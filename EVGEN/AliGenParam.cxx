@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.19  2000/07/11 18:24:56  fca
+Coding convention corrections + few minor bug fixes
+
 Revision 1.18  2000/06/29 21:08:27  morsch
 All paramatrisation libraries derive from the pure virtual base class AliGenLib.
 This allows to pass a pointer to a library directly to AliGenParam and avoids the
@@ -47,10 +50,15 @@ Introduction of the Copyright and cvs Log
 */
 
 #include "AliGenParam.h"
+#include "AliDecayerPythia.h"
 #include "AliGenMUONlib.h"
 #include "AliRun.h"
 #include "AliPythia.h"
 #include <TParticle.h>
+#include <TParticlePDG.h>
+#include <TDatabasePDG.h>
+#include <TLorentzVector.h>
+
 #include <TF1.h>
 
 ClassImp(AliGenParam)
@@ -176,9 +184,8 @@ AliGenParam::~AliGenParam()
 void AliGenParam::Init()
 {
 // Initialisation
-    SetMC(new AliPythia());
-    fPythia= (AliPythia*) fgMCEvGen;
-    
+
+    fDecayer = new AliDecayerPythia();
   //Begin_Html
   /*
     <img src="picts/AliGenParam.gif">
@@ -218,9 +225,9 @@ void AliGenParam::Init()
     }
 //
 // particle decay related initialization
-    fPythia->DefineParticles();
+    fDecayer->Init();
 // semimuonic decays of charm and beauty
-    fPythia->ForceDecay(fForceDecay);
+    fDecayer->ForceDecay(fForceDecay);
 //
     switch (fForceDecay) 
     {
@@ -277,6 +284,9 @@ void AliGenParam::Generate()
   static TClonesArray *particles;
   //
   if(!particles) particles=new TClonesArray("TParticle",1000);
+
+  static TDatabasePDG *DataBase = new TDatabasePDG();
+  if(!DataBase) DataBase = new TDatabasePDG();
   //
   Float_t random[6];
  
@@ -296,8 +306,10 @@ void AliGenParam::Generate()
 //
 // particle type
 	  Int_t iPart = fIpParaFunc();
-	  fChildWeight=(fPythia->GetBraPart(iPart))*fParentWeight;	  
-	  Float_t am=fPythia->GetPMAS(fPythia->Lucomp(iPart),1);
+	  fChildWeight=(fDecayer->GetPartialBranchingRatio(iPart))*fParentWeight;	   
+	  TParticlePDG *particle = DataBase->GetParticle(iPart);
+	  Float_t am = particle->Mass();
+
 	  gMC->Rndm(random,2);
 //
 // phi
@@ -347,10 +359,11 @@ void AliGenParam::Generate()
 	  if (fForceDecay != nodecay) {
 // Using lujet to decay particle
 	      Float_t energy=TMath::Sqrt(ptot*ptot+am*am);
-	      fPythia->DecayParticle(iPart,energy,theta,phi);
+	      TLorentzVector pmom(p[0], p[1], p[2], energy);
+	      fDecayer->Decay(iPart,&pmom);
 //
 // select decay particles
-	      Int_t np=fPythia->ImportParticles(particles,"All");
+	      Int_t np=fDecayer->ImportParticles(particles);
 	      Int_t ncsel=0;
 	      for (i = 1; i<np; i++) {
 		  TParticle *  iparticle = (TParticle *) particles->At(i);
