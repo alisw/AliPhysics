@@ -1,6 +1,9 @@
 #include "AliHBTCorrelFctn.h"
-
-
+//Set of Correlation fuctions
+//AliHBTQInvCorrelFctn - Q Invariant correlatyion function
+//
+//
+//
 
 ClassImp(AliHBTQInvCorrelFctn)
 
@@ -9,11 +12,50 @@ ClassImp(AliHBTQInvCorrelFctn)
 //by 
 //  of particles from different events
 
-TH1* AliHBTQInvCorrelFctn::GetResult()
+AliHBTQInvCorrelFctn::
+AliHBTQInvCorrelFctn(Int_t nbins = 100, Double_t maxXval = 0.15, Double_t minXval = 0.0):
+                     AliHBTTwoPartFctn1D(nbins,maxXval,minXval)
 {
- return GetRatio(GetDenominator()->GetMaximum()/GetNumerator()->GetMaximum());
+ Rename("qinvcf","Q_{inv} Correlation Function");
 }
 
+
+TH1* AliHBTQInvCorrelFctn::GetResult()
+{  
+ return GetRatio(Scale());
+}
+/*************************************************************************************/ 
+/*************************************************************************************/ 
+/*************************************************************************************/ 
+
+ClassImp(AliHBTQOutCMSLCCorrelFctn)
+TH1* AliHBTQOutCMSLCCorrelFctn::GetResult()
+{
+ return GetRatio(Scale());
+}
+/*************************************************************************************/ 
+/*************************************************************************************/ 
+/*************************************************************************************/ 
+
+ClassImp(AliHBTQLongCMSLCCorrelFctn)
+TH1* AliHBTQLongCMSLCCorrelFctn::GetResult()
+{
+ return GetRatio(Scale());
+}
+/*************************************************************************************/ 
+/*************************************************************************************/ 
+/*************************************************************************************/ 
+
+ClassImp(AliHBTQSideCMSLCCorrelFctn)
+TH1* AliHBTQSideCMSLCCorrelFctn::GetResult()
+{
+ return GetRatio(Scale());
+}
+
+
+/*************************************************************************************/ 
+/*************************************************************************************/ 
+/*************************************************************************************/ 
 
 ClassImp(AliHBTInvMassCorrelFctn)
 
@@ -26,5 +68,6 @@ AliHBTInvMassCorrelFctn(Int_t nbins, Double_t maxXval, Double_t minXval):
 
 TH1* AliHBTInvMassCorrelFctn::GetResult()
 {
- return GetRatio(GetDenominator()->GetMaximum()/GetNumerator()->GetMaximum());
+ TString name = fName + " Result";
+ return (TH1*)GetNumerator()->Clone(name.Data());
 }
