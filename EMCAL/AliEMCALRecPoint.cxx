@@ -577,15 +577,16 @@ void  AliEMCALRecPoint::EvalParents(TClonesArray * digits)
 	fMulParent++ ;
       } // store it
     } // all parents in digit
-    delete newparentarray ; 
+    delete [] newparentarray ; 
   } // all digits
 
-  
-  fParentsList = new Int_t[fMulParent] ;
-  for(index = 0; index < fMulParent; index++)
-   fParentsList[index] = tempo[index] ;
+  if (fMulParent>0) {
+    fParentsList = new Int_t[fMulParent] ;
+    for(index = 0; index < fMulParent; index++)
+      fParentsList[index] = tempo[index] ;
+  }
  
-  delete tempo ;
+  delete [] tempo ;
 
 }
 
