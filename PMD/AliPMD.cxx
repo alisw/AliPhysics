@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.8  2000/10/20 06:24:40  fca
+Put the PMD at the right position in the event display
+
 Revision 1.7  2000/10/02 21:28:12  fca
 Removal of useless dependecies via forward declarations
 
@@ -51,13 +54,16 @@ Introduction of the Copyright and cvs Log
 
 #include <TBRIK.h>
 #include <TNode.h>
+#include <TTree.h>
 #include <TGeometry.h>
+#include <TClonesArray.h>
 
 #include "AliPMD.h"
 #include "AliRun.h"
 #include "AliMC.h" 
 #include "AliConst.h" 
- 
+#include "AliPMDRecPoint.h"
+  
 ClassImp(AliPMD)
  
 //_____________________________________________________________________________
@@ -81,7 +87,11 @@ AliPMD::AliPMD(const char *name, const char *title)
   // Allocate the array of hits
   fHits   = new TClonesArray("AliPMDhit",  405);
   gAlice->AddHitList(fHits);
+
+  fRecPoints  = new TClonesArray("AliPMDRecPoint",10000); 
+  fNRecPoints = 0;
   
+
   fIshunt =  1;
   
   fPar[0] = 1;
@@ -100,6 +110,15 @@ AliPMD::AliPMD(const char *name, const char *title)
   fPadSize[1] = 1.0;
   fPadSize[2] = 1.2;
   fPadSize[3] = 1.5;
+}
+
+AliPMD::~AliPMD()
+{
+  //
+  // Default constructor
+  //
+    delete fRecPoints;
+    fNRecPoints=0;
 }
 
 //_____________________________________________________________________________
@@ -217,6 +236,58 @@ void AliPMD::StepManager()
   //
 }
 
+void AliPMD::AddRecPoint(const AliPMDRecPoint &p)
+{
+    //
+    // Add a PMD reconstructed hit to the list
+    //
+    TClonesArray &lrecpoints = *fRecPoints;
+    new(lrecpoints[fNRecPoints++]) AliPMDRecPoint(p);
+}
+
+void AliPMD::MakeBranch(Option_t* option)
+{
+    // Create Tree branches for the PMD
+    printf("Make Branch - TreeR address %p\n",gAlice->TreeR());
+    
+    const Int_t kBufferSize = 4000;
+    char branchname[30];
+
+    AliDetector::MakeBranch(option);
+
+    sprintf(branchname,"%sRecPoints",GetName());
+    if (fRecPoints   && gAlice->TreeR()) {
+	gAlice->TreeR()->Branch(branchname, &fRecPoints, kBufferSize);
+	printf("Making Branch %s for reconstructed hits\n",branchname);
+    }	
+}
+
+
+void AliPMD::SetTreeAddress()
+{
+  // Set branch address for the TreeR
+    char branchname[30];
+    AliDetector::SetTreeAddress();
+
+    TBranch *branch;
+    TTree *treeR = gAlice->TreeR();
+
+    sprintf(branchname,"%s",GetName());
+    if (treeR && fRecPoints) {
+	branch = treeR->GetBranch(branchname);
+	if (branch) branch->SetAddress(&fRecPoints);
+    }
+}
+
+void AliPMD::ResetHits()
+{
+  //
+  // Reset number of hits and the hits array
+  //
+  fNRecPoints   = 0;
+  if (fRecPoints)   fRecPoints->Clear();
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
 //  Photon Multiplicity Detector Version 1                                   //
@@ -228,6 +299,8 @@ void AliPMD::StepManager()
 //End_Html
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
+
+
 
 ClassImp(AliPMDhit)
   

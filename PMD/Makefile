@@ -9,11 +9,13 @@ PACKAGE = PMD
 
 # C++ sources
 
-SRCS          = AliPMD.cxx AliPMDv0.cxx AliPMDv1.cxx AliPMDv2.cxx
+SRCS          = AliPMD.cxx AliPMDv0.cxx AliPMDv1.cxx AliPMDv2.cxx AliPMDRecPoint.cxx
 
 # C++ Headers
 
-HDRS          = $(SRCS:.cxx=.h) PMDLinkDef.h
+HDRS    = $(SRCS:.cxx=.h) \
+	$(ROOTSYS)/include/TClonesArray.h \
+	PMDLinkDef.h
 
 # Library dictionary
 

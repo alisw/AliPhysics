@@ -12,6 +12,8 @@
 #include "AliDetector.h"
 #include "AliHit.h"
 
+class TClonesArray;
+class AliPMDRecPoint;
 
 class AliPMD : public AliDetector {
   
@@ -24,7 +26,7 @@ protected:
 public:
   AliPMD();
   AliPMD(const char *name, const char *title);
-  virtual      ~AliPMD() {}
+  virtual      ~AliPMD();
   virtual void  AddHit(Int_t, Int_t*, Float_t*);
    virtual void  BuildGeometry();
   virtual void  CreateGeometry() {}
@@ -36,6 +38,14 @@ public:
   virtual void  SetGEO(Float_t, Float_t, Float_t);
   virtual void  SetPadSize(Float_t, Float_t, Float_t, Float_t);
   virtual void  StepManager();
+  virtual void  AddRecPoint(const AliPMDRecPoint &p);
+  virtual void  MakeBranch(Option_t* option);
+  virtual void  SetTreeAddress();
+  virtual void  ResetHits();
+  
+ private:
+  TClonesArray* fRecPoints;   // List of reconstructed hits
+  Int_t         fNRecPoints;  // Number of reconstructed hits
   
   ClassDef(AliPMD,1)  // Base Class for Photon Multiplicity Detector
 };
@@ -70,7 +80,7 @@ public:
 	   fVolume[0],fVolume[1],fVolume[2],fVolume[3],fTrack,fEnergy);
   }
 
- 
+  
   ClassDef(AliPMDhit,1)  //Hits object for set:PMD
 };
 #endif
