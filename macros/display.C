@@ -40,18 +40,17 @@ void display (const char *filename="galice.root",Int_t nevent=0, Int_t * tracks=
     return;
   }
     
-// Create Event Display object
-   AliDisplay *edisplay = new AliDisplay(750);
-   if (ntracks>0) edisplay->SetTracksToDisplay(tracks, ntracks);
-
-// Display the requested event
+// Load data
    rl->GetEvent(nevent);
    rl->LoadKinematics();
    rl->LoadHeader();
    rl->LoadHits();
 
+// Create Event Display object
    AliDisplay *edisplay = new AliDisplay(750);
+   if (ntracks>0) edisplay->SetTracksToDisplay(tracks, ntracks);
    
+// Display the requested event
    edisplay->ShowNextEvent(0);
 
 // Define the buttons to switch on/off the existing modules
