@@ -43,7 +43,7 @@ public:
   virtual Float_t GetValue() const = 0 ; 
   TString HasA() const { return fType ; }
   virtual void Print() const = 0 ; 
-  void RaiseAlarm(const char * time, const char * checked, const char * checker, const char * message) ; 
+  void RaiseAlarm(const char * time, const char * checked, const char * checker, const char * message) const ; 
   void RemoveChecker(AliPHOSQAChecker *ch) ; 
   virtual void Reset() = 0 ;
   void ResetAlarms() ;

@@ -101,7 +101,7 @@ void AliPHOSQAVirtualCheckable::CheckMe()
 }
 
 //____________________________________________________________________________ 
-void AliPHOSQAVirtualCheckable::RaiseAlarm(const char * time, const char * checked, const char * checker, const char * message)
+void AliPHOSQAVirtualCheckable::RaiseAlarm(const char * time, const char * checked, const char * checker, const char * message) const
 {
   // Raise an alarm and store it in the appropriate folder : //Folders/Run/Conditions/QA/PHOS..
   // Info("RaiseAlarm", "%s", message) ; 
