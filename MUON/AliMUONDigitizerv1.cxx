@@ -435,6 +435,8 @@ void AliMUONDigitizerv1::Exec(Option_t* option)
       cerr<<"AliMUONDigitizer::Exec: writing the TreeD: "
 	  <<treeD->GetName()<<endl;
 
+    runloader    = AliRunLoader::GetRunLoader(fManager->GetOutputFolderName());
+    gime        = runloader->GetLoader("MUONLoader");
     gime->WriteDigits("OVERWRITE");
     delete [] fHitMap;
     delete fTDList;
