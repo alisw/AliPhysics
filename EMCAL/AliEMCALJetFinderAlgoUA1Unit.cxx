@@ -42,24 +42,27 @@ AliEMCALJetFinderAlgoUA1Unit::~AliEMCALJetFinderAlgoUA1Unit()
 
 }
 	
-Bool_t AliEMCALJetFinderAlgoUA1Unit::operator>(AliEMCALJetFinderAlgoUA1Unit unit)
+const Bool_t AliEMCALJetFinderAlgoUA1Unit::operator>(AliEMCALJetFinderAlgoUA1Unit unit)
 {
+	// Greater than operator used by sort
   if( fUnitEnergy > unit.GetUnitEnergy())
     return kTRUE;
   else 
     return kFALSE;
 }
 
-Bool_t AliEMCALJetFinderAlgoUA1Unit::operator<( AliEMCALJetFinderAlgoUA1Unit unit)
+const Bool_t AliEMCALJetFinderAlgoUA1Unit::operator<( AliEMCALJetFinderAlgoUA1Unit unit)
 {
+	// Less than operator used by sort
   if( fUnitEnergy < unit.GetUnitEnergy())
      return kTRUE;
   else
      return kFALSE;
 }
 
-Bool_t AliEMCALJetFinderAlgoUA1Unit::operator==( AliEMCALJetFinderAlgoUA1Unit unit)
+const Bool_t AliEMCALJetFinderAlgoUA1Unit::operator==( AliEMCALJetFinderAlgoUA1Unit unit)
     {
+	    // equality operator used by sort
       if( fUnitEnergy == unit.GetUnitEnergy())
 	 return kTRUE;
       else
