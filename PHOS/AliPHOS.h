@@ -25,15 +25,8 @@ class AliPHOS : public AliDetector {
 
  public:
 
-  AliPHOS() {
-    // ctor  
-    fEmcRecPoints=0;
-    fTrackSegments=0;
-    fRecParticles=0;
-  } 
-  AliPHOS(const char* name, const char* title=""): AliDetector(name,title) {
-    // ctor  
-  } 
+  AliPHOS() ;
+  AliPHOS(const char* name, const char* title="");
   AliPHOS(const AliPHOS & phos) {
     // cpy ctor: no implementation yet
     // requested by the Coding Convention
@@ -46,24 +39,24 @@ class AliPHOS : public AliDetector {
   }
   virtual void   AddHit( Int_t shunt, Int_t primary, Int_t track, Int_t id, Float_t *hits ) = 0 ;   
   virtual void   CreateMaterials() ;                     
-  virtual  AliPHOSRecPoint::RecPointsList *  EmcRecPoints() {
+  virtual  AliPHOSRecPoint::RecPointsList **  EmcRecPoints() {
     // Getting list of RecPoints
-    return fEmcRecPoints ;
+    return &fEmcRecPoints ;
   }
   virtual  AliPHOSGeometry * GetGeometry() = 0 ;
   virtual Int_t   IsVersion(void) const { return -1 ; } 
-  virtual  AliPHOSRecPoint::RecPointsList * PpsdRecPoints() {
+  virtual  AliPHOSRecPoint::RecPointsList ** PpsdRecPoints() {
     // to be redefined when ppsd is present
-    return 0 ;
+    return & fPpsdRecPoints ;
   } 
   virtual void  SetTreeAddress();                
-  virtual  AliPHOSRecParticle::RecParticlesList *  RecParticles() {
+  virtual  AliPHOSRecParticle::RecParticlesList **  RecParticles() {
     // Getting list of RecParticles
-    return fRecParticles ;
+    return & fRecParticles ;
   }
-  virtual  AliPHOSTrackSegment::TrackSegmentsList *  TrackSegments() {
+  virtual  AliPHOSTrackSegment::TrackSegmentsList **  TrackSegments() {
     // Getting list of TrackSegments
-    return fTrackSegments ;
+    return & fTrackSegments ;
   }
   virtual TString Version() {return TString(" ") ; } 
  
@@ -77,6 +70,7 @@ class AliPHOS : public AliDetector {
  protected:
   
   AliPHOSRecPoint::RecPointsList * fEmcRecPoints ;         // The RecPoints (clusters) list in EMC 
+  AliPHOSRecPoint::RecPointsList * fPpsdRecPoints ;        // The RecPoints (clusters) list in PPSD (veto)
   AliPHOSTrackSegment::TrackSegmentsList * fTrackSegments ;// The TrackSegment list in PHOS
   AliPHOSRecParticle::RecParticlesList * fRecParticles ;   // The reconstructed particles list in PHOS
 

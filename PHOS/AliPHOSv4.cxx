@@ -473,12 +473,6 @@ void AliPHOSv4::StepManager(void)
   TParticlePDG * partPDG = PDG->GetParticle(gMC->TrackPid()) ;
   Float_t mass = partPDG->Mass() ;
 
-  TClonesArray * particlelist = gAlice->Particles() ;
-  TParticle * part = (TParticle *)particlelist->At(primary) ;
-
-
-  cout << "Primary " << primary << "  " << part->GetPDG()->PdgCode() << " Track " << gMC->TrackPid() << endl ;
-
   if(Energy > mass){
     pos.SetMag(TMath::Sqrt(Energy*Energy-mass*mass)) ;
     TLorentzVector pTrack(pos,Energy) ;  

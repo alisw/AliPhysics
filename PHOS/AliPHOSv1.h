@@ -41,10 +41,6 @@ public:
     return 1 ; 
   }
   virtual void   MakeBranch(Option_t* opt) ;
-  virtual  AliPHOSRecPoint::RecPointsList *  PpsdRecPoints() {
-    // Getting list of PPSD RecPoints
-    return fPpsdRecPoints ;
-  }
   void           Reconstruction(AliPHOSReconstructioner * Reconstructioner) ;
   void           ResetClusters(){} ;
   virtual void   ResetDigits() ; 
@@ -73,7 +69,6 @@ protected:
   Float_t fDigitThreshold ;                       // Threshold for the digit registration 
   Int_t fNTmpHits ;                               //!  Used internally for digitalization
   Float_t fPinElectronicNoise  ;                  // Electronic Noise in the PIN
-  AliPHOSRecPoint::RecPointsList * fPpsdRecPoints ; // The RecPoints (clusters) list in PPSD 
   AliPHOSReconstructioner * fReconstructioner ;   // Reconstrutioner of the PHOS event: Clusterization and subtracking procedures
   TClonesArray * fTmpHits ;                       //!  Used internally for digitalization 
   AliPHOSTrackSegmentMaker * fTrackSegmentMaker ; // Reconstructioner of the PHOS track segment: 2 x PPSD + 1 x EMC

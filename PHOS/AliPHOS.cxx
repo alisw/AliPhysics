@@ -38,9 +38,42 @@
 ClassImp(AliPHOS)
 
 //____________________________________________________________________________
+AliPHOS::AliPHOS():AliDetector()
+{
+  // ctor 
+  //We do not create objects, because these pointers will be overwritten durin reading from file.
+  fEmcRecPoints  = 0 ; 
+  fPpsdRecPoints = 0 ;
+  fTrackSegments = 0 ;
+  fRecParticles  = 0 ;
+
+}
+//____________________________________________________________________________
+AliPHOS::AliPHOS(const char* name, const char* title=""):AliDetector(name,title)
+{
+  // ctor
+  fEmcRecPoints  = new AliPHOSRecPoint::RecPointsList(10) ; 
+  fPpsdRecPoints = new AliPHOSRecPoint::RecPointsList(10) ;
+  fTrackSegments = new AliPHOSTrackSegment::TrackSegmentsList("AliPHOSTrackSegment", 10) ;
+  fRecParticles  = new AliPHOSRecParticle::RecParticlesList("AliPHOSRecParticle", 10) ;
+  
+}
+//____________________________________________________________________________
 AliPHOS::~AliPHOS()
 {
   // dtor
+  if(fEmcRecPoints)
+    fEmcRecPoints->Delete() ;
+  delete fEmcRecPoints ;
+  if(fPpsdRecPoints)
+    fPpsdRecPoints->Delete() ;
+  delete fPpsdRecPoints ;
+  if(fTrackSegments)
+    fTrackSegments->Delete() ;
+  delete fTrackSegments ;
+  if(fRecParticles)
+    fRecParticles->Delete() ;
+  delete fRecParticles ;
   delete fHits ;
   delete fDigits ;
 }

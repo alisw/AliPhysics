@@ -35,6 +35,7 @@ public:
 
   void AnalyzeOneEvent(Int_t evt = -999) ;  // analyzes a single event ;
   void AnalyzeManyEvents(Int_t Nevtents = 100, Int_t Module=0) ;  // analyzes many events   ;
+  void Reconstruct(Int_t Nevtents = 100) ;
   void AnalyzeResolutions(Int_t Nevtents) ;  // analyzes Energy and Position resolutions   ;
   void BookingHistograms() ;                // booking histograms for the ManyEvent analysis ;
   void BookResolutionHistograms() ;         // booking histograms for the Resoluion analysis ;
@@ -73,16 +74,22 @@ public:
   TH1F * fhVetoCluster ;            // Histo of Cluster energies in Veto
   TH1F * fhConvertorCluster ;       // Histo of Cluster energies in Convertor
   TH1F * fhConvertorEmc ;           // 2d Convertor versus Emc energies
-  TH2F * fhPhotonEnergy ;           // Spectrum of detected photons
-  TH2F * fhElectronEnergy ;         // Spectrum of detected electrons
+  TH2F * fhPhotonEnergy ;           // Spectrum of detected photons with photon primary
+  TH2F * fhPhotonAllEnergy ;        // Total spectrum of detected photons
+  TH2F * fhElectronEnergy ;         // Spectrum of detected electrons with electron primary
+  TH2F * fhElectronAllEnergy ;      // Total spectrum of detected electrons
   TH2F * fhNeutralHadronEnergy ;    // Spectrum of detected neutral hadron
-  TH2F * fhNeutralEMEnergy ;        // Spectrum of detected neutral EM
+  TH2F * fhNeutralEMEnergy ;        // Spectrum of detected neutral EM with EM primary
+  TH2F * fhNeutralEMAllEnergy ;     // Spectrum of detected neutral EM
   TH2F * fhChargedHadronEnergy ;    // Spectrum of detected charged
   TH2F * fhPhotonHadronEnergy ;     // Spectrum of detected Photon-Hadron
-  TH2F * fhPhotonPosition ;        // Position Resolution of  photons
-  TH2F * fhElectronPosition ;      // Position Resolution of electrons
+  TH2F * fhPhotonPosition ;        // Position Resolution of  photons with photon primary
+  TH2F * fhPhotonAllPosition ;     // Position Resolution of  photons
+  TH2F * fhElectronPosition ;      // Position Resolution of electrons with electron primary
+  TH2F * fhElectronAllPosition ;   // Position Resolution of electrons
   TH2F * fhNeutralHadronPosition ; // Position Resolution of neutral hadron
-  TH2F * fhNeutralEMPosition ;     // Position Resolution of neutral EM
+  TH2F * fhNeutralEMPosition ;     // Position Resolution of neutral EM with EM primary
+  TH2F * fhNeutralEMAllPosition ;  // Position Resolution of neutral EM
   TH2F * fhChargedHadronPosition ; // Position Resolution of charged
   TH2F * fhPhotonHadronPosition ;  // Position Resolution of Photon-Hadron
   TH1F * fhPhotonPositionY ;        // Y distribution of detected photons
@@ -91,6 +98,25 @@ public:
   TH1F * fhNeutralEMPositionY ;     // Y distribution of detected neutral EM
   TH1F * fhChargedHadronPositionY ; // Y distribution of detected charged
   TH1F * fhPhotonHadronPositionY ;  // Y distribution of detected Photon-Hadron
+  TH1F * fhPhotonReg ;          
+  TH1F * fhAllReg ;          
+  TH1F * fhNReg ;          
+  TH1F * fhNBarReg ;          
+  TH1F * fhChargedReg ;          
+  TH1F * fhPhotonEM ;          
+  TH1F * fhAllEM ;          
+  TH1F * fhNEM ;          
+  TH1F * fhNBarEM ;          
+  TH1F * fhChargedEM ;          
+  TH1F * fhPrimary ;          
+
+  TH1F * fhPhotPhot ;
+  TH1F * fhPhotElec ;
+  TH1F * fhPhotNeuH ;
+  TH1F * fhPhotNuEM ; 
+  TH1F * fhPhotChHa ;
+  TH1F * fhPhotGaHa ;
+
 
 
 ClassDef(AliPHOSAnalyze,1)  // PHOSv1 event analyzis algorithm
