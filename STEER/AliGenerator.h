@@ -84,7 +84,6 @@ protected:
     Int_t       fNpart;        //Maximum number of particles per event
     Float_t     fParentWeight; //Parent Weight
     Float_t     fChildWeight;  //ChildWeight
-    Int_t       fTrackit;      // Track the generated final state particle if 1
     Int_t       fAnalog;       //Flaf for anolog or pt-weighted generation
    //
     VertexSmear_t     fVertexSmear;  //Vertex Smearing mode
