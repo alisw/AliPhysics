@@ -1,10 +1,8 @@
 #ifndef ALIL3_MEMHANDLER_H
 #define ALIL3_MEMHANDLER_H
 
-#include "AliL3RootTypes.h"
-#include "AliL3Transform.h"
-#include <stdio.h>
 #include <stdlib.h>
+#include "AliL3RootTypes.h"
 #include "AliL3DigitData.h"
 
 class AliL3SpacePointData;
