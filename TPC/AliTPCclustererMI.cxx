@@ -21,6 +21,7 @@
 //   Origin: Marian Ivanov 
 //-------------------------------------------------------
 
+#include "AliTPCReconstructor.h"
 #include "AliTPCclustererMI.h"
 #include "AliTPCclusterMI.h"
 #include <TObjArray.h>
@@ -707,7 +708,7 @@ void AliTPCclustererMI::FindClusters()
   //first loop - for "gold cluster" 
   fLoop=1;
   Int_t *b=&fBins[-1]+2*fMaxTime;
-  Int_t crtime = Int_t((fParam->GetZLength()-1.05*fRx)/fZWidth-5);
+  Int_t crtime = Int_t((fParam->GetZLength()-AliTPCReconstructor::GetCtgRange()*fRx)/fZWidth-5);
 
   for (Int_t i=2*fMaxTime; i<fMaxBin-2*fMaxTime; i++) {
     b++;

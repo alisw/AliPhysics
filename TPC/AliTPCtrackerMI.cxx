@@ -49,6 +49,8 @@
 #include "AliTPCreco.h" 
 #include "AliTPCtrackerMI.h"
 #include "TStopwatch.h"
+
+#include "AliTPCReconstructor.h"
 //
 
 ClassImp(AliTPCseed)
@@ -1539,7 +1541,7 @@ Int_t AliTPCtrackerMI::FollowToNext(AliTPCseed& t, Int_t nr) {
   } 
   else
     {
-      if (TMath::Abs(z)<(1.05*x+10)) t.fNFoundable++;
+      if (TMath::Abs(z)<(AliTPCReconstructor::GetCtgRange()*x+10)) t.fNFoundable++;
       else
 	return 0;
     }   
@@ -1636,7 +1638,7 @@ Int_t AliTPCtrackerMI::FollowToNextFast(AliTPCseed& t, Int_t nr) {
   } 
   else
     {
-      if (TMath::Abs(z)>(1.05*x+10)) t.SetClusterIndex2(row,-1);
+      if (TMath::Abs(z)>(AliTPCReconstructor::GetCtgRange()*x+10)) t.SetClusterIndex2(row,-1);
     }   
   //calculate 
   
@@ -1719,7 +1721,7 @@ Int_t AliTPCtrackerMI::UpdateClusters(AliTPCseed& t,  Int_t nr) {
   } 
   else
     {
-      if (TMath::Abs(t.GetZ())<(1.05*t.GetX()+10)) t.fNFoundable++;
+      if (TMath::Abs(t.GetZ())<(AliTPCReconstructor::GetCtgRange()*t.GetX()+10)) t.fNFoundable++;
       else
 	return 0;      
     }
@@ -5264,7 +5266,7 @@ void AliTPCseed::CookdEdx(Double_t low, Double_t up,Int_t i1, Int_t i2, Bool_t o
 	  //  TMath::Abs( Int_t(iz) - iz + 0.5);
 	  //ampc *= 1.15*(1-0.3*dy);
 	  //ampc *= 1.15*(1-0.3*dz);
-	  //	  Float_t zfactor = (1.05-0.0004*TMath::Abs(point->GetCPoint().GetZ()));
+	  //	  Float_t zfactor = (AliTPCReconstructor::GetCtgRange()-0.0004*TMath::Abs(point->GetCPoint().GetZ()));
 	  //ampc               *=zfactor; 
 	}
 	else{ 

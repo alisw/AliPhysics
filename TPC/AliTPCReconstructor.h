@@ -19,8 +19,13 @@ public:
   virtual AliTracker*  CreateTracker(AliRunLoader* runLoader) const;
   virtual void         FillESD(AliRunLoader* runLoader, AliESD* esd) const;
 
+  static void SetCtgRange(Double_t ctgRange = 1.05) {fgCtgRange = ctgRange;}
+  static Double_t GetCtgRange(){ return fgCtgRange;}
+
 private:
   AliTPCParam*         GetTPCParam(AliRunLoader* runLoader) const;
+
+  static Double_t fgCtgRange; //! +-fCtgRange is the ctg(Theta) window used for clusterization and tracking (MI) 
 
   ClassDef(AliTPCReconstructor, 0)   // class for the TPC reconstruction
 };
