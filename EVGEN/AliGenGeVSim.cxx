@@ -1,5 +1,5 @@
 
-#include <stream.h>
+#include <iostream.h>
 
 #include "TROOT.h"
 #include "TCanvas.h"
