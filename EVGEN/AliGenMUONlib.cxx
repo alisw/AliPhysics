@@ -29,6 +29,32 @@ Double_t AliGenMUONlib::PtPion(Double_t *px, Double_t *)
     y=b*TMath::Exp(-sqrt(x*x+xmpi2)/t);
   return y*x;
 }
+//
+// y-distribution
+//
+Double_t AliGenMUONlib::YPion( Double_t *py, Double_t *)
+{
+  const Double_t a    = 7000.;
+  const Double_t dy   = 4.;
+
+  Double_t y=TMath::Abs(*py);
+  //
+  Double_t ex = y*y/(2*dy*dy);
+  return a*TMath::Exp(-ex);
+}
+//                 particle composition
+//
+Int_t AliGenMUONlib::IpPion()
+{
+    AliMC* pMC = AliMC::GetMC();
+    Float_t random[1];
+    pMC->Rndm(random,1);
+    if (random[0] < 0.5) {
+	return  211;
+    } else {
+	return -211;
+    }
+}
 
 //____________________________________________________________
 //
@@ -51,22 +77,43 @@ Double_t AliGenMUONlib::PtScal(Double_t pt, Int_t np)
   return fmtscal*ptpion;
 }
 //
-// eta-distribution for kaons
+// kaon
+//
+//                pt-distribution
 //____________________________________________________________
-Double_t AliGenMUONlib::EtaKaon( Double_t *py, Double_t *)
+Double_t AliGenMUONlib::PtKaon( Double_t *px, Double_t *)
 {
-  const Double_t a1    = 497.6;
-  const Double_t a2    = 215.6;
-  const Double_t eta1  = 0.79;
-  const Double_t eta2  = 4.09;
-  const Double_t deta1 = 1.54;
-  const Double_t deta2 = 1.40;
+  return PtScal(*px,2);
+}
+
+// y-distribution
+//____________________________________________________________
+Double_t AliGenMUONlib::YKaon( Double_t *py, Double_t *)
+{
+  const Double_t a    = 1000.;
+  const Double_t dy   = 4.;
+  
+
   Double_t y=TMath::Abs(*py);
   //
-  Double_t ex1 = (y-eta1)*(y-eta1)/(2*deta1*deta1);
-  Double_t ex2 = (y-eta2)*(y-eta2)/(2*deta2*deta2);
-  return a1*TMath::Exp(-ex1)+a2*TMath::Exp(-ex2);
+  Double_t ex = y*y/(2*dy*dy);
+  return a*TMath::Exp(-ex);
 }
+
+//                 particle composition
+//
+Int_t AliGenMUONlib::IpKaon()
+{
+    AliMC* pMC = AliMC::GetMC();
+    Float_t random[1];
+    pMC->Rndm(random,1);
+    if (random[0] < 0.5) {
+	return  321;
+    } else {
+	return -321;
+    }
+}
+
 //                    J/Psi 
 //
 //
@@ -155,7 +202,7 @@ Double_t AliGenMUONlib::PtPhi( Double_t *px, Double_t *)
 //    y-distribution
 Double_t AliGenMUONlib::YPhi( Double_t *px, Double_t *)
 {
-    Double_t *dummy=0;
+    Double_t *dummy;
     return YJpsi(px,dummy);
 }
 //                 particle composition
@@ -183,7 +230,7 @@ Double_t AliGenMUONlib::PtCharm( Double_t *px, Double_t *)
 //                  y-distribution
 Double_t AliGenMUONlib::YCharm( Double_t *px, Double_t *)
 {
-    Double_t *dummy=0;
+    Double_t *dummy;
     return YJpsi(px,dummy);
 }
 
@@ -227,7 +274,7 @@ Double_t AliGenMUONlib::PtBeauty( Double_t *px, Double_t *)
 //                     y-distribution
 Double_t AliGenMUONlib::YBeauty( Double_t *px, Double_t *)
 {
-    Double_t *dummy=0;
+    Double_t *dummy;
     return YJpsi(px,dummy);
 }
 
@@ -252,76 +299,96 @@ Int_t AliGenMUONlib::IpBeauty()
 }
 
 typedef Double_t (*GenFunc) (Double_t*,  Double_t*);
-GenFunc AliGenMUONlib::GetPt(Int_t ipart)
+GenFunc AliGenMUONlib::GetPt(Param_t param)
 {
     GenFunc func;
-    switch (ipart) 
+    switch (param) 
     {
-    case 333:
+    case phi_p:
 	func=PtPhi;
 	break;
-    case 443:
+    case jpsi_p:
 	func=PtJpsi;
 	break;
-    case 553:
+    case upsilon_p:
 	func=PtUpsilon;
 	break;
-    case 400:
+    case charm_p:
 	func=PtCharm;
 	break;
-    case 500:
+    case beauty_p:
 	func=PtBeauty;
+	break;
+    case pion_p:
+	func=PtPion;
+	break;
+    case kaon_p:
+	func=PtKaon;
 	break;
     }
     return func;
 }
 
-GenFunc AliGenMUONlib::GetY(Int_t ipart)
+GenFunc AliGenMUONlib::GetY(Param_t param)
 {
     GenFunc func;
-    switch (ipart) 
+    switch (param) 
     {
-    case 333:
+    case phi_p:
 	func=YPhi;
 	break;
-    case 443:
+    case jpsi_p:
 	func=YJpsi;
 	break;
-    case 553:
+    case upsilon_p:
 	func=YUpsilon;
 	break;
-    case 400:
+    case charm_p:
 	func=YCharm;
 	break;
-    case 500:
+    case beauty_p:
 	func=YBeauty;
+	break;
+    case pion_p:
+	func=YPion;
+	break;
+    case kaon_p:
+	func=YKaon;
 	break;
     }
     return func;
 }
 typedef Int_t (*GenFuncIp) ();
-GenFuncIp AliGenMUONlib::GetIp(Int_t ipart)
+GenFuncIp AliGenMUONlib::GetIp(Param_t param)
 {
     GenFuncIp func;
-    switch (ipart) 
+    switch (param) 
     {
-    case 333:
+    case phi_p:
 	func=IpPhi;
 	break;
-    case 443:
+    case jpsi_p:
 	func=IpJpsi;
 	break;
-    case 553:
+    case upsilon_p:
 	func=IpUpsilon;
 	break;
-    case 400:
+    case charm_p:
 	func=IpCharm;
 	break;
-    case 500:
+    case beauty_p:
 	func=IpBeauty;
+	break;
+    case pion_p:
+	func=IpPion;
+	break;
+    case kaon_p:
+	func=IpKaon;
 	break;
     }
     return func;
 }
+
+
 
 
