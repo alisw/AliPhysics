@@ -61,15 +61,16 @@
 // this feature is not available for all detectors and that merging is not   //
 // possible, when digits are created directly from hits.                     //
 //                                                                           //
-// Backgound events can be merged by calling                                 //
+// Background events can be merged by calling                                //
 //                                                                           //
 //   sim.MergeWith("background/galice.root", 2);                             //
 //                                                                           //
 // The first argument is the file name of the background galice file. The    //
 // second argument is the number of signal events per background event.      //
-// The default value for this is 1. MergeWith can be called several times    //
-// to merge more than two event streams. It is assumed that the sdigits      //
-// were already produced for the background events.                          //
+// By default this number is calculated from the number of available         //
+// background events. MergeWith can be called several times to merge more    //
+// than two event streams. It is assumed that the sdigits were already       //
+// produced for the background events.                                       //
 //                                                                           //
 // The methods RunSimulation, RunSDigitization, RunDigitization and          //
 // RunHitsDigitization can be used to run only parts of the full simulation  //
@@ -266,11 +267,12 @@ Bool_t AliSimulation::RunSimulation(Int_t nEvents)
 	  "Check your config file: %s", fConfigFileName.Data());
     return kFALSE;
   }
+  if (nEvents <= 0) nEvents = fNEvents;
 
   // get vertex from background file in case of merging
   if (fUseBkgrdVertex &&
       fBkgrdFileNames && (fBkgrdFileNames->GetEntriesFast() > 0)) {
-    Int_t signalPerBkgrd = fBkgrdFileNames->At(0)->GetUniqueID();
+    Int_t signalPerBkgrd = GetNSignalPerBkgrd(nEvents);
     const char* fileName = ((TObjString*)
 			    (fBkgrdFileNames->At(0)))->GetName();
     Info("RunSimulation", "The vertex will be taken from the background "
@@ -285,7 +287,6 @@ Bool_t AliSimulation::RunSimulation(Int_t nEvents)
   }
 
   Info("RunSimulation", "running gAlice");
-  if (nEvents <= 0) nEvents = fNEvents;
   gAlice->Run(nEvents);
 
   delete runLoader;
@@ -352,11 +353,8 @@ Bool_t AliSimulation::RunDigitization(const char* detectors,
   gAlice = NULL;
 
   Int_t nStreams = 1;
-  Int_t signalPerBkgrd = 1;
-  if (fBkgrdFileNames) {
-    nStreams = fBkgrdFileNames->GetEntriesFast() + 1;
-    if (nStreams > 1) signalPerBkgrd = fBkgrdFileNames->At(0)->GetUniqueID();
-  }
+  if (fBkgrdFileNames) nStreams = fBkgrdFileNames->GetEntriesFast() + 1;
+  Int_t signalPerBkgrd = GetNSignalPerBkgrd();
   AliRunDigitizer* manager = new AliRunDigitizer(nStreams, signalPerBkgrd);
   manager->SetInputStream(0, fGAliceFileName.Data());
   for (Int_t iStream = 1; iStream < nStreams; iStream++) {
@@ -465,6 +463,58 @@ AliRunLoader* AliSimulation::LoadRun() const
     return NULL;
   }
   return runLoader;
+}
+
+//_____________________________________________________________________________
+Int_t AliSimulation::GetNSignalPerBkgrd(Int_t nEvents) const
+{
+// get or calculate the number of signal events per background event
+
+  if (!fBkgrdFileNames) return 1;
+  Int_t nBkgrdFiles = fBkgrdFileNames->GetEntriesFast();
+  if (nBkgrdFiles == 0) return 1;
+
+  // get the number of signal events
+  if (nEvents <= 0) {
+    AliRunLoader* runLoader = 
+      AliRunLoader::Open(fGAliceFileName.Data(), "SIGNAL");
+    if (!runLoader) return 1;
+    nEvents = runLoader->GetNumberOfEvents();
+    delete runLoader;
+  }
+
+  Int_t result = 0;
+  for (Int_t iBkgrdFile = 0; iBkgrdFile < nBkgrdFiles; iBkgrdFile++) {
+    // get the number of background events
+    const char* fileName = ((TObjString*)
+			    (fBkgrdFileNames->At(iBkgrdFile)))->GetName();
+    AliRunLoader* runLoader = 
+      AliRunLoader::Open(fileName, "BKGRD");
+    if (!runLoader) continue;
+    Int_t nBkgrdEvents = runLoader->GetNumberOfEvents();
+    delete runLoader;
+
+    // get or calculate the number of signal per background events
+    Int_t nSignalPerBkgrd = fBkgrdFileNames->At(iBkgrdFile)->GetUniqueID();
+    if (nSignalPerBkgrd <= 0) {
+      nSignalPerBkgrd = (nEvents-1) / nBkgrdEvents + 1;
+    } else if (result && (result != nSignalPerBkgrd)) {
+      Info("GetNSignalPerBkgrd", "the number of signal events per "
+	   "background event will be changed from %d to %d for stream %d", 
+	   nSignalPerBkgrd, result, iBkgrdFile+1);
+      nSignalPerBkgrd = result;
+    }
+
+    if (!result) result = nSignalPerBkgrd;
+    if (nSignalPerBkgrd * nBkgrdEvents < nEvents) {
+      Warning("GetNSignalPerBkgrd", "not enough background events (%d) for "
+	      "%d signal events using %d signal per background events for "
+	      "stream %d", 
+	      nBkgrdEvents, nEvents, nSignalPerBkgrd, iBkgrdFile+1);
+    }
+  }
+
+  return result;
 }
 
 //_____________________________________________________________________________

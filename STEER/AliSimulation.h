@@ -27,7 +27,7 @@ public:
   void           SetRunSimulation(Bool_t run) {fRunSimulation = run;};
   void           SetMakeSDigits(const char* detectors) 
                    {fMakeSDigits = detectors;};
-  void           MergeWith(const char* fileName, Int_t nSignalPerBkgrd = 1);
+  void           MergeWith(const char* fileName, Int_t nSignalPerBkgrd = 0);
   void           SetUseBkgrdVertex(Bool_t useBkgrdVertex)
                    {fUseBkgrdVertex = useBkgrdVertex;};
   void           SetRegionOfInterest(Bool_t flag) {fRegionOfInterest = flag;};
@@ -46,6 +46,7 @@ public:
 
 private:
   AliRunLoader*  LoadRun() const;
+  Int_t          GetNSignalPerBkgrd(Int_t nEvents = 0) const;
   Bool_t         IsSelected(TString detName, TString& detectors) const;
 
   Bool_t         fRunGeneration;      // generate prim. particles or not
