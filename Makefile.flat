@@ -40,10 +40,14 @@ endif
 #
 #                   Modules to build 
 
+# COMMENTED OUT FOR TEST PURPOSES
 MODULES:=PDF PYTHIA PYTHIA6 GEANT321 MINICERN STEER HIJING\
 	 TGeant3 PHOS TRD TPC ZDC MUON PMD FMD TOF ITS \
          CASTOR RICH START STRUCT EVGEN RALICE ALIFAST \
 	 THijing CONTAINERS MEVSIM TMEVSIM THbtp HBTP EMCAL
+
+# MODULES:=STEER HBTP PHOS
+
 ##################################################################
 
 MODULES += ALIROOT 
@@ -101,7 +105,7 @@ EXPORTFILES :=
 
 BINLIBDIRS := -L$(ALICE_ROOT)/$(LIBPATH)
 
-.PHONY:		alilibs aliroot makedistr 
+.PHONY:		alilibs aliroot makedistr headers
 
 #Dependencies of module.mk files
 
@@ -112,7 +116,7 @@ include build/module.dep
 #        Check if module.mk is present for the library
 %.mk:
 	@echo "***** Creating $@ file *****";
-	share/alibtool mkmodule  $(patsubst %/module.mk,%,$@) > $@;
+	@share/alibtool mkmodule  $(patsubst %/module.mk,%,$@) > $@;
 #############################################################
 
 # **************************************************************************
@@ -121,6 +125,12 @@ include build/module.dep
 #             dependencies or module.mk files.
 
 ifneq ($(findstring clean,$(MAKECMDGOALS)),clean)
+
+#            If makeing modules, not not include
+#                       anything
+
+ifneq ($(findstring modules,$(MAKECMDGOALS)),modules)
+
 
 #############################################################
 # 
@@ -137,15 +147,19 @@ endif
 #############################################################
 
 endif
+endif
 # **************************************************************************
 
 
 # targets
 
-aliroot: $(BINPATH) $(ALLEXECS) bin
+modules: $(patsubst %,%/module.mk,$(MODULES)) 	
 
+aliroot: $(BINPATH) $(ALLEXECS) alilibs bin headers
 
-alilibs: $(LIBPATH) $(ALLLIBS) lib
+headers: $(EXPORTFILES)
+
+alilibs: $(LIBPATH) $(ALLLIBS) lib headers modules
 
 # Single Makefile "distribution": Makefile + modules + mkdepend scripts
 makedistr: $(MODULES)	 
@@ -190,7 +204,7 @@ cleanall: clean-modules
 
 clean: clean-modules  clean-objects clean-libs clean-bins clean-ditcs
 
-clead-dicts:
+clean-dicts:
 	@echo "***** Cleaning up G__ files *****"
 	rm -rf */tgt_$(ALICE_TARGET)/G__*
 clean-modules:

@@ -15,17 +15,25 @@ SRCS          = AliGenHIJINGpara.cxx AliGenBox.cxx AliGenFixed.cxx \
                 AliGenHBTprocessor.cxx \
 		AliGenReader.cxx AliGenReaderCwn.cxx AliGenReaderTreeK.cxx 
 
-# Headerfiels for this particular package (Path respect to own directory)
+# Headerfiles for this particular package (Path respect to own directory)
 HDRS= $(SRCS:.cxx=.h) 
 
 # Headerfiles otherwise needed (Full pathname required)
 
 EHDRS = $(ALICE_ROOT)/include/THijing.h \
-        $(ROOTSYS)/include/TF1.h \
-	$(ROOTSYS)/include/TChain.h \
-        $(ROOTSYS)/include/TParticle.h \
-
+$(ALICE_ROOT)/include/TMevSimPartTypeParams.h\
+$(ALICE_ROOT)/include/TMevSimConverter.h\
+$(ALICE_ROOT)/include/THBTprocessor.h\
+$(ALICE_ROOT)/include/MevSimCommon.h\
+$(ALICE_ROOT)/include/HBTprocCOMMON.h\
+$(ROOTSYS)/include/TF1.h\
+$(ROOTSYS)/include/TChain.h\
+$(ROOTSYS)/include/TParticle.h
 
 DHDR:=EVGENLinkDef.h
 
 EXPORT:=AliPythia.h AliDecayer.h AliDecayerPythia.h AliGenHijingEventHeader.h
+
+
+
+
