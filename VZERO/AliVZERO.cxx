@@ -154,5 +154,14 @@ AliLoader* AliVZERO::MakeLoader(const char* topfoldername)
   return fLoader;
 }
 
+//___________________________________________
+void AliVZERO::SetTreeAddress(){
+  // Sets tree address for hits.
+
+  if (fLoader->TreeH() && (fHits == 0x0))
+    fHits = new  TClonesArray("AliVZEROhit", 400);
+
+  AliDetector::SetTreeAddress();
+}
 
 
