@@ -14,18 +14,18 @@ Process_t;
 
 typedef enum
 {
-    kDO_Set_1=1006,
-    kGRV_LO=5005,
-    kGRV_HO=5006,
-    kMRS_D_minus=3031,
-    kMRS_D0=3030,
-    kMRS_G=3041,
-    kCTEQ_2pM=4024,
-    kCTEQ_4L=4032,
-    kCTEQ_4M=4034,
-    kMRST_cg_LO=3072,
-    kCTEQ_5L=4046,
-    kGRV_LO_98=5012
+    kDOSet1     = 1006,
+    kGRVLO      = 5005,
+    kGRVHO      = 5006,
+    kMRSDminus  = 3031,
+    kMRSD0      = 3030,
+    kMRSG       = 3041,
+    kCTEQ2pM    = 4024,
+    kCTEQ4L     = 4032,
+    kCTEQ4M     = 4034,
+    kMRSTcgLO   = 3072,
+    kCTEQ5L     = 4046,
+    kGRVLO98    = 5012
 }
 StrucFunc_t;
 
