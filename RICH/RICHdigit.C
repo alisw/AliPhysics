@@ -11,7 +11,7 @@ Int_t particle_type=0;
 
 #include "iostream.h"
 
-void RICHdigit (Int_t evNumber1=0,Int_t evNumber2=0, Int_t merging=0) 
+void RICHdigit (Int_t nEvents = 1,Int_t type = 0)
 {
 /////////////////////////////////////////////////////////////////////////
 //   This macro is a small example of a ROOT macro
@@ -22,86 +22,34 @@ void RICHdigit (Int_t evNumber1=0,Int_t evNumber2=0, Int_t merging=0)
 
 // Dynamically link some shared libs
 
-   
-  if (gClassTable->GetID("AliRun") < 0) {
+   if (gClassTable->GetID("AliRun") < 0) {
       gROOT->LoadMacro("loadlibs.C");
       loadlibs();
-  }else {
-    delete gAlice;
-    gAlice = 0;
-  }
-  
-// Connect the Root Galice file containing Geometry, Kine and Hits
-
-   TFile *file = (TFile*)gROOT->GetListOfFiles()->FindObject("galice.root");
-   if (file) file->Close(); 
-   file = new TFile("galice.root","UPDATE");
-//   file->ls();
-// Get AliRun object from file or create it if not on file
-
-   
-
-   if (gClassTable->GetID("AliRun") < 0) {
-	gROOT->LoadMacro("loadlibs.C");
-	loadlibs();
-    }
-
-
-   if (!gAlice) {
-       gAlice = (AliRun*)file->Get("gAlice");
-       if (gAlice) printf("AliRun object found on file\n");
-       if (!gAlice) gAlice = new AliRun("gAlice","Alice test program");
-   } else {
+    }else {
       delete gAlice;
-      gAlice = (AliRun*)file->Get("gAlice");
-      	if (gAlice) printf("AliRun object found on file\n");
-	if (!gAlice) gAlice = new AliRun("gAlice","Alice test program");
-    }
-      
-   AliRICH *RICH  = (AliRICH*) gAlice->GetDetector("RICH");
+      gAlice = 0;
+   }
 
-   if (merging)
-     printf("Merging is ON\n");
-   else
-     printf("Merging is OFF\n");
-
-// Creation of merger object
-   AliRICHMerger* merger = new AliRICHMerger();
-   
-// Configuration
-   merger->SetMode(merging);
-   merger->SetSignalEventNumber(0);
-   merger->SetBackgroundEventNumber(0);
-   merger->SetBackgroundFileName("bg.root");
-       
-// Pass
-   RICH->SetMerger(merger);
-
-
-//
-// Event Loop
-//
-   for (int nev=0; nev<= evNumber2; nev++) {
-       Int_t nparticles = gAlice->GetEvent(nev);
-       cout <<endl<< "Processing event:" <<nev<<endl;
-       cout << "Particles       :" <<nparticles<<endl;
-       if (nev < evNumber1) continue;
-       if (nparticles <= 0) return;
-       if (RICH) 
-	 {
-	   //gAlice->MakeTree("D");
-	   //RICH->MakeBranch("D");
-	   //RICH->Digitise(nev, particle_type);
-	   //gAlice->SDigits2Digits("RICH");
-	   //gAlice->Tree2Tree("D");
-	   RICH->MakeBranch("D");
-	   RICH->SDigits2Digits(nev, particle_type);
-	 }
-   } // event loop 
-   file->Close();
+    if(type)
+      {
+	AliRunDigitizer * manager = new AliRunDigitizer(2,1);
+	manager->SetInputStream(0,"galice.root");
+	manager->SetInputStream(1,"bgr.root");
+	manager->SetOutputFile("galice.root");
+	AliRICHDigitizer *dRICH  = new AliRICHDigitizer(manager);
+	manager->Exec("deb");
+      }
+    else
+      {
+	AliRunDigitizer * manager = new AliRunDigitizer(1,1);
+	manager->SetInputStream(0,"galice.root");
+	manager->SetNrOfEventsToWrite(nEvents);
+	AliRICHDigitizer *dRICH  = new AliRICHDigitizer(manager);
+	manager->Exec("deb");
+      }
 
    //delete gAlice;
-   printf("\nEnd of Macro  *************************************\n");
+  printf("\nEnd of Macro  *************************************\n");
 }
 
 
