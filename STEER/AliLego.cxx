@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.20  2000/11/30 07:12:48  alibrary
+Introducing new Rndm and QA classes
+
 Revision 1.19  2000/10/26 14:13:05  morsch
 - Change from coordinates theta, phi to general coordinates Coor1 and Coor2.
 - Lego generator instance can be passed in constructor.
@@ -148,11 +151,11 @@ AliLego::AliLego(const char *title, AliLegoGenerator* generator)
    fGener->Coor2Range(c2min, c2max);   
 
    fHistRadl = new TH2F("hradl","Radiation length map",    
-			n1, c1min, c1max, n2, c2min, c2max);
+			n2, c2min, c2max, n1, c1min, c1max);
    fHistAbso = new TH2F("habso","Interaction length map",  
-			n1, c1min, c1max, n2, c2min, c2max);
+			n2, c2min, c2max, n1, c1min, c1max);
    fHistGcm2 = new TH2F("hgcm2","g/cm2 length map",        
-			n1, c1min, c1max, n2, c2min, c2max);
+			n2, c2min, c2max, n1, c1min, c1max);
 }
 
 //___________________________________________
@@ -187,9 +190,9 @@ void AliLego::FinishEvent()
   Double_t c1, c2;
   c1 = fGener->CurCoor1();
   c2 = fGener->CurCoor2();
-  fHistRadl->Fill(c1,c2,fTotRadl);
-  fHistAbso->Fill(c1,c2,fTotAbso);
-  fHistGcm2->Fill(c1,c2,fTotGcm2);
+  fHistRadl->Fill(c2,c1,fTotRadl);
+  fHistAbso->Fill(c2,c1,fTotAbso);
+  fHistGcm2->Fill(c2,c1,fTotGcm2);
 }
 
 //___________________________________________

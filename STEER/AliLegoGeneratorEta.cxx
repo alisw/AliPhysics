@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.2  2000/11/30 07:12:49  alibrary
+Introducing new Rndm and QA classes
+
 Revision 1.1  2000/10/26 14:18:05  morsch
 Add new AliLegoGenerator classes:
 AliLegoGeneratorXYZ: carthesian binning
@@ -48,15 +51,16 @@ void AliLegoGeneratorEta::Generate()
        return;
      } else { 
        fCoor2Bin++;
-       printf("Generating rays in phi bin:%d\n",fCoor2Bin);
+       printf("Generating rays in eta bin:%d\n",fCoor2Bin);
        fCoor1Bin=0;
      } else fCoor1Bin++;
 
    fCurCoor1 = (fCoor1Min+(fCoor1Bin+0.5)*(fCoor1Max-fCoor1Min)/fNCoor1);
    fCurCoor2 = (fCoor2Min+(fCoor2Bin+0.5)*(fCoor2Max-fCoor2Min)/fNCoor2);
 
-   Float_t theta = 2.*TMath::ATan(TMath::Exp(-fCurCoor1));
-   Float_t phi   = fCurCoor2*TMath::Pi()/180.;
+   Float_t phi   = fCurCoor1*TMath::Pi()/180.;
+   Float_t theta = 2.*TMath::ATan(TMath::Exp(-fCurCoor2));
+
    
    cost      = TMath::Cos(theta);
    sint      = TMath::Sin(theta);
