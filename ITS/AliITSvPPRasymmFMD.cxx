@@ -5024,7 +5024,7 @@ void AliITSvPPRasymmFMD::InitAliITSgeom(){
     Char_t names[knlayers][kndeep][4];
     Int_t itsGeomTreeCopys[knlayers][kndeep];
     if(fMinorVersion == 1){ // Option A
-    Char_t *namesA[knlayers][kndeep] = {
+    const char *namesA[knlayers][kndeep] = {
      {"ALIC","ITSV","ITSD","IT12","I12A","I10A","I103","I101","ITS1"}, // lay=1
      {"ALIC","ITSV","ITSD","IT12","I12A","I20A","I1D3","I1D1","ITS2"}, // lay=2
      {"ALIC","ITSV","ITSD","IT34","I004","I302","ITS3","    ","    "}, // lay=3
@@ -5042,7 +5042,7 @@ void AliITSvPPRasymmFMD::InitAliITSgeom(){
 	itsGeomTreeCopys[i][j] = itsGeomTreeCopysA[i][j];
     } // end for i,j
     }else if(fMinorVersion == 2){ // Option B
-    Char_t *namesB[knlayers][kndeep] = {
+    const char *namesB[knlayers][kndeep] = {
      {"ALIC","ITSV","ITSD","IT12","I12B","I10B","I107","I101","ITS1"}, // lay=1
      {"ALIC","ITSV","ITSD","IT12","I12B","I20B","I1D7","I1D1","ITS2"}, // lay=2
      {"ALIC","ITSV","ITSD","IT34","I004","I302","ITS3","    ","    "}, // lay=3

@@ -19,7 +19,7 @@ class AliSignal : public TNamed,public AliPosition,public AliAttrib
   AliSignal();                                          // Default constructor
   virtual ~AliSignal();                                 // Destructor
   AliSignal(AliSignal& s);                              // Copy constructor
-  virtual TObject* Clone(char* name="");                // Make a deep copy and provide its pointer
+  virtual TObject* Clone(const char* name="");                // Make a deep copy and provide its pointer
   virtual void SetSignal(Double_t sig,Int_t j=1);       // Store j-th signal value
   virtual void AddSignal(Double_t sig,Int_t j=1);       // Add value to j-th signal value
   virtual Float_t GetSignal(Int_t j=1,Int_t mode=0);    // Provide j-th (corrected) signal value

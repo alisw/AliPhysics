@@ -992,7 +992,7 @@ void AliVertex::Draw(Int_t secs,Int_t cons,Int_t jets)
  }
 }
 ///////////////////////////////////////////////////////////////////////////
-TObject* AliVertex::Clone(char* name)
+TObject* AliVertex::Clone(const char* name)
 {
 // Make a deep copy of the current object and provide the pointer to the copy.
 // This memberfunction enables automatic creation of new objects of the

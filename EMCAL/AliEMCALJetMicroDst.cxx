@@ -47,7 +47,7 @@ TString gAliNameTree("jetMDST"); // 7-feb-2002
 
 extern "C" void sgpdge_(Int_t &i, Int_t &pdggea);
 
-AliEMCALJetMicroDst::AliEMCALJetMicroDst(char *name, char *tit) : TNamed(name,tit)
+AliEMCALJetMicroDst::AliEMCALJetMicroDst(const char *name, const char *tit) : TNamed(name,tit)
 {
 	//constructor
   fFile  = 0;
@@ -742,7 +742,7 @@ Bool_t  AliEMCALJetMicroDst::IsFolder() const
   else                   return kFALSE;
 }
 
-TList* AliEMCALJetMicroDst::MoveHistsToList(char* name, Bool_t putToBrowser)
+TList* AliEMCALJetMicroDst::MoveHistsToList(const char* name, Bool_t putToBrowser)
 {
   // Move HIST to list
   gROOT->cd();

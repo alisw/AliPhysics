@@ -21,7 +21,7 @@ class AliTRDsegmentArray : public AliTRDsegmentArrayBase {
  public:
 
   AliTRDsegmentArray();
-  AliTRDsegmentArray(Text_t *classname, Int_t n);
+  AliTRDsegmentArray(const char *classname, Int_t n);
   AliTRDsegmentArray(AliTRDsegmentArray &a);
   virtual ~AliTRDsegmentArray();
 

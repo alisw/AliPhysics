@@ -486,7 +486,7 @@ void AliTPCtrackerParam::AnalyzedEdx(const Char_t *outName,Int_t pdg) {
   gStyle->SetOptStat(0);
   gStyle->SetOptFit(10001);
 
-  Char_t *part="PIONS";
+  const char *part="PIONS";
   Double_t ymax=500.;
 
   /*
@@ -1823,19 +1823,19 @@ void AliTPCtrackerParam::MakeDataBase() {
 //-----------------------------------------------------------------------------
 
   // define some file names
-  Char_t *effFile   ="TPCeff.root";
-  Char_t *pullsFile ="pulls.root";
-  Char_t *regPiFile ="regPi.root";
-  Char_t *regKaFile ="regKa.root";
-  Char_t *regPrFile ="regPr.root";
-  Char_t *regElFile ="regEl.root";
-  Char_t *regMuFile ="regMu.root";
-  Char_t *dEdxPiFile="dEdxPi.root";
-  Char_t *dEdxKaFile="dEdxKa.root";
-  Char_t *dEdxPrFile="dEdxPr.root";
-  Char_t *dEdxElFile="dEdxEl.root";
-  Char_t *dEdxMuFile="dEdxMu.root";
-  Char_t *cmFile    ="CovMatrix_AllEvts.root";
+  const char *effFile   ="TPCeff.root";
+  const char *pullsFile ="pulls.root";
+  const char *regPiFile ="regPi.root";
+  const char *regKaFile ="regKa.root";
+  const char *regPrFile ="regPr.root";
+  const char *regElFile ="regEl.root";
+  const char *regMuFile ="regMu.root";
+  const char *dEdxPiFile="dEdxPi.root";
+  const char *dEdxKaFile="dEdxKa.root";
+  const char *dEdxPrFile="dEdxPr.root";
+  const char *dEdxElFile="dEdxEl.root";
+  const char *dEdxMuFile="dEdxMu.root";
+  const char *cmFile    ="CovMatrix_AllEvts.root";
   /*
   Char_t *cmFile1  ="CovMatrix_AllEvts_1.root";
   Char_t *cmFile2  ="CovMatrix_AllEvts_2.root";
@@ -2212,7 +2212,7 @@ void AliTPCtrackerParam::MergeEvents(Int_t evFirst,Int_t evLast) {
 //                2) computes the average TPC efficiencies
 //-----------------------------------------------------------------------------
 
-  Char_t *outName="TPCeff.root";
+  const char *outName="TPCeff.root";
 
   // merge files with tracks
   cerr<<" ******** MERGING FILES **********\n\n";
@@ -2595,7 +2595,7 @@ void AliTPCtrackerParam::RegularizeCovMatrix(const Char_t *outName,Int_t pdg) {
   gStyle->SetOptFit(10001);
 
   Int_t thisPdg=211;
-  Char_t *part="Pions - ";
+  const char *part="Pions - ";
 
   InitializeKineGrid("DB");
   SetParticle(pdg);
@@ -3237,9 +3237,9 @@ Int_t AliTPCtrackerParam::WritedEdx(const Char_t *outName,Int_t pdg) {
 //-----------------------------------------------------------------------------
 
   Option_t *opt;
-  Char_t *dirName="Pions";
-  Char_t *meanName="dEdxMeanPi";
-  Char_t *rmsName="dEdxRMSPi";
+  const char *dirName="Pions";
+  const char *meanName="dEdxMeanPi";
+  const char *rmsName="dEdxRMSPi";
 
   SetParticle(pdg);
 
@@ -3389,8 +3389,8 @@ Int_t AliTPCtrackerParam::WriteRegParams(const Char_t *outName,Int_t pdg) {
 //-----------------------------------------------------------------------------
 
   Option_t *opt;
-  Char_t *dirName="Pions";
-  Char_t *keyName="RegPions";
+  const char *dirName="Pions";
+  const char *keyName="RegPions";
 
   SetParticle(pdg);
 

@@ -368,7 +368,7 @@ void  AliPHOSPIDv0:: Print() const
 }
 
 //____________________________________________________________________________
-void  AliPHOSPIDv0::SetShowerProfileCut(char * formula)
+void  AliPHOSPIDv0::SetShowerProfileCut(const char * formula)
 {
   //set shape of the cut on the axis of ellipce, drown around shouer
   //shower considered "narrow" if Formula(lambda[0],lambda[1]) > 0.

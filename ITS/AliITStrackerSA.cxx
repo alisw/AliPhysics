@@ -159,7 +159,7 @@ void AliITStrackerSA::ResetForFinding(){
     fPointc[1]=0;
 }
 //____________________________________________________________________________
-void AliITStrackerSA::FindTracks(TTree *clusterTree, TTree *out,Int_t evnumber,char *opt){
+void AliITStrackerSA::FindTracks(TTree *clusterTree, TTree *out,Int_t evnumber,const char *opt){
 
   /**************************************************************************
    * Options: to use only ITS execute FindTracks                            *
@@ -429,7 +429,7 @@ void AliITStrackerSA::UseFoundTracksV2(Int_t evnum,TTree* treev2, TTree* cluster
 
 //________________________________________________________________________
 
-AliITStrackV2* AliITStrackerSA::FitTrack(AliITStrackSA* tr,Double_t *primaryVertex,Double_t *errorsprimvert,char *opt){
+AliITStrackV2* AliITStrackerSA::FitTrack(AliITStrackSA* tr,Double_t *primaryVertex,Double_t *errorsprimvert, const char *opt){
   //fit of the found track
 
 //options

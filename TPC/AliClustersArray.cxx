@@ -49,7 +49,7 @@ AliClustersArray::AliClustersArray()
   fClFinder = 0;
 }
 
-Bool_t  AliClustersArray::SetClusterType(Text_t * classname) 
+Bool_t  AliClustersArray::SetClusterType(const char * classname) 
 {
   //
   //set type of Clusters

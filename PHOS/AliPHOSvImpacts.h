@@ -33,7 +33,7 @@ public:
   virtual ~AliPHOSvImpacts(void) ;
 
   virtual void   Copy(AliPHOSvImpacts & phos) ; 
-  virtual void   AddImpact(char* detector, Int_t shunt, Int_t primary, Int_t track,
+  virtual void   AddImpact(const char* detector, Int_t shunt, Int_t primary, Int_t track,
 			   Int_t module, Int_t pid, TLorentzVector p, Float_t *xyz) ;
   virtual void   MakeBranch(Option_t *opt=" ");
   virtual void   ResetHits();

@@ -42,7 +42,7 @@ AliTRDsegmentArray::AliTRDsegmentArray():AliTRDsegmentArrayBase()
 }
 
 //_____________________________________________________________________________
-AliTRDsegmentArray::AliTRDsegmentArray(Text_t *classname, Int_t n)
+AliTRDsegmentArray::AliTRDsegmentArray(const char *classname, Int_t n)
                    :AliTRDsegmentArrayBase(classname,n)
 {
   //

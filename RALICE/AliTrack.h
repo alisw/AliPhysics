@@ -21,7 +21,7 @@ class AliTrack : public TNamed,public Ali4Vector
   AliTrack();                           // Default constructor
   virtual ~AliTrack();                  // Destructor
   AliTrack(AliTrack& t);                // Copy constructor
-  virtual TObject* Clone(char* name="");// Make a deep copy and provide its pointer
+  virtual TObject* Clone(const char* name="");// Make a deep copy and provide its pointer
   virtual void Reset();                 // Reset all values to 0
   void Set4Momentum(Ali4Vector& p);     // Set track 4-momentum
   void Set3Momentum(Ali3Vector& p);     // Set track 3-momentum

@@ -42,7 +42,7 @@ class AliEMCALPID : public TTask {
   void SetEventFolderName(TString name) { fEventFolderName = name ; }
   virtual void SetPREtoECADistanceCut(Float_t, TString, Float_t) { Warning("SetCpvtoEmcDistanceCut", "not defined" ) ;}
   virtual void SetTimeGate(Float_t /*Cluster_En*/, TString /*Eff_Pur*/, Float_t /*gate*/) { Warning("SetTimeGate", "not defined" ) ; }
-  virtual char * Version() const { Warning("Version", "not defined" ) ; return 0 ; }  
+  virtual const char * Version() const { Warning("Version", "not defined" ) ; return 0 ; }  
   virtual void WriteRecParticles() = 0;
 
 private: 

@@ -625,8 +625,8 @@ void AliMUONv3::CreateGeometry()
      tpar[1] = (iChamber->ROuter()+dframep)/TMath::Cos(phi);
      tpar[2] = dstation/5;
 
-     char *slats5Mother = "S05M";
-     char *slats6Mother = "S06M";
+     const char *slats5Mother = "S05M";
+     const char *slats6Mother = "S06M";
      Float_t zoffs5 = 0;
      Float_t zoffs6 = 0;
 

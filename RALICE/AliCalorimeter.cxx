@@ -1681,7 +1681,7 @@ Int_t AliCalorimeter::GetSwapMode()
  return fSwap;
 }
 ///////////////////////////////////////////////////////////////////////////
-TObject* AliCalorimeter::Clone(char* name)
+TObject* AliCalorimeter::Clone(const char* name)
 {
 // Make a deep copy of the current object and provide the pointer to the copy.
 // This memberfunction enables automatic creation of new objects of the

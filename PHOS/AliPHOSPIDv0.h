@@ -39,14 +39,14 @@ public:
 
   virtual void PlotDispersionCuts()const ;
   virtual void Print()const ; 
-  virtual void SetIdentificationMethod(char * option = "CPV DISP" ){fIDOptions = option ;} 
-  virtual void SetShowerProfileCut(char * formula = "0.35*0.35 - (x-1.386)*(x-1.386) - 1.707*1.707*(y-1.008)*(y-1.008)") ;
+  virtual void SetIdentificationMethod(const char * option = "CPV DISP" ){fIDOptions = option ;} 
+  virtual void SetShowerProfileCut(const char * formula = "0.35*0.35 - (x-1.386)*(x-1.386) - 1.707*1.707*(y-1.008)*(y-1.008)") ;
   virtual void SetDispersionCut(Float_t cut){fDispersion = cut ; } 
   virtual void SetCpvtoEmcDistanceCut(Float_t cut )      {fCpvEmcDistance = cut ;}
   virtual void SetTimeGate(Float_t gate)                 {fTimeGate = gate ;}
   //  virtual void SetTrackSegmentsBranch(const char* title) { fTrackSegmentsTitle = title;}
   //  virtual void SetRecParticlesBranch (const char* title) { fRecParticlesTitle = title;} 
-  virtual char * Version() const { return "pid-v0" ; }  
+  virtual const char * Version() const { return "pid-v0" ; }  
                      
  private:
   

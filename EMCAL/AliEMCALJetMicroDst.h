@@ -26,8 +26,8 @@ class AliEMCALJetMicroDst: public TNamed {
 
 
   public:
-  AliEMCALJetMicroDst(char *name="jetMicroDst",
-  char *tit="jet Micro Dst for preparation of proposal");
+  AliEMCALJetMicroDst(const char *name="jetMicroDst",
+  const char *tit="jet Micro Dst for preparation of proposal");
   AliEMCALJetMicroDst(const  AliEMCALJetMicroDst &) : TNamed("", ""){
     Fatal("cpy ctor", "not implemented") ; }
   virtual ~AliEMCALJetMicroDst();
@@ -80,7 +80,7 @@ class AliEMCALJetMicroDst: public TNamed {
   virtual Bool_t  IsFolder() const;
   virtual void Browse(TBrowser* b) const ;
 
-  static TList *MoveHistsToList(char* name="List of Hist", Bool_t putToBrowser=kTRUE);
+  static TList *MoveHistsToList(const char* name="List of Hist", Bool_t putToBrowser=kTRUE);
 
   AliEMCALJetMicroDst & operator = (const AliEMCALJetMicroDst &) {
     Fatal("operator =", "not implemented") ; return *this ; }

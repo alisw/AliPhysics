@@ -30,10 +30,10 @@ class AliITStrackerSA : public AliITStrackerV2 {
   AliITStrackerSA(AliITStrackerSA& tracker);
   virtual ~AliITStrackerSA();  
   void     FindTracks(TTree *clusterTree, TTree *out,Int_t evnumber=0,
-		      char *opt="6/6");
+		      const char *opt="6/6");
 
   AliITStrackV2* FitTrack(AliITStrackSA* tr,Double_t* primaryVertex,
-			  Double_t *errorprimvert,char *opt="6/6");
+			  Double_t *errorprimvert, const char *opt="6/6");
 
   AliITStrackV2* FindTrackLowChiSquare(TObjArray* tracklist, Int_t dim) const;
   void SetVertex(AliITSVertex *vtx){fVert = vtx;}

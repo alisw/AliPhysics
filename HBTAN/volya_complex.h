@@ -30,13 +30,13 @@ Version 1.0.1
 
 /////////////////////////// Helper Error Function
 
-void ComplexError (char *msg)
+void ComplexError (const char *msg)
 {
 	cout << endl <<  msg << endl;
 	exit (1);
 }
 
-void ComplexWarning (char *msg)
+void ComplexWarning (const char *msg)
 {
 	cout << endl <<  msg << endl;
 }

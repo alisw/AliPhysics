@@ -730,7 +730,7 @@ void AliITS::InitModules(Int_t size,Int_t &nmodules){
 }
 //______________________________________________________________________
 void AliITS::FillModules(Int_t evnt,Int_t bgrev,Int_t nmodules,
-                         Option_t *option,Text_t *filename){
+                         Option_t *option, const char *filename){
     // fill the modules with the sorted by module hits; add hits from
     // background if option=Add.
     // Inputs:
@@ -1087,7 +1087,7 @@ void AliITS::Hits2Digits(){
 }
 //______________________________________________________________________
 void AliITS::HitsToSDigits(Int_t evNumber,Int_t bgrev,Int_t size,
-                          Option_t *option, Option_t *opt,Text_t *filename){
+                          Option_t *option, Option_t *opt, const char *filename){
     // keep galice.root for signal and name differently the file for 
     // background when add! otherwise the track info for signal will be lost !
     // the condition below will disappear when the geom class will be
@@ -1112,7 +1112,7 @@ void AliITS::HitsToSDigits(Int_t evNumber,Int_t bgrev,Int_t size,
 }
 //______________________________________________________________________
 void AliITS::HitsToPreDigits(Int_t evNumber,Int_t bgrev,Int_t size,
-                          Option_t *option, Option_t *opt,Text_t *filename){
+                          Option_t *option, Option_t *opt, const char *filename){
     //   Keep galice.root for signal and name differently the file for 
     // background when add! otherwise the track info for signal will be lost !
     // the condition below will disappear when the geom class will be
@@ -1176,7 +1176,7 @@ void AliITS::HitsToPreDigits(Int_t evNumber,Int_t bgrev,Int_t size,
 }
 //______________________________________________________________________
 void AliITS::HitsToDigits(Int_t evNumber,Int_t bgrev,Int_t size,
-                          Option_t *option, Option_t *opt,Text_t *filename){
+                          Option_t *option, Option_t *opt, const char *filename){
     //   Keep galice.root for signal and name differently the file for 
     // background when add! otherwise the track info for signal will be lost !
     // the condition below will disappear when the geom class will be
@@ -1605,7 +1605,7 @@ void AliITS::AddRecPoint(const AliITSRecPoint &r){
 }
 //______________________________________________________________________
 void AliITS::HitsToFastRecPoints(Int_t evNumber,Int_t bgrev,Int_t size,
-                                  Option_t *opt0,Option_t *opt1,Text_t *flnm){
+                                  Option_t *opt0,Option_t *opt1, const char *flnm){
     // keep galice.root for signal and name differently the file for 
     // background when add! otherwise the track info for signal will be lost !
     // the condition below will disappear when the geom class will be

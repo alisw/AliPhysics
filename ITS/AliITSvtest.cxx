@@ -200,7 +200,7 @@ void AliITSvtest::InitAliITSgeom(){
     Int_t    npar,natt,idshape,imat,imed;
     AliITSGeant3Geometry *ig = new AliITSGeant3Geometry();
     Int_t mod,lay,lad,det,i,j,k;
-    char *names[nlayers][ndeep] = {
+    const char *names[nlayers][ndeep] = {
      {"ALIC","ITSV","ITSD","IT12","I12B","I10B","I107","I101","ITS1"}, // lay=1
      {"ALIC","ITSV","ITSD","IT12","I12B","I20B","I1D7","I1D1","ITS2"}, // lay=2
      {"ALIC","ITSV","ITSD","IT34","I004","I302","ITS3","    ","    "}, // lay=3

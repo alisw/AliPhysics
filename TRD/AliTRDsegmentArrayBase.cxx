@@ -51,7 +51,7 @@ AliTRDsegmentArrayBase::AliTRDsegmentArrayBase():TNamed()
 }
 
 //_____________________________________________________________________________
-AliTRDsegmentArrayBase::AliTRDsegmentArrayBase(Text_t *classname, Int_t n)
+AliTRDsegmentArrayBase::AliTRDsegmentArrayBase(const char *classname, Int_t n)
 {
   //
   //  Create an array of objects of <classname>. The class must inherit from
@@ -135,7 +135,7 @@ void AliTRDsegmentArrayBase::Copy(TObject &a)
 }
 
 //_____________________________________________________________________________
-Bool_t AliTRDsegmentArrayBase::SetClass(Text_t *classname)
+Bool_t AliTRDsegmentArrayBase::SetClass(const char *classname)
 {
   //
   // Sets the classname of the stored object

@@ -21,7 +21,7 @@ class AliEvent : public AliVertex
   AliEvent(Int_t n);                      // Create an event to hold initially n tracks
   virtual ~AliEvent();                    // Default destructor
   AliEvent(AliEvent& evt);                // Copy constructor
-  virtual TObject* Clone(char* name="");  // Make a deep copy and provide its pointer
+  virtual TObject* Clone(const char* name="");  // Make a deep copy and provide its pointer
   virtual void SetOwner(Bool_t own=kTRUE);// Set ownership of all added objects
   void SetDayTime(TTimeStamp& stamp);     // Set the date and time stamp exactly as specified (1 ns accuracy)
   void SetDayTime(TDatime& stamp);        // Set date and time stamp interpreted as local time (1 s accuracy)

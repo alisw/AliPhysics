@@ -21,7 +21,7 @@ class AliVertex : public AliJet,public AliPosition
   AliVertex(Int_t n);                     // Create a vertex to hold initially n tracks
   virtual ~AliVertex();                   // Default destructor
   AliVertex(AliVertex& v);                // Copy constructor
-  virtual TObject* Clone(char* name="");  // Make a deep copy and provide its pointer
+  virtual TObject* Clone(const char* name="");  // Make a deep copy and provide its pointer
   virtual void SetOwner(Bool_t own=kTRUE);// Set ownership of all added objects
   virtual void Reset();                   // Reset all values and stored vertex and jet lists
   void ResetVertices();                   // Reset stored vertex list

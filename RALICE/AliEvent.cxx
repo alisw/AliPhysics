@@ -676,7 +676,7 @@ void AliEvent::ShowDevices()
  }
 }
 ///////////////////////////////////////////////////////////////////////////
-TObject* AliEvent::Clone(char* name)
+TObject* AliEvent::Clone(const char* name)
 {
 // Make a deep copy of the current object and provide the pointer to the copy.
 // This memberfunction enables automatic creation of new objects of the

@@ -23,9 +23,9 @@ class AliSegmentID;
 class AliSegmentArray: public TNamed{
 public:
   AliSegmentArray();
-  AliSegmentArray(Text_t *classname, Int_t n);  // 
+  AliSegmentArray(const char *classname, Int_t n);  // 
   virtual ~AliSegmentArray();
-  Bool_t  SetClass(Text_t *classname);  //set class of stored object 
+  Bool_t  SetClass(const char *classname);  //set class of stored object 
   const AliSegmentID * At(Int_t i); //return pointer to segment with index i 
   const AliSegmentID * operator[](Int_t i); //return pointer to segment with index i
 

@@ -27,7 +27,7 @@ ClassImp(AliRICHv0)
 void AliRICHv0::StepManager()
 {
 //This StepManager is a provision for different test-learn activities on the current MC layer  
-  char *sParticle;
+  const char *sParticle;
   switch(gMC->TrackPid()){
     case kProton:
       sParticle="proton";break;

@@ -107,7 +107,7 @@ class AliITS : public AliDetector {
     virtual void InitModules(Int_t size,Int_t &nmodules);  
     virtual void FillModules(TTree *treeH, Int_t mask = 0);
     virtual void FillModules(Int_t evnt,Int_t bgrev,Int_t nmodules,
-			     Option_t *opt,Text_t *filename);
+			     Option_t *opt, const char *filename);
     virtual void ClearModules();
 
     //===================== Digitisation ===============================
@@ -127,13 +127,13 @@ class AliITS : public AliDetector {
     //------------------ Internal functions ----------------------------
     // Standard Hits To SDigits function
     void HitsToSDigits(Int_t evNumber,Int_t bgrev,Int_t size,
-                 Option_t *add, Option_t *det, Text_t *filename);
+                 Option_t *add, Option_t *det, const char *filename);
     // Standard Hits To SDigits function
     void HitsToPreDigits(Int_t evNumber,Int_t bgrev,Int_t size,
-                 Option_t *add, Option_t *det, Text_t *filename);
+                 Option_t *add, Option_t *det, const char *filename);
     // Standard Hits To Digits function
     void HitsToDigits(Int_t evNumber,Int_t bgrev,Int_t size,
-                 Option_t *add, Option_t *det, Text_t *filename);
+                 Option_t *add, Option_t *det, const char *filename);
     void ResetSDigits();                  // Resets the Summable digits.
     void ResetDigits();                   // depending on how the
     void ResetDigits(Int_t branch);       // tree will be filled only
@@ -174,7 +174,7 @@ class AliITS : public AliDetector {
     void SetTreeAddressR(TTree *treeR);
     void AddRecPoint(const AliITSRecPoint &p);
     void HitsToFastRecPoints(Int_t evNumber,Int_t bgrev,Int_t size,
-                 Option_t *add, Option_t *det, Text_t *filename);
+                 Option_t *add, Option_t *det, const char *filename);
     void Digits2Reco();
     void DigitsToRecPoints(Int_t evNumber,Int_t lastEntry,Option_t *det);
     void ResetRecPoints();

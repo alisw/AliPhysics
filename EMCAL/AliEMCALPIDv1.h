@@ -60,7 +60,7 @@ class  AliEMCALPIDv1 : public AliEMCALPID {
 
   void Print() const ; 
 
-  virtual char * Version() const { return "pid-v1" ; }  
+  virtual const char * Version() const { return "pid-v1" ; }  
 
   AliEMCALPIDv1 & operator = (const AliEMCALPIDv1 & /*pid*/) { return *this ;} 
 

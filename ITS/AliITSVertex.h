@@ -34,14 +34,14 @@ class AliITSVertex : public TNamed {
  
   AliITSVertex();
   AliITSVertex(Double_t positionZ,Double_t sigmaZ,Int_t nContributors,
-	       Char_t *vtxName="Vertex");
+	       const char *vtxName="Vertex");
   AliITSVertex(Double_t phi,Double_t position[3],Double_t covmatrix[6],
 	       Double_t chi2,Int_t nContributors,
-	       Char_t *vtxName="Vertex");
+	       const char *vtxName="Vertex");
   AliITSVertex(Double_t position[3],Double_t sigma[3],
-	       Char_t *vtxName="Vertex");
+	       const char *vtxName="Vertex");
   AliITSVertex(Double_t position[3],Double_t sigma[3],Double_t snr[3],
-	       Char_t *vtxName="Vertex");
+	       const char *vtxName="Vertex");
 
   virtual ~AliITSVertex();
 

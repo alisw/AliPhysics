@@ -479,7 +479,7 @@ void AliITSvSPD02::InitAliITSgeom(){
     Int_t mod,typ,lay,lad,det,cpy,i,j,k;
     Char_t names[kltypess][kndeep][4];
     Int_t itsGeomTreeCopys[kltypess][kndeep];
-    Char_t *namesA[kltypess][kndeep] = {
+    const char *namesA[kltypess][kndeep] = {
      {"ALIC","ITSV","ITEL","IMB0","IMBS"}, // lay=1
      {"ALIC","ITSV","IDET","ITS0","ITST"}};// Test SPD
     Int_t itsGeomTreeCopysA[kltypess][kndeep]= {{1,1,4,1,1},// lay=1

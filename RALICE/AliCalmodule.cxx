@@ -121,7 +121,7 @@ Float_t AliCalmodule::GetClusteredSignal()
  }
 }
 ///////////////////////////////////////////////////////////////////////////
-TObject* AliCalmodule::Clone(char* name)
+TObject* AliCalmodule::Clone(const char* name)
 {
 // Make a deep copy of the current object and provide the pointer to the copy.
 // This memberfunction enables automatic creation of new objects of the

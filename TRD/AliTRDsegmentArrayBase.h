@@ -22,7 +22,7 @@ class AliTRDsegmentArrayBase: public TNamed {
  public:
 
   AliTRDsegmentArrayBase();
-  AliTRDsegmentArrayBase(Text_t *classname, Int_t n); 
+  AliTRDsegmentArrayBase(const char *classname, Int_t n); 
   AliTRDsegmentArrayBase(const AliTRDsegmentArrayBase &a);
   virtual ~AliTRDsegmentArrayBase();
   AliTRDsegmentArrayBase &operator=(const AliTRDsegmentArrayBase &a);
@@ -43,7 +43,7 @@ class AliTRDsegmentArrayBase: public TNamed {
   virtual void             StoreSegment(Int_t index);
           Bool_t           MakeDictionary(Int_t size);
 
-          Bool_t           SetClass(Text_t *classname);
+          Bool_t           SetClass(const char *classname);
  
           TClass          *GetClass() const { return fClass; };
           TTree           *GetTree() const  { return fTree;  };   

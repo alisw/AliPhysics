@@ -1134,7 +1134,7 @@ Float_t AliTrack::GetProb()
  return fProb;
 }
 ///////////////////////////////////////////////////////////////////////////
-TObject* AliTrack::Clone(char* name)
+TObject* AliTrack::Clone(const char* name)
 {
 // Make a deep copy of the current object and provide the pointer to the copy.
 // This memberfunction enables automatic creation of new objects of the

@@ -22,7 +22,7 @@ class AliTOFReconstructionerV2: public TTask {
 
 public:
   AliTOFReconstructionerV2() ;          // ctor
-  AliTOFReconstructionerV2(char* tpcBackTracks, char* tofDigits="digits.root");
+  AliTOFReconstructionerV2(const char* tpcBackTracks, const char* tofDigits="digits.root");
   AliTOFReconstructionerV2(const AliTOFReconstructionerV2 & rec);
   virtual ~AliTOFReconstructionerV2() ; // dtor   
   Bool_t        BackPropagation(){return kTRUE;};

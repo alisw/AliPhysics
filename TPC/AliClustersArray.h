@@ -22,7 +22,7 @@ public:
   AliClustersFinder *  GetFinder() {return fClFinder;}
   virtual Bool_t SetParam(AliDetectorParam * param);
   virtual Bool_t SetFinder(AliClustersFinder * finder);
-  Bool_t  SetClusterType(Text_t *classname );
+  Bool_t  SetClusterType(const char *classname );
   TClass * GetClusterType() {return fClusterType;}
 protected:  
   AliDetectorParam * fParam;      //pointer to detector parameters 

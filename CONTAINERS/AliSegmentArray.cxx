@@ -55,7 +55,7 @@ AliSegmentArray::AliSegmentArray()
   fTreeOwner = kFALSE;
 }
 
-AliSegmentArray::AliSegmentArray(Text_t *classname, Int_t n)
+AliSegmentArray::AliSegmentArray(const char *classname, Int_t n)
 {
   //
   //constructor which 
@@ -111,7 +111,7 @@ AliSegmentArray::~AliSegmentArray()
 }
 
 
-Bool_t AliSegmentArray::SetClass(Text_t *classname)
+Bool_t AliSegmentArray::SetClass(const char *classname)
 {
   //
   //set class of stored object

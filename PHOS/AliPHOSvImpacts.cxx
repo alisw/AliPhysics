@@ -125,7 +125,7 @@ void AliPHOSvImpacts::Copy(AliPHOSvImpacts & phos)
 
 
 //____________________________________________________________________________
-void AliPHOSvImpacts::AddImpact( char* det, Int_t shunt, Int_t primary, Int_t track, Int_t module,
+void AliPHOSvImpacts::AddImpact(const char* det, Int_t shunt, Int_t primary, Int_t track, Int_t module,
 			   Int_t pid, TLorentzVector p, Float_t *xyz)
 {
   // Add an impact to the impact list.

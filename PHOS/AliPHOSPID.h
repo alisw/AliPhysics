@@ -40,7 +40,7 @@ class AliPHOSPID : public TTask {
   virtual void Print() const { Warning("Print", "not defined" ) ;}
   void SetEventRange(Int_t first=0, Int_t last=-1) {fFirstEvent=first; fLastEvent=last; }
   void SetEventFolderName(TString name) { fEventFolderName = name ; }
-  virtual char * Version() const { Warning("Version", "not defined" ) ; return 0 ; }  
+  virtual const char * Version() const { Warning("Version", "not defined" ) ; return 0 ; }  
   virtual void WriteRecParticles() = 0;
 
 protected:

@@ -40,7 +40,7 @@ AliITSVertex::AliITSVertex() {
 }
 //--------------------------------------------------------------------------
 AliITSVertex::AliITSVertex(Double_t positionZ,Double_t sigmaZ,
-			   Int_t nContributors,Char_t *vtxName) {
+			   Int_t nContributors, const char *vtxName) {
   //
   // Constructor for vertex Z from pixels
   //
@@ -56,7 +56,7 @@ AliITSVertex::AliITSVertex(Double_t positionZ,Double_t sigmaZ,
 //------------------------------------------------------------------------- 
 AliITSVertex::AliITSVertex(Double_t phi,
 			   Double_t position[3],Double_t covmatrix[6],
-			   Double_t chi2,Int_t nContributors,Char_t *vtxName) {
+			   Double_t chi2,Int_t nContributors, const char *vtxName) {
 //
 // Constructor for vertex in 3D from tracks
 //
@@ -82,7 +82,7 @@ AliITSVertex::AliITSVertex(Double_t phi,
 }
 //--------------------------------------------------------------------------
 AliITSVertex::AliITSVertex(Double_t position[3],Double_t sigma[3],
-			   Char_t *vtxName) {
+			   const char *vtxName) {
 //
 // Constructor for smearing of true position
 //
@@ -104,7 +104,7 @@ AliITSVertex::AliITSVertex(Double_t position[3],Double_t sigma[3],
 }
 //--------------------------------------------------------------------------
 AliITSVertex::AliITSVertex(Double_t position[3],Double_t sigma[3],
-			   Double_t snr[3],Char_t *vtxName) {
+			   Double_t snr[3], const char *vtxName) {
   //
   // Constructor for Pb-Pb
   //

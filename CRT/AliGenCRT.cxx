@@ -486,7 +486,7 @@ void AliGenCRT::InitZenithalAngleGeneration()
       this->InitApWeightFactors();
       
       // Define the standard function.
-      char* zenithalDisributionFunction = "1 + [0]*(1 - cos(x*3.14159265358979312/180))";
+      const char* zenithalDisributionFunction = "1 + [0]*(1 - cos(x*3.14159265358979312/180))";
 
       Int_t pEnd  = TMath::Abs(TMath::Nint(fPMax/fPResolution)) + 1;
       fPDist = new TClonesArray("TF1", pEnd);

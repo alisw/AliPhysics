@@ -138,7 +138,7 @@ void AliITSDigitizer::Exec(Option_t* opt){
     //      none.
 
     char name[20] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
-    char *all;
+    const char *all;
     const char *det[3] = {strstr(opt,"SPD"),strstr(opt,"SDD"),
                           strstr(opt,"SSD")};
     if( !det[0] && !det[1] && !det[2] ) all = "All";

@@ -71,7 +71,7 @@ class AliEMCALJetFinder : public TTask {
     AliEMCALJet* GetJetT(Int_t n = 0) {return fJetT[n];}
     virtual void DrawHistsForTuning(Int_t mode=0);           // *MENU*
     virtual void PrintParameters(Int_t mode=0);              // *MENU*
-    virtual const Char_t* GetFileNameForParameters(Char_t* dir="RES/");
+    virtual const Char_t* GetFileNameForParameters(const char* dir="RES/");
 
     // Access to Results
     virtual Int_t Njets() const;
@@ -94,13 +94,13 @@ class AliEMCALJetFinder : public TTask {
     Bool_t  GetEnergyWeightingFlag() const {return fWeightingMethod ;}
     Float_t GetEMCALWeight() const {return fEMCALWeight;}
     Float_t GetTrackWeight() const {return fTrackWeight;}
-    void    DrawLego(Char_t *opt="lego");         // *MENU*
-    void    DrawLegoEMCAL(Char_t *opt="lego");    // *MENU*
+    void    DrawLego(const char *opt="lego");         // *MENU*
+    void    DrawLegoEMCAL(const char *opt="lego");    // *MENU*
     void    DrawLegos();                          // *MENU*
-    void    DrawLegoBackground(Char_t *opt="lego"); // *MENU*
+    void    DrawLegoBackground(const char *opt="lego"); // *MENU*
     Bool_t  IsThisPartonsOrDiQuark(Int_t pdg);
     // I/O
-    virtual void SetOutputFileName(char* name) {fOutFileName = name;}
+    virtual void SetOutputFileName(const char* name) {fOutFileName = name;}
     virtual void FillFromHits(Int_t flag = 0);
     virtual void FillFromHitFlaggedTracks(Int_t flag = 0);
     virtual void FillFromDigits(Int_t flag = 0);
@@ -108,13 +108,13 @@ class AliEMCALJetFinder : public TTask {
     virtual void FillFromParticles();
     virtual void FillFromPartons();
 
-    virtual void SaveBackgroundEvent(Char_t *name="");
+    virtual void SaveBackgroundEvent(const char *name="");
     virtual void InitFromBackground();
     virtual void AddJet(const AliEMCALJet& jet);
     virtual void WriteJets();
     virtual void ResetJets();
     virtual TClonesArray* Jets() const {return fJets;}
-    const Char_t* GetNameOfVariant();
+    const char* GetNameOfVariant();
 
     virtual Bool_t  IsFolder() const;
     virtual void Browse(TBrowser* b);
@@ -196,7 +196,7 @@ class AliEMCALJetFinder : public TTask {
     Float_t                        fPrecBg;          // max value of change for BG (in %)
     Int_t                          fError;           // error variables 
 
-    char*                          fOutFileName;     //! Output file name
+    const char*                    fOutFileName;     //! Output file name
     TFile*                         fOutFile;         //! Output file
     TFile*                         fInFile;          //! Output file
     Int_t                          fEvent;           //! Processed event

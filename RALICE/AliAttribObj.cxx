@@ -73,7 +73,7 @@ AliAttribObj::AliAttribObj(AliAttribObj& a) : TObject(a),AliAttrib(a)
 // Copy constructor
 }
 ///////////////////////////////////////////////////////////////////////////
-TObject* AliAttribObj::Clone(char* name)
+TObject* AliAttribObj::Clone(const char* name)
 {
 // Make a deep copy of the current object and provide the pointer to the copy.
 // This memberfunction enables automatic creation of new objects of the
