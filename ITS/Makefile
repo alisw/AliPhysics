@@ -18,15 +18,18 @@ SRCS          = AliITS.cxx AliITSv1.cxx AliITSv3.cxx AliITSv5.cxx \
 		AliITSgeomSSD.cxx AliITSmodule.cxx \
 		AliITSsimulationFastPoints.cxx \
 		AliITSsimulationFastPointsV0.cxx AliITSsimulation.cxx \
-		AliITSsimulationSPD.cxx AliITSsimulationSDD.cxx \
+		AliITSsimulationSPD.cxx AliITSsimulationSPDbari.cxx \
+		AliITSsimulationSDD.cxx \
 		AliITSetfSDD.cxx AliITSsimulationSSD.cxx AliITSdcsSSD.cxx \
 		AliITSdigit.cxx AliITSRawCluster.cxx AliITSRecPoint.cxx \
 		AliITSMap.cxx AliITSMapA1.cxx AliITSMapA2.cxx \
 		AliITSsegmentation.cxx AliITSsegmentationSPD.cxx \
 		AliITSsegmentationSDD.cxx AliITSsegmentationSSD.cxx\
 		AliITSresponse.cxx AliITSresponseSPD.cxx \
+		AliITSresponseSPDbari.cxx \
 		AliITSresponseSDD.cxx AliITSresponseSSD.cxx \
 		AliITSClusterFinder.cxx AliITSClusterFinderSPD.cxx \
+		AliITSClusterFinderSPDbari.cxx \
 		AliITSClusterFinderSDD.cxx AliITSRawData.cxx \
 		AliITSHuffman.cxx AliITSClusterFinderSSD.cxx \
 		AliITSclusterSSD.cxx AliITSpackageSSD.cxx \
