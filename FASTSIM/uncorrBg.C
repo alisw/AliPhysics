@@ -1,45 +1,75 @@
-void uncorrBg(Int_t nev = 1000000)
+void uncorrBg(Int_t nev = 1000000, Double_t bmin = 0., Double_t bmax = 5.)
 {
-// b: 0.00261     (0.0375 per unit of rapidity per event)
-// c: 1.029       (1.35 per unit of rapidity per event)    
 //
-// rate of central collisions  400 Hz
-// central events 4 10^8
-// Get the single muon pT spectra
 //
-// 
-    Float_t scaleC = 200.;
-    Float_t scaleB = 200.;
-    Float_t scaleD = 0.34 * 1.362e-3 * 1.e3;
- 
 //
-    Float_t bbx[15] = 
-	{
-	    0.21, 0.55, 0.65, 0.65,  0.5, 
-	    0.40, 0.26, 0.19, 0.11,  0.1, 
-	    0.075, 0.045, 0.035, 0.02, 0.017 
-	};
+    AliFastGlauber*  glauber = new AliFastGlauber();
+    glauber->Init(1);
+    
+    Float_t lumi   = 5.e26;   // cm^-2 s^-1
+    Float_t time   = 1.e6;    // s
+    Float_t rate   = lumi/1.e24 * glauber->CrossSection(bmin, bmax); // Hz
+    Float_t fhard  = glauber->FractionOfHardCrossSection(bmin, bmax);
+    Float_t fgeo   = glauber->CrossSection(bmin, bmax) / glauber->CrossSection(0, 100.);
+    Float_t events = rate * time;
+
+    printf("-------------------------------------------------------------------\n");
+    printf("Impact parameter range: %10.3f - %10.3f fm \n", bmin, bmax);
+    printf("Luminosity: %10.3e cm^-2 s^-1 \n", lumi);
+    printf("Rate: %10.3f Hz\n", rate);
+    printf("Fraction of hard  cross-section: %10.3f %\n", fhard * 100.);
+    printf("Fraction of geom. cross-section: %10.3f %\n", fgeo  * 100.);
+    printf("Events in 10^6 s: %10.3e %\n", events);
+    printf("-------------------------------------------------------------------\n");
+
+//
+//    
+    Float_t ptMinCut  = 1.;
+    Float_t etamin    = 2.543;
+    Float_t etar      = 1.457;
+    Float_t ptUp      = 20.;   // GeV
+    Float_t dpt       = 0.1;   // GeV
+//    
+//  For b = 0
+//  (factor 1.35 to scale from 10% most central to b=0)
+//    
+    Float_t scaleC0 = 1.35 * ptUp / dpt;
+    Float_t scaleB0 = 1.35 * ptUp / dpt;
+    Float_t scaleD0 = 1.35 * etar * ptUp / 1.35; // scaled by 1.35 to match ALICE-INT-2002-6
+    
+//
 //
 //  Fast response
 //    
-    AliFastMuonTriggerEff *trigeff = new AliFastMuonTriggerEff();
-    AliFastMuonTrackingAcc *acc = new AliFastMuonTrackingAcc();
-    AliFastMuonTrackingEff *eff = new AliFastMuonTrackingEff();
-    AliFastMuonTrackingRes *res = new AliFastMuonTrackingRes();
+    AliFastMuonTriggerEff  *trigeff = new AliFastMuonTriggerEff();
+    AliFastMuonTrackingAcc *acc     = new AliFastMuonTrackingAcc();
+    AliFastMuonTrackingEff *eff     = new AliFastMuonTrackingEff();
+    AliFastMuonTrackingRes *res     = new AliFastMuonTrackingRes();
     acc->SetBackground(1.);
     eff->SetBackground(1.);
     res->SetBackground(1.);  
-    acc->Init(); 
-    eff->Init(); 
-    res->Init(); 
+
+    acc    ->Init(); 
+    eff    ->Init(); 
+    res    ->Init(); 
+    trigeff->Init();
+    
+/*
+//  To be improved
+//
     AliFastDetector* tracker = new AliFastDetector("Tracker", "Muon Tracker");
-    tracker->AddResponse(trigeff);
     tracker->AddResponse(acc);
     tracker->AddResponse(eff);
     tracker->AddResponse(res);
-    tracker->Init();
-    tracker->Dump();
 
+    AliFastDetector* trigger = new AliFastDetector("Trigger", "Muon Trigger");
+    trigger->AddResponse(trigeff);
+
+    AliFastDetector* spectro = new AliFastDetector("Spectro", "Muon Spectrometer");
+    spectro->AddSubdetector(tracker, "");
+    spectro->AddSubdetector(trigger, "");    
+    spectro->Init();
+*/
 	    
 //
 //  Heavy Flavors
@@ -47,63 +77,42 @@ void uncorrBg(Int_t nev = 1000000)
     f = new TFile("HVQinc.root");
     TH1F* ptBB = (TH1F*) f->Get("hPtCorra");
     TH1F* ptCC = (TH1F*) f->Get("hpta");   
-    TCanvas *c5 = new TCanvas("c5","Canvas 6",400,10,600,700);
-
+    
     TF1*  ptBBLf = new TF1("ptBBLf", "[0] * x / (1. + (x/[1])**2)**[2]", 0., 3.);
     ptBBLf->SetParameter(0, 4.46695e-03);
     ptBBLf->SetParameter(1, 1.60242e+00);
     ptBBLf->SetParameter(2, 2.24948e+00);
 
-    TF1*  ptBBHf = new TF1("ptBBHf", "[0] * x / (1. + (x/[1])**2)**[2]", 3., 20.);
+    TF1*  ptBBHf = new TF1("ptBBHf", "[0] * x / (1. + (x/[1])**2)**[2]", 3., ptUp);
     ptBBHf->SetParameter(0, 2.59961e-03);
     ptBBHf->SetParameter(1, 2.41);
     ptBBHf->SetParameter(2, 3.075);
 
-    TF1*  ptCCHf = new TF1("ptCCHf", "[0] * x / (1. + (x/[1])**2)**([2] + [3] * x)", 1.5, 20.);
+    TF1*  ptCCHf = new TF1("ptCCHf", "[0] * x / (1. + (x/[1])**2)**([2] + [3] * x)", 1.5, ptUp);
     ptCCHf->SetParameter(0, 6.72360e-01);
     ptCCHf->SetParameter(1, 7.06043e-01);
     ptCCHf->SetParameter(2, 2.74240e+00);
     ptCCHf->SetParameter(3, 8.45018e-03);
-//    ptCCHf->Draw("ac");
 
     TF1*  ptCCLf = new TF1("ptCCLf", "[0] * x / (1. + (x/[1])**2)**([2] + [3] * x)", 0., 1.5);
     ptCCLf->SetParameter(0, 1.40260e+00);
     ptCCLf->SetParameter(1, 3.75762e-01);
     ptCCLf->SetParameter(2, 1.54345e+00);
     ptCCLf->SetParameter(3, 2.49806e-01);
-//    ptCCLf->Draw("ac");
-    /*    
     
-    TF1*  ptCCHf = new TF1("ptCCHf", "[0] * x / (1. + (x/[1])**2)**[2]", 0., 20.);
-    ptCCHf->SetParameter(0, 0.249);
-    ptCCHf->SetParameter(1, 1.15);
-    ptCCHf->SetParameter(2, 3.33);
-//    ptCCHf->Draw("ac");
-
-    TF1*  ptCCLf = new TF1("ptCCLf", "[0] * x / (1. + (x/[1])**2)**[2]", 0., 20.);
-    ptCCLf->SetParameter(0, 1.125);
-    ptCCLf->SetParameter(1, 0.525);
-    ptCCLf->SetParameter(2, 2.42);
-//    ptCCLf->Draw("ac");
-*/
-
-    
-    TF1*  ptBf = new TF1("ptBf", "[0] * x / (1. + (x/[1])**2)**[2]", 0., 20.);
+    TF1*  ptBf = new TF1("ptBf", "[0] * x / (1. + (x/[1])**2)**[2]", 0., ptUp);
     ptBf->SetParameter(0, 1.e5 * 0.7 * 1.125);
     ptBf->SetParameter(1, 6.27);
     ptBf->SetParameter(2, 3.2);
-//    ptBf->Draw("ac");
 //
 //  pi/K -> mu
 //
     f->Close();
-    f = new TFile("pikmu.root");
-    TH2F* etaptPiK = (TH2F*) f->Get("etaptH");
-    TAxis* etaAxis = etaptPiK->GetXaxis();
-    TAxis* ptAxis  = etaptPiK->GetYaxis();    
-    TH1F* ptPiK    = (TH1F*) f->Get("ptH3");
-//    ptAxis = ptPiK->GetXaxis();
-    
+    f = new TFile("$(ALICE_ROOT)/FASTSIM/data/pikmu.root");
+    TH2F*  etaptPiK = (TH2F*) f->Get("etaptH");
+    TAxis* etaAxis  = etaptPiK->GetXaxis();
+    TAxis* ptAxis   = etaptPiK->GetYaxis();    
+//
 //
 // Book histograms
     TH1F* massBBH = new TH1F("massBBH", "Mass Spectrum: b-b        ", 150, 0., 15.);
@@ -112,27 +121,28 @@ void uncorrBg(Int_t nev = 1000000)
     TH1F* massDDH = new TH1F("massDDH", "Mass Spectrum: decay-decay", 150, 0., 15.);
     TH1F* massBDH = new TH1F("massBDH", "Mass Spectrum: decay-b    ", 150, 0., 15.);
     TH1F* massCDH = new TH1F("massCDH", "Mass Spectrum: decay-c    ", 150, 0., 15.);    
-    TH1F* ptCH    = new TH1F("ptCH", "pt Spectrum mu from c", 20., 0., 10.);    
-    TH1F* ptBH    = new TH1F("ptBH", "pt Spectrum mu from b", 20., 0., 10.);    
-    TH1F* ptDH    = new TH1F("ptDH", "pt Spectrum mu from pi/K", 20., 0., 10.);    
-    TH1F* ptBH2    = new TH1F("ptBH2", "pt Spectrum mu from b", 20., 0., 10.);    
-    TH1F* ptBH3    = new TH1F("ptBH3", "pt Spectrum mu from b", 15., 0., 15.);
-    for (Int_t i = 0; i < 15; i++)
-    {
-	ptBH3->SetBinContent(i+1, bbx[i]);
-    }
-    ptBH3->Draw();
-    
-    
+    TH1F* ptCH    = new TH1F("ptCH", "pt Spectrum mu from c",          20, 0., 10.);    
+    TH1F* ptBH    = new TH1F("ptBH", "pt Spectrum mu from b",          20, 0., 10.);    
+    TH1F* ptDH    = new TH1F("ptDH", "pt Spectrum mu from pi/K",       20, 0., 10.);    
+    TH1F* ptBH2   = new TH1F("ptBH2", "pt Spectrum mu from b",         20, 0., 10.);    
 //
 // Event Loop
 //
     Int_t iev;
     for (iev = 0; iev < nev; iev++) {
 //
+//  Collision geometry
+//
+	Float_t b;
+	b = glauber->GetRandomImpactParameter(bmin, bmax);
+	Double_t nbinary = glauber->Binaries(b);
+	Float_t  scaleC  = scaleC0 * nbinary;
+	Float_t  scaleB  = scaleB0 * nbinary;
+	Float_t  scaleD  = scaleD0 * nbinary;
+//
 // pT
-	Float_t pT1 = 20. * gRandom->Rndm();
-	Float_t pT2 = 20. * gRandom->Rndm();
+	Float_t pT1 = ptUp * gRandom->Rndm();
+	Float_t pT2 = ptUp * gRandom->Rndm();
 //
 // phi
 	Float_t phi1 = 2. * TMath::Pi() * gRandom->Rndm() - TMath::Pi();
@@ -140,8 +150,8 @@ void uncorrBg(Int_t nev = 1000000)
 	Float_t dphi = phi1 - phi2;
 //
 // eta
-	Float_t eta1 = 1.457 * gRandom->Rndm() + 2.543;
-	Float_t eta2 = 1.457 * gRandom->Rndm() + 2.543;	
+	Float_t eta1 = etar * gRandom->Rndm() + etamin;
+	Float_t eta2 = etar * gRandom->Rndm() + etamin;	
 	Float_t deta = eta1 - eta2;
 //
 // invariant mass
@@ -149,7 +159,7 @@ void uncorrBg(Int_t nev = 1000000)
 	Float_t m  = TMath::Sqrt(m2);
 
 //
-// Smearing
+// Smearing (to be improved)
 	Float_t dm = m * 0.01;
 	m += gRandom->Gaus(0., dm);	
 //
@@ -198,22 +208,17 @@ void uncorrBg(Int_t nev = 1000000)
 	etaBin = etaAxis->FindBin(eta2);
 	ptBin  = ptAxis ->FindBin(pT2);	
 	wgtD2  = etaptPiK->GetBinContent(etaBin, ptBin) * scaleD;
-
-	/*
-	ptBin  = ptAxis ->FindBin(pT1);	
-	wgtD1  = ptPiK->GetBinContent(ptBin) * scaleD;
-	ptBin  = ptAxis ->FindBin(pT2);	
-	wgtD2  = ptPiK->GetBinContent(ptBin) * scaleD;
-	*/
-
+	
 //
-//   efficiencies
+//      Efficiencies
 //	
 	Float_t theta1 = 2. * TMath::ATan(TMath::Exp(-eta1)) * 180./TMath::Pi();
 	Float_t theta2 = 2. * TMath::ATan(TMath::Exp(-eta2)) * 180./TMath::Pi();
 	Float_t phid1  = phi1 * 180./TMath::Pi();
 	Float_t phid2  = phi2 * 180./TMath::Pi();
-
+	Float_t p1     = pT1/TMath::Sin(theta1 * TMath::Pi()/180.);
+	Float_t p2     = pT2/TMath::Sin(theta2 * TMath::Pi()/180.);
+	
 	res->SetCharge(1);
 	eff->SetCharge(1);
 	acc->SetCharge(1);
@@ -228,7 +233,7 @@ void uncorrBg(Int_t nev = 1000000)
 	Float_t tri2  = trigeff->Evaluate(1, pT2, theta2, phid2);
 
 	Float_t effA   = eff1 * eff2 * acc1 * acc2 * tri1 * tri2;
-	
+
 	Float_t ptMax = pT1;
 	Float_t ptMin = pT2;
 	if (pT2 > pT1) {
@@ -236,13 +241,7 @@ void uncorrBg(Int_t nev = 1000000)
 	    Float_t ptMin = pT1;
 	}
 	
-
-//	if (
-//	    (ptMax > 6. && ptMin > 3.) ||
-//	    (ptMax < 6. && ptMin > (6. - 0.5 * ptMax))
-//	    ) 
-//	{
-	if (ptMin > 3.) {
+	if (ptMin > ptMinCut && p1 > 4. && p2 > 4.) {
 	    massBBH->Fill(m, wgtB1 * wgtB2 / 4. * effA);
 	    massCCH->Fill(m, wgtC1 * wgtC2 / 4. * effA);
 	    massBCH->Fill(m, wgtC1 * wgtB2 / 4. * effA);
@@ -265,12 +264,10 @@ void uncorrBg(Int_t nev = 1000000)
 		ptBH->Fill(pt, wgtB1);
 		ptDH->Fill(pt, wgtD1);
 	    }
-	}
-
+	} // bins
     } // event loop
-//    Float_t eff    = 0.6 * 1.0;
-    Float_t evtWgt = 1. / Float_t(nev) * 4.e8;
-    
+
+    Float_t evtWgt = events / Float_t(nev);
     
     massBBH->Scale(evtWgt);
     massCCH->Scale(evtWgt);
