@@ -324,7 +324,7 @@ next:
       c1->cd(cath+1);
       gPad->SetTheta(55);
       gPad->SetPhi(30);
-      Float_t x, y, x0, y0, r1=999, r2=0;
+      Double_t x, y, x0, y0, r1=999, r2=0;
       if (fHist[cath*2+1]) {
 	// 
 	x0 = fHist[cath*2]->GetXaxis()->GetXmin() - 1000*TMath::Cos(30*TMath::Pi()/180);
@@ -572,7 +572,7 @@ void AliMUONClusterFinderAZ::ModifyHistos(void)
   nhist = 0;
   TH2F *hist = 0;
   Int_t nx, ny;
-  Float_t x, y, cont, cmax=0;
+  Double_t x, y, cont, cmax=0;
   char hName[4];
   for (Int_t ihist=0; ihist<4; ihist++) {
     if (!fHist[ihist]) continue;
@@ -838,7 +838,7 @@ Bool_t AliMUONClusterFinderAZ::CheckPrecluster(Int_t *nShown)
 	  if (fXyq[2][indx] <= cmax || TMath::Abs(dist[indx]-xmax)<1.e-3) {
 	    // Release pads
 	    if (TMath::Abs(dist[indx]-xmax)<1.e-3) 
-                cmax = TMath::Max(fXyq[2][indx],cmax);
+                cmax = TMath::Max((Double_t)(fXyq[2][indx]),cmax);
 	    else cmax = fXyq[2][indx];
 	    xmax = dist[indx];
 	    digit = TMath::Nint (fXyq[5][indx]);
@@ -1123,7 +1123,7 @@ Bool_t AliMUONClusterFinderAZ::MainLoop()
     // MLEM algorithm
     Mlem(coef, probi);
 
-    Float_t xylim[4] = {999, 999, 999, 999};
+    Double_t xylim[4] = {999, 999, 999, 999};
     for (Int_t ipix=0; ipix<nPix; ipix++) {
       pixPtr = (AliMUONPixel*) fPixArray->UncheckedAt(ipix);
       for (Int_t i=0; i<4; i++) 
@@ -2322,7 +2322,7 @@ Int_t AliMUONClusterFinderAZ::FindLocalMaxima(Int_t *localMax, Double_t *maxVal)
   TH2D *hist = (TH2D*) gROOT->FindObject("anode");
   if (hist) hist->Delete();
 
-  Float_t xylim[4] = {999, 999, 999, 999};
+  Double_t xylim[4] = {999, 999, 999, 999};
   Int_t nPix = fPixArray->GetEntriesFast();
   AliMUONPixel *pixPtr = 0;
   for (Int_t ipix=0; ipix<nPix; ipix++) {
