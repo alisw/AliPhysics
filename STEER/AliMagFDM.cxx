@@ -15,6 +15,12 @@
 
 /*
 $Log$
+Revision 1.9  2001/01/17 20:02:20  morsch
+In the AliMagFDM tree  call-by-reference functions were changed to
+call-by-value, what is more adequate for our task. There were added
+a few comments and put protection to values of cos > 1.000 in
+AliMagFDM.cxx. (Galina Chabratova)
+
 Revision 1.8  2000/12/18 10:44:01  morsch
 Possibility to set field map by passing pointer to objet of type AliMagF via
 SetField().
@@ -77,7 +83,7 @@ void AliMagFDM::Field(Float_t *xfi, Float_t *b)
   // Main routine to compute the field in a point
   //
   static  const Double_t keps=0.1E-06;
-  static  const Double_t PI2=.6283185E+01;
+  static  const Double_t PI2=2.*TMath::Pi();
   static  const Double_t kone=1;
 
   static  const    Int_t  kiip=33; 
