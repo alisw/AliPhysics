@@ -14,6 +14,9 @@
  **************************************************************************/
 /*
 $Log$
+Revision 1.12  2001/05/21 09:39:28  morsch
+Minor modifications on the geometry. (Tapan Nayak)
+
 Revision 1.11  2001/05/14 14:01:04  morsch
 AliPMDv0 coarse geometry and AliPMDv1 detailed simulation, completely revised versions by Tapan Nayak.
 */
@@ -728,12 +731,13 @@ void AliPMDv0::CreatePMD()
 	{
 	  xpos[i]=xmod[j] + xsup[i]*TMath::Cos(theta[j]) - ysup[i]*TMath::Sin(theta[j]);
 	  ypos[i]=ymod[j] + xsup[i]*TMath::Sin(theta[j]) + ysup[i]*TMath::Cos(theta[j]);
-
-	  printf("%f %f \n", xpos[i], ypos[i]);
+	  if(fDebug) 
+	      printf("%s: %f %f \n", ClassName(), xpos[i], ypos[i]);
 
 	  num_mod = num_mod+1;
 
-	  printf("\nNum_mod %d\n",num_mod);
+	  if(fDebug) 
+	      printf("\n%s: Num_mod %d\n",ClassName(),num_mod);
 
 	  gMC->Gsposp("EMM1", num_mod + 6, "EPMD", xpos[i],ypos[i], 0., irotate[j], "ONLY", dpara_emm1, 6);
 
@@ -931,18 +935,20 @@ void AliPMDv0::Init()
   Int_t i;
   kdet=1;
   //
-  printf("\n");
-  for(i=0;i<35;i++) printf("*");
-  printf(" PMD_INIT ");
-  for(i=0;i<35;i++) printf("*");
-  printf("\n");
-  printf("                 PMD simulation package (v0) initialised\n");
-  printf(" parameters of pmd\n");
-  printf("%10.2f %10.2f %10.2f %10.2f\n", cell_radius,cell_wall,cell_depth,zdist1 );
-  
-  for(i=0;i<80;i++) printf("*");
-  printf("\n");
-  
+  if(fDebug) {
+      printf("\n%s: ",ClassName());
+      for(i=0;i<35;i++) printf("*");
+      printf(" PMD_INIT ");
+      for(i=0;i<35;i++) printf("*");
+      printf("\n%s: ",ClassName());
+      printf("                 PMD simulation package (v0) initialised\n");
+      printf("%s: parameters of pmd\n", ClassName());
+      printf("%s: %10.2f %10.2f %10.2f
+      %10.2f\n",ClassName(),cell_radius,cell_wall,cell_depth,zdist1 );
+      printf("%s: ",ClassName());
+      for(i=0;i<80;i++) printf("*");
+      printf("\n");
+  }
   Int_t *idtmed = fIdtmed->GetArray()-599;
   fMedSens=idtmed[605-1];
 }
