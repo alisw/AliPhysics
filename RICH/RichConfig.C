@@ -6,8 +6,8 @@ public:
           RichConfig(const char*sFileName);
          ~RichConfig()                    {Info("ctor","");Cleanup();}
 //protected:
-  enum ERichVers  {kNoRich=-1,kNormalRich,kTestBeam,kTestRadio,kAerogel,kOnTop};
-  enum EGenTypes  {kProton15=100,kBox1,kGun7,kPythia7,kHijing,kHijingPara,kRichLib,kSignalHijing,kHijingPara2Proton};
+  enum ERichVers  {kNoRich=-1,kNormalRich,kTestBeam,kTestRadio,kAerogel,kOnTop,kTic};
+  enum EGenTypes  {kTestGun=100,kBox1,kGun7,kPythia7,kHijing,kHijingPara,kRichLib,kSignalHijing,kHijingPara2Proton};
   
   enum EDetectors {kPIPE=1,kITS,kTPC,kTRD,kTOF,kFRAME,kMAG,kCRT,kHALL,kPHOS,kSTART,kFMD,kABSO,kPMD,kDIPO,kEMCAL,kVZERO,kMUON,kZDC,kSHILD};
   enum EProcesses {kDCAY=1,kPAIR,kCOMP,kPHOT,kPFIS,kDRAY,kANNI,kBREM,kMUNU,kCKOV,kHADR,kLOSS,kMULS,kRAYL,kALL};
@@ -49,6 +49,7 @@ RichConfig::RichConfig(const char *sFileName):TGMainFrame(gClient->GetRoot(),650
     fRichVerCombo->AddEntry("test beam"    ,kTestBeam);
     fRichVerCombo->AddEntry("radio source" ,kTestRadio);
     fRichVerCombo->AddEntry("aerogel"      ,kAerogel);
+    fRichVerCombo->AddEntry("VHMPID TIC"   ,kTic);
     fRichVerCombo->Select(kNormalRich);  fRichVerCombo->Resize(150,20);
     pRichFG->AddFrame(fRichDeclusterBC=new TGCheckButton(pRichFG,"Declustering"));       fRichDeclusterBC->SetState(kButtonDown);
     pRichFG->AddFrame(fRichSagBC      =new TGCheckButton(pRichFG,"Wire sagita?"));       fRichSagBC      ->SetState(kButtonDown);
@@ -57,7 +58,7 @@ RichConfig::RichConfig(const char *sFileName):TGMainFrame(gClient->GetRoot(),650
 //Generator  
   pVerFrame->AddFrame(pGenGrpFrm=new TGGroupFrame(pHorFrame,"Generator"));
   pGenGrpFrm->AddFrame(fGenTypeCombo=new TGComboBox(pGenGrpFrm,100));
-  fGenTypeCombo->AddEntry("15 GeV proton to fixed pad",kProton15);  
+  fGenTypeCombo->AddEntry("test gun along z",kTestGun);  
   fGenTypeCombo->AddEntry("box gun to single chamber",kBox1);  
   fGenTypeCombo->AddEntry("gun to all chambers",kGun7);
   fGenTypeCombo->AddEntry("7 guns+Pythia",kPythia7);
@@ -176,7 +177,7 @@ void RichConfig::CreateConfig()
   fprintf(fp,"  gRandom->SetSeed(123456);//put 0 to use system time\n\n");    
 //Geant  
   fprintf(fp,"  gSystem->Load(\"libgeant321\");\n");
-  fprintf(fp,"  new TGeant3(\"C++ Interface to Geant3\");\n\n");
+  fprintf(fp,"  new TGeant3TGeo(\"C++ Interface to Geant3\");\n\n");
 //File
   fprintf(fp,"  AliRunLoader *pAL=AliRunLoader::Open(\"galice.root\",AliConfig::GetDefaultEventFolderName(),\"recreate\");\n");    
   fprintf(fp,"  pAL->SetCompressionLevel(2);\n");
@@ -216,25 +217,32 @@ void RichConfig::CreateConfig()
 //BODY-ALIC 
   fprintf(fp,"  new AliBODY(\"BODY\",\"Alice envelop\");\n\n");
 //RICH
-  if(fRichVerCombo->GetSelected() != kNoRich){  
-    TString richStr="RICH "; 
-    if(fRichDeclusterBC->GetState()!=kButtonDown){richStr+="no declustering "  ; fprintf(fp,"  AliRICHParam::SetDeclustering(kFALSE);\n");}
-    if(fRichSagBC->GetState()      !=kButtonDown){richStr+="no sagita "        ; fprintf(fp,"  AliRICHParam::SetWireSag(kFALSE);\n")     ;}
-    switch(fRichVerCombo->GetSelected()){//RICH
-      case kOnTop:      richStr+="top position";fprintf(fp,"  AliRICHParam::SetAngleRot(0);\n")      ;break;   
-      case kAerogel:    richStr+="aerogel"     ;fprintf(fp,"  AliRICHParam::SetAerogel(kTRUE);\n") ;break;   
-      case kTestRadio:  richStr+="radioactive" ;fprintf(fp,"  AliRICHParam::SetRadioSrc(kTRUE);\n");
-                                                fprintf(fp,"  AliRICHParam::SetTestBeam(kTRUE);\n");break;   
-      case kTestBeam:   richStr+="test beam"   ;fprintf(fp,"  AliRICHParam::SetTestBeam(kTRUE);\n");break;   
-      case kNormalRich: richStr+="normal"      ;                                                    break;   
-    }
-    if(fRichDebugBC->GetState()    ==kButtonDown){
-      richStr+="+debug StepManager"; 
-      fprintf(fp,"  AliRICH *pRICH=new AliRICHv0(\"RICH\",\"%s\");\n\n",richStr.Data());
-    }else{
-      fprintf(fp,"  AliRICH *pRICH=new AliRICHv1(\"RICH\",\"%s\");\n\n",richStr.Data());
-    }
-  }//Rich not selected
+  switch(fRichVerCombo->GetSelected()){
+    case kNoRich: break;
+    case kTic:   
+                  fprintf(fp,"  gSystem->Load(\"libVHMPIDbase\");\n");     
+                  fprintf(fp,"  AliVHMPID *pVHMPID=new AliVHMPIDv0(\"VHMPID\",\"Test setup\");\n\n"); 
+                  break;      
+    default:  
+      TString richStr="RICH "; 
+      if(fRichDeclusterBC->GetState()!=kButtonDown){richStr+="no declustering "  ; fprintf(fp,"  AliRICHParam::SetDeclustering(kFALSE);\n");}
+      if(fRichSagBC->GetState()      !=kButtonDown){richStr+="no sagita "        ; fprintf(fp,"  AliRICHParam::SetWireSag(kFALSE);\n")     ;}
+      switch(fRichVerCombo->GetSelected()){//RICH
+        case kOnTop:      richStr+="top position";fprintf(fp,"  AliRICHParam::SetAngleRot(0);\n")      ;break;   
+        case kAerogel:    richStr+="aerogel"     ;fprintf(fp,"  AliRICHParam::SetAerogel(kTRUE);\n") ;break;   
+        case kTestRadio:  richStr+="radioactive" ;fprintf(fp,"  AliRICHParam::SetRadioSrc(kTRUE);\n");
+                                                  fprintf(fp,"  AliRICHParam::SetTestBeam(kTRUE);\n");break;   
+        case kTestBeam:   richStr+="test beam"   ;fprintf(fp,"  AliRICHParam::SetTestBeam(kTRUE);\n");break;   
+        case kNormalRich: richStr+="normal"      ;                                                    break;   
+      }
+      if(fRichDebugBC->GetState()    ==kButtonDown){
+        richStr+="+debug StepManager"; 
+        fprintf(fp,"  AliRICH *pRICH=new AliRICHv0(\"RICH\",\"%s\");\n\n",richStr.Data());
+      }else{
+        fprintf(fp,"  AliRICH *pRICH=new AliRICHv1(\"RICH\",\"%s\");\n\n",richStr.Data());
+      }
+      break;
+  }//switch RICH
 //Generator
   switch(fGenTypeCombo->GetSelected()){
     case kHijingPara: 
@@ -251,11 +259,10 @@ void RichConfig::CreateConfig()
       fprintf(fp,"  pGen->SetPhiRange(pRICH->C(%i)->PhiD()-1,pRICH->C(%i)->PhiD()+1); \n",fGenChamberCombo->GetSelected(),fGenChamberCombo->GetSelected());    
       fprintf(fp,"  pGen->Init();\n");
     break;    
-    case kProton15:   
-      fprintf(fp,"  AliGenFixed *pFixed=new AliGenFixed(1);\n");
-      fprintf(fp,"  pFixed->SetPart(kProton); pFixed->SetOrigin(0,0,0);\n");
-      fprintf(fp,"  pFixed->SetMomentum(15);  pFixed->SetTheta(113.37); pFixed->SetPhi(9.73);\n");                             
-      fprintf(fp,"  pFixed->Init();\n");
+    case kTestGun:   
+      fprintf(fp,"  AliGenFixed *pGen=new AliGenFixed(1);\n");
+      fprintf(fp,"  pGen->SetPart(kProton); pGen->SetOrigin(0,0,0); pGen->SetMomentum(15); pGen->SetTheta(0);\n");
+      fprintf(fp,"  pGen->Init();\n");
     break;
     case kGun7:   
       fprintf(fp,"  AliGenCocktail *pCocktail=new AliGenCocktail();\n");
