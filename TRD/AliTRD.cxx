@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.36  2002/02/11 14:25:27  cblume
+Geometry update, compressed hit structure
+
 Revision 1.35  2001/11/14 12:08:44  cblume
 Remove unneccessary header files
 
@@ -320,8 +323,8 @@ void AliTRD::AddCluster(Float_t *pos, Int_t *digits, Int_t det, Float_t amp
   c->SetQ(amp);
 
   c->SetLocalTimeBin(((Int_t) pos[2]));
-  c->SetY(- (col0 + padCol * colSize));
-  c->SetZ(   row0 + padRow * rowSize);
+  c->SetY(col0 + padCol * colSize);
+  c->SetZ(row0 + padRow * rowSize);
   
   c->SetSigmaY2((sigmaY2 + 1./12.) * colSize*colSize);   
   c->SetSigmaZ2(rowSize * rowSize / 12.);
@@ -358,10 +361,6 @@ void AliTRD::Hits2Digits()
   AliTRDdigitizer *digitizer = new AliTRDdigitizer("TRDdigitizer"
                                                   ,"TRD digitizer class");
   digitizer->SetDebug(GetDebug());
-
-  // Set the parameter
-  digitizer->SetDiffusion();
-  digitizer->SetExB();
   digitizer->SetEvent(gAlice->GetEvNumber());
 
   // Initialization
@@ -395,10 +394,6 @@ void AliTRD::Hits2SDigits()
 
   // For the summable digits
   digitizer->SetSDigits(kTRUE);
-
-  // Set the parameter
-  digitizer->SetDiffusion();
-  digitizer->SetExB();
   digitizer->SetEvent(gAlice->GetEvNumber());
 
   // Initialization

@@ -46,6 +46,8 @@ class AliTRDgeometry : public AliGeometry {
   static  Float_t  DrThick() { return fgkDrThick; };
   static  Float_t  AmThick() { return fgkAmThick; };
   static  Float_t  DrZpos()  { return fgkDrZpos;  };
+  static  Float_t  RpadW()   { return fgkRpadW;   };
+  static  Float_t  CpadW()   { return fgkCpadW;   };
 
   virtual void     SetPHOShole() = 0;
   virtual void     SetRICHhole() = 0;

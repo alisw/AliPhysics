@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.15  2001/11/14 12:09:11  cblume
+Use correct name for digitizer
+
 Revision 1.14  2001/11/14 10:50:45  cblume
 Changes in digits IO. Add merging of summable digits
 
@@ -92,6 +95,7 @@ Add new TRD classes
 #include "AliTRDdataArrayF.h"
 #include "AliTRDdataArrayI.h"
 #include "AliTRDdigitsManager.h"
+#include "AliTRDparameter.h"
 
 ClassImp(AliTRDclusterizerV1)
 
@@ -102,12 +106,8 @@ AliTRDclusterizerV1::AliTRDclusterizerV1():AliTRDclusterizer()
   // AliTRDclusterizerV1 default constructor
   //
 
-  fDigitsManager = NULL;
-
-  fClusMaxThresh = 0;
-  fClusSigThresh = 0;
-
-  fUseLUT        = kFALSE;
+  fDigitsManager = 0;
+  fPar           = 0;
 
 }
 
@@ -120,8 +120,8 @@ AliTRDclusterizerV1::AliTRDclusterizerV1(const Text_t* name, const Text_t* title
   //
 
   fDigitsManager = new AliTRDdigitsManager();
-
-  Init();
+  fDigitsManager->CreateArrays();
+  fPar           = 0;
 
 }
 
@@ -169,56 +169,10 @@ void AliTRDclusterizerV1::Copy(TObject &c)
   // Copy function
   //
 
-  ((AliTRDclusterizerV1 &) c).fUseLUT        = fUseLUT;
-  ((AliTRDclusterizerV1 &) c).fClusMaxThresh = fClusMaxThresh;
-  ((AliTRDclusterizerV1 &) c).fClusSigThresh = fClusSigThresh;
-  ((AliTRDclusterizerV1 &) c).fDigitsManager = NULL;
-  for (Int_t ilut = 0; ilut < kNlut; ilut++) {
-    ((AliTRDclusterizerV1 &) c).fLUT[ilut] = fLUT[ilut];
-  }
+  ((AliTRDclusterizerV1 &) c).fDigitsManager = 0;
+  ((AliTRDclusterizerV1 &) c).fPar           = 0;
 
   AliTRDclusterizer::Copy(c);
-
-}
-
-//_____________________________________________________________________________
-void AliTRDclusterizerV1::Init()
-{
-  //
-  // Initializes the cluster finder
-  //
-
-  // The default parameter for the clustering
-  fClusMaxThresh = 3;
-  fClusSigThresh = 1;
-
-  // Use the lookup table for the position determination
-  fUseLUT        = kTRUE;
-
-  // The lookup table from Bogdan
-  Float_t lut[128] = {  
-    0.0068,  0.0198,  0.0318,  0.0432,  0.0538,  0.0642,  0.0742,  0.0838,
-    0.0932,  0.1023,  0.1107,  0.1187,  0.1268,  0.1347,  0.1423,  0.1493,  
-    0.1562,  0.1632,  0.1698,  0.1762,  0.1828,  0.1887,  0.1947,  0.2002,  
-    0.2062,  0.2118,  0.2173,  0.2222,  0.2278,  0.2327,  0.2377,  0.2428,  
-    0.2473,  0.2522,  0.2567,  0.2612,  0.2657,  0.2697,  0.2743,  0.2783,  
-    0.2822,  0.2862,  0.2903,  0.2943,  0.2982,  0.3018,  0.3058,  0.3092,  
-    0.3128,  0.3167,  0.3203,  0.3237,  0.3268,  0.3302,  0.3338,  0.3368,  
-    0.3402,  0.3433,  0.3462,  0.3492,  0.3528,  0.3557,  0.3587,  0.3613,  
-    0.3643,  0.3672,  0.3702,  0.3728,  0.3758,  0.3783,  0.3812,  0.3837,  
-    0.3862,  0.3887,  0.3918,  0.3943,  0.3968,  0.3993,  0.4017,  0.4042,  
-    0.4067,  0.4087,  0.4112,  0.4137,  0.4157,  0.4182,  0.4207,  0.4227,  
-    0.4252,  0.4272,  0.4293,  0.4317,  0.4338,  0.4358,  0.4383,  0.4403,  
-    0.4423,  0.4442,  0.4462,  0.4482,  0.4502,  0.4523,  0.4543,  0.4563,  
-    0.4582,  0.4602,  0.4622,  0.4638,  0.4658,  0.4678,  0.4697,  0.4712,  
-    0.4733,  0.4753,  0.4767,  0.4787,  0.4803,  0.4823,  0.4837,  0.4857,  
-    0.4873,  0.4888,  0.4908,  0.4922,  0.4942,  0.4958,  0.4972,  0.4988  
-  }; 
-  for (Int_t ilut = 0; ilut < kNlut; ilut++) {
-    fLUT[ilut] = lut[ilut];
-  }
-
-  fDigitsManager->CreateArrays();
 
 }
 
@@ -230,7 +184,7 @@ Bool_t AliTRDclusterizerV1::ReadDigits()
   //
 
   if (!fInputFile) {
-    printf("AliTRDclusterizerV1::ReadDigits -- ");
+    printf("<AliTRDclusterizerV1::ReadDigits> ");
     printf("No input file open\n");
     return kFALSE;
   }
@@ -252,7 +206,7 @@ Bool_t AliTRDclusterizerV1::MakeClusters()
   Int_t row, col, time;
 
   if (fTRD->IsVersion() != 1) {
-    printf("AliTRDclusterizerV1::MakeCluster -- ");
+    printf("<AliTRDclusterizerV1::MakeCluster> ");
     printf("TRD must be version 1 (slow simulator).\n");
     return kFALSE; 
   }
@@ -260,16 +214,24 @@ Bool_t AliTRDclusterizerV1::MakeClusters()
   // Get the geometry
   AliTRDgeometry *geo = fTRD->GetGeometry();
 
-  Float_t timeBinSize = geo->GetTimeBinSize();
+  // Create a default parameter class if none is defined
+  if (!fPar) {
+    fPar = new AliTRDparameter("TRDparameter","Standard TRD parameter");
+    if (fVerbose > 0) {
+      printf("<AliTRDclusterizerV1::MakeCluster> ");
+      printf("Create the default parameter object.\n");
+    }
+  }
+
+  Float_t timeBinSize = fPar->GetTimeBinSize();
   // Half of ampl.region
   const Float_t kAmWidth = AliTRDgeometry::AmThick()/2.; 
 
-  AliTRDdigitizer *digitizer = (AliTRDdigitizer*) fInputFile->Get("TRDdigitizer");
-  Float_t omegaTau = digitizer->GetOmegaTau();
+  Float_t omegaTau = fPar->GetOmegaTau();
   if (fVerbose > 0) {
-    printf("AliTRDclusterizerV1::MakeCluster -- ");
+    printf("<AliTRDclusterizerV1::MakeCluster> ");
     printf("OmegaTau = %f \n",omegaTau);
-    printf("AliTRDclusterizerV1::MakeCluster -- ");
+    printf("<AliTRDclusterizerV1::MakeCluster> ");
     printf("Start creating clusters.\n");
   } 
 
@@ -279,9 +241,9 @@ Bool_t AliTRDclusterizerV1::MakeClusters()
   AliTRDdataArrayI *track2; 
 
   // Threshold value for the maximum
-  Int_t maxThresh = fClusMaxThresh;   
+  Int_t maxThresh = fPar->GetClusMaxThresh();   
   // Threshold value for the digit signal
-  Int_t sigThresh = fClusSigThresh;   
+  Int_t sigThresh = fPar->GetClusSigThresh();   
 
   // Iteration limit for unfolding procedure
   const Float_t kEpsilon = 0.01;             
@@ -289,10 +251,6 @@ Bool_t AliTRDclusterizerV1::MakeClusters()
   const Int_t   kNclus   = 3;  
   const Int_t   kNsig    = 5;
   const Int_t   kNtrack  = 3 * kNclus;
-
-  // For the LUT
-  const Float_t kLUTmin  = 0.106113;
-  const Float_t kLUTmax  = 0.995415;
 
   Int_t   iType          = 0;
   Int_t   iUnfold        = 0;
@@ -349,15 +307,15 @@ Bool_t AliTRDclusterizerV1::MakeClusters()
         Int_t nClustersLarge = 0;
 
         if (fVerbose > 0) {
-          printf("AliTRDclusterizerV1::MakeCluster -- ");
+          printf("<AliTRDclusterizerV1::MakeCluster> ");
           printf("Analyzing chamber %d, plane %d, sector %d.\n"
                 ,icham,iplan,isect);
 	}
 
-        Int_t nRowMax     = geo->GetRowMax(iplan,icham,isect);
-        Int_t nColMax     = geo->GetColMax(iplan);
-        Int_t nTimeBefore = geo->GetTimeBefore();
-        Int_t nTimeTotal  = geo->GetTimeTotal();  
+        Int_t nRowMax     = fPar->GetRowMax(iplan,icham,isect);
+        Int_t nColMax     = fPar->GetColMax(iplan);
+        Int_t nTimeBefore = fPar->GetTimeBefore();
+        Int_t nTimeTotal  = fPar->GetTimeTotal();  
 
         // Get the digits
         digits = fDigitsManager->GetDigits(idet);
@@ -493,7 +451,7 @@ Bool_t AliTRDclusterizerV1::MakeClusters()
                   }
                   // Unfold the two maxima and set the signal on 
                   // the overlapping pad to the ratio
-                  ratioRight        = Unfold(kEpsilon,padSignal);
+                  ratioRight        = Unfold(kEpsilon,iplan,padSignal);
                   ratioLeft         = 1.0 - ratioRight; 
                   clusterSignal[2] *= ratioRight;
                   iType   = 3;
@@ -509,33 +467,13 @@ Bool_t AliTRDclusterizerV1::MakeClusters()
 		// Take the shift of the additional time bins into account
                 clusterPads[2] = time - nTimeBefore + 0.5;
 
-                if (fUseLUT) {
+                if (fPar->LUTOn()) {
 
   		  // Calculate the position of the cluster by using the
 		  // lookup table method
-                  Float_t ratioLUT;
-                  Float_t signLUT;
-                  Float_t lut = 0.0;
-                  if (clusterSignal[0] > clusterSignal[2]) {
-                    ratioLUT = clusterSignal[0] / clusterSignal[1];
-                    signLUT  = -1.0;
-		  }
-                  else {
-                    ratioLUT = clusterSignal[2] / clusterSignal[1];
-                    signLUT  =  1.0;
-		  }
-                  if      (ratioLUT < kLUTmin) {
-                    lut = 0.0;
-		  }
-                  else if (ratioLUT > kLUTmax) {
-                    lut = 0.5;
-		  }
-                  else {
-                    Int_t indexLUT = TMath::Nint ((kNlut-1) * (ratioLUT - kLUTmin)  
-						            / (kLUTmax  - kLUTmin)); 
-                    lut = fLUT[indexLUT];
-		  }
-                  clusterPads[1] = col + 0.5 + signLUT * lut;
+                  clusterPads[1] = fPar->LUTposition(iplan,clusterSignal[0]
+                                                          ,clusterSignal[1]
+					                  ,clusterSignal[2]);
 
 		}
 		else {
@@ -552,10 +490,10 @@ Bool_t AliTRDclusterizerV1::MakeClusters()
                                        - (clusterPads[1]-col-0.5) * (clusterPads[1]-col-0.5);
 
                 // Correct for ExB displacement
-                if (digitizer->GetExB()) { 
+                if (fPar->ExBOn()) { 
                   Int_t   local_time_bin = (Int_t) clusterPads[2];
                   Float_t driftLength    = local_time_bin * timeBinSize + kAmWidth;
-                  Float_t colSize        = geo->GetColPadSize(iplan);
+                  Float_t colSize        = fPar->GetColPadSize(iplan);
                   Float_t deltaY         = omegaTau*driftLength/colSize;
                   clusterPads[1]         = clusterPads[1] - deltaY;
                 }
@@ -607,7 +545,7 @@ Bool_t AliTRDclusterizerV1::MakeClusters()
 	fTRD->ResetRecPoints();
 
         if (fVerbose > 0) {
-          printf("AliTRDclusterizerV1::MakeCluster -- ");
+          printf("<AliTRDclusterizerV1::MakeCluster> ");
           printf("Found %d clusters in total.\n"
                 ,nClusters);
           printf("                                    2pad:  %d\n",nClusters2pad);
@@ -622,7 +560,7 @@ Bool_t AliTRDclusterizerV1::MakeClusters()
   }        
 
   if (fVerbose > 0) {
-    printf("AliTRDclusterizerV1::MakeCluster -- ");
+    printf("<AliTRDclusterizerV1::MakeCluster> ");
     printf("Done.\n");
   }
 
@@ -631,7 +569,7 @@ Bool_t AliTRDclusterizerV1::MakeClusters()
 }
 
 //_____________________________________________________________________________
-Float_t AliTRDclusterizerV1::Unfold(Float_t eps, Float_t* padSignal)
+Float_t AliTRDclusterizerV1::Unfold(Float_t eps, Int_t plane, Float_t* padSignal)
 {
   //
   // Method to unfold neighbouring maxima.
@@ -640,6 +578,7 @@ Float_t AliTRDclusterizerV1::Unfold(Float_t eps, Float_t* padSignal)
   // The resulting ratio is then returned to the calling method.
   //
 
+  Int_t   irc               = 0;
   Int_t   itStep            = 0;      // Count iteration steps
 
   Float_t ratio             = 0.5;    // Start value for ratio
@@ -647,6 +586,7 @@ Float_t AliTRDclusterizerV1::Unfold(Float_t eps, Float_t* padSignal)
 
   Float_t newLeftSignal[3]  = {0};    // Array to store left cluster signal
   Float_t newRightSignal[3] = {0};    // Array to store right cluster signal
+  Float_t newSignal[3]      = {0};
 
   // Start the iteration
   while ((TMath::Abs(prevRatio - ratio) > eps) && (itStep < 10)) {
@@ -661,17 +601,14 @@ Float_t AliTRDclusterizerV1::Unfold(Float_t eps, Float_t* padSignal)
                      / ((1-ratio)*padSignal[2] + padSignal[3] + padSignal[4]);
 
     // Set cluster charge ratio
-    Float_t ampLeft  = padSignal[1] / PadResponse(0 - maxLeft );
-    Float_t ampRight = padSignal[3] / PadResponse(0 - maxRight);
+    irc = fPar->PadResponse(1.0,maxLeft ,plane,newSignal);
+    Float_t ampLeft  = padSignal[1] / newSignal[1];
+    irc = fPar->PadResponse(1.0,maxRight,plane,newSignal);
+    Float_t ampRight = padSignal[3] / newSignal[1];
 
     // Apply pad response to parameters
-    newLeftSignal[0]  = ampLeft  * PadResponse(-1 - maxLeft);
-    newLeftSignal[1]  = ampLeft  * PadResponse( 0 - maxLeft);
-    newLeftSignal[2]  = ampLeft  * PadResponse( 1 - maxLeft);
-
-    newRightSignal[0] = ampRight * PadResponse(-1 - maxRight);
-    newRightSignal[1] = ampRight * PadResponse( 0 - maxRight);
-    newRightSignal[2] = ampRight * PadResponse( 1 - maxRight);
+    irc = fPar->PadResponse(ampLeft ,maxLeft ,plane,newLeftSignal );
+    irc = fPar->PadResponse(ampRight,maxRight,plane,newRightSignal);
 
     // Calculate new overlapping ratio
     ratio = TMath::Min((Float_t)1.0,newLeftSignal[2] / 
@@ -683,24 +620,3 @@ Float_t AliTRDclusterizerV1::Unfold(Float_t eps, Float_t* padSignal)
 
 }
 
-//_____________________________________________________________________________
-Float_t AliTRDclusterizerV1::PadResponse(Float_t x)
-{
-  //
-  // The pad response for the chevron pads. 
-  // We use a simple Gaussian approximation which should be good
-  // enough for our purpose.
-  // Updated for new PRF 1/5/01.
-  //
-
-  // The parameters for the response function
-  const Float_t kA  =  0.8303; 
-  const Float_t kB  = -0.00392;
-  const Float_t kC  =  0.472 * 0.472;
-  const Float_t kD  =  2.19;
-
-  Float_t pr = kA * (kB + TMath::Exp(-TMath::Power(x*x,kD) / (2.*kC)));
-
-  return (pr);
-
-}

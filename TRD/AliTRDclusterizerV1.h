@@ -12,6 +12,7 @@
 ///////////////////////////////////////////////////////
 
 class AliTRDdigitsManager;
+class AliTRDparameter;
 
 class AliTRDclusterizerV1 : public AliTRDclusterizer {
 
@@ -23,38 +24,23 @@ class AliTRDclusterizerV1 : public AliTRDclusterizer {
   virtual ~AliTRDclusterizerV1();
   AliTRDclusterizerV1 &operator=(const AliTRDclusterizerV1 &c);
 
-  virtual void    Copy(TObject &c);
-  virtual void    Init();
-  virtual Bool_t  MakeClusters();
-  virtual Bool_t  ReadDigits();
-          void    UseLUT()                                { fUseLUT        = kTRUE;  };
-          void    UseCOG()                                { fUseLUT        = kFALSE; };
+  virtual void     Copy(TObject &c);
+  virtual Bool_t   MakeClusters();
+  virtual Bool_t   ReadDigits();
+  virtual void     SetParameter(AliTRDparameter *par)      { fPar           = par; };
 
-          void    SetClusMaxThresh(Int_t thresh)          { fClusMaxThresh = thresh; };
-          void    SetClusSigThresh(Int_t thresh)          { fClusSigThresh = thresh; };
-
-          Int_t   GetClusMaxThresh() const                { return fClusMaxThresh; };
-          Int_t   GetClusSigThresh() const                { return fClusSigThresh; };
+  AliTRDparameter *GetParameter()                    const { return fPar;          };
 
  protected:
- 
-  enum { 
-    kNlut = 128                        //  Dimension of the lookup table
-  };                    
 
-  AliTRDdigitsManager *fDigitsManager; //! TRD digits manager
-
-  Int_t                fClusMaxThresh; //  Threshold value for cluster maximum
-  Int_t                fClusSigThresh; //  Threshold value for cluster signal
-  Bool_t               fUseLUT;        //  Switch for the lookup table method
-  Float_t              fLUT[kNlut];    //  The lookup table
+  AliTRDdigitsManager *fDigitsManager;      //! TRD digits manager
+  AliTRDparameter     *fPar;                //  TRD digitization parameter object
 
  private:
 
-  virtual Float_t  Unfold(Float_t eps, Float_t *padSignal);
-  virtual Float_t  PadResponse(Float_t x);
+  virtual Float_t  Unfold(Float_t eps, Int_t plane, Float_t *padSignal);
 
-  ClassDef(AliTRDclusterizerV1,2)      // TRD-Cluster finder, slow simulator
+  ClassDef(AliTRDclusterizerV1,4)           // TRD-Cluster finder, slow simulator
 
 };
 
