@@ -40,10 +40,13 @@
 #include "AliCRT.h"
 
 #include <TTree.h>
+#include <TVirtualMC.h>
 
 #include "AliRun.h"
 #include "AliMagF.h"
+//#include "AliMC.h"
 
+//#include "AliCRThit.h"
 #include "AliCRTModule.h"
 
 ClassImp(AliCRT)
@@ -66,6 +69,8 @@ AliCRT::AliCRT(const char *name, const char *title)
   //
   // Standard constructor
   //
+  //fHits =  new TClonesArray("AliCRThit", 400);
+  //gAlice->GetMCApp()->AddHitList(fHits);
 }
 
 //_____________________________________________________________________________
@@ -211,11 +216,25 @@ void AliCRT::SetTreeAddress()
   TBranch *branch;
   char branchname[20];
   sprintf(branchname,"%s",GetName());
-
   // Branch address for hit tree
   TTree *treeH = fLoader->TreeH();
-  if (treeH && fHits) {
+  if (treeH ) {
     branch = treeH->GetBranch(branchname);
     if (branch) branch->SetAddress(&fHits);
   }
+}
+
+//_____________________________________________________________________________
+void AliCRT::MakeBranch(Option_t* opt)
+{
+  //
+  // Initializes the branches of the CRT inside the trees written
+  // for each event.
+  //
+  const char* oH = strstr(opt, "H");
+  if ( fLoader->TreeH() && oH && (fHits == 0x0) ) {
+    fHits = new TClonesArray("AliCRThit", 1000);
+    fNhits = 0;
+  }
+  AliDetector::MakeBranch(opt);
 }

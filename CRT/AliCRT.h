@@ -23,13 +23,14 @@ public:
   AliCRT& operator=(const AliCRT& crt);
   virtual void CreateMaterials();
 
-  virtual Int_t IsVersion() const { return 0; }
+  virtual Int_t IsVersion() const { return -1; }
 
   virtual TString Version() { return TString(""); }
 
   virtual void SetTreeAddress();
   virtual void SetModule(AliCRTModule* module) {fModule = module;}
   virtual const AliCRTModule* GetModule() const {return fModule; }
+  virtual void MakeBranch(Option_t* opt = "");
 
 protected:
   AliCRTModule* fModule;
