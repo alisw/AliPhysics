@@ -1038,6 +1038,8 @@ void AliHBTTwoPairFctn1D::ProcessSameEventParticles(AliHBTPair* trackpair, AliHB
 {
   // Fills the numerator using pairs from the same event
   partpair  = CheckPair(partpair);
+  if (partpair->GetSwapedPair() == 0x0)//it means that Check pair returned swapped pair
+    trackpair = trackpair->GetSwapedPair();//so the track pair must be swapped as well
   if( partpair ) 
    { 
      Double_t x = GetValue(trackpair,partpair);
@@ -1050,6 +1052,8 @@ void AliHBTTwoPairFctn1D::ProcessDiffEventParticles(AliHBTPair* trackpair, AliHB
 {
   // Fills the denumerator usin mixed pairs
   partpair  = CheckPair(partpair);
+  if (partpair->GetSwapedPair() == 0x0)//it means that Check pair returned swapped pair
+    trackpair = trackpair->GetSwapedPair();//so the track pair must be swapped as well
   if( partpair )
    { 
      Double_t x = GetValue(trackpair,partpair);
@@ -1106,6 +1110,8 @@ void AliHBTTwoPairFctn2D::ProcessSameEventParticles(AliHBTPair* trackpair, AliHB
 {
 //processes pair of particles coming from a same events (real pair)
   partpair  = CheckPair(partpair);  //check cuts
+  if (partpair->GetSwapedPair() == 0x0)//it means that Check pair returned swapped pair
+    trackpair = trackpair->GetSwapedPair();//so the track pair must be swapped as well
   if( partpair ) 
    { 
      Double_t x,y;
@@ -1119,6 +1125,8 @@ void AliHBTTwoPairFctn2D::ProcessDiffEventParticles(AliHBTPair* trackpair, AliHB
 {
 //processes pair of particles coming from a different events (mixed pair)
   partpair  = CheckPair(partpair);
+  if (partpair->GetSwapedPair() == 0x0)//it means that Check pair returned swapped pair
+    trackpair = trackpair->GetSwapedPair();//so the track pair must be swapped as well
   if( partpair ) 
    { 
      Double_t x,y;
@@ -1179,6 +1187,8 @@ void AliHBTTwoPairFctn3D::ProcessSameEventParticles(AliHBTPair* trackpair, AliHB
 {
   // Fills th numerator using pairs from the same event
   partpair  = CheckPair(partpair);
+  if (partpair->GetSwapedPair() == 0x0)//it means that CheckPair returned swapped pair
+    trackpair = trackpair->GetSwapedPair();//so the track pair must be swapped as well
   if( partpair ) 
    { 
      Double_t x,y,z;
@@ -1192,6 +1202,8 @@ void AliHBTTwoPairFctn3D::ProcessDiffEventParticles(AliHBTPair* trackpair, AliHB
 {
   // Fills the denumerator using mixed pairs
   partpair  = CheckPair(partpair);
+  if (partpair->GetSwapedPair() == 0x0)//it means that CheckPair returned swapped pair
+    trackpair = trackpair->GetSwapedPair();//so the track pair must be swapped as well
   if( partpair ) 
    { 
      Double_t x,y,z;
