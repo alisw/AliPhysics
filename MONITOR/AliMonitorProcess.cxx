@@ -361,6 +361,7 @@ Bool_t AliMonitorProcess::CheckForNewFile()
     return kFALSE;
   }
   fFileName = resultEntry->name2.c_str();
+  fFileName.ReplaceAll("castor:/", "rfio:/");
 #endif
   delete result;
 
