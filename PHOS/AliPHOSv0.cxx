@@ -1165,12 +1165,15 @@ void AliPHOSv0::FinishEvent()
   // Save the cumulated hits instead of raw hits (need to create the branch myself)
   // It is put in the Digit Tree because the TreeH is filled after each primary
   // and the TreeD at the end of the event.
-  if ( fTmpHits && gAlice->TreeD() ) {
-    char branchname[10] ;
-    sprintf(branchname, "%sCH", GetName()) ;
-    gAlice->TreeD()->Branch(branchname, &fTmpHits, fBufferSize) ; 
-  } else 
-    cout << "AliPHOSv0::AliPHOSv0: Failed to create branch PHOSCH in TreeD " << endl ;  
+  
+  if ( ! (gAlice->IsLegoRun()) ) { // only when not in lego plot mode 
+    if ( fTmpHits && gAlice->TreeD() ) {
+      char branchname[10] ;
+      sprintf(branchname, "%sCH", GetName()) ;
+      gAlice->TreeD()->Branch(branchname, &fTmpHits, fBufferSize) ; 
+    } else 
+      cout << "AliPHOSv0::AliPHOSv0: Failed to create branch PHOSCH in TreeD " << endl ;  
+  }
   
   Int_t i ;
   Int_t relid[4];
