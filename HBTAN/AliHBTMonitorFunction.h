@@ -64,6 +64,7 @@ class AliHBTMonitorFunction: public TNamed
 
     virtual void Write();
     virtual void Init();
+    virtual const char* Name(){return GetName();}
     void Rename(const Char_t * name); 
     void Rename(const Char_t * name, const Char_t * title); 
     

@@ -131,7 +131,10 @@ void AliHBTAnalysis::DeleteFunctions()
  for(ii = 0;ii<fNParticleFunctions;ii++)
   { 
     if (AliHBTParticle::GetDebug()>5)
-      Info("DeleteFunctions","Deleting ParticleFunction %s",fParticleFunctions[ii]->Name());
+     {
+       Info("DeleteFunctions","Deleting ParticleFunction %#x",fParticleFunctions[ii]);
+       Info("DeleteFunctions","Deleting ParticleFunction %s",fParticleFunctions[ii]->Name());
+     }
     delete fParticleFunctions[ii];
   } 
  fNParticleFunctions = 0;
@@ -140,8 +143,8 @@ void AliHBTAnalysis::DeleteFunctions()
   { 
     if (AliHBTParticle::GetDebug()>5)
      {
-       Info("DeleteFunctions","Deleting TrackFunction %#x",fParticleFunctions[ii]);
-       Info("DeleteFunctions","Deleting TrackFunction %s",fParticleFunctions[ii]->Name());
+       Info("DeleteFunctions","Deleting TrackFunction %#x",fTrackFunctions[ii]);
+       Info("DeleteFunctions","Deleting TrackFunction %s",fTrackFunctions[ii]->Name());
      }
     delete fTrackFunctions[ii];
   }  
@@ -150,7 +153,10 @@ void AliHBTAnalysis::DeleteFunctions()
  for(ii = 0;ii<fNParticleAndTrackFunctions;ii++)
   { 
     if (AliHBTParticle::GetDebug()>5)
-      Info("DeleteFunctions","Deleting ParticleAndTrackFunction %s",fParticleFunctions[ii]->Name());
+     {
+       Info("DeleteFunctions","Deleting ParticleAndTrackFunction %#x",fParticleAndTrackFunctions[ii]);
+       Info("DeleteFunctions","Deleting ParticleAndTrackFunction %s",fParticleAndTrackFunctions[ii]->Name());
+     } 
     delete fParticleAndTrackFunctions[ii];
   }  
  fNParticleAndTrackFunctions = 0;
@@ -158,7 +164,10 @@ void AliHBTAnalysis::DeleteFunctions()
  for(ii = 0; ii<fNParticleMonitorFunctions; ii++)
   { 
     if (AliHBTParticle::GetDebug()>5)
-      Info("DeleteFunctions","Deleting ParticleMonitorFunction %s",fParticleFunctions[ii]->Name());
+     {
+       Info("DeleteFunctions","Deleting ParticleMonitorFunction %#x",fParticleMonitorFunctions[ii]);
+       Info("DeleteFunctions","Deleting ParticleMonitorFunction %s",fParticleMonitorFunctions[ii]->Name());
+     }
     delete fParticleMonitorFunctions[ii];
   } 
  fNParticleMonitorFunctions = 0;
@@ -166,7 +175,10 @@ void AliHBTAnalysis::DeleteFunctions()
  for(ii = 0; ii<fNTrackMonitorFunctions; ii++)
   { 
     if (AliHBTParticle::GetDebug()>5)
-      Info("DeleteFunctions","Deleting TrackMonitorFunction %s",fParticleFunctions[ii]->Name());
+     {
+       Info("DeleteFunctions","Deleting TrackMonitorFunction %#x",fTrackMonitorFunctions[ii]);
+       Info("DeleteFunctions","Deleting TrackMonitorFunction %s",fTrackMonitorFunctions[ii]->Name());
+     }
     delete fTrackMonitorFunctions[ii];
   } 
  fNTrackMonitorFunctions = 0;
@@ -174,7 +186,10 @@ void AliHBTAnalysis::DeleteFunctions()
  for(ii = 0; ii<fNParticleAndTrackMonitorFunctions; ii++)
   { 
     if (AliHBTParticle::GetDebug()>5)
-      Info("DeleteFunctions","Deleting ParticleAndTrackMonitorFunction %s",fParticleFunctions[ii]->Name());
+     {
+      Info("DeleteFunctions","Deleting ParticleAndTrackMonitorFunction %#x",fParticleAndTrackMonitorFunctions[ii]);
+      Info("DeleteFunctions","Deleting ParticleAndTrackMonitorFunction %s",fParticleAndTrackMonitorFunctions[ii]->Name());
+     }
     delete fParticleAndTrackMonitorFunctions[ii];
   } 
  fNParticleAndTrackMonitorFunctions = 0;
@@ -771,22 +786,64 @@ void AliHBTAnalysis::WriteFunctions()
 //== writes all results
   UInt_t ii;
   for(ii = 0;ii<fNParticleFunctions;ii++)
-    fParticleFunctions[ii]->Write();
+   {
+     if (AliHBTParticle::GetDebug()>5)
+      {
+        Info("WriteFunctions","Writing ParticleFunction %#x",fParticleFunctions[ii]);
+        Info("WriteFunctions","Writing ParticleFunction %s",fParticleFunctions[ii]->Name());
+      }
+     fParticleFunctions[ii]->Write();
+   }
                  
   for(ii = 0;ii<fNTrackFunctions;ii++)
-    fTrackFunctions[ii]->Write();
+   {
+     if (AliHBTParticle::GetDebug()>5)
+      {
+        Info("WriteFunctions","Writing TrackFunction %#x",fTrackFunctions[ii]);
+        Info("WriteFunctions","Writing TrackFunction %s",fTrackFunctions[ii]->Name());
+      }
+     fTrackFunctions[ii]->Write();
+   }
                  
   for(ii = 0;ii<fNParticleAndTrackFunctions;ii++)
-   fParticleAndTrackFunctions[ii]->Write();
+   {
+     if (AliHBTParticle::GetDebug()>5)
+      {
+        Info("WriteFunctions","Writing ParticleAndTrackFunction %#x",fParticleAndTrackFunctions[ii]);
+        Info("WriteFunctions","Writing ParticleAndTrackFunction %s",fParticleAndTrackFunctions[ii]->Name());
+      } 
+     fParticleAndTrackFunctions[ii]->Write();
+   }
 
   for(ii = 0;ii<fNParticleMonitorFunctions;ii++)
-    fParticleMonitorFunctions[ii]->Write();
+   {
+     if (AliHBTParticle::GetDebug()>5)
+      {
+        Info("WriteFunctions","Writing ParticleMonitorFunction %#x",fParticleMonitorFunctions[ii]);
+        Info("WriteFunctions","Writing ParticleMonitorFunction %s",fParticleMonitorFunctions[ii]->Name());
+      }
+     fParticleMonitorFunctions[ii]->Write();
+   }
 
   for(ii = 0;ii<fNTrackMonitorFunctions;ii++)
-    fTrackMonitorFunctions[ii]->Write();
+   {
+     if (AliHBTParticle::GetDebug()>5)
+      {
+        Info("WriteFunctions","Writing TrackMonitorFunction %#x",fTrackMonitorFunctions[ii]);
+        Info("WriteFunctions","Writing TrackMonitorFunction %s",fTrackMonitorFunctions[ii]->Name());
+      }
+     fTrackMonitorFunctions[ii]->Write();
+   }
 
   for(ii = 0;ii<fNParticleAndTrackMonitorFunctions;ii++)
-   fParticleAndTrackMonitorFunctions[ii]->Write();
+   {
+     if (AliHBTParticle::GetDebug()>5)
+      {
+       Info("WriteFunctions","Writing ParticleAndTrackMonitorFunction %#x",fParticleAndTrackMonitorFunctions[ii]);
+       Info("WriteFunctions","Writing ParticleAndTrackMonitorFunction %s",fParticleAndTrackMonitorFunctions[ii]->Name());
+      }
+     fParticleAndTrackMonitorFunctions[ii]->Write();
+   }
 }
 /*************************************************************************************/
 
