@@ -246,6 +246,9 @@ Int_t AliHBTReaderITSv2::Read(AliHBTRun* particles, AliHBTRun *tracks)
            }
 
           TParticle *p = (TParticle*)gAlice->Particle(label);
+          if(p == 0x0) continue; //if returned pointer is NULL
+          if(p->GetPDG() == 0x0) continue; //if particle has crezy PDG code (not known to our database)
+
           if(Pass(p->GetPdgCode())) continue; //check if we are intersted with particles of this type 
                                               //if not take next partilce
             
