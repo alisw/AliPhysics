@@ -29,7 +29,7 @@ AliModulesCompositionMessenger::AliModulesCompositionMessenger(
   fSwitchOnCmd = new G4UIcmdWithAString("/aliDet/switchOn", this);
   fSwitchOnCmd->SetGuidance("Define the module to be built.");
   fSwitchOnCmd->SetGuidance("Available modules:");
-  G4String listAvailableDets = "NONE, ALL, PPR, ";  
+  G4String listAvailableDets = "NONE, ALL, ";  
   listAvailableDets 
     = listAvailableDets + modulesComposition->GetAvailableDetsListWithCommas();
   fSwitchOnCmd->SetGuidance(listAvailableDets);
@@ -186,7 +186,7 @@ void AliModulesCompositionMessenger::SetCandidates()
 // Builds candidates list.
 // ---
 
-  G4String candidatesList = "NONE ALL PPR ";
+  G4String candidatesList = "NONE ALL ";
   candidatesList += fModulesComposition->GetDetNamesList();;
   candidatesList += fModulesComposition->GetAvailableDetsList();
   fSwitchOnCmd->SetCandidates(candidatesList);

@@ -5,77 +5,107 @@
 //
 // Class AliDetSwitch
 // ------------------
-// Data type class that stores available detector options.
-// Used in interactive detector setup.
+// See the class description in the header file.
 
-#ifndef ALI_DET_SWITCH_H
-#define ALI_DET_SWITCH_H
+#include "AliDetSwitch.h"
+#include "AliGlobals.h"
 
-#include "AliModuleType.h"
-
-#include <globals.hh>
-
-class AliDetSwitch
+//_____________________________________________________________________________
+AliDetSwitch::AliDetSwitch(G4String detName, G4int nofVersions, 
+                 G4int defaultVersion, AliModuleType modType, 
+		 G4bool isStandalone)
+  : fDetName(detName),
+    fNofVersions(nofVersions),
+    fDefaultVersion(defaultVersion),
+    fIsStandalone(isStandalone),
+    fType(modType),
+    fSwitchedVersion(-1)
 {
-  public:
-    AliDetSwitch(G4String detName, G4int nofVersions, G4int defaultVersion,
-                 G4int pprVersion, AliModuleType modType = kDetector, 
-		 G4bool isStandalone = true);
-    AliDetSwitch(const AliDetSwitch& right);
-    virtual ~AliDetSwitch();
+//
+}
 
-    //operators
-    AliDetSwitch& operator=(const AliDetSwitch& right);
-    G4int operator==(const AliDetSwitch& right) const;
-    G4int operator!=(const AliDetSwitch& right) const;
-    
-    // methods
-    void SwitchOn(G4int version); 
-    void SwitchOnDefault(); 
-    void SwitchOnPPR(); 
-    void SwitchOff(); 
+//_____________________________________________________________________________
+AliDetSwitch::AliDetSwitch(const AliDetSwitch& right) {
+//
+  // copy stuff
+  *this = right;
+}
 
-    // get methods
-    G4String GetDetName() const;
-    G4int GetNofVersions() const;
-    G4int GetDefaultVersion() const;
-    G4int GetPPRVersion() const;
-    G4bool IsStandalone() const;
-    AliModuleType GetType() const;
-    G4int GetSwitchedVersion() const;
+//_____________________________________________________________________________
+AliDetSwitch::~AliDetSwitch(){
+//
+}
 
-  private:
-    // data members
-    G4String       fDetName;         //module name
-    G4int          fNofVersions;     //number of versions
-    G4int          fDefaultVersion;  //default version
-    G4int          fPPRVersion;      //default PPR version
-    G4bool         fIsStandalone;    //true if module can be built standalone
-    AliModuleType  fType;            //type of module (detector or structure)
-    G4int          fSwitchedVersion; //current selected version
-};
-    
-// inline methods    
-    
-inline G4String AliDetSwitch::GetDetName() const
-{ return fDetName; }
+// operators
 
-inline G4int AliDetSwitch::GetNofVersions() const
-{ return fNofVersions; }
+//_____________________________________________________________________________
+AliDetSwitch& AliDetSwitch::operator=(const AliDetSwitch& right)
+{    
+  // check assignement to self
+  if (this == &right) return *this;
 
-inline G4int AliDetSwitch::GetDefaultVersion() const
-{ return fDefaultVersion; }
+  fDetName = right.fDetName;
+  fNofVersions = right.fNofVersions;
+  fDefaultVersion = right.fDefaultVersion;
+  fSwitchedVersion = right.fSwitchedVersion;
+  fType = right.fType;
+  fIsStandalone = right.fIsStandalone;
+  
+  return *this;
+}
 
-inline G4int AliDetSwitch::GetPPRVersion() const
-{ return fPPRVersion; }
+//_____________________________________________________________________________
+G4int AliDetSwitch::operator==(const AliDetSwitch& right) const
+{    
+//
+  G4int returnValue = 0;
+  if (fDetName == right.fDetName )
+     returnValue = 1;
 
-inline G4int AliDetSwitch::GetSwitchedVersion() const
-{ return fSwitchedVersion; }
+  return returnValue;  
+}
 
-inline AliModuleType AliDetSwitch::GetType() const
-{ return fType; }
+//_____________________________________________________________________________
+G4int AliDetSwitch::operator!=(const AliDetSwitch& right) const
+{ 
+//   
+  G4int returnValue = 1;
+  if (*this == right) returnValue = 0; 
+  
+  return returnValue;
+}
+  
+// public methods
 
-inline G4bool AliDetSwitch::IsStandalone() const
-{ return fIsStandalone; }
+//_____________________________________________________________________________
+void AliDetSwitch::SwitchOn(G4int iVersion)
+{
+// Switchs on the iVersion version.
+// ---
 
-#endif //ALI_DET_SWITCH_H
+  if ((iVersion < 0) || (iVersion >= fNofVersions)) {
+    G4String text = "Wrong version number for ";
+    text = text + fDetName + ".";
+    AliGlobals::Exception(text);
+  }  
+   
+  fSwitchedVersion = iVersion;
+}
+
+//_____________________________________________________________________________
+void AliDetSwitch::SwitchOnDefault()
+{
+// Switchs on the default version.
+// ---
+
+  fSwitchedVersion = fDefaultVersion;
+}
+
+//_____________________________________________________________________________
+void AliDetSwitch::SwitchOff()
+{
+// No version is switched on.
+// ---
+
+  fSwitchedVersion = -1;
+}

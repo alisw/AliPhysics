@@ -232,11 +232,6 @@ void AliModulesComposition::SwitchDetOn(const G4String& moduleNameVer)
     for (it = fDetSwitchVector.begin(); it != fDetSwitchVector.end(); it++)
       (*it)->SwitchOnDefault(); 
   }
-  else if (moduleNameVer == "PPR") {
-    for (it = fDetSwitchVector.begin(); it != fDetSwitchVector.end(); it++)
-      (*it)->SwitchOnPPR(); 
-    AliFiles::Instance()->SetMacroName("ConfigPPR");
-  }
   else if (moduleNameVer == "NONE") {
     for (it = fDetSwitchVector.begin(); it != fDetSwitchVector.end(); it++)
       (*it)->SwitchOff(); 
@@ -275,15 +270,6 @@ void AliModulesComposition::SwitchDetOnDefault(const G4String& moduleName)
 // ---
 
   GetDetSwitch(moduleName)->SwitchOnDefault();
-}
-
-//_____________________________________________________________________________
-void AliModulesComposition::SwitchDetOnPPR(const G4String& moduleName)
-{ 
-// Switchs on module specified by name with PPR version.
-// ---
-
-  GetDetSwitch(moduleName)->SwitchOnPPR();
 }
 
 //_____________________________________________________________________________

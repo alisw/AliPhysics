@@ -46,7 +46,6 @@ class AliModulesComposition : public G4VUserDetectorConstruction
     void SwitchDetOn(const G4String& moduleNameVer);
     void SwitchDetOn(const G4String& moduleName, G4int version);
     void SwitchDetOnDefault(const G4String& moduleName);
-    void SwitchDetOnPPR(const G4String& moduleName);
     void SwitchDetOff(const G4String& moduleName);
     void PrintSwitchedDets() const;
     void PrintAvailableDets() const;

@@ -19,48 +19,48 @@ AliDetConstruction::AliDetConstruction()
   : fTopVolumeName("ALIC")
 {
   // initialize det switch vector: 
-  // moduleName nofVersions defaultVersion PPRVersion [type isStandalone]     
+  // moduleName nofVersions defaultVersion [type isStandalone]     
         // det switch objects are deleted in
-	// tbe base class (AliModulesCompositions) destructor
+	// the base class (AliModulesCompositions) destructor
 
   AliDetSwitch* detSwitch;
-  detSwitch = new AliDetSwitch("ABSO",   1, 0, 0, kStructure);
+  detSwitch = new AliDetSwitch("ABSO",   1, 0, kStructure);
   AddDetSwitch(detSwitch); 
-  detSwitch = new AliDetSwitch("DIPO",   3, 2, 2, kStructure, false);
+  detSwitch = new AliDetSwitch("DIPO",   3, 2, kStructure, false);
   AddDetSwitch(detSwitch); 
-  detSwitch = new AliDetSwitch("FRAME",  3, 2, 2, kStructure, false);
+  detSwitch = new AliDetSwitch("FRAME",  3, 2, kStructure, false);
   AddDetSwitch(detSwitch); 
-  detSwitch = new AliDetSwitch("HALL",   1, 0, 0, kStructure);
+  detSwitch = new AliDetSwitch("HALL",   1, 0, kStructure);
   AddDetSwitch(detSwitch); 
-  detSwitch = new AliDetSwitch("MAG",    1, 0, 0, kStructure);
+  detSwitch = new AliDetSwitch("MAG",    1, 0, kStructure);
   AddDetSwitch(detSwitch); 
-  detSwitch = new AliDetSwitch("PIPE",   5, 0, 0, kStructure);
+  detSwitch = new AliDetSwitch("PIPE",   5, 0, kStructure);
   AddDetSwitch(detSwitch); 
-  detSwitch = new AliDetSwitch("SHIL",   1, 0, 0, kStructure);
+  detSwitch = new AliDetSwitch("SHIL",   1, 0, kStructure);
   AddDetSwitch(detSwitch); 
-  detSwitch = new AliDetSwitch("CASTOR", 2, 1, 1);
+  detSwitch = new AliDetSwitch("CASTOR", 2, 1);
   AddDetSwitch(detSwitch); 
-  detSwitch = new AliDetSwitch("FMD",    2, 1, 0);
+  detSwitch = new AliDetSwitch("FMD",    2, 1);
   AddDetSwitch(detSwitch); 
-  detSwitch = new AliDetSwitch("ITS",    7, 5, 5);
+  detSwitch = new AliDetSwitch("ITS",    7, 5);
   AddDetSwitch(detSwitch); 
-  detSwitch = new AliDetSwitch("MUON",   2, 1, 1);
+  detSwitch = new AliDetSwitch("MUON",   2, 1);
   AddDetSwitch(detSwitch); 
-  detSwitch = new AliDetSwitch("PHOS",   5, 1, 1);
+  detSwitch = new AliDetSwitch("PHOS",   5, 1);
   AddDetSwitch(detSwitch); 
-  detSwitch = new AliDetSwitch("PMD",    3, 1, 1);
+  detSwitch = new AliDetSwitch("PMD",    3, 1);
   AddDetSwitch(detSwitch); 
-  detSwitch = new AliDetSwitch("RICH",   3, 1, 1);
+  detSwitch = new AliDetSwitch("RICH",   3, 1);
   AddDetSwitch(detSwitch); 
-  detSwitch = new AliDetSwitch("START",  2, 1, 1);
+  detSwitch = new AliDetSwitch("START",  2, 1);
   AddDetSwitch(detSwitch); 
-  detSwitch = new AliDetSwitch("TOF",    5, 2, 2, kDetector, false);
+  detSwitch = new AliDetSwitch("TOF",    5, 2, kDetector, false);
   AddDetSwitch(detSwitch); 
-  detSwitch = new AliDetSwitch("TPC",    4, 2, 2);
+  detSwitch = new AliDetSwitch("TPC",    4, 2);
   AddDetSwitch(detSwitch); 
-  detSwitch = new AliDetSwitch("TRD",    2, 1, 1, kDetector, false);
+  detSwitch = new AliDetSwitch("TRD",    2, 1, kDetector, false);
   AddDetSwitch(detSwitch); 
-  detSwitch = new AliDetSwitch("ZDC",    2, 1, 2, kDetector, false);
+  detSwitch = new AliDetSwitch("ZDC",    2, 1, kDetector, false);
   AddDetSwitch(detSwitch);  
 }
 
