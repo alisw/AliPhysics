@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.5  2000/11/14 14:40:27  cblume
+Correction for the Sun compiler (kTRUE and kFALSE)
+
 Revision 1.4  2000/11/01 14:53:21  cblume
 Merge with TRD-develop
 
@@ -126,7 +129,12 @@ void AliTRDrecPoint::SetLocalPosition(TVector3 &pos)
   // row:  pad-size / sqrt(12)
   // col:  not defined yet
   // time: bin-size / sqrt(12)
-  fLocPosM->operator()(0,0) = ((AliTRDgeometry *) fGeom)->GetRowPadSize()  
+  Int_t plane   = ((AliTRDgeometry *) fGeom)->GetPlane(fDetector);
+  Int_t chamber = ((AliTRDgeometry *) fGeom)->GetChamber(fDetector);
+  Int_t sector  = ((AliTRDgeometry *) fGeom)->GetSector(fDetector);
+  fLocPosM->operator()(0,0) = ((AliTRDgeometry *) fGeom)->GetRowPadSize(plane
+                                                                       ,chamber
+                                                                       ,sector) 
                             / kSq12;
   fLocPosM->operator()(1,1) = 0.0;
   fLocPosM->operator()(2,2) = ((AliTRDgeometry *) fGeom)->GetTimeBinSize() 
@@ -160,17 +168,20 @@ void AliTRDrecPoint::SetTrackingYZ(Float_t sigmaY, Float_t sigmaZ)
 
   //  Float_t   offset = 0.5 * ((AliTRDgeometry *) fGeom)->GetChamberWidth(plane);
 
-  fY = - (col0 + padCol * ((AliTRDgeometry *) fGeom)->GetColPadSize());
-
-  fZ = row0  + padRow * ((AliTRDgeometry *) fGeom)->GetRowPadSize();
+  fY = - (col0 + padCol * ((AliTRDgeometry *) fGeom)->GetColPadSize(plane));
+  fZ =    row0 + padRow * ((AliTRDgeometry *) fGeom)->GetRowPadSize(plane
+                                                                   ,chamber
+                                                                   ,sector);
 
   //  fSigmaY = sigmaY * sigmaY;
   //  fSigmaZ = sigmaZ * sigmaZ;
 
   fSigmaY2 = 0.05 * 0.05;
 
-  fSigmaZ2 = ((AliTRDgeometry *) fGeom)->GetRowPadSize() *
-             ((AliTRDgeometry *) fGeom)->GetRowPadSize() / 12.;
+  fSigmaZ2 = ((AliTRDgeometry *) fGeom)->GetRowPadSize(plane,chamber,sector)
+           * ((AliTRDgeometry *) fGeom)->GetRowPadSize(plane,chamber,sector) 
+           / 12.;
+
 }                                    
 
 //_____________________________________________________________________________

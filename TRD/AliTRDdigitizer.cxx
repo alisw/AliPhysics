@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.18  2001/01/26 19:56:57  hristov
+Major upgrade of AliRoot code
+
 Revision 1.17  2000/12/08 12:53:27  cblume
 Change in Copy() function for HP-compiler
 
@@ -579,7 +582,7 @@ Bool_t AliTRDdigitizer::MakeDigits()
   const Int_t kNDict = AliTRDdigitsManager::kNDict;
 
   Int_t   iRow, iCol, iTime;
-  Int_t   iDict;
+  Int_t   iDict  = 0;
   Int_t   nBytes = 0;
 
   Int_t   totalSizeDigits = 0;
@@ -674,8 +677,8 @@ Bool_t AliTRDdigitizer::MakeDigits()
       Float_t row0        = fGeo->GetRow0(plane,chamber,sector);
       Float_t col0        = fGeo->GetCol0(plane);
       Float_t time0       = fGeo->GetTime0(plane);
-      Float_t rowPadSize  = fGeo->GetRowPadSize();
-      Float_t colPadSize  = fGeo->GetColPadSize();
+      Float_t rowPadSize  = fGeo->GetRowPadSize(plane,chamber,sector);
+      Float_t colPadSize  = fGeo->GetColPadSize(plane);
       Float_t timeBinSize = fGeo->GetTimeBinSize();
 
       if (fVerbose > 1) {
@@ -875,16 +878,35 @@ Bool_t AliTRDdigitizer::MakeDigits()
 
           // Store the track index in the dictionary
           // Note: We store index+1 in order to allow the array to be compressed
-          for (iDict = 0; iDict < kNDict; iDict++) {
-            Int_t oldTrack = dictionary[iDict]->GetData(rowE,colE,timeE);
-            if (oldTrack == track+1) break;
-            //if (oldTrack ==      -1) break;
-            if (oldTrack ==       0) {
-              dictionary[iDict]->SetData(rowE,colE,timeE,track+1);
-              if (fVerbose > 3) {
-                printf("    track index = %d\n",track); 
-	      }
-              break;
+          //for (iDict = 0; iDict < kNDict; iDict++) {
+          //  Int_t oldTrack = dictionary[iDict]->GetData(rowE,colE,timeE);
+          //  if (oldTrack == track+1) break;
+          //  //if (oldTrack ==      -1) break;
+          //  if (oldTrack ==       0) {
+          //    dictionary[iDict]->SetData(rowE,colE,timeE,track+1);
+          //    if (fVerbose > 3) {
+          //      printf("    track index = %d\n",track); 
+	  //    }
+          //    break;
+          //  }
+          //}
+          for (Int_t iPad = 0; iPad < kNpad; iPad++) {
+            Int_t colPos = colE + iPad - 1;
+            if (colPos <        0) continue;
+            if (colPos >= nColMax) break;
+            if (signals->GetData(rowE,colPos,iTimeBin) > 0) {
+              for (iDict = 0; iDict < kNDict; iDict++) {
+                Int_t oldTrack = dictionary[iDict]->GetData(rowE,colPos,iTimeBin);
+                if (oldTrack == track+1) break;
+                //if (oldTrack ==      -1) break;
+                if (oldTrack ==       0) {
+                  dictionary[iDict]->SetData(rowE,colPos,iTimeBin,track+1);
+                  if (fVerbose > 3) {
+                    printf("    track index = %d\n",track); 
+                  }
+                  break;
+                }
+              }
             }
           }
           if ((fVerbose > 1) && (iDict == kNDict)) {
@@ -1060,7 +1082,7 @@ Bool_t AliTRDdigitizer::WriteDigits()
   fDigits->WriteDigits();
 
   // Write the new tree into the input file (use overwrite option)
-  Char_t treeName[7];
+  Char_t treeName[15];
   sprintf(treeName,"TreeD%d",fEvent);
   printf("AliTRDdigitizer::WriteDigits -- ");
   printf("Write the digits tree %s for event %d.\n"

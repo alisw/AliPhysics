@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.6  2000/11/01 14:53:20  cblume
+Merge with TRD-develop
+
 Revision 1.1.4.6  2000/10/16 01:16:53  cblume
 Changed timebin 0 to be the one closest to the readout
 
@@ -179,8 +182,8 @@ Bool_t AliTRDclusterizerV0::MakeClusters()
         Float_t col0        = geo->GetCol0(iplan);
         Float_t time0       = geo->GetTime0(iplan);
 
-        Float_t rowPadSize  = geo->GetRowPadSize();
-        Float_t colPadSize  = geo->GetColPadSize();
+        Float_t rowPadSize  = geo->GetRowPadSize(iplan,icham,isect);
+        Float_t colPadSize  = geo->GetColPadSize(iplan);
         Float_t timeBinSize = geo->GetTimeBinSize();
 
         // Loop through all entries in the tree

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.5  2000/11/01 14:53:21  cblume
+Merge with TRD-develop
+
 Revision 1.1.4.6  2000/10/15 23:40:01  cblume
 Remove AliTRDconst
 
@@ -153,57 +156,91 @@ void AliTRDgeometryFull::Init()
   //                                             
 
   // The pad row (z-direction)
-  SetRowPadSize(4.5);
+  SetNRowPad();
 
 }
 
 //_____________________________________________________________________________
-void AliTRDgeometryFull::SetRowPadSize(Float_t size)
+void AliTRDgeometryFull::SetNRowPad(Int_t p, Int_t c, Int_t npad)
 {
   //
-  // Redefines the pad size in row direction
+  // Redefines the number of pads in raw direction for
+  // a given plane and chamber number
   //
 
-  fRowPadSize = size;
+  Float_t clengthI = fClengthI[p];
+  Float_t clengthM = fClengthM1[p];
+  Float_t clengthO = fClengthO1[p];
+  
+  for (Int_t iSect = 0; iSect < fgkNsect; iSect++) {
 
-  for (Int_t iplan = 0; iplan < fgkNplan; iplan++) {
-
-    for (Int_t isect = 0; isect < fgkNsect; isect++) {
-      Float_t clengthI = fClengthI[iplan];
-      Float_t clengthM = fClengthM1[iplan];
-      Float_t clengthO = fClengthO1[iplan];
-      switch (isect) {
-      case 12:
-      case 13:
-      case 14:
-      case 15:
-      case 16:
-        clengthM = fClengthM2[iplan];
-        clengthO = fClengthO2[iplan];
-        break;
-      case 4:
-      case 5:
-      case 6:
-        clengthO = fClengthO3[iplan];
-        break;
-      };
-      fRowMax[iplan][0][isect] = 1 + TMath::Nint((clengthO - 2. * fgkCcthick) 
-                                                           / fRowPadSize - 0.5);
-      fRowMax[iplan][1][isect] = 1 + TMath::Nint((clengthM - 2. * fgkCcthick) 
-                                                           / fRowPadSize - 0.5);
-      fRowMax[iplan][2][isect] = 1 + TMath::Nint((clengthI - 2. * fgkCcthick) 
-                                                           / fRowPadSize - 0.5);
-      fRowMax[iplan][3][isect] = 1 + TMath::Nint((clengthM - 2. * fgkCcthick) 
-                                                           / fRowPadSize - 0.5);
-      fRowMax[iplan][4][isect] = 1 + TMath::Nint((clengthO - 2. * fgkCcthick) 
-                                                           / fRowPadSize - 0.5);
-      fRow0[iplan][0][isect]   = -clengthI/2. - clengthM - clengthO + fgkCcthick; 
-      fRow0[iplan][1][isect]   = -clengthI/2. - clengthM            + fgkCcthick;
-      fRow0[iplan][2][isect]   = -clengthI/2.                       + fgkCcthick;
-      fRow0[iplan][3][isect]   =  clengthI/2.                       + fgkCcthick; 
-      fRow0[iplan][4][isect]   =  clengthI/2. + clengthM            + fgkCcthick; 
+    fRowMax[p][c][iSect] = npad;
+    if (c == 2) {
+      fRowPadSize[p][c][iSect] = (clengthI - 2. * fgkCcthick)
+                               / fRowMax[p][c][iSect];
+    }
+    if ((c == 1) || (c == 3)) {
+      fRowPadSize[p][c][iSect] = (clengthM - 2. * fgkCcthick)
+                               / fRowMax[p][c][iSect];
+    }
+    if ((c == 0) || (c == 4)) {
+      fRowPadSize[p][c][iSect] = (clengthO - 2. * fgkCcthick)
+                               / fRowMax[p][c][iSect];
     }
 
+  }
+
+}
+
+//_____________________________________________________________________________
+void AliTRDgeometryFull::SetNRowPad()
+{
+  //
+  // Defines the number of pads in row direction
+  //
+
+  for (Int_t iPlan = 0; iPlan < fgkNplan; iPlan++) {
+
+    Float_t clengthI = fClengthI[iPlan];
+    Float_t clengthM = fClengthM1[iPlan];
+    Float_t clengthO = fClengthO1[iPlan];
+
+    for (Int_t iSect = 0; iSect < fgkNsect; iSect++) {
+
+      fRow0[iPlan][0][iSect]   = -clengthI/2. - clengthM - clengthO + fgkCcthick; 
+      fRow0[iPlan][1][iSect]   = -clengthI/2. - clengthM            + fgkCcthick;
+      fRow0[iPlan][2][iSect]   = -clengthI/2.                       + fgkCcthick;
+      fRow0[iPlan][3][iSect]   =  clengthI/2.                       + fgkCcthick; 
+      fRow0[iPlan][4][iSect]   =  clengthI/2. + clengthM            + fgkCcthick; 
+
+      for (Int_t iCham = 0; iCham < fgkNcham; iCham++) {
+
+        if (iCham == 2) {
+          fRowMax[iPlan][iCham][iSect]     = 18;
+          fRowPadSize[iPlan][iCham][iSect] = (clengthI - 2. * fgkCcthick)
+                                           / fRowMax[iPlan][iCham][iSect];
+        }
+        if ((iCham == 1) || (iCham == 3)) {
+          fRowMax[iPlan][iCham][iSect]     = 24;
+          fRowPadSize[iPlan][iCham][iSect] = (clengthM - 2. * fgkCcthick)
+                                           / fRowMax[iPlan][iCham][iSect];
+        }
+        if ((iCham == 0) || (iCham == 4)) {
+          if (iPlan <  4) {
+            fRowMax[iPlan][iCham][iSect] = 24;
+          }
+          if (iPlan == 4) {
+            fRowMax[iPlan][iCham][iSect] = 22;
+          }
+          if (iPlan == 5) {
+            fRowMax[iPlan][iCham][iSect] = 20;
+          }
+          fRowPadSize[iPlan][iCham][iSect] = (clengthO - 2. * fgkCcthick)
+                                           / fRowMax[iPlan][iCham][iSect];
+        }
+
+      }
+    }
   }
 
 }

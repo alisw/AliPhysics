@@ -45,9 +45,9 @@ class AliTRDgeometry : public AliGeometry {
   virtual void     SetPHOShole() = 0;
   virtual void     SetRICHhole() = 0;
 
-  virtual void     SetRowPadSize(Float_t size) {};
-  virtual void     SetColPadSize(Float_t size);
-  virtual void     SetTimeBinSize(Float_t size);
+  virtual void     SetNRowPad(Int_t p, Int_t c, Int_t npad) {};
+  virtual void     SetNColPad(Int_t npad);
+  virtual void     SetNTimeBin(Int_t nbin);
 
   virtual Bool_t   GetPHOShole() const = 0;
   virtual Bool_t   GetRICHhole() const = 0;
@@ -57,19 +57,19 @@ class AliTRDgeometry : public AliGeometry {
   virtual Int_t    GetChamber(Int_t d) const;
   virtual Int_t    GetSector(Int_t d)  const;
 
-  virtual Float_t  GetChamberWidth(Int_t p)             const { return fCwidth[p]; };
+  virtual Float_t  GetChamberWidth(Int_t p)                 const { return fCwidth[p]; };
    
-  virtual Int_t    GetRowMax(Int_t p, Int_t c, Int_t s) const { return fRowMax[p][c][s]; };
-  virtual Int_t    GetColMax(Int_t p)                   const { return fColMax[p];       };
-  virtual Int_t    GetTimeMax()                         const { return fTimeMax;         };
+  virtual Int_t    GetRowMax(Int_t p, Int_t c, Int_t s)     const { return fRowMax[p][c][s]; };
+  virtual Int_t    GetColMax(Int_t p)                       const { return fColMax[p];       };
+  virtual Int_t    GetTimeMax()                             const { return fTimeMax;         };
  
-  virtual Float_t  GetRow0(Int_t p, Int_t c, Int_t s)   const { return fRow0[p][c][s]; };
-  virtual Float_t  GetCol0(Int_t p)                     const { return fCol0[p];       };
-  virtual Float_t  GetTime0(Int_t p)                    const { return fTime0[p];      };
+  virtual Float_t  GetRow0(Int_t p, Int_t c, Int_t s)       const { return fRow0[p][c][s]; };
+  virtual Float_t  GetCol0(Int_t p)                         const { return fCol0[p];       };
+  virtual Float_t  GetTime0(Int_t p)                        const { return fTime0[p];      };
 
-  virtual Float_t  GetRowPadSize()                      const { return fRowPadSize;  };
-  virtual Float_t  GetColPadSize()                      const { return fColPadSize;  };
-  virtual Float_t  GetTimeBinSize()                     const { return fTimeBinSize; };
+  virtual Float_t  GetRowPadSize(Int_t p, Int_t c, Int_t s) const { return fRowPadSize[p][c][s]; };
+  virtual Float_t  GetColPadSize(Int_t p)                   const { return fColPadSize[p];       };
+  virtual Float_t  GetTimeBinSize()                         const { return fTimeBinSize;         };
 
   virtual void     GetGlobal(const AliRecPoint *p, TVector3 &pos, TMatrix &mat) const; 
   virtual void     GetGlobal(const AliRecPoint *p, TVector3 &pos) const;   
@@ -138,8 +138,8 @@ class AliTRDgeometry : public AliGeometry {
   Float_t              fCol0[kNplan];                       // Column-position of pad 0
   Float_t              fTime0[kNplan];                      // Time-position of pad 0
 
-  Float_t              fRowPadSize;                         // Pad size in z-direction
-  Float_t              fColPadSize;                         // Pad size in rphi-direction
+  Float_t              fRowPadSize[kNplan][kNcham][kNsect]; // Pad size in z-direction
+  Float_t              fColPadSize[kNplan];                 // Pad size in rphi-direction
   Float_t              fTimeBinSize;                        // Size of the time buckets
 
   Float_t              fRotA11[kNsect];                     // Matrix elements for the rotation
@@ -152,7 +152,7 @@ class AliTRDgeometry : public AliGeometry {
   Float_t              fRotB21[kNsect];                     // Matrix elements for the backward rotation
   Float_t              fRotB22[kNsect];                     // Matrix elements for the backward rotation
 
-  ClassDef(AliTRDgeometry,2)                                // TRD geometry base class
+  ClassDef(AliTRDgeometry,3)                                // TRD geometry base class
 
 };
 

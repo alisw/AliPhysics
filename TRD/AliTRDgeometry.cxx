@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.6  2000/11/01 14:53:20  cblume
+Merge with TRD-develop
+
 Revision 1.1.4.7  2000/10/16 01:16:53  cblume
 Changed timebin 0 to be the one closest to the readout
 
@@ -136,8 +139,10 @@ ClassImp(AliTRDgeometry)
   const Float_t AliTRDgeometry::fgkSeZpos  = -4.1525; 
   const Float_t AliTRDgeometry::fgkRaZpos  = -1.7425;
   const Float_t AliTRDgeometry::fgkPeZpos  =  0.0000;
-  const Float_t AliTRDgeometry::fgkMyZpos  =  0.6600;
-  const Float_t AliTRDgeometry::fgkDrZpos  =  2.1625;
+//const Float_t AliTRDgeometry::fgkMyZpos  =  0.6600;
+//const Float_t AliTRDgeometry::fgkDrZpos  =  2.1625;
+  const Float_t AliTRDgeometry::fgkMyZpos  =  0.8500;
+  const Float_t AliTRDgeometry::fgkDrZpos  =  2.3625;
   const Float_t AliTRDgeometry::fgkAmZpos  =  4.1125;
   const Float_t AliTRDgeometry::fgkCuZpos  = -1.3370; 
   const Float_t AliTRDgeometry::fgkSuZpos  =  0.0000;
@@ -205,10 +210,10 @@ void AliTRDgeometry::Init()
   //
 
   // The pad column (rphi-direction)  
-  SetColPadSize(1.0);
+  SetNColPad(96);
 
   // The time bucket
-  SetTimeBinSize(0.1);
+  SetNTimeBin(30);
 
   // The rotation matrix elements
   Float_t phi = 0;
@@ -228,30 +233,29 @@ void AliTRDgeometry::Init()
 }
 
 //_____________________________________________________________________________
-void AliTRDgeometry::SetColPadSize(Float_t size)
+void AliTRDgeometry::SetNColPad(Int_t npad)
 {
   //
-  // Redefines the pad size in column direction
+  // Redefines the number of pads in column direction
   //
 
-  fColPadSize = size;
   for (Int_t iplan = 0; iplan < fgkNplan; iplan++) {
-    fColMax[iplan] = 1 + TMath::Nint((fCwidth[iplan] - 2. * fgkCcthick) 
-                                                     / fColPadSize - 0.5);
-    fCol0[iplan]   = -fCwidth[iplan]/2. + fgkCcthick;
+    fColMax[iplan]     = npad;
+    fColPadSize[iplan] = (fCwidth[iplan] - 2. * fgkCcthick) / fColMax[iplan];
+    fCol0[iplan]       = -fCwidth[iplan]/2. + fgkCcthick;
   }
 
 }
 
 //_____________________________________________________________________________
-void AliTRDgeometry::SetTimeBinSize(Float_t size)
+void AliTRDgeometry::SetNTimeBin(Int_t nbin)
 {
   //
-  // Redefines the time bin size
+  // Redefines the number of time bins
   //
 
-  fTimeBinSize = size;
-  fTimeMax     = 1 + TMath::Nint(fgkDrThick / fTimeBinSize - 0.5);
+  fTimeMax     = nbin;
+  fTimeBinSize = fgkDrThick / ((Float_t) fTimeMax);
   for (Int_t iplan = 0; iplan < fgkNplan; iplan++) {
     fTime0[iplan]  = fgkRmin + fgkCcframe/2. + fgkDrZpos + 0.5 * fgkDrThick
                              + iplan * (fgkCheight + fgkCspace);
@@ -468,9 +472,9 @@ Bool_t AliTRDgeometry::Local2Global(Int_t iplan, Int_t icham, Int_t isect
   Float_t  rot[3];
 
   // calculate (x,y,z) position in rotated chamber
-  rot[0] = time0 + timeSlice * fTimeBinSize;
-  rot[1] = col0  + padCol    * fColPadSize;
-  rot[2] = row0  + padRow    * fRowPadSize;
+  rot[0] = time0 - timeSlice * fTimeBinSize;
+  rot[1] = col0  + padCol    * fColPadSize[iplan];
+  rot[2] = row0  + padRow    * fRowPadSize[iplan][icham][isect];
 
   // Rotate back to original position
   return RotateBack(idet,rot,global);

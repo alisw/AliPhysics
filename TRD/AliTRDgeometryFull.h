@@ -21,7 +21,8 @@ class AliTRDgeometryFull : public AliTRDgeometry {
           void    SetPHOShole()       { fPHOShole = kTRUE; };
           void    SetRICHhole()       { fRICHhole = kTRUE; };
 
-  virtual void    SetRowPadSize(Float_t size);
+          void    SetNRowPad();
+  virtual void    SetNRowPad(Int_t p, Int_t c, Int_t npad);
 
           Bool_t  GetPHOShole() const { return fPHOShole;  };
           Bool_t  GetRICHhole() const { return fRICHhole;  };

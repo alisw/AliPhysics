@@ -15,6 +15,9 @@
                                                       
 /*
 $Log$
+Revision 1.8  2000/12/20 13:00:44  cblume
+Modifications for the HP-compiler
+
 Revision 1.7  2000/12/08 16:07:02  cblume
 Update of the tracking by Sergei
 
@@ -154,7 +157,9 @@ Double_t AliTRDtracker::ExpectedSigmaZ2(Double_t r, Double_t tgl)
 {
   // Parametrised "expected" error of the cluster reconstruction in Z 
 
-  Double_t s, pad = fGeom->GetRowPadSize();
+  // Take an example pad size for the time being, check back
+  // again with Sergei
+  Double_t s, pad = fGeom->GetRowPadSize(0,2,0);
   s = pad * pad /12.;  
   return s;
 }                  
