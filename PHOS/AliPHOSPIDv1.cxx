@@ -134,30 +134,35 @@ AliPHOSPIDv1::AliPHOSPIDv1(const char * headerFile,const char * name, const char
 //____________________________________________________________________________
 AliPHOSPIDv1::~AliPHOSPIDv1()
 { 
-
+  // dtor
+  // gime=0 if PID created by default ctor (to get just the parameters)
+  
   delete [] fX ; // Principal input 
   delete [] fP ; // Principal components
   delete fParameters ; // Matrix of Parameters 
 
   AliPHOSGetter * gime = AliPHOSGetter::GetInstance() ; 
   
-  // remove the task from the folder list
-  gime->RemoveTask("P",GetName()) ;
-  TString name(GetName()) ; 
-  name.ReplaceAll("pid", "clu") ; 
-  gime->RemoveTask("C",name) ;
+  if (gime) {
+    // remove the task from the folder list
+    gime->RemoveTask("P",GetName()) ;
+    TString name(GetName()) ; 
+    name.ReplaceAll("pid", "clu") ; 
+    gime->RemoveTask("C",name) ;
+    
+    // remove the data from the folder list
+    name = GetName() ; 
+    name.Remove(name.Index(":")) ; 
+    gime->RemoveObjects("RE", name) ; // EMCARecPoints
+    gime->RemoveObjects("RC", name) ; // CPVRecPoints
+    gime->RemoveObjects("T", name) ;  // TrackSegments
+    gime->RemoveObjects("P", name) ;  // RecParticles
+    
+    // Delete gAlice
+    gime->CloseFile() ; 
   
-  // remove the data from the folder list
-  name = GetName() ; 
-  name.Remove(name.Index(":")) ; 
-  gime->RemoveObjects("RE", name) ; // EMCARecPoints
-  gime->RemoveObjects("RC", name) ; // CPVRecPoints
-  gime->RemoveObjects("T", name) ;  // TrackSegments
-  gime->RemoveObjects("P", name) ;  // RecParticles
-  
-  // Delete gAlice
-  gime->CloseFile() ; 
-  
+    fSplitFile = 0 ;  
+  }
 }
 
 //____________________________________________________________________________

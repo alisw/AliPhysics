@@ -115,23 +115,26 @@ AliEMCALDigitizer::AliEMCALDigitizer(AliRunDigitizer * ard):AliDigitizer(ard)
   AliEMCALDigitizer::~AliEMCALDigitizer()
 {
   // dtor
+  // gime=0 if Digitizer created by default ctor (to get just the parameters)
  
   AliEMCALGetter * gime = AliEMCALGetter::GetInstance() ; 
 
-  // remove the task from the folder list
-  gime->RemoveTask("S",GetName()) ;
-  gime->RemoveTask("D",GetName()) ;
-
-  // remove the Digits from the folder list
-  gime->RemoveObjects("D", GetName()) ;
-
-  // remove the SDigits from the folder list
-  gime->RemoveSDigits() ;
-
-  // Delete gAlice
-  gime->CloseFile() ; 
-
-  fSplitFile = 0 ; 
+  if (gime) {
+    // remove the task from the folder list
+    gime->RemoveTask("S",GetName()) ;
+    gime->RemoveTask("D",GetName()) ;
+    
+    // remove the Digits from the folder list
+    gime->RemoveObjects("D", GetName()) ;
+    
+    // remove the SDigits from the folder list
+    gime->RemoveSDigits() ;
+    
+    // Delete gAlice
+    gime->CloseFile() ; 
+    
+    fSplitFile = 0 ; 
+  }
 }
 
 //____________________________________________________________________________ 

@@ -90,8 +90,10 @@ AliEMCALSDigitizer::AliEMCALSDigitizer(const char* headerFile, const char *sDigi
 AliEMCALSDigitizer::~AliEMCALSDigitizer()
 {
   // dtor
-  
+  // gime=0 if Digitizer created by default ctor (to get just the parameters)
+ 
   AliEMCALGetter * gime = AliEMCALGetter::GetInstance() ; 
+
   if (gime) {
     // remove the task from the folder list
     gime->RemoveTask("S",GetName()) ;

@@ -93,8 +93,11 @@ AliPHOSSDigitizer::AliPHOSSDigitizer(const char * headerFile, const char * sDigi
 //____________________________________________________________________________ 
 AliPHOSSDigitizer::~AliPHOSSDigitizer()
 {
+  // dtor
+  // gime=0 if Digitizer created by default ctor (to get just the parameters)
 
   AliPHOSGetter * gime = AliPHOSGetter::GetInstance() ; 
+  
   if (gime) {
     // remove the task from the folder list
     gime->RemoveTask("S",GetName()) ;

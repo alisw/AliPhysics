@@ -107,26 +107,31 @@ ClassImp( AliPHOSTrackSegmentMakerv1)
  AliPHOSTrackSegmentMakerv1::~AliPHOSTrackSegmentMakerv1()
 { 
   // dtor
+  // gime=0 if TrackSegmentMaker created by default ctor (to get just the parameters)
+
   delete fLinkUpArray  ;
+  
+  AliPHOSGetter * gime = AliPHOSGetter::GetInstance() ; 
 
- AliPHOSGetter * gime = AliPHOSGetter::GetInstance() ; 
-
- // remove the task from the folder list
- gime->RemoveTask("T",GetName()) ;
- TString name(GetName()) ; 
- name.ReplaceAll("tsm", "clu") ; 
- gime->RemoveTask("C",name) ;
-
- // remove the data from the folder list
- name = GetName() ; 
- name.Remove(name.Index(":")) ; 
- gime->RemoveObjects("RE", name) ; // EMCARecPoints
- gime->RemoveObjects("RC", name) ; // CPVRecPoints
- gime->RemoveObjects("T", name) ;  // TrackSegments
-
- // Delete gAlice
- gime->CloseFile() ; 
-
+  if (gime) {
+    // remove the task from the folder list
+    gime->RemoveTask("T",GetName()) ;
+    TString name(GetName()) ; 
+    name.ReplaceAll("tsm", "clu") ; 
+    gime->RemoveTask("C",name) ;
+    
+    // remove the data from the folder list
+    name = GetName() ; 
+    name.Remove(name.Index(":")) ; 
+    gime->RemoveObjects("RE", name) ; // EMCARecPoints
+    gime->RemoveObjects("RC", name) ; // CPVRecPoints
+    gime->RemoveObjects("T", name) ;  // TrackSegments
+    
+    // Delete gAlice
+    gime->CloseFile() ; 
+    
+    fSplitFile = 0 ; 
+  }
 }
 
 
