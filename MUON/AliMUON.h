@@ -18,6 +18,7 @@ class AliMUONTriggerCircuit;
 class AliMUONTriggerDecision;
 class AliSegmentation;
 class AliMUONResponse;
+class AliMUONMerger;
 class AliMUONHit;
 class AliMUONPadHit;
 class AliMUONRawCluster;
@@ -89,6 +90,8 @@ class AliMUON : public  AliDetector {
     virtual void   SetMaxDestepGas(Float_t p1);
     virtual void   SetMaxDestepAlu(Float_t p1);
     virtual void   SetAcceptance(Bool_t acc=0, Float_t angmin=2, Float_t angmax=9);
+// Set Merger
+    virtual void   SetMerger(AliMUONMerger* thisMerger) {fMerger=thisMerger;}
 // Response Simulation
     virtual void   MakePadHits(Float_t xhit,Float_t yhit, Float_t zhit,
 			       Float_t eloss, Float_t tof, Int_t id);
@@ -158,6 +161,7 @@ class AliMUON : public  AliDetector {
    TTree *fTrH1;                // Hits Tree for background event
    TClonesArray *fHits2;        // List of hits for one track only
    TClonesArray *fPadHits2;     // List of clusters for one track only
+   AliMUONMerger *fMerger;   // ! pointer to merger
 
    ClassDef(AliMUON,1)  // MUON Detector base class
 };
