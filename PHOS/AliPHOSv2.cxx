@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.8  1999/09/29 09:24:25  fca
+Introduction of the Copyright and cvs Log
+
 */
 
 //-*-C++-*-
@@ -42,7 +45,6 @@ $Log$
 #include "AliPHOSv2.h"
 #include "AliRun.h"
 #include "AliConst.h"
-#include "AliMC.h" 
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -77,7 +79,7 @@ AliPHOSv2::AliPHOSv2()
 ///////////////////////////////////////////////////////////////////////////////
 
 AliPHOSv2::AliPHOSv2(const char *name, const char *title):
-  AliDetector(name,title)
+  AliPHOS(name,title)
 {
   
   //Begin_Html
@@ -475,8 +477,8 @@ void AliPHOSv2::CreateGeometry()
   gMC->Gsvolu("PCBL", "BOX ", IDTMED[798], DPCBL, 3);
   
   // --- Divide PCBL in X (phi) and Z directions --
-  gMC->Gsdvn("PROW", "PCBL", Int_t (GetNphi()), 1);
-  gMC->Gsdvn("PCEL", "PROW", Int_t (GetNz()), 3);
+  gMC->Gsdvn("PROW", "PCBL", GetNphi(), 1);
+  gMC->Gsdvn("PCEL", "PROW", GetNz(), 3);
   YO=-TCB_THICK/2.0;
   gMC->Gspos("PCBL", 1, "PTCB", 0.0, YO, 0.0, 0, "ONLY");
 
@@ -563,8 +565,8 @@ void AliPHOSv2::CreateGeometry()
   DPCPV[2]=DPCBL[2];
   //  gMC->Gsvolu("PCPV", "BOX ", IDTMED[700], DPCPV, 3);
   gMC->Gsvolu("PCPV", "BOX ", IDTMED[798], DPCPV, 3);
-  gMC->Gsdvn("PCRO", "PCPV", Int_t (GetNphi()), 1);
-  gMC->Gsdvn("PCCE", "PCRO", Int_t (GetNz()), 3);
+  gMC->Gsdvn("PCRO", "PCPV", GetNphi(), 1);
+  gMC->Gsdvn("PCCE", "PCRO", GetNz(), 3);
 
   // Define CPV sensitive pad. It has the same size as PCCE.
   DPCPA[0]=DPCBL[0]/GetNphi();

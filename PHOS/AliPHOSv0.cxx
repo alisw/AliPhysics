@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.8  1999/09/29 09:24:23  fca
+Introduction of the Copyright and cvs Log
+
 */
 
 /////////////////////////////////////////////////////////
@@ -156,7 +159,7 @@ void AliPHOSv0::CreateGeometry()
     gMC->Gspos("PASP", 1, "PAIR", 0., yo, 0., 0, "ONLY");
 
 // --- Divide in X and Z direction (same way as PTCB) --- 
-    gMC->Gsdvn("PCMO", "PCSE", 13, 3);
+    //    gMC->Gsdvn("PCMO", "PCSE", 13, 3);
     gMC->Gsdvn("PCST", "PCMO", 8, 1);
     gMC->Gsdvn("PCCE", "PCST", 8, 3);
 

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.8  1999/09/29 09:24:23  fca
+Introduction of the Copyright and cvs Log
+
 */
 
 ////////////////////////////////////////////////
@@ -34,6 +37,7 @@ $Log$
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <iostream.h>
 
 // --- galice header files ---
 #include "AliPHOS.h"

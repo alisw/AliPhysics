@@ -16,10 +16,10 @@
 #include <TRandom.h> 
 
 // --- galice header files ---
-#include "AliDetector.h"
+#include "AliPHOS.h"
 #include "AliHit.h"
 
-class AliPHOSv2 : public AliDetector{
+class AliPHOSv2 : public AliPHOS {
 
 protected:
   Float_t fXtlSize[3]; // PWO crystal dimensions
@@ -31,8 +31,8 @@ protected:
   Float_t fPHOSAir[3]; // Inner air filled volume dimensions
   Float_t fRadius[2]; // Distances from IP to outer cover and to Xtal surface
   Float_t fPHOSextra[10]; // Assorted geometrical parameters
-  Float_t fNphi; // Number of crystal units in X (phi) direction
-  Float_t fNz; // Number of crystal units in Z direction
+  Int_t   fNphi; // Number of crystal units in X (phi) direction
+  Int_t   fNz; // Number of crystal units in Z direction
   Float_t fNModules; // Number of modules constituing PHOS
   Float_t fPHOSAngle[4]; // Position angles of modules
   
@@ -64,8 +64,8 @@ public:
   virtual Float_t GetPHOSAir(Int_t n) const {return fPHOSAir[n];}
   virtual Float_t GetRadius(Int_t n) const {return fRadius[n];}
   virtual Float_t GetPHOSextra(Int_t n) const {return fPHOSextra[n];}
-  virtual Float_t GetNphi(void) const {return fNphi;}
-  virtual Float_t GetNz(void) const {return fNz;}
+  virtual Int_t   GetNphi(void) const {return fNphi;}
+  virtual Int_t   GetNz(void) const {return fNz;}
   virtual Float_t GetNModules(void) const {return fNModules;}
   virtual Float_t &GetModuleAngle(Int_t n) {return fPHOSAngle[n];}
 
