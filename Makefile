@@ -138,9 +138,14 @@ htmldoc:		FORCE
 clean:  FORCE
 		@rm -f *~ \#*
 		@rm -f include/*
-		@for i in $(ALIROOT_DIRS) ALIROOT TGeant4 AliGeant4; do \
+		@for i in $(ALIROOT_DIRS) ALIROOT; do \
                     ${MAKE} -C $$i macroclean ; \
                 done
+                ifdef G4INSTALL
+	 	  @for i in TGeant4 AliGeant4; do \
+                    ${MAKE} -C $$i macroclean ; \
+                  done
+                endif  
 
 libclean:  FORCE
 		@rm -f *~ \#*
