@@ -279,17 +279,18 @@ void AliPHOSDigitizer::Exec(Option_t *option)
 
   for(ievent = 0; ievent < nevents; ievent++){
 
+    gAlice->GetEvent(ievent);
+    gAlice->SetEvent(ievent) ;
     if(!ReadSDigits(ievent)) //read sdigits event(s) evaluated by Combinator() from file(s)
-      return ;    
+      continue ;    
     
     Digitize(ievent) ; //Add prepared SDigits to digits and add the noise
     
     WriteDigits(ievent) ;
-  }
    
-  if(strstr(option,"deb"))
-    PrintDigits(option);
-  
+    if(strstr(option,"deb"))
+      PrintDigits(option);
+  }
 
   if(strstr(option,"tim")){
     gBenchmark->Stop("PHOSDigitizer");
@@ -461,7 +462,7 @@ void AliPHOSDigitizer::PrintDigits(Option_t * option){
   AliPHOSGetter * gime = AliPHOSGetter::GetInstance() ; 
   TClonesArray * digits = gime->Digits() ; 
 
-  cout << "AliPHOSDigitiser:"<< endl ;
+  cout << "AliPHOSDigitiser: event " << gAlice->GetEvNumber() << endl ;
   cout << "       Number of entries in Digits list " << digits->GetEntriesFast() << endl ;
   cout << endl ;
   if(strstr(option,"all")){
@@ -510,7 +511,7 @@ Bool_t AliPHOSDigitizer::ReadSDigits(Int_t event)
   TString treeName("TreeS") ;
   treeName += event ; 
   TTree * treeS = (TTree*)file->Get(treeName.Data());
-   
+
   if(treeS==0){
     cerr << "ERROR: AliPHOSDigitizer::ReadSDigits There is no SDigit Tree" << endl;
     return kFALSE;
@@ -544,6 +545,7 @@ Bool_t AliPHOSDigitizer::ReadSDigits(Int_t event)
   
   TClonesArray * sdigits = gime->SDigits() ; 
   sdigitsBranch->SetAddress(&sdigits) ;
+  sdigits->Clear();
   
   AliPHOSSDigitizer * sdigitizer = gime->SDigitizer() ; 
   sdigitizerBranch->SetAddress(&sdigitizer) ;
@@ -553,8 +555,8 @@ Bool_t AliPHOSDigitizer::ReadSDigits(Int_t event)
  
   fPedestal = sdigitizer->GetPedestalParameter() ;
   fSlope    = sdigitizer->GetCalibrationParameter() ;
-  
-   return kTRUE ;
+
+  return kTRUE ;
 
 }
 
@@ -587,8 +589,6 @@ void AliPHOSDigitizer::WriteDigits(Int_t event)
   AliPHOSGetter * gime = AliPHOSGetter::GetInstance() ; 
   TClonesArray * digits = gime->Digits() ; 
 
-
-  gAlice->GetEvent(event) ; 
   if(gAlice->TreeD()==0)
     gAlice->MakeTree("D") ;  
 
@@ -638,5 +638,3 @@ void AliPHOSDigitizer::WriteDigits(Int_t event)
   gAlice->TreeD()->Write(0,kOverwrite) ;  
 
 }
-
-

@@ -138,7 +138,6 @@ void  AliPHOSTrackSegmentMakerv1::FillOneModule()
 	(((AliPHOSRecPoint *) emcRecPoints->At(fEmcLast))->GetPHOSMod() == fModule ); 
       fEmcLast ++)  ;
   
-  
   //Now CPV clusters
   Int_t totalCpv = cpvRecPoints->GetEntriesFast() ;
 
@@ -303,7 +302,7 @@ void  AliPHOSTrackSegmentMakerv1::MakePairs()
   TObjArray * cpvRecPoints = gime->CpvRecPoints() ; 
   TClonesArray * trackSegments = gime->TrackSegments() ; 
   
-  //Make arrays to mark clusters already chousen
+  //Make arrays to mark clusters already chosen
   Int_t * emcExist = 0;
   if(fEmcLast > fEmcFirst)
     emcExist = new Int_t[fEmcLast-fEmcFirst] ;
@@ -436,8 +435,11 @@ void  AliPHOSTrackSegmentMakerv1::Exec(Option_t * option)
   Int_t ievent ;
 
   for(ievent = 0; ievent < nevents; ievent++){
+    gAlice->GetEvent(ievent) ;
+    gAlice->SetEvent(ievent) ;
+
     if(!ReadRecPoints(ievent))  //reads RecPoints for event ievent
-      return;
+      continue;
     
     for(fModule = 1; fModule <= geom->GetNModules() ; fModule++ ){
       
@@ -501,10 +503,6 @@ Bool_t AliPHOSTrackSegmentMakerv1::ReadRecPoints(Int_t event)
   fPpsdFirst= 0 ;   
   fPpsdLast = 0 ;   
 
-
-  gAlice->GetEvent(event) ;
-  gAlice->SetEvent(event) ;
-
   // Get TreeR header from file
   if(gAlice->TreeR()==0){
     cerr << "ERROR: AliPHOSTrackSegmentMakerv1::ReadRecPoints -> There is no Reconstruction Tree" << endl;
@@ -554,7 +552,9 @@ Bool_t AliPHOSTrackSegmentMakerv1::ReadRecPoints(Int_t event)
   TObjArray * cpvRecPoints = gime->CpvRecPoints() ;
   cpvRecPoints->Clear() ; 
   cpvbranch->SetAddress(&cpvRecPoints) ;
- 
+
+  TClonesArray * trackSegments = gime->TrackSegments() ; 
+  trackSegments->Clear() ;
 
   AliPHOSClusterizer * clusterizer = 0 ; 
   clusterizerbranch->SetAddress(&clusterizer) ;
@@ -565,7 +565,10 @@ Bool_t AliPHOSTrackSegmentMakerv1::ReadRecPoints(Int_t event)
 
   emcbranch->GetEntry(0) ;
   cpvbranch->GetEntry(0) ;
+
   clusterizerbranch->GetEntry(0) ;
+
+  printf("ReadRecPoint: EMC=%d, CPV=%d\n",emcRecPoints->GetEntries(),cpvRecPoints->GetEntries());
   
   return kTRUE ;
   
@@ -584,8 +587,6 @@ void AliPHOSTrackSegmentMakerv1::WriteTrackSegments(Int_t event)
   
   AliPHOSGetter *gime = AliPHOSGetter::GetInstance() ; 
   TClonesArray * trackSegments = gime->TrackSegments() ; 
-
-  gAlice->GetEvent(event) ; 
 
   //Make branch in TreeR for TrackSegments 
   char * filename = 0;
@@ -642,7 +643,7 @@ void AliPHOSTrackSegmentMakerv1::PrintTrackSegments(Option_t * option)
 
   TClonesArray * trackSegments = AliPHOSGetter::GetInstance()->TrackSegments() ; 
   
-  cout << "AliPHOSTrackSegmentMakerv1: " << endl ;
+  cout << "AliPHOSTrackSegmentMakerv1: event "<<gAlice->GetEvNumber()  << endl ;
   cout << "       Found " << trackSegments->GetEntriesFast() << "  trackSegments " << endl ;
   
   if(strstr(option,"all")) {  // printing found TS

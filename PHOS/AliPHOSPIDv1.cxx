@@ -138,9 +138,6 @@ Bool_t AliPHOSPIDv1::ReadTrackSegments(Int_t event)
 
   //Fist read Track Segment Branch and extract RecPointsBranch from fTSMaker
 
-  gAlice->GetEvent(event) ;
-  gAlice->SetEvent(event) ;
-
   // Get TreeR header from file
   if(gAlice->TreeR()==0){
     cerr << "ERROR: AliPHOSPIDv1::ReadTrackSegments -> There is no Reconstruction Tree" << endl;
@@ -317,11 +314,14 @@ void  AliPHOSPIDv1::Exec(Option_t * option)
   Int_t ievent ;
 
   for(ievent = 0; ievent < nevents; ievent++){
+    gAlice->GetEvent(ievent) ;
+    gAlice->SetEvent(ievent) ;
+
     if(!ReadTrackSegments(ievent)) //reads TrackSegments for event ievent
-      return ;
+      continue ;
 
     MakeRecParticles() ;
-    cout << "MAKE" << endl ; 
+
     WriteRecParticles(ievent);
 
     if(strstr(option,"deb"))
@@ -374,6 +374,7 @@ void  AliPHOSPIDv1::MakeRecParticles(){
   TObjArray * cpvRecPoints = gime->CpvRecPoints() ; 
   TClonesArray * trackSegments = gime->TrackSegments() ; 
   TClonesArray * recParticles  = gime->RecParticles() ; 
+  recParticles->Clear();
 
   TIter next(trackSegments) ; 
   AliPHOSTrackSegment * ts ; 
@@ -479,8 +480,6 @@ void  AliPHOSPIDv1::WriteRecParticles(Int_t event)
  
   AliPHOSGetter *gime = AliPHOSGetter::GetInstance() ; 
   TClonesArray * recParticles = gime->RecParticles() ; 
-
-  gAlice->GetEvent(event) ; 
 
   //Make branch in TreeR for RecParticles 
   char * filename = 0;
@@ -616,7 +615,7 @@ void AliPHOSPIDv1::PrintRecParticles(Option_t * option)
   TClonesArray * recParticles = gime->RecParticles() ; 
 
  
-  cout << "AliPHOSPIDv1: " << endl ;
+  cout << "AliPHOSPIDv1: event "<<gAlice->GetEvNumber()  << endl ;
   cout << "       found " << recParticles->GetEntriesFast() << " RecParticles " << endl ;
 
   if(strstr(option,"all")) {  // printing found TS

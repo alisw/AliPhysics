@@ -185,8 +185,11 @@ void AliPHOSClusterizerv1::Exec(Option_t * option)
 
   for(ievent = 0; ievent < nevents; ievent++){
     
+    gAlice->GetEvent(ievent) ;
+    gAlice->SetEvent(ievent) ;
+
     if(!ReadDigits(ievent))  //reads digits for event fEvent
-      return;
+      continue;
     
     MakeClusters() ;
     
@@ -436,10 +439,6 @@ Bool_t AliPHOSClusterizerv1::ReadDigits(Int_t event)
   fNumberOfEmcClusters  = 0 ;
   fNumberOfCpvClusters  = 0 ;
 
-  // Get Digits Tree header from file
-  gAlice->GetEvent(event) ;
-  gAlice->SetEvent(event) ;
-
   if ( gAlice->TreeD()==0) {  
    cerr << "ERROR: AliPHOSClusterizerv1::ReadDigits There is no Digit Tree" << endl;
    return kFALSE;
@@ -504,7 +503,7 @@ void AliPHOSClusterizerv1::WriteRecPoints(Int_t event)
   TClonesArray * digits = gime->Digits() ; 
 
   Int_t index ;
-  //Evaluate poisition, dispersion and other RecPoint properties...
+  //Evaluate position, dispersion and other RecPoint properties...
   for(index = 0; index < emcRecPoints->GetEntries(); index++)
     ((AliPHOSEmcRecPoint *)emcRecPoints->At(index))->EvalAll(fW0,digits) ;
 
@@ -543,9 +542,10 @@ void AliPHOSClusterizerv1::WriteRecPoints(Int_t event)
   TString branchName(GetName()) ; 
   branchName.ReplaceAll(Version(), "") ; 
  
-  //First EMC
   Int_t bufferSize = 32000 ;    
   Int_t splitlevel = 0 ;
+
+  //First EMC
   TBranch * emcBranch = gAlice->TreeR()->Branch("PHOSEmcRP","TObjArray",&emcRecPoints,bufferSize,splitlevel);
   emcBranch->SetTitle(branchName);
   if (filename) {
@@ -555,7 +555,7 @@ void AliPHOSClusterizerv1::WriteRecPoints(Int_t event)
     while ((sb=(TBranch*)next())) {
       sb->SetFile(filename);
     }   
-
+    
     cwd->cd();
   }
     
@@ -586,9 +586,8 @@ void AliPHOSClusterizerv1::WriteRecPoints(Int_t event)
     }   
     cwd->cd();
   }
-  
-  emcBranch->Fill() ;
-  cpvBranch->Fill() ;
+  emcBranch        ->Fill() ;
+  cpvBranch        ->Fill() ;
   clusterizerBranch->Fill() ;
 
   gAlice->TreeR()->Write(0,kOverwrite) ;  
@@ -942,8 +941,7 @@ void AliPHOSClusterizerv1::UnfoldingChiSquare(Int_t & nPar, Double_t * Grad, Dou
 
   Float_t * emcEnergies = emcRP->GetEnergiesList() ;
 
-  AliPHOSGeometry * geom = AliPHOSGeometry::GetInstance() ;
-
+  const AliPHOSGeometry * geom = AliPHOSGetter::GetInstance()->PHOSGeometry() ; 
   fret = 0. ;     
   Int_t iparam ;
 
@@ -1063,7 +1061,7 @@ void AliPHOSClusterizerv1::PrintRecPoints(Option_t * option)
   TObjArray * emcRecPoints = AliPHOSGetter::GetInstance()->EmcRecPoints() ; 
   TObjArray * cpvRecPoints = AliPHOSGetter::GetInstance()->CpvRecPoints() ; 
 
-  cout << "AliPHOSClusterizerv1: " << endl ;
+  cout << "AliPHOSClusterizerv1: : event "<<gAlice->GetEvNumber() << endl ;
   cout << "       Found "<< emcRecPoints->GetEntriesFast() << " EMC Rec Points and " 
 	   << cpvRecPoints->GetEntriesFast() << " CPV RecPoints" << endl ;
 

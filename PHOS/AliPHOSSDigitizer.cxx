@@ -339,7 +339,7 @@ void AliPHOSSDigitizer::PrintSDigits(Option_t * option)
   AliPHOSGetter * gime = AliPHOSGetter::GetInstance() ; 
   TClonesArray * sdigits = gime->SDigits(GetName()) ; 
 
-  cout << "AliPHOSSDigitizer: " << endl ;
+  cout << "AliPHOSSDigitizer: event "<<gAlice->GetEvNumber() << endl ;
   cout << "       Number of entries in SDigits list  " << sdigits->GetEntriesFast() << endl ;
   cout << endl ;
   
