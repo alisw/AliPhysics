@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.24  2002/10/21 09:20:51  alibrary
+Introduce Riostream.h and remove unused variables
+
 Revision 1.23  2002/10/14 14:55:35  hristov
 Merging the VirtualMC branch to the main development branch (HEAD)
 
@@ -214,7 +217,7 @@ void AliGenExtFile::Generate()
 	       iparticle->P(),
 	       iparticle->Pt(),
 	       y);
-	delete iparticle;
+	//PH	delete iparticle;
 	continue;
       }
       p[0] = iparticle->Px();
