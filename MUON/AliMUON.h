@@ -29,6 +29,7 @@ class AliMUONClusterFinderVS;
 class AliMUONReconstHit;
 class AliMUONMerger;
 class AliMUONVGeometryBuilder;
+class AliESD;
 
 class TVector;
 #include "TObjArray.h"
@@ -119,7 +120,13 @@ class AliMUON : public  AliDetector {
     // Copy Operator
     AliMUON& operator = (const AliMUON& rhs);
     
+    // Reconstruct fct for AliModule
+    virtual void Reconstruct() const;
+
     
+    // ESD filling for AliModule
+    virtual void FillESD(AliESD* ) const;
+
  protected:
     Int_t                 fNCh;                // Number of chambers   
     Int_t                 fNTrackingCh;        // Number of tracking chambers*
