@@ -187,8 +187,8 @@ endif
 	  find $(CURDIR)/@MODULE@/tgt_$(ALICE_TARGET) -name '*.o' -exec ln -s {} . \; ;\
 	  rm -f $(CURDIR)/$@ ;\
 	  TMPLIB=$(notdir $(@PACKAGE@LIB)); export TMPLIB;\
-	  $(SHLD) $(@PACKAGE@SOFLAGS) -o $(CURDIR)/$@ $(notdir $(@PACKAGE@O) $(@PACKAGE@DO))  $(@PACKAGE@ELIBSDIR) $(@PACKAGE@ELIBS) $(SHLIB);
-	  $(MUTE)chmod a-w $(CURDIR)/$@ ;\
+	  $(SHLD) $(@PACKAGE@SOFLAGS) -o $(CURDIR)/$@ $(notdir $(@PACKAGE@O) $(@PACKAGE@DO))  $(@PACKAGE@ELIBSDIR) $(@PACKAGE@ELIBS) $(SHLIB);\
+	  chmod a-w $(CURDIR)/$@ ;\
 	  rm -rf $$TMPDIR
 
 ifneq ($(DYEXT),)
@@ -200,8 +200,8 @@ endif
 	  export TMPDIR; mkdir $$TMPDIR ; cd $$TMPDIR ; \
 	  find $(CURDIR)/@MODULE@/tgt_$(ALICE_TARGET) -name '*.o' -exec ln -s {} . \; ;\
 	  rm -f $(CURDIR)/$@ ;\
-	  $(DYLD) $(@PACKAGE@DYFLAGS) -o $(CURDIR)/$@ $(notdir $(@PACKAGE@O) $(@PACKAGE@DO))  $(@PACKAGE@ELIBSDIR) $(@PACKAGE@ELIBS) $(DYLIB);
-	  $(MUTE)chmod a-w $(CURDIR)/$@ ;\
+	  $(DYLD) $(@PACKAGE@DYFLAGS) -o $(CURDIR)/$@ $(notdir $(@PACKAGE@O) $(@PACKAGE@DO))  $(@PACKAGE@ELIBSDIR) $(@PACKAGE@ELIBS) $(DYLIB);\
+	  chmod a-w $(CURDIR)/$@ ;\
 	  rm -rf $$TMPDIR
 endif
 
