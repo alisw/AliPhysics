@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.9  2002/10/14 14:57:32  hristov
+Merging the VirtualMC branch to the main development branch (HEAD)
+
 Revision 1.7.6.1  2002/07/24 10:07:52  alibrary
 Updating VirtualMC
 
@@ -38,7 +41,7 @@ Revision 1.1  2001/02/27 22:13:34  jbarbosa
 Implementing merger class.
 
 */
-#include <iostream.h> 
+#include <Riostream.h> 
 
 #include <TTree.h> 
 #include <TObjArray.h>

@@ -21,7 +21,7 @@
 #include "AliConst.h"
 #include "AliPDG.h"
 
-#include <iostream.h>
+#include <Riostream.h>
 #include <TNode.h>
 #include <TGeometry.h>
 #include <TBRIK.h>

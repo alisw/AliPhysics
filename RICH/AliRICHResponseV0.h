@@ -9,7 +9,7 @@
 
 
 #include "AliRICHResponse.h"
-#include <iostream.h>
+#include <Riostream.h>
 
 class AliSegmentation;
 

@@ -15,6 +15,9 @@
 
 /* 
    $Log$
+   Revision 1.6  2002/10/14 14:57:32  hristov
+   Merging the VirtualMC branch to the main development branch (HEAD)
+
    Revision 1.3.6.2  2002/07/24 10:07:52  alibrary
    Updating VirtualMC
 
@@ -33,7 +36,7 @@
    Revision 1.1  2001/11/02 15:37:26  hristov
    Digitizer class created. Code cleaning and bug fixes (J.Chudoba)
 */
-#include <iostream.h> 
+#include <Riostream.h> 
 
 #include <TTree.h> 
 #include <TObjArray.h>

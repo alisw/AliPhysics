@@ -7,7 +7,7 @@
 /* $Id$ */
 
 #include "AliRICHSegmentationV0.h"
-#include <iostream.h>
+#include <Riostream.h>
 
 class AliRICHSegmentationV1 : public AliRICHSegmentationV0 
 {    

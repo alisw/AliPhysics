@@ -7,7 +7,7 @@
 
 /* $Id$ */
 
-#include <iostream.h>
+#include <Riostream.h>
 #include <TObject.h>
 
 class AliRICHGeometry :public TObject  

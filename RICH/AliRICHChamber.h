@@ -6,7 +6,7 @@
 
 /* $Id$ */
 
-#include <iostream.h>
+#include <Riostream.h>
 
 #include <TRotMatrix.h>
 #include <TVector3.h>
