@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.12  2001/02/23 17:26:12  jbarbosa
+  Setters for wire sag effect and voltage values.
+
   Revision 1.11  2001/02/13 20:10:33  jbarbosa
   Removed call to SetNSec() (obsolete). Fixed bug in chamber initialisation (not all chambers were initialised).
 
@@ -208,31 +211,33 @@ void AliRICHv1::Init()
     ((AliRICHChamber*)(*fChambers)[5])->SetGid(6);  
     ((AliRICHChamber*)(*fChambers)[6])->SetGid(7); 
 
-    Float_t pos1[3]={0,471.8999,165.2599};
-    Chamber(0).SetChamberTransform(pos1[0],pos1[1],pos1[2],new TRotMatrix("rot993","rot993",90,0,70.69,90,19.30999,-90));
-
-    Float_t pos2[3]={171,470,0};
-    Chamber(1).SetChamberTransform(pos2[0],pos2[1],pos2[2],new TRotMatrix("rot994","rot994",90,-20,90,70,0,0));
-
-    Float_t pos3[3]={0,500,0};
-    Chamber(2).SetChamberTransform(pos3[0],pos3[1],pos3[2],new TRotMatrix("rot995","rot995",90,0,90,90,0,0));
-    
-    Float_t pos4[3]={-171,470,0};
-    Chamber(3).SetChamberTransform(pos4[0],pos4[1],pos4[2], new TRotMatrix("rot996","rot996",90,20,90,110,0,0));  
-
-    Float_t pos5[3]={161.3999,443.3999,-165.3};
-    Chamber(4).SetChamberTransform(pos5[0],pos5[1],pos5[2],new TRotMatrix("rot997","rot997",90,340,108.1999,70,18.2,70));
-
-    Float_t pos6[3]={0., 471.9, -165.3,};
-    Chamber(5).SetChamberTransform(pos6[0],pos6[1],pos6[2],new TRotMatrix("rot998","rot998",90,0,109.3099,90,19.30999,90));
-
-    Float_t pos7[3]={-161.399,443.3999,-165.3};
-    Chamber(6).SetChamberTransform(pos7[0],pos7[1],pos7[2],new TRotMatrix("rot999","rot999",90,20,108.1999,110,18.2,110));
-    
     segmentation=Chamber(0).GetSegmentationModel(0);
     geometry=Chamber(0).GetGeometryModel();
     response=Chamber(0).GetResponseModel();
     
+    Float_t offset       = 490 + 1.276 - geometry->GetGapThickness()/2;        //distance from center of mother volume to methane
+    Float_t deltaphi     = 19.5;                                               //phi angle between center of chambers - z direction
+    Float_t deltatheta   = 20;                                                 //theta angle between center of chambers - x direction
+    Float_t cosphi       = TMath::Cos(deltaphi*TMath::Pi()/180);
+    Float_t sinphi       = TMath::Sin(deltaphi*TMath::Pi()/180);
+    Float_t costheta     = TMath::Cos(deltatheta*TMath::Pi()/180);
+    Float_t sintheta     = TMath::Sin(deltatheta*TMath::Pi()/180);
+
+    Float_t pos1[3]={0.                , offset*cosphi         , offset*sinphi};
+    Float_t pos2[3]={offset*sintheta   , offset*costheta       , 0. };
+    Float_t pos3[3]={0.                , offset                , 0.};
+    Float_t pos4[3]={-offset*sintheta  , offset*costheta       , 0.};
+    Float_t pos5[3]={offset*sinphi     , offset*costheta*cosphi, -offset*sinphi};
+    Float_t pos6[3]={0.                , offset*cosphi         , -offset*sinphi};
+    Float_t pos7[3]={ -offset*sinphi   , offset*costheta*cosphi, -offset*sinphi};
+
+    Chamber(0).SetChamberTransform(pos1[0],pos1[1],pos1[2],new TRotMatrix("rot993","rot993",90., 0.               , 90. - deltaphi, 90.             , deltaphi, -90.           ));
+    Chamber(1).SetChamberTransform(pos2[0],pos2[1],pos2[2],new TRotMatrix("rot994","rot994",90., -deltatheta      , 90.           , 90.- deltatheta , 0.      , 0.             ));
+    Chamber(2).SetChamberTransform(pos3[0],pos3[1],pos3[2],new TRotMatrix("rot995","rot995",90., 0.               , 90.           , 90.             , 0.      , 0.             ));
+    Chamber(3).SetChamberTransform(pos4[0],pos4[1],pos4[2],new TRotMatrix("rot996","rot996",90.,  deltatheta      , 90.           , 90 + deltatheta , 0.      , 0.             ));
+    Chamber(4).SetChamberTransform(pos5[0],pos5[1],pos5[2],new TRotMatrix("rot997","rot997",90., 360. - deltatheta, 108.2         , 90.- deltatheta ,18.2     , 90 - deltatheta));
+    Chamber(5).SetChamberTransform(pos6[0],pos6[1],pos6[2],new TRotMatrix("rot998","rot998",90., 0.               , 90 + deltaphi , 90.             , deltaphi, 90.            ));
+    Chamber(6).SetChamberTransform(pos7[0],pos7[1],pos7[2],new TRotMatrix("rot999","rot999",90., deltatheta       , 108.2         , 90.+ deltatheta ,18.2     , 90 + deltatheta));   
      
     printf("*                            Pads            : %3dx%3d                          *\n",segmentation->Npx(),segmentation->Npy());
     printf("*                            Pad size        : %5.2f x%5.2f mm2                 *\n",segmentation->Dpx(),segmentation->Dpy()); 
