@@ -126,7 +126,7 @@ void AliGenPythia::Generate()
     Int_t nt=0;
     Int_t nt_p=0;
     Int_t jev=0;
-    Int_t j;
+    Int_t j, kf;
 
     if(!particles) particles=new TClonesArray("TParticle",1000);
     
@@ -157,7 +157,7 @@ void AliGenPythia::Generate()
 	if (fProcess != mb) {
 	    for (Int_t i = 0; i<np; i++) {
 		TParticle *  iparticle = (TParticle *) particles->At(i);
-		Int_t kf = iparticle->GetPdgCode();
+		kf = iparticle->GetPdgCode();
 		fChildWeight=(fPythia->GetBraPart(kf))*fParentWeight;	  
 //
 // Parent
@@ -202,7 +202,7 @@ void AliGenPythia::Generate()
 //
 // Children	    
 
-			    for (Int_t j=ifch; j<=ilch; j++)
+			    for (j=ifch; j<=ilch; j++)
 			    {
 				TParticle *  ichild = 
 				    (TParticle *) particles->At(j-1);
