@@ -1,4 +1,5 @@
 SRCS:=aliroot.cxx
+CSRCS:=fpu.c
 
 ELIBSDIR:= $(ALICE)/geant3/lib/tgt_$(ALICE_TARGET)
 
