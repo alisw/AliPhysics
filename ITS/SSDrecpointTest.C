@@ -21,6 +21,9 @@ void SSDrecpointTest (Int_t evNumber1=0,Int_t evNumber2=0)
    if (gClassTable->GetID("AliRun") < 0) {
       gROOT->LoadMacro("loadlibs.C");
       loadlibs();
+   } else {
+      delete gAlice;
+      gAlice=0;
    }
 
 // Connect the Root Galice file containing Geometry, Kine and Hits
@@ -258,10 +261,10 @@ void SSDrecpointTest (Int_t evNumber1=0,Int_t evNumber2=0)
        totclust += nclusters;
        //if (nclusters) printf("Found %d clusters for module %d\n",nrecc,mod);
        
-       AliITSmodule *Mod = (AliITSmodule *)fITSmodules->At(mod+first2);
+       //AliITSmodule *Mod = (AliITSmodule *)fITSmodules->At(mod+first2);
        // for the "SSD" option
 
-       //AliITSmodule *Mod = (AliITSmodule *)fITSmodules->At(mod);
+       AliITSmodule *Mod = (AliITSmodule *)fITSmodules->At(mod);
        // for the "ALL" option
 
        //       printf("Mod: %X\n",Mod);
@@ -404,7 +407,7 @@ void SSDrecpointTest (Int_t evNumber1=0,Int_t evNumber2=0)
 
 	     //cout<<"lay,pnt,hit,xmed,xrec,xdif,zmed,zrec,zdif ="<<hitlayer<<","<<pnt<<","<<hit<<","<<xmed<<","<<xrec<<","<<xdif<<","<<zmed<<","<<zrec<<","<<zdif<<endl;
 
-	 // fill ntuple
+	     // fill ntuple
              ntuple_st.lay = hitlayer;
 	     ntuple_st.nxP = nxP;
              ntuple_st.nxN = nxN;
@@ -421,6 +424,7 @@ void SSDrecpointTest (Int_t evNumber1=0,Int_t evNumber2=0)
              ntuple->Fill();
 
 	     //if(hitlayer == 5 && qcut < 0.18) {
+             
 	    if(hitlayer == 5 ) {
              Xres5->Fill(xdif);
              Zres5->Fill(zdif);
