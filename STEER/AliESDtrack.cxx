@@ -33,6 +33,8 @@ AliESDtrack::AliESDtrack() :
 fFlags(0),
 fLabel(0),
 fTrackLength(0),
+fD(0),
+fZ(0),
 fStopVertex(0),
 fRalpha(0),
 fRx(0),
@@ -116,6 +118,7 @@ AliESDtrack::AliESDtrack(const AliESDtrack& track):TObject(track){
   fFlags = track.fFlags;
   fLabel =track.fLabel;
   fTrackLength =track.fTrackLength;
+  fD=track.fD; fZ=track.fZ;
   for (Int_t i=0;i<kSPECIES;i++) fTrackTime[i] =track.fTrackTime[i];
   for (Int_t i=0;i<kSPECIES;i++)  fR[i] =track.fR[i];
   fStopVertex =track.fStopVertex;

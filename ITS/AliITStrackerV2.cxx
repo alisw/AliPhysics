@@ -376,6 +376,9 @@ Int_t AliITStrackerV2::RefitInward(AliESD *event) {
 
 	 if (fTrackToFollow.Propagate(fv+a,xv)) {
             fTrackToFollow.UpdateESDtrack(AliESDtrack::kITSrefit);
+            Float_t d=fTrackToFollow.GetD(GetX(),GetY());
+            Float_t z=fTrackToFollow.GetZ()-GetZ();
+            fTrackToFollow.GetESDtrack()->SetImpactParameters(d,z);
             UseClusters(&fTrackToFollow);
             {
             AliITSclusterV2 c; c.SetY(yv); c.SetZ(GetZ());

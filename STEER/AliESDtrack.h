@@ -38,6 +38,7 @@ public:
   void SetStatus(ULong_t flags) {fFlags|=flags;}
   void ResetStatus(ULong_t flags) {fFlags&=~flags;}
   Bool_t UpdateTrackParams(const AliKalmanTrack *t, ULong_t flags);
+  void SetImpactParameters(Float_t xy,Float_t z) {fD=xy; fZ=z;}
   void SetIntegratedLength(Double_t l) {fTrackLength=l;}
   void SetIntegratedTimes(const Double_t *times);
   void SetESDpid(const Double_t *p);
@@ -53,6 +54,7 @@ public:
   Bool_t GetPxPyPzAt(Double_t x, Double_t p[3]) const;
   Bool_t GetXYZAt(Double_t x, Double_t r[3]) const;
 
+  void GetImpactParameters(Float_t &xy,Float_t &z) const {xy=fD; z=fZ;}
   Double_t GetIntegratedLength() const {return fTrackLength;}
   void GetIntegratedTimes(Double_t *times) const;
   Double_t GetMass() const;
@@ -186,7 +188,9 @@ protected:
   ULong_t   fFlags;        // Reconstruction status flags 
   Int_t     fLabel;        // Track label
   Int_t     fID;           // Unique ID of the track
-  Float_t   fTrackLength;         // Track length
+  Float_t   fTrackLength;  // Track length
+  Float_t   fD;            // Impact parameter in XY-plane
+  Float_t   fZ;            // Impact parameter in Z 
   Float_t   fTrackTime[kSPECIES]; // TOFs estimated by the tracking
   Float_t   fR[kSPECIES];         // combined "detector response probability"
 
@@ -274,7 +278,7 @@ protected:
   Float_t fRICHsignal;     // detector's PID signal (beta for RICH)
   Float_t fRICHr[kSPECIES];// "detector response probabilities" (for the PID)
   	
-  ClassDef(AliESDtrack,10)  //ESDtrack 
+  ClassDef(AliESDtrack,11)  //ESDtrack 
 };
 
 #endif 
