@@ -17,10 +17,13 @@ public:
   void AddPoint(Double_t x, Double_t y, Double_t z, Double_t sy=1, Double_t sz=1);
   inline void GetFitPoint(Double_t x, Double_t &y, Double_t &z);
   inline void GetFitDerivation(Double_t x, Double_t &y, Double_t &z);
+  inline void GetFitDerivation2(Double_t &y, Double_t &z);
+  void UpdateParameters(Int_t ny, Int_t nz);
   void UpdateParameters();
   Int_t GetN(){return fNPoints;}
   void GetBoundaries(Double_t &xmin, Double_t &xmax){xmin = fMinX;xmax=fMaxX;}
   void Refit(AliTPCpolyTrack & track, Double_t deltay, Double_t deltaz); 
+  void Refit(AliTPCpolyTrack & track, Double_t deltay, Double_t deltaz, Int_t nfirst, Int_t ny, Int_t nz); 
 private: 
   void   Fit2(Double_t fSumY, Double_t fSumYX, Double_t fSumYX2,
 	      Double_t fSumX,  Double_t fSumX2, Double_t fSumX3, 
@@ -74,6 +77,14 @@ void AliTPCpolyTrack::GetFitDerivation(Double_t x, Double_t &y, Double_t &z)
 
   y = fB+2.*fC*x;
   z = fE+2.*fF*x;
+  
+}
+
+void AliTPCpolyTrack::GetFitDerivation2(Double_t &y, Double_t &z)
+{
+
+  y = 2.*fC;
+  z = 2.*fF;
   
 }
 

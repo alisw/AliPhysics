@@ -89,6 +89,25 @@ void  AliTPCpolyTrack::UpdateParameters()
     }
 }
 
+void  AliTPCpolyTrack::UpdateParameters(Int_t ny, Int_t nz)
+{
+  //
+  //
+  //Update fit parameters
+  if (ny>1){
+    Fit2(fSumY,fSumYX,fSumYX2,fSumX,fSumX2,fSumX3,fSumX4,fSumW,fA,fB,fC);
+  }
+  else{ 
+    Fit1(fSumY,fSumYX,fSumX,fSumX2,fSumW,fA,fB,fC);
+  }
+  if (nz>1){
+    Fit2(fSumZ,fSumZX,fSumZX2,fSumX,fSumX2,fSumX3,fSumX4,fNPoints,fD,fE,fF);
+  }
+  else{
+    Fit1(fSumZ,fSumZX,fSumX,fSumX2,fSumW,fD,fE,fF);
+  }
+}
+
 
 
 void  AliTPCpolyTrack::Fit2(Double_t fSumY, Double_t fSumYX, Double_t fSumYX2,
@@ -168,6 +187,43 @@ void AliTPCpolyTrack::Refit(AliTPCpolyTrack &track, Double_t deltay, Double_t de
   }
   if (track.GetN()>2) 
     track.UpdateParameters();
+
+}
+
+void AliTPCpolyTrack::Refit(AliTPCpolyTrack &track, Double_t deltay, Double_t deltaz, Int_t nfirst, Int_t ny, Int_t nz)
+{
+  //
+  // refit with cut on distortion
+  //
+  track.Reset();
+  //first refit to temporary
+  AliTPCpolyTrack track0;
+  track0.Reset();
+  for (Int_t i=0;i<fNPoints;i++){
+    Double_t y,z;
+    GetFitPoint(fX[i],y,z);
+    if ( (TMath::Abs(y-fY[i])<deltay)&&(TMath::Abs(z-fZ[i])<deltaz)){
+      track0.AddPoint(fX[i],y,z);
+    }    
+  }
+  if (track0.GetN()>2){ 
+    if (track0.GetN()>nfirst)
+      track0.UpdateParameters(ny,nz);
+    else 
+      track0.UpdateParameters(1,1);
+  }
+  else 
+    return;
+  //
+  for (Int_t i=0;i<fNPoints;i++){
+    Double_t y,z;
+    track0.GetFitPoint(fX[i],y,z);
+    if ( (TMath::Abs(y-fY[i])<deltay)&&(TMath::Abs(z-fZ[i])<deltaz)){
+      track.AddPoint(fX[i],y,z);
+    }
+  }
+  if (track.GetN()>2) 
+    track.UpdateParameters(ny,nz);
 
 }
 
