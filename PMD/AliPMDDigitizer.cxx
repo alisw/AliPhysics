@@ -747,7 +747,6 @@ void AliPMDDigitizer::Exec(Option_t *option)
 {
   // Does the event merging and digitization
 
-  fpw = fopen("digits_test.dat","w");
   fDebug = 0;
   const char *cdeb = strstr(option,"deb");
   if(cdeb)

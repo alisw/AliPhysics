@@ -210,7 +210,6 @@ void AliPMDDDLRawData::ReadPMDRawData(Int_t evtno)
 	      imodule = 36 + ium;
 	    }
 
-	  fprintf(fpw3,"%d %d %d %d %d %d\n",imodule,irow,icol,mcmno,chno,adc);
 	  
 	}
 
@@ -260,7 +259,6 @@ void AliPMDDDLRawData::GetUMDigitsData(TTree *treeD, Int_t imodule, Int_t ium,
 
       GetMCMCh(ddlno, ium, irownew, icolnew, mcmno, chno);
 
-      fprintf(fpw2,"%d %d %d %d %d %d\n",imodule,irownew,icolnew,mcmno,chno,adc);
 
       baseword = 0;
       dataword = adc;
@@ -280,7 +278,6 @@ void AliPMDDDLRawData::GetUMDigitsData(TTree *treeD, Int_t imodule, Int_t ium,
       
 
 
-      //      fprintf(fpw1,"%d %d %d %d %d\n",det,smn,irow,icol,adc);
       
     }
 
