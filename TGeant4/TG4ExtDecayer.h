@@ -14,6 +14,8 @@
 #ifndef TG4_EXT_DECAYER_H
 #define TG4_EXT_DECAYER_H
 
+#include "TG4Verbose.h"
+
 #include <G4VExtDecayer.hh>
 #include <globals.hh>
 
@@ -25,7 +27,8 @@ class G4DecayProducts;
 
 class TClonesArray;
 
-class TG4ExtDecayer : public G4VExtDecayer
+class TG4ExtDecayer : public G4VExtDecayer, 
+                      public TG4Verbose
 {
   public:
     TG4ExtDecayer(AliDecayer* externalDecayer);
@@ -34,12 +37,6 @@ class TG4ExtDecayer : public G4VExtDecayer
     virtual ~TG4ExtDecayer();
 
     virtual G4DecayProducts* ImportDecayProducts(const G4Track& track);
-    
-    // set methods
-    void SetVerboseLevel(G4int verbose);
-    
-    // get methods
-    G4int GetVerboseLevel() const;
     
   protected:  
     TG4ExtDecayer(const TG4ExtDecayer& right);
@@ -51,15 +48,6 @@ class TG4ExtDecayer : public G4VExtDecayer
     TG4ParticlesManager* fParticlesManager;  //particles manager 
     AliDecayer*          fExternalDecayer;   //the AliDecayer
     TClonesArray*        fDecayProductsArray;//array of decay products
-    G4int                fVerboseLevel;      //verbose level         
 };
-
-// inline methods
-
-inline void TG4ExtDecayer::SetVerboseLevel(G4int verbose)
-{ fVerboseLevel = verbose; }
-
-inline G4int TG4ExtDecayer::GetVerboseLevel() const
-{ return fVerboseLevel; }
 
 #endif //TG4_EXT_DECAYER_H

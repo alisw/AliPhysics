@@ -29,15 +29,16 @@
 //_____________________________________________________________________________
 TG4ExtDecayer::TG4ExtDecayer(AliDecayer* externalDecayer)
   : G4VExtDecayer("TG4ExtDecayer"),
-    fExternalDecayer(externalDecayer),
-    fVerboseLevel(0) {
+    TG4Verbose("extDecayer"),
+    fExternalDecayer(externalDecayer) {
 //
   fDecayProductsArray = new  TClonesArray("TParticle", 1000);
   fParticlesManager = TG4ParticlesManager::Instance();
 }
 
 //_____________________________________________________________________________
-TG4ExtDecayer::TG4ExtDecayer(const TG4ExtDecayer& right) {
+TG4ExtDecayer::TG4ExtDecayer(const TG4ExtDecayer& right)
+  : TG4Verbose("extDecayer") {
 // 
   TG4Globals::Exception(
     "TG4ExtDecayer is protected from copying.");
@@ -100,8 +101,9 @@ G4DecayProducts* TG4ExtDecayer::ImportDecayProducts(const G4Track& track)
   G4int nofParticles
     = fExternalDecayer->ImportParticles(fDecayProductsArray);
   
-  if (fVerboseLevel>0)
+  if (VerboseLevel()>1) {
     G4cout << "nofParticles: " <<  nofParticles << G4endl;
+  }  
 
   // convert decay products TParticle type 
   // to G4DecayProducts  
@@ -122,8 +124,9 @@ G4DecayProducts* TG4ExtDecayer::ImportDecayProducts(const G4Track& track)
       // pass to tracking final particles only;
       // skip neutrinos
 
-      if (fVerboseLevel>0)
+      if (VerboseLevel()>1) {
         G4cout << "  " << i << "th particle PDG: " << pdg << "   ";
+      }
             
       // create G4DynamicParticle 
       G4DynamicParticle* dynamicParticle 
@@ -131,10 +134,11 @@ G4DecayProducts* TG4ExtDecayer::ImportDecayProducts(const G4Track& track)
 
       if (dynamicParticle) {
 
-        if (fVerboseLevel>0)
+        if (VerboseLevel()>1) {
           G4cout << "  G4 particle name: " 
                  << dynamicParticle->GetDefinition()->GetParticleName()
 	         << G4endl;
+	}	 
 
         // add dynamicParticle to decayProducts
         decayProducts->PushProducts(dynamicParticle);
@@ -143,8 +147,9 @@ G4DecayProducts* TG4ExtDecayer::ImportDecayProducts(const G4Track& track)
       }
     }       
   }			     
-  if (fVerboseLevel>0)
+  if (VerboseLevel()>1) {
     G4cout << "nofParticles for tracking: " <<  counter << G4endl;
+  }  
      
   return decayProducts;
 }
