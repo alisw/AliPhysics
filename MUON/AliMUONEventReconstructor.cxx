@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.28  2001/08/31 06:50:11  gosset
+Different handling of TreeR for track reconstruction from raw clusters
+
 Revision 1.27  2001/07/27 13:03:12  hristov
 Default Branch split level set to 99
 
@@ -906,7 +909,7 @@ void AliMUONEventReconstructor::MakeSegmentsPerStation(Int_t Station)
 	  (hit1Ptr->GetZ() - hit2Ptr->GetZ());
 	// absolute value of impact parameter
 	impactParam =
-	  TMath::Abs(hit1Ptr->GetBendingCoor() - hit2Ptr->GetZ() * bendingSlope);
+	  TMath::Abs(hit1Ptr->GetBendingCoor() - hit1Ptr->GetZ() * bendingSlope);
       }
       // check for distances not too large,
       // and impact parameter not too big if stations downstream of the dipole.

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.8  2001/04/25 14:50:42  gosset
+Corrections to violations of coding conventions
+
 Revision 1.7  2001/02/08 10:34:41  gosset
 Add a "real" default constructor.
 
@@ -164,8 +167,8 @@ Int_t AliMUONSegment::Compare(const TObject* Segment) const
   // of the "impact parameter" in bending plane.
   // Returns -1 (0, +1) if |impact parameter| of current Segment
   // is smaller than (equal to, larger than) |impact parameter| of Segment
-  if (TMath::Abs(((AliMUONSegment*)this)->fBendingSlope)
-      < TMath::Abs(((AliMUONSegment*)Segment)->fBendingSlope))
+  if (TMath::Abs(((AliMUONSegment*)this)->fBendingImpact)
+      < TMath::Abs(((AliMUONSegment*)Segment)->fBendingImpact))
     return(-1);
   // continuous parameter, hence no need for testing equal case
   else return(+1);
