@@ -16,6 +16,7 @@
 
 #include "TVirtualMC.h"
 #include "TMCProcess.h"
+#include "RVersion.h"
 
 //Forward declaration
 class TFlukaMCGeometry;
@@ -106,7 +107,7 @@ class TFluka : public TVirtualMC {
     {printf("WARNING: Gdraw not yet implemented !\n");}
   
   // Euclid
-  virtual void  WriteEuclid(const char*, const char*, Int_t, Int_t);
+  virtual void WriteEuclid(const char*, const char*, Int_t, Int_t);
   
   // get methods
   virtual Int_t VolId(const Text_t* volName) const;
@@ -119,9 +120,20 @@ class TFluka : public TVirtualMC {
   //
   
   // set methods
-  virtual void     SetProcess(const char* flagName, Int_t flagValue);
-    virtual void     SetProcess(const char* flagName, Int_t flagValue, Int_t imed);
+#if ROOT_VERSION_CODE >= 262151
+  virtual Bool_t SetProcess(const char* flagName, Int_t flagValue);
+#else
+  virtual void   SetProcess(const char* flagName, Int_t flagValue);
+#endif
+
+  virtual void   SetProcess(const char* flagName, Int_t flagValue, Int_t imed);
+
+#if ROOT_VERSION_CODE >= 262151
+  virtual Bool_t
+      SetCut(const char* cutName, Double_t cutValue);
+#else
   virtual void     SetCut(const char* cutName, Double_t cutValue);
+#endif
   virtual void     SetCut(const char* cutName, Double_t cutValue, Int_t imed);
   virtual Double_t Xsec(char*, Double_t, Int_t, Int_t);
   
@@ -235,9 +247,21 @@ class TFluka : public TVirtualMC {
   virtual void Gspart(Int_t, const char*, Int_t, Double_t, Double_t, Double_t)
     {printf("WARNING: Gspart not yet implemented !\n");}
   
-    // Dummy methods 
-    virtual void DefineParticle(int, const char*, TMCParticleType, double, double, double){;}
-    virtual void DefineIon(const char*, int, int, int, double, double){;}
+    // Dummy methods
+  
+
+#if ROOT_VERSION_CODE >= 262151
+  virtual Bool_t DefineParticle(int, const char*, TMCParticleType, double, double, double){return kTRUE;}
+#else
+  virtual void   DefineParticle(int, const char*, TMCParticleType, double, double, double){;}
+#endif
+
+#if ROOT_VERSION_CODE >= 262151
+    virtual Bool_t DefineIon(const char*, int, int, int, double, double){return kTRUE;}
+#else
+    virtual void   DefineIon(const char*, int, int, int, double, double){;}
+#endif
+
     virtual TString  ParticleName(int) const {return "";}
     virtual Double_t ParticleMass(int) const {return 0.;}
     virtual Double_t ParticleCharge(int) const {return 0.;}
@@ -258,7 +282,8 @@ class TFluka : public TVirtualMC {
 #else
   virtual void   ProcessRun(Int_t nevent);
 #endif
-
+  virtual void StopRun() {;}
+  
   //
   //New Getter and Setters
   // ------------------------------------------------

@@ -247,9 +247,15 @@ void   TFluka::ProcessRun(Int_t nevent) {
     cout << "\t* GLOBAL.fdrtr = " << (GLOBAL.lfdrtr?'T':'F') << endl;
     cout << "\t* Calling flukam again..." << endl;
   }
-  fApplication->InitGeometry();
-  fApplication->BeginEvent();
-  ProcessEvent();
+
+  Int_t todo = TMath::Abs(nevent);
+
+  for (Int_t ev = 0; ev < todo; ev++) {
+      fApplication->InitGeometry();
+      fApplication->BeginEvent();
+      ProcessEvent();
+  }
+
   fApplication->FinishEvent();
   if (fVerbosityLevel >=3)
     cout << "<== TFluka::ProcessRun(" << nevent << ") called." 
@@ -573,8 +579,7 @@ Int_t TFluka::PDGFromId(Int_t id) const
 //
 // set methods
 //
-
-void TFluka::SetProcess(const char* flagName, Int_t flagValue, Int_t imat)
+  void   TFluka::SetProcess(const char* flagName, Int_t flagValue, Int_t imat)
 {
 //  Set process user flag for material imat
 //
@@ -585,7 +590,12 @@ void TFluka::SetProcess(const char* flagName, Int_t flagValue, Int_t imat)
 }
 
 //______________________________________________________________________________ 
-void TFluka::SetProcess(const char* flagName, Int_t flagValue)
+
+#if ROOT_VERSION_CODE >= 262151
+  Bool_t TFluka::SetProcess(const char* flagName, Int_t flagValue)
+#else
+  void   TFluka::SetProcess(const char* flagName, Int_t flagValue)
+#endif
 {
 //  Set process user flag 
 //
@@ -596,7 +606,11 @@ void TFluka::SetProcess(const char* flagName, Int_t flagValue)
       if (strcmp(&fProcessFlag[i][0],flagName) == 0) {
         fProcessValue[fNbOfProc] = flagValue;
 	fProcessMaterial[fNbOfProc] = -1;
-  	return;
+#if ROOT_VERSION_CODE >= 262151
+  	return kFALSE;
+#else 
+	return
+#endif
       }
     }
     strcpy(&fProcessFlag[fNbOfProc][0],flagName);
@@ -606,10 +620,13 @@ void TFluka::SetProcess(const char* flagName, Int_t flagValue)
   }
   else
     cout << "Nb of SetProcess calls exceeds 100 - ignored" << endl;
+#if ROOT_VERSION_CODE >= 262151
+  return kTRUE;
+#endif
 }
 
 //______________________________________________________________________________ 
-void TFluka::SetCut(const char* cutName, Double_t cutValue, Int_t imed)
+  void     TFluka::SetCut(const char* cutName, Double_t cutValue, Int_t imed)
 {
 // Set user cut value for material imed
 //
@@ -620,7 +637,11 @@ void TFluka::SetCut(const char* cutName, Double_t cutValue, Int_t imed)
 }
 
 //______________________________________________________________________________ 
-void TFluka::SetCut(const char* cutName, Double_t cutValue)
+#if ROOT_VERSION_CODE >= 262151
+  Bool_t   TFluka::SetCut(const char* cutName, Double_t cutValue)
+#else
+  void     TFluka::SetCut(const char* cutName, Double_t cutValue)
+#endif
 {
 // Set user cut value 
 //
@@ -629,7 +650,12 @@ void TFluka::SetCut(const char* cutName, Double_t cutValue)
     for (i=0; i<fNbOfCut; i++) {
       if (strcmp(&fCutFlag[i][0],cutName) == 0) {
         fCutValue[fNbOfCut] = cutValue;
+#if ROOT_VERSION_CODE >= 262151
+	return kFALSE;
+#else
 	return;
+	
+#endif
       }
     }
     strcpy(&fCutFlag[fNbOfCut][0],cutName);
@@ -638,6 +664,9 @@ void TFluka::SetCut(const char* cutName, Double_t cutValue)
   }
   else
     cout << "Nb of SetCut calls exceeds 100 - ignored" << endl;
+#if ROOT_VERSION_CODE >= 262151
+  return kTRUE;
+#endif
 }
 
 //______________________________________________________________________________ 
