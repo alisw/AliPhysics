@@ -487,7 +487,8 @@ void AliPHOSAnalyze::AnalyzeCPV(Int_t Nevents)
       
     Int_t nOfModules = fGeom->GetNModules();
     TClonesArray **hitsPerModule = new TClonesArray *[nOfModules];
-    for (Int_t iModule=0; iModule < nOfModules; iModule++)
+    Int_t iModule ; 
+    for (iModule=0; iModule < nOfModules; iModule++)
       hitsPerModule[iModule] = new TClonesArray("AliPHOSCPVHit",100);
 
     AliPHOSCPVModule cpvModule;
@@ -505,7 +506,7 @@ void AliPHOSAnalyze::AnalyzeCPV(Int_t Nevents)
       // Get the Hits Tree for the Primary track itrack
       gAlice->ResetHits();
       gAlice->TreeH()->GetEvent(itrack);
-      for (Int_t iModule=0; iModule < nOfModules; iModule++) {
+      for (iModule=0; iModule < nOfModules; iModule++) {
 	cpvModule = fPHOS->GetCPVModule(iModule);
 	cpvHits   = cpvModule.Hits();
 	nCPVhits  = cpvHits->GetEntriesFast();
@@ -521,7 +522,6 @@ void AliPHOSAnalyze::AnalyzeCPV(Int_t Nevents)
 	cpvModule.Clear();
       }
     }
-    Int_t iModule = 0; 	
     for (iModule=0; iModule < nOfModules; iModule++) {
       Int_t nsum = hitsPerModule[iModule]->GetEntriesFast();
       printf("Module %d has %d hits\n",iModule,nsum);
