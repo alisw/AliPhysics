@@ -28,10 +28,10 @@
 
 void MUONTest(Int_t testNumber)
 {
-  gAlice->Init("./Config_MUON_test.C");
+  gAlice->Init("./Config.C");
   cout << "Init done " << endl;
 
-  AliMUONTest test("./Config_MUON_test.C");
+  AliMUONTest test("./Config.C");
   switch (testNumber) {
     case 1: test.DetElemTransforms();  break;
     case 2: test.ForWhole(kPrintPads); break; 
