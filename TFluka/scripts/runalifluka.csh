@@ -22,7 +22,7 @@ ln -s $FLUPRO/elasct.bin .
 cp $FLUPRO/random.dat old.seed
 
 # Give some meaningfull name to the output
-ln -s alice.out fort.11
+ln -s fluka.out fort.11
 
 # Link the pemf and input file for alice
 ln -s $ALICE_ROOT/TFluka/input/alice.pemf .
@@ -32,7 +32,10 @@ ln -s $ALICE_ROOT/TFluka/input/alice.inp .
 ln -fs $ALICE_ROOT/TFluka/macro/FlukaConfig.C Config.C
 
 # Launch aliroot
-aliroot
+aliroot -b <<EOF > run.out
+gAlice->Init();
+gAlice->Run();
+EOF
 
 # Go back on exit
 cd ..
