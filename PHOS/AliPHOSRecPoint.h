@@ -47,7 +47,7 @@ class AliPHOSRecPoint : public AliRecPoint {
   virtual Int_t   Compare(const TObject * obj) const = 0 ;   
   virtual Int_t   DistancetoPrimitive(Int_t px, Int_t py);
   virtual void    Draw(Option_t * option="") ;
-  virtual void    ExecuteEvent(Int_t event, Int_t px, Int_t py) ;
+  virtual void    ExecuteEvent(Int_t event, Int_t px, Int_t py)const ;
   virtual void    EvalAll(Float_t logWeight,TClonesArray * digits) ;  
   virtual void    EvalPHOSMod(AliPHOSDigit * digit) ;  
   virtual void    EvalPrimaries(TClonesArray * digits) ;  
