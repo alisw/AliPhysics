@@ -46,6 +46,7 @@
 #include <TPDGCode.h>
 #include <TCanvas.h>
 #include <TVirtualMC.h>
+#include <TROOT.h>
 
 #include "AliConst.h"
 #include "AliDecayer.h"
@@ -221,11 +222,15 @@ void AliGenHIJINGpara::Init()
     Float_t etaMax = -TMath::Log(TMath::Tan(
 	TMath::Max((Double_t)fThetaMin/2,1.e-10)));
     fPtpi   = new TF1("ptpi",&ptpi,0,20,0);
+    gROOT->GetListOfFunctions()->Remove(fPtpi);
     fPtka   = new TF1("ptka",&ptka,0,20,0);
+    gROOT->GetListOfFunctions()->Remove(fPtka);
     fPtpi->SetNpx(1000);
     fPtka->SetNpx(1000);
     fETApic = new TF1("etapic",&etapic,etaMin,etaMax,0);
+    gROOT->GetListOfFunctions()->Remove(fETApic);
     fETAkac = new TF1("etakac",&etakac,etaMin,etaMax,0);
+    gROOT->GetListOfFunctions()->Remove(fETAkac);
 
     TF1 etaPic0("etaPic0",&etapic,-7,7,0);
     TF1 etaKac0("etaKac0",&etakac,-7,7,0);
