@@ -614,7 +614,7 @@ Bool_t AliHBTReaderESD::CheckTrack(AliESDtrack* t) const
 }
 /********************************************************************/
 
-void AliHBTReaderESD::SetChi2(Float_t min, Float_t max)
+void AliHBTReaderESD::SetChi2Range(Float_t min, Float_t max)
 {
   //sets range of Chi2 per Cluster
   fChi2Min = min;

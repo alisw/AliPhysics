@@ -41,7 +41,7 @@ class AliHBTReaderESD: public AliHBTReader
     void          SetTPCNClustersRange(Int_t min,Int_t max);
     void          SetTPCChi2PerCluserRange(Float_t min, Float_t max);
     
-    void          SetChi2(Float_t min, Float_t max);
+    void          SetChi2Range(Float_t min, Float_t max);
     void          SetC00Range(Float_t min, Float_t max);
     void          SetC11Range(Float_t min, Float_t max);
     void          SetC22Range(Float_t min, Float_t max);
