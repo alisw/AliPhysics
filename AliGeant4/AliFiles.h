@@ -1,9 +1,20 @@
 // $Id$
 // Category: global
 //
-// Class for file names and paths.
-// It is protected from instantiating (only static data members
-// and static methods are defined).
+// Class for generating file names and paths.
+// The input files:
+// Config.C    - the basic AliRoot configuration file (Root macro)
+//               When detector setup is defined interactively,
+//               the alternative Config.C files per detector
+//               are used.
+// Config.in   - G4 specific configuration macros per detector
+// The output files:
+// g3calls.dat - the ASCII file with G3 geometry calls;
+//               generation is switch on with /aliDet/writeGeometry command
+//               in PreInit phase
+// DetvN.xml   - XML geometry description file;                
+//               generation is switch on with /aliDet/generateXML command
+//               in Init phase
 
 #ifndef ALI_FILES_H
 #define ALI_FILES_H
@@ -13,76 +24,77 @@
 class AliFiles
 {
   public:
-    // --> protected
-    // AliFiles();
+    AliFiles();
+    AliFiles(const G4String& config);
+    AliFiles(const G4String& config, const G4String& g3calls);
     virtual ~AliFiles();
-
-    // static get methods
-    static G4String Config();   
-    static G4String DetConfig1();
-    static G4String DetConfig2();
-    static G4String DetConfig3();
-    static G4String DetConfig4();
-    static G4String DetConfigName1();
-    static G4String DetConfigName2();
-    static G4String DetData1();
-    static G4String DetData2();
-    static G4String DetData3();
-    static G4String STRUCT();
-
-  protected:
-    AliFiles();  
-       // only static data members and methods
     
-  private:       
+    // static access method
+    static AliFiles* Instance();
+
+    // methods
+    G4String GetRootMacroPath() const;
+    G4String GetRootMacroPath(const G4String& moduleName,
+                              G4bool isStructure) const;
+    G4String GetG4MacroPath(const G4String& moduleName, 
+                              G4bool isStructure) const;
+    G4String GetG3CallsDatPath(const G4String& moduleName, 
+                              G4int moduleVersion, G4bool isStructure) const;
+    G4String GetXMLFilePath(const G4String& moduleName, 
+                              G4int moduleVersion) const;
+			      
+    // set methods
+    void SetMacroName(const G4String& name);			      
+    void SetG3CallsName(const G4String& name);			      
+ 
+    // get methods
+    G4String GetMacroName() const;			      
+    G4String GetG3CallsName() const;			      
+    G4String GetDefaultMacroName() const;			      
+    G4String GetDefaultG3CallsName() const;			      
+       
+  private: 
+    // methods
+    G4String GetMacroPath(const G4String& macroName,
+                          const G4String& moduleName,
+                          G4bool isStructure) const;    
+        
     // static data members  
-    static const G4String  fgkTop;        //top directory
-    static const G4String  fgkConfig;     //path to general Config.C
-    static const G4String  fgkDetConfig1; //path (part 1) to module Config.C/in
-    static const G4String  fgkDetConfig2; //path (part 2) to module Config.C/in
-    static const G4String  fgkDetConfig3; //path (part 3) to module Config.C/in
-    static const G4String  fgkDetConfig4; //path (part 2) to module Config.C/in
-    static const G4String  fgkDetConfigName1;  //config macro name (part 1)
-    static const G4String  fgkDetConfigName2;  //config macro name (part 2)
-    static const G4String  fgkDetData1;   //path (part 1) to module g3calls.dat
-    static const G4String  fgkDetData2;   //path (part 2) to module g3calls.dat
-    static const G4String  fgkDetData3;   //path (part 3) to module g3calls.dat
-    static const G4String  fgkSTRUCT;     //structure directory name
+    static AliFiles*       fgInstance; //this instance
+    static const G4String  fgkTop;     //top directory
+    static const G4String  fgkDefaultMacroName;   // default config. macro name
+    static const G4String  fgkDefaultG3CallsName; // default g3calls name
+    static const G4String  fgkRootMacroExtension; //".C"  Root macro extension
+    static const G4String  fgkG4MacroExtension;   //".in" G4 macro extension
+    static const G4String  fgkG3CallsExtension;   //".dat"   
+    static const G4String  fgkXMLFileExtension;   //".xml"   
+
+    // data members  
+    G4String        fMacroName;      //configuration macro name
+    G4String        fG3CallsName;        //g3calls data file name  
 };  
 
 // inline methods
 
-inline G4String AliFiles::Config()
-{ return fgkConfig; }
+inline AliFiles* AliFiles::Instance() 
+{ return fgInstance; }
 
-inline G4String AliFiles::DetConfig1()
-{ return fgkDetConfig1; }
+inline void AliFiles::SetMacroName(const G4String& name)
+{ fMacroName = name; }
+		      
+inline void AliFiles::SetG3CallsName(const G4String& name)
+{ fG3CallsName = name; }
 
-inline G4String AliFiles::DetConfig2()
-{ return fgkDetConfig2; }
+inline G4String AliFiles::GetMacroName() const
+{ return fMacroName; }
 
-inline G4String AliFiles::DetConfig3()
-{ return fgkDetConfig3; }
+inline G4String AliFiles::GetG3CallsName() const
+{ return fG3CallsName; }
 
-inline G4String AliFiles::DetConfig4()
-{ return fgkDetConfig4; }
-
-inline G4String AliFiles::DetConfigName1()
-{ return fgkDetConfigName1; }
-
-inline G4String AliFiles::DetConfigName2()
-{ return fgkDetConfigName2; }
-
-inline G4String AliFiles::DetData1()
-{ return fgkDetData1; }
-
-inline G4String AliFiles::DetData2()
-{ return fgkDetData2; }
-
-inline G4String AliFiles::DetData3()
-{ return fgkDetData3; }
-
-inline G4String AliFiles::STRUCT()
-{ return fgkSTRUCT; }
+inline G4String AliFiles::GetDefaultMacroName() const
+{ return fgkDefaultMacroName; }
+			      
+inline G4String AliFiles::GetDefaultG3CallsName() const			      
+{ return fgkDefaultG3CallsName; }
 
 #endif //ALI_FILES_H
