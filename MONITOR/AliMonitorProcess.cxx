@@ -568,7 +568,10 @@ Bool_t AliMonitorProcess::ReconstructTPC(AliRawReader* rawReader)
   tpcLoader->LoadTracks("recreate");
   {
     AliTPCtrackerMI tracker(fTPCParam);
+    tracker.SetIO();
+    tracker.LoadClusters();
     tracker.Clusters2Tracks();
+    tracker.WriteTracks();
     tracker.UnloadClusters();
   }
 
