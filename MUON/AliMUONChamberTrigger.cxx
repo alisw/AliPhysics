@@ -15,6 +15,13 @@
 
 /*
 $Log$
+Revision 1.3  2000/06/28 15:16:35  morsch
+(1) Client code adapted to new method signatures in AliMUONSegmentation (see comments there)
+to allow development of slat-muon chamber simulation and reconstruction code in the MUON
+framework. The changes should have no side effects (mostly dummy arguments).
+(2) Hit disintegration uses 3-dim hit coordinates to allow simulation
+of chambers with overlapping modules (MakePadHits, Disintegration).
+
 Revision 1.2  2000/06/15 07:58:48  morsch
 Code from MUON-dev joined
 
@@ -56,7 +63,7 @@ void AliMUONChamberTrigger::DisIntegration(Float_t eloss, Float_t tof,
 //  using the segmentation and the response model
 
   Int_t twentyNano;
-  if (tof<75*pow(10,-9)) {
+  if (tof<75*TMath::Power(10,-9)) {
     twentyNano=1;
   } else {
     twentyNano=100;
