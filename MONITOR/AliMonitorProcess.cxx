@@ -586,7 +586,7 @@ Bool_t AliMonitorProcess::ReconstructHLT(
 #ifdef ALI_HLT
   Int_t iEvent
 #else
-  /* Int_t iEvent */
+  Int_t /* iEvent */
 #endif
 )
 {
