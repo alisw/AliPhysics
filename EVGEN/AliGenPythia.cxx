@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.36  2001/03/30 07:05:49  morsch
+Final print-out in finish run.
+Write parton system for jet-production (preliminary solution).
+
 Revision 1.35  2001/03/09 13:03:40  morsch
 Process_t and Struc_Func_t moved to AliPythia.h
 
@@ -112,6 +116,7 @@ AliGenPythia::AliGenPythia()
 {
 // Default Constructor
   fDecayer = new AliDecayerPythia();
+  SetEventListRange();
 }
 
 AliGenPythia::AliGenPythia(Int_t npart)
@@ -135,6 +140,7 @@ AliGenPythia::AliGenPythia(Int_t npart)
     fDecayer = new AliDecayerPythia();
     // Set random number generator 
     sRandom=fRandom;
+    SetEventListRange();
 }
 
 AliGenPythia::AliGenPythia(const AliGenPythia & Pythia)
@@ -145,6 +151,15 @@ AliGenPythia::AliGenPythia(const AliGenPythia & Pythia)
 AliGenPythia::~AliGenPythia()
 {
 // Destructor
+}
+
+void AliGenPythia::SetEventListRange(Int_t eventFirst, Int_t eventLast)
+{
+  // Set a range of event numbers, for which a table
+  // of generated particle will be printed
+  fDebugEventFirst = eventFirst;
+  fDebugEventLast  = eventLast;
+  if (fDebugEventLast==-1) fDebugEventLast=fDebugEventFirst;
 }
 
 void AliGenPythia::Init()
@@ -272,7 +287,8 @@ void AliGenPythia::Generate()
     while(1)
     {
 	fPythia->Pyevnt();
-//	fPythia->Pylist(1);
+	if (gAlice->GetEvNumber()>=fDebugEventFirst &&
+	    gAlice->GetEvNumber()<=fDebugEventLast) fPythia->Pylist(1);
 	fTrials++;
 	fPythia->ImportParticles(particles,"All");
 	Int_t np = particles->GetEntriesFast();
@@ -285,7 +301,6 @@ void AliGenPythia::Generate()
 		Int_t ks = iparticle->GetStatusCode();
 		kf = CheckPDGCode(iparticle->GetPdgCode());
 		if (ks==21) continue;
-
 		fChildWeight=(fDecayer->GetPartialBranchingRatio(kf))*fParentWeight;	  
 //
 // Parent

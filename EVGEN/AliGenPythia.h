@@ -23,6 +23,7 @@ class AliGenPythia : public AliGenerator
     virtual ~AliGenPythia();
     virtual void    Generate();
     virtual void    Init();
+    virtual void    SetEventListRange(Int_t eventFirst=-1, Int_t eventLast=-1);
     // select process type
     virtual void    SetProcess(Process_t proc = kPyCharm) {fProcess = proc;}
     // select structure function
@@ -37,7 +38,7 @@ class AliGenPythia : public AliGenerator
     // treat protons as inside nuclei
     virtual void    SetNuclei(Int_t a1, Int_t a2);
     // get cross section of process
-    virtual Float_t GetXsection() {return fXsection;}
+    virtual Float_t GetXsection() {return fXsection;}      
     // Check PDG code
     virtual Int_t   CheckPDGCode(Int_t pdgcode);
     virtual void    FinishRun();
@@ -61,6 +62,8 @@ class AliGenPythia : public AliGenerator
     Int_t       fNucA2;         // mass number nucleus side 2
     Bool_t      fFullEvent;     // Write Full event if true
     AliDecayer  *fDecayer;      // ! pointer to the decayer instance
+    Int_t       fDebugEventFirst; // First event to debug
+    Int_t       fDebugEventLast;  // Last  event to debug
  private:
     // check if particle is selected as parent particle
     Bool_t ParentSelected(Int_t ip);
