@@ -59,8 +59,9 @@
 #include <AliHeader.h>
 #include <AliPoints.h>
 
-#include "AliMUONRecoEvent.h"
 #include "AliMUONRecoDisplay.h"
+#include "AliMUONRecoEvent.h"
+#include "AliMUONRecoTrack.h"
 #include "AliMC.h"
 
 ClassImp(AliMUONRecoDisplay)
