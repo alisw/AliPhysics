@@ -114,8 +114,8 @@ Int_t AliJetParticlesReaderHLT::ReadESD(AliESD* esd)
   AliL3Track l3;
   AliL3Vertex v;
   v.SetX(vertexpos[0]);
-  v.SetY(vertexpos[0]);
-  v.SetZ(vertexpos[0]);
+  v.SetY(vertexpos[1]);
+  v.SetZ(vertexpos[2]);
   Double_t xc=0.,yc=0.,zc=0.;
   for (Int_t i = 0;i<ntr; i++) {
     AliESDHLTtrack *kesdtrack;
