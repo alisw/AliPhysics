@@ -19,6 +19,7 @@
 #pragma link C++ class  AliITSvSPD02+;
 #pragma link C++ class  AliITSvSDD03+;
 #pragma link C++ class  AliITSvSSD03+;
+#pragma link C++ class  AliITSvBeamTestITS04+;
 //#pragma link C++ class  AliITSv11+;
 //#pragma link C++ class  AliITSv11GeomCable+;
 //#pragma link C++ class  AliITSv11GeomCableFlat+;
@@ -191,7 +192,6 @@
 #pragma link C++ class AliITSRawStreamSPD+;
 #pragma link C++ class AliITSRawStreamSSD+;
 #pragma link C++ class AliITSRawStreamSSDv1+;
-#pragma link C++ class AliITSBeamTest+;
 #pragma link C++ class AliITSBeamTestDig+;
 #pragma link C++ class AliITSBeamTestDigSPD+;
 #pragma link C++ class AliITSBeamTestDigSDD+;

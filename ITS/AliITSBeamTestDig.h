@@ -9,12 +9,11 @@
 ////////////////////////////////////////////////////
 
 #include "TTask.h"
-#include "AliITSEventHeader.h"
 
-class AliITSBeamTest;
+class AliITS;
 class AliRawReaderDate;
 class TTree;
-
+class AliITSEventHeader;
 
 class AliITSBeamTestDig: public TTask {
  
@@ -24,14 +23,14 @@ class AliITSBeamTestDig: public TTask {
   AliITSBeamTestDig();
   AliITSBeamTestDig(const Text_t* name, const Text_t* title);
   AliITSBeamTestDig(const AliITSBeamTestDig& bt);
-  AliITSBeamTestDig& operator=(AliITSBeamTestDig &bt);
+  AliITSBeamTestDig& operator=(const AliITSBeamTestDig &source);
   virtual ~AliITSBeamTestDig() {}
  
   void SetRawReaderDate(AliRawReaderDate* rd) {fReaderDate=rd;}
   void SetTree(TTree* treedig) {fTreeD=treedig;}
   void SetITSEventHeader(AliITSEventHeader* header){fITSHeader = header;}
 
-  void SetBeamTest(AliITSBeamTest* bt) {fBt=bt;}
+  void SetBeamTest(AliITS* bt) {fBt=bt;}
 
 
  protected:      
@@ -40,9 +39,9 @@ class AliITSBeamTestDig: public TTask {
   AliRawReaderDate* fReaderDate;     // !reader date;
   TTree* fTreeD;                     // tree of digits
  
-  AliITSBeamTest* fBt;               // !beam test object
+  AliITS* fBt;               // !beam test object
 
-  ClassDef(AliITSBeamTestDig,1)   // its beam test digitization 
+  ClassDef(AliITSBeamTestDig,2)   // its beam test digitization 
 
  };
 

@@ -13,7 +13,6 @@
 
 
 class AliRawReaderDate;
-class AliITSBeamTest;
 
 class AliITSBeamTestDigSSD: public AliITSBeamTestDig {
  

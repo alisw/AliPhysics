@@ -47,11 +47,11 @@ AliITSBeamTestDig::AliITSBeamTestDig(const AliITSBeamTestDig &bt):TTask(bt){
   fITSHeader=bt.fITSHeader;
 }
 //______________________________________________________________________
-AliITSBeamTestDig& AliITSBeamTestDig::operator=(AliITSBeamTestDig &bt){
+AliITSBeamTestDig& AliITSBeamTestDig::operator=(const AliITSBeamTestDig &source){
     // Assignment operator. This is a function which is not allowed to be
     // done to the ITS beam test dig. It exits with an error.
     // Inputs:
-    if(this==&bt) return *this;
+    if(this==&source) return *this;
     Error("operator=","You are not allowed to make a copy of the AliITSBeamTestDig");
     exit(1);
     return *this; //fake return

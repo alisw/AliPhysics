@@ -3,6 +3,7 @@ SRCS = 	AliITS.cxx \
           AliITSvSDD03.cxx AliITSvSSD03.cxx \
 		AliITSvPPRcoarseasymm.cxx \
 		AliITSvPPRasymmFMD.cxx \
+		AliITSvBeamTestITS04.cxx \
 		AliITShit.cxx \
 		AliITSDetType.cxx \
 		AliITSgeom.cxx \
@@ -103,7 +104,6 @@ SRCS = 	AliITS.cxx \
 		AliITSRawStreamSSD.cxx \
 		AliITSRawStreamSDD.cxx \
 		AliITSRawStreamSPD.cxx \
-		AliITSBeamTest.cxx \
 		AliITSBeamTestDig.cxx \
 		AliITSBeamTestDigSDD.cxx \
 		AliITSBeamTestDigSPD.cxx \

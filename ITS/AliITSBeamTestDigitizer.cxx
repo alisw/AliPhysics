@@ -11,15 +11,20 @@
 #include "AliRunLoader.h"
 #include "AliITSEventHeader.h"
 #include "AliITSLoader.h"
-#include "AliITSBeamTest.h"
+#include "AliITSvBeamTestITS04.h"
+#include "AliITSvSDD03.h"
 #include "AliITSBeamTestDigSDD.h"
 #include "AliITSBeamTestDigSPD.h"
 #include "AliITSBeamTestDigSSD.h"
 #include "AliITSBeamTestDigitizer.h"
 #include "AliRawReaderDate.h"
+#include "TGeoManager.h"
+#include "TGeoMaterial.h"
+#include "TGeoMedium.h"
+#include "TGeoVolume.h"
+#include <TGeant3.h>
 
-
-const TString AliITSBeamTestDigitizer::fgkDefaultDigitsFileName="ITSbt.Digits.root";  
+const TString AliITSBeamTestDigitizer::fgkDefaultDigitsFileName="ITS.Digits.root";  
 
 ClassImp(AliITSBeamTestDigitizer)
 
@@ -39,38 +44,54 @@ AliITSBeamTestDigitizer::AliITSBeamTestDigitizer():TTask()
   fRunNumber=-1;
   SetFlagInit();
   fBt=0;
-  SetBeamTestPeriod();
+  fPeriod=kNov04;
 } 
 
 //_____________________________________________________________
-  AliITSBeamTestDigitizer::AliITSBeamTestDigitizer(const Text_t* name, const Text_t* title):TTask(name,title) 
+  AliITSBeamTestDigitizer::AliITSBeamTestDigitizer(const Text_t* name, const Text_t* title, Char_t* opt):TTask(name,title) 
 {  
   //
   // Standard constructor 
   //
-  Init();
+  fRunLoader=0;
+  fLoader=0;
+  fBt=0;
   fEvIn=0;
   fEvFin=0;
   fDATEEvType=7;
   fFlagHeader=kTRUE;
   fRunNumber=-1;
-  SetBeamTestPeriod();
+
+  TString choice(opt);
+  Bool_t aug04 = choice.Contains("Aug04");
+  Bool_t nov04 = choice.Contains("Nov04");
+  if(aug04) fPeriod=kAug04;
+  if(nov04) fPeriod=kNov04;
+  Init();
  } 
 
 //_____________________________________________________________
-  AliITSBeamTestDigitizer::AliITSBeamTestDigitizer(const Text_t* name, const Text_t* title, Int_t run):TTask(name,title) 
+  AliITSBeamTestDigitizer::AliITSBeamTestDigitizer(const Text_t* name, const Text_t* title, Int_t run, Char_t* opt):TTask(name,title) 
 
 {  
   //
   // Constructor 
   //
-  Init();
+  fRunLoader=0;
+  fLoader=0;
+  fBt=0;
   fEvIn=0;
   fEvFin=0;
   fDATEEvType=7;
   fFlagHeader=kTRUE;
   fRunNumber=run;
-  SetBeamTestPeriod();
+  TString choice(opt);
+  Bool_t aug04 = choice.Contains("Aug04");
+  Bool_t nov04 = choice.Contains("Nov04");
+  if(aug04) fPeriod=kAug04;
+  if(nov04) fPeriod=kNov04;
+
+  Init();
  } 
 
 //___________________________________________________________
@@ -80,20 +101,41 @@ void AliITSBeamTestDigitizer::Init(){
   //Initialization of run loader and its loader 
   //creation of galice.root
   //
+
   fRunLoader = AliRunLoader::Open("galice.root",
 				  AliConfig::GetDefaultEventFolderName(),"recreate");
   
   gAlice->SetRunLoader(fRunLoader);    
   fRunLoader->SetEventFolderName();
-  fBt = new AliITSBeamTest("ITS","ITS beam test");
-  fBt->SetDefaults();
+  if(GetBeamTestPeriod()==kNov04){
+    if(gGeoManager) delete gGeoManager;
+    gGeoManager = new TGeoManager("ITSGeometry","ITS Simulation Geometry Manager");
+    TGeoMaterial *vacmat = new TGeoMaterial("Vacuum",0,0,0);
+    TGeoMedium   *vacmed = new TGeoMedium("Vacuum_med",1,vacmat);
+    TGeoVolume *aLICE = gGeoManager->MakeBox("ALICE",vacmed,100.,100.,200.);
+    gGeoManager->SetTopVolume(aLICE);  
+    fBt = new AliITSvBeamTestITS04("ITS","ITS beam test");
+    fBt->CreateGeometry();
+    fBt->Init();
+
+  }
+  if(GetBeamTestPeriod()==kAug04){
+    fBt = new AliITSvSDD03("ITS",2004);
+    gSystem->Load("libgeant321");
+    new TGeant3("C++ Interface to Geant3");
+    fBt->CreateMaterials();
+    fBt->CreateGeometry();
+    fBt->Init();
+  }
   gAlice->AddModule(fBt);
+  fBt->SetDefaults();   
   fRunLoader->AddLoader(fBt);
   fLoader = (AliITSLoader*)fRunLoader->GetLoader("ITSLoader");
   fRunLoader->MakeTree("E");  
-
+  fRunLoader->WriteHeader("OVERWRITE");
   fRunLoader->WriteRunLoader("OVERWRITE");
-  fRunLoader->WriteAliRun("OVERWRITE");
+  fRunLoader->WriteAliRun("OVERWRITE"); 
+  
   fDigitsFileName=fgkDefaultDigitsFileName;
   this->Add(new AliITSBeamTestDigSPD("DigSPD","SPD Digitization")); 
   this->Add(new AliITSBeamTestDigSDD("DigSDD","SDD Digitization")); 
@@ -125,7 +167,7 @@ void AliITSBeamTestDigitizer::Init(){
   
   fLoader = (AliITSLoader*)fRunLoader->GetLoader("ITSLoader");
   
-  fBt = (AliITSBeamTest*)gAlice->GetDetector("ITS");
+  //fBt = (AliITSBeamTest*)gAlice->GetDetector("ITS");
   fBt->SetDefaults();
 
   fDigitsFileName=fgkDefaultDigitsFileName;
@@ -146,11 +188,11 @@ AliITSBeamTestDigitizer::AliITSBeamTestDigitizer(const AliITSBeamTestDigitizer &
 
 }
 //______________________________________________________________________
-AliITSBeamTestDigitizer& AliITSBeamTestDigitizer::operator=(AliITSBeamTestDigitizer &bt){
+AliITSBeamTestDigitizer& AliITSBeamTestDigitizer::operator=(const AliITSBeamTestDigitizer &source){
     // Assignment operator. This is a function which is not allowed to be
     // done to the ITS beam test digitizer. It exits with an error.
     // Inputs:
-    if(this==&bt) return *this;
+    if(this==&source) return *this;
     Error("operator=","You are not allowed to make a copy of the AliITSBeamTestDigitizer");
     exit(1);
     return *this; //fake return
@@ -163,7 +205,7 @@ AliITSBeamTestDigitizer::~AliITSBeamTestDigitizer(){
   //Destructor
   if(fBt) delete fBt;
   if(fLoader) delete fLoader;
-  if(fRunLoader) delete fRunLoader;
+  if(fHeader) delete fHeader;
 } 
 
 
@@ -222,30 +264,30 @@ void AliITSBeamTestDigitizer::ExecDigitization(){
     // Make branches outside the dig-classes
 
     TClonesArray* digitsSPD = new TClonesArray("AliITSdigitSPD",1000);
-    treeD->Branch("ITSDigitSPD",&digitsSPD);
+    treeD->Branch("ITSDigitsSPD",&digitsSPD);
  
     TClonesArray* digitsSDD = new TClonesArray("AliITSdigitSDD",1000);
-    treeD->Branch("ITSDigitSDD",&digitsSDD);
+    treeD->Branch("ITSDigitsSDD",&digitsSDD);
    
     TClonesArray* digitsSSD = new TClonesArray("AliITSdigitSSD",1000);
-    treeD->Branch("ITSDigitSSD",&digitsSSD);
+    treeD->Branch("ITSDigitsSSD",&digitsSSD);
 
 
     digSSD->SetTree(treeD);
     digSDD->SetTree(treeD);
     digSPD->SetTree(treeD);
-
+    
     digSSD->SetBeamTest(fBt);
     digSDD->SetBeamTest(fBt);
     digSPD->SetBeamTest(fBt);
-
+    
     digSSD->SetITSEventHeader(itsh);
     digSDD->SetITSEventHeader(itsh);
     digSPD->SetITSEventHeader(itsh);
 
     digSDD->SetBtPeriod(GetBeamTestPeriod());
-    digSDD->SetThreshold(16);
-
+    if(GetBeamTestPeriod()==1)digSDD->SetThreshold(16);
+    else digSDD->SetThreshold(0);
     ExecuteTask(0);  
 
     header->SetEventNrInRun(iev);
@@ -261,11 +303,14 @@ void AliITSBeamTestDigitizer::ExecDigitization(){
 
    }while(rd.NextEvent());
 
+ 
   fRunLoader->WriteHeader("OVERWRITE");
   fRunLoader->WriteRunLoader("OVERWRITE");
+
   fLoader->UnloadDigits();
   fLoader->UnloadRawClusters();
   fRunLoader->UnloadHeader();
+
   
 }
 

@@ -5,13 +5,18 @@
 //                                                // 
 //                                                //
 ////////////////////////////////////////////////////
+#include "AliITS.h"
 #include "AliITSdigitSDD.h"
 #include "AliRawReaderDate.h"
+#include "AliVMERawStream.h"
 #include "AliITSRawStreamSDDv2.h"
 #include "AliITSRawStreamSDDv3.h"
 #include "AliITSRawStreamSDD.h"
 #include "AliITSBeamTestDigSDD.h"
-#include "AliITSBeamTest.h"
+#include "AliITSEventHeader.h"
+#include "AliITSgeom.h"
+#include <TBranch.h>
+#include <TTree.h>
 
 ClassImp(AliITSBeamTestDigSDD)
 
@@ -56,45 +61,63 @@ void AliITSBeamTestDigSDD::Exec(Option_t* /*opt*/)
 
   // Reads raw data and fills the tree of digits
 
-  TBranch* branch = fTreeD->GetBranch("ITSDigitSDD");
-
-  TClonesArray** digits = new TClonesArray*[fBt->GetNSDD()+fBt->GetNSPD()];
-  Int_t* idig = new Int_t[fBt->GetNSDD()+fBt->GetNSPD()];
-  for(Int_t idet=0;idet<(fBt->GetNSDD()+fBt->GetNSPD());idet++){
+  TBranch* branch = fTreeD->GetBranch("ITSDigitsSDD");
+  Int_t maxn=0;
+  AliITSgeom* geom = fBt->GetITSgeom();
+  Int_t nsdd=0;
+  Int_t nspd=0;
+  Int_t nssd=0;
+  for(Int_t nlay=1;nlay<=geom->GetNlayers();nlay++){
+    for(Int_t nlad=1;nlad<=geom->GetNladders(nlay);nlad++){
+      for(Int_t ndet=1;ndet<=geom->GetNdetectors(nlay);ndet++){
+	Int_t index=geom->GetModuleIndex(nlay,nlad,ndet);
+	if(geom->GetModuleTypeName(index)=="kSPD") nspd++;
+	if(geom->GetModuleTypeName(index)=="kSDD") nsdd++;
+	if(geom->GetModuleTypeName(index)=="kSSD") nssd++;
+      }
+    }
+  }
+  if(GetBtPeriod()==kAug04) maxn=nsdd;
+  if(GetBtPeriod()==kNov04) maxn=nspd+nsdd+nssd;
+  TClonesArray** digits = new TClonesArray*[maxn];
+  Int_t* idig = new Int_t[maxn];
+  for(Int_t idet=0;idet<maxn;idet++){
     digits[idet]=new TClonesArray("AliITSdigitSDD");
     idig[idet]=0;
   }
-
 
   switch(fBtPer){
   case kNov04:
     fStreamer = new AliITSRawStreamSDDv3(fReaderDate);
     break;
   case kAug04:
-    fStreamer = new AliITSRawStreamSDDv2(fReaderDate);
+    AliVMERawStream vmeStreamer(fReaderDate);
     fReaderDate->RequireHeader(kFALSE);
-    fReaderDate->ReadHeader();
-   do{
+    while(fReaderDate->ReadHeader()){
       fSubEventAttributes = fReaderDate->GetSubEventAttributes();
-    }while(fReaderDate->ReadHeader());
-   fSDDEvType=GetEventType();
+    }
+    
+    fSDDEvType=GetEventType();
     if(fSDDEvType==1) fITSHeader->SetEventTypeSDD(kReal);
     if(fSDDEvType==2) fITSHeader->SetEventTypeSDD(kCalibration1);
     if(fSDDEvType==3) fITSHeader->SetEventTypeSDD(kCalibration2);
     fReaderDate->Reset();
+    fStreamer = new AliITSRawStreamSDDv2(fReaderDate);
     break;
   }
 
-
-   fStreamer->SetLowCarlosThreshold(fThreshold,0);
-   fStreamer->SetLowCarlosThreshold(fThreshold,1);
+ 
+  fStreamer->SetLowCarlosThreshold(fThreshold,0);
+  fStreamer->SetLowCarlosThreshold(fThreshold,1);
 
   //from raw data the signal is already decompressed..
   //set compressed fSignal of AliITSdigitSDD to -1000
   //set expanded fSignalExpanded of AliITSdigitSDD equal to fStreamer.GetSignal() 
   while(fStreamer->Next()){   
 
-    Int_t ndet = fStreamer->GetChannel()+fBt->GetNSPD();
+    Int_t ndet =0;
+    if(GetBtPeriod()==kNov04) ndet=fStreamer->GetChannel()+nspd;
+    if(GetBtPeriod()==kAug04) ndet=fStreamer->GetChannel();
     Int_t anode = fStreamer->GetCoord1();
 
     /* if we are reading only one det, two wings
@@ -113,23 +136,23 @@ void AliITSBeamTestDigSDD::Exec(Option_t* /*opt*/)
 
     new ((*digits[ndet])[idig[ndet]]) AliITSdigitSDD(0,kdgt,ktracks,khits,kcharges,fStreamer->GetSignal());
     idig[ndet]++;
-
   }
 
   if(GetBtPeriod()==kNov04){
     Int_t jitter=fStreamer->ReadJitter();
     fITSHeader->SetJitterSDD(jitter);
   }
-  for(Int_t n = fBt->GetNSPD();n<fBt->GetNSDD()+fBt->GetNSPD();n++){
+  for(Int_t n = 0;n<maxn;n++){
     branch->SetAddress(&digits[n]);
     branch->Fill();
+  
   }
       
-  fTreeD->SetEntries(fBt->GetNSPD()+fBt->GetNSDD()+fBt->GetNSSD());
+  fTreeD->SetEntries(maxn);
   fReaderDate->Reset();
   fTreeD->AutoSave();
 
-  for(Int_t n=0;n<fBt->GetNSPD()+fBt->GetNSDD();n++){
+  for(Int_t n=0;n<maxn;n++){
     delete digits[n];
   }
 
@@ -148,12 +171,12 @@ Int_t AliITSBeamTestDigSDD::GetEventType(){
   // 2: calibration 1 (kCalibration1, injector pulse)
   // 3: calibration 2 (kCalibration2, test pulse)
  
-  fSDDEvType = 2;
+  fSDDEvType=0;
   if(fSubEventAttributes[0]==0 && fSubEventAttributes[1]==0 && fSubEventAttributes[2]==0) fSDDEvType = 1;
+  if(fSubEventAttributes[0]==1 && fSubEventAttributes[1]==0 && fSubEventAttributes[2]==0) fSDDEvType = 2;
 
   if(fSubEventAttributes[0]==2 && fSubEventAttributes[1]==0 && fSubEventAttributes[2]==0) fSDDEvType = 3;
 
-  fSubEventAttributes = 0;
   return fSDDEvType;
 }
 
@@ -168,11 +191,11 @@ AliITSBeamTestDigSDD::AliITSBeamTestDigSDD(const AliITSBeamTestDigSDD &bt):AliIT
   fStreamer = bt.fStreamer;
 }
 //______________________________________________________________________
-AliITSBeamTestDigSDD& AliITSBeamTestDigSDD::operator=(AliITSBeamTestDigSDD &bt){
+AliITSBeamTestDigSDD& AliITSBeamTestDigSDD::operator=(const AliITSBeamTestDigSDD &source){
     // Assignment operator. This is a function which is not allowed to be
     // done to the ITS beam test dig. It exits with an error.
     // Inputs:
-    if(this==&bt) return *this;
+    if(this==&source) return *this;
     Error("operator=","You are not allowed to make a copy of the AliITSBeamTestDig");
     exit(1);
     return *this; //fake return

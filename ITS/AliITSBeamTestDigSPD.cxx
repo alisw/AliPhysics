@@ -6,15 +6,16 @@
 //                                                //
 ////////////////////////////////////////////////////
 
-
+#include "AliITS.h"
 #include "AliITSdigitSPD.h"
 #include "AliRawReaderDate.h"
 #include "AliRawDataHeader.h"
 #include "AliITSRawStreamSPD.h"
 #include "AliITSBeamTestDigSPD.h"
-#include "AliITSBeamTest.h"
-
-
+#include "AliITSgeom.h"
+#include <TBranch.h>
+#include <TTree.h>
+#include "AliITSEventHeader.h"
 ClassImp(AliITSBeamTestDigSPD)
 
 
@@ -55,22 +56,35 @@ void AliITSBeamTestDigSPD::Exec(Option_t* /*opt*/)
   //Reads raw data for SPD, fill SPD digits tree
 
 
-  TBranch* branch = fTreeD->GetBranch("ITSDigitSPD");
-  TClonesArray** newdigits = new TClonesArray*[fBt->GetNSPD()];
+  TBranch* branch = fTreeD->GetBranch("ITSDigitsSPD");
 
-   Int_t* idig = new Int_t[fBt->GetNSPD()];
+  AliITSgeom* geom = fBt->GetITSgeom();
+  Int_t nsdd=0;
+  Int_t nspd=0;
+  Int_t nssd=0;
+  for(Int_t nlay=1;nlay<=geom->GetNlayers();nlay++){
+    for(Int_t nlad=1;nlad<=geom->GetNladders(nlay);nlad++){
+      for(Int_t ndet=1;ndet<=geom->GetNdetectors(nlay);ndet++){
+	Int_t index=geom->GetModuleIndex(nlay,nlad,ndet);
+	if(geom->GetModuleTypeName(index)=="kSPD") nspd++;
+	if(geom->GetModuleTypeName(index)=="kSDD") nsdd++;
+	if(geom->GetModuleTypeName(index)=="kSSD") nssd++;
+      }
+    }
+  }
+  Int_t maxn=nspd+nsdd+nssd;
 
-  
+  TClonesArray** newdigits = new TClonesArray*[maxn];
 
-  for (Int_t idet =0; idet < fBt->GetNSPD();idet++){
+
+  Int_t* idig = new Int_t[maxn];
+
+  for (Int_t idet =0; idet <maxn;idet++){
      newdigits[idet]=new TClonesArray("AliITSdigitSPD");
      idig[idet]=0;  
    }
   
 
- 
-
-  //cout <<"still here"<< endl;
   AliITSRawStreamSPD str(fReaderDate);
 
   fReaderDate->SelectEquipment(17,211,211);
@@ -96,15 +110,7 @@ void AliITSBeamTestDigSPD::Exec(Option_t* /*opt*/)
     Int_t row = str.GetRow();
     Int_t col = str.GetColumn();
 
-
-
-    //    if (modID == 0 || modID == 1) {
-    // cout <<"Mod ID " << modID  <<" Row : "<< row << "Col : " << col << endl; 
-     //}
-
-
-    const Int_t kdgt[3]={row,col,1};
-    
+    const Int_t kdgt[3]={col,row,1};
     //    newdigits = new TClonesArray*[fBt->GetNSPD()];
 
     new ((*newdigits[modID])[idig[modID]]) AliITSdigitSPD(kdgt);
@@ -133,21 +139,21 @@ void AliITSBeamTestDigSPD::Exec(Option_t* /*opt*/)
     } // while(str.Next());
     
 
-    for(Int_t n=0;n<fBt->GetNSPD();n++){
+    for(Int_t n=0;n<maxn;n++){
       branch->SetAddress(&newdigits[n]);
-      branch->Fill();  
+      branch->Fill(); 
+
    }
     
-    fTreeD->SetEntries(fBt->GetNSDD()+fBt->GetNSPD()+fBt->GetNSSD());
+    fTreeD->SetEntries(maxn);
   
 	
-  
     fReaderDate->Reset();
     fTreeD->AutoSave();
    
 
-    for(Int_t n=0;n<fBt->GetNSPD();n++){
-    delete newdigits[n];
+    for(Int_t n=0;n<maxn;n++){
+      delete newdigits[n];
     }
 
     delete[] newdigits;

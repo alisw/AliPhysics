@@ -9,10 +9,11 @@
 ////////////////////////////////////////////////////
 
 #include "AliITSBeamTestDig.h"
-#include "AliITSBeamTest.h"
 
 class AliRawReaderDate;
 class AliITSRawStreamSDD;
+
+typedef enum {kAug04,kNov04} BeamtestPeriod_t;
 
 class AliITSBeamTestDigSDD: public AliITSBeamTestDig {
  
@@ -22,7 +23,7 @@ class AliITSBeamTestDigSDD: public AliITSBeamTestDig {
   AliITSBeamTestDigSDD();
   AliITSBeamTestDigSDD(const Text_t* name, const Text_t* title);
   AliITSBeamTestDigSDD(const AliITSBeamTestDigSDD& bt);
-  AliITSBeamTestDigSDD& operator=(AliITSBeamTestDigSDD &bt);
+  AliITSBeamTestDigSDD& operator=(const AliITSBeamTestDigSDD &source);
 
   virtual ~AliITSBeamTestDigSDD();
 
