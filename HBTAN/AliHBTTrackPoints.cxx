@@ -57,7 +57,7 @@ AliHBTTrackPoints::AliHBTTrackPoints(Int_t n, AliESDtrack* track, Float_t mf, Fl
   Double_t x;
   Double_t par[5];
   track->GetInnerExternalParameters(x,par);     //get properties of the track
-  if (x == 0)
+  if (par[4] == 0)
    {
      Error("AliHBTTrackPoints","This ESD track does not contain TPC information");
      return;
