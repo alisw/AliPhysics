@@ -16,6 +16,7 @@ class AliITSIOTrack : public TObject {
   AliITSIOTrack();                        // constructor
   virtual ~AliITSIOTrack() {};            // distructor
   Int_t   GetLabel() const {return fLab;} // get track label
+  Int_t   GetTPCLabel() const {return fTPCLab;} // get TPC track label   
   Int_t   GetIdPoint(Int_t i) const {return fIdPoints[i];}   // get the identification number for the point
   Int_t   GetIdModule(Int_t i) const {return fIdModules[i];} // get the module number for the point
 
@@ -35,13 +36,18 @@ class AliITSIOTrack : public TObject {
   Float_t GetY() const {return fY;}     // gets the y cohordinate of the found vertex
   Float_t GetPx() const {return fPx;}   // gets the x momentum component at the found vertex 
   Float_t GetPy() const {return fPy;}   // gets the y momentum component at the found vertex 
-  Float_t GetPz()const {return fPz;}    // gets the z momentum component at the found vertex 
+  Float_t GetPz() const {return fPz;}    // gets the z momentum component at the found vertex 
+  Int_t GetCode() const  {return fCode;}   // gets the PDG particle code
+  Float_t GetPxg() const  {return fPxg;}   // gets the x momentum component read from Geant
+  Float_t GetPyg() const  {return fPyg;}   // gets the y momentum component read from Geant
+  Float_t GetPzg() const  {return fPzg;}   // gets the z momentum component read from Geant
  
   void SetCovMatrix(Double_t C00, Double_t C10, Double_t C11, Double_t C20, Double_t C21, 
        Double_t C22, Double_t C30, Double_t C31, Double_t C32, Double_t C33, Double_t C40, 
        Double_t C41, Double_t C42, Double_t C43, Double_t C44);
   
   void SetLabel(Int_t lab) {fLab=lab;}  // sets the track label
+  void SetTPCLabel(Int_t lab) {fTPCLab=lab;}  // sets the TPC track label    
   void SetIdPoint(Int_t i,Int_t pnt) {fIdPoints[i]=pnt;}   // set the identification number for the point
   void SetIdModule(Int_t i,Int_t mod) {fIdModules[i]=mod;} // set the module number for the point
    
@@ -59,16 +65,25 @@ class AliITSIOTrack : public TObject {
   void SetPx(Float_t px) {fPx=px;}   // sets the x momentum component at the found vertex 
   void SetPy(Float_t py) {fPy=py;}   // sets the y momentum component at the found vertex
   void SetPz(Float_t pz) {fPz=pz;}   // sets the z momentum component at the found vertex
-
+  void SetCode(Int_t code) {fCode=code;}   // sets the PDG particle code
+  void SetPxg(Float_t pxg) {fPxg=pxg;}   // sets the x momentum component read from Geant
+  void SetPyg(Float_t pyg) {fPyg=pyg;}   // sets the y momentum component read from Geant
+  void SetPzg(Float_t pzg) {fPzg=pzg;}   // sets the z momentum component read from Geant
+  
  private:
     
   Int_t     fLab;       // label of reconstructed track
+  Int_t     fTPCLab;       // label of TPC track  
+  Int_t     fCode;      // PDG particle code
   Float_t   fX ;        // x cohordinate of the found vertex
   Float_t   fY ;        // y cohordinate of the found vertex
   Float_t   fZ ;        // z cohordinate of the found vertex
   Float_t   fPx;        // x component of track momentum at the found vertex
   Float_t   fPy;        // y component of track momentum at the found vertex
   Float_t   fPz;        // z component of track momentum at the found vertex
+  Float_t   fPxg;        // x component of track momentum read from Geant
+  Float_t   fPyg;        // y component of track momentum read from Geant
+  Float_t   fPzg;        // z component of track momentum read from Geant
    
   //
   Int_t     fIdPoints[6];   // points assigned to the track (entry # in fRecPoints is given by module #)

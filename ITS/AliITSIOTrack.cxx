@@ -11,13 +11,19 @@ ClassImp(AliITSIOTrack)
 AliITSIOTrack::AliITSIOTrack() {
 //Origin  A. Badala' and G.S. Pappalardo:  e-mail Angela.Badala@ct.infn.it, Giuseppe.S.Pappalardo@ct.infn.it
 // default constructor
-  fLab=-3; 
+  fLab=-3;
+  fTPCLab=-3;   
   fX=fZ=fY=0.; 
   fPx=fPy=fPz=0.;
   for (Int_t i=0;i<6;i++) {fIdModules[i]=fIdPoints[i]=-1; fIdPoints[i]=-1;}
   fStateVPhi=0.; fStateVZ=0.; fStateVD=0.; fStateVTgl=0.; fStateVC=0.;
   fRadius=0.; fCharge=0; 
   fC00=fC10=fC11=fC20=fC21=fC22=fC30=fC31=fC32=fC33=fC40=fC41=fC42=fC43=fC44=0.;      
+///////////////////////////////
+   fCode=0;
+   fPxg=0.;
+   fPyg=0.;
+   fPzg=0.;
 }
    
 

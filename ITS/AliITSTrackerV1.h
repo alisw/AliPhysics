@@ -51,8 +51,8 @@ class AliITSTrackerV1 : public TObject {
     Int_t Intersection(AliITSTrackV1 &track, Int_t layer, Int_t &ladder, Int_t &detector); 
     void KalmanFilter(AliITSTrackV1 *newtrack, TVector &cluster, Double_t sigma[2]);
     
-   // void KalmanFilterVert(AliITSTrackV1 *newtrack, TVector &cluster, Double_t sigma[2]);
-	void KalmanFilterVert(AliITSTrackV1 *newtrack, TVector &cluster, Double_t sigma[2], Double_t chi2pred);
+    void KalmanFilterVert(AliITSTrackV1 *newtrack, TVector &cluster, Double_t sigma[2]);
+	//void KalmanFilterVert(AliITSTrackV1 *newtrack, TVector &cluster, Double_t sigma[2], Double_t chi2pred);
 	 
   private:
 
