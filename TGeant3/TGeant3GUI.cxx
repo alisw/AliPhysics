@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.5  2000/03/20 15:11:03  fca
+Mods to make the code compile on HP
+
 Revision 1.4  2000/01/18 16:12:08  morsch
 Bug in calculation of number of volume divisions and number of positionings corrected
 Browser for Material and Media properties added
@@ -1088,8 +1091,14 @@ void AliGuiGeomMain::Update()
 	    (fComboEntries->UncheckedAt(i));
 	if (gCurrentMaterial->Id()==imat) break;
     }
-    gCurrentMedium   = (AliGUIMedium*) 
-	(fComboMediaEntries->UncheckedAt(i));
+    Int_t imed = gCurrentVolume->Medium();
+    Int_t nmed=fComboMediaEntries->GetEntriesFast();
+    for (i=0; i<nmed; i++) {
+	gCurrentMedium = (AliGUIMedium*) 
+	    (fComboMediaEntries->UncheckedAt(i));
+	if (gCurrentMedium->Id()==imed) break;
+    }
+
     UpdateCombo();
     UpdateListBox();
     
