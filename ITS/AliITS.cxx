@@ -126,7 +126,25 @@ the AliITS class.
 ClassImp(AliITS)
 
 //______________________________________________________________________
-AliITS::AliITS() : AliDetector() {
+AliITS::AliITS() : AliDetector(),
+    fITSgeom(0),
+    fEuclidOut(0),
+    fITSmodules(0),
+    fOpt("All"),
+    fIdN(0),
+    fIdSens(0),
+    fIdName(0),
+    fNDetTypes(kNTYPES),
+    fDetTypes(0),
+    fSDigits(0),
+    fNSDigits(0),
+    fDtype(0),
+    fNdtype(0),
+    fCtype(0),
+    fNctype(0),
+    fRecPoints(0),
+    fNRecPoints(0),
+    fSelectedVertexer(0){
     // Default initializer for ITS
     //      The default constructor of the AliITS class. In addition to
     // creating the AliITS class it zeros the variables fIshunt (a member
@@ -143,36 +161,30 @@ AliITS::AliITS() : AliDetector() {
     fIshunt     = 0;   // not zeroed in AliDetector.
 
     // AliITS variables.
-    fEuclidOut  = 0;
-    fITSgeom    = 0;
-    fITSmodules = 0;
-    fOpt        = "All";
 //    SetDetectors(); // default to fOpt="All". This variable not written out.
-
-    fIdN        = 0;
-    fIdName     = 0;
-    fIdSens     = 0;
-
-    fNDetTypes  = kNTYPES;
-    fDetTypes   = 0;
-
-    fSDigits    = 0;
-    fNSDigits   = 0;
-
-    fNdtype     = 0;
-    fDtype      = 0;
-
-    fCtype      = 0;
-    fNctype     = 0;
-
-    fRecPoints  = 0;
-    fNRecPoints = 0;
-
     SetMarkerColor(kRed);
     SelectVertexer(" ");
 }
 //______________________________________________________________________
-AliITS::AliITS(const char *name, const char *title):AliDetector(name,title){
+AliITS::AliITS(const char *name, const char *title):AliDetector(name,title),
+    fITSgeom(0),
+    fEuclidOut(0),
+    fITSmodules(0),
+    fOpt("All"),
+    fIdN(0),
+    fIdSens(0),
+    fIdName(0),
+    fNDetTypes(kNTYPES),
+    fDetTypes(0),
+    fSDigits(0),
+    fNSDigits(0),
+    fDtype(0),
+    fNdtype(0),
+    fCtype(0),
+    fNctype(0),
+    fRecPoints(0),
+    fNRecPoints(0),
+    fSelectedVertexer(0){
     //     The standard Constructor for the ITS class. In addition to 
     // creating the AliITS class, it allocates memory for the TClonesArrays 
     // fHits, fSDigits, fDigits, fITSpoints, and the TObjArray of fCtype 
@@ -1040,8 +1052,9 @@ void AliITS::SDigitsToDigits(Option_t *opt){
         iDetType = DetType(id);
         sim      = (AliITSsimulation*)iDetType->GetSimulationModel();
         if (!sim) {
-            Error("SDigit2Digits",
-                  "The simulation class was not instanciated!");
+            Error("SDigit2Digits","The simulation class was not "
+                  "instanciated for module %d type %s!",module,
+                  geom->GetModuleTypeName(module));
             exit(1);
         } // end if !sim
         sim->InitSimulationModule(module,gAlice->GetEvNumber());
@@ -1162,8 +1175,9 @@ void AliITS::HitsToPreDigits(Int_t evNumber,Int_t bgrev,Int_t size,
         iDetType = DetType(id);
         sim      = (AliITSsimulation*)iDetType->GetSimulationModel();
         if (!sim) {
-            Error("HitsToSDigits",
-                  "The simulation class was not instanciated!");
+            Error("HitsToSDigits","The simulation class was not "
+                  "instanciated for module %d type %s!",module,
+                  geom->GetModuleTypeName(module));
             exit(1);
         } // end if !sim
         mod      = (AliITSmodule *)fITSmodules->At(module);
@@ -1226,8 +1240,9 @@ void AliITS::HitsToDigits(Int_t evNumber,Int_t bgrev,Int_t size,
         iDetType = DetType(id);
         sim      = (AliITSsimulation*)iDetType->GetSimulationModel();
         if (!sim) {
-            Error("HitsToDigits",
-                  "The simulation class was not instanciated!");
+            Error("HitsToDigits","The simulation class was not "
+                  "instanciated for module %d type %s!",module,
+                  geom->GetModuleTypeName(module));
             exit(1);
         } // end if !sim
         mod      = (AliITSmodule *)fITSmodules->At(module);
@@ -1652,15 +1667,16 @@ void AliITS::HitsToFastRecPoints(Int_t evNumber,Int_t bgrev,Int_t size,
     
     cout<<"HitsToFastRecPoints: N mod = "<<geom->GetIndexMax()<<endl;
     
-    for(module=0;module<geom->GetIndexMax();module++)
-     {
+    for(module=0;module<geom->GetIndexMax();module++){
         id       = geom->GetModuleType(module);
         if (!all && !det[id]) continue;
         iDetType = DetType(id);
         sim      = (AliITSsimulation*)iDetType->GetSimulationModel();
         if (!sim) 
          {
-           Error("HitsToFastPoints","The simulation class was not instanciated!");
+           Error("HitsToFastPoints","The simulation class was not "
+                 "instanciated for module %d type %x!",module,
+                 geom->GetModuleTypeName(module));
            exit(1);
          } // end if !sim
         mod      = (AliITSmodule *)fITSmodules->At(module);
