@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.65  2003/01/14 10:50:19  alibrary
+  Cleanup of STEER coding conventions
+
   Revision 1.64  2002/11/21 22:54:07  alibrary
   Removing AliMC and AliMCProcess
 
@@ -246,7 +249,6 @@ ClassImp(AliRICH)
 AliRICH::AliRICH()
 {
 // Default ctor should not contain any new operators
-   cout<<ClassName()<<"::named ctor(sName,sTitle)>\n"; // no way to control it as ctor is called before call to SetDebugXXXX()
 
     fIshunt     = 0;
     fHits       = 0;
