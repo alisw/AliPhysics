@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.59  2002/07/19 14:35:36  morsch
+Count total number of trials. Print mean Q, x1, x2.
+
 Revision 1.58  2002/07/17 10:04:09  morsch
 SetYHard method added.
 
@@ -345,7 +348,7 @@ void AliGenPythia::Init()
     fQ         = 0.;
     fX1        = 0.;
     fX2        = 0.;    
-    fNev       = 0.;
+    fNev       = 0 ;
 //    
     AliGenMC::Init();
 }
@@ -574,9 +577,6 @@ void AliGenPythia::Generate()
 	    if (jev >= fNpart || fNpart == -1) {
 		fKineBias=Float_t(fNpart)/Float_t(fTrials);
 		printf("\n Trials: %i %i %i\n",fTrials, fNpart, jev);
-		       fPythia->GetVINT(41), 
-		       fPythia->GetVINT(42),
-		       fPythia->GetVINT(51));
 
 		fQ  += fPythia->GetVINT(51);
 		fX1 += fPythia->GetVINT(41);
