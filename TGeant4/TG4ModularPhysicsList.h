@@ -6,12 +6,9 @@
 // Class TG4ModularPhysicsList
 // ---------------------------
 // The modular physics list.
-// Creates all standard particles.
-// The physics processes have to be created
+// The physics processes and particles have to be created
 // using the G4VPhysicsCreator derived classes
 // and registered to this physics list.
-// Only G4Decay is created directly in this modular
-// physics list.
 
 #ifndef TG4_MODULAR_PHYSICS_LIST_H
 #define TG4_MODULAR_PHYSICS_LIST_H
