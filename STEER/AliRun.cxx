@@ -421,16 +421,16 @@ void AliRun::FinishEvent()
   ResetStack();
   
   // Write Tree headers
-  Int_t ievent = fHeader.GetEvent();
-  char hname[30];
-  sprintf(hname,"TreeK%d",ievent);
-  if (fTreeK) fTreeK->Write(hname);
-  sprintf(hname,"TreeH%d",ievent);
-  if (fTreeH) fTreeH->Write(hname);
-  sprintf(hname,"TreeD%d",ievent);
-  if (fTreeD) fTreeD->Write(hname);
-  sprintf(hname,"TreeR%d",ievent);
-  if (fTreeR) fTreeR->Write(hname);
+  //  Int_t ievent = fHeader.GetEvent();
+  //  char hname[30];
+  //  sprintf(hname,"TreeK%d",ievent);
+  if (fTreeK) fTreeK->Write();
+  //  sprintf(hname,"TreeH%d",ievent);
+  if (fTreeH) fTreeH->Write();
+  //  sprintf(hname,"TreeD%d",ievent);
+  if (fTreeD) fTreeD->Write();
+  //  sprintf(hname,"TreeR%d",ievent);
+  if (fTreeR) fTreeR->Write();
 }
 
 //_____________________________________________________________________________
@@ -605,7 +605,6 @@ Int_t AliRun::GetEvent(Int_t event)
   // Connect the Trees Kinematics and Hits for event # event
   // Set branch addresses
   //
-  fHeader.SetEvent(event);
 
   // Reset existing structures
   ResetStack();
@@ -617,6 +616,10 @@ Int_t AliRun::GetEvent(Int_t event)
   if (fTreeH) delete fTreeH;
   if (fTreeD) delete fTreeD;
   if (fTreeR) delete fTreeR;
+
+  // Get header from file
+  if(fTreeE) fTreeE->GetEntry(event);
+  else Error("GetEvent","Cannot file Header Tree\n");
   
   // Get Kine Tree from file
   char treeName[20];
@@ -1007,11 +1010,11 @@ void AliRun::MakeTree(Option_t *option)
   char *D = strstr(option,"D");
   char *R = strstr(option,"R");
   //
-  if (K && !fTreeK) fTreeK = new TTree("TK","Kinematics");
-  if (H && !fTreeH) fTreeH = new TTree("TH","Hits");
-  if (D && !fTreeD) fTreeD = new TTree("TD","Digits");
+  if (K && !fTreeK) fTreeK = new TTree("TreeK0","Kinematics");
+  if (H && !fTreeH) fTreeH = new TTree("TreeH0","Hits");
+  if (D && !fTreeD) fTreeD = new TTree("TreeD0","Digits");
   if (E && !fTreeE) fTreeE = new TTree("TE","Header");
-  if (R && !fTreeR) fTreeR = new TTree("TR","Reconstruction");
+  if (R && !fTreeR) fTreeR = new TTree("TreeR0","Reconstruction");
   if (fTreeH) fTreeH->SetAutoSave(1000000000); //no autosave
   //
   // Create a branch for hits/digits for each detector
@@ -1128,6 +1131,8 @@ void AliRun::Reset(Int_t run, Int_t idevent)
   //
   //  Reset all Detectors & kinematics & trees
   //
+  char hname[30];
+  //
   ResetStack();
   ResetHits();
   ResetDigits();
@@ -1135,10 +1140,26 @@ void AliRun::Reset(Int_t run, Int_t idevent)
   // Initialise event header
   fHeader.Reset(run,idevent);
 
-  if(fTreeK) fTreeK->Reset();
-  if(fTreeH) fTreeH->Reset();
-  if(fTreeD) fTreeD->Reset();
-  if(fTreeR) fTreeR->Reset();
+  if(fTreeK) {
+    fTreeK->Reset();
+    sprintf(hname,"TreeK%d",idevent);
+    fTreeK->SetName(hname);
+  }
+  if(fTreeH) {
+    fTreeH->Reset();
+    sprintf(hname,"TreeH%d",idevent);
+    fTreeH->SetName(hname);
+  }
+  if(fTreeD) {
+    fTreeD->Reset();
+    sprintf(hname,"TreeD%d",idevent);
+    fTreeD->SetName(hname);
+  }
+  if(fTreeR) {
+    fTreeR->Reset();
+    sprintf(hname,"TreeR%d",idevent);
+    fTreeR->SetName(hname);
+  }
 }
 
 //_____________________________________________________________________________
@@ -1626,6 +1647,9 @@ void AliRun::Streamer(TBuffer &R__b)
     TNamed::Streamer(R__b);
     if (!gAlice) gAlice = this;
     gROOT->GetListOfBrowsables()->Add(this,"Run");
+    fTreeE = (TTree*)gDirectory->Get("TE");
+    if (fTreeE) fTreeE->SetBranchAddress("Header", &header);
+    else    Error("Streamer","cannot find Header Tree\n");
     R__b >> fNtrack;
     R__b >> fHgwmk;
     R__b >> fDebug;
@@ -1638,7 +1662,13 @@ void AliRun::Streamer(TBuffer &R__b)
     R__b >> fTrRmax;
     R__b >> fTrZmax;
     R__b >> fGenerator;
-    R__b >> fPDGDB;        //Particle factory object!
+    if(R__v>1) {
+      R__b >> fPDGDB;        //Particle factory object!
+      fTreeE->GetEntry(0);
+    } else {
+      fHeader.SetEvent(0);
+      fPDGDB     = TDatabasePDG::Instance();        //Particle factory object!
+    }
   } else {
     R__b.WriteVersion(AliRun::IsA());
     TNamed::Streamer(R__b);

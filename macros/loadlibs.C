@@ -1,22 +1,22 @@
 void loadlibs () 
 {
   gSystem->Load("$(ROOTSYS)/lib/libEG");
-  gSystem->Load("$(ALICE_ROOT)/lib/libSTEER");
-  gSystem->Load("$(ALICE_ROOT)/lib/libTGeant3Dummy");
-  gSystem->Load("$(ALICE_ROOT)/lib/libdummypythia");
+  gSystem->Load("$(ALICE_ROOT)/lib/$(ALICE_TARGET)/libSTEER");
+  gSystem->Load("$(ALICE_ROOT)/lib/$(ALICE_TARGET)/libTGeant3Dummy");
+  gSystem->Load("$(ALICE_ROOT)/lib/$(ALICE_TARGET)/libdummypythia");
   gSystem->Load("$(ROOTSYS)/lib/libEGPythia");
-  gSystem->Load("$(ALICE_ROOT)/lib/libEVGEN");
-  gSystem->Load("$(ALICE_ROOT)/lib/libFMD");
-  gSystem->Load("$(ALICE_ROOT)/lib/libMUON");
-  gSystem->Load("$(ALICE_ROOT)/lib/libPHOSdummy");
-  gSystem->Load("$(ALICE_ROOT)/lib/libPHOS");
-  gSystem->Load("$(ALICE_ROOT)/lib/libPMD");
-  gSystem->Load("$(ALICE_ROOT)/lib/libRICH");
-  gSystem->Load("$(ALICE_ROOT)/lib/libSTRUCT");
-  gSystem->Load("$(ALICE_ROOT)/lib/libTOF");
-  gSystem->Load("$(ALICE_ROOT)/lib/libTPC");
-  gSystem->Load("$(ALICE_ROOT)/lib/libTRD");
-  gSystem->Load("$(ALICE_ROOT)/lib/libZDC");
-  gSystem->Load("$(ALICE_ROOT)/lib/libITS");
-  gSystem->Load("$(ALICE_ROOT)/lib/libCASTOR");
+  gSystem->Load("$(ALICE_ROOT)/lib/$(ALICE_TARGET)/libEVGEN");
+  gSystem->Load("$(ALICE_ROOT)/lib/$(ALICE_TARGET)/libFMD");
+  gSystem->Load("$(ALICE_ROOT)/lib/$(ALICE_TARGET)/libMUON");
+  gSystem->Load("$(ALICE_ROOT)/lib/$(ALICE_TARGET)/libPHOSdummy");
+  gSystem->Load("$(ALICE_ROOT)/lib/$(ALICE_TARGET)/libPHOS");
+  gSystem->Load("$(ALICE_ROOT)/lib/$(ALICE_TARGET)/libPMD");
+  gSystem->Load("$(ALICE_ROOT)/lib/$(ALICE_TARGET)/libRICH");
+  gSystem->Load("$(ALICE_ROOT)/lib/$(ALICE_TARGET)/libSTRUCT");
+  gSystem->Load("$(ALICE_ROOT)/lib/$(ALICE_TARGET)/libTOF");
+  gSystem->Load("$(ALICE_ROOT)/lib/$(ALICE_TARGET)/libTPC");
+  gSystem->Load("$(ALICE_ROOT)/lib/$(ALICE_TARGET)/libTRD");
+  gSystem->Load("$(ALICE_ROOT)/lib/$(ALICE_TARGET)/libZDC");
+  gSystem->Load("$(ALICE_ROOT)/lib/$(ALICE_TARGET)/libITS");
+  gSystem->Load("$(ALICE_ROOT)/lib/$(ALICE_TARGET)/libCASTOR");
 }

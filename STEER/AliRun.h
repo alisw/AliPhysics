@@ -139,7 +139,7 @@ public:
 
   // --------------------------- commons -------------------------------------
 
-   ClassDef(AliRun,1)      //Supervisor class for all Alice detectors
+   ClassDef(AliRun,2)      //Supervisor class for all Alice detectors
 };
  
 EXTERN  AliRun *gAlice;
