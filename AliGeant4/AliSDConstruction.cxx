@@ -1,6 +1,10 @@
 // $Id$
 // Category: digits+hits
 //
+// Author: I. Hrivnacova
+//
+// Class AliAliSDConstruction
+// --------------------------
 // See the class description in the header file.
 
 #include "AliSDConstruction.h"
@@ -18,17 +22,20 @@
 
 #include <TObjArray.h>
 
+//_____________________________________________________________________________
 AliSDConstruction::AliSDConstruction()
   : TG4VSDConstruction() {
 //
 }
 
+//_____________________________________________________________________________
 AliSDConstruction::~AliSDConstruction() {
 //
 }
 
 // private methods
 
+//_____________________________________________________________________________
 void AliSDConstruction::InitializeModules()
 {
 // Initializes AliModules.
@@ -41,6 +48,7 @@ void AliSDConstruction::InitializeModules()
     module->Init();
 }  
 
+//_____________________________________________________________________________
 AliModule* AliSDConstruction::FindAliModule(G4LogicalVolume* lv) const
 {
 // Finds the module containing specified logical volume.
@@ -50,8 +58,7 @@ AliModule* AliSDConstruction::FindAliModule(G4LogicalVolume* lv) const
   TG4GeometryServices* geometryServices = TG4GeometryServices::Instance();
 
   // get g3 volume name
-  G4String g3Name = lv->GetName();
-  geometryServices->G4ToG3VolumeName(g3Name);
+  G4String g3Name = geometryServices->G4ToG3VolumeName(lv->GetName());
   
   // get module name from the map
   G4String moduleName = geometryServices->GetMapSecond(g3Name);
@@ -69,6 +76,7 @@ AliModule* AliSDConstruction::FindAliModule(G4LogicalVolume* lv) const
   return module;
 }  
 
+//_____________________________________________________________________________
 void AliSDConstruction::CreateSD(G4LogicalVolume* lv, AliModule* module) const
 { 
 // Creates/retrieves a sensitive detector for the logical volume.
@@ -77,13 +85,12 @@ void AliSDConstruction::CreateSD(G4LogicalVolume* lv, AliModule* module) const
   TG4GeometryServices* geometryServices = TG4GeometryServices::Instance();
   G4SDManager* pSDManager = G4SDManager::GetSDMpointer();
 
-  G4String lvName = lv->GetName(); 
-  
+  G4String lvName = lv->GetName();   
   G4String moduleName = module->GetName();
   G4String sdName = "/Alice/" + moduleName + "/" + lvName;
 
   // cut copy number from sdName
-  geometryServices->G4ToG3VolumeName(sdName);
+  sdName = geometryServices->G4ToG3VolumeName(sdName);
   
   // create/retrieve the sensitive detector
   G4VSensitiveDetector* sd = 0; 
@@ -100,6 +107,7 @@ void AliSDConstruction::CreateSD(G4LogicalVolume* lv, AliModule* module) const
   lv->SetSensitiveDetector(sd);	     
 }
 
+//_____________________________________________________________________________
 void AliSDConstruction::CreateLegoSD(G4LogicalVolume* lv, AliLego* lego) const
 { 
 // Replaces the existing sensitive detector of the logical volume
@@ -113,7 +121,7 @@ void AliSDConstruction::CreateLegoSD(G4LogicalVolume* lv, AliLego* lego) const
   G4String sdName = "/Alice/lego/" + lvName;
 
   // cut copy number from sdName
-  geometryServices->G4ToG3VolumeName(sdName);
+  sdName = geometryServices->G4ToG3VolumeName(sdName);
   
   // retrieve the standard sensitive detector
   G4VSensitiveDetector* sd = lv->GetSensitiveDetector();
@@ -134,6 +142,7 @@ void AliSDConstruction::CreateLegoSD(G4LogicalVolume* lv, AliLego* lego) const
   lv->SetSensitiveDetector(legoVSD);	     
 }
 
+//_____________________________________________________________________________
 void AliSDConstruction::UnsetLegoSD(G4LogicalVolume* lv) const
 { 
 // Replace the lego sensitive detector of the logical volume
@@ -165,6 +174,7 @@ void AliSDConstruction::UnsetLegoSD(G4LogicalVolume* lv) const
 
 // public methods
 
+//_____________________________________________________________________________
 void AliSDConstruction::Construct()
 { 
 // Creates sensitive detectors and initialize AliModules.
@@ -207,6 +217,7 @@ void AliSDConstruction::CreateSensitiveDetectors2()
 }
 */
 
+//_____________________________________________________________________________
 void AliSDConstruction::SetLego(AliLego* lego) const 
 { 
 // Replaces the existing sensitive detectors 
@@ -229,6 +240,7 @@ void AliSDConstruction::SetLego(AliLego* lego) const
   }
 }
 
+//_____________________________________________________________________________
 void AliSDConstruction::UnsetLego() const
 {
 // Replace the lego sensitive detectors 
