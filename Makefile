@@ -113,6 +113,7 @@ htmldocnew:		FORCE
 
 htmldoc:		FORCE
 		@rm -rf html/roothtml
+		@rm -f  html/picts
 		@rm -f /tmp/macros
 		@cd html ;\
 		aliroot -q -b "mkhtml.C(0,1)" ;\
