@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.40  2002/10/14 14:55:35  hristov
+Merging the VirtualMC branch to the main development branch (HEAD)
+
 Revision 1.36.6.3  2002/10/10 16:40:08  hristov
 Updating VirtualMC to v3-09-02
 
@@ -138,6 +141,8 @@ Introduction of the Copyright and cvs Log
 #include <TLorentzVector.h>
 
 #include <TF1.h>
+#include <TCanvas.h>
+#include <TH1.h>
 
 ClassImp(AliGenParam)
 
@@ -560,6 +565,21 @@ void AliGenParam::Generate()
     } // while
   } // event loop
   SetHighWaterMark(nt);
+}
+
+void AliGenParam::Draw()
+{
+    //
+    // Draw the pT and y Distributions
+    //
+     TCanvas *c0 = new TCanvas("c0","Canvas 0",400,10,600,700);
+     c0->Divide(2,1);
+     c0->cd(1);
+     fPtPara->Draw();
+     fPtPara->GetHistogram()->SetXTitle("p_{T} (GeV)");     
+     c0->cd(2);
+     fYPara->Draw();
+     fYPara->GetHistogram()->SetXTitle("y");     
 }
 
 AliGenParam& AliGenParam::operator=(const  AliGenParam& rhs)

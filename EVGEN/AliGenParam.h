@@ -42,7 +42,7 @@ class AliGenParam : public AliGenMC
     // force decay type
     virtual void SetWeighting(Weighting_t flag = kAnalog) {fAnalog = flag;}	
     virtual void SetDeltaPt(Float_t delta=0.01) {fDeltaPt = delta;}
-    
+    virtual void Draw();
     AliGenParam & operator=(const AliGenParam & rhs);
  protected:
     Double_t (*fPtParaFunc)(Double_t*, Double_t*); //! Pointer to Pt parametrisation function
