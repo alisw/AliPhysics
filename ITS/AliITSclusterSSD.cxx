@@ -27,7 +27,8 @@ AliITSclusterSSD::AliITSclusterSSD
   (Int_t ndigits, Int_t *DigitIndexes, 
    TObjArray *Digits, Bool_t side)
 {
-  // comment to be written
+  // non-default constructor
+  
 	fNDigits = ndigits;
 	fDigits = Digits;
 	fSide = side;
@@ -128,7 +129,7 @@ Int_t AliITSclusterSSD::SplitCluster(Int_t where, Int_t *outdigits)
 /*******************************************************************/
 Int_t AliITSclusterSSD::GetDigitStripNo(Int_t digit)
 {
-  // comment to be written
+  // return strip no of a digit
 	if (digit<0) return -1;
 	return (digit>(fNDigits-1))?-1 :
             ((AliITSdigitSSD*)((*fDigits)[(*fDigitsIndex)[digit]]))->GetStripNumber();
@@ -136,8 +137,8 @@ Int_t AliITSclusterSSD::GetDigitStripNo(Int_t digit)
 /************************************************************/
 Int_t AliITSclusterSSD::GetDigitSignal(Int_t digit)
 {
-  Int_t index,signal;
   // returns digit signal
+  Int_t index,signal;
   if (digit<0||digit>=fNDigits) return -1;
   index  = (*fDigitsIndex)[digit];
   signal = ((AliITSdigitSSD*)((*fDigits)[index]))->GetSignal();
@@ -151,20 +152,22 @@ Int_t AliITSclusterSSD::GetDigitSignal(Int_t digit)
 /***********************************************************/
 void  AliITSclusterSSD::AddCross(Int_t clIndex)
 {
-  // comment to be written
+  // add cluster cross to list of cluster crosses
+  
 	(*fCrossedClusterIndexes)[fNCrosses++] = clIndex;
 }
 /***********************************************************/
 
 Int_t AliITSclusterSSD::GetCross(Int_t crIndex)
 {
-  // comment to be written
+  // return crossing cluster
+  
   return ((crIndex>-1)&&(crIndex<fNCrosses))?(*fCrossedClusterIndexes)[crIndex]:-1;
 }
 /***********************************************************/
 Double_t AliITSclusterSSD::CentrOfGravity()
 {
-  // comment to be written
+  // return center of gravity of the cluster
   Float_t ret=0;
   
   if (fLeftNeighbour) ret+=(GetDigitStripNo(0)*0.5*GetDigitSignal(0));
@@ -186,7 +189,8 @@ Double_t AliITSclusterSSD::CentrOfGravity()
 /***********************************************************/
 Float_t AliITSclusterSSD::GetTotalSignal()
 {
-  // comment to be written
+  // return total signal
+  
   if(fTotalSignal <0)
     {
       fTotalSignal=0;
@@ -217,7 +221,7 @@ Float_t AliITSclusterSSD::GetTotalSignal()
 
 Float_t  AliITSclusterSSD::GetTotalSignalError()
 {
-  // comment to be written
+  // return the error on the signal
   Float_t err =0;
   for (Int_t i =1; i<fNDigits -1; i++)
     {
@@ -247,7 +251,7 @@ Float_t  AliITSclusterSSD::GetTotalSignalError()
 
 void AliITSclusterSSD::DelCross(Int_t index)
 {
-  // comment to be written
+  // remove cross clusters from the list of cross clusters
 Int_t i,j; //iterators
 
 for (i =0;i<fNCrosses;i++)
@@ -268,7 +272,7 @@ for (i =0;i<fNCrosses;i++)
 
 Int_t  *AliITSclusterSSD::GetTracks(Int_t &nt)
 {
-  // comment to be written
+  // return the track number of the cluster
   Int_t *tidx=0;
   Int_t i, bit;
   nt=0;
@@ -319,7 +323,7 @@ Int_t  *AliITSclusterSSD::GetTracks(Int_t &nt)
 
 Double_t AliITSclusterSSD::GetPosition()
 {
-  // comment to be written
+  // return position of the cluster
   Float_t ret;
   switch(fNDigits)
    {
@@ -339,7 +343,7 @@ Double_t AliITSclusterSSD::GetPosition()
 
 Double_t AliITSclusterSSD::EtaAlgorithm()
 {
-  // comment to be written
+  // algorithm for determing cluster position
   if (fNDigits != 2) return -1;
 
   Int_t strip1  = GetDigit(0)->GetStripNumber(); 
@@ -370,13 +374,13 @@ Double_t AliITSclusterSSD::EtaAlgorithm()
 
 Double_t  AliITSclusterSSD::GetPositionError()
 {
-  // comment to be written
+  // return the position error
  return (GetNumOfDigits()+1)/2;
 }
 
 Bool_t AliITSclusterSSD::IsCrossingWith(Int_t idx)
 {
-  // comment to be written
+  // return the cluster to which he crosses
  for (Int_t i =0; i< fNCrosses;i++)
   {
     if (GetCross(i) == idx) return kTRUE;

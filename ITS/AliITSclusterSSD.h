@@ -22,7 +22,7 @@ class AliITSclusterSSD : public TObject
 public:
 
   AliITSclusterSSD();    //Default Constructor
-  ~AliITSclusterSSD();
+  virtual ~AliITSclusterSSD();
   AliITSclusterSSD(Int_t ndigits, Int_t *DigitIndexes, TObjArray *Digits, Bool_t side);		
   AliITSclusterSSD(const AliITSclusterSSD &source); 
   AliITSclusterSSD&  operator=( const AliITSclusterSSD & source);
@@ -148,7 +148,7 @@ private:
 								
 /*************************************/
 /*************************************/						
-  ClassDef(AliITSclusterSSD,1)
+  ClassDef(AliITSclusterSSD,1)          // Cluster class for reconstructing SSD
 };
 
 #endif

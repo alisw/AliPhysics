@@ -18,6 +18,11 @@
 Adding rekonstruction facilities
 Piotr Krzysztof Skowronski 
 December 1999.
+
+//Piotr Krzysztof Skowronski
+//Warsaw University of Technology
+//skowron@if.pw.edu.pl
+
 */
 
 /*
@@ -54,7 +59,7 @@ ClassImp(AliITSClusterFinderSSD)
 
 AliITSClusterFinderSSD::AliITSClusterFinderSSD(AliITSsegmentation *seg, TClonesArray *digits, TClonesArray *recp)   
 {
-
+//Standard constructor
 
     fSegmentation=seg;
     fDigits=digits;
@@ -97,7 +102,7 @@ AliITSClusterFinderSSD::AliITSClusterFinderSSD(AliITSsegmentation *seg, TClonesA
 
 //-------------------------------------------------------
 AliITSClusterFinderSSD::~AliITSClusterFinderSSD() {
-   
+// Default destructor   
 
     delete fClusterP;
     delete fClusterN;        
@@ -112,6 +117,7 @@ AliITSClusterFinderSSD::~AliITSClusterFinderSSD() {
 //-------------------------------------------------------
 void AliITSClusterFinderSSD::InitReconstruction()
 {
+// initialization of the cluster finder
 
   register Int_t i; //iterator
 
@@ -147,13 +153,6 @@ void AliITSClusterFinderSSD::InitReconstruction()
 //---------------------------------------------
 void AliITSClusterFinderSSD::FindRawClusters() 
 {
-
-
-
-//Piotr Krzysztof Skowronski
-//Warsaw University of Technology
-//skowron@if.pw.edu.pl
-
 // This function findes out all clusters belonging to one module
 // 1. Zeroes all space after previous module reconstruction
 // 2. Finds all neighbouring digits
@@ -180,16 +179,12 @@ void AliITSClusterFinderSSD::FindRawClusters()
 //-------------------------------------------------
 void AliITSClusterFinderSSD::FindNeighbouringDigits()
 {
+//If there are any digits on this side, create 1st Cluster,
+// add to it this digit, and increment number of clusters
 
-
-//Piotr Krzysztof Skowronski
-//Warsaw University of Technology
-//skowron@if.pw.edu.pl
 
  register Int_t i;
 
-    //If there are any digits on this side, create 1st Cluster,
-    // add to it this digit, and increment number of clusters
 
  if ((fNDigitsP>0 )  && (fNDigitsN > 0 )) {     
 
@@ -252,10 +247,7 @@ void AliITSClusterFinderSSD::FindNeighbouringDigits()
 
 void AliITSClusterFinderSSD::SeparateOverlappedClusters()
 {
-//************************************************
-//Piotr Krzysztof Skowronski
-//Warsaw University of Technology
-//skowron@if.pw.edu.pl
+// overlapped clusters separation
 
   register Int_t i; //iterator
 
@@ -321,12 +313,6 @@ void AliITSClusterFinderSSD::SeparateOverlappedClusters()
 //-------------------------------------------------------
 void AliITSClusterFinderSSD::SplitCluster(TArrayI *list, Int_t nsplits, Int_t index, Bool_t side)
 {
-
-
-//Piotr Krzysztof Skowronski
-//Warsaw University of Technology
-//skowron@if.pw.edu.pl
-
   //This function splits one side cluster into more clusters
   //number of splits is defined by "nsplits"
   //Place of splits are defined in the TArray "list" 
@@ -381,11 +367,8 @@ void AliITSClusterFinderSSD::SplitCluster(TArrayI *list, Int_t nsplits, Int_t in
 //-------------------------------------------------
 Int_t AliITSClusterFinderSSD::SortDigitsP(Int_t start, Int_t end)
 {
+// sort digits on the P side
 
-
-//Piotr Krzysztof Skowronski
-//Warsaw University of Technology
-//skowron@if.pw.edu.pl
   
   Int_t right;
   Int_t left;
@@ -415,11 +398,7 @@ Int_t AliITSClusterFinderSSD::SortDigitsP(Int_t start, Int_t end)
 
 Int_t AliITSClusterFinderSSD::SortDigitsN(Int_t start, Int_t end)
 {
-
-
-//Piotr Krzysztof Skowronski
-//Warsaw University of Technology
-//skowron@if.pw.edu.pl
+// sort digits on the N side
 
   Int_t right;
   Int_t left;
@@ -447,14 +426,7 @@ Int_t AliITSClusterFinderSSD::SortDigitsN(Int_t start, Int_t end)
 //------------------------------------------------
 void AliITSClusterFinderSSD::FillDigitsIndex()
 {
-
-
-//Piotr Krzysztof Skowronski
-//Warsaw University of Technology
-//skowron@if.pw.edu.pl
-
  //Fill the indexes of the clusters belonging to a given ITS module
- //Created by Piotr K. Skowronski, August 7 1999
 
  Int_t PNs=0, NNs=0;
  Int_t tmp,bit,k;
@@ -522,13 +494,7 @@ void AliITSClusterFinderSSD::FillDigitsIndex()
 
 void AliITSClusterFinderSSD::SortDigits()
 {
-
-
-//Piotr Krzysztof Skowronski
-//Warsaw University of Technology
-//skowron@if.pw.edu.pl
-
-
+// sort digits
 
   Int_t i;
   if(fNDigitsP>1) 
@@ -545,12 +511,7 @@ void AliITSClusterFinderSSD::SortDigits()
 //----------------------------------------------
 void AliITSClusterFinderSSD::FillClIndexArrays(Int_t* arrayP, Int_t *arrayN)
 {
-
-
-//Piotr Krzysztof Skowronski
-//Warsaw University of Technology
-//skowron@if.pw.edu.pl
-
+// fill cluster index array
 
   register Int_t i;
   for (i=0; i<fNClusterP;i++)
@@ -567,12 +528,7 @@ void AliITSClusterFinderSSD::FillClIndexArrays(Int_t* arrayP, Int_t *arrayN)
 //------------------------------------------------------
 void AliITSClusterFinderSSD::SortClusters(Int_t* arrayP, Int_t *arrayN)
 {
-
-
-//Piotr Krzysztof Skowronski
-//Warsaw University of Technology
-//skowron@if.pw.edu.pl
-
+// sort clusters
 
   Int_t i;
   if(fNClusterP>1) 
@@ -591,12 +547,7 @@ void AliITSClusterFinderSSD::SortClusters(Int_t* arrayP, Int_t *arrayN)
 //---------------------------------------------------
 Int_t AliITSClusterFinderSSD::SortClustersP(Int_t start, Int_t end, Int_t *array)
 {
-
-
-//Piotr Krzysztof Skowronski
-//Warsaw University of Technology
-//skowron@if.pw.edu.pl
-
+//Sort P side clusters
 
 
   Int_t right;
@@ -626,11 +577,8 @@ Int_t AliITSClusterFinderSSD::SortClustersP(Int_t start, Int_t end, Int_t *array
 //-------------------------------------------------------
 Int_t AliITSClusterFinderSSD::SortClustersN(Int_t start, Int_t end, Int_t *array)
 {
+//Sort N side clusters
 
-
-//Piotr Krzysztof Skowronski
-//Warsaw University of Technology
-//skowron@if.pw.edu.pl
 
   Int_t right;
   Int_t left;
@@ -659,13 +607,7 @@ Int_t AliITSClusterFinderSSD::SortClustersN(Int_t start, Int_t end, Int_t *array
 //-------------------------------------------------------
 void AliITSClusterFinderSSD::ClustersToPackages()
 {  
-
-
-
-//Piotr Krzysztof Skowronski
-//Warsaw University of Technology
-//skowron@if.pw.edu.pl
-  
+// fill packages   
     
   Int_t *oneSclP = new Int_t[fNClusterP]; //I want to have sorted 1 S clusters
   Int_t *oneSclN = new Int_t[fNClusterN]; //I can not sort it in TClonesArray
@@ -827,6 +769,7 @@ void AliITSClusterFinderSSD::ClustersToPackages()
 //-----------------------------------------------
 void AliITSClusterFinderSSD::PackagesToPoints()
 {
+// find recpoints from packages
  
  register Int_t i;
  AliITSpackageSSD *currentpkg;
@@ -904,6 +847,22 @@ void AliITSClusterFinderSSD::PackagesToPoints()
 void AliITSClusterFinderSSD::
 ResolveClusterWithOneCross(AliITSpackageSSD *currentpkg, Int_t clusterIndex, Bool_t clSide)
 {
+// resolve clusters with one cross
+/*
+
+ie:
+    \    /  
+     \  /   
+      \/ 
+      /\ 
+     /  \
+    /    \  
+   /      \
+  /        \
+ /          \
+*/
+
+
 
    if (clSide == fgkSIDEP) ResolvePClusterWithOneCross(currentpkg,clusterIndex);
    else  ResolveNClusterWithOneCross(currentpkg,clusterIndex);
@@ -915,7 +874,7 @@ ResolveClusterWithOneCross(AliITSpackageSSD *currentpkg, Int_t clusterIndex, Boo
 void AliITSClusterFinderSSD::
 ResolvePClusterWithOneCross(AliITSpackageSSD *pkg, Int_t clusterIndex)
 {
-
+// resolve clusters with one cross on P side
 /*
 There is cluster (side P) which crosses with only one cluster on the other 
 side (N)
@@ -981,7 +940,7 @@ ie:
       //Let's see how signal ratio is far from perfect matching line
       Chicomb = DistToPML(ps,ns);
       if (debug) cout<<"Chic "<<Chicomb<<"\n";
-      if (Chicomb > falpha2) {
+      if (Chicomb > fAlpha2) {
          //it is near, so we can risk throwing this cluster away too
 	 if (debug) cout<<"Attempting to del cluster N "<<clusterIdx<<"...\n"; 
          pkg->DelClusterOI(clusterIdx,fgkSIDEN);
@@ -1002,6 +961,8 @@ ie:
 void AliITSClusterFinderSSD::
 ResolveNClusterWithOneCross(AliITSpackageSSD *pkg, Int_t clusterIndex)
 {
+// resolve clusters with one cross on N side
+
 
   AliITSclusterSSD * clusterP;
   AliITSclusterSSD * clusterN;
@@ -1050,7 +1011,7 @@ ResolveNClusterWithOneCross(AliITSpackageSSD *pkg, Int_t clusterIndex)
       //Let's see how signal ratio is far from perfect matching line
        Chicomb = DistToPML(ps,ns);
        if (debug) cout<<"Chic "<<Chicomb<<"\n";
-       if (Chicomb > falpha2) {
+       if (Chicomb > fAlpha2) {
           //it is near, so we can risk frowing this cluster away too
           if (debug) cout<<"Attempting to del cluster P "<<clusterIdx<<"...\n";
 	  pkg->DelClusterOI(clusterIdx,fgkSIDEP);
@@ -1074,6 +1035,8 @@ ResolveNClusterWithOneCross(AliITSpackageSSD *pkg, Int_t clusterIndex)
 Bool_t AliITSClusterFinderSSD::
 ResolvePackageBestCombin(AliITSpackageSSD *pkg)
 {
+//find best combination
+
   if (debug) cout<<"NumNcl==NumPcl ("<<pkg->GetNumOfClustersN()
       <<"=="<<pkg->GetNumOfClustersP()<<"); Generating combinations ... \n";
 
@@ -1132,6 +1095,7 @@ ResolvePackageBestCombin(AliITSpackageSSD *pkg)
 void AliITSClusterFinderSSD::
 ResolveOneBestMatchingPoint(AliITSpackageSSD *pkg)
 {
+// find best matching point
 
  Int_t ni, pi;
 
@@ -1180,6 +1144,7 @@ ResolveOneBestMatchingPoint(AliITSpackageSSD *pkg)
 //--------------------------------------------------
 void  AliITSClusterFinderSSD::ResolveSimplePackage(AliITSpackageSSD *pkg)
 {
+// resolve simple package
 
   AliITSclusterSSD * clusterP;
   AliITSclusterSSD * clusterN;
@@ -1196,7 +1161,7 @@ void  AliITSClusterFinderSSD::ResolveSimplePackage(AliITSpackageSSD *pkg)
 
 //--------------------------------------------------
 void AliITSClusterFinderSSD:: ResolvePackageWithOnePSideCluster(AliITSpackageSSD *pkg) {
-
+// resolve P side clusters from packages
 
 /*
  \   \   \  /
@@ -1274,7 +1239,7 @@ void AliITSClusterFinderSSD:: ResolvePackageWithOnePSideCluster(AliITSpackageSSD
 
 //---------------------------------------------------------
 void AliITSClusterFinderSSD::ResolvePackageWithOneNSideCluster(AliITSpackageSSD *pkg) {
-
+// resolve N side clusters from packages
 
 /*
     \    /   /   /
@@ -1350,6 +1315,7 @@ void AliITSClusterFinderSSD::ResolvePackageWithOneNSideCluster(AliITSpackageSSD 
 void AliITSClusterFinderSSD::
 ResolveTwoForTwoPackage(AliITSpackageSSD *pkg)
 {
+// resolve 2x2 packages
 
   AliITSclusterSSD *clusterP1 = pkg->GetPSideCluster(0);
   AliITSclusterSSD *clusterP2 = pkg->GetPSideCluster(1);
@@ -1442,7 +1408,7 @@ ResolveTwoForTwoPackage(AliITSpackageSSD *pkg)
      /*Keep only better combinantion              */
      /*********************************************/
 	    
-     if (D12 > (falpha3*17.8768)) {
+     if (D12 > (fAlpha3*17.8768)) {
        if (debug) cout<<"decided to take only one pair \n";
        Chicomb1 = DistToPML(p1sig,n1sig) + DistToPML(p2sig,n2sig);
        Chicomb2 = DistToPML(p2sig,n1sig) + DistToPML(p1sig,n2sig);
@@ -1462,7 +1428,7 @@ ResolveTwoForTwoPackage(AliITSpackageSSD *pkg)
 	  CreateNewRecPoint(ZposP1,0, ZposN2,0, p1sig+n2sig, p1sigErr+n2sigErr, clusterP1, clusterN2, 0.75);   
 	  CreateNewRecPoint(ZposP2,0, ZposN1,0, p2sig+n1sig, p2sigErr+n1sigErr, clusterP2, clusterN1, 0.75);    
        } //end second combinantion
-       //if (D12 > falpha3*17.8768)
+       //if (D12 > fAlpha3*17.8768)
        //keep all combinations
      } else {
         if (debug) cout<<"We decide to take all points\n";
@@ -1477,7 +1443,7 @@ ResolveTwoForTwoPackage(AliITSpackageSSD *pkg)
     Chicomb1 = DistToPML(p1sig,n1sig) + DistToPML(p2sig,n2sig);
     if (debug) cout<<"\nhere can be reconstructed 3 points: chicomb = "<<Chicomb1<<"\n"; 
   
-    if (Chicomb1<falpha1) {
+    if (Chicomb1<fAlpha1) {
        if (debug) cout<<"\nWe decided to take 3rd point"; 
        if (clusterP1->GetCrossNo()==1) {
 	  if (debug) cout<<"...  P1 has one cross\n"; 
@@ -1526,6 +1492,7 @@ CreateNewRecPoint(Float_t P, Float_t dP, Float_t N, Float_t dN,
                   AliITSclusterSSD *clusterP, AliITSclusterSSD *clusterN,
                   Stat_t prob)
 {
+// create the recpoints
 
   const Float_t kdEdXtoQ = 2.778e+8;
   const Float_t kconv = 1.0e-4; 
@@ -1622,6 +1589,8 @@ CreateNewRecPoint(Float_t P, Float_t dP, Float_t N, Float_t dN,
 Bool_t  AliITSClusterFinderSSD::
 CreateNewRecPoint(AliITSclusterSSD *clusterP, AliITSclusterSSD *clusterN, Stat_t prob)
 {
+// create recpoints
+
   Float_t posClusterP;  //Cluster P position in strip coordinates
   Float_t posClusterN;  //Cluster N position in strip coordinates
  
@@ -1653,6 +1622,8 @@ CreateNewRecPoint(AliITSclusterSSD *clusterP, AliITSclusterSSD *clusterN, Stat_t
 //--------------------------------------------------
 Bool_t AliITSClusterFinderSSD::IsCrossing(AliITSclusterSSD* p, AliITSclusterSSD* n)
 {
+// check for crossings
+
   Float_t x = p->GetPosition();
   Float_t y = n->GetPosition();
   return GetCrossing(x,y);
@@ -1662,11 +1633,7 @@ Bool_t AliITSClusterFinderSSD::IsCrossing(AliITSclusterSSD* p, AliITSclusterSSD*
 //----------------------------------------------
 Bool_t AliITSClusterFinderSSD::Strip2Local( Float_t stripP, Float_t stripN, Float_t &Z,Float_t &X)
 {
-
-
-//Piotr Krzysztof Skowronski
-//Warsaw University of Technology
-//skowron@if.pw.edu.pl
+// convert between strip numbers and local coordinates
 
 /*
  Z = (stripN-stripP)*fFactorOne;  
@@ -1689,6 +1656,7 @@ Bool_t AliITSClusterFinderSSD::Strip2Local( Float_t stripP, Float_t stripN, Floa
 //-----------------------------------------------------------
 Float_t  AliITSClusterFinderSSD::GetClusterZ(AliITSclusterSSD* clust)
 {
+// get Z coordinate of the cluster
 
   return clust->GetPosition();
 
@@ -1698,12 +1666,6 @@ Float_t  AliITSClusterFinderSSD::GetClusterZ(AliITSclusterSSD* clust)
 Int_t AliITSClusterFinderSSD::GetBestComb
 (Int_t** comb,Int_t Ncomb, Int_t Ncl, AliITSpackageSSD * pkg)
 {
-
-
-//Piotr Krzysztof Skowronski
-//Warsaw University of Technology
-//skowron@if.pw.edu.pl
-
 //returns index of best combination in "comb"
 //comb : sets of combinations
 //       in given combination on place "n" is index of 
@@ -1752,11 +1714,7 @@ Int_t AliITSClusterFinderSSD::GetBestComb
 void AliITSClusterFinderSSD::GetBestMatchingPoint
 (Int_t & ip, Int_t & in, AliITSpackageSSD* pkg )
 {
-
-
-//Piotr Krzysztof Skowronski
-//Warsaw University of Technology
-//skowron@if.pw.edu.pl
+// find the best matching point
  
   if (debug) pkg->PrintClusters();
  
@@ -1801,11 +1759,7 @@ void AliITSClusterFinderSSD::GetBestMatchingPoint
 //------------------------------------------------------
 void  AliITSClusterFinderSSD::CalcStepFactor(Float_t Psteo, Float_t Nsteo )
 {
-
-
-//Piotr Krzysztof Skowronski
-//Warsaw University of Technology
-//skowron@if.pw.edu.pl
+// calculate the step factor for matching clusters
 
 
   // 95 is the pitch, 4000 - dimension along z ?
@@ -1826,11 +1780,8 @@ void  AliITSClusterFinderSSD::CalcStepFactor(Float_t Psteo, Float_t Nsteo )
 //-----------------------------------------------------------
 AliITSclusterSSD* AliITSClusterFinderSSD::GetPSideCluster(Int_t idx)
 {
+// get P side clusters
 
-
-//Piotr Krzysztof Skowronski
-//Warsaw University of Technology
-//skowron@if.pw.edu.pl
 
 
 
@@ -1848,11 +1799,7 @@ AliITSclusterSSD* AliITSClusterFinderSSD::GetPSideCluster(Int_t idx)
 //-------------------------------------------------------
 AliITSclusterSSD* AliITSClusterFinderSSD::GetNSideCluster(Int_t idx)
 {
-
-
-//Piotr Krzysztof Skowronski
-//Warsaw University of Technology
-//skowron@if.pw.edu.pl
+// get N side clusters
 
   if((idx<0)||(idx>=fNClusterN))
     {
@@ -1868,11 +1815,7 @@ AliITSclusterSSD* AliITSClusterFinderSSD::GetNSideCluster(Int_t idx)
 //--------------------------------------------------------
 AliITSclusterSSD* AliITSClusterFinderSSD::GetCluster(Int_t idx, Bool_t side)
 {
-
-
-//Piotr Krzysztof Skowronski
-//Warsaw University of Technology
-//skowron@if.pw.edu.pl
+// Get cluster
 
   return (side) ? GetPSideCluster(idx) : GetNSideCluster(idx);
 }
@@ -1881,7 +1824,7 @@ AliITSclusterSSD* AliITSClusterFinderSSD::GetCluster(Int_t idx, Bool_t side)
 //--------------------------------------------------------
 void AliITSClusterFinderSSD::ConsumeClusters()
 {
-
+// remove clusters from the list of unmatched clusters
 
  for ( Int_t i=0;i<fNPackages;i++)
   {
@@ -1894,6 +1837,8 @@ void AliITSClusterFinderSSD::ConsumeClusters()
 //--------------------------------------------------------
 void AliITSClusterFinderSSD::ReconstructNotConsumedClusters()
 {
+// reconstruct remaining non-crossing clusters
+
   Int_t i;
   AliITSclusterSSD *cluster;
   Float_t pos;
@@ -2054,6 +1999,7 @@ void AliITSClusterFinderSSD::ReconstructNotConsumedClusters()
 
 Bool_t AliITSClusterFinderSSD::GetCrossing (Float_t &P, Float_t &N) 
 { 
+// get crossing 
 
    Float_t Dx = fSegmentation->Dx();
    Float_t Dz = fSegmentation->Dz();
@@ -2090,6 +2036,8 @@ Bool_t AliITSClusterFinderSSD::GetCrossing (Float_t &P, Float_t &N)
 
 void AliITSClusterFinderSSD::GetCrossingError(Float_t& dP, Float_t& dN)
 {
+// get crossing error
+
   Float_t dz, dx;
   
   dz = TMath::Abs(( dP + dN )*fPitch/(fTanP + fTanN) );
@@ -2099,5 +2047,3 @@ void AliITSClusterFinderSSD::GetCrossingError(Float_t& dP, Float_t& dN)
   dN = dz;
   dP = dx;
 }
-
-

@@ -29,9 +29,9 @@ public:
   void FindRawClusters();
 
     
-  void SetAlpha1(Float_t a) {falpha1 =a;}
-  void SetAlpha2(Float_t a) {falpha2 =a;}
-  void SetAlpha3(Float_t a) {falpha3 =a;}
+  void SetAlpha1(Float_t a) {fAlpha1 =a;}
+  void SetAlpha2(Float_t a) {fAlpha2 =a;}
+  void SetAlpha3(Float_t a) {fAlpha3 =a;}
 
 
 
@@ -135,9 +135,9 @@ public:
 /**  to be tune when slow simulation raliable ****/
 /*************************************************/ 
   
-  Float_t falpha1; 
-  Float_t falpha2;
-  Float_t falpha3;
+  Float_t fAlpha1; 
+  Float_t fAlpha2;
+  Float_t fAlpha3;
   Float_t fPNsignalRatio;
 
     
