@@ -289,7 +289,7 @@ SLIBRARY	= $(LIBDIR)/libminicern.$(SL)
 ALIBRARY	= $(LIBDIR)/libminicern.a
 
 ifeq ($(PLATFORM),alpha)
-        default:	$(ALIBRARY)
+        default:	$(ALIBRARY) $(SLIBRARY)
 else
         default:	$(SLIBRARY)
 endif
