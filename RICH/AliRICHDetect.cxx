@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.3  2000/06/13 13:15:41  jbarbosa
+  Still some code cleanup done (variable names)
+
   Revision 1.2  2000/06/12 15:19:30  jbarbosa
   Cleaned up version.
 
@@ -196,14 +199,14 @@ void AliRICHDetect::Detect()
 		//printf("Loaded digit %d with coordinates x:%f, y%f\n",dig,x,y);
 		//cout<<"x="<<x<<" y="<<y<<endl;
 		
-		if (sqrt(pow(x,2)+pow(y,2))<kHeight*tan(theta+kMaxOmega)*3/4)
+		if (sqrt(TMath::Power(x,2)+TMath::Power(y,2))<kHeight*tan(theta+kMaxOmega)*3/4)
 		  {
 		    
 		    l=kHeight/cos(theta);
 		    
 		    aux1=-y*sin(phi)+x*cos(phi);
 		    aux2=y*cos(phi)+x*sin(phi);
-		    aux3=( pow(aux1,2)+pow(cos(theta)*aux2 ,2))/pow(sin(theta)*aux2+l,2);
+		    aux3=( TMath::Power(aux1,2)+TMath::Power(cos(theta)*aux2 ,2))/TMath::Power(sin(theta)*aux2+l,2);
 		    //cout<<"aux1="<<aux1<<" aux2="<<aux2<<" aux3="<<aux3;
 		    
 		    omega=atan(sqrt(aux3));
@@ -336,7 +339,7 @@ Float_t AliRICHDetect:: Area(Float_t theta,Float_t omega)
     Float_t area;
     const Float_t kHeight=9.25;                       //Distance from Radiator to Pads in pads
     
-    area=TMath::Pi()*pow(kHeight*tan(omega),2)/pow(pow(cos(theta),2)-pow(tan(omega)*sin(theta),2),3/2);
+    area=TMath::Pi()*TMath::Power(kHeight*tan(omega),2)/TMath::Power(TMath::Power(cos(theta),2)-TMath::Power(tan(omega)*sin(theta),2),3/2);
     
     return (area);
 }
@@ -394,9 +397,9 @@ return t;
   Float_t theta1=theta*kPi/180;
   Float_t omega1=omega*kPi/180;
   //Solve the eq for a trial x
-  c0=-pow(y*cos(alfa1)*cos(theta1),2)-pow(y*sin(alfa1),2)+pow(l*tan(omega1),2)+2*l*y*cos(alfa1)*sin(theta1)*pow(tan(omega1),2)+pow(y*cos(alfa1)*sin(theta1)*tan(omega1),2);
-  c1=2*y*cos(alfa1)*sin(alfa1)-2*y*cos(alfa1)*pow(cos(theta1),2)*sin(alfa1)+2*l*sin(alfa1)*sin(theta1)*pow(tan(omega1),2)+2*y*cos(alfa1)*sin(alfa1)*pow(sin(theta1),2)*pow(tan(omega1),2);
-  c2=-pow(cos(alfa1),2)-pow(cos(theta1)*sin(alfa1),2)+pow(sin(alfa1)*sin(theta1)*tan(omega1),2);
+  c0=-TMath::Power(y*cos(alfa1)*cos(theta1),2)-TMath::Power(y*sin(alfa1),2)+TMath::Power(l*tan(omega1),2)+2*l*y*cos(alfa1)*sin(theta1)*TMath::Power(tan(omega1),2)+TMath::Power(y*cos(alfa1)*sin(theta1)*tan(omega1),2);
+  c1=2*y*cos(alfa1)*sin(alfa1)-2*y*cos(alfa1)*TMath::Power(cos(theta1),2)*sin(alfa1)+2*l*sin(alfa1)*sin(theta1)*TMath::Power(tan(omega1),2)+2*y*cos(alfa1)*sin(alfa1)*TMath::Power(sin(theta1),2)*TMath::Power(tan(omega1),2);
+  c2=-TMath::Power(cos(alfa1),2)-TMath::Power(cos(theta1)*sin(alfa1),2)+TMath::Power(sin(alfa1)*sin(theta1)*tan(omega1),2);
   //cout<<"Trial: y="<<y<<"c0="<<c0<<" c1="<<c1<<" c2="<<c2<<endl;
   }
   //Choose which side to go...

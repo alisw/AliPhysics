@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.2  2000/06/12 15:26:09  jbarbosa
+  Cleaned up version.
+
   Revision 1.1  2000/06/09 14:53:01  jbarbosa
   Bari's pattern recognition algorithm
 
@@ -159,7 +162,7 @@ void AliRICHPatRec::PatRec()
     pRICH->AddRecHit(ich,rechit);
     
     betaCer = BetaCerenkov(1.29,fThetaCerenkov);
-    gamma  = 1./sqrt(1.-pow(betaCer,2));
+    gamma  = 1./sqrt(1.-TMath::Power(betaCer,2));
     massCer = fTrackMom/(betaCer*gamma);
     //    printf(" mass %f \n",massCer);
     mass->Fill(massCer*1000,1.);
@@ -219,7 +222,7 @@ Int_t AliRICHPatRec::TrackParam(Int_t itr, Int_t &ich)
     pX = mHit->fMomX;
     pY = mHit->fMomY;
     pZ = mHit->fMomZ;
-    fTrackMom = sqrt(pow(pX,2)+pow(pY,2)+pow(pZ,2));
+    fTrackMom = sqrt(TMath::Power(pX,2)+TMath::Power(pY,2)+TMath::Power(pZ,2));
     thetatr = (180 - mHit->fTheta)*(Float_t)kDegrad;
     phitr = mHit->fPhi*(Float_t)kDegrad;
     iloss = mHit->fLoss;
@@ -267,12 +270,12 @@ Float_t AliRICHPatRec::EstimationAtLimits(Float_t lim, Float_t radius,
 
   Float_t apar = (fRw -fEmissPoint + fQw + fTgap)*tan(fTrackTheta);
   Float_t b1 = (fRw-fEmissPoint)*tan(lim);
-  Float_t b2 = fQw / sqrt(pow(nquartz,2)-pow(nfreon*sin(lim),2));
-  Float_t b3 = fTgap / sqrt(pow(ngas,2)-pow(nfreon*sin(lim),2));
+  Float_t b2 = fQw / sqrt(TMath::Power(nquartz,2)-TMath::Power(nfreon*sin(lim),2));
+  Float_t b3 = fTgap / sqrt(TMath::Power(ngas,2)-TMath::Power(nfreon*sin(lim),2));
   Float_t bpar = b1 + nfreon*sin(lim)*(b2+b3);
-  value = pow(radius,2)
-    -pow((apar*cos(fTrackPhi)-bpar*cos(phiphot)),2)
-    -pow((apar*sin(fTrackPhi)-bpar*sin(phiphot)),2);
+  value = TMath::Power(radius,2)
+    -TMath::Power((apar*cos(fTrackPhi)-bpar*cos(phiphot)),2)
+    -TMath::Power((apar*sin(fTrackPhi)-bpar*sin(phiphot)),2);
   return value;
 }
 
@@ -294,7 +297,7 @@ Float_t AliRICHPatRec::PhotonCerenkovAngle()
 
   //  printf("Calling PhotonCerenkovAngle\n");
 
-  radius = sqrt(pow(fTrackLoc[0]-fXpad,2)+pow(fTrackLoc[1]-fYpad,2));
+  radius = sqrt(TMath::Power(fTrackLoc[0]-fXpad,2)+TMath::Power(fTrackLoc[1]-fYpad,2));
   fEmissPoint = fRw/2.;  //Start value of EmissionPoint
   
   while(niterEmiss<=niterEmissMax) {
@@ -415,11 +418,11 @@ void AliRICHPatRec::BackgroundEstimation()
     etaStepMax = etaMinBkg + (Float_t)(i+1)*stepEta;    
     etaStepAvg = 0.5*(etaStepMax + etaStepMin);
     /*
-    funBkg = tan(etaStepAvg)*pow((1.+pow(tan(etaStepAvg),2)),
+    funBkg = tan(etaStepAvg)*TMath::Power((1.+TMath::Power(tan(etaStepAvg),2)),
 				  5.52)-7.803 + 22.02*tan(etaStepAvg);
     */
     thetaSig = asin(nfreon/ngas*sin(etaStepAvg));
-    funBkg = tan(thetaSig)*(1.+pow(tan(thetaSig),2))*nfreon
+    funBkg = tan(thetaSig)*(1.+TMath::Power(tan(thetaSig),2))*nfreon
        /ngas*cos(etaStepAvg)/cos(thetaSig);
     areaBkg += stepEta*funBkg;
   }
@@ -435,12 +438,12 @@ void AliRICHPatRec::BackgroundEstimation()
     etaStepMax = etaMinBkg + (Float_t)(i+1)*stepEta;    
     etaStepAvg = 0.5*(etaStepMax + etaStepMin);
     /*
-    funBkg = tan(etaStepAvg)*pow((1.+pow(tan(etaStepAvg),2)),
+    funBkg = tan(etaStepAvg)*TMath::Power((1.+TMath::Power(tan(etaStepAvg),2)),
 				  5.52)-7.803 + 22.02*tan(etaStepAvg);
     */
 
     thetaSig = asin(nfreon/ngas*sin(etaStepAvg));
-    funBkg = tan(thetaSig)*(1.+pow(tan(thetaSig),2))*nfreon
+    funBkg = tan(thetaSig)*(1.+TMath::Power(tan(thetaSig),2))*nfreon
        /ngas*cos(etaStepAvg)/cos(thetaSig);
 
     areaBkg = stepEta*funBkg;
@@ -539,10 +542,10 @@ Int_t AliRICHPatRec::PhotonInBand()
   
     nfreon[times]   = a+b*energy[times];
 
-    nquartz[times] = sqrt(1+(f1/(pow(e1,2)-pow(energy[times],2)))+
-			  (f2/(pow(e2,2)-pow(energy[times],2))));
+    nquartz[times] = sqrt(1+(f1/(TMath::Power(e1,2)-TMath::Power(energy[times],2)))+
+			  (f2/(TMath::Power(e2,2)-TMath::Power(energy[times],2))));
 
-    beta[times]  = imp[times]/sqrt(pow(imp[times],2)+pow(mass[times],2));
+    beta[times]  = imp[times]/sqrt(TMath::Power(imp[times],2)+TMath::Power(mass[times],2));
    
     thetacer[times] =  CherenkovAngle( nfreon[times], beta[times]);
 
@@ -553,7 +556,7 @@ Int_t AliRICHPatRec::PhotonInBand()
 
   bandradius[0] -= 1.6;
   bandradius[1] += 1.6;
-  padradius = sqrt(pow(fXpad,2)+pow(fYpad,2));
+  padradius = sqrt(TMath::Power(fXpad,2)+TMath::Power(fYpad,2));
   //  printf(" rmin %f r %f rmax %f \n",bandradius[0],padradius,bandradius[1]);
 
   if(padradius>=bandradius[0] && padradius<=bandradius[1]) return 1;
@@ -647,8 +650,8 @@ Float_t AliRICHPatRec::DistanceFromMip(Float_t nfreon, Float_t nquartz,
 
   fPhotocatExitPhot =  radExitPhot + quarExitPhot + gapExitPhot; 
 
-  distanceValue = sqrt(pow(fPhotocatExitPhot(0),2)
-                           +pow(fPhotocatExitPhot(1),2)); 
+  distanceValue = sqrt(TMath::Power(fPhotocatExitPhot(0),2)
+                           +TMath::Power(fPhotocatExitPhot(1),2)); 
   return  distanceValue ;
 }
 
@@ -887,8 +890,8 @@ Float_t AliRICHPatRec::CherenkovRingDrawing(Float_t fixedthetacer)
        aveEnerg =  (energy[0]+energy[1])/2.;
        
        nfreonave  = a+b*aveEnerg;
-       nquartzave = sqrt(1+(f1/(pow(e1,2)-pow(aveEnerg,2)))+
-			 (f2/(pow(e2,2)-pow(aveEnerg,2))));
+       nquartzave = sqrt(1+(f1/(TMath::Power(e1,2)-TMath::Power(aveEnerg,2)))+
+			 (f2/(TMath::Power(e2,2)-TMath::Power(aveEnerg,2))));
        
        thetacer =  fixedthetacer;
        
