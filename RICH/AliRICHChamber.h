@@ -53,15 +53,14 @@ public:
   Double_t    Z()                  const{return fCenterV3.Z();}
   TVector3    L2G(TVector3 x3)                       const{x3.Transform(fRot);x3+=fCenterV3;return x3;}
   TVector3    G2L(TVector3 x3)                       const{x3-=fCenterV3;x3.Transform(fRot.Inverse()); return x3;}
+  inline TVector3  Global2Local(TVector3 x3, Bool_t isVector=kFALSE) const;
+  TVector3    Global2Local(TLorentzVector x4,Bool_t isVector=kFALSE) const{return Global2Local(x4.Vect(),isVector);}
   TVector3    L2G(Double_t x,Double_t y,Double_t z)  const{return L2G(TVector3(x,y,z));}
   TVector3    G2L(TLorentzVector x4)                 const{return G2L(x4.Vect());}
   Float_t     G2Ly(TLorentzVector x4)                const{TVector3 x3=G2L(x4.Vect()); return x3.Z();}
   TVector3    G2L(Double_t x,Double_t y,Double_t z)  const{return G2L(TVector3(x,y,z));}
   Float_t     G2Lx(Double_t x,Double_t y,Double_t z) const{TVector3 x3=G2L(x,y,z); return x3.X();}
   Float_t     G2Ly(Double_t x,Double_t y,Double_t z) const{TVector3 x3=G2L(x,y,z); return x3.Z();}
-  TVector3    L2Gvector(TVector3 x3)                 const{x3.Transform(fRot);return x3;}
-  TVector3    G2Lvector(TVector3 x3)                 const{x3.Transform(fRot.Inverse()); return x3;}
-//  TLorentzVector L2G(TLorentzVector v4)  const{v4.Transform(fRot.Inverse());v4+=fCenterV3;return v4;}???
   void        Print(Option_t *sOption)const;//virtual      
    
   void LocaltoGlobal(Float_t pos[3],Float_t Localpos[3]);//Transformation from local to global coordinates, chamber-dependant
@@ -104,6 +103,14 @@ void AliRICHChamber::SetCenter(Double_t x,Double_t y,Double_t z)
 {
   fCenterV3.SetXYZ(x,y,z);
   fX=x;fY=y;fZ=z;
+}
+
+TVector3 AliRICHChamber::Global2Local(TVector3 x3,Bool_t isVector)const
+{
+  if(!isVector) x3-=fCenterV3;
+  x3.Transform(fRot.Inverse()); 
+  Double_t tmp=x3.Y(); x3.SetY(-x3.Z()); x3.SetZ(tmp);
+  return x3;
 }
   
 #endif //AliRICHChamber_h

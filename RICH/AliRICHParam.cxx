@@ -21,13 +21,13 @@
 
 ClassImp(AliRICHParam)
 
+Float_t AliRICHParam::fgAngleRot=-60;
+
 // RICH main parameters manipulator
 //__________________________________________________________________________________________________
 AliRICHParam::AliRICHParam():
 fCurrentPadX(0),fCurrentPadY(0),fCurrentWire(0),
 fSizeZ(0),
-fAngleRot(0),fAngleYZ(0),fAngleXY(0),
-fOffset(0),
 fProximityGapThickness(0),
 fQuartzLength(0),
 fQuartzWidth(0),
@@ -46,9 +46,7 @@ fWireSag(0),
 fVoltage(0)
 {//defines the default parameters
   Size                 (132.6*kcm,26*kcm,136.7*kcm);  //full length, not GEANT half notation
-  AngleRot             (-60);                         //rotation of the whole RICH around Z, deg
-  Angles               (20,19.5);                     //XY angle, YZ angle  deg  
-  Offset               (490*kcm+1.267*kcm);           //1.267???????cm distance from IP to the center of module 
+  
   ProximityGapThickness(0.4*kcm);            
   QuartzLength         (133*kcm);            
   QuartzWidth          (127.9*kcm);          

@@ -4,6 +4,8 @@
 #include <TObject.h>
 #include "AliRICHConst.h"
 
+
+
 class AliRICHParam :public TObject  
 {
 public:
@@ -45,14 +47,12 @@ public:
   Float_t SizeX()                       const{return fSizeX;}
   Float_t SizeY()                       const{return fSizeY;}
   Float_t SizeZ()                       const{return fSizeZ;}   
-  void    Offset(Float_t offset)             {       fOffset=offset;}  
-  Float_t Offset()                      const{return fOffset;}  
-  void    Angles(Float_t xy,Float_t yz)      {       fAngleXY=xy;fAngleYZ=yz;} 
-  Float_t AngleYZ()                     const{return fAngleYZ*kD2r;} 
-  Float_t AngleXY()                     const{return fAngleXY*kD2r;} 
-  void    AngleRot(Float_t angle)            {       fAngleRot=angle;}
-  Float_t AngleRot()                    const{return fAngleRot*kD2r;}                
-  static Float_t GapThickness()              {return 8.0;}      
+  static  Float_t Offset()                   {return 490+1.267;}  
+  static  Float_t AngleYZ()                  {return 19.5*TMath::DegToRad();} 
+  static  Float_t AngleXY()                  {return 20*TMath::DegToRad();} 
+  static  void    AngleRot(Float_t angle)    {       fgAngleRot=angle;}
+  static  Float_t AngleRot()                 {return fgAngleRot*kD2r;}                
+  static  Float_t GapThickness()             {return 8.0;}      
   void    ProximityGapThickness(Float_t a)   {       fProximityGapThickness=a;}
   Float_t ProximityGapThickness()       const{return fProximityGapThickness;}    
   void    QuartzLength(Float_t a)            {       fQuartzLength=a;}
@@ -105,10 +105,7 @@ protected:
   Int_t   fCurrentWire;                           //???
     
   Float_t fSizeX;  Float_t fSizeY; Float_t fSizeZ;                                //chamber outer size, cm
-  Float_t fAngleRot;                                                              //azimuthal rotation XY plane, deg  
-  Float_t fAngleYZ;                                                               //angle between chambers YZ plane, deg
-  Float_t fAngleXY;                                                               //angle between chambers XY plane, deg
-  Float_t fOffset;                                                                //chambers offset from IP, cm   
+  static  Float_t fgAngleRot;                                                     //azimuthal rotation XY plane, deg  
   Float_t fProximityGapThickness;                                                 //proximity gap thickness, cm
   Float_t fQuartzLength;     Float_t fQuartzWidth;                                //quartz window size, cm
   Float_t fOuterFreonLength; Float_t fOuterFreonWidth;                            //freon box outer size, cm

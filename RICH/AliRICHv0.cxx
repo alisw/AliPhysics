@@ -83,7 +83,7 @@ void AliRICHv0::StepManager()
   Float_t glo[3],loc[3];
   glo[0]=x4.X();glo[1]=x4.Y();glo[2]=x4.Z();  
   gMC->Gmtod(glo,loc,1);
-  Info("","glo(%+8.3f,%+8.3f,%+8.3f) r=%7.2f theta=%7.2f phi=%7.2f",
+  Info("","glo(%+8.3f,%+8.3f,%+8.3f) r=%8.3f theta=%8.3f phi=%8.3f",
                       glo[0],glo[1],glo[2],x4.Rho(),x4.Theta()*kR2d,x4.Phi()*kR2d);  
   Info("","loc(%+8.3f,%+8.3f,%8.3f) by gMC->Gmtod()",         loc[0],loc[1],loc[2]);  
   if(gMC->VolId("CSI ")==gMC->CurrentVolID(copy0)){
@@ -91,6 +91,8 @@ void AliRICHv0::StepManager()
     gMC->CurrentVolOffID(2,iChamber);
     TVector3 x3=C(iChamber)->G2L(x4);
     Info("","loc(%+8.3f,%+8.3f,%8.3f) by G2L",         x3.X(),x3.Y(),x3.Z());  
+    x3=C(iChamber)->Global2Local(x4);
+    Info("","loc(%+8.3f,%+8.3f,%8.3f) by Global2Local",         x3.X(),x3.Y(),x3.Z());  
   }
   Info("","end of current step\n");
 }//AliRICHv0::StepManager()

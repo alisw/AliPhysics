@@ -1,9 +1,9 @@
-Int_t   iRICH  =  3;//0-1-3
+const static Int_t   iRICH  =  0;//0-1-3
+const static Bool_t  IsRichUp=kTRUE;
+const static Int_t   kEventsPerFile=50;
 
-enum EGenTypes {kGun1,kGun7,kPP7};
-
-static EGenTypes kGen=kGun1;
-static Int_t kEventsPerFile=50;
+enum  EGenTypes {kGun0,kGun1,kGun7,kPP7};
+const static EGenTypes kGen=kGun0;
 
 Int_t   iPIPE  =  0;//central before RICH
 Int_t   iITS   =  0;
@@ -38,7 +38,9 @@ void Config()
   int n,pid,chamber;
   double p;
   Geant3(); File(); Decayer(); Field(); Other();
-   
+  
+
+  if(IsRichUp) AliRICHParam::AngleRot(0); 
   AliRICH *pRICH;
   switch(iRICH){
     case 0:
@@ -51,11 +53,11 @@ void Config()
       gRICH=new AliRICHv3("RICH","old parametrised RICH with rotation");
       break;
   }   
-
   switch(kGen){
 	case kPP7:          Pythia7(pid=kPiPlus,p=4);                break;
         case kGun7:         Gun7(pid=kPiPlus,p=4);                   break;
         case kGun1:         Gun1(n=1,pid=kPiPlus,p=4,chamber=4);     break;
+        case kGun0:         Gun1(n=1,pid=kNeutron,p=4,chamber=4);    break;
         default:            Fatal("Config","No generator");          break;
   }  
   ::Info("kir","Stop.");
@@ -63,12 +65,15 @@ void Config()
 
 void Gun1(Int_t iNprim,Int_t iPID,Double_t p,Int_t iChamber)
 {
-  ::Info("kir-Gun1","%i primaries of %i PID  with p=%f GeV",iNprim,iPID,p);
+  Double_t theta=gRICH->C(iChamber)->ThetaD();
+  Double_t phi  =gRICH->C(iChamber)->PhiD();
+  theta-=2;
+  ::Info("kir-Gun1","%i primarie(s) of %i PID  with p=%f GeV at (%f,%f)",iNprim,iPID,p,theta,phi);
    
   AliGenFixed *pGen=new AliGenFixed(iNprim);
   pGen->SetMomentum(p);
-  pGen->SetPhiRange(gRICH->C(iChamber)->PhiD());
-  pGen->SetThetaRange(gRICH->C(iChamber)->ThetaD()+2);
+  pGen->SetPhiRange(phi);
+  pGen->SetThetaRange(theta);
   pGen->SetOrigin(0,0,0);                 
   pGen->SetPart(iPID);    
   pGen->Init();
