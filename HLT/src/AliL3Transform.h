@@ -20,6 +20,8 @@ class AliL3Transform {
   Int_t fNRow;
   Double_t fPi;
   Double_t fNRotShift;
+  Double_t fZLength;
+  Double_t fZOffset;
   Double_t fCos[36]; //fill this following Init
   Double_t fSin[36]; //fill this following Init
   Double_t fX[176];  //fill this following Init
@@ -30,7 +32,7 @@ class AliL3Transform {
   AliL3Transform();
   AliL3Transform(const char *pathname);
   virtual ~AliL3Transform();
-  Int_t getVersion(){return fVersion;}
+  Int_t GetVersion(){return fVersion;}
   void Init(const Char_t* path); //new init for all AliRoot versions
 
   Double_t GetPadPitchWidthLow() {return fPadPitchWidthLow;}
@@ -51,6 +53,7 @@ class AliL3Transform {
   Double_t GetEta(Int_t row, Int_t pad, Int_t time);
   Double_t GetPhi(Float_t *xyz);
   Double_t GetMaxY(Int_t slicerow);
+  void XYZtoRPhiEta(Float_t *rpe, Float_t *xyz);
   void Local2Global(Float_t *xyz, Int_t slice);
   void Local2GlobalAngle(Float_t *angle, Int_t slice);
   void Global2LocalAngle(Float_t *angle, Int_t slice);

@@ -49,6 +49,8 @@ void AliL3Transform::Init()
   fPadPitchWidthUp = 0.600000;
   fZWidth = 0.56599998474121093750;
   fZSigma = 0.22880849748219134199;
+  fZLength = 2.5;
+  fZOffset = 0.68642549244657402596;
 
   //slices:
   fNSlice = 36;
@@ -446,6 +448,8 @@ void AliL3Transform::Init(const Char_t* path){
     else if(strcmp(d1,"fPadPitchWidthUp")==0){fscanf(fptr,"%s %lf %s",d2,&ddummy,d3);fPadPitchWidthUp=(Double_t)ddummy;}
     else if(strcmp(d1,"fZWidth")==0){fscanf(fptr,"%s %lf %s",d2,&ddummy,d3);fZWidth=(Double_t)ddummy;}
     else if(strcmp(d1,"fZSigma")==0){fscanf(fptr,"%s %lf %s",d2,&ddummy,d3);fZSigma=(Double_t)ddummy;}
+    else if(strcmp(d1,"fZLength")==0){fscanf(fptr,"%s %lf %s",d2,&ddummy,d3);fZLength=(Double_t)ddummy;}
+    else if(strcmp(d1,"fZOffset")==0){fscanf(fptr,"%s %lf %s",d2,&ddummy,d3);fZOffset=(Double_t)ddummy;}
     else if(strcmp(d1,"fNSlice")==0){fscanf(fptr,"%s %d %s",d2,&dummy,d3);fNSlice=(Int_t)dummy;}
     else if(strcmp(d1,"fNRow")==0){
       fscanf(fptr,"%s %d %s",d2,&dummy,d3);fNRow=(Int_t)dummy;
@@ -457,7 +461,7 @@ void AliL3Transform::Init(const Char_t* path){
     else if(strcmp(d1,"fPi")==0){fscanf(fptr,"%s %lf %s",d2,&ddummy,d3);fPi=(Double_t)ddummy;}
     else if(strcmp(d1,"fX[0]")==0){
       fscanf(fptr,"%s %lf %s",d2,&ddummy,d3);fX[0]=(Double_t)ddummy;
-      for(Int_t i=1;i<fNRow;i++){fscanf(fptr,"%s %s %lf %s",d1,d2,&ddummy,d3);fX[i]=(Double_t)dummy;}
+      for(Int_t i=1;i<fNRow;i++){fscanf(fptr,"%s %s %lf %s",d1,d2,&ddummy,d3);fX[i]=(Double_t)ddummy;}
     }
     else if(strcmp(d1,"fNPads[0]")==0){
       fscanf(fptr,"%s %d %s",d2,&dummy,d3);fNPads[0]=(Int_t)dummy;
@@ -481,6 +485,13 @@ Double_t AliL3Transform::GetEta(Float_t *xyz)
   Double_t r3 = sqrt(xyz[0]*xyz[0]+xyz[1]*xyz[1]+xyz[2]*xyz[2]);
   Double_t eta = 0.5 * log((r3+xyz[2])/(r3-xyz[2]));
   return eta;
+}
+
+void AliL3Transform::XYZtoRPhiEta(Float_t *rpe, Float_t *xyz)
+{
+  rpe[0] = sqrt(xyz[0]*xyz[0]+xyz[1]*xyz[1]+xyz[2]*xyz[2]);
+  rpe[1] = atan2(xyz[1],xyz[0]);
+  rpe[2] = 0.5 * log((rpe[0]+xyz[2])/(rpe[0]-xyz[2]));
 }
 
 Double_t AliL3Transform::GetEta(Int_t padrow,Int_t pad,Int_t time)
@@ -557,11 +568,11 @@ void AliL3Transform::Local2Global(Float_t *xyz,Int_t slice)
 }
 
 void AliL3Transform::Local2GlobalAngle(Float_t *angle,Int_t slice){
-  angle[0] = fmod(angle[0]+(slice+0.5)*(2*fPi/18),2*fPi);
+  angle[0] = fmod(angle[0]+(slice+fNRotShift)*(2*fPi/18),2*fPi);
 }
 
 void AliL3Transform::Global2LocalAngle(Float_t *angle,Int_t slice){
-  angle[0] = angle[0]-(slice+0.5)*(2*fPi/18);
+  angle[0] = angle[0]-(slice+fNRotShift)*(2*fPi/18);
   if(angle[0]<0) angle[0]+=2*fPi;
 }
 
@@ -572,27 +583,24 @@ void AliL3Transform::Raw2Local(Float_t *xyz,Int_t sector,Int_t row,Float_t pad,F
   Int_t slice,slicerow;
   Sector2Slice(slice, slicerow, sector, row);  
 
+  //X-Value
   xyz[0]=Row2X(slicerow); 
+
+  //Y-Value
   Int_t npads= fNPads[slicerow];
   if(sector<fNSectorLow)
     xyz[1]=(pad-0.5*(npads-1))*fPadPitchWidthLow;
   else
     xyz[1]=(pad-0.5*(npads-1))*fPadPitchWidthUp;
-  xyz[2]=fZWidth*time-3.*fZSigma;
-  Int_t sign=1;
-  
-  
+
+  //Z-Value (remember PULSA Delay)
+  //xyz[2]=fZWidth*time-3.*fZSigma;
+  xyz[2]=fZWidth*time-fZOffset;
   if(slice < 18)
-    sign = 1;
+    xyz[2]=fZLength-xyz[2];
   else
-    sign = -1;
-  
-  xyz[2]=sign*(250.-xyz[2]);
-  
-  //Int_t nis=fNSectorLow;
-  //Int_t nos=fNSectorUp;
-  //if((sector<nis)/2 || ((sector-nis)<nos/2)) sign=1;
-  
+    xyz[2]=xyz[2]-fZLength;
+
 }
 
 void AliL3Transform::Local2Global(Float_t *xyz,Int_t sector,Int_t row)
