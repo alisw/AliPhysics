@@ -280,7 +280,7 @@ void AliPHOSv1::StepManager(void)
   TLorentzVector pos      ;           // Lorentz vector of the track current position
   Int_t          copy     ;
 
-  Int_t tracknumber =  gAlice->CurrentTrack() ; 
+  Int_t tracknumber =  gAlice->GetCurrentTrackNumber() ; 
   TString name      =  GetGeometry()->GetName() ; 
 
   Int_t moduleNumber ;
@@ -400,7 +400,7 @@ void AliPHOSv1::StepManager(void)
       gMC -> Gmtod (xyzte, xyzd, 1);    // transform coordinate from master to daughter system    
       if (xyzd[1] < -GetGeometry()->GetCrystalSize(1)/2.+0.001){   //Entered close to forward surface  
 	TParticle * part = 0 ; 
-	Int_t parent = gAlice->CurrentTrack() ; 
+	Int_t parent = gAlice->GetCurrentTrackNumber() ; 
 	while ( parent != -1 ) {
 	  part = gAlice->Particle(parent) ; 
 	  part->SetBit(kKeepBit);
@@ -438,9 +438,9 @@ void AliPHOSv1::StepManager(void)
       
       Int_t primary =-1 ;
       if(fIshunt == 1)
-	 primary  =  gAlice->GetPrimary( gAlice->CurrentTrack() ); 
+	 primary  =  gAlice->GetPrimary( gAlice->GetCurrentTrackNumber() ); 
       else if(fIshunt == 2){
-         primary = gAlice->CurrentTrack() ;
+         primary = gAlice->GetCurrentTrackNumber() ;
          TParticle * part = gAlice->Particle(primary) ;
          while ( !part->TestBit(kKeepBit) ) {
            primary = part->GetFirstMother() ;

@@ -191,8 +191,8 @@ void AliPHOSvImpacts::StepManager(void)
   TLorentzVector pos      ;           // Lorentz vector of the track current position
   Int_t          copy     ;
 
-  Int_t tracknumber =  gAlice->CurrentTrack() ; 
-  Int_t primary     =  gAlice->GetPrimary( gAlice->CurrentTrack() ); 
+  Int_t tracknumber =  gAlice->GetCurrentTrackNumber() ; 
+  Int_t primary     =  gAlice->GetPrimary( gAlice->GetCurrentTrackNumber() ); 
   TString name      =  GetGeometry()->GetName() ; 
 
   // Add impact to EMC
