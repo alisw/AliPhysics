@@ -20,7 +20,7 @@
 //-----------------------------------------------------------------
 
 //---- standard headers ----
-#include <iostream.h>
+#include "Riostream.h"
 //---- Root headers --------
 #include <TMath.h>
 #include <TROOT.h>
