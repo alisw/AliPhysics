@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.11  2001/11/11 17:27:50  hristov
+Minor corrections
+
 Revision 1.10  2001/09/26 16:00:47  coppedis
 Minor change
 
@@ -54,12 +57,12 @@ Introduction of the Copyright and cvs Log
 #include <TLorentzVector.h>
 #include <TVector3.h>
 #include "TDatabasePDG.h"
+#include "TMCProcess.h"
 
 #include "AliGenZDC.h"
 #include "AliConst.h"
 #include "AliPDG.h"
 #include "AliRun.h"
-#include "AliMCProcess.h"
  
 ClassImp(AliGenZDC)
  

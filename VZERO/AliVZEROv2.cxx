@@ -47,7 +47,6 @@
 #include "AliVZEROv2.h"
 #include "AliRun.h"
 #include "AliMagF.h"
-#include "AliMC.h"
 #include "AliVZEROhit.h"
 #include "AliVZEROdigit.h"
 #include <Riostream.h>

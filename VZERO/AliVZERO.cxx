@@ -35,7 +35,6 @@
 #include "AliRun.h"
 #include "AliVZERO.h"
 #include "AliVZEROdigit.h"
-#include "AliMC.h"
 #include "AliVZEROhit.h"
 
 ClassImp(AliVZERO)
