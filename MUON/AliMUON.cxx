@@ -828,7 +828,8 @@ void AliMUON::Reconstruct() const
 void AliMUON::FillESD(AliESD* event) const
 {
 
-  TClonesArray * recTracksArray;
+  TClonesArray* recTracksArray;
+  TClonesArray* recTrigTracksArray;
   
   //YS AliLoader* loader = GetLoader();
   AliRunLoader* runLoader = fLoader->GetRunLoader(); //YS loader->GetRunLoader();
@@ -839,7 +840,7 @@ void AliMUON::FillESD(AliESD* event) const
   Int_t ievent;
   Int_t ntrackhits;
   Double_t fitfmin;
-  Int_t nrectracks;
+ 
 
   Double_t bendingSlope, nonBendingSlope, fInverseBendingMomentum;
   Double_t fXRec, fYRec, fZRec;
@@ -853,7 +854,7 @@ void AliMUON::FillESD(AliESD* event) const
   AliMUONTriggerTrack * rectriggertrack;
   AliMUONTrackParam *trackParam;
   
-  ievent = runLoader->GetEventNumber() ; //YS 
+  ievent = runLoader->GetEventNumber() ; //YS, seems not to be implemented yet (Ch. F)
   //YS for (ievent = 0; ievent < nEvents; ievent++) {
     runLoader->GetEvent(ievent);
 
@@ -865,67 +866,78 @@ void AliMUON::FillESD(AliESD* event) const
     fMUONData->GetRecTracks();
     recTracksArray = fMUONData->RecTracks();
         
-    nrectracks = (Int_t) recTracksArray->GetEntriesFast(); //
- 
-    // printf(">>> Event %d Number of Recconstructed tracks %d \n",ievent, nrectracks);
-   
-    // read track infos
-    for (Int_t irectracks = 0; irectracks <  nrectracks;  irectracks++) {
+    Int_t nrectracks = (Int_t) recTracksArray->GetEntriesFast(); //
 
-      rectrack = (AliMUONTrack*) recTracksArray->At(irectracks);
-
-      trackParam = rectrack->GetTrackParamAtVertex();
-
-      bendingSlope            = trackParam->GetBendingSlope();
-      nonBendingSlope         = trackParam->GetNonBendingSlope();
-      fInverseBendingMomentum = trackParam->GetInverseBendingMomentum();
-      fXRec  = trackParam->GetNonBendingCoor();
-      fYRec  = trackParam->GetBendingCoor();
-      fZRec  = trackParam->GetZ();
-
-      ntrackhits = rectrack->GetNTrackHits();
-      fitfmin = rectrack->GetFitFMin();
-
-      // setting data member of ESD MUON
-      ESDTrack->SetInverseBendingMomentum(fInverseBendingMomentum);
-      ESDTrack->SetThetaX(TMath::ATan(nonBendingSlope));
-      ESDTrack->SetThetaY(TMath::ATan(bendingSlope));
-      ESDTrack->SetZ(fZRec);
-      ESDTrack->SetBendingCoor(fYRec);
-      ESDTrack->SetNonBendingCoor(fXRec);
-      ESDTrack->SetChi2(fitfmin);
-      ESDTrack->SetNHit(ntrackhits);
-    }
-
- //    // -------------------- trigger tracks-------------
+    //-------------------- trigger tracks-------------
+    Bool_t ifirst = true;
+    Long_t trigPat = 0;
     fMUONData->SetTreeAddress("RL");
     fMUONData->GetRecTriggerTracks();
-    recTracksArray = fMUONData->RecTriggerTracks();
+    recTrigTracksArray = fMUONData->RecTriggerTracks();
         
-    Int_t ntrectracks = (Int_t) recTracksArray->GetEntriesFast(); //YS
+    Int_t ntrectracks = (Int_t) recTrigTracksArray->GetEntriesFast(); //YS
  
-    //  printf(">>> Event %d Number of Recconstructed tracks %d \n",ievent, nrectracks);
+    //printf(">>> Event %d Number of Recconstructed tracks %d \n",ievent, nrectracks);
    
-    // read trigger track infos
-    for (Int_t irectracks = 0; irectracks <  ntrectracks;  irectracks++) {
+    Int_t ntracks = TMath::Max(nrectracks, ntrectracks);
 
-      rectriggertrack = (AliMUONTriggerTrack*) recTracksArray->At(irectracks);
-    
-      x11 = rectriggertrack->GetY11();
-      y11 = rectriggertrack->GetY11();
-      thetaX = rectriggertrack->GetThetax();
-      thetaY = rectriggertrack->GetThetay();
+    // loop over tracks
+    for (Int_t irectracks = 0; irectracks <  ntracks;  irectracks++) {
 
-      // setting data member of ESD MUON trigger
-      ESDTrack->SetThetaX11(thetaX);
-      ESDTrack->SetThetaY11(thetaY);
-      ESDTrack->SetX11(x11);
-      ESDTrack->SetY11(y11);
-    }
+    // -------------------- tracks-------------
+    // not the best way to do, avoid creating two "branches" in fMuonTracks
+      if (irectracks < nrectracks) { 
+	rectrack = (AliMUONTrack*) recTracksArray->At(irectracks);
 
-    // storing ESD MUON Track into ESD Event & reset muondata
-    if (ntrectracks+ntrectracks != 0) //YS 
-      event->AddMuonTrack(ESDTrack);
+	trackParam = rectrack->GetTrackParamAtVertex();
+
+	bendingSlope            = trackParam->GetBendingSlope();
+	nonBendingSlope         = trackParam->GetNonBendingSlope();
+	fInverseBendingMomentum = trackParam->GetInverseBendingMomentum();
+	fXRec  = trackParam->GetNonBendingCoor();
+	fYRec  = trackParam->GetBendingCoor();
+	fZRec  = trackParam->GetZ();
+
+	ntrackhits = rectrack->GetNTrackHits();
+	fitfmin = rectrack->GetFitFMin();
+
+	// setting data member of ESD MUON
+	ESDTrack->SetInverseBendingMomentum(fInverseBendingMomentum);
+	ESDTrack->SetThetaX(TMath::ATan(nonBendingSlope));
+	ESDTrack->SetThetaY(TMath::ATan(bendingSlope));
+	ESDTrack->SetZ(fZRec);
+	ESDTrack->SetBendingCoor(fYRec);
+	ESDTrack->SetNonBendingCoor(fXRec);
+	ESDTrack->SetChi2(fitfmin);
+	ESDTrack->SetNHit(ntrackhits);
+      }
+    // -------------------- trigger tracks-------------
+      if (irectracks < ntrectracks) { 
+	rectriggertrack = (AliMUONTriggerTrack*) recTrigTracksArray->At(irectracks);
+	if (ifirst) {
+	  ifirst = false;
+	  trigPat = rectriggertrack->GetGTPattern();
+	}
+
+	x11 = rectriggertrack->GetY11();
+	y11 = rectriggertrack->GetY11();
+	thetaX = rectriggertrack->GetThetax();
+	thetaY = rectriggertrack->GetThetay();
+
+	// setting data member of ESD MUON trigger
+	ESDTrack->SetThetaX11(thetaX);
+	ESDTrack->SetThetaY11(thetaY);
+	ESDTrack->SetX11(x11);
+	ESDTrack->SetY11(y11);
+      }
+      // storing ESD MUON Track into ESD Event & reset muondata
+      if (ntrectracks+ntrectracks != 0)  //YS 
+	event->AddMuonTrack(ESDTrack);
+    } // end loop tracks
+
+    if (ntrectracks+ntrectracks != 0)  //YS 
+      event->SetTrigger(trigPat);
+
     fMUONData->ResetRecTracks();
     fMUONData->ResetRecTriggerTracks();
 
