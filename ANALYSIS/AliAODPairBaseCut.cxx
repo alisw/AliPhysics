@@ -261,7 +261,19 @@ Bool_t AliAODAndPairCut::Rejected(AliAODPair * p)  const
   //OR operation is a little bit misleading but is correct
   //User wants to build logical cuts with natural (positive) logic
   //while ALIAN use inernally reverse (returns true when rejected)
-  if (fFirst->Rejected(p) || fSecond->Rejected(p)) return kTRUE;//rejected (any of two rejected(returned kTRUE) )
+  if (fFirst->Rejected(p))
+   {//first rejected - we reject
+     return kTRUE;
+   }
+  else
+   {//first accepted
+    if (fSecond->Rejected(p))
+     {//second rejected - we reject
+       return kTRUE;
+     }
+   }  
+//  if (fFirst->Rejected(p) || fSecond->Rejected(p)) return kTRUE;//rejected (any of two rejected(returned kTRUE) )
+  
   return kFALSE;//accepted (both accepted (returned kFALSE))
 }
 /******************************************************************/
