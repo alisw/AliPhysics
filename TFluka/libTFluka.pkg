@@ -1,11 +1,9 @@
 # Sources
-SRCS:=  TFluka.cxx source.cxx mgdraw.cxx bxdraw.cxx eedraw.cxx endraw.cxx sodraw.cxx usdraw.cxx
-#FSRCS:= FLUKA_input.f mgdraw.f
+SRCS:=  TFluka.cxx source.cxx mgdraw.cxx bxdraw.cxx eedraw.cxx endraw.cxx sodraw.cxx usdraw.cxx FlukaVolume.cxx
 FSRCS:= FLUKA_input.f 
 
 # Headers
-
-HDRS:= TFluka.h
+HDRS:= TFluka.h FlukaVolume.h
 
 # ROOT Dictionary
 DHDR:=  TFlukaLinkDef.h

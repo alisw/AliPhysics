@@ -10,6 +10,7 @@
  
 
 #pragma link C++ class  TFluka+;
+#pragma link C++ class  FlukaVolume+;
 #endif
 
 
