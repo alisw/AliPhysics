@@ -998,6 +998,7 @@ void AliMUONEventReconstructor::MakeTracks(void)
   //__________________________________________________________________________
 void AliMUONEventReconstructor::ValidateTracksWithTrigger(void)
 {
+  // Try to match track from tracking system with trigger track
   AliMUONTrack *track;
   TClonesArray *recTriggerTracks;
   

@@ -107,26 +107,26 @@ class AliMUONEventReconstructor : public TObject {
   static const Int_t fgkMaxMuonTrackingStations = 5; // Max number of Muon tracking stations
 
   // Defaults parameters for reconstruction
-  static const Double_t fgkDefaultMinBendingMomentum;
-  static const Double_t fgkDefaultMaxBendingMomentum;
-  static const Double_t fgkDefaultMaxChi2;
-  static const Double_t fgkDefaultMaxSigma2Distance;
-  static const Double_t fgkDefaultBendingResolution;
-  static const Double_t fgkDefaultNonBendingResolution;
-  static const Double_t fgkDefaultChamberThicknessInX0;
+  static const Double_t fgkDefaultMinBendingMomentum; // default min. bending momentum for reconstruction
+  static const Double_t fgkDefaultMaxBendingMomentum; // default max. bending momentum for reconstruction
+  static const Double_t fgkDefaultMaxChi2; // default max. track chi2 for reconstruction
+  static const Double_t fgkDefaultMaxSigma2Distance; // default square of max. distance for window size 
+  static const Double_t fgkDefaultBendingResolution; // default bending coordinate resolution for reconstruction 
+  static const Double_t fgkDefaultNonBendingResolution; // default non bending coordinate resolution for reconstruction
+  static const Double_t fgkDefaultChamberThicknessInX0; // default chamber thickness in X0 for reconstruction
   // Simple magnetic field:
   // Value taken from macro MUONtracking.C: 0.7 T, hence 7 kG
   // Length and Position from reco_muon.F, with opposite sign:
   // Length = ZMAGEND-ZCOIL
   // Position = (ZMAGEND+ZCOIL)/2
   // to be ajusted differently from real magnetic field ????
-  static const Double_t fgkDefaultSimpleBValue;
-  static const Double_t fgkDefaultSimpleBLength;
-  static const Double_t fgkDefaultSimpleBPosition;
-  static const Int_t fgkDefaultRecGeantHits;
-  static const Double_t fgkDefaultEfficiency;
+  static const Double_t fgkDefaultSimpleBValue; // default value of magnetic field (dipole)
+  static const Double_t fgkDefaultSimpleBLength; // default length of magnetic field (dipole)
+  static const Double_t fgkDefaultSimpleBPosition; // default position of magnetic field (dipole)
+  static const Int_t fgkDefaultRecGeantHits; // default flag for reconstrution GEANT hits or Clusters
+  static const Double_t fgkDefaultEfficiency; // default chamber efficiency for GEANT hits recontruction
 
-  static const Int_t fgkDefaultPrintLevel;
+  static const Int_t fgkDefaultPrintLevel; // default print level
 
   Int_t fTrackMethod; // AZ - tracking method
 
@@ -157,8 +157,8 @@ class AliMUONEventReconstructor : public TObject {
   TTree *fBkgGeantTK; // pointer to tree TK
   TClonesArray *fBkgGeantParticles;   // pointer to list of particles in tree TK
   TTree *fBkgGeantTH; // pointer to tree TH
-  TClonesArray *fBkgGeantHits;   // pointer to list of hits in tree TH
-  Int_t fBkgGeantEventNumber;   // event number
+  TClonesArray *fBkgGeantHits; // pointer to list of hits in tree TH
+  Int_t fBkgGeantEventNumber; // event number
   
   // Hits for reconstruction (should be in AliMUON ????)
   TClonesArray *fHitsForRecPtr; // pointer to the array of hits for reconstruction
@@ -189,10 +189,10 @@ class AliMUONEventReconstructor : public TObject {
   TFile            *fTreeFile;  // file where the tree is outputed
 
   // data container
-  AliMUONData* fMUONData;
+  AliMUONData* fMUONData; // Data container for MUON subsystem 
 
   // alice loader
-  AliLoader* fLoader;
+  AliLoader* fLoader; // MUON loader to get data
 
   Int_t fMuons; // AZ - number of muons within acceptance - just for tests
 
