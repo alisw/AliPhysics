@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.3  2000/10/03 21:44:09  morsch
+  Use AliSegmentation and AliHit abstract base classes.
+
   Revision 1.2  2000/10/02 15:48:55  jbarbosa
   Fixed coding conventions.
 
@@ -39,6 +42,7 @@ AliRICHSegmentationV1::AliRICHSegmentationV1()
   fNpy=144;
   //fNpx=80;
   //fNpy=48;
+  fDeadZone=2.6;
   fSector=-1;
 }
 
@@ -56,10 +60,12 @@ Int_t AliRICHSegmentationV1::Sector(Float_t x, Float_t y)
 {
 
 // Calculate in which sector is the hit
-
+  
   fSector=-1;
   
-  if (x<-1.3)
+  //old numerical definition
+
+  /*if (x<-fDeadZone/2)
     {
       if (y>22.75)
 	{
@@ -77,7 +83,7 @@ Int_t AliRICHSegmentationV1::Sector(Float_t x, Float_t y)
 	    fSector=4;
 	}
     }
-  else if (x>1.3)
+  else if (x>fDeadZone/2)
     {
       if (y>22.75)
 	{
@@ -93,6 +99,54 @@ Int_t AliRICHSegmentationV1::Sector(Float_t x, Float_t y)
 	{
 	  if (y>(-63.1))
 	    fSector=5;
+	}
+    }*/
+
+  
+  // parametrised definition
+
+  Float_t csi_length = fNpx*Dpx() + fDeadZone;
+  Float_t csi_width = fNpy*Dpy() + 2*fDeadZone;
+
+  fPadPlane_Width = (csi_width - 2*fDeadZone)/3;
+  fPadPlane_Length = (csi_length - fDeadZone)/2;
+
+  //printf("\n\n\n\n\n\n  padplane w: %f l:%f wr: %f   \n\n\n\n\n\n\n\n",  fPadPlane_Width,fPadPlane_Length,63.1-22.75); 
+
+  if (x<-fDeadZone/2)
+    {
+      if (y> fPadPlane_Width/2 +fDeadZone)
+	{
+	  if ( fPadPlane_Width/2 +fDeadZone +  fPadPlane_Width)
+	    fSector=0;
+	}
+      if (y< fPadPlane_Width/2)
+	{
+	  if (y> -( fPadPlane_Width/2))
+	    fSector=2;
+	}
+      if (y< -( fPadPlane_Width/2 +fDeadZone))
+	{
+	  if (y> -( fPadPlane_Width/2 +fDeadZone +  fPadPlane_Width))
+	    fSector=4;
+	}
+    }
+  else if (x>fDeadZone/2)
+    {
+      if (y> fPadPlane_Width/2 +fDeadZone)
+	{
+	  if ( fPadPlane_Width/2 +fDeadZone +  fPadPlane_Width)
+	    fSector=0;
+	}
+      if (y< fPadPlane_Width/2)
+	{
+	  if (y> -( fPadPlane_Width/2))
+	    fSector=2;
+	}
+      if (y< -( fPadPlane_Width/2 +fDeadZone))
+	{
+	  if (y> -( fPadPlane_Width/2 +fDeadZone +  fPadPlane_Width))
+	    fSector=4;
 	}
     }
   
@@ -118,33 +172,33 @@ void AliRICHSegmentationV1::GetPadI(Float_t x, Float_t y, Int_t &ix, Int_t &iy)
     {
       //ix = (x>0)? Int_t(x/fDpx)+1 : Int_t(x/fDpx);
       //iy = (y>0)? Int_t(y/fDpy)+1 : Int_t(y/fDpy);
-      ix = Int_t (x/fDpx+1.3);
-      iy = Int_t (y/fDpy-2.6);
+      ix = Int_t (x/fDpx+fDeadZone/2);
+      iy = Int_t (y/fDpy-fDeadZone);
     }
   if (sector==1)
     {
-      ix = Int_t (x/fDpx-1.3);
-      iy = Int_t (y/fDpy-2.6);
+      ix = Int_t (x/fDpx-fDeadZone/2);
+      iy = Int_t (y/fDpy-fDeadZone);
     }
   if (sector==2)
     {
-      ix = Int_t (x/fDpx+1.3);
+      ix = Int_t (x/fDpx+fDeadZone/2);
       iy = Int_t (y/fDpy);
     }
   if (sector==3)
     {
-      ix = Int_t (x/fDpx-1.3);
+      ix = Int_t (x/fDpx-fDeadZone);
       iy = Int_t (y/fDpy);
     }
   if (sector==4)
     {
-      ix = Int_t (x/fDpx+1.3);
-      iy = Int_t (y/fDpy+2.6);
+      ix = Int_t (x/fDpx+fDeadZone/2);
+      iy = Int_t (y/fDpy+fDeadZone);
     }
   if (sector==5)
     {
-      ix = Int_t (x/fDpx-1.3);
-      iy = Int_t (y/fDpy+2.6);
+      ix = Int_t (x/fDpx-fDeadZone/2);
+      iy = Int_t (y/fDpy+fDeadZone);
     }
   
   //ix = Int_t (x/fDpx);
@@ -175,7 +229,9 @@ GetPadC(Int_t ix, Int_t iy, Float_t &x, Float_t &y)
 
   Int_t sector=-1;
 
-  if (ix<=0)
+ // old numerical definition
+
+ /*if (ix<=0)
     {
       if (iy<=72)
 	{
@@ -210,40 +266,81 @@ GetPadC(Int_t ix, Int_t iy, Float_t &x, Float_t &y)
 	  if (iy>-72)
 	    sector=5;
 	}
-    }
+    }*/
   
+  //  parametrised definition
+
+  
+  Float_t padplane_width = fNpy/3;
+  
+  if (ix<=0)
+    {
+      if (iy <= fNpy/2)
+	{
+	  if (iy > fNpy/2 - padplane_width)
+	    sector=0;
+	}
+      if (iy<= padplane_width/2)
+	{
+	  if (iy > -(padplane_width/2))
+	    sector=2;
+	}
+      if (iy <= -(padplane_width/2))
+	{
+	  if (iy > -(fNpy/2))
+	    sector=4;
+	}
+    }
+  if (ix>0)
+    {
+      if (iy <= fNpy/2)
+	{
+	  if (iy > fNpy/2 - padplane_width)
+	    sector=0;
+	}
+      if (iy<= padplane_width/2)
+	{
+	  if (iy > -(padplane_width/2))
+	    sector=2;
+	}
+      if (iy <= -(padplane_width/2))
+	{
+	  if (iy > -(fNpy/2))
+	    sector=4;
+	}
+    }
 
   if (sector==0)
     {
       //x = (ix>0) ? Float_t(ix*fDpx)-fDpx/2. : Float_t(ix*fDpx)-fDpx/2.;
       //y = (iy>0) ? Float_t(iy*fDpy)-fDpy/2. : Float_t(iy*fDpy)-fDpy/2.;
-      x = Float_t(ix*fDpx)-fDpx/2.-1.3;
-      y = Float_t(iy*fDpy)-fDpy/2.+2.6;
+      x = Float_t(ix*fDpx)-fDpx/2.-fDeadZone/2;
+      y = Float_t(iy*fDpy)-fDpy/2.+fDeadZone;
     }
   if (sector==1)
     {
-      x = Float_t(ix*fDpx)-fDpx/2.+1.3;
-      y = Float_t(iy*fDpy)-fDpy/2.+2.6;
+      x = Float_t(ix*fDpx)-fDpx/2.+fDeadZone/2;
+      y = Float_t(iy*fDpy)-fDpy/2.+fDeadZone;
     }
   if (sector==2)
     {
-      x = Float_t(ix*fDpx)-fDpx/2.-1.3;
+      x = Float_t(ix*fDpx)-fDpx/2.-fDeadZone/2;
       y = Float_t(iy*fDpy)-fDpy/2.;
     }
   if (sector==3)
     {
-      x = Float_t(ix*fDpx)-fDpx/2.+1.3;
+      x = Float_t(ix*fDpx)-fDpx/2.+fDeadZone;
       y = Float_t(iy*fDpy)-fDpy/2.;
     }
   if (sector==4)
     {
-      x = Float_t(ix*fDpx)-fDpx/2.-1.3;
-      y = Float_t(iy*fDpy)-fDpy/2.-2.6;
+      x = Float_t(ix*fDpx)-fDpx/2.-fDeadZone/2;
+      y = Float_t(iy*fDpy)-fDpy/2.-fDeadZone;
     }
   if (sector==5)
     {
-      x = Float_t(ix*fDpx)-fDpx/2.+1.3;
-      y = Float_t(iy*fDpy)-fDpy/2.-2.6;
+      x = Float_t(ix*fDpx)-fDpx/2.+fDeadZone/2;
+      y = Float_t(iy*fDpy)-fDpy/2.-fDeadZone;
     }
   
   //if (sector==2)
