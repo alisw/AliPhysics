@@ -496,3 +496,6 @@
                 Also call to AliSignal::ResetLink changed to AliSignal::ResetLinks() in the dtor
                 of AliTrack to adopt the extended AliSignal linking facility and output in 
                 AliTrack::ListAll() limited to only the referring signal slots to prevent long output lists.
+12-mar-2004 NvE Additional "cout << endl;" in front of AliCollider initialisation message in order to always
+                have the initialisation message starting on a new line. On some systems the fortran
+                carriage control of the pure Pythia doesn't get treated correctly.

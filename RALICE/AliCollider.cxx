@@ -13,7 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-// $Id: AliCollider.cxx,v 1.9 2004/01/12 08:23:22 nick Exp $
+// $Id: AliCollider.cxx,v 1.10 2004/02/13 11:08:16 nick Exp $
 
 ///////////////////////////////////////////////////////////////////////////
 // Class AliCollider
@@ -108,7 +108,7 @@
 //
 //
 //--- Author: Nick van Eijndhoven 22-nov-2002 Utrecht University
-//- Modified: NvE $Date: 2004/01/12 08:23:22 $ Utrecht University
+//- Modified: NvE $Date: 2004/02/13 11:08:16 $ Utrecht University
 ///////////////////////////////////////////////////////////////////////////
 
 #include "AliCollider.h"
@@ -317,6 +317,7 @@ void AliCollider::Init(char* frame,char* beam,char* target,Float_t win)
  fWin=win;
  Initialize(frame,beam,target,win);
 
+ cout << endl;
  cout << " *AliCollider::Init* Standard Pythia initialisation." << endl;
  cout << " Beam particle : " << beam << " Target particle : " << target
       << " Frame = " << frame << " Energy = " << win
@@ -349,6 +350,7 @@ void AliCollider::Init(char* frame,Int_t zp,Int_t ap,Int_t zt,Int_t at,Float_t w
 
  if (ap<1 || at<1 || zp>ap || zt>at)
  {
+  cout << endl;
   cout << " *AliCollider::Init* Invalid input value(s). Zproj = " << zp
        << " Aproj = " << ap << " Ztarg = " << zt << " Atarg = " << at << endl;
   return;
@@ -359,6 +361,7 @@ void AliCollider::Init(char* frame,Int_t zp,Int_t ap,Int_t zt,Int_t at,Float_t w
  fZtarg=zt;
  fAtarg=at;
 
+ cout << endl;
  cout << " *AliCollider::Init* Nucleus-Nucleus generator initialisation." << endl;
  cout << " Zproj = " << zp << " Aproj = " << ap << " Ztarg = " << zt << " Atarg = " << at
       << " Frame = " << frame << " Energy = " << win
