@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.93  2002/11/21 16:13:03  alibrary
+Removing AliMCProcess and AliMC
+
 Revision 1.92  2002/11/15 17:12:04  alibrary
 Cleaning includes
 
@@ -1588,49 +1591,52 @@ void AliRun::Tree2Tree(Option_t *option, const char *selected)
 
    TDirectory *cwd = gDirectory;
 
+   TObject *obj;
+
    char outFile[32];
    
-   while((detector = dynamic_cast<AliDetector*>(next()))) {
+   while((obj = next())) {
+     if (!dynamic_cast<AliModule*>(obj)) 
+       Fatal("Tree2Tree","Wrong type in fModules array\n");
+     if (!(detector = dynamic_cast<AliDetector*>(obj))) continue;
      if (selected) 
        if (strcmp(detector->GetName(),selected)) continue;
-     if (detector->IsActive()){ 
-       if (gSystem->Getenv("CONFIG_SPLIT_FILE")) {          
-          if (oS) {
-            sprintf(outFile,"SDigits.%s.root",detector->GetName());
-            detector->MakeBranch("S",outFile);
-          }    
-          if (oD) {
-            sprintf(outFile,"Digits.%s.root",detector->GetName());
-            detector->MakeBranch("D",outFile);
-          }    
-          if (oR) {
-            sprintf(outFile,"Reco.%s.root",detector->GetName());
-            detector->MakeBranch("R",outFile);
-          }    
-       } else {
-          detector->MakeBranch(option);
-       }
-       
-       cwd->cd(); 
-
+     if (!detector->IsActive()) continue; 
+     if (gSystem->Getenv("CONFIG_SPLIT_FILE")) {          
        if (oS) {
-          cout << "Hits2SDigits: Processing " << detector->GetName() << "..." << endl;
-          detector->Hits2SDigits(); 
-       }  
+	 sprintf(outFile,"SDigits.%s.root",detector->GetName());
+	 detector->MakeBranch("S",outFile);
+       }    
        if (oD) {
-          cout << "SDigits2Digits: Processing " << detector->GetName() << "..." << endl;
-          detector->SDigits2Digits();
-       } 
+	 sprintf(outFile,"Digits.%s.root",detector->GetName());
+	 detector->MakeBranch("D",outFile);
+       }    
        if (oR) {
-          cout << "Digits2Reco: Processing " << detector->GetName() << "..." << endl;
-          detector->Digits2Reco(); 
-       }
-       
-       cwd->cd();        
-     }   
-   }
+	 sprintf(outFile,"Reco.%s.root",detector->GetName());
+	 detector->MakeBranch("R",outFile);
+       }    
+     } else {
+       detector->MakeBranch(option);
+     }
+     
+     cwd->cd(); 
+     
+     if (oS) {
+       cout << "Hits2SDigits: Processing " << detector->GetName() << "..." << endl;
+       detector->Hits2SDigits(); 
+     }  
+     if (oD) {
+       cout << "SDigits2Digits: Processing " << detector->GetName() << "..." << endl;
+       detector->SDigits2Digits();
+     } 
+     if (oR) {
+       cout << "Digits2Reco: Processing " << detector->GetName() << "..." << endl;
+       detector->Digits2Reco(); 
+     }
+     
+     cwd->cd();        
+   }   
 }
-
 
 //_______________________________________________________________________
 void AliRun::RunLego(const char *setup, Int_t nc1, Float_t c1min,
