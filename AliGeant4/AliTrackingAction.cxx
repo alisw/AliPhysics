@@ -17,12 +17,6 @@
 #include <G4TrackingManager.hh>
 #include <G4SteppingManager.hh>
 
-/*
-#include <TTree.h>
-#include <TParticle.h>
-#include <TClonesArray.h>
-*/
-
 // static data members
 AliTrackingAction* AliTrackingAction::fgInstance = 0;
 
@@ -139,6 +133,9 @@ void AliTrackingAction::PreTrackingAction(const G4Track* aTrack)
     // finish previous primary track
     FinishPrimaryTrack();
     fPrimaryTrackID = aTrack->GetTrackID();
+    
+    // begin this primary track
+    gAlice->BeginPrimary();
   }
   else { 
     // save secondary particles info 
