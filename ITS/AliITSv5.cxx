@@ -58,7 +58,7 @@ void AliITSv5::CreateMaterials()
   FILE *file = fopen(fEuclidMaterial.Data(),"r");
   if(file) {
     fclose(file);
-    gAlice->ReadEuclidMedia(fEuclidMaterial.Data(),2);
+    gAlice->ReadEuclidMedia(fEuclidMaterial.Data(),this);
   } else {
     Error("CreateMaterials"," THE MEDIA FILE %s DOES NOT EXIST !",fEuclidMaterial.Data());
     exit(1);
@@ -82,7 +82,7 @@ void AliITSv5::CreateGeometry()
   delete [] filtmp;
   if(file) {
     fclose(file);
-    gAlice->ReadEuclid(fEuclidGeometry.Data(),2,topvol);
+    gAlice->ReadEuclid(fEuclidGeometry.Data(),this,topvol);
   } else {
     Error("CreateGeometry"," THE GEOM FILE %s DOES NOT EXIST !",fEuclidGeometry.Data());
     exit(1);

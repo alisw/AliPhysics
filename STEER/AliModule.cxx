@@ -52,14 +52,14 @@ AliModule::AliModule(const char* name,const char *title):TNamed(name,title)
   //  
   // Get the Module numeric ID
   Int_t id = gAlice->GetModuleID(name);
-  if (id < 0) {
-    // Unknown Module !
-     Warning("AliRun::Ctor","ERROR Unknown Module: %s\n",name);
+  if (id>=0) {
+    // Module already added !
+     Warning("Ctor","Module: %s already present at %d\n",name,id);
      return;
   }
   //
   // Add this Module to the list of Modules
-  gAlice->Modules()->AddAtAndExpand(this,id);
+  gAlice->Modules()->Add(this);
   //
   //
   SetMarkerColor(3);

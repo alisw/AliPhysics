@@ -36,14 +36,14 @@ protected:
   TTree        *fTreeH;        //Pointer to Tree for Hits
   TTree        *fTreeE;        //Pointer to Tree for Header
   TTree        *fTreeR;        //Pointer to Tree for Reconstructed Objects
-  TObjArray    *fModules;    //List of Detectors
+  TObjArray    *fModules;      //List of Detectors
   TClonesArray *fParticles;    //Pointer to list of particles
   TGeometry    *fGeometry;     //Pointer to geometry
   AliDisplay   *fDisplay;      //Pointer to event display
   TStopwatch    fTimer;        //Timer object
   AliMagF      *fField;        //Magnetic Field Map
   AliMC        *fMC;           //pointer to MonteCarlo object
-  char          fDnames[kMaxModules][kLenModuleName];
+  //  char          fDnames[kMaxModules][kLenModuleName];
                                //Array of detector names
   TArrayI      *fImedia;       //Array of correspondence between media and detectors
   Int_t         fNdets;        //Number of detectors
@@ -132,8 +132,8 @@ public:
   // Functions from GEOCAD
   //_______________________________________________________________________
   
-   virtual void ReadEuclid(const char*, Int_t, const char*);
-   virtual void ReadEuclidMedia(const char*, Int_t);
+   virtual void ReadEuclid(const char*, const AliModule*, const char*);
+   virtual void ReadEuclidMedia(const char*, const AliModule*);
 
    TTree         *TreeD() {return fTreeD;}
    TTree         *TreeE() {return fTreeE;}

@@ -35,15 +35,15 @@ public:
   // Inline functions
   virtual  int           GetNdigits() {return 0;}
   virtual  int           GetNhits()   {return 0;}
-  virtual  TArrayI      *GetIdtmed()   {return fIdtmed;}
-  virtual  TList        *Histograms() {return fHistograms;}
-  virtual  TList        *Nodes()  {return fNodes;}
+  virtual  TArrayI      *GetIdtmed()   const {return fIdtmed;}
+  virtual  TList        *Histograms() const {return fHistograms;}
+  virtual  TList        *Nodes()  const {return fNodes;}
   virtual  TClonesArray *Digits() {return 0;}
   virtual  TClonesArray *Hits()   {return 0;}
   virtual  TObjArray    *Points() {return 0;}
   virtual  Int_t         GetIshunt() {return 0;}
   virtual  void          SetIshunt(Int_t) {}
-  virtual  Bool_t        IsActive() {return fActive;}
+  virtual  Bool_t        IsActive() const {return fActive;}
   virtual  Bool_t        IsFolder() {return kTRUE;}
   virtual  Int_t&        LoMedium() {return fLoMedium;}
   virtual  Int_t&        HiMedium() {return fHiMedium;}
