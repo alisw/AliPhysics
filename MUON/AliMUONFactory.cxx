@@ -246,7 +246,7 @@ void AliMUONFactory::BuildStation3()
 			     0,0,2,0};
 	
 	Float_t shift = 1.5/2.;
-	Float_t xpos5[9]    = {2., 2., 2., 2.,33., 2., 2., 2., 2.};
+	Float_t xpos5[9]    = {4.5, 4.5, 4.5, 4.5, 33., 4.5, 4.5, 4.5, 4.5};
 	Float_t ypos5       = -(20.+4.*(40.-2.*shift));
 	
 	Int_t chamber=5;
@@ -332,7 +332,7 @@ void AliMUONFactory::BuildStation4()
 			   0,0,2,2, 
 			   0,0,0,3,
 			   0,0,0,2};
-	Float_t xpos7[13]   = {2., 2., 2., 2., 2., 2., 40.5, 2., 2., 2., 2., 2., 2.};
+	Float_t xpos7[13]   = {4.5, 4.5, 4.5, 4.5, 4.5, 4.5, 40.5, 4.5, 4.5, 4.5, 4.5, 4.5, 4.5};
 	Float_t ypos7       = -(20.+6.*(40.-2.*shift));  
 	
 	seg71->SetNSlats(13);  
@@ -423,7 +423,7 @@ void AliMUONFactory::BuildStation5()
 			     0,0,0,4, 
 			     0,0,0,3};   
 	
-	Float_t xpos9[13]   = {2., 2., 2., 2., 2., 2., 40.5, 2., 2., 2., 2., 2., 2.};
+	Float_t xpos9[13]   = {4.5, 4.5, 4.5, 4.5, 4.5, 4.5, 40.5, 4.5, 4.5, 4.5, 4.5, 4.5, 4.5};
 	Float_t ypos9       = -(20.+6.*(40.-2.*shift));
 	
 	seg91->SetNSlats(13);  
