@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.4  2000/06/12 23:49:02  nilsen
+New ITS code replacing the old structure and simulations code.
+
 Revision 1.3.4.4  2000/06/12 18:10:32  barbera
 fixed posible compilation errors on HP unix
 
@@ -116,6 +119,7 @@ AliITSmodule& AliITSmodule::operator=(const AliITSmodule &source){
 ////////////////////////////////////////////////////////////////////////
   printf("AliITSmodule error: AliITSmodule class has not to be copied! Exit.\n");
   exit(1);
+  return *this;
 } 
 
 //_________________________________________________________________________
