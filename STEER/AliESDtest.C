@@ -209,7 +209,7 @@ Int_t AliESDtest(Int_t nev=1,Int_t run=0) {
 
    //Instance of the TOF PID maker
    Double_t parTOF[]={130.,5.};
-   AliTOFpidESD tofPID(parTOF);
+   AliTOFtracker tofTracker(tofGeo,parTOF) ;
 
 
    //rl->UnloadgAlice();
@@ -297,18 +297,17 @@ Int_t AliESDtest(Int_t nev=1,Int_t run=0) {
         cerr<<"Can't get the TOF cluster tree !\n";
         return 4;
      } 
-     tofPID.LoadClusters(tofTree,tofGeo);
-     tofPID.MakePID(event);
-     tofPID.UnloadClusters();
-
+     tofTracker.LoadClusters(tofTree);
+     rc+=tofTracker.PropagateBack(event);
+     tofTracker.UnloadClusters();
 
        //checkpoint
-       bf->cd();
-       strcat(ename,";*"); bf->Delete(ename);
-       sprintf(ename,"out%d",i);
-       event->Write(ename); bf->Flush();
-       ef->cd();
-
+     bf->cd();
+     strcat(ename,";*"); bf->Delete(ename);
+     sprintf(ename,"out%d",i);
+     event->Write(ename); bf->Flush();
+     ef->cd();
+     
 
 //***** Now the final refit at the primary vertex...
      rc+=trdTracker.RefitInward(event);
@@ -328,14 +327,14 @@ Int_t AliESDtest(Int_t nev=1,Int_t run=0) {
 
 
        //checkpoint
-       bf->cd();
-       strcat(ename,";*"); bf->Delete(ename);
-       sprintf(ename,"refit%d",i);
-       event->Write(ename); bf->Flush();
-       ef->cd();
-
-       bf->Close();
-
+     bf->cd();
+     strcat(ename,";*"); bf->Delete(ename);
+     sprintf(ename,"refit%d",i);
+     event->Write(ename); bf->Flush();
+     ef->cd();
+     
+     bf->Close();
+     
 //***** Hyperon reconstruction 
      vtxer.SetVertex(vtx);
      rc+=vtxer.Tracks2V0vertices(event);            // V0 finding
