@@ -143,13 +143,12 @@ void AliVZERODigitizer::OpengAliceFile(const char *file)
 void AliVZERODigitizer::Exec() 
  { 
 
-  Int_t nbytes;
   fNdigits = 0;
   Int_t N; 
   Int_t map[96];
   Int_t cell = 0;
   Float_t cPM = fPhotoCathodeEfficiency * fPMGain;
-	     
+             
   for(Int_t i=0; i<96; i++) map[i] = 0; 
           
   fNevents = (Int_t) fRunLoader->TreeE()->GetEntries ();  
@@ -171,7 +170,7 @@ void AliVZERODigitizer::Exec()
       { fVZEROLoader->MakeTree("D");
         fVZEROLoader->MakeDigitsContainer();
         fTreeD = fVZEROLoader->TreeD(); }
-	
+        
       Int_t bufsize = 16000;
       fTreeD->Branch("VZERODigit", &fDigits, bufsize); 
       
@@ -182,41 +181,41 @@ void AliVZERODigitizer::Exec()
          fHits = fVZERO->Hits();
          
          Int_t ntracks = (Int_t) fTreeH->GetEntries ();
-//	 printf(" Number of Tracks in the TreeH = %d \n", ntracks);
+//       printf(" Number of Tracks in the TreeH = %d \n", ntracks);
          for (Int_t track = 0; track < ntracks; track++)
            {
              gAlice->ResetHits ();
-             nbytes += fTreeH->GetEvent(track);
+             fTreeH->GetEvent(track);
              fParticle = fRunLoader->Stack()->Particle(track);
              Int_t nhits = fHits->GetEntriesFast();
              for (Int_t hit = 0; hit < nhits; hit++)
                  {
                    fVZEROHit = (AliVZEROhit *)fHits->UncheckedAt(hit);
-		   N    = fVZEROHit->Nphot();
-		   cell = fVZEROHit->Cell();			 		
-		   map[cell] = map[cell] + N;
+                   N    = fVZEROHit->Nphot();
+                   cell = fVZEROHit->Cell();                                    
+                   map[cell] = map[cell] + N;
                  }           // hit   loop
            }                 // track loop
             
            Int_t icount = 0; 
-	   
+           
            for(Int_t i=0; i<96; i++) {
-	      Float_t q1 = Float_t ( map[i] )* cPM * kQe;
-	      Float_t noise = gRandom->Gaus(10.5,3.22);
+              Float_t q1 = Float_t ( map[i] )* cPM * kQe;
+              Float_t noise = gRandom->Gaus(10.5,3.22);
               Float_t PMresponse  =  q1/kC*TMath::Power(ktheta/kthau,1/(1-ktheta/kthau)) 
-	                          + noise*1e-3;
-	      map[i] = Int_t( PMresponse * 200.0);
-	      if(map[i] > 3) {
-	         icount++;
-//	         printf(" Event, cell, adc = %d %d %d\n", ievent, i, map[i]);
-	         AddDigit(ievent, i, map[i]);} 
+                                  + noise*1e-3;
+              map[i] = Int_t( PMresponse * 200.0);
+              if(map[i] > 3) {
+                 icount++;
+//               printf(" Event, cell, adc = %d %d %d\n", ievent, i, map[i]);
+                 AddDigit(ievent, i, map[i]);} 
             }
 
            fTreeD->Reset();
            fTreeD->Fill();
-	   ResetDigit();
+           ResetDigit();
            fVZEROLoader->WriteDigits("OVERWRITE");  
-	   fVZEROLoader->UnloadDigits();     
+           fVZEROLoader->UnloadDigits();     
       }                     // VZERO loop
     }  //event loop
 }
