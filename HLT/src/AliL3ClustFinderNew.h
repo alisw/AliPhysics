@@ -12,6 +12,8 @@ struct ClusterData
   UInt_t fTime;
   UInt_t fMean;
   UInt_t fFlags;
+  UInt_t fChargeFalling; //for deconvolution
+  UInt_t fLastCharge;    //for deconvolution
 };
 typedef struct ClusterData ClusterData;
 
@@ -26,6 +28,8 @@ class AliL3ClustFinderNew {
   AliL3DigitRowData *fDigitRowData; //!
   AliL3Transform *fTransform; //!
   AliL3SpacePointData *fSpacePointData; //!
+  Bool_t fDeconvTime;
+  Bool_t fDeconvPad;
   UInt_t fNDigitRowData;
   Int_t fFirstRow;
   Int_t fLastRow;
