@@ -51,7 +51,7 @@ AliVZERO::AliVZERO(const char *name, const char *title)
   // Standard constructor for VZERO Detector
   //
   
-  fIshunt       =  1;  // All hits are associated with primary particles  
+//  fIshunt       =  1;  // All hits are associated with primary particles  
    
   fHits         =  new TClonesArray("AliVZEROhit", 400);
   fDigits       =  new TClonesArray("AliVZEROdigit",400); 
