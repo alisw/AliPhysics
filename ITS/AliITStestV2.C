@@ -46,6 +46,7 @@ Int_t AliITStestV2(Char_t SlowOrFast='s') {
    gROOT->LoadMacro("$(ALICE_ROOT)/ITS/AliCascadeFindVertices.C");
    if (rc=AliCascadeFindVertices()) return rc;
 
+   gSystem->SetIncludePath("-I$ROOTSYS/include -I$ALICE_ROOT/include -I$ALICE_ROOT/ITS -I$ALICE_ROOT/TPC -I$ALICE_ROOT/CONTAINERS");
    gROOT->ProcessLine(".L $(ALICE_ROOT)/ITS/AliCascadeComparison.C+");
    if (rc=AliCascadeComparison()) return rc;
 
