@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.8  2000/09/12 16:11:43  morsch
+- Bug in volume YGO2 corrected: PCON started with twice the same z-value.
+- Recesses for chambers added to outer Pb cone.
+
 Revision 1.7  2000/06/15 09:40:31  morsch
 Obsolete typedef keyword removed
 
@@ -493,6 +497,10 @@ enum {kC=1705, kAl=1708, kFe=1709, kCu=1710, kW=1711, kPb=1712,
   parPb[9]   = dlPb;
   parPb[10]  = parPb[7]+(zvac7-zConeE)*TMath::Tan(thetaOpenPb);
   parPb[11]  = 30.;
+  
+  Float_t rPbLast=parPb[10];
+  
+
   gMC->Gsvolu("YXO2", "PCON", idtmed[kPb], parPb, 12);	  
   gMC->Gspos("YXO2", 1, "YGO2", 0., 0., (zPb-zvac4)/2., 0, "ONLY");  
 
@@ -655,7 +663,7 @@ enum {kC=1705, kAl=1708, kFe=1709, kCu=1710, kW=1711, kPb=1712,
   gMC->Gsvolu("YGO3", "PCON", idtmed[iHeavy+40], par3, 27);
 
   parPb[0]  = dl;
-  parPb[1]  = parPb[10];
+  parPb[1]  = rPbLast;
   parPb[2]  = 30;
   parPb[3]  = parPb[1]+2.*dl*TMath::Tan(thetaOpenPb);
   parPb[4]  = 30;
