@@ -32,7 +32,7 @@
 
 // --- Standard library ---
 
-#include <cstdio>
+#include <stdio.h>
 
 // --- AliRoot header files ---
 

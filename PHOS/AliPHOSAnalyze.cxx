@@ -37,8 +37,8 @@
 
 // --- Standard library ---
 
-#include <iostream>
-#include <cstdio>
+#include <iostream.h>
+#include <stdio.h>
 
 // --- AliRoot header files ---
 
@@ -189,8 +189,9 @@ void AliPHOSAnalyze::AnalyzeOneEvent(Int_t evt)
 	  fPID->Print() ; 	    
 	  //========== Creates the Reconstructioner  
 	  fRec = new AliPHOSReconstructioner(fClu, fTrs, fPID) ; 
-	  //========== Event Number
-	  if ( ( log10(ievent+1) - (Int_t)(log10(ievent+1)) ) == 0. ) cout <<  "AnalyzeManyEvents > " << "Event is " << ievent << endl ;  
+	  //========== Event Number>         
+	  if ( ( log10((Float_t)(ievent+1)) - (Int_t)(log10((Float_t)(ievent+1))) ) == 0. ) 
+	    cout <<  "AnalyzeManyEvents > " << "Event is " << ievent << endl ;  
 	  //=========== Connects the various Tree's for evt
 	  gAlice->GetEvent(ievent);
 	  //=========== Gets the Digit TTree

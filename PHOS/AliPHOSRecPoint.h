@@ -16,8 +16,6 @@
 
 // --- Standard library ---
 
-#include <cassert>
-
 // --- AliRoot header files ---
 
 #include "AliRecPoint.h"

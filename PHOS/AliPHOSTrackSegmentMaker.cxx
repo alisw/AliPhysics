@@ -30,8 +30,6 @@
 
 // --- Standard library ---
 
-#include <iostream>
-
 // --- AliRoot header files ---
 
 #include "AliPHOSTrackSegmentMaker.h"

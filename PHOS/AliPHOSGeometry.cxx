@@ -29,7 +29,7 @@
 
 // --- Standard library ---
 
-#include <iostream>
+#include <iostream.h>
 
 // --- AliRoot header files ---
 

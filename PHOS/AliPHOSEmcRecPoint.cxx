@@ -30,8 +30,7 @@
 
 // --- Standard library ---
 
-#include <iostream> 
-#include <cassert>
+#include <iostream.h> 
 
 // --- AliRoot header files ---
 
@@ -545,7 +544,6 @@ void AliPHOSEmcRecPoint::Streamer(TBuffer &R__b)
   // Stream an object of class AliPHOSEmcRecPoint.
   // Needed because of the array fEnergyList
   
-  assert(0==1) ;
    if (R__b.IsReading()) {
       Version_t R__v = R__b.ReadVersion(); if (R__v) { }
       AliPHOSRecPoint::Streamer(R__b);

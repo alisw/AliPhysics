@@ -31,8 +31,7 @@
 
 // --- Standard library ---
 
-#include <iostream>
-#include <cassert>
+#include <iostream.h>
 
 // --- AliRoot header files ---
 

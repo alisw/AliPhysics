@@ -24,8 +24,8 @@
 #include "TPad.h"
 
 // --- Standard library ---
-#include <iostream>
-#include <cstdio>
+#include <iostream.h>
+#include <stdio.h>
 
 // --- AliRoot header files ---
 

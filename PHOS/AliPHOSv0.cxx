@@ -30,11 +30,10 @@
 
 // --- Standard library ---
 
-#include <cstdio>
-#include <cstring>
-#include <cstdlib>
-#include <strstream>
-#include <cassert>
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <strstream.h>
 
 // --- AliRoot header files ---
 
