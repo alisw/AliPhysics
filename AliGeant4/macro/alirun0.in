@@ -1,4 +1,4 @@
-# $ Id:$
+# $ Id: $
 # The simplest way how to run aligeant4;
 # all detector and structure modules of the default versions
 # (excluded G3-dependent/errorneous detectors) are built;
@@ -12,6 +12,7 @@
 # switch off modules with errors
 /aliDet/switchOff CASTOR
 /aliDet/switchOff PMD
+/aliDet/switchOff SHIL
 
 # switch off modules with MANY
 /aliDet/switchOff DIPO
