@@ -36,7 +36,7 @@ class AliMUONDigitizerv1 : public AliMUONDigitizer
 	
 	// The following methods are all derived from AliMUONDigitizer
 	virtual void GenerateTransientDigits();
-	virtual void AddDigit(Int_t chamber, Int_t tracks[kMAXTRACKS], Int_t charges[kMAXTRACKS], Int_t digits[6]);
+	virtual void AddDigit(Int_t chamber, Int_t tracks[kMAXTRACKS], Int_t charges[kMAXTRACKS], Int_t digits[7]);
 	virtual Int_t GetSignalFrom(AliMUONTransientDigit* td);
 	virtual Bool_t InitOutputData(AliMUONLoader* muonloader);
 	virtual void FillOutputData();
@@ -47,7 +47,7 @@ class AliMUONDigitizerv1 : public AliMUONDigitizer
 	// for trigger purpose
 	virtual void CreateTrigger();
 	virtual void CleanupTriggerArrays();
-	virtual void AddDigitTrigger(Int_t chamber, Int_t tracks[kMAXTRACKS], Int_t charges[kMAXTRACKS], Int_t digits[6]);
+	virtual void AddDigitTrigger(Int_t chamber, Int_t tracks[kMAXTRACKS], Int_t charges[kMAXTRACKS], Int_t digits[7]);
 	virtual void FillTriggerOutput();
 
 	ClassDef(AliMUONDigitizerv1, 2)

@@ -22,7 +22,7 @@ class AliMUONSDigitizerv1 : public AliMUONDigitizerv1
 	AliMUONSDigitizerv1(AliRunDigitizer * manager);
 
 	// The following methods are inherited from AliMUONDigitizerv1
-	virtual void AddDigit(Int_t chamber, Int_t tracks[kMAXTRACKS], Int_t charges[kMAXTRACKS], Int_t digits[6]);
+	virtual void AddDigit(Int_t chamber, Int_t tracks[kMAXTRACKS], Int_t charges[kMAXTRACKS], Int_t digits[7]);
 	virtual Int_t GetSignalFrom(AliMUONTransientDigit* td);
 	virtual Bool_t InitOutputData(AliMUONLoader* muonloader);
 	virtual void FillOutputData();

@@ -11,9 +11,10 @@
 
 
 class AliMUONClusterFinder;
-class AliMUONSegmentationTrigger ;
-class AliMUONResponseTrigger ;
-class AliMUONResponseTriggerV1 ;
+class AliMUONSegmentationTrigger;
+class AliMUONResponseTrigger;
+class AliMUONResponseTriggerV1;
+class AliMUONHit;
 
 class AliMUONChamberTrigger : public AliMUONChamber 
 {
@@ -25,6 +26,9 @@ class AliMUONChamberTrigger : public AliMUONChamber
     // Cluster formation method (charge disintegration)
     
     virtual void   DisIntegration(Float_t eloss, Float_t tof, Float_t xhit, Float_t yhit, Float_t zhit,
+       				Int_t& nnew, Float_t newclust[6][500]);
+
+    virtual void   DisIntegration(AliMUONHit* hit,
        				Int_t& nnew, Float_t newclust[6][500]);
 
   ClassDef(AliMUONChamberTrigger,1) // Muon trigger chamber class

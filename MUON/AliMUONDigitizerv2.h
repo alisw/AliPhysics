@@ -25,7 +25,7 @@ class AliMUONDigitizerv2 : public AliMUONDigitizerv1
 
 	// The following methods are inherited from AliMUONDigitizerv1 and overridden.
 	virtual void GenerateTransientDigits();
-	virtual void AddDigit(Int_t chamber, Int_t tracks[kMAXTRACKS], Int_t charges[kMAXTRACKS], Int_t digits[6]);
+	virtual void AddDigit(Int_t chamber, Int_t tracks[kMAXTRACKS], Int_t charges[kMAXTRACKS], Int_t digits[7]);
 	virtual Bool_t InitInputData(AliMUONLoader* muonloader);
 	virtual void CleanupInputData(AliMUONLoader* muonloader);
 

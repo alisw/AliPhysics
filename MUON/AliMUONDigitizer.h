@@ -117,7 +117,7 @@ protected:
 	/* Should be overridden by inheriting digitizers such that this method adds the digits
 	   to the correct tree. 
 	 */
-	virtual void AddDigit(Int_t chamber, Int_t tracks[kMAXTRACKS], Int_t charges[kMAXTRACKS], Int_t digits[6]) = 0;
+	virtual void AddDigit(Int_t chamber, Int_t tracks[kMAXTRACKS], Int_t charges[kMAXTRACKS], Int_t digits[7]) = 0;
 
 	/* Should be called by GenerateTransientDigits() when a new transient digit is generated
 	   form a source object from the input stream. The source object could be an AliMUONHit

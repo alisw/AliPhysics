@@ -179,7 +179,7 @@ void AliMUONSt345SlatSegmentation::GetPadC(Int_t ix, Int_t iy, Float_t &x, Float
     //  Returns real coordinates (x,y) for given pad coordinates (ix,iy)
     //  Find sector isec
     Int_t isec = Sector(ix,iy);
-    if (isec == -1) printf("\n PadC %d %d %d  %d \n ", isec, fId, ix, iy);
+    if (isec == -1) AliWarning(Form("isector = %d  with ix %d, iy %d", isec, ix, iy));
     if (iy > fNpyS[isec]) {
       x=-99999.; y=-99999.;
       return;
@@ -199,7 +199,7 @@ void AliMUONSt345SlatSegmentation::GetPadC(Int_t ix, Int_t iy, Float_t &x, Float
 void AliMUONSt345SlatSegmentation::GetPadI(Float_t x, Float_t y, Int_t &ix, Int_t &iy) 
 {
 //  Returns pad coordinates (ix,iy) for given real coordinates (x,y)
-  
+
   //  Find sector isec    
   Int_t isec=-1;
   for (Int_t i=fNsec-1; i > 0; i--) {
@@ -209,7 +209,7 @@ void AliMUONSt345SlatSegmentation::GetPadI(Float_t x, Float_t y, Int_t &ix, Int_
       break;
     }
   }
-  
+  if (isec == -1) AliWarning(Form("isector equal to %d  with x %f, y %f", isec, x, y));
   if (isec>0) {
     ix= Int_t((x-fCx[isec-1])/(*fDpxD)[isec])
       +fNpxS[isec-1]+1;
@@ -297,14 +297,14 @@ void AliMUONSt345SlatSegmentation::FirstPad(Float_t xhit, Float_t yhit, Float_t 
     fYhit=yhit;
     //
     // and take fNsigma*sigma around this center
-    Float_t x01=x0a  - dx;
+    Float_t x01=x0a  - dx ;
     Float_t x02=x0a  + dx;
     Float_t y01=yhit - dy;
     Float_t y02=yhit + dy;
-    if (x01 < 0) x01 = 0;
-    if (y01 < 0) y01 = 0;
+  //   if (x01 < 0) x01 = 0;
+//     if (y01 < 0) y01 = 0;
 
-    if (x02 >= fCx[fNsec-1]) x02 = fCx[fNsec-1];
+//     if (x02 >= fCx[fNsec-1]) x02 = fCx[fNsec-1];
 
    
     Int_t isec=-1;
@@ -417,7 +417,7 @@ IntegrationLimits(Float_t& x1,Float_t& x2,Float_t& y1, Float_t& y2)
   x2=x1+Dpx(fSector);
   y1=fYhit-fY-Dpy(fSector)/2.;
   y2=y1+Dpy(fSector);    
-  //    printf("\n Integration Limits %f %f %f %f %d %f", x1, x2, y1, y2, fSector, Dpx(fSector));
+  //  printf("\n Integration Limits %f %f %f %f %d %f", x1, x2, y1, y2, fSector, Dpx(fSector));
 
 }
 //-----------------------------------------------------------------------------

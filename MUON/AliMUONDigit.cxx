@@ -40,9 +40,21 @@ ClassImp(AliMUONDigit)
 
 //_____________________________________________________________________________
  AliMUONDigit::AliMUONDigit()
-   : TObject()
+   : TObject(),
+     fPadX(0),
+     fPadY(0),
+     fCathode(0),
+     fSignal(0),
+     fPhysics(0),
+     fHit(0),
+     fDetElemId(0)
 {
 // Default constructor
+
+    for(Int_t i=0; i<kMAXTRACKS; i++) {
+	fTcharges[i]  = 0;
+	fTracks[i]    = 0;
+    }
 }
 
 //_____________________________________________________________________________
