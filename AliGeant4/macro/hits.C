@@ -85,8 +85,8 @@ void hits(const TString& detName, const TString& detVersion)
   // fill histograms
   AliDetector* detector;
 
-  //detector = LoadDetector(g3File1Name, detName, g3);
-  //FillHistogram(detector, g3, g3x, g3y, g3z); 
+  detector = LoadDetector(g3File1Name, detName, g3);
+  FillHistogram(detector, g3, g3x, g3y, g3z); 
 
   detector = LoadDetector(g3File2Name, detName,  g3);
   FillHistogram(detector, g3, g3xh, g3yh, g3zh); 
@@ -103,7 +103,7 @@ void hits(const TString& detName, const TString& detVersion)
   TString gifNameBase =  "hits" + detName + "v" + detVersion;
   TString title = detName + " hits";
 
-  // draw histohrams
+  // draw histograms (G3, G4 in one canvas)
   DrawHistograms(title, gifNameBase + ".gif", g3xh, g4xh, g3zh, g4zh);
   if (detName == "PHOS") 
     DrawHistograms(title, gifNameBase + "2.gif", g3yh, g4yh, g3zh, g4zh);
@@ -112,6 +112,12 @@ void hits(const TString& detName, const TString& detVersion)
   //DrawHistograms(title, gifNameBase + "_y.gif", g3y, g4y, g3yh, g4yh);
   //DrawHistograms(title, gifNameBase + "_z.gif", g3z, g4z, g3zh, g4zh);
   
+  // draw histograms (one by one)
+  DrawHistogram(title, "g3x_"+ gifNameBase + ".gif", g3xh);
+  DrawHistogram(title, "g4x_"+ gifNameBase + ".gif", g4xh);
+  DrawHistogram(title, "g3z_"+ gifNameBase + ".gif", g3zh);
+  DrawHistogram(title, "g4z_"+ gifNameBase + ".gif", g4zh);
+
 }
 
 void SetHistogramRanges(TString& detName, Int_t& nbin, 
@@ -294,17 +300,40 @@ void DrawHistograms(TString& title, TString& gifName,
 
   if (h1 && h2 && h3 && h4) {
     // create canvas
-    TCanvas* canvas = new TCanvas("c1", title, 400, 10, 800, 600);
-    canvas->Divide(2,2);
+    TCanvas* canvas1 = new TCanvas("c1", title, 400, 10, 400, 300);
+    TCanvas* canvas2 = new TCanvas("c2", title, 400, 10, 400, 300);
+    TCanvas* canvas3 = new TCanvas("c3", title, 400, 10, 400, 300);
+    TCanvas* canvas4 = new TCanvas("c4", title, 400, 10, 400, 300);
+    //canvas->Divide(2,2);
     
     // draw histograms
-    canvas->cd(1); h1->Draw();
-    canvas->cd(2); h2->Draw(); 
-    canvas->cd(3); h3->Draw(); 
-    canvas->cd(4); h4->Draw();
+    canvas1->cd(1); h1->Draw();
+    canvas2->cd(1); h2->Draw(); 
+    canvas3->cd(1); h3->Draw(); 
+    canvas4->cd(1); h4->Draw();
     
     // save gif
     //canvas->SaveAs(gifNameBase + "_x.gif"); 
+    canvas1->SaveAs(gifName+"1"); 
+    canvas2->SaveAs(gifName+"2"); 
+    canvas3->SaveAs(gifName+"3"); 
+    canvas4->SaveAs(gifName+"4"); 
+  }  
+}
+
+void DrawHistogram(TString& title, TString& gifName, TH1F* h)
+{
+// Create canvas, set the view range, show histograms.
+// ---
+
+  if (h){
+    // create canvas
+    TCanvas* canvas = new TCanvas("c", title, 400, 10, 400, 300);
+    
+    // draw histograms
+    h->Draw();
+    
+    // save gif
     canvas->SaveAs(gifName); 
   }  
 }
