@@ -9,6 +9,7 @@ public AliITSMapA1
 {
 
 public:
+  AliITSMapA2();
   AliITSMapA2(AliITSsegmentation *seg);
   AliITSMapA2(AliITSsegmentation *seg,Int_t scalesizeX,Int_t scalesizeZ);
   AliITSMapA2(AliITSsegmentation *seg, TObjArray *hist,Double_t thresh);
@@ -23,6 +24,8 @@ public:
    // set hit
   virtual  void  SetHit(Int_t iz, Int_t ix, Int_t signal){}
     // Flag a hit as used
+    // Set threshold for the signal
+  virtual  void  SetThreshold(Int_t thresh) {fMapThreshold=(double)thresh;}
   virtual  void  FlagHit(Int_t iz, Int_t ix);    
   virtual  void  DeleteHit(Int_t iz, Int_t ix);
     // Get index in the map
