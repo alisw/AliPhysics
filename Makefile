@@ -3,6 +3,7 @@
 # Author: Jan-Erik Revsbech (revsbech@fys.ku.dk)
 #         Developed on idea of Boris Polichtchouk (Boris.Polichtchouk@cern.ch), 15/4/2001
 
+# /* $Id$ */
 
 ifdef ALIVERBOSE
 MUTE:=
@@ -10,7 +11,9 @@ else
 MUTE:=@
 endif
 
+#-------------------------------------------------------------------------------
 # IRST coding rule check
+
 IRST_INSTALLDIR=$(ALICE)/local/IRST
 IRST_CONFIG_DIR=$(IRST_INSTALLDIR)/userConfig/ALICE
 CLASSPATH=$(IRST_INSTALLDIR)
@@ -18,27 +21,26 @@ export CLASSPATH IRST_INSTALLDIR IRST_CONFIG_DIR
 CODE_CHECK=java rules.ALICE.ALICERuleChecker
 REV_ENG=$(IRST_INSTALLDIR)/scripts/revEng.sh
 
+#-------------------------------------------------------------------------------
+# Include library definition
 
 include build/Makefile.config
-##################################################################
-#
-#            Where to install libraries and binaries
-#                 and common header files
 
-LIBPATH   = lib/tgt_$(ALICE_TARGET)
-BINPATH   = bin/tgt_$(ALICE_TARGET)
-EXPORTDIR = $(ALICE_ROOT)/include
-##################################################################
+#-------------------------------------------------------------------------------
+# Location where to install libraries and binaries and common header files
 
-##################################################################
-# include machine dependent macros
+LIBPATH      := lib/tgt_$(ALICE_TARGET)
+BINPATH      := bin/tgt_$(ALICE_TARGET)
+EXPORTDIR    := $(ALICE_ROOT)/include
+BINLIBDIRS   := -L$(ALICE_ROOT)/$(LIBPATH)
+
+#-------------------------------------------------------------------------------
+# Include machine dependent macros
 
 -include build/Makefile.$(ALICE_TARGET)
-##################################################################
 
-##################################################################
-#
-#               Check if called with debug
+#-------------------------------------------------------------------------------
+# Check if called with debug
 
 ifeq ($(ALIDEBUG),YES)
 override ALICE_TARGET := $(ALICE_TARGET)DEBUG
@@ -48,11 +50,9 @@ CFLAGS   := -g $(filter-out -O%,$(CLAGS))
 SOFLAGS  := -g $(filter-out -O%,$(SOFLAGS))
 LDFLAGS  := -g $(filter-out -O%,$(LDFLAGS))
 endif
-##################################################################
 
-##################################################################
-#
-#               Check if called with profile
+#-------------------------------------------------------------------------------
+# Check if called with profile
 
 ifeq ($(ALIPROFILE),YES)
 override ALICE_TARGET := $(ALICE_TARGET)PROF
@@ -62,27 +62,25 @@ CFLAGS   += -pg
 SOFLAGS  += -pg
 LDFLAGS  += -pg
 endif
-##################################################################
 
-##################################################################
-#
-#               check if DATE is installed
+#-------------------------------------------------------------------------------
+# Check if DATE is installed
 
 ifdef DATE_ROOT
-DATEFLAGS  = -DALI_DATE -D${DATE_SYS} -DDATE_SYS=${DATE_SYS} -Dlong32=${DATE_LONG32} -Dlong64=${DATE_LONG64} -DdatePointer=${DATE_POINTER}
+DATEFLAGS  = -DALI_DATE -D${DATE_SYS} -DDATE_SYS=${DATE_SYS} -Dlong32=${DATE_LONG32} \
+             -Dlong64=${DATE_LONG64} -DdatePointer=${DATE_POINTER}
 CXXFLAGS  += $(DATEFLAGS)
 CFLAGS    += $(DATEFLAGS)
 CINTFLAGS += $(DATEFLAGS)
 DEPINC    += $(DATEFLAGS)
 endif
-##################################################################
 
-##################################################################
-#
-#                   Modules to build
+#-------------------------------------------------------------------------------
+# Modules to build
 
-# Uncomment to show some output
-#$(warning MAKECMDGOALS=$(MAKECMDGOALS))
+ifdef ALIVERBOSE
+$(warning MAKECMDGOALS=$(MAKECMDGOALS))
+endif
 
 ALIROOTMODULES := STEER PHOS TRD TPC ZDC MUON PMD FMD TOF ITS \
       CRT RICH START STRUCT EVGEN RALICE ALIFAST VZERO \
@@ -90,127 +88,104 @@ ALIROOTMODULES := STEER PHOS TRD TPC ZDC MUON PMD FMD TOF ITS \
       THerwig TEPEMGEN EPEMGEN FASTSIM TPHIC RAW MONITOR DISPLAY ANALYSIS \
       JETAN HLT
 
-CERNMODULES := PDF PYTHIA6 HIJING MICROCERN HERWIG
-
-MODULES := $(ALIROOTMODULES) $(CERNMODULES)
-
 ifeq ($(findstring TFluka,$(MAKECMDGOALS)),TFluka)
-MODULES += TFluka
+ALIROOTMODULES += TFluka
 endif
 
 ifeq ($(findstring Flugg,$(MAKECMDGOALS)),Flugg)
-MODULES += Flugg
+ALIROOTMODULES += Flugg
 endif
 
-##################################################################
+CERNMODULES := PDF PYTHIA6 HIJING MICROCERN HERWIG
 
-MODULES += ALIROOT
+MODULES := $(ALIROOTMODULES) $(CERNMODULES) ALIROOT
 
 MODDIRS := $(MODULES)
 
-#############################################################
-#
-#               Default include dirs for
-#          C++, Fortran, Cint, and dependencies
-#      The module directory will be added by each module
-#
+#-------------------------------------------------------------------------------
+# Default include dirs for C++, Fortran, Cint, and dependencies
+# The module directory will be added by each module
 
 GENINC     := -I$(ALICE_ROOT)/include -I$(shell root-config --incdir)
-
 CXXFLAGS   += $(GENINC)
 CXXFLAGSNO += $(GENINC)
 CINTFLAGS  += $(GENINC)
 DEPINC     += $(GENINC)
 
-#############################################################
+#-------------------------------------------------------------------------------
+# Libraries to link binaries against
+# Libraries will be linked against SHLIB
 
-
-#############################################################
-#
-#             Libraries to link binaries against
-#            Libraries will be linked againstSHLIB
 LIBS := $(GLIBS) $(ROOTLIBS) $(SYSLIBS)
-#############################################################
 
-
+#-------------------------------------------------------------------------------
 # default target
+
 default:     alilibs  aliroot
 
 
-#############################################################
-#
-#            Each module will add to this
+#-------------------------------------------------------------------------------
+# Each module will add to these macros
 
 ALLLIBS      :=
 ALLEXECS     :=
 INCLUDEFILES :=
 BINLIBS      :=
 EXPORTFILES  :=
-#############################################################
 
-BINLIBDIRS   := -L$(ALICE_ROOT)/$(LIBPATH)
-
-
-#Dependencies of module.mk files
+#-------------------------------------------------------------------------------
+# Dependencies of module.mk files
 
 include build/module.dep
 
-#############################################################
-#
-#        Check if module.mk is present for the library
+#-------------------------------------------------------------------------------
+# Check if module.mk is present for the library
+
 %.mk: build/module.tpl
 ifndef ALIQUIET
 	@echo "***** Creating $@ file *****";
 endif
 	@share/alibtool mkmodule  $(patsubst %/module.mk,%,$@) > $@;
-#############################################################
 
-# **************************************************************************
-#
-#               If cleaning, do not include
-#             dependencies or module.mk files.
+#-------------------------------------------------------------------------------
+# If cleaning, do not include dependencies or module.mk files.
 
-ifeq ($(findstring $(MAKECMDGOALS), clean distclean clean-all clean-dicts clean-modules clean-depend clean-objects clean-libs clean-bins),)
+ifeq ($(findstring $(MAKECMDGOALS), clean distclean clean-all clean-dicts \
+clean-modules clean-depend clean-objects clean-libs clean-bins \
+clean-check-all),)
 
-#            If making modules, not not include
-#                       anything
+#-------------------------------------------------------------------------------
+# If making modules, not not include anything
 
 ifneq ($(findstring modules,$(MAKECMDGOALS)),modules)
 
-#############################################################
-#
-#                Include the modules
+#-------------------------------------------------------------------------------
+# Include the modules
+
 -include $(patsubst %,%/module.mk,$(MODULES))
 
-#
-#
-#############################################################
+#-------------------------------------------------------------------------------
+# Include dependencies if not making them!
 
-#############################################################
-#
-#          include dependencies if not making them!
-ifneq ($(MAKECMDGOALS),depend )
-#           Don't include if cleaning of any sort
-ifneq ($(findstring clean,$(MAKECMDGOALS)),clean)
-#$(warning INCLUDEFILES=$(INCLUDEFILES))
+ifneq ($(MAKECMDGOALS),depend)
+
+ifdef ALIVERBOSE
+$(warning INCLUDEFILES=$(INCLUDEFILES))
+endif
 -include $(INCLUDEFILES)
-endif
-endif
-#############################################################
 
 endif
 endif
-# **************************************************************************
+endif
 
-#############################################################
-#
-#              include dummy dependency file
-#               *MUST* be last includefile
+#-------------------------------------------------------------------------------
+# Include dummy dependency file *MUST* be last includefile
+
 include build/dummy.d
-#############################################################
 
 
-# targets
+#-------------------------------------------------------------------------------
+# Targets
 
 .PHONY:		alilibs aliroot makedistr clean distclean clean-all \
 		htmldoc profile
@@ -226,13 +201,13 @@ else
 alilibs: $(LIBPATH) modules $(ALLLIBS)
 endif
 
+#-------------------------------------------------------------------------------
 # Single Makefile "distribution": Makefile + modules + mkdepend scripts
 makedistr: $(MODULES)
 	 tar -cvf MakeDistr.tar $(patsubst %,%/*.pkg,$(MODULES)) \
 		Makefile create build/*
 
 all: aliroot
-
 
 depend: $(INCLUDEFILES)
 
@@ -291,7 +266,8 @@ endif
 distclean: clean-all
 	$(MUTE)rm -rf */tgt_* bin lib
 
-#This cleans only libraries that are not CERN-libraries
+#-------------------------------------------------------------------------------
+# This cleans only libraries that are not CERN-libraries
 
 clean-aliroot:   $(patsubst %,%/module.mk,$(ALIROOTMODULES)) $(patsubst %,clean-%,$(ALIROOTMODULES))
 
