@@ -1046,6 +1046,8 @@ void AliMonitorClient::DisconnectFromServer()
   if (result == kMBNo) return;
 
   // disconnect from the server
+  fSocketHandler->Remove();
+  fSocket->Send("Finished"); 
   fSocket->Close();
   delete fSocket;
   fSocket = NULL;
