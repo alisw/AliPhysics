@@ -41,19 +41,14 @@ AliRawCastorDB::AliRawCastorDB(AliRawEvent *event,
    // Create a new raw DB that will be accessed via CASTOR and rootd.
 
    static int init = 0;
-   // Set STAGE_POOL environment variable to current host
    if (!init) {
-      // THESE ENVIRONMENT SYMBOLS ARE NOW DEFINED BY THE ALICE DATE SETUP
-      // THEREFORE WE SHALL NOT USE ANY HARDCODED VALUES BUT RATHER USE
-      // WHATEVER HAS BEEN SET IN THE DATE SITE
-      //gSystem->Setenv("STAGE_POOL", "lcg00");
-      //gSystem->Setenv("STAGE_HOST", "stage013");
-
-      // however for sanity we check if they are really set
-      if (!gSystem->Getenv("STAGE_POOL"))
-         Error("AliRawRFIODB", "STAGE_POOL not set");
-      if (!gSystem->Getenv("STAGE_HOST"))
-         Error("AliRawRFIODB", "STAGE_HOST not set");
+      // THESE ENVIRONMENT VARIABLES ARE IN PRINCIPLE HARDCODED IN
+      // THE CASTOR CLIENT LIBRARY
+      // however for sanity we check if they are set by the user
+      if (!gSystem->Getenv("RH_HOST"))
+         Error("AliRawRFIODB", "RH_HOST not set");
+      if (!gSystem->Getenv("SVCCLASS"))
+         Error("AliRawRFIODB", "SVCCLASS not set");
       init = 1;
    }
 
