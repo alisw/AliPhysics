@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.40  2002/10/14 14:57:43  hristov
+Merging the VirtualMC branch to the main development branch (HEAD)
+
 Revision 1.33.6.3  2002/10/11 07:26:37  hristov
 Updating VirtualMC to v3-09-02
 
@@ -1132,7 +1135,7 @@ Bool_t AliTRDdigitizer::MakeDigits()
                         ,iRow,iCol,iTime,outADC[iTime]);
 	        }
                 nDigits++;
-                digits->SetDataUnchecked(iRow,iCol,iTime,outADC[iTime]);
+                digits->SetDataUnchecked(iRow,iCol,iTime,((Int_t) outADC[iTime]));
   	      }
 	    }
 
@@ -1319,7 +1322,7 @@ Bool_t AliTRDdigitizer::ConvertSDigits()
         for (iTime = 0; iTime < nTimeTotal; iTime++) {   
           // Store the amplitude of the digit if above threshold
           if (outADC[iTime] > adcThreshold) {
-            digitsOut->SetDataUnchecked(iRow,iCol,iTime,outADC[iTime]);
+            digitsOut->SetDataUnchecked(iRow,iCol,iTime,((Int_t) outADC[iTime]));
   	    // Copy the dictionary
             for (iDict = 0; iDict < kNDict; iDict++) { 
               Int_t track = dictionaryIn[iDict]->GetDataUnchecked(iRow,iCol,iTime);

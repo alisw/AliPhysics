@@ -103,7 +103,7 @@ class AliTRDparameter : public TNamed {
           Float_t  GetTRFlo()                               const { return fTRFlo;         };
           Float_t  GetTRFhi()                               const { return fTRFhi;         };
           Float_t  GetLorentzFactor()                       const { return fLorentzFactor; };
-          Float_t  GetTCnexp()                              const { return fTCnexp;        };
+          Int_t    GetTCnexp()                              const { return fTCnexp;        };
           Float_t  GetTiltingAngle() const;
   virtual Float_t  GetDiffusionL(Float_t vd, Float_t b);
   virtual Float_t  GetDiffusionT(Float_t vd, Float_t b);
