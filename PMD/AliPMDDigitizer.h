@@ -35,7 +35,6 @@ class AliPMDcell;
 class AliPMDsdigit;
 class AliPMDdigit;
 class AliPMDClustering;
-class AliPMDContainer;
 class AliPMDrecpoint;
 
 using namespace std;

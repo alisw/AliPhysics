@@ -30,7 +30,6 @@ class AliHeader;
 
 class AliPMDdigit;
 class AliPMDClustering;
-class AliPMDContainer;
 class AliPMDcluster;
 class AliPMDrecpoint;
 

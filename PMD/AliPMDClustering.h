@@ -38,7 +38,6 @@
 
 class TNtuple;
 class TObjArray;
-class AliPMDContainer;
 class AliPMDcluster;
 class AliPMDClustering
 {

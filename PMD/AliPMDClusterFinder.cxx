@@ -171,8 +171,6 @@ void AliPMDClusterFinder::Digits2RecPoints(Int_t ievt)
   // Clustering started
   //
 
-  //  AliPMDContainer  *pmdcont  = new AliPMDContainer;
-  
   TObjArray *pmdcont = new TObjArray();
 
   AliPMDcluster  *pmdcl  = new AliPMDcluster;

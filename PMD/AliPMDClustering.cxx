@@ -32,7 +32,6 @@
 
 #include <TNtuple.h>
 #include <TObjArray.h>
-#include "AliPMDContainer.h"
 #include "AliPMDcluster.h"
 #include "AliPMDClustering.h"
 #include <stdio.h>
