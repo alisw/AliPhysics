@@ -14,32 +14,16 @@
  **************************************************************************/
 /*
 $Log$
+Revision 1.3  2000/07/13 16:41:29  fca
+New START corrected for coding conventions
+
 Revision 1.2  2000/03/24 17:40:35  alla
 New AliSTART
 
 */ 
-#include <iostream.h>
-#include <fstream.h>
 
-#include "AliRun.h"
-#include "AliSTART.h"
 #include "AliSTARTdigit.h"
 
 ClassImp(AliSTARTdigit)
 
-AliSTARTdigit::AliSTARTdigit(Int_t Timeav, Int_t Timediff)
-  //:  AliDigit(tracks)
-{
-  //
-  // Create START digit
-  //     The creator for the AliSTARTdigit class. This routine fills the
-  // AliSTARTdigit data members from the array digits. The array of track
-  // numbers are passed to the AliDigit creator. The order of the elements
-  // in the digits array are fEvent = digits[0], fAmplitude = digits[1],
-  // fTimeAverage = digits[1], fTimeDiff = digits[1], and fDet = digits[4].
-  // Therefore the array digits is expected to be at least 5 elements long.
-  //
-  Timeav = fTimeAverage;
-  Timediff = fTimeDiff;
 
-}

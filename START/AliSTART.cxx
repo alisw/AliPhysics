@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.10  2000/10/02 21:28:13  fca
+Removal of useless dependecies via forward declarations
+
 Revision 1.9  2000/07/13 16:41:29  fca
 New START corrected for coding conventions
 
@@ -205,7 +208,7 @@ void AliSTART::MakeBranch(Option_t* option)
 
   TTree *td = gAlice->TreeD();
   digits = new AliSTARTdigit();
-  td->Branch(branchname,"AliSTARTdigit",&digits, buffersize);
+  td->Branch(branchname,"AliSTARTdigit",digits, buffersize);
   printf("Making Branch %s for digits\n",branchname);
     
 /*

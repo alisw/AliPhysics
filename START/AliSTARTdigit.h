@@ -5,7 +5,7 @@
 
 /* $Id$ */
 #include <TObject.h>
-#include "AliSTART.h"
+
 //___________________________________________
 class AliSTARTdigit: public TObject  {
 ////////////////////////////////////////////////////////////////////////
@@ -15,8 +15,7 @@ class AliSTARTdigit: public TObject  {
 
 
  public:
-    AliSTARTdigit();
-    AliSTARTdigit(Int_t , Int_t );
+    AliSTARTdigit(Int_t Timeav=999999, Int_t Timediff=999999);
     virtual ~AliSTARTdigit() {}
     void Set(Int_t, Int_t);
     Int_t GetTime();
@@ -26,7 +25,12 @@ class AliSTARTdigit: public TObject  {
     ClassDef(AliSTARTdigit,1)  //Digit (Header) object for set:START
 };
 
-inline AliSTARTdigit::AliSTARTdigit(){fTimeAverage=999999;fTimeDiff=999999;}
+inline  AliSTARTdigit::AliSTARTdigit(Int_t Timeav, Int_t Timediff):fTimeAverage(Timeav),fTimeDiff(Timediff)
+{
+  //
+  // Create START digit
+  //     
+}
 inline Int_t AliSTARTdigit::GetTime(){return fTimeDiff;}
 inline void AliSTARTdigit::Set(Int_t Timeav, Int_t Timediff)
   {fTimeAverage=Timeav; fTimeDiff=Timediff;}
