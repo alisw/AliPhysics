@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.3  2000/10/22 16:56:33  morsch
+- Store chamber number as slat id.
+
 Revision 1.2  2000/10/18 11:42:06  morsch
 - AliMUONRawCluster contains z-position.
 - Some clean-up of useless print statements during initialisations.
@@ -73,11 +76,13 @@ GetPadI(Float_t x, Float_t y, Int_t &ix, Int_t &iy)
     for (Int_t i = fNsec-1; i > 0; i--) {
 	if (x >= fCx[i-1]) {
 	    isec=i;
+	    if (fCx[isec] == fCx[isec-1] && isec > 1) isec--;
 	    break;
 	}
     }
 //
 //
+
     if (isec == -1) {
 	ix = 0;
 	iy = 0;

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.3  2000/10/22 16:56:32  morsch
+- Store chamber number as slat id.
+
 Revision 1.2  2000/10/18 11:42:06  morsch
 - AliMUONRawCluster contains z-position.
 - Some clean-up of useless print statements during initialisations.
@@ -99,6 +102,7 @@ GetPadI(Float_t x, Float_t y, Int_t &ix, Int_t &iy)
     for (Int_t i=fNsec-1; i > 0; i--) {
 	if (x >= fCx[i-1]) {
 	    isec=i;
+	    if (fCx[isec] == fCx[isec-1]  && isec > 1) isec--;
 	    break;
 	}
     }
@@ -175,24 +179,27 @@ FirstPad(Float_t xhit, Float_t yhit, Float_t dx, Float_t dy)
     Float_t x02=x0a  + dx;
     Float_t y01=yhit - dy;
     Float_t y02=yhit + dy;
-    
     if (x01 < 0) x01 = 0;
     if (y01 < 0) y01 = 0;
+
+    if (x02 >= fCx[fNsec-1]) x02 = fCx[fNsec-1];
+    if (y02 >= fDyPCB) y02 = fDyPCB;
     
+
     Int_t isec=-1;
     for (Int_t i=fNsec-1; i > 0; i--) {
 	if (x02 >= fCx[i-1]) {
 	    isec=i;
+	    if (fCx[isec] == fCx[isec-1] && isec > 1) isec--;
 	    break;
 	}
     }
    
-    if (x02 >= fCx[fNsec-1]) x02 = fCx[fNsec-1];
-    if (y02 >= fDyPCB) y02 = fDyPCB;
     //
     // find the pads over which the charge distributes
     GetPadI(x01,y01,fIxmin,fIymin);
     GetPadI(x02,y02,fIxmax,fIymax);
+    
     if (fIxmax > fNpx) fIxmax=fNpx;
     if (fIymax > fNpyS[isec]) fIymax = fNpyS[isec];    
     fXmin=x01;
@@ -212,7 +219,7 @@ FirstPad(Float_t xhit, Float_t yhit, Float_t dx, Float_t dy)
 //    printf("\n \n First Pad: %d %d %f %f %d %d %d %f" , 
 //	   fIxmin, fIxmax, fXmin, fXmax, fNpx, fId, isec, Dpy(isec));    
 //    printf("\n \n First Pad: %d %d %f %f %d %d %d %f",
-//	   fIymin, fIymax, fYmin, fYmax, fNpy, fId, isec, Dpy(isec));
+//	   fIymin, fIymax, fYmin, fYmax,  fNpyS[isec], fId, isec, Dpy(isec));
 }
 
 void AliMUONSegmentationSlatModule::NextPad()
