@@ -28,6 +28,9 @@ class TG4XMLGeometryGenerator
     static TG4XMLGeometryGenerator* Instance();
 
     // methods
+    void GenerateMaterials(const G4String& version, const G4String& date,
+            const G4String& author,  const G4String dtdVersion,
+	    G4LogicalVolume* lv);
     void GenerateSection(const G4String& name, const G4String& version,
 	    const G4String& date, const G4String& author,
             const G4String& topVolume, G4LogicalVolume* lv);
@@ -45,6 +48,7 @@ class TG4XMLGeometryGenerator
     void ProcessLogicalVolume(G4LogicalVolume* lv); 
     void ProcessMaterials(G4LogicalVolume* lv); 
     void ProcessSolids(G4LogicalVolume* lv); 
+    void ProcessRotations(G4LogicalVolume* lv); 
 
     // static data members
     static TG4XMLGeometryGenerator*  fgInstance;     //this instance
