@@ -39,6 +39,8 @@ class AliJet : public TObject,public Ali4Vector
   Double_t GetEl();                  // Provide long. energy w.r.t. z-axis
   Double_t GetMt();                  // Provide trans. mass w.r.t. z-axis
   Double_t GetRapidity();            // Provide rapidity value w.r.t. z-axis
+  void SetTrackCopy(Int_t j);        // (De)activate creation of private copies in fTracks
+  Int_t GetTrackCopy();              // Provide TrackCopy flag value      
 
  protected:
   void SetNtinit(Int_t n=2); // Set the initial max. number of tracks for this Jet
@@ -47,6 +49,7 @@ class AliJet : public TObject,public Ali4Vector
   Float_t fQ;                // The total charge of the jet 
   Int_t fNtrk;               // The number of tracks in the jet
   TObjArray* fTracks;        // Array to hold the pointers to the tracks of the jet
+  Int_t fTrackCopy;          // Flag to denote creation of private copies in fTracks
  
  ClassDef(AliJet,1) // Creation and investigation of a jet of particle tracks.
 };

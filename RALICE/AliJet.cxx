@@ -20,21 +20,52 @@
 // Creation and investigation of a jet of particle tracks.
 // An AliJet can be constructed by adding AliTracks.
 //
+// To provide maximal flexibility to the user, two modes of track storage
+// are provided by means of the memberfunction SetTrackCopy().
+//
+// a) SetTrackCopy(0) (which is the default).
+//    Only the pointers of the 'added' tracks are stored.
+//    This mode is typically used by making jet studies based on a fixed list
+//    of tracks which stays under user control or is contained for instance
+//    in an AliEvent.  
+//    In this way the AliJet just represents a 'logical structure' for the
+//    physics analysis which can be embedded in e.g. an AliEvent or AliVertex.
+//    Modifications made to the original tracks also affect the AliTrack objects
+//    which are stored in the AliJet. 
+// b) SetTrackCopy(1).
+//    Of every 'added' track a private copy will be made of which the pointer
+//    will be stored.
+//    In this way the AliJet represents an entity on its own and modifications
+//    made to the original tracks do not affect the AliTrack objects which are
+//    stored in the AliJet. 
+//    This mode will allow 'adding' many different AliTracks into an AliJet by
+//    creating only one AliTrack instance in the main programme and using the
+//    AliTrack::Reset() and AliTrack parameter setting memberfunctions.
+//
 // Coding example to make 2 jets j1 and j2.
 // ----------------------------------------
-// j1 contains the AliTracks 1 and 2
-// j2 contains the AliTracks 3 and 4
+// j1 contains the AliTracks t1 and t2
+// j2 contains 10 different AliTracks via tx
 //
-// AliTrack t1,t2,t3,t4;
+// AliTrack t1,t2;
 //  ...
 //  ... // code to fill the AliTrack data
 //  ...
-// AliJet j1(5);
-// AliJet j2(12);
+// AliJet j1();
 // j1.AddTrack(t1);
 // j1.AddTrack(t2);
-// j2.AddTrack(t3);
-// j2.AddTrack(t4);
+//
+// AliJet j2();
+// j2.SetTrackCopy(1);
+// AliTrack* tx=new AliTrack();
+// for (Int_t i=0; i<10; i++)
+// {
+//  ...
+//  ... // code to set momentum etc... of the track tx
+//  ...
+//  j2.AddTrack(tx);
+//  tx->Reset();
+// }
 //
 // j1.Info();
 // j2.Info("sph");
@@ -45,6 +76,8 @@
 // Float_t m=j1.GetInvmass();
 // Int_t ntk=j1.GetNtracks();
 // AliTrack* tj=j1.GetTrack(1);
+//
+// delete tx;
 //
 // Note : All quantities are in GeV, GeV/c or GeV/c**2
 //
@@ -63,6 +96,7 @@ AliJet::AliJet()
 // Initial maximum number of tracks is set to the default value
  fTracks=0;
  fNtinit=0;
+ fTrackCopy=0;
  Reset();
  SetNtinit();
 }
@@ -73,6 +107,7 @@ AliJet::AliJet(Int_t n)
 // All variables initialised to 0
  fTracks=0;
  fNtinit=0;
+ fTrackCopy=0;
  Reset();
  if (n > 0)
  {
@@ -91,8 +126,12 @@ AliJet::AliJet(Int_t n)
 AliJet::~AliJet()
 {
 // Default destructor
- if (fTracks) delete fTracks;
- fTracks=0;
+ if (fTracks)
+ {
+  if (fTrackCopy) fTracks->Delete();
+  delete fTracks;
+  fTracks=0;
+ }
 }
 ///////////////////////////////////////////////////////////////////////////
 void AliJet::SetNtinit(Int_t n)
@@ -100,8 +139,12 @@ void AliJet::SetNtinit(Int_t n)
 // Set the initial maximum number of tracks for this jet
  fNtinit=n;
  fNtmax=n;
+ {
+  if (fTrackCopy) fTracks->Delete();
+  delete fTracks;
+  fTracks=0;
+ }
  if (fTracks) delete fTracks;
- fTracks=new TObjArray(fNtmax);
 }
 ///////////////////////////////////////////////////////////////////////////
 void AliJet::Reset()
@@ -121,6 +164,7 @@ void AliJet::AddTrack(AliTrack& t)
 // In case the maximum number of tracks has been reached
 // space will be extended to hold an additional amount of tracks as
 // was initially reserved
+ if (!fTracks) fTracks=new TObjArray(fNtmax);
  if (fNtrk == fNtmax) // Check if maximum track number is reached
  {
   fNtmax+=fNtinit;
@@ -129,7 +173,15 @@ void AliJet::AddTrack(AliTrack& t)
  
  // Add the track to this jet
  fNtrk++;
- fTracks->Add(&t);
+ if (fTrackCopy)
+ {
+  AliTrack* tx=new AliTrack(t);
+  fTracks->Add(tx);
+ }
+ else
+ {
+  fTracks->Add(&t);
+ }
  (*this)+=(Ali4Vector&)t;
  fQ+=t.GetCharge();
 }
@@ -338,5 +390,41 @@ Double_t AliJet::GetRapidity()
 
  fDresult=sqrt(dy2);
  return y;
+}
+///////////////////////////////////////////////////////////////////////////
+void AliJet::SetTrackCopy(Int_t j)
+{
+// (De)activate the creation of private copies of the added tracks.
+// j=0 ==> No private copies are made; pointers of original tracks are stored.
+// j=1 ==> Private copies of the tracks are made and these pointers are stored.
+//
+// Note : Once the storage contains pointer(s) to AliTrack(s) one cannot
+//        change the TrackCopy mode anymore.
+//        To change the TrackCopy mode for an existing AliJet containing
+//        tracks one first has to invoke Reset().
+ if (!fTracks)
+ {
+  if (j==0 || j==1)
+  {
+   fTrackCopy=j;
+  }
+  else
+  {
+   cout << "*AliJet::SetTrackCopy* Invalid argument : " << j << endl;
+  }
+ }
+ else
+ {
+  cout << "*AliJet::SetTrackCopy* Storage already contained tracks."
+       << "  ==> TrackCopy mode not changed." << endl; 
+ }
+}
+///////////////////////////////////////////////////////////////////////////
+Int_t AliJet::GetTrackCopy()
+{
+// Provide value of the TrackCopy mode.
+// 0 ==> No private copies are made; pointers of original tracks are stored.
+// 1 ==> Private copies of the tracks are made and these pointers are stored.
+ return fTrackCopy;
 }
 ///////////////////////////////////////////////////////////////////////////
