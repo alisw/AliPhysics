@@ -1017,7 +1017,7 @@ Int_t TGeant3::TrackPid() const
   //
   // Return the id of the particle transported
   //
-  return fGckine->ipart;
+  return PDGFromId(fGckine->ipart);
 }
 
 //_____________________________________________________________________________
