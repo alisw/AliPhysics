@@ -86,6 +86,7 @@ Int_t AliRunAnalysis::Run()
      /******************************/ 
      /*  Process Event             */ 
      /******************************/ 
+     if (AliVAODParticle::GetDebug())  Info("Run","There is %d analyses",fAnalysies.GetEntries());
      for (Int_t an = 0; an < fAnalysies.GetEntries(); an++)
       {
           AliAnalysis* analysis = (AliAnalysis*)fAnalysies.At(an);

@@ -153,7 +153,7 @@ class AliAODParticleBaseCut: public TObject
      Double_t          GetMinimum() const {return fMin;}
      Double_t          GetMaximum() const {return fMax;}
      
-     EAODCutProperty GetProperty() const {return fProperty;}
+     EAODCutProperty   GetProperty() const {return fProperty;}
      virtual void Print(void) const;
      
    protected:
