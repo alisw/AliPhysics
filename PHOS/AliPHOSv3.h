@@ -5,7 +5,6 @@
 
 //_________________________________________________________________________
 // Implementation version v1 of PHOS Manager class 
-// Layout EMC + PPSD has name GPS2  
 // The main goal of this version of AliPHOS is to calculte the 
 //  induced charged in the PIN diode, taking into account light
 //  tracking in the PbWO4 crystal, induced signal in the 

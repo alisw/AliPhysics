@@ -17,7 +17,6 @@
 
 //_________________________________________________________________________
 // Implementation version v0 of PHOS Manager class 
-// Layout EMC + PPSD has name GPS2  
 // The main goal of this version of AliPHOS is to calculte the 
 //  induced charged in the PIN diode, taking into account light
 //  tracking in the PbWO4 crystal, induced signal in the 
@@ -136,40 +135,7 @@ void AliPHOSv3::StepManager(void)
   Float_t        local[3] ;
 
 
-  if ( name == "GPS2" || name == "MIXT" ) {            // ======> CPV is a GPS' PPSD
-
-    if( gMC->CurrentVolID(copy) == gMC->VolId("PPCE") ) // We are inside a gas cell 
-    {
-      gMC->TrackPosition(pos) ;
-      xyze[0] = pos[0] ;
-      xyze[1] = pos[1] ;
-      xyze[2] = pos[2] ;
-      xyze[3] = gMC->Edep() ; 
-
-      if ( xyze[3] != 0) { // there is deposited energy 
-       	gMC->CurrentVolOffID(5, relid[0]) ;  // get the PHOS Module number
-	if ( name == "MIXT" && strcmp(gMC->CurrentVolOffName(5),"PHO1") == 0 ){
-	  relid[0] += GetGeometry()->GetNModules() - GetGeometry()->GetNPPSDModules();
-	}
-       	gMC->CurrentVolOffID(3, relid[1]) ;  // get the Micromegas Module number 
-      // 1-> GetGeometry()->GetNumberOfModulesPhi() * GetGeometry()->GetNumberOfModulesZ() upper
-      //   > GetGeometry()->GetNumberOfModulesPhi() * GetGeometry()->GetNumberOfModulesZ() lower
-       	gMC->CurrentVolOffID(1, relid[2]) ;  // get the row number of the cell
-        gMC->CurrentVolID(relid[3]) ;        // get the column number 
-
-	// get the absolute Id number
-
-       	GetGeometry()->RelToAbsNumbering(relid, absid) ; 
-
-	// add current hit to the hit list      
-	  AddHit(fIshunt, primary, tracknumber, absid, xyze);
-
-
-      } // there is deposited energy 
-    } // We are inside the gas of the CPV  
-  } // GPS2 configuration
-
-  if ( name == "IHEP" || name == "MIXT" ) {       // ======> CPV is a IHEP's one
+  if ( name == "IHEP" ) {       // ======> CPV is a IHEP's one
 
     // Yuri Kharlov, 28 September 2000
 
@@ -283,9 +249,6 @@ if(gMC->CurrentVolID(copy)==gMC->VolId("PXTL")){// We are inside a PBWO4 crystal
   if ( (xyze[3] != 0) ){//Track is inside the crystal and deposits some energy
 
       gMC->CurrentVolOffID(10, relid[0]) ; // get the PHOS module number ;
-
-      if ( name == "MIXT" && strcmp(gMC->CurrentVolOffName(10),"PHO1") == 0 )
-	relid[0] += GetGeometry()->GetNModules() - GetGeometry()->GetNPPSDModules();      
 
       relid[1] = 0   ;                    // means PBW04
    gMC->CurrentVolOffID(4, relid[2]) ; // get the row number inside the module

@@ -5,7 +5,6 @@
 
 //_________________________________________________________________________
 // Implementation version v0 of PHOS Manager class 
-// Layout EMC + PPSD has name GPS2  
 // Layout EMC + CPV  has name IHEP
 //*--                  
 //*-- Author: Yves Schutz (SUBATECH)
