@@ -16,81 +16,78 @@ void anal (Int_t evNumber=0)
 /////////////////////////////////////////////////////////////////////////
 
 
-// Dynamically link some shared libs
-   if (gClassTable->GetID("AliRun") < 0) {
-      gROOT->LoadMacro("loadlibs.C");
-      loadlibs();
-   }
+  // Dynamically link some shared libs
+  if (gClassTable->GetID("AliRun") < 0) {
+    gROOT->LoadMacro("loadlibs.C");
+    loadlibs();
+  }
       
-// Connect the Root Galice file containing Geometry, Kine and Hits
-   TFile *file = (TFile*)gROOT->GetListOfFiles()->FindObject("galice.root");
-   if (!file) file = new TFile("galice.root");
+  // Connect the Root Galice file containing Geometry, Kine and Hits
+  TFile *file = new TFile("galice.root","read");
+  if (!file) {
+    cerr<<"anal.C: No galice.root file. Please run the simulation\n";
+    return 1;
+  }
 
-// Get AliRun object from file or create it if not on file
-   if (!gAlice) {
-      gAlice = (AliRun*)file->Get("gAlice");
-      if (gAlice) printf("AliRun object found on file\n");
-      if (!gAlice) gAlice = new AliRun("gAlice","Alice test program");
-   }
+  // Get AliRun object from file
+  if (gAlice) delete gAlice;
+  gAlice = (AliRun*)file->Get("gAlice");
+  if (gAlice) 
+    cerr<<"anal.C: AliRun object found on file\n";
+  else {
+    cerr<<"anal.C: AliRun object not found on file\n";
+    return 2;
+  }
       
-// Import the Kine and Hits Trees for the event evNumber in the file
-   Int_t nparticles = gAlice->GetEvent(evNumber);
-   if (nparticles <= 0) return;
-   Float_t x,y,z,mass,e;
-   Int_t nbytes = 0;
-   Int_t j,hit,ipart;
-   Int_t nhits;
-   Int_t sector,plane;
-   TParticle *particle;
-   AliTPChit  *tpcHit;
-   AliTRDhit  *trdHit;
+  // Import the Kine and Hits Trees for the event evNumber in the file
+  Int_t nparticles = gAlice->GetEvent(evNumber);
+  if (nparticles <= 0) return;
 
-// Get pointers to Alice detectors and Hits containers
-   AliDetector *TPC  = gAlice->GetDetector("TPC");
-   AliDetector *TRD  = gAlice->GetDetector("TRD");
-   TClonesArray *Particles = gAlice->Particles();
-   if (TPC) TClonesArray *TPChits   = TPC->Hits();
-   if (TRD) TClonesArray *TRDhits   = TRD->Hits();
+  // Get pointers to Alice detectors and Hits containers
+  AliTPC *TPC  = gAlice->GetDetector("TPC");
+  AliTRD *TRD  = gAlice->GetDetector("TRD");
+  AliTRDgeometry *TRDgeometry   = TRD->GetGeometry();
 
-   TTree *TH = gAlice->TreeH();
-   Int_t ntracks    = TH->GetEntries();
 
-   // Create histograms
-   TH1F *hSectors = new TH1F("hSectors","Number of tracks hits per sector",75,1,76);
-   TH1F *hTRD     = new TH1F("hTRD","Number of planes crossed per track in TRD",6,1,7);
-   TH1F *hTRDprim = new TH1F("hTRDprim","Number of planes crossed per primary track in TRD",6,1,7);
+  TTree *TH = gAlice->TreeH();
+  Int_t ntracks    = TH->GetEntries();
+
+  // Create histograms
+  TH1F *hSectors = new TH1F("hSectors","Number of tracks hits per sector",72,-0.5,71.5);
+  TH1F *hTRD     = new TH1F("hTRD","Number of planes crossed per track in TRD",6,-0.5,5.5);
+  TH1F *hTRDprim = new TH1F("hTRDprim","Number of planes crossed per primary track in TRD",6,-0.5,5.5);
    
-// Start loop on tracks in the hits containers
-   for (Int_t track=0; track<ntracks;track++) {
-     gAlice->ResetHits();
-     nbytes += TH->GetEvent(track);
-     // ======>Histogram TPC
-     // histogram number of tracks per sector
+  // Start loop on tracks in the hits containers
+  for (Int_t track=0; track<ntracks;track++) {
+
+    // ======>Histogram TPC
+    // histogram the number of tracks per sector
+    AliTPChit  *tpcHit;
      if (TPC) {
-       nhits = TPChits->GetEntriesFast();
-       for (hit=0;hit<nhits;hit++) {
-	 tpcHit   = (AliTPChit*)TPChits->UncheckedAt(hit);
-         sector = tpcHit->fPadRow;
+       for (tpcHit=(AliTPChit*)TPC->FirstHit(track);tpcHit;
+            tpcHit=(AliTPChit*)TPC->NextHit()) {
+         Int_t sector = tpcHit->fSector;
          hSectors->Fill(sector);
        }
      }        
      // =======>Histogram TRD
      // histogram number of planes crossed per track
      // same for primary tracks only
+     AliTRDhit  *trdHit;
      if (TRD) {
-       nhits = TRDhits->GetEntriesFast();
-       for (hit=0;hit<nhits;hit++) {
-	 trdHit   = (AliTRDhit*)TRDhits->UncheckedAt(hit);
-         ipart    = trdHit->fTrack;
-         particle = (TParticle*)Particles->UncheckedAt(ipart);
-         plane = trdHit->fX;//Plane;
+       for (trdHit=(AliTRDhit*)TRD->FirstHit(track);trdHit;
+            trdHit=(AliTRDhit*)TRD->NextHit()) {
+         Int_t ipart    = trdHit->Track();
+         TParticle * particle = (TParticle*)gAlice->Particle(ipart);
+         UShort_t detector = trdHit->GetDetector();
+         Int_t plane = TRDgeometry->GetPlane(detector);
          hTRD->Fill(plane);
          if (particle->GetFirstMother() < 0) hTRDprim->Fill(plane);
        }
      }        
    }
 
-//Create a canvas, set the view range, show histograms
+  //Create a canvas, set the view range, show histograms
    TCanvas *c1 = new TCanvas("c1","Alice TPC and ITS hits",400,10,600,700);
    c1->Divide(1,2);
    c1->cd(1);
@@ -105,3 +102,14 @@ void anal (Int_t evNumber=0)
    hTRDprim->Draw("same");
    c1->Print("anal.ps");
 }
+
+
+
+
+
+
+
+
+
+
+
