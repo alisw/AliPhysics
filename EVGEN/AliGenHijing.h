@@ -34,20 +34,12 @@ class AliGenHijing : public AliGenMC
     virtual void    SetEnergyCMS(Float_t energy=5500) {fEnergyCMS=energy;}
     virtual void    SetReferenceFrame(TString frame="CMS")
 	{fFrame=frame;}
-    virtual void    SetProjectile(TString proj="A",
-				  Int_t a=208, Int_t z=82)
-	{fProjectile = proj;
-	fAProjectile = a;
-	fZProjectile = z;}    
-    virtual void    SetTarget(TString tar="A",
-			      Int_t a=208, Int_t z=82)
-	{fTarget = tar;
-	fATarget = a;
-	fZTarget = z;}    
+    virtual void    SetProjectile(TString proj="A", Int_t a=208, Int_t z=82)
+	{fProjectile = proj; fAProjectile = a; fZProjectile = z;}    
+    virtual void    SetTarget(TString tar="A", Int_t a=208, Int_t z=82)
+	{fTarget = tar; fATarget = a; fZTarget = z;}    
     virtual void    SetImpactParameterRange(Float_t bmin = 0, Float_t bmax = 15.)
-	{ fMinImpactParam=bmin;
-	fMaxImpactParam=bmax;
-	}
+	{fMinImpactParam=bmin; fMaxImpactParam=bmax;}
     virtual void    KeepFullEvent();
     virtual void    SetJetQuenching(Int_t flag=1)     {fQuench     = flag;}
     virtual void    SetShadowing(Int_t flag=1)        {fShadowing  = flag;}
@@ -66,17 +58,36 @@ class AliGenHijing : public AliGenMC
 	{fEtaMinJet = etamin; fEtaMaxJet = etamax;}
     virtual void    SetJetPhiRange(Float_t phimin = -180., Float_t phimax = 180.)
 	{fPhiMinJet = TMath::Pi()*phimin/180.; fPhiMaxJet = TMath::Pi()*phimax/180.;}
-    virtual void    SetBoostLHC(Int_t flag=0)         {fLHC        = flag;}
-    
-	    
-    AliGenHijing &  operator=(const AliGenHijing & rhs);
+    virtual void    SetBoostLHC(Int_t flag = 0)         {fLHC        = flag;}
+// Getters
+    virtual Float_t GetEnergyCMS() {return fEnergyCMS;}
+    virtual TString GetReferenceFrame() {return fFrame;}
+    virtual void    GetProjectile(TString& tar, Int_t& a, Int_t& z)
+	{tar = fProjectile; a = fAProjectile; z = fZProjectile;}    
+    virtual void    GetTarget(TString& tar, Int_t& a, Int_t& z)
+	{tar = fTarget; a = fATarget; z = fZTarget;}    
+    virtual void    GetImpactParameterRange(Float_t& bmin, Float_t& bmax)
+	{bmin = fMinImpactParam; bmax = fMaxImpactParam;}
+    virtual Int_t   GetJetQuenching()                    {return fQuench;}
+    virtual Int_t   GetShadowing()                       {return fShadowing;}
+    virtual Int_t   GetTrigger(Int_t flag=kNoTrigger)    {return fTrigger;}
+    virtual Int_t   GetFlavor(Int_t flag=0)              {return fFlavor;}
+    virtual Int_t   GetRadiation(Int_t flag=3)           {return fRadiation;}    
+    virtual Int_t   GetSpectators(Int_t spects=1)        {return fSpectators;}
+    virtual Float_t GetPtJet(Float_t ptmin)              {return fPtMinJet;}
+    virtual void    GetJetEtaRange(Float_t& etamin, Float_t& etamax)
+	{etamin = fEtaMinJet; etamax = fEtaMaxJet;}
+    virtual void    GetJetPhiRange(Float_t& phimin, Float_t& phimax)
+	{phimin = fPhiMinJet*180./TMath::Pi(); phimax = fPhiMaxJet*180./TMath::Pi();}
+
 // Physics Routines	    
     virtual void EvaluateCrossSections();
     virtual void Boost(TClonesArray* particles);
     virtual TGraph* CrossSection()     {return fDsigmaDb;}
     virtual TGraph* BinaryCollisions() {return fDnDb;}
     virtual Bool_t  CheckTrigger();
-    
+//
+    AliGenHijing &  operator=(const AliGenHijing & rhs);
  protected:
     Bool_t SelectFlavor(Int_t pid);
     void   MakeHeader();
