@@ -35,6 +35,7 @@ public:
   virtual ~AliPHOSRecParticle(){} ; // dtor
 
   AliPHOSTrackSegment * GetPHOSTrackSegment() const ; 
+  Int_t                 GetPHOSTrackSegmentIndex(){return fPHOSTrackSegment;}
   Int_t *               GetPrimaries(Int_t & number) ;
 
 private:
