@@ -8,7 +8,8 @@ AliHBTReaderITSv1.cxx AliHBTReaderITSv2.cxx    AliHBTReaderKineTree.cxx \
 AliHBTTwoTrackEffFctn.cxx       AliHBTReaderInternal.cxx\
 AliHBTQResolutionFctns.cxx      AliHBTQDistributionFctns.cxx    \
 AliHBTLLWeights.cxx             AliHBTLLWeightFctn.cxx\
-AliHBTMonDistributionFctns.cxx     AliHBTMonResolutionFctns.cxx 
+AliHBTMonDistributionFctns.cxx     AliHBTMonResolutionFctns.cxx \
+AliHBTLLWeightsPID.cxx AliHBTLLWeightTheorFctn.cxx
 
 FSRCS   = fsiini.F  fsiw.F  led_bldata.F  ltran12.F
 

@@ -39,6 +39,7 @@
 #pragma link C++ class AliHbtBasePairCut+;
 #pragma link C++ class AliHBTQInvCut+;
 #pragma link C++ class AliHBTKtCut+;
+#pragma link C++ class AliHBTKStarCut+;
 #pragma link C++ class AliHBTQSideCMSLCCut+;
 #pragma link C++ class AliHBTQOutCMSLCCut+;
 #pragma link C++ class AliHBTQLongCMSLCCut+;
@@ -73,6 +74,8 @@
 #pragma link C++ class AliHBTQSideCMSLCCorrelFctn+;
 
 #pragma link C++ class AliHBTInvMassCorrelFctn+;
+
+#pragma link C++ class AliHBTLLWeightTheorQInvFctn+;
 
 #pragma link C++ class AliHBTQInvResolVsQInvFctn+;
 #pragma link C++ class AliHBTQOutResolVsQInvFctn+;
@@ -134,5 +137,6 @@
 
 #pragma link C++ class AliHBTLLWeights+;
 #pragma link C++ class AliHBTLLWeightQInvFctn+;
+#pragma link C++ class AliHBTLLWeightsPID+;
 
 #endif
