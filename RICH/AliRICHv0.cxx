@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.6  2000/04/28 11:51:58  morsch
+   Dimensions of arrays hits and Ckov_data corrected.
+
   Revision 1.5  2000/04/19 13:28:46  morsch
   Major changes in geometry (parametrised), materials (updated) and
   step manager (diagnostics) (JB, AM)
@@ -93,6 +96,10 @@ void AliRICHv0::CreateGeometry()
   iChamber = &(RICH->Chamber(0));
   segmentation=iChamber->GetSegmentationModel(0);
   geometry=iChamber->GetGeometryModel();
+
+  Float_t distance;
+  distance = geometry->GetFreonThickness()/2 + geometry->GetQuartzThickness() + geometry->GetGapThickness();
+  geometry->SetRadiatorToPads(distance);
     
     
     Int_t *idtmed = fIdtmed->GetArray()-999;
@@ -252,10 +259,12 @@ void AliRICHv0::CreateGeometry()
     
     Int_t nspacers = (Int_t)(TMath::Abs(geometry->GetInnerFreonLength()/14.4));
     //printf("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n Spacers:%d\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n",nspacers); 
+
+    printf("Nspacers: %d", nspacers);
     
     //for (i = 1; i <= 9; ++i) {
       //zs = (5 - i) * 14.4;                       //Original settings 
-    for (i = 0; i <= nspacers; i++) {
+    for (i = 0; i < nspacers; i++) {
 	zs = (TMath::Abs(nspacers/2) - i) * 14.4;
 	gMC->Gspos("SPAC", i, "FRE1", 6.7, 0., zs, idrotm[1019], "ONLY");  //Original settings 
 	//gMC->Gspos("SPAC", i, "FRE1", zs, 0., 6.7, idrotm[1019], "ONLY"); 
@@ -270,7 +279,7 @@ void AliRICHv0::CreateGeometry()
 
     //for (i = 1; i <= 9; ++i) {
       //zs = (5 - i) * 14.4;                       //Original settings 
-      for (i = 0; i <= nspacers; i++) {
+      for (i = 0; i < nspacers; i++) {
 	zs = (TMath::Abs(nspacers/2) - i) * 14.4;
 	gMC->Gspos("SPAC", i, "FRE2", 6.7, 0., zs, idrotm[1019], "ONLY");  //Original settings 
 	//gMC->Gspos("SPAC", i, "FRE2", zs, 0., 6.7, idrotm[1019], "ONLY");
@@ -304,9 +313,11 @@ void AliRICHv0::CreateGeometry()
     gMC->Gspos("BARR", 1, "QUAR", -21.65, 0., 0., 0, "ONLY");           //Original settings 
     gMC->Gspos("BARR", 2, "QUAR", 21.65, 0., 0., 0, "ONLY");            //Original settings 
     gMC->Gspos("QUAR", 1, "SRIC", 0., 1.276 - geometry->GetGapThickness()/2 - geometry->GetQuartzThickness()/2, 0., 0, "ONLY");
-    gMC->Gspos("GAP ", 1, "META", 0., geometry->GetGapThickness()/2+ geometry->GetProximityGapThickness()/2, 0., 0, "ONLY");
+    gMC->Gspos("GAP ", 1, "META", 0., geometry->GetGapThickness()/2 - geometry->GetProximityGapThickness()/2 - 0.0001, 0., 0, "ONLY");
     gMC->Gspos("META", 1, "SRIC", 0., 1.276, 0., 0, "ONLY");
-    gMC->Gspos("CSI ", 1, "SRIC", 0., 1.276 + geometry->GetGapThickness()/2 + geometry->GetProximityGapThickness() + .25, 0., 0, "ONLY");
+    gMC->Gspos("CSI ", 1, "SRIC", 0., 1.276 + geometry->GetGapThickness()/2 + .25, 0., 0, "ONLY");
+
+    printf("Position of the gap: %f to %f\n", 1.276 + geometry->GetGapThickness()/2 - geometry->GetProximityGapThickness()/2 - .2, 1.276 + geometry->GetGapThickness()/2 - geometry->GetProximityGapThickness()/2 + .2);
     
     //     Place RICH inside ALICE apparatus 
   
@@ -919,6 +930,7 @@ void AliRICHv0::StepManager()
     Float_t        theta,phi;
     Float_t        destep, step;
     Float_t        ranf[2];
+    Int_t          NPads;
     static Float_t eloss, xhit, yhit, tlength;
     const  Float_t big=1.e10;
        
@@ -952,73 +964,72 @@ void AliRICHv0::StepManager()
     if (gMC->TrackPid() == 50000050) {          
 
       //if (gMC->VolId("GAP ")==gMC->CurrentVolID(copy))
-	
-                            
-	Float_t Ckov_energy = current->Energy();
-	//energy interval for tracking
-	if  (Ckov_energy > 5.6e-09 && Ckov_energy < 7.8e-09 )       
-	//if (Ckov_energy > 0)
-	{
-	    if (gMC->IsTrackEntering()){                                     //is track entering?
+        //{                    
+	  Float_t Ckov_energy = current->Energy();
+	  //energy interval for tracking
+	  if  (Ckov_energy > 5.6e-09 && Ckov_energy < 7.8e-09 )       
+	    //if (Ckov_energy > 0)
+	    {
+	      if (gMC->IsTrackEntering()){                                     //is track entering?
 		if (gMC->VolId("FRE1")==gMC->CurrentVolID(copy) || gMC->VolId("FRE2")==gMC->CurrentVolID(copy))
 		  {                                                          //is it in freo?
 		    if (geant3->Gctrak()->nstep<1){                          //is it the first step?
-			Int_t mother = current->GetFirstMother(); 
-			
-			//printf("Second Mother:%d\n",current->GetSecondMother());
-			
-			Ckov_data[10] = mother;
-			Ckov_data[11] = gAlice->CurrentTrack();
-			Ckov_data[12] = 1;             //Media where photon was produced 1->Freon, 2->Quarz
-			fCkov_number++;
-			fFreon_prod=1;
-			//printf("Index: %d\n",fCkov_number);
+		      Int_t mother = current->GetFirstMother(); 
+		      
+		      //printf("Second Mother:%d\n",current->GetSecondMother());
+		      
+		      Ckov_data[10] = mother;
+		      Ckov_data[11] = gAlice->CurrentTrack();
+		      Ckov_data[12] = 1;             //Media where photon was produced 1->Freon, 2->Quarz
+		      fCkov_number++;
+		      fFreon_prod=1;
+		      //printf("Index: %d\n",fCkov_number);
 		    }    //first step question
-		}        //freo question
+		  }        //freo question
 		
 		if (geant3->Gctrak()->nstep<1){                                  //is it first step?
-		    if (gMC->VolId("QUAR")==gMC->CurrentVolID(copy))             //is it in quarz?
+		  if (gMC->VolId("QUAR")==gMC->CurrentVolID(copy))             //is it in quarz?
 		    {
-			Ckov_data[12] = 2;
+		      Ckov_data[12] = 2;
 		    }    //quarz question
 		}        //first step question
 		
 		//printf("Before %d\n",fFreon_prod);
-	    }   //track entering question
-	    
-	    if (Ckov_data[12] == 1)                                        //was it produced in Freon?
+	      }   //track entering question
+	      
+	      if (Ckov_data[12] == 1)                                        //was it produced in Freon?
 		//if (fFreon_prod == 1)
-	    {
-		if (gMC->IsTrackEntering()){                                     //is track entering?
+		{
+		  if (gMC->IsTrackEntering()){                                     //is track entering?
 		    //printf("Got in");
 		    if (gMC->VolId("META")==gMC->CurrentVolID(copy))                //is it in gap?      
-		    {
+		      {
 			//printf("Got in\n");
 			gMC->TrackMomentum(Momentum);
 			mom[0]=Momentum(0);
 			mom[1]=Momentum(1);
 			mom[2]=Momentum(2);
 			mom[3]=Momentum(3);
-			               // Z-position for hit
-
-			  
+			// Z-position for hit
+			
+			
 			/**************** Photons lost in second grid have to be calculated by hand************/ 
-			  
+			
 			Float_t cophi = TMath::Cos(TMath::ATan2(mom[0], mom[1]));
 			Float_t t = (1. - .025 / cophi) * (1. - .05 /  cophi);
 			gMC->Rndm(ranf, 1);
 			//printf("grid calculation:%f\n",t);
 			if (ranf[0] > t) {
-			    geant3->StopTrack();
-			    Ckov_data[13] = 5;
-			    AddCerenkov(gAlice->CurrentTrack(),vol,Ckov_data);
-			    //printf("Lost one in grid\n");
+			  geant3->StopTrack();
+			  Ckov_data[13] = 5;
+			  AddCerenkov(gAlice->CurrentTrack(),vol,Ckov_data);
+			  //printf("Lost one in grid\n");
 			}
 			/**********************************************************************************/
-		    }    //gap
+		      }    //gap
 		    
 		    if (gMC->VolId("CSI ")==gMC->CurrentVolID(copy))             //is it in csi?      
-		    {
+		      {
 			gMC->TrackMomentum(Momentum);
 			mom[0]=Momentum(0);
 			mom[1]=Momentum(1);
@@ -1032,76 +1043,78 @@ void AliRICHv0::StepManager()
 			Float_t t = Fresnel(Ckov_energy*1e9,cophi,1);
 			gMC->Rndm(ranf, 1);
 			if (ranf[0] < t) {
-			    geant3->StopTrack();
-			    Ckov_data[13] = 6;
-			    AddCerenkov(gAlice->CurrentTrack(),vol,Ckov_data);
-			    //printf("Lost by Fresnel\n");
+			  geant3->StopTrack();
+			  Ckov_data[13] = 6;
+			  AddCerenkov(gAlice->CurrentTrack(),vol,Ckov_data);
+			  //printf("Lost by Fresnel\n");
 			}
-			  /**********************************************************************************/
-		    }
-		} //track entering?
-		
-		
-		/********************Evaluation of losses************************/
-		/******************still in the old fashion**********************/
-		
-		Int_t i1 = geant3->Gctrak()->nmec;            //number of physics mechanisms acting on the particle
-		for (Int_t i = 0; i < i1; ++i) {
+			/**********************************************************************************/
+		      }
+		  } //track entering?
+		  
+		  
+		  /********************Evaluation of losses************************/
+		  /******************still in the old fashion**********************/
+		  
+		  Int_t i1 = geant3->Gctrak()->nmec;            //number of physics mechanisms acting on the particle
+		  for (Int_t i = 0; i < i1; ++i) {
 		    //        Reflection loss 
 		    if (geant3->Gctrak()->lmec[i] == 106) {        //was it reflected
-			Ckov_data[13]=10;
-			if (gMC->VolId("FRE1")==gMC->CurrentVolID(copy) || gMC->VolId("FRE2")==gMC->CurrentVolID(copy)) 
-			    Ckov_data[13]=1;
-			if (gMC->CurrentVolID(copy) == gMC->VolId("QUAR")) 
-			    Ckov_data[13]=2;
-			geant3->StopTrack();
-			AddCerenkov(gAlice->CurrentTrack(),vol,Ckov_data);
+		      Ckov_data[13]=10;
+		      if (gMC->VolId("FRE1")==gMC->CurrentVolID(copy) || gMC->VolId("FRE2")==gMC->CurrentVolID(copy)) 
+			Ckov_data[13]=1;
+		      if (gMC->CurrentVolID(copy) == gMC->VolId("QUAR")) 
+			Ckov_data[13]=2;
+		      geant3->StopTrack();
+		      AddCerenkov(gAlice->CurrentTrack(),vol,Ckov_data);
 		    } //reflection question
 		    
-		  
+		    
 		    //        Absorption loss 
 		    else if (geant3->Gctrak()->lmec[i] == 101) {              //was it absorbed?
-			Ckov_data[13]=20;
-			if (gMC->VolId("FRE1")==gMC->CurrentVolID(copy) || gMC->VolId("FRE2")==gMC->CurrentVolID(copy)) 
-			    Ckov_data[13]=11;
-			if (gMC->CurrentVolID(copy) == gMC->VolId("QUAR")) 
-			    Ckov_data[13]=12;
-			if (gMC->CurrentVolID(copy) == gMC->VolId("META")) 
-			    Ckov_data[13]=13;
-			if (gMC->CurrentVolID(copy) == gMC->VolId("GAP ")) 
-			    Ckov_data[13]=13;
-			
-			if (gMC->CurrentVolID(copy) == gMC->VolId("SRIC")) 
-			    Ckov_data[13]=15;
-			
-			//        CsI inefficiency 
-			if (gMC->CurrentVolID(copy) == gMC->VolId("CSI ")) {
-			    Ckov_data[13]=16;
-			}
-			geant3->StopTrack();
-			AddCerenkov(gAlice->CurrentTrack(),vol,Ckov_data);
-			//printf("Added cerenkov %d\n",fCkov_number);
+		      Ckov_data[13]=20;
+		      if (gMC->VolId("FRE1")==gMC->CurrentVolID(copy) || gMC->VolId("FRE2")==gMC->CurrentVolID(copy)) 
+			Ckov_data[13]=11;
+		      if (gMC->CurrentVolID(copy) == gMC->VolId("QUAR")) 
+			Ckov_data[13]=12;
+		      if (gMC->CurrentVolID(copy) == gMC->VolId("META")) 
+			Ckov_data[13]=13;
+		      if (gMC->CurrentVolID(copy) == gMC->VolId("GAP ")) 
+			Ckov_data[13]=13;
+		      
+		      if (gMC->CurrentVolID(copy) == gMC->VolId("SRIC")) 
+			Ckov_data[13]=15;
+		      
+		      //        CsI inefficiency 
+		      if (gMC->CurrentVolID(copy) == gMC->VolId("CSI ")) {
+			Ckov_data[13]=16;
+		      }
+		      geant3->StopTrack();
+		      AddCerenkov(gAlice->CurrentTrack(),vol,Ckov_data);
+		      //printf("Added cerenkov %d\n",fCkov_number);
 		    } //absorption question 
 		    
-		  
+		    
 		    //        Photon goes out of tracking scope 
 		    else if (geant3->Gctrak()->lmec[i] == 30) {                 //is it below energy treshold?
-			Ckov_data[13]=21;
-			geant3->StopTrack();
-			AddCerenkov(gAlice->CurrentTrack(),vol,Ckov_data);
+		      Ckov_data[13]=21;
+		      geant3->StopTrack();
+		      AddCerenkov(gAlice->CurrentTrack(),vol,Ckov_data);
 		    }	// energy treshold question	    
-		}  //number of mechanisms cycle
-		/**********************End of evaluation************************/
-	    } //freon production question
-	} //energy interval question
+		  }  //number of mechanisms cycle
+		  /**********************End of evaluation************************/
+		} //freon production question
+	    } //energy interval question
+	//}//inside the proximity gap question
     } //cerenkov photon question
-    
+      
     /**************************************End of Production Parameters Storing*********************/ 
     
     
     /*******************************Treat photons that hit the CsI (Ckovs and Feedbacks)************/ 
     
     if (gMC->TrackPid() == 50000050 || gMC->TrackPid() == 50000051) {
+      //printf("Cerenkov\n");
 	if (gMC->VolId("CSI ")==gMC->CurrentVolID(copy))
 	{
 	    
@@ -1156,7 +1169,7 @@ void AliRICHv0::StepManager()
 		    cherenkov_loss  += destep;
 		    Ckov_data[7]=cherenkov_loss;
 		    
-		    MakePadHits(Localpos[0],Localpos[2],cherenkov_loss,idvol,cerenkov);
+		    NPads = MakePadHits(Localpos[0],Localpos[2],cherenkov_loss,idvol,cerenkov);
 		    if (fNPadHits > (Int_t)Ckov_data[8]) {
 			Ckov_data[8]= Ckov_data[8]+1;
 			Ckov_data[9]= (Float_t) fNPadHits;
@@ -1176,8 +1189,8 @@ void AliRICHv0::StepManager()
 
     /**********************************************Charged particles treatment*************************************/
 
-    //else if (gMC->TrackCharge())
-    else if (1 == 1)
+    else if (gMC->TrackCharge())
+    //else if (1 == 1)
       {
 //If MIP
 	/*if (gMC->IsTrackEntering())
@@ -1277,7 +1290,12 @@ void AliRICHv0::StepManager()
 				
 		// Only if not trigger chamber
 		if(idvol<7) {
-		    if (eloss > 0) MakePadHits(xhit,yhit,eloss,idvol,mip);
+		  if (eloss > 0) 
+		    {
+		      if(gMC->TrackPid() == kNeutron)
+			printf("\n\n\n\n\n Neutron Making Pad Hit!!! \n\n\n\n");
+		      NPads = MakePadHits(xhit,yhit,eloss,idvol,mip);
+		    }
 		}
 		
 		hits[6]=tlength;
@@ -1300,7 +1318,12 @@ void AliRICHv0::StepManager()
 	    {
 		((AliRICHChamber*) (*fChambers)[idvol])
 		    ->SigGenInit(Localpos[0], Localpos[2], Localpos[1]);
-		if (eloss > 0) MakePadHits(xhit,yhit,eloss,idvol,mip);
+		if (eloss > 0) 
+		  {
+		    if(gMC->TrackPid() == kNeutron)
+		      printf("\n\n\n\n\n Neutron Making Pad Hit!!! \n\n\n\n");
+		    NPads = MakePadHits(xhit,yhit,eloss,idvol,mip);
+		  }
 		xhit     = Localpos[0];
 		yhit     = Localpos[2]; 
 		eloss    = destep;
@@ -1319,7 +1342,7 @@ void AliRICHv0::StepManager()
 
   
 //___________________________________________
-void AliRICH::MakePadHits(Float_t xhit,Float_t yhit,Float_t eloss, Int_t idvol, Response_t res)
+Int_t AliRICH::MakePadHits(Float_t xhit,Float_t yhit,Float_t eloss, Int_t idvol, Response_t res)
 {
 //
 //  Calls the charge disintegration method of the current chamber and adds
@@ -1358,4 +1381,5 @@ void AliRICH::MakePadHits(Float_t xhit,Float_t yhit,Float_t eloss, Int_t idvol, 
 	    AddPadHit(clhits);
 	}
     }
+return nnew;
 }
