@@ -421,7 +421,16 @@ TParticle * AliPHOSGetter::Primary(Int_t index) const
 AliPHOS * AliPHOSGetter:: PHOS() const  
 {
   // returns the PHOS object 
-  AliPHOS * phos = dynamic_cast<AliPHOS*>(PhosLoader()->GetModulesFolder()->FindObject("PHOS")) ;  
+  AliPHOSLoader *    loader = 0;
+  static AliPHOSLoader * oldloader = 0;
+  static AliPHOS * phos = 0;
+
+  loader = PhosLoader();
+
+  if ( loader != oldloader) {
+    phos = dynamic_cast<AliPHOS*>(loader->GetModulesFolder()->FindObject("PHOS")) ;
+    oldloader = loader;
+  }
   if (!phos) 
     if (fgDebug)
       Warning("PHOS", "PHOS module not found in module folders: %s", PhosLoader()->GetModulesFolder()->GetName() ) ; 

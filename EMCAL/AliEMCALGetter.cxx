@@ -390,7 +390,16 @@ Int_t AliEMCALGetter::NPrimaries() const
 AliEMCAL * AliEMCALGetter:: EMCAL() const  
 {
   // returns the EMCAL object 
-  AliEMCAL * emcal = dynamic_cast<AliEMCAL*>(EmcalLoader()->GetModulesFolder()->FindObject("EMCAL")) ;  
+  AliEMCALLoader *    loader = 0;
+  static AliEMCALLoader * oldloader = 0;
+  static AliEMCAL * emcal = 0;
+
+  loader = EmcalLoader();
+
+  if (loader != oldloader ) {
+    emcal = dynamic_cast<AliEMCAL*>(loader->GetModulesFolder()->FindObject("EMCAL")) ;  
+    oldloader = loader;
+  }
   if (!emcal) 
     if (fgDebug)
       Warning("EMCAL", "EMCAL module not found in module folders: %s", EmcalLoader()->GetModulesFolder()->GetName() ) ; 
