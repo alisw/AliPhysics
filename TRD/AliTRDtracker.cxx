@@ -940,14 +940,23 @@ Int_t AliTRDtracker::PropagateBack(AliESD* event) {
       
       Double_t xtof=378.;
       Double_t c2=track->GetC()*xtof - track->GetEta();
-      if (TMath::Abs(c2)>=0.9999999) continue;
+      if (TMath::Abs(c2)>=0.9999999){
+	delete track;
+	continue;
+      }
       
       Double_t ymax=xtof*TMath::Tan(0.5*AliTRDgeometry::GetAlpha());
       Double_t y=track->GetYat(xtof);
       if (y > ymax) {
-	if (!track->Rotate(AliTRDgeometry::GetAlpha())) return 1;
+	if (!track->Rotate(AliTRDgeometry::GetAlpha())) {
+	  delete track;
+	  return 1;
+	}
       } else if (y <-ymax) {
-	if (!track->Rotate(-AliTRDgeometry::GetAlpha())) return 1;
+	if (!track->Rotate(-AliTRDgeometry::GetAlpha())) {
+	  delete track;
+	  return 1;
+	}
       }
       
       if (track->PropagateTo(xtof)) {
