@@ -699,10 +699,14 @@ UInt_t AliLog::GetLogLevel(const char* module, const char* className) const
 // get the logging level for the given module and class
 
   if (!fgInstance) new AliLog;
-  TObject* obj = fgInstance->fClassDebugLevels.FindObject(className);
-  if (obj) return obj->GetUniqueID();
-  obj = fgInstance->fModuleDebugLevels.FindObject(module);
-  if (obj) return obj->GetUniqueID();
+  if (className) {
+    TObject* obj = fgInstance->fClassDebugLevels.FindObject(className);
+    if (obj) return obj->GetUniqueID();
+  }
+  if (module) {
+    TObject* obj = fgInstance->fModuleDebugLevels.FindObject(module);
+    if (obj) return obj->GetUniqueID();
+  }
   return fgInstance->fGlobalLogLevel;
 }
 
