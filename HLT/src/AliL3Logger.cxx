@@ -1,3 +1,9 @@
+// $Id$
+
+// Author: Anders Vestbo <mailto:vestbo@fi.uib.no>
+// changes done by Constantin Loizides <mailto:loizides@ikf.physik.uni-frankfurt.de>
+
+
 #include "AliL3Logging.h"
 #include "AliL3Logger.h"
 #include <fstream.h>
@@ -15,7 +21,8 @@ int AliL3Logger::kFatal = AliL3Log::kFatal;
 
 AliL3Logger::AliL3Logger(){
   gLogLevel=AliL3Log::kAll;
-  dn = so = se = sm =0; 
+  dn = so = se = sm =0;
+  of = 0;
 }
 AliL3Logger::~AliL3Logger(){
   if(dn) {gLog.DelServer(dn);delete dn;}
@@ -44,10 +51,9 @@ void AliL3Logger::UseStderr(){
 
 void AliL3Logger::UseStream(char *name){
   if(sm) return;
-//  static ofstream of;
   if(of) of->close();
   delete of;
-  of =0;
+  of = 0;
   of = new ofstream();
   of->open(name);
   sm = new  AliL3StreamLogServer(*of);
@@ -89,4 +95,6 @@ void AliL3Logger::NotUseStdout(){;}
 void AliL3Logger::NotUseStderr(){;}
 void AliL3Logger::NotUseStream(){;}
 #endif
+
+
 
