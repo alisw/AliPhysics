@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.8  2000/11/15 15:52:53  jbarbosa
+  Turned on spot algorithm.
+
   Revision 1.7  2000/11/01 15:37:05  jbarbosa
   Updated to use its own rec. point object.
 
@@ -91,23 +94,26 @@ void AliRICHDetect::Detect()
   Int_t i,j,k;
  
   
-  //const Float_t Noise_Level=0;          //Noise Level in percentage of mesh points
+  //const Float_t Noise_Level=0;                //Noise Level in percentage of mesh points
   //const Float_t t=0.6;			//Softening of Noise Correction (factor)
   
   const Float_t kPi=3.1415927;		
   
-  const Float_t kHeight=10;                       //Distance from Radiator to Pads in pads
+  const Float_t kHeight=10;                     //Distance from Radiator to Pads in pads
  
-  const Int_t kSpot=3;                                //number of passes with spot algorithm
+  const Int_t kSpot=0;                          //number of passes with spot algorithm
   
   const Int_t kDimensionTheta=50;		//Matrix dimension for angle Detection
   const Int_t kDimensionPhi=50;
   const Int_t kDimensionOmega=50;
   
-  const Float_t SPOTp=.2;		//Percentage of spot action
-  //const Int_t np=500;		        //Number of points to reconstruct elipse 
+  const Float_t SPOTp=.2;		        //Percentage of spot action
+  //const Int_t np=500;		                //Number of points to reconstruct elipse 
+  const Float_t kMinOmega=30*kPi/180;
   const Float_t kMaxOmega=65*kPi/180;		//Maximum Cherenkov angle to identify
-  
+ 
+  const Float_t kCorr=.5;                       //Correction factor, accounting for aberration, refractive index, etc.
+   
   Int_t point[kDimensionTheta][kDimensionPhi][kDimensionOmega];
   Int_t point1[kDimensionTheta][kDimensionPhi][kDimensionOmega];
   
@@ -215,23 +221,29 @@ void AliRICHDetect::Detect()
 		y=points->fPadY-cy;
 		//printf("Loaded digit %d with coordinates x:%f, y%f\n",dig,x,y);
 		//cout<<"x="<<x<<" y="<<y<<endl;
-		
+			
 		if (sqrt(TMath::Power(x,2)+TMath::Power(y,2))<kHeight*tan(theta+kMaxOmega)*3/4)
 		  {
 		    
+	
 		    l=kHeight/cos(theta);
 		    
 		    aux1=-y*sin(phi)+x*cos(phi);
 		    aux2=y*cos(phi)+x*sin(phi);
 		    aux3=( TMath::Power(aux1,2)+TMath::Power(cos(theta)*aux2 ,2))/TMath::Power(sin(theta)*aux2+l,2);
-		    //cout<<"aux1="<<aux1<<" aux2="<<aux2<<" aux3="<<aux3;
-		    
+			//cout<<"aux1="<<aux1<<" aux2="<<aux2<<" aux3="<<aux3;
+			    
 		    omega=atan(sqrt(aux3));
 		    //printf("Omega: %f\n",omega);
 		    
 		    //cout<<"\ni="<<i<<" theta="<<Int_t(2*theta*dimension/kPi)<<" phi="<<Int_t(2*phi*dimension/kPi)<<" omega="<<Int_t(2*omega*dimension/kPi)<<endl<<endl;
 		    //{Int_t lixo;cin>>lixo;}
-		    if(omega<kMaxOmega)point[Int_t(2*theta*kDimensionTheta/kPi)][Int_t(2*phi*kDimensionPhi/kPi)][Int_t(omega*kDimensionOmega/kMaxOmega)]+=1;	
+		    if(omega<kMaxOmega && omega>kMinOmega)
+		      {
+			omega=omega-kMinOmega;
+			//point[Int_t(2*theta*kDimensionTheta/kPi)][Int_t(2*phi*kDimensionPhi/kPi)][Int_t(kCorr*2*omega*kDimensionOmega/kMaxOmega)]+=1;	
+			point[Int_t(2*theta*kDimensionTheta/kPi)][Int_t(2*phi*kDimensionPhi/kPi)][Int_t(kCorr*(omega/(kMaxOmega-kMinOmega)*kDimensionOmega))]+=1;		
+		      }
 		    //if(omega<kMaxOmega)point[Int_t(theta)][Int_t(phi)][Int_t(omega)]+=1;
 		  }
 		}
@@ -315,8 +327,11 @@ void AliRICHDetect::Detect()
 	      }
     printf("\n");
     
+    maxk=maxk*(kMaxOmega-kMinOmega)/kDimensionOmega + kMinOmega;
+
+    
     //printf("Detected angle for height %3.1f and for center %3.1f %3.1f:%f\n",h,cx,cy,maxk*kPi/(kDimensionTheta*4));
-    printf("     Indentified cerenkov angle: %f\n", maxk*kPi/(kDimensionTheta*4));
+    printf("     Indentified cerenkov angle: %f\n", maxk);
     //printf("Detected angle for height %3.1f and for center %3.1f %3.1f:%f\n",kHeight,cx,cy,maxk);
 
 
@@ -337,7 +352,7 @@ void AliRICHDetect::Detect()
     
     rechit[0] = (Float_t)( maxi*kPi/(kDimensionTheta*4));
     rechit[1]   = (Float_t)( maxj*kPi/(kDimensionPhi*4));
-    rechit[2] = (Float_t)( maxk*kPi/(kDimensionOmega*4));
+    rechit[2] = (Float_t)( maxk);
     //rechit[0] = (Float_t)( maxi);
     //rechit[1]   = (Float_t)( maxj);
     //rechit[2] = (Float_t)( maxk);
