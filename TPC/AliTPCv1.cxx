@@ -15,6 +15,17 @@
 
 /*
 $Log$
+Revision 1.15.8.2  2000/04/10 08:29:48  kowal2
+
+Different pad geometry for different sectors
+Updated readouch chambers geometry
+
+Revision 1.15.8.1  2000/04/10 07:56:53  kowal2
+Not used anymore - removed
+
+Revision 1.15  1999/11/04 17:28:07  fca
+Correct barrel part of HV Degrader
+
 Revision 1.14  1999/10/08 06:27:23  fca
 Corrected bug in the HV degrader geometry, thanks to G.Tabary
 
@@ -53,7 +64,7 @@ Introduction of the Copyright and cvs Log
 #include "AliConst.h"
 
 #include "AliTPCParam.h"
-#include "AliTPCD.h"
+#include "AliTPCDigitsArray.h"
 
 ClassImp(AliTPCv1)
  
@@ -85,7 +96,6 @@ void AliTPCv1::CreateGeometry()
   */
   //End_Html
 
-  AliTPCParam * fTPCParam = &(fDigParam->GetParam());
 
   Int_t *idtmed = fIdtmed->GetArray();
 
@@ -189,20 +199,20 @@ void AliTPCv1::CreateGeometry()
   Int_t nOuterSector = fTPCParam->GetNOuterSector()/2;
 
 
-  Float_t InSecLowEdge = fTPCParam->GetInSecLowEdge();
-  Float_t InSecUpEdge =  fTPCParam->GetInSecUpEdge();
+  Float_t InSecLowEdge = fTPCParam->GetInnerRadiusLow();
+  Float_t InSecUpEdge =  fTPCParam->GetInnerRadiusUp();
 
-  Float_t OuSecLowEdge = fTPCParam->GetOuSecLowEdge();
-  Float_t OuSecUpEdge = fTPCParam->GetOuSecUpEdge();
+  Float_t OuSecLowEdge = fTPCParam->GetOuterRadiusLow();
+  Float_t OuSecUpEdge = fTPCParam->GetOuterRadiusUp();
 
   Float_t SecThick = 2.225; // Al
 
-  Float_t edge = fTPCParam->GetEdge();
-
   //  S (Inner) sectors
 
-  dm[0] = InSecLowEdge*TMath::Tan(0.5*InnerOpenAngle)-edge;
-  dm[1] = InSecUpEdge*TMath::Tan(0.5*InnerOpenAngle)-edge;
+  Float_t LowEdge = fTPCParam->GetInnerFrameSpace();
+
+  dm[0] = InSecLowEdge*TMath::Tan(0.5*InnerOpenAngle)-LowEdge;
+  dm[1] = InSecUpEdge*TMath::Tan(0.5*InnerOpenAngle)-LowEdge;
   dm[2] = 0.5*SecThick;
   dm[3] = 0.5*(InSecUpEdge-InSecLowEdge);
 
@@ -212,8 +222,10 @@ void AliTPCv1::CreateGeometry()
 
   //  L (Outer) sectors
 
-  dm[0] = OuSecLowEdge*TMath::Tan(0.5*OuterOpenAngle)-edge;
-  dm[1] = OuSecUpEdge*TMath::Tan(0.5*OuterOpenAngle)-edge;
+  Float_t UpEdge = fTPCParam->GetOuterFrameSpace();
+
+  dm[0] = OuSecLowEdge*TMath::Tan(0.5*OuterOpenAngle)-UpEdge;
+  dm[1] = OuSecUpEdge*TMath::Tan(0.5*OuterOpenAngle)-UpEdge;
   dm[2] = 0.5*SecThick;
   dm[3] = 0.5*(OuSecUpEdge-OuSecLowEdge);
 
@@ -242,7 +254,7 @@ void AliTPCv1::CreateGeometry()
   Float_t r1,r2,zz;
 
   Float_t StripThick = 0.01; // 100 microns
-  Float_t dead = fTPCParam->GetDeadZone();
+  Float_t dead;
 
   gMC->Gsvolu("TSST", "TRD1", idtmed[4], dm, 0);
 
@@ -251,6 +263,8 @@ void AliTPCv1::CreateGeometry()
 
 
   // S-sector
+
+  dead = fTPCParam->GetInnerWireMount();
 
   for (ns = 0; ns < fTPCParam->GetNRowLow(); ns++) {
 
@@ -321,6 +335,8 @@ void AliTPCv1::CreateGeometry()
   dm[3] = 2.;
 
   dm[7] = 250.;
+
+  dead = fTPCParam->GetOuterWireMount();
 
   Float_t xx = dead/TMath::Tan(0.5*OuterOpenAngle);
 
@@ -847,7 +863,7 @@ void AliTPCv1::DrawDetector()
   gMC->Gsatt("TPCO","SEEN",1);
   gMC->Gsatt("TPOV","SEEN",1);
   gMC->Gsatt("TPVD","SEEN",1);
-  //
+  
   gMC->Gdopt("hide", "on");
   gMC->Gdopt("shad", "on");
   gMC->Gsatt("*", "fill", 7);
@@ -893,8 +909,6 @@ void AliTPCv1::StepManager()
   Int_t         vol[2];
   TLorentzVector p;
   TClonesArray &lhits = *fHits;
-
-  AliTPCParam *fTPCParam = &(fDigParam->GetParam());
   
   //
 
@@ -909,6 +923,24 @@ void AliTPCv1::StepManager()
       vol[1]=copy-1; // row
       id=gMC->CurrentVolOffID(1,copy);
       vol[0]=copy+fTPCParam->GetNInnerSector()-1; // sector
+
+      //I.Belikov's modification
+      if (vol[1]==0) {
+       gMC->TrackMomentum(p);
+       hits[0]=p[0];
+       hits[1]=p[1];
+       hits[2]=p[2];
+       hits[3]=0.; // this hit has no energy loss
+       new(lhits[fNhits++]) AliTPChit(fIshunt,gAlice->CurrentTrack(),vol,hits);
+
+       gMC->TrackPosition(p);
+       hits[0]=p[0];
+       hits[1]=p[1];
+       hits[2]=p[2];
+       hits[3]=0.; // this hit has no energy loss
+       new(lhits[fNhits++]) AliTPChit(fIshunt,gAlice->CurrentTrack(),vol,hits);
+      }
+      //end of I.Belikov's modification
     } else if(id==fIdSens2) {
 
       // S
@@ -916,11 +948,30 @@ void AliTPCv1::StepManager()
       vol[1]=copy-1; // row
       id=gMC->CurrentVolOffID(1,copy); // sector
       vol[0]=copy-1;
+
+      //I.Belikov's modification
+      if (vol[1]==0) {
+       gMC->TrackMomentum(p);
+       hits[0]=p[0];
+       hits[1]=p[1];
+       hits[2]=p[2];
+       hits[3]=0.; // this hit has no energy loss
+       new(lhits[fNhits++]) AliTPChit(fIshunt,gAlice->CurrentTrack(),vol,hits);
+
+       gMC->TrackPosition(p);
+       hits[0]=p[0];
+       hits[1]=p[1];
+       hits[2]=p[2];
+       hits[3]=0.; // this hit has no energy loss
+       new(lhits[fNhits++]) AliTPChit(fIshunt,gAlice->CurrentTrack(),vol,hits);
+      }
+      //end of I.Belikov's modification
+
     } else return;
 
     gMC->TrackPosition(p);
     for(i=0;i<3;++i) hits[i]=p[i];
-    hits[3]=0;
+    hits[3]=1; //I'd like to have something positive here (I.Belikov)
     new(lhits[fNhits++]) AliTPChit(fIshunt,gAlice->CurrentTrack(),vol,hits);
   }
 }

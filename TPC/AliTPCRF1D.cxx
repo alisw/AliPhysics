@@ -15,6 +15,14 @@
 
 /*
 $Log$
+Revision 1.4.8.2  2000/04/10 08:53:09  kowal2
+
+Updates by M. Ivanov
+
+
+Revision 1.4  1999/09/29 09:24:34  fca
+Introduction of the Copyright and cvs Log
+
 */
 
 //-----------------------------------------------------------------------------
@@ -26,6 +34,7 @@ $Log$
 //  Declaration of class AliTPCRF1D
 //
 //-----------------------------------------------------------------------------
+
 #include "TMath.h"
 #include "AliTPCRF1D.h"
 #include "TF2.h"
@@ -39,18 +48,19 @@ extern TStyle * gStyle;
 
 static Double_t funGauss(Double_t *x, Double_t * par)
 {
+  //Gauss function  -needde by the generic function object 
   return TMath::Exp(-(x[0]*x[0])/(2*par[0]*par[0]));
 }
 
 static Double_t funCosh(Double_t *x, Double_t * par)
 {
+  //Cosh function  -needde by the generic function object 
   return 1/TMath::CosH(3.14159*x[0]/(2*par[0]));  
 }    
 
 static Double_t funGati(Double_t *x, Double_t * par)
 {
-  //par[1] = is equal to k3
-  //par[0] is equal to pad wire distance
+  //Gati function  -needde by the generic function object 
   Float_t K3=par[1];
   Float_t K3R=TMath::Sqrt(K3);
   Float_t K2=(TMath::Pi()/2)*(1-K3R/2.);
@@ -62,26 +72,20 @@ static Double_t funGati(Double_t *x, Double_t * par)
   return res;  
 }    
 
-
-
-
-///////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////
 
-AliTPCRF1D * gRF1D;
 ClassImp(AliTPCRF1D)
 
 
 AliTPCRF1D::AliTPCRF1D(Bool_t direct,Int_t np,Float_t step)
 {
+  //default constructor for response function object
   fDirect=direct;
   fNRF = np;
   fcharge = new Float_t[fNRF];
   fDSTEPM1=1./step;
   fSigma = 0;
-  gRF1D = this;
   fGRF = 0;
   fkNorm = 0.5;
   fpadWidth = 3.5;
@@ -92,13 +96,14 @@ AliTPCRF1D::AliTPCRF1D(Bool_t direct,Int_t np,Float_t step)
 
 AliTPCRF1D::~AliTPCRF1D()
 {
-  if (fcharge!=0) delete fcharge;
+  if (fcharge!=0) delete [] fcharge;
   if (fGRF !=0 ) fGRF->Delete();
 }
 
 Float_t AliTPCRF1D::GetRF(Float_t xin)
 {
-  //x xin DSTEP unit
+  //function which return response
+  //for the charge in distance xin 
   //return linear aproximation of RF
   Float_t x = TMath::Abs((xin-fOffset)*fDSTEPM1)+fNRF/2;
   Int_t i1=Int_t(x);
@@ -111,6 +116,8 @@ Float_t AliTPCRF1D::GetRF(Float_t xin)
 
 Float_t  AliTPCRF1D::GetGRF(Float_t xin)
 {  
+  //function which returnoriginal charge distribution
+  //this function is just normalised for fKnorm
   if (fGRF != 0 ) 
     return fkNorm*fGRF->Eval(xin)/fInteg;
       else
@@ -121,6 +128,8 @@ Float_t  AliTPCRF1D::GetGRF(Float_t xin)
 void AliTPCRF1D::SetParam( TF1 * GRF,Float_t padwidth,
 		       Float_t kNorm, Float_t sigma)
 {
+  //adjust parameters of the original charge distribution
+  //and pad size parameters
    fpadWidth = padwidth;
    fGRF = GRF;
    fkNorm = kNorm;
@@ -135,7 +144,9 @@ void AliTPCRF1D::SetParam( TF1 * GRF,Float_t padwidth,
 void AliTPCRF1D::SetGauss(Float_t sigma, Float_t padWidth,
 		      Float_t kNorm)
 {
-  // char s[120];
+  // 
+  // set parameters for Gauss generic charge distribution
+  //
   fpadWidth = padWidth;
   fkNorm = kNorm;
   if (fGRF !=0 ) fGRF->Delete();
@@ -144,15 +155,16 @@ void AliTPCRF1D::SetGauss(Float_t sigma, Float_t padWidth,
   forigsigma=sigma;
   fGRF->SetParameters(funParam);
    fDSTEPM1 = 10./TMath::Sqrt(sigma*sigma+fpadWidth*fpadWidth/12); 
-  //by default I set the step as one tenth of sigma
-   //  Update(); 
+  //by default I set the step as one tenth of sigma  
   sprintf(fType,"Gauss");
 }
 
 void AliTPCRF1D::SetCosh(Float_t sigma, Float_t padWidth,
 		     Float_t kNorm)
 {
-  //  char s[120];
+  // 
+  // set parameters for Cosh generic charge distribution
+  //
   fpadWidth = padWidth;
   fkNorm = kNorm;
   if (fGRF !=0 ) fGRF->Delete();
@@ -162,14 +174,15 @@ void AliTPCRF1D::SetCosh(Float_t sigma, Float_t padWidth,
   forigsigma=sigma;
   fDSTEPM1 = 10./TMath::Sqrt(sigma*sigma+fpadWidth*fpadWidth/12); 
   //by default I set the step as one tenth of sigma
-  //  Update();
   sprintf(fType,"Cosh");
 }
 
 void AliTPCRF1D::SetGati(Float_t K3, Float_t padDistance, Float_t padWidth,
 		     Float_t kNorm)
 {
-  //  char s[120];
+  // 
+  // set parameters for Gati generic charge distribution
+  //
   fpadWidth = padWidth;
   fkNorm = kNorm;
   if (fGRF !=0 ) fGRF->Delete();
@@ -180,12 +193,14 @@ void AliTPCRF1D::SetGati(Float_t K3, Float_t padDistance, Float_t padWidth,
   forigsigma=padDistance;
   fDSTEPM1 = 10./TMath::Sqrt(padDistance*padDistance+fpadWidth*fpadWidth/12); 
   //by default I set the step as one tenth of sigma
-  //  Update(); 
   sprintf(fType,"Gati");
 }
 
 void AliTPCRF1D::Draw(Float_t x1,Float_t x2,Int_t N)
 { 
+  //
+  //Draw prf in selected region <x1,x2> with nuber of diviision = n
+  //
   char s[100];
   TCanvas  * c1 = new TCanvas("canRF","Pad response function",700,900);
   c1->cd();
@@ -222,7 +237,11 @@ void AliTPCRF1D::Draw(Float_t x1,Float_t x2,Int_t N)
 
 void AliTPCRF1D::Update()
 {
-  //initialize to 0
+  //
+  //update fields  with interpolated values for
+  //PRF calculation
+
+  //at the begining initialize to 0
   for (Int_t i =0; i<fNRF;i++)  fcharge[i] = 0;
   if ( fGRF == 0 ) return;
   fInteg  = fGRF->Integral(-5*forigsigma,5*forigsigma,funParam,0.00001);
@@ -264,7 +283,7 @@ void AliTPCRF1D::Update()
 
 void AliTPCRF1D::Streamer(TBuffer &R__b)
 {
-   // Stream an object of class AliTPC.
+   // Stream an object of class AliTPCRF1D.
 
    if (R__b.IsReading()) {
       Version_t R__v = R__b.ReadVersion(); if (R__v) { }
@@ -285,7 +304,7 @@ void AliTPCRF1D::Streamer(TBuffer &R__b)
       R__b >> fOffset;
       //read functions
       if (fGRF!=0) { 
-	delete fGRF;  
+	delete [] fGRF;  
 	fGRF=0;
       }
       if (strncmp(fType,"User",3)==0){
@@ -327,10 +346,7 @@ void AliTPCRF1D::Streamer(TBuffer &R__b)
       R__b <<fDSTEPM1;
       R__b <<fNRF;    
       R__b.WriteFastArray(fcharge,fNRF); 
-      R__b.WriteFastArray(funParam,5); 
-       
-      
-
+      R__b.WriteFastArray(funParam,5);              
    }
 }
  

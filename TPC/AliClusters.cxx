@@ -1,0 +1,173 @@
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+
+/*
+$Log$
+Revision 1.1.4.2  2000/04/10 11:34:02  kowal2
+
+Clusters handling in a new data structure
+
+*/
+
+///////////////////////////////////////////////////////////////////////////////
+//                                                                           //
+//  Time Projection Chamber clusters objects                                //
+//
+//  Origin: Marian Ivanov , GSI Darmstadt
+//                                                                           //
+//                                                                           //
+//                                                                          //
+///////////////////////////////////////////////////////////////////////////////
+#include "TError.h"
+#include "TClass.h"
+#include  <TROOT.h>
+#include "AliCluster.h"
+#include "AliClusters.h"
+#include "TClonesArray.h"
+#include "TMarker.h"
+
+
+const Int_t kDefSize = 1;  //defalut size
+
+
+ClassImp(AliClusters) 
+
+//*****************************************************************************
+//
+//_____________________________________________________________________________
+AliClusters::AliClusters() 
+{  
+  //
+  //default constructor
+  fNclusters=0;
+  fClusters =0;
+  fClass =0;
+}
+
+Bool_t AliClusters::SetClass(const Text_t *classname)
+{
+  //
+  //set class of stored object
+  if ( fClass !=0 ) {
+    delete fClass;
+    fClass = 0;
+  }
+ 
+  if (!gROOT)
+      ::Fatal("AliClusters::SetClass", "ROOT system not initialized");
+   
+   fClass = gROOT->GetClass(classname);
+   if (!fClass) {
+      Error("AliClusters", "%s is not a valid class name", classname);
+      return kFALSE;
+   }
+   if (!fClass->InheritsFrom(AliCluster::Class())) {
+      Error("AliClusters", "%s does not inherit from AliCluster", classname);
+      return kFALSE;
+   }  
+   return kTRUE;
+}
+
+//_____________________________________________________________________________
+void AliClusters::SetArray(Int_t length)
+{
+  //
+  // construct Clones array of object
+  //
+  if (fClusters!=0) delete fClusters;
+  if (fClass==0){
+     Error("AliClusters", "cluster type not initialised \n SetClass before!");
+     return;
+  }
+  fClusters = new TClonesArray(fClass->GetName(),length);
+}
+
+
+
+//_____________________________________________________________________________
+const  AliCluster* AliClusters::operator[](Int_t i)
+{
+  //
+  // return cluster at internal position i
+  //
+  if (fClusters==0) return 0;
+  void * cl = fClusters->UncheckedAt(i);
+  if (cl==0) return 0;
+  return  (AliCluster*)cl;
+}
+//_____________________________________________________________________________
+void  AliClusters::Sort()
+{
+  // sort cluster 
+  if (fClusters!=0) fClusters->Sort();
+}
+
+//_____________________________________________________________________________
+AliCluster * AliClusters::InsertCluster( const AliCluster * c) 
+{ 
+  //
+  // Add a simulated cluster copy to the list
+  //
+  if (fClass==0) { 
+    Error("AliClusters", "class type not specified");
+    return 0; 
+  }
+  if(!fClusters) fClusters=new TClonesArray(fClass->GetName(),1000);
+  TClonesArray &lclusters = *fClusters;
+  return new(lclusters[fNclusters++]) AliCluster(*c);
+}
+
+//_____________________________________________________________________________
+Int_t AliClusters::Find(Double_t y) const 
+{
+  //
+  // return index of cluster nearest to given y position
+  //
+  AliCluster* cl;
+  cl=(AliCluster*)fClusters->UncheckedAt(0);
+  if (y <= cl->fY) return 0;  
+  cl=(AliCluster*)fClusters->UncheckedAt(fNclusters-1);
+  if (y > cl->fY) return fNclusters; 
+  Int_t b=0, e=fNclusters-1, m=(b+e)/2;
+  for (; b<e; m=(b+e)/2) {
+    cl = (AliCluster*)fClusters->UncheckedAt(m);
+    if (y > cl->fY) b=m+1;
+    else e=m; 
+  }
+  return m;
+}
+
+
+//_____________________________________________________________________________
+
+void AliClusters::Draw(Float_t shiftx, Float_t shifty, 
+				  Int_t color, Int_t size, Int_t style)
+{
+
+  if (fClusters==0) return;  
+  //draw marker for each of cluster
+  Int_t ncl=fClusters->GetEntriesFast();
+  for (Int_t i=0;i<ncl;i++){
+    AliCluster *cl = (AliCluster*)fClusters->UncheckedAt(i);
+    TMarker * marker = new TMarker;
+    marker->SetX(cl->fX+shiftx);
+    marker->SetY(cl->fY+shifty);
+    marker->SetMarkerSize(size);
+    marker->SetMarkerStyle(style);
+    marker->SetMarkerColor(color);
+    marker->Draw();    
+  }
+}
+

@@ -15,13 +15,23 @@
 
 /*
 $Log$
+Revision 1.3.8.2  2000/04/10 08:40:46  kowal2
+
+Small changes by M. Ivanov, improvements of algorithms
+
+Revision 1.3.8.1  2000/04/10 07:56:53  kowal2
+Not used anymore - removed
+
+Revision 1.3  1999/10/05 17:15:46  fca
+Minor syntax for the Alpha OSF
+
 Revision 1.2  1999/09/29 09:24:34  fca
 Introduction of the Copyright and cvs Log
 
 */
 
 ///////////////////////////////////////////////////////////////////////////////
-//  AliTPCPRF2D -                                                                         //
+//  AliTPCPRF2D -                                                              //
 //  Pad response function object in two dimesions                            //
 //  This class contains the basic functions for the                          //
 //  calculation of PRF according generic charge distribution                 //
@@ -33,6 +43,8 @@ Introduction of the Copyright and cvs Log
 //  Origin: Marian Ivanov, Uni. of Bratislava, ivanov@fmph.uniba.sk          //
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
+
+
 #include "TMath.h"
 #include "AliTPCPRF2D.h"
 #include "TF2.h"
@@ -45,6 +57,7 @@ Introduction of the Copyright and cvs Log
 #include "TH2.h"
 #include "TPaveText.h"
 #include "TText.h"
+//
 
 extern TStyle * gStyle;
 
@@ -54,6 +67,7 @@ static const Int_t   NPRF = 100;
 
 static Double_t funGauss2D(Double_t *x, Double_t * par)
 { 
+//Gauss function  -needde by the generic function object 
   return ( TMath::Exp(-(x[0]*x[0])/(2*par[0]*par[0]))*
 	   TMath::Exp(-(x[1]*x[1])/(2*par[1]*par[1])));
 
@@ -61,14 +75,14 @@ static Double_t funGauss2D(Double_t *x, Double_t * par)
 
 static Double_t funCosh2D(Double_t *x, Double_t * par)
 {
+ //Cosh function  -needde by the generic function object 
   return ( 1/(TMath::CosH(3.14159*x[0]/(2*par[0]))*
 	   TMath::CosH(3.14159*x[1]/(2*par[1]))));
 }    
 
 static Double_t funGati2D(Double_t *x, Double_t * par)
 {
-  //par[1] = is equal to k3X
-  //par[0] is equal to pad wire distance
+  //Gati function  -needde by the generic function object 
   Float_t K3=par[1];
   Float_t K3R=TMath::Sqrt(K3);
   Float_t K2=(TMath::Pi()/2)*(1-K3R/2.);
@@ -89,9 +103,6 @@ static Double_t funGati2D(Double_t *x, Double_t * par)
   return res;  
 }   
 
-
-///////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////
 
@@ -99,20 +110,24 @@ ClassImp(AliTPCPRF2D)
 
 AliTPCPRF2D::AliTPCPRF2D()
 {
+  //default constructor for response function object
   ffcharge = 0;
   fNPRF =NPRF ;
   fSigmaX = 0;
+  fSigmaY = 0;
 
   fGRF = 0;
   fkNorm = 1;
-  forigsigmaY=0;
-  forigsigmaX=0;
+  fOrigSigmaY=0;
+  fOrigSigmaX=0;
   fNdiv = 5;
+  //set daault angels
+  fChargeAngle = 0;
+  fCosAngle = 0;
   //chewron default values   
   SetPad(0.8,0.8);
   SetChevron(0.2,0.0,1.0);
   SetY(-0.2,0.2,2);
-  // SetGauss(0.22,0.22,1);  
 }
 
 AliTPCPRF2D::~AliTPCPRF2D()
@@ -159,8 +174,10 @@ void AliTPCPRF2D::SetChParam(Float_t width, Float_t height,
 
 Float_t AliTPCPRF2D::GetPRF(Float_t xin, Float_t yin, Bool_t inter)
 {
-  if (ffcharge==0) return 0;
-  //  Float_t y=Float_t(fNYdiv-1)*(yin-fY1)/(fY2-fY1);
+  //function which return pad response
+  //for the charge in distance xin 
+  //return  cubic aproximation of PRF or PRF at nearest virtual wire
+   if (ffcharge==0) return 0;
   //transform position to "wire position"
   Float_t y=fDYtoWire*(yin-fY1);
   if (fNYdiv == 1) y=fY1;
@@ -203,16 +220,16 @@ Float_t AliTPCPRF2D::GetPRF(Float_t xin, Float_t yin, Bool_t inter)
     c=K-d;
     Float_t dy=y-Float_t(i);
         Float_t res = a+b*dy+c*dy*dy+d*dy*dy*dy;  
-	//Float_t res = z1*(1-dy)+z2*dy;
     return res;            
   }        
+  return 0.;
 } 
 
 
 Float_t AliTPCPRF2D::GetPRFActiv(Float_t xin)
 {
-  //x xin DStep unit
-  //return splaine aproximaton 
+  //GEt response function on given charege line 
+  //return spline aproximaton 
   Float_t x = (xin*fDStepM1)+fNPRF/2;
   Int_t i = Int_t(x);
   
@@ -234,6 +251,8 @@ Float_t AliTPCPRF2D::GetPRFActiv(Float_t xin)
 
 Float_t  AliTPCPRF2D::GetGRF(Float_t xin, Float_t yin)
 {  
+  //function which returnoriginal charge distribution
+  //this function is just normalised for fKnorm
   if (fGRF != 0 ) 
     return fkNorm*fGRF->Eval(xin,yin)/fInteg;
       else
@@ -244,15 +263,16 @@ Float_t  AliTPCPRF2D::GetGRF(Float_t xin, Float_t yin)
 void AliTPCPRF2D::SetParam( TF2 * GRF,  Float_t kNorm, 
 		       Float_t sigmaX, Float_t sigmaY)
 {
+  //adjust parameters of the original charge distribution
+  //and pad size parameters
    if (fGRF !=0 ) fGRF->Delete();
    fGRF = GRF;
    fkNorm = kNorm;
    if (sigmaX ==0) sigmaX=(fWidth+fK*fHeightS)/sqrt12;
    if (sigmaY ==0) sigmaY=(fWidth+fK*fHeightS)/sqrt12;
-   forigsigmaX=sigmaX; 
-   forigsigmaY=sigmaY; 
+   fOrigSigmaX=sigmaX; 
+   fOrigSigmaY=sigmaY; 
    fDStep = TMath::Sqrt(sigmaX*sigmaX+fWidth*fWidth/6.)/10.; 
-   //   Update();   
   sprintf(fType,"User");
 }
   
@@ -260,6 +280,9 @@ void AliTPCPRF2D::SetParam( TF2 * GRF,  Float_t kNorm,
 void AliTPCPRF2D::SetGauss(Float_t sigmaX, Float_t sigmaY,
 		      Float_t kNorm)
 {
+  // 
+  // set parameters for Gauss generic charge distribution
+  //
   fkNorm = kNorm;
   if (fGRF !=0 ) fGRF->Delete();
   fGRF = new TF2("fun",funGauss2D,-5.,5.,-5.,5.,4);
@@ -267,18 +290,19 @@ void AliTPCPRF2D::SetGauss(Float_t sigmaX, Float_t sigmaY,
   funParam[1]=sigmaY;  
   funParam[2]=fK;
   funParam[3]=fHeightS;    
-  forigsigmaX=sigmaX;
-  forigsigmaY=sigmaY;
+  fOrigSigmaX=sigmaX;
+  fOrigSigmaY=sigmaY;
   fGRF->SetParameters(funParam);
   fDStep = TMath::Sqrt(sigmaX*sigmaX+fWidth*fWidth/6.)/10.; 
   //by default I set the step as one tenth of sigma
-  //Update();
   sprintf(fType,"Gauss");
 }
 
 void AliTPCPRF2D::SetCosh(Float_t sigmaX, Float_t sigmaY,
 		     Float_t kNorm)
-{
+{ 
+  // set parameters for Cosh generic charge distribution
+  //
   fkNorm = kNorm;
   if (fGRF !=0 ) fGRF->Delete();
   fGRF = new TF2("fun",	funCosh2D,-5.,5.,-5.,5.,4);   
@@ -287,11 +311,10 @@ void AliTPCPRF2D::SetCosh(Float_t sigmaX, Float_t sigmaY,
   funParam[2]=fK;  
   funParam[3]=fHeightS;
   fGRF->SetParameters(funParam);
-  forigsigmaX=sigmaX;
-  forigsigmaY=sigmaY;
+  fOrigSigmaX=sigmaX;
+  fOrigSigmaY=sigmaY;
   fDStep = TMath::Sqrt(sigmaX*sigmaX+fWidth*fWidth/6.)/10.; 
   //by default I set the step as one tenth of sigma
-  //Update();
   sprintf(fType,"Cosh");
 }
 
@@ -299,6 +322,8 @@ void AliTPCPRF2D::SetGati(Float_t K3X, Float_t K3Y,
 		     Float_t padDistance,
 		     Float_t kNorm)
 {
+  // set parameters for Gati generic charge distribution
+  //
   fkNorm = kNorm;
   if (fGRF !=0 ) fGRF->Delete();
   fGRF = new TF2("fun",	funGati2D,-5.,5.,-5.,5.,5);  
@@ -311,11 +336,10 @@ void AliTPCPRF2D::SetGati(Float_t K3X, Float_t K3Y,
   funParam[3]=fHeightS;
   funParam[4]=K3Y;
   fGRF->SetParameters(funParam);
-  forigsigmaX=padDistance;
-  forigsigmaY=padDistance;
+  fOrigSigmaX=padDistance;
+  fOrigSigmaY=padDistance;
   fDStep = TMath::Sqrt(padDistance*padDistance+fWidth*fWidth/6.)/10.; 
   //by default I set the step as one tenth of sigma
-  //Update();
   sprintf(fType,"Gati");
 }
 
@@ -323,102 +347,144 @@ void AliTPCPRF2D::SetGati(Float_t K3X, Float_t K3Y,
 
 void AliTPCPRF2D::Update()
 {
-  for (Int_t i=0; i<fNYdiv; i++){
-    if (fNYdiv == 1) fActualY = fY1;
+  //
+  //update fields  with interpolated values for
+  //PRF calculation
+
+  if ( fGRF == 0 ) return;  
+  //initialize interpolated values to 0
+  Int_t i;
+  //Float_t x;
+  for (i =0; i<fNPRF*fNYdiv;i++)  ffcharge[i] = 0;
+  //firstly calculate total integral of charge
+
+  ////////////////////////////////////////////////////////
+  //I'm waiting for normal integral
+  //in this moment only sum
+  Float_t x2=  4*fOrigSigmaX;
+  Float_t y2=  4*fOrigSigmaY;
+  Float_t dx = fOrigSigmaX/Float_t(fNdiv*6);
+  Float_t dy = fOrigSigmaY/Float_t(fNdiv*6);  
+  Int_t nx  = Int_t(0.5+x2/dx);
+  Int_t ny  = Int_t(0.5+y2/dy);
+  Int_t ix,iy;
+  fInteg  = 0;
+  Double_t dInteg =0;
+  for (ix=-nx;ix<=nx;ix++)
+    for ( iy=-ny;iy<=ny;iy++) 
+      dInteg+=fGRF->Eval(Float_t(ix)*dx,Float_t(iy)*dy)*dx*dy;  
+  /////////////////////////////////////////////////////
+  fInteg =dInteg;
+  if ( fInteg == 0 ) fInteg = 1; 
+
+  for (i=0; i<fNYdiv; i++){
+    if (fNYdiv == 1) fCurrentY = fY1;
     else
-      fActualY = fY1+Float_t(i)*(fY2-fY1)/Float_t(fNYdiv-1);
+      fCurrentY = fY1+Double_t(i)*(fY2-fY1)/Double_t(fNYdiv-1);
     fcharge   = &(ffcharge[i*fNPRF]);
     Update1();
   }
+  //calculate conversion coefitient to convert position to virtual wire
+  fDYtoWire=Float_t(fNYdiv-1)/(fY2-fY1);
+  fDStepM1=1/fDStep;
+  UpdateSigma();
 }
 
 
 
 void AliTPCPRF2D::Update1()
 {
-  //initialize to 0
-  
-
+  //
+  //update fields  with interpolated values for
+  //PRF calculation for given charge line
   Int_t i;
-  Float_t x;
-  for (i =0; i<fNPRF;i++)  fcharge[i] = 0;
-  if ( fGRF == 0 ) return;
-  ////////////////////////////////////////////////////////
-  //I'm waiting for normal integral
-  //in this moment only sum
-  Float_t x2=  4*forigsigmaX;
-  Float_t y2=  4*forigsigmaY;
-  Float_t dx = forigsigmaX/Float_t(fNdiv*6);
-  Float_t dy = forigsigmaY/Float_t(fNdiv*6);  
-  fInteg  = 0;
-  for (x=0.;x<x2;x+=dx)
-    for (Float_t y=0;y<y2;y+=dy) fInteg+=fGRF->Eval(x,y)*dx*dy;
-  fInteg*=4;
-  /////////////////////////////////////////////////////
-      
-  
-  if ( fInteg == 0 ) fInteg = 1; 
-  
+  Double_t x,dx,ddx,ddy,dddx,dddy;
+  Double_t cos = TMath::Cos(fChargeAngle);
+  Double_t sin = TMath::Sin(fChargeAngle);
+    
     //integrate charge over pad for different distance of pad
     for (i =0; i<fNPRF;i++)
-      {      //x in cm fWidth in cm
+      {      
+	//x in cm fWidth in cm
 	//calculate integral 
-	Float_t xch = fDStep * (Float_t)(i-fNPRF/2);
-	Float_t k=1;
+	Double_t xch = fDStep * (Double_t)(i-fNPRF/2);
+	Double_t k=1;
 	fcharge[i]=0;
-	for (Float_t y=-fHeightFull/2.-fShiftY;
+	
+	for (Double_t y=-fHeightFull/2.-fShiftY;	     //loop over chevron steps
 	     y<fHeightFull/2.;y+=fHeightS){
-	  Float_t y2=TMath::Min((y+fHeightS),Float_t(fHeightFull/2.));
-	  Float_t y1=TMath::Max((y),Float_t(-fHeightFull/2.));
-	  Float_t x1;
+	  Double_t y2=TMath::Min((y+fHeightS),Double_t(fHeightFull/2.));
+	  Double_t y1=TMath::Max((y),Double_t(-fHeightFull/2.));
+	  Double_t x1;
 	
 	  if (k>0) 
 	    x1 = (y2-y1)*fK-(fWidth+fK*fHeightS)/2.;	  
 	  else
 	    x1 =-(fWidth+fK*fHeightS)/2. ;	  
-	  Float_t x2=x1+fWidth;
+	  Double_t x2=x1+fWidth;
 
 	  if (y2>y1) {
 	    
-            if ((x2-x1)*fNdiv<forigsigmaX) dx=(x2-x1);
+            if ((x2-x1)*fNdiv<fOrigSigmaX) dx=(x2-x1);
 	    else{
-	      dx= forigsigmaX/Float_t(fNdiv);
-	      dx = (x2-x1)/Float_t(Int_t(3+(x2-x1)/dx));	  
+	      dx= fOrigSigmaX/Double_t(fNdiv);
+	      dx = (x2-x1)/Double_t(Int_t(3.5+(x2-x1)/dx));	  
 	    }	    
-	    Float_t dy;
-	    if ((y2-y1)*fNdiv<forigsigmaY) dy=(y2-y1);
+	    Double_t dy;
+	    if ((y2-y1)*fNdiv<fOrigSigmaY) dy=(y2-y1);
 	    else{	      
-	      dy= forigsigmaY/Float_t(fNdiv);
-	      dy = (y2-y1)/Float_t(Int_t(3+(y2-y1)/dy));
+	      dy= fOrigSigmaY/Double_t(fNdiv);
+	      dy = (y2-y1)/Double_t(Int_t(3.5+(y2-y1)/dy));
 	    }
+	    //integrate between x1 x2 and y1 y2
+	    for (x=x1;x<x2+dx/2.;x+=dx)
+	      for (Double_t y=y1;y<y2+dy/2.;y+=dy){
+		if ( (y>(fCurrentY-(4.0*fOrigSigmaY))) &&
+		     (y<(fCurrentY+(4.0*fOrigSigmaY)))){
+		  Double_t xt=x-k*fK*(y-y1); 
+		  if ((TMath::Abs(xch-xt)<4*fOrigSigmaX)){
 
-	    for (x=x1;x<x2;x+=dx)
-	      for (Float_t y=y1;y<y2;y+=dy){
-		if ( (y>(fActualY-(4.0*forigsigmaY))) &&
-		     (y<(fActualY+(4.0*forigsigmaY)))){
-		  Float_t xt=x-k*fK*(y-y1); 
-		  if ((TMath::Abs(xch-xt)<4*forigsigmaX)){
-		    
-		    Float_t z0=fGRF->Eval(xch-(xt+dx/2.),fActualY-(y+dy/2.));
-		    
-		    Float_t z1=fGRF->Eval(xch-(xt+dx/2.),fActualY-y);
-		    Float_t z2=fGRF->Eval(xch-xt,fActualY-(y+dy/2.));
-		    Float_t z3=fGRF->Eval(xch-(xt-dx/2.),fActualY-y);
-		    Float_t z4=fGRF->Eval(xch-xt,fActualY-(y-dy/2.));
+		    ddx = xch-(xt+dx/2.);
+		    ddy = fCurrentY-(y+dy/2.);
+		    dddx = cos*ddx-sin*ddy;
+		    dddy = sin*ddx+cos*ddy;
+		    Double_t z0=fGRF->Eval(dddx,dddy);  //middle point
+
+		    ddx = xch-(xt+dx/2.);
+		    ddy = fCurrentY-(y);
+		    dddx = cos*ddx-sin*ddy;
+		    dddy = sin*ddx+cos*ddy;
+		    Double_t z1=fGRF->Eval(dddx,dddy);  //point down
+
+		    ddx = xch-(xt+dx/2.);
+		    ddy = fCurrentY-(y+dy);
+		    dddx = cos*ddx-sin*ddy;
+		    dddy = sin*ddx+cos*ddy;
+		    Double_t z3=fGRF->Eval(dddx,dddy);  //point up
+
+		    ddx = xch-(xt);
+		    ddy = fCurrentY-(y+dy/2.);
+		    dddx = cos*ddx-sin*ddy;
+		    dddy = sin*ddx+cos*ddy;
+		    Double_t z2=fGRF->Eval(dddx,dddy);  //point left  
+
+		    ddx = xch-(xt+dx);
+		    ddy = fCurrentY-(y+dy/2.);
+		    dddx = cos*ddx-sin*ddy;
+		    dddy = sin*ddx+cos*ddy;
+		    Double_t z4=fGRF->Eval(dddx,dddy);  //point right
+
 		    if (z0<0) z0=0;
 		    if (z1<0) z1=0;
 		    if (z2<0) z2=0;
 		    if (z3<0) z3=0;
 		    if (z4<0) z4=0;
-		    
-		    //	      Float_t a=(z1-z3)/2;
-		    //	      Float_t b=(z2-z4)/2;
-		    Float_t c= (z3+z1-2*z0)/2.;
-		    Float_t d= (z2+z4-2*z0)/2.;
-		    Float_t z= (z0+c/12.+d/12.);	      	      		
-		    
-		    //Float_t z= fGRF->Eval(xch-xt,fActualY-y);
-		    if (z>0.)	      fcharge[i]+=z*dx*dy/fInteg;	      
+		    		
+		    Double_t c= (z3+z1-2*z0)/2.;
+		    Double_t d= (z2+z4-2*z0)/2.;
+		    Double_t z= (z0+c/12.+d/12.);	      	      		
+		    		
+		    if (z>0.)	      fcharge[i]+=fkNorm*z*dx*dy/fInteg;	      
 		  }
 		}
 	      }
@@ -426,26 +492,46 @@ void AliTPCPRF2D::Update1()
 	  k*=-1;
 	}
       };   
-  
-  fSigmaX = 0; 
+    
+}
+
+void AliTPCPRF2D::UpdateSigma()
+{
+  //
+  //calulate effective sigma X and sigma y of PRF
+  fMeanX = 0;
+  fMeanY = 0;
+  fSigmaX = 0;
+  fSigmaY = 0;
+ 
   Float_t sum =0;
-  Float_t mean=0;
-  for (x =-fNPRF*fDStep; x<fNPRF*fDStep;x+=fDStep)
-    {      //x in cm fWidth in cm
-      Float_t weight = GetPRFActiv(x);
-      fSigmaX+=x*x*weight; 
-      mean+=x*weight;
-      sum+=weight;
+  Int_t i;
+  Float_t x,y;
+
+  for (i=-1; i<=fNYdiv; i++){
+    if (fNYdiv == 1) y = fY1;
+    else
+      y = fY1+Float_t(i)*(fY2-fY1)/Float_t(fNYdiv-1);
+    for (x =-fNPRF*fDStep; x<fNPRF*fDStep;x+=fDStep)
+      {      
+	//x in cm fWidth in cm
+	Float_t weight = GetPRF(x,y);
+	fSigmaX+=x*x*weight; 
+	fSigmaY+=y*y*weight;
+	fMeanX+=x*weight;
+	fMeanY+=y*weight;
+	sum+=weight;
     };  
+  }
   if (sum>0){
-    mean/=sum;
-    fSigmaX = TMath::Sqrt(fSigmaX/sum-mean*mean);   
+    fMeanX/=sum;
+    fMeanY/=sum;    
+    fSigmaX = TMath::Sqrt(fSigmaX/sum-fMeanX*fMeanX);
+    fSigmaY = TMath::Sqrt(fSigmaY/sum-fMeanY*fMeanY);   
   }
   else fSigmaX=0; 
-  //calculate conversion coefitient to convert position to virtual wire
-  fDYtoWire=Float_t(fNYdiv-1)/(fY2-fY1);
-  fDStepM1=1/fDStep;
 }
+
 
 void AliTPCPRF2D::Streamer(TBuffer &R__b)
 {
@@ -455,30 +541,27 @@ void AliTPCPRF2D::Streamer(TBuffer &R__b)
       Version_t R__v = R__b.ReadVersion(); if (R__v) { }
       TObject::Streamer(R__b);     
       //read chewron parameters
-      R__b >> fSigmaX;
       R__b >> fHeightFull;
       R__b >> fHeightS;
       R__b >> fShiftY;
       R__b >> fWidth;
       R__b >> fK;
-      R__b >> fActualY;
-      //read charge parameters
-      R__b >> fType[0];
-      R__b >> fType[1];
-      R__b >> fType[2];
-      R__b >> fType[3];
-      R__b >> fType[4];
-      R__b >> forigsigmaX;
-      R__b >> forigsigmaY;
+      R__b >> fSigmaX;
+      R__b >> fSigmaY;
+      R__b >> fMeanX;
+      R__b >> fMeanY;
+      //read charge parameters     
+      R__b.ReadFastArray(fType,5);
+      R__b >> fOrigSigmaX;
+      R__b >> fOrigSigmaY;
       R__b >> fkNorm;
       R__b >> fK3X;
       R__b >> fK3Y;
       R__b >> fPadDistance;
-      R__b >> fInteg;
-      
+      R__b >> fInteg;      
       //read functions
       if (fGRF!=0) { 
-	delete [] fGRF;  
+	fGRF->Delete();  
 	fGRF=0;
       }
       if (strncmp(fType,"User",3)==0){
@@ -490,8 +573,7 @@ void AliTPCPRF2D::Streamer(TBuffer &R__b)
       if (strncmp(fType,"Cosh",3)==0) 
 	fGRF = new TF2("fun",funCosh2D,-5.,5.,-5.,5.,4);
        if (strncmp(fType,"Gati",3)==0) 
-	fGRF = new TF2("fun",funGati2D,-5.,5.,-5.,5.,5);
-      
+	fGRF = new TF2("fun",funGati2D,-5.,5.,-5.,5.,5);      
       //read interpolation parameters
       R__b >>fY1;
       R__b >>fY2;
@@ -510,22 +592,19 @@ void AliTPCPRF2D::Streamer(TBuffer &R__b)
       R__b.WriteVersion(AliTPCPRF2D::IsA());
       TObject::Streamer(R__b);      
       //write chewron parameters
-      R__b << fSigmaX;
       R__b << fHeightFull;
       R__b << fHeightS;
       R__b << fShiftY;
       R__b << fWidth;
       R__b << fK;
-      R__b << fActualY;
+      R__b << fSigmaX;
+      R__b << fSigmaY;
+      R__b << fMeanX;
+      R__b << fMeanY;
       //write charge parameters
-      R__b << fType[0];
-      R__b << fType[1];
-      R__b << fType[2];
-      R__b << fType[3];
-      R__b << fType[4];
-
-      R__b << forigsigmaX;
-      R__b << forigsigmaY;
+      R__b.WriteFastArray(fType,5);
+      R__b << fOrigSigmaX;
+      R__b << fOrigSigmaY;
       R__b << fkNorm;
       R__b << fK3X;
       R__b << fK3Y;
@@ -549,6 +628,7 @@ void AliTPCPRF2D::Streamer(TBuffer &R__b)
 
 void AliTPCPRF2D::DrawX(Float_t x1 ,Float_t x2,Float_t y, Bool_t inter)
 { 
+  //draw pad response function at interval <x1,x2> at  given y position
   if (fGRF==0) return ;
   const Int_t N=100;
   char s[100];
@@ -559,15 +639,12 @@ void AliTPCPRF2D::DrawX(Float_t x1 ,Float_t x2,Float_t y, Bool_t inter)
   TPad * pad2 = new TPad("pad2PRF","",0.05,0.22,0.95,0.60,21);
   pad2->Draw();
 
-  //  pad1->cd();  
-  //pad2->cd();
   gStyle->SetOptFit(1);
   gStyle->SetOptStat(0); 
   sprintf(s,"PRF response function for chevron pad");  
   TH1F * hPRFc = new TH1F("hPRFc",s,N+1,x1,x2);
   Float_t x=x1;
   Float_t y1;
-  //  Float_t y2;
 
   for (Float_t i = 0;i<N+1;i++)
     {
@@ -601,9 +678,9 @@ void AliTPCPRF2D::DrawX(Float_t x1 ,Float_t x2,Float_t y, Bool_t inter)
   comment->AddText(s);
   sprintf(s,"Y position:  %2.2f ",y);
   comment->AddText(s);
-  sprintf(s,"Sigma x of original distribution: %2.2f ",forigsigmaX);
+  sprintf(s,"Sigma x of original distribution: %2.2f ",fOrigSigmaX);
   comment->AddText(s);  
-  sprintf(s,"Sigma y of original distribution: %2.2f ",forigsigmaY);
+  sprintf(s,"Sigma y of original distribution: %2.2f ",fOrigSigmaY);
   comment->AddText(s);    
   sprintf(s,"Type of original distribution: %s ",fType);
   comment->AddText(s); 
@@ -664,9 +741,9 @@ void AliTPCPRF2D::Draw(Float_t x1 ,Float_t x2,Float_t y1, Float_t y2,
   comment->AddText(s);
   sprintf(s,"Overlap factor:  %2.2f",fK*fHeightS/fWidth);
   comment->AddText(s); 
-  sprintf(s,"Sigma x of original distribution: %2.2f ",forigsigmaX);
+  sprintf(s,"Sigma x of original distribution: %2.2f ",fOrigSigmaX);
   comment->AddText(s);  
-  sprintf(s,"Sigma y of original distribution: %2.2f ",forigsigmaY);
+  sprintf(s,"Sigma y of original distribution: %2.2f ",fOrigSigmaY);
   comment->AddText(s);    
   sprintf(s,"Type of original distribution: %s ",fType);
   comment->AddText(s); 
@@ -697,14 +774,16 @@ void AliTPCPRF2D::DrawDist(Float_t x1 ,Float_t x2,Float_t y1, Float_t y2,
   Float_t dy=(y2-y1)/Float_t(Ny) ;
   Float_t x,y,z,ddx;
   //  Float_t y2;
-  for ( x = x1;x<(x2+dx/2.);x+=dx)
-    for(y = y1;y<=(y2+dx/2.);y+=dy)
+  for ( x = x1;x<(x2+3.1*dx);x+=dx)
+    for(y = y1;y<(y2+3.1*dx);y+=dy)
       {
 	Float_t sumx=0;
 	Float_t sum=0;
-	for (Float_t padx=-fWidth;padx<(fWidth*1.1);padx+=fWidth)
+	for (Int_t i=-3;i<=3;i++)
+	//	for (Float_t padx=-fWidth;padx<(fWidth*1.1);padx+=fWidth)
 	  {	    
-	    z = GetPRF(x-padx,y,inter);
+	    Float_t padx=Float_t(i)*fWidth;
+	    z = GetPRF(x-padx,y,inter); 
 	    if (z>thr){
 	      sum+=z;
 	      sumx+=z*padx;
@@ -743,9 +822,9 @@ void AliTPCPRF2D::DrawDist(Float_t x1 ,Float_t x2,Float_t y1, Float_t y2,
   comment->AddText(s);
   sprintf(s,"Overlap factor:  %2.2f",fK*fHeightS/fWidth);
   comment->AddText(s); 
-  sprintf(s,"Sigma x of original distribution: %2.2f ",forigsigmaX);
+  sprintf(s,"Sigma x of original distribution: %2.2f ",fOrigSigmaX);
   comment->AddText(s);  
-  sprintf(s,"Sigma y of original distribution: %2.2f ",forigsigmaY);
+  sprintf(s,"Sigma y of original distribution: %2.2f ",fOrigSigmaY);
   comment->AddText(s);    
   sprintf(s,"Type of original distribution: %s ",fType);
   comment->AddText(s); 

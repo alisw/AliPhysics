@@ -15,6 +15,19 @@
 
 /*
 $Log$
+Revision 1.17.2.2  2000/04/10 08:15:12  kowal2
+
+New, experimental data structure from M. Ivanov
+New tracking algorithm
+Different pad geometry for different sectors
+Digitization rewritten
+
+Revision 1.17.2.1  2000/04/10 07:56:53  kowal2
+Not used anymore - removed
+
+Revision 1.17  2000/01/19 17:17:30  fca
+Introducing a list of lists of hits -- more hits allowed for detector now
+
 Revision 1.16  1999/11/05 09:29:23  fca
 Accept only signals > 0
 
@@ -57,11 +70,18 @@ Introduction of the Copyright and cvs Log
 #include <fstream.h>
 #include "AliMC.h"
 
-//MI change
+
 #include "AliTPCParam.h"
-#include "AliTPCD.h"
 #include "AliTPCPRF2D.h"
 #include "AliTPCRF1D.h"
+#include "AliDigits.h"
+#include "AliSimDigits.h"
+
+#include "AliTPCDigitsArray.h"
+#include "AliCluster.h"
+#include "AliClusters.h"
+#include "AliTPCClustersRow.h"
+#include "AliTPCClustersArray.h"
 
 
 
@@ -81,9 +101,10 @@ AliTPC::AliTPC()
   fNsectors = 0;
   fNtracks  = 0;
   fNclusters= 0;
-
-  fDigParam= new AliTPCD();
-  fDigits = fDigParam->GetArray();
+  //MI changes
+  fDigitsArray = 0;
+  fClustersArray = 0;
+  fTPCParam = 0;
 }
  
 //_____________________________________________________________________________
@@ -97,23 +118,18 @@ AliTPC::AliTPC(const char *name, const char *title)
   //
   // Initialise arrays of hits and digits 
   fHits     = new TClonesArray("AliTPChit",  176);
-  gAlice->AddHitList(fHits);
-  //  fDigits   = new TClonesArray("AliTPCdigit",10000);
-  //MI change
-  fDigParam= new AliTPCD;
-  fDigits = fDigParam->GetArray();
-
-  AliTPCParam  *fTPCParam = &(fDigParam->GetParam());
-
+  //MI change  
+  fDigitsArray = 0;
+  fClustersArray= 0;
+  fTPCParam = 0;
   //
   // Initialise counters
-  //
   fClusters = 0;
   fTracks   = 0;
-  fNsectors = fTPCParam->GetNSector();
+  fNsectors = 0;
   fNtracks  = 0;
   fNclusters= 0;
-  fDigitsIndex = new Int_t[fNsectors+1];
+
   //
   fIshunt     =  0;
   //
@@ -132,8 +148,10 @@ AliTPC::~AliTPC()
   delete fDigits;
   delete fClusters;
   delete fTracks;
-  delete fDigParam;
-  if (fDigitsIndex)   delete [] fDigitsIndex;
+  if (fDigitsArray!=0) delete fDigitsArray;
+  if (fClustersArray!=0) delete fClustersArray;
+
+  if (fTPCParam) delete fTPCParam;
 }
 
 //_____________________________________________________________________________
@@ -153,21 +171,9 @@ void AliTPC::AddCluster(const AliTPCcluster &c)
   //
   // Add a simulated cluster copy to the list
   //
-  if(!fClusters) fClusters=new TClonesArray("AliTPCcluster",10000);
+  if(!fClusters) fClusters=new TClonesArray("AliTPCcluster",900000);
   TClonesArray &lclusters = *fClusters;
   new(lclusters[fNclusters++]) AliTPCcluster(c);
-}
- 
-//_____________________________________________________________________________
-void AliTPC::AddDigit(Int_t *tracks, Int_t *digits)
-{
-  //
-  // Add a TPC digit to the list
-  //
-  //  TClonesArray &ldigits = *fDigits;
-  //MI change 
-  TClonesArray &ldigits = *fDigParam->GetArray();
-  new(ldigits[fNdigits++]) AliTPCdigit(tracks,digits);
 }
  
 //_____________________________________________________________________________
@@ -204,6 +210,7 @@ void AliTPC::AddTrack(const AliTPCtrack& t)
 //_____________________________________________________________________________
 void AliTPC::BuildGeometry()
 {
+
   //
   // Build TPC ROOT TNode geometry for the event display
   //
@@ -215,7 +222,6 @@ void AliTPC::BuildGeometry()
   const Double_t kDegrad=TMath::Pi()/180;
   const Double_t kRaddeg=180./TMath::Pi();
 
-  AliTPCParam * fTPCParam = &(fDigParam->GetParam());
 
   Float_t InnerOpenAngle = fTPCParam->GetInnerAngle();
   Float_t OuterOpenAngle = fTPCParam->GetOuterAngle();
@@ -246,8 +252,8 @@ void AliTPC::BuildGeometry()
 
   //  inner sectors
 
-  rl = fTPCParam->GetInSecLowEdge();
-  ru = fTPCParam->GetInSecUpEdge();
+  rl = fTPCParam->GetInnerRadiusLow();
+  ru = fTPCParam->GetInnerRadiusUp();
  
 
   for(i=0;i<nLo;i++) {
@@ -267,8 +273,8 @@ void AliTPC::BuildGeometry()
 
   // Outer sectors
 
-  rl = fTPCParam->GetOuSecLowEdge();
-  ru = fTPCParam->GetOuSecUpEdge();
+  rl = fTPCParam->GetOuterRadiusLow();
+  ru = fTPCParam->GetOuterRadiusUp();
 
   for(i=0;i<nHi;i++) {
     sprintf(name,"US%2.2d",i);
@@ -283,6 +289,8 @@ void AliTPC::BuildGeometry()
     Node->SetLineColor(kColorTPC);
     fNodes->Add(Node);
   }
+
+
 }  
   
   
@@ -382,21 +390,21 @@ inline Double_t f3(Double_t x1,Double_t y1,
 }
 
 //_____________________________________________________________________________
-static int FindProlongation(AliTPCtrack& t, const AliTPCSector *sec,
-			    int s, int rf=0) 
+static Int_t FindProlongation(AliTPCtrack& t, const AliTPCSector *sec,
+			    Int_t s, Int_t rf=0) 
 {
   //-----------------------------------------------------------------
   // This function tries to find a track prolongation.
   //
   // Origin: Iouri Belikov, CERN, Jouri.Belikov@cern.ch
   //-----------------------------------------------------------------
-  const int ROWS_TO_SKIP=int(0.5*sec->GetNRows());
+  const Int_t ROWS_TO_SKIP=(t<10) ? 10 : Int_t(0.5*sec->GetNRows());
   const Float_t MAX_CHI2=12.;
-  int try_again=ROWS_TO_SKIP;
+  Int_t try_again=ROWS_TO_SKIP;
   Double_t alpha=sec->GetAlpha();
-  int ns=int(2*TMath::Pi()/alpha+0.5);
+  Int_t ns=Int_t(2*TMath::Pi()/alpha+0.5);
 
-  for (int nr=sec->GetRowNumber(t.GetX())-1; nr>=rf; nr--) {
+  for (Int_t nr=sec->GetRowNumber(t.GetX())-1; nr>=rf; nr--) {
     Double_t x=sec->GetX(nr), ymax=sec->GetMaxY(nr);
     if (!t.PropagateTo(x)) return 0;
 
@@ -413,7 +421,7 @@ static int FindProlongation(AliTPCtrack& t, const AliTPCSector *sec,
     }
 
     if (row) {
-      for (int i=row.Find(y-road); i<row; i++) {
+      for (Int_t i=row.Find(y-road); i<row; i++) {
 	AliTPCcluster* c=(AliTPCcluster*)(row[i]);
 	if (c->fY > y+road) break;
 	if (c->IsUsed()) continue;
@@ -426,9 +434,8 @@ static int FindProlongation(AliTPCtrack& t, const AliTPCSector *sec,
     }
     if (cl) {
       t.Update(cl,max_chi2);
-      Double_t ll=TMath::Sqrt((1+t.GetTgl()*t.GetTgl())/
+      cl->fdEdX=sec->GetPadPitchWidth()*TMath::Sqrt((1+t.GetTgl()*t.GetTgl())/
                (1-(t.GetC()*x-t.GetEta())*(t.GetC()*x-t.GetEta())));
-      cl->fdEdX = cl->fQ/ll;
       try_again=ROWS_TO_SKIP;
     } else {
       if (try_again==0) break;
@@ -444,12 +451,13 @@ static int FindProlongation(AliTPCtrack& t, const AliTPCSector *sec,
   }
 
   return 1;
+
 }
 
 
 //_____________________________________________________________________________
-static void MakeSeeds(TObjArray& seeds,const AliTPCSector *sec, int max_sec,
-int i1, int i2)
+static void MakeSeeds(TObjArray& seeds,const AliTPCSector *sec, Int_t max_sec,
+Int_t i1, Int_t i2)
 {
   //-----------------------------------------------------------------
   // This function creates track seeds.
@@ -457,19 +465,19 @@ int i1, int i2)
   // Origin: Iouri Belikov, CERN, Jouri.Belikov@cern.ch
   //-----------------------------------------------------------------
   TMatrix C(5,5); TVector x(5);
-  double alpha=sec->GetAlpha(), shift=sec->GetAlphaShift();
-  double cs=cos(alpha), sn=sin(alpha);
-  for (int ns=0; ns<max_sec; ns++) {
-    int nl=sec[(ns-1+max_sec)%max_sec][i2];
-    int nm=sec[ns][i2];
-    int nu=sec[(ns+1)%max_sec][i2];
+  Double_t alpha=sec->GetAlpha(), shift=sec->GetAlphaShift();
+  Double_t cs=cos(alpha), sn=sin(alpha);
+  for (Int_t ns=0; ns<max_sec; ns++) {
+    Int_t nl=sec[(ns-1+max_sec)%max_sec][i2];
+    Int_t nm=sec[ns][i2];
+    Int_t nu=sec[(ns+1)%max_sec][i2];
     const AliTPCRow& r1=sec[ns][i1];
-    for (int is=0; is < r1; is++) {
-      double x1=sec->GetX(i1), y1=r1[is]->fY, z1=r1[is]->fZ;
-      for (int js=0; js < nl+nm+nu; js++) {
+    for (Int_t is=0; is < r1; is++) {
+      Double_t x1=sec->GetX(i1), y1=r1[is]->fY, z1=r1[is]->fZ;
+      for (Int_t js=0; js < nl+nm+nu; js++) {
 	const AliTPCcluster *cl;
-	int ks;
-        double x2=sec->GetX(i2), y2, z2, tmp;
+	Int_t ks;
+        Double_t x2=sec->GetX(i2), y2, z2, tmp;
 
 	if (js<nl) {
 	  ks=(ns-1+max_sec)%max_sec;
@@ -493,13 +501,18 @@ int i1, int i2)
             y2 =x2*sn+y2*cs; x2=tmp;
 	  }
 
-        double d=(x2-x1)*(0.-y2)-(0.-x2)*(y2-y1);
+        Double_t zz=z1 - z1/x1*(x1-x2); 
+        if (TMath::Abs(zz-z2)>5) continue;
+
+        Double_t d=(x2-x1)*(0.-y2)-(0.-x2)*(y2-y1);
         if (d==0.) {cerr<<"MakeSeeds warning: Straight seed !\n"; continue;}
+
+        Double_t x3=0., y3=0.;//gRandom->Gaus(0.,TMath::Sqrt(cl->fSigmaY2));
 
 	x(0)=y1;
 	x(1)=z1;
-	x(2)=f1(x1,y1,x2,y2,0.,0.);
-	x(3)=f2(x1,y1,x2,y2,0.,0.);
+	x(2)=f1(x1,y1,x2,y2,x3,y3);
+	x(3)=f2(x1,y1,x2,y2,x3,y3);
 	x(4)=f3(x1,y1,x2,y2,z1,z2);
 	
 	if (TMath::Abs(x(2)*x1-x(3)) >= 0.999) continue;
@@ -508,20 +521,21 @@ int i1, int i2)
 
 	Double_t a=asin(x(3));
 	Double_t zv=z1 - x(4)/x(2)*(a+asin(x(2)*x1-x(3)));
-	if (TMath::Abs(zv)>33.) continue; 
+	if (TMath::Abs(zv)>10.) continue; 
 
 	TMatrix X(6,6); X=0.; 
 	X(0,0)=r1[is]->fSigmaY2; X(1,1)=r1[is]->fSigmaZ2;
 	X(2,2)=cl->fSigmaY2;     X(3,3)=cl->fSigmaZ2;
-	X(4,4)=3./12.; X(5,5)=3./12.;
+	X(4,4)=cl->fSigmaY2;     X(5,5)=cl->fSigmaZ2;
+	//X(4,4)=3./12.; X(5,5)=3./12.;
 	TMatrix F(5,6); F.UnitMatrix();
 	Double_t sy=sqrt(X(0,0)), sz=sqrt(X(1,1));
-	F(2,0)=(f1(x1,y1+sy,x2,y2,0.,0.)-x(2))/sy;
-	F(2,2)=(f1(x1,y1,x2,y2+sy,0.,0.)-x(2))/sy;
-	F(2,4)=(f1(x1,y1,x2,y2,0.,0.+sy)-x(2))/sy;
-	F(3,0)=(f2(x1,y1+sy,x2,y2,0.,0.)-x(3))/sy;
-	F(3,2)=(f2(x1,y1,x2,y2+sy,0.,0.)-x(3))/sy;
-	F(3,4)=(f2(x1,y1,x2,y2,0.,0.+sy)-x(3))/sy;
+	F(2,0)=(f1(x1,y1+sy,x2,y2,x3,y3)-x(2))/sy;
+	F(2,2)=(f1(x1,y1,x2,y2+sy,x3,y3)-x(2))/sy;
+	F(2,4)=(f1(x1,y1,x2,y2,x3,y3+sy)-x(2))/sy;
+	F(3,0)=(f2(x1,y1+sy,x2,y2,x3,y3)-x(3))/sy;
+	F(3,2)=(f2(x1,y1,x2,y2+sy,x3,y3)-x(3))/sy;
+	F(3,4)=(f2(x1,y1,x2,y2,x3,y3+sy)-x(3))/sy;
 	F(4,0)=(f3(x1,y1+sy,x2,y2,z1,z2)-x(4))/sy;
 	F(4,1)=(f3(x1,y1,x2,y2,z1+sz,z2)-x(4))/sz;
 	F(4,2)=(f3(x1,y1,x2,y2+sy,z1,z2)-x(4))/sy;
@@ -533,7 +547,7 @@ int i1, int i2)
 	C.Mult(t,TMatrix(TMatrix::kTransposed,F));
 
 	AliTPCtrack *track=new AliTPCtrack(r1[is], x, C, x1, ns*alpha+shift);
-	int rc=FindProlongation(*track,sec,ns,i2);
+        Int_t rc=FindProlongation(*track,sec,ns,i2);
         if (rc<0 || *track<(i1-i2)/2) delete track;
         else seeds.AddLast(track); 
       }
@@ -552,21 +566,22 @@ void AliTPC::Clusters2Tracks()
   //-----------------------------------------------------------------
   if (!fClusters) return;
 
-  AliTPCParam *p=&fDigParam->GetParam();
+  AliTPCParam *p=fTPCParam;
   AliTPCSector::SetParam(p);
 
-  const int nis=p->GetNInnerSector()/2;
+  const Int_t nis=p->GetNInnerSector()/2;
   AliTPCSSector *ssec=new AliTPCSSector[nis];         
-  int nrow_low=ssec->GetNRows();     
+  Int_t nrow_low=ssec->GetNRows();     
 
-  const int nos=p->GetNOuterSector()/2;
+  const Int_t nos=p->GetNOuterSector()/2;
   AliTPCLSector *lsec=new AliTPCLSector[nos];
-  int nrow_up=lsec->GetNRows();
+  Int_t nrow_up=lsec->GetNRows();
 
-  int ncl=fClusters->GetEntriesFast();
+  Int_t ncl=fClusters->GetEntriesFast();
   while (ncl--) {
     AliTPCcluster *c=(AliTPCcluster*)fClusters->UncheckedAt(ncl);
     Int_t sec=c->fSector, row=c->fPadRow;
+
     if (sec<nis*2) {
       ssec[sec%nis][row].InsertCluster(c);
     } else {
@@ -577,44 +592,46 @@ void AliTPC::Clusters2Tracks()
   
   TObjArray seeds(20000);
 
-  int nrows=nrow_low+nrow_up;
-  int gap=int(0.125*nrows), shift=int(0.5*gap);
+  Int_t nrows=nrow_low+nrow_up;
+  Int_t gap=Int_t(0.125*nrows), shift=Int_t(0.5*gap);
   MakeSeeds(seeds, lsec, nos, nrow_up-1, nrow_up-1-gap);
   MakeSeeds(seeds, lsec, nos, nrow_up-1-shift, nrow_up-1-shift-gap);
     
   seeds.Sort();
-  
-  int found=0;
-  int nseed=seeds.GetEntriesFast();
-  
-  for (int s=0; s<nseed; s++) {
-    AliTPCtrack& t=*((AliTPCtrack*)seeds.UncheckedAt(s));
-    double alpha=t.GetAlpha();
+
+  Int_t found=0;
+  Int_t nseed=seeds.GetEntriesFast();
+
+  for (Int_t s=0; s<nseed; s++) {
+    AliTPCtrack *pt=(AliTPCtrack*)seeds.UncheckedAt(s), &t=*pt;
+    Double_t alpha=t.GetAlpha();
     if (alpha > 2.*TMath::Pi()) alpha -= 2.*TMath::Pi();  
     if (alpha < 0.            ) alpha += 2.*TMath::Pi();  
-    int ns=int(alpha/lsec->GetAlpha())%nos;
+    Int_t ns=Int_t(alpha/lsec->GetAlpha())%nos;
 
     if (!FindProlongation(t,lsec,ns)) continue;
 
     alpha=t.GetAlpha() + 0.5*ssec->GetAlpha() - ssec->GetAlphaShift();
     if (alpha > 2.*TMath::Pi()) alpha -= 2.*TMath::Pi();
     if (alpha < 0.            ) alpha += 2.*TMath::Pi();
-    ns=int(alpha/ssec->GetAlpha())%nis; //index of the inner sector needed
+    ns=Int_t(alpha/ssec->GetAlpha())%nis; //index of the inner sector needed
 
     alpha=ns*ssec->GetAlpha() - t.GetAlpha();
     if (!t.Rotate(alpha)) continue;
-
+    
     if (!FindProlongation(t,ssec,ns)) continue;
     
-    if (t < int(0.4*nrows)) continue;
-    
-    AddTrack(t);
-    t.UseClusters();
-    cerr<<found++<<'\r';
+    if (t >= Int_t(0.4*nrows)) {
+       AddTrack(t);
+       t.UseClusters();
+       cerr<<found++<<'\r';
+    }
+    delete pt; 
   }  
 
   delete[] ssec;
   delete[] lsec;
+
 }
 
 //_____________________________________________________________________________
@@ -897,58 +914,77 @@ void AliTPC::CreateMaterials()
 
   AliMedium(12,"CO2",10,0, ISXFLD, SXMGMX, 10., 999.,.1, .001, .001);
     
-
-
 }
 
 //_____________________________________________________________________________
 struct Bin {
-   const AliTPCdigit *dig;
-   int idx;
-   Bin() {dig=0; idx=-1;}
+   UShort_t q;
+   UInt_t mask;
+   Bin();
 };
+Bin::Bin() {q=0; mask=0xFFFFFFFE;}
 
-struct PreCluster : public AliTPCcluster {
-  const AliTPCdigit* summit; //pointer to the maximum digit of this precluster
-  int idx;                   //index in AliTPC::fClusters
-  int npeaks;                //number of peaks in this precluster
-  int ndigits;               //number of digits in this precluster
-  PreCluster();
+struct Peak {
+   Int_t k;
+   UInt_t mask;
 };
-PreCluster::PreCluster() : AliTPCcluster() {npeaks=ndigits=0;}
-
-//_____________________________________________________________________________
-static void FindPreCluster(int i,int j,int maxj,Bin *bins,PreCluster &c) 
-{
-  //-----------------------------------------------------------------
-  // This function looks for "preclusters".
-  //
-  // Origin: Iouri Belikov, CERN, Jouri.Belikov@cern.ch
-  //-----------------------------------------------------------------
-  Bin& b=bins[i*maxj+j];
-  double q=(double)TMath::Abs(b.dig->fSignal);
-
-  if (b.idx >= 0 && b.idx != c.idx) {
-    c.idx=b.idx;
-    c.npeaks++;
+inline Bool_t IsMaximum(Int_t k, Int_t max, const Bin *bins) {
+  UShort_t q=bins[k].q;
+  if (q==1023) return kFALSE;
+  if (bins[k-max].q > q) return kFALSE;
+  if (bins[k-1  ].q > q) return kFALSE; 
+  if (bins[k+max].q > q) return kFALSE; 
+  if (bins[k+1  ].q > q) return kFALSE; 
+  if (bins[k-max-1].q > q) return kFALSE;
+  if (bins[k+max-1].q > q) return kFALSE; 
+  if (bins[k+max+1].q > q) return kFALSE; 
+  if (bins[k-max+1].q > q) return kFALSE;
+  return kTRUE; 
+}
+static void FindPeaks(Int_t k, Int_t max, Bin *bins, Peak *peaks, Int_t& n) {
+//if (n>=31) return;
+  if (n<31)
+  if (IsMaximum(k,max,bins)) {
+    peaks[n].k=k; peaks[n].mask=(2<<n);
+    n++;
   }
-  
-  if (q > TMath::Abs(c.summit->fSignal)) c.summit=b.dig;
-  
+  bins[k].mask=0;
+  if (bins[k-max].mask&1) FindPeaks(k-max,max,bins,peaks,n);
+  if (bins[k-1  ].mask&1) FindPeaks(k-1  ,max,bins,peaks,n);
+  if (bins[k+max].mask&1) FindPeaks(k+max,max,bins,peaks,n);
+  if (bins[k+1  ].mask&1) FindPeaks(k+1  ,max,bins,peaks,n);
+}
+
+static void MarkPeak(Int_t k, Int_t max, Bin *bins, UInt_t m) {
+  UShort_t q=bins[k].q;
+
+  bins[k].mask |= m; 
+
+  if (bins[k-max].q <= q)
+     if ((bins[k-max].mask&m) == 0) MarkPeak(k-max,max,bins,m);
+  if (bins[k-1  ].q <= q)
+     if ((bins[k-1  ].mask&m) == 0) MarkPeak(k-1  ,max,bins,m);
+  if (bins[k+max].q <= q)
+     if ((bins[k+max].mask&m) == 0) MarkPeak(k+max,max,bins,m);
+  if (bins[k+1  ].q <= q)
+     if ((bins[k+1  ].mask&m) == 0) MarkPeak(k+1  ,max,bins,m);
+}
+
+static void MakeCluster(Int_t k,Int_t max,Bin *bins,UInt_t m,AliTPCcluster &c){
+  Float_t q=(Float_t)bins[k].q;
+  Int_t i=k/max, j=k-i*max;
   c.fY += i*q;
   c.fZ += j*q;
   c.fSigmaY2 += i*i*q;
   c.fSigmaZ2 += j*j*q;
   c.fQ += q;
-  c.ndigits++;
 
-  b.dig = 0;  b.idx = c.idx;
+  bins[k].mask = 0xFFFFFFFE;
   
-  if (bins[(i-1)*maxj+j].dig) FindPreCluster(i-1,j,maxj,bins,c);
-  if (bins[i*maxj+(j-1)].dig) FindPreCluster(i,j-1,maxj,bins,c);
-  if (bins[(i+1)*maxj+j].dig) FindPreCluster(i+1,j,maxj,bins,c);
-  if (bins[i*maxj+(j+1)].dig) FindPreCluster(i,j+1,maxj,bins,c);
-  
+  if (bins[k-max].mask == m) MakeCluster(k-max,max,bins,m,c);
+  if (bins[k-1  ].mask == m) MakeCluster(k-1  ,max,bins,m,c);
+  if (bins[k+max].mask == m) MakeCluster(k+max,max,bins,m,c);
+  if (bins[k+1  ].mask == m) MakeCluster(k+1  ,max,bins,m,c);
 }
 
 //_____________________________________________________________________________
@@ -959,31 +995,26 @@ void AliTPC::Digits2Clusters()
   //
   // Origin: Iouri Belikov, CERN, Jouri.Belikov@cern.ch
   //-----------------------------------------------------------------
-  AliTPCParam *par = &(fDigParam->GetParam());
-  
-  int inp=par->GetNPads(0,                  par->GetNRowLow()-1);
-  int onp=par->GetNPads(par->GetNSector()-1,par->GetNRowUp() -1);
-  const int MAXY=(inp>onp) ? inp+2 : onp+2;
-  const int MAXTBKT=int((z_end+6*par->GetZSigma())/par->GetZWidth())+1;
-  const int MAXZ=MAXTBKT+2;
-  const int THRESHOLD=20;
-  
-  TTree *t=(TTree*)gDirectory->Get("TreeD0_Param1");
-  t->GetBranch("Digits")->SetAddress(&fDigits);
-  Int_t sectors_by_rows=(Int_t)t->GetEntries();
-  
-  int ncls=0;
-  
+  AliTPCParam *par = fTPCParam;
+  const Int_t MAXZ=par->GetMaxTBin()+2;
+
+  TTree *t = (TTree *)gDirectory->Get("TreeD_75x40_100x60");
+  AliSimDigits digarr, *dummy=&digarr;
+  t->GetBranch("Segment")->SetAddress(&dummy);
+  Stat_t sectors_by_rows = t->GetEntries();
   for (Int_t n=0; n<sectors_by_rows; n++) {
-    if (!t->GetEvent(n)) continue;
-    Bin *bins=new Bin[MAXY*MAXZ];
-    AliTPCdigit *dig=(AliTPCdigit*)fDigits->UncheckedAt(0);
-    int sec=dig->fSector, row=dig->fPadRow;
-    int ndigits=fDigits->GetEntriesFast();
-    
-    int npads, sign;
+    t->GetEvent(n);
+    Int_t sec, row;
+    if (!par->AdjustSectorRow(digarr.GetID(),sec,row)) {
+       cerr<<"AliTPC warning: invalid segment ID ! "<<digarr.GetID()<<endl;
+       continue;
+    }
+
+    Float_t rx=par->GetPadRowRadii(sec,row);
+
+    Int_t npads, sign;
     {
-       int nis=par->GetNInnerSector(), nos=par->GetNOuterSector();
+       Int_t nis=par->GetNInnerSector(), nos=par->GetNOuterSector();
        if (sec < nis) {
           npads = par->GetNPadsLow(row);
           sign = (sec < nis/2) ? 1 : -1;
@@ -993,171 +1024,105 @@ void AliTPC::Digits2Clusters()
        }
     }
 
-    int ndig;
-    for (ndig=0; ndig<ndigits; ndig++) {
-      dig=(AliTPCdigit*)fDigits->UncheckedAt(ndig);
-      int i=dig->fPad+1, j=dig->fTime+1;
-      if (i > npads) {
-         cerr<<"AliTPC::Digits2Clusters error: pad number is out of range ! ";
-         cerr<<i<<' '<<npads<<endl; 
-         continue;
+    const Int_t MAXBIN=MAXZ*(npads+2);
+    Bin *bins=new Bin[MAXBIN];
+
+    digarr.First();
+    do {
+       Short_t dig=digarr.CurrentDigit();
+       if (dig<=par->GetZeroSup()) continue;
+       Int_t j=digarr.CurrentRow()+1, i=digarr.CurrentColumn()+1;
+       bins[i*MAXZ+j].q=dig;
+       bins[i*MAXZ+j].mask=1;
+    } while (digarr.Next());
+
+    Int_t ncl=0;
+    for (Int_t i=0; i<MAXBIN; i++) {
+      if ((bins[i].mask&1) == 0) continue;
+      Peak peaks[32]; Int_t npeaks=0;
+      FindPeaks(i, MAXZ, bins, peaks, npeaks);
+
+      if (npeaks>30) continue;
+
+      Int_t k,l;
+      for (k=0; k<npeaks-1; k++){//mark adjacent peaks
+        if (peaks[k].k < 0) continue; //this peak is already removed
+        for (l=k+1; l<npeaks; l++) {
+           if (peaks[l].k < 0) continue; //this peak is already removed
+           Int_t ki=peaks[k].k/MAXZ, kj=peaks[k].k - ki*MAXZ;
+           Int_t li=peaks[l].k/MAXZ, lj=peaks[l].k - li*MAXZ;
+           Int_t di=TMath::Abs(ki - li);
+           Int_t dj=TMath::Abs(kj - lj);
+           if (di>1 || dj>1) continue;
+           if (bins[peaks[k].k].q > bins[peaks[l].k].q) {
+              peaks[l].mask=peaks[k].mask;
+              peaks[l].k*=-1;
+           } else {
+              peaks[k].mask=peaks[l].mask;
+              peaks[k].k*=-1;
+              break;
+           } 
+        }
       }
-      if (j > MAXTBKT) {
-         cerr<<"AliTPC::Digits2Clusters error: time bucket is out of range ! ";
-         cerr<<j<<' '<<MAXTBKT<<endl; 
-         continue;
+
+      for (k=0; k<npeaks; k++) {
+        MarkPeak(TMath::Abs(peaks[k].k), MAXZ, bins, peaks[k].mask);
       }
-      if (dig->fSignal >= THRESHOLD) bins[i*MAXZ+j].dig=dig;
-      if (i==1 || i==npads || j==1 || j==MAXTBKT) dig->fSignal*=-1;
-    }
-
-    int ncl=0;
-    int i,j;
-    
-    for (i=1; i<MAXY-1; i++) {
-      for (j=1; j<MAXZ-1; j++) {
-	if (bins[i*MAXZ+j].dig == 0) continue;
-	PreCluster c; c.summit=bins[i*MAXZ+j].dig; c.idx=ncls;
-	FindPreCluster(i, j, MAXZ, bins, c);
-	c.fY /= c.fQ;
-	c.fZ /= c.fQ;
-
-        double s2 = c.fSigmaY2/c.fQ - c.fY*c.fY;
-        c.fSigmaY2 = s2 + 1./12.;
-        c.fSigmaY2 *= par->GetPadPitchWidth()*par->GetPadPitchWidth();
-        if (s2 != 0.) c.fSigmaY2 *= 0.17;
-
-        s2 = c.fSigmaZ2/c.fQ - c.fZ*c.fZ;
-        c.fSigmaZ2 = s2 + 1./12.;
-        c.fSigmaZ2 *= par->GetZWidth()*par->GetZWidth();
-        if (s2 != 0.) c.fSigmaZ2 *= 0.41;
-
-	c.fY = (c.fY - 0.5 - 0.5*npads)*par->GetPadPitchWidth();
-	c.fZ = par->GetZWidth()*c.fZ; 
-	c.fZ -= 3.*par->GetZSigma(); // PASA delay 
-        c.fZ = sign*(z_end - c.fZ);
-
-	c.fSector=sec;
-	c.fPadRow=row;
-	c.fTracks[0]=c.summit->fTracks[0];
-	c.fTracks[1]=c.summit->fTracks[1];
-	c.fTracks[2]=c.summit->fTracks[2];
-
-        if (c.summit->fSignal<0) {
-	  c.fSigmaY2 *= 25.;
-	  c.fSigmaZ2 *= 4.;
-	}
-	
-	AddCluster(c); ncls++; ncl++;
-      }
-    }
         
-    for (ndig=0; ndig<ndigits; ndig++) {
-      dig=(AliTPCdigit*)fDigits->UncheckedAt(ndig);
-      int i=dig->fPad+1, j=dig->fTime+1;
-      if (i > npads) {
-         cerr<<"AliTPC::Digits2Clusters error: pad number is out of range ! ";
-         cerr<<i<<' '<<npads<<endl; 
-         continue;
-      }
-      if (j > MAXTBKT) {
-         cerr<<"AliTPC::Digits2Clusters error: time bucket is out of range ! ";
-         cerr<<j<<' '<<MAXTBKT<<endl; 
-         continue;
-      }
-      if (TMath::Abs(dig->fSignal)>=par->GetZeroSup()) bins[i*MAXZ+j].dig=dig;
-    }
-    
-    for (i=1; i<MAXY-1; i++) {
-      for (j=1; j<MAXZ-1; j++) {
-	if (bins[i*MAXZ+j].dig == 0) continue;
-	PreCluster c; c.summit=bins[i*MAXZ+j].dig; c.idx=ncls;
-	FindPreCluster(i, j, MAXZ, bins, c);
-	if (c.ndigits < 2) continue; //noise cluster
-        if (c.npeaks>1) continue;    //overlapped cluster
-	c.fY /= c.fQ;
-	c.fZ /= c.fQ;
+      for (k=0; k<npeaks; k++) {
+         if (peaks[k].k < 0) continue; //removed peak
+         AliTPCcluster c;
+         MakeCluster(peaks[k].k, MAXZ, bins, peaks[k].mask, c);
+         if (c.fQ < 5) continue; //noise cluster
+         c.fY /= c.fQ;
+         c.fZ /= c.fQ;
 
-        double s2 = c.fSigmaY2/c.fQ - c.fY*c.fY;
-        c.fSigmaY2 = s2 + 1./12.;
-        c.fSigmaY2 *= par->GetPadPitchWidth()*par->GetPadPitchWidth();
-        if (s2 != 0.) c.fSigmaY2 *= 0.04;
+         Double_t s2 = c.fSigmaY2/c.fQ - c.fY*c.fY;
+         c.fSigmaY2 = s2 + 1./12.;
+         c.fSigmaY2 *= par->GetPadPitchWidth(sec)*par->GetPadPitchWidth(sec);
+         if (s2 != 0.) {
+            c.fSigmaY2 *= 0.064*1.3*1.3;
+            if (sec<par->GetNInnerSector()) c.fSigmaY2 *= 1.44*1.44;
+         }
 
-        s2 = c.fSigmaZ2/c.fQ - c.fZ*c.fZ;
-        c.fSigmaZ2 = s2 + 1./12.;
-        c.fSigmaZ2 *= par->GetZWidth()*par->GetZWidth();
-        if (s2 != 0.) c.fSigmaZ2 *= 0.10;
+         s2 = c.fSigmaZ2/c.fQ - c.fZ*c.fZ;
+         c.fSigmaZ2 = s2 + 1./12.;
+         c.fSigmaZ2 *= par->GetZWidth()*par->GetZWidth();
+         if (s2 != 0.) {
+            c.fSigmaZ2 *= 0.10*1.3*1.3;
+            if (sec<par->GetNInnerSector()) c.fSigmaZ2 *= 1.33*1.33;
+         }
 
-	c.fY = (c.fY - 0.5 - 0.5*npads)*par->GetPadPitchWidth();
-	c.fZ = par->GetZWidth()*c.fZ; 
-	c.fZ -= 3.*par->GetZSigma(); // PASA delay 
-        c.fZ = sign*(z_end - c.fZ);
-	
-	c.fSector=sec;
-	c.fPadRow=row;
-	c.fTracks[0]=c.summit->fTracks[0];
-	c.fTracks[1]=c.summit->fTracks[1];
-	c.fTracks[2]=c.summit->fTracks[2];
-	
-        if (c.summit->fSignal<0) {
-	  c.fSigmaY2 *= 25.;
-	  c.fSigmaZ2 *= 4.;
-	}
+         c.fY = (c.fY - 0.5 - 0.5*npads)*par->GetPadPitchWidth(sec);
+         c.fZ = par->GetZWidth()*(c.fZ-1); 
+         c.fZ -= 3.*par->GetZSigma(); // PASA delay 
+         c.fZ = sign*(z_end - c.fZ);
 
-	if (c.npeaks==0) {AddCluster(c); ncls++; ncl++;}
-	else {
-	  new ((*fClusters)[c.idx]) AliTPCcluster(c);
-	}
+         if (rx<230./250.*TMath::Abs(c.fZ)) continue;
+
+         c.fSector=sec;
+         c.fPadRow=row;
+         Int_t ki=peaks[k].k/MAXZ, kj=peaks[k].k - ki*MAXZ;
+         c.fTracks[0]=digarr.GetTrackID(kj-1,ki-1,0);
+         c.fTracks[1]=digarr.GetTrackID(kj-1,ki-1,1);
+         c.fTracks[2]=digarr.GetTrackID(kj-1,ki-1,2);
+
+         c.fQ=bins[peaks[k].k].q;
+
+         if (ki==1 || ki==npads || kj==1 || kj==MAXZ-2) {
+           c.fSigmaY2 *= 25.;
+           c.fSigmaZ2 *= 4.;
+         }
+
+         AddCluster(c); ncl++;
       }
     }
-    
-    cerr<<"sector, row, digits, clusters: "
-	<<sec<<' '<<row<<' '<<ndigits<<' '<<ncl<<"                  \r";
-    
-    fDigits->Clear();
-  
+
+    cerr<<"sector, row, compressed digits, clusters: "
+    <<sec<<' '<<row<<' '<<digarr.GetSize()<<' '<<ncl<<"                  \r";
+        
     delete[] bins;  
   }
-}
-
-//_____________________________________________________________________________
-void AliTPC::ElDiff(Float_t *xyz)
-{
-  //--------------------------------------------------
-  // calculates the diffusion of a single electron
-  //--------------------------------------------------
-
-  //-----------------------------------------------------------------
-  // Origin: Marek Kowalski  IFJ, Krakow, Marek.Kowalski@ifj.edu.pl
-  //-----------------------------------------------------------------
-  AliTPCParam * fTPCParam = &(fDigParam->GetParam());
-  Float_t driftl;
-  
-  Float_t z0=xyz[2];
-
-  driftl=z_end-TMath::Abs(xyz[2]);
-
-  if(driftl<0.01) driftl=0.01;
-
-  // check the attachment
-
-  driftl=TMath::Sqrt(driftl);
-
-  //  Float_t sig_t = driftl*diff_t;
-  //Float_t sig_l = driftl*diff_l;
-  Float_t sig_t = driftl*fTPCParam->GetDiffT();
-  Float_t sig_l = driftl*fTPCParam->GetDiffL();
-  xyz[0]=gRandom->Gaus(xyz[0],sig_t);
-  xyz[1]=gRandom->Gaus(xyz[1],sig_t);
-  xyz[2]=gRandom->Gaus(xyz[2],sig_l);
-  
-  if (TMath::Abs(xyz[2])>z_end){
-    xyz[2]=TMath::Sign(z_end,z0);
-  }
-  if(xyz[2]*z0 < 0.){
-    Float_t eps = 0.0001;
-    xyz[2]=TMath::Sign(eps,z0);
-  } 
 }
 
 //_____________________________________________________________________________
@@ -1173,7 +1138,11 @@ void AliTPC::Hits2Clusters()
   // Origin: Marek Kowalski  IFJ, Krakow, Marek.Kowalski@ifj.edu.pl
   //-----------------------------------------------------------------
 
-  AliTPCParam * fTPCParam = &(fDigParam->GetParam());
+   if(fTPCParam == 0){
+     printf("AliTPCParam MUST be created firstly\n");
+     return;
+   }
+
   Float_t sigma_rphi,sigma_z,cl_rphi,cl_z;
   //
   TParticle *particle; // pointer to a given particle
@@ -1191,22 +1160,19 @@ void AliTPC::Hits2Clusters()
   
   TTree *TH = gAlice->TreeH();
   Stat_t ntracks = TH->GetEntries();
-  Particles=gAlice->Particles();
   
   //------------------------------------------------------------
-  // Loop over all sectors (72 sectors)
-  // Sectors 0-35 are lower sectors, 0-17 z>0, 18-35 z<0
+  // Loop over all sectors (72 sectors for 20 deg
+  // segmentation for both lower and upper sectors)
+  // Sectors 0-35 are lower sectors, 0-17 z>0, 17-35 z<0
   // Sectors 36-71 are upper sectors, 36-53 z>0, 54-71 z<0
   //
   // First cluster for sector 0 starts at "0"
   //------------------------------------------------------------
-  
-  
-  //
-  int Nsectors=fDigParam->GetParam().GetNSector();
-  for(Int_t isec=0; isec<Nsectors; isec++){
+   
+  for(Int_t isec=0;isec<fTPCParam->GetNSector();isec++){
     //MI change
-    fTPCParam->AdjustAngles(isec,cph,sph);
+    fTPCParam->AdjustCosSin(isec,cph,sph);
     
     //------------------------------------------------------------
     // Loop over tracks
@@ -1220,11 +1186,13 @@ void AliTPC::Hits2Clusters()
       //  to the particles
       //
       nhits=fHits->GetEntriesFast();
+      Particles=gAlice->Particles();
       //
       // Loop over hits
       //
       for(Int_t hit=0;hit<nhits;hit++){
 	tpcHit=(AliTPChit*)fHits->UncheckedAt(hit);
+        if (tpcHit->fQ == 0.) continue; //information about track (I.Belikov)
 	sector=tpcHit->fSector; // sector number
 	if(sector != isec) continue; //terminate iteration
 	ipart=tpcHit->fTrack;
@@ -1255,45 +1223,202 @@ void AliTPC::Hits2Clusters()
 	if(cl_z < 0.) cl_z=2.5e-5;
 	
 	//
-	// smearing --> rotate sectors firstly,
+	
+	//
+	// smearing --> rotate to the 1 (13) or to the 25 (49) sector,
 	// then the inaccuracy in a X-Y plane is only along Y (pad row)!
 	//
-	Float_t xprim= tpcHit->fX*cph + tpcHit->fY*sph;
+	//Float_t xprim= tpcHit->fX*cph + tpcHit->fY*sph;
 	Float_t yprim=-tpcHit->fX*sph + tpcHit->fY*cph;
 	xyz[0]=gRandom->Gaus(yprim,TMath::Sqrt(sigma_rphi));   // y
-        Double_t alpha=(sector < fTPCParam->GetNInnerSector()) ?
-        fTPCParam->GetInnerAngle() : fTPCParam->GetOuterAngle();
-	if (TMath::Abs(xyz[0]/xprim) > TMath::Tan(0.5*alpha)) xyz[0]=yprim;
 	xyz[1]=gRandom->Gaus(tpcHit->fZ,TMath::Sqrt(sigma_z)); // z 
-        if (TMath::Abs(xyz[1]) > 250) xyz[1]=tpcHit->fZ;
-	xyz[2]=tpcHit->fQ+1;// q; let it be not equal to zero (Y.Belikov)
+	xyz[2]=tpcHit->fQ;                                     // q
 	xyz[3]=sigma_rphi;                                     // fSigmaY2
 	xyz[4]=sigma_z;                                        // fSigmaZ2
-		
-	// and finally add the cluster
-	Int_t tracks[5]={tpcHit->fTrack, -1, -1, sector, tpcHit->fPadRow};
+	
+        Int_t tracks[5]={tpcHit->fTrack, -1, -1, sector, tpcHit->fPadRow};
 	AddCluster(xyz,tracks);
 	
       } // end of loop over hits
-    }   // end of loop over tracks 
+    }   // end of loop over tracks     
     
+  } // end of loop over sectors  
+  
+} // end of function
+
+//_________________________________________________________________
+void AliTPC::Hits2ExactClustersSector(Int_t isec)
+{
+  //--------------------------------------------------------
+  //calculate exact cross point of track and given pad row
+  //resulting values are expressed in "digit" coordinata
+  //--------------------------------------------------------
+
+  //-----------------------------------------------------------------
+  // Origin: Marian Ivanov  GSI Darmstadt, m.ivanov@gsi.de
+  //-----------------------------------------------------------------
+  //
+  if (fClustersArray==0){    
+    return;
+  }
+  //
+  TParticle *particle; // pointer to a given particle
+  AliTPChit *tpcHit; // pointer to a sigle TPC hit
+  TClonesArray *Particles; //pointer to the particle list
+  Int_t sector,nhits;
+  Int_t ipart;
+  const Int_t cmaxhits=30000;
+  TVector * xxxx = new TVector(cmaxhits*4);
+  TVector & xxx = *xxxx;
+  Int_t maxhits = cmaxhits;
+  //construct array for each padrow
+  for (Int_t i=0; i<fTPCParam->GetNRow(isec);i++) 
+    fClustersArray->CreateRow(isec,i);
+  
+  //---------------------------------------------------------------
+  //  Get the access to the tracks 
+  //---------------------------------------------------------------
+  
+  TTree *TH = gAlice->TreeH();
+  Stat_t ntracks = TH->GetEntries();
+  Particles=gAlice->Particles();
+  Int_t npart = Particles->GetEntriesFast();
     
-  } // end of loop over sectors
+  //------------------------------------------------------------
+  // Loop over tracks
+  //------------------------------------------------------------
   
-  
+  for(Int_t track=0;track<ntracks;track++){
+    ResetHits();
+    TH->GetEvent(track);
+    //
+    //  Get number of the TPC hits and a pointer
+    //  to the particles
+    //
+    nhits=fHits->GetEntriesFast();
+    //
+    // Loop over hits
+    //
+    Int_t currentIndex=0;
+    Int_t lastrow=-1;  //last writen row
+    for(Int_t hit=0;hit<nhits;hit++){
+      tpcHit=(AliTPChit*)fHits->UncheckedAt(hit);
+      if (tpcHit==0) continue;
+      sector=tpcHit->fSector; // sector number
+      if(sector != isec) continue; 
+      ipart=tpcHit->fTrack;
+      if (ipart<npart) particle=(TParticle*)Particles->UncheckedAt(ipart);
+      
+      //find row number
+
+      Float_t  x[3]={tpcHit->fX,tpcHit->fY,tpcHit->fZ};
+      Int_t    index[3]={1,isec,0};
+      Int_t    currentrow = fTPCParam->GetPadRow(x,index) ;	
+      if (currentrow<0) continue;
+      if (lastrow<0) lastrow=currentrow;
+      if (currentrow==lastrow){
+	if ( currentIndex>=maxhits){
+	  maxhits+=cmaxhits;
+	  xxx.ResizeTo(4*maxhits);
+	}     
+	xxx(currentIndex*4)=x[0];
+	xxx(currentIndex*4+1)=x[1];
+	xxx(currentIndex*4+2)=x[2];	
+	xxx(currentIndex*4+3)=tpcHit->fQ;
+	currentIndex++;	
+      }
+      else 
+	if (currentIndex>2){
+	  Float_t sumx=0;
+	  Float_t sumx2=0;
+	  Float_t sumx3=0;
+	  Float_t sumx4=0;
+	  Float_t sumy=0;
+	  Float_t sumxy=0;
+	  Float_t sumx2y=0;
+	  Float_t sumz=0;
+	  Float_t sumxz=0;
+	  Float_t sumx2z=0;
+	  Float_t sumq=0;
+	  for (Int_t index=0;index<currentIndex;index++){
+	    Float_t x,x2,x3,x4;
+	    x=x2=x3=x4=xxx(index*4);
+	    x2*=x;
+	    x3*=x2;
+	    x4*=x3;
+	    sumx+=x;
+	    sumx2+=x2;
+	    sumx3+=x3;
+	    sumx4+=x4;
+	    sumy+=xxx(index*4+1);
+	    sumxy+=xxx(index*4+1)*x;
+	    sumx2y+=xxx(index*4+1)*x2;
+	    sumz+=xxx(index*4+2);
+	    sumxz+=xxx(index*4+2)*x;
+	    sumx2z+=xxx(index*4+2)*x2;	 
+	    sumq+=xxx(index*4+3);
+	  }
+	  Float_t CentralPad = (fTPCParam->GetNPads(isec,lastrow)-1)/2;
+	  Float_t det=currentIndex*(sumx2*sumx4-sumx3*sumx3)-sumx*(sumx*sumx4-sumx2*sumx3)+
+	    sumx2*(sumx*sumx3-sumx2*sumx2);
+	  
+	  Float_t detay=sumy*(sumx2*sumx4-sumx3*sumx3)-sumx*(sumxy*sumx4-sumx2y*sumx3)+
+	    sumx2*(sumxy*sumx3-sumx2y*sumx2);
+	  Float_t detaz=sumz*(sumx2*sumx4-sumx3*sumx3)-sumx*(sumxz*sumx4-sumx2z*sumx3)+
+	    sumx2*(sumxz*sumx3-sumx2z*sumx2);
+	  
+	  Float_t detby=currentIndex*(sumxy*sumx4-sumx2y*sumx3)-sumy*(sumx*sumx4-sumx2*sumx3)+
+	    sumx2*(sumx*sumx2y-sumx2*sumxy);
+	  Float_t detbz=currentIndex*(sumxz*sumx4-sumx2z*sumx3)-sumz*(sumx*sumx4-sumx2*sumx3)+
+	    sumx2*(sumx*sumx2z-sumx2*sumxz);
+	  
+	  Float_t y=detay/det+CentralPad;
+	  Float_t z=detaz/det;	
+	  Float_t by=detby/det; //y angle
+	  Float_t bz=detbz/det; //z angle
+	  sumy/=Float_t(currentIndex);
+	  sumz/=Float_t(currentIndex);
+	  AliCluster cl;
+	  cl.fX=z;
+	  cl.fY=y;
+	  cl.fQ=sumq;
+	  cl.fSigmaX2=bz;
+	  cl.fSigmaY2=by;
+	  cl.fTracks[0]=ipart;
+	  
+	  AliTPCClustersRow * row = (fClustersArray->GetRow(isec,lastrow));
+	  if (row!=0) row->InsertCluster(&cl);
+	  currentIndex=0;
+	  lastrow=currentrow;
+	} //end of calculating cluster for given row
+	
+	
+	
+    } // end of loop over hits
+  }   // end of loop over tracks 
+  //write padrows to tree 
+  for (Int_t ii=0; ii<fTPCParam->GetNRow(isec);ii++) {
+    fClustersArray->StoreRow(isec,ii);    
+    fClustersArray->ClearRow(isec,ii);        
+  }
+  xxxx->Delete();
+ 
 }
 
-
+//__________________________________________________________________  
 void AliTPC::Hits2Digits()  
 { 
-
  //----------------------------------------------------
-  // Loop over all sectors (72 sectors)
-  // Sectors 0-35 are lower sectors, 0-17 z>0, 18-35 z<0
-  // Sectors 36-71 are upper sectors, 36-53 z>0, 54-71 z<0
-  //----
-  int Nsectors=fDigParam->GetParam().GetNSector();
-  for(Int_t isec=0;isec<Nsectors;isec++)  Hits2DigitsSector(isec);
+ // Loop over all sectors
+ //----------------------------------------------------
+
+  if(fTPCParam == 0){
+    printf("AliTPCParam MUST be created firstly\n");
+    return;
+  } 
+
+ for(Int_t isec=0;isec<fTPCParam->GetNSector();isec++) Hits2DigitsSector(isec);
+
 }
 
 
@@ -1312,7 +1437,7 @@ void AliTPC::Hits2DigitsSector(Int_t isec)
   //  Get the access to the track hits
   //-------------------------------------------------------
 
-  AliTPCParam * fTPCParam = &(fDigParam->GetParam());
+
   TTree *TH = gAlice->TreeH(); // pointer to the hits tree
   Stat_t ntracks = TH->GetEntries();
 
@@ -1322,20 +1447,7 @@ void AliTPC::Hits2DigitsSector(Int_t isec)
   //  Only if there are any tracks...
   //-------------------------------------------
 
-    
-    // TObjArrays for three neighouring pad-rows
-
-    TObjArray **rowTriplet = new TObjArray* [3]; 
-    
-    // TObjArray-s for each pad-row
-
     TObjArray **row;
-      
-    for (Int_t trip=0;trip<3;trip++){  
-      rowTriplet[trip]=new TObjArray;
-    }
-
-
     
       printf("*** Processing sector number %d ***\n",isec);
 
@@ -1354,203 +1466,38 @@ void AliTPC::Hits2DigitsSector(Int_t isec)
 
       Int_t i;
 
+      if (fDigitsArray->GetTree()==0) fDigitsArray->MakeTree();
+
       for (i=0;i<nrows;i++){
 
-	// Triplets for i = 0 and i=1 are identical!
-	// The same for i = nrows-1 and nrows!
+	AliDigits * dig = fDigitsArray->CreateRow(isec,i); 
 
-        if(i != 1 && i != nrows-1){
-	   MakeTriplet(i,rowTriplet,row);
-	 }
+	DigitizeRow(i,isec,row);
 
-	    DigitizeRow(i,isec,rowTriplet);
+	fDigitsArray->StoreRow(isec,i);
 
-	    fDigParam->Fill();
+	Int_t ndig = dig->GetSize(); 
+ 
+	printf("*** Sector, row, compressed digits %d %d %d ***\n",isec,i,ndig);
+	
+        fDigitsArray->ClearRow(isec,i);  
 
-            Int_t ndig=fDigParam->GetArray()->GetEntriesFast();
-
-            printf("*** Sector, row, digits %d %d %d ***\n",isec,i,ndig);
-
-	    ResetDigits(); // reset digits for this row after storing them
-             
+   
        } // end of the sector digitization
-     
-       // delete the last triplet
 
-       for (i=0;i<3;i++) rowTriplet[i]->Delete();
-          
+      for(i=0;i<nrows;i++){
+        row[i]->Delete();     
+      }
+      
        delete [] row; // delete the array of pointers to TObjArray-s
         
   } // ntracks >0
-} // end of Hits2Digits
+
+} // end of Hits2DigitsSector
+
+
 //_____________________________________________________________________________
-void AliTPC::MakeTriplet(Int_t row,
-                         TObjArray **rowTriplet, TObjArray **prow)
-{
-  //------------------------------------------------------------------
-  //  Makes the "triplet" of the neighbouring pad-row for the
-  //  digitization including the cross-talk between the pad-rows
-  //------------------------------------------------------------------
-
-  //-----------------------------------------------------------------
-  // Origin: Marek Kowalski  IFJ, Krakow, Marek.Kowalski@ifj.edu.pl
-  //-----------------------------------------------------------------
-
-  AliTPCParam * fTPCParam = &(fDigParam->GetParam());
-  Float_t gasgain = fTPCParam->GetGasGain();
-  Int_t nTracks[3];
-
-  Int_t nElements,nElectrons;
-
-  TVector *pv;
-  TVector *tv;
-
-  //-------------------------------------------------------------------
-  // pv is an "old" track, i.e. label + triplets of (x,y,z) 
-  // for each electron
-  //
-  //-------------------------------------------------------------------
-
-
-  Int_t i1,i2;
-  Int_t nel,nt;
-
-  if(row == 0 || row == 1){
-
-  // create entire triplet for the first AND the second row
-
-    nTracks[0] = prow[0]->GetEntries();
-    nTracks[1] = prow[1]->GetEntries();
-    nTracks[2] = prow[2]->GetEntries();
-
-    for(i1=0;i1<3;i1++){
-      nt = nTracks[i1]; // number of tracks for this row
-
-      for(i2=0;i2<nt;i2++){
-        pv = (TVector*)prow[i1]->At(i2);
-        TVector &v1 = *pv;
-        nElements = pv->GetNrows(); 
-        nElectrons = (nElements-1)/3;
-
-        tv = new TVector(4*nElectrons+1); // create TVector for a modified track
-        TVector &v2 = *tv;
-        v2(0)=v1(0); //track label
-
-        for(nel=0;nel<nElectrons;nel++){        
-          Int_t idx1 = nel*3;
-          Int_t idx2 = nel*4;
-       	  // Avalanche, including fluctuations
-          Int_t aval = (Int_t) (-gasgain*TMath::Log(gRandom->Rndm()));
-          v2(idx2+1)= v1(idx1+1);
-          v2(idx2+2)= v1(idx1+2);
-          v2(idx2+3)= v1(idx1+3);
-          v2(idx2+4)= (Float_t)aval; // in number of electrons!        
-	} // end of loop over electrons
-	//
-	//  Add this track to a row 
-	//
-
-        rowTriplet[i1]->Add(tv); 
-
-
-      } // end of loop over tracks for this row
-
-      prow[i1]->Delete(); // remove "old" tracks
-      delete prow[i1]; // delete  TObjArray for this row
-      prow[i1]=0; // set pointer to NULL
-
-    } // end of loop over row triplets
-
-
-  }
-  else{
-   
-    rowTriplet[0]->Delete(); // remove old lower row
-
-    nTracks[0]=rowTriplet[1]->GetEntries(); // previous middle row
-    nTracks[1]=rowTriplet[2]->GetEntries(); // previous upper row
-    nTracks[2]=prow[row+1]->GetEntries(); // next row
-    
-
-    //------------------------------------------- 
-    //  shift new tracks downwards
-    //-------------------------------------------
-
-    for(i1=0;i1<nTracks[0];i1++){
-      pv=(TVector*)rowTriplet[1]->At(i1);
-      rowTriplet[0]->Add(pv); 
-    }       
-
-    rowTriplet[1]->Clear(); // leave tracks on the heap!!!
-
-    for(i1=0;i1<nTracks[1];i1++){
-      pv=(TVector*)rowTriplet[2]->At(i1);
-      rowTriplet[1]->Add(pv);
-    }
-
-    rowTriplet[2]->Clear(); // leave tracks on the heap!!!
-
-    //---------------------------------------------
-    //  Create new upper row
-    //---------------------------------------------
-
-    
-
-    for(i1=0;i1<nTracks[2];i1++){
-        pv = (TVector*)prow[row+1]->At(i1);
-        TVector &v1 = *pv;
-        nElements = pv->GetNrows();
-        nElectrons = (nElements-1)/3;
-
-        tv = new TVector(4*nElectrons+1); // create TVector for a modified track
-        TVector &v2 = *tv;
-        v2(0)=v1(0); //track label
-
-        for(nel=0;nel<nElectrons;nel++){
-        
-          Int_t idx1 = nel*3;
-          Int_t idx2 = nel*4;
-	  // Avalanche, including fluctuations
-          Int_t aval = (Int_t) 
-	    (-gasgain*TMath::Log(gRandom->Rndm()));
-          
-          v2(idx2+1)= v1(idx1+1); 
-          v2(idx2+2)= v1(idx1+2);
-          v2(idx2+3)= v1(idx1+3);
-          v2(idx2+4)= (Float_t)aval; // in number of electrons!        
-	} // end of loop over electrons
-
-          rowTriplet[2]->Add(tv);
-     
-    } // end of loop over tracks
-         
-    prow[row+1]->Delete(); // delete tracks for this row
-    delete prow[row+1];  // delete TObjArray for this row
-    prow[row+1]=0; // set a pointer to NULL
-
-  }
-
-}  // end of MakeTriplet
-//_____________________________________________________________________________
-void AliTPC::ExB(Float_t *xyz)
-{
-  //------------------------------------------------
-  //  ExB at the wires and wire number calulation
-  //------------------------------------------------
-  
-  //-----------------------------------------------------------------
-  // Origin: Marek Kowalski  IFJ, Krakow, Marek.Kowalski@ifj.edu.pl
-  //-----------------------------------------------------------------
-   AliTPCParam * fTPCParam = &(fDigParam->GetParam());
-
-   Float_t x1=xyz[0];
-   fTPCParam->GetWire(x1);        //calculate nearest wire position
-   Float_t dx=xyz[0]-x1;
-   xyz[1]+=dx*fTPCParam->GetOmegaTau();
-
-} // end of ExB
-//_____________________________________________________________________________
-void AliTPC::DigitizeRow(Int_t irow,Int_t isec,TObjArray **rowTriplet)
+void AliTPC::DigitizeRow(Int_t irow,Int_t isec,TObjArray **rows)
 {
   //-----------------------------------------------------------
   // Single row digitization, coupling from the neighbouring
@@ -1559,140 +1506,69 @@ void AliTPC::DigitizeRow(Int_t irow,Int_t isec,TObjArray **rowTriplet)
 
   //-----------------------------------------------------------------
   // Origin: Marek Kowalski  IFJ, Krakow, Marek.Kowalski@ifj.edu.pl
+  // Modified: Marian Ivanov GSI Darmstadt, m.ivanov@gsi.de
   //-----------------------------------------------------------------
  
 
-  AliTPCParam * fTPCParam = &(fDigParam->GetParam());
-  Float_t chipgain= fTPCParam->GetChipGain();
   Float_t zerosup = fTPCParam->GetZeroSup();
   Int_t nrows =fTPCParam->GetNRow(isec);
-  const int MAXTBKT=
-  int((z_end+6*fTPCParam->GetZSigma())/fTPCParam->GetZWidth())+1;
+  fCurrentIndex[1]= isec;
   
-  Int_t nTracks[3];
-  Int_t n_of_pads[3];
+
+  Int_t n_of_pads = fTPCParam->GetNPads(isec,irow);
+  Int_t n_of_tbins = fTPCParam->GetMaxTBin();
   Int_t IndexRange[4];
-  Int_t i1;
-  Int_t iFlag; 
-
-  //
-  // iFlag = 0 -> inner row, iFlag = 1 -> the middle one, iFlag = 2 -> the outer one
-  //
-
-  nTracks[0]=rowTriplet[0]->GetEntries(); // lower row
-  nTracks[1]=rowTriplet[1]->GetEntries(); // middle row
-  nTracks[2]=rowTriplet[2]->GetEntries(); // upper row
-
-    
-  if(irow == 0){
-    iFlag=0;
-    n_of_pads[0]=fTPCParam->GetNPads(isec,0);
-    n_of_pads[1]=fTPCParam->GetNPads(isec,1);
-  }
-  else if(irow == nrows-1){
-     iFlag=2;
-     n_of_pads[1]=fTPCParam->GetNPads(isec,irow-1);
-     n_of_pads[2]=fTPCParam->GetNPads(isec,irow);
-  }
-  else {
-    iFlag=1;
-    for(i1=0;i1<3;i1++){
-       n_of_pads[i1]=fTPCParam->GetNPads(isec,irow-1+i1);
-    }
-  }
- 
   //
   //  Integrated signal for this row
   //  and a single track signal
-  // 
-   
-  TMatrix *m1   = new TMatrix(0,n_of_pads[iFlag]-1,0,MAXTBKT-1); // integrated
-  TMatrix *m2   = new TMatrix(0,n_of_pads[iFlag]-1,0,MAXTBKT-1); // single
-
+  //    
+  TMatrix *m1   = new TMatrix(0,n_of_pads,0,n_of_tbins); // integrated
+  TMatrix *m2   = new TMatrix(0,n_of_pads,0,n_of_tbins); // single
   //
-
   TMatrix &Total  = *m1;
 
   //  Array of pointers to the label-signal list
 
-  Int_t NofDigits = n_of_pads[iFlag]*MAXTBKT; // number of digits for this row
-
+  Int_t NofDigits = n_of_pads*n_of_tbins; // number of digits for this row
   Float_t  **pList = new Float_t* [NofDigits]; 
 
   Int_t lp;
-
+  Int_t i1;   
   for(lp=0;lp<NofDigits;lp++)pList[lp]=0; // set all pointers to NULL
-
   //
-  //  Straight signal and cross-talk, cross-talk is integrated over all
-  //  tracks and added to the signal at the very end
+  //calculate signal 
   //
-   
-
-  for (i1=0;i1<nTracks[iFlag];i1++){
-
-    m2->Zero(); // clear single track signal matrix
-  
-    Float_t TrackLabel = 
-      GetSignal(rowTriplet[iFlag],i1,n_of_pads[iFlag],m2,m1,IndexRange); 
-
-    GetList(TrackLabel,n_of_pads[iFlag],m2,IndexRange,pList);
-
+  Int_t row1 = TMath::Max(irow-fTPCParam->GetNCrossRows(),0);
+  Int_t row2 = TMath::Min(irow+fTPCParam->GetNCrossRows(),nrows-1);
+  for (Int_t row= row1;row<=row2;row++){
+    Int_t nTracks= rows[row]->GetEntries();
+    for (i1=0;i1<nTracks;i1++){
+      fCurrentIndex[2]= row;
+      fCurrentIndex[3]=irow;
+      if (row==irow){
+	m2->Zero();  // clear single track signal matrix
+	Float_t TrackLabel = GetSignal(rows[row],i1,m2,m1,IndexRange); 
+	GetList(TrackLabel,n_of_pads,m2,IndexRange,pList);
+      }
+      else   GetSignal(rows[row],i1,0,m1,IndexRange);
+    }
   }
-
-  // 
-  //  Cross talk from the neighbouring pad-rows
-  //
-
-  TMatrix *m3 =  new TMatrix(0,n_of_pads[iFlag]-1,0,MAXTBKT-1); // cross-talk
-
-  TMatrix &Cross = *m3;
-
-  if(iFlag == 0){
-
-    // cross-talk from the outer row only (first pad row)
-
-    GetCrossTalk(0,rowTriplet[1],nTracks[1],n_of_pads,m3);
-
-  }
-  else if(iFlag == 2){
-
-    // cross-talk from the inner row only (last pad row)
-
-    GetCrossTalk(2,rowTriplet[1],nTracks[1],n_of_pads,m3);
-
-  }
-  else{
-
-    // cross-talk from both inner and outer rows
-
-    GetCrossTalk(3,rowTriplet[0],nTracks[0],n_of_pads,m3); // inner
-    GetCrossTalk(4,rowTriplet[2],nTracks[2],n_of_pads,m3); //outer
-  }
-
-  Total += Cross; // add the cross-talk
-
-  //
-  //  Convert analog signal to ADC counts
-  //
-   
+         
   Int_t tracks[3];
-  Int_t digits[5];
 
-
-  for(Int_t ip=0;ip<n_of_pads[iFlag];ip++){
-    for(Int_t it=0;it<MAXTBKT;it++){
+  AliDigits *dig = fDigitsArray->GetRow(isec,irow);
+  for(Int_t ip=0;ip<n_of_pads;ip++){
+    for(Int_t it=0;it<n_of_tbins;it++){
 
       Float_t q = Total(ip,it);
 
-      Int_t gi =it*n_of_pads[iFlag]+ip; // global index
+      Int_t gi =it*n_of_pads+ip; // global index
 
-      q = gRandom->Gaus(q,fTPCParam->GetNoise()); // apply noise
-      q *= (q_el*1.e15); // convert to fC
-      q *= chipgain; // convert to mV   
-      q *= (adc_sat/dyn_range); // convert to ADC counts  
+      q = gRandom->Gaus(q,fTPCParam->GetNoise()*fTPCParam->GetNoiseNormFac()); 
 
-      if(q <zerosup) continue; // do not fill zeros
+      q = (Int_t)q;
+
+      if(q <=zerosup) continue; // do not fill zeros
       if(q > adc_sat) q = adc_sat;  // saturation
 
       //
@@ -1703,15 +1579,20 @@ void AliTPC::DigitizeRow(Int_t irow,Int_t isec,TObjArray **rowTriplet)
         tracks[j1] = (pList[gi]) ?(Int_t)(*(pList[gi]+j1)) : -1;
       }
 
-      digits[0]=isec;
-      digits[1]=irow;
-      digits[2]=ip;
-      digits[3]=it;
-      digits[4]= (Int_t)q;
-
-      //  Add this digit
-
-      AddDigit(tracks,digits);
+//Begin_Html
+/*
+  <A NAME="AliDigits"></A>
+  using of AliDigits object
+*/
+//End_Html
+      dig->SetDigitFast((Short_t)q,it,ip);
+      if (fDigitsArray->IsSimulated())
+	{
+	 ((AliSimDigits*)dig)->SetTrackIDFast(tracks[0],it,ip,0);
+	 ((AliSimDigits*)dig)->SetTrackIDFast(tracks[1],it,ip,1);
+	 ((AliSimDigits*)dig)->SetTrackIDFast(tracks[2],it,ip,2);
+	}
+     
     
     } // end of loop over time buckets
   }  // end of lop over pads 
@@ -1728,11 +1609,13 @@ void AliTPC::DigitizeRow(Int_t irow,Int_t isec,TObjArray **rowTriplet)
 
   delete m1;
   delete m2;
-  delete m3;
+  //  delete m3;
 
 } // end of DigitizeRow
+
 //_____________________________________________________________________________
-Float_t AliTPC::GetSignal(TObjArray *p1, Int_t ntr, Int_t np, TMatrix *m1, TMatrix *m2,
+
+Float_t AliTPC::GetSignal(TObjArray *p1, Int_t ntr, TMatrix *m1, TMatrix *m2,
                           Int_t *IndexRange)
 {
 
@@ -1744,111 +1627,55 @@ Float_t AliTPC::GetSignal(TObjArray *p1, Int_t ntr, Int_t np, TMatrix *m1, TMatr
 
   //-----------------------------------------------------------------
   // Origin: Marek Kowalski  IFJ, Krakow, Marek.Kowalski@ifj.edu.pl
+  // Modified: Marian Ivanov 
   //-----------------------------------------------------------------
 
   TVector *tv;
-  AliTPCParam * fTPCParam = &(fDigParam->GetParam());
-  AliTPCPRF2D * fPRF2D = &(fDigParam->GetPRF2D());
-  AliTPCRF1D  * fRF    = &(fDigParam->GetRF()); 
-  const int MAXTBKT=
-  int((z_end+6*fTPCParam->GetZSigma())/fTPCParam->GetZWidth())+1;
  
-  //to make the code faster we put parameters  to the stack
-
-  Float_t zwidth  = fTPCParam->GetZWidth();
-  Float_t zwidthm1  =1./zwidth;
-
   tv = (TVector*)p1->At(ntr); // pointer to a track
   TVector &v = *tv;
   
   Float_t label = v(0);
+  Int_t CentralPad = (fTPCParam->GetNPads(fCurrentIndex[1],fCurrentIndex[3])-1)/2;
 
-  Int_t CentralPad = (np-1)/2;
-  Int_t PadNumber;
   Int_t nElectrons = (tv->GetNrows()-1)/4;
-  Float_t range=((np-1)/2 + 0.5)*fTPCParam->GetPadPitchWidth(); // pad range
-
-  range -= 0.5; // dead zone, 5mm from the edge, according to H.G. Fischer
-  
-  Float_t IneffFactor = 0.5; // inefficiency in the gain close to the edge, as above
-
-
-  Float_t PadSignal[7]; // signal from a single electron
-
-  TMatrix &signal = *m1;
-  TMatrix &total = *m2;
-
-
   IndexRange[0]=9999; // min pad
   IndexRange[1]=-1; // max pad
   IndexRange[2]=9999; //min time
   IndexRange[3]=-1; // max time
 
+  //  Float_t IneffFactor = 0.5; // inefficiency in the gain close to the edge, as above
+
+  TMatrix &signal = *m1;
+  TMatrix &total = *m2;
   //
   //  Loop over all electrons
   //
-
   for(Int_t nel=0; nel<nElectrons; nel++){
-   Int_t idx=nel*4;
-   Float_t xwire = v(idx+1);
-   Float_t y = v(idx+2);
-   Float_t z = v(idx+3);
-
-
-   Float_t absy=TMath::Abs(y);
-   
-   if(absy < 0.5*fTPCParam->GetPadPitchWidth()){
-     PadNumber=CentralPad;
-   }
-   else if (absy < range){
-     PadNumber=(Int_t) ((absy-0.5*fTPCParam->GetPadPitchWidth())/fTPCParam->GetPadPitchWidth()+1.);
-     PadNumber=(Int_t) (TMath::Sign((Float_t)PadNumber, y)+CentralPad);
-   }
-   else continue; // electron out of pad-range , lost at the sector edge
+    Int_t idx=nel*4;
+    Float_t aval =  v(idx+4);
+    Float_t eltoadcfac=aval*fTPCParam->GetTotalNormFac(); 
+    Float_t xyz[3]={v(idx+1),v(idx+2),v(idx+3)};
+    Int_t n = fTPCParam->CalcResponse(xyz,fCurrentIndex,fCurrentIndex[3]);
     
-   Float_t aval = (absy<range-0.5) ? v(idx+4):v(idx+4)*IneffFactor;
-   
-
-   Float_t dist = y - (Float_t)(PadNumber-CentralPad)*fTPCParam->GetPadPitchWidth();
-   for (Int_t i=0;i<7;i++){
-     PadSignal[i]=fPRF2D->GetPRF(-dist+(i-3)*fTPCParam->GetPadPitchWidth(),xwire)*aval;
-     PadSignal[i] *= fTPCParam->GetPadCoupling();
-   }
-
-   Int_t  LeftPad = TMath::Max(0,PadNumber-3);
-   Int_t  RightPad = TMath::Min(np-1,PadNumber+3);
-
-   Int_t pmin=LeftPad-PadNumber+3; // lower index of the pad_signal vector
-   Int_t pmax=RightPad-PadNumber+3; // upper index     
-   
-   Float_t z_drift = z*zwidthm1;
-   Float_t z_offset = z_drift-(Int_t)z_drift;
-
-   Int_t FirstBucket = (Int_t)z_drift; // numbering starts from "0"
-
-
-   // loop over time bins (4 bins is enough - 3 sigma truncated Gaussian)
-
-   for (Int_t i2=0;i2<4;i2++){          
-     Int_t TrueTime = FirstBucket+i2; // current time bucket
-     Float_t dz   = (Float_t(i2)+1.-z_offset)*zwidth; 
-     Float_t ampl = fRF->GetRF(dz); 
-     if( (TrueTime>MAXTBKT-1) ) break; // beyond the time range
-     
-     IndexRange[2]=TMath::Min(IndexRange[2],TrueTime); // min time
-     IndexRange[3]=TMath::Max(IndexRange[3],TrueTime); // max time
-
-     // loop over pads, from pmin to pmax
-     for(Int_t i3=pmin;i3<=pmax;i3++){
-       Int_t TruePad = LeftPad+i3-pmin;
-       IndexRange[0]=TMath::Min(IndexRange[0],TruePad); // min pad
-       IndexRange[1]=TMath::Max(IndexRange[1],TruePad); // max pad
-       signal(TruePad,TrueTime)+=(PadSignal[i3]*ampl); // not converted to charge!!!
-       total(TruePad,TrueTime)+=(PadSignal[i3]*ampl); // not converted to charge!!!
-     } // end of pads loop
-   }  // end of time loop
+    if (n>0) for (Int_t i =0; i<n; i++){
+       Int_t *index = fTPCParam->GetResBin(i);        
+       Int_t pad=index[1]+CentralPad;  //in digit coordinates central pad has coordinate 0
+       if ( ( pad<(fTPCParam->GetNPads(fCurrentIndex[1],fCurrentIndex[3]))) && (pad>0)) {
+	 Int_t time=index[2];	 
+	 Float_t weight = fTPCParam->GetResWeight(i); //we normalise response to ADC channel
+	 weight *= eltoadcfac;
+	 
+	 if (m1!=0) signal(pad,time)+=weight; 
+	 total(pad,time)+=weight;
+	 IndexRange[0]=TMath::Min(IndexRange[0],pad);
+	 IndexRange[1]=TMath::Max(IndexRange[1],pad);
+	 IndexRange[2]=TMath::Min(IndexRange[2],time);
+	 IndexRange[3]=TMath::Max(IndexRange[3],time); 
+       }	 
+    }
   } // end of loop over electrons
-
+  
   return label; // returns track label when finished
 }
 
@@ -1874,7 +1701,7 @@ void AliTPC::GetList(Float_t label,Int_t np,TMatrix *m,Int_t *IndexRange,
 
         // accept only the contribution larger than 500 electrons (1/2 s_noise)
 
-        if(signal(ip,it)<500.) continue; 
+        if(signal(ip,it)<0.5) continue; 
 
 
         Int_t GlobalIndex = it*np+ip; // GlobalIndex starts from 0!
@@ -1943,7 +1770,6 @@ void AliTPC::GetList(Float_t label,Int_t np,TMatrix *m,Int_t *IndexRange,
 
 
 
-
 }//end of GetList
 //___________________________________________________________________
 void AliTPC::MakeSector(Int_t isec,Int_t nrows,TTree *TH,
@@ -1960,9 +1786,9 @@ void AliTPC::MakeSector(Int_t isec,Int_t nrows,TTree *TH,
   // Origin: Marek Kowalski  IFJ, Krakow, Marek.Kowalski@ifj.edu.pl
   //-----------------------------------------------------------------
 
-  AliTPCParam * fTPCParam = &(fDigParam->GetParam());
+  Float_t gasgain = fTPCParam->GetGasGain();
   Int_t i;
-  Float_t xyz[3]; 
+  Float_t xyz[4]; 
 
   AliTPChit *tpcHit; // pointer to a sigle TPC hit    
  
@@ -1976,7 +1802,7 @@ void AliTPC::MakeSector(Int_t isec,Int_t nrows,TTree *TH,
     row[i] = new TObjArray;
   }
   Int_t *n_of_electrons = new Int_t [nrows]; // electron counter for each row
-  TVector **tr = new TVector* [nrows]; //pointers to the track vectors
+  TVector **tracks = new TVector* [nrows]; //pointers to the track vectors
 
   //--------------------------------------------------------------------
   //  Loop over tracks, the "track" contains the full history
@@ -2003,7 +1829,7 @@ void AliTPC::MakeSector(Int_t isec,Int_t nrows,TTree *TH,
       tpcHit = (AliTPChit*)fHits->UncheckedAt(hit); // get a pointer to a hit
       
       Int_t sector=tpcHit->fSector; // sector number
-      if(sector != isec) continue; //terminate iteration
+      if(sector != isec) continue; 
 
 	currentTrack = tpcHit->fTrack; // track number
         if(currentTrack != previousTrack){
@@ -2013,19 +1839,19 @@ void AliTPC::MakeSector(Int_t isec,Int_t nrows,TTree *TH,
 	   for(i=0;i<nrows;i++){
              if(previousTrack != -1){
 	       if(n_of_electrons[i]>0){
-	         TVector &v = *tr[i];
+	         TVector &v = *tracks[i];
 		 v(0) = previousTrack;
-                 tr[i]->ResizeTo(3*n_of_electrons[i]+1); // shrink if necessary
-	         row[i]->Add(tr[i]);                     
+                 tracks[i]->ResizeTo(4*n_of_electrons[i]+1); // shrink if necessary
+	         row[i]->Add(tracks[i]);                     
 	       }
                else{
-                 delete tr[i]; // delete empty TVector
-                 tr[i]=0;
+                 delete tracks[i]; // delete empty TVector
+                 tracks[i]=0;
 	       }
 	     }
 
              n_of_electrons[i]=0;
-             tr[i] = new TVector(361); // TVectors for the next fTrack
+             tracks[i] = new TVector(481); // TVectors for the next fTrack
 
 	   } // end of loop over rows
 	       
@@ -2038,7 +1864,9 @@ void AliTPC::MakeSector(Int_t isec,Int_t nrows,TTree *TH,
        //  Calculate the electron attachment probability
        //---------------------------------------------------
 
-        Float_t time = 1.e6*(z_end-TMath::Abs(tpcHit->fZ))/fTPCParam->GetDriftV(); 
+
+        Float_t time = 1.e6*(fTPCParam->GetZLength()-TMath::Abs(tpcHit->fZ))
+                                                        /fTPCParam->GetDriftV(); 
 	// in microseconds!	
 	Float_t AttProb = fTPCParam->GetAttCoef()*
 	  fTPCParam->GetOxyCont()*time; //  fraction! 
@@ -2046,41 +1874,43 @@ void AliTPC::MakeSector(Int_t isec,Int_t nrows,TTree *TH,
 	//-----------------------------------------------
 	//  Loop over electrons
 	//-----------------------------------------------
-
+	Int_t index[3];
+	index[1]=isec;
         for(Int_t nel=0;nel<QI;nel++){
           // skip if electron lost due to the attachment
           if((gRandom->Rndm(0)) < AttProb) continue; // electron lost!
 	  xyz[0]=tpcHit->fX;
 	  xyz[1]=tpcHit->fY;
-	  xyz[2]=tpcHit->fZ;
-	  ElDiff(xyz); // Appply the diffusion
+	  xyz[2]=tpcHit->fZ;	  
+	  xyz[3]= (Float_t) (-gasgain*TMath::Log(gRandom->Rndm()));
+	  index[0]=1;
+	  
+	  TransportElectron(xyz,index); //MI change -august	  
 	  Int_t row_number;
-	  fTPCParam->XYZtoCRXYZ(xyz,isec,row_number,3);
-
-	  //transform position to local coordinates
-	  //option 3 means that we calculate x position relative to 
-	  //nearest pad row 
-
-	  if ((row_number<0)||row_number>=fTPCParam->GetNRow(isec)) continue;
-	  ExB(xyz); // ExB effect at the sense wires
+	  fTPCParam->GetPadRow(xyz,index); //MI change august
+	  row_number = index[2];
+	  //transform position to local digit coordinates
+	  //relative to nearest pad row 
+	  if ((row_number<0)||row_number>=fTPCParam->GetNRow(isec)) continue;	  
 	  n_of_electrons[row_number]++;	  
 	  //----------------------------------
 	  // Expand vector if necessary
 	  //----------------------------------
 	  if(n_of_electrons[row_number]>120){
-	    Int_t range = tr[row_number]->GetNrows();
-	    if(n_of_electrons[row_number] > (range-1)/3){
-	      tr[row_number]->ResizeTo(range+150); // Add 50 electrons
+	    Int_t range = tracks[row_number]->GetNrows();
+	    if((n_of_electrons[row_number])>(range-1)/4){
+        
+	      tracks[row_number]->ResizeTo(range+400); // Add 100 electrons
 	    }
 	  }
 	  
-	  TVector &v = *tr[row_number];
-	  Int_t idx = 3*n_of_electrons[row_number]-2;
+	  TVector &v = *tracks[row_number];
+	  Int_t idx = 4*n_of_electrons[row_number]-3;
 
-	  v(idx)=  xyz[0];   // X
-	  v(idx+1)=xyz[1];   // Y (along the pad-row)
-          v(idx+2)=xyz[2];   // Z
-	    
+	  v(idx)=  xyz[0];   // X - pad row coordinate
+	  v(idx+1)=xyz[1];   // Y - pad coordinate (along the pad-row)
+          v(idx+2)=xyz[2];   // Z - time bin coordinate
+	  v(idx+3)=xyz[3];   // avalanche size  
 	} // end of loop over electrons
         
       } // end of loop over hits
@@ -2092,172 +1922,22 @@ void AliTPC::MakeSector(Int_t isec,Int_t nrows,TTree *TH,
 
      for(i=0;i<nrows;i++){
        if(n_of_electrons[i]>0){
-          TVector &v = *tr[i];
+          TVector &v = *tracks[i];
 	  v(0) = previousTrack;
-          tr[i]->ResizeTo(3*n_of_electrons[i]+1); // shrink if necessary
-	  row[i]->Add(tr[i]);  
+          tracks[i]->ResizeTo(4*n_of_electrons[i]+1); // shrink if necessary
+	  row[i]->Add(tracks[i]);  
 	}
 	else{
-          delete tr[i];
-          tr[i]=0;
+          delete tracks[i];
+          tracks[i]=0;
 	}  
       }  
 
-          delete [] tr;
-          delete [] n_of_electrons; 
+          delete [] tracks;
+          delete [] n_of_electrons;
+ 
 
 } // end of MakeSector
-//_____________________________________________________________________________
-void AliTPC::GetCrossTalk (Int_t iFlag,TObjArray *p,Int_t ntracks,Int_t *npads,
-                           TMatrix *m)
-{
-
-  //-------------------------------------------------------------
-  // Calculates the cross-talk from one row (inner or outer)
-  //-------------------------------------------------------------
-
-  //-----------------------------------------------------------------
-  // Origin: Marek Kowalski  IFJ, Krakow, Marek.Kowalski@ifj.edu.pl
-  //-----------------------------------------------------------------
-
-  //
-  // iFlag=2 & 3 --> cross-talk from the inner row
-  // iFlag=0 & 4 --> cross-talk from the outer row
-  //
-  AliTPCParam * fTPCParam = &(fDigParam->GetParam());
-  AliTPCPRF2D * fPRF2D = &(fDigParam->GetPRF2D());
-  AliTPCRF1D  * fRF    = &(fDigParam->GetRF()); 
-  const int MAXTBKT=
-  int((z_end+6*fTPCParam->GetZSigma())/fTPCParam->GetZWidth())+1;
- 
-  //to make code faster
-
-  Float_t zwidth  = fTPCParam->GetZWidth();
-  Float_t zwidthm1  =1/fTPCParam->GetZWidth();
-
- Int_t PadNumber;
- Float_t xwire;
-
- Int_t nPadsSignal; // for this pads the signal is calculated
- Float_t range;     // sense wire range
- Int_t nPadsDiff;
-
- Float_t IneffFactor=0.5; // gain inefficiency close to the edges
-
- if(iFlag == 0){   
-   // 1-->0
-   nPadsSignal = npads[1];
-   range = ((npads[1]-1)/2 + 0.5)*fTPCParam->GetPadPitchWidth();  
-   nPadsDiff = (npads[1]-npads[0])/2;
- }  
- else if (iFlag == 2){
-   // 1-->2
-   nPadsSignal = npads[2];
-   range = ((npads[1]-1)/2 + 0.5)*fTPCParam->GetPadPitchWidth();
-   nPadsDiff = 0;
- }
- else if (iFlag == 3){
-   // 0-->1
-   nPadsSignal = npads[1];
-   range = ((npads[0]-1)/2 + 0.5)*fTPCParam->GetPadPitchWidth();
-   nPadsDiff = 0;
- }
- else{
-   // 2-->1
-   nPadsSignal = npads[2];
-   range = ((npads[2]-1)/2 + 0.5)*fTPCParam->GetPadPitchWidth();
-   nPadsDiff = (npads[2]-npads[1])/2;
- }
-
- range-=0.5; // dead zone close to the edges
-
- TVector *tv; 
- TMatrix &signal = *m;
-
- Int_t CentralPad = (nPadsSignal-1)/2;
- Float_t PadSignal[7]; // signal from a single electron
- // Loop over tracks
- for(Int_t nt=0;nt<ntracks;nt++){
-   tv=(TVector*)p->At(nt); // pointer to a track
-   TVector &v = *tv;
-   Int_t nElectrons = (tv->GetNrows()-1)/4;
-   // Loop over electrons
-   for(Int_t nel=0; nel<nElectrons; nel++){
-     Int_t idx=nel*4;
-     xwire=v(idx+1);
- 
-     if (iFlag==0) xwire+=fTPCParam->GetPadPitchLength();
-     if (iFlag==2)  xwire-=fTPCParam->GetPadPitchLength();
-     if (iFlag==3)  xwire-=fTPCParam->GetPadPitchLength();
-     if (iFlag==4)  xwire+=fTPCParam->GetPadPitchLength();  
-   
-     //  electron acceptance for the cross-talk (only the closest wire)  
-
-     Float_t dxMax = fTPCParam->GetPadPitchLength()*0.5+fTPCParam->GetWWPitch();
-     if(TMath::Abs(xwire)>dxMax) continue;
-
-     Float_t y = v(idx+2);
-     Float_t z = v(idx+3);
-     Float_t absy=TMath::Abs(y);
-
-     if(absy < 0.5*fTPCParam->GetPadPitchWidth()){
-       PadNumber=CentralPad;
-     }
-     else if (absy < range){
-       PadNumber=(Int_t) ((absy-0.5*fTPCParam->GetPadPitchWidth())/fTPCParam->GetPadPitchWidth() +1.);
-       PadNumber=(Int_t) (TMath::Sign((Float_t)PadNumber, y)+CentralPad);
-     }
-     else continue; // electron out of sense wire range, lost at the sector edge
-
-     Float_t aval = (absy<range-0.5) ? v(idx+4):v(idx+4)*IneffFactor;
-
-     Float_t dist = y - (Float_t)(PadNumber-CentralPad)*fTPCParam->GetPadPitchWidth();
-       
-     for (Int_t i=0;i<7;i++){
-       PadSignal[i]=fPRF2D->GetPRF(-dist+(i-3)*fTPCParam->GetPadPitchWidth(),xwire)*aval;
-
-       PadSignal[i] *= fTPCParam->GetPadCoupling();
-     }
-     // real pad range
-
-     Int_t  LeftPad = TMath::Max(0,PadNumber-3);
-     Int_t  RightPad = TMath::Min(nPadsSignal-1,PadNumber+3);
-
-     Int_t pmin=LeftPad-PadNumber+3; // lower index of the pad_signal vector
-     Int_t pmax=RightPad-PadNumber+3; // upper index  
-
-
-     Float_t z_drift = z*zwidthm1;
-     Float_t z_offset = z_drift-(Int_t)z_drift;
-
-     Int_t FirstBucket = (Int_t)z_drift; // numbering starts from "0"
-
-     for (Int_t i2=0;i2<4;i2++){     
-       Int_t TrueTime = FirstBucket+i2; // current time bucket
-       Float_t dz   = (Float_t(i2)+1.- z_offset)*zwidth; 
-       Float_t ampl = fRF->GetRF(dz); 
-       if((TrueTime>MAXTBKT-1)) break; // beyond the time range
-
-
-       // loop over pads, from pmin to pmax
-
-       for(Int_t i3=pmin;i3<pmax+1;i3++){
-         Int_t TruePad = LeftPad+i3-pmin;
-
-         if(TruePad<nPadsDiff || TruePad > nPadsSignal-nPadsDiff-1) continue;
-
-         TruePad -= nPadsDiff;
-         signal(TruePad,TrueTime)+=(PadSignal[i3]*ampl); // not converted to charge!
-
-       } // end of loop over pads
-     } // end of loop over time bins
-
-   } // end of loop over electrons 
-
- } // end of loop over tracks
-
-} // end of GetCrossTalk
-
 
 
 //_____________________________________________________________________________
@@ -2313,8 +1993,7 @@ void AliTPC::ResetDigits()
   // reset clusters
   //
   fNdigits   = 0;
-  //  if (fDigits)   fDigits->Clear();
-  if (fDigParam->GetArray()!=0)  fDigParam->GetArray()->Clear();
+  if (fDigits)   fDigits->Clear();
   fNclusters = 0;
   if (fClusters) fClusters->Clear();
 }
@@ -2432,6 +2111,42 @@ void AliTPC::SetGasMixt(Int_t nc,Int_t c1,Int_t c2,Int_t c3,Float_t p1,
  
 }
 //_____________________________________________________________________________
+
+void AliTPC::TransportElectron(Float_t *xyz, Int_t *index)
+{
+  //
+  // electron transport taking into account:
+  // 1. diffusion, 
+  // 2.ExB at the wires
+  // 3. nonisochronity
+  //
+  // xyz and index must be already transformed to system 1
+  //
+
+  fTPCParam->Transform1to2(xyz,index);
+  
+  //add diffusion
+  Float_t driftl=xyz[2];
+  if(driftl<0.01) driftl=0.01;
+  driftl=TMath::Sqrt(driftl);
+  Float_t sig_t = driftl*(fTPCParam->GetDiffT());
+  Float_t sig_l = driftl*(fTPCParam->GetDiffL());
+  xyz[0]=gRandom->Gaus(xyz[0],sig_t);
+  xyz[1]=gRandom->Gaus(xyz[1],sig_t);
+  xyz[2]=gRandom->Gaus(xyz[2],sig_l);
+
+  // ExB
+  
+  if (fTPCParam->GetMWPCReadout()==kTRUE){
+    Float_t x1=xyz[0];
+    fTPCParam->Transform2to2NearestWire(xyz,index);
+    Float_t dx=xyz[0]-x1;
+    xyz[1]+=dx*(fTPCParam->GetOmegaTau());
+  }
+  //add nonisochronity (not implemented yet)
+  
+}
+//_____________________________________________________________________________
 void AliTPC::Streamer(TBuffer &R__b)
 {
   //
@@ -2444,7 +2159,7 @@ void AliTPC::Streamer(TBuffer &R__b)
       R__b >> fNsectors;
       R__b >> fNclusters;
       R__b >> fNtracks;
-      fDigitsIndex   = new Int_t[fNsectors+1];
+
    } else {
       R__b.WriteVersion(AliTPC::IsA());
       AliDetector::Streamer(R__b);
@@ -2483,8 +2198,10 @@ void AliTPCcluster::GetXYZ(Float_t *x, const AliTPCParam *par) const
   x[0]=par->GetPadRowRadii(fSector,fPadRow);
   x[1]=fY;
   x[2]=fZ;
-  par->CRXYZtoXYZ(x,fSector,fPadRow,1);
-  x[2]=fZ;
+  Float_t cs, sn, tmp;
+  par->AdjustCosSin(fSector,cs,sn);
+  tmp = x[0]*cs-x[1]*sn;
+  x[1]= x[0]*sn+x[1]*cs; x[0]=tmp;
 }
  
 //_____________________________________________________________________________
@@ -2554,6 +2271,7 @@ AliTPCtrack::AliTPCtrack(Float_t *hits)
   //
   fX=hits[0]; // This is dummy code !
 }
+//_________________________________________________________________________
 
 AliTPCtrack::AliTPCtrack(const AliTPCcluster *c,const TVector& xx,
 			 const TMatrix& CC, Double_t xref, Double_t alpha):
@@ -2582,15 +2300,15 @@ AliTPCtrack::AliTPCtrack(const AliTPCtrack& t) : x(t.x), C(t.C),
   fX=t.fX;
   fChi2=t.fChi2;
   fAlpha=t.fAlpha;
-  int n=t.fClusters.GetEntriesFast();
-  for (int i=0; i<n; i++) fClusters.AddLast(t.fClusters.UncheckedAt(i));
+  Int_t n=t.fClusters.GetEntriesFast();
+  for (Int_t i=0; i<n; i++) fClusters.AddLast(t.fClusters.UncheckedAt(i));
 }
 
 //_____________________________________________________________________________
 Int_t AliTPCtrack::Compare(TObject *o) {
   //-----------------------------------------------------------------
-  // This function compares tracks according to their curvature.
-  //
+  // This function compares tracks according to the uncertainty of their
+  // position in Y.
   // Origin: Iouri Belikov, CERN, Jouri.Belikov@cern.ch
   //-----------------------------------------------------------------
   AliTPCtrack *t=(AliTPCtrack*)o;
@@ -2602,7 +2320,7 @@ Int_t AliTPCtrack::Compare(TObject *o) {
 }
 
 //_____________________________________________________________________________
-int AliTPCtrack::PropagateTo(Double_t xk,Double_t x0,Double_t rho,Double_t pm)
+Int_t AliTPCtrack::PropagateTo(Double_t xk,Double_t x0,Double_t rho,Double_t pm)
 {
   //-----------------------------------------------------------------
   // This function propagates a track to a reference plane x=xk.
@@ -2614,7 +2332,7 @@ int AliTPCtrack::PropagateTo(Double_t xk,Double_t x0,Double_t rho,Double_t pm)
     return 0;
   }
 
-  Double_t x1=fX, x2=x1+0.5*(xk-x1), dx=x2-x1, y1=x(0), z1=x(1);
+  Double_t x1=fX, x2=x1+(xk-x1), dx=x2-x1, y1=x(0), z1=x(1);
   Double_t c1=x(2)*x1 - x(3), r1=sqrt(1.- c1*c1);
   Double_t c2=x(2)*x2 - x(3), r2=sqrt(1.- c2*c2);
   
@@ -2631,9 +2349,9 @@ int AliTPCtrack::PropagateTo(Double_t xk,Double_t x0,Double_t rho,Double_t pm)
   F(1,4)= dx*cc/cr; 
   TMatrix tmp(F,TMatrix::kMult,C);
   C.Mult(tmp,TMatrix(TMatrix::kTransposed,F));
-  
+
   fX=x2;
-  
+
   //Multiple scattering******************
   Double_t ey=x(2)*fX - x(3);
   Double_t ex=sqrt(1-ey*ey);
@@ -2654,37 +2372,16 @@ int AliTPCtrack::PropagateTo(Double_t xk,Double_t x0,Double_t rho,Double_t pm)
   Double_t p2=GetPt()*GetPt()*(1.+x(4)*x(4));
   Double_t beta2=p2/(p2 + pm*pm);
   Double_t d=sqrt((x1-fX)*(x1-fX)+(y1-x(0))*(y1-x(0))+(z1-x(1))*(z1-x(1)));
-  d*=2.;
   Double_t theta2=14.1*14.1/(beta2*p2*1e6)*d/x0*rho;
   Q*=theta2;
   C+=Q;
-  
+
   //Energy losses************************
   Double_t dE=0.153e-3/beta2*(log(5940*beta2/(1-beta2)) - beta2)*d*rho;
   if (x1 < x2) dE=-dE;
   x(2)*=(1.- sqrt(p2+pm*pm)/p2*dE);
   //x(3)*=(1.- sqrt(p2+pm*pm)/p2*dE);
-  
-  x1=fX; x2=xk; y1=x(0); z1=x(1);
-  c1=x(2)*x1 - x(3); r1=sqrt(1.- c1*c1);
-  c2=x(2)*x2 - x(3); r2=sqrt(1.- c2*c2);
-  
-  x(0) += dx*(c1+c2)/(r1+r2);
-  x(1) += dx*(c1+c2)/(c1*r2 + c2*r1)*x(4);
-  
-  F.UnitMatrix();
-  rr=r1+r2; cc=c1+c2; xx=x1+x2;
-  F(0,2)= dx*(rr*xx + cc*(c1*x1/r1+c2*x2/r2))/(rr*rr);
-  F(0,3)=-dx*(2*rr + cc*(c1/r1 + c2/r2))/(rr*rr);
-  cr=c1*r2+c2*r1;
-  F(1,2)= dx*x(4)*(cr*xx-cc*(r1*x2-c2*c1*x1/r1+r2*x1-c1*c2*x2/r2))/(cr*cr);
-  F(1,3)=-dx*x(4)*(2*cr + cc*(c2*c1/r1-r1 + c1*c2/r2-r2))/(cr*cr);
-  F(1,4)= dx*cc/cr; 
-  tmp.Mult(F,C);
-  C.Mult(tmp,TMatrix(TMatrix::kTransposed,F));
-  
-  fX=x2;
-  
+
   return 1;
 }
 
@@ -2729,7 +2426,9 @@ void AliTPCtrack::Update(const AliTPCcluster *c, Double_t chisq)
   TMatrix K(C,TMatrix::kMult,Ht); K*=R;
   
   TVector savex=x;
-  x*=H; x-=m; x*=-1; x*=K; x+=savex;
+  x*=H; x-=m;
+
+  x*=-1; x*=K; x+=savex;
   if (TMath::Abs(x(2)*fX-x(3)) >= 0.999) {
     if (*this>4) cerr<<*this<<" AliTPCtrack warning: Filtering failed !\n";
     x=savex;
@@ -2738,13 +2437,13 @@ void AliTPCtrack::Update(const AliTPCcluster *c, Double_t chisq)
   
   TMatrix saveC=C;
   C.Mult(K,tmp); C-=saveC; C*=-1;
-  
+
   fClusters.AddLast((AliTPCcluster*)c);
   fChi2 += chisq;
 }
 
 //_____________________________________________________________________________
-int AliTPCtrack::Rotate(Double_t alpha)
+Int_t AliTPCtrack::Rotate(Double_t alpha)
 {
   //-----------------------------------------------------------------
   // This function rotates this track.
@@ -2795,8 +2494,8 @@ void AliTPCtrack::UseClusters() const
   //
   // Origin: Iouri Belikov, CERN, Jouri.Belikov@cern.ch
   //-----------------------------------------------------------------
-  int num_of_clusters=fClusters.GetEntriesFast();
-  for (int i=0; i<num_of_clusters; i++) {
+  Int_t num_of_clusters=fClusters.GetEntriesFast();
+  for (Int_t i=0; i<num_of_clusters; i++) {
     //if (i<=14) continue;
     AliTPCcluster *c=(AliTPCcluster*)fClusters.UncheckedAt(i);
     c->Use();   
@@ -2835,31 +2534,31 @@ Double_t AliTPCtrack::GetPredictedChi2(const AliTPCcluster *c) const
 }
 
 //_____________________________________________________________________________
-struct S { int lab; int max; };
-int AliTPCtrack::GetLabel(int nrows) const 
+struct S { Int_t lab; Int_t max; };
+Int_t AliTPCtrack::GetLabel(Int_t nrows) const 
 {
   //-----------------------------------------------------------------
   // This function returns the track label. If label<0, this track is fake.
   //
   // Origin: Iouri Belikov, CERN, Jouri.Belikov@cern.ch
   //-----------------------------------------------------------------
-  int num_of_clusters=fClusters.GetEntriesFast();
+  Int_t num_of_clusters=fClusters.GetEntriesFast();
   S *s=new S[num_of_clusters];
-  int i;
+  Int_t i;
   for (i=0; i<num_of_clusters; i++) s[i].lab=s[i].max=0;
   
-  int lab=123456789;
+  Int_t lab=123456789;
   for (i=0; i<num_of_clusters; i++) {
     AliTPCcluster *c=(AliTPCcluster*)fClusters.UncheckedAt(i);
     lab=TMath::Abs(c->fTracks[0]);
-    int j;
+    Int_t j;
     for (j=0; j<num_of_clusters; j++)
       if (s[j].lab==lab || s[j].max==0) break;
     s[j].lab=lab;
     s[j].max++;
   }
   
-  int max=0;
+  Int_t max=0;
   for (i=0; i<num_of_clusters; i++) 
     if (s[i].max>max) {max=s[i].max; lab=s[i].lab;}
     
@@ -2871,9 +2570,9 @@ int AliTPCtrack::GetLabel(int nrows) const
         TMath::Abs(c->fTracks[2]) == lab ) max++;
   }
   
-  if (1.-float(max)/num_of_clusters > 0.10) return -lab;
+  if (1.-Float_t(max)/num_of_clusters > 0.10) return -lab;
   
-  int tail=int(0.08*nrows);
+  Int_t tail=Int_t(0.08*nrows);
   if (num_of_clusters < tail) return lab;
   
   max=0;
@@ -2883,7 +2582,7 @@ int AliTPCtrack::GetLabel(int nrows) const
         lab == TMath::Abs(c->fTracks[1]) ||
         lab == TMath::Abs(c->fTracks[2])) max++;
   }
-  if (max < int(0.5*tail)) return -lab;
+  if (max < Int_t(0.5*tail)) return -lab;
   
   return lab;
 }
@@ -2914,19 +2613,18 @@ Double_t AliTPCtrack::GetdEdX(Double_t low, Double_t up) const {
   //
   // Origin: Iouri Belikov, CERN, Jouri.Belikov@cern.ch
   //-----------------------------------------------------------------
-  int ncl=fClusters.GetEntriesFast();
-  int n=0;
+  Int_t ncl=fClusters.GetEntriesFast();
+  Int_t n=0;
   Double_t *q=new Double_t[ncl];
-  int i;
-  for (i=0; i<ncl; i++) {
+  Int_t i;
+  for (i=1; i<ncl; i++) { //Shall I think of this "i=1" ? (I.Belikov)
      AliTPCcluster *cl=(AliTPCcluster*)(fClusters.UncheckedAt(i));
-     //     if (cl->fdEdX > 3000) continue;
-     if (cl->fdEdX <= 0) continue;
-     q[n++]=cl->fdEdX;
+     q[n++]=TMath::Abs(cl->fQ)/cl->fdEdX;
+     if (cl->fSector<36) q[n-1]*=1.1;
   }
 
   //stupid sorting
-  int swap;
+  Int_t swap;
   do {
     swap=0;
     for (i=0; i<n-1; i++) {
@@ -2936,7 +2634,7 @@ Double_t AliTPCtrack::GetdEdX(Double_t low, Double_t up) const {
     }
   } while (swap);
 
-  int nl=int(low*n), nu=int(up *n);
+  Int_t nl=Int_t(low*n), nu=Int_t(up *n);
   Double_t dedx=0.;
   for (i=nl; i<=nu; i++) dedx += q[i];
   dedx /= (nu-nl+1);
@@ -2957,12 +2655,13 @@ void AliTPCRow::InsertCluster(const AliTPCcluster* c) {
     cerr<<"AliTPCRow::InsertCluster(): Too many clusters !\n"; return;
   }
   if (num_of_clusters==0) {clusters[num_of_clusters++]=c; return;}
-  int i=Find(c->fY);
+  Int_t i=Find(c->fY);
   memmove(clusters+i+1 ,clusters+i,(num_of_clusters-i)*sizeof(AliTPCcluster*));
   clusters[i]=c; num_of_clusters++;
 }
+//___________________________________________________________________
 
-int AliTPCRow::Find(Double_t y) const {
+Int_t AliTPCRow::Find(Double_t y) const {
   //-----------------------------------------------------------------------
   // Return the index of the nearest cluster 
   //
@@ -2970,11 +2669,12 @@ int AliTPCRow::Find(Double_t y) const {
   //-----------------------------------------------------------------------
   if (y <= clusters[0]->fY) return 0;
   if (y > clusters[num_of_clusters-1]->fY) return num_of_clusters;
-  int b=0, e=num_of_clusters-1, m=(b+e)/2;
+  Int_t b=0, e=num_of_clusters-1, m=(b+e)/2;
   for (; b<e; m=(b+e)/2) {
     if (y > clusters[m]->fY) b=m+1;
     else e=m; 
   }
   return m;
 }
+//________________________________________________________________________
 

@@ -15,6 +15,18 @@
 
 /*
 $Log$
+Revision 1.19.8.2  2000/04/10 08:31:52  kowal2
+
+Different geometry for different sectors
+Updated readout chambers
+Some modifications to StepManager by J.Belikov
+
+Revision 1.19.8.1  2000/04/10 07:56:53  kowal2
+Not used anymore - removed
+
+Revision 1.19  1999/11/04 17:28:07  fca
+Correct barrel part of HV Degrader
+
 Revision 1.18  1999/10/14 16:52:08  fca
 Only use PDG codes and not GEANT ones
 
@@ -46,7 +58,7 @@ Introduction of the Copyright and cvs Log
 #include <TMath.h>
 
 #include "AliTPCv2.h"
-#include "AliTPCD.h"
+#include "AliTPCDigitsArray.h"
 #include "AliRun.h"
 #include "AliConst.h"
 #include "AliPDG.h"
@@ -82,7 +94,6 @@ void AliTPCv2::CreateGeometry()
   */
   //End_Html
 
-  AliTPCParam * fTPCParam = &(fDigParam->GetParam());
 
   Int_t *idtmed = fIdtmed->GetArray();
 
@@ -220,9 +231,9 @@ void AliTPCv2::CreateGeometry()
 
   Float_t z_side = dm[2]; // 1/2 of the side gas thickness
 
-  //-----------------------------------------------------------
+  //------------------------------------------------------------
   //   Readout chambers , 25% of X0, I use Al as the material
-  //-----------------------------------------------------------
+  //------------------------------------------------------------
 
   Float_t InnerOpenAngle = fTPCParam->GetInnerAngle();
   Float_t OuterOpenAngle = fTPCParam->GetOuterAngle();
@@ -230,21 +241,21 @@ void AliTPCv2::CreateGeometry()
   Float_t InnerAngleShift = fTPCParam->GetInnerAngleShift();
   Float_t OuterAngleShift = fTPCParam->GetOuterAngleShift();
 
-  Float_t InSecLowEdge = fTPCParam->GetInSecLowEdge();
-  Float_t InSecUpEdge =  fTPCParam->GetInSecUpEdge();
+  Float_t InSecLowEdge = fTPCParam->GetInnerRadiusLow();
+  Float_t InSecUpEdge =  fTPCParam->GetInnerRadiusUp();
 
-  Float_t OuSecLowEdge = fTPCParam->GetOuSecLowEdge();
-  Float_t OuSecUpEdge = fTPCParam->GetOuSecUpEdge();
+  Float_t OuSecLowEdge = fTPCParam->GetOuterRadiusLow();
+  Float_t OuSecUpEdge = fTPCParam->GetOuterRadiusUp();
 
 
   Float_t SecThick = 2.225; // Al
 
-  Float_t edge = fTPCParam->GetEdge();
+  Float_t LowEdge = fTPCParam->GetInnerFrameSpace();
 
   //  S (Inner) sectors
 
-  dm[0] = InSecLowEdge*TMath::Tan(0.5*InnerOpenAngle)-edge;
-  dm[1] = InSecUpEdge*TMath::Tan(0.5*InnerOpenAngle)-edge;
+  dm[0] = InSecLowEdge*TMath::Tan(0.5*InnerOpenAngle)-LowEdge;
+  dm[1] = InSecUpEdge*TMath::Tan(0.5*InnerOpenAngle)-LowEdge;
   dm[2] = 0.5*SecThick;
   dm[3] = 0.5*(InSecUpEdge-InSecLowEdge);
 
@@ -254,8 +265,10 @@ void AliTPCv2::CreateGeometry()
 
   //  L (Outer) sectors
 
-  dm[0] = OuSecLowEdge*TMath::Tan(0.5*OuterOpenAngle)-edge;
-  dm[1] = OuSecUpEdge*TMath::Tan(0.5*OuterOpenAngle)-edge;
+  Float_t UpEdge = fTPCParam->GetOuterFrameSpace();
+
+  dm[0] = OuSecLowEdge*TMath::Tan(0.5*OuterOpenAngle)-UpEdge;
+  dm[1] = OuSecUpEdge*TMath::Tan(0.5*OuterOpenAngle)-UpEdge;
   dm[2] = 0.5*SecThick;
   dm[3] = 0.5*(OuSecUpEdge-OuSecLowEdge);
 
@@ -288,12 +301,14 @@ void AliTPCv2::CreateGeometry()
     Float_t r1,r2,zz;
 
     Float_t StripThick = 0.01; // 100 microns
-    Float_t dead = fTPCParam->GetDeadZone();
+    Float_t dead;
 
     gMC->Gsvolu("TSST", "TRD1", idtmed[4], dm, 0);
 
     dm[2] = 0.5*(250. - 0.002);
     dm[3] = 0.5 * StripThick;
+
+    dead= fTPCParam->GetInnerWireMount();
 
 
     for (ns = 0; ns < fTPCParam->GetNRowLow(); ns++) {
@@ -353,7 +368,7 @@ void AliTPCv2::CreateGeometry()
     
     Float_t rmax = dm[6];
     Float_t r1,r2;
-    Float_t dead = fTPCParam->GetDeadZone();
+    Float_t dead = fTPCParam->GetOuterWireMount();
 
     Float_t StripThick = 0.01; // 100 microns
 
@@ -1022,10 +1037,6 @@ void AliTPCv2::StepManager()
   const Float_t prim = 14.35; // number of primary collisions per 1 cm
   const Float_t poti = 20.77e-9; // first ionization potential for Ne/CO2
   const Float_t w_ion = 35.97e-9; // energy for the ion-electron pair creation 
-
-  //  const Float_t prim = 17.65;
-  //  const Float_t poti = 19.02e-9;
-  // const Float_t w_ion = 33.06e-9;
  
  
   const Float_t big = 1.e10;
@@ -1035,8 +1046,6 @@ void AliTPCv2::StepManager()
   Int_t vol[2];  
   TClonesArray &lhits = *fHits;
   TLorentzVector pos;
-
-  AliTPCParam *fTPCParam = &(fDigParam->GetParam());
   
   vol[1]=0;
 
@@ -1068,6 +1077,17 @@ void AliTPCv2::StepManager()
       vol[1] = copy-1;  // row number  
       id = gMC->CurrentVolOffID(1,copy);
       vol[0] = copy-1; // sector number (S-sector)
+
+      //I.Belikov's modification
+      if (vol[1]==0) {
+       gMC->TrackMomentum(pos);
+       hits[0]=pos[0];
+       hits[1]=pos[1];
+       hits[2]=pos[2];
+       hits[3]=0.; // this hit has no energy loss
+       new(lhits[fNhits++]) AliTPChit(fIshunt,gAlice->CurrentTrack(),vol,hits);
+      }
+      //end of I.Belikov's modification
       
       gMC->TrackPosition(pos);
       hits[0]=pos[0];
@@ -1081,6 +1101,17 @@ void AliTPCv2::StepManager()
       vol[1] = copy-1; // row number 
       id = gMC->CurrentVolOffID(1,copy);
       vol[0] = copy+fTPCParam->GetNInnerSector()-1; // sector number (L-sector)
+
+      //I.Belikov's modification
+      if (vol[1]==0) {
+       gMC->TrackMomentum(pos);
+       hits[0]=pos[0];
+       hits[1]=pos[1];
+       hits[2]=pos[2];
+       hits[3]=0.; // this hit has no energy loss
+       new(lhits[fNhits++]) AliTPChit(fIshunt,gAlice->CurrentTrack(),vol,hits);
+      }
+      //end of I.Belikov's modification
       
       gMC->TrackPosition(pos);
       hits[0]=pos[0];
@@ -1121,7 +1152,7 @@ void AliTPCv2::StepManager()
   Float_t beta_gamma = ptot/gMC->TrackMass();
   
   Int_t pid=gMC->TrackPid();
-  if((pid==kElectron || pid==kPositron || pid==kGamma) && ptot > 0.002)
+  if((pid==kElectron || pid==kPositron) && ptot > 0.002)
     { 
       pp = prim*1.58; // electrons above 20 MeV/c are on the plateau!
     }

@@ -6,7 +6,7 @@
 /* $Id$ */
 
 ////////////////////////////////////////////////
-//  Manager class for AliTPCRF1D                  //
+//  Manager class for AliTPCRF1D              //
 ////////////////////////////////////////////////
   
 
@@ -39,11 +39,11 @@ public :
   //adjust RF with general function 
   void SetOffset(Float_t xoff) {fOffset=xoff;}
   //set offset value 
+  Float_t GetOffset(){return fOffset;}
   Float_t GetPadWidth(){ return fpadWidth;};       
   //return  pad width 
   Float_t  GetSigma(){return fSigma;}
   //return estimated sigma of RF
-  void Draw(Option_t*) {}
   void Draw(Float_t x1=-3 ,Float_t x2 =3.,Int_t N = 200);
   //draw RF it don't delete histograms after drawing
   /// it's on user !!!!

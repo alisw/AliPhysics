@@ -1,8 +1,16 @@
+struct GoodTrack {
+  Int_t lab;
+  Int_t code;
+  Float_t px,py,pz;
+  Float_t x,y,z;
+};
+Int_t good_tracks(GoodTrack *gt, Int_t max);
+
 void AliTPCTestTracking() {
-   const char *pname="Param1";
-   const char *tname="TreeD0_Param1";
+   const char *pname="75x40_100x60";
 
 // Dynamically link some shared libs
+
    if (gClassTable->GetID("AliRun") < 0) {
       gROOT->LoadMacro("loadlibs.C");
       loadlibs();
@@ -14,6 +22,7 @@ void AliTPCTestTracking() {
 // Connect the Root Galice file containing Geometry, Kine and Hits
    TFile *file = (TFile*)gROOT->GetListOfFiles()->FindObject("galice.root");
    if (!file) file = new TFile("galice.root");
+   //if (!file) file = TFile::Open("rfio:galice.root");
 
 // Get AliRun object from file or create it if not on file
    if (!gAlice) {
@@ -24,191 +33,146 @@ void AliTPCTestTracking() {
 
    gAlice->GetEvent(0);
 
-   TClonesArray *particles=gAlice->Particles(); 
-   int np=particles->GetEntriesFast();
-   int *good=new int[np];
-   for (int ii=0; ii<np; ii++) good[ii]=0;
-
    AliTPC *TPC = (AliTPC*)gAlice->GetDetector("TPC");
-   int ver=TPC->IsVersion();
+   Int_t ver=TPC->IsVersion();
    cerr<<"TPC version "<<ver<<" has been found !\n";
 
-   AliTPCD *digp= (AliTPCD*)file->Get(pname);
-   if (digp!=0) TPC->SetDigParam(digp);
+   AliTPCParam *digp= (AliTPCParam*)file->Get(pname);
+   if (digp!=0) TPC->SetParam(digp);
    else cerr<<"Warning: default TPC parameters will be used !\n";
 
-   int nrow_up=TPC->GetDigParam()->GetParam().GetNRowUp();
-   int nrows=TPC->GetDigParam()->GetParam().GetNRowLow()+nrow_up;
-   int zero=TPC->GetDigParam()->GetParam().GetZeroSup();
-   int gap=int(0.125*nrows);
-   int good_number=int(0.4*nrows);
+   Int_t nrow_up=TPC->GetParam()->GetNRowUp();
+   Int_t nrows=TPC->GetParam()->GetNRowLow()+nrow_up;
 
    switch (ver) {
    case 1:
       cerr<<"Making clusters...\n";
       TPC->Hits2Clusters();
-      TClonesArray *clusters=TPC->Clusters();
-      if (!clusters) {cerr<<"No clusters found !\n"; return;}
-      int n=clusters->GetEntriesFast();
-      cerr<<"Number of clusters "<<n<<"                                  \n";
-      
-      cerr<<"Marking \"good\" tracks...                                  \n";
-      for (int i=0; i<n; i++) {
-          AliTPCcluster *c=(AliTPCcluster*)clusters->UncheckedAt(i);
-          int lab=c->fTracks[0];
-          if (lab<0) continue; //noise cluster
-          lab=TMath::Abs(lab);
-          int row=c->fPadRow;
-          if (row==nrow_up-1    ) good[lab]|=0x1000;
-          if (row==nrow_up-1-gap) good[lab]|=0x800;
-          good[lab]++;
-      }
-      
       break;
    case 2:
       cerr<<"Looking for clusters...\n";
       TPC->Digits2Clusters();
-      TClonesArray *clusters=TPC->Clusters();
-      if (!clusters) {cerr<<"No clusters found !\n"; return;}
-      int n=clusters->GetEntriesFast();
-      cerr<<"Number of clusters "<<n<<"                                  \n";
-                
-      cerr<<"Marking \"good\" tracks...                                  \n";
-      TTree *TD=gDirectory->Get(tname);
-      TClonesArray *digits=TPC->Digits();
-      TD->GetBranch("Digits")->SetAddress(&digits);
-
-      int *count = new int[np];
-      int i;
-      for (i=0; i<np; i++) count[i]=0;
-      int sectors_by_rows=(int)TD->GetEntries();
-      for (i=0; i<sectors_by_rows; i++) {
-          if (!TD->GetEvent(i)) continue;
-          int row;
-          int ndigits=digits->GetEntriesFast();
-          int j;
-          for (j=0; j<ndigits; j++) {
-              AliTPCdigit *dig = (AliTPCdigit*)digits->UncheckedAt(j);
-              int idx0=dig->fTracks[0];
-              int idx1=dig->fTracks[1];
-              int idx2=dig->fTracks[2];
-              row=dig->fPadRow;
-              if (idx0>=0 && dig->fSignal>=zero) count[idx0]+=1;
-              if (idx1>=0 && dig->fSignal>=zero) count[idx1]+=1;
-              if (idx2>=0 && dig->fSignal>=zero) count[idx2]+=1;
-          }
-          for (j=0; j<np; j++) {
-              if (count[j]>1) {
-                 int ks;
-                 if (row==nrow_up-1    ) good[j]|=0x1000;
-                 if (row==nrow_up-1-gap) good[j]|=0x800;
-                 good[j]++;
-              }
-              count[j]=0;
-          }
-      }
-      delete[] count;
-      
       break;
    default:
       cerr<<"Invalid TPC version !\n";
       return;
    }
 
+   TClonesArray *clusters=TPC->Clusters();
+   Int_t n=clusters->GetEntriesFast();
+   cerr<<"Number of clusters "<<n<<"                                  \n";
+
    cerr<<"Looking for tracks...\n";
+   TStopwatch timer;
    TPC->Clusters2Tracks();
-   int nt=0;
+   timer.Stop(); timer.Print();
+   Int_t nt=0;
    TClonesArray *tracks=TPC->Tracks();
    if (tracks) nt=tracks->GetEntriesFast();
    cerr<<"Number of found tracks "<<nt<<endl;
 
 /////////////////////////////////////////////////////////////////////////
+   GoodTrack gt[7000];
+   Int_t ngood=0;
+   ifstream in("good_tracks");
+   if (in) {
+      cerr<<"Reading good tracks...\n";
+      while (in>>gt[ngood].lab>>gt[ngood].code
+	       >>gt[ngood].px >>gt[ngood].py>>gt[ngood].pz
+	       >>gt[ngood].x  >>gt[ngood].y >>gt[ngood].z) {
+         ngood++;
+         cerr<<ngood<<'\r';
+         if (ngood==7000) {
+            cerr<<"Too many good tracks !\n";
+            break;
+         }
+      }
+      if (!in.eof()) cerr<<"Read error (good_tracks) !\n";
+   } else {
+      cerr<<"Marking good tracks (this will take a while)...\n";
+      ngood=good_tracks(gt,7000);
+      ofstream out("good_tracks");
+      if (out) {
+         for (Int_t ngd=0; ngd<ngood; ngd++)            
+	    out<<gt[ngd].lab<<' '<<gt[ngd].code<<' '
+	       <<gt[ngd].px <<' '<<gt[ngd].py<<' '<<gt[ngd].pz<<' '
+	       <<gt[ngd].x  <<' '<<gt[ngd].y <<' '<<gt[ngd].z <<endl;
+      } else cerr<<"Can not open file (good_tracks) !\n";
+      out.close();
+   }
+   cerr<<"Number of good tracks : "<<ngood<<endl;
+
    cerr<<"Doing comparison...\n";
-   TH1F *hp=new TH1F("hp","PHI resolution",50,-100.,100.); hp->SetFillColor(4); 
-   TH1F *hl=new TH1F("hl","LAMBDA resolution",50,-100,100); hl->SetFillColor(4);
+   TH1F *hp=new TH1F("hp","PHI resolution",50,-20.,20.); hp->SetFillColor(4);
+   TH1F *hl=new TH1F("hl","LAMBDA resolution",50,-20,20);hl->SetFillColor(4);
    TH1F *hpt=new TH1F("hpt","Relative Pt resolution",30,-10.,10.); 
    hpt->SetFillColor(2); 
-   TH1F *hd=new TH1F("hd","Impact parameter distribution ",30,0,25); 
-   hd->SetFillColor(6);
+   TH1F *hmpt=new TH1F("hmpt","Relative Pt resolution (pt>4GeV/c)",30,-60,60); 
+   hmpt->SetFillColor(6);
 
-   TH1F *hgood=new TH1F("hgood","Good tracks",20,0,10);    
-   TH1F *hfound=new TH1F("hfound","Found tracks",20,0,10);
-   TH1F *hfake=new TH1F("hfake","Fake tracks",20,0,10);
-   TH1F *hg=new TH1F("hg","",20,0,10); //efficiency for good tracks
+   TH1F *hgood=new TH1F("hgood","Good tracks",20,0,7);    
+   TH1F *hfound=new TH1F("hfound","Found tracks",20,0,7);
+   TH1F *hfake=new TH1F("hfake","Fake tracks",20,0,7);
+   TH1F *hg=new TH1F("hg","",20,0,7); //efficiency for good tracks
    hg->SetLineColor(4); hg->SetLineWidth(2);
-   TH1F *hf=new TH1F("hf","Efficiency for fake tracks",20,0,10);
+   TH1F *hf=new TH1F("hf","Efficiency for fake tracks",20,0,7);
    hf->SetFillColor(1); hf->SetFillStyle(3013); hf->SetLineWidth(2);
 
-   TH1F *he =new TH1F("he","dE/dX for pions with 0.4<p<0.5 GeV/c",50,0.,500.);
-   TH2F *hep=new TH2F("hep","dE/dX vs momentum",50,0.,2.,50,0.,500.);
+   TH1F *he =new TH1F("he","dE/dX for pions with 0.4<p<0.5 GeV/c",50,0.,100.);
+   TH2F *hep=new TH2F("hep","dE/dX vs momentum",50,0.,2.,50,0.,200.);
 
-   for (int i=0; i<np; i++) {
-      TParticle *p = (TParticle*)particles->UncheckedAt(i);
-      if (p->GetFirstMother()>=0) continue;  //secondary particle
-      if (good[i] < 0x1000+0x800+2+good_number) continue;
-      Double_t ptg=p->Pt(),pxg=p->Px(),pyg=p->Py(),pzg=p->Pz();
-      if (ptg<0.100) continue;
-      if (fabs(pzg/ptg)>0.999) continue;
-
-      //cout<<i<<endl;
+   while (ngood--) {
+      Int_t lab=gt[ngood].lab,tlab;
+      Float_t ptg=
+      TMath::Sqrt(gt[ngood].px*gt[ngood].px + gt[ngood].py*gt[ngood].py);
 
       hgood->Fill(ptg);
-      int found=0;
-      for (int j=0; j<nt; j++) {
-          AliTPCtrack *track=(AliTPCtrack*)tracks->UncheckedAt(j);
-          int lab=track->GetLabel(nrows);
-	  if (fabs(lab)!=i) continue;
 
-          found=1;
-
-          Double_t xk=76.;
-          track->PropagateTo(xk);
-          xk-=0.11;
-          track->PropagateTo(xk,42.7,2.27); //C
-          xk-=26.;
-          track->PropagateTo(xk,36.2,1.98e-3); //C02
-          xk-=0.051;
-          track->PropagateTo(xk,42.7,2.27); //C
-          xk-=25.;
-          track->PropagateTo(xk,36.7,1.29e-3);//Air
-          xk-=0.4;                           //  +
-          track->PropagateTo(xk,21.82,2.33);//ITS+beam_pipe+etc (approximately)
-
-          track->PropagateToVertex(); //comparison should be done at the vertex
-
-          if (lab==i) hfound->Fill(ptg);
-          else { hfake->Fill(ptg); cerr<<lab<<" fake\n";}
-          Double_t px,py,pz,pt=fabs(track->GetPt());track->GetPxPyPz(px,py,pz);
-          Double_t phig=TMath::ATan(pyg/pxg);
-          Double_t phi =TMath::ATan(py /px );
-          hp->Fill((phi - phig)*1000.);
-          Double_t lamg=TMath::ATan(pzg/ptg);
-          Double_t lam =TMath::ATan(pz /pt );
-          hl->Fill((lam - lamg)*1000.);
-          hpt->Fill((pt - ptg)/ptg*100.);
-          Double_t x=track->GetX(), y=track->GetY(), z=track->GetZ();
-          hd->Fill(sqrt(x*x + y*y + z*z)*10.);
-
-          Double_t mom=track->GetP();
-          Double_t dedx=track->GetdEdX(0.05,0.80)/
-                        digp->GetParam().GetPadPitchLength();
-
-          hep->Fill(mom,dedx,1.);
-          if (p->GetPdgCode()==211 || p->GetPdgCode()==-211)
-	    if (mom>0.4 && mom<0.5) 
-                   he->Fill(dedx,1.);
-
-          break;
+      AliTPCtrack *track;
+      Int_t i;
+      for (i=0; i<nt; i++) {
+          track=(AliTPCtrack*)tracks->UncheckedAt(i);
+          tlab=track->GetLabel(nrows);
+          if (lab==TMath::Abs(tlab)) break;
       }
-      if (!found) cerr<<"Track number "<<i<<" was not found !\n";
+      if (i==nt) {
+	cerr<<"Track "<<lab<<" was not found !\n";
+        continue;
+      }
+      Double_t xk=gt[ngood].x;//digp->GetPadRowRadii(0,0);
+      track->PropagateTo(xk);
+
+      if (lab==tlab) hfound->Fill(ptg);
+      else { hfake->Fill(ptg); cerr<<lab<<" fake\n";}
+
+      Double_t px,py,pz,pt=fabs(track->GetPt());track->GetPxPyPz(px,py,pz);
+
+      if (TMath::Abs(gt[ngood].code)==11 && ptg>4.) {
+         hmpt->Fill((1/pt - 1/ptg)/(1/ptg)*100.);
+      } else {
+         Float_t phig=TMath::ATan2(gt[ngood].py,gt[ngood].px);
+         Float_t phi =TMath::ATan2(py,px );
+         hp->Fill((phi - phig)*1000.);
+
+         Float_t lamg=TMath::ATan2(gt[ngood].pz,ptg);
+         Float_t lam =TMath::ATan2(pz ,pt );
+         hl->Fill((lam - lamg)*1000.);
+
+         hpt->Fill((1/pt - 1/ptg)/(1/ptg)*100.);
+      }
+      Float_t mom=track->GetP();
+      Float_t dedx=track->GetdEdX(0.05,0.70);
+      hep->Fill(mom,dedx,1.);
+      if (TMath::Abs(gt[ngood].code)==211)
+	 if (mom>0.4 && mom<0.5) {
+            he->Fill(dedx,1.);
+         }
    }
 
-   delete[] good;
-
-   Stat_t ngood =hgood->GetEntries(); cerr<<"Good tracks "<<ngood<<endl;
-   Stat_t nfound=hfound->GetEntries();
-   if (ngood!=0) 
-      cerr<<"Integral efficiency is about "<<nfound/ngood*100.<<" %\n";
+   Stat_t ng=hgood->GetEntries(); cerr<<"Good tracks "<<ng<<endl;
+   Stat_t nf=hfound->GetEntries();
+   if (ng!=0) 
+      cerr<<"Integral efficiency is about "<<nf/ng*100.<<" %\n";
 
    gStyle->SetOptStat(111110);
    gStyle->SetOptFit(1);
@@ -229,7 +193,7 @@ void AliTPCTestTracking() {
 
    TPad *p4=new TPad("p4","",0.5,0,1,0.3); p4->Draw();
    p4->cd(); p4->SetFillColor(42); p4->SetFrameFillColor(10);
-   hd->SetXTitle("(mm)"); hd->Draw(); c1->cd();
+   hmpt->SetXTitle("(%)"); hmpt->Fit("gaus"); c1->cd();
 
    TPad *p5=new TPad("p5","",0,0.6,1,1); p5->Draw(); p5->cd(); 
    p5->SetFillColor(41); p5->SetFrameFillColor(10);
@@ -241,9 +205,9 @@ void AliTPCTestTracking() {
    hg->SetXTitle("Pt (GeV/c)");
    hg->Draw();
 
-   TLine *line1 = new TLine(0,1.0,2,1.0); line1->SetLineStyle(4);
+   TLine *line1 = new TLine(0,1.0,7,1.0); line1->SetLineStyle(4);
    line1->Draw("same");
-   TLine *line2 = new TLine(0,0.9,2,0.9); line2->SetLineStyle(4);
+   TLine *line2 = new TLine(0,0.9,7,0.9); line2->SetLineStyle(4);
    line2->Draw("same");
 
    hf->SetFillColor(1);
@@ -273,6 +237,129 @@ void AliTPCTestTracking() {
    hep->SetXTitle("p (Gev/c)"); hep->SetYTitle("dE/dX (Arb. Units)"); 
    hep->Draw(); c1->cd();
 
+}
 
+
+Int_t good_tracks(GoodTrack *gt, Int_t max) {
+   const char *tname="TreeD_75x40_100x60";
+
+   Int_t nt=0;
+
+   AliTPC *TPC = (AliTPC*)gAlice->GetDetector("TPC");
+   Int_t ver=TPC->IsVersion();
+   AliTPCParam *digp= (AliTPCParam*)TPC->GetParam();
+
+   Int_t nrow_up=TPC->GetParam()->GetNRowUp();
+   Int_t nrows=TPC->GetParam()->GetNRowLow()+nrow_up;
+   Int_t zero=TPC->GetParam()->GetZeroSup();
+   Int_t gap=Int_t(0.125*nrows);
+   Int_t good_number=Int_t(0.4*nrows);
+
+   //gAlice->GetEvent(0);
+   TClonesArray *particles=gAlice->Particles(); 
+   Int_t np=particles->GetEntriesFast();
+   Int_t *good=new Int_t[np];
+   for (Int_t ii=0; ii<np; ii++) good[ii]=0;
+
+   switch (ver) {
+   case 1:
+      TClonesArray *clusters=TPC->Clusters();
+      Int_t n=0;
+      if (clusters) n=clusters->GetEntriesFast(); 
+      for (Int_t i=0; i<n; i++) {
+          AliTPCcluster *c=(AliTPCcluster*)clusters->UncheckedAt(i);
+          Int_t lab=c->fTracks[0];
+          if (lab<0) continue; //noise cluster
+          lab=TMath::Abs(lab);
+          Int_t sec=c->fSector, row=c->fPadRow;
+          if (sec>=digp->GetNInnerSector())
+          if (row==nrow_up-1    ) good[lab]|=0x1000;
+          if (sec>=digp->GetNInnerSector())
+          if (row==nrow_up-1-gap) good[lab]|=0x800;
+          good[lab]++;
+      }
+      break;
+   case 2:
+      TTree *TD=(TTree*)gDirectory->Get(tname);
+      AliSimDigits da, *digits=&da;
+      TD->GetBranch("Segment")->SetAddress(&digits);
+      Int_t *count = new Int_t[np];
+      Int_t i;
+      for (i=0; i<np; i++) count[i]=0;
+      Int_t sectors_by_rows=(Int_t)TD->GetEntries();
+      for (i=0; i<sectors_by_rows; i++) {
+          if (!TD->GetEvent(i)) continue;
+          Int_t sec,row;
+          digp->AdjustSectorRow(digits->GetID(),sec,row);
+          cerr<<sec<<' '<<row<<"                                     \r";
+          digits->First();
+          while (digits->Next()) {
+              Int_t it=digits->CurrentRow(), ip=digits->CurrentColumn();
+              Short_t dig = digits->GetDigit(it,ip);
+              Int_t idx0=digits->GetTrackID(it,ip,0); 
+              Int_t idx1=digits->GetTrackID(it,ip,1);
+              Int_t idx2=digits->GetTrackID(it,ip,2);
+              if (idx0>=0 && dig>=zero) count[idx0]+=1;
+              if (idx1>=0 && dig>=zero) count[idx1]+=1;
+              if (idx2>=0 && dig>=zero) count[idx2]+=1;
+          }
+          for (Int_t j=0; j<np; j++) {
+              if (count[j]>1) {
+                 if (sec>=digp->GetNInnerSector())
+                 if (row==nrow_up-1    ) good[j]|=0x1000;
+                 if (sec>=digp->GetNInnerSector())
+                 if (row==nrow_up-1-gap) good[j]|=0x800;
+                 good[j]++;
+              }
+              count[j]=0;
+          }
+      }
+      delete[] count;
+      break;
+   default:
+      cerr<<"Invalid TPC version !\n";
+      return;
+   }
+
+   TTree *TH=gAlice->TreeH();
+   TClonesArray *hits=TPC->Hits();
+   Int_t npart=TH->GetEntries();
+
+   while (npart--) {
+      TPC->ResetHits();
+      TH->GetEvent(npart);
+      Int_t nhits=hits->GetEntriesFast();
+      if (nhits==0) continue;
+      AliTPChit *hit;
+      Int_t j;
+      for (j=0; j<nhits-1; j++) {
+         hit=(AliTPChit*)hits->UncheckedAt(j);
+         if (hit->fQ==0.) break;
+      }
+      if (j==nhits-1) continue;
+      AliTPChit *hit1=(AliTPChit*)hits->UncheckedAt(j+1);
+      if (hit1->fQ != 0.) continue;
+      Int_t i=hit->fTrack;
+      TParticle *p = (TParticle*)particles->UncheckedAt(i);
+      if (p->GetFirstMother()>=0) continue;  //secondary particle
+      if (good[i] < 0x1000+0x800+2+good_number) continue;
+      if (p->Pt()<0.100) continue;
+      if (TMath::Abs(p->Pz()/p->Pt())>0.999) continue;
+
+      gt[nt].lab=i;
+      gt[nt].code=p->GetPdgCode();
+//**** px py pz - in global coordinate system, x y z - in local !
+      gt[nt].px=hit->fX; gt[nt].py=hit->fY; gt[nt].pz=hit->fZ;
+      Float_t cs,sn; digp->AdjustCosSin(hit1->fSector,cs,sn);
+      gt[nt].x = hit1->fX*cs + hit1->fY*sn;
+      gt[nt].y =-hit1->fX*sn + hit1->fY*cs;
+      gt[nt].z = hit1->fZ;
+      nt++;
+
+      cerr<<i<<"                \r";
+      if (nt==max) {cerr<<"Too many good tracks !\n"; break;}
+   }
+   delete[] good;
+   return nt;
 }
 

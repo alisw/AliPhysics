@@ -1,8 +1,9 @@
 void AliTPCTestClustering() {
-   const char *pname="Param1";
-   const char *tname="TreeD0_Param1";
+   const char *pname="75x40_100x60";
+   const char *tname="TreeD_75x40_100x60";
 
 // Dynamically link some shared libs
+
    if (gClassTable->GetID("AliRun") < 0) {
       gROOT->LoadMacro("loadlibs.C");
       loadlibs();
@@ -14,6 +15,7 @@ void AliTPCTestClustering() {
 // Connect the Root Galice file containing Geometry, Kine and Hits
    TFile *file = (TFile*)gROOT->GetListOfFiles()->FindObject("galice.root");
    if (!file) file = new TFile("galice.root");
+   //if (!file) file = TFile::Open("rfio:galice.root");
 
 // Get AliRun object from file or create it if not on file
    if (!gAlice) {
@@ -28,8 +30,8 @@ void AliTPCTestClustering() {
    int ver=TPC->IsVersion(); 
    cerr<<"TPC version "<<ver<<" has been found !\n";
 
-   AliTPCD *dig=(AliTPCD*)file->Get(pname);
-   if (dig!=0) TPC->SetDigParam(dig);
+   AliTPCParam *dig=(AliTPCParam *)file->Get(pname);
+   if (dig!=0) TPC->SetParam(dig);
    else cerr<<"Warning: default TPC parameters will be used !\n";
 
    switch (ver) {
@@ -49,12 +51,11 @@ void AliTPCTestClustering() {
    int n=c->GetEntriesFast();
    cerr<<"Number of clusters "<<n<<"                            \n";
 
-   AliTPCParam *par=&TPC->GetDigParam()->GetParam();
    Float_t x[3];
    TPolyMarker3D *pm=new TPolyMarker3D(n);
    for (int i=0; i<n; i++) {
        AliTPCcluster *cl=(AliTPCcluster *)c->UncheckedAt(i);
-       cl->GetXYZ(x,par);
+       cl->GetXYZ(x,dig);
        Double_t xx=x[0], yy=x[1], zz=x[2];
        pm->SetPoint(i,xx,yy,zz);
    }

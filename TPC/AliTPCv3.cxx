@@ -15,6 +15,17 @@
 
 /*
 $Log$
+Revision 1.11.8.2  2000/04/10 08:36:12  kowal2
+
+Updated readout chambers
+Some modifications to StepManager by M. Kowalski
+
+Revision 1.11.8.1  2000/04/10 07:56:53  kowal2
+Not used anymore - removed
+
+Revision 1.11  1999/11/04 17:28:07  fca
+Correct barrel part of HV Degrader
+
 Revision 1.10  1999/10/14 16:52:08  fca
 Only use PDG codes and not GEANT ones
 
@@ -44,12 +55,11 @@ Introduction of the Copyright and cvs Log
 
 #include <stdlib.h>
 #include <TMath.h>
-
 #include "AliTPCv3.h"
 #include "AliRun.h"
 #include "AliConst.h"
-#include "AliTPCD.h"
-#include "AliTPCParam.h"
+#include "AliTPCDigitsArray.h"
+#include"AliTPCParam.h"
 #include "AliPDG.h"
 
 ClassImp(AliTPCv3)
@@ -59,7 +69,7 @@ AliTPCv3::AliTPCv3(const char *name, const char *title) :
   AliTPC(name, title) 
 {
   //
-  // Standard constructor for Time Projection Chamber version 2
+  // Standard constructor for Time Projection Chamber version 3
   //
 
   SetBufferSize(128000);
@@ -69,8 +79,8 @@ AliTPCv3::AliTPCv3(const char *name, const char *title) :
 void AliTPCv3::CreateGeometry()
 {
   //
-  // Creation of the TPC coarse geometry (version 0)
-  // Origin Marek Kowalski Crakow
+  // Creation of the TPC coarse geometry (version 3)
+  // Origin Marek Kowalski Cracow
   //
   //Begin_Html
   /*
@@ -82,8 +92,6 @@ void AliTPCv3::CreateGeometry()
     <img src="picts/AliTPCv0Tree.gif">
   */
   //End_Html
-
-  AliTPCParam * fTPCParam = &(fDigParam->GetParam());
 
   Int_t *idtmed = fIdtmed->GetArray();
 
@@ -187,20 +195,20 @@ void AliTPCv3::CreateGeometry()
   Int_t nOuterSector = fTPCParam->GetNOuterSector()/2;
 
 
-  Float_t InSecLowEdge = fTPCParam->GetInSecLowEdge();
-  Float_t InSecUpEdge =  fTPCParam->GetInSecUpEdge();
+  Float_t InSecLowEdge = fTPCParam->GetInnerRadiusLow();
+  Float_t InSecUpEdge =  fTPCParam->GetInnerRadiusUp();
 
-  Float_t OuSecLowEdge = fTPCParam->GetOuSecLowEdge();
-  Float_t OuSecUpEdge = fTPCParam->GetOuSecUpEdge();
+  Float_t OuSecLowEdge = fTPCParam->GetOuterRadiusLow();
+  Float_t OuSecUpEdge = fTPCParam->GetOuterRadiusUp();
 
   Float_t SecThick = 2.225; // Al
 
-  Float_t edge = fTPCParam->GetEdge();
+  Float_t LowEdge = fTPCParam->GetInnerFrameSpace();
 
   //  S (Inner) sectors
 
-  dm[0] = InSecLowEdge*TMath::Tan(0.5*InnerOpenAngle)-edge;
-  dm[1] = InSecUpEdge*TMath::Tan(0.5*InnerOpenAngle)-edge;
+  dm[0] = InSecLowEdge*TMath::Tan(0.5*InnerOpenAngle)-LowEdge;
+  dm[1] = InSecUpEdge*TMath::Tan(0.5*InnerOpenAngle)-LowEdge;
   dm[2] = SecThick;
   dm[3] = 0.5*(InSecUpEdge-InSecLowEdge);
 
@@ -210,8 +218,10 @@ void AliTPCv3::CreateGeometry()
 
   //  L (Outer) sectors
 
-  dm[0] = OuSecLowEdge*TMath::Tan(0.5*OuterOpenAngle)-edge;
-  dm[1] = OuSecUpEdge*TMath::Tan(0.5*OuterOpenAngle)-edge;
+  Float_t UpEdge = fTPCParam->GetOuterFrameSpace();
+
+  dm[0] = OuSecLowEdge*TMath::Tan(0.5*OuterOpenAngle)-UpEdge;
+  dm[1] = OuSecUpEdge*TMath::Tan(0.5*OuterOpenAngle)-UpEdge;
   dm[2] = SecThick;
   dm[3] = 0.5*(OuSecUpEdge-OuSecLowEdge);
 
@@ -802,7 +812,7 @@ void AliTPCv3::StepManager()
   Float_t beta_gamma = ptot/gMC->TrackMass();
   
   Int_t pid=gMC->TrackPid();
-  if((pid==kElectron || pid==kPositron || pid==kGamma) && ptot > 0.002)
+  if((pid==kElectron || pid==kPositron) && ptot > 0.002)
     { 
       pp = prim*1.58; // electrons above 20 MeV/c are on the plateau!
     }

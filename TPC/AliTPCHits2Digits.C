@@ -1,4 +1,3 @@
-
 void AliTPCHits2Digits(const  char * name= "pokusD_")
 {
  
@@ -9,6 +8,7 @@ void AliTPCHits2Digits(const  char * name= "pokusD_")
      }
   
    //names of trees
+
    const char * inFile = "galice.root";
    //   const * char ident= "TreeD1par_";
 
@@ -42,8 +42,8 @@ void AliTPCHits2Digits(const  char * name= "pokusD_")
   AliTPCPRF2D &prf = paramd->GetPRF2D();
   AliTPCRF1D  & rf  = paramd->GetRF();
   
-  param.SetPadLength(2.0);
-  param.SetPadWidth(0.3);
+  param.SetPadLength(2.05);
+  param.SetPadWidth(0.35);
   param.SetPadPitchLength(2.05);
   param.SetPadPitchWidth(0.35);
   param.SetNWires(5);
@@ -53,19 +53,11 @@ void AliTPCHits2Digits(const  char * name= "pokusD_")
   param.SetNoise(500);
   param.SetGasGain(1.e4);
   param.SetChipGain(24); 
-  param.SetSectorAngles(20.,0.,20.,0.);
-  param.SetInnerRadiusLow(83.9);
-  param.SetInnerRadiusUp(141.3);
+  param.SetSectorAngles(40.,0.,20.,10.);
+  param.SetInnerRadiusLow(83.7);
+  param.SetInnerRadiusUp(132.9);
   param.SetOuterRadiusLow(146.9);
   param.SetOuterRadiusUp(249.4);     
-  param.SetTSample(1.9e-7);
-  param.SetTSigma(1.5e-7/2.35);
-  param.SetInSecLowEdge(81.6);
-  param.SetInSecUpEdge(143.6);
-  param.SetOuSecLowEdge(144.2);
-  param.SetOuSecUpEdge(252.1);
-  param.SetEdge(1.5);
-  param.SetDeadZone(1.15);
   param.Update();
 
     //Set z (time) response function
@@ -74,7 +66,7 @@ void AliTPCHits2Digits(const  char * name= "pokusD_")
   rf.SetGauss(param.GetZSigma(),param.GetZWidth(),0.4);
   rf.Update();
   //Set two dimensional pad response function
-  TFile f("$(ALICE_ROOT)/TPC/AliTPCprf2d.root");
+  TFile f("TPC/AliTPCprf2d.root");
   //  prf.Read("prf_205035_Gati_062074_d03");
   prf.Read("prf_205035_Gati_062074_d03");
   f.Close();
@@ -89,18 +81,7 @@ void AliTPCHits2Digits(const  char * name= "pokusD_")
   prf.Dump();
   printf("**********Digit object dump end********************\n");
 
-   TPC->Hits2DigitsSector(1);     
-   TPC->Hits2DigitsSector(2);     
-   TPC->Hits2DigitsSector(3);     
-   TPC->Hits2DigitsSector(1+18);     
-   TPC->Hits2DigitsSector(2+18);     
-   TPC->Hits2DigitsSector(3+18);     
-   TPC->Hits2DigitsSector(1+36);     
-   TPC->Hits2DigitsSector(2+36);     
-   TPC->Hits2DigitsSector(3+36);     
-   TPC->Hits2DigitsSector(1+36+18);     
-   TPC->Hits2DigitsSector(2+36+18);     
-   TPC->Hits2DigitsSector(3+36+18);     
+   TPC->Hits2DigitsSector(0);     
          
  
    file->cd();

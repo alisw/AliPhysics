@@ -15,6 +15,16 @@
 
 /*
 $Log$
+Revision 1.13.8.2  2000/04/10 08:33:44  kowal2
+
+Updated readout chambers
+
+Revision 1.13.8.1  2000/04/10 07:56:53  kowal2
+Not used anymore - removed
+
+Revision 1.13  1999/11/04 17:28:06  fca
+Correct barrel part of HV Degrader
+
 Revision 1.12  1999/10/08 06:27:23  fca
 Corrected bug in the HV degrader geometry, thanks to G.Tabary
 
@@ -47,12 +57,11 @@ Introduction of the Copyright and cvs Log
 #include "AliRun.h"
 #include <iostream.h>
 #include <fstream.h>
-
 #include "AliMC.h"
 #include "AliConst.h"
 
 #include "AliTPCParam.h"
-#include "AliTPCD.h"
+#include "AliTPCDigitsArray.h"
 
 ClassImp(AliTPCv0)
  
@@ -70,7 +79,7 @@ void AliTPCv0::CreateGeometry()
 {
   //
   // Creation of the TPC coarse geometry (version 0)
-  // Origin Marek Kowalski Crakow
+  // Origin Marek Kowalski Cracow
   //
   //Begin_Html
   /*
@@ -83,7 +92,6 @@ void AliTPCv0::CreateGeometry()
   */
   //End_Html
 
-  AliTPCParam * fTPCParam = &(fDigParam->GetParam());
 
   Int_t *idtmed = fIdtmed->GetArray();
 
@@ -187,20 +195,21 @@ void AliTPCv0::CreateGeometry()
   Int_t nOuterSector = fTPCParam->GetNOuterSector()/2;
 
 
-  Float_t InSecLowEdge = fTPCParam->GetInSecLowEdge();
-  Float_t InSecUpEdge =  fTPCParam->GetInSecUpEdge();
+  Float_t InSecLowEdge = fTPCParam->GetInnerRadiusLow();
+  Float_t InSecUpEdge =  fTPCParam->GetInnerRadiusUp();
 
-  Float_t OuSecLowEdge = fTPCParam->GetOuSecLowEdge();
-  Float_t OuSecUpEdge = fTPCParam->GetOuSecUpEdge();
+  Float_t OuSecLowEdge = fTPCParam->GetOuterRadiusLow();
+  Float_t OuSecUpEdge = fTPCParam->GetOuterRadiusUp();
 
   Float_t SecThick = 2.225; // Al
 
-  Float_t edge = fTPCParam->GetEdge();
 
   //  S (Inner) sectors
 
-  dm[0] = InSecLowEdge*TMath::Tan(0.5*InnerOpenAngle)-edge;
-  dm[1] = InSecUpEdge*TMath::Tan(0.5*InnerOpenAngle)-edge;
+  Float_t LowEdge = fTPCParam->GetInnerFrameSpace();
+
+  dm[0] = InSecLowEdge*TMath::Tan(0.5*InnerOpenAngle)-LowEdge;
+  dm[1] = InSecUpEdge*TMath::Tan(0.5*InnerOpenAngle)-LowEdge;
   dm[2] = SecThick;
   dm[3] = 0.5*(InSecUpEdge-InSecLowEdge);
 
@@ -210,8 +219,10 @@ void AliTPCv0::CreateGeometry()
 
   //  L (Outer) sectors
 
-  dm[0] = OuSecLowEdge*TMath::Tan(0.5*OuterOpenAngle)-edge;
-  dm[1] = OuSecUpEdge*TMath::Tan(0.5*OuterOpenAngle)-edge;
+  Float_t UpEdge = fTPCParam->GetOuterFrameSpace();
+
+  dm[0] = OuSecLowEdge*TMath::Tan(0.5*OuterOpenAngle)-UpEdge;
+  dm[1] = OuSecUpEdge*TMath::Tan(0.5*OuterOpenAngle)-UpEdge;
   dm[2] = SecThick;
   dm[3] = 0.5*(OuSecUpEdge-OuSecLowEdge);
 
