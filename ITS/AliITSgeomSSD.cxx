@@ -26,7 +26,7 @@ Revision 1.2  1999/09/29 09:24:20  fca
 Introduction of the Copyright and cvs Log
 
 */
-
+ 
 #include "AliITSgeomSSD.h"
 
 ClassImp(AliITSgeomSSD)
@@ -40,5 +40,62 @@ AliITSgeomSSD::AliITSgeomSSD(){
     Float_t dz = 2.0;   // cm. (Geant 3.12 units) Allong the Beam Pipe
 
     fShapeSSD = new TBRIK("ActiveSSD","Active volume of SSD","SSD SI DET",
-		  	    dx,dy,dz);
+			  dx,dy,dz);   
 }
+
+AliITSgeomSSD::AliITSgeomSSD(const AliITSgeomSSD &source){
+////////////////////////////////////////////////////////////////////////
+//    copy  constructor
+////////////////////////////////////////////////////////////////////////
+
+    this->fShapeSSD = source.fShapeSSD;
+    return;
+}  
+
+AliITSgeomSSD& AliITSgeomSSD::operator=(const AliITSgeomSSD &source) {
+////////////////////////////////////////////////////////////////////////
+//    assignment operator
+////////////////////////////////////////////////////////////////////////
+
+    this->fShapeSSD = source.fShapeSSD;
+    return *this;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
