@@ -82,8 +82,8 @@ class AliGenHijing : public AliGenMC
     
 
 // Physics Routines
-    virtual Bool_t ProvidesCollisionGeometry() {return kTRUE;}
-    virtual AliCollisionGeometry* CollisionGeometry() {return fCollisionGeometry;}
+    virtual Bool_t ProvidesCollisionGeometry() const {return kTRUE;}
+    virtual AliCollisionGeometry* CollisionGeometry() const {return fCollisionGeometry;}
     virtual void EvaluateCrossSections();
     virtual void Boost();
     virtual TGraph* CrossSection()     {return fDsigmaDb;}
