@@ -39,9 +39,10 @@ public:
   // Getters 
   Double_t GetFermi2p(Int_t key) {return fProbintp[key];}
   Double_t GetFermi2n(Int_t key) {return fProbintn[key];}
-  Float_t  GetMomentum(Int_t key) {return fP[key];};
+  Float_t  GetInMomentum(Int_t key) {return fPInit[key];};
   Float_t  GetBoostMomentum(Int_t key) {return fBoostP[key];};
   Float_t  GetDivMomentum(Int_t key) {return fDivP[key];};
+  Float_t  GetTrackMomentum(Int_t key) {return fPTrack[key];};
   
   // Fermi smearing, beam divergence and crossing angle       	       
   virtual void FermiTwoGaussian(Double_t A, Float_t Z, Double_t* pp, 
@@ -66,9 +67,11 @@ protected:
   Double_t fProbintp[201];      // for protons
   Double_t fProbintn[201];      // for neutrons
   Double_t fPp[201];            // for protons
-  Double_t fP[3];               // momentum
-  Float_t fBoostP[3];           // boost vector
-  Float_t fDivP[3];             // divergence
+  Double_t fP[3];               // temporary momentum
+  Float_t  fPInit[3];           // initial momentum 
+  Float_t  fBoostP[3];          // boosted momentum
+  Float_t  fDivP[3];            // divergence
+  Float_t  fPTrack[3];          // track momentum
   
    ClassDef(AliGenZDC,1)  // Generator for AliZDC class
 };

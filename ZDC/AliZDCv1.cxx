@@ -15,6 +15,12 @@
 
 /*
 $Log$
+Revision 1.5  2000/10/02 21:28:20  fca
+Removal of useless dependecies via forward declarations
+
+Revision 1.3.2.1  2000/08/24 09:25:47  hristov
+Patch by P.Hristov: Bug in ZDC geometry corrected by E.Scomparin
+
 Revision 1.4  2000/08/24 09:23:59  hristov
 Bug in ZDC geometry corrected by E.Scomparin
 
@@ -37,8 +43,8 @@ Introduction of the Copyright and cvs Log
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
 //  Zero Degree Calorimeter                                                  //
-//  This class contains the basic functions for the Time Of Flight           //
-//  detector. Functions specific to one particular geometry are              //
+//  This class contains the basic functions for the ZDC                      //
+//  Functions specific to one particular geometry are                        //
 //  contained in the derived classes                                         //
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
@@ -46,6 +52,7 @@ Introduction of the Copyright and cvs Log
 #include <TBRIK.h>
 #include <TNode.h>
 #include <TMath.h>
+#include <TSystem.h>
 
 #include "stdio.h"
 #include "AliZDCv1.h"
@@ -72,11 +79,14 @@ AliZDCv1::AliZDCv1() : AliZDC()
   //
   // Default constructor for Zero Degree Calorimeter
   //
-  fMedSensF1 = 0;
-  fMedSensF2 = 0;
-  fMedSensZN = 0;
-  fMedSensZP = 0;
-  fMedSensGR = 0;
+  fMedSensF1  = 0;
+  fMedSensF2  = 0;
+  fMedSensZN  = 0;
+  fMedSensZP  = 0;
+  fMedSensGR  = 0;
+  fMedSensZEM = 0;
+  fMedSensPI  = 0;
+  fNoShower   = 0;
 }
  
 //_____________________________________________________________________________
@@ -86,11 +96,14 @@ AliZDCv1::AliZDCv1(const char *name, const char *title)
   //
   // Standard constructor for Zero Degree Calorimeter 
   //
-  fMedSensF1 = 0;
-  fMedSensF2 = 0;
-  fMedSensZN = 0;
-  fMedSensZP = 0;
-  fMedSensGR = 0;
+  fMedSensF1  = 0;
+  fMedSensF2  = 0;
+  fMedSensZN  = 0;
+  fMedSensZP  = 0;
+  fMedSensGR  = 0;
+  fMedSensZEM = 0;
+  fMedSensPI  = 0;
+  fNoShower   = 0;
 }
  
 //_____________________________________________________________________________
@@ -153,28 +166,28 @@ void AliZDCv1::CreateBeamLine()
   elpar[0] = 6.84/2.;
   elpar[1] = 5.86/2.;
   elpar[2] = 945./2.;
-  gMC->Gsvolu("E001", "ELTU", idtmed[5], elpar, 3);
-  gMC->Gspos("E001", 1, "ZDC ", 0., 0., elpar[2] + zd1, 0, "ONLY");
-  
+//  gMC->Gsvolu("E001", "ELTU", idtmed[5], elpar, 3);
+//  gMC->Gspos("E001", 1, "ZDC ", 0., 0., elpar[2] + zd1, 0, "ONLY");
+//  
   elpar[0] = 6.44/2.;
   elpar[1] = 5.46/2.;
   elpar[2] = 945./2.;
-  gMC->Gsvolu("E002", "ELTU", idtmed[10], elpar, 3);
-  gMC->Gspos("E002", 1, "E001", 0., 0., 0., 0, "ONLY");
+//  gMC->Gsvolu("E002", "ELTU", idtmed[10], elpar, 3);
+//  gMC->Gspos("E002", 1, "E001", 0., 0., 0., 0, "ONLY");
 
   zd1 += 2.*elpar[2];
   
   elpar[0] = 6.84/2.;
   elpar[1] = 5.86/2.;
   elpar[2] = 13.5/2.;
-  gMC->Gsvolu("E003", "ELTU", idtmed[5], elpar, 3);
-  gMC->Gspos("E002", 1, "ZDC ", 0., 0., elpar[2] + zd1, 0, "ONLY");
+//  gMC->Gsvolu("E003", "ELTU", idtmed[5], elpar, 3);
+//  gMC->Gspos("E002", 1, "ZDC ", 0., 0., elpar[2] + zd1, 0, "ONLY");
   
   elpar[0] = 6.44/2.;
   elpar[1] = 5.46/2.;
   elpar[2] = 13.5/2.;
-  gMC->Gsvolu("E004", "ELTU", idtmed[10], elpar, 3);
-  gMC->Gspos("E004", 1, "E003", 0., 0., 0., 0, "ONLY");
+//  gMC->Gsvolu("E004", "ELTU", idtmed[10], elpar, 3);
+//  gMC->Gspos("E004", 1, "E003", 0., 0., 0., 0, "ONLY");
 
   zd1 += 2.*elpar[2];
   
@@ -319,7 +332,7 @@ void AliZDCv1::CreateBeamLine()
   tubpar[0] = 0./2.;
   tubpar[1] = 68.4/2.;
   tubpar[2] = 0.2/2.;
-  gMC->Gsvolu("P017", "TUBE", idtmed[5], tubpar, 3);
+  gMC->Gsvolu("P017", "TUBE", idtmed[8], tubpar, 3);
   gMC->Gspos("P017", 1, "ZDC ", 0., 0., tubpar[2] + zd1, 0, "ONLY");
   
   zd1 += tubpar[2] * 2.;
@@ -499,6 +512,9 @@ void AliZDCv1::CreateZDC()
 {
   
   Int_t *idtmed = fIdtmed->GetArray();
+  Int_t irot1, irot2;
+  Float_t DimPb[6], DimVoid[6];
+
   
   //-- Create calorimeters geometry
   
@@ -545,7 +561,8 @@ void AliZDCv1::CreateZDC()
   // --- Position the neutron calorimeter in ZDC 
   gMC->Gspos("ZNEU", 1, "ZDC ", fPosZN[0], fPosZN[1], fPosZN[2] + fDimZN[2], 0, "ONLY");
   
-  //--> Proton calorimeter 
+
+  //--> Proton calorimeter (ZP)  
   
   gMC->Gsvolu("ZPRO", "BOX ", idtmed[2], fDimZP, 3); // Passive material
   gMC->Gsvolu("ZPF1", "TUBE", idtmed[3], fFibZP, 3); // Active material
@@ -589,6 +606,66 @@ void AliZDCv1::CreateZDC()
 
   // --- Position the proton calorimeter in ZDC 
   gMC->Gspos("ZPRO", 1, "ZDC ", fPosZP[0], fPosZP[1], fPosZP[2] + fDimZP[2], 0, "ONLY");
+    
+  
+  
+  //--> EM calorimeter (ZEM)  
+  
+  gMC->Gsvolu("ZEM ", "PARA", idtmed[10], fDimZEM, 6);
+  
+  gMC->Matrix(irot1,0.,0.,90.,90.,90.,180.); 		    // Rotation matrix 1  
+  gMC->Matrix(irot2,180.,0.,90.,fDimZEM[3]+90.,90.,fDimZEM[3]); // Rotation matrix 2
+//  printf("irot1 = %d, irot2 = %d \n", irot1, irot2);
+  
+  gMC->Gsvolu("ZEMF", "TUBE", idtmed[3], fFibZEM, 3); // Active material
+
+  gMC->Gsdvn("ZETR", "ZEM ", fDivZEM[2], 1); 	     // Tranches 
+  
+  DimPb[0] = fDimZEMPb;			// Lead slices 
+  DimPb[1] = fDimZEM[2];
+  DimPb[2] = fDimZEM[1];
+  DimPb[3] = 90.-fDimZEM[3];
+  DimPb[4] = 0.;
+  DimPb[5] = 0.;
+  gMC->Gsvolu("ZEL0", "PARA", idtmed[6], DimPb, 6);
+  gMC->Gsvolu("ZEL1", "PARA", idtmed[6], DimPb, 6);
+  gMC->Gsvolu("ZEL2", "PARA", idtmed[6], DimPb, 6);
+  
+  // --- Position the lead slices in the tranche 
+  Float_t zTran = fDimZEM[0]/fDivZEM[2]; 
+  Float_t zTrPb = -zTran+fDimZEMPb;
+  gMC->Gspos("ZEL0", 1, "ZETR", zTrPb, 0., 0., 0, "ONLY");
+  gMC->Gspos("ZEL1", 1, "ZETR", fDimZEMPb, 0., 0., 0, "ONLY");
+  
+  // --- Vacuum zone (to be filled with fibres)
+  DimVoid[0] = (zTran-2*fDimZEMPb)/2.;
+  DimVoid[1] = fDimZEM[2];
+  DimVoid[2] = fDimZEM[1];
+  DimVoid[3] = 90.-fDimZEM[3];
+  DimVoid[4] = 0.;
+  DimVoid[5] = 0.;
+  gMC->Gsvolu("ZEV0", "PARA", idtmed[10], DimVoid,6);
+  gMC->Gsvolu("ZEV1", "PARA", idtmed[10], DimVoid,6);
+  
+  // --- Divide the vacuum slice into sticks along x axis
+  gMC->Gsdvn("ZES0", "ZEV0", fDivZEM[0], 3); 
+  gMC->Gsdvn("ZES1", "ZEV1", fDivZEM[0], 3); 
+  
+  // --- Positioning the fibers into the sticks
+  gMC->Gspos("ZEMF", 1,"ZES0", 0., 0., 0., irot2, "ONLY");
+  gMC->Gspos("ZEMF", 1,"ZES1", 0., 0., 0., irot2, "ONLY");
+  
+  // --- Positioning the vacuum slice into the tranche
+  Float_t DisplFib = fDimZEM[1]/fDivZEM[0];
+  gMC->Gspos("ZEV0", 1,"ZETR", -DimVoid[0], 0., 0., 0, "ONLY");
+  gMC->Gspos("ZEV1", 1,"ZETR", -DimVoid[0]+zTran, 0., DisplFib, 0, "ONLY");
+
+  // --- Positioning the ZEM into the ZDC - rotation for 90 degrees  
+  gMC->Gspos("ZEM ", 1,"ZDC ", fPosZEM[0], fPosZEM[1], fPosZEM[2], irot1, "ONLY");
+  
+  // --- Adding last slice at the end of the EM calorimeter 
+  Float_t zLastSlice = fPosZEM[2]+fDimZEMPb+fDimZEM[0];
+  gMC->Gspos("ZEL2", 1,"ZDC ", fPosZEM[0], fPosZEM[1], zLastSlice, irot1, "ONLY");
   
 }
  
@@ -673,6 +750,17 @@ void AliZDCv1::DrawModule()
   gMC->Gsatt("ZP1 ","SEEN",1);
   gMC->Gsatt("ZPSL","SEEN",0);
   gMC->Gsatt("ZPST","SEEN",0);
+  gMC->Gsatt("ZEM ","COLO",2); 
+  gMC->Gsatt("ZEM ","SEEN",1);
+  gMC->Gsatt("ZEMF","SEEN",0);
+  gMC->Gsatt("ZETR","SEEN",0);
+  gMC->Gsatt("ZEL0","SEEN",0);
+  gMC->Gsatt("ZEL1","SEEN",0);
+  gMC->Gsatt("ZEL2","SEEN",0);
+  gMC->Gsatt("ZEV0","SEEN",0);
+  gMC->Gsatt("ZEV1","SEEN",0);
+  gMC->Gsatt("ZES0","SEEN",0);
+  gMC->Gsatt("ZES1","SEEN",0);
   
   //
   gMC->Gdopt("hide", "on");
@@ -696,17 +784,12 @@ void AliZDCv1::CreateMaterials()
   
   Int_t *idtmed = fIdtmed->GetArray();
   
-  Float_t dens, ubuf[1], wmat[2];
-  Int_t isvolActive;
-  Float_t a[2];
-  Int_t i;
-  Float_t z[2], epsil=0.001, stmin=0.01;
-  Int_t isvol;
+  Float_t dens, ubuf[1], wmat[2], a[2], z[2], epsil=0.001, stmin=0.01;
+  Int_t   i, isvolActive, isvol, inofld;
   Float_t fieldm = gAlice->Field()->Max();
-  Int_t inofld;
-  Float_t deemax=-1;
   Float_t tmaxfd=gAlice->Field()->Max();
-  Int_t isxfld = gAlice->Field()->Integ();
+  Int_t   isxfld = gAlice->Field()->Integ();
+  Float_t deemax=-1;
   Float_t stemax;
   
   // --- Store in UBUF r0 for nuclear radius calculation R=r0*A**1/3 
@@ -738,19 +821,23 @@ void AliZDCv1::CreateMaterials()
   wmat[0] = 1.;
   wmat[1] = 2.;
   AliMixture(3, "SIO2                ", a, z, dens, -2, wmat);
+  
+  
+  // --- Lead 
+  ubuf[0] = 1.12;
+  AliMaterial(5, "LEAD", 207.19, 82., 11.35, .56, 18.5, ubuf, 1);
 
   // --- Copper 
 //  ubuf[0] = 1.1;
 //  AliMaterial(7, "COPP", 63.54, 29., 8.96, 1.4, 0., ubuf, 1);
   
-  
-  // --- Lead 
-//  ubuf[0] = 1.12;
-//  AliMaterial(6, "LEAD", 207.19, 82., 11.35, .56, 18.5, ubuf, 1);
-  
-  // --- Iron 
+  // --- Iron (energy loss taken into account)
   ubuf[0] = 1.1;
-  AliMaterial(5, "IRON", 55.85, 26., 7.87, 1.76, 0., ubuf, 1);
+  AliMaterial(6, "IRON", 55.85, 26., 7.87, 1.76, 0., ubuf, 1);
+  
+  // --- Iron (no energy loss)
+  ubuf[0] = 1.1;
+  AliMaterial(7, "IRON", 55.85, 26., 7.87, 1.76, 0., ubuf, 1);
   
   // --- Vacuum (no magnetic field) 
   AliMaterial(10, "VOID", 1e-16, 1e-16, 1e-16, 1e16, 1e16, ubuf,0);
@@ -767,8 +854,9 @@ void AliZDCv1::CreateMaterials()
   // --- Brass = 2 ; 
   // --- Fibers (SiO2) = 3 ; 
   // --- Fibers (SiO2) = 4 ; 
-  // --- Iron = 5 ; 
-  // --- Lead = 6 ; 
+  // --- Lead = 5 ; 
+  // --- Iron (with energy loss) = 6 ; 
+  // --- Iron (without energy loss) = 7 ; 
   // --- Vacuum (no field) = 10 
   // --- Vacuum (with field) = 11 
   // --- Air (no field) = 12 
@@ -787,9 +875,10 @@ void AliZDCv1::CreateMaterials()
   AliMedium(2, "ZBRASS", 2, isvolActive, inofld, fieldm, tmaxfd, stemax, deemax, epsil, stmin);
   AliMedium(3, "ZSIO2", 3, isvolActive, inofld, fieldm, tmaxfd, stemax, deemax, epsil, stmin);
   AliMedium(4, "ZQUAR", 3, isvolActive, inofld, fieldm, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(6, "ZLEAD", 5, isvolActive, inofld, fieldm, tmaxfd, stemax, deemax, epsil, stmin);
 //  AliMedium(7, "ZCOPP", 7, isvolActive, inofld, fieldm, tmaxfd, stemax, deemax, epsil, stmin);
-//  AliMedium(6, "ZLEAD", 6, isvolActive, inofld, fieldm, tmaxfd, stemax, deemax, epsil, stmin);
-  AliMedium(5, "ZIRON", 5, isvol, inofld, fieldm, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(5, "ZIRON", 6, isvolActive, inofld, fieldm, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(8, "ZIRONN", 7, isvol, inofld, fieldm, tmaxfd, stemax, deemax, epsil, stmin);
   AliMedium(10, "ZVOID", 10, isvol, inofld, fieldm, tmaxfd, stemax, deemax, epsil, stmin);
   AliMedium(12, "ZAIR", 12, 0, inofld, fieldm, tmaxfd, stemax,deemax, epsil, stmin);
   
@@ -804,6 +893,11 @@ void AliZDCv1::CreateMaterials()
   gMC->Gstpar(idtmed[i], "CUTNEU", .01);
   gMC->Gstpar(idtmed[i], "CUTHAD", .01);
   i = 2;
+  gMC->Gstpar(idtmed[i], "CUTGAM", .001);
+  gMC->Gstpar(idtmed[i], "CUTELE", .001);
+  gMC->Gstpar(idtmed[i], "CUTNEU", .01);
+  gMC->Gstpar(idtmed[i], "CUTHAD", .01);
+  i = 6;
   gMC->Gstpar(idtmed[i], "CUTGAM", .001);
   gMC->Gstpar(idtmed[i], "CUTELE", .001);
   gMC->Gstpar(idtmed[i], "CUTNEU", .01);
@@ -844,19 +938,36 @@ void AliZDCv1::CreateMaterials()
   gMC->Gstpar(idtmed[i], "DRAY", 0.);
   gMC->Gstpar(idtmed[i], "ANNI", 0.);
   gMC->Gstpar(idtmed[i], "HADR", 0.);
+  
+  // Avoid interaction in void 
+  i = 10;
+  gMC->Gstpar(idtmed[i], "DCAY", 0.);
+  gMC->Gstpar(idtmed[i], "MULS", 0.);
+  gMC->Gstpar(idtmed[i], "PFIS", 0.);
+  gMC->Gstpar(idtmed[i], "MUNU", 0.);
+  gMC->Gstpar(idtmed[i], "LOSS", 0.);
+  gMC->Gstpar(idtmed[i], "PHOT", 0.);
+  gMC->Gstpar(idtmed[i], "COMP", 0.);
+  gMC->Gstpar(idtmed[i], "PAIR", 0.);
+  gMC->Gstpar(idtmed[i], "BREM", 0.);
+  gMC->Gstpar(idtmed[i], "DRAY", 0.);
+  gMC->Gstpar(idtmed[i], "ANNI", 0.);
+  gMC->Gstpar(idtmed[i], "HADR", 0.);
+
   //
-  fMedSensF1 = idtmed[3];  // Sensitive volume: fibres type 1
-  fMedSensF2 = idtmed[4];  // Sensitive volume: fibres type 2
-  fMedSensZN = idtmed[1];  // Sensitive volume: ZN passive material
-  fMedSensZP = idtmed[2];  // Sensitive volume: ZP passive material
-  fMedSensGR = idtmed[12]; // Sensitive volume: air into the grooves
+  fMedSensF1  = idtmed[3];  // Sensitive volume: fibres type 1
+  fMedSensF2  = idtmed[4];  // Sensitive volume: fibres type 2
+  fMedSensZN  = idtmed[1];  // Sensitive volume: ZN passive material
+  fMedSensZP  = idtmed[2];  // Sensitive volume: ZP passive material
+  fMedSensZEM = idtmed[6];  // Sensitive volume: ZEM passive material
+  fMedSensGR  = idtmed[12]; // Sensitive volume: air into the grooves
+  fMedSensPI  = idtmed[5];  // Sensitive volume: beam pipes
 } 
 
 //_____________________________________________________________________________
 void AliZDCv1::Init()
 {
  InitTables();
-
 }
 
 //_____________________________________________________________________________
@@ -869,21 +980,27 @@ void AliZDCv1::InitTables()
   fNben = 18;
   fNbep = 28;
   
+  char *lightfName1,*lightfName2,*lightfName3,*lightfName4,
+       *lightfName5,*lightfName6,*lightfName7,*lightfName8;
   FILE *fp1, *fp2, *fp3, *fp4, *fp5, *fp6, *fp7, *fp8;
 
-  if((fp1 = fopen("light22620362207s","r")) == NULL){
+  lightfName1 = gSystem->ExpandPathName("$ALICE/$ALICE_LEVEL/ZDC/light22620362207s");
+  if((fp1 = fopen(lightfName1,"r")) == NULL){
      printf("Cannot open file fp1 \n");
      return;
   }
-  if((fp2 = fopen("light22620362208s","r")) == NULL){
+  lightfName2 = gSystem->ExpandPathName("$ALICE/$ALICE_LEVEL/ZDC/light22620362208s");
+  if((fp2 = fopen(lightfName2,"r")) == NULL){
      printf("Cannot open file fp2 \n");
      return;
   }  
-  if((fp3 = fopen("light22620362209s","r")) == NULL){
+  lightfName3 = gSystem->ExpandPathName("$ALICE/$ALICE_LEVEL/ZDC/light22620362209s");
+  if((fp3 = fopen(lightfName3,"r")) == NULL){
      printf("Cannot open file fp3 \n");
      return;
   }
-  if((fp4 = fopen("light22620362210s","r")) == NULL){
+  lightfName4 = gSystem->ExpandPathName("$ALICE/$ALICE_LEVEL/ZDC/light22620362210s");
+  if((fp4 = fopen(lightfName4,"r")) == NULL){
      printf("Cannot open file fp4 \n");
      return;
   }
@@ -901,23 +1018,27 @@ void AliZDCv1::InitTables()
   fclose(fp3);
   fclose(fp4);
   
-  if((fp5 = fopen("light22620552207s","r")) == NULL){
+  lightfName5 = gSystem->ExpandPathName("$ALICE/$ALICE_LEVEL/ZDC/light22620552207s");
+  if((fp5 = fopen(lightfName5,"r")) == NULL){
      printf("Cannot open file fp5 \n");
      return;
   }
-  if((fp6 = fopen("light22620552208s","r")) == NULL){
+  lightfName6 = gSystem->ExpandPathName("$ALICE/$ALICE_LEVEL/ZDC/light22620552208s");
+  if((fp6 = fopen(lightfName6,"r")) == NULL){
      printf("Cannot open file fp6 \n");
      return;
   }
-  if((fp7 = fopen("light22620552209s","r")) == NULL){
+  lightfName7 = gSystem->ExpandPathName("$ALICE/$ALICE_LEVEL/ZDC/light22620552209s");
+  if((fp7 = fopen(lightfName7,"r")) == NULL){
      printf("Cannot open file fp7 \n");
      return;
   }
-  if((fp8 = fopen("light22620552210s","r")) == NULL){
+  lightfName8 = gSystem->ExpandPathName("$ALICE/$ALICE_LEVEL/ZDC/light22620552210s");
+  if((fp8 = fopen(lightfName8,"r")) == NULL){
      printf("Cannot open file fp8 \n");
      return;
   }
-//  printf(" --- Reading light tables for ZP \n");
+//  printf(" --- Reading light tables for ZP and ZEM \n");
   for(k=0; k<fNalfap; k++){
      for(j=0; j<fNbep; j++){
        fscanf(fp5,"%f",&fTablep[0][k][j]);
@@ -931,7 +1052,6 @@ void AliZDCv1::InitTables()
   fclose(fp7);
   fclose(fp8);
 }
-
 //_____________________________________________________________________________
 void AliZDCv1::StepManager()
 {
@@ -941,15 +1061,25 @@ void AliZDCv1::StepManager()
 
   Int_t j;
 
-  Int_t vol[2], ibeta, ialfa, ibe;
+  Int_t vol[2], ibeta=0, ialfa, ibe;
   Float_t x[3], xdet[3], destep, hits[10], m, ekin, um[3], ud[3], be, radius, out;
   TLorentzVector s, p;
   const char *knamed;
-  
+
+
   if((gMC->GetMedium() == fMedSensZN) || (gMC->GetMedium() == fMedSensZP) ||
      (gMC->GetMedium() == fMedSensGR) || (gMC->GetMedium() == fMedSensF1) ||
-     (gMC->GetMedium() == fMedSensF2)){
-        
+     (gMC->GetMedium() == fMedSensF2) || (gMC->GetMedium() == fMedSensZEM) ||
+     (gMC->GetMedium() == fMedSensPI)){
+  
+  // If particle interacts with beam pipe -> return
+    if(gMC->GetMedium() == fMedSensPI){ 
+  
+  // If option NoShower is set -> StopTrack
+      if(fNoShower==1) gMC->StopTrack();
+      return;
+    }
+  
   //Particle coordinates 
     gMC->TrackPosition(s);
     for(j=0; j<=2; j++){
@@ -963,13 +1093,15 @@ void AliZDCv1::StepManager()
     knamed = gMC->CurrentVolName();
     if(!strncmp(knamed,"ZN",2))vol[0]=1;
     if(!strncmp(knamed,"ZP",2))vol[0]=2;
+    if(!strncmp(knamed,"ZE",2))vol[0]=3;
   
   // Determine in which quadrant the particle is
     
     //Quadrant in ZN
-    gMC->Gmtod(x,xdet,1);
     if(vol[0]==1){
-      if((xdet[0]<0.) && (xdet[1]>0.)) vol[1]=1;
+      xdet[0] = x[0]-fPosZN[0];
+      xdet[1] = x[1]-fPosZN[1];
+      if((xdet[0]<=0.) && (xdet[1]>=0.)) vol[1]=1;
       if((xdet[0]>0.) && (xdet[1]>0.)) vol[1]=2;
       if((xdet[0]<0.) && (xdet[1]<0.)) vol[1]=3;
       if((xdet[0]>0.) && (xdet[1]<0.)) vol[1]=4;
@@ -977,15 +1109,30 @@ void AliZDCv1::StepManager()
     
     //Quadrant in ZP
     if(vol[0]==2){
+      xdet[0] = x[0]-fPosZP[0];
+      xdet[1] = x[1]-fPosZP[1];
+      if(xdet[0]>fDimZP[0])xdet[0]=fDimZP[0]-0.01;
+      if(xdet[0]<-fDimZP[0])xdet[0]=-fDimZP[0]+0.01;
       Float_t xqZP = xdet[0]/(fDimZP[0]/2);
       for(int i=1; i<=4; i++){
-         if(xqZP>(i-3) && xqZP<(i-2)){
+         if(xqZP>=(i-3) && xqZP<(i-2)){
  	   vol[1] = i;
  	   break;
  	}
      }
     }
-//    printf("	-> Det. %d Quad. %d \n", vol[0], vol[1]);
+    
+    //ZEM has only 1 quadrant
+    if(vol[0] == 3){
+      vol[1] = 1;
+      xdet[0] = x[0]-fPosZEM[0];
+      xdet[1] = x[1]-fPosZEM[1];
+//      printf("x %f %f xdet %f %f\n",x[0],x[1],xdet[0],xdet[1]);
+    }
+
+    if(vol[1]>4){
+    printf("\n-> Det. %d Quad. %d \n", vol[0], vol[1]);
+    printf("x %f %f xdet %f %f\n",x[0],x[1],xdet[0],xdet[1]);}
 
   // Store impact point and kinetic energy of the ENTERING particle
     
@@ -1001,15 +1148,22 @@ void AliZDCv1::StepManager()
 //                 p[0], p[1], p[2], p[3]);
         hits[3] = p[3];
 
-        // Impact point on ZN  
+        // Impact point on ZDC  
         hits[4] = xdet[0];
         hits[5] = xdet[1];
+	hits[6] = 0;
         hits[7] = 0;
         hits[8] = 0;
         hits[9] = 0;
 
-//        printf(" hits[2] = %f \n",hits[2]);
-        AddHit(gAlice->CurrentTrack(), vol, hits);
+//	  Int_t PcID = gMC->TrackPid();
+//	  printf("Pc ID -> %d\n",PcID);
+	AddHit(gAlice->CurrentTrack(), vol, hits);
+	
+	if(fNoShower==1){
+	gMC->StopTrack();
+	return;
+	}
       }
 //    }
              
@@ -1039,7 +1193,6 @@ void AliZDCv1::StepManager()
 
   // *** Light production in fibres 
   if((gMC->GetMedium() == fMedSensF1) || (gMC->GetMedium() == fMedSensF2)){
-//    printf("%%%%%%%%%%%%%%%% Particle in fibre %%%%%%%%%%%%%%%%\n");
 
      //Select charged particles
      if((destep=gMC->Edep())){
@@ -1049,15 +1202,14 @@ void AliZDCv1::StepManager()
        gMC->TrackMomentum(p);
        Float_t ptot=TMath::Sqrt(p[0]*p[0]+p[1]*p[1]+p[2]*p[2]);
        Float_t beta =  ptot/p[3];
-//       printf("p[0] = %f, p[1] = %f, p[2] = %f, p[3] = %f, ptot = %f \n",
-//              p[0], p[1], p[2], p[3], ptot);
 //       Int_t pcID = gMC->TrackPid();
 //       printf("	Pc %d in quadrant %d -> beta = %f \n", pcID, vol[1], beta);
        if(beta<0.67) return;
-       else if((beta>=0.67) && (beta<=0.75)) ibeta = 0;
-       else if((beta>0.75)  && (beta<=0.85)) ibeta = 1;
-       else if((beta>0.85)  && (beta<=0.95)) ibeta = 2;
-       else ibeta = 3;
+       if((beta>=0.67) && (beta<=0.75)) ibeta = 0;
+       if((beta>0.75)  && (beta<=0.85)) ibeta = 1;
+       if((beta>0.85)  && (beta<=0.95)) ibeta = 2;
+//       if((beta>0.95)  && (beta<=1.00)) ibeta = 3;
+       if(beta>0.95) ibeta = 3;
  
        // Angle between particle trajectory and fibre axis
        // 1 -> Momentum directions
@@ -1068,7 +1220,7 @@ void AliZDCv1::StepManager()
        // 2 -> Angle < limit angle
        Double_t alfar = TMath::ACos(ud[2]);
        Double_t alfa = alfar*kRaddeg;
-       if(alfa>110.) return;
+       if(alfa>=110.) return;
        ialfa = Int_t(1.+alfa/2.);
  
        // Distance between particle trajectory and fibre axis
@@ -1096,8 +1248,6 @@ void AliZDCv1::StepManager()
        if((vol[0]==1)) {
          if(ibe>fNben) ibe=fNben;
          out =  charge*charge*fTablen[ibeta][ialfa][ibe];
-//	 printf("	-> fTablen [%d][%d][%d] = %f \n", 
-//	        ibeta, ialfa, ibe, fTablen[ibeta][ialfa][ibe]);
 	 if(gMC->GetMedium() == fMedSensF1){
 	   hits[7] = out;  	//fLightPMQ
 	   hits[8] = 0;
@@ -1116,8 +1266,6 @@ void AliZDCv1::StepManager()
        if((vol[0]==2)) {
          if(ibe>fNbep) ibe=fNbep;
          out =  charge*charge*fTablep[ibeta][ialfa][ibe];
-//	 printf("	-> fTablep [%d][%d][%d] = %f\n", 
-//	        ibeta, ialfa, ibe, fTablen[ibeta][ialfa][ibe]);
 	 if(gMC->GetMedium() == fMedSensF1){
 	   hits[7] = out;  	//fLightPMQ
 	   hits[8] = 0;
@@ -1131,7 +1279,16 @@ void AliZDCv1::StepManager()
 	   AddHit(gAlice->CurrentTrack(), vol, hits);
 	 }
        } 
+       // (3) ZEM
+       if((vol[0]==3)) {
+         if(ibe>fNbep) ibe=fNbep;
+         out =  charge*charge*fTablep[ibeta][ialfa][ibe];
+	   hits[7] = out;  	//fLightPMQ
+	   hits[8] = 0;
+	   hits[9] = 0;
+	   AddHit(gAlice->CurrentTrack(), vol, hits);
+       } 
      }
-//    printf("\n");
+       
    }
 }

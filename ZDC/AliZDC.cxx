@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.9  2000/10/02 21:28:20  fca
+Removal of useless dependecies via forward declarations
+
 Revision 1.8  2000/07/10 13:58:01  fca
 New version of ZDC from E.Scomparin & C.Oppedisano
 
@@ -106,8 +109,38 @@ AliZDC::AliZDC(const char *name, const char *title)
   fTowZN[1] = 2;
   fTowZP[0] = 4;
   fTowZP[1] = 1;
+  
+  // EM Calorimeter
+  fDimZEMPb  = 0.15*(TMath::Sqrt(2.));
+  fDimZEMAir = 0.001;
+  fFibRadZEM = 0.0315;
+  fDivZEM[0] = 92;
+  fDivZEM[1] = 0;
+  fDivZEM[2] = 20;
+  fDimZEM[0] = 2*fDivZEM[2]*(fDimZEMPb+fDimZEMAir+fFibRadZEM*(TMath::Sqrt(2.)));
+  fDimZEM[1] = 3.5;
+  fDimZEM[2] = 3.5;
+  fDimZEM[3] = 45.;
+  fDimZEM[4] = 0.;
+  fDimZEM[5] = 0.;
+  fFibZEM[0] = 0.;
+  fFibZEM[1] = 0.0275;
+  fFibZEM[2] = fDimZEM[2]/TMath::Sin(fDimZEM[3]*kDegrad)-fFibRadZEM;
+  fPosZEM[0] = 0.;
+  fPosZEM[1] = 5.8;
+  fPosZEM[2] = 11600.;
+
 }
- 
+//____________________________________________________________________________ 
+AliZDC::~AliZDC()
+{
+  //
+  // ZDC destructor
+  //
+
+  fIshunt   = 0;
+  delete fHits;
+}
 //_____________________________________________________________________________
 void AliZDC::AddHit(Int_t track, Int_t *vol, Float_t *hits)
 {
@@ -153,19 +186,20 @@ void AliZDC::AddHit(Int_t track, Int_t *vol, Float_t *hits)
       newquad->fYImpact = yImpact;
       newquad->fSFlag = sFlag;
    }
-   new(lhits[fNhits++]) AliZDChit(newquad);
-    if(fNhits==1) {
-//      Int_t Curtrack = gAlice->CurrentTrack();
-//      Int_t Prim = gAlice->GetPrimary(Curtrack);
-//      printf ("		Primary track: %d, Current track: %d \n", 
-//              Prim, Curtrack);
-//      fHits->Print("");
-    }
-    delete newquad;
+//    printf("\n");  
 //    fHits->Print("");
+    new(lhits[fNhits++]) AliZDChit(newquad);
+    delete newquad;
+  }
   
+//_____________________________________________________________________________
+void AliZDC::ResetHits()
+{
+  //
+  // Reset number of hits and the hits array
+  //
+    AliDetector::ResetHits();
 }
-  
 //_____________________________________________________________________________
 void AliZDC::BuildGeometry()
 {
