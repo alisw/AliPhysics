@@ -102,7 +102,11 @@ class AliITSpList: public AliITSMap {
  private:
     // returns the TObjArray index for a give set of map indecies.
     Int_t GetIndex(Int_t i,Int_t j){
-	if(i<0||i>=fNi || j<0||j>=fNj) return -1;
+	if(i<0||i>=fNi || j<0||j>=fNj){
+	    Warning("GetIndex","Index out of range 0<i=%d<%d and 0<0j=%d<%d",
+		    i,fNi,j,fNj);
+	    return -1;
+	} // end if
 	return fNj*i+j;
     }
 
