@@ -36,7 +36,13 @@
 ClassImp(AliPHOSClusterizer)
 
 //____________________________________________________________________________
-AliPHOSClusterizer::AliPHOSClusterizer()
+  AliPHOSClusterizer::AliPHOSClusterizer():TTask("AliPHOSClusterizer","")
+{
+  // ctor
+}
+//____________________________________________________________________________
+AliPHOSClusterizer::AliPHOSClusterizer(const char* HeaderFile,const char* DigitsFile = 0):
+TTask("AliPHOSClusterizer","")
 {
   // ctor
 }

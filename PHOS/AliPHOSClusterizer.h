@@ -7,57 +7,53 @@
 
 //_________________________________________________________________________
 //  Base class for the clusterization algorithm (pure abstract)
-//*-- Author: Yves Schutz (SUBATECH)
-
+//*-- Author: Yves Schutz (SUBATECH) & Dmitri Peressounko (SUBATECH & Kurchatov Institute)
 // --- ROOT system ---
 
-#include "TObject.h" 
-#include "TClonesArray.h"
+#include "TTask.h" 
 
 // --- Standard library ---
 
 // --- AliRoot header files ---
 
-#include "AliPHOSDigit.h"
-#include "AliPHOSRecPoint.h"
+//#include "AliPHOSDigit.h"
 
-class AliPHOSClusterizer : public TObject {
+class AliPHOSClusterizer : public TTask {
 
 public:
 
-  AliPHOSClusterizer() ;          // ctor            
+  AliPHOSClusterizer() ;          // ctor
+  AliPHOSClusterizer(const char * headerFile,const char * digitsBrancheTitle=0);
   virtual ~AliPHOSClusterizer() ; // dtor
 
-  virtual Float_t Calibrate(Int_t Amp) = 0 ; 
-  virtual Bool_t IsInEmc(AliPHOSDigit * digit)= 0 ;   
-  virtual void    GetNumberOfClustersFound(Int_t * numb) = 0 ; 
-  virtual void    GetCalibrationParameters(Float_t & A, Float_t &B) = 0 ; 
-  virtual Float_t GetEmcClusteringThreshold() = 0 ; 
-  virtual Float_t GetEmcEnergyThreshold() = 0 ;  
-  virtual Float_t GetLocalMaxCut() = 0 ; 
-  virtual Float_t GetLogWeightCut() = 0 ; 
-  virtual Float_t GetLocalMaxCutCPV() = 0 ; 
-  virtual Float_t GetLogWeightCutCPV() = 0 ; 
-  virtual Float_t GetPpsdClusteringThreshold() = 0 ; 
-  virtual Float_t GetPpsdEnergyThreshold() = 0 ; 
+  virtual Float_t GetEmcClusteringThreshold()const = 0 ; 
+  virtual Float_t GetEmcLocalMaxCut()const = 0 ; 
+  virtual Float_t GetEmcLogWeight()const = 0 ; 
+  virtual Float_t GetCpvClusteringThreshold()const = 0 ; 
+  virtual Float_t GetCpvLocalMaxCut()const = 0 ; 
+  virtual Float_t GetCpvLogWeight()const = 0 ; 
+  virtual Float_t GetPpsdClusteringThreshold()const = 0 ; 
+  virtual char *  GetRecPointsBranch() const = 0 ;
+  virtual char *  GetDigitsBranch() const = 0 ;
 
-  virtual void MakeClusters(const DigitsList * dl,
-			    AliPHOSRecPoint::RecPointsList * emccl,
-			    AliPHOSRecPoint::RecPointsList * ppsdl) = 0 ; 
-  virtual void PrintParameters() = 0 ;  
-  virtual void SetCalibrationParameters(Float_t A, Float_t B) = 0 ; 
+  virtual void MakeClusters() = 0 ; 
+  virtual void Print(Option_t * option)const = 0;
+
   virtual void SetEmcClusteringThreshold(Float_t cluth) = 0 ; 
-  virtual void SetEmcEnergyThreshold(Float_t enth) = 0 ;  
-  virtual void SetLocalMaxCut(Float_t cut) = 0 ; 
-  virtual void SetLogWeightCut(Float_t w) = 0 ; 
-  virtual void SetLocalMaxCutCPV(Float_t cut) = 0 ; 
-  virtual void SetLogWeightCutCPV(Float_t w) = 0 ; 
-  virtual void SetPpsdClusteringThreshold(Float_t cluth) = 0 ; 
-  virtual void SetPpsdEnergyThreshold(Float_t enth) = 0 ; 
+  virtual void SetEmcLocalMaxCut(Float_t cut) = 0 ; 
+  virtual void SetEmcLogWeight(Float_t w) = 0 ; 
   virtual void SetCpvClusteringThreshold(Float_t cluth) = 0 ; 
-  virtual void SetCpvEnergyThreshold(Float_t enth) = 0 ;  
+  virtual void SetCpvLocalMaxCut(Float_t cut) = 0 ; 
+  virtual void SetCpvLogWeight(Float_t w) = 0 ; 
+  virtual void SetPpsdClusteringThreshold(Float_t cluth) = 0 ; 
+
+  virtual void SetDigitsBranch(const char * title) = 0 ;
+  virtual void SetRecPointsBranch(const char *title) = 0 ;
+
+  virtual void SetUnfolding(Bool_t toUnfold ) = 0 ;
+
  
-  ClassDef(AliPHOSClusterizer,1)  // Clusterization algorithm class (abstract base class)
+  ClassDef(AliPHOSClusterizer,1)  // Clusterization algorithm class 
 
 } ;
 
