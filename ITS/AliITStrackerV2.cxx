@@ -241,7 +241,6 @@ Int_t AliITStrackerV2::Clusters2Tracks(AliESD *event) {
   for (fPass=0; fPass<2; fPass++) {
      Int_t &constraint=fConstraint[fPass]; if (constraint<0) continue;
      for (Int_t i=0; i<nentr; i++) {
-       cerr<<fPass<<"    "<<i<<'\r';
        fCurrentEsdTrack = i;
        AliITStrackV2 *t=(AliITStrackV2*)itsTracks.UncheckedAt(i);
        if (t==0) continue;              //this track has been already tracked
@@ -311,7 +310,6 @@ Int_t AliITStrackerV2::Clusters2Tracks(AliESD *event) {
     AliITStrackV2 *t=(AliITStrackV2*)itsTracks.UncheckedAt(i);
     if (t==0) continue;         
     Int_t tpcLabel=t->GetLabel(); //save the TPC track label
-    cerr<<i<<'\r';
     AliITStrackV2 * besttrack = GetBestHypothesysMIP(fCurrentEsdTrack,t);
     if (!besttrack) continue;
 
