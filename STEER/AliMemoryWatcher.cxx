@@ -110,6 +110,7 @@ void AliMemoryWatcher::Watch(Int_t x)
       fTimer->Stop();
     }
     if ( fUseMallinfo ) {
+#ifdef __linux
       static struct mallinfo meminfo;
       meminfo = mallinfo();
       fX[fSize] = x ;
@@ -117,6 +118,9 @@ void AliMemoryWatcher::Watch(Int_t x)
       fRSSIZE[fSize] =  meminfo.uordblks / 1024;
       fTIME[fSize] = fTimer->CpuTime();
       fSize++;
+#else
+      ::Fatal("Watch","Please SetUseMallinfo to kFALSE on this system");
+#endif
     } else {
       static Int_t vsize, rssize;
       static FILE* pipe = 0;
