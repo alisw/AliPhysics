@@ -42,7 +42,6 @@ public:
   AliTPCtrack(const AliTPCtrack& t);
   virtual ~AliTPCtrack() {}
   Int_t PropagateToVertex(Double_t x0=36.66,Double_t rho=1.2e-3);
-  Int_t PropagateToPrimVertex(Double_t x0,Double_t rho){return PropagateToVertex(x0,rho);}
   Int_t Rotate(Double_t angle);
   void SetdEdx(Double_t dedx) {fdEdx=dedx;}
 
@@ -109,6 +108,26 @@ public:
   Int_t PropagateTo(Double_t xr,Double_t x0=28.94,Double_t rho=0.9e-3);
   Int_t Update(const AliCluster* c, Double_t chi2, UInt_t i);
   void ResetCovariance();
+  // MI addition
+  Float_t fSdEdx;           // sigma of dedx 
+  //
+  Int_t   fNFoundable;      //number of foundable clusters - dead zone taken to the account
+  Bool_t  fBConstrain;   // indicate seeding with vertex constrain
+  Int_t   fLastPoint;     // last  cluster position     
+  Int_t   fFirstPoint;    // first cluster position
+  Int_t fRemoval;         // removal factor
+  Int_t fTrackType;       // track type - 0 - normal - 1 - kink -  2 -V0  3- double found
+  Int_t fLab2;            // index of corresponding track (kink, V0, double)
+  Int_t   fNShared;       // number of shared points 
+  Float_t  fKinkPoint[12];      //radius, of kink,  dfi and dtheta 
+  //
+  //  TClonesArray * fHelixIn;    //array of helixes  
+  //TClonesArray * fHelixOut;   //array of helixes 
+  //
+  Float_t Density(Int_t row0, Int_t row1); //calculate cluster density
+  Float_t Density2(Int_t row0, Int_t row1); //calculate cluster density
+  Double_t GetZat0() const;
+  Double_t GetD(Double_t x=0, Double_t y=0) const;
 
 protected: 
   Double_t fX;              // X-coordinate of this track (reference plane)
@@ -129,7 +148,7 @@ protected:
   Double_t fC30, fC31, fC32, fC33;       // track
   Double_t fC40, fC41, fC42, fC43, fC44; // parameters
 
-  UInt_t fIndex[kMaxRow];       // indices of associated clusters 
+  Int_t fIndex[kMaxRow];       // indices of associated clusters 
 
   //[SR, 01.04.2003]
   Int_t fNWrong;         // number of wrong clusters

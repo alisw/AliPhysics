@@ -60,7 +60,16 @@ const Double_t cc[15], Double_t xref, Double_t alpha) : AliKalmanTrack() {
 
   fIndex[0]=index;
   SetNumberOfClusters(1);
-
+  //
+  //MI
+  fSdEdx      = 0;
+  fNFoundable = 0;
+  fBConstrain = 0;
+  fLastPoint  = 0;
+  fFirstPoint = 0;
+  fRemoval    = 0;
+  fTrackType  = 0;
+  fLab2       = 0;
 }
 
 //_____________________________________________________________________________
@@ -99,7 +108,16 @@ AliKalmanTrack(t) {
   fC20=c20;     fC21=c21;     fC22=c22;
   fC30=c[6 ];   fC31=c[7 ];   fC32=c32;   fC33=c[9 ];
   fC40=c[10];   fC41=c[11];   fC42=c42;   fC43=c[13]; fC44=c[14];
-
+  //
+  //MI
+  fSdEdx      = 0;
+  fNFoundable = 0;
+  fBConstrain = 0;
+  fLastPoint  = 0;
+  fFirstPoint = 0;
+  fRemoval    = 0;
+  fTrackType  = 0;
+  fLab2       = 0;
 }
 
 //_____________________________________________________________________________
@@ -143,6 +161,16 @@ AliTPCtrack::AliTPCtrack(const AliESDtrack& t) : AliKalmanTrack() {
   StartTimeIntegral();
   Double_t times[10]; t.GetIntegratedTimes(times); SetIntegratedTimes(times);
   SetIntegratedLength(t.GetIntegratedLength());
+  //
+  //MI
+  fSdEdx      = 0;
+  fNFoundable = 0;
+  fBConstrain = 0;
+  fLastPoint  = 0;
+  fFirstPoint = 0;
+  fRemoval    = 0;
+  fTrackType  = 0;
+  fLab2       = 0;
 }
 
 //_____________________________________________________________________________
@@ -163,7 +191,18 @@ AliTPCtrack::AliTPCtrack(const AliTPCtrack& t) : AliKalmanTrack(t) {
   fC40=t.fC40;  fC41=t.fC41;  fC42=t.fC42;  fC43=t.fC43;  fC44=t.fC44;
 
   Int_t n=GetNumberOfClusters();
-  for (Int_t i=0; i<n; i++) fIndex[i]=t.fIndex[i];
+  for (Int_t i=0; i<kMaxRow; i++) fIndex[i]=t.fIndex[i];
+  //
+  //MI 
+  fSdEdx      = t.fSdEdx;
+  fNFoundable = t.fNFoundable;
+  fBConstrain = t.fBConstrain;
+  fLastPoint  = t.fLastPoint;
+  fFirstPoint = t.fFirstPoint;
+  fRemoval    = t.fRemoval ;
+  fTrackType  = t.fTrackType;
+  fLab2       = t.fLab2;
+
 }
 //_____________________________________________________________________________
 
@@ -525,3 +564,80 @@ Double_t AliTPCtrack::Phi() const {
 }
 ////////////////////////////////////////////////////////////////////////
 
+
+
+////////////////////////////////////////////////////////////////////////
+// MI ADDITION
+
+Float_t AliTPCtrack::Density(Int_t row0, Int_t row1)
+{
+  //
+  // calculate cluster density
+  Int_t good  = 0;
+  Int_t found = 0;
+  //if (row0<fFirstPoint) row0 = fFirstPoint;
+  if (row1>fLastPoint) row1 = fLastPoint;
+
+  
+  for (Int_t i=row0;i<=row1;i++){ 
+    //    Int_t index = fClusterIndex[i];
+    Int_t index = fIndex[i];
+    if (index!=-1)  good++;
+    if (index>0)    found++;
+  }
+  Float_t density=0;
+  if (good>0) density = Float_t(found)/Float_t(good);
+  return density;
+}
+
+
+Float_t AliTPCtrack::Density2(Int_t row0, Int_t row1)
+{
+  //
+  // calculate cluster density
+  Int_t good  = 0;
+  Int_t found = 0;
+  //  
+  for (Int_t i=row0;i<=row1;i++){     
+    Int_t index = fIndex[i];
+    if (index!=-1)  good++;
+    if (index>0)    found++;
+  }
+  Float_t density=0;
+  if (good>0) density = Float_t(found)/Float_t(good);
+  return density;
+}
+
+
+Double_t AliTPCtrack::GetZat0() const
+{
+  //
+  // return virtual z - supposing that x = 0
+  if (TMath::Abs(fP2)>1) return 0;
+  if (TMath::Abs(fX*fP4-fP2)>1) return 0;
+  Double_t vz = fP1+fP3/fP4*(asin(-fP2)-asin(fX*fP4-fP2));
+  return vz;
+}
+
+
+Double_t AliTPCtrack::GetD(Double_t x, Double_t y) const {
+  //------------------------------------------------------------------
+  // This function calculates the transverse impact parameter
+  // with respect to a point with global coordinates (x,y)
+  //------------------------------------------------------------------
+  //Double_t xt=fX, yt=fP0;
+
+  Double_t sn=TMath::Sin(fAlpha), cs=TMath::Cos(fAlpha);
+  Double_t a = x*cs + y*sn;
+  y = -x*sn + y*cs; x=a;
+  //
+  Double_t r  = TMath::Abs(1/fP4);
+  Double_t x0 = TMath::Abs(fP2*r);
+  Double_t y0 = fP0;
+  y0= fP0+TMath::Sqrt(1-(fP4*fX-fP2)*(fP4*fX-fP2))/fP4;
+  
+  Double_t  delta = TMath::Sqrt((x-x0)*(x-x0)+(y-y0)*(y-y0));  
+  //  Double_t  delta = TMath::Sqrt(TMath::Abs(x*x-2*x0*x+x0*x0+ y*y-2*y*y0+y0*y0));
+  delta -= TMath::Abs(r);
+  return delta;  
+}
