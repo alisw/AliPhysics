@@ -5,15 +5,16 @@
 // include files and class forward declarations
 #include "TObject.h"
 #include "TH2.h"
-#include "AliCluster.h"
+//#include "AliComplexCluster.h"
 
 class TClonesArray;
-class AliCluster;
+class AliComplexCluster;
 class AliCell;
 class AliArrayI;
 class AliDetectorParam;
 class TMinuit;
 class AliH2F;
+class AliDigitCluster;
 
 class  AliTPCClusterFinder : public TObject {
  
@@ -140,7 +141,7 @@ private:
   TClonesArray * fClustersArray; //array with current clusters
   Bool_t     rOK;       
   //signalize that all fields were initialised 
-  ClassDef(AliTPCClusterFinder,2)
+  ClassDef(AliTPCClusterFinder,2) // Cluster finder
 };  
 
 

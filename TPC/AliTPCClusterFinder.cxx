@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.3  2000/07/10 20:57:39  hristov
+Update of TPC code and macros by M.Kowalski
+
 Revision 1.2  2000/06/30 12:07:49  kowal2
 Updated from the TPC-PreRelease branch
 
@@ -25,7 +28,7 @@ replacing AliClusterFinder
 
 //-----------------------------------------------------------------------------
 //
-//  Implementation of class ALICLUSTERFINDER
+//  Implementation of class ALITPCCLUSTERFINDER
 // 
 //Class for cluster finding in two dimension.
 //In the present there are implemented two algorithm
@@ -49,7 +52,7 @@ replacing AliClusterFinder
 #include "TRandom.h"
 #include "AliH2F.h"
 #include "TMarker.h"
-#include "AliCluster.h"
+#include "AliComplexCluster.h"
 #include "AliTPCClusterFinder.h"
 #include <fstream.h>
 
@@ -782,7 +785,7 @@ TClonesArray * AliTPCClusterFinder::FindPeaks3(TClonesArray *arr)
 	   for ( Int_t dd =1;((dd<=dmax) && (naccepted>0));dd++){
              naccepted=0; 
 	     for (Int_t di = -dd;di<=dd;di++){
-	       Int_t ddj = dd-abs(di);
+	       Int_t ddj = dd-TMath::Abs(di);
 	       Int_t sigstart = (ddj>0) ?  -1 : 0;
 	       for (Int_t sig = sigstart;sig<=1;sig+=2){
 		 Int_t dj= sig*ddj; 
@@ -916,7 +919,7 @@ void AliTPCClusterFinder::DrawCluster(
   //draw marker for each of cluster
   Int_t ncl=fClustersArray->GetEntriesFast();
   for (Int_t i=0;i<ncl;i++){
-    AliCluster *cl = (AliCluster*)fClustersArray->UncheckedAt(i);
+    AliComplexCluster *cl = (AliComplexCluster*)fClustersArray->UncheckedAt(i);
     TMarker * marker = new TMarker;
     marker->SetX(cl->fX);
     marker->SetY(cl->fY);
