@@ -115,7 +115,7 @@ EXPORTFILES += $(@PACKAGE@EXPORTDEST)
 
 ifdef @PACKAGE@EXPORT
 $(@PACKAGE@EXPORTDEST): $(patsubst %,@MODULE@/%,$(@PACKAGE@EXPORT))
-	  @echo "***** Copying file @MODULE@/$(notdir $@) to $@ WRONG !!!*****"
+	  @echo "***** Copying file @MODULE@/$(notdir $@) to $@ *****"
 	  @[ -d $(dir $@) ] || mkdir $(dir $@)
 	  cp @MODULE@/$(notdir $@) $@	
 endif
