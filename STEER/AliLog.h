@@ -152,8 +152,8 @@ class AliLog: public TObject {
 // function name
 #if defined(__GNUC__) || defined(__ICC) || defined(__ECC) || defined(__APPLE__)
 #define FUNCTIONNAME() __FUNCTION__
-#elif defined(__HP_aCC) || defined(__alpha) || defined(__DECCXX)
-#define FUNCTIONNAME() __FUNC__
+// #elif defined(__HP_aCC) || defined(__alpha) || defined(__DECCXX)
+// #define FUNCTIONNAME() __FUNC__
 #else
 #define FUNCTIONNAME() "???"
 #endif
