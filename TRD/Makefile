@@ -50,7 +50,7 @@ FFLAGS      = $(FOPT)
 SLIBRARY	= $(ALICE_ROOT)/lib/libTRD.$(SL)
 ALIBRARY	= $(ALICE_ROOT)/lib/libTRD.a
 
-default:	$(SLIBRARY) headers
+default:	headers $(SLIBRARY)
 
 $(ALICE_ROOT)/lib/libTRD.$(SL):	$(OBJS)
 
