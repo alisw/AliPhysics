@@ -5,7 +5,8 @@ SRCS= AliAOD.cxx AliEventBuffer.cxx \
       AliAODParticleCut.cxx AliAODParticleBaseCut.cxx \
       AliAODPairCut.cxx AliAODPairBaseCut.cxx \
       AliEventCut.cxx AliEventBaseCut.cxx \
-      AliReader.cxx AliReaderESD.cxx AliReaderKineTree.cxx\
+      AliReader.cxx AliReaderESD.cxx AliReaderKineTree.cxx \
+      AliReaderAOD.cxx \
       AliTrackPoints.cxx AliClusterMap.cxx \
       AliD0toKpi.cxx  AliD0toKpiAnalysis.cxx AliFlowAnalysis.cxx \
 

@@ -20,8 +20,13 @@ class AliClusterMap;
 
 class AliVAODParticle : public TObject {
 public:
-   AliVAODParticle(){}
-   virtual ~AliVAODParticle(){}
+  AliVAODParticle(){}
+  virtual ~AliVAODParticle(){}
+
+  AliVAODParticle(const AliVAODParticle& in);
+  virtual AliVAODParticle& operator=(const AliVAODParticle& in); 
+   
+
   // kinematics
   virtual TLorentzVector   FourMomentum() const = 0;
   virtual TVector3         Momentum() const {return FourMomentum().Vect();};
@@ -41,16 +46,18 @@ public:
   virtual void             SetProductionVertex(Double_t /*vx*/, Double_t /*vy*/, Double_t /*vz*/, Double_t /*t*/) = 0;
 
   // PID
-  virtual Double_t         Charge() const = 0;
+  virtual void             SetPdgCode(Int_t pdg, Float_t prob = 1.0) = 0;
   virtual Double_t         GetProbability(Int_t pdg) const = 0;
-  virtual Double_t         GetPidProb() const = 0;
+  virtual Double_t         GetPidProb() const = 0;//returns probability of being particle type defined by GetPdgCode() 
   virtual Int_t            GetMostProbable() const = 0;
   
   virtual Int_t            GetPdgCode() const = 0;//We need to assume some PID (f.e. energy calculation) 
-                                                  //sotimes one track can apear in analysis twise (e.g. ones as pion ones as kaon)
+                                                  //sometimes one track can apear in analysis twise (e.g. ones as pion ones as kaon)
   virtual Int_t            GetNumberOfPids() const = 0; //returns number of non zero PID probabilities
   virtual Int_t            GetNthPid         (Int_t idx) const = 0;//These two methods are made to be able to
   virtual Float_t          GetNthPidProb     (Int_t idx) const = 0;//copy pid information i.e. in copy ctors
+
+  virtual Double_t         Charge() const = 0;
   
   // vertices
   virtual TVector3         ProductionVertex() const = 0;
@@ -68,7 +75,7 @@ public:
   virtual Int_t            GetUID() const { return 0;}//returns unique ID of this track 
                                                       //(may happen than the same track is selected
                                                       //twise, f.g. as a pion and as a kaon than both have the same UID)
-                                                      
+  virtual void             SetUID(Int_t /*id*/){/* *this */}
   // type information
   virtual Bool_t           IsSimulated() {return kFALSE;};
   virtual Bool_t           IsTrack() {return kFALSE;};
@@ -82,7 +89,7 @@ public:
 
   static void    SetDebug(Int_t dbg=1){fgDebug=dbg;}
   static Int_t   GetDebug(){return fgDebug;}
-
+  virtual void   Clear(Option_t * /*option*/ ="");
 private:
   static Int_t fgDebug;//! debug level for all the analysis package
 

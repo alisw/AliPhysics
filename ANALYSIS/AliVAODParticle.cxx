@@ -37,3 +37,32 @@ Int_t AliVAODParticle::fgDebug = 0;
 
 ClassImp(AliVAODParticle)
 
+void   AliVAODParticle::Clear(Option_t * /*option*/)
+{
+//Clear method
+//It is necessary for storing particles in clones array
+  Error("Clear","!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+  Error("Clear","error Error ERROR error Error ERROR");
+  Error("Clear","This Particle do not implement Clear Method");
+  Error("Clear","Clear Method must delete all dynamiclally allocalted memory");
+  Error("Clear","error Error ERROR error Error ERROR");
+  Error("Clear","!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+}
+//______________________________________________________________________________
+
+AliVAODParticle::AliVAODParticle(const AliVAODParticle& in):
+ TObject(in)
+{
+ //Copy constructor
+// Info("AliVAODParticle(const AliVAODParticle& in)","");
+}
+//______________________________________________________________________________
+
+
+AliVAODParticle& AliVAODParticle::operator=(const AliVAODParticle& /*in*/)
+{
+//assigment operator
+  Info("operator=(const AliVAODParticle& in)","Implement opertator= in your particle!!!");
+  return *this;
+}
+

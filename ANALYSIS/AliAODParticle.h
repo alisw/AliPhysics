@@ -45,8 +45,9 @@ public:
   virtual ~AliAODParticle();
   
   AliAODParticle& operator=(const AliAODParticle& in); 
+  AliAODParticle& operator=(const AliVAODParticle& in); 
   
-  void           Clear(Option_t*);//Must be implemented in order to store this object in Clones Array
+  void           Clear(Option_t* /*option*/ ="");//Must be implemented in order to store this object in Clones Array
   
   TLorentzVector FourMomentum() const {TLorentzVector v(fPx,fPy,fPz,fE);return v;}
   TVector3       ProductionVertex() const {TVector3 v(fVx,fVy,fVz);return v;}
@@ -59,7 +60,7 @@ public:
   
   Int_t          GetPdgCode      () const { return (fPids)?fPids[fPdgIdx]:0;}
 
-  Double_t        GetPidProb      () const { return (fPidProb)?fPidProb[fPdgIdx]:0;}
+  Double_t       GetPidProb      () const { return (fPidProb)?fPidProb[fPdgIdx]:0;}
   
   Int_t          GetUID          () const { return fIdxInEvent;}
   Int_t          GetNumberOfPids () const { return fNPids;}
