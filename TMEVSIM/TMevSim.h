@@ -38,6 +38,8 @@ class TMevSim : public TGenerator {
 
    virtual void        GenerateEvent();
 
+   TObjArray *         ImportParticles(Option_t * option);
+
    virtual Int_t       ImportParticles(TClonesArray *particles, Option_t *option="");
 
    //Parameters for the generation:

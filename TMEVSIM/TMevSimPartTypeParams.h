@@ -36,7 +36,7 @@ class TMevSimPartTypeParams : public TObject {
    // Copy and assignment operators;
    
    TMevSimPartTypeParams (const TMevSimPartTypeParams& pars);                    // copy constructor
-   virtual TMevSimPartTypeParams& operator=(const TMevSimPartTypeParams& pars);  // assignment operator 
+   TMevSimPartTypeParams& operator=(const TMevSimPartTypeParams& pars);  // assignment operator 
    
    // Parameters of the particle type
    
