@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.3  2002/08/21 22:04:27  nilsen
+Added data member to SPD cluters and made related modifications to the
+SPD Cluster finders. Generaly cleanded up some of the code.
+
 Revision 1.2  2001/06/14 14:33:53  barbera
 New version from B. Batyunya to get the Dubna model work with the present HEAD
 
@@ -67,6 +71,41 @@ AliITSClusterFinderSPDdubna::AliITSClusterFinderSPDdubna(){
     SetDx();
     SetDz();
     SetNCells();
+}
+//______________________________________________________________________
+AliITSClusterFinderSPDdubna &AliITSClusterFinderSPDdubna::operator=(const
+                                          AliITSClusterFinderSPDdubna &s){
+    // The = operator for the class AliITSClusterFinderSPDdugna
+    // Inputs:
+    //    AliITSClusterFinderSPDdubna @s  The AliITSClusterFinderSPDdubna
+    //                                    class to be copy constructed.
+    // Outputs:
+    //    none.
+    // Returned:
+    //    this, a copy of the class s.
+
+    this->fNclusters = s.fNclusters;
+    this->fDz        = s.fDz;
+    this->fDx        = s.fDx;
+    this->fMinNCells = s.fMinNCells;
+    this->fClusters  = new TClonesArray(*(s.fClusters));
+    return *this;
+}
+//______________________________________________________________________
+AliITSClusterFinderSPDdubna::AliITSClusterFinderSPDdubna(const
+                                         AliITSClusterFinderSPDdubna &s){
+    // The Copy constructortor the class AliITSClusterFinderSPDdugna
+    // It calles the = operator.
+    // Inputs:
+    //    AliITSClusterFinderSPDdubna @s  The AliITSClusterFinderSPDdubna
+    //                                    class to be copy constructed.
+    // Outputs:
+    //    none.
+    // Returned:
+    //    none.
+
+    *this = s;
+    return;
 }
 //______________________________________________________________________
 AliITSClusterFinderSPDdubna::~AliITSClusterFinderSPDdubna(){
