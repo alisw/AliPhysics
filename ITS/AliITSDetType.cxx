@@ -15,6 +15,9 @@
 
 /*
  $Log$
+ Revision 1.5  2001/05/31 06:58:38  fca
+ Patch problem with destructor
+
  Revision 1.4  2001/05/01 14:47:45  nilsen
  Fixed destructor so that it destroyes the pointers fSegmentation, fResponse,
  fSimulation, and fReconst if they have been allocated. The two TStrings
@@ -40,11 +43,12 @@ AliITSDetType::AliITSDetType(){
 //----------------------------------------------------------------------
 AliITSDetType::~AliITSDetType(){
     // destructor
-
+  /* PH Commented because AliITSDetType is not the owner
     if(fSegmentation!=0) delete fSegmentation; fSegmentation = 0;
     //    if(fResponse!=0)     delete fResponse;     fResponse     = 0;
     if(fSimulation!=0)   delete fSimulation;   fSimulation   = 0;
     if(fReconst!=0)      delete fReconst;      fReconst      = 0;
+  */
 }
 //______________________________________________________________________
 AliITSDetType::AliITSDetType(const AliITSDetType &source){
