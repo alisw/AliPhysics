@@ -371,17 +371,21 @@ void AliGenerator::VertexInternal()
     Float_t random[6];
     Float_t dv[3];
     Int_t j;
-    
     dv[2] = 1.e10;
-    while(TMath::Abs(dv[2]) > fCutVertexZ*fOsigma[2]) {
-	Rndm(random,6);
-	for (j=0; j < 3; j++) {
-	    dv[j] = fOsigma[j]*TMath::Cos(2*random[2*j]*TMath::Pi())*
-		TMath::Sqrt(-2*TMath::Log(random[2*j+1]));
+    if (!TestBit(kVertexRange)) {
+	while(TMath::Abs(dv[2]) > fCutVertexZ*fOsigma[2]) {
+	    Rndm(random,6);
+	    for (j=0; j < 3; j++) {
+		dv[j] = fOsigma[j]*TMath::Cos(2*random[2*j]*TMath::Pi())*
+		    TMath::Sqrt(-2*TMath::Log(random[2*j+1]));
+	    }
 	}
+	for (j=0; j < 3; j++) fVertex[j] = fOrigin[j] + dv[j];
+    } else {
+	Rndm(random,3);
+	for (j=0; j < 3; j++)
+	    fVertex[j] =  fVMin[j] + random[j] * (fVMax[j] - fVMin[j]);
     }
-    for (j=0; j < 3; j++) fVertex[j] = fOrigin[j] + dv[j];
-    
 }
 
 //_______________________________________________________________________
