@@ -6,6 +6,9 @@
 #include "TG4ModularPhysicsList.h"
 #include "TG4G3PhysicsManager.h"
 #include "TG4G3ControlVector.h"
+#include "TG4ExtDecayer.h"
+#include "AliDecayer.h"
+#include "AliMC.h"
 
 #include <G4ParticleDefinition.hh>
 #include <G4ProcessManager.hh>
@@ -20,17 +23,38 @@
 
 
 TG4ModularPhysicsList::TG4ModularPhysicsList()
-  : G4VModularPhysicsList()
+  : G4VModularPhysicsList(),
+    fExtDecayer(0)
 {
-  G4cout << "TG4ModularPhysicsList::TG4ModularPhysicsList" << G4endl;
-
+//
   defaultCutValue = 1.0*mm;
 
   SetVerboseLevel(1);
 }
 
+TG4ModularPhysicsList::TG4ModularPhysicsList(const TG4ModularPhysicsList& right)
+{
+//
+  TG4Globals::Exception("TG4ModularPhysicsList is protected from copying.");
+}
+
 TG4ModularPhysicsList::~TG4ModularPhysicsList() {
 //
+  //delete fExtDecayer;
+       // fExtDecayer is deleted in G4Decay destructor
+}
+
+// operators
+
+TG4ModularPhysicsList& 
+TG4ModularPhysicsList::operator=(const TG4ModularPhysicsList &right)
+{
+  // check assignement to self
+  if (this == &right) return *this;
+  
+  TG4Globals::Exception("TG4ModularPhysicsList is protected from assigning.");
+
+  return *this;
 }
 
 // protected methods
@@ -42,8 +66,6 @@ void TG4ModularPhysicsList::ConstructParticle()
 // This ensures that objects of these particle types will be
 // created in the program. 
 // ---
-
-  G4cout << "Construct particles" << G4endl;
 
   // lock physics manager
   TG4G3PhysicsManager* g3PhysicsManager = TG4G3PhysicsManager::Instance();
@@ -65,8 +87,6 @@ void TG4ModularPhysicsList::ConstructProcess()
 {
 // Constructs all processes.
 // ---
-
-  G4cout << "Construct process" << G4endl;
 
   // create processes for registered physics
   G4VModularPhysicsList::ConstructProcess();
@@ -139,6 +159,18 @@ void TG4ModularPhysicsList::ConstructGeneral()
 
   // Add Decay Process
   G4Decay* theDecayProcess = new G4Decay();
+
+  // Set external decayer
+  AliDecayer* aliDecayer = gMC->Decayer(); 
+  if (aliDecayer) {
+    TG4ExtDecayer* tg4Decayer = new TG4ExtDecayer(aliDecayer);
+       // the tg4Decayer is deleted in G4Decay destructor
+    tg4Decayer->SetVerboseLevel(1);   
+    theDecayProcess->SetExtDecayer(tg4Decayer);
+    
+    if (verboseLevel>0) G4cout << "### External decayer is set" << G4endl;
+  } 
+
   theParticleIterator->reset();
   while( (*theParticleIterator)() ){
     G4ParticleDefinition* particle = theParticleIterator->value();
@@ -168,8 +200,8 @@ void TG4ModularPhysicsList::SetCuts()
 
   // default cut value
   G4double cut  = defaultCutValue;
-  G4double ecut = 10.*m; 
-  //G4double ecut = cut; 
+  //G4double ecut = 10.*m; 
+  G4double ecut = cut; 
 
 #ifdef G4VERBOSE    
   if (verboseLevel >1){
@@ -202,8 +234,6 @@ void TG4ModularPhysicsList::SetProcessActivation()
 // to the setup in TG4G3PhysicsManager::fControlVector.
 // ---
 
-  G4cout << "TG4ModularPhysicsList::SetProcessActivation() start" << G4endl;
-  
   TG4G3PhysicsManager* g3PhysicsManager = TG4G3PhysicsManager::Instance();
   TG4G3ControlVector* controlVector = g3PhysicsManager->GetControlVector();
 
@@ -247,7 +277,6 @@ void TG4ModularPhysicsList::SetProcessActivation()
     text = text + "    Vector of processes controls is not set.";
     TG4Globals::Warning(text);
   }    
-  G4cout << "TG4ModularPhysicsList::SetProcessActivation() end" << G4endl;
 }
 
 void TG4ModularPhysicsList::PrintAllProcesses() const
