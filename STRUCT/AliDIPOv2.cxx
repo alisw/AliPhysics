@@ -618,8 +618,9 @@ void AliDIPOv2::CreateSpectrometerDipole()
   
   gMC->Gspos("DY2 ", 1, "DDIP",  dx, 0.0,  dz+kZDipole, idrotm[1809], "ONLY");
   gMC->Gspos("DY2 ", 2, "DDIP", -dx, 0.0,  dz+kZDipole, idrotm[1810], "ONLY");
-
-  gMC->Gspos("DDIP", 1, "ALIC", 0., 0., 0., 0, "ONLY");
+  
+  AliMatrix(idrotm[1811], 270., 0., 90., 90., 180., 0.);
+  gMC->Gspos("DDIP", 1, "ALIC", 0., 0., 0., idrotm[1811], "ONLY");
 
   gMC->Gsatt("DDIP", "SEEN", 0);
 //  gMC->Gsatt("DC21", "SEEN", 0);
@@ -757,7 +758,8 @@ void AliDIPOv2::CreateCompensatorDipole()
 
 
     gMC->Gspos("DCBA", 1, "DCM0",  0., -47.5 , 17.5, 0, "ONLY");
-    gMC->Gspos("DCM0", 1, "ALIC",  0., -6.75, -975., 0, "ONLY");
+    AliMatrix(idrotm[1816], 270., 0., 90., 90.,  180., 0.);  
+    gMC->Gspos("DCM0", 1, "ALIC",  0., -6.75,  975., idrotm[1816], "ONLY");
 
 
 }
