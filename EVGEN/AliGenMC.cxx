@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.7  2002/04/17 10:32:32  morsch
+Coding Rule violations corrected.
+
 Revision 1.6  2002/03/26 14:19:36  morsch
 Saver calculation of rapdity.
 
@@ -114,6 +117,7 @@ void AliGenMC::Init()
     case kOmega:	
     case kAll:
     case kNoDecay:
+    case kNoDecayHeavy:
 	break;
     }
 }
