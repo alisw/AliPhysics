@@ -21,6 +21,7 @@
 #include "TG4Globals.h"
 
 #include <G3toG4.hh> 
+#include <G3toG4MANY.hh>
 #include <G3toG4BuildTree.hh>
 #include <G3VolTable.hh>
 #include <G3RotTable.hh>
@@ -462,8 +463,10 @@ void  TG4GeometryManager::SetCerenkov(Int_t itmed, Int_t npckov,
   // set material properties table 
   material->SetMaterialPropertiesTable(table);
 
+  // add verbose
   G4cout << "The tables for UV photon tracking set for "
          << material->GetName() << G4endl;
+
   for (i=0; i<npckov; i++)
     G4cout << ppckovDbl[i] << " " << rindexDbl[i] << G4endl;
 	 
@@ -747,6 +750,23 @@ void  TG4GeometryManager::Gsposp(const char *name, Int_t nr,
  
  
 //_____________________________________________________________________________
+void  TG4GeometryManager::Gsbool(const char* onlyVolName, 
+                                 const char* manyVolName)
+{ 
+// Helps for resolving MANY.
+// Specifies the ONLY volume that overlaps with the 
+// specified MANY and has to be substracted.
+// ---  
+
+   // write token to the output file
+   //if (fWriteGeometry) 
+   //  fOutputManager->WriteGsbool(onlyVolName, manyVolName);
+
+   G4gsbool(onlyVolName, manyVolName);
+} 
+ 
+ 
+//_____________________________________________________________________________
 Int_t TG4GeometryManager::Gsvolu(const char *name, const char *shape, 
           Int_t nmed, Double_t *upar, Int_t npar) 
 { 
@@ -849,6 +869,9 @@ G4VPhysicalVolume* TG4GeometryManager::CreateG4Geometry()
   Ggclos();
   G3VolTableEntry* first = G3Vol.GetFirstVTE();
   
+  // transform MANY to Boolean solids
+  G3toG4MANY(first);
+  
   // create G4 geometry
   G3toG4BuildTree(first,0);  
   
@@ -859,6 +882,7 @@ G4VPhysicalVolume* TG4GeometryManager::CreateG4Geometry()
   G3Vol.VTEStat();
 
   // print G4 geometry statistics
+  // add verbose
   G4cout << "G4 Stat: instantiated " 
          << fGeometryServices->NofG4LogicalVolumes()  
 	 << " logical volumes \n"
@@ -913,6 +937,7 @@ void TG4GeometryManager::SetUserLimits(const TG4G3CutVector& cuts,
 
     // set limits to logical volume
     lv->SetUserLimits(tg4Limits);
+    //NO TG4 lv->SetUserLimits(0);
   } 
 }
 
@@ -924,7 +949,10 @@ void TG4GeometryManager::ReadG3Geometry(G4String filePath)
 
   // add verbose
   G4cout << "Reading the call list file " << filePath << "..." << G4endl;
+    
   G3CLRead(filePath, NULL);
+
+  // add verbose
   G4cout << "Call list file read completed. Build geometry" << G4endl;
 }
 
