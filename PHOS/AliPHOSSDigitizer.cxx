@@ -173,19 +173,20 @@ void AliPHOSSDigitizer::Exec(Option_t *option)
   Int_t ievent ;
   for(ievent = 0; ievent < nevents; ievent++){
     gime->Event(ievent,"H") ;
-
+    const TClonesArray * hits = gime->Hits() ;
     TClonesArray * sdigits = gime->SDigits(sdname.Data()) ;
     sdigits->Clear();
     Int_t nSdigits = 0 ;
     
     
     //Now make SDigits from hits, for PHOS it is the same, so just copy    
-    Int_t itrack ;
-    for (itrack=0; itrack < gAlice->GetNtrack(); itrack++){
-  
-      //=========== Get the PHOS branch from Hits Tree for the Primary track itrack
-      gime->Track(itrack) ;
-      TClonesArray * hits = gime->Hits() ;
+
+//******************** CHECK HERE
+//YS DOES NOT UNDERSTAND THE NEED FOR THE FOLLOWING LOOP
+//     Int_t itrack ;
+//     for (itrack=0; itrack < gAlice->GetNtrack(); itrack++){
+//       //=========== Get the PHOS branch from Hits Tree for the Primary track itrack
+//       gime->Track(itrack) ;
       Int_t i;
       for ( i = 0 ; i < hits->GetEntries() ; i++ ) {
 	AliPHOSHit * hit = dynamic_cast<AliPHOSHit *>(hits->At(i)) ;
@@ -200,14 +201,14 @@ void AliPHOSSDigitizer::Exec(Option_t *option)
 	nSdigits++ ;	
 	
       }
-    } // loop over tracks
+//    } // loop over tracks
     
     sdigits->Sort() ;
     
     nSdigits = sdigits->GetEntriesFast() ;
     fSDigitsInRun += nSdigits ;  
     sdigits->Expand(nSdigits) ;
-    Int_t i ;
+//    Int_t i ;
     for (i = 0 ; i < nSdigits ; i++) { 
       AliPHOSDigit * digit = dynamic_cast<AliPHOSDigit *>(sdigits->At(i)) ; 
       digit->SetIndexInList(i) ;     
@@ -336,7 +337,7 @@ void AliPHOSSDigitizer::PrintSDigits(Option_t * option)
   AliPHOSGetter * gime = AliPHOSGetter::GetInstance() ; 
   TString sdname(GetName()) ;
   sdname.Remove(sdname.Index(GetTitle())-1) ;
-  TClonesArray * sdigits = gime->SDigits(sdname.Data()) ; 
+  const TClonesArray * sdigits = gime->SDigits(sdname.Data()) ; 
 
   cout << "AliPHOSSDigitiser: event " << gAlice->GetEvNumber() << endl ;
   cout << "      Number of entries in SDigits list " << sdigits->GetEntriesFast() << endl ;
