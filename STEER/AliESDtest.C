@@ -56,7 +56,7 @@ extern TSystem *gSystem;
 extern AliRun *gAlice;
 extern TFile *gFile;
 
-Int_t AliESDtest(Int_t nev=1) {
+Int_t AliESDtest(Int_t nev=1,Int_t run=0) {
 
 /**** Initialization of the NewIO *******/
 
@@ -219,6 +219,8 @@ Int_t AliESDtest(Int_t nev=1) {
    for (Int_t i=0; i<nev; i++) {
      cerr<<"\n\nProcessing event number : "<<i<<endl;
      AliESD *event=new AliESD(); 
+     event->SetRunNumber(run);
+     event->SetEventNumber(i);
 
      rl->GetEvent(i);
  
