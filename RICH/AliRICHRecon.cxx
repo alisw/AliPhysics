@@ -21,25 +21,26 @@
 //                                                                      //
 //////////////////////////////////////////////////////////////////////////
 
-
-#include "AliRICH.h"
-#include "AliRICHRecon.h"
-#include "AliRICHParam.h"
-#include "AliRICHChamber.h"
-#include <AliLoader.h>
-#include <AliRun.h>
-#include <AliStack.h>
 #include <Riostream.h>
-#include <TParticle.h>
+#include <TCanvas.h>
+#include <TFile.h>
 #include <TH2.h>
 #include <TMath.h>
-#include <TRandom.h>
+#include <TMath.h>
 #include <TMinuit.h>
 #include <TNtuple.h>
-#include <TMath.h>
+#include <TParticle.h>
+#include <TRandom.h>
 #include <TRotation.h>
 #include <TVector3.h>
-#include <TCanvas.h>
+
+#include "AliLoader.h"
+#include "AliRICH.h"
+#include "AliRICHChamber.h"
+#include "AliRICHParam.h"
+#include "AliRICHRecon.h"
+#include "AliRun.h"
+#include "AliStack.h"
 
 #define NPointsOfRing 201
 

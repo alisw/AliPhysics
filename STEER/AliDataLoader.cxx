@@ -382,7 +382,7 @@ AliRunLoader* AliDataLoader::GetRunLoader()
      Error("GetRunLoader","Can not get event folder.");
      return 0;
    }
-  rg = dynamic_cast<AliRunLoader*>(ef->FindObject(AliRunLoader::fgkRunLoaderName));
+  rg = dynamic_cast<AliRunLoader*>(ef->FindObject(AliRunLoader::GetRunLoaderName()));
   return rg;
 }
 

@@ -23,11 +23,12 @@
 /////////////////////////////////////////////////////////////////////
 
 #include <TNamed.h>
-#include <TFile.h>
+
 #include "AliConfig.h"
 #include "AliLoader.h"
 #include "AliDataLoader.h"
 
+class TFile;
 class TString;
 class TFolder;
 class TObjArray;
@@ -50,6 +51,9 @@ class AliRunLoader: public TNamed
     AliRunLoader();
     AliRunLoader(const char* topfoldername);
     AliRunLoader(TFolder* topfolder);
+    AliRunLoader(const AliRunLoader &rl);
+    AliRunLoader & operator = (const AliRunLoader &rl) 
+      {rl.Copy(*this); return *this;}
     
     virtual ~AliRunLoader();
     
@@ -150,7 +154,7 @@ class AliRunLoader: public TNamed
     TString     GetFileName() const;//returns name of galice file
     const TObjArray* GetArrayOfLoaders() const {return fLoaders;}
     Int_t GetDebug() const {return AliLoader::GetDebug();}
-    void cd(){fgRunLoader = this;}
+    void Cd(){fgRunLoader = this;}
     void Synchronize();
     
     AliLoader*    GetDetectorLoader(const char* detname);
@@ -182,15 +186,16 @@ class AliRunLoader: public TNamed
     static TTask*           GetRunTracker();          //
     static TTask*           GetRunPIDTask();          // 
     static TTask*           GetRunQATask();           //
+
+    static TString GetRunLoaderName () {return fgkRunLoaderName;}
+    static TString GetHeaderContainerName () {return fgkHeaderContainerName;}
+    static TString GetKineContainerName () {return fgkKineContainerName;}
+    static TString GetTrackRefsContainerName () {return fgkTrackRefsContainerName;}
+    static TString GetHeaderBranchName () {return fgkHeaderBranchName;}
+    static TString GetKineBranchName () {return fgkKineBranchName;}
+    static TString GetGAliceName () {return fgkGAliceName;}
      
-    static const TString   fgkRunLoaderName;          //default name of the run loader
-    static const TString   fgkHeaderContainerName;    //default name of the kinematics container (TREE) name - TreeE
-    static const TString   fgkKineContainerName;      //default name of the kinematics container (TREE) name - TreeK
-    static const TString   fgkTrackRefsContainerName; //default name of the track references container (TREE) name - TreeTR
-    static const TString   fgkHeaderBranchName;       //default name of the branch containing the header
-    static const TString   fgkKineBranchName;         //default name of the branch with kinematics
-    static const TString   fgkGAliceName;             //default name for gAlice file    
-  protected:
+protected:
     /**********************************************/
     /************    PROTECTED      ***************/
     /*********        D A T A          ************/
@@ -238,6 +243,16 @@ class AliRunLoader: public TNamed
    
     static AliRunLoader* fgRunLoader; //pointer to the AliRunLoader instance
 
+private:
+    void Copy(TObject &arun) const;
+
+    static const TString   fgkRunLoaderName;          //default name of the run loader
+    static const TString   fgkHeaderContainerName;    //default name of the kinematics container (TREE) name - TreeE
+    static const TString   fgkKineContainerName;      //default name of the kinematics container (TREE) name - TreeK
+    static const TString   fgkTrackRefsContainerName; //default name of the track references container (TREE) name - TreeTR
+    static const TString   fgkHeaderBranchName;       //default name of the branch containing the header
+    static const TString   fgkKineBranchName;         //default name of the branch with kinematics
+    static const TString   fgkGAliceName;             //default name for gAlice file    
     
     ClassDef(AliRunLoader,1)
 };

@@ -68,6 +68,11 @@
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
+#include <TArrayF.h>
+#include <TFile.h>
+#include <TSystem.h>
+#include <TROOT.h>
+#include <TPluginManager.h>
 
 #include "AliReconstruction.h"
 #include "AliRunLoader.h"
@@ -83,11 +88,6 @@
 #include "AliGenEventHeader.h"
 #include "AliESDpid.h"
 #include "AliMagF.h"
-#include <TArrayF.h>
-#include <TSystem.h>
-#include <TROOT.h>
-#include <TPluginManager.h>
-
 
 ClassImp(AliReconstruction)
 

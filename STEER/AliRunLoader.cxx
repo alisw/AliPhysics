@@ -1,4 +1,3 @@
-#include "AliRunLoader.h"
 //____________________________________________________________________
 //////////////////////////////////////////////////////////////////////
 //                                                                  //
@@ -30,14 +29,12 @@
 //////////////////////////////////////////////////////////////////////
 
 #include <TBranch.h>
-#include <TError.h>
 #include <TFile.h>
 #include <TFolder.h>
 #include <TGeometry.h>
 #include <TObjArray.h>
-#include <TROOT.h>
 #include <TString.h>
-#include <TTask.h>
+class TTask;
 #include <TTree.h>
 
 #include "AliRun.h"
@@ -46,7 +43,7 @@
 #include "AliHeader.h"
 #include "AliStack.h"
 #include "AliDetector.h"
-#include "AliRunDigitizer.h"
+#include "AliRunLoader.h"
 
 ClassImp(AliRunLoader)
 
@@ -97,6 +94,26 @@ AliRunLoader::AliRunLoader(const char* eventfoldername):
 //ctor
   SetEventFolderName(eventfoldername);
  if (!fgRunLoader) fgRunLoader = this;
+}
+/**************************************************************************/
+
+AliRunLoader::AliRunLoader(const AliRunLoader &rl):
+ TNamed(rl),
+ fLoaders(0x0),
+ fEventFolder(0x0),
+ fCurrentEvent(0),
+ fGAFile(0x0),
+ fHeader(0x0),
+ fStack(0x0),
+ fKineDataLoader(0x0),
+ fTrackRefsDataLoader(0x0),
+ fNEventsPerFile(0),
+ fUnixDirName(".")
+{
+  //
+  // Copy ctor
+  //
+  rl.Copy(*this);
 }
 /**************************************************************************/
 
@@ -164,6 +181,12 @@ AliRunLoader::AliRunLoader(TFolder* topfolder):
    
  fEventFolder->Add(this);//put myself to the folder to accessible for all
   
+}
+/**************************************************************************/
+
+void AliRunLoader::Copy(TObject &) const 
+{
+  Fatal("Copy","Not implemented");
 }
 /**************************************************************************/
 
@@ -318,10 +341,10 @@ AliRunLoader* AliRunLoader::Open
 //returns the pointer to run Loader which can be further used for accessing data 
 //in case of error returns NULL
  
- static const TString webaddress("http://alisoft.cern.ch/people/skowron/codedoc/split/index.html");
+ static const TString kwebaddress("http://alisoft.cern.ch/people/skowron/codedoc/split/index.html");
  if (AliLoader::GetDebug()) 
   ::Info("AliRunLoader::Open",
-         "\n\n\nNew I/O strcture: See more info:\n %s\n\n\n",webaddress.Data());
+         "\n\n\nNew I/O strcture: See more info:\n %s\n\n\n",kwebaddress.Data());
  
  AliRunLoader* result = 0x0;
  

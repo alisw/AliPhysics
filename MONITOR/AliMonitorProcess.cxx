@@ -25,6 +25,7 @@
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
+#include <TFile.h>
 #include <TGrid.h>
 #include <TGridResult.h>
 #include <TMessage.h>

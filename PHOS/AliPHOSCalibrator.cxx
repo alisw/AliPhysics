@@ -45,18 +45,19 @@
 //////////////////////////////////////////////////////////////////////////////
 
 // --- ROOT system ---
-#include "TROOT.h"
 #include "TF1.h"
+#include "TFile.h"
 #include "TObjString.h"
+#include "TROOT.h"
 
 // --- Standard library ---
 
 // --- AliRoot header files ---
-#include "AliPHOSGetter.h"
-#include "AliPHOSCalibrator.h"
-#include "AliPHOSConTableDB.h"
 #include "AliPHOSCalibrManager.h"
 #include "AliPHOSCalibrationData.h"
+#include "AliPHOSCalibrator.h"
+#include "AliPHOSConTableDB.h"
+#include "AliPHOSGetter.h"
 
 ClassImp(AliPHOSCalibrator)
 

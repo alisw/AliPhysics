@@ -15,6 +15,13 @@
 
 /* $Id$ */
 
+#include <TFile.h>
+#include <TObjString.h>
+
+#include "AliLoader.h"
+#include "AliRun.h"
+#include "AliStream.h"
+
 ////////////////////////////////////////////////////////////////////////
 //
 // AliStream.cxx
@@ -25,20 +32,6 @@
 // and the TFile pointer for a proper file
 //
 ////////////////////////////////////////////////////////////////////////
-
-#include <Riostream.h>
-
-#include "TTree.h"
-#include "TROOT.h"
-
-#include "AliStream.h"
-#include "AliRun.h"
-
-#include "TObjString.h"
-#include "TArrayI.h"
-#include "TClonesArray.h"
-#include "TFile.h"
-#include "AliLoader.h"
 
 ClassImp(AliStream)
 
@@ -51,8 +44,8 @@ AliStream::AliStream():
   fFileNames(0x0),
   fEventFolderName(0)
 {
-// root requires default ctor, where no new objects can be created
-// do not use this ctor, it is supplied only for root needs
+  // root requires default ctor, where no new objects can be created
+  // do not use this ctor, it is supplied only for root needs
 }
 //_______________________________________________________________________
 
@@ -69,11 +62,37 @@ AliStream::AliStream(const char* foldername,Option_t *option):
 }
 //_______________________________________________________________________
 
+AliStream::AliStream(const AliStream &as):
+  TNamed(as),
+  fLastEventSerialNr(-1),
+  fLastEventNr(0),
+  fCurrentFileIndex(-1),
+  fEvents(0),
+  fMode(0),
+  fFileNames(0x0),
+  fEventFolderName(" ")
+{
+  //
+  // Copy ctor
+  //
+  as.Copy(*this);
+}
+//_______________________________________________________________________
+
 AliStream::~AliStream()
 {
 // default dtor
   delete AliRunLoader::GetRunLoader(fEventFolderName); //clear the eventuall session
   if (fFileNames) delete fFileNames;
+}
+//_______________________________________________________________________
+
+void AliStream::Copy(TObject &) const
+{
+  //
+  // Copy function
+  //
+  Fatal("Copy","Not implemented!");
 }
 //_______________________________________________________________________
 
@@ -116,10 +135,10 @@ Bool_t AliStream::NextEventInStream()
 //_______________________________________________________________________
 
 void AliStream::ChangeMode(Option_t* option)
-// set the mode to READ or UPDATE, reopen file with the new mode
-// only change from UPDATE to READ have sense in the current scheme,
-// other changes are possible but not usefull
 {
+  // set the mode to READ or UPDATE, reopen file with the new mode
+  // only change from UPDATE to READ have sense in the current scheme,
+  // other changes are possible but not usefull
 
   fMode = option;
   AliRunLoader* currentloader = AliRunLoader::GetRunLoader(fEventFolderName);
@@ -133,6 +152,9 @@ void AliStream::ChangeMode(Option_t* option)
 
 Bool_t AliStream::OpenNextFile()
 {
+  //
+  // Opens next file in the list
+  //
   if (++fCurrentFileIndex > fFileNames->GetLast()) {
     Error("OpenNextFile", "No more files in the stream") ;
     return kFALSE;
@@ -186,6 +208,9 @@ Bool_t AliStream::OpenNextFile()
 
 Bool_t AliStream::ImportgAlice()
 {
+  //
+  // Imports gAlice object from file
+  //
   if (fFileNames->GetLast() < 0) return kFALSE;
   
   AliRunLoader* currentloader = AliRunLoader::GetRunLoader(fEventFolderName);
@@ -202,10 +227,10 @@ Bool_t AliStream::ImportgAlice()
 
 //_______________________________________________________________________
 TString AliStream::GetFileName(Int_t order) const
-// returns name of the order-th file
-// returns empty string if such file does not exist
-// first file in the input stream is 0
 {
+  // returns name of the order-th file
+  // returns empty string if such file does not exist
+  // first file in the input stream is 0
   TString fileName("");
   if (order > fFileNames->GetLast()) return fileName;
   TObjString *fileNameStored = dynamic_cast<TObjString*>(fFileNames->At(order));

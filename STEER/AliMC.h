@@ -7,6 +7,7 @@
 
 #include <TArrayF.h>
 #include <TArrayI.h>
+#include <TMCProcess.h>
 #include <TVirtualMCApplication.h>
 
 class AliGenerator;

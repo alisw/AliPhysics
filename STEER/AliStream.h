@@ -14,12 +14,10 @@
 ////////////////////////////////////////////////////////////////////////
 
 // --- ROOT system ---
-#include "TNamed.h"
+#include <TNamed.h>
 
 // --- AliRoot header files ---
-//#include <TString.h>
-
-#include "TObjArray.h"
+class TObjArray;
 class TFile;
 
 class TString;
@@ -29,6 +27,9 @@ class AliStream: public TNamed {
 public:
   AliStream();
   AliStream(const char* foldername, Option_t *optioneventfoldername);
+  AliStream(const AliStream &as);
+  AliStream & operator = (const AliStream & as) 
+    {as.Copy(*this); return *this;}
   virtual ~AliStream();
 
   void       AddFile(const char *fileName);
@@ -44,12 +45,15 @@ public:
   Int_t GetCurrentEventNumber() const { return fLastEventSerialNr ; }
     
 private:  
-  Int_t      fLastEventSerialNr;
-  Int_t      fLastEventNr;
-  Int_t      fCurrentFileIndex;
+
+  void Copy(TObject & as) const;
+
+  Int_t      fLastEventSerialNr;     // Serial number of last event
+  Int_t      fLastEventNr;           // Number of last event
+  Int_t      fCurrentFileIndex;      // Index of current file
   Int_t      fEvents;                //! nr. of events in the current file
   TString    fMode;                  // = 0 for READONLY, = 1 for READWRITE
-  TObjArray* fFileNames;
+  TObjArray* fFileNames;             // List of file names
   
   TString fEventFolderName; //Name of the folder where data for this stram will be mounted
   

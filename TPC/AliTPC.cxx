@@ -931,7 +931,7 @@ void AliTPC::Hits2Clusters(Int_t /*eventn*/)
   
   cout<<"fTPCParam->GetTitle() = "<<fTPCParam->GetTitle()<<endl;
   
-  AliRunLoader* rl = (AliRunLoader*)fLoader->GetEventFolder()->FindObject(AliRunLoader::fgkRunLoaderName);
+  AliRunLoader* rl = (AliRunLoader*)fLoader->GetEventFolder()->FindObject(AliRunLoader::GetRunLoaderName());
   rl->CdGAFile();
   //fTPCParam->Write(fTPCParam->GetTitle());
 
@@ -1381,7 +1381,7 @@ void AliTPC::SetDefaults(){
   // Set response functions
 
   //
-  AliRunLoader* rl = (AliRunLoader*)fLoader->GetEventFolder()->FindObject(AliRunLoader::fgkRunLoaderName);
+  AliRunLoader* rl = (AliRunLoader*)fLoader->GetEventFolder()->FindObject(AliRunLoader::GetRunLoaderName());
   rl->CdGAFile();
   AliTPCParamSR *param=(AliTPCParamSR*)gDirectory->Get("75x40_100x60");
   if(param){
@@ -1472,7 +1472,7 @@ void AliTPC::Hits2Digits(Int_t eventnumber)
  //----------------------------------------------------
  // Loop over all sectors for a single event
  //----------------------------------------------------
-  AliRunLoader* rl = (AliRunLoader*)fLoader->GetEventFolder()->FindObject(AliRunLoader::fgkRunLoaderName);
+  AliRunLoader* rl = (AliRunLoader*)fLoader->GetEventFolder()->FindObject(AliRunLoader::GetRunLoaderName());
   rl->GetEvent(eventnumber);
   if (fLoader->TreeH() == 0x0)
    {

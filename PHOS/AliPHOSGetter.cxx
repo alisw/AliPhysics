@@ -40,22 +40,23 @@
 
 // --- ROOT system ---
 
-#include "TSystem.h"
+#include "TFile.h"
 #include "TROOT.h"
+#include "TSystem.h"
 
 
 // --- Standard library ---
 
 // --- AliRoot header files ---
-#include "AliPHOSGetter.h"
+#include "AliESD.h"
+#include "AliHeader.h"  
+#include "AliMC.h"
 #include "AliPHOS.h"
+#include "AliPHOSBeamTestEvent.h"
+#include "AliPHOSGetter.h"
+#include "AliPHOSLoader.h"
 #include "AliRunLoader.h"
 #include "AliStack.h"  
-#include "AliHeader.h"  
-#include "AliPHOSLoader.h"
-#include "AliPHOSBeamTestEvent.h"
-#include "AliMC.h"
-#include "AliESD.h"
 
 ClassImp(AliPHOSGetter)
   

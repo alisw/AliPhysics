@@ -846,10 +846,10 @@ void AliStack::ConnectTree()
   else
     Warning("ConnectTree","DIR IS NOT SET !!!");
   
-  TBranch *branch=fTreeK->GetBranch(AliRunLoader::fgkKineBranchName);
+  TBranch *branch=fTreeK->GetBranch(AliRunLoader::GetKineBranchName());
   if(branch == 0x0)
    {
-    branch = fTreeK->Branch(AliRunLoader::fgkKineBranchName, "TParticle", &fParticleBuffer, 4000);
+    branch = fTreeK->Branch(AliRunLoader::GetKineBranchName(), "TParticle", &fParticleBuffer, 4000);
     if (AliLoader::GetDebug()) Info("ConnectTree","Creating Branch in Tree");
    }  
   else

@@ -807,7 +807,7 @@ AliRunLoader* AliLoader::GetRunLoader()
 {
 //gets the run-loader from event folder
   AliRunLoader* rg = 0x0;
-  TObject * obj = GetEventFolder()->FindObject(AliRunLoader::fgkRunLoaderName);
+  TObject * obj = GetEventFolder()->FindObject(AliRunLoader::GetRunLoaderName());
   if (obj) rg = dynamic_cast<AliRunLoader*>(obj);
   return rg;
 }
