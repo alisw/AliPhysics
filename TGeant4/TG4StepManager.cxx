@@ -10,14 +10,13 @@
 #include "TG4Globals.h"
 #include "TG3Units.h"
 
-#include <G4Step.hh>
 #include <G4SteppingManager.hh>
 #include <G4UserLimits.hh>
 #include <G4ParticleTable.hh>
 #include <G4UImanager.hh>
 #include <G4AffineTransform.hh>
-//#include <G4TransportationManager.hh>
-//#include <G4Navigator.hh>
+#include <G4TransportationManager.hh>
+#include <G4Navigator.hh>
 
 #include <Randomize.hh>
 
@@ -26,8 +25,9 @@
 TG4StepManager* TG4StepManager::fgInstance = 0;
 
 TG4StepManager::TG4StepManager() 
-  : fStep(0),
-    fStepStatus(kPreStepPoint),
+  : fTrack(0),
+    fStep(0),
+    fStepStatus(kNormalStep),
     fSteppingManager(0)
 {
 // 
@@ -64,6 +64,36 @@ TG4StepManager& TG4StepManager::operator=(const TG4StepManager& right)
           
 // private methods
 
+void TG4StepManager::CheckTrack() const
+{
+// Gives exception in case the track is not defined.
+// ---
+
+  if (!fTrack) 
+    TG4Globals::Exception("TG4StepManager: Track is not defined.");
+}     
+
+
+void TG4StepManager::CheckStep() const
+{
+// Gives exception in case the step is not defined.
+// ---
+
+  if (!fStep) 
+    TG4Globals::Exception("TG4StepManager: Step is not defined.");
+}     
+
+
+void TG4StepManager::CheckSteppingManager() const
+{
+// Gives exception in case the step is not defined.
+// ---
+
+  if (!fSteppingManager) 
+    TG4Globals::Exception("TG4StepManager: Stepping manager is not defined.");
+}     
+
+
 void TG4StepManager::SetTLorentzVector(G4ThreeVector xyz, G4double t, 
                                        TLorentzVector& lv) const				       
 {
@@ -75,6 +105,61 @@ void TG4StepManager::SetTLorentzVector(G4ThreeVector xyz, G4double t,
    lv[2] = xyz.z();  				       
    lv[3] = t;
 }     				       
+
+G4VPhysicalVolume* TG4StepManager::GetCurrentOffPhysicalVolume(G4int off) const 
+{
+// Returns the physical volume of the off-th mother's
+// of the current volume.
+// ---
+ 
+  G4VPhysicalVolume* physVolume = GetCurrentPhysicalVolume(); 
+
+  G4VPhysicalVolume* mother = physVolume;
+  Int_t level = off;
+  while (level > 0) { 
+    if (mother) mother = mother->GetMother();
+    level--;
+  }
+    
+  if (!mother) {
+    G4String text = "TG4StepManager::CurrentVolOff: \n";
+    text = text + "    Volume ";
+    text = text + physVolume->GetName();
+    text = text + " has not defined mother in the required level.";
+    TG4Globals::Warning(text);
+  }  
+
+  return mother;  
+}     
+
+G4int TG4StepManager::GetVolumeID(G4VPhysicalVolume* physVolume) const 
+{
+// Returns the sensitive detector ID of the specified
+// physical volume.
+// ---
+ 
+  // sensitive detector ID
+  G4VSensitiveDetector* sd
+    = physVolume->GetLogicalVolume()->GetSensitiveDetector();
+  if (sd) {
+    TG4VSensitiveDetector* tsd = dynamic_cast<TG4VSensitiveDetector*>(sd);
+    if (tsd)
+      return tsd->GetID();
+    else {
+      TG4Globals::Exception(
+        "TG4StepManager::GetVolumeID: Unknown sensitive detector type");
+      return 0;
+    }   	
+  }  
+  else {
+    G4String text = "TG4StepManager::CurrentVol: \n";
+    text = text + "    Volume " + physVolume->GetName();
+    text = text + " has not a sensitive detector.";
+    TG4Globals::Exception(text);
+    return 0;
+  }      	
+} 
+
 
 // public methods
 
@@ -92,15 +177,11 @@ void TG4StepManager::StopTrack()
 //                       // secondaries.
 // ---
 
-  if (fStep) {
-    // check
-    fStep->GetTrack()->SetTrackStatus(fStopAndKill);
-    // fStep->GetTrack()->SetTrackStatus(fStopButAlive);
-    // fStep->GetTrack()->SetTrackStatus(fKillTrackAndSecondaries);
-  } 
-  else {   
-    TG4Globals::Exception("TG4StepManager: Step is not defined.");
-  }
+  CheckTrack();
+  
+  fTrack->SetTrackStatus(fStopAndKill);
+  // fTrack->SetTrackStatus(fStopButAlive);
+  // fTrack->SetTrackStatus(fKillTrackAndSecondaries);
 }
 
 void TG4StepManager::StopEvent()
@@ -108,15 +189,12 @@ void TG4StepManager::StopEvent()
 // Aborts the current event processing.
 // ---
 
-  if (fStep) {
-    fStep->GetTrack()->SetTrackStatus(fKillTrackAndSecondaries);
-      //StopTrack();   // cannot be used as it keeps secondaries
-    G4UImanager::GetUIpointer()->ApplyCommand("/event/abort");
-    G4UImanager::GetUIpointer()->ApplyCommand("/alStacking/clearStack");
-  } 
-  else {   
-    TG4Globals::Exception("TG4StepManager: Step is not defined.");
-  }
+  CheckTrack();
+  
+  fTrack->SetTrackStatus(fKillTrackAndSecondaries);
+          //StopTrack();   // cannot be used as it keeps secondaries
+  G4UImanager::GetUIpointer()->ApplyCommand("/event/abort");
+  G4UImanager::GetUIpointer()->ApplyCommand("/alStacking/clearStack");
 }
 
 void TG4StepManager::Rndm(Float_t* array, const Int_t size) const
@@ -125,7 +203,7 @@ void TG4StepManager::Rndm(Float_t* array, const Int_t size) const
 // ---
 
   G4double* const kpDoubleArray = new G4double[size];
-  RandFlat::shootArray(size,kpDoubleArray);
+  RandFlat::shootArray(size, kpDoubleArray);
   for (G4int i=0; i<size; i++) { 
     array[i] = kpDoubleArray[i]; 
   } 
@@ -138,23 +216,17 @@ void TG4StepManager::SetMaxStep(Float_t step)
 // The maximum value is kept for following tracks - is it ok ??
 // ---
 
-  if (fStep) {
-    // check this
-    G4LogicalVolume* curLogVolume
-      = fStep->GetPreStepPoint()->GetPhysicalVolume()->GetLogicalVolume();
-    G4UserLimits* userLimits 
-      = curLogVolume->GetUserLimits();
-    if (userLimits == 0)
-    { 
-      userLimits = new G4UserLimits(step); 
-      curLogVolume->SetUserLimits(userLimits);
-    }
-    else
-    { userLimits->SetMaxAllowedStep(step); }  
-  } 
-  else {   
-    TG4Globals::Exception("TG4StepManager: Step is not defined.");
+  // check this
+  G4LogicalVolume* curLogVolume 
+    = GetCurrentPhysicalVolume()->GetLogicalVolume();
+  G4UserLimits* userLimits 
+    = curLogVolume->GetUserLimits();
+  if (userLimits == 0) {
+    userLimits = new G4UserLimits(step); 
+    curLogVolume->SetUserLimits(userLimits);
   }
+  else
+    userLimits->SetMaxAllowedStep(step);
 }
 
 void TG4StepManager::SetMaxNStep(Int_t maxNofSteps)
@@ -175,44 +247,47 @@ void TG4StepManager::SetUserDecay(Int_t pdg)
     "TG4StepManager::SetUserDecay(..) is not yet implemented.");
 }
 
+G4VPhysicalVolume* TG4StepManager::GetCurrentPhysicalVolume() const 
+{
+// Returns the current physical volume.
+// According to fStepStatus the volume from track vertex,
+// pre step point or post step point is returned.
+// ---
+
+  G4VPhysicalVolume* physVolume; 
+  if (fStepStatus == kNormalStep) {
+    CheckStep();
+    physVolume = fStep->GetPreStepPoint()->GetPhysicalVolume();
+  }  
+  else if (fStepStatus == kBoundary) {
+    CheckStep();
+    physVolume = fStep->GetPostStepPoint()->GetPhysicalVolume();
+  }  
+  else {
+    CheckTrack();
+    G4ThreeVector position = fTrack->GetPosition();
+    G4Navigator* navigator =
+      G4TransportationManager::GetTransportationManager()->
+        GetNavigatorForTracking();
+    physVolume
+     = navigator->LocateGlobalPointAndSetup(position);  
+  }   
+    
+  return physVolume;
+}     
+
 Int_t TG4StepManager::CurrentVolID(Int_t& copyNo) const
 {
 // Returns the current sensitive detector ID
 // and the copy number of the current physical volume.
 // ---
 
-  if (fStep) {
-    // check this
-    G4VPhysicalVolume* physVolume 
-      = fStep->GetPreStepPoint()->GetPhysicalVolume();
-    copyNo = physVolume->GetCopyNo();
+  G4VPhysicalVolume* physVolume = GetCurrentPhysicalVolume(); 
+  copyNo = physVolume->GetCopyNo();
 
-    // sensitive detector ID
-    G4VSensitiveDetector* sd
-        = physVolume->GetLogicalVolume()->GetSensitiveDetector();
-    if (sd) {
-      TG4VSensitiveDetector* tsd = dynamic_cast<TG4VSensitiveDetector*>(sd);
-      if (tsd)
-        return tsd->GetID();
-      else {
-        TG4Globals::Exception(
-          "TG4StepManager::CurrentVol: Unknown sensitive detector type");
-        return 0;
-      }   	
-    }  
-    else {
-      G4String text = "TG4StepManager::CurrentVol: \n";
-      text = text + "    Volume " + physVolume->GetName();
-      text = text + " has not a sensitive detector.";
-      TG4Globals::Exception(text);
-      return 0;
-    }      	
-  } 
-  else {   
-    TG4Globals::Exception("TG4StepManager: Step is not defined.");
-    return 0;
-  }
-}
+  // sensitive detector ID
+  return GetVolumeID(physVolume);
+} 
 
 Int_t TG4StepManager::CurrentVolOffID(Int_t off, Int_t&  copyNo) const
 { 
@@ -222,56 +297,18 @@ Int_t TG4StepManager::CurrentVolOffID(Int_t off, Int_t&  copyNo) const
 
   if (off == 0) return CurrentVolID(copyNo);
 
-  if (fStep) {
-    // check this !!
-    // mother of physical volume may not be set ?!!
- 
-    G4VPhysicalVolume* physVolume 
-      = fStep->GetPreStepPoint()->GetPhysicalVolume();
+  G4VPhysicalVolume* mother = GetCurrentOffPhysicalVolume(off); 
 
-    G4VPhysicalVolume* mother = 0;
-    Int_t level = off;
-    while (level > 0) { 
-      mother = physVolume->GetMother();
-      level--;
-    }
-    
-    if (mother) {
-      copyNo = mother->GetCopyNo();
+  if (mother) {
+    copyNo = mother->GetCopyNo();
 
-      // sensitive detector ID
-      G4VSensitiveDetector* sd
-        = mother->GetLogicalVolume()->GetSensitiveDetector();
-      if (sd) {
-        TG4VSensitiveDetector* tsd = dynamic_cast<TG4VSensitiveDetector*>(sd);
-        if (tsd)
-          return tsd->GetID();
-        else {
-          TG4Globals::Exception(
-            "TG4StepManager::CurrentVolOff: Unknown sensitive detector type");
-          return 0;
-        }   	
-      }  
-      else {
-        G4String text = "TG4StepManager::CurrentVolOff: \n";
-        text = text + "    Volume " + mother->GetName();
-        text = text + " has not a sensitive detector.";
-        TG4Globals::Exception(text);
-        return 0;
-      } 
-    }
-    else {       	
-      G4String text = "TG4StepManager::CurrentVolOff: Volume ";
-      text = text + physVolume->GetName();
-      text = text + " has not defined mother in required level.";
-      TG4Globals::Exception(text);
-      return 0;
-    }  
-  } 
-  else {   
-    TG4Globals::Exception("TG4StepManager: Step is not defined.");
-    return 0;
+    // sensitive detector ID
+    return GetVolumeID(mother);
   }
+  else {
+    copyNo = 0;
+    return 0;
+  }  
 }
 
 const char* TG4StepManager::CurrentVolName() const
@@ -279,15 +316,7 @@ const char* TG4StepManager::CurrentVolName() const
 // Returns the current physical volume name.
 // ---
 
-  if (fStep) {
-    G4VPhysicalVolume* physVolume 
-      = fStep->GetPreStepPoint()->GetPhysicalVolume();
-    return physVolume->GetName();
-  } 
-  else {   
-    TG4Globals::Exception("TG4StepManager: Step is not defined.");
-    return 0;
-  }
+  return GetCurrentPhysicalVolume()->GetName();
 }
 
 const char* TG4StepManager::CurrentVolOffName(Int_t off) const
@@ -295,29 +324,14 @@ const char* TG4StepManager::CurrentVolOffName(Int_t off) const
 // Returns the off-th mother's physical volume name.
 // ---
 
-  if (fStep) {
-    G4VPhysicalVolume* physVolume 
-      = fStep->GetPreStepPoint()->GetPhysicalVolume();
+  if (off == 0) return CurrentVolName();
 
-    G4VPhysicalVolume* mother = 0;
-    Int_t level = off;
-    while (level > 0) { 
-      mother = physVolume->GetMother();
-      level--;
-    }
-    
-    if (mother) {
-      return mother->GetName();
-    }
-    else {
-      TG4Globals::Exception("TG4StepManager::CurrentVolOff: wrong usage.");
-      return 0;
-    }
-  } 
-  else {   
-    TG4Globals::Exception("TG4StepManager: Step is not defined.");
+  G4VPhysicalVolume* mother = GetCurrentOffPhysicalVolume(off); 
+
+  if (mother) 
+    return mother->GetName();
+  else 
     return 0;
-  }
 }
 
 Int_t TG4StepManager::CurrentMaterial(Float_t &a, Float_t &z, Float_t &dens, 
@@ -327,40 +341,33 @@ Int_t TG4StepManager::CurrentMaterial(Float_t &a, Float_t &z, Float_t &dens,
 // the return value is the number of elements in the mixture.
 // ---
 
-  if (fStep) {
-    // check this
-    G4LogicalVolume* curLogVolume 
-      = fStep->GetPreStepPoint()->GetPhysicalVolume()->GetLogicalVolume();
-    G4Material* material
-      = curLogVolume->GetMaterial();
+  G4VPhysicalVolume* physVolume = GetCurrentPhysicalVolume(); 
+    
+  G4Material* material 
+    = physVolume->GetLogicalVolume()->GetMaterial();
 
-    // this if may be redundant - check
-    if (material)
-    {
-      G4int nofElements = material->GetNumberOfElements();
-      TG4GeometryManager* pGeometryManager = TG4GeometryManager::Instance();
-      a = pGeometryManager->GetEffA(material);
-      z = pGeometryManager->GetEffZ(material);
+  // this if may be redundant - check
+  if (material)
+  {
+    G4int nofElements = material->GetNumberOfElements();
+    TG4GeometryManager* pGeometryManager = TG4GeometryManager::Instance();
+    a = pGeometryManager->GetEffA(material);
+    z = pGeometryManager->GetEffZ(material);
       
-      // density 
-      dens = material->GetDensity();
-      dens /= TG3Units::MassDensity();      
+    // density 
+    dens = material->GetDensity();
+    dens /= TG3Units::MassDensity();      
       
-      // radiation length
-      radl = material->GetRadlen();
-      radl /= TG3Units::Length();
+    // radiation length
+    radl = material->GetRadlen();
+    radl /= TG3Units::Length();
       
-      absl = 0.;  // this parameter is not defined in Geant4
-      return nofElements;
-    }
-    else {
-      TG4Globals::Exception(
-       "TG4StepManager::CurrentMaterial(..): material is not defined.");
-      return 0;
-    }
-  } 
-  else {   
-    TG4Globals::Exception("TG4StepManager: Step is not defined.");
+    absl = 0.;  // this parameter is not defined in Geant4
+    return nofElements;
+  }
+  else {
+    TG4Globals::Exception(
+     "TG4StepManager::CurrentMaterial(..): material is not defined.");
     return 0;
   }
 }
@@ -385,28 +392,28 @@ void TG4StepManager::Gmtod(Float_t* xm, Float_t* xd, Int_t iflag)
 //
 // ---
 
-  if (fStep) {
+  CheckStep();
  
-    G4ThreeVector theGlobalPoint(xm[0],xm[1],xm[2]); 
+  G4ThreeVector theGlobalPoint(xm[0],xm[1],xm[2]); 
 
-    //const G4NavigationHistory* history
-    //   =  fStep->GetPreStepPoint()->GetTouchable()->GetHistory();
-    G4AffineTransform affineTransform
-      = fStep->GetPreStepPoint()->GetTouchable()->GetHistory()
-        ->GetTopTransform();
+  //const G4NavigationHistory* history
+  //   =  fStep->GetPreStepPoint()->GetTouchable()->GetHistory();
+  G4AffineTransform affineTransform
+    = fStep->GetPreStepPoint()->GetTouchable()->GetHistory()
+      ->GetTopTransform();
 
-    G4ThreeVector theLocalPoint;
-    if(iflag == 1) 
-         theLocalPoint = affineTransform.TransformPoint(theGlobalPoint);
-    else if ( iflag == 2)
-         theLocalPoint = affineTransform.TransformAxis(theGlobalPoint);
-    else 
-      TG4Globals::Exception(
-        "TG4StepManager::Gmtod(..,iflag): iflag is not in 1..2");
+  G4ThreeVector theLocalPoint;
+  if(iflag == 1) 
+       theLocalPoint = affineTransform.TransformPoint(theGlobalPoint);
+  else if ( iflag == 2)
+       theLocalPoint = affineTransform.TransformAxis(theGlobalPoint);
+  else 
+    TG4Globals::Exception(
+      "TG4StepManager::Gmtod(..,iflag): iflag is not in 1..2");
 
-    xd[0] = theLocalPoint.x();
-    xd[1] = theLocalPoint.y();
-    xd[2] = theLocalPoint.z();
+  xd[0] = theLocalPoint.x();
+  xd[1] = theLocalPoint.y();
+  xd[2] = theLocalPoint.z();
      
  /* 
    // does not work ???
@@ -424,10 +431,6 @@ void TG4StepManager::Gmtod(Float_t* xm, Float_t* xd, Int_t iflag)
    G4AffineTransform at
      = theNavigator->GetGlobalToLocalTransform();
  */  
-  } 
-  else { 
-    TG4Globals::Exception("TG4StepManager: Step is not defined.");
-  }  
 } 
  
 void TG4StepManager::Gdtom(Float_t* xd, Float_t* xm, Int_t iflag) 
@@ -449,31 +452,28 @@ void TG4StepManager::Gdtom(Float_t* xd, Float_t* xm, Int_t iflag)
 //
 // ---
 
-  if (fStep) {
-    // check this
-    
-   G4ThreeVector theLocalPoint(xd[0],xd[1],xd[2]); 
+  CheckStep();
 
-   G4AffineTransform affineTransform
-      = fStep->GetPreStepPoint()->GetTouchable()->GetHistory()
+  // check this
+    
+  G4ThreeVector theLocalPoint(xd[0],xd[1],xd[2]); 
+
+  G4AffineTransform affineTransform
+    = fStep->GetPreStepPoint()->GetTouchable()->GetHistory()
         ->GetTopTransform().Inverse();
   
-   G4ThreeVector theGlobalPoint;
-   if(iflag == 1)
-         theGlobalPoint = affineTransform.TransformPoint(theLocalPoint);
-   else if( iflag == 2)
-         theGlobalPoint = affineTransform.TransformAxis(theLocalPoint);
-   else 
-      TG4Globals::Warning(
-        "TG4StepManager::Gdtom(...,iflag): iflag is not in 1..2");
+  G4ThreeVector theGlobalPoint;
+  if(iflag == 1)
+       theGlobalPoint = affineTransform.TransformPoint(theLocalPoint);
+  else if( iflag == 2)
+       theGlobalPoint = affineTransform.TransformAxis(theLocalPoint);
+  else 
+    TG4Globals::Warning(
+      "TG4StepManager::Gdtom(...,iflag): iflag is not in 1..2");
 
-   xm[0] = theGlobalPoint.x();
-   xm[1] = theGlobalPoint.y();
-   xm[2] = theGlobalPoint.z();
-  }   
-  else { 
-    TG4Globals::Exception("TG4StepManager: Step is not defined.");
-  }  
+  xm[0] = theGlobalPoint.x();
+  xm[1] = theGlobalPoint.y();
+  xm[2] = theGlobalPoint.z();
 } 
  
 Float_t TG4StepManager::MaxStep() const
@@ -482,32 +482,25 @@ Float_t TG4StepManager::MaxStep() const
 // by User Limits.
 // ---
 
-  if (fStep) {
-    // check this
-    G4LogicalVolume* curLogVolume
-      = fStep->GetPreStepPoint()->GetPhysicalVolume()->GetLogicalVolume();
-    G4UserLimits* userLimits 
-      = curLogVolume->GetUserLimits();
-    G4double maxStep;
-    if (userLimits == 0)
-    { 
-      G4String text = "User Limits are not defined for log volume ";
-      text = text + curLogVolume->GetName();
-      TG4Globals::Warning(text);
-      return FLT_MAX;
-    }
-    else
-    { 
-      const G4Track& trackRef = *(fStep->GetTrack());
-      maxStep = userLimits->GetMaxAllowedStep(trackRef); 
-      maxStep /= TG3Units::Length(); 
-      return maxStep;
-    }  
-  } 
-  else {   
-    TG4Globals::Exception("TG4StepManager: Step is not defined.");
+  // check this
+  G4LogicalVolume* curLogVolume 
+    = GetCurrentPhysicalVolume()->GetLogicalVolume();
+  G4UserLimits* userLimits 
+    = curLogVolume->GetUserLimits();
+
+  G4double maxStep;
+  if (userLimits == 0) { 
+    G4String text = "User Limits are not defined for log volume ";
+    text = text + curLogVolume->GetName();
+    TG4Globals::Warning(text);
     return FLT_MAX;
   }
+  else { 
+    const G4Track& trackRef = *(fTrack);
+    maxStep = userLimits->GetMaxAllowedStep(trackRef); 
+    maxStep /= TG3Units::Length(); 
+    return maxStep;
+  }  
 }
 
 Int_t TG4StepManager::GetMaxNStep() const
@@ -527,30 +520,18 @@ void TG4StepManager::TrackPosition(TLorentzVector& position) const
 // (position of the PostStepPoint).
 // ---
 
-  if (fStep) {
+  CheckTrack();
   
-    // get step point    
-    G4StepPoint* stepPoint;
-    if (fStepStatus == kPreStepPoint) 
-      stepPoint = fStep->GetPreStepPoint();
-    else  
-      stepPoint = fStep->GetPostStepPoint();
-      
-    // position
-    G4ThreeVector positionVector
-       = stepPoint->GetPosition();
-    positionVector *= 1./(TG3Units::Length());   
+  // get position
+  // check if this is == to PostStepPoint position !!
+  G4ThreeVector positionVector = fTrack->GetPosition();
+  positionVector *= 1./(TG3Units::Length());   
      
-    // local time   
-    G4double time
-      = fStep->GetTrack()->GetLocalTime();
-    time /= TG3Units::Time();
-      
-    SetTLorentzVector(positionVector, time, position);
-  } 
-  else {   
-    TG4Globals::Exception("TG4StepManager: Step is not defined.");
-  }
+  // local time   
+  G4double time = fTrack->GetLocalTime();
+  time /= TG3Units::Time();
+    
+  SetTLorentzVector(positionVector, time, position);
 }
 
 Int_t TG4StepManager::GetMedium() const
@@ -559,19 +540,13 @@ Int_t TG4StepManager::GetMedium() const
 // G3 tracking medium index).
 // --- 
 
-  if (fStep) {
-    // current material
-    G4Material* curMaterial
-      = fStep->GetPreStepPoint()->GetPhysicalVolume()->GetLogicalVolume()->GetMaterial();
+  // current material
+  G4Material* curMaterial
+    = GetCurrentPhysicalVolume()->GetLogicalVolume()->GetMaterial();
 
-    // medium index  
-    TG4GeometryManager* pGeometryManager = TG4GeometryManager::Instance();
-    return pGeometryManager->GetMediumId(curMaterial);
-  }  
-  else {   
-    TG4Globals::Exception("TG4StepManager: Step is not defined.");
-    return 0;
-  }
+  // medium index  
+  TG4GeometryManager* pGeometryManager = TG4GeometryManager::Instance();
+  return pGeometryManager->GetMediumId(curMaterial);
 }
 
 void TG4StepManager::TrackMomentum(TLorentzVector& momentum) const
@@ -579,19 +554,15 @@ void TG4StepManager::TrackMomentum(TLorentzVector& momentum) const
 // Current particle "momentum" (px, py, pz, Etot).
 // ---
 
-  if (fStep) {
-    G4ThreeVector momentumVector
-      = fStep->GetTrack()->GetMomentum(); 
+  CheckTrack();
 
-    G4double energy
-      = fStep->GetTrack()->GetDynamicParticle()->GetTotalEnergy();
-    energy /= TG3Units::Energy();  
+  G4ThreeVector momentumVector = fTrack->GetMomentum(); 
+  momentumVector *= 1./(TG3Units::Energy());   
 
-    SetTLorentzVector(momentumVector, energy, momentum);
-  } 
-  else {   
-    TG4Globals::Exception("TG4StepManager: Step is not defined.");
-  }
+  G4double energy = fTrack->GetDynamicParticle()->GetTotalEnergy();
+  energy /= TG3Units::Energy();  
+
+  SetTLorentzVector(momentumVector, energy, momentum);
 }
 
 void TG4StepManager::TrackVertexPosition(TLorentzVector& position) const
@@ -600,23 +571,18 @@ void TG4StepManager::TrackVertexPosition(TLorentzVector& position) const
 // and the local time since the current track is created.
 // ---
 
-  if (fStep) {
-    // position
-    G4ThreeVector positionVector
-       = fStep->GetTrack()->GetVertexPosition();
-    positionVector *= 1./(TG3Units::Length());   
+  CheckTrack();
+
+  // position
+  G4ThreeVector positionVector = fTrack->GetVertexPosition();
+  positionVector *= 1./(TG3Units::Length());   
      
-    // local time 
-    // to be checked  
-    G4double time
-      = fStep->GetTrack()->GetLocalTime();
-    time /= TG3Units::Time();
+  // local time 
+  // to be checked  
+  G4double time = fTrack->GetLocalTime();
+  time /= TG3Units::Time();
       
-    SetTLorentzVector(positionVector, time, position);
-  } 
-  else {   
-    TG4Globals::Exception("TG4StepManager: Step is not defined.");
-  }
+  SetTLorentzVector(positionVector, time, position);
 }
 
 void TG4StepManager::TrackVertexMomentum(TLorentzVector& momentum) const
@@ -625,19 +591,14 @@ void TG4StepManager::TrackVertexMomentum(TLorentzVector& momentum) const
 // to do: change Ekin -> Etot 
 // ---
 
-  if (fStep) {
-    G4ThreeVector momentumVector
-      = fStep->GetTrack()->GetVertexMomentumDirection(); 
+  CheckTrack();
+  G4ThreeVector momentumVector = fTrack->GetVertexMomentumDirection(); 
+  momentumVector *= 1./(TG3Units::Energy());   
 
-    G4double energy
-      = fStep->GetTrack()->GetVertexKineticEnergy();
-    energy /= TG3Units::Energy();  
+  G4double energy = fTrack->GetVertexKineticEnergy();
+  energy /= TG3Units::Energy();  
 
-    SetTLorentzVector(momentumVector, energy, momentum);
-  } 
-  else {   
-    TG4Globals::Exception("TG4StepManager: Step is not defined.");
-  }
+  SetTLorentzVector(momentumVector, energy, momentum);
 }
 
 Float_t TG4StepManager::TrackStep() const
@@ -645,20 +606,16 @@ Float_t TG4StepManager::TrackStep() const
 // Returns the current step length.
 // ---
 
-  if (fStep) {
-    G4double length;
-    if (fStepStatus == kPreStepPoint) 
-      length = 0;
-    else {  
-      length = fStep->GetStepLength();
-      length /= TG3Units::Length();
-    }	  
-    return length;
-  }
-  else {   
-    TG4Globals::Exception("TG4StepManager: Step is not defined.");
-    return 0.;
-  }
+  G4double length;
+  if (fStepStatus == kNormalStep) {
+    CheckStep();    
+    length = fStep->GetStepLength();
+    length /= TG3Units::Length();
+  }  
+  else 
+    length = 0;
+
+  return length;
 }
 
 Float_t TG4StepManager::TrackLength() const
@@ -666,16 +623,11 @@ Float_t TG4StepManager::TrackLength() const
 // Returns the length of the current track from its origin.
 // ---
 
-  if (fStep) {
-    G4double length
-      = fStep->GetTrack()->GetTrackLength();
-    length /= TG3Units::Length();
-    return length;
-  }
-  else {   
-    TG4Globals::Exception("TG4StepManager: Step is not defined.");
-    return 0;
-  }
+  CheckTrack();
+
+  G4double length = fTrack->GetTrackLength();
+  length /= TG3Units::Length();
+  return length;
 }
 
 Float_t TG4StepManager::TrackTime() const
@@ -686,16 +638,11 @@ Float_t TG4StepManager::TrackTime() const
 // the proper time of the dynamical particle of the current track.
 // ---
 
-  if (fStep) {
-    G4double time
-      = fStep->GetTrack()->GetLocalTime();
-    time /= TG3Units::Time();
-    return time;
-  }
-  else {   
-    TG4Globals::Exception("TG4StepManager: Step is not defined.");
-    return 0;
-  }
+  CheckTrack();
+  
+  G4double time = fTrack->GetLocalTime();
+  time /= TG3Units::Time();
+  return time;
 }
 
 Float_t TG4StepManager::Edep() const
@@ -703,20 +650,16 @@ Float_t TG4StepManager::Edep() const
 // Returns total energy deposit in this step.
 // ---
 
-  if (fStep) {
-    G4double energyDeposit;
-    if (fStepStatus == kPreStepPoint) 
-      energyDeposit = 0;
-    else {  
-      energyDeposit = fStep->GetTotalEnergyDeposit();
-      energyDeposit /= TG3Units::Energy();
-    }	  
-    return energyDeposit;
-  } 
-  else {   
-    TG4Globals::Exception("TG4StepManager: Step is not defined.");
-    return 0.;
+  G4double energyDeposit;
+  if (fStepStatus == kNormalStep) {
+    CheckStep();
+    energyDeposit = fStep->GetTotalEnergyDeposit();
+    energyDeposit /= TG3Units::Energy();
   }
+  else   
+    energyDeposit = 0;
+
+  return energyDeposit;
 }
 
 Int_t TG4StepManager::TrackPid() const
@@ -724,22 +667,18 @@ Int_t TG4StepManager::TrackPid() const
 // Returns the current particle PDG encoding.
 // ---
 
-  if (fStep) {
-    G4ParticleDefinition* particle
-      = fStep->GetTrack()->GetDynamicParticle()->GetDefinition();
-      
-    // ask TG4PhysicsManager to get PDG encoding 
-    // (in order to get PDG from extended TDatabasePDG
-    // in case the standard PDG code is not defined)
-    TG4PhysicsManager* pPhysicsManager = TG4PhysicsManager::Instance();
-    G4int pdgEncoding = pPhysicsManager->GetPDGEncodingFast(particle);
+  CheckTrack();
 
-    return pdgEncoding;
-  }
-  else {   
-    TG4Globals::Exception("TG4StepManager: Step is not defined.");
-    return 0;
-  }
+  G4ParticleDefinition* particle
+    = fTrack->GetDynamicParticle()->GetDefinition();
+    
+  // ask TG4PhysicsManager to get PDG encoding 
+  // (in order to get PDG from extended TDatabasePDG
+  // in case the standard PDG code is not defined)
+  TG4PhysicsManager* pPhysicsManager = TG4PhysicsManager::Instance();
+  G4int pdgEncoding = pPhysicsManager->GetPDGEncodingFast(particle);
+
+  return pdgEncoding;
 }
 
 Float_t TG4StepManager::TrackCharge() const
@@ -747,17 +686,12 @@ Float_t TG4StepManager::TrackCharge() const
 // Returns the current particle charge.
 // ---
 
-  if (fStep) {
-    G4double charge
-      = fStep->GetTrack()->GetDynamicParticle()->GetDefinition()
-        ->GetPDGCharge();
-    charge /= TG3Units::Charge();	
-    return charge;
-  }
-  else {   
-    TG4Globals::Exception("TG4StepManager: Step is not defined.");
-    return 0;
-  }
+  CheckTrack();
+  G4double charge
+    = fTrack->GetDynamicParticle()->GetDefinition()
+      ->GetPDGCharge();
+  charge /= TG3Units::Charge();	
+  return charge;
 }
 
 Float_t TG4StepManager::TrackMass() const
@@ -765,17 +699,13 @@ Float_t TG4StepManager::TrackMass() const
 // Returns current particle rest mass.
 // ---
 
-  if (fStep) {
-    G4double mass
-      = fStep->GetTrack()->GetDynamicParticle()->GetDefinition()
-        ->GetPDGMass();
-    mass /= TG3Units::Mass();	
-    return mass;
-  }
-  else {   
-    TG4Globals::Exception("TG4StepManager: Step is not defined.");
-    return 0;
-  }
+  CheckTrack();
+
+  G4double mass
+    = fTrack->GetDynamicParticle()->GetDefinition()
+      ->GetPDGMass();
+  mass /= TG3Units::Mass();	
+  return mass;
 }
 
 Float_t TG4StepManager::Etot() const
@@ -783,70 +713,55 @@ Float_t TG4StepManager::Etot() const
 // Returns total energy of the current particle.
 // ---
 
-  if (fStep) {
-    G4double energy
-      = fStep->GetTrack()->GetDynamicParticle()->GetTotalEnergy();
-    energy /= TG3Units::Energy();  
-    return energy;
-  } 
-  else {   
-    TG4Globals::Exception("TG4StepManager: Step is not defined.");
-    return 0.;
-  }
+  CheckTrack();
+
+  G4double energy
+    = fTrack->GetDynamicParticle()->GetTotalEnergy();
+  energy /= TG3Units::Energy();  
+  return energy;
 }
 
 Bool_t TG4StepManager::IsTrackInside() const
 {   
 // Returns true if particle does not cross geometrical boundary
-// at both pre-step and post-step points.
+// and is not in vertex.
 // ---
 
-  G4bool inside;
-  if (fStepStatus == kPreStepPoint) {
-    inside = false;
-  }
-  else {  
-    if ( !(IsTrackEntering()) && !(IsTrackExiting()) ) 
-      inside = true; 
-    else
-      inside = false;
-  }
-  return inside;    
+  if (fStepStatus == kNormalStep  && !(IsTrackExiting()) ) {
+    // track is always inside during a normal step
+    return true; 
+  }    
+
+  return false;    
 }
 
 Bool_t TG4StepManager::IsTrackEntering() const
 {   
 // Returns true if particle cross a geometrical boundary
-// at pre-step point.
+// or is in vertex.
 // ---
 
-    if (fStepStatus == kPreStepPoint)
-      return true;  
-    else
-      return false;  
+  if (fStepStatus != kNormalStep) {
+    // track is entering during a vertex or boundary step
+    return true;  
+  }
+  
+  return false;  
 }
 
 Bool_t TG4StepManager::IsTrackExiting() const
 {   
-// Returns true if particle cross a geometrical boundary
-// at post-step point.
+// Returns true if particle cross a geometrical boundary.
 // ---
 
-  if (fStep) {
-    if (fStepStatus == kPreStepPoint) 
-      return false;
-      
-    G4StepStatus status
-       = fStep->GetPostStepPoint()->GetStepStatus();
-    if (status == fGeomBoundary)
-      return true; 
-    else
-      return false;
-  } 
-  else {   
-    TG4Globals::Exception("TG4StepManager: Step is not defined.");
-    return false;
+  if (fStepStatus == kNormalStep) {
+    CheckStep();
+    
+    if (fStep->GetPostStepPoint()->GetStepStatus() == fGeomBoundary) 
+       return true;  
   }
+  
+  return false;  
 }
 
 Bool_t TG4StepManager::IsTrackOut() const
@@ -855,19 +770,17 @@ Bool_t TG4StepManager::IsTrackOut() const
 // at post-step point.
 // ---
 
-  if (fStep) {
-    // check
-    G4StepStatus status
-      = fStep->GetPostStepPoint()->GetStepStatus();
-    if (status == fWorldBoundary)
-      return true; 
-    else
-      return false;
-  } 
-  else {   
-    TG4Globals::Exception("TG4StepManager: Step is not defined.");
+  if (fStepStatus == kVertex) return false;
+
+  CheckStep();
+
+  // check
+  G4StepStatus status
+    = fStep->GetPostStepPoint()->GetStepStatus();
+  if (status == fWorldBoundary)
+    return true; 
+  else
     return false;
-  }
 }
 
 Bool_t TG4StepManager::IsTrackStop() const
@@ -889,22 +802,19 @@ Bool_t TG4StepManager::IsTrackStop() const
 //                       // to the next event.
 // ---
 
-  if (fStep) {
-    // check
-    G4TrackStatus status
-       = fStep->GetTrack()->GetTrackStatus();
-    if ((status == fStopAndKill) ||  
-        (status == fKillTrackAndSecondaries) ||
-        (status == fSuspend) ||
-        (status == fPostponeToNextEvent))
-    { return true; }
-    else
-    { return false; }
-  } 
-  else {   
-    TG4Globals::Exception("TG4StepManager: Step is not defined.");
-    return false;
+  CheckTrack();
+
+  // check
+  G4TrackStatus status
+     = fTrack->GetTrackStatus();
+  if ((status == fStopAndKill) ||  
+      (status == fKillTrackAndSecondaries) ||
+      (status == fSuspend) ||
+      (status == fPostponeToNextEvent)) {
+    return true; 
   }
+  else
+    return false; 
 }
 
 Bool_t TG4StepManager::IsTrackDisappeared() const
@@ -914,22 +824,19 @@ Bool_t TG4StepManager::IsTrackDisappeared() const
 // or has been killed, suspended or postponed to next event.
 // ---
 
-  if (fStep) {
-    // check
-    G4TrackStatus status
-       = fStep->GetTrack()->GetTrackStatus();
-    if ((status == fStopButAlive) ||  
-        (status == fKillTrackAndSecondaries) ||
-        (status == fSuspend) ||
-        (status == fPostponeToNextEvent))
-    { return true; }
-    else
-    { return false; }
-  } 
-  else {   
-    TG4Globals::Exception("TG4StepManager: Step is not defined.");
-    return false;
+  CheckTrack();
+
+  // check
+  G4TrackStatus status
+     = fTrack->GetTrackStatus();
+  if ((status == fStopButAlive) ||  
+      (status == fKillTrackAndSecondaries) ||
+      (status == fSuspend) ||
+      (status == fPostponeToNextEvent)) {
+    return true; 
   }
+  else
+    return false;
 }
 
 Bool_t TG4StepManager::IsTrackAlive() const
@@ -937,18 +844,14 @@ Bool_t TG4StepManager::IsTrackAlive() const
 // Returns true if particle continues tracking.
 // ---
 
-  if (fStep) {
-    G4TrackStatus status
-       = fStep->GetTrack()->GetTrackStatus();
-    if (status == fAlive)
-    { return true; }
-    else
-    { return false; }
-  } 
-  else {   
-    TG4Globals::Exception("TG4StepManager: Step is not defined.");
-    return false;
-  }
+  CheckTrack();
+
+  G4TrackStatus status
+     = fTrack->GetTrackStatus();
+  if (status == fAlive)
+    return true; 
+  else
+    return false; 
 }
 
 Bool_t TG4StepManager::IsNewTrack() const
@@ -956,8 +859,7 @@ Bool_t TG4StepManager::IsNewTrack() const
 // Returns true when track performs the first step.
 // ---
 
-  if ((fStep->GetTrack()->GetCurrentStepNumber() == 1) &&
-      (fStepStatus == kPreStepPoint))
+  if (fStepStatus == kVertex)
     return true;
   else  
     return false;
@@ -969,19 +871,14 @@ Int_t TG4StepManager::NSecondaries() const
 // in the current step.
 // ---
 
-  if (fSteppingManager) 
-  {
-    G4int nofSecondaries = 0;
-    nofSecondaries += fSteppingManager->GetfN2ndariesAtRestDoIt();
-    nofSecondaries += fSteppingManager->GetfN2ndariesAlongStepDoIt();
-    nofSecondaries += fSteppingManager->GetfN2ndariesPostStepDoIt();
+  CheckSteppingManager();
 
-    return nofSecondaries;
-  }
-  else {   
-    TG4Globals::Exception("TG4StepManager: SteppingManager is not defined.");
-    return 0;
-  }
+  G4int nofSecondaries = 0;
+  nofSecondaries += fSteppingManager->GetfN2ndariesAtRestDoIt();
+  nofSecondaries += fSteppingManager->GetfN2ndariesAlongStepDoIt();
+  nofSecondaries += fSteppingManager->GetfN2ndariesPostStepDoIt();
+
+  return nofSecondaries;
 }
 
 void TG4StepManager::GetSecondary(Int_t index, Int_t& particleId, 
@@ -992,52 +889,47 @@ void TG4StepManager::GetSecondary(Int_t index, Int_t& particleId,
 // !! Check if indexing of secondaries is same !!
 // ---
 
-  if (fSteppingManager) 
-  {
-    G4int nofSecondaries = NSecondaries();
-    G4TrackVector* secondaryTracks = fSteppingManager->GetSecondary();
+  CheckSteppingManager();
 
-    if (secondaryTracks)
-    {
-      if (index < nofSecondaries)
-      {
-        // the index of the first secondary of this step
-        G4int startIndex 
-          = secondaryTracks->entries() - nofSecondaries;
-               // (the secondaryTracks vector contains secondaries 
-               // produced by the track at previous steps, too)
-        G4Track* track 
-          = (*secondaryTracks)[startIndex + index]; 
+  G4int nofSecondaries = NSecondaries();
+  G4TrackVector* secondaryTracks = fSteppingManager->GetSecondary();
+
+  if (secondaryTracks){
+    if (index < nofSecondaries) {
+
+      // the index of the first secondary of this step
+      G4int startIndex 
+        = secondaryTracks->entries() - nofSecondaries;
+             // (the secondaryTracks vector contains secondaries 
+             // produced by the track at previous steps, too)
+      G4Track* track 
+        = (*secondaryTracks)[startIndex + index]; 
    
-        // particle encoding
-        particleId 
-          = track->GetDynamicParticle()->GetDefinition()->GetPDGEncoding();
+      // particle encoding
+      particleId 
+        = track->GetDynamicParticle()->GetDefinition()->GetPDGEncoding();
  
-        // position & time
-        G4ThreeVector positionVector = track->GetPosition();
-	positionVector *= 1./(TG3Units::Length());
-        G4double time = track->GetLocalTime();
-	time /= TG3Units::Time();
-        SetTLorentzVector(positionVector, time, position);
+      // position & time
+      G4ThreeVector positionVector = track->GetPosition();
+      positionVector *= 1./(TG3Units::Length());
+      G4double time = track->GetLocalTime();
+      time /= TG3Units::Time();
+      SetTLorentzVector(positionVector, time, position);
 
-        // momentum & energy
-        G4ThreeVector momentumVector = track->GetMomentum();	
-        G4double energy = track->GetDynamicParticle()->GetTotalEnergy();
-	energy /= TG3Units::Energy();
-        SetTLorentzVector(momentumVector, energy, momentum);
-      }
-      else {
-        TG4Globals::Exception(
-          "TG4StepManager::GetSecondary(): wrong secondary track index.");
-      }
+      // momentum & energy
+      G4ThreeVector momentumVector = track->GetMomentum();	
+      G4double energy = track->GetDynamicParticle()->GetTotalEnergy();
+      energy /= TG3Units::Energy();
+      SetTLorentzVector(momentumVector, energy, momentum);
     }
     else {
       TG4Globals::Exception(
-        "TG4StepManager::GetSecondary(): secondary tracks vector is empty");
+        "TG4StepManager::GetSecondary(): wrong secondary track index.");
     }
   }
-  else {   
-    TG4Globals::Exception("TG4StepManager: SteppingManager is not defined.");
+  else {
+    TG4Globals::Exception(
+      "TG4StepManager::GetSecondary(): secondary tracks vector is empty");
   }
 }
 
@@ -1047,16 +939,11 @@ const char* TG4StepManager::ProdProcess() const
 // (and may produce the secondary particles).
 // ---
 
-  if (fStep) 
-  {
-    const G4VProcess* curProcess 
-      = fStep->GetPostStepPoint()->GetProcessDefinedStep(); 
+  CheckStep();
 
-    G4String g4Name = curProcess->GetProcessName(); 
-    return g4Name;
-  }
-  else {   
-    TG4Globals::Exception("TG4StepManager: Step is not defined.");
-    return "";
-  }
+  const G4VProcess* curProcess 
+    = fStep->GetPostStepPoint()->GetProcessDefinedStep(); 
+
+  G4String g4Name = curProcess->GetProcessName(); 
+  return g4Name;
 }

@@ -10,17 +10,19 @@
 #ifndef TG4_STEP_MANAGER_H
 #define TG4_STEP_MANAGER_H
 
+#include "TG4StepStatus.h"
+
+#include <G4Step.hh>
 #include <G4ThreeVector.hh>
 #include <globals.hh>
 
 #include <Rtypes.h>
 
-class G4Step;
+class G4Track;
 class G4SteppingManager;
+class G4VPhysicalVolume;
 
 class TLorentzVector;
-
-enum TG4StepStatus { kPreStepPoint, kPostStepPoint};
 
 class TG4StepManager
 {
@@ -40,16 +42,19 @@ class TG4StepManager
     
     // set methods
     void SetStep(G4Step* step, TG4StepStatus status);    // G4 specific
+    void SetStep(G4Track* track, TG4StepStatus status);  // G4 specific
     void SetSteppingManager(G4SteppingManager* manager); // G4 specific
     void SetMaxStep(Float_t step);
     void SetMaxNStep(Int_t maxNofSteps);  //??
     void SetUserDecay(Int_t pdg);  //NEW
     
     // get methods
-    G4Step* GetStep() const;                              // G4 specific
+    G4Track* GetTrack() const;                            // G4 specific
+    G4Step*  GetStep() const;                             // G4 specific
     TG4StepStatus GetStepStatus() const;                  // G4 specific
-    
+        
         // tracking volume(s) 
+    G4VPhysicalVolume* GetCurrentPhysicalVolume() const;  // G4 specific
     Int_t CurrentVolID(Int_t& copyNo) const;
     Int_t CurrentVolOffID(Int_t off, Int_t& copyNo) const;
     const char* CurrentVolName() const;
@@ -102,13 +107,19 @@ class TG4StepManager
 
   private:
     // methods
+    void CheckTrack() const;
+    void CheckStep() const;
+    void CheckSteppingManager() const;
     void SetTLorentzVector(G4ThreeVector xyz, G4double t, 
-                           TLorentzVector& lv) const;
-    
+                           TLorentzVector& lv) const;    
+    G4VPhysicalVolume* GetCurrentOffPhysicalVolume(G4int off) const;
+    G4int GetVolumeID(G4VPhysicalVolume* volume) const;
+
     // static data members
     static TG4StepManager*  fgInstance;   //this instance
     
     // data members
+    G4Track*            fTrack;           //current track
     G4Step*             fStep;            //current step
     TG4StepStatus       fStepStatus;      //step status that decides whether
                                           //track properties will be returned
@@ -122,10 +133,16 @@ inline TG4StepManager* TG4StepManager::Instance()
 { return fgInstance; }
 
 inline void TG4StepManager::SetStep(G4Step* step, TG4StepStatus status)
-{ fStep = step; fStepStatus = status; }
+{ fTrack = step->GetTrack(); fStep = step; fStepStatus = status; }
+
+inline void TG4StepManager::SetStep(G4Track* track, TG4StepStatus status)
+{ fTrack = track; fStep = 0; fStepStatus = status; }
 
 inline void TG4StepManager::SetSteppingManager(G4SteppingManager* manager)
 { fSteppingManager = manager; }
+
+inline G4Track* TG4StepManager::GetTrack() const
+{ return fTrack; }
 
 inline G4Step* TG4StepManager::GetStep() const
 { return fStep; }
