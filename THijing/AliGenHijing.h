@@ -112,7 +112,7 @@ class AliGenHijing : public AliGenMC
     TArrayI     fParentSelect;   // Parent particles to be selected 
     TArrayI     fChildSelect;    // Decay products to be selected
     Float_t     fXsection;       // Cross-section
-    THijing    *fHijing;         // Hijing
+    THijing    *fHijing;         //!Hijing
     Float_t     fPtHardMin;      // lower pT-hard cut 
     Float_t     fPtHardMax;      // higher pT-hard cut
     Int_t       fSpectators;     // put spectators on stack

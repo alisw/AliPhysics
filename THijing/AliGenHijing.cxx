@@ -111,7 +111,7 @@ void AliGenHijing::Init()
 		      fAProjectile, fZProjectile, fATarget, fZTarget, 
 		      fMinImpactParam, fMaxImpactParam));
 
-    fHijing=(THijing*) fgMCEvGen;
+    fHijing=(THijing*) fMCEvGen;
     fHijing->SetIHPR2(2,  fRadiation);
     fHijing->SetIHPR2(3,  fTrigger);
     fHijing->SetIHPR2(6,  fShadowing);
