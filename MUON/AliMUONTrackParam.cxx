@@ -25,10 +25,10 @@
 //
 ///////////////////////////////////////////////////
 
-#include <Riostream.h>
+//#include <Riostream.h>
 #include "AliMUON.h"
 #include "AliMUONTrackParam.h" 
-#include "AliMUONChamber.h"
+//#include "AliMUONChamber.h"
 #include "AliRun.h" 
 #include "AliMagF.h" 
 #include "AliLog.h" 
@@ -53,6 +53,7 @@ AliMUONTrackParam::AliMUONTrackParam()
 AliMUONTrackParam& 
 AliMUONTrackParam::operator=(const AliMUONTrackParam& theMUONTrackParam)
 {
+  // Asignment operator
   if (this == &theMUONTrackParam)
     return *this;
 
@@ -72,6 +73,7 @@ AliMUONTrackParam::operator=(const AliMUONTrackParam& theMUONTrackParam)
 AliMUONTrackParam::AliMUONTrackParam(const AliMUONTrackParam& theMUONTrackParam)
   : TObject(theMUONTrackParam)
 {
+  // Copy constructor
   fInverseBendingMomentum =  theMUONTrackParam.fInverseBendingMomentum; 
   fBendingSlope           =  theMUONTrackParam.fBendingSlope; 
   fNonBendingSlope        =  theMUONTrackParam.fNonBendingSlope; 
@@ -570,21 +572,21 @@ void AliMUONTrackParam::ExtrapOneStepHelix(Double_t charge, Double_t step,
     Double_t sint, sintt, tsint, cos1t;
     Double_t f1, f2, f3, f4, f5, f6;
 
-    const Int_t ix  = 0;
-    const Int_t iy  = 1;
-    const Int_t iz  = 2;
-    const Int_t ipx = 3;
-    const Int_t ipy = 4;
-    const Int_t ipz = 5;
-    const Int_t ipp = 6;
+    const Int_t kix  = 0;
+    const Int_t kiy  = 1;
+    const Int_t kiz  = 2;
+    const Int_t kipx = 3;
+    const Int_t kipy = 4;
+    const Int_t kipz = 5;
+    const Int_t kipp = 6;
 
-    const Double_t ec = 2.9979251e-4;
+    const Double_t kec = 2.9979251e-4;
     //
     //    ------------------------------------------------------------------
     //
     //       units are kgauss,centimeters,gev/c
     //
-    vout[ipp] = vect[ipp];
+    vout[kipp] = vect[kipp];
     if (TMath::Abs(charge) < 0.00001) {
       for (Int_t i = 0; i < 3; i++) {
 	vout[i] = vect[i] + step * vect[i+3];
@@ -592,9 +594,9 @@ void AliMUONTrackParam::ExtrapOneStepHelix(Double_t charge, Double_t step,
       }
       return;
     }
-    xyz[0]    = vect[ix] + 0.5 * step * vect[ipx];
-    xyz[1]    = vect[iy] + 0.5 * step * vect[ipy];
-    xyz[2]    = vect[iz] + 0.5 * step * vect[ipz];
+    xyz[0]    = vect[kix] + 0.5 * step * vect[kipx];
+    xyz[1]    = vect[kiy] + 0.5 * step * vect[kipy];
+    xyz[2]    = vect[kiz] + 0.5 * step * vect[kipz];
 
     //cmodif: call gufld (xyz, h) changed into:
     GetField (xyz, h);
@@ -616,15 +618,15 @@ void AliMUONTrackParam::ExtrapOneStepHelix(Double_t charge, Double_t step,
     h[0] /= h[3];
     h[1] /= h[3];
     h[2] /= h[3];
-    h[3] *= ec;
+    h[3] *= kec;
 
-    hxp[0] = h[1]*vect[ipz] - h[2]*vect[ipy];
-    hxp[1] = h[2]*vect[ipx] - h[0]*vect[ipz];
-    hxp[2] = h[0]*vect[ipy] - h[1]*vect[ipx];
+    hxp[0] = h[1]*vect[kipz] - h[2]*vect[kipy];
+    hxp[1] = h[2]*vect[kipx] - h[0]*vect[kipz];
+    hxp[2] = h[0]*vect[kipy] - h[1]*vect[kipx];
  
-    hp = h[0]*vect[ipx] + h[1]*vect[ipy] + h[2]*vect[ipz];
+    hp = h[0]*vect[kipx] + h[1]*vect[kipy] + h[2]*vect[kipz];
 
-    rho = -charge*h[3]/vect[ipp];
+    rho = -charge*h[3]/vect[kipp];
     tet = rho * step;
 
     if (TMath::Abs(tet) > 0.15) {
@@ -646,13 +648,13 @@ void AliMUONTrackParam::ExtrapOneStepHelix(Double_t charge, Double_t step,
     f5 = sint;
     f6 = tet * cos1t * hp;
  
-    vout[ix] = vect[ix] + f1*vect[ipx] + f2*hxp[0] + f3*h[0];
-    vout[iy] = vect[iy] + f1*vect[ipy] + f2*hxp[1] + f3*h[1];
-    vout[iz] = vect[iz] + f1*vect[ipz] + f2*hxp[2] + f3*h[2];
+    vout[kix] = vect[kix] + f1*vect[kipx] + f2*hxp[0] + f3*h[0];
+    vout[kiy] = vect[kiy] + f1*vect[kipy] + f2*hxp[1] + f3*h[1];
+    vout[kiz] = vect[kiz] + f1*vect[kipz] + f2*hxp[2] + f3*h[2];
  
-    vout[ipx] = vect[ipx] + f4*vect[ipx] + f5*hxp[0] + f6*h[0];
-    vout[ipy] = vect[ipy] + f4*vect[ipy] + f5*hxp[1] + f6*h[1];
-    vout[ipz] = vect[ipz] + f4*vect[ipz] + f5*hxp[2] + f6*h[2];
+    vout[kipx] = vect[kipx] + f4*vect[kipx] + f5*hxp[0] + f6*h[0];
+    vout[kipy] = vect[kipy] + f4*vect[kipy] + f5*hxp[1] + f6*h[1];
+    vout[kipz] = vect[kipz] + f4*vect[kipz] + f5*hxp[2] + f6*h[2];
  
     return;
 }
@@ -681,30 +683,30 @@ void AliMUONTrackParam::ExtrapOneStepHelix3(Double_t field, Double_t step,
     Double_t sint, sintt, tsint, cos1t;
     Double_t f1, f2, f3, f4, f5, f6;
 
-    const Int_t ix  = 0;
-    const Int_t iy  = 1;
-    const Int_t iz  = 2;
-    const Int_t ipx = 3;
-    const Int_t ipy = 4;
-    const Int_t ipz = 5;
-    const Int_t ipp = 6;
+    const Int_t kix  = 0;
+    const Int_t kiy  = 1;
+    const Int_t kiz  = 2;
+    const Int_t kipx = 3;
+    const Int_t kipy = 4;
+    const Int_t kipz = 5;
+    const Int_t kipp = 6;
 
-    const Double_t ec = 2.9979251e-4;
+    const Double_t kec = 2.9979251e-4;
 
 // 
 //     ------------------------------------------------------------------
 // 
 //       units are kgauss,centimeters,gev/c
 // 
-    vout[ipp] = vect[ipp];
-    h4 = field * ec;
+    vout[kipp] = vect[kipp];
+    h4 = field * kec;
 
-    hxp[0] = - vect[ipy];
-    hxp[1] = + vect[ipx];
+    hxp[0] = - vect[kipy];
+    hxp[1] = + vect[kipx];
  
-    hp = vect[ipz];
+    hp = vect[kipz];
 
-    rho = -h4/vect[ipp];
+    rho = -h4/vect[kipp];
     tet = rho * step;
     if (TMath::Abs(tet) > 0.15) {
       sint = TMath::Sin(tet);
@@ -725,13 +727,13 @@ void AliMUONTrackParam::ExtrapOneStepHelix3(Double_t field, Double_t step,
     f5 = sint;
     f6 = tet * cos1t * hp;
  
-    vout[ix] = vect[ix] + f1*vect[ipx] + f2*hxp[0];
-    vout[iy] = vect[iy] + f1*vect[ipy] + f2*hxp[1];
-    vout[iz] = vect[iz] + f1*vect[ipz] + f3;
+    vout[kix] = vect[kix] + f1*vect[kipx] + f2*hxp[0];
+    vout[kiy] = vect[kiy] + f1*vect[kipy] + f2*hxp[1];
+    vout[kiz] = vect[kiz] + f1*vect[kipz] + f3;
  
-    vout[ipx] = vect[ipx] + f4*vect[ipx] + f5*hxp[0];
-    vout[ipy] = vect[ipy] + f4*vect[ipy] + f5*hxp[1];
-    vout[ipz] = vect[ipz] + f4*vect[ipz] + f6;
+    vout[kipx] = vect[kipx] + f4*vect[kipx] + f5*hxp[0];
+    vout[kipy] = vect[kipy] + f4*vect[kipy] + f5*hxp[1];
+    vout[kipz] = vect[kipz] + f4*vect[kipz] + f6;
 
     return;
 }
@@ -781,19 +783,19 @@ void AliMUONTrackParam::ExtrapOneStepRungekutta(Double_t charge, Double_t step,
     Double_t maxit = 1992;
     Double_t maxcut = 11;
 
-    const Double_t dlt   = 1e-4;
-    const Double_t dlt32 = dlt/32.;
-    const Double_t third = 1./3.;
-    const Double_t half  = 0.5;
-    const Double_t ec = 2.9979251e-4;
+    const Double_t kdlt   = 1e-4;
+    const Double_t kdlt32 = kdlt/32.;
+    const Double_t kthird = 1./3.;
+    const Double_t khalf  = 0.5;
+    const Double_t kec = 2.9979251e-4;
 
-    const Double_t pisqua = 9.86960440109;
-    const Int_t ix  = 0;
-    const Int_t iy  = 1;
-    const Int_t iz  = 2;
-    const Int_t ipx = 3;
-    const Int_t ipy = 4;
-    const Int_t ipz = 5;
+    const Double_t kpisqua = 9.86960440109;
+    const Int_t kix  = 0;
+    const Int_t kiy  = 1;
+    const Int_t kiz  = 2;
+    const Int_t kipx = 3;
+    const Int_t kipy = 4;
+    const Int_t kipz = 5;
   
     // *.
     // *.    ------------------------------------------------------------------
@@ -805,7 +807,7 @@ void AliMUONTrackParam::ExtrapOneStepRungekutta(Double_t charge, Double_t step,
     for(Int_t j = 0; j < 7; j++)
       vout[j] = vect[j];
 
-    Double_t  pinv   = ec * charge / vect[6];
+    Double_t  pinv   = kec * charge / vect[6];
     Double_t tl = 0.;
     Double_t h = step;
     Double_t rest;
@@ -828,15 +830,15 @@ void AliMUONTrackParam::ExtrapOneStepRungekutta(Double_t charge, Double_t step,
       b      = vout[4];
       c      = vout[5];
 
-      h2     = half * h;
-      h4     = half * h2;
+      h2     = khalf * h;
+      h4     = khalf * h2;
       ph     = pinv * h;
-      ph2    = half * ph;
+      ph2    = khalf * ph;
       secxs[0] = (b * f[2] - c * f[1]) * ph2;
       secys[0] = (c * f[0] - a * f[2]) * ph2;
       seczs[0] = (a * f[1] - b * f[0]) * ph2;
       ang2 = (secxs[0]*secxs[0] + secys[0]*secys[0] + seczs[0]*seczs[0]);
-      if (ang2 > pisqua) break;
+      if (ang2 > kpisqua) break;
 
       dxt    = h2 * a + h4 * secxs[0];
       dyt    = h2 * b + h4 * secys[0];
@@ -851,7 +853,7 @@ void AliMUONTrackParam::ExtrapOneStepRungekutta(Double_t charge, Double_t step,
       est = TMath::Abs(dxt) + TMath::Abs(dyt) + TMath::Abs(dzt);
       if (est > h) {
 	if (ncut++ > maxcut) break;
-	h *= half;
+	h *= khalf;
 	continue;
       }
  
@@ -888,7 +890,7 @@ void AliMUONTrackParam::ExtrapOneStepRungekutta(Double_t charge, Double_t step,
       est = TMath::Abs(dxt)+TMath::Abs(dyt)+TMath::Abs(dzt);
       if (est > 2.*TMath::Abs(h)) {
 	if (ncut++ > maxcut) break;
-	h *= half;
+	h *= khalf;
 	continue;
       }
  
@@ -899,24 +901,24 @@ void AliMUONTrackParam::ExtrapOneStepRungekutta(Double_t charge, Double_t step,
       //cmodif: call gufld(xyzt,f) changed into:
       GetField(xyzt,f);
 
-      z      = z + (c + (seczs[0] + seczs[1] + seczs[2]) * third) * h;
-      y      = y + (b + (secys[0] + secys[1] + secys[2]) * third) * h;
-      x      = x + (a + (secxs[0] + secxs[1] + secxs[2]) * third) * h;
+      z      = z + (c + (seczs[0] + seczs[1] + seczs[2]) * kthird) * h;
+      y      = y + (b + (secys[0] + secys[1] + secys[2]) * kthird) * h;
+      x      = x + (a + (secxs[0] + secxs[1] + secxs[2]) * kthird) * h;
 
       secxs[3] = (bt*f[2] - ct*f[1])* ph2;
       secys[3] = (ct*f[0] - at*f[2])* ph2;
       seczs[3] = (at*f[1] - bt*f[0])* ph2;
-      a      = a+(secxs[0]+secxs[3]+2. * (secxs[1]+secxs[2])) * third;
-      b      = b+(secys[0]+secys[3]+2. * (secys[1]+secys[2])) * third;
-      c      = c+(seczs[0]+seczs[3]+2. * (seczs[1]+seczs[2])) * third;
+      a      = a+(secxs[0]+secxs[3]+2. * (secxs[1]+secxs[2])) * kthird;
+      b      = b+(secys[0]+secys[3]+2. * (secys[1]+secys[2])) * kthird;
+      c      = c+(seczs[0]+seczs[3]+2. * (seczs[1]+seczs[2])) * kthird;
 
       est    = TMath::Abs(secxs[0]+secxs[3] - (secxs[1]+secxs[2]))
 	+ TMath::Abs(secys[0]+secys[3] - (secys[1]+secys[2]))
 	+ TMath::Abs(seczs[0]+seczs[3] - (seczs[1]+seczs[2]));
 
-      if (est > dlt && TMath::Abs(h) > 1.e-4) {
+      if (est > kdlt && TMath::Abs(h) > 1.e-4) {
 	if (ncut++ > maxcut) break;
-	h *= half;
+	h *= khalf;
 	continue;
       }
 
@@ -925,7 +927,7 @@ void AliMUONTrackParam::ExtrapOneStepRungekutta(Double_t charge, Double_t step,
       if (iter++ > maxit) break;
 
       tl += h;
-      if (est < dlt32) 
+      if (est < kdlt32) 
 	h *= 2.;
       cba    = 1./ TMath::Sqrt(a*a + b*b + c*c);
       vout[0] = x;
@@ -954,15 +956,15 @@ void AliMUONTrackParam::ExtrapOneStepRungekutta(Double_t charge, Double_t step,
     f2 = f2*hnorm;
     f3 = f3*hnorm;
 
-    hxp[0] = f2*vect[ipz] - f3*vect[ipy];
-    hxp[1] = f3*vect[ipx] - f1*vect[ipz];
-    hxp[2] = f1*vect[ipy] - f2*vect[ipx];
+    hxp[0] = f2*vect[kipz] - f3*vect[kipy];
+    hxp[1] = f3*vect[kipx] - f1*vect[kipz];
+    hxp[2] = f1*vect[kipy] - f2*vect[kipx];
  
-    hp = f1*vect[ipx] + f2*vect[ipy] + f3*vect[ipz];
+    hp = f1*vect[kipx] + f2*vect[kipy] + f3*vect[kipz];
 
     rho1 = 1./rho;
     sint = TMath::Sin(tet);
-    cost = 2.*TMath::Sin(half*tet)*TMath::Sin(half*tet);
+    cost = 2.*TMath::Sin(khalf*tet)*TMath::Sin(khalf*tet);
 
     g1 = sint*rho1;
     g2 = cost*rho1;
@@ -971,13 +973,13 @@ void AliMUONTrackParam::ExtrapOneStepRungekutta(Double_t charge, Double_t step,
     g5 = sint;
     g6 = cost * hp;
  
-    vout[ix] = vect[ix] + g1*vect[ipx] + g2*hxp[0] + g3*f1;
-    vout[iy] = vect[iy] + g1*vect[ipy] + g2*hxp[1] + g3*f2;
-    vout[iz] = vect[iz] + g1*vect[ipz] + g2*hxp[2] + g3*f3;
+    vout[kix] = vect[kix] + g1*vect[kipx] + g2*hxp[0] + g3*f1;
+    vout[kiy] = vect[kiy] + g1*vect[kipy] + g2*hxp[1] + g3*f2;
+    vout[kiz] = vect[kiz] + g1*vect[kipz] + g2*hxp[2] + g3*f3;
  
-    vout[ipx] = vect[ipx] + g4*vect[ipx] + g5*hxp[0] + g6*f1;
-    vout[ipy] = vect[ipy] + g4*vect[ipy] + g5*hxp[1] + g6*f2;
-    vout[ipz] = vect[ipz] + g4*vect[ipz] + g5*hxp[2] + g6*f3;
+    vout[kipx] = vect[kipx] + g4*vect[kipx] + g5*hxp[0] + g6*f1;
+    vout[kipy] = vect[kipy] + g4*vect[kipy] + g5*hxp[1] + g6*f2;
+    vout[kipz] = vect[kipz] + g4*vect[kipz] + g5*hxp[2] + g6*f3;
 
     return;
 }
