@@ -47,6 +47,7 @@ AliPHOSClusterizerv1::AliPHOSClusterizerv1()
 
   fA                       = 0.;
   fB                       = 0.01 ;
+  fGeom                    = AliPHOSGeometry::GetInstance();
   fNumberOfEmcClusters     = 0 ; 
   fNumberOfPpsdClusters    = 0 ; 
   fEmcClusteringThreshold  = 0.1;   
@@ -69,13 +70,11 @@ Int_t AliPHOSClusterizerv1::AreNeighbours(AliPHOSDigit * d1, AliPHOSDigit * d2)
 
   Int_t rv = 0 ; 
 
-  AliPHOSGeometry * geom = AliPHOSGeometry::GetInstance() ;
-
   Int_t relid1[4] ; 
-  geom->AbsToRelNumbering(d1->GetId(), relid1) ; 
+  fGeom->AbsToRelNumbering(d1->GetId(), relid1) ; 
 
   Int_t relid2[4] ; 
-  geom->AbsToRelNumbering(d2->GetId(), relid2) ; 
+  fGeom->AbsToRelNumbering(d2->GetId(), relid2) ; 
  
   if ( (relid1[0] == relid2[0]) && (relid1[1]==relid2[1]) ) { // inside the same PHOS module and the same PPSD Module 
     Int_t rowdiff = TMath::Abs( relid1[2] - relid2[2] ) ;  
@@ -106,7 +105,6 @@ void AliPHOSClusterizerv1::FillandSort(const DigitsList * dl, TObjArray * tl)
   // Copies the digits with energy above thershold and sorts the list
   // according to increasing Id number
 
-  AliPHOSGeometry * geom = AliPHOSGeometry::GetInstance() ;
   Int_t relid[4] ;  
   
   TIter next(dl) ; 
@@ -125,7 +123,7 @@ void AliPHOSClusterizerv1::FillandSort(const DigitsList * dl, TObjArray * tl)
 
     Int_t id    = digit->GetId() ; 
     Float_t ene = Calibrate(digit->GetAmp()) ; 
-    geom->AbsToRelNumbering(id, relid) ;
+    fGeom->AbsToRelNumbering(id, relid) ;
     if(relid[1]==0){ // EMC
       if ( ene > fEmcEnergyThreshold )
 	tl->Add(digit) ;
@@ -157,10 +155,8 @@ Bool_t AliPHOSClusterizerv1::IsInEmc(AliPHOSDigit * digit)
  
   Bool_t rv = kFALSE ; 
 
-  AliPHOSGeometry * geom = AliPHOSGeometry::GetInstance() ;  
-
   Int_t relid[4] ; 
-  geom->AbsToRelNumbering(digit->GetId(), relid) ; 
+  fGeom->AbsToRelNumbering(digit->GetId(), relid) ; 
 
   if ( relid[1] == 0  )
     rv = kTRUE; 
@@ -200,14 +196,12 @@ void AliPHOSClusterizerv1::MakeClusters(const DigitsList * dl,
 	//        new ((*emcl)[fNumberOfEmcClusters]) AliPHOSEmcRecPoint(fW0, fLocMaxCut) ; if TClonesArray
 	(*emcl)[fNumberOfEmcClusters] = new  AliPHOSEmcRecPoint(fW0, fLocMaxCut) ;
 
-	clu = (AliPHOSEmcRecPoint *) (*emcl)[fNumberOfEmcClusters] ; 
+	clu = (AliPHOSEmcRecPoint *) emcl->At(fNumberOfEmcClusters) ; 
 	fNumberOfEmcClusters++ ; 
 	clu->AddDigit(*digit, Calibrate(digit->GetAmp())) ; 
-
 	clusterdigitslist[iDigitInCluster] = digit ;	
 	iDigitInCluster++ ; 
 	tempodigitslist.Remove(digit) ; 
-
 
       }
 

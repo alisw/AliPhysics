@@ -18,6 +18,7 @@
 
 #include "AliPHOSClusterizer.h"
 #include "AliPHOSDigit.h" 
+#include "AliPHOSGeometry.h" 
 
 
 
@@ -58,6 +59,7 @@ private:
   
   Float_t fA ;                       // offset of the energy calibration
   Float_t fB ;                       // gain of the energy calibration
+  AliPHOSGeometry * fGeom ;          // pointer to geometry
   Float_t fEmcClusteringThreshold ;  // minimum energy to include a EMC digit in a cluster
   Float_t fEmcEnergyThreshold ;      // minimum energy of EMC digit to be considered
   Float_t fLocMaxCut ;               // minimum energy difference to distinguish local maxima in a cluster
