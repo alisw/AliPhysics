@@ -18,21 +18,21 @@
 #/aliDet/switchOff SHIL
 
 # set physics
-/g4mc/setHadron true
-/g4mc/setSpecialCuts true
-#/g4mc/setSpecialControls true
+/tg4Physics/setHadron true
+/tg4Physics/setSpecialCuts true
+#/tg4Physics/setSpecialControls true
 
 /aliDet/list
 /aliRun/initialize
 
 #/aliDet/printMaterials
 
-/g4mc/rootCmd TStopwatch timer;
-/g4mc/rootCmd timer.Start();
+/tg4Control/rootCmd TStopwatch timer;
+/tg4Control/rootCmd timer.Start();
 
 /aliRun/beamOn 1
 
-/g4mc/rootCmd timer.Stop();
-/g4mc/rootCmd timer.Print();
+/tg4Control/rootCmd timer.Stop();
+/tg4Control/rootCmd timer.Print();
 
 exit

@@ -11,7 +11,7 @@
 /aliRun/initialize
 /aliDet/generateXML
 
-/g4mc/setHadron true
+/tg4Physics/setHadron true
 /control/execute gen_testGGG.in
 
 #/tracking/verbose 1

@@ -5,8 +5,8 @@
 
 /aliDet/switchOn FRAME
 
-/g4mc/setEM false
-/g4mc/setMuon false
+/tg4Physics/setEM false
+/tg4Physics/setMuon false
 /aliRun/initialize
 
 /aliTree/setVolume ALIC
@@ -20,6 +20,7 @@
 /vis/viewer/viewpointThetaPhi  35 35
 /vis/viewer/zoom  1.2 
 
-/g4mc/rootCmd new TG4GeometryGUI()
-/g4mc/root
+/tg4Control/rootCmd new TG4GeometryGUI()
+/tg4Control/root
 
+exit

@@ -7,7 +7,7 @@
 
 /aliRun/lego 
 
-/g4mc/rootMacro lego
-/g4mc/root
+/tg4Control/rootMacro lego
+/tg4Control/root
 
 exit

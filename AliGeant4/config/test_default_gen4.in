@@ -6,7 +6,7 @@
 /aliEvent/verbose 0
 /aliRun/lego
 
-/g4mc/rootMacro legoSave
+/tg4Control/rootMacro legoSave
 
 /control/exit
 exit
