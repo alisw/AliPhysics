@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.20  2002/10/14 14:57:32  hristov
+Merging the VirtualMC branch to the main development branch (HEAD)
+
 Revision 1.13.6.2  2002/07/24 10:08:13  alibrary
 Updating VirtualMC
 
@@ -146,7 +149,7 @@ Manager class for merging/digitization
 
 // system includes
 
-#include <iostream.h>
+#include <Riostream.h>
 
 // ROOT includes
 

@@ -6,6 +6,9 @@
 /* $Id$ */
 /* 
  * $Log$
+ * Revision 1.5  2002/10/14 14:57:32  hristov
+ * Merging the VirtualMC branch to the main development branch (HEAD)
+ *
  * Revision 1.4.8.1  2002/06/10 14:43:06  hristov
  * Merged with v3-08-02
  *
@@ -23,31 +26,23 @@
  * 
  */
 
-#include <iostream.h>
-#include <TFolder.h>
-#include <TList.h>
-#include <TInterpreter.h>
-#include <TROOT.h>
-#include <TSystem.h>
-#include <TDatabasePDG.h>
 #include "AliMC.h"
-class TString ; 
+
+class TDatabasePDG;
+class TFolder;
+class TString;
+
+class AliConfig;
+class AliDetector;
 class AliGenerator;
 class AliModule;
-class AliDetector;
-class AliConfig;
 class AliTasks;
 
 class AliConfig : public TNamed {
   
 public:
-  
-  AliConfig(){ 
-    // ctor: this is a singleton, the ctor should never be called but cint needs it as public
-    cerr << "ERROR: AliConfig is a singleton default ctor not callable" << endl ;
-    abort() ; 
-  } 
-  
+
+  AliConfig();
   virtual ~ AliConfig ();
   
   void  Add (AliGenerator *generator);
@@ -61,11 +56,15 @@ public:
   static AliConfig* Instance();
   
 private:
-  AliConfig(const char * name, const char * title );
+
+  enum {kFolders=8, kTasks=5};
+  AliConfig(const char * name, const char * title);
+  AliConfig(const AliConfig&);
   void  AddInFolder (char * dir, TObject *obj);
   void  AddSubFolder(char * dir[], TObject *obj);
   void  AddSubTask(char * dir[], TObject *obj);
- TObject* FindInFolder (char *dir, const char *name);
+  TObject* FindInFolder (char *dir, const char *name);
+  AliConfig& operator = (const AliConfig&) {return *this;}
   
   TFolder  *fTopFolder;
   AliTasks *fTasks;
@@ -76,7 +75,6 @@ private:
   char*  fModuleFolder ; 
   char** fDetectorFolder ; 
   char** fDetectorTask ; 
-
 
   static AliConfig*  fInstance;
     

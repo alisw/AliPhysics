@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.23  2002/10/14 14:57:32  hristov
+Merging the VirtualMC branch to the main development branch (HEAD)
+
 Revision 1.19.4.2  2002/08/28 15:06:52  alibrary
 Updating to v3-09-01
 
@@ -86,7 +89,7 @@ New files for folders and Stack
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include <iostream.h>
+#include <Riostream.h>
  
 #include <TObjArray.h>
 #include <TParticle.h>

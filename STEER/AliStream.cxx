@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.7  2002/10/14 14:57:33  hristov
+Merging the VirtualMC branch to the main development branch (HEAD)
+
 Revision 1.4.6.2  2002/07/24 10:08:13  alibrary
 Updating VirtualMC
 
@@ -49,7 +52,7 @@ Class to manage input filenames, used by AliRunDigitizer
 //
 ////////////////////////////////////////////////////////////////////////
 
-#include <iostream.h>
+#include <Riostream.h>
 
 #include "TTree.h"
 #include "TROOT.h"

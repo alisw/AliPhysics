@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.20  2002/10/14 14:57:32  hristov
+Merging the VirtualMC branch to the main development branch (HEAD)
+
 Revision 1.16.8.3  2002/10/14 09:45:57  hristov
 Updating VirtualMC to v3-09-02
 
@@ -84,7 +87,7 @@ Introduction of the Copyright and cvs Log
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <assert.h>
-#include <iostream.h>
+#include <Riostream.h>
 
 #include <TTree.h>
 #include <TBrowser.h>

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.3  2002/10/14 14:57:33  hristov
+Merging the VirtualMC branch to the main development branch (HEAD)
+
 Revision 1.2.2.1  2002/10/14 09:45:57  hristov
 Updating VirtualMC to v3-09-02
 
@@ -36,7 +39,7 @@ Classes to create and store tracks maps - correcpondence between track label and
 //
 ////////////////////////////////////////////////////////////////////////
 
-#include <iostream.h>
+#include <Riostream.h>
 
 #include "TTree.h"
 #include "TROOT.h"

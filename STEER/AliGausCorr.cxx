@@ -21,7 +21,7 @@
 // Rep. Prog. Phys. 43 (1980) 1145-1189. 
 // M.Masera 15.03.2001 9:30 - modified on 26.02.2002 17:40
 ////////////////////////////////////////////////////////////////////////
-#include <iostream.h>
+#include <Riostream.h>
 #include <TArrayD.h>
 #include <TMatrixD.h>
 #include <TRandom.h>

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.5  2002/10/14 14:57:32  hristov
+Merging the VirtualMC branch to the main development branch (HEAD)
+
 Revision 1.3.8.1  2002/06/10 14:43:06  hristov
 Merged with v3-08-02
 
@@ -32,16 +35,21 @@ New files for folders and Stack
 
 */
 
+#include <Riostream.h>
+#include <TDatabasePDG.h>
+#include <TFolder.h>
+#include <TInterpreter.h>
+#include <TROOT.h>
+#include <TSystem.h>
+
 #include "AliConfig.h"
 #include "AliDetector.h"
+#include "AliGenerator.h" 
 #include "TObjString.h" 
 #include "TString.h"
 #include "TTask.h" 
-#include "AliGenerator.h" 
-#include "AliMC.h" 
 
 ClassImp(AliConfig)
-
 
 AliConfig* AliConfig::fInstance = 0;
 
@@ -51,28 +59,70 @@ AliConfig* AliConfig::Instance ()
   //
   // Instance method for singleton class
   //
-        if(fInstance == 0) {
-		    fInstance = new AliConfig ("Folders","Alice data exchange");
-		}
-		return fInstance;
+  if(!fInstance) fInstance = new AliConfig ("Folders","Alice data exchange");
+
+  return fInstance;
 }
 
+//____________________________________________________________________________
+AliConfig::AliConfig(): TNamed("","")
+{
+  //
+  // Default constructor, mainly to keep coding conventions
+  //
+  fTopFolder=0;
+  fTasks=0;
 
-AliConfig::AliConfig(const char *name, const char *title)
+  fPDGFolder=0; 
+  fGeneratorFolder=0; 
+  fMCFolder=0; 
+  fModuleFolder=0; 
+  fDetectorFolder=0;
+  fDetectorTask=0; 
+  fInstance=0;
+    
+  Fatal("ctor",
+   "Constructor should not be called for a singleton\n");
+}
+
+//____________________________________________________________________________
+AliConfig::AliConfig(const AliConfig&): TNamed("","")
+{
+  //
+  // Copy constructor, mainly to keep coding conventions
+  //
+  fTopFolder=0;
+  fTasks=0;
+
+  fPDGFolder=0; 
+  fGeneratorFolder=0; 
+  fMCFolder=0; 
+  fModuleFolder=0; 
+  fDetectorFolder=0;
+  fDetectorTask=0; 
+  fInstance=0;
+    
+  Fatal("copy ctor",
+   "Copy constructor should not be called for a singleton\n");
+}
+
+//____________________________________________________________________________
+AliConfig::AliConfig(const char *name, const char *title): 
+  TNamed(name,title), 
+  fTopFolder(gROOT->GetRootFolder ()->AddFolder (name,title)),
+  fTasks(0),
+  fPDGFolder("Constants/DatabasePDG"),
+  fGeneratorFolder("RunMC/Configuration/Generators"),
+  fMCFolder("RunMC/Configuration/VirtualMC"),
+  fModuleFolder("Run/Configuration/Modules"),
+  fDetectorFolder(new char*[kFolders]),
+  fDetectorTask(new char*[kTasks])
 {
   //
   // Constructor
   //
-  //
   fInstance=this;
-  SetName(name) ; 
-  SetTitle(title) ; 
   
-  fPDGFolder         =  "Constants/DatabasePDG" ;
-  fGeneratorFolder   =  "RunMC/Configuration/Generators" ;
-  fMCFolder          =  "RunMC/Configuration/VirtualMC" ;
-  fModuleFolder      =  "Run/Configuration/Modules" ;
-  fDetectorFolder    =  new char*[8] ; 
   fDetectorFolder[0] = "Run/Conditions/Calibration" ;
   fDetectorFolder[1] = "Run/Event/Data" ;
   fDetectorFolder[2] = "Run/Event/RecData" ;
@@ -81,14 +131,12 @@ AliConfig::AliConfig(const char *name, const char *title)
   fDetectorFolder[5] = "Run/Conditions/QA" ;  
   fDetectorFolder[6] = "RunMC/Event/Data/TrackReferences" ;  
   fDetectorFolder[7] = 0 ;  
-  fDetectorTask    =  new char*[5] ; 
   fDetectorTask[0] = "Tasks/QA" ;  
   fDetectorTask[1] = "Tasks/SDigitizer" ;  
   fDetectorTask[2] = "Tasks/Digitizer" ;  
   fDetectorTask[3] = "Tasks/Reconstructioner" ;  
   fDetectorTask[4] = 0 ;  
 
-  fTopFolder = gROOT->GetRootFolder ()->AddFolder (name,title);
   fTopFolder->SetOwner() ; 
   gROOT->GetListOfBrowsables ()->Add (fTopFolder, name);
   
@@ -195,7 +243,7 @@ AliConfig::~AliConfig()
 }
 
 //____________________________________________________________________________
-void    AliConfig::AddInFolder (char *dir, TObject *obj)
+void AliConfig::AddInFolder (char *dir, TObject *obj)
 {
   TFolder *folder =
     dynamic_cast<TFolder *>(fTopFolder->FindObject(dir));

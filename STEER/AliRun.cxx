@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.89  2002/10/17 16:26:39  hristov
+Definition of additional particles moved to VMC (I.Hrivnacova)
+
 Revision 1.88  2002/10/14 14:57:32  hristov
 Merging the VirtualMC branch to the main development branch (HEAD)
 
@@ -259,7 +262,7 @@ Introduction of the Copyright and cvs Log
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <iostream.h>
+#include <Riostream.h>
  
 #include <TFile.h>
 #include <TRandom.h>
@@ -2192,7 +2195,7 @@ TFile* AliRun::InitTreeFile(Option_t *option, TString fileName)
     }
     return ptr;
   }
-
+  return 0;
 }
 
 //___________________________________________________________________________

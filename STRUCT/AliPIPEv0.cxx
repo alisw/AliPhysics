@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.23  2002/10/14 14:57:39  hristov
+Merging the VirtualMC branch to the main development branch (HEAD)
+
 Revision 1.19.4.2  2002/10/11 08:04:28  hristov
 Updating VirtualMC to v3-09-02
 
@@ -95,7 +98,7 @@ Introduction of the Copyright and cvs Log
 #include "AliMC.h"
 #include "TSystem.h"
 
-#include <iostream.h>
+#include <Riostream.h>
  
 ClassImp(AliPIPEv0)
  
