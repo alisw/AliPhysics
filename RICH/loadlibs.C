@@ -3,7 +3,8 @@ void loadlibs ()
   if (gClassTable->GetID("AliRun") >= 0) return;
    cout<<"RICH private loadlibs.C ...";
   gSystem->Load("libminicern");
-  gSystem->Load("libPhysics");
+  if (gClassTable->GetID("TVector3") < 0)// additional check as libPhysics may be loaded in logon.C
+      gSystem->Load("libPhysics");
   gSystem->Load("libEG");
   gSystem->Load("libSTEER");
   gSystem->Load("libTGeant3Dummy");
