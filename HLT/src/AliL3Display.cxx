@@ -7,6 +7,9 @@
 #include <TPolyLine3D.h>
 #include <TH2.h>
 #include <TTree.h>
+#include <TNode.h>
+#include <TGeometry.h>
+#include <TShape.h>
 
 #include "AliSimDigits.h"
 #include "AliTPCParam.h"
@@ -33,7 +36,8 @@ AliL3Display::AliL3Display(Int_t *slice)
 {
   //Ctor. Specify which slices you want to look at.
 
-  TFile *file = new TFile("alice.geom");
+  TFile *file = new TFile("/nfs/david/subatom/alice/data/GEO/alice.geom");
+  if(!file) printf("NO FILE\n");
   if(file->IsOpen())
     LOG(AliL3Log::kError,"AliL3Display::AliL3Display","File Open")
       <<"Geometry file alice.geom does not exist"<<ENDLOG;
@@ -70,7 +74,9 @@ void AliL3Display::Setup(Char_t *trackfile)
 	    {
 	      LOG(AliL3Log::kError,"AliL3Evaluation::Setup","File Open")
 		<<"Inputfile "<<fname<<" does not exist"<<ENDLOG; 
-	      return;
+	      delete clusterfile[s][p];
+              clusterfile[s][p] = 0; 
+	      continue;
 	    }
 	  fClusters[s][p] = (AliL3SpacePointData*)clusterfile[s][p]->Allocate();
 	  clusterfile[s][p]->Binary2Memory(fNcl[s][p],fClusters[s][p]);
@@ -99,19 +105,21 @@ void AliL3Display::DisplayTracks(Int_t min_hits)
 
   TCanvas *c1 = new TCanvas("c1","",700,700);
   c1->cd();
+  
   TView *v = new TView(1);
   v->SetRange(-430,-560,-430,430,560,1710);
+  
   c1->Clear();
-  c1->SetFillColor(1);
+  c1->SetFillColor(10);
   c1->SetTheta(90.);
   c1->SetPhi(0.);
-  
+    
   Int_t ntracks = fTracks->GetNTracks();
   TPolyLine3D *line = new TPolyLine3D[ntracks];
   Float_t xcl[174];
   Float_t ycl[174];
   Float_t zcl[174];
-    
+  
   for(Int_t j=0; j<ntracks; j++)
     {
       AliL3Track *gtrack = fTracks->GetCheckedTrack(j); 
@@ -120,6 +128,7 @@ void AliL3Display::DisplayTracks(Int_t min_hits)
       UInt_t *hitnum = gtrack->GetHitNumbers();
       if(nHits < min_hits) continue;
       TPolyMarker3D *pm = new TPolyMarker3D(nHits);
+      
       for(Int_t h=0; h<nHits; h++)
 	{
 	  UInt_t id=hitnum[h];
@@ -138,17 +147,38 @@ void AliL3Display::DisplayTracks(Int_t min_hits)
 	  xcl[h] = points[pos].fX;
 	  ycl[h] = points[pos].fY;
 	  zcl[h] = points[pos].fZ;
+	  
 	  pm->SetPoint(h,xcl[h],ycl[h],zcl[h]);
 	}
-      pm->SetMarkerColor(3);
-      pm->Draw();
+      pm->SetMarkerColor(2);
+      //pm->Draw();
       TPolyLine3D *current_line = &(line[j]);
       current_line = new TPolyLine3D(nHits,xcl,ycl,zcl,"");
       
-      current_line->SetLineColor(4);
+      current_line->SetLineColor(1);
       current_line->Draw("same");
+            
     }
-
+  
+  /*Take this if you want black&white display for printing.
+    Char_t fname[256];
+    Int_t i;
+    Int_t color = 1;
+    for(i=0; i<10; i++)
+    {
+    sprintf(fname,"LS0%d",i);
+    geom->GetNode(fname)->SetLineColor(color);
+    sprintf(fname,"US0%d",i);
+    geom->GetNode(fname)->SetLineColor(color);
+    }
+    for(i=10; i<18; i++)
+    {
+    sprintf(fname,"LS%d",i);
+    geom->GetNode(fname)->SetLineColor(color);
+    sprintf(fname,"US%d",i);
+    geom->GetNode(fname)->SetLineColor(color);
+    }
+  */
   fGeom->Draw("same");
   
   c1->x3d();
@@ -170,7 +200,7 @@ void AliL3Display::DisplayClusters()
   
   for(Int_t s=fMinSlice; s<=fMaxSlice; s++)
     {
-      for(Int_t p=0;p<1;p++)
+      for(Int_t p=0;p<5;p++)
 	{
 	  AliL3SpacePointData *points = fClusters[s][p];
 	  if(!points) continue;
@@ -283,7 +313,7 @@ void AliL3Display::DisplayAll(Int_t min_hits)
   
 }
 
-void AliL3Display::DisplayClusterRow(Int_t slice,Int_t padrow,Char_t *digitsFile)
+void AliL3Display::DisplayClusterRow(Int_t slice,Int_t padrow,Char_t *digitsFile,Char_t *type)
 {
   //Display the found clusters on this row together with the raw data.
   
@@ -328,7 +358,7 @@ void AliL3Display::DisplayClusterRow(Int_t slice,Int_t padrow,Char_t *digitsFile
   }
   
   
-  for(Int_t p=0;p<1;p++)
+  for(Int_t p=0;p<5;p++)
     {
       AliL3SpacePointData *points = fClusters[slice][p];
       if(!points) continue;
@@ -341,14 +371,14 @@ void AliL3Display::DisplayClusterRow(Int_t slice,Int_t padrow,Char_t *digitsFile
 	  xyz[0] = points[i].fX;
 	  xyz[1] = points[i].fY;
 	  xyz[2] = points[i].fZ;
-	  transform->Global2Raw(xyz,sector,row);
+	  transform->Local2Raw(xyz,sector,row);
 	  histfast->Fill((Int_t)xyz[1],(Int_t)xyz[2],1);
 	  
 	}
       
     }
   
-  TCanvas *c1 = new TCanvas("c1","",2);
+  TCanvas *c1 = new TCanvas("c1","",900,900);
   c1->cd();
   histdig->Draw();
   
@@ -357,7 +387,7 @@ void AliL3Display::DisplayClusterRow(Int_t slice,Int_t padrow,Char_t *digitsFile
   
   histdig->GetXaxis()->SetTitle("Pad");
   histdig->GetYaxis()->SetTitle("Time");
-  histdig->Draw("hist");
+  histdig->Draw(type);
   histfast->Draw("psame");
   
 }

@@ -27,7 +27,7 @@ class AliL3Display : public TObject {
   void DisplayTracks(Int_t min_hits=10);
   void DisplayAll(Int_t min_hits=10);
   void DisplayClusters();
-  void DisplayClusterRow(Int_t slice,Int_t padrow,Char_t *digitsFile);
+  void DisplayClusterRow(Int_t slice,Int_t padrow,Char_t *digitsFile,Char_t *type="hist");
 
   ClassDef(AliL3Display,1) 
 };
