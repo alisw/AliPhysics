@@ -55,6 +55,7 @@ class AliTRDtracker : public AliTracker {
   void          ReadClusters(TObjArray *array, const Char_t *filename); 
   Int_t         ReadClusters(TObjArray *array, TTree *in);
   Int_t         CookSectorIndex(Int_t gs) const { return kTrackingSectors - 1 - gs; }
+  AliTRDcluster * GetCluster(AliTRDtrack * track, Int_t plane, Int_t timebin);
 
 
   Float_t  GetSeedGap()       const {return fgkSeedGap;}   
@@ -181,7 +182,6 @@ class AliTRDtracker : public AliTracker {
   AliTRDparameter    *fPar;             // Pointer to TRD parameter
 
   AliTRDtrackingSector *fTrSec[kTrackingSectors];  // array of tracking sectors;    
-  
   Int_t            fNclusters;        // Number of clusters in TRD 
   TObjArray        *fClusters;        // List of clusters for all sectors
 

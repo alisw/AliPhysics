@@ -22,7 +22,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <Riostream.h>
-
 #include <TFile.h>
 #include <TBranch.h>
 #include <TTree.h>  
@@ -342,6 +341,27 @@ inline Double_t f3trd(Double_t x1,Double_t y1,
   return (z1 - z2)/sqrt((x1-x2)*(x1-x2)+(y1-y2)*(y1-y2));
 }            
 
+
+AliTRDcluster * AliTRDtracker::GetCluster(AliTRDtrack * track, Int_t plane, Int_t timebin){
+  //
+  //try to find cluster in the backup list
+  //
+  AliTRDcluster * cl =0;
+  UInt_t *indexes = track->GetBackupIndexes();
+  for (UInt_t i=0;i<kMaxTimeBinIndex;i++){
+    if (indexes[i]==0) break;  
+    AliTRDcluster * cli = (AliTRDcluster*)fClusters->UncheckedAt(indexes[i]);
+    if (!cli) break;
+    if (cli->GetLocalTimeBin()!=timebin) continue;
+    Int_t iplane = fGeom->GetPlane(cli->GetDetector());
+    if (iplane==plane) {
+      cl = cli;
+      break;
+    }
+  }
+  return cl;
+}
+
 //___________________________________________________________________
 Int_t AliTRDtracker::Clusters2Tracks(const TFile *inp, TFile *out)
 {
@@ -535,7 +555,7 @@ Int_t AliTRDtracker::Clusters2Tracks(AliESD* event)
     nseed++;
 
     AliTRDtrack* seed2 = new AliTRDtrack(*seed);
-    seed2->ResetCovariance(); 
+    //seed2->ResetCovariance(); 
     AliTRDtrack *pt = new AliTRDtrack(*seed2,seed2->GetAlpha());
     AliTRDtrack &t=*pt; 
     FollowProlongation(t, innerTB); 
@@ -900,17 +920,37 @@ Int_t AliTRDtracker::RefitInward(AliESD* event)
     AliESDtrack* seed=event->GetTrack(i);
     ULong_t status=seed->GetStatus();
     if ( (status & AliESDtrack::kTRDout ) == 0 ) continue;
-    if ( (status & AliESDtrack::kTRDrefit) != 0 ) continue;
+    if ( (status & AliESDtrack::kTRDin) != 0 ) continue;
     nseed++;
 
     AliTRDtrack* seed2 = new AliTRDtrack(*seed);
-    seed2->ResetCovariance(); 
+    seed2->ResetCovariance(2.); 
     AliTRDtrack *pt = new AliTRDtrack(*seed2,seed2->GetAlpha());
+    UInt_t * indexes2 = seed2->GetIndexes();
+    UInt_t * indexes3 = pt->GetBackupIndexes();
+    for (Int_t i=0;i<200;i++) {
+      if (indexes2[i]==0) break;
+      indexes3[i] = indexes2[i];
+    }          
+    //AliTRDtrack *pt = seed2;
     AliTRDtrack &t=*pt; 
     FollowProlongation(t, innerTB); 
+
+    if (t.GetNumberOfClusters()<seed->GetTRDclusters(indexes3)*0.5){
+      // debug  - why we dont go back?
+      AliTRDtrack *pt2 = new AliTRDtrack(*seed2,seed2->GetAlpha());
+      UInt_t * indexes2 = seed2->GetIndexes();
+      UInt_t * indexes3 = pt2->GetBackupIndexes();
+      for (Int_t i=0;i<200;i++) {
+	if (indexes2[i]==0) break;
+	indexes3[i] = indexes2[i];
+      }  
+      FollowProlongation(*pt2, innerTB); 
+    }
+
     if (t.GetNumberOfClusters() >= foundMin) {
-      UseClusters(&t);
-      CookLabel(pt, 1-fgkLabelFraction);
+      //      UseClusters(&t);
+      //CookLabel(pt, 1-fgkLabelFraction);
       //      t.CookdEdx();
     }
     found++;
@@ -1032,12 +1072,6 @@ Int_t AliTRDtracker::FollowProlongation(AliTRDtrack& t, Int_t rf)
       wSigmaZ2 = (Float_t) t.GetSigmaZ2();
       wChi2 = -1;            
       
-      if (road>fgkWideRoad) {
-        if (t.GetNumberOfClusters()>4)
-          cerr<<t.GetNumberOfClusters()
-              <<"FindProlongation warning: Too broad road !\n";
-        return 0;
-      }             
 
       AliTRDcluster *cl=0;
       UInt_t index=0;
@@ -1071,21 +1105,44 @@ Int_t AliTRDtracker::FollowProlongation(AliTRDtrack& t, Int_t rf)
       // Now go for the real cluster search
 
       if (timeBin) {
+	//
+	//find cluster in history
+	cl =0;
+	
+	AliTRDcluster * cl0 = timeBin[0];
+	if (!cl0) {
+	  continue;
+	}
+	Int_t plane = fGeom->GetPlane(cl0->GetDetector());
+	Int_t timebin = cl0->GetLocalTimeBin();
+	AliTRDcluster * cl2= GetCluster(&t,plane, timebin);
+	if (cl2) cl =cl2;	
 
-        for (Int_t i=timeBin.Find(y-road); i<timeBin; i++) {
-          AliTRDcluster* c=(AliTRDcluster*)(timeBin[i]);
-          if (c->GetY() > y+road) break;
-          if (c->IsUsed() > 0) continue;
-          if((c->GetZ()-z)*(c->GetZ()-z) > 3 * sz2) continue;
+	if ((!cl) && road>fgkWideRoad) {
+	  //if (t.GetNumberOfClusters()>4)
+	  //  cerr<<t.GetNumberOfClusters()
+	  //	<<"FindProlongation warning: Too broad road !\n";
+	  continue;
+	}             
 
-          Double_t h01 = GetTiltFactor(c);
-          Double_t chi2=t.GetPredictedChi2(c,h01);
-          
-          if (chi2 > maxChi2) continue;
-          maxChi2=chi2;
-          cl=c;
-          index=timeBin.GetIndex(i);
-        }               
+
+	if(!cl){
+
+	  for (Int_t i=timeBin.Find(y-road); i<timeBin; i++) {
+	    AliTRDcluster* c=(AliTRDcluster*)(timeBin[i]);
+	    if (c->GetY() > y+road) break;
+	    if (c->IsUsed() > 0) continue;
+	    if((c->GetZ()-z)*(c->GetZ()-z) > 3 * sz2) continue;
+	    
+	    Double_t h01 = GetTiltFactor(c);
+	    Double_t chi2=t.GetPredictedChi2(c,h01);
+	    
+	    if (chi2 > maxChi2) continue;
+	    maxChi2=chi2;
+	    cl=c;
+	    index=timeBin.GetIndex(i);
+	  }               
+	}
 
         if(!cl) {
 
@@ -1105,15 +1162,17 @@ Int_t AliTRDtracker::FollowProlongation(AliTRDtrack& t, Int_t rf)
             index=timeBin.GetIndex(i);
           }
         }        
-        
-
         if (cl) {
           wYclosest = cl->GetY();
           wZclosest = cl->GetZ();
           Double_t h01 = GetTiltFactor(cl);
 
           t.SetSampledEdx(cl->GetQ()/dx,t.GetNumberOfClusters()); 
-          if(!t.Update(cl,maxChi2,index,h01)) {
+	  //printf("Track   position\t%f\t%f\t%f\n",t.GetX(),t.GetY(),t.GetZ());
+	  //printf("Cluster position\t%d\t%f\t%f\n",cl->GetLocalTimeBin(),cl->GetY(),cl->GetZ());
+	  
+
+          if(!t.UpdateMI(cl,maxChi2,index,h01)) {
             if(!tryAgain--) return 0;
           }  
           else tryAgain=fMaxGap;
@@ -1373,7 +1432,7 @@ Int_t AliTRDtracker::FollowBackProlongation(AliTRDtrack& t)
 
           t.SetSampledEdx(cl->GetQ()/dx,t.GetNumberOfClusters()); 
           Double_t h01 = GetTiltFactor(cl);
-          if(!t.Update(cl,maxChi2,index,h01)) {
+          if(!t.UpdateMI(cl,maxChi2,index,h01)) {
             if(!tryAgain--) return 0;
           }  
           else tryAgain=fMaxGap;

@@ -70,6 +70,9 @@ public:
    Double_t GetX()    const {return fX;}
    Double_t GetY()    const {return fY;}
    Double_t GetZ()    const {return fZ;}
+   UInt_t * GetBackupIndexes()  {return fIndexBackup;}
+   UInt_t * GetIndexes()  {return fIndex;}
+  
 
    Double_t GetYat(Double_t xk) const {
 //-----------------------------------------------------------------
@@ -83,6 +86,7 @@ public:
 
    Int_t    PropagateTo(Double_t xr, Double_t x0=8.72, Double_t rho=5.86e-3);
    void     ResetCovariance();   
+   void     ResetCovariance(Float_t mult);   
    void ResetClusters() { SetChi2(0.); SetNumberOfClusters(0); }
    Int_t    Rotate(Double_t angle);
 
@@ -98,6 +102,8 @@ public:
    void     SetSeedLabel(Int_t lab) { fSeedLab=lab; }
 
    Int_t    Update(const AliTRDcluster* c, Double_t chi2, UInt_t i, 
+                   Double_t h01);
+   Int_t    UpdateMI(const AliTRDcluster* c, Double_t chi2, UInt_t i, 
                    Double_t h01);
 
   //
@@ -131,6 +137,7 @@ protected:
    Double_t fCcy, fCcz, fCce, fCct, fCcc; // parameters   
    
    UInt_t  fIndex[kMAX_CLUSTERS_PER_TRACK];  // global indexes of clusters  
+   UInt_t  fIndexBackup[kMAX_CLUSTERS_PER_TRACK]; //backup indexes of clusters - used in iterations
    Float_t fdQdl[kMAX_CLUSTERS_PER_TRACK];   // cluster amplitudes corrected 
                                              // for track angles    
                            
