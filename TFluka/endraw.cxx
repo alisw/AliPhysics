@@ -1,5 +1,8 @@
 #include <Riostream.h>
 #include "TVirtualMCApplication.h"
+#include "TGeoMaterial.h"
+#include "TGeoManager.h"
+#include "TFlukaCerenkov.h"
 
 #ifndef WITH_ROOT
 #include "TFluka.h"
@@ -28,6 +31,20 @@ void endraw(Int_t& icode, Int_t& mreg, Double_t& rull, Double_t& xsco, Double_t&
   if (icode == 11) {
     cout << " For icode=" << icode << " Stepping is NOT called" << endl;
     return;
+  }
+  if (TRACKR.jtrack == -1) {
+// Handle quantum efficiency the G3 way
+      printf("endraw: Cerenkov photon depositing energy: %d %e\n", mreg, rull);
+      TGeoMaterial* material = (gGeoManager->GetCurrentVolume())->GetMaterial();
+      Int_t nmat = material->GetIndex();
+      TFlukaCerenkov*  cerenkov = dynamic_cast<TFlukaCerenkov*> (material->GetCerenkovProperties());
+      if (cerenkov) {
+	  Double_t eff = (cerenkov->GetQuantumEfficiency(rull));
+	  if (gRandom->Rndm() > eff) {
+	      rull = 0.;
+	      fluka->SetRull(rull);
+	  }
+      }
   }
   (TVirtualMCApplication::Instance())->Stepping();
   fluka->SetTrackIsNew(kFALSE);
