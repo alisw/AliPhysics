@@ -197,6 +197,7 @@ void AliJetEventParticles::AddSignal(const AliJetEventParticles& source)
   fNUQJets=source.NUQTriggerJets();
   fXJet=source.GetXJet();
   fYJet=source.GetXJet();
+  fEventNr=source.GetEventNr();
 
   for (Int_t i = 0; i < 4; i++) fZquench[i] = 0.;
   for (Int_t i = 0; i < 10; i++) 
