@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.9  2001/12/05 12:10:26  morsch
+Rails for spaceframe included.
+
 Revision 1.8  2001/10/18 14:11:35  morsch
 Some changes/bug corrections for SetHole(1) option.
 
@@ -91,7 +94,7 @@ void AliFRAMEv2::CreateGeometry()
 // The Space frame
 //
 //
-  Float_t pbox[3], ptrap[11], ptrd1[4], ptube[3], ppgon[10];
+  Float_t pbox[3], ptrap[11], ptrd1[4], ppgon[10];
   
   Float_t dx, dy, dz;
   Int_t i, j, jmod;
@@ -431,15 +434,15 @@ void AliFRAMEv2::CreateGeometry()
   
   gMC->Gspos("B047", 1, "B076", -dx,  dy,  dz, idrotm[2004], "ONLY");
   gMC->Gspos("B047", 2, "B076", -dx,  dy, -dz, idrotm[2003], "ONLY");
-  gMC->Gspos("B047", 3, "B076",  dx,  dy,  dz, idrotm[2017], "ONLY");
-  gMC->Gspos("B047", 4, "B076",  dx,  dy, -dz, idrotm[2018], "ONLY");
+//  gMC->Gspos("B047", 3, "B076",  dx,  dy,  dz, idrotm[2017], "ONLY");
+//  gMC->Gspos("B047", 4, "B076",  dx,  dy, -dz, idrotm[2018], "ONLY");
 
   gMC->Gspos("B045", 1, "B076", -dx,  dy,  dz2, idrotm[2019], "ONLY");
   gMC->Gspos("B045", 2, "B076", -dx,  dy, -dz2, idrotm[2003], "ONLY"); // ?
   gMC->Gspos("B045", 3, "B076",  dx,  dy,  dz2, idrotm[2020], "ONLY");
   gMC->Gspos("B045", 4, "B076",  dx,  dy, -dz2, idrotm[2027], "ONLY");
 
-  gMC->Gspos("BM49", 1, "B076",  dx,  dy,  0., idrotm[2020], "ONLY");
+//  gMC->Gspos("BM49", 1, "B076",  dx,  dy,  0., idrotm[2020], "ONLY");
   gMC->Gspos("BM49", 2, "B076", -dx,  dy,  0., idrotm[2019], "ONLY");
 
 //
@@ -451,15 +454,15 @@ void AliFRAMEv2::CreateGeometry()
   dy = rd * TMath::Cos(phi*kdeg2rad);
   gMC->Gspos("B047", 5, "B076", -dx,  dy,  dz, idrotm[2005], "ONLY");
   gMC->Gspos("B047", 6, "B076", -dx,  dy, -dz, idrotm[2006], "ONLY");
-  gMC->Gspos("B047", 7, "B076",  dx,  dy,  dz, idrotm[2016], "ONLY");
-  gMC->Gspos("B047", 8, "B076",  dx,  dy, -dz, idrotm[2015], "ONLY");
+//  gMC->Gspos("B047", 7, "B076",  dx,  dy,  dz, idrotm[2016], "ONLY");
+//  gMC->Gspos("B047", 8, "B076",  dx,  dy, -dz, idrotm[2015], "ONLY");
 
   gMC->Gspos("B045", 5, "B076", -dx,  dy,  dz2, idrotm[2021], "ONLY");
   gMC->Gspos("B045", 6, "B076", -dx,  dy, -dz2, idrotm[2028], "ONLY");
   gMC->Gspos("B045", 7, "B076",  dx,  dy,  dz2, idrotm[2022], "ONLY");
   gMC->Gspos("B045", 8, "B076",  dx,  dy, -dz2, idrotm[2029], "ONLY");
 
-  gMC->Gspos("BM49", 3, "B076",  dx,  dy,  0., idrotm[2022], "ONLY");
+//  gMC->Gspos("BM49", 3, "B076",  dx,  dy,  0., idrotm[2022], "ONLY");
   gMC->Gspos("BM49", 4, "B076", -dx,  dy,  0., idrotm[2021], "ONLY");
 //
 //  phi = 80
@@ -470,8 +473,8 @@ void AliFRAMEv2::CreateGeometry()
   dy = rd * TMath::Cos(phi*kdeg2rad);
   gMC->Gspos("B047",  9, "B076", -dx,  dy,  dz, idrotm[2009], "ONLY");
   gMC->Gspos("B047", 10, "B076", -dx,  dy, -dz, idrotm[2007], "ONLY");
-  gMC->Gspos("B047", 11, "B076",  dx,  dy,  dz, idrotm[2013], "ONLY");
-  gMC->Gspos("B047", 12, "B076",  dx,  dy, -dz, idrotm[2014], "ONLY");
+//  gMC->Gspos("B047", 11, "B076",  dx,  dy,  dz, idrotm[2013], "ONLY");
+//  gMC->Gspos("B047", 12, "B076",  dx,  dy, -dz, idrotm[2014], "ONLY");
 
   gMC->Gspos("B047", 13, "B076", -dx, -dy,  dz, idrotm[2008], "ONLY");
   gMC->Gspos("B047", 14, "B076", -dx, -dy, -dz, idrotm[2010], "ONLY");
@@ -488,7 +491,7 @@ void AliFRAMEv2::CreateGeometry()
   gMC->Gspos("B045", 15, "B076",  dx, -dy,  dz2, idrotm[2025], "ONLY");
   gMC->Gspos("B045", 16, "B076",  dx, -dy, -dz2, idrotm[2033], "ONLY");
 
-  gMC->Gspos("BM49", 5, "B076",  dx,  dy,  0., idrotm[2026], "ONLY");
+//  gMC->Gspos("BM49", 5, "B076",  dx,  dy,  0., idrotm[2026], "ONLY");
   gMC->Gspos("BM49", 6, "B076", -dx,  dy,  0., idrotm[2023], "ONLY");
   gMC->Gspos("BM49", 7, "B076",  dx, -dy,  0., idrotm[2025], "ONLY");
   gMC->Gspos("BM49", 8, "B076", -dx, -dy,  0., idrotm[2024], "ONLY");
@@ -973,7 +976,7 @@ void AliFRAMEv2::CreateGeometry()
   gMC->Gspos("BRS1", 2, "ALIC",  430.+3.,    -180., 0., 0, "ONLY");
 
   rbox[0] =    3.0;
-  rbox[1] =  175./2.;
+  rbox[1] =  145./2.;
   rbox[2] =   25.0;
   gMC->Gsvolu("BRS4", "BOX", kSteel, rbox, 3);
 
