@@ -16,16 +16,18 @@
 class AliTOFv1 : public AliTOF {
 
 private:
-  Int_t fIdFTO2; // First sensitive volume identifier
-  Int_t fIdFTO3; // Second sensitive volume identifier
-  Int_t fIdFLT1; // Third sensitive volume identifier
-  Int_t fIdFLT2; // Fourth sensitive volume identifier
-  Int_t fIdFLT3; // Fifth sensitive volume identifier
+  Int_t fIdFTOA;
+  Int_t fIdFTOB; // First sensitive volume identifier
+  Int_t fIdFTOC; // Second sensitive volume identifier
+  Int_t fIdFLTA; // Third sensitive volume identifier
+  Int_t fIdFLTB; // Fourth sensitive volume identifier
+  Int_t fIdFLTC; // Fifth sensitive volume identifier
  
 public:
   AliTOFv1();
   AliTOFv1(const char *name, const char *title);
   virtual       ~AliTOFv1() {}
+  virtual void   BuildGeometry();
   virtual void   CreateGeometry();
   virtual void   CreateMaterials();
   virtual void   Init();

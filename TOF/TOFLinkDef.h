@@ -14,9 +14,12 @@
 #pragma link C++ class  AliTOFv2;
 #pragma link C++ class  AliTOFv3;
 #pragma link C++ class  AliTOFv4;
-#pragma link C++ class  AliTOFv5;
-#pragma link C++ class  AliTOFv6;
 
 #pragma link C++ class  AliTOFhit;
+
+#pragma link C++ class  AliTOFdigit;
+#pragma link C++ class  AliTOFRoc;
+#pragma link C++ class  AliTOFRawSector;
+#pragma link C++ class  AliTOFRawDigit;
 
 #endif
