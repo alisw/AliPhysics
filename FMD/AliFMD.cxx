@@ -50,6 +50,7 @@
 #include "AliFMDv1.h"
 #include "AliRun.h"
 #include "AliDetector.h"
+#include <TBranch.h>
 #include <Riostream.h>
 #include "AliMagF.h"
 #include "AliFMDhit.h"
@@ -68,7 +69,6 @@ AliFMD::AliFMD ():AliDetector ()
   fIshunt = 0;
   fHits     = 0;
   fDigits   = 0;
-  fSDigits  = 0;
   fReconParticles=0; 
 }
 
@@ -85,7 +85,6 @@ AliDetector (name, title)
   fHits = new TClonesArray ("AliFMDhit", 1000);
   // Digits for each Si disk
   fDigits = new TClonesArray ("AliFMDdigit", 1000);
-  fSDigits = new TClonesArray ("AliFMDdigit", 1000);
   fReconParticles=new TClonesArray("AliFMDReconstParticles",1000); 
   gAlice->AddHitList (fHits);
 
@@ -114,12 +113,6 @@ AliFMD::~AliFMD ()
       delete fDigits;
       fDigits = 0;
     }
-  if (fSDigits)
-    {
-      fSDigits->Delete ();
-      delete fSDigits;
-      fSDigits = 0;
-    }
   if (fReconParticles)
     {
       fReconParticles->Delete ();
@@ -146,15 +139,6 @@ void AliFMD::AddDigit (Int_t * digits)
 
 
   TClonesArray & ldigits = *fDigits;
-  new (ldigits[fNdigits++]) AliFMDdigit (digits);
-
-}
-//_____________________________________________________________________________
-void AliFMD::AddSDigit (Int_t * digits)
-{
-  // add a real digit - as coming from data
-
-  TClonesArray & ldigits = *fSDigits;
   new (ldigits[fNdigits++]) AliFMDdigit (digits);
 
 }
@@ -274,14 +258,7 @@ void AliFMD::MakeBranch (Option_t * option, const char *file)
   AliDetector::MakeBranch (option, file);
   const char *cD = strstr(option,"D");
   const char *cR = strstr(option,"R");
-  const char *cS = strstr(option,"S");
   
-  if (cS){
-
-    MakeBranchInTree(gAlice->TreeS(), 
-		     branchname,&fSDigits, 
-    		     kBufferSize, file);
-  }
   if (cD){
 
     MakeBranchInTree(gAlice->TreeD(), 
@@ -318,16 +295,8 @@ void AliFMD::SetTreeAddress ()
 	}
 
     }
-  if (fSDigits)
-    //  fSDigits->Clear ();
 
-  if (gAlice->TreeS () && fSDigits)
-    {
-      branch = gAlice->TreeS ()->GetBranch ("FMD");
-      if (branch)
-	branch->SetAddress (&fSDigits);
-    }
-
+ 
   if (gAlice->TreeR() && fReconParticles) 
     {
       branch = gAlice->TreeR()->GetBranch("FMD"); 
@@ -356,41 +325,6 @@ void AliFMD::SetSectorsSi2(Int_t sectorsSi2)
 }
 
 //---------------------------------------------------------------------
-/*
-void AliFMD::SDigits2Digits() 
-{
-  cout<<"AliFMD::SDigits2Digits"<<endl; 
-    if (!fMerger) {
-      fMerger = new AliFMDMerger();
-    }
-    
-    fMerger ->SetRingsSi1(fRingsSi1);
-    fMerger->SetRingsSi2(fRingsSi2);
-    fMerger ->SetSectorsSi1(fSectorsSi1);
-    fMerger ->SetSectorsSi2(fSectorsSi2);
-     
-    fMerger->Init();
-    cout<<"AliFMD::SDigits2Digits Init"<<endl; 
-    fMerger->Digitise();
-    cout<<"AliFMD::SDigits2Digits Digitise() "<<endl; 
- 
-
-    }
-
-    //---------------------------------------------------------------------
-void   AliFMD::SetMerger(AliFMDMerger* merger)
-{
-// Set pointer to merger
-    fMerger = merger;
-}
-
-AliFMDMerger*  AliFMD::Merger()
-{
-// Return pointer to merger
-    return fMerger;
-}
-*/
-//---------------------------------------------------------------------
 
 
 
@@ -407,28 +341,6 @@ AliFMD::Eta2Radius (Float_t eta, Float_t zDisk, Float_t * radius)
     printf ("%s: eta %f radius %f\n", ClassName (), eta, rad);
 }
 
-//---------------------------------------------------------------------
-
-void AliFMD::Hits2SDigits ()
-{
-
-  //#ifdef DEBUG
-  cout<<"ALiFMD::Hits2SDigits> start...\n";
-  //#endif
-  
-  char * fileSDigits = "FMD.SDigits.root";
-  char * fileHeader = 0;
-  AliFMDSDigitizer * sd = new AliFMDSDigitizer(fileHeader,fileSDigits) ;
-  sd->SetRingsSi1(fRingsSi1);
-  sd->SetRingsSi2(fRingsSi2);
-  sd->SetSectorsSi1(fSectorsSi1);
-  sd->SetSectorsSi2(fSectorsSi2);
-  //  sd->SetEventNumber(fEvNrSig);
-  sd->Exec("") ;
-  
-  delete sd ;
-  
-}
 //-----------------------------------------------------------------------
 
 void AliFMD::Digits2Reco()

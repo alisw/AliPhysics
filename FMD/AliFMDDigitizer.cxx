@@ -64,19 +64,25 @@ AliFMDDigitizer::~AliFMDDigitizer()
 }
 
  //------------------------------------------------------------------------
-Bool_t AliFMDDigitizer::Init()
+/*
+Bool_t AliFMDDigitizer::Init() 
 {
-// Initialization
  cout<<"AliFMDDigitizer::Init"<<endl;
  return kTRUE;
 }
  
-
+*/
 //---------------------------------------------------------------------
 
 void AliFMDDigitizer::Exec(Option_t* option)
 {
-
+  /*
+   Conver hits to digits:
+   - number of detector;
+   - number of ring;
+   - number of sector;
+   - ADC signal in this channel
+  */
 
 
 #ifdef DEBUG
@@ -87,23 +93,22 @@ void AliFMDDigitizer::Exec(Option_t* option)
 
    Int_t volume, sector, ring, charge;
   Float_t e;
-  Float_t de[10][50][300];
+  Float_t de[10][50][800];
   Int_t hit;
   Int_t digit[5];
   Int_t ivol, iSector, iRing;
   for (Int_t i=0; i<10; i++)
     for(Int_t j=0; j<50; j++)
-      for(Int_t ij=0; ij<300; ij++)
+      for(Int_t ij=0; ij<800; ij++)
 	de[i][j][ij]=0;
-  Int_t NumberOfRings[5]=
-  {256,128,256,128,256};
-  Int_t NumberOfSectors[5]=
+  Int_t numberOfRings[5]=
+  {768,384,768,384,768};
+  Int_t numberOfSector[5]=
   {20,40,20,40,20}; 
   
   AliFMDhit *fmdHit=0;
-  TTree *TH=0;
+  TTree *tH=0;
   TBranch *brHits=0;
-  // fHits = new TClonesArray ("AliFMDhit", 1000);
 
   AliFMD * fFMD = (AliFMD *) gAlice->GetDetector("FMD") ;
 
@@ -117,15 +122,15 @@ void AliFMDDigitizer::Exec(Option_t* option)
     if (fFMD)
     {
       TClonesArray *FMDhits = fFMD->Hits ();
-      TH = fManager->GetInputTreeH(inputFile);
-      brHits = TH->GetBranch("FMD");
+      tH = fManager->GetInputTreeH(inputFile);
+      brHits = tH->GetBranch("FMD");
       if (brHits) {
 	fFMD->SetHitsAddressBranch(brHits);
       }else{
 	cerr<<"EXEC Branch FMD hit not found"<<endl;
 	exit(111);
       } 
-      Int_t ntracks    = (Int_t) TH->GetEntries();
+      Int_t ntracks    = (Int_t) tH->GetEntries();
 
         for (Int_t track = 0; track < ntracks; track++)
 	{
@@ -148,14 +153,14 @@ void AliFMDDigitizer::Exec(Option_t* option)
 
  
   // Put noise and make ADC signal
-   Float_t I = 1.664 * 0.04 * 2.33 / 22400;	// = 0.69e-6;
+   Float_t iP = 1.664 * 0.04 * 2.33 / 22400;	// = 0.69e-6;
  for ( ivol=1; ivol<=5; ivol++){
-    for ( iSector=1; iSector<=NumberOfSectors[ivol-1]; iSector++){
-      for ( iRing=1; iRing<=NumberOfRings[ivol-1]; iRing++){
+    for ( iSector=1; iSector<=numberOfSector[ivol-1]; iSector++){
+      for ( iRing=1; iRing<=numberOfRings[ivol-1]; iRing++){
 	digit[0]=ivol;
 	digit[1]=iSector;
 	digit[2]=iRing;
-	charge = Int_t (de[ivol][iSector][iRing] / I);
+	charge = Int_t (de[ivol][iSector][iRing] / iP);
 	digit[3]=PutNoise(charge);
 	if(digit[3]<= 500) digit[3]=500; 
     //dynamic range from MIP(0.155MeV) to 30MIP(4.65MeV)

@@ -8,22 +8,16 @@
 ////////////////////////////////////////////////
  
 #include "AliDetector.h"
-#include "TString.h"
-#include "TBranch.h"
-//#include "AliFMDMerger.h" 
-#include "AliFMDSDigitizer.h" 
- class TFile;
- class TTree;
-// class AliFMDMerger;
- class AliFMD : public AliDetector {
+
+class TClonesArray;
+class AliFMD : public AliDetector {
  
 public:
   AliFMD();
   AliFMD(const char *name, const char *title);
   virtual       ~AliFMD(); 
-  virtual void   AddHit(Int_t, Int_t*, Float_t*);
-  virtual void   AddDigit(Int_t*);
-  virtual void   AddSDigit(Int_t*);
+  virtual void   AddHit(Int_t track, Int_t * vol, Float_t * hits);
+  virtual void   AddDigit(Int_t* digits);
   virtual void   BuildGeometry();
   virtual void   CreateGeometry() {}
   virtual void   CreateMaterials()=0; 
@@ -44,13 +38,11 @@ public:
   virtual void SetSectorsSi2(Int_t sectorsSi2=40);
    
   void SetEventNumber(Int_t i)     {fEvNrSig = i;}
-  void  Eta2Radius(Float_t, Float_t, Float_t*);
-  void Hits2SDigits();//
+  void  Eta2Radius(Float_t eta, Float_t zDisk, Float_t * radius);
   void Digits2Reco(); 
   virtual void SetHitsAddressBranch(TBranch *b){b->SetAddress(&fHits);}
   
    // Digitisation
-  TClonesArray *SDigits() const {return fSDigits;}
   TClonesArray *ReconParticles() const {return fReconParticles;}   
 
  protected:
@@ -68,9 +60,7 @@ public:
   Int_t   fNevents ;        // Number of events to digitize
   Int_t fEvNrSig;                 // signal     event number
 
-  //  AliFMDMerger *fMerger;   // ! pointer to merger
-  TClonesArray *fSDigits      ; // List of summable digits
-  TClonesArray *fReconParticles;
+  TClonesArray *fReconParticles; // list of reconstructed particles
 
  ClassDef(AliFMD,4)  //Class for the FMD detector
 };

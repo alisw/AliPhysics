@@ -71,39 +71,31 @@ class AliFMDhit : public AliHit {
 // original particle (if this particle is a daughter).  The units
 // are those determined by the Monte Carlo.
 
+  
+public:
+  AliFMDhit() {}
+  AliFMDhit(Int_t shunt, Int_t track, Int_t *vol, Float_t *hits);
+  virtual ~AliFMDhit() {}
+  Int_t Volume() const {return fVolume;}
+  Int_t NumberOfSector() const {return fNumberOfSector;}
+  Int_t NumberOfRing() const {return fNumberOfRing;}
+  Float_t Particle() const {return fParticle;} 
+  Float_t Edep() const {return fEdep;}
+  Float_t Px() const {return fPx;}
+  Float_t Py() const {return fPy;}
+  Float_t Pz() const {return fPz;} 
+  Float_t Time() const {return fTime;}
 private:
   Int_t      fVolume;       //Volume copy identifier
-  Int_t    fNumberOfSector;
-  Int_t    fNumberOfRing;
+  Int_t    fNumberOfSector;  //number of sector of hitted pad 
+  Int_t    fNumberOfRing;    //number of ring of  hitted pad
   Int_t      fParticle;     //Particle identificator
   Float_t    fEdep;         //Energy deposition
   Float_t    fPx;            // Particle's momentum X
   Float_t    fPy;            // Particle's momentum Y
   Float_t    fPz;            // Particle's momentum Z
   Float_t    fTime;         // Particle's time of flight
-  
-public:
-  AliFMDhit() {}
-  AliFMDhit(Int_t shunt, Int_t track, Int_t *vol, Float_t *hits);
-  virtual ~AliFMDhit() {}
-  Int_t Volume();
-  Int_t NumberOfSector();
-  Int_t NumberOfRing();
-  Float_t Particle();
-  Float_t Edep();
-  Float_t Px();
-  Float_t Py();
-  Float_t Pz();
-  Float_t Time();
+
   ClassDef(AliFMDhit,1)  //Hits for detector FMD
 };
-inline Int_t AliFMDhit::Volume(){return fVolume;} 
-inline Int_t AliFMDhit::NumberOfSector(){return fNumberOfSector;} 
-inline Int_t AliFMDhit::NumberOfRing(){return fNumberOfRing;} 
-inline Float_t AliFMDhit::Particle(){return fParticle;} 
-inline Float_t AliFMDhit::Edep(){return fEdep;} 
-inline Float_t AliFMDhit::Px(){return fPx;} 
-inline Float_t AliFMDhit::Py(){return fPy;} 
-inline Float_t AliFMDhit::Pz(){return fPz;} 
-inline Float_t AliFMDhit::Time(){return fTime;} 
 #endif
