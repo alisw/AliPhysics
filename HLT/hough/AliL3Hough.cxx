@@ -104,11 +104,11 @@ void AliL3Hough::CleanUp()
       if(fMemHandler[i]) delete fMemHandler[i];
     }
   
-  /*    
-	if(fTracks) delete [] fTracks;
-	if(fEval) delete [] fEval;
-	if(fHoughTransformer) delete [] fHoughTransformer;
-	if(fMemHandler) delete [] fMemHandler;
+  /*
+  if(fTracks) delete [] fTracks;
+  if(fEval) delete [] fEval;
+  if(fHoughTransformer) delete [] fHoughTransformer;
+  if(fMemHandler) delete [] fMemHandler;
   */
 }
 
@@ -127,7 +127,7 @@ void AliL3Hough::Init()
   fEval = new AliL3HoughEval*[fNPatches];
   for(Int_t i=0; i<fNPatches; i++)
     {
-      fHoughTransformer[i] = new AliL3HoughTransformer(1,i,fNEtaSegments);
+      fHoughTransformer[i] = new AliL3HoughTransformer(0,i,fNEtaSegments);
       //fHoughTransformer[i]->CreateHistograms(64,-0.003,0.003,64,-0.26,0.26);
       fHoughTransformer[i]->CreateHistograms(64,0.1,64,-30,30);
       fHoughTransformer[i]->SetThreshold(3);
@@ -142,7 +142,7 @@ void AliL3Hough::Init()
 #endif
       
     }
-  fPeakFinder = new AliL3HoughMaxFinder("KappaPhi");
+  fPeakFinder = new AliL3HoughMaxFinder("KappaPhi",100);
   fMerger = new AliL3HoughMerger(fNPatches);
   fInterMerger = new AliL3HoughIntMerger();
   fGlobalMerger = 0;
@@ -177,6 +177,7 @@ void AliL3Hough::ReadData(Int_t slice)
       UInt_t ndigits=0;
       AliL3DigitRowData *digits =0;
       Char_t name[256];
+      fMemHandler[i]->Init(slice,i);
       if(fBinary)//take input data from binary files
 	{
 	  sprintf(name,"%sdigits_%d_%d.raw",fPath,slice,i);
@@ -187,8 +188,7 @@ void AliL3Hough::ReadData(Int_t slice)
       else //read data from root file
 	{
 #ifdef use_aliroot
-	  const Int_t rows[2] = {AliL3Transform::GetFirstRow(i),AliL3Transform::GetLastRow(i)};
-	  fMemHandler[i]->Init(slice,i,rows);
+	  fMemHandler[i]->Init(slice,i);
 	  digits=(AliL3DigitRowData *)fMemHandler[i]->AliDigits2Memory(ndigits); 
 #else
 	  cerr<<"You cannot read from rootfile now"<<endl;
@@ -321,20 +321,15 @@ void AliL3Hough::FindTrackCandidates()
 	{
 	  AliL3Histogram *hist = tr->GetHistogram(j);
 	  if(hist->GetNEntries()==0) continue;
+	  fPeakFinder->Reset();
 	  fPeakFinder->SetHistogram(hist);
 	  fPeakFinder->SetThreshold(fPeakThreshold);
-	  Int_t n=20;
-	  Float_t x[n];
-	  Float_t y[n];
-	  Int_t weight[n];
-	  //fPeakFinder->FindPeak1(x,y,weight,n,2,1);
-	  fPeakFinder->FindMaxima(x,y,weight,n);
-	  for(Int_t k=0; k<n; k++)
+	  fPeakFinder->FindMaxima(); //Simple maxima finder
+	  for(Int_t k=0; k<fPeakFinder->GetEntries(); k++)
 	    {
-	      if(weight[k] == 0) continue;
-	      
+	      if(fPeakFinder->GetWeight(k) == 0) continue;
 	      AliL3HoughTrack *track = (AliL3HoughTrack*)fTracks[i]->NextTrack();
-	      track->SetTrackParameters(x[k],y[k],weight[k]);
+	      track->SetTrackParameters(fPeakFinder->GetXPeak(k),fPeakFinder->GetYPeak(k),fPeakFinder->GetWeight(k));
 	      track->SetEtaIndex(j);
 	      track->SetEta((Double_t)(j*eta_slice));
 	      track->SetRowRange(AliL3Transform::GetFirstRow(0),AliL3Transform::GetLastRow(5));
@@ -344,11 +339,21 @@ void AliL3Hough::FindTrackCandidates()
     }
 }
 
+void AliL3Hough::InitEvaluate()
+{
+  //Pass the transformer objects to the AliL3HoughEval objects:
+  //This will provide the evaluation objects with all the necessary
+  //data it needs.
+  
+  for(Int_t i=0; i<fNPatches; i++) 
+    fEval[i]->InitTransformer(fHoughTransformer[i]);
+}
+
 void AliL3Hough::Evaluate(Int_t road_width)
 {
   //Evaluate the tracks, by looking along the road in the raw data.
+  //If track does not cross all padrows - rows2miss, it is removed from the arrray.
   
-
   if(!fTracks[0])
     {
       LOG(AliL3Log::kError,"AliL3Hough::Evaluate","Track Array")
@@ -356,12 +361,11 @@ void AliL3Hough::Evaluate(Int_t road_width)
       return;
     }
   
-  printf("Number of tracks before evaluation %d\n",fTracks[0]->GetNTracks());
+  InitEvaluate();
+  
   AliL3TrackArray *tracks;
   for(Int_t i=0; i<fNPatches; i++)
     {
-      fEval[i]->InitTransformer(fHoughTransformer[i]);
-      continue;
       fEval[i]->SetNumOfRowsToMiss(2);
       fEval[i]->SetNumOfPadsToLook(road_width);
       if(fAddHistograms)
@@ -394,6 +398,8 @@ void AliL3Hough::Evaluate(Int_t road_width)
 
 void AliL3Hough::EvaluateWithEta()
 {
+
+  
   if(!fTracks[0])
     {
       printf("AliL3Hough::EvaluateWithEta: NO TRACKS\n");
@@ -409,13 +415,13 @@ void AliL3Hough::EvaluateWithEta()
   fMerger->FillTracks(fTracks[0],0);
 }
 
-void AliL3Hough::WriteTracks(Char_t *path)
+void AliL3Hough::WriteTracks(Int_t slice,Char_t *path)
 {
   AliL3MemHandler *mem = new AliL3MemHandler();
   Char_t fname[100];
   if(fAddHistograms)
     {
-      sprintf(fname,"%s/tracks.raw",path);
+      sprintf(fname,"%s/tracks_ho_%d.raw",path,slice);
       mem->SetBinaryOutput(fname);
       mem->TrackArray2Binary(fTracks[0]);
       mem->CloseBinaryOutput();
@@ -424,7 +430,7 @@ void AliL3Hough::WriteTracks(Char_t *path)
     {
       for(Int_t i=0; i<fNPatches; i++)
 	{
-	  sprintf(fname,"%s/tracks_%d.raw",path,i);
+	  sprintf(fname,"%s/tracks_ho_%d_%d.raw",path,slice,i);
 	  mem->SetBinaryOutput(fname);
 	  mem->TrackArray2Binary(fTracks[i]);
 	  mem->CloseBinaryOutput();

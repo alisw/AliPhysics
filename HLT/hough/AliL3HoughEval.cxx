@@ -116,7 +116,6 @@ Bool_t AliL3HoughEval::LookInsideRoad(AliL3HoughTrack *track,Int_t eta_index,Boo
       Int_t prow = padrow - AliL3Transform::GetFirstRow(fPatch);
       if(!track->GetCrossingPoint(padrow,xyz))  
 	{
-	  //printf("AliL3HoughEval::LookInsideRoad : Track does not cross line!!; pt %f phi0 %f\n",track->GetPt(),track->GetPhi0());
 	  continue;
 	}
       
@@ -139,13 +138,12 @@ Bool_t AliL3HoughEval::LookInsideRoad(AliL3HoughTrack *track,Int_t eta_index,Boo
 	  AliL3DigitData *digPt = tempPt->fDigitData;
 	  for(UInt_t j=0; j<tempPt->fNDigit; j++)
 	    {
-	      //if(digPt->fCharge <= fHoughTransformer->GetThreshold()) continue;
 	      UChar_t pad = digPt[j].fPad;
 	      if(pad < p) continue;
 	      if(pad > p) break;
 	      UShort_t time = digPt[j].fTime;
 	      Double_t eta = AliL3Transform::GetEta(padrow,pad,time);
-	      Int_t pixel_index = (Int_t)(eta/etaslice);
+	      Int_t pixel_index = fHoughTransformer->GetEtaIndex(eta);
 	      if(pixel_index > eta_index) continue;
 	      if(pixel_index != eta_index) break;
 	      total_charge += digPt[j].fCharge;
@@ -165,12 +163,6 @@ Bool_t AliL3HoughEval::LookInsideRoad(AliL3HoughTrack *track,Int_t eta_index,Boo
   
   if(nrow >= rows_crossed - fNumOfRowsToMiss)//this was a good track
     {
-      Double_t eta_track = (Double_t)eta_index*etaslice;
-      track->SetEtaIndex(eta_index);
-      track->SetWeight(total_charge,kTRUE);
-      track->SetEta(eta_track);
-      track->SetRowRange(AliL3Transform::GetFirstRow(fPatch),AliL3Transform::GetLastRow(fPatch));
-      track->SetSlice(fSlice);
       if(fRemoveFoundTracks)
 	LookInsideRoad(track,eta_index,kTRUE);
       return kTRUE;

@@ -54,16 +54,17 @@ class AliL3Hough {
   void ProcessPatchIter(Int_t patch);
   void MergePatches();
   void MergeInternally();
-
+  
   void FindTrackCandidates();
   void AddAllHistograms();
   void Evaluate(Int_t road_width=1);
   void EvaluateWithEta();
-  void WriteTracks(Char_t *path="./");
+  void WriteTracks(Int_t slice,Char_t *path="./");
 #ifdef use_aliroot
   void WriteDigits(Char_t *outfile="output_digits.root");
 #endif
-
+  void InitEvaluate();
+  
   //Setters
   void SetNEtaSegments(Int_t i) {fNEtaSegments = i;}
   void SetAddHistograms() {fAddHistograms = kTRUE;}

@@ -3,10 +3,9 @@
 // Author: Anders Vestbo <mailto:vestbo@fi.uib.no>
 //*-- Copyright &copy ASV 
 
-#include <string.h>
 #include <math.h>
 #include <stdlib.h>
-#include <stream.h>
+#include <string.h>
 
 #include "AliL3Histogram.h"
 #include "AliL3TrackArray.h"
@@ -25,12 +24,15 @@ AliL3HoughMaxFinder::AliL3HoughMaxFinder()
 {
   //Default constructor
   fThreshold = 0;
-  //fTracks = 0;
   fHistoType=0;
+  fXPeaks=0;
+  fYPeaks=0;
+  fNPeaks=0;
+  fNMax=0;
 }
 
 
-AliL3HoughMaxFinder::AliL3HoughMaxFinder(Char_t *histotype,AliL3Histogram *hist)
+AliL3HoughMaxFinder::AliL3HoughMaxFinder(Char_t *histotype,Int_t nmax,AliL3Histogram *hist)
 {
   //Constructor
 
@@ -40,16 +42,37 @@ AliL3HoughMaxFinder::AliL3HoughMaxFinder(Char_t *histotype,AliL3Histogram *hist)
   
   if(hist)
     fCurrentHisto = hist;
+  
+  fNMax=nmax;
+  fXPeaks = new Float_t[fNMax];
+  fYPeaks = new Float_t[fNMax];
+  fWeight = new Int_t[fNMax];
 }
 
 
 AliL3HoughMaxFinder::~AliL3HoughMaxFinder()
 {
   //Destructor
-
+  if(fXPeaks)
+    delete [] fXPeaks;
+  if(fYPeaks)
+    delete [] fYPeaks;
+  if(fWeight)
+    delete [] fWeight;
 }
 
-void AliL3HoughMaxFinder::FindAbsMaxima(Int_t &max_xbin,Int_t &max_ybin)
+void AliL3HoughMaxFinder::Reset()
+{
+  for(Int_t i=0; i<fNMax; i++)
+    {
+      fXPeaks[i]=0;
+      fYPeaks[i]=0;
+      fWeight[i]=0;
+    }
+  fNPeaks=0;
+}
+
+void AliL3HoughMaxFinder::FindAbsMaxima()
 {
   if(!fCurrentHisto)
     {
@@ -64,7 +87,8 @@ void AliL3HoughMaxFinder::FindAbsMaxima(Int_t &max_xbin,Int_t &max_ybin)
   Int_t ymax = hist->GetLastYbin();  
   Int_t bin;
   Double_t value,max_value=0;
-
+  
+  Int_t max_xbin=0,max_ybin=0;
   for(Int_t xbin=xmin; xbin<=xmax; xbin++)
     {
       for(Int_t ybin=ymin; ybin<=ymax; ybin++)
@@ -80,20 +104,31 @@ void AliL3HoughMaxFinder::FindAbsMaxima(Int_t &max_xbin,Int_t &max_ybin)
 	}
     }
   
+  if(fNPeaks > fNMax)
+    {
+      cerr<<"AliL3HoughMaxFinder::FindAbsMaxima : Array out of range : "<<fNPeaks<<endl;
+      return;
+    }
+  
+  Double_t max_x = hist->GetBinCenterX(max_xbin);
+  Double_t max_y = hist->GetBinCenterY(max_ybin);
+  fXPeaks[fNPeaks] = max_x;
+  fYPeaks[fNPeaks] = max_y;
+  fWeight[fNPeaks] = (Int_t)max_value;
+  fNPeaks++;
+
 }
 
-AliL3TrackArray *AliL3HoughMaxFinder::FindBigMaxima(AliL3Histogram *hist)
+void AliL3HoughMaxFinder::FindBigMaxima()
 {
   
+  AliL3Histogram *hist = fCurrentHisto;
   Int_t xmin = hist->GetFirstXbin();
   Int_t xmax = hist->GetLastXbin();
   Int_t ymin = hist->GetFirstYbin();
   Int_t ymax = hist->GetLastYbin();
   Int_t bin[25],bin_index;
   Double_t value[25];
-  
-  AliL3TrackArray *tracks = new AliL3TrackArray("AliL3HoughTrack");
-  AliL3HoughTrack *track;
   
   for(Int_t xbin=xmin+2; xbin<xmax-3; xbin++)
     {
@@ -116,32 +151,34 @@ AliL3TrackArray *AliL3HoughMaxFinder::FindBigMaxima(AliL3Histogram *hist)
 	    {
 	      if(value[b] > value[12] || b==bin_index) break;
 	      b++;
-	      printf("b %d\n",b);
+	      //printf("b %d\n",b);
 	    }
 	  if(b == bin_index)
 	    {
 	      //Found maxima
+	      if(fNPeaks > fNMax)
+		{
+		  cerr<<"AliL3HoughMaxFinder::FindBigMaxima : Array out of range "<<fNPeaks<<endl;
+		  return;
+		}
+	      
 	      Double_t max_x = hist->GetBinCenterX(xbin);
 	      Double_t max_y = hist->GetBinCenterY(ybin);
-	      track = (AliL3HoughTrack*)tracks->NextTrack();
-	      track->SetTrackParameters(max_x,max_y,(Int_t)value[12]);
+	      fXPeaks[fNPeaks] = max_x;
+	      fYPeaks[fNPeaks] = max_y;
+	      fNPeaks++;
 	    }
 	}
     }
-  
-  tracks->QSort();
-  return tracks;
 }
 
 
-void AliL3HoughMaxFinder::FindMaxima(Float_t *xpeaks,Float_t *ypeaks,Int_t *weight,Int_t &entries)
+void AliL3HoughMaxFinder::FindMaxima()
 {
   //Locate all the maxima in input histogram.
   //Maxima is defined as bins with more entries than the
   //immediately neighbouring bins. 
   
-  Int_t max_entries = entries;
-  entries = 0;
   Int_t xmin = fCurrentHisto->GetFirstXbin();
   Int_t xmax = fCurrentHisto->GetLastXbin();
   Int_t ymin = fCurrentHisto->GetFirstYbin();
@@ -149,9 +186,9 @@ void AliL3HoughMaxFinder::FindMaxima(Float_t *xpeaks,Float_t *ypeaks,Int_t *weig
   Int_t bin[9];
   Double_t value[9];
   
-  Double_t kappa_overlap = 0.001;
-  Double_t phi_overlap = 0.05;
-  
+  Double_t grad_x = 3;
+  Double_t grad_y = 3;
+
   for(Int_t xbin=xmin+1; xbin<xmax-1; xbin++)
     {
       for(Int_t ybin=ymin+1; ybin<ymax-1; ybin++)
@@ -188,19 +225,31 @@ void AliL3HoughMaxFinder::FindMaxima(Float_t *xpeaks,Float_t *ypeaks,Int_t *weig
 	      
 	      if((Int_t)value[4] <= fThreshold) continue;//central bin below threshold
 	      
-	      if(entries >= max_entries)
+	      if(fNPeaks > fNMax)
 		{
-		  cerr<<"AliL3HoughMaxFinder::FindMaxima : Array out of range : "<<entries<<" "<<max_entries<<endl;
+		  cerr<<"AliL3HoughMaxFinder::FindMaxima : Array out of range "<<fNPeaks<<endl;
 		  return;
 		}
 	      
+	      //Check the gradient:
+	      if(value[4]/value[3] < grad_x || value[4]/value[5] < grad_x ||
+		 value[4]/value[1] < grad_y || value[4]/value[7] < grad_y)
+		continue;
+	      
+	      
+	      fXPeaks[fNPeaks] = max_x;
+	      fYPeaks[fNPeaks] = max_y;
+	      fWeight[fNPeaks] = (Int_t)value[4];
+	      fNPeaks++;
+	      
+	      /*
 	      //Check if the peak is overlapping with a previous:
 	      Bool_t bigger = kFALSE;
 	      for(Int_t p=0; p<entries; p++)
-		{
-		  if(fabs(max_x - xpeaks[p]) < kappa_overlap && fabs(max_y - ypeaks[p]) < phi_overlap)
-		    {
-		      bigger = kTRUE;
+	      {
+	        if(fabs(max_x - xpeaks[p]) < kappa_overlap && fabs(max_y - ypeaks[p]) < phi_overlap)
+	      {
+	      bigger = kTRUE;
 		      if(value[4] > weight[p]) //this peak is bigger.
 			{
 			  xpeaks[p] = max_x;
@@ -213,11 +262,12 @@ void AliL3HoughMaxFinder::FindMaxima(Float_t *xpeaks,Float_t *ypeaks,Int_t *weig
 		}
 	      if(!bigger) //there were no overlapping peaks.
 		{
-		  xpeaks[entries] = max_x;
+		xpeaks[entries] = max_x;
 		  ypeaks[entries] = max_y;
 		  weight[entries] = (Int_t)value[4];
 		  entries++;
 		}
+	      */
 	    }
 	  else
 	    continue; //not a maxima

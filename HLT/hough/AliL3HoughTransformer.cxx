@@ -137,7 +137,7 @@ void AliL3HoughTransformer::TransformCircle()
 	  printf("AliL3HoughTransform::TransformCircle : Mismatching padrow numbering\n");
 	  continue;
 	}
-      
+
       //Loop over the data on this padrow:
       for(UInt_t j=0; j<tempPt->fNDigit; j++)
 	{
