@@ -900,7 +900,7 @@ Int_t AliTRDtracker::RefitInward(AliESD* event)
     AliESDtrack* seed=event->GetTrack(i);
     ULong_t status=seed->GetStatus();
     if ( (status & AliESDtrack::kTRDout ) == 0 ) continue;
-    if ( (status & AliESDtrack::kTRDin) != 0 ) continue;
+    if ( (status & AliESDtrack::kTRDrefit) != 0 ) continue;
     nseed++;
 
     AliTRDtrack* seed2 = new AliTRDtrack(*seed);
