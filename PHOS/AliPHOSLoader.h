@@ -119,7 +119,7 @@ public:
   const AliPHOSGeometry  *PHOSGeometry() ; 
   // Alarms
   // TFolder * Alarms() const { return (TFolder*)(ReturnO("Alarms", 0)); }
-  TObjArray *  Alarms();  
+  TObjArray *  Alarms() {return 0x0;}  
 
   /*********************************************/
   /************    TClonesArrays     ***********/
