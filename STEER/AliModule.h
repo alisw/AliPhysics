@@ -17,7 +17,10 @@ class TClonesArray;
 class TBrowser;
 class TArrayI;
 class TFile;
+class TTree;
+class AliLoader;
 class AliTrackReference;
+
 
 class AliModule : public TNamed , public TAttLine, public TAttMarker,
                   public AliRndm {
@@ -52,24 +55,25 @@ public:
 			   Float_t z, Float_t dens, Float_t radl,
 			   Float_t absl, Float_t *buf=0, Int_t nwbuf=0) const;
   virtual void AliGetMaterial(Int_t imat, char* name, Float_t &a, 
-				Float_t &z, Float_t &dens, Float_t &radl,
-				Float_t &absl) const;
+			      Float_t &z, Float_t &dens, Float_t &radl,
+			      Float_t &absl) const;
   virtual void AliMixture(Int_t imat, const char *name, Float_t *a,
-			  Float_t *z, Float_t dens, Int_t nlmat,
-			  Float_t *wmat) const;
+                          Float_t *z, Float_t dens, Int_t nlmat,
+                          Float_t *wmat) const;
   virtual void AliMedium(Int_t numed, const char *name, Int_t nmat,
-			 Int_t isvol, Int_t ifield, Float_t fieldm,
-			 Float_t tmaxfd, Float_t stemax, Float_t deemax,
-			 Float_t epsil, Float_t stmin, Float_t *ubuf=0,
-			 Int_t nbuf=0) const;
+                          Int_t isvol, Int_t ifield, Float_t fieldm,
+                          Float_t tmaxfd, Float_t stemax, Float_t deemax,
+                          Float_t epsil, Float_t stmin, Float_t *ubuf=0,
+                          Int_t nbuf=0) const;
   virtual void AliMatrix(Int_t &nmat, Float_t theta1, Float_t phi1,
-			 Float_t theta2, Float_t phi2, Float_t theta3,
-			 Float_t phi3) const;
+                          Float_t theta2, Float_t phi2, Float_t theta3,
+                          Float_t phi3) const;
   
   // Virtual methods
   virtual void  BuildGeometry() {};
   virtual Int_t IsVersion() const =0;
-
+  
+  
   // Other methods
   virtual void        AddDigit(Int_t*, Int_t*){
   Error("AddDigit","Digits cannot be added to module %s\n",fName.Data());}
@@ -91,10 +95,18 @@ public:
   virtual void        FinishEvent() {}
   virtual void        FinishRun() {}
   virtual void        FinishPrimary() {}
-  //virtual void        Hits2Digits() {}
   virtual void        Init() {}
   virtual void        LoadPoints(Int_t ) {}
-  virtual void        MakeBranch(Option_t *, const char* =0 ) {} 
+
+
+
+  virtual void        MakeBranch(Option_t * opt =" ") {}
+  virtual void        MakeTree(Option_t *) {}//skowron 
+
+  virtual AliLoader*  MakeLoader(const char* topfoldername);//skowron   
+  virtual AliLoader*  GetLoader() const {return 0x0;} //skowron
+  
+
   virtual void        Paint(Option_t *) {}
   virtual void        ResetDigits() {}
   virtual void        ResetSDigits() {}
@@ -110,17 +122,18 @@ public:
   virtual Float_t     ZMin() const;
   virtual Float_t     ZMax() const;
   virtual void        SetEuclidFile(char *material,char *geometry=0);
-  virtual void ReadEuclid(const char *filnam, char *topvol);
-  virtual void ReadEuclidMedia(const char *filnam);
+  virtual void        ReadEuclid(const char *filnam, char *topvol);
+  virtual void        ReadEuclidMedia(const char *filnam);
 // Track reference related
   TClonesArray *TrackReferences()   const {return fTrackReferences;}
   virtual void        RemapTrackHitIDs(Int_t *) {}
   virtual void        RemapTrackReferencesIDs(Int_t *map); //remaping track references MI
   virtual void        ResetTrackReferences();
-  virtual void  AddTrackReference(Int_t label);
+  virtual void        AddTrackReference(Int_t label);
   virtual  AliTrackReference * FirstTrackReference(Int_t track);
   virtual  AliTrackReference * NextTrackReference();
-  virtual void MakeBranchTR(Option_t *option, const char *file);
+  virtual void        MakeBranchTR(Option_t *opt=" ");
+  TTree* TreeTR();  //shorcut method for accessing treeTR from folder
   
 //
   AliModule& operator=(const AliModule &mod)
@@ -147,6 +160,6 @@ protected:
   TClonesArray *fTrackReferences;     //!list of track references - for one primary track only -MI
   Int_t         fMaxIterTrackRef;     //!for track refernce iterator routines
   Int_t         fCurrentIterTrackRef; //!for track refernce iterator routines
-  ClassDef(AliModule,3)  //Base class for ALICE Modules
+  ClassDef(AliModule,4)  //Base class for ALICE Modules
 };
 #endif

@@ -46,12 +46,11 @@ ClassImp(AliEMCALDigit)
 {
   // default ctor 
 
-  fIndexInList = 0 ; 
+  fIndexInList = -1 ; 
   fNprimary    = 0 ;  
-  fNMaxPrimary = 0 ; 
-  fNiparent     = 0 ;
-
-  fNMaxiparent = 0; 
+  fNMaxPrimary = 5 ; 
+  fNiparent    = 0 ;
+  fNMaxiparent = 5; 
   fPrimary = 0 ;
   fIparent = 0 ;
   fMaxIter = 0;
@@ -149,21 +148,21 @@ Int_t AliEMCALDigit::Compare(const TObject * obj) const
 }
 
 //____________________________________________________________________________
-const Float_t AliEMCALDigit::GetEta() const
+Float_t AliEMCALDigit::GetEta() const
 {
   Float_t eta=-10., phi=-10.;
   Int_t id = GetId();
-  const AliEMCALGeometry *g = AliEMCALGetter::GetInstance()->EMCALGeometry();
+  const AliEMCALGeometry *g = AliEMCALGetter::Instance()->EMCALGeometry();
   g->EtaPhiFromIndex(id,eta,phi);
   return eta ;
 }
 
 //____________________________________________________________________________
-const Float_t AliEMCALDigit::GetPhi() const
+Float_t AliEMCALDigit::GetPhi() const
 {
   Float_t eta=-10., phi=-10.;
   Int_t id = GetId();
-  const AliEMCALGeometry *g = AliEMCALGetter::GetInstance()->EMCALGeometry();
+  const AliEMCALGeometry *g = AliEMCALGetter::Instance()->EMCALGeometry();
   g->EtaPhiFromIndex(id,eta,phi);
   return phi ;
 }

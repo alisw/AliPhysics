@@ -15,41 +15,41 @@
 
 // --- ROOT system ---
 #include "TNamed.h"
-#include "TObjArray.h"
-#include "TString.h"
-
-class TFile;
 
 // --- AliRoot header files ---
+//#include <TString.h>
+
+#include "TObjArray.h"
+class TFile;
+
+class TString;
 
 class AliStream: public TNamed {
 
 public:
   AliStream();
-  AliStream(Option_t *option);
-  AliStream(const AliStream& str);
-  AliStream & operator=(const AliStream& str) 
-    {str.Copy(*this); return (*this);}
+  AliStream(const char* foldername, Option_t *optioneventfoldername);
   virtual ~AliStream();
-  void AddFile(const char *fileName);
-  Bool_t NextEventInStream(Int_t &eventNr);
-  Bool_t OpenNextFile();
-  Bool_t ImportgAlice();
-  TFile* CurrentFile() { return fCurrentFile;}
-  void ChangeMode(Option_t* option);     // reset READ or UPDATE mode
-  Int_t GetNInputFiles() const {return fFileNames->GetLast()+1;}          
-  TString GetFileName(const Int_t order) const; 
-  
-private:  
-  void Copy(AliStream& str) const;
 
-  Int_t fLastEventSerialNr;     // Serial number of the last event
-  Int_t fLastEventNr;           // Number of the last event
-  Int_t fCurrentFileIndex;      // Index of the current file
-  Int_t fEvents;                //! nr. of events in the current file
-  TString fMode;                // = 0 for READONLY, = 1 for READWRITE
-  TFile *fCurrentFile;          //! pointer to current open file
-  TObjArray * fFileNames;       // storage for TStrings with file names
+  void       AddFile(const char *fileName);
+  Bool_t     NextEventInStream();
+  Bool_t     OpenNextFile();//returns kFALSE in case of failure
+  Bool_t     ImportgAlice();
+  void       ChangeMode(Option_t* option);     // reset READ or UPDATE mode
+ 
+  const TString& GetFolderName() const{return fEventFolderName;}
+  Int_t GetNInputFiles() const {return fFileNames->GetLast()+1;}
+  TString GetFileName(const Int_t order) const;
+  void SetFolderName(const TString name) { fEventFolderName = name ; }    
+private:  
+  Int_t      fLastEventSerialNr;
+  Int_t      fLastEventNr;
+  Int_t      fCurrentFileIndex;
+  Int_t      fEvents;                //! nr. of events in the current file
+  TString    fMode;                  // = 0 for READONLY, = 1 for READWRITE
+  TObjArray* fFileNames;
+  
+  TString fEventFolderName; //Name of the folder where data for this stram will be mounted
   
   ClassDef(AliStream,1)
 };

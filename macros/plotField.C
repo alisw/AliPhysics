@@ -6,7 +6,7 @@ void plotField(Int_t iField = 0)
 //           2    5 kG  solenoid
 //  
 //  load necessary libraries
-//    gSystem->Load("$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET)/libminicern");
+    gSystem->Load("$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET)/libminicern");
     gSystem->Load("$(ROOTSYS)/lib/libPhysics");
     gSystem->Load("$(ROOTSYS)/lib/libEG");
     gSystem->Load("$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET)/libSTEER");

@@ -24,7 +24,8 @@ class TH2F ;
 
 class AliPHOSv1 ;
 class AliPHOSGeometry ;
-class AliPHOSGetter ;
+class AliPHOSLoader ;
+class AliRunLoader ; 
 
 class AliPHOSAnalyze : public TObject {
 
@@ -36,8 +37,8 @@ public:
   virtual ~AliPHOSAnalyze() ;     // dtor
 
   void DrawRecon(Int_t Nevent= 0,Int_t Nmod = 1,
-		 const char* branchName = "PHOSRP",
-		 const char* branchTitle = "Default") ; 
+                 const char* branchName = "PHOSRP",
+                 const char* branchTitle = "Default") ; 
   // draws positions of entering of primaries and reconstructed objects in PHOS
 
   void InvariantMass(const char* RecPartTitle = "Default") ;      // Photons invariant mass distributions
@@ -73,6 +74,7 @@ private:
   Int_t   fEvt ;                      //! the evt number being processed 
   TString ffileName ;                 //! the root file that contains the data
 
+  AliRunLoader* fRunLoader;           //! run loader of the specified filename
 
 ClassDef(AliPHOSAnalyze,1)  // PHOSv1 event analyzis algorithm
 

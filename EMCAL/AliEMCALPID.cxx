@@ -33,13 +33,9 @@
 #include "TTree.h"
  
 // --- Standard library ---
-#include <stdlib.h>
-
 
 // --- AliRoot header files ---
-#include "AliRun.h" 
 #include "AliEMCALPID.h"
-#include "AliHeader.h" 
 
 ClassImp(AliEMCALPID)
 
@@ -47,18 +43,16 @@ ClassImp(AliEMCALPID)
   AliEMCALPID::AliEMCALPID():TTask("","")
 {
   // ctor
-  fSplitFile= 0 ; 
-
+  fEventFolderName = "" ; 
 }
 
 
 //____________________________________________________________________________
-AliEMCALPID::AliEMCALPID(const char* headerFile, const char * name, const Bool_t toSplit):TTask(name, headerFile)
+AliEMCALPID::AliEMCALPID(const TString alirunFileName, const TString eventFolderName)
+:TTask("EMCAL"+AliConfig::fgkPIDTaskName, alirunFileName), fEventFolderName(eventFolderName)
 {
   // ctor
 
-  fToSplit = toSplit ;
-  fSplitFile= 0 ; 
 }
 
 //____________________________________________________________________________
@@ -66,5 +60,4 @@ AliEMCALPID::~AliEMCALPID()
 {
   // dtor
         
-  fSplitFile = 0 ;
 }

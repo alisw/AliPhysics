@@ -51,19 +51,6 @@ AliPHOSGeometry * AliPHOSGeometry::fgGeom = 0 ;
 Bool_t            AliPHOSGeometry::fgInit = kFALSE ;
 
 //____________________________________________________________________________
-AliPHOSGeometry::AliPHOSGeometry(void)
-{
-  // default ctor 
-  // must be kept public for root persistency purposes,
-  // but should never be called by the outside world
-  fPHOSAngle      = 0 ;
-  fGeometryEMCA   = 0;
-  fGeometrySUPP   = 0;
-  fGeometryCPV    = 0;
-  fgGeom          = 0;
-  fRotMatrixArray = 0;
-}
-//____________________________________________________________________________
 AliPHOSGeometry::~AliPHOSGeometry(void)
 {
   // dtor
@@ -230,16 +217,17 @@ void AliPHOSGeometry::EmcModuleCoverage(const Int_t mod, Double_t & tm, Double_t
 
   Float_t phi = GetPHOSAngle(mod) *  (TMath::Pi() / 180.)  ;  
   Float_t y0  = GetIPtoCrystalSurface() ; 
-  Float_t x0  = GetCellStep()*GetNPhi() ;
-  Float_t z0  = GetCellStep()*GetNZ();
-  Double_t angle = TMath::ATan( x0 / y0 / 2 ) ;
+  Float_t * strip = fGeometryEMCA->GetStripHalfSize() ;
+  Float_t x0  = fGeometryEMCA->GetNStripX()*strip[0] ;
+  Float_t z0  = fGeometryEMCA->GetNStripZ()*strip[2] ;
+  Double_t angle = TMath::ATan( x0 / y0 ) ;
   phi = phi + 1.5 * TMath::Pi() ; // to follow the convention of the particle generator(PHOS is between 220 and 320 deg.)
   Double_t max  = phi - angle ;
   Double_t min   = phi + angle ;
   pM = TMath::Max(max, min) * conv ;
   pm = TMath::Min(max, min) * conv ; 
   
-  angle =  TMath::ATan( z0 /  y0  / 2 ) ;
+  angle =  TMath::ATan( z0 /  y0 ) ;
   max  = TMath::Pi() / 2.  + angle ; // to follow the convention of the particle generator(PHOS is at 90 deg.)
   min  = TMath::Pi() / 2.  - angle ;
   tM = TMath::Max(max, min) * conv ;
@@ -335,43 +323,35 @@ void AliPHOSGeometry::ImpactOnEmc(const Double_t theta, const Double_t phi, Int_
   // calculates the impact coordinates on PHOS of a neutral particle  
   // emitted in the direction theta and phi in the ALICE global coordinate system
 
-  //Convert phi to range 0-2pi if nesassary
-  Double_t phiin2pi = phi ;
-  while(phiin2pi<0)
-    phiin2pi+=6.2831853072 ;
-
   // searches for the PHOS EMC module
   ModuleNumber = 0 ; 
   Double_t tm, tM, pm, pM ; 
   Int_t index = 1 ; 
   while ( ModuleNumber == 0 && index <= GetNModules() ) { 
     EmcModuleCoverage(index, tm, tM, pm, pM) ; 
-    if ( (theta >= tm && theta <= tM) && (phiin2pi >= pm && phiin2pi <= pM ) ) 
+    if ( (theta >= tm && theta <= tM) && (phi >= pm && phi <= pM ) ) 
       ModuleNumber = index ; 
     index++ ;    
   }
   if ( ModuleNumber != 0 ) {
     Float_t phi0 =  GetPHOSAngle(ModuleNumber) *  (TMath::Pi() / 180.) + 1.5 * TMath::Pi()  ;  
     Float_t y0  =  GetIPtoCrystalSurface()  ;   
-    Double_t angle = phiin2pi - phi0; 
+    Double_t angle = phi - phi0; 
     x = y0 * TMath::Tan(angle) ; 
     angle = theta - TMath::Pi() / 2 ; 
     z = y0 * TMath::Tan(angle) ; 
   }
 }
 
-//____________________________________________________________________________
 Bool_t  AliPHOSGeometry::Impact(const TParticle * particle) const 
 {
-  // Check if a particle being propagates from IP along the straight line impacts EMC
-
-  Bool_t in=kFALSE;
-  Int_t moduleNumber=0;
+  Bool_t In=kFALSE;
+  Int_t ModuleNumber=0;
   Double_t z,x;
-  ImpactOnEmc(particle->Theta(),particle->Phi(),moduleNumber,z,x);
-  if(moduleNumber) in=kTRUE;
-  else in=kFALSE;
-  return in;
+  ImpactOnEmc(particle->Theta(),particle->Phi(),ModuleNumber,z,x);
+  if(ModuleNumber) In=kTRUE;
+  else In=kFALSE;
+  return In;
 }
 
 //____________________________________________________________________________
@@ -403,24 +383,7 @@ Bool_t AliPHOSGeometry::RelToAbsNumbering(const Int_t * relid, Int_t &  AbsId) c
 }
 
 //____________________________________________________________________________
-void AliPHOSGeometry::RelPosToAbsId(const Int_t module , const Double_t x, const Double_t z, Int_t & AbsId)const{
-  // Converts local PHOS-module (x, z) coordinates to absId 
 
-  if(!module){
-    AbsId = 0 ;
-    return ;
-  }
-  
-  Int_t relid[4] ;
-  relid[0] = module ;
-  relid[1] = 0 ;
-  relid[2] = static_cast<Int_t>(TMath::Ceil(GetNPhi()/2.+ x/GetCellStep()));
-  relid[3] = static_cast<Int_t>(TMath::Ceil(GetNZ()/2.  - z/GetCellStep())) ;
-
-  RelToAbsNumbering(relid,AbsId) ;
-
-}
-//____________________________________________________________________________
 void AliPHOSGeometry::RelPosInAlice(const Int_t id, TVector3 & pos ) const
 {
   // Converts the absolute numbering into the global ALICE coordinate system

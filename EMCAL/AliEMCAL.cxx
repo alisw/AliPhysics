@@ -27,19 +27,21 @@
 
 // --- ROOT system ---
 class TFile;
-#include "TBranch.h" 
-#include "TClonesArray.h" 
-#include "TTree.h" 
+#include <TFolder.h> 
+#include <TROOT.h>
+#include <TTree.h>
+#include <TVirtualMC.h> 
 
 // --- Standard library ---
 #include <Rstrstream.h>
 
 // --- AliRoot header files ---
-#include "AliEMCAL.h"
-#include "AliRun.h"
 #include "AliMagF.h"
+#include "AliEMCAL.h"
 #include "AliEMCALGeometry.h"
+#include "AliEMCALLoader.h"
 //#include "AliEMCALQAChecker.h" 
+#include "AliRun.h"
 
 ClassImp(AliEMCAL)
 //____________________________________________________________________________
@@ -57,7 +59,6 @@ AliEMCAL::AliEMCAL(const char* name, const char* title): AliDetector(name,title)
 {
   //   ctor : title is used to identify the layout
   
-  fGeom = AliEMCALGeometry::GetInstance(GetTitle(),"") ; 
   //fQATask = 0;
   fTreeQA = 0;
 }
@@ -187,31 +188,57 @@ void AliEMCAL::SetTreeAddress()
   sprintf(branchname,"%s",GetName());
   
   // Branch address for hit tree
-  TTree *treeH = gAlice->TreeH();
-  if (treeH && fHits) {
+  TTree *treeH = TreeH();
+  if (treeH) {
     branch = treeH->GetBranch(branchname);
-    if (branch) branch->SetAddress(&fHits);
+    if (branch) 
+      { 
+	if (fHits == 0x0) fHits= new TClonesArray("AliEMCALHit",1000);
+	//Info("SetTreeAddress","<%s> Setting Hits Address",GetName());
+	branch->SetAddress(&fHits);
+      }
+    else
+      {
+	Warning("SetTreeAddress","<%s> Failed",GetName());
+      }
   }
 }
-
 //____________________________________________________________________________
 void AliEMCAL::WriteQA()
 {
-
+  
   // Make TreeQA in the output file. 
-
+  
   if(fTreeQA == 0)
     fTreeQA = new TTree("TreeQA", "QA Alarms") ;    
   // Create Alarms branches
-//   Int_t bufferSize = 32000 ;    
-//   Int_t splitlevel = 0 ; 
-//   TFolder * alarmsF = (TFolder*)gROOT->FindObjectAny("Folders/Run/Conditions/QA/PHOS") ; 
-//   TString branchName(alarmsF->GetName());  
-//   TBranch * alarmsBranch = fTreeQA->Branch(branchName,"TFolder", &alarmsF, bufferSize, splitlevel);
-//   TString branchTitle = branchName + " QA alarms" ; 
-//   alarmsBranch->SetTitle(branchTitle);
-//   alarmsBranch->Fill() ; 
-
-  //fTreeQA->Fill() ; 
+  Int_t bufferSize = 32000 ;    
+  Int_t splitlevel = 0 ; 
+  
+  TFolder* topfold = GetLoader()->GetTopFolder(); //get top aliroot folder; skowron
+  TString emcalqafn(AliConfig::Instance()->GetQAFolderName()+"/"); //get name of QAaut folder relative to top event; skowron
+  emcalqafn+=GetName(); //hard wired string!!! add the detector name to the pathname; skowron 
+  TFolder * alarmsF = (TFolder*)topfold->FindObjectAny(emcalqafn); //get the folder
+  
+  if (alarmsF == 0x0)
+    {
+      Error("WriteQA","Can not find folder with qa alarms");
+      return;
+    }
+  TString branchName(alarmsF->GetName());
+  TBranch * alarmsBranch = fTreeQA->Branch(branchName,"TFolder", &alarmsF, bufferSize, splitlevel);
+  TString branchTitle = branchName + " QA alarms" ; 
+  alarmsBranch->SetTitle(branchTitle);
+  alarmsBranch->Fill() ; 
+  
+  //fTreeQA
 }
 
+//____________________________________________________________________________
+AliLoader* AliEMCAL::MakeLoader(const char* topfoldername)
+{
+//different behaviour than standard (singleton getter)
+// --> to be discussed and made eventually coherent
+ fLoader = new AliEMCALLoader(GetName(),topfoldername);
+ return fLoader;
+}

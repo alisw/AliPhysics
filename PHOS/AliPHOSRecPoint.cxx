@@ -23,8 +23,6 @@
 // --- ROOT system ---
 #include "TPad.h"
 #include "TClonesArray.h"
-#include "TGraph.h"
-#include "TPaveText.h"
 
 // --- Standard library ---
 
@@ -44,8 +42,8 @@ AliPHOSRecPoint::AliPHOSRecPoint()
 {
   // ctor
 
-  fMaxTrack = 200 ;
-  fPHOSMod = 0;
+  fMaxTrack = 0 ;
+  fPHOSMod  = 0 ;
 
 }
 
@@ -55,17 +53,7 @@ AliPHOSRecPoint::AliPHOSRecPoint(const char * opt) : AliRecPoint(opt)
   // ctor
   
   fMaxTrack = 200 ;
-  fPHOSMod = 0;
-  
-}
-
-//____________________________________________________________________________
-AliPHOSRecPoint::AliPHOSRecPoint(const AliPHOSRecPoint & rp ) : AliRecPoint(rp)
-{
-  // cpy ctor
-  
-  fMaxTrack = rp.fMaxTrack;
-  fPHOSMod = rp.fPHOSMod;
+  fPHOSMod  = 0;
   
 }
 
@@ -98,7 +86,7 @@ Int_t AliPHOSRecPoint::DistancetoPrimitive(Int_t px, Int_t py)
  }
 
 //______________________________________________________________________________
-void AliPHOSRecPoint::ExecuteEvent(Int_t event, Int_t px, Int_t py) const
+void AliPHOSRecPoint::ExecuteEvent(Int_t event, Int_t px, Int_t py)
 {
   // Execute action corresponding to one event
   // This member function is called when a AliPHOSRecPoint is clicked with the locator
@@ -118,8 +106,13 @@ void AliPHOSRecPoint::ExecuteEvent(Int_t event, Int_t px, Int_t py) const
     
   case kButton1Down:{
     AliPHOSDigit * digit ;
-    AliPHOSGetter * gime = AliPHOSGetter::GetInstance() ; 
-    AliPHOSGeometry * phosgeom =  const_cast<AliPHOSGeometry*>(gime->PHOSGeometry());
+  
+//  Accessing geometry this way is equivalent to getting from gAlice
+// to have Detector in Folder one have to load gAlice anyway
+//    AliPHOSLoader * gime = AliPHOSLoader::GetInstance();
+//    AliPHOSGeometry * phosgeom =  const_cast<AliPHOSGeometry*>(gime->PHOSGeometry());
+
+    AliPHOSGeometry * phosgeom = AliPHOSLoader::GetPHOSGeometry();
 
     Int_t iDigit;
     Int_t relid[4] ;
@@ -178,11 +171,13 @@ break;
   }
 }
 //____________________________________________________________________________
-void AliPHOSRecPoint::EvalAll(Float_t logWeight,TClonesArray * digits) {
+void AliPHOSRecPoint::EvalAll(Float_t logWeight,TClonesArray * digits) 
+{
   //evaluates (if necessary) all RecPoint data members 
 
   EvalPrimaries(digits) ;
 }
+
 //____________________________________________________________________________
 void AliPHOSRecPoint::EvalPHOSMod(AliPHOSDigit * digit) 
 {
@@ -190,9 +185,8 @@ void AliPHOSRecPoint::EvalPHOSMod(AliPHOSDigit * digit)
 
   if( fPHOSMod == 0){
   Int_t relid[4] ; 
-  
-  AliPHOSGetter * gime = AliPHOSGetter::GetInstance() ; 
-  AliPHOSGeometry * phosgeom =  const_cast<AliPHOSGeometry*>(gime->PHOSGeometry());
+ 
+  AliPHOSGeometry * phosgeom = (AliPHOSGetter::Instance())->PHOSGeometry();
 
   phosgeom->AbsToRelNumbering(digit->GetId(), relid) ;
   fPHOSMod = relid[0];
@@ -203,71 +197,42 @@ void AliPHOSRecPoint::EvalPHOSMod(AliPHOSDigit * digit)
 void  AliPHOSRecPoint::EvalPrimaries(TClonesArray * digits)
 {
   // Constructs the list of primary particles (tracks) which have contributed to this RecPoint
-  // First in the list - primary, made strongest contribution to the center
-
   
   AliPHOSDigit * digit ;
   Int_t * tempo    = new Int_t[fMaxTrack] ;
 
-  //Find digit in center
-  AliPHOSGeometry * geom = AliPHOSGeometry::GetInstance("IHEP","") ;
-  if(!geom){
-    Error("EvalPrimaries","Can not instantiate PHOS geometry") ;
-    return ;
-  }
-  TVector3  pos ;
-  TMatrix  mat ;
-  GetGlobalPosition(pos,mat) ;
-  pos.SetZ(-pos.Z()) ;
-  Int_t module ;
-  Double_t x,z ;
-  geom->ImpactOnEmc(pos.Theta(),pos.Phi(),module,z,x);
-  Int_t absId ;
-  geom->RelPosToAbsId(module,x,z,absId) ;
-  //copy primaries
   Int_t index ;  
   for ( index = 0 ; index < GetDigitsMultiplicity() ; index++ ) { // all digits
     digit = dynamic_cast<AliPHOSDigit *>(digits->At( fDigitsList[index] )) ; 
-    if(digit->GetId() == absId){ 
-      fMulTrack = digit->GetNprimary() ;
-      for(Int_t ii = 0 ; ii < fMulTrack ; ii++)
-	tempo[ii] = digit->GetPrimary(ii+1) ; 
-    }
-  }
-  
-  for ( index = 0 ; index < GetDigitsMultiplicity() ; index++ ) { // all digits
-    digit = dynamic_cast<AliPHOSDigit *>(digits->At( fDigitsList[index] )) ; 
-    if(digit->GetId()!=absId){ //already done
-      Int_t nprimaries = digit->GetNprimary() ;
-      if(nprimaries){
-	Int_t * newprimaryarray = new Int_t[nprimaries] ;
-	Int_t ii ; 
-	for ( ii = 0 ; ii < nprimaries ; ii++)
-	  newprimaryarray[ii] = digit->GetPrimary(ii+1) ; 
-	
-	Int_t jndex ;
-	for ( jndex = 0 ; jndex < nprimaries ; jndex++ ) { // all primaries in digit
-	  if ( fMulTrack > fMaxTrack ) {
-	    fMulTrack = - 1 ;
-	    Error("EvalPrimaries", "GetNprimaries ERROR > increase fMaxTrack" ) ;
+    Int_t nprimaries = digit->GetNprimary() ;
+    if(nprimaries){
+      Int_t * newprimaryarray = new Int_t[nprimaries] ;
+      Int_t ii ; 
+      for ( ii = 0 ; ii < nprimaries ; ii++)
+	newprimaryarray[ii] = digit->GetPrimary(ii+1) ; 
+
+      Int_t jndex ;
+      for ( jndex = 0 ; jndex < nprimaries ; jndex++ ) { // all primaries in digit
+	if ( fMulTrack > fMaxTrack ) {
+	  fMulTrack = - 1 ;
+	  Error("EvalPrimaries", "GetNprimaries ERROR > increase fMaxTrack" ) ;
+	  break ;
+	}
+	Int_t newprimary = newprimaryarray[jndex] ;
+	Int_t kndex ;
+	Bool_t already = kFALSE ;
+	for ( kndex = 0 ; kndex < fMulTrack ; kndex++ ) { //check if not already stored
+	  if ( newprimary == tempo[kndex] ){
+	    already = kTRUE ;
 	    break ;
 	  }
-	  Int_t newprimary = newprimaryarray[jndex] ;
-	  Int_t kndex ;
-	  Bool_t already = kFALSE ;
-	  for ( kndex = 0 ; kndex < fMulTrack ; kndex++ ) { //check if not already stored
-	    if ( newprimary == tempo[kndex] ){
-	      already = kTRUE ;
-	      break ;
-	    }
-	  } // end of check
-	  if ( !already) { // store it
-	    tempo[fMulTrack] = newprimary ; 
-	    fMulTrack++ ;
-	  } // store it
-	} // all primaries in digit
-	delete [] newprimaryarray ; 
-      }
+	} // end of check
+	if ( !already) { // store it
+	  tempo[fMulTrack] = newprimary ; 
+	  fMulTrack++ ;
+	} // store it
+      } // all primaries in digit
+      delete [] newprimaryarray ; 
     }
   } // all digits
 
@@ -284,10 +249,7 @@ void AliPHOSRecPoint::GetGlobalPosition(TVector3 & gpos, TMatrix & gmat) const
 {
   // returns the position of the cluster in the global reference system of ALICE
   // and the uncertainty on this position
-  
-  
-  AliPHOSGetter::GetInstance()->PHOSGeometry()->GetGlobal(this, gpos, gmat) ;
- 
+  (AliPHOSGetter::Instance())->PHOSGeometry()->GetGlobal(this, gpos, gmat);
 }
 
 
@@ -312,3 +274,5 @@ void AliPHOSRecPoint::Paint(Option_t *)
   gPad->SetAttMarkerPS(markercolor,markerstyle,markersize) ;
   gPad->PaintPolyMarker(1,&x,&y,"") ;
 }
+//______________________________________________________________________________
+

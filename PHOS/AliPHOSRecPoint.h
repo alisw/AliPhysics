@@ -7,19 +7,20 @@
 //  A recpoint being equivalent to a cluster in encal terminology                 
 //*-- Author: Gines Martinez (SUBATECH)
 
+#include <assert.h>
 
 // --- ROOT system ---
 
-//#include "TMarker.h"
-//#include "TGraph.h"
-//#include "TPaveText.h"
+#include "TMarker.h"
+#include "TGraph.h"
+#include "TPaveText.h"
 
 // --- Standard library ---
 
 // --- AliRoot header files ---
 
 #include "AliRecPoint.h"
-  class AliPHOSDigit ;
+#include "AliPHOSDigit.h"
 
 class AliPHOSRecPoint : public AliRecPoint {
 
@@ -29,20 +30,24 @@ class AliPHOSRecPoint : public AliRecPoint {
 
   AliPHOSRecPoint() ;                   // ctor         
   AliPHOSRecPoint(const char * opt) ;   // ctor 
-  AliPHOSRecPoint(const AliPHOSRecPoint & rp) ; //cpy ctor
+  AliPHOSRecPoint(const AliPHOSRecPoint & rp) {
+    // cpy ctor requested by Coding Convention 
+    // but not yet needed
+    assert(0==1) ; 
+  } 
   
   virtual ~AliPHOSRecPoint(){
     // dtor
   }
   virtual  void   AddDigit(AliDigitNew &){
     // do not use this definition but the one below
-    Fatal("AddDigit", "use  AddDigit(AliPHOSDigit & digit, Float_t Energy)") ; 
+    assert(0==1) ; 
   }
   virtual  void   AddDigit(AliPHOSDigit & digit, Float_t Energy) = 0 ; 
   virtual Int_t   Compare(const TObject * obj) const = 0 ;   
   virtual Int_t   DistancetoPrimitive(Int_t px, Int_t py);
   virtual void    Draw(Option_t * option="") ;
-  virtual void    ExecuteEvent(Int_t event, Int_t px, Int_t py)const ;
+  virtual void    ExecuteEvent(Int_t event, Int_t px, Int_t py) ;
   virtual void    EvalAll(Float_t logWeight,TClonesArray * digits) ;  
   virtual void    EvalPHOSMod(AliPHOSDigit * digit) ;  
   virtual void    EvalPrimaries(TClonesArray * digits) ;  
@@ -60,8 +65,11 @@ class AliPHOSRecPoint : public AliRecPoint {
     // Print prototype
   } 
 
-  AliPHOSRecPoint & operator = (const AliPHOSRecPoint & )  { return *this ; }
-
+  AliPHOSRecPoint & operator = (const AliPHOSRecPoint & )  {
+    // assignement operator requested by coding convention but not needed
+    assert(0==1) ;
+    return *this ; 
+  }
 protected:
   
   Int_t fPHOSMod ;      // PHOS Module number in which the RecPoint is found

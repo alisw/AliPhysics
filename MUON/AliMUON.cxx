@@ -14,6 +14,24 @@
  **************************************************************************/
 /*
 $Log$
+Revision 1.56.4.8  2003/06/30 18:32:58  hristov
+fHits array is not stored in file - intrdoducing proper protections in SetTreeAddress and MakeBranch in all detectors. Increasing version of class in detectors. (P.Skowronski)
+
+Revision 1.56.4.7  2003/06/24 14:08:27  pcrochet
+Trigger with NewIO
+
+Revision 1.56.4.6  2003/06/11 16:45:07  martinez
+NewIO in Digits2Reco
+
+Revision 1.56.4.5  2003/05/16 14:40:24  martinez
+New IO in AliMUON
+
+Revision 1.56.4.4  2003/05/14 15:24:08  martinez
+Merging with NewIO: New AddHit function
+
+Revision 1.60  2003/05/13 17:04:22  martinez
+Adding new AddHit function
+
 Revision 1.59  2002/11/21 17:01:56  alibrary
 Removing AliMCProcess and AliMC
 
@@ -111,171 +129,62 @@ Built geometry includes slat geometry for event display.
 
 Revision 1.31  2000/10/02 21:28:08  fca
 Removal of useless dependecies via forward declarations
-
-Revision 1.30  2000/10/02 16:58:29  egangler
-Cleaning of the code :
--> coding conventions
--> void Streamers
--> some useless includes removed or replaced by "class" statement
-
-Revision 1.29  2000/07/28 13:49:38  morsch
-SetAcceptance defines inner and outer chamber radii according to angular acceptance.
-Can be used for simple acceptance studies.
-
-Revision 1.28  2000/07/22 16:43:15  morsch
-Same comment as before, but now done correctly I hope (sorry it's Saturday evening)
-
-Revision 1.27  2000/07/22 16:36:50  morsch
-Change order of indices in creation (new) of xhit and yhit
-
-Revision 1.26  2000/07/03 11:54:57  morsch
-AliMUONSegmentation and AliMUONHitMap have been replaced by AliSegmentation and AliHitMap in STEER
-The methods GetPadIxy and GetPadXxy of AliMUONSegmentation have changed name to GetPadI and GetPadC.
-
-Revision 1.25  2000/06/29 12:34:09  morsch
-AliMUONSegmentation class has been made independent of AliMUONChamber. This makes
-it usable with any other geometry class. The link to the object to which it belongs is
-established via an index. This assumes that there exists a global geometry manager
-from which the pointer to the parent object can be obtained (in our case gAlice).
-
-Revision 1.24  2000/06/28 15:16:35  morsch
-(1) Client code adapted to new method signatures in AliMUONSegmentation (see comments there)
-to allow development of slat-muon chamber simulation and reconstruction code in the MUON
-framework. The changes should have no side effects (mostly dummy arguments).
-(2) Hit disintegration uses 3-dim hit coordinates to allow simulation
-of chambers with overlapping modules (MakePadHits, Disintegration).
-
-Revision 1.23  2000/06/28 12:19:17  morsch
-More consequent seperation of global input data services (AliMUONClusterInput singleton) and the
-cluster and hit reconstruction algorithms in AliMUONClusterFindRawinderVS.
-AliMUONClusterFinderVS becomes the base class for clustering and hit reconstruction.
-It requires two cathode planes. Small modifications in the code will make it usable for
-one cathode plane and, hence, more general (for test beam data).
-AliMUONClusterFinder is now obsolete.
-
-Revision 1.22  2000/06/28 08:06:10  morsch
-Avoid global variables in AliMUONClusterFinderVS by seperating the input data for the fit from the
-algorithmic part of the class. Input data resides inside the AliMUONClusterInput singleton.
-It also naturally takes care of the TMinuit instance.
-
-Revision 1.21  2000/06/27 08:54:41  morsch
-Problems with on constant array sizes (in hitMap, nmuon, xhit, yhit) corrected.
-
-Revision 1.20  2000/06/26 14:02:38  morsch
-Add class AliMUONConstants with MUON specific constants using static memeber data and access methods.
-
-Revision 1.19  2000/06/22 13:40:51  morsch
-scope problem on HP, "i" declared once
-pow changed to TMath::Power (PH, AM)
-
-Revision 1.18  2000/06/15 07:58:48  morsch
-Code from MUON-dev joined
-
-Revision 1.14.4.17  2000/06/14 14:36:46  morsch
-- add TriggerCircuit (PC)
-- add GlobalTrigger and LocalTrigger and specific methods (PC)
-
-Revision 1.14.4.16  2000/06/09 21:20:28  morsch
-Most coding rule violations corrected
-
-Revision 1.14.4.15  2000/05/02 09:54:32  morsch
-RULE RN17 violations corrected
-
-Revision 1.14.4.12  2000/04/26 12:25:02  morsch
-Code revised by P. Crochet:
-- Z position of TriggerChamber changed according to A.Tournaire Priv.Comm.
-- ToF included in the method MakePadHits
-- inner radius of flange between beam shielding and trigger corrected
-- Trigger global volume updated (according to the new geometry)
-
-Revision 1.14.4.11  2000/04/19 19:42:08  morsch
-Some changes of variable names curing viols and methods concerning
-correlated clusters removed.
-
-Revision 1.14.4.10  2000/03/22 16:44:07  gosset
-Memory leak suppressed in function Digitise:
-p_adr->Delete() instead of Clear (I.Chevrot and A.Baldisseri)
-
-Revision 1.14.4.9  2000/03/20 18:15:25  morsch
-Positions of trigger chambers corrected (P.C.)
-
-Revision 1.14.4.8  2000/02/21 15:38:01  morsch
-Call to AddHitList introduced to make this version compatible with head.
-
-Revision 1.14.4.7  2000/02/20 07:45:53  morsch
-Bugs in Trigger part of BuildGeomemetry corrected (P.C)
-
-Revision 1.14.4.6  2000/02/17 14:28:54  morsch
-Trigger included into initialization and digitization
-
-Revision 1.14.4.5  2000/02/15 10:02:58  morsch
-Log messages of previous revisions added
-
-Revision 1.14.4.2  2000/02/04 10:57:34  gosset
-Z position of the chambers:
-it was the Z position of the stations;
-it is now really the Z position of the chambers.
-   !!!! WARNING: THE CALLS TO "AliMUONChamber::SetZPOS"
-   !!!!                   AND "AliMUONChamber::ZPosition"
-   !!!! HAVE TO BE CHANGED TO "AliMUONChamber::"SetZ"
-   !!!!                   AND "AliMUONChamber::Z"
-
-Revision 1.14.4.3  2000/02/04 16:19:04  gosset
-Correction for mis-spelling of NCH 
-
-Revision 1.14.4.4  2000/02/15 09:43:38  morsch
-Log message added
-
 */
+
+/* $Id$ */
 
 
 ///////////////////////////////////////////////
 //  Manager and hits classes for set:MUON     //
 ////////////////////////////////////////////////
 
-#include <TTUBE.h>
+#include "Riostream.h"
+
+#include <AliPDG.h>
 #include <TBRIK.h>
-#include <TRotMatrix.h>
+#include <TCanvas.h>
+#include <TDirectory.h>
+#include <TFile.h>
 #include <TGeometry.h>
-#include <TNode.h> 
-#include <TTree.h> 
-#include <TRandom.h> 
-#include <TObject.h>
-#include <TVector.h>
-#include <TObjArray.h>
 #include <TMinuit.h>
+#include <TNode.h> 
+#include <TNtuple.h>
+#include <TObjArray.h>
+#include <TObject.h>
+#include <TObjectTable.h>
+#include <TPad.h>
 #include <TParticle.h>
 #include <TROOT.h>
-#include <TFile.h>
-#include <TNtuple.h>
-#include <TCanvas.h>
-#include <TPad.h>
-#include <TDirectory.h>
-#include <TObjectTable.h>
-#include <AliPDG.h>
+#include <TRandom.h> 
+#include <TRotMatrix.h>
 #include <TTUBE.h>
+#include <TTUBE.h>
+#include <TTree.h> 
+#include <TVector.h>
+#include <TVirtualMC.h>
 
-#include "AliMUON.h"
-#include "AliMUONHit.h"
-#include "AliMUONPadHit.h"
-#include "AliMUONDigit.h"
-#include "AliMUONTransientDigit.h"
-#include "AliMUONRawCluster.h"
-#include "AliMUONLocalTrigger.h"
-#include "AliMUONGlobalTrigger.h"
-#include "AliMUONTriggerCircuit.h"
-#include "AliHitMap.h"
-#include "AliMUONHitMapA1.h"
-#include "AliMUONChamberTrigger.h"
-#include "AliMUONConstants.h"
-#include "AliMUONClusterFinderVS.h"
-#include "AliMUONTriggerDecision.h"
-#include "AliRun.h"
-#include "AliHeader.h"
-#include "AliMUONClusterInput.h"
-#include "AliMUONMerger.h"	
-#include "Riostream.h"
 #include "AliConst.h" 
+#include "AliHeader.h"
+#include "AliHitMap.h"
+#include "AliLoader.h"
+#include "AliMUON.h"
+#include "AliMUONChamberTrigger.h"
+#include "AliMUONClusterFinderVS.h"
+#include "AliMUONClusterInput.h"
+#include "AliMUONConstants.h"
+#include "AliMUONDigit.h"
+#include "AliMUONGlobalTrigger.h"
+#include "AliMUONHit.h"
+#include "AliMUONHitMapA1.h"
+#include "AliMUONLocalTrigger.h"
+#include "AliMUONMerger.h"	
+#include "AliMUONPadHit.h"
+#include "AliMUONRawCluster.h"
+#include "AliMUONTransientDigit.h"
+#include "AliMUONTriggerCircuit.h"
+#include "AliMUONTriggerDecision.h"
+#include "AliRun.h"	
+
 
 // Defaults parameters for Z positions of chambers
 // taken from values for "stations" in AliMUON::AliMUON
@@ -579,7 +488,7 @@ Int_t AliMUON::DistancetoPrimitive(Int_t , Int_t )
 }
 
 //___________________________________________
-void AliMUON::MakeBranch(Option_t* option, const char *file)
+void AliMUON::MakeBranch(Option_t* option)
 {
     //
     // Create Tree branches for the MUON.
@@ -588,68 +497,83 @@ void AliMUON::MakeBranch(Option_t* option, const char *file)
     char branchname[30];
     sprintf(branchname,"%sCluster",GetName());
     
-    AliDetector::MakeBranch(option,file);
     
     const char *cD = strstr(option,"D");
     const char *cR = strstr(option,"R");
     const char *cH = strstr(option,"H");
 
-    // PadHits to be removed
-    if (fPadHits   && gAlice->TreeH() && cH) {
-      MakeBranchInTree(gAlice->TreeH(), 
-                       branchname, &fPadHits, kBufferSize, file);
-    }
+    if (TreeH() && cH) 
+     {
+      if (fPadHits == 0x0) fPadHits = new TClonesArray("AliMUONPadHit",10000);
+      MakeBranchInTree(TreeH(), branchname, &fPadHits, kBufferSize, 0);
+      if (fHits == 0x0) fHits     = new TClonesArray("AliMUONHit",1000);
+     }
+    //it must be under fHits creation
+    AliDetector::MakeBranch(option);
     
-    if (cD) {
+    if (cD  && fLoader->TreeD()) {
       //
       // one branch for digits per chamber
       // 
       Int_t i;
-    
-      for (i=0; i<AliMUONConstants::NCh() ;i++) {
-	    sprintf(branchname,"%sDigits%d",GetName(),i+1);	
-	    if (fDchambers   && gAlice->TreeD()) {
-            MakeBranchInTree(gAlice->TreeD(), 
-                             branchname, &((*fDchambers)[i]), kBufferSize, file);
-	      printf("Making Branch %s for digits in chamber %d\n",branchname,i+1);
+      if (fDchambers  == 0x0) 
+        {
+          fDchambers = new TObjArray(AliMUONConstants::NCh());
+          for (Int_t i=0; i<AliMUONConstants::NCh() ;i++) {
+              fDchambers->AddAt(new TClonesArray("AliMUONDigit",10000),i); 
+          }
         }
-	  }	
+    
+      for (i=0; i<AliMUONConstants::NCh() ;i++) 
+       {
+        sprintf(branchname,"%sDigits%d",GetName(),i+1);	
+        MakeBranchInTree(fLoader->TreeD(), branchname, &((*fDchambers)[i]), kBufferSize, 0);
+        printf("Making Branch %s for digits in chamber %d\n",branchname,i+1);
+       }
     }
     
-    if (cR) {
+    if (cR  && fLoader->TreeR()) {
       //     
       // one branch for raw clusters per chamber
       //  
-      printf("Make Branch - TreeR address %p\n",gAlice->TreeR());
+      printf("Make Branch - TreeR address %p\n",fLoader->TreeR());
       
       Int_t i;
+      if (fRawClusters == 0x0)
+      {
+        fRawClusters = new TObjArray(AliMUONConstants::NTrackingCh());
+        for (Int_t i=0; i<AliMUONConstants::NTrackingCh();i++) {
+            fRawClusters->AddAt(new TClonesArray("AliMUONRawCluster",10000),i); 
+        }
+      }
 
-      for (i=0; i<AliMUONConstants::NTrackingCh() ;i++) {
-	    sprintf(branchname,"%sRawClusters%d",GetName(),i+1);	
-	    if (fRawClusters   && gAlice->TreeR()) {
-              MakeBranchInTree(gAlice->TreeR(), 
-                               branchname, &((*fRawClusters)[i]), kBufferSize, file);
-	      printf("Making Branch %s for raw clusters in chamber %d\n",branchname,i+1);
-   	    }	
+      for (i=0; i<AliMUONConstants::NTrackingCh() ;i++) 
+       {
+         sprintf(branchname,"%sRawClusters%d",GetName(),i+1);	
+         MakeBranchInTree(fLoader->TreeR(), branchname, &((*fRawClusters)[i]), kBufferSize, 0);
+         printf("Making Branch %s for raw clusters in chamber %d\n",branchname,i+1);
       }
       //
       // one branch for global trigger
       //
       sprintf(branchname,"%sGlobalTrigger",GetName());
-      if (fGlobalTrigger && gAlice->TreeR()) {  
-          MakeBranchInTree(gAlice->TreeR(), 
-                           branchname, &fGlobalTrigger, kBufferSize, file);
-	    printf("Making Branch %s for Global Trigger\n",branchname);
+      
+      if (fGlobalTrigger == 0x0) {
+        fGlobalTrigger = new TClonesArray("AliMUONGlobalTrigger",1); 
       }
+      MakeBranchInTree(fLoader->TreeR(), branchname, &fGlobalTrigger, kBufferSize, 0);
+      printf("Making Branch %s for Global Trigger\n",branchname);
       //
       // one branch for local trigger
       //  
       sprintf(branchname,"%sLocalTrigger",GetName());
-      if (fLocalTrigger && gAlice->TreeR()) {  
-          MakeBranchInTree(gAlice->TreeR(), 
-                           branchname, &fLocalTrigger, kBufferSize, file);
-	    printf("Making Branch %s for Local Trigger\n",branchname);
+      
+      if (fLocalTrigger == 0x0) {
+        fLocalTrigger  = new TClonesArray("AliMUONLocalTrigger",234);
       }
+      
+      MakeBranchInTree(fLoader->TreeR(), branchname, &fLocalTrigger, kBufferSize, 0);
+      printf("Making Branch %s for Local Trigger\n",branchname);
    }
 }
 
@@ -658,24 +582,35 @@ void AliMUON::SetTreeAddress()
 {
   // Set branch address for the Hits and Digits Tree.
   char branchname[30];
-  AliDetector::SetTreeAddress();
 
   TBranch *branch;
-  TTree *treeH = gAlice->TreeH();
-  TTree *treeD = gAlice->TreeD();
-  TTree *treeR = gAlice->TreeR();
+  TTree *treeH = fLoader->TreeH();
+  TTree *treeD = fLoader->TreeD();
+  TTree *treeR = fLoader->TreeR();
 
   if (treeH) {
+    if (fPadHits == 0x0) fPadHits = new TClonesArray("AliMUONPadHit",10000);
     if (fPadHits) {
       branch = treeH->GetBranch("MUONCluster");
       if (branch) branch->SetAddress(&fPadHits);
     }
+    if (fHits == 0x0) fHits     = new TClonesArray("AliMUONHit",1000);
   }
+  //it must be under fHits creation
+  AliDetector::SetTreeAddress();
 
   if (treeD) {
+      if (fDchambers == 0x0) 
+        {
+          fDchambers = new TObjArray(AliMUONConstants::NCh());
+          for (Int_t i=0; i<AliMUONConstants::NCh() ;i++) {
+              fDchambers->AddAt(new TClonesArray("AliMUONDigit",10000),i); 
+          }
+        }
       for (int i=0; i<AliMUONConstants::NCh(); i++) {
 	  sprintf(branchname,"%sDigits%d",GetName(),i+1);
-	  if (fDchambers) {
+                        
+                      if (fDchambers) {
 	      branch = treeD->GetBranch(branchname);
 	      if (branch) branch->SetAddress(&((*fDchambers)[i]));
 	  }
@@ -685,6 +620,14 @@ void AliMUON::SetTreeAddress()
   // printf("SetTreeAddress --- treeR address  %p \n",treeR);
 
   if (treeR) {
+      if (fRawClusters == 0x0)
+      {
+        fRawClusters = new TObjArray(AliMUONConstants::NTrackingCh());
+        for (Int_t i=0; i<AliMUONConstants::NTrackingCh();i++) {
+            fRawClusters->AddAt(new TClonesArray("AliMUONRawCluster",10000),i); 
+        }
+      }
+      
       for (int i=0; i<AliMUONConstants::NTrackingCh(); i++) {
 	  sprintf(branchname,"%sRawClusters%d",GetName(),i+1);
 	  if (fRawClusters) {
@@ -693,10 +636,19 @@ void AliMUON::SetTreeAddress()
 	  }
       }
 
+      if (fLocalTrigger == 0x0) {
+        fLocalTrigger  = new TClonesArray("AliMUONLocalTrigger",234);
+      }
+
       if (fLocalTrigger) {
 	branch = treeR->GetBranch("MUONLocalTrigger");
 	if (branch) branch->SetAddress(&fLocalTrigger);
       }
+      
+      if (fGlobalTrigger == 0x0) {
+        fGlobalTrigger = new TClonesArray("AliMUONGlobalTrigger",1); 
+      }
+      
       if (fGlobalTrigger) {
 	branch = treeR->GetBranch("MUONGlobalTrigger");
 	if (branch) branch->SetAddress(&fGlobalTrigger);
@@ -915,9 +867,9 @@ void AliMUON::SDigits2Digits()
     fMerger->Init();
     fMerger->Digitise();
     char hname[30];
-    sprintf(hname,"TreeD%d",gAlice->GetHeader()->GetEvent());
-    gAlice->TreeD()->Write(hname,TObject::kOverwrite);
-    gAlice->TreeD()->Reset();
+    //    sprintf(hname,"TreeD%d",fLoader->GetHeader()->GetEvent());
+    fLoader->TreeD()->Write(hname,TObject::kOverwrite);
+    fLoader->TreeD()->Reset();
 }
 
 //___________________________________________
@@ -987,6 +939,7 @@ void AliMUON::Trigger(Int_t nev){
   decision->Trigger();   
   decision->GetGlobalTrigger(singlePlus, singleMinus, singleUndef,
 			     pairUnlike, pairLike);
+
 // add a local trigger in the list 
   AddGlobalTrigger(singlePlus, singleMinus, singleUndef, pairUnlike, pairLike);
   Int_t i;
@@ -1008,14 +961,17 @@ void AliMUON::Trigger(Int_t nev){
 	  AddLocalTrigger(localtr);  // add a local trigger in the list
       }
   }
+
   delete decision;
 
-  gAlice->TreeR()->Fill();
+  fLoader->TreeR()->Fill();
+//  char hname[30];
+//  sprintf(hname,"TreeR%d",nev);
+//  fLoader->TreeR()->Write(hname,TObject::kOverwrite);
+//  fLoader->TreeR()->Reset();
+  fLoader->WriteRecPoints("OVERWRITE");
   ResetTrigger();
-  char hname[30];
-  sprintf(hname,"TreeR%d",nev);
-  gAlice->TreeR()->Write(hname,TObject::kOverwrite);
-  gAlice->TreeR()->Reset();
+  
   printf("\n End of trigger for event %d", nev);
 }
 
@@ -1025,11 +981,12 @@ void AliMUON::Digits2Reco()
 {
   FindClusters();
   Int_t nev = gAlice->GetHeader()->GetEvent();
-  gAlice->TreeR()->Fill();
-  char hname[30];
-  sprintf(hname,"TreeR%d", nev);
-  gAlice->TreeR()->Write(hname);
-  gAlice->TreeR()->Reset();
+  fLoader->TreeR()->Fill();
+  // char hname[30];
+  // sprintf(hname,"TreeR%d", nev);
+  //fLoader->TreeR()->Write(hname);
+  //fLoader->TreeR()->Reset();
+  fLoader->WriteRecPoints("OVERWRITE");
   ResetRawClusters();        
   printf("\n End of cluster finding for event %d", nev);
 }
@@ -1044,20 +1001,22 @@ void AliMUON::FindClusters()
     dig1 = new TClonesArray("AliMUONDigit",1000);
     dig2 = new TClonesArray("AliMUONDigit",1000);
     AliMUONDigit *digit;
-//
 // Loop on chambers and on cathode planes
 //
     ResetRawClusters();        
+    TClonesArray * muonDigits;
+
     for (Int_t ich = 0; ich < 10; ich++) {
       //PH	AliMUONChamber* iChamber = (AliMUONChamber*) (*fChambers)[ich];
 	AliMUONChamber* iChamber = (AliMUONChamber*) fChambers->At(ich);
 	AliMUONClusterFinderVS* rec = iChamber->ReconstructionModel();
     
-	gAlice->ResetDigits();
-	gAlice->TreeD()->GetEvent(0);
-	TClonesArray *muonDigits = this->DigitsAddress(ich);
+	ResetDigits();
+	fLoader->TreeD()->GetEvent(0);
+	//TClonesArray *
+	muonDigits = (TClonesArray *) Dchambers()->At(ich);
 	ndig=muonDigits->GetEntriesFast();
-	printf("\n 1 Found %d digits in %p %d", ndig, muonDigits,ich);
+	printf("\n 1 Found %d digits in %p chamber %d", ndig, muonDigits,ich);
 	TClonesArray &lhits1 = *dig1;
 	Int_t n = 0;
 	for (k = 0; k < ndig; k++) {
@@ -1065,9 +1024,10 @@ void AliMUON::FindClusters()
 	    if (rec->TestTrack(digit->Track(0)))
 		new(lhits1[n++]) AliMUONDigit(*digit);
 	}
-	gAlice->ResetDigits();
-	gAlice->TreeD()->GetEvent(1);
-	muonDigits  = this->DigitsAddress(ich);
+	ResetDigits();
+	fLoader->TreeD()->GetEvent(1);
+	//muonDigits  = this->DigitsAddress(ich);
+	muonDigits = (TClonesArray *) Dchambers()->At(ich);
 	ndig=muonDigits->GetEntriesFast();
 	printf("\n 2 Found %d digits in %p %d", ndig, muonDigits, ich);
 	TClonesArray &lhits2 = *dig2;
@@ -1240,7 +1200,7 @@ AliMUONRawCluster *AliMUON::RawCluster(Int_t ichamber, Int_t icathod, Int_t iclu
 //  Obsolete ??
     TClonesArray *muonRawCluster  = RawClustAddress(ichamber);
     ResetRawClusters();
-    TTree *treeR = gAlice->TreeR();
+    TTree *treeR = fLoader->TreeR();
     Int_t nent=(Int_t)treeR->GetEntries();
     treeR->GetEvent(nent-2+icathod-1);
     //treeR->GetEvent(icathod);

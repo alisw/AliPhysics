@@ -3,7 +3,7 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-// $Id: AliEvent.h,v 1.7 2003/02/03 13:19:44 nick Exp $
+// $Id: AliEvent.h,v 1.4 2002/06/25 09:38:28 nick Exp $
 
 #include "Riostream.h"
 #include <math.h>

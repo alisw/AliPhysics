@@ -13,65 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.8.10.1  2002/10/11 06:56:48  hristov
-Updating VirtualMC to v3-09-02
-
-Revision 1.9  2002/09/20 13:32:26  cussonno
-Minor bugs in the definition of the bending impact parameter corrected (thanks to A. Zinchenko)
-
-Revision 1.8  2001/04/25 14:50:42  gosset
-Corrections to violations of coding conventions
-
-Revision 1.7  2001/02/08 10:34:41  gosset
-Add a "real" default constructor.
-
-Revision 1.6  2001/02/05 14:49:29  hristov
-Compare() declared const (R.Brun)
-
-Revision 1.5  2001/01/08 11:01:02  gosset
-Modifications used for addendum to Dimuon TDR (JP Cussonneau):
-*. MaxBendingMomentum to make both a segment and a track (default 500)
-*. MaxChi2 per degree of freedom to make a track (default 100)
-*. MinBendingMomentum used also to make a track
-   and not only a segment (default 3)
-*. wider roads for track search in stations 1 to 3
-*. extrapolation to actual Z instead of Z(chamber) in FollowTracks
-*. in track fit:
-   - limits on parameters X and Y (+/-500)
-   - covariance matrices in double precision
-   - normalization of covariance matrices before inversion
-   - suppression of Minuit printouts
-*. correction against memory leak (delete extrapHit) in FollowTracks
-*. RMax to 10 degrees with Z(chamber) instead of fixed values;
-   RMin and Rmax cuts suppressed in NewHitForRecFromGEANT,
-   because useless with realistic geometry
-
-Revision 1.4  2000/06/30 10:15:48  gosset
-Changes to EventReconstructor...:
-precision fit with multiple Coulomb scattering;
-extrapolation to vertex with Branson correction in absorber (JPC)
-
-Revision 1.3  2000/06/25 13:06:39  hristov
-Inline functions moved from *.cxx to *.h files instead of forward declarations
-
-Revision 1.2  2000/06/15 07:58:48  morsch
-Code from MUON-dev joined
-
-Revision 1.1.2.4  2000/06/12 10:10:21  morsch
-Dummy copy constructor and assignment operator added
-
-Revision 1.1.2.3  2000/06/09 21:01:16  morsch
-Make includes consistent with new file structure.
-
-Revision 1.1.2.2  2000/06/09 12:58:05  gosset
-Removed comment beginnings in Log sections of .cxx files
-Suppressed most violations of coding rules
-
-Revision 1.1.2.1  2000/06/07 14:44:53  gosset
-Addition of files for track reconstruction in C++
-*/
+/* $Id$ */
 
 ///////////////////////////////////////////////////////////
 //

@@ -12,29 +12,8 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-/*
-  $Id$
-  $Log$
-  Revision 1.37  2002/10/14 14:57:07  hristov
-  Merging the VirtualMC branch to the main development branch (HEAD)
 
-  Revision 1.32.4.4  2002/10/14 13:14:08  hristov
-  Updating VirtualMC to v3-09-02
-
-  Revision 1.36  2002/09/11 10:32:41  hristov
-  Use new for arrays with variable size
-
-  Revision 1.35  2002/09/09 17:23:28  nilsen
-  Minor changes in support of changes to AliITSdigitS?D class'.
-
-  Revision 1.34  2002/06/07 16:32:28  nilsen
-  Latest SDD changes to speed up the SDD simulation code.
-
-  Revision 1.33  2002/04/24 22:02:31  nilsen
-  New SDigits and Digits routines, and related changes,  (including new
-  noise values).
-
- */
+/* $Id$ */
 
 #include <Riostream.h>
 #include <stdlib.h>
@@ -864,128 +843,6 @@ void AliITSsimulationSDD::AddDigit( Int_t i, Int_t j, Int_t signal ) {
     delete [] charges;
 }
 
-/*
-//____________________________________________
-void AliITSsimulationSDD::AddDigit(Int_t i, Int_t j, Int_t signal){
-    // Adds a Digit.
-    // tag with -1 signals coming from background tracks
-    // tag with -2 signals coming from pure electronic noise
-
-    Int_t digits[3], tracks[3], hits[3];
-    Float_t phys, charges[3];
-
-    Int_t trk[20], htrk[20];
-    Float_t chtrk[20];  
-
-    Bool_t do10to8=fResponse->Do10to8();
-
-    if(do10to8) signal=Convert8to10(signal); 
-    AliITSTransientDigit *obj = (AliITSTransientDigit*)fHitMap1->GetHit(i,j);
-    digits[0] = i;
-    digits[1] = j;
-    digits[2] = signal;
-    if (!obj) {
-        phys=0;
-        Int_t k;
-        for (k=0;k<3;k++) {
-            tracks[k]=-2;
-            charges[k]=0;
-            hits[k]=-1;
-        } // end for k
-        fITS->AddSimDigit(1,phys,digits,tracks,hits,charges); 
-    } else {
-        phys=obj->fPhysics;
-        TObjArray* trlist=(TObjArray*)obj->TrackList();
-        Int_t nptracks=trlist->GetEntriesFast();
-        if (nptracks > 20) {
-            Warning("AddDigit","nptracks=%d > 20 nptracks set to 20",nptracks);
-            nptracks=20;
-        } // end if nptracks > 20
-        Int_t tr;
-        for (tr=0;tr<nptracks;tr++) {
-            TVector &pp  =*((TVector*)trlist->At(tr));
-            trk[tr]=Int_t(pp(0));
-            htrk[tr]=Int_t(pp(1));
-            chtrk[tr]=(pp(2));
-        } // end for tr
-        if (nptracks > 1) {
-            SortTracks(trk,chtrk,htrk,nptracks);
-        } // end if nptracks > 1
-        Int_t i;
-        if (nptracks < 3 ) {
-            for (i=0; i<nptracks; i++) {
-                tracks[i]=trk[i];
-                charges[i]=chtrk[i];
-                hits[i]=htrk[i];
-            } // end for i
-            for (i=nptracks; i<3; i++) {
-                tracks[i]=-3;
-                hits[i]=-1;
-                charges[i]=0;
-            } // end for i
-        } else {
-            for (i=0; i<3; i++) {
-                tracks[i]=trk[i];
-                charges[i]=chtrk[i];
-                hits[i]=htrk[i];
-            } // end for i
-        } // end if/else nptracks < 3
-
-        fITS->AddSimDigit(1,phys,digits,tracks,hits,charges); 
- 
-    } // end if/else !obj
-}
-
-
-//______________________________________________________________________
-void AliITSsimulationSDD::SortTracks(Int_t *tracks,Float_t *charges,
-                                     Int_t *hits,Int_t ntr){
-    // Sort the list of tracks contributing to a given digit
-    // Only the 3 most significant tracks are acctually sorted
-    //  Loop over signals, only 3 times
-
-    Float_t qmax;
-    Int_t   jmax;
-    Int_t   idx[3]  = {-3,-3,-3};
-    Float_t jch[3]  = {-3,-3,-3};
-    Int_t   jtr[3]  = {-3,-3,-3};
-    Int_t   jhit[3] = {-3,-3,-3};
-    Int_t   i,j,imax;
-
-    if (ntr<3) imax = ntr;
-    else imax = 3;
-    for(i=0;i<imax;i++){
-        qmax = 0;
-        jmax = 0;
-        for(j=0;j<ntr;j++){
-            if((i == 1 && j == idx[i-1] )
-               ||(i == 2 && (j == idx[i-1] || j == idx[i-2]))) continue;
-            if(charges[j] > qmax) {
-                qmax = charges[j];
-                jmax=j;
-            } // end if charges[j]>qmax
-        } // end for j
-        if(qmax > 0) {
-            idx[i]  = jmax;
-            jch[i]  = charges[jmax]; 
-            jtr[i]  = tracks[jmax]; 
-            jhit[i] = hits[jmax]; 
-        } // end if qmax > 0
-    } // end for i
-
-    for(i=0;i<3;i++){
-        if (jtr[i] == -3) {
-            charges[i] = 0;
-            tracks[i]  = -3;
-            hits[i]    = -1;
-        } else {
-            charges[i] = jch[i];
-            tracks[i]  = jtr[i];
-            hits[i]    = jhit[i];
-        } // end if jtr[i] == -3
-    } // end for i
-}
-*/
 //______________________________________________________________________
 void AliITSsimulationSDD::ChargeToSignal(Bool_t bAddNoise) {
     // add baseline, noise, electronics and ADC saturation effects
@@ -1565,11 +1422,6 @@ void AliITSsimulationSDD::Compress1D(){
                     // this if(TMath::Abs(diff)<tol) ... else ...
                     if(TMath::Abs(diff)<tol) diff=0;
                     // or keep it as it was before
-                    /*
-                    if (tol==1 && (diff >= -2 && diff <= 1)) diff=0;
-                    if (tol==2 && (diff >= -4 && diff <= 3)) diff=0;
-                    if (tol==3 && (diff >= -16 && diff <= 15)) diff=0;
-                    */
                     AddDigit(idx,j,last+diff);
                 } else {
                     AddDigit(idx,j,signal);

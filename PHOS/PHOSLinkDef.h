@@ -5,6 +5,7 @@
 #pragma link off all functions;
 
 #pragma link C++ class AliPHOSEMCAGeometry+;
+#pragma link C++ class AliPHOSCPVBaseGeometry+;
 #pragma link C++ class AliPHOSCPVGeometry+;
 #pragma link C++ class AliPHOSSupportGeometry+;
 #pragma link C++ class AliPHOSGeometry+;
@@ -32,8 +33,8 @@
 #pragma link C++ class AliPHOSTrackSegmentMakerv1+;
 #pragma link C++ class AliPHOSRecParticle+;
 #pragma link C++ class AliPHOSPID+;
+#pragma link C++ class AliPHOSLoader+;
 #pragma link C++ class AliPHOSPIDv0+;
-#pragma link C++ class AliPHOSGetter+;
 #pragma link C++ class AliPHOSAnalyze+;
 #pragma link C++ class AliPHOSCPVDigit+;
 #pragma link C++ class AliPHOSQAVirtualCheckable+;
@@ -51,14 +52,17 @@
 #pragma link C++ class AliPHOSClusterizerv2+;
 #pragma link C++ class AliPHOSEvalRecPoint+;
 #pragma link C++ class AliPHOSPIDv1+;
+#pragma link C++ class AliPHOSMemoryWatcher+;
 #pragma link C++ class AliPHOSRaw2Digits+;
 #pragma link C++ class AliPHOSBeamTestEvent+;
-#pragma link C++ class AliPHOSCalibrManager+;
-#pragma link C++ class AliPHOSConTableDB+;
-#pragma link C++ class AliPHOSCalibrator+;
+#pragma link C++ class AliPHOSCalibrationDB+;
 #pragma link C++ class AliPHOSCalibrationData+;
-#pragma link C++ class AliPHOSJetFinder+;
-#pragma link C++ class AliPHOSJet+;
+#pragma link C++ class AliPHOSCalibrManager+;
+#pragma link C++ class AliPHOSCalibrator+;
+#pragma link C++ class AliPHOSConTableDB+;
+#pragma link C++ class AliPHOSGetter+;
 #pragma link C++ class AliPHOSFastGlobalReconstruction+;
+#pragma link C++ class AliPHOSJet+;
+#pragma link C++ class AliPHOSJetFinder+;
 
 #endif

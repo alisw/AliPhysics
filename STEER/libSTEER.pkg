@@ -1,4 +1,4 @@
-SRCS          =   \
+SRCS          = AliRunLoader.cxx AliLoader.cxx AliDataLoader.cxx  \
 AliDetector.cxx	AliHeader.cxx	AliMagF.cxx \
 AliDigit.cxx	AliHit.cxx	AliPoints.cxx \
 AliDisplay.cxx	AliRun.cxx AliGenerator.cxx \
@@ -23,4 +23,5 @@ HDRS:= $(SRCS:.cxx=.h)
 
 DHDR= STEERLinkDef.h
 
-EXPORT:=$(SRCS:.cxx=.h) AliConst.h AliCallf77.h 
+EXPORT:=$(SRCS:.cxx=.h) AliConst.h AliCallf77.h
+

@@ -13,30 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.7  2002/02/05 09:12:26  hristov
-Small mods for gcc 3.02
-
-Revision 1.6  2001/10/21 19:07:24  hristov
-Several pointers were set to zero in the default constructors to avoid memory management problems
-
-Revision 1.5  2001/01/26 19:57:22  hristov
-Major upgrade of AliRoot code
-
-Revision 1.4  2000/10/05 16:08:15  kowal2
-Changes due to a new class AliComplexCluster. Forward declarations.
-
-Revision 1.3  2000/07/10 20:57:39  hristov
-Update of TPC code and macros by M.Kowalski
-
-Revision 1.2  2000/06/30 12:07:49  kowal2
-Updated from the TPC-PreRelease branch
-
-Revision 1.1.2.1  2000/06/25 08:52:51  kowal2
-replacing AliClusterFinder
-
-*/
+/* $Id$ */
 
 //-----------------------------------------------------------------------------
 //

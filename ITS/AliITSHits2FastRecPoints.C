@@ -1,6 +1,4 @@
-TFile* AccessFile(TString inFile="galice.root", TString acctype="R");
-
-void AliITSHits2FastRecPoints (Int_t evNumber1=0,Int_t evNumber2=0, TString inFile = "galice.root", TString outFile="galice.root", Int_t nsignal=25, Int_t size=-1) 
+void AliITSHits2FastRecPoints (Int_t evNumber1=0,Int_t evNumber2=0, TString inFile = "galice.root", Int_t nsignal=25, Int_t size=-1) 
 {
   /////////////////////////////////////////////////////////////////////////
   //   
@@ -8,33 +6,68 @@ void AliITSHits2FastRecPoints (Int_t evNumber1=0,Int_t evNumber2=0, TString inFi
   //   
   /////////////////////////////////////////////////////////////////////////
 
+
   // Dynamically link some shared libs
 
   if (gClassTable->GetID("AliRun") < 0) {
     gROOT->LoadMacro("loadlibs.C");
     loadlibs();
-  } else {
-    delete gAlice;
-    gAlice=0;
+  } else if (gAlice){
+     delete gAlice->GetRunLoader();
+     delete gAlice; 
+     gAlice=0;
   }
 
   // Connect the Root Galice file containing Geometry, Kine and Hits
-  TFile *file;
-  if(outFile.Data() == inFile.Data()){
-    file = AccessFile(inFile,"U");
-  }
-  else {
-    file = AccessFile(inFile);
-  }
-
-  TFile *file2 = 0;   // possible output file for TreeR
-  if(!(outFile.Data() == inFile.Data())){
-      // open output file and create TreeR on it
-    file2 = gAlice->InitTreeFile("R",outFile);
-  }
-
-  AliITS *ITS  = (AliITS*) gAlice->GetModule("ITS");
-  if (!ITS) return;
+    AliRunLoader* rl = AliRunLoader::Open("galice.root");
+    if (rl == 0x0)
+     {
+       ::Error("AliITSHits2FastRecPoints.C","Can not open session RL=NULL");
+       return;
+     }
+     
+    Int_t retval = rl->LoadgAlice();
+    if (retval)
+     {
+       ::Error("AliITSHits2FastRecPoints.C","LoadgAlice returned error");
+       delete rl;
+       return;
+     }
+    gAlice=rl->GetAliRun();
+    rl->LoadHeader();
+    retval = rl->LoadKinematics();
+    if (retval)
+     {
+       ::Error("AliITSHits2FastRecPoints.C","LoadKinematics returned error");
+       delete rl;
+       return;
+     }
+    
+    AliITSLoader* gime = (AliITSLoader*)rl->GetLoader("ITSLoader");
+    if (gime == 0x0)
+     {
+       ::Error("AliITSHits2FastRecPoints.C","can not get ITS loader");
+       delete rl;
+       return;
+     }
+    retval = gime->LoadHits("read");
+    if (retval)
+     {
+       ::Error("AliITSHits2FastRecPoints.C","LoadHits returned error");
+       delete rl;
+       return;
+     }
+    gime->SetRecPointsFileName("ITS.FastRecPoints.root"); 
+    retval = gime->LoadRecPoints("update");
+    if (retval)
+     {
+       ::Error("AliITSHits2FastRecPoints.C","LoadRecPoints returned error");
+       delete rl;
+       return;
+     }
+    
+   AliITS *ITS  = (AliITS*) gAlice->GetModule("ITS");
+   if (!ITS) return;
 
   // Set the simulation model
 
@@ -57,51 +90,19 @@ void AliITSHits2FastRecPoints (Int_t evNumber1=0,Int_t evNumber2=0, TString inFi
     Int_t nparticles = gAlice->GetEvent(ev);
     cout << "event         " <<ev<<endl;
     cout << "nparticles  " <<nparticles<<endl;
-    gAlice->SetEvent(ev);
-    if(!gAlice->TreeR() && file2 == 0) gAlice-> MakeTree("R");
-    if(!gAlice->TreeR() && file2 != 0) gAlice->MakeTree("R",file2);
+    rl->GetEvent(ev);
+    if(gime->TreeR() == 0x0) gime->MakeTree("R");
+
     ITS->MakeBranch("RF");
     if (ev < evNumber1) continue;
     if (nparticles <= 0) return;
 
     Int_t bgr_ev=Int_t(ev/nsignal);
-    //printf("bgr_ev %d\n",bgr_ev);
     timer.Start();
     ITS->HitsToFastRecPoints(ev,bgr_ev,size," ","All"," ");
     timer.Stop(); timer.Print();
   } // event loop 
 
-  delete gAlice; gAlice=0;
-  file->Close();
+  delete rl;
 }
 
-
-//-------------------------------------------------------------------
-TFile * AccessFile(TString FileName, TString acctype){
-
-  // Function used to open the input file and fetch the AliRun object
-
-  TFile *retfil = 0;
-  TFile *file = (TFile*)gROOT->GetListOfFiles()->FindObject(FileName);
-  if (file) {file->Close(); delete file; file = 0;}
-  if(acctype.Contains("U")){
-    file = new TFile(FileName,"update");
-  }
-  if(acctype.Contains("N") && !file){
-    file = new TFile(FileName,"recreate");
-  }
-  if(!file) file = new TFile(FileName);   // default readonly
-  if (!file->IsOpen()) {
-	cerr<<"Can't open "<<FileName<<" !" << endl;
-	return retfil;
-  } 
-
-  // Get AliRun object from file or return if not on file
-  if (gAlice) {delete gAlice; gAlice = 0;}
-  gAlice = (AliRun*)file->Get("gAlice");
-  if (!gAlice) {
-	cerr << "AliRun object not found on file"<< endl;
-	return retfil;
-  } 
-  return file;
-}

@@ -4,7 +4,6 @@
  * See cxx source for full Copyright notice                               */
 
 /* $Id$ */                   
-
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
 //   The TRD particle identification base class                              //

@@ -13,7 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-
+/* $Id$ */
 
 ///////////////////////////////////////////////////////////////////////////
 //                                                                       //
@@ -25,13 +25,9 @@
 //                                                                       //
 ///////////////////////////////////////////////////////////////////////////
 
-#include <Riostream.h>
+
 #include <Riostream.h>
 
-#include "TMath.h"
-#include "TTUBE.h"
-#include "TNode.h"
-#include "TGeometry.h"
 #include "AliRun.h"
 #include "AliVZERO.h"
 #include "AliVZEROdigit.h"

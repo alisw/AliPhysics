@@ -13,41 +13,46 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+/* $Id$ */
+
 //_________________________________________________________________________
 // This is a TTask for reconstruction V2 in TOF
 // Description of the algorithm
 //-- Author: F. Pierella | pierella@bo.infn.it
 //////////////////////////////////////////////////////////////////////////////
 
-#include "TBenchmark.h"
-#include "TFile.h"
-#include "TFolder.h"
-#include "TParticle.h"
-#include "TTask.h"
-#include "TTree.h"
-#include "TClonesArray.h"
-#include "TROOT.h"
-#include "TSystem.h"
+
+#include <Riostream.h>
 #include <stdlib.h>
-#include <Riostream.h>
-#include <Riostream.h>
-#include "TGeant3.h"
-#include "TVirtualMC.h"
 
-#include "AliDetector.h"
-#include "AliRun.h"
-#include "AliTOF.h"
-#include "AliTOFDigitMap.h"
-#include "AliTOFHitMap.h"
-#include "AliTOFhitT0.h"
-#include "AliTOFdigit.h"
-#include "AliTOFConstants.h"
-#include "AliTOFReconstructionerV2.h"
-#include "AliTOFTrackV2.h"
+#include <TBenchmark.h>
+#include <TClonesArray.h>
+#include <TFile.h>
+#include <TFolder.h>
+#include <TGeant3.h>
+#include <TParticle.h>
+#include <TROOT.h>
+#include <TSystem.h>
+#include <TTask.h>
+#include <TTree.h>
+#include <TVirtualMC.h>
 
-#include "AliKalmanTrack.h"
 #include "../TPC/AliTPCtrack.h"
 #include "../TRD/AliTRDtrack.h"
+#include "AliDetector.h"
+#include "AliHeader.h"
+#include "AliKalmanTrack.h"
+#include "AliLoader.h"
+#include "AliRun.h"
+#include "AliRunLoader.h"
+#include "AliTOF.h"
+#include "AliTOFConstants.h"
+#include "AliTOFDigitMap.h"
+#include "AliTOFHitMap.h"
+#include "AliTOFReconstructionerV2.h"
+#include "AliTOFTrackV2.h"
+#include "AliTOFdigit.h"
+#include "AliTOFhitT0.h"
 
 ClassImp(AliTOFReconstructionerV2)
 
@@ -935,33 +940,44 @@ void AliTOFReconstructionerV2::Comparison(Int_t* rtIndex)
 
 
   Int_t nEvent = 0;
-  Char_t *alifile = "galice.root";
+  Char_t *datafile = "galice.root";
   
-  TFile *gafl = (TFile*) gROOT->GetListOfFiles()->FindObject(alifile);
-  if (!gafl) {
-    cout << "Open the ALIROOT-file " << alifile << endl;
-    gafl = new TFile(alifile);
-  }
-  else {
-    cout << alifile << " is already open" << endl;
-  }
-  
+  AliRunLoader *rl = AliRunLoader::Open(datafile);
+  if (rl == 0x0)
+   {
+     Error("Exec","Can not open session for file %s",datafile);
+     return;
+   }
   // Get AliRun object from file or create it if not on file
-  gAlice = (AliRun*) gafl->Get("gAlice");
+  rl->LoadgAlice();
+  gAlice = rl->GetAliRun();
   if (gAlice)
     cout << "AliRun object found on file" << endl;
   else
     gAlice = new AliRun("gAlice","Alice test program");
+
+
+  AliTOF* TOF = (AliTOF *) gAlice->GetDetector ("TOF");
+
   
   
   // Import the Trees for the event nEvent in the file
-  const Int_t nparticles = gAlice->GetEvent(nEvent);
+  rl->GetEvent(nEvent);
+  const Int_t nparticles = rl->GetNumberOfEvents();
   if (nparticles <= 0) return;
 
+  AliLoader* tofloader = rl->GetLoader("TOFLoader");
+  if (tofloader == 0x0)
+   {
+    Error("AliTOFReconstructioner","Can not get TOF Loader from Run Loader.");
+    delete rl;
+    return;
+   }
+
   // Get pointers to Alice detectors and Hits containers
-  AliDetector *TOF  = gAlice->GetDetector("TOF");
-  Int_t ntracks    = (Int_t) gAlice->TreeH()->GetEntries();     
-  
+  tofloader->LoadHits();
+  Int_t ntracks    = (Int_t) tofloader->TreeH()->GetEntries();     
+  TOF->SetTreeAddress();
   // Start loop on tracks in the hits containers
   for (Int_t track=0; track < ntracks; track++) {
     

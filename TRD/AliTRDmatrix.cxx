@@ -13,63 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.10.12.2  2002/07/24 10:09:30  alibrary
-Updating VirtualMC
-
-Revision 1.10.12.1  2002/06/10 15:28:58  hristov
-Merged with v3-08-02
-
-Revision 1.11  2002/03/28 14:59:07  cblume
-Coding conventions
-
-Revision 1.11  2002/03/28 14:59:07  cblume
-Coding conventions
-
-Revision 1.10  2000/11/20 08:56:51  cblume
-Fix the binning of the histograms
-
-Revision 1.9  2000/11/01 14:53:21  cblume
-Merge with TRD-develop
-
-Revision 1.4.2.5  2000/10/17 02:27:34  cblume
-Get rid of global constants
-
-Revision 1.4.2.4  2000/10/06 16:49:46  cblume
-Made Getters const
-
-Revision 1.4.2.3  2000/10/04 16:34:58  cblume
-Replace include files by forward declarations
-
-Revision 1.8  2000/06/09 11:10:07  cblume
-Compiler warnings and coding conventions, next round
-
-Revision 1.7  2000/06/08 18:32:58  cblume
-Make code compliant to coding conventions
-
-Revision 1.6  2000/05/08 15:48:30  cblume
-Resolved merge conflict
-
-Revision 1.4.2.2  2000/05/08 14:50:58  cblume
-Add functions ProjRow(), ProjCol(), and ProjTime()
-
-Revision 1.4.2.1  2000/04/27 12:47:02  cblume
-Replace Fill3() by Fill()
-
-Revision 1.4  2000/02/28 19:10:26  cblume
-Include the new TRD classes
-
-Revision 1.3.4.1  2000/02/28 17:57:47  cblume
-GetTrack returns now -1 if no track is found
-
-Revision 1.3  1999/10/04 14:48:07  fca
-Avoid warnings on non-ansi compiler HP-UX CC
-
-Revision 1.2  1999/09/29 09:24:35  fca
-Introduction of the Copyright and cvs Log
-
-*/
+/* $Id$ */
 
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //

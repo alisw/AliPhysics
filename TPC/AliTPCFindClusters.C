@@ -13,26 +13,71 @@
   #include "TStopwatch.h"
 #endif
 
-Int_t AliTPCFindClusters(Int_t n=1) {
-   TFile *out=TFile::Open("AliTPCclusters.root","new");
-   if (!out->IsOpen()) {cerr<<"Delete old AliTPCclusters.root !\n"; return 1;}
-   TFile *in=TFile::Open("rfio:galice.root");
-   if (!in->IsOpen()) {cerr<<"Can't open galice.root !\n"; return 2;}
+Int_t AliTPCFindClusters(Int_t N=-1) 
+ {
+   
+   if (gAlice)
+    {
+      delete gAlice->GetRunLoader();
+      delete gAlice;//if everything was OK here it is already NULL
+      gAlice = 0x0;
+    }
+    
+   AliRunLoader* rl = AliRunLoader::Open("galice.root");
+   if (rl == 0x0)
+    {
+      cerr<<"Can not open session"<<endl;
+      return 1;
+    }
+   
+   if (rl->LoadgAlice())
+    {
+      cerr<<"Error occured while l"<<endl;
+      return 1;
+    }
+   AliKalmanTrack::SetConvConst(1000/0.299792458/rl->GetAliRun()->Field()->SolenoidField());
+   
+   tpcl = (AliTPCLoader*)rl->GetLoader("TPCLoader");
+   if (tpcl == 0x0)
+    {
+      cerr<<"Can not get TPC Loader"<<endl;
+      return 1;
+    }
 
-   if (!(gAlice=(AliRun*)in->Get("gAlice"))) {
-     cerr<<"gAlice have not been found on galice.root !\n";
-     return 3;
+   gAlice=rl->GetAliRun();
+   if (!gAlice) {
+      cerr<<"Can't get gAlice !\n";
+      return 1;
    }
-
-   TDirectory *cwd = gDirectory;
 
    AliTPC *TPC = (AliTPC*)gAlice->GetDetector("TPC"); 
    Int_t ver = TPC->IsVersion(); 
    cerr<<"TPC version "<<ver<<" has been found !\n";
 
-   AliTPCParam *dig=(AliTPCParam *)in->Get("75x40_100x60_150x60");
-   if (!dig) {cerr<<"TPC parameters have not been found !\n"; return 4;}
+   rl->CdGAFile();
+   AliTPCParam *dig=(AliTPCParam *)gDirectory->Get("75x40_100x60_150x60");
+   if (!dig) 
+    {
+     dig=(AliTPCParam *)gDirectory->Get("75x40_100x60");
+     if (!param) 
+      {
+        cerr<<"TPC parameters have not been found !\n";
+        return 1;
+      }
+     else
+      {
+        cout<<"TPC 75x40_100x60 geometry found"<<endl;
+      }
+    }
+   else
+    {
+      cout<<"TPC 75x40_100x60_150x60  geometry found"<<endl;
+    }
 
+   Int_t n;
+   if (N<=0) n = rl->GetNumberOfEvents();
+   else n=N;
+   
    TStopwatch timer;
 
    switch (ver) {
@@ -41,9 +86,12 @@ Int_t AliTPCFindClusters(Int_t n=1) {
       {
        AliTPCv1 &tpc=*((AliTPCv1*)TPC);
        tpc.SetParam(dig); timer.Start(); cwd->cd(); 
+       tpc.SetLoader(tpcl);
+       tpcl->LoadHits("read");
+       tpcl->LoadRecPoints("recreate");
        for(Int_t i=0;i<n;i++){
          printf("Processing event %d\n",i);
-         gAlice->GetEvent(i);
+         rl->GetEvent(i);
          tpc.Hits2Clusters(out,i);
        } 
       }
@@ -52,27 +100,29 @@ Int_t AliTPCFindClusters(Int_t n=1) {
       cerr<<"Looking for clusters...\n";
       {
 	// delete gAlice; gAlice=0;
-       AliTPCv2 tpc; 
-       tpc.SetParam(dig); timer.Start(); cwd->cd();  
-       for (Int_t i=0;i<n;i++){
-	 printf("Processing event %d\n",i);
-         tpc.Digits2Clusters(out,i);
-	 //	 AliTPCclusterer::Digits2Clusters(dig, out, i);
+       AliTPCv2 * tpc = new AliTPCv2();
+       tpc->SetLoader(tpcl);
+       tpcl->LoadDigits("read");
+       tpcl->LoadRecPoints("recreate");
+
+       tpc->SetParam(dig); timer.Start();
+       for (Int_t i=0;i<n;i++)
+        {
+         printf("Processing event %d\n",i);
+         tpc->Digits2Clusters(i);
+         //AliTPCclusterer::Digits2Clusters(dig, out, i);
        }
+       delete tpc;
       }
       break;
    default:
       cerr<<"Invalid TPC version !\n";
+      delete rl;
       return 5;
    }
 
    timer.Stop(); timer.Print();
 
-   delete gAlice; gAlice=0;
-
-   out->Close();
-
-   in->Close();
-
+   delete rl;
    return 0;
 }

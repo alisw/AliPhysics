@@ -86,7 +86,6 @@ ClassImp(AliPHOSRaw2Digits)
   fMK4 = 0x80618061 ;
   fCKW = 0x4640E400 ;
   fDebug = kFALSE;             //  Debug flag
-  fToSplit = kFALSE ;
   fIsInitialized = kFALSE ;
   fTarget[0] = 0 ;
   fTarget[1] = 0 ;
@@ -100,20 +99,17 @@ ClassImp(AliPHOSRaw2Digits)
   fctdb = 0;
 }
 //____________________________________________________________________________ 
-  AliPHOSRaw2Digits::AliPHOSRaw2Digits(const char * filename,Bool_t toSplit):TTask("Default","") 
+  AliPHOSRaw2Digits::AliPHOSRaw2Digits(const char * filename):TTask("Default","") 
 {
-  //this constructor should be normally used. Parameters: imput file and should we produce output in split mode.
+  //this constructor should be normally used. Parameters: imput file 
   fInName=filename;
-  fToSplit = toSplit ;
   TString outname("") ;
-  if(fToSplit)
-    outname = "galice.root" ;
-  else{
-    outname =fInName ;
-    outname.ToLower() ;
-    outname.ReplaceAll(".fz",".root") ;
-    outname.ReplaceAll(".gz","") ;
-  }
+ 
+  outname =fInName ;
+  outname.ToLower() ;
+  outname.ReplaceAll(".fz",".root") ;
+  outname.ReplaceAll(".gz","") ;
+  
   SetTitle(outname) ;
 
   fMK1 = 0x0123CDEF ;
@@ -138,7 +134,6 @@ ClassImp(AliPHOSRaw2Digits)
 AliPHOSRaw2Digits::AliPHOSRaw2Digits(AliPHOSRaw2Digits & r2d):TTask(r2d.GetName(), r2d.GetTitle()) 
 {
   fInName=r2d.fInName ;
-  fToSplit = r2d.fToSplit ;
 
   fMK1 =  r2d.fMK1 ;
   fMK2 =  r2d.fMK2 ;
@@ -198,73 +193,74 @@ Bool_t AliPHOSRaw2Digits::Init(void){
 }
 //____________________________________________________________________________ 
 Bool_t AliPHOSRaw2Digits::StartRootFiles(void ){
-  //Create PHOS geometry, sets magnetic field to zero, 
-  //create Generator - to store target position, 
-  //opens out file, creates TreeE 
+//   //Create PHOS geometry, sets magnetic field to zero, 
+//   //create Generator - to store target position, 
+//   //opens out file, creates TreeE 
 
-  //create gAlice if nececcary
-  if(!gAlice)
-    new AliRun("gAlice","The ALICE Off-line Simulation Framework") ;
+//   //create gAlice if nececcary
+//   if(!gAlice)
+//     new AliRun("gAlice","The ALICE Off-line Simulation Framework") ;
 
-  //Create PHOS
-  if(!gAlice->GetModule("PHOS"))
-    new AliPHOSv1("PHOS","GPS2") ;
+//   //Create PHOS
+//   if(!gAlice->GetModule("PHOS"))
+//     new AliPHOSv1("PHOS","GPS2") ;
 
-  //Set Magnetic field
-  gAlice->SetField(0,2);  
+//   //Set Magnetic field
+//   gAlice->SetField(0,2);  
 
-  //Set positin of the virtex
-  AliGenerator * gener = gAlice->Generator() ; 
-  if(!gener)    
-    gener = new AliGenBox(1);
-  Float_t ox = fTarget[1]; 
-  Float_t oy = fTarget[2]+460.; 
-  Float_t oz = fTarget[0];
-  gener->SetOrigin(ox, oy, oz);
+//   //Set positin of the virtex
+//   AliGenerator * gener = gAlice->Generator() ; 
+//   if(!gener)    
+//     gener = new AliGenBox(1);
+//   Float_t ox = fTarget[1]; 
+//   Float_t oy = fTarget[2]+460.; 
+//   Float_t oz = fTarget[0];
+//   gener->SetOrigin(ox, oy, oz);
 
-  //make directory 
-  Int_t nRootFile = (fEvent+1)/fMaxPerFile ;	
-  if(nRootFile){
-    char dname[20];
-    sprintf(dname,"%d",nRootFile) ;
-    if(gSystem->AccessPathName(dname)) //strange return: 0 if exists
-      if(gSystem->MakeDirectory(dname)!=0)
-	Fatal("StartRootFiles","Can not make directory %s \n",dname) ;
+//   //make directory 
+//   Int_t nRootFile = (fEvent+1)/fMaxPerFile ;	
+//   if(nRootFile){
+//     char dname[20];
+//     sprintf(dname,"%d",nRootFile) ;
+//     if(gSystem->AccessPathName(dname)) //strange return: 0 if exists
+//       if(gSystem->MakeDirectory(dname)!=0)
+// 	Fatal("StartRootFiles","Can not make directory %s \n",dname) ;
     
-    if(!gSystem->ChangeDirectory(dname))
-      Fatal("StartRootFiles","Can not cd to %s\n",dname) ;
-  }
+//     if(!gSystem->ChangeDirectory(dname))
+//       Fatal("StartRootFiles","Can not cd to %s\n",dname) ;
+//   }
 
-  //  Create the output file
-  TString outname("") ;
-  if(strstr(GetTitle(),"root")){
-    outname=GetTitle();
-  }
-  else{
-    outname = fInName ;
-    outname.ToLower() ;
-    outname.ReplaceAll(".fz",".root") ;
-  }
+//   //  Create the output file
+//   TString outname("") ;
+//   if(strstr(GetTitle(),"root")){
+//     outname=GetTitle();
+//   }
+//   else{
+//     outname = fInName ;
+//     outname.ToLower() ;
+//     outname.ReplaceAll(".fz",".root") ;
+//   }
 
-  fHeaderFile = new TFile(outname,"recreate");
-  fHeaderFile->SetCompressionLevel(2);
+//   fHeaderFile = new TFile(outname,"recreate");
+//   fHeaderFile->SetCompressionLevel(2);
   
-  // Create the Root Trees
-  gAlice->MakeTree("E") ;
+//   // Create the Root Trees
   
-  //Fill now TreeE
-  Int_t splitlevel = 0 ;
-  Int_t bufferSize = 32000 ;    
-  TBranch * headerBranch = gAlice->TreeE()->Branch("AliPHOSBeamTestEvent", 
-						   "AliPHOSBeamTestEvent", 
-						   &fPHOSHeader,bufferSize,splitlevel);
-  headerBranch->SetName("AliPHOSBeamTestEvent") ;
+//   gime->MakeTree("E") ;
+  
+//   //Fill now TreeE
+//   Int_t splitlevel = 0 ;
+//   Int_t bufferSize = 32000 ;    
+//   TBranch * headerBranch = gAlice->TreeE()->Branch("AliPHOSBeamTestEvent", 
+// 						   "AliPHOSBeamTestEvent", 
+// 						   &fPHOSHeader,bufferSize,splitlevel);
+//   headerBranch->SetName("AliPHOSBeamTestEvent") ;
 
-  if(fToSplit){
-    fDigitsFile = new TFile("PHOS.Digits.root","recreate") ;
-    fDigitsFile->SetCompressionLevel(2) ;
-  }
-  return kTRUE ;
+// //   if(fToSplit){
+// //     fDigitsFile = new TFile("PHOS.Digits.root","recreate") ;
+// //     fDigitsFile->SetCompressionLevel(2) ;
+// //   }
+   return kTRUE ;
 }
 //____________________________________________________________________________ 
 Bool_t AliPHOSRaw2Digits::CloseRootFiles(void ){

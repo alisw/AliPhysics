@@ -13,57 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.21  2002/02/20 14:01:40  hristov
-Compare a TString with a string, otherwise the conversion cannot be done on Sun
-
-Revision 1.20  2002/02/13 16:58:37  cblume
-Bug fix reported by Jiri. Make atoi input zero terminated in StepManager()
-
-Revision 1.19  2002/02/11 14:25:27  cblume
-Geometry update, compressed hit structure
-
-Revision 1.18  2000/11/30 17:38:08  cblume
-Changes to get in line with new STEER and EVGEN
-
-Revision 1.17  2000/11/01 14:53:21  cblume
-Merge with TRD-develop
-
-Revision 1.14.2.3  2000/10/06 16:49:46  cblume
-Made Getters const
-
-Revision 1.14.2.2  2000/10/04 16:34:58  cblume
-Replace include files by forward declarations
-
-Revision 1.14.2.1  2000/09/18 13:48:18  cblume
-Adapt to new AliTRDhit
-
-Revision 1.16  2000/06/08 18:32:58  cblume
-Make code compliant to coding conventions
-
-Revision 1.15  2000/06/07 16:25:37  cblume
-Try to remove compiler warnings on Sun and HP
-
-Revision 1.14  2000/02/28 19:10:26  cblume
-Include the new TRD classes
-
-Revision 1.13.4.1  2000/02/28 18:01:53  cblume
-Change to new hit version and introduce geometry class
-
-Revision 1.13  1999/11/05 22:50:28  fca
-Do not use Atan, removed from ROOT too
-
-Revision 1.12  1999/11/02 16:35:56  fca
-New version of TRD introduced
-
-Revision 1.11  1999/11/01 20:41:51  fca
-Added protections against using the wrong version of FRAME
-
-Revision 1.10  1999/09/29 09:24:35  fca
-Introduction of the Copyright and cvs Log
-
-*/
+/* $Id$ */
 
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
@@ -80,17 +30,17 @@ Introduction of the Copyright and cvs Log
 
 #include <stdlib.h> 
 
+#include <TLorentzVector.h>
 #include <TMath.h>
 #include <TRandom.h>
 #include <TVector.h> 
-#include <TLorentzVector.h>
+#include <TVirtualMC.h>
 
-#include "AliRun.h"
 #include "AliConst.h"
-  
-#include "AliTRDv0.h"
-#include "AliTRDhit.h"
+#include "AliRun.h"
 #include "AliTRDgeometry.h"
+#include "AliTRDhit.h"
+#include "AliTRDv0.h"
 
 ClassImp(AliTRDv0)
   

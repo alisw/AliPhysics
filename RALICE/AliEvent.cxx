@@ -13,7 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-// $Id: AliEvent.cxx,v 1.10 2003/02/03 13:19:44 nick Exp $
+// $Id: AliEvent.cxx,v 1.6 2002/04/26 11:23:37 nick Exp $
 
 ///////////////////////////////////////////////////////////////////////////
 // Class AliEvent
@@ -220,6 +220,7 @@ AliEvent::AliEvent(Int_t n): AliVertex(n)
 {
 // Create an event to hold initially a maximum of n tracks
 // All variables initialised to default values
+ cout << "AliEvent init with n = " << n << endl;
  fDaytime.Set();
  fRun=0;
  fEvent=0;

@@ -23,7 +23,6 @@
 
 
 // --- ROOT system ---
-#include "TPad.h"
 #include "TH2.h"
 #include "TMath.h" 
 #include "TCanvas.h" 
@@ -125,8 +124,7 @@ Bool_t AliEMCALTowerRecPoint::AreNeighbours(AliEMCALDigit * digit1, AliEMCALDigi
   
   Bool_t aren = kFALSE ;
   
-  AliEMCALGetter * gime = AliEMCALGetter::GetInstance() ; 
-  AliEMCALGeometry * phosgeom =  (AliEMCALGeometry*)gime->EMCALGeometry();
+  AliEMCALGeometry * phosgeom =  (AliEMCALGetter::Instance())->EMCALGeometry();
 
   Int_t relid1[4] ; 
   phosgeom->AbsToRelNumbering(digit1->GetId(), relid1) ; 
@@ -196,10 +194,8 @@ void AliEMCALTowerRecPoint::ExecuteEvent(Int_t event, Int_t px, Int_t py) const
   //  and switched off when the mouse button is released.
   
     
-  // AliEMCALGetter * gime =  AliEMCALGetter::GetInstance() ; 
-//   if(!gime) return ;
-//   AliEMCALGeometry * emcalgeom =  (AliEMCALGeometry*)gime->EMCALGeometry();
-  
+  //    AliEMCALGeometry * phosgeom =  (AliEMCALGetter::Instance())->EMCALGeometry();
+
 //   static TGraph *  digitgraph = 0 ;
   
 //   if (!gPad->IsEditable()) return;
@@ -305,7 +301,7 @@ void  AliEMCALTowerRecPoint::EvalDispersion(Float_t logWeight,TClonesArray * dig
 
   AliEMCALDigit * digit ;
  
-  AliEMCALGeometry * emcalgeom = AliEMCALGetter::GetInstance()->EMCALGeometry();
+  AliEMCALGeometry * emcalgeom = (AliEMCALGetter::Instance())->EMCALGeometry();
   
 
  // Calculates the center of gravity in the local EMCAL-module coordinates 
@@ -321,10 +317,10 @@ void  AliEMCALTowerRecPoint::EvalDispersion(Float_t logWeight,TClonesArray * dig
   
   if (IsInPRE()) 
     cyl_radius = emcalgeom->GetIP2PRESection() ;
-  else if (IsInECAL()) 
-    cyl_radius = emcalgeom->GetIP2ECALSection() ;
-  else if (IsInHCAL()) 
-    cyl_radius = emcalgeom->GetIP2HCALSection() ;
+  else if (IsInECA()) 
+    cyl_radius = emcalgeom->GetIP2ECASection() ;
+  else if (IsInHCA()) 
+    cyl_radius = emcalgeom->GetIP2HCASection() ;
   else 
     Fatal("EvalDispersion", "Unexpected tower section!") ; 
   
@@ -375,7 +371,7 @@ void AliEMCALTowerRecPoint::EvalCoreEnergy(Float_t logWeight, TClonesArray * dig
   AliEMCALDigit * digit ;
   Float_t wtot = 0. ;
 
-  AliEMCALGeometry * emcalgeom = AliEMCALGetter::GetInstance()->EMCALGeometry();    
+  AliEMCALGeometry * emcalgeom = (AliEMCALGetter::Instance())->EMCALGeometry();    
   Int_t iDigit;
 
   if (!fTheta || !fPhi ) {
@@ -402,7 +398,7 @@ void AliEMCALTowerRecPoint::EvalCoreEnergy(Float_t logWeight, TClonesArray * dig
   
   const Float_t kDeg2Rad = TMath::DegToRad() ; 
   
-  Float_t cyl_radius = emcalgeom->GetIP2ECALSection();
+  Float_t cyl_radius = emcalgeom->GetIP2ECASection();
   Float_t x =  cyl_radius * TMath::Cos(fPhi * kDeg2Rad ) ;
   Float_t y =  cyl_radius * TMath::Cos(fPhi * kDeg2Rad ) ; 
   Float_t z =  cyl_radius * TMath::Tan(fTheta * kDeg2Rad ) ; 
@@ -438,7 +434,7 @@ void  AliEMCALTowerRecPoint::EvalElipsAxis(Float_t logWeight,TClonesArray * digi
 
   AliEMCALDigit * digit ;
 
-  AliEMCALGeometry * emcalgeom = AliEMCALGetter::GetInstance()->EMCALGeometry();
+  AliEMCALGeometry * emcalgeom = (AliEMCALGetter::Instance())->EMCALGeometry();
 
   Int_t iDigit;
   const Float_t kDeg2Rad = TMath::DegToRad() ; 
@@ -447,10 +443,10 @@ void  AliEMCALTowerRecPoint::EvalElipsAxis(Float_t logWeight,TClonesArray * digi
   
   if (IsInPRE()) 
     cyl_radius = emcalgeom->GetIP2PRESection() ;
-  else if (IsInECAL()) 
-    cyl_radius = emcalgeom->GetIP2ECALSection() ;
-  else if (IsInHCAL()) 
-    cyl_radius = emcalgeom->GetIP2HCALSection() ;
+  else if (IsInECA()) 
+    cyl_radius = emcalgeom->GetIP2ECASection() ;
+  else if (IsInHCA()) 
+    cyl_radius = emcalgeom->GetIP2HCASection() ;
   else 
     Fatal("EvalDispersion", "Unexpected tower section!") ; 
 
@@ -483,8 +479,7 @@ void  AliEMCALTowerRecPoint::EvalElipsAxis(Float_t logWeight,TClonesArray * digi
     //   //Apply correction due to non-perpendicular incidence
 //   Double_t CosX ;
 //   Double_t CosZ ;
-//   AliEMCALGetter * gime = AliEMCALGetter::GetInstance() ; 
-//   AliEMCALGeometry * emcalgeom =  (AliEMCALGeometry*)gime->EMCALGeometry();
+//   AliEMCALGeometry * emcalgeom = (AliEMCALGetter::Instance())->EMCALGeometry();
   //   Double_t DistanceToIP= (Double_t ) emcalgeom->GetIPDistance() ;
   
 //   CosX = DistanceToIP/TMath::Sqrt(DistanceToIP*DistanceToIP+x*x) ;
@@ -532,7 +527,7 @@ void AliEMCALTowerRecPoint::EvalGlobalPosition(Float_t logWeight, TClonesArray *
   //  Int_t relid[4] ;
   
   AliEMCALDigit * digit ;
-  AliEMCALGeometry * emcalgeom  =  AliEMCALGetter::GetInstance()->EMCALGeometry();
+  AliEMCALGeometry * emcalgeom  =  (AliEMCALGetter::Instance())->EMCALGeometry();
   Int_t iDigit;
 
   for(iDigit=0; iDigit<fMulDigit; iDigit++) {
@@ -562,10 +557,10 @@ void AliEMCALTowerRecPoint::EvalGlobalPosition(Float_t logWeight, TClonesArray *
 
   if (IsInPRE()) 
     cyl_radius = emcalgeom->GetIP2PRESection() ;
-  else if (IsInECAL()) 
-    cyl_radius = emcalgeom->GetIP2ECALSection() ;
-  else if (IsInHCAL()) 
-    cyl_radius = emcalgeom->GetIP2HCALSection() ;
+  else if (IsInECA()) 
+    cyl_radius = emcalgeom->GetIP2ECASection() ;
+  else if (IsInHCA()) 
+    cyl_radius = emcalgeom->GetIP2HCASection() ;
   else 
     Fatal("EvalGlobalPosition", "Unexpected tower section!") ; 
   

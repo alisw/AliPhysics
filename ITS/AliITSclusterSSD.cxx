@@ -13,21 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.10  2002/10/22 14:45:37  alibrary
-Introducing Riostream.h
-
-Revision 1.9  2002/10/14 14:57:00  hristov
-Merging the VirtualMC branch to the main development branch (HEAD)
-
-Revision 1.7.6.1  2002/10/14 13:14:08  hristov
-Updating VirtualMC to v3-09-02
-
-Revision 1.8  2002/09/09 17:23:28  nilsen
-Minor changes in support of changes to AliITSdigitS?D class'.
-
-*/
+/* $Id$ */
 
 #include <Riostream.h>
 #include "TArrayI.h"

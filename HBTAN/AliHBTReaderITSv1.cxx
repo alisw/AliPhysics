@@ -211,7 +211,7 @@ Int_t AliHBTReaderITSv1::Read(AliHBTRun* particles, AliHBTRun *tracks)
         Double_t y= iotrack->GetY();
         Double_t z= iotrack->GetZ();
         
-        AliHBTParticle* track = new AliHBTParticle(p->GetPdgCode(),i , px, py , pz, tEtot, x, y, z, 0.);
+        AliHBTParticle* track = new AliHBTParticle(p->GetPdgCode(), i, px, py , pz, tEtot, x, y, z, 0.);
         if(Pass(track)) { delete  track;continue;}//check if meets all criteria of any of our cuts
                                                   //if it does not delete it and take next good track
 

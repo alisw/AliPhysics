@@ -13,44 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.10  2001/11/02 12:43:21  jchudoba
-remove fNdigits data member, it could have wrong value if fDigits is updated. Make this class non-persistent
-
-Revision 1.9  2001/03/20 13:34:05  egangler
-Obvious small bug
-
-Revision 1.8  2001/01/26 21:47:21  morsch
-Use access functions to AliMUONDigit member data.
-
-Revision 1.7  2001/01/25 11:43:48  morsch
-Add a "real" default constructor.
-
-Revision 1.6  2000/10/06 09:05:42  morsch
-Correction on upper limits for x- and y- coordinates to make code work with slat chambers.
-
-Revision 1.5  2000/10/02 21:28:09  fca
-Removal of useless dependecies via forward declarations
-
-Revision 1.4  2000/07/13 16:19:44  fca
-Mainly coding conventions + some small bug fixes
-
-Revision 1.3  2000/07/03 11:54:57  morsch
-AliMUONSegmentation and AliMUONHitMap have been replaced by AliSegmentation and AliHitMap in STEER
-The methods GetPadIxy and GetPadXxy of AliMUONSegmentation have changed name to GetPadI and GetPadC.
-
-Revision 1.2  2000/06/15 07:58:48  morsch
-Code from MUON-dev joined
-
-Revision 1.1.2.2  2000/06/12 07:58:06  morsch
-include TMath.h
-
-Revision 1.1.2.1  2000/06/09 22:01:09  morsch
-Code from AliMUONHitMap.h
-Most coding rule violations corrected.
-
-*/
+/* $Id$ */
 
 #include "AliMUONHitMapA1.h"
 #include "AliSegmentation.h"

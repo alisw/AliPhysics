@@ -1,13 +1,13 @@
 void AliITSDumpVertices(Int_t firstEv=0, Int_t noev=1,
-       TString fileimp="AliITSVertices.root",
-       TString objbasename="Vertex_"){
+                        TString fileimp="galice.root"){
   // This is a simple example on how to access the vertex objects
   Int_t evmax = firstEv+noev;
-  TFile *file = new TFile(fileimp);
+  AliRunLoader *rl = AliRunLoader::Open(fileimp.Data());
+  AliITSLoader* ITSloader =  (AliITSLoader*) rl->GetLoader("ITSLoader");
+  ITSloader->LoadVertices();
   for(Int_t i=firstEv; i<evmax; i++){
-    TString name = objbasename;
-    name += i;
-    vert = (AliITSVertex*)file->Get(name.Data());
+    rl->GetEvent(i);
+    AliITSVertex *vert = ITSloader->GetVertex();
     if(vert){
       cout <<"===============================================\n";
       cout <<" Event n. "<<i<<endl;

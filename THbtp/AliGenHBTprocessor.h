@@ -11,12 +11,12 @@
 #ifndef ALIGENHBTPROCESSOR_H
 #define ALIGENHBTPROCESSOR_H
 
-#include <TPDGCode.h>
-
 #include "AliGenerator.h"
+#include "TPDGCode.h"
 
 class THBTprocessor;
 class TClonesArray;
+class TParticle;
 
 enum {kHBTPMaxParticleTypes = 50};
 
@@ -76,9 +76,7 @@ class AliGenHBTprocessor : public AliGenerator
     virtual void SetPyRange(Float_t pymin = -1.0, Float_t pymax = 1.0);  
     virtual void SetPzRange(Float_t pzmin = -3.6, Float_t pzmax = 3.6);
     
-    virtual void SetPhiRange(Float_t phimin = 0.0, Float_t phimax = 360.0);//Angle in degrees
-                                                                                   //coherent with AliGenCocktail
-                                                                                   //incohernet with AliGenerator
+    virtual void SetPhiRange(Float_t phimin = -180.0, Float_t phimax = 180.0);//Phi angle
     virtual void SetEtaRange(Float_t etamin = -1.5, Float_t etamax = 1.5);//Pseudorapidity
     void SetThetaRange(Float_t thetamin = 0, Float_t thetamax = 180); //Azimuthal angle, override AliGenerator method
                                                                       //which uses this, core fortran HBTProcessor uses Eta (pseudorapidity)
@@ -105,6 +103,16 @@ class AliGenHBTprocessor : public AliGenerator
     virtual void SetBinSize3DCoarseMesh(Float_t x=0.08);
       
     virtual void SetNBins3DFineProjectMesh(Int_t n =3 );
+
+    virtual void SetPrintFull(Int_t flag = 1);
+    
+/************* E V E N T   M E R G E ******************/  
+    
+    Int_t        GetNumberOfEvents();
+    Int_t        GetNumberOfTracks();
+    void         SetActiveEventNumber(Int_t n);
+    TParticle*   GetTrack(Int_t n);
+    void         SetNEventsToMerge(Int_t nev);
 /***********************************************************************/
 /* * * * * * *    P R O T E C T E D   A R E A    * * * * * * * * * * * */ 
 /***********************************************************************/
@@ -227,7 +235,10 @@ class AliGenHBTprocessor : public AliGenerator
       Float_t    fDelpz;                 // Mom. space sector cell size - pz(GeV/c)
 
 
+      Int_t fEventMerge;                //number of events that are masked as an one event
+      Int_t fActiveStack;
       /******* P R O T E C T E D   M E T H O D S  *****/
+      void GetTrackEventIndex(Int_t n, Int_t &evno, Int_t &index) const; //returns event(stack) number and 
   private:
   public:    
         //conveerts Eta (pseudorapidity) to etha(azimuthal angle). Returns radians 
@@ -238,7 +249,7 @@ class AliGenHBTprocessor : public AliGenerator
     static Double_t DegreesToRadians(Double_t arg){return arg*TMath::Pi()/180.;}
           //converts Radians To Degrees 
     static Double_t RadiansToDegrees(Double_t arg){return arg*180./TMath::Pi();}
-    
+    static Int_t    fgDebug;
     ClassDef(AliGenHBTprocessor,1) // Interface class for AliMevsim
     
 };

@@ -13,42 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.8.6.1  2002/07/30 15:00:39  alibrary
-Correction in initialization of dx (Enrique Gamez Flores).
-
-Revision 1.9  2002/07/30 13:48:03  morsch
-
-Correction in initialization of dx (Enrique Gamez Flores).
-
-Revision 1.8  2002/02/08 16:50:50  morsch
-Add name and title in constructor.
-
-Revision 1.7  2001/07/27 17:09:35  morsch
-Use local SetTrack, KeepTrack and SetHighWaterMark methods
-to delegate either to local stack or to stack owned by AliRun.
-(Piotr Skowronski, A.M.)
-
-Revision 1.6  2000/12/21 16:24:06  morsch
-Coding convention clean-up
-
-Revision 1.5  2000/12/06 15:11:38  morsch
-Correct double declared data members.
-
-Revision 1.4  2000/11/30 07:12:50  alibrary
-Introducing new Rndm and QA classes
-
-Revision 1.3  2000/10/02 21:28:06  fca
-Removal of useless dependecies via forward declarations
-
-Revision 1.2  2000/06/09 20:37:51  morsch
-All coding rule violations except RS3 corrected
-
-Revision 1.1  2000/02/23 16:25:14  morsch
-First commit of this file
-
-*/
+/* $Id$ */
 
 // As AliGenScan,  generation of particles on a 3-dim grid
 // but here double hits with a predefined distance are generated.

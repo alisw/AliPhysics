@@ -13,9 +13,8 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-*/
+/* $Id$ */
+
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
 //  AliObjectArray                                                           //
@@ -62,7 +61,8 @@ AliObjectArray::AliObjectArray(const char * classname, Int_t buffersize):AliMemA
   SetClass(classname);
 }
 
-AliObjectArray::AliObjectArray(const AliObjectArray &arr)
+AliObjectArray::AliObjectArray(const AliObjectArray &arr):
+  AliMemArray(arr)
 {  
   //
   //

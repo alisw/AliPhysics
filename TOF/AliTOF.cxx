@@ -13,111 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.41  2002/10/22 14:26:27  alibrary
-Introducing Riostream.h
-
-Revision 1.40  2002/10/14 14:57:42  hristov
-Merging the VirtualMC branch to the main development branch (HEAD)
-
-Revision 1.35.4.2  2002/07/24 10:08:43  alibrary
-Updating VirtualMC
-
-Revision 1.39  2002/06/24 14:09:12  vicinanz
-review on materials and
-
-Revision 1.38  2002/06/13 08:43:46  vicinanz
-Merging added and test macro
-
-Revision 1.37  2002/05/03 07:34:19  vicinanz
-Updated SDigitizer; Added AliTOFanalyzeSDigits.C macro
-
-Revision 1.36  2002/04/19 14:40:51  vicinanz
-Updated SDigitizer
-
-Revision 1.35  2002/03/21 13:52:53  vicinanz
-Minor changes to AliTOF constructor
-
-Revision 1.34  2002/02/20 13:41:38  hristov
-Default arguments set only in the header file
-
-Revision 1.33  2002/02/19 10:39:38  vicinanz
-t0 classes added and material update (steel added)
-
-Revision 1.31  2001/11/22 11:22:51  hristov
-Updated version of TOF digitization, N^2 problem solved (J.Chudoba)
-
-Revision 1.30  2001/10/21 18:30:39  hristov
-Several pointers were set to zero in the default constructors to avoid memory management problems
-
-Revision 1.29  2001/10/17 14:19:24  hristov
-delete replaced by delete []
-
-Revision 1.28  2001/10/05 12:02:01  vicinanz
-Minor improvements on Merger and SDigitizer
-
-Revision 1.27  2001/10/02 13:03:13  vicinanz
-Minor improvements on the code
-
-Revision 1.26  2001/09/27 10:39:20  vicinanz
-SDigitizer and Merger added
-
-Revision 1.25  2001/09/07 08:37:40  hristov
-Pointers initialised to 0 in the default constructor
-
-Revision 1.24  2001/09/05 16:31:00  hristov
-The deletion of TOF folders temporarily commented out
-
-Revision 1.23  2001/08/29 12:59:01  vicinanz
-Minor changes to the Digitizer procedure
-
-Revision 1.22  2001/08/28 08:45:58  vicinanz
-TTask and TFolder structures implemented
-
-Revision 1.21  2001/05/16 14:57:24  alibrary
-New files for folders and Stack
-
-Revision 1.20  2001/05/04 10:09:47  vicinanz
-Major upgrades to the strip structure
-
-Revision 1.19  2001/03/12 17:47:25  hristov
-Changes needed on Sun with CC 5.0
-
-Revision 1.18  2001/01/26 19:57:42  hristov
-Major upgrade of AliRoot code
-
-Revision 1.17  2000/10/19 09:58:14  vicinanz
-Updated Hits2Digit procedure
-
-Revision 1.16  2000/10/02 21:28:17  fca
-Removal of useless dependecies via forward declarations
-
-Revision 1.15  2000/05/18 14:33:01  vicinanz
-Modified to be full HP compliant
-
-Revision 1.14  2000/05/15 19:32:36  fca
-Add AddHitList !!
-
-Revision 1.13  2000/05/10 16:52:18  vicinanz
-New TOF version with holes for PHOS/RICH
-
-Revision 1.11.2.1  2000/05/10 09:37:15  vicinanz
-New version with Holes for PHOS/RICH
-
-Revision 1.11  1999/11/05 22:39:06  fca
-New hits structure
-
-Revision 1.10  1999/11/01 20:41:57  fca
-Added protections against using the wrong version of FRAME
-
-Revision 1.9  1999/10/15 15:35:19  fca
-New version for frame1099 with and without holes
-
-Revision 1.9  1999/09/29 09:24:33  fca
-Introduction of the Copyright and cvs Log
-
-*/
+/* $Id$ */
 
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
@@ -145,34 +41,34 @@ Introduction of the Copyright and cvs Log
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
+
 #include <Riostream.h>
 #include <Rstrstream.h>
-#include <Riostream.h>
 #include <stdlib.h>
 
+#include <TBRIK.h>
+#include <TFile.h>
+#include <TFolder.h>
+#include <TNode.h>
+#include <TObject.h>
+#include <TROOT.h>
+#include <TSystem.h>
+#include <TTask.h>
+#include <TTree.h>
+#include <TVirtualMC.h>
+
+#include "AliConst.h"
+#include "AliLoader.h"
+#include "AliMagF.h"
+#include "AliRun.h"
 #include "AliTOF.h"
-#include "AliTOFhit.h"
-#include "AliTOFhitT0.h"
-#include "AliTOFdigit.h"
-#include "AliTOFSDigit.h"
+#include "AliTOFRawDigit.h"
 #include "AliTOFRawSector.h"
 #include "AliTOFRoc.h"
-#include "AliTOFRawDigit.h"
-
-#include "TROOT.h"
-#include "TBRIK.h"
-#include "TNode.h"
-#include "TObject.h"
-#include "TSystem.h"
-#include "TTree.h"
-#include "TFile.h"
-#include "TFolder.h"
-#include "TTask.h"
-
-#include "AliRun.h"
-#include "AliMagF.h"
-#include "AliConst.h"
-
+#include "AliTOFSDigit.h"
+#include "AliTOFdigit.h"
+#include "AliTOFhit.h"
+#include "AliTOFhitT0.h"
  
 ClassImp(AliTOF)
  
@@ -192,9 +88,7 @@ AliTOF::AliTOF()
   fReconParticles = 0x0;
   fName="TOF";
   fMerger = 0x0;
-/* fp
-  CreateTOFFolders();
-*/
+  fTZero = kFALSE;
 }
  
 //_____________________________________________________________________________
@@ -209,11 +103,19 @@ AliTOF::AliTOF(const char *name, const char *title, Option_t *option)
 
   // Initialization of hits, sdigits and digits array
   // added option for time zero analysis
+  fFGeom = 0x0; //skowron
+  fDTask = 0x0;
+  fReTask= 0x0;
+  fReconParticles= 0x0;
+  fMerger = 0x0;
+
   if (strstr(option,"tzero")){
     fHits   = new TClonesArray("AliTOFhitT0",  1000);
+    fTZero = kTRUE;
     cout << "tzero option requires AliTOFv4T0 as TOF version (check Your Config.C)" << endl;
   }else{
     fHits   = new TClonesArray("AliTOFhit",  1000);
+    fTZero = kFALSE;
   }
   gAlice->AddHitList(fHits);
   fIshunt  = 0;
@@ -276,10 +178,7 @@ AliTOF::AliTOF(const char *name, const char *title, Option_t *option)
                       // (TARODA)
   fNTdc       = 32;   // number of Tdc (Time to Digital Converter)
   fNPadXRoc   = (Int_t)fPadXSector/fNRoc; // number of pads for each ROC
-  /* fp 25 Sept 2001
-  // Create TOF Folder Structure
-  CreateTOFFolders();
-  */ 
+  
 }
 
 //_____________________________________________________________________________
@@ -352,7 +251,7 @@ AliTOF::~AliTOF()
     }
   if (fSDigits)
     {
-      fSDigits->Delete ();
+      fSDigits->Delete();
       delete fSDigits;
       fSDigits = 0;
     }
@@ -415,36 +314,46 @@ void AliTOF::SetTreeAddress ()
 {
   // Set branch address for the Hits and Digits Tree.
   char branchname[30];
+  
+  if (fLoader->TreeH())
+   {
+     if (fHits == 0x0)
+      {
+        if (fTZero) fHits   = new TClonesArray("AliTOFhitT0", 1000);
+        else fHits   = new TClonesArray("AliTOFhit", 1000);
+      }
+   }
   AliDetector::SetTreeAddress ();
 
   TBranch *branch;
-  TTree *treeD = gAlice->TreeD ();
-
+  TTree *treeD = fLoader->TreeD();
 
   if (treeD)
     {
-      if (fDigits)
-	{
-	  branch = treeD->GetBranch (branchname);
-	  if (branch)
-	    branch->SetAddress (&fDigits);
-	}
-
-    }
-//  if (fSDigits)
-    //  fSDigits->Clear ();
-
-  if (gAlice->TreeS () && fSDigits)
-    {
-      branch = gAlice->TreeS ()->GetBranch ("TOF");
+      branch = treeD->GetBranch (branchname);
       if (branch)
-	branch->SetAddress (&fSDigits);
+       {
+         if (fDigits == 0x0) fDigits = new TClonesArray("AliTOFdigit",  1000); 
+         branch->SetAddress (&fDigits);
+       }
     }
 
-  if (gAlice->TreeR() && fReconParticles) 
+  if (fLoader->TreeS () )
     {
-      branch = gAlice->TreeR()->GetBranch("TOF"); 
-      if (branch) branch->SetAddress(&fReconParticles) ;
+      branch = fLoader->TreeS ()->GetBranch ("TOF");
+      if (branch) {
+        if (fSDigits == 0x0) fSDigits = new TClonesArray("AliTOFSDigit",  1000);
+        branch->SetAddress (&fSDigits);
+      }
+    }
+
+  if (fLoader->TreeR() && fReconParticles) //I do not know where this array is created - skowron
+    {
+      branch = fLoader->TreeR()->GetBranch("TOF"); 
+      if (branch) 
+       {
+         branch->SetAddress(&fReconParticles) ;
+       }
     }   
 }
 
@@ -690,7 +599,7 @@ void AliTOF::Init()
 }
 
 //____________________________________________________________________________
-void AliTOF::MakeBranch(Option_t* option, const char *file)
+void AliTOF::MakeBranch(Option_t* option)
 {
  //
  // Initializes the Branches of the TOF inside the 
@@ -699,7 +608,17 @@ void AliTOF::MakeBranch(Option_t* option, const char *file)
  // Branch inside TreeH. Here we add the branches in 
  // TreeD, TreeS and TreeR.
  //
-  AliDetector::MakeBranch(option,file);
+  const char *oH = strstr(option,"H");
+  if (fLoader->TreeH() && oH)
+   {
+     if (fHits == 0x0)
+      {
+        if (fTZero) fHits   = new TClonesArray("AliTOFhitT0", 1000);
+        else fHits   = new TClonesArray("AliTOFhit", 1000);
+      }
+   }
+  
+  AliDetector::MakeBranch(option);
 
   Int_t buffersize = 4000;
   Char_t branchname[10];
@@ -709,39 +628,19 @@ void AliTOF::MakeBranch(Option_t* option, const char *file)
   const char *oS = strstr(option,"S");
   const char *oR = strstr(option,"R");
 
-  if (oD)
-  //
-  // one branch for TOF digits
-  // 
-
-
-  if (fDigits && gAlice->TreeD() && oD){
-             MakeBranchInTree(gAlice->TreeD(), 
-                              branchname, &fDigits,buffersize, file) ;
+  if (fLoader->TreeD() && oD){
+    if (fDigits == 0x0) fDigits = new TClonesArray("AliTOFdigit",  1000); 
+    MakeBranchInTree(fLoader->TreeD(), branchname, &fDigits,buffersize, 0) ;
   }
 
-  if (oS)
-  //
-  // one branch for TOF sdigits
-  //
-
-
-  if (fSDigits && gAlice->TreeS() && oS){
-             MakeBranchInTree(gAlice->TreeS(),
-                              branchname, &fSDigits,buffersize, file) ;
+  if (fLoader->TreeS() && oS){
+    if (fSDigits == 0x0) fSDigits = new TClonesArray("AliTOFSDigit",  1000);
+    MakeBranchInTree(fLoader->TreeS(), branchname, &fSDigits,buffersize, 0) ;
   }
 
-  if (oR)
-  //
-  // one branch for TOF reconstructed particles
-  //
-
-
-  if (fReconParticles && gAlice->TreeR() && oR){
-             MakeBranchInTree(gAlice->TreeR(),
-                              branchname, &fReconParticles,buffersize, file) ;
+  if (fReconParticles && fLoader->TreeR() && oR){
+    MakeBranchInTree(fLoader->TreeR(), branchname, &fReconParticles,buffersize, 0) ;
   }
-
 }
 
 //____________________________________________________________________________

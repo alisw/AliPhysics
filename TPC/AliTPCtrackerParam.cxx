@@ -13,25 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.11  2003/02/13 09:30:46  hristov
-Updated version taken from v3-08-Release (A.Dainese)
-
-Revision 1.9.2.1  2002/10/15 12:52:42  hristov
-Changes and bug fixes for the next round of PPR
-
-Revision 1.9  2002/05/13 09:53:08  hristov
-Some frequent problems corrected: arrays with variable size have to be defined via the operator new, default values for the arguments have to be  used only in the header files, etc.
-
-Revision 1.8  2002/05/08 18:21:40  kowal2
-Now the code is blind to the binning used for pulls, efficiencies etc.
-
-Revision 1.7  2002/04/10 16:30:07  kowal2
-logs added
-
-*/
-
+/* $Id$ */
 
 /**************************************************************************
  *                                                                        *
@@ -90,6 +72,8 @@ logs added
 #include "AliKalmanTrack.h"
 #include "AliMagF.h"
 #include "AliMagFCM.h"
+#include "AliRunLoader.h"
+#include "AliTPCLoader.h"
 #include "AliTPCkineGrid.h"
 #include "AliTPCtrack.h"
 #include "AliTrackReference.h"
@@ -125,7 +109,8 @@ ClassImp(AliTPCtrackerParam)
 
 //-----------------------------------------------------------------------------
 AliTPCtrackerParam::AliTPCtrackerParam(const Int_t coll,const Double_t Bz,
-				       const Int_t n) {
+				       const Int_t n, const char* evfoldname):
+  fEvFolderName(evfoldname) {
 //-----------------------------------------------------------------------------
 // This is the class conctructor 
 //-----------------------------------------------------------------------------
@@ -159,6 +144,25 @@ Int_t AliTPCtrackerParam::BuildTPCtracks(const TFile *inp, TFile *out) {
 //-----------------------------------------------------------------------------
 // This function creates the TPC parameterized tracks
 //-----------------------------------------------------------------------------
+
+  Error("BuildTPCtracks","in and out parameters ignored. new io");
+  
+/********************************************/
+  AliRunLoader* rl = AliRunLoader::GetRunLoader(fEvFolderName);
+  if (rl == 0x0)
+   {
+     Error("BuildTPCtracks","Can not get Run Loader from event folder named %s.",
+           fEvFolderName.Data());
+     return 2;
+   }
+  AliLoader* tpcloader = rl->GetLoader("TPCLoader");
+  if (tpcloader == 0x0)
+   {
+     Error("BuildTPCtracks","Can not get TPC Loader from Run Loader.");
+     return 3;
+   }
+  
+/********************************************/
 
   TFile *fileDB=0;
   TTree *covTreePi[50];
@@ -224,8 +228,13 @@ Int_t AliTPCtrackerParam::BuildTPCtracks(const TFile *inp, TFile *out) {
   infile->cd();
 
   // Get gAlice object from file
-  if(!(gAlice=(AliRun*)infile->Get("gAlice"))) {
-    cerr<<"gAlice has not been found on galice.root !\n";
+  
+  rl->LoadgAlice();
+  rl->LoadHeader();
+  tpcloader->LoadHits("read");
+  
+  if(!(gAlice=rl->GetAliRun())) {
+    cerr<<"Can not get gAlice from Run Loader !\n";
     return 1;
   }
 
@@ -244,6 +253,8 @@ Int_t AliTPCtrackerParam::BuildTPCtracks(const TFile *inp, TFile *out) {
   AliTPC *TPC=(AliTPC*)gAlice->GetDetector("TPC");
   Int_t ver = TPC->IsVersion(); 
   cerr<<"+++ TPC version "<<ver<<" has been found !\n";
+
+  rl->CdGAFile();
   AliTPCParam *digp=(AliTPCParam*)infile->Get("75x40_100x60");
   if(digp){
     delete digp;
@@ -309,11 +320,11 @@ Int_t AliTPCtrackerParam::BuildTPCtracks(const TFile *inp, TFile *out) {
     // Create the seeds for the TPC tracks at the inner radius of TPC
     if(fColl==0) {
       // Get TreeH with hits
-      TTree *TH = gAlice->TreeH(); 
+      TTree *TH = tpcloader->TreeH(); 
       MakeSeedsFromHits(TPC,TH,sArray);
     } else {
       // Get TreeTR with track references
-      TTree *TTR = gAlice->TreeTR();
+      TTree *TTR = rl->TreeTR();
       MakeSeedsFromRefs(TTR,sArray);
     }
 

@@ -4,13 +4,10 @@ enum gentype_t {hijing, hijingParam, gun, box, pythia,
 
 gentype_t gentype=param4;
 
-Int_t ntracks=1;
+ntracks=1;
 
 void Config()
 {
-
-  // libraries required by geant321
-  gSystem->Load("libgeant321");
 
 new TGeant3("C++ Interface to Geant3");
 
@@ -137,7 +134,7 @@ geant3->SetCUTS(cut,cut, cut, cut, cut, cut,  cut,  cut, cut,  cut, tofmax);
 // momentum range
      gener->SetMomentumRange(0,999);
 // phi range
-     gener->SetPhiRange(0,360);
+     gener->SetPhiRange(-180,180);
 // theta range 
      gener->SetThetaRange(0,180.);
 // select flavor (0: no, 4: charm+beauty, 5:beauty)
@@ -157,7 +154,7 @@ geant3->SetCUTS(cut,cut, cut, cut, cut, cut,  cut,  cut, cut,  cut, tofmax);
      AliGenPythia *gener = new AliGenPythia(-1);
 //   final state kinematic cuts
      gener->SetMomentumRange(0,999);
-     gener->SetPhiRange(0, 360);
+     gener->SetPhiRange(-180,180);
      gener->SetThetaRange(0., 180.);
      gener->SetYRange(-10,10);
      gener->SetPtRange(0,100);
@@ -174,7 +171,7 @@ geant3->SetCUTS(cut,cut, cut, cut, cut, cut,  cut,  cut, cut,  cut, tofmax);
 // MRS_G
 // CTEQ_2pM
 // CTEQ_4M
-     gener->SetStrucFunc(kGRVHO);
+     gener->SetStrucFunc(kGRV_HO);
 // Select corection for nuclear structure functions
 //     gener->SetNuclei(208,208);
 //
@@ -201,7 +198,7 @@ geant3->SetCUTS(cut,cut, cut, cut, cut, cut,  cut,  cut, cut,  cut, tofmax);
 	 new AliGenParam(ntracks, AliGenMUONlib::kUpsilon);
      gener->SetMomentumRange(0,999);
      gener->SetPtRange(0,999);     
-     gener->SetPhiRange(0, 360);
+     gener->SetPhiRange(-180, 180);
      gener->SetYRange(2.5,4);
      gener->SetCutOnChild(1);
      gener->SetChildThetaRange(2,9);
@@ -235,7 +232,7 @@ geant3->SetCUTS(cut,cut, cut, cut, cut, cut,  cut,  cut, cut,  cut, tofmax);
 					  AliGenGSIlib::kUpsilon, "MUON");
      gener->SetMomentumRange(0,999);
      gener->SetPtRange(0,999);     
-     gener->SetPhiRange(0, 360);
+     gener->SetPhiRange(-180, 180);
      gener->SetYRange(2.5,4);
      gener->SetCutOnChild(1);
      gener->SetChildThetaRange(2,9);

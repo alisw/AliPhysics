@@ -13,12 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.1  2000/06/26 09:57:57  pcrochet
-New class which contains quantities previously defined as global variables
-
-*/
+/* $Id$ */
 
 #include "AliMUONTriggerConstants.h"
 

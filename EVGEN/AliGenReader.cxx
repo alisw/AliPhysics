@@ -13,19 +13,8 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.1.8.1  2002/06/10 14:57:41  hristov
-Merged with v3-08-02
+/* $Id$ */
 
-Revision 1.2  2002/04/26 10:37:23  morsch
-Method RewindEvent() added. (N. Carrer)
-
-Revision 1.1  2001/11/09 09:09:59  morsch
-Base class with responsibility to read events and particles from a file. To be used
-with AliGenExtFile.
-
-*/
 #include "AliGenReader.h"
 ClassImp(AliGenReader)
 

@@ -13,24 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.8  2002/10/23 07:17:33  alibrary
-Introducing Riostream.h
-
-Revision 1.7  2002/10/14 14:57:42  hristov
-Merging the VirtualMC branch to the main development branch (HEAD)
-
-Revision 1.3.6.1  2002/06/10 15:26:11  hristov
-Merged with v3-08-02
-
-Revision 1.6  2002/04/06 14:41:04  kowal2
-Added #include<stdlib.h> and log
-
-*/
-
-
-
+/* $Id$ */
 
 #include <stdlib.h>
 #include <TTree.h> 
@@ -67,7 +50,7 @@ AliTPCDigitizer::AliTPCDigitizer(AliRunDigitizer* manager)
   fDebug =0;
   if (GetDebug()>2) 
     cerr<<"AliTPCDigitizer::AliTPCDigitizer"
-	<<"(AliRunDigitizer* manager) was processed"<<endl;
+       <<"(AliRunDigitizer* manager) was processed"<<endl;
 }
 
 //------------------------------------------------------------------------
@@ -106,6 +89,23 @@ void AliTPCDigitizer::ExecFast(Option_t* option)
     fDebug = 3;
   }
   //get detector and geometry
+
+
+  AliRunLoader *rl, *orl;
+  AliLoader *gime, *ogime;
+  
+  if (gAlice == 0x0)
+   {
+     Warning("ExecFast","gAlice is NULL. Loading from input 0");
+     rl = AliRunLoader::GetRunLoader(fManager->GetInputFolderName(0));
+     if (rl == 0x0)
+      {
+        Error("ExecFast","Can not find Run Loader for input 0. Can not proceed.");
+        return;
+      }
+     rl->LoadgAlice();
+     rl->GetAliRun();
+   }
   AliTPC *pTPC  = (AliTPC *) gAlice->GetModule("TPC");
   AliTPCParam * param = pTPC->GetParam();
   
@@ -133,28 +133,47 @@ void AliTPCDigitizer::ExecFast(Option_t* option)
   Short_t **pdig= new Short_t*[nInputs];   //pointers to the expanded digits array
   Int_t **ptr=  new Int_t*[nInputs];       //pointers to teh expanded tracks array
 
+  
   //create digits array for given sectors
   // make indexes
-  AliSimDigits ** digarr = new AliSimDigits*[nInputs]; 
-  for (Int_t i1=0;i1<nInputs; i1++){
-    digarr[i1]=0;
-    //    intree[i1]
-    TTree * treear =  fManager->GetInputTreeTPCS(i1);
-    if (!treear) {
-      cerr<<"AliTPCDigitizer: Input tree with SDigits not found in"
-	  <<" input "<< i1<<endl;
-      return;
-    }
-    treear->GetBranch("Segment")->SetAddress(&digarr[i1]);
-    if (treear->GetIndex()==0) 
-      treear->BuildIndex("fSegmentID","fSegmentID");
-  }
-  Stat_t nentries = fManager->GetInputTreeTPCS(0)->GetEntries();
+  Stat_t nentries = 0;//number of entries in TreeS
   
+  AliSimDigits ** digarr = new AliSimDigits*[nInputs]; 
+  for (Int_t i1=0;i1<nInputs; i1++)
+    {
+      digarr[i1]=0;
+     //    intree[i1]
+      rl = AliRunLoader::GetRunLoader(fManager->GetInputFolderName(i1));
+      gime = rl->GetLoader("TPCLoader");
+      gime->LoadSDigits("read");
+      TTree * treear =  gime->TreeS();
+     
+      if (!treear) 
+       {
+        cerr<<"AliTPCDigitizer: Input tree with SDigits not found in"
+            <<" input "<< i1<<endl;
+        return;
+       }
+      if (i1 == 0) nentries=treear->GetEntries();
+    
+      if (treear->GetIndex()==0)  
+	treear->BuildIndex("fSegmentID","fSegmentID");
+      treear->GetBranch("Segment")->SetAddress(&digarr[i1]);
+    }
+
 
   //create branch's in TPC treeD
   AliSimDigits * digrow = new AliSimDigits;
-  TTree * tree  = fManager->GetTreeDTPC();
+
+  orl = AliRunLoader::GetRunLoader(fManager->GetOutputFolderName());
+  ogime = orl->GetLoader("TPCLoader");
+  
+  TTree * tree  = ogime->TreeD();
+  if (tree == 0x0)
+   {
+     ogime->MakeTree("D");
+     tree  = ogime->TreeD();
+   }
   tree->Branch("Segment","AliSimDigits",&digrow);
   //
 
@@ -164,25 +183,34 @@ void AliTPCDigitizer::ExecFast(Option_t* option)
   //
   //Loop over segments of the TPC
     
-  for (Int_t n=0; n<nentries; n++) {
-  //    for (Int_t n=0; n<300; n++) {
-    fManager->GetInputTreeTPCS(0)->GetEvent(n);      
+  for (Int_t n=0; n<nentries; n++) 
+   {
+    rl = AliRunLoader::GetRunLoader(fManager->GetInputFolderName(0));
+    gime = rl->GetLoader("TPCLoader");
+    gime->TreeS()->GetEvent(n);
     digarr[0]->ExpandBuffer();
     digarr[0]->ExpandTrackBuffer();
            
-    for (Int_t i=1;i<nInputs; i++){ 
-      fManager->GetInputTreeTPCS(i)->GetEntryWithIndex(digarr[0]->GetID(),digarr[0]->GetID());
+    for (Int_t i=1;i<nInputs; i++) 
+     { 
+
+      rl = AliRunLoader::GetRunLoader(fManager->GetInputFolderName(i));
+      gime = rl->GetLoader("TPCLoader");
+      
+      gime->TreeS()->GetEntryWithIndex(digarr[0]->GetID(),digarr[0]->GetID());
       if ((digarr[0]->GetID()-digarr[i]->GetID())>0) 
-	printf("problem - not corresponding segment in background event\n");
+       printf("problem - not corresponding segment in background event\n");
       
       digarr[i]->ExpandBuffer();
       digarr[i]->ExpandTrackBuffer();
-    }   
+      
+     }   
     Int_t sec, row;
-    if (!param->AdjustSectorRow(digarr[0]->GetID(),sec,row)) {
+    if (!param->AdjustSectorRow(digarr[0]->GetID(),sec,row)) 
+     {
       cerr<<"AliTPC warning: invalid segment ID ! "<<digarr[0]->GetID()<<endl;
       continue;
-    }
+     }
 
     digrow->SetID(digarr[0]->GetID());
 
@@ -197,68 +225,74 @@ void AliTPCDigitizer::ExecFast(Option_t* option)
 
     Int_t nElems = nrows*ncols;     
  
-    for (Int_t i=0;i<nInputs; i++){ 
-      pdig[i] = digarr[i]->GetDigits();
-      ptr[i]  = digarr[i]->GetTracks();
-    }
+    for (Int_t i=0;i<nInputs; i++)
+     { 
+       pdig[i] = digarr[i]->GetDigits();
+       ptr[i]  = digarr[i]->GetTracks();
+     }
+     
     Short_t *pdig1= digrow->GetDigits();
     Int_t   *ptr1= digrow->GetTracks() ;
 
     
 
-    //    for (Int_t rows=0;rows<nrows; rows++){
-    //  for (Int_t col=0;col<ncols; col++){
-    for (Int_t elem=0;elem<nElems; elem++){    
-      //for (Int_t elem=nElems;elem<nElems; elem++){
+    for (Int_t elem=0;elem<nElems; elem++)
+     {    
 
-	q=0;
-	labptr=0;
-	// looop over digits 
-        for (Int_t i=0;i<nInputs; i++){ 
-	  //          q  += digarr[i]->GetDigitFast(rows,col);
-          q  += *(pdig[i]);
-	  
-          for (Int_t tr=0;tr<3;tr++) {
-	    //             Int_t lab = digarr[i]->GetTrackIDFast(rows,col,tr);
-	    Int_t lab = ptr[i][tr*nElems];
-            if ( (lab > 1) && *(pdig[i])>zerosup) {
-              label[labptr]=lab+masks[i];
-              labptr++;
-            }	   
-          }
-	  pdig[i]++;
-	  ptr[i]++;
-	  
-        }
-	q/=16.;  //conversion factor
-	//	Float_t noise  = gRandom->Gaus(0,param->GetNoise()*param->GetNoiseNormFac());  
-	Float_t noise  = pTPC->GetNoise();
-	q+=noise;
+       q=0;
+       labptr=0;
+       // looop over digits 
+        for (Int_t i=0;i<nInputs; i++)
+         { 
+          //          q  += digarr[i]->GetDigitFast(rows,col);
+            q  += *(pdig[i]);
+         
+           for (Int_t tr=0;tr<3;tr++) 
+            {
+             //             Int_t lab = digarr[i]->GetTrackIDFast(rows,col,tr);
+             Int_t lab = ptr[i][tr*nElems];
+             if ( (lab > 1) && *(pdig[i])>zerosup) 
+              {
+                label[labptr]=lab+masks[i];
+                labptr++;
+              }          
+            }
+           pdig[i]++;
+           ptr[i]++;
+         }
+        q/=16.;  //conversion factor
+        //       Float_t noise  = gRandom->Gaus(0,param->GetNoise()*param->GetNoiseNormFac());  
+        Float_t noise  = pTPC->GetNoise();
+        q+=noise;
         q=TMath::Nint(q);
-        if (q > zerosup){ 
-	  
-	  if(q > param->GetADCSat()) q = (Short_t)(param->GetADCSat());
-	  //digrow->SetDigitFast((Short_t)q,rows,col);  
-	  *pdig1 =Short_t(q);
-	  for (Int_t tr=0;tr<3;tr++){
-	    if (tr<labptr) 
-	      // ((AliSimDigits*)digrow)->SetTrackIDFast(label[tr],rows,col,tr);
-	      ptr1[tr*nElems] = label[tr];
-	    //else
-	      //	    ((AliSimDigits*)digrow)->SetTrackIDFast(-1,rows,col,tr);          
-	    //  ptr1[tr*nElems] = 1;
-	  }
-	}
-	pdig1++;
-	ptr1++;
-    }
+        if (q > zerosup)
+         { 
+          if(q > param->GetADCSat()) q = (Short_t)(param->GetADCSat());
+          //digrow->SetDigitFast((Short_t)q,rows,col);  
+          *pdig1 =Short_t(q);
+          for (Int_t tr=0;tr<3;tr++)
+           {
+            if (tr<labptr) 
+             ptr1[tr*nElems] = label[tr];
+           }
+          }
+        pdig1++;
+        ptr1++;
+     }
     
     digrow->CompresBuffer(1,zerosup);
     digrow->CompresTrackBuffer(1);
     tree->Fill();
     if (fDebug>0) cerr<<sec<<"\t"<<row<<"\n";  
-  } 
-  fManager->GetTreeDTPC()->Write(0,TObject::kOverwrite);
+   } //for (Int_t n=0; n<nentries; n++) 
+  
+
+  orl = AliRunLoader::GetRunLoader(fManager->GetOutputFolderName());
+  ogime = orl->GetLoader("TPCLoader");
+  ogime->WriteDigits("OVERWRITE");
+  
+  //fManager->GetTreeDTPC()->Write(0,TObject::kOverwrite);
+  
   delete digrow;     
   for (Int_t i1=0;i1<nInputs; i1++) delete digarr[i1];
   delete []masks;
@@ -280,8 +314,20 @@ void AliTPCDigitizer::ExecSave(Option_t* option)
     fDebug = 3;
   }
   //get detector and geometry 
-  printf("TPC merging -1  -Tree %s\t%p\n",fManager->GetInputTreeH(0)->GetName(),fManager->GetInputTreeH(0)->GetListOfBranches()->At(3));
-  AliTPC *pTPC  = (AliTPC *) gAlice->GetModule("TPC");
+  AliRunLoader *rl, *orl;
+  AliLoader *gime, *ogime;
+
+  
+  orl = AliRunLoader::GetRunLoader(fManager->GetOutputFolderName());
+  ogime = orl->GetLoader("TPCLoader");
+  
+  rl = AliRunLoader::GetRunLoader(fManager->GetInputFolderName(0));
+  gime = rl->GetLoader("TPCLoader");
+  
+  rl->LoadgAlice();
+  AliRun* alirun = rl->GetAliRun();
+  
+  AliTPC *pTPC  = (AliTPC *) alirun->GetModule("TPC");
   AliTPCParam * param = pTPC->GetParam();
   pTPC->GenerNoise(500000); //create teble with noise
   printf("noise %f \n",  param->GetNoise()*param->GetNoiseNormFac());
@@ -290,58 +336,56 @@ void AliTPCDigitizer::ExecSave(Option_t* option)
   Int_t * masks = new Int_t[nInputs];
   for (Int_t i=0; i<nInputs;i++)
     masks[i]= fManager->GetMask(i);
-  //  Short_t **pdig= new Short_t*[nInputs];   //pointers to the expanded digits array
-  //Int_t **ptr=  new Int_t*[nInputs];       //pointers to teh expanded tracks array
 
-  //create digits array for given sectors
-  // make indexes
-   printf("TPC merging -2  -Tree %s\t%p\n",fManager->GetInputTreeH(0)->GetName(),fManager->GetInputTreeH(0)->GetListOfBranches()->At(3));
   AliSimDigits ** digarr = new AliSimDigits*[nInputs]; 
-  for (Int_t i1=0;i1<nInputs; i1++){
+  for (Int_t i1=0;i1<nInputs; i1++)
+   {
     digarr[i1]=0;
     //    intree[i1]
-    TTree * treear =  fManager->GetInputTreeTPCS(i1);
-    printf("TPC merging -2.7  -Tree %s\t%p\n",fManager->GetInputTreeH(0)->GetName(),fManager->GetInputTreeH(0)->GetListOfBranches()->At(3));
+    rl = AliRunLoader::GetRunLoader(fManager->GetInputFolderName(i1));
+    gime = rl->GetLoader("TPCLoader");
+
+    TTree * treear =  gime->TreeS();
     TBranch * br = treear->GetBranch("fSegmentID");
     if (br) br->GetFile()->cd();
-    printf("TPC merging -2.75  -Tree %s\t%p\n",fManager->GetInputTreeH(0)->GetName(),fManager->GetInputTreeH(0)->GetListOfBranches()->At(3));
-    //treear->BuildIndex("fSegmentID","fSegmentID");
     if (!treear) {      
       cerr<<" TPC -  not existing input = \n"<<i1<<" ";      
     } 
-    printf("TPC merging -2.8  -Tree %s\t%p\n",fManager->GetInputTreeH(0)->GetName(),fManager->GetInputTreeH(0)->GetListOfBranches()->At(3));
     treear->GetBranch("Segment")->SetAddress(&digarr[i1]);
-     printf("TPC merging -2.9  -Tree %s\t%p\n",fManager->GetInputTreeH(0)->GetName(),fManager->GetInputTreeH(0)->GetListOfBranches()->At(3));
   }
-  Stat_t nentries = fManager->GetInputTreeTPCS(0)->GetEntries();
+  
+  rl = AliRunLoader::GetRunLoader(fManager->GetInputFolderName(0));
+  gime = rl->GetLoader("TPCLoader");
+  Stat_t nentries = gime->TreeS()->GetEntries();
   
 
   //create branch's in TPC treeD
   AliSimDigits * digrow = new AliSimDigits;
-  TTree * tree  = fManager->GetTreeDTPC();
-  //if (tree->GetBranch("Segment") ) tree->GetBranch("Segment")->SetAddress(&digrow);
-  //else
+  TTree * tree  = ogime->TreeD();
+
   tree->Branch("Segment","AliSimDigits",&digrow);
-  //
- printf("TPC merging -3  -Tree %s\t%p\n",fManager->GetInputTreeH(0)->GetName(),fManager->GetInputTreeH(0)->GetListOfBranches()->At(3));
   param->SetZeroSup(2);
 
   Int_t zerosup = param->GetZeroSup();
   //Loop over segments of the TPC
     
   for (Int_t n=0; n<nentries; n++) {
-  //    for (Int_t n=0; n<300; n++) {
-    fManager->GetInputTreeTPCS(0)->GetEvent(n);      
+    rl = AliRunLoader::GetRunLoader(fManager->GetInputFolderName(0));
+    gime = rl->GetLoader("TPCLoader");
+    gime->TreeS()->GetEvent(n);
+
     digarr[0]->ExpandBuffer();
     digarr[0]->ExpandTrackBuffer();
            
     for (Int_t i=1;i<nInputs; i++){ 
-      fManager->GetInputTreeTPCS(i)->GetEntryWithIndex(digarr[0]->GetID(),digarr[0]->GetID());      
-      //fManager->GetInputTreeTPCS(i)->GetEntryWithIndex(digarr[0]->GetID(),1);      
+//      fManager->GetInputTreeTPCS(i)->GetEntryWithIndex(digarr[0]->GetID(),digarr[0]->GetID());      
+      rl = AliRunLoader::GetRunLoader(fManager->GetInputFolderName(i));
+      gime = rl->GetLoader("TPCLoader");
+      gime->TreeS()->GetEntryWithIndex(digarr[0]->GetID(),digarr[0]->GetID());  
       digarr[i]->ExpandBuffer();
       digarr[i]->ExpandTrackBuffer();
       if ((digarr[0]->GetID()-digarr[i]->GetID())>0) 
-	printf("problem\n");
+       printf("problem\n");
     
     }   
     
@@ -367,46 +411,46 @@ void AliTPCDigitizer::ExecSave(Option_t* option)
     for (Int_t rows=0;rows<nrows; rows++){
       for (Int_t col=0;col<ncols; col++){
     
-	q=0;
-	labptr=0;
-	// looop over digits 
+       q=0;
+       labptr=0;
+       // looop over digits 
         for (Int_t i=0;i<nInputs; i++){ 
-	  q  += digarr[i]->GetDigitFast(rows,col);
+         q  += digarr[i]->GetDigitFast(rows,col);
           //q  += *(pdig[i]);
-	  
+         
           for (Int_t tr=0;tr<3;tr++) {
-	    Int_t lab = digarr[i]->GetTrackIDFast(rows,col,tr);
-	    //Int_t lab = ptr[i][tr*nElems];
+           Int_t lab = digarr[i]->GetTrackIDFast(rows,col,tr);
+           //Int_t lab = ptr[i][tr*nElems];
             if ( (lab > 1) ) {
               label[labptr]=lab+masks[i];
               labptr++;
-            }	   
+            }          
           }
-	  // pdig[i]++;
-	  //ptr[i]++;
-	  
+         // pdig[i]++;
+         //ptr[i]++;
+         
         }
-	q/=16.;  //conversion factor
-	//	Float_t noise  = gRandom->Gaus(0,param->GetNoise()*param->GetNoiseNormFac());  
-	Float_t noise  = pTPC->GetNoise();
-	q+=noise;
+       q/=16.;  //conversion factor
+       //       Float_t noise  = gRandom->Gaus(0,param->GetNoise()*param->GetNoiseNormFac());  
+       Float_t noise  = pTPC->GetNoise();
+       q+=noise;
         q=TMath::Nint(q);
         if (q > zerosup){ 
-	  
-	  if(q > param->GetADCSat()) q = (Short_t)(param->GetADCSat());
-	  digrow->SetDigitFast((Short_t)q,rows,col);  
-	  // *pdig1 =Short_t(q);
-	  for (Int_t tr=0;tr<3;tr++){
-	    if (tr<labptr) 
-	      ((AliSimDigits*)digrow)->SetTrackIDFast(label[tr],rows,col,tr);
-	    //ptr1[tr*nElems] = label[tr];
-	    //else
-	      //	    ((AliSimDigits*)digrow)->SetTrackIDFast(-1,rows,col,tr);          
-	    //  ptr1[tr*nElems] = 1;
-	  }
-	}
-	//pdig1++;
-	//ptr1++;
+         
+         if(q > param->GetADCSat()) q = (Short_t)(param->GetADCSat());
+         digrow->SetDigitFast((Short_t)q,rows,col);  
+         // *pdig1 =Short_t(q);
+         for (Int_t tr=0;tr<3;tr++){
+           if (tr<labptr) 
+             ((AliSimDigits*)digrow)->SetTrackIDFast(label[tr],rows,col,tr);
+           //ptr1[tr*nElems] = label[tr];
+           //else
+             //           ((AliSimDigits*)digrow)->SetTrackIDFast(-1,rows,col,tr);          
+           //  ptr1[tr*nElems] = 1;
+         }
+       }
+       //pdig1++;
+       //ptr1++;
     }
     }
     
@@ -415,8 +459,18 @@ void AliTPCDigitizer::ExecSave(Option_t* option)
     tree->Fill();
     if (fDebug>0) cerr<<sec<<"\t"<<row<<"\n";  
   } 
-  printf("end TPC merging - end -Tree %s\t%p\n",fManager->GetInputTreeH(0)->GetName(),fManager->GetInputTreeH(0)->GetListOfBranches()->At(3));
-  fManager->GetTreeDTPC()->Write(0,TObject::kOverwrite);
+//  printf("end TPC merging - end -Tree %s\t%p\n",fManager->GetInputTreeH(0)->GetName(),fManager->GetInputTreeH(0)->GetListOfBranches()->At(3));
+  //fManager->GetTreeDTPC()->Write(0,TObject::kOverwrite);
+    ogime->WriteDigits("OVERWRITE");
+
+    for (Int_t i=1;i<nInputs; i++) 
+     { 
+      rl = AliRunLoader::GetRunLoader(fManager->GetInputFolderName(i));
+      gime = rl->GetLoader("TPCLoader");
+      gime->UnloadSDigits();
+     }
+    ogime->UnloadDigits();
+    
   delete digrow;     
   for (Int_t i1=0;i1<nInputs; i1++) delete digarr[i1];
   delete []masks;

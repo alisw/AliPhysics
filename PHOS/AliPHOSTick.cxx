@@ -18,8 +18,7 @@
 //_________________________________________________________________________
 // Auxiliary class to help calculate the time of crossing 
 // of the threshold by the front edge of the time signal
-//..
-//..
+//
 //*-- Author :  Dmitri Peressounko (SUBATECH) 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -36,7 +35,6 @@ ClassImp(AliPHOSTick)
 //____________________________________________________________________________ 
   AliPHOSTick::AliPHOSTick():TObject() 
 {
-  // default ctor
   fTime = 0;
   fA = 0;
   fB = 0 ;
@@ -45,19 +43,12 @@ ClassImp(AliPHOSTick)
 //____________________________________________________________________________ 
 AliPHOSTick::AliPHOSTick(Float_t time, Float_t a, Float_t slope):TObject()
 {
-  //ctor
   fTime = time;
   fA = a;
   fB = slope ;  
 }
 //____________________________________________________________________________ 
-Int_t AliPHOSTick::Compare(const TObject * obj) const 
-{
-  // compare the times of two tick objects
-  // return = -1 if smaller
-  //           0 if equal
-  //           1 id larger
-
+Int_t AliPHOSTick::Compare(const TObject * obj) const {
   if(obj->InheritsFrom("AliPHOSTick")){
     AliPHOSTick * tick = (AliPHOSTick *) obj ;
     if(fTime < tick->fTime)

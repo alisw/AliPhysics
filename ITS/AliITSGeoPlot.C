@@ -1,5 +1,5 @@
 #if !defined(__CINT__) || defined(__MAKECINT__)
-#include<iostream.h>
+#include<Riostream.h>
 #include<TROOT.h>
 #include<TArrayI.h>
 #include<TBranch.h>
@@ -24,12 +24,15 @@
 #include <AliITSsegmentationSPD.h> 
 #include <AliITSsegmentationSDD.h>
 #include <AliITSsegmentationSSD.h>
+#include <AliRunLoader.h>
+#include <AliITSLoader.h>
+#include <AliHeader.h>
 #endif
 void GetHitsCoor(TObject *its, Int_t mod, TObjArray & histos, Int_t subd,Bool_t verb);
 Int_t GetRecCoor(TObject *ge, TClonesArray *ITSrec, Int_t mod, TH2F *h2, TH1F *h1, Bool_t verb);
 void GetDigits(TObject *tmps,TObject *ge,TClonesArray *ITSdigits, Int_t subd, Int_t mod, Bool_t verbose, TObjArray & histos);
 
-Int_t AliITSGeoPlot (Int_t evesel=0, char *opt="All+Rec", char *filename="galice.root",TString FileDigits="galice.root", TString FileRec="galice.root", Int_t isfastpoints = 0) {
+Int_t AliITSGeoPlot (Int_t evesel=0, char *opt="All+Rec", char *filename="galice.root", Int_t isfastpoints = 0) {
   /*******************************************************************
    *  This macro displays geometrical information related to the
    *  hits, digits and rec points in ITS.
@@ -51,12 +54,7 @@ Int_t AliITSGeoPlot (Int_t evesel=0, char *opt="All+Rec", char *filename="galice
    *       .x AliITSGeoPlot();  (All subdetectors; no-verbose; no-recpoints)
    *       .x AliITSGeoPlot("SPD+SSD+Verbose+Rec"); 
    *   
-   *    filename:   It's "galice.root" by default. Hits, kine and the 
-   *                AliRun object are supposed to be stored on this file
-   *    FileDigits: It's "galice.root" by defaults. It is the file where
-   *                digits are stored
-   *    FileRec:    It's "galice.root" by defaults. It is the file where
-   *                recpoints are stored
+   *    filename:   It's "galice.root" by default. 
    *    isfastpoints: integer. It is set to 0 by defaults. This means that
    *                slow reconstruction is assumed. If fast recpoint are in
    *                in use, isfastpoints must be set =1.
@@ -83,7 +81,7 @@ Int_t AliITSGeoPlot (Int_t evesel=0, char *opt="All+Rec", char *filename="galice
    *                 ---  AliITSGeoPlot();
    *     
    *  M.Masera  14/05/2001 18:30
-   *  Last rev. 05/06/2002          
+   *  Last rev. 09/06/2003 17:00 (Adapted to NewIO)  m.m.          
    ********************************************************************/
 
   //Options
@@ -100,38 +98,47 @@ Int_t AliITSGeoPlot (Int_t evesel=0, char *opt="All+Rec", char *filename="galice
   else {
 #endif
     if(gAlice){
+      delete gAlice->GetRunLoader();
       delete gAlice;
       gAlice=0;
     }
 #if !(!defined(__CINT__) || defined(__MAKECINT__))
   }
 #endif
-  // Connect the Root input  file containing Geometry, Kine and Hits
-  // galice.root file by default
 
-  TFile *file = (TFile*)gROOT->GetListOfFiles()->FindObject(filename);
-  if (!file) file = new TFile(filename);
-  file->ls();
+AliRunLoader* rl = AliRunLoader::Open(filename);
+ if (rl == 0x0){
+   cerr<<"AliITSGeoPlot.C : Can not open session RL=NULL"<< endl;
+   return -1;
+ }
+ Int_t retval = rl->LoadgAlice();
+ if (retval){
+   cerr<<"AliITSGeoPlot.C : LoadgAlice returned error"<<endl;
+   return -1;
+ }
+ gAlice=rl->GetAliRun();
 
-  // Get AliRun object from file
+ retval = rl->LoadHeader();
+ if (retval){
+   cerr<<"AliITSGeoPlot.C : LoadHeader returned error"<<endl;
+   return -1;
+ }
 
-  if (!gAlice) {
-    gAlice = (AliRun*)file->Get("gAlice");
-    if (gAlice && verbose)cout<<"AliRun object found on file "<<filename<<endl;
-    if(!gAlice){
-      cout<<"Can't access AliRun object on file "<<filename<<endl;
-      cout<<"Macro execution stopped!!!"<<endl;
-      retcode=-1;
-      return retcode;
-    }
-  }
-  if(!(FileDigits.Data() == filename)){
-    gAlice->SetTreeDFileName(FileDigits);
-  }
-  if(!(FileRec.Data() == filename)){
-    gAlice->SetTreeRFileName(FileRec);
-  }
-  Int_t nparticles = gAlice->GetEvent(evesel);
+ AliITSLoader* ITSloader =  (AliITSLoader*) rl->GetLoader("ITSLoader");
+
+ if(!ITSloader){
+   cerr<<"AliITSGeoPlot.C :  ITS loader not found"<<endl;
+   return -1;
+ }
+
+ ITSloader->LoadHits("read");
+ ITSloader->LoadDigits("read");
+ if(isfastpoints==1)ITSloader->SetRecPointsFileName("ITS.FastRecPoints.root");
+ ITSloader->LoadRecPoints("read");
+ rl->GetEvent(evesel);
+ Int_t nparticles = rl->GetHeader()->GetNtrack();
+ AliITS *ITS  = (AliITS*)gAlice->GetModule("ITS");
+ ITS->SetTreeAddress();
   if(verbose) {
     cout<<" "<<endl<<" "<<endl;
     cout<<"******* Event processing started   *******"<<endl;
@@ -141,12 +148,11 @@ Int_t AliITSGeoPlot (Int_t evesel=0, char *opt="All+Rec", char *filename="galice
   }
 
   // HITS
-  TTree *TH = gAlice->TreeH();
+  TTree *TH = ITSloader->TreeH();
   Stat_t ntracks = TH->GetEntries();
   if(verbose)cout<<"Number of primary tracks= "<<ntracks<<endl;
 
   // ITS
-  AliITS *ITS  = (AliITS*)gAlice->GetModule("ITS");
   Int_t nmodules;
   ITS->InitModules(-1,nmodules);
   cout<<"Number of ITS modules= "<<nmodules<<endl;
@@ -155,19 +161,19 @@ Int_t AliITSGeoPlot (Int_t evesel=0, char *opt="All+Rec", char *filename="galice
   cout<<"ITS modules .... DONE!"<<endl;
 
   // DIGITS
-  TTree *TD = gAlice->TreeD();
+  TTree *TD = ITSloader->TreeD();
 
   //RECPOINTS
-  TTree *TR = gAlice->TreeR();
+  TTree *TR = ITSloader->TreeR();
   TClonesArray *ITSrec  = ITS->RecPoints();
   TBranch *branch = 0;
   if(userec && TR && ITSrec){
     if(isfastpoints==1){
-      branch = gAlice->TreeR()->GetBranch("ITSRecPointsF");
+      branch = ITSloader->TreeR()->GetBranch("ITSRecPointsF");
       cout<<"using fast points\n";
     }
     else {
-      branch = gAlice->TreeR()->GetBranch("ITSRecPoints");
+      branch = ITSloader->TreeR()->GetBranch("ITSRecPoints");
     }
     if(branch)branch->SetAddress(&ITSrec);
   }
@@ -563,23 +569,3 @@ void GetDigits(TObject *tmps,TObject *ge,TClonesArray *ITSdigits, Int_t subd, In
     } // loop on digits for this module
   } // if(ndigits>0....
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

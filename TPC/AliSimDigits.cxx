@@ -13,54 +13,16 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.7  2002/10/23 07:17:33  alibrary
-Introducing Riostream.h
-
-Revision 1.6  2002/01/21 17:15:23  kowal2
-Better protection.
-
-Revision 1.5  2001/11/24 16:10:22  kowal2
-Faster algorithms.
-
-Revision 1.4  2000/10/05 16:01:49  kowal2
-Corrected for memory leaks.
-
-Revision 1.3  2000/06/30 12:07:49  kowal2
-Updated from the TPC-PreRelease branch
-
-Revision 1.2.4.3  2000/06/26 07:39:42  kowal2
-Changes to obey the coding rules
-
-Revision 1.2.4.2  2000/06/25 08:38:41  kowal2
-Splitted from AliTPCtracking
-
-Revision 1.2.4.1  2000/06/14 16:45:13  kowal2
-Improved algorithms. Compiler warnings removed.
-
-Revision 1.2  2000/04/17 09:37:33  kowal2
-removed obsolete AliTPCDigitsDisplay.C
-
-Revision 1.1.4.2  2000/04/10 11:37:42  kowal2
-
-Digits handling in a new data structure
-
-*/
-
-//
+/* $Id$ */
 
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
 //  Alice segment manager object                                             //
-//                                
-//  AliSimDigits object   (derived from AliDigits)                            //
+//  AliSimDigits object   (derived from AliDigits)                           //
 //  provide additional track information to digit                            //
-//  
-//   Origin: Marian Ivanov  GSI Darmstadt                                     //
-//
+//   Origin: Marian Ivanov  GSI Darmstadt                                    //
 //                                                                           //
-//                                                                          //
+//                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "TClass.h"

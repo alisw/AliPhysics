@@ -20,6 +20,7 @@
 // in parallel with Geant geometry definition.
 // Author: A.Morsch
 //----------------------------------------------------------------------
+
 #include <AliALIFE.h>
 
 ClassImp(AliALIFE)

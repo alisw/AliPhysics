@@ -13,36 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.6  2001/02/05 14:49:29  hristov
-Compare() declared const (R.Brun)
-
-Revision 1.5  2001/01/26 21:46:33  morsch
-Use access functions to MUONHit, ... data members.
-
-Revision 1.4  2000/10/02 21:28:09  fca
-Removal of useless dependecies via forward declarations
-
-Revision 1.3  2000/06/25 13:06:39  hristov
-Inline functions moved from *.cxx to *.h files instead of forward declarations
-
-Revision 1.2  2000/06/15 07:58:48  morsch
-Code from MUON-dev joined
-
-Revision 1.1.2.4  2000/06/12 10:11:10  morsch
-Dummy copy constructor and assignment operator added
-
-Revision 1.1.2.3  2000/06/09 22:14:43  morsch
-Make includes consistent with new file naming.
-
-Revision 1.1.2.2  2000/06/09 12:58:05  gosset
-Removed comment beginnings in Log sections of .cxx files
-Suppressed most violations of coding rules
-
-Revision 1.1.2.1  2000/06/07 14:44:53  gosset
-Addition of files for track reconstruction in C++
-*/
+/* $Id$ */
 
 //__________________________________________________________________________
 //

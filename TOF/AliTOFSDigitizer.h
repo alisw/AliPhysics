@@ -12,8 +12,7 @@
 
 #include "TTask.h"
 #include "TString.h"
-#include "AliTOF.h"
-#include "AliDetector.h"
+class AliRunLoader;
 
 class TF1;
 
@@ -21,12 +20,12 @@ class AliTOFSDigitizer: public TTask {
 
 public:
   AliTOFSDigitizer() ;          // ctor
-  AliTOFSDigitizer(const char* HeaderFile, Int_t evNumber1=0, Int_t nEvents=1) ; // par ctor
+  AliTOFSDigitizer(char* HeaderFile, Int_t evNumber1=0, Int_t nEvents=1) ; // par ctor
 
   virtual ~AliTOFSDigitizer() ; // dtor
 
   virtual void  Exec(Option_t *verboseOption, Option_t *allEvents="noAll"); 
-  void SetSDigitsFile(const char* file ) {;}
+  void SetSDigitsFile(char * file ) {;}
   
   void InitParameters();
   virtual void PrintParameters() const ;
@@ -108,6 +107,9 @@ private:
   Int_t   fEvent2;          // upper bound for events to sdigitize
   TF1     *ftail;           // pointer to formula for time with tail
   TString fHeadersFile;     // input file
+  AliRunLoader* fRunLoader;  //! Run Loader
+  
+
   Int_t fSelectedSector;    // sector number for sdigitization
   Int_t fSelectedPlate ;    // plate  number for sdigitization
 

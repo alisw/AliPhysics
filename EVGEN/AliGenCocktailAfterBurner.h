@@ -9,6 +9,9 @@
 // (Container is itself an AliGenerator)
 // Author: piotr.skowronski@cern.ch 
 //
+
+#include <TMCProcess.h>
+
 #include "AliGenCocktail.h"
 #include "AliRun.h"
 

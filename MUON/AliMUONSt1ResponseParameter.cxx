@@ -13,9 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-*/
+/* $Id$ */
 
 // Authors: David Guez, Ivana Hrivnacova, Marion MacCormick; IPN Orsay
 //

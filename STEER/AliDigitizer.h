@@ -22,14 +22,14 @@ class AliDigitizer: public TTask {
  public:
 // ctor with name and title
     AliDigitizer(const Text_t* name="AliDigitizer",
-		 const Text_t* title="AliDigitizer");
+                const Text_t* title="AliDigitizer");
 // ctor to be used with name and title
     AliDigitizer(AliRunDigitizer *manager,
-		 const Text_t* name="AliDigitizer",
-		 const Text_t* title="AliDigitizer");
+                 const Text_t* name="AliDigitizer",
+                 const Text_t* title="AliDigitizer");
 // Copy ctor needed because there is a pointer
     AliDigitizer(const AliDigitizer &dig);
-    AliDigitizer& operator=(const AliDigitizer &dig)
+    AliDigitizer& operator=(AliDigitizer &dig)
       {dig.Copy(*this);return *this;}
       
     virtual ~AliDigitizer();
@@ -46,3 +46,4 @@ protected:
 };
 
 #endif // ALIDIGITIZER_H
+

@@ -13,6 +13,8 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+/* $Id$ */
+
 //_________________________________________________________________________
 // This is a TTask that constructs SDigits out of Hits
 // A Summable Digits is the sum of all hits in a cell
@@ -21,31 +23,31 @@
 //-- Author: Alla Maevskaia(INR)
 //////////////////////////////////////////////////////////////////////////////
 
-// --- ROOT system ---
-#include "TTask.h"
-#include "TTree.h"
-#include "TSystem.h"
-#include "TFile.h"
 // --- Standard library ---
+#include <Riostream.h>
+#include <stdlib.h>
+
+// --- ROOT system ---
+#include <TFile.h>
+#include <TFolder.h>
+#include <TROOT.h>
+#include <TSystem.h>
+#include <TTask.h>
+#include <TTree.h>
+#include <TVirtualMC.h>
 
 // --- AliRoot header files ---
-
+#include "AliConfig.h"
+#include "AliDetector.h"
+#include "AliFMD.h"
+#include "AliFMDSDigitizer.h"
 #include "AliFMDdigit.h"
 #include "AliFMDhit.h"
-#include "AliFMD.h"
 #include "AliFMDv1.h"
-#include "AliFMDSDigitizer.h"
+#include "AliLoader.h"
 #include "AliRun.h"
-#include "AliDetector.h"
-
-#include "TFile.h"
-#include "TTask.h"
-#include "TTree.h"
-#include "TSystem.h"
-#include "TROOT.h"
-#include "TFolder.h"
-#include <stdlib.h>
-#include <Riostream.h>
+#include "AliRunLoader.h"
+#include "AliStack.h"
 
 ClassImp(AliFMDSDigitizer)
 
@@ -56,16 +58,28 @@ ClassImp(AliFMDSDigitizer)
   fNevents = 0 ;     
   fSDigits = 0 ;
   fHits = 0 ;
-
+  fRunLoader = 0;
 }
            
 //____________________________________________________________________________ 
-  AliFMDSDigitizer::AliFMDSDigitizer(char* HeaderFile,char *SdigitsFile ):TTask("AliFMDSDigitizer","") 
+AliFMDSDigitizer::AliFMDSDigitizer(char* HeaderFile,char *SdigitsFile ):TTask("AliFMDSDigitizer","") 
 {
   fNevents = 0 ;     // Number of events to digitize, 0 means all evens in current file
   // add Task to //root/Tasks folder
-  TTask * roottasks = (TTask*)gROOT->GetRootFolder()->FindObject("Tasks") ; 
-  roottasks->Add(this) ; 
+  fRunLoader = AliRunLoader::Open(HeaderFile);//Load event in default folder
+  if (fRunLoader == 0x0)
+   {
+     Fatal("AliFMDSDigitizer","Can not open session. Header File is %s ",HeaderFile);
+     return;//never reached
+   }
+  AliLoader* gime = fRunLoader->GetLoader("FMDLoader");
+  if (gime == 0x0)
+   {
+     Fatal("AliFMDSDigitizer","Can not find FMD (loader) in specified event");
+     return;//never reached
+   }
+  //add Task to //root/Tasks folder
+  gime->PostSDigitizer(this);
 }
 
 //____________________________________________________________________________ 
@@ -93,15 +107,38 @@ void AliFMDSDigitizer::SetSectorsSi2(Int_t sectorsSi2)
 }
 
 //____________________________________________________________________________
-void AliFMDSDigitizer::Exec(Option_t *option) { 
-
-
-
-
+void AliFMDSDigitizer::Exec(Option_t *option) 
+ { 
   Int_t NumberOfRings[5]=
   {fRingsSi1,fRingsSi2,fRingsSi1,fRingsSi2,fRingsSi1};
   Int_t NumberOfSectors[5]=
   {fSectorsSi1,fSectorsSi2,fSectorsSi1,fSectorsSi2,fSectorsSi1};
+
+  if (fRunLoader)
+   {
+    Error("Exec","Run Loader loader is NULL - Session not opened");
+    return;
+   }
+  AliLoader* gime = fRunLoader->GetLoader("FMDLoader");
+  if (gime == 0x0)
+   {
+     Fatal("AliFMDReconstruction","Can not find FMD (loader) in specified event");
+     return;//never reached
+   }
+
+  fRunLoader->LoadgAlice();
+  fRunLoader->LoadHeader();
+  fRunLoader->LoadKinematics("READ");
+  
+  Int_t retval;
+
+  retval = gime->LoadHits("READ");
+  if (retval)
+   {
+     Error("Exec","Error occured while loading hits. Exiting.");
+     return;
+   }
+
 
   // Initialise Hit array
   fHits = new TClonesArray ("AliFMDhit", 1000);
@@ -110,26 +147,23 @@ void AliFMDSDigitizer::Exec(Option_t *option) {
   AliFMD *FMD = (AliFMD *) gAlice->GetDetector ("FMD");
 
   if (fNevents == 0)
-    fNevents = (Int_t) gAlice->TreeE ()->GetEntries ();
+    fNevents = (Int_t) fRunLoader->TreeE ()->GetEntries ();
 
   for (Int_t ievent = 0; ievent < fNevents; ievent++)
     {
-      gAlice->GetEvent (ievent);
-      if (gAlice->TreeH () == 0)
-	return;
-      if (gAlice->TreeS () == 0)
-	gAlice->MakeTree ("S");
+      fRunLoader->GetEvent (ievent);
 
+      TTree* TH = gime->TreeH();
+      if (TH == 0x0)
+       {
+         Error("Exec","Can not get TreeH");
+         return;
+       }
+      if (gime->TreeS () == 0)  gime->MakeTree("S");
 
-
-      
-            //Make branches
-      char branchname[20];
-       sprintf (branchname, "%s", FMD->GetName ());
       //Make branch for digits
-        FMD->MakeBranch ("S");
-    
-       //Now made SDigits from hits, for PHOS it is the same
+      FMD->MakeBranch ("S");
+      //Now made SDigits from hits, for PHOS it is the same
       Int_t volume, sector, ring, charge;
       Float_t e;
       Float_t de[10][50][150];
@@ -142,65 +176,66 @@ void AliFMDSDigitizer::Exec(Option_t *option) {
       // Event ------------------------- LOOP  
 
       for (ivol = 0; ivol < 10; ivol++)
-	for (isec = 0; isec < 50; isec++)
-	  for (iring = 0; iring < 150; iring++)
-	    de[ivol][isec][iring] = 0;
+       for (isec = 0; isec < 50; isec++)
+         for (iring = 0; iring < 150; iring++)
+           de[ivol][isec][iring] = 0;
 
       if (FMD)
-	{
-	  FMDhits = FMD->Hits ();
-	  TTree *TH = gAlice->TreeH ();
-	  Stat_t ntracks = TH->GetEntries ();
-	  for (Int_t track = 0; track < ntracks; track++)
-	    {
-	      gAlice->ResetHits ();
-	      nbytes += TH->GetEvent (track);
-	      particle = gAlice->Particle (track);
-	      Int_t nhits = FMDhits->GetEntriesFast ();
+       {
+         FMDhits = FMD->Hits ();
 
-	      for (hit = 0; hit < nhits; hit++)
-		{
-		  fmdHit = (AliFMDhit *) FMDhits->UncheckedAt (hit);
+         
+         Stat_t ntracks = TH->GetEntries ();
+         for (Int_t track = 0; track < ntracks; track++)
+           {
+             gAlice->ResetHits ();
+             nbytes += TH->GetEvent(track);
+             particle = fRunLoader->Stack()->Particle (track);
+             Int_t nhits = FMDhits->GetEntriesFast ();
 
-		  volume = fmdHit->Volume ();
-		  sector = fmdHit->NumberOfSector ();
-		  ring = fmdHit->NumberOfRing ();
-		  e = fmdHit->Edep ();
-		  de[volume][sector][ring] += e;
-		}		//hit loop
-	    }			//track loop
-	}			//if FMD
+             for (hit = 0; hit < nhits; hit++)
+              {
+                fmdHit = (AliFMDhit *) FMDhits->UncheckedAt (hit);
+
+                volume = fmdHit->Volume ();
+                sector = fmdHit->NumberOfSector ();
+                ring = fmdHit->NumberOfRing ();
+                e = fmdHit->Edep ();
+                de[volume][sector][ring] += e;
+              }              //hit loop
+           }                     //track loop
+       }                     //if FMD
 
 
       Int_t digit[5];
-      Float_t I = 1.664 * 0.04 * 2.33 / 22400;	// = 0.69e-6;
+      Float_t I = 1.664 * 0.04 * 2.33 / 22400;       // = 0.69e-6;
       for (ivol = 1; ivol < 6; ivol++)
-	{ 
-	  for (isec = 1; isec <= NumberOfSectors[ivol-1]; isec++)
-	    { 
-	      for (iring = 1; iring <= NumberOfRings[ivol-1]; iring++)
-		{
-		      digit[0] = ivol;
-		      digit[1] = isec;
-		      digit[2] = iring;
-		      charge = Int_t (de[ivol][isec][iring] / I);
+       { 
+         for (isec = 1; isec <= NumberOfSectors[ivol-1]; isec++)
+           { 
+             for (iring = 1; iring <= NumberOfRings[ivol-1]; iring++)
+              {
+                    digit[0] = ivol;
+                    digit[1] = isec;
+                    digit[2] = iring;
+                    charge = Int_t (de[ivol][isec][iring] / I);
 
-		      digit[3] = charge;
-		      //dinamic diapason from MIP(0.155MeV) to 30MIP(4.65MeV)
-		      //1024 ADC channels 
-		      Float_t channelWidth = (22400 * 30) / 1024;
+                    digit[3] = charge;
+                    //dinamic diapason from MIP(0.155MeV) to 30MIP(4.65MeV)
+                    //1024 ADC channels 
+                    Float_t channelWidth = (22400 * 30) / 1024;
 
-		      digit[4] = Int_t (digit[3] / channelWidth);
-		      FMD->AddSDigit(digit);
+                    digit[4] = Int_t (digit[3] / channelWidth);
+                    FMD->AddSDigit(digit);
 
-		}		// iring loop
-	    }			//sector loop
-	}			// volume loop
+              }              // iring loop
+           }                     //sector loop
+       }                     // volume loop
       
-      gAlice->TreeS()->Reset();
-      gAlice->TreeS()->Fill();
-      gAlice->TreeS()->Write(0,TObject::kOverwrite) ;
-    }				//event loop
+      gime->TreeS()->Reset();
+      gime->TreeS()->Fill();
+      gime->WriteSDigits("OVERWRITE");
+    }  //event loop
 
 
 }

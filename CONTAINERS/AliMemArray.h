@@ -58,8 +58,8 @@ protected :
   void   Reserve2D(UInt_t n);     
   //  
 protected:      
-  virtual void     CTORBuffer(void *buffer, UInt_t size){;} //array placement constructor
-  virtual void     DTORBuffer(void *buffer, UInt_t size){;} //array placement destructor
+  virtual void     CTORBuffer(void */*buffer*/, UInt_t /*size*/){;} //array placement constructor
+  virtual void     DTORBuffer(void */*buffer*/, UInt_t /*size*/){;} //array placement destructor
   virtual void     CopyBuffer(void *src, void *dest,  UInt_t size); //array placement copy constructor
   UInt_t          fSize;             //total number of valid  objects  
   UInt_t          fCapacity;         //capacity of array 

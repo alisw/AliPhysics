@@ -12,33 +12,8 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-/*
-$Log$
-Revision 1.6  2000/10/03 13:51:57  egangler
-Removal of useless dependencies via forward declarations
 
-Revision 1.5  2000/10/02 21:28:09  fca
-Removal of useless dependecies via forward declarations
-
-Revision 1.4  2000/07/03 11:54:57  morsch
-AliMUONSegmentation and AliMUONHitMap have been replaced by AliSegmentation and AliHitMap in STEER
-The methods GetPadIxy and GetPadXxy of AliMUONSegmentation have changed name to GetPadI and GetPadC.
-
-Revision 1.3  2000/06/27 10:13:01  morsch
-Obsolete global variables removed from file.
-
-Revision 1.2  2000/06/15 07:58:48  morsch
-Code from MUON-dev joined
-
-Revision 1.1.2.6  2000/06/09 21:57:40  morsch
-Most coding rule violations corrected.
-
-Revision 1.1.2.5  2000/05/05 11:33:56  morsch
-Log inside comments.
-
-Revision 1.1.2.4  2000/05/05 10:12:09  morsch
-Log messages included
-*/
+/* $Id$ */
 
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
@@ -241,7 +216,8 @@ AliMUONHit *AliMUONPoints::GetHit() const
   //   Returns pointer to hit index in AliRun::fParticles
   //
   AliMUON *pMUON  = (AliMUON*)gAlice->GetModule("MUON");
-  gAlice->TreeH()->GetEvent(fTrackIndex);
+  
+  pMUON->TreeH()->GetEvent(fTrackIndex);
   TClonesArray *muonHits  = pMUON->Hits();
   Int_t nhits = muonHits->GetEntriesFast();
   if (fHitIndex < 0 || fHitIndex >= nhits) return 0;

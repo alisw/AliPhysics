@@ -13,193 +13,19 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+/* 
+ $Id$ 
+*/
 /*
-$Log$
-Revision 1.63  2003/02/12 10:39:05  hristov
-Updated AliTrackReference class (S.Radomski)
-
-Revision 1.62  2003/01/16 08:10:13  hristov
-Correcting usage of string arrays (valgrind)
-
-Revision 1.61  2002/11/21 23:05:27  alibrary
-Removing AliMC and AliMCProcess
-
-Revision 1.60  2002/10/22 14:45:47  alibrary
-Introducing Riostream.h
-
-Revision 1.59  2002/10/14 14:57:08  hristov
-Merging the VirtualMC branch to the main development branch (HEAD)
-
-Revision 1.53.6.4  2002/10/14 13:14:08  hristov
-Updating VirtualMC to v3-09-02
-
-Revision 1.58  2002/10/02 17:56:34  barbera
-Bug in copy 37 of volume I570 corrected (thanks to J. Belikov)
-
-Revision 1.57  2002/06/12 18:57:25  nilsen
-Added TrackReference hits for ITS Mother volume at request of TRD and TOF.
-
-Revision 1.56  2002/05/10 22:30:27  nilsen
-fix to use default paramters for the SDD response.
-
-Revision 1.55  2002/04/13 22:21:12  nilsen
-New default value of noise for SDD simulations introduced.
-
-Revision 1.54  2002/03/28 16:17:03  nilsen
-Set new Geant Step size and related parameters for the ITS materials.
-
-Revision 1.53  2001/11/28 01:35:45  nilsen
-Using standard constructors instead of default constructors for Clusterfinder,
-Response, and FastSimulator.
-
-Revision 1.52  2001/10/22 11:00:54  hristov
-New naming schema of the rotation matrices in BuildGeometry() to avoid redefinition in other detectors (R.Barbera)
-
-Revision 1.51  2001/10/19 10:18:49  barbera
-A typo corrected.
-
-Revision 1.50  2001/10/18 12:25:07  barbera
-Detailed geometry in BuildGeometry() commented out (450 MB needed to compile the file). Six cylinders put back but improved by comparison with the ITS coarse geometry
-
-Revision 1.49  2001/10/18 03:09:21  barbera
-The method BuildGeometry() has been completely rewritten. Now display.C can display the detailed ITS geometry instead of the old six dummy cylunders.
-
-Revision 1.48  2001/10/17 04:35:32  barbera
-Checks for the det and chip thickness modified in order to set the dafault values to 200 um if the user chosen values are outside the range 100-300 um
-
-Revision 1.47  2001/10/04 22:33:39  nilsen
-Fixed bugs in SetDefaults.
-
-Revision 1.46  2001/10/01 19:34:08  nilsen
-Fixed a bug in asigning detector types in SetDefaults under SSD layer 6.
-
-Revision 1.45  2001/06/07 14:42:14  barbera
-Both chip and det thicknesses set to [100,300]
-
-Revision 1.44  2001/05/31 19:24:47  barbera
-Default values of SPD detector and chip thickness set to 200 microns as defined by the Technical Board
-
-Revision 1.43  2001/05/30 16:15:47  fca
-Correct comparison wiht AliGeant3::Class() introduced. Thanks to I.Hrivnacova
-
-Revision 1.42  2001/05/30 15:55:35  hristov
-Strings compared instead of pointers
-
-Revision 1.41  2001/05/30 14:04:31  hristov
-Dynamic cast replaced (F.Carminati)
-
-Revision 1.40  2001/05/25 15:59:59  morsch
-Overlaps corrected. (R. Barbera)
-
-Revision 1.38  2001/05/16 08:17:49  hristov
-Bug fixed in the StepManager to account for the difference in the geometry tree for the ITS pixels. This fixes both the funny distribution of pixel coordinates and the missing hits/digits/points in many sectors of the ITS pixel barrel. Also included is a patch to properly get and use the detector dimensions through out the ITS code. (B.Nilsen)
-
-Revision 1.37  2001/05/10 00:12:59  nilsen
-Finished fixing up the default segmentation for the PPR geometry.
-
-Revision 1.36  2001/05/09 01:02:21  nilsen
-Finished fixing SetDefaults for the segmentation of SPD, SDD, and SSD.
-
-Revision 1.35  2001/05/03 08:40:15  barbera
-Volume ITSD slightly modified to be consistent with v5. Some improvement in the printouts. The last commit did not complete successfully.
-
-Revision 1.33  2001/05/01 22:40:42  nilsen
-Partical update of SetDefault.
-
-Revision 1.32  2001/04/22 13:48:09  barbera
-New values of media parameters and thickness of SPD end-ladder electronics as given by Fabio Formenti
-
-Revision 1.31  2001/04/04 07:02:16  barbera
-Position of the cylinders holding rails corrected
-
-Revision 1.30  2001/03/29 22:02:30  barbera
-Some changes to the services due to the new drawings from the engineers.
-
-Revision 1.29  2001/03/29 05:28:56  barbera
-Rails material changed from aluminum to carbon fiber according with the decision of the last Technical Board
-
-Revision 1.28  2001/03/28 06:40:20  barbera
-Central and services mother volumes made consistenf for detailed and coarse geometry. Switch for rails added to the coarse geometries
-
-Revision 1.26  2001/03/23 00:12:23  nilsen
-Set Reading of AliITSgeom data from Geant3 common blocks as the default and
-not a .det file. Removed redundent calls to BuildGeometry.
-
-Revision 1.25  2001/03/20 19:22:51  barbera
-Flags for the rails and the cooling fluid added. Some changes in the volumes of the SSD cones after the meeting with the engineers in Torino.
-
-Revision 1.23  2001/03/13 21:18:44  barbera
-Some misleading comments removed
-
-Revision 1.22  2001/03/13 18:13:30  barbera
-Some mother volumes sligthly modified to eliminate an overlap with the absorber
-
-Revision 1.21  2001/03/13 08:36:23  hristov
-fabsf replaced by TMath::Abs
-
-Revision 1.20  2001/03/13 00:17:41  barbera
-New SDD geometry got grom F. Tosello and checked by the SDD engineers
-
-Revision 1.19  2001/02/28 18:23:13  barbera
-Setters and getters to set/get the detector and chip thickness on SPD layers added
-
-Revision 1.18  2001/02/27 23:18:24  barbera
-Full parameterization of detector and chip thicknesses for layer 1 and layer 2 of SPD as requested by the project leader
-
-Revision 1.17  2001/02/19 22:14:55  nilsen
-Fix for all 4 versions 11, 12, 21, and 22.
-
-Revision 1.16  2001/02/19 20:10:34  barbera
-Set option=2 and thickness=2 as default values --> SetMinorVersion=22
-
-Revision 1.15  2001/02/19 19:44:00  barbera
-Air density parameter corrected
-
-Revision 1.14  2001/02/13 16:53:35  nilsen
-Fixed a but when trying to use GEANT4. Needed to replace
-if(!((TGeant3*)gMC)) with if(!(dynamic_casst<TGeant3*>(gMC)))
-because just casting gMC to be TGeant3* even when it realy is a TGeant3 pointer
-did not result in a zero value. For AliITSv5asymm and AliITSv5symm, needed
-to fix a bug in the initilizers and a bug in BuildGeometry. This is now done
-in the same way as in AliITSv5.cxx.
-
-Revision 1.13  2001/02/09 20:06:26  nilsen
-Fixed bug in distructor. Can't distroy fixxed length arrays. Thanks Peter.
-
-Revision 1.12  2001/02/09 13:53:38  barbera
-Int_t redefinition avoided
-
-Revision 1.11  2001/02/09 06:55:38  barbera
-SPD option re-set to B. It was A by mistake
-
-Revision 1.10  2001/02/09 00:05:31  nilsen
-Added fMajor/MinorVersion variables and made other changes to better make
-use of the new code changes in AliITSgeom related classes.
-
-
-Revision 1.9  2001/02/08 16:00:37  barbera
-New thicknesses (300+300 um) added for SPD chips and detectors and set as default. Many other refinements.
-
-Revision 1.8  2001/02/06 08:03:44  barbera
-Material redefinition in SDD
-
-Revision 1.7  2001/02/05 13:34:57  barbera
-Updated version of the ITS detailed geometry
-
-Revision 1.5  2001/01/30 09:23:13  hristov
-Streamers removed (R.Brun)
-
-Revision 1.4  2001/01/23 20:08:03  barbera
-Option B for pixels implemented and set as default
-
-Revision 1.3  2001/01/17 08:08:20  barbera
-Some media parameters modified
-
-Revision 1.1.2.1  2001/01/15 13:38:08  barbera
-New ITS detailed geometry to be used for the PPR
+ $Log$
+ Revision 1.53.4.6  2003/06/13 16:30:59  nilsen
+ Introducing a backward incompatibility to hit files created before June 12
+ 2002. The enterance hit is no longer recorded. The starting position of
+ every hit is used instead. Added GetPositionL0 to AliITShit, fixed up
+ AliITSmodule to use starting location of hit and not enterance hits, and
+ StepManager in AliITSvPPRasymm no longer records enterence hit to hit file.
 
 */
-
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
 //  Inner Traking System version PPR  asymmetric                             //
@@ -217,20 +43,22 @@ New ITS detailed geometry to be used for the PPR
 #include <Riostream.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <TMath.h>
+
+#include <TBRIK.h>
+//#include <TCanvas.h>
+#include <TClonesArray.h>
+//#include <TFile.h>    // only required for Tracking function?
 #include <TGeometry.h>
+#include <TLorentzVector.h>
+#include <TMath.h>
 #include <TNode.h>
+//#include <TObjArray.h>
+//#include <TObjString.h>
+#include <TPCON.h>
+//#include <TSystem.h>
 #include <TTUBE.h>
 #include <TTUBS.h>
-#include <TPCON.h>
-#include <TFile.h>    // only required for Tracking function?
-#include <TCanvas.h>
-#include <TObjArray.h>
-#include <TLorentzVector.h>
-#include <TObjString.h>
-#include <TClonesArray.h>
-#include <TBRIK.h>
-#include <TSystem.h>
+#include <TVirtualMC.h>
 
 #include "AliRun.h"
 #include "AliMagF.h"
@@ -241,22 +69,20 @@ New ITS detailed geometry to be used for the PPR
 #include "AliITS.h"
 #include "AliITSvPPRasymm.h"
 #include "AliITSgeom.h"
-#include "AliITSgeomSPD.h"
 #include "AliITSgeomSDD.h"
+#include "AliITSgeomSPD.h"
 #include "AliITSgeomSSD.h"
-#include "AliITSDetType.h"
-#include "AliITSresponseSPD.h"
+#include "AliITShit.h"
 #include "AliITSresponseSDD.h"
+#include "AliITSresponseSPD.h"
 #include "AliITSresponseSSD.h"
-#include "AliITSsegmentationSPD.h"
 #include "AliITSsegmentationSDD.h"
+#include "AliITSsegmentationSPD.h"
 #include "AliITSsegmentationSSD.h"
-#include "AliITSsimulationSPD.h"
 #include "AliITSsimulationSDD.h"
+#include "AliITSsimulationSPD.h"
 #include "AliITSsimulationSSD.h"
-#include "AliITSClusterFinderSPD.h"
-#include "AliITSClusterFinderSDD.h"
-#include "AliITSClusterFinderSSD.h"
+#include "AliITSvPPRasymm.h"
 
 
 ClassImp(AliITSvPPRasymm)
@@ -29386,9 +29212,8 @@ void AliITSvPPRasymm::StepManager(){
     if(!(this->IsActive())){
 	return;
     } // end if !Active volume.
-    Int_t   copy1,copy2;  
-//    Float_t hits[8];
-    Int_t   vol[5];
+    Int_t copy1,copy2;
+    Int_t vol[5];
     TClonesArray &lhits = *fHits;
     //
     // Track status
@@ -29464,23 +29289,13 @@ void AliITSvPPRasymm::StepManager(){
     //
     gMC->TrackPosition(position);
     gMC->TrackMomentum(momentum);
-/*
-    hits[0]=position[0];
-    hits[1]=position[1];
-    hits[2]=position[2];
-    hits[3]=momentum[0];
-    hits[4]=momentum[1];
-    hits[5]=momentum[2];
-    hits[6]=gMC->Edep();
-    hits[7]=gMC->TrackTime();
-*/
     vol[4] = stat0;
     if(gMC->IsTrackEntering()){
 	position0 = position;
 	stat0 = vol[3];
+	return;
     } // end if IsEntering
     // Fill hit structure with this new hit.
-//    new(lhits[fNhits++]) AliITShit(fIshunt,gAlice->CurrentTrack(),vol,hits);
     new(lhits[fNhits++]) AliITShit(fIshunt,gAlice->CurrentTrack(),vol,
 				   gMC->Edep(),gMC->TrackTime(),position,
 				   position0,momentum);

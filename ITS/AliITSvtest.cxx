@@ -13,85 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.15  2002/10/22 14:46:03  alibrary
-Introducing Riostream.h
-
-Revision 1.14  2002/10/14 14:57:10  hristov
-Merging the VirtualMC branch to the main development branch (HEAD)
-
-Revision 1.13.8.2  2002/08/30 15:45:56  alibrary
-Adding geant4vmc support
-
-Revision 1.13.8.1  2002/06/10 17:51:17  hristov
-Merged with v3-08-02
-
-Revision 1.13  2001/10/01 19:34:09  nilsen
-Fixed a bug in asigning detector types in SetDefaults under SSD layer 6.
-
-Revision 1.12  2001/08/24 21:04:36  nilsen
-Added some include files. Needed due to new forward declorations in other
-files
-
-Revision 1.11  2001/05/30 16:15:47  fca
-Correct comparison wiht AliGeant3::Class() introduced. Thanks to I.Hrivnacova
-
-Revision 1.10  2001/05/30 15:55:35  hristov
-Strings compared instead of pointers
-
-Revision 1.9  2001/05/30 14:04:31  hristov
-Dynamic cast replaced (F.Carminati)
-
-Revision 1.8  2001/02/13 16:53:35  nilsen
-Fixed a but when trying to use GEANT4. Needed to replace
-if(!((TGeant3*)gMC)) with if(!(dynamic_casst<TGeant3*>(gMC)))
-because just casting gMC to be TGeant3* even when it realy is a TGeant3 pointer
-did not result in a zero value. For AliITSv5asymm and AliITSv5symm, needed
-to fix a bug in the initilizers and a bug in BuildGeometry. This is now done
-in the same way as in AliITSv5.cxx.
-
-Revision 1.7  2001/02/09 20:06:26  nilsen
-Fixed bug in distructor. Can't distroy fixxed length arrays. Thanks Peter.
-
-Revision 1.6  2001/02/09 00:05:31  nilsen
-Added fMajor/MinorVersion variables and made other changes to better make
-use of the new code changes in AliITSgeom related classes.
-
-Revision 1.5  2001/01/30 09:23:14  hristov
-Streamers removed (R.Brun)
-
-Revision 1.4  2001/01/18 06:25:09  barbera
-ITS geometry using test Euclid files
-
-Revision 1.1.2.8  2000/10/05 20:28:18  nilsen
-Now using root generated streamer function.
-
-Revision 1.1.2.7  2000/07/31 13:51:22  barbera
-Updated from the release
-
-Revision 1.2  2000/07/10 16:07:19  fca
-Release version of ITS code
-
-Revision 1.1.2.2  2000/03/02 21:53:36  nilsen
-to make it compatable with the changes in AliRun/AliModule.
-
-Revision 1.1.2.1  2000/01/12 20:19:03  nilsen
-	The changes made with this latest inclusion of code is very large.
-Many of the new files were added just in December when P. Cerello added his
-SDD simulations to the distrobutions. Also added are some file of P. Skowronski
-for SSD cluster finding and ghost RecPoints. None of this "new" code has been
-proporly tested. Other code new to this cvs repository is explained in the
-ITS Off-line web page. In general the changes are too large to give a resonable
-discription of them but probably should be taken as the starting point for
-the developement branch (ITS-working).
-    B. S. Nilsen
-
-Revision 1.13  1999/10/16 19:49:00  BSN
-$Name$
-$Author$
-$Id$
-*/
+/* $Id$ */
 
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
@@ -103,31 +25,27 @@ $Id$
 // Created October 16 1999.                                                  //
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
+
+#include <Riostream.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <Riostream.h>
 #include <TMath.h>
-#include <TGeometry.h>
 #include <TNode.h>
-#include <TTUBE.h>
-#include <TFile.h>    // only required for Tracking function?
-#include <TCanvas.h>
 #include <TObjArray.h>
 #include <TObjString.h>
-#include <TClonesArray.h>
-#include <TLorentzVector.h>
-#include <TBRIK.h>
 #include <TSystem.h>
+#include <TTUBE.h>
+#include <TVirtualMC.h>
 
 #include "AliRun.h"
 #include "AliITSGeant3Geometry.h"
-#include "AliITShit.h"
-#include "AliITS.h"
-#include "AliITSvtest.h"
 #include "AliITSgeom.h"
-#include "AliITSgeomSPD.h"
 #include "AliITSgeomSDD.h"
+#include "AliITSgeomSPD.h"
 #include "AliITSgeomSSD.h"
+#include "AliITShit.h"
+#include "AliITSvtest.h"
+#include "AliRun.h"
 
 ClassImp(AliITSvtest)
  

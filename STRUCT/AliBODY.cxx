@@ -36,9 +36,11 @@
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "AliRun.h"
-#include "AliMagF.h"
+#include <TVirtualMC.h>
+
 #include "AliBODY.h"
+#include "AliMagF.h"
+#include "AliRun.h"
 
 ClassImp(AliBODY)
  

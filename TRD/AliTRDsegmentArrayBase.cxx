@@ -13,60 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.12.6.1  2002/06/10 15:28:58  hristov
-Merged with v3-08-02
-
-Revision 1.13  2002/03/28 14:59:07  cblume
-Coding conventions
-
-Revision 1.12  2002/02/12 16:06:45  cblume
-Remove delete fTree
-
-Revision 1.11  2001/11/19 08:44:08  cblume
-Fix bugs reported by Rene
-
-Revision 1.10  2001/08/30 09:31:22  hristov
-The operator[] is replaced by At() or AddAt() in case of TObjArray.
-
-Revision 1.9  2001/07/27 13:03:15  hristov
-Default Branch split level set to 99
-
-Revision 1.8  2001/01/26 19:56:57  hristov
-Major upgrade of AliRoot code
-
-Revision 1.7  2000/11/20 08:56:07  cblume
-Cleanup of data arrays
-
-Revision 1.6  2000/11/01 14:53:21  cblume
-Merge with TRD-develop
-
-Revision 1.1.4.3  2000/10/06 16:49:46  cblume
-Made Getters const
-
-Revision 1.1.4.2  2000/10/04 16:34:58  cblume
-Replace include files by forward declarations
-
-Revision 1.5  2000/06/09 11:10:07  cblume
-Compiler warnings and coding conventions, next round
-
-Revision 1.4  2000/06/08 18:32:58  cblume
-Make code compliant to coding conventions
-
-Revision 1.3  2000/06/07 16:27:01  cblume
-Try to remove compiler warnings on Sun and HP
-
-Revision 1.2  2000/05/08 16:17:27  cblume
-Merge TRD-develop
-
-Revision 1.1.4.1  2000/05/08 14:55:03  cblume
-Bug fixes
-
-Revision 1.1  2000/02/28 19:02:56  cblume
-Add new TRD classes
-
-*/
+/* $Id$ */
 
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //

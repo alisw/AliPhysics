@@ -13,39 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.8  2001/01/26 21:25:48  morsch
-Empty default constructors and.
-
-Revision 1.7  2000/12/21 22:12:41  morsch
-Clean-up of coding rule violations,
-
-Revision 1.6  2000/10/18 08:41:32  morsch
-Make NextPad() and MorePads() to iterate until the end.
-
-Revision 1.5  2000/10/03 21:48:07  morsch
-Adopt to const declaration of some of the methods in AliSegmentation.
-
-Revision 1.4  2000/10/02 16:58:29  egangler
-Cleaning of the code :
--> coding conventions
--> void Streamers
--> some useless includes removed or replaced by "class" statement
-
-Revision 1.3  2000/07/03 11:54:57  morsch
-AliMUONSegmentation and AliMUONHitMap have been replaced by AliSegmentation and AliHitMap in STEER
-The methods GetPadIxy and GetPadXxy of AliMUONSegmentation have changed name to GetPadI and GetPadC.
-
-Revision 1.2  2000/06/15 07:58:48  morsch
-Code from MUON-dev joined
-
-Revision 1.1.2.1  2000/06/09 21:37:56  morsch
-AliMUONSegmentationV02 code  from  AliMUONSegResV02.cxx
-
-*/
-
-
+/* $Id$ */
 
 /////////////////////////////////////////////////////
 //  Segmentation and Response classes version 02   //

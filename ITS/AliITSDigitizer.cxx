@@ -13,66 +13,32 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
  
-/*
-$Log$
-Revision 1.8  2003/03/03 17:00:30  masera
-Corrections to comply with coding conventions
+/* $Id$ */
 
-Revision 1.7  2002/10/25 18:54:22  barbera
-Various improvements and updates from B.S.Nilsen and T. Virgili
-
-Revision 1.6  2002/10/22 14:45:34  alibrary
-Introducing Riostream.h
-
-Revision 1.5  2002/10/14 14:57:00  hristov
-Merging the VirtualMC branch to the main development branch (HEAD)
-
-Revision 1.3.4.1  2002/06/10 17:51:14  hristov
-Merged with v3-08-02
-
-Revision 1.4  2002/04/24 22:08:12  nilsen
-New ITS Digitizer/merger with two macros. One to make SDigits (old way) and
-one to run the  merger (modified for Jiri).
-
-Revision 1.3  2002/03/25 10:48:55  nilsen
-New ITS SDigit merging with region of interest cut. Update for changes in
-AliDigitizer. Additional optimization should be done.
-
-Revision 1.2  2002/03/15 17:26:40  nilsen
-New SDigit version of ITS Digitizer.
-
-Revision 1.1  2001/11/27 16:27:28  nilsen
-Adding AliITSDigitizer class to do merging and digitization . Based on the
-TTask method. AliITSDigitizer class added to the Makefile and ITSLinkDef.h
-file. The following files required minor changes. AliITS, added functions
-SetHitsAddressBranch, MakeBranchInTreeD and modified MakeBranchD.
-AliITSsimulationSDD.cxx needed a Tree independent way of returning back to
-the original Root Directory in function Compress1D. Now it uses gDirectory.
-
-Revision 1.2  2002/03/01  E. Lopez
-Digitization changed to start from SDigits instead of Hits.
-The SDigits are reading as TClonesArray of AliITSpListItem
-*/
+//Piotr.Skowronski@cern.ch :
+//Corrections applied in order to compile (only) with new I/O and folder structure
+//To be implemented correctly by responsible
 //
 //  Class used to steer
 //  the digitization for ITS
 //
 //
+
 #include <stdlib.h>
 #include <Riostream.h>
-#include <TClonesArray.h> 
+#include <TClonesArray.h>
 #include <TTree.h>
 #include <TBranch.h>
 
 #include <AliRun.h>
+#include <AliRunLoader.h>
+#include <AliLoader.h>
 #include <AliRunDigitizer.h>
-
 #include "AliITSDigitizer.h"
-#include "AliITSgeom.h"
 #include "AliITSpList.h"
+#include "AliITSgeom.h"
 #include "AliITSsimulation.h"
 #include "AliITSDetType.h"
-
 
 ClassImp(AliITSDigitizer)
 
@@ -159,22 +125,6 @@ Bool_t AliITSDigitizer::Init(){
     } // end if
     // fModActive needs to be set to a default all kTRUE value
     for(Int_t i=0;i<fITS->GetITSgeom()->GetIndexMax();i++) fModActive[i] = kTRUE;
-/*  This will not work from Init. ts is aways returned as zero.
-    TTree *ts;
-    if(fRoif>=0 && fRoiifile>=0 && fRoiifile<GetManager()->GetNinputs()){
-	ts = GetManager()->GetInputTreeS(fRoiifile);
-	if(!ts){
-	    if(!gAlice) ts = gAlice->TreeS();
-	    if(!ts){
-		cout <<"The TTree TreeS needed to set by region not found."
-		    " No region of interest cut will be applied."<< endl;
-		return fInit;
-	    } // end if
-	} // end if
-	cout << "calling SetByReionOfInterest ts="<< ts <<endl;
-	SetByRegionOfInterest(ts);
-    } // end if
-*/
     return fInit;
 }
 //______________________________________________________________________
@@ -214,26 +164,59 @@ void AliITSDigitizer::Exec(Option_t* opt){
     Int_t *fl = new Int_t[nfiles];
     fl[0] = fRoiifile;
     mask = 1;
-    for(id=0;id<nfiles;id++) if(id!=fRoiifile){
-	// just in case fRoiifile!=0.
-	fl[mask] = id;
-	mask++;
-    } // end for,if
+    for(id=0;id<nfiles;id++) 
+     if(id!=fRoiifile)
+      {
+       // just in case fRoiifile!=0.
+        fl[mask] = id;
+        mask++;
+      } // end for,if
     TClonesArray * sdig = new TClonesArray( "AliITSpListItem",1000 );
     
+    TString loadname(name);
+    loadname+="Loader";
+    
+    AliRunLoader *inRL = 0x0, *outRL = 0x0;
+    AliLoader *ingime = 0x0, *outgime = 0x0;    
+    
+    outRL = AliRunLoader::GetRunLoader(fManager->GetOutputFolderName());    
+    if ( outRL == 0x0)
+     {
+       Error("Exec","Can not get Output Run Loader");
+       return;
+     }
+    outRL->GetEvent(event);
+    outgime = outRL->GetLoader(loadname);
+    if ( outgime == 0x0)
+     {
+       Error("Exec","Can not get Output ITS Loader");
+       return;
+     }
+    outgime->LoadDigits("update");
+    if (outgime->TreeD() == 0x0) outgime->MakeTree("D");
+    
     // Digitize
-    fITS->MakeBranchInTreeD(GetManager()->GetTreeD());
+    fITS->MakeBranchInTreeD(outgime->TreeD());
     if(fRoif!=0) Info("AliITSDigitizer","Region of Interest digitization selected");
     else Info("AliITSDigitizer","No Region of Interest selected. Digitizing everything");
     //cout <<"fModActive="<<fModActive<<" fRoif="<<fRoif;
     if(fModActive==0) fRoif = 0; // fModActive array must be define for RIO cuts.
     //cout <<" fRoif="<<fRoif<<endl;
 
-    for(module=0; module<size; module++ ){
-	if(fRoif!=0) if(!fModActive[module]) continue;
+    for(ifiles=0; ifiles<nfiles; ifiles++ )
+     {
+       inRL =  AliRunLoader::GetRunLoader(fManager->GetInputFolderName(fl[ifiles]));
+       ingime = inRL->GetLoader(loadname);
+       if (ingime->TreeS() == 0x0) ingime->LoadSDigits();
+     }
+
+    for(module=0; module<size; module++ )
+     {
+        if(fModActive && fRoif!=0) if(!fModActive[module]) continue;
         id = fITS->GetITSgeom()->GetModuleType(module);
         if(!all && !det[id]) continue;
         iDetType = fITS->DetType( id );
+
         sim      = (AliITSsimulation*)iDetType->GetSimulationModel();
         if(!sim) {
             Error( "Exec", "The simulation class was not instanciated!" );
@@ -243,13 +226,20 @@ void AliITSDigitizer::Exec(Option_t* opt){
         // Fill the module with the sum of SDigits
         sim->InitSimulationModule(module, event);
 	//cout << "Module=" << module;
-        for(ifiles=0; ifiles<nfiles; ifiles++ ){
-	    if(fRoif!=0) if(!fModActive[module]) continue;
-	    //cout <<" fl[ifiles=" << ifiles << "]=" << fl[ifiles];
-            TTree *treeS = GetManager()->GetInputTreeS(fl[ifiles]);
-            if( !(treeS && fITS->GetSDigits()) ) continue;   
-            TBranch *brchSDigits = treeS->GetBranch( name );
-            if( brchSDigits ) {
+        for(ifiles=0; ifiles<nfiles; ifiles++ )
+         {
+           if(fRoif!=0) if(!fModActive[module]) continue;
+            
+           inRL =  AliRunLoader::GetRunLoader(fManager->GetInputFolderName(fl[ifiles]));
+           ingime = inRL->GetLoader(loadname);
+           
+           TTree *treeS = ingime->TreeS();
+           fITS->SetTreeAddress();
+           
+           if( !(treeS && fITS->GetSDigits()) ) continue; 
+           TBranch *brchSDigits = treeS->GetBranch( name );
+           if( brchSDigits ) 
+            {
                 brchSDigits->SetAddress( &sdig ); 
             } else {
                 Error( "Exec", "branch ITS not found in TreeS, input file %d ",
@@ -261,24 +251,30 @@ void AliITSDigitizer::Exec(Option_t* opt){
             // add summable digits to module
             brchSDigits->GetEvent( module );
             lmod = sim->AddSDigitsToModule(sdig,mask);
-	    if(ifiles==0){
-		fModActive[module] = lmod;
-	    } // end if
-	    //cout << " fModActive["<<module<<"]=";
-	    //if(fModActive[module]) cout << "kTRUE";
-	    //else cout << "kFALSE";
+            if(ifiles==0)
+             {
+               fModActive[module] = lmod;
+             } // end if
         } // end for ifiles
 	//cout << " end ifiles loop" << endl;
         // Digitize current module sum(SDigits)->Digits
         sim->FinishSDigitiseModule();
 
         // fills all branches - wasted disk space
-        GetManager()->GetTreeD()->Fill();
+        outgime->TreeD()->Fill();
         fITS->ResetDigits();
     } // end for module
-    //cout << "end modules loop"<<endl;
 
-    GetManager()->GetTreeD()->AutoSave();
+    outgime->TreeD()->AutoSave();
+    outgime->WriteDigits("OVERWRITE");
+    outgime->UnloadDigits();
+    
+    for(ifiles=0; ifiles<nfiles; ifiles++ )
+     {
+       inRL =  AliRunLoader::GetRunLoader(fManager->GetInputFolderName(fl[ifiles]));
+       ingime = inRL->GetLoader(loadname);
+       ingime->UnloadSDigits();
+     }
 
     delete[] fl;
     sdig->Clear();
@@ -311,27 +307,27 @@ void AliITSDigitizer::SetByRegionOfInterest(TTree *ts){
     //cout << "Region of Interest ts="<<ts<<" brchSDigits="<<brchSDigits<<" sdig="<<sdig<<endl;
 
     if( brchSDigits ) {
-	brchSDigits->SetAddress( &sdig );
+      brchSDigits->SetAddress( &sdig );
     } else {
-	Error( "SetByRegionOfInterest","branch ITS not found in TreeS");
-	return;
+      Error( "SetByRegionOfInterest","branch ITS not found in TreeS");
+      return;
     } // end if brchSDigits
 
     nm = fITS->GetITSgeom()->GetIndexMax();
     for(m=0;m<nm;m++){
-	//cout << " fModActive["<<m<<"]=";
-	fModActive[m] = kFALSE; // Not active by default
-	sdig->Clear();
-	brchSDigits->GetEvent(m);
-	if(sdig->GetLast()>=0) for(i=0;i<sdig->GetLast();i++){
-	    // activate the necessary modules
-	    if(((AliITSpList*)sdig->At(m))->GetpListItem(i)->GetSignal()>0.0){ // Must have non zero signal.
-		fModActive[m] = kTRUE;
-		break;
-	    } // end if
-	} // end if. end for i.
-	//cout << fModActive[m];
-	//cout << endl;
+      //cout << " fModActive["<<m<<"]=";
+      fModActive[m] = kFALSE; // Not active by default
+      sdig->Clear();
+      brchSDigits->GetEvent(m);
+      if(sdig->GetLast()>=0) for(i=0;i<sdig->GetLast();i++){
+          // activate the necessary modules
+          if(((AliITSpList*)sdig->At(m))->GetpListItem(i)->GetSignal()>0.0){ // Must have non zero signal.
+            fModActive[m] = kTRUE;
+            break;
+          } // end if
+      } // end if. end for i.
+      //cout << fModActive[m];
+      //cout << endl;
     } // end for m
     Info("AliITSDigitizer","Digitization by Region of Interest selected");
     sdig->Clear();

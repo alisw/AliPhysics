@@ -13,53 +13,48 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.4.4.1  2002/06/10 14:57:41  hristov
-Merged with v3-08-02
+/* $Id$ */
 
-Revision 1.5  2002/04/26 10:37:23  morsch
-Method RewindEvent() added. (N. Carrer)
-
-Revision 1.4  2002/03/22 08:25:33  morsch
-TreeE connected correctly.
-
-Revision 1.3  2001/12/12 11:21:37  morsch
-Dummy copy constructor added.
-
-Revision 1.2  2001/11/12 14:31:00  morsch
-Memory leaks fixed. (M. Bondila)
-
-Revision 1.1  2001/11/09 09:11:24  morsch
-Realisation of AliGenReader that reads the kine tree (TreeK).
-
-*/
 #include <TFile.h>
 #include <TTree.h>
 #include <TParticle.h>
+#include <TObjString.h>
+#include <TObjArray.h>
 
 #include "AliGenReaderTreeK.h"
-#include "AliStack.h"
 #include "AliHeader.h"
 #include "AliRun.h"
+#include "AliRunLoader.h"
 
 ClassImp(AliGenReaderTreeK);
 
+const TString AliGenReaderTreeK::fgkEventFolderName("GenReaderTreeK");
 
-AliGenReaderTreeK::AliGenReaderTreeK():AliGenReader() 
+AliGenReaderTreeK::AliGenReaderTreeK():
+ AliGenReader(),
+ fNcurrent(0),
+ fNparticle(0),
+ fNp(0),
+ fInRunLoader(0),
+ fBaseFile(0),
+ fStack(0),
+ fOnlyPrimaries(kFALSE),
+ fDirs(0x0),
+ fCurrentDir(0)
 {
 //  Default constructor
-    fFileName       = NULL;
-    fStack          = 0;
-    fHeader         = 0;
-    fNcurrent       = 0;
-    fNparticle      = 0;
-    fFile           = 0;
-    fBaseFile       = 0;
-    fTreeE          = 0;
 }
 
-AliGenReaderTreeK::AliGenReaderTreeK(const AliGenReaderTreeK &reader)
+AliGenReaderTreeK::AliGenReaderTreeK(const AliGenReaderTreeK &reader):
+ fNcurrent(0),
+ fNparticle(0),
+ fNp(0),
+ fInRunLoader(0),
+ fBaseFile(0),
+ fStack(0),
+ fOnlyPrimaries(kFALSE),
+ fDirs(0x0),
+ fCurrentDir(0)
 {
     ;
 }
@@ -68,7 +63,8 @@ AliGenReaderTreeK::AliGenReaderTreeK(const AliGenReaderTreeK &reader)
 AliGenReaderTreeK::~AliGenReaderTreeK() 
 {
 // Destructor
-    delete fTreeE;
+    delete fInRunLoader;//it cleans all the loaded data
+    delete fDirs;
 }
 
 void AliGenReaderTreeK::Init() 
@@ -78,11 +74,17 @@ void AliGenReaderTreeK::Init()
 
     TTree *ali = gAlice->TreeE();
     if (ali) {
-	fBaseFile = ali->GetCurrentFile();
+      fBaseFile = ali->GetCurrentFile();
     } else {
-	printf("\n Warning: Basefile cannot be found !\n");
+      printf("\n Warning: Basefile cannot be found !\n");
     }
-    if (!fFile) fFile  = new TFile(fFileName);
+    //if (!fFile) fFile  = new TFile(fFileName);
+    if (fInRunLoader == 0x0) 
+     {
+       fInRunLoader = AliRunLoader::Open((GetDirName(fCurrentDir++)+"/")+fFileName,fgkEventFolderName);
+       fInRunLoader->LoadHeader();
+       fInRunLoader->LoadKinematics("READ");
+     }
 }
 
 Int_t AliGenReaderTreeK::NextEvent() 
@@ -90,35 +92,50 @@ Int_t AliGenReaderTreeK::NextEvent()
 //  Read the next event  
 //  cd to file with old kine tree    
     if (!fBaseFile) Init();
-    fFile->cd();
-//  Connect header tree
-    if (!fTreeE) fTreeE = (TTree*)gDirectory->Get("TE");
-    if (fHeader) delete fHeader;
-    fHeader = 0;
-    fTreeE->SetBranchAddress("Header", &fHeader);
 //  Get next event
-    fTreeE->GetEntry(fNcurrent);
-//  Connect Stack
-    if (fStack) delete fStack;
-    fStack = fHeader->Stack();
-    fStack->GetEvent(fNcurrent);
+    
+    if (fNcurrent >= fInRunLoader->GetNumberOfEvents())
+     {
+      if (fCurrentDir >= fDirs->GetEntries())
+       {
+         Warning("NextEvent","No more events");
+         return 0;
+       }
+      delete fInRunLoader;
+      fInRunLoader = AliRunLoader::Open((GetDirName(fCurrentDir++)+"/")+fFileName,fgkEventFolderName);
+      fInRunLoader->LoadHeader();
+      fInRunLoader->LoadKinematics("READ");
+      fNcurrent = 0;
+     }
+    fInRunLoader->GetEvent(fNcurrent);
+    fStack = fInRunLoader->Stack();
+    
 //  cd back to base file
     fBaseFile->cd();
 //
     fNcurrent++;
     fNparticle = 0;
-    Int_t ntrack =  fStack->GetNtrack();
-    printf("\n Next event contains %d particles", ntrack);
+    fNp =  fStack->GetNtrack();
+    printf("\n Next event contains %d particles", fNp);
 //    
-    return  ntrack;
+    return  fNp;
 }
 
 TParticle* AliGenReaderTreeK::NextParticle() 
 {
-//  Return next particle
-    TParticle* part = fStack->Particle(fNparticle);
-    fNparticle++;
-    return part;
+//Return next particle
+  TParticle* part = GetParticle(fNparticle++);
+  if (part == 0x0) return 0x0;
+  //if only primaries are to be read, and this particle is not primary enter loop  
+  if (fOnlyPrimaries && ( part->GetFirstMother() > -1) ) 
+   for (;;)
+    { //look for a primary
+      part = GetParticle(fNparticle++);
+      if (part == 0x0) return 0x0;
+      if (part->GetFirstMother() == -1) return part;
+    }
+
+  return part;
 }
 
 void AliGenReaderTreeK::RewindEvent()
@@ -136,3 +153,47 @@ AliGenReaderTreeK& AliGenReaderTreeK::operator=(const  AliGenReaderTreeK& rhs)
 
 
 
+TString& AliGenReaderTreeK::GetDirName(Int_t entry)
+ {
+   TString* retval;//return value
+   if (fDirs ==  0x0)
+    {
+      retval = new TString(".");
+      return *retval;
+    }
+   
+   if ( (entry>fDirs->GetEntries()) || (entry<0))//if out of bounds return empty string
+    {                                            //note that entry==0 is accepted even if array is empty (size=0)
+      Error("GetDirName","Name out of bounds");
+      retval = new TString();
+      return *retval;
+    }
+   
+   if (fDirs->GetEntries() == 0)
+    { 
+      retval = new TString(".");
+      return *retval;
+    }
+   
+   TObjString *dir = dynamic_cast<TObjString*>(fDirs->At(entry));
+   if(dir == 0x0)
+    {
+      Error("GetDirName","Object in TObjArray is not a TObjString or its descendant");
+      retval = new TString();
+      return *retval;
+    }
+   if (gDebug > 0) Info("GetDirName","Returned ok %s",dir->String().Data());
+   return dir->String();
+ }
+ 
+void AliGenReaderTreeK::AddDir(const char* dirname)
+{
+  //adds a directory to the list of directories where data are looked for
+  if(fDirs == 0x0) 
+   {
+     fDirs = new TObjArray();
+     fDirs->SetOwner(kTRUE);
+   }
+  TObjString *odir= new TObjString(dirname);
+  fDirs->Add(odir);
+}

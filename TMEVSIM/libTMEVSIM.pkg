@@ -1,13 +1,7 @@
 SRCS= TMevSim.cxx TMevSimPartTypeParams.cxx TMevSimConverter.cxx \
 AliGenMevSim.cxx AliMevSimConfig.cxx AliMevSimParticle.cxx
 
-HDRS= \
-TMevSim.h \
-TMevSimPartTypeParams.h \
-TMevSimConverter.h \
-AliGenMevSim.h \
-AliMevSimConfig.h \
-AliMevSimParticle.h
+HDRS= $(SRCS:.cxx=.h) 
 
 DHDR=TMevSimLinkDef.h
 

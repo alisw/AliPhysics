@@ -65,7 +65,7 @@ protected:
    Int_t        fFreeSpn;       // Signal event number x spectator n
    Int_t        fFreeSpp;       // Signal event number x spectator p
 
-   char       	*fFnSpecn;      // Spectator n file name
+   char      	*fFnSpecn;      // Spectator n file name
    TFile      	*fSpecnFile;    // Pointer to signal file -> spectator n
    char       	*fFnSpecp;      // Spectator p file name
    TFile      	*fSpecpFile;    // Pointer to signal file -> spectator p

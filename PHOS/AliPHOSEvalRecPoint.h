@@ -6,9 +6,11 @@
 
 
 #include "AliPHOSCpvRecPoint.h"
-#include "AliPHOSClusterizer.h"
-#include "AliPHOSRecPoint.h"
-#include "AliPHOSRecManager.h"
+
+class AliPHOSClusterizer;
+class AliPHOSRecPoint;
+class AliPHOSRecManager;
+class TString;
 
 class AliPHOSEvalRecPoint : public AliPHOSCpvRecPoint
 {
@@ -54,8 +56,9 @@ public:
   Int_t InWorkingPool();
   void RemoveFromWorkingPool(TObject* obj);
   void PrintWorkingPool();
-
-  enum RecPointType {kEmc,kCpv};
+  
+  enum RecPointType {emc,cpv};
+  void SetEventFolderName(const char* evfname);
 
 private:
 
@@ -66,11 +69,13 @@ private:
 
 private:
 
-  Bool_t fIsEmc;    // true if EMC
-  Bool_t fIsCpv;    // true if CPV
-  Int_t fParent;    // parent
-  Float_t fChi2Dof; // chi^2 per degree of freedom
-
+  Bool_t  fIsEmc;
+  Bool_t  fIsCpv;
+  Int_t   fParent;
+  Float_t fChi2Dof;
+  
+  TString fEventFolderName;
+  
   ClassDef(AliPHOSEvalRecPoint,1)
 
 };

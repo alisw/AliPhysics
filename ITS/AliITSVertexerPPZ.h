@@ -21,7 +21,7 @@ class AliITSVertexerPPZ : public AliITSVertexer {
 
  public:
   AliITSVertexerPPZ();
-  AliITSVertexerPPZ(TFile *infile, TFile *outfile, Float_t x0=0., Float_t y0=0.);  // standard constructor 
+  AliITSVertexerPPZ(TString fn, Float_t x0=0., Float_t y0=0.);  // standard constructor 
   virtual ~AliITSVertexerPPZ(); // destructor
   virtual AliITSVertex* FindVertexForCurrentEvent(Int_t event);
   virtual void FindVertices();

@@ -11,6 +11,8 @@
 #ifndef __CINT__
   #include "alles.h"
   #include "AliTPCtracker.h"
+  #include "AliRunLoader.h"
+  #include "AliMagF.h"
 #endif
 
 struct GoodTrackTPC {
@@ -20,38 +22,72 @@ struct GoodTrackTPC {
   Float_t x,y,z;
 };
 
+Int_t good_tracks_tpc(GoodTrackTPC *gt, const Int_t max, const char* evfoldname);
+
 Int_t AliTPCComparison(Int_t event=0) {
+
+   if (gAlice) 
+    { 
+       delete gAlice->GetRunLoader();
+       delete gAlice;//if everything was OK here it is already NULL
+       gAlice = 0x0;
+    }
 
    cerr<<"Doing comparison...\n";
 
    const Int_t MAX=20000;
-   Int_t good_tracks_tpc(GoodTrackTPC *gt, const Int_t max, const Int_t event);
+   Int_t good_tracks_tpc(GoodTrackTPC *gt, const Int_t max, const char* evfoldname = AliConfig::fgkDefaultEventFolderName);//declaration only
 
    gBenchmark->Start("AliTPCComparison");
 
+   AliRunLoader *rl = AliRunLoader::Open("galice.root","COMPARISON");
+   if (!rl) 
+     {
+       cerr<<"Can't start sesion !\n";
+       return 1;
+     }
+
+   rl->LoadgAlice();
+   if (rl->GetAliRun()) 
+    AliKalmanTrack::SetConvConst(1000/0.299792458/rl->GetAliRun()->Field()->SolenoidField());
+   else
+    {
+       cerr<<"AliTPCComparison.C :Can't get AliRun !\n";
+       return 1;
+    }
+   rl->UnloadgAlice();
+  
+   AliLoader * tpcl = rl->GetLoader("TPCLoader");
+   if (tpcl == 0x0)
+     {
+       cerr<<"AliTPCComparison.C : Can not find TPCLoader\n";
+       delete rl;
+       return 3;
+     }
+
    Int_t nentr=0,i=0; TObjArray tarray(MAX);
    { /*Load tracks*/
-   TFile *tf=TFile::Open("AliTPCtracks.root");
-   if (!tf->IsOpen()) {cerr<<"Can't open AliTPCtracks.root !\n"; return 3;}
+   
+     tpcl->LoadTracks();
+     
+     TTree *tracktree=tpcl->TreeT();
+     if (!tracktree) {cerr<<"Can't get a tree with TPC tracks !\n"; return 4;}
 
-   char tname[100]; sprintf(tname,"TreeT_TPC_%d",event);
-   TTree *tracktree=(TTree*)tf->Get(tname);
-   if (!tracktree) {cerr<<"Can't get a tree with TPC tracks !\n"; return 4;}
-
-   TBranch *tbranch=tracktree->GetBranch("tracks");
-   nentr=(Int_t)tracktree->GetEntries();
-   AliTPCtrack *iotrack=0;
-   for (i=0; i<nentr; i++) {
+     TBranch *tbranch=tracktree->GetBranch("tracks");
+     nentr=(Int_t)tracktree->GetEntries();
+     AliTPCtrack *iotrack=0;
+     for (i=0; i<nentr; i++) 
+      {
        iotrack=new AliTPCtrack;
        tbranch->SetAddress(&iotrack);
        tracktree->GetEvent(i);
        tarray.AddLast(iotrack);
-   }   
-   delete tracktree; //Thanks to Mariana Bondila
-   tf->Close();
+      }   
+     tpcl->UnloadTracks();
    }
 
    /* Generate a list of "good" tracks */
+
    GoodTrackTPC gt[MAX];
    Int_t ngood=0;
    ifstream in("good_tracks_tpc");
@@ -70,7 +106,7 @@ Int_t AliTPCComparison(Int_t event=0) {
       if (!in.eof()) cerr<<"Read error (good_tracks_tpc) !\n";
    } else {
       cerr<<"Marking good tracks (this will take a while)...\n";
-      ngood=good_tracks_tpc(gt,MAX, event);
+      ngood=good_tracks_tpc(gt,MAX,"COMPARISON");
       ofstream out("good_tracks_tpc");
       if (out) {
          for (Int_t ngd=0; ngd<ngood; ngd++)            
@@ -270,33 +306,44 @@ Int_t AliTPCComparison(Int_t event=0) {
    gBenchmark->Stop("AliTPCComparison");
    gBenchmark->Show("AliTPCComparison");
 
-
+   delete rl;
    return 0;
 }
 
 
-Int_t good_tracks_tpc(GoodTrackTPC *gt, const Int_t max, const Int_t event) {
+Int_t good_tracks_tpc(GoodTrackTPC *gt, const Int_t max, const char* evfoldname) {
    Int_t nt=0;
 
-   TFile *file=TFile::Open("galice.root");
-   if (!file->IsOpen()) {cerr<<"Can't open galice.root !\n"; exit(4);}
-
-   if (!(gAlice=(AliRun*)file->Get("gAlice"))) {
-     cerr<<"gAlice have not been found on galice.root !\n";
-     exit(5);
-   }
-
-   Int_t np=gAlice->GetEvent(event);   
-
-   AliTPC *TPC=(AliTPC*)gAlice->GetDetector("TPC");
+   AliRunLoader* rl = AliRunLoader::GetRunLoader(evfoldname);
+   if (rl == 0x0)
+    {
+      ::Fatal("AliTPCComparison.C::good_tracks_tpc",
+              "Can not find Run Loader in Folder Named %s",
+              evfoldname);
+    }
+   AliLoader * tpcl = rl->GetLoader("TPCLoader");
+   if (tpcl == 0x0)
+     {
+       cerr<<"AliTPCHits2Digits.C : Can not find TPCLoader\n";
+       delete rl;
+       return 0;
+     }
+   
+   rl->LoadgAlice();
+   
+   AliTPC *TPC=(AliTPC*)rl->GetAliRun()->GetDetector("TPC");
    Int_t ver = TPC->IsVersion(); 
    cerr<<"TPC version "<<ver<<" has been found !\n";
 
-   AliTPCParamSR *digp=(AliTPCParamSR*)file->Get("75x40_100x60_150x60");
+   rl->CdGAFile();
+   AliTPCParamSR *digp=(AliTPCParamSR*)gDirectory->Get("75x40_100x60_150x60");
    if (!digp) { cerr<<"TPC parameters have not been found !\n"; exit(6); }
    TPC->SetParam(digp);
 
-   
+   rl->LoadHeader();
+
+   Int_t np = rl->GetHeader()->GetNtrack();
+      
 
    Int_t nrow_up=digp->GetNRowUp();
    Int_t nrows=digp->GetNRowLow()+nrow_up;
@@ -312,13 +359,11 @@ Int_t good_tracks_tpc(GoodTrackTPC *gt, const Int_t max, const Int_t event) {
    switch (ver) {
    case 1:
      {
-      char cname[100]; sprintf(cname,"TreeC_TPC_%d",event);
-      TFile *cf=TFile::Open("AliTPCclusters.root");
-      if (!cf->IsOpen()){cerr<<"Can't open AliTPCclusters.root !\n";exit(5);}
+      tpcl->LoadRecPoints();      
       AliTPCClustersArray *pca=new AliTPCClustersArray, &ca=*pca;
       ca.Setup(digp);
       ca.SetClusterType("AliTPCcluster");
-      ca.ConnectTree(cname);
+      ca.ConnectTree(tpcl->TreeR());
       Int_t nrows=Int_t(ca.GetTree()->GetEntries());
       for (Int_t n=0; n<nrows; n++) {
           AliSegmentID *s=ca.LoadEntry(n);
@@ -347,13 +392,14 @@ Int_t good_tracks_tpc(GoodTrackTPC *gt, const Int_t max, const Int_t event) {
           ca.ClearRow(sec,row);
       }
       delete pca;
-      cf->Close();
+      tpcl->UnloadRecPoints();
      }
      break;
    case 2:
      {
-      char dname[100]; sprintf(dname,"TreeD_75x40_100x60_150x60_%d",event);
-      TTree *TD=(TTree*)gDirectory->Get(dname);
+      tpcl->LoadDigits();
+      TTree *TD=tpcl->TreeD();
+      
       AliSimDigits da, *digits=&da;
       TD->GetBranch("Segment")->SetAddress(&digits);
 
@@ -395,35 +441,45 @@ Int_t good_tracks_tpc(GoodTrackTPC *gt, const Int_t max, const Int_t event) {
           }
       }
       delete[] count;
-      delete TD; //Thanks to Mariana Bondila
+      tpcl->UnloadDigits();
      }
       break;
    default:
       cerr<<"Invalid TPC version !\n";
-      file->Close();
+      delete rl;
       exit(7);
    }
 
-
+   rl->LoadKinematics();
+   AliStack* stack = rl->Stack();
    /** select tracks which are "good" enough **/
    for (i=0; i<np; i++) {
       if ((good[i]&0x5000) != 0x5000)
       if ((good[i]&0x2800) != 0x2800) continue;
       if ((good[i]&0x7FF ) < good_number) continue;
 
-      TParticle *p = (TParticle*)gAlice->Particle(i);
-
+      TParticle *p = (TParticle*)stack->Particle(i);
+      if (p == 0x0)
+       {
+         cerr<<"Can not get particle "<<i<<endl;
+         continue;
+       }
       if (p->Pt()<0.100) continue;
       if (TMath::Abs(p->Pz()/p->Pt())>0.999) continue;
 
       Int_t j=p->GetFirstMother();
       if (j>=0) {
-        TParticle *pp = (TParticle*)gAlice->Particle(j);
+        TParticle *pp = (TParticle*)stack->Particle(j);
+        if (pp == 0x0)
+         {
+           cerr<<"Can not get particle "<<j<<endl;
+           continue;
+         }
         if (pp->GetFirstMother()>=0) continue;//only one decay is allowed
 	/*  for cascade hyperons only
         Int_t jj=pp->GetFirstMother();
         if (jj>=0) {
-          TParticle *ppp = (TParticle*)gAlice->Particle(jj);
+          TParticle *ppp = (TParticle*)stack->Particle(jj);
           if (ppp->GetFirstMother()>=0) continue;//two decays are allowed
         }
 	*/
@@ -437,9 +493,14 @@ Int_t good_tracks_tpc(GoodTrackTPC *gt, const Int_t max, const Int_t event) {
       if (nt==max) {cerr<<"Too many good tracks !\n"; break;}
       cerr<<np-i<<"                \r";
    }
+   rl->UnloadKinematics();
 
    /** check if there is also information at the entrance of the TPC **/
-   TTree *TH=gAlice->TreeH(); np=(Int_t)TH->GetEntries();
+   
+   tpcl->LoadHits();
+   TTree *TH=tpcl->TreeH();
+   TPC->SetTreeAddress();
+   np=(Int_t)TH->GetEntries();
    for (i=0; i<np; i++) {
       TPC->ResetHits();
       TH->GetEvent(i);
@@ -470,14 +531,11 @@ Int_t good_tracks_tpc(GoodTrackTPC *gt, const Int_t max, const Int_t event) {
    }
 
    delete[] good;
+   
+   tpcl->UnloadHits();
+   rl->UnloadgAlice();
 
-   delete gAlice; gAlice=0;
-
-   file->Close();
    gBenchmark->Stop("AliTPCComparison");
    gBenchmark->Show("AliTPCComparison");   
    return nt;
 }
-
-
-

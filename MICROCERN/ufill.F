@@ -2,6 +2,12 @@
 * $Id$
 *
 * $Log$
+* Revision 1.2.4.1  2002/11/26 16:46:57  hristov
+* Merging NewIO with v3-09-04
+*
+* Revision 1.2  2002/10/14 14:57:11  hristov
+* Merging the VirtualMC branch to the main development branch (HEAD)
+*
 * Revision 1.1.2.1  2002/07/11 17:14:48  alibrary
 * Adding MICROCERN
 *

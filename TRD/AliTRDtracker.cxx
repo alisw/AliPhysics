@@ -13,132 +13,76 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
                                                       
-/*
-$Log$
-Revision 1.26  2003/04/10 10:36:54  hristov
-Code for unified TPC/TRD tracking (S.Radomski)
-
-Revision 1.25  2003/03/19 17:14:11  hristov
-Load/UnloadClusters added to the base class and the derived classes changed correspondingly. Possibility to give 2 input files for ITS and TPC tracks in PropagateBack. TRD tracker uses fEventN from the base class (T.Kuhr)
-
-Revision 1.24  2003/02/19 09:02:28  hristov
-Track time measurement (S.Radomski)
-
-Revision 1.23  2003/02/10 14:06:10  cblume
-Add tracking without tilted pads as option
-
-Revision 1.22  2003/01/30 15:19:58  cblume
-New set of  parameters
-
-Revision 1.21  2003/01/27 16:34:49  cblume
-Update of tracking by Sergei and Chuncheng
-
-Revision 1.20  2002/11/07 15:52:09  cblume
-Update of tracking code for tilted pads
-
-Revision 1.19  2002/10/22 15:53:08  alibrary
-Introducing Riostream.h
-
-Revision 1.18  2002/10/14 14:57:44  hristov
-Merging the VirtualMC branch to the main development branch (HEAD)
-
-Revision 1.14.6.2  2002/07/24 10:09:31  alibrary
-Updating VirtualMC
-
-Revision 1.17  2002/06/13 12:09:58  hristov
-Minor corrections
-
-Revision 1.16  2002/06/12 09:54:36  cblume
-Update of tracking code provided by Sergei
-
-Revision 1.14  2001/11/14 10:50:46  cblume
-Changes in digits IO. Add merging of summable digits
-
-Revision 1.13  2001/05/30 12:17:47  hristov
-Loop variables declared once
-
-Revision 1.12  2001/05/28 17:07:58  hristov
-Last minute changes; ExB correction in AliTRDclusterizerV1; taking into account of material in G10 TEC frames and material between TEC planes (C.Blume,S.Sedykh)
-
-Revision 1.8  2000/12/20 13:00:44  cblume
-Modifications for the HP-compiler
-
-Revision 1.7  2000/12/08 16:07:02  cblume
-Update of the tracking by Sergei
-
-Revision 1.6  2000/11/30 17:38:08  cblume
-Changes to get in line with new STEER and EVGEN
-
-Revision 1.5  2000/11/14 14:40:27  cblume
-Correction for the Sun compiler (kTRUE and kFALSE)
-
-Revision 1.4  2000/11/10 14:57:52  cblume
-Changes in the geometry constants for the DEC compiler
-
-Revision 1.3  2000/10/15 23:40:01  cblume
-Remove AliTRDconst
-
-Revision 1.2  2000/10/06 16:49:46  cblume
-Made Getters const
-
-Revision 1.1.2.2  2000/10/04 16:34:58  cblume
-Replace include files by forward declarations
-
-Revision 1.1.2.1  2000/09/22 14:47:52  cblume
-Add the tracking code
-
-*/   
+/* $Id$ */
 
 #include <Riostream.h>
 
 #include <TFile.h>
 #include <TBranch.h>
 #include <TTree.h>  
-#include <TObjArray.h> 
+#include <TObjArray.h>
+#include <TError.h>
 
 #include "AliTRDgeometry.h"
 #include "AliTRDparameter.h"
 #include "AliTRDgeometryDetail.h"
 #include "AliTRDcluster.h" 
 #include "AliTRDtrack.h"
-#include "AliTRDPartID.h"
 #include "../TPC/AliTPCtrack.h"
 
 #include "AliTRDtracker.h"
 
 ClassImp(AliTRDtracker) 
 
-  const  Float_t     AliTRDtracker::fSeedDepth          = 0.5; 
-  const  Float_t     AliTRDtracker::fSeedStep           = 0.10;   
-  const  Float_t     AliTRDtracker::fSeedGap            = 0.25;  
+  const  Float_t     AliTRDtracker::fgkSeedDepth          = 0.5; 
+  const  Float_t     AliTRDtracker::fgkSeedStep           = 0.10;   
+  const  Float_t     AliTRDtracker::fgkSeedGap            = 0.25;  
 
-  const  Float_t     AliTRDtracker::fMaxSeedDeltaZ12    = 40.;  
-  const  Float_t     AliTRDtracker::fMaxSeedDeltaZ      = 25.;  
-  const  Float_t     AliTRDtracker::fMaxSeedC           = 0.0052; 
-  const  Float_t     AliTRDtracker::fMaxSeedTan         = 1.2;  
-  const  Float_t     AliTRDtracker::fMaxSeedVertexZ     = 150.; 
+  const  Float_t     AliTRDtracker::fgkMaxSeedDeltaZ12    = 40.;  
+  const  Float_t     AliTRDtracker::fgkMaxSeedDeltaZ      = 25.;  
+  const  Float_t     AliTRDtracker::fgkMaxSeedC           = 0.0052; 
+  const  Float_t     AliTRDtracker::fgkMaxSeedTan         = 1.2;  
+  const  Float_t     AliTRDtracker::fgkMaxSeedVertexZ     = 150.; 
 
-  const  Double_t    AliTRDtracker::fSeedErrorSY        = 0.2;
-  const  Double_t    AliTRDtracker::fSeedErrorSY3       = 2.5;
-  const  Double_t    AliTRDtracker::fSeedErrorSZ        = 0.1;
+  const  Double_t    AliTRDtracker::fgkSeedErrorSY        = 0.2;
+  const  Double_t    AliTRDtracker::fgkSeedErrorSY3       = 2.5;
+  const  Double_t    AliTRDtracker::fgkSeedErrorSZ        = 0.1;
 
-  const  Float_t     AliTRDtracker::fMinClustersInSeed  = 0.7;  
+  const  Float_t     AliTRDtracker::fgkMinClustersInSeed  = 0.7;  
 
-  const  Float_t     AliTRDtracker::fMinClustersInTrack = 0.5;  
-  const  Float_t     AliTRDtracker::fMinFractionOfFoundClusters = 0.8;  
+  const  Float_t     AliTRDtracker::fgkMinClustersInTrack = 0.5;  
+  const  Float_t     AliTRDtracker::fgkMinFractionOfFoundClusters = 0.8; 
+  
+  const  Float_t     AliTRDtracker::fgkSkipDepth          = 0.3;
+  const  Float_t     AliTRDtracker::fgkLabelFraction      = 0.8;  
+  const  Float_t     AliTRDtracker::fgkWideRoad           = 20.;
 
-  const  Float_t     AliTRDtracker::fSkipDepth          = 0.3;
-  const  Float_t     AliTRDtracker::fLabelFraction      = 0.8;  
-  const  Float_t     AliTRDtracker::fWideRoad           = 20.;
+  const  Double_t    AliTRDtracker::fgkMaxChi2            = 12.; 
 
-  const  Double_t    AliTRDtracker::fMaxChi2            = 12.; 
-
-const Int_t AliTRDtracker::kFirstPlane = 5;
-const Int_t AliTRDtracker::kLastPlane = 17;
-
-
+  const Int_t AliTRDtracker::kFirstPlane = 5;
+  const Int_t AliTRDtracker::kLastPlane = 17;
 //____________________________________________________________________
-AliTRDtracker::AliTRDtracker(const TFile *geomfile):AliTracker()
+Int_t AliTRDtracker::PropagateBack()
+{
+//Overrides pure virtual methods in AliTracker
+//Left for responsible to make it compatible with NewIO
+
+  Error("PropagateBack","Not yet NewIO-ed");
+  return 0;
+}
+//____________________________________________________________________
+
+Int_t AliTRDtracker::Clusters2Tracks()
+{
+//Overrides pure virtual methods in AliTracker
+//Left for responsible to make it compatible with NewIO
+
+  Error("PropagateBack","Not yet NewIO-ed");
+  return 0;
+}
+//____________________________________________________________________
+
+AliTRDtracker::AliTRDtracker(const TFile *geomfile)
 {
   // 
   //  Main constructor
@@ -158,10 +102,10 @@ AliTRDtracker::AliTRDtracker(const TFile *geomfile):AliTracker()
   }
   else {
     in->cd();  
-//    in->ls();
+    in->ls();
     fGeom = (AliTRDgeometry*) in->Get("TRDgeometry");
     fPar  = (AliTRDparameter*) in->Get("TRDparameter");
-//    fGeom->Dump();
+    fGeom->Dump();
   }
 
   if(fGeom) {
@@ -179,6 +123,9 @@ AliTRDtracker::AliTRDtracker(const TFile *geomfile):AliTracker()
 
 
   //  fGeom->SetT0(fTzero);
+
+  //  fEvent     = 0;
+  AliTracker::SetEventNumber(0);
 
   fNclusters = 0;
   fClusters  = new TObjArray(2000); 
@@ -219,7 +166,7 @@ AliTRDtracker::AliTRDtracker(const TFile *geomfile):AliTracker()
   tbAmp = TMath::Min(tbAmp,maxAmp);
 
   fTimeBinsPerPlane = tbAmp + tbDrift;
-  fMaxGap = (Int_t) (fTimeBinsPerPlane * fGeom->Nplan() * fSkipDepth);
+  fMaxGap = (Int_t) (fTimeBinsPerPlane * fGeom->Nplan() * fgkSkipDepth);
 
   fVocal = kFALSE;
 
@@ -365,6 +312,7 @@ inline Double_t f1trd(Double_t x1,Double_t y1,
   Double_t xr=TMath::Abs(d/(d*x1-a)), yr=d/(d*y1-b);
 
   return -xr*yr/sqrt(xr*xr+yr*yr);
+
 }          
 
 //_____________________________________________________________________
@@ -386,6 +334,7 @@ inline Double_t f2trd(Double_t x1,Double_t y1,
   Double_t xr=TMath::Abs(d/(d*x1-a)), yr=d/(d*y1-b);
 
   return -a/(d*y1-b)*xr/sqrt(xr*xr+yr*yr);
+
 }          
 
 //_____________________________________________________________________
@@ -398,6 +347,7 @@ inline Double_t f3trd(Double_t x1,Double_t y1,
   //
 
   return (z1 - z2)/sqrt((x1-x2)*(x1-x2)+(y1-y2)*(y1-y2));
+
 }            
 
 //___________________________________________________________________
@@ -433,7 +383,7 @@ Int_t AliTRDtracker::Clusters2Tracks(const TFile *inp, TFile *out)
   trd_tree.Branch("tracks","AliTRDtrack",&iotrack_trd,32000,0);  
 
   Int_t timeBins = fTrSec[0]->GetNumberOfTimeBins();
-  Float_t foundMin = fMinClustersInTrack * timeBins; 
+  Float_t foundMin = fgkMinClustersInTrack * timeBins; 
 
   if (inp) {
      TFile *in=(TFile*)inp;
@@ -480,7 +430,7 @@ Int_t AliTRDtracker::Clusters2Tracks(const TFile *inp, TFile *out)
     FollowProlongation(t, innerTB); 
     if (t.GetNumberOfClusters() >= foundMin) {
       UseClusters(&t);
-      CookLabel(pt, 1-fLabelFraction);
+      CookLabel(pt, 1-fgkLabelFraction);
       //      t.CookdEdx();
     }
     iotrack_trd = pt;
@@ -508,15 +458,15 @@ Int_t AliTRDtracker::Clusters2Tracks(const TFile *inp, TFile *out)
     // Find tracks for the seeds in the TRD
     Int_t timeBins = fTrSec[0]->GetNumberOfTimeBins();
   
-    Int_t nSteps = (Int_t) (fSeedDepth / fSeedStep);
-    Int_t gap = (Int_t) (timeBins * fSeedGap);
-    Int_t step = (Int_t) (timeBins * fSeedStep);
+    Int_t nSteps = (Int_t) (fgkSeedDepth / fgkSeedStep);
+    Int_t gap = (Int_t) (timeBins * fgkSeedGap);
+    Int_t step = (Int_t) (timeBins * fgkSeedStep);
   
     // make a first turn with tight cut on initial curvature
     for(Int_t turn = 1; turn <= 2; turn++) {
       if(turn == 2) {
-        nSteps = (Int_t) (fSeedDepth / (3*fSeedStep));
-        step = (Int_t) (timeBins * (3*fSeedStep));
+        nSteps = (Int_t) (fgkSeedDepth / (3*fgkSeedStep));
+        step = (Int_t) (timeBins * (3*fgkSeedStep));
       }
       for(Int_t i=0; i<nSteps; i++) {
         Int_t outer=timeBins-1-i*step; 
@@ -535,7 +485,7 @@ Int_t AliTRDtracker::Clusters2Tracks(const TFile *inp, TFile *out)
           FollowProlongation(t,innerTB); 
           if (t.GetNumberOfClusters() >= foundMin) {
             UseClusters(&t);
-            CookLabel(pt, 1-fLabelFraction);
+            CookLabel(pt, 1-fgkLabelFraction);
             t.CookdEdx();
 	    found++;
 //            cout<<found<<'\r';     
@@ -566,7 +516,6 @@ Int_t AliTRDtracker::Clusters2Tracks(const TFile *inp, TFile *out)
   return 0;    
 }     
      
-  
 
 //_____________________________________________________________________________
 Int_t AliTRDtracker::PropagateBack(const TFile *inp, TFile *out) {
@@ -655,7 +604,7 @@ Int_t AliTRDtracker::PropagateBack(const TFile *inp, TFile *out) {
   Int_t found=0;  
   Int_t nseed=fSeeds->GetEntriesFast();
 
-  //  Float_t foundMin = fMinClustersInTrack * fTimeBinsPerPlane * fGeom->Nplan(); 
+  //  Float_t foundMin = fgkMinClustersInTrack * fTimeBinsPerPlane * fGeom->Nplan(); 
   Float_t foundMin = 40;
 
   Int_t outermost_tb  = fTrSec[0]->GetOuterTimeBin();
@@ -679,7 +628,7 @@ Int_t AliTRDtracker::PropagateBack(const TFile *inp, TFile *out) {
     if (foundClr >= foundMin) {
       if(foundClr >= 2) {
 	s.CookdEdx(); 
-	CookLabel(ps, 1-fLabelFraction);
+	CookLabel(ps, 1-fgkLabelFraction);
 	UseClusters(ps);
       }
       
@@ -694,7 +643,7 @@ Int_t AliTRDtracker::PropagateBack(const TFile *inp, TFile *out) {
     if(((expectedClr < 10) && (last_tb == outermost_tb)) ||
        ((expectedClr >= 10) && 
         (((Float_t) foundClr) / ((Float_t) expectedClr) >= 
-         fMinFractionOfFoundClusters) && (last_tb == outermost_tb))) {
+         fgkMinFractionOfFoundClusters) && (last_tb == outermost_tb))) {
 
       Double_t x_tof = 375.5;
     
@@ -753,58 +702,6 @@ Int_t AliTRDtracker::PropagateBack(const TFile *inp, TFile *out) {
   cerr<<"Number of back propagated TRD tracks: "<<found<<endl;
 
   UnloadEvent();
-
-  return 0;
-
-}
-
-//_____________________________________________________________________________
-Int_t AliTRDtracker::PropagateBack(AliESD* event) {
-  //
-  // Gets seeds from ESD event. The seeds are AliTPCtrack's found and
-  // backpropagated by the TPC tracker. Each seed is first propagated 
-  // to the TRD, and then its prolongation is searched in the TRD.
-  // If sufficiently long continuation of the track is found in the TRD
-  // the track is updated, otherwise it's stored as originaly defined 
-  // by the TPC tracker.   
-  //  
-
-  Int_t found=0;  
-  Float_t foundMin = 40;
-
-  Int_t n = event->GetNumberOfTracks();
-  for (Int_t i=0; i<n; i++) {
-    AliESDtrack* seed=event->GetTrack(i);
-    ULong_t status=seed->GetStatus();
-    if ( (status & AliESDtrack::kTPCout ) == 0 ) continue;
-    if ( (status & AliESDtrack::kTRDout) != 0 ) continue;
-
-    Int_t lbl = seed->GetLabel();
-    AliTRDtrack *track = new AliTRDtrack(*seed);
-    track->SetSeedLabel(lbl);
-    fNseeds++;
-
-    Int_t expectedClr = FollowBackProlongation(*track);
-
-    Int_t foundClr = track->GetNumberOfClusters();
-    if (foundClr >= foundMin) {
-      if(foundClr >= 2) {
-	track->CookdEdx(); 
-//	CookLabel(track, 1-fLabelFraction);
-	UseClusters(track);
-      }
-      
-      // Propagate to outer reference plane [SR, GSI, 18.02.2003]
-//      track->PropagateTo(364.8);  why?
-      
-      seed->UpdateTrackParams(track, AliESDtrack::kTRDout);
-      found++;
-    }
-
-  }
-  
-  cerr<<"Number of seeds: "<<fNseeds<<endl;  
-  cerr<<"Number of back propagated TRD tracks: "<<found<<endl;
 
   return 0;
 
@@ -912,7 +809,7 @@ Int_t AliTRDtracker::FollowProlongation(AliTRDtrack& t, Int_t rf)
       wSigmaZ2 = (Float_t) t.GetSigmaZ2();
       wChi2 = -1;            
       
-      if (road>fWideRoad) {
+      if (road>fgkWideRoad) {
         if (t.GetNumberOfClusters()>4)
           cerr<<t.GetNumberOfClusters()
               <<"FindProlongation warning: Too broad road !\n";
@@ -922,7 +819,7 @@ Int_t AliTRDtracker::FollowProlongation(AliTRDtrack& t, Int_t rf)
       AliTRDcluster *cl=0;
       UInt_t index=0;
 
-      Double_t max_chi2=fMaxChi2;
+      Double_t max_chi2=fgkMaxChi2;
 
       wYclosest = 12345678;
       wYcorrect = 12345678;
@@ -1102,7 +999,7 @@ Int_t AliTRDtracker::FollowBackProlongation(AliTRDtrack& t)
     if (fTrSec[s]->GetLayer(nr)->IsSensitive() != 
         fTrSec[s]->GetLayer(nr+1)->IsSensitive() ) {
 
-//      if (IsStoringBarrel()) StoreBarrelTrack(&t, nRefPlane++, kTrackBack);
+      if (IsStoringBarrel()) StoreBarrelTrack(&t, nRefPlane++, kTrackBack);
     }
 
     if (fTrSec[s]->GetLayer(nr-1)->IsSensitive() && 
@@ -1156,7 +1053,7 @@ Int_t AliTRDtracker::FollowBackProlongation(AliTRDtrack& t)
       wSigmaZ2 = (Float_t) t.GetSigmaZ2();
       wChi2 = -1;            
       
-      if (road>fWideRoad) {
+      if (road>fgkWideRoad) {
         if (t.GetNumberOfClusters()>4)
           cerr<<t.GetNumberOfClusters()
               <<"FindProlongation warning: Too broad road !\n";
@@ -1166,16 +1063,16 @@ Int_t AliTRDtracker::FollowBackProlongation(AliTRDtrack& t)
       AliTRDcluster *cl=0;
       UInt_t index=0;
 
-      Double_t max_chi2=fMaxChi2;
+      Double_t max_chi2=fgkMaxChi2;
 
       if (isNewLayer) { 
         road = 3 * road;
         //sz2 = 3 * sz2;
-        max_chi2 = 10 * fMaxChi2;
+        max_chi2 = 10 * fgkMaxChi2;
       }
       
-      if (nRefPlane == kFirstPlane) max_chi2 = 20 * fMaxChi2; 
-      if (nRefPlane == kFirstPlane+2) max_chi2 = 15 * fMaxChi2;
+      if (nRefPlane == kFirstPlane) max_chi2 = 20 * fgkMaxChi2; 
+      if (nRefPlane == kFirstPlane+2) max_chi2 = 15 * fgkMaxChi2;
       if (t.GetNRotate() > 0) max_chi2 = 3 * max_chi2;
       
 
@@ -1566,11 +1463,11 @@ void AliTRDtracker::MakeSeeds(Int_t inner, Int_t outer, Int_t turn)
           y2=xx2*sn2+y2*cs2;
         }
         
-        if(TMath::Abs(z1-z2) > fMaxSeedDeltaZ12) continue;
+        if(TMath::Abs(z1-z2) > fgkMaxSeedDeltaZ12) continue;
         
         Double_t zz=z1 - z1/x1*(x1-x2);
         
-        if (TMath::Abs(zz-z2)>fMaxSeedDeltaZ) continue;
+        if (TMath::Abs(zz-z2)>fgkMaxSeedDeltaZ) continue;
         
         Double_t d=(x2-x1)*(0.-y2)-(0.-x2)*(y2-y1);
         if (d==0.) {cerr<<"TRD MakeSeeds: Straight seed !\n"; continue;}
@@ -1579,7 +1476,7 @@ void AliTRDtracker::MakeSeeds(Int_t inner, Int_t outer, Int_t turn)
         x[1]=z1;
         x[4]=f1trd(x1,y1,x2,y2,x3,y3);
         
-        if (TMath::Abs(x[4]) > fMaxSeedC) continue;      
+        if (TMath::Abs(x[4]) > fgkMaxSeedC) continue;      
         
         x[2]=f2trd(x1,y1,x2,y2,x3,y3);
         
@@ -1587,16 +1484,16 @@ void AliTRDtracker::MakeSeeds(Int_t inner, Int_t outer, Int_t turn)
         
         x[3]=f3trd(x1,y1,x2,y2,z1,z2);
         
-        if (TMath::Abs(x[3]) > fMaxSeedTan) continue;
+        if (TMath::Abs(x[3]) > fgkMaxSeedTan) continue;
         
         Double_t a=asin(x[2]);
         Double_t zv=z1 - x[3]/x[4]*(a+asin(x[4]*x1-x[2]));
         
-        if (TMath::Abs(zv)>fMaxSeedVertexZ) continue;
+        if (TMath::Abs(zv)>fgkMaxSeedVertexZ) continue;
         
         Double_t sy1=r1[is]->GetSigmaY2(), sz1=r1[is]->GetSigmaZ2();
         Double_t sy2=cl->GetSigmaY2(),     sz2=cl->GetSigmaZ2();
-        Double_t sy3=fSeedErrorSY3, sy=fSeedErrorSY, sz=fSeedErrorSZ;  
+        Double_t sy3=fgkSeedErrorSY3, sy=fgkSeedErrorSY, sz=fgkSeedErrorSZ;  
 
         // Tilt changes
         Double_t h01 = GetTiltFactor(r1[is]);
@@ -1640,7 +1537,7 @@ void AliTRDtracker::MakeSeeds(Int_t inner, Int_t outer, Int_t turn)
         
         if ((rc < 1) ||
             (track->GetNumberOfClusters() < 
-             (outer-inner)*fMinClustersInSeed)) delete track;
+             (outer-inner)*fgkMinClustersInSeed)) delete track;
         else {
           fSeeds->AddLast(track); fNseeds++;
 //          cerr<<"\r found seed "<<fNseeds;
@@ -1853,7 +1750,6 @@ void AliTRDtracker::CookLabel(AliKalmanTrack* pt, Float_t wrong) const {
 
 }
 
-
 //__________________________________________________________________
 void AliTRDtracker::UseClusters(const AliKalmanTrack* t, Int_t from) const {
   Int_t ncl=t->GetNumberOfClusters();
@@ -1897,7 +1793,6 @@ Double_t AliTRDtracker::GetX(Int_t sector, Int_t plane, Int_t local_tb) const
   return fTrSec[sector]->GetLayer(pl)->GetX();
 
 }
-
 
 //_______________________________________________________
 AliTRDtracker::AliTRDpropagationLayer::AliTRDpropagationLayer(Double_t x, 
@@ -2544,9 +2439,4 @@ Double_t AliTRDtracker::GetTiltFactor(const AliTRDcluster* c) {
   
   return h01;
 }
-
-
-
-
-
 

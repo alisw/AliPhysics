@@ -23,7 +23,7 @@ public:
 public:
   AliH2F(const AliH2F &his);
   AliH2F & operator = (const AliH2F &his);
-  TClonesArray * FindPeaks(Float_t threshold, Float_t noise);  
+//  TClonesArray * FindPeaks(Float_t threshold, Float_t noise);  
     //find peaks and write it in form of AliTPCcluster to array
   void ClearSpectrum();
   void AddGauss(Float_t x,Float_t y,Float_t sx, Float_t sy, Float_t max);

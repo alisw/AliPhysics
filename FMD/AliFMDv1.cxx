@@ -12,6 +12,9 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
+
+/* $Id$ */
+
  /////////////////////////////////////////////////////////////////////
 //                                                                 //
 // Forward Multiplicity detector based on Silicon version 0        //
@@ -25,25 +28,27 @@
 //                                                                  //
 //////////////////////////////////////////////////////////////////////
 
-#include <TMath.h>
-#include <TGeometry.h>
-#include <TTUBE.h>
-#include <TFile.h>
-#include <TTree.h>
-#include <TNode.h>
-#include <TClonesArray.h>
-#include <TLorentzVector.h>
-#include <TDirectory.h>
-#include "AliFMDv1.h"
-#include "AliFMDv0.h"
-#include "AliRun.h"
 #include <Riostream.h>
-#include "AliMagF.h"
-#include "AliFMDhit.h"
-#include "AliFMDdigit.h"
 #include <stdlib.h>
-//#include "TGeant3.h"
-//class TGeant3;
+
+#include <TClonesArray.h>
+#include <TDirectory.h>
+#include <TFile.h>
+#include <TGeometry.h>
+#include <TLorentzVector.h>
+#include <TMath.h>
+#include <TNode.h>
+#include <TTUBE.h>
+#include <TTree.h>
+#include <TVirtualMC.h>
+
+#include "AliFMDdigit.h"
+#include "AliFMDhit.h"
+#include "AliFMDv0.h"
+#include "AliFMDv1.h"
+#include "AliMagF.h"
+#include "AliRun.h"
+
 ClassImp(AliFMDv1)
 
 //--------------------------------------------------------------------
@@ -212,7 +217,6 @@ void AliFMDv1::DrawDetector()
 //
 // Draw a shaded view of the Forward multiplicity detector version 0
 //
-
 
 //Set ALIC mother transparent
 gMC->Gsatt("ALIC","SEEN",0);

@@ -17,10 +17,11 @@
 class TFile;
 class AliTPCParam;
 class AliTPCcluster;
+class AliLoader;
 
 class AliTPCclusterer {
 public:
-   static void Digits2Clusters(const AliTPCParam *par, TFile *of, Int_t eventn=1);
+   static void Digits2Clusters(const AliTPCParam *par, AliLoader *of, Int_t eventn=1);
 
 private:
    class AliBin {

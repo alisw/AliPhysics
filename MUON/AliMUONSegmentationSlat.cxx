@@ -13,65 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.18  2002/02/20 09:14:37  morsch
-Protection against numerical inprecission for hits on slat boundaries.
-
-Revision 1.17  2001/12/01 20:00:45  hristov
-New protections added
-
-Revision 1.16  2001/10/30 08:25:14  jchudoba
-Small correction to prevent crash when hit is at the edge of a slat
-
-Revision 1.15  2001/09/07 08:38:30  hristov
-Pointers initialised to 0 in the default constructors
-
-Revision 1.14  2001/08/30 09:52:12  hristov
-The operator[] is replaced by At() or AddAt() in case of TObjArray.
-
-Revision 1.13  2001/07/20 10:03:14  morsch
-Changes needed to work with Root 3.01 (substitute lhs [] operator). (Jiri Chudoba)
-
-Revision 1.12  2001/05/16 14:57:17  alibrary
-New files for folders and Stack
-
-Revision 1.11  2001/01/26 21:25:48  morsch
-Empty default constructors and.
-
-Revision 1.10  2001/01/23 18:58:19  hristov
-Initialisation of some pointers
-
-Revision 1.9  2001/01/17 20:53:40  hristov
-Destructors corrected to avoid memory leaks
-
-Revision 1.8  2000/12/21 22:12:41  morsch
-Clean-up of coding rule violations,
-
-Revision 1.7  2000/11/08 13:01:40  morsch
-Chamber half-planes of stations 3-5 at different z-positions.
-
-Revision 1.6  2000/11/06 09:20:43  morsch
-AliMUON delegates part of BuildGeometry() to AliMUONSegmentation using the
-Draw() method. This avoids code and parameter replication.
-
-Revision 1.5  2000/10/23 13:37:40  morsch
-Correct z-position of slat planes.
-
-Revision 1.4  2000/10/22 16:55:43  morsch
-Use only x-symmetry in global to local transformations and delegation.
-
-Revision 1.3  2000/10/18 11:42:06  morsch
-- AliMUONRawCluster contains z-position.
-- Some clean-up of useless print statements during initialisations.
-
-Revision 1.2  2000/10/09 14:06:18  morsch
-Some type cast problems of type  (TMath::Sign((Float_t)1.,x)) corrected (P.H.)
-
-Revision 1.1  2000/10/06 09:00:47  morsch
-Segmentation class for chambers built out of slats.
-
-*/
+/* $Id$ */
 
 #include "AliMUONSegmentationSlat.h"
 #include "AliMUONSegmentationSlatModule.h"

@@ -13,64 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.17  2003/04/30 14:48:21  hristov
-Changes related to the initialization of random numbers generators. Now one can use its own randoms for each module, particle generator, and/or tracking package. The interface with Fortran is simplified and some inter-library dependencies are avoided. Future improvements are welcome...
-
-Revision 1.16  2003/04/08 10:22:05  morsch
-Rapidity shift calculated in Init().
-
-Revision 1.15  2003/04/04 08:13:26  morsch
-Boost method added.
-
-Revision 1.14  2003/01/14 10:50:19  alibrary
-Cleanup of STEER coding conventions
-
-Revision 1.13  2002/10/14 14:55:35  hristov
-Merging the VirtualMC branch to the main development branch (HEAD)
-
-Revision 1.5.4.2  2002/07/24 08:56:28  alibrary
-Updating EVGEN on TVirtulaMC
-
-Revision 1.12  2002/07/19 11:42:33  morsch
-Use CalcMass()
-
-Revision 1.11  2002/06/06 15:26:24  morsch
-Correct child-selection for kPhiKK
-
-Revision 1.10  2002/06/05 14:05:46  morsch
-Decayer option kPhiKK for forced phi->K+K- decay added.
-
-Revision 1.9  2002/05/30 14:58:29  morsch
-Add pointer to AliGeometry to handle geometrical acceptance. (G. MArtinez)
-
-Revision 1.8  2002/04/26 10:42:35  morsch
-Case kNoDecayHeavy added. (N. Carrer)
-
-Revision 1.7  2002/04/17 10:32:32  morsch
-Coding Rule violations corrected.
-
-Revision 1.6  2002/03/26 14:19:36  morsch
-Saver calculation of rapdity.
-
-Revision 1.5  2002/03/12 17:02:20  morsch
-Change in calculation of rapidity, include case in which numerically e == pz.
-
-Revision 1.4  2001/11/27 13:13:07  morsch
-Maximum lifetime for long-lived particles to be put on the stack is parameter.
-It can be set via SetMaximumLifetime(..).
-
-Revision 1.3  2001/10/16 08:48:56  morsch
-Common vertex related code moved to base class AliGenerator.
-
-Revision 1.2  2001/10/15 08:15:51  morsch
-Event vertex and vertex truncation setting moved into AliMC.
-
-Revision 1.1  2001/07/13 10:56:00  morsch
-AliGenMC base class for AliGenParam and AliGenPythia commonalities.
-
-*/
+/* $Id$ */
 
 // Base class for generators using external MC generators.
 // For example AliGenPythia using Pythia.

@@ -44,6 +44,8 @@
 #pragma link C++ class AliTPCDigitsArray+;
 
 
+#pragma link C++ class AliTPCClusterFinder+;
+
 #pragma link C++ class AliTPCTrackHits+;
 #pragma link C++ class AliTPCTrackHitsV2+;
 
@@ -56,6 +58,8 @@
 #pragma link C++ class AliTPCclusterer-;
 #pragma link C++ class AliTPCDigitizer;
 #pragma link C++ class AliTPCtrackerParam; 
+
+#pragma link C++ class AliTPCLoader+;
 #pragma link C++ class AliTPCkineGrid;
 
 // points used in new cluster finder

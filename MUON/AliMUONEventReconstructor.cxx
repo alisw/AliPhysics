@@ -13,147 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.31  2002/10/23 07:24:56  alibrary
-Introducing Riostream.h
-
-Revision 1.30  2002/10/14 14:57:29  hristov
-Merging the VirtualMC branch to the main development branch (HEAD)
-
-Revision 1.28.8.1  2002/10/11 06:56:47  hristov
-Updating VirtualMC to v3-09-02
-
-Revision 1.29  2002/09/20 13:32:26  cussonno
-Minor bugs in the definition of the bending impact parameter corrected (thanks to A. Zinchenko)
-
-Revision 1.28  2001/08/31 06:50:11  gosset
-Different handling of TreeR for track reconstruction from raw clusters
-
-Revision 1.27  2001/07/27 13:03:12  hristov
-Default Branch split level set to 99
-
-Revision 1.26  2001/05/03 08:11:31  hristov
-stdlib.h included to define exit()
-
-Revision 1.25  2001/04/25 14:50:42  gosset
-Corrections to violations of coding conventions
-
-Revision 1.24  2001/03/30 09:37:58  gosset
-Initialisations of pointers... for GEANT background events in the constructor
-
-Revision 1.23  2001/01/26 21:44:45  morsch
-Use access functions to AliMUONDigit, ...   member data.
-
-Revision 1.22  2001/01/26 20:00:53  hristov
-Major upgrade of AliRoot code
-Revision 1.20  2001/01/08 11:01:02  gosset
-Modifications used for addendum to Dimuon TDR (JP Cussonneau):
-*. MaxBendingMomentum to make both a segment and a track (default 500)
-*. MaxChi2 per degree of freedom to make a track (default 100)
-*. MinBendingMomentum used also to make a track
-   and not only a segment (default 3)
-*. wider roads for track search in stations 1 to 3
-*. extrapolation to actual Z instead of Z(chamber) in FollowTracks
-*. in track fit:
-   - limits on parameters X and Y (+/-500)
-   - covariance matrices in double precision
-   - normalization of covariance matrices before inversion
-   - suppression of Minuit printouts
-*. correction against memory leak (delete extrapHit) in FollowTracks
-*. RMax to 10 degrees with Z(chamber) instead of fixed values;
-   RMin and Rmax cuts suppressed in NewHitForRecFromGEANT,
-   because useless with realistic geometry
-
-Revision 1.19  2000/11/20 11:24:10  gosset
-New package for reconstructed tracks (A. Gheata):
-* tree output in the file "tree_reco.root"
-* display events and make histograms from this file
-
-Revision 1.18  2000/10/26 12:47:03  gosset
-Real distance between chambers of each station taken into account
-for the reconstruction parameters "fSegmentMaxDistBending[5]"
-
-Revision 1.17  2000/10/24 09:26:20  gosset
-Comments updated
-
-Revision 1.16  2000/10/24 09:22:35  gosset
-Method AddHitsForRecFromRawClusters: real Z of raw cluster and not Z of chamber
-
-Revision 1.15  2000/10/12 15:17:30  gosset
-Sign of fSimpleBValue corrected: sign ox Bx and not Bz (thanks to Galina)
-
-Revision 1.14  2000/10/04 18:21:26  morsch
-Include stdlib.h
-
-Revision 1.13  2000/10/02 21:28:09  fca
-Removal of useless dependecies via forward declarations
-
-Revision 1.12  2000/10/02 16:58:29  egangler
-Cleaning of the code :
--> coding conventions
--> void Streamers
--> some useless includes removed or replaced by "class" statement
-
-Revision 1.11  2000/09/22 09:16:33  hristov
-Casting needed on DEC
-
-Revision 1.10  2000/09/19 09:49:50  gosset
-AliMUONEventReconstructor package
-* track extrapolation independent from reco_muon.F, use of AliMagF...
-* possibility to use new magnetic field (automatic from generated root file)
-
-Revision 1.9  2000/07/20 12:45:27  gosset
-New "EventReconstructor..." structure,
-	hopefully more adapted to tree/streamer.
-"AliMUONEventReconstructor::RemoveDoubleTracks"
-	to keep only one track among similar ones.
-
-Revision 1.8  2000/07/18 16:04:06  gosset
-AliMUONEventReconstructor package:
-* a few minor modifications and more comments
-* a few corrections
-  * right sign for Z of raw clusters
-  * right loop over chambers inside station
-  * symmetrized covariance matrix for measurements (TrackChi2MCS)
-  * right sign of charge in extrapolation (ExtrapToZ)
-  * right zEndAbsorber for Branson correction below 3 degrees
-* use of TVirtualFitter instead of TMinuit for AliMUONTrack::Fit
-* no parameter for AliMUONTrack::Fit() but more fit parameters in Track object
-
-Revision 1.7  2000/07/03 12:28:06  gosset
-Printout at the right place after extrapolation to vertex
-
-Revision 1.6  2000/06/30 12:01:06  gosset
-Correction for hit search in the right chamber (JPC)
-
-Revision 1.5  2000/06/30 10:15:48  gosset
-Changes to EventReconstructor...:
-precision fit with multiple Coulomb scattering;
-extrapolation to vertex with Branson correction in absorber (JPC)
-
-Revision 1.4  2000/06/27 14:11:36  gosset
-Corrections against violations of coding conventions
-
-Revision 1.3  2000/06/16 07:27:08  gosset
-To remove problem in running RuleChecker, like in MUON-dev
-
-Revision 1.1.2.5  2000/06/16 07:00:26  gosset
-To remove problem in running RuleChecker
-
-Revision 1.1.2.4  2000/06/12 08:00:07  morsch
-Dummy streamer to solve CINT compilation problem (to be investigated !)
-
-Revision 1.1.2.3  2000/06/09 20:59:57  morsch
-Make includes consistent with new file structure.
-
-Revision 1.1.2.2  2000/06/09 12:58:05  gosset
-Removed comment beginnings in Log sections of .cxx files
-Suppressed most violations of coding rules
-
-Revision 1.1.2.1  2000/06/07 14:44:53  gosset
-Addition of files for track reconstruction in C++
-*/
+/* $Id$ */
 
 ////////////////////////////////////
 //
@@ -188,6 +48,9 @@ Addition of files for track reconstruction in C++
 #include "AliMUONTrackHit.h"
 #include "AliMagF.h"
 #include "AliRun.h" // for gAlice
+#include "AliConfig.h"
+#include "AliRunLoader.h"
+#include "AliLoader.h"
 #include "AliMUONTrackK.h" //AZ
 #include <TMatrixD.h> //AZ
 
@@ -541,16 +404,47 @@ void AliMUONEventReconstructor::MakeEventToBeReconstructed(void)
   // To make the list of hits to be reconstructed,
   // either from the GEANT hits or from the raw clusters
   // according to the parameter set for the reconstructor
+  TString evfoldname = AliConfig::fgkDefaultEventFolderName;//to be interfaced properly
+  
+  AliRunLoader* rl = AliRunLoader::GetRunLoader(evfoldname);
+  if (rl == 0x0)
+   {
+     Error("MakeEventToBeReconstructed",
+           "Can not find Run Loader in Event Folder named %s.",
+           evfoldname.Data());
+     return;
+   }
+  AliLoader* gime = rl->GetLoader("MUONLoader");
+  if (gime == 0x0)
+   {
+     Error("MakeEventToBeReconstructed","Can not get MUON Loader from Run Loader.");
+     return;
+   }
+  
   if (fPrintLevel >= 1) cout << "enter MakeEventToBeReconstructed" << endl;
   ResetHitsForRec();
   if (fRecGeantHits == 1) {
     // Reconstruction from GEANT hits
     // Back to the signal file
-    ((gAlice->TreeK())->GetCurrentFile())->cd();
-    // Signal hits
-    // AliMUON *MUON  = (AliMUON*) gAlice->GetModule("MUON"); // necessary ????
-    // Security on MUON ????
-    AddHitsForRecFromGEANT(gAlice->TreeH());
+      TTree* treeH = gime->TreeH();
+      if (treeH == 0x0)
+       {
+         Int_t retval = gime->LoadHits();
+         if ( retval)
+          {
+            Error("MakeEventToBeReconstructed","Error occured while loading hits.");
+            return;
+          }
+         treeH = gime->TreeH();
+         if (treeH == 0x0)
+          {
+           Error("MakeEventToBeReconstructed","Can not get TreeH");
+           return;
+          }
+       }
+    
+    AddHitsForRecFromGEANT(treeH);
+    
     // Background hits
     AddHitsForRecFromBkgGEANT(fBkgGeantTH, fBkgGeantHits);
     // Sort HitsForRec in increasing order with respect to chamber number
@@ -562,7 +456,7 @@ void AliMUONEventReconstructor::MakeEventToBeReconstructed(void)
     // Security on MUON ????
     // TreeR assumed to be be "prepared" in calling function
     // by "MUON->GetTreeR(nev)" ????
-    TTree *treeR = gAlice->TreeR();
+    TTree *treeR = gime->TreeR();
     AddHitsForRecFromRawClusters(treeR);
     // No sorting: it is done automatically in the previous function
   }
@@ -798,9 +692,32 @@ void AliMUONEventReconstructor::AddHitsForRecFromRawClusters(TTree* TR)
   Int_t iclus, nclus, nTRentries;
   TClonesArray *rawclusters;
   if (fPrintLevel >= 1) cout << "enter AddHitsForRecFromRawClusters" << endl;
-  AliMUON *pMUON  = (AliMUON*) gAlice->GetModule("MUON"); // necessary ????
+
+  TString evfoldname = AliConfig::fgkDefaultEventFolderName;//to be interfaced properly
+  AliRunLoader* rl = AliRunLoader::GetRunLoader(evfoldname);
+  if (rl == 0x0)
+   {
+     Error("MakeEventToBeReconstructed",
+           "Can not find Run Loader in Event Folder named %s.",
+           evfoldname.Data());
+     return;
+   }
+  AliLoader* gime = rl->GetLoader("MUONLoader");
+  if (gime == 0x0)
+   {
+     Error("MakeEventToBeReconstructed","Can not get MUON Loader from Run Loader.");
+     return;
+   }
+   // Loading AliRun master
+  rl->LoadgAlice();
+  gAlice = rl->GetAliRun();
+
+  // Loading MUON subsystem
+  AliMUON * pMUON = (AliMUON *) gAlice->GetDetector("MUON");
+
+  //  AliMUON *pMUON  = (AliMUON*) gAlice->GetModule("MUON"); // necessary ????
   // Security on MUON ????
-  pMUON->ResetRawClusters();
+  //pMUON->ResetRawClusters();
   nTRentries = Int_t(TR->GetEntries());
   if (nTRentries != 1) {
     cout << "Error in AliMUONEventReconstructor::AddHitsForRecFromRawClusters"
@@ -808,7 +725,7 @@ void AliMUONEventReconstructor::AddHitsForRecFromRawClusters(TTree* TR)
     cout << "nTRentries = " << nTRentries << " not equal to 1" << endl;
     exit(0);
   }
-  TR->GetEvent(0); // only one entry
+  gime->TreeR()->GetEvent(0); // only one entry  
   // Loop over tracking chambers
   for (Int_t ch = 0; ch < kMaxMuonTrackingChambers; ch++) {
     // number of HitsForRec to 0 for the chamber
@@ -1543,11 +1460,11 @@ void AliMUONEventReconstructor::EventDump(void)
   np = gAlice->GetNtrack();
   printf(" **** number of generated particles: %d  \n", np);
   
-  for (Int_t iPart = 0; iPart < np; iPart++) {
-    p = gAlice->Particle(iPart);
-    printf(" particle %d: type= %d px= %f py= %f pz= %f pdg= %d\n",
-	   iPart, p->GetPdgCode(), p->Px(), p->Py(), p->Pz(), p->GetPdgCode());    
-  }
+//    for (Int_t iPart = 0; iPart < np; iPart++) {
+//      p = gAlice->Particle(iPart);
+//      printf(" particle %d: type= %d px= %f py= %f pz= %f pdg= %d\n",
+//  	   iPart, p->GetPdgCode(), p->Px(), p->Py(), p->Pz(), p->GetPdgCode());    
+//    }
   return;
 }
 

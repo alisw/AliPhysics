@@ -30,11 +30,14 @@
 #include "TTree.h"
 #include "TFile.h"
 #include "TStopwatch.h"
+#include "TError.h"
 
 #include "AliDetector.h"
 #include "AliTrackMapper.h"
 #include "AliTrackMap.h"
 #include "AliRun.h"
+#include "AliRunLoader.h"
+#include "AliLoader.h"
 #include "AliHit.h"
 
 ClassImp(AliTrackMapper)
@@ -64,23 +67,28 @@ void AliTrackMapper::CreateMap(Int_t nEvents, Int_t firstEventNr,
   
   TFile *fileMap=TFile::Open(fnMap,"new");
   if (!fileMap->IsOpen()) {cerr<<"Can't open output file "<<fnMap<<"!\n"; return;}
-  
-  TFile *fileHits=TFile::Open(fnHits);
-  if (!fileHits->IsOpen()) {cerr<<"Can't open input file "<<fnHits<<"!\n"; return;}
-  if (!(gAlice=dynamic_cast<AliRun*>(fileHits->Get("gAlice")))) {
-    cerr<<"gAlice have not been found on galice.root !\n";
+
+  AliRunLoader* rl = AliRunLoader::Open(fnHits);
+  if (rl == 0x0) {cerr<<"Can't open input file "<<fnHits<<"!\n"; return;}
+  if (rl->LoadgAlice())
+    {
+      ::Error("AliTrackMapper::CreateMap","Error occured while loading AliRun");
+      return;
+    }
+    
+  if (!(gAlice=rl->GetAliRun())) {
+    cerr<<"gAlice have not been found on session !\n";
     return;
   }
   
+  rl->LoadKinematics();
+  
   for (Int_t eventNr = firstEventNr; eventNr < firstEventNr+nEvents;
        eventNr++) {
-    CreateMap(eventNr,fileMap);
+    CreateMap(eventNr,fileMap,rl);
   } // end loop over events
   
-  delete gAlice;
-  gAlice = 0;
-  fileHits->Close();
-  delete fileHits;
+  delete rl;
   fileMap->Close();
   delete fileMap;
   timer.Stop();
@@ -88,20 +96,16 @@ void AliTrackMapper::CreateMap(Int_t nEvents, Int_t firstEventNr,
 }
 
 //_______________________________________________________________________
-Int_t  AliTrackMapper::CreateMap(Int_t eventNr, TFile* fileMap) const
+Int_t  AliTrackMapper::CreateMap(Int_t eventNr, TFile* fileMap,AliRunLoader* rl) 
 {
   //
   // create an AliTrackMap for a given event
   // correct gAlice must be already present in memory
   //
-  Int_t nGenPrimPlusSecParticles = gAlice->GetEvent(eventNr);
-  if (fDEBUG > 1) cout<<"nGenPrimPlusSecParticles = "<<nGenPrimPlusSecParticles<<endl;
-  if (nGenPrimPlusSecParticles < 1) {
-    cerr<<"No primary particles found in event "<<eventNr<<endl;
-    return -1;
-  }
 
-  TTree *treeK = gAlice->TreeK();
+  rl->GetEvent(eventNr);
+
+  TTree *treeK = rl->TreeK();
   if (!treeK) {
     cerr<<"Error: Event "<<eventNr<<", treeK not found."<<endl;
     return -1;
@@ -110,13 +114,6 @@ Int_t  AliTrackMapper::CreateMap(Int_t eventNr, TFile* fileMap) const
   Int_t *trackMap = new Int_t[nAllParticles];
   for (Int_t i = 0; i<nAllParticles; i++) {trackMap[i] = kNoEntry;}
 
-  TTree *treeH = gAlice->TreeH();
-  if (!treeH) {
-    cerr<<"Error: Event "<<eventNr<<", treeH not found."<<endl;
-    return -1;
-  }
-  Int_t treeHEntries = static_cast<Int_t>(treeH->GetEntries());
-  if (fDEBUG > 1) cout<<"treeHEntries "<<treeHEntries<<endl;
 
   TObjArray *modules = gAlice->Detectors();
   if (!modules) {
@@ -125,38 +122,65 @@ Int_t  AliTrackMapper::CreateMap(Int_t eventNr, TFile* fileMap) const
   }
   Int_t nModules = static_cast<Int_t>(modules->GetEntries());
   AliHit* hit;
-  for (Int_t treeHIndex = 0; treeHIndex < treeHEntries; treeHIndex++) {
-    gAlice->ResetHits();
-    treeH->GetEvent(treeHIndex);
-    for (Int_t iModule = 0; iModule < nModules; iModule++) {
-      AliDetector * detector = dynamic_cast<AliDetector*>(modules->At(iModule));
-      if (!detector) continue;
-      // process only detectors with shunt = 0
+  for (Int_t iModule = 0; iModule < nModules; iModule++) 
+   {
+    AliDetector * detector = dynamic_cast<AliDetector*>(modules->At(iModule));
+    if (!detector) continue;
+    AliLoader* loader = detector->GetLoader();
+    if (loader == 0x0)
+     {
+       ::Warning("AliTrackMapper::CreateMap",
+                 "Can not get loader from detector %s.",detector->GetName());
+       continue;
+     }
+    Int_t retval = loader->LoadHits();
+    if (retval) {
+      ::Error("AliTrackMapper::CreateMap",
+            "Event %d: error occured while loading hits for %s",
+            eventNr,detector->GetName());
+      return -1;
+     }
+    
+    TTree *treeH = loader->TreeH();
+    if (!treeH) {
+      ::Error("AliTrackMapper::CreateMap","Event %d: Can not get TreeH for %s",
+             eventNr,detector->GetName());
+      return -1;
+     }
+    Int_t treeHEntries = static_cast<Int_t>(treeH->GetEntries());
+    if (fDEBUG > 1) cout<<"treeHEntries "<<treeHEntries<<endl;
+     
+    detector->ResetHits();
+    
+    for (Int_t treeHIndex = 0; treeHIndex < treeHEntries; treeHIndex++)  
+     { // process only detectors with shunt = 0
+      treeH->GetEvent(treeHIndex);
       if (detector->GetIshunt()) continue; 
 
       hit=dynamic_cast<AliHit*>(detector->FirstHit(-1));
       Int_t lastLabel=-1, label;
       for( ; hit; hit=dynamic_cast<AliHit*>(detector->NextHit()) ) {
-	label=hit->Track();	
-	if (lastLabel != label) {
-	  if (label < 0 || label >= nAllParticles) {
-	    cerr<<"Error: label out of range. ";
-	    cerr<<"Event "<<eventNr<<" treeHIndex "<<treeHIndex<<" label = "<<label<<endl;
-	    return -2;
-	  }
-	  if (trackMap[label] >=0 && trackMap[label] != treeHIndex) {
-	    cerr<<"Error: different treeHIndex for label "<<label
-		<<" indeces: "<<trackMap[label]<<" != "<<treeHIndex;
-	    cerr<<" event "<<eventNr<<" detector "<<detector->GetName()<<endl;
-	    return -3;
-	  }
-	  trackMap[label] = treeHIndex;
-	  if (fDEBUG > 2) cout<<"treeHIndex, label = "<<treeHIndex<<" "<<label<<endl;
-	  lastLabel = label;
-	}
+       label=hit->Track();       
+       if (lastLabel != label) {
+         if (label < 0 || label >= nAllParticles) {
+           cerr<<"Error: label out of range. ";
+           cerr<<"Event "<<eventNr<<" treeHIndex "<<treeHIndex<<" label = "<<label<<endl;
+           return -2;
+         }
+         if (trackMap[label] >=0 && trackMap[label] != treeHIndex) {
+           cerr<<"Error: different treeHIndex for label "<<label
+              <<" indeces: "<<trackMap[label]<<" != "<<treeHIndex;
+           cerr<<" event "<<eventNr<<" detector "<<detector->GetName()<<endl;
+           return -3;
+         }
+         trackMap[label] = treeHIndex;
+         if (fDEBUG > 2) cout<<"treeHIndex, label = "<<treeHIndex<<" "<<label<<endl;
+         lastLabel = label;
+       }
       }
-    }
-  }
+    }//loop over hits in module
+    loader->UnloadHits();
+  }//loop over modules
 
   if (fDEBUG > 2) {
     for (Int_t i = 0; i < nAllParticles; i++) {

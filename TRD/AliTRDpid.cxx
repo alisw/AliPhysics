@@ -13,27 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.4.6.1  2002/07/24 10:09:30  alibrary
-Updating VirtualMC
-
-Revision 1.5  2002/06/12 09:54:35  cblume
-Update of tracking code provided by Sergei
-
-Revision 1.4  2001/11/19 08:44:08  cblume
-Fix bugs reported by Rene
-
-Revision 1.3  2001/11/14 10:50:46  cblume
-Changes in digits IO. Add merging of summable digits
-
-Revision 1.2  2001/11/06 17:19:41  cblume
-Add detailed geometry and simple simulator
-
-Revision 1.1  2001/05/07 08:08:05  cblume
-Update of TRD code
-
-*/
+/* $Id$ */
 
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //

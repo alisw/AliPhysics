@@ -88,6 +88,9 @@ Int_t AliHBTReaderPPprod::Read(AliHBTRun* particles, AliHBTRun *tracks)
  //reads data and puts put to the particles and tracks objects
  //reurns 0 if everything is OK
  //
+  cout<<"New I/O not implemented\n";
+  return 0;
+   
   Int_t i; //iterator and some temprary values
   Int_t Nevents;
   if (!particles) //check if an object is instatiated
@@ -160,17 +163,14 @@ Int_t AliHBTReaderPPprod::Read(AliHBTRun* particles, AliHBTRun *tracks)
          AliTPCtrack *iotrack=0;
          
          fClustersFile->cd();
-       //AliTPCtracker *tracker=new AliTPCtracker(TPCParam,currentEvent);//I.B.
-       AliTPCtracker *tracker=new AliTPCtracker(TPCParam);               //I.B.
-       tracker->SetEventNumber(currentEvent);                            //I.B.
+         AliTPCtracker *tracker = new AliTPCtracker(TPCParam,currentEvent,"");
          if (!tracker) 
           {
             Error("AliHBTReaderPPprod::Read","Can't get a tracker !\n"); 
             return 3;
           }
-         //tracker->LoadInnerSectors(); //I.B.
-         //tracker->LoadOuterSectors(); //I.B.
-         tracker->LoadClusters();     //I.B.
+         tracker->LoadInnerSectors();
+         tracker->LoadOuterSectors();
    
          for (i=0; i<NTPCtracks; i++)
           {
@@ -226,7 +226,7 @@ Int_t AliHBTReaderPPprod::Read(AliHBTRun* particles, AliHBTRun *tracks)
             Double_t mass = TDatabasePDG::Instance()->GetParticle(gt.code)->Mass();
             Double_t pEtot = TMath::Sqrt(gt.px*gt.px + gt.py*gt.py + gt.pz*gt.pz + mass*mass);
             
-            AliHBTParticle* part = new AliHBTParticle(gt.code, i, gt.px, gt.py, gt.pz, pEtot, gt.x, gt.y, gt.z, 0.0);
+            AliHBTParticle* part = new AliHBTParticle(gt.code,i, gt.px, gt.py, gt.pz, pEtot, gt.x, gt.y, gt.z, 0.0);
             if(Pass(part)) continue;
             
          
@@ -244,7 +244,7 @@ Int_t AliHBTReaderPPprod::Read(AliHBTRun* particles, AliHBTRun *tracks)
             
             Double_t tEtot = TMath::Sqrt( tpx*tpx + tpy*tpy + tpz*tpz + mass*mass);
             
-            AliHBTParticle* track = new AliHBTParticle(gt.code, i, tpx, tpy , tpz, tEtot, 0., 0., 0., 0.);
+            AliHBTParticle* track = new AliHBTParticle(gt.code,i, tpx, tpy , tpz, tEtot, 0., 0., 0., 0.);
             if(Pass(track)) continue;
             
             particles->AddParticle(currentEvent,part);

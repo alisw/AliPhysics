@@ -41,4 +41,3 @@ class AliTOFDigitizer : public AliDigitizer {
   ClassDef(AliTOFDigitizer,0)  // TOF/Merging/Digitization
 };    
 #endif
-    

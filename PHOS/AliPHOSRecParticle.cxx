@@ -29,7 +29,6 @@
 
 
 // --- AliRoot header files ---
-#include "AliHeader.h"
 #include "AliPHOSRecParticle.h"
 #include "AliPHOSGetter.h" 
 #include "TParticle.h"
@@ -71,51 +70,37 @@ ClassImp(AliPHOSRecParticle)
 
 //____________________________________________________________________________
 const Int_t AliPHOSRecParticle::GetNPrimaries() const  
-{   
-  // retrieve the total number of primaries
-  AliHeader *h = gAlice->GetHeader();
-  return  h->GetNprimary(); 
-  // return  gAlice->GetNtrack(); 
+{ 
+  return -1;
 }
 
 //____________________________________________________________________________
 const Int_t AliPHOSRecParticle::GetNPrimariesToRecParticles() const  
 { 
-  // returns the number of primariies which contribute to the recparticle
+
   Int_t rv = 0 ;
-  AliPHOSGetter * gime = AliPHOSGetter::GetInstance() ; 
-  Int_t emcRPindex = ((AliPHOSTrackSegment*)gime->TrackSegments()->At(GetPHOSTSIndex()))->GetEmcIndex();
-  ((AliPHOSEmcRecPoint*)gime->EmcRecPoints()->At(emcRPindex))->GetPrimaries(rv) ; 
+  AliPHOSGetter * gime = AliPHOSGetter::Instance() ; 
+  Int_t emcRPindex = dynamic_cast<AliPHOSTrackSegment*>(gime->TrackSegments()->At(GetPHOSTSIndex()))->GetEmcIndex();
+  dynamic_cast<AliPHOSEmcRecPoint*>(gime->EmcRecPoints()->At(emcRPindex))->GetPrimaries(rv) ; 
   return rv ; 
 }
 
 //____________________________________________________________________________
 const TParticle * AliPHOSRecParticle::GetPrimary(Int_t index) const  
 {
-  // retrieves the one of primaries which contribute to the recparticle
   if ( index > GetNPrimariesToRecParticles() ) { 
     if (fDebug) 
-      Warning("GetPrimary", "%d is larger that the number of primaries %d", index, GetNPrimaries()) ;
-  } else { 
-    Int_t dummy ; 
-    AliPHOSGetter * gime = AliPHOSGetter::GetInstance() ;
-    Int_t emcRPindex = ((AliPHOSTrackSegment*)gime->TrackSegments()->At(GetPHOSTSIndex()))->GetEmcIndex();
-    Int_t *list = static_cast<AliPHOSEmcRecPoint*>(gime->EmcRecPoints()->At(emcRPindex))->GetPrimaries(dummy) ;
-    Int_t primaryindex ;
-    if(index<dummy)
-      primaryindex = list[index] ;
-    else{
-      if (fDebug)	    
-        printf("No primary number %d in list \n",index) ;
-      return 0 ;
-    }
-    if(primaryindex>4999999){
-	if (fDebug)
-           printf("No method to extract primaries from background!\n") ;
-      return 0 ;
-    }
-    return gime->Primary(primaryindex) ; 
+      Warning("GetPrimary", "AliPHOSRecParticle::GetPrimary -> %d is larger that the number of primaries %d", 
+	      index, GetNPrimaries()) ;
+    return 0 ; 
   } 
+  else { 
+    Int_t dummy ; 
+    AliPHOSGetter * gime = AliPHOSGetter::Instance() ; 
+
+    Int_t emcRPindex = dynamic_cast<AliPHOSTrackSegment*>(gime->TrackSegments()->At(GetPHOSTSIndex()))->GetEmcIndex();
+    Int_t primaryindex = dynamic_cast<AliPHOSEmcRecPoint*>(gime->EmcRecPoints()->At(emcRPindex))->GetPrimaries(dummy)[index] ; 
+    return gime->Primary(primaryindex) ;
+   } 
   return 0 ; 
 }
-

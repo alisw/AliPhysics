@@ -13,48 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.17  2002/11/21 22:57:02  alibrary
-Removing AliMC and AliMCProcess
-
-Revision 1.16  2002/01/23 09:36:52  morsch
-Don't use shunting if you don't want it !
-
-Revision 1.15  2001/05/16 14:57:19  alibrary
-New files for folders and Stack
-
-Revision 1.14  2001/03/12 17:46:22  hristov
-Changes needed on Sun with CC 5.0
-
-Revision 1.13  2001/01/26 20:02:43  hristov
-Major upgrade of AliRoot code
-
-Revision 1.12  2000/12/04 08:48:18  alibrary
-Fixing problems in the HEAD
-
-Revision 1.11  2000/11/17 10:15:24  morsch
-Call to AliDetector::ResetHits() added to method  AliPMD::ResetHits()
-
-Revision 1.10  2000/11/06 09:07:13  morsch
-Set  fRecPoints to zero in default constructor.
-
-Revision 1.9  2000/10/30 09:03:59  morsch
-Prototype for PMD reconstructed hits (AliPMDRecPoint) added.
-
-Revision 1.8  2000/10/20 06:24:40  fca
-Put the PMD at the right position in the event display
-
-Revision 1.7  2000/10/02 21:28:12  fca
-Removal of useless dependecies via forward declarations
-
-Revision 1.6  2000/01/19 17:17:06  fca
-Introducing a list of lists of hits -- more hits allowed for detector now
-
-Revision 1.5  1999/09/29 09:24:27  fca
-Introduction of the Copyright and cvs Log
-
-*/
+/* $Id$ */
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -80,16 +39,18 @@ Introduction of the Copyright and cvs Log
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <TBRIK.h>
-#include <TNode.h>
-#include <TTree.h>
-#include <TGeometry.h>
 #include <TClonesArray.h>
 #include <TFile.h>
+#include <TGeometry.h>
+#include <TNode.h>
+#include <TTree.h>
+#include <TVirtualMC.h>
 
-#include "AliPMD.h"
-#include "AliRun.h"
 #include "AliConst.h" 
+#include "AliLoader.h" 
+#include "AliPMD.h"
 #include "AliPMDRecPoint.h"
+#include "AliRun.h"
   
 ClassImp(AliPMD)
  
@@ -275,25 +236,28 @@ void AliPMD::AddRecPoint(const AliPMDRecPoint &p)
     new(lrecpoints[fNRecPoints++]) AliPMDRecPoint(p);
 }
 
-void AliPMD::MakeBranch(Option_t* option, const char *file)
+void AliPMD::MakeBranch(Option_t* option)
 {
     // Create Tree branches for the PMD
     
     const char *cR = strstr(option,"R");
+    const char *cH = strstr(option,"H");
+    if (cH && fLoader->TreeH() && (fHits == 0x0))
+      fHits   = new TClonesArray("AliPMDhit",  405);
     
-    AliDetector::MakeBranch(option,file);
+    AliDetector::MakeBranch(option);
 
-    if (cR) {
-      printf("Make Branch - TreeR address %p\n",gAlice->TreeR());
+    if (cR  && fLoader->TreeR()) {
+      printf("Make Branch - TreeR address %p\n",fLoader->TreeR());
     
       const Int_t kBufferSize = 4000;
       char branchname[30];
       
       sprintf(branchname,"%sRecPoints",GetName());
-      if (fRecPoints   && gAlice->TreeR()) {
-          MakeBranchInTree(gAlice->TreeR(), 
-                           branchname, &fRecPoints, kBufferSize, file);
+      if (fRecPoints == 0x0) {
+        fRecPoints  = new TClonesArray("AliPMDRecPoint",10000); 
       }
+      MakeBranchInTree(fLoader->TreeR(), branchname, &fRecPoints, kBufferSize,0);
    }	
 }
 
@@ -302,15 +266,25 @@ void AliPMD::SetTreeAddress()
 {
   // Set branch address for the TreeR
     char branchname[30];
+    
+    if (fLoader->TreeH())
+      fHits   = new TClonesArray("AliPMDhit",  405);
+      
     AliDetector::SetTreeAddress();
 
     TBranch *branch;
-    TTree *treeR = gAlice->TreeR();
+    TTree *treeR = fLoader->TreeR();
 
     sprintf(branchname,"%s",GetName());
-    if (treeR && fRecPoints) {
-	branch = treeR->GetBranch(branchname);
-	if (branch) branch->SetAddress(&fRecPoints);
+    if (treeR) {
+       branch = treeR->GetBranch(branchname);
+       if (branch) 
+       {
+         if (fRecPoints == 0x0) {
+           fRecPoints  = new TClonesArray("AliPMDRecPoint",10000); 
+         }
+         branch->SetAddress(&fRecPoints);
+       }
     }
 }
 

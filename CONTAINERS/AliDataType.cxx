@@ -13,15 +13,8 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.2  2002/02/04 14:47:22  hristov
-Corrections needed bu Root v3-02-07
+/* $Id$ */
 
-Revision 1.1  2000/11/01 16:01:22  kowal2
-Classes for handling the new hits structures
-
-*/
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
 //  AliDataType                                                              //

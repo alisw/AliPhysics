@@ -10,10 +10,9 @@
 //  Simple TRD Monte Carlo class                                             //
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
-
-#include "TMCProcess.h"
-#include "TVirtualMC.h"
  
+#include <TMCProcess.h>
+#include <TVirtualMC.h>
 #include "AliDecayer.h"
 
 class AliTRDv1;

@@ -12,9 +12,11 @@
 // Author:   Yuri Kharlov (IHEP, Protvino)
 // 13 November 2000
 
+#include <assert.h> 
 
 // --- ROOT system ---
-#include "TObject.h" 
+
+#include "TObjArray.h"
 
 // --- AliRoot header files ---
 
@@ -22,13 +24,18 @@ class AliPHOSSupportGeometry : public TObject {
 
 public: 
 
-  AliPHOSSupportGeometry();
-  AliPHOSSupportGeometry(const AliPHOSSupportGeometry & cpv) {
-    Fatal("AliPHOSSupportGeometry", "CPY CTOR not implemented") ;}
+           AliPHOSSupportGeometry();
+           AliPHOSSupportGeometry(const AliPHOSSupportGeometry & cpv) {
+             // cpy ctor requested by Coding Convention but not yet needed
+             assert(0==1) ;
+           } 
   virtual ~AliPHOSSupportGeometry(void) {}
 
-  AliPHOSSupportGeometry & operator = (const AliPHOSSupportGeometry  & rvalue) { return *this ; }
-
+  AliPHOSSupportGeometry & operator = (const AliPHOSSupportGeometry  & rvalue) {
+    // assignement operator requested by coding convention but not needed
+    assert(0==1) ;
+    return *this ; 
+  }
   Float_t GetRailOuterSize(Int_t index)     const { return fRailOuterSize[index]; }
   Float_t GetRailPart1    (Int_t index)     const { return fRailPart1[index]; }
   Float_t GetRailPart2    (Int_t index)     const { return fRailPart2[index]; }

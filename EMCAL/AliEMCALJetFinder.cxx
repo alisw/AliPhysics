@@ -15,6 +15,16 @@
 
 /*
 $Log$
+Revision 1.19.2.5  2003/07/08 16:43:48  schutz
+NewIO and remove AliEMCALReconstructionner
+
+Revision 1.19.2.4  2003/07/07 14:13:31  schutz
+NewIO
+
+
+Revision 1.40  2003/01/30 17:29:02  hristov
+No default arguments in the implementation file
+
 Revision 1.39  2003/01/29 00:34:51  pavlinov
 fixed bug in FillFromHits
 
@@ -184,6 +194,7 @@ Revision 1.3  2002/01/18 05:07:56  morsch
 #include "AliMagFCM.h"
 #include "AliRun.h"
 #include "AliGenerator.h"
+#include "AliEMCALGetter.h"
 // Interface to FORTRAN
 #include "Ecommon.h"
 
@@ -352,9 +363,11 @@ void AliEMCALJetFinder::Init()
 //
 //
 //  Geometry 
-    AliEMCAL* pEMCAL = (AliEMCAL*) gAlice->GetModule("EMCAL");
-    AliEMCALGeometry* geom = 
-    AliEMCALGeometry::GetInstance(pEMCAL->GetTitle(), "");
+  //AliEMCAL* pEMCAL = (AliEMCAL*) gAlice->GetModule("EMCAL");
+  //  AliEMCALGeometry* geom = 
+  //  AliEMCALGeometry::GetInstance(pEMCAL->GetTitle(), "");
+  AliEMCALGetter * gime = AliEMCALGetter::Instance() ; 
+  AliEMCALGeometry* geom = gime->EMCALGeometry() ;  
 
 //    SetSamplingFraction(geom->GetSampling());
 
@@ -675,43 +688,52 @@ void AliEMCALJetFinder::WriteJets()
     }
 
 // I/O
+    AliEMCALGetter * gime = AliEMCALGetter::Instance() ; 
     if (!fOutFileName) {
 //
 // output written to input file
 //
-	AliEMCAL* pEMCAL = (AliEMCAL* )gAlice->GetModule("EMCAL");
-	TTree* pK = gAlice->TreeK();
-	file = (pK->GetCurrentFile())->GetName();
+      AliEMCAL* pEMCAL = (AliEMCAL* )gAlice->GetModule("EMCAL");
+      TTree* pK = gAlice->TreeK();
+      file = (pK->GetCurrentFile())->GetName();
+      TBranch * jetBranch ;  
 	if (fDebug > 1)
 	    printf("Make Branch - TreeR address %p %p\n",gAlice->TreeR(), pEMCAL);
-	if (fJets && gAlice->TreeR()) {
-	    pEMCAL->MakeBranchInTree(gAlice->TreeR(), 
-				     "EMCALJets", 
-				     &fJets, 
-				     kBufferSize, 
-				     file);
+	//if (fJets && gAlice->TreeR()) {
+	if (fJets && gime->TreeR()) {
+	  // pEMCAL->MakeBranchInTree(gAlice->TreeR(), 
+          jetBranch = gime->TreeR()->Branch("EMCALJets", &fJets, kBufferSize, 0) ; 
+	  //pEMCAL->MakeBranchInTree(gime->TreeR(), 
+	  //			     "EMCALJets", 
+	  //			     &fJets, 
+	  //			     kBufferSize, 
+	  //			     file);
+	  
+	  //Int_t nev = gAlice->GetHeader()->GetEvent();
+	  //gAlice->TreeR()->Fill();
+	  jetBranch->Fill();
+	  //char hname[30];
+	  //sprintf(hname,"TreeR%d", nev);
+	  //gAlice->TreeR()->Write(hname);
+	  //gAlice->TreeR()->Reset();
+	  gime->WriteRecPoints("OVERWRITE");
 	}
-	Int_t nev = gAlice->GetHeader()->GetEvent();
-	gAlice->TreeR()->Fill();
-	char hname[30];
-	sprintf(hname,"TreeR%d", nev);
-	gAlice->TreeR()->Write(hname);
-	gAlice->TreeR()->Reset();
     } else {
 //
 // Output written to user specified output file
 //
-	TTree* pK = gAlice->TreeK();
-	fInFile  = pK->GetCurrentFile();
+      //TTree* pK = gAlice->TreeK();
+      TTree* pK = gAlice->TreeK();
+      fInFile  = pK->GetCurrentFile();
 
-	fOutFile->cd();
-	char hname[30];
-	sprintf(hname,"TreeR%d", fEvent);
-	TTree* treeJ = new TTree(hname, "EMCALJets");
-	treeJ->Branch("EMCALJets", &fJets, kBufferSize);
-	treeJ->Fill();
-	treeJ->Write(hname);
-	fInFile->cd();
+      fOutFile->cd();
+      char hname[30];
+      sprintf(hname,"TreeR%d", fEvent);
+      TTree* treeJ = new TTree(hname, "EMCALJets");
+      treeJ->Branch("EMCALJets", &fJets, kBufferSize);
+      treeJ->Fill();
+      treeJ->Write(hname);
+      fInFile->cd();
     }
     ResetJets();        
 }
@@ -1084,7 +1106,8 @@ void AliEMCALJetFinder::FillFromHits(Int_t flag)
 //
 // Access hit information    
     AliEMCAL* pEMCAL = (AliEMCAL*) gAlice->GetModule("EMCAL");
-    TTree *treeH = gAlice->TreeH();
+    AliEMCALGetter * gime = AliEMCALGetter::Instance() ; 
+    TTree *treeH = gime->TreeH();
     Int_t ntracks = (Int_t) treeH->GetEntries();
 //
 //   Loop over tracks
@@ -1183,10 +1206,10 @@ void AliEMCALJetFinder::FillFromDigits(Int_t flag)
 //  Get digitizer parameters
     Float_t preADCped = digr->GetPREpedestal();
     Float_t preADCcha = digr->GetPREchannel();
-    Float_t ecADCped  = digr->GetECpedestal();
-    Float_t ecADCcha  = digr->GetECchannel();
-    Float_t hcADCped  = digr->GetHCpedestal();
-    Float_t hcADCcha  = digr->GetHCchannel();
+    Float_t ecADCped  = digr->GetECApedestal();
+    Float_t ecADCcha  = digr->GetECAchannel();
+    Float_t hcADCped  = digr->GetHCApedestal();
+    Float_t hcADCcha  = digr->GetHCAchannel();
 
     AliEMCAL* pEMCAL = (AliEMCAL*) gAlice->GetModule("EMCAL");
     AliEMCALGeometry* geom = 
@@ -1210,11 +1233,11 @@ void AliEMCALJetFinder::FillFromDigits(Int_t flag)
 	  pedestal = preADCped;
 	  channel  = preADCcha; 
 	} 
-	else if (geom->IsInECAL(sdg->GetId()))  {
+	else if (geom->IsInECA(sdg->GetId()))  {
 	  pedestal = ecADCped;
 	  channel  = ecADCcha; 
 	}
-	else if (geom->IsInHCAL(sdg->GetId()))  {
+	else if (geom->IsInHCA(sdg->GetId()))  {
 	  pedestal = hcADCped;
 	  channel  = hcADCcha; 
 	}
@@ -1457,8 +1480,10 @@ void AliEMCALJetFinder::BuildTrackFlagTable() {
 	fTrackList[i] = 0;
     }
     
-    TTree *treeH = gAlice->TreeH();
-    Int_t ntracks = (Int_t) treeH->GetEntries();
+    AliEMCALGetter * gime = AliEMCALGetter::Instance() ; 
+    // TTree *treeH = gAlice->TreeH();
+    TTree *treeH = gime->TreeH();
+   Int_t ntracks = (Int_t) treeH->GetEntries();
 //
 //   Loop over tracks
 //

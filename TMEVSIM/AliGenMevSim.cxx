@@ -31,10 +31,9 @@
 #include "AliGenMevSim.h"
 #include "AliRun.h"
 
+static TRandom * sRandom;
 
 ClassImp(AliGenMevSim)
-
-static TRandom * sRandom;
 
 //____________________________________________________________________________
 AliGenMevSim::AliGenMevSim() : AliGenerator(-1) 

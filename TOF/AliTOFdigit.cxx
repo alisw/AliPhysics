@@ -1,18 +1,3 @@
-//_________________________________________________________________________
-//  TOF digit: member variables 
-//  fSector  : TOF sector
-//  fPlate   : TOF plate
-//  fStrip   : strips number
-//  fPadx    : pad number along x
-//  fPadz    : pad number along z
-//  fTdc     : TDC
-//  fAdc     : ADC
-//              
-//  Getters, setters and member functions  defined here
-//
-//*-- Authors: F. Pierella, A. Seganti, D. Vicinanza
-
- 
 /**************************************************************************
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
@@ -28,11 +13,28 @@
  * provided "as is" without express or implied warranty.                  * 
  **************************************************************************/
 
+/* $Id$ */
+
+//_________________________________________________________________________
+//  TOF digit: member variables 
+//  fSector  : TOF sector
+//  fPlate   : TOF plate
+//  fStrip   : strips number
+//  fPadx    : pad number along x
+//  fPadz    : pad number along z
+//  fTdc     : TDC
+//  fAdc     : ADC
+//              
+//  Getters, setters and member functions  defined here
+//
+//*-- Authors: F. Pierella, A. Seganti, D. Vicinanza
+
+ 
 #include <Riostream.h>
 
+#include "AliRun.h"
 #include "AliTOF.h"
 #include "AliTOFdigit.h"
-#include "AliRun.h"
 
 ClassImp(AliTOFdigit)
 

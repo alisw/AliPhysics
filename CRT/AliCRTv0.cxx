@@ -13,46 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.10  2002/10/29 17:20:37  hristov
-Corrections for subscript out of range (Alpha)
-
-Revision 1.9  2002/10/23 06:47:56  alibrary
-Introducing Riostream.h
-
-Revision 1.8  2002/10/14 14:55:34  hristov
-Merging the VirtualMC branch to the main development branch (HEAD)
-
-Revision 1.4.2.4  2002/10/10 14:40:31  hristov
-Updating VirtualMC to v3-09-02
-
-Revision 1.7  2002/10/07 11:13:25  gamez
-Access shafts added
-
-Revision 1.6  2002/07/26 06:21:12  gamez
-CRT3 volume taken as sensitive volume
-
-Revision 1.5  2002/07/25 12:52:34  morsch
-AddHit call only if hit has been defined.
-
-Revision 1.4  2002/07/12 12:57:29  gamez
-Division of CRT1 corrected
-
-Revision 1.3.2.1  2002/07/12 12:32:50  gamez
-Division of CRT1 corrected
-
-Revision 1.3  2002/07/10 15:57:04  gamez
-CreateHall() removed, and new Molasse volumes
-
-Revision 1.2  2002/07/09 08:45:35  hristov
-Old style include files needed on HP (aCC)
-
-Revision 1.1  2002/06/16 17:08:19  hristov
-First version of CRT
-
-
-*/
+/* $Id$ */
 
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
@@ -86,18 +47,18 @@ First version of CRT
 
 #include <Riostream.h>
 
-#include <TGeometry.h>
 #include <TBRIK.h>
-#include <TNode.h>
+#include <TGeometry.h>
 #include <TLorentzVector.h>
+#include <TNode.h>
+#include <TVirtualMC.h>
 
-#include "AliRun.h"
-#include "AliMagF.h"
-#include "AliConst.h"
-#include "AliPDG.h"
-
-#include "AliCRTv0.h"
 #include "AliCRTConstants.h"
+#include "AliCRTv0.h"
+#include "AliConst.h"
+#include "AliMagF.h"
+#include "AliPDG.h"
+#include "AliRun.h"
 
 ClassImp(AliCRTv0)
  

@@ -13,54 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.9  2002/10/23 07:24:56  alibrary
-Introducing Riostream.h
-
-Revision 1.8  2000/11/20 21:44:17  pcrochet
-some modifications to account for the new class AliMUONResponseTriggerV1
-
-Revision 1.7  2000/10/02 16:58:29  egangler
-Cleaning of the code :
--> coding conventions
--> void Streamers
--> some useless includes removed or replaced by "class" statement
-
-Revision 1.6  2000/07/03 11:54:57  morsch
-AliMUONSegmentation and AliMUONHitMap have been replaced by AliSegmentation and AliHitMap in STEER
-The methods GetPadIxy and GetPadXxy of AliMUONSegmentation have changed name to GetPadI and GetPadC.
-
-Revision 1.5  2000/06/29 12:34:09  morsch
-AliMUONSegmentation class has been made independent of AliMUONChamber. This makes
-it usable with any other geometry class. The link to the object to which it belongs is
-established via an index. This assumes that there exists a global geometry manager
-from which the pointer to the parent object can be obtained (in our case gAlice).
-
-Revision 1.4  2000/06/29 06:52:02  pcrochet
-pow changed to TMath::Power
-
-Revision 1.3  2000/06/28 15:16:35  morsch
-(1) Client code adapted to new method signatures in AliMUONSegmentation (see comments there)
-to allow development of slat-muon chamber simulation and reconstruction code in the MUON
-framework. The changes should have no side effects (mostly dummy arguments).
-(2) Hit disintegration uses 3-dim hit coordinates to allow simulation
-of chambers with overlapping modules (MakePadHits, Disintegration).
-
-Revision 1.2  2000/06/15 07:58:48  morsch
-Code from MUON-dev joined
-
-Revision 1.1.2.3  2000/06/09 21:27:35  morsch
-Most coding rule violations corrected.
-
-Revision 1.1.2.2  2000/04/26 12:28:25  morsch
-- flag pad hits with condition on ToF (CP)
-- Tof included in the method DisIntegration (CP)
-
-Revision 1.1.2.1  2000/02/17 14:30:54  morsch
-Draft version
-
-*/
+/* $Id$ */
 
 #include "AliMUONChamberTrigger.h"
 #include "AliMUONSegmentationTrigger.h"

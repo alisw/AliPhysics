@@ -1,6 +1,6 @@
 #include "iostream.h"
 
-void MUONrawclusters (Int_t evNumber1=0,Int_t evNumber2=0) 
+void MUONrawclusters (char* filename, Int_t evNumber1=0,Int_t evNumber2=0) 
 {
   //////////////////////////////////////
   //                                  //
@@ -22,42 +22,57 @@ void MUONrawclusters (Int_t evNumber1=0,Int_t evNumber2=0)
   //
   //__________________________________________________________________________
 
-// Dynamically link some shared libs
+//  // Dynamically link some shared libs
 
-    if (gClassTable->GetID("AliRun") < 0) {
-	gROOT->LoadMacro("loadlibs.C");
-	loadlibs();
-    }
+  //if (gClassTable->GetID("AliRun") < 0) {
+  //	gROOT->LoadMacro("$ALICE_ROOT/macros/loadlibs.C");
+  //	loadlibs();
+  //    }
 
-// Connect the Root Galice file containing Geometry, Kine and Hits
+ // Creating Run Loader and openning file containing Hits
+  AliRunLoader * RunLoader = AliRunLoader::Open(filename,"MUONFolder","UPDATE");
+  if (RunLoader ==0x0) {
+    printf(">>> Error : Error Opening %s file \n",filename);
+    return;
+  }
 
-    TFile *file = (TFile*)gROOT->GetListOfFiles()->FindObject("galice.root");
-    if (!file) file = new TFile("galice.root","UPDATE");
+  // Loading AliRun master
+  RunLoader->UnloadgAlice();
+  RunLoader->LoadgAlice();
+  gAlice = RunLoader->GetAliRun();
 
-// Get AliRun object from file or create it if not on file
+  // Loading MUON subsystem
+  AliMUON * MUON = (AliMUON *) gAlice->GetDetector("MUON");
+  AliLoader * MUONLoader = RunLoader->GetLoader("MUONLoader");
 
-    if (!gAlice) {
-	gAlice = (AliRun*)file->Get("gAlice");
-	if (gAlice) printf("AliRun object found on file\n");
-	if (!gAlice) gAlice = new AliRun("gAlice","Alice test program");
-    }
+  Int_t ievent, nevents;
+  nevents = RunLoader->GetNumberOfEvents();
 
-// Set reconstruction models
-//
-// Get pointers to Alice detectors and Digits containers
-    AliMUON *MUON  = (AliMUON*) gAlice->GetModule("MUON");
-    for (Int_t i=0; i<10; i++) {
-	RecModel = new AliMUONClusterFinderVS();
-//	RecModel->SetTracks(16,17);    
-//	RecModel->SetTracks(266,267);    
-	RecModel->SetGhostChi2Cut(10);
-	MUON->SetReconstructionModel(i,RecModel);
-    }
+  for (Int_t i=0; i<10; i++) {
+    RecModel = new AliMUONClusterFinderVS();
+    //	RecModel->SetTracks(16,17);    
+    //	RecModel->SetTracks(266,267);    
+    RecModel->SetGhostChi2Cut(10);
+    MUON->SetReconstructionModel(i,RecModel);
+  }
 //
 //   Loop over events              
-//
+  //
     Int_t Nh=0;
     Int_t Nh1=0;
-    gAlice->RunReco("MUON", evNumber1, evNumber2);
+    //    gAlice->RunReco("MUON", evNumber1, evNumber2);
+    for(Int_t ievent=evNumber1; ievent<evNumber2; ievent++) {
+      printf("event %d\n",ievent);
+      RunLoader->GetEvent(ievent);
+      MUONLoader->LoadDigits("read");
+      if (MUONLoader->TreeR() == 0x0) MUONLoader->MakeTree("R");
+      MUON->MakeBranch("R");
+      MUON->SetTreeAddress();
+      MUON->Digits2Reco(); 
+      MUONLoader->UnloadDigits();
+      MUONLoader->UnloadRecPoints();
+    }
+
 }
+
 

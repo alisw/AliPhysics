@@ -13,25 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.4  2002/11/21 19:34:52  alibrary
-Removing AliMC and AliMCProcess
-
-Revision 1.3  2002/10/23 06:47:56  alibrary
-Introducing Riostream.h
-
-Revision 1.2  2002/10/14 14:55:34  hristov
-Merging the VirtualMC branch to the main development branch (HEAD)
-
-Revision 1.1.2.1  2002/10/10 14:40:31  hristov
-Updating VirtualMC to v3-09-02
-
-Revision 1.1  2002/10/07 11:25:28  gamez
-First version, generation of cosmic muons on the surface
-
-
-*/
+/* $Id$ */
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -54,6 +36,7 @@ First version, generation of cosmic muons on the surface
 /////////////////////////////////////////////////////////////////////////////
 
 #include <Riostream.h>
+
 #include <TMCProcess.h>
 #include <TPDGCode.h>
 

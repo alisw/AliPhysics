@@ -13,93 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.21  2003/02/04 17:26:00  cblume
-Include a reset of the digits arrays in order to process several events
-
-Revision 1.20  2002/10/22 15:53:08  alibrary
-Introducing Riostream.h
-
-Revision 1.19  2002/10/14 14:57:43  hristov
-Merging the VirtualMC branch to the main development branch (HEAD)
-
-Revision 1.16.6.2  2002/07/24 10:09:30  alibrary
-Updating VirtualMC
-
-Revision 1.16.6.1  2002/06/10 15:28:58  hristov
-Merged with v3-08-02
-
-Revision 1.18  2002/04/12 12:13:23  cblume
-Add Jiris changes
-
-Revision 1.17  2002/03/28 14:59:07  cblume
-Coding conventions
-
-Revision 1.18  2002/04/12 12:13:23  cblume
-Add Jiris changes
-
-Revision 1.17  2002/03/28 14:59:07  cblume
-Coding conventions
-
-Revision 1.16  2002/02/12 11:42:08  cblume
-Remove fTree from destructor
-
-Revision 1.15  2002/02/11 14:27:54  cblume
-Geometry and hit structure update
-
-Revision 1.14  2001/11/14 10:50:46  cblume
-Changes in digits IO. Add merging of summable digits
-
-Revision 1.13  2001/11/06 17:19:41  cblume
-Add detailed geometry and simple simulator
-
-Revision 1.12  2001/05/16 14:57:28  alibrary
-New files for folders and Stack
-
-Revision 1.11  2001/03/13 09:30:35  cblume
-Update of digitization. Moved digit branch definition to AliTRD
-
-Revision 1.10  2001/01/26 19:56:57  hristov
-Major upgrade of AliRoot code
-
-Revision 1.9  2000/11/02 09:25:53  cblume
-Change also the dictionary to AliTRDdataArray
-
-Revision 1.8  2000/11/01 15:20:13  cblume
-Change AliTRDdataArrayI to AliTRDdataArray in MakeBranch()
-
-Revision 1.7  2000/11/01 14:53:20  cblume
-Merge with TRD-develop
-
-Revision 1.1.2.5  2000/10/17 02:27:34  cblume
-Get rid of global constants
-
-Revision 1.1.2.4  2000/10/15 23:40:01  cblume
-Remove AliTRDconst
-
-Revision 1.1.2.3  2000/10/06 16:49:46  cblume
-Made Getters const
-
-Revision 1.1.2.2  2000/10/04 16:34:58  cblume
-Replace include files by forward declarations
-
-Revision 1.5  2000/06/09 11:10:07  cblume
-Compiler warnings and coding conventions, next round
-
-Revision 1.4  2000/06/08 18:32:58  cblume
-Make code compliant to coding conventions
-
-Revision 1.3  2000/06/07 16:27:01  cblume
-Try to remove compiler warnings on Sun and HP
-
-Revision 1.2  2000/05/08 16:17:27  cblume
-Merge TRD-develop
-
-Revision 1.1.2.1  2000/05/08 14:44:01  cblume
-Add new class AliTRDdigitsManager
-
-*/
+/* $Id$ */
 
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
@@ -142,8 +56,6 @@ AliTRDdigitsManager::AliTRDdigitsManager():TObject()
   fDebug   = 0;
   fSDigits = 0;
 
-  fFile    = NULL;
-  fFileCreated = kFALSE;
   fTree    = NULL;
   fDigits  = NULL;
   for (Int_t iDict = 0; iDict < kNDict; iDict++) {
@@ -169,12 +81,6 @@ AliTRDdigitsManager::~AliTRDdigitsManager()
   //
   // AliTRDdigitsManager destructor
   //
-
-  if (fFile && fFileCreated) {
-    fFile->Close();
-    delete fFile;
-    fFile = NULL;
-  }
 
   if (fDigits) {
     fDigits->Delete();
@@ -269,78 +175,7 @@ Short_t AliTRDdigitsManager::GetDigitAmp(Int_t row, Int_t col,Int_t time
 }
  
 //_____________________________________________________________________________
-Bool_t AliTRDdigitsManager::Open(const Char_t *file)
-{
-  //
-  // Opens the file for the TRD digits
-  //
-
-  fFile = (TFile*) gROOT->GetListOfFiles()->FindObject(file);
-  if (!fFile) {
-    if (fDebug > 0) {
-      printf("<AliTRDdigitsManager::Open> ");
-      printf("Open the AliROOT-file %s.\n",file);
-    }
-    fFile = new TFile(file,"UPDATE");
-    fFileCreated = kTRUE;
-    if (!fFile) return kFALSE;
-  }
-  else {
-    if (fDebug > 0) {
-      printf("<AliTRDdigitsManager::Open> ");
-      printf("%s is already open.\n",file);
-    }
-  }
-
-  return kTRUE;
-
-}
-
-//_____________________________________________________________________________
-void AliTRDdigitsManager::MakeTreeAndBranches(TFile *file, Int_t iEvent)
-{
-  //
-  // Creates tree for (s)digits in the specified file
-  //
-
-  fEvent = iEvent;
-  TDirectory *wd = gDirectory;
-  file->cd();
-  MakeBranch();
-  wd->cd();
-
-}
-
-//_____________________________________________________________________________
-Bool_t AliTRDdigitsManager::MakeBranch(const Char_t *file)
-{
-  //
-  // Creates the tree and branches for the digits and the dictionary
-  //
-
-  // Create the TRD digits tree
-  TTree *tree;
-  Char_t treeName[12];
-  if (fSDigits) {
-    sprintf(treeName,"TreeS%d_TRD",fEvent);
-    tree = new TTree(treeName,"TRD SDigits");
-  }
-  else {
-    sprintf(treeName,"TreeD%d_TRD",fEvent);
-    tree = new TTree(treeName,"TRD Digits");
-  }
-
-  if (fDebug > 0) {
-    printf("<AliTRDdigitsManager::MakeBranch> ");
-    printf("Creating tree %s\n",treeName);
-  }
-
-  return MakeBranch(tree,file);
-
-}
-
-//_____________________________________________________________________________
-Bool_t AliTRDdigitsManager::MakeBranch(TTree *tree, const Char_t *file)
+Bool_t AliTRDdigitsManager::MakeBranch(TTree *tree)
 {
   //
   // Creates the tree and branches for the digits and the dictionary
@@ -361,7 +196,7 @@ Bool_t AliTRDdigitsManager::MakeBranch(TTree *tree, const Char_t *file)
     const AliTRDdataArray *kDigits = (AliTRDdataArray *) fDigits->At(0);
     if (kDigits) {
       trd->MakeBranchInTree(fTree,"TRDdigits",kDigits->IsA()->GetName()
-                                 ,&kDigits,buffersize,99,file);
+                                 ,&kDigits,buffersize,99);
       if (fDebug > 0) {
         printf("<AliTRDdigitsManager::MakeBranch> ");
         printf("Making branch TRDdigits\n");
@@ -384,7 +219,7 @@ Bool_t AliTRDdigitsManager::MakeBranch(TTree *tree, const Char_t *file)
               (AliTRDdataArray *) fDictionary[iDict]->At(0);
       if (kDictionary) {
         trd->MakeBranchInTree(fTree,branchname,kDictionary->IsA()->GetName()
-                             ,&kDictionary,buffersize,99,file);
+                             ,&kDictionary,buffersize,99);
         if (fDebug > 0) {
           printf("<AliTRDdigitsManager::MakeBranch> ");
           printf("Making branch %s\n",branchname);
@@ -415,32 +250,6 @@ Bool_t AliTRDdigitsManager::ReadDigits(TTree *tree)
   if (tree) {
 
     fTree = tree;
-
-  }
-  else {
-
-    // Get the digits tree
-    Char_t treeName[12];
-    if (fSDigits) {
-      sprintf(treeName,"TreeS%d_TRD",fEvent);
-    }
-    else {
-      sprintf(treeName,"TreeD%d_TRD",fEvent);
-    }
-    if (fFile) {
-      fTree = (TTree *) fFile->Get(treeName);
-    }
-    else {
-      fTree = (TTree *) gDirectory->Get(treeName);
-    }
-
-    if (!fTree) {
-      if (fDebug > 0) {
-        printf("<AliTRDdigitsManager::ReadDigits> ");
-        printf("Could not find tree %s.\n",treeName);
-      }
-      return kFALSE;
-    }
 
   }
 

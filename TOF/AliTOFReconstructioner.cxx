@@ -13,6 +13,8 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+/* $Id$ */
+
 //_________________________________________________________________________
 // Manager class for TOF reconstruction.
 // 
@@ -32,47 +34,50 @@
 //
 //////////////////////////////////////////////////////////////////////////////
 
+#include <Riostream.h>
+#include <stdlib.h>
+
+#include <TBenchmark.h>
+#include <TClonesArray.h>
+#include <TF1.h>
+#include <TF2.h>
+#include <TFile.h>
+#include <TFolder.h>
+#include <TGeant3.h>
+#include <TNtuple.h>
+#include <TParticle.h>
+#include <TROOT.h>
+#include <TSystem.h>
+#include <TTask.h>
+#include <TTree.h>
+#include <TVirtualMC.h>
 
 #include "AliConst.h"
+#include "AliDetector.h"
+#include "AliHeader.h"
+#include "AliLoader.h"
 #include "AliRun.h"
+#include "AliRun.h"
+#include "AliRunLoader.h"
+#include "AliTOF.h"
 #include "AliTOFConstants.h"
 #include "AliTOFHitMap.h"
-#include "AliTOFSDigit.h"
-#include "AliTOFhit.h"
-#include "AliTOFRecHit.h"
 #include "AliTOFPad.h"
+#include "AliTOFRecHit.h"
+#include "AliTOFReconstructioner.h"
+#include "AliTOFSDigit.h"
 #include "AliTOFTrack.h"
-#include "AliTOF.h"
+#include "AliTOFhit.h"
 #include "AliTOFv1.h"
 #include "AliTOFv2.h"
 #include "AliTOFv2FHoles.h"
 #include "AliTOFv3.h"
 #include "AliTOFv4.h"
 #include "AliTOFv4T0.h"
-#include "AliTOFReconstructioner.h"
-// this line has to be commented till TPC will provide fPx fPy fPz and fL in
-// AliTPChit class or somewhere
-// #include "../TPC/AliTPC.h"
-#include "AliRun.h"
-#include "AliDetector.h"
 
-#include "TTask.h"
-#include "TBenchmark.h"
-#include "TTree.h"
-#include "TSystem.h"
-#include "TFile.h"
-#include "TParticle.h"
-#include <TClonesArray.h>
-#include "TGeant3.h"
-#include "TVirtualMC.h"
-#include <TF1.h>
-#include <TF2.h>
-#include "TROOT.h"
-#include "TFolder.h"
-#include "TNtuple.h"
-#include <stdlib.h>
-#include <Riostream.h>
-#include <Riostream.h>
+// #include "../TPC/AliTPC.h"
+// AliTPChit class or somewhere
+// this line has to be commented till TPC will provide fPx fPy fPz and fL in
 
 ClassImp(AliTOFReconstructioner)
 
@@ -311,32 +316,59 @@ void AliTOFReconstructioner::Exec(const char* datafile, Option_t *option)
   // 
   gBenchmark->Start("TOFReconstruction");
 
-  TFile *file = TFile::Open(datafile);
-
+  
+  AliRunLoader *rl = AliRunLoader::Open(datafile);
+  if (rl == 0x0)
+   {
+     Error("Exec","Can not open session for file %s",datafile);
+     return;
+   }
   // Get AliRun object from file or create it if not on file
-  gAlice = (AliRun*)file->Get("gAlice");
+  rl->LoadgAlice();
+  gAlice = rl->GetAliRun();
 
   AliTOF* TOF = (AliTOF *) gAlice->GetDetector ("TOF");
   AliDetector* TPC = gAlice->GetDetector("TPC");
 
   if (!TOF) {
     Error("AliTOFReconstructioner","TOF not found");
+    delete rl;
     return;
   }
   if (!TPC) {
     Error("AliTOFReconstructioner","TPC Detector not found");
+    delete rl;
     return;
   }
+  AliLoader* tpcloader = rl->GetLoader("TPCLoader");
+  if (tpcloader == 0x0)
+   {
+    Error("AliTOFReconstructioner","Can not get TPC Loader from Run Loader.");
+    delete rl;
+    return;
+   }
 
+  AliLoader* tofloader = rl->GetLoader("TOFLoader");
+  if (tofloader == 0x0)
+   {
+    Error("AliTOFReconstructioner","Can not get TOF Loader from Run Loader.");
+    delete rl;
+    return;
+   }
+  
   if (fEdgeTails) ftail = new TF1("tail",TimeWithTailR,-2,2,3);
-
-  if (fNevents == 0) fNevents = (Int_t) gAlice->TreeE()->GetEntries();
+  
+  if (fNevents == 0) fNevents = rl->GetNumberOfEvents();
   // You have to set the number of event with the ad hoc setter
   // see testrecon.C
-
+  if (rl->GetHeader() == 0x0) rl->LoadHeader();
+  
+  tofloader->LoadHits();
+  tpcloader->LoadHits(); 
+  
   for (Int_t ievent = 0; ievent < fNevents; ievent++) { // start loop on events
-
-    Int_t nparticles=gAlice->GetEvent(ievent);
+    rl->GetEvent(ievent);
+    Int_t nparticles= rl->GetHeader()->GetNtrack();
     if (nparticles <= 0) return;
 
     TClonesArray* tofhits=0;
@@ -345,7 +377,7 @@ void AliTOFReconstructioner::Exec(const char* datafile, Option_t *option)
     if (TOF) tofhits = TOF->Hits();
     if (TPC) tpchits = TPC->Hits();
 
-    TTree *TH = gAlice->TreeH();
+    TTree *TH = tofloader->TreeH();
     if (!TH) return;
     Int_t ntracks    = (Int_t) (TH->GetEntries()); // primary tracks
     cout << "number of primary tracked tracks in current event " << ntracks << endl; // number of primary tracked tracks

@@ -12,27 +12,8 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-/*
-$Log$
-Revision 1.7  2002/10/23 07:24:57  alibrary
-Introducing Riostream.h
 
-Revision 1.6  2001/03/20 13:32:37  egangler
-includes cleanup
-
-Revision 1.5  2000/10/02 21:28:09  fca
-Removal of useless dependecies via forward declarations
-
-Revision 1.4  2000/10/02 16:58:29  egangler
-Cleaning of the code :
--> coding conventions
--> void Streamers
--> some useless includes removed or replaced by "class" statement
-
-Revision 1.3  2000/06/25 16:47:43  pcrochet
-pow replaced by TMath::Power
-
-*/
+/* $Id$ */
 
 #include "AliMUONTriggerCircuit.h"
 #include "AliMUONTriggerLut.h"
@@ -154,10 +135,12 @@ void AliMUONTriggerLut::GetLutOutput(Int_t circuit, Int_t xstrip, Int_t idev,
   if ((binc & mask)!=0) lutApt[0]=lutApt[1]=1;
 
 // get back to the first file
+/* no need for this with NewIO
   TTree *tK = gAlice->TreeK();
   TFile *file1 = 0;
   if (tK) file1 = tK->GetCurrentFile();
   file1->cd();
+*/
 }
 
 //----------------------------------------------------------------------

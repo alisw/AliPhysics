@@ -9,9 +9,24 @@ void FMDReconstructor (Int_t evNumber=1)
     cout << "SPLIT" << endl;
   else
     cout << "NO SPLIT" << endl ;
-  TFile * f = new TFile("galice.root","UPDATE");
-  gAlice = (AliRun*) f->Get("gAlice") ;
+    
+  
+  
+  //TFile * f = new TFile("galice.root","UPDATE");
+  //gAlice = (AliRun*) f->Get("gAlice") ;
+  
+  AliRunLoader* rl = AliRunLoader::Open("galice.root",AliConfig::fgkDefaultEventFolderName,"read");
+  if (rl == 0x0)
+   {
+     cerr<<"Can not open session for file galice.root\n";
+     return;
+   }
+
+  rl->LoadgAlice();
+  gAlice = rl->GetAliRun();
+
   AliFMD* FMD  = (AliFMD *)gAlice->GetDetector("FMD");
-  gAlice->RunReco("FMD") ;
+
+  gAlice->RunReco("FMD");
 }
   

@@ -13,18 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.3  2001/02/05 14:49:29  hristov
-Compare() declared const (R.Brun)
-
-Revision 1.2  2000/06/15 07:58:48  morsch
-Code from MUON-dev joined
-
-Revision 1.1.2.1  2000/06/09 22:04:50  morsch
-Was before in DataStructures.cxx
-
-*/
+/* $Id$ */
 
 #include "AliMUONRawCluster.h"
 #include <TObjArray.h>

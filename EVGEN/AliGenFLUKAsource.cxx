@@ -13,47 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.16  2002/11/21 16:22:35  alibrary
-Removing AliMCProcess and AliMC
-
-Revision 1.15  2001/07/27 17:09:36  morsch
-Use local SetTrack, KeepTrack and SetHighWaterMark methods
-to delegate either to local stack or to stack owned by AliRun.
-(Piotr Skowronski, A.M.)
-
-Revision 1.14  2001/03/21 11:28:20  morsch
-Use enum constants for particle selection.
-
-Revision 1.13  2000/12/21 16:24:06  morsch
-Coding convention clean-up
-
-Revision 1.12  2000/11/30 07:12:50  alibrary
-Introducing new Rndm and QA classes
-
-Revision 1.11  2000/06/14 15:20:40  morsch
-Include clean-up (IH)
-
-Revision 1.10  2000/06/09 20:31:34  morsch
-All coding rule violations except RS3 corrected
-
-Revision 1.9  2000/03/07 13:52:54  morsch
-static Int_t irwn=0;
-
-Revision 1.8  2000/02/14 14:49:38  morsch
-Correct particle type for gamma and neutrons
-More consistent calculation of momentum from kin. energy and mass
-
-Revision 1.7  1999/11/03 17:43:20  fca
-New version from G.Martinez & A.Morsch
-
-Revision 1.6  1999/09/29 09:24:12  fca
-Introduction of the Copyright and cvs Log
-
-*/
-
-
+/* $Id$ */
 
 // Read background particles from a FLUKA boundary source file
 // This is a very special generator that works for background studies for the muon-spectrometer.

@@ -118,8 +118,8 @@ void AliPHOSRecCpvManager::AG(Float_t ei, Float_t xi, Float_t yi, Float_t& ai, F
   //xi and yi are the distances along x and y from reference point 
   // to the pad center.
 
-  AliPHOSGetter * gime = AliPHOSGetter::GetInstance() ; 
-  const AliPHOSGeometry* geom = gime->PHOSGeometry();
+  AliPHOSGeometry * geom = AliPHOSLoader::GetPHOSGeometry();
+
   Float_t celZ = geom->GetPadSizeZ();
   Float_t celY = geom->GetPadSizePhi();
 

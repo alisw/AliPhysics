@@ -104,13 +104,18 @@ void AliMUONClusterFinderAZ::EventLoop(Int_t nev=0, Int_t ch=0)
 
 newev:
   Int_t nparticles = 0, nent;
-  if (!fReco) nparticles = gAlice->GetEvent(nev);
+
+  //Loaders
+  AliRunLoader * rl = AliRunLoader::GetRunLoader();
+  AliLoader * gime  = rl->GetLoader("MUONLoader");
+
+  if (!fReco) nparticles = rl->GetEvent(nev);
   else nparticles = gAlice->GetNtrack();
   cout << "nev         " << nev <<endl;
   cout << "nparticles  " << nparticles <<endl;
   if (nparticles <= 0) return;
   
-  TTree *TH = gAlice->TreeH();
+  TTree *TH = gime->TreeH();
   Int_t ntracks = (Int_t) TH->GetEntries();
   cout<<"ntracks "<<ntracks<<endl;
     
@@ -119,7 +124,7 @@ newev:
   if (!MUON) return;
   //       TClonesArray *Particles = gAlice->Particles();
   if (!fReco) {
-    TR = gAlice->TreeR();
+    TR = gime->TreeR();
     if (TR) {
       MUON->ResetRawClusters();
       nent = (Int_t) TR->GetEntries();
@@ -131,7 +136,7 @@ newev:
     } // if (TR)
   } // if (!fReco)
 
-  TTree *TD = gAlice->TreeD();
+  TTree *TD = gime->TreeD();
   //MUON->ResetDigits();
 
   TClonesArray *MUONrawclust;

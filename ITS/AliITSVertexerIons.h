@@ -26,7 +26,7 @@ class AliITSVertexerIons : public AliITSVertexer {
 
  public:
   AliITSVertexerIons();
-  AliITSVertexerIons(TFile *infile, TFile *outfile); 
+  AliITSVertexerIons(TString fn); 
   virtual ~AliITSVertexerIons(); // destructor
   virtual AliITSVertex* FindVertexForCurrentEvent(Int_t event);
   virtual void FindVertices();

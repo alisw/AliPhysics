@@ -33,11 +33,10 @@ class AliTRDdigitsManager : public TObject {
   virtual void                CreateArrays();
   virtual void                ResetArrays();
   virtual void                Copy(TObject &m);
-  virtual Bool_t              Open(const Char_t *file);
-  virtual Bool_t              MakeBranch(const Char_t *file = 0);
-  virtual Bool_t              MakeBranch(TTree *tree, const Char_t *file = 0);
-          void                MakeTreeAndBranches(TFile *treeFile, Int_t iEvent);
-  virtual Bool_t              ReadDigits(TTree *tree = 0);
+
+  virtual Bool_t              MakeBranch(TTree *tree);
+          
+  virtual Bool_t              ReadDigits(TTree *tree);
   virtual Bool_t              WriteDigits();
 
   virtual void                SetRaw();
@@ -66,8 +65,6 @@ class AliTRDdigitsManager : public TObject {
 
   Int_t               fEvent;              //  Event number
 
-  TFile              *fFile;               //! File containing the TRD digits tree
-  Bool_t              fFileCreated;        //! Flag set if file was created by the digits manager
   TTree              *fTree;               //! Tree for the digits arrays
 
   AliTRDsegmentArray *fDigits;             //! Digits data array

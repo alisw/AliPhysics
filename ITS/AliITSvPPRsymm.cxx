@@ -13,211 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.42  2002/10/22 14:46:01  alibrary
-Introducing Riostream.h
-
-Revision 1.41  2002/10/14 14:57:09  hristov
-Merging the VirtualMC branch to the main development branch (HEAD)
-
-Revision 1.38.6.3  2002/10/14 13:14:12  hristov
-Updating VirtualMC to v3-09-02
-
-Revision 1.40  2002/10/02 17:56:35  barbera
-Bug in copy 37 of volume I570 corrected (thanks to J. Belikov)
-
-Revision 1.39  2002/04/13 22:35:52  nilsen
-Now symm is derived from asymm. This minimizes duplicated code because
-only the geometry is different between asymm and symm.
-
-Revision 1.38  2001/11/28 01:35:47  nilsen
-Using standard constructors instead of default constructors for Clusterfinder,
-Response, and FastSimulator.
-
-Revision 1.37  2001/10/22 11:00:54  hristov
-New naming schema of the rotation matrices in BuildGeometry() to avoid redefinition in other detectors (R.Barbera)
-
-Revision 1.36  2001/10/19 21:32:35  nilsen
-Minor changes to remove compliation warning on gcc 2.92.2 compiler, and
-cleanded up a little bit of code.
-
-Revision 1.35  2001/10/19 10:16:28  barbera
-A bug corrected in the definition of a TPCON
-
-Revision 1.34  2001/10/18 12:25:07  barbera
-Detailed geometry in BuildGeometry() commented out (450 MB needed to compile the file). Six cylinders put back but improved by comparison with the ITS coarse geometry
-
-Revision 1.33  2001/10/18 03:09:21  barbera
-The method BuildGeometry() has been completely rewritten. Now display.C can display the detailed ITS geometry instead of the old six dummy cylunders.
-
-Revision 1.32  2001/10/17 04:35:32  barbera
-Checks for the det and chip thickness modified in order to set the dafault values to 200 um if the user chosen values are outside the range 100-300 um
-
-Revision 1.31  2001/10/04 22:33:39  nilsen
-Fixed bugs in SetDefaults.
-
-Revision 1.30  2001/10/01 19:34:09  nilsen
-Fixed a bug in asigning detector types in SetDefaults under SSD layer 6.
-
-Revision 1.29  2001/06/07 14:42:14  barbera
-Both chip and det thicknesses set to [100,300]
-
-Revision 1.28  2001/05/31 19:24:47  barbera
-Default values of SPD detector and chip thickness set to 200 microns as defined by the Technical Board
-
-Revision 1.27  2001/05/30 16:15:47  fca
-Correct comparison wiht AliGeant3::Class() introduced. Thanks to I.Hrivnacova
-
-Revision 1.26  2001/05/30 15:55:35  hristov
-Strings compared instead of pointers
-
-Revision 1.25  2001/05/30 14:04:31  hristov
-Dynamic cast replaced (F.Carminati)
-
-Revision 1.24  2001/05/25 15:59:59  morsch
-Overlaps corrected. (R. Barbera)
-
-Revision 1.22  2001/05/16 08:17:49  hristov
-Bug fixed in the StepManager to account for the difference in the geometry tree for the ITS pixels. This fixes both the funny distribution of pixel coordinates and the missing hits/digits/points in many sectors of the ITS pixel barrel. Also included is a patch to properly get and use the detector dimensions through out the ITS code. (B.Nilsen)
-
-Revision 1.21  2001/05/10 00:12:59  nilsen
-Finished fixing up the default segmentation for the PPR geometry.
-
-Revision 1.20  2001/05/09 01:02:22  nilsen
-Finished fixing SetDefaults for the segmentation of SPD, SDD, and SSD.
-
-Revision 1.19  2001/05/03 08:40:15  barbera
-Volume ITSD slightly modified to be consistent with v5. Some improvement in the printouts. The last commit did not complete successfully.
-
-Revision 1.17  2001/05/01 22:40:42  nilsen
-Partical update of SetDefault.
-
-Revision 1.16  2001/04/22 13:48:09  barbera
-New values of media parameters and thickness of SPD end-ladder electronics as given by Fabio Formenti
-
-Revision 1.15  2001/04/04 07:02:16  barbera
-Position of the cylinders holding rails corrected
-
-Revision 1.14  2001/03/29 22:02:30  barbera
-Some changes to the services due to the new drawings from the engineers.
-
-Revision 1.13  2001/03/29 05:28:56  barbera
-Rails material changed from aluminum to carbon fiber according with the decision of the last Technical Board
-
-Revision 1.12  2001/03/28 06:40:20  barbera
-Central and services mother volumes made consistenf for detailed and coarse geometry. Switch for rails added to the coarse geometries
-
-Revision 1.11  2001/03/23 00:12:23  nilsen
-Set Reading of AliITSgeom data from Geant3 common blocks as the default and
-not a .det file. Removed redundent calls to BuildGeometry.
-
-Revision 1.10  2001/03/15 13:47:55  barbera
-Some service mother volumes modified
-
-Revision 1.9  2001/03/13 18:13:30  barbera
-Some mother volumes sligthly modified to eliminate an overlap with the absorber
-
-Revision 1.8  2001/03/13 08:36:24  hristov
-fabsf replaced by TMath::Abs
-
-Revision 1.7  2001/03/13 00:43:43  barbera
-Updated version of the PPR detailed geometry with symmetric services. Of course, the central part of the detector (volume ITSD and its daughters) is the same of AliITSvPPRasymm.cxx
-
-Revision 1.6  2001/02/13 16:53:35  nilsen
-Fixed a but when trying to use GEANT4. Needed to replace
-if(!((TGeant3*)gMC)) with if(!(dynamic_casst<TGeant3*>(gMC)))
-because just casting gMC to be TGeant3* even when it realy is a TGeant3 pointer
-did not result in a zero value. For AliITSv5asymm and AliITSv5symm, needed
-to fix a bug in the initilizers and a bug in BuildGeometry. This is now done
-in the same way as in AliITSv5.cxx.
-
-Revision 1.5  2001/02/09 20:06:26  nilsen
-Fixed bug in distructor. Can't distroy fixxed length arrays. Thanks Peter.
-
-Revision 1.4  2001/02/09 00:05:31  nilsen
-Added fMajor/MinorVersion variables and made other changes to better make
-use of the new code changes in AliITSgeom related classes.
-
-Revision 1.3  2001/01/30 09:23:13  hristov
-Streamers removed (R.Brun)
-
-Revision 1.2  2001/01/26 20:01:19  hristov
-Major upgrade of AliRoot code
-
-Revision 1.1.2.1  2001/01/15 13:38:32  barbera
-New ITS detailed geometry to be used for the PPR
-
-Revision 1.12  2000/12/10 16:00:44  barbera
-Added last definition of special media like end-ladder boxes and cones
-
-Revision 1.11  2000/10/30 08:02:25  barbera
-PCON's changed into simpler CONS and TUBS. Services now allow for the rails to go through them.
-
-Revision 1.3.2.7  2000/10/27 17:20:00  barbera
-Position of rails w.r.t. the interaction point corrected.
-
-Revision 1.9  2000/10/27 13:31:29  barbera
-Rails between ITS and TPC added.
-
-Revision 1.8  2000/10/27 13:03:08  barbera
-Small changes in the SPD volumes and materials
-
-Revision 1.6  2000/10/16 14:45:37  barbera
-Mother volume ITSD modified to avoid some overlaps
-
-Revision 1.5  2000/10/16 13:49:15  barbera
-Services volumes slightly modified and material added following Pierluigi Barberis' information
-
-Revision 1.4  2000/10/07 15:33:07  barbera
-Small corrections to the ITSV mother volume
-
-Revision 1.3  2000/10/07 13:06:50  barbera
-Some new materials and media defined
-
-Revision 1.2  2000/10/07 10:42:43  barbera
-Mother volume ITSV corrected
-
-Revision 1.1  2000/10/06 23:09:12  barbera
-New  geometry (symmetric services
-
-Revision 1.20  2000/10/02 21:28:08  fca
-Removal of useless dependecies via forward declarations
-
-Revision 1.19  2000/07/10 16:07:19  fca
-Release version of ITS code
-
-Revision 1.14.2.2  2000/05/19 10:09:21  nilsen
-fix for bug with HP and Sun unix + fix for event display in ITS-working branch
-
-Revision 1.14.2.1  2000/03/04 23:45:19  nilsen
-Fixed up the comments/documentation.
-
-Revision 1.14  1999/11/25 06:52:56  fca
-Correct value of drca
-
-Revision 1.13.2.1  1999/11/25 06:52:21  fca
-Correct value of drca
-
-Revision 1.13  1999/10/27 11:16:26  fca
-Correction of problem in geometry
-
-Revision 1.12  1999/10/22 08:25:25  fca
-remove double definition of destructors
-
-Revision 1.11  1999/10/22 08:16:49  fca
-Correct destructors, thanks to I.Hrivnacova
-
-Revision 1.10  1999/10/06 19:56:50  fca
-Add destructor
-
-Revision 1.9  1999/10/05 08:05:09  fca
-Minor corrections for uninitialised variables.
-
-Revision 1.8  1999/09/29 09:24:20  fca
-Introduction of the Copyright and cvs Log
-
-*/
+/* $Id$ */
 
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
@@ -238,46 +34,44 @@ Introduction of the Copyright and cvs Log
 #include <Riostream.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <TMath.h>
+
+#include <TBRIK.h>
+#include <TCanvas.h>
+#include <TClonesArray.h>
+#include <TFile.h>    // only required for Tracking function?
 #include <TGeometry.h>
+#include <TLorentzVector.h>
+#include <TMath.h>
 #include <TNode.h>
+#include <TObjArray.h>
+#include <TObjString.h>
+#include <TPCON.h>
+#include <TSystem.h>
 #include <TTUBE.h>
 #include <TTUBS.h>
-#include <TPCON.h>
-#include <TFile.h>    // only required for Tracking function?
-#include <TCanvas.h>
-#include <TObjArray.h>
-#include <TLorentzVector.h>
-#include <TObjString.h>
-#include <TClonesArray.h>
-#include <TBRIK.h>
-#include <TSystem.h>
+#include <TVirtualMC.h>
 
 #include "AliRun.h"
 #include "AliMagF.h"
 #include "AliConst.h"
 #include "AliITSGeant3Geometry.h"
-#include "AliITShit.h"
-#include "AliITS.h"
-#include "AliITSvPPRsymm.h"
 #include "AliITSgeom.h"
-#include "AliITSgeomSPD.h"
 #include "AliITSgeomSDD.h"
+#include "AliITSgeomSPD.h"
 #include "AliITSgeomSSD.h"
-#include "AliITSDetType.h"
-#include "AliITSresponseSPD.h"
+#include "AliITShit.h"
 #include "AliITSresponseSDD.h"
+#include "AliITSresponseSPD.h"
 #include "AliITSresponseSSD.h"
-#include "AliITSsegmentationSPD.h"
 #include "AliITSsegmentationSDD.h"
+#include "AliITSsegmentationSPD.h"
 #include "AliITSsegmentationSSD.h"
-#include "AliITSsimulationSPD.h"
 #include "AliITSsimulationSDD.h"
+#include "AliITSsimulationSPD.h"
 #include "AliITSsimulationSSD.h"
-#include "AliITSClusterFinderSPD.h"
-#include "AliITSClusterFinderSDD.h"
-#include "AliITSClusterFinderSSD.h"
-
+#include "AliITSvPPRsymm.h"
+#include "AliMagF.h"
+#include "AliRun.h"
 
 ClassImp(AliITSvPPRsymm)
  

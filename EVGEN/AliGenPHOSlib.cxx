@@ -14,42 +14,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.7.10.1  2002/06/10 14:57:41  hristov
-Merged with v3-08-02
-
-Revision 1.10  2002/05/02 09:40:50  morsch
-Recover mods from Rev. 1.8
-
-Revision 1.9  2002/04/23 12:54:29  morsch
-New options kPi0Flat y kEtaFlat (Gustavo Conesa)
-
-Revision 1.7  2001/03/09 13:01:41  morsch
-- enum constants for paramterisation type (particle family) moved to AliGen*lib.h
-- use AliGenGSIlib::kUpsilon, AliGenPHOSlib::kEtaPrime to access the constants
-
-Revision 1.6  2000/11/30 07:12:50  alibrary
-Introducing new Rndm and QA classes
-
-Revision 1.5  2000/06/29 21:08:27  morsch
-All paramatrisation libraries derive from the pure virtual base class AliGenLib.
-This allows to pass a pointer to a library directly to AliGenParam and avoids the
-use of function pointers in Config.C.
-
-Revision 1.4  2000/06/14 15:21:05  morsch
-Include clean-up (IH)
-
-Revision 1.3  2000/06/09 20:32:54  morsch
-All coding rule violations except RS3 corrected
-
-Revision 1.2  1999/11/04 11:30:48  fca
-Improve comments
-
-Revision 1.1  1999/11/03 17:43:20  fca
-New version from G.Martinez & A.Morsch
-
-*/
+/* $Id$ */
 
 //======================================================================
 //  AliGenPHOSlib class contains parameterizations of the

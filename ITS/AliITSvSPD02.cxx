@@ -13,22 +13,8 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.4  2003/04/08 08:16:50  morsch
-AliTrackReference constructor without passing pointer to VMC.
+/* $Id$ */
 
-Revision 1.3  2003/03/21 14:34:10  nilsen
-Removed warning from part of code not properly implimneted yet.
-
-Revision 1.2  2003/02/12 10:39:05  hristov
-Updated AliTrackReference class (S.Radomski)
-
-Revision 1.1  2002/12/05 20:07:25  nilsen
-Adding new SPD 2002 test-beam geometry, with Config file (setup for testing,
-50 pions in one event and not 50 events with one pion).
-
-*/
 #include <Riostream.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -594,7 +580,8 @@ void AliITSvSPD02::SetDefaults(){
 
     //SPD
     iDetType=DetType(kSPD);
-    s0 = (AliITSgeomSPD*) fITSgeom->GetShape(kSPD);// Get shape info. Do it this way for now.
+    // Get shape info. Do it this way for now.
+    s0 = (AliITSgeomSPD*) fITSgeom->GetShape(kSPD);
     AliITSresponse *resp0=new AliITSresponseSPD();
     SetResponseModel(kSPD,resp0);
     AliITSsegmentationSPD *seg0=new AliITSsegmentationSPD(fITSgeom);
@@ -733,6 +720,7 @@ void AliITSvSPD02::StepManager(){
     if(gMC->IsTrackEntering()){
 	position0 = position;
 	stat0 = vol[3];
+	return;
     } // end if IsEntering
     // Fill hit structure with this new hit only for non-entrerance hits.
     else new(lhits[fNhits++]) AliITShit(fIshunt,gAlice->CurrentTrack(),vol,

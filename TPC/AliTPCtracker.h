@@ -11,60 +11,49 @@
 //   Origin: Iouri Belikov, CERN, Jouri.Belikov@cern.ch 
 //-------------------------------------------------------
 #include "AliTracker.h"
+#include "AliConfig.h"
 #include "AliTPCtrack.h"
+#include "AliTPCClustersArray.h"
+
 #include "AliTPCreco.h"
-#include "AliTPCcluster.h"
-#include "AliBarrelTrack.h"
 
 class TFile;
-class TTree;
-class TBranch;
 class AliTPCParam;
-class TObjArray;
-class AliESD;
+class AliRunLoader;
+class AliTPCcluster;
 
 class AliTPCtracker : public AliTracker {
 public:
    AliTPCtracker():AliTracker(),fkNIS(0),fkNOS(0) {
       fInnerSec=fOuterSec=0; fSeeds=0; 
-      fParam = 0;
    }
-   AliTPCtracker(const AliTPCParam *par);
+   AliTPCtracker(const AliTPCParam *par, Int_t eventn=0, 
+                 const char* evfoldname  = AliConfig::fgkDefaultEventFolderName);
   ~AliTPCtracker();
 
    Int_t ReadSeeds(const TFile *in);
 
-   Int_t LoadClusters();
-   Int_t LoadClusters(const TFile *cf);
-   void UnloadClusters();
+   void LoadInnerSectors();
+   void UnloadInnerSectors();
+   void LoadOuterSectors();
+   void UnloadOuterSectors();
 
    AliCluster *GetCluster(Int_t index) const;
-   Int_t Clusters2Tracks(const TFile *in, TFile *out);
-   Int_t Clusters2Tracks(AliESD *event);
-   Int_t PropagateBack(const TFile *in, TFile *out);
-   Int_t PropagateBack(AliESD *event);
-   Int_t PropagateBack(const TFile *in, const TFile *in2, TFile *out);
-   Int_t RefitInward(TFile *outTracks, TFile *inTracks);
+   Int_t Clusters2Tracks();
+   Int_t PropagateBack();
 
    virtual void  CookLabel(AliKalmanTrack *t,Float_t wrong) const; 
+   Int_t LoadClusters(){return 0;}
+   void UnloadClusters(){}
 
 public:
 //**************** Internal tracker class ********************** 
    class AliTPCRow {
    public:
-     AliTPCRow() {
-       fN=0; 
-       fSize=kMaxClusterPerRow/8;
-       fClusterArray=new AliTPCcluster[fSize];
-     }
-     ~AliTPCRow() {delete[] fClusterArray;}
-     void InsertCluster(const AliTPCcluster *c, Int_t sec, Int_t row);
-     void ResetClusters() {fN=0;}
+     AliTPCRow() {fN=0;}
+     void InsertCluster(const AliTPCcluster *c, UInt_t index);
      operator int() const {return fN;}
-     const AliTPCcluster *operator[](Int_t i) const {return fClusters[i];}
-     const AliTPCcluster *GetUnsortedCluster(Int_t i) const {
-       return fClusterArray+i;
-     }
+     const AliTPCcluster* operator[](Int_t i) const {return fClusters[i];}
      UInt_t GetIndex(Int_t i) const {return fIndex[i];}
      Int_t Find(Double_t y) const; 
      void SetX(Double_t x) {fX=x;}
@@ -73,8 +62,6 @@ public:
    private:
      Int_t fN;                                          //number of clusters 
      const AliTPCcluster *fClusters[kMaxClusterPerRow]; //pointers to clusters
-     Int_t fSize;                                 //size of array of clusters
-     AliTPCcluster *fClusterArray;                      //array of clusters
      UInt_t fIndex[kMaxClusterPerRow];                  //indeces of clusters
      Double_t fX;                                 //X-coordinate of this row
 
@@ -86,7 +73,7 @@ public:
 //**************** Internal tracker class ********************** 
    class AliTPCSector {
    public:
-     AliTPCSector() { fN=0; fRow = 0; }
+     AliTPCSector() { fN=0; fRow = 0;}
     ~AliTPCSector() { delete[] fRow; }
      AliTPCRow& operator[](Int_t i) const { return *(fRow+i); }
      Int_t GetNRows() const { return fN; }
@@ -126,8 +113,8 @@ public:
      Double_t fAlpha;                    //opening angle
      Double_t fAlphaShift;               //shift angle;
      Double_t fPadPitchWidth;            //pad pitch width
-     Double_t f1PadPitchLength;          //pad pitch length
-     Double_t f2PadPitchLength;          //pad pitch length
+     Double_t f1PadPitchLength;           //pad pitch length
+     Double_t f2PadPitchLength;            //pad pitch length 
    private:
      AliTPCSector(const AliTPCSector &s);           //dummy copy contructor
      AliTPCSector& operator=(const AliTPCSector &s);//dummy assignment operator
@@ -154,38 +141,25 @@ public:
    };
 
 private:
-
    void MakeSeeds(Int_t i1, Int_t i2);
    Int_t FollowProlongation(AliTPCseed& t, Int_t rf=0);
    Int_t FollowBackProlongation(AliTPCseed &s, const AliTPCtrack &t);
-   Int_t FollowRefitInward(AliTPCseed *seed, AliTPCtrack *track);
 
    AliTPCtracker(const AliTPCtracker& r);           //dummy copy constructor
    AliTPCtracker &operator=(const AliTPCtracker& r);//dummy assignment operator
 
    const Int_t fkNIS;        //number of inner sectors
-   AliTPCSector *fInnerSec;  //array of inner sectors
+   AliTPCSector *fInnerSec;  //array of inner sectors;
    const Int_t fkNOS;        //number of outer sectors
-   AliTPCSector *fOuterSec;  //array of outer sectors
+   AliTPCSector *fOuterSec;  //array of outer sectors;
 
-   Int_t fN;               //number of "active" sectors
-   AliTPCSector *fSectors; //pointer to "active" sectors;
-   
-   AliTPCParam *fParam;      //! TPC parameters for outer reference plane [SR, GSI, 18.02.2003]
-   TObjArray *fSeeds;        //array of track seeds
+   Int_t fN;               //number of loaded sectors
+   AliTPCSector *fSectors; //pointer to loaded sectors;
 
-   // [SR, 01.04.2003]
-   void SetBarrelTree(const char *mode);
-   void StoreBarrelTrack(AliTPCtrack *ps, Int_t refPlane, Int_t isIn);
-
-   // [SR, 01.04.2003]
-   TFile *fBarrelFile;             // file with "barrel" tracks
-   TTree *fBarrelTree;             // tree with "barrel" tracks
-   TBranch *fBarrelBranch;
-   TClonesArray *fBarrelArray;
-   AliBarrelTrack *fBarrelTrack;
-
-  ClassDef(AliTPCtracker,1)   // Time Projection Chamber tracker
+   Int_t fEventN;                      //event number
+   AliTPCClustersArray fClustersArray; //array of TPC clusters
+   TObjArray *fSeeds;                  //array of track seeds
+   TString fEvFolderName;//! name of data folder
 };
 
 #endif

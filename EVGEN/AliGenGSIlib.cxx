@@ -13,40 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
   
-/*
-$Log$
-Revision 1.7  2002/10/14 14:55:35  hristov
-Merging the VirtualMC branch to the main development branch (HEAD)
-
-Revision 1.5.10.1  2002/06/10 14:57:41  hristov
-Merged with v3-08-02
-
-Revision 1.6  2002/04/16 15:53:19  morsch
-Coding rule violations corrected.
-
-Revision 1.5  2001/05/15 15:43:23  morsch
-Update of library for low mass resonances (Yiota Foka)
-
-Revision 1.4  2001/03/09 13:01:41  morsch
-- enum constants for paramterisation type (particle family) moved to AliGen*lib.h
-- use AliGenGSIlib::kUpsilon, AliGenPHOSlib::kEtaPrime to access the constants
-
-Revision 1.3  2000/12/21 16:24:06  morsch
-Coding convention clean-up
-
-Revision 1.2  2000/11/30 07:12:50  alibrary
-Introducing new Rndm and QA classes
-
-Revision 1.1  2000/06/15 08:48:43  morsch
-AliGenGSIlib with parametersations for GSI physics simulation added (YF, MI)
-
-Revision 1.7  2000/05/02 08:12:13  morsch
-Coding rule violations corrected.
-
-Revision 1.6  1999/09/29 09:24:14  fca
-Introduction of the Copyright and cvs Log
-
-*/
+/* $Id$ */
 
 /////////////////////////////////////////////////////////////////////////////
 //                                                                         //

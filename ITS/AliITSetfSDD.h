@@ -2,16 +2,9 @@
 #define ITSETFSDD_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
-/*
-$Log$
-Revision 1.5.10.1  2002/06/10 17:51:15  hristov
-Merged with v3-08-02
 
-Revision 1.6  2002/04/24 22:02:31  nilsen
-New SDigits and Digits routines, and related changes,  (including new
-noise values).
+/* $Id$ */
 
-*/
 #include <TObject.h>
 
 static const Int_t kMaxNofPoles = 5;

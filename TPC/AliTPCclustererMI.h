@@ -26,9 +26,8 @@ class TTree;
 
 class AliTPCclustererMI : public TObject{
 public:
-  AliTPCclustererMI(const AliTPCParam* par);
+  AliTPCclustererMI();
   virtual void Digits2Clusters(const AliTPCParam *par, Int_t eventn=1);
-  virtual void Digits2Clusters(const char* fileName = "AltroFormatDDL.dat");
   virtual void SetInput(TTree * tree);  // set input tree with digits    
   virtual void SetOutput(TTree * tree); //set output tree with 
 private:
@@ -43,7 +42,6 @@ private:
   void AddCluster(AliTPCclusterMI &c);  // add the cluster to the array
   void UnfoldCluster(Int_t * matrix[7], Float_t recmatrix[5][5], 
 		     Float_t & meani, Float_t & meanj, Float_t & sum, Float_t &overlap );
-  void FindClusters();
 
 
 

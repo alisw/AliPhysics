@@ -29,9 +29,9 @@ class  AliPHOSPIDv1 : public AliPHOSPID {
   
 public:
   
-  AliPHOSPIDv1() ;          // ctor            
-  AliPHOSPIDv1(const char* headerFile, const char * tsBranch = "Default", const Bool_t toSplit=kFALSE) ;
-  AliPHOSPIDv1(AliPHOSPIDv1 & pid) ;          // cpy ctor            
+  AliPHOSPIDv1() ;          // ctor   
+  AliPHOSPIDv1(const TString alirunFileNameFile, const TString eventFolderName = AliConfig::fgkDefaultEventFolderName) ;
+  AliPHOSPIDv1(const AliPHOSPIDv1 & pid) ;          // cpy ctor            
   
   virtual ~AliPHOSPIDv1() ; // dtor
   
@@ -67,8 +67,7 @@ public:
   void SetParameterPhotonBoundary(Int_t i, Float_t param);
   void SetParameterPi0Boundary   (Int_t i, Float_t param);
 
-  virtual void Print(Option_t * option) const {}
-  void         Print() ; 
+  void Print() const ; 
 
   virtual const char * Version() const { return "pid-v1" ; }  
 
@@ -90,6 +89,7 @@ private:
   void          PrintRecParticles(Option_t * option) ;
   virtual void  WriteRecParticles(Int_t event) ; 
   void          SetParameters() ; //Fills the matrix of parameters
+  void Unload(); 
 
 private:
 
@@ -107,7 +107,7 @@ private:
   TMatrix    *fParameters;               //! Matrix of identification Parameters
 
 
-  ClassDef( AliPHOSPIDv1,8)  // Particle identifier implementation version 1
+  ClassDef( AliPHOSPIDv1,9)  // Particle identifier implementation version 1
 
 };
 

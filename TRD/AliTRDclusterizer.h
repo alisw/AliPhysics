@@ -8,7 +8,7 @@
 #include <TNamed.h>
 
 class TFile;
-
+class AliRunLoader;
 class AliTRDparameter;
 
 ///////////////////////////////////////////////////////
@@ -25,26 +25,22 @@ class AliTRDclusterizer : public TNamed {
   virtual ~AliTRDclusterizer();
   AliTRDclusterizer &operator=(const AliTRDclusterizer &c);
 
-  virtual void     Copy(TObject &c);
-  virtual Bool_t   Open(const Char_t *name, Int_t nEvent = 0);
-  virtual Bool_t   Open(const Char_t *inname, const Char_t *outname, Int_t nEvent = 0);
-  virtual Bool_t   OpenInput(const Char_t *name, Int_t nEvent = 0);
-  virtual Bool_t   OpenOutput(const Char_t *name);
-  virtual Bool_t   MakeClusters() = 0;
-  virtual Bool_t   WriteClusters(Int_t det);
-
-          void     SetVerbose(Int_t v = 1)                 { fVerbose       = v;   };
-
+  virtual void    Copy(TObject &c);
+  virtual Bool_t  Open(const Char_t *name, Int_t nEvent = 0);
+  
+  virtual Bool_t  OpenInput(Int_t nEvent = 0);
+  virtual Bool_t  OpenOutput();
+  virtual Bool_t  MakeClusters() = 0;
+  virtual Bool_t  WriteClusters(Int_t det);
   virtual void     SetParameter(AliTRDparameter *par)      { fPar           = par; };
+  void     SetVerbose(Int_t v = 1)                 { fVerbose       = v;   };
 
   AliTRDparameter *GetParameter()                    const { return fPar;          };
 
  protected:
 
-  TFile           *fInputFile;     //! AliROOT input file
-  Bool_t           fInputFileCreated;     //! flag set if input file was created
-  TFile           *fOutputFile;    //! AliROOT output file
-  Bool_t           fOutputFileCreated;     //! flag set if output file was created
+  AliRunLoader * fRunLoader;       //! Run Loader
+  
   TTree           *fClusterTree;   //! Tree with the cluster
   AliTRD          *fTRD;           //! The TRD object
   AliTRDparameter *fPar;           //  TRD digitization parameter object

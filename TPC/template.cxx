@@ -13,13 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.1.2.2  2000/04/10 11:40:46  kowal2
-
-Needed for tracking
-
-*/
+/* $Id$ */
 
 static int PropagateTo(TVector &x, Double_t fX, Double_t xk) {
   if (TMath::Abs(x(2)*xk - x(3)) >= 0.999) {

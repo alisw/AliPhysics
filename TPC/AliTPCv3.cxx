@@ -13,117 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.32  2003/01/14 10:50:20  alibrary
-Cleanup of STEER coding conventions
-
-Revision 1.31  2002/11/21 22:43:33  alibrary
-Removing AliMC and AliMCProcess
-
-Revision 1.30  2002/10/14 14:57:43  hristov
-Merging the VirtualMC branch to the main development branch (HEAD)
-
-Revision 1.29.6.2  2002/07/24 10:09:01  alibrary
-Updating VirtualMC
-
-Revision 1.29  2002/01/21 17:12:00  kowal2
-New track hits structure using root containers
-
-Revision 1.28  2001/06/12 07:07:41  kowal2
-New files for folder and stack
-
-Revision 1.27  2001/05/08 16:03:06  kowal2
-Geometry update according to the latest technical spec.
-
-Revision 1.26  2001/04/27 15:23:07  kowal2
-Correct materian in the central part of the inner containment vessel
-
-Revision 1.25  2001/04/26 06:15:12  kowal2
-Corrected bug in the inner containment vessel (cones)
-
-Revision 1.24  2001/04/24 11:22:01  kowal2
-Protection against too small betagamma
-
-Revision 1.23  2001/04/24 11:17:33  kowal2
-New TPC geometry.
-
-Revision 1.22  2001/03/13 13:07:34  kowal2
-Corrected bug in the TPC mother volume geometry.
-Thanks to A. Morsch
-
-Revision 1.21  2000/11/30 11:48:50  kowal2
-TLorentzVector.h adde to satisfy the latest changes by Federico
-
-Revision 1.20  2000/11/14 10:48:57  kowal2
-Correct material used for TSA4. Thanks to J. Barbosa.
-
-Revision 1.19  2000/11/06 17:24:10  kowal2
-Corrected bug in the outer containment vessel and
-the outer field cage geometry.
-Thanks to J. Barbosa.
-
-Revision 1.18  2000/11/02 16:55:24  kowal2
-Corrected bug in the inner containment vessel geometry.
-Thanks to J. Belikov
-
-Revision 1.17  2000/11/02 07:24:11  kowal2
-Correction in the TPC geometry.
-Changes due to the new hit structure.
-
-Revision 1.16  2000/10/02 21:28:18  fca
-Removal of useless dependecies via forward declarations
-
-Revision 1.15  2000/07/10 20:57:39  hristov
-Update of TPC code and macros by M.Kowalski
-
-Revision 1.14  2000/06/30 12:07:50  kowal2
-Updated from the TPC-PreRelease branch
-
-Revision 1.13.2.4  2000/06/26 07:39:42  kowal2
-Changes to obey the coding rules
-
-Revision 1.13.2.3  2000/06/25 08:38:41  kowal2
-Splitted from AliTPCtracking
-
-Revision 1.13.2.2  2000/06/16 12:58:13  kowal2
-Changed parameter settings
-
-Revision 1.13.2.1  2000/06/09 07:15:07  kowal2
-
-Defaults loaded automatically (hard-wired)
-Optional parameters can be set via macro called in the constructor
-
-Revision 1.13  2000/05/15 10:00:30  kowal2
-Corrected bug in the TPC geometry, thanks to Ivana Hrivnacova
-
-Revision 1.12  2000/04/17 09:37:33  kowal2
-removed obsolete AliTPCDigitsDisplay.C
-
-Revision 1.11.8.2  2000/04/10 08:36:12  kowal2
-
-Updated readout chambers
-Some modifications to StepManager by M. Kowalski
-
-Revision 1.11.8.1  2000/04/10 07:56:53  kowal2
-Not used anymore - removed
-
-Revision 1.11  1999/11/04 17:28:07  fca
-Correct barrel part of HV Degrader
-
-Revision 1.10  1999/10/14 16:52:08  fca
-Only use PDG codes and not GEANT ones
-
-Revision 1.9  1999/10/08 06:27:23  fca
-Corrected bug in the HV degrader geometry, thanks to G.Tabary
-
-Revision 1.8  1999/10/04 13:39:55  fca
-Correct array index problem
-
-Revision 1.7  1999/09/29 09:24:34  fca
-Introduction of the Copyright and cvs Log
-
-*/
+/* $Id$ */
 
 //
 ///////////////////////////////////////////////////////////////////////////////
@@ -141,10 +31,11 @@ Introduction of the Copyright and cvs Log
 
 #include <stdlib.h>
 
-#include <TLorentzVector.h>
-#include <TPDGCode.h>
 #include <TInterpreter.h>
+#include <TLorentzVector.h>
 #include <TMath.h>
+#include <TVirtualMC.h>
+#include <TPDGCode.h>
 
 #include "AliConst.h"
 #include "AliRun.h"

@@ -13,12 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.3  2003/03/04 07:36:15  kowal2
-Logs added
-
-*/
+/* $Id$ */
 
 #include "AliTPCPid.h"
 #include "TMath.h"

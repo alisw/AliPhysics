@@ -298,7 +298,7 @@ Double_t AliPHOSJetFinder::Calibrate(const AliPHOSDigit * digit){
 //   }
 //   else{ //simulation
   if(fSimGain==0){ //read simulation parameters
-    AliPHOSGetter * gime = AliPHOSGetter::GetInstance() ;
+    AliPHOSGetter * gime = AliPHOSGetter::Instance() ;
     if(!gime){
       Error("Calibrate","Can not read Calibration parameters") ;
       return 0 ;

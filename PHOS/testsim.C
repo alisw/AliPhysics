@@ -1,4 +1,4 @@
-void testsim (Int_t nevent=100, const char *config="$ALICE_ROOT/PHOS/testconfig.C")
+void testsim (Int_t nevent=1, const char *config="testconfig.C")
 {
   //
   // Simple macro to run aliroot in a batch mode
@@ -18,8 +18,11 @@ void testsim (Int_t nevent=100, const char *config="$ALICE_ROOT/PHOS/testconfig.
   gAlice->Run(nevent);
   timer.Stop();
   timer.Print();
-   cerr<<" ___________________________________________________________________ "<<endl;
+  cerr<<" ___________________________________________________________________ "<<endl;
   cerr<<" "<<endl;
   cerr << "             MESS ==> Simulation ended successfully. " << endl ; 
   cerr<<" ___________________________________________________________________ "<<endl;
+  
+  //delete AliRunLoader::GetRunLoader(AliConfig::fgkDefaultEventFolderName);
+  
 }

@@ -10,7 +10,7 @@ void readVertex(Int_t evNumber=1)
   // Connect the Root Galice file containing Geometry, Kine and Hits
 
   TFile *file =  (TFile*)gROOT->GetListOfFiles()->FindObject("galice.root");
-  if (!file) file = new TFile("~/w0/START/galice.root","UPDATE");
+  if (!file) file = new TFile("production.root","UPDATE");
   
   // Get AliRun object from file or create it if not on file
   if (!gAlice) {

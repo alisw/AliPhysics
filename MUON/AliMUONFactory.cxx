@@ -17,25 +17,8 @@
 //  Factory for muon chambers, segmentations and response //
 ////////////////////////////////////////////////////////////
 
-/*
-$Log$
-Revision 1.4  2002/10/14 14:57:29  hristov
-Merging the VirtualMC branch to the main development branch (HEAD)
+/* $Id$ */
 
-Revision 1.2.10.1  2002/10/11 06:56:47  hristov
-Updating VirtualMC to v3-09-02
-
-Revision 1.3  2002/09/02 14:35:14  morsch
-New segmentation radii for Station 2.
-
-Revision 1.2  2001/05/16 14:57:17  alibrary
-New files for folders and Stack
-
-Revision 1.1  2001/04/06 11:24:43  morsch
-Dependency on implementations of AliSegmentation and AliMUONResponse moved to AliMUONFactory class.
-Static method Build() builds the MUON system out of chambers, segmentation and response.
-
-*/
 #include "AliMUONFactory.h"
 #include "AliMUON.h"
 #include "AliMUONChamber.h"

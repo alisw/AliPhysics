@@ -1,5 +1,5 @@
-#ifndef ALIHBTEvent_H
-#define ALIHBTEvent_H
+#ifndef ALIHBTEVENT_H
+#define ALIHBTEVENT_H
 //__________________________________________________________
 ///////////////////////////////////////////////////////////////////
 //
@@ -36,12 +36,14 @@ class AliHBTEvent: public TObject
     void    Reset(); //deletes all entries
     void    SetOwner(Bool_t owns = kTRUE){ fOwner = owns; }
     Bool_t  IsOwner() {return fOwner;}
-    
+    void    SetRandomized(Bool_t rd = kTRUE){fRandomized = rd;}
+    Bool_t  IsRandomized()const {return fRandomized;}
   protected:
+    Int_t  fSize;       //!current size of the array
     AliHBTParticle ** fParticles; //!array of pointers to the particles
     Int_t  fNParticles; //!number of particles in Event
-    Int_t  fSize;       //!current size of the array
     Bool_t fOwner;      //flag if that event owns the 
+    Bool_t fRandomized; //!flag indicating if particles positions has been already randomizd
     void   Expand();    //expands the array if necessary
 
   private:

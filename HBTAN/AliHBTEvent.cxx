@@ -19,7 +19,12 @@ const UInt_t AliHBTEvent::fgkInitEventSize = 100;
 
 /**************************************************************************/ 
  
-AliHBTEvent::AliHBTEvent()
+AliHBTEvent::AliHBTEvent():
+ fSize(fgkInitEventSize),
+ fParticles(new AliHBTParticle* [fSize]),
+ fNParticles(0),
+ fOwner(kTRUE),
+ fRandomized(kFALSE)
  {
 //default constructor   
   if(fgkInitEventSize<1) 
@@ -29,10 +34,6 @@ AliHBTEvent::AliHBTEvent()
            fgkInitEventSize);
 
    }
-  fSize=fgkInitEventSize;
-  fParticles = new AliHBTParticle* [fSize];
-  fNParticles = 0;
-  fOwner = kTRUE;
  }
 /**************************************************************************/ 
 

@@ -4,6 +4,8 @@
  * See cxx source for full Copyright notice                               */
 
 /* $Id$ */
+/* $Id$ */
+
 
 ////////////////////////////////////////////////
 //  AliDetector Class for MUON subsystem      //
@@ -56,7 +58,7 @@ class AliMUON : public  AliDetector {
     TClonesArray  *PadHits() {return fPadHits;}
     TClonesArray  *LocalTrigger() {return fLocalTrigger;}
     TClonesArray  *GlobalTrigger() {return fGlobalTrigger;}
-    virtual void   MakeBranch(Option_t *opt=" ", const char *file=0);
+    virtual void   MakeBranch(Option_t *opt=" ");
     virtual void   MakeBranchInTreeD(TTree *treeD, const char *file=0);
     void           SetTreeAddress();
     virtual void   ResetHits();
@@ -132,18 +134,18 @@ class AliMUON : public  AliDetector {
  protected:
     Int_t                 fNCh;                // Number of chambers   
     Int_t                 fNTrackingCh;        // Number of tracking chambers
-    TObjArray            *fChambers;           // List of Tracking Chambers
-    TObjArray            *fTriggerCircuits;    // List of Trigger Circuits
+    TObjArray            *fChambers;           //! List of Tracking Chambers
+    TObjArray            *fTriggerCircuits;    //! List of Trigger Circuits
     Int_t                 fNPadHits;           // Number of pad hits
-    TClonesArray         *fPadHits;            // List of pad hits
-    TObjArray            *fDchambers;          // List of digits
+    TClonesArray         *fPadHits;            //! List of pad hits
+    TObjArray            *fDchambers;          //! List of digits
     Int_t                *fNdch;               // [fNCh] Number of digits per chamber
-    TObjArray            *fRawClusters;        // List of raw clusters
+    TObjArray            *fRawClusters;        //! List of raw clusters
     Int_t                *fNrawch;             // [fNTrackingCh] Number of raw clusters  per chamber
     Int_t                 fNLocalTrigger;      // Number of Local Trigger 
-    TClonesArray         *fLocalTrigger;       // List of Local Trigger      
+    TClonesArray         *fLocalTrigger;       //! List of Local Trigger      
     Int_t                 fNGlobalTrigger;     // Number of Global Trigger
-    TClonesArray         *fGlobalTrigger;      // List of Global Trigger  
+    TClonesArray         *fGlobalTrigger;      //! List of Global Trigger  
     
 //
     Bool_t   fAccCut;          //Transport acceptance cut
@@ -166,7 +168,7 @@ class AliMUON : public  AliDetector {
    Text_t *fFileName;           // ! File with background hits
    AliMUONMerger *fMerger;   // ! pointer to merger
 
-   ClassDef(AliMUON,2)  // MUON Detector base class
+   ClassDef(AliMUON,3)  // MUON Detector base class
 };
 #endif
 

@@ -126,7 +126,6 @@ void AliMagFMaps::ReadField()
       fFieldMap[2] = dynamic_cast<AliFieldMap*>(file->Get("ExtB02"));
       file->Close();
       delete file;
-
   } else if (fMap == k4kG) {
       if (fL3Option) {
 	  fSolenoid = 4.;
@@ -224,9 +223,9 @@ void AliMagFMaps::Field(Float_t *x, Float_t *b)
 	  return;
     }
   } else if (fFieldMap[1]->Inside(x[0], x[1], x[2])) {
-      map = fFieldMap[1];
+    map = fFieldMap[1];
   } else if (fFieldMap[2]->Inside(x[0], x[1], x[2])) {
-      map = fFieldMap[2];
+    map = fFieldMap[2];
   }
   
   if(map){

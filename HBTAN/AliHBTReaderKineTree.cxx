@@ -1,7 +1,6 @@
 #include "AliHBTReaderKineTree.h"
 
 #include <Riostream.h>
-//#include <Riostream.h>
 #include <TString.h>
 #include <TObjString.h>
 #include <TTree.h>
@@ -9,6 +8,7 @@
 #include <TParticle.h>
 
 #include <AliRun.h>
+#include <AliRunLoader.h>
 #include <AliStack.h>
 #include <AliHeader.h>
 
@@ -19,9 +19,9 @@
 
 ClassImp(AliHBTReaderKineTree)
 /**********************************************************/
+const TString AliHBTReaderKineTree::fgkEventFolderName("HBTReaderKineTree");
 
-AliHBTReaderKineTree::
-AliHBTReaderKineTree():fFileName("galice.root")
+AliHBTReaderKineTree::AliHBTReaderKineTree():fFileName("galice.root")
 {
   fParticles = new AliHBTRun();
   fIsRead = kFALSE;
@@ -101,24 +101,22 @@ Read(AliHBTRun* particles, AliHBTRun *tracks)
  do  //do{}while; is OK even if 0 dirs specified. In that case we try to read from "./"
   { 
     cout<<"________________________________________________________\n";
-    TFile* fileK = OpenFile(currentdir);
-    TTree* treeE = (TTree*)fileK->Get("TE");
-    if(treeE) 
+    AliRunLoader * rl = OpenFile(currentdir);
+
+    if (rl == 0x0)
      {
-      Nevents = (Int_t)treeE->GetEntries();
-      cout<<"Found "<<Nevents<<" in directory "<<GetDirName(currentdir)<<endl;
-      fileK->Delete("TE");
+      Error("Read","Cannot open session");
+      return 2;
      }
-    else
-     {
-      Error("Read","Cannot find Header Tree (TE)");
-      Nevents = 0;
-     }
+    rl->LoadHeader();
+    rl->LoadKinematics("READ");
+    Nevents = rl->GetNumberOfEvents();
     
     for(Int_t currentEvent =0; currentEvent<Nevents;currentEvent++)//loop over all events
      {
 //      cout<<"processing event "<<currentEvent<<" in current dir."<<endl;
-      AliStack* stack = GetStack(currentEvent,fileK);
+      rl->GetEvent(currentEvent);
+      AliStack* stack = rl->Stack();
       if (!stack)
        {
          Error("Read","Can not get stack for event %d",currentEvent);
@@ -130,10 +128,10 @@ Read(AliHBTRun* particles, AliHBTRun *tracks)
        {
          
          TParticle * p = stack->Particle(i);
-         if (p->GetFirstMother() >= 0) continue;
+//         if (p->GetFirstMother() >= 0) continue; do not apply with pythia etc
          
          if(Pass(p->GetPdgCode())) continue; //check if we are intersted with particles of this type 
-                                              //if not take next partilce
+                                             //if not take next partilce
          
          AliHBTParticle* part = new AliHBTParticle(*p,i);
          if(Pass(part)) { delete part; continue;}//check if meets all criteria of any of our cuts
@@ -148,63 +146,16 @@ Read(AliHBTRun* particles, AliHBTRun *tracks)
          nnn++;
        }
       cout<<"Total read "<<nnn<<endl;
-      delete stack;
       totalNevents++;
      }
-    delete gAlice;
-    gAlice = 0;
-    if (fileK) 
-     {
-      fileK->Close();
-      delete fileK;
-      fileK = 0;
-     }
-    
-    currentdir++;
+     delete rl;
+     currentdir++;
   }while(currentdir < Ndirs);//end of loop over directories specified in fDirs Obj Array
  fIsRead = kTRUE;
  return 0;
 }
 
-/**********************************************************/
-AliStack* AliHBTReaderKineTree::GetStack(Int_t n, TFile* file)
-{
-  AliHeader *header =  new AliHeader();
-  TTree* treeE = (TTree*)file->Get("TE");
-  if(treeE) 
-   {
-    treeE->SetBranchAddress("Header", &header);
-    if (!treeE->GetEntry(n)) 
-     {
-       Error("GetEvent","Cannot find event:%dn",n);
-       delete header;
-       treeE->Delete("TE");
-       return 0x0;
-     }
-   }  
-  else 
-   {
-     Error("GetStack","Cannot find Header Tree (TE)n");
-     delete header;
-     return 0x0;
-   }
-
-  AliStack* stack = header->Stack();
-  if (stack) 
-   {
-    if (!stack->GetEvent(n)) 
-     {
-       delete header;
-       treeE->Delete("TE");
-       return 0x0;
-     }
-   }
-  delete header;
-  treeE->Delete("TE");
-  return stack;
-}
-
-TFile* AliHBTReaderKineTree::OpenFile(Int_t n)
+AliRunLoader* AliHBTReaderKineTree::OpenFile(Int_t n)
 {
 //opens file with kine tree
 
@@ -215,16 +166,12 @@ TFile* AliHBTReaderKineTree::OpenFile(Int_t n)
    return 0x0;
   }
  TString filename = dirname +"/"+ fFileName;
- TFile *ret = TFile::Open(filename.Data()); 
+
+ AliRunLoader *ret = AliRunLoader::Open(filename.Data(),fgkEventFolderName,"READ"); 
 
  if ( ret == 0x0)
   {
-    Error("OpenFiles","Can't open file %s",filename.Data());
-    return 0x0;
-  }
- if (!ret->IsOpen())
-  {
-    Error("OpenFiles","Can't open file  %s",filename.Data());
+    Error("OpenFiles","Can't open session from file %s",filename.Data());
     return 0x0;
   }
  

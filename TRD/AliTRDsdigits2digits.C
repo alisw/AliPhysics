@@ -26,19 +26,21 @@ void AliTRDsdigits2digits()
   // Initialize the geometry 
   digitizer->Open(fileName);
 
+  AliRunLoader* rl = AliRunLoader::GetRunLoader(AliConfig::fgkDefaultEventFolderName);
+  AliLoader* loader = rl->GetLoader("TRDLoader");
   // Define the parameter object
   // If no external parameter object is defined, 
   // default parameter will be used
-  AliTRDparameter *parameter = new AliTRDparameter("TRDparameter"
-						  ,"TRD parameter class");
+  AliTRDparameter *parameter = new AliTRDparameter("TRDparameter","TRD parameter class");
   digitizer->SetParameter(parameter);
 
   // Create the digits manager for the input s-digits
   AliTRDdigitsManager *sdigitsManager = new AliTRDdigitsManager();
   sdigitsManager->SetDebug(1);
   sdigitsManager->SetSDigits(kTRUE);
-  sdigitsManager->ReadDigits();
-
+  if (loader->TreeS() == 0x0) loader->LoadSDigits();
+  
+  sdigitsManager->ReadDigits(loader->TreeS());
   // Add the s-digits to the input list 
   digitizer->AddSDigitsManager(sdigitsManager);
 
@@ -49,6 +51,8 @@ void AliTRDsdigits2digits()
   digitizer->WriteDigits();
 
   // Save the parameter object in the AliROOT file
+
+  rl->CdGAFile();
   parameter->Write();
 
 }

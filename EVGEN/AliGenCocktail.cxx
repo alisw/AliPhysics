@@ -13,56 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.18  2003/03/24 16:38:40  morsch
-Bug corrected.
-
-Revision 1.17  2003/03/24 15:58:27  morsch
-FinishRun() implemented.
-
-Revision 1.16  2003/01/14 10:50:18  alibrary
-Cleanup of STEER coding conventions
-
-Revision 1.15  2003/01/07 14:13:22  morsch
-Communication between generators provising and requesting collision
-geometries.
-
-Revision 1.14  2002/02/08 16:50:50  morsch
-Add name and title in constructor.
-
-Revision 1.13  2001/10/21 18:35:56  hristov
-Several pointers were set to zero in the default constructors to avoid memory management problems
-
-Revision 1.12  2001/06/18 13:07:30  morsch
-Forward kinematic ranges to entries only if not set by user.
-
-Revision 1.11  2001/01/30 09:23:12  hristov
-Streamers removed (R.Brun)
-
-Revision 1.10  2001/01/26 19:55:49  hristov
-Major upgrade of AliRoot code
-
-Revision 1.9  2000/12/21 16:24:06  morsch
-Coding convention clean-up
-
-Revision 1.8  2000/10/27 13:53:29  morsch
-AddGenerator: check testbit before setting the pT and momentum range
-(D.Y. Peressounko)
-
-Revision 1.7  2000/10/02 15:15:41  morsch
-Use default streamer for AliGenCocktail
-
-Revision 1.6  2000/09/07 17:04:31  morsch
-In Streamer: TIter() after R__b << fEntries (Dmitri Yurevitch Peressounko)
-
-Revision 1.5  2000/06/09 20:28:51  morsch
-All coding rule violations except RS3 corrected (AM)
-
-Revision 1.4  1999/09/29 09:24:12  fca
-Introduction of the Copyright and cvs Log
-
-*/
+/* $Id$ */
 
 // Container class for AliGenerator through recursion.
 // Container is itself an AliGenerator.

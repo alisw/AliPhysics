@@ -6,10 +6,13 @@
 /* $Id$ */
 
 #include "AliGenReader.h"
-class TFile;
-class AliStack;
-class AliHeader;
+#include "AliStack.h"
 
+class TFile;
+class AliHeader;
+class AliRunLoader;
+class TString;
+class TObjArray;
 
 class AliGenReaderTreeK : public AliGenReader
 {
@@ -23,19 +26,35 @@ class AliGenReaderTreeK : public AliGenReader
     virtual Int_t NextEvent();
     virtual TParticle*  NextParticle();
     virtual void RewindEvent();
+    virtual void SetOnlyPrimaries(Bool_t flag){fOnlyPrimaries = flag;}
     AliGenReaderTreeK & operator=(const AliGenReaderTreeK & rhs);
-    
+    void SetDirs(TObjArray* dirs){fDirs = dirs;} //sets array directories names
+    void AddDir(const char* dirname);
  protected:
     Int_t             fNcurrent;          // points to the next entry
     Int_t             fNparticle;         // Next particle in list
     Int_t             fNp;                // number of particles
-    TFile            *fFile;              //! pointer to file
+    AliRunLoader     *fInRunLoader;       //!Run Loader of the input event
     TFile            *fBaseFile;          //! pointer to base file
     AliStack         *fStack;             //! Particle stack
-    AliHeader        *fHeader;            //! Pointer to event header
-    TTree            *fTreeE;             //! Pointer to header tree
+    Bool_t            fOnlyPrimaries;     // Flag indicating wether only primaries are read
+    TObjArray        *fDirs;              //arry with directories to read data from
+    Int_t             fCurrentDir;        //Number of current directory
+    static const TString fgkEventFolderName;//!name of folder where event to read is mounted
+    
+    TString&   GetDirName(Int_t entry);
+    TParticle* GetParticle(Int_t i);
+    
     ClassDef(AliGenReaderTreeK,1) // Read particles from TreeK
 };
+
+inline 
+TParticle* AliGenReaderTreeK::GetParticle(Int_t i)
+ {
+  if (fStack && i<fNp) return fStack->Particle(i);
+  return 0x0;
+ }
+
 #endif
 
 

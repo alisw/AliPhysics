@@ -8,22 +8,44 @@
 #include <AliHeader.h>
 #include <AliGenEventHeader.h>
 #include <AliITSVertexerPPZ.h>
+#include <AliRunLoader.h>
+#include <AliITSLoader.h>
 
 #endif
 
-void AliITSVertexerZTest(Float_t delphi=0.05,Float_t window=3.,Float_t initx=0., Float_t inity=0.,TString FileWithKine="galice.root", TString FileWithRecP="galice.root"){
+void AliITSVertexerZTest(Float_t delphi=0.05,Float_t window=3.,Float_t initx=0., Float_t inity=0.,TString FileIn="galice.root"){
   // delphi ---> azimuthal range to accept tracklets
   // window ---> window in Z around the peak of tracklets proj. in mm
-  Int_t kDebug = 0;
+  Int_t kDebug = 50;
   TH2F *diff2 = new TH2F("diff2","Zfound vs Ztrue",100,-6,6,100,-6,6); 
   TH1F *diff1 = new TH1F("diff1","Zfound - Ztrue(#mu m)",100,-500,500);
   delete gAlice;
   gAlice = 0;
-  TFile *in = new TFile(FileWithKine.Data());
-  gAlice = (AliRun*)in->Get("gAlice");
-  if(FileWithKine != FileWithRecP)gAlice->SetTreeRFileName(FileWithRecP);
-  TFile *fo = new TFile("vertici.root","recreate");
-  AliITSVertexerPPZ *dovert = new AliITSVertexerPPZ(in,fo,initx,inity);
+  AliRunLoader *rl = AliRunLoader::Open(FileIn.Data());
+  Int_t retval = rl->LoadgAlice();
+  if(retval){
+    cerr<<"AliITSVertexerZTest.C: AliRun object not found"<<endl;
+    return;
+  }
+  retval = rl->LoadHeader();
+  if (retval){
+    cerr<<"AliITSVertexerZTest.C : LoadHeader returned error"<<endl;
+    return;
+  }
+  retval = rl->LoadKinematics();
+  if (retval){
+    cerr<<"AliITSVertexerZTest.C : LoadKinematics returned error"<<endl;
+    return;
+  }
+  AliITSLoader* ITSloader =  (AliITSLoader*) rl->GetLoader("ITSLoader");
+
+  if(!ITSloader){
+    cerr<<"AliITSVertexerZTest.C :  ITS loader not found"<<endl;
+    return;
+  }
+  //  ITSloader->LoadRecPoints("read");
+  //  TFile *fo = new TFile("vertici.root","recreate");
+  AliITSVertexerPPZ *dovert = new AliITSVertexerPPZ("default",initx,inity);
   dovert->SetDebug(0);
   dovert->SetDiffPhiMax(delphi);
   dovert->SetWindow(window);
@@ -33,10 +55,10 @@ void AliITSVertexerZTest(Float_t delphi=0.05,Float_t window=3.,Float_t initx=0.,
   Int_t meno110=0;
   Int_t sigmazero=0;
   AliITSVertex *vert = 0;
-  for(Int_t i=0; i<gAlice->TreeE()->GetEntries(); i++){
-    gAlice->GetEvent(i);
+  for(Int_t i=0; i<rl->TreeE()->GetEntries(); i++){
+    rl->GetEvent(i);
     // The true Z coord. is fetched for comparison
-    AliHeader *header = gAlice->GetHeader();
+    AliHeader *header = rl->GetHeader();
     AliGenEventHeader* genEventHeader = header->GenEventHeader();
     TArrayF primaryVertex(3);
     genEventHeader->PrimaryVertex(primaryVertex);
@@ -75,10 +97,6 @@ void AliITSVertexerZTest(Float_t delphi=0.05,Float_t window=3.,Float_t initx=0.,
       dovert->WriteCurrentVertex();
     }
   }
-  in->Close();
-  fo->Close();
-  delete in;
-  delete fo;
   if(kDebug>0){
     cout<<"Number of bad vertices with code  -100: "<<meno100<<endl;
     cout<<"Number of bad vertices with code  -110: "<<meno110<<endl;

@@ -36,7 +36,7 @@ public:
 
   virtual void   AddImpact(char* detector, Int_t shunt, Int_t primary, Int_t track,
 			   Int_t module, Int_t pid, TLorentzVector p, Float_t *xyz) ;
-  virtual void   MakeBranch(Option_t *opt=" ", const char *file=0) ;
+  virtual void   MakeBranch(Option_t *opt=" ");
   virtual void   ResetHits();
   virtual Int_t  IsVersion(void) const {
     // Gives the version number 

@@ -13,25 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.5  2002/10/23 07:24:56  alibrary
-Introducing Riostream.h
-
-Revision 1.4  2000/11/20 21:44:17  pcrochet
-some modifications to account for the new class AliMUONResponseTriggerV1
-
-Revision 1.3  2000/07/03 11:54:57  morsch
-AliMUONSegmentation and AliMUONHitMap have been replaced by AliSegmentation and AliHitMap in STEER
-The methods GetPadIxy and GetPadXxy of AliMUONSegmentation have changed name to GetPadI and GetPadC.
-
-Revision 1.2  2000/06/15 07:58:48  morsch
-Code from MUON-dev joined
-
-Revision 1.1.2.1  2000/06/09 21:48:28  morsch
-Code from AliMUONSegResTrigger.cxx
-
-*/
+/* $Id$ */
 
 #include "AliMUONResponseTrigger.h"
 #include "AliSegmentation.h"

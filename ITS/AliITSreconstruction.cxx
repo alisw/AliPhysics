@@ -13,35 +13,8 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
  
-/*
-$Log$
-Revision 1.3.6.2  2002/10/14 13:14:08  hristov
-Updating VirtualMC to v3-09-02
+/* $Id$ */
 
-Revision 1.6  2002/09/09 17:30:02  nilsen
-Added new creator which passes a pointer to type AliRun. Can now use either
-gAlice or a local instance of AliRun.
-
-Revision 1.5  2002/05/13 14:27:57  hristov
-TreeC created once per event (M.Masera)
-
-Revision 1.4  2002/05/10 22:31:30  nilsen
-Changes by Massimo Masera to allow Recpoints and Clusters to be written
-to separate files.
-
-Revision 1.3  2002/02/06 13:52:27  barbera
-gAlice deletion corrected (from M. Masera)
-
-Revision 1.2  2002/01/31 18:52:09  nilsen
-Minor change to allow the use of files that are already open. grun.C macro
-that also does ITS digitizationa and Reconstruction all in one go.
-
-Revision 1.1  2002/01/30 22:20:22  nilsen
-New TTask based method to do Digits To clusters. Works with files of multiple
-events in the file. Macro added to show how to use. Also the changes made
-in the nessesary complilation files.
-
-*/
 #include <TROOT.h>
 #include <TFile.h>
 #include <TSeqCollection.h>
@@ -49,9 +22,11 @@ in the nessesary complilation files.
 #include <TClonesArray.h>
 
 #include "AliRun.h"
+#include "AliRunLoader.h"
 
 #include "AliITS.h"
 #include "AliITSDetType.h"
+#include "AliITSLoader.h"
 #include "AliITSreconstruction.h"
 #include "AliITSsegmentationSPD.h"
 #include "AliITSsegmentationSDD.h"
@@ -65,7 +40,15 @@ in the nessesary complilation files.
 ClassImp(AliITSreconstruction)
 
 //______________________________________________________________________
-AliITSreconstruction::AliITSreconstruction(){
+AliITSreconstruction::AliITSreconstruction():
+ fInit(kFALSE),
+ fEnt(0),
+ fEnt0(0),
+ fITS(0x0),
+ fDfArp(kFALSE),
+ fLoader(0x0),
+ fRunLoader(0x0)
+{
     // Default constructor.
     // Inputs:
     //  none.
@@ -73,38 +56,31 @@ AliITSreconstruction::AliITSreconstruction(){
     //   none.
     // Return:
     //    A zero-ed constructed AliITSreconstruction class.
-
-    fFilename = "";
-    fFile     = 0;
-    fFile2    = 0;
-    fITS      = 0;
     fDet[0] = fDet[1] = fDet[2] = kTRUE;
-    fInit     = kFALSE;
-    fArp      = 0;
-    fDfArp    = kFALSE;
 }
 //______________________________________________________________________
-AliITSreconstruction::AliITSreconstruction(AliRun *ar){
-    // Standard constructor.
-    // Inputs:
-    //  AliRun *ar   Pointer to an existing AliRun object. Assumed that
-    //               this AliRun object will not be deleted by this distructor.
-    // Outputs:
-    //   none.
-    // Return:
-    //    A standardly constructed AliITSreconstruction class.
 
-    fFilename = "";
-    fFile     = 0;
-    fFile2    = 0;
-    fITS      = 0;
-    fDet[0] = fDet[1] = fDet[2] = kTRUE;
-    fInit     = kFALSE;
-    fDfArp    = kFALSE;
-    fArp      = ar;
+AliITSreconstruction::AliITSreconstruction(AliRunLoader *rl):
+ fInit(kFALSE),
+ fEnt(0),
+ fEnt0(0),
+ fITS(0x0),
+ fDfArp(kFALSE),
+ fLoader(0x0),
+ fRunLoader(rl)
+{
+  fDet[0] = fDet[1] = fDet[2] = kTRUE;
 }
 //______________________________________________________________________
-AliITSreconstruction::AliITSreconstruction(const char* filename){
+AliITSreconstruction::AliITSreconstruction(const char* filename):
+ fInit(kFALSE),
+ fEnt(0),
+ fEnt0(0),
+ fITS(0x0),
+ fDfArp(kFALSE),
+ fLoader(0x0),
+ fRunLoader(0x0)
+{
     // Standard constructor.
     // Inputs:
     //  const char* filename    filename containing the digits to be
@@ -117,43 +93,29 @@ AliITSreconstruction::AliITSreconstruction(const char* filename){
     // Return:
     //    A standardly constructed AliITSreconstruction class.
 
-    fFilename = filename;
-    fFile2 = 0;
-    fFile = 0;
-    fArp      = 0;
-    fDfArp    = kTRUE;
-    if(filename){
-	fFile = (TFile*)gROOT->GetListOfFiles()->FindObject(fFilename.Data());
-	if(fFile) fFile->Close();
-	fFile = new TFile(fFilename.Data(),"UPDATE");
-    if(fArp) {
-      delete fArp;
-      fArp = 0;
-    }
-	fArp = (AliRun*)fFile->Get("gAlice");
-	if(!fArp) {
-	    cout << "gAlice not found on file. Aborting." << endl;
-	    fInit = kFALSE;
-	    return;
-	} // end if !fArp
-    } // end if !filename.
+    fDet[0] = fDet[1] = fDet[2] = kTRUE;
+
+    fRunLoader = AliRunLoader::Open(filename);
+    if (fRunLoader == 0x0)
+     {
+       Error("AliITSreconstruction","Can not load the session",filename);
+       return;
+     }
+    fRunLoader->LoadgAlice();
+    gAlice = fRunLoader->GetAliRun();
+
+    if(!gAlice) {
+          Error("AliITSreconstruction","gAlice not found on file. Aborting.");
+          fInit = kFALSE;
+          return;
+      } // end if !gAlice
+
 }
 //______________________________________________________________________
 AliITSreconstruction::~AliITSreconstruction(){
-    // Default constructor.
-    // Inputs:
-    //  none.
-    // Outputs:
-    //   none.
-    // Return:
     //    A destroyed AliITSreconstruction class.
-
-    if(fFile) fFile->Close();
-    fFile     = 0;
+    delete fRunLoader;
     fITS      = 0;
-    if(fDfArp){
-	if(fArp) delete fArp;
-    } // end if
 }
 //______________________________________________________________________
 Bool_t AliITSreconstruction::Init(){
@@ -164,28 +126,51 @@ Bool_t AliITSreconstruction::Init(){
     //   none.
     // Return:
     //    kTRUE if no errors initilizing this class occurse else kFALSE
-    Int_t nparticles;
-    fITS = (AliITS*) fArp->GetDetector("ITS");
+    Info("Init","");
+    if (fRunLoader == 0x0)
+     {
+       Error("Init","Run Loader is NULL");
+       return kFALSE;
+     }
+    fRunLoader->LoadgAlice();
+    fRunLoader->LoadHeader();  
+
+    fLoader = (AliITSLoader*) fRunLoader->GetLoader("ITSLoader");
+    if(!fLoader) {
+      Error("Init","ITS loader not found");
+      fInit = kFALSE;
+    }
+
+    //Int_t retcode;
+    fITS = (AliITS*) gAlice->GetDetector("ITS");
     if(!fITS){
-	cout << "ITS not found aborting. fITS=" << fITS << endl;
-	fInit = kFALSE;
-	return fInit;
+      cout << "ITS not found aborting. fITS=" << fITS << endl;
+      fInit = kFALSE;
+      return fInit;
     } // end if !fITS
     if(!(fITS->GetITSgeom())){
-	cout << "ITSgeom not found aborting."<< endl;
-	fInit = kFALSE;
-	return fInit;
+      cout << "ITSgeom not found aborting."<< endl;
+      fInit = kFALSE;
+      return fInit;
     } // end if !GetITSgeom()
     // Now ready to init.
 
     fDet[0] = fDet[1] = fDet[2] = kTRUE;
     fEnt0 = 0;
-    fEnt  = fArp->GetEventsPerRun();
-    fITS->MakeTreeC();
-    nparticles = fArp->GetEvent(fEnt0);
-    
-    // finished init.
+
+    fEnt  = gAlice->GetEventsPerRun();
+
+    fLoader->LoadDigits("read");
+    fLoader->LoadRecPoints("recreate");
+    fLoader->LoadRawClusters("recreate");
+    if (fLoader->TreeR() == 0x0) fLoader->MakeTree("R");
+    fITS->MakeBranch("R");
+    fITS->MakeBranchC();
+    fITS->SetTreeAddress();
     fInit = InitRec();
+
+    Info("Init","  Done\n\n\n");
+
     return fInit;
 }
 //______________________________________________________________________
@@ -201,41 +186,42 @@ Bool_t AliITSreconstruction::InitRec(){
 
     // SPD
     if(fDet[kSPD]){
-	idt = fITS->DetType(kSPD);
-	AliITSsegmentationSPD *segSPD = (AliITSsegmentationSPD*)
-	                                       idt->GetSegmentationModel();
-	TClonesArray *digSPD = fITS->DigitsAddress(kSPD);
-	TClonesArray *recpSPD = fITS->ClustersAddress(kSPD);
-	AliITSClusterFinderSPD *recSPD = new AliITSClusterFinderSPD(segSPD,
-								    digSPD,
-								    recpSPD);
-	fITS->SetReconstructionModel(kSPD,recSPD);
+      Info("InitRec","SPD");
+      idt = fITS->DetType(kSPD);
+      AliITSsegmentationSPD *segSPD = (AliITSsegmentationSPD*)idt->GetSegmentationModel();
+      TClonesArray *digSPD = fITS->DigitsAddress(kSPD);
+      TClonesArray *recpSPD = fITS->ClustersAddress(kSPD);
+      Info("InitRec","idt = %#x; digSPD = %#x; recpSPD = %#x",idt,digSPD,recpSPD);
+      AliITSClusterFinderSPD *recSPD = new AliITSClusterFinderSPD(segSPD,digSPD,recpSPD);
+      fITS->SetReconstructionModel(kSPD,recSPD);
     } // end if fDet[kSPD].
     // SDD
     if(fDet[kSDD]){
-	idt = fITS->DetType(kSDD);
-	AliITSsegmentationSDD *segSDD = (AliITSsegmentationSDD*)
-	                                   idt->GetSegmentationModel();
-	AliITSresponseSDD *resSDD = (AliITSresponseSDD*)
-	                                   idt->GetResponseModel();
-	TClonesArray *digSDD = fITS->DigitsAddress(kSDD);
-	TClonesArray *recpSDD = fITS->ClustersAddress(kSDD);
-	AliITSClusterFinderSDD *recSDD =new AliITSClusterFinderSDD(segSDD,
-								   resSDD,
-							       digSDD,recpSDD);
-	fITS->SetReconstructionModel(kSDD,recSDD);
+      Info("InitRec","SDD");
+      idt = fITS->DetType(kSDD);
+      AliITSsegmentationSDD *segSDD = (AliITSsegmentationSDD*)
+                                         idt->GetSegmentationModel();
+      AliITSresponseSDD *resSDD = (AliITSresponseSDD*)
+                                         idt->GetResponseModel();
+      TClonesArray *digSDD = fITS->DigitsAddress(kSDD);
+      TClonesArray *recpSDD = fITS->ClustersAddress(kSDD);
+      AliITSClusterFinderSDD *recSDD =new AliITSClusterFinderSDD(segSDD,
+                                                   resSDD,
+                                                 digSDD,recpSDD);
+      fITS->SetReconstructionModel(kSDD,recSDD);
     } // end if fDet[kSDD]
     // SSD
     if(fDet[kSSD]){
-	idt = fITS->DetType(kSSD);
-	AliITSsegmentationSSD *segSSD = (AliITSsegmentationSSD*)
-	                                 idt->GetSegmentationModel();
-	TClonesArray *digSSD = fITS->DigitsAddress(kSSD);
-	AliITSClusterFinderSSD *recSSD =new AliITSClusterFinderSSD(segSSD,
-								   digSSD);
-	fITS->SetReconstructionModel(kSSD,recSSD);
+      Info("InitRec","SSD");
+      idt = fITS->DetType(kSSD);
+      AliITSsegmentationSSD *segSSD = (AliITSsegmentationSSD*)
+                                       idt->GetSegmentationModel();
+      TClonesArray *digSSD = fITS->DigitsAddress(kSSD);
+      AliITSClusterFinderSSD *recSSD =new AliITSClusterFinderSSD(segSSD,
+                                                   digSSD);
+      fITS->SetReconstructionModel(kSSD,recSSD);
     } // end if fDet[kSSD]
-
+    Info("InitRec","    Done\n");
     return kTRUE;
 }
 //______________________________________________________________________ 
@@ -248,51 +234,42 @@ void AliITSreconstruction::Exec(const Option_t *opt){
     // Return:
     //      none.
     Option_t *lopt;
-    Int_t nparticles,evnt;
+    Int_t evnt;
 
     if(strstr(opt,"All")||strstr(opt,"ALL")||strstr(opt,"ITS")||opt==0){
-	fDet[0] = fDet[1] = fDet[2] = kTRUE;
-	lopt = "All";
+      fDet[0] = fDet[1] = fDet[2] = kTRUE;
+      lopt = "All";
     }else{
-	fDet[0] = fDet[1] = fDet[2] = kFALSE;
-	if(strstr(opt,"SPD")) fDet[kSPD] = kTRUE;
-	if(strstr(opt,"SDD")) fDet[kSDD] = kTRUE;
-	if(strstr(opt,"SSD")) fDet[kSSD] = kTRUE;
-	if(fDet[kSPD] && fDet[kSDD] && fDet[kSSD]) lopt = "All";
-	else lopt = opt;
+      fDet[0] = fDet[1] = fDet[2] = kFALSE;
+      if(strstr(opt,"SPD")) fDet[kSPD] = kTRUE;
+      if(strstr(opt,"SDD")) fDet[kSDD] = kTRUE;
+      if(strstr(opt,"SSD")) fDet[kSSD] = kTRUE;
+      if(fDet[kSPD] && fDet[kSDD] && fDet[kSSD]) lopt = "All";
+      else lopt = opt;
     } // end if strstr(opt,...)
 
     if(!fInit){
-	cout << "Initilization Failed, Can't run Exec." << endl;
-	return;
+      cout << "Initilization Failed, Can't run Exec." << endl;
+      return;
     } // end if !fInit
-    TDirectory *curr = gDirectory;
-    if(fFile2)fFile2->cd();
-    for(evnt=0;evnt<fEnt;evnt++){
-      nparticles = fArp->GetEvent(evnt);
-      fArp->SetEvent(evnt);
-      if(!fArp->TreeR()){
-        if(fFile2){
-          fArp->MakeTree("R",fFile2);
-        }
-        else {
-          fArp->MakeTree("R");
-        }
-      }
+
+    for(evnt=0;evnt<fEnt;evnt++)
+     {
+      Info("Exec","");
+      Info("Exec","Processing Event %d",evnt);
+      Info("Exec","");
+
+      fRunLoader->GetEvent(evnt);
+      if (fLoader->TreeR() == 0x0) fLoader->MakeTree("R");
       fITS->MakeBranch("R");
-      fITS->MakeTreeC();
+      if (fLoader->TreeC() == 0x0) fITS->MakeTreeC();
+      fITS->SetTreeAddress();
       fITS->DigitsToRecPoints(evnt,0,lopt);
     } // end for evnt
-    curr->cd();
 }
 //______________________________________________________________________ 
 void AliITSreconstruction::SetOutputFile(TString filename){
   // Set a file name for recpoints. Used only if this file is not the file
   // containing digits. This obj is deleted by AliRun.
-  fFile2 = fArp->InitTreeFile("R",filename);
+  Error("SetOutputFile","Use AliLoader::SetRecPointsFileName(TString&)instead");
 }
-
-
-
-
-

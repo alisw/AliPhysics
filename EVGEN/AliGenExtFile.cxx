@@ -88,7 +88,7 @@ void AliGenExtFile::Generate()
   Float_t origin[3] = {0,0,0};
   Float_t p[3];
   Float_t random[6];
-  Int_t i, j, nt;
+  Int_t i = 0, j, nt;
   //
   for (j=0;j<3;j++) origin[j]=fOrigin[j];
   if(fVertexSmear == kPerTrack) {
@@ -112,7 +112,7 @@ void AliGenExtFile::Generate()
     //
     // The selction criterium for the external file generator is as follows:
     //
-    // 1) All tracs are subjects to the cuts defined by AliGenerator, i.e.
+    // 1) All tracks are subjects to the cuts defined by AliGenerator, i.e.
     //    fThetaMin, fThetaMax, fPhiMin, fPhiMax, fPMin, fPMax, fPtMin, fPtMax,
     //    fYMin, fYMax.
     //    If the particle does not satisfy these cuts, it is not put on the
@@ -120,12 +120,13 @@ void AliGenExtFile::Generate()
     // 2) If fCutOnChild and some specific child is selected (e.g. if
     //    fForceDecay==kSemiElectronic) the event is rejected if NOT EVEN ONE
     //    child falls into the child-cuts.
+    TParticle* iparticle = 0x0;
+    
     if(fCutOnChild) {
       // Count the selected children
       Int_t nSelected = 0;
-
-      for (i = 0; i < nTracks; i++) {
-	TParticle* iparticle = fReader->NextParticle();
+      while ( (iparticle=fReader->NextParticle()) ) {
+	 ;
 	Int_t kf = CheckPDGCode(iparticle->GetPdgCode());
 	kf = TMath::Abs(kf);
 	if (ChildSelected(kf) && KinematicSelection(iparticle, 1)) {
@@ -167,13 +168,14 @@ void AliGenExtFile::Generate()
       p[1] = iparticle->Py();
       p[2] = iparticle->Pz();
       Int_t idpart = iparticle->GetPdgCode();
-      if(fVertexSmear==kPerTrack) {
-	  Rndm(random,6);
-	  for (j = 0; j < 3; j++) {
-	      origin[j]=fOrigin[j]
-		  +fOsigma[j]*TMath::Cos(2*random[2*j]*TMath::Pi())*
-		  TMath::Sqrt(-2*TMath::Log(random[2*j+1]));
-	  }
+      if(fVertexSmear==kPerTrack) 
+       {
+         Rndm(random,6);
+         for (j = 0; j < 3; j++) {
+            origin[j]=fOrigin[j]+
+                      fOsigma[j]*TMath::Cos(2*random[2*j]*TMath::Pi())*
+                        TMath::Sqrt(-2*TMath::Log(random[2*j+1]));
+         }
       }
       Int_t decayed = iparticle->GetFirstDaughter();
       Int_t doTracking = fTrackIt && (decayed < 0) &&

@@ -74,7 +74,8 @@ public:
 
    void   SigGenInit(Float_t x, Float_t y, Float_t z)   {fSegmentation->SigGenInit(x, y, z) ;}
    Int_t  SigGenCond(Float_t x, Float_t y, Float_t z)	{return fSegmentation->SigGenCond(x, y, z);}
-   Int_t  Sector(Float_t x, Float_t y)                  {return fSegmentation->Sector(x, y);} // Returns number of sector containing (x,y) position    
+   Int_t  Sector(Float_t x, Float_t y)                  {return fSegmentation->Sector((Int_t)x, (Int_t)y);} // Returns number of sector containing (x,y) position    
+ 
    void   SetPadSize(Float_t p1, Float_t p2)            {fSegmentation->SetPadSize(p1,p2);}
    
    Float_t IntPH(Float_t eloss, Float_t yhit)                        {return fResponse->IntPH(eloss,yhit);}

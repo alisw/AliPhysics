@@ -38,6 +38,5 @@ Flugg/module.mk:         Flugg/libFlugg.pkg
 VZERO/module.mk:         VZERO/libVZERO.pkg
 EPEMGEN/module.mk:       EPEMGEN/libEPEMGEN.pkg EPEMGEN/libdummyepemgen.pkg
 TEPEMGEN/module.mk:      TEPEMGEN/libTEPEMGEN.pkg
-TPHIC/module.mk:         TPHIC/libTPHIC.pkg
 
 

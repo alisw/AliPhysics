@@ -5,10 +5,13 @@
 
 /* $Id$ */
 
-#include <AliModule.h>
+#include "AliModule.h"
+
 class AliHit;
 class TTree;
 class TBranch;
+class AliLoader;
+
 class AliDetector : public AliModule {
 
 public:
@@ -25,6 +28,7 @@ public:
   virtual int   GetNhits()   const {return fNhits;}
   TClonesArray *Digits() const {return fDigits;}
   TClonesArray *Hits()   const {return fHits;}
+
   TObjArray    *Points() const {return fPoints;}
   Int_t         GetIshunt() const {return fIshunt;}
   void          SetIshunt(Int_t ishunt) {fIshunt=ishunt;}
@@ -36,10 +40,10 @@ public:
   virtual void        Browse(TBrowser *b);
   virtual void        FinishRun();
   virtual void        LoadPoints(Int_t track);
-  virtual void        MakeBranch(Option_t *opt=" ", const char *file=0 );
-  virtual void        MakeBranchTR(Option_t *opt=" ", const char *file=0 );
+  virtual void        MakeBranch(Option_t *opt=" ");
   virtual void        ResetDigits();
   virtual void        ResetHits();
+
   virtual void        ResetPoints();
   virtual void        SetTreeAddress();
   virtual void        SetTimeGate(Float_t gate) {fTimeGate=gate;}
@@ -51,8 +55,14 @@ public:
   virtual void        SetBufferSize(Int_t bufsize=8000) {fBufferSize = bufsize;}  
   virtual TBranch*    MakeBranchInTree(TTree *tree, const char* cname, void* address, Int_t size=32000, const char *file=0);
   virtual TBranch*    MakeBranchInTree(TTree *tree, const char* cname, const char* name, void* address, Int_t size=32000, Int_t splitlevel=99, const char *file=0);
-   
-  // Data members
+  
+  void MakeTree(Option_t *option); //skowron
+  
+  virtual AliLoader* MakeLoader(const char* topfoldername); //builds standard getter (AliLoader type)
+  void    SetLoader(AliLoader* loader){fLoader = loader;}
+  AliLoader* GetLoader() const {return fLoader;} //skowron
+  TTree* TreeH();  //shorcut method for accessing treeH from folder
+    // Data members
 protected:      
   
   Float_t       fTimeGate;    //Time gate in seconds
@@ -63,9 +73,10 @@ protected:
   Int_t         fBufferSize;  //!buffer size for Tree detector branches
   TClonesArray *fHits;        //!List of hits for one track only
   TClonesArray *fDigits;      //!List of digits for this detector
-  char         *fDigitsFile;  //!File to store branches of digits tree for detector 
   TObjArray    *fPoints;      //!Array of points for each track (all tracks in memory)
 
-  ClassDef(AliDetector,3)  //Base class for ALICE detectors
+  AliLoader*  fLoader;//! pointer to getter for this module skowron
+
+  ClassDef(AliDetector,4)  //Base class for ALICE detectors
 };
 #endif

@@ -13,6 +13,14 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+///////////////////////////////////////////////////////////////////////////////
+//                                                                           //
+//  TRD MC track                                                             //
+//  Used for efficiency estimates and matching of reconstructed tracks       //
+//  to MC particles                                                          //                    
+//                                                                           //
+///////////////////////////////////////////////////////////////////////////////
+
 #include "AliTRDmcTrack.h"
 #include "AliTRDgeometry.h"
 
@@ -136,7 +144,3 @@ void AliTRDmcTrack::GetPlanePxPyPz(Double_t& px, Double_t& py, Double_t& pz,
   }
   return;
 }
-
-
-
-

@@ -13,6 +13,8 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+/* $Id$ */
+
 /////////////////////////////////////////////////////////////////////
 //                                                                 //
 // START ( T-zero) detector  version 0                        //
@@ -29,20 +31,22 @@
 #define RIGHT_ARRAY		1
 #define LEFT_ARRAY		2
 
-#include <TMath.h>
-#include <TGeometry.h>
-#include <TTUBE.h>
-#include <TNode.h>
-#include <TLorentzVector.h>
-
-#include "AliSTARTv2.h"
-#include "AliRun.h"
-#include "AliMagF.h"
-#include "AliSTARThit.h"
-
 #include <Riostream.h>
-
 #include <stdlib.h>
+
+#include <TGeometry.h>
+#include <TLorentzVector.h>
+#include <TMath.h>
+#include <TNode.h>
+#include <TTUBE.h>
+#include <TVirtualMC.h>
+
+#include "AliMagF.h"
+#include "AliRun.h"
+#include "AliSTARThit.h"
+#include "AliSTARTv2.h"
+//#include "AliSTARThitPhoton.h"
+//#include "TGeant3.h"
 
 ClassImp(AliSTARTv2)
 

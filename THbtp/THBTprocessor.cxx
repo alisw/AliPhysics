@@ -441,3 +441,8 @@ void THBTprocessor::PrintEvent()
 
 
 /*****************************************************************************************/
+void THBTprocessor::DumpSettings()
+{
+ //prints values set in common blocks
+  ctest();
+}

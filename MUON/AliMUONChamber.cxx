@@ -12,68 +12,8 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-/*
-$Log$
-Revision 1.11  2001/07/20 10:03:14  morsch
-Changes needed to work with Root 3.01 (substitute lhs [] operator). (Jiri Chudoba)
 
-Revision 1.10  2001/03/20 13:17:30  egangler
-fChargeCorrel moved from AliMUONChamber to AliMUONResponse as decided by
-January meeting.
-Setters and Getters are modified accordingly.
-This modification is transparent to the user code
-
-Revision 1.9  2001/01/26 21:35:54  morsch
-All pointers set to 0 in default constructor.
-
-Revision 1.8  2001/01/17 20:53:40  hristov
-Destructors corrected to avoid memory leaks
-
-Revision 1.7  2000/12/20 13:00:22  egangler
-
-Added charge correlation between cathods.
-In Config_slat.C, use
- MUON->Chamber(chamber-1).SetChargeCorrel(0.11); to set the RMS of
- q1/q2 to 11 % (number from Alberto)
- This is stored in AliMUONChamber fChargeCorrel member.
- At generation time, when a tracks enters the volume,
- AliMUONv1::StepManager calls
- AliMUONChamber::ChargeCorrelationInit() to set the current value of
- fCurrentCorrel which is then used at Disintegration level to scale
- appropriately the PadHit charges.
-
-Revision 1.6  2000/10/09 14:01:12  morsch
-Double inclusion of AliResponse removed.
-
-Revision 1.5  2000/07/03 11:54:57  morsch
-AliMUONSegmentation and AliMUONHitMap have been replaced by AliSegmentation and AliHitMap in STEER
-The methods GetPadIxy and GetPadXxy of AliMUONSegmentation have changed name to GetPadI and GetPadC.
-
-Revision 1.4  2000/06/29 12:34:09  morsch
-AliMUONSegmentation class has been made independent of AliMUONChamber. This makes
-it usable with any other geometry class. The link to the object to which it belongs is
-established via an index. This assumes that there exists a global geometry manager
-from which the pointer to the parent object can be obtained (in our case gAlice).
-
-Revision 1.3  2000/06/28 15:16:35  morsch
-(1) Client code adapted to new method signatures in AliMUONSegmentation (see comments there)
-to allow development of slat-muon chamber simulation and reconstruction code in the MUON
-framework. The changes should have no side effects (mostly dummy arguments).
-(2) Hit disintegration uses 3-dim hit coordinates to allow simulation
-of chambers with overlapping modules (MakePadHits, Disintegration).
-
-Revision 1.2  2000/06/15 07:58:48  morsch
-Code from MUON-dev joined
-
-Revision 1.1.2.5  2000/06/09 21:27:01  morsch
-Most coding rule violations corrected.
-
-Revision 1.1.2.4  2000/05/05 11:34:12  morsch
-Log inside comments.
-
-Revision 1.1.2.3  2000/05/05 10:09:52  morsch
-Log messages included
-*/
+/* $Id$ */
 
 // --- MUON includes ---
 #include "AliMUONChamber.h"

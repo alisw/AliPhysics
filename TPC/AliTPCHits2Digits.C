@@ -4,20 +4,25 @@ Int_t AliTPCHits2Digits(Int_t nevent=1)
   // new version by J.Belikov
 
   // Connect the Root Galice file containing Geometry, Kine and Hits
+  if (gAlice) 
+   { 
+     delete gAlice->GetRunLoader();
+     delete gAlice;//if everything was OK here it is already NULL
+     gAlice = 0x0;
+   }
 
-  const char * inFile_old = "galice.root"; 
-  const char * inFile_new = "rfio:galice.root";
-  TFile *file = (TFile*)gROOT->GetListOfFiles()->FindObject(inFile_old);
-  if (file) {file->Close(); delete file;}
-  file =  TFile::Open(inFile_new,"UPDATE");
-  if (!file->IsOpen()) {
-    cerr<<"Can't open "<<inFile_new<<" !\n";
+  AliRunLoader *rl = AliRunLoader::Open("galice.root","Event","update");
+  if (!rl) 
+   {
+    cerr<<"Can't load RunLoader from "<<inFile_new<<" !\n";
     return 1;
-  }
+   }
 
   // Get AliRun object from file or create it if not on file
-  if (gAlice) delete gAlice;
-  gAlice = (AliRun*)file->Get("gAlice");
+
+  rl->LoadgAlice();
+ 
+  gAlice = rl->GetAliRun();
   if (!gAlice) {
     cerr<<"AliTPCHits2Digits.C : AliRun object not found on file\n";
     return 2;
@@ -27,6 +32,16 @@ Int_t AliTPCHits2Digits(Int_t nevent=1)
 
   // gAlice->GetEvent(0);
   AliTPC *TPC = (AliTPC*)gAlice->GetDetector("TPC");      
+  AliLoader * tpcl = rl->GetLoader("TPCLoader");
+  if ((TPC == 0x0) || (tpcl == 0x0))
+   {
+    cerr<<"AliTPCHits2Digits.C : Can not find TPC or TPCLoader\n";
+//    delete rl;
+    return 3;
+   }
+  tpcl->LoadHits("READ");
+  tpcl->LoadDigits("recreate");
+
   TStopwatch timer;
   timer.Start();
 
@@ -36,13 +51,14 @@ Int_t AliTPCHits2Digits(Int_t nevent=1)
 
   for(Int_t eventn =0;eventn<nevent;eventn++){
     printf("Processing event %d \n",eventn);
-    gAlice->GetEvent(eventn);
+    rl->GetEvent(eventn);
     TPC->SetActiveSectors(); // all sectors set active
+    for (Int_t i=0;i<72;i++) if (TPC->IsSectorActive(i)) printf("%d\t",i);
     TPC->Hits2Digits(eventn);
   }
 
-  delete gAlice; gAlice=0;
-  file->Close(); delete file;
+  delete rl;
+
   timer.Stop();
   timer.Print();
 

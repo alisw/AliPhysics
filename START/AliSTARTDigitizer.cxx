@@ -35,6 +35,8 @@
 #include "AliGenEventHeader.h"
 #include "AliRun.h"
 #include "AliPDG.h"
+#include "AliLoader.h"
+#include "AliRunLoader.h"
 
 #include <stdlib.h>
 #include <Riostream.h>
@@ -84,7 +86,13 @@ Bool_t AliSTARTDigitizer::Init()
 void AliSTARTDigitizer::Exec(Option_t* option)
 {
 
-  cout<<" AliSTARTDigitizer::Exec"<<endl;
+
+  AliRunLoader *inRL, *outRL;//in and out Run Loaders
+  AliLoader *ingime, *outgime;// in and out ITSLoaders
+
+  outRL = AliRunLoader::GetRunLoader(fManager->GetOutputFolderName());
+  outgime = outRL->GetLoader("STARTLoader");
+
 #ifdef DEBUG
   cout<<"AliSTARTDigitizer::>SDigits2Digits start...\n";
 #endif
@@ -94,7 +102,6 @@ void AliSTARTDigitizer::Exec(Option_t* option)
   Int_t hit, nhits;
   Int_t CountEr[13],CountEl[13];							//!!!
   Int_t volume,pmt,tr,tl,sumRight;
-  char nameDigits[20];
   Float_t timediff,timeav;
   Float_t besttimeright,besttimeleft,meanTime;
   Int_t  bestRightADC,bestLeftADC;
@@ -137,9 +144,14 @@ void AliSTARTDigitizer::Exec(Option_t* option)
 	CountEr[i0]=0;   CountEl[i0]=0;
       }
     TClonesArray *STARThits = START->Hits ();
+
+    inRL = AliRunLoader::GetRunLoader(fManager->GetInputFolderName(inputFile));
+    ingime = inRL->GetLoader("STARTLoader");
+    ingime->LoadHits("READ");//probably it is necessary to load them before
     TClonesArray *STARThitsPhotons = START->Photons ();
 
-   TTree *th = fManager->GetInputTreeH(inputFile);
+
+   TTree *th = ingime->TreeH();
     brHits = th->GetBranch("START");
     brHitPhoton = th->GetBranch("STARThitPhoton");
     if (brHits) {
@@ -267,20 +279,9 @@ void AliSTARTDigitizer::Exec(Option_t* option)
       }
     else
       {timeAv=999999; timeDiff=99999;}
-    
-    // trick to find out output dir:
-    TTree *outTree = fManager->GetTreeD();
-    if (!outTree) {
-      cerr<<"something wrong with output...."<<endl;
-      exit(111);
-    }
 
-    TDirectory *wd = gDirectory;
-    outTree->GetDirectory()->cd();
-    sprintf(nameDigits,"START_D_%d",fManager->GetOutputEventNr());
-    fdigits->Write(nameDigits);
-    cout<<nameDigits<<endl;
-    wd->cd();
+// trick to find out output dir:
+    outgime->WriteDigits("OVERWRITE");
   }
 }
 

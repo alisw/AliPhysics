@@ -13,42 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.8  2001/11/14 10:50:46  cblume
-Changes in digits IO. Add merging of summable digits
-
-Revision 1.7  2001/03/13 09:30:35  cblume
-Update of digitization. Moved digit branch definition to AliTRD
-
-Revision 1.6  2000/11/01 14:53:21  cblume
-Merge with TRD-develop
-
-Revision 1.1.4.3  2000/10/06 16:49:46  cblume
-Made Getters const
-
-Revision 1.1.4.2  2000/10/04 16:34:58  cblume
-Replace include files by forward declarations
-
-Revision 1.5  2000/10/02 21:28:19  fca
-Removal of useless dependecies via forward declarations
-
-Revision 1.4  2000/06/27 13:08:50  cblume
-Changed to Copy(TObject &A) to appease the HP-compiler
-
-Revision 1.3  2000/06/08 18:32:58  cblume
-Make code compliant to coding conventions
-
-Revision 1.2  2000/05/08 16:17:27  cblume
-Merge TRD-develop
-
-Revision 1.1.4.1  2000/05/08 14:55:03  cblume
-Bug fixes
-
-Revision 1.1  2000/02/28 19:02:32  cblume
-Add new TRD classes
-
-*/
+/* $Id$ */
 
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //

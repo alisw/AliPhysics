@@ -13,12 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.1.2.1  2000/06/09 21:31:45  morsch
-AliMUONResponse code  from  AliMUONSegRes.cxx
-
-*/
+/* $Id$ */
 
 #include "AliMUONResponse.h"
 

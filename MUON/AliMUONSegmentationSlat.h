@@ -4,7 +4,6 @@
  * See cxx source for full Copyright notice                               */
 
 /* $Id$ */
-
 /////////////////////////////////////////////////////
 //  Segmentation classes for slat modules          //
 //  to be used with AluMUONSegmentationSlat        //

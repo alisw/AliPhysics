@@ -25,7 +25,7 @@ class AliPHOSCalibrator: public TTask{
 
 public:
   AliPHOSCalibrator() ;          // ctor
-  AliPHOSCalibrator(const char* run, const char * title = "Default",Bool_t toSplit = kTRUE) ;
+  AliPHOSCalibrator(const char* run, const char * title = "Default") ;
   AliPHOSCalibrator(const AliPHOSCalibrator & ctor) {
     // cpy ctor: no implementation yet
     // requested by the Coding Convention
@@ -134,7 +134,6 @@ private:
   UShort_t fLEDPat ;     //trigger pattern for LED events
   UShort_t fWBPat ;      //trigger pattern for WIDE BEAM events
   UShort_t fNBPat ;      //trigger pattern for NARROW BEAM events
-  Bool_t   fToSplit ;    //To split digits from header
 
   ClassDef(AliPHOSCalibrator,1)  // description 
 

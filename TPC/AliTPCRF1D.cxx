@@ -13,38 +13,8 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.8  2002/02/12 16:07:43  kowal2
-coreccted bug in SetGauss
+/* $Id$ */
 
-Revision 1.7  2001/01/26 19:57:22  hristov
-Major upgrade of AliRoot code
-
-Revision 1.6  2000/06/30 12:07:50  kowal2
-Updated from the TPC-PreRelease branch
-
-Revision 1.5.4.3  2000/06/26 07:39:42  kowal2
-Changes to obey the coding rules
-
-Revision 1.5.4.2  2000/06/25 08:38:41  kowal2
-Splitted from AliTPCtracking
-
-Revision 1.5.4.1  2000/06/14 16:48:24  kowal2
-Parameter setting improved. Removed compiler warnings
-
-Revision 1.5  2000/04/17 09:37:33  kowal2
-removed obsolete AliTPCDigitsDisplay.C
-
-Revision 1.4.8.2  2000/04/10 08:53:09  kowal2
-
-Updates by M. Ivanov
-
-
-Revision 1.4  1999/09/29 09:24:34  fca
-Introduction of the Copyright and cvs Log
-
-*/
 
 //-----------------------------------------------------------------------------
 //

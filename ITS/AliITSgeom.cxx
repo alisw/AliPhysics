@@ -13,87 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.20  2002/10/14 14:57:00  hristov
-Merging the VirtualMC branch to the main development branch (HEAD)
-
-Revision 1.18.8.1  2002/07/24 09:27:50  alibrary
-Updating on VirtualMC
-
-Revision 1.19  2002/05/31 21:07:42  mariana
-Fix memory leak
-
-Revision 1.18  2001/08/24 21:06:37  nilsen
-Added more documentation, fixed up some coding violations, and some
-forward declorations.
-
-Revision 1.17  2001/07/27 08:06:48  hristov
-Use global gRandom generator (M.Ivanov)
-
-Revision 1.16  2001/02/08 23:57:00  nilsen
-Fixed up some informational printouts.
-
-Revision 1.15  2001/02/07 20:23:21  nilsen
-Fixed bug with HP and no unget in iostream.h. Now using putback instead.
-Other changes and fixes also included.
-
-Revision 1.14  2001/02/03 00:00:29  nilsen
-New version of AliITSgeom and related files. Now uses automatic streamers,
-set up for new formatted .det file which includes detector information.
-Additional smaller modifications are still to come.
-
-Revision 1.11  2000/10/02 16:32:35  barbera
-Forward declaration added
-
-Revision 1.4.4.15  2000/10/02 15:52:05  barbera
-Forward declaration added
-
-Revision 1.10  2000/09/05 14:25:50  nilsen
-Made fixes for HP compiler. All function parameter default values placed
-in .h file. Fixed the usual problem with HP compilers and the "for(Int_t i..."
-business. Replaced casting (Double_t [3][3]) to (Double_t (*)[3]) for HP.
-Lastly removed all "const" before function parameters which were 2 dim. arrays,
-because on HP root generates some strange code (?). Thanks Peter for the
-changes.
-
-Revision 1.9  2000/08/29 20:19:03  nilsen
-Removed dependency on structure AliITSeomS and replaced it with class
-AliITSgeomMatrix. Added many new functions with many new arguments. Most
-in the form of in line functions for speed.
-
-Revision 1.4.4.6  2000/06/04 16:33:32  Nilsen
-A restructured AliITSgeom class. Now used AliITSgeomMatrix.
-
-Revision 1.4.4.5  2000/03/04 23:42:39  Nilsen
-Updated the comments/documentations and improved the maintainability of the
-code.
-
-Revision 1.4.4.4  2000/03/02 21:27:07  Nilsen
-Added two functions, SetByAngles and SetTrans.
-
-Revision 1.4.4.3  2000/01/23 03:09:10  Nilsen
-// fixed compiler warnings for new function LtLErrorMatrix(...)
-
-Revision 1.4.4.2  2000/01/19 23:18:20  Nilsen
-Added transformations of Error matrix to AliITSgeom and fixed some typos
-in AliITS.h and AliITShitIndex.h
-
-Revision 1.4.4.1  2000/01/12 19:03:32  Nilsen
-This is the version of the files after the merging done in December 1999.
-See the ReadMe110100.txt file for details
-
-Revision 1.4  1999/10/15 07:03:20  fca
-Fixed bug in GetModuleId(Int_t index,Int_t &lay,Int_t &lad, Int_t &det) and
-a typo in the creator. aliroot need to be rerun to get a fixed geometry.
-
-Revision 1.3  1999/10/04 15:20:12  fca
-Correct syntax accepted by g++ but not standard for static members, remove minor warnings
-
-Revision 1.2  1999/09/29 09:24:20  fca
-Introduction of the Copyright and cvs Log
-
-*/
+/* $Id$ */
 
 ///////////////////////////////////////////////////////////////////////
 // ITS geometry manipulation routines.                               //
@@ -711,9 +631,17 @@ void AliITSgeom::GetModuleId(Int_t index,Int_t &lay,Int_t &lad,Int_t &det){
     // Int_t lad    The ladder number. Starting from 1.
     // Int_t det    The detector number. Starting from 1.
     Int_t id[3];
-
-    GetGeomMatrix(index)->GetIndex(id);
-    lay = id[0]; lad = id[1]; det = id[2];
+    AliITSgeomMatrix *g = GetGeomMatrix(index);
+    if (g == 0x0)
+     {
+      Error("GetModuleId","Can not get GeoMatrix for index = %d",index);
+      lay = -1; lad = -1; det = -1;
+     }
+    else
+     {
+      g->GetIndex(id);
+      lay = id[0]; lad = id[1]; det = id[2];
+     }
     return;
 
     // The old way kept for posterity.

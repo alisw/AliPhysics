@@ -13,45 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.6  2001/02/05 14:49:29  hristov
-Compare() declared const (R.Brun)
-
-Revision 1.5  2000/07/20 12:45:27  gosset
-New "EventReconstructor..." structure,
-	hopefully more adapted to tree/streamer.
-"AliMUONEventReconstructor::RemoveDoubleTracks"
-	to keep only one track among similar ones.
-
-Revision 1.4  2000/07/18 16:04:06  gosset
-AliMUONEventReconstructor package:
-* a few minor modifications and more comments
-* a few corrections
-  * right sign for Z of raw clusters
-  * right loop over chambers inside station
-  * symmetrized covariance matrix for measurements (TrackChi2MCS)
-  * right sign of charge in extrapolation (ExtrapToZ)
-  * right zEndAbsorber for Branson correction below 3 degrees
-* use of TVirtualFitter instead of TMinuit for AliMUONTrack::Fit
-* no parameter for AliMUONTrack::Fit() but more fit parameters in Track object
-
-Revision 1.3  2000/06/25 13:06:39  hristov
-Inline functions moved from *.cxx to *.h files instead of forward declarations
-
-Revision 1.2  2000/06/15 07:58:49  morsch
-Code from MUON-dev joined
-
-Revision 1.1.2.3  2000/06/12 10:11:45  morsch
-Dummy copy constructor and assignment operator added
-
-Revision 1.1.2.2  2000/06/09 12:58:05  gosset
-Removed comment beginnings in Log sections of .cxx files
-Suppressed most violations of coding rules
-
-Revision 1.1.2.1  2000/06/07 14:44:53  gosset
-Addition of files for track reconstruction in C++
-*/
+/* $Id$ */
 
 ///////////////////////////////////////////////////////
 //

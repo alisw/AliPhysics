@@ -200,14 +200,16 @@ void AliEMCALGeometry::Init(void){
   
   fgInit = kTRUE; 
   
-  Info("Init", "geometry of EMCAL named %s is as follows:", name.Data());
-  printf( "Tower geometry pre-shower: %d x (%f mm Pb, %f mm Sc) \n", GetNPRLayers(), GetPRPbRadThick(), GetPRScintThick() ) ; 
-  printf( "               ECAL      : %d x (%f mm Pb, %f mm Sc) \n", GetNECLayers(), GetECPbRadThick(), GetECScintThick() ) ; 
-  if ( GetNHCLayers() > 0 )
-    printf( "               HCAL      : %d x (%f mm Pb, %f mm Sc) \n", GetNHCLayers(), GetHCCuRadThick(), GetHCScintThick() ) ; 
-  printf("Granularity: %d in eta and %d in phi\n", GetNZ(), GetNPhi()) ;
-  printf("Layout: phi = (%f, %f), eta = (%f, %f), y = %f\n",  
-	 GetArm1PhiMin(), GetArm1PhiMax(),GetArm1EtaMin(), GetArm1EtaMax(), GetIPDistance() ) ;    
+  if (gDebug) {
+    Info("Init", "geometry of EMCAL named %s is as follows:", name.Data());
+    printf( "Tower geometry pre-shower: %d x (%f mm Pb, %f mm Sc) \n", GetNPRLayers(), GetPRPbRadThick(), GetPRScintThick() ) ; 
+    printf( "               ECAL      : %d x (%f mm Pb, %f mm Sc) \n", GetNECLayers(), GetECPbRadThick(), GetECScintThick() ) ; 
+    if ( GetNHCLayers() > 0 )
+      printf( "               HCAL      : %d x (%f mm Pb, %f mm Sc) \n", GetNHCLayers(), GetHCCuRadThick(), GetHCScintThick() ) ; 
+    printf("Granularity: %d in eta and %d in phi\n", GetNZ(), GetNPhi()) ;
+    printf("Layout: phi = (%f, %f), eta = (%f, %f), y = %f\n",  
+	   GetArm1PhiMin(), GetArm1PhiMax(),GetArm1EtaMin(), GetArm1EtaMax(), GetIPDistance() ) ;    
+  }
 }
 
 //______________________________________________________________________
@@ -289,11 +291,11 @@ void AliEMCALGeometry::TowerIndexes(Int_t index,Int_t &ieta,Int_t &iphi,
     nindex = index - itowers;
     ipre = 1 ; 
   }
-  else  if ( IsInECAL(index) ) { // ECAL index
+  else  if ( IsInECA(index) ) { // ECAL index
     nindex = index ;
     ipre = 0 ; 
   }
-  else  if ( IsInHCAL(index) ) { // HCAL index
+  else  if ( IsInHCA(index) ) { // HCAL index
     nindex = index - 2*itowers;
     ipre = 2 ; 
   }
@@ -425,9 +427,9 @@ void AliEMCALGeometry::PosInAlice(const Int_t *relid, Float_t &theta, Float_t &p
   if (sect == 1)
     d = GetIP2PRESection() -  GetIPDistance() ; 
   else if (sect == 0)
-    d = GetIP2ECALSection() - GetIPDistance() ; 
+    d = GetIP2ECASection() - GetIPDistance() ; 
   else if (sect == 2) 
-    d = GetIP2HCALSection() - GetIPDistance() ;
+    d = GetIP2HCASection() - GetIPDistance() ;
   else 
     Fatal("PosInAlice", "Unexpected tower section!") ; 
 
@@ -461,10 +463,10 @@ void AliEMCALGeometry::PosInAlice(const Int_t absid, Float_t &theta, Float_t &ph
   Float_t d = 0. ; 
   if (IsInPRE(absid))
     d = GetIP2PRESection() -  GetIPDistance() ; 
-  else if (IsInECAL(absid))
-    d = GetIP2ECALSection() - GetIPDistance() ; 
-  else if (IsInHCAL(absid)) 
-    d = GetIP2HCALSection() - GetIPDistance() ;
+  else if (IsInECA(absid))
+    d = GetIP2ECASection() - GetIPDistance() ; 
+  else if (IsInHCA(absid)) 
+    d = GetIP2HCASection() - GetIPDistance() ;
   else 
     Fatal("PosInAlice", "Unexpected id # %d!", absid) ; 
 
@@ -501,11 +503,11 @@ void AliEMCALGeometry::XYZFromIndex(const Int_t *relid,Float_t &x,Float_t &y, Fl
     theta = 180.*(2.0*TMath::ATan(TMath::Exp(-eta)))/TMath::Pi();
     
     if ( ipre == 0 ) 
-      cyl_radius = GetIP2ECALSection() ;
+      cyl_radius = GetIP2ECASection() ;
     else if ( ipre == 1 ) 
       cyl_radius = GetIP2PRESection() ;
     else if ( ipre == 2 ) 
-      cyl_radius = GetIP2HCALSection() ;
+      cyl_radius = GetIP2HCASection() ;
     else 
       Fatal("XYZFromIndex", "Unexpected Tower section # %d", ipre) ;  
 
@@ -533,12 +535,12 @@ void AliEMCALGeometry::XYZFromIndex(const Int_t absid,  TVector3 &v) const {
         
     PosInAlice(absid, theta, phi) ; 
     
-    if ( IsInECAL(absid) ) 
-      cyl_radius = GetIP2ECALSection() ;
+    if ( IsInECA(absid) ) 
+      cyl_radius = GetIP2ECASection() ;
     else if ( IsInPRE(absid) ) 
       cyl_radius = GetIP2PRESection() ;
-    else if ( IsInHCAL(absid) ) 
-      cyl_radius = GetIP2HCALSection() ;
+    else if ( IsInHCA(absid) ) 
+      cyl_radius = GetIP2HCASection() ;
     else 
       Fatal("XYZFromIndex", "Unexpected Tower section") ;  
 

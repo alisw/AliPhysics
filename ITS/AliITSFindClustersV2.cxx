@@ -15,6 +15,15 @@
  
 /*
 $Log$
+Revision 1.3.4.2  2002/12/11 10:00:15  hristov
+Merging with v3-09-04 (P.Skowronski)
+
+Revision 1.3.4.1  2002/11/26 16:58:52  hristov
+Merging NewIO with v3-09-04
+
+Revision 1.3  2002/10/14 14:57:00  hristov
+Merging the VirtualMC branch to the main development branch (HEAD)
+
 Revision 1.2.2.1  2002/10/14 13:14:08  hristov
 Updating VirtualMC to v3-09-02
 
@@ -65,7 +74,7 @@ AliITSFindClustersV2::AliITSFindClustersV2(){
 }
 //______________________________________________________________________
 AliITSFindClustersV2::AliITSFindClustersV2(const TString infile,
-					   const TString outfile){
+                                           const TString outfile){
     // Standard constructor.
     // Inputs:
     //  const TString infile   Input file name where the RecPoints are

@@ -25,7 +25,7 @@ public:
 
   AliPHOSQAIntCheckable(){}           // default ctor not to be used
   AliPHOSQAIntCheckable(const char * name) ;          // ctor
-  AliPHOSQAIntCheckable(AliPHOSQAIntCheckable& obj) ;
+  AliPHOSQAIntCheckable(AliPHOSQAIntCheckable& obj) {assert(0==1);}
   virtual ~AliPHOSQAIntCheckable() ; // dtor
 
   virtual Float_t GetValue() const { return (Float_t)fValue ; }
@@ -33,11 +33,10 @@ public:
   virtual void Reset() { fValue=0; fChange=kFALSE ; }
   void Set(Int_t value) ; 
   void Update(Int_t value) ;  
-  AliPHOSQAIntCheckable & operator = ( AliPHOSQAIntCheckable & obj) { return *this ; } 
-  
+
 private:
   
-  Int_t fValue ; // the value of the checkable
+  Int_t fValue ; 
 
   ClassDef(AliPHOSQAIntCheckable,1)  // description 
 

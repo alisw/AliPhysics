@@ -13,13 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.1.4.2  2000/04/10 11:36:13  kowal2
-
-New Detector parameters handling class
-
-*/
+/* $Id$ */
 
 ///////////////////////////////////////////////////////////////////////
 //  Paramter class for AliDetector                                   //

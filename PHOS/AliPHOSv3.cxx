@@ -43,6 +43,7 @@
 #include "AliPHOSCPVDigit.h"
 #include "AliRun.h"
 #include "AliConst.h"
+#include "AliMC.h"
 #include "AliPHOSGeometry.h"
 
 ClassImp(AliPHOSv3)

@@ -15,6 +15,12 @@
 
 /*
   $Log$
+  Revision 1.13.4.1  2002/05/31 09:37:59  hristov
+  First set of changes done by Piotr
+
+  Revision 1.13  2001/10/23 13:03:35  hristov
+  The access to several data members was changed from public to protected. The digitisation was adapted to the multi-event case (J.Chudoba)
+
   Revision 1.12  2001/05/10 12:34:23  jbarbosa
   Changed drwaing routines.
 
@@ -116,7 +122,7 @@ void AliRICHPatRec::PatRec()
   //printf("PatRec started\n");
 
   AliRICH *pRICH  = (AliRICH*)gAlice->GetDetector("RICH");
-  TTree *treeH = gAlice->TreeH();
+  TTree *treeH = pRICH->TreeH();
 
   ntracks =(Int_t) treeH->GetEntries();
   //  ntracks = 1;
@@ -220,10 +226,10 @@ Int_t AliRICHPatRec::TrackParam(Int_t itr, Int_t &ich, Float_t rectheta, Float_t
   //printf("Calling TrackParam\n");
 
     gAlice->ResetHits();
-    TTree *treeH = gAlice->TreeH();
+    AliRICH *pRICH  = (AliRICH*)gAlice->GetDetector("RICH");
+    TTree *treeH = pRICH->TreeH();
     treeH->GetEvent(itr);
  
-    AliRICH *pRICH  = (AliRICH*)gAlice->GetDetector("RICH");
     AliRICHHit* mHit=(AliRICHHit*)pRICH->FirstHit(-1);
     if(mHit==0) return 1;
     ich = mHit->Chamber()-1;

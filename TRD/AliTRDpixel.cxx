@@ -13,30 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.3.2.2  2000/10/17 02:27:34  cblume
-Get rid of global constants
-
-Revision 1.3.2.1  2000/10/04 16:34:58  cblume
-Replace include files by forward declarations
-
-Revision 1.5  2000/06/09 11:10:07  cblume
-Compiler warnings and coding conventions, next round
-
-Revision 1.4  2000/06/08 18:32:58  cblume
-Make code compliant to coding conventions
-
-Revision 1.3  2000/02/28 19:10:26  cblume
-Include the new TRD classes
-
-Revision 1.2.4.1  2000/02/28 17:59:27  cblume
-Initialize fTrack with -1
-
-Revision 1.2  1999/09/29 09:24:35  fca
-Introduction of the Copyright and cvs Log
-
-*/
+/* $Id$ */
 
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //

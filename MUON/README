@@ -1,0 +1,90 @@
+==========================================================
+Please add  to this README file all information concerning 
+config files, simulation, digitalization, clusterization, 
+reconstruction and macro analysis
+
+==========================================================
+ How to run a MUON simulation 
+==========================================================
+aliroot
+root [0] gAlice->Run(10,"$ALICE_ROOT/MUON/Config_MUON_test.C");
+
+1 single muon of 7 GeV/c in the MUON spectrometer 
+acceptance will be simulated using geant3. 
+Hit information will be store in the root file in the
+execution directory.
+
+If you want to change the option or to define a new directory
+for hits, you have to do the following before:
+root [0] gAlice->SetConfigFunction("Config( \"/home/martinez/aliroot/work_NewIO/test/\" , \"box\" );"); 
+
+============================================================
+ How to run MUON Digitalization
+============================================================
+To process the digitalization of hits the AliRunDigitizer 
+framework is used:
+
+root [0] AliRunDigitizer   * manager = new AliRunDigitizer(1,1);
+root [1] manager->SetInputStream(0,"galice.root");
+root [2] AliMUONDigitizerv1* dMUON   = new AliMUONDigitizerv1(manager);
+root [3] manager->AddDigitizer(dMUON);
+root [4] manager->Exec("deb");
+
+============================================================
+ How to run MUON RecPoint clusterization
+============================================================
+aliroot -b << EOF
+root [0].L $ALICE_ROOT/MUON/MUONrawclusters.C
+root [1] MUONrawclusters("galice.root",0,2); 
+
+First event and last event are given by hand, but this will change.
+
+============================================================
+ How to run MUON Trigger
+============================================================
+root [0].L $ALICE_ROOT/MUON/MUONtrigger.C
+root [1] MUONtrigger("galice.root",0,9); 
+>> IMPORTANT NOTE: in the present version, one can only have either
+>> rawclusters or trigger information written in MUON.RecPoints.root
+>> but not both of them i.e. running MUONtrigger after MUONrawclusters
+>> will erase rawclusters from TreeR and vice versa.
+
+First event and last event are given by hand, but this will change.
+
+============================================================
+ How to run MUON Tracking reconstruction
+============================================================
+
+root [0] .includepath $ALICE_ROOT/STEER
+root [1] .includepath $ALICE_ROOT/MUON
+root [2] .L $ALICE_ROOT/MUON/MUONrecoNtuple.C++
+root [3] MUONrecoNtuple(0,1,0,"galice.root")    
+
+First event and last event are given by hand, but this will change.
+
+============================================================
+ How to run MUONCheck macro
+============================================================
+To check the content of a root data file, the MUONCheck
+provides a ascii output on screen.
+
+To compile MUONCheck.C
+root [0] .includepath $ALICE_ROOT/STEER
+root [1] .includepath $ALICE_ROOT/MUON
+root [2] .L $ALICE_ROOT/MUON/MUONCheck.C++
+
+To print hits : (default file is galice.root if not MUONhits("toto.root""); )
+root [3] MUONhits()  
+
+To print digits : (default file is galice.root)
+root [4] MUONdigits()  
+
+To print rawcluster : (default file is galice.root)
+root [5] MUONrecpoints()
+
+To print trigger : (default file is galice.root)
+root [5] MUONTestTrigger()
+
+===========================================================
+ Still working ..............
+===========================================================

@@ -8,6 +8,10 @@
 #include "TRandom.h"
 #include "AliDetector.h"
 #include "AliTOF.h"
+//Piotr.Skowronski@cern.ch :
+//Corrections applied in order to compile (only) with new I/O and folder structure
+//To be implemented correctly by responsible
+class AliRunLoader;
 
 typedef enum {kDigitize=0, kMerge = 1} MergeMode_t;
 
@@ -52,6 +56,7 @@ class AliTOFMerger {
     char  *fFnSig;                  // signal file name
     TFile *fBgrFile;                // Pointer to background file
     
+    AliRunLoader * fRunLoader;        //! Run Loader 
     ClassDef(AliTOFMerger,0)
 };    
 #endif

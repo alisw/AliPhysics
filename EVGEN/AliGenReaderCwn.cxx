@@ -14,21 +14,7 @@
  **************************************************************************/
 
 
-/*
-$Log$
-Revision 1.4  2002/10/30 13:39:51  hristov
-Warnings cleaned up (Alpha)
-
-Revision 1.3  2002/10/21 09:20:51  alibrary
-Introduce Riostream.h and remove unused variables
-
-Revision 1.2  2001/11/12 14:31:00  morsch
-Memory leaks fixed. (M. Bondila)
-
-Revision 1.1  2001/11/09 09:10:46  morsch
-Realisation of AliGenReader that reads the old cwn event format.
-
-*/
+/* $Id$ */
 
 // Read the old ALICE event format based on CW-ntuples
 // http://consult.cern.ch/alice/Internal_Notes/1995/32/abstract
@@ -37,11 +23,12 @@ Realisation of AliGenReader that reads the old cwn event format.
 // Author: andreas.morsch@cern.ch
 
 #include <TFile.h>
-#include <TTree.h>
 #include <TParticle.h>
+#include <TTree.h>
 #include <TVirtualMC.h>
 
 #include "AliGenReaderCwn.h"
+
 ClassImp(AliGenReaderCwn);
 
 

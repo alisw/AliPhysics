@@ -29,7 +29,6 @@
 
 
 // --- AliRoot header files ---
-#include "AliHeader.h"
 #include "AliEMCALRecParticle.h"
 #include "AliEMCALGetter.h" 
 #include "TParticle.h"
@@ -72,20 +71,17 @@ ClassImp(AliEMCALRecParticle)
 //____________________________________________________________________________
 const Int_t AliEMCALRecParticle::GetNPrimaries() const  
 {   
-  AliHeader *h = gAlice->GetHeader();
-  return  h->GetNprimary(); 
-  // return  gAlice->GetNtrack(); 
+  return -1;
 }
 
 //____________________________________________________________________________
 const Int_t AliEMCALRecParticle::GetNPrimariesToRecParticles() const  
 { 
-
   Int_t rv = 0 ;
-  AliEMCALGetter * gime = AliEMCALGetter::GetInstance() ; 
-  Int_t emcRPindex = ( dynamic_cast<AliEMCALTrackSegment*>(gime->TrackSegments()->At(GetEMCALTSIndex())) )->GetECIndex();
-  (dynamic_cast<AliEMCALTowerRecPoint*>(gime->ECALRecPoints()->At(emcRPindex)))->GetPrimaries(rv) ; 
-  return rv ;
+  AliEMCALGetter * gime = AliEMCALGetter::Instance() ; 
+  Int_t ecaRPindex = dynamic_cast<AliEMCALTrackSegment*>(gime->TrackSegments()->At(GetEMCALTSIndex()))->GetECAIndex();
+  dynamic_cast<AliEMCALTowerRecPoint*>(gime->ECARecPoints()->At(ecaRPindex))->GetPrimaries(rv) ; 
+  return rv ; 
 }
 
 //____________________________________________________________________________
@@ -93,27 +89,18 @@ const TParticle * AliEMCALRecParticle::GetPrimary(Int_t index) const
 {
   if ( index > GetNPrimariesToRecParticles() ) { 
     if (fDebug) 
-      Warning("GetPrimary", "%d is larger that the number of primaries %d", index, GetNPrimaries()) ;
-  } else { 
-    Int_t dummy ; 
-    AliEMCALGetter * gime = AliEMCALGetter::GetInstance() ;
-    Int_t emcRPindex = ( dynamic_cast<AliEMCALTrackSegment*>(gime->TrackSegments()->At(GetEMCALTSIndex())) )->GetECIndex();
-    Int_t *list = static_cast<AliEMCALTowerRecPoint*>(gime->ECALRecPoints()->At(emcRPindex))->GetPrimaries(dummy) ;
-    Int_t primaryindex ;
-    if(index<dummy)
-      primaryindex = list[index] ;
-    else{
-      if (fDebug)	    
-        printf("No primary number %d in list \n",index) ;
-      return 0 ;
-    }
-    if(primaryindex>4999999){
-	if (fDebug)
-           printf("No method to extract primaries from background!\n") ;
-      return 0 ;
-    }
-    return gime->Primary(primaryindex) ; 
+      Warning("GetPrimary", "AliEMCALRecParticle::GetPrimary -> %d is larger that the number of primaries %d", 
+	      index, GetNPrimaries()) ;
+    return 0 ; 
   } 
+  else { 
+    Int_t dummy ; 
+    AliEMCALGetter * gime = AliEMCALGetter::Instance() ; 
+
+    Int_t ecaRPindex = dynamic_cast<AliEMCALTrackSegment*>(gime->TrackSegments()->At(GetEMCALTSIndex()))->GetECAIndex();
+    Int_t primaryindex = dynamic_cast<AliEMCALTowerRecPoint*>(gime->ECARecPoints()->At(ecaRPindex))->GetPrimaries(dummy)[index] ; 
+    return gime->Primary(primaryindex) ;
+   } 
   return 0 ; 
 }
 

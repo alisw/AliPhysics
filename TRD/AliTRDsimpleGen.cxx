@@ -13,12 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
  
-/*
-$Log$
-Revision 1.1  2001/11/06 17:19:41  cblume
-Add detailed geometry and simple simulator
-                                                          
-*/
+/* $Id$ */
  
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //

@@ -3,6 +3,7 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
+
 /* $Id$ */
 
 //_________________________________________________________________________
@@ -20,41 +21,43 @@ class TFile ;
 // --- Standard library ---
 
 // --- AliRoot header files ---
+#include "AliConfig.h"
 
 class AliPHOSSDigitizer: public TTask {
 
 public:
   AliPHOSSDigitizer() ;          // ctor
-  AliPHOSSDigitizer(const char* headerFile, const char *sdigitsTitle = "Default", const Bool_t toSplit = kFALSE) ; 
+  AliPHOSSDigitizer(const char * alirunFileName, const char * eventFolderName = AliConfig::fgkDefaultEventFolderName) ; 
   AliPHOSSDigitizer(const AliPHOSSDigitizer & sd) ; // cpy ctor
-  virtual ~AliPHOSSDigitizer() ; // dtor
+  virtual ~AliPHOSSDigitizer() {;} // dtor
 
-  Float_t  Calibrate(Int_t amp)const {return (amp - fA)/fB ; }
-  Int_t    Digitize(Float_t Energy)const { return (Int_t ) ( fA + Energy*fB); }
+  Float_t        Calibrate(Int_t amp)const {return (amp - fA)/fB ; }
+  Int_t          Digitize(Float_t Energy)const { return (Int_t ) ( fA + Energy*fB); }
   virtual void   Exec(Option_t *option); 
-  const char *   GetSDigitsBranch()const{return GetName();}  
   const Int_t    GetSDigitsInRun() const {return fSDigitsInRun ;}  
-  virtual void Print(Option_t* option) const ;
-  void SetSDigitsBranch(const char * title ) ;
-  void UseHitsFrom(const char * filename) ;      
+  virtual void   Print() const ;
+  void           SetEventFolderName(TString name) { fEventFolderName = name ; }
+
   Bool_t operator == (const AliPHOSSDigitizer & sd) const ;
-  AliPHOSSDigitizer & operator = (const AliPHOSSDigitizer & sd) {return *this ; } 
+  AliPHOSSDigitizer & operator = (const AliPHOSSDigitizer & sd) {return *this ;}
   
 private:
   void     Init() ;
   void     InitParameters() ;
   void     PrintSDigits(Option_t * option) ;
+  void     Unload() const ;
+
 
 private:
   Float_t fA ;              // Pedestal parameter
   Float_t fB ;              // Slope Digitizition parameters
   Float_t fPrimThreshold ;  // To store primari if Elos > threshold
   Bool_t  fDefaultInit;     //! Says if the task was created by defaut ctor (only parameters are initialized)
+  TString fEventFolderName; // event folder name
+  Bool_t  fInit ;           //! tells if initialisation wennt OK, will revent exec if not
   Int_t   fSDigitsInRun ;   //! Total number of sdigits in one run
-  TFile * fSplitFile ;      //! file in which SDigits will eventually be stored
-  Bool_t  fToSplit ;        //! Says that sigits should be written into splip file
 
-  ClassDef(AliPHOSSDigitizer,1)  // description 
+  ClassDef(AliPHOSSDigitizer,2)  // description 
 
 };
 

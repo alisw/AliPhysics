@@ -13,78 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.18  2002/10/14 14:57:43  hristov
-Merging the VirtualMC branch to the main development branch (HEAD)
-
-Revision 1.15.6.2  2002/07/24 10:09:30  alibrary
-Updating VirtualMC
-
-Revision 1.17  2002/06/12 09:54:35  cblume
-Update of tracking code provided by Sergei
-
-Revision 1.16  2002/03/25 20:01:30  cblume
-Introduce parameter class
-
-Revision 1.15  2001/11/14 12:09:11  cblume
-Use correct name for digitizer
-
-Revision 1.14  2001/11/14 10:50:45  cblume
-Changes in digits IO. Add merging of summable digits
-
-Revision 1.13  2001/05/28 17:07:58  hristov
-Last minute changes; ExB correction in AliTRDclusterizerV1; taking into account of material in G10 TEC frames and material between TEC planes (C.Blume,S.Sedykh)
-
-Revision 1.12  2001/05/21 17:42:58  hristov
-Constant casted to avoid the ambiguity
-
-Revision 1.11  2001/05/21 16:45:47  hristov
-Last minute changes (C.Blume)
-
-Revision 1.10  2001/05/07 08:06:44  cblume
-Speedup of the code. Create only AliTRDcluster
-
-Revision 1.9  2000/11/01 14:53:20  cblume
-Merge with TRD-develop
-
-Revision 1.1.4.5  2000/10/15 23:40:01  cblume
-Remove AliTRDconst
-
-Revision 1.1.4.4  2000/10/06 16:49:46  cblume
-Made Getters const
-
-Revision 1.1.4.3  2000/10/04 16:34:58  cblume
-Replace include files by forward declarations
-
-Revision 1.1.4.2  2000/09/22 14:49:49  cblume
-Adapted to tracking code
-
-Revision 1.8  2000/10/02 21:28:19  fca
-Removal of useless dependecies via forward declarations
-
-Revision 1.7  2000/06/27 13:08:50  cblume
-Changed to Copy(TObject &A) to appease the HP-compiler
-
-Revision 1.6  2000/06/09 11:10:07  cblume
-Compiler warnings and coding conventions, next round
-
-Revision 1.5  2000/06/08 18:32:58  cblume
-Make code compliant to coding conventions
-
-Revision 1.4  2000/06/07 16:27:01  cblume
-Try to remove compiler warnings on Sun and HP
-
-Revision 1.3  2000/05/08 16:17:27  cblume
-Merge TRD-develop
-
-Revision 1.1.4.1  2000/05/08 15:09:01  cblume
-Introduce AliTRDdigitsManager
-
-Revision 1.1  2000/02/28 18:58:54  cblume
-Add new TRD classes
-
-*/
+/* $Id$ */
 
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
@@ -98,6 +27,8 @@ Add new TRD classes
 #include <TFile.h>
 
 #include "AliRun.h"
+#include "AliRunLoader.h"
+#include "AliLoader.h"
 
 #include "AliTRD.h"
 #include "AliTRDclusterizerV1.h"
@@ -192,17 +123,16 @@ Bool_t AliTRDclusterizerV1::ReadDigits()
   // Reads the digits arrays from the input aliroot file
   //
 
-  if (!fInputFile) {
+  if (!fRunLoader) {
     printf("<AliTRDclusterizerV1::ReadDigits> ");
     printf("No input file open\n");
     return kFALSE;
   }
-
-  fDigitsManager->Open(fInputFile->GetName());
-  fDigitsManager->SetEvent(fEvent);
+  AliLoader* loader = fRunLoader->GetLoader("TRDLoader");
+  if (!loader->TreeD()) loader->LoadDigits();
 
   // Read in the digit arrays
-  return (fDigitsManager->ReadDigits());  
+  return (fDigitsManager->ReadDigits(loader->TreeD()));
 
 }
 

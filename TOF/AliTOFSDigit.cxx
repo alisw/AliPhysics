@@ -13,6 +13,7 @@
  * provided "as is" without express or implied warranty.                  * 
  **************************************************************************/
 
+/* $Id$ */
 
 //_________________________________________________________________________
 //  TOF sdigit: member variables 
@@ -32,10 +33,10 @@
 #include "TArrayF.h"
 #include "TArrayI.h"
 
-#include "AliTOF.h"
-#include "AliTOFSDigit.h"
-#include "AliTOFConstants.h"
 #include "AliRun.h"
+#include "AliTOF.h"
+#include "AliTOFConstants.h"
+#include "AliTOFSDigit.h"
 
 ClassImp(AliTOFSDigit)
 

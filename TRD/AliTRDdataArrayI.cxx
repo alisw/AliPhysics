@@ -13,57 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.10.6.2  2002/07/24 10:09:30  alibrary
-Updating VirtualMC
-
-Revision 1.10.6.1  2002/06/10 15:28:58  hristov
-Merged with v3-08-02
-
-Revision 1.11  2002/03/28 14:59:07  cblume
-Coding conventions
-
-Revision 1.11  2002/03/28 14:59:07  cblume
-Coding conventions
-
-Revision 1.10  2002/02/11 14:27:54  cblume
-Geometry and hit structure update
-
-Revision 1.9  2001/05/07 08:08:05  cblume
-Update of TRD code
-
-Revision 1.8  2000/11/23 14:34:08  cblume
-Fixed bug in expansion routine of arrays (initialize buffers properly)
-
-Revision 1.7  2000/11/20 08:56:07  cblume
-Cleanup of data arrays
-
-Revision 1.6  2000/11/01 14:53:20  cblume
-Merge with TRD-develop
-
-Revision 1.1.2.3  2000/10/06 16:49:46  cblume
-Made Getters const
-
-Revision 1.1.2.2  2000/10/04 16:34:58  cblume
-Replace include files by forward declarations
-
-Revision 1.5  2000/06/27 13:08:50  cblume
-Changed to Copy(TObject &A) to appease the HP-compiler
-
-Revision 1.4  2000/06/09 11:10:07  cblume
-Compiler warnings and coding conventions, next round
-
-Revision 1.3  2000/06/08 18:32:58  cblume
-Make code compliant to coding conventions
-
-Revision 1.2  2000/05/08 16:17:27  cblume
-Merge TRD-develop
-
-Revision 1.1.2.1  2000/05/08 15:14:34  cblume
-Add new data array classes
-
-*/
+/* $Id$ */
 
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //

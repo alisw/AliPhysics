@@ -23,11 +23,15 @@
 
 // --- ROOT system ---
 
+#include "TDatime.h" 
+#include "TFolder.h" 
+
 // --- Standard library ---
 
 // --- AliRoot header files ---
 
 #include "AliPHOSQAMeanChecker.h" 
+#include "AliPHOSQAAlarm.h"
 
 ClassImp(AliPHOSQAMeanChecker)
 

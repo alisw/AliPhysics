@@ -18,6 +18,20 @@ else
 @PACKAGE@CXXFLAGS:=$(PACKCXXFLAGS)
 endif
 
+ifndef PACKSOFLAGS
+@PACKAGE@SOFLAGS:=$(SOFLAGS)
+else
+@PACKAGE@SOFLAGS:=$(PACKSOFLAGS)
+endif
+
+ifdef DYEXT
+ifndef PACKDYFLAGS
+@PACKAGE@DYFLAGS:=$(DYFLAGS)
+else
+@PACKAGE@DYFLAGS:=$(PACKDYFLAGS)
+endif
+endif
+
 ifndef PACKDCXXFLAGS
 ifeq ($(PLATFORM),linuxicc)
 @PACKAGE@DCXXFLAGS:=$(filter-out -O%,$(CXXFLAGS)) -O0
@@ -162,6 +176,8 @@ endif
 	  @cp $^ $@	
 endif
 
+#------------------------------------------------------------------------
+
 $(@PACKAGE@LIB):$(@PACKAGE@O) $(@PACKAGE@DO) @MODULE@/module.mk
 ifndef ALIQUIET
 	  @echo "***** Linking library $@ *****"
@@ -169,10 +185,11 @@ endif
 	  $(MUTE)TMPDIR=/tmp/@MODULE@$$$$.`date +%M%S` ; \
 	  export TMPDIR; mkdir $$TMPDIR ; cd $$TMPDIR ; \
 	  find $(CURDIR)/@MODULE@/tgt_$(ALICE_TARGET) -name '*.o' -exec ln -s {} . \; ;\
-      rm -f $(CURDIR)/$@ ;\
-	  $(SHLD) $(SOFLAGS) -o $(CURDIR)/$@ $(notdir $(@PACKAGE@O) $(@PACKAGE@DO))  $(@PACKAGE@ELIBSDIR) $(@PACKAGE@ELIBS) $(SHLIB);\
-      cd $(CURDIR) ; rm -rf $$TMPDIR
-	  $(MUTE)chmod a-w $@
+	  rm -f $(CURDIR)/$@ ;\
+	  TMPLIB=$(notdir $(@PACKAGE@LIB)); export TMPLIB;\
+	  $(SHLD) $(@PACKAGE@SOFLAGS) -o $(CURDIR)/$@ $(notdir $(@PACKAGE@O) $(@PACKAGE@DO))  $(@PACKAGE@ELIBSDIR) $(@PACKAGE@ELIBS) $(SHLIB);
+	  $(MUTE)chmod a-w $(CURDIR)/$@ ;\
+	  rm -rf $$TMPDIR
 
 ifneq ($(DYEXT),)
 $(@PACKAGE@DLIB):$(@PACKAGE@O) $(@PACKAGE@DO) @MODULE@/module.mk
@@ -188,6 +205,8 @@ endif
 	  rm -rf $$TMPDIR
 endif
 
+#------------------------------------------------------------------------
+
 $(@PACKAGE@ALIB):$(@PACKAGE@O) $(@PACKAGE@DO) @MODULE@/module.mk
 ifndef ALIQUIET
 	  @echo "***** Linking static library $@ *****"
@@ -196,7 +215,7 @@ endif
 	  export TMPDIR; mkdir $$TMPDIR ; cd $$TMPDIR ; \
 	  find $(CURDIR)/@MODULE@/tgt_$(ALICE_TARGET) -name '*.o' -exec ln -s {} . \; ;\
       rm -f $(CURDIR)/$@ ;\
-	  $(ALLD) $(ALFLAGS) $(CURDIR)/$@ $(notdir $(@PACKAGE@O) $(@PACKAGE@DO))  $(@PACKAGE@ELIBSDIR) $(@PACKAGE@ELIBS) $(ALLIB);\
+	  $(ALLD) $(ALFLAGS) $(CURDIR)/$@ $(notdir $(@PACKAGE@O)) $(notdir @PACKAGE@DO) $(ALLIB);\
       cd $(CURDIR) ; rm -rf $$TMPDIR
 	  $(MUTE)chmod a-w $@
 
@@ -216,7 +235,6 @@ ifndef ALIQUIET
 	 @echo "***** Creating $@ *****";	
 endif
 	 @(if [ ! -d '$(dir $@)' ]; then echo "***** Making directory $(dir $@) *****"; mkdir -p $(dir $@); fi;)
-	 @rm -f $(patsubst %.cxx,%.d, $@)
 	 $(MUTE)rootcint -f $@ -c $(@PACKAGE@DEFINE) $(CINTFLAGS) $(@PACKAGE@INC) $(@PACKAGE@CINTHDRS) $(@PACKAGE@DH) 
 
 $(@PACKAGE@DO): $(@PACKAGE@DS)

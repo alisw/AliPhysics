@@ -40,7 +40,8 @@ class AliTPCtrackerParam {
   //                                                                        
   /////////////////////////////////////////////////////////////////////////
  public:
-  AliTPCtrackerParam(const Int_t coll=0,const Double_t Bz=0.4,const Int_t n=1);
+  AliTPCtrackerParam(const Int_t coll=0,const Double_t Bz=0.4,const Int_t n=1,
+		     const char* evfoldname = AliConfig::fgkDefaultEventFolderName);
   virtual ~AliTPCtrackerParam();
 
   // this function performs the parameterized tracking
@@ -128,6 +129,8 @@ class AliTPCtrackerParam {
   //******* end of internal class ****************
   
  private:
+  TString fEvFolderName;//! name of data folder
+
   Int_t           fNevents;     // number of events in the file to be processed
   Double_t        fBz;          // value of the z component of L3 field (Tesla)
   Int_t           fColl;        // collision code (0: PbPb6000; 1: pp)

@@ -13,46 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.11  2003/04/04 11:33:34  coppedis
-Bug in geometry corrected
-
-Revision 1.10  2003/03/25 14:18:30  coppedis
-Changes in ZDC geometry to avoid overlaps with other detectors
-
-Revision 1.9  2002/11/21 20:05:22  alibrary
-Removing AliMC and AliMCProcess
-
-Revision 1.8  2002/10/14 14:57:44  hristov
-Merging the VirtualMC branch to the main development branch (HEAD)
-
-Revision 1.7.8.1  2002/06/10 15:29:36  hristov
-Merged with v3-08-02
-
-Revision 1.7  2001/10/04 14:33:43  coppedis
-Second EM ZDC added at 7.35 m from IP
-
-Revision 1.6  2001/09/26 16:07:40  coppedis
-Changes in StepManager suggested by J.Chudoba
-
-Revision 1.5  2001/06/15 14:51:39  coppedis
-Geometry bug corrected
-
-Revision 1.4  2001/06/13 11:17:49  coppedis
-Bug corrected
-
-Revision 1.3  2001/06/13 11:11:02  coppedis
-Minor changes
-
-Revision 1.2  2001/06/12 13:45:11  coppedis
-TDI in correct position and minor correction
-
-Revision 1.1  2001/05/14 09:57:39  coppedis
-A different geometry for the ZDCs
-
-
-*/
+/* $Id$ */
 
 ///////////////////////////////////////////////////////////////////////
 //                                                                   //
@@ -68,22 +29,22 @@ A different geometry for the ZDCs
 
 // --- ROOT system
 #include <TBRIK.h>
-#include <TNode.h>
+#include <TLorentzVector.h>
 #include <TMath.h>
+#include <TNode.h>
 #include <TRandom.h>
 #include <TSystem.h>
 #include <TTree.h>
-
+#include <TVirtualMC.h>
 
 // --- AliRoot classes
-#include "AliZDCv2.h"
-#include "AliZDCHit.h"
-#include "AliRun.h"
+#include "AliConst.h"
 #include "AliDetector.h"
 #include "AliMagF.h"
-#include "AliConst.h"
 #include "AliPDG.h"
-#include "TLorentzVector.h"
+#include "AliRun.h"
+#include "AliZDCHit.h"
+#include "AliZDCv2.h"
  
  
 ClassImp(AliZDCv2)

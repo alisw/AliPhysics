@@ -13,6 +13,7 @@
 #include <TBranch.h>   // used in inline function SetHitsAddressBranch
 
 #include "AliRun.h"
+#include "AliLoader.h"
 #include "AliDetector.h"
 #include "AliITSDetType.h"
 
@@ -23,6 +24,7 @@ class TFile;
 //class AliITSDetType;
 class AliITSsimulation;
 class AliITSClusterFinder;
+class AliITSLoader;
 class AliITSsegmentation;
 class AliITSresponse;
 class AliITShit;
@@ -65,12 +67,13 @@ class AliITS : public AliDetector {
     AliITSmodule *GetModule(Int_t index) {return (AliITSmodule *)
 					      (fITSmodules->At(index));}
 
-    //================ Nessesary general Classes =======================
+    //================ Necessary general Classes =======================
     virtual void Init();
+    virtual AliLoader* MakeLoader(const char* topfoldername);
     virtual void SetDefaults();
     virtual void SetDefaultSimulation();
     virtual void SetDefaultClusterFinders();
-    virtual void MakeBranch(Option_t *opt=" ", const char *file=0);
+    virtual void MakeBranch(Option_t *opt=" ");
     virtual void SetTreeAddress();
     // For a give branch from the treeH sets the TClonesArray address.
     virtual void SetHitsAddressBranch(TBranch *b){b->SetAddress(&fHits);}
@@ -157,8 +160,6 @@ class AliITS : public AliDetector {
     void AddCluster(Int_t branch, AliITSRawCluster *c);
     void ResetClusters();                 // one of the methods in 
     void ResetClusters(Int_t branch);     // the pair will be kept
-    // Return pointer to the tree of clusters
-    TTree        *TreeC() {return fTreeC;}
     // Return pointers to clusters 
     TObjArray    *Ctype() {return fCtype;}
     Int_t        *Nctype() {return fNctype;}
@@ -168,6 +169,7 @@ class AliITS : public AliDetector {
     //=================== Reconstruction ===============================
     void MakeBranchR(const char *file, Option_t *opt=" ");
     void MakeBranchRF(const char *file){MakeBranchR(file,"Fast");}
+    void MakeBranchC();
     void SetTreeAddressR(TTree *treeR);
     void AddRecPoint(const AliITSRecPoint &p);
     void HitsToFastRecPoints(Int_t evNumber,Int_t bgrev,Int_t size,
@@ -177,7 +179,7 @@ class AliITS : public AliDetector {
     void ResetRecPoints();
     // Return pointer to rec points 
     TClonesArray  *RecPoints()   {return fRecPoints;}
-
+     
  protected:
     //================== Data Members ==================================
     AliITSgeom   *fITSgeom;    // Pointer to ITS geometry
@@ -192,20 +194,19 @@ class AliITS : public AliDetector {
     Int_t         fNDetTypes;  // Number of detector types
     TObjArray    *fDetTypes;   // List of detector types
 
-    TClonesArray  *fSDigits;    // List of Summable digits.
+    TClonesArray  *fSDigits;    //! List of Summable digits.
     Int_t         fNSDigits;   // Number of Summable Digits.
 
-    TObjArray    *fDtype;      // List of digits
+    TObjArray    *fDtype;      //! List of digits
     Int_t        *fNdtype;     //[fNDetTypes] Num. of digits per type of det. 
 
-    TObjArray    *fCtype;      // List of clusters
+    TObjArray    *fCtype;      //! List of clusters
     Int_t        *fNctype;     //[fNDetTypes] Num. of clust. per type of det.
-    TTree        *fTreeC;      //! Tree for raw clusters
 
-    TClonesArray *fRecPoints;  // List of reconstructed points
+    TClonesArray *fRecPoints;  //! List of reconstructed points
     Int_t         fNRecPoints; // Number of rec points
 
-    ClassDef(AliITS,2) // Base class for ITS
+    ClassDef(AliITS,3) // Base class for ITS
 };
 
 #endif

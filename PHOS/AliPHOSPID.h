@@ -13,10 +13,12 @@
 
 // --- ROOT system ---
 
-#include "TTask.h" 
+#include "TTask.h"
+#include "AliConfig.h"
+
 class TFormula ;
 class TClonesArray ;
-class TFile ; 
+
 // --- Standard library ---
 
 // --- AliRoot header files ---
@@ -30,36 +32,26 @@ class AliPHOSPID : public TTask {
  public:
 
   AliPHOSPID() ;          // ctor            
-  AliPHOSPID(const char* headerFile,const char * name, const Bool_t toSplit) ;
-  AliPHOSPID(AliPHOSPID& pid) ;          // cpy ctor            
+  AliPHOSPID (const TString alirunFileName, const TString eventFolderName = AliConfig::fgkDefaultEventFolderName) ;
+  AliPHOSPID(const AliPHOSPID & pid) {;} 
   virtual ~AliPHOSPID() ; // dtor
 
   virtual void Exec(Option_t * option) { Warning("Exec", "not defined" ) ; }
-  //  virtual char * GetRecParticlesBranch()const  { Warning("GetRecParticlesBranch", "not defined" ) ; return 0 ; }
-  //  virtual char * GetTrackSegmentsBranch()const { Warning("GetTrackSegmentsBranch", "not defined" ) ; return 0 ; } 
   virtual const Int_t GetRecParticlesInRun()  const { Warning("GetRecParticlesInRun", "not defined" ) ; return 0 ;} 
-  virtual void Print(Option_t * option) const { Warning("Print", "not defined" ) ;}
-  //virtual void PlotDispersionCuts()const = 0;
-  //virtual void SetIdentificationMethod(char * option) = 0 ;
-  //virtual void SetShowerProfileCut(char *  formula) = 0  ; 
-  //virtual void SetDispersionCut(Float_t cut) = 0  ;   
-  virtual void SetCpvtoEmcDistanceCut(Float_t ClusterEn, TString EffPur,Float_t cut ) { Warning("SetCpvtoEmcDistanceCut", "not defined" ) ;}
-  virtual void SetTimeGate(Float_t ClusterEn, TString EffPur, Float_t gate) { Warning("SetTimeGate", "not defined" ) ; }
-  //  virtual void SetTrackSegmentsBranch(const char* title) { Warning("Exec", "not defined" ) ; }
-  //  virtual void SetRecParticlesBranch (const char* title) { Warning("SetTecParticlesBranch", "not defined" ) ; }
-  //  virtual void SetSplitFile(const TString splitFileName = "PHOS.RecData.root") const ; 
+  virtual void Print() const { Warning("Print", "not defined" ) ;}
+  virtual void SetCpvtoEmcDistanceCut(Float_t Cluster_En, TString Eff_Pur,Float_t cut ) { Warning("SetCpvtoEmcDistanceCut", "not defined" ) ;}
+  void   SetEventFolderName(TString name) { fEventFolderName = name ; }
+  virtual void SetTimeGate(Float_t Cluster_En, TString Eff_Pur, Float_t gate) { Warning("SetTimeGate", "not defined" ) ; }
   virtual const char * Version() const { Warning("Version", "not defined" ) ; return 0 ; }  
   virtual void WriteRecParticles(Int_t event) { Warning("WriteRecParticles", "not defined" ) ; }
-  AliPHOSPID & operator = (const AliPHOSPID & pid) { return *this ; }
 
-protected: 
+private: 
   virtual void Init() { Warning("Init", "not defined" ) ; } 
 
 protected:
+  TString fEventFolderName ;  // event folder name
 
-  TFile * fSplitFile ;             //! file in which RecParticles will eventually be stored
-  Bool_t  fToSplit   ;             //! do we in the split mode  
-  ClassDef(AliPHOSPID,1)  // Particle Identifier algorithm (base class)
+  ClassDef(AliPHOSPID,3)  // Particle Identifier algorithm (base class)
 
 } ;
 

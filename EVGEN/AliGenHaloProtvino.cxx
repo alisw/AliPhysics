@@ -13,52 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.12  2002/11/21 16:22:35  alibrary
-Removing AliMCProcess and AliMC
-
-Revision 1.11  2002/10/14 14:55:35  hristov
-Merging the VirtualMC branch to the main development branch (HEAD)
-
-Revision 1.8.4.1  2002/07/24 08:56:28  alibrary
-Updating EVGEN on TVirtulaMC
-
-Revision 1.10  2002/05/28 14:28:12  morsch
-Correct LHC nominal current profile (1st year 20%, 2nd year 30%, 3rd year 100 %)
-
-Revision 1.9  2002/05/28 13:49:17  morsch
-- Udates for new pressure table
-- calculate time
-- first provisions for real events.
-
-Revision 1.8  2002/03/22 13:00:25  morsch
-Initialize sum to 0. (Jiri Chudoba).
-
-Revision 1.7  2002/02/21 16:09:45  morsch
-Move SetHighwaterMark() after last possible SetTrack()
-
-Revision 1.6  2002/02/01 15:28:22  morsch
-Fastidious print statements removed.
-
-Revision 1.5  2002/02/01 14:12:28  morsch
-Include new gas pressure estimates (LHC Pproject Note 273)
-
-Revision 1.4  2001/12/19 16:30:24  morsch
-Some bugs corrected and skip method added. (Rachid Guernane)
-
-Revision 1.3  2001/07/27 17:09:36  morsch
-Use local SetTrack, KeepTrack and SetHighWaterMark methods
-to delegate either to local stack or to stack owned by AliRun.
-(Piotr Skowronski, A.M.)
-
-Revision 1.2  2001/06/14 12:15:27  morsch
-Bugs corrected. SetSide() method added.
-
-Revision 1.1  2001/01/23 15:04:33  morsch
-Generator to read beam halo file from Protvino group.
-
-*/
+/* $Id$ */
 
 // Read background particles from a boundary source
 // Very specialized generator to simulate background from beam halo.

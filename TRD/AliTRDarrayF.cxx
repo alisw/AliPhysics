@@ -13,21 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.4  2000/06/09 11:10:07  cblume
-Compiler warnings and coding conventions, next round
-
-Revision 1.3  2000/06/08 18:32:58  cblume
-Make code compliant to coding conventions
-
-Revision 1.2  2000/05/08 16:17:27  cblume
-Merge TRD-develop
-
-Revision 1.1.2.1  2000/05/08 14:35:38  cblume
-Add float array
-
-*/
+/* $Id$ */
 
 ///////////////////////////////////////////////////////////////////////
 //                                                                   //  

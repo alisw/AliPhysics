@@ -4,7 +4,7 @@
  * See cxx source for full Copyright notice                               */
  
 /* $Id$ */
- 
+
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
 //  Particle generator for the simplescopic TRD simulator                    //

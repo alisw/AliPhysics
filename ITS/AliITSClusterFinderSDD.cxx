@@ -12,36 +12,9 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-/*
-  $Id$
-  $Log$
-  Revision 1.30  2003/03/03 16:34:35  masera
-  Corrections to comply with coding conventions
 
-  Revision 1.29  2002/10/25 18:54:22  barbera
-  Various improvements and updates from B.S.Nilsen and T. Virgili
+/* $Id$ */
 
-  Revision 1.28  2002/10/22 14:45:29  alibrary
-  Introducing Riostream.h
-
-  Revision 1.27  2002/10/14 14:57:00  hristov
-  Merging the VirtualMC branch to the main development branch (HEAD)
-
-  Revision 1.23.4.2  2002/10/14 13:14:07  hristov
-  Updating VirtualMC to v3-09-02
-
-  Revision 1.26  2002/09/09 17:23:28  nilsen
-  Minor changes in support of changes to AliITSdigitS?D class'.
-
-  Revision 1.25  2002/05/10 22:29:40  nilsen
-  Change my Massimo Masera in the default constructor to bring things into
-  compliance.
-
-  Revision 1.24  2002/04/24 22:02:31  nilsen
-  New SDigits and Digits routines, and related changes,  (including new
-  noise values).
-
- */
 // 
 //  Cluster finder 
 //  for Silicon

@@ -6,6 +6,7 @@
 
 class TFile;
 class AliStack;
+class AliRunLoader;
 
 class AliHBTReaderKineTree: public AliHBTReader
  {
@@ -26,13 +27,15 @@ class AliHBTReaderKineTree: public AliHBTReader
 
     
    protected:
-    TString      fFileName;
-    AliHBTRun* fParticles; //!simulated particles
+    TString       fFileName;
+    AliHBTRun*    fParticles; //!simulated particles
 
-    TFile*       OpenFile(Int_t);
-    AliStack*    GetStack(Int_t,TFile*);
+    AliRunLoader* OpenFile(Int_t);
 
     Bool_t fIsRead;//!flag indicating if the data are already read
+    
+    static const TString fgkEventFolderName;
+    
    private:
    
    public:

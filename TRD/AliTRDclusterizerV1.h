@@ -12,6 +12,7 @@
 ///////////////////////////////////////////////////////
 
 class AliTRDdigitsManager;
+class AliTRDparameter;
 
 class AliTRDclusterizerV1 : public AliTRDclusterizer {
 
@@ -36,7 +37,6 @@ class AliTRDclusterizerV1 : public AliTRDclusterizer {
   virtual Float_t  Unfold(Float_t eps, Int_t plane, Float_t *padSignal);
 
   ClassDef(AliTRDclusterizerV1,5)           // TRD-Cluster finder, slow simulator
-
 };
 
 #endif

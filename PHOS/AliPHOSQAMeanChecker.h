@@ -14,7 +14,11 @@
 
 // --- ROOT system ---
 
+#include "TTask.h"
+
 // --- Standard library ---
+
+#include <assert.h>
 
 // --- AliRoot header files ---
 

@@ -34,7 +34,7 @@
 ClassImp(AliEMCALTrackSegment)
 
 //____________________________________________________________________________
-AliEMCALTrackSegment::AliEMCALTrackSegment( AliEMCALTowerRecPoint * ec, AliEMCALTowerRecPoint * pre, AliEMCALTowerRecPoint * hc)
+AliEMCALTrackSegment::AliEMCALTrackSegment( AliEMCALTowerRecPoint * eca, AliEMCALTowerRecPoint * pre, AliEMCALTowerRecPoint * hca)
 {
   // ctor
 
@@ -43,15 +43,15 @@ AliEMCALTrackSegment::AliEMCALTrackSegment( AliEMCALTowerRecPoint * ec, AliEMCAL
   else 
     fPRERecPoint = -1 ;
 
-  if( ec )   
-    fECRecPoint =  ec->GetIndexInList() ;
+  if( eca )   
+    fECARecPoint =  eca->GetIndexInList() ;
   else 
-    fECRecPoint = -1 ;
+    fECARecPoint = -1 ;
 
-  if( hc )   
-    fHCRecPoint =  hc->GetIndexInList() ;
+  if( hca )   
+    fHCARecPoint =  hca->GetIndexInList() ;
   else 
-    fHCRecPoint = -1 ;
+    fHCARecPoint = -1 ;
 
   fIndexInList = -1 ;
 }
@@ -72,8 +72,8 @@ void AliEMCALTrackSegment::Copy(TObject & obj)
 
    TObject::Copy(obj) ;
    ( (AliEMCALTrackSegment &)obj ).fPRERecPoint = fPRERecPoint ; 
-   ( (AliEMCALTrackSegment &)obj ).fECRecPoint  = fECRecPoint ; 
-   ( (AliEMCALTrackSegment &)obj ).fHCRecPoint  = fHCRecPoint ; 
+   ( (AliEMCALTrackSegment &)obj ).fECARecPoint = fECARecPoint ; 
+   ( (AliEMCALTrackSegment &)obj ).fHCARecPoint = fHCARecPoint ; 
    ( (AliEMCALTrackSegment &)obj ).fIndexInList = fIndexInList ; 
 }
 
@@ -88,10 +88,10 @@ void AliEMCALTrackSegment::Print(Option_t * opt) const
   printf("Stored at position %d\n", fIndexInList) ;
   if (fPRERecPoint) 
     printf("PRE RecPoint #     %d\n", fPRERecPoint) ;
-  if (fECRecPoint) 
-    printf("EC RecPoint  #     %d\n", fECRecPoint) ;
-  if (fHCRecPoint) 
-    printf("HC RecPoint  #     %d\n", fHCRecPoint) ;
+  if (fECARecPoint) 
+    printf("EC RecPoint  #     %d\n", fECARecPoint) ;
+  if (fHCARecPoint) 
+    printf("HC RecPoint  #     %d\n", fHCARecPoint) ;
 
   printf("------------------------------------ \n") ; 
   
@@ -108,11 +108,11 @@ void AliEMCALTrackSegment::SetPRERecPoint(AliEMCALRecPoint * pre)
 }
 
 //____________________________________________________________________________
-void AliEMCALTrackSegment::SetHCRecPoint(AliEMCALRecPoint * hc) 
+void AliEMCALTrackSegment::SetHCARecPoint(AliEMCALRecPoint * hca) 
 {
   // gives an id from its position in the list
-  if( hc )  
-    fHCRecPoint = hc->GetIndexInList() ;
+  if( hca )  
+    fHCARecPoint = hca->GetIndexInList() ;
  else 
-    fHCRecPoint = -1 ;
+    fHCARecPoint = -1 ;
 }

@@ -26,11 +26,15 @@
 
 // --- ROOT system ---
 
+#include "TMath.h"
+
 // --- Standard library ---
 
 // --- AliRoot header files ---
 
 #include "AliPHOSDigit.h"
+
+
 
 
 ClassImp(AliPHOSDigit)
@@ -42,7 +46,8 @@ ClassImp(AliPHOSDigit)
 
   fIndexInList = -1 ; 
   fNprimary    = 0 ;  
-  fNMaxPrimary = 5 ; 
+  fNMaxPrimary = 5 ;
+  fPrimary = 0;
 }
 
 //____________________________________________________________________________
@@ -55,6 +60,7 @@ AliPHOSDigit::AliPHOSDigit(Int_t primary, Int_t id, Int_t digEnergy, Float_t tim
   fTime        = time ;
   fId          = id ;
   fIndexInList = index ; 
+  fPrimary = new Int_t[fNMaxPrimary] ;
   if( primary != -1){
     fNprimary    = 1 ; 
     fPrimary[0]  = primary ;
@@ -75,6 +81,7 @@ AliPHOSDigit::AliPHOSDigit(const AliPHOSDigit & digit)
   
 
   fNMaxPrimary = digit.fNMaxPrimary ;  
+  fPrimary = new Int_t[fNMaxPrimary] ;
   Int_t i ;
   for ( i = 0; i < fNMaxPrimary ; i++)
     fPrimary[i]  = digit.fPrimary[i] ;
@@ -89,7 +96,7 @@ AliPHOSDigit::AliPHOSDigit(const AliPHOSDigit & digit)
 AliPHOSDigit::~AliPHOSDigit() 
 {
   // Delete array of primiries if any
-  
+  delete [] fPrimary ;
 }
 
 //____________________________________________________________________________
@@ -158,61 +165,41 @@ AliPHOSDigit& AliPHOSDigit::operator+(AliPHOSDigit const & digit)
   // Adds the amplitude of digits and completes the list of primary particles
   // if amplitude is larger than 
   
-  Int_t toAdd = fNprimary ;
-  if(digit.fNprimary>0){
-    if(fAmp < digit.fAmp){//most energetic primary in second digit => first primaries in list from second digit
-      for (Int_t index = 0 ; index < digit.fNprimary ; index++){
-	for (Int_t old = 0 ; old < fNprimary ; old++) { //already have this primary?
-	  if(fPrimary[old] == (digit.fPrimary)[index]){
-	    fPrimary[old] = -1 ; //removed
-	    toAdd-- ;
-	    break ;
-	  }
-	}
-      }
-      Int_t nNewPrimaries = digit.fNprimary+toAdd ;
-      if(nNewPrimaries >fNMaxPrimary)  //Do not change primary list
-	Error("Operator +", "Increase NMaxPrimary") ;
-      else{
-	for(Int_t index = fNprimary-1 ; index >=0 ; index--){ //move old primaries	
-	  if(fPrimary[index]>-1){
-	    toAdd-- ;
-	    fPrimary[fNprimary+toAdd]=fPrimary[index] ;
-	  }
-	}
-	//copy new primaries
-	for(Int_t index = 0; index < digit.fNprimary ; index++){
-	  fPrimary[index] = (digit.fPrimary)[index] ;	
-	}
-	fNprimary = nNewPrimaries ;
-      }
-    }
-    else{ //add new primaries to the end
-      for(Int_t index = 0 ; index < digit.fNprimary ; index++){
-	Bool_t deja = kTRUE ;
-	for(Int_t old = 0 ; old < fNprimary; old++) { //already have this primary?
-	  if(fPrimary[old] == (digit.fPrimary)[index]){
-	    deja = kFALSE;
-	    break ;
-	  }      
-	}
-	if(deja){
-	  fPrimary[fNprimary] = (digit.fPrimary)[index] ; 
-	  fNprimary++ ;
-	  if(fNprimary>fNMaxPrimary) {
-	    Error("Operator +", "Increase NMaxPrimary") ;
-	    break ;
-	  }
-	}
-      }
-      
-    }
-  }
-  
   fAmp += digit.fAmp ;
   if(fTime > digit.fTime)
     fTime = digit.fTime ;
   
+  Int_t max1 = fNprimary ; 
+  
+  Int_t index ; 
+  for (index = 0 ; index < digit.fNprimary ; index++){
+    Bool_t deja = kTRUE ;
+    Int_t old ;
+    for ( old = 0 ; (old < max1) && deja; old++) { //already have this primary?
+      if(fPrimary[old] == (digit.fPrimary)[index])
+	deja = kFALSE;
+    }
+    if(deja){
+      fPrimary[fNprimary] = (digit.fPrimary)[index] ; 
+      fNprimary++ ;
+      if(fNprimary>fNMaxPrimary) {
+	Error("Operator +", "Increase NMaxPrimary") ;
+	return *this ;
+      }
+    }
+  }
+  
+  return *this ;
+}
+
+//____________________________________________________________________________
+AliPHOSDigit& AliPHOSDigit::operator*(Float_t factor) 
+{
+  // Multiplies the amplitude by a factor
+  
+  Float_t tempo = static_cast<Float_t>(fAmp) ; 
+  tempo *= factor ; 
+  fAmp = static_cast<Int_t>(TMath::Ceil(tempo)) ; 
   return *this ;
 }
 

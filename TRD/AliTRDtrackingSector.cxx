@@ -13,42 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.7.6.2  2002/07/24 10:09:31  alibrary
-Updating VirtualMC
-
-Revision 1.9  2002/06/12 09:54:36  cblume
-Update of tracking code provided by Sergei
-
-Revision 1.8  2002/03/28 14:59:07  cblume
-Coding conventions
-
-Revision 1.7  2001/11/19 08:44:08  cblume
-Fix bugs reported by Rene
-
-Revision 1.6  2001/05/28 17:07:58  hristov
-Last minute changes; ExB correction in AliTRDclusterizerV1; taking into account of material in G10 TEC frames and material between TEC planes (C.Blume,S.Sedykh)
-
-Revision 1.5  2000/12/08 16:07:02  cblume
-Update of the tracking by Sergei
-
-Revision 1.4  2000/10/16 01:16:53  cblume
-Changed timebin 0 to be the one closest to the readout
-
-Revision 1.3  2000/10/15 23:40:01  cblume
-Remove AliTRDconst
-
-Revision 1.2  2000/10/06 16:49:46  cblume
-Made Getters const
-
-Revision 1.1.2.2  2000/10/04 16:34:58  cblume
-Replace include files by forward declarations
-
-Revision 1.1.2.1  2000/09/22 14:47:52  cblume
-Add the tracking code
-
-*/ 
+/* $Id$ */
 
 /////////////////////////////////////////////////////////////////////////
 //                                                                     //
@@ -100,6 +65,8 @@ void AliTRDtrackingSector::SetUp()
 
   AliTRD *trd = (AliTRD*) gAlice->GetDetector("TRD");
   fGeom = trd->GetGeometry();
+
+  fTimeBinSize = fGeom->GetTimeBinSize();
 
   fN = AliTRDgeometry::Nplan() * (Int_t(AliTRDgeometry::DrThick()
                                        /fTimeBinSize) + 1);

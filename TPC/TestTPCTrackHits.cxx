@@ -13,12 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.3  2000/11/02 10:22:50  kowal2
-Logs added
-
-*/
+/* $Id$ */
 
 /*
   Author : MI

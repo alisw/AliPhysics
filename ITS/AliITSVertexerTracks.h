@@ -39,15 +39,15 @@ class AliITSVertexerTracks : public AliITSVertexer {
   // default constructor
   AliITSVertexerTracks();  
   // standard constructor     
-  AliITSVertexerTracks(TFile *inFile,TFile *outFile,Double_t field,
-		       Double_t xStart=0,Double_t yStart=0,Int_t useThFr=0); 
+  AliITSVertexerTracks(Double_t field, TString fn,
+                      Double_t xStart=0,Double_t yStart=0,Int_t useThFr=0); 
   // destructor
   virtual ~AliITSVertexerTracks() {}
   // return vertex from the set of tracks in the tree
   AliITSVertex *VertexOnTheFly(TTree &trkTree);
   // computes the vertex for the current event
   virtual AliITSVertex*    FindVertexForCurrentEvent(Int_t evnumb);
-  // computes the vertex for each event and stores it on fOutFile
+  // computes the vertex for each event and stores it on file
   virtual void  FindVertices();
   virtual void  PrintStatus() const;
   // computes the vertex for the current event    

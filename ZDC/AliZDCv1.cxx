@@ -13,104 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.28  2002/10/14 14:57:44  hristov
-Merging the VirtualMC branch to the main development branch (HEAD)
-
-Revision 1.27.8.1  2002/06/10 15:29:36  hristov
-Merged with v3-08-02
-
-Revision 1.27  2001/09/26 16:06:59  coppedis
-Some function moved to AliZDC
-
-Revision 1.26  2001/06/13 11:10:55  coppedis
-Minor changes
-
-Revision 1.25  2001/06/12 13:45:05  coppedis
-TDI in correct position and minor correction
-
-Revision 1.24  2001/05/16 14:57:28  alibrary
-New files for folders and Stack
-
-Revision 1.23  2001/05/14 09:51:50  coppedis
-Change in AddHit suggested by J. Chudoba
-
-Revision 1.22  2001/05/05 13:33:19  coppedis
-Changes in StepManager to speed simulation
-
-Revision 1.21  2001/05/02 11:54:34  enrico
-Minor change
-
-Revision 1.20  2001/05/02 10:33:11  coppedis
-Modify tmaxfd in media definition
-
-Revision 1.19  2001/04/27 08:35:01  coppedis
-Remove some lines for proton acceptance studies
-
-Revision 1.18  2001/04/20 10:08:45  coppedis
-Preliminary version of optics 6.2 - Insertion of TDI
-
-Revision 1.17  2001/03/16 16:18:10  coppedis
-Correction for superposition of ZDC volumes with MUON arm one
-
-Revision 1.16  2001/03/15 16:12:04  coppedis
-Code review
-
-Revision 1.15  2001/03/12 17:47:56  hristov
-Changes needed on Sun with CC 5.0
-
-Revision 1.14  2001/02/23 16:48:28  coppedis
-Correct bug in ZEM hit definition
-
-Revision 1.13  2001/02/07 18:07:41  coppedis
-Modif for splitting
-
-Revision 1.12  2001/01/26 19:56:27  hristov
-Major upgrade of AliRoot code
-
-Revision 1.11  2001/01/16 07:43:33  hristov
-Initialisation of ZDC hits
-
-Revision 1.10  2000/12/14 15:20:02  coppedis
-Hits2Digits method for digitization
-
-Revision 1.9  2000/12/13 10:33:49  coppedis
-Prints only if fDebug==1
-
-Revision 1.8  2000/12/12 14:10:02  coppedis
-Correction suggested by M. Masera
-
-Revision 1.7  2000/11/30 17:23:47  coppedis
-Remove first corrector dipole and introduce digitization
-
-Revision 1.6  2000/11/22 11:33:10  coppedis
-Major code revision
-
-Revision 1.5  2000/10/02 21:28:20  fca
-Removal of useless dependecies via forward declarations
-
-Revision 1.3.2.1  2000/08/24 09:25:47  hristov
-Patch by P.Hristov: Bug in ZDC geometry corrected by E.Scomparin
-
-Revision 1.4  2000/08/24 09:23:59  hristov
-Bug in ZDC geometry corrected by E.Scomparin
-
-Revision 1.3  2000/07/12 06:59:16  fca
-Fixing dimension of hits array
-
-Revision 1.2  2000/07/11 11:12:34  fca
-Some syntax corrections for non standard HP aCC
-
-Revision 1.1  2000/07/10 13:58:01  fca
-New version of ZDC from E.Scomparin &amp; C.Oppedisano
-
-Revision 1.7  2000/01/19 17:17:40  fca
-
-Revision 1.6  1999/09/29 09:24:35  fca
-Introduction of the Copyright and cvs Log
-
-*/
+/* $Id$ */
 
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
@@ -125,22 +28,22 @@ Introduction of the Copyright and cvs Log
 
 // --- ROOT system
 #include <TBRIK.h>
-#include <TNode.h>
+#include <TLorentzVector.h>
 #include <TMath.h>
+#include <TNode.h>
 #include <TRandom.h>
 #include <TSystem.h>
 #include <TTree.h>
-
+#include <TVirtualMC.h>
 
 // --- AliRoot classes
-#include "AliZDCv1.h"
-#include "AliZDCHit.h"
-#include "AliRun.h"
+#include "AliConst.h"
 #include "AliDetector.h"
 #include "AliMagF.h"
-#include "AliConst.h"
 #include "AliPDG.h"
-#include "TLorentzVector.h"
+#include "AliRun.h"
+#include "AliZDCHit.h"
+#include "AliZDCv1.h"
  
  
 ClassImp(AliZDCv1)

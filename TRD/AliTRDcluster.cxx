@@ -13,35 +13,20 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.4.10.2  2002/07/24 10:09:30  alibrary
-Updating VirtualMC
+/* $Id$ */
 
-Revision 1.6  2002/06/12 09:54:35  cblume
-Update of tracking code provided by Sergei
-
-Revision 1.4  2001/05/07 08:08:05  cblume
-Update of TRD code
-
-Revision 1.3  2000/12/08 16:07:02  cblume
-Update of the tracking by Sergei
-
-Revision 1.2  2000/10/06 16:49:46  cblume
-Made Getters const
-
-Revision 1.1.2.1  2000/09/22 14:47:52  cblume
-Add the tracking code
-
-*/
+ 
+///////////////////////////////////////////////////////////////////////////////
+//                                                                           //
+//  TRD cluster                                                              //
+//                                                                           //
+/////////////////////////////////////////////////////////////////////////////// 
 
 #include "AliTRDcluster.h"
-#include "AliTRDgeometry.h"
 #include "AliTRDrecPoint.h"
 
 ClassImp(AliTRDcluster)
  
-
 //_____________________________________________________________________________
   AliTRDcluster::AliTRDcluster(const AliTRDrecPoint &p):AliCluster()
 {
@@ -102,26 +87,27 @@ void AliTRDcluster::AddTrackIndex(Int_t *track)
   //     ones are stored first;
   //
 
-  const Int_t size = 9;
+  const Int_t kSize = 9;
 
-  Int_t entries[size][2], i, j, index;
+  Int_t entries[kSize][2], i, j, index;
 
-  Bool_t index_added;
+  Bool_t indexAdded;
 
-  for (i=0; i<size; i++) {
+  for (i=0; i<kSize; i++) {
     entries[i][0]=-1;
     entries[i][1]=0;
   }                                 
 
-  for (Int_t k=0; k<size; k++) {
+  for (Int_t k=0; k<kSize; k++) {
     index=track[k];
-    index_added=kFALSE; j=0;
+    indexAdded=kFALSE; 
+    j=0;
     if (index >= 0) {
-      while ( (!index_added) && ( j < size ) ) {
+      while ( (!indexAdded) && ( j < kSize ) ) {
         if ((entries[j][0]==index) || (entries[j][1]==0)) {
           entries[j][0]=index;
           entries[j][1]=entries[j][1]+1;
-          index_added=kTRUE;
+          indexAdded=kTRUE;
         }
         j++;
       }
@@ -132,7 +118,7 @@ void AliTRDcluster::AddTrackIndex(Int_t *track)
   Int_t swap=1, tmp0, tmp1;
   while ( swap > 0) {
     swap=0;
-    for(i=0; i<(size-1); i++) {
+    for(i=0; i<(kSize-1); i++) {
       if ((entries[i][0] >= 0) && (entries[i+1][0] >= 0)) {
         if ((entries[i][1] < entries[i+1][1]) ||
             ((entries[i][1] == entries[i+1][1]) &&

@@ -15,10 +15,19 @@
 
 /*
   $Log$
+  Revision 1.1.4.2  2003/04/16 07:51:47  hristov
+  Removing malloc.h
+
+  Revision 1.1.4.1  2002/11/26 16:59:29  hristov
+  Merging NewIO with v3-09-04
+
+  Revision 1.1  2002/10/29 14:09:45  morsch
+  Second reconstruction algorithm. (J. Barbosa)
+
  
 */
 
-#include <stdlib.h>
+#include <stdlib.h> 
 
 #include "AliRICHDetectV1.h"
 #include "AliRICH.h"
@@ -39,8 +48,6 @@
 #include "TCanvas.h"
 #include <TStyle.h>
 
-
-#include "malloc.h"
 
 
 ClassImp(AliRICHDetectV1)
@@ -184,7 +191,7 @@ void AliRICHDetectV1::Detect(Int_t nev, Int_t type)
   Activation->SetFillColor(5);
   Activation->SetXTitle("activation");
 
-  Int_t ntracks = (Int_t)gAlice->TreeH()->GetEntries();
+  Int_t ntracks = (Int_t)pRICH->TreeH()->GetEntries();
    
   Float_t trackglob[3];
   Float_t trackloc[3];
@@ -195,7 +202,7 @@ void AliRICHDetectV1::Detect(Int_t nev, Int_t type)
 	
   for (track=0; track<ntracks;track++) {
     gAlice->ResetHits();
-    gAlice->TreeH()->GetEvent(track);
+    pRICH->TreeH()->GetEvent(track);
     TClonesArray *pHits  = pRICH->Hits();
     if (pHits == 0) return;
     Int_t nhits = pHits->GetEntriesFast();

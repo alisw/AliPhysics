@@ -35,17 +35,18 @@
 
 #include <assert.h>
 
-#include <Riostream.h>
 #include <TBrowser.h>
 #include <TFile.h>
 #include <TFolder.h>
 #include <TROOT.h>
 #include <TTree.h>
+#include <Riostream.h>
 
 #include "AliConfig.h"
 #include "AliDetector.h"
 #include "AliHit.h"
 #include "AliPoints.h"
+#include "AliLoader.h"
 #include "AliRun.h"
 
 
@@ -65,8 +66,8 @@ AliDetector::AliDetector():
   fBufferSize(1600),
   fHits(0),
   fDigits(0),
-  fDigitsFile(0),
-  fPoints(0)
+  fPoints(0),
+  fLoader(0x0)
 {
   //
   // Default constructor for the AliDetector class
@@ -83,8 +84,8 @@ AliDetector::AliDetector(const AliDetector &det):
   fBufferSize(1600),
   fHits(0),
   fDigits(0),
-  fDigitsFile(0),
-  fPoints(0)
+  fPoints(0),
+  fLoader(0x0)
 {
   det.Copy(*this);
 }
@@ -99,8 +100,8 @@ AliDetector::AliDetector(const char* name,const char *title):
   fBufferSize(1600),
   fHits(0),
   fDigits(0),
-  fDigitsFile(0),
-  fPoints(0)
+  fPoints(0),
+  fLoader(0x0)
 {
   //
   // Normal constructor invoked by all Detectors.
@@ -132,37 +133,22 @@ AliDetector::~AliDetector()
     delete fDigits;
     fDigits     = 0;
   }
-  if (fDigitsFile) delete [] fDigitsFile;
+
+  if (fLoader)
+   {
+    fLoader->GetModulesFolder()->Remove(this);
+   }
+
 }
 
 //_______________________________________________________________________
 void AliDetector::Publish(const char *dir, void *address, const char *name)
 {
-  //
-  // Register pointer to detector objects. 
-  // 
-  TFolder *topFolder = dynamic_cast<TFolder *>(gROOT->FindObjectAny("/Folders"));
-  if  (topFolder) { 
-    TFolder *folder = dynamic_cast<TFolder *>(topFolder->FindObjectAny(dir));
-    // TFolder *folder = dynamic_cast<TFolder *>(gROOT->FindObjectAny(dir));
-    if (!folder)  {
-      cerr << "Cannot register: Missing folder: " << dir << endl;
-    } else {
-      TFolder *subfolder = dynamic_cast<TFolder *>(folder->FindObjectAny(this->GetName())); 
-
-      if(!subfolder)
-         subfolder = folder->AddFolder(this->GetName(),this->GetTitle());
-      if (address) {
-        TObject **obj = static_cast<TObject **>(address);
-        if ((*obj)->InheritsFrom(TCollection::Class())) {
-           TCollection *collection = dynamic_cast<TCollection *>(*obj); 
-           if (name)
-             collection->SetName(name);
-        } 
-        subfolder->Add(*obj);
-      } 
-    }  
-  }
+//
+// Register pointer to detector objects. 
+// 
+//  TFolder *topFolder = (TFolder *)gROOT->FindObjectAny("/Folders");
+  MayNotUse("Publish");
 }
 
 //_______________________________________________________________________
@@ -179,66 +165,35 @@ TBranch* AliDetector::MakeBranchInTree(TTree *tree, const char* name,
                                        void* address,Int_t size, 
                                        Int_t splitlevel, const char *file)
 { 
-    //
-    // Makes branch in given tree and diverts them to a separate file
-    //  
-    if (GetDebug()>1)
-      printf("* MakeBranch * Making Branch %s \n",name);
-      
-    TDirectory *cwd = gDirectory;
-    TBranch *branch = 0;
-    
-    if (classname) {
-      branch = tree->Branch(name,classname,address,size,splitlevel);
-    } else {
-      branch = tree->Branch(name,address,size);
-    }
-       
-    if (file) {
-        char * outFile = new char[strlen(gAlice->GetBaseFile())+strlen(file)+2];
-        sprintf(outFile,"%s/%s",gAlice->GetBaseFile(),file);
-        branch->SetFile(outFile);
-        TIter next( branch->GetListOfBranches());
-        while ((branch=dynamic_cast<TBranch*>(next()))) {
-           branch->SetFile(outFile);
-        } 
-       delete outFile;
-        
-       cwd->cd();
-        
-       if (GetDebug()>1)
-           printf("* MakeBranch * Diverting Branch %s to file %s\n",name,file);
-    }
-    const char *folder = 0;
-    TString folderName(name);  
-    
-    if (!strncmp(tree->GetName(),"TreeE",5)) folder = "RunMC/Event/Data";
-    if (!strncmp(tree->GetName(),"TreeK",5)) folder = "RunMC/Event/Data";
-    if (!strncmp(tree->GetName(),"TreeH",5)) {
-      folder     = "RunMC/Event/Data/Hits";
-      folderName = "Hits" ; 
-    }
-    if (!strncmp(tree->GetName(),"TreeTrackReferences",5)) {
-      folder     = "RunMC/Event/Data/TrackReferences";
-      folderName = "TrackReferences" ; 
-    }
-
-    if (!strncmp(tree->GetName(),"TreeD",5)) {
-      folder     = "Run/Event/Data";
-      folderName = "Digits" ; 
-    }
-    if (!strncmp(tree->GetName(),"TreeS",5)) {
-      folder     = "RunMC/Event/Data/SDigits";
-      folderName = "SDigits" ; 
-    }
-    if (!strncmp(tree->GetName(),"TreeR",5)) folder = "Run/Event/RecData";
-
-    if (folder) {
-      if (GetDebug())
-          printf("%15s: Publishing %s to %s\n",ClassName(),name,folder);
-      Publish(folder,address, folderName.Data());
-    }  
+//
+// Makes branch in given tree and diverts them to a separate file
+// 
+//
+//
+// if (GetDebug()>1)
+ if(GetDebug()) Info("MakeBranch","Making Branch %s",name);
+ if (tree == 0x0) 
+  {
+   Error("MakeBranch","Making Branch %s Tree is NULL",name);
+   return 0x0;
+  }
+ TBranch *branch = tree->GetBranch(name);
+ if (branch) 
+  {  
+    if(GetDebug()) Info("MakeBranch","Branch %s is already in tree.",name);
     return branch;
+  }
+    
+ if (classname) 
+  {
+    branch = tree->Branch(name,classname,address,size,splitlevel);
+  } 
+ else 
+  {
+    branch = tree->Branch(name,address,size);
+  }
+ if(GetDebug()) Info("MakeBranch","Branch %s returning branch %#x",name,branch);
+ return branch;
 }
 
 //_______________________________________________________________________
@@ -277,7 +232,6 @@ void AliDetector::FinishRun()
   //
 }
 
-
 //_______________________________________________________________________
 AliHit* AliDetector::FirstHit(Int_t track)
 {
@@ -289,8 +243,8 @@ AliHit* AliDetector::FirstHit(Int_t track)
   // track is returned
   // 
   if(track>=0) {
-    gAlice->ResetHits();
-    gAlice->TreeH()->GetEvent(track);
+    gAlice->ResetHits(); //stupid = if N detector this method is called N times
+    TreeH()->GetEvent(track); //skowron
   }
   //
   sMaxIterHit=fHits->GetEntriesFast();
@@ -298,7 +252,6 @@ AliHit* AliDetector::FirstHit(Int_t track)
   if(sMaxIterHit) return dynamic_cast<AliHit*>(fHits->UncheckedAt(0));
   else            return 0;
 }
-
 
 //_______________________________________________________________________
 AliHit* AliDetector::NextHit()
@@ -317,17 +270,24 @@ AliHit* AliDetector::NextHit()
   }
 }
 
-
 //_______________________________________________________________________
 void AliDetector::LoadPoints(Int_t)
 {
   //
   // Store x, y, z of all hits in memory
   //
-  if (fHits == 0) return;
+  if (fHits == 0) 
+   {
+    Error("LoadPoints","fHits == 0. Name is %s",GetName());
+    return;
+   }
   //
   Int_t nhits = fHits->GetEntriesFast();
-  if (nhits == 0) return;
+  if (nhits == 0) 
+   {
+//    Error("LoadPoints","nhits == 0. Name is %s",GetName());
+    return;
+   }
   Int_t tracks = gAlice->GetNtrack();
   if (fPoints == 0) fPoints = new TObjArray(tracks);
   AliHit *ahit;
@@ -351,19 +311,23 @@ void AliDetector::LoadPoints(Int_t)
     ahit = dynamic_cast<AliHit*>(fHits->UncheckedAt(hit));
     trk=ahit->GetTrack();
     assert(trk<=tracks);
-    if(ntrk[trk]==limi[trk]) {
+    if(ntrk[trk]==limi[trk])
+     {
       //
       // Initialise a new track
       fp=new Float_t[3*(limi[trk]+chunk)];
-      if(coor[trk]) {
-	memcpy(fp,coor[trk],sizeof(Float_t)*3*limi[trk]);
-	delete [] coor[trk];
-      }
+      if(coor[trk]) 
+       {
+          memcpy(fp,coor[trk],sizeof(Float_t)*3*limi[trk]);
+          delete [] coor[trk];
+       }
       limi[trk]+=chunk;
       coor[trk] = fp;
-    } else {
+     } 
+    else 
+     {
       fp = coor[trk];
-    }
+     }
     fp[3*ntrk[trk]  ] = ahit->X();
     fp[3*ntrk[trk]+1] = ahit->Y();
     fp[3*ntrk[trk]+2] = ahit->Z();
@@ -389,51 +353,19 @@ void AliDetector::LoadPoints(Int_t)
 }
 
 //_______________________________________________________________________
-void AliDetector::MakeBranch(Option_t *option, const char *file)
+void AliDetector::MakeBranch(Option_t *option)
 {
   //
-  // Create a new branch in the current Root Tree
-  // The branch of fHits is automatically split
+  // Create a new branch for this detector in its treeH
   //
- 
-  char branchname[10];
-  sprintf(branchname,"%s",GetName());
-  //
-  // Get the pointer to the header
-  const char *cH = strstr(option,"H");
-  //
-  if (fHits && gAlice->TreeH() && cH) {
-    MakeBranchInTree(gAlice->TreeH(), 
-                     branchname, &fHits, fBufferSize, file) ;              
-  }	
-  
-  const char *cD = strstr(option,"D");
 
-  if (cD) {
-    if (file) {
-       fDigitsFile = new char[strlen (file)];
-       strcpy(fDigitsFile,file);
-    }
-  }
-}
-//_______________________________________________________________________
-void AliDetector::MakeBranchTR(Option_t *option, const char *file)
-{
-  //
-  // Create a new branch in the current Root Tree
-  // The branch of fHits is automatically split
-  //
- 
-  char branchname[10];
-  sprintf(branchname,"%s",GetName());
-  //
-  // Get the pointer to the header
-  const char *cTR = strstr(option,"T");
-  //
-  if (fTrackReferences && gAlice->TreeTR() && cTR) {
-    MakeBranchInTree(gAlice->TreeTR(), 
-                     branchname, &fTrackReferences, fBufferSize, file) ;              
-  }	  
+  if(GetDebug()) Info("MakeBranch"," for %s",GetName());
+  const char *cH = strstr(option,"H");
+
+  if (fHits && TreeH() && cH) 
+   {
+     MakeBranchInTree(TreeH(), GetName(), &fHits, fBufferSize, 0);
+   }	
 }
 
 //_______________________________________________________________________
@@ -443,7 +375,7 @@ void AliDetector::ResetDigits()
   // Reset number of digits and the digits array
   //
   fNdigits   = 0;
-  if (fDigits)   fDigits->Clear();
+  if (fDigits) fDigits->Clear();
 }
 
 //_______________________________________________________________________
@@ -453,7 +385,7 @@ void AliDetector::ResetHits()
   // Reset number of hits and the hits array
   //
   fNhits   = 0;
-  if (fHits)   fHits->Clear();
+  if (fHits) fHits->Clear();
 }
 
 //_______________________________________________________________________
@@ -476,24 +408,78 @@ void AliDetector::SetTreeAddress()
   // Set branch address for the Hits and Digits Trees
   //
   TBranch *branch;
-  char branchname[20];
-  sprintf(branchname,"%s",GetName());
   //
   // Branch address for hit tree
-  TTree *treeH = gAlice->TreeH();
-  if (treeH && fHits) {
-    branch = treeH->GetBranch(branchname);
-    if (branch) branch->SetAddress(&fHits);
+  
+  TTree *tree = TreeH();
+  if (tree && fHits) {
+    branch = tree->GetBranch(GetName());
+    if (branch) 
+     {
+       if(GetDebug()) Info("SetTreeAddress","(%s) Setting for Hits",GetName());
+       branch->SetAddress(&fHits);
+     }
+    else
+     {
+       Warning("SetTreeAddress","(%s) Failed for Hits. Can not find branch in tree.",GetName());
+     }
   }
+  
   //
   // Branch address for digit tree
-  TTree *treeD = gAlice->TreeD();
+  TTree *treeD = fLoader->TreeD();
   if (treeD && fDigits) {
-    branch = treeD->GetBranch(branchname);
+    branch = treeD->GetBranch(GetName());
     if (branch) branch->SetAddress(&fDigits);
   }
   
   AliModule::SetTreeAddress();
 }
 
+//_______________________________________________________________________
+void AliDetector::MakeTree(Option_t *option)
+ {
+ //makes a tree (container) for the data defined in option
+ //"H" - hits
+ //"D" - digits
+ //"S" - summable digits
+ //"R" - recontructed points and tracks
  
+    AliLoader* loader = GetLoader();
+    if (loader == 0x0)
+     {
+       Error("MakeTree","Can not get loader for %s",GetName());
+       return;
+     }
+    loader->MakeTree(option); //delegate this job to getter
+ }
+
+//_______________________________________________________________________
+AliLoader* AliDetector::MakeLoader(const char* topfoldername)
+{ 
+//builds standard getter (AliLoader type)
+//if detector wants to use castomized getter, it must overload this method
+
+ cout<<"AliDetector::MakeLoader: Creating standard getter for detector "<<GetName()
+     <<". top folder is "<<topfoldername<<endl;
+     
+ fLoader = new AliLoader(GetName(),topfoldername);
+ return fLoader;
+ 
+}
+
+//_______________________________________________________________________
+TTree* AliDetector::TreeH()
+{
+//Get the hits container from the folder
+  if (GetLoader() == 0x0) 
+    {
+    //sunstitude this with make getter when we can obtain the event folder name 
+     Error("TreeH","Can not get the getter");
+     return 0x0;
+    }
+ 
+  TTree* tree = (TTree*)GetLoader()->TreeH();
+  return tree;
+}
+

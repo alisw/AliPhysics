@@ -13,81 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.31  2002/11/21 22:46:24  alibrary
-Removing AliMC and AliMCProcess
-
-Revision 1.30  2002/10/22 14:26:28  alibrary
-Introducing Riostream.h
-
-Revision 1.29  2002/10/14 14:57:42  hristov
-Merging the VirtualMC branch to the main development branch (HEAD)
-
-Revision 1.25.6.3  2002/07/25 06:24:28  alibrary
-Updating TOF on VirtualMC
-
-Revision 1.28  2002/07/24 16:13:56  vicinanz
-Fixed bub in BuildGeometry
-
-Revision 1.27  2002/06/24 14:09:12  vicinanz
-review on materials and
-
-Revision 1.26  2002/05/08 13:24:50  vicinanz
-AliTOFanalyzeMatching.C macro added and minor changes to the AliTOF code
-
-Revision 1.25  2001/11/22 11:22:51  hristov
-Updated version of TOF digitization, N^2 problem solved (J.Chudoba)
-
-Revision 1.23  2001/09/27 10:39:20  vicinanz
-SDigitizer and Merger added
-
-Revision 1.22  2001/09/20 15:54:22  vicinanz
-Updated Strip Structure (Double Stack)
-
-Revision 1.21  2001/08/28 08:45:59  vicinanz
-TTask and TFolder structures implemented
-
-Revision 1.20  2001/05/16 14:57:24  alibrary
-New files for folders and Stack
-
-Revision 1.19  2001/05/04 10:09:48  vicinanz
-Major upgrades to the strip structure
-
-Revision 1.18  2000/12/04 08:48:20  alibrary
-Fixing problems in the HEAD
-
-Revision 1.17  2000/10/02 21:28:17  fca
-Removal of useless dependecies via forward declarations
-
-Revision 1.16  2000/05/10 16:52:18  vicinanz
-New TOF version with holes for PHOS/RICH
-
-Revision 1.14.2.1  2000/05/10 09:37:16  vicinanz
-New version with Holes for PHOS/RICH
-
-Revision 1.14  1999/11/05 22:39:06  fca
-New hits structure
-
-Revision 1.13  1999/11/02 11:26:39  fca
-added stdlib.h for exit
-
-Revision 1.12  1999/11/01 20:41:57  fca
-Added protections against using the wrong version of FRAME
-
-Revision 1.11  1999/10/22 08:04:14  fca
-Correct improper use of negative parameters
-
-Revision 1.10  1999/10/16 19:30:06  fca
-Corrected Rotation Matrix and CVS log
-
-Revision 1.9  1999/10/15 15:35:20  fca
-New version for frame1099 with and without holes
-
-Revision 1.8  1999/09/29 09:24:33  fca
-Introduction of the Copyright and cvs Log
-
-*/
+/* $Id$ */
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -120,15 +46,16 @@ Introduction of the Copyright and cvs Log
 #include <Riostream.h>
 #include <stdlib.h>
 
-#include "AliTOFv3.h"
-#include "TBRIK.h"
-#include "TGeometry.h"
-#include "TNode.h"
+#include <TBRIK.h>
+#include <TGeometry.h>
 #include <TLorentzVector.h>
-#include "TObject.h"
-#include "AliRun.h"
-#include "AliConst.h"
+#include <TNode.h>
+#include <TObject.h>
+#include <TVirtualMC.h>
 
+#include "AliConst.h"
+#include "AliRun.h"
+#include "AliTOFv3.h"
  
 ClassImp(AliTOFv3)
  

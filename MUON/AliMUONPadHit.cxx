@@ -13,15 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.2  2000/06/15 07:58:48  morsch
-Code from MUON-dev joined
-
-Revision 1.1.2.1  2000/06/09 22:02:45  morsch
-Was before in DataStructures.cxx
-
-*/
+/* $Id$ */
 
 #include "AliMUONPadHit.h"
 

@@ -51,12 +51,12 @@ protected:
   AliZDCMerger *fMerger;   	// ! pointer to merger
   
   Int_t        fNMergedhits;    // Number of Merged hits for background
-  TClonesArray *fMergedHits;    // TCA for "merged" hits  
+  TClonesArray *fMergedHits;    //! TCA for "merged" hits  
   
   Int_t        fNRecPoints;	// Number of RecPoints
-  TClonesArray *fRecPoints;	// List of RecPoints
+  TClonesArray *fRecPoints;	//! List of RecPoints
 
-  ClassDef(AliZDC,2)  	// Zero Degree Calorimeter base class
+  ClassDef(AliZDC,3)  	// Zero Degree Calorimeter base class
 };
  
 #endif

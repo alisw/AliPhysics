@@ -32,7 +32,7 @@ LDFLAGS       = $(OPT)
 
 SHLD	     := $(LD)
 SOFLAGS      := -bundle -flat_namespace -undefined suppress
-SHLIB        := -lg2c
+#SHLIB        := -lg2c
 SHLIB        :=
 SOEXT 	     := so
 
@@ -57,7 +57,7 @@ GLIBS         = -L/usr/X11R6/lib -lX11
 #System libraries
 SYSLIBS = -ldl
 
-EXEFLAGS+= -Xlinker -bind_at_load -Xlinker -m -lg2c
+EXEFLAGS+= -Xlinker -bind_at_load -Xlinker -m #-lg2c
 
 
 

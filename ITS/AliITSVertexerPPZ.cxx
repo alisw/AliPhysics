@@ -24,6 +24,7 @@
 #include "AliRun.h"
 #include "AliITS.h"
 #include "AliITSgeom.h"
+#include "AliITSLoader.h"
 #include "AliITSRecPoint.h"
 /////////////////////////////////////////////////////////////////////////
 //                                                                     //
@@ -53,9 +54,8 @@ AliITSVertexerPPZ::AliITSVertexerPPZ():AliITSVertexer() {
   SetWindow(0);
 }
 
-AliITSVertexerPPZ::AliITSVertexerPPZ(TFile *infile, TFile *outfile, Float_t x0, Float_t y0):AliITSVertexer(infile,outfile) {
+AliITSVertexerPPZ::AliITSVertexerPPZ(TString fn, Float_t x0, Float_t y0):AliITSVertexer(fn) {
   // Standard constructor
-  if(!fInFile)Fatal("AliITSVertexerPPZ","No inputfile has been defined!");
   SetDiffPhiMax();
   fX0 = x0;
   fY0 = y0;
@@ -180,11 +180,8 @@ AliITSVertex* AliITSVertexerPPZ::FindVertexForCurrentEvent(Int_t evnumber){
   fCurrentVertex = 0;
   fZFound = -999;
   fZsig = -999;
-  if(!gAlice)gAlice = (AliRun*)fInFile->Get("gAlice");
-  if(!gAlice){
-    Error("FindVertexForCurrentEvent","The AliRun object is not available - nothing done");
-    return fCurrentVertex;
-  }
+  AliRunLoader *rl =AliRunLoader::GetRunLoader();
+  AliITSLoader* ITSloader =  (AliITSLoader*) rl->GetLoader("ITSLoader");
   if(!fITS)  {
     fITS = (AliITS*)gAlice->GetModule("ITS");
     if(!fITS) {
@@ -192,6 +189,7 @@ AliITSVertex* AliITSVertexerPPZ::FindVertexForCurrentEvent(Int_t evnumber){
       return fCurrentVertex;
     }
   }
+  fITS->SetTreeAddress();
   AliITSgeom *geom = fITS->GetITSgeom();
   if(!geom) {
     Error("FindVertexForCurrentEvent","ITS geometry is not defined");
@@ -204,7 +202,7 @@ AliITSVertex* AliITSVertexerPPZ::FindVertexForCurrentEvent(Int_t evnumber){
   Float_t lc2[3]; for(Int_t ii=0; ii<3; ii++) lc2[ii]=0.;
   Float_t gc2[3]; for(Int_t ii=0; ii<3; ii++) gc2[ii]=0.;
 
-  TR = gAlice->TreeR();
+  TR = ITSloader->TreeR();
   if(!TR){
     Error("FindVertexForCurrentEvent","TreeR not found");
     return fCurrentVertex;
@@ -330,7 +328,7 @@ AliITSVertex* AliITSVertexerPPZ::FindVertexForCurrentEvent(Int_t evnumber){
   if(fCurrentVertex){
     char name[30];
     sprintf(name,"Vertex_%d",evnumber);
-    fCurrentVertex->SetName(name);
+    //    fCurrentVertex->SetName(name);
     fCurrentVertex->SetTitle("vertexer: PPZ");
   }
   return fCurrentVertex;
@@ -339,19 +337,12 @@ AliITSVertex* AliITSVertexerPPZ::FindVertexForCurrentEvent(Int_t evnumber){
 //______________________________________________________________________
 void AliITSVertexerPPZ::FindVertices(){
   // computes the vertices of the events in the range FirstEvent - LastEvent
-  if(!fOutFile){
-    Error("FindVertices","The output file is not available - nothing done");
-    return;
-  }
-  if(!gAlice)gAlice = (AliRun*)fInFile->Get("gAlice");
-  if(!gAlice){
-    Error("FindVertices","The AliRun object is not available - nothing done");
-    return;
-  }
-  TDirectory *curdir = gDirectory;
-  fInFile->cd();
+  AliRunLoader *rl = AliRunLoader::GetRunLoader();
+  AliITSLoader* ITSloader =  (AliITSLoader*) rl->GetLoader("ITSLoader");
+  ITSloader->ReloadRecPoints();
   for(Int_t i=fFirstEvent;i<=fLastEvent;i++){
-    gAlice->GetEvent(i);
+    cout<<"Processing event "<<i<<endl;
+    rl->GetEvent(i);
     FindVertexForCurrentEvent(i);
     if(fCurrentVertex){
       WriteCurrentVertex();
@@ -363,7 +354,6 @@ void AliITSVertexerPPZ::FindVertices(){
       }
     }
   }
-  curdir->cd();
 }
 
 //________________________________________________________
@@ -378,10 +368,6 @@ void AliITSVertexerPPZ::PrintStatus() const {
   cout <<" Window for Z search: "<<fWindow<<endl;
   cout <<" Current Z "<<fZFound<<"; Z sig "<<fZsig<<endl;
   cout <<" Debug flag: "<<fDebug<<endl;
-  if(fInFile)cout <<" The input file is open\n";
-  if(!fInFile)cout <<"The input file is not open\n";
-  if(fOutFile)cout <<"The output file is open\n";
-  if(!fOutFile)cout <<"The output file is not open\n";
   cout<<"First event to be processed "<<fFirstEvent;
   cout<<"\n Last event to be processed "<<fLastEvent<<endl;
 }

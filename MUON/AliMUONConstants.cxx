@@ -13,36 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.8  2001/03/16 15:32:06  morsch
-Corrections of overlap with beam shield and dipole (A. de Falco)
-
-Revision 1.7  2001/03/14 17:22:15  pcrochet
-Geometry of the trigger chambers : a vertical gap of has been introduced around x=0 according fig.3.27 of the TDR (P.Dupieux)
-
-Revision 1.6  2001/01/30 12:19:39  morsch
-Update chamber positions (AdTDR version update 4/12/2000).
-
-Revision 1.5  2000/10/18 13:26:10  morsch
-New z-positions of chambers after Erice
-
-Revision 1.4  2000/10/06 09:09:56  morsch
-Outer radius of chambers adjusted to accomodate slat chambers (to be checked and updated).
-
-Revision 1.3  2000/10/02 16:58:29  egangler
-Cleaning of the code :
--> coding conventions
--> void Streamers
--> some useless includes removed or replaced by "class" statement
-
-Revision 1.2  2000/06/27 09:46:57  morsch
-kMAXZOOM global constant now in AliMUONConstants
-
-Revision 1.1  2000/06/26 14:02:38  morsch
-Add class AliMUONConstants with MUON specific constants using static memeber data and access methods.
-
-*/
+/* $Id$ */
 
 #include "AliMUONConstants.h"
 

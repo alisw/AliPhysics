@@ -13,6 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+/* $Id$ */
 
 //////////////////////////////////////////////////////////////////////
 //                                                                  //
@@ -23,39 +24,35 @@
 //                                                                  //
 //////////////////////////////////////////////////////////////////////
 
-#include <TMath.h>
-#include <TGeometry.h>
-#include <TTRD2.h>
-#include <TCONE.h>
-#include <TPGON.h>
-#include <TPCON.h>
-#include <TSPHE.h>
-#include <TTRAP.h>
-#include <TBRIK.h>
-#include <TBox.h>
-
-#include <TShape.h>
-#include <TNode.h>
-#include <TClonesArray.h>
-#include <TH1.h>
+#include <stdlib.h>
 #include <string.h>
 #include <Riostream.h>
 
-#include "AliVZEROv0.h"
-#include "AliRun.h"
-#include "AliMagF.h"
-#include "AliVZEROhit.h"
-#include "AliVZEROdigit.h"
-#include <Riostream.h>
-#include <Riostream.h>
+#include <TBRIK.h>
+#include <TBox.h>
+#include <TCONE.h>
+#include <TClonesArray.h>
+#include <TGeometry.h>
+#include <TH1.h>
+#include <TLorentzVector.h>
+#include <TMath.h>
+#include <TNode.h>
+#include <TObjectTable.h>
+#include <TPCON.h>
+#include <TPGON.h>
+#include <TSPHE.h>
+#include <TShape.h>
+#include <TTRAP.h>
+#include <TTRD2.h>
+#include <TVirtualMC.h>
 
-#include <stdlib.h>
-#include "TObjectTable.h"
-
-#include "AliConst.h"
-#include "ABSOSHILConst.h"
 #include "ABSOConst.h"
-#include "TLorentzVector.h"
+#include "ABSOSHILConst.h"
+#include "AliMagF.h"
+#include "AliRun.h"
+#include "AliVZEROdigit.h"
+#include "AliVZEROhit.h"
+#include "AliVZEROv0.h"
 
 ClassImp(AliVZEROv0)
 
@@ -773,7 +770,8 @@ void AliVZEROv0::BuildGeometry()
   
   
   TPGON *V0CA = new TPGON("V0CA", "V0CA", "void",parbox[0], parbox[1],
-                            Int_t(parbox[2]),Int_t(parbox[3]) );
+			  static_cast<Int_t>(parbox[2]),
+			  static_cast<Int_t>(parbox[3]));
 			    
   V0CA->DefineSection( 0, parbox[4], parbox[5], parbox[6] );
   V0CA->DefineSection( 1, parbox[7], parbox[8], parbox[9] ); 
@@ -795,7 +793,8 @@ void AliVZEROv0::BuildGeometry()
   parbox[9] =  r0; 
 
   TPGON  *V0IR = new TPGON("V0IR","V0IR","void",  parbox[0], parbox[1],
-                            Int_t(parbox[2]),Int_t(parbox[3]) );
+			  static_cast<Int_t>(parbox[2]),
+			  static_cast<Int_t>(parbox[3]));
   V0IR->DefineSection( 0, parbox[4], parbox[5], parbox[6] );
   V0IR->DefineSection( 1, parbox[7], parbox[8], parbox[9] );
   
@@ -812,7 +811,9 @@ void AliVZEROv0::BuildGeometry()
   parbox[9] =  r5 + 1.0; 
 
   TPGON  *V0ER = new TPGON("V0ER","V0ER","void",  parbox[0], parbox[1],
-                            Int_t(parbox[2]),Int_t(parbox[3]) );
+			  static_cast<Int_t>(parbox[2]),
+			  static_cast<Int_t>(parbox[3]));
+
   V0ER->DefineSection( 0, parbox[4], parbox[5], parbox[6] );
   V0ER->DefineSection( 1, parbox[7], parbox[8], parbox[9] );
   
@@ -1530,8 +1531,8 @@ void AliVZEROv0::MakeBranch(Option_t *option)
   
   const char *H = strstr(option,"H");
   
-  if (fHits   && gAlice->TreeH() && H) {
-    gAlice->TreeH()->Branch(branchname,&fHits, fBufferSize);
+  if (fHits   && TreeH() && H) {
+    TreeH()->Branch(branchname,&fHits, fBufferSize);
     printf("* AliDetector::MakeBranch * Making Branch %s for hits\n",branchname);
   }     
 

@@ -13,23 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.3  2000/06/30 12:07:49  kowal2
-Updated from the TPC-PreRelease branch
-
-Revision 1.2.4.1  2000/06/09 07:09:29  kowal2
-
-Clustering and tracking classes are splitted from the simulation ones
-
-Revision 1.2  2000/04/17 09:37:33  kowal2
-removed obsolete AliTPCDigitsDisplay.C
-
-Revision 1.1.4.2  2000/04/10 11:34:02  kowal2
-
-Clusters handling in a new data structure
-
-*/
+/* $Id$ */
 
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //

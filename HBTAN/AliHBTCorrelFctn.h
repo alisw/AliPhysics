@@ -1,19 +1,15 @@
 #ifndef ALIHBTCORRELFUNCTION_H
 #define ALIHBTCORRELFUNCTION_H
-//_________________________________________________________________
-///////////////////////////////////////////////////////////////////
-//
+
+#include "AliHBTFunction.h"
+#include "AliHBTParticle.h"
+#include <Riostream.h>
 //Set of functions:
 //   Q Invaraint Correlation Function
 //   Invariant Mass Function
 //
 //more info: http://alisoft.cern.ch/people/skowron/analyzer/index.html
 //Piotr.Skowronski@cern.ch
-//
-///////////////////////////////////////////////////////////////////
-#include "AliHBTFunction.h"
-
-class AliHBTParticle;
 
 /*************************************************************************************/ 
 class AliHBTQInvCorrelFctn: public AliHBTOnePairFctn1D

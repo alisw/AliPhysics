@@ -29,8 +29,7 @@ class  AliPHOSPIDv0 : public AliPHOSPID {
 public:
 
   AliPHOSPIDv0() ;          // ctor            
-  AliPHOSPIDv0(const char* headerFile, const char * tsBranch = "Default", const Bool_t toSplit=kFALSE) ;
-  AliPHOSPIDv0(AliPHOSPIDv0 & pid) ;          // cpy ctor            
+  AliPHOSPIDv0(const char* evFolderName, const char * tsBranch = "Default");
   virtual ~AliPHOSPIDv0() ; // dtor
 
   virtual void Exec(Option_t * option);
@@ -39,7 +38,7 @@ public:
   virtual const Int_t GetRecParticlesInRun() const  {return fRecParticlesInRun ;}  
 
   virtual void PlotDispersionCuts()const ;
-  virtual void Print(Option_t * option)const ; 
+  virtual void Print()const ; 
   virtual void SetIdentificationMethod(char * option = "CPV DISP" ){fIDOptions = option ;} 
   virtual void SetShowerProfileCut(char * formula = "0.35*0.35 - (x-1.386)*(x-1.386) - 1.707*1.707*(y-1.008)*(y-1.008)") ;
   virtual void SetDispersionCut(Float_t cut){fDispersion = cut ; } 
@@ -48,7 +47,7 @@ public:
   //  virtual void SetTrackSegmentsBranch(const char* title) { fTrackSegmentsTitle = title;}
   //  virtual void SetRecParticlesBranch (const char* title) { fRecParticlesTitle = title;} 
   virtual const char * Version() const { return "pid-v0" ; }  
-  AliPHOSPIDv0 & operator = (const  AliPHOSPIDv0 & pid) { return *this ; }                 
+                     
  private:
   
   virtual void Init() ;
@@ -56,11 +55,11 @@ public:
   Float_t  GetDistance(AliPHOSEmcRecPoint * emc, AliPHOSRecPoint * cpv, Option_t * Axis)const ; // Relative Distance CPV-EMC
   TVector3 GetMomentumDirection(AliPHOSEmcRecPoint * emc, AliPHOSRecPoint * cpv)const ;
   void     PrintRecParticles(Option_t * option) ;
-  virtual void WriteRecParticles(Int_t event) ; 
+  virtual void WriteRecParticles(); 
 
  private:
 
-  TString                fHeaderFileName ;    // file name with event header
+  TString                fEventFolderName;    // file name with event header
   TString                fTrackSegmentsTitle; // branch name with track segments
   TString                fRecPointsTitle ;    // branch name with rec points
   TString                fRecParticlesTitle ; // branch name with rec particles

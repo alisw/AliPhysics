@@ -13,7 +13,7 @@ class AliHBTParticleCut;
 class TObjArray;
 class AliHBTParticle;
 class TString;
-
+ 
 class AliHBTReader: public TNamed
 {
   public:
@@ -31,6 +31,9 @@ class AliHBTReader: public TNamed
     void AddParticleCut(AliHBTParticleCut* cut);
     
     void SetDirs(TObjArray* dirs){fDirs = dirs;} //sets array directories names
+
+    virtual AliHBTEvent* GetNextParticleEvent(){return 0x0;}
+    virtual AliHBTEvent* GetNextTrackEvent(){return 0x0;}
 
   protected:
     

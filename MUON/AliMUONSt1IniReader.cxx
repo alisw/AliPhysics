@@ -13,13 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.1  2003/01/28 13:21:06  morsch
-Improved response simulation for station 1.
-(M. Mac Cormick, I. Hrivnacova, D. Guez)
-
-*/
+/* $Id$ */
 
 // Authors: David Guez, Ivana Hrivnacova, Marion MacCormick; IPN Orsay
 //

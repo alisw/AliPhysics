@@ -13,20 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
  
-/*
-$Log$
-Revision 1.1  2002/03/15 17:25:54  nilsen
-Renaming of old hit based Digitizer to make room for new SDigit version.
-
-Revision 1.1  2001/11/27 16:27:28  nilsen
-Adding AliITSDigitizer class to do merging and digitization . Based on the
-TTask method. AliITSDigitizer class added to the Makefile and ITSLinkDef.h
-file. The following files required minor changes. AliITS, added functions
-SetHitsAddressBranch, MakeBranchInTreeD and modified MakeBranchD.
-AliITSsimulationSDD.cxx needed a Tree indepenent way of returning back to
-the original Root Directory in function Compress1D. Now it uses gDirectory.
-
-*/
+/* $Id$ */
 
 #include <stdlib.h>
 #include <Riostream.h>

@@ -12,6 +12,12 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
+//Piotr.Skowronski@cern.ch :
+//Corrections applied in order to compile (only) with new I/O and folder structure
+//To be implemented correctly by responsible
+
+#include "AliRunLoader.h"
+#include "AliLoader.h"
 
 #include <TTree.h> 
 #include <TVector.h>
@@ -48,6 +54,7 @@ ClassImp(AliTOFMerger)
     fFnBgr = 0;
     fFnSig = 0;
     fBgrFile = 0;
+    fRunLoader     = 0 ;
 }
 
 //------------------------------------------------------------------------
@@ -69,6 +76,7 @@ AliTOFMerger::~AliTOFMerger()
     delete[] fFnSig;
     fFnSig = 0;
   }
+  delete fRunLoader;
 }
 
 
@@ -86,6 +94,8 @@ void AliTOFMerger::Init()
 TFile* AliTOFMerger::InitBgr()
 {
 // Initialise background event
+   fRunLoader = AliRunLoader::Open(fFnBgr);//open session and mount on default event folder
+   
     TFile *file = new TFile(fFnBgr);
 // add error checking later
     printf("\n AliTOFMerger has opened %s file with background event \n", fFnBgr);
@@ -99,35 +109,69 @@ void AliTOFMerger::Digitise()
 // keep galice.root for signal and name differently the file for 
 // background when add! otherwise the track info for signal will be lost !
 
-
-
 #ifdef DEBUG
   cout<<"ALiTOFMerger::>SDigits2Digits start...\n";
 #endif
+  Int_t retval;
 
+  if (fRunLoader == 0x0)
+   {
+     Error("Exec","Event is not loaded. Exiting");
+     return;
+   }
+  retval = fRunLoader->LoadgAlice();
+  if (retval)
+   {
+     Error("Exec","Error occured while loading gAlice. Exiting");
+     return;
+   }
+  retval = fRunLoader->LoadHeader();
+  if (retval)
+   {
+     Error("Exec","Error occured while loading header. Exiting");
+     return;
+   }
+
+  retval = fRunLoader->LoadKinematics("READ");
+  if (retval)
+   {
+     Error("Exec","Error occured while loading kinematics. Exiting");
+     return;
+   }
+
+  AliLoader* gime = fRunLoader->GetLoader("TOFLoader");
+  if (gime == 0x0)
+   {
+     Error("Exec","Can not find TOF loader in event. Exiting.");
+     return;
+   }
+  gAlice = fRunLoader->GetAliRun();
+  
   AliTOF* TOF = (AliTOF *) gAlice->GetDetector("TOF") ;
 
 
   TFile *f1 =0;
-  TTree *TK = gAlice->TreeK();
+  TTree *TK = fRunLoader->TreeK();
   if (TK) f1 = TK->GetCurrentFile();
 
-  gAlice->GetEvent(fEvNrSig) ;
+  fRunLoader->GetEvent(fEvNrSig);
   
-  if(gAlice->TreeD() == 0)    	
-    gAlice->MakeTree("D") ;
-  gAlice->TreeD()->Reset();
+  if(gime->TreeD() == 0)    	
+    gime->MakeTree("D") ;
+  
+  gime->TreeD()->Reset();
 
   // read and write digits for signal
    ReadWriteDigit(fEvNrSig);
 
-   if(fMerge){ 
-     // bgr file
-    fBgrFile->cd();
-    // gAlice->TreeS()->Reset();
-    gAlice = (AliRun*)fBgrFile->Get("gAlice");
-    ReadWriteDigit(fEvNrBgr);
-   } //if merge
+   if(fMerge)
+    { 
+      // bgr file
+      fBgrFile->cd();
+      // gAlice->TreeS()->Reset();
+      gAlice = (AliRun*)fBgrFile->Get("gAlice");
+      ReadWriteDigit(fEvNrBgr);
+    } //if merge
 
 
   f1->cd();
@@ -135,12 +179,12 @@ void AliTOFMerger::Digitise()
   //Make branch for digits
   TOF->MakeBranch("D");
 
-  gAlice->TreeD()->Reset();
-  gAlice->TreeD()->Fill();
+  gime->TreeD()->Reset();
+  gime->TreeD()->Fill();
   
   fDigits   = TOF->Digits();
   
-  gAlice->TreeD()->Write(0,TObject::kOverwrite) ;
+  gime->WriteDigits("OVERWRITE");
   
   gAlice->ResetDigits();
 
@@ -157,10 +201,27 @@ void AliTOFMerger::ReadWriteDigit(Int_t iEvNum)
   
   AliTOF * tofinfile = (AliTOF *) gAlice->GetDetector("TOF") ;
   
-  gAlice->GetEvent(iEvNum) ;
-  if(gAlice->TreeS()==0) {
-    cout<<" TreeS==0 -> return"<<gAlice->TreeS()<<endl; 
-    return ;}
+  Int_t retval = fRunLoader->GetEvent(iEvNum);
+  if (retval)
+   {
+     Error("ReadWriteDigit","Error while getting event %d",iEvNum);
+     return;
+   }
+
+  AliLoader* gime = fRunLoader->GetLoader("TOFLoader");
+  if (gime == 0x0)
+   {
+     Error("Exec","Can not find TOF loader in event. Exiting.");
+     return;
+   }
+  
+  
+  
+  if(gime->TreeS()==0) 
+   {
+    cout<<" TreeS==0 -> return"<<gime->TreeS()<<endl; 
+    return ;
+   }
   
   Int_t ndig, k;
   Int_t    tracks[3];    // track info
@@ -168,7 +229,7 @@ void AliTOFMerger::ReadWriteDigit(Int_t iEvNum)
   Float_t  digit[2];     // TOF digit variables
 
   gAlice->ResetDigits();
-  gAlice->TreeS()->GetEvent(iEvNum);
+  gime->TreeS()->GetEvent(iEvNum);
   TClonesArray * TOFdigits   = tofinfile->SDigits();
   
   ndig=TOFdigits->GetEntries();

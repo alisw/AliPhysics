@@ -13,6 +13,8 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+/* $Id$ */
+
 // 
 // Container class for AliGenerator and AfterBurners 
 // (which are AliGenerators as well) through recursion.
@@ -27,14 +29,17 @@
 //             debug -> gDebug,
 //             fNEvents replaced with gAlice->GetEventsPerRun()
 //
+
+
+#include <Riostream.h>
+
+#include <TList.h>
+#include <TObjArray.h>
+#include <TParticle.h>
+
 #include "AliGenCocktailAfterBurner.h"
 #include "AliGenCocktailEntry.h"
-
 #include "AliStack.h"
-#include <TObjArray.h>
-#include <TList.h>
-#include <TParticle.h>
-#include <Riostream.h>
 
 
 ClassImp(AliGenCocktailAfterBurner)

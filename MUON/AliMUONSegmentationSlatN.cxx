@@ -13,21 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.4  2001/01/26 21:25:48  morsch
-Empty default constructors and.
-
-Revision 1.3  2000/10/22 16:55:43  morsch
-Use only x-symmetry in global to local transformations and delegation.
-
-Revision 1.2  2000/10/09 14:06:18  morsch
-Some type cast problems of type  (TMath::Sign((Float_t)1.,x)) corrected (P.H.)
-
-Revision 1.1  2000/10/06 09:00:47  morsch
-Segmentation class for chambers built out of slats.
-
-*/
+/* $Id$ */
 
 #include "AliMUONSegmentationSlatN.h"
 #include "AliMUONSegmentationSlatModuleN.h"

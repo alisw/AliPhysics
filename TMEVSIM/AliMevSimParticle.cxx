@@ -15,6 +15,12 @@
 
 /*
 $Log$
+Revision 1.1.2.1  2003/04/14 16:24:06  hristov
+Merging with v3-09-08. Several classes are exported from EVGEN to different directories to resolve the dependencies
+
+Revision 1.1  2003/03/15 14:49:39  morsch
+Classes imported from EVGEN
+
 Revision 1.3  2001/10/21 18:35:56  hristov
 Several pointers were set to zero in the default constructors to avoid memory management problems
 

@@ -13,183 +13,15 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-  $Log$
-  Revision 1.65  2003/01/14 10:50:19  alibrary
-  Cleanup of STEER coding conventions
-
-  Revision 1.64  2002/11/21 22:54:07  alibrary
-  Removing AliMC and AliMCProcess
-
-  Revision 1.63  2002/11/04 09:02:52  morsch
-  Further corrcetions on Fresnel and Grid losses.
-
-  Revision 1.62  2002/10/31 08:44:04  morsch
-  Problems with rotated RICH solved:
-  Detector response (fresnel reflection, grid absorption ...) has to be
-  determined using local coordinates.
-
-  Revision 1.61  2002/10/29 15:00:08  morsch
-  - Diagnostics updated.
-  - RecHits structure synchronized.
-  - Digitizer method using AliRICHDigitizer.
-  (J. Barbosa)
-
-  
-  Revision 1.60  2002/10/22 16:28:21  alibrary
-  Introducing Riostream.h
-
-  Revision 1.59  2002/10/14 14:57:31  hristov
-  Merging the VirtualMC branch to the main development branch (HEAD)
-
-  Revision 1.58.6.1  2002/06/10 15:12:46  hristov
-  Merged with v3-08-02
-
-  Revision 1.58  2001/11/14 09:49:37  dibari
-  Use debug methods
-
-  Revision 1.57  2001/11/09 17:29:31  dibari
-  Setters fro models moved to header
-
-  Revision 1.56  2001/11/02 15:37:25  hristov
-  Digitizer class created. Code cleaning and bug fixes (J.Chudoba)
-
-  Revision 1.55  2001/10/23 13:03:35  hristov
-  The access to several data members was changed from public to protected. The digitisation was adapted to the multi-event case (J.Chudoba)
-
-  Revision 1.54  2001/09/07 08:38:10  hristov
-  Pointers initialised to 0 in the default constructors
-
-  Revision 1.53  2001/08/30 09:51:23  hristov
-  The operator[] is replaced by At() or AddAt() in case of TObjArray.
-
-  Revision 1.52  2001/05/16 14:57:20  alibrary
-  New files for folders and Stack
-
-  Revision 1.51  2001/05/14 10:18:55  hristov
-  Default arguments declared once
-
-  Revision 1.50  2001/05/10 14:44:16  jbarbosa
-  Corrected some overlaps (thanks I. Hrivnacovna).
-
-  Revision 1.49  2001/05/10 12:23:49  jbarbosa
-  Repositioned the RICH modules.
-  Eliminated magic numbers.
-  Incorporated diagnostics (from macros).
-
-  Revision 1.48  2001/03/15 10:35:00  jbarbosa
-  Corrected bug in MakeBranch (was using a different version of STEER)
-
-  Revision 1.47  2001/03/14 18:13:56  jbarbosa
-  Several changes to adapt to new IO.
-  Removed digitising function, using AliRICHMerger::Digitise from now on.
-
-  Revision 1.46  2001/03/12 17:46:33  hristov
-  Changes needed on Sun with CC 5.0
-
-  Revision 1.45  2001/02/27 22:11:46  jbarbosa
-  Testing TreeS, removing of output.
-
-  Revision 1.44  2001/02/27 15:19:12  jbarbosa
-  Transition to SDigits.
-
-  Revision 1.43  2001/02/23 17:19:06  jbarbosa
-  Corrected photocathode definition in BuildGeometry().
-
-  Revision 1.42  2001/02/13 20:07:23  jbarbosa
-  Parametrised definition of photcathode dimensions. New spacers. New data members in AliRICHHit to store particle momentum
-  when entering the freon. Corrected calls to particle stack.
-
-  Revision 1.41  2001/01/26 20:00:20  hristov
-  Major upgrade of AliRoot code
-
-  Revision 1.40  2001/01/24 20:58:03  jbarbosa
-  Enhanced BuildGeometry. Now the photocathodes are drawn.
-
-  Revision 1.39  2001/01/22 21:40:24  jbarbosa
-  Removing magic numbers
-
-  Revision 1.37  2000/12/20 14:07:25  jbarbosa
-  Removed dependencies on TGeant3 (thanks to F. Carminati and I. Hrivnacova)
-
-  Revision 1.36  2000/12/18 17:45:54  jbarbosa
-  Cleaned up PadHits object.
-
-  Revision 1.35  2000/12/15 16:49:40  jbarbosa
-  Geometry and materials updates (wire supports, pcbs, backplane supports, frame).
-
-  Revision 1.34  2000/11/10 18:12:12  jbarbosa
-  Bug fix for AliRICHCerenkov (thanks to P. Hristov)
-
-  Revision 1.33  2000/11/02 10:09:01  jbarbosa
-  Minor bug correction (some pointers were not initialised in the default constructor)
-
-  Revision 1.32  2000/11/01 15:32:55  jbarbosa
-  Updated to handle both reconstruction algorithms.
-
-  Revision 1.31  2000/10/26 20:18:33  jbarbosa
-  Supports for methane and freon vessels
-
-  Revision 1.30  2000/10/24 13:19:12  jbarbosa
-  Geometry updates.
-
-  Revision 1.29  2000/10/19 19:39:25  jbarbosa
-  Some more changes to geometry. Further correction of digitisation "per part. type"
-
-  Revision 1.28  2000/10/17 20:50:57  jbarbosa
-  Inversed digtise by particle type (now, only the selected particle type is not digitsed).
-  Corrected several geometry minor bugs.
-  Added new parameter (opaque quartz thickness).
-
-  Revision 1.27  2000/10/11 10:33:55  jbarbosa
-  Corrected bug introduced by earlier revisions  (CerenkovData array cannot be reset to zero on wach call of StepManager)
-
-  Revision 1.26  2000/10/03 21:44:08  morsch
-  Use AliSegmentation and AliHit abstract base classes.
-
-  Revision 1.25  2000/10/02 21:28:12  fca
-  Removal of useless dependecies via forward declarations
-
-  Revision 1.24  2000/10/02 15:43:17  jbarbosa
-  Fixed forward declarations.
-  Fixed honeycomb density.
-  Fixed cerenkov storing.
-  New electronics.
-
-  Revision 1.23  2000/09/13 10:42:14  hristov
-  Minor corrections for HP, DEC and Sun; strings.h included
-
-  Revision 1.22  2000/09/12 18:11:13  fca
-  zero hits area before using
-
-  Revision 1.21  2000/07/21 10:21:07  morsch
-  fNrawch   = 0; and  fNrechits = 0; in the default constructor.
-
-  Revision 1.20  2000/07/10 15:28:39  fca
-  Correction of the inheritance scheme
-
-  Revision 1.19  2000/06/30 16:29:51  dibari
-  Added kDebugLevel variable to control output size on demand
-
-  Revision 1.18  2000/06/12 15:15:46  jbarbosa
-  Cleaned up version.
-
-  Revision 1.17  2000/06/09 14:58:37  jbarbosa
-  New digitisation per particle type
-
-  Revision 1.16  2000/04/19 12:55:43  morsch
-  Newly structured and updated version (JB, AM)
-
-*/
-
+/* $Id$ */
 
 ////////////////////////////////////////////////
 //  Manager and hits classes for set:RICH     //
 ////////////////////////////////////////////////
 
+#include <Riostream.h>
 #include <strings.h>
 
-#include <Riostream.h>
 #include <TArrayF.h>
 #include <TBRIK.h>
 #include <TCanvas.h>
@@ -208,7 +40,6 @@
 #include <TTUBE.h>
 #include <TTree.h>
 #include <TVector.h>
-
 #include "AliConst.h"
 #include "AliMagF.h"
 #include "AliPoints.h"
@@ -229,8 +60,6 @@
 #include "AliRun.h"
 #include "AliRunDigitizer.h"
 #include "AliSegmentation.h"
-
-
 
 
 static Int_t sMaxIterPad=0;    // Static variables for the pad-hit iterator routines
@@ -298,8 +127,8 @@ AliRICH::AliRICH(const char *name, const char *title)
    
     for (i=0; i<kNCH ;i++) {
       //PH	(*fDchambers)[i] = new TClonesArray("AliRICHDigit",10000); 
-	fDchambers->AddAt(new TClonesArray("AliRICHDigit",10000), i); 
-	fNdch[i]=0;
+       fDchambers->AddAt(new TClonesArray("AliRICHDigit",10000), i); 
+       fNdch[i]=0;
     }
 
     //fNrawch      = new Int_t[kNCH];
@@ -1856,100 +1685,107 @@ Int_t AliRICH::DistancetoPrimitive(Int_t , Int_t )
 }
 
 //___________________________________________
-void AliRICH::MakeBranch(Option_t* option, const char *file)
+void AliRICH::MakeBranch(Option_t* option)
 {
   // Create Tree branches for the RICH.
     
-    const Int_t kBufferSize = 4000;
-    char branchname[20];
+ const Int_t kBufferSize = 4000;
+ char branchname[20];
       
-    AliDetector::MakeBranch(option,file);
    
-    const char *cH = strstr(option,"H");
-    const char *cD = strstr(option,"D");
-    const char *cR = strstr(option,"R");
-    const char *cS = strstr(option,"S");
+ const char *cH = strstr(option,"H");
+ const char *cD = strstr(option,"D");
+ const char *cR = strstr(option,"R");
+ const char *cS = strstr(option,"S");
 
 
-    if (cH) {
-      sprintf(branchname,"%sCerenkov",GetName());
-      if (fCerenkovs   && gAlice->TreeH()) {
-	//TBranch* branch = MakeBranchInTree(gAlice->TreeH(),branchname, &fCerenkovs, kBufferSize, file) ;
-	MakeBranchInTree(gAlice->TreeH(),branchname, &fCerenkovs, kBufferSize, file) ;
-	//branch->SetAutoDelete(kFALSE);
-      } 
-      sprintf(branchname,"%sSDigits",GetName());
-      if (fSDigits   && gAlice->TreeH()) {
-	//TBranch* branch = MakeBranchInTree(gAlice->TreeH(),branchname, &fSDigits, kBufferSize, file) ;
-	MakeBranchInTree(gAlice->TreeH(),branchname, &fSDigits, kBufferSize, file) ;
-	//branch->SetAutoDelete(kFALSE);
-	//printf("Making branch %sSDigits in TreeH\n",GetName());
-      }
-    }   
+
+ if (cH  && TreeH()) {
+  sprintf(branchname,"%sCerenkov",GetName());
+  if (fCerenkovs == 0x0) fCerenkovs  = new TClonesArray("AliRICHCerenkov",1000);
+  MakeBranchInTree(TreeH(),branchname, &fCerenkovs, kBufferSize, 0) ;
+
+  sprintf(branchname,"%sSDigits",GetName());
+  if (fSDigits == 0x0) fSDigits    = new TClonesArray("AliRICHSDigit",100000);
+  MakeBranchInTree(TreeH(),branchname, &fSDigits, kBufferSize, 0) ;
+    //branch->SetAutoDelete(kFALSE);
+    //printf("Making branch %sSDigits in TreeH\n",GetName());
+  if (fHits == 0x0) fHits       = new TClonesArray("AliRICHHit",1000  );
+
+  }   
+  //this is after cH because we need to guarantee that fHits array is created
+  AliDetector::MakeBranch(option);
       
-    if (cS) {  
-      sprintf(branchname,"%sSDigits",GetName());
-      if (fSDigits   && gAlice->TreeS()) {
-	//TBranch* branch = MakeBranchInTree(gAlice->TreeS(),branchname, &fSDigits, kBufferSize, file) ;
-	MakeBranchInTree(gAlice->TreeS(),branchname, &fSDigits, kBufferSize, file) ;
-	//branch->SetAutoDelete(kFALSE);
-	//printf("Making branch %sSDigits in TreeS\n",GetName());
-      }
-    }
-    
-    if (cD) {
+  if (cS && fLoader->TreeS()) {  
+    sprintf(branchname,"%sSDigits",GetName());
+    if (fSDigits == 0x0) fSDigits    = new TClonesArray("AliRICHSDigit",100000);
+    MakeBranchInTree(gAlice->TreeS(),branchname, &fSDigits, kBufferSize, 0) ;
+  }
+   
+ if (cD && fLoader->TreeD()) 
+   {
     //
     // one branch for digits per chamber
     //
-      Int_t i;
-    
-      for (i=0; i<kNCH ;i++) {
-	sprintf(branchname,"%sDigits%d",GetName(),i+1);	
-	if (fDchambers   && gAlice->TreeD()) {
-	   //TBranch* branch = MakeBranchInTree(gAlice->TreeD(),branchname, &((*fDchambers)[i]), kBufferSize, file) ;
-	  MakeBranchInTree(gAlice->TreeD(),branchname, &((*fDchambers)[i]), kBufferSize, file) ;
-	   //branch->SetAutoDelete(kFALSE);
-	  //printf("Making Branch %sDigits%d\n",GetName(),i+1);
-	}	
+    Int_t i;
+    if (fDchambers == 0x0) 
+      {
+         fDchambers = new TObjArray(kNCH);
+         for (i=0; i<kNCH ;i++) 
+           {
+             fDchambers->AddAt(new TClonesArray("AliRICHDigit",10000), i); 
+           }
       }
-    }
+    for (i=0; i<kNCH ;i++) 
+      {
+        sprintf(branchname,"%sDigits%d",GetName(),i+1);	
+        MakeBranchInTree(fLoader->TreeD(),branchname, &((*fDchambers)[i]), kBufferSize, 0);
+      }
+   }
 
-    if (cR) {    
+ if (cR && gAlice->TreeR()) 
+  {
     //
     // one branch for raw clusters per chamber
     //
-
-      //printf("Called MakeBranch for TreeR\n");
-
-      Int_t i;
-
-      for (i=0; i<kNCH ;i++) {
-        sprintf(branchname,"%sRawClusters%d",GetName(),i+1);      
-        if (fRawClusters && gAlice->TreeR()) {
-           //TBranch* branch = MakeBranchInTree(gAlice->TreeR(),branchname, &((*fRawClusters)[i]), kBufferSize, file) ;
-	  MakeBranchInTree(gAlice->TreeR(),branchname, &((*fRawClusters)[i]), kBufferSize, file) ;
-	   //branch->SetAutoDelete(kFALSE);	
-        }	  
-      }
-     //
-     // one branch for rec hits per chamber
-     // 
-     for (i=0; i<kNCH ;i++) {
-       sprintf(branchname,"%sRecHits1D%d",GetName(),i+1);    
-       if (fRecHits1D   && gAlice->TreeR()) {
-	 //TBranch* branch = MakeBranchInTree(gAlice->TreeR(),branchname, &((*fRecHits1D)[i]), kBufferSize, file) ;
-	 MakeBranchInTree(gAlice->TreeR(),branchname, &((*fRecHits1D)[i]), kBufferSize, file) ;
-	 //branch->SetAutoDelete(kFALSE);
-       }	
+    Int_t i;
+    if (fRawClusters == 0x0 ) 
+     {
+       fRawClusters = new TObjArray(kNCH);
+       for (i=0; i<kNCH ;i++) 
+         {
+           fRawClusters->AddAt(new TClonesArray("AliRICHRawCluster",10000), i); 
+         }
      }
-     for (i=0; i<kNCH ;i++) {
+     
+    if (fRecHits1D == 0x0) 
+     {
+        fRecHits1D = new TObjArray(kNCH);
+        for (i=0; i<kNCH ;i++) 
+         {
+          fRecHits1D->AddAt(new TClonesArray("AliRICHRecHit1D",1000), i);
+         }
+     }
+
+    if (fRecHits3D == 0x0) 
+     {
+        fRecHits3D = new TObjArray(kNCH);
+        for (i=0; i<kNCH ;i++) 
+         {
+          fRecHits3D->AddAt(new TClonesArray("AliRICHRecHit3D",1000), i);
+         }
+     }
+       
+    for (i=0; i<kNCH ;i++) 
+     {
+       sprintf(branchname,"%sRawClusters%d",GetName(),i+1);      
+       MakeBranchInTree(gAlice->TreeR(),branchname, &((*fRawClusters)[i]), kBufferSize, 0);
+       sprintf(branchname,"%sRecHits1D%d",GetName(),i+1);
+       MakeBranchInTree(fLoader->TreeR(),branchname, &((*fRecHits1D)[i]), kBufferSize, 0);
        sprintf(branchname,"%sRecHits3D%d",GetName(),i+1);  
-       if (fRecHits3D   && gAlice->TreeR()) {
-	 MakeBranchInTree(gAlice->TreeR(),branchname, &((*fRecHits3D)[i]), kBufferSize, file) ;
-	 //branch->SetAutoDelete(kFALSE);
-      }	
-    }
-  }  
+       MakeBranchInTree(fLoader->TreeR(),branchname, &((*fRecHits3D)[i]), kBufferSize, 0);
+     }
+   }//if (cR && gAlice->TreeR())
 }
 
 //___________________________________________
@@ -1959,66 +1795,110 @@ void AliRICH::SetTreeAddress()
   char branchname[20];
   Int_t i;
 
-    AliDetector::SetTreeAddress();
     
-    TBranch *branch;
-    TTree *treeH = gAlice->TreeH();
-    TTree *treeD = gAlice->TreeD();
-    TTree *treeR = gAlice->TreeR();
-    TTree *treeS = gAlice->TreeS();
+  TBranch *branch;
+  TTree *treeH = fLoader->TreeH();
+  TTree *treeD = fLoader->TreeD();
+  TTree *treeR = fLoader->TreeR();
+  TTree *treeS = fLoader->TreeS();
     
-    if (treeH) {
-      if (fCerenkovs) {
-	    branch = treeH->GetBranch("RICHCerenkov");
-	    if (branch) branch->SetAddress(&fCerenkovs);
-	}
-    if (fSDigits) {
-	branch = treeH->GetBranch("RICHSDigits");
-	if (branch) 
-	  {
-	    branch->SetAddress(&fSDigits);
-	    //printf("Setting sdigits branch address at %p in TreeH\n",&fSDigits);
-	  }
+  if (treeH) 
+   {
+     branch = treeH->GetBranch("RICHCerenkov");
+     if (branch) 
+      {
+        if (fCerenkovs == 0x0) fCerenkovs  = new TClonesArray("AliRICHCerenkov",1000); 
+        branch->SetAddress(&fCerenkovs);
       }
-    }
-    
-    if (treeS) {
-      if (fSDigits) {
-	branch = treeS->GetBranch("RICHSDigits");
-	if (branch) 
-	  {
-	    branch->SetAddress(&fSDigits);
-	    //printf("Setting sdigits branch address at %p in TreeS\n",&fSDigits);
-	  }
+       
+     branch = treeH->GetBranch("RICHSDigits");
+     if (branch) 
+      {
+        if (fSDigits == 0x0) fSDigits    = new TClonesArray("AliRICHSDigit",100000);
+        branch->SetAddress(&fSDigits);
+         //printf("Setting sdigits branch address at %p in TreeH\n",&fSDigits);
       }
+     if (fHits == 0x0) fHits       = new TClonesArray("AliRICHHit",1000  ); 
+    }
+ 
+   //this is after TreeH because we need to guarantee that fHits array is created
+   AliDetector::SetTreeAddress();
+    
+   if (treeS) {
+      branch = treeS->GetBranch("RICHSDigits");
+      if (branch) 
+        {
+          if (fSDigits == 0x0) fSDigits = new TClonesArray("AliRICHSDigit",100000);
+          branch->SetAddress(&fSDigits);
+          //printf("Setting sdigits branch address at %p in TreeS\n",&fSDigits);
+        }
     }
     
     
-    if (treeD) {
-	for (int i=0; i<kNCH; i++) {
-	    sprintf(branchname,"%sDigits%d",GetName(),i+1);
-	    if (fDchambers) {
-	      branch = treeD->GetBranch(branchname);
-	      if (branch) branch->SetAddress(&((*fDchambers)[i]));
-	    }
-	}
-    }
-  if (treeR) {
+   if (treeD) 
+    {
+      if (fDchambers == 0x0) 
+        {
+           fDchambers = new TObjArray(kNCH);
+           for (i=0; i<kNCH ;i++) 
+             {
+               fDchambers->AddAt(new TClonesArray("AliRICHDigit",10000), i); 
+             }
+        }
+      
       for (i=0; i<kNCH; i++) {
+        sprintf(branchname,"%sDigits%d",GetName(),i+1);
+        if (fDchambers) {
+           branch = treeD->GetBranch(branchname);
+           if (branch) branch->SetAddress(&((*fDchambers)[i]));
+        }
+      }
+    }
+    
+  if (treeR) {
+    
+    if (fRawClusters == 0x0 ) 
+     {
+       fRawClusters = new TObjArray(kNCH);
+       for (i=0; i<kNCH ;i++) 
+         {
+           fRawClusters->AddAt(new TClonesArray("AliRICHRawCluster",10000), i); 
+         }
+     }
+     
+    if (fRecHits1D == 0x0) 
+     {
+        fRecHits1D = new TObjArray(kNCH);
+        for (i=0; i<kNCH ;i++) 
+         {
+          fRecHits1D->AddAt(new TClonesArray("AliRICHRecHit1D",1000), i);
+         }
+     }
+
+    if (fRecHits3D == 0x0) 
+     {
+        fRecHits3D = new TObjArray(kNCH);
+        for (i=0; i<kNCH ;i++) 
+         {
+          fRecHits3D->AddAt(new TClonesArray("AliRICHRecHit3D",1000), i);
+         }
+     }
+    
+    for (i=0; i<kNCH; i++) {
 	  sprintf(branchname,"%sRawClusters%d",GetName(),i+1);
 	  if (fRawClusters) {
 	      branch = treeR->GetBranch(branchname);
 	      if (branch) branch->SetAddress(&((*fRawClusters)[i]));
 	  }
-      }
+    }
       
-      for (i=0; i<kNCH; i++) {
+    for (i=0; i<kNCH; i++) {
 	sprintf(branchname,"%sRecHits1D%d",GetName(),i+1);
 	if (fRecHits1D) {
 	  branch = treeR->GetBranch(branchname);
 	  if (branch) branch->SetAddress(&((*fRecHits1D)[i]));
 	  }
-      }
+     }
       
      for (i=0; i<kNCH; i++) {
 	sprintf(branchname,"%sRecHits3D%d",GetName(),i+1);
@@ -2786,7 +2666,7 @@ void AliRICH::DiagnosticsFE(Int_t evNumber1,Int_t evNumber2)
        
        AliRICH *pRICH = (AliRICH *) gAlice->GetDetector("RICH");
      
-       TTree *treeH = gAlice->TreeH();
+       TTree *treeH = TreeH();
        Int_t ntracks =(Int_t) treeH->GetEntries();
             
 // Start loop on tracks in the hits containers
@@ -3389,7 +3269,7 @@ AliRICH *pRICH  = (AliRICH*)gAlice->GetDetector("RICH");
 // Get pointers to RICH detector and Hits containers
        
 
-       TTree *TH = gAlice->TreeH(); 
+       TTree *TH = TreeH(); 
        Stat_t ntracks = TH->GetEntries();
 
        // Start loop on tracks in the hits containers

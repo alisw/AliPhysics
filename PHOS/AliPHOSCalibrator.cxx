@@ -75,18 +75,17 @@ ClassImp(AliPHOSCalibrator)
   fConTableDBFile = "ConTableDB.root" ;
 }
 //____________________________________________________________________________ 
-AliPHOSCalibrator::AliPHOSCalibrator(const char* file, const char* title,Bool_t toSplit):
+AliPHOSCalibrator::AliPHOSCalibrator(const char* file, const char* title):
   TTask("AliPHOSCalibrator",title) 
 { 
   //Constructor which should normally be used.
   //file: path/galice.root  - header file
   //title: branch name of PHOS reconstruction (e.g. "Default")
-  //toSplit: wether we work in Split mode?
+ 
 
   fRunList = new TList() ;
   fRunList->SetOwner() ;
   fRunList->Add(new TObjString(file)) ;
-  fToSplit = toSplit ;
   fNch = 0 ;
   fPedPat = 257 ;  //Patterns for different kind of events
   fPulPat = 33 ;
@@ -281,7 +280,7 @@ void AliPHOSCalibrator::ScanPedestals(Option_t * option )
   while((file = static_cast<TObjString *>(next()))){
     if(strstr(option,"deb"))
       printf("Processing file %s \n ",file->String().Data()) ;
-    AliPHOSGetter * gime = AliPHOSGetter::GetInstance(file->String().Data(),GetTitle(),fToSplit) ;
+    AliPHOSGetter * gime = AliPHOSGetter::Instance(file->String().Data(),GetTitle()) ;
     Int_t ievent ;
     for(ievent = 0; ievent<gime->MaxEvent() ; ievent++){
       gime->Event(ievent,"D") ;
@@ -396,7 +395,7 @@ void AliPHOSCalibrator::ScanGains(Option_t * option)
   TObjString * file ;
   while((file = static_cast<TObjString *>(next()))){
     
-    AliPHOSGetter * gime = AliPHOSGetter::GetInstance(file->String().Data(),GetTitle(),fToSplit) ;
+    AliPHOSGetter * gime = AliPHOSGetter::Instance(file->String().Data(),GetTitle()) ;
     Int_t handled = 0;
     Int_t ievent ;
     for(ievent = 0; ievent<gime->MaxEvent() ; ievent++){

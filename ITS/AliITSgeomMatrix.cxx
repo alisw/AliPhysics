@@ -13,78 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.17  2002/10/31 10:16:40  hristov
-Minor corrections for warnings on Alpha
-
-Revision 1.16  2002/10/22 14:45:40  alibrary
-Introducing Riostream.h
-
-Revision 1.15  2002/10/14 14:57:00  hristov
-Merging the VirtualMC branch to the main development branch (HEAD)
-
-Revision 1.13.6.1  2002/06/10 17:51:15  hristov
-Merged with v3-08-02
-
-Revision 1.14  2002/05/19 18:17:03  hristov
-Changes needed by ICC/IFC compiler (Intel)
-
-Revision 1.13  2002/01/28 21:49:19  nilsen
-Fixed a logical bug in functions GtoLPositionError, LtoGPositionError,
-GtoLPositionErrorTracking, and LtoGPositionErrorTracking.
-
-Revision 1.12  2001/10/12 22:07:20  nilsen
-A patch for C++ io manipulation functions so that they will work both
-with GNU gcc 2.96 and GNU gcc 3.01 compilers. Needs to be tested with
-other platforms.
-
-Revision 1.11  2001/09/04 14:54:31  hristov
-Const multidimentional arrays cause problems in the CINT dictionary on HP, const removed
-
-Revision 1.10  2001/08/24 21:06:37  nilsen
-Added more documentation, fixed up some coding violations, and some
-forward declorations.
-
-Revision 1.9  2001/03/23 15:21:56  nilsen
-Added Cylinderical Coordinates for use with Tracking. Fixed a but in the
-Streamer, It was not setting a value for frot[3] as it should when reading.
-
-Revision 1.8  2001/02/09 00:00:57  nilsen
-Fixed compatibility problem with HP unix {ios::fmtflags -> Int_t}. Fixed
-bugs in iostream based streamers used to read and write .det files. Fixed
-some detector sizes. Fixed bugs in some default-special constructors.
-
-Revision 1.7  2001/02/03 00:00:30  nilsen
-New version of AliITSgeom and related files. Now uses automatic streamers,
-set up for new formatted .det file which includes detector information.
-Additional smaller modifications are still to come.
-
-Revision 1.5  2000/10/02 16:32:35  barbera
-Forward declaration added
-
-Revision 1.1.2.6  2000/10/02 15:52:05  barbera
-Forward declaration added
-
-Revision 1.4  2000/09/07 17:30:45  nilsen
-fixed a bug in SixAnglesFromMatrix.
-
-Revision 1.3  2000/09/05 14:25:50  nilsen
-Made fixes for HP compiler. All function parameter default values placed
-in .h file. Fixed the usual problem with HP comilers and the "for(Int_t i..."
-business. Replaced casting (Double_t [3][3]) to (Double_t (*)[3]) for HP.
-Lastly removed all "const" before function parameters which were 2 dim. arrays,
-because on HP root generates some strange code (?). Thanks Peter for the
-changes.
-
-Revision 1.2  2000/08/29 20:16:50  nilsen
-New class for ITS coordiante transformations used by AliITSgeom nearly
-exclusively.
-
-Revision 1.1.2.1  2000/06/04 16:32:31  Nilsen
-A new class to hold the matrix information needed by AliITSgeom.
-
-*/
+/* $Id$ */
 
 ////////////////////////////////////////////////////////////////////////
 // This is the implementation file for AliITSgeomMatrix class. It 

@@ -13,126 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.41  2003/04/23 15:19:48  cblume
-Fix bug in absorbtion length of photons
-
-Revision 1.40  2003/04/08 08:14:53  morsch
-AddTrackReference moved to AliModule.
-
-Revision 1.39  2003/02/11 16:54:07  hristov
-Updated AliTrackReference class (S.Radomski)
-
-Revision 1.38  2003/01/31 11:41:06  cblume
-Fix bug in StepManager in treating geometry with holes
-
-Revision 1.37  2003/01/28 14:38:18  cblume
-Add track length to track references
-
-Revision 1.36  2002/11/21 22:38:47  alibrary
-Removing AliMC and AliMCProcess
-
-Revision 1.35  2002/10/14 14:57:44  hristov
-Merging the VirtualMC branch to the main development branch (HEAD)
-
-Revision 1.33.6.2  2002/07/24 10:09:31  alibrary
-Updating VirtualMC
-
-Revision 1.34  2002/06/13 08:11:56  cblume
-Add the track references
-
-Revision 1.33  2002/02/20 14:01:40  hristov
-Compare a TString with a string, otherwise the conversion cannot be done on Sun
-
-Revision 1.32  2002/02/13 16:58:37  cblume
-Bug fix reported by Jiri. Make atoi input zero terminated in StepManager()
-
-Revision 1.31  2002/02/11 14:25:27  cblume
-Geometry update, compressed hit structure
-
-Revision 1.30  2001/05/21 16:45:47  hristov
-Last minute changes (C.Blume)
-
-Revision 1.29  2001/05/16 14:57:28  alibrary
-New files for folders and Stack
-
-Revision 1.28  2001/05/07 08:03:22  cblume
-Generate also hits in the amplification region
-
-Revision 1.27  2001/03/30 14:40:15  cblume
-Update of the digitization parameter
-
-Revision 1.26  2000/11/30 17:38:08  cblume
-Changes to get in line with new STEER and EVGEN
-
-Revision 1.25  2000/11/15 14:30:16  cblume
-Fixed bug in calculating detector no. of extra hit
-
-Revision 1.24  2000/11/10 14:58:36  cblume
-Introduce additional hit with amplitude 0 at the chamber borders
-
-Revision 1.23  2000/11/01 14:53:21  cblume
-Merge with TRD-develop
-
-Revision 1.17.2.5  2000/10/15 23:40:01  cblume
-Remove AliTRDconst
-
-Revision 1.17.2.4  2000/10/06 16:49:46  cblume
-Made Getters const
-
-Revision 1.17.2.3  2000/10/04 16:34:58  cblume
-Replace include files by forward declarations
-
-Revision 1.17.2.2  2000/09/18 13:50:17  cblume
-Include TR photon generation and adapt to new AliTRDhit
-
-Revision 1.22  2000/06/27 13:08:50  cblume
-Changed to Copy(TObject &A) to appease the HP-compiler
-
-Revision 1.21  2000/06/09 11:10:07  cblume
-Compiler warnings and coding conventions, next round
-
-Revision 1.20  2000/06/08 18:32:58  cblume
-Make code compliant to coding conventions
-
-Revision 1.19  2000/06/07 16:27:32  cblume
-Try to remove compiler warnings on Sun and HP
-
-Revision 1.18  2000/05/08 16:17:27  cblume
-Merge TRD-develop
-
-Revision 1.17.2.1  2000/05/08 14:59:16  cblume
-Made inline function non-virtual. Bug fix in setting sensitive chamber
-
-Revision 1.17  2000/02/28 19:10:26  cblume
-Include the new TRD classes
-
-Revision 1.16.4.1  2000/02/28 18:04:35  cblume
-Change to new hit version, introduce geometry class, and move digitization and clustering to AliTRDdigitizer/AliTRDclusterizerV1
-
-Revision 1.16  1999/11/05 22:50:28  fca
-Do not use Atan, removed from ROOT too
-
-Revision 1.15  1999/11/02 17:20:19  fca
-initialise nbytes before using it
-
-Revision 1.14  1999/11/02 17:15:54  fca
-Correct ansi scoping not accepted by HP compilers
-
-Revision 1.13  1999/11/02 17:14:51  fca
-Correct ansi scoping not accepted by HP compilers
-
-Revision 1.12  1999/11/02 16:35:56  fca
-New version of TRD introduced
-
-Revision 1.11  1999/11/01 20:41:51  fca
-Added protections against using the wrong version of FRAME
-
-Revision 1.10  1999/09/29 09:24:35  fca
-Introduction of the Copyright and cvs Log
-
-*/
+/* $Id$ */
 
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
@@ -149,20 +30,20 @@ Introduction of the Copyright and cvs Log
 
 #include <stdlib.h> 
 
-#include <TMath.h>
-#include <TVector.h>
-#include <TRandom.h>
 #include <TF1.h>
 #include <TLorentzVector.h>
+#include <TMath.h>
+#include <TRandom.h>
+#include <TVector.h>
+#include <TVirtualMC.h>
 
-#include "AliRun.h"
 #include "AliConst.h"
-
-#include "AliTRDv1.h"
+#include "AliRun.h"
+#include "AliTRDgeometry.h"
 #include "AliTRDhit.h"
 #include "AliTRDmatrix.h"
-#include "AliTRDgeometry.h"
 #include "AliTRDsim.h"
+#include "AliTRDv1.h"
 
 ClassImp(AliTRDv1)
  

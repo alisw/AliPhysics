@@ -27,7 +27,7 @@ class AliPHOSRaw2Digits : public TTask {
 
 public:
   AliPHOSRaw2Digits() ;          // ctor
-  AliPHOSRaw2Digits(const char * inputFileName,Bool_t toSplit = kTRUE) ;         
+  AliPHOSRaw2Digits(const char * inputFileName) ;         
   AliPHOSRaw2Digits(AliPHOSRaw2Digits & r2d) ;          // cpy ctor
   virtual ~AliPHOSRaw2Digits() ; // dtor
 
@@ -71,7 +71,7 @@ private:
   TString fInName ;        // FileName of the input file
   Bool_t  fDebug ;         //!
   Bool_t  fIsInitialized ; //!
-  Bool_t  fToSplit ;       //To produce splitted output
+ 
   UInt_t  fMK1 ;     //!ZEBRA markers
   UInt_t  fMK2 ;     //!ZEBRA markers
   UInt_t  fMK3 ;     //!ZEBRA markers

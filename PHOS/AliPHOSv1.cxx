@@ -31,22 +31,30 @@
 
 
 // --- ROOT system ---
-#include "TRandom.h"
-#include "TParticle.h"
-#include "TClonesArray.h"
+
+#include <TBRIK.h>
+#include <TNode.h>
+#include <TParticle.h>
+#include <TRandom.h>
+#include <TTree.h>
+#include <TVirtualMC.h>
 
 // --- Standard library ---
 
+#include <string.h>
+#include <stdlib.h>
+
 // --- AliRoot header files ---
 
-#include "AliPHOSv1.h"
-#include "AliPHOSHit.h"
+#include "AliConst.h"
 #include "AliPHOSCPVDigit.h"
-#include "AliRun.h"
 #include "AliPHOSGeometry.h"
-#include "AliPHOSQAIntCheckable.h"
+#include "AliPHOSHit.h"
 #include "AliPHOSQAFloatCheckable.h"
+#include "AliPHOSQAIntCheckable.h"
 #include "AliPHOSQAMeanChecker.h"
+#include "AliPHOSv1.h"
+#include "AliRun.h"
 
 ClassImp(AliPHOSv1)
 
@@ -154,8 +162,7 @@ AliPHOSv1::AliPHOSv1(const char *name, const char *title):
 AliPHOSv1::~AliPHOSv1()
 {
   // dtor
-
-  if ( fHits) {
+ if ( fHits) {
     fHits->Delete() ; 
     delete fHits ;
     fHits = 0 ; 
@@ -230,6 +237,7 @@ void AliPHOSv1::FinishEvent()
   // called at the end of each event by AliRun
   // accumulate the hit-multiplicity and total energy per block 
   // if the values have been updated check it
+  
 
   if ( fQATotEner ) { 
     if ( fQATotEner->HasChanged() ) {
@@ -262,6 +270,8 @@ void AliPHOSv1::FinishEvent()
       fQAHitsMul->Reset() ; 
     }
   } 
+
+  AliDetector::FinishEvent(); 
 }
 //____________________________________________________________________________
 void AliPHOSv1::StepManager(void)

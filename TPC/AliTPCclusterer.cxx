@@ -13,42 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.10  2002/10/14 14:57:43  hristov
-Merging the VirtualMC branch to the main development branch (HEAD)
-
-Revision 1.7.6.1  2002/06/10 15:26:12  hristov
-Merged with v3-08-02
-
-Revision 1.9  2002/05/09 06:57:09  kowal2
-Protection against nonexisting input tree
-
-Revision 1.8  2002/03/29 06:57:45  kowal2
-Restored backward compatibility to use the hits from Dec. 2000 production.
-
-Revision 1.7  2001/10/21 19:04:55  hristov
-Several patches were done to adapt the barel reconstruction to the multi-event case. Some memory leaks were corrected. (Yu.Belikov)
-
-Revision 1.6  2001/08/30 09:28:48  hristov
-TTree names are explicitly set via SetName(name) and then Write() is called
-
-Revision 1.5  2001/07/20 14:32:44  kowal2
-Processing of many events possible now
-
-Revision 1.4  2001/04/17 08:06:27  hristov
-Possibility to define the magnetic field in the reconstruction (Yu.Belikov)
-
-Revision 1.3  2000/10/05 16:14:01  kowal2
-Forward declarations.
-
-Revision 1.2  2000/06/30 12:07:50  kowal2
-Updated from the TPC-PreRelease branch
-
-Revision 1.1.2.1  2000/06/25 08:53:55  kowal2
-Splitted from AliTPCtracking
-
-*/
+/* $Id$ */
 
 //-------------------------------------------------------
 //          Implementation of the TPC clusterer
@@ -67,6 +32,8 @@ Splitted from AliTPCtracking
 #include "AliTPCParam.h"
 #include <Riostream.h>
 #include <TTree.h>
+#include "AliRunLoader.h"
+#include "AliLoader.h"
 
 void AliTPCclusterer::FindPeaks(Int_t k,Int_t max,
 AliBin *b,Int_t *idx,UInt_t *msk,Int_t& n) {
@@ -120,37 +87,31 @@ AliTPCcluster &c) {
 }
 
 //_____________________________________________________________________________
-void AliTPCclusterer::Digits2Clusters(const AliTPCParam *par, TFile *of, Int_t eventn)
+void AliTPCclusterer::Digits2Clusters(const AliTPCParam *par, AliLoader *of, Int_t eventn)
 {
   //-----------------------------------------------------------------
   // This is a simple cluster finder.
   //-----------------------------------------------------------------
+  AliRunLoader* rl = (AliRunLoader*)of->GetEventFolder()->FindObject(AliRunLoader::fgkRunLoaderName);
+  rl->GetEvent(eventn);
   TDirectory *savedir=gDirectory; 
 
-  if (!of->IsOpen()) {
+  if (of->TreeR() == 0x0) of->MakeTree("R");
+  
+  
+  if (of == 0x0) 
+   {
      cerr<<"AliTPC::Digits2Clusters(): output file not open !\n";
      return;
-  }
+   }
 
   const Int_t kMAXZ=par->GetMaxTBin()+2;
 
-  char  dname[100];
-  char   cname[100];
-  if (eventn==-1) {
-
-    // for backward compatibility
-    
-    sprintf(dname,"TreeD_75x40_100x60_150x60");
-    sprintf(cname,"TreeC_TPC");
-  }
-  else {
-    sprintf(dname,"TreeD_75x40_100x60_150x60_%d",eventn);
-    sprintf(cname,"TreeC_TPC_%d",eventn);
-  }
-  TTree *t = (TTree *)gDirectory->Get(dname);
+  
+  TTree *t = (TTree *)of->TreeD();
 
   if (!t) {
-    cerr<<"Input tree with "<<dname<<" not found"<<endl;
+    cerr<<"Input tree with digits not found"<<endl;
     return;
   }
 
@@ -158,21 +119,27 @@ void AliTPCclusterer::Digits2Clusters(const AliTPCParam *par, TFile *of, Int_t e
   t->GetBranch("Segment")->SetAddress(&dummy);
   Stat_t nentries = t->GetEntries();
 
-  of->cd();
+  cout<<"Got "<<nentries<<" from TreeD"<<endl;
 
-  ((AliTPCParam*)par)->Write(par->GetTitle());
+//  ((AliTPCParam*)par)->Write(par->GetTitle());
+  
   AliTPCClustersArray carray;
   carray.Setup(par);
   carray.SetClusterType("AliTPCcluster");
-  carray.MakeTree();
+
+  TTree* treeR = of->TreeR();
+  carray.MakeTree(treeR);
 
 
 
   Int_t nclusters=0;
 
-  for (Int_t n=0; n<nentries; n++) {
-    t->GetEvent(n);
+  for (Int_t n=0; n<nentries; n++) 
+   {
+   
     Int_t sec, row;
+    t->GetEvent(n);
+
     if (!par->AdjustSectorRow(digarr.GetID(),sec,row)) {
        cerr<<"AliTPC warning: invalid segment ID ! "<<digarr.GetID()<<endl;
        continue;
@@ -300,10 +267,10 @@ void AliTPCclusterer::Digits2Clusters(const AliTPCParam *par, TFile *of, Int_t e
 
   cerr<<"Number of found clusters : "<<nclusters<<"                        \n";
 
-  carray.GetTree()->SetName(cname);
-  carray.GetTree()->Write();
+  of->WriteRecPoints("OVERWRITE");
+  
   savedir->cd();
 
-  delete t;  //Thanks to Mariana Bondila
+//  delete t;  //Thanks to Mariana Bondila
 }
 

@@ -13,42 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.15  2002/10/22 15:40:19  alibrary
-Introducing Riostream.h
-
-Revision 1.14  2001/10/19 05:29:38  alla
-bug in meduim fixed
-
-Revision 1.13  2001/09/19 18:41:59  alla
-Asimmetric START geometry
-
-Revision 1.12  2001/04/25 14:09:34  alla
-Curent bur fixed
-
-Revision 1.11  2001/04/04 12:10:18  alla
-changes according Coding Convension
-
-Revision 1.10  2000/12/04 08:48:19  alibrary
-Fixing problems in the HEAD
-
-Revision 1.9  2000/10/02 21:28:13  fca
-Removal of useless dependecies via forward declarations
-
-Revision 1.8  2000/07/13 16:41:29  fca
-New START corrected for coding conventions
-
-Revision 1.7  2000/01/21 15:45:23  fca
-New Version from Alla
-
-Revision 1.6  1999/11/12 15:04:00  fca
-Modifications from A.Maevskaya
-
-Revision 1.5  1999/09/29 09:24:29  fca
-Introduction of the Copyright and cvs Log
-
-*/ 
+/* $Id$ */
 
 /////////////////////////////////////////////////////////////////////
 //                                                                 //
@@ -63,20 +28,20 @@ Introduction of the Copyright and cvs Log
 //                                                                  //
 //////////////////////////////////////////////////////////////////////
 
-#include <TMath.h>
-#include <TGeometry.h>
-#include <TTUBE.h>
-#include <TNode.h>
-#include <TLorentzVector.h>
-
-#include "AliSTARTv0.h"
-#include "AliRun.h"
-#include "AliMagF.h"
-#include "AliSTARThit.h"
-
 #include <Riostream.h>
-
 #include <stdlib.h>
+
+#include <TGeometry.h>
+#include <TLorentzVector.h>
+#include <TMath.h>
+#include <TNode.h>
+#include <TTUBE.h>
+#include <TVirtualMC.h>
+
+#include "AliMagF.h"
+#include "AliRun.h"
+#include "AliSTARThit.h"
+#include "AliSTARTv0.h"
 
 ClassImp(AliSTARTv0)
 

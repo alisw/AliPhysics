@@ -24,16 +24,17 @@ class TFile;
 // --- AliRoot header files ---
 
 class AliTrackMap;
+class AliRunLoader;
 
 class AliTrackMapper {
 
 public:
   AliTrackMapper();
   virtual ~AliTrackMapper(){}
-  void CreateMap(Int_t nEvents, Int_t firstEventNr,
-	    const char* fnMap = "trackMap.root",
-	    const char* fnHits   ="rfio:galice.root");
-  Int_t CreateMap(Int_t eventNr, TFile* fileMap) const;
+  void CreateMap(Int_t nEvents, Int_t firstEventNr, 
+                 const char* fnMap = "trackMap.root",
+                 const char* fnHits   ="rfio:galice.root");
+  Int_t CreateMap(Int_t eventNr, TFile* fileMap,AliRunLoader* rl);
   void SetDebug(Int_t level) {fDEBUG = level;}
   void CheckTrackMap(Int_t eventNr, const char* fnMap = "trackMap.root");
   AliTrackMap* LoadTrackMap(Int_t eventNr, const char* fnMap, TFile* &fileMap);

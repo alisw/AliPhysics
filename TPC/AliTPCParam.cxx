@@ -13,78 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.18  2003/01/28 16:42:43  hristov
-Bug fix in Transform0to1 (M.Ivanov)
-
-Revision 1.17  2002/10/23 07:17:33  alibrary
-Introducing Riostream.h
-
-Revision 1.16  2002/10/14 14:57:42  hristov
-Merging the VirtualMC branch to the main development branch (HEAD)
-
-Revision 1.13.4.1  2002/06/10 15:26:11  hristov
-Merged with v3-08-02
-
-Revision 1.15  2002/05/07 17:24:02  kowal2
-Updated wires positions
-
-Revision 1.14  2002/03/29 06:57:45  kowal2
-Restored backward compatibility to use the hits from Dec. 2000 production.
-
-Revision 1.13  2002/03/18 17:59:13  kowal2
-Chnges in the pad geometry - 3 pad lengths introduced.
-
-Revision 1.12  2002/02/05 09:12:26  hristov
-Small mods for gcc 3.02
-
-Revision 1.11  2000/11/02 07:33:48  kowal2
-Automatic streamer generation.
-
-Revision 1.10  2000/07/10 20:57:39  hristov
-Update of TPC code and macros by M.Kowalski
-
-Revision 1.9  2000/06/30 12:07:50  kowal2
-Updated from the TPC-PreRelease branch
-
-Revision 1.8.4.4  2000/06/26 07:39:42  kowal2
-Changes to obey the coding rules
-
-Revision 1.8.4.3  2000/06/25 08:38:41  kowal2
-Splitted from AliTPCtracking
-  
-Revision 1.8.4.2  2000/06/14 16:48:24  kowal2
-Parameter setting improved. Removed compiler warnings
-
-Revision 1.8.4.1  2000/06/09 07:12:21  kowal2  
-
-Updated defaults
-
-Revision 1.8  2000/04/17 09:37:33  kowal2
-removed obsolete AliTPCDigitsDisplay.C
-
-Revision 1.7.8.2  2000/04/10 08:44:51  kowal2
-
-New transformations added
-Different pad and pad-rows geometries for different sectors
-
-Revision 1.7.8.1  2000/04/10 07:56:53  kowal2
-Not used anymore - removed
-
-Revision 1.7  1999/10/08 13:10:35  fca
-Values in SetDefault are in radiants
-
-Revision 1.6  1999/10/08 06:27:59  fca
-Defaults updated
-
-Revision 1.5  1999/10/05 17:18:27  fca
-Correct GetWire check on even/odd fnWires
-
-Revision 1.4  1999/09/29 09:24:34  fca
-Introduction of the Copyright and cvs Log
-
-*/
+/* $Id$ */
 
 ///////////////////////////////////////////////////////////////////////
 //  Manager and of geomety  classes for set: TPC                     //

@@ -48,7 +48,7 @@ AliPHOSFastGlobalReconstruction::AliPHOSFastGlobalReconstruction(const char* hea
   // create an instance of the PHOS getter,
   // create an array or reconstructed particles.
 
-  gime = AliPHOSGetter::GetInstance(headerFile);
+  gime = AliPHOSGetter::Instance(headerFile);
   fGenerator = gAlice->Generator();
   fParticles = new TClonesArray("TParticle",100);
   fNParticles = 0;
@@ -76,7 +76,7 @@ void AliPHOSFastGlobalReconstruction::FastReconstruction(Int_t event)
   TLorentzVector p,v;
   Int_t kf,ks,imom1,imom2,idaug1,idaug2;
 
-  gime->Event(event,"P") ;
+  gime->Event(event,"X") ;
   fParticles  ->Clear();
   fNParticles = 0;
   Int_t        nPrimaries = gime->NPrimaries();

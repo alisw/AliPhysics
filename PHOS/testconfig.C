@@ -11,11 +11,23 @@ void Config()
   TDatime dat ; 
   gRandom->SetSeed(dat.GetTime());
   
-  gSystem->Load("libgeant321.so") ; 
-  new     TGeant3("C++ Interface to Geant3");
+  new     AliGeant3("C++ Interface to Geant3");
+  AliRunLoader* rl;
+  if (!gSystem->Getenv("CONFIG_FILE"))
+    {
+        cout<<"Config.C: Creating Run Loader ..."<<endl;
+        rl = AliRunLoader::Open("galice.root",AliConfig::fgkDefaultEventFolderName,
+                                              "recreate");
+        if (rl == 0x0)
+         {
+           gAlice->Fatal("Config.C","Can not instatiate the Run Loader");
+           return;
+         }
+        rl->SetCompressionLevel(2);
+        rl->SetNumberOfEventsPerFile(2);
+        gAlice->SetRunLoader(rl);
+    }
   
-  TFile  *rootfile = new TFile("testPHOS.root", "recreate");
-  rootfile->SetCompressionLevel(2);
   
   TGeant3 *geant3 = (TGeant3 *) gMC;
   
@@ -67,7 +79,6 @@ void Config()
   
   int     nParticles = 1;
   AliGenBox *gener = new AliGenBox(nParticles);
-  
   gener->SetPart(22) ;
   gener->SetPtRange(9.99, 10.00);
   gener->SetPhiRange(220, 320);
@@ -92,18 +103,25 @@ void Config()
   
   
   AliPHOS *PHOS = new AliPHOSv1("PHOS", "IHEP");
-  AliPHOSGetter * gime = AliPHOSGetter::GetInstance("aliroot") ;
-  AliPHOSQAMeanChecker * hm  = static_cast<AliPHOSQAMeanChecker *>gime->QATasks("HitsMul");
-  AliPHOSQAMeanChecker * te  = static_cast<AliPHOSQAMeanChecker *>gime->QATasks("TotEner");
-  AliPHOSQAMeanChecker * hmB = static_cast<AliPHOSQAMeanChecker *>gime->QATasks("HitsMulB");
-  AliPHOSQAMeanChecker * teB = static_cast<AliPHOSQAMeanChecker *>gime->QATasks("TotEnerB");
+  
+  AliPHOSLoader* gim = 0x0;
+
+  cout<<"0: "<<gim<<endl;
+  
+  gim = (AliPHOSLoader*)PHOS->MakeLoader(rl->GetEventFolder()->GetName());
+  
+  cout<<"1: "<<gim<<endl;
+  
+  AliPHOSQAMeanChecker * hm  = static_cast<AliPHOSQAMeanChecker *>gim->QAtask("HitsMul");
+  AliPHOSQAMeanChecker * te  = static_cast<AliPHOSQAMeanChecker *>gim->QAtask("TotEner");
+  AliPHOSQAMeanChecker * hmB = static_cast<AliPHOSQAMeanChecker *>gim->QAtask("HitsMulB");
+  AliPHOSQAMeanChecker * teB = static_cast<AliPHOSQAMeanChecker *>gim->QAtask("TotEnerB");
   hm->Set(62.18, 23.81) ;
   hm->Print() ; 
   te->Set(8.092, 3.06) ;
   hmB->Set(63.498, 24.348) ;
   teB->Set(8.363, 3.44) ;
-  hm->Print("") ;      
-  delete gime;
+       
 }
 
 Float_t EtaToTheta(Float_t arg){

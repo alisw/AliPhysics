@@ -32,6 +32,7 @@
 //End_Html
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
+
 #include <TNode.h>
 #include <TObjArray.h>
 #include <TClonesArray.h>
@@ -39,10 +40,11 @@
 #include <TSystem.h>
 #include <TDirectory.h>
 
+#include "AliConfig.h"
+#include "AliLoader.h"
+#include "AliMagF.h"
 #include "AliModule.h"
 #include "AliRun.h"
-#include "AliMagF.h"
-#include "AliConfig.h"
 #include "AliTrackReference.h"
 
 ClassImp(AliModule)
@@ -101,16 +103,15 @@ AliModule::AliModule(const char* name,const char *title):
   }
   //
   // Add this Module to the list of Modules
-  gAlice->Modules()->Add(this);
-  //
-  //
+
+  gAlice->AddModule(this);
+
   SetMarkerColor(3);
   //
   // Clear space for tracking media and material indexes
 
   for(Int_t i=0;i<100;i++) (*fIdmate)[i]=(*fIdtmed)[i]=0;
 
-  AliConfig::Instance()->Add(this);    
     
   SetDebug(gAlice->GetDebug());
 }
@@ -175,6 +176,7 @@ AliModule::~AliModule()
   // Delete TArray objects
   delete fIdtmed;
   delete fIdmate;
+
 }
  
 //_______________________________________________________________________
@@ -688,10 +690,15 @@ AliTrackReference* AliModule::FirstTrackReference(Int_t track)
   // while if track<0 the first hit of the current
   // track is returned
   // 
-  if(track>=0) {
-    gAlice->ResetTrackReferences();
-    gAlice->TreeTR()->GetEvent(track);
-  }
+  if(track>=0) 
+   {
+     AliRunLoader* rl = AliRunLoader::GetRunLoader();
+
+     rl->GetAliRun()->ResetTrackReferences();
+     rl->TreeTR()->GetEvent(track);
+     if (rl == 0x0)
+       Fatal("FirstTrackReference","AliRunLoader not initialized. Can not proceed");
+   }
   //
   fMaxIterTrackRef     = fTrackReferences->GetEntriesFast();
   fCurrentIterTrackRef = 0;
@@ -711,7 +718,7 @@ AliTrackReference* AliModule::NextTrackReference()
     else        
       return 0;
   } else {
-    printf("* AliDetector::NextTrackReference * TrackReference  Iterator called without calling FistTrackReference before\n");
+    printf("* AliModule::NextTrackReference * TrackReference  Iterator called without calling FistTrackReference before\n");
     return 0;
   }
 }
@@ -727,24 +734,43 @@ void AliModule::ResetTrackReferences()
   if (fTrackReferences)   fTrackReferences->Clear();
 }
  
+//_____________________________________________________________________________
+
+AliLoader*  AliModule::MakeLoader(const char* topfoldername) 
+ {
+   return 0x0;
+ }//skowron   
  
+//PH Merged with v3-09-08 |
+//                        V
+//_____________________________________________________________________________
 
 void AliModule::SetTreeAddress()
 {
   //
-  // Set branch address for the Hits and Digits Trees
+  // Set branch address for track reference Tree
   //
-    TBranch *branch;
-    char branchname[20];
-    sprintf(branchname,"%s",GetName());
-    // Branch address for track reference tree
-    TTree *treeTR = gAlice->TreeTR();
-    if (treeTR && fTrackReferences) {
-	branch = treeTR->GetBranch(branchname);
-	if (branch) branch->SetAddress(&fTrackReferences);
-    }
+
+  TBranch *branch;
+
+  // Branch address for track reference tree
+  TTree *treeTR = TreeTR();
+
+  if (treeTR && fTrackReferences) {
+     branch = treeTR->GetBranch(GetName());
+    if (branch) 
+     {
+       if(GetDebug()) Info("SetTreeAddress","(%s) Setting for TrackRefs",GetName());
+       branch->SetAddress(&fTrackReferences);
+     }
+    else
+     {
+       Warning("SetTreeAddress","(%s) Failed for Track References. Can not find branch in tree.",GetName());
+     }
+  }
 }
 
+//_____________________________________________________________________________
 void  AliModule::AddTrackReference(Int_t label){
   //
   // add a trackrefernce to the list
@@ -758,36 +784,44 @@ void  AliModule::AddTrackReference(Int_t label){
 }
 
 
-void AliModule::MakeBranchTR(Option_t *option, const char *file)
+//_____________________________________________________________________________
+void AliModule::MakeBranchTR(Option_t *option)
 { 
     //
     // Makes branch in treeTR
     //  
-    char name[10];
-    sprintf(name,"%s",GetName());
-
-    if (GetDebug()>1)
-	printf("* MakeBranch * Making Branch %s \n",name);
-    
-    TDirectory *cwd = gDirectory;
-    TBranch *branch = 0;
-    TTree* tree = gAlice->TreeTR();
-    if (tree) {
-	branch = tree->Branch(name, &fTrackReferences, 1600);
-	if (file) {
-	    char * outFile = new char[strlen(gAlice->GetBaseFile())+strlen(file)+2];
-	    sprintf(outFile,"%s/%s",gAlice->GetBaseFile(),file);
-	    branch->SetFile(outFile);
-	    TIter next( branch->GetListOfBranches());
-	    while ((branch=dynamic_cast<TBranch*>(next()))) {
-		branch->SetFile(outFile);
-	    } 
-	    delete outFile;
-	    
-	    cwd->cd();
-	    
-	    if (GetDebug()>1)
-		printf("* MakeBranch * Diverting Branch %s to file %s\n",name,file);
-	}
+  if(GetDebug()) Info("MakeBranchTR","Making Track Refs. Branch for %s",GetName());
+  TTree * tree = TreeTR();
+  if (fTrackReferences && tree) 
+   {
+      TBranch *branch = tree->GetBranch(GetName());
+     if (branch) 
+       {  
+	 if(GetDebug()) Info("MakeBranch","Branch %s is already in tree.",GetName());
+	 return;
+       }
+  
+     branch = tree->Branch(GetName(),&fTrackReferences);
+   }
+  else
+    {
+      if(GetDebug()) 
+	Info("MakeBranchTR","FAILED for %s: tree=%#x fTrackReferences=%#x",
+	     GetName(),tree,fTrackReferences);
     }
+}
+
+//_____________________________________________________________________________
+TTree* AliModule::TreeTR()
+{
+  AliRunLoader* rl = AliRunLoader::GetRunLoader();
+
+  if ( rl == 0x0)
+   {
+     Error("TreeTR","Can not get the run loader");
+     return 0x0;
+   }
+
+  TTree* tree = rl->TreeTR();
+  return tree;
 }

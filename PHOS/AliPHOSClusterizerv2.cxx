@@ -38,22 +38,31 @@
 
 ClassImp(AliPHOSClusterizerv2)
 
+//____________________________________________________________________________
 AliPHOSClusterizerv2::AliPHOSClusterizerv2() : AliPHOSClusterizerv1() 
 {}
 
-AliPHOSClusterizerv2::AliPHOSClusterizerv2(const char * headerFile, const char * name, const Bool_t toSplit):
-AliPHOSClusterizerv1(headerFile,name,toSplit)
+//____________________________________________________________________________
+AliPHOSClusterizerv2::AliPHOSClusterizerv2(const char * headerFile, const char * name):
+AliPHOSClusterizerv1(headerFile,name)
 {}
 
+//____________________________________________________________________________
+AliPHOSClusterizerv2::AliPHOSClusterizerv2(const AliPHOSClusterizerv2 & clu):
+AliPHOSClusterizerv1(clu)
+{}
+
+//____________________________________________________________________________
 void AliPHOSClusterizerv2::GetNumberOfClustersFound(int* numb) const
 {
   // Returns the number of found EMC and CPV rec.points
 
-  AliPHOSGetter * gime = AliPHOSGetter::GetInstance() ;   
+  AliPHOSGetter * gime = AliPHOSGetter::Instance() ;   
   numb[0] = gime->EmcRecPoints()->GetEntries();  
   numb[1] = gime->CpvRecPoints()->GetEntries();  
 }
 
+//____________________________________________________________________________
 void AliPHOSClusterizerv2::Exec(Option_t* option)
 {
   // Steering method
@@ -62,29 +71,23 @@ void AliPHOSClusterizerv2::Exec(Option_t* option)
     gBenchmark->Start("PHOSClusterizer"); 
   
   if(strstr(option,"print"))
-    Print("") ; 
+    Print() ; 
 
-  AliPHOSGetter * gime = AliPHOSGetter::GetInstance() ; 
+  AliPHOSGetter * gime = AliPHOSGetter::Instance() ; 
 
-  TFolder* storage = dynamic_cast<TFolder*>(gROOT->FindObjectAny("Folders/Run/Event/RecData/RecPoints/PHOS")); 
-  TFolder* wPoolF =  storage->AddFolder("SmP","SmartRecPoints for PHOS");
+  TFolder* wPoolF =  gime->PhosLoader()->GetDetectorDataFolder();
   
   TObjArray* wPool = new TObjArray(400);
   wPool->SetName("SmartPoints");
   wPoolF->Add(wPool);
   wPoolF->Add(this);
 
-  Int_t nevents = (Int_t) gAlice->TreeE()->GetEntries() ;
+  Int_t nevents = gime->MaxEvent() ;
   Int_t ievent ;
 
   for(ievent = 0; ievent<nevents; ievent++) {
     
-    gAlice->GetEvent(ievent) ;
-    gAlice->SetEvent(ievent) ;
-    
     gime->Event(ievent,"D") ;
-//      if(!ReadDigits(ievent))  //reads digits for event fEvent
-//        continue;
     
     Info("Exec", "MakeClusters invoked..") ;
     MakeClusters() ;
@@ -103,7 +106,7 @@ void AliPHOSClusterizerv2::Exec(Option_t* option)
     Int_t iPoint; //loop variable
 
     for(iPoint=0; iPoint<gime->CpvRecPoints()->GetEntriesFast(); iPoint++) {
-      rp = new AliPHOSEvalRecPoint(iPoint,AliPHOSEvalRecPoint::kCpv);
+      rp = new AliPHOSEvalRecPoint(iPoint, kTRUE);
       rp->MakeJob();
     }
 
@@ -136,7 +139,7 @@ void AliPHOSClusterizerv2::Exec(Option_t* option)
     wPoolF->Add(recEmc);
 
     for(iPoint=0; iPoint<gime->EmcRecPoints()->GetEntriesFast(); iPoint++) {
-      rp = new AliPHOSEvalRecPoint(iPoint,(Bool_t)AliPHOSEvalRecPoint::kEmc);
+      rp = new AliPHOSEvalRecPoint(iPoint, kFALSE);
       rp->MakeJob();
     }
 
@@ -171,7 +174,7 @@ void AliPHOSClusterizerv2::Exec(Option_t* option)
 	 nOldEmc, 
 	 gime->EmcRecPoints()->GetEntries(), emcRecPoints->GetEntries() ) ; 
 
-    WriteRecPoints(ievent);
+    WriteRecPoints();
 
 
   } // loop over events
@@ -181,7 +184,8 @@ void AliPHOSClusterizerv2::Exec(Option_t* option)
     Info("Exec","took %f seconds for Clusterizing", gBenchmark->GetCpuTime("PHOSClusterizer") ) ;
   }
 }
-//---------------------------------------------------------------------------------
+
+//____________________________________________________________________________
 Int_t AliPHOSClusterizerv2::AreNeighbours(AliPHOSDigit* d1, AliPHOSDigit* d2) const
 {
   // Points are neighbours if they have common edge.
@@ -195,7 +199,7 @@ Int_t AliPHOSClusterizerv2::AreNeighbours(AliPHOSDigit* d1, AliPHOSDigit* d2) co
   // The order of d1 and d2 is important: first (d1) should be a digit already in a cluster 
   // which is compared to a digit (d2)  not yet in a cluster  
 
-  const AliPHOSGeometry * geom = AliPHOSGetter::GetInstance()->PHOSGeometry();
+  const AliPHOSGeometry * geom = AliPHOSGetter::Instance()->PHOSGeometry();
 
   Int_t rv = 0 ; 
 

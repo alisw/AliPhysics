@@ -13,46 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.8  2001/10/21 19:07:24  hristov
-Several pointers were set to zero in the default constructors to avoid memory management problems
-
-Revision 1.7  2001/01/30 09:23:15  hristov
-Streamers removed (R.Brun)
-
-Revision 1.6  2000/09/07 11:23:27  kowal2
-Improved algoritms, coding convensions applied.
-
-Revision 1.5  2000/06/30 12:07:50  kowal2
-Updated from the TPC-PreRelease branch
-
-Revision 1.4.4.3  2000/06/26 07:39:42  kowal2
-Changes to obey the coding rules
-
-Revision 1.4.4.2  2000/06/25 08:38:41  kowal2
-Splitted from AliTPCtracking
-
-Revision 1.4.4.1  2000/06/14 16:48:24  kowal2
-Parameter setting improved. Removed compiler warnings
-
-Revision 1.4  2000/04/17 09:37:33  kowal2
-removed obsolete AliTPCDigitsDisplay.C
-
-Revision 1.3.8.2  2000/04/10 08:40:46  kowal2
-
-Small changes by M. Ivanov, improvements of algorithms
-
-Revision 1.3.8.1  2000/04/10 07:56:53  kowal2
-Not used anymore - removed
-
-Revision 1.3  1999/10/05 17:15:46  fca
-Minor syntax for the Alpha OSF
-
-Revision 1.2  1999/09/29 09:24:34  fca
-Introduction of the Copyright and cvs Log
-
-*/
+/* $Id$ */
 
 ///////////////////////////////////////////////////////////////////////////////
 //  AliTPCPRF2D -                                                            //

@@ -13,46 +13,14 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.10  2003/01/14 10:50:19  alibrary
-Cleanup of STEER coding conventions
+/* $Id$ */
 
-Revision 1.9  2002/03/13 07:04:11  jchudoba
-Connect only MUON branches when reading the event to speed up digitisation.
-
-Revision 1.8  2002/02/22 12:14:21  morsch
-Validate pad hit before digitization.
-
-Revision 1.7  2001/11/22 11:15:41  jchudoba
-Proper deletion of arrays (thanks to Rene Brun)
-
-Revision 1.6  2001/11/02 12:55:45  jchudoba
-cleanup of the code, add const to Get methods
-
-Revision 1.5  2001/10/31 16:35:07  jchudoba
-some functionality move to AliMUONTransientDigit class
-
-Revision 1.4  2001/03/20 13:36:11  egangler
-TFile memory leak and "too many files open" problem solved (?):
-the backgroud file is open only once forever, and not once for each event.
-
-Revision 1.3  2001/03/05 23:57:44  morsch
-Writing of digit tree moved to macro.
-
-Revision 1.2  2001/03/05 08:40:25  morsch
-Method SortTracks(..) imported from AliMUON.
-
-Revision 1.1  2001/02/02 14:11:53  morsch
-AliMUONMerger prototype to be called by the merge manager.
-
-*/
-
-#include <TDirectory.h>
-#include <TFile.h>
-#include <TObjArray.h>
-#include <TPDGCode.h>
+#include <Riostream.h> 
 #include <TTree.h> 
+#include <TObjArray.h>
+#include <TFile.h>
+#include <TDirectory.h>
+#include <TPDGCode.h>
 
 #include "AliHitMap.h"
 #include "AliMUON.h"
@@ -241,7 +209,17 @@ void AliMUONMerger::Digitise()
 //   Loop over tracks
 //
 
-	TTree *treeH  = gAlice->TreeH();
+/******************************************************************/
+      TTree* treeH = pMUON->TreeH();
+      if (treeH == 0x0)
+       {
+         cerr<<"AliMUONMerger::Exec: Can not get TreeH"<<endl;
+         return;
+       }
+/******************************************************************/     
+
+	
+	
 	Int_t ntracks = (Int_t) treeH->GetEntries();
 	treeH->SetBranchStatus("*",0); // switch off all branches
         treeH->SetBranchStatus("MUON*",1); // switch on only MUON

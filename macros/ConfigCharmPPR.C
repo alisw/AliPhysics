@@ -11,9 +11,6 @@ void Config()
   gRandom->SetSeed(seed);
   cerr<<"Seed for random number generation= "<<seed<<endl; 
 
-  // libraries required by geant321
-  gSystem->Load("libgeant321");
-
   new TGeant3("C++ Interface to Geant3");
 
   //=======================================================================
@@ -70,7 +67,7 @@ void Config()
   AliGenPythia *gener = new AliGenPythia(-1);
 
   gener->SetMomentumRange(0,999);
-  gener->SetPhiRange(0.,360.);
+  gener->SetPhiRange(-180.,180.);
   gener->SetThetaRange(0,180);
   gener->SetYRange(-999,999);
   //gener->SetPtRange(0,100);

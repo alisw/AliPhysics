@@ -4,6 +4,14 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */ 
 
+///////////////////////////////////////////////////////////////////////////////
+//                                                                           //
+//  TRD MC track                                                             //
+//  Used for efficiency estimates and matching of reconstructed tracks       //
+//  to MC particles                                                          //                    
+//                                                                           //
+///////////////////////////////////////////////////////////////////////////////
+
 #include <TObject.h> 
 
 class AliTRDgeometry;

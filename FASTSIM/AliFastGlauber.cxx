@@ -13,21 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.4  2003/06/03 13:13:20  morsch
-GetRandom returning impact parameter bin and flag for hard process added.
-
-Revision 1.3  2003/04/21 09:35:53  morsch
-Protection against division by 0 in Binaries().
-
-Revision 1.2  2003/04/14 14:23:44  morsch
-Correction in Binaries().
-
-Revision 1.1  2003/04/10 08:48:13  morsch
-First commit.
-
-*/
+/* $Id$ */
 
 // from AliRoot
 #include "AliFastGlauber.h"
@@ -341,12 +327,7 @@ Double_t AliFastGlauber::WSN(Double_t* x, Double_t* par)
 //  Number of hard processes per event
 //
     Double_t b     = x[0];
-    Double_t y;
-    if (b != 0.) {
-	y = fWSbinary->Eval(b)/fWSgeo->Eval(b);
-    } else {
-	y = fWSbinary->Eval(1.e-4)/fWSgeo->Eval(1.e-4);
-    }
+    Double_t y     = fWSbinary->Eval(b)/fWSgeo->Eval(b);
     return y;
 }
 
@@ -404,7 +385,7 @@ void AliFastGlauber::GetRandom(Float_t& b, Float_t& p, Float_t& mult)
 	b = fWSgeo->GetRandom();
 	Float_t mu = fWSN->Eval(b);
 	p = 1.-TMath::Exp(-mu);
-	mult = 6000./fWSN->Eval(0.) * mu;
+	mult = 6000./fWSN->Eval(1.) * mu;
 }
 
 void AliFastGlauber::GetRandom(Int_t& bin, Bool_t& hard)

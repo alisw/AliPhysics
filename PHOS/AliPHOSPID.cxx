@@ -27,11 +27,15 @@
 
 
 // --- ROOT system ---
-
+#include "TGeometry.h"
+#include "TDirectory.h"
+#include "TFile.h"
+#include "TTree.h"
+ 
 // --- Standard library ---
 
-
 // --- AliRoot header files ---
+#include "AliRun.h" 
 #include "AliPHOSPID.h"
 
 ClassImp(AliPHOSPID)
@@ -40,33 +44,20 @@ ClassImp(AliPHOSPID)
   AliPHOSPID::AliPHOSPID():TTask("","")
 {
   // ctor
-  fSplitFile= 0 ; 
-
+  fEventFolderName = "" ; 
 }
 
 
 //____________________________________________________________________________
-AliPHOSPID::AliPHOSPID(const char* headerFile, const char * name, const Bool_t toSplit):TTask(name, headerFile)
+AliPHOSPID::AliPHOSPID(const TString alirunFileName, const TString eventFolderName)
+:TTask("PHOS"+AliConfig::fgkPIDTaskName, alirunFileName), fEventFolderName(eventFolderName)
 {
   // ctor
-
-  fToSplit = toSplit ;
-  fSplitFile= 0 ; 
-}
-
-//____________________________________________________________________________
-  AliPHOSPID::AliPHOSPID(AliPHOSPID &pid):TTask(pid)
-{
-  // copy ctor
-  fSplitFile = pid.fSplitFile ;
-  fToSplit   = pid.fToSplit ; 
-
 }
 
 //____________________________________________________________________________
 AliPHOSPID::~AliPHOSPID()
 {
   // dtor
-        
-  fSplitFile = 0 ;
 }
+

@@ -12,8 +12,8 @@ class TParticle;
 class AliGenReader : public TObject
 {
  public:
-    AliGenReader(){;}
-    AliGenReader(const AliGenReader &reader){;}
+    AliGenReader():fFileName(NULL),fCode(kPDG){;}
+    AliGenReader(const AliGenReader &reader):fFileName(NULL),fCode(kPDG){;}
     
     virtual ~AliGenReader(){;}
     // Initialise 

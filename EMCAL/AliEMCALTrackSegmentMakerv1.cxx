@@ -49,7 +49,6 @@
 #include "AliEMCALLink.h"
 #include "AliEMCALGetter.h"
 #include "AliEMCAL.h"
-#include "AliRun.h"
 
 ClassImp( AliEMCALTrackSegmentMakerv1) 
 
@@ -60,23 +59,17 @@ ClassImp( AliEMCALTrackSegmentMakerv1)
   // default ctor (to be used mainly by Streamer)
 
   InitParameters() ; 
-
-  fTrackSegmentsInRun       = 0 ; 
-
   fDefaultInit = kTRUE ; 
 }
 
 //____________________________________________________________________________
- AliEMCALTrackSegmentMakerv1::AliEMCALTrackSegmentMakerv1(const char * headerFile, const char * name, const Bool_t toSplit) : AliEMCALTrackSegmentMaker(headerFile, name, toSplit)
+ AliEMCALTrackSegmentMakerv1::AliEMCALTrackSegmentMakerv1(const TString alirunFileName, const TString eventFolderName)
+   :AliEMCALTrackSegmentMaker(alirunFileName, eventFolderName)
 {
   // ctor
 
   InitParameters() ; 
-
-  fTrackSegmentsInRun       = 0 ; 
-
   Init() ;
-
   fDefaultInit = kFALSE ; 
 
 }
@@ -89,18 +82,15 @@ ClassImp( AliEMCALTrackSegmentMakerv1)
   
   if (!fDefaultInit) {
     delete fPRELinkArray  ;
-    delete fHCLinkArray  ;
-    fSplitFile = 0 ; 
+    delete fHCALinkArray  ;
   }
 }
-
 
 //____________________________________________________________________________
 const TString AliEMCALTrackSegmentMakerv1::BranchName() const 
 {  
-  TString branchName(GetName() ) ;
-  branchName.Remove(branchName.Index(Version())-1) ;
-  return branchName ;
+   return GetName() ;
+
 }
 
 //____________________________________________________________________________
@@ -136,58 +126,22 @@ void  AliEMCALTrackSegmentMakerv1::Init()
 {
   // Make all memory allocations that are not possible in default constructor
   
-  if ( strcmp(GetTitle(), "") == 0 )
-    SetTitle("galice.root") ;
-    
-  TString branchname = GetName() ;
-  branchname.Remove(branchname.Index(Version())-1) ;
-  AliEMCALGetter * gime = AliEMCALGetter::GetInstance(GetTitle(),branchname.Data(), fToSplit ) ; 
-  if ( gime == 0 ) {
-    Error("Init", "Could not obtain the Getter object !") ; 
-    return ;
-  } 
-  
-  fSplitFile = 0 ;
-  if(fToSplit){
-    //First - extract full path if necessary
-    TString fileName(GetTitle()) ;
-    Ssiz_t islash = fileName.Last('/') ;
-    if(islash<fileName.Length())
-      fileName.Remove(islash+1,fileName.Length()) ;
-    else
-      fileName="" ;
-    fileName+="EMCAL.RecData." ;
-    if((strcmp(branchname.Data(),"Default")!=0)&&(strcmp(branchname.Data(),"")!=0)){
-      fileName+=branchname ;
-      fileName+="." ;
-    }
-    fileName+="root" ;
-    fSplitFile = static_cast<TFile*>(gROOT->GetFile(fileName.Data()));   
-    if(!fSplitFile)
-      fSplitFile =  TFile::Open(fileName.Data(),"update") ;
-  }
-  
+  AliEMCALGetter* gime = AliEMCALGetter::Instance(GetTitle(), fEventFolderName.Data());
+
   fPRELinkArray = new TClonesArray("AliEMCALLink", 1000); 
-  fHCLinkArray  = new TClonesArray("AliEMCALLink", 1000); 
-
-
-  gime->PostTrackSegmentMaker(this) ;
-  gime->PostTrackSegments(BranchName()) ; 
-
+  fHCALinkArray = new TClonesArray("AliEMCALLink", 1000); 
+  if ( !gime->TrackSegmentMaker() ) {
+    gime->PostTrackSegmentMaker(this);
+  }
 }
 
 //____________________________________________________________________________
 void  AliEMCALTrackSegmentMakerv1::InitParameters()
 {
-  fClose     = 10e-3 ;   
-  fPRELinkArray = 0 ;
-  fHCLinkArray  = 0 ;
-  TString tsmName( GetName()) ; 
-  if (tsmName.IsNull() ) 
-    tsmName = "Default" ; 
-  tsmName.Append(":") ; 
-  tsmName.Append(Version()) ; 
-  SetName(tsmName) ;
+  fClose              = 10e-3 ;   
+  fPRELinkArray       = 0 ;
+  fHCALinkArray       = 0 ;
+  fTrackSegmentsInRun = 0 ; 
 }
 
 
@@ -198,50 +152,50 @@ void  AliEMCALTrackSegmentMakerv1::MakeLinks()const
   // which are not further apart from each other than fDangle 
   // and sort them in accordance with this distance
   
-  AliEMCALGetter * gime = AliEMCALGetter::GetInstance() ; 
-  TObjArray * aECRecPoints  = gime->ECALRecPoints() ; 
-  TObjArray * aPRERecPoints = gime->PRERecPoints() ; 
-  TObjArray * aHCRecPoints  = gime->HCALRecPoints() ; 
+  AliEMCALGetter * gime = AliEMCALGetter::Instance() ; 
+  TObjArray * aECARecPoints  = gime->ECARecPoints() ; 
+  TObjArray * aPRERecPoints  = gime->PRERecPoints() ; 
+  TObjArray * aHCARecPoints  = gime->HCARecPoints() ; 
 
   fPRELinkArray->Clear() ;    
-  fHCLinkArray->Clear() ;    
+  fHCALinkArray->Clear() ;    
 
   AliEMCALTowerRecPoint * pre ;
-  AliEMCALTowerRecPoint * ec ;
-  AliEMCALTowerRecPoint * hc ;
+  AliEMCALTowerRecPoint * eca ;
+  AliEMCALTowerRecPoint * hca ;
 
   Int_t iPRELink  = 0 ;
-  Int_t iHCLink   = 0 ;
+  Int_t iHCALink  = 0 ;
     
-  Int_t iECRP;
-  for(iECRP = 0; iECRP < aECRecPoints->GetEntriesFast(); iECRP++ ) {
-    ec = dynamic_cast<AliEMCALTowerRecPoint *>(aECRecPoints->At(iECRP)) ;
+  Int_t iECARP;
+  for(iECARP = 0; iECARP < aECARecPoints->GetEntriesFast(); iECARP++ ) {
+    eca = dynamic_cast<AliEMCALTowerRecPoint *>(aECARecPoints->At(iECARP)) ;
     Bool_t toofar = kTRUE ;        
     Int_t iPRERP = 0 ;    
     for(iPRERP = 0; iPRERP < aPRERecPoints->GetEntriesFast(); iPRERP++ ) { 
       pre = dynamic_cast<AliEMCALTowerRecPoint *>(aPRERecPoints->At(iPRERP)) ;
-      Float_t prod = HowClose(ec, pre, toofar) ;    
+      Float_t prod = HowClose(eca, pre, toofar) ;    
       if(toofar)
 	break ;	 
       if(prod < fClose) { 
-	new ((*fPRELinkArray)[iPRELink++])  AliEMCALLink(prod, iECRP, iPRERP, 0) ;
+	new ((*fPRELinkArray)[iPRELink++])  AliEMCALLink(prod, iECARP, iPRERP, 0) ;
       }      
     }
     toofar = kTRUE ; 
-    Int_t iHCRP = 0 ;    
-    for(iHCRP = 0; iHCRP < aHCRecPoints->GetEntriesFast(); iHCRP++ ) { 
-      hc = dynamic_cast<AliEMCALTowerRecPoint *>(aHCRecPoints->At(iHCRP)) ;
-      Float_t prod = HowClose(ec, hc, toofar) ;    
+    Int_t iHCARP = 0 ;    
+    for(iHCARP = 0; iHCARP < aHCARecPoints->GetEntriesFast(); iHCARP++ ) { 
+      hca = dynamic_cast<AliEMCALTowerRecPoint *>(aHCARecPoints->At(iHCARP)) ;
+      Float_t prod = HowClose(eca, hca, toofar) ;    
       if(toofar)
 	break ;	 
       if(prod < fClose) { 
-	new ((*fHCLinkArray)[iHCLink++])  AliEMCALLink(prod, iECRP, iHCRP, 1) ;
+	new ((*fHCALinkArray)[iHCALink++])  AliEMCALLink(prod, iECARP, iHCARP, 1) ;
       }      
     }
   } 
   
   fPRELinkArray->Sort() ;  //first links with largest scalar product
-  fHCLinkArray->Sort() ;  //first links with largest scalar product
+  fHCALinkArray->Sort() ;  //first links with largest scalar product
 }
 
 //____________________________________________________________________________
@@ -252,21 +206,21 @@ void  AliEMCALTrackSegmentMakerv1::MakePairs()
   // unassigned RecParticles. We assign these RecPoints to TrackSegment and 
   // remove them from the list of "unassigned". 
   
-  AliEMCALGetter * gime = AliEMCALGetter::GetInstance() ; 
-  TObjArray * aECALRecPoints = gime->ECALRecPoints() ; 
+  AliEMCALGetter * gime = AliEMCALGetter::Instance() ; 
+  TObjArray * aECARecPoints = gime->ECARecPoints() ; 
   TObjArray * aPRERecPoints = gime->PRERecPoints() ; 
-  TObjArray * aHCALRecPoints = gime->HCALRecPoints() ; 
-  TClonesArray * trackSegments = gime->TrackSegments(BranchName()) ;   
+  TObjArray * aHCARecPoints = gime->HCARecPoints() ; 
+  TClonesArray * trackSegments = gime->TrackSegments() ;   
     
   //Make arrays to mark clusters already chosen
-  Int_t * ecalExist = 0;
-  Int_t nECAL = aECALRecPoints->GetEntriesFast() ;  
-  if (nECAL) 
-    ecalExist = new Int_t[nECAL] ;
+  Int_t * ecaExist = 0;
+  Int_t nECA = aECARecPoints->GetEntriesFast() ;  
+  if (nECA) 
+    ecaExist = new Int_t[nECA] ;
   
   Int_t index;
-  for(index = 0; index < nECAL; index ++)
-    ecalExist[index] = 1 ;
+  for(index = 0; index < nECA; index ++)
+    ecaExist[index] = 1 ;
   
   Bool_t * preExist = 0;
   Int_t nPRE = aPRERecPoints->GetEntriesFast() ;  
@@ -275,12 +229,12 @@ void  AliEMCALTrackSegmentMakerv1::MakePairs()
   for(index = 0; index < nPRE; index ++)
     preExist[index] = kTRUE ;
   
-  Bool_t * hcalExist = 0;
-  Int_t nHCAL = aHCALRecPoints->GetEntriesFast() ;  
-  if(nHCAL)
-    hcalExist = new Bool_t[nHCAL] ;
-  for(index = 0; index < nHCAL; index ++)
-    hcalExist[index] = kTRUE ;
+  Bool_t * hcaExist = 0;
+  Int_t nHCA = aHCARecPoints->GetEntriesFast() ;  
+  if(nHCA)
+    hcaExist = new Bool_t[nHCA] ;
+  for(index = 0; index < nHCA; index ++)
+    hcaExist[index] = kTRUE ;
   
   AliEMCALTowerRecPoint * null = 0 ; 
  // Finds the smallest links and makes pairs of PRE and ECAL clusters with largest scalar product 
@@ -290,18 +244,18 @@ void  AliEMCALTrackSegmentMakerv1::MakePairs()
   
   while ( (linkPRE =  static_cast<AliEMCALLink *>(nextPRE()) ) ){  
 
-    if(ecalExist[linkPRE->GetECAL()] != -1){ //without PRE yet 
+    if(ecaExist[linkPRE->GetECA()] != -1){ //without PRE yet 
 
       if(preExist[linkPRE->GetOther()]){ // PRE still exist
 	
 	new ((* trackSegments)[fNTrackSegments]) 
-	  AliEMCALTrackSegment(dynamic_cast<AliEMCALTowerRecPoint *>(aECALRecPoints->At(linkPRE->GetECAL())) , 
+	  AliEMCALTrackSegment(dynamic_cast<AliEMCALTowerRecPoint *>(aECARecPoints->At(linkPRE->GetECA())) , 
 			       dynamic_cast<AliEMCALTowerRecPoint *>(aPRERecPoints->At(linkPRE->GetOther())), null) ;
 	(dynamic_cast<AliEMCALTrackSegment *>(trackSegments->At(fNTrackSegments)))->SetIndexInList(fNTrackSegments);
 	fNTrackSegments++ ;
 	if (gDebug == 2 ) 
 	  Info("MakePairs", "ECAL section with PRE section") ; 	
-	ecalExist[linkPRE->GetECAL()] = -1 ; //Mark ecal  that pre was found 
+	ecaExist[linkPRE->GetECA()] = -1 ; //Mark ecal  that pre was found 
 	//mark PRE recpoint as already used 
 	preExist[linkPRE->GetOther()] = kFALSE ;
       } //if PRE still exist
@@ -310,54 +264,54 @@ void  AliEMCALTrackSegmentMakerv1::MakePairs()
 
   // Finds the smallest links and makes pairs of HCAL and ECAL clusters with largest scalar product 
  
-  TIter nextHCAL(fHCLinkArray) ;
-  AliEMCALLink * linkHCAL ;
+  TIter nextHCA(fHCALinkArray) ;
+  AliEMCALLink * linkHCA ;
   
-  while ( (linkHCAL =  static_cast<AliEMCALLink *>(nextHCAL()) ) ){  
+  while ( (linkHCA =  static_cast<AliEMCALLink *>(nextHCA()) ) ){  
 
-    if(ecalExist[linkHCAL->GetECAL()] != -2){ //without HCAL yet 
+    if(ecaExist[linkHCA->GetECA()] != -2){ //without HCAL yet 
 
-      if(hcalExist[linkHCAL->GetOther()]){ // HCAL still exist
+      if(hcaExist[linkHCA->GetOther()]){ // HCAL still exist
 	// search among the already existing track segments
 	Int_t ii ; 
 	Bool_t found = kFALSE ; 
 	AliEMCALTrackSegment * ts = 0 ; 
 	for ( ii = 0 ; ii < fNTrackSegments ; ii++ ) {
 	  ts = dynamic_cast<AliEMCALTrackSegment *>(trackSegments->At(ii)) ;
-	  if ( ts->GetECIndex() == linkHCAL->GetECAL() ) {
+	  if ( ts->GetECAIndex() == linkHCA->GetECA() ) {
 	    found = kTRUE ; 
 	    break ; 
 	  }
 	}
 	if (found){
-	  ts->SetHCRecPoint( dynamic_cast<AliEMCALTowerRecPoint *>(aHCALRecPoints->At(linkHCAL->GetOther())) ) ;
+	  ts->SetHCARecPoint( dynamic_cast<AliEMCALTowerRecPoint *>(aHCARecPoints->At(linkHCA->GetOther())) ) ;
 	  if (gDebug == 2 ) 
 	    Info("MakePairs", "ECAL section with PRE and HCAL sections") ;
 	} 	
 	if (!found) {
 	  new ((* trackSegments)[fNTrackSegments]) 
-	    AliEMCALTrackSegment(dynamic_cast<AliEMCALTowerRecPoint *>(aECALRecPoints->At(linkHCAL->GetECAL())), null,
-				 dynamic_cast<AliEMCALTowerRecPoint *>(aHCALRecPoints->At(linkHCAL->GetOther()))) ; 
+	    AliEMCALTrackSegment(dynamic_cast<AliEMCALTowerRecPoint *>(aECARecPoints->At(linkHCA->GetECA())), null,
+				 dynamic_cast<AliEMCALTowerRecPoint *>(aHCARecPoints->At(linkHCA->GetOther()))) ; 
 	(dynamic_cast<AliEMCALTrackSegment *>(trackSegments->At(fNTrackSegments)))->SetIndexInList(fNTrackSegments);
 	fNTrackSegments++ ;
 	if (gDebug == 2 ) 
 	  Info("MakePairs", "ECAL section with HCAL section") ; 	
 	}
-	ecalExist[linkHCAL->GetECAL()] = -2 ; //Mark ecal  that hcal was found 
+	ecaExist[linkHCA->GetECA()] = -2 ; //Mark ecal  that hcal was found 
 	//mark HCAL recpoint as already used 
-	hcalExist[linkHCAL->GetOther()] = kFALSE ;
+	hcaExist[linkHCA->GetOther()] = kFALSE ;
       } //if HCAL still exist
     } 
   }
   
 
   //look through ECAL recPoints left without PRE/HCAL
-  if(ecalExist){ //if there is ecal rec point
-    Int_t iECALRP ;
-    for(iECALRP = 0; iECALRP < nECAL  ; iECALRP++ ){
-      if(ecalExist[iECALRP] > 0 ){
+  if(ecaExist){ //if there is ecal rec point
+    Int_t iECARP ;
+    for(iECARP = 0; iECARP < nECA  ; iECARP++ ){
+      if(ecaExist[iECARP] > 0 ){
 	new ((*trackSegments)[fNTrackSegments])  
-	  AliEMCALTrackSegment(dynamic_cast<AliEMCALTowerRecPoint *>(aECALRecPoints->At(iECALRP)), null, null) ;
+	  AliEMCALTrackSegment(dynamic_cast<AliEMCALTowerRecPoint *>(aECARecPoints->At(iECARP)), null, null) ;
 	(dynamic_cast<AliEMCALTrackSegment *>(trackSegments->At(fNTrackSegments)))->SetIndexInList(fNTrackSegments);
 	fNTrackSegments++;    
 	if( gDebug == 2 ) 
@@ -365,9 +319,9 @@ void  AliEMCALTrackSegmentMakerv1::MakePairs()
      } 
     }
   }
-  delete [] ecalExist ; 
+  delete [] ecaExist ; 
   delete [] preExist ; 
-  delete [] hcalExist ; 
+  delete [] hcaExist ; 
 }
 
 //____________________________________________________________________________
@@ -375,8 +329,6 @@ void  AliEMCALTrackSegmentMakerv1::Exec(Option_t * option)
 {
   // STEERing method
 
-  if( strcmp(GetName(), "")== 0 ) 
-    Init() ;
 
   if(strstr(option,"tim"))
     gBenchmark->Start("EMCALTSMaker");
@@ -386,23 +338,19 @@ void  AliEMCALTrackSegmentMakerv1::Exec(Option_t * option)
     return ; 
   }
 
-  AliEMCALGetter * gime = AliEMCALGetter::GetInstance() ; 
-  if(gime->BranchExists("TrackSegments") )
-    return ;
+  AliEMCALGetter * gime = AliEMCALGetter::Instance() ; 
 
-  Int_t nevents = gime->MaxEvent() ;       //(Int_t) gAlice->TreeE()->GetEntries() ;
+  Int_t nevents = gime->MaxEvent() ;   
   Int_t ievent ;
 
   for(ievent = 0; ievent < nevents; ievent++){
-
     gime->Event(ievent,"R") ;
- 
     //Make some initializations 
     fNTrackSegments = 0 ;
-    gime->TrackSegments(BranchName())->Clear() ; 
+    
+    gime->TrackSegments()->Clear() ; 
     
     MakeLinks() ;
-    
     MakePairs() ;
 
     WriteTrackSegments(ievent) ;
@@ -411,7 +359,7 @@ void  AliEMCALTrackSegmentMakerv1::Exec(Option_t * option)
       PrintTrackSegments(option) ;
     
     //increment the total number of track segments per run 
-    fTrackSegmentsInRun += gime->TrackSegments(BranchName())->GetEntriesFast() ; 
+    fTrackSegmentsInRun += gime->TrackSegments()->GetEntriesFast() ; 
     
   }
   
@@ -420,7 +368,15 @@ void  AliEMCALTrackSegmentMakerv1::Exec(Option_t * option)
     Info("Exec", "took %f seconds for making TS %f seconds per event", 
 	 gBenchmark->GetCpuTime("EMCALTSMaker"), gBenchmark->GetCpuTime("EMCALTSMaker")/nevents) ;
   }
-  
+   Unload();
+}
+
+//____________________________________________________________________________
+void AliEMCALTrackSegmentMakerv1::Unload() 
+{
+  AliEMCALGetter * gime = AliEMCALGetter::Instance() ;  
+  gime->EmcalLoader()->UnloadRecPoints() ;
+  gime->EmcalLoader()->UnloadTracks() ;
 }
 
 //____________________________________________________________________________
@@ -449,47 +405,20 @@ void AliEMCALTrackSegmentMakerv1::WriteTrackSegments(Int_t event)
   // first we check, if branches with the same title already exist.
   // If yes - exits without writing.
   
-  AliEMCALGetter *gime = AliEMCALGetter::GetInstance() ; 
+  AliEMCALGetter *gime = AliEMCALGetter::Instance() ; 
 
   TClonesArray * trackSegments = gime->TrackSegments() ; 
   trackSegments->Expand(trackSegments->GetEntriesFast()) ;
-  TTree * treeR ;
-  
-  if(fToSplit){
-    if(!fSplitFile)
-      return ;
-    fSplitFile->cd() ;
-    char name[10] ;
-    sprintf(name,"%s%d", "TreeR",event) ;
-    treeR = dynamic_cast<TTree*>(fSplitFile->Get(name)); 
-  }
-  else{
-    treeR = gAlice->TreeR();
-  }
-  
-  if(!treeR){
-    gAlice->MakeTree("R", fSplitFile);
-    treeR = gAlice->TreeR() ;
-  }
+
+  TTree * treeT = gime->TreeT();
   
   //First TS
   Int_t bufferSize = 32000 ;    
-  TBranch * tsBranch = treeR->Branch("EMCALTS",&trackSegments,bufferSize);
-  tsBranch->SetTitle(BranchName());
+  TBranch * tsBranch = treeT->Branch("EMCALTS",&trackSegments,bufferSize);
+  tsBranch->Fill() ; 
 
-  //Second -TSMaker
-  Int_t splitlevel = 0 ;
-  AliEMCALTrackSegmentMakerv1 * ts = this ;
-  TBranch * tsMakerBranch = treeR->Branch("AliEMCALTrackSegmentMaker","AliEMCALTrackSegmentMakerv1",
-					  &ts,bufferSize,splitlevel);
-  tsMakerBranch->SetTitle(BranchName());
-
-  tsBranch->Fill() ;  
-  tsMakerBranch->Fill() ;
-
-  treeR->AutoSave() ; //Write(0,kOverwrite) ;  
-  if(gAlice->TreeR()!=treeR)
-    treeR->Delete();
+  gime->WriteTracks("OVERWRITE");
+  gime->WriteTrackSegmentMaker("OVERWRITE");
 }
 
 
@@ -498,10 +427,8 @@ void AliEMCALTrackSegmentMakerv1::PrintTrackSegments(Option_t * option)
 {
   // option deb - prints # of found TrackSegments
   // option deb all - prints as well indexed of found RecParticles assigned to the TS
-  TString taskName(GetName()) ; 
-  taskName.Remove(taskName.Index(Version())-1) ;
   
-  TClonesArray * trackSegments = AliEMCALGetter::GetInstance()->TrackSegments(taskName) ; 
+  TClonesArray * trackSegments = AliEMCALGetter::Instance()->TrackSegments() ; 
 
 
   Info("PrintTrackSegments", "Results from TrackSegmentMaker:") ; 
@@ -514,7 +441,7 @@ void AliEMCALTrackSegmentMakerv1::PrintTrackSegments(Option_t * option)
     for (index = 0 ; index < fNTrackSegments ; index++) {
       AliEMCALTrackSegment * ts = (AliEMCALTrackSegment * )trackSegments->At(index) ; 
       printf("   %d           %d        %d         %d \n", 
-	     ts->GetIndexInList(), ts->GetECIndex(), ts->GetPREIndex(), ts->GetHCIndex() ); 
+	     ts->GetIndexInList(), ts->GetECAIndex(), ts->GetPREIndex(), ts->GetHCAIndex() ); 
     }	
   }
 }

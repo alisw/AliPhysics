@@ -22,3 +22,4 @@ typedef enum
 #endif
 
 #endif //ALI_DECAYER__H
+

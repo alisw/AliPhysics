@@ -40,26 +40,21 @@ class AliEMCALDigit : public AliDigitNew {
   AliEMCALDigit& operator*(Float_t factor) ; 
  
   Int_t   Compare(const TObject * obj) const ;  
-  const Float_t GetEta() const ; 
-  Int_t   GetNprimary() const { 
-    // returns the number of primaries
-    return fNprimary ; }
+  Float_t GetEta() const ; 
+  Int_t   GetNprimary() const { return fNprimary ; }
   Int_t   GetPrimary(Int_t index) const ; 
   Int_t   GetNiparent() const {return fNiparent;}
   Int_t   GetIparent(Int_t index) const ;
-  const Float_t GetPhi() const;
+  Float_t GetPhi() const;
   Float_t GetTime(void) const {return fTime ;}
-  Bool_t  IsSortable() const { 
-    // says that AliEMCALDigits are sortable (needed for Sort method
-    return kTRUE ; }
-  void    SetAmp(Int_t amp) { 
-    // sets the amplitude data member 
-    fAmp= amp ; } 
-  void SetId(Int_t id) {fId = id ;}
-  void SetTime(Float_t time) {fTime = time ;}
-  void ShiftPrimary(Int_t shift); // shift to semarate different TreeK in merging
+  Bool_t  IsSortable() const { return kTRUE ; }
+  void    SetAmp(Int_t amp) { fAmp= amp ; } 
+  void    SetId(Int_t id) {fId = id ;}
+  void    SetTime(Float_t time) {fTime = time ;}
+  void    ShiftPrimary(Int_t shift); // shift to semarate different TreeK in merging
  
  private: 
+
   Int_t fNprimary ;     // Number of primaries
   Int_t fNMaxPrimary ;  // Max Number of primaries
   Int_t *fPrimary ;     //[fNMaxPrimary]  Array of primaries       

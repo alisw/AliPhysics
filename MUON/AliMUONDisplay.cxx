@@ -13,121 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.17  2001/09/03 14:54:55  gosset
-Corrections for suppressing "segmentation violation" errors
-when using buttons "Chamber +", "Chamber -", "Cathode <>"
-
-Revision 1.16  2001/08/31 08:18:43  jchudoba
-Changes needed to run with Root 3.01
-
-Revision 1.15  2001/05/16 14:57:17  alibrary
-New files for folders and Stack
-
-Revision 1.14  2001/04/05 08:30:48  gosset
-Cleaning: suppression of Cpoints and (R2points + CoG2)
-Correction: TreeR->GetEvent(0) for raw clusters
-
-Revision 1.13  2001/03/30 13:01:50  gosset
-Centroid of raw clusters displayed for each cathode plane
-
-Revision 1.12  2001/03/05 23:50:08  morsch
-Correct access to digit and recpoint data.
-
-Revision 1.11  2001/01/26 21:41:55  morsch
-Use access functions to AliMUONDigit member data.
-
-Revision 1.10  2001/01/25 20:41:56  morsch
-Protect against empty TreeD and TreeR.
-
-Revision 1.9  2001/01/23 18:58:19  hristov
-Initialisation of some pointers
-
-Revision 1.8  2000/10/06 09:09:01  morsch
-Pad colour according to z-position (slats).
-
-Revision 1.7  2000/10/02 21:28:09  fca
-Removal of useless dependecies via forward declarations
-
-Revision 1.6  2000/07/03 11:54:57  morsch
-AliMUONSegmentation and AliMUONHitMap have been replaced by AliSegmentation and AliHitMap in STEER
-The methods GetPadIxy and GetPadXxy of AliMUONSegmentation have changed name to GetPadI and GetPadC.
-
-Revision 1.5  2000/06/28 15:16:35  morsch
-(1) Client code adapted to new method signatures in AliMUONSegmentation (see comments there)
-to allow development of slat-muon chamber simulation and reconstruction code in the MUON
-framework. The changes should have no side effects (mostly dummy arguments).
-(2) Hit disintegration uses 3-dim hit coordinates to allow simulation
-of chambers with overlapping modules (MakePadHits, Disintegration).
-
-Revision 1.4  2000/06/27 09:46:57  morsch
-kMAXZOOM global constant now in AliMUONConstants
-
-Revision 1.3  2000/06/26 14:02:38  morsch
-Add class AliMUONConstants with MUON specific constants using static memeber data and access methods.
-
-Revision 1.2  2000/06/15 07:58:48  morsch
-Code from MUON-dev joined
-
-Revision 1.1.2.15  2000/06/14 14:37:53  morsch
-method Trigger() modified
-
-Revision 1.1.2.14  2000/06/09 21:57:09  morsch
-Bug in color scale diplay corrected.
-Most coding rule violations corrected.
-
-Revision 1.1.2.13  2000/05/02 11:57:27  morsch
-Coding rules RN3, RN13, RN17 violations corrected.
-
-Revision 1.1.2.12  2000/04/26 12:27:33  morsch
-Mods for trigger display (P. Crochet):
-- color code versus time for pad hits in trigger chambers
-- call to TriggerDecision corrected
-
-Revision 1.1.2.11  2000/04/26 09:04:46  morsch
-Obsolete cathode correlation related code removed.
-
-Revision 1.1.2.10  2000/04/19 19:43:47  morsch
-change NCH to kNCH as in AliMUON.h
-no more TreeC related methods
-
-Revision 1.1.2.9  2000/03/20 18:10:33  morsch
-Trigger method for "online" trigger decission added
-
-Revision 1.1.2.8  2000/02/23 10:12:01  morsch
-Dont't try to draw reconstructed hit coordinates for Trigger Chambers.
-General clean-up of commented code.
-
-Revision 1.1.2.7  2000/02/17 14:36:55  morsch
-Display of Trigger hits and clusters added.
-Displacement between clusters and hits has to be investigated and corrected ! (A.M.)
-
-Revision 1.1.2.6  2000/02/15 10:19:42  morsch
-Previous log messages included
-
-Revision 1.1.2.5  2000/02/15 10:09:09  morsch
-Log Message added
-
-Revision 1.1.2.4  2000/02/08 09:17:16  gosset    
-One more improvement of MUON display:
-same zoom for both cathode planes in a chamber
-
-Revision 1.1.2.3  2000/02/07 15:37:21  gosset
-A few improvements of the MUON display:
-new buttons to change either chamber or cathode,
-added to the more complicated way
-(right mouse click and explicit filling of chamber and cathode)
-
-Revision 1.1.2.2  2000/02/04 10:57:34  gosset
-Z position of the chambers:
-it was the Z position of the stations;
-it is now really the Z position of the chambers.
-   !!!! WARNING: THE CALLS TO "AliMUONChamber::SetZPOS"
-   !!!!                   AND "AliMUONChamber::ZPosition"
-   !!!! HAVE TO BE CHANGED TO "AliMUONChamber::"SetZ"
-   !!!!                   AND "AliMUONChamber::Z"                                                           
-*/
+/* $Id$ */
 
 //////////////////////////////////////////////////////////////////////////
 //                                                                      //
@@ -1057,11 +943,11 @@ void AliMUONDisplay::LoadHits(Int_t chamber)
     iChamber = &(pMUON->Chamber(chamber-1));
     Float_t zpos=iChamber->Z();
 
-    Int_t ntracks = (Int_t)gAlice->TreeH()->GetEntries();
+    Int_t ntracks = (Int_t)pMUON->TreeH()->GetEntries(); //skowron
     Int_t nthits  = 0;
     for (track = 0; track < ntracks; track++) {
 	gAlice->ResetHits();
-	gAlice->TreeH()->GetEvent(track);
+	pMUON->TreeH()->GetEvent(track);//skowron
 	TClonesArray *muonHits  = pMUON->Hits();
 	if (muonHits == 0) return;
 	nthits += muonHits->GetEntriesFast();
@@ -1070,7 +956,7 @@ void AliMUONDisplay::LoadHits(Int_t chamber)
     Int_t nhold=0;
     for (track=0; track<ntracks;track++) {
 	gAlice->ResetHits();
-	gAlice->TreeH()->GetEvent(track);
+	pMUON->TreeH()->GetEvent(track);//skowron
 	TClonesArray *muonHits  = pMUON->Hits();
 	if (muonHits == 0) return;
 	Int_t nhits = muonHits->GetEntriesFast();

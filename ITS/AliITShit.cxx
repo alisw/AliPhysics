@@ -13,75 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.21  2002/12/03 09:03:06  hristov
-Changes needed on Itanium (F.Carminati)
-
-Revision 1.20  2002/10/22 14:45:42  alibrary
-Introducing Riostream.h
-
-Revision 1.19  2002/10/14 14:57:00  hristov
-Merging the VirtualMC branch to the main development branch (HEAD)
-
-Revision 1.13.6.3  2002/08/28 15:06:50  alibrary
-Updating to v3-09-01
-
-Revision 1.18  2002/08/07 18:37:53  nilsen
-Removed endl from print function. should be supplied by user as wanted.
-
-Revision 1.17  2002/06/20 09:10:14  hristov
-Data member ft0 initialized
-
-Revision 1.16  2002/06/19 21:12:37  nilsen
-Fixed bug with non-zero-ed new data members in constructors. Thanks Jiri
-for finding it and pointing it out.
-
-Revision 1.15  2002/06/12 18:59:47  nilsen
-Added Starting track location to hit class and related changes to modules.
-This is at present still fully backwards compatible since starting hits
-are still written to the file. When aliroot v4.0 will be released, this
-backwards compatiblity will be broken by removing the enterence hit, and making
-the nessesary changes to module at that time.
-
-Revision 1.14  2002/05/19 18:17:03  hristov
-Changes needed by ICC/IFC compiler (Intel)
-
-Revision 1.13  2002/03/09 18:35:35  nilsen
-Added functions to print out Hit data members.
-
-Revision 1.12  2002/03/08 16:05:05  nilsen
-Standeard io streamers added to make debugging et al. easier.
-
-Revision 1.11  2001/01/30 09:23:13  hristov
-Streamers removed (R.Brun)
-
-Revision 1.10  2001/01/26 20:01:19  hristov
-Major upgrade of AliRoot code
-
-Revision 1.9  2000/10/02 16:32:51  barbera
-Automatic streamer used and forward declarations added
-
-Revision 1.3.4.7  2000/10/02 15:54:49  barbera
-Automatic streamer used and forward declarations added
-
-Revision 1.8  2000/09/22 12:35:21  nilsen
-Traps placed incase it is used without a properly initilized AliITSgeom class.
-
-Revision 1.7  2000/07/10 16:07:18  fca
-Release version of ITS code
-
-Revision 1.3.4.2  2000/03/04 23:43:57  nilsen
-Fixed up the comments/documentation.
-
-Revision 1.3.4.1  2000/01/12 19:03:32  nilsen
-This is the version of the files after the merging done in December 1999.
-See the ReadMe110100.txt file for details
-
-Revision 1.3  1999/09/29 09:24:20  fca
-Introduction of the Copyright and cvs Log
-
-*/
+/* $Id$ */
 
 #include <Riostream.h>
 

@@ -13,50 +13,17 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-  $Log$
-  Revision 1.10  2002/10/14 14:57:32  hristov
-  Merging the VirtualMC branch to the main development branch (HEAD)
-
-  Revision 1.9.6.1  2002/06/10 15:12:46  hristov
-  Merged with v3-08-02
-
-  Revision 1.9  2001/11/08 20:10:45  dibari
-  ctor with initialising of parmeters added
-
-  Revision 1.8  2001/09/05 09:09:38  hristov
-  The energy of feedback photons calculated correctly
-
-  Revision 1.7  2001/05/10 12:32:27  jbarbosa
-  Changed call to SetTrack.
-
-  Revision 1.6  2001/02/23 17:39:02  jbarbosa
-  Removed verbose output.
-
-  Revision 1.5  2001/02/23 17:25:08  jbarbosa
-  Re-definition of IntPH() to accomodate for wire sag effect.
-
-  Revision 1.4  2000/12/01 17:37:44  morsch
-  Replace in argument of SetTrack(..) string constant by  kPFeedBackPhoton.
-
-  Revision 1.3  2000/10/03 21:44:09  morsch
-  Use AliSegmentation and AliHit abstract base classes.
-
-  Revision 1.2  2000/10/02 21:28:12  fca
-  Removal of useless dependecies via forward declarations
-
-  Revision 1.1  2000/06/12 15:29:37  jbarbosa
-  Cleaned up version.
-
-*/
-
-#include "AliRICHResponseV0.h"
-#include "AliSegmentation.h"
-#include "AliRun.h"
+/* $Id$ */
 
 #include <TMath.h>
-#include <TRandom.h>
 #include <TParticle.h>
+#include <TRandom.h>
+#include <TVirtualMC.h>
+
+#include "AliRICHResponseV0.h"
+#include "AliRun.h"
+#include "AliSegmentation.h"
+
 //___________________________________________
 ClassImp(AliRICHResponseV0)
 

@@ -112,10 +112,10 @@ class AliITSClusterFinder :public TObject{
     // set the fitting methods in the derived classes
     // data members
 
- 
- protected:
     TClonesArray       *fDigits;       //! digits
-    Int_t              fNdigits;       //! num of digits 
+    Int_t              fNdigits;       //! num of digits
+
+ protected:
     AliITSresponse     *fResponse;     //! response
     AliITSsegmentation *fSegmentation; //!segmentation
     Int_t              fNRawClusters;  //! in case we split the cluster

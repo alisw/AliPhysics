@@ -1,11 +1,12 @@
-SRCS:=  AliTPC.cxx  AliTPCv0.cxx    AliTPCv1.cxx      AliTPCv2.cxx  \
-	AliTPCv3.cxx AliDetectorParam.cxx AliTPCParam.cxx \
-	AliTPCParamSR.cxx AliTPCParamCR.cxx  AliTPCPRF2D.cxx \
-	AliTPCRF1D.cxx \
-	AliSimDigits.cxx AliDigitsArray.cxx  AliTPCDigitsArray.cxx \
-	AliComplexCluster.cxx AliClusters.cxx AliClustersArray.cxx \
-	AliTPCClustersRow.cxx \
-	AliTPCClustersArray.cxx \
+SRCS:=  AliTPCLoader.cxx\
+        AliTPCClusterFinder.cxx  AliTPC.cxx  AliTPCv0.cxx    AliTPCv1.cxx      AliTPCv2.cxx  \
+        AliTPCv3.cxx AliDetectorParam.cxx AliTPCParam.cxx \
+        AliTPCParamSR.cxx AliTPCParamCR.cxx  AliTPCPRF2D.cxx \
+        AliTPCRF1D.cxx \
+        AliSimDigits.cxx AliDigitsArray.cxx  AliTPCDigitsArray.cxx \
+        AliComplexCluster.cxx AliClusters.cxx AliClustersArray.cxx \
+        AliTPCClustersRow.cxx \
+        AliTPCClustersArray.cxx \
         AliTPCcluster.cxx AliTPCclusterer.cxx \
         AliTPCtrack.cxx AliTPCtracker.cxx \
 	AliTPCTrackHits.cxx\

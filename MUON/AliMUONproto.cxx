@@ -12,26 +12,8 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-/*
-$Log$
-Revision 1.5  2002/10/23 07:24:57  alibrary
-Introducing Riostream.h
 
-Revision 1.4  2001/01/26 20:00:53  hristov
-Major upgrade of AliRoot code
-
-Revision 1.3  2000/10/11 09:19:12  egangler
-Corrected some bugs - it should compile now
-
-Revision 1.2  2000/06/15 07:58:49  morsch
-Code from MUON-dev joined
-
-Revision 1.1.2.1  2000/04/18 09:11:15  morsch
-Implementation of MUON Chamber Prototype Class
-Both read digits from raw data or use the Monte-Carlo.
-Rachid GUERNANE, IPN Lyon guernane@ipnl.in2p3.fr
-
-*/
+/* $Id$ */
 
 /*
 Implementation of MUON Chamber Prototype Class 

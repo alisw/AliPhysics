@@ -12,17 +12,8 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-/*
-$Id$
-$Log$
-Revision 1.18.4.1  2002/06/10 17:51:15  hristov
-Merged with v3-08-02
 
-Revision 1.19  2002/04/24 22:02:31  nilsen
-New SDigits and Digits routines, and related changes,  (including new
-noise values).
-
-*/
+/* $Id$ */
 
 #include <TString.h>
 #include <TRandom.h>

@@ -14,21 +14,22 @@
  **************************************************************************/
 
 /* $Id:  */
+
 /* $Log:
    29.05.2001 Yuri Kharlov:
               Everywhere reading the treese TTree->GetEvent(i)
               is replaced by reading the branches TBranch->GetEntry(0)
 */
-
 /* $Log:
    08.2002 Dmitri Peressounko:
+
 */
 
 //_________________________________________________________________________
 //  A singleton. This class should be used in the analysis stage to get 
 //  reconstructed objects: Digits, RecPoints, TrackSegments and RecParticles,
 //  instead of directly reading them from galice.root file. This container 
-//  ensures, that one reads Digits, made of these particular digits, RecPoints,
+//  ensures, that one reads Digits, made of these particular digits, RecPoints, 
 //  made of these particular RecPoints, TrackSegments and RecParticles. 
 //  This becomes non trivial if there are several identical branches, produced with
 //  different set of parameters. 
@@ -38,456 +39,395 @@
 //  for(Int_t irecp = 0; irecp < gime->NRecParticles() ; irecp++)
 //     AliEMCALRecParticle * part = gime->RecParticle(1) ;
 //     ................
-//  please->GetEvent(event) ;    // reads new event from galice.root
+//  gime->Event(event) ;    // reads new event from galice.root
 //                  
 //*-- Author: Yves Schutz (SUBATECH) & Dmitri Peressounko (RRC KI & SUBATECH)
 //*--         Completely redesigned by Dmitri Peressounko March 2001  
 //
 //*-- YS June 2001 : renamed the original AliEMCALIndexToObject and make
-//*--         systematic usage of TFolders without changing the interface     
-//*-- YS August 2002 : clone PHOS as closely as possible and intoduction
-//                     of new  IO (à la PHOS)
-
+//*--         systematic usage of TFolders without changing the interface        
 //////////////////////////////////////////////////////////////////////////////
-
-
 
 // --- ROOT system ---
 
+#include "TSystem.h"
 #include "TFile.h"
-#include "TTree.h"
+// #include "TTree.h"
 #include "TROOT.h"
-#include "TObjString.h"
-#include "TFolder.h"
-#include "TParticle.h"
+// #include "TObjString.h"
+// #include "TFolder.h"
+// #include "TParticle.h"
 
 // --- Standard library ---
 
-#include <Riostream.h>
-
 // --- AliRoot header files ---
-
-#include "AliRun.h"
-#include "AliConfig.h"
+// #include "AliRun.h"
+// #include "AliConfig.h"
 #include "AliEMCALGetter.h"
-#include "AliEMCAL.h"
-#include "AliEMCALDigitizer.h"
-#include "AliEMCALSDigitizer.h"
-#include "AliEMCALClusterizerv1.h"
-#include "AliEMCALTrackSegmentMakerv1.h"
-#include "AliEMCALTrackSegment.h"
-#include "AliEMCALPIDv1.h" 
-#include "AliEMCALGeometry.h"
+#include "AliRunLoader.h"
+#include "AliStack.h"  
+#include "AliEMCALLoader.h"
 
 ClassImp(AliEMCALGetter)
+  
+AliEMCALGetter * AliEMCALGetter::fgObjGetter = 0 ; 
+AliEMCALLoader * AliEMCALGetter::fgEmcalLoader = 0;
+Int_t AliEMCALGetter::fgDebug = 0;
 
-  AliEMCALGetter * AliEMCALGetter::fgObjGetter = 0 ; 
-  TFile * AliEMCALGetter::fFile = 0 ; 
+//  TFile * AliEMCALGetter::fgFile = 0 ; 
 
 //____________________________________________________________________________ 
-
-AliEMCALGetter::AliEMCALGetter(const char* headerFile, const char* branchTitle, const Bool_t toSplit)
+AliEMCALGetter::AliEMCALGetter(const char* headerFile, const char* version, Option_t * openingOption)
 {
-  // This is the ctor called by GetInstance and the only one that can be used 
+  // ctor only called by Instance()
 
-  if ( fHeaderFile.Contains("_") ) {
-    Fatal("AliEMCALGetter","Invalid file name (_ not allowed) %s",fHeaderFile.Data()) ;
-  }
-
-  //Initialize  all data
-
-  fFailed = kFALSE ;   
-  fDebug  = 0 ; 
-  fAlice  = 0 ; 
-
-  fToSplit    = toSplit ;
-  fHeaderFile = headerFile ; 
-
-  fPrimaries = new TObjArray(1) ;
-
-  fModuleFolder    = dynamic_cast<TFolder*>(gROOT->FindObjectAny("Folders/Run/Configuration/Modules")); 
-  fPrimariesFolder = dynamic_cast<TFolder*>(gROOT->FindObjectAny("Folders/RunMC/Event/Data")); 
-  fHitsFolder      = dynamic_cast<TFolder*>(gROOT->FindObjectAny("Folders/RunMC/Event/Data/Hits")); 
-  fSDigitsFolder   = dynamic_cast<TFolder*>(gROOT->FindObjectAny("Folders/RunMC/Event/Data/SDigits")); 
-  fDigitsFolder    = dynamic_cast<TFolder*>(gROOT->FindObjectAny("Folders/Run/Event/Data")); 
-  fRecoFolder      = dynamic_cast<TFolder*>(gROOT->FindObjectAny("Folders/Run/Event/RecData")); 
-  //fQAFolder      = dynamic_cast<TFolder*>(gROOT->FindObjectAny("Folders/Run/Conditions/QA")); 
-  fTasksFolder     = dynamic_cast<TFolder*>(gROOT->FindObjectAny("Folders/Tasks")) ; 
-
-  //Set titles to branches and create EMCAL specific folders
-
-  SetTitle(branchTitle) ;
-
-  if ( fHeaderFile != "aliroot"  ) { // to call the getter without a file
-
-    //open headers file
-
-    fFile = static_cast<TFile*>(gROOT->GetFile(fHeaderFile.Data() ) ) ;
-
-    if(!fFile){    //if file was not opened yet, read gAlice
-      fFile = TFile::Open(fHeaderFile.Data(), "update") ;   
-      if (!fFile->IsOpen()) {
-        Error("AliEMCALGetter","Cannot open %s",fHeaderFile.Data()) ; 
-       	fFailed = kTRUE ;
-        return ;  
-      }
+  AliRunLoader* rl = AliRunLoader::GetRunLoader(version) ; 
+  if (!rl) {
+    rl = AliRunLoader::Open(headerFile, version, openingOption);
+    if (!rl) {
+      Fatal("AliEMCALGetter", "Could not find the Run Loader for %s - %s",headerFile, version) ; 
+      return ;
+    } 
+    if (rl->GetAliRun() == 0x0) {
+      rl->LoadgAlice();
+      gAlice = rl->GetAliRun(); // should be removed
     }
-    gAlice = static_cast<AliRun *>(fFile->Get("gAlice")) ;
   }
-
-  if (!gAlice) {
-    Error("AliEMCALGetter","Cannot find gAlice in %s",fHeaderFile.Data()) ; 
-    fFailed = kTRUE ;
-    return ; 
-  }
-  if (!EMCAL()) {
-    if (fDebug)
-      Info("AliEMCALGetter","Posting EMCAL to Folders") ; 
-
-    if (gAlice->GetDetector("EMCAL")) {
-      AliConfig * conf = AliConfig::Instance() ;
-      conf->Add(static_cast<AliDetector*>(gAlice->GetDetector("EMCAL"))) ; 
-      conf->Add(static_cast<AliModule*>(gAlice->GetDetector("EMCAL"))) ;
-    }
-    else 
-      Error("AliEMCALGetter"," Detector EMCAL not found");
-  }
-
-  fDebug=0;
+  fgEmcalLoader = dynamic_cast<AliEMCALLoader*>(rl->GetLoader("EMCALLoader"));
+  if ( !fgEmcalLoader ) 
+    Error("AliEMCALGetter", "Could not find EMCALLoader") ; 
+  else 
+    fgEmcalLoader->SetTitle(version);
+  
+  
+  // initialize data members
+  SetDebug(0) ; 
+  //fBTE = 0 ; 
+  fPrimaries = 0 ; 
+  fLoadingStatus = "" ; 
 }
 
 //____________________________________________________________________________ 
-
 AliEMCALGetter::~AliEMCALGetter()
 {
-  if (fPrimaries) {
-    fPrimaries->Delete() ; 
-    delete fPrimaries ; 
-  }
-
-  TFolder * emcalF = dynamic_cast<TFolder *>(fSDigitsFolder->FindObject("EMCAL")) ;
-  TCollection * folderslist = emcalF->GetListOfFolders() ; 
-  TIter next(folderslist) ; 
-  TFolder * folder = 0 ; 
-
-  while ( (folder = static_cast<TFolder*>(next())) ) 
-    emcalF->Remove(folder) ; 
-
-  if (fFile) { 
-    fFile->Close() ;  
-    delete fFile ; 
-    fFile = 0 ;
-  }
-
-  fgObjGetter = 0 ; 
+  // dtor
+  delete fgEmcalLoader ;
+  fgEmcalLoader = 0 ;
+  //delete fBTE ; 
+  // fBTE = 0 ; 
+  fPrimaries->Delete() ; 
+  delete fPrimaries ; 
 }
 
 //____________________________________________________________________________ 
+AliEMCALClusterizer * AliEMCALGetter::Clusterizer()
+{ 
+  AliEMCALClusterizer * rv ; 
+  rv =  dynamic_cast<AliEMCALClusterizer *>(EmcalLoader()->Reconstructioner()) ;
+  if (!rv) {
+    Event(0, "R") ; 
+    rv =  dynamic_cast<AliEMCALClusterizer*>(EmcalLoader()->Reconstructioner()) ;
+  }
+  return rv ; 
+}
 
-void AliEMCALGetter::CloseFile()
+
+//____________________________________________________________________________ 
+TClonesArray * AliEMCALGetter::Digits() 
 {
-  delete gAlice ;  
-  gAlice = 0 ; 
-  delete fAlice ; 
-  fAlice = 0 ; 
-}
+  // asks the Loader to return the Digits container 
 
-//____________________________________________________________________________ 
+  TClonesArray * rv = 0 ; 
+  rv = EmcalLoader()->Digits() ; 
 
-const TFolder * AliEMCALGetter::Folder(const TString what) const {
-
-  // returns the EMCAL folder required by what
-  // what = hits, sdigits, digits
-
-  if ( what == "hits" ) 
-    return dynamic_cast<const TFolder *>(fHitsFolder->FindObject("EMCAL")) ; 
-  else if ( what == "sdigits" ) 
-    return  dynamic_cast<const TFolder *>(fSDigitsFolder->FindObject("EMCAL")) ; 
-  else if ( what == "digits" ) 
-    return  dynamic_cast<const TFolder *>(fDigitsFolder->FindObject("EMCAL")) ;
-  else {
-    Error("GetFolder","%s illegal option (hits, sdigits, digits) ", what.Data()) ; 
-    return 0 ; 
+  if( !rv ) {
+    EmcalLoader()->MakeDigitsArray() ; 
+    rv = EmcalLoader()->Digits() ;
   }
+  return rv ; 
 }
 
 //____________________________________________________________________________ 
+AliEMCALDigitizer * AliEMCALGetter::Digitizer() 
+{ 
+  AliEMCALDigitizer * rv ; 
+  rv =  dynamic_cast<AliEMCALDigitizer *>(EmcalLoader()->Digitizer()) ;
+  if (!rv) {
+    Event(0, "D") ; 
+    rv =  dynamic_cast<AliEMCALDigitizer *>(EmcalLoader()->Digitizer()) ;
+  }
+  return rv ; 
+}
 
-AliEMCALGetter * AliEMCALGetter::GetInstance()
+
+//____________________________________________________________________________ 
+TObjArray * AliEMCALGetter::PRERecPoints() 
 {
-  // Returns the pointer of the unique instance already defined
+  // asks the Loader to return the EMC RecPoints container 
 
-  if ( fgObjGetter ) {
-    return fgObjGetter ;
+  TObjArray * rv = 0 ; 
+  
+  rv = EmcalLoader()->PRERecPoints() ; 
+  if (!rv) {
+    EmcalLoader()->MakeRecPointsArray() ;
+    rv = EmcalLoader()->PRERecPoints() ; 
   }
-  else {
-    return 0 ;
-  }
+  return rv ; 
 }
 
 //____________________________________________________________________________ 
+TObjArray * AliEMCALGetter::ECARecPoints() 
+{
+  // asks the Loader to return the EMC RecPoints container 
 
-AliEMCALGetter * AliEMCALGetter::GetInstance(const char* headerFile,
-					     const char* branchTitle,
-					     const Bool_t toSplit)
+  TObjArray * rv = 0 ; 
+  
+  rv = EmcalLoader()->ECARecPoints() ; 
+  if (!rv) {
+    EmcalLoader()->MakeRecPointsArray() ;
+    rv = EmcalLoader()->ECARecPoints() ; 
+  }
+  return rv ; 
+}
+
+//____________________________________________________________________________ 
+TObjArray * AliEMCALGetter::HCARecPoints() 
+{
+  // asks the Loader to return the EMC RecPoints container 
+
+  TObjArray * rv = 0 ; 
+  
+  rv = EmcalLoader()->HCARecPoints() ; 
+  if (!rv) {
+    EmcalLoader()->MakeRecPointsArray() ;
+    rv = EmcalLoader()->HCARecPoints() ; 
+  }
+  return rv ; 
+}
+
+//____________________________________________________________________________ 
+TClonesArray * AliEMCALGetter::TrackSegments() 
+{
+  // asks the Loader to return the TrackSegments container 
+
+  TClonesArray * rv = 0 ; 
+  
+  rv = EmcalLoader()->TrackSegments() ; 
+  if (!rv) {
+    EmcalLoader()->MakeTrackSegmentsArray() ;
+    rv = EmcalLoader()->TrackSegments() ; 
+  }
+  return rv ; 
+}
+
+//____________________________________________________________________________ 
+AliEMCALTrackSegmentMaker * AliEMCALGetter::TrackSegmentMaker() 
+{ 
+  AliEMCALTrackSegmentMaker * rv ; 
+  rv =  dynamic_cast<AliEMCALTrackSegmentMaker *>(EmcalLoader()->TrackSegmentMaker()) ;
+  if (!rv) {
+    Event(0, "T") ; 
+    rv =  dynamic_cast<AliEMCALTrackSegmentMaker *>(EmcalLoader()->TrackSegmentMaker()) ;
+  }
+  return rv ; 
+}
+
+//____________________________________________________________________________ 
+TClonesArray * AliEMCALGetter::RecParticles() 
+{
+  // asks the Loader to return the TrackSegments container 
+
+  TClonesArray * rv = 0 ; 
+  
+  rv = EmcalLoader()->RecParticles() ; 
+  if (!rv) {
+    EmcalLoader()->MakeRecParticlesArray() ;
+    rv = EmcalLoader()->RecParticles() ; 
+  }
+  return rv ; 
+}
+//____________________________________________________________________________ 
+void AliEMCALGetter::Event(const Int_t event, const char* opt) 
+{
+  // Reads the content of all Tree's S, D and R
+
+  if ( event >= MaxEvent() ) {
+    Error("Event", "%d not found in TreeE !", event) ; 
+    return ; 
+  }
+
+  AliRunLoader * rl = AliRunLoader::GetRunLoader(EmcalLoader()->GetTitle());
+
+  // checks if we are dealing with test-beam data
+//   TBranch * btb = rl->TreeE()->GetBranch("AliEMCALBeamTestEvent") ;
+//   if(btb){
+//     if(!fBTE)
+//       fBTE = new AliEMCALBeamTestEvent() ;
+//     btb->SetAddress(&fBTE) ;
+//     btb->GetEntry(event) ;
+//   }
+//   else{
+//     if(fBTE){
+//       delete fBTE ;
+//       fBTE = 0 ;
+//     }
+//   }
+
+  // Loads the type of object(s) requested
+  
+  rl->GetEvent(event) ;
+
+  if( strstr(opt,"X") || (strcmp(opt,"")==0) )
+    ReadPrimaries() ;
+
+  if(strstr(opt,"H") )
+    ReadTreeH();
+
+  if(strstr(opt,"S") )
+    ReadTreeS() ;
+
+  if( strstr(opt,"D") )
+    ReadTreeD() ;
+
+  if( strstr(opt,"R") )
+    ReadTreeR() ;
+
+  if( strstr(opt,"T") )
+    ReadTreeT() ;
+
+  if( strstr(opt,"P") )
+    ReadTreeP() ;
+
+//   if( strstr(opt,"Q") )
+//     ReadTreeQA() ;
+ 
+}
+
+
+//____________________________________________________________________________ 
+Int_t AliEMCALGetter::EventNumber() const
+  {
+  // return the current event number
+  AliRunLoader * rl = AliRunLoader::GetRunLoader(EmcalLoader()->GetTitle());
+  return static_cast<Int_t>(rl->GetEventNumber()) ;   
+}
+
+//____________________________________________________________________________ 
+  TClonesArray * AliEMCALGetter::Hits()  
+{
+  // asks the loader to return  the Hits container 
+  
+  TClonesArray * rv = 0 ; 
+  
+  rv = EmcalLoader()->Hits() ; 
+  if ( !rv ) {
+    EmcalLoader()->LoadHits("read"); 
+    rv = EmcalLoader()->Hits() ; 
+  }
+  return rv ; 
+}
+
+//____________________________________________________________________________ 
+AliEMCALGetter * AliEMCALGetter::Instance(const char* alirunFileName, const char* version, Option_t * openingOption) 
 {
   // Creates and returns the pointer of the unique instance
-  // Must be called only when the environment has changed 
-
-  if(!fgObjGetter){
-    fgObjGetter = new AliEMCALGetter(headerFile,branchTitle,toSplit) ;
-    if(fgObjGetter->fFailed)
-      return 0;
-    else
-      return fgObjGetter ;
+  // Must be called only when the environment has changed
+  
+  //::Info("Instance","alirunFileName=%s version=%s openingOption=%s",alirunFileName,version,openingOption);
+  
+  if(!fgObjGetter){ // first time the getter is called 
+    fgObjGetter = new AliEMCALGetter(alirunFileName, version, openingOption) ;
   }
-
-  //First checks, if header file already opened
-
-  if(!fgObjGetter->fFile){
-     fgObjGetter = new AliEMCALGetter(headerFile,branchTitle,toSplit) ;
-    if(fgObjGetter->fFailed)
-      return 0;
-    else
-      return fgObjGetter ;
+  else { // the getter has been called previously
+    AliRunLoader * rl = AliRunLoader::GetRunLoader(fgEmcalLoader->GetTitle());
+    if ( rl->GetFileName() == alirunFileName ) {// the alirunFile has the same name
+      // check if the file is already open
+      TFile * galiceFile = dynamic_cast<TFile *>(gROOT->FindObject(rl->GetFileName()) ) ; 
+      
+      if ( !galiceFile ) 
+	fgObjGetter = new AliEMCALGetter(alirunFileName, version, openingOption) ;
+      
+      else {  // the file is already open check the version name
+	TString currentVersionName = rl->GetEventFolder()->GetName() ; 
+	TString newVersionName(version) ; 
+	if (currentVersionName == newVersionName) 
+	  if(fgDebug)
+	    ::Warning( "Instance", "Files with version %s already open", currentVersionName.Data() ) ;  
+	else {
+	  fgObjGetter = new AliEMCALGetter(alirunFileName, version, openingOption) ;      
+	}
+      }
+    }
+    else 
+      fgObjGetter = new AliEMCALGetter(alirunFileName, version, openingOption) ;      
   }
-
-  if(fgObjGetter->fHeaderFile.CompareTo(headerFile)==0){ //Opened the same header file   
-    if((fgObjGetter->fBranchTitle.CompareTo(branchTitle) == 0)&&   //Open the same branch title
-       (toSplit==fgObjGetter->fToSplit)){                          //Nothing should be cleaned
-    }
-    else{ //Clean all data and AliEMCAL...zers
-      if(fgObjGetter->fToSplit)
-        fgObjGetter->CloseSplitFiles() ;	  
-      //fgObjGetter->CleanWhiteBoard() ;
-      fgObjGetter->fToSplit = toSplit ;
-      fgObjGetter->SetTitle(branchTitle) ;
-    }
-  }
-  else{  //Close already opened files, clean memory and open new header file
-    if(gAlice){ //should first delete gAlice, then close file
-      //Should be in dtor of EMCAL, but if one changes path ...
-      fgObjGetter->fModuleFolder->Remove(fgObjGetter->fModuleFolder->FindObject("EMCAL")) ; 
-      delete gAlice ;
-    }
-    if(fgObjGetter->fFile){
-      fgObjGetter->fFile->Close() ;
-      fgObjGetter->fFile=0;
-    }
-    if(fgObjGetter->fToSplit)
-      fgObjGetter->CloseSplitFiles() ;
-    fgObjGetter->CleanWhiteBoard() ;    
-    fgObjGetter = new AliEMCALGetter(headerFile,branchTitle,toSplit) ;
-  }
-
-  return fgObjGetter ; 
-
+  if (!fgObjGetter) 
+    ::Error("Instance", "Failed to create the EMCAL Getter object") ;
+  else 
+    if (fgDebug)
+      Print() ;
+  
+  return fgObjGetter ;
 }
 
 //____________________________________________________________________________ 
-
-const Bool_t AliEMCALGetter::BranchExists(const TString recName) const
+AliEMCALGetter *  AliEMCALGetter::Instance()
 {
-  //Looks in the tree Tree"name" if branch with current name olready exists
+  // Returns the pointer of the unique instance already defined
+  
+  if(!fgObjGetter)
+     ::Error("Instance", "Getter not initialized") ;
 
-  TString filename("") ;
-  TString name, dataname, zername;
-  if(recName == "SDigits"){
-    filename=fSDigitsFileName ;
-    name = "TreeS0" ;
-    dataname = "EMCAL" ;
-    zername = "AliEMCALSDigitizer" ;
-  }
-  else if(recName == "Digits"){
-    filename=fDigitsFileName ;
-    name = "TreeD0" ;
-    dataname = "EMCAL" ;
-    zername = "AliEMCALDigitizer" ;
-  }
-  else if(recName =="RecPoints"){
-	filename=fRecPointsFileName ;
-	name = "TreeR0" ;
-	dataname = "EMCALEmcRP" ;
-	zername = "AliEMCALClusterizer" ;
-  }
-  else if(recName == "TrackSegments"){
-    filename=fTrackSegmentsFileName ;
-    name = "TreeR0" ;
-    dataname = "EMCALTS" ;
-    zername = "AliEMCALTrackSegmentMaker" ;
-  }	 
-  else if(recName == "RecParticles"){
-    filename= fRecParticlesFileName ;
-    name = "TreeR0" ;
-    dataname = "EMCALRP" ;
-    zername = "AliEMCALPID" ;
-  }
-  else
-    return kFALSE ;
-
-  TFile * file ;
-  TTree * tree ;
-  if(fToSplit){
-    file = static_cast<TFile*>(gROOT->GetFile(filename.Data() ) ) ;
-    if(!file)
-      file = TFile::Open(fSDigitsFileName.Data(),"update");
-  }
-  else
-    file = fFile ;
-
-  tree = (TTree *)file->Get(name.Data()) ;
-
-  if(!tree ) 
-    return kFALSE ;
-
-  TObjArray * lob = static_cast<TObjArray*>(tree->GetListOfBranches()) ;
-  TIter next(lob) ; 
-  TBranch * branch = 0 ;  
-  TString titleName(fBranchTitle);
-  titleName+=":";
-
-  while ((branch = (static_cast<TBranch*>(next())))) {
-    TString branchName(branch->GetName() ) ; 
-    TString branchTitle(branch->GetTitle() ) ;  
-    if ( branchName.BeginsWith(dataname) && branchTitle.BeginsWith(fBranchTitle) ){  
-      Warning("BranchExists", "branch %s with title %s already exits in %s", dataname.Data(), fBranchTitle.Data(), name.Data());
-      return kTRUE ;
-    }
-
-    if ( branchName.BeginsWith(zername) &&  branchTitle.BeginsWith(titleName) ){
-      Warning("BranchExists","Branch AliEMCAL... with title %s already exits in %s",branch->GetTitle(), name.Data());     
-      return kTRUE ; 
-    }
-  }
-
-    //We can't delete three if gAlice points to it... To be redisigned somehow???!!!
-
-  if(!fToSplit){
-    if(name.Contains("TreeS"))
-      if(tree!=gAlice->TreeS())
-        tree->Delete();
-    if(name.Contains("TreeD"))
-      if(tree!=gAlice->TreeD())
-        tree->Delete();
-    if(name.Contains("TreeR"))
-      if(tree!=gAlice->TreeR())
-        tree->Delete();    
-  }
-
-  return kFALSE ;
+   return fgObjGetter ;
+           
 }
 
 //____________________________________________________________________________ 
-
-void AliEMCALGetter::ListBranches(Int_t event) const  
+Int_t AliEMCALGetter::MaxEvent() const 
 {
-  TBranch * branch = 0 ; 
-  if (gAlice->GetEvent(event) == -1)
-    return ; 
+  // returns the number of events in the run (from TE)
 
-  TTree * t =  gAlice->TreeH() ; 
-
-  if(t){
-    Info("ListBranches"," -> ****** Hits    : "); 
-    TObjArray * lob = t->GetListOfBranches() ;
-    TIter next(lob) ; 
-
-    while ( (branch = static_cast<TBranch*>(next())) )
-      Info("ListBranches","         %s", branch->GetName());
-
-  } else 
-    Warning("ListBranches"," -> TreeH not found for event %d",event);  
-
-  t = gAlice->TreeS() ;
-
-  if(t){
-    Info("ListBranches"," -> ****** SDigits : "); 
-    TObjArray * lob = t->GetListOfBranches() ;
-    TIter next(lob) ; 
-
-    while ( (branch = static_cast<TBranch*>(next())) )
-      Info("ListBranches","             %s %s",branch->GetName(),branch->GetTitle()); 
-  } else 
-    Warning("ListBranches"," -> TreeS not found for event %d",event);  
-
-  t = gAlice->TreeD() ;
-
-  if(t){
-    Info("ListBranches"," -> ****** Digits  : "); 
-    TObjArray * lob = t->GetListOfBranches() ;
-    TIter next(lob) ; 
-
-    while ( (branch = static_cast<TBranch*>(next())) )
-      Info("             %s %s", branch->GetName(), branch->GetTitle()); 
-  } else 
-    Warning("ListBranches"," -> TreeD not found for event %d", event);  
-
-  t = gAlice->TreeR() ;
-
-  if(t){
-    Info("ListBranches"," -> ****** Recon   : "); 
-    TObjArray * lob = t->GetListOfBranches() ;
-    TIter next(lob) ; 
-    while ( (branch = static_cast<TBranch*>(next())) )
-      Info("             %s %s", branch->GetName(), branch->GetTitle()); 
-  } else 
-    Warning("ListBranches"," -> TreeR not found for event %d",event);  
+  AliRunLoader * rl = AliRunLoader::GetRunLoader(EmcalLoader()->GetTitle());
+  return static_cast<Int_t>(rl->GetNumberOfEvents()) ; 
 }
 
 //____________________________________________________________________________ 
-
-void AliEMCALGetter::NewBranch(TString name, Int_t event)  
+TParticle * AliEMCALGetter::Primary(Int_t index) const
 {
-  fBranchTitle = fSDigitsTitle = fDigitsTitle = fRecPointsTitle = fTrackSegmentsTitle = fRecParticlesTitle =  name ; 
-  Event(event) ; 
-}
+  AliRunLoader * rl = AliRunLoader::GetRunLoader(EmcalLoader()->GetTitle());
+  return rl->Stack()->Particle(index) ; 
+} 
 
 //____________________________________________________________________________ 
-
-Bool_t AliEMCALGetter::NewFile(TString name)  
-{
-  fHeaderFile = name ; 
-  fFile->Close() ; 
-  fFailed = kFALSE; 
-
-  fFile = static_cast<TFile*>(gROOT->GetFile(fHeaderFile.Data() ) ) ;
-
-  if(!fFile) {    //if file was not opened yet, read gAlice
-    fFile = TFile::Open(fHeaderFile.Data(),"update") ;
-    if (!fFile->IsOpen()) {
-      Error("NewFile", " -> Cannot open %s", fHeaderFile.Data()); 
-      fFailed = kTRUE ;
-      return fFailed ;  
-    }
-    gAlice = static_cast<AliRun *>(fFile->Get("gAlice")) ;
-  } 
-
-  if (!gAlice) {
-    Error("NewFile"," -> Cannot find gAlice in %s", fHeaderFile.Data());
-    fFailed = kTRUE ;
-    return fFailed ; 
-  }
-  return fFailed ; 
-}
-
-//____________________________________________________________________________ 
-
-const AliEMCAL * AliEMCALGetter::EMCAL() 
+AliEMCAL * AliEMCALGetter:: EMCAL() const  
 {
   // returns the EMCAL object 
-
-  AliEMCAL * emcal = dynamic_cast<AliEMCAL*>(fModuleFolder->FindObject("EMCAL")) ;  
-
+  AliEMCAL * emcal = dynamic_cast<AliEMCAL*>(EmcalLoader()->GetModulesFolder()->FindObject("EMCAL")) ;  
   if (!emcal) 
-    if (fDebug)
-      Warning("EMCAL"," -> EMCAL module not found in Folders" );
+    if (fgDebug)
+      Warning("EMCAL", "EMCAL module not found in module folders: %s", EmcalLoader()->GetModulesFolder()->GetName() ) ; 
   return emcal ; 
 }  
 
-//____________________________________________________________________________ 
 
-AliEMCALGeometry * AliEMCALGetter::EMCALGeometry() 
+
+//____________________________________________________________________________ 
+AliEMCALPID * AliEMCALGetter::PID() 
+{ 
+  AliEMCALPID * rv ; 
+  rv =  dynamic_cast<AliEMCALPID *>(EmcalLoader()->PIDTask()) ;
+  if (!rv) {
+    Event(0, "P") ; 
+    rv =  dynamic_cast<AliEMCALPID *>(EmcalLoader()->PIDTask()) ;
+  }
+  return rv ; 
+}
+
+//____________________________________________________________________________ 
+AliEMCALGeometry * AliEMCALGetter::EMCALGeometry() const 
 {
+  // Returns EMCAL geometry
+
   AliEMCALGeometry * rv = 0 ; 
   if (EMCAL() )
     rv =  EMCAL()->GetGeometry() ;
@@ -495,1188 +435,172 @@ AliEMCALGeometry * AliEMCALGetter::EMCALGeometry()
 } 
 
 //____________________________________________________________________________ 
-
-const Bool_t AliEMCALGetter::PostPrimaries(void) const 
-{  
-  //------- Primaries ----------------------
-  // the hierarchy is //Folders/RunMC/Event/Data/Primaries
-
-  TFolder * primariesFolder = dynamic_cast<TFolder*>(fPrimariesFolder->FindObject("Primaries")) ; 
-  if ( !primariesFolder ) {
-    if (fDebug) {
-      Warning("PostPrimaries", "-> Folder //%s/Primaries/ not found!", fPrimariesFolder->GetName());
-      Info("PostPrimaries", "-> Adding Folder //%s/Primaries/",fPrimariesFolder->GetName());
-    }
-    primariesFolder = fPrimariesFolder->AddFolder("Primaries", "Primaries particles from TreeK") ; 
-  }    
-
-  TClonesArray *primaries=  new TClonesArray("TParticle",1000) ;
-  primaries->SetName("Primaries") ;
-  primariesFolder->Add(primaries) ; 
-
-  return kTRUE;
-} 
-
-//____________________________________________________________________________ 
-
-TObject** AliEMCALGetter::PrimariesRef(void) const 
-{  
-  //------- Primaries ----------------------
-  // the hierarchy is //Folders/RunMC/Event/Data/Primaries
-
-  if ( !fPrimariesFolder ) {
-    Fatal("PrimariesRef", "-> Folder //%s not found!",fPrimariesFolder);
-  }    
-
-  TFolder * primariesFolder = dynamic_cast<TFolder *>(fPrimariesFolder->FindObject("Primaries")) ;
-
-  if ( !primariesFolder ) {
-    Fatal("PrimariesRef", "-> Folder //%s/Primaries/ not found!",fPrimariesFolder);  
-  }
-
-  TObject * p = primariesFolder->FindObject("Primaries") ;
-
-  if(!p) {
-    Fatal("PrimariesRef", "-> %s/Primaries not found !",primariesFolder->GetName()); 
-  }
-
-  return primariesFolder->GetListOfFolders()->GetObjectRef(p) ;
-}
-
-//____________________________________________________________________________ 
-
-const Bool_t AliEMCALGetter::PostHits(void) const 
-{  
-  //------- Hits ----------------------
-  // the hierarchy is //Folders/RunMC/Event/Data/EMCAL/Hits
-
-  TFolder * emcalFolder = dynamic_cast<TFolder*>(fHitsFolder->FindObject("EMCAL")) ; 
-
-  if ( !emcalFolder ) {
-    if (fDebug) {
-      Warning("PostHits", "-> Folder //%s/EMCAL/ not found!", fHitsFolder);
-      Info("PostHits", "-> Adding Folder //%s/EMCAL/",fHitsFolder);
-    }
-    emcalFolder = fHitsFolder->AddFolder("EMCAL", "Hits from EMCAL") ; 
-  }    
-
-  TClonesArray *hits=  new TClonesArray("AliEMCALHit",1000) ;
-  hits->SetName("Hits") ;
-  emcalFolder->Add(hits) ; 
-
-  return kTRUE;
-} 
-
-//____________________________________________________________________________ 
-
-TObject ** AliEMCALGetter::HitsRef(void) const 
-{  
-  //------- Hits ----------------------
-  // the hierarchy is //Folders/RunMC/Event/Data/EMCAL/Hits
-
-  if ( !fHitsFolder ) {
-    Error("HitsRef", "-> Folder //%s not found!",fHitsFolder);
-    return 0;
-  }    
-
-  TFolder * emcalFolder = dynamic_cast<TFolder *>(fHitsFolder->FindObject("EMCAL")) ;
-  if ( !emcalFolder ) {
-    Error("HitsRef", "-> Folder //%s/EMCAL/ not found!",fHitsFolder);
-    return 0;
-  }
-
-  TObject * h = emcalFolder->FindObject("Hits") ;
-
-  if(!h) {
-    Error("HitsRef", "-> %s/Hits not found !",emcalFolder->GetName());
-    return 0 ;
-  }
-  else
-    return emcalFolder->GetListOfFolders()->GetObjectRef(h) ;
-}
-
-//____________________________________________________________________________ 
-
-const Bool_t AliEMCALGetter::PostSDigits(const char * name, const char * headerFile) const 
-{  
-  //---------- SDigits -------------------------
-  // the hierarchy is //Folders/RunMC/Event/Data/EMCAL/SDigits/headerFile/sdigitsname
-  // because you can have sdigits from several hit files for mixing
-
-  TFolder * emcalFolder = dynamic_cast<TFolder*>(fSDigitsFolder->FindObject("EMCAL")) ;
-
-  if ( !emcalFolder ) {
-    if (fDebug) {
-      Warning("PostSDigits", "-> Folder //%s/EMCAL/ not found!", fSDigitsFolder);
-      Info("PostSDigits", "-> Adding Folder //%s/EMCAL/",fHitsFolder);
-    }
-    emcalFolder = fSDigitsFolder->AddFolder("EMCAL", "SDigits from EMCAL") ; 
-  }    
-
-  TString subdir(headerFile) ;
-  subdir.ReplaceAll("/", "_") ; 
-  TFolder * emcalSubFolder = dynamic_cast<TFolder*>(emcalFolder->FindObject(subdir)) ; 
-  if ( !emcalSubFolder ) 
-    emcalSubFolder = emcalFolder->AddFolder(subdir, ""); 
-
-  TObject * sd  = emcalSubFolder->FindObject(name); 
-
-  if ( !sd ) {
-    TClonesArray * sdigits = new TClonesArray("AliEMCALDigit",1) ;
-    sdigits->SetName(name) ;
-    emcalSubFolder->Add(sdigits) ;
-  }
-
-  return kTRUE;
-} 
-
-//____________________________________________________________________________ 
-
-TObject ** AliEMCALGetter::SDigitsRef(const char * name, const char * file) const 
-{  
-  //------- SDigits ----------------------
-  // the hierarchy is //Folders/RunMC/Event/Data/EMCAL/SDigits/filename/SDigits
-
-  if ( !fSDigitsFolder ) {
-    Fatal("SDigitsRef", "-> Folder //%s not found!", fSDigitsFolder);
-  }    
-
-  TFolder * emcalFolder = dynamic_cast<TFolder *>(fSDigitsFolder->FindObject("EMCAL")) ;
-
-  if ( !emcalFolder ) {
-    Fatal("SDigitsRef", "-> Folder //%s/EMCAL/ not found!", fSDigitsFolder);
-  }
-
-  TFolder * emcalSubFolder = 0 ;
-
-  if(file)
-    emcalSubFolder = dynamic_cast<TFolder *>(emcalFolder->FindObject(file)) ;
-  else
-    emcalSubFolder = dynamic_cast<TFolder *>(emcalFolder->FindObject(fHeaderFile)) ;
-
-  if(!emcalSubFolder) {
-    Fatal("SDigitsRef", "-> Folder //Folders/RunMC/Event/Data/EMCAL/%s not found!", file);
-  }
-
-  TObject * dis = emcalSubFolder->FindObject(name) ;
-
-  if(!dis) {
-    Fatal("SDigitsRef", "-> object %s not found!", name);
-  }
-
-  return emcalSubFolder->GetListOfFolders()->GetObjectRef(dis) ;
-}
-
-//____________________________________________________________________________ 
-
-const Bool_t AliEMCALGetter::PostSDigitizer(AliEMCALSDigitizer * sdigitizer) const 
-{  
-  //---------- SDigitizer -------------------------
-  // the hierarchy is //Folders/Tasks/SDigitizer/EMCAL/sdigitsname
-
-  TTask * sd  = dynamic_cast<TTask*>(fTasksFolder->FindObject("SDigitizer")) ; 
-
-  if ( !sd ) {
-    Error("PostSDigitizer", "-> Task //%s/SDigitizer not found!",fTasksFolder);
-    return kFALSE ;
-  }        
-
-  TTask * emcal = dynamic_cast<TTask*>(sd->GetListOfTasks()->FindObject("EMCAL")) ; 
-
-  if ( !emcal )  {
-    if (fDebug) {
-      Warning("PostSDigitizer", "->//%s/SDigitizer/EMCAL/ not found!",fTasksFolder);
-      Info("PostSDigitizer", "-> Adding //%s/SDigitizer/EMCAL/", fTasksFolder);
-    }
-    emcal = new TTask("EMCAL", "") ; 
-    sd->Add(emcal) ; 
-  } 
-
-  AliEMCALSDigitizer * emcalsd  = dynamic_cast<AliEMCALSDigitizer *>(emcal->GetListOfTasks()->FindObject( sdigitizer->GetName() )); 
-
-  if (emcalsd) { 
-    if (fDebug)
-      Info("PostSDigitizer", "-> Task %s already exists",sdigitizer->GetName());
-    emcal->GetListOfTasks()->Remove(emcalsd) ;
-  }
-
-  emcal->Add(sdigitizer) ;	
-
-  return kTRUE; 
-}
-
-//____________________________________________________________________________ 
-
-TObject ** AliEMCALGetter::SDigitizerRef(const char * name) const 
-{  
-  TTask * sd  = dynamic_cast<TTask*>(fTasksFolder->FindObject("SDigitizer")) ; 
-
-  if ( !sd ) {
-    Fatal("SDigitizerRef", "-> Task //%s/SDigitizer not found!", fTasksFolder);
-  }        
-
-  TTask * emcal = dynamic_cast<TTask*>(sd->GetListOfTasks()->FindObject("EMCAL")) ; 
-
-  if ( !emcal )  {
-    Fatal("SDigitizerRef", "->  //%s/SDigitizer/EMCAL not found!", fTasksFolder);
-  }        
-
-  TTask * task = dynamic_cast<TTask*>(emcal->GetListOfTasks()->FindObject(name)) ; 
-
-  return emcal->GetListOfTasks()->GetObjectRef(task) ;
-}
-
-//____________________________________________________________________________ 
-
-const Bool_t AliEMCALGetter::PostSDigitizer(const char * name, const char * file) const 
-{  
-  //---------- SDigitizer -------------------------
-  // the hierarchy is //Folders/Tasks/SDigitizer/EMCAL/sdigitsname
-
-  TTask * sd  = dynamic_cast<TTask*>(fTasksFolder->FindObject("SDigitizer")) ; 
-
-  if ( !sd ) {
-    Error("PostSDigitizer", "-> Task //%s/SDigitizer not found!", fTasksFolder);
-    return kFALSE ;
-  }        
-
-  TTask * emcal = dynamic_cast<TTask*>(sd->GetListOfTasks()->FindObject("EMCAL")) ; 
-
-  if ( !emcal )  {
-    if (fDebug) {
-      Warning("PostSDigitizer", "->  //%s/SDigitizer/EMCAL/ not found!", fTasksFolder);
-
-      Info("PostSDigitizer", "-> Adding  //%s/SDigitizer/EMCAL", fTasksFolder);
-
-    }
-    emcal = new TTask("EMCAL", "") ; 
-    sd->Add(emcal) ; 
-  } 
-
-  TString sdname(name) ;
-  sdname.Append(":") ;
-  sdname.Append(file);
-  sdname.ReplaceAll("/","_") ; 
-  AliEMCALSDigitizer * emcalsd  = dynamic_cast<AliEMCALSDigitizer *>(emcal->GetListOfTasks()->FindObject( sdname )); 
-
-  if (!emcalsd) {
-    emcalsd = new AliEMCALSDigitizer() ;  
-
-    //Note, we can not call constructor with parameters: it will call Getter and screw up everething
-
-    emcalsd->SetName(sdname) ;
-    emcalsd->SetTitle(file) ;
-    emcal->Add(emcalsd) ;	
-  }
-
-  return kTRUE; 
-}
-
-//____________________________________________________________________________ 
-
-const Bool_t AliEMCALGetter::PostDigits(const char * name) const 
-{  
-  //---------- Digits -------------------------
-  // the hierarchy is //Folders/Run/Event/Data/EMCAL/SDigits/name
-
-  TFolder * emcalFolder  = dynamic_cast<TFolder*>(fDigitsFolder->FindObject("EMCAL")) ;
-
-  if ( !emcalFolder ) {
-    if (fDebug) {
-      Warning("PostDigits", "-> Folder //%s/EMCAL/ not found!", fDigitsFolder);
-      Info("PostDigits", "-> Adding Folder //%s/EMCAL/", fDigitsFolder);
-    }
-    emcalFolder = fDigitsFolder->AddFolder("EMCAL", "Digits from EMCAL") ;  
-  }    
-
-  TObject*  dig = emcalFolder->FindObject( name ) ;
-
-  if ( !dig ) {
-    TClonesArray * digits = new TClonesArray("AliEMCALDigit",1000) ;
-    digits->SetName(name) ;
-    emcalFolder->Add(digits) ;  
-  }
-
-  return kTRUE; 
-}
-
-//____________________________________________________________________________ 
-
-TObject ** AliEMCALGetter::DigitsRef(const char * name) const 
-{ 
-  //------- Digits ----------------------
-  // the hierarchy is //Folders/Run/Event/Data/EMCAL/Digits/name
-
-  if ( !fDigitsFolder ) {
-    Fatal("DigitsRef", "-> Folder //%s not found!", fDigitsFolder);
-  }    
-
-  TFolder * emcalFolder  = dynamic_cast<TFolder*>(fDigitsFolder->FindObject("EMCAL")) ; 
-
-  if ( !emcalFolder ) {
-    Fatal("DigitsRef", "-> Folder //%s/EMCAL/ not found!", fDigitsFolder);
-  }    
-
-  TObject * d = emcalFolder->FindObject(name) ;
-
-  if(!d) {
-    Fatal("DigitsRef", "-> object %s not found!", name);
-  }   
-
-  return emcalFolder->GetListOfFolders()->GetObjectRef(d) ;
-}
-
-//____________________________________________________________________________ 
-
-const Bool_t AliEMCALGetter::PostDigitizer(AliEMCALDigitizer * digitizer) const
-{  
-  //---------- Digitizer -------------------------
-
-  TTask * sd  = dynamic_cast<TTask*>(fTasksFolder->FindObject("Digitizer")) ; 
-
-  if ( !sd ) {
-    Error("PostDigitizer", "-> Task //%s/Digitizer not found!", fTasksFolder);
-    return kFALSE ;
-  }        
-
-  TTask * emcal = dynamic_cast<TTask*>(sd->GetListOfTasks()->FindObject("EMCAL")) ; 
-
-  if ( !emcal )  {
-    if (fDebug) {
-      Warning("PostDigitizer", "->  //%s/Digitizer/EMCAL not found!", fTasksFolder);
-      Info("PostDigitizer", "-> Adding //%s/Digitizer/EMCAL", fTasksFolder);
-    }
-    emcal = new TTask("EMCAL", "") ; 
-    sd->Add(emcal) ; 
-  } 
-
-    AliEMCALDigitizer * emcald = dynamic_cast<AliEMCALDigitizer*>(emcal->GetListOfTasks()->FindObject(digitizer->GetName())) ; 
-
-    if (emcald) { 
-      emcald->Delete() ;
-      emcal->GetListOfTasks()->Remove(emcald) ;
-    }
-
-    emcal->Add(digitizer) ; 
-
-    return kTRUE; 
-}  
-
-//____________________________________________________________________________ 
-
-const Bool_t AliEMCALGetter::PostDigitizer(const char * name) const 
-{  
-  //---------- Digitizer -------------------------
-  // the hierarchy is //Folders/Tasks/SDigitizer/EMCAL/sdigitsname
-
-  TTask * d  = dynamic_cast<TTask*>(fTasksFolder->FindObject("Digitizer")) ; 
-
-  if ( !d ) {
-
-    Error("PostDigitizer", "-> Task //%s/Digitizer not found!", fTasksFolder);
-    return kFALSE ;
-  }        
-
-  TTask * emcal = dynamic_cast<TTask*>(d->GetListOfTasks()->FindObject("EMCAL")) ; 
-
-  if ( !emcal )  {
-    if (fDebug) {
-      Warning("PostDigitizer", "-> //%s/Digitizer/EMCAL not found!", fTasksFolder);
-
-      Info("PostDigitizer", "-> Adding //%s/Digitizer/EMCAL", fTasksFolder);
-    }
-    emcal = new TTask("EMCAL", "") ; 
-    d->Add(emcal) ; 
-} 
-
-  AliEMCALDigitizer * emcald = dynamic_cast<AliEMCALDigitizer*>(emcal->GetListOfTasks()->FindObject(name)) ; 
-
-  if (!emcald) { 
-    emcald = new AliEMCALDigitizer() ;
-    emcald->SetName(fDigitsTitle) ;
-    emcald->SetTitle(fHeaderFile) ;
-    emcal->Add(emcald) ;
-  }
-
-  return kTRUE;  
-}
-
-//____________________________________________________________________________ 
-
-TObject ** AliEMCALGetter::DigitizerRef(const char * name) const 
-{  
-
-  TTask * sd  = dynamic_cast<TTask*>(fTasksFolder->FindObject("Digitizer")) ; 
-
-  if ( !sd ) {
-    Fatal("DigitizerRef", "-> Task //%s/Digitizer not found!", fTasksFolder->GetName());
-  }        
-
-  TTask * emcal = dynamic_cast<TTask*>(sd->GetListOfTasks()->FindObject("EMCAL")) ; 
-
-  if ( !emcal )  {
-    Fatal("DigitizerRef", "->  //%s/Digitizer/EMCAL", fTasksFolder->GetName());
-  }        
-
-  TTask * task = dynamic_cast<TTask*>(emcal->GetListOfTasks()->FindObject(name)) ; 
-
-  return emcal->GetListOfTasks()->GetObjectRef(task) ;
-}
-
-//____________________________________________________________________________ 
-
-const Bool_t AliEMCALGetter::PostRecPoints(const char * name) const 
-{ 
-  // -------------- RecPoints -------------------------------------------
-  // the hierarchy is //Folders/Run/Event/RecData/EMCAL/TowerRecPoints/name
-  // the hierarchy is //Folders/Run/Event/RecData/EMCAL/PreShowerRecPoints/name
-
-  TFolder * emcalFolder  = dynamic_cast<TFolder*>(fRecoFolder->FindObject("EMCAL")) ; 
-
-  if ( !emcalFolder ) {
-    if (fDebug) {
-      Warning("PostRecPoints", "-> Folder //%s/EMCAL/ not found!", fRecoFolder);
-      Info("PostRecPoints", "-> Adding Folder //%s/EMCAL/", fRecoFolder);
-    }
-    emcalFolder = fRecoFolder->AddFolder("EMCAL", "Reconstructed data from EMCAL") ;  
-  }    
-
-  // Pre Shower RecPoints 
-
-  TFolder * emcalRPoPREFolder  = dynamic_cast<TFolder*>(emcalFolder->FindObject("PRERecPoints")) ;
-
-  if ( !emcalRPoPREFolder ) {
-    if (fDebug) {
-      Warning("PostRecPoints", "-> Folder //%s/EMCAL/PRERecPoints/ not found!", fRecoFolder);
-      Info("PostRecPoints", "-> Adding Folder //%s/EMCAL/PRERecPoints/", fRecoFolder);
-    }
-    emcalRPoPREFolder = emcalFolder->AddFolder("PRERecPoints", "PRE RecPoints from EMCAL") ;  
-  }    
-
-  TObject * rpPRE =  emcalRPoPREFolder->FindObject( name ) ;
-
-  if ( !rpPRE )   {
-    TObjArray * aPRErp = new TObjArray(100) ;
-    aPRErp->SetName(name) ;
-    emcalRPoPREFolder->Add(aPRErp) ;  
-  }
-
- // EC RecPoints 
-
-  TFolder * emcalRPoECFolder  = dynamic_cast<TFolder*>(emcalFolder->FindObject("ECRecPoints")) ;
-
-  if ( !emcalRPoECFolder ) {
-    if (fDebug) {
-
-      Warning("PostRecPoints", "-> Folder //%s/EMCAL/ECRecPoints/ not found!", fRecoFolder);
-      Info("PostRecPoints", "-> Adding Folder //%s/EMCAL/ECRecPoints not found!", fRecoFolder);
-    }
-    emcalRPoECFolder = emcalFolder->AddFolder("ECRecPoints", "EC RecPoints from EMCAL") ;  
-  }    
-
-  TObject * rpEC = emcalFolder->FindObject( name ) ;
-
-  if ( !rpEC )   {
-    TObjArray * aECrp = new TObjArray(100) ;
-    aECrp->SetName(name) ;
-    emcalRPoECFolder->Add(aECrp) ;  
-  }
-
- // HC RecPoints 
-
-  TFolder * emcalRPoHCFolder  = dynamic_cast<TFolder*>(emcalFolder->FindObject("HCRecPoints")) ;
-
-  if ( !emcalRPoHCFolder ) {
-    if (fDebug) {
-
-      Warning("PostRecPoints", "-> Folder //%s/EMCAL/HCRecPoints/ not found!", fRecoFolder);
-      Info("PostRecPoints", "-> Adding Folder //%s/EMCAL/HCRecPoints not found!", fRecoFolder);
-    }
-    emcalRPoHCFolder = emcalFolder->AddFolder("HCRecPoints", "HC RecPoints from EMCAL") ;  
-  }    
-
-  TObject * rpHC = emcalFolder->FindObject( name ) ;
-
-  if ( !rpHC )   {
-    TObjArray * aHCrp = new TObjArray(100) ;
-    aHCrp->SetName(name) ;
-    emcalRPoHCFolder->Add(aHCrp) ;  
-  }
-
-  return kTRUE; 
-}
-
-//____________________________________________________________________________ 
-
-TObject ** AliEMCALGetter::ECRecPointsRef(const char * name) const 
-{ 
-  // -------------- RecPoints -------------------------------------------
-  // the hierarchy is //Folders/Run/Event/RecData/EMCAL/ECRecPoints/name
-
-  if ( !fRecoFolder ) {
-    Fatal("ECRecPointsRef", "-> Folder //%s not found!", fRecoFolder);
-  }    
-
-  TFolder * towerFolder  = dynamic_cast<TFolder*>(fRecoFolder->FindObject("EMCAL/ECRecPoints")) ; 
-
-  if ( !towerFolder ) {
-    Fatal("ECRecPointsRef", "-> Folder //%s/EMCAL/ECRecPoints/ not found!", fRecoFolder);
-  }    
-
-  TObject * trp = towerFolder->FindObject(name ) ;
-
-  if ( !trp )   {
-    Fatal("ECRecPointsRef", "-> Object %s not found!", name);
-  }
-
-  return towerFolder->GetListOfFolders()->GetObjectRef(trp) ;
-} 
-
-//____________________________________________________________________________ 
-
-TObject ** AliEMCALGetter::HCRecPointsRef(const char * name) const 
-{ 
-  // -------------- RecPoints -------------------------------------------
-  // the hierarchy is //Folders/Run/Event/RecData/EMCAL/HCRecPoints/name
-
-  if ( !fRecoFolder ) {
-    Fatal("HCRecPointsRef", "-> Folder //%s not found!", fRecoFolder);
-  }    
-
-  TFolder * towerFolder  = dynamic_cast<TFolder*>(fRecoFolder->FindObject("EMCAL/HCRecPoints")) ; 
-
-  if ( !towerFolder ) {
-    Fatal("HCRecPointsRef", "-> Folder //%s/EMCAL/HCRecPoints/ not found!", fRecoFolder);
-  }    
-
-  TObject * trp = towerFolder->FindObject(name ) ;
-
-  if ( !trp )   {
-    Fatal("HCRecPointsRef", "-> Object %s not found!", name);
-  }
-
-  return towerFolder->GetListOfFolders()->GetObjectRef(trp) ;
-} 
-
-//____________________________________________________________________________ 
-
-TObject ** AliEMCALGetter::PRERecPointsRef(const char * name) const 
-{ 
-  // -------------- RecPoints -------------------------------------------
-  // the hierarchy is //Folders/Run/Event/RecData/EMCAL/PRERecPoints/name
-
-  if ( !fRecoFolder ) {
-    Fatal("PRERecPointsRef", "-> Folder //%s not found!", fRecoFolder);
-  }    
-
-  TFolder * folderPRE  = dynamic_cast<TFolder*>(fRecoFolder->FindObject("EMCAL/PRERecPoints")) ; 
-
-  if ( !folderPRE ) {
-    Fatal("PRERecPointsRef", "-> Folder //%s/EMCAL/PRERecPoints/", fRecoFolder);
-  }    
-
-
-
-  TObject * prp = folderPRE->FindObject(name ) ;
-
-  if ( !prp )   {
-    Fatal("PRERecPointsRef", "-> Object %s not found!", name);
-  }
-
-  return folderPRE->GetListOfFolders()->GetObjectRef(prp) ;
-} 
-
-//____________________________________________________________________________ 
-
-const Bool_t AliEMCALGetter::PostClusterizer(AliEMCALClusterizer * clu) const 
-{ 
-  // ------------------ AliEMCALClusterizer ------------------------
-  // the hierarchy is //Folders/Tasks/Reconstructioner/EMCAL/sdigitsname
-
-  TTask * tasks  = dynamic_cast<TTask*>(fTasksFolder->FindObject("Reconstructioner")) ; 
-
-  if ( !tasks ) {
-    Error("PostClusterizer", "-> Task //%s/Reconstructioner not found!", fTasksFolder);
-    return kFALSE ;
-  }        
-
-  TTask * emcal = dynamic_cast<TTask*>(tasks->GetListOfTasks()->FindObject("EMCAL")) ; 
-
-  if ( !emcal )  {
-    if (fDebug) {
-      Warning("PostClusterizer", "-> //%s/ReconstructionerEMCAL not found!", fTasksFolder);
-      Info("PostClusterizer", "-> Adding //%s/Reconstructioner/EMCAL", fTasksFolder);
-    }
-    emcal = new TTask("EMCAL", "") ; 
-    tasks->Add(emcal) ; 
-  } 
-
-  AliEMCALClusterizerv1 * emcalcl = dynamic_cast<AliEMCALClusterizerv1*>(emcal->GetListOfTasks()->FindObject(clu->GetName())) ; 
-
-  if (emcalcl) { 
-    if (fDebug)
-      Info("PostClusterizer", "-> Task %s already exists", clu->GetName());
-    emcalcl->Delete() ; 
-    emcal->GetListOfTasks()->Remove(emcalcl) ;
-  }
-  emcal->Add(clu) ;      
-
-  return kTRUE; 
-} 
-
-//____________________________________________________________________________ 
-
-TObject ** AliEMCALGetter::ClusterizerRef(const char * name) const 
-{ 
-  // ------------------ AliEMCALClusterizer ------------------------
-
-  TTask * tasks  = dynamic_cast<TTask*>(fTasksFolder->FindObject("Reconstructioner")) ; 
-
-  if ( !tasks ) {
-    Fatal("ClusterizerRef", "-> Task //%s/Reconstructioner not found!", fTasksFolder->GetName());
-  }        
-
-  TTask * emcal = dynamic_cast<TTask*>(tasks->GetListOfTasks()->FindObject("EMCAL")) ; 
-
-  if ( !emcal )  {
-    Fatal("ClusterizerRef", "-> //%s/Reconstructioner/EMCAL", fTasksFolder->GetName());
-  }   
-
-  TList * l = emcal->GetListOfTasks() ; 
-  TIter it(l) ;
-  TTask * task ;
-  TTask * clu = 0 ;
-  TString cluname(name) ;
-  cluname+=":clu-" ;
-
-  while((task = static_cast<TTask *>(it.Next()) )){
-    TString taskname(task->GetName()) ;
-    if(taskname.BeginsWith(cluname)){
-      clu = task ;
-      break ;
-    }
-  }
-
-  if(!clu) {
-    Fatal("ClusterizerRef", "-> task %s not found!", task->GetName());
-  }
-
-  return l->GetObjectRef(clu) ;
-}
-
-//____________________________________________________________________________ 
-
-const Bool_t AliEMCALGetter::PostClusterizer(const char * name) const 
-{ 
-  // ------------------ AliEMCALClusterizer ------------------------
-  // the hierarchy is //Folders/Tasks/Reconstructioner/EMCAL/sdigitsname
-  
-
-  TTask * tasks  = dynamic_cast<TTask*>(fTasksFolder->FindObject("Reconstructioner")) ; 
-
-  if ( !tasks ) {
-    Error("PostClusterizer", "-> Task //%s/Reconstructioner not found!", fTasksFolder->GetName());
-    return kFALSE ;
-  }        
-
-  TTask * emcal = dynamic_cast<TTask*>(tasks->GetListOfTasks()->FindObject("EMCAL")) ; 
-
-  if ( !emcal )  {
-    if (fDebug) {
-      Warning("PostClusterizer", "-> //%s/Reconstructioner/EMCAL not found!", fTasksFolder);
-      Info("PostClusterizer", "-> Adding //%s/Reconstructioner/EMCAL", fTasksFolder);
-    }
-    emcal = new TTask("EMCAL", "") ; 
-    tasks->Add(emcal) ; 
-  } 
-
-  TList * l = emcal->GetListOfTasks() ;   
-  TIter it(l) ;
-  TString clun(name) ;
-  clun+=":clu" ; 
-  TTask * task ;
-
-  while((task = static_cast<TTask *>(it.Next()) )){
-    TString taskname(task->GetName()) ;
-
-    if(taskname.BeginsWith(clun))
-      return kTRUE ;
-  }
-
-  AliEMCALClusterizerv1 * emcalcl = new AliEMCALClusterizerv1() ;
-
-  clun+="-v1" ; 
-  emcalcl->SetName(clun) ;
-  emcalcl->SetTitle(fHeaderFile) ; 
-  emcal->Add(emcalcl) ;
-
-  return kTRUE; 
-}
-
-//____________________________________________________________________________ 
-const Bool_t AliEMCALGetter::PostTrackSegments(const char * name) const 
-{ // ---------------TrackSegments -----------------------------------
-  
-  // the hierarchy is //Folders/Run/Event/RecData/EMCAL/TrackSegments/name
-
-  TFolder * emcalFolder  = dynamic_cast<TFolder*>(fRecoFolder->FindObject("EMCAL")) ; 
-  
-  if ( !emcalFolder ) {
-    if (fDebug) {
-      Warning("PostTrackSegments", "-> Folder //%s/EMCAL/ not found", fRecoFolder->GetName()) ;
-      Info("PostTrackSegments", "-> Adding Folder //%s/EMCAL", fRecoFolder->GetName()) ;
-    }
-    emcalFolder = fRecoFolder->AddFolder("EMCAL", "Reconstructed data from EMCAL") ;  
-  }    
-
-  TFolder * emcalTSFolder  = dynamic_cast<TFolder*>(emcalFolder->FindObject("TrackSegments")) ;
-  if ( !emcalTSFolder ) {
-    if (fDebug) {
-      Warning("PostTrackSegments", "-> Folder //%s/EMCAL/TrackSegments/ not found!", fRecoFolder->GetName() ) ; 
-      Info("PostTrackSegments", "-> Adding Folder //%s/EMCAL/TrackSegments/", fRecoFolder->GetName()) ; 
-    }
-    emcalTSFolder = emcalFolder->AddFolder("TrackSegments", "TrackSegments from EMCAL") ;  
-  }    
-  
-  TObject * tss =  emcalTSFolder->FindObject( name ) ;
-  if (!tss) {
-    TClonesArray * ts = new TClonesArray("AliEMCALTrackSegment",100) ;
-    ts->SetName(name) ;
-    emcalTSFolder->Add(ts) ;  
-  }
-  return kTRUE; 
-} 
-
-//____________________________________________________________________________ 
-TObject** AliEMCALGetter::TrackSegmentsRef(const char * name) const 
-{ // ---------------TrackSegments -----------------------------------
-  
-  // the hierarchy is //Folders/Run/Event/RecData/EMCAL/TrackSegments/name
-
- if ( !fRecoFolder ) {
-    Fatal("TrackSegmentsRef", "Folder //%s not found !", fRecoFolder->GetName() ) ;
-  }    
-
-  TFolder * emcalFolder  = dynamic_cast<TFolder*>(fRecoFolder->FindObject("EMCAL/TrackSegments")) ; 
-  if ( !emcalFolder ) {
-    Fatal("TrackSegmentsRef", "Folder //%s/EMCAL/TrackSegments/ not found !", fRecoFolder->GetName() ) ;
-  }    
-  
-  TObject * tss =  emcalFolder->FindObject(name) ;
-  if (!tss) {
-    Fatal("TrackSegmentsRef", "object %s not found !", name) ;  
-  }
-  return emcalFolder->GetListOfFolders()->GetObjectRef(tss) ;
-} 
-
-//____________________________________________________________________________ 
-const Bool_t AliEMCALGetter::PostTrackSegmentMaker(AliEMCALTrackSegmentMaker * tsmaker) const 
-{ //------------Track Segment Maker ------------------------------
-  
-  // the hierarchy is //Folders/Tasks/Reconstructioner/EMCAL/sdigitsname
-
-  TTask * tasks  = dynamic_cast<TTask*>(fTasksFolder->FindObject("Reconstructioner")) ; 
-
-  if ( !tasks ) {
-    Error("PostTrackSegmentMaker", "Task //%s/Reconstructioner not found !", fTasksFolder) ;
-    return kFALSE ;
-  }        
-        
-  TTask * emcal = dynamic_cast<TTask*>(tasks->GetListOfTasks()->FindObject("EMCAL")) ; 
-  if ( !emcal )  {
-    if (fDebug) {
-      Warning("PostTrackSegmentMaker", "//%s/Reconstructioner/EMCAL not found!", fTasksFolder) ; 
-      Info("PostTrackSegmentMaker", "Adding //%s/Reconstructioner/EMCAL", fTasksFolder) ;
-    }
-    emcal = new TTask("EMCAL", "") ; 
-    tasks->Add(emcal) ; 
-  } 
-
-  AliEMCALTrackSegmentMaker * emcalts = 
-    dynamic_cast<AliEMCALTrackSegmentMaker*>(emcal->GetListOfTasks()->FindObject(tsmaker->GetName())) ; 
-  if (emcalts) { 
-    emcalts->Delete() ;
-    emcal->GetListOfTasks()->Remove(emcalts) ;
-  }
-  emcal->Add(tsmaker) ;      
-  return kTRUE; 
-  
-} 
-//____________________________________________________________________________ 
-const Bool_t AliEMCALGetter::PostTrackSegmentMaker(const char * name) const 
-{ //------------Track Segment Maker ------------------------------
-  
-  // the hierarchy is //Folders/Tasks/Reconstructioner/EMCAL/sdigitsname
-  
-  TTask * tasks  = dynamic_cast<TTask*>(fTasksFolder->FindObject("Reconstructioner")) ; 
-  
-  if ( !tasks ) {
-    Error("PostTrackSegmentMaker", "Task //%s/Reconstructioner not found !", fTasksFolder->GetName() ) ;
-    return kFALSE ;
-  }        
-  
-  TTask * emcal = dynamic_cast<TTask*>(tasks->GetListOfTasks()->FindObject("EMCAL")) ; 
-  if ( !emcal )  {
-    if (fDebug) {
-      Warning("PostTrackSegmentMaker", "//%s/Reconstructioner/EMCAL not found!", fTasksFolder->GetName() ) ; 
-      Info("PostTrackSegmentMaker", "Adding //%s/Reconstructioner/EMCAL", fTasksFolder->GetName()) ;
-    }
-    emcal = new TTask("EMCAL", "") ; 
-    tasks->Add(emcal) ; 
-  } 
-
-  TList * l = emcal->GetListOfTasks() ;   
-  TIter it(l) ;
-  TString tsn(name);
-  tsn+=":tsm" ; 
-  TTask * task ;
-  while((task = static_cast<TTask *>(it.Next()) )){
-    TString taskname(task->GetName()) ;
-    if(taskname.BeginsWith(tsn))
-      return kTRUE ;
-  }
-  
-  AliEMCALTrackSegmentMakerv1 * emcalts = new AliEMCALTrackSegmentMakerv1() ;
-  tsn+="-v1" ;
-  emcalts->SetName(tsn) ;
-  emcalts->SetTitle(fHeaderFile) ;
-  emcal->Add(emcalts) ;      
-  return kTRUE; 
-  
-} 
-
-//____________________________________________________________________________ 
-TObject** AliEMCALGetter::TSMakerRef(const char * name) const 
-{ //------------Track Segment Maker ------------------------------
-  
-  TTask * tasks  = dynamic_cast<TTask*>(fTasksFolder->FindObject("Reconstructioner")) ; 
-
-  if ( !tasks ) {
-    Fatal("TSMakerRef", "Task //%s/Reconstructioner not found !", fTasksFolder->GetName() ) ;
-  }        
-        
-  TTask * emcal = dynamic_cast<TTask*>(tasks->GetListOfTasks()->FindObject("EMCAL")) ; 
-  if ( !emcal )  {
-    Fatal("TSMakerRef", "//%s/Reconstructioner/EMCAL not found !", fTasksFolder->GetName() ) ; 
-  }   
-
-  TList * l = emcal->GetListOfTasks() ; 
-  TIter it(l) ;
-  TTask * task ;
-  TTask * tsm = 0 ;
-  TString tsmname(name) ;
-  tsmname+=":tsm" ;
-  while((task = static_cast<TTask *>(it.Next()) )){
-    TString taskname(task->GetName()) ;
-    if(taskname.BeginsWith(tsmname)){
-      tsm = task ;
-      break ;
-    }
-  }
-  
-  if(!tsm) {
-   Fatal("TSMakerRef", "Task //%s/Reconstructioner/EMCAL/TrackSegmentMarker/%s not found !", fTasksFolder->GetName(),  name) ;
-  }
- 
-  return l->GetObjectRef(tsm) ;
-
-} 
-
-//____________________________________________________________________________ 
-const Bool_t AliEMCALGetter::PostRecParticles(const char * name) const 
-{  // -------------------- RecParticles ------------------------
-  
-  // the hierarchy is //Folders/Run/Event/RecData/EMCAL/RecParticles/name
-
-  TFolder * emcalFolder  = dynamic_cast<TFolder*>(fRecoFolder->FindObject("EMCAL")) ; 
-  
-  if ( !emcalFolder ) {
-    if (fDebug) {
-      Warning("PostRecParticles", "-> Folder //%s/EMCAL/ not found!", fRecoFolder->GetName()) ;
-      Info("PostRecParticles", "-> Adding Folder //%s/EMCAL/", fRecoFolder->GetName()) ;
-    }
-    emcalFolder = fRecoFolder->AddFolder("EMCAL", "Reconstructed data from EMCAL") ;  
-  }    
-
- TFolder * emcalRPaFolder  = dynamic_cast<TFolder*>(emcalFolder->FindObject("RecParticles")) ;
-  if ( !emcalRPaFolder ) {
-    if (fDebug) {
-      Warning("PostRecParticles", "-> Folder //%s/EMCAL/RecParticles/ not found!", fRecoFolder->GetName()) ;
-      Info("PostRecParticles", "-> Adding Folder //%s/EMCAL/RecParticles/", fRecoFolder->GetName()) ;
-    }
-    emcalRPaFolder = emcalFolder->AddFolder("RecParticles", "RecParticles from EMCAL") ;  
-  } 
-
-  TObject * rps = emcalRPaFolder->FindObject( name )  ;
-  if ( !rps ) {
-    TClonesArray * rp = new TClonesArray("AliEMCALRecParticle",100) ;
-    rp->SetName(name) ;    
-    emcalRPaFolder->Add(rp) ;  
-  }
-  return kTRUE; 
-} 
-
-//____________________________________________________________________________ 
-TObject** AliEMCALGetter::RecParticlesRef(const char * name) const 
-{ // ---------------RecParticles -----------------------------------
-  
-  // the hierarchy is //Folders/Run/Event/RecData/EMCAL/TrackSegments/name
-
- if ( !fRecoFolder ) {
-    Fatal("RecParticlesRef", "Folder//%s not found !", fRecoFolder->GetName() ) ; 
-  }    
-
-  TFolder * emcalFolder  = dynamic_cast<TFolder*>(fRecoFolder->FindObject("EMCAL/RecParticles")) ; 
-  if ( !emcalFolder ) {
-    Fatal("RecParticlesRef", "Folder //%s/EMCAL/RecParticles/ not found !", fRecoFolder->GetName() ) ;
-  }    
-
-  TObject * tss =  emcalFolder->FindObject(name  ) ;
-  if (!tss) {
-    Fatal("RecParticlesRef", "object %s not found !", name) ; 
-  }
-  return emcalFolder->GetListOfFolders()->GetObjectRef(tss) ;
-}
-
-//____________________________________________________________________________ 
-const Bool_t AliEMCALGetter::PostPID(AliEMCALPID * pid) const 
-{      // ------------AliEMCAL PID -----------------------------
-
-  TTask * tasks  = dynamic_cast<TTask*>(fTasksFolder->FindObject("Reconstructioner")) ; 
-
-  if ( !tasks ) {
-    Error("PostPID", "Task //%s/Reconstructioner not found !", fTasksFolder) ;
-    return kFALSE ;
-  }        
-  
-  TTask * emcal = dynamic_cast<TTask*>(tasks->GetListOfTasks()->FindObject("EMCAL")) ; 
-  if ( !emcal )  {
-    if (fDebug) {
-      Warning("PostPID", "//%s/Reconstructioner/EMCAL not found!", fTasksFolder) ; 
-      Info("PostPID", "Adding //%s/Reconstructioner/EMCAL", fTasksFolder) ;
-    }
-    emcal = new TTask("EMCAL", "") ; 
-    tasks->Add(emcal) ; 
-  } 
-
-  AliEMCALPID * emcalpid = dynamic_cast<AliEMCALPID*>(emcal->GetListOfTasks()->FindObject(pid->GetName())) ; 
-  if (emcalpid) { 
-    if (fDebug)
-      Info("PostPID", "-> Task %s qlready exists", pid->GetName()) ; 
-    emcal->GetListOfTasks()->Remove(emcalpid) ;
-  }
-  
-  emcal->Add(pid) ;      
-  return kTRUE; 
-} 
-
-//____________________________________________________________________________ 
-const Bool_t AliEMCALGetter::PostPID(const char * name) const 
-{     
-  // the hierarchy is //Folders/Tasks/Reconstructioner/EMCAL/sdigitsname
-  
-  TTask * tasks  = dynamic_cast<TTask*>(fTasksFolder->FindObject("Reconstructioner")) ; 
-
-  if ( !tasks ) {
-    Error("PostPID", "Task //%s/Reconstructioner not found !", fTasksFolder->GetName() ) ;
-    return kFALSE ;
-  }        
-  
-  TTask * emcal = dynamic_cast<TTask*>(tasks->GetListOfTasks()->FindObject("EMCAL")) ; 
-  if ( !emcal )  {
-    if (fDebug) {
-      Warning("PostPID", "//%s/Reconstructioner/EMCAL not found!", fTasksFolder->GetName()) ; 
-      Info("PostPID", "Adding //%s/Reconstructioner/EMCAL", fTasksFolder->GetName()) ;
-    }
-    emcal = new TTask("EMCAL", "") ; 
-    tasks->Add(emcal) ; 
-  } 
-
-  TList * l = emcal->GetListOfTasks() ;   
-  TIter it(l) ;
-  TString pidname(name) ;
-  pidname+=":pid" ;
-  TTask * task ;
-  while((task = static_cast<TTask *>(it.Next()) )){
-    TString taskname(task->GetName()) ;
-    if(taskname.BeginsWith(pidname))
-      return kTRUE ;
-  }
- 
-  AliEMCALPIDv1 * emcalpid = new AliEMCALPIDv1() ;
-  pidname+="-v1" ;
-  emcalpid->SetName(pidname) ; 
-  emcalpid->SetTitle(fHeaderFile) ;
-  emcal->Add(emcalpid) ;      
-  
-  return kTRUE; 
-} 
-
-//____________________________________________________________________________ 
-TObject** AliEMCALGetter::PIDRef(const char * name) const 
-{ //------------PID ------------------------------
-
-  TTask * tasks  = dynamic_cast<TTask*>(fTasksFolder->FindObject("Reconstructioner")) ; 
-
-  if ( !tasks ) {
-    Fatal("PIDRef", "Task //%s/Reconstructioner not found !", fTasksFolder->GetName() ) ;
-  }        
-        
-  TTask * emcal = dynamic_cast<TTask*>(tasks->GetListOfTasks()->FindObject("EMCAL")) ; 
-  if ( !emcal )  {
-    Fatal("PIDRef", "//%s/Reconstructioner/EMCAL not found !", fTasksFolder->GetName() ) ; 
-  }   
-  
-  TList * l = emcal->GetListOfTasks() ; 
-  TIter it(l) ;
-  TTask * task ;
-  TTask * pid = 0 ;
-  TString pidname(name) ;
-  pidname+=":pid" ;
-  while((task = static_cast<TTask *>(it.Next()) )){
-    TString taskname(task->GetName()) ;
-    if(taskname.BeginsWith(pidname)){
-      pid = task ;
-      break ;
-    }
-  }
-  
-  if(!pid) {
-    Fatal("PIDRef", "Task //%s/Reconstructioner/EMCAL/PID/%s not found !", fTasksFolder->GetName(), name) ;
-  }
-  
-    return l->GetObjectRef(pid) ;
-} 
-
-//____________________________________________________________________________ 
-TTree * AliEMCALGetter::TreeK(TString filename)  
+TClonesArray * AliEMCALGetter::Primaries()  
 {
-  // returns TreeK from file filename
-  // usefull in case of split file
+  // creates the Primaries container if needed
+  if ( !fPrimaries ) {
+    if (fgDebug) 
+      Info("Primaries", "Creating a new TClonesArray for primaries") ; 
+    fPrimaries = new TClonesArray("TParticle", 1000) ;
+  } 
+  return fPrimaries ; 
+}
 
-  if ( filename.IsNull() ) 
-    filename = fHeaderFile ; 
+//____________________________________________________________________________ 
+void  AliEMCALGetter::Print() 
+{
+  // Print usefull information about the getter
+    
+  AliRunLoader * rl = AliRunLoader::GetRunLoader(fgEmcalLoader->GetTitle());
+  ::Info( "Print", "gAlice file is %s -- version name is %s", (rl->GetFileName()).Data(), rl->GetEventFolder()->GetName() ) ; 
+}
 
-  TFile * file = 0 ; 
-
-  file = static_cast<TFile*>(gROOT->GetFile(filename.Data() ) ) ;
-
-  if (!file || !file->IsOpen())  // file not yet open 
-    file = TFile::Open(filename.Data(), "read") ; 
+//____________________________________________________________________________ 
+void AliEMCALGetter::ReadPrimaries()  
+{
+  // Read Primaries from Kinematics.root
   
-  if(filename != fHeaderFile ){
-    fAlice = dynamic_cast<AliRun *>(file->Get("gAlice")) ;
+  AliRunLoader * rl = AliRunLoader::GetRunLoader(EmcalLoader()->GetTitle());
+  
+  // gets kine tree from the root file (Kinematics.root)
+  if ( ! rl->TreeK() )  // load treeK the first time
+    rl->LoadKinematics() ;
+  
+  fNPrimaries = rl->Stack()->GetNtrack() ; 
+
+  if (fgDebug) 
+    Info( "ReadTreeK", "Found %d particles in event # %d", fNPrimaries, EventNumber() ) ; 
+
+
+  // first time creates the container
+  if ( Primaries() ) 
+    fPrimaries->Clear() ; 
+  
+  Int_t index = 0 ; 
+  for (index = 0 ; index < fNPrimaries; index++) { 
+    new ((*fPrimaries)[index]) TParticle(*(Primary(index)));
+  }
+}
+
+//____________________________________________________________________________ 
+Int_t AliEMCALGetter::ReadTreeD()
+{
+  // Read the Digits
+  
+  
+  // gets TreeD from the root file (EMCAL.SDigits.root)
+  if ( !IsLoaded("D") ) {
+    EmcalLoader()->LoadDigits("UPDATE") ;
+    EmcalLoader()->LoadDigitizer("UPDATE") ;
+    SetLoaded("D") ; 
+  } 
+  return Digits()->GetEntries() ; 
+}
+
+//____________________________________________________________________________ 
+Int_t AliEMCALGetter::ReadTreeH()
+{
+  // Read the Hits
+    
+  // gets TreeH from the root file (EMCAL.Hit.root)
+  if ( !IsLoaded("H") ) {
+    EmcalLoader()->LoadHits("UPDATE") ;
+    SetLoaded("H") ; 
+  }  
+  return Hits()->GetEntries() ; 
+}
+
+//____________________________________________________________________________ 
+Int_t AliEMCALGetter::ReadTreeR()
+{
+  // Read the RecPoints
+  
+  
+  // gets TreeR from the root file (EMCAL.RecPoints.root)
+  if ( !IsLoaded("R") ) {
+    EmcalLoader()->LoadRecPoints("UPDATE") ;
+    EmcalLoader()->LoadClusterizer("UPDATE") ;
+    SetLoaded("R") ; 
   }
 
-  TString treeName("TreeK") ; 
-  treeName += EventNumber()  ; 
-  TTree * tree = static_cast<TTree *>(file->Get(treeName.Data())) ;
-
-  if (!tree && fDebug)  
-    Warning("TreeK", "-> %s not found in %s", treeName.Data(),filename.Data());
-
-  return tree ; 		      
+  return ECARecPoints()->GetEntries() ; 
 }
 
 //____________________________________________________________________________ 
-
-TTree * AliEMCALGetter::TreeH(TString filename)  
+Int_t AliEMCALGetter::ReadTreeT()
 {
-  // returns TreeH from file filename
-  // usefull in case of split file
-
-  if ( filename.IsNull() ) 
-    filename = fHeaderFile ; 
-
-  TFile * file = 0 ; 
-  file = static_cast<TFile*>(gROOT->GetFile(filename.Data() ) ) ;
-
-  if (!file) { // file not open yet
-    file = TFile::Open(filename.Data(), "read") ; 
+  // Read the TrackSegments
+  
+  
+  // gets TreeT from the root file (EMCAL.TrackSegments.root)
+  if ( !IsLoaded("T") ) {
+    EmcalLoader()->LoadTracks("UPDATE") ;
+    EmcalLoader()->LoadTrackSegmentMaker("UPDATE") ;
+    SetLoaded("T") ; 
   }
 
-  TString treeName("TreeH") ; 
-  treeName += EventNumber()  ; 
-  TTree * tree = static_cast<TTree *>(file->Get(treeName.Data())) ;
-
-  if (!tree && fDebug)  
-    Warning("TreeH", "-> %s not found in %s", treeName.Data(), filename.Data());
-  return tree ; 		      
+  return TrackSegments()->GetEntries() ; 
 }
-
 //____________________________________________________________________________ 
-
-TTree * AliEMCALGetter::TreeS(TString filename)  
+Int_t AliEMCALGetter::ReadTreeP()
 {
-  // returns TreeS from file filename
-  // usefull in case of split file
-
-  if ( filename.IsNull() ) 
-    filename = fHeaderFile ; 
-
-  TFile * file = 0 ; 
-  file = static_cast<TFile*>(gROOT->GetFile(filename.Data() ) ) ;
-
-  if (!file) { // file not open yet
-    file = TFile::Open(filename.Data(), "read") ; 
+  // Read the TrackSegments
+  
+  
+  // gets TreeT from the root file (EMCAL.TrackSegments.root)
+  if ( !IsLoaded("P") ) {
+    EmcalLoader()->LoadRecParticles("UPDATE") ;
+    EmcalLoader()->LoadPID("UPDATE") ;
+    SetLoaded("P") ; 
   }
 
-  TString treeName("TreeS") ; 
-  treeName += EventNumber()  ; 
-  TTree * tree = static_cast<TTree *>(file->Get(treeName.Data())) ;
-
-  if (!tree && fDebug)  
-    Warning("TreeS", "-> %s not found in %s", treeName.Data(), filename.Data());
-  return tree ; 		      
+  return RecParticles()->GetEntries() ; 
 }
-
 //____________________________________________________________________________ 
-
-TTree * AliEMCALGetter::TreeD(TString filename)  
+Int_t AliEMCALGetter::ReadTreeS()
 {
-  // returns TreeD from file filename
-  // usefull in case of split file
-
-  if ( filename.IsNull() ) 
-    filename = fHeaderFile ; 
-
-  TFile * file = 0 ; 
-  file = static_cast<TFile*>(gROOT->GetFile(filename.Data() ) ) ;
-
-  if (!file) { // file not open yet
-    file = TFile::Open(filename.Data(), "read") ; 
+  // Read the SDigits
+  
+  
+  // gets TreeS from the root file (EMCAL.SDigits.root)
+  if ( !IsLoaded("S") ) {
+    EmcalLoader()->LoadSDigits("UPDATE") ;
+    EmcalLoader()->LoadSDigitizer("UPDATE") ;
+    SetLoaded("S") ; 
   }
 
-  TString treeName("TreeD") ; 
-  treeName += EventNumber()  ; 
-  TTree * tree = static_cast<TTree *>(file->Get(treeName.Data())) ;
-
-  if (!tree && fDebug)  
-    Warning("TreeD", "-> %s not found in %s", treeName.Data(), filename.Data());
-  return tree ; 		      
+  return SDigits()->GetEntries() ; 
 }
 
 //____________________________________________________________________________ 
-
-const TParticle * AliEMCALGetter::Primary(Int_t index) const
+TClonesArray * AliEMCALGetter::SDigits() 
 {
-  // Return primary particle numbered by <index>
+  // asks the Loader to return the Digits container 
 
-  if(index < 0) 
-    return 0 ;
-
-  TParticle *  p = 0 ;
-    if (fAlice) 
-      p = fAlice->Particle(index) ; 
-    else
-      p = gAlice->Particle(index) ; 
- 
-  return p ; 
+  TClonesArray * rv = 0 ; 
+  
+  rv = EmcalLoader()->SDigits() ; 
+  if (!rv) {
+    EmcalLoader()->MakeSDigitsArray() ;
+    rv = EmcalLoader()->SDigits() ; 
+  }
+  return rv ; 
 }
 
 //____________________________________________________________________________ 
+AliEMCALSDigitizer * AliEMCALGetter::SDigitizer() 
+{ 
+  AliEMCALSDigitizer * rv ; 
+  rv =  dynamic_cast<AliEMCALSDigitizer *>(EmcalLoader()->SDigitizer()) ;
+  if (!rv) {
+    Event(0, "S") ; 
+    rv =  dynamic_cast<AliEMCALSDigitizer *>(EmcalLoader()->SDigitizer()) ;
+  }
+  return rv ; 
+}
 
-const TParticle * AliEMCALGetter::Secondary(TParticle* p, Int_t index) const
+//____________________________________________________________________________ 
+TParticle * AliEMCALGetter::Secondary(const TParticle* p, const Int_t index) const
 {
   // Return first (index=1) or second (index=2) secondary particle of primary particle p 
 
@@ -1686,1179 +610,166 @@ const TParticle * AliEMCALGetter::Secondary(TParticle* p, Int_t index) const
     return 0 ;
 
   if(p) {
-    Int_t daughterIndex = p->GetDaughter(index-1) ; 
-    return  gAlice->Particle(daughterIndex) ; 
+  Int_t daughterIndex = p->GetDaughter(index-1) ; 
+  AliRunLoader * rl = AliRunLoader::GetRunLoader(EmcalLoader()->GetTitle());
+  return  rl->GetAliRun()->Particle(daughterIndex) ; 
   }
   else
     return 0 ;
 }
 
 //____________________________________________________________________________ 
-
-Int_t AliEMCALGetter::ReadTreeD(const Int_t event)
-{
-  // Read the digit tree gAlice->TreeD()  
-
-  TTree * treeD ;
-  if(fToSplit){
-    TFile * file = static_cast<TFile*>(gROOT->GetFile(fDigitsFileName)); 
-    if(!file) 
-      file = TFile::Open(fDigitsFileName) ;      
-
-    // Get Digits Tree header from file
-
-    TString treeName("TreeD") ;
-    treeName += event ; 
-    treeD = dynamic_cast<TTree*>(file->Get(treeName.Data()));
-
-    if(!treeD){ // TreeD not found in header file
-      if (fDebug)
-        Warning("ReadTreeD", "-> Cannot find TreeD in %s", fDigitsFileName.Data());
-      return 1;
-    }
-  }
-  else
-    treeD = gAlice->TreeD() ;
-
-  TObjArray * lob = static_cast<TObjArray*>(treeD->GetListOfBranches()) ;
-  TIter next(lob) ; 
-  TBranch * branch = 0 ; 
-  TBranch * digitsbranch = 0 ; 
-  TBranch * digitizerbranch = 0 ; 
-
-  Bool_t emcalfound = kFALSE, digitizerfound = kFALSE ; 
-
-  while ( (branch = static_cast<TBranch*>(next())) && (!emcalfound || !digitizerfound) ) {
-    if ( (strcmp(branch->GetName(), "EMCAL")==0) && (strcmp(branch->GetTitle(), fDigitsTitle)==0) ) {
-      digitsbranch = branch ; 
-      emcalfound = kTRUE ;
-    }
-    else if ( (strcmp(branch->GetName(), "AliEMCALDigitizer")==0) && (strcmp(branch->GetTitle(), fDigitsTitle)==0) ) {
-      digitizerbranch = branch ; 
-      digitizerfound = kTRUE ; 
-    }
-  }
-
-  if ( !emcalfound || !digitizerfound ) {
-    if (fDebug)
-      Warning("ReadTreeD", "-> Cannot find Digits and/or Digitizer with name %s", fDigitsTitle.Data());
-    return 2; 
-  }   
-
-  //read digits
-
-  if(!Digits(fDigitsTitle) ) 
-    PostDigits(fDigitsTitle);
-  digitsbranch->SetAddress(DigitsRef(fDigitsTitle)) ;
-  digitsbranch->GetEntry(0) ;
-
-  // read  the Digitizer
-
-  RemoveTask("D", fDigitsTitle) ; // I do not understand why I need that 
-  if(!Digitizer(fDigitsTitle))
-    PostDigitizer(fDigitsTitle) ;
-  digitizerbranch->SetAddress(DigitizerRef(fDigitsTitle)) ;
-  digitizerbranch->GetEntry(0) ;
-
-  lob->Delete();
-
-  if(gAlice->TreeD()!=treeD)
-    treeD->Delete();
-
-  return 0 ; 
-}
-
-//____________________________________________________________________________ 
-
-Int_t AliEMCALGetter::ReadTreeH()
+void AliEMCALGetter::Track(const Int_t itrack) 
 {
   // Read the first entry of EMCAL branch in hit tree gAlice->TreeH()
+ 
+ AliRunLoader * rl = AliRunLoader::GetRunLoader(EmcalLoader()->GetTitle());
 
-  TTree * treeH = gAlice->TreeH() ;
+  if( !TreeH() ) // load treeH the first time
+    rl->LoadHits() ;
 
-  if(!treeH) {// TreeH not found in header file
-    if (fDebug) 
-      Warning("ReadTreeH", "-> Cannot find TreeH in %s", fHeaderFile.Data());
+  // first time create the container
+  TClonesArray * hits = Hits() ; 
+  if ( hits ) 
+    hits->Clear() ; 
 
-    TString searchFileName("EMCAL.HITS") ; 
-    if((strcmp(fBranchTitle.Data(),"Default")!=0)&&(strcmp(fBranchTitle.Data(),"")!=0)){
-      searchFileName+="." ;
-      searchFileName += fBranchTitle ;
-    }
-
-    searchFileName+=".root" ;
-
-    if ( (treeH = TreeH(searchFileName)) ) { //found TreeH in the file which contains the hits
-      if (fDebug) 
-        Info("ReadTreeH", "-> TreeH found in %s", searchFileName.Data());
-    } else {
-      Error("ReadTreeH", "-> TreeH not found "); 
-      return 1;
-    }  
-  }
-
-  TBranch * hitsbranch = static_cast<TBranch*>(gAlice->TreeH()->GetBranch("EMCAL")) ;
-
-  if ( !hitsbranch ) {
-    if (fDebug)
-      Warning("ReadTreeH", "-> Cannot find branch EMCAL"); 
-    return 2;
-  }
-
-  if(!Hits())
-    PostHits() ;
-
-  if (hitsbranch->GetEntries() > 1 ) {
-    (dynamic_cast<TClonesArray*> (*HitsRef()))->Clear() ;
-    TClonesArray * tempo =  new TClonesArray("AliEMCALHit",1000) ;
-    TClonesArray * hits = dynamic_cast<TClonesArray*>(*HitsRef()) ; 
-    hitsbranch->SetAddress(&tempo) ;
-
-    Int_t index = 0 ; 
-    Int_t i = 0 ;
-
-    for (i = 0 ; i < hitsbranch->GetEntries() ; i++) {
-      hitsbranch->GetEntry(i) ;
-      Int_t j = 0 ; 
-      for ( j = 0 ; j < tempo->GetEntries() ; j++) { 
-        const AliEMCALHit * hit = static_cast<const AliEMCALHit *>(tempo->At(j)) ; 
-        new((*hits)[index]) AliEMCALHit( *hit ) ;
-        index++ ; 
-      }
-    }
-    delete tempo ; 
-  }
-  else {
-    (dynamic_cast<TClonesArray*> (*HitsRef()))->Clear() ;
-    hitsbranch->SetAddress(HitsRef()) ;
-    hitsbranch->GetEntry(0) ;
-  }
-  return 0 ; 
+  TBranch * emcalbranch = dynamic_cast<TBranch*>(TreeH()->GetBranch("EMCAL")) ; 
+  emcalbranch->SetAddress(&hits) ;
+  emcalbranch->GetEntry(itrack) ;
 }
 
 //____________________________________________________________________________ 
-
-void AliEMCALGetter::Track(const Int_t itrack)
+TTree * AliEMCALGetter::TreeD() const 
 {
-  // Read the first entry of EMCAL branch in hit tree gAlice->TreeH()
-  if(gAlice->TreeH()== 0){
-    Error("ReadTreeH", "-> Cannot read TreeH ");
-    return ;
-  }
-
-  TBranch * hitsbranch = dynamic_cast<TBranch*>(gAlice->TreeH()->GetListOfBranches()->FindObject("EMCAL")) ;
-
-  if ( !hitsbranch ) {
-    if (fDebug)
-      Warning("ReadTreeH", "-> Cannot find branch EMCAL"); 
-    return ;
-  }  
-
-  if(!Hits())
-    PostHits() ;
-
-  (dynamic_cast<TClonesArray*> (*HitsRef()))->Clear() ;
-  hitsbranch->SetAddress(HitsRef()) ;
-  hitsbranch->GetEntry(itrack) ;
-}
-
-//____________________________________________________________________________ 
-
-void AliEMCALGetter::ReadTreeQA()
-{
-  if (fDebug)
-    Warning("ReadTreeQA", "-> %s not implemented", ClassName());
-}
-
-  
-
-//____________________________________________________________________________ 
-
-Int_t AliEMCALGetter::ReadTreeR(const Int_t event)
-
-{
-  // Read the reconstrunction tree gAlice->TreeR()
-  // A particularity has been introduced here :
-  //  if gime->Event(ievent,"R") is called branches with the current title are read, the current title
-  //   being for example give in AliEMCALPID(fileName, title)
-  //  if gime(Event(ievent, "RA") is called the title of the branches is not checked anymore, "A" stands for any
-  // This is a feature needed by PID to be able to reconstruct several times particles (each time a ther title is given)
-  // from a given set of TrackSegments (with a given name)
-  // This is why any is NOT used to read the branch of RecParticles
-  // any migh have become obsolete : to be checked
-  // See AliEMCALPIDv1    
-
-  //first - clean if necessary
-  if(ECALRecPoints(fRecPointsTitle)){
-    ECALRecPoints(fRecPointsTitle)->Delete() ;
-    PRERecPoints(fRecPointsTitle)->Delete() ;
-    HCALRecPoints(fRecPointsTitle)->Delete() ;
- }
-  //clear TrackSegments
-  if(TrackSegments(fTrackSegmentsTitle))
-    TrackSegments(fTrackSegmentsTitle)->Clear() ;
-	
-  TTree * treeR ;
-
-  if(fToSplit){
-    TFile * file = static_cast<TFile*>(gROOT->GetFile(fRecPointsFileName)); 
-    if(!file) 
-      file = TFile::Open(fRecPointsFileName) ;      
-    // Get Digits Tree header from file
-
-    TString treeName("TreeR") ;
-    treeName += event ; 
-    treeR = dynamic_cast<TTree*>(file->Get(treeName.Data()));
-
-    if(!treeR){ // TreeR not found in header file
-      if (fDebug)
-        Warning("ReadTreeR", "-> Cannot find TreeR in %s", fRecPointsFileName.Data());
-      return 1;
-    }
-  }
-  else
-    treeR = gAlice->TreeR() ;
-
-  // RecPoints 
-
-  TObjArray * lob = static_cast<TObjArray*>(treeR->GetListOfBranches()) ;
-  TIter next(lob) ; 
-  TBranch * branch = 0 ; 
-  TBranch * branchPRE = 0 ; 
-  TBranch * branchEC  = 0 ; 
-  TBranch * branchHC  = 0 ; 
-  TBranch * clusterizerbranch = 0 ; 
-
-  Bool_t emcalPRERPfound = kFALSE, emcalECRPfound = kFALSE, emcalHCRPfound = kFALSE, clusterizerfound = kFALSE ; 
-
-  while ( (branch = static_cast<TBranch*>(next())) && (!emcalPRERPfound || !emcalECRPfound || !emcalHCRPfound || !clusterizerfound) ) {
-    if(strcmp(branch->GetTitle(), fRecPointsTitle)==0 ) {
-      if ( strcmp(branch->GetName(), "EMCALPRERP")==0) {
-        branchPRE = branch ; 
-        emcalPRERPfound = kTRUE ;
-      }
-      else if ( strcmp(branch->GetName(), "EMCALECRP")==0) {
-        branchEC = branch ; 
-        emcalECRPfound = kTRUE ;
-      }
-      else if ( strcmp(branch->GetName(), "EMCALHCRP")==0) {
-        branchHC = branch ; 
-        emcalHCRPfound = kTRUE ;
-      }
-       else if(strcmp(branch->GetName(), "AliEMCALClusterizer")==0){
-        clusterizerbranch = branch ; 
-        clusterizerfound = kTRUE ; 
-      }
-    }
-  }
-
-  if ( !emcalPRERPfound || !emcalECRPfound || !emcalHCRPfound || !clusterizerfound) {
-    if (fDebug)
-      Warning("ReadTreeR", "-> Cannot find RecPoints and/or Clusterizer with name %s", fRecPointsTitle.Data());
+  TTree * rv = 0 ; 
+  rv = EmcalLoader()->TreeD() ; 
+  if ( !rv ) {
+    EmcalLoader()->MakeTree("D");
+    rv = EmcalLoader()->TreeD() ;
   } 
-  else { 
-    if(!ECALRecPoints(fRecPointsTitle) ) 
-      PostRecPoints(fRecPointsTitle) ;
-    branchEC->SetAddress(ECRecPointsRef(fRecPointsTitle)) ;
-    branchEC->GetEntry(0) ;
-
-    branchPRE->SetAddress(PRERecPointsRef(fRecPointsTitle)) ; 
-    branchPRE->GetEntry(0) ;  
-
-    branchHC->SetAddress(HCRecPointsRef(fRecPointsTitle)) ; 
-    branchHC->GetEntry(0) ;  
-
-    if(!Clusterizer(fRecPointsTitle) )
-      PostClusterizer(fRecPointsTitle) ;
-
-    clusterizerbranch->SetAddress(ClusterizerRef(fRecPointsTitle)) ;
-    clusterizerbranch->GetEntry(0) ;
-  }
-
-  //------------------- TrackSegments ---------------------
-  next.Reset() ; 
-  TBranch * tsbranch = 0 ; 
-  TBranch * tsmakerbranch = 0 ; 
-  Bool_t emcaltsfound = kFALSE, tsmakerfound = kFALSE ; 
-  while ( (branch = static_cast<TBranch*>(next())) && (!emcaltsfound || !tsmakerfound) ) {
-    if(strcmp(branch->GetTitle(), fTrackSegmentsTitle)==0 )  {
-      if ( strcmp(branch->GetName(), "EMCALTS")==0){
-	tsbranch = branch ; 
-	emcaltsfound = kTRUE ;
-      }
-      else if(strcmp(branch->GetName(), "AliEMCALTrackSegmentMaker")==0) {
-	tsmakerbranch = branch ; 
-	tsmakerfound  = kTRUE ; 
-      }
-    }
-  }
-
-  if ( !emcaltsfound || !tsmakerfound ) {
-    if (fDebug)
-      Warning("ReadTreeR", "-> Cannot find TrackSegments and/or TrackSegmentMaker with name %s", fTrackSegmentsTitle.Data() ) ;
-  } else { 
-    // Read and Post the TrackSegments
-    if(!TrackSegments(fTrackSegmentsTitle))
-      PostTrackSegments(fTrackSegmentsTitle) ;
-    tsbranch->SetAddress(TrackSegmentsRef(fTrackSegmentsTitle)) ;
-    tsbranch->GetEntry(0) ;
-
-    // Read and Post the TrackSegment Maker
-    if(!TrackSegmentMaker(fTrackSegmentsTitle))
-      PostTrackSegmentMaker(fTrackSegmentsTitle) ;
-    tsmakerbranch->SetAddress(TSMakerRef(fTrackSegmentsTitle)) ;
-    tsmakerbranch->GetEntry(0) ;
- }
- //------------ RecParticles ----------------------------
-  next.Reset() ; 
-  TBranch * rpabranch = 0 ; 
-  TBranch * pidbranch = 0 ; 
-  Bool_t emcalrpafound = kFALSE, pidfound = kFALSE ; 
   
-  while ( (branch = static_cast<TBranch*>(next())) && (!emcalrpafound || !pidfound) ) 
-    if(strcmp(branch->GetTitle(), fRecParticlesTitle)==0) {   
-      if ( strcmp(branch->GetName(), "EMCALRP")==0) {   
-	rpabranch = branch ; 
-	emcalrpafound = kTRUE ;
-      }
-      else if (strcmp(branch->GetName(), "AliEMCALPID")==0) {
-	pidbranch = branch ; 
-	pidfound  = kTRUE ; 
-      }
-    }
+  return rv ; 
+}
+
+//____________________________________________________________________________ 
+TTree * AliEMCALGetter::TreeH() const 
+{
+  TTree * rv = 0 ; 
+  rv = EmcalLoader()->TreeH() ; 
+  if ( !rv ) {
+    EmcalLoader()->MakeTree("H");
+    rv = EmcalLoader()->TreeH() ;
+  } 
   
-  if ( !emcalrpafound || !pidfound ) {
-    if (fDebug)
-      Warning("ReadTreeR", "-> Cannot find RecParticles and/or PID with name %s", fRecParticlesTitle.Data() ) ; 
-  } else { 
-    // Read and Post the RecParticles
-    if(!RecParticles(fRecParticlesTitle)) 
-      PostRecParticles(fRecParticlesTitle) ;
-    rpabranch->SetAddress(RecParticlesRef(fRecParticlesTitle)) ;
-    rpabranch->GetEntry(0) ;
-    // Read and Post the PID
-    if(!PID(fRecParticlesTitle))
-      PostPID(fRecParticlesTitle) ;
-    pidbranch->SetAddress(PIDRef(fRecParticlesTitle)) ;
-    pidbranch->GetEntry(0) ;
-  }
-
-  if(gAlice->TreeR()!=treeR)
-    treeR->Delete();
-  return 0 ; 
+  return rv ; 
 }
 
 //____________________________________________________________________________ 
-
-Int_t AliEMCALGetter::ReadTreeS(const Int_t event)
+TTree * AliEMCALGetter::TreeR() const 
 {
-  // Reads the SDigits treeS from all files  
-  // Files, which should be opened are listed in emcalF
-  // So, first get list of files
-
-  TFolder * emcalF = dynamic_cast<TFolder *>(fSDigitsFolder->FindObject("EMCAL")) ;
-
-  if (!emcalF) 
-    emcalF = fSDigitsFolder->AddFolder("EMCAL", "SDigits from EMCAL") ; 
-
-  TCollection * folderslist = emcalF->GetListOfFolders() ; 
-
-  // Now iterate over the list of files and read TreeS into Whiteboard
-
-  TIter next(folderslist) ; 
-  TFolder * folder = 0 ; 
-  TFile * file; 
-  TTree * treeS = 0;
-
-  while ( (folder = static_cast<TFolder*>(next())) ) {
-    TString fileName("") ;
-    if(fToSplit)
-      fileName = folder->GetTitle() ;
-    else
-      fileName = folder->GetName() ; 
-
-    fileName.ReplaceAll("_","/") ; 
-    file = static_cast<TFile*>(gROOT->GetFile(fileName)); 
-
-    if(!file) 
-      file = TFile::Open(fileName) ;      
-
-    // Get SDigits Tree header from file
-
-    TString treeName("TreeS") ;
-    treeName += event ; 
-    treeS = dynamic_cast<TTree*>(file->Get(treeName.Data()));
-
-    if(!treeS){ // TreeS not found in header file
-      if (fDebug)
-        Warning("ReadTreeS", "-> Cannot find TreeS in %s", fileName.Data());
-      return 1;
-    }
-
-    //set address of the SDigits and SDigitizer
-
-    TBranch   * sdigitsBranch    = 0;
-    TBranch   * sdigitizerBranch = 0;
-    TBranch   * branch           = 0 ;  
-    TObjArray * lob = static_cast<TObjArray*>(treeS->GetListOfBranches()) ;
-    TIter next(lob) ; 
-
-    Bool_t emcalfound = kFALSE, sdigitizerfound = kFALSE ; 
-
-    while ( (branch = static_cast<TBranch*>(next())) && (!emcalfound || !sdigitizerfound) ) {
-      if ( (strcmp(branch->GetName(), "EMCAL")==0) && (strcmp(branch->GetTitle(), fSDigitsTitle)==0) ) {
-        emcalfound = kTRUE ;
-        sdigitsBranch = branch ; 
-      }
-      else if ( (strcmp(branch->GetName(), "AliEMCALSDigitizer")==0) && 
-                (strcmp(branch->GetTitle(), fSDigitsTitle)==0) ) {
-        sdigitizerfound = kTRUE ; 
-        sdigitizerBranch = branch ;
-      }
-    }
-    if ( !emcalfound || !sdigitizerfound ) {
-      if (fDebug)
-        Warning("ReadSDigits", "-> Digits and/or Digitizer branch with name %s not found", GetName());
-      return 2; 
-    }   
-
-    if ( !folder->FindObject(fSDigitsTitle) )  
-      PostSDigits(fSDigitsTitle,folder->GetName()) ;
-
-    ((TClonesArray*) (*SDigitsRef(fSDigitsTitle,folder->GetName())))->Clear() ;
-
-    sdigitsBranch->SetAddress(SDigitsRef(fSDigitsTitle,folder->GetName())) ;
-    sdigitsBranch->GetEntry(0) ;
-
-    TString sdname(fSDigitsTitle) ;
-    sdname+=":" ;
-    sdname+=folder->GetName() ;
-
-    if(!SDigitizer(sdname) ) 
-      PostSDigitizer(fSDigitsTitle,folder->GetName()) ;
-
-    sdigitizerBranch->SetAddress(SDigitizerRef(sdname)) ;
-    sdigitizerBranch->GetEntry(0) ; 
-
-    if(gAlice->TreeS()!=treeS)
-      treeS->Delete();
-  }    
-   return 0 ;  
-}
-
-//____________________________________________________________________________ 
-
-void AliEMCALGetter::ReadTreeS(TTree * treeS, Int_t input)
-{  
-  // Read the summable digits fron treeS()  
-
-  TString filename("mergefile") ;
-  filename+= input ;
-
-  TFolder * emcalFolder = dynamic_cast<TFolder*>(fSDigitsFolder->FindObject("EMCAL")) ; 
-  if ( !emcalFolder ) { 
-    emcalFolder = fSDigitsFolder->AddFolder("EMCAL", "SDigits from EMCAL") ; 
+  TTree * rv = 0 ; 
+  rv = EmcalLoader()->TreeR() ; 
+  if ( !rv ) {
+    EmcalLoader()->MakeTree("R");
+    rv = EmcalLoader()->TreeR() ;
   } 
-
-  TFolder * folder=(TFolder*)emcalFolder->FindObject(filename) ;
-
-  //set address of the SDigits and SDigitizer
-
-  TBranch   * sdigitsBranch    = 0;
-  TBranch   * sdigitizerBranch = 0;
-  TBranch   * branch           = 0 ;  
-  TObjArray * lob = (TObjArray*)treeS->GetListOfBranches() ;
-  TIter next(lob) ; 
-
-  Bool_t emcalfound = kFALSE, sdigitizerfound = kFALSE ; 
-
-  while ( (branch = (TBranch*)next()) && (!emcalfound || !sdigitizerfound) ) {
-    if ( strcmp(branch->GetName(), "EMCAL")==0) {
-      emcalfound = kTRUE ;
-      sdigitsBranch = branch ; 
-    }
-    else if ( strcmp(branch->GetName(), "AliEMCALSDigitizer")==0) {
-      sdigitizerfound = kTRUE ; 
-      sdigitizerBranch = branch ;
-    }
-  }
-
-  if ( !emcalfound || !sdigitizerfound ) {
-    if (fDebug)
-      Warning("ReadTreeS", "-> Digits and/or Digitizer branch not found");
-    return ; 
-  }   
-
-  if (!folder || !(folder->FindObject(sdigitsBranch->GetTitle()) ) )
-    PostSDigits(sdigitsBranch->GetTitle(),filename) ;
-
-  sdigitsBranch->SetAddress(SDigitsRef(sdigitsBranch->GetTitle(),filename)) ;
-  sdigitsBranch->GetEntry(0) ;
-
-  TString sdname(sdigitsBranch->GetTitle()) ;
-  sdname+=":" ;
-  sdname+=filename ;
-
-  if(!SDigitizer(sdigitsBranch->GetTitle()) )
-    PostSDigitizer(sdigitsBranch->GetTitle(),filename) ;
-
-  sdigitizerBranch->SetAddress(SDigitizerRef(sdname)) ;
-  sdigitizerBranch->GetEntry(0) ;
-
-  if(gAlice->TreeS()!=treeS)
-    treeS->Delete();
-}    
+  
+  return rv ; 
+}
 
 //____________________________________________________________________________ 
-
-void AliEMCALGetter::ReadPrimaries()
+TTree * AliEMCALGetter::TreeT() const 
 {
-
-  // Reads specific branches of primaries
-
-  TClonesArray * ar = 0  ; 
-
-  if(! (ar = Primaries()) ) { 
-    PostPrimaries() ;
-    ar = Primaries() ; 
-  }
-
-  ar->Delete() ; 
-
-  if (TreeK(fHeaderFile)) { // treeK found in header file
-    if (fDebug) 
-      Info("ReadPrimaries", "-> TreeK found in %s", fHeaderFile.Data());
-    fNPrimaries = gAlice->GetNtrack() ; 
-    fAlice = 0 ; 
+  TTree * rv = 0 ; 
+  rv = EmcalLoader()->TreeT() ; 
+  if ( !rv ) {
+    EmcalLoader()->MakeTree("T");
+    rv = EmcalLoader()->TreeT() ;
   } 
-  else { // treeK not found in header file
-    Error("ReadPrimaries", "-> TreeK not  found ");
-    return ;
-  }
-
-  Int_t index = 0 ; 
-
-  for (index = 0 ; index < fNPrimaries; index++) { 
-    new ((*ar)[index]) TParticle(*(Primary(index)));
-  }
+  
+  return rv ; 
+}
+//____________________________________________________________________________ 
+TTree * AliEMCALGetter::TreeP() const 
+{
+  TTree * rv = 0 ; 
+  rv = EmcalLoader()->TreeP() ; 
+  if ( !rv ) {
+    EmcalLoader()->MakeTree("P");
+    rv = EmcalLoader()->TreeP() ;
+  } 
+  
+  return rv ; 
 }
 
 //____________________________________________________________________________ 
-
-void AliEMCALGetter::Event(const Int_t event, const char* opt)
+TTree * AliEMCALGetter::TreeS() const 
 {
-  // Reads the content of all Tree's S, D and R
-
-  if (event >= gAlice->TreeE()->GetEntries() ) {
-    Error("Event", "-> %d not found in TreeE!", event);
-    return ; 
-  }
-
-  Bool_t any = kFALSE ; 
-
-  if (strstr(opt,"A") ) // do not check the title of the branches
-    any = kTRUE; 
-
-  gAlice->GetEvent(event) ; 
-
-  if( strstr(opt,"R") )
-    ReadTreeR(event) ;
-
-  if( strstr(opt,"D") )
-    ReadTreeD(event) ;
-
-  if(strstr(opt,"S") )
-    ReadTreeS(event) ;
-
-  if(strstr(opt,"H") )
-    ReadTreeH() ;
-
-  if( strstr(opt,"Q") )
-    ReadTreeQA() ;
-
-  if( strstr(opt,"P") )
-    ReadPrimaries() ;
+  TTree * rv = 0 ; 
+  rv = EmcalLoader()->TreeS() ; 
+  if ( !rv ) {
+    EmcalLoader()->MakeTree("S");
+    rv = EmcalLoader()->TreeS() ;
+  } 
+  
+  return rv ; 
 }
 
 //____________________________________________________________________________ 
-
-TObject * AliEMCALGetter::ReturnO(TString what, TString name, TString file) const 
+Bool_t AliEMCALGetter::VersionExists(TString & opt) const
 {
-  // get the object named "what" from the folder
-  // folders are named like //Folders
+  // checks if the version with the present name already exists in the same directory
 
-  if ( file.IsNull() ) 
-    file = fHeaderFile ; 
+  Bool_t rv = kFALSE ;
+ 
+  AliRunLoader * rl = AliRunLoader::GetRunLoader(EmcalLoader()->GetTitle());
+  TString version( rl->GetEventFolder()->GetName() ) ; 
 
-  TFolder * folder = 0 ;
-  TObject * emcalO  = 0 ; 
-
-  if ( what.CompareTo("Primaries") == 0 ) {
-    folder = dynamic_cast<TFolder *>(fPrimariesFolder->FindObject("Primaries")) ; 
-    if (folder) 
-      emcalO  = dynamic_cast<TObject *>(folder->FindObject("Primaries")) ;  
-    else 
-      return 0 ; 
-  }
-  else if ( what.CompareTo("Hits") == 0 ) {
-    folder = dynamic_cast<TFolder *>(fHitsFolder->FindObject("EMCAL")) ; 
-    if (folder) 
-      emcalO  = dynamic_cast<TObject *>(folder->FindObject("Hits")) ;  
-  }
-  else if ( what.CompareTo("SDigits") == 0 ) { 
-    file.ReplaceAll("/","_") ; 
-    TString path = "EMCAL/" + file  ; 
-    folder = dynamic_cast<TFolder *>(fSDigitsFolder->FindObject(path.Data())) ; 
-    if (folder) { 
-      if (name.IsNull())
-        name = fSDigitsTitle ; 
-      emcalO  = dynamic_cast<TObject *>(folder->FindObject(name)) ; 
+  opt.ToLower() ; 
+  
+  if ( opt == "sdigits") {
+    // add the version name to the root file name
+    TString fileName( EmcalLoader()->GetSDigitsFileName() ) ; 
+    if (version != AliConfig::fgkDefaultEventFolderName) // only if not the default folder name 
+      fileName = fileName.ReplaceAll(".root", "") + "_" + version + ".root" ;
+    if ( !(gSystem->AccessPathName(fileName)) ) { 
+      Warning("VersionExists", "The file %s already exists", fileName.Data()) ;
+      rv = kTRUE ; 
     }
+    EmcalLoader()->SetSDigitsFileName(fileName) ;
   }
-  else if ( what.CompareTo("Digits") == 0 ){
-    folder = dynamic_cast<TFolder *>(fDigitsFolder->FindObject("EMCAL")) ; 
-    if (folder) { 
-      if (name.IsNull())
-        name = fDigitsTitle ; 
-      emcalO  = dynamic_cast<TObject *>(folder->FindObject(name)) ; 
-    } 
+
+  if ( opt == "digits") {
+    // add the version name to the root file name
+    TString fileName( EmcalLoader()->GetDigitsFileName() ) ; 
+    if (version != AliConfig::fgkDefaultEventFolderName) // only if not the default folder name 
+      fileName = fileName.ReplaceAll(".root", "") + "_" + version + ".root" ;
+    if ( !(gSystem->AccessPathName(fileName)) ) {
+      Warning("VersionExists", "The file %s already exists", fileName.Data()) ;  
+      rv = kTRUE ; 
+    }
+    EmcalLoader()->SetDigitsFileName(fileName) ;
   }
-  else if ( what.CompareTo("PRERecPoints") == 0 ) {
-    folder = dynamic_cast<TFolder *>(fRecoFolder->FindObject("EMCAL/PRERecPoints")) ; 
-    if (folder) { 
-      if (name.IsNull())
-        name = fRecPointsTitle ; 
-      emcalO  = dynamic_cast<TObject *>(folder->FindObject(name)) ; 
-    }   
-  }
-  else if ( what.CompareTo("ECALRecPoints") == 0 ) {
-    folder = dynamic_cast<TFolder *>(fRecoFolder->FindObject("EMCAL/ECRecPoints")) ; 
-    if (folder) { 
-      if (name.IsNull())
-        name = fRecPointsTitle ; 
-      emcalO  = dynamic_cast<TObject *>(folder->FindObject(name)) ; 
-    } 
-  }
-  else if ( what.CompareTo("HCALRecPoints") == 0 ) {
-    folder = dynamic_cast<TFolder *>(fRecoFolder->FindObject("EMCAL/HCRecPoints")) ; 
-    if (folder) { 
-      if (name.IsNull())
-        name = fRecPointsTitle ; 
-      emcalO  = dynamic_cast<TObject *>(folder->FindObject(name)) ; 
-    } 
-  }
-  else if ( what.CompareTo("TrackSegments") == 0 ) {
-    folder = dynamic_cast<TFolder *>(fRecoFolder->FindObject("EMCAL/TrackSegments")) ; 
-    if (folder) { 
-      if (name.IsNull())
-	name = fTrackSegmentsTitle ; 
-      emcalO  = dynamic_cast<TObject *>(folder->FindObject(name)) ; 
-    }   
-  }
-  else if ( what.CompareTo("RecParticles") == 0 ) {
-    folder = dynamic_cast<TFolder *>(fRecoFolder->FindObject("EMCAL/RecParticles")) ; 
-    if (folder) { 
-      if (name.IsNull())
-	name = fRecParticlesTitle ; 
-      emcalO  = dynamic_cast<TObject *>(folder->FindObject(name)) ;
-    }   
-  }
- if (!emcalO) {
-    if(fDebug)
-      Warning("ReturnO", "-> Object %s  not found in %s", what.Data(), folder->GetName());
+
+  return rv ;
+
+}
+
+//____________________________________________________________________________ 
+UShort_t AliEMCALGetter::EventPattern(void) const
+{
+  // Return the pattern (trigger bit register) of the beam-test event
+//   if(fBTE)
+//     return fBTE->GetPattern() ;
+//   else
     return 0 ;
-  }
-
-  return emcalO ;
 }
-
 //____________________________________________________________________________ 
-
-const TTask * AliEMCALGetter::ReturnT(TString what, TString name) const 
+Float_t AliEMCALGetter::BeamEnergy(void) const
 {
-  // get the TTask named "what" from the folder
-  // folders are named like //Folders/Tasks/what/EMCAL/name
-
-  TString search(what) ; 
-  if ( what.CompareTo("Clusterizer") == 0 ) 
-    search = "Reconstructioner" ; 
-  else if ( what.CompareTo("TrackSegmentMaker") == 0 ) 
-    search = "Reconstructioner" ; 
-  else if ( what.CompareTo("PID") == 0 ) 
-    search = "Reconstructioner" ; 
-  else if ( what.CompareTo("QATasks") == 0 ) 
-    search = "QA" ; 
-  
-  TTask * tasks = dynamic_cast<TTask*>(fTasksFolder->FindObject(search)) ; 
-
-  if (!tasks) {
-    Error("AliReturnT", "-> Task %s not found!", what.Data());
-    return 0 ; 
-  }
-
-  TTask * emcalT = dynamic_cast<TTask*>(tasks->GetListOfTasks()->FindObject("EMCAL")) ; 
-
-  if (!emcalT) { 
-    Error("ReturnT", "-> Task %s/EMCAL not found!", what.Data());
-    return 0 ; 
-  }
-
-  TList * list = emcalT->GetListOfTasks() ; 
-
-  if (what.CompareTo("SDigitizer") == 0) {  
-    if ( name.IsNull() )
-      name =  fSDigitsTitle ; 
-  }
-  else  if (what.CompareTo("Digitizer") == 0){ 
-    if ( name.IsNull() )
-      name =  fDigitsTitle ;
-  }
-  else  if (what.CompareTo("Clusterizer") == 0){ 
-    if ( name.IsNull() )
-      name =  fRecPointsTitle ;
-    name.Append(":clu") ;
-  }
-  else  if (what.CompareTo("TrackSegmentMaker") == 0){ 
-    if ( name.IsNull() )
-      name =  fTrackSegmentsTitle ;
-    name.Append(":tsm") ;
-  }
-  else  if (what.CompareTo("PID") == 0){ 
-    if ( name.IsNull() )
-      name =  fRecParticlesTitle ;
-    name.Append(":pid") ;
-  }
-  TIter it(list) ;
-  TTask * task = 0 ; 
-
-  while((task = static_cast<TTask *>(it.Next()) )){
-    TString taskname(task->GetName()) ;
-    if(taskname.BeginsWith(name)){
-      return task ;}
-  }
-  
-  if(fDebug)
-    Warning("ReturnT", "-> Task %s/%s not found!", search.Data(), name.Data());
-  return 0 ;
+  // Return the beam energy of the beam-test event
+//   if(fBTE)
+//     return fBTE->GetBeamEnergy() ;
+//   else
+    return 0 ;
 }
-
-//____________________________________________________________________________ 
-
-void AliEMCALGetter::RemoveTask(TString opt, TString name) const 
-
-{
-  // remove a task from the folder
-  // path is fTasksFolder/SDigitizer/EMCAL/name
-
-  TTask * task  = 0 ; 
-  TTask * emcal = 0 ; 
-  TList * lofTasks = 0 ; 
-
-  if (opt == "S") { // SDigitizer
-    task = dynamic_cast<TTask*>(fTasksFolder->FindObject("SDigitizer")) ;
-    if (!task) 
-      return ; 
-  } 
-  else if (opt == "D") { // Digitizer
-    task = dynamic_cast<TTask*>(fTasksFolder->FindObject("Digitizer")) ;
-    if (!task) 
-      return ; 
-  }
-  else if (opt == "C" || opt == "T" ) { // Clusterizer, TrackSegmentMaker
-    task = dynamic_cast<TTask*>(fTasksFolder->FindObject("Reconstructioner")) ;
-    if (!task) 
-      return ; 
-  }
-  else {
-    Warning("RemoveTask", "-> Unknown option %s");
-    return ; 
-  }    
-
-  emcal =  dynamic_cast<TTask*>(task->GetListOfTasks()->FindObject("EMCAL")) ;
-
-  if (!emcal)
-    return ; 
-
-  lofTasks = emcal->GetListOfTasks() ;
-
-  if (!lofTasks) 
-    return ; 
-
-  TObject * obj = lofTasks->FindObject(name) ; 
-  if (obj) 
-
-    lofTasks->Remove(obj) ;
-}
-
-//____________________________________________________________________________ 
-
-void AliEMCALGetter::RemoveObjects(TString opt, TString name) const 
-{
-  // remove SDigits from the folder
-  // path is fSDigitsFolder/fHeaderFileName/name
-
-  TFolder * emcal     = 0 ; 
-  TFolder * emcalmain = 0 ; 
-
-  if (opt == "H") { // Hits
-    emcal = dynamic_cast<TFolder*>(fHitsFolder->FindObject("EMCAL")) ;
-    if (!emcal) 
-      return ;
-    name = "Hits" ; 
-  }
-  else if ( opt == "S") { // SDigits
-    emcalmain = dynamic_cast<TFolder*>(fSDigitsFolder->FindObject("EMCAL")) ;
-    if (!emcalmain) 
-      return ;
-    emcal = dynamic_cast<TFolder*>(emcalmain->FindObject(fHeaderFile)) ;
-    if (!emcal) 
-      return ;
-  }
-  else if (opt == "D") { // Digits
-    emcal = dynamic_cast<TFolder*>(fDigitsFolder->FindObject("EMCAL")) ;
-    if (!emcal) 
-      return ;
-  }
-  else if (opt == "RT") { // Tower RecPoints
-    emcal = dynamic_cast<TFolder*>(fRecoFolder->FindObject("EMCAL/TowerRecPoints")) ;
-    if (!emcal) 
-      return ;
-  }
-  else if (opt == "RP") { // Preshower RecPoints
-    emcal = dynamic_cast<TFolder*>(fRecoFolder->FindObject("EMCAL/PreShowerRecPoints")) ;
-    if (!emcal) 
-      return ;
-  }
-  else if (opt == "T") { // TrackSegments
-    emcal = dynamic_cast<TFolder*>(fRecoFolder->FindObject("EMCAL/TrackSegments")) ;
-    if (!emcal) 
-      return ;
-  }
-  else if (opt == "P") { // RecParticles
-    emcal = dynamic_cast<TFolder*>(fRecoFolder->FindObject("EMCAL/RecParticles")) ;
-    if (!emcal) 
-      return ;
-  }
-  else {
-    Warning("RemoveObjects", "-> Unknown option %s", opt.Data());
-    return ; 
-  }
-
-  TObjArray * ar  = dynamic_cast<TObjArray*>(emcal->FindObject(name)) ; 
-
-  if (ar) { 
-    emcal->Remove(ar) ;
-    ar->Delete() ; 
-    delete ar ; 
-  }
-
-  if (opt == "S") 
-    emcalmain->Remove(emcal) ; 
-}
-
-//____________________________________________________________________________ 
-
-void AliEMCALGetter::RemoveSDigits() const 
-{
-  TFolder * emcal= dynamic_cast<TFolder*>(fSDigitsFolder->FindObject("EMCAL")) ;
-
-  if (!emcal) 
-    return ;
-
-  emcal->SetOwner() ; 
-  emcal->Clear() ; 
-}
-
-//____________________________________________________________________________ 
-
-void AliEMCALGetter::CleanWhiteBoard(void){
-
-  TFolder * emcalmain = 0 ; 
-  TFolder * emcal ;
-  TObjArray * ar ;
-  TList * lofTasks = 0 ; 
-  TTask * task = 0 ; 
-  TTask * emcalt = 0 ; 
-
-  // Hits  
-
-  emcal = dynamic_cast<TFolder*>(fHitsFolder->FindObject("EMCAL")) ;
-
-  if (emcal){  
-    TObjArray * ar  = dynamic_cast<TObjArray*>(emcal->FindObject("Hits")) ; 
-    if (ar) { 
-      emcal->Remove(ar) ;
-      ar->Delete() ; 
-      delete ar ; 
-    }
-  }
-
-  // SDigits
-
-  emcalmain = dynamic_cast<TFolder*>(fSDigitsFolder->FindObject("EMCAL")) ;
-
-  if (emcalmain){ 
-    emcal = dynamic_cast<TFolder*>(emcalmain->FindObject(fHeaderFile)) ;
-    if (emcal) {
-      ar  = dynamic_cast<TObjArray*>(emcal->FindObject(fSDigitsTitle)) ; 
-      if (ar) { 
-        emcal->Remove(ar) ;
-        ar->Delete() ; 
-        delete ar ; 
-      }
-    }
-    emcalmain->Remove(emcal) ; 
-  }
-
-  // Digits
-
-  emcal = dynamic_cast<TFolder*>(fDigitsFolder->FindObject("EMCAL")) ;
-
-  if (emcal){ 
-    ar  = dynamic_cast<TObjArray*>(emcal->FindObject(fDigitsTitle)) ; 
-    if (ar) { 
-      emcal->Remove(ar) ;
-      ar->Delete() ; 
-      delete ar ; 
-    }
-  }
-
-  // TowerRecPoints
-
-  emcal = dynamic_cast<TFolder*>(fRecoFolder->FindObject("EMCAL/TowerRecPoints")) ;
-
-  if (emcal){ 
-    ar  = dynamic_cast<TObjArray*>(emcal->FindObject(fRecPointsTitle)) ; 
-    if (ar) { 
-      emcal->Remove(ar) ;
-      ar->Delete() ; 
-      delete ar ; 
-    }
-  }
-
-  // PreShowerRecPoints
-
-  emcal = dynamic_cast<TFolder*>(fRecoFolder->FindObject("EMCAL/PreShowerRecPoints")) ;
-
-  if (emcal){ 
-    ar  = dynamic_cast<TObjArray*>(emcal->FindObject(fRecPointsTitle)) ; 
-    if (ar) { 
-      emcal->Remove(ar) ;
-      ar->Delete() ; 
-      delete ar ; 
-    }
-  }  
-
-  // TrackSegments
-
-  emcal = dynamic_cast<TFolder*>(fRecoFolder->FindObject("EMCAL/TrackSegments")) ;
-
-  if (emcal) { 
-    ar  = dynamic_cast<TObjArray*>(emcal->FindObject(fTrackSegmentsTitle)) ; 
-    if (ar) { 
-      emcal->Remove(ar) ;
-      ar->Delete() ; 
-      delete ar ; 
-    }
-  }
-
-  // RecParticles
-
-  emcal = dynamic_cast<TFolder*>(fRecoFolder->FindObject("EMCAL/RecParticles")) ;
-
-  if (emcal){ 
-    ar  = dynamic_cast<TObjArray*>(emcal->FindObject(fRecParticlesTitle)) ; 
-    if (ar) { 
-      emcal->Remove(ar) ;
-      ar->Delete() ; 
-      delete ar ; 
-    }
-  }
-
-  //---- Now Tasks ----------- 
-
-  TObject * obj ;
-  TString sdname(fSDigitsTitle);
-
-  // Digitizer
-
-  task = dynamic_cast<TTask*>(fTasksFolder->FindObject("Digitizer")) ;
-
-  if (task){ 
-    emcalt =  dynamic_cast<TTask*>(task->GetListOfTasks()->FindObject("EMCAL")) ;
-    if (emcalt){
-      lofTasks = emcalt->GetListOfTasks() ;
-      if (lofTasks){ 
-        obj = lofTasks->FindObject(sdname.Data()) ; 
-        if (obj) 
-          lofTasks->Remove(obj) ;
-      }
-    }      
-  }
-
-  sdname.Append(":") ;
-
-  // Clusterizer, TrackSegmentMaker, PID
-
-  task = dynamic_cast<TTask*>(fTasksFolder->FindObject("Reconstructioner")) ;
-
-  if (task){ 
-    emcalt =  dynamic_cast<TTask*>(task->GetListOfTasks()->FindObject("EMCAL")) ;
-    if (emcalt){
-      lofTasks = emcalt->GetListOfTasks() ;
-      TIter next(lofTasks);
-      while((obj=next())){ 
-        TString oname(obj->GetName()) ;
-        if (oname.BeginsWith(sdname)){ 
-          lofTasks->Remove(obj) ;
-        }
-      }
-    }  
-  }
-
-  // SDigitizer
-
-  sdname.Append(fHeaderFile) ;
-  task = dynamic_cast<TTask*>(fTasksFolder->FindObject("SDigitizer")) ;
-
-  if (task) {
-    emcalt =  dynamic_cast<TTask*>(task->GetListOfTasks()->FindObject("EMCAL")) ;
-    if (emcalt){
-      lofTasks = emcalt->GetListOfTasks() ;
-      if (lofTasks){ 
-        obj = lofTasks->FindObject(sdname.Data()) ; 
-        if (obj) 
-          lofTasks->Remove(obj) ;
-      }
-    }
-  }  
-}
-
-//____________________________________________________________________________ 
-
-void AliEMCALGetter::SetTitle(const char * branchTitle ) 
-
-{
-  fBranchTitle        = branchTitle ;
-  fSDigitsTitle       = branchTitle ; 
-  fDigitsTitle        = branchTitle ; 
-  fRecPointsTitle     = branchTitle ; 
-  fRecParticlesTitle  = branchTitle ; 
-  fTrackSegmentsTitle = branchTitle ; 
-
-  if(fToSplit){
-
-    //First - extract full path if necessary
-
-    TString sFileName(fHeaderFile) ;
-    Ssiz_t islash = sFileName.Last('/') ;
-
-    if(islash<sFileName.Length())
-      sFileName.Remove(islash+1,sFileName.Length()) ;
-    else
-      sFileName="" ;
-
-    //Now construct file names
-
-    fSDigitsFileName       = sFileName ;
-    fDigitsFileName        = sFileName ; 
-    fRecPointsFileName     = sFileName ; 
-    fRecParticlesFileName  = sFileName ; 
-    fTrackSegmentsFileName = sFileName ; 
-    fSDigitsFileName      += "EMCAL.SDigits." ;
-    fDigitsFileName       += "EMCAL.Digits." ; 
-    fRecPointsFileName    += "EMCAL.RecData." ; 
-    fTrackSegmentsFileName+= "EMCAL.RecData." ; 
-    fRecParticlesFileName += "EMCAL.RecData." ; 
-
-    if((strcmp(fBranchTitle.Data(),"Default")!=0)&&(strcmp(fBranchTitle.Data(),"")!=0)){
-      fSDigitsFileName      += fBranchTitle ;
-      fSDigitsFileName      += "." ;
-      fDigitsFileName       += fBranchTitle ; 
-      fDigitsFileName       += "." ; 
-      fRecPointsFileName    += fBranchTitle ; 
-      fRecPointsFileName    += "." ; 
-      fRecParticlesFileName += fBranchTitle ; 
-      fRecParticlesFileName += "." ; 
-      fTrackSegmentsFileName+= fBranchTitle ; 
-      fTrackSegmentsFileName+= "." ; 
-    }
-
-    fSDigitsFileName      += "root" ;
-    fDigitsFileName       += "root" ; 
-    fRecPointsFileName    += "root" ; 
-    fRecParticlesFileName += "root" ; 
-    fTrackSegmentsFileName+= "root" ; 
-  }
-  else{
-    fSDigitsFileName       = "" ; 
-    fDigitsFileName        = "" ; 
-    fRecPointsFileName     = "" ; 
-    fRecParticlesFileName  = "" ; 
-    fTrackSegmentsFileName = "" ; 
-  }
-
-  TFolder * emcalFolder ; 
-  emcalFolder = dynamic_cast<TFolder*>(fHitsFolder->FindObject("EMCAL")) ; 
-
-  if ( !emcalFolder ) 
-    emcalFolder = fHitsFolder->AddFolder("EMCAL", "Hits from EMCAL") ; 
-
-  emcalFolder = dynamic_cast<TFolder*>(fSDigitsFolder->FindObject("EMCAL")) ;
-
-  if ( !emcalFolder ) 
-    emcalFolder = fSDigitsFolder->AddFolder("EMCAL", "SDigits from EMCAL") ; 
-
-  //Make folder for SDigits
-
-  TString subdir(fHeaderFile) ;
-  subdir.ReplaceAll("/","_") ;
-
-  emcalFolder->AddFolder(subdir, fSDigitsFileName.Data());
-  emcalFolder  = dynamic_cast<TFolder*>(fDigitsFolder->FindObject("EMCAL")) ;
-
-  if ( !emcalFolder ) 
-    emcalFolder = fDigitsFolder->AddFolder("EMCAL", "Digits from EMCAL") ;  
-
-  emcalFolder  = dynamic_cast<TFolder*>(fRecoFolder->FindObject("EMCAL")) ; 
-
-  if ( !emcalFolder )
-    emcalFolder = fRecoFolder->AddFolder("EMCAL", "Reconstructed data from EMCAL") ;  
-}
-
-//____________________________________________________________________________ 
-
-void AliEMCALGetter::CloseSplitFiles(void){
-
-  TFile * file ;
-  file = static_cast<TFile*>(gROOT->GetFile(fSDigitsFileName.Data() ) ) ;
-
-  if(file)
-    file->Close() ;
-
-  file = static_cast<TFile*>(gROOT->GetFile(fDigitsFileName.Data() ) ) ;
-
-  if(file)
-    file->Close() ;
-
-  file = static_cast<TFile*>(gROOT->GetFile(fRecPointsFileName.Data() ) ) ;
-
-  if(file)
-    file->Close() ;
-
-  file = static_cast<TFile*>(gROOT->GetFile(fTrackSegmentsFileName.Data() ) ) ;
-
-  if(file)
-    file->Close() ;
-
-  file = static_cast<TFile*>(gROOT->GetFile(fRecParticlesFileName.Data() ) ) ;
-
-  if(file)
-    file->Close() ;
-}
-
-
-
-
-
-

@@ -27,9 +27,11 @@
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
+#include <TVirtualMC.h>
+
+#include "AliMagF.h"
 #include "AliPIPEv3.h"
 #include "AliRun.h"
-#include "AliMagF.h"
  
 ClassImp(AliPIPEv3)
  

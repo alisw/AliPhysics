@@ -8,7 +8,7 @@
 
 #include "AliHBTParticleCut.h"
 
-
+ 
 ClassImp(AliHBTReader)
 //pure virtual
 
@@ -56,7 +56,7 @@ void AliHBTReader::AddParticleCut(AliHBTParticleCut* cut)
 /*************************************************************************************/
 
 Bool_t AliHBTReader::Pass(AliHBTParticle* p)
- {
+{
  //Method examines whether particle meets all cut and particle type criteria
   
    if(p==0x0)//of corse we not pass NULL pointers
@@ -74,8 +74,7 @@ Bool_t AliHBTReader::Pass(AliHBTParticle* p)
    }
    
   return kTRUE;//not accepted
-
- }
+}
 /*************************************************************************************/
 
 Bool_t  AliHBTReader::Pass(Int_t pid)

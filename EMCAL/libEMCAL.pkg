@@ -23,7 +23,6 @@ AliEMCALHadronCorrectionv0.cxx \
 AliEMCALHadronCorrectionv1.cxx \
 AliEMCALJetMicroDst.cxx \
 AliEMCALParton.cxx \
-AliEMCALReconstructioner.cxx \
 AliEMCALTrackSegment.cxx \
 AliEMCALTrackSegmentMaker.cxx \
 AliEMCALTrackSegmentMakerv1.cxx \
@@ -31,7 +30,8 @@ AliEMCALLink.cxx \
 AliEMCALRecParticle.cxx \
 AliEMCALFastRecParticle.cxx \
 AliEMCALPID.cxx \
-AliEMCALPIDv1.cxx 
+AliEMCALPIDv1.cxx \
+AliEMCALLoader.cxx 
 
 HDRS= $(SRCS:.cxx=.h) 
 

@@ -4,6 +4,7 @@
  * See cxx source for full Copyright notice                               */
 
 /* $Id$ */
+/* $Id$ */
 
 /////////////////////////////////////////////////////////
 //  Manager and hits classes for set:MUON version 0    //

@@ -22,12 +22,15 @@
 
 
 // --- ROOT system ---
+#include "TGeometry.h"
 #include "TFile.h"
+#include "TTree.h"
 
 // --- Standard library ---
 
 // --- AliRoot header files ---
 #include "AliPHOSTrackSegmentMaker.h"
+#include "AliHeader.h" 
 
 ClassImp( AliPHOSTrackSegmentMaker) 
 
@@ -36,31 +39,18 @@ ClassImp( AliPHOSTrackSegmentMaker)
   AliPHOSTrackSegmentMaker:: AliPHOSTrackSegmentMaker() : TTask("","")
 {
   // ctor
-  fSplitFile= 0 ; 
-
+  fEventFolderName = "" ; 
 }
 
 //____________________________________________________________________________
-AliPHOSTrackSegmentMaker::AliPHOSTrackSegmentMaker(const char * headerFile, const char * name, const Bool_t toSplit): TTask(name, headerFile)
+AliPHOSTrackSegmentMaker::AliPHOSTrackSegmentMaker(const TString alirunFileName, const TString eventFolderName):
+  TTask("PHOS"+AliConfig::fgkTrackerTaskName, alirunFileName), fEventFolderName(eventFolderName)
 {
   // ctor
-  fSplitFile= 0 ; 
-  fToSplit  = toSplit ;
-}
-
-//____________________________________________________________________________
-  AliPHOSTrackSegmentMaker:: AliPHOSTrackSegmentMaker(const AliPHOSTrackSegmentMaker& ts) : 
-    TTask(ts.GetName(), ts.GetTitle())
-{
-  // ctor
-  fSplitFile = new TFile( (ts.fSplitFile)->GetName(), "new") ; 
-  fToSplit   = ts.fToSplit ; 
 }
 
 //____________________________________________________________________________
 AliPHOSTrackSegmentMaker::~AliPHOSTrackSegmentMaker()
 {
-   
-      fSplitFile = 0 ;
 }
 

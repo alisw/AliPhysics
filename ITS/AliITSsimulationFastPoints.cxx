@@ -13,39 +13,8 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.9.8.1  2002/07/24 09:27:50  alibrary
-Updating on VirtualMC
+/* $Id$ */
 
-Revision 1.11  2002/07/11 10:24:21  barbera
-Fixes to make tracking V2 working with the HEAD and with fast points. Waiting for a fix in slow reconstruction of SPD, fast points are temporarily made the default for tracking V2.
-
-Revision 1.10  2002/06/10 17:30:24  nilsen
-A new CreateFastRecPoints has been made and the old one made compatible.
-
-Revision 1.9  2001/10/01 19:36:03  nilsen
-fixed a compilation warning about unused variable.
-
-Revision 1.8  2001/07/27 08:06:49  hristov
-Use global gRandom generator (M.Ivanov)
-
-Revision 1.7  2001/05/11 09:15:21  barbera
-Corrected to make fast point creation working with PPR geometry
-
-Revision 1.6  2000/10/29 18:30:14  barbera
-Z resolution of pixel changed according with the default lenght of 425 microns
-
-Revision 1.1.2.6  2000/10/29 18:29:51  barbera
-Z resolution of pixel changed according with the default lenght of 425 microns
-
-Revision 1.1.2.5  2000/10/02 16:03:20  barbera
-Forward declarations added
-
-Revision 1.4  2000/09/22 12:43:59  nilsen
-Default track number set to -3 and not 0.
-
-*/
 #include <TRandom.h>
 
 #include "AliITS.h"

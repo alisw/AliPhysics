@@ -15,33 +15,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.5  2000/11/01 14:53:20  cblume
-Merge with TRD-develop
-
-Revision 1.1.2.4  2000/10/17 02:27:34  cblume
-Get rid of global constants
-
-Revision 1.1.2.3  2000/10/06 16:49:46  cblume
-Made Getters const
-
-Revision 1.1.2.2  2000/09/22 14:42:05  cblume
-Changed data members to UShort_t
-
-Revision 1.4  2000/06/08 18:32:58  cblume
-Make code compliant to coding conventions
-
-Revision 1.3  2000/06/07 16:25:37  cblume
-Try to remove compiler warnings on Sun and HP
-
-Revision 1.2  2000/05/08 16:17:27  cblume
-Merge TRD-develop
-
-Revision 1.1.2.1  2000/05/08 14:40:29  cblume
-Introduce raw digit bit flag and DecodeAmp()
-
-*/
+/* $Id$ */
 
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //

@@ -53,6 +53,7 @@
 #include "AliPHOSReconstructioner.h"
 #include "AliRun.h"
 #include "AliConst.h"
+#include "AliMC.h"
 
 ClassImp(AliPHOSv1)
 
@@ -227,8 +228,13 @@ void AliPHOSv1::Hits2SDigits()
   for (itrack=0; itrack<gAlice->GetNtrack(); itrack++){
         
     //=========== Get the Hits Tree for the Primary track itrack
-    gAlice->ResetHits();    
-    gAlice->TreeH()->GetEvent(itrack);
+    gAlice->ResetHits();
+    if (TreeH() == 0x0)
+     {
+       Error("Hits2SDigits","Can not find TreeH in the folder");
+       return;
+     }
+    TreeH()->GetEvent(itrack);
       
 
     for ( i = 0 ; i < fHits->GetEntries() ; i++ ) {

@@ -33,7 +33,7 @@ public:
   AliPHOSv1(const AliPHOSv1 & phos) {
     // cpy ctor: no implementation yet
     // requested by the Coding Convention
-    Fatal("cpy ctor", "not implemented") ;
+    assert(0==1) ; 
   }
   virtual ~AliPHOSv1(void) ;
 
@@ -67,7 +67,7 @@ public:
 
   AliPHOSv1 & operator = (const AliPHOSv1 & rvalue)  {
     // assignement operator requested by coding convention but not needed
-    Fatal("operator =", "not implemented") ; return *this ; 
+    assert(0==1) ;
     return *this ; 
   }
 

@@ -35,7 +35,7 @@ class AliEMCALClusterizerv1 : public AliEMCALClusterizer {
 public:
   
   AliEMCALClusterizerv1() ;         
-  AliEMCALClusterizerv1(const char * headerFile, const char * name = "Default", const Bool_t toSplit=kFALSE);
+  AliEMCALClusterizerv1(const TString alirunFileNameFile, const TString eventFolderName = AliConfig::fgkDefaultEventFolderName);
   virtual ~AliEMCALClusterizerv1()  ;
   
   virtual Int_t   AreNeighbours(AliEMCALDigit * d1, AliEMCALDigit * d2)const ; 
@@ -44,19 +44,19 @@ public:
   virtual Float_t Calibrate(Int_t amp, Int_t where)const ;  // Tranforms Amp to energy 
 
   virtual void    GetNumberOfClustersFound(int * numb )const{ numb[0] = fNumberOfPREClusters ; 
-                                                              numb[1] = fNumberOfECClusters ; 
-                                                              numb[2] = fNumberOfHCClusters ; }
+                                                              numb[1] = fNumberOfECAClusters ; 
+                                                              numb[2] = fNumberOfHCAClusters ; }
 
   virtual Float_t GetPREClusteringThreshold()const{ return fPREClusteringThreshold;  } 
-  virtual Float_t GetECClusteringThreshold()const{ return fECClusteringThreshold;}
-  virtual Float_t GetHCClusteringThreshold()const{ return fHCClusteringThreshold;}
+  virtual Float_t GetECAClusteringThreshold()const{ return fECAClusteringThreshold;}
+  virtual Float_t GetHCAClusteringThreshold()const{ return fHCAClusteringThreshold;}
 
   virtual Float_t GetPRELocalMaxCut()const       { return fPRELocMaxCut;} 
   virtual Float_t GetPREShoLogWeight()const      { return fPREW0;}  
-  virtual Float_t GetECLocalMaxCut()const        { return fECLocMaxCut;} 
-  virtual Float_t GetECLogWeight()const          { return fECW0;}  
-  virtual Float_t GetHCLocalMaxCut()const        { return fHCLocMaxCut;} 
-  virtual Float_t GetHCLogWeight()const          { return fHCW0;}  
+  virtual Float_t GetECALocalMaxCut()const       { return fECALocMaxCut;} 
+  virtual Float_t GetECALogWeight()const         { return fECAW0;}  
+  virtual Float_t GetHCALocalMaxCut()const       { return fHCALocMaxCut;} 
+  virtual Float_t GetHCALogWeight()const         { return fHCAW0;}  
 
   virtual Float_t GetTimeGate() const            { return fTimeGate ; }
   virtual const char *  GetRecPointsBranch() const{ return GetName() ;}
@@ -66,21 +66,22 @@ public:
 
   virtual void Print(Option_t * option)const ;
 
-  virtual void SetECClusteringThreshold(Float_t cluth)  { fECClusteringThreshold = cluth ; }
-  virtual void SetECLocalMaxCut(Float_t cut)            { fECLocMaxCut = cut ; }
-  virtual void SetECLogWeight(Float_t w)                { fECW0 = w ; }
-  virtual void SetHCClusteringThreshold(Float_t cluth)  { fHCClusteringThreshold = cluth ; }
-  virtual void SetHCLocalMaxCut(Float_t cut)            { fHCLocMaxCut = cut ; }
-  virtual void SetHCLogWeight(Float_t w)                { fHCW0 = w ; }
-  virtual void SetTimeGate(Float_t gate)                { fTimeGate = gate ;}
-  virtual void SetPREClusteringThreshold(Float_t cluth) { fPREClusteringThreshold = cluth ; }
-  virtual void SetPRELocalMaxCut(Float_t cut)           { fPRELocMaxCut = cut ; }
-  virtual void SetPRELogWeight(Float_t w)               { fPREW0 = w ; }
-  virtual void SetUnfolding(Bool_t toUnfold = kTRUE )      {fToUnfold = toUnfold ;}  
+  virtual void SetECAClusteringThreshold(Float_t cluth)  { fECAClusteringThreshold = cluth ; }
+  virtual void SetECALocalMaxCut(Float_t cut)            { fECALocMaxCut = cut ; }
+  virtual void SetECALogWeight(Float_t w)                { fECAW0 = w ; }
+  virtual void SetHCAClusteringThreshold(Float_t cluth)  { fHCAClusteringThreshold = cluth ; }
+  virtual void SetHCALocalMaxCut(Float_t cut)            { fHCALocMaxCut = cut ; }
+  virtual void SetHCALogWeight(Float_t w)                { fHCAW0 = w ; }
+  virtual void SetTimeGate(Float_t gate)                 { fTimeGate = gate ;}
+  virtual void SetPREClusteringThreshold(Float_t cluth)  { fPREClusteringThreshold = cluth ; }
+  virtual void SetPRELocalMaxCut(Float_t cut)            { fPRELocMaxCut = cut ; }
+  virtual void SetPRELogWeight(Float_t w)                { fPREW0 = w ; }
+  virtual void SetUnfolding(Bool_t toUnfold = kTRUE )    {fToUnfold = toUnfold ;}  
   static Double_t ShowerShape(Double_t r) ; // Shape of EM shower used in unfolding; 
                                             //class member function (not object member function)
   static void UnfoldingChiSquare(Int_t & nPar, Double_t * Grad, Double_t & fret, Double_t * x, Int_t iflag)  ;
                                             // Chi^2 of the fit. Should be static to be passes to MINUIT
+  void Unload() ; 
   virtual const char * Version() const { return "clu-v1" ; }  
 
 protected:
@@ -112,28 +113,28 @@ private:
   Bool_t  fToUnfold ;                // To perform unfolding 
 
   Int_t   fNumberOfPREClusters ;     // number of clusters found in PRE section 
-  Int_t   fNumberOfECClusters ;      // number of clusters found in EC section
-  Int_t   fNumberOfHCClusters ;      // number of clusters found in HC section
+  Int_t   fNumberOfECAClusters ;     // number of clusters found in EC section
+  Int_t   fNumberOfHCAClusters ;     // number of clusters found in HC section
   
   //Calibration parameters... to be replaced by database 
   Float_t fADCchannelPRE ;          // width of one ADC channel for PRE section (GeV)
   Float_t fADCpedestalPRE ;         // pedestal of ADC for PRE section (GeV)
-  Float_t fADCchannelEC ;           // width of one ADC channel for EC section (GeV)
-  Float_t fADCpedestalEC ;          // pedestal of ADC for EC section (GeV) 
-  Float_t fADCchannelHC ;           // width of one ADC channel for HC section (GeV)
-  Float_t fADCpedestalHC ;          // pedestal of ADC for HC section (GeV) 
+  Float_t fADCchannelECA ;          // width of one ADC channel for EC section (GeV)
+  Float_t fADCpedestalECA ;         // pedestal of ADC for EC section (GeV) 
+  Float_t fADCchannelHCA ;          // width of one ADC channel for HC section (GeV)
+  Float_t fADCpedestalHCA ;         // pedestal of ADC for HC section (GeV) 
  
-  Float_t fECClusteringThreshold ;  // minimum energy to include a EC digit in a cluster
-  Float_t fHCClusteringThreshold ;  // minimum energy to include a HC digit in a cluster
-  Float_t fPREClusteringThreshold ; // minimum energy to include a PRE digit in a cluster
-  Float_t fECLocMaxCut ;            // minimum energy difference to distinguish local maxima in a cluster
-  Float_t fECW0 ;                   // logarithmic weight for the cluster center of gravity calculation
-  Float_t fHCLocMaxCut ;            // minimum energy difference to distinguish local maxima in a cluster
-  Float_t fHCW0 ;                   // logarithmic weight for the cluster center of gravity calculation
-  Float_t fPRELocMaxCut ;           //  minimum energy difference to distinguish local maxima in a CPV cluster
-  Float_t fPREW0 ;                  // logarithmic weight for the CPV cluster center of gravity calculation
-  Int_t fRecPointsInRun ;           //! Total number of recpoints in one run
-  Float_t fTimeGate ;               // Maximum time difference between the digits in ont EMC cluster
+  Float_t fECAClusteringThreshold ;  // minimum energy to include a EC digit in a cluster
+  Float_t fHCAClusteringThreshold ;  // minimum energy to include a HC digit in a cluster
+  Float_t fPREClusteringThreshold ;  // minimum energy to include a PRE digit in a cluster
+  Float_t fECALocMaxCut ;            // minimum energy difference to distinguish local maxima in a cluster
+  Float_t fECAW0 ;                   // logarithmic weight for the cluster center of gravity calculation
+  Float_t fHCALocMaxCut ;            // minimum energy difference to distinguish local maxima in a cluster
+  Float_t fHCAW0 ;                   // logarithmic weight for the cluster center of gravity calculation
+  Float_t fPRELocMaxCut ;            //  minimum energy difference to distinguish local maxima in a CPV cluster
+  Float_t fPREW0 ;                   // logarithmic weight for the CPV cluster center of gravity calculation
+  Int_t fRecPointsInRun ;            //! Total number of recpoints in one run
+  Float_t fTimeGate ;                // Maximum time difference between the digits in ont EMC cluster
     
   ClassDef(AliEMCALClusterizerv1,2)   // Clusterizer implementation version 1
 

@@ -13,44 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.11  2003/04/08 08:16:50  morsch
-AliTrackReference constructor without passing pointer to VMC.
-
-Revision 1.10  2003/02/12 10:39:08  hristov
-Updated AliTrackReference class (S.Radomski)
-
-Revision 1.9  2002/11/21 23:05:28  alibrary
-Removing AliMC and AliMCProcess
-
-Revision 1.8  2002/11/14 15:09:58  nilsen
-Fixed problem of elements of a Mixture having zero concentration. This was
-done by reordering some of the elements such that those which may have
-zero concentration were at the end of the array and the array size passed
-would thereby exclude those zero concentrations.
-
-Revision 1.7  2002/11/02 15:15:58  hristov
-Corrected with respect to the previous versions
-
-Revision 1.6  2002/11/01 19:48:35  nilsen
-Fixed bug in material numbering for new FMD part of code. Removed large part
-of commented code (if still needed it is in AliITSvPPRasymm.cxx).
-
-Revision 1.3  2002/10/05 00:12:39  nilsen
-Added material to simulate services in front of the SPD, SDD, and SSD support
-structures. Modified folumes I212, I200, and I099 so that they do not go
-beyond the volume they are creating holes for. This was nessesary so that
-the material added to these volumes would be correct.
-
-Revision 1.2  2002/10/02 17:56:37  barbera
-Bug in copy 37 of volume I570 corrected (thanks to J. Belikov)
-
-Revision 1.1  2002/09/16 14:45:31  barbera
-Updated detailed geometry needed by FMD people for some studies
-
-
-*/
+/* $Id$ */
 
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
@@ -66,50 +29,52 @@ Updated detailed geometry needed by FMD people for some studies
 ///////////////////////////////////////////////////////////////////////////////
 
 // See AliITSvPPRasymmFMD::StepManager().
+
 #include <Riostream.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <TMath.h>
+
+#include <TBRIK.h>
+#include <TCanvas.h>
+#include <TClonesArray.h>
+#include <TFile.h>    // only required for Tracking function?
 #include <TGeometry.h>
+#include <TLorentzVector.h>
+#include <TMath.h>
 #include <TNode.h>
+#include <TObjArray.h>
+#include <TObjString.h>
+#include <TPCON.h>
+#include <TSystem.h>
 #include <TTUBE.h>
 #include <TTUBS.h>
-#include <TPCON.h>
-#include <TFile.h>    // only required for Tracking function?
-#include <TCanvas.h>
-#include <TObjArray.h>
-#include <TLorentzVector.h>
-#include <TObjString.h>
-#include <TClonesArray.h>
-#include <TBRIK.h>
-#include <TSystem.h>
+#include <TVirtualMC.h>
 
-#include "AliRun.h"
-#include "AliMagF.h"
 #include "AliConst.h"
-#include "AliITSGeant3Geometry.h"
-#include "AliTrackReference.h"
-#include "AliITShit.h"
 #include "AliITS.h"
-#include "AliITSvPPRasymmFMD.h"
-#include "AliITSgeom.h"
-#include "AliITSgeomSPD.h"
-#include "AliITSgeomSDD.h"
-#include "AliITSgeomSSD.h"
-#include "AliITSDetType.h"
-#include "AliITSresponseSPD.h"
-#include "AliITSresponseSDD.h"
-#include "AliITSresponseSSD.h"
-#include "AliITSsegmentationSPD.h"
-#include "AliITSsegmentationSDD.h"
-#include "AliITSsegmentationSSD.h"
-#include "AliITSsimulationSPD.h"
-#include "AliITSsimulationSDD.h"
-#include "AliITSsimulationSSD.h"
-#include "AliITSClusterFinderSPD.h"
 #include "AliITSClusterFinderSDD.h"
+#include "AliITSClusterFinderSPD.h"
 #include "AliITSClusterFinderSSD.h"
-
+#include "AliITSDetType.h"
+#include "AliITSGeant3Geometry.h"
+#include "AliITSgeom.h"
+#include "AliITSgeomSDD.h"
+#include "AliITSgeomSPD.h"
+#include "AliITSgeomSSD.h"
+#include "AliITShit.h"
+#include "AliITSresponseSDD.h"
+#include "AliITSresponseSPD.h"
+#include "AliITSresponseSSD.h"
+#include "AliITSsegmentationSDD.h"
+#include "AliITSsegmentationSPD.h"
+#include "AliITSsegmentationSSD.h"
+#include "AliITSsimulationSDD.h"
+#include "AliITSsimulationSPD.h"
+#include "AliITSsimulationSSD.h"
+#include "AliITSvPPRasymmFMD.h"
+#include "AliMagF.h"
+#include "AliRun.h"
+#include "AliTrackReference.h"
 
 ClassImp(AliITSvPPRasymmFMD)
  

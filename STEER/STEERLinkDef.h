@@ -55,6 +55,13 @@
 #pragma link C++ class  AliMergeCombi+;
 #pragma link C++ class  AliFieldMap-;
 #pragma link C++ class  AliGausCorr+;
+#pragma link C++ class  AliLoader+;
+#pragma link C++ class  AliDataLoader+;
+#pragma link C++ class  AliBaseLoader+;
+#pragma link C++ class  AliObjectLoader+;
+#pragma link C++ class  AliTreeLoader+;
+#pragma link C++ class  AliTaskLoader+;
+#pragma link C++ class  AliRunLoader+;
 #pragma link C++ class  AliTrackReference+;
 #pragma link C++ class  AliESD+;
 #pragma link C++ class  AliESDtrack+;

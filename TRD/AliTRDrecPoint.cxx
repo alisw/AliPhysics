@@ -13,51 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.7.6.2  2002/07/24 10:09:31  alibrary
-Updating VirtualMC
-
-Revision 1.7.6.1  2002/06/10 15:28:58  hristov
-Merged with v3-08-02
-
-Revision 1.8  2002/03/28 14:59:07  cblume
-Coding conventions
-
-Revision 1.9  2002/06/12 09:54:35  cblume
-Update of tracking code provided by Sergei
-
-Revision 1.8  2002/03/28 14:59:07  cblume
-Coding conventions
-
-Revision 1.7  2001/12/05 15:04:34  hristov
-Changes related to the corrections of AliRecPoint
-
-Revision 1.6  2001/02/14 18:22:26  cblume
-Change in the geometry of the padplane
-
-Revision 1.5  2000/11/14 14:40:27  cblume
-Correction for the Sun compiler (kTRUE and kFALSE)
-
-Revision 1.4  2000/11/01 14:53:21  cblume
-Merge with TRD-develop
-
-Revision 1.1.4.2  2000/10/04 16:34:58  cblume
-Replace include files by forward declarations
-
-Revision 1.1.4.1  2000/09/22 14:50:39  cblume
-Adapted to tracking code
-
-Revision 1.3  2000/06/09 11:10:07  cblume
-Compiler warnings and coding conventions, next round
-
-Revision 1.2  2000/06/08 18:32:58  cblume
-Make code compliant to coding conventions
-
-Revision 1.1  2000/02/28 19:02:07  cblume
-Add new TRD classes
-
-*/
+/* $Id$ */
 
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //

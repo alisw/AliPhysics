@@ -13,21 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-  $Log$
-  Revision 1.4  2001/05/10 12:34:43  jbarbosa
-  Changed drwaing routines.
-
-  Revision 1.3  2000/11/01 15:37:44  jbarbosa
-  Removed verbose output.
-
-  Revision 1.2  2000/06/30 16:31:51  dibari
-  New drawing routine from Nico and Daniela.
-
-  Revision 1.1  2000/06/12 15:21:57  jbarbosa
-  Cleaned up version.
-
-*/
+/* $Id$ */
 
 #include "TMath.h"
 #include "AliRICHEllipse.h"

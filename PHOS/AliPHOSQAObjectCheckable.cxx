@@ -16,14 +16,14 @@
 /* $Id$ */
 
 //_________________________________________________________________________
-// Class for a QA checkable that is an Object
-// To be used with AliPHOSChecker
-// or any derived class  
-//..
+// Class for a QA checkable that is an Int  
+//
 //*-- Author :  Yves Schutz (SUBATECH) 
 //////////////////////////////////////////////////////////////////////////////
 
 // --- ROOT system ---
+
+#include "TClass.h"
 
 // --- Standard library ---
 
@@ -39,13 +39,6 @@ ClassImp(AliPHOSQAObjectCheckable)
 {
   fType   = "O" ; 
   fObject = 0 ; 
-}
-
-//____________________________________________________________________________ 
-  AliPHOSQAObjectCheckable::AliPHOSQAObjectCheckable(AliPHOSQAObjectCheckable & cho) : AliPHOSQAVirtualCheckable(cho.GetName()) 
-{
-  fType   = "O" ; 
-  fObject = new TObject(cho) ; 
 }
 
 //____________________________________________________________________________ 

@@ -13,31 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.6  2002/03/18 17:59:13  kowal2
-Chnges in the pad geometry - 3 pad lengths introduced.
-
-Revision 1.5  2001/01/26 19:57:22  hristov
-Major upgrade of AliRoot code
-
-Revision 1.4  2000/11/02 07:33:15  kowal2
-Improvements of the code.
-
-Revision 1.3  2000/06/30 12:07:50  kowal2
-Updated from the TPC-PreRelease branch
-
-Revision 1.2.4.1  2000/06/14 16:48:24  kowal2
-Parameter setting improved. Removed compiler warnings
-
-Revision 1.2  2000/04/17 09:37:33  kowal2
-removed obsolete AliTPCDigitsDisplay.C
-
-Revision 1.1.4.2  2000/04/10 11:36:13  kowal2
-
-New Detector parameters handling class
-
-*/
+/* $Id$ */
 
 ///////////////////////////////////////////////////////////////////////
 //  Manager and of geomety  classes for set: TPC                     //

@@ -11,6 +11,7 @@ class TFile;
 class TF1;
 
 class AliRunDigitizer;
+class AliRunLoader;
 
 class AliTRD;
 class AliTRDdigitsManager;
@@ -37,7 +38,7 @@ class AliTRDdigitizer : public AliDigitizer {
   virtual Bool_t       InitDetector();
   virtual void         Exec(Option_t* option = 0);  
   virtual Bool_t       Open(const Char_t *file, Int_t nEvent = 0);
-  virtual Bool_t       MakeBranch(const Char_t *file = 0) const;
+  virtual Bool_t       MakeBranch(TTree* tree) const;
   virtual Bool_t       MakeDigits();
   virtual void         AddSDigitsManager(AliTRDdigitsManager *manager);
   virtual void         DeleteSDigitsManager();
@@ -46,7 +47,7 @@ class AliTRDdigitizer : public AliDigitizer {
   virtual Bool_t       SDigits2Digits();
   virtual Bool_t       WriteDigits() const;
 
-          void         InitOutput(TFile *file, Int_t iEvent);
+  void         InitOutput(Int_t iEvent);
  
   virtual void         SetCompress(Int_t c = 1)             { fCompress        = c;   };
   virtual void         SetDebug(Int_t v = 1)                { fDebug           = v;   };
@@ -71,7 +72,8 @@ class AliTRDdigitizer : public AliDigitizer {
 
  protected:
 
-  TFile               *fInputFile;          //! ALIROOT-file
+  //TFile               *fInputFile;          //! ALIROOT-file
+  AliRunLoader        *fRunLoader;
   AliTRDdigitsManager *fDigitsManager;      //! Manager for the output digits
   AliTRDdigitsManager *fSDigitsManager;     //! Manager for the summed input s-digits
   TList               *fSDigitsManagerList; //! List of managers of input s-digits

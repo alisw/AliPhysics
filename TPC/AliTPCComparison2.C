@@ -470,8 +470,8 @@ Int_t good_tracks(GoodTrackTPC *gt, Int_t max, Int_t firstev, Int_t eventn) {
     case 2:
       {
         sprintf(treeName,"TreeD_75x40_100x60_150x60_%d",event);  
-	//        TD=(TTree*)gDirectory->Get(treeName);
-        TD=(TTree*)fdigit->Get(treeName);
+        TD=(TTree*)fdigit->Get(treeName); // To be revised according to
+                                          // NewIO schema M.Kowalski
         TD->GetBranch("Segment")->SetAddress(&digits);
         count = new Int_t[np];
         Int_t i;
@@ -651,9 +651,4 @@ Int_t FindPrimaries(Int_t nparticles){
 
   return nprch1;
 }
-
-
-
-
-
 

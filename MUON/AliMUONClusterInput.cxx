@@ -13,56 +13,8 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.10  2001/03/20 13:33:23  egangler
-Small cleanup
+/* $Id$ */
 
-Revision 1.9  2001/01/26 21:38:49  morsch
-Use access functions to AliMUONDigit member data.
-
-Revision 1.8  2001/01/23 18:58:19  hristov
-Initialisation of some pointers
-
-Revision 1.7  2000/12/21 22:14:38  morsch
-Clean-up of coding rule violations.
-
-Revision 1.6  2000/10/06 09:04:50  morsch
-
-- Dummy z-arguments in GetPadI, SetHit, FirstPad replaced by real z-coordinate
-        to make code work with slat chambers.
-
-Revision 1.5  2000/10/02 16:58:29  egangler
-Cleaning of the code :
--> coding conventions
--> void Streamers
--> some useless includes removed or replaced by "class" statement
-
-Revision 1.4  2000/07/03 11:54:57  morsch
-AliMUONSegmentation and AliMUONHitMap have been replaced by AliSegmentation and AliHitMap in STEER
-The methods GetPadIxy and GetPadXxy of AliMUONSegmentation have changed name to GetPadI and GetPadC.
-
-Revision 1.3  2000/06/28 15:16:35  morsch
-(1) Client code adapted to new method signatures in AliMUONSegmentation (see comments there)
-to allow development of slat-muon chamber simulation and reconstruction code in the MUON
-framework. The changes should have no side effects (mostly dummy arguments).
-(2) Hit disintegration uses 3-dim hit coordinates to allow simulation
-of chambers with overlapping modules (MakePadHits, Disintegration).
-
-Revision 1.2  2000/06/28 12:19:18  morsch
-More consequent seperation of global input data services (AliMUONClusterInput singleton) and the
-cluster and hit reconstruction algorithms in AliMUONClusterFinderVS.
-AliMUONClusterFinderVS becomes the base class for clustering and hit reconstruction.
-It requires two cathode planes. Small modifications in the code will make it usable for
-one cathode plane and, hence, more general (for test beam data).
-AliMUONClusterFinder is now obsolete.
-
-Revision 1.1  2000/06/28 08:06:10  morsch
-Avoid global variables in AliMUONClusterFinderVS by seperating the input data for the fit from the
-algorithmic part of the class. Input data resides inside the AliMUONClusterInput singleton.
-It also naturally takes care of the TMinuit instance.
-
-*/
 #include "AliRun.h"
 #include "AliMUON.h"
 #include "AliMUONChamber.h"

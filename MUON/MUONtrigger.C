@@ -1,41 +1,41 @@
 #include "iostream.h"
-//Add the Trigger output in the tree TR of the ROOT file galice.root
+//get trigger decision and write it in TreeR of MUON.RecPoints.root
 
-void MUONtrigger (Int_t evNumber1=0, Int_t evNumber2=0)
+void MUONtrigger (char* filename="galice.root", 
+		  Int_t evNumber1=0, Int_t evNumber2=0)
 {
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-// Dynamically link some shared libs
-   if (gClassTable->GetID("AliRun") < 0) {
-      gROOT->LoadMacro("loadlibs.C");
-      loadlibs();
-   }
+// Creating Run Loader and openning file containing Hits
+  AliRunLoader * RunLoader = AliRunLoader::Open(filename,"MUONFolder","UPDATE");
+  if (RunLoader ==0x0) {
+    printf(">>> Error : Error Opening %s file \n",filename);
+    return;
+  }
 
-// Connect the Root Galice file containing Geometry, Kine and Hits
-   TFile *file = (TFile*)gROOT->GetListOfFiles()->FindObject("galice.root");
-   if (file) file->Close(); 
-   file = new TFile("galice.root","UPDATE");
+  // Loading AliRun master
+  RunLoader->UnloadgAlice();
+  RunLoader->LoadgAlice();
+  gAlice = RunLoader->GetAliRun();
 
-// Get AliRun object from file or create it if not on file
-   if (!gAlice) {
-       gAlice = (AliRun*)file->Get("gAlice");
-       if (gAlice) printf("AliRun object found on file\n");
-       if (!gAlice) gAlice = new AliRun("gAlice","Alice test program");
-   }
-   printf ("I'm after gAlice \n");
-   
-   AliMUON *MUON  = (AliMUON*) gAlice->GetModule("MUON");
+  // Loading MUON subsystem
+  AliMUON * MUON = (AliMUON *) gAlice->GetDetector("MUON");
+  AliLoader * MUONLoader = RunLoader->GetLoader("MUONLoader");
+
+  Int_t ievent, nevents;
+  nevents = RunLoader->GetNumberOfEvents();
+
+  MUONLoader->LoadDigits("READ");
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-   for (int nev=evNumber1; nev<= evNumber2; nev++) { // event loop
-     Int_t nparticles = gAlice->GetEvent(nev);
-     cout << "nev         " <<nev<<endl;
-     cout << "nparticles  " <<nparticles<<endl; 
-     if (nparticles <= 0) return;
-     
-     if (MUON) MUON->Trigger(nev);
-     
+   for (Int_t ievent=evNumber1; ievent<=evNumber2; ievent++) { // event loop
+       printf("event %d\n",ievent);
+       RunLoader->GetEvent(ievent);       
+       if (MUONLoader->TreeR() == 0x0) MUONLoader->MakeTree("R");
+       MUON->MakeBranch("R");
+       MUON->SetTreeAddress();
+       MUON->Trigger(ievent);       
    } // event loop 
-   file->Close();
+   MUONLoader->UnloadDigits();
 }
 
 

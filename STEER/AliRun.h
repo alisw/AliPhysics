@@ -7,10 +7,11 @@
 
 #include <TArrayF.h>
 #include <TArrayI.h>
+#include <TClonesArray.h>
 #include <TMCProcess.h>
 #include <TStopwatch.h>
-#include <TVirtualMC.h>
 #include <TVirtualMCApplication.h>
+#include <TVirtualMC.h>
 #include <TError.h>
 
 class TBranch;
@@ -23,6 +24,7 @@ class TParticle;
 class TRandom;
 class TTree;
 
+#include "AliRunLoader.h"
 class AliDetector;
 class AliDisplay;
 class AliGenEventHeader;
@@ -35,6 +37,7 @@ class AliMCQA;
 class AliMagF;
 class AliModule;
 class AliStack;
+
 
 enum {kKeepBit=1, kDaughtersBit=2, kDoneBit=4};
 
@@ -68,7 +71,8 @@ public:
    virtual  void  FlagTrack(Int_t track);
    void           AddEnergyDeposit(Int_t id, Float_t edep) 
                                        {fEventEnergy[id]+=edep;}
-   Int_t          GetEvNumber() const {return fEvent;}
+   void           AddModule(AliModule* mod);
+   Int_t          GetEvNumber() const;
    Int_t          GetRunNumber() const {return fRun;}
    void           SetRunNumber(Int_t run) {fRun=run;}
    void           SetEventNrInRun(Int_t event) {fEventNrInRun=event;}
@@ -88,7 +92,6 @@ public:
    virtual  const char *GetConfigFunction() const 
     {return fConfigFunction.Data();}
    TGeometry     *GetGeometry();
-   AliHeader*     GetHeader() const {return fHeader;}
    virtual  void  SetGenEventHeader(AliGenEventHeader* header);
    Int_t          GetNtrack() const;
    virtual  Int_t GetPrimary(Int_t track) const;
@@ -100,8 +103,6 @@ public:
    virtual  void  Init(const char *setup="Config.C") {InitMC(setup);}
    Bool_t         IsFolder() const {return kTRUE;}
    virtual AliLego* Lego() const {return fLego;}
-   virtual  void  MakeTree(Option_t *option="KH", const char *file = 0);
-   void           MakeTree(Option_t *option, TFile *file);
 
    TObjArray     *Particles() const;
    TParticle     *Particle(Int_t i) const;
@@ -114,11 +115,10 @@ public:
    virtual  void  SetBaseFile(const char *filename="galice.root");
    virtual  void  ReadTransPar();
    virtual  void  RunMC(Int_t nevent=1, const char *setup="Config.C");
-   virtual  void  Run(Int_t nevent=1, const char *setup="Config.C") 
-  {RunMC(nevent,setup);}
+   virtual  void  Run(Int_t nevent=1, const char *setup="Config.C") {RunMC(nevent,setup);}
    virtual  void  RunLego(const char *setup="Config.C",Int_t nc1=60,Float_t c1min=2,Float_t c1max=178,
-			  Int_t nc2=60,Float_t c2min=0,Float_t c2max=360,Float_t rmin=0,
-			  Float_t rmax=430,Float_t zmax=10000, AliLegoGenerator* gener=NULL);
+                          Int_t nc2=60,Float_t c2min=0,Float_t c2max=360,Float_t rmin=0,
+                          Float_t rmax=430,Float_t zmax=10000, AliLegoGenerator* gener=NULL);
    virtual  Bool_t IsLegoRun() const {return (fLego!=0);}
    virtual  void  RunReco(const char *detector=0, Int_t first = 0, Int_t last = 0);
    virtual  void  SetCurrentTrack(Int_t track);                           
@@ -147,7 +147,6 @@ public:
    virtual  void ResetGenerator(AliGenerator *generator);
    virtual  void EnergySummary();
    virtual  TDatabasePDG* PDGDB() const {return fPDGDB;}
-   virtual  void Announce() const;
    
    // MC Application
    //
@@ -164,57 +163,41 @@ public:
    virtual  Double_t  TrackingZmax() const {return fTrZmax;}
    virtual  Double_t  TrackingRmax() const {return fTrRmax;}
    virtual  void Field(const Double_t* x, Double_t* b) const;
+
    //
    // End of MC Application
 
-   TFile* InitTreeFile(Option_t *option, TString fileName);
-   void PrintTreeFile();
-   void CloseTreeFile(Option_t *option);
-   TString GetTreeDFileName() const {return fTreeDFileName;}
-   TString GetTreeSFileName() const {return fTreeSFileName;}
-   TString GetTreeRFileName() const {return fTreeRFileName;}
-   void SetTreeDFileName(TString fileName){fTreeDFileName=fileName;}
-   void SetTreeSFileName(TString fileName){fTreeSFileName=fileName;}
-   void SetTreeRFileName(TString fileName){fTreeRFileName=fileName;}
-   TFile* GetTreeDFile() const {return fTreeDFile;}
-   TFile* GetTreeSFile() const {return fTreeSFile;}
-   TFile* GetTreeRFile() const {return fTreeRFile;}
+   TTree         *TreeE() {return (fRunLoader)?fRunLoader->TreeE():0x0;}
+   TTree         *TreeK() {return (fRunLoader)?fRunLoader->TreeK():0x0;}
+   AliStack      *Stack() {return (fRunLoader)?fRunLoader->Stack():0x0;}
+   AliHeader*     GetHeader() {return (fRunLoader)?fRunLoader->GetHeader():0x0;}
+
+   TTree         *TreeD() {MayNotUse("TreeD"); return 0x0;}
+   TTree         *TreeS() {MayNotUse("TreeS"); return 0x0;}
+   TTree         *TreeR() {MayNotUse("TreeR"); return 0x0;}
+
    
-
-   TTree         *TreeD() const {return fTreeD;}
-   TTree         *TreeS() const {return fTreeS;}
-   TTree         *TreeE() const {return fTreeE;}
-   TTree         *TreeH() const {return fTreeH;}
-   TTree         *TreeTR() const {return fTreeTR;}
-   TTree         *TreeK() const;
-   TTree         *TreeR() const {return fTreeR;}
-
-   AliStack      *Stack() const {return fStack;}
-
-   static void Deprecated(TObject *obj, const char *method,
-			  const char *replacement) {
-     if (obj)
-       ::Warning(Form("%s::%s", obj->ClassName(), method),
-		 "method is depricated\nPlease use: %s", replacement);
-     else
-       ::Warning(method, "method is depricated\nPlease use: %s", replacement);
-   }
-
+   void SetRunLoader(AliRunLoader* rloader);
+   AliRunLoader* GetRunLoader() const {return fRunLoader;}
+//   void SetEventFolderName(const char* eventfoldername);
+  virtual  void Announce() const;
+   
+  virtual  void  InitLoaders(); //prepares run (i.e. creates getters)
+  static void Deprecated(TObject *obj, const char *method,
+			 const char *replacement) {
+    if (obj)
+      ::Warning(Form("%s::%s", obj->ClassName(), method),
+		"method is depricated\nPlease use: %s", replacement);
+    else
+      ::Warning(method, "method is depricated\nPlease use: %s", replacement);
+  }
 protected:
   virtual  void  Tree2Tree(Option_t *option, const char *detector=0);
-  TFile* InitFile(TString fileName="");
   Int_t          fRun;               //! Current run number
   Int_t          fEvent;             //! Current event number (from 1)
   Int_t          fEventNrInRun;      //! Current unique event number in run
   Int_t          fEventsPerRun;      //  Number of events per run
   Int_t          fDebug;             //  Debug flag
-  AliHeader     *fHeader;            //  Header information
-  TTree         *fTreeD;             //! Pointer to Tree for Digits
-  TTree         *fTreeS;             //! Pointer to Tree for SDigits
-  TTree         *fTreeH;             //! Pointer to Tree for Hits
-  TTree         *fTreeTR;            //! Pointer to Tree for TrackRefernces
-  TTree         *fTreeE;             //! Pointer to Tree for Header
-  TTree         *fTreeR;             //! Pointer to Tree for Reconstructed Objects
   TObjArray     *fModules;           //  List of Detectors
   TGeometry     *fGeometry;          //  Pointer to geometry
   AliDisplay    *fDisplay;           //! Pointer to event display
@@ -238,19 +221,12 @@ protected:
   AliMCQA       *fMCQA;              //  Pointer to MC Quality assurance class
   TString        fTransParName;      //  Name of the transport parameters file
   TString        fBaseFileName;      //  Name of the base root file
-  AliStack*      fStack;             //! Particle Stack
-
-  TString        fTreeDFileName;     //!  name of the file with TreeD
-  TFile*         fTreeDFile;         //!  file with TreeD
-  TString        fTreeSFileName;     //!  name of the file with TreeS
-  TFile*         fTreeSFile;         //!  file with TreeS
-  TString        fTreeRFileName;     //!  name of the file with TreeR
-  TFile*         fTreeRFile;         //!  file with TreeR
-
+  
+  AliRunLoader  *fRunLoader;         //!run getter - written as a separate object
 private:
   void Copy(AliRun &arun) const;
 
-  ClassDef(AliRun,7)      //Supervisor class for all Alice detectors
+  ClassDef(AliRun,8)      //Supervisor class for all Alice detectors
 };
  
 R__EXTERN  AliRun *gAlice;

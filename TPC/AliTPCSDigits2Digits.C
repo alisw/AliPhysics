@@ -9,30 +9,54 @@ Int_t AliTPCSDigits2Digits(Int_t nevent=1)
 
   // Connect the Root Galice file containing Geometry, Kine and Hits
 
-  const char * inFile_old = "galice.root"; 
+  const char * inFile_old = "galice.root";
   const char * inFile_new = "galice.root";
+
+   if (gAlice)
+    {
+      delete gAlice->GetRunLoader();
+      delete gAlice;//if everything was OK here it is already NULL
+      gAlice = 0x0;
+    }
+
   TFile *file = (TFile*)gROOT->GetListOfFiles()->FindObject(inFile_old);
   if (file) {file->Close(); delete file;}
-  file =  TFile::Open(inFile_new,"UPDATE");
-  if (!file->IsOpen()) {
+
+  AliRunLoader *rl = AliRunLoader::Open(inFile_new,"Event","update");
+
+  if (!rl) {
     cerr<<"Can't open "<<inFile_new<<" !\n";
     return 1;
   }
 
   // Get AliRun object from file or create it if not on file
   //  if (gAlice) delete gAlice;
-  gAlice = (AliRun*)file->Get("gAlice");
+
+  rl->LoadgAlice();
+
+  gAlice = rl->GetAliRun();
   if (!gAlice) {
     cerr<<"AliTPCHits2Digits.C : AliRun object not found on file\n";
+    delete rl;
     return 2;
   }
 
-
-
   // gAlice->GetEvent(0);
-  AliTPC *TPC = (AliTPC*)gAlice->GetDetector("TPC");  
+  AliTPC *TPC = (AliTPC*)gAlice->GetDetector("TPC");      
+
+  AliLoader * tpcl = rl->GetLoader("TPCLoader");
   
-     AliTPCParamSR *dig=(AliTPCParamSR *)file->Get("75x40_100x60");
+  if ((TPC == 0x0) || (tpcl == 0x0))
+   {
+    cerr<<"AliTPCHits2Digits.C : Can not find TPC or TPCLoader\n";
+//    delete rl;
+    return 3;
+   }
+
+  tpcl->LoadSDigits("READ");
+  tpcl->LoadDigits("RECREATE");
+  rl->CdGAFile();
+  AliTPCParamSR *dig=(AliTPCParamSR *)gDirectory->Get("75x40_100x60");
    if(dig){
      cerr<<"2 pad-length geom hits with 3 pad-lengths geom digits\n";
      delete dig;
@@ -51,16 +75,16 @@ Int_t AliTPCSDigits2Digits(Int_t nevent=1)
 
   for(Int_t eventn =0;eventn<nevent;eventn++){
     printf("Processing event %d\n",eventn);
-    gAlice->GetEvent(eventn);
-
+    cout<<"rl->GetEvent(eventn);\n";
+    rl->GetEvent(eventn);
+    cout<<"TPC->SDigits2Digits2(eventn);\n";
     TPC->SDigits2Digits2(eventn);
   } 
 
-  delete gAlice; gAlice=0;
-  file->Close(); delete file;
   timer.Stop();
   timer.Print();
 
+  delete rl;
   return 0;
 };
 

@@ -1,5 +1,8 @@
+#include <Riostream.h>
 #include <AliITSVertex.h>
 #include <AliITSVertexer.h>
+#include <AliRunLoader.h>
+#include <AliITSLoader.h>
 
 ClassImp(AliITSVertexer)
 
@@ -13,27 +16,33 @@ AliITSVertexer::AliITSVertexer() {
   // Default Constructor
 
     fCurrentVertex  = 0;
-    fInFile         = 0;
-    fOutFile        = 0;
     SetDebug();
     SetFirstEvent(0);
     SetLastEvent(0);
 }
 
-AliITSVertexer::AliITSVertexer(TFile *infile, TFile *outfile) {
+AliITSVertexer::AliITSVertexer(TString filename) {
   // Standard constructor
+  AliRunLoader *rl = AliRunLoader::GetRunLoader();
+  if(!rl){
+    Fatal("AliITSVertexer","Run Loader not found");
+  }
+  if(rl->LoadgAlice()){
+    Fatal("AliITSVertexer","The AliRun object is not available - nothing done");
+  }
   fCurrentVertex  = 0;   
-  SetInputFile(infile);
-  SetOutputFile(outfile);
   SetDebug();
   SetFirstEvent(0);
   SetLastEvent(0);
-  if(gAlice){
-    Int_t lst;
-    if(gAlice->TreeE()){
-      lst = static_cast<Int_t>(gAlice->TreeE()->GetEntries());
-      SetLastEvent(lst-1);
-    }
+  rl->LoadHeader();
+  AliITSLoader* ITSloader =  (AliITSLoader*) rl->GetLoader("ITSLoader");
+  if(filename.Data()!="default")ITSloader->SetVerticesFileName(filename);
+  ITSloader->LoadVertices("recreate");
+  ITSloader->LoadRecPoints();
+  Int_t lst;
+  if(rl->TreeE()){
+    lst = static_cast<Int_t>(rl->TreeE()->GetEntries());
+    SetLastEvent(lst-1);
   }
 }
 
@@ -44,20 +53,16 @@ AliITSVertexer::~AliITSVertexer() {
   // by this class and are not deleted
 
     fCurrentVertex  = 0;
-    fInFile         = 0;
-    fOutFile        = 0;
 }
 
 //______________________________________________________________________
 void AliITSVertexer::WriteCurrentVertex(){
   // Write the current AliVertex object to file fOutFile
-  if(!fOutFile){
-    Error("WriteCurrentEvent","The output file is not defined");
-    return;
-  }
-  TDirectory *curdir = gDirectory;
-  fOutFile->cd();
-  fCurrentVertex->Write();
-  curdir->cd();
-  fCurrentVertex = 0;
+  AliRunLoader *rl = AliRunLoader::GetRunLoader();
+  AliITSLoader* ITSloader =  (AliITSLoader*) rl->GetLoader("ITSLoader");
+  fCurrentVertex->SetName("Vertex");
+  //  const char * name = fCurrentVertex->GetName();
+  //  ITSloader->SetVerticesContName(name);
+  Int_t rc = ITSloader->PostVertex(fCurrentVertex);
+  rc = ITSloader->WriteVertices();
 }

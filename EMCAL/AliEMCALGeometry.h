@@ -58,9 +58,9 @@ public:
   const Float_t GetArm1EtaMin() const { return fArm1EtaMin;}
   const Float_t GetArm1EtaMax() const { return fArm1EtaMax;}
   const Float_t GetIPDistance() const { return fIPDistance  ; } 
-  const Float_t GetIP2PRESection()  const { return (GetIPDistance() + GetAlFrontThickness() +  GetGap2Active() ) ;}
-  const Float_t GetIP2ECALSection() const { return ( GetIP2PRESection() + GetNPRLayers() * (  GetPRScintThick() +  GetPRPbRadThick() ) ) ; }  
-  const Float_t GetIP2HCALSection() const { return ( GetIP2ECALSection() + GetNECLayers() * ( GetECScintThick() +  GetECPbRadThick() ) ) ; }  
+  const Float_t GetIP2PRESection() const { return (GetIPDistance() + GetAlFrontThickness() +  GetGap2Active() ) ;}
+  const Float_t GetIP2ECASection() const { return ( GetIP2PRESection() + GetNPRLayers() * (  GetPRScintThick() +  GetPRPbRadThick() ) ) ; }  
+  const Float_t GetIP2HCASection() const { return ( GetIP2ECASection() + GetNECLayers() * ( GetECScintThick() +  GetECPbRadThick() ) ) ; }  
   const Float_t GetEnvelop(Int_t index) const { return fEnvelop[index] ; }  
   const Float_t GetShellThickness() const { return fShellThickness ; }
   const Float_t GetZLength() const { return fZLength ; } 
@@ -86,8 +86,8 @@ public:
   const Float_t GetSummationFraction() const {return fSummationFraction ; } 
   
   const Bool_t IsInPRE(Int_t index) const  { if ( (index > (GetNZ() * GetNPhi()) && (index <= 2 * (GetNZ() * GetNPhi())))) return kTRUE; else return kFALSE ;} 
-  const Bool_t IsInECAL(Int_t index) const { if ( (index > 0 && (index <= GetNZ() * GetNPhi()))) return kTRUE; else return kFALSE ;}
-  const Bool_t IsInHCAL(Int_t index) const { if ( (index > 2*(GetNZ() * GetNPhi()) && (index <= 3 * (GetNZ() * GetNPhi())))) return kTRUE; else return kFALSE ;} ; 
+  const Bool_t IsInECA(Int_t index) const { if ( (index > 0 && (index <= GetNZ() * GetNPhi()))) return kTRUE; else return kFALSE ;}
+  const Bool_t IsInHCA(Int_t index) const { if ( (index > 2*(GetNZ() * GetNPhi()) && (index <= 3 * (GetNZ() * GetNPhi())))) return kTRUE; else return kFALSE ;} ; 
 
   Float_t AngleFromEta(Float_t eta){ // returns angle in radians for a given
     // pseudorapidity.

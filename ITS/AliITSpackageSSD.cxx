@@ -13,29 +13,17 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.6  2002/10/22 14:45:42  alibrary
-Introducing Riostream.h
-
-Revision 1.5  2001/11/19 16:17:03  nilsen
-Applyed fixes to bugs found by Rene Brun. With many thanks. Some additonal
-bugs found by Rene require more work to fix. Will be fixed soon.
-
-Revision 1.4  2000/07/12 05:32:20  fca
-Correcting several syntax problem with static members
-
-*/
-
-#include <Riostream.h>
-#include <TClonesArray.h>
-#include "AliITSpackageSSD.h"
+/* $Id$ */
 
 //************************************************
 //Piotr Krzysztof Skowronski
 //Warsaw University of Technology
 //skowron@if.pw.edu.pl
 //
+
+#include <Riostream.h>
+#include <TClonesArray.h>
+#include "AliITSpackageSSD.h"
 
 const Bool_t AliITSpackageSSD::fgkSIDEP=kTRUE;
 const Bool_t AliITSpackageSSD::fgkSIDEN=kFALSE;

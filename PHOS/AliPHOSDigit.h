@@ -38,31 +38,26 @@ class AliPHOSDigit : public AliDigitNew {
 
   Bool_t operator==(const AliPHOSDigit &rValue) const;
   AliPHOSDigit& operator+(AliPHOSDigit const &rValue) ;
-    
+  AliPHOSDigit& operator*(Float_t factor) ; 
+
   Int_t   Compare(const TObject * obj) const ;  
-  Int_t   GetNprimary() const { 
-    // returns the number of primaries
-    return fNprimary ; }
+  Int_t   GetNprimary() const { return fNprimary ; }
   Int_t   GetPrimary(Int_t index) const ; 
   Float_t GetTime(void) const {return fTime ;}
-  Bool_t  IsSortable() const { 
-    // says that AliPHOSDigits are sortable (needed for Sort method
-    return kTRUE ; }
+  Bool_t  IsSortable() const { return kTRUE ; }
   void    Print(Option_t *option) const;
-  void    SetAmp(Int_t Amp) { 
-    // sets the amplitude data member 
-    fAmp=Amp ; } 
-  void SetTime(Float_t Time) {fTime = Time ;}
-  void ShiftPrimary(Int_t shift); // shift to separate different TreeK in merging
+  void    SetAmp(Int_t Amp) { fAmp=Amp ; } 
+  void    SetTime(Float_t Time) {fTime = Time ;}
+  void    ShiftPrimary(Int_t shift); // shift to separate different TreeK in merging
 
  private:
 
-  Int_t fNprimary ;         // Number of primaries
-  Int_t fNMaxPrimary ;      //! Max Number of primaries
-  Int_t fPrimary[5] ;       // Array of primaries      
-  Float_t fTime ;           // Calculcated time 
+  Int_t fNprimary ;        // Number of primaries
+  Int_t fNMaxPrimary ;     //! Max Number of primaries
+  Int_t * fPrimary ;       //[fNMaxPrimary] Array of primaries      
+  Float_t fTime ;          // Calculcated time 
     
-  ClassDef(AliPHOSDigit,1)   // Digit in PHOS 
+  ClassDef(AliPHOSDigit,2)   // Digit in PHOS 
 
 } ;
 

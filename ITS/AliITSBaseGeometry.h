@@ -49,12 +49,6 @@ istream &operator>>(istream &os,AliITSBaseVolParams &source);
 
 #ifndef ALIITSBOXDATA_H
 #define ALIITSBOXDATA_H
-/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- * See cxx source for full Copyright notice                               */
-
-/*
-  $Id$
- */
 
 /////////////////////////////////////////////////////////////////////////
 //  Geant 3 Box data structure.
@@ -89,12 +83,6 @@ istream &operator>>(istream &os,AliITSBoxData &source);
 
 #ifndef ALIITSTRAPEZOID1DATA_H
 #define ALIITSTRAPEZOID1DATA_H
-/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- * See cxx source for full Copyright notice                               */
-
-/*
-  $Id$
- */
 
 /////////////////////////////////////////////////////////////////////////
 //  Geant 3 Trapezoid 1 data structure.
@@ -129,12 +117,6 @@ istream &operator>>(istream &os,AliITSTrapezoid1Data &source);
 
 #ifndef ALIITSTRAPEZOID2DATA_H
 #define ALIITSTRAPEZOID2DATA_H
-/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- * See cxx source for full Copyright notice                               */
-
-/*
-  $Id$
- */
 
 /////////////////////////////////////////////////////////////////////////
 //  Geant 3 Trapezoid 2 data structure.
@@ -169,12 +151,6 @@ istream &operator>>(istream &os,AliITSTrapezoid2Data &source);
 
 #ifndef ALIITSTRAPEZOIDDATA_H
 #define ALIITSTRAPEZOIDDATA_H
-/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- * See cxx source for full Copyright notice                               */
-
-/*
-  $Id$
- */
 
 /////////////////////////////////////////////////////////////////////////
 //  Geant 3 Trapezoid General data structure.
@@ -228,12 +204,6 @@ istream &operator>>(istream &os,AliITSTrapezoidData &source);
 
 #ifndef ALIITSTRAPEZOIDTWISTEDDATA_H
 #define ALIITSTRAPEZOIDTWISTEDDATA_H
-/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- * See cxx source for full Copyright notice                               */
-
-/*
-  $Id$
- */
 
 /////////////////////////////////////////////////////////////////////////
 //  Geant 3 Trapezoid General data structure.
@@ -291,12 +261,6 @@ istream &operator>>(istream &os,AliITSTrapezoidTwistedData &source);
 
 #ifndef ALIITSTUBEDATA_H
 #define ALIITSTUBEDATA_H
-/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- * See cxx source for full Copyright notice                               */
-
-/*
-  $Id$
- */
 
 /////////////////////////////////////////////////////////////////////////
 //  Geant 3 Tube data structure.
@@ -331,12 +295,6 @@ istream &operator>>(istream &os,AliITSTubeData &source);
 
 #ifndef ALIITSTUBESEGDATA_H
 #define ALIITSTUBESEGDATA_H
-/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- * See cxx source for full Copyright notice                               */
-
-/*
-  $Id$
- */
 
 /////////////////////////////////////////////////////////////////////////
 //  Geant 3 Tube Segment data structure.
@@ -376,12 +334,6 @@ istream &operator>>(istream &os,AliITSTubeSegData &source);
 
 #ifndef ALIITSTUBECUTDATA_H
 #define ALIITSTUBECUTDATA_H
-/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- * See cxx source for full Copyright notice                               */
-
-/*
-  $Id$
- */
 
 #include <TVector3.h>
 
@@ -436,12 +388,6 @@ istream &operator>>(istream &os,AliITSTubeCutData &source);
 
 #ifndef ALIITSTUBEELLIPTICALDATA_H
 #define ALIITSTUBEELLIPTICALDATA_H
-/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- * See cxx source for full Copyright notice                               */
-
-/*
-  $Id$
- */
 
 /////////////////////////////////////////////////////////////////////////
 //  Geant 3 Tube Elliptical data structure.
@@ -477,12 +423,6 @@ istream &operator>>(istream &os,AliITSTubeEllipticalData &source);
 
 #ifndef ALIITSTUBEHYPERBOLICDATA_H
 #define ALIITSTUBEHYPERBOLICDATA_H
-/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- * See cxx source for full Copyright notice                               */
-
-/*
-  $Id$
- */
 
 /////////////////////////////////////////////////////////////////////////
 //  Geant 3 Tube Hyperbolic data structure.
@@ -520,12 +460,6 @@ istream &operator>>(istream &os,AliITSTubeHyperbolicData &source);
 
 #ifndef ALIITSCONEDATA_H
 #define ALIITSCONEDATA_H
-/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- * See cxx source for full Copyright notice                               */
-
-/*
-  $Id$
- */
 
 /////////////////////////////////////////////////////////////////////////
 //  Geant 3 Cone data structure.
@@ -564,12 +498,6 @@ istream &operator>>(istream &os,AliITSConeData &source);
   
 #ifndef ALIITSCONESEGDATA_H
 #define ALIITSCONESEGDATA_H
-/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- * See cxx source for full Copyright notice                               */
-
-/*
-  $Id$
- */
 
 /////////////////////////////////////////////////////////////////////////
 //  Geant 3 Cone Segment data structure.
@@ -613,12 +541,6 @@ istream &operator>>(istream &os,AliITSConeSegData &source);
 
 #ifndef ALIITSPCONEDATA_H
 #define ALIITSPCONEDATA_H
-/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- * See cxx source for full Copyright notice                               */
-
-/*
-  $Id$
- */
 
 /////////////////////////////////////////////////////////////////////////
 //  Geant 3 Poly-Cone data structure.
@@ -700,12 +622,6 @@ istream &operator>>(istream &os,AliITSPConeData &source);
 
 #ifndef ALIITSSPHEREDATA_H
 #define ALIITSSPHEREDATA_H
-/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- * See cxx source for full Copyright notice                               */
-
-/*
-  $Id$
- */
 
 /////////////////////////////////////////////////////////////////////////
 //  Geant 3 Tube Segment data structure.
@@ -747,12 +663,6 @@ istream &operator>>(istream &os,AliITSSphereData &source);
 
 #ifndef ALIITSPARALLELEPIPEDDATA_H
 #define ALIITSPARALLELEPIPEDDATA_H
-/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- * See cxx source for full Copyright notice                               */
-
-/*
-  $Id$
- */
 
 /////////////////////////////////////////////////////////////////////////
 //  Geant 3 Box data structure.
@@ -800,12 +710,6 @@ istream &operator>>(istream &os,AliITSParallelpipedData &source);
 
 #ifndef ALIITSPGONDATA_H
 #define ALIITSPGONDATA_H
-/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- * See cxx source for full Copyright notice                               */
-
-/*
-  $Id$
- */
 
 /////////////////////////////////////////////////////////////////////////
 //  Geant 3 Poly-Gon data structure.
@@ -889,12 +793,6 @@ istream &operator>>(istream &os,AliITSPGonData &source);
 #endif
 #ifndef ALIITSBASEGEOMETRY_H
 #define ALIITSBASEGEOMETRY_H
-/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- * See cxx source for full Copyright notice                               */
-
-/*
-  $Id$
- */
 
 /////////////////////////////////////////////////////////////////////////
 //  A basic geometry class for the ITS simulation geometry stucture

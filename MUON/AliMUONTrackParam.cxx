@@ -13,76 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.13  2002/10/14 14:57:29  hristov
-Merging the VirtualMC branch to the main development branch (HEAD)
-
-Revision 1.11.6.1  2002/10/11 06:56:48  hristov
-Updating VirtualMC to v3-09-02
-
-Revision 1.12  2002/09/19 10:14:00  cussonno
-Modified absorber correction. Added function FieldCorrection() to account
-for the effect of magnetic field in absorber.
-
-Revision 1.11  2002/03/08 17:25:36  cussonno
-Update absorber energy loss and Branson corrections : simplified functions
-BransonCorrection and TotalMomentumEnergyLoss.
-
-Revision 1.10  2001/04/25 14:50:42  gosset
-Corrections to violations of coding conventions
-
-Revision 1.9  2000/10/16 15:30:40  gosset
-TotalMomentumEnergyLoss:
-correction for change in the absorber composition (JP Cussonneau)
-
-Revision 1.8  2000/10/02 21:28:09  fca
-Removal of useless dependecies via forward declarations
-
-Revision 1.7  2000/10/02 16:58:29  egangler
-Cleaning of the code :
--> coding conventions
--> void Streamers
--> some useless includes removed or replaced by "class" statement
-
-Revision 1.6  2000/09/19 09:49:50  gosset
-AliMUONEventReconstructor package
-* track extrapolation independent from reco_muon.F, use of AliMagF...
-* possibility to use new magnetic field (automatic from generated root file)
-
-Revision 1.5  2000/07/18 16:04:06  gosset
-AliMUONEventReconstructor package:
-* a few minor modifications and more comments
-* a few corrections
-  * right sign for Z of raw clusters
-  * right loop over chambers inside station
-  * symmetrized covariance matrix for measurements (TrackChi2MCS)
-  * right sign of charge in extrapolation (ExtrapToZ)
-  * right zEndAbsorber for Branson correction below 3 degrees
-* use of TVirtualFitter instead of TMinuit for AliMUONTrack::Fit
-* no parameter for AliMUONTrack::Fit() but more fit parameters in Track object
-
-Revision 1.4  2000/07/03 07:53:31  morsch
-Double declaration problem on HP solved.
-
-Revision 1.3  2000/06/30 10:15:48  gosset
-Changes to EventReconstructor...:
-precision fit with multiple Coulomb scattering;
-extrapolation to vertex with Branson correction in absorber (JPC)
-
-Revision 1.2  2000/06/15 07:58:49  morsch
-Code from MUON-dev joined
-
-Revision 1.1.2.3  2000/06/09 21:03:09  morsch
-Make includes consistent with new file structure.
-
-Revision 1.1.2.2  2000/06/09 12:58:05  gosset
-Removed comment beginnings in Log sections of .cxx files
-Suppressed most violations of coding rules
-
-Revision 1.1.2.1  2000/06/07 14:44:53  gosset
-Addition of files for track reconstruction in C++
-*/
+/* $Id$ */
 
 ///////////////////////////////////////////////////
 //

@@ -13,6 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+
 /* $Id$ */
 
 //_________________________________________________________________________
@@ -28,17 +29,17 @@
 
 // --- ROOT system ---
 
-#include "TTree.h"  
-#include "TClonesArray.h" 
+#include <TTree.h>
+#include <TVirtualMC.h>
 
 // --- Standard library ---
 
 // --- AliRoot header files ---
 
-#include "AliRun.h"
-#include "AliPHOSvImpacts.h"
 #include "AliPHOSGeometry.h"
 #include "AliPHOSImpact.h"
+#include "AliPHOSvImpacts.h"
+#include "AliRun.h"
 
 ClassImp(AliPHOSvImpacts)
 
@@ -143,17 +144,17 @@ void AliPHOSvImpacts::AddImpact( char* det, Int_t shunt, Int_t primary, Int_t tr
 }
 
 //____________________________________________________________________________
-void AliPHOSvImpacts::MakeBranch(Option_t *opt, const char *file)
+void AliPHOSvImpacts::MakeBranch(Option_t *opt)
 {  
   // Create new branch in the current Hits Root Tree containing
   // a list of PHOS impacts (exact values of track coming to detector)
 
-  AliDetector::MakeBranch(opt,file);
+  AliDetector::MakeBranch(opt);
   
   Int_t bufferSize = 32000 ;
   Int_t splitlevel = 0 ;
-  gAlice->TreeH()->Branch("PHOSEmcImpacts" , "TList", &fEMCImpacts , bufferSize, splitlevel);
-  gAlice->TreeH()->Branch("PHOSCpvImpacts" , "TList", &fCPVImpacts , bufferSize, splitlevel);
+  TreeH()->Branch("PHOSEmcImpacts" , "TList", &fEMCImpacts , bufferSize, splitlevel);
+  TreeH()->Branch("PHOSCpvImpacts" , "TList", &fCPVImpacts , bufferSize, splitlevel);
   
 }
 

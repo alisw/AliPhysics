@@ -25,13 +25,14 @@ class AliClassInfo : public TNamed {
 public:   
   AliClassInfo(){;}
   virtual ~AliClassInfo(){;}
-  virtual void CTORBuffer(void * pointer, UInt_t size=1){;}
+  virtual void CTORBuffer(void * /*pointer*/, UInt_t /*size=1*/){;}
     //  {return (*ctorbuffer)(p,size);}
-  virtual void DTORBuffer(void * pointer, UInt_t size=1){;}
+  virtual void DTORBuffer(void * /*pointer*/, UInt_t /*size=1*/){;}
     //{return (*dtorbuffer)(p,size);}
-  virtual void StreamBuffer(TBuffer& b, const void *object, UInt_t size){;}
+  virtual void StreamBuffer(TBuffer& /*b*/,
+			    const void */*object*/, UInt_t /*size*/){;}
     //{return (*streamb)(b,object,size);}
-  virtual void ObjectDump(void *p){;}
+  virtual void ObjectDump(void */*p*/){;}
   virtual const char  * GetClassName(){ return 0;}
   virtual TClass *    GetClass(){return 0;} 
   virtual TDataType * GetDataType(){return 0;}

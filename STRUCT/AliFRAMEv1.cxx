@@ -21,9 +21,10 @@
 //  Author:
 //-------------------------------------------------------------------------
 
+#include <TSystem.h>
+
 #include "AliFRAMEv1.h"
 #include "AliRun.h"
-#include "TSystem.h"
  
 ClassImp(AliFRAMEv1)
  

@@ -12,28 +12,8 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-/*
-$Log$
-Revision 1.15  2001/05/16 14:57:16  alibrary
-New files for folders and Stack
 
-Revision 1.14  2001/05/14 06:21:49  barbera
-Some unuseful printout commented
-
-Revision 1.13  2001/05/14 05:44:11  barbera
-Version 1.11 reput in place to avoid problem with reconstruction
-
-Revision 1.11  2001/05/03 16:12:37  nilsen
-Fixed up LocalToDet, DetToLocal, GetCrossing, GetPadTxz to work with different
-angles in layer 5 and 6.
-
-Revision 1.10  2001/05/01 22:42:22  nilsen
-Update of SSD simulation and reconstruction code by Boris and Enrico.
-
-Revision 1.9  2001/04/27 14:16:50  nilsen
-Remove dead and/or unused code and printout lines. i.e. cleaned it up a bit.
-
-*/
+/* $Id$ */
 
 #include <TMath.h>
 #include <TF1.h>

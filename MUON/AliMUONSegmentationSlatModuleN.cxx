@@ -13,34 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.8  2001/05/16 14:57:17  alibrary
-New files for folders and Stack
-
-Revision 1.7  2001/01/26 21:25:48  morsch
-Empty default constructors and.
-
-Revision 1.6  2000/12/21 22:12:41  morsch
-Clean-up of coding rule violations,
-
-Revision 1.5  2000/10/26 19:32:04  morsch
-Problem with iteration over y-pads for 2nd cathode corrected.
-
-Revision 1.4  2000/10/25 19:56:55  morsch
-Handle correctly slats with less than 3 segmentation zones.
-
-Revision 1.3  2000/10/22 16:56:33  morsch
-- Store chamber number as slat id.
-
-Revision 1.2  2000/10/18 11:42:06  morsch
-- AliMUONRawCluster contains z-position.
-- Some clean-up of useless print statements during initialisations.
-
-Revision 1.1  2000/10/06 08:59:03  morsch
-Segmentation classes for bending and non bending plane slat modules (A. de Falco, A. Morsch)
-
-*/
+/* $Id$ */
 
 /////////////////////////////////////////////////////
 //  Segmentation classes for slat modules          //

@@ -3,6 +3,7 @@ void DrawALICE()
    gMC->Gsatt("*", "seen", -1);
    gMC->Gsatt("alic", "seen", 0);
    gROOT->LoadMacro("ViewABSO.C");gInterpreter->ProcessLine("ViewABSO()");
+   gROOT->LoadMacro("ViewCASTOR.C");gInterpreter->ProcessLine("ViewCASTOR()");
    gROOT->LoadMacro("ViewDIPO.C");gInterpreter->ProcessLine("ViewDIPO()");
    gROOT->LoadMacro("ViewFMD.C");gInterpreter->ProcessLine("ViewFMD()");
    gROOT->LoadMacro("ViewHALL.C");gInterpreter->ProcessLine("ViewHALL()");

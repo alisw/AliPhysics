@@ -15,30 +15,95 @@
 
 /* $Id$ */
 
-// Class for configuration of TFolder and TTasks
-// in AliRoot. Used by AliRun, AliGenerator, 
-// AliModule and AliDetector classes
-// as well as by the PHOS and EMCAL Getters
-// Author: Originally developed by the PHOS group
+//  Description:
+//  This class is responsible for creating folder structure
+//  All stuff of aliroot sits in one folder with name defined by
+//  fgkTopFolderName data wich do not very trough event to event are
+//  sitting in directly in "top folder" all data which changes from
+//  event to event are sitting in one folder (which has more subfolders)
+//  Idea is to have more than one event in folder structure which allows
+//  usage of standard procedures in merging
+//  Add(AliDetector*) calls Add(AliModule*) as AliDetector is a AliModule
+//  as well and should be listed in module list
 
-#include <Riostream.h>
 #include <TDatabasePDG.h>
 #include <TFolder.h>
 #include <TInterpreter.h>
+#include <TObjString.h>
 #include <TROOT.h>
+#include <TString.h>
 #include <TSystem.h>
+#include <TTask.h>
 #include <TVirtualMC.h>
 
 #include "AliConfig.h"
 #include "AliDetector.h"
 #include "AliGenerator.h" 
-#include "TObjString.h" 
-#include "TString.h"
-#include "TTask.h" 
+#include "AliLoader.h"
 
+enum 
+ {
+  kDetTaskQA = 0,
+  kDetTaskSDigitizer,
+  kDetTaskDigitizer,
+  kDetTaskRecontructioner,
+  kDetTaskTracker,
+  kDetTaskPID,
+  kDetTaskLast
+ };
+
+enum
+ {
+   kDetFolderData = 0,
+   kDetFolderCalibration,
+   kDetFolderAligmnet,
+   kDetFolderQA,
+   kDetFolderLast
+ };
 ClassImp(AliConfig)
 
-AliConfig* AliConfig::fgInstance = 0;
+AliConfig* AliConfig::fInstance = 0;
+
+//0 level folder
+const TString AliConfig::fgkTopFolderName("Folders");
+
+//1st level folder
+const TString AliConfig::fgkTasksFolderName("Tasks"); //task folder, commn
+const TString AliConfig::fgkConstantsFolderName("Constants");
+const TString AliConfig::fgkDefaultEventFolderName("Event");  //default folder for event, always used except merging
+
+//2st level folder
+//subfolder of event folder
+const TString AliConfig::fgkDataFolderName("Data");//folder for data (hits, digits, points, tracks) grouped by detectors
+const TString AliConfig::fgkModuleFolderName("Modules");//folder with modules objects
+const TString AliConfig::fgkConditionsFolderName("Conditions");//folder with conditions (mag. field etc.)
+const TString AliConfig::fgkConfigurationFolderName("Configuration");//folder with configuration (setup) of the detector
+const TString AliConfig::fgkHeaderFolderName("Header");//folder with header and other MC information
+
+//Tasks names, goes into fgkTasksFolderName folder
+const TString AliConfig::fgkDigitizerTaskName("Digitizer");
+const TString AliConfig::fgkSDigitizerTaskName("SDigitizer");
+const TString AliConfig::fgkReconstructionerTaskName("Reconstructioner");
+const TString AliConfig::fgkTrackerTaskName("Tracker");
+const TString AliConfig::fgkPIDTaskName("PIDTask");//;=) PIDer???
+const TString AliConfig::fgkQATaskName("QAtask");
+
+//3rd level folder
+//fgkConditionsFolderName subfolders
+const TString AliConfig::fgkCalibrationFolderName("Calibration");
+const TString AliConfig::fgkAligmentFolderName("Aligment");
+const TString AliConfig::fgkQAFolderName("QAout");
+  
+//3rd level folder
+//fgkConfigurationFolderName subfolders
+const TString AliConfig::fgkFieldFolderName("Field");
+const TString AliConfig::fgkGeneratorsFolderName("Generators");
+const TString AliConfig::fgkVirtualMCFolderName("VirtualMC");
+
+
+const TString AliConfig::fgkPDGFolderName("Constants/DatabasePDG");//folder with PDG Database
+const TString AliConfig::fgkGeneratorFolderName("Configuration/Generators");//folder with generators
+const TString AliConfig::fgkMCFolderName("Configuration/VirtualMC");
 
 //____________________________________________________________________________
 AliConfig* AliConfig::Instance ()
@@ -46,242 +111,157 @@ AliConfig* AliConfig::Instance ()
   //
   // Instance method for singleton class
   //
-  if(!fgInstance) fgInstance = new AliConfig ("Folders","Alice data exchange");
-
-  return fgInstance;
+   if(fInstance == 0) 
+    {
+     fInstance = new AliConfig (fgkTopFolderName,"Alice data exchange board");
+    }
+   return fInstance;
 }
 
 //____________________________________________________________________________
 AliConfig::AliConfig():
-  fTopFolder(0),
-  fTasks(0),
-  fPDGFolder(0),
-  fGeneratorFolder(0),
-  fMCFolder(0),
-  fModuleFolder(0),
-  fDetectorFolder(0),
-  fDetectorTask(0)
+  fTopFolder(0x0),
+  fTaskFolder(0x0),
+  fConstFolder(0x0),
+  fDetectorTask(0x0),
+  fDetectorFolder(0x0)
 {
   //
   // Default constructor, mainly to keep coding conventions
   //
-  fgInstance=0;
-    
-  Fatal("ctor",
-   "Constructor should not be called for a singleton\n");
+  fInstance=0;//never mind, its going to exit in next step
+  Fatal("ctor","Constructor should not be called for a singleton\n");
 }
-
 //____________________________________________________________________________
+
 AliConfig::AliConfig(const AliConfig& conf):
-  TNamed(conf),
-  fTopFolder(0),
-  fTasks(0),
-  fPDGFolder(0),
-  fGeneratorFolder(0),
-  fMCFolder(0),
-  fModuleFolder(0),
-  fDetectorFolder(0),
-  fDetectorTask(0)
+  fTopFolder(0x0),
+  fTaskFolder(0x0),
+  fConstFolder(0x0),
+  fDetectorTask(0x0),
+  fDetectorFolder(0x0)
 {
   //
   // Copy constructor, mainly to keep coding conventions
   //
-  fgInstance=0;
+  fInstance=0;
     
   Fatal("copy ctor",
    "Copy constructor should not be called for a singleton\n");
 }
-
 //____________________________________________________________________________
+
 AliConfig::AliConfig(const char *name, const char *title): 
   TNamed(name,title), 
-  fTopFolder(gROOT->GetRootFolder ()->AddFolder (name,title)),
-  fTasks(0),
-  fPDGFolder("Constants/DatabasePDG"),
-  fGeneratorFolder("RunMC/Configuration/Generators"),
-  fMCFolder("RunMC/Configuration/VirtualMC"),
-  fModuleFolder("Run/Configuration/Modules"),
-  fDetectorFolder(new const char*[kFolders]),
-  fDetectorTask(new const char*[kTasks])
+  fTopFolder(gROOT->GetRootFolder()->AddFolder(name,title)),
+  fTaskFolder(fTopFolder->AddFolder(fgkTasksFolderName, "ALICE Tasks")),
+  fConstFolder(0x0),
+  fDetectorTask(0x0),
+  fDetectorFolder(new TString[kDetFolderLast+1])
 {
-  //
-  // Constructor
-  //
-  fgInstance=this;
-  
-  fDetectorFolder[0] = "Run/Conditions/Calibration" ;
-  fDetectorFolder[1] = "Run/Event/Data" ;
-  fDetectorFolder[2] = "Run/Event/RecData" ;
-  fDetectorFolder[3] = "RunMC/Event/Data/Hits" ;
-  fDetectorFolder[4] = "RunMC/Event/Data/SDigits" ;
-  fDetectorFolder[5] = "Run/Conditions/QA" ;  
-  fDetectorFolder[6] = "RunMC/Event/Data/TrackReferences" ;  
-  fDetectorFolder[7] = 0 ;  
-  fDetectorTask[0] = "Tasks/QA" ;  
-  fDetectorTask[1] = "Tasks/SDigitizer" ;  
-  fDetectorTask[2] = "Tasks/Digitizer" ;  
-  fDetectorTask[3] = "Tasks/Reconstructioner" ;  
-  fDetectorTask[4] = 0 ;  
+// Constructor
 
-  fTopFolder->SetOwner() ; 
-  gROOT->GetListOfBrowsables ()->Add (fTopFolder, name);
+  //Main AliRoot Folder
+  if (fTopFolder == 0x0)
+   {
+     Fatal("AliConfig(const char*, const char*)","Can not create Top Alice Folder.");
+     return;//never reached
+   }
+  fTopFolder->SetOwner();
   
-  TFolder *subfolder;
+  fDetectorFolder[kDetFolderData] = fgkDataFolderName;
+  fDetectorFolder[kDetFolderCalibration] = fgkConditionsFolderName+"/"+fgkCalibrationFolderName;
+  fDetectorFolder[kDetFolderAligmnet] = fgkConditionsFolderName+"/"+fgkAligmentFolderName;
+  fDetectorFolder[kDetFolderQA] = fgkConditionsFolderName+"/"+fgkQAFolderName;
+  fDetectorFolder[kDetFolderLast] = "";
   
-  TFolder *constants =
-    fTopFolder->AddFolder ("Constants", "Detector constants");
-  
-  subfolder = 
-    constants->AddFolder ("DatabasePDG", "PDG database");
-  
-  TFolder *run = 
-    fTopFolder->AddFolder ("Run", "Run dependent folders");
-  
-  TFolder *conditions = 
-    run->AddFolder ("Conditions", "Run conditions");
-  
-  subfolder =
-    conditions->AddFolder ("Calibration","Detector calibration data");
-  
-  subfolder =
-    conditions->AddFolder ("Aligment", "Detector aligment");
-  
-  subfolder =
-    conditions->AddFolder ("QA", "Detector QA");
-  
-  TFolder *configuration =
-    run->AddFolder ("Configuration", "Run configuration");
-  
-  subfolder =
-    configuration->AddFolder ("Modules", "Detector objects");
-  
-  subfolder =
-    configuration->AddFolder ("Field", "Magnetic field maps");
-  
-  TFolder *event = 
-    run->AddFolder ("Event", "Event folders");
-  
-  subfolder = 
-    event->AddFolder ("Data", "Detector raw data");
-  
-  subfolder =
-    event->AddFolder ("RecData", "Detectors reconstucted data");
-  
-  TFolder *runMC =
-    fTopFolder->AddFolder ("RunMC", "MonteCarlo run dependent folders");
-  
-  TFolder *configurationMC =
-    runMC->AddFolder ("Configuration","MonteCarlo run configuration");
-  
-  subfolder =
-    configurationMC->AddFolder ("Generators","list of generator objects");
-  
-  subfolder =
-    configurationMC->AddFolder ("VirtualMC", "the Virtual MC");
-  
-  TFolder *eventMC =
-    runMC->AddFolder ("Event", "MonteCarlo event folders");
-  
-  subfolder =
-    eventMC->AddFolder ("Header", "MonteCarlo event header");
-  
-  //		subfolder =
-  //		    eventMC->AddFolder ("Kinematics", "MonteCarlo generated particles");
-  
-  TFolder *dataMC =
-    eventMC->AddFolder ("Data", "MonteCarlo data");
-  
-  subfolder = 
-    dataMC->AddFolder ("Hits", "MonteCarlo Hits") ; 
- 
- subfolder = 
-    dataMC->AddFolder ("SDigits", "MonteCarlo SDigits") ; 
+  gROOT->GetListOfBrowsables()->Add(fTopFolder, name);
 
- subfolder = 
-    dataMC->AddFolder ("TrackReferences", "MonteCarlo track references") ; 
-
-
+  //Constants folder
+  TFolder *fConstFolder = fTopFolder->AddFolder (fgkConstantsFolderName, "Constant parameters");
+  fConstFolder->AddFolder("DatabasePDG", "PDG database");
   
   // Add the tasks to //Folders
   
-  TFolder * tasksfolder = fTopFolder->AddFolder("Tasks", "ALICE Tasks") ; 
+  TTask * qa = new TTask(fgkQATaskName, "Alice QA tasks");
+  fTaskFolder->Add(qa); 
+  TTask * sd = new TTask(fgkSDigitizerTaskName, "Alice SDigitizer") ;
+  fTaskFolder->Add(sd); 
+  TTask * di = new TTask(fgkDigitizerTaskName, "Alice Digitizer") ;
+  fTaskFolder->Add(di); 
+  TTask * re = new TTask(fgkReconstructionerTaskName, "Alice Reconstructioner") ;
+  fTaskFolder->Add(re); 
+  TTask * tr = new TTask(fgkTrackerTaskName,"Alice Tracker");
+  fTaskFolder->Add(tr);
+  TTask * pid = new TTask(fgkPIDTaskName,"Alice Particle Identification Task");
+  fTaskFolder->Add(pid);
+  fDetectorTask    =  new TString[kDetTaskLast+1];
   
-  TTask * qa = new TTask("QA", "Alice QA tasks") ;
-  tasksfolder->Add(qa); 
-  
-  TTask * sd = new TTask("SDigitizer", "Alice SDigitizer") ;
-  tasksfolder->Add(sd); 
+  fDetectorTask[kDetTaskQA] = fgkQATaskName;
+  fDetectorTask[kDetTaskSDigitizer] = fgkSDigitizerTaskName;
+  fDetectorTask[kDetTaskDigitizer] =  fgkDigitizerTaskName;
+  fDetectorTask[kDetTaskRecontructioner] = fgkReconstructionerTaskName;
+  fDetectorTask[kDetTaskTracker] = fgkTrackerTaskName;
+  fDetectorTask[kDetTaskPID] = fgkPIDTaskName;
+  fDetectorTask[kDetTaskLast] = "";
 
-  TTask * di = new TTask("Digitizer", "Alice Digitizer") ;
-  tasksfolder->Add(di); 
-
-  TTask * re = new TTask("Reconstructioner", "Alice Reconstructioner") ;
-  tasksfolder->Add(re); 
-
+  fInstance=this;
 }
 
 //____________________________________________________________________________
 AliConfig::~AliConfig()
 { 
-  // destructor
   delete [] fDetectorFolder ;  
-  delete fDetectorTask ;  
-  delete fTopFolder ; 
+  delete [] fDetectorTask;
+  if (fTopFolder)
+   {
+    fTopFolder->SetOwner();
+    delete fTopFolder; 
+   }
 }
-
 //____________________________________________________________________________
+
 void AliConfig::AddInFolder (const char *dir, TObject *obj)
 {
-  // Adds an object "obj" to a folder named "dir"
-  TFolder *folder =
-    dynamic_cast<TFolder *>(fTopFolder->FindObject(dir));
+  TFolder *folder = dynamic_cast<TFolder *>(fTopFolder->FindObject(dir));
   if (folder)
     folder->Add (static_cast<TObject *>(obj));
 }
-
 //____________________________________________________________________________
-void    AliConfig::AddSubFolder(const char * dir[], TObject *obj)
-{
-  // Adds a subfolder taken from "obj" to all the folders from dir,
-  // which are found in the top folder
-  int iDir = 0;
-  
-  while (dir[iDir]) 
-    {
-      TFolder * folder = dynamic_cast<TFolder *>(fTopFolder->FindObject (dir[iDir++]));
-      if (folder) {
-	TFolder * subfolder = dynamic_cast<TFolder *>(folder->FindObject (obj->GetName()));
-	if (!subfolder)
-	  subfolder = folder->AddFolder (obj->GetName(),obj->GetTitle());			   
-      }
-    }
-}
 
-//____________________________________________________________________________
-void    AliConfig::AddSubTask(const char * dir[], TObject *obj)
+Int_t AliConfig::AddSubTask(const char *taskname, const char* name,const char* title)
 {
-  // Adds a subtask taken from "obj" to all the folders from dir,
-  // which are found in the top folder
-  int iDir = 0;
-  
-  while (dir[iDir]) 
-    {
-      TTask * task = dynamic_cast<TTask *>(fTopFolder->FindObject (dir[iDir++]));
-      if (task) {
-	TTask * subtask = static_cast<TTask*>(task->GetListOfTasks()->FindObject (obj->GetName()));
-	if (!subtask) {
-	  subtask = new TTask(obj->GetName(), obj->GetTitle()) ; 
-	  task->Add(subtask);			   
-	}
-      }
-    }
+//Create new task named 'name' and titled 'title' 
+//as a subtask of the task named 'taskname'
+
+   if (AliLoader::fgDebug) Info("AddSubTask","Try to get folder named %s",taskname);
+   TObject* obj = fTopFolder->FindObject(taskname);
+   TTask * task = (obj)?dynamic_cast<TTask*>(obj):0x0;
+   if (task)
+     {
+      if (AliLoader::fgDebug) Info("AddSubTask","          Got");
+      TTask * subtask = static_cast<TTask*>(task->GetListOfTasks()->FindObject(name));
+      if (!subtask) 
+        {
+          subtask = new TTask(name,title);
+          task->Add(subtask);
+        }
+      else
+       {
+         Warning("AddSubTask","Task named \"%s\" already exists in Task %s\n",name,taskname);
+       }
+     }
+   else
+     {
+       Error("AddSubTask","Can not find task %s to put a new task in.",taskname);
+       return 1;
+     }
+  return 0;
 }
 
 //____________________________________________________________________________
 TObject* AliConfig::FindInFolder (const char *dir, const char *name)
 {
-  // Searches for object with "name" in the top directory and in
-  // the directory "dir"
   if(!name) return(fTopFolder->FindObject(name));
   TFolder * folder = dynamic_cast<TFolder *>(fTopFolder->FindObject(dir));
   if (!folder) return (NULL);
@@ -289,54 +269,163 @@ TObject* AliConfig::FindInFolder (const char *dir, const char *name)
 }
 
 //____________________________________________________________________________
-void    AliConfig::Add (AliGenerator * obj)
+void    AliConfig::Add (AliGenerator * obj,const char* eventfolder)
 {
-  // Adds new AliGenerator to the generator's folder
-  AddInFolder(fGeneratorFolder, obj);
+  TString path(eventfolder);
+  path = path + "/" + fgkGeneratorsFolderName;
+  AddInFolder(path,obj);
 }
 
 //____________________________________________________________________________
-void    AliConfig::Add (TVirtualMC * obj)
+void AliConfig::Add (TVirtualMC * obj,const char* eventfolder)
 {
-  // Adds new object of type TVirtualMC to the MC folder
-  AddInFolder(fMCFolder, obj);
+  TString path(eventfolder);
+  path = path + "/" + fgkMCFolderName;
+  AddInFolder(path, obj);
 }
 
 //____________________________________________________________________________
-void    AliConfig::Add (TDatabasePDG * obj)
+void  AliConfig::Add (TDatabasePDG * obj)
 {
-  // Adds new TDatabasePDG to the PDG folder
-  AddInFolder(fPDGFolder, obj);
+  AddInFolder(fgkPDGFolderName, obj);
 }
 
 //____________________________________________________________________________
-void    AliConfig::Add (AliModule* obj)
+void AliConfig::Add(AliModule* obj,const char* eventfolder)
 {
-  // Adds new module to the folder of modules 
-  AddInFolder(fModuleFolder, obj);
+  
+  TString path(eventfolder);
+  path = path + "/" + fgkModuleFolderName;
+  if (AliLoader::fgDebug)
+    Info("Add(AliModule*)","module name = %s, Ev. Fold. Name is %s.",
+         obj->GetName(),eventfolder);
+  AddInFolder(path, obj);
 }
-
 //____________________________________________________________________________
-void    AliConfig::Add (AliDetector * obj)
-{
-  // Adds new detector to the detctor's folder as well as to
-  // the detector's task
-  AddSubFolder(fDetectorFolder, obj); 
-  AddSubTask(fDetectorTask, obj);
-}
 
+Int_t AliConfig::AddDetector(TFolder* evntfolder, const char *name, const char* title)
+{
+//creates folders and tasks for the detector 'name'
+ Int_t retval;//returned value
+ retval = CreateDetectorFolders(evntfolder,name,title);
+ if (retval)
+  {
+    Error("AddDetector","CreateDetectorFolders returned error for detector %s",name);
+    return retval;
+  }
+ return 0; 
+}
+//____________________________________________________________________________
+
+Int_t AliConfig::AddDetector(const char* evntfoldername,const char *name, const char* title)
+{
+//creates folders and tasks for the detector 'name'
+ Int_t retval;//returned value
+ retval = CreateDetectorFolders(evntfoldername,name,title);
+ if (retval)
+  {
+    Error("AddDetector","CreateDetectorFolders returned error for detector %s",name);
+    return retval;
+  }
+// retval = CreateDetectorTasks(name,title);
+// if (retval)
+//  {
+//    Error("AddDetector","CreateDetectorTasks returned error for detector %s",name);
+//    return retval;
+//  }
+ return 0; 
+}
+//____________________________________________________________________________
+
+void  AliConfig::Add(AliDetector * obj,const char* eventfolder)
+{
+  if (AliLoader::fgDebug) 
+    Info("Add(AliDetector*)","detector name = %s, Ev. Fold. Name is %s.",
+        obj->GetName(),eventfolder);
+
+  TObject* foundobj = GetTopFolder()->FindObject(eventfolder);
+  TFolder* evfolder = (foundobj)?dynamic_cast<TFolder*>(foundobj):0x0;
+  if (evfolder == 0x0)
+   {
+     Fatal("Add(AliDetector * obj,const char* eventfolder)",
+           "Can not find folder %s while adding detector %s",eventfolder,obj->GetName());
+     return;
+   } 
+  CreateDetectorFolders(evfolder, obj->GetName(), obj->GetTitle());
+  
+//  CreateDetectorTasks(obj->GetName(),obj->GetTitle());
+
+}
+//____________________________________________________________________________
+
+Int_t  AliConfig::CreateDetectorFolders(const char* evntfoldername,const char *name, const char* title)
+{
+//creates a folders for detector named 'name' and titled 'title'
+//in a event folder named 'evntfoldername'
+//list of folder names where new folders are created is defined in fDetectorFolder array 
+//detector folders are named 'name' and titled 'title' as well
+
+ TFolder* evfolder = dynamic_cast<TFolder*>(GetTopFolder()->FindObject(evntfoldername));
+ if (evfolder == 0x0)
+  {
+   Error("CreateDetectorFolders",
+         "Can not find folder %s while adding detector %s",evntfoldername,name);
+   return 1;
+  }
+ return CreateDetectorFolders(evfolder,name,title);
+}
+//____________________________________________________________________________
+Int_t  AliConfig::CreateDetectorFolders(TFolder* evntfolder,const char *name, const char* title)
+{
+//creates a folders for detector named 'name' and titled 'title'
+//in a event folder 'evntfolder'
+//list of folder names where new folders are created is defined in fDetectorFolder array 
+//detector folders are named 'name' and titled 'title' as well
+//Here we add only detector not an modules
+ 
+ Int_t tmp;
+ Int_t i = 0;//iterator
+ while(!fDetectorFolder[i].IsNull())
+  {
+    tmp = AddSubFolder(evntfolder,fDetectorFolder[i],name,title);
+    if (tmp)
+     {
+      Error("AddDetector(TFolder*","Failed to create subfolder of %s for detector %s",fDetectorFolder[i].Data(),name);
+      return 1;
+     }
+    i++;
+  }
+ return 0;
+}
+//____________________________________________________________________________
+Int_t AliConfig::CreateDetectorTasks(const char *name, const char* title)
+{
+   Int_t i = 0;
+   Int_t tmp;
+   while (i < kDetTaskLast)
+    {
+      tmp = AddSubTask(fgkTasksFolderName+"/"+fDetectorTask[i],
+                       name+fDetectorTask[i],(fDetectorTask[i]+" for ")+title);
+      if (tmp)
+       {
+         Error("CreateDetectorTasks","Error occured while creating task for %s in %s.",
+                name,fDetectorTask[i-1].Data());
+         return 1;
+       }
+      i++;
+    }
+   return 0;
+}
 
 //____________________________________________________________________________
 void    AliConfig::Add (char *list)
 {
-  // Finds in the list of directories all macros named Configure.C 
-  // and Default.C and uses them to configure the setup
   char *path;
   
-  const char   *confPath = gSystem->Getenv ("ALICE_CONFIG_PATH");
-  if  (confPath) {
-    path = new char[strlen (confPath)];
-    strcpy (path, confPath);
+  const char   *conf_path = gSystem->Getenv ("ALICE_CONFIG_PATH");
+  if  (conf_path) {
+    path = new char[strlen (conf_path)];
+    strcpy (path, conf_path);
   } else {
     const char   *alice = gSystem->Getenv ("ALICE_ROOT");
     path = new char[strlen (alice) + 32];
@@ -361,57 +450,309 @@ void    AliConfig::Add (char *list)
   token = strtok (list, " ");
   
   while (token != NULL)
-    {
-      cout << "Configuring " << token << ": ";
+    { 
+      Info("Add(char *list)","Configuring token=%s",token);
       
       TObject *obj;
       TIter   next (dirlist);
       TString found = "\0";
       
       while ((obj = next ()))
-	{
-	  TString dir(obj->GetName());
-	  TString tpath  = dir + "/" + token;
-	  TString macro = tpath + ".C";
-	  if (!gSystem->AccessPathName (macro.Data()))	{
-	    gInterpreter->ExecuteMacro (macro.Data());				   
-	    found = "(" + macro + ")";
-	    if (macro.Contains("/")) {
-	      TString dirname = gSystem->DirName(macro.Data());
-	      TString macroConfigure = dirname + "/Configure.C";
-	      if (!gSystem->AccessPathName (macroConfigure.Data()))	{
-		gInterpreter->ExecuteMacro (macroConfigure.Data());				    
-		found += " => Configured";
-	      }			      
-	    }
-	    break;
-	  } else {
-	    TString macroDefault = tpath + "/Default.C";
-	    if (!gSystem->AccessPathName (macroDefault.Data()))	{
-	      gInterpreter->ExecuteMacro (macroDefault.Data());
-	      found = "(" + macro + ")";
-	      TString macroConfigure = tpath + "/Configure.C";
-	      if (!gSystem->AccessPathName (macroConfigure.Data()))	{
-		gInterpreter->ExecuteMacro (macroConfigure.Data());				    
-		found += " => Configured";
-	      }
-	      break; 				    
-	    }
-	  }
-	}
+        {
+          TString dir(obj->GetName());
+          TString path  = dir + "/" + token;
+          TString macro = path + ".C";
+          if (!gSystem->AccessPathName (macro.Data()))	
+           {
+            gInterpreter->ExecuteMacro (macro.Data());				   
+            found = "(" + macro + ")";
+            if (macro.Contains("/")) 
+             {
+               TString dirname = gSystem->DirName(macro.Data());
+               TString macroConfigure = dirname + "/Configure.C";
+               if (!gSystem->AccessPathName (macroConfigure.Data()))
+                {
+                  gInterpreter->ExecuteMacro (macroConfigure.Data());				    
+                  found += " => Configured";
+                }			      
+             }
+            break;
+           } 
+          else 
+           {
+            TString macroDefault = path + "/Default.C";
+            if (!gSystem->AccessPathName (macroDefault.Data()))
+              {
+                gInterpreter->ExecuteMacro (macroDefault.Data());
+                found = "(" + macro + ")";
+                TString macroConfigure = path + "/Configure.C";
+                if (!gSystem->AccessPathName (macroConfigure.Data()))	
+                  {
+                    gInterpreter->ExecuteMacro (macroConfigure.Data());				    
+                    found += " => Configured";
+                  }
+                break; 				    
+              }
+           }
+        }
       
-      if (strlen(found.Data())) {
-	cout << found << " => OK" << endl;
-      } else {
-	cout << " => FAILED." << endl;
-	exit(1); 
-      }   	    
+      if (strlen(found.Data())) 
+        {
+          Info("Add(char *list)","found=%s  => OK",found.Data());
+        } 
+      else 
+        {
+          Error("Add(char *list)"," => FAILED.");
+          exit(1); 
+        }   	    
       
-      token = strtok (NULL, " ");
+      token = strtok (NULL," ");
     }
   
   if (dirlist) delete dirlist;
   
 }
 
+/*****************************************************************************/
 
+TFolder* AliConfig::BuildEventFolder(const char* name,const char* title)
+{
+/*
+ creates the folder structure for one event
+ TopFolder_
+         | \
+         |  Tasks
+         |_
+         | \
+         |  Constants
+         |_
+         | \
+         |  Event_
+         |      | \
+         |      |  Modules(detector objects)
+         |      |_
+         |      | \              
+         |      |  Header
+         |      |_
+         |      | \              
+         |      |  Data_
+         |      |     | \ 
+         |      |     |  TPC_
+         |      |     |    | \
+         |      |     |    |  Hits(object;e.g. tree)
+         |      |     |    |_  
+         |      |     |    | \ 
+         |      |     |    |  SDigits(object)
+         |      |     |    |_
+         |      |     |    | \ 
+         |      |     |    |  Digits(object)
+         |      |     |    |_
+         |      |     |    | \ 
+         |      |     |    |  RecPoints(object)
+         |      |     |    |_
+         |      |     |      \ 
+         |      |     |       Tracks(object)
+         |      |     |_ 
+         |      |       \
+         |      |        ITS_
+         |      |          | \
+         |      |          |  Hits(object;e.g. tree)
+         |      |          |_  
+         |      |          | \ 
+         |      |          |  SDigits(object)
+         |      |          |_
+         |      |          | \ 
+         |      |          |  Digits(object)
+         |      |          |_
+         |      |          | \ 
+         |      |          |  RecPoints(object)
+         |      |          |_
+         |      |            \ 
+         |      |             Tracks(object)
+         |      |_         
+         |        \       
+         |         Configuration
+         |               
+         |_
+           \
+            Event2_  (to be merged with event)
+                |  \
+                |   Modules(detector objects)
+                |_
+                | \              
+                |  Header
+                |_
+                | \              
+                |  Data_
+                |     | \ 
+                |     |  TPC_
+                |     |    | \
+                |     |    |  Hits(object;e.g. tree)
+                |     |    |_  
+                |     |    | \ 
+                |     |    |  SDigits(object)
+                |     |    |_
+                |     |    | \ 
+                |     |    |  Digits(object)
+                |     |    |_
+                |     |    | \ 
+                |     |    |  RecPoints(object)
+                |     |    |_
+                |     |      \ 
+                |     |       Tracks(object)
+                |     |_ 
+                |       \
+                |        ITS_
+                |          | \
+                |          |  Hits(object;e.g. tree)
+                |          |_  
+                |          | \ 
+                |          |  SDigits(object)
+                |          |_
+                |          | \ 
+                |          |  Digits(object)
+                |          |_
+                |          | \ 
+                |          |  RecPoints(object)
+                |          |_
+                |            \ 
+                |             Tracks(object)
+                |_         
+                  \       
+                   Configuration
+                         
+*/
+  TFolder* eventfolder = fTopFolder->AddFolder(name,title); 
+   
+  //modules
+  eventfolder->AddFolder(fgkModuleFolderName, "Detector objects");
+  //event data
+  eventfolder->AddFolder(fgkDataFolderName, "Detector data");
+  
+    //Conditions
+  TFolder *conditions = eventfolder->AddFolder(fgkConditionsFolderName, "Run conditions");
+  conditions->AddFolder(fgkCalibrationFolderName,"Detector calibration data");
+  conditions->AddFolder(fgkAligmentFolderName,"Detector aligment");
+  conditions->AddFolder(fgkQAFolderName,"Quality Asurance Output"); //Folder with output of the QA task(s)
+  //Configuration
+  TFolder *configuration = eventfolder->AddFolder(fgkConfigurationFolderName, "Run configuration");
+  configuration->AddFolder(fgkFieldFolderName, "Magnetic field maps");
+  configuration->AddFolder(fgkGeneratorsFolderName,"list of generator objects");
+  configuration->AddFolder(fgkVirtualMCFolderName,"the Virtual MC");
+
+  eventfolder->AddFolder(fgkHeaderFolderName,"MonteCarlo event header");
+
+  eventfolder->SetOwner();
+
+  return eventfolder;
+}
+
+/*****************************************************************************/
+
+TString AliConfig::GetQATaskName() const
+ {
+ //returns task name
+  return fDetectorTask[kDetTaskQA];
+ }
+/*****************************************************************************/
+ 
+TString AliConfig::GetDigitizerTaskName() const
+ {
+ //returns task name
+  return fDetectorTask[kDetTaskDigitizer];
+ }
+/*****************************************************************************/
+ 
+TString AliConfig::GetSDigitizerTaskName() const
+ {
+ //returns task name
+  return fDetectorTask[kDetTaskSDigitizer];
+ }
+/*****************************************************************************/
+
+TString AliConfig::GetReconstructionerTaskName() const
+ {
+ //returns task name
+  return fDetectorTask[kDetTaskRecontructioner];
+ }
+/*****************************************************************************/
+
+TString AliConfig::GetTrackerTaskName() const
+ {
+ //returns task name
+  return fDetectorTask[kDetTaskTracker];
+ }
+/*****************************************************************************/
+
+TString AliConfig::GetPIDTaskName() const
+ {
+ //returns task name
+  return fDetectorTask[kDetTaskPID];
+ }
+/*****************************************************************************/
+
+const TString& AliConfig::GetQAFolderName() const
+{
+//returns pathname of folder with QA output relative to Top Alice Folder
+  return fDetectorFolder[kDetFolderQA];
+}
+/*****************************************************************************/
+
+const TString& AliConfig::GetDataFolderName()
+{
+//returns name of data folder path relative to event folder
+ return fgkDataFolderName;
+}
+/*****************************************************************************/
+
+Int_t AliConfig::AddSubFolder(TFolder* topfolder, const char* infoler, 
+                     const char* newfoldname, const char* newfoldtitle)
+{
+//helper method
+//in topfolder looks for folder named 'infolder'
+//and if it exist it creates inside a new folder named 'newfoldname' and titled 'newfoldtitle'
+
+ if (topfolder == 0x0)//check if exists top folder
+  {
+   Error("AddSubFodler(TFolder*, ....","Parameter TFolder* points to NULL.");
+   return 1;
+  }
+ 
+ TObject *obj;
+ TFolder* folder;
+ 
+ folder = dynamic_cast<TFolder*>(topfolder->FindObject(infoler));
+ if (folder == 0x0) //check if we got inolder
+  {
+   Error("AddSubFodler(TFolder*, ....","Can not find folder %s in folder %s.",infoler,topfolder->GetName());
+   return 1;
+  }
+ obj = folder->FindObject(newfoldname); //see if such a subfolder already exists
+ if (obj == 0x0) //nope
+  {
+   TFolder *newfolder = folder->AddFolder(newfoldname,newfoldtitle);//add the desired subfolder
+   if (newfolder == 0x0) //check if we managed
+    {
+     Error("AddSubFodler(TFolder*, ....","Can not create folder %s in folder %s",newfoldname,infoler);
+     return 2;
+    }
+   else return 0;//success
+  }
+ else
+  {//such an object already exists
+    TFolder* fol = dynamic_cast<TFolder*>(obj);
+    if (fol == 0x0)
+     {
+      Error("AddSubFodler(TFolder*, ....",
+             "Object named %s already exists in folder %s AND IT IS NOT A FOLDER",newfoldname,infoler);
+      return 3;
+     }
+    else
+     {
+      Warning("AddSubFodler(TFolder*, ....",
+             "Folder named %s already exists in folder %s",newfoldname,infoler);
+      return 0;
+     }
+  }
+ return 0; //never reached
+}

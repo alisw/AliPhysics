@@ -24,9 +24,17 @@ void Config()
 
     if (!gSystem->Getenv("CONFIG_FILE"))
     {
-        TFile  *rootfile = new TFile("galice.root", "recreate");
-
-        rootfile->SetCompressionLevel(2);
+        cout<<"Config.C: Creating Run Loader ..."<<endl;
+        AliRunLoader* rl = AliRunLoader::Open("galice.root",AliConfig::fgkDefaultEventFolderName,
+                                              "recreate");
+        if (rl == 0x0)
+         {
+           gAlice->Fatal("Config.C","Can not instatiate the Run Loader");
+           return;
+         }
+        rl->SetCompressionLevel(2);
+        rl->SetNumberOfEventsPerFile(3);
+        gAlice->SetRunLoader(rl);
     }
 
     TGeant3 *geant3 = (TGeant3 *) gMC;
@@ -81,19 +89,28 @@ void Config()
         int     nParticles = atoi(gSystem->Getenv("CONFIG_NPARTICLES"));
     } else
     {
-        int     nParticles = 50;
+        int     nParticles = 30;
     }
-    AliGenHIJINGpara *gener = new AliGenHIJINGpara(nParticles);
-
-    gener->SetMomentumRange(0, 999);
-    gener->SetPhiRange(0, 360);
+    AliGenCocktail *gener = new AliGenCocktail();
+    gener->SetPhiRange(220, 320);
     // Set pseudorapidity range from -8 to 8.
-    Float_t thmin = EtaToTheta(8);   // theta min. <---> eta max
-    Float_t thmax = EtaToTheta(-8);  // theta max. <---> eta min 
+    Float_t thmin = EtaToTheta(0.12);   // theta min. <---> eta max
+    Float_t thmax = EtaToTheta(-0.12);  // theta max. <---> eta min 
     gener->SetThetaRange(thmin,thmax);
     gener->SetOrigin(0, 0, 0);  //vertex position
     gener->SetSigma(0, 0, 0);   //Sigma in (X,Y,Z) (cm) on IP position
+
+    AliGenHIJINGpara *hijingparam = new AliGenHIJINGpara(nParticles);
+    hijingparam->SetMomentumRange(0.2, 999);
+    gener->AddGenerator(hijingparam,"HIJING PARAM",1);
+
+//    AliGenBox *genbox = new AliGenBox(nParticles);
+//    genbox->SetPart(22);
+//    genbox->SetPtRange(0.3, 10.00);
+//    gener->AddGenerator(genbox,"GENBOX GAMMA for PHOS",1);
     gener->Init();
+
+
     // 
     // Activate this line if you want the vertex smearing to happen
     // track by track
@@ -101,32 +118,31 @@ void Config()
     //gener->SetVertexSmear(perTrack); 
     // Field (L3 0.4 T)
     AliMagFMaps* field = new AliMagFMaps("Maps","Maps", 2, 1., 10., 1);
-    rootfile->cd();
     gAlice->SetField(field);    
 
 
-    Int_t   iABSO  =  1;
+    Int_t   iABSO  =  0;
     Int_t   iDIPO  =  1;
-    Int_t   iFMD   =  1;
+    Int_t   iFMD   =  0;
     Int_t   iFRAME =  1;
     Int_t   iHALL  =  1;
     Int_t   iITS   =  1;
     Int_t   iMAG   =  1;
-    Int_t   iMUON  =  1;
+    Int_t   iMUON  =  0;
     Int_t   iPHOS  =  1;
     Int_t   iPIPE  =  1;
-    Int_t   iPMD   =  1;
-    Int_t   iRICH  =  1;
+    Int_t   iPMD   =  0;
+    Int_t   iRICH  =  0;
     Int_t   iSHIL  =  1;
-    Int_t   iSTART =  1;
-    Int_t   iTOF   =  1;
+    Int_t   iSTART =  0;
+    Int_t   iTOF   =  0;
     Int_t   iTPC   =  1;
-    Int_t   iTRD   =  1;
-    Int_t   iZDC   =  1;
-    Int_t   iEMCAL =  1;
+    Int_t   iTRD   =  0;
+    Int_t   iZDC   =  0;
+    Int_t   iEMCAL =  0;
     Int_t   iCRT   =  0;
-    Int_t   iVZERO =  1;
-
+    Int_t   iVZERO =  0;
+    rl->CdGAFile();
     //=================== Alice BODY parameters =============================
     AliBODY *BODY = new AliBODY("BODY", "Alice envelop");
 
@@ -252,7 +268,7 @@ void Config()
     // ITSgeometry.tme) in a format understandable to the CAD system EUCLID.
     // The default (=0) means that you dont want to use this facility.
     //
-	ITS->SetEUCLID(0);  
+     ITS->SetEUCLID(0);  
     }
 
     if (iTPC)
@@ -278,9 +294,8 @@ void Config()
         AliTPC *TPC = new AliTPCv2("TPC", "Default");
 
         // All sectors included 
-        TPC->SetSecAL(-1);
         TPC->SetSecAU(-1);
-
+        TPC->SetSecAL(-1);
     }
 
 
@@ -366,7 +381,7 @@ void Config()
     if (iEMCAL)
     {
         //=================== EMCAL parameters ============================
-        AliEMCAL *EMCAL = new AliEMCALv1("EMCAL", "G56_2_55_19_104_14");
+        AliEMCAL *EMCAL = new AliEMCALv1("EMCAL", "EMCALArch1a");
     }
 
      if (iCRT)

@@ -13,35 +13,8 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.6  2002/10/22 14:45:33  alibrary
-Introducing Riostream.h
+/* $Id$ */
 
-Revision 1.5  2002/10/14 14:57:00  hristov
-Merging the VirtualMC branch to the main development branch (HEAD)
-
-Revision 1.2.8.1  2002/08/28 15:06:50  alibrary
-Updating to v3-09-01
-
-Revision 1.4  2002/08/22 13:18:46  nilsen
-Added = operator and copy constructor in an attempt to fix complilation
-problems found by Yves Schutz.
-
-Revision 1.3  2002/08/21 22:04:27  nilsen
-Added data member to SPD cluters and made related modifications to the
-SPD Cluster finders. Generaly cleanded up some of the code.
-
-Revision 1.2  2001/06/14 14:33:53  barbera
-New version from B. Batyunya to get the Dubna model work with the present HEAD
-
-Revision 1.15  2001/05/01 22:37:44  nilsen
-Added a dummy argument to FindRawClusters. Argument used for SSD version.
-
-Revision 1.14  2001/03/05 14:48:46  nilsen
-Fixed a reoccuring bug. Array sizes must be declare const.
-
-*/
 //  Cluster Finder for
 //  Silicon
 //  Pixel

@@ -61,7 +61,7 @@ public:
    virtual Float_t Fresnel(Float_t ene,Float_t pdoti, Bool_t pola);
    virtual void   StepManager();
    Int_t          DistancetoPrimitive(Int_t px, Int_t py);
-   virtual void   MakeBranch(Option_t *opt=" ", const char *file=0);
+   virtual void   MakeBranch(Option_t *opt=" ");
    virtual void   MakeBranchInTreeD(TTree *treeD, const char *file=0);
    void           SetTreeAddress();
    virtual void   ResetHits();
@@ -144,16 +144,16 @@ public:
    inline virtual void Print(Option_t *option)const; // Prints debug information
     
 protected:
-   TObjArray            *fChambers;           // List of RICH chambers aka modules
+   TObjArray            *fChambers;           // !List of RICH chambers aka modules
    Int_t                 fNSDigits;           // Number of clusters
    Int_t                 fNcerenkovs;         // Number of cerenkovs
-   TClonesArray         *fSDigits;            // List of clusters
-   TObjArray            *fDchambers;          // List of digits
-   TClonesArray         *fCerenkovs;          // List of cerenkovs
+   TClonesArray         *fSDigits;            // !List of clusters
+   TObjArray            *fDchambers;          // !List of digits
+   TClonesArray         *fCerenkovs;          // !List of cerenkovs
    Int_t                 fNdch[kNCH];         // Number of digits
-   TObjArray            *fRawClusters;        // List of raw clusters
-   TObjArray            *fRecHits1D;          // List of rec. hits
-   TObjArray            *fRecHits3D;          // List of rec. hits
+   TObjArray            *fRawClusters;        // !List of raw clusters
+   TObjArray            *fRecHits1D;          // !List of rec. hits
+   TObjArray            *fRecHits3D;          // !List of rec. hits
    Int_t                 fNrawch[kNCH];       // Number of raw clusters
    Int_t                 fNrechits1D[kNCH];   // Number of rec hits 
    Int_t                 fNrechits3D[kNCH];   // Number of rec hits 
@@ -181,7 +181,7 @@ protected:
     Text_t *fFileName;                         //! File with background hits
     AliRICHMerger *fMerger;                    //! pointer to merger
     
-   ClassDef(AliRICH,1)                        // Main RICH class 
+   ClassDef(AliRICH,2)                        // Main RICH class 
 };//class AliRICH
     
 inline void AliRICH::Print(Option_t *option)const

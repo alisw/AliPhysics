@@ -1,19 +1,16 @@
 #include "AliHBTCorrelFctn.h"
-//_____________________________________________________________
-///////////////////////////////////////////////////////////////
+//Set of Correlation fuctions
+//AliHBTQInvCorrelFctn - Q Invariant correlatyion function
 //
-//  Set of Correlation fuctions
-//  AliHBTQInvCorrelFctn - Q Invariant correlatyion function
 //
-//  Corroleation function is created from dividing two histograms of QInvariant:
-//    of particles from the same evnt
-//  by 
-//    of particles from different events
 //
-///////////////////////////////////////////////////////////////
 
 ClassImp(AliHBTQInvCorrelFctn)
 
+//Corroleation function is created from dividing two histograms of QInvariant:
+//  of particles from the same evnt
+//by 
+//  of particles from different events
 
 AliHBTQInvCorrelFctn::
 AliHBTQInvCorrelFctn(Int_t nbins, Double_t maxXval, Double_t minXval):

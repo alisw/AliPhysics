@@ -12,28 +12,16 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
+//Piotr.Skowronski@cern.ch
+//Fast fixes to be able to compile with new Folder and I/O structure
+//To be implemented correctly by the responsible person
 
-/*
-$Log$
-Revision 1.3  2001/10/21 18:36:31  hristov
-Several pointers were set to zero in the default constructors to avoid memory management problems
+//PH 20/05/2003 It seems this class is obsolete and not used anymore
 
-Revision 1.2  2001/09/24 16:41:15  hristov
-New version of FMD code (A.Maevskaia)
+/* $Id$ */
 
-Revision 1.1  2001/05/29 12:01:06  hristov
-Last minute changes and new code for event mixing and reconstruction (A.Maevskaia)
+#include "AliFMDMerger.h"
 
-Revision 1.3  2001/03/05 23:57:44  morsch
-Writing of digit tree moved to macro.
-
-Revision 1.2  2001/03/05 08:40:25  morsch
-Method SortTracks(..) imported from AliMUON.
-
-Revision 1.1  2001/02/02 14:11:53  morsch
-AliMUONMerger prototype to be called by the merge manager.
-
-*/
 
 #include <TTree.h> 
 #include <TVector.h>
@@ -41,8 +29,10 @@ AliMUONMerger prototype to be called by the merge manager.
 #include <TFile.h>
 #include <TDirectory.h>
 
+#include "AliDetector.h"
+#include "AliRunLoader.h"
+#include "AliLoader.h"
 
-#include "AliFMDMerger.h"
 #include "AliFMD.h"
 #include "AliFMDSDigitizer.h"
 #include "AliFMDhit.h"
@@ -63,6 +53,8 @@ ClassImp(AliFMDMerger)
 // Default constructor    
     fEvNrSig = 0;
     fEvNrBgr = 0;
+    fBgrLoader = 0x0;
+    fSigLoader = 0x0;
     fMerge   = kDigitize;
     fDigits  = 0;
     fSDigits = 0;
@@ -107,7 +99,6 @@ void AliFMDMerger::Init()
 {
 // Initialisation
     if (fMerge) fBgrFile = InitBgr();
-    
 }
 
 
@@ -116,7 +107,8 @@ void AliFMDMerger::Init()
 TFile* AliFMDMerger::InitBgr()
 {
 // Initialise background event
-    TFile *file = new TFile(fFnBgr);
+    fBgrLoader= AliRunLoader::Open(fFnBgr);
+    TFile *file = TFile::Open(fFnBgr);
 // add error checking later
     printf("\n AliFMDMerger has opened %s file with background event \n", fFnBgr);
     return file;
@@ -134,7 +126,16 @@ void AliFMDMerger::Digitise()
 #ifdef DEBUG
   cout<<"ALiFMDMerger::>SDigits2Digits start...\n";
 #endif
-
+  if (fBgrLoader == 0x0)
+   {
+     cerr<<"AliFMDMerger::Digitise : Background Run Loader is NULL"<<endl;
+     return;
+   }
+   
+  fBgrLoader->LoadgAlice();
+  fBgrLoader->LoadHeader();
+  fBgrLoader->LoadKinematics();
+  
   AliFMD * FMD = (AliFMD *) gAlice->GetDetector("FMD") ;
 
   Int_t chargeSum[10][30][150];
@@ -147,30 +148,48 @@ void AliFMDMerger::Digitise()
   {fSectorsSi1,fSectorsSi2,fSectorsSi1,fSectorsSi2,fSectorsSi1};
 
   TFile *f1 =0;
-  TTree *TK = gAlice->TreeK();
+  TTree *TK = fBgrLoader->TreeK();
   if (TK) f1 = TK->GetCurrentFile();
 
-  gAlice->GetEvent(fEvNrSig) ;
+  //just patches to be able to compile
   
-  if(gAlice->TreeD() == 0)    	
-    gAlice->MakeTree("D") ;
-  gAlice->TreeD()->Reset();
+
+  fBgrLoader->GetEvent(fEvNrSig) ;
+  AliLoader* loader = fBgrLoader->GetLoader("FMDLoader");
+  if (loader == 0x0)
+   {
+     cerr<<"AliFMDMerger::Digitise : Can not find loader for FMD. Exiting"<<endl;
+     return;
+   }
+  
+  Int_t retval;
+  retval = loader->LoadDigits("UPDATE");
+  if (retval == 0x0)
+   {
+     cerr<<"AliFMDMerger::Digitise : Error occured while loading digits. Exiting"<<endl;
+     return;
+   }
+  
+  if(loader->TreeD() == 0)           
+    loader->MakeTree("D") ;
+  
+  loader->TreeD()->Reset();
 
   //Make branches 
    ReadDigit( chargeSum, fEvNrSig);
 
    if(fMerge){ 
-    fBgrFile->cd();
+//    fBgrFile->cd();
     // gAlice->TreeS()->Reset();
-    gAlice = (AliRun*)fBgrFile->Get("gAlice");
+    gAlice = fBgrLoader->GetAliRun();
     Int_t chargeBgr[10][30][150];
     ReadDigit( chargeBgr,fEvNrBgr);
     for ( ivol=1; ivol<=5; ivol++)
       for ( iSector=1; iSector<=NumberOfSectors[ivol-1]; iSector++)
-	for (  iRing=1; iRing<=NumberOfRings[ivol-1]; iRing++)
-	  chargeSum[ivol][iSector][iRing]=
-	    chargeBgr[ivol][iSector][iRing]+
-	    chargeSum[ivol][iSector][iRing];
+       for (  iRing=1; iRing<=NumberOfRings[ivol-1]; iRing++)
+         chargeSum[ivol][iSector][iRing]=
+           chargeBgr[ivol][iSector][iRing]+
+           chargeSum[ivol][iSector][iRing];
     
    } //if merge
 
@@ -179,19 +198,19 @@ void AliFMDMerger::Digitise()
   for ( ivol=1; ivol<=5; ivol++){
     for ( iSector=1; iSector<=NumberOfSectors[ivol-1]; iSector++){
       for ( iRing=1; iRing<=NumberOfRings[ivol-1]; iRing++){
-	digit[0]=ivol;
-	digit[1]=iSector;
-	digit[2]=iRing;
-	digit[3]=PutNoise(chargeSum[ivol][iSector][iRing]);
-	if(chargeSum[ivol][iSector][iRing] <= 500) digit[3]=500; 
+       digit[0]=ivol;
+       digit[1]=iSector;
+       digit[2]=iRing;
+       digit[3]=PutNoise(chargeSum[ivol][iSector][iRing]);
+       if(chargeSum[ivol][iSector][iRing] <= 500) digit[3]=500; 
 
     //dinamic diapason from MIP(0.155MeV) to 30MIP(4.65MeV)
     //1024 ADC channels 
-	Float_t channelWidth=(22400*50)/1024;
-	digit[4]=Int_t(digit[3]/channelWidth);
-	if (digit[4]>1024) digit[4]=1024; 
+       Float_t channelWidth=(22400*50)/1024;
+       digit[4]=Int_t(digit[3]/channelWidth);
+       if (digit[4]>1024) digit[4]=1024; 
 
-	FMD->AddDigit(digit);
+       FMD->AddDigit(digit);
 
       } //ivol
     } //iSector
@@ -202,12 +221,12 @@ void AliFMDMerger::Digitise()
   //Make branch for digits
   FMD->MakeBranch("D");
 
-  gAlice->TreeD()->Reset();
-  gAlice->TreeD()->Fill();
+  loader->TreeD()->Reset();
+  loader->TreeD()->Fill();
   
-  fDigits   = FMD->Digits();
+  fDigits   = FMD->Digits();//should be moved to specialized loader (AliFMDLoader)
   
-  gAlice->TreeD()->Write(0,TObject::kOverwrite) ;
+  loader->WriteDigits("OVERWRITE");
   
   gAlice->ResetDigits();
 
@@ -222,7 +241,7 @@ void AliFMDMerger::ReadDigit(Int_t chargeSum[][30][150], Int_t iEvNum)
   for (Int_t i=0; i<10; i++)
     for(Int_t j=0; j<30; j++)
       for(Int_t ij=0; ij<150; ij++)
-	chargeSum[i][j][ij]=0;
+       chargeSum[i][j][ij]=0;
 
   AliFMD * FMD = (AliFMD *) gAlice->GetDetector("FMD") ;
   

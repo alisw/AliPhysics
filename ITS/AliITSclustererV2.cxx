@@ -6,6 +6,8 @@
 //uncomment the line below for running with V1 cluster finder classes 
 //#define V1
 
+//PH 19/05/2003 This class hast to be adapted to NewIO
+
 #include <stdlib.h>
 
 #include "AliRun.h"

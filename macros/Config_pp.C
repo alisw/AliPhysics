@@ -55,9 +55,6 @@ void Config()
   // END OF TEMPORARY
 */
 
-  // libraries required by geant321
-  gSystem->Load("libgeant321");
-
   new TGeant3("C++ Interface to Geant3");
 
   if (!gSystem->Getenv("CONFIG_FILE"))
@@ -420,7 +417,7 @@ void Config()
   if (iEMCAL!=0 && iRICH==0)
     {
       //=================== START parameters ============================
-      AliEMCAL *EMCAL = new AliEMCALv1("EMCAL", "G56_2_55_19_104_14");
+      AliEMCAL *EMCAL = new AliEMCALv1("EMCAL", "EMCALArch1a");
     }
 
   if (iSTART)
@@ -448,7 +445,7 @@ AliGenerator* GeneratorFactory(PprRun_t run) {
 	comment = comment.Append(":HIJINGparam test 50 particles");
 	AliGenHIJINGpara *gener = new AliGenHIJINGpara(50);
 	gener->SetMomentumRange(0, 999999.);
-	gener->SetPhiRange(0., 360.);
+	gener->SetPhiRange(-180., 180.);
 	// Set pseudorapidity range from -8 to 8.
 	Float_t thmin = EtaToTheta(8);   // theta min. <---> eta max
 	Float_t thmax = EtaToTheta(-8);  // theta max. <---> eta min 
@@ -458,11 +455,11 @@ AliGenerator* GeneratorFactory(PprRun_t run) {
 	comment = comment.Append(":Pythia p-p @ 14 TeV");
     AliGenPythia *gener = new AliGenPythia(-1); 
     gener->SetMomentumRange(0,999999);
-    gener->SetPhiRange(0, 360);
+    gener->SetPhiRange(-180,180);
     gener->SetThetaRange(0., 180.);
     gener->SetYRange(-12,12);
     gener->SetPtRange(0,1000);
-    gener->SetStrucFunc(kCTEQ4L);   
+    gener->SetStrucFunc(kCTEQ_4L);   
     gener->SetProcess(kPyMb);
     gener->SetEnergyCMS(14000.);
     break;
@@ -470,7 +467,7 @@ AliGenerator* GeneratorFactory(PprRun_t run) {
 	comment = comment.Append(":HIJINGparam N=8000");
 	AliGenHIJINGpara *gener = new AliGenHIJINGpara(86030);
 	gener->SetMomentumRange(0, 999999.);
-	gener->SetPhiRange(0., 360.);
+	gener->SetPhiRange(-180., 180.);
 	// Set pseudorapidity range from -8 to 8.
 	Float_t thmin = EtaToTheta(8);   // theta min. <---> eta max
 	Float_t thmax = EtaToTheta(-8);  // theta max. <---> eta min 
@@ -480,7 +477,7 @@ AliGenerator* GeneratorFactory(PprRun_t run) {
 	comment = comment.Append("HIJINGparam N=4000");
 	AliGenHIJINGpara *gener = new AliGenHIJINGpara(43015);
 	gener->SetMomentumRange(0, 999999.);
-	gener->SetPhiRange(0., 360.);
+	gener->SetPhiRange(-180., 180.);
 	// Set pseudorapidity range from -8 to 8.
 	Float_t thmin = EtaToTheta(8);   // theta min. <---> eta max
 	Float_t thmax = EtaToTheta(-8);  // theta max. <---> eta min 
@@ -490,7 +487,7 @@ AliGenerator* GeneratorFactory(PprRun_t run) {
 	comment = comment.Append("HIJINGparam N=2000");
 	AliGenHIJINGpara *gener = new AliGenHIJINGpara(21507);
 	gener->SetMomentumRange(0, 999999.);
-	gener->SetPhiRange(0., 360.);
+	gener->SetPhiRange(-180., 180.);
 	// Set pseudorapidity range from -8 to 8.
 	Float_t thmin = EtaToTheta(8);   // theta min. <---> eta max
 	Float_t thmax = EtaToTheta(-8);  // theta max. <---> eta min 

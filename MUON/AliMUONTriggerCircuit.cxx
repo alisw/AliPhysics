@@ -12,38 +12,8 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-/*
-$Log$
-Revision 1.9  2002/10/23 07:24:56  alibrary
-Introducing Riostream.h
 
-Revision 1.8  2001/03/20 13:32:37  egangler
-includes cleanup
-
-Revision 1.7  2000/10/02 16:58:29  egangler
-Cleaning of the code :
--> coding conventions
--> void Streamers
--> some useless includes removed or replaced by "class" statement
-
-Revision 1.6  2000/07/13 16:19:44  fca
-Mainly coding conventions + some small bug fixes
-
-Revision 1.5  2000/07/03 11:54:57  morsch
-AliMUONSegmentation and AliMUONHitMap have been replaced by AliSegmentation and AliHitMap in STEER
-The methods GetPadIxy and GetPadXxy of AliMUONSegmentation have changed name to GetPadI and GetPadC.
-
-Revision 1.4  2000/06/28 15:16:35  morsch
-(1) Client code adapted to new method signatures in AliMUONSegmentation (see comments there)
-to allow development of slat-muon chamber simulation and reconstruction code in the MUON
-framework. The changes should have no side effects (mostly dummy arguments).
-(2) Hit disintegration uses 3-dim hit coordinates to allow simulation
-of chambers with overlapping modules (MakePadHits, Disintegration).
-
-Revision 1.3  2000/06/26 10:04:49  pcrochet
-problem with HP compiler solved (PH), static variables removed : now defined in AliMUONTriggerConstants
-
-*/
+/* $Id$ */
 
 #include "AliRun.h"
 #include "AliMUON.h"

@@ -13,34 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.6  2002/10/14 14:55:34  hristov
-Merging the VirtualMC branch to the main development branch (HEAD)
-
-Revision 1.4.2.2  2002/10/10 14:40:31  hristov
-Updating VirtualMC to v3-09-02
-
-Revision 1.5  2002/10/07 11:12:26  gamez
-Cleaned up version
-
-Revision 1.4  2002/07/12 12:56:18  gamez
-Material numbers, correction
-
-Revision 1.3.2.1  2002/07/12 12:31:30  gamez
-Material numbers, correction
-
-Revision 1.3  2002/07/10 15:53:10  gamez
-Molasse redefinition
-
-Revision 1.2  2002/07/09 08:45:35  hristov
-Old style include files needed on HP (aCC)
-
-Revision 1.1  2002/06/16 17:08:19  hristov
-First version of CRT
-
-
-*/
+/* $Id$ */
 
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
@@ -65,14 +38,14 @@ First version of CRT
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <TTree.h>
-
-#include "AliRun.h"
-#include "AliMagF.h"
+#include <TVirtualMC.h>
 
 #include "AliCRT.h"
 #include "AliCRTConstants.h"
 #include "AliCRThit.h"
-
+#include "AliLoader.h"
+#include "AliMagF.h"
+#include "AliRun.h"
  
 ClassImp(AliCRT)
 
@@ -349,7 +322,7 @@ void AliCRT::SetTreeAddress()
   sprintf(branchname,"%s",GetName());
   
   // Branch address for hit tree
-  TTree *treeH = gAlice->TreeH();
+  TTree *treeH = fLoader->TreeH();
   if (treeH && fHits) {
     branch = treeH->GetBranch(branchname);
     if (branch) branch->SetAddress(&fHits);

@@ -98,12 +98,12 @@ C---> Coordinates -----------------------------
       RS12=XS*P12X+YS*P12Y+ZS*P12Z
       H1=(RS12/EPM-TS)/AM12
 
-cmlv      X=XS+P12X*H1
-cmlv      Y=YS+P12Y*H1
-cmlv      Z=ZS+P12Z*H1
-cmlv      T=(E12*TS-RS12)/AM12
-cmlv      RPS=X*X+Y*Y+Z*Z
-cmlv      RP=DSQRT(RPS)
+      X=XS+P12X*H1
+      Y=YS+P12Y*H1
+      Z=ZS+P12Z*H1
+      T=(E12*TS-RS12)/AM12
+      RPS=X*X+Y*Y+Z*Z
+      RP=DSQRT(RPS)
 
 
       RETURN
@@ -121,6 +121,7 @@ C==== ===============================================================
       RETURN
       END
 C====       
+      
       SUBROUTINE LTR4(Z,T,BETA,GAMMA,ZT,TT)
 C===> Lorentz Transf. of Z(Pz) and T(E) to moving ref. frame.(real*4) 
 CInp: Z,T-Zcoord,Time before tr., BETA,GAMMA- velocity, Lor.fact.
@@ -143,6 +144,16 @@ C==== =================================================
       XR=XH        ! _- f      
       RETURN       !------>
       END          !     X
+
+      SUBROUTINE SETPDIST(R)
+C=====Just sets distance between particles
+      IMPLICIT REAL*8 (A-H,O-Z)
+      COMMON/FSI_PRF/PPX,PPY,PPZ,AK,AKS, ! momenta in PRF
+     1               X,Y,Z,T,RP,RPS
+      RPS=R
+      RP=R*R
+      RETURN
+      END
 
 
 

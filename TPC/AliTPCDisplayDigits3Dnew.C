@@ -4,7 +4,9 @@
   #include "TView.h"
   #include "TPolyMarker3D.h"
   #include "AliSimDigits.h"
-#include "AliTPCParamSR.h"
+  #include "AliRunLoader.h"
+  #include "AliLoader.h"
+  #include "AliTPCParamSR.h"
 #endif
 
 //  
@@ -13,16 +15,27 @@
 //  if sdigits=kTRUE it will display Sdigits - otherwise it display digits
 //  signal event is displayed with yellow color
 
-Int_t AliTPCDisplayDigits3D(Int_t eventn=0, Int_t noiseth=15, Bool_t sdigits=kFALSE) {
+Int_t AliTPCDisplayDigits3Dnew(Int_t eventn=0, Int_t noiseth=15, Bool_t sdigits=kFALSE) {
    cerr<<"Displaying digits...\n";
 
-   TFile *file=TFile::Open("galice.root");
-   if (!file->IsOpen()) {cerr<<"Can't open galice.root !\n"; return 1;}
+//   TFile *file=TFile::Open("galice.root");
+//   if (!file->IsOpen()) {cerr<<"Can't open galice.root !\n"; return 1;}
 
-   TFile *cf=TFile::Open("galice.root");
-   // if (!cf->IsOpen()){cerr<<"Can't open AliTPCclusters.root !\n"; return 3;}
+//   TFile *cf=TFile::Open("galice.root");
+//    if (!cf->IsOpen()){cerr<<"Can't open AliTPCclusters.root !\n"; return 3;}
 
-   AliTPCParamSR *param=(AliTPCParamSR *)cf->Get("75x40_100x60");
+   AliRunLoader* rl = AliRunLoader::Open();
+   rl->GetEvent(eventn);
+
+   AliLoader* tpcl = (AliTPCLoader*)rl->GetLoader("TPCLoader");
+   if (tpcl == 0x0)
+    {
+      cerr<<"Can not get TPC Loader"<<endl;
+      return 1;
+    }
+
+   rl->CdGAFile();
+   AliTPCParam *param=(AliTPCParam *)gDirectory->Get("75x40_100x60");
    if(param){
      cerr<<"2 pad-length geom hits with 3 pad-lengths geom parameters\n";
      delete param;
@@ -46,18 +59,32 @@ Int_t AliTPCDisplayDigits3D(Int_t eventn=0, Int_t noiseth=15, Bool_t sdigits=kFA
    AliTPCDigitsArray *digarr=new AliTPCDigitsArray;
    digarr->Setup(param);
    
+  
+  TTree* tree;
+   
    char  cname[100];
    if (!sdigits)
-     sprintf(cname,"TreeD_75x40_100x60_150x60_%d",eventn);
+     {
+       tpcl->LoadDigits();
+       tree = tpcl->TreeD();
+     }
    else
-     sprintf(cname,"TreeS_75x40_100x60_150x60_%d",eventn);
+     {
+       tpcl->LoadSDigits();
+       tree = tpcl->TreeS();
+     }
 
 // some "constants"
    Int_t markerColorSignal = 5;
    Int_t markerColorBgr = 2;
    Int_t MASK = 10000000;
 
-   digarr->ConnectTree(cname);
+   Int_t imarBgr=0;
+   Int_t imarSignal=0;
+   Int_t ncl=0;
+   
+   digarr->ConnectTree(tree);
+   
    Int_t nrows=Int_t(digarr->GetTree()->GetEntries());
    Int_t all0=0;
    for (Int_t n=0; n<nrows; n++) {
@@ -66,44 +93,47 @@ Int_t AliTPCDisplayDigits3D(Int_t eventn=0, Int_t noiseth=15, Bool_t sdigits=kFA
        param->AdjustSectorRow(s->GetID(),sec,row);
        Int_t npads, sign;
        {
-	 const Int_t kNIS=param->GetNInnerSector(), kNOS=param->GetNOuterSector();
-	 if (sec < kNIS) {
-	   npads = param->GetNPadsLow(row);
-	   sign = (sec < kNIS/2) ? 1 : -1;
-	 } else {
-	   npads = param->GetNPadsUp(row);
-	   sign = ((sec-kNIS) < kNOS/2) ? 1 : -1;
-	 }
+       const Int_t kNIS=param->GetNInnerSector(), kNOS=param->GetNOuterSector();
+       if (sec < kNIS) {
+         npads = param->GetNPadsLow(row);
+         sign = (sec < kNIS/2) ? 1 : -1;
+       } else {
+         npads = param->GetNPadsUp(row);
+         sign = ((sec-kNIS) < kNOS/2) ? 1 : -1;
+       }
        }
 
        AliSimDigits *digrow = (AliSimDigits*)digarr->GetRow(sec,row);
-       Int_t ncl=0;
+       ncl=0;
        if (digrow->First()){
-	 while(digrow->Next()) ncl++;
-	 ncl++;
+       while(digrow->Next()) ncl++;
+       ncl++;
        }
        TPolyMarker3D *pm=new TPolyMarker3D(ncl);
        TPolyMarker3D *pmSignal=new TPolyMarker3D(ncl); // polymarker for signal
-       Int_t imarBgr=0;
-       Int_t imarSignal=0;
+       imarBgr=0;
+       imarSignal=0;
        if (digrow->First()) do {
-	 Short_t dig=digrow->CurrentDigit();
-	 Double_t y = (digrow->CurrentColumn()- 0.5 - 0.5*npads)*param->GetPadPitchWidth(sec);
-	 Double_t z = sign*(param->GetZLength()-param->GetZWidth()*digrow->CurrentRow());	 
-	 Double_t x=param->GetPadRowRadii(sec,row);
-	 if (dig<noiseth) continue;	
-	 Int_t trackId = digrow->GetTrackID(digrow->CurrentRow(),digrow->CurrentColumn(),0);	
-	 Float_t cs, sn, tmp;
-	 param->AdjustCosSin(sec,cs,sn);
-	 tmp = x*cs-y*sn; y= x*sn+y*cs; x=tmp;
-	 if (trackId<0) continue;  //if signal from croostalk - we don't have track ID information
-      	 if (trackId < MASK-1) {
-	   pmSignal->SetPoint(imarSignal,x,y,z);
-	   imarSignal++;
-	 } else {
-	   pm->SetPoint(imarBgr,x,y,z);
-	   imarBgr++;
-	 }
+       Short_t dig=digrow->CurrentDigit();
+       Double_t y = (digrow->CurrentColumn()- 0.5 - 0.5*npads)*param->GetPadPitchWidth(sec);
+       Double_t z = sign*(param->GetZLength()-param->GetZWidth()*digrow->CurrentRow());       
+       Double_t x=param->GetPadRowRadii(sec,row);
+//       cout<<dig<<endl;
+       if (dig<noiseth) continue;
+//       cout<<"\nAbove noise Threshold";
+       Int_t trackId = digrow->GetTrackID(digrow->CurrentRow(),digrow->CurrentColumn(),0);      
+       Float_t cs, sn, tmp;
+       param->AdjustCosSin(sec,cs,sn);
+       tmp = x*cs-y*sn; y= x*sn+y*cs; x=tmp;
+       if (trackId<0) continue;  //if signal from croostalk - we don't have track ID information
+//       cout<<"Track ID > 0";
+             if (trackId < MASK-1) {
+         pmSignal->SetPoint(imarSignal,x,y,z);
+         imarSignal++;
+       } else {
+         pm->SetPoint(imarBgr,x,y,z);
+         imarBgr++;
+       }
        } while (digrow->Next());
 
 // change color for signal
@@ -118,14 +148,17 @@ Int_t AliTPCDisplayDigits3D(Int_t eventn=0, Int_t noiseth=15, Bool_t sdigits=kFA
        pmSignal->SetMarkerStyle(1);
        pmSignal->Draw();
        all0+=imarSignal;
+//       cout<<"imarSignal ="<<imarSignal<<"   imarBgr ="<<imarBgr<<"   ncl ="<<ncl<<endl;
    }
    printf("%d\n",all0);
    
+   
 
    delete digarr;
-   cf->Close();
+
    //draw TPC skeleton
-   TGeometry *geom=(TGeometry*)file->Get("AliceGeom");
+   rl->CdGAFile();
+   TGeometry *geom=(TGeometry*)gDirectory->Get("AliceGeom");
    TNode * main = (TNode*)((geom->GetListOfNodes())->First());
    TIter next(main->GetListOfNodes());
    TNode  *module=0;
@@ -143,8 +176,8 @@ Int_t AliTPCDisplayDigits3D(Int_t eventn=0, Int_t noiseth=15, Bool_t sdigits=kFA
    geom->Draw("same");
    //v->Draw();
    c1->Modified(); c1->Update(); 
-
-   file->Close();
+   
+   delete rl;
    return 0;
 }
 

@@ -20,8 +20,7 @@ class TFile ;
 // --- Standard library ---
 
 // --- AliRoot header files ---
-
-
+#include "AliConfig.h"
 class AliEMCALClusterizer ;
 class AliEMCALGeometry ;
 
@@ -30,8 +29,8 @@ class  AliEMCALTrackSegmentMaker : public TTask {
 public:
 
   AliEMCALTrackSegmentMaker() ;                     
-  AliEMCALTrackSegmentMaker(const char* headerFile, const char* name, const Bool_t toSplit) ;                     
-  
+  AliEMCALTrackSegmentMaker(const TString alirunFileName, const TString eventFolderName = AliConfig::fgkDefaultEventFolderName) ;                       
+  AliEMCALTrackSegmentMaker(const AliEMCALTrackSegmentMaker & tsmaker) { ; } 
   virtual ~ AliEMCALTrackSegmentMaker() ;
 
   virtual void    Exec(Option_t * option){Warning("Exec", "Not Defined" ) ; } 
@@ -42,10 +41,8 @@ public:
   virtual void WriteTrackSegments(Int_t event){Warning("WriteTrackSegments", "Not Defined" ) ; } 
   
 protected:
+  TString fEventFolderName ;  // event folder name
   
-  TFile * fSplitFile ;             //! file in which TrackSegments will eventually be stored
-  Bool_t  fToSplit ;               //! Do we work in the split mode
-
   ClassDef( AliEMCALTrackSegmentMaker,1)    // Algorithm class to make EMCAL track segments (Base Class)
 
 };

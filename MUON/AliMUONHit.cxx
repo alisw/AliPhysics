@@ -13,18 +13,8 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.3  2001/03/17 10:07:20  morsch
-Correct inconsistent variable name / method name / comments.
+/* $Id$ */
 
-Revision 1.2  2000/06/15 07:58:48  morsch
-Code from MUON-dev joined
-
-Revision 1.1.2.1  2000/06/09 22:02:14  morsch
-Was before in DataStructures.cxx
-
-*/
 #include "AliMUONHit.h"
 
 ClassImp(AliMUONHit)

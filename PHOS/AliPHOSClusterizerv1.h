@@ -12,10 +12,10 @@
 //  results are stored in TreeR#, branches PHOSEmcRP (EMC recPoints),
 //  PHOSCpvRP (CPV RecPoints) and AliPHOSClusterizer
 //
-//*-- Author: Dmitri Peressounko (SUBATECH)
+//*-- Author: Yves Schutz (SUBATECH)
 
 // --- ROOT system ---
-#include "TArrayS.h"
+
 // --- Standard library ---
 
 // --- AliRoot header files ---
@@ -25,16 +25,17 @@ class AliPHOSEmcRecPoint ;
 class AliPHOSDigit ;
 class AliPHOSDigitizer ;
 class AliPHOSGeometry ;
-class AliPHOSCalibrationData ;
+class AliPHOSCalibrationDB ;
 
 class AliPHOSClusterizerv1 : public AliPHOSClusterizer {
   
 public:
   
   AliPHOSClusterizerv1() ;         
-  AliPHOSClusterizerv1(const char * headerFile, const char * name = "Default", const Bool_t toSplit=kFALSE);
-  AliPHOSClusterizerv1(const AliPHOSClusterizerv1 & clusterizer) {
-    // copy ctor: no implementation yet
+  AliPHOSClusterizerv1(const TString alirunFileNameFile, const TString eventFolderName = AliConfig::fgkDefaultEventFolderName);
+  AliPHOSClusterizerv1(const AliPHOSClusterizerv1 & clu) {
+    // cpy ctor: no implementation yet
+    // requested by the Coding Convention
     Fatal("cpy ctor", "not implemented") ;
   }
   virtual ~AliPHOSClusterizerv1()  ;
@@ -54,13 +55,12 @@ public:
   virtual Float_t GetCpvClusteringThreshold()const{ return fCpvClusteringThreshold;  } 
   virtual Float_t GetCpvLocalMaxCut()const        { return fCpvLocMaxCut;} 
   virtual Float_t GetCpvLogWeight()const          { return fW0CPV;}  
-  virtual Float_t GetPurifyThreshold()const       {return fPurifyThreshold; }
   virtual const char *  GetRecPointsBranch() const{ return GetName() ;}
   virtual const Int_t GetRecPointsInRun() const   {return fRecPointsInRun ;} 
 
   void    Exec(Option_t *option);                // Does the job
 
-  virtual void Print(Option_t * option)const ;
+  void Print()const ;
 
   virtual void SetEmcClusteringThreshold(Float_t cluth)  { fEmcClusteringThreshold = cluth ; }
   virtual void SetEmcLocalMaxCut(Float_t cut)            { fEmcLocMaxCut = cut ; }
@@ -69,26 +69,17 @@ public:
   virtual void SetCpvClusteringThreshold(Float_t cluth)  { fCpvClusteringThreshold = cluth ; }
   virtual void SetCpvLocalMaxCut(Float_t cut)            { fCpvLocMaxCut = cut ; }
   virtual void SetCpvLogWeight(Float_t w)                { fW0CPV = w ; }
-  virtual void SetUnfolding(Bool_t toUnfold = kTRUE )    { fToUnfold = toUnfold ;}
-  virtual void SetPirifyThreshold(Float_t threshold)     {fPurifyThreshold = threshold ;}
-  void SetCalibrVersion(const char* version = "v1",Int_t run=1)  //Provides specification of calibrationData
-    {fCalibrVersion = version ; fCalibrRun = run ;} 
-  void SetPatterns(TArrayS * pats){if(fPatterns) delete fPatterns ; 
-                                  fPatterns = new TArrayS(*pats) ;} 
+  virtual void SetUnfolding(Bool_t toUnfold = kTRUE )    { fToUnfold = toUnfold ;}  
   static Double_t ShowerShape(Double_t r) ; // Shape of EM shower used in unfolding; 
                                             //class member function (not object member function)
   static void UnfoldingChiSquare(Int_t & nPar, Double_t * Grad, Double_t & fret, Double_t * x, Int_t iflag)  ;
                                             // Chi^2 of the fit. Should be static to be passes to MINUIT
-  AliPHOSClusterizerv1 & operator = (const AliPHOSClusterizerv1 & rvalue)  {
-    // assignement operator requested by coding convention but not needed
-    Fatal("operator =", "not implemented") ; return *this ; 
-  }
-
-  virtual const char * Version() const { return "clu-v1" ; }  
+  void Unload() ; 
+  virtual const char * Version() const { return "clu-v1"; }  
 
 protected:
 
-  void           WriteRecPoints(Int_t event) ;
+  void           WriteRecPoints() ;
   virtual void   MakeClusters( ) ;            
   virtual Bool_t IsInEmc (AliPHOSDigit * digit)const ;     // Tells if id digit is in EMC
   virtual Bool_t IsInCpv (AliPHOSDigit * digit)const ;     // Tells if id digit is in CPV
@@ -121,17 +112,12 @@ private:
   Int_t   fNumberOfCpvClusters ;     // number of CPV clusters found
  
   //Calibration parameters
-  AliPHOSCalibrationData * fPedestals ; //!
-  AliPHOSCalibrationData * fGains ;    //!
-  TArrayS                * fPatterns ;// Array of trigger patterns of events to handle
-  TString fCalibrVersion ;          // Version of calibration Data  
-  Int_t   fCalibrRun ;              // Specification of Calibration data
+  AliPHOSCalibrationDB * fCalibrationDB ; //! Calibration database if aval
   Float_t fADCchanelEmc ;           // width of one ADC channel in GeV
-  Float_t fADCpedestalEmc ;         // value of the EMC ADC pedestal
+  Float_t fADCpedestalEmc ;         //
   Float_t fADCchanelCpv ;           // width of one ADC channel in CPV 'popugais'
-  Float_t fADCpedestalCpv ;         // value of the CPV ADC pedestal
-  
-  Float_t fPurifyThreshold ;         // threshold for cell energies after unfolding
+  Float_t fADCpedestalCpv ;         // 
+
   Float_t fEmcClusteringThreshold ;  // minimum energy to include a EMC digit in a cluster
   Float_t fCpvClusteringThreshold ;  // minimum energy to include a CPV digit in a cluster
   Float_t fEmcLocMaxCut ;            // minimum energy difference to distinguish local maxima in a cluster
@@ -141,7 +127,7 @@ private:
   Int_t fRecPointsInRun ;            //! Total number of recpoints in one run
   Float_t fEmcTimeGate ;             // Maximum time difference between the digits in ont EMC cluster
     
-  ClassDef(AliPHOSClusterizerv1,2)   // Clusterizer implementation version 1
+  ClassDef(AliPHOSClusterizerv1,3)   // Clusterizer implementation version 1
 
 };
 

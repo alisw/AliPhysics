@@ -13,75 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.10.6.1  2002/07/24 10:09:30  alibrary
-Updating VirtualMC
-
-Revision 1.11  2002/06/12 09:54:35  cblume
-Update of tracking code provided by Sergei
-
-Revision 1.10  2001/12/05 15:04:34  hristov
-Changes related to the corrections of AliRecPoint
-
-Revision 1.9  2001/05/28 17:07:58  hristov
-Last minute changes; ExB correction in AliTRDclusterizerV1; taking into account of material in G10 TEC frames and material between TEC planes (C.Blume,S.Sedykh)
-
-Revision 1.8  2001/05/07 08:06:44  cblume
-Speedup of the code. Create only AliTRDcluster
-
-Revision 1.7  2001/02/14 18:22:26  cblume
-Change in the geometry of the padplane
-
-Revision 1.6  2000/11/01 14:53:20  cblume
-Merge with TRD-develop
-
-Revision 1.1.4.6  2000/10/16 01:16:53  cblume
-Changed timebin 0 to be the one closest to the readout
-
-Revision 1.1.4.5  2000/10/15 23:40:01  cblume
-Remove AliTRDconst
-
-Revision 1.1.4.4  2000/10/06 16:49:46  cblume
-Made Getters const
-
-Revision 1.1.4.3  2000/10/04 16:34:58  cblume
-Replace include files by forward declarations
-
-Revision 1.1.4.2  2000/09/22 14:49:49  cblume
-Adapted to tracking code
-
-Revision 1.5  2000/10/02 21:28:19  fca
-Removal of useless dependecies via forward declarations
-
-Revision 1.4  2000/06/08 18:32:58  cblume
-Make code compliant to coding conventions
-
-Revision 1.3  2000/06/07 16:27:01  cblume
-Try to remove compiler warnings on Sun and HP
-
-Revision 1.2  2000/05/08 16:17:27  cblume
-Merge TRD-develop
-
-Revision 1.1.4.1  2000/05/08 15:08:41  cblume
-Replace AliTRDcluster by AliTRDrecPoint
-
-Revision 1.4  2000/06/08 18:32:58  cblume
-Make code compliant to coding conventions
-
-Revision 1.3  2000/06/07 16:27:01  cblume
-Try to remove compiler warnings on Sun and HP
-
-Revision 1.2  2000/05/08 16:17:27  cblume
-Merge TRD-develop
-
-Revision 1.1.4.1  2000/05/08 15:08:41  cblume
-Replace AliTRDcluster by AliTRDrecPoint
-
-Revision 1.1  2000/02/28 18:58:33  cblume
-Add new TRD classes
-
-*/
+/* $Id$ */
 
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
@@ -188,7 +120,7 @@ Bool_t AliTRDclusterizerV0::MakeClusters()
   AliTRDhit *hit;
   
   // Get the pointer to the hit tree
-  TTree     *hitTree      = gAlice->TreeH();
+  TTree     *hitTree      = fTRD->TreeH();
   // Get the pointer to the reconstruction tree
   TTree     *clusterTree  = gAlice->TreeR();
 

@@ -355,6 +355,13 @@ void AliCalorimeter::Reset(Int_t mode)
   delete fModules;
   fModules=0;
  }
+ for (Int_t i=0; i<fNrows; i++)
+ {
+  for (Int_t j=0; j<fNcolumns; j++)
+  {
+   fMatrix[i][j]=0;
+  }
+ }
 
  fNclusters=0;
  if (fClusters)

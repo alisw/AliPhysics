@@ -26,7 +26,6 @@
 #pragma link C++ class AliEMCALHadronCorrectionv0+;
 #pragma link C++ class AliEMCALHadronCorrectionv1+;		 
 #pragma link C++ class AliEMCALParton+;		
-#pragma link C++ class AliEMCALReconstructioner+;		
 #pragma link C++ class AliEMCALTrackSegment+;		
 #pragma link C++ class AliEMCALTrackSegmentMaker+;		
 #pragma link C++ class AliEMCALTrackSegmentMakerv1+;		
@@ -35,4 +34,5 @@
 #pragma link C++ class AliEMCALFastRecParticle+;		
 #pragma link C++ class AliEMCALPID+;		
 #pragma link C++ class AliEMCALPIDv1+;		
+#pragma link C++ class AliEMCALLoader+;		
 #endif

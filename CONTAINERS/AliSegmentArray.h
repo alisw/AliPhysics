@@ -37,9 +37,12 @@ public:
   //input output functions
   TTree * GetTree(){return fTree;}      //return pointer to connected tree
   
-  virtual void MakeTree(char *file=0);            //Make tree with the name
-  virtual TTree* MakeTree(TFile *file);           //Make tree in the file file
+  virtual void MakeTree(char *file=0);              //Make tree with the name
+  virtual void MakeTree(TTree* tree);              //Make tree with the name
+
   virtual Bool_t ConnectTree(const char * treeName); //connect tree from current directory 
+  virtual Bool_t ConnectTree(TTree* tree); //connect tree from current directory 
+  
   virtual AliSegmentID * LoadSegment(Int_t index);//load segment with index to the memory
   virtual AliSegmentID * LoadEntry(Int_t index); //load segment entry from position index in tree
   virtual void StoreSegment(Int_t index);//write segmen persistent  
@@ -53,10 +56,11 @@ protected:
   AliArrayI    * fTreeIndex; //!pointers(index) table in tree
   Int_t      fNSegment; //number of alocated segments   
   TTree    * fTree;   //!tree with segment objects
-  TBranch  * fBranch; //!total branch 
+  Bool_t   fTreeOwner;// flag determing the ownership of the fTree
+  TBranch  * fBranch; //!total branch
 private: 
   TClass  *   fClass;    //!class type of included objects 
-  ClassDef(AliSegmentArray,1) 
+  ClassDef(AliSegmentArray,2) 
 };
 
 

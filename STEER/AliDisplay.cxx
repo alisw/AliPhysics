@@ -15,7 +15,6 @@
 
 /* $Id$ */
 
-
 //////////////////////////////////////////////////////////////////////////
 //                                                                      //
 // AliDisplay                                                           //
@@ -88,7 +87,7 @@ AliDisplay::AliDisplay():
   //
 }
 
-//_______________________________________________________________________
+//_____________________________________________________________________________
 AliDisplay::AliDisplay(Int_t size):
   fZoomMode(1),
   fDrawAllViews(kFALSE),
@@ -118,83 +117,81 @@ AliDisplay::AliDisplay(Int_t size):
   fTracksToDisplay(0),
   fNTracksToDisplay(0)
 {
-  // Create an event display object.
-  // A canvas named "edisplay" is created with a vertical size in pixels
-  //
-  //    A QUICK Overview of the Event Display functions
-  //    ===============================================
-  //
-  //  The event display can ve invoked by executing the macro "display.C"
-  // A canvas like in the picture below will appear.
-  //
-  //  On the left side of the canvas, the following buttons appear:
-  //   *Next*       to move to the next event
-  //   *Previous*   to move to the previous event
-  //   *Top View*   to display a top view of the current event
-  //   *Side View*  to display a side view of the current event
-  //   *Front View* to display a front view of the current event
-  //   *All Views*  to display front/side/top/30-30 views of the current event
-  //   *OpenGL*     to use OpenGl to view the current event.
-  //                Note that OpenGL cannot be used across the network.
-  //                Before using OpenGL, load the GL libraries
-  //                by executing the macro GL.C (in $ROOTSYS/macros/GL.C.
-  //                Once in GL, click the HELP button of the GL canvas.
-  //   *X3D*        to use X3D to view the current event (Unix only).
-  //                Once in X3D, type M to see the list of all possible options.
-  //                for example type J to zoom, K to unzoom
-  //                use the mouse to rotate.
-  //   *Pick*       Select this option to be able to point on a track with the
-  //                mouse. Once on the track, use the right button to select
-  //                an action. For example, select SetMarkerAttributes to
-  //                change the marker type/color/size for the track.
-  //   *Zoom*       Select this option (default) if you want to zoom.
-  //                To zoom, simply select the selected area with the left button.
-  //   *UnZoom*     To revert to the previous picture size.
-  //
-  //   slider R     On the left side, the vertical slider can be used to
-  //                set the default picture size.
-  //   slider pcut  At the top of the canvas, a slider can be used to change
-  //                the momentum cut (or range) to display tracks.
-  //   slider eta   On the right side of the canvas, a vertical slider can be used
-  //                to specify a rapidity range for the tracks.
-  //
-  //  When you are in Zoom mode, you can click on the black part of the canvas
-  //  to select special options with the right mouse button.
-  //  This will display a pop-up menu with items like:
-  //     *Disable detector* 
-  //     *Enable detector*, etc.
-  //  For example select "Disable detector". You get a dialog box.
-  //  Diable detector TRD for example.
-  //
-  //  When you are in pick mode, you can "Inspect" the object pointed by the mouse.
-  //  When you are on a track, select the menu item "InspectParticle"
-  //  to display the current particle attributes.
-  //
-  //  You can activate the Root browser by selecting the Inspect menu
-  //  in the canvas tool bar menu. Then select "Start Browser"
-  //  This will open a new canvas with the browser. At this point, you may want
-  //  to display some histograms (from the Trees). Go to the "File" menu
-  //  of the browser and click on "New canvas".
-  //  In the browser, click on item "ROOT files" in the left pane.
-  //  Click on galice.root.
-  //  Click on TH
-  //  Click on TPC for example
-  //  Click on any variable (eg TPC.fX) to histogram the variable.
-  //
-  //   If you are lost, you can click on HELP in any Root canvas or browser.
-  //Begin_Html
-  /*
-    <img src="picts/alidisplay.gif">
-  */
-  //End_Html
-  
+// Create an event display object.
+// A canvas named "edisplay" is created with a vertical size in pixels
+//
+//    A QUICK Overview of the Event Display functions
+//    ===============================================
+//
+//  The event display can ve invoked by executing the macro "display.C"
+// A canvas like in the picture below will appear.
+//
+//  On the left side of the canvas, the following buttons appear:
+//   *Next*       to move to the next event
+//   *Previous*   to move to the previous event
+//   *Top View*   to display a top view of the current event
+//   *Side View*  to display a side view of the current event
+//   *Front View* to display a front view of the current event
+//   *All Views*  to display front/side/top/30-30 views of the current event
+//   *OpenGL*     to use OpenGl to view the current event.
+//                Note that OpenGL cannot be used across the network.
+//                Before using OpenGL, load the GL libraries
+//                by executing the macro GL.C (in $ROOTSYS/macros/GL.C.
+//                Once in GL, click the HELP button of the GL canvas.
+//   *X3D*        to use X3D to view the current event (Unix only).
+//                Once in X3D, type M to see the list of all possible options.
+//                for example type J to zoom, K to unzoom
+//                use the mouse to rotate.
+//   *Pick*       Select this option to be able to point on a track with the
+//                mouse. Once on the track, use the right button to select
+//                an action. For example, select SetMarkerAttributes to
+//                change the marker type/color/size for the track.
+//   *Zoom*       Select this option (default) if you want to zoom.
+//                To zoom, simply select the selected area with the left button.
+//   *UnZoom*     To revert to the previous picture size.
+//
+//   slider R     On the left side, the vertical slider can be used to
+//                set the default picture size.
+//   slider pcut  At the top of the canvas, a slider can be used to change
+//                the momentum cut (or range) to display tracks.
+//   slider eta   On the right side of the canvas, a vertical slider can be used
+//                to specify a rapidity range for the tracks.
+//
+//    When you are in Zoom mode, you can click on the black part of the canvas
+//  to select special options with the right mouse button.
+//  This will display a pop-up menu with items like:
+//     *Disable detector* 
+//     *Enable detector*, etc.
+//  For example select "Disable detector". You get a dialog box.
+//  Diable detector TRD for example.
+//
+//  When you are in pick mode, you can "Inspect" the object pointed by the mouse.
+//  When you are on a track, select the menu item "InspectParticle"
+//  to display the current particle attributes.
+//
+//  You can activate the Root browser by selecting the Inspect menu
+//  in the canvas tool bar menu. Then select "Start Browser"
+//  This will open a new canvas with the browser. At this point, you may want
+//  to display some histograms (from the Trees). Go to the "File" menu
+//  of the browser and click on "New canvas".
+//  In the browser, click on item "ROOT files" in the left pane.
+//  Click on galice.root.
+//  Click on TH
+//  Click on TPC for example
+//  Click on any variable (eg TPC.fX) to histogram the variable.
+//
+//   If you are lost, you can click on HELP in any Root canvas or browser.
+//Begin_Html
+/*
+<img src="picts/alidisplay.gif">
+*/
+//End_Html
+   
   gAlice->SetDisplay(this);
    
   // Initialize display default parameters
   SetRange();
   SetPTcut();
-  
-  // Set front view by default
   
   // Create display canvas
   Int_t ysize = size;
@@ -202,18 +199,18 @@ AliDisplay::AliDisplay(Int_t size):
   Int_t xsize = Int_t(size*830./ysize);
   fCanvas = new TCanvas("Canvas", "ALICE Event Display",14,47,xsize,ysize);
   fCanvas->ToggleEventStatus();
-  
+
   // Create main display pad
   fPad = new TPad("viewpad", "Alice display",0.15,0,0.97,0.96);
   fPad->Draw();
   fPad->Modified();
   fPad->SetFillColor(1);
   fPad->SetBorderSize(2);
-  
+
   // Create user interface control pad
   DisplayButtons();
   fCanvas->cd();
-  
+
   // Create Range and mode pad
   Float_t dxtr     = 0.15;
   Float_t dytr     = 0.45;
@@ -222,12 +219,10 @@ AliDisplay::AliDisplay(Int_t size):
   fTrigPad->cd();
   fTrigPad->SetFillColor(22);
   fTrigPad->SetBorderSize(2);
-
   fRangeSlider = new TSlider("range","range",0.7,0.42,0.9,0.98);
   fRangeSlider->SetObject(this);
   char pickmode[] = "gAlice->Display()->SetPickMode()";
   Float_t db = 0.09;
-
   fPickButton = new TButton("Pick",pickmode,0.05,0.32,0.65,0.32+db);
   fPickButton->SetFillColor(38);
   fPickButton->Draw();
@@ -243,7 +238,6 @@ AliDisplay::AliDisplay(Int_t size):
   button->SetFillColor(38);
   button->Draw();
   AppendPad(); // append display object as last object to force selection
-  
   // Create momentum cut slider pad
   fCanvas->cd();
   fCutPad = new TPad("cutSlider", "pcut slider pad",dxtr,.96,1,1);
@@ -251,7 +245,6 @@ AliDisplay::AliDisplay(Int_t size):
   fCutPad->cd();
   fCutPad->SetFillColor(22);
   fCutPad->SetBorderSize(2);
-
   fCutSlider = new TSlider("pcut","Momentum cut",0,0,1,1);
   fCutSlider->SetRange(fPTcut/kptcutmax,1);
   fCutSlider->SetObject(this);
@@ -265,16 +258,13 @@ AliDisplay::AliDisplay(Int_t size):
   cutaxis->SetTitleOffset(0.5);
   cutaxis->SetTitle("pcut .  ");
   fCutSlider->GetListOfPrimitives()->AddFirst(cutaxis);
-  
   // Create rapidity cut slider pad
   fCanvas->cd();
-
   fEtaPad = new TPad("EtaSlider", "Eta slider pad",0.97,0,1,0.96);
   fEtaPad->Draw();
   fEtaPad->cd();
   fEtaPad->SetFillColor(22);
   fEtaPad->SetBorderSize(2);
-
   fEtaSlider = new TSlider("etacut","Rapidity cut",0,0,1,1);
   fEtaSlider->SetObject(this);
   fEtaSlider->SetFillColor(45);
@@ -288,12 +278,12 @@ AliDisplay::AliDisplay(Int_t size):
   cutaxis->SetTitle("Etacut .  ");
   fEtaSlider->GetListOfPrimitives()->AddFirst(etaaxis);
   fCanvas->cd();
-  
+
   fTrigPad->SetEditable(kFALSE);
   fButtons->SetEditable(kFALSE);
   fTracksToDisplay =0;
   fNTracksToDisplay =0;   
-  
+
   fCanvas->cd();
   fCanvas->Update();
 }
@@ -820,28 +810,50 @@ void AliDisplay::LoadPoints()
    TIter next(gAlice->Modules());
    AliModule *module;
    Int_t ntracks = gAlice->GetNtrack();
-   
+
+   while((module = (AliModule*)next())) 
+    {
+     AliDetector* detector = dynamic_cast<AliDetector*>(module);
+     if(detector) detector->SetTreeAddress();
+    }
+   next.Reset();
+
    // load only wanted tracks
-   if (fNTracksToDisplay>0){
-     Int_t nprim =  gAlice->Stack()->GetNprimary();
-     for (Int_t track=0; track<fNTracksToDisplay;track++) {
+   if (fNTracksToDisplay>0)
+    {
+      Int_t nprim =  gAlice->Stack()->GetNprimary();
+      for (Int_t track=0; track<fNTracksToDisplay;track++) 
+       {
+        gAlice->ResetHits();
+        Int_t nev = nprim-1-gAlice->GetPrimary(fTracksToDisplay[track]);
+        while((module = (AliModule*)next())) 
+         {
+          AliDetector* detector = dynamic_cast<AliDetector*>(module);
+          if(detector)
+           {
+            detector->TreeH()->GetEvent(nev);
+            module->LoadPoints(nprim-1-gAlice->GetPrimary(fTracksToDisplay[track]));
+           }
+         }
+        next.Reset();
+     }
+   }
+   else
+    {
+      
+      for (Int_t track=0; track<ntracks;track++) {
       gAlice->ResetHits();
-      gAlice->TreeH()->GetEvent(nprim-1-gAlice->GetPrimary(fTracksToDisplay[track]));
-      while((module = dynamic_cast<AliModule*>(next()))) {
-	module->LoadPoints(nprim-1-gAlice->GetPrimary(fTracksToDisplay[track]));
+      while((module = (AliModule*)next())) {
+         AliDetector* detector = dynamic_cast<AliDetector*>(module);
+         if(detector)
+           {
+             detector->TreeH()->GetEvent(track);
+             detector->LoadPoints(track);
+           }
       }
       next.Reset();
      }
    }
-   else
-     for (Int_t track=0; track<ntracks;track++) {
-       gAlice->ResetHits();
-       gAlice->TreeH()->GetEvent(track);
-       while((module = dynamic_cast<AliModule*>(next()))) {
-         module->LoadPoints(track);
-       }
-       next.Reset();
-     }
 }
 
 //_____________________________________________________________________________
@@ -927,11 +939,14 @@ void AliDisplay::ShowNextEvent(Int_t delta)
 //    delta = -1 show previous event
 
   if (delta) {
-     gAlice->Clear();
-     Int_t currentEvent = gAlice->GetHeader()->GetEvent();
+//     gAlice->Clear();
+     //Int_t currentEvent = gAlice->GetHeader()->GetEvent();//event number is not filled correctly
+     Int_t currentEvent = gAlice->GetRunLoader()->GetEventNumber();
      Int_t newEvent     = currentEvent + delta;
      gAlice->GetEvent(newEvent);
-     if (!gAlice->TreeH()) return; 
+     cout<<"AliDisplay::ShowNextEvent: delta = "<<delta
+         <<"  currentEvent = "<<currentEvent
+         <<"  newEvent = "<<newEvent<<endl;
    }
   LoadPoints();
   fPad->cd(); 

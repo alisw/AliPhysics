@@ -13,31 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.6  2000/12/21 22:12:41  morsch
-Clean-up of coding rule violations,
-
-Revision 1.5  2000/10/18 11:42:06  morsch
-- AliMUONRawCluster contains z-position.
-- Some clean-up of useless print statements during initialisations.
-
-Revision 1.4  2000/10/03 21:48:07  morsch
-Adopt to const declaration of some of the methods in AliSegmentation.
-
-Revision 1.3  2000/06/29 12:34:09  morsch
-AliMUONSegmentation class has been made independent of AliMUONChamber. This makes
-it usable with any other geometry class. The link to the object to which it belongs is
-established via an index. This assumes that there exists a global geometry manager
-from which the pointer to the parent object can be obtained (in our case gAlice).
-
-Revision 1.2  2000/06/15 07:58:48  morsch
-Code from MUON-dev joined
-
-Revision 1.1.2.1  2000/06/09 21:38:46  morsch
-AliMUONSegmentationV05 code  from  AliMUONSegResV05.cxx
-
-*/
+/* $Id$ */
 
 /////////////////////////////////////////////////////
 //  Segmentation and Response classes version 05   //

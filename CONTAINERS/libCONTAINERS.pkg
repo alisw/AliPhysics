@@ -10,4 +10,3 @@ HDRS= $(SRCS:.cxx=.h)
 
 DHDR:= CONTAINERSLinkDef.h
 
-EINCLUDE:= TPC

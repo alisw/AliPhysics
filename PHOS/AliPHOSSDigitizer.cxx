@@ -68,7 +68,7 @@ ClassImp(AliPHOSSDigitizer)
 
            
 //____________________________________________________________________________ 
-  AliPHOSSDigitizer::AliPHOSSDigitizer():TTask("","") 
+  AliPHOSSDigitizer::AliPHOSSDigitizer():TTask("","")
 {
   // ctor
   InitParameters() ;
@@ -76,12 +76,13 @@ ClassImp(AliPHOSSDigitizer)
 }
 
 //____________________________________________________________________________ 
-AliPHOSSDigitizer::AliPHOSSDigitizer(const char * headerFile, const char * sDigitsTitle, const Bool_t toSplit):
-TTask(sDigitsTitle, headerFile)
+AliPHOSSDigitizer::AliPHOSSDigitizer(const char * alirunFileName, const char * eventFolderName):
+  TTask("PHOS"+AliConfig::fgkSDigitizerTaskName, alirunFileName),
+  fEventFolderName(eventFolderName)
 {
+
   // ctor
   InitParameters() ; 
-  fToSplit = toSplit ;
   Init();
   fDefaultInit = kFALSE ; 
 }
@@ -94,119 +95,85 @@ AliPHOSSDigitizer::AliPHOSSDigitizer(const AliPHOSSDigitizer & sd) {
   fB             = sd.fB ;
   fPrimThreshold = sd.fPrimThreshold ;
   fSDigitsInRun  = sd.fSDigitsInRun ;
-  fSplitFile     = new TFile( (sd.fSplitFile)->GetName(), "new")  ; 
-  fToSplit       = sd.fToSplit ;
+  SetName(sd.GetName()) ; 
+  SetTitle(sd.GetTitle()) ; 
+  fEventFolderName = sd.fEventFolderName;
 }
 
-//____________________________________________________________________________ 
-AliPHOSSDigitizer::~AliPHOSSDigitizer()
-{
-  // dtor
-  
-  fSplitFile = 0 ; 
-}
 
 //____________________________________________________________________________ 
 void AliPHOSSDigitizer::Init()
 {
-  // Initialization: open root-file, allocate arrays for hits and sdigits,
-  // attach task SDigitizer to the list of PHOS tasks
-  // 
-  // Initialization can not be done in the default constructor
-  //============================================================= YS
-  //  The initialisation is now done by AliPHOSGetter
+  // Uses the getter to access the required files
   
-  if( strcmp(GetTitle(), "") == 0 )
-    SetTitle("galice.root") ;
-
-  AliPHOSGetter * gime = AliPHOSGetter::GetInstance(GetTitle(), GetName(),fToSplit) ;  
+  fInit = kTRUE ; 
+  
+  AliPHOSGetter * gime = AliPHOSGetter::Instance(GetTitle(), fEventFolderName.Data());  
   if ( gime == 0 ) {
-    Error("Init" ,"Could not obtain the Getter object !") ;  
+    Fatal("Init" ,"Could not obtain the Getter object for file %s and event %s !", GetTitle(), fEventFolderName.Data()) ;  
     return ;
   } 
   
-  gime->PostSDigits( GetName(), GetTitle() ) ; 
-
-  fSplitFile = 0 ;
-  if(fToSplit){
-    // construct the name of the file as /path/PHOS.SDigits.root
-    // First - extract full path if necessary
-    TString sDigitsFileName(GetTitle()) ;
-    Ssiz_t islash = sDigitsFileName.Last('/') ;
-    if(islash<sDigitsFileName.Length())
-      sDigitsFileName.Remove(islash+1,sDigitsFileName.Length()) ;
-    else
-      sDigitsFileName="" ;
-    // Next - append the file name 
-    sDigitsFileName+="PHOS.SDigits." ;
-    if((strcmp(GetName(),"Default")!=0)&&(strcmp(GetName(),"")!=0)){
-      sDigitsFileName+=GetName() ;
-      sDigitsFileName+="." ;
-    }
-    sDigitsFileName+="root" ;
-    // Finally - check if the file already opened or open the file
-    fSplitFile = static_cast<TFile*>(gROOT->GetFile(sDigitsFileName.Data()));   
-    if(!fSplitFile)
-      fSplitFile =  TFile::Open(sDigitsFileName.Data(),"update") ;
+  TString opt("SDigits") ; 
+  if(gime->VersionExists(opt) ) { 
+    Error( "Init", "Give a version name different from %s", fEventFolderName.Data() ) ;
+    fInit = kFALSE ; 
   }
 
-  TString sdname(GetName() );
-  sdname.Append(":") ;
-  sdname.Append(GetTitle() ) ;
-  SetName(sdname) ;
-  gime->PostSDigitizer(this) ;
+  gime->PostSDigitizer(this);
+  gime->PhosLoader()->GetSDigitsDataLoader()->GetBaseTaskLoader()->SetDoNotReload(kTRUE);
+  
 }
 
 //____________________________________________________________________________ 
 void AliPHOSSDigitizer::InitParameters()
 { 
-  // initializes the parameters for difitization
+  // initializes the parameters for digitization
   fA             = 0;
   fB             = 10000000.;
   fPrimThreshold = 0.01 ;
   fSDigitsInRun  = 0 ;
-  fSplitFile     = 0 ; 
-  fToSplit       = kFALSE ;
 }
 
 //____________________________________________________________________________
 void AliPHOSSDigitizer::Exec(Option_t *option) 
 { 
   // Collects all hits in the same active volume into digit
-
-  if( strcmp(GetName(), "") == 0 )
-    Init() ;
   
   if (strstr(option, "print") ) {
-    Print("") ; 
+    Print() ; 
     return ; 
   }
 
   if(strstr(option,"tim"))
     gBenchmark->Start("PHOSSDigitizer");
   
-  //Check, if this branch already exits
-  AliPHOSGetter * gime = AliPHOSGetter::GetInstance() ;
-  if(gime->BranchExists("SDigits") ) 
-    return;   
+  AliPHOSGetter * gime = AliPHOSGetter::Instance() ;
 
-  TString sdname(GetName()) ;
-  sdname.Remove(sdname.Index(GetTitle())-1) ;
-   
+  //switch off reloading of this task while getting event
+  if (!fInit) { // to prevent overwrite existing file
+    Error( "Exec", "Give a version name different from %s", fEventFolderName.Data() ) ;
+    return ;
+  }
+
+
   Int_t nevents = gime->MaxEvent() ; 
   Int_t ievent ;
   for(ievent = 0; ievent < nevents; ievent++){
+
     gime->Event(ievent,"H") ;
-    const TClonesArray * hits = gime->Hits() ;
-    TClonesArray * sdigits = gime->SDigits(sdname.Data()) ;
+
+    TTree * treeS = gime->TreeS(); 
+    TClonesArray * hits = gime->Hits() ;
+    TClonesArray * sdigits = gime->SDigits() ;
     sdigits->Clear();
     Int_t nSdigits = 0 ;
-    
     //Now make SDigits from hits, for PHOS it is the same, so just copy    
-    Int_t nPrim =  static_cast<Int_t>((gAlice->TreeH())->GetEntries()) ; 
+    Int_t nPrim =  static_cast<Int_t>((gime->TreeH())->GetEntries()) ; 
     // Attention nPrim is the number of primaries tracked by Geant 
     // and this number could be different to the number of Primaries in TreeK;
     Int_t iprim ;
+
     for (iprim = 0 ; iprim < nPrim ; iprim ++) { 
       //=========== Get the PHOS branch from Hits Tree for the Primary iprim
       gime->Track(iprim) ;
@@ -224,15 +191,16 @@ void AliPHOSSDigitizer::Exec(Option_t *option)
 	nSdigits++ ;	
 	
       }
-      
+ 
     } // loop over iprim
-    
+
     sdigits->Sort() ;
-    
+
     nSdigits = sdigits->GetEntriesFast() ;
+
     fSDigitsInRun += nSdigits ;  
     sdigits->Expand(nSdigits) ;
-    
+
     Int_t i ;
     for (i = 0 ; i < nSdigits ; i++) { 
       AliPHOSDigit * digit = dynamic_cast<AliPHOSDigit *>(sdigits->At(i)) ; 
@@ -240,33 +208,28 @@ void AliPHOSSDigitizer::Exec(Option_t *option)
     }
 
     //Now write SDigits
-    
-    if((gAlice->TreeS() == 0)|| (fSplitFile))  
-      gAlice->MakeTree("S", fSplitFile);
-    
-    if(fSplitFile)
-      fSplitFile->cd() ;
 
+    
     //First list of sdigits
-    Int_t bufferSize = 32000 ;
-    TBranch * sdigitsBranch = gAlice->TreeS()->Branch("PHOS",&sdigits,bufferSize);
-    sdigitsBranch->SetTitle(sdname);
-    
-    //Next - SDigitizer
-    Int_t splitlevel = 0 ;
-    AliPHOSSDigitizer * sd = this ;
-    TBranch * sdigitizerBranch = gAlice->TreeS()->Branch("AliPHOSSDigitizer","AliPHOSSDigitizer",
-							 &sd,bufferSize,splitlevel);
-    sdigitizerBranch->SetTitle(sdname);
-    
-    sdigitsBranch->Fill() ;
-    sdigitizerBranch->Fill() ;
 
-    gAlice->TreeS()->AutoSave() ;
-        
+    Int_t bufferSize = 32000 ;
+    TBranch * sdigitsBranch = treeS->Branch("PHOS",&sdigits,bufferSize);
+
+    sdigitsBranch->Fill() ;
+
+    gime->WriteSDigits("OVERWRITE");
+
+    //Next - SDigitizer
+
+    gime->WriteSDigitizer("OVERWRITE");
+
     if(strstr(option,"deb"))
       PrintSDigits(option) ;
   }
+  
+  Unload();
+
+  gime->PhosLoader()->GetSDigitsDataLoader()->GetBaseTaskLoader()->SetDoNotReload(kTRUE);
   
   if(strstr(option,"tim")){
     gBenchmark->Stop("PHOSSDigitizer");
@@ -276,46 +239,15 @@ void AliPHOSSDigitizer::Exec(Option_t *option)
 }
 
 //__________________________________________________________________
-void AliPHOSSDigitizer::SetSDigitsBranch(const char * title )
-{
-  // Setting title to branch SDigits 
-
-  TString stitle(title) ;
-
-  // check if branch with title already exists
-  TBranch * sdigitsBranch    = 
-    static_cast<TBranch*>(gAlice->TreeS()->GetListOfBranches()->FindObject("PHOS")) ; 
-  TBranch * sdigitizerBranch =  
-    static_cast<TBranch*>(gAlice->TreeS()->GetListOfBranches()->FindObject("AliPHOSSDigitizer")) ;
-  const char * sdigitsTitle    = sdigitsBranch ->GetTitle() ;  
-  const char * sdigitizerTitle = sdigitizerBranch ->GetTitle() ;
-  if ( stitle.CompareTo(sdigitsTitle)==0 || stitle.CompareTo(sdigitizerTitle)==0 ){
-    Error("SetSDigitsBranch", "Cannot overwrite existing branch with title %s", title) ;
-    return ;
-  }
-  
-  Info("SetSDigitsBranch", "-> Changing SDigits file from %s to %s", GetName(), title) ;
-
-  SetName(title) ; 
-    
-  // Post to the WhiteBoard
-  AliPHOSGetter * gime = AliPHOSGetter::GetInstance() ; 
-  gime->PostSDigits( title, GetTitle()) ; 
-}
-
-
-//__________________________________________________________________
-void AliPHOSSDigitizer::Print(Option_t* option)const
+void AliPHOSSDigitizer::Print()const
 {
   // Prints parameters of SDigitizer
-  TString message ; 
-  message  = "\n------------------- %s -------------\n" ;  
-  message += "   Writing SDigits to branch with title  %s\n" ;
-  message += "   with digitization parameters  A = %f\n" ; 
-  message += "                                 B = %f\n" ;
-  message += "   Threshold for Primary assignment= %f\n" ; 
-  message += "---------------------------------------------------\n" ;
-  Info("Print", message.Data(),  GetName(),  GetName(), fA, fB, fPrimThreshold ) ;
+  Info("Print", "\n------------------- %s -------------", GetName() ) ; 
+  printf("   Writing SDigits to branch with title  %s\n", fEventFolderName.Data()) ;
+  printf("   with digitization parameters  A = %f\n", fA) ; 
+  printf("                                 B = %f\n", fB) ;
+  printf("   Threshold for Primary assignment= %f\n", fPrimThreshold)  ; 
+  printf("---------------------------------------------------\n") ;
   
 }
 
@@ -337,10 +269,8 @@ void AliPHOSSDigitizer::PrintSDigits(Option_t * option)
   // Prints list of digits produced in the current pass of AliPHOSDigitizer
 
 
-  AliPHOSGetter * gime = AliPHOSGetter::GetInstance() ; 
-  TString sdname(GetName()) ;
-  sdname.Remove(sdname.Index(GetTitle())-1) ;
-  const TClonesArray * sdigits = gime->SDigits(sdname.Data()) ;
+  AliPHOSGetter * gime = AliPHOSGetter::Instance() ; 
+  const TClonesArray * sdigits = gime->SDigits() ;
 
   TString message ; 
   message  = "\nAliPHOSSDigitiser: event " ;
@@ -396,13 +326,15 @@ void AliPHOSSDigitizer::PrintSDigits(Option_t * option)
       }    
     }
   }
-  delete tempo ; 
+  delete []tempo ; 
   Info("PrintSDigits", message.Data() ) ;
 }
 
 //____________________________________________________________________________ 
-void AliPHOSSDigitizer::UseHitsFrom(const char * filename)
+void AliPHOSSDigitizer::Unload() const
 {
-  SetTitle(filename) ; 
-  Init() ; 
+  AliPHOSGetter * gime = AliPHOSGetter::Instance() ; 
+  AliPHOSLoader * loader = gime->PhosLoader() ; 
+  loader->UnloadHits() ; 
+  loader->UnloadSDigits() ; 
 }

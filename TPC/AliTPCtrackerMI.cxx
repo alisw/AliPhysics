@@ -13,18 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.8  2003/03/05 11:16:15  kowal2
-Logs added
-
-*/
-
-
-
-
-
-
+/* $Id$ */
 
 /*
   AliTPC parallel tracker - 

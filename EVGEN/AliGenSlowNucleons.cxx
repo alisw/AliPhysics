@@ -13,19 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.3  2003/06/26 08:45:22  morsch
-- Vertex using Vertex() method.
-- Use member data in GetNumberOfSlowNucleons call.
-
-Revision 1.2  2003/03/25 09:55:24  morsch
-Numbers of slow nucleons either from model or user set.
-
-Revision 1.1  2003/03/24 16:49:23  morsch
-Slow nucleon generator and model.
-
-*/
+/* $Id$ */
 
 /*
   Generator for slow nucluons in pA interactions. 

@@ -28,26 +28,12 @@ void AliTRDanaDigits()
 
   Int_t           track;
 
-  // Connect the AliRoot file containing Geometry, Kine, Hits, and digits
-  TFile *gafl = (TFile*) gROOT->GetListOfFiles()->FindObject(alifile);
-  if (!gafl) {
-    cout << "Open the ALIROOT-file " << alifile << endl;
-    gafl = new TFile(alifile);
-  }
-  else {
-    cout << alifile << " is already open" << endl;
-  }
-
-  // Get AliRun object from file or create it if not on file
-  gAlice = (AliRun*) gafl->Get("gAlice");
-  if (gAlice)  
-    cout << "AliRun object found on file" << endl;
-  else
-    gAlice = new AliRun("gAlice","Alice test program");
-
-  // Import the Trees for the event nEvent in the file
-  Int_t nparticles = gAlice->GetEvent(nEvent);
-  if (nparticles <= 0) break;
+  AliRunLoader* rl = AliRunLoader::Open(alifile);
+  AliLoader* loader = rl->GetLoader("TRDLoader");
+  rl->LoadDigits();
+  
+  rl->LoadgAlice();
+  gAlice = rl->GetAliRun();
   
   // Get the pointer to the detector object
   trd = (AliTRDv1*) gAlice->GetDetector("TRD");
@@ -69,8 +55,8 @@ void AliTRDanaDigits()
   digitsManager->SetDebug(1);
 
   // Read the digits from the file
-  digitsManager->Open(alifile);
-  digitsManager->ReadDigits();
+  
+  digitsManager->ReadDigits(loader->TreeD());
 
   // Get the detector number
   Int_t iDet = 514;
@@ -109,5 +95,5 @@ void AliTRDanaDigits()
   matrix->ProjRow();
   matrix->ProjCol();
   matrix->ProjTime();
-
+  delete rl;
 }

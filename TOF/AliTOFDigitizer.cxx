@@ -42,10 +42,11 @@
 #include "AliRunDigitizer.h"
 
 #include "AliRun.h"
+#include "AliRunLoader.h"
+#include "AliLoader.h"
 #include "AliPDG.h"
 
 #include <stdlib.h>
-#include <Riostream.h>
 #include <Riostream.h>
 
 ClassImp(AliTOFDigitizer)
@@ -99,8 +100,27 @@ void AliTOFDigitizer::Exec(Option_t* option)
   sprintf (branchname, "%s", tof->GetName ());
 
   fDigits=new TClonesArray("AliTOFdigit",4000);
-
-  TTree* treeD = fManager->GetTreeD();
+ 
+  AliRunLoader* outrl = AliRunLoader::GetRunLoader(fManager->GetOutputFolderName());
+  if (outrl == 0x0)
+   {
+     Error("Exec","Can not find Run Loader in output folder.");
+     return;
+   }
+   
+  AliLoader* outgime = outrl->GetLoader("TOFLoader");
+  if (outgime == 0x0)
+   {
+     Error("Exec","Can not get TOF Loader from Output Run Loader.");
+     return;
+   }
+  
+  TTree* treeD = outgime->TreeD();
+  if (treeD == 0x0)
+   {
+     outgime->MakeTree("D");
+     treeD = outgime->TreeD();
+   }
   //Make branch for digits (to be created in Init())
   tof->MakeBranchInTree(treeD,branchname,&fDigits,4000);
 
@@ -115,7 +135,7 @@ void AliTOFDigitizer::Exec(Option_t* option)
   for (Int_t inputFile=0; inputFile<fManager->GetNinputs();
        inputFile++) {
     ReadSDigit(inputFile);
-  }
+   }
 
   // create digits
   CreateDigits();
@@ -125,7 +145,8 @@ void AliTOFDigitizer::Exec(Option_t* option)
   fSDigitsArray->Delete();
   treeD->Fill();
  
-  fManager->GetTreeD()->AutoSave(); // to fit with the framework
+  outgime->WriteDigits("OVERWRITE");
+  outgime->UnloadDigits();
   fDigits->Delete();
   delete fDigits;
 
@@ -219,8 +240,36 @@ void AliTOFDigitizer::ReadSDigit(Int_t inputFile )
   // be created with the same simulation parameters.
   
   // get the treeS from manager
-  TTree* currentTreeS=fManager->GetInputTreeS(inputFile);
-  
+  AliRunLoader* rl = AliRunLoader::GetRunLoader(fManager->GetInputFolderName(inputFile));
+  if (rl == 0x0)
+   {
+     Error("ReadSDigit","Can not find Run Loader in input %d folder.",inputFile);
+     return;
+   }
+
+  AliLoader* gime = rl->GetLoader("TOFLoader");
+  if (gime == 0x0)
+   {
+     Error("ReadSDigit","Can not get TOF Loader from Input %d Run Loader.",inputFile);
+     return;
+   }
+
+  TTree* currentTreeS=gime->TreeS();
+  if (currentTreeS == 0x0)
+   {
+     Int_t retval = gime->LoadSDigits();
+     if (retval) 
+      {
+         Error("ReadSDigit","Error occured while loading S. Digits for Input %d",inputFile);
+         return;
+      }
+     currentTreeS=gime->TreeS();
+     if (currentTreeS == 0x0)
+      {
+         Error("ReadSDigit","Can not get S. Digits Tree for Input %d",inputFile);
+         return;
+      }
+   } 
   // get the branch TOF inside the treeS
   TClonesArray * sdigitsDummyContainer= new TClonesArray("AliTOFSDigit",  1000); 
 

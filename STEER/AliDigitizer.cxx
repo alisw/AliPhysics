@@ -21,7 +21,6 @@
 //  Author: Jiri Chudoba (CERN)
 //----------------------------------------------------------------------
 
-
 // system includes
 #include <Riostream.h>
 
@@ -37,7 +36,6 @@ ClassImp(AliDigitizer)
 AliDigitizer::AliDigitizer(const Text_t* name, const Text_t* title):
   TTask(name,title),
   fManager(0)
-
 {
   //
   // Default ctor with name and title

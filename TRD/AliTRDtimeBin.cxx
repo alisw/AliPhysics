@@ -13,33 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.5.6.2  2002/07/24 10:09:31  alibrary
-Updating VirtualMC
-
-Revision 1.6  2002/03/28 14:59:07  cblume
-Coding conventions
-
-Revision 1.5  2001/11/06 17:19:41  cblume
-Add detailed geometry and simple simulator
-
-Revision 1.4  2001/10/21 18:30:02  hristov
-Several pointers were set to zero in the default constructors to avoid memory management problems
-
-Revision 1.3  2000/10/15 23:40:01  cblume
-Remove AliTRDconst
-
-Revision 1.2  2000/10/06 16:49:46  cblume
-Made Getters const
-
-Revision 1.1.2.2  2000/10/04 16:34:58  cblume
-Replace include files by forward declarations
-
-Revision 1.1.2.1  2000/09/22 14:47:52  cblume
-Add the tracking code
-
-*/                        
+/* $Id$ */
              
 //////////////////////////////////////////////////////////////////////
 //                                                                  //

@@ -18,15 +18,14 @@
 // --- Standard library ---
 
 // --- AliRoot header files ---
-
-//#include "AliEMCALDigit.h"
+#include "AliConfig.h"
 
 class AliEMCALClusterizer : public TTask {
 
 public:
 
   AliEMCALClusterizer() ;        // default ctor
-  AliEMCALClusterizer(const char * headerFile, const char * name, const Bool_t toSplit) ;
+  AliEMCALClusterizer(const TString alirunFileName, const TString eventFolderName = AliConfig::fgkDefaultEventFolderName) ;
   virtual ~AliEMCALClusterizer() ; // dtor
 
   virtual Float_t GetTowerClusteringThreshold()const {Warning("GetTowerClusteringThreshold", "Not Defined") ; return 0. ; }
@@ -59,11 +58,9 @@ public:
   virtual const char * Version() const {Warning("Version", "Not Defined") ; return 0 ; } 
 
 protected:
-  
-  TFile * fSplitFile ;             //! file in which RecPoints will eventually be stored
-  Bool_t  fToSplit ;               //! Should we write to splitted file
+  TString fEventFolderName ;  // event folder name
 
-  ClassDef(AliEMCALClusterizer,2)  // Clusterization algorithm class 
+  ClassDef(AliEMCALClusterizer,3)  // Clusterization algorithm class 
 
 } ;
 

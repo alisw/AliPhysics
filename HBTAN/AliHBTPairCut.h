@@ -64,9 +64,7 @@ class AliHBTPairCut: public TNamed
   AliHbtBasePairCut* FindCut(AliHBTPairCutProperty cut);
  private:
   static const Int_t fgkMaxCuts; // Max number of cuts
-  
   ClassDef(AliHBTPairCut,2)
-    
 };
 /******************************************************************/
 /******************************************************************/
@@ -85,7 +83,6 @@ class AliHBTEmptyPairCut:  public AliHBTPairCut
   Bool_t IsEmpty() const {return kTRUE;}
   
   ClassDef(AliHBTEmptyPairCut,1)
-    
 };
 
 

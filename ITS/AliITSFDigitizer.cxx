@@ -15,6 +15,12 @@
  
 /*
 $Log$
+Revision 1.3.4.1  2002/11/26 16:58:52  hristov
+Merging NewIO with v3-09-04
+
+Revision 1.3  2002/10/22 14:45:34  alibrary
+Introducing Riostream.h
+
 Revision 1.2  2002/10/14 14:57:00  hristov
 Merging the VirtualMC branch to the main development branch (HEAD)
 
@@ -35,6 +41,8 @@ New Fastpoint merger added.
 #include <TFile.h>
 
 #include <AliRun.h>
+#include <AliRunLoader.h>
+#include <AliLoader.h>
 #include <AliRunDigitizer.h>
 
 #include "AliITSFDigitizer.h"
@@ -105,22 +113,55 @@ void AliITSFDigitizer::Exec(Option_t* opt){
 //
 
   AliITSsimulationFastPoints *sim = new AliITSsimulationFastPoints();
+  AliRunLoader* outrl = AliRunLoader::GetRunLoader(fManager->GetOutputFolderName());
+  if (outrl == 0x0)
+   {
+     Error("Exec","Can not find Run Loader in output folder.");
+     return;
+   }
 
-  TTree *outputTreeR = fManager->GetTreeR();
+  AliLoader* outgime = outrl->GetLoader("ITSLoader");
+  if (outgime == 0x0)
+   {
+     Error("Exec","Can not get TOF Loader from Output Run Loader.");
+     return;
+   }
+
+  TTree* outputTreeR = outgime->TreeR();
+  if (outputTreeR == 0x0)
+   {
+     outgime->MakeTree("R");
+     outputTreeR = outgime->TreeR();
+   }
+
   TClonesArray *recPoints = fITS->RecPoints();
 //  TBranch *branch =
-      fITS->MakeBranchInTree(outputTreeR,"ITSRecPointsF",
-					   &recPoints,4000,0);
+  fITS->MakeBranchInTree(outputTreeR,"ITSRecPointsF",&recPoints,4000,0);
   
   Int_t nModules;
   fITS->InitModules(-1,nModules);
 
 // load hits into modules
+  for (Int_t iFile = 0; iFile < fManager->GetNinputs(); iFile++) 
+   {
+     AliRunLoader* rl = AliRunLoader::GetRunLoader(fManager->GetInputFolderName(iFile));
+     if (rl == 0x0)
+      {
+        Error("Exec","Can not find Run Loader in input %d folder.",iFile);
+        return;
+      }
 
-  for (Int_t iFile = 0; iFile < fManager->GetNinputs(); iFile++) {
-    fITS->FillModules(fManager->GetInputTreeH(iFile),
-		      fManager->GetMask(iFile));
-  }
+     AliLoader* gime = rl->GetLoader("ITSLoader");
+     if (gime == 0x0)
+      {
+        Error("Exec","Can not get TOF Loader from Input %d Run Loader.",iFile);
+        return;
+      }
+
+     gime->LoadHits();
+     fITS->FillModules(gime->TreeH(),fManager->GetMask(iFile));
+     gime->UnloadHits();
+   }
   
 // transform hits to fast rec points
 
@@ -131,7 +172,7 @@ void AliITSFDigitizer::Exec(Option_t* opt){
     outputTreeR->Fill();
     fITS->ResetRecPoints();
   }
-  outputTreeR->AutoSave();
-
+  outrl->WriteRecPoints("OVERWRITE");
+//  outputTreeR->AutoSave();
 }
 ////////////////////////////////////////////////////////////////////////

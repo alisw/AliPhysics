@@ -8,7 +8,7 @@ SRCS          = AliITS.cxx AliITSv1.cxx AliITSv5.cxx AliITSvSPD02.cxx \
 		AliITSgeom.cxx AliITSgeomMatrix.cxx \
 	        AliITSgeomSPD.cxx AliITSgeomSDD.cxx \
 		AliITSgeomSSD.cxx AliITSmodule.cxx \
-                AliITSGeant3Geometry.cxx \
+                AliITSGeant3Geometry.cxx AliITSLoader.cxx\
 		AliITSsimulationFastPoints.cxx \
 		AliITSsimulationFastPointsV0.cxx AliITSsimulation.cxx \
 		AliITSsimulationSPD.cxx AliITSsimulationSPDdubna.cxx \
@@ -31,7 +31,6 @@ SRCS          = AliITS.cxx AliITSv1.cxx AliITSv5.cxx AliITSvSPD02.cxx \
                 AliITSTrackV1.cxx AliITSIOTrack.cxx \
 		AliITSRad.cxx AliITSgeoinfo.cxx AliITSTrackerV1.cxx\
 		AliITSvtest.cxx	AliITSStrLine.cxx\
-                AliITSclustererV2.cxx \
                 AliITSclusterV2.cxx AliITStrackV2.cxx AliITStrackerV2.cxx \
 		AliITSVertex.cxx AliITSVertexer.cxx AliITSVertexerIons.cxx \
                 AliITSVertexerPPZ.cxx AliITSVertexerTracks.cxx\
@@ -47,6 +46,7 @@ SRCS          = AliITS.cxx AliITSv1.cxx AliITSv5.cxx AliITSvSPD02.cxx \
 		AliITSDDLRawData.cxx AliITSpidESD.cxx \
 		AliITSRawStream.cxx AliITSRawStreamSPD.cxx \
 		AliITSRawStreamSDD.cxx AliITSRawStreamSSD.cxx
+
 #		AliITSAlignmentTrack.cxx AliITSAlignmentModule.cxx \
 
 HDRS:=  $(SRCS:.cxx=.h)

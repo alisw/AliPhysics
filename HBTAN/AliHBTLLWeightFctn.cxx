@@ -10,10 +10,13 @@
 //Author: Ludmila Malinina, JINR (malinina@sunhe.jinr.ru)
 #include "AliHBTLLWeightFctn.h"
 #include "AliHBTLLWeights.h"
+#include "AliHBTLLWeightsPID.h"
 
 //--for test--AliHBTLLWeightQInvFctn* yyy= new AliHBTLLWeightQInvFctn();
 
-ClassImp( AliHBTLLWeightQInvFctn )  
+ClassImp( AliHBTLLWeightQInvFctn )
+
+  
 /****************************************************************/
 AliHBTLLWeightQInvFctn::AliHBTLLWeightQInvFctn(Int_t nbins, Double_t maxXval, Double_t minXval):
            AliHBTTwoPairFctn1D(nbins,maxXval,minXval)

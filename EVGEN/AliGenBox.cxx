@@ -13,37 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.8  2003/01/14 10:50:18  alibrary
-Cleanup of STEER coding conventions
-
-Revision 1.7  2002/02/08 16:50:50  morsch
-Add name and title in constructor.
-
-Revision 1.6  2001/07/27 17:09:35  morsch
-Use local SetTrack, KeepTrack and SetHighWaterMark methods
-to delegate either to local stack or to stack owned by AliRun.
-(Piotr Skowronski, A.M.)
-
-Revision 1.5  2000/12/21 16:24:06  morsch
-Coding convention clean-up
-
-Revision 1.4  2000/11/30 07:12:49  alibrary
-Introducing new Rndm and QA classes
-
-Revision 1.3  2000/10/02 21:28:06  fca
-Removal of useless dependecies via forward declarations
-
-Revision 1.2  2000/07/11 18:24:55  fca
-Coding convention corrections + few minor bug fixes
-
-Revision 1.1  2000/06/09 20:22:58  morsch
-Same class as previously in AliSimpleGen.cxx
-All coding rule violations except RS3 corrected (AM)
-
-*/
-
+/* $Id$ */
 
 
 // Generator for particles in a preset

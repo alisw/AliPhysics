@@ -13,27 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* 
-$Log$
-Revision 1.5  2002/10/14 14:57:42  hristov
-Merging the VirtualMC branch to the main development branch (HEAD)
-
-Revision 1.3.6.1  2002/07/24 11:07:40  alibrary
-Updating VirtualMC
-
-Revision 1.4  2002/07/24 09:38:28  vicinanz
-Fixed (ininfluential) bug on TestHit method
-
-Revision 1.3  2001/12/19 09:33:32  hristov
-Index corrected
-
-Revision 1.2  2001/11/22 11:30:30  hristov
-Correct log field
-
-Revision 1.1  2001/11/22 11:22:51  hristov
-Updated version of TOF digitization, N^2 problem solved (J.Chudoba)
-
-*/
+/* $Id$ */
 
 ////////////////////////////////////////////////////////////////////////
 //

@@ -12,27 +12,8 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-/*
-$Log$
-Revision 1.6  2002/10/14 14:57:32  hristov
-Merging the VirtualMC branch to the main development branch (HEAD)
 
-Revision 1.4.12.1  2002/07/24 09:50:10  alibrary
-Updating VirtualMC
-
-Revision 1.5  2002/07/23 11:48:05  alla
-new Digits structure
-
-Revision 1.4  2000/10/13 13:14:08  hristov
-Bug fixes and code cleaning
-
-Revision 1.3  2000/07/13 16:41:29  fca
-New START corrected for coding conventions
-
-Revision 1.2  2000/03/24 17:40:35  alla
-New AliSTART
-
-*/ 
+/* $Id$ */
 
 #include <TArrayI.h>
 #include "AliSTARTdigit.h"

@@ -11,7 +11,7 @@
 //*-- Author: Gines Martinez & Yves Schutz (SUBATECH) 
 //*--         Dmitri Peressounko (SUBATECH & Kurchatov Institute)
 
-  //#include <stdlib.h>
+#include <stdlib.h>
 
 // --- ROOT system ---
 
@@ -31,7 +31,7 @@ class AliPHOSReconstructioner : public TTask {
 public:
 
   AliPHOSReconstructioner() ; //ctor            
-  AliPHOSReconstructioner(const char * headreFile, const char * branchName = "Default",Bool_t toSplit = kFALSE) ;
+  AliPHOSReconstructioner(const char * headreFile, const char * branchName = "Default");
   AliPHOSReconstructioner(const AliPHOSReconstructioner & rec) {
     // cpy ctor: 
     // requested by the Coding Convention
@@ -69,8 +69,6 @@ private:
 
 private:
   
-  Bool_t   fToSplit ;           // To tell if we are in split mode or not
-  TString  fHeaderFileName ;    // File with headers and gAlice
   TString  fDigitsBranch ;      // Title of digits branch
   TString  fRecPointBranch ;    // Title of RecPoints branch   
   TString  fTSBranch  ;         // Title of TrackSegments branch

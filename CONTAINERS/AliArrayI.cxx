@@ -13,19 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.1  2000/11/01 15:57:13  kowal2
-Moved from the TPC directory
-
-Revision 1.2  2000/04/17 09:37:33  kowal2
-removed obsolete AliTPCDigitsDisplay.C
-
-Revision 1.1.4.2  2000/04/10 11:32:37  kowal2
-
-"ROOT"-based class with some extra functionality
-
-*/
+/* $Id$ */
 
 ///////////////////////////////////////////////////////////////////////
 //   Added additional functionality  to original TArrayI              //

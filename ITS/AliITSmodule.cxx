@@ -14,71 +14,18 @@
  **************************************************************************/
 
 /*
-$Log$
-Revision 1.15  2003/03/21 13:58:14  masera
-Fix to avoid out-of-detector fast rec points (problem occurring for tracks entering and exiting the same side of a sensitive volume)
-
-Revision 1.14  2002/10/14 14:57:00  hristov
-Merging the VirtualMC branch to the main development branch (HEAD)
-
-Revision 1.10.4.2  2002/07/24 09:27:50  alibrary
-Updating on VirtualMC
-
-Revision 1.13  2002/06/12 18:59:47  nilsen
-Added Starting track location to hit class and related changes to modules.
-This is at present still fully backwards compatible since starting hits
-are still written to the file. When aliroot v4.0 will be released, this
-backwards compatiblity will be broken by removing the enterence hit, and making
-the nessesary changes to module at that time.
-
-Revision 1.12  2002/06/10 17:31:03  nilsen
-Replaced TArrayI expansion with Root version.
-
-Revision 1.11  2002/06/04 18:43:15  nilsen
-Fix to avoid divide by zero problem in MedianHitG and MedianHitL for track
-that enter and exit the same side of a detector sensitive volume. Needed
-for Fast simulation. Thanks to Nicola Carrer.
-
-Revision 1.10  2002/03/15 17:21:54  nilsen
-Removed zero-ing of fModules variable in constructors.
-
-Revision 1.9  2000/10/04 19:46:39  barbera
-Corrected by F. Carminati for v3.04
-
-Revision 1.8  2000/10/02 16:32:57  barbera
-Forward declarations added and formatting
-
-Revision 1.3.4.8  2000/10/02 15:55:26  barbera
-Forward declarations added and formatting
-
-Revision 1.7  2000/09/22 12:36:38  nilsen
-Minor changes to improve compilation and create less NOISE.
-
-Revision 1.6  2000/07/10 16:07:18  fca
-Release version of ITS code
-
-Revision 1.3.4.2  2000/03/02 21:42:29  nilsen 
-Linked AliDetector::fDigit to AliITSmodule::fDigitsM and AliITS::fITSRecPoints
-to AliITSmodule::fRecPointsM. Renamed AliITSmodule::fPointsM to fRecPointsM.
-Removed the deletion of fDigitsM from the distructor since it is only a copy
-of what is in AliDetector. Fixed a bug in the functions LineSegmentL and
-LineSegmentG. Added two new versions of LineSegmentL and LineSegmentG to
-additionaly return track number from the hit. Removed FastPoint function,
-haven't found anywere it was used, also it had very many problems, should
-just call FastPointSPD... .
-
-Revision 1.3.4.1  2000/01/12 19:03:32  nilsen
-This is the version of the files after the merging done in December 1999.
-See the ReadMe110100.txt file for details
-
-Revision 1.3  1999/10/04 15:20:12  fca
-Correct syntax accepted by g++ but not standard for static members, remove minor warnings
-
-Revision 1.2  1999/09/29 09:24:20  fca
-Introduction of the Copyright and cvs Log
+ $Id$ 
+*/
+/*
+ $Log$
+ Revision 1.9.8.4  2003/06/13 16:31:00  nilsen
+ Introducing a backward incompatibility to hit files created before June 12
+ 2002. The enterance hit is no longer recorded. The starting position of
+ every hit is used instead. Added GetPositionL0 to AliITShit, fixed up
+ AliITSmodule to use starting location of hit and not enterance hits, and
+ StepManager in AliITSvPPRasymm no longer records enterence hit to hit file.
 
 */
-
 #include <TArrayI.h>
 
 #include <stdlib.h>
@@ -142,20 +89,18 @@ AliITSmodule::AliITSmodule(const AliITSmodule &source){
 ////////////////////////////////////////////////////////////////////////
 //     Copy Constructor 
 ////////////////////////////////////////////////////////////////////////
-  printf("AliITSmodule error: AliITSmodule class has not to be copied! Exit.\n");
+  Error("AliITSmodule","AliITSmodule class has not to be copied! Exit.");
   exit(1);
 }
-
 //_____________________________________________________________________________
 AliITSmodule& AliITSmodule::operator=(const AliITSmodule &source){
 ////////////////////////////////////////////////////////////////////////
 //    Assignment operator 
 ////////////////////////////////////////////////////////////////////////
-  printf("AliITSmodule error: AliITSmodule class has not to be copied! Exit.\n");
+  Error("AliITSmodule","AliITSmodule class has not to be copied! Exit.");
   exit(1);
   return *this; // fake return neded on Sun
-} 
-
+}
 //_________________________________________________________________________
 // 
 // Hits management
@@ -229,26 +174,23 @@ Bool_t AliITSmodule::LineSegmentL(Int_t hitindex,Double_t &a,Double_t &b,
 				  Double_t &c,Double_t &d,
 				  Double_t &e,Double_t &f,Double_t &de){
   // line segment
-    static Int_t hitindex0;
-    AliITShit *h0,*h1;
+    AliITShit *h1;
+    Double_t t;
 
     if(hitindex>= fHitsM->GetEntriesFast()) return kFALSE;
 
     h1 = (AliITShit *) (fHitsM->At(hitindex));
     if(h1->StatusEntering()){ // if track entering volume, get index for next
 	                      // step
-	hitindex0 = hitindex;
 	return kFALSE;
     } // end if StatusEntering()
     // else stepping
-    h0 = (AliITShit *) (fHitsM->At(hitindex0));
     de = h1->GetIonization();
-    h0->GetPositionL(a,c,e);
+    h1->GetPositionL0(a,c,e,t);
     h1->GetPositionL(b,d,f);
     b = b - a;
     d = d - c;
     f = f - e;
-    hitindex0 = hitindex;
     return kTRUE;
 }
 //___________________________________________________________________________
@@ -256,26 +198,23 @@ Bool_t AliITSmodule::LineSegmentG(Int_t hitindex,Double_t &a,Double_t &b,
 				  Double_t &c,Double_t &d,
 				  Double_t &e,Double_t &f,Double_t &de){
   // line segment
-    static Int_t hitindex0;
-    AliITShit *h0,*h1;
+    AliITShit *h1;
+    Double_t t;
 
     if(hitindex>= fHitsM->GetEntriesFast()) return kFALSE;
 
     h1 = (AliITShit *) (fHitsM->At(hitindex));
     if(h1->StatusEntering()){ // if track entering volume, get index for next
 	                      // step
-	hitindex0 = hitindex;
 	return kFALSE;
     } // end if StatusEntering()
     // else stepping
-    h0 = (AliITShit *) (fHitsM->At(hitindex0));
     de = h1->GetIonization();
-    h0->GetPositionG(a,c,e);
+    h1->GetPositionG0(a,c,e,t);
     h1->GetPositionG(b,d,f);
     b = b - a;
     d = d - c;
     f = f - e;
-    hitindex0 = hitindex;
     return kTRUE;
 }
 //___________________________________________________________________________
@@ -284,27 +223,24 @@ Bool_t AliITSmodule::LineSegmentL(Int_t hitindex,Double_t &a,Double_t &b,
 				  Double_t &e,Double_t &f,
 				  Double_t &de,Int_t &track){
   // line segmente
-    static Int_t hitindex0;
-    AliITShit *h0,*h1;
+    AliITShit *h1;
+    Double_t t;
 
     if(hitindex>= fHitsM->GetEntriesFast()) return kFALSE;
 
     h1 = (AliITShit *) (fHitsM->At(hitindex));
     if(h1->StatusEntering()){ // if track entering volume, get index for next
 	                      // step
-	hitindex0 = hitindex;
 	track = h1->GetTrack();
 	return kFALSE;
     } // end if StatusEntering()
     // else stepping
-    h0 = (AliITShit *) (fHitsM->At(hitindex0));
     de = h1->GetIonization();
-    h0->GetPositionL(a,c,e);
+    h1->GetPositionL0(a,c,e,t);
     h1->GetPositionL(b,d,f);
     b = b - a;
     d = d - c;
     f = f - e;
-    hitindex0 = hitindex;
     track = h1->GetTrack();
     return kTRUE;
 }
@@ -314,27 +250,24 @@ Bool_t AliITSmodule::LineSegmentG(Int_t hitindex,Double_t &a,Double_t &b,
 				  Double_t &e,Double_t &f,
 				  Double_t &de,Int_t &track){
   // line segment
-    static Int_t hitindex0;
-    AliITShit *h0,*h1;
+    AliITShit *h1;
+    Double_t t;
 
     if(hitindex>= fHitsM->GetEntriesFast()) return kFALSE;
 
     h1 = (AliITShit *) (fHitsM->At(hitindex));
     if(h1->StatusEntering()){ // if track entering volume, get index for next
 	                      // step
-	hitindex0 = hitindex;
 	track = h1->GetTrack();
 	return kFALSE;
     } // end if StatusEntering()
     // else stepping
-    h0 = (AliITShit *) (fHitsM->At(hitindex0));
     de = h1->GetIonization();
-    h0->GetPositionG(a,c,e);
+    h1->GetPositionG0(a,c,e,t);
     h1->GetPositionG(b,d,f);
     b = b - a;
     d = d - c;
     f = f - e;
-    hitindex0 = hitindex;
     track = h1->GetTrack();
     return kTRUE;
 }

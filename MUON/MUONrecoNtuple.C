@@ -30,6 +30,7 @@
 #include "AliHeader.h"
 #include "AliRun.h"
 
+#include "AliMUON.h"
 #include "AliMUONEventReconstructor.h"
 #include "AliMUONTrack.h"
 #include "AliMUONTrackHit.h"
@@ -92,6 +93,7 @@ void AliMUONEventRecNtupleFill(AliMUONEventReconstructor *Reco, Int_t FillWrite 
   Double_t bendingSlope, nonBendingSlope, pYZ;
 
   if (FillWrite == -1) {
+    printf(">>> Writing Ntuple of reconstructed tracks\n");
     // better to create the file before the Ntuple ????
     TFile *file = new TFile("MUONtrackReco.root","recreate");
     ntuple->Write();
@@ -102,12 +104,14 @@ void AliMUONEventRecNtupleFill(AliMUONEventReconstructor *Reco, Int_t FillWrite 
   if (firstTime) {
     firstTime = kFALSE;
     // first call: create tree for Ntuple...
+    printf(">>> Creating Ntuple of reconstructed tracks\n");
     ntuple = new TTree("MUONtrackReco", "MUONtrackReco");
     ntuple->Branch("Header","AliMUONHeaderRecNtuple", &header);
     ntuple->Branch("Tracks", &recTracks);
   }
 
   // header
+  
   header->fEvent = gAlice->GetHeader()->GetEvent();
 
   TClonesArray *recoTracksPtr = Reco->GetRecTracksPtr();
@@ -139,16 +143,17 @@ void AliMUONEventRecNtupleFill(AliMUONEventReconstructor *Reco, Int_t FillWrite 
     recTrackNt->fNHits = track->GetNTrackHits();
     // track parameters at vertex of best compatible generated track:
     // in fact muon with the right charge
-    for (int iPart = 0; iPart < gAlice->Particles()->GetEntriesFast(); iPart++) {
-      TParticle *particle = (TParticle*) gAlice->Particles()->UncheckedAt(iPart);
-      if ((particle->GetPdgCode() * recTrackNt->fCharge) == -13) {
-	recTrackNt->fPxGen = particle->Px();
-	recTrackNt->fPyGen = particle->Py();
-	recTrackNt->fPzGen = particle->Pz();
-      }
-    }
+ //     for (int iPart = 0; iPart < gAlice->Particles()->GetEntriesFast(); iPart++) {
+//        TParticle *particle = (TParticle*) gAlice->Particles()->UncheckedAt(iPart);
+//        if ((particle->GetPdgCode() * recTrackNt->fCharge) == -13) {
+//  	recTrackNt->fPxGen = particle->Px();
+//  	recTrackNt->fPyGen = particle->Py();
+//  	recTrackNt->fPzGen = particle->Pz();
+//        }  // commented by Gines
+    //    }
   } // for (trackIndex = 0;...
 
+  printf(">>> Filling Ntuple of reconstructed tracks\n");
   ntuple->Fill();
 
   return;
@@ -169,24 +174,25 @@ void MUONrecoNtuple (Int_t FirstEvent = 0, Int_t LastEvent = 0, Int_t RecGeantHi
 //     loadlibs();
 //   }
 
-  // Connect the Root Galice file containing Geometry, Kine, Hits
-  // and eventually RawClusters
-  TFile *file = (TFile*) gROOT->GetListOfFiles()->FindObject(FileName);
-  if (!file) {
-    printf("\n Creating file %s\n", FileName);
-    file = new TFile(FileName);
-  }
-  else printf("\n File %s found in file list\n", FileName);
 
-  // Get AliRun object from file or create it if not on file
-  if (!gAlice) {
-    gAlice = (AliRun*) file->Get("gAlice");
-    if (gAlice) printf("AliRun object found on file\n");
-    if (!gAlice) {
-      printf("\n Create new gAlice object");
-      gAlice = new AliRun("gAlice","Alice test program");
-    }
+  // Creating Run Loader and openning file containing Hits, Digits and RecPoints
+  AliRunLoader * RunLoader = AliRunLoader::Open(FileName,"Event","UPDATE");
+  if (RunLoader ==0x0) {
+    printf(">>> Error : Error Opening %s file \n",FileName);
+    return;
   }
+  // Loading AliRun master
+  RunLoader->LoadgAlice();
+  gAlice = RunLoader->GetAliRun();
+
+  // Loading MUON subsystem
+  AliMUON * MUON = (AliMUON *) gAlice->GetDetector("MUON");
+  AliLoader * MUONLoader = RunLoader->GetLoader("MUONLoader");
+  MUONLoader->LoadHits("READ");
+  MUONLoader->LoadRecPoints("READ");
+
+  Int_t ievent, nevents;
+  nevents = RunLoader->GetNumberOfEvents();
 
   // Initializations
   // AliMUON *MUON  = (AliMUON*) gAlice->GetModule("MUON"); // necessary ????
@@ -197,7 +203,7 @@ void MUONrecoNtuple (Int_t FirstEvent = 0, Int_t LastEvent = 0, Int_t RecGeantHi
   // The right place for changing AliMUONEventReconstructor parameters
   // with respect to the default ones
 //   Reco->SetMaxSigma2Distance(100.0);
-  Reco->SetPrintLevel(0);
+  Reco->SetPrintLevel(20);
 //   Reco->SetPrintLevel(1);
 //   Reco->SetBendingResolution(0.0);
 //   Reco->SetNonBendingResolution(0.0);
@@ -207,10 +213,16 @@ void MUONrecoNtuple (Int_t FirstEvent = 0, Int_t LastEvent = 0, Int_t RecGeantHi
 
   // Loop over events
   for (Int_t event = FirstEvent; event <= LastEvent; event++) {
+    MUON->ResetRawClusters();
     cout << "Event: " << event << endl;
-//     AliMUON *MUON  = (AliMUON*) gAlice->GetModule("MUON"); // necessary ????
-    Int_t nparticles = gAlice->GetEvent(event);
-    cout << "nparticles: " << nparticles << endl;
+    RunLoader->GetEvent(event);
+    // Addressing
+    MUON->SetTreeAddress(); 
+
+
+
+ //     Int_t nparticles = gAlice->GetEvent(event);
+//      cout << "nparticles: " << nparticles << endl;
     // prepare background file and/or event if necessary
     if (RecGeantHits == 1) {
       if (event == FirstEvent) Reco->SetBkgGeantFile(BkgGeantFileName);

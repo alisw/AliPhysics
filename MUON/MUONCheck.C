@@ -1,0 +1,382 @@
+//
+// Macro for checking aliroot output and associated files contents
+// Gines Martinez, Subatech June 2003
+//
+
+// ROOT includes
+#include "TBranch.h"
+#include "TClonesArray.h"
+#include "TFile.h"
+#include "TH1.h"
+#include "TParticle.h"
+#include "TTree.h"
+
+// STEER includes
+#include "AliRun.h"
+#include "AliRunLoader.h"
+#include "AliHeader.h"
+#include "AliLoader.h"
+#include "AliStack.h"
+
+// MUON includes
+#include "AliMUON.h"
+#include "AliMUONHit.h"
+#include "AliMUONConstants.h"
+#include "AliMUONDigit.h"
+#include "AliMUONRawCluster.h"
+#include "AliMUONGlobalTrigger.h"
+#include "AliMUONLocalTrigger.h"
+
+void MUONkine(char * filename="galice.root")
+{
+  TClonesArray * ListOfParticles = new TClonesArray("TParticle",1000);
+  TParticle * particle = new TParticle();
+  // Creating Run Loader and openning file containing Hits
+  AliRunLoader * RunLoader = AliRunLoader::Open(filename,"MUONFolder","READ");
+  if (RunLoader ==0x0) {
+    printf(">>> Error : Error Opening %s file \n",filename);
+    return;
+  }
+  RunLoader->LoadKinematics("READ");
+  Int_t ievent, nevents;
+  nevents = RunLoader->GetNumberOfEvents();
+
+  for(ievent=0; ievent<nevents; ievent++) {  // Event loop
+    Int_t iparticle, nparticles;
+    // Getting event ievent
+    RunLoader->GetEvent(ievent); 
+    RunLoader->TreeK()->GetBranch("Particles")->SetAddress(&particle);
+    nparticles = RunLoader->TreeK()->GetEntries();
+    printf(">>> Event %d, Number of particles is %d \n",ievent, nparticles);
+    for(iparticle=0; iparticle<nparticles; iparticle++) {
+      RunLoader->TreeK()->GetEvent(iparticle);
+      particle->Print("");
+    }
+  }
+  RunLoader->UnloadKinematics();
+}
+
+
+void MUONhits(char * filename="galice.root")
+{
+  // List of Hits per event and per track
+  TClonesArray * ListOfHits = new TClonesArray("AliMUONHit",1000);
+
+  // Creating Run Loader and openning file containing Hits
+  AliRunLoader * RunLoader = AliRunLoader::Open(filename,"MUONFolder","READ");
+  if (RunLoader ==0x0) {
+    printf(">>> Error : Error Opening %s file \n",filename);
+    return;
+  }
+
+  // Loading MUON subsystem
+  AliLoader * MUONLoader = RunLoader->GetLoader("MUONLoader");
+  MUONLoader->LoadHits("READ");
+
+  Int_t ievent, nevents;
+  nevents = RunLoader->GetNumberOfEvents();
+
+  for(ievent=0; ievent<nevents; ievent++) {  // Event loop
+    printf(">>> Event %d \n",ievent);
+
+    // Getting event ievent
+    RunLoader->GetEvent(ievent); 
+    MUONLoader->TreeH()->GetBranch("MUON")->SetAddress(&ListOfHits);
+
+    Int_t itrack, ntracks;
+    ntracks = (Int_t) (MUONLoader->TreeH())->GetEntries();
+    for (itrack=0; itrack<ntracks; itrack++) { // Track loop
+      printf(">>> Track %d \n",itrack);
+
+      //Getting List of Hits of Track itrack
+      (MUONLoader->TreeH())->GetEvent(itrack); 
+
+      Int_t ihit, nhits;
+      nhits = (Int_t) ListOfHits->GetEntriesFast();
+      printf(">>> Number of hits  %d \n",nhits);
+      AliMUONHit* mHit;
+      for(ihit=0; ihit<nhits; ihit++) {
+	mHit = static_cast<AliMUONHit*>(ListOfHits->At(ihit));
+  	Int_t Nch      = mHit->Chamber();  // chamber number
+	Int_t hittrack = mHit->Track();
+	Float_t x      = mHit->X();
+  	Float_t y      = mHit->Y();
+  	Float_t z      = mHit->Z();
+  	Float_t elos   = mHit->Eloss();
+  	Float_t theta  = mHit->Theta();
+  	Float_t phi    = mHit->Phi();
+  	Float_t momentum = mHit->Momentum();
+  	printf(">>> Hit %2d Chamber %2d Track %4d x %6.3f y %6.3f z %7.3f elos %g theta %6.3f phi %5.3f momentum %5.3f\n",
+	       ihit, Nch,hittrack,x,y,z,elos,theta,phi, momentum);
+      }
+      ListOfHits->Clear();
+    } // end track loop
+  }  // end event loop
+  MUONLoader->UnloadHits();
+}
+
+
+void MUONdigits(char * filename="galice.root")
+{
+  TClonesArray * ListOfDigits;
+
+  // Creating Run Loader and openning file containing Hits
+  AliRunLoader * RunLoader = AliRunLoader::Open(filename,"MUONFolder","READ");
+  if (RunLoader ==0x0) {
+    printf(">>> Error : Error Opening %s file \n",filename);
+    return;
+  }
+
+  // Loading AliRun master
+  RunLoader->LoadgAlice();
+  gAlice = RunLoader->GetAliRun();
+ // Getting Module MUON  
+  AliMUON *pMUON  = (AliMUON *) gAlice->GetDetector("MUON");
+
+  AliLoader * MUONLoader = RunLoader->GetLoader("MUONLoader");
+  MUONLoader->LoadDigits("READ");
+
+  Int_t ievent, nevents;
+  nevents = RunLoader->GetNumberOfEvents();
+
+  AliMUONDigit * mDigit;
+  
+
+  for(ievent=0; ievent<nevents; ievent++) {
+    printf(">>> Event %d \n",ievent);
+    RunLoader->GetEvent(ievent);
+  
+    // Addressing
+    Int_t ichamber, nchambers;
+    nchambers = AliMUONConstants::NCh(); ;
+    pMUON->SetTreeAddress(); 
+    char branchname[30];    
+   //for( ichamber=0; ichamber<nchambers; ichamber++) {
+    // sprintf(branchname,"MUONDigits%d",ichamber+1);
+    //(MUONLoader->TreeD()->GetBranch(branchname))->SetAddress(&((*pMUON->Dchambers())[ichamber]));
+    //}
+   
+
+    Int_t icathode, ncathodes;
+    ncathodes=2;
+    //Loop on cathodes 
+    for(icathode=0; icathode<ncathodes; icathode++) {
+      printf(">>> Cathode %d\n",icathode);
+      MUONLoader->TreeD()->GetEvent(icathode);
+      // Loop on chambers
+      for( ichamber=0; ichamber<nchambers; ichamber++) {
+	printf(">>> Chamber %d\n",ichamber);
+	//	sprintf(branchname,"MUONDigits%d",ichamber+1);
+	//printf(">>>  branchname %s\n",branchname);
+	ListOfDigits = (TClonesArray *) pMUON->Dchambers()->At(ichamber);
+	
+	Int_t idigit, ndigits;
+
+	ndigits = (Int_t) ListOfDigits->GetEntriesFast();
+	
+	for(idigit=0; idigit<ndigits; idigit++) {
+	  mDigit = static_cast<AliMUONDigit*>(ListOfDigits->At(idigit));
+	  Int_t PadX   = mDigit->PadX();     // Pad X number
+	  Int_t PadY   = mDigit->PadY();     // Pad Y number
+	  Int_t Signal = mDigit->Signal();   // Physics Signal
+	  Int_t Hit    = mDigit->Hit();      // iHit
+	  Int_t Cathode= mDigit->Cathode();  // Cathode
+	  Int_t Track0 = mDigit->Track(0);
+	  Int_t Track1 = mDigit->Track(1); 
+	  Int_t Track2 = mDigit->Track(2);
+	  
+	  printf(">>> Digit %4d cathode %1d hit %4d PadX %3d PadY %3d Signal %4d Track0 %4d Track1 %'d Track2 %4d \n",idigit, Cathode,Hit, PadX, PadY, Signal, Track0, Track1, Track2);
+	} // end digit loop
+      } // end chamber loop
+    } // end cathode loop
+  }  // end event loop
+  MUONLoader->UnloadDigits();
+}
+
+void MUONrecpoints(char * filename="galice.root") {
+
+  TClonesArray * ListOfRecPoints;
+  
+  // Creating Run Loader and openning file containing Hits
+  AliRunLoader * RunLoader = AliRunLoader::Open(filename,"MUONFolder","READ");
+  if (RunLoader ==0x0) {
+    printf(">>> Error : Error Opening %s file \n",filename);
+    return;
+  }
+
+  // Loading AliRun master
+  RunLoader->LoadgAlice();
+  gAlice = RunLoader->GetAliRun();
+ // Getting Module MUON  
+  AliMUON *pMUON  = (AliMUON *) gAlice->GetDetector("MUON");
+
+  AliLoader * MUONLoader = RunLoader->GetLoader("MUONLoader");
+  MUONLoader->LoadRecPoints("READ");
+
+  Int_t ievent, nevents;
+  nevents = RunLoader->GetNumberOfEvents();
+
+  AliMUONRawCluster * mRecPoint;
+  
+
+  for(ievent=0; ievent<nevents; ievent++) {
+    printf(">>> Event %d \n",ievent);
+    RunLoader->GetEvent(ievent);
+  
+    // Addressing
+    Int_t ichamber, nchambers;
+    nchambers = AliMUONConstants::NTrackingCh();
+    pMUON->SetTreeAddress(); 
+    char branchname[30];    
+ 
+    MUONLoader->TreeR()->GetEvent(0);
+    // Loop on chambers
+    for( ichamber=0; ichamber<nchambers; ichamber++) {
+      printf(">>> Chamber %d\n",ichamber);
+      sprintf(branchname,"MUONRawClusters%d",ichamber+1);
+      //printf(">>>  branchname %s\n",branchname);
+      ListOfRecPoints = (TClonesArray *) pMUON->RawClusters()->At(ichamber);
+      
+      Int_t irecpoint, nrecpoints;
+      
+      nrecpoints = (Int_t) ListOfRecPoints->GetEntriesFast();
+      
+      for(irecpoint=0; irecpoint<nrecpoints; irecpoint++) {
+	mRecPoint = static_cast<AliMUONRawCluster*>(ListOfRecPoints->At(irecpoint));
+//     Int_t       fTracks[3];        //labels of overlapped tracks
+//     Int_t       fQ[2]  ;           // Q of cluster (in ADC counts)     
+//     Float_t     fX[2]  ;           // X of cluster
+//     Float_t     fY[2]  ;           // Y of cluster
+//     Float_t     fZ[2]  ;           // Z of cluster
+//     Int_t       fPeakSignal[2];    // Peak signal 
+//     Int_t       fIndexMap[50][2];  // indeces of digits
+//     Int_t       fOffsetMap[50][2]; // Emmanuel special
+//     Float_t     fContMap[50][2];   // Contribution from digit
+//     Int_t       fPhysicsMap[50];   // Distinguish signal and background contr.
+//     Int_t       fMultiplicity[2];  // Cluster multiplicity
+//     Int_t       fNcluster[2];      // Number of clusters
+//     Int_t       fClusterType;      // Cluster type
+//     Float_t     fChi2[2];          // Chi**2 of fit
+//     Int_t       fGhost;            // 0 if not a ghost or ghost problem solved
+//                                    // >0 if ghost problem remains because
+//                                    // 1 both (true and ghost) satify 
+//                                    //   charge chi2 compatibility
+//                                    // 2 none give satisfactory chi2
+
+	Int_t Track0 = mRecPoint->fTracks[0];
+	Int_t Track1 = mRecPoint->fTracks[1]; 
+	Int_t Track2 = mRecPoint->fTracks[2];
+	Int_t Q0 = mRecPoint->fQ[0];
+	Int_t Q1 = mRecPoint->fQ[1];
+	Float_t x0 = mRecPoint->fX[0];
+	Float_t x1 = mRecPoint->fX[1];
+	Float_t y0 = mRecPoint->fY[0];
+	Float_t y1 = mRecPoint->fY[1];
+	Float_t z0 = mRecPoint->fZ[0];
+	Float_t z1 = mRecPoint->fZ[1];
+	Float_t chi2_0 =  mRecPoint->fChi2[0];
+	Float_t chi2_1 =  mRecPoint->fChi2[1];
+
+	printf(">>> RecPoint %4d x %6.3f %6.3f y %6.3f %6.3f z %6.3f %6.3f Q0 %4d  Q1 %4d Hit %4d Track1 %4d Track2 %4d Chi2 %6.3f %6.3f \n",
+irecpoint, x0, x1, y0, y1, z0, z1, Q0, Q1, Track0, Track1, Track2, chi2_0, chi2_1);
+      } // end recpoint loop
+    } // end chamber loop
+  }  // end event loop
+  MUONLoader->UnloadRecPoints();
+}
+
+void MUONTestTrigger (char * filename="galice.root"){
+// reads and dumps trigger objects from MUON.RecPoints.root
+  TClonesArray * globalTrigger;
+  TClonesArray * localTrigger;
+  
+  // Creating Run Loader and openning file containing Hits
+  AliRunLoader * RunLoader = AliRunLoader::Open(filename,"MUONFolder","READ");
+  if (RunLoader ==0x0) {
+      printf(">>> Error : Error Opening %s file \n",filename);
+      return;
+  }
+  
+  // Loading AliRun master
+  RunLoader->LoadgAlice();
+  gAlice = RunLoader->GetAliRun();
+  // Getting Module MUON  
+  AliMUON *pMUON  = (AliMUON *) gAlice->GetDetector("MUON");
+  
+  AliLoader * MUONLoader = RunLoader->GetLoader("MUONLoader");
+  MUONLoader->LoadRecPoints("READ");
+  
+  Int_t ievent, nevents;
+  nevents = RunLoader->GetNumberOfEvents();
+  
+  AliMUONGlobalTrigger *gloTrg;
+  AliMUONLocalTrigger *locTrg;
+  
+  for (ievent=0; ievent<nevents; ievent++) {
+      RunLoader->GetEvent(ievent);
+      
+      pMUON->SetTreeAddress(); 
+      MUONLoader->TreeR()->GetEvent(0);
+      
+      globalTrigger = (TClonesArray *) pMUON->GlobalTrigger();
+      localTrigger = (TClonesArray *) pMUON->LocalTrigger();
+      
+      Int_t nglobals = (Int_t) globalTrigger->GetEntriesFast(); // should be 1
+      Int_t nlocals  = (Int_t) localTrigger->GetEntriesFast(); // up to 234
+      printf("###################################################\n");
+      cout << " event " << ievent 
+	   << " nglobals nlocals: " << nglobals << " " << nlocals << "\n"; 
+      
+      for (Int_t iglobal=0; iglobal<nglobals; iglobal++) { // Global Trigger
+	  gloTrg = static_cast<AliMUONGlobalTrigger*>(globalTrigger->At(iglobal));
+	  
+	  printf("===================================================\n");
+	  printf(" Global Trigger output       Low pt  High pt   All\n");
+	  printf(" number of Single Plus      :\t");
+	  printf("%i\t%i\t%i\t",gloTrg->SinglePlusLpt(),
+		 gloTrg->SinglePlusHpt(),gloTrg->SinglePlusApt());
+	  printf("\n");
+	  printf(" number of Single Minus     :\t");
+	  printf("%i\t%i\t%i\t",gloTrg->SingleMinusLpt(),
+		 gloTrg->SingleMinusHpt(),gloTrg->SingleMinusApt());
+	  printf("\n");
+	  printf(" number of Single Undefined :\t"); 
+	  printf("%i\t%i\t%i\t",gloTrg->SingleUndefLpt(),
+		 gloTrg->SingleUndefHpt(),gloTrg->SingleUndefApt());
+	  printf("\n");
+	  printf(" number of UnlikeSign pair  :\t"); 
+	  printf("%i\t%i\t%i\t",gloTrg->PairUnlikeLpt(),
+		 gloTrg->PairUnlikeHpt(),gloTrg->PairUnlikeApt());
+	  printf("\n");
+	  printf(" number of LikeSign pair    :\t");  
+	  printf("%i\t%i\t%i\t",gloTrg->PairLikeLpt(),
+		 gloTrg->PairLikeHpt(),gloTrg->PairLikeApt());
+	  printf("\n");
+	  printf("===================================================\n");
+	  
+      } // end of loop on Global Trigger
+      
+      for (Int_t ilocal=0; ilocal<nlocals; ilocal++) { // Local Trigger
+	  cout << " >>> Output for Local Trigger " << ilocal << "\n";
+	  
+	  locTrg = static_cast<AliMUONLocalTrigger*>(localTrigger->At(ilocal));
+	  
+	  cout << "Circuit StripX Dev StripY: " 
+	       << locTrg->LoCircuit() << " " 
+	       << locTrg->LoStripX() << " " 
+	       << locTrg->LoDev() << " " 
+	       << locTrg->LoStripY() 
+	       << "\n";
+	  cout << "Lpt Hpt Apt: "     
+	       << locTrg->LoLpt() << " "   
+	       << locTrg->LoHpt() << " "  
+	       << locTrg->LoApt() << "\n";
+	  
+      } // end of loop on Local Trigger
+  } // end loop on event  
+} 
+
+
+
+
+

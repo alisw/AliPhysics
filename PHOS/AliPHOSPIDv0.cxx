@@ -63,17 +63,23 @@
 #include "TF2.h"
 #include "TFormula.h"
 #include "TCanvas.h"
+#include "TFolder.h"
+#include "TSystem.h"
 #include "TBenchmark.h"
 // --- Standard library ---
 
 // --- AliRoot header files ---
 
+#include "AliRun.h"
 #include "AliGenerator.h"
+#include "AliPHOS.h"
 #include "AliPHOSPIDv0.h"
+#include "AliPHOSClusterizerv1.h"
 #include "AliPHOSTrackSegment.h"
+#include "AliPHOSTrackSegmentMakerv1.h"
 #include "AliPHOSRecParticle.h"
 #include "AliPHOSGeometry.h"
-#include "AliPHOSGetter.h"
+#include "AliPHOSLoader.h"
 
 ClassImp( AliPHOSPIDv0) 
 
@@ -85,7 +91,7 @@ AliPHOSPIDv0::AliPHOSPIDv0():AliPHOSPID()
   fDispersion        = 0. ; 
   fCpvEmcDistance    = 0 ; 
   fTimeGate          = 2.e-9 ;
-  fHeaderFileName    = "" ; 
+  fEventFolderName    = "" ; 
   fTrackSegmentsTitle= "" ; 
   fRecPointsTitle    = "" ; 
   fRecParticlesTitle = "" ; 
@@ -96,7 +102,7 @@ AliPHOSPIDv0::AliPHOSPIDv0():AliPHOSPID()
 }
 
 //____________________________________________________________________________
-AliPHOSPIDv0::AliPHOSPIDv0(const char * headerFile,const char * name, const Bool_t toSplit) : AliPHOSPID(headerFile, name,toSplit)
+AliPHOSPIDv0::AliPHOSPIDv0(const char * evFolderName,const char * name) : AliPHOSPID(evFolderName, name)
 { 
   //ctor with the indication on where to look for the track segments
 
@@ -105,35 +111,16 @@ AliPHOSPIDv0::AliPHOSPIDv0(const char * headerFile,const char * name, const Bool
   fCpvEmcDistance = 3.0 ;
   fTimeGate          = 2.e-9 ;
  
-  fHeaderFileName     = GetTitle() ; 
-  fTrackSegmentsTitle = GetName() ; 
-  fRecPointsTitle     = GetName() ; 
-  fRecParticlesTitle  = GetName() ; 
+  fEventFolderName     = GetTitle() ; 
+  fTrackSegmentsTitle = GetName();
+  fRecPointsTitle     = GetName();
+  fRecParticlesTitle  = GetName();
   fIDOptions          = "dis time" ;
     
-  TString tempo(GetName()) ; 
-  tempo.Append(":") ;
-  tempo.Append(Version()) ; 
-  SetName(tempo) ; 
   fRecParticlesInRun = 0 ; 
 
   Init() ;
 
-}
-AliPHOSPIDv0::AliPHOSPIDv0(AliPHOSPIDv0 & pid):AliPHOSPID(pid)
-{ 
-  // copy ctor
-  fHeaderFileName = pid.fHeaderFileName ; 
-  fTrackSegmentsTitle = pid.fTrackSegmentsTitle ;
-  fRecPointsTitle = pid.fRecPointsTitle ;
-  fRecParticlesTitle = pid.fRecParticlesTitle ;
-  fIDOptions = pid.fIDOptions ;
-  fNEvent = pid.fNEvent ; 
-  fFormula = new TFormula(*pid.fFormula) ; 
-  fDispersion = pid.fDispersion ;
-  fCpvEmcDistance = pid.fCpvEmcDistance ; 
-  fRecParticlesInRun = pid.fRecParticlesInRun ;
-  Init() ;
 }
 
 //____________________________________________________________________________
@@ -146,7 +133,7 @@ Float_t  AliPHOSPIDv0::GetDistance(AliPHOSEmcRecPoint * emc,AliPHOSRecPoint * cp
 {
   // Calculates the distance between the EMC RecPoint and the PPSD RecPoint
  
-  const AliPHOSGeometry * geom = AliPHOSGetter::GetInstance()->PHOSGeometry() ; 
+  const AliPHOSGeometry * geom = AliPHOSLoader::GetPHOSGeometry() ; 
   TVector3 vecEmc ;
   TVector3 vecCpv ;
   
@@ -181,46 +168,38 @@ void  AliPHOSPIDv0::Exec(Option_t * option)
     gBenchmark->Start("PHOSPID");
   
   if(strstr(option,"print")) {
-    Print("") ; 
+    Print() ; 
     return ; 
   }
 
-  AliPHOSGetter * gime = AliPHOSGetter::GetInstance() ; 
+  AliRunLoader* runget = AliRunLoader::GetRunLoader(GetTitle());
+  if(runget == 0x0) 
+   {
+     Error("Exec","Can not find run getter in event folder \"%s\"",GetTitle());
+     return;
+   }
+  
+  AliPHOSLoader* gime = dynamic_cast<AliPHOSLoader*>(runget->GetLoader("PHOSLoader"));
+  if ( gime == 0 ) 
+   {
+     Error("Exec","Could not obtain the Loader object !"); 
+     return ;
+   } 
+
   if(gime->BranchExists("RecParticles") )
     return ;
 
-//   gAlice->GetEvent(0) ;
-//   //check, if the branch with name of this" already exits?
-//   TObjArray * lob = (TObjArray*)gAlice->TreeR()->GetListOfBranches() ;
-//   TIter next(lob) ; 
-//   TBranch * branch = 0 ;  
-//   Bool_t phospidfound = kFALSE, pidfound = kFALSE ; 
   
-//   TString taskName(GetName()) ; 
-//   taskName.Remove(taskName.Index(Version())-1) ;
+  Int_t nevents = runget->GetNumberOfEvents() ;       //(Int_t) gAlice->TreeE()->GetEntries() ;
 
-//   while ( (branch = (TBranch*)next()) && (!phospidfound || !pidfound) ) {
-//     if ( (strcmp(branch->GetName(), "PHOSPID")==0) && (strcmp(branch->GetTitle(), taskName.Data())==0) ) 
-//       phospidfound = kTRUE ;
-    
-//     else if ( (strcmp(branch->GetName(), "AliPHOSPID")==0) && (strcmp(branch->GetTitle(), taskName.Data())==0) ) 
-//       pidfound = kTRUE ; 
-//   }
-
-//   if ( phospidfound || pidfound ) {
-//     Error("Exec", "RecParticles and/or PIDtMaker branch with name %s already exists", taskName.Data() ) ; 
-//     return ; 
-//   }       
-  
-  Int_t nevents = gime->MaxEvent() ;       //(Int_t) gAlice->TreeE()->GetEntries() ;
   Int_t ievent ;
   
   for(ievent = 0; ievent < nevents; ievent++){
-    gime->Event(ievent,"R") ;
+    runget->GetEvent(ievent);
     Info("Exec", "event %d %d %d", ievent, gime->EmcRecPoints(), gime->TrackSegments()) ;
     MakeRecParticles() ;
     
-    WriteRecParticles(ievent);
+    WriteRecParticles();
     
     if(strstr(option,"deb"))
       PrintRecParticles(option) ;
@@ -243,57 +222,50 @@ void AliPHOSPIDv0::Init()
   // Make all memory allocations that are not possible in default constructor
   // Add the PID task to the list of PHOS tasks
   
-  if ( strcmp(GetTitle(), "") == 0 )
-    SetTitle("galice.root") ;
+  AliRunLoader* runget = AliRunLoader::GetRunLoader(GetTitle());
+  if(runget == 0x0) 
+   {
+     Error("Exec","Can not find run getter in event folder \"%s\"",GetTitle());
+     return;
+   }
   
-  TString taskName(GetName()) ; 
-  taskName.Remove(taskName.Index(Version())-1) ;
-  
-  AliPHOSGetter * gime = AliPHOSGetter::GetInstance(GetTitle(), taskName.Data(),fToSplit) ; 
-  if ( gime == 0 ) {
-    Error("Init", "Could not obtain the Getter object !") ; 
-    return ;
-  } 
+  AliPHOSLoader* gime = dynamic_cast<AliPHOSLoader*>(runget->GetLoader("PHOSLoader"));
+  if ( gime == 0 ) 
+   {
+     Error("Exec","Could not obtain the Loader object !"); 
+     return ;
+   } 
    
-  fSplitFile = 0 ;
-  if(fToSplit){
-    //First - extract full path if necessary
-    TString fileName(GetTitle()) ;
-    Ssiz_t islash = fileName.Last('/') ;
-    if(islash<fileName.Length())
-      fileName.Remove(islash+1,fileName.Length()) ;
-    else
-      fileName="" ;
-    fileName+="PHOS.RecData." ;
-    if((strcmp(taskName.Data(),"Default")!=0)&&(strcmp(taskName.Data(),"")!=0)){
-      fileName+=taskName ;
-      fileName+="." ;
-    }
-    fileName+="root" ;
-    fSplitFile = static_cast<TFile*>(gROOT->GetFile(fileName.Data()));   
-    if(!fSplitFile)
-      fSplitFile =  TFile::Open(fileName.Data(),"update") ;
-  }
-
-
-  gime->PostPID(this) ;
-  // create a folder on the white board //YSAlice/WhiteBoard/RecParticles/PHOS/recparticlesName
-  gime->PostRecParticles(taskName.Data() ) ; 
+  gime->PostPID(this);
+  gime->LoadRecParticles("UPDATE");
   
 }
 
 //____________________________________________________________________________
 void  AliPHOSPIDv0::MakeRecParticles(){
 
-  // Makes a RecParticle out of a TrackSegment
   TString taskName(GetName()) ; 
   taskName.Remove(taskName.Index(Version())-1) ;
 
-  AliPHOSGetter * gime = AliPHOSGetter::GetInstance() ; 
-  TObjArray * emcRecPoints = gime->EmcRecPoints(taskName) ; 
-  TObjArray * cpvRecPoints = gime->CpvRecPoints(taskName) ; 
-  TClonesArray * trackSegments = gime->TrackSegments(taskName) ; 
-  TClonesArray * recParticles  = gime->RecParticles(taskName) ; 
+  AliRunLoader* runget = AliRunLoader::GetRunLoader(GetTitle());
+  if(runget == 0x0) 
+   {
+     Error("Exec","Can not find run getter in event folder \"%s\"",GetTitle());
+     return;
+   }
+  
+  AliPHOSLoader* gime = dynamic_cast<AliPHOSLoader*>(runget->GetLoader("PHOSLoader"));
+  if ( gime == 0 ) 
+   {
+     Error("Exec","Could not obtain the Loader object !"); 
+     return ;
+   } 
+
+  TObjArray * emcRecPoints = gime->EmcRecPoints() ; 
+  TObjArray * cpvRecPoints = gime->CpvRecPoints() ; 
+  TClonesArray * trackSegments = gime->TrackSegments() ; 
+  TClonesArray * recParticles  = gime->RecParticles() ; 
+
   recParticles->Clear();
   
   TIter next(trackSegments) ; 
@@ -367,11 +339,11 @@ void  AliPHOSPIDv0::MakeRecParticles(){
 }
 
 //____________________________________________________________________________
-void  AliPHOSPIDv0:: Print(Option_t * option) const
+void  AliPHOSPIDv0:: Print() const
 {
   // Print the parameters used for the particle type identification
   TString message ; 
-  message  = "=============== AliPHOSPID1 ================\n" ;
+  message  = "=============== AliPHOSPIDv0 ================\n" ;
   message += "Making PID\n" ;
   message += "    Headers file:               %s\n" ; 
   message += "    RecPoints branch title:     %s\n" ;
@@ -380,7 +352,7 @@ void  AliPHOSPIDv0:: Print(Option_t * option) const
   message += "with parameters:\n"  ;
   message += "    Maximal EMC - CPV  distance (cm) %f\n" ;
   Info("Print", message.Data(),  
-       fHeaderFileName.Data(), 
+       GetTitle(), 
        fRecPointsTitle.Data(), 
        fTrackSegmentsTitle.Data(), 
        fRecParticlesTitle.Data(), 
@@ -404,77 +376,50 @@ void  AliPHOSPIDv0::SetShowerProfileCut(char * formula)
   fFormula = new TFormula("Lambda Cut",formula) ;
 }
 //____________________________________________________________________________
-void  AliPHOSPIDv0::WriteRecParticles(Int_t event)
+void  AliPHOSPIDv0::WriteRecParticles()
 {
  
-  AliPHOSGetter *gime = AliPHOSGetter::GetInstance() ; 
-  TString taskName(GetName()) ; 
-  taskName.Remove(taskName.Index(Version())-1) ;
-  TClonesArray * recParticles = gime->RecParticles(taskName) ; 
+  AliRunLoader* runget = AliRunLoader::GetRunLoader(GetTitle());
+  if(runget == 0x0) 
+   {
+     Error("Exec","Can not find run getter in event folder \"%s\"",GetTitle());
+     return;
+   }
+  
+  AliPHOSLoader* gime = dynamic_cast<AliPHOSLoader*>(runget->GetLoader("PHOSLoader"));
+  if ( gime == 0 ) 
+   {
+     Error("Exec","Could not obtain the Loader object !"); 
+     return ;
+   } 
+
+  TClonesArray * recParticles = gime->RecParticles() ; 
   recParticles->Expand(recParticles->GetEntriesFast() ) ;
 
-  TTree * treeR ;
-  
-  if(fToSplit){
-    if(!fSplitFile)
-      return ;
-    fSplitFile->cd() ;
-    char name[10] ;
-    sprintf(name,"%s%d", "TreeR",event) ;
-    treeR = dynamic_cast<TTree*>(fSplitFile->Get(name)); 
-  }
-  else{
-    treeR = gAlice->TreeR();
-  }
+  TTree * treeR = gime->TreeR();
   
   if(!treeR){
-    gAlice->MakeTree("R", fSplitFile);
-    treeR = gAlice->TreeR() ;
+    gime->MakeTree("R");
+    treeR = gime->TreeR() ;
   }
-
-//  //Make branch in TreeR for RecParticles 
-//   char * filename = 0;
-//   if(gSystem->Getenv("CONFIG_SPLIT_FILE")!=0){   //generating file name
-//     filename = new char[strlen(gAlice->GetBaseFile())+20] ;
-//     sprintf(filename,"%s/PHOS.Reco.root",gAlice->GetBaseFile()) ; 
-//   }
-  
-//   TDirectory *cwd = gDirectory;
   
   //First rp
   Int_t bufferSize = 32000 ;    
   TBranch * rpBranch = treeR->Branch("PHOSRP",&recParticles,bufferSize);
   rpBranch->SetTitle(fRecParticlesTitle);
-//   if (filename) {
-//     rpBranch->SetFile(filename);
-//     TIter next( rpBranch->GetListOfBranches());
-//     TBranch * sb ;
-//     while ((sb=(TBranch*)next())) {
-//       sb->SetFile(filename);
-//     }   
-//     cwd->cd();
-//   }
   
   //second, pid
   Int_t splitlevel = 0 ; 
   AliPHOSPIDv0 * pid = this ;
   TBranch * pidBranch = treeR->Branch("AliPHOSPID","AliPHOSPIDv0",&pid,bufferSize,splitlevel);
   pidBranch->SetTitle(fRecParticlesTitle.Data());
-//   if (filename) {
-//     pidBranch->SetFile(filename);
-//     TIter next( pidBranch->GetListOfBranches());
-//     TBranch * sb ;
-//     while ((sb=(TBranch*)next())) {
-//       sb->SetFile(filename);
-//     }   
-//     cwd->cd();
-//   }    
   
   rpBranch->Fill() ;
   pidBranch->Fill() ;
-  
-  treeR->AutoSave() ; //Write(0,kOverwrite) ;  
-  
+
+  gime->WriteRecParticles("OVERWRITE");
+  gime->WritePID("OVERWRITE");
+
 }
 
 //____________________________________________________________________________
@@ -560,11 +505,23 @@ void AliPHOSPIDv0::PrintRecParticles(Option_t * option)
 {
   // Print table of reconstructed particles
 
-  AliPHOSGetter *gime = AliPHOSGetter::GetInstance() ; 
+  AliRunLoader* runget = AliRunLoader::GetRunLoader(GetTitle());
+  if(runget == 0x0) 
+   {
+     Error("WriteRecParticles","Can not find run getter in event folder \"%s\"",GetTitle());
+     return;
+   }
+  
+  AliPHOSLoader* gime = dynamic_cast<AliPHOSLoader*>(runget->GetLoader("PHOSLoader"));
+  if ( gime == 0 ) 
+   {
+     Error("WriteRecParticles","Could not obtain the Loader object !"); 
+     return ;
+   } 
 
   TString taskName(GetName()) ; 
   taskName.Remove(taskName.Index(Version())-1) ;
-  TClonesArray * recParticles = gime->RecParticles(taskName) ; 
+  TClonesArray * recParticles = gime->RecParticles() ; 
   
   TString message ; 
   message  = "event %d\n" ; 
@@ -573,7 +530,7 @@ void AliPHOSPIDv0::PrintRecParticles(Option_t * option)
 
   if(strstr(option,"all")) {  // printing found TS
     Info("PrintRecParticles","  PARTICLE   Index    \n"  ) ; 
-    
+   
     Int_t index ;
     for (index = 0 ; index < recParticles->GetEntries() ; index++) {
       AliPHOSRecParticle * rp = (AliPHOSRecParticle * ) recParticles->At(index) ;       

@@ -44,19 +44,16 @@ ClassImp(AliPHOSClusterizer)
   AliPHOSClusterizer::AliPHOSClusterizer():TTask("","")
 {
   // ctor
-  fSplitFile= 0 ; 
-  fToSplit  = kFALSE ;
 
+  fEventFolderName = "" ; 
 }
 
 //____________________________________________________________________________
-AliPHOSClusterizer::AliPHOSClusterizer(const char* headerFile, const char* name, const Bool_t toSplit):
-TTask(name, headerFile)
+AliPHOSClusterizer::AliPHOSClusterizer(const TString alirunFileName, const TString eventFolderName):
+  TTask("PHOS"+AliConfig::fgkReconstructionerTaskName, alirunFileName), fEventFolderName(eventFolderName)
 {
   // ctor
-  fToSplit  = toSplit ;
-  fSplitFile= 0 ; 
-
+ 
 }
 
 //____________________________________________________________________________
@@ -64,7 +61,6 @@ AliPHOSClusterizer::~AliPHOSClusterizer()
 {
   // dtor
          
-  fSplitFile = 0 ; 
 }
 
 

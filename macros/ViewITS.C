@@ -199,16 +199,16 @@ void ViewITS()
 //gMC->Gsatt("I095","seen",0);
 //gMC->Gsatt("I096","seen",0);
 //gMC->Gsatt("I094","seen",0);
-//   gMC->Gsatt("ISS1","seen",0);
-//   gMC->Gsatt("ISS2","seen",0);
-//   gMC->Gsatt("ISS3","seen",1);
-//   gMC->Gsatt("ISS4","seen",1);
-//   gMC->Gsatt("ISS5","seen",1);
-//   gMC->Gsatt("ISS6","seen",0);
-//   gMC->Gsatt("ISS7","seen",1);
-//   gMC->Gsatt("ISS8","seen",1);
-//   gMC->Gsatt("ISS9","seen",1);
-//   gMC->Gsatt("IS10","seen",1);
-//   gMC->Gsatt("IS11","seen",1);
-//   gMC->Gsatt("IS12","seen",1);
+  gMC->Gsatt("ISS1","seen",0);
+  gMC->Gsatt("ISS2","seen",0);
+  gMC->Gsatt("ISS3","seen",1);
+  gMC->Gsatt("ISS4","seen",1);
+  gMC->Gsatt("ISS5","seen",1);
+  gMC->Gsatt("ISS6","seen",0);
+  gMC->Gsatt("ISS7","seen",1);
+  gMC->Gsatt("ISS8","seen",1);
+  gMC->Gsatt("ISS9","seen",1);
+  gMC->Gsatt("IS10","seen",1);
+  gMC->Gsatt("IS11","seen",1);
+  gMC->Gsatt("IS12","seen",1);
 }

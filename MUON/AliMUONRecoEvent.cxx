@@ -13,46 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-
-Revision 1.7  2002/10/23 07:24:56  alibrary
-Introducing Riostream.h
-
-Revision 1.6  2001/05/16 14:57:17  alibrary
-New files for folders and Stack
-
-Revision 1.5  2001/05/11 07:59:03  hristov
-Index corrected
-
-Revision 1.4  2001/01/26 20:00:53  hristov
-Major upgrade of AliRoot code
-
-Revision 1.3  2000/12/21 17:51:54  morsch
-RN3 violations corrected
-
-Revision 1.2  2000/11/23 10:09:38  gosset
-Bug correction in AliMUONRecoDisplay.
-Copyright, $Log$
-Copyright, Revision 1.7  2002/10/23 07:24:56  alibrary
-Copyright, Introducing Riostream.h
-Copyright,
-Copyright, Revision 1.6  2001/05/16 14:57:17  alibrary
-Copyright, New files for folders and Stack
-Copyright,
-Copyright, Revision 1.5  2001/05/11 07:59:03  hristov
-Copyright, Index corrected
-Copyright,
-Copyright, Revision 1.4  2001/01/26 20:00:53  hristov
-Copyright, Major upgrade of AliRoot code
-Copyright,
-Copyright, Revision 1.3  2000/12/21 17:51:54  morsch
-Copyright, RN3 violations corrected
-Copyright,, $Id$, comments at the right place for automatic documentation,
-in AliMUONRecoEvent and AliMUONRecoDisplay
-
-
-*/
+/* $Id$ */
 
 //Authors: Mihaela Gheata, Andrei Gheata 09/10/00
 ////////////////////////////////////////////////////////////////////

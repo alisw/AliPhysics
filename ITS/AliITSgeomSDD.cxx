@@ -13,74 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.18  2002/10/22 14:45:41  alibrary
-Introducing Riostream.h
-
-Revision 1.17  2002/10/14 14:57:00  hristov
-Merging the VirtualMC branch to the main development branch (HEAD)
-
-Revision 1.15.6.1  2002/06/10 17:51:15  hristov
-Merged with v3-08-02
-
-Revision 1.16  2002/05/19 18:17:03  hristov
-Changes needed by ICC/IFC compiler (Intel)
-
-Revision 1.15  2001/11/19 16:17:03  nilsen
-Applyed fixes to bugs found by Rene Brun. With many thanks. Some additonal
-bugs found by Rene require more work to fix. Will be fixed soon.
-
-Revision 1.14  2001/10/19 21:32:35  nilsen
-Minor changes to remove compliation warning on gcc 2.92.2 compiler, and
-cleanded up a little bit of code.
-
-Revision 1.13  2001/10/12 22:07:20  nilsen
-A patch for C++ io manipulation functions so that they will work both
-with GNU gcc 2.96 and GNU gcc 3.01 compilers. Needs to be tested with
-other platforms.
-
-Revision 1.12  2001/08/24 21:06:37  nilsen
-Added more documentation, fixed up some coding violations, and some
-forward declorations.
-
-Revision 1.11  2001/05/16 08:17:49  hristov
-Bug fixed in the StepManager to account for the difference in the geometry 
-tree for the ITS pixels. This fixes both the funny distribution of pixel 
-coordinates and the missing hits/digits/points in many sectors of the ITS 
-pixel barrel. Also included is a patch to properly get and use the detector 
-dimensions through out the ITS code. (B.Nilsen)
-
-Revision 1.10  2001/02/09 00:00:57  nilsen
-Fixed compatibility problem with HP unix {ios::fmtflags -> Int_t}. Fixed
-bugs in iostream based streamers used to read and write .det files. Fixed
-some detector sizes. Fixed bugs in some default-special constructors.
-
-Revision 1.9  2001/02/03 00:00:30  nilsen
-New version of AliITSgeom and related files. Now uses automatic streamers,
-set up for new formatted .det file which includes detector information.
-Additional smaller modifications are still to come.
-
-Revision 1.8  2000/10/02 16:32:35  barbera
-Forward declaration added
-
-Revision 1.2.4.8  2000/10/02 15:52:05  barbera
-Forward declaration added
-
-Revision 1.7  2000/07/10 16:07:18  fca
-Release version of ITS code
-
-Revision 1.2.4.2  2000/03/04 23:55:35  nilsen
-Fixed up comments/documentation.
-
-Revision 1.2.4.1  2000/01/12 19:03:32  nilsen
-This is the version of the files after the merging done in December 1999.
-See the ReadMe110100.txt file for details
-
-Revision 1.2  1999/09/29 09:24:20  fca
-Introduction of the Copyright and cvs Log
-
-*/
+/* $Id$ */
 
 ////////////////////////////////////////////////////////////////////////
 // This class is for the Silicon Drift Detector, SDD, specific geometry.
@@ -339,56 +272,8 @@ istream &operator>>(istream &is,AliITSgeomSDD &r){
     r.Read(&is);
     return is;
 }
+
 //======================================================================
-/*
-$Log$
-Revision 1.18  2002/10/22 14:45:41  alibrary
-Introducing Riostream.h
-
-Revision 1.17  2002/10/14 14:57:00  hristov
-Merging the VirtualMC branch to the main development branch (HEAD)
-
-Revision 1.15.6.1  2002/06/10 17:51:15  hristov
-Merged with v3-08-02
-
-Revision 1.16  2002/05/19 18:17:03  hristov
-Changes needed by ICC/IFC compiler (Intel)
-
-Revision 1.15  2001/11/19 16:17:03  nilsen
-Applyed fixes to bugs found by Rene Brun. With many thanks. Some additonal
-bugs found by Rene require more work to fix. Will be fixed soon.
-
-Revision 1.14  2001/10/19 21:32:35  nilsen
-Minor changes to remove compliation warning on gcc 2.92.2 compiler, and
-cleanded up a little bit of code.
-
-Revision 1.13  2001/10/12 22:07:20  nilsen
-A patch for C++ io manipulation functions so that they will work both
-with GNU gcc 2.96 and GNU gcc 3.01 compilers. Needs to be tested with
-other platforms.
-
-Revision 1.12  2001/08/24 21:06:37  nilsen
-Added more documentation, fixed up some coding violations, and some
-forward declorations.
-
-Revision 1.11  2001/05/16 08:17:49  hristov
-Bug fixed in the StepManager to account for the difference in the geometry tree for the ITS pixels. This fixes both the funny distribution of pixel coordinates and the missing hits/digits/points in many sectors of the ITS pixel barrel. Also included is a patch to properly get and use the detector dimensions through out the ITS code. (B.Nilsen)
-
-Revision 1.10  2001/02/09 00:00:57  nilsen
-Fixed compatibility problem with HP unix {ios::fmtflags -> Int_t}. Fixed
-bugs in iostream based streamers used to read and write .det files. Fixed
-some detector sizes. Fixed bugs in some default-special constructors.
-
-Revision 1.9  2001/02/03 00:00:30  nilsen
-New version of AliITSgeom and related files. Now uses automatic streamers,
-set up for new formatted .det file which includes detector information.
-Additional smaller modifications are still to come.
-
-*/
-//#include <Riostream.h>
-//#include <TBRIK.h>
-
-//#include "AliITSgeomSDD256.h"
 
 ClassImp(AliITSgeomSDD256)
 
@@ -829,56 +714,8 @@ istream &operator>>(istream &is,AliITSgeomSDD256 &r){
     r.Read(&is);
     return is;
 }
+
 //======================================================================
-/*
-$Log$
-Revision 1.18  2002/10/22 14:45:41  alibrary
-Introducing Riostream.h
-
-Revision 1.17  2002/10/14 14:57:00  hristov
-Merging the VirtualMC branch to the main development branch (HEAD)
-
-Revision 1.15.6.1  2002/06/10 17:51:15  hristov
-Merged with v3-08-02
-
-Revision 1.16  2002/05/19 18:17:03  hristov
-Changes needed by ICC/IFC compiler (Intel)
-
-Revision 1.15  2001/11/19 16:17:03  nilsen
-Applyed fixes to bugs found by Rene Brun. With many thanks. Some additonal
-bugs found by Rene require more work to fix. Will be fixed soon.
-
-Revision 1.14  2001/10/19 21:32:35  nilsen
-Minor changes to remove compliation warning on gcc 2.92.2 compiler, and
-cleanded up a little bit of code.
-
-Revision 1.13  2001/10/12 22:07:20  nilsen
-A patch for C++ io manipulation functions so that they will work both
-with GNU gcc 2.96 and GNU gcc 3.01 compilers. Needs to be tested with
-other platforms.
-
-Revision 1.12  2001/08/24 21:06:37  nilsen
-Added more documentation, fixed up some coding violations, and some
-forward declorations.
-
-Revision 1.11  2001/05/16 08:17:49  hristov
-Bug fixed in the StepManager to account for the difference in the geometry tree for the ITS pixels. This fixes both the funny distribution of pixel coordinates and the missing hits/digits/points in many sectors of the ITS pixel barrel. Also included is a patch to properly get and use the detector dimensions through out the ITS code. (B.Nilsen)
-
-Revision 1.10  2001/02/09 00:00:57  nilsen
-Fixed compatibility problem with HP unix {ios::fmtflags -> Int_t}. Fixed
-bugs in iostream based streamers used to read and write .det files. Fixed
-some detector sizes. Fixed bugs in some default-special constructors.
-
-Revision 1.9  2001/02/03 00:00:30  nilsen
-New version of AliITSgeom and related files. Now uses automatic streamers,
-set up for new formatted .det file which includes detector information.
-Additional smaller modifications are still to come.
-
-*/
-//#include <Riostream.h>
-//#include <TBRIK.h>
-
-//#include "AliITSgeomSDD300.h"
 
 ClassImp(AliITSgeomSDD300)
 

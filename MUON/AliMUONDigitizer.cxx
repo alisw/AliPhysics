@@ -13,46 +13,20 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.12  2003/01/14 10:50:19  alibrary
-Cleanup of STEER coding conventions
+/* $Id$ */
 
-Revision 1.11  2002/10/23 07:24:56  alibrary
-Introducing Riostream.h
-
-Revision 1.10  2002/03/13 07:55:04  jchudoba
-Correction of the errourness last commit.
-
-Revision 1.8  2002/02/13 09:03:24  jchudoba
-Remove some deletes from dtor, those objects are deleted earlier in Exec() method (where they are created)
-
-Revision 1.7  2001/11/22 11:15:41  jchudoba
-Proper deletion of arrays (thanks to Rene Brun)
-
-Revision 1.6  2001/11/02 12:55:45  jchudoba
-cleanup of the code, add const to Get methods
-
-Revision 1.4  2001/10/18 14:44:09  jchudoba
-Define constant MAXTRACKS for maximum number of tracks associated with 1 digit
-
-Revision 1.3  2001/10/04 20:01:54  jchudoba
-changes for TTask implementation, some other small editing
-
-Revision 1.2  2001/07/28 10:46:04  hristov
-AliRunDigitizer.h included; typos corrected
-
-Revision 1.1  2001/07/27 15:41:01  jchudoba
-merging/digitization classes
-
-*/
 #include <Riostream.h>
 #include <TDirectory.h>
-#include <TFile.h>
-#include <TObjArray.h>
 #include <TPDGCode.h>
-#include <TTree.h> 
 
+#include "AliRunLoader.h"
+#include "AliLoader.h"
+#include <Riostream.h>
+
+#include "AliMUONDigitizer.h"
+#include "AliMUONConstants.h"
+#include "AliMUONChamber.h"
+#include "AliMUONHitMapA1.h"
 #include "AliMUON.h"
 #include "AliMUONChamber.h"
 #include "AliMUONConstants.h"
@@ -89,7 +63,7 @@ AliMUONDigitizer::AliMUONDigitizer(AliRunDigitizer* manager)
   fDebug   = 0; 
   if (GetDebug()>2) 
     cerr<<"AliMUONDigitizer::AliMUONDigitizer"
-	<<"(AliRunDigitizer* manager) was processed"<<endl;
+       <<"(AliRunDigitizer* manager) was processed"<<endl;
 }
 
 //------------------------------------------------------------------------
@@ -117,7 +91,7 @@ void AliMUONDigitizer::Update(AliMUONPadHit *padhit)
     //
     Int_t iqpad    = padhit->QPad();        // charge per pad
     pdigit->AddSignal(iqpad);
-    pdigit->AddPhysicsSignal(iqpad);		
+    pdigit->AddPhysicsSignal(iqpad);              
 
     // update list of tracks
     //
@@ -184,10 +158,17 @@ void AliMUONDigitizer::Exec(Option_t* option)
   AliMUON *pMUON  = (AliMUON *) gAlice->GetModule("MUON");
   if (!pMUON) {
     cerr<<"AliMUONDigitizer::Digitize Error:"
-	<<" module MUON not found in the input file"<<endl;
+       <<" module MUON not found in the input file"<<endl;
     return;
   }
-  pMUON->MakeBranchInTreeD(fManager->GetTreeD());
+  
+  AliRunLoader *rl, *orl;
+  AliLoader *gime, *ogime;
+  orl = AliRunLoader::GetRunLoader(fManager->GetOutputFolderName());
+  ogime = orl->GetLoader("MUONLoader");
+
+  pMUON->MakeBranchInTreeD(ogime->TreeD());
+  
   fHitMap= new AliMUONHitMapA1* [AliMUONConstants::NCh()];
 
   //
@@ -199,8 +180,8 @@ void AliMUONDigitizer::Exec(Option_t* option)
     for (Int_t i = 0; i < AliMUONConstants::NCh(); i++) {
       iChamber = &(pMUON->Chamber(i));
 //      if (!(iChamber->Nsec() == 1 && icat == 1)) {
-	segmentation = iChamber->SegmentationModel(icat+1);
-	fHitMap[i] = new AliMUONHitMapA1(segmentation, fTDList);
+       segmentation = iChamber->SegmentationModel(icat+1);
+       fHitMap[i] = new AliMUONHitMapA1(segmentation, fTDList);
 //      }
     }
 
@@ -208,35 +189,40 @@ void AliMUONDigitizer::Exec(Option_t* option)
 // Loop over files to digitize
     fSignal = kTRUE;
     for (Int_t inputFile=0; inputFile<fManager->GetNinputs();
-	 inputFile++) {
+        inputFile++) {
 // Connect MUON branches
 
       if (inputFile > 0 ) fSignal = kFALSE;
       TBranch *branchHits = 0;
       TBranch *branchPadHits = 0;
-      TTree *treeH = fManager->GetInputTreeH(inputFile);
+      
+      rl = AliRunLoader::GetRunLoader(fManager->GetInputFolderName(inputFile));
+      gime = rl->GetLoader("MUONLoader");
+    
+      
+      TTree *treeH = gime->TreeH();
       if (GetDebug()>2) {
-	cerr<<"   inputFile , cathode = "<<inputFile<<" "
-	    <<icat<<endl;
-	cerr<<"   treeH, fHits "<<treeH<<" "<<fHits<<endl;
+       cerr<<"   inputFile , cathode = "<<inputFile<<" "
+           <<icat<<endl;
+       cerr<<"   treeH, fHits "<<treeH<<" "<<fHits<<endl;
       }
       if (treeH && fHits) {
-	branchHits = treeH->GetBranch("MUON");
-	if (branchHits) {
-	  fHits->Clear();
-	  branchHits->SetAddress(&fHits);
-	}
-	else
-	  Error("Exec","branch MUON was not found");
+       branchHits = treeH->GetBranch("MUON");
+       if (branchHits) {
+         fHits->Clear();
+         branchHits->SetAddress(&fHits);
+       }
+       else
+         Error("Exec","branch MUON was not found");
       }
       if (GetDebug()>2) cerr<<"   branchHits = "<<branchHits<<endl;
 
       if (treeH && fPadHits) {
-	branchPadHits = treeH->GetBranch("MUONCluster");
-	if (branchPadHits) 
-	  branchPadHits->SetAddress(&fPadHits);
-	else
-	  Error("Exec","branch MUONCluster was not found");
+       branchPadHits = treeH->GetBranch("MUONCluster");
+       if (branchPadHits) 
+         branchPadHits->SetAddress(&fPadHits);
+       else
+         Error("Exec","branch MUONCluster was not found");
       }
       if (GetDebug()>2) cerr<<"   branchPadHits = "<<branchPadHits<<endl;
 
@@ -247,64 +233,64 @@ void AliMUONDigitizer::Exec(Option_t* option)
       Int_t ntracks = (Int_t) treeH->GetEntries();
 
       for (fTrack = 0; fTrack < ntracks; fTrack++) {
-	if (GetDebug()>2) cerr<<"   fTrack = "<<fTrack<<endl;
-	fHits->Clear();
-	fPadHits->Clear();
-	branchHits->GetEntry(fTrack);
-	branchPadHits->GetEntry(fTrack);
-	
+       if (GetDebug()>2) cerr<<"   fTrack = "<<fTrack<<endl;
+       fHits->Clear();
+       fPadHits->Clear();
+       branchHits->GetEntry(fTrack);
+       branchPadHits->GetEntry(fTrack);
+       
 //
 //   Loop over hits
 
-	AliMUONHit* mHit;
-	for(Int_t i = 0; i < fHits->GetEntriesFast(); ++i) {
-	  mHit = static_cast<AliMUONHit*>(fHits->At(i));
-	  fNch = mHit->Chamber()-1;  // chamber number
-	  if (fNch > AliMUONConstants::NCh()-1) {
-	    cerr<<"AliMUONDigitizer: ERROR: "
-		<<"fNch > AliMUONConstants::NCh()-1, fNch, NCh(): "
-		<<fNch<<", "<< AliMUONConstants::NCh()<<endl;
-	    return;
-	  }
-	  iChamber = &(pMUON->Chamber(fNch));
+       AliMUONHit* mHit;
+       for(Int_t i = 0; i < fHits->GetEntriesFast(); ++i) {
+         mHit = static_cast<AliMUONHit*>(fHits->At(i));
+         fNch = mHit->Chamber()-1;  // chamber number
+         if (fNch > AliMUONConstants::NCh()-1) {
+           cerr<<"AliMUONDigitizer: ERROR: "
+              <<"fNch > AliMUONConstants::NCh()-1, fNch, NCh(): "
+              <<fNch<<", "<< AliMUONConstants::NCh()<<endl;
+           return;
+         }
+         iChamber = &(pMUON->Chamber(fNch));
 //
 // Loop over pad hits
-	  for (AliMUONPadHit* mPad =
-		 (AliMUONPadHit*)pMUON->FirstPad(mHit,fPadHits);
-	       mPad;
-	       mPad = (AliMUONPadHit*)pMUON->NextPad(fPadHits))
-	  {
-	    Int_t cathode  = mPad->Cathode();      // cathode number
-	    Int_t ipx      = mPad->PadX();         // pad number on X
-	    Int_t ipy      = mPad->PadY();         // pad number on Y
-	    Int_t iqpad    = Int_t(mPad->QPad());  // charge per pad
-	    if (cathode != (icat+1)) continue;
+         for (AliMUONPadHit* mPad =
+               (AliMUONPadHit*)pMUON->FirstPad(mHit,fPadHits);
+              mPad;
+              mPad = (AliMUONPadHit*)pMUON->NextPad(fPadHits))
+         {
+           Int_t cathode  = mPad->Cathode();      // cathode number
+           Int_t ipx      = mPad->PadX();         // pad number on X
+           Int_t ipy      = mPad->PadY();         // pad number on Y
+           Int_t iqpad    = Int_t(mPad->QPad());  // charge per pad
+           if (cathode != (icat+1)) continue;
 
-	    fMask = fManager->GetMask(inputFile);
-	    fDigits[0] = ipx;
-	    fDigits[1] = ipy;
-	    fDigits[2] = icat;
-	    fDigits[3] = iqpad;
-	    if (inputFile == 0) {
-	      fDigits[4] = iqpad;
-	    } else {
-	      fDigits[4] = 0;
-	    }
-	    if (mHit->Particle() == kMuonPlus ||
-		mHit->Particle() == kMuonMinus) {
-	      fDigits[5] = (mPad->HitNumber()) + fMask; 
-	    } else fDigits[5] = -1;
+           fMask = fManager->GetMask(inputFile);
+           fDigits[0] = ipx;
+           fDigits[1] = ipy;
+           fDigits[2] = icat;
+           fDigits[3] = iqpad;
+           if (inputFile == 0) {
+             fDigits[4] = iqpad;
+           } else {
+             fDigits[4] = 0;
+           }
+           if (mHit->Particle() == kMuonPlus ||
+              mHit->Particle() == kMuonMinus) {
+             fDigits[5] = (mPad->HitNumber()) + fMask; 
+           } else fDigits[5] = -1;
 
-	    // build the list of fired pads and update the info, 
-	    // fDigits is input for Update(mPad)
+           // build the list of fired pads and update the info, 
+           // fDigits is input for Update(mPad)
 
-	    if (!Exists(mPad)) {
-	      CreateNew(mPad);
-	    } else {
-	      Update(mPad);
-	    } //  end if Exists(mPad)
-	  } //end loop over clusters
-	} // hit loop
+           if (!Exists(mPad)) {
+             CreateNew(mPad);
+           } else {
+             Update(mPad);
+           } //  end if Exists(mPad)
+         } //end loop over clusters
+       } // hit loop
       } // track loop
     } // end file loop
     if (GetDebug()>2) cerr<<"END OF FILE LOOP"<<endl;
@@ -312,7 +298,7 @@ void AliMUONDigitizer::Exec(Option_t* option)
     Int_t tracks[kMAXTRACKS];
     Int_t charges[kMAXTRACKS];
     Int_t nentries = fTDList->GetEntriesFast();
-	
+       
     for (Int_t nent = 0; nent < nentries; nent++) {
       AliMUONTransientDigit *address = (AliMUONTransientDigit*)fTDList->At(nent);
       if (address == 0) continue; 
@@ -325,63 +311,67 @@ void AliMUONDigitizer::Exec(Option_t* option)
       q = response->DigitResponse(q,address);
 	    
       if (!q) continue;
-	    
+           
       fDigits[0] = address->PadX();
       fDigits[1] = address->PadY();
       fDigits[2] = address->Cathode();
       fDigits[3] = q;
       fDigits[4] = address->Physics();
       fDigits[5] = address->Hit();
-	    
+           
       Int_t nptracks = address->GetNTracks();
 
       if (nptracks > kMAXTRACKS) {
-	if (GetDebug() >0) {
-	  cerr<<"AliMUONDigitizer: nptracks > 10 "<<nptracks;
-	  cerr<<"reset to max value "<<kMAXTRACKS<<endl;
-	}
-	nptracks = kMAXTRACKS;
+       if (GetDebug() >0) {
+         cerr<<"AliMUONDigitizer: nptracks > 10 "<<nptracks;
+         cerr<<"reset to max value "<<kMAXTRACKS<<endl;
+       }
+       nptracks = kMAXTRACKS;
       }
       if (nptracks > 2 && GetDebug() >2) {
-	cerr<<"AliMUONDigitizer: nptracks > 2 "<<nptracks<<endl;
-	printf("cat,ich,ix,iy,q %d %d %d %d %d \n",icat,ich,fDigits[0],fDigits[1],q);
+       cerr<<"AliMUONDigitizer: nptracks > 2 "<<nptracks<<endl;
+       printf("cat,ich,ix,iy,q %d %d %d %d %d \n",icat,ich,fDigits[0],fDigits[1],q);
       }
       for (Int_t tr = 0; tr < nptracks; tr++) {
-	tracks[tr]   = address->GetTrack(tr);
-	charges[tr]  = address->GetCharge(tr);
+       tracks[tr]   = address->GetTrack(tr);
+       charges[tr]  = address->GetCharge(tr);
       }      //end loop over list of tracks for one pad
       // Sort list of tracks according to charge
       if (nptracks > 1) {
-	SortTracks(tracks,charges,nptracks);
+       SortTracks(tracks,charges,nptracks);
       }
       if (nptracks < kMAXTRACKS ) {
-	for (Int_t i = nptracks; i < kMAXTRACKS; i++) {
-	  tracks[i]  = 0;
-	  charges[i] = 0;
-	}
+       for (Int_t i = nptracks; i < kMAXTRACKS; i++) {
+         tracks[i]  = 0;
+         charges[i] = 0;
+       }
       }
-	    
+           
       // fill digits
       pMUON->AddDigits(ich,tracks,charges,fDigits);
     }
+    
+//    fManager->GetTreeD()->Fill();
+    ogime->TreeD()->Fill();
 
-    fManager->GetTreeD()->Fill();
 
     pMUON->ResetDigits();  //
     fTDList->Clear();
 
-	
+       
     for(Int_t ii = 0; ii < AliMUONConstants::NCh(); ++ii) {
       if (fHitMap[ii]) {
-	delete fHitMap[ii];
-	fHitMap[ii] = 0;
+       delete fHitMap[ii];
+       fHitMap[ii] = 0;
       }
     }
   } //end loop over cathodes
   if (GetDebug()>2) 
     cerr<<"AliMUONDigitizer::Exec: writing the TreeD: "
-	<<fManager->GetTreeD()->GetName()<<endl;
-  fManager->GetTreeD()->Write(0,TObject::kOverwrite);
+       << ogime->TreeD()->GetName()<<endl;
+  
+   ogime->WriteDigits("OVERWRITE");
+  
   delete [] fHitMap;
   delete fTDList;
     
@@ -418,11 +408,11 @@ void AliMUONDigitizer::SortTracks(Int_t *tracks,Int_t *charges,Int_t ntr)
     for(j=0;j<ntr;j++){
       
       if((i == 1 && j == idx[i-1]) 
-	 ||(i == 2 && (j == idx[i-1] || j == idx[i-2]))) continue;
+        ||(i == 2 && (j == idx[i-1] || j == idx[i-2]))) continue;
       
       if(charges[j] > qmax) {
-	qmax = charges[j];
-	jmax=j;
+       qmax = charges[j];
+       jmax=j;
       }       
     } 
     

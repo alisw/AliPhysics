@@ -6,6 +6,7 @@
  * See cxx source for full Copyright notice                               */
 
 /* $Id$ */
+
 #include <TObject.h>
 class AliRICHRecHit3D : public TObject {
 public:

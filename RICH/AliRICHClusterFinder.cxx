@@ -15,6 +15,12 @@
 
 /*
   $Log$
+  Revision 1.11.4.1  2003/07/10 17:09:50  hristov
+  Merging to v3-10-00
+
+  Revision 1.12  2003/06/27 10:03:00  rdm
+  avoid assignment of TF1 objects. In SinoidalFit() pass TF1 by pointer.
+
   Revision 1.11  2001/10/23 13:03:35  hristov
   The access to several data members was changed from public to protected. The digitisation was adapted to the multi-event case (J.Chudoba)
 

@@ -57,11 +57,10 @@ AliITSVertexerTracks::AliITSVertexerTracks():AliITSVertexer() {
 }
 
 //----------------------------------------------------------------------------
-AliITSVertexerTracks::AliITSVertexerTracks(TFile *inFile,TFile *outFile,
-					   Double_t field,
+AliITSVertexerTracks::AliITSVertexerTracks(Double_t field, TString fn,
 					   Double_t xStart,Double_t yStart,
 					   Int_t useThFr)
-                                          :AliITSVertexer(inFile,outFile) {
+                                          :AliITSVertexer(fn) {
 //
 // Standard constructor
 //
@@ -125,7 +124,7 @@ void AliITSVertexerTracks::FindVertices() {
     if(fDebug) fCurrentVertex->PrintStatus();
     TString vtxName = "Vertex_";
     vtxName += ev;
-    fCurrentVertex->SetName(vtxName.Data()); 
+    //    fCurrentVertex->SetName(vtxName.Data()); 
     fCurrentVertex->SetTitle("VertexerTracks");
     WriteCurrentVertex();
   } // loop over events
@@ -210,7 +209,8 @@ AliITSVertex* AliITSVertexerTracks::FindVertexForCurrentEvent(Int_t evnumb) {
   // get tree with tracks from input file
   TString treeName = "TreeT_ITS_";
   treeName += evnumb;
-  TTree *trkTree=(TTree*)fInFile->Get(treeName.Data());
+  //  TTree *trkTree=(TTree*)fInFile->Get(treeName.Data()); masera
+  TTree *trkTree;
   if(!trkTree) return fCurrentVertex;
 
 
@@ -233,7 +233,7 @@ AliITSVertex* AliITSVertexerTracks::FindVertexForCurrentEvent(Int_t evnumb) {
   TString vtxName;
   vtxName = "Vertex_";
   vtxName += evnumb;
-  fCurrentVertex->SetName(vtxName.Data());
+  //  fCurrentVertex->SetName(vtxName.Data());
   return fCurrentVertex;
 }
 //---------------------------------------------------------------------------

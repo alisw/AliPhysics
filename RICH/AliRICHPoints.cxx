@@ -15,6 +15,12 @@
 
 /*
   $Log$
+  Revision 1.10.4.1  2002/05/31 09:37:59  hristov
+  First set of changes done by Piotr
+
+  Revision 1.10  2001/10/23 13:03:35  hristov
+  The access to several data members was changed from public to protected. The digitisation was adapted to the multi-event case (J.Chudoba)
+
   Revision 1.9  2001/02/27 15:20:56  jbarbosa
   Transition to SDigits.
 
@@ -182,7 +188,7 @@ AliRICHHit *AliRICHPoints::GetHit() const
   //   Returns pointer to hit index in AliRun::fParticles
   //
   AliRICH *pRICH  = (AliRICH*)gAlice->GetDetector("RICH");
-  gAlice->TreeH()->GetEvent(fTrackIndex);
+  pRICH->TreeH()->GetEvent(fTrackIndex);
   TClonesArray *pRICHhits  = pRICH->Hits();
   Int_t nhits = pRICHhits->GetEntriesFast();
   if (fHitIndex < 0 || fHitIndex >= nhits) return 0;

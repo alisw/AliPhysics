@@ -26,7 +26,7 @@ public:
   void ObjectDump(void *p);
   TDataType * GetDataType(){return fDataType;}  
 protected:
-  AliDataType(const AliDataType & type){;}
+  AliDataType(const AliDataType & type): AliClassInfo(type) {;}
   AliDataType &operator = (const AliDataType & type){return *this;} //assignment operator
   TDataType * fDataType;  //root type information
   ClassDef(AliDataType,0)

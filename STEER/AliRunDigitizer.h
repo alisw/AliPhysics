@@ -17,15 +17,17 @@
 
 #include "TArrayI.h"
 #include "TTask.h"
-class TClonesArray;
+#include "TClonesArray.h"
 class TFile;
 class TParticle;
 class TTree;
 
 // --- AliRoot header files ---
 
+#include "AliStream.h" 
 class AliDigitizer;
 class AliMergeCombi;
+class AliRunLoader;
 
 static const Int_t kMaxStreamsToMerge = 4;
 
@@ -38,12 +40,20 @@ public:
   AliRunDigitizer& operator=(const AliRunDigitizer& dig)
     {dig.Copy(*this); return (*this);}
   virtual ~AliRunDigitizer();
+
+  void      ExecuteTask(Option_t* option = 0);
+  void      Exec(Option_t *option) {this->Digitize(option);}
+  void      Digitize(Option_t* option = 0);
   void      AddDigitizer(AliDigitizer *digitizer);
+
   void      SetOutputFile(TString fn);
   TString   GetOutputFile() const {return fOutputFileName;}
+  
   void      SetOutputDir(TString dn) {fOutputDirName = dn;}
   TString   GetOutputDir() const {return fOutputDirName;}
-  void      SetInputStream(Int_t stream, const char *inputName);
+  
+  void      SetInputStream(Int_t stream, const char *inputName, TString foldername = "");
+  
   void      SetFirstOutputEventNr(Int_t i) {fEvent = i;}
   void      SetNrOfEventsToWrite(Int_t i) {fNrOfEventsToWrite = i;}
   void      SetCopyTreesFromInput(Int_t i) {fCopyTreesFromInput = i;}
@@ -51,25 +61,15 @@ public:
   Int_t     GetOutputEventNr() const {return fEvent;}
   void      SetCombinationFileName(TString fn) {fCombinationFileName = fn;} 
   TString   GetCombinationFileName() const {return fCombinationFileName;}
-  Int_t     GetNinputs() const {return fNinputs;}
   Int_t     GetMask(Int_t i) const {return fkMASK[i];}
-  TTree*    GetInputTreeS(Int_t i) const {return fArrayTreeS[i];}
-  TTree*    GetInputTreeH(Int_t i) const {return fArrayTreeH[i];}
-  void      SetInputTreeTPCSBaseName(char * name) {
-    fTreeTPCSBaseName = name;}
-  TTree*    GetInputTreeTPCS(Int_t i) const {return fArrayTreeTPCS[i];}
-  TTree*    GetInputTreeTRDS(Int_t i) const {return fArrayTreeTRDS[i];}
-  TTree*    GetTreeD() const {return fTreeD;}
-  void      SetTreeDTPCBaseName(char * name) {
-    fTreeDTPCBaseName = name;}
-  TTree*    GetTreeDTPC() const {return fTreeDTPC;} 
-  TTree*    GetTreeDTRD() const {return fTreeDTRD;} 
-  TTree*    GetTreeR() const {return fTreeR;} 
-  void      Digitize(Option_t* option = 0);
-  void      Exec(Option_t *option) {this->Digitize(option);}
-  void      ExecuteTask(Option_t* option = 0);
 
-  
+
+  Int_t     GetNinputs() const {return fNinputs;}
+  const TString& GetInputFolderName(Int_t i) const;
+  const char* GetOutputFolderName();
+
+
+    
 // Nr of particles in all input files for a given event
 //     (as numbered in the output file)
   Int_t GetNParticles(Int_t event) const;
@@ -86,6 +86,7 @@ public:
 // which was merged to create output event event
   Int_t GetInputEventNumber(Int_t event, Int_t input) const;
   
+  AliStream * GetInputStream(const Int_t index) const { return dynamic_cast<AliStream *>(fInputStreams->At(index)) ; }
 // return pointer to particle with index i (index with mask)
   TParticle* GetParticle(Int_t i, Int_t event) const;
 
@@ -98,7 +99,7 @@ public:
   
   Int_t     GetDebug() const {return fDebug;}
   void      SetDebug(Int_t level) {fDebug = level;}
-  
+
 private:
   void Copy(AliRunDigitizer& dig) const;
   Bool_t            ConnectInputTrees();
@@ -114,33 +115,31 @@ private:
                                           // each input file
   TString           fOutputFileName;      // output file name
   TString           fOutputDirName;       // output dir name
-  TFile *           fOutput;              //! pointer to the output file
+
   Int_t             fEvent;               // output event nr.
   Int_t             fNrOfEventsToWrite;   // Nr of events to write
   Int_t             fNrOfEventsWritten;   // Nr of events written
   Int_t             fCopyTreesFromInput;  // from which input file the trees
                                           // should be copied, -1 for no copies
-  TTree *           fTreeD;               //! output TreeD
-  TTree *           fTreeDTPC;            //! output TreeD for TPC
-  TTree *           fTreeDTRD;            //! output TreeD for TRD
-  TTree *           fTreeR;               //! output TreeR for ITS fast points
   Int_t             fNinputs;             // nr of input streams - can be taken from the TClonesArray dimension
   Int_t             fNinputsGiven;        // nr of input streams given by user
-  TClonesArray *    fInputStreams;        // input streams
-  TFile *           fInputFiles[kMaxStreamsToMerge];   //! p. to current input files
-  TTree *           fArrayTreeS[kMaxStreamsToMerge];   //! array with p. to TreeS
-  TTree *           fArrayTreeTPCS[kMaxStreamsToMerge];   //! array with p. to TreeD_75x40_100x60_x (TPC Sdigits)
-  TTree *           fArrayTreeTRDS[kMaxStreamsToMerge];   //! array with p. to TreeSx_TRD (TRD Sdigits)
-  TTree *           fArrayTreeH[kMaxStreamsToMerge];   //! array with p. to TreeH
-  char *            fTreeDTPCBaseName;    //! basename of output TreeD for TPC
-  char *            fTreeTPCSBaseName;    //! basename of output TreeS for TPC
+  TClonesArray *    fInputStreams;        // input signal streams
+
+//  AliStream*        fOutputStream;
+  AliRunLoader*     fOutRunLoader;        //!
+  Bool_t            fOutputInitialized;   //indicates if outout was initialized 
+                                          // 
   AliMergeCombi *   fCombi;               // pointer to the combination object
   TArrayI           fCombination;         //! combination of events from
   TString           fCombinationFileName; // fn with combinations (used
                                           // with type 2 of comb.)
   Int_t             fDebug;                //! specifies debug level, 0 is min
+
+  AliRunLoader*     GetOutRunLoader();
   
-  ClassDef(AliRunDigitizer,4)
+  static const TString fgkDefOutFolderName;//default name for output foler 
+  static const TString fgkBaseInFolderName;//default name for input foler
+  ClassDef(AliRunDigitizer,5)
 };
 
 #endif // ALIRUNDIGITIZER_H

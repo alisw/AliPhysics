@@ -13,101 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.15  2002/10/22 14:45:47  alibrary
-Introducing Riostream.h
-
-Revision 1.14  2002/10/14 14:57:08  hristov
-Merging the VirtualMC branch to the main development branch (HEAD)
-
-Revision 1.13.10.2  2002/08/30 15:45:54  alibrary
-Adding geant4vmc support
-
-Revision 1.13.10.1  2002/06/10 17:51:15  hristov
-Merged with v3-08-02
-
-Revision 1.13  2001/05/30 16:15:47  fca
-Correct comparison wiht AliGeant3::Class() introduced. Thanks to I.Hrivnacova
-
-Revision 1.12  2001/05/30 15:55:35  hristov
-Strings compared instead of pointers
-
-Revision 1.11  2001/05/30 14:04:31  hristov
-Dynamic cast replaced (F.Carminati)
-
-Revision 1.10  2001/05/25 06:47:16  hristov
-Bug fix in the creation of the AliITSgeom::fShape entry for SPD. Now there is both a proper shape entry and a default, should there be future changes. This bug was related to fMinorVersion=3 was not antisipated. (B.Nilsen)
-
-Revision 1.9  2001/04/18 12:07:37  barbera
-Number of modules in layer 5 and 6 re-set to 23 and 26
-
-Revision 1.8  2001/03/23 00:12:23  nilsen
-Set Reading of AliITSgeom data from Geant3 common blocks as the default and
-not a .det file. Removed redundent calls to BuildGeometry.
-
-Revision 1.7  2001/02/13 16:53:35  nilsen
-Fixed a but when trying to use GEANT4. Needed to replace
-if(!((TGeant3*)gMC)) with if(!(dynamic_casst<TGeant3*>(gMC)))
-because just casting gMC to be TGeant3* even when it realy is a TGeant3 pointer
-did not result in a zero value. For AliITSv5asymm and AliITSv5symm, needed
-to fix a bug in the initilizers and a bug in BuildGeometry. This is now done
-in the same way as in AliITSv5.cxx.
-
-Revision 1.6  2001/02/09 20:06:26  nilsen
-Fixed bug in distructor. Can't distroy fixxed length arrays. Thanks Peter.
-
-Revision 1.5  2001/02/09 00:05:31  nilsen
-Added fMajor/MinorVersion variables and made other changes to better make
-use of the new code changes in AliITSgeom related classes.
-
-Revision 1.4  2001/02/02 23:57:29  nilsen
-Added include file that are no londer included in AliITSgeom.h
-
-Revision 1.3  2001/01/30 09:23:13  hristov
-Streamers removed (R.Brun)
-
-Revision 1.2  2000/11/30 11:13:11  barbera
- Added changes suggested by Federico Carminati on nov, 30, 2000
-
-Revision 1.1  2000/10/07 15:46:29  barbera
-Version 5 of the geometry with symmetric services
-
-Revision 1.25  2000/10/05 20:50:00  nilsen
-Now using root generated streamers.
-
-Revision 1.14.4.12  2000/10/02 16:04:03  barbera
-Forward declarations added
-
-Revision 1.22  2000/07/10 16:07:19  fca
-Release version of ITS code
-
-Revision 1.14.4.4  2000/05/19 10:10:21  nilsen
-fix for bug with HP and Sun unix + fix for event display in ITS-working branch
-
-Revision 1.14.4.3  2000/03/04 23:46:38  nilsen
-Fixed up the comments/documentation.
-
-Revision 1.14.4.2  2000/03/02 21:53:02  nilsen
-To make it compatable with the changes in AliRun/AliModule.
-
-Revision 1.14.4.1  2000/01/12 19:03:33  nilsen
-This is the version of the files after the merging done in December 1999.
-See the ReadMe110100.txt file for details
-
-Revision 1.14  1999/10/22 08:16:49  fca
-Correct destructors, thanks to I.Hrivnacova
-
-Revision 1.13  1999/10/06 10:15:19  fca
-Correct bug in allocation of layer name and add destructor
-
-Revision 1.12  1999/10/05 08:05:09  fca
-Minor corrections for uninitialised variables.
-
-Revision 1.11  1999/09/29 09:24:20  fca
-Introduction of the Copyright and cvs Log
-
-*/
+/* $Id$ */
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -122,28 +28,31 @@ Introduction of the Copyright and cvs Log
 #include <Riostream.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <TMath.h>
-#include <TGeometry.h>
-#include <TNode.h>
-#include <TTUBE.h>
-#include <TFile.h>    // only required for Tracking function?
-#include <TCanvas.h>
-#include <TObjArray.h>
-#include <TLorentzVector.h>
-#include <TObjString.h>
-#include <TClonesArray.h>
+
 #include <TBRIK.h>
+#include <TCanvas.h>
+#include <TClonesArray.h>
+#include <TFile.h>    // only required for Tracking function?
+#include <TGeometry.h>
+#include <TLorentzVector.h>
+#include <TMath.h>
+#include <TNode.h>
+#include <TObjArray.h>
+#include <TObjString.h>
 #include <TSystem.h>
+#include <TTUBE.h>
+#include <TVirtualMC.h>
 
 #include "AliRun.h"
 #include "AliITShit.h"
 #include "AliITSGeant3Geometry.h"
-#include "AliITS.h"
-#include "AliITSv5symm.h"
 #include "AliITSgeom.h"
-#include "AliITSgeomSPD.h"
 #include "AliITSgeomSDD.h"
+#include "AliITSgeomSPD.h"
 #include "AliITSgeomSSD.h"
+#include "AliITShit.h"
+#include "AliITSv5symm.h"
+#include "AliRun.h"
 
 ClassImp(AliITSv5symm)
  

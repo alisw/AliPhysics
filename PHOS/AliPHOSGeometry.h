@@ -16,6 +16,8 @@
 // 
 //*-- Author: Yves Schutz (SUBATECH)
 
+#include <assert.h> 
+
 // --- ROOT system ---
 
 #include "TString.h"
@@ -36,11 +38,20 @@ class AliPHOSGeometry : public AliGeometry {
 
 public: 
 
-  AliPHOSGeometry() ;
+  AliPHOSGeometry() {
+    // default ctor 
+    // must be kept public for root persistency purposes, but should never be called by the outside world
+    fPHOSAngle = 0 ;
+    fGeometryEMCA = 0;
+    fGeometrySUPP = 0;
+    fGeometryCPV  = 0;
+    fgGeom        = 0;
+    fRotMatrixArray = 0;  }  
 
   AliPHOSGeometry(const AliPHOSGeometry & geom) {
     // cpy ctor requested by Coding Convention but not yet needed
-    Fatal("cpy ctor", "not implemented") ;
+    
+    assert(0==1) ;
   } 
   
   virtual ~AliPHOSGeometry(void) ; 
@@ -52,7 +63,8 @@ public:
 
   AliPHOSGeometry & operator = (const AliPHOSGeometry  & rvalue) const {
     // assignement operator requested by coding convention but not needed
-    Fatal("operator =", "not implemented") ; return *(GetInstance()) ; 
+    assert(0==1) ;
+    return *(GetInstance()) ; 
   }
  
   // General
@@ -82,7 +94,7 @@ public:
                                          // gets the position of element (pad or Xtal) relative to Alice
   Bool_t RelToAbsNumbering(const Int_t * RelId, Int_t & AbsId) const ;         
                                          // converts the absolute PHOS numbering to a relative 
-  void RelPosToAbsId(const Int_t module , const Double_t x, const Double_t z, Int_t & AbsId)const;                       // Converts local PHOS-module (x, z) coordinates to absId
+
   Bool_t IsInitialized(void)                  const { return fgInit ; }  
                                                                        
   // Return general PHOS parameters

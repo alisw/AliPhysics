@@ -28,10 +28,8 @@
 #include "TTree.h"
 
 // --- Standard library ---
-#include <stdlib.h>   
 
 // --- AliRoot header files ---
-#include "AliRun.h" 
 #include "AliEMCALTrackSegmentMaker.h"
 #include "AliHeader.h" 
 
@@ -42,22 +40,20 @@ ClassImp( AliEMCALTrackSegmentMaker)
   AliEMCALTrackSegmentMaker:: AliEMCALTrackSegmentMaker() : TTask("","")
 {
   // ctor
-  fSplitFile= 0 ; 
+  fEventFolderName = "" ; 
 
 }
 
 //____________________________________________________________________________
-AliEMCALTrackSegmentMaker::AliEMCALTrackSegmentMaker(const char * headerFile, const char * name, const Bool_t toSplit): TTask(name, headerFile)
+AliEMCALTrackSegmentMaker::AliEMCALTrackSegmentMaker(const TString alirunFileName, const TString eventFolderName):
+  TTask("EMCAL"+AliConfig::fgkTrackerTaskName, alirunFileName), fEventFolderName(eventFolderName)
 {
   // ctor
-  fSplitFile= 0 ; 
-  fToSplit  = toSplit ;
+
 }
 
 //____________________________________________________________________________
 AliEMCALTrackSegmentMaker::~AliEMCALTrackSegmentMaker()
 {
-   
-      fSplitFile = 0 ;
 }
 

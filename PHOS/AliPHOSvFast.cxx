@@ -1,4 +1,4 @@
-/**************************************************************************
+  /**************************************************************************
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
  * Author: The ALICE Off-line Project.                                    *
@@ -26,17 +26,22 @@
 
 // --- ROOT system ---
  
-#include "TBRIK.h"
-#include "TNode.h"
-#include "TParticle.h"
-#include "TGeometry.h"
+#include <TBRIK.h>
+#include <TFile.h>
+#include <TGeometry.h>
+#include <TNode.h>
+#include <TParticle.h>
+#include <TTree.h>
+#include <TVirtualMC.h>
 
 // --- Standard library ---
 
 // --- AliRoot header files ---
+#include "AliConst.h"
 #include "AliPHOSFastRecParticle.h"
+#include "AliPHOSGeometry.h"
+#include "AliPHOSLoader.h"
 #include "AliPHOSvFast.h"
-#include "AliPHOSGetter.h"
 #include "AliRun.h"
 
 ClassImp(AliPHOSvFast)
@@ -69,8 +74,7 @@ AliPHOSvFast::AliPHOSvFast(const char *name, const char *title):
   // ctor
 
   
-  // create the Getter 
-  AliPHOSGetter::GetInstance(gDirectory->GetName(), 0) ; 
+  // create the Loader 
   
   SetBigBox(0, GetGeometry()->GetOuterBoxSize(0) ) ;
   SetBigBox(1, GetGeometry()->GetOuterBoxSize(3) + GetGeometry()->GetCPVBoxSize(1) ) ; 
@@ -88,34 +92,6 @@ AliPHOSvFast::AliPHOSvFast(const char *name, const char *title):
   fPosParaB0 = 0.257 ;   
   fPosParaB1 = 0.137 ; 
   fPosParaB2 = 0.00619 ; 
-}
-
-//____________________________________________________________________________
-AliPHOSvFast::AliPHOSvFast(const AliPHOSvFast & pv):
-  AliPHOS(pv.GetName(), pv.GetTitle())
-{
-  // cpy ctor
-
-  
-  // create the Getter 
-  AliPHOSGetter::GetInstance(gDirectory->GetName(), 0) ; 
-  
-  SetBigBox(0, pv.fBigBoxX) ;
-  SetBigBox(1, pv.fBigBoxY) ; 
-  SetBigBox(2, pv.fBigBoxZ) ; 
-  
-  fNRecParticles = pv.fNRecParticles; 
-  fFastRecParticles = new TClonesArray( *(pv.fFastRecParticles) ) ;
-  
-  fResPara1 = pv.fResPara1 ;    
-  fResPara2 = pv.fResPara2 ; 
-  fResPara3 = pv.fResPara3 ; 
-  
-  fPosParaA0 = pv.fPosParaA0 ;    
-  fPosParaA1 = pv.fPosParaA1 ;  
-  fPosParaB0 = pv.fPosParaB0 ;   
-  fPosParaB1 = pv.fPosParaB1 ; 
-  fPosParaB2 = pv.fPosParaB2 ; 
 }
 
 //____________________________________________________________________________
@@ -280,25 +256,20 @@ Float_t AliPHOSvFast::GetBigBox(Int_t index) const
  }
   return rv ; 
 }
-
 //___________________________________________________________________________
-void AliPHOSvFast::MakeBranch(Option_t* opt, const char *file)
+
+void AliPHOSvFast::MakeBranch(Option_t* opt)
 {  
   // Create new branch in the current reconstructed Root Tree
- 
-  AliDetector::MakeBranch(opt,file) ;
-  
-  char branchname[10];
-  sprintf(branchname,"%s",GetName());
+  AliDetector::MakeBranch(opt);
   const char *cd = strstr(opt,"R");
   
-  if (fFastRecParticles && gAlice->TreeR() && cd) {
-    MakeBranchInTree(gAlice->TreeR(), 
-                     branchname, &fFastRecParticles, fBufferSize, file);
+  if (fFastRecParticles && fLoader->TreeR() && cd) {
+    MakeBranchInTree(fLoader->TreeR(), GetName(), &fFastRecParticles, fBufferSize, 0);
   }
 }
-
 //____________________________________________________________________________
+
 Double_t AliPHOSvFast::MakeEnergy(const Double_t energy)
 {  
   // Smears the energy according to the energy dependent energy resolution.
@@ -307,8 +278,8 @@ Double_t AliPHOSvFast::MakeEnergy(const Double_t energy)
   Double_t sigma  = SigmaE(energy) ; 
   return  fRan.Gaus(energy, sigma) ;   
 }
-
 //____________________________________________________________________________
+
 TVector3 AliPHOSvFast::MakePosition(const Double_t energy, const TVector3 pos, const Double_t theta, const Double_t phi)
 {
   // Smears the impact position according to the energy dependent position resolution
@@ -378,8 +349,8 @@ Int_t AliPHOSvFast::MakeType(AliPHOSFastRecParticle & rp )
   else
     test = rp.GetPdgCode() ; 
 
-  Fatal("MakeType", "SHOULD NOT BE USED until values of probabilities are properly set ") ;
-
+  Info("MakeType", "SHOULD NOT BE USED until values of probabilities are properly set ") ;
+  assert(1==0) ;    // NB: ALL VALUES SHOULD BE CHECKED !!!!
   switch (test) { 
 
   case 22:    // it's a photon              // NB: ALL VALUES SHOLD BE CHECKED !!!!

@@ -24,7 +24,6 @@
 
 #include "AliH2F.h"
 #include "TClonesArray.h"
-#include "AliTPC.h"
 #include "TRandom.h"
 
 
@@ -53,26 +52,33 @@ AliH2F::~AliH2F()
   //
 }
 
-AliH2F::AliH2F(const AliH2F &his) 
+AliH2F::AliH2F(const AliH2F &his) :
+  TH2F(his)
 {
   //
   
 }
 
-AliH2F & AliH2F::operator = (const AliH2F & his) 
+AliH2F & AliH2F::operator = (const AliH2F & /*his*/) 
 {
   //
   return *this;
 }
 
+/*
 TClonesArray * AliH2F::FindPeaks(Float_t threshold, Float_t noise)
 {
-
-  //
-  // not implemented
-  //
-  return 0;
+  //find peaks and write it in form of AliTPCcluster to array
+    
+  //firstly we need to create object for cluster finding
+  //and fill it with contents of histogram
+  AliTPCClusterFinder cfinder;
+  cfinder.SetThreshold(threshold);
+  cfinder.SetNoise(noise);
+  cfinder.GetHisto(this);
+  return cfinder.FindPeaks3();
 }
+*/
 
 void AliH2F::ClearSpectrum()
 {

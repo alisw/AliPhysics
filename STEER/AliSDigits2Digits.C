@@ -25,28 +25,27 @@
 ////////////////////////////////////////////////////////////////////////
 
 #if !defined(__CINT__) || defined(__MAKECINT__)
-#include <Riostream.h>
-#include "AliRun.h"
-#include "AliRunDigitizer.h"
-#include "AliITSDigitizer.h"
-#include "AliITSFDigitizer.h"
-#include "AliTPCDigitizer.h"
-#include "AliTRDdigitizer.h"
-#include "AliPHOSDigitizer.h"
-#include "AliMUONDigitizer.h"
-#include "AliRICHDigitizer.h"
-#include <TStopwatch.h>
+#include "iostream.h"
+#include "STEER/AliRun.h"
+#include "STEER/AliRunDigitizer.h"
+#include "ITS/AliITSDigitizer.h"
+#include "TPC/AliTPCDigitizer.h"
+#include "TRD/AliTRDdigitizer.h"
+#include "PHOS/AliPHOSDigitizer.h"
+#include "MUON/AliMUONDigitizer.h"
+#include "RICH/AliRICHDigitizer.h"
+#include "TStopwatch.h"
 #endif
 
 #include "AliHits2SDigits.C"
 
 void AliCopyN(TString inputFile, TString outputFile);
 
-Int_t AliSDigits2Digits(TString fileNameDigits="digits.root", 
-			TString fileNameSDigits="sdigits.root", 
-			Int_t nEvents = 1, Int_t iITS = 0, Int_t iTPC = 0,
-			Int_t iTRD = 0,  Int_t iPHOS = 0, Int_t iMUON = 0,
-			Int_t iRICH = 0, Int_t iCopy = 1)
+Int_t AliSDigits2Digits(TString output="out/galice.root", 
+                        TString input="wrk/galice.root", 
+                        Int_t nEvents = 1, Int_t iITS = 0, Int_t iTPC = 1,
+                        Int_t iTRD = 0,  Int_t iPHOS = 0, Int_t iMUON = 0,
+                        Int_t iRICH = 0, Int_t iCopy = 0)
 {
 // delete the current gAlice object, the one from input file
 //  will be used
@@ -56,13 +55,14 @@ Int_t AliSDigits2Digits(TString fileNameDigits="digits.root",
     gAlice = 0;
   } // end if gAlice
   AliRunDigitizer * manager = new AliRunDigitizer(1,1);
-  manager->SetInputStream(0,fileNameSDigits.Data());
-  if (fileNameDigits != "") {
-    if (iCopy) {
-      AliCopyN(fileNameSDigits,fileNameDigits);
-    }
-    manager->SetOutputFile(fileNameDigits);
-  }
+  manager->SetDebug(1000);
+  manager->SetInputStream(0,input);
+    if (iCopy) 
+     {
+//      AliCopyN(fileNameSDigits,fileNameDigits);
+     }
+  
+  manager->SetOutputFile(output);
   manager->SetNrOfEventsToWrite(nEvents);
   if (iITS == 1) AliITSDigitizer *dITS  = new AliITSDigitizer(manager);
   if (iITS == 2) AliITSFDigitizer *dITS  = new AliITSFDigitizer(manager);
@@ -77,7 +77,6 @@ Int_t AliSDigits2Digits(TString fileNameDigits="digits.root",
   timer.Stop(); 
   timer.Print();
   delete manager;
-  return 0;
 }
 
 
@@ -85,19 +84,5 @@ Int_t AliSDigits2Digits(TString fileNameDigits="digits.root",
 void AliCopyN(TString inputFileName, TString outputFileName) {
 // copy some objects
 
-  TFile *inputFile = OpenFile(inputFileName);
-  if (!inputFile) return;
-
-  TFile *outputFile = TFile::Open(outputFileName.Data(),"update");
-  if (!outputFile->IsOpen()) {
-    cerr<<"Can't open "<<outputFileName.Data()<<" !\n";
-    return;
-  }
-  if (!ImportgAlice(inputFile)) return;
-  AliCopy(inputFile, outputFile);
-  inputFile->Close();
-  delete inputFile;
-  outputFile->Close();
-  delete outputFile;
 }
 ////////////////////////////////////////////////////////////////////////

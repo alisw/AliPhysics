@@ -6,7 +6,12 @@
 // #include "AliMerger.h"
 // #include "AliMergable.h"
 #include "TRandom.h"
-#include "AliDetector.h"
+
+
+
+class AliRunLoader;
+class TClonesArray;
+class TFile;
 
 typedef enum {kDigitize=0, kMerge = 1} MergeMode_t;
 
@@ -30,8 +35,8 @@ class AliFMDMerger {
   // Setters -> Later Communication with gAlice 
   void SetSignalEventNumber(Int_t i)     {fEvNrSig = i;}
   void SetBackgroundEventNumber(Int_t i) {fEvNrBgr = i;}    
-  void SetBackgroundFileName(char* file) {fFnBgr = file;}        
-  void SetSignalFileName(char* file)     {fFnSig = file;}        
+  void SetBackgroundFileName(char* file) {fFnBgr = file;}       
+  void SetSignalFileName(char* file)     {fFnSig = file;}   
   void SetMode(MergeMode_t mode) {fMerge = mode;}
 
   // Granularity
@@ -44,7 +49,7 @@ class AliFMDMerger {
       
  private:    
     // Open the bgr file
-    TFile *InitBgr();
+  TFile *InitBgr();
   //Granularity
   Int_t fRingsSi1;       // Number of rings
   Int_t fSectorsSi1;    // Number of sectors
@@ -60,6 +65,9 @@ class AliFMDMerger {
     char  *fFnBgr;                  // background file name
     char  *fFnSig;                  // signal file name
     TFile *fBgrFile;                // Pointer to background file
+    
+    AliRunLoader* fBgrLoader; //! Background event run loader
+    AliRunLoader* fSigLoader; //! Signal event run loader
     
     ClassDef(AliFMDMerger,0)
 };    

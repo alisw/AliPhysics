@@ -35,9 +35,11 @@
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
+#include <TVirtualMC.h>
+
 #include "AliDIPOv1.h"
-#include "AliRun.h"
 #include "AliMagF.h"
+#include "AliRun.h"
  
 ClassImp(AliDIPOv1)
  

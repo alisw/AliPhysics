@@ -13,44 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-
-$Log$
-Revision 1.4  2002/01/21 17:04:12  kowal2
-check the range of digits array
-
-Revision 1.3  2001/11/24 16:08:09  kowal2
-Fatsre algorithms
-
-Revision 1.2  2000/12/20 09:36:46  kowal2
-Improvements in algorithms to make the code faster
-
-Revision 1.1  2000/11/01 15:57:13  kowal2
-Moved from the TPC directory
-
-Revision 1.4  2000/10/05 16:01:49  kowal2
-Corrected for memory leaks.
-
-Revision 1.3  2000/06/30 12:07:49  kowal2
-Updated from the TPC-PreRelease branch
-
-Revision 1.2.4.3  2000/06/26 07:39:42  kowal2
-Changes to obey the coding rules
-
-Revision 1.2.4.2  2000/06/25 08:38:41  kowal2
-Splitted from AliTPCtracking
-
-Revision 1.2.4.1  2000/06/14 16:45:13  kowal2
-Improved algorithms. Compiler warnings removed.
-
-Revision 1.2  2000/04/17 09:37:33  kowal2
-removed obsolete AliTPCDigitsDisplay.C
-
-Revision 1.1.4.2  2000/04/10 11:37:42  kowal2
-
-Digits handling in a new data structure
-
-*/
+/* $Id$ */
 
 /*MI change -- for Rule checker
           -- added copy constructor and assignmet operator 
@@ -96,7 +59,8 @@ AliDigits::AliDigits()
   Invalidate();
 }
 
-AliDigits::AliDigits(const AliDigits& digits)
+AliDigits::AliDigits(const AliDigits& digits):
+  AliSegmentID(digits)
 {
   //
   //copy constructor

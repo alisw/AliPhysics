@@ -13,44 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.7  2001/05/16 14:57:17  alibrary
-New files for folders and Stack
-
-Revision 1.6  2001/01/26 21:50:43  morsch
-Use access functions to AliMUONHit member data.
-
-Revision 1.5  2001/01/26 20:00:53  hristov
-Major upgrade of AliRoot code
-
-Revision 1.4  2000/12/21 22:14:38  morsch
-Clean-up of coding rule violations.
-
-Revision 1.3  2000/12/21 17:51:54  morsch
-RN3 violations corrected
-
-Revision 1.2  2000/11/23 10:09:39  gosset
-Bug correction in AliMUONRecoDisplay.
-Copyright, $Log$
-Copyright, Revision 1.7  2001/05/16 14:57:17  alibrary
-Copyright, New files for folders and Stack
-Copyright,
-Copyright, Revision 1.6  2001/01/26 21:50:43  morsch
-Copyright, Use access functions to AliMUONHit member data.
-Copyright,
-Copyright, Revision 1.5  2001/01/26 20:00:53  hristov
-Copyright, Major upgrade of AliRoot code
-Copyright,
-Copyright, Revision 1.4  2000/12/21 22:14:38  morsch
-Copyright, Clean-up of coding rule violations.
-Copyright,
-Copyright, Revision 1.3  2000/12/21 17:51:54  morsch
-Copyright, RN3 violations corrected
-Copyright,, $Id$, comments at the right place for automatic documentation,
-in AliMUONRecoEvent and AliMUONRecoDisplay
-
-*/
+/* $Id$ */
 
 //Authors: Mihaela Gheata, Andrei Gheata 09/10/00
 //////////////////////////////////////////////////////////////////////
@@ -82,16 +45,22 @@ in AliMUONRecoEvent and AliMUONRecoDisplay
 //////////////////////////////////////////////////////////////////////
 
 #include <Riostream.h>
-#include <AliRun.h>
+
+#include <TROOT.h>
+#include <TFolder.h>
 #include <TClonesArray.h>
+#include <TGeometry.h>
+#include <TSlider.h>
+#include <TGeometry.h>
+#include <TView.h>
+
+#include <AliRun.h>
+#include <AliConfig.h>
+#include <AliHeader.h>
+#include <AliPoints.h>
+
 #include "AliMUONRecoEvent.h"
 #include "AliMUONRecoDisplay.h"
-#include "AliHeader.h"
-#include <TROOT.h>
-#include <AliPoints.h>
-#include <TSlider.h>
-#include <TView.h>
-#include <TGeometry.h>
 
 ClassImp(AliMUONRecoDisplay)
 
@@ -204,7 +173,7 @@ void AliMUONRecoDisplay::MapEvent(Int_t nevent)
       gApplication->Terminate(0);
    }
    // get the number of generated tracks
-   Int_t ntracks = (Int_t)gAlice->TreeH()->GetEntries();
+   Int_t ntracks = (Int_t)pMUON->TreeH()->GetEntries();
    // Fill the fEvGen object
    AliMUONRecoTrack *gtrack = 0;
    AliMUONHit *hit = 0;
@@ -441,7 +410,29 @@ void AliMUONRecoDisplay::ShowNextEvent(Int_t delta)
       if (newEvent<0 || newEvent>(gAlice->TreeE()->GetEntries() - 1)) return;
       Int_t nparticles = gAlice->GetEvent(newEvent);
       cout << "Event : " << newEvent << " with " << nparticles << " particles\n";
-      if (!gAlice->TreeH()) return;
+
+/******************************************************************/
+      AliConfig* config = AliConfig::Instance();
+      TFolder* topfold = (TFolder*)config->GetTopFolder();
+      if (topfold == 0x0)
+       {
+         Error("Exec","Can not get Alice top folder");
+         return; 
+       }
+      TString fmdfoldname(config->GetDataFolderName()+"/"+"MUON");
+      TFolder* fmdfold = (TFolder*)topfold->FindObject(fmdfoldname);
+      if (fmdfold == 0x0)
+       {
+         Error("Exec","Can not get MUON folder");
+         return; 
+       }
+      TTree* treeH = dynamic_cast<TTree*>(fmdfold->FindObject("TreeH"));
+      if (treeH == 0x0)
+       {
+         Error("Exec","Can not get TreeH");
+         return;
+       }
+/******************************************************************/     
       MapEvent(newEvent);
       fHighlited = -1;
    }

@@ -21,6 +21,8 @@
 
 // --- AliRoot header files ---
 
+class AliRunLoader;
+
 class AliFMDSDigitizer: public TTask {
 
 public:
@@ -51,13 +53,16 @@ private:
   TClonesArray *fSDigits      ; // List of summable digits
   TClonesArray *fHits      ; // List of summable digits
   TString fHeadersFile ;    //input file
+
+  AliRunLoader *fRunLoader;//!Run Loader
+
  protected:
   //Granularity
    Int_t fRingsSi1;       // Number of rings
    Int_t fSectorsSi1;    // Number of sectors
    Int_t fRingsSi2;       // Number of rings
   Int_t fSectorsSi2;    // Number of sectors
-
+  
 
   ClassDef(AliFMDSDigitizer,1)  // description 
 

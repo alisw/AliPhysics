@@ -15,8 +15,11 @@
 
 #include "TFolder.h" 
 #include "TNamed.h" 
+#include "TTask.h" 
 
 // --- Standard library ---
+
+#include <assert.h>
 
 // --- AliRoot header files ---
 
@@ -32,7 +35,7 @@ public:
     fAlarms = 0;
   }           // default ctor not to be used
   AliPHOSQAVirtualCheckable(const char * name) ;          // ctor
-  AliPHOSQAVirtualCheckable(AliPHOSQAVirtualCheckable& obj) {Fatal("AliPHOSQAVirtualCheckable", "CPY CTOR not implemented") ;}
+  AliPHOSQAVirtualCheckable(AliPHOSQAVirtualCheckable& obj) {assert(0==1);}
   virtual ~AliPHOSQAVirtualCheckable() ; // dtor
 
   void AddChecker(AliPHOSQAChecker * ch) ; 
@@ -43,7 +46,7 @@ public:
   virtual Float_t GetValue() const = 0 ; 
   TString HasA() const { return fType ; }
   virtual void Print() const = 0 ; 
-  void RaiseAlarm(const char * time, const char * checked, const char * checker, const char * message) const ; 
+  void RaiseAlarm(const char * time, const char * checked, const char * checker, const char * message) ; 
   void RemoveChecker(AliPHOSQAChecker *ch) ; 
   virtual void Reset() = 0 ;
   void ResetAlarms() ;

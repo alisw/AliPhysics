@@ -13,15 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.2  2000/06/30 12:07:50  kowal2
-Updated from the TPC-PreRelease branch
-
-Revision 1.1.2.2  2000/06/25 08:38:41  kowal2
-Splitted from AliTPCtracking
-
-*/
+/* $Id$ */
 
 //-----------------------------------------------------------------
 //           Implementation of the TPC cluster class

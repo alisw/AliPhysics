@@ -24,7 +24,7 @@ class AliPHOSPpsdRecPoint : public AliPHOSRecPoint {
 
 public:
 
-  AliPHOSPpsdRecPoint() ;           // ctor   
+  AliPHOSPpsdRecPoint();           // ctor   
   virtual ~AliPHOSPpsdRecPoint(){
     // dtor
   }

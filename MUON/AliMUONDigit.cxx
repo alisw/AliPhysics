@@ -13,24 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.5  2001/10/31 16:40:07  jchudoba
-change preprocessor constant to C++ constant
-
-Revision 1.4  2001/10/18 14:44:09  jchudoba
-Define constant MAXTRACKS for maximum number of tracks associated with 1 digit
-
-Revision 1.3  2001/01/26 21:26:58  morsch
-All data members private. Access functions provided.
-
-Revision 1.2  2000/06/15 07:58:48  morsch
-Code from MUON-dev joined
-
-Revision 1.1.2.1  2000/06/09 22:03:22  morsch
-Was before in DataStructures.cxx
-
-*/
+/* $Id$ */
 
 #include "AliMUONDigit.h"
 

@@ -79,6 +79,7 @@
 // --- AliRoot header files ---
 
 #include "AliRun.h"
+#include "AliStack.h"
 #include "AliPHOSv1.h"
 #include "AliPHOSAnalyze.h"
 #include "AliPHOSDigit.h"
@@ -86,7 +87,7 @@
 #include "AliPHOSTrackSegment.h"
 #include "AliPHOSRecParticle.h"
 #include "AliPHOSCpvRecPoint.h"
-#include "AliPHOSGetter.h"
+#include "AliPHOSLoader.h"
 
 
 ClassImp(AliPHOSAnalyze)
@@ -96,14 +97,20 @@ ClassImp(AliPHOSAnalyze)
 {
   // default ctor (useless)
   fCorrection = 1.2 ;  //Value calculated for default parameters of reconstruction  
+  fRunLoader = 0x0;
 }
 
 //____________________________________________________________________________
 AliPHOSAnalyze::AliPHOSAnalyze(Text_t * fileName)
 {
   // ctor: analyze events from root file "name"
-  ffileName = fileName ;
+  ffileName = fileName;
   fCorrection = 1.05 ;  //Value calculated for default parameters of reconstruction   
+  fRunLoader = AliRunLoader::Open(fileName,"AliPHOSAnalyze");
+  if (fRunLoader == 0x0)
+   {
+     Error("AliPHOSAnalyze","Error Loading session");
+   }
 }
 
 //____________________________________________________________________________
@@ -120,19 +127,32 @@ AliPHOSAnalyze::~AliPHOSAnalyze()
 
 }
 //____________________________________________________________________________
-void AliPHOSAnalyze::DrawRecon(Int_t Nevent,Int_t Nmod,const char * what,const char* branchTitle){
+void AliPHOSAnalyze::DrawRecon(Int_t Nevent,Int_t Nmod,const char * branchName,const char* branchTitle){
   //Draws pimary particles and reconstructed 
   //digits, RecPoints, RecPartices etc 
   //for event Nevent in the module Nmod.
 
-  //========== Create ObjectGetter
-  AliPHOSGetter * gime = AliPHOSGetter::GetInstance(ffileName.Data(),branchTitle) ;
-  if(Nevent >= gAlice->TreeE()->GetEntries() ) {
-    Error("DrawRecon", "There is no event %d only %d events available", Nevent, gAlice->TreeE()->GetEntries() ) ;
+  //========== Create ObjectLoader
+  if (fRunLoader == 0x0)
+   {
+     Error("DrawRecon","Error Loading session");
+     return;
+   }
+  
+  AliPHOSLoader* gime = dynamic_cast<AliPHOSLoader*>(fRunLoader->GetLoader("PHOSLoader"));
+  if ( gime == 0 ) 
+   {
+     Error("DrawRecon","Could not obtain the Loader object !"); 
+     return ;
+   } 
+  
+  
+  if(Nevent >= fRunLoader->GetNumberOfEvents() ) {
+    Error("DrawRecon", "There is no event %d only %d events available", Nevent, fRunLoader->GetNumberOfEvents() ) ;
     return ;
   }
   const AliPHOSGeometry * phosgeom = gime->PHOSGeometry() ; 
-  gime->Event(Nevent);
+  fRunLoader->GetEvent(Nevent);
 
   Int_t nx = phosgeom->GetNPhi() ;
   Int_t nz = phosgeom->GetNZ() ;
@@ -176,16 +196,21 @@ void AliPHOSAnalyze::DrawRecon(Int_t Nevent,Int_t Nmod,const char * what,const c
     recPhot->Delete() ;
   recPhot = new TH2F("recPhot","RecParticles with primary Photon",nx,-x,x,nz,-z,z);
   
-  if(strstr(what,"P") || strstr(what,"p")){ 
+  
   //Plot Primary Particles
+  
+  if (fRunLoader->Stack() == 0x0) fRunLoader->LoadKinematics("READ");
+  
+
   const TParticle * primary ;
   Int_t iPrimary ;
-  for ( iPrimary = 0 ; iPrimary < gime->NPrimaries() ; iPrimary++)
+  for ( iPrimary = 0 ; iPrimary < fRunLoader->Stack()->GetNprimary() ; iPrimary++)
     {
-      primary = gime->Primary(iPrimary) ;
-      Int_t primaryType = primary->GetPdgCode() ;
+      primary = fRunLoader->Stack()->Particle(iPrimary);
+      
+      Int_t primaryType = primary->GetPdgCode();
 //       if( (primaryType == 211)||(primaryType == -211)||(primaryType == 2212)||(primaryType == -2212)
-// 	  ||(primaryType == 11)||(primaryType == -11) ) {
+//          ||(primaryType == 11)||(primaryType == -11) ) {
 //         Int_t moduleNumber ;
 //         Double_t primX, primZ ;
 //         phosgeom->ImpactOnEmc(primary->Theta(), primary->Phi(), moduleNumber, primX, primZ) ;
@@ -209,11 +234,8 @@ void AliPHOSAnalyze::DrawRecon(Int_t Nevent,Int_t Nmod,const char * what,const c
 //         }
 //       }
     }  
-    phot->Draw("box") ;
-  }
 
   
-  if(strstr(what,"S") || strstr(what,"s")){
   Int_t iSDigit ;
   AliPHOSDigit * sdigit ;
   const TClonesArray * sdigits = gime->SDigits() ;
@@ -221,29 +243,27 @@ void AliPHOSAnalyze::DrawRecon(Int_t Nevent,Int_t Nmod,const char * what,const c
   if(sdigits){
     for(iSDigit = 0; iSDigit < sdigits->GetEntriesFast() ; iSDigit++)
       {
-	sdigit = (AliPHOSDigit *) sdigits->At(iSDigit) ;
-	Int_t relid[4];
-	phosgeom->AbsToRelNumbering(sdigit->GetId(), relid) ;
-	Float_t x,z ;
-	phosgeom->RelPosInModule(relid,x,z) ;
-  	Float_t e = gime->SDigitizer()->Calibrate(sdigit->GetAmp()) ;
-	nsdig[relid[0]-1]++ ;
-	if(relid[0]==Nmod){
-	  if(relid[1]==0)  //EMC
-	    emcSdigits->Fill(x,z,e) ;
-	  if( relid[1]!=0 )
-	    cpvSdigits->Fill(x,z,e) ;
-	}
+       sdigit = (AliPHOSDigit *) sdigits->At(iSDigit) ;
+       Int_t relid[4];
+       phosgeom->AbsToRelNumbering(sdigit->GetId(), relid) ;
+       Float_t x,z ;
+       phosgeom->RelPosInModule(relid,x,z);
+       AliPHOSSDigitizer* sd = dynamic_cast<AliPHOSSDigitizer*>(gime->SDigitizer());
+       Float_t e = sd->Calibrate(sdigit->GetAmp()) ;
+       nsdig[relid[0]-1]++ ;
+       if(relid[0]==Nmod){
+         if(relid[1]==0)  //EMC
+           emcSdigits->Fill(x,z,e) ;
+         if( relid[1]!=0 )
+           cpvSdigits->Fill(x,z,e) ;
+       }
       }
   }
   TString message ; 
   message  = "Number of EMC + CPV SDigits per module: \n" ;
   message += "%d %d %d %d %d\n"; 
   Info("DrawRecon", message.Data(), nsdig[0], nsdig[1], nsdig[2], nsdig[3], nsdig[4] ) ;
-  emcSdigits->Draw("box") ;
-  }
 
-  if(strstr(what,"D") || strstr(what,"d")){
   //Plot digits
   Int_t iDigit ;
   AliPHOSDigit * digit ;
@@ -251,25 +271,23 @@ void AliPHOSAnalyze::DrawRecon(Int_t Nevent,Int_t Nmod,const char * what,const c
   if(digits) {
     for(iDigit = 0; iDigit < digits->GetEntriesFast(); iDigit++)
       {
-	digit = (AliPHOSDigit *) digits->At(iDigit) ;
-	Int_t relid[4];
-	phosgeom->AbsToRelNumbering(digit->GetId(), relid) ;
-	Float_t x,z ;
-	phosgeom->RelPosInModule(relid,x,z) ;
-	Float_t e = gime->SDigitizer()->Calibrate(digit->GetAmp()) ;
-	if(relid[0]==Nmod){
-	  if(relid[1]==0)  //EMC
-	    emcDigits->Fill(x,z,e) ;
-	  if( relid[1]!=0 )
-	    cpvDigits->Fill(x,z,e) ;
-	}
+       digit = (AliPHOSDigit *) digits->At(iDigit) ;
+       Int_t relid[4];
+       phosgeom->AbsToRelNumbering(digit->GetId(), relid) ;
+       Float_t x,z ;
+       phosgeom->RelPosInModule(relid,x,z) ;
+       AliPHOSSDigitizer* sd = dynamic_cast<AliPHOSSDigitizer*>(gime->SDigitizer());
+       Float_t e = sd->Calibrate(digit->GetAmp()) ;
+       if(relid[0]==Nmod){
+         if(relid[1]==0)  //EMC
+           emcDigits->Fill(x,z,e) ;
+         if( relid[1]!=0 )
+           cpvDigits->Fill(x,z,e) ;
+       }
       }
   }
-  emcDigits->SetLineColor(5) ;
-  emcDigits->Draw("boxsame") ;
-  }
   
-  if(strstr(what,"R") || strstr(what,"r")){
+  
   //Plot RecPoints
   Int_t irecp ;
   TVector3 pos ;
@@ -278,8 +296,8 @@ void AliPHOSAnalyze::DrawRecon(Int_t Nevent,Int_t Nmod,const char * what,const c
     for(irecp = 0; irecp < emcrp->GetEntriesFast() ; irecp ++){
       AliPHOSEmcRecPoint * emc = (AliPHOSEmcRecPoint *) emcrp->At(irecp) ;
       if(emc->GetPHOSMod()==Nmod){
-	emc->GetLocalPosition(pos) ;
-	emcRecPoints->Fill(pos.X(),pos.Z(),emc->GetEnergy());
+       emc->GetLocalPosition(pos) ;
+       emcRecPoints->Fill(pos.X(),pos.Z(),emc->GetEnergy());
       }
     }
   }
@@ -289,8 +307,8 @@ void AliPHOSAnalyze::DrawRecon(Int_t Nevent,Int_t Nmod,const char * what,const c
     for(irecp = 0; irecp < cpvrp->GetEntriesFast() ; irecp ++){
       AliPHOSRecPoint * cpv = (AliPHOSCpvRecPoint *) cpvrp->At(irecp) ;
       if(cpv->GetPHOSMod()==Nmod){
-	cpv->GetLocalPosition(pos) ;
-	cpvRecPoints->Fill(pos.X(),pos.Z(),cpv->GetEnergy());
+       cpv->GetLocalPosition(pos) ;
+       cpvRecPoints->Fill(pos.X(),pos.Z(),cpv->GetEnergy());
       }
     }
   }
@@ -303,71 +321,92 @@ void AliPHOSAnalyze::DrawRecon(Int_t Nevent,Int_t Nmod,const char * what,const c
   if(rp && ts && emcrp) {
     for(iRecParticle = 0; iRecParticle < rp->GetEntriesFast() ; iRecParticle++ )
       {
-	recParticle = (AliPHOSRecParticle *) rp->At(iRecParticle) ;
-	Int_t moduleNumberRec ;
-	Double_t recX, recZ ;
-	phosgeom->ImpactOnEmc(recParticle->Theta(), recParticle->Phi(), moduleNumberRec, recX, recZ) ;
-	if(moduleNumberRec == Nmod){
-	  
-	  Double_t minDistance = 5. ;
-	  Int_t closestPrimary = -1 ;	
+       recParticle = (AliPHOSRecParticle *) rp->At(iRecParticle) ;
+       Int_t moduleNumberRec ;
+       Double_t recX, recZ ;
+       phosgeom->ImpactOnEmc(recParticle->Theta(), recParticle->Phi(), moduleNumberRec, recX, recZ) ;
+       if(moduleNumberRec == Nmod){
+         
+         Double_t minDistance = 5. ;
+         Int_t closestPrimary = -1 ;       
 
-	  //extract list of primaries: it is stored at EMC RecPoints
-	  Int_t emcIndex = ((AliPHOSTrackSegment *) ts->At(recParticle->GetPHOSTSIndex()))->GetEmcIndex() ;
-	  Int_t numberofprimaries ;
-	  Int_t * listofprimaries  = ((AliPHOSRecPoint*) emcrp->At(emcIndex))->GetPrimaries(numberofprimaries)  ;
-	  Int_t index ;
-	  const TParticle * primary ;
-	  Double_t distance = minDistance ;
-	  
-	  for ( index = 0 ; index < numberofprimaries ; index++){
-	    primary = gime->Primary(listofprimaries[index]) ;
-	    Int_t moduleNumber ;
-	    Double_t primX, primZ ;
-	    phosgeom->ImpactOnEmc(primary->Theta(), primary->Phi(), moduleNumber, primX, primZ) ;
-	    if(moduleNumberRec == moduleNumber)
-	      distance = TMath::Sqrt((recX-primX)*(recX-primX)+(recZ-primZ)*(recZ-primZ) ) ;
-	    if(minDistance > distance)
-	      {
-		minDistance = distance ;
-		closestPrimary = listofprimaries[index] ;
-	      }
-	  }
-	  
-	  if(closestPrimary >=0 ){
-	    
-	    Int_t primaryType = gime->Primary(closestPrimary)->GetPdgCode() ;
-	    
-	    if(primaryType==22)
-	      recPhot->Fill(recZ,recX,recParticle->Energy()) ;
-// 	    else
-// 	      if(primaryType==-2112)
-// 		recNbar->Fill(recZ,recX,recParticle->Energy()) ; 
-	  }
-	}
+         //extract list of primaries: it is stored at EMC RecPoints
+         Int_t emcIndex = ((AliPHOSTrackSegment *) ts->At(recParticle->GetPHOSTSIndex()))->GetEmcIndex() ;
+         Int_t numberofprimaries ;
+         Int_t * listofprimaries  = ((AliPHOSRecPoint*) emcrp->At(emcIndex))->GetPrimaries(numberofprimaries)  ;
+         Int_t index ;
+         const TParticle * primary ;
+         Double_t distance = minDistance ;
+         
+         for ( index = 0 ; index < numberofprimaries ; index++){
+           primary = fRunLoader->Stack()->Particle(listofprimaries[index]) ;
+           Int_t moduleNumber ;
+           Double_t primX, primZ ;
+           phosgeom->ImpactOnEmc(primary->Theta(), primary->Phi(), moduleNumber, primX, primZ) ;
+           if(moduleNumberRec == moduleNumber)
+             distance = TMath::Sqrt((recX-primX)*(recX-primX)+(recZ-primZ)*(recZ-primZ) ) ;
+           if(minDistance > distance)
+             {
+              minDistance = distance ;
+              closestPrimary = listofprimaries[index] ;
+             }
+         }
+         
+         if(closestPrimary >=0 ){
+           
+           Int_t primaryType = fRunLoader->Stack()->Particle(closestPrimary)->GetPdgCode() ;
+           
+           if(primaryType==22)
+             recPhot->Fill(recZ,recX,recParticle->Energy()) ;
+//            else
+//              if(primaryType==-2112)
+//               recNbar->Fill(recZ,recX,recParticle->Energy()) ; 
+         }
+       }
       }
 
   }
+  
   //Plot made histograms
+  emcSdigits->Draw("box") ;
+  emcDigits->SetLineColor(5) ;
+  emcDigits->Draw("boxsame") ;
   emcRecPoints->SetLineColor(2) ;
   emcRecPoints->Draw("boxsame") ;
   cpvSdigits->SetLineColor(1) ;
   cpvSdigits->Draw("boxsame") ;
-  }  
-
-
   
 }
 //____________________________________________________________________________
 void AliPHOSAnalyze::Ls(){
   //lists branches and titles of PHOS-related branches of TreeR, TreeD, TreeS
   
-  AliPHOSGetter::GetInstance(ffileName.Data()) ;
+  if (fRunLoader == 0x0)
+   {
+     Error("Ls","Error Loading session");
+     return;
+   }
+  
+  AliPHOSLoader* gime = dynamic_cast<AliPHOSLoader*>(fRunLoader->GetLoader("PHOSLoader"));
+  if ( gime == 0 ) 
+   {
+     Error("Ls","Could not obtain the Loader object !"); 
+     return ;
+   } 
+
 
   Int_t ibranch;
   TObjArray * branches; 
   
-  branches = gAlice->TreeS()->GetListOfBranches() ;
+  if (gime->TreeS() == 0x0) 
+   {
+     if (gime->LoadSDigits("READ"))
+      {
+        Error("Ls","Problems with loading summable digits");
+        return;
+      }
+   }
+  branches = gime->TreeS()->GetListOfBranches() ;
  
   TString message ; 
   message  = "TreeS:\n" ;
@@ -381,7 +420,16 @@ void AliPHOSAnalyze::Ls(){
       message += "\n" ; 
     }
   }
-  branches = gAlice->TreeD()->GetListOfBranches() ;
+  if (gime->TreeD() == 0x0) 
+   {
+     if (gime->LoadDigits("READ"))
+      {
+        Error("Ls","Problems with loading digits");
+        return;
+      }
+   }
+
+  branches = gime->TreeD()->GetListOfBranches() ;
   
   message += "TreeD:\n" ;
   for(ibranch = 0;ibranch <branches->GetEntries();ibranch++){
@@ -395,7 +443,16 @@ void AliPHOSAnalyze::Ls(){
     }
   }
   
-  branches = gAlice->TreeR()->GetListOfBranches() ;
+  if (gime->TreeR() == 0x0) 
+   {
+     if (gime->LoadRecPoints("READ"))
+      {
+        Error("Ls","Problems with loading rec points");
+        return;
+      }
+   }
+
+  branches = gime->TreeR()->GetListOfBranches() ;
   
   message += "TreeR: \n" ;
   for(ibranch = 0;ibranch <branches->GetEntries();ibranch++){
@@ -414,10 +471,24 @@ void AliPHOSAnalyze::Ls(){
  void AliPHOSAnalyze::InvariantMass(const char* branchTitle)    
 {
   // Calculates Real and Mixed invariant mass distributions
-  AliPHOSGetter * gime  = AliPHOSGetter::GetInstance(ffileName.Data(),branchTitle) ;
-
+  if (fRunLoader == 0x0)
+   {
+     Error("DrawRecon","Error Loading session");
+     return;
+   }
+  
+  AliPHOSLoader* gime = dynamic_cast<AliPHOSLoader*>(fRunLoader->GetLoader("PHOSLoader"));
+  if ( gime == 0 ) 
+   {
+     Error("DrawRecon","Could not obtain the Loader object !"); 
+     return ;
+   } 
+  
+  gime->LoadRecParticles("READ");
+  
   Int_t nMixedEvents = 4 ; //# of events used for calculation of 'mixed' distribution 
-
+  
+  
   //opening file
   TFile * mfile = new TFile("invmass.root","update");
   
@@ -453,10 +524,18 @@ void AliPHOSAnalyze::Ls(){
   
   //scan over all events
   Int_t event ;
-  Int_t maxevent = (Int_t)gAlice->TreeE()->GetEntries() ; 
+  
+
+  if (fRunLoader->TreeE() == 0x0) fRunLoader->LoadHeader();
+  
+  
+  Int_t maxevent = (Int_t)fRunLoader->TreeE()->GetEntries();
   //  for(event = 0; event < gime->MaxEvent(); event++  ){
+  
+  
+  
   for(event = 0; event < maxevent; event++  ){
-    gime->Event(event,"R");  //will read only TreeR 
+    fRunLoader->GetEvent(event);  //will read only TreeR 
     
     //copy EM RecParticles to the "total" list        
     const AliPHOSRecParticle * recParticle ;
@@ -469,10 +548,10 @@ void AliPHOSAnalyze::Ls(){
 
     for(iRecParticle = 0; iRecParticle < rp->GetEntriesFast(); iRecParticle++ )
       {
-	recParticle = (AliPHOSRecParticle *) rp->At(iRecParticle) ;
-	if((recParticle->GetType() == AliPHOSFastRecParticle::kNEUTRALEMFAST)||
-	   (recParticle->GetType() == AliPHOSFastRecParticle::kNEUTRALEMSLOW))
-	  new( (*allRecParticleList)[iRecPhot++] ) AliPHOSRecParticle(*recParticle) ;
+       recParticle = (AliPHOSRecParticle *) rp->At(iRecParticle) ;
+       if((recParticle->GetType() == AliPHOSFastRecParticle::kNEUTRALEMFAST)||
+          (recParticle->GetType() == AliPHOSFastRecParticle::kNEUTRALEMSLOW))
+         new( (*allRecParticleList)[iRecPhot++] ) AliPHOSRecParticle(*recParticle) ;
       }
     
     Int_t mevent = event%nMixedEvents ; //event number in the "mixed" cicle
@@ -489,46 +568,46 @@ void AliPHOSAnalyze::Ls(){
       Int_t nCurEvent = 0 ;
       
       for(irp1 = 0; irp1 < allRecParticleList->GetEntries()-1; irp1++){
-	AliPHOSRecParticle * rp1 = (AliPHOSRecParticle *)allRecParticleList->At(irp1) ;
-	
-	for(irp2 = irp1+1; irp2 < allRecParticleList->GetEntries(); irp2++){
-	  AliPHOSRecParticle * rp2 = (AliPHOSRecParticle *)allRecParticleList->At(irp2) ;
-	  
-	  Double_t invMass ;
-	  invMass = (rp1->Energy()+rp2->Energy())*(rp1->Energy()+rp2->Energy())-
-	    (rp1->Px()+rp2->Px())*(rp1->Px()+rp2->Px())-
-	    (rp1->Py()+rp2->Py())*(rp1->Py()+rp2->Py())-
-	    (rp1->Pz()+rp2->Pz())*(rp1->Pz()+rp2->Pz()) ;
-	  
-	  if(invMass> 0)
-	    invMass = TMath::Sqrt(invMass);
-	  
-	  Double_t pt ; 
-	  pt = TMath::Sqrt((rp1->Px()+rp2->Px() )*( rp1->Px()+rp2->Px() ) + 
-			   (rp1->Py()+rp2->Py() )*( rp1->Py()+rp2->Py() ) );
-	  
-	  if(irp1 > nRecParticles[nCurEvent])
-	    nCurEvent++;
-	  
-	  if(irp2 <= nRecParticles[nCurEvent]){ //'Real' event
-	    hRealEM->Fill(invMass,pt);
-	    if((rp1->GetType() == AliPHOSFastRecParticle::kNEUTRALEMFAST)&&
-	       (rp2->GetType() == AliPHOSFastRecParticle::kNEUTRALEMFAST) )
-	      hRealPhot->Fill(invMass,pt);
-	  }
-	  else{
-	    hMixedEM->Fill(invMass,pt);
-	    if((rp1->GetType() == AliPHOSFastRecParticle::kNEUTRALEMFAST)&&
-	       (rp2->GetType() == AliPHOSFastRecParticle::kNEUTRALEMFAST) )
-	      hMixedPhot->Fill(invMass,pt);
-	  } //real-mixed
-	  
+       AliPHOSRecParticle * rp1 = (AliPHOSRecParticle *)allRecParticleList->At(irp1) ;
+       
+       for(irp2 = irp1+1; irp2 < allRecParticleList->GetEntries(); irp2++){
+         AliPHOSRecParticle * rp2 = (AliPHOSRecParticle *)allRecParticleList->At(irp2) ;
+         
+         Double_t invMass ;
+         invMass = (rp1->Energy()+rp2->Energy())*(rp1->Energy()+rp2->Energy())-
+           (rp1->Px()+rp2->Px())*(rp1->Px()+rp2->Px())-
+           (rp1->Py()+rp2->Py())*(rp1->Py()+rp2->Py())-
+           (rp1->Pz()+rp2->Pz())*(rp1->Pz()+rp2->Pz()) ;
+         
+         if(invMass> 0)
+           invMass = TMath::Sqrt(invMass);
+         
+         Double_t pt ; 
+         pt = TMath::Sqrt((rp1->Px()+rp2->Px() )*( rp1->Px()+rp2->Px() ) + 
+                        (rp1->Py()+rp2->Py() )*( rp1->Py()+rp2->Py() ) );
+         
+         if(irp1 > nRecParticles[nCurEvent])
+           nCurEvent++;
+         
+         if(irp2 <= nRecParticles[nCurEvent]){ //'Real' event
+           hRealEM->Fill(invMass,pt);
+           if((rp1->GetType() == AliPHOSFastRecParticle::kNEUTRALEMFAST)&&
+              (rp2->GetType() == AliPHOSFastRecParticle::kNEUTRALEMFAST) )
+             hRealPhot->Fill(invMass,pt);
+         }
+         else{
+           hMixedEM->Fill(invMass,pt);
+           if((rp1->GetType() == AliPHOSFastRecParticle::kNEUTRALEMFAST)&&
+              (rp2->GetType() == AliPHOSFastRecParticle::kNEUTRALEMFAST) )
+             hMixedPhot->Fill(invMass,pt);
+         } //real-mixed
+         
       } //loop over second rp
       }//loop over first rp
       
       //Make some cleanings 
       for(Int_t index = 0; index < nMixedEvents; index ++)
-	nRecParticles[index] = 0 ;
+       nRecParticles[index] = 0 ;
       iRecPhot = 0 ;              
       allRecParticleList->Clear() ;
       
@@ -576,15 +655,32 @@ void AliPHOSAnalyze::Ls(){
     hEMEnergy   = new TH2F("hEMEnergy",   "Energy of EM with primary photon",    100, 0., 5., 100, 0., 5.);
 
 
-  AliPHOSGetter * gime = AliPHOSGetter::GetInstance(ffileName.Data(),branchTitle) ;
-  const AliPHOSGeometry * phosgeom = gime->PHOSGeometry() ; 
+  if (fRunLoader == 0x0)
+   {
+     Error("DrawRecon","Error Loading session");
+     return;
+   }
+  
+  AliPHOSLoader* gime = dynamic_cast<AliPHOSLoader*>(fRunLoader->GetLoader("PHOSLoader"));
+  if ( gime == 0 ) 
+   {
+     Error("DrawRecon","Could not obtain the Loader object !"); 
+     return ;
+   } 
+
+
+  const AliPHOSGeometry * phosgeom = gime->PHOSGeometry();
 
   Int_t ievent;
-  Int_t maxevent = (Int_t)gAlice->TreeE()->GetEntries() ; 
+  Int_t maxevent = (Int_t)fRunLoader->TreeE()->GetEntries();
+
+  fRunLoader->LoadKinematics("READ");
+  gime->LoadTracks("READ");
+  
   for ( ievent=0; ievent < maxevent ; ievent++){
 
     //read the current event
-    gime->Event(ievent) ;
+    fRunLoader->GetEvent(ievent) ;
 
     const AliPHOSRecParticle * recParticle ;
     Int_t iRecParticle ;
@@ -627,36 +723,38 @@ void AliPHOSAnalyze::Ls(){
       Double_t dXmin = 0.; 
       Double_t dZmin = 0. ;
       for ( index = 0 ; index < numberofprimaries ; index++){
-	primary = gime->Primary(listofprimaries[index]) ;
-	Int_t moduleNumber ;
-	Double_t primX, primZ ;
-	phosgeom->ImpactOnEmc(primary->Theta(), primary->Phi(), moduleNumber, primX, primZ) ;
-	if(moduleNumberRec == moduleNumber) {
-	  dX = recX - primX;
-	  dZ = recZ - primZ;
-	  distance = TMath::Sqrt(dX*dX + dZ*dZ) ;
-	  if(minDistance > distance) {
-	    minDistance = distance ;
-	    dXmin = dX;
-	    dZmin = dZ;
-	    closestPrimary = listofprimaries[index] ;
-	  }
-	}
+
+       primary = fRunLoader->Stack()->Particle(listofprimaries[index]) ;
+
+       Int_t moduleNumber ;
+       Double_t primX, primZ ;
+       phosgeom->ImpactOnEmc(primary->Theta(), primary->Phi(), moduleNumber, primX, primZ) ;
+       if(moduleNumberRec == moduleNumber) {
+         dX = recX - primX;
+         dZ = recZ - primZ;
+         distance = TMath::Sqrt(dX*dX + dZ*dZ) ;
+         if(minDistance > distance) {
+           minDistance = distance ;
+           dXmin = dX;
+           dZmin = dZ;
+           closestPrimary = listofprimaries[index] ;
+         }
+       }
       }
 
       //if found primary, fill histograms
       if(closestPrimary >=0 ){
-	const TParticle * primary = gime->Primary(closestPrimary) ;
-	if(primary->GetPdgCode() == 22){
-	  hAllEnergy->Fill(primary->Energy(), recParticle->Energy()) ;
-	  if(recParticle->GetType() == AliPHOSFastRecParticle::kNEUTRALEMFAST){
-	    hPhotEnergy->Fill(primary->Energy(), recParticle->Energy() ) ; 
-	    hEMEnergy->Fill(primary->Energy(), recParticle->Energy() ) ; 
-	  }
-	  else
-	    if(recParticle->GetType() == AliPHOSFastRecParticle::kNEUTRALEMSLOW)
-	      hEMEnergy->Fill(primary->Energy(), recParticle->Energy() ) ; 
-	}
+       const TParticle * primary = fRunLoader->Stack()->Particle(closestPrimary) ;
+       if(primary->GetPdgCode() == 22){
+         hAllEnergy->Fill(primary->Energy(), recParticle->Energy()) ;
+         if(recParticle->GetType() == AliPHOSFastRecParticle::kNEUTRALEMFAST){
+           hPhotEnergy->Fill(primary->Energy(), recParticle->Energy() ) ; 
+           hEMEnergy->Fill(primary->Energy(), recParticle->Energy() ) ; 
+         }
+         else
+           if(recParticle->GetType() == AliPHOSFastRecParticle::kNEUTRALEMSLOW)
+             hEMEnergy->Fill(primary->Energy(), recParticle->Energy() ) ; 
+       }
       }
     }
   }
@@ -692,34 +790,47 @@ void AliPHOSAnalyze::PositionResolution(const char * branchTitle)
   hAllPosition = (TH2F*)pfile->Get("hAllPosition");
   if(hAllPosition == 0)
     hAllPosition  = new TH2F("hAllPosition",  
-			     "Position of any RP with primary photon",100, 0., 5., 100, 0., 5.);
+                          "Position of any RP with primary photon",100, 0., 5., 100, 0., 5.);
   hPhotPosition= (TH2F*)pfile->Get("hPhotPosition");
   if(hPhotPosition == 0)
     hPhotPosition = new TH2F("hPhotPosition", 
-			     "Position of kGAMMA with primary photon",100, 0., 5., 100, 0., 5.);
+                          "Position of kGAMMA with primary photon",100, 0., 5., 100, 0., 5.);
   hEMPosition= (TH2F*)pfile->Get("hEMPosition") ;
   if(hEMPosition == 0)
     hEMPosition   = new TH2F("hEMPosition",   
-			     "Position of EM with primary photon",    100, 0., 5., 100, 0., 5.);
-  hAllPositionX = (TH1F*)pfile->Get("hAllPositionX") ;			   
+                          "Position of EM with primary photon",    100, 0., 5., 100, 0., 5.);
+  hAllPositionX = (TH1F*)pfile->Get("hAllPositionX") ;                        
   if(hAllPositionX == 0)
     hAllPositionX = new TH1F("hAllPositionX", 
-			     "Delta X of any RP with primary photon",100, -2., 2.);
+                          "Delta X of any RP with primary photon",100, -2., 2.);
   hAllPositionZ =(TH1F*) pfile->Get("hAllPositionZ") ;
   if(hAllPositionZ == 0)
     hAllPositionZ = new TH1F("hAllPositionZ", 
-			     "Delta X of any RP with primary photon",100, -2., 2.);
+                          "Delta X of any RP with primary photon",100, -2., 2.);
 
+  if (fRunLoader == 0x0)
+   {
+     Error("DrawRecon","Error Loading session");
+     return;
+   }
+  
+  AliPHOSLoader* gime = dynamic_cast<AliPHOSLoader*>(fRunLoader->GetLoader("PHOSLoader"));
+  if ( gime == 0 ) 
+   {
+     Error("DrawRecon","Could not obtain the Loader object !"); 
+     return ;
+   } 
+  
+  if (fRunLoader->TreeE() == 0x0) fRunLoader->LoadHeader();
 
-  AliPHOSGetter * gime = AliPHOSGetter::GetInstance(ffileName.Data(),branchTitle) ;
   const AliPHOSGeometry * phosgeom = gime->PHOSGeometry() ; 
 
   Int_t ievent;
-  Int_t maxevent = (Int_t)gAlice->TreeE()->GetEntries() ; 
+  Int_t maxevent = (Int_t)fRunLoader->TreeE()->GetEntries() ; 
   for ( ievent=0; ievent < maxevent ; ievent++){
     
     //read the current event
-    gime->Event(ievent) ;
+    fRunLoader->GetEvent(ievent) ;
     TClonesArray * rp = gime->RecParticles() ;
     if(!rp) {
       Error("PositionResolution", "Event %d,  Can't find RecParticles", ievent) ;
@@ -763,38 +874,38 @@ void AliPHOSAnalyze::PositionResolution(const char * branchTitle)
       Double_t dXmin = 0.; 
       Double_t dZmin = 0. ;
       for ( index = 0 ; index < numberofprimaries ; index++){
-	primary = gime->Primary(listofprimaries[index]) ;
-	Int_t moduleNumber ;
-	Double_t primX, primZ ;
-	phosgeom->ImpactOnEmc(primary->Theta(), primary->Phi(), moduleNumber, primX, primZ) ;
-	if(moduleNumberRec == moduleNumber) {
-	  dX = recX - primX;
-	  dZ = recZ - primZ;
-	  distance = TMath::Sqrt(dX*dX + dZ*dZ) ;
-	  if(minDistance > distance) {
-	    minDistance = distance ;
-	    dXmin = dX;
-	    dZmin = dZ;
-	    closestPrimary = listofprimaries[index] ;
-	  }
-	}
+       primary = fRunLoader->Stack()->Particle(listofprimaries[index]) ;
+       Int_t moduleNumber ;
+       Double_t primX, primZ ;
+       phosgeom->ImpactOnEmc(primary->Theta(), primary->Phi(), moduleNumber, primX, primZ) ;
+       if(moduleNumberRec == moduleNumber) {
+         dX = recX - primX;
+         dZ = recZ - primZ;
+         distance = TMath::Sqrt(dX*dX + dZ*dZ) ;
+         if(minDistance > distance) {
+           minDistance = distance ;
+           dXmin = dX;
+           dZmin = dZ;
+           closestPrimary = listofprimaries[index] ;
+         }
+       }
       }
       
       //if found primary, fill histograms
       if(closestPrimary >=0 ){
-	const TParticle * primary = gime->Primary(closestPrimary) ;
-	if(primary->GetPdgCode() == 22){
-	  hAllPosition->Fill(primary->Energy(), minDistance) ;
-	  hAllPositionX->Fill(primary->Energy(), dX) ;
-	  hAllPositionZ->Fill(primary->Energy(), dZ) ;
-	  if(recParticle->GetType() == AliPHOSFastRecParticle::kNEUTRALEMFAST){
-	    hPhotPosition->Fill(primary->Energy(), minDistance ) ; 
-	    hEMPosition->Fill(primary->Energy(), minDistance ) ; 
-	  }
-	  else
-	    if(recParticle->GetType() == AliPHOSFastRecParticle::kNEUTRALEMSLOW)
-	      hEMPosition->Fill(primary->Energy(), minDistance ) ; 
-	}
+       const TParticle * primary = fRunLoader->Stack()->Particle(closestPrimary) ;
+       if(primary->GetPdgCode() == 22){
+         hAllPosition->Fill(primary->Energy(), minDistance) ;
+         hAllPositionX->Fill(primary->Energy(), dX) ;
+         hAllPositionZ->Fill(primary->Energy(), dZ) ;
+         if(recParticle->GetType() == AliPHOSFastRecParticle::kNEUTRALEMFAST){
+           hPhotPosition->Fill(primary->Energy(), minDistance ) ; 
+           hEMPosition->Fill(primary->Energy(), minDistance ) ; 
+         }
+         else
+           if(recParticle->GetType() == AliPHOSFastRecParticle::kNEUTRALEMSLOW)
+             hEMPosition->Fill(primary->Energy(), minDistance ) ; 
+       }
       }
     }
   }
@@ -919,14 +1030,27 @@ void AliPHOSAnalyze::Contamination(const char* RecPointsTitle){
 
 
 
-  AliPHOSGetter * gime = AliPHOSGetter::GetInstance(ffileName.Data(),RecPointsTitle) ;
+  if (fRunLoader == 0x0)
+   {
+     Error("DrawRecon","Error Loading session");
+     return;
+   }
+  
+  AliPHOSLoader* gime = dynamic_cast<AliPHOSLoader*>(fRunLoader->GetLoader("PHOSLoader"));
+  if ( gime == 0 ) 
+   {
+     Error("DrawRecon","Could not obtain the Loader object !"); 
+     return ;
+   } 
+  
+  if (fRunLoader->TreeE() == 0x0) fRunLoader->LoadHeader();
   const AliPHOSGeometry * phosgeom = gime->PHOSGeometry() ; 
   
   Int_t ievent;
-  Int_t maxevent = (Int_t)gAlice->TreeE()->GetEntries() ; 
+  Int_t maxevent = (Int_t)fRunLoader->TreeE()->GetEntries() ; 
   for ( ievent=0; ievent < maxevent ; ievent++){
     
-    gime->Event(ievent) ;
+    fRunLoader->GetEvent(ievent) ;
     
     TClonesArray * rp = gime->RecParticles() ;
     if(!rp) {
@@ -948,17 +1072,17 @@ void AliPHOSAnalyze::Contamination(const char* RecPointsTitle){
     //=========== Make spectrum of the primary photons
     const TParticle * primary ;
     Int_t iPrimary ;
-    for( iPrimary = 0 ; iPrimary < gime->NPrimaries() ; iPrimary++){
-      primary = gime->Primary(iPrimary) ;
+    for( iPrimary = 0 ; iPrimary < fRunLoader->Stack()->GetNprimary() ; iPrimary++){
+      primary = fRunLoader->Stack()->Particle(iPrimary) ;
       Int_t primaryType = primary->GetPdgCode() ;
       if( primaryType == 22 ) {
-	//check, if photons folls onto PHOS
-	Int_t moduleNumber ;
-	Double_t primX, primZ ;
-	phosgeom->ImpactOnEmc(primary->Theta(), primary->Phi(), moduleNumber, primX, primZ) ;
-	if(moduleNumber)
-	  hPrimary->Fill(primary->Energy()) ;
-	
+       //check, if photons folls onto PHOS
+       Int_t moduleNumber ;
+       Double_t primX, primZ ;
+       phosgeom->ImpactOnEmc(primary->Theta(), primary->Phi(), moduleNumber, primX, primZ) ;
+       if(moduleNumber)
+         hPrimary->Fill(primary->Energy()) ;
+       
       }
       
     }
@@ -971,7 +1095,7 @@ void AliPHOSAnalyze::Contamination(const char* RecPointsTitle){
       //fill histo spectrum of all RecParticles
       hAllRP->Fill(CorrectedEnergy(recParticle->Energy())) ;
       
-      //==========find the closest primary	
+      //==========find the closest primary       
       Int_t moduleNumberRec ;
       Double_t recX, recZ ;
       phosgeom->ImpactOnEmc(recParticle->Theta(), recParticle->Phi(), moduleNumberRec, recX, recZ) ;
@@ -990,105 +1114,105 @@ void AliPHOSAnalyze::Contamination(const char* RecPointsTitle){
       Double_t dXmin = 0.; 
       Double_t dZmin = 0. ;
       for ( index = 0 ; index < numberofprimaries ; index++){
-	primary = gime->Primary(listofprimaries[index]) ;
-	Int_t moduleNumber ;
-	Double_t primX, primZ ;
-	phosgeom->ImpactOnEmc(primary->Theta(), primary->Phi(), moduleNumber, primX, primZ) ;
-	if(moduleNumberRec == moduleNumber) {
-	  dX = recX - primX;
-	  dZ = recZ - primZ;
-	  distance = TMath::Sqrt(dX*dX + dZ*dZ) ;
-	  if(minDistance > distance) {
-	    minDistance = distance ;
-	    dXmin = dX;
-	    dZmin = dZ;
-	    closestPrimary = listofprimaries[index] ;
-	  }
-	}
+       primary = fRunLoader->Stack()->Particle(listofprimaries[index]) ;
+       Int_t moduleNumber ;
+       Double_t primX, primZ ;
+       phosgeom->ImpactOnEmc(primary->Theta(), primary->Phi(), moduleNumber, primX, primZ) ;
+       if(moduleNumberRec == moduleNumber) {
+         dX = recX - primX;
+         dZ = recZ - primZ;
+         distance = TMath::Sqrt(dX*dX + dZ*dZ) ;
+         if(minDistance > distance) {
+           minDistance = distance ;
+           dXmin = dX;
+           dZmin = dZ;
+           closestPrimary = listofprimaries[index] ;
+         }
+       }
       }
       
       //===========define the "type" of closest primary
       if(closestPrimary >=0 ){
-	Int_t primaryCode = -1;
-	const TParticle * primary = gime->Primary(closestPrimary) ;
-	Int_t primaryType = primary->GetPdgCode() ;
-	if(primaryType == 22) // photon ?
-	  primaryCode = 0 ;
-	else
-	  if(primaryType == 2112) // neutron
-	    primaryCode = 1 ; 
-	  else
-	    if(primaryType == -2112) // Anti neutron
-	      primaryCode = 2 ;
-	    else
-	      if(primaryType == -2122) //Anti proton
-		primaryCode = 4 ;
-	      else {
-		TParticle tempo(*primary) ; 
-		if(tempo.GetPDG()->Charge())
-		  primaryCode = 3 ;
-	      }
+       Int_t primaryCode = -1;
+       const TParticle * primary = fRunLoader->Stack()->Particle(closestPrimary) ;
+       Int_t primaryType = primary->GetPdgCode() ;
+       if(primaryType == 22) // photon ?
+         primaryCode = 0 ;
+       else
+         if(primaryType == 2112) // neutron
+           primaryCode = 1 ; 
+         else
+           if(primaryType == -2112) // Anti neutron
+             primaryCode = 2 ;
+           else
+             if(primaryType == -2122) //Anti proton
+              primaryCode = 4 ;
+             else {
+              TParticle tempo(*primary) ; 
+              if(tempo.GetPDG()->Charge())
+                primaryCode = 3 ;
+             }
 
-	//==========Now look at the type of RecParticle
-	Float_t energy = CorrectedEnergy(recParticle->Energy()) ;
-	if(recParticle->GetType() == AliPHOSFastRecParticle::kNEUTRALEMFAST){
-	  hPhot->Fill(energy ) ; 	
-	  switch(primaryCode){
-	  case 0:
-	    hPhotReg->Fill(energy ) ; 
-	    break ;
-	  case 1:
-	    hNReg->Fill(energy ) ; 
-	    break ;
-	  case 2:
-	    hNBarReg->Fill(energy ) ; 
-	    break ;
-	  case 3:
-	    hChargedReg->Fill(energy ) ;
-	    break ;
-	  case 4:
-	    hPbarReg->Fill(energy ) ;
-	    break ;
-	  default:
-	    break ;
-	  }
-	}
-	if((recParticle->GetType() == AliPHOSFastRecParticle::kNEUTRALEMFAST)||
-	   (recParticle->GetType() == AliPHOSFastRecParticle::kCHARGEDEMFAST)||
-	   (recParticle->GetType() == AliPHOSFastRecParticle::kNEUTRALEMSLOW)||
-	   (recParticle->GetType() == AliPHOSFastRecParticle::kCHARGEDEMSLOW) ){ //with EM shower
-	  hShape->Fill(energy ) ;
-	  switch(primaryCode){
-	  case 0:
-	    hPhotEM->Fill(energy ) ; 
-	    break ;
-	  case 1:
-	    hNEM->Fill(energy ) ; 
-	    break ;
-	  case 2:
-	    hNBarEM->Fill(energy ) ; 
-	    break ;
-	  case 3:
-	    hChargedEM->Fill(energy ) ; 
-	    break ;
-	  case 4:
-	    hPbarEM->Fill(energy ) ; 
-	    break ;
-	  default:
-	    break ;
-	  }
-	}
-	
-	if((recParticle->GetType() == AliPHOSFastRecParticle::kNEUTRALEMFAST)||
-	   (recParticle->GetType() == AliPHOSFastRecParticle::kNEUTRALHAFAST) ||
-	   (recParticle->GetType() == AliPHOSFastRecParticle::kNEUTRALEMSLOW) ||
-	   (recParticle->GetType() == AliPHOSFastRecParticle::kNEUTRALHASLOW) ) //nuetral
-	  hVeto->Fill(energy ) ;
-	
-	//fill number of primaries identified as ...
-	if(primaryCode >= 0) // Primary code defined
-	  counter[recParticle->GetType()][primaryCode]++ ; 
-	
+       //==========Now look at the type of RecParticle
+       Float_t energy = CorrectedEnergy(recParticle->Energy()) ;
+       if(recParticle->GetType() == AliPHOSFastRecParticle::kNEUTRALEMFAST){
+         hPhot->Fill(energy ) ;        
+         switch(primaryCode){
+         case 0:
+           hPhotReg->Fill(energy ) ; 
+           break ;
+         case 1:
+           hNReg->Fill(energy ) ; 
+           break ;
+         case 2:
+           hNBarReg->Fill(energy ) ; 
+           break ;
+         case 3:
+           hChargedReg->Fill(energy ) ;
+           break ;
+         case 4:
+           hPbarReg->Fill(energy ) ;
+           break ;
+         default:
+           break ;
+         }
+       }
+       if((recParticle->GetType() == AliPHOSFastRecParticle::kNEUTRALEMFAST)||
+          (recParticle->GetType() == AliPHOSFastRecParticle::kCHARGEDEMFAST)||
+          (recParticle->GetType() == AliPHOSFastRecParticle::kNEUTRALEMSLOW)||
+          (recParticle->GetType() == AliPHOSFastRecParticle::kCHARGEDEMSLOW) ){ //with EM shower
+         hShape->Fill(energy ) ;
+         switch(primaryCode){
+         case 0:
+           hPhotEM->Fill(energy ) ; 
+           break ;
+         case 1:
+           hNEM->Fill(energy ) ; 
+           break ;
+         case 2:
+           hNBarEM->Fill(energy ) ; 
+           break ;
+         case 3:
+           hChargedEM->Fill(energy ) ; 
+           break ;
+         case 4:
+           hPbarEM->Fill(energy ) ; 
+           break ;
+         default:
+           break ;
+         }
+       }
+       
+       if((recParticle->GetType() == AliPHOSFastRecParticle::kNEUTRALEMFAST)||
+          (recParticle->GetType() == AliPHOSFastRecParticle::kNEUTRALHAFAST) ||
+          (recParticle->GetType() == AliPHOSFastRecParticle::kNEUTRALEMSLOW) ||
+          (recParticle->GetType() == AliPHOSFastRecParticle::kNEUTRALHASLOW) ) //nuetral
+         hVeto->Fill(energy ) ;
+       
+       //fill number of primaries identified as ...
+       if(primaryCode >= 0) // Primary code defined
+         counter[recParticle->GetType()][primaryCode]++ ; 
+       
       }
       
     } // no closest primary found
@@ -1164,6 +1288,3 @@ void AliPHOSAnalyze::Contamination(const char* RecPointsTitle){
       totalInd ) ;
 
 }
-
-
-

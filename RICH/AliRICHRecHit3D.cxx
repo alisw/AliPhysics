@@ -13,21 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-  $Log$
-  Revision 1.2  2001/05/10 12:33:24  jbarbosa
-  Added mean radius data member.
-
-  Revision 1.1  2000/11/01 15:31:56  jbarbosa
-  New rec. point object for 3D Hough reconstruction.
-
-  Revision 1.2  2000/06/30 16:36:58  dibari
-  Several new data members for Bari reconstruction
-
-  Revision 1.1  2000/06/12 15:28:06  jbarbosa
-  Cleaned up version.
-
-*/
+/* $Id$ */
 
 
 #include "AliRICHRecHit3D.h"

@@ -13,34 +13,8 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.9  2002/10/14 14:57:32  hristov
-Merging the VirtualMC branch to the main development branch (HEAD)
+/* $Id$ */
 
-Revision 1.7.6.1  2002/07/24 10:07:52  alibrary
-Updating VirtualMC
-
-Revision 1.7  2001/11/02 15:37:26  hristov
-Digitizer class created. Code cleaning and bug fixes (J.Chudoba)
-
-Revision 1.5  2001/10/23 13:03:35  hristov
-The access to several data members was changed from public to protected. The digitisation was adapted to the multi-event case (J.Chudoba)
-
-Revision 1.4  2001/10/21 18:31:24  hristov
-Several pointers were set to zero in the default constructors to avoid memory management problems
-
-Revision 1.3  2001/05/16 14:57:20  alibrary
-New files for folders and Stack
-
-Revision 1.2  2001/03/14 18:16:08  jbarbosa
-Corrected bug (more to correct).
-File "points.dat" is no longer created.
-
-Revision 1.1  2001/02/27 22:13:34  jbarbosa
-Implementing merger class.
-
-*/
 #include <Riostream.h> 
 
 #include <TTree.h> 
@@ -228,7 +202,7 @@ void AliRICHMerger::Digitise(Int_t nev, Int_t flag)
     
   fSignal = kTRUE;
   fCounter = 0;
-  TTree *treeH = gAlice->TreeH();
+  TTree *treeH = pRICH->TreeH();
   Int_t ntracks =(Int_t) treeH->GetEntries();
   for (fTrack=0; fTrack<ntracks; fTrack++) {
     gAlice->ResetHits();

@@ -4,15 +4,16 @@
  * See cxx source for full Copyright notice                               */
 
 #include "AliDigitizer.h"
-class TClonesArray;
+
 class AliRunDigitizer;
+class TClonesArray;
 class AliFMDDigitizer : public AliDigitizer {
  public:
   
   AliFMDDigitizer();
   AliFMDDigitizer(AliRunDigitizer * manager);
   virtual ~AliFMDDigitizer();
-  virtual  Bool_t Init()  {return kTRUE;} ///???????????
+  virtual Bool_t Init();
    
   
   // Do the main work

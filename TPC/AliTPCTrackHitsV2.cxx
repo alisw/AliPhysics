@@ -13,24 +13,8 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.6  2002/10/14 14:57:43  hristov
-Merging the VirtualMC branch to the main development branch (HEAD)
+/* $Id$ */
 
-Revision 1.4.6.1  2002/07/26 12:12:55  alibrary
-Updating VirtualMC
-
-Revision 1.5  2002/07/25 16:56:52  hristov
-fSize set to zero in Clear(). The size of the array is checked in First() (M.Ivanov)
-
-Revision 1.4  2002/03/01 10:19:06  hristov
-Additional protection (M.Ivanov)
-
-Revision 1.1  2002/01/21 17:14:21  kowal2
-New track hits using root containers.
-
-*/
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
 //  Time Projection Chamber  track hits object                                //

@@ -14,6 +14,8 @@
 // --- ROOT system ---
 
 #include "TTask.h" 
+#include "AliConfig.h"
+
 class TFormula ;
 class TClonesArray ;
 
@@ -30,13 +32,15 @@ class AliEMCALPID : public TTask {
  public:
 
   AliEMCALPID() ;          // ctor            
-  AliEMCALPID(const char* headerFile,const char * name, const Bool_t toSplit) ;
+  AliEMCALPID(const TString alirunFileName, const TString eventFolderName = AliConfig::fgkDefaultEventFolderName) ;
+  AliEMCALPID(const AliEMCALPID & pid) {;} 
   virtual ~AliEMCALPID() ; // dtor
 
   virtual void Exec(Option_t * option) { Warning("Exec", "not defined" ) ; }
   virtual const Int_t GetRecParticlesInRun()  const { Warning("GetRecParticlesInRun", "not defined" ) ; return 0 ;} 
   virtual void Print(Option_t * option) const { Warning("Print", "not defined" ) ;}
-  virtual void SetCpvtoEmcDistanceCut(Float_t Cluster_En, TString Eff_Pur,Float_t cut ) { Warning("SetCpvtoEmcDistanceCut", "not defined" ) ;}
+  void   SetEventFolderName(TString name) { fEventFolderName = name ; }
+  virtual void SetPREtoECADistanceCut(Float_t Cluster_En, TString Eff_Pur,Float_t cut ) { Warning("SetCpvtoEmcDistanceCut", "not defined" ) ;}
   virtual void SetTimeGate(Float_t Cluster_En, TString Eff_Pur, Float_t gate) { Warning("SetTimeGate", "not defined" ) ; }
   virtual const char * Version() const { Warning("Version", "not defined" ) ; return 0 ; }  
   virtual void WriteRecParticles(Int_t event) { Warning("WriteRecParticles", "not defined" ) ; }
@@ -45,10 +49,9 @@ private:
   virtual void Init() { Warning("Init", "not defined" ) ; } 
 
 protected:
-
-  TFile * fSplitFile ;             //! file in which RecParticles will eventually be stored
-  Bool_t  fToSplit   ;             //! do we in the split mode  
-  ClassDef(AliEMCALPID,1)  // Particle Identifier algorithm (base class)
+  TString fEventFolderName ;  // event folder name
+ 
+  ClassDef(AliEMCALPID,2)  // Particle Identifier algorithm (base class)
 
 } ;
 

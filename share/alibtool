@@ -1,10 +1,16 @@
 #!/bin/sh
+
+# $Id$
+
 #############################################################################
 # alibtool - a shell script to help makeing modules for AliRoot Makefile
 #############################################################################
 #
 # modification history
 # $Log$
+# Revision 1.5  2003/05/02 15:11:52  hristov
+# Changes to avoid warnings (I.Hrivnacova)
+#
 # Revision 1.4  2002/10/14 14:57:45  hristov
 # Merging the VirtualMC branch to the main development branch (HEAD)
 #

@@ -17,13 +17,13 @@
 
 //_________________________________________________________________________
 // Class for a QA checkable that is an Int  
-// To be used with AliPHOSChecker
-// or any derived class
-// ..
+//
 //*-- Author :  Yves Schutz (SUBATECH) 
 //////////////////////////////////////////////////////////////////////////////
 
 // --- ROOT system ---
+
+#include "TClass.h"
 
 // --- Standard library ---
 
@@ -42,13 +42,6 @@ ClassImp(AliPHOSQAIntCheckable)
   fValue = 0 ; 
 }
 
-//____________________________________________________________________________ 
-  AliPHOSQAIntCheckable::AliPHOSQAIntCheckable(AliPHOSQAIntCheckable & ich) : AliPHOSQAVirtualCheckable(ich.GetName()) 
-{
-  //ctor initial value is zero
-  fType  = "I" ; 
-  fValue = ich.fValue ; 
-}
 
 //____________________________________________________________________________ 
   AliPHOSQAIntCheckable::~AliPHOSQAIntCheckable()

@@ -13,39 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.11  2001/11/14 10:50:46  cblume
-Changes in digits IO. Add merging of summable digits
-
-Revision 1.10  2001/05/31 16:53:26  alibrary
-Correction to the destructor
-
-Revision 1.9  2001/05/21 16:45:47  hristov
-Last minute changes (C.Blume)
-
-Revision 1.8  2001/01/26 19:56:57  hristov
-Major upgrade of AliRoot code
-
-Revision 1.7  2000/12/20 13:00:45  cblume
-Modifications for the HP-compiler
-
-Revision 1.6  2000/12/12 10:20:10  cblume
-Initialize fSepctrum = 0 in ctors
-
-Revision 1.5  2000/10/15 23:40:01  cblume
-Remove AliTRDconst
-
-Revision 1.4  2000/10/06 16:49:46  cblume
-Made Getters const
-
-Revision 1.3.2.1  2000/09/18 13:45:30  cblume
-New class AliTRDsim that simulates TR photons
-
-Revision 1.2  1999/09/29 09:24:35  fca
-Introduction of the Copyright and cvs Log
-
-*/
+/* $Id$ */
 
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //

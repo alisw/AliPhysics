@@ -11,6 +11,8 @@
 // --- ROOT system ---
 
 #include "TTask.h" 
+#include "AliConfig.h"
+
 class TFile ; 
 
 // --- Standard library ---
@@ -22,13 +24,9 @@ class AliPHOSClusterizer : public TTask {
 public:
 
   AliPHOSClusterizer() ;        // default ctor
-  AliPHOSClusterizer(const char * headerFile, const char * name, const Bool_t toSplit) ;
-  AliPHOSClusterizer(const AliPHOSClusterizer & clusterizer) {
-    // copy ctor: no implementation yet
-    Fatal("cpy ctor", "not implemented") ;
-  }
+  AliPHOSClusterizer(const TString alirunFileName, const TString eventFolderName = AliConfig::fgkDefaultEventFolderName) ;
+  AliPHOSClusterizer(const AliPHOSClusterizer & clusterizer) { ; }
   virtual ~AliPHOSClusterizer() ; // dtor
-
   virtual Float_t GetEmcClusteringThreshold()const {Warning("GetEmcClusteringThreshold", "Not Defined" ) ; return 0. ; }  
   virtual Float_t GetEmcLocalMaxCut()const {Warning("GetEmcLocalMaxCut", "Not Defined" ) ; return 0. ; } 
   virtual Float_t GetEmcLogWeight()const {Warning("GetEmcLogWeight", "Not Defined" ) ; return 0. ; } 
@@ -41,7 +39,7 @@ public:
   virtual const char *  GetDigitsBranch() const{Warning("GetDigitsBranch", "Not Defined" ) ; return 0 ; }   ;
 
   virtual void MakeClusters() {Warning("MakeClusters", "Not Defined" ) ; } 
-  virtual void Print(Option_t * option)const {Warning("Print", "Not Defined" ) ; } 
+  virtual void Print()const {Warning("Print", "Not Defined" ) ; } 
 
   virtual void SetEmcClusteringThreshold(Float_t cluth) {Warning("SetEmcClusteringThreshold", "Not Defined" ) ; } 
   virtual void SetEmcLocalMaxCut(Float_t cut) {Warning("SetEmcLocalMaxCut", "Not Defined" ) ; } 
@@ -53,19 +51,18 @@ public:
   virtual void SetCpvLogWeight(Float_t w) {Warning("SetCpvLogWeight", "Not Defined" ) ;  } 
   virtual void SetDigitsBranch(const char * title) {Warning("SetDigitsBranch", "Not Defined" ) ; }  
   virtual void SetRecPointsBranch(const char *title) {Warning("SetRecPointsBranch", "Not Defined" ) ; } 
-  virtual void SetUnfolding(Bool_t toUnfold ){Warning("SetUnfolding", "Not Defined" ) ;}  
-  AliPHOSClusterizer & operator = (const AliPHOSClusterizer & rvalue)  {
-    // assignement operator requested by coding convention but not needed
-    Fatal("operator =", "not implemented") ; return *this ; 
-  }
+  virtual void SetUnfolding(Bool_t toUnfold ){Warning("SetUnfolding", "Not Defined" ) ;}
+  void   SetEventFolderName(TString name) { fEventFolderName = name ; }
+
+  AliPHOSClusterizer & operator = (const AliPHOSClusterizer & rvalue)  {return *this ;} 
+ 
   virtual const char * Version() const {Warning("Version", "Not Defined" ) ; return 0 ; }  
 
 protected:
+  TString fEventFolderName ;  // event folder name
 
-  TFile * fSplitFile ;             //! file in which RecPoints will eventually be stored
-  Bool_t  fToSplit ;               //! Should we write to splitted file
 
-  ClassDef(AliPHOSClusterizer,2)  // Clusterization algorithm class 
+  ClassDef(AliPHOSClusterizer,3)  // Clusterization algorithm class 
 
 } ;
 

@@ -13,17 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-// AliMUONv3 Addapted for AliMUONv1 
-// This was the last revision of AliMUONv1
-// $Log$
-// Revision 1.1  2003/02/07 15:40:53  morsch
-// New class for testing new Stepmanager added. (G. Martinez)
-//
-// Revision 1.40  2003/01/28 13:21:06  morsch
-// Improved response simulation for station 1.
-// (M. Mac Cormick, I. Hrivnacova, D. Guez)
-//
-// Gines Martinez (Subatech) jan 2003
+/* $Id$ */
 
 /////////////////////////////////////////////////////////
 //  Manager and hits classes for set:MUON version 2    //

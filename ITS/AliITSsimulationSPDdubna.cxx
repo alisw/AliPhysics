@@ -15,6 +15,12 @@
 
 /*
 $Log$
+Revision 1.3.6.2  2003/05/19 16:24:40  hristov
+Merging with v3-09-09 (partial, AliITCclustererV2 is excluded from compilation and has to be adapted to NewIO, AliITStrackerV2 needs additional changes)
+
+Revision 1.10  2003/01/22 01:58:38  nilsen
+Small patch to allow new Dubna modle to reproduce BS model.
+
 Revision 1.9  2002/10/22 14:45:45  alibrary
 Introducing Riostream.h
 

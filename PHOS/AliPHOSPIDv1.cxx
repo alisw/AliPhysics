@@ -94,11 +94,9 @@
 
 // --- Standard library ---
 
-#include <Riostream.h>
 
 // --- AliRoot header files ---
 
-#include "AliRun.h"
 #include "AliGenerator.h"
 #include "AliPHOS.h"
 #include "AliPHOSPIDv1.h"
@@ -118,53 +116,41 @@ AliPHOSPIDv1::AliPHOSPIDv1():AliPHOSPID()
  
   InitParameters() ; 
   fDefaultInit = kTRUE ; 
-
 }
 
 //____________________________________________________________________________
-AliPHOSPIDv1::AliPHOSPIDv1(AliPHOSPIDv1 & pid ):AliPHOSPID(pid)
+AliPHOSPIDv1::AliPHOSPIDv1(const AliPHOSPIDv1 & pid ):AliPHOSPID(pid)
 { 
   // ctor
   InitParameters() ; 
-
   Init() ;
-  fDefaultInit = kFALSE ; 
 
 }
 
 //____________________________________________________________________________
-AliPHOSPIDv1::AliPHOSPIDv1(const char * headerFile,const char * name, const Bool_t toSplit)
-:AliPHOSPID(headerFile, name,toSplit)
+AliPHOSPIDv1::AliPHOSPIDv1(const TString alirunFileName, const TString eventFolderName):AliPHOSPID(alirunFileName, eventFolderName)
 { 
   //ctor with the indication on where to look for the track segments
  
   InitParameters() ; 
-
   Init() ;
   fDefaultInit = kFALSE ; 
-
 }
 
 //____________________________________________________________________________
 AliPHOSPIDv1::~AliPHOSPIDv1()
 { 
   // dtor
-  // fDefaultInit = kTRUE if PID created by default ctor (to get just the parameters)
 
   delete [] fX ;       // Principal input 
   delete [] fPPhoton ; // Photon Principal components
   delete [] fPPi0 ;    // Pi0 Principal components
-
-  if (!fDefaultInit)
-    fSplitFile = 0 ; 
 }
-
 //____________________________________________________________________________
 const TString AliPHOSPIDv1::BranchName() const 
 {  
-  TString branchName(GetName() ) ;
-  branchName.Remove(branchName.Index(Version())-1) ;
-  return branchName ;
+
+  return GetName() ;
 }
  
 //____________________________________________________________________________
@@ -173,42 +159,10 @@ void AliPHOSPIDv1::Init()
   // Make all memory allocations that are not possible in default constructor
   // Add the PID task to the list of PHOS tasks
 
-  if ( strcmp(GetTitle(), "") == 0 )
-    SetTitle("galice.root") ;
+  AliPHOSGetter * gime = AliPHOSGetter::Instance(GetTitle(), fEventFolderName.Data()) ; 
 
-  TString branchname(GetName()) ;
-  branchname.Remove(branchname.Index(Version())-1) ;    
-  AliPHOSGetter * gime = AliPHOSGetter::GetInstance(GetTitle(),branchname.Data(),fToSplit ) ; 
-
-  if ( gime == 0 ) {
-    Error("Init", "Could not obtain the Getter object !" ) ;  
-    return ;
-  } 
-
-  fSplitFile = 0 ;
-  if(fToSplit){
-    //First - extract full path if necessary
-    TString fileName(GetTitle()) ;
-    Ssiz_t islash = fileName.Last('/') ;
-    if(islash<fileName.Length())
-      fileName.Remove(islash+1,fileName.Length()) ;
-    else
-      fileName="" ;
-    fileName+="PHOS.RecData." ;
-    if((strcmp(branchname.Data(),"Default")!=0)&&(strcmp(branchname.Data(),"")!=0)){
-      fileName+=branchname.Data() ;
-      fileName+="." ;
-    }
-    fileName+="root" ;
-    fSplitFile = static_cast<TFile*>(gROOT->GetFile(fileName.Data()));   
-    if(!fSplitFile)
-      fSplitFile =  TFile::Open(fileName.Data(),"update") ;
-  }
-  
-  gime->PostPID(this) ;
-  // create a folder on the white board //YSAlice/WhiteBoard/RecParticles/PHOS/recparticlesName
-  gime->PostRecParticles(branchname) ; 
-  
+  if ( !gime->PID() ) 
+    gime->PostPID(this) ;
 }
 
 //____________________________________________________________________________
@@ -218,13 +172,50 @@ void AliPHOSPIDv1::InitParameters()
   fRecParticlesInRun = 0 ; 
   fNEvent            = 0 ;            
   fRecParticlesInRun = 0 ;
-  TString pidName( GetName()) ;
-  if (pidName.IsNull() ) 
-    pidName = "Default" ; 
-  pidName.Append(":") ; 
-  pidName.Append(Version()) ; 
-  SetName(pidName) ;
   SetParameters() ; // fill the parameters matrix from parameters file
+}
+
+//________________________________________________________________________
+void  AliPHOSPIDv1::Exec(Option_t * option) 
+{
+  //Steering method
+  
+
+  if(strstr(option,"tim"))
+    gBenchmark->Start("PHOSPID");
+  
+  if(strstr(option,"print")) {
+    Print() ; 
+    return ; 
+  }
+
+
+  AliPHOSGetter * gime = AliPHOSGetter::Instance() ; 
+ 
+  Int_t nevents = gime->MaxEvent() ;       
+  Int_t ievent ;
+
+
+  for(ievent = 0; ievent < nevents; ievent++){
+    gime->Event(ievent,"TR") ;
+    if(gime->TrackSegments() && //Skip events, where no track segments made
+       gime->TrackSegments()->GetEntriesFast()) {
+      MakeRecParticles() ;
+      WriteRecParticles(ievent);
+      if(strstr(option,"deb"))
+	PrintRecParticles(option) ;
+      //increment the total number of rec particles per run 
+      fRecParticlesInRun += gime->RecParticles()->GetEntriesFast() ; 
+    }
+  }
+  if(strstr(option,"tim")){
+    gBenchmark->Stop("PHOSPID");
+    Info("Exec", "took %f seconds for PID %f seconds per event", 
+	 gBenchmark->GetCpuTime("PHOSPID"),  
+	 gBenchmark->GetCpuTime("PHOSPID")/nevents) ;
+  }
+ 
+  Unload();
 }
 
 //____________________________________________________________________________
@@ -252,6 +243,22 @@ const Float_t  AliPHOSPIDv1::GetParameterCalibration(Int_t i) const
 }
 
 //____________________________________________________________________________
+const Float_t  AliPHOSPIDv1::GetCalibratedEnergy(const Float_t e) const
+{
+//      It calibrates Energy depending on the recpoint energy.
+//      The energy of the reconstructed cluster is corrected with 
+//      the formula A + B* E  + C* E^2, whose parameters where obtained 
+//      through the study of the reconstructed energy distribution of 
+//      monoenergetic photons.
+ 
+  Float_t p[]={0.,0.,0.};
+  for (Int_t i=0; i<3; i++) p[i] = GetParameterCalibration(i);
+  Float_t enerec = p[0] +  p[1]*e + p[2]*e*e;
+  return enerec ;
+
+}
+
+//____________________________________________________________________________
 const Float_t  AliPHOSPIDv1::GetParameterCpv2Emc(Int_t i, TString axis) const 
 {
   // Get the i-th parameter "CPV-EMC distance" for the specified axis
@@ -265,6 +272,65 @@ const Float_t  AliPHOSPIDv1::GetParameterCpv2Emc(Int_t i, TString axis) const
     else Error("GetParameterCpv2Emc","Invalid axis name: %s",axis.Data());
   }
   return  param;
+}
+
+//____________________________________________________________________________
+const Float_t  AliPHOSPIDv1::GetCpv2EmcDistanceCut(TString axis, Float_t e) const
+{
+  // Get CpvtoEmcDistance Cut depending on the cluster energy, axis and 
+  // Purity-Efficiency point 
+
+  axis.ToLower();
+  Float_t p[]={0.,0.,0.};
+  for (Int_t i=0; i<3; i++) p[i] = GetParameterCpv2Emc(i,axis);
+  Float_t sig = p[0] + TMath::Exp(p[1] - p[2]*e);
+  return sig;
+}
+
+//____________________________________________________________________________
+const Float_t  AliPHOSPIDv1::GetEllipseParameter(TString particle, TString param, Float_t e) const 
+{
+  // Calculates the parameter param of the ellipse
+
+  particle.ToLower();
+  param.   ToLower();
+  Float_t p[4]={0.,0.,0.,0.};
+  Float_t value = 0.0;
+  for (Int_t i=0; i<4; i++) p[i] = GetParameterToCalculateEllipse(particle,param,i);
+  if (particle == "photon") {
+    if      (param.Contains("a"))  e = TMath::Min((Double_t)e,70.);
+    else if (param.Contains("b"))  e = TMath::Min((Double_t)e,70.);
+    else if (param.Contains("x0")) e = TMath::Max((Double_t)e,1.1);
+  }
+
+  value = p[0]/TMath::Sqrt(e) + p[1]*e + p[2]*e*e + p[3];
+  return value;
+}
+
+//_____________________________________________________________________________
+const Float_t  AliPHOSPIDv1::GetParameterPhotonBoundary (Int_t i) const
+{ 
+  // Get the parameter "i" to calculate the boundary on the moment M2x
+  // for photons at high p_T
+  Float_t param = 0;
+  if (i>3 || i<0)
+    Error("GetParameterPhotonBoundary","Wrong parameter number: %d\n",i);
+  else
+    param = (*fParameters)(14,i) ;
+  return param;
+}
+
+//____________________________________________________________________________
+const Float_t  AliPHOSPIDv1::GetParameterPi0Boundary (Int_t i) const
+{ 
+  // Get the parameter "i" to calculate the boundary on the moment M2x
+  // for pi0 at high p_T
+  Float_t param = 0;
+  if (i>2 || i<0)
+    Error("GetParameterPi0Boundary","Wrong parameter number: %d\n",i);
+  else
+    param = (*fParameters)(15,i) ;
+  return param;
 }
 
 //____________________________________________________________________________
@@ -313,169 +379,13 @@ const Float_t  AliPHOSPIDv1::GetParameterToCalculateEllipse(TString particle, TS
   return par;
 }
 
-//_____________________________________________________________________________
-const Float_t  AliPHOSPIDv1::GetParameterPhotonBoundary (Int_t i) const
-{ 
-  // Get the parameter "i" to calculate the boundary on the moment M2x
-  // for photons at high p_T
-  Float_t param = 0;
-  if (i>3 || i<0)
-    Error("GetParameterPhotonBoundary","Wrong parameter number: %d\n",i);
-  else
-    param = (*fParameters)(14,i) ;
-  return param;
-}
-
-//____________________________________________________________________________
-const Float_t  AliPHOSPIDv1::GetParameterPi0Boundary (Int_t i) const
-{ 
-  // Get the parameter "i" to calculate the boundary on the moment M2x
-  // for pi0 at high p_T
-  Float_t param = 0;
-  if (i>2 || i<0)
-    Error("GetParameterPi0Boundary","Wrong parameter number: %d\n",i);
-  else
-    param = (*fParameters)(15,i) ;
-  return param;
-}
-
-//____________________________________________________________________________
-const Float_t  AliPHOSPIDv1::GetCalibratedEnergy(const Float_t e) const
-{
-//      It calibrates Energy depending on the recpoint energy.
-//      The energy of the reconstructed cluster is corrected with 
-//      the formula A + B* E  + C* E^2, whose parameters where obtained 
-//      through the study of the reconstructed energy distribution of 
-//      monoenergetic photons.
- 
-  Float_t p[]={0.,0.,0.};
-  for (Int_t i=0; i<3; i++) p[i] = GetParameterCalibration(i);
-  Float_t enerec = p[0] +  p[1]*e + p[2]*e*e;
-  return enerec ;
-
-}
-//____________________________________________________________________________
-const Float_t  AliPHOSPIDv1::GetCpv2EmcDistanceCut(TString axis, Float_t e) const
-{
-  // Get CpvtoEmcDistance Cut depending on the cluster energy, axis and 
-  // Purity-Efficiency point 
-
-  axis.ToLower();
-  Float_t p[]={0.,0.,0.};
-  for (Int_t i=0; i<3; i++) p[i] = GetParameterCpv2Emc(i,axis);
-  Float_t sig = p[0] + TMath::Exp(p[1] - p[2]*e);
-  return sig;
-}
-
-//____________________________________________________________________________
-const Float_t  AliPHOSPIDv1::GetEllipseParameter(TString particle, TString param, Float_t e) const 
-{
-  // Calculates the parameter param of the ellipse
-
-  particle.ToLower();
-  param.   ToLower();
-  Float_t p[4]={0.,0.,0.,0.};
-  Float_t value = 0.0;
-  for (Int_t i=0; i<4; i++) p[i] = GetParameterToCalculateEllipse(particle,param,i);
-  if (particle == "photon") {
-    if      (param.Contains("a"))  e = TMath::Min((Double_t)e,70.);
-    else if (param.Contains("b"))  e = TMath::Min((Double_t)e,70.);
-    else if (param.Contains("x0")) e = TMath::Max((Double_t)e,1.1);
-  }
-
-  value = p[0]/TMath::Sqrt(e) + p[1]*e + p[2]*e*e + p[3];
-  return value;
-}
-
-//____________________________________________________________________________
-void  AliPHOSPIDv1::SetParameterCalibration(Int_t i,Float_t param) 
-{
-  // Set parameter "Calibration" i to a value param
-  if(i>2 || i<0)
-    Error("SetParameterCalibration","Invalid parameter number: %d",i);
-  else
-    (*fParameters)(0,i) = param ;
-}
-
-//____________________________________________________________________________
-void  AliPHOSPIDv1::SetParameterCpv2Emc(Int_t i, TString axis, Float_t cut) 
-{
-  // Set the parameters to calculate Cpv-to-Emc Distance Cut depending on 
-  // Purity-Efficiency point i
-
-  if(i>2 || i<0)
-    Error("SetParameterCpv2Emc","Invalid parameter number: %d",i);
-  else {
-    axis.ToLower();
-    if      (axis == "x") (*fParameters)(1,i) = cut;
-    else if (axis == "z") (*fParameters)(2,i) = cut;
-    else Error("SetParameterCpv2Emc","Invalid axis name: %s",axis.Data());
-  }
-}
-//_____________________________________________________________________________
-void  AliPHOSPIDv1::SetParameterTimeGate(Int_t i, Float_t gate) 
-{
-  // Set the parameter TimeGate depending on Purity-Efficiency point i 
-  if (i>2 || i<0)
-    Error("SetParameterTimeGate","Invalid Efficiency-Purity choice %d",i);
-  else
-    (*fParameters)(3,i)= gate ; 
-} 
-//_____________________________________________________________________________
-void  AliPHOSPIDv1::SetParameterToCalculateEllipse(TString particle, TString param, Int_t i, Float_t par) 
-{  
-  // Set the parameter "i" that is needed to calculate the ellipse 
-  // parameter "param" for a particle "particle"
-  
-  particle.ToLower();
-  param.   ToLower();
-  Int_t p= -1;
-  Int_t offset=0;
-
-  if      (particle == "photon") offset=0;
-  else if (particle == "pi0")    offset=5;
-  else
-    Error("SetParameterToCalculateEllipse","Wrong particle name: %s (choose from pi0/photon)\n",particle.Data());
-
-  if     (param.Contains("a")) p=4+offset; 
-  else if(param.Contains("b")) p=5+offset; 
-  else if(param.Contains("c")) p=6+offset; 
-  else if(param.Contains("x0"))p=7+offset; 
-  else if(param.Contains("y0"))p=8+offset;
-  if((i>4)||(i<0))
-    Error("SetEllipseParameter", "No parameter with index %d", i) ; 
-  else if(p==-1)
-    Error("SetEllipseParameter", "No parameter with name %s", param.Data() ) ; 
-  else
-    (*fParameters)(p,i) = par ;
-} 
-
-//____________________________________________________________________________
-void  AliPHOSPIDv1::SetParameterPhotonBoundary(Int_t i,Float_t param) 
-{
-  // Set parameter "Hard photon boundary" i to a value param
-  if(i>4 || i<0)
-    Error("SetParameterPhotonBoundary","Invalid parameter number: %d",i);
-  else
-    (*fParameters)(14,i) = param ;
-}
-
-//____________________________________________________________________________
-void  AliPHOSPIDv1::SetParameterPi0Boundary(Int_t i,Float_t param) 
-{
-  // Set parameter "Hard pi0 boundary" i to a value param
-  if(i>1 || i<0)
-    Error("SetParameterPi0Boundary","Invalid parameter number: %d",i);
-  else
-    (*fParameters)(15,i) = param ;
-}
 
 //____________________________________________________________________________
 const Float_t  AliPHOSPIDv1::GetDistance(AliPHOSEmcRecPoint * emc,AliPHOSRecPoint * cpv, Option_t *  axis)const
 {
   // Calculates the distance between the EMC RecPoint and the PPSD RecPoint
   
-  const AliPHOSGeometry * geom = AliPHOSGetter::GetInstance()->PHOSGeometry() ; 
+  const AliPHOSGeometry * geom = AliPHOSGetter::Instance()->PHOSGeometry() ; 
   TVector3 vecEmc ;
   TVector3 vecCpv ;
   if(cpv){
@@ -581,140 +491,33 @@ const Int_t  AliPHOSPIDv1::GetHardPi0Bit(AliPHOSEmcRecPoint * emc) const
 }
 
 //____________________________________________________________________________
-void  AliPHOSPIDv1::SetParameters() 
-{
-  // PCA : To do the Principal Components Analysis it is necessary 
-  // the Principal file, which is opened here
-  fX       = new double[7]; // Data for the PCA 
-  fPPhoton = new double[7]; // Eigenvalues of the PCA
-  fPPi0    = new double[7]; // Eigenvalues of the Pi0 PCA
+TVector3 AliPHOSPIDv1::GetMomentumDirection(AliPHOSEmcRecPoint * emc, AliPHOSRecPoint * cpv)const 
+{ 
+  // Calculates the momentum direction:
+  //   1. if only a EMC RecPoint, direction is given by IP and this RecPoint
+  //   2. if a EMC RecPoint and CPV RecPoint, direction is given by the line through the 2 recpoints 
+  //  However because of the poor position resolution of PPSD the direction is always taken as if we were 
+  //  in case 1.
 
-  // Read photon principals from the photon file
+  TVector3 dir(0,0,0) ; 
   
-  fFileNamePrincipalPhoton = "$ALICE_ROOT/PHOS/PCA8pa15_0.5-100.root" ; 
-  TFile f( fFileNamePrincipalPhoton.Data(), "read" ) ;
-  fPrincipalPhoton = dynamic_cast<TPrincipal*> (f.Get("principal")) ; 
-  f.Close() ; 
-
-  // Read pi0 principals from the pi0 file
-
-  fFileNamePrincipalPi0    = "$ALICE_ROOT/PHOS/PCA_pi0_40-120.root" ;
-  TFile fPi0( fFileNamePrincipalPi0.Data(), "read" ) ;
-  fPrincipalPi0    = dynamic_cast<TPrincipal*> (fPi0.Get("principal")) ; 
-  fPi0.Close() ;
-
-  // Open parameters file and initialization of the Parameters matrix. 
-  // In the File Parameters.dat are all the parameters. These are introduced 
-  // in a matrix of 16x4  
-  // 
-  // All the parameters defined in this file are, in order of row: 
-  // line   0   : calibration 
-  // lines  1,2 : CPV rectangular cat for X and Z
-  // line   3   : TOF cut
-  // lines  4-8 : parameters to calculate photon PCA ellipse
-  // lines  9-13: parameters to calculate pi0 PCA ellipse
-  // lines 14-15: parameters to calculate border for high-pt photons and pi0
-
-  fFileNameParameters = gSystem->ExpandPathName("$ALICE_ROOT/PHOS/Parameters.dat");
-  fParameters = new TMatrix(16,4) ;
-  const Int_t maxLeng=255;
-  char string[maxLeng];
-
-  // Open a text file with PID parameters
-  FILE *fd = fopen(fFileNameParameters.Data(),"r");
-  if (!fd)
-    Fatal("SetParameter","File %s with a PID parameters cannot be opened\n",
-	  fFileNameParameters.Data());
-
-  Int_t i=0;
-  // Read parameter file line-by-line and skip empty line and comments
-  while (fgets(string,maxLeng,fd) != NULL) {
-    if (string[0] == '\n' ) continue;
-    if (string[0] == '!'  ) continue;
-    sscanf(string, "%f %f %f %f",
-	   &(*fParameters)(i,0), &(*fParameters)(i,1), 
-	   &(*fParameters)(i,2), &(*fParameters)(i,3));
-    i++;
-    printf("line %d: %s",i,string);
-  }
-  fclose(fd);
-}
-
-//________________________________________________________________________
-void  AliPHOSPIDv1::Exec(Option_t * option) 
-{
-  //Steering method
+  TVector3 emcglobalpos ;
+  TMatrix  dummy ;
   
-  if( strcmp(GetName(), "")== 0 ) 
-    Init() ;
+  emc->GetGlobalPosition(emcglobalpos, dummy) ;
   
-  if(strstr(option,"tim"))
-    gBenchmark->Start("PHOSPID");
-  
-  if(strstr(option,"print")) {
-    Print("") ; 
-    return ; 
-  }
 
+  dir = emcglobalpos ;  
+  dir.SetZ( -dir.Z() ) ;   // why ?  
+  dir.SetMag(1.) ;
 
-//   gAlice->GetEvent(0) ;
+  //account correction to the position of IP
+  Float_t xo,yo,zo ; //Coordinates of the origin
+  gAlice->Generator()->GetOrigin(xo,yo,zo) ;
+  TVector3 origin(xo,yo,zo);
+  dir = dir - origin ;
 
-//   //check, if the branch with name of this" already exits?
-//   if (gAlice->TreeR()) {
-//     TObjArray * lob = (TObjArray*)gAlice->TreeR()->GetListOfBranches() ;
-//     TIter next(lob) ; 
-//     TBranch * branch = 0 ;  
-//     Bool_t phospidfound = kFALSE, pidfound = kFALSE ; 
-    
-//     TString taskName(GetName()) ; 
-//     taskName.Remove(taskName.Index(Version())-1) ;
-    
-//     while ( (branch = (TBranch*)next()) && (!phospidfound || !pidfound) ) {
-//       if ( (strcmp(branch->GetName(), "PHOSPID")==0) && (strcmp(branch->GetTitle(), taskName.Data())==0) ) 
-// 	phospidfound = kTRUE ;
-      
-//       else if ( (strcmp(branch->GetName(), "AliPHOSPID")==0) && (strcmp(branch->GetTitle(), taskName.Data())==0) ) 
-// 	pidfound = kTRUE ; 
-//     }
-    
-//     if ( phospidfound || pidfound ) {
-//       Error("Exec", "RecParticles and/or PIDtMaker branch with name %s already exists", taskName.Data() ) ; 
-//       return ; 
-//     }       
-//   }
-
-//   Int_t nevents = (Int_t) gAlice->TreeE()->GetEntries() ;
-//   Int_t ievent ;
-//   AliPHOSGetter * gime = AliPHOSGetter::GetInstance() ;  
-
-  AliPHOSGetter * gime = AliPHOSGetter::GetInstance() ; 
-  if(gime->BranchExists("RecParticles") )
-    return ;
-  Int_t nevents = gime->MaxEvent() ;       //(Int_t) gAlice->TreeE()->GetEntries() ;
-  Int_t ievent ;
-
-
-  for(ievent = 0; ievent < nevents; ievent++){
-    gime->Event(ievent,"R") ;
- 
-    MakeRecParticles() ;
-    
-    WriteRecParticles(ievent);
-    
-    if(strstr(option,"deb"))
-      PrintRecParticles(option) ;
-
-    //increment the total number of rec particles per run 
-    fRecParticlesInRun += gime->RecParticles(BranchName())->GetEntriesFast() ; 
-
-  }
-  
-  if(strstr(option,"tim")){
-    gBenchmark->Stop("PHOSPID");
-    Info("Exec", "took %f seconds for PID %f seconds per event", 
-	 gBenchmark->GetCpuTime("PHOSPID"),  
-	 gBenchmark->GetCpuTime("PHOSPID")/nevents) ;
-  } 
+  return dir ;  
 }
 
 //____________________________________________________________________________
@@ -722,7 +525,7 @@ void  AliPHOSPIDv1::MakeRecParticles()
 {
   // Makes a RecParticle out of a TrackSegment
   
-  AliPHOSGetter * gime = AliPHOSGetter::GetInstance() ; 
+  AliPHOSGetter * gime = AliPHOSGetter::Instance() ; 
   TObjArray * emcRecPoints = gime->EmcRecPoints() ; 
   TObjArray * cpvRecPoints = gime->CpvRecPoints() ; 
   TClonesArray * trackSegments = gime->TrackSegments() ; 
@@ -847,110 +650,33 @@ void  AliPHOSPIDv1::MakeRecParticles()
 }
   
 //____________________________________________________________________________
-void  AliPHOSPIDv1::Print()
+void  AliPHOSPIDv1::Print() const
 {
   // Print the parameters used for the particle type identification
 
-  TString message ; 
-    message  = "\n=============== AliPHOSPID1 ================\n" ;
-    message += "Making PID\n";
-    message += "    Pricipal analysis file from 0.5 to 100 %s\n" ; 
-    message += "    Name of parameters file     %s\n" ;
-    message += "    Matrix of Parameters: 14x4\n" ;
-    message += "        Energy Calibration  1x3 [3 parametres to calibrate energy: A + B* E + C * E^2]\n" ;
-    message += "        RCPV 2x3 rows x and z, columns function cut parameters\n" ;
-    message += "        TOF  1x3 [High Eff-Low Pur,Medium Eff-Pur, Low Eff-High Pur]\n" ;
-    message += "        PCA  5x4 [5 ellipse parametres and 4 parametres to calculate them: A/Sqrt(E) + B* E + C * E^2 + D]\n" ;
-    message += "    Pi0 PCA  5x3 [5 ellipse parametres and 3 parametres to calculate them: A + B* E + C * E^2]\n" ;
-    Info("Print", message.Data(), fFileNamePrincipalPhoton.Data(), fFileNameParameters.Data() ) ; 
+    Info("Print", "=============== AliPHOSPIDv1 ================") ;
+    printf("Making PID\n") ;
+    printf("    Pricipal analysis file from 0.5 to 100 %s\n", fFileNamePrincipalPhoton.Data() )   ; 
+    printf("    Name of parameters file     %s\n", fFileNameParameters.Data() )  ;
+    printf("    Matrix of Parameters: 14x4\n") ;
+    printf("        Energy Calibration  1x3 [3 parametres to calibrate energy: A + B* E + C * E^2]\n") ;
+    printf("        RCPV 2x3 rows x and z, columns function cut parameters\n") ;
+    printf("        TOF  1x3 [High Eff-Low Pur,Medium Eff-Pur, Low Eff-High Pur]\n") ;
+    printf("        PCA  5x4 [5 ellipse parametres and 4 parametres to calculate them: A/Sqrt(E) + B* E + C * E^2 + D]\n") ;
+    Printf("    Pi0 PCA  5x3 [5 ellipse parametres and 3 parametres to calculate them: A + B* E + C * E^2]\n") ;
     fParameters->Print() ;
 }
 
-//____________________________________________________________________________
-void  AliPHOSPIDv1::WriteRecParticles(Int_t event)
-{
- 
-  AliPHOSGetter *gime = AliPHOSGetter::GetInstance() ; 
 
-  TClonesArray * recParticles = gime->RecParticles() ; 
-  recParticles->Expand(recParticles->GetEntriesFast() ) ;
-  TTree * treeR ;
 
-  if(fToSplit){
-    if(!fSplitFile)
-      return ;
-    fSplitFile->cd() ;
-    char name[10] ;
-    sprintf(name,"%s%d", "TreeR",event) ;
-    treeR = dynamic_cast<TTree*>(fSplitFile->Get(name)); 
-  }
-  else{
-    treeR = gAlice->TreeR();
-  }
-  
-  if(!treeR){
-    gAlice->MakeTree("R", fSplitFile);
-    treeR = gAlice->TreeR() ;
-  }
-  
-  //First rp
-  Int_t bufferSize = 32000 ;    
-  TBranch * rpBranch = treeR->Branch("PHOSRP",&recParticles,bufferSize);
-  rpBranch->SetTitle(BranchName());
-
-  
-  //second, pid
-  Int_t splitlevel = 0 ; 
-  AliPHOSPIDv1 * pid = this ;
-  TBranch * pidBranch = treeR->Branch("AliPHOSPID","AliPHOSPIDv1",&pid,bufferSize,splitlevel);
-  pidBranch->SetTitle(BranchName());
-  
-  rpBranch->Fill() ;
-  pidBranch->Fill() ; 
-  
-  treeR->AutoSave() ; //Write(0,kOverwrite) ;  
-  if(gAlice->TreeR()!=treeR){
-    treeR->Delete();
-  }
-}
-
-//____________________________________________________________________________
-TVector3 AliPHOSPIDv1::GetMomentumDirection(AliPHOSEmcRecPoint * emc, AliPHOSRecPoint * cpv)const 
-{ 
-  // Calculates the momentum direction:
-  //   1. if only a EMC RecPoint, direction is given by IP and this RecPoint
-  //   2. if a EMC RecPoint and CPV RecPoint, direction is given by the line through the 2 recpoints 
-  //  However because of the poor position resolution of PPSD the direction is always taken as if we were 
-  //  in case 1.
-
-  TVector3 dir(0,0,0) ; 
-  
-  TVector3 emcglobalpos ;
-  TMatrix  dummy ;
-  
-  emc->GetGlobalPosition(emcglobalpos, dummy) ;
-  
-
-  dir = emcglobalpos ;  
-  dir.SetZ( -dir.Z() ) ;   // why ?  
-  dir.SetMag(1.) ;
-
-  //account correction to the position of IP
-  Float_t xo,yo,zo ; //Coordinates of the origin
-  gAlice->Generator()->GetOrigin(xo,yo,zo) ;
-  TVector3 origin(xo,yo,zo);
-  dir = dir - origin ;
-
-  return dir ;  
-}
 //____________________________________________________________________________
 void AliPHOSPIDv1::PrintRecParticles(Option_t * option)
 {
   // Print table of reconstructed particles
 
-  AliPHOSGetter *gime = AliPHOSGetter::GetInstance() ; 
+  AliPHOSGetter *gime = AliPHOSGetter::Instance() ; 
 
-  TClonesArray * recParticles = gime->RecParticles(BranchName()) ; 
+  TClonesArray * recParticles = gime->RecParticles() ; 
 
   TString message ; 
   message  = "\nevent " ;
@@ -975,3 +701,179 @@ void AliPHOSPIDv1::PrintRecParticles(Option_t * option)
   }
   Info("Print", message.Data() ) ; 
 }
+
+//____________________________________________________________________________
+void  AliPHOSPIDv1::SetParameters() 
+{
+  // PCA : To do the Principal Components Analysis it is necessary 
+  // the Principal file, which is opened here
+  fX       = new double[7]; // Data for the PCA 
+  fPPhoton = new double[7]; // Eigenvalues of the PCA
+  fPPi0    = new double[7]; // Eigenvalues of the Pi0 PCA
+
+  // Read photon principals from the photon file
+  
+  fFileNamePrincipalPhoton = "$ALICE_ROOT/PHOS/PCA8pa15_0.5-100.root" ; 
+  TFile f( fFileNamePrincipalPhoton.Data(), "read" ) ;
+  fPrincipalPhoton = dynamic_cast<TPrincipal*> (f.Get("principal")) ; 
+  f.Close() ; 
+
+  // Read pi0 principals from the pi0 file
+
+  fFileNamePrincipalPi0    = "$ALICE_ROOT/PHOS/PCA_pi0_40-120.root" ;
+  TFile fPi0( fFileNamePrincipalPi0.Data(), "read" ) ;
+  fPrincipalPi0    = dynamic_cast<TPrincipal*> (fPi0.Get("principal")) ; 
+  fPi0.Close() ;
+
+  // Open parameters file and initialization of the Parameters matrix. 
+  // In the File Parameters.dat are all the parameters. These are introduced 
+  // in a matrix of 16x4  
+  // 
+  // All the parameters defined in this file are, in order of row: 
+  // line   0   : calibration 
+  // lines  1,2 : CPV rectangular cat for X and Z
+  // line   3   : TOF cut
+  // lines  4-8 : parameters to calculate photon PCA ellipse
+  // lines  9-13: parameters to calculate pi0 PCA ellipse
+  // lines 14-15: parameters to calculate border for high-pt photons and pi0
+
+  fFileNameParameters = gSystem->ExpandPathName("$ALICE_ROOT/PHOS/Parameters.dat");
+  fParameters = new TMatrix(16,4) ;
+  const Int_t maxLeng=255;
+  char string[maxLeng];
+
+  // Open a text file with PID parameters
+  FILE *fd = fopen(fFileNameParameters.Data(),"r");
+  if (!fd)
+    Fatal("SetParameter","File %s with a PID parameters cannot be opened\n",
+	  fFileNameParameters.Data());
+
+  Int_t i=0;
+  // Read parameter file line-by-line and skip empty line and comments
+  while (fgets(string,maxLeng,fd) != NULL) {
+    if (string[0] == '\n' ) continue;
+    if (string[0] == '!'  ) continue;
+    sscanf(string, "%f %f %f %f",
+	   &(*fParameters)(i,0), &(*fParameters)(i,1), 
+	   &(*fParameters)(i,2), &(*fParameters)(i,3));
+    i++;
+    //printf("line %d: %s",i,string);
+  }
+  fclose(fd);
+}
+
+//____________________________________________________________________________
+void  AliPHOSPIDv1::SetParameterCalibration(Int_t i,Float_t param) 
+{
+  // Set parameter "Calibration" i to a value param
+  if(i>2 || i<0)
+    Error("SetParameterCalibration","Invalid parameter number: %d",i);
+  else
+    (*fParameters)(0,i) = param ;
+}
+
+//____________________________________________________________________________
+void  AliPHOSPIDv1::SetParameterCpv2Emc(Int_t i, TString axis, Float_t cut) 
+{
+  // Set the parameters to calculate Cpv-to-Emc Distance Cut depending on 
+  // Purity-Efficiency point i
+
+  if(i>2 || i<0)
+    Error("SetParameterCpv2Emc","Invalid parameter number: %d",i);
+  else {
+    axis.ToLower();
+    if      (axis == "x") (*fParameters)(1,i) = cut;
+    else if (axis == "z") (*fParameters)(2,i) = cut;
+    else Error("SetParameterCpv2Emc","Invalid axis name: %s",axis.Data());
+  }
+}
+
+//____________________________________________________________________________
+void  AliPHOSPIDv1::SetParameterPhotonBoundary(Int_t i,Float_t param) 
+{
+  // Set parameter "Hard photon boundary" i to a value param
+  if(i>4 || i<0)
+    Error("SetParameterPhotonBoundary","Invalid parameter number: %d",i);
+  else
+    (*fParameters)(14,i) = param ;
+}
+
+//____________________________________________________________________________
+void  AliPHOSPIDv1::SetParameterPi0Boundary(Int_t i,Float_t param) 
+{
+  // Set parameter "Hard pi0 boundary" i to a value param
+  if(i>1 || i<0)
+    Error("SetParameterPi0Boundary","Invalid parameter number: %d",i);
+  else
+    (*fParameters)(15,i) = param ;
+}
+
+//_____________________________________________________________________________
+void  AliPHOSPIDv1::SetParameterTimeGate(Int_t i, Float_t gate) 
+{
+  // Set the parameter TimeGate depending on Purity-Efficiency point i 
+  if (i>2 || i<0)
+    Error("SetParameterTimeGate","Invalid Efficiency-Purity choice %d",i);
+  else
+    (*fParameters)(3,i)= gate ; 
+} 
+
+//_____________________________________________________________________________
+void  AliPHOSPIDv1::SetParameterToCalculateEllipse(TString particle, TString param, Int_t i, Float_t par) 
+{  
+  // Set the parameter "i" that is needed to calculate the ellipse 
+  // parameter "param" for a particle "particle"
+  
+  particle.ToLower();
+  param.   ToLower();
+  Int_t p= -1;
+  Int_t offset=0;
+
+  if      (particle == "photon") offset=0;
+  else if (particle == "pi0")    offset=5;
+  else
+    Error("SetParameterToCalculateEllipse","Wrong particle name: %s (choose from pi0/photon)\n",particle.Data());
+
+  if     (param.Contains("a")) p=4+offset; 
+  else if(param.Contains("b")) p=5+offset; 
+  else if(param.Contains("c")) p=6+offset; 
+  else if(param.Contains("x0"))p=7+offset; 
+  else if(param.Contains("y0"))p=8+offset;
+  if((i>4)||(i<0))
+    Error("SetEllipseParameter", "No parameter with index %d", i) ; 
+  else if(p==-1)
+    Error("SetEllipseParameter", "No parameter with name %s", param.Data() ) ; 
+  else
+    (*fParameters)(p,i) = par ;
+} 
+
+//____________________________________________________________________________
+void AliPHOSPIDv1::Unload() 
+{
+  AliPHOSGetter * gime = AliPHOSGetter::Instance() ;  
+  gime->PhosLoader()->UnloadRecPoints() ;
+  gime->PhosLoader()->UnloadTracks() ;
+  gime->PhosLoader()->UnloadRecParticles() ;
+}
+
+//____________________________________________________________________________
+void  AliPHOSPIDv1::WriteRecParticles(Int_t event)
+{
+ 
+  AliPHOSGetter *gime = AliPHOSGetter::Instance() ; 
+
+  TClonesArray * recParticles = gime->RecParticles() ; 
+  recParticles->Expand(recParticles->GetEntriesFast() ) ;
+  TTree * treeP =  gime->TreeP();
+  
+  //First rp
+  Int_t bufferSize = 32000 ;
+  TBranch * rpBranch = treeP->Branch("PHOSRP",&recParticles,bufferSize);
+  rpBranch->SetTitle(BranchName());
+  
+  rpBranch->Fill() ;
+ 
+  gime->WriteRecParticles("OVERWRITE");
+  gime->WritePID("OVERWRITE");
+}
+

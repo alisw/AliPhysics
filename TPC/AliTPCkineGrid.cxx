@@ -13,16 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.1.8.1  2002/10/15 12:52:42  hristov
-Changes and bug fixes for the next round of PPR
-
-Revision 1.1  2002/05/08 18:19:50  kowal2
-New class by Andrea Dainese. It deals with the parameters used by
-AliTPCtrackerParam (efficiences, pulls etc)
-
-*/
+/* $Id$ */
 
 ////////////////////////////////////////////////////////////////////////
 // Class used by TPC tracking parameterization to handle to tracking

@@ -13,54 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.23  2001/01/30 09:23:13  hristov
-Streamers removed (R.Brun)
-
-Revision 1.22  2000/10/05 20:49:59  nilsen
-Now using root generated streamers.
-
-Revision 1.14.2.9  2000/10/05 07:49:27  nilsen
-Removed hit generation from step manager.
-
-Revision 1.14.2.8  2000/07/31 13:50:37  barbera
-Updated from the release
-
-Revision 1.19  2000/07/10 16:07:19  fca
-Release version of ITS code
-
-Revision 1.14.2.2  2000/05/19 10:09:21  nilsen
-fix for bug with HP and Sun unix + fix for event display in ITS-working branch
-
-Revision 1.14.2.1  2000/03/04 23:45:19  nilsen
-Fixed up the comments/documentation.
-
-Revision 1.14  1999/11/25 06:52:56  fca
-Correct value of drca
-
-Revision 1.13.2.1  1999/11/25 06:52:21  fca
-Correct value of drca
-
-Revision 1.13  1999/10/27 11:16:26  fca
-Correction of problem in geometry
-
-Revision 1.12  1999/10/22 08:25:25  fca
-remove double definition of destructors
-
-Revision 1.11  1999/10/22 08:16:49  fca
-Correct destructors, thanks to I.Hrivnacova
-
-Revision 1.10  1999/10/06 19:56:50  fca
-Add destructor
-
-Revision 1.9  1999/10/05 08:05:09  fca
-Minor corrections for uninitialised variables.
-
-Revision 1.8  1999/09/29 09:24:20  fca
-Introduction of the Copyright and cvs Log
-
-*/
+/* $Id$ */
 
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
@@ -77,26 +30,24 @@ Introduction of the Copyright and cvs Log
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
  
-#include <TMath.h>
-#include <TRandom.h>
-#include <TVector.h>
-#include <TGeometry.h>
-#include <TNode.h>
-#include <TTUBE.h>
-#include <TFile.h>    // only required for Tracking function?
 #include <TCanvas.h>
+#include <TClonesArray.h>
+#include <TFile.h>    // only required for Tracking function?
+#include <TGeometry.h>
+#include <TMath.h>
+#include <TNode.h>
 #include <TObjArray.h>
 #include <TObjString.h>
-#include <TClonesArray.h>
-
+#include <TRandom.h>
+#include <TTUBE.h>
+#include <TVector.h>
+#include <TVirtualMC.h>
 
 #include "AliConst.h"
-#include "AliRun.h"
-#include "AliMagF.h"
-
 #include "AliITShit.h"
 #include "AliITSv1.h"
-
+#include "AliMagF.h"
+#include "AliRun.h"
 
 ClassImp(AliITSv1)
  

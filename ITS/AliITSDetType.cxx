@@ -13,37 +13,8 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
- $Log$
- Revision 1.10  2002/10/14 14:57:00  hristov
- Merging the VirtualMC branch to the main development branch (HEAD)
+/* $Id$ */
 
- Revision 1.8.8.1  2002/06/10 17:51:14  hristov
- Merged with v3-08-02
-
- Revision 1.9  2002/05/05 21:10:10  nilsen
- In Distructor, delete fResponse. Since AliITSDetType is supposed to own it
- it should delete it.
-
- Revision 1.8  2001/10/04 22:40:15  nilsen
- Cosmetic changes.
-
- Revision 1.7  2001/09/07 14:43:15  hristov
- Destructor reverted after a temporary fix
-
- Revision 1.6  2001/09/07 08:44:43  hristov
- Deletion commented out because AliITSDetType was not the owner
-
- Revision 1.5  2001/05/31 06:58:38  fca
- Patch problem with destructor
-
- Revision 1.4  2001/05/01 14:47:45  nilsen
- Fixed destructor so that it destroyes the pointers fSegmentation, fResponse,
- fSimulation, and fReconst if they have been allocated. The two TStrings
- fDigClassName and fClustClassName shoud be destroyed automaticaly. This should
- fix a small memory leak associated with digitization and reconstruction.
-
-*/
 ////////////////////////////////////////////////////////////////////////
 // This Class owns the classes needed to to detector simulations and
 // reconstruction. This includes the detector segmentation classes,

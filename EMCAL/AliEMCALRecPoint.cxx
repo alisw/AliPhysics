@@ -25,7 +25,6 @@
 #include "TClonesArray.h"
 
 // --- Standard library ---
-#include <stdio.h>
 
 // --- AliRoot header files ---
 
@@ -46,7 +45,7 @@ AliEMCALRecPoint::AliEMCALRecPoint()
   fMaxTrack = 0 ;
   fTheta = fPhi = 0. ; 
   fEMCALArm = 0;
-  fPRESection = fECALSection = fHCALSection = kFALSE ; 
+  fPRESection = fECASection = fHCASection = kFALSE ; 
 }
 
 //____________________________________________________________________________
@@ -109,8 +108,7 @@ void AliEMCALRecPoint::ExecuteEvent(Int_t event, Int_t px, Int_t py)
     
   case kButton1Down:{
     AliEMCALDigit * digit ;
-    AliEMCALGetter * gime = AliEMCALGetter::GetInstance() ; 
-    AliEMCALGeometry * emcalgeom =  const_cast<AliEMCALGeometry*>(gime->EMCALGeometry());
+    AliEMCALGeometry * emcalgeom =  (AliEMCALGetter::Instance())->EMCALGeometry() ;
 
     Int_t iDigit;
     Int_t relid[4] ;
@@ -169,7 +167,8 @@ break;
   }
 }
 //____________________________________________________________________________
-void AliEMCALRecPoint::EvalAll(Float_t logWeight,TClonesArray * digits) {
+void AliEMCALRecPoint::EvalAll(Float_t logWeight,TClonesArray * digits) 
+{
   //evaluates (if necessary) all RecPoint data members 
 
   EvalPrimaries(digits) ;
@@ -184,8 +183,7 @@ void AliEMCALRecPoint::EvalEMCALArm(AliEMCALDigit * digit)
   if( fEMCALArm == 0){
   Int_t relid[4] ; 
   
-  AliEMCALGetter * gime = AliEMCALGetter::GetInstance() ; 
-  AliEMCALGeometry * emcalgeom =  const_cast<AliEMCALGeometry*>(gime->EMCALGeometry());
+  AliEMCALGeometry * emcalgeom = (AliEMCALGetter::Instance())->EMCALGeometry();
 
   emcalgeom->AbsToRelNumbering(digit->GetId(), relid) ;
   fEMCALArm = relid[0];
@@ -247,14 +245,14 @@ void AliEMCALRecPoint::GetGlobalPosition(TVector3 & gpos) const
 {
   // returns the position of the cluster in the global reference system of ALICE
   
-  AliEMCALGeometry * emcalgeom = AliEMCALGetter::GetInstance()->EMCALGeometry();  
+  AliEMCALGeometry * emcalgeom = AliEMCALGetter::Instance()->EMCALGeometry();  
   gpos.SetX(fPhi) ;
-  if ( IsInECAL() ) 
-    gpos.SetY(emcalgeom->GetIP2ECALSection()) ;
+  if ( IsInECA() ) 
+    gpos.SetY(emcalgeom->GetIP2ECASection()) ;
   else if ( IsInPRE() )
     gpos.SetY(emcalgeom->GetIP2PRESection()) ;
-  else if ( IsInHCAL() )
-    gpos.SetY(emcalgeom->GetIP2HCALSection()) ;
+  else if ( IsInHCA() )
+    gpos.SetY(emcalgeom->GetIP2HCASection()) ;
   else 
     Fatal("GetGlobalPosition", "Unexpected tower section") ; 
   gpos.SetZ(fTheta) ; 

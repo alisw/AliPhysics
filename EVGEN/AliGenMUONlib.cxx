@@ -13,63 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.21  2003/03/25 12:01:11  morsch
-Quarkonia for pp @ 14 TeV added.
-
-Revision 1.20  2003/03/13 11:54:39  morsch
-Limited pT range for parameterized Upsilon and J/Psi pT distributions.
-
-Revision 1.19  2003/02/24 16:46:11  morsch
-New parameterisation for Psi and Upsilon (PbPb)
-
-Revision 1.18  2002/11/07 09:13:42  morsch
-Use "Vogt" to label new distributions.
-
-Revision 1.17  2002/11/07 09:06:10  morsch
-J/Psi and Upsilon pt and y distributions from R. Vogt 2002 added.
-
-Revision 1.16  2002/10/14 14:55:35  hristov
-Merging the VirtualMC branch to the main development branch (HEAD)
-
-Revision 1.14.6.1  2002/06/10 14:57:41  hristov
-Merged with v3-08-02
-
-Revision 1.15  2002/04/17 10:11:51  morsch
-Coding Rule violations corrected.
-
-Revision 1.14  2002/02/22 17:26:43  morsch
-Eta and omega added.
-
-Revision 1.13  2001/03/27 11:01:04  morsch
-Charm pt-distribution corrected. More realistic y-distribution for pi and K.
-
-Revision 1.12  2001/03/09 13:01:41  morsch
-- enum constants for paramterisation type (particle family) moved to AliGen*lib.h
-- use AliGenGSIlib::kUpsilon, AliGenPHOSlib::kEtaPrime to access the constants
-
-Revision 1.11  2000/11/30 07:12:50  alibrary
-Introducing new Rndm and QA classes
-
-Revision 1.10  2000/06/29 21:08:27  morsch
-All paramatrisation libraries derive from the pure virtual base class AliGenLib.
-This allows to pass a pointer to a library directly to AliGenParam and avoids the
-use of function pointers in Config.C.
-
-Revision 1.9  2000/06/14 15:20:56  morsch
-Include clean-up (IH)
-
-Revision 1.8  2000/06/09 20:32:11  morsch
-All coding rule violations except RS3 corrected
-
-Revision 1.7  2000/05/02 08:12:13  morsch
-Coding rule violations corrected.
-
-Revision 1.6  1999/09/29 09:24:14  fca
-Introduction of the Copyright and cvs Log
-
-*/
+/* $Id$ */
 
 // Library class for particle pt and y distributions used for 
 // muon spectrometer simulations.
@@ -351,14 +295,7 @@ Double_t AliGenMUONlib::YJpsiPP( Double_t *px, Double_t *dummy)
 Int_t AliGenMUONlib::IpJpsi(TRandom *)
 {
 // J/Psi composition
-    Int_t ip;
-    Float_t r = gRandom->Rndm();
-    if (r < 0.98) {
-	ip = 443;
-    } else {
-	ip = 100443;
-    }
-    return ip;
+    return 443;
 }
 
 //                      Upsilon
@@ -506,18 +443,7 @@ Double_t AliGenMUONlib::YUpsilonPP( Double_t *px, Double_t *dummy)
 Int_t AliGenMUONlib::IpUpsilon(TRandom *)
 {
 // y composition
-    Int_t ip;
-    Float_t r = gRandom->Rndm();
-    
-    if (r < 0.712) {
-	ip = 553;
-    } else if (r < 0.896) {
-	ip = 100553;
-    } else {
-	ip = 200553;
-    }
-
-    return ip;
+    return 553;
 }
 
 //

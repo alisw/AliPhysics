@@ -13,57 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-  $Log$
-  Revision 1.16  2001/10/23 13:03:35  hristov
-  The access to several data members was changed from public to protected. The digitisation was adapted to the multi-event case (J.Chudoba)
-
-  Revision 1.15  2001/10/21 18:31:23  hristov
-  Several pointers were set to zero in the default constructors to avoid memory management problems
-
-  Revision 1.14  2001/05/14 13:25:54  hristov
-  stdlib.h included (for Alpha)
-
-  Revision 1.13  2001/05/10 12:26:31  jbarbosa
-  Totally reworked version of reconstruction algorithm.
-
-  Revision 1.12  2001/02/27 22:15:03  jbarbosa
-  Removed compiler warning.
-
-  Revision 1.11  2001/02/27 15:21:46  jbarbosa
-  Transition to SDigits.
-
-  Revision 1.10  2001/02/13 20:39:06  jbarbosa
-  Changes to make it work with new IO.
-
-  Revision 1.9  2001/01/22 21:39:11  jbarbosa
-  Several tune-ups
-
-  Revision 1.8  2000/11/15 15:52:53  jbarbosa
-  Turned on spot algorithm.
-
-  Revision 1.7  2000/11/01 15:37:05  jbarbosa
-  Updated to use its own rec. point object.
-
-  Revision 1.6  2000/10/02 21:28:12  fca
-  Removal of useless dependecies via forward declarations
-
-  Revision 1.5  2000/06/30 16:30:28  dibari
-  Disabled writing to rechits.
-
-  Revision 1.4  2000/06/15 15:46:59  jbarbosa
-  Corrected compilation errors on HP-UX (replaced pow with TMath::Power)
-
-  Revision 1.3  2000/06/13 13:15:41  jbarbosa
-  Still some code cleanup done (variable names)
-
-  Revision 1.2  2000/06/12 15:19:30  jbarbosa
-  Cleaned up version.
-
-  Revision 1.1  2000/04/19 13:05:14  morsch
-  J. Barbosa's spot reconstruction algorithm.
-
-*/
+/* $Id$ */
 
 #include <stdlib.h>
 
@@ -86,8 +36,6 @@
 #include "TCanvas.h"
 #include <TStyle.h>
 
-
-#include "malloc.h"
 
 
 ClassImp(AliRICHDetect)
@@ -223,8 +171,8 @@ void AliRICHDetect::Detect(Int_t nev, Int_t type)
   Activation->SetFillColor(5);
   Activation->SetXTitle("activation");
 
-  Int_t ntracks = (Int_t)gAlice->TreeH()->GetEntries();
-   
+  Int_t ntracks = (Int_t)pRICH->TreeH()->GetEntries();
+
   Float_t trackglob[3];
   Float_t trackloc[3];
 
@@ -234,7 +182,7 @@ void AliRICHDetect::Detect(Int_t nev, Int_t type)
 	
   for (track=0; track<ntracks;track++) {
     gAlice->ResetHits();
-    gAlice->TreeH()->GetEvent(track);
+    pRICH->TreeH()->GetEvent(track);
     TClonesArray *pHits  = pRICH->Hits();
     if (pHits == 0) return;
     Int_t nhits = pHits->GetEntriesFast();

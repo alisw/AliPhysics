@@ -13,38 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.11  2001/11/27 12:18:05  morsch
-Fully commented version by Bruno Espagnon.
-
-Revision 1.10  2001/03/27 11:14:54  morsch
-Weight calculation for correlated particles updated:
-- Decay probability is counted once if muons are decay products
-of the same mother particle. Otherwise,  it's counted twice.
-
-Revision 1.9  2001/03/08 13:30:43  morsch
-Make it work with particle stack of V3.05.
-
-Revision 1.8  2000/12/21 16:24:06  morsch
-Coding convention clean-up
-
-Revision 1.7  2000/10/02 15:16:37  morsch
-Correct coding rule violation for member data names of type fi -> fI.
-
-Revision 1.6  2000/06/14 15:19:47  morsch
-Include clean-up (IH)
-
-Revision 1.5  2000/06/09 20:35:32  morsch
-All coding rule violations except RS3 corrected
-
-Revision 1.4  2000/03/20 18:03:24  morsch
-Change muon particle code to PDG code.
-
-Revision 1.3  1999/09/29 09:24:08  fca
-Introduction of the Copyright and cvs Log
-
-*/
+/* $Id$ */
 
 /*  
  Class for dimuon analysis and fast dimuon simulation.

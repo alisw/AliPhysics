@@ -13,111 +13,30 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-  $Log$
-  Revision 1.18  2002/10/22 16:28:21  alibrary
-  Introducing Riostream.h
-
-  Revision 1.17  2002/10/14 14:57:32  hristov
-  Merging the VirtualMC branch to the main development branch (HEAD)
-
-  Revision 1.16.6.2  2002/07/24 10:07:52  alibrary
-  Updating VirtualMC
-
-  Revision 1.16.6.1  2002/06/10 15:12:46  hristov
-  Merged with v3-08-02
-
-  Revision 1.16  2001/10/10 11:29:17  morsch
-  Use segmentation v1 and wire sag as default. It does not work otherwise. Why ?
-
-  Revision 1.15  2001/08/30 09:51:23  hristov
-  The operator[] is replaced by At() or AddAt() in case of TObjArray.
-
-  Revision 1.14  2001/05/16 14:57:20  alibrary
-  New files for folders and Stack
-
-  Revision 1.13  2001/05/10 12:28:04  jbarbosa
-  Repositioned the RICH modules.
-
-  Revision 1.12  2001/02/23 17:26:12  jbarbosa
-  Setters for wire sag effect and voltage values.
-
-  Revision 1.11  2001/02/13 20:10:33  jbarbosa
-  Removed call to SetNSec() (obsolete). Fixed bug in chamber initialisation (not all chambers were initialised).
-
-  Revision 1.10  2000/12/20 14:08:02  jbarbosa
-  Removed dependencies on TGeant3 (thanks to F. Carminati and I. Hrivnacova)
-
-  Revision 1.9  2000/12/18 17:44:40  jbarbosa
-  Took two lines out of output.
-
-  Revision 1.8  2000/11/01 15:39:00  jbarbosa
-  Updated default geometry.
-
-  Revision 1.7  2000/10/03 21:44:09  morsch
-  Use AliSegmentation and AliHit abstract base classes.
-
-  Revision 1.6  2000/07/10 15:28:39  fca
-  Correction of the inheritance scheme
-
-  Revision 1.5  2000/06/30 16:38:51  dibari
-  Removed setters.
-
-  Revision 1.4  2000/06/13 13:13:40  jbarbosa
-  Correcting previous correction...
-
-  Revision 1.3  2000/06/13 13:06:38  jbarbosa
-  Fixed compiling error for HP (multiple declaration)
-
-  Revision 1.2  2000/06/12 15:36:16  jbarbosa
-  Cleaned up version.
-
-  Revision 1.1  2000/06/09 15:00:31  jbarbosa
-  New full version. All parameters configurable.
-
-  Revision 1.9  2000/05/31 08:19:38  jbarbosa
-  Fixed bug in StepManager
-
-  Revision 1.8  2000/05/26 17:30:08  jbarbosa
-  Cerenkov angle now stored within cerenkov data structure.
-
-  Revision 1.7  2000/05/18 10:31:36  jbarbosa
-  Fixed positioning of spacers inside freon.
-  Fixed positioning of proximity gap
-  inside methane.
-  Fixed cut on neutral particles in the StepManager.
-
-  Revision 1.6  2000/04/28 11:51:58  morsch
-   Dimensions of arrays hits and Ckov_data corrected.
-
-  Revision 1.5  2000/04/19 13:28:46  morsch
-  Major changes in geometry (parametrised), materials (updated) and
-  step manager (diagnostics) (JB, AM)
-
-*/
-
+/* $Id$ */
 
 
 //////////////////////////////////////////////////////////
 //  Manager and hits classes for set: RICH full version //
 //////////////////////////////////////////////////////////
 
-#include <TTUBE.h>
-#include <TNode.h> 
-#include <TRandom.h> 
-#include <TParticle.h> 
-
-#include "AliRICHv1.h"
-#include "AliRICHHit.h"
-#include "AliSegmentation.h"
-#include "AliRICHResponse.h"
-#include "AliRICHSegmentationV1.h"
-#include "AliRICHResponseV0.h"
-#include "AliRICHGeometry.h"
-#include "AliRun.h"
 #include "Riostream.h"
+
+#include <TNode.h> 
+#include <TParticle.h> 
+#include <TRandom.h> 
+#include <TTUBE.h>
+#include <TVirtualMC.h>
+
 #include "AliConst.h" 
 #include "AliPDG.h" 
+#include "AliRICHGeometry.h"
+#include "AliRICHHit.h"
+#include "AliRICHResponse.h"
+#include "AliRICHResponseV0.h"
+#include "AliRICHSegmentationV1.h"
+#include "AliRICHv1.h"
+#include "AliRun.h"
 
 ClassImp(AliRICHv1)
     

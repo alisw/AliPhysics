@@ -13,41 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.10.6.1  2002/07/30 11:30:48  alibrary
-Updating VirtualMC
-
-Revision 1.11  2002/07/30 09:09:59  morsch
-Correction in initialization.
-
-Revision 1.10  2002/02/08 16:50:50  morsch
-Add name and title in constructor.
-
-Revision 1.9  2001/07/27 17:09:36  morsch
-Use local SetTrack, KeepTrack and SetHighWaterMark methods
-to delegate either to local stack or to stack owned by AliRun.
-(Piotr Skowronski, A.M.)
-
-Revision 1.8  2000/12/06 15:11:38  morsch
-Correct double declared data members.
-
-Revision 1.7  2000/11/30 07:12:50  alibrary
-Introducing new Rndm and QA classes
-
-Revision 1.6  2000/10/02 21:28:06  fca
-Removal of useless dependecies via forward declarations
-
-Revision 1.5  2000/06/09 20:37:20  morsch
-All coding rule violations except RS3 corrected
-
-Revision 1.4  1999/11/03 17:43:20  fca
-New version from G.Martinez & A.Morsch
-
-Revision 1.3  1999/09/29 09:24:14  fca
-Introduction of the Copyright and cvs Log
-
-*/
+/* $Id$ */
 
 #include "AliGenScan.h"
 #include "AliRun.h"

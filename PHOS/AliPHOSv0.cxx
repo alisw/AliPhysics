@@ -14,32 +14,38 @@
  **************************************************************************/
 /* $Id$ */
 
-
 //_________________________________________________________________________
 // Implementation version v0 of PHOS Manager class 
 // An object of this class does not produce hits nor digits
 // It is the one to use if you do not want to produce outputs in TREEH or TREED
-//...                  
+//                  
 //*-- Author: Yves Schutz (SUBATECH) & Dmitri Peressounko (RRC KI & SUBATECH)
 
 
 // --- ROOT system ---
 
-#include "TBRIK.h"
-#include "TTRD1.h"
-#include "TNode.h"
-#include "TArrayI.h"
-#include "TRandom.h"
-#include "TGeometry.h"
-#include "TROOT.h"
+#include <TBRIK.h>
+#include <TFolder.h>
+#include <TGeometry.h>
+#include <TNode.h>
+#include <TROOT.h>
+#include <TRandom.h>
+#include <TTRD1.h>
+#include <TTree.h>
+#include <TVirtualMC.h>
 
 // --- Standard library ---
 
+#include <string.h>
+#include <stdlib.h>
+
 // --- AliRoot header files ---
 
+#include "AliConst.h"
+#include "AliPHOSGeometry.h"
+#include "AliPHOSLoader.h"
 #include "AliPHOSv0.h"
 #include "AliRun.h"
-#include "AliPHOSGeometry.h"
 
 ClassImp(AliPHOSv0)
 

@@ -1,28 +1,30 @@
 void ViewPMD()
 {
-//   gMC->Gsatt("ECAR","seen",1);
-//   gMC->Gsatt("ECCU","seen",1);
-//   gMC->Gsatt("ESMA","seen",1);
-//   gMC->Gsatt("ESMB","seen",1);
-//   gMC->Gsatt("EAIR","seen",1);
-//   gMC->Gsatt("EHC1","seen",1);
-//   gMC->Gsatt("ESMX","seen",1);
-//   gMC->Gsatt("ESMY","seen",1);
-//   gMC->Gsatt("EHC2","seen",1);
-//   gMC->Gsatt("EAIX","seen",1);
-//   gMC->Gsatt("ESMP","seen",1);
-//   gMC->Gsatt("ESMQ","seen",1);
-//   gMC->Gsatt("EHC3","seen",1);
-//   gMC->Gsatt("EAIP","seen",1);
-  gMC->Gsatt("EPMD","seen",1);
-//   gMC->Gsatt("EMM1","seen",1);
-//   gMC->Gsatt("EPB1","seen",1);
-//   gMC->Gsatt("EFE1","seen",1);
-//   gMC->Gsatt("EMM2","seen",1);
-//   gMC->Gsatt("EPB2","seen",1);
-//   gMC->Gsatt("EFE2","seen",1);
-//   gMC->Gsatt("EMM3","seen",1);
-//   gMC->Gsatt("EPB3","seen",1);
-//   gMC->Gsatt("EFE3","seen",1);
-//   gMC->Gsatt("EALM","seen",1);
+gMC->Gsatt("DP11","seen",0);
+gMC->Gsatt("DS11","seen",0);
+gMC->Gsatt("SUPR","seen",0);
+gMC->Gsatt("SMSS","seen",1);
+gMC->Gsatt("SMAR","seen",1);
+gMC->Gsatt("DW11","seen",0);
+gMC->Gsatt("SUPB","seen",0);
+gMC->Gsatt("SUFE","seen",0);
+gMC->Gsatt("DM11","seen",0);
+gMC->Gsatt("DPMD","seen",0);
+gMC->Gsatt("PM01","seen",0);
+gMC->Gsatt("PM02","seen",0);
+gMC->Gsatt("PM03","seen",0);
+gMC->Gsatt("PM04","seen",0);
+gMC->Gsatt("PM05","seen",0);
+gMC->Gsatt("PM06","seen",0);
+gMC->Gsatt("PM07","seen",0);
+gMC->Gsatt("PM08","seen",0);
+gMC->Gsatt("PM09","seen",0);
+gMC->Gsatt("PM10","seen",0);
+gMC->Gsatt("PM11","seen",0);
+gMC->Gsatt("PM12","seen",0);
+gMC->Gsatt("PM13","seen",0);
+gMC->Gsatt("PM14","seen",0);
+gMC->Gsatt("PMDL","seen",0);
+gMC->Gsatt("PMDR","seen",0);
+
 }

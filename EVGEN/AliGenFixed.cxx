@@ -15,6 +15,12 @@
 
 /*
 $Log$
+Revision 1.7.4.1  2003/04/14 17:33:49  hristov
+Merging with v3-09-08 (part1)
+
+Revision 1.8  2003/01/14 10:50:18  alibrary
+Cleanup of STEER coding conventions
+
 Revision 1.7  2001/10/30 11:27:35  morsch
 fExplicit member data correctly initialized.
 

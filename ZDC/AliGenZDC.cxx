@@ -13,47 +13,8 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.12  2002/11/21 20:05:22  alibrary
-Removing AliMC and AliMCProcess
+/* $Id$ */
 
-Revision 1.11  2001/11/11 17:27:50  hristov
-Minor corrections
-
-Revision 1.10  2001/09/26 16:00:47  coppedis
-Minor change
-
-Revision 1.8  2001/04/20 10:10:25  coppedis
-Minor changes
-
-Revision 1.7  2001/03/15 16:13:28  coppedis
-Code review
-
-Revision 1.6  2000/11/30 17:16:14  coppedis
-Changes suggested by fca
-
-Revision 1.5  2000/11/22 11:30:12  coppedis
-Major code revision
-
-Revision 1.4  2000/10/05 08:02:47  fca
-Correction of the generator direction
-
-Revision 1.3  2000/10/02 21:28:20  fca
-Removal of useless dependecies via forward declarations
-
-Revision 1.2  2000/07/11 11:12:34  fca
-Some syntax corrections for non standard HP aCC
-
-Revision 1.1  2000/07/10 13:58:01  fca
-New version of ZDC from E.Scomparin & C.Oppedisano
-
-Revision 1.7  2000/01/19 17:17:40  fca
-
-Revision 1.6  1999/09/29 09:24:35  fca
-Introduction of the Copyright and cvs Log
-
-*/
 #include <assert.h>
 
 #include <TDatabasePDG.h>

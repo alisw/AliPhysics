@@ -56,7 +56,7 @@ public:
   virtual void    CreateMaterials();
   virtual void    Init();
 //  virtual void    MakeBranch(Option_t* option, const char *file=0);
-  virtual void    MakeBranch(Option_t *opt=" ",const char *file=0);
+  virtual void    MakeBranch(Option_t *opt=" ");
   virtual void    Makehits(Bool_t hits=1);
   virtual void    FinishEvent();
   virtual Int_t   IsVersion() const =0;
@@ -126,10 +126,11 @@ protected:
   Int_t   fNTdc;       // number of TDC
   Int_t   fNPadXRoc;   // number of pads for each ROC
   Int_t   fIdSens;     // the unique numeric identifier for sensitive volume FPAD 
+  Bool_t  fTZero;      // flag indicating if T0 is used
 
 private:
 
-  ClassDef(AliTOF,5)  // Time Of Flight base class
+  ClassDef(AliTOF,6)  // Time Of Flight base class
 };
  
 #endif /* ALITOF_H */

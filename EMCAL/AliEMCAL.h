@@ -60,6 +60,8 @@ class AliEMCAL : public AliDetector {
     return *this ; 
   }
  
+  virtual AliLoader* MakeLoader(const char* topfoldername);
+  
 protected:
 
   //AliEMCALQAChecker * fQATask ; //! PHOS checkers container

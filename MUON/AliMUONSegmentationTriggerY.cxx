@@ -13,63 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.10  2002/10/23 07:24:56  alibrary
-Introducing Riostream.h
-
-Revision 1.9  2001/05/16 14:57:17  alibrary
-New files for folders and Stack
-
-Revision 1.8  2000/11/20 21:44:17  pcrochet
-some modifications to account for the new class AliMUONResponseTriggerV1
-
-Revision 1.7  2000/10/03 21:48:07  morsch
-Adopt to const declaration of some of the methods in AliSegmentation.
-
-Revision 1.6  2000/10/02 16:58:29  egangler
-Cleaning of the code :
--> coding conventions
--> void Streamers
--> some useless includes removed or replaced by "class" statement
-
-Revision 1.5  2000/07/03 11:54:57  morsch
-AliMUONSegmentation and AliMUONHitMap have been replaced by AliSegmentation and AliHitMap in STEER
-The methods GetPadIxy and GetPadXxy of AliMUONSegmentation have changed name to GetPadI and GetPadC.
-
-Revision 1.4  2000/06/29 12:34:09  morsch
-AliMUONSegmentation class has been made independent of AliMUONChamber. This makes
-it usable with any other geometry class. The link to the object to which it belongs is
-established via an index. This assumes that there exists a global geometry manager
-from which the pointer to the parent object can be obtained (in our case gAlice).
-
-Revision 1.3  2000/06/26 10:01:26  pcrochet
-global variables removed
-
-Revision 1.2  2000/06/15 07:58:48  morsch
-Code from MUON-dev joined
-
-Revision 1.1.2.1  2000/06/09 21:51:58  morsch
-Code from AliMUONSegResTriggerY.cxx
-
-*/
-
-
-/*
-Old Log:
-Revision 1.1.2.4  2000/05/05 10:17:04  morsch
-Y strip numerotation changed (CP)
-
-Revision 1.1.2.3  2000/04/26 12:33:40  morsch
-Minor changes in some methods (CP)
-
-Revision 1.1.2.2  2000/02/20 07:49:50  morsch
-Bugs in Dpx, Dpy and ISector methods corrected (P.C.)
-
-Revision 1.1.2.1  2000/02/17 14:34:57  morsch
-Draft version from P. Crochet
-
-*/
+/* $Id$ */
 
 #include "AliMUONSegmentationTriggerY.h"
 #include "AliMUONTriggerConstants.h"

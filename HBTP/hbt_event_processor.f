@@ -2717,7 +2717,7 @@ CCC   table 'trk' and table 'trk2':
          sign_toggle = 1
 
 CCC   Start Event Loop:
-
+C         write(*,*) 'REF HISTO N Ev = ', n_events
          do i = 1,n_events
            If(ALICE .eq. 1) Then
               Call AliHbtp_SetActiveEventNumber(i)
@@ -2732,14 +2732,23 @@ CCC   Start Event Loop:
 
                do ipt = 1,n_pt_bins
                href1_pt_1(ipt) = href1_pt_1(ipt) + hist1_pt_1(ipt)
+               if (href1_pt_1(ipt) .lt. 0 ) then
+                 write(*,*) 'href1_pt_1 bin ',ipt,'is less then 0'
+               endif 
                end do
 
                do iphi = 1,n_phi_bins
                href1_phi_1(iphi) = href1_phi_1(iphi) + hist1_phi_1(iphi)
+               if (href1_phi_1(iphi) .lt. 0 ) then
+                 write(*,*) 'href1_phi_1 bin ',iphi,'is less then 0'
+               endif 
                end do
 
                do ieta = 1,n_eta_bins
                href1_eta_1(ieta) = href1_eta_1(ieta) + hist1_eta_1(ieta)
+               if (href1_eta_1(ieta) .lt. 0 ) then
+                 write(*,*) 'href1_eta_1 bin ',ieta,'is less then 0'
+               endif 
                end do
              end if
 
@@ -2810,6 +2819,8 @@ CCC   Start Event Loop:
               num_pairs_unlike_ref = num_pairs_unlike_ref
      1           + n_part_used_1_trk * n_part_used_2_trk2
      2           + n_part_used_2_trk * n_part_used_1_trk2
+C              write(*,*) 'num_pairs_like_ref',num_pairs_like_ref
+C              write(*,*) 'num_pairs_unlike_ref',num_pairs_unlike_ref
            end if
 
         end do   !  End of Event Loop
@@ -3617,7 +3628,7 @@ CCC   Local Variable Type Declarations:
       integer*4 control
 
       real*4 px,py,pz,E,pt,phi,eta,mass
-      real*4 theta,pi,rad,pcut
+      real*4 theta,pi,rad,pcut,x,y
       parameter (pi = 3.141592654)
       parameter (pcut = 0.000001)
 
@@ -3658,7 +3669,10 @@ CCC   Compute pseudorapidity:
          if(abs(eta) .le. pcut) then
             pz = 0.0
          else
-            theta = 2.0*atan(exp(-eta))
+            x = exp(-eta)
+            y = atan(x)
+            theta = 2.0*y
+C            theta = 2.0*atan(exp(-eta))
             pz = pt/tan(theta)
          end if
 
@@ -4898,6 +4912,14 @@ C           write(*,*) 'NEXT EVENT:', ievent
           num_pairs_unlike_inc = num_pairs_unlike_inc + num_pairs_unlike
           n_part_used_1_inc = n_part_used_1_inc + n_part_used_1_trk
           n_part_used_2_inc = n_part_used_2_inc + n_part_used_2_trk
+          
+C          write (*,*) 'num_pairs_like = ',num_pairs_like
+C          write (*,*) 'num_pairs_unlike = ',num_pairs_unlike
+C          write (*,*) 'num_pairs_like_inc = ',num_pairs_like_inc
+c          write (*,*) 'num_pairs_unlike_inc = ',num_pairs_unlike_inc
+c          write (*,*) 'n_part_used_1_inc = ',n_part_used_1_inc
+C          write (*,*) 'n_part_used_2_inc = ',n_part_used_2_inc
+          
           if(pid(1).gt.0) Call histog1(1,0,1,pid(1),0.,0.,0.)
           if(pid(2).gt.0) Call histog1(1,0,2,pid(2),0.,0.,0.)
           Call histog2(1,0,0,0,0,0.0,0.0,0.0,0.0)
@@ -6661,7 +6683,8 @@ CCC   END MODE = 4  OUTPUT AND FORMATS
 C------------------------------
       Else If(mode.eq.5) Then   ! Optional Output for 1- and 2-Body Fits
 C------------------------------ ! for each event.
-
+C      write(*,*)'Event ', ievent
+C      write(*,*)'chisq_total_store(event) ',chisq_total_store(ievent)
       write(8,500) ievent
       write(8,501) n_part_1_trk,n_part_2_trk,n_part_tot_trk
       write(8,502) n_part_used_1_trk, n_part_used_2_trk

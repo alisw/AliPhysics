@@ -23,10 +23,12 @@
 
 // --- ROOT system ---
 #include "TROOT.h"
+#include "TFolder.h" 
 
 // --- Standard library ---
 
 // --- AliRoot header files ---
+#include "AliConfig.h"
 
 #include "AliPHOSQAChecker.h"
 #include "AliPHOSQAVirtualCheckable.h"
@@ -39,8 +41,18 @@ ClassImp(AliPHOSQAChecker)
 {
   // ctor
   // stores checkers in the PHOS QA TTask folder //Folders/Task/QA
-  TTask * aliceQA  = (TTask*)gROOT->FindObjectAny("Folders/Tasks/QA") ; 
-  TTask * phosQA   = (TTask*)aliceQA->GetListOfTasks()->FindObject("PHOS") ;
+  
+  TFolder* topfold = AliConfig::Instance()->GetTopFolder(); //get top aliroot folder; skowron
+  TString phosqatn(AliConfig::Instance()->GetQATaskName()); //skowron
+  
+  TTask * aliceQA  = (TTask*)topfold->FindObjectAny(phosqatn); //skowron
+  if (aliceQA == 0x0)
+   {
+     Fatal("AliPHOSQAChecker","Can not find QA main task");
+     return;//never reached
+   }
+   
+  TTask * phosQA   = (TTask*)aliceQA->GetListOfTasks()->FindObject("PHOS"); //hard wired name !!!; skowron
   if (phosQA)  // PHOS QA Tasks container exists
    phosQA->Add(this) ;
    else    // create  //Folders/Task/QA/PHOS

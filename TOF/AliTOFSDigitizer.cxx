@@ -13,6 +13,8 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+/* $Id$ */
+
 //_________________________________________________________________________
 // This is a TTask that constructs SDigits out of Hits
 // A Summable Digits is the "sum" of all hits in a pad
@@ -23,34 +25,36 @@
 // Use case: see AliTOFhits2sdigits.C macro in the CVS
 //////////////////////////////////////////////////////////////////////////////
 
-#include "TBenchmark.h"
-#include "TTask.h"
-#include "TTree.h"
-#include "TSystem.h"
-#include "TParticle.h"
-#include "TH1.h"
-#include "TFile.h"
-#include "TROOT.h"
-#include "TFolder.h"
-#include <TF1.h>
-#include <stdlib.h>
-#include <Riostream.h>
-#include <Riostream.h>
 
+#include <Riostream.h>
+#include <stdlib.h>
+
+#include <TBenchmark.h>
+#include <TF1.h>
+#include <TFile.h>
+#include <TFolder.h>
+#include <TH1.h>
+#include <TParticle.h>
+#include <TROOT.h>
+#include <TSystem.h>
+#include <TTask.h>
+#include <TTree.h>
+
+#include "AliDetector.h"
+#include "AliLoader.h"
+#include "AliRun.h"
+#include "AliRunLoader.h"
+#include "AliTOF.h"
+#include "AliTOFConstants.h"
 #include "AliTOFHitMap.h"
 #include "AliTOFSDigit.h"
-#include "AliTOFConstants.h"
+#include "AliTOFSDigitizer.h"
 #include "AliTOFhit.h"
 #include "AliTOFhitT0.h"
-#include "AliTOF.h"
 #include "AliTOFv1.h"
 #include "AliTOFv2.h"
 #include "AliTOFv3.h"
 #include "AliTOFv4.h"
-#include "AliTOFSDigitizer.h"
-#include "AliRun.h"
-#include "AliDetector.h"
-
 
 ClassImp(AliTOFSDigitizer)
 
@@ -58,6 +62,9 @@ ClassImp(AliTOFSDigitizer)
   AliTOFSDigitizer::AliTOFSDigitizer():TTask("AliTOFSDigitizer","") 
 {
   // ctor
+
+  fRunLoader     = 0 ;
+
   fEvent1=0;
   fEvent2=0;
   ftail    = 0;
@@ -66,7 +73,7 @@ ClassImp(AliTOFSDigitizer)
 }
            
 //____________________________________________________________________________ 
-  AliTOFSDigitizer::AliTOFSDigitizer(const char* HeaderFile, Int_t evNumber1, Int_t nEvents):TTask("AliTOFSDigitizer","") 
+  AliTOFSDigitizer::AliTOFSDigitizer(char* HeaderFile, Int_t evNumber1, Int_t nEvents):TTask("AliTOFSDigitizer","") 
 {
   fEvent1=evNumber1;
   fEvent2=fEvent1+nEvents;
@@ -88,8 +95,19 @@ ClassImp(AliTOFSDigitizer)
   InitParameters();
 
   // add Task to //root/Tasks folder
-  TTask * roottasks = (TTask*)gROOT->GetRootFolder()->FindObject("Tasks") ; 
-  roottasks->Add(this) ; 
+  fRunLoader = AliRunLoader::Open(HeaderFile);//open session and mount on default event folder
+  if (fRunLoader == 0x0)
+   {
+     Fatal("AliTOFSDigitizer","Event is not loaded. Exiting");
+     return;
+   }
+  AliLoader* gime = fRunLoader->GetLoader("TOFLoader");
+  if (gime == 0x0)
+   {
+     Fatal("AliTOFSDigitizer","Can not find TOF loader in event. Exiting.");
+     return;
+   }
+  gime->PostSDigitizer(this);
 }
 
 //____________________________________________________________________________ 
@@ -158,10 +176,17 @@ Double_t TimeWithTail(Double_t* x, Double_t* par)
 //____________________________________________________________________________
 void AliTOFSDigitizer::Exec(Option_t *verboseOption, Option_t *allEvents) { 
 
+  fRunLoader->LoadgAlice();
+  fRunLoader->LoadHeader();
+  gAlice = fRunLoader->GetAliRun();
+  
+  AliLoader* gime = fRunLoader->GetLoader("TOFLoader");
+  gime->LoadHits("read");
+  gime->LoadSDigits("recreate");
   if(strstr(verboseOption,"tim") || strstr(verboseOption,"all"))
     gBenchmark->Start("TOFSDigitizer");
 
-  AliTOF *TOF = (AliTOF *) gAlice->GetDetector ("TOF");
+  AliTOF *TOF = (AliTOF *) gAlice->GetDetector("TOF");
 
   if (!TOF) {
     Error("AliTOFSDigitizer","TOF not found");
@@ -208,19 +233,20 @@ void AliTOFSDigitizer::Exec(Option_t *verboseOption, Option_t *allEvents) {
     Int_t nnoisesdigitsinEv=0;
     Int_t nsignalsdigitsinEv=0;
 
-    gAlice->GetEvent(ievent);
-    TTree *TH = gAlice->TreeH ();
+    fRunLoader->GetEvent(ievent);
+    TOF->SetTreeAddress();
+    TTree *TH = gime->TreeH ();
     if (!TH)
       return;
-    if (gAlice->TreeS () == 0)
-      gAlice->MakeTree ("S");
+    if (gime->TreeS () == 0)
+      gime->MakeTree ("S");
 
       
     //Make branches
     char branchname[20];
     sprintf (branchname, "%s", TOF->GetName ());
     //Make branch for digits
-    TOF->MakeBranch ("S");
+    TOF->MakeBranch("S");
     
     //Now made SDigits from hits
 
@@ -381,10 +407,10 @@ void AliTOFSDigitizer::Exec(Option_t *verboseOption, Option_t *allEvents) {
     
     delete hitMap;
       
-    gAlice->TreeS()->Reset();
-    gAlice->TreeS()->Fill();
+    gime->TreeS()->Reset();
+    gime->TreeS()->Fill();
     //gAlice->TreeS()->Write(0,TObject::kOverwrite) ;
-    gAlice->TreeS()->AutoSave();
+    gime->WriteSDigits("OVERWRITE");
 
     if(strstr(verboseOption,"all")){
       cout << "----------------------------------------" << endl;

@@ -13,6 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+/* $Id$ */
 
 //////////////////////////////////////////////////////////////////////
 //                                                                  //
@@ -25,42 +26,38 @@
 //                                                                  //
 //////////////////////////////////////////////////////////////////////
 
-#include <TMath.h>
-#include <TTree.h>
-#include <TParticle.h>
-#include <TGeometry.h>
-#include <TTRD2.h>
-#include <TCONE.h>
-#include <TPGON.h>
-#include <TPCON.h>
-#include <TSPHE.h>
-#include <TTRAP.h>
-#include <TTUBS.h>
-#include <TTUBE.h>
+#include <Riostream.h>
+#include <stdlib.h>
+#include <string.h>
+
 #include <TBRIK.h>
 #include <TBox.h>
-
-#include <TShape.h>
-#include <TNode.h>
+#include <TCONE.h>
 #include <TClonesArray.h>
-#include <TH1.h>
-#include <string.h>
-#include <Riostream.h>
-
-#include "AliVZEROv2.h"
-#include "AliRun.h"
-#include "AliMagF.h"
-#include "AliVZEROhit.h"
-#include "AliVZEROdigit.h"
-#include <Riostream.h>
-#include <Riostream.h>
-
 #include <TGeant3.h>
-#include <stdlib.h>
-#include "TObjectTable.h"
+#include <TGeometry.h>
+#include <TH1.h>
+#include <TLorentzVector.h>
+#include <TMath.h>
+#include <TNode.h>
+#include <TObjectTable.h>
+#include <TPCON.h>
+#include <TPGON.h>
+#include <TSPHE.h>
+#include <TShape.h>
+#include <TTRAP.h>
+#include <TTRD2.h>
+#include <TTUBE.h>
+#include <TTUBS.h>
+#include <TVirtualMC.h>
+#include <TParticle.h>
 
-#include "AliConst.h"
-#include "TLorentzVector.h"
+#include "AliLoader.h"
+#include "AliMagF.h"
+#include "AliRun.h"
+#include "AliVZEROdigit.h"
+#include "AliVZEROhit.h"
+#include "AliVZEROv2.h"
 
 ClassImp(AliVZEROv2)
 
@@ -1113,15 +1110,15 @@ void AliVZEROv2::MakeBranch(Option_t *option)
   
   const char *H = strstr(option,"H");
   
-  if (fHits   && gAlice->TreeH() && H) {
-    gAlice->TreeH()->Branch(branchname,&fHits, fBufferSize);
+  if (fHits   && TreeH() && H) {
+    TreeH()->Branch(branchname,&fHits, fBufferSize);
     printf("* AliDetector::MakeBranch * Making Branch %s for hits\n",branchname);
   }     
 
   const char *D = strstr(option,"D");
   //
-  if (fDigits   && gAlice->TreeD() && D) {
-    gAlice->TreeD()->Branch(branchname,&fDigits, fBufferSize);
+  if (fDigits   && fLoader->TreeD() && D) {
+    fLoader->TreeD()->Branch(branchname,&fDigits, fBufferSize);
     printf("* AliDetector::MakeBranch * Making Branch %s for digits\n",branchname);
   }  
    

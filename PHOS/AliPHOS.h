@@ -9,7 +9,7 @@
 //                  
 //*-- Author: Laurent Aphecetche & Yves Schutz (SUBATECH)
 
-//#include <stdlib.h>
+#include <stdlib.h>
 
 // --- ROOT system ---
 
@@ -52,9 +52,13 @@ class AliPHOS : public AliDetector {
   virtual const TString Version() const {return TString(" ") ; } 
   virtual void WriteQA() ; 
   AliPHOS & operator = (const AliPHOS & rvalue)  {
-    // assignement operator requested by coding convention but not needed
-    Fatal("operator =", "not implemented") ; return *this ; 
+    // assignement operator requested by coding convention
+    // but not needed
+    Fatal("operator =", "not implemented") ;
+    return *this ; 
   }
+
+  virtual AliLoader* MakeLoader(const char* topfoldername);
  
 protected:
   

@@ -33,7 +33,6 @@
 #include <TList.h>
 #include <TLorentzVector.h>
 #include <TMath.h>
-#include <TMath.h>
 #include <TObjArray.h>
 #include <TPad.h>
 #include <TPaveLabel.h>
@@ -176,30 +175,34 @@ void AliMCQA::Copy(AliMCQA &) const
 
 //_______________________________________________________________________
 AliMCQA::~AliMCQA() 
-{
+ {
   //
   // Destructor
   //
   gROOT->GetListOfBrowsables()->Remove(this);
+  //if program crashes here - it probobly means that 
+  //one of added browsables was deleted and not removed previously from that list
+  //skowron
+  
   if (fQAList) {
     fQAList->Delete();
     delete fQAList;
-    fQAList=0;
+    fQAList = 0;
   }
   if (fQAHist) {
     fQAHist->Delete();
     delete fQAHist;
-    fQAHist=0;
+    fQAHist = 0;
   }
   if (fVolNames) {
     fVolNames->Delete();
     delete fVolNames;
-    fVolNames=0;
+    fVolNames = 0;
   }
   if (fModNames) {
     fModNames->Delete();
     delete fModNames;
-    fModNames=0;
+    fModNames = 0;
   }
   delete [] fDetDone;
   delete fMPaveLabel;

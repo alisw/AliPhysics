@@ -13,18 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.2.6.1  2002/06/10 14:57:41  hristov
-Merged with v3-08-02
-
-Revision 1.2  2002/05/15 13:29:11  morsch
-Use fOsigma[2] for vertex smearing. Default is 2000 cm.
-
-Revision 1.1  2002/05/15 08:59:36  morsch
-First commit.
-
-*/
+/* $Id$ */
 
 //
 // Generator to simulate beam gas interactions.

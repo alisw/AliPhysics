@@ -32,13 +32,16 @@ public:
 
   AliPHOSvFast() ;
   AliPHOSvFast(const char *name, const char *title="") ;
-  AliPHOSvFast(const AliPHOSvFast & fast) ; 
- 
+  AliPHOSvFast(const AliPHOSvFast & fast) {
+    // cpy ctor: no implementation yet
+    // requested by the Coding Convention
+    assert(0==1) ; 
+  }
   virtual ~AliPHOSvFast(void) ;
 
   virtual void   AddHit( Int_t shunt, Int_t primary, Int_t track, Int_t id, Float_t *hits ) {
     // useless since there are no hits
-    Error("AddHit", "Not callable !")  ; 
+    assert(0==1) ; 
   }
   void           AddRecParticle(const AliPHOSFastRecParticle & rp) ; // adds primary particle to the RecParticles list
   virtual void   BuildGeometry(void) ;                               // creates the geometry for the ROOT display
@@ -50,7 +53,7 @@ public:
     return 99 ; 
   }
 
-  void    MakeBranch(Option_t* opt, const char *file=0) ;
+  void    MakeBranch(Option_t* opt);
   Double_t MakeEnergy(const Double_t energy) ;                       // makes the detected energy    
   TVector3 MakePosition(const Double_t energy, const TVector3 pos, const Double_t th, const Double_t ph) ; 
                                                                      // makes the detected position
@@ -69,7 +72,11 @@ public:
     return TString("vFast") ; 
   }
 
-  AliPHOSvFast & operator = (const AliPHOSvFast & )  { return *this ; }
+  AliPHOSvFast & operator = (const AliPHOSvFast & )  {
+    // assignement operator requested by coding convention but not needed
+    assert(0==1) ;
+    return *this ; 
+  }
   
 private:
   

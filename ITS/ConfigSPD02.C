@@ -5,9 +5,17 @@ void Config(){
     gSystem->Load("libgeant321");
     new TGeant3("C++ Interface to Geant3");
     if (!gSystem->Getenv("CONFIG_FILE")){
-        TFile  *rootfile = new TFile("galice.root", "recreate");
-        rootfile->SetCompressionLevel(2);
-    } // end if
+        cout<<"Config.C: Creating Run Loader ..."<<endl;
+        AliRunLoader *rl = AliRunLoader::Open("galice.root",
+                      AliConfig::fgkDefaultEventFolderName,"recreate");
+        if (rl == 0x0){
+	    gAlice->Fatal("Config.C","Can not instatiate the Run Loader");
+	    return;
+	} // end if rl==0x0
+        rl->SetCompressionLevel(2);
+        rl->SetNumberOfEventsPerFile(1000);
+        gAlice->SetRunLoader(rl);
+    } // end if !gSystem
     TGeant3 *geant3 = (TGeant3 *) gMC;
     // Set External decayer
     AliDecayer *decayer = new AliDecayerPythia();
@@ -69,12 +77,12 @@ void Config(){
     //
     //gener->SetVertexSmear(perTrack); 
     // Field (L3 0.4 T)
-    //AliMagFMaps* field = new AliMagFMaps("Maps","Maps", 2, 1., 10., 1);
     rootfile->cd();
     //gAlice->SetField(field);
 
     Int_t   iHALL  =  0;
     Int_t   iITS   =  1;
+    rl->CdGAFile();
     //=================== Alice BODY parameters =============================
     AliBODY *BODY = new AliBODY("BODY", "Alice envelop");
 

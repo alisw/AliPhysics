@@ -40,15 +40,15 @@ public:
   virtual void  SetPadSize(Float_t, Float_t, Float_t, Float_t);
   virtual void  StepManager();
   virtual void  AddRecPoint(const AliPMDRecPoint &p);
-  virtual void  MakeBranch(Option_t* option, const char *file=0);
+  virtual void  MakeBranch(Option_t* option);
   virtual void  SetTreeAddress();
   virtual void  ResetHits();
   
  private:
-  TClonesArray* fRecPoints;   // List of reconstructed hits
+  TClonesArray* fRecPoints;   //! List of reconstructed hits
   Int_t         fNRecPoints;  // Number of reconstructed hits
   
-  ClassDef(AliPMD,1)  // Base Class for Photon Multiplicity Detector
+  ClassDef(AliPMD,2)  // Base Class for Photon Multiplicity Detector
 };
 
  

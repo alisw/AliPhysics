@@ -18,8 +18,7 @@ void AliTRDhits2sdigits()
   Char_t *alifile = "galice.root"; 
 
   // Create the TRD digitzer 
-  AliTRDdigitizer *digitizer = new AliTRDdigitizer("TRDdigitizer"
-                                                  ,"TRD digitizer class");
+  AliTRDdigitizer *digitizer = new AliTRDdigitizer("TRDdigitizer","TRD digitizer class");
 
   // Set the parameter
   digitizer->SetDebug(1);
@@ -44,6 +43,8 @@ void AliTRDhits2sdigits()
   digitizer->WriteDigits();
 
   // Save the parameter object in the AliROOT file
+  AliRunLoader* rl = AliRunLoader::GetRunLoader(AliConfig::fgkDefaultEventFolderName);
+  rl->CdGAFile();
   parameter->Write();
 
 }

@@ -13,34 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.6  2000/12/04 17:48:23  gosset
-Modifications for stations 1 et 2 mainly:
-* station 1 with 4 mm gas gap and smaller cathode segmentation...
-* stations 1 and 2 with "grey" frame crosses
-* mean noise at 1.5 ADC channel
-* Ar-CO2 gas (80%+20%)
-
-Revision 1.5  2000/11/21 13:47:55  gosset
-All Mathieson parameters (Sqrt(K3), K2 and K4) set in one function,
-SetSqrtKx3AndDeriveKx2Kx4 or SetSqrtKx3AndDeriveKx2Kx4,
-for each cathode plane
-
-Revision 1.4  2000/10/25 10:41:52  morsch
-IntPH(..): Protec Log against random numbers equal to 0.
-
-Revision 1.3  2000/07/03 11:54:57  morsch
-AliMUONSegmentation and AliMUONHitMap have been replaced by AliSegmentation and AliHitMap in STEER
-The methods GetPadIxy and GetPadXxy of AliMUONSegmentation have changed name to GetPadI and GetPadC.
-
-Revision 1.2  2000/06/15 07:58:48  morsch
-Code from MUON-dev joined
-
-Revision 1.1.2.1  2000/06/09 21:33:35  morsch
-AliMUONResponse code  from  AliMUONSegResV0.cxx
-
-*/
+/* $Id$ */
 
 #include "AliMUONResponseV0.h"
 #include "AliSegmentation.h"

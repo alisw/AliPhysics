@@ -151,7 +151,7 @@
 // This class will always be for ITS only
 #pragma link C++ class  AliITSvtest+;
 
-#pragma link C++ class AliITSclustererV2+;
+//PH #pragma link C++ class AliITSclustererV2+;
 #pragma link C++ class AliITSclusterV2+;
 #pragma link C++ class AliITStrackV2+;
 #pragma link C++ class AliITStrackerV2+;
@@ -180,6 +180,9 @@
 #pragma link C++ class AliITSFindClustersV2+;
 // Raw data
 #pragma link C++ class AliITSDDLRawData+;
+
+#pragma link C++ class AliITSLoader+;
+
 #pragma link C++ class AliITSRawStream+;
 #pragma link C++ class AliITSRawStreamSPD+;
 #pragma link C++ class AliITSRawStreamSDD+;

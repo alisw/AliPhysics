@@ -26,7 +26,7 @@ class  AliEMCALTrackSegmentMakerv1 : public AliEMCALTrackSegmentMaker {
 public:
 
   AliEMCALTrackSegmentMakerv1() ;                     
-  AliEMCALTrackSegmentMakerv1(const char* headerFile, const char* name = "Default", const Bool_t toSplit = kFALSE) ;                     
+  AliEMCALTrackSegmentMakerv1(const TString alirunFileNameFile, const TString eventFolderName = AliConfig::fgkDefaultEventFolderName);                  
   AliEMCALTrackSegmentMakerv1(const AliEMCALTrackSegmentMakerv1 & tsm) {
     // cpy ctor: no implementation yet
     // requested by the Coding Convention
@@ -57,6 +57,7 @@ private:
   void    Init() ;
   void    InitParameters() ;
   void    PrintTrackSegments(Option_t *option) ;
+  void    Unload() ;
   virtual void   WriteTrackSegments(Int_t event) ;
 
 private:  
@@ -65,7 +66,7 @@ private:
   Bool_t  fDefaultInit ;         //! Says if the task was created by defaut ctor (only parameters are initialized)
   Int_t fNTrackSegments ;        // number of track segments found 
   TClonesArray * fPRELinkArray  ;//! Contains the links ECAL-PRE
-  TClonesArray * fHCLinkArray  ; //! Contains the links ECAL-HCAL
+  TClonesArray * fHCALinkArray  ;//! Contains the links ECAL-HCAL
   Int_t fTrackSegmentsInRun ;    //! Total number of track segments in one run
 
   ClassDef( AliEMCALTrackSegmentMakerv1,2)  // Implementation version 1 of algorithm class to make EMCAL track segments 

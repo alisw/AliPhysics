@@ -36,10 +36,12 @@
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "AliHALL.h"
-#include "AliRun.h"
-#include "AliMagF.h"
+#include <TVirtualMC.h>
+
 #include "AliConst.h"
+#include "AliHALL.h"
+#include "AliMagF.h"
+#include "AliRun.h"
  
 ClassImp(AliHALL)
  
@@ -271,27 +273,6 @@ void AliHALL::CreateGeometry()
 
   gMC->Gsvolu("HMBS", "PGON", idtmed[1956], ppgon, 10);
   gMC->Gspos("HMBS", 1, "ALIC", 0., 70., 0., 0, "ONLY");
-/*
-  ppgon[4] = -1800.;
-  ppgon[5] =     0.;
-  ppgon[6] =   150.;
-  ppgon[7] = -1300.;
-  ppgon[8] =     0.;
-  ppgon[9] =   150.;
-  gMC->Gsvolu("HMBT", "PGON", idtmed[1956], ppgon, 10);
-
-  ppgon[4] = -1800.;
-  ppgon[5] =     0.;
-  ppgon[6] =    10.;
-  ppgon[7] = -1300.;
-  ppgon[8] =     0.;
-  ppgon[9] =    10.;
-  gMC->Gsvolu("HMBU", "PGON", idtmed[1954], ppgon, 10);
-
-  gMC->Gspos("HMBU", 1, "HMBT", 0., -70., 0., 0, "ONLY");
-
-  gMC->Gspos("HMBT", 1, "ALIC", 0.,  70., 0., 0, "ONLY");
-*/  
 }
 
 //_____________________________________________________________________________

@@ -13,6 +13,8 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+/* $Id$ */
+
 //_________________________________________________________________________
 // This is a TTask that made the calculation of the Time zero using TOF.
 // Description: The algorithm used to calculate the time zero of interaction
@@ -61,27 +63,29 @@
 //-- Author: F. Pierella
 //////////////////////////////////////////////////////////////////////////////
 
+#include <Riostream.h>
+#include <stdlib.h>
+
+#include <TBenchmark.h>
+#include <TCanvas.h>
+#include <TClonesArray.h>
+#include <TFile.h>
+#include <TFolder.h>
+#include <TFrame.h>
+#include <TH1.h>
+#include <TParticle.h>
+#include <TROOT.h>
+#include <TSystem.h>
+#include <TTask.h>
+#include <TTree.h>
+#include <TVirtualMC.h>
+
+#include "AliDetector.h"
+#include "AliRun.h"
+#include "AliTOF.h"
 #include "AliTOFT0.h"
 #include "AliTOFhitT0.h"
-#include "AliTOF.h"
 #include "AliTOFv4T0.h"
-#include "AliRun.h"
-#include "AliDetector.h"
-
-#include "TH1.h"
-#include "TFile.h"
-#include "TTask.h"
-#include "TTree.h"
-#include "TSystem.h"
-#include "TCanvas.h"
-#include "TFrame.h"
-#include "TROOT.h"
-#include "TFolder.h"
-#include "TBenchmark.h"
-#include "TParticle.h"
-#include "TClonesArray.h"
-#include <stdlib.h>
-#include <Riostream.h>
 
 ClassImp(AliTOFT0)
 
@@ -222,7 +226,7 @@ void AliTOFT0::Exec(Option_t *option)
 
   for (Int_t ievent = 0; ievent < fNevents; ievent++) {
     gAlice->GetEvent(ievent);
-    TTree *TH = gAlice->TreeH ();
+    TTree *TH = TOF->TreeH ();
     if (!TH)
       return;
     TParticle*    particle;

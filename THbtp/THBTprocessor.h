@@ -94,8 +94,10 @@ class THBTprocessor: public TGenerator
       virtual void SetBinSize3DCoarseMesh(Float_t x=0.08){MESH.binsize_3d_coarse=x;}      
       
       virtual void SetNBins3DFineProjectMesh(Int_t n =3 ){ MESH.n_3d_fine_project=n;}
-    
-    
+
+      virtual void SetPrintFull(Int_t flag = 1){PARAMETERS.print_full=flag;} 
+      
+      void         DumpSettings();
     protected:
 
     private:

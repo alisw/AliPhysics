@@ -13,50 +13,8 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.22  2002/10/22 14:45:44  alibrary
-Introducing Riostream.h
+/* $Id$ */
 
-Revision 1.21  2002/10/14 14:57:08  hristov
-Merging the VirtualMC branch to the main development branch (HEAD)
-
-Revision 1.15.4.3  2002/10/14 13:14:08  hristov
-Updating VirtualMC to v3-09-02
-
-Revision 1.20  2002/09/11 10:32:41  hristov
-Use new for arrays with variable size
-
-Revision 1.19  2002/09/09 17:23:28  nilsen
-Minor changes in support of changes to AliITSdigitS?D class'.
-
-Revision 1.18  2002/08/21 22:11:13  nilsen
-Debug output now settable via a DEBUG flag.
-
-Revision 1.17  2002/07/16 17:00:17  barbera
-Fixes added to make the slow simulation running with the current HEAD (from M. Masera)
-
-Revision 1.16  2002/06/19 16:02:22  hristov
-Division by zero corrected
-
-Revision 1.15  2002/03/15 17:32:14  nilsen
-Reintroduced SDigitization, and Digitization from SDigits, along with
-functions InitSimulationModule, and FinishSDigitizModule.
-
-Revision 1.14  2001/11/23 13:04:07  barbera
-Some protection added in case of high multiplicity
-
-Revision 1.13  2001/11/13 11:13:24  barbera
-A protection against tracks with the same entrance and exit has been made more strict
-
-Revision 1.12  2001/10/04 22:44:31  nilsen
-Major changes in supppor of PreDigits (SDigits). Changes made with will make
-it easier to suppor expected changes in AliITSHit class. Added use of new
-class AliITSpList. Both SPD and SDD have added effects of Dead Channels. Both
-of these will require addtional work as data bases of detectors and the like
-are developed.
-
-*/
 #include <Riostream.h>
 #include <TRandom.h>
 #include <TH1.h>

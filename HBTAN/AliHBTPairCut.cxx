@@ -246,22 +246,21 @@ void AliHBTPairCut::Streamer(TBuffer &b)
     {
       Version_t v = b.ReadVersion(&R__s, &R__c);
       if (v > -1)
-	{
-	  delete fFirstPartCut;
-	  delete fSecondPartCut;
-	  fFirstPartCut = 0x0;
-	  fSecondPartCut = 0x0;
-	  TObject::Streamer(b);
-	  b >> fFirstPartCut;
-	  b >> fSecondPartCut;
-	  b >> fNCuts;
-	  for (Int_t i = 0;i<fNCuts;i++)
-	    {
-	      b >> fCuts[i];
-	    }
+       {
+          delete fFirstPartCut;
+          delete fSecondPartCut;
+          fFirstPartCut = 0x0;
+          fSecondPartCut = 0x0;
+          TObject::Streamer(b);
+          b >> fFirstPartCut;
+          b >> fSecondPartCut;
+          b >> fNCuts;
+          for (Int_t i = 0;i<fNCuts;i++)
+           {
+             b >> fCuts[i];
+           }
         }
       b.CheckByteCount(R__s, R__c,AliHBTPairCut::IsA());
-      
     } 
   else 
     {
@@ -271,9 +270,9 @@ void AliHBTPairCut::Streamer(TBuffer &b)
       b << fSecondPartCut;
       b << fNCuts;
       for (Int_t i = 0;i<fNCuts;i++)
-	{
-	  b << fCuts[i];
-	}
+        {
+          b << fCuts[i];
+        }
       b.SetByteCount(R__c, kTRUE);
     }
 }
@@ -282,15 +281,13 @@ ClassImp(AliHBTEmptyPairCut)
   
 void AliHBTEmptyPairCut::Streamer(TBuffer &b)
 {
+//streamer for empty pair cut
   AliHBTPairCut::Streamer(b);
 }
 
 ClassImp(AliHbtBasePairCut)
-  
 ClassImp(AliHBTQInvCut)
-  
 ClassImp(AliHBTKtCut)
-  
 ClassImp(AliHBTQSideCMSLCCut)
 ClassImp(AliHBTQOutCMSLCCut)
 ClassImp(AliHBTQLongCMSLCCut)

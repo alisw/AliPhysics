@@ -15,6 +15,12 @@
 
 /*
 $Log$
+Revision 1.1.2.1  2003/04/14 16:24:06  hristov
+Merging with v3-09-08. Several classes are exported from EVGEN to different directories to resolve the dependencies
+
+Revision 1.1  2003/03/15 14:49:39  morsch
+Classes imported from EVGEN
+
 Revision 1.2  2001/03/24 10:08:30  morsch
 Log tag and copyright notice added.
 

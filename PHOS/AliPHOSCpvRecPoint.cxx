@@ -34,7 +34,7 @@
 // --- AliRoot header files ---
 
 #include "AliPHOSCpvRecPoint.h"
-#include "AliPHOSGetter.h"
+#include "AliPHOSLoader.h"
 ClassImp(AliPHOSCpvRecPoint)
 
 //____________________________________________________________________________
@@ -68,8 +68,7 @@ Bool_t AliPHOSCpvRecPoint::AreNeighbours(AliPHOSDigit * digit1, AliPHOSDigit * d
   
   Bool_t aren = kFALSE ;
   
-  AliPHOSGetter * gime = AliPHOSGetter::GetInstance() ; 
-  AliPHOSGeometry * phosgeom =  (AliPHOSGeometry*)gime->PHOSGeometry();
+  AliPHOSGeometry * phosgeom =  AliPHOSLoader::GetPHOSGeometry();
 
   Int_t relid1[4] ; 
   phosgeom->AbsToRelNumbering(digit1->GetId(), relid1) ; 
@@ -142,7 +141,7 @@ void AliPHOSCpvRecPoint::ExecuteEvent(Int_t event, Int_t px, Int_t py) const
 
 //   //   static Int_t pxold, pyold;
 
-//   AliPHOSGetter * gime =  AliPHOSGetter::GetInstance() ; 
+//   AliPHOSLoader * gime =  AliPHOSLoader::GetInstance() ; 
   
 //   static TGraph *  digitgraph = 0 ;
   
@@ -259,9 +258,8 @@ void AliPHOSCpvRecPoint::EvalLocalPosition(Float_t logWeight,TClonesArray * digi
   
   AliPHOSDigit * digit ;
 
-  AliPHOSGetter * gime = AliPHOSGetter::GetInstance() ;
-  AliPHOSGeometry * phosgeom =  (AliPHOSGeometry*)gime->PHOSGeometry();
-
+  AliPHOSGeometry * phosgeom =  AliPHOSLoader::GetPHOSGeometry();
+  
   Int_t iDigit;
 
   for(iDigit=0; iDigit<fMulDigit; iDigit++) {
@@ -307,8 +305,7 @@ void AliPHOSCpvRecPoint::EvalClusterLengths(TClonesArray * digits)
 
   AliPHOSDigit * digit ;
 
-  AliPHOSGetter * gime = AliPHOSGetter::GetInstance() ;
-  AliPHOSGeometry * phosgeom =  (AliPHOSGeometry*)gime->PHOSGeometry();
+  AliPHOSGeometry * phosgeom =  AliPHOSLoader::GetPHOSGeometry();
 
   const Int_t kMaxLeng=20;
   Int_t idX[kMaxLeng], idZ[kMaxLeng];

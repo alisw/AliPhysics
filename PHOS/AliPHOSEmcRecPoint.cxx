@@ -33,7 +33,7 @@
 
 // --- AliRoot header files ---
 
- #include "AliGenerator.h"
+#include "AliGenerator.h"
 #include "AliPHOSGeometry.h"
 #include "AliPHOSEmcRecPoint.h"
 #include "AliRun.h"
@@ -148,8 +148,7 @@ Bool_t AliPHOSEmcRecPoint::AreNeighbours(AliPHOSDigit * digit1, AliPHOSDigit * d
   
   Bool_t aren = kFALSE ;
   
-  AliPHOSGetter * gime = AliPHOSGetter::GetInstance() ; 
-  AliPHOSGeometry * phosgeom =  (AliPHOSGeometry*)gime->PHOSGeometry();
+  AliPHOSGeometry * phosgeom =  AliPHOSLoader::GetPHOSGeometry();
 
   Int_t relid1[4] ; 
   phosgeom->AbsToRelNumbering(digit1->GetId(), relid1) ; 
@@ -218,10 +217,8 @@ void AliPHOSEmcRecPoint::ExecuteEvent(Int_t event, Int_t px, Int_t py) const
   //  If Left button is clicked on AliPHOSRecPoint, the digits are switched on    
   //  and switched off when the mouse button is released.
   
-    
-  AliPHOSGetter * gime =  AliPHOSGetter::GetInstance() ; 
-  if(!gime) return ;
-  AliPHOSGeometry * phosgeom =  (AliPHOSGeometry*)gime->PHOSGeometry();
+  
+  AliPHOSGeometry * phosgeom =  AliPHOSLoader::GetPHOSGeometry();
   
   static TGraph *  digitgraph = 0 ;
   
@@ -230,6 +227,22 @@ void AliPHOSEmcRecPoint::ExecuteEvent(Int_t event, Int_t px, Int_t py) const
   TH2F * histo = 0 ;
   TCanvas * histocanvas ; 
 
+  
+  //try to get run loader from default event folder
+  AliRunLoader* rn = AliRunLoader::GetRunLoader(AliConfig::fgkDefaultEventFolderName);
+  if (rn == 0x0) 
+    {
+      Error("ExecuteEvent","Can not find Run Loader in Default Event Folder");
+      return;
+    }
+  AliPHOSLoader* gime = dynamic_cast<AliPHOSLoader*>(rn->GetLoader("PHOSLoader"));
+  if (gime == 0x0) 
+    {
+      Error("ExecuteEvent","Can not find PHOS Loader from Run Loader");
+      return;
+    }
+  
+  
   const TClonesArray * digits = gime->Digits() ;
   
   switch (event) {
@@ -331,9 +344,7 @@ void  AliPHOSEmcRecPoint::EvalDispersion(Float_t logWeight,TClonesArray * digits
 
   AliPHOSDigit * digit ;
  
-  AliPHOSGetter * gime = AliPHOSGetter::GetInstance() ; 
-  AliPHOSGeometry * phosgeom =  (AliPHOSGeometry*)gime->PHOSGeometry();
-  
+  AliPHOSGeometry * phosgeom =  AliPHOSLoader::GetPHOSGeometry();
 
  // Calculates the center of gravity in the local PHOS-module coordinates 
   
@@ -392,9 +403,8 @@ void AliPHOSEmcRecPoint::EvalCoreEnergy(Float_t logWeight, TClonesArray * digits
 
   AliPHOSDigit * digit ;
 
-  AliPHOSGetter * gime = AliPHOSGetter::GetInstance() ; 
-  AliPHOSGeometry * phosgeom =  (AliPHOSGeometry*)gime->PHOSGeometry();
-    
+  AliPHOSGeometry * phosgeom =  AliPHOSLoader::GetPHOSGeometry();
+
   Int_t iDigit;
 
 // Calculates the center of gravity in the local PHOS-module coordinates 
@@ -443,8 +453,7 @@ void  AliPHOSEmcRecPoint::EvalElipsAxis(Float_t logWeight,TClonesArray * digits)
 
   AliPHOSDigit * digit ;
 
-  AliPHOSGetter * gime = AliPHOSGetter::GetInstance() ; 
-  AliPHOSGeometry * phosgeom =  (AliPHOSGeometry*)gime->PHOSGeometry();
+  AliPHOSGeometry * phosgeom =  AliPHOSLoader::GetPHOSGeometry();
 
   Int_t iDigit;
 
@@ -476,7 +485,7 @@ void  AliPHOSEmcRecPoint::EvalElipsAxis(Float_t logWeight,TClonesArray * digits)
 //   //Apply correction due to non-perpendicular incidence
 //   Double_t CosX ;
 //   Double_t CosZ ;
-//   AliPHOSGetter * gime = AliPHOSGetter::GetInstance() ; 
+//   AliPHOSGetter * gime = AliPHOSGetter::Instance() ; 
 //   AliPHOSGeometry * phosgeom =  (AliPHOSGeometry*)gime->PHOSGeometry();
   //   Double_t DistanceToIP= (Double_t ) phosgeom->GetIPtoCrystalSurface() ;
   
@@ -516,8 +525,7 @@ void  AliPHOSEmcRecPoint::EvalMoments(Float_t logWeight,TClonesArray * digits)
 
   AliPHOSDigit * digit ;
 
-  AliPHOSGetter * gime = AliPHOSGetter::GetInstance() ; 
-  AliPHOSGeometry * phosgeom =  (AliPHOSGeometry*)gime->PHOSGeometry();
+  AliPHOSGeometry * phosgeom =  AliPHOSLoader::GetPHOSGeometry();
 
   Int_t iDigit;
 
@@ -652,8 +660,7 @@ void AliPHOSEmcRecPoint::EvalLocalPosition(Float_t logWeight, TClonesArray * dig
   
   AliPHOSDigit * digit ;
 
-  AliPHOSGetter * gime = AliPHOSGetter::GetInstance() ; 
-  AliPHOSGeometry * phosgeom =  (AliPHOSGeometry*)gime->PHOSGeometry();
+  AliPHOSGeometry * phosgeom =  AliPHOSLoader::GetPHOSGeometry();
 
   Int_t iDigit;
 

@@ -9,7 +9,7 @@ C          o Chi-Square values
 C                                     ! a limit on the number of events that
 C                                     ! can be processed in the input event
 C                                     ! text file.
-      parameter (max_events = 100)
+      parameter (max_events = 10000)
 
       common/event_summary/
      1num_iter(max_events), niter_mean, niter_rms,

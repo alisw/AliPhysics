@@ -13,21 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
  
-/*
-$Log$
-Revision 1.3  2002/10/14 14:57:03  hristov
-Merging the VirtualMC branch to the main development branch (HEAD)
-
-Revision 1.2.4.1  2002/06/10 17:51:15  hristov
-Merged with v3-08-02
-
-Revision 1.2  2002/05/19 18:17:03  hristov
-Changes needed by ICC/IFC compiler (Intel)
-
-Revision 1.1  2002/03/28 16:25:26  nilsen
-New TTask method for creating SDigits from Hits.
-
-*/
+/* $Id$ */
 
 #include <Riostream.h>
  
@@ -55,8 +41,7 @@ AliITSsDigitize::AliITSsDigitize(){
     // Return:
     //    A zero-ed constructed AliITSsDigitize class.
  
-    fFilename = "";
-    fFile     = 0;
+    fRunLoader = 0x0;
     fITS      = 0;
     fDet[0] = fDet[1] = fDet[2] = kTRUE;
     fInit     = kFALSE;
@@ -75,24 +60,15 @@ AliITSsDigitize::AliITSsDigitize(const char* filename){
     // Return:
     //    A standardly constructed AliITSsDigitize class.
  
-    fFilename = filename;
- 
-    if(filename){
-        fFile = (TFile*)gROOT->GetListOfFiles()->FindObject(fFilename.Data());
-        if(fFile) fFile->Close();
-        fFile = new TFile(fFilename.Data(),"UPDATE");
-        //
-        if(gAlice) {
-          delete gAlice;
-          gAlice = 0;
-        }
-        gAlice = (AliRun*)fFile->Get("gAlice");
-        if(!gAlice) {
-            cout << "gAlice not found on file. Aborting." << endl;
-            fInit = kFALSE;
-            return;
-        } // end if !gAlice
-    } // end if !filename.
+    if(gAlice) 
+     {
+      delete gAlice;
+      gAlice = 0;
+     }
+    fRunLoader = AliRunLoader::Open(filename);
+    fRunLoader->LoadgAlice();
+    fRunLoader->LoadHeader();
+    
  
     Init();
 }
@@ -106,8 +82,7 @@ AliITSsDigitize::~AliITSsDigitize(){
     // Return:
     //    A destroyed AliITSsDigitize class.
  
-    if(fFile) fFile->Close();
-    fFile     = 0;
+    if(fRunLoader) delete fRunLoader;
     fITS      = 0;
  
 }
@@ -120,8 +95,8 @@ Bool_t AliITSsDigitize::Init(){
     //   none.
     // Return:
     //    kTRUE if no errors initilizing this class occurse else kFALSE
-    Int_t nparticles;
- 
+    //Int_t nparticles;
+   
     fITS = (AliITS*) gAlice->GetDetector("ITS");
     if(!fITS){
         cout << "ITS not found aborting. fITS=" << fITS << endl;
@@ -139,15 +114,17 @@ Bool_t AliITSsDigitize::Init(){
     fEnt0 = 0;
     fEnt  = gAlice->GetEventsPerRun(); 
  
-    if(!gAlice->TreeS()){
+    AliLoader* loader = fRunLoader->GetLoader("ITSLoader");
+    
+    if(!loader->TreeS()){
         cout << "Having to create the SDigits Tree." << endl;
-        gAlice->MakeTree("S");
+        loader->MakeTree("S");
     } // end if !gAlice->TreeS()
     //make branch
     fITS->MakeBranch("S");
     fITS->SetTreeAddress();
-    nparticles = gAlice->GetEvent(fEnt0);
- 
+    
+    fRunLoader->GetEvent(fEnt0);
     // finished init.
     fInit = InitSDig();
     return fInit;
@@ -194,5 +171,5 @@ void AliITSsDigitize::Exec(const Option_t *opt){
         return;
     } // end if !fInit
 
-    fITS->HitsToSDigits(gAlice->GetHeader()->GetEvent(),0,-1," ",lopt," ");
+    fITS->HitsToSDigits(fRunLoader->GetHeader()->GetEvent(),0,-1," ",lopt," ");
 }

@@ -13,45 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.11  2002/11/21 14:34:53  cblume
-Bug fix in SetNRowPad() reposted by Bogdan
-
-Revision 1.10  2002/10/31 17:46:22  cblume
-New padplane (same number of columns in outer plane
-
-Revision 1.9  2002/10/28 13:02:51  cblume
-Bug fix in GetTiltingAngle()
-
-Revision 1.8  2002/10/14 14:57:44  hristov
-Merging the VirtualMC branch to the main development branch (HEAD)
-
-Revision 1.5.6.3  2002/10/11 07:26:37  hristov
-Updating VirtualMC to v3-09-02
-
-Revision 1.7  2002/09/26 09:26:31  cblume
-Bug fix in LUT
-
-Revision 1.6  2002/06/12 09:54:35  cblume
-Update of tracking code provided by Sergei
-
-Revision 1.5  2002/04/30 08:30:40  cblume
-gAlice now only read by AliRunDigitizer. Therefore it is just deleted in AliTRDmerge.C
-
-Revision 1.4  2002/04/12 12:13:23  cblume
-Add Jiris changes
-
-Revision 1.3  2002/03/28 14:59:07  cblume
-Coding conventions
-
-Revision 1.2  2002/03/28 10:00:36  hristov
-Some additional initialisation
-
-Revision 1.1  2002/03/25 20:01:18  cblume
-Introduce parameter class
-
-*/
+/* $Id$ */
 
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //

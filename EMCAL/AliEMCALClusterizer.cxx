@@ -48,26 +48,20 @@ ClassImp(AliEMCALClusterizer)
   AliEMCALClusterizer::AliEMCALClusterizer():TTask("","")
 {
   // ctor
-  fSplitFile = 0 ;  
-  fToSplit  = kFALSE ;
-
+  fEventFolderName = "" ;  
 }
 
 //____________________________________________________________________________
-AliEMCALClusterizer::AliEMCALClusterizer(const char* headerFile, const char* name, const Bool_t toSplit):
-TTask(name, headerFile)
+AliEMCALClusterizer::AliEMCALClusterizer(const TString alirunFileName, const TString eventFolderName):
+  TTask("EMCAL"+AliConfig::fgkReconstructionerTaskName, alirunFileName), fEventFolderName(eventFolderName)
 {
   // ctor
-  fToSplit  = toSplit ;
-  fSplitFile = 0 ;  
-
+  
 }
 
 //____________________________________________________________________________
 AliEMCALClusterizer::~AliEMCALClusterizer()
 {
   // dtor
-  
-  fSplitFile = 0 ;
- }
+}
 

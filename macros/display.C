@@ -10,33 +10,48 @@ void display (const char *filename="galice.root",Int_t nevent=0, Int_t * tracks=
       gROOT->LoadMacro("loadlibs.C");
       loadlibs();
    } else {
+      delete gAlice->GetRunLoader();
       delete gAlice;
       gAlice = 0;
    }
       
 // Connect the Root Galice file containing Geometry, Kine and Hits
-
+   AliRunLoader *rl = 0x0;
    TFile *file = (TFile*)gROOT->GetListOfFiles()->FindObject(filename);
    if(file){
      cout<<"galice.root is already open \n";
    }
-   else {
-     if(!file)file=TFile::Open(filename);
-   }
 
-// Get AliRun object from file or create it if not on file
-   if (!gAlice) {
-      gAlice = (AliRun*)file->Get("gAlice");
-      if (gAlice) printf("AliRun object found on file\n");
-      if (!gAlice) gAlice = new AliRun("gAlice","Alice test program");
-   }
    
+   rl = AliRunLoader::Open(filename,"DISPLAYED EVENT");
+   
+   if (rl == 0x0)
+    {
+      cerr<<"Error <display.C()>: can not get Run Loader. Exiting"<<endl;
+      return;
+    }
+// Get AliRun object from file or create it if not on file
+
+   rl->LoadgAlice();
+ 
+   gAlice = rl->GetAliRun();
+   if (!gAlice) {
+    cerr<<"AliTPCHits2Digits.C : AliRun object not found on file\n";
+    return;
+  }
+    
 // Create Event Display object
    AliDisplay *edisplay = new AliDisplay(750);
    if (ntracks>0) edisplay->SetTracksToDisplay(tracks, ntracks);
 
 // Display the requested event
-   gAlice->GetEvent(nevent);
+   rl->GetEvent(nevent);
+   rl->LoadKinematics();
+   rl->LoadHeader();
+   rl->LoadHits();
+
+   AliDisplay *edisplay = new AliDisplay(750);
+   
    edisplay->ShowNextEvent(0);
 
 // Define the buttons to switch on/off the existing modules

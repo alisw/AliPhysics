@@ -12,6 +12,7 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
+
 /* $Id$ */
 
 #include <stdio.h>
@@ -328,22 +329,6 @@ AliITSpListItem& AliITSpListItem::operator=(const AliITSpListItem &source){
     this->fTsignal = source.fTsignal;
     this->fNoise   = source.fNoise;
     this->fSignalAfterElect   = source.fSignalAfterElect;
-    /*
-    cout <<"this fTrack[0-9]=";
-    for(i=0;i<this->fkSize;i++) cout <<this->fTrack[i]<<",";
-    cout <<" fHits[0-9]=";
-    for(i=0;i<this->fkSize;i++) cout <<this->fHits[i]<<",";
-    cout <<" fSignal[0-9]=";
-    for(i=0;i<this->fkSize;i++) cout <<this->fSignal[i]<<",";
-    cout << endl;
-    cout <<"source fTrack[0-9]=";
-    for(i=0;i<this->fkSize;i++) cout <<source.fTrack[i]<<",";
-    cout <<" fHits[0-9]=";
-    for(i=0;i<this->fkSize;i++) cout <<source.fHits[i]<<",";
-    cout <<" fSignal[0-9]=";
-    for(i=0;i<this->fkSize;i++) cout <<source.fSignal[i]<<",";
-    cout << endl;
-    */
     return *this;
 }
 //______________________________________________________________________

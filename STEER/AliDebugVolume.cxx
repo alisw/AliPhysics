@@ -21,7 +21,6 @@
 //    Author: A.Morsch
 //-----------------------------------------------------------------------
 
-
 #include "AliDebugVolume.h"
 
 ClassImp(AliDebugVolume)

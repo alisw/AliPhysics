@@ -27,18 +27,21 @@
 
 // --- ROOT system ---
 class TFile;
-#include "TROOT.h"
-#include "TTree.h"
-#include "TFolder.h" 
+#include <TFolder.h> 
+#include <TROOT.h>
+#include <TTree.h>
+#include <TVirtualMC.h> 
 
 // --- Standard library ---
+#include <Riostream.h>
 
 // --- AliRoot header files ---
-#include "AliPHOS.h"
-#include "AliRun.h"
 #include "AliMagF.h"
+#include "AliPHOS.h"
 #include "AliPHOSGeometry.h"
-#include "AliPHOSQAChecker.h" 
+#include "AliPHOSLoader.h"
+#include "AliPHOSQAChecker.h"
+#include "AliRun.h"
 
 ClassImp(AliPHOS)
 //____________________________________________________________________________
@@ -368,16 +371,21 @@ AliPHOSGeometry * AliPHOS::GetGeometry() const
 //____________________________________________________________________________
 void AliPHOS::SetTreeAddress()
 { 
-  // Set tree address to hit array
+
   TBranch *branch;
   char branchname[20];
   sprintf(branchname,"%s",GetName());
   
   // Branch address for hit tree
-  TTree *treeH = gAlice->TreeH();
-  if (treeH && fHits) {
+  TTree *treeH = TreeH();
+  if (treeH) {
     branch = treeH->GetBranch(branchname);
-    if (branch) branch->SetAddress(&fHits);
+    if (branch) 
+     { 
+       if (fHits == 0x0) fHits= new TClonesArray("AliPHOSHit",1000);
+       //Info("SetTreeAddress","<%s> Setting Hits Address",GetName());
+       branch->SetAddress(&fHits);
+     }
   }
 }
 
@@ -386,13 +394,24 @@ void AliPHOS::WriteQA()
 {
 
   // Make TreeQA in the output file. 
+
   if(fTreeQA == 0)
     fTreeQA = new TTree("TreeQA", "QA Alarms") ;    
   // Create Alarms branches
   Int_t bufferSize = 32000 ;    
   Int_t splitlevel = 0 ; 
-  TFolder * alarmsF = (TFolder*)gROOT->FindObjectAny("Folders/Run/Conditions/QA/PHOS") ; 
-  TString branchName(alarmsF->GetName());  
+
+  TFolder* topfold = GetLoader()->GetTopFolder(); //get top aliroot folder; skowron
+  TString phosqafn(AliConfig::Instance()->GetQAFolderName()+"/"); //get name of QAaut folder relative to top event; skowron
+  phosqafn+=GetName(); //hard wired string!!! add the detector name to the pathname; skowron 
+  TFolder * alarmsF = (TFolder*)topfold->FindObjectAny(phosqafn); //get the folder
+ 
+  if (alarmsF == 0x0)
+   {
+     Error("WriteQA","Can not find folder with qa alarms");
+     return;
+   }
+  TString branchName(alarmsF->GetName());
   TBranch * alarmsBranch = fTreeQA->Branch(branchName,"TFolder", &alarmsF, bufferSize, splitlevel);
   TString branchTitle = branchName + " QA alarms" ; 
   alarmsBranch->SetTitle(branchTitle);
@@ -401,3 +420,11 @@ void AliPHOS::WriteQA()
   //fTreeQA->Fill() ; 
 }
 
+//____________________________________________________________________________
+AliLoader* AliPHOS::MakeLoader(const char* topfoldername)
+{
+//different behaviour than standard (singleton getter)
+// --> to be discussed and made eventually coherent
+ fLoader = new AliPHOSLoader(GetName(),topfoldername);
+ return fLoader;
+}

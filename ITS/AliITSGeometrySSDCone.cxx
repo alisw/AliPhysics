@@ -15,6 +15,12 @@
 
 /*
 $Log$
+Revision 1.4.2.1  2003/05/19 16:24:39  hristov
+Merging with v3-09-09 (partial, AliITCclustererV2 is excluded from compilation and has to be adapted to NewIO, AliITStrackerV2 needs additional changes)
+
+Revision 1.4  2003/04/22 20:41:08  nilsen
+Finished geometry objects defninistions, and fixed bugs in SSD cone geometry.
+
 Revision 1.3  2003/04/17 22:29:23  nilsen
 Geometry bug fixes and the like. Work still progressing.
 

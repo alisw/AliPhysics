@@ -15,7 +15,7 @@
 // --- ROOT system ---
 //class TFormula ;
 class TVector3 ;
-class TMatrixD ;
+class TMatrix ;
 class TPrincipal ;
 
 // --- Standard library ---
@@ -31,13 +31,13 @@ class  AliEMCALPIDv1 : public AliEMCALPID {
  public:
   
   AliEMCALPIDv1() ;          // ctor            
-  AliEMCALPIDv1(const char* headerFile, const char * tsBranch = "Default", const Bool_t toSplit=kFALSE) ;
-  
+  AliEMCALPIDv1(const TString alirunFileNameFile, const TString eventFolderName = AliConfig::fgkDefaultEventFolderName) ;
+  AliEMCALPIDv1(const AliEMCALPIDv1 & pid) ;          // cpy ctor            
+
   virtual ~AliEMCALPIDv1() ; // dtor
   
   virtual void Exec(Option_t * option) ;
-  //  virtual char * GetRecParticlesBranch()const {return (char*) fRecParticlesTitle.Data() ;}      
-  //  virtual char * GetTrackSegmentsBranch()const{return (char*) fTrackSegmentsTitle.Data(); }
+
   virtual const Int_t GetRecParticlesInRun() const  {return fRecParticlesInRun ;}  
   
   virtual void Print(Option_t * option) const {}
@@ -58,19 +58,18 @@ class  AliEMCALPIDv1 : public AliEMCALPID {
   void     MakeRecParticles(void ) ;
   void     PrintRecParticles(Option_t * option) ;
   virtual  void WriteRecParticles(Int_t event) ; 
-  
- 
+  void Unload(); 
 
  private:
 
-  Bool_t                 fDefaultInit;        //! Says if the task was created by defaut ctor (only parameters are initialized)
-  TString    fFileName ;  // File that contains the Principal file for analysis
-  TString    fFileNamePar ;// File that contains the parameters for analysis
-  Int_t                      fNEvent ;            //! current event number
-  Bool_t                     fPi0Analysis;        //! Pi0 analysis on or off  
-  Int_t                      fRecParticlesInRun ; //! Total number of recparticles in one run
+  Bool_t  fDefaultInit;        //! Says if the task was created by defaut ctor (only parameters are initialized)
+  Int_t   fNEvent ;            //! current event number
+  TString fFileName ;          // File that contains the Principal file for analysis
+  TString fFileNamePar ;       // File that contains the parameters for analysis
+  Bool_t  fPi0Analysis;        //! Pi0 analysis on or off  
+  Int_t   fRecParticlesInRun ; //! Total number of recparticles in one run
 
-  ClassDef( AliEMCALPIDv1,6)  // Particle identifier implementation version 1
+  ClassDef( AliEMCALPIDv1,7)  // Particle identifier implementation version 1
 
 };
 

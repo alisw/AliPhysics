@@ -13,15 +13,8 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.2  2001/01/10 09:32:50  kowal2
-Changes to obey the coding rules.
+/* $Id$ */
 
-Revision 1.1  2000/11/01 16:01:26  kowal2
-Classes for handling the new hits structures
-
-*/
 #include "TArrayOfArray.h"
 #include "Riostream.h"
 
