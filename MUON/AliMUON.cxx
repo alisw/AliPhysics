@@ -393,6 +393,14 @@ Float_t  AliMUON::GetMaxDestepAlu() const
 }
 
 //____________________________________________________________________
+ void  AliMUON::SetAlign(Bool_t align)
+ {
+ // Sets option for alignement to geometry builder
+ 
+   fGeometryBuilder->SetAlign(align);
+}   
+    
+//____________________________________________________________________
 void   AliMUON::SetSegmentationModel(Int_t id, Int_t isec, AliSegmentation *segmentation)
 {
 // Set the segmentation for chamber id cathode isec

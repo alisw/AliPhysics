@@ -101,6 +101,9 @@ class AliMUON : public  AliDetector
     virtual Float_t  GetMaxStepAlu() const;
     virtual Float_t  GetMaxDestepGas() const;
     virtual Float_t  GetMaxDestepAlu() const;
+    
+    // Set alignement option
+    virtual void  SetAlign(Bool_t align);
    
     // Return reference to Chamber #id
     virtual AliMUONChamber& Chamber(Int_t id)
