@@ -1,0 +1,6 @@
+SRCS          =   \
+TFluka.cxx AliFluka.cxx
+
+HDRS:= $(SRCS:.cxx=.h) 
+
+DHDR= TFlukaLinkDef.h
