@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.34  2001/12/11 16:55:42  morsch
+Correct initialization for jet phi-range.
+
 Revision 1.33  2001/12/05 10:18:51  morsch
 Possibility of kinematic biasing of jet phi range. (J. Klay)
 
@@ -154,6 +157,9 @@ AliGenHijing::AliGenHijing()
                  :AliGenMC()
 {
 // Constructor
+  fHijing = 0;
+  fDsigmaDb = 0;
+  fDnDb = 0;
 }
 
 AliGenHijing::AliGenHijing(Int_t npart)
