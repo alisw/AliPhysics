@@ -65,8 +65,8 @@ public:
   inline static Int_t   Loc2TotQdc(TVector3 locX3,Double_t eloss,Int_t iPid, Int_t &sector);
   inline static Double_t Loc2PadFrac(TVector3 locX3,Int_t padx,Int_t pady);
   
-  inline  void   SigGenInit(Double_t x,Double_t y);
-  inline  Bool_t SigGenCond(Double_t x,Double_t y);
+         void   SigGenInit(Double_t,Double_t){;}
+         Bool_t SigGenCond(Double_t,Double_t){return kFALSE;}
   inline static Int_t   Loc2Sec(Double_t &x,Double_t &y); 
   inline static Int_t   Pad2Sec(Int_t &padx,Int_t &pady); 
   
@@ -91,19 +91,18 @@ Int_t AliRICHParam::PadNeighbours(Int_t iPadX,Int_t iPadY,Int_t listX[4],Int_t l
 Int_t AliRICHParam::Loc2Sec(Double_t &x,Double_t &y)
 {//Determines sector for a given hit (x,y) and trasform this point to the local system of that sector.
   Int_t sector=kBad;  
-  Double_t x1=-0.5*PcSizeX();      Double_t x2=-0.5*SectorSizeX()-DeadZone();  Double_t x3=-0.5*SectorSizeX();
-  Double_t x4= 0.5*SectorSizeX();  Double_t x5= 0.5*SectorSizeX()+DeadZone();  Double_t x6= 0.5*PcSizeX();
+  Double_t x1=-PcSizeX()/2;      Double_t x2=-SectorSizeX()/2-DeadZone();  Double_t x3=-SectorSizeX()/2;
+  Double_t x4= SectorSizeX()/2;  Double_t x5= SectorSizeX()/2+DeadZone();  Double_t x6= PcSizeX()/2;
 
-  if     (x>=x1&&x<=x2)    {sector=1;x+=0.5*PcSizeX();}
-  else if(x>=x3&&x<=x4)    {sector=2;x+=0.5*SectorSizeX();}
-  else if(x>=x5&&x<=x6)    {sector=3;x-=0.5*SectorSizeX()+DeadZone();}
-  else if(x< x1||x> x6)    {return kBad;}
-  else                                                        {return kBad;} //in dead zone
+  if     (x>=x1&&x<=x2)    {sector=1;x+=PcSizeX()/2;}
+  else if(x>=x3&&x<=x4)    {sector=2;x+=SectorSizeX()/2;}
+  else if(x>=x5&&x<=x6)    {sector=3;x-=SectorSizeX()/2+DeadZone();}
+  else                     {return kBad;} //in dead zone
 
-  if     (y>=-0.5*PcSizeY()   &&y<=-0.5*DeadZone())  {y+=0.5*PcSizeY();  return -sector;}
-  else if(y> -0.5*DeadZone()  &&y<  0.5*DeadZone())  {return kBad;} //in dead zone
-  else if(y>= 0.5*DeadZone()  &&y<= 0.5*PcSizeY())   {y-=0.5*DeadZone(); return  sector;}
-  else                                               {return kBad;}
+  if     (y>=-PcSizeY()/2   &&y<=-DeadZone()/2)  {y+=PcSizeY()/2;  return -sector;}
+  else if(y> -DeadZone()/2  &&y<  DeadZone()/2)  {return kBad;} //in dead zone
+  else if(y>= DeadZone()/2  &&y<= PcSizeY()/2)   {y-=DeadZone()/2; return  sector;}
+  else                                           {return kBad;}
 }//Loc2Sec(Double_t x, Double_t y)
 //__________________________________________________________________________________________________
 Int_t AliRICHParam::Pad2Sec(Int_t &padx, Int_t &pady)
@@ -220,7 +219,7 @@ void AliRICHParam::Loc2Area(TVector3 hitX3,Int_t &iPadXmin,Int_t &iPadYmin,Int_t
 {//calculates the area of disintegration for a given hit. Area is a rectangulare set pf pads
  //defined by its left-down and right-up coners
   //  hitX3.SetX(Shift2NearestWire(hitX3.X());
-  Loc2Pad(hitX3.X()-MathiensonDeltaX(),hitX3.X()-MathiensonDeltaY(),iPadXmin,iPadYmin);   
-  Loc2Pad(hitX3.X()+MathiensonDeltaX(),hitX3.X()+MathiensonDeltaY(),iPadXmax,iPadYmax);     
+  Loc2Pad(hitX3.X()-MathiensonDeltaX(),hitX3.Y()-MathiensonDeltaY(),iPadXmin,iPadYmin);   
+  Loc2Pad(hitX3.X()+MathiensonDeltaX(),hitX3.Y()+MathiensonDeltaY(),iPadXmax,iPadYmax);     
 }//
 #endif //AliRICHParam_h
