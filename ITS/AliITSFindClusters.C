@@ -77,25 +77,10 @@ Int_t AliITSFindClusters() {
 
    TStopwatch timer;
 
-   switch (ver) {
-   case 5:
-      cerr<<"Looking for clusters...\n";
-      {
-	timer.Start();
-	ITS->DigitsToRecPoints(0,0,"All");
-      }
-      break;
-   default:
-      cerr<<"Invalid ITS version !\n";
-      return 5;
-   }
-
+   cerr<<"Looking for clusters...\n";
+   timer.Start();
+   ITS->DigitsToRecPoints(0,0,"All");
    timer.Stop(); timer.Print();
-
-   delete rec0;
-   delete rec1;
-   delete rec2;
-
 
    delete gAlice; gAlice=0;
 
