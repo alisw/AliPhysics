@@ -61,7 +61,7 @@ Int_t AliTPCHits2Digits()
   arr->MakeTree();
 
   TPC->SetDigitsArray(arr);
-  TPC->AliTPCHits2Digits();
+  TPC->Hits2Digits();
   /*  TPC->Hits2DigitsSector(1);             
   TPC->Hits2DigitsSector(2);             
   TPC->Hits2DigitsSector(3);             
