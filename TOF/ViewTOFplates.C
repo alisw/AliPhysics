@@ -1,4 +1,4 @@
-void ViewTOF()
+void ViewTOFplates()
 {
 //=====> Level 1
   // Level 1 for TOF volumes
