@@ -116,6 +116,9 @@ Int_t iSTART=0;
       iRICH=0; 
       iZDC=0; 
       iCASTOR=0;
+    // Detectors with temporary problem
+      iMUON=0;
+      iFMD=0;
 
 // From G3 Config.C
 // Without any modification 
