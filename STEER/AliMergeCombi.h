@@ -30,9 +30,9 @@ public:
   Bool_t Combination(Int_t evNumber[], Int_t delta[]);
   
 private:  
-  Int_t *fLastDelta;        //! last combination offered in relative nr.
   Int_t fDim;               //! dimension of arrays evNumber and delta
-  Int_t fSperb;             //! signal per background ration
+  Int_t fSperb;             //! signal per background ratio
+  Int_t fCounter;           //! counter for calls
   
   ClassDef(AliMergeCombi,1)
 };

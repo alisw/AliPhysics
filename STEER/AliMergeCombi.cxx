@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.1  2001/09/19 06:22:13  jchudoba
+Class to generate combinations for merging
+
 */
 
 ////////////////////////////////////////////////////////////////////////
@@ -32,7 +35,9 @@ ClassImp(AliMergeCombi)
 AliMergeCombi::AliMergeCombi()
 {
 // default ctor
-
+  fDim = 1;
+  fSperb = 1;
+  fCounter = 0;
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -41,25 +46,29 @@ AliMergeCombi::AliMergeCombi(Int_t dim, Int_t sperb)
 // default ctor
   fDim = dim;
   fSperb = sperb;
-  fLastDelta = new Int_t[fDim];
-  for (Int_t i=0; i<fDim; i++) fLastDelta[i] = -1;
+  fCounter = 0;
 }
 
 ////////////////////////////////////////////////////////////////////////
 AliMergeCombi::~AliMergeCombi()
 {
 // default dtor
-  if (fLastDelta) {
-    delete fLastDelta;
-    fLastDelta = 0;
-  }
+  ;
 }
 
 ////////////////////////////////////////////////////////////////////////
 Bool_t AliMergeCombi::Combination(Int_t evNumber[], Int_t delta[])
 {
-   for (Int_t i=0; i<fDim; i++) fLastDelta[i] = delta[i] = 1;
-   return kTRUE;
+  delta[0] = 1;
+  for (Int_t i=1; i<fDim; i++) {
+    if (fCounter%fSperb == 0) {
+      delta[i] = 1;
+    } else {
+      delta[i] = 0;
+    }
+    fCounter++;
+  }      
+  return kTRUE;
 }
 
 ////////////////////////////////////////////////////////////////////////
