@@ -95,7 +95,6 @@ void AliPMDClustering::DoClust(double celladc[48][96], TObjArray *pmdcont)
 	}
     }
   order(); // order the data
-  //  cutoff=400.; // cutoff used to discard cells having ener. dep. 
   cutoff = fCutoff; // cutoff used to discard cells having ener. dep. 
   ave=0.; 
   nmx1=-1;
@@ -105,7 +104,7 @@ void AliPMDClustering::DoClust(double celladc[48][96], TObjArray *pmdcont)
       i1 = iord[0][j];
       i2 = iord[1][j];
       if (d[i1][i2] > 0.) {ave=ave+d[i1][i2];}
-      if (d[i1][i2] >= cutoff ) nmx1 = nmx1 + 1;
+      if (d[i1][i2] > cutoff ) nmx1 = nmx1 + 1;
     }
   // nmx1 --- number of cells having ener dep >= cutoff
   if (fDebug == 1)
@@ -139,16 +138,17 @@ void AliPMDClustering::DoClust(double celladc[48][96], TObjArray *pmdcont)
       float clu_y0 = twobysqrt3*clu_yc;
       float clu_x0 = clu_xc - clu_y0/2.;
 
-      clusdata[0] = clu_cells;
-      clusdata[1] = clu_x0;
-      clusdata[2] = clu_y0;
-      clusdata[3] = clu_adc;
+      clusdata[0] = clu_x0;
+      clusdata[1] = clu_y0;
+      clusdata[2] = clu_adc;
+      clusdata[3] = clu_cells;
       clusdata[4] = clu_rad;
       
       pmdcl = new AliPMDcluster(clusdata);
       pmdcont->Add(pmdcl);
     }
   delete pmdcl;
+
 }
 
 void AliPMDClustering::order()
@@ -189,8 +189,6 @@ void AliPMDClustering::order()
     iord[1][i]=i2;
   }
 }
-
-
   
 int AliPMDClustering::crclust(double ave, double cutoff, int nmx1)
 {
@@ -256,7 +254,6 @@ int AliPMDClustering::crclust(double ave, double cutoff, int nmx1)
       for(i=0; i<6; i++){
 	jd1=id1+neibx[i]; 
 	jd2=id2+neiby[i];
-	//if( (jd1 >= 0 && jd1 < 72) && (jd2 >= 0 && jd2 < 72) && 
 	if( (jd1 >= 0 && jd1 < ndimx) && (jd2 >= 0 && jd2 < ndimy) && 
 	    infocl[0][jd1][jd2] == 0){
 	  numcell=numcell+1;
@@ -281,7 +278,6 @@ int AliPMDClustering::crclust(double ave, double cutoff, int nmx1)
 	  for(j=0; j<6 ; j++){
 	    jd1=id1+neibx[j]; 
 	    jd2=id2+neiby[j];
-	    //if( (jd1 >= 0 && jd1 < 72) && (jd2 >= 0 && jd2 < 72) && 
 	    if( (jd1 >= 0 && jd1 < ndimx) && (jd2 >= 0 && jd2 < ndimy) && 
 		infocl[0][jd1][jd2] == 0 ){
 	      infocl[0][jd1][jd2]=2; 
@@ -513,9 +509,6 @@ void AliPMDClustering::refclust(int incr)
       }
     }
   }
-
-  cout << " COMING OUT of refclust" << endl;
-
 }
 
 void AliPMDClustering::gaussfit(int ncell, int nclust, double &x, double &y ,double &z, double &xc, double &yc, double &zc, double &rc)
