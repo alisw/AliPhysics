@@ -52,6 +52,7 @@ class AliGenHijing : public AliGenerator
     virtual void    SetFlavor(Int_t flag=0)           {fFlavor    = flag;}    
     virtual void    SetEvaluate(Int_t flag=0)         {fEvaluate  = flag;}
     virtual void    SetSelectAll(Int_t flag=0)        {fSelectAll = flag;}    
+    virtual void    SetSpectators(Int_t spects=1)     {fSpectators = spects;}
     AliGenHijing &  operator=(const AliGenHijing & rhs);
 // Physics Routines	    
     virtual void EvaluateCrossSections();
@@ -87,6 +88,7 @@ class AliGenHijing : public AliGenerator
     THijing    *fHijing;         // Hijing
     Float_t     fPtHardMin;      // lower pT-hard cut 
     Float_t     fPtHardMax;      // higher pT-hard cut
+    Int_t       fSpectators;     // put spectators on stack
 
  private:
     // check if particle is selected as parent particle

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.12  2000/10/20 13:38:38  morsch
+Debug printouts commented.
+
 Revision 1.11  2000/10/20 13:22:26  morsch
 - skip particle type 92 (string)
 - Charmed and beauty baryions (5122, 4122) are considered as stable consistent with
@@ -88,6 +91,7 @@ AliGenHijing::AliGenHijing(Int_t npart)
     fEvaluate=0;
     fSelectAll=0;
     fFlavor=0;
+    fSpectators=1;
 }
 
 AliGenHijing::AliGenHijing(const AliGenHijing & Hijing)
@@ -238,13 +242,16 @@ void AliGenHijing::Generate()
 	    Bool_t  hasMother            =  (iparticle->GetFirstMother()   >=0);
 	    Bool_t  selected             =  kTRUE;
 	    kf        = iparticle->GetPdgCode();
-	    if (!fSelectAll) selected = KinematicSelection(iparticle)&&SelectFlavor(kf);
+	    ks        = iparticle->GetStatusCode();
+	    if (!fSelectAll) {
+	      selected = KinematicSelection(iparticle)&&SelectFlavor(kf);
+	      if (!fSpectators && selected) selected = (ks != 0 && ks != 10);
+	    }
 //
 // Put particle on the stack if selected
 //
 	    if (selected) {
 		nc++;
-		ks        = iparticle->GetStatusCode();
 		p[0]=iparticle->Px();
 		p[1]=iparticle->Py();
 		p[2]=iparticle->Pz();
