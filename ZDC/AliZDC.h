@@ -25,7 +25,7 @@ public:
   virtual void  BuildGeometry();
   virtual void  CreateGeometry() {}
   virtual void  CreateMaterials() {}
-  Int_t         DistancetoPrimitive(Int_t px, Int_t py);
+  Int_t         DistancetoPrimitive(Int_t px, Int_t py) const;
   virtual Int_t IsVersion() const =0;
   virtual Float_t ZMin() const;	// Minimum overall dimension of the ZDC
   virtual Float_t ZMax() const;	// Maximum overall dimension of the ZDC
@@ -42,19 +42,14 @@ public:
 
 
 //Calibration methods (by Alberto Colla)
-// Albe
+  void    SetZDCCalibFName(const char *name="$(ALICE)/AliRoot/data/AliZDCCalib.root");
+  char*   GetZDCCalibFName() const;
 
-public:
-  void SetZDCCalibFName(const char *name="$(ALICE)/AliRoot/data/AliZDCCalib.root");
-  char* GetZDCCalibFName() const;
-  TString       fZDCCalibFName;      //  Name of the ZDC calibration data
-
-  void          CreateCalibData();
-  void          WriteCalibData(Int_t option=TObject::kOverwrite);
-  void          LoadCalibData();
-  void          SetCalibData(AliZDCCalibData* data) {fCalibData = data;}
+  void    CreateCalibData();
+  void    WriteCalibData(Int_t option=TObject::kOverwrite);
+  void    LoadCalibData();
+  void    SetCalibData(AliZDCCalibData* data) {fCalibData = data;}
   AliZDCCalibData* GetCalibData() const  {return fCalibData;}
-//Calibration methods (by Alberto Colla)
 
 
 protected:
@@ -62,8 +57,8 @@ protected:
   Int_t        fNoShower;	// Flag to switch off the shower	
 
 //Calibration methods (by Alberto Colla)
-  AliZDCCalibData* fCalibData;	// Calibration data for ZDC
-//Calibration methods (by Alberto Colla)
+  AliZDCCalibData* fCalibData;		// Calibration data for ZDC
+  TString          fZDCCalibFName; 	//  Name of the ZDC calibration data
   
   ClassDef(AliZDC,4)  	// Zero Degree Calorimeter base class
 };

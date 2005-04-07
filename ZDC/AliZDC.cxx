@@ -29,6 +29,7 @@
 #include <TGeometry.h>
 #include <TNode.h>
 #include <TTree.h>
+#include <TFile.h>
 #include <TSystem.h>
 
 // --- AliRoot header files
@@ -193,7 +194,7 @@ void AliZDC::BuildGeometry()
 }
 
 //_____________________________________________________________________________
-Int_t AliZDC::DistancetoPrimitive(Int_t , Int_t )
+Int_t AliZDC::DistancetoPrimitive(Int_t , Int_t ) const
 {
   //
   // Distance from the mouse to the Zero Degree Calorimeter
@@ -348,9 +349,9 @@ void AliZDC::Digits2Raw()
 
   // preliminary format: 12 interger values (ZNC, ZNQ1-4, ZPC, ZPQ1-4, ZEM1,2)
   // For the CAEN module V965 we have an header, the Data Words and an End Of Block
-  UInt_t ADCHeader; 
-  UInt_t ADCData[24];
-  UInt_t ADCEndBlock;
+  UInt_t lADCHeader; 
+  UInt_t lADCData[24];
+  UInt_t lADCEndBlock;
 
   // load the digits
   fLoader->LoadDigits("read");
@@ -362,24 +363,24 @@ void AliZDC::Digits2Raw()
 
   // Fill data array
   // ADC header
-  UInt_t ADCHeaderGEO = 0;
-  UInt_t ADCHeaderCRATE = 0;
-  UInt_t ADCHeaderCNT = (UInt_t) treeD->GetEntries();
+  UInt_t lADCHeaderGEO = 0;
+  UInt_t lADCHeaderCRATE = 0;
+  UInt_t lADCHeaderCNT = (UInt_t) treeD->GetEntries();
     
-  ADCHeader = ADCHeaderGEO << 27 | 0x1 << 25 | ADCHeaderCRATE << 16 |
-              ADCHeaderCNT << 8 ;
+  lADCHeader = lADCHeaderGEO << 27 | 0x1 << 25 | lADCHeaderCRATE << 16 |
+               lADCHeaderCNT << 8 ;
 
-  //printf("ADCHeader = %d\n",ADCHeader);
+  //printf("lADCHeader = %d\n",lADCHeader);
       
   // ADC data word
-  UInt_t ADCDataGEO = ADCHeaderGEO;
-  UInt_t ADCDataValue[24];
-  UInt_t ADCDataOvFlw[24];
+  UInt_t lADCDataGEO = lADCHeaderGEO;
+  UInt_t lADCDataValue[24];
+  UInt_t lADCDataOvFlw[24];
   for(Int_t i = 0; i < 24; i++){
-    ADCDataValue[i] = 0;
-    ADCDataOvFlw[i] = 0;
+    lADCDataValue[i] = 0;
+    lADCDataOvFlw[i] = 0;
   }
-  UInt_t ADCDataChannel = 0;
+  UInt_t lADCDataChannel = 0;
   
   // loop over digits
   for (Int_t iDigit = 0; iDigit < treeD->GetEntries(); iDigit++) {
@@ -390,11 +391,11 @@ void AliZDC::Digits2Raw()
     Int_t index = 0;
     if(digit.GetSector(0)!=3){
       index = (digit.GetSector(0)-1) + digit.GetSector(1)*4;
-      ADCDataChannel = (digit.GetSector(0)-1)*8 + digit.GetSector(1);
+      lADCDataChannel = (digit.GetSector(0)-1)*8 + digit.GetSector(1);
     }
     else {
       index = 19 + digit.GetSector(1);
-      ADCDataChannel = 5 + digit.GetSector(1)*8;
+      lADCDataChannel = 5 + digit.GetSector(1)*8;
     }
      
     if ((index < 0) || (index >= 22)) {
@@ -403,25 +404,25 @@ void AliZDC::Digits2Raw()
       continue;
     }
     
-    ADCDataValue[index] = digit.GetADCValue(0);
-    if (ADCDataValue[index] > 2047) ADCDataOvFlw[index] = 1; 
-    ADCDataValue[index+2] = digit.GetADCValue(1);
-    if (ADCDataValue[index+2] > 2047) ADCDataOvFlw[index+2] = 1; 
+    lADCDataValue[index] = digit.GetADCValue(0);
+    if (lADCDataValue[index] > 2047) lADCDataOvFlw[index] = 1; 
+    lADCDataValue[index+2] = digit.GetADCValue(1);
+    if (lADCDataValue[index+2] > 2047) lADCDataOvFlw[index+2] = 1; 
     
-    ADCData[index] =   ADCDataGEO << 27 | ADCDataChannel << 17 | 
-                       ADCDataOvFlw[index] << 12 | (ADCDataValue[index] & 0xfff); 
-    ADCData[index+2] = ADCDataGEO << 27 | ADCDataChannel << 17 | 0x1 << 16 |
-                       ADCDataOvFlw[index+2] << 12 | (ADCDataValue[index+2] & 0xfff);                    
+    lADCData[index] =   lADCDataGEO << 27 | lADCDataChannel << 17 | 
+                        lADCDataOvFlw[index] << 12 | (lADCDataValue[index] & 0xfff); 
+    lADCData[index+2] = lADCDataGEO << 27 | lADCDataChannel << 17 | 0x1 << 16 |
+                        lADCDataOvFlw[index+2] << 12 | (lADCDataValue[index+2] & 0xfff);                    
   }
-  //for (Int_t i=0;i<24;i++)printf("ADCData[%d] = %d\n",i,ADCData[i]);
+  //for (Int_t i=0;i<24;i++)printf("ADCData[%d] = %d\n",i,lADCData[i]);
   
   // End of Block
-  UInt_t ADCEndBlockGEO = ADCHeaderGEO;
-  UInt_t ADCEndBlockEvCount = gAlice->GetEventNrInRun();
+  UInt_t lADCEndBlockGEO = lADCHeaderGEO;
+  UInt_t lADCEndBlockEvCount = gAlice->GetEventNrInRun();
   
-  ADCEndBlock = ADCEndBlockGEO << 27 | 0x1 << 26 | ADCEndBlockEvCount;
+  lADCEndBlock = lADCEndBlockGEO << 27 | 0x1 << 26 | lADCEndBlockEvCount;
   
-  //printf("ADCEndBlock = %d\n",ADCEndBlock);
+  //printf("ADCEndBlock = %d\n",lADCEndBlock);
 
 
   // open the output file
@@ -435,17 +436,17 @@ void AliZDC::Digits2Raw()
 
   // write the DDL data header
   AliRawDataHeader header;
-  header.fSize = sizeof(header) + sizeof(ADCHeader) + 
-                 sizeof(ADCData) + sizeof(ADCEndBlock);
+  header.fSize = sizeof(header) + sizeof(lADCHeader) + 
+                 sizeof(lADCData) + sizeof(lADCEndBlock);
   //printf("sizeof header = %d, ADCHeader = %d, ADCData = %d, ADCEndBlock = %d\n",
-  //        sizeof(header),sizeof(ADCHeader),sizeof(ADCData),sizeof(ADCEndBlock));
+  //        sizeof(header),sizeof(lADCHeader),sizeof(lADCData),sizeof(lADCEndBlock));
   header.SetAttribute(0);  // valid data
   file.write((char*)(&header), sizeof(header));
 
   // write the raw data and close the file
-  file.write((char*) &ADCHeader, sizeof (ADCHeader));
-  file.write((char*)(ADCData), sizeof(ADCData));
-  file.write((char*) &ADCEndBlock, sizeof(ADCEndBlock));
+  file.write((char*) &lADCHeader, sizeof (lADCHeader));
+  file.write((char*)(lADCData), sizeof(lADCData));
+  file.write((char*) &lADCEndBlock, sizeof(lADCEndBlock));
   file.close();
 
   // unload the digits
@@ -483,10 +484,9 @@ void AliZDC::WriteCalibData(Int_t option)
 {
   //
   const int kCompressLevel = 9;
-  const char defname[] = "$(ALICE)/AliRoot/data/AliZDCCalib.root";
   char* fnam = GetZDCCalibFName();
   if (!fnam || fnam[0]=='\0') {
-    fnam = gSystem->ExpandPathName(defname);
+    fnam = gSystem->ExpandPathName("$(ALICE)/$(ALICE_LEVEL)/data/AliZDCCalib.root");
     Warning("WriteCalibData","No File Name is provided, using default %s",fnam);
   }
   TFile* cdfile = TFile::Open(fnam,"UPDATE","",kCompressLevel);
