@@ -22,7 +22,8 @@
 #include "TGeoMaterial.h"
 #include "TGeoMedium.h"
 #include "TGeoVolume.h"
-#include <TGeant3.h>
+#include <TVirtualMC.h>
+//#include <TGeant3.h>
 
 const TString AliITSBeamTestDigitizer::fgkDefaultDigitsFileName="ITS.Digits.root";  
 
@@ -122,7 +123,11 @@ void AliITSBeamTestDigitizer::Init(){
   if(GetBeamTestPeriod()==kAug04){
     fBt = new AliITSvSDD03("ITS",2004);
     gSystem->Load("libgeant321");
-    new TGeant3("C++ Interface to Geant3");
+    //    new TGeant3("C++ Interface to Geant3");
+    if(strcmp(gMC->GetName(),"TGeant3")) {
+	Fatal("Init","TGeant3 should be instantiated in advance");
+	return;
+    } 
     fBt->CreateMaterials();
     fBt->CreateGeometry();
     fBt->Init();
