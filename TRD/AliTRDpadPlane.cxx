@@ -318,6 +318,18 @@ AliTRDpadPlane::~AliTRDpadPlane()
 }
 
 //_____________________________________________________________________________
+AliTRDpadPlane &AliTRDpadPlane::operator=(const AliTRDpadPlane &p)
+{
+  //
+  // Assignment operator
+  //
+
+  if (this != &p) ((AliTRDpadPlane &) p).Copy(*this);
+  return *this;
+
+}
+
+//_____________________________________________________________________________
 void AliTRDpadPlane::Copy(TObject &p) const
 {
   //
