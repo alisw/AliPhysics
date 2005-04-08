@@ -1313,6 +1313,13 @@ Int_t AliL3Hough::FillESD(AliESD *esd)
   // into the ESD. The tracks are stored as
   // AliESDHLTtrack objects.
 
+  // No TPC PID so far,assuming pions
+  Double_t prob[AliPID::kSPECIES];
+  for(Int_t i=0;i<AliPID::kSPECIES;i++) {
+    if(i==AliPID::kPion) prob[i]=1.0;
+    else prob[i]=0.1;
+  }
+
   if(!fGlobalTracks) return 0;
   Int_t nglobaltracks = 0;
   for(Int_t i=0; i<fGlobalTracks->GetNTracks(); i++)
@@ -1325,6 +1332,7 @@ Int_t AliL3Hough::FillESD(AliESD *esd)
       if(!tpctrack) continue;
       AliESDtrack *esdtrack2 = new AliESDtrack() ; 
       esdtrack2->UpdateTrackParams(tpctrack,AliESDtrack::kTPCin);
+      esdtrack2->SetESDpid(prob);
       esd->AddTrack(esdtrack2);
       nglobaltracks++;
       delete esdtrack2;
