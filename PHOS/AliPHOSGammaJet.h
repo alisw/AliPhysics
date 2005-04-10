@@ -145,7 +145,7 @@ public:
 	       Double_t ptl, Double_t phil, Double_t etal, 
 	       TString  type, TLorentzVector & jet); 
   void MakeJetAnyConeOrPt(TClonesArray * particleList, Double_t ptg, 
-			  Double_t phil, Double_t ptl, Double_t phil, 
+			  Double_t phig, Double_t ptl, Double_t phil, 
 			  Double_t etal, TString  type); 
   void GetGammaJet(TClonesArray * pl,  Double_t &pt, 
 		   Double_t &phi, Double_t &eta, Bool_t &Is)  const;
