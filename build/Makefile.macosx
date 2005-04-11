@@ -21,8 +21,8 @@ CLIBCOPT      =
 CLIBFOPT      = $(CLIBDEFS)
 
 # Compiler flags
-CXXFLAGS      = $(CXXOPT) -Wall -W -pipe -fsigned-char -fno-common -fweak-coalesced -fmessage-length=0 -I/sw/include
-CXXFLAGSNO    = $(CXXNOOPT) -Wall -W -pipe -fsigned-char -fno-common -fweak-coalesced -fmessage-length=0 -I/sw/include
+CXXFLAGS      = $(CXXOPT)   -Wall -W -pipe -fsigned-char -fno-common -fweak-coalesced -fmessage-length=0 -I/sw/include  -Wno-long-double #-Weffc++ -Woverloaded-virtual 
+CXXFLAGSNO    = $(CXXNOOPT) -Wall -W -pipe -fsigned-char -fno-common -fweak-coalesced -fmessage-length=0 -I/sw/include  -Wno-long-double
 CFLAGS	      = $(COPT) -Wall -W -fno-common -fweak-coalesced -pipe -I/sw/include
 FFLAGS        = $(CLIBFOPT) $(FOPT)
 # rmkdepend flags for building dependencies of FORTRAN files
@@ -38,12 +38,12 @@ LDFLAGS       = $(OPT) $(DICTLOAD)
 
 SHLD	     := $(LD)
 SOFLAGS      := -bundle -undefined dynamic_lookup
-SHLIB        :=
+SHLIB        := -L/sw/lib -lg2c
 SOEXT 	     := so
 
 DYLD	     := $(LD)
 DYFLAGS       = -dynamiclib -undefined dynamic_lookup -single_module
-DYLIB        :=
+DYLIB        := -L/sw/lib -lg2c
 DYEXT        := dylib
 
 ALLD	      = ar
