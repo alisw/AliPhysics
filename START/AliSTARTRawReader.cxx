@@ -1,7 +1,7 @@
 #include "AliSTARTRawReader.h"
 #include "AliSTARTRawData.h"
 #include "AliRawReaderFile.h" 
-
+#include "AliSTARTdigit.h"
 
 #include <Riostream.h>
 #include "TMath.h"
@@ -10,30 +10,21 @@
 #include "AliLog.h"
  
 ClassImp(AliSTARTRawReader)
-
-  AliSTARTRawReader::AliSTARTRawReader (): TTask("STARTRawReader","read raw data"),
-					   fPMTId(-1),
-					   fTimeTDC1(0),
-					   fChargeADC1(0),
-					   fTimeTDC2(0),
-					   fChargeADC2(0)
+  
+  AliSTARTRawReader::AliSTARTRawReader (AliRawReader *rawReader, TTree* tree)
+    :  TTask("STARTRawReader","read raw START data"),
+       fTree(tree),
+       fRawReader(rawReader)
 {
   //
 // create an object to read STARTraw digits
   AliDebug(1,"Start ");
-  fTimeTDC1 = new TArrayI(24); 
-  fChargeADC1 = new TArrayI(24); 
-  fTimeTDC2 = new TArrayI(24); 
-  fChargeADC2 = new TArrayI(24); 
+
  
 }
  AliSTARTRawReader::~AliSTARTRawReader ()
 {
-  delete fTimeTDC1;
-  delete fTimeTDC2;
-  delete fChargeADC1 ; 
-  delete fChargeADC2; 
- 
+  // 
 }
 //------------------------------------------------------------------------------------------------
 
@@ -51,98 +42,193 @@ UInt_t AliSTARTRawReader::UnpackWord(UInt_t packedWord, Int_t startBit, Int_t st
   return word;
 }
 //---------------------------------------------------------------------------------------
-Bool_t AliSTARTRawReader::NextThing( AliRawReader *fRawReader)
+void AliSTARTRawReader::NextThing()
 {
 // read the next raw digit
 // returns kFALSE if there is no digit left
-
   UInt_t word, unpackword; 
-  UInt_t fADC, fTime;
+  Int_t time, adc, pmt;
+  TArrayI *timeTDC1 = new TArrayI(24);
+  TArrayI * chargeTDC1 = new TArrayI(24);
+  TArrayI *timeTDC2 = new TArrayI(24);
+  TArrayI *chargeTDC2 = new TArrayI(24);
+  TArrayI *sumMult = new TArrayI(6);
+
   fRawReader->Select(13);
  
-  if (!fRawReader->ReadNextInt(fData)) return kFALSE;
+  if (!fRawReader->ReadHeader()){
+    Error("ReadSTARTRaw","Couldn't read header");
+    return;
+  }
+  AliSTARTdigit *fDigits = new AliSTARTdigit(); 
+  fTree->Branch("START","AliSTARTdigit",&fDigits,400,1);
+
+  fRawReader->ReadNextInt(word);
+   for (Int_t i=0; i<24; i++)
+    {
+      word=0;
+      unpackword=0;
+      fRawReader->ReadNextInt(word);
+      unpackword=UnpackWord(word,0,5);
+      pmt=unpackword; 
+      word=0;
+      unpackword=0;
+      fRawReader->ReadNextInt(word);
+      unpackword=UnpackWord(word,8,31);
+      time=unpackword;
+      timeTDC1->AddAt(time,pmt);
+
+      word=0;
+      unpackword=0;
+      fRawReader->ReadNextInt(word);
+      unpackword=UnpackWord(word,0,5);
+      pmt=unpackword;
+      word=0;
+      unpackword=0;
+      fRawReader->ReadNextInt(word);
+      unpackword=UnpackWord(word,8,31);
+      time=unpackword;
+      timeTDC2->AddAt(time,pmt);
+ 
+      //  QTC
+      word=0;
+      unpackword=0;
+      fRawReader->ReadNextInt(word);
+      unpackword=UnpackWord(word,0,5);
+      pmt=unpackword;
+      word=0;
+      unpackword=0;
+      fRawReader->ReadNextInt(word);
+      unpackword= UnpackWord(word,8,31);
+      time=unpackword; //T1
+  
+      word=0;
+      unpackword=0;
+
+      fRawReader->ReadNextInt(word);
+      unpackword=UnpackWord(word,0,5);
+      pmt=unpackword;
+      word=0;
+      unpackword=0;
+      fRawReader->ReadNextInt(word);
+      unpackword= UnpackWord(word,8,31);
+      adc=unpackword-time;  // T1+ T2 (A)
+      chargeTDC1->AddAt(adc,pmt);
+      //QTC amplified
+
+      word=0;
+      unpackword=0;
+      fRawReader->ReadNextInt(word);
+      unpackword=UnpackWord(word,0,5);
+      pmt=unpackword;
+      word=0;
+      unpackword=0;
+      fRawReader->ReadNextInt(word);
+      unpackword= UnpackWord(word,8,31);
+      time=unpackword; //T1
+  
+      word=0;
+      unpackword=0;
+
+      fRawReader->ReadNextInt(word);
+      unpackword=UnpackWord(word,0,5);
+      pmt=unpackword;
+      word=0;
+      unpackword=0;
+      fRawReader->ReadNextInt(word);
+      unpackword= UnpackWord(word,8,31);
+      adc=unpackword-time;  // T1+ T2 (A)
+      chargeTDC2->AddAt(adc,pmt);
+ 
+
+    }
+   fDigits->SetTime(*timeTDC1);
+   fDigits->SetADC(*chargeTDC1);
+ 
+
+   word=0;
+   unpackword=0;
+    
+   fRawReader->ReadNextInt(word);
+   unpackword=UnpackWord(word,0,5);
+   pmt=unpackword;
+
+   word=0;
+   unpackword=0;
+   
+   fRawReader->ReadNextInt(word);
+   unpackword=UnpackWord(word,8,31);
+   time=unpackword;
+   fDigits->SetMeanTime(time);   
+    
+   // Best time right &left  
+   word=0;
+   unpackword=0;
+   
+   fRawReader->ReadNextInt(word);
+   unpackword=UnpackWord(word,0,5);
+   pmt=unpackword;
+
+   word=0;
+   unpackword=0;
+
+   fRawReader->ReadNextInt(word);
+   unpackword=UnpackWord(word,8,31);
+   time=unpackword;
+   fDigits->SetTimeBestRight(time);   
+ 
+
+   // best time left 
+   word=0;
+   unpackword=0;
+     
+   fRawReader->ReadNextInt(word);
+   unpackword=UnpackWord(word,0,5);
+   pmt=unpackword;
+
+   word=0;
+   unpackword=0;
+   
+   fRawReader->ReadNextInt(word);
+   unpackword=UnpackWord(word,8,31);
+   time=unpackword;
+   fDigits->SetTimeBestLeft(time);   
    
 
-  Int_t size=fRawReader->GetDataSize();
-  for (Int_t i=0; i<size/32; i++)
-    {
-      word=0;
-      unpackword=0;
-      fRawReader->ReadNextInt(word);
-      unpackword=UnpackWord(word,0,5);
-      fPMTId=unpackword;
-      word=0;
-      unpackword=0;
+   // best time differece  
+    word=0;
+   unpackword=0;
+   
+   fRawReader->ReadNextInt(word);
+   unpackword=UnpackWord(word,0,5);
+   pmt=unpackword;
 
-      fRawReader->ReadNextInt(word);
-      unpackword=UnpackWord(word,8,31);
-      fTime=unpackword;
-      fTimeTDC1->AddAt(fTime,fPMTId);
-      word=0;
-      unpackword=0;
-
-      fRawReader->ReadNextInt(word);
-      unpackword=UnpackWord(word,0,5);
-      fPMTId=unpackword;
-      word=0;
-      unpackword=0;
-
-      fRawReader->ReadNextInt(word);
-  
-      unpackword=UnpackWord(word,8,31);
-      fTime=unpackword;
-      fTimeTDC2->AddAt(fTime,fPMTId);
-
-      word=0;
-      unpackword=0;
-      fRawReader->ReadNextInt(word);
-      unpackword=UnpackWord(word,0,5);
-      fPMTId=unpackword;
-      word=0;
-      unpackword=0;
-
-      fRawReader->ReadNextInt(word);
-      unpackword= UnpackWord(word,8,31);
-      fADC=unpackword;
-      fChargeADC1 -> AddAt(fADC, fPMTId); 
+   word=0;
+   unpackword=0;
+   
+   fRawReader->ReadNextInt(word);
+   unpackword=UnpackWord(word,8,31);
+   time=unpackword;
+   fDigits->SetDiffTime(time);   
  
-      word=0;
-      unpackword=0;
+ //  multiplicity 
+   for (Int_t im=0; im<6; im++)
+     {
+       word=0;
+       unpackword=0;
+       fRawReader->ReadNextInt(word);
+       unpackword=UnpackWord(word,0,5);
+       pmt=unpackword;
+       word=0;
+       unpackword=0;
+       fRawReader->ReadNextInt(word);
+       unpackword=UnpackWord(word,8,31);
+       time=unpackword;
+       sumMult->AddAt(time,im);
+     }
+        fDigits->SetSumMult(*sumMult);   
 
-      fRawReader->ReadNextInt(word);
-      unpackword=UnpackWord(word,0,5);
-      fPMTId=unpackword;
-
-      word=0;
-      unpackword=0;
-      fRawReader->ReadNextInt(word);
-  
-      unpackword= UnpackWord(word,8,31);
-      fADC=unpackword;
-      fChargeADC2 -> AddAt(fADC, fPMTId); 
-      }
-  return kTRUE;
+    fTree->Fill();
 
 }
  
-//--------------------------------------------
-void AliSTARTRawReader::GetTime (TArrayI &o)
-{
-  //
-  Int_t i;
-  for (i=0; i<24; i++)
-    {
-      o[i]=fTimeTDC1->At(i);
-    }
-}
-//--------------------------------------------
-//--------------------------------------------
-void AliSTARTRawReader::GetADC (TArrayI &o)
-{
-  //
-  Int_t i;
-  for (i=0; i<24; i++)
-    {
-      o[i]=fChargeADC1->At(i);
-    }
-}

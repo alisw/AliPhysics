@@ -26,11 +26,12 @@
 #include "AliSTART.h"
 #include "AliSTARTRawData.h"
 #include "AliSTARTdigit.h"
-#include "AliSTARTLoader.h"
+//#include "AliSTARTLoader.h"
 
 #include <AliLoader.h>
 #include <AliRunLoader.h>
- 
+#include <TClonesArray.h>
+#include <TTree.h>
 #include "AliRawDataHeader.h"
 
 ClassImp(AliSTARTRawData)
@@ -42,11 +43,13 @@ AliSTARTRawData::AliSTARTRawData():TObject()
 
   fIndex=-1;
   fDigits = NULL;
-  
-  ftimeTDC = new TArrayI(24); 
-   fADC = new TArrayI(24); 
-   
-  this->Dump();
+
+  ftimeTDC = new TArrayI(24);
+  fADC = new TArrayI(24);
+  ftimeTDCAmp = new TArrayI(24);
+  fADCAmp = new TArrayI(24);
+  fSumMult = new TArrayI(6);
+   //   this->Dump();
   
 }
 
@@ -67,14 +70,15 @@ AliSTARTRawData::~AliSTARTRawData()
   //
   // Destructor
   //
-
   if (fDigits) {
     delete fDigits;
     fDigits = NULL;
-    delete ftimeTDC;
-    delete fADC;
   }
-
+  delete ftimeTDC;
+  delete fADC;
+  delete ftimeTDCAmp;
+  delete fADCAmp;
+  delete fSumMult;
 }
 
 //_____________________________________________________________________________
@@ -97,31 +101,27 @@ void AliSTARTRawData::GetDigits(AliSTARTdigit *fDigits, UInt_t *buf)
 
   //read START digits and fill TDC and ADC arrays
 
-  cout<<"GetDigits(AliSTARTdigit *fDigits, UInt_t *buf) "<<endl;
+
   UInt_t word;
   UInt_t baseWord=0;
   Int_t error=0;
+    // Get the digits array
 
-    fDigits->Print();
-
-   // Get the digits array
-
-      fDigits->GetTime(*ftimeTDC);
-      fDigits->GetADC(*fADC);
-      fBestTimeRight=fDigits->GetBestTimeRight();
-      fBestTimeLeft=fDigits->GetBestTimeLeft();
-      fMeanTime = fDigits-> GetMeanTime();
-
+  fDigits->GetTime(*ftimeTDC);
+  fDigits->GetADC(*fADC);
+  fDigits->GetTimeAmp(*ftimeTDCAmp);
+  fDigits->GetADCAmp(*fADCAmp);
+  fDigits->GetSumMult(*fSumMult);
      
   // Loop through all PMT
  
-
   for (Int_t det = 0; det < 24; det++) {
     Int_t time=ftimeTDC->At(det);
-    Int_t ADC=fADC->At(det);
-    printf(" right det %x time %x ADC %x \n",det,time,ADC);
-    //conver ADC to time (preliminary algorithm)
+    Int_t qtc=fADC->At(det);
+    Int_t timeAmp=ftimeTDCAmp->At(det);
+    Int_t qtcAmp=fADCAmp->At(det);
 
+    //conver ADC to time (preliminary algorithm)
 
      // DDL 1 0-5 -#PMT, 6-31 - empty
 
@@ -133,13 +133,14 @@ void AliSTARTRawData::GetDigits(AliSTARTdigit *fDigits, UInt_t *buf)
      word=0;
      baseWord=0;
 
-     //TDC   
+     //TDC    
      word=error;
      PackWord(baseWord,word,0, 7); // Error flag
      word=time;
      PackWord(baseWord,word,8,31); // time-of-flight
      fIndex++;
      buf[fIndex]=baseWord;
+
      word=0;
      baseWord=0;
     
@@ -154,10 +155,11 @@ void AliSTARTRawData::GetDigits(AliSTARTdigit *fDigits, UInt_t *buf)
      //  amplified TDC    
      word=error;
      PackWord(baseWord,word,0, 7); // Error flag
-     word=time;
+     word=timeAmp;
      PackWord(baseWord,word,8,31); // time-of-flight
      fIndex++;
      buf[fIndex]=baseWord;
+
      word=0;
      baseWord=0;
 
@@ -172,7 +174,43 @@ void AliSTARTRawData::GetDigits(AliSTARTdigit *fDigits, UInt_t *buf)
      // ADC -> TDC     
      word=error;
      PackWord(baseWord,word,0, 7); // Error flag
-     word=ADC;
+     word=time;
+     PackWord(baseWord,word,8,31); // time-of-flight
+     fIndex++;
+     buf[fIndex]=baseWord;
+
+
+     // ADC -> TDC :QTC 
+     word=0;
+     baseWord=0;
+
+     word=det;;
+     PackWord(baseWord,word, 0, 5); // number of PMT on the right side
+     fIndex++;
+     buf[fIndex]=baseWord;
+     baseWord=0;
+     word=error;
+     PackWord(baseWord,word,0, 7); // Error flag
+     word=time+qtc;
+     PackWord(baseWord,word,8,31); // time-of-flight
+     fIndex++;
+     buf[fIndex]=baseWord;
+
+     word=0;
+     baseWord=0;
+
+    // DDL 4 amplified QTC charge * 10
+     word=det;;
+     PackWord(baseWord,word, 0, 5); // number of PMT on the right side
+     fIndex++;
+     buf[fIndex]=baseWord;
+     word=0;
+     baseWord=0;
+
+     // ADC -> TDC     
+     word=error;
+     PackWord(baseWord,word,0, 7); // Error flag
+     word=timeAmp;
      PackWord(baseWord,word,8,31); // time-of-flight
      fIndex++;
      buf[fIndex]=baseWord;
@@ -188,90 +226,107 @@ void AliSTARTRawData::GetDigits(AliSTARTdigit *fDigits, UInt_t *buf)
      baseWord=0;
      word=error;
      PackWord(baseWord,word,0, 7); // Error flag
-     word=ADC;
+     word=time+qtcAmp;
      PackWord(baseWord,word,8,31); // time-of-flight
      fIndex++;
      buf[fIndex]=baseWord;
+
      word=0;
      baseWord=0;
-
-
  }
-  /*
-  //timemean
-  fIndex++;
-  buf[fIndex]=baseWord;
-  word=25;
-  PackWord(baseWord,word, 0, 5); // number of PMT on the right side
-  word=fMeanTime;
-  PackWord(baseWord,word, 6, 31); // TDC on the right side from Marin
-  printf("meantime buf[%i]=%x\n",fIndex,buf[fIndex]);
-  
-  fIndex++;
-  buf[fIndex]=baseWord;
-  
-  baseWord=0;
-  
-  word=error;
-  PackWord(baseWord,word,0, 7); // Error flag
-  word=fMeanTime;
-  PackWord(baseWord,word,8,31); // time-of-flight
-  
-  fIndex++;
-  buf[fIndex]=baseWord;
-  
-  printf("meantime buf[%i]=%x\n",fIndex,buf[fIndex]);
 
-     
-  // besttime right & left
-  fIndex++;
-  cout<<" left "<<fBestTimeLeft<<" right "<<fBestTimeRight<<endl;
-  buf[fIndex]=baseWord;
-  word=26;
-  PackWord(baseWord,word, 0, 5); // number of PMT on the right side
-  word=fBestTimeRight;
-  PackWord(baseWord,word, 6, 31); // TDC on the right side from Marin
-  printf("best buf[%i]=%x\n",fIndex,buf[fIndex]);
-  
-  fIndex++;
-  buf[fIndex]=baseWord;
-  
-  baseWord=0;
-  
-  word=error;
-  PackWord(baseWord,word,0, 7); // Error flag
-  word=fBestTimeRight;
-  PackWord(baseWord,word,8,31); // time-of-flight
-  
-  fIndex++;
-  buf[fIndex]=baseWord;
-  
-  printf("4 right buf[%i]=%x\n",fIndex,buf[fIndex]);
-  
-  word=27;
-  PackWord(baseWord,word, 0, 5); // number of PMT on the right side
-  word=fBestTimeLeft;
-  PackWord(baseWord,word, 6, 31); // TDC on the right side from Marin
-  printf("5 left buf[%i]=%x\n",fIndex,buf[fIndex]);
-  
-  fIndex++;
-  buf[fIndex]=baseWord;
-  
-  baseWord=0;
-  
-  word=error;
-  PackWord(baseWord,word,0, 7); // Error flag
-  word=fBestTimeLeft;
-  PackWord(baseWord,word,8,31); // time-of-flight
-  
-  fIndex++;
-  buf[fIndex]=baseWord;
-  
-  printf("5 left buf[%i]=%x\n",fIndex,buf[fIndex]);
-  */   
+
   word=0;
   baseWord=0;
-   
+  fIndex++;
+  word=25;
+  PackWord(baseWord,word, 0, 5); // number of PMT on the right side
+  word=fDigits->MeanTime();
+  PackWord(baseWord,word, 6, 31); // TDC on the right side from Marin
+  buf[fIndex]=baseWord;
+
+  baseWord=0;
+  word=error;
+  PackWord(baseWord,word,0, 7); // Error flag
+  word=fDigits->MeanTime();
+  PackWord(baseWord,word,8,31); // time-of-flight
+  fIndex++;
+  buf[fIndex]=baseWord;
+
+
+
+  // besttime right & left
+  //  fIndex++;
+  //  buf[fIndex]=baseWord;
+  word=26;
+  PackWord(baseWord,word, 0, 5); // number of PMT on the right side
+  word=fDigits->BestTimeRight();
+  PackWord(baseWord,word, 6, 31); // TDC on the right side from Marin
+  fIndex++;
+  buf[fIndex]=baseWord;
+
+  baseWord=0;
+  word=error;
+  PackWord(baseWord,word,0, 7); // Error flag
+  word=fDigits->BestTimeRight();
+  PackWord(baseWord,word,8,31); // time-of-flight
+  fIndex++;
+  buf[fIndex]=baseWord;
+
+  word=27;
+  PackWord(baseWord,word, 0, 5); // number of PMT on the right side
+  word=fDigits->BestTimeLeft();
+  PackWord(baseWord,word, 6, 31); // TDC on the right side from Marin
+  fIndex++;
+  buf[fIndex]=baseWord;
+
+  baseWord=0;
+
+  word=error;
+  PackWord(baseWord,word,0, 7); // Error flag
+  word=fDigits->BestTimeLeft();
+  PackWord(baseWord,word,8,31); // time-of-flight
+  fIndex++;
+  buf[fIndex]=baseWord;
+
+  // time difference
+  word=28;
+  PackWord(baseWord,word, 0, 5); // number of PMT on the right side
+  word=fDigits->TimeDiff();
+  PackWord(baseWord,word, 6, 31); // TDC on the right side from Marin
+  fIndex++;
+  buf[fIndex]=baseWord;
+
+  baseWord=0;
+
+  word=error;
+  PackWord(baseWord,word,0, 7); // Error flag
+  word=fDigits->TimeDiff();
+  PackWord(baseWord,word,8,31); // time-of-flight
+  fIndex++;
+  buf[fIndex]=baseWord;
+
+  // multiplicity 
+
+  for (Int_t i=0; i<6; i++)
+    {
+      Int_t mult=fSumMult->At(i);
+      word=29+i;
+      PackWord(baseWord,word, 0, 5); 
+      word=mult;
+      PackWord(baseWord,word, 6, 31); // TDC on the right side from Marin
+      fIndex++;
+      buf[fIndex]=baseWord;
+      
+      baseWord=0;
+      word=error;
+      PackWord(baseWord,word,0, 7); // Error flag
+      word=mult;
+      PackWord(baseWord,word,8,31); // time QTC
+      fIndex++;
+      buf[fIndex]=baseWord;
+    }
+  cout<<endl;
 }
 
 //-------------------------------------------------------------------------------------
@@ -319,13 +374,14 @@ Int_t AliSTARTRawData::RawDataSTART(AliSTARTdigit *fDigits){
   UInt_t word;
 
   fIndex=-1;
+  // TClonesArray*& digits = * (TClonesArray**) branch->GetAddress();
 
   char fileName[15];
   ofstream outfile;         // logical name of the output file 
   AliRawDataHeader header;
-  cout<<" AliRawDataHeader header; start "<<endl;
   //loop over TOF DDL files
-     sprintf(fileName,"START_0xd00.ddl"); //The name of the output file
+  sprintf(fileName,"START_%d.ddl", 0xd00);
+  //   sprintf(fileName,"START_0xd00.ddl"); //The name of the output file
 #ifndef __DECCXX
     outfile.open(fileName,ios::binary);
 #else
@@ -341,18 +397,11 @@ Int_t AliSTARTRawData::RawDataSTART(AliSTARTdigit *fDigits){
 
     fIndex++;
     buf[fIndex]=baseWord;
-
-    //   branch->GetEvent();
-
-    //For each DDL file, buf contains the array of data words in Binary format
-    //fIndex gives the number of 32 bits words in the buffer for each DDL file
-    cout<<" AliSTARTRawData::RawDataSTART "<<fDigits<<endl;
-
     GetDigits(fDigits,buf);
-    cout<<"REAL DATA "<<fIndex<<endl;
-   outfile.write((char *)buf,((fIndex+1)*sizeof(UInt_t)));
+
+    outfile.write((char *)buf,((fIndex+1)*sizeof(UInt_t)));
     for(Int_t ii=0;ii<(fIndex+1);ii++) buf[ii]=0;
-     fIndex=-1;
+    fIndex=-1;
     
     //Write REAL DATA HEADER
     UInt_t currentFilePosition=outfile.tellp();

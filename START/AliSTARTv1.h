@@ -14,12 +14,12 @@ class AliSTARTv1 : public AliSTART {
   
 public:
 
-  enum constants {kAir=1, kSc=2, kVac=3, kCer=4, kGlass=6, kSteel=8, kRibber=9, kBrass=11, kLucite=12, kC=13, kPP=14, kAl=15, kOpGlass=16, kOpAir=17};
+  enum constants {kAir=1, kSc=2, kVac=3, kCer=4, kGlass=6, kSteel=8, kRibber=9, kBrass=11, kLucite=12, kC=13, kPP=14, kAl=15, kOpGlass=16, kOpAir=17, kOpAirNext=18, kOpGlassCathode=19};
 
  
   AliSTARTv1() {};
   AliSTARTv1(const char *name, const char *title);
-  virtual       ~AliSTARTv1() {}
+  virtual       ~AliSTARTv1();
   virtual void   CreateGeometry();
   virtual void   CreateMaterials();
   virtual void   DrawDetector();

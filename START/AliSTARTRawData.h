@@ -12,9 +12,10 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "TObject.h"
-#include "TArrayI.h"
 class AliSTART;
 class AliSTARTdigit;
+class TTRee;
+class TBranch;
 //class AliRawDataHeader;
 class AliSTARTRawData : public TObject {
 
@@ -41,21 +42,28 @@ class AliSTARTRawData : public TObject {
 
   AliSTARTdigit *fDigits;  //! The START digits manager
 
-  TArrayI *timeTDC() {return ftimeTDC;} 
-  TArrayI *ADC() {return fADC;} 
-  
+  TArrayI *timeTDC() {return ftimeTDC;}
+  TArrayI *ADC() {return fADC;}
+  TArrayI *timeTDCAmp() {return ftimeTDCAmp;}
+  TArrayI *ADCAmp() {return fADCAmp;}
+  TArrayI *SumMult() {return fSumMult;}
+
+ 
   
  protected:
 
   Int_t fVerbose;            //Verbose level (0:no msg, 1:msg, 2:digits in txt files)
   Int_t fIndex;              //number of 32 words to be stored into the output file
 
-  Int_t fBestTimeRight      ; //smallest time on the right side
-  Int_t fBestTimeLeft      ; //smallest time on the left side
   Int_t fTimeDiff     ; //time difference 
   Int_t fMeanTime      ; // average time - ALICE start signal 
-  TArrayI *ftimeTDC    ; //array of TDC signal from right side
-  TArrayI *fADC    ;   //array of ADC signal from right sida 
+  Int_t fBestTimeLeft;
+  Int_t fBestTimeRight;
+  TArrayI * ftimeTDC;
+  TArrayI *  fADC;
+  TArrayI * ftimeTDCAmp;
+  TArrayI *  fADCAmp;
+  TArrayI *  fSumMult;
 
   ClassDef(AliSTARTRawData,1)             //  START raw data class
 

@@ -5,42 +5,54 @@
 
 /* $Id$ */
 #include <TObject.h>
+class TClonesArray;
 class TArrayI;
 
 //___________________________________________
-class AliSTARTdigit: public TObject  {
-////////////////////////////////////////////////////////////////////////
+class AliSTARTdigit: public TObject {
+  ////////////////////////////////////////////////////////////////////////
  public:
-    AliSTARTdigit();
-    virtual ~AliSTARTdigit();
-    void SetMeanTime(Int_t time) {fTimeAverage=time;}
-    Int_t  GetMeanTime() {return fTimeAverage;}
-    Int_t  GetBestTimeRight() {return fTimeBestRight ;}
-    Int_t  GetBestTimeLeft() {return fTimeBestLeft ;}
-    Int_t  GetSumADCRight() {return fSumADCRight ;}
-    void SetTimeBestRight( Int_t time) {fTimeBestRight = time;}
-    void SetTimeBestLeft( Int_t time) {fTimeBestLeft = time;}
-    void SetSumADCRight( Int_t ADC) {fSumADCRight = ADC;}
-    //    void SetProcessKoef( Float_t pp) {fProcessKoef = pp;}
-    virtual void SetTime (TArrayI &o);
-    virtual void GetTime (TArrayI &o);
-    virtual void SetADC (TArrayI &o);
-    virtual void GetADC (TArrayI &o);
-     virtual const char* GetName() const {return "START_D";}
-  private: 
-    //    Float_t fProcessKoef;  // for pp fProcessKoef=1 ; for Pb-Pb - 0.001
-    Int_t fTimeAverage;     // Average time
-    Int_t fTimeBestRight;   //TOF first particle on the right
-    Int_t fTimeBestLeft;    //TOF first particle on the left
-    Int_t fSumADCRight;    // multiplicity on the right side
-    TArrayI *fTime;    // array's TDC
-    TArrayI *fADC;    // array's ADC
+  AliSTARTdigit();
+  virtual ~AliSTARTdigit();
+  Int_t BestTimeRight() {return fBestTimeRight;}
+  Int_t BestTimeLeft() {return fBestTimeLeft;}
+  Int_t MeanTime() {return fTimeAverage;}
+  Int_t TimeDiff() {return fTimeDiff;}
+  void SetTimeBestRight( Int_t time) {fBestTimeRight = time;}
+  void SetTimeBestLeft( Int_t time) {fBestTimeLeft = time;}
+  void SetMeanTime(Int_t time) {fTimeAverage=time;}
+  void SetDiffTime(Int_t time) {fTimeDiff=time;}
+  
+  virtual void SetTime (TArrayI &o);
+  virtual void GetTime (TArrayI &o);
+  virtual void SetADC (TArrayI &o);
+  virtual void GetADC (TArrayI &o);
+  virtual void SetSumMult( TArrayI &o);
+  virtual void GetSumMult( TArrayI &o);
+  
+  virtual void SetTimeAmp (TArrayI &o);
+  virtual void GetTimeAmp (TArrayI &o);
+  virtual void SetADCAmp (TArrayI &o);
+  virtual void GetADCAmp (TArrayI &o);
+ private: 
 
-    ClassDef(AliSTARTdigit,2)  //Digit (Header) object for set:START
-};
+  Int_t fBestTimeRight;        // TOF first particle on the right 
+  Int_t fBestTimeLeft;         // TOF first particle on the left
+  Int_t fTimeAverage;             // mean time (start signal)
+  Int_t fTimeDiff;             // time difference (vertex position)
 
+  TArrayI *fTime;    // array's TDC
+  TArrayI *fADC;    // array's ADC
+  TArrayI *fTimeAmp;    // array's TDC
+  TArrayI *fADCAmp;    // array's ADC
+  TArrayI *fSumMult;   //multiplisity
+  
+  ClassDef(AliSTARTdigit,4)  //Digit (Header) object for set:START
+    };
+    
 
 #endif
+
 
 
 

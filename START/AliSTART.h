@@ -9,6 +9,9 @@
  
 #include <AliDetector.h>
 #include <TTree.h>
+#include <TClonesArray.h>
+#include "AliSTARTRecPoint.h"
+#include "AliSTARTdigit.h"
 
 class TDirectory;
 class TFile;
@@ -26,7 +29,9 @@ public:
    AliSTART(const char *name, const char *title);
    virtual       ~AliSTART();
    virtual void   AddHit(Int_t track, Int_t *vol, Float_t *hits);
-   virtual void   AddDigit(Int_t *tracks, Int_t *digits);
+   virtual void   AddDigit(Int_t besttimeright, Int_t besttimeleft, Int_t meantime, 
+			Int_t timediff, TArrayI *sumMult,
+			   TArrayI *time, TArrayI *adc, TArrayI *timeAmp, TArrayI *adcAmp);
    virtual void   BuildGeometry();
    virtual void   CreateGeometry(){}
    virtual void   CreateMaterials(){} 
@@ -39,15 +44,18 @@ public:
    virtual void   MakeBranch(Option_t *opt=" ");
    virtual void   StepManager(){}
    virtual void   ResetHits();
-   virtual void   SetTreeAddress();
-   virtual AliLoader* MakeLoader(const char* topfoldername);
+   virtual void   ResetDigits();
+    virtual void   SetTreeAddress();
+   virtual void   MakeBranchInTreeD(TTree *treeD, const char *file=0);
+   // virtual AliLoader* MakeLoader(const char* topfoldername);
    virtual AliDigitizer* CreateDigitizer(AliRunDigitizer* manager) const;
    void  Digits2Raw ();
 
 protected:
-   Int_t fIdSens;    // Sensetive Cherenkov radiator
+   Int_t fIdSens;    // Sensetive Cherenkov photocathode
+   AliSTARTdigit *fDigits;
+   AliSTARTRecPoint *fRecPoints;
  
-private:
   ClassDef(AliSTART,4)  //Base class for the T0 aka START detector
 };
 

@@ -25,41 +25,44 @@
 //
 ///////////////////////////////////////////////////////////////////////
 
-
-
- 
-#include <TArrayI.h>
 #include "AliSTARTdigit.h"
-#include <Riostream.h>
+#include "TArrayI.h"
 
 ClassImp(AliSTARTdigit)
 
-//------------------------------------
- AliSTARTdigit::AliSTARTdigit() : TObject()
+//-----------------------------------------------
+  AliSTARTdigit::AliSTARTdigit() :TObject()
 {
-  //ctor
-  fTimeAverage=9999;
-  fTimeBestRight=9999;
-  fTimeBestLeft=9999;
-  fSumADCRight=0;
 
-  fTime = new TArrayI(36);  
-  fADC  = new TArrayI(36);  
+  fTimeAverage   = 99999;
+  fTimeDiff      = 99999;
+  fBestTimeRight = 99999;
+  fBestTimeLeft  = 99999;
+
+  fTime = new TArrayI(24);
+  fADC  = new TArrayI(24);
+  fTimeAmp = new TArrayI(24);
+  fADCAmp  = new TArrayI(24);
+  fSumMult=new TArrayI(6);
 }
+
 //-----------------------------------
 AliSTARTdigit::~AliSTARTdigit() {
   // destructor
   delete fTime;
   delete fADC;
+  delete fTimeAmp;
+  delete fADCAmp;
+  delete fSumMult;
 }
 //-----------------------------------
 void AliSTARTdigit::SetTime (TArrayI &o)
 {
   ////////////////////////////////////////
-  fTime = new TArrayI(36);  
+  fTime = new TArrayI(24);
 
   Int_t i;
-  for (i=0; i<36; i++)
+  for (i=0; i<24; i++)
     {
       Int_t buf=o.At(i);
       fTime->AddAt(buf,i);
@@ -70,7 +73,7 @@ void AliSTARTdigit::GetTime (TArrayI &o)
 {
   //
   Int_t i;
-  for (i=0; i<36; i++)
+  for (i=0; i<24; i++)
     {
       o[i]=fTime->At(i);
     }
@@ -80,7 +83,7 @@ void AliSTARTdigit::GetADC (TArrayI &o)
 {
   //
   Int_t i;
-  for (i=0; i<36; i++)
+  for (i=0; i<24; i++)
     {
       o[i]=fADC->At(i);
     }
@@ -89,12 +92,78 @@ void AliSTARTdigit::GetADC (TArrayI &o)
 void AliSTARTdigit::SetADC (TArrayI &o)
 {
   //
-  fADC  = new TArrayI(36);  
+  fADC  = new TArrayI(24);
   Int_t i;
-  //  Float_t fProcessKoef=1; // for pb 0.001
-  for (i=0; i<36; i++)
+  for (i=0; i<24; i++)
     {
       Int_t buf=(o.At(i));
       fADC->AddAt(buf,i);
+    }
+}
+//-----------------------------------
+void AliSTARTdigit::SetTimeAmp (TArrayI &o)
+{
+  ////////////////////////////////////////
+  fTimeAmp = new TArrayI(24);
+
+  Int_t i;
+  for (i=0; i<24; i++)
+    {
+      Int_t buf=o.At(i);
+      fTimeAmp->AddAt(buf,i);
+    }
+}
+//--------------------------------------------
+void AliSTARTdigit::GetTimeAmp (TArrayI &o)
+{
+  //
+  Int_t i;
+  for (i=0; i<24; i++)
+    {
+      o[i]=fTimeAmp->At(i);
+    }
+}
+//--------------------------------------------
+void AliSTARTdigit::GetADCAmp (TArrayI &o)
+{
+  //
+  Int_t i;
+  for (i=0; i<24; i++)
+    {
+      o[i]=fADCAmp->At(i);
+    }
+}
+//--------------------------------------------
+void AliSTARTdigit::SetADCAmp (TArrayI &o)
+{
+  //
+  fADCAmp  = new TArrayI(24);
+  Int_t i;
+  for (i=0; i<24; i++)
+    {
+      Int_t buf=(o.At(i));
+      fADCAmp->AddAt(buf,i);
+    }
+}
+//--------------------------------------------
+void AliSTARTdigit::GetSumMult (TArrayI &o)
+{
+  //
+  Int_t i;
+  for (i=0; i<6; i++)
+    {
+      o[i]=fSumMult->At(i);
+    }
+}
+//--------------------------------------------
+void AliSTARTdigit::SetSumMult (TArrayI &o)
+{
+  //
+  fSumMult = new TArrayI(24);
+  Int_t i;
+  for (i=0; i<6; i++)
+    {
+      Int_t buf=(o.At(i));
+      fSumMult->AddAt(buf,i);
     }
 }

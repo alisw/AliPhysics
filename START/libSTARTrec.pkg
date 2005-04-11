@@ -1,7 +1,7 @@
 #-*- Mode: Makefile -*-
 # $Id$
 
-SRCS= AliSTARTReconstructor.cxx
+SRCS= AliSTARTRecPoint.cxx AliSTARTReconstructor.cxx AliSTARTRawReader.cxx 
 
 HDRS= $(SRCS:.cxx=.h)
 

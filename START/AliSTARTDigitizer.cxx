@@ -54,6 +54,9 @@ AliSTARTDigitizer::AliSTARTDigitizer(AliRunDigitizer* manager)
    fdigits(0),
    ftimeTDC(0),
    fADC(0),
+   ftimeTDCAmp(0),
+   fADCAmp(0),
+   fSumMult(0),
    fEff(0)
 {
   //	cout<<"AliSTARTDigitizer::AliSTARTDigitizer"<<endl;
@@ -62,12 +65,15 @@ AliSTARTDigitizer::AliSTARTDigitizer(AliRunDigitizer* manager)
   AliDebug(1,"processed");
 
   fSTART = 0;
-  fPhotons = 0;
   fHits = 0;
   fdigits = 0;
 
-  ftimeTDC = new TArrayI(36); 
-  fADC = new TArrayI(36); 
+  ftimeTDC = new TArrayI(24); 
+  fADC = new TArrayI(24); 
+  ftimeTDCAmp = new TArrayI(24); 
+  fADCAmp = new TArrayI(24); 
+  fSumMult = new TArrayI(6); 
+  
 
   TFile* file = TFile::Open("$ALICE_ROOT/START/PMTefficiency.root");
   fEff = (TH1F*) file->Get("hEff")->Clone();
@@ -86,6 +92,9 @@ AliSTARTDigitizer::~AliSTARTDigitizer()
   delete ftimeTDC;
   delete fADC;
   delete fEff;
+  delete ftimeTDCAmp;
+  delete  fADCAmp;
+  delete fSumMult;
 }
 
  //------------------------------------------------------------------------
@@ -112,74 +121,72 @@ void AliSTARTDigitizer::Exec(Option_t* /*option*/)
 	
   */
 
-  AliRunLoader *inRL, *outRL;//in and out Run Loaders
-  AliLoader *pInStartLoader, *pOutStartLoader;// in and out STARTLoaders
-
-  outRL = AliRunLoader::GetRunLoader(fManager->GetOutputFolderName());
-  pOutStartLoader = outRL->GetLoader("STARTLoader");
+  //output loader 
+  AliRunLoader *outRL = AliRunLoader::GetRunLoader(fManager->GetOutputFolderName());
+  AliLoader * pOutStartLoader = outRL->GetLoader("STARTLoader");
+  AliSTART *fSTART  = (AliSTART*)outRL ->GetAliRun()->GetDetector("START");
 
   AliDebug(1,"start...");
-
+  cout<<" AliSTARTDigitizer::Exec "<<endl;
+  //input loader
   //
   // From hits to digits
   //
   Int_t hit, nhits;
-  Float_t meanTime;
-  Int_t countE[36];
-  Int_t volume,pmt,tr,sumRight;
+  Int_t countE[24], sumMult[3];
+  Int_t volume,pmt,tr,qt,qtAmp;
   Int_t  bestRightTDC,bestLeftTDC;
-  Float_t time[36]={36*0};
-  Float_t besttime[36]={36*0};
-  Float_t timeGaus[36]={36*0};
+  Float_t time[24],besttime[24], timeGaus[24] ;
   Float_t channelWidth=25.; //ps
+    //Q->T-> coefficients !!!! should be asked!!!
+  Float_t ph2mV = 150./500.;
+  Int_t threshold =50; //photoelectrons
+  Int_t mV2channel=200000/(25*25);  //5V -> 200ns
+
   
   AliSTARThit  *startHit;
   TBranch *brHits=0;
-
-  pOutStartLoader->LoadDigits("UPDATE");//probably it is necessary to load them before
-  fdigits= new AliSTARTdigit();
-  pOutStartLoader->GetDigitsDataLoader()->GetBaseLoader(0)->Post(fdigits);
 
   Int_t nFiles=fManager->GetNinputs();
   for (Int_t inputFile=0; inputFile<nFiles;  inputFile++) {
     if (inputFile < nFiles-1) {
       AliWarning(Form("ignoring input stream %d", inputFile));
       continue;
-
+      
     }
-
-    Float_t besttimeright=9999.;
-    Float_t besttimeleft=9999.;
-    Float_t timeDiff;
-    sumRight=0;
-    for (Int_t i0=0; i0<36; i0++)
+    
+    Float_t besttimeright=99999.;
+    Float_t besttimeleft=99999.;
+    Int_t timeDiff, meanTime;
+    
+    for (Int_t i0=0; i0<24; i0++)
       {
-	time[i0]=9999;  besttime[i0]=9999;	countE[i0]=0;
+	time[i0]=99999;  besttime[i0]=99999;	countE[i0]=0;
       }
-
-    inRL = AliRunLoader::GetRunLoader(fManager->GetInputFolderName(inputFile));
+    for ( Int_t imu=0; imu<3; imu++) sumMult[imu]=0;
+    AliRunLoader * inRL = AliRunLoader::GetRunLoader(fManager->GetInputFolderName(inputFile));
+    AliLoader * pInStartLoader = inRL->GetLoader("STARTLoader");
     if (!inRL->GetAliRun()) inRL->LoadgAlice();
-    AliSTART *fSTART  = (AliSTART*) inRL->GetAliRun()->GetDetector("START");
-    pInStartLoader = inRL->GetLoader("STARTLoader");
+
+       //read Hits 
     pInStartLoader->LoadHits("READ");//probably it is necessary to load them before
     TClonesArray *fHits = fSTART->Hits ();
-
     TTree *th = pInStartLoader->TreeH();
     brHits = th->GetBranch("START");
     if (brHits) {
       fSTART->SetHitsAddressBranch(brHits);
     }else{
-       AliError("Branch START hit not found");
+      AliError("Branch START hit not found");
       exit(111);
     } 
     Int_t ntracks    = (Int_t) th->GetEntries();
-
+    
     if (ntracks<=0) return;
     // Start loop on tracks in the hits containers
     for (Int_t track=0; track<ntracks;track++) {
       brHits->GetEntry(track);
       nhits = fHits->GetEntriesFast();
-       for (hit=0;hit<nhits;hit++) 
+      for (hit=0;hit<nhits;hit++) 
 	{
 	  startHit   = (AliSTARThit*) fHits->UncheckedAt(hit);
 	  if (!startHit) {
@@ -188,79 +195,101 @@ void AliSTARTDigitizer::Exec(Option_t* /*option*/)
 	  }
 	  pmt=startHit->Pmt();
 	  Int_t numpmt=pmt-1;
-	  Double_t e=startHit->Etot();
-	  //	  cout<<"AliSTARTDigitizer::Exec >> e "<<e<<" time "<< startHit->Time()<<endl;
+	  	  Double_t e=startHit->Etot();
 	  volume = startHit->Volume();
 	  
-	   if(e>0 && RegisterPhotoE(e)) {
-	     countE[numpmt]++;
-	     besttime[numpmt] = startHit->Time();
-	     if(besttime[numpmt]<time[numpmt])
-	       {
-		 time[numpmt]=besttime[numpmt];
-	       }
-	   }
+	  if(e>0 && RegisterPhotoE(e)) {
+	    countE[numpmt]++;
+	    besttime[numpmt] = startHit->Time();
+	    if(besttime[numpmt]<time[numpmt])
+	      {
+		time[numpmt]=besttime[numpmt];
+	      }
+	  } 
 	} //hits loop
     } //track loop
     
-    //best time right&left   
-    for (Int_t ipmt=0; ipmt<12; ipmt++)
-      {
-	timeGaus[ipmt]=gRandom->Gaus(time[ipmt],0.025);
+    //spread time right&left by 25ps   && besttime
+    for (Int_t ipmt=0; ipmt<12; ipmt++){
+      if(countE[ipmt] > threshold) {
+	timeGaus[ipmt]=gRandom->Gaus(time[ipmt],25);
 	if(timeGaus[ipmt]<besttimeleft) besttimeleft=timeGaus[ipmt]; //timeleft
+	sumMult[0] +=  countE[ipmt];
+	sumMult[1] +=  countE[ipmt];
       }
-    //    for ( Int_t ipmt=12; ipmt<36; ipmt++)
-    for ( Int_t ipmt=12; ipmt<36; ipmt++)
-      {
-   	timeGaus[ipmt]=gRandom->Gaus(time[ipmt],0.025);
+    }
+    for ( Int_t ipmt=12; ipmt<24; ipmt++){
+      if(countE[ipmt] > threshold) {
+	timeGaus[ipmt]=gRandom->Gaus(time[ipmt],25); 
 	if(timeGaus[ipmt]<besttimeright)  besttimeright=timeGaus[ipmt]; //timeright
-      }// besttime
-	
-    //folding with experimental time distribution
-      Float_t c = 29.9792; // mm/ns
+	sumMult[0] +=  countE[ipmt];
+	sumMult[2] +=  countE[ipmt];
+      }	
+    }
+    //ADC features fill digits
+   //folding with experimental time distribution
+    Float_t c = 0.0299792; // cm/ps
     Float_t koef=(350.-69.7)/c;
     Float_t  besttimeleftR= besttimeleft;
     besttimeleft=koef+besttimeleft;
-    bestLeftTDC=Int_t (besttimeleftR*1000/channelWidth);
-    bestRightTDC=Int_t (besttimeright*1000/channelWidth);
-    timeDiff=(c*(besttimeright-besttimeleftR)-(350.-69.7))/(2*c);
-    meanTime=(besttimeright+besttimeleftR)/2.;
-    Float_t ds=(c*(besttimeright-besttimeleftR)-(350.-69.7))/2;
-    AliDebug(2,Form(" timediff in ns %f  z= %f real point%f",timeDiff,timeDiff*c,ds));
-
-  
-    // Time to TDC signal
-    Int_t iTimeAv=Int_t (meanTime*1000/channelWidth); 
-    // time  channel numbres 
-    //       fill digits
-    fdigits->SetTimeBestLeft(bestLeftTDC);
-    fdigits->SetTimeBestRight(bestRightTDC);
-    fdigits->SetMeanTime(iTimeAv);
-    
-    //ADC features
-  
-    for (Int_t i=0; i<36; i++)
+    bestLeftTDC=Int_t (besttimeleftR/channelWidth);
+    bestRightTDC=Int_t (besttimeright/channelWidth);
+    timeDiff=Int_t ((besttimeright-besttimeleftR)/channelWidth);
+    meanTime=Int_t (((besttimeright+besttimeleft)/2.)/channelWidth);
+    AliDebug(2,Form(" time in ns %f ", besttimeleft));
+    for (Int_t i=0; i<24; i++)
       {
-
 	//  fill TDC
-	tr= Int_t (timeGaus[i]*1000/channelWidth); 
-	if(timeGaus[i]>100) tr=0;
-	ftimeTDC->AddAt(tr,i);
+	tr= Int_t (timeGaus[i]/channelWidth); 
+	if(timeGaus[i]>50000) tr=0;
 	
 	//fill ADC
-       	Int_t al= countE[i]; //1024 - channel width shoul be change
- 	fADC->AddAt(al,i);
+       	Int_t al= countE[i]; 
+	// QTC procedure:
+	// phe -> mV 0.3; 1MIP ->500phe -> ln (amp (mV)) = 5;
+	// max 200ns, HIJING  mean 50000phe -> 15000mv -> ln = 15 (s zapasom)
+	// channel 25ps
+	if (al>threshold) {
+	  qt=Int_t (TMath::Log(al*ph2mV) * mV2channel); 
+	  qtAmp=Int_t (TMath::Log(al*10*ph2mV) * mV2channel);
+	  cout<<i<<" "<<qt<<" "<<qtAmp<<endl;
+	  fADC->AddAt(qt,i);
+	  ftimeTDC->AddAt(tr,i);
+	  fADCAmp->AddAt(qtAmp,i);
+	  ftimeTDCAmp->AddAt(tr,i); //now is the same as non-amplified but will be change
+	}
       } //pmt loop
+    for (Int_t im=0; im<3; im++)
+      { 
+	if (sumMult[im]>threshold){
+	  Int_t sum=Int_t (TMath::Log(sumMult[im]*ph2mV) * mV2channel);
+	  Int_t sumAmp=Int_t (TMath::Log(10*sumMult[im]*ph2mV) * mV2channel);
+	  fSumMult->AddAt(sum,im);
+	  fSumMult->AddAt(sumAmp,im+3);
+	}
+      }	
 
-    fdigits->SetTime(*ftimeTDC);
-    fdigits->SetADC(*fADC);
-     
-    pInStartLoader->UnloadHits();
-    
+    fSTART->AddDigit(bestRightTDC,bestLeftTDC,meanTime,timeDiff,fSumMult,
+		     ftimeTDC,fADC,ftimeTDCAmp,fADCAmp);
+    pOutStartLoader->UnloadHits();
   } //input streams loop
-     
+  
+    //load digits    
+    pOutStartLoader->LoadDigits("UPDATE");
+    TTree *treeD  = pOutStartLoader->TreeD();
+    if (treeD == 0x0) {
+      pOutStartLoader->MakeTree("D");
+      treeD = pOutStartLoader->TreeD();
+    }
+    fSTART->MakeBranch("D");
+     treeD->Reset();
+     treeD->Fill();
+  
   pOutStartLoader->WriteDigits("OVERWRITE");
+  
+  fSTART->ResetDigits();
   pOutStartLoader->UnloadDigits();
+    
 }
 
 

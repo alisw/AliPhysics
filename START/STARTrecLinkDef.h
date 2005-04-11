@@ -8,6 +8,8 @@
 #pragma link off all classes;
 #pragma link off all functions;
  
+#pragma link C++ class  AliSTARTRecPoint+;
 #pragma link C++ class  AliSTARTReconstructor+;
+#pragma link C++ class  AliSTARTRawReader+;
 
 #endif

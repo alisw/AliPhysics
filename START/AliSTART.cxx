@@ -53,13 +53,14 @@
 #include "AliMC.h"
 #include "AliLoader.h"
 #include "AliRun.h"
-
+#include "TClonesArray.h"
 #include "AliSTART.h"
 #include "AliSTARTLoader.h"
 #include "AliSTARTdigit.h"
 #include "AliSTARThit.h"
 #include "AliSTARTDigitizer.h"
 #include "AliSTARTRawData.h"
+#include "AliSTARTRecPoint.h"
 
 ClassImp(AliSTART)
 
@@ -74,6 +75,7 @@ AliSTART::AliSTART()
   fIshunt   = 1;
   fHits     = 0;
   fDigits   = 0;
+  fRecPoints = 0;
 }
  
 //_____________________________________________________________________________
@@ -89,6 +91,8 @@ AliSTART::AliSTART(const char *name, const char *title)
   // Initialise Hit array
   fHits       = new TClonesArray("AliSTARThit",  405);
   gAlice->GetMCApp()->AddHitList(fHits);
+  fDigits    = new AliSTARTdigit();
+  fRecPoints = new AliSTARTRecPoint();
   fIshunt     =  1;
   fIdSens   =  0;
   SetMarkerColor(kRed);
@@ -96,10 +100,24 @@ AliSTART::AliSTART(const char *name, const char *title)
 
 //_____________________________________________________________________________
 AliSTART::~AliSTART() {
+  
   if (fHits) {
     fHits->Delete();
     delete fHits;
+    cout<<"  delete fHits; "<<endl;
   }
+  /*
+  if (fDigits) {
+    fDigits->Delete();
+    delete fDigits;
+    cout<<" delete fDigits; "<<endl;
+  }
+  if (fRecPoints) {
+   fRecPoints ->Delete();
+    delete fRecPoints;
+    cout<<" delete fRecPoints; "<<endl;
+  }
+  */ 
 }
  
 //_____________________________________________________________________________
@@ -115,12 +133,28 @@ void AliSTART::AddHit(Int_t track, Int_t *vol, Float_t *hits)
 
 //_____________________________________________________________________________
 
-void AliSTART::AddDigit(Int_t * /*tracks*/, Int_t * /*digits*/)
+void AliSTART::AddDigit(Int_t besttimeright, Int_t besttimeleft, Int_t meantime, 
+			Int_t timediff, TArrayI *sumMult,
+			TArrayI *time, TArrayI *adc, TArrayI *timeAmp, TArrayI *adcAmp)
 {
   
-  //  Add a START digit to the list. Dummy function.
+  //  Add a START digit to the list.
+ //
   
+  if (!fDigits) {
+    fDigits = new AliSTARTdigit();
+  }
+  fDigits-> SetTimeBestRight(besttimeright);
+  fDigits->SetTimeBestLeft(besttimeleft);
+  fDigits-> SetMeanTime(meantime);
+  fDigits-> SetDiffTime(timediff);
+  fDigits-> SetSumMult(*sumMult);
+  fDigits->SetTime(*time);
+  fDigits->SetTimeAmp(*timeAmp);
+  fDigits->SetADC(*adc);
+  fDigits->SetADCAmp(*adcAmp);
 }
+
 
 //_____________________________________________________________________________
 void AliSTART::BuildGeometry()
@@ -183,20 +217,43 @@ void AliSTART::Init()
 void AliSTART::MakeBranch(Option_t* option)
 {
   //
-  // Specific START branches
+// Create Tree branches for the START.
+
+ // Options:
   //
-  // Create Tree branches for the START.
+  //    H          Make a branch of TClonesArray of AliSTARTHit's
+  //    D          Make a branch of TClonesArray of AliSTARTDigit's
+  //
+  //    R         Make a branch of  AliSTARTRecPoints
+  //
   char branchname[20];
   sprintf(branchname,"%s",GetName());
 
   const char *cH = strstr(option,"H");
-  
-  if (cH && fLoader->TreeH())
+  const char *cD = strstr(option,"D");
+  const char *cR = strstr(option,"R");
+
+    if (cH && fLoader->TreeH())
   {
      if (fHits == 0x0) fHits  = new TClonesArray("AliSTARThit",  405);
+     AliDetector::MakeBranch(option);
   } 
+    
+    
+  if (cD && fLoader->TreeD())
+    {
+      if (fDigits == 0x0) fDigits  = new AliSTARTdigit();
+      //     MakeBranchInTree(fLoader->TreeD(), branchname,
+      //		       &fDigits, 405, 0);
+      fLoader->TreeD()->Branch(branchname,"AliSTARTdigit",&fDigits,405,1);
+    } 
+  if (cR && fLoader->TreeR())
+    {
+      if (fRecPoints == 0x0) fRecPoints  = new AliSTARTRecPoint();
+      MakeBranchInTree(fLoader->TreeR(), branchname,
+		       &fRecPoints, 405, 0);
+    } 
   
-  AliDetector::MakeBranch(option);
 }    
 
 //_____________________________________________________________________________
@@ -204,6 +261,14 @@ void AliSTART::ResetHits()
 {
   AliDetector::ResetHits();
   
+}
+//____________________________________________________________________
+void AliSTART::ResetDigits()
+{
+  //
+  // Reset number of digits and the digits array for this detector
+  //
+  if (fDigits) fDigits->Clear();
 }
 
 //_____________________________________________________________________________
@@ -219,16 +284,36 @@ void AliSTART::SetTreeAddress()
     }
     
   AliDetector::SetTreeAddress();
-  
+  TTree *treeD = fLoader->TreeD();
+  if (treeD) {
+    if (fDigits == 0x0)  fDigits  = new AliSTARTdigit();
+    TBranch* branch = treeD->GetBranch ("START");
+    if (branch) branch->SetAddress(&fDigits);
+  }
+
+  TTree *treeR = fLoader->TreeR();
+  if (treeR) {
+    if (fRecPoints == 0x0) fRecPoints  = new  AliSTARTRecPoint()  ;
+    TBranch* branch = treeR->GetBranch ("START");
+    if (branch) branch->SetAddress(&fRecPoints);
+  }
+ 
 }
 
-//______________________________________________________________________
-AliLoader* AliSTART::MakeLoader(const char* topfoldername)
-{ 
 
-  AliDebug(2,Form(" Creating AliSTARTLoader "));
-  fLoader = new AliSTARTLoader(GetName(), topfoldername);
-  return fLoader;
+//_____________________________________________________________________________
+void AliSTART::MakeBranchInTreeD(TTree *treeD, const char *file)
+{
+    //
+    // Create TreeD branches for the FMD
+    //
+    const Int_t kBufferSize = 4000;
+    char branchname[20];
+    sprintf(branchname,"%s",GetName());
+    if(treeD)
+     {
+       MakeBranchInTree(treeD,  branchname,&fDigits, kBufferSize, file);
+     }
 }
 
 //_____________________________________________________________________________
@@ -242,16 +327,31 @@ void AliSTART::Digits2Raw()
 //
 // Starting from the START digits, writes the Raw Data objects
 //
-  AliSTARTLoader* pStartLoader = (AliSTARTLoader*)fLoader;
-  pStartLoader ->LoadDigits();
-  AliSTARTdigit* fDigits=pStartLoader->Digits();
+//  AliSTARTLoader* pStartLoader = (AliSTARTLoader*)fLoader;
+  fLoader ->LoadDigits("read");
+  TTree* treeD = fLoader->TreeD();
+  if (!treeD) {
+    AliError("no digits tree");
+    return;
+  }
+  if (fDigits == 0x0)  fDigits  = new AliSTARTdigit();
+  
+  TBranch *branch = treeD->GetBranch("START");
+  if (branch) {
+    branch->SetAddress(&fDigits);
+  }else{
+    AliError("Branch START DIGIT not found");
+    exit(111);
+  } 
   AliSTARTRawData rawWriter;
   rawWriter.SetVerbose(0);
-
-  AliDebug(2,Form(" Formatting raw data for START "));
   
-  rawWriter.RawDataSTART (fDigits);
-
-   pStartLoader->UnloadDigits();
-
+  AliDebug(2,Form(" Formatting raw data for START "));
+  branch->GetEntry(0);
+  //  rawWriter.RawDataSTART(treeD->GetBranch("START"));
+  rawWriter.RawDataSTART(fDigits);
+  
+  
+  fLoader->UnloadDigits();
+  
 }

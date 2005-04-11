@@ -55,8 +55,14 @@ AliSTARTv1::AliSTARTv1(const char *name, const char *title):
   //
   fIdSens1=0;
   fIshunt = 2;
-//  setBufferSize(128000);
 }
+//_____________________________________________________________________________
+
+AliSTARTv1::~AliSTARTv1() 
+{
+  // desctructor  
+}
+
 //-------------------------------------------------------------------------
 void AliSTARTv1::CreateGeometry()
 {
@@ -68,6 +74,7 @@ void AliSTARTv1::CreateGeometry()
    <img src="gif/AliSTARTv0.gif">
   */
   //
+
 
 
   Int_t *idtmed = fIdtmed->GetArray();
@@ -86,14 +93,13 @@ void AliSTARTv1::CreateGeometry()
   Float_t pstart[3]={4.3, 12.,6.8};
   Float_t pinstart[3]={0.,1.6,6.5};
   Float_t ppmt[3]={0.,1.5,3.5};
-
+  Float_t ptop[3]={0.,1.,1.5};
   Float_t preg[3]={0., 1.0, 0.005}; //photcathode dobavil bogdanov
-
+  Float_t ptopout[3]={1.,1.01,1.5}; 
+  //  Float_t pregafter[3]={0.,1.0,0.005}; 
   Float_t pdivider[3]={0.,1.2,1.75};
   Float_t pdiv2[3]={0.,1.2,1.25};
   Float_t pdiv1[3]={0.6,1.2,0.5};
-  //  Float_t ptop[3]={0.,1.0,1.5};
-  Float_t ptop[3]={0., 1.0, 1.5};
   Float_t pbot[3]={0.6,1.2,0.1};
   Float_t pglass[3]={1.2,1.3,2.};
   Float_t pcer[3]={0.9,1.1,0.09};
@@ -111,6 +117,7 @@ void AliSTARTv1::CreateGeometry()
   Float_t psupport5[3] = {1.44,1.5,6.5}; // stakanchik dlai feu  C
   Float_t psupport6[3] = {0,1.5,0.05}; //kryshechka stakanchika  Al
   Float_t psupport7[3] = {1.5,1.6,0.6}; //kolechko snaruzhu stakanchika Al
+   
   // Mother Volume katushka dlia krepezha vokrug truby k Absorbru
     AliMatrix(idrotm[901], 90., 0., 90., 90., 180., 0.);
   Float_t ppcon[70]; 
@@ -203,8 +210,9 @@ void AliSTARTv1::CreateGeometry()
     gMC->Gspos("0STL",1,"ALIC",0.,0.,zdetLeft+pstart[2],0,"ONLY");
 
 //START interior
-    gMC->Gsvolu("0INS","TUBE",idtmed[kAir],pinstart,3);
-    gMC->Gsvolu("0PMT","TUBE",idtmed[kOpAir],ppmt,3);     
+   gMC->Gsvolu("0INS","TUBE",idtmed[kAir],pinstart,3);
+   gMC->Gsvolu("0PMT","TUBE",idtmed[kAir],ppmt,3);     
+          
     gMC->Gsvolu("0DIV","TUBE",idtmed[kVac],pdivider,3);     
     gMC->Gsvolu("0SU1","TUBE",idtmed[kC],psupport1,3);//C kozhuh vnutri
     gMC->Gsvolu("0SU2","TUBE",idtmed[kC],psupport2,3);// snaruzhi  C
@@ -214,7 +222,7 @@ void AliSTARTv1::CreateGeometry()
     gMC->Gsvolu("0SU6","TUBE",idtmed[kC],psupport5,3);// stakanchik dlai feu  C
     gMC->Gsvolu("0SU7","TUBE",idtmed[kAl],psupport6,3);//kryshechka stakanchika  Al
     gMC->Gsvolu("0SU8","TUBE",idtmed[kAl],psupport7,3);//kolechko snaruzhu stakanchika Al
-       
+             
 // first ring: 12 units of Scintillator+PMT+divider
   Float_t  theta  = (180 / TMath::Pi()) * TMath::ATan(6.5 / zdetRight);
   printf(" theta %f", theta);
@@ -239,21 +247,22 @@ void AliSTARTv1::CreateGeometry()
 	z=-pstart[2]+pinstart[2]+0.2;
 	gMC->Gspos ("0INS", is + 1, "0STR", x, y, z, idrotm[902 + is], "ONLY");
 	gMC->Gspos ("0INS", is + 13, "0STL", x, y, z, 0, "ONLY");
-			
-	x = 9. * TMath::Sin(angle/2+is * angle);
-	y = 9. * TMath::Cos(angle/2+is * angle);
+	/*			
+	x = 9.1 * TMath::Sin(angle/2+is * angle);
+	y = 9.1 * TMath::Cos(angle/2+is * angle);
 
 	gMC->Gspos ("0INS", is + 25, "0STL", x, y, z, 0, "ONLY");
-			
+	*/			
       }	
    
       
    x=0;
    y=0;
-   z=-pinstart[2]+ppmt[2]+2.*psupport6[2]+0.1;
+   // z=-pinstart[2]+ppmt[2]+2.*psupport6[2]+0.1;
+    z=-pinstart[2]+ppmt[2];
    gMC->Gspos("0PMT",1,"0INS",x,y,z,0,"ONLY");
-   z=z+pdivider[2]+ppmt[2];
-   gMC->Gspos("0DIV",1,"0INS",x,y,z,0,"ONLY");
+   //   z=z+pdivider[2]+ppmt[2];
+   //  gMC->Gspos("0DIV",1,"0INS",x,y,z,0,"ONLY");
    
    // PMT
    
@@ -262,13 +271,20 @@ void AliSTARTv1::CreateGeometry()
    //   gMC->Gsvolu("0TOP","TUBE",idtmed[12],ptop,3); //lucite
    z=-ppmt[2]+ptop[2];
    gMC->Gspos("0TOP",1,"0PMT",0,0,z,0,"ONLY");
-   
+   //metal volume to simulate reclection  
+   gMC->Gsvolu("0TOO","TUBE",idtmed[kOpAir],ptopout,3); //glass
+   //   gMC->Gsvolu("0TOP","TUBE",idtmed[12],ptop,3); //lucite
+   gMC->Gspos("0TOO",1,"0PMT",0,0,z,0,"ONLY");
+
    //Fotokatod
-   
-   gMC->Gsvolu ("0REG", "TUBE", idtmed[kOpGlass], preg, 3); //photocathode dobavil bogdanov(AliSTARTv2)
-   z = -ppmt[2] + 2 * ptop[2] + preg[2]; //photocathode dobavil bogdanov 
-   gMC->Gspos ("0REG", 1, "0PMT", 0, 0, z, 0, "ONLY"); //photocathode dobavil bogdanov(AliSTARTv2)
-   
+   gMC->Gsvolu ("0REG", "TUBE", idtmed[kOpGlassCathode], preg, 3); 
+   z = -ppmt[2] + 2 * ptop[2] + preg[2]; 
+   gMC->Gspos ("0REG", 1, "0PMT", 0, 0, z, 0, "ONLY"); 
+   //optical volume special to detect photons in cathode 
+   //   gMC->Gsvolu ("0RE1", "TUBE", idtmed[kOpAirNext], pregafter, 3);
+   // z = -ppmt[2] + 2 * ptop[2] + 2*preg[2] + pregafter[2]; 
+   // gMC->Gspos ("0RE1", 1, "0PMT", 0, 0, z, 0, "ONLY");
+       
    // Bottom glass
    gMC->Gsvolu("0BOT","TUBE",idtmed[kGlass],pbot,3);
    z=ppmt[2]-pbot[2];
@@ -327,15 +343,6 @@ void AliSTARTv1::CreateGeometry()
    
    
    //Support  left side
-   /*   
-   z=-pstart[2]+psupport1[2];
-   gMC->Gspos("0SU1",2,"0STL",0,0,z,0,"ONLY"); //C kozhuh snaruzhi
-   gMC->Gspos("0SU2",2,"0STL",0,0,z,0,"ONLY"); //C kozhuh vnutri
-   z=-pstart[2]+psupport3[2];
-   gMC->Gspos("0SU3",2,"0STL",0,0,z,0,"ONLY"); //peredniaia kryshka
-   z=-pstart[2]+2.*psupport1[2];
-   gMC->Gspos("0SU4",2,"0STL",0,0,z,0,"MANY"); //zadnaiai kryshka
-   */
    z=-pstart[2]+psupport1[2]+0.1;
    gMC->Gspos("0SU1",1,"0STR",0,0,z,0,"ONLY"); //C kozhuh snaruzhi
    gMC->Gspos("0SU2",1,"0STR",0,0,z,0,"ONLY"); //C kozhuh vnutri
@@ -373,36 +380,8 @@ void AliSTARTv1::CreateGeometry()
     z += par[2];
     gMC->Gspos("0SC2",1,"0SUP",0,0,z,0,"ONLY"); 
     z += par[2];
-    /*
-    Float_t parC[5];
-    parC[0]=0.25;
-    parC[1]=5.1;
-    parC[2]=5.2;
-    parC[3]=5.5;
-    parC[4]=5.6;
-    gMC->Gsvolu("0SC3","CONE",idtmed[kC],parC,5);
-    z += parC[0];
-    gMC->Gspos("0SC3",1,"0SUP",0,0,z,0,"ONLY"); 
-    z += parC[0];
-    par[0]=5.5;
-    par[1]=5.6;
-    par[2]=1.2/2;
-    gMC->Gsvolu("0SC4","TUBE",idtmed[kC],par,3);
-    z += par[2];
-    gMC->Gspos("0SC4",1,"0SUP",0,0,z,0,"ONLY"); 
-    par[0]=5.1;
-    par[1]=5.5;
-    par[2]=1.2/2;
-    gMC->Gsvolu("0SA0","TUBE",idtmed[kAl],par,3);
-    gMC->Gspos("0SA0",1,"0SUP",0,0,z,0,"ONLY"); 
-    //gvozdi dlia skruchivaniia Al i C parts
-    par[0]=5.75; 
-    par[1]=5.78;
-    gMC->Gsvolu("0SN1","TUBE",idtmed[kSteel],par,3);
-    gMC->Gspos("0SN1",1,"0SUP",0,0,z,0,"ONLY"); 
-    z += par[2];
-    */
-    par[0]=3.15;
+   
+     par[0]=3.15;
     par[1]=4.9;
     par[2]=0.1/2;
     gMC->Gsvolu("0SA1","TUBE",idtmed[kAl],par,3);
@@ -428,7 +407,7 @@ void AliSTARTv1::CreateGeometry()
     par[2]=0.01;
     gMC->Gsvolu("0SN2","TUBE",idtmed[kSteel],par,3);
     gMC->Gspos("0SN2",1,"0SUP",0,0,z,0,"ONLY"); 
-    
+         
  
 }    
 //------------------------------------------------------------------------
@@ -436,8 +415,8 @@ void AliSTARTv1::CreateMaterials()
 {
    Int_t isxfld   = gAlice->Field()->Integ();
    Float_t sxmgmx = gAlice->Field()->Max();
-   Float_t a,z,d,radl,absl,buf[1];
-   Int_t nbuf;
+   //   Float_t a,z,d,radl,absl,buf[1];
+   // Int_t nbuf;
    Int_t *idtmed = fIdtmed->GetArray();
 
 // AIR
@@ -463,7 +442,7 @@ void AliSTARTv1::CreateMaterials()
    Float_t wglass[2]={1.,2.};
    Float_t dglass=2.65;
 // Ceramic   97.2% Al2O3 , 2.8% SiO2
-   Float_t acer[2],zcer[2],wcer[2]={0.972,0.028};
+   // Float_t wcer[2]={0.972,0.028};
    Float_t aCeramic[2]  = { 26.981539,15.9994 };
    Float_t zCeramic[2]  = { 13.,8. };
    Float_t wCeramic[2]  = { 2.,3. };
@@ -495,26 +474,32 @@ void AliSTARTv1::CreateMaterials()
 
    AliMixture( 3, "Ceramic  $",aCeramic, zCeramic, denscer, -2, wCeramic);
    AliMixture( 4, "PMT glass   $",aglass,zglass,dglass,-2,wglass);
-   char namate[21]="";
+   /* 
+  char namate[21]="";
+  
    gMC->Gfmate((*fIdmate)[3], namate, a, z, d, radl, absl, buf, nbuf);
-   acer[0]=a;
+   acer[0]=a;  
+
    zcer[0]=z;
    gMC->Gfmate((*fIdmate)[4], namate, a, z, d, radl, absl, buf, nbuf);
    acer[1]=a;
    zcer[1]=z;
-
-   
-   AliMixture( 9, "Ceramic    $", acer, zcer, denscer, 2, wcer);
-   AliMixture( 5, "Scintillator$",ascin,zscin,denscin,-2,wscin);
+   AliMixture( 11, "Ceramic    $", acer, zcer, denscer, 2, wcer);
+   */ 
+    AliMixture( 5, "Scintillator$",ascin,zscin,denscin,-2,wscin);
    AliMixture( 6, "Brass    $", abrass, zbrass, denbrass, 2, wbrass);
    AliMixture( 7, "Ribber $",aribber,zribber,denribber,-3,wribber);
    AliMixture( 8, "Lucite$",alucite,zlucite,denlucite,-3,wlucite);
    AliMixture( 9, "Penoplast$",asupport,zsupport,densupport,-2,wsupport);
+   AliMixture( 21, "PMT Optical glass   $",aglass,zglass,dglass,-2,wglass);
+   AliMixture( 24, "PMT Optical glass cathode $",aglass,zglass,dglass,-2,wglass);
+    AliMixture(22, "START Opt Air$", aAir, zAir, dAir,4,wAir);
+   AliMixture(23, "START Opt Air Next$", aAir, zAir, dAir,4,wAir);
    
    AliMedium(1, "START Air$", 2, 0, isxfld, sxmgmx, 10., .1, 1., .003, .003);
    AliMedium(2, "Scintillator$", 5, 1, isxfld, sxmgmx, 10., .01, 1., .003, .003);
    AliMedium(3, "Vacuum$", 1, 0, isxfld, sxmgmx, 10., .01, .1, .003, .003);
-   AliMedium(4, "Ceramic$", 9, 0, isxfld, sxmgmx, 10., .01, .1, .003, .003);
+   AliMedium(4, "Ceramic$", 3, 0, isxfld, sxmgmx, 10., .01, .1, .003, .003);
    AliMedium(6, "Glass$", 4, 1, isxfld, sxmgmx, 10., .01, .1, .003, .003);
    AliMedium(8, "Steel$", 0, 0, isxfld, sxmgmx, 1., .001, 1., .001, .001);
    AliMedium(9, "Ribber  $", 7, 0, isxfld, sxmgmx, 10., .01, .1, .003, .003);
@@ -523,47 +508,65 @@ void AliSTARTv1::CreateMaterials()
    AliMedium(13, "CarbonPlastic$", 10, 0, isxfld, sxmgmx, 10., .01, 1., .003, .003);  
    AliMedium(14, "PenoPlast$", 9, 0, isxfld, sxmgmx, 10., .01, 1., .003, .003);  
    AliMedium(15, "Aluminium$", 11, 0, isxfld, sxmgmx, 10., .01, 1., .003, .003);  
-   AliMedium(16, "OpticalGlass$", 4, 1, isxfld, sxmgmx, 10., .01, .1, .003, .003);
-   AliMedium(17, "START OpAir$", 2, 0, isxfld, sxmgmx, 10., .1, 1., .003, .003);
- 
+   AliMedium(16, "OpticalGlass$", 21, 1, isxfld, sxmgmx, 10., .01, .1, .003, .003);
+   AliMedium(17, "START OpAir$", 22, 0, isxfld, sxmgmx, 10., .1, 1., .003, .003);
+   AliMedium(18, "START OpAirNext$", 23, 0, isxfld, sxmgmx, 10., .1, 1., .003, .003);
+    AliMedium(19, "OpticalGlassCathode$", 24, 1, isxfld, sxmgmx, 10., .01, .1, .003, .003);
+
 
 // Definition Cherenkov parameters
    int i;
-   //   const Int_t kNbins=30;
-   const Int_t kNbins=27;
+   const Int_t kNbins=31;
    
-   //  Float_t aPckov[kNbins]; 
-   Float_t aRindexSiO2[kNbins], rindexAir[kNbins], efficAll[kNbins], absorAir[kNbins];
-       
+   Float_t rindexSiO2[kNbins],  efficAll[kNbins], rindexAir[kNbins], absorAir[kNbins],rindexCathodeNext[kNbins], absorbCathodeNext[kNbins];
+            
    // quartz 20mm
-   Float_t aAbsSiO2[kNbins]={28.3, 27.7, 27.3, 26.7, 26.4, 
-			     25.9, 25.3, 24.9, 24.5, 23.7, 23.2,
-			     22.8, 22.4, 21.8, 21.3, 22.8, 
-			     22.1, 21.7, 21.2, 20.5, 19.9, 
-			     19.3, 18.7, 18.0, 17.1, 16.3, 15.3   };
-   
-   Float_t aPckov[kNbins]  ={4.02, 4.11, 4.19, 4.29, 4.38,
+   Float_t aAbsSiO2[kNbins]={29.0, 28.6, 28.3, 27.7, 27.3, 26.7, 26.4, 
+			     25.9, 25.3, 24.9, 24.5, 23.7, 
+			     23.2, 22.8, 22.4, 21.8, 21.3,
+			     22.8, 22.1, 21.7, 21.2, 20.5, 
+			     19.9, 19.3, 18.7, 18.0, 17.1, 
+			     16.3, 15.3, 14.3, 14.3   };
+          
+   Float_t aPckov[kNbins]  ={3.87, 3.94, 4.02, 4.11, 4.19, 4.29, 4.38,
 			     4.48, 4.58, 4.69, 4.81, 4.93, 
 			     5.05, 5.19, 5.33, 5.48, 5.63,
 			     5.8,  5.97, 6.16, 6.36, 6.57, 
-			     6.8,  7.04, 7.3,  7.58, 7.89, 8.22, 8.57};  
-    
-   //   Float_t aAbsSiO2[kNbins];
+			     6.8,  7.04, 7.3,  7.58, 7.89, 
+			     8.22, 8.57, 8.97, 9.39 };  
+   /*     
+   Float_t effCathode[kNbins]={0.11, 0.13, 0.15, 0.16, 0.18, 0.19, 0.20,
+			      0.21, 0.22, 0.23, 0.24, 0.26, 
+			      0.27, 0.29, 0.30, 0.29, 0.29, 
+			      0.28, 0.28, 0.27, 0.26, 0.25, 
+			      0.25, 0.23, 0.20, 0.19, 0.17,
+			      0.17, 0.17, 0.2, 0.23};
+   */     
+   //  Float_t aAbsSiO2[kNbins]; //quartz 30mm
   for(i=0;i<kNbins;i++)
     {
-      //      aPckov[i]=(0.1*i+5.5)*1e-9;//Photons energy bins 5.5 eV - 8.5 eV step 0.1 eV   
       aPckov[i]=aPckov[i]*1e-9;//Photons energy bins 4 eV - 8.5 eV step 0.1 eV   
-      aRindexSiO2[i]=1.458; //refractive index for qwarts
-      rindexAir[i]=1.;
+      rindexAir[i]=0;
+      rindexSiO2[i]=1.458; //refractive index for qwarts
+      rindexCathodeNext[i]=0;
       efficAll[i]=1.;
-      //  aAbsSiO2[i]=28.5; //quartz 30mm
-      absorAir[i]=1.e-5;
-    }
- 
-   gMC->SetCerenkov (idtmed[kOpGlass], kNbins, aPckov, aAbsSiO2, efficAll, aRindexSiO2 );
-   gMC->SetCerenkov (idtmed[kOpAir], kNbins , aPckov, absorAir, efficAll, rindexAir);
-   if(fDebug) cout<<ClassName()<<": ++++++++++++++Medium set++++++++++"<<endl;
 
+      //      aAbsSiO2[i]=28.5; //quartz 30mm
+      absorAir[i]=0.3;      
+      absorbCathodeNext[i]=0;
+
+    }
+  
+  
+   gMC->SetCerenkov (idtmed[kOpGlass], kNbins, aPckov, aAbsSiO2, efficAll, rindexSiO2 );
+   // gMC->SetCerenkov (idtmed[kOpGlassCathode], kNbins, aPckov, aAbsSiO2, effCathode, rindexSiO2 );
+   gMC->SetCerenkov (idtmed[kOpGlassCathode], kNbins, aPckov, aAbsSiO2,efficAll , rindexSiO2 );
+  gMC->SetCerenkov (idtmed[kOpAir], kNbins, aPckov,absorAir , efficAll,rindexAir );
+   gMC->SetCerenkov (idtmed[kOpAirNext], kNbins, aPckov,absorbCathodeNext , efficAll, rindexCathodeNext);
+   
+   if(fDebug) cout<<ClassName()<<": ++++++++++++++Medium set++++++++++"<<endl;
+   
+   
 }
 //---------------------------------------------------------------------
 void AliSTARTv1::DrawDetector()
@@ -617,19 +620,19 @@ void AliSTARTv1::StepManager()
   static Int_t vol[2];
   TLorentzVector pos;
   
-  TClonesArray &lhits = *fHits;
+  //   TClonesArray &lhits = *fHits;
   
   if(!gMC->IsTrackAlive()) return; // particle has disappeared
-
+  
 // If particles is photon then ...
-
-  if (gMC->TrackPid() == 50000050)
-    {
+  
+ if (gMC->TrackPid() == 50000050)
+  {
       id=gMC->CurrentVolID(copy);
       
       
       // Check the sensetive volume
-      if(id==fIdSens1 ) {
+      if(id==fIdSens1 ) { 
 	if(gMC->IsTrackEntering()) {
 	  gMC->CurrentVolOffID(2,copy);
 	  vol[1]=copy;
@@ -639,29 +642,34 @@ void AliSTARTv1::StepManager()
 	  hits[0] = pos[0];
 	  hits[1] = pos[1];
 	  hits[2] = pos[2];
-	  //	  printf(" pmt %i ", vol[1]);
-	  //  printf(" x %f y %f z %f \n", pos[0],pos[1],pos[2]);
 	  if(pos[2]<0) vol[0]=2;
-	  if(pos[2]>=0) vol[0]=1;
+	  if(pos[2]>=0) vol[0]=1; 
 	  
 	  Float_t etot=gMC->Etot();
 	  hits[3]=etot;
 	  Int_t iPart= gMC->TrackPid();
 	  Int_t partID=gMC->IdFromPDG(iPart);
 	  hits[4]=partID;
-	  //    if (partID!=50) cout<<partID<<endl;
 	  Float_t ttime=gMC->TrackTime();
-	  hits[5]=ttime*1e9;
+	  hits[5]=ttime*1e12;
+	  AddHit(fIshunt,vol,hits);
+	  //  cout<< gAlice->GetMCApp()->GetCurrentTrackNumber()<<" hit added "<<endl;
 	}
-	
-	if(gMC->IsTrackExiting())	
-	  new(lhits[fNhits++]) AliSTARThit(fIshunt,gAlice->GetMCApp()->GetCurrentTrackNumber(),vol,hits);      
-	
-      }
-    }
-//---------------------------------------------------------------------
+	/*		
+		printf("track(%i) alive(%i) disap(%i) enter(%i) exit(%i) inside(%i) out(%i) stop(%i) new(%i) \n",
+		       gAlice->GetMCApp()->GetCurrentTrackNumber(),
+	       gMC->IsTrackAlive(),
+	       gMC->IsTrackDisappeared(),
+	       gMC->IsTrackEntering(),
+	       gMC->IsTrackExiting(),
+	       gMC->IsTrackInside(),
+	       gMC->IsTrackOut(),
+	       gMC->IsTrackStop(),
+	       gMC->IsNewTrack());
+	*/		
+      } //sensitive
+  } //photon
 }
-
 
 
 
