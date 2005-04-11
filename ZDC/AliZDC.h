@@ -63,17 +63,12 @@ protected:
   ClassDef(AliZDC,4)  	// Zero Degree Calorimeter base class
 };
  
-R__EXTERN  AliZDC *gZDC;
-
-
 // Calibration methods (by Alberto Colla)
 //_____________________________________________________________________________
 inline void AliZDC::SetZDCCalibFName(const char *name)  
 {fZDCCalibFName = name;        gSystem->ExpandPathName(fZDCCalibFName);}
 //_____________________________________________________________________________
 inline char* AliZDC::GetZDCCalibFName()  const {return (char*)fZDCCalibFName.Data();}
-
-// Calibration methods (by Alberto Colla)
 
 
 #endif

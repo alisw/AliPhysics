@@ -44,6 +44,32 @@ AliZDCCalibData::AliZDCCalibData(const char* name)
 }
 
 //________________________________________________________________
+AliZDCCalibData::AliZDCCalibData(const AliZDCCalibData& calibda) :
+  TNamed(calibda)
+{
+// copy constructor
+  SetName(calibda.GetName());
+  SetTitle(calibda.GetName());
+  Reset();
+  for(int t=0; t<47; t++) fMeanPedestal[t] = calibda.GetMeanPed(t);
+  for(int t=0; t<4; t++) fEnCalibration[t] = calibda.GetEnCalib(t);
+  PrepHistos();
+}
+
+//________________________________________________________________
+AliZDCCalibData &AliZDCCalibData::operator =(const AliZDCCalibData& calibda)
+{
+// assignment operator
+  SetName(calibda.GetName());
+  SetTitle(calibda.GetName());
+  Reset();
+  for(int t=0; t<47; t++) fMeanPedestal[t] = calibda.GetMeanPed(t);
+  for(int t=0; t<4; t++) fEnCalibration[t] = calibda.GetEnCalib(t);
+  PrepHistos();
+  return *this;
+}
+
+//________________________________________________________________
 AliZDCCalibData::~AliZDCCalibData()
 {
   CleanHistos();
@@ -65,12 +91,12 @@ void AliZDCCalibData::CleanHistos()
 //________________________________________________________________
 void AliZDCCalibData::PrepHistos()
 {
-  CleanHistos();
-  Int_t   kNChannels = 100;
-  Float_t kMaxPedVal = 400.;
+//  CleanHistos(); // this gives a segm.viol!
+  Int_t   kNChannels = 47;
+  Float_t kMaxPedVal = 47.;
   TString hname = GetName();  hname += "_Pedestals";
   fHistMeanPed   = new TH1F(hname.Data(),hname.Data(),kNChannels,0.,kMaxPedVal);
-  for (int i=0; i<64; i++) {
+  for (int i=0; i<47; i++) {
     fHistMeanPed->SetBinContent(i+1,GetMeanPed(i));
   }
 }

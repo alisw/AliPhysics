@@ -17,6 +17,8 @@ class AliZDCCalibData: public TNamed {
  public:
   AliZDCCalibData();
   AliZDCCalibData(const char* name);
+  AliZDCCalibData(const AliZDCCalibData &calibda);
+  AliZDCCalibData& operator= (const AliZDCCalibData &calibda);
   virtual ~AliZDCCalibData();
   void Reset();
   virtual void  Print() const; 
