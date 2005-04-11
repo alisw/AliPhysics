@@ -54,6 +54,16 @@ typedef struct {
 } chepsrCommon;
 #define CHEPSR COMMON_BLOCK(CHEPSR,chepsr)
 COMMON_BLOCK_DEF(chepsrCommon,CHEPSR);
+
+typedef struct {
+   Double_t xn[3];
+   Double_t wn[3];
+   Double_t distn;
+   Int_t    irltno;
+   Int_t    irrnor;
+} norlatCommon;
+#define NORLAT COMMON_BLOCK(NORLAT,norlat)
+COMMON_BLOCK_DEF(norlatCommon,NORLAT);   
 }
 
 #endif
