@@ -9,8 +9,6 @@
 //  Manager and classes for set ZDC           //
 ////////////////////////////////////////////////
 
-#include <TSystem.h>
-
 #include "AliDetector.h"
 
 class AliZDCCalibData;
@@ -25,7 +23,7 @@ public:
   virtual void  BuildGeometry();
   virtual void  CreateGeometry() {}
   virtual void  CreateMaterials() {}
-  Int_t         DistancetoPrimitive(Int_t px, Int_t py) const;
+  Int_t         DistancetoPrimitive(Int_t px, Int_t py);
   virtual Int_t IsVersion() const =0;
   virtual Float_t ZMin() const;	// Minimum overall dimension of the ZDC
   virtual Float_t ZMax() const;	// Maximum overall dimension of the ZDC
@@ -42,14 +40,12 @@ public:
 
 
 //Calibration methods (by Alberto Colla)
-  void    SetZDCCalibFName(const char *name="$(ALICE)/AliRoot/data/AliZDCCalib.root");
-  char*   GetZDCCalibFName() const;
-
-  void    CreateCalibData();
-  void    WriteCalibData(Int_t option=TObject::kOverwrite);
-  void    LoadCalibData();
-  void    SetCalibData(AliZDCCalibData* data) {fCalibData = data;}
+  void          CreateCalibData();
+  void          WriteCalibData(Int_t option=TObject::kOverwrite);
+  void          LoadCalibData();
+  void          SetCalibData(AliZDCCalibData* data) {fCalibData = data;}
   AliZDCCalibData* GetCalibData() const  {return fCalibData;}
+//Calibration methods (by Alberto Colla)
 
 
 protected:
@@ -57,23 +53,12 @@ protected:
   Int_t        fNoShower;	// Flag to switch off the shower	
 
 //Calibration methods (by Alberto Colla)
-  AliZDCCalibData* fCalibData;		// Calibration data for ZDC
-  TString          fZDCCalibFName; 	//  Name of the ZDC calibration data
+  AliZDCCalibData* fCalibData;	// Calibration data for ZDC
+//Calibration methods (by Alberto Colla)
   
   ClassDef(AliZDC,4)  	// Zero Degree Calorimeter base class
 };
  
 R__EXTERN  AliZDC *gZDC;
-
-
-// Calibration methods (by Alberto Colla)
-//_____________________________________________________________________________
-inline void AliZDC::SetZDCCalibFName(const char *name)  
-{fZDCCalibFName = name;        gSystem->ExpandPathName(fZDCCalibFName);}
-//_____________________________________________________________________________
-inline char* AliZDC::GetZDCCalibFName()  const {return (char*)fZDCCalibFName.Data();}
-
-// Calibration methods (by Alberto Colla)
-
 
 #endif
