@@ -1,6 +1,5 @@
 #include "AliSTARTRawReader.h"
 #include "AliSTARTRawData.h"
-#include "AliRawReaderFile.h" 
 #include "AliSTARTdigit.h"
 
 #include <Riostream.h>
