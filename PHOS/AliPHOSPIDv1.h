@@ -67,7 +67,9 @@ public:
   Float_t GetEllipseParameter    (TString particle, TString param, Float_t e) const;
 
   Double_t GetThresholdChargedNeutral () const {return  fChargedNeutralThreshold;}
-
+  Float_t GetTOFEnergyThreshold () const {return  fTOFEnThreshold;}
+  Float_t GetDispersionEnergyThreshold () const {return  fDispEnThreshold;}
+  Int_t   GetDispersionMultiplicityThreshold () const {return  fDispMultThreshold;}
 
   //Do bayesian PID
   void SetBayesianPID(Bool_t set){ fBayesian = set ;}
@@ -81,7 +83,9 @@ public:
   void SetParameterPi0Boundary   (Int_t i, Float_t param);
 
   void SetThresholdChargedNeutral (Double_t th) {fChargedNeutralThreshold = th;}
-
+  void SetTOFEnergyThreshold (Float_t th)  {fTOFEnThreshold = th;}
+  void SetDispersionEnergyThreshold (Float_t th) {fDispEnThreshold = th;}
+  void SetDispersionMultiplicityThreshold (Int_t th)  {fDispMultThreshold = th;}
 
   //Switch to "on flyght" mode, without writing to TreeR and file  
   void SetWriting(Bool_t toWrite = kFALSE){fWrite = toWrite;} 
@@ -141,51 +145,40 @@ private:
   Double_t fInitPID[AliPID::kSPECIESN] ; // Initial population to do bayesian PID
   // pid probability function parameters
   // ToF
-  Double_t fTphoton[3] ;                // gaussian tof response for photon
-  TFormula * fTFphoton ;                // the formula   
-/*   Double_t fTelectron[3] ;              // gaussian tof response for electrons */
-/*   TFormula * fTFelectron ;              // the formula */
-/*   Double_t fTmuon[3] ;                  // gaussian tof response for muon */
-/*   TFormula * fTFmuon ;                  // the formula */
-  Double_t fTpiong[3] ;                 // gaussian tof response for pions
-  TFormula * fTFpiong ;                 // the formula
-/*   Double_t fTpionl[3] ;                 // gaussian tof response for pions */
-/*   TFormula * fTFpionl ;                 // the formula    */
-  Double_t fTkaong[3] ;                 // landau tof response for kaons
-  TFormula * fTFkaong ;                 // the formula
-  Double_t fTkaonl[3] ;                 // landau tof response for kaons
-  TFormula * fTFkaonl ;                 // the formula
-  Double_t fThhadrong[3] ;              // gaus   tof response for heavy hadrons
-  TFormula * fTFhhadrong ;              // the formula
-  Double_t fThhadronl[3] ;              // landau   tof response for heavy hadrons
-  TFormula * fTFhhadronl ;              // the formula
- /*  Double_t fTpion[9] ;                     // gaussian tof response for pions */
-/*   Double_t fTkaon[9] ;                     // landau tof response for kaons */
-/*   Double_t fThhadron[9] ;                  // landau tof response for nucleons */
+  Double_t fTphoton[3] ;       // gaussian tof response for photon
+  TFormula * fTFphoton ;       // the formula   
+  Double_t fTpiong[3] ;        // gaussian tof response for pions
+  TFormula * fTFpiong ;        // the formula
+  Double_t fTkaong[3] ;        // landau tof response for kaons
+  TFormula * fTFkaong ;        // the formula
+  Double_t fTkaonl[3] ;        // landau tof response for kaons
+  TFormula * fTFkaonl ;        // the formula
+  Double_t fThhadrong[3] ;     // gaus   tof response for heavy hadrons
+  TFormula * fTFhhadrong ;     // the formula
+  Double_t fThhadronl[3] ;     // landau   tof response for heavy hadrons
+  TFormula * fTFhhadronl ;     // the formula
 
   //Shower dispersion
-  Double_t fDmuon[3] ;                   // gaussian ss response for muon 
-  TFormula * fDFmuon ;                   // the formula 
-  Double_t fDphoton[9] ;                 // gaussian ss response for EM
-  Double_t fDpi0[9] ;                    // gaussian ss response for pi0
-  Double_t fDhadron[9] ;                 // gaussian ss response for hadrons
+  Double_t fDmuon[3]    ;     // gaussian ss response for muon 
+  TFormula * fDFmuon    ;     // the formula 
+  Double_t fDphoton[10] ;     // gaussian ss response for EM
+  Double_t fDpi0[10]    ;     // gaussian ss response for pi0
+  Double_t fDhadron[10] ;     // gaussian ss response for hadrons
 
-                   // gaussian ss response for muons
-  //CPV-EMCAL distance
-/*   Double_t fCPVelectron[9] ;   // gaussian emc-cpv distance response for electron */
-/*   Double_t fCPVcharged[9]  ;   // landau emc-cpv distance response for charged part (no elect) */ 
-  Double_t fXelectron[9] ;   // gaussian emc-cpv distance response for electron
-  Double_t fXcharged[9]  ;   // landau emc-cpv distance response for charged part (no elect) */
-  Double_t fZelectron[9] ;   // gaussian emc-cpv distance response for electron
-  Double_t fZcharged[9]  ;   // landau emc-cpv distance response for charged part (no elect) */
+  Double_t fXelectron[10] ;   // gaussian emc-cpv distance response for electron
+  Double_t fXcharged[10]  ;   // landau emc-cpv distance response for charged part (no elect) */
+  Double_t fZelectron[10] ;   // gaussian emc-cpv distance response for electron
+  Double_t fZcharged[10]  ;   // landau emc-cpv distance response for charged part (no elect) */
 
-/*   Double_t fCPVchargedg[9] ;         // gaussian emc-cpv distance response for charged part (no elect) */
-/*   Double_t fCPVchargedl[9] ;         // landau emc-cpv distance response for charged part (no elect) */
 
   Double_t fERecWeightPar[4] ;  // gaussian tof response for photon
   TFormula * fERecWeight ;      // the formula   
-  Double_t fChargedNeutralThreshold ;  //Threshold to differentiate between charged and neutral
-  ClassDef( AliPHOSPIDv1,11)  // Particle identifier implementation version 1
+  Double_t fChargedNeutralThreshold ; //Threshold to differentiate between charged and neutral
+  Float_t  fTOFEnThreshold;           //Maximum energy to use TOF
+  Float_t  fDispEnThreshold;          //Minimum energy to use shower shape
+  Int_t    fDispMultThreshold ;       //Minimum multiplicity to use shower shape
+
+  ClassDef( AliPHOSPIDv1,12)  // Particle identifier implementation version 1
 
 };
 

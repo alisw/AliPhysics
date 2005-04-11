@@ -180,54 +180,74 @@ void AliPHOSPIDv1::InitParameters()
 
   // initialisation of response function parameters
   // Tof
+
+//   // Photons
+//   fTphoton[0] = 0.218    ;
+//   fTphoton[1] = 1.55E-8  ; 
+//   fTphoton[2] = 5.05E-10 ;
+//   fTFphoton = new TFormula("ToF response to photons" , "gaus") ; 
+//   fTFphoton->SetParameters( fTphoton[0], fTphoton[1], fTphoton[2]) ; 
+
+//   // Pions
+//   //Gaus (0 to max probability)
+//   fTpiong[0] = 0.0971    ; 
+//   fTpiong[1] = 1.58E-8  ; 
+//   fTpiong[2] = 5.69E-10 ;
+//   fTFpiong = new TFormula("ToF response to pions" , "gaus") ; 
+//   fTFpiong->SetParameters( fTpiong[0], fTpiong[1], fTpiong[2]) ; 
+
+//   // Kaons
+//   //Gaus (0 to max probability)
+//   fTkaong[0] = 0.0542  ; 
+//   fTkaong[1] = 1.64E-8 ; 
+//   fTkaong[2] = 6.07E-10 ;
+//   fTFkaong = new TFormula("ToF response to kaon" , "gaus") ; 
+//   fTFkaong->SetParameters( fTkaong[0], fTkaong[1], fTkaong[2]) ; 
+//   //Landau (max probability to inf) 
+//   fTkaonl[0] = 0.264   ;
+//   fTkaonl[1] = 1.68E-8  ; 
+//   fTkaonl[2] = 4.10E-10 ;
+//   fTFkaonl = new TFormula("ToF response to kaon" , "landau") ; 
+//   fTFkaonl->SetParameters( fTkaonl[0], fTkaonl[1], fTkaonl[2]) ; 
+
+//   //Heavy Hadrons
+//   //Gaus (0 to max probability)
+//   fThhadrong[0] = 0.0302   ;  
+//   fThhadrong[1] = 1.73E-8  ; 
+//   fThhadrong[2] = 9.52E-10 ;
+//   fTFhhadrong = new TFormula("ToF response to heavy hadrons" , "gaus") ; 
+//   fTFhhadrong->SetParameters( fThhadrong[0], fThhadrong[1], fThhadrong[2]) ; 
+//   //Landau (max probability to inf) 
+//   fThhadronl[0] = 0.139    ;  
+//   fThhadronl[1] = 1.745E-8  ; 
+//   fThhadronl[2] = 1.00E-9  ;
+//   fTFhhadronl = new TFormula("ToF response to heavy hadrons" , "landau") ; 
+//   fTFhhadronl->SetParameters( fThhadronl[0], fThhadronl[1], fThhadronl[2]) ; 
+
   // Photons
-  fTphoton[0] = 0.218    ;
-  //fTphoton[0] = 1.    ;
+  fTphoton[0] = 7.83E8   ;
   fTphoton[1] = 1.55E-8  ; 
-  fTphoton[2] = 5.05E-10 ;
+  fTphoton[2] = 5.09E-10 ;
   fTFphoton = new TFormula("ToF response to photons" , "gaus") ; 
   fTFphoton->SetParameters( fTphoton[0], fTphoton[1], fTphoton[2]) ; 
-//   // Electrons
-//   fTelectron[0] = 0.2      ;
-//   fTelectron[1] = 1.55E-8  ; 
-//   fTelectron[2] = 5.35E-10 ;
-//   fTFelectron = new TFormula("ToF response to electrons" , "gaus") ; 
-//   fTFelectron->SetParameters( fTelectron[0], fTelectron[1], fTelectron[2]) ; 
-//   // Muons
-//   fTmuon[0] = 0.2     ;
-//   fTmuon[1] = 1.55E-8 ; 
-//   fTmuon[2] = 5.1E-10 ;
-//   fTFmuon = new TFormula("ToF response to muons" , "gaus") ; 
-//   fTFmuon->SetParameters( fTmuon[0], fTmuon[1], fTmuon[2]) ; 
 
   // Pions
   //Gaus (0 to max probability)
-  fTpiong[0] = 0.0971    ; 
-  //fTpiong[0] = 1.       ;
+  fTpiong[0] = 6.73E8    ; 
   fTpiong[1] = 1.58E-8  ; 
-  fTpiong[2] = 5.69E-10 ;
+  fTpiong[2] = 5.87E-10 ;
   fTFpiong = new TFormula("ToF response to pions" , "gaus") ; 
   fTFpiong->SetParameters( fTpiong[0], fTpiong[1], fTpiong[2]) ; 
-  // Landau (max probability to inf) 
-//   fTpionl[0] = 0.05     ; 
-//   //fTpionl[0] = 5.53     ; 
-//   fTpionl[1] = 1.68E-8  ; 
-//   fTpionl[2] = 5.38E-10 ;
-//   fTFpionl = new TFormula("ToF response to pions" , "landau") ; 
-//   fTFpionl->SetParameters( fTpionl[0], fTpionl[1], fTpionl[2]) ; 
-
 
   // Kaons
   //Gaus (0 to max probability)
-  fTkaong[0] = 0.0542  ; 
-  //fTkaong[0] = 1.      ;
+  fTkaong[0] = 3.93E8  ; 
   fTkaong[1] = 1.64E-8 ; 
-  fTkaong[2] = 6.07-10 ;
+  fTkaong[2] = 6.07E-10 ;
   fTFkaong = new TFormula("ToF response to kaon" , "gaus") ; 
   fTFkaong->SetParameters( fTkaong[0], fTkaong[1], fTkaong[2]) ; 
   //Landau (max probability to inf) 
-  fTkaonl[0] = 0.264   ;
-  //fTkaonl[0] = 5.53     ;
+  fTkaonl[0] = 2.0E9    ;
   fTkaonl[1] = 1.68E-8  ; 
   fTkaonl[2] = 4.10E-10 ;
   fTFkaonl = new TFormula("ToF response to kaon" , "landau") ; 
@@ -235,65 +255,52 @@ void AliPHOSPIDv1::InitParameters()
 
   //Heavy Hadrons
   //Gaus (0 to max probability)
-  fThhadrong[0] = 0.0302   ;  
-  //fThhadrong[0] = 1.       ; 
+  fThhadrong[0] = 2.02E8   ;  
   fThhadrong[1] = 1.73E-8  ; 
   fThhadrong[2] = 9.52E-10 ;
   fTFhhadrong = new TFormula("ToF response to heavy hadrons" , "gaus") ; 
   fTFhhadrong->SetParameters( fThhadrong[0], fThhadrong[1], fThhadrong[2]) ; 
   //Landau (max probability to inf) 
-  fThhadronl[0] = 0.139    ;  
-  //fThhadronl[0] = 5.53      ;   
-  fThhadronl[1] = 1.745E-8  ; 
-  fThhadronl[2] = 1.00E-9  ;
+  fThhadronl[0] = 1.10E9    ;  
+  fThhadronl[1] = 1.74E-8   ; 
+  fThhadronl[2] = 1.00E-9   ;
   fTFhhadronl = new TFormula("ToF response to heavy hadrons" , "landau") ; 
   fTFhhadronl->SetParameters( fThhadronl[0], fThhadronl[1], fThhadronl[2]) ; 
 
-/// /gaussian parametrization for pions
-//   fTpion[0] = 3.93E-2 ;  fTpion[1] = 0.130   ; fTpion[2] =-6.37E-2 ;//constant
-//   fTpion[3] = 1.65E-8 ;  fTpion[4] =-1.40E-9 ; fTpion[5] = 5.96E-10;//mean
-//   fTpion[6] = 8.09E-10;  fTpion[7] =-4.65E-10; fTpion[8] = 1.50E-10;//sigma
-
-// //landau parametrization for kaons
-//   fTkaon[0] = 0.107   ;  fTkaon[1] = 0.166   ; fTkaon[2] = 0.243   ;//constant
-//   fTkaon[3] = 1.80E-8 ;  fTkaon[4] =-2.96E-9 ; fTkaon[5] = 9.60E-10;//mean
-//   fTkaon[6] = 1.37E-9 ;  fTkaon[7] =-1.80E-9 ; fTkaon[8] = 6.74E-10;//sigma
-
-// //landau parametrization for nucleons
-//   fThhadron[0] = 6.33E-2 ;  fThhadron[1] = 2.52E-2 ; fThhadron[2] = 2.16E-2 ;//constant
-//   fThhadron[3] = 1.94E-8 ;  fThhadron[4] =-7.06E-10; fThhadron[5] =-4.69E-10;//mean
-//   fThhadron[6] = 2.55E-9 ;  fThhadron[7] =-1.90E-9 ; fThhadron[8] = 5.41E-10;//sigma
 
 
   // Shower shape: dispersion gaussian parameters
   // Photons
+  
+//   fDphoton[0] = 4.62e-2;  fDphoton[1] = 1.39e-2 ; fDphoton[2] = -3.80e-2;//constant
+//   fDphoton[3] = 1.53   ;  fDphoton[4] =-6.62e-2 ; fDphoton[5] = 0.339   ;//mean
+//   fDphoton[6] = 6.89e-2;  fDphoton[7] =-6.59e-2 ; fDphoton[8] = 0.194   ;//sigma
+  
+//   fDpi0[0] = 0.0586  ;  fDpi0[1] = 1.06E-3 ; fDpi0[2] = 0.      ;//constant
+//   fDpi0[3] = 2.67    ;  fDpi0[4] =-2.00E-2 ; fDpi0[5] = 9.37E-5 ;//mean
+//   fDpi0[6] = 0.153   ;  fDpi0[7] = 9.34E-4 ; fDpi0[8] =-1.49E-5 ;//sigma
+  
+//   fDhadron[0] = 1.61E-2 ;  fDhadron[1] = 3.03E-3 ; fDhadron[2] = 1.01E-2 ;//constant
+//   fDhadron[3] = 3.81    ;  fDhadron[4] = 0.232   ; fDhadron[5] =-1.25    ;//mean
+//   fDhadron[6] = 0.897   ;  fDhadron[7] = 0.0987  ; fDhadron[8] =-0.534   ;//sigma
+  
+  fDphoton[0] = 1.5    ;  fDphoton[1] = 0.49    ; fDphoton[2] =-1.7E-2 ;//constant
+  fDphoton[3] = 1.5    ;  fDphoton[4] = 4.0E-2  ; fDphoton[5] = 0.21   ;//mean
+  fDphoton[6] = 4.8E-2 ;  fDphoton[7] =-0.12    ; fDphoton[8] = 0.27   ;//sigma
+  fDphoton[9] = 16.; //for E>  fDphoton[9] parameters calculated at  fDphoton[9]
 
-//   fDphoton[0] = 3.84e-2;  fDphoton[1] = 4.46e-3 ; fDphoton[2] = -2.36e-2;//constant
-//   //fDphoton[0] = 1.0    ;  fDphoton[1] = 0.      ; fDphoton[2] = 0.     ;//constant
-//   fDphoton[3] = 1.55   ;  fDphoton[4] =-0.0863  ; fDphoton[5] = 0.287   ;//mean
-//   fDphoton[6] = 0.0451 ;  fDphoton[7] =-0.0803  ; fDphoton[8] = 0.314   ;//sigma
+  fDpi0[0] = 0.25      ;  fDpi0[1] = 3.3E-2     ; fDpi0[2] =-1.0e-5    ;//constant
+  fDpi0[3] = 1.50      ;  fDpi0[4] = 398.       ; fDpi0[5] = 12.       ;//mean
+  fDpi0[6] =-7.0E-2    ;  fDpi0[7] =-524.       ; fDpi0[8] = 22.       ;//sigma
+  fDpi0[9] = 110.; //for E>  fDpi0[9] parameters calculated at  fDpi0[9]
 
-   fDphoton[0] = 4.62e-2;  fDphoton[1] = 1.39e-2 ; fDphoton[2] = -3.80e-2;//constant
-   //fDphoton[0] = 1.0    ;  fDphoton[1] = 0.      ; fDphoton[2] = 0.     ;//constant
-   fDphoton[3] = 1.53   ;  fDphoton[4] =-6.62e-2 ; fDphoton[5] = 0.339   ;//mean
-   fDphoton[6] = 6.89e-2;  fDphoton[7] =-6.59e-2 ; fDphoton[8] = 0.194   ;//sigma
+  fDhadron[0] = 6.5    ;  fDhadron[1] =-5.3     ; fDhadron[2] = 1.5    ;//constant
+  fDhadron[3] = 3.8    ;  fDhadron[4] = 0.23    ; fDhadron[5] =-1.2    ;//mean
+  fDhadron[6] = 0.88   ;  fDhadron[7] = 9.3E-2  ; fDhadron[8] =-0.51   ;//sigma
+  fDhadron[9] = 2.; //for E>  fDhadron[9] parameters calculated at  fDhadron[9]
 
-   fDpi0[0] = 0.0586  ;  fDpi0[1] = 1.06E-3 ; fDpi0[2] = 0.      ;//constant
-   //fDpi0[0] = 1.0     ;  fDpi0[1] = 0.0     ; fDpi0[2] = 0.      ;//constant
-  fDpi0[3] = 2.67    ;  fDpi0[4] =-2.00E-2 ; fDpi0[5] = 9.37E-5 ;//mean
-  fDpi0[6] = 0.153   ;  fDpi0[7] = 9.34E-4 ; fDpi0[8] =-1.49E-5 ;//sigma
-  //landau
-//   fDhadron[0] = 0.007  ;  fDhadron[1] = 0.      ; fDhadron[2] = 0.    ;//constant
-//   //fDhadron[0] = 5.53   ;  fDhadron[1] = 0.      ; fDhadron[2] = 0.    ;//constant
-//   fDhadron[3] = 3.38   ;  fDhadron[4] = 0.0833  ; fDhadron[5] =-0.845 ;//mean
-//   fDhadron[6] = 0.627  ;  fDhadron[7] = 0.012   ; fDhadron[8] =-0.170 ;//sigma
-
-  fDhadron[0] = 1.61E-2 ;  fDhadron[1] = 3.03E-3 ; fDhadron[2] = 1.01E-2 ;//constant
-  fDhadron[3] = 3.81    ;  fDhadron[4] = 0.232   ; fDhadron[5] =-1.25    ;//mean
-  fDhadron[6] = 0.897   ;  fDhadron[7] = 0.0987  ; fDhadron[8] =-0.534   ;//sigma
-  // Muons
-  fDmuon[0] = 0.0631     ;
-  fDmuon[1] = 1.4 ; 
+  fDmuon[0] = 0.0631 ;
+  fDmuon[1] = 1.4    ; 
   fDmuon[2] = 0.0557 ;
   fDFmuon = new TFormula("Shower shape response to muons" , "landau") ; 
   fDFmuon->SetParameters( fDmuon[0], fDmuon[1], fDmuon[2]) ; 
@@ -301,31 +308,58 @@ void AliPHOSPIDv1::InitParameters()
 
   // x(CPV-EMC) distance gaussian parameters
   
-  fXelectron[0] = 8.06e-2 ;  fXelectron[1] = 1.00e-2; fXelectron[2] =-5.14e-2;//constant
-  //fXelectron[0] = 1.0     ;  fXelectron[1] = 0.     ; fXelectron[2] = 0.    ;//constant
-  fXelectron[3] = 0.202   ;  fXelectron[4] = 8.15e-3; fXelectron[5] = 4.55   ;//mean
-  fXelectron[6] = 0.334   ;  fXelectron[7] = 0.186  ; fXelectron[8] = 4.32e-2;//sigma
+//   fXelectron[0] = 8.06e-2 ;  fXelectron[1] = 1.00e-2; fXelectron[2] =-5.14e-2;//constant
+//   fXelectron[3] = 0.202   ;  fXelectron[4] = 8.15e-3; fXelectron[5] = 4.55   ;//mean
+//   fXelectron[6] = 0.334   ;  fXelectron[7] = 0.186  ; fXelectron[8] = 4.32e-2;//sigma
   
+//   //charged hadrons gaus
+//   fXcharged[0] = 6.43e-3 ;  fXcharged[1] =-4.19e-5; fXcharged[2] = 1.42e-3;//constant
+//   fXcharged[3] = 2.75    ;  fXcharged[4] =-0.40   ; fXcharged[5] = 1.68   ;//mean
+//   fXcharged[6] = 3.135   ;  fXcharged[7] =-9.41e-2; fXcharged[8] = 1.31e-2;//sigma
+  
+//   // z(CPV-EMC) distance gaussian parameters
+  
+//   fZelectron[0] = 8.22e-2 ;  fZelectron[1] = 5.11e-3; fZelectron[2] =-3.05e-2;//constant
+//   fZelectron[3] = 3.09e-2 ;  fZelectron[4] = 5.87e-2; fZelectron[5] =-9.49e-2;//mean
+//   fZelectron[6] = 0.263   ;  fZelectron[7] =-9.02e-3; fZelectron[8] = 0.151 ;//sigma
+  
+//   //charged hadrons gaus
+  
+//   fZcharged[0] = 1.00e-2 ;  fZcharged[1] = 2.82E-4 ; fZcharged[2] = 2.87E-3 ;//constant
+//   fZcharged[3] =-4.68e-2 ;  fZcharged[4] =-9.21e-3 ; fZcharged[5] = 4.91e-2 ;//mean
+//   fZcharged[6] = 1.425   ;  fZcharged[7] =-5.90e-2 ; fZcharged[8] = 5.07e-2 ;//sigma
+
+
+  fXelectron[0] =-1.6E-2 ;  fXelectron[1] = 0.77  ; fXelectron[2] =-0.15 ;//constant
+  fXelectron[3] = 0.35   ;  fXelectron[4] = 0.25  ; fXelectron[5] = 4.12 ;//mean
+  fXelectron[6] = 0.30   ;  fXelectron[7] = 0.11  ; fXelectron[8] = 0.16 ;//sigma
+  fXelectron[9] = 3.; //for E>  fXelectron[9] parameters calculated at  fXelectron[9]
+
   //charged hadrons gaus
-  fXcharged[0] = 6.43e-3 ;  fXcharged[1] =-4.19e-5; fXcharged[2] = 1.42e-3;//constant
-  fXcharged[3] = 2.75    ;  fXcharged[4] =-0.40   ; fXcharged[5] = 1.68   ;//mean
-  fXcharged[6] = 3.135   ;  fXcharged[7] =-9.41e-2; fXcharged[8] = 1.31e-2;//sigma
-  
+  fXcharged[0] = 0.14    ;  fXcharged[1] =-3.0E-2 ; fXcharged[2] = 0     ;//constant
+  fXcharged[3] = 1.4     ;  fXcharged[4] =-9.3E-2 ; fXcharged[5] = 1.4   ;//mean
+  fXcharged[6] = 5.7     ;  fXcharged[7] = 0.27   ; fXcharged[8] =-1.8   ;//sigma
+  fXcharged[9] = 1.2; //for E>  fXcharged[9] parameters calculated at  fXcharged[9]
+
   // z(CPV-EMC) distance gaussian parameters
   
-  fZelectron[0] = 8.22e-2 ;  fZelectron[1] = 5.11e-3; fZelectron[2] =-3.05e-2;//constant
-  //fZelectron[0] = 1.0     ;  fZelectron[1] = 0.     ; fZelectron[2] = 0.    ;//constant
-  fZelectron[3] = 3.09e-2 ;  fZelectron[4] = 5.87e-2; fZelectron[5] =-9.49e-2;//mean
-  fZelectron[6] = 0.263   ;  fZelectron[7] =-9.02e-3; fZelectron[8] = 0.151 ;//sigma
-  
+  fZelectron[0] = 0.49   ;  fZelectron[1] = 0.53   ; fZelectron[2] =-9.8E-2 ;//constant
+  fZelectron[3] = 2.8E-2 ;  fZelectron[4] = 5.0E-2 ; fZelectron[5] =-8.2E-2 ;//mean
+  fZelectron[6] = 0.25   ;  fZelectron[7] =-1.7E-2 ; fZelectron[8] = 0.17   ;//sigma
+  fZelectron[9] = 3.; //for E>  fZelectron[9] parameters calculated at  fZelectron[9]
+
   //charged hadrons gaus
   
-  fZcharged[0] = 1.00e-2 ;  fZcharged[1] = 2.82E-4 ; fZcharged[2] = 2.87E-3 ;//constant
-  fZcharged[3] =-4.68e-2 ;  fZcharged[4] =-9.21e-3 ; fZcharged[5] = 4.91e-2 ;//mean
-  fZcharged[6] = 1.425   ;  fZcharged[7] =-5.90e-2 ; fZcharged[8] = 5.07e-2 ;//sigma
-  
+  fZcharged[0] = 0.46    ;  fZcharged[1] =-0.65    ; fZcharged[2] = 0.52    ;//constant
+  fZcharged[3] = 1.1E-2  ;  fZcharged[4] = 0.      ; fZcharged[5] = 0.      ;//mean
+  fZcharged[6] = 0.60    ;  fZcharged[7] =-8.2E-2  ; fZcharged[8] = 0.45    ;//sigma
+  fZcharged[9] = 1.2; //for E>  fXcharged[9] parameters calculated at  fXcharged[9]
+
   //Threshold to differentiate between charged and neutral
   fChargedNeutralThreshold = 1e-5;
+  fTOFEnThreshold          = 2;          //Maximum energy to use TOF
+  fDispEnThreshold         = 0.5;       //Minimum energy to use shower shape
+  fDispMultThreshold       = 3;       //Minimum multiplicity to use shower shape
 
   //Weight to hadrons recontructed energy
 
@@ -403,10 +437,18 @@ Double_t  AliPHOSPIDv1::GausF(Double_t  x, Double_t  y, Double_t * par)
   //Given the energy x and the parameter y (tof, shower dispersion or cpv-emc distance), 
   //this method returns a density probability of this parameter, given by a gaussian 
   //function whose parameters depend with the energy  with a function: a/(x*x)+b/x+b
-  Double_t cnt    = par[1] / (x*x) + par[2] / x + par[0] ;
+  //Float_t xorg = x;
+  if (x > par[9]) x = par[9];
+  
+  //Double_t cnt    = par[1] / (x*x) + par[2] / x + par[0] ;
+  Double_t cnt    = par[0] + par[1] * x + par[2] * x * x ;
   Double_t mean   = par[4] / (x*x) + par[5] / x + par[3] ;
   Double_t sigma  = par[7] / (x*x) + par[8] / x + par[6] ;
  
+//   if(xorg > 30)
+//     cout<<"En_in = "<<xorg<<"; En_out = "<<x<<"; cnt = "<<cnt
+// 	<<"; mean = "<<mean<<"; sigma = "<<sigma<<endl;
+      
   //  Double_t arg    = - (y-mean) * (y-mean) / (2*sigma*sigma) ;
   //  return cnt * TMath::Exp(arg) ;
   if(TMath::Abs(sigma) > 1.e-10){
@@ -766,7 +808,10 @@ Double_t  AliPHOSPIDv1::LandauF(Double_t  x, Double_t y, Double_t * par)
   //this method returns a density probability of this parameter, given by a landau 
   //function whose parameters depend with the energy  with a function: a/(x*x)+b/x+b
 
-  Double_t cnt    = par[1] / (x*x) + par[2] / x + par[0] ;
+  if (x > par[9]) x = par[9];
+
+  //Double_t cnt    = par[1] / (x*x) + par[2] / x + par[0] ;
+  Double_t cnt    = par[0] + par[1] * x + par[2] * x * x ;
   Double_t mean   = par[4] / (x*x) + par[5] / x + par[3] ;
   Double_t sigma  = par[7] / (x*x) + par[8] / x + par[6] ;
 
@@ -840,27 +885,6 @@ void  AliPHOSPIDv1::MakePID()
 
   Int_t nparticles = gime->RecParticles()->GetEntriesFast() ;
 
-  //   const Int_t kMAXPARTICLES = 2000 ; 
-  //   if (nparticles >= kMAXPARTICLES) 
-  //     Error("MakePID", "Change size of MAXPARTICLES") ; 
-  //   Double_t stof[kSPECIES][kMAXPARTICLES] ;
-  
-//   const Int_t kMAXPARTICLES = 2000 ; 
-//   if (nparticles >= kMAXPARTICLES) 
-//     AliError("Change size of MAXPARTICLES") ; 
-//   Double_t stof[kSPECIES][kMAXPARTICLES] ;
-
-
-  // make the normalized distribution of pid for this event 
-  // w(pid) in the Bayesian formulation
-//   for(index = 0 ; index < nparticles ; index ++) {
-    
-//     cout<<">>>>>>>>>>>>>>>Bayes Index "<<index<<endl;
-
-
-//     AliPHOSEmcRecPoint * emc     = AliPHOSGetter::Instance()->EmcRecPoint(index) ;
-//     AliPHOSCpvRecPoint * cpv     = AliPHOSGetter::Instance()->CpvRecPoint(index) ;
-
   TObjArray * emcRecPoints = gime->EmcRecPoints() ; 
   TObjArray * cpvRecPoints = gime->CpvRecPoints() ; 
   TClonesArray * trackSegments = gime->TrackSegments() ;
@@ -904,6 +928,7 @@ void  AliPHOSPIDv1::MakePID()
       AliFatal(Form("-> emc(%d) = %d", ts->GetEmcIndex(), emc )) ;
     }
 
+
     // ############Tof#############################
 
     //    Info("MakePID", "TOF");
@@ -924,11 +949,9 @@ void  AliPHOSPIDv1::MakePID()
     //We assing the same prob to neutral hadrons, sum is 1
     stof[AliPID::kNeutron][index]  = 1./2.;
     stof[AliPID::kKaon0][index]    = 1./2.;
-
     stof[AliPID::kMuon][index]     = 1.; 
-
-    
-    if(en < 2.) {
+ 
+    if(en <  fTOFEnThreshold) {
 
       Double_t pTofPion = fTFpiong ->Eval(time) ; //gaus distribution
       Double_t pTofKaon = 0;
@@ -981,7 +1004,7 @@ void  AliPHOSPIDv1::MakePID()
     sdp[AliPID::kKaon0][index]    = 1. ; 
     sdp[AliPID::kMuon][index]     = 1. ; 
     
-    if(en > 0.5 && emc->GetMultiplicity() > 3){ 
+    if(en > fDispEnThreshold && emc->GetMultiplicity() >  fDispMultThreshold){
       sdp[AliPID::kPhoton][index]   = GausF(en , dispersion, fDphoton) ;
       sdp[AliPID::kElectron][index] = sdp[AliPID::kPhoton][index] ;
       sdp[AliPID::kPion][index]     = LandauF(en , dispersion, fDhadron ) ; 
@@ -1020,7 +1043,7 @@ void  AliPHOSPIDv1::MakePID()
 //     cout<<">>>>hadron   : x "<<x<<" xprob "<<chprobx<<" z "<<z<<" zprob "<<chprobz<<endl;
 //     cout<<">>>>electron : px*pz "<<pcpvelectron <<" hadron: px*pz "<<pcpvcharged<<endl;  
 
-    // Is neutral or charged
+    // Is neutral or charged?
     if(pcpvelectron >= pcpvcharged)  
       pcpv = pcpvelectron ;
     else
@@ -1057,14 +1080,20 @@ void  AliPHOSPIDv1::MakePID()
 
     if(en > 30.){
       // pi0 are detected via decay photon
-      stof[AliPID::kPi0][index]  = fTFphoton  ->Eval(time) ;
+      stof[AliPID::kPi0][index]  =   stof[AliPID::kPhoton][index];
       scpv[AliPID::kPi0][index]  = pcpvneutral  ;
-      sdp [AliPID::kPi0][index]  = 1. ;
-      if(emc->GetMultiplicity() > 3)
-	sdp [AliPID::kPi0][index]  = GausPol2(en , dispersion, fDpi0) ;
+      if(emc->GetMultiplicity() >  fDispMultThreshold)
+	sdp [AliPID::kPi0][index]  = GausF(en , dispersion, fDpi0) ;
+	//sdp [AliPID::kPi0][index]  = GausPol2(en , dispersion, fDpi0) ;
+//       cout<<"E = "<<en<<" GeV; disp = "<<dispersion<<"; mult = "
+// 	  <<emc->GetMultiplicity()<<endl;
+//       cout<<"PDF: photon = "<<sdp [AliPID::kPhoton][index]<<"; pi0 = "
+// 	  <<sdp [AliPID::kPi0][index]<<endl;
     }
     
+  
 
+    
     //############## muon #############################
 
     if(en > 0.5){
@@ -1098,16 +1127,16 @@ void  AliPHOSPIDv1::MakePID()
 //       cout<<">>>>hadron   : xprob "<<chprobx<<" zprob "<<chprobz<<endl;
 //       cout<<">>>>electron : px*pz "<<pcpvelectron <<" hadron: px*pz "<<pcpvcharged<<endl;  
       
-//       cout<<"Photon   , pid "<< fInitPID[AliPID::kPhoton]<<" tof "<<stof[AliPID::kPhoton][index]
-// 	  <<", cpv "<<scpv[AliPID::kPhoton][index]<<", ss "<<sdp[AliPID::kPhoton][index]<<endl;
+//        cout<<"Photon   , pid "<< fInitPID[AliPID::kPhoton]<<" tof "<<stof[AliPID::kPhoton][index]
+//  	  <<", cpv "<<scpv[AliPID::kPhoton][index]<<", ss "<<sdp[AliPID::kPhoton][index]<<endl;
 //       cout<<"EleCon   , pid "<< fInitPID[AliPID::kEleCon]<<", tof "<<stof[AliPID::kEleCon][index]
 // 	  <<", cpv "<<scpv[AliPID::kEleCon][index]<<" ss "<<sdp[AliPID::kEleCon][index]<<endl;
 //       cout<<"Electron , pid "<< fInitPID[AliPID::kElectron]<<", tof "<<stof[AliPID::kElectron][index]
 // 	  <<", cpv "<<scpv[AliPID::kElectron][index]<<" ss "<<sdp[AliPID::kElectron][index]<<endl;
 //       cout<<"Muon     , pid "<< fInitPID[AliPID::kMuon]<<", tof "<<stof[AliPID::kMuon][index]
 // 	  <<", cpv "<<scpv[AliPID::kMuon][index]<<" ss "<<sdp[AliPID::kMuon][index]<<endl;
-//       cout<<"Pi0      , pid "<< fInitPID[AliPID::kPi0]<<", tof "<<stof[AliPID::kPi0][index]
-// 	  <<", cpv "<<scpv[AliPID::kPi0][index]<<" ss "<<sdp[AliPID::kPi0][index]<<endl;
+//        cout<<"Pi0      , pid "<< fInitPID[AliPID::kPi0]<<", tof "<<stof[AliPID::kPi0][index]
+//  	  <<", cpv "<<scpv[AliPID::kPi0][index]<<" ss "<<sdp[AliPID::kPi0][index]<<endl;
 //       cout<<"Pion     , pid "<< fInitPID[AliPID::kPion]<<", tof "<<stof[AliPID::kPion][index]
 // 	  <<", cpv "<<scpv[AliPID::kPion][index]<<" ss "<<sdp[AliPID::kPion][index]<<endl;
 //       cout<<"Kaon0    , pid "<< fInitPID[AliPID::kKaon0]<<", tof "<<stof[AliPID::kKaon0][index]
@@ -1130,48 +1159,58 @@ void  AliPHOSPIDv1::MakePID()
   //  Info("MakePID", "Total Probability calculation");
   
   for(index = 0 ; index < nparticles ; index ++) {
+    
+    AliPHOSRecParticle * recpar = gime->RecParticle(index) ;  
+    
+    //Conversion electron?
+    
+    if(recpar->IsEleCon()){
+      fInitPID[AliPID::kEleCon]   = 1. ;
+      fInitPID[AliPID::kPhoton]   = 0. ;
+      fInitPID[AliPID::kElectron] = 0. ;
+    }
+    else{
+      fInitPID[AliPID::kEleCon]   = 0. ;
+      fInitPID[AliPID::kPhoton]   = 1. ;
+      fInitPID[AliPID::kElectron] = 1. ;
+    }
+    //	fInitPID[AliPID::kEleCon]   = 0. ;
+    
+    
     // calculates the Bayesian weight
     
     Int_t jndex ;
     Double_t wn = 0.0 ; 
     for (jndex = 0 ; jndex < kSPECIES ; jndex++) 
-      wn += stof[jndex][index] * sdp[jndex][index]  * scpv[jndex][index] * sw[jndex][index] * fInitPID[jndex] ;
-   
+      wn += stof[jndex][index] * sdp[jndex][index]  * scpv[jndex][index] * 
+	sw[jndex][index] * fInitPID[jndex] ;
+    
     //    cout<<"*************wn "<<wn<<endl;
-    AliPHOSRecParticle * recpar = gime->RecParticle(index) ;  
     if (TMath::Abs(wn)>0)
       for (jndex = 0 ; jndex < kSPECIES ; jndex++) {
-
-// 	if(recpar->IsEleCon()){
-// 	 fInitPID[AliPID::kEleCon]   = 1. ;
-// 	 fInitPID[AliPID::kPhoton]   = 0. ;
-// 	}
-// 	else{
-// 	 fInitPID[AliPID::kEleCon]   = 0. ;
-// 	 fInitPID[AliPID::kPhoton]   = 1. ;
-// 	}
-	fInitPID[AliPID::kEleCon]   = 0. ;
 	//cout<<"jndex "<<jndex<<" wn "<<wn<<" SetPID * wn"
 	//<<stof[jndex][index] * sdp[jndex][index] * pid[jndex]  << endl;
 	//cout<<" tof "<<stof[jndex][index] << " disp " <<sdp[jndex][index] << " pid "<< fInitPID[jndex] << endl;
-//  	cout<<"Particle "<<jndex<<"  final prob * wn   "
-//  	    <<stof[jndex][index] * sdp[jndex][index] * scpv[jndex][index] * fInitPID[jndex] <<"  wn  "<< wn<<endl;
-	recpar->SetPID(jndex, stof[jndex][index] * sdp[jndex][index] * sw[jndex][index] *
-		       scpv[jndex][index] * fInitPID[jndex] / wn) ; 
-// 	cout<<"final prob "<<stof[jndex][index] * sdp[jndex][index] * scpv[jndex][index] * fInitPID[jndex] / wn<<endl;
-	//recpar->SetPID(jndex, stof[jndex][index] * fInitPID[jndex] / wn) ; 
-	//cout<<"After SetPID"<<endl;
-	//recpar->Print();
+	// 	if(jndex ==  AliPID::kPi0 || jndex ==  AliPID::kPhoton){
+	// 	  cout<<"Particle "<<jndex<<"  final prob * wn   "
+	// 	      <<stof[jndex][index] * sdp[jndex][index] * scpv[jndex][index] * 
+	// 	    fInitPID[jndex] <<"  wn  "<< wn<<endl;
+	// 	  cout<<"pid "<< fInitPID[jndex]<<", tof "<<stof[jndex][index]
+	// 	      <<", cpv "<<scpv[jndex][index]<<" ss "<<sdp[jndex][index]<<endl;
+	// 	}
+	recpar->SetPID(jndex, stof[jndex][index] * sdp[jndex][index] * 
+		       sw[jndex][index] * scpv[jndex][index] * 
+		       fInitPID[jndex] / wn) ; 
       }
   }
   //  Info("MakePID", "Delete");
   
-    for (Int_t i =0; i< kSPECIES; i++){
-      delete [] stof[i];
-      delete [] sdp [i];
-      delete [] scpv[i];
-      delete [] sw  [i];
-    }
+  for (Int_t i =0; i< kSPECIES; i++){
+    delete [] stof[i];
+    delete [] sdp [i];
+    delete [] scpv[i];
+    delete [] sw  [i];
+  }
   //  Info("MakePID","End MakePID"); 
 }
 
