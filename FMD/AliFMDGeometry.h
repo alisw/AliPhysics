@@ -4,11 +4,13 @@
 //  
 // $Id$ 
 //
+// Forward Multiplicity Detector based on Silicon wafers. 
+//
+// This class is a singleton that handles the geometry parameters of
+// the FMD detectors.  
+//                                                       
 #ifndef ALIGEOMETRY_H
 # include <AliGeometry.h>
-#endif
-#ifndef ROOT_TObjArray
-# include <TObjArray.h>
 #endif
 class TVector3;
 class TMatrix;
@@ -49,7 +51,7 @@ public:
   virtual void GetGlobal(const AliRecPoint* p, TVector3& pos) const;
   virtual Bool_t Impact(const TParticle* particle) const;
 protected:
-  Bool_t        fIsInitialized;
+  Bool_t        fIsInitialized; // Whether singleton is initalized
   AliFMDRing*	fInner;		// Inner ring geometry information
   AliFMDRing*	fOuter;		// Outer ring geometry information
   AliFMD1*	fFMD1;		// FMD1 geometry information
@@ -58,10 +60,12 @@ protected:
   Bool_t	fUseFMD1;	// Wheter to Use FMD1 or not
   Bool_t	fUseFMD2;	// Wheter to Use FMD2 or not
   Bool_t	fUseFMD3;	// Wheter to Use FMD3 or not
-  static AliFMDGeometry* fgInstance;
+  static AliFMDGeometry* fgInstance; // Singleton instance 
   AliFMDGeometry();
+  AliFMDGeometry(const AliFMDGeometry& other);
+  AliFMDGeometry& operator=(const AliFMDGeometry& other);
   virtual ~AliFMDGeometry() {}
-
+  
   ClassDef(AliFMDGeometry,1); //
 };
 

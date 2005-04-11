@@ -56,7 +56,7 @@ AliFMDBoolMap::AliFMDBoolMap(size_t maxDet,
   //	maxSec	Maximum number of sectors per ring
   //	maxStr	Maximum number of strips per sector
   fData = new Bool_t[fMaxDetectors * fMaxRings * fMaxSectors * fMaxStrips];
-  Clear();
+  Reset();
 }
 
 //__________________________________________________________
@@ -78,7 +78,7 @@ AliFMDBoolMap::operator=(const AliFMDBoolMap& other)
 
 //__________________________________________________________
 void
-AliFMDBoolMap::Clear(const Bool_t& val)
+AliFMDBoolMap::Reset(const Bool_t& val)
 {
   // Reset map to val
   for (size_t i = 0; i < fMaxDetectors * fMaxRings 

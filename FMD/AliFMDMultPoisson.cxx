@@ -61,7 +61,7 @@ AliFMDMultPoisson::PreEvent(TTree* tree, Float_t ipZ)
   // Reset internal data
   AliFMDMultAlgorithm::PreEvent(tree, ipZ);
   fCurrentVertexZ = ipZ;
-  fEmpty.Clear(kFALSE);
+  fEmpty.Reset(kFALSE);
 
   // Make a branch in the reconstruction tree. 
   const Int_t kBufferSize = 16000;

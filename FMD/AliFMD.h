@@ -52,37 +52,37 @@ public:
   virtual TClonesArray* SDigits() { return fSDigits; }        
   virtual void          ResetSDigits();
   virtual void          AddHit(Int_t track, Int_t *vol, Float_t *hits);
-  virtual void          AddHit(Int_t    track, 
-			       UShort_t detector, 
-			       Char_t   ring, 
-			       UShort_t sector, 
-			       UShort_t strip, 
-			       Float_t  x=0,
-			       Float_t  y=0, 
-			       Float_t  z=0,
-			       Float_t  px=0, 
-			       Float_t  py=0, 
-			       Float_t  pz=0,
-			       Float_t  edep=0,
-			       Int_t    pdg=0,
-			       Float_t  t=0);
-  virtual        void   AddDigit(Int_t *digits);
-  virtual        void   AddDigit(UShort_t detector=0, 
-				 Char_t   ring='\0', 
-				 UShort_t sector=0, 
-				 UShort_t strip=0, 
-				 UShort_t count1=0, 
-				 Short_t  count2=-1, 
-				 Short_t  count3=-1);
+  virtual void          AddHitByFields(Int_t    track, 
+				       UShort_t detector, 
+				       Char_t   ring, 
+				       UShort_t sector, 
+				       UShort_t strip, 
+				       Float_t  x=0,
+				       Float_t  y=0, 
+				       Float_t  z=0,
+				       Float_t  px=0, 
+				       Float_t  py=0, 
+				       Float_t  pz=0,
+				       Float_t  edep=0,
+				       Int_t    pdg=0,
+				       Float_t  t=0);
+  virtual        void   AddDigit(Int_t *digits, Int_t* notused=0);
+  virtual        void   AddDigitByFields(UShort_t detector=0, 
+					 Char_t   ring='\0', 
+					 UShort_t sector=0, 
+					 UShort_t strip=0, 
+					 UShort_t count1=0, 
+					 Short_t  count2=-1, 
+					 Short_t  count3=-1);
   virtual        void   AddSDigit(Int_t *digits);
-  virtual        void   AddSDigit(UShort_t detector=0, 
-				  Char_t   ring='\0', 
-				  UShort_t sector=0, 
-				  UShort_t strip=0, 
-				  Float_t  edep=0,
-				  UShort_t count1=0, 
-				  Short_t  count2=-1, 
-				  Short_t  count3=-1);
+  virtual        void   AddSDigitByFields(UShort_t detector=0, 
+					  Char_t   ring='\0', 
+					  UShort_t sector=0, 
+					  UShort_t strip=0, 
+					  Float_t  edep=0,
+					  UShort_t count1=0, 
+					  Short_t  count2=-1, 
+					  Short_t  count3=-1);
 
   // Digitisation
   virtual AliDigitizer* CreateDigitizer(AliRunDigitizer* manager) const;

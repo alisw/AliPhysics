@@ -440,11 +440,12 @@ AliFMDSimulator::Exec(Option_t* /* option */)
     AliDebug(20, Form("Processing hit in FMD%d%c[%2d,%3d]: %f", 
 		      detector, ring, sector, strip, fCurrentDeltaE));
     
-    fFMD->AddHit(gAlice->GetMCApp()->GetCurrentTrackNumber(),
-		 UShort_t(detector), ring, UShort_t(sector), UShort_t(strip),
-		 fCurrentV.X(), fCurrentV.Y(), fCurrentV.Z(),
-		 fCurrentP.X(), fCurrentP.Y(), fCurrentP.Z(), 
-		 fCurrentDeltaE, fCurrentPdg, fCurrentV.T());
+    fFMD->AddHitByFields(gAlice->GetMCApp()->GetCurrentTrackNumber(),
+			 UShort_t(detector), ring, UShort_t(sector), 
+			 UShort_t(strip),
+			 fCurrentV.X(), fCurrentV.Y(), fCurrentV.Z(),
+			 fCurrentP.X(), fCurrentP.Y(), fCurrentP.Z(), 
+			 fCurrentDeltaE, fCurrentPdg, fCurrentV.T());
     fCurrentDeltaE = -1;
   }
 }

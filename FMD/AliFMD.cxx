@@ -558,38 +558,38 @@ AliFMD::AddHit(Int_t track, Int_t *vol, Float_t *hits)
   //    hits[9]	 [Float_t  ] Time when the track hit
   // 
   // 
-  AddHit(track, 
-	 UShort_t(vol[0]),  // Detector # 
-	 Char_t(vol[1]),    // Ring ID
-	 UShort_t(vol[2]),  // Sector # 
-	 UShort_t(vol[3]),  // Strip # 
-	 hits[0],           // X
-	 hits[1],           // Y
-	 hits[2],           // Z
-	 hits[3],           // Px
-	 hits[4],           // Py
-	 hits[5],           // Pz
-	 hits[6],           // Energy loss 
-	 Int_t(hits[7]),    // PDG 
-	 hits[8]);          // Time
+  AddHitByFields(track, 
+		 UShort_t(vol[0]),  // Detector # 
+		 Char_t(vol[1]),    // Ring ID
+		 UShort_t(vol[2]),  // Sector # 
+		 UShort_t(vol[3]),  // Strip # 
+		 hits[0],           // X
+		 hits[1],           // Y
+		 hits[2],           // Z
+		 hits[3],           // Px
+		 hits[4],           // Py
+		 hits[5],           // Pz
+		 hits[6],           // Energy loss 
+		 Int_t(hits[7]),    // PDG 
+		 hits[8]);          // Time
 }
 
 //____________________________________________________________________
 void 
-AliFMD::AddHit(Int_t    track, 
-	       UShort_t detector, 
-	       Char_t   ring, 
-	       UShort_t sector, 
-	       UShort_t strip, 
-	       Float_t  x, 
-	       Float_t  y, 
-	       Float_t  z,
-	       Float_t  px, 
-	       Float_t  py, 
-	       Float_t  pz,
-	       Float_t  edep,
-	       Int_t    pdg,
-	       Float_t  t)
+AliFMD::AddHitByFields(Int_t    track, 
+		       UShort_t detector, 
+		       Char_t   ring, 
+		       UShort_t sector, 
+		       UShort_t strip, 
+		       Float_t  x, 
+		       Float_t  y, 
+		       Float_t  z,
+		       Float_t  px, 
+		       Float_t  py, 
+		       Float_t  pz,
+		       Float_t  edep,
+		       Int_t    pdg,
+		       Float_t  t)
 {
   //
   // Add a hit to the list
@@ -641,7 +641,7 @@ AliFMD::AddHit(Int_t    track,
 
 //____________________________________________________________________
 void 
-AliFMD::AddDigit(Int_t* digits)
+AliFMD::AddDigit(Int_t* digits, Int_t*)
 {
   // Add a digit to the Digit tree 
   // 
@@ -655,24 +655,24 @@ AliFMD::AddDigit(Int_t* digits)
   //    digits[5]  [Short_t]  ADC Count, -1 if not used
   //    digits[6]  [Short_t]  ADC Count, -1 if not used 
   // 
-  AddDigit(UShort_t(digits[0]),  // Detector #
-	   Char_t(digits[1]),    // Ring ID
-	   UShort_t(digits[2]),  // Sector #
-	   UShort_t(digits[3]),  // Strip #
-	   UShort_t(digits[4]),  // ADC Count1 
-	   Short_t(digits[5]), 	 // ADC Count2 
-	   Short_t(digits[6]));  // ADC Count3 
+  AddDigitByFields(UShort_t(digits[0]),  // Detector #
+		   Char_t(digits[1]),    // Ring ID
+		   UShort_t(digits[2]),  // Sector #
+		   UShort_t(digits[3]),  // Strip #
+		   UShort_t(digits[4]),  // ADC Count1 
+		   Short_t(digits[5]), 	 // ADC Count2 
+		   Short_t(digits[6]));  // ADC Count3 
 }
 
 //____________________________________________________________________
 void 
-AliFMD::AddDigit(UShort_t detector, 
-		 Char_t   ring, 
-		 UShort_t sector, 
-		 UShort_t strip, 
-		 UShort_t count1, 
-		 Short_t  count2,
-		 Short_t  count3)
+AliFMD::AddDigitByFields(UShort_t detector, 
+			 Char_t   ring, 
+			 UShort_t sector, 
+			 UShort_t strip, 
+			 UShort_t count1, 
+			 Short_t  count2,
+			 Short_t  count3)
 {
   // add a real digit - as coming from data
   // 
@@ -708,26 +708,26 @@ AliFMD::AddSDigit(Int_t* digits)
   //    digits[6]  [Short_t]  ADC Count, -1 if not used
   //    digits[7]  [Short_t]  ADC Count, -1 if not used 
   // 
-  AddSDigit(UShort_t(digits[0]),  // Detector #
-	    Char_t(digits[1]),    // Ring ID
-	    UShort_t(digits[2]),  // Sector #
-	    UShort_t(digits[3]),  // Strip #
-	    Float_t(digits[4]),   // Edep
-	    UShort_t(digits[5]),  // ADC Count1 
-	    Short_t(digits[6]),   // ADC Count2 
-	    Short_t(digits[7]));  // ADC Count3 
+  AddSDigitByFields(UShort_t(digits[0]),  // Detector #
+		    Char_t(digits[1]),    // Ring ID
+		    UShort_t(digits[2]),  // Sector #
+		    UShort_t(digits[3]),  // Strip #
+		    Float_t(digits[4]),   // Edep
+		    UShort_t(digits[5]),  // ADC Count1 
+		    Short_t(digits[6]),   // ADC Count2 
+		    Short_t(digits[7]));  // ADC Count3 
 }
 
 //____________________________________________________________________
 void 
-AliFMD::AddSDigit(UShort_t detector, 
-		  Char_t   ring, 
-		  UShort_t sector, 
-		  UShort_t strip, 
-		  Float_t  edep,
-		  UShort_t count1, 
-		  Short_t  count2,
-		  Short_t  count3)
+AliFMD::AddSDigitByFields(UShort_t detector, 
+			  Char_t   ring, 
+			  UShort_t sector, 
+			  UShort_t strip, 
+			  Float_t  edep,
+			  UShort_t count1, 
+			  Short_t  count2,
+			  Short_t  count3)
 {
   // add a summable digit
   // 

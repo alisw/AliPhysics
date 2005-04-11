@@ -78,7 +78,7 @@ AliFMDEdepMap::operator=(const AliFMDEdepMap& other)
 
 //____________________________________________________________________
 void
-AliFMDEdepMap::Clear(const AliFMDEdepHitPair& val) 
+AliFMDEdepMap::Reset(const AliFMDEdepHitPair& val) 
 {
   for (size_t i = 0; i < fMaxDetectors * fMaxRings * fMaxSectors * fMaxStrips;
        i++) fData[i] = val;

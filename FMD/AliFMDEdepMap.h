@@ -33,7 +33,7 @@ public:
 		size_t maxStr = kMaxStrips);
   virtual ~AliFMDEdepMap() { delete [] fData; }
   AliFMDEdepMap& operator=(const AliFMDEdepMap& other);
-  virtual void Clear(const AliFMDEdepHitPair& val=AliFMDEdepHitPair());
+  virtual void Reset(const AliFMDEdepHitPair& val=AliFMDEdepHitPair());
   virtual AliFMDEdepHitPair& operator()(UShort_t detector, 
 				     Char_t   ring, 
 				     UShort_t sector, 

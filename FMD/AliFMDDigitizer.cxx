@@ -280,7 +280,7 @@ AliFMDBaseDigitizer::SumContributions(AliFMD* fmd)
     Fatal("SumContributions", "no run loader");
   
   // Clear array of deposited energies 
-  fEdep.Clear();
+  fEdep.Reset();
   
   // Get the FMD loader 
   AliLoader* inFMD = fRunLoader->GetLoader("FMDLoader");
@@ -568,7 +568,7 @@ AliFMDDigitizer::AddDigit(AliFMD*  fmd,
 			  Short_t  count2, 
 			  Short_t  count3) const
 {
-  fmd->AddDigit(detector, ring, sector, strip, count1, count2, count3);
+  fmd->AddDigitByFields(detector, ring, sector, strip, count1, count2, count3);
 }
 
 //____________________________________________________________________
@@ -684,7 +684,8 @@ AliFMDSDigitizer::AddDigit(AliFMD*  fmd,
 			   Short_t  count2, 
 			   Short_t  count3) const
 {
-  fmd->AddSDigit(detector, ring, sector, strip, edep, count1, count2, count3);
+  fmd->AddSDigitByFields(detector, ring, sector, strip, edep, 
+			 count1, count2, count3); 
 }
 
 

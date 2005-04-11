@@ -25,15 +25,15 @@ public:
                  size_t maxStr  = kMaxStrips);
   virtual ~AliFMDBoolMap() { delete [] fData; }
   AliFMDBoolMap& operator=(const AliFMDBoolMap& other);
-  virtual void Clear(const Bool_t& v=Bool_t());
+  virtual void Reset(const Bool_t& v=Bool_t());
   virtual Bool_t& operator()(UShort_t det,
-                                     Char_t   ring,
-                                     UShort_t sec,
-                                     UShort_t str);
+			     Char_t   ring,
+			     UShort_t sec,
+			     UShort_t str);
   virtual const Bool_t& operator()(UShort_t det,
-                                           Char_t   ring,
-                                           UShort_t sec,
-                                           UShort_t str) const;
+				   Char_t   ring,
+				   UShort_t sec,
+				   UShort_t str) const;
 protected:
   Bool_t* fData; // The Data
   ClassDef(AliFMDBoolMap,1) // Map of Bool_t data per strip

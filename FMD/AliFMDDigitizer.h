@@ -70,7 +70,7 @@ protected:
 			    Short_t  /* count2   */, 
 			    Short_t  /* count3   */) const {}
 
-  AliRunLoader* fRunLoader;
+  AliRunLoader* fRunLoader;	   // Run loader
   AliFMDEdepMap fEdep;             // Cache of Energy from hits 
   UShort_t      fVA1MipRange;      // How many MIPs the pre-amp can do    
   UShort_t      fAltroChannelSize; // Largest # to store in 1 ADC chan.

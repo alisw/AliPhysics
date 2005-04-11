@@ -411,7 +411,7 @@ Config()
   Bool_t useDIPO  = kTRUE; 
   Bool_t useFMD   = kTRUE; 
   Bool_t useFRAME = kTRUE; 
-  Bool_t useHALL  = kTRUE; 
+  Bool_t useHALL  = kFALSE; 
   Bool_t useITS   = kTRUE; 
   Bool_t useMAG   = kTRUE; 
   Bool_t useMUON  = kTRUE; 
@@ -424,7 +424,7 @@ Config()
   Bool_t useTOF   = kTRUE; 
   Bool_t useTPC   = kTRUE;
   Bool_t useTRD   = kTRUE; 
-  Bool_t useZDC   = kTRUE; 
+  Bool_t useZDC   = kFALSE; 
   Bool_t useEMCAL = kTRUE; 
   Bool_t useVZERO = kTRUE;
 

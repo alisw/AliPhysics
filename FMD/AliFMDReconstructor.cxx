@@ -230,6 +230,8 @@ AliFMDReconstructor::Reconstruct(TTree* digitsTree,
 {
   // Reconstruct event from digits in tree 
   // Get the FMD branch holding the digits. 
+  // FIXME: The vertex may not be known yet, so we may have to move
+  // some of this to FillESD. 
   AliDebug(1, "Reconstructing from digits in a tree");
   
   TBranch *digitBranch = digitsTree->GetBranch("FMD");
@@ -259,6 +261,9 @@ AliFMDReconstructor::Reconstruct(TTree* digitsTree,
 void
 AliFMDReconstructor::ProcessDigits(TClonesArray* digits) const
 {
+  // For each digit, find the pseudo rapdity, azimuthal angle, and
+  // number of corrected ADC counts, and pass it on to the algorithms
+  // used. 
   Int_t nDigits = digits->GetEntries();
   AliDebug(1, Form("Got %d digits", nDigits));
   for (Int_t i = 0; i < nDigits; i++) {
@@ -320,6 +325,8 @@ AliFMDReconstructor::FillESD(TTree*  /* digitsTree */,
 			     AliESD* /* esd*/) const
 {
   // nothing to be done
+  // FIXME: The vertex may not be known when Reconstruct is executed,
+  // so we may have to move some of that member function here. 
 
 }
 
