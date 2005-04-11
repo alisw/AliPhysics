@@ -64,7 +64,7 @@
 #include "AliRun.h"
 #include "AliStack.h"
 #ifdef __APPLE__
-#include "AliTPCTrackHitsInterfaces.h"
+//#include "AliTPCTrackHitsInterfaces.h"
 #endif
 
 AliRun *gAlice;
@@ -176,9 +176,9 @@ AliRun::AliRun(const char *name, const char *title):
 #ifdef __APPLE__
   // Terrible hack to avoid problem with the initialisation of 
   // static and globals on Mac OS X 
-  AliClassAliTrackHitsInfo p1=galiclass____AliClassAliTrackHitsInfo;
-  AliClassAliTrackHitsParam p2=galiclass____AliTrackHitsParam;
-  AliClassAliHitInfo p3=galiclass____AliHitInfo;
+  //  AliClassAliTrackHitsInfo p1=galiclass____AliClassAliTrackHitsInfo;
+  // AliClassAliTrackHitsParam p2=galiclass____AliTrackHitsParam;
+  //AliClassAliHitInfo p3=galiclass____AliHitInfo;
 #endif
 
 }

@@ -83,7 +83,7 @@ public:
 class TTreeSRedirector: public TObject { 
 public:
   TTreeSRedirector(const char *fname);
-  ~TTreeSRedirector();
+  virtual ~TTreeSRedirector();
   void Close();
   static void Test();
   virtual   TTreeStream  &operator<<(Int_t id);

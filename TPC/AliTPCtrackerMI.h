@@ -13,8 +13,6 @@
 //   Origin: 
 //-------------------------------------------------------
 
-#include <TError.h>
-
 #include "AliTracker.h"
 #include "AliTPCtrack.h"
 #include "AliComplexCluster.h"
@@ -71,8 +69,7 @@ class AliTPCseed : public AliTPCtrack {
      //
      //
  private:
-     //     AliTPCseed & operator = (const AliTPCseed &)
-     //  {::Fatal("= operator","Not Implemented\n");return *this;}
+     AliTPCseed & operator = (const AliTPCseed &);
      AliESDtrack * fEsd; //!
      AliTPCclusterMI*   fClusterPointer[160];  //! array of cluster pointers  - 
      TClonesArray * fPoints;              // array with points along the track
@@ -117,8 +114,8 @@ public:
     fInnerSec=fOuterSec=0; fSeeds=0; 
   }
   AliTPCtrackerMI(const AliTPCParam *par); 
-   AliTPCtrackerMI(const AliTPCtrackerMI& r);           //dummy copy constructor
-   AliTPCtrackerMI &operator=(const AliTPCtrackerMI& r);//dummy assignment operator
+  AliTPCtrackerMI(const AliTPCtrackerMI& r);           //dummy copy constructor
+  AliTPCtrackerMI &operator=(const AliTPCtrackerMI& r);//dummy assignment operator
   virtual ~AliTPCtrackerMI();
   //
   void SetIteration(Int_t iteration){fIteration = iteration;}
@@ -192,8 +189,6 @@ public:
      friend class AliTPCtrackerMI::AliTPCSector;
    public:
      AliTPCRow();
-     AliTPCRow(const AliTPCRow& /*r*/){;}           //dummy copy constructor
-     AliTPCRow &operator=(const AliTPCRow& /*r*/){return *this;} //dummy assignment operator
      ~AliTPCRow();
      void InsertCluster(const AliTPCclusterMI *c, UInt_t index);
      void ResetClusters();
@@ -209,6 +204,8 @@ public:
      void SetX(Double_t x) {fX=x;}
      Double_t GetX() const {return fX;}
 private:  
+     AliTPCRow & operator=(const AliTPCRow & );
+     AliTPCRow(const AliTPCRow& /*r*/);           //dummy copy constructor
      Float_t fDeadZone;  // the width of the dead zone
      AliTPCclusterMI *fClusters1; //array with clusters 1
      Int_t fN1;  //number of clusters on left side
@@ -230,33 +227,33 @@ private:
    public:
      AliTPCSector() { fN=0; fRow = 0; }
     ~AliTPCSector() { delete[] fRow; }
-    AliTPCSector(const AliTPCSector &/*s*/){;}           //dummy copy contructor 
-    AliTPCSector& operator=(const AliTPCSector &/*s*/){return *this;}//dummy assignment operator
-     AliTPCRow& operator[](Int_t i) const { return *(fRow+i); }
-     Int_t GetNRows() const { return fN; }
-     void Setup(const AliTPCParam *par, Int_t flag);
-     Double_t GetX(Int_t l) const {return fRow[l].GetX();}
-     Double_t GetMaxY(Int_t l) const {
-         return GetX(l)*TMath::Tan(0.5*GetAlpha());
-     } 
-     Double_t GetAlpha() const {return fAlpha;}
-     Double_t GetAlphaShift() const {return fAlphaShift;}     
-     //Int_t GetFirst(){return fFirstRow;}
-     Int_t GetRowNumber(Double_t  x) const;
-     Double_t GetPadPitchWidth()  const {return fPadPitchWidth;}
-     Double_t GetPadPitchLength() const {return fPadPitchLength;}
-     Double_t GetPadPitchLength(Float_t x) const {return (x<200) ? fPadPitchLength:f2PadPitchLength ;}
-
+    AliTPCRow& operator[](Int_t i) const { return *(fRow+i); }
+    Int_t GetNRows() const { return fN; }
+    void Setup(const AliTPCParam *par, Int_t flag);
+    Double_t GetX(Int_t l) const {return fRow[l].GetX();}
+    Double_t GetMaxY(Int_t l) const {
+      return GetX(l)*TMath::Tan(0.5*GetAlpha());
+    } 
+    Double_t GetAlpha() const {return fAlpha;}
+    Double_t GetAlphaShift() const {return fAlphaShift;}     
+    //Int_t GetFirst(){return fFirstRow;}
+    Int_t GetRowNumber(Double_t  x) const;
+    Double_t GetPadPitchWidth()  const {return fPadPitchWidth;}
+    Double_t GetPadPitchLength() const {return fPadPitchLength;}
+    Double_t GetPadPitchLength(Float_t x) const {return (x<200) ? fPadPitchLength:f2PadPitchLength ;}
+    
    private:
-     Int_t fN;                        //number of pad rows 
-     //Int_t fFirstRow;                 //offset
-     AliTPCRow *fRow;                    //array of pad rows
-     Double_t fAlpha;                    //opening angle
-     Double_t fAlphaShift;               //shift angle;
-     Double_t fPadPitchWidth;            //pad pitch width
-     Double_t fPadPitchLength;           //pad pitch length
-     Double_t f1PadPitchLength;           //pad pitch length
-     Double_t f2PadPitchLength;           //pad pitch length
+    AliTPCSector & operator=(const AliTPCSector & );
+    AliTPCSector(const AliTPCSector &/*s*/);           //dummy copy contructor 
+    Int_t fN;                        //number of pad rows 
+    //Int_t fFirstRow;                 //offset
+    AliTPCRow *fRow;                    //array of pad rows
+    Double_t fAlpha;                    //opening angle
+    Double_t fAlphaShift;               //shift angle;
+    Double_t fPadPitchWidth;            //pad pitch width
+    Double_t fPadPitchLength;           //pad pitch length
+    Double_t f1PadPitchLength;           //pad pitch length
+    Double_t f2PadPitchLength;           //pad pitch length
     
    };
 

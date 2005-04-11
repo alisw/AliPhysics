@@ -1,7 +1,24 @@
-#include "TObjArray.h"
-#include "TFile.h"
-#include "TTree.h"
+//
+//  marian.ivanov@cern.ch
+//
+//  ------------------------------------------------------------------------------------------------
+//  TTreeStream
+//  Standard stream (cout) like input for the tree
+//  Run and see TTreeStreamer::Test() - to see TTreeStreamer functionality
+//  ------------------------------------------------------------------------------------------------  
+//
+//  -------------------------------------------------------------------------------------------------
+//  TTreeSRedirector
+//  Redirect file to  different TTreeStreams  
+//  Run and see   TTreeSRedirector::Test() as an example of TTreeSRedirectorer functionality 
+// 
+
+/* $Id$ */
+
 #include "TBrowser.h"
+#include "TFile.h"
+#include "TObjArray.h"
+#include "TTree.h"
 #include "TTreeStream.h"
 
 
@@ -9,21 +26,6 @@ ClassImp(TTreeDataElement)
 ClassImp(TTreeStream)
 ClassImp(TTreeSRedirector)
 
-/*
-  marian.ivanov@cern.ch
-  //
-  ------------------------------------------------------------------------------------------------
-  TTreeStream
-  Standard stream (cout) like input for the tree
-  Run and see TTreeStreamer::Test() - to see TTreeStreamer functionality
-  ------------------------------------------------------------------------------------------------  
-  //
-  -------------------------------------------------------------------------------------------------
-  TTreeSRedirector
-  Redirect file to  different TTreeStreams  
-  Run and see   TTreeSRedirector::Test() as an example of TTreeSRedirectorer functionality 
-  // 
-*/
 
 
 void TTreeStream::Test()
@@ -263,10 +265,16 @@ TTreeStream::TTreeStream(const char *treename):
   fNextNameCounter(),
   fStatus(0)
 {
+  //
+  // Standard ctor
+  //
 }
 
 TTreeStream::~TTreeStream()
 {
+  //
+  // Class dtor
+  //
   fElements->Delete();
   fBranches->Clear();
   delete fElements;
@@ -276,11 +284,16 @@ TTreeStream::~TTreeStream()
 void TTreeStream::Close()
 {
   //
+  // Flush data to disk and close
+  //
   fTree->Write();
 }
 
 Int_t TTreeStream::CheckIn(Char_t type, void *pointer)
 {
+  //
+  // Insert object of given type
+  //
   if (!fElements) fElements = new TObjArray(1000);
   TTreeDataElement* element = (TTreeDataElement*)fElements->At(fCurrentIndex);
   if (!element) {
@@ -316,6 +329,7 @@ Int_t TTreeStream::CheckIn(Char_t type, void *pointer)
 
 Int_t TTreeStream::CheckIn(TObject *o){
   //
+  // Insert TObject
   //
   if (!o) return 0;
   if (!fElements) fElements = new TObjArray(1000);
@@ -353,6 +367,7 @@ Int_t TTreeStream::CheckIn(TObject *o){
 
 void TTreeStream::BuildTree(){
   //
+  // Build the Tree
   //
   if (fTree->GetEntries()>0) return;
   fTree = new TTree(GetName(),GetName());
@@ -390,6 +405,7 @@ void TTreeStream::BuildTree(){
 
 void TTreeStream::Fill(){
   //
+  // Fill the tree
   //
   if (fTree) { 
     Int_t entries=fElements->GetEntriesFast();
@@ -408,7 +424,11 @@ void TTreeStream::Fill(){
   }
 }
 
-TTreeStream & TTreeStream::Endl(){
+TTreeStream & TTreeStream::Endl()
+{
+  //
+  // Perform pseudo endl operation
+  //
   if (fTree->GetNbranches()==0) BuildTree();
   Fill();
   fStatus =0;
@@ -420,9 +440,8 @@ TTreeStream & TTreeStream::Endl(){
 TTreeStream  &TTreeStream::operator<<(Char_t *name)
 {
   //
+  // Endl 
   //
-  //
-  //Endl 
   if (name[0]=='\n'){
     return Endl();
   }
