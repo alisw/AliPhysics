@@ -3,6 +3,12 @@
 #ifndef ALIL3HOUGHTRANSFORMER_H
 #define ALIL3HOUGHTRANSFORMER_H
 
+//-------------------------------------------------------------------------
+//                Class AliL3HoughTransformer
+//   This is one of the possible implementations of the Hough Transform
+//   TPC tracking algorithms for HLT. 
+//-------------------------------------------------------------------------
+
 #include "AliL3RootTypes.h"
 #include "AliL3HoughBaseTransformer.h"
 

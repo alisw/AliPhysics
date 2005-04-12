@@ -3,6 +3,16 @@
 // Author: Anders Vestbo <mailto:vestbo@fi.uib.no>
 //*-- Copyright &copy ALICE HLT Group
 
+/** \class AliL3HoughTransformer
+<pre>
+//_____________________________________________________________
+// AliL3HoughTransformer
+//
+// Hough transformation class
+//
+</pre>
+*/
+
 #include "AliL3StandardIncludes.h"
 
 #include "AliL3Logging.h"
@@ -15,16 +25,6 @@
 #if __GNUC__ == 3
 using namespace std;
 #endif
-
-/** \class AliL3HoughTransformer
-<pre>
-//_____________________________________________________________
-// AliL3HoughTransformer
-//
-// Hough transformation class
-//
-</pre>
-*/
 
 ClassImp(AliL3HoughTransformer)
 
@@ -79,6 +79,7 @@ void AliL3HoughTransformer::DeleteHistograms()
       delete fParamSpace[i];
     }
   delete [] fParamSpace;
+  fParamSpace = 0;
 }
 
 void AliL3HoughTransformer::CreateHistograms(Float_t ptmin,Float_t ptmax,Float_t ptres,
