@@ -20,7 +20,6 @@
 static const int kNchambers=7;     //number of RICH chambers 
 static const int kNpadsX = 160;    //number of pads along X in single chamber
 static const int kNpadsY = 144;    //number of pads along Y in single chamber
-static const int kBad=-101;        //useful static const to mark initial (uninitalised) values
 static const int kNsectors=6;      //number of sectors per chamber
 
 static const int kCerenkov=50000050;  //??? go to something more general like TPDGCode
@@ -91,7 +90,7 @@ public:
   static TVector2 MathiesonDelta()           {return TVector2(5*0.18,5*0.18);}            //area of 5 sigmas of Mathieson distribution (cm)
   static Int_t    MaxQdc()                   {return 4095;}                               //QDC number of channels          
   
-  static Int_t    HV(Int_t sector)           {if (sector>=1 && sector <=6) return fgHV[sector-1];  else return kBad;} //high voltage for this sector
+  static Int_t    HV(Int_t sector)           {if (sector>=1 && sector <=6) return fgHV[sector-1];  else return -1;} //high voltage for this sector
   static void     SetHV(Int_t sector,Int_t hv){fgHV[sector-1]=hv;}  
 //optical properties methodes  
   static Float_t  PhotonEnergy(Int_t i)    {return 0.1*i+5.5;}             //photon energy (eV) for i-th point
@@ -117,13 +116,13 @@ public:
 //charge response methodes  
   inline static Double_t Mathieson(Double_t x1,Double_t x2,Double_t y1,Double_t y2);               //Mathienson integral over given limits
   inline static Double_t GainSag(Double_t x,Int_t sector);                                         //gain variations in %
-         static Double_t QdcSlope(Int_t sec){switch(sec){case kBad: return 0;  default:   return 33;}} //weight of electon in QDC channels
+         static Double_t QdcSlope(Int_t sec){switch(sec){case -1: return 0;  default:   return 33;}} //weight of electon in QDC channels
          static Double_t Gain(const TVector2 &x2){//gives chamber gain in terms of QDC channels for given point in local ref system
                           if(fgIsWireSag) return QdcSlope(Loc2Sec(x2))*(1+GainSag(x2.X(),Loc2Sec(x2))/100);
                           else            return QdcSlope(Loc2Sec(x2));}
   inline static Double_t FracQdc(const TVector2 &x2,const TVector &pad);                           //charge fraction to pad from hit
   inline static Int_t    TotQdc(TVector2 x2,Double_t eloss);                                       //total charge for hit eloss=0 for photons
-  inline        Bool_t   IsOverTh(Int_t c,TVector pad,Double_t q);                                 //is QDC of the pad registered by FEE  
+  inline static Bool_t   IsOverTh(Int_t c,TVector pad,Double_t q);                                 //is QDC of the pad registered by FEE  
          static Int_t    NsigmaTh()                    {return fgNsigmaTh;}                        //
          static Float_t  SigmaThMean()                 {return fgSigmaThMean;}                     //QDC electronic noise mean
          static Float_t  SigmaThSpread()               {return fgSigmaThSpread;}                   //QDC electronic noise width
@@ -176,15 +175,15 @@ Int_t AliRICHParam::Loc2Sec(const TVector2 &v2)
   Double_t y0=0; Double_t y1=SectorSizeY(); Double_t y2=SectorSizeY()+DeadZone(); Double_t y3=2*SectorSizeY()+DeadZone(); 
   Double_t y4=PcSizeY()-SectorSizeY();      Double_t y5=PcSizeY();
   
-  Int_t sector=kBad;  
+  Int_t sector=-1;  
   if     (v2.X() >= x0 && v2.X() <= x1 )  sector=1;
   else if(v2.X() >= x2 && v2.X() <= x3 )  sector=2;
-  else                                    return kBad;
+  else                                    return -1;
   
   if     (v2.Y() >= y0 && v2.Y() <= y1 )  ;                    //sectors 1 or 2 
   else if(v2.Y() >= y2 && v2.Y() <= y3 )  sector+=2;           //sectors 3 or 4
   else if(v2.Y() >= y4 && v2.Y() <= y5 )  sector+=4;           //sectors 5 or 6
-  else                                    return kBad;
+  else                                    return -1;
   return sector;
 }//Loc2Sec(Double_t x, Double_t y)
 //__________________________________________________________________________________________________
@@ -198,7 +197,7 @@ TVector AliRICHParam::Loc2Pad(const TVector2 &loc)
 //   -------> x  
   TVector pad(2);
   Int_t sec=Loc2Sec(loc);//trasforms x2 to sector reference system
-  if(sec==kBad) {pad[0]=pad[1]=kBad; return pad;}
+  if(sec==-1) {pad[0]=pad[1]=-1; return pad;}
 //first we deal with x  
   if(sec==1||sec==3||sec==5)    pad[0]=           Int_t(            loc.X()   / PadSizeX() )+1; //sector 1 or 3 or 5
   else                          pad[0]=NpadsX() - Int_t( (PcSizeX()-loc.X())  / PadSizeX() )  ; //sector 2 or 4 or 6
@@ -212,7 +211,7 @@ TVector AliRICHParam::Loc2Pad(const TVector2 &loc)
 Int_t AliRICHParam::Pad2Sec(const TVector &pad)
 {
 //Determines sector containing the given pad.
-  Int_t sector=kBad;      
+  Int_t sector=-1;      
   if     (pad[0] >= 1           && pad[0] <=   NpadsXsec() )    {sector=1;}
   else if(pad[0] >  NpadsXsec() && pad[0] <=   NpadsX()    )    {sector=2;} 
   else                                                         AliDebugClass(1,Form("Wrong pad (%3.0f,%3.0f)",pad[0],pad[1]));
@@ -232,7 +231,7 @@ TVector2 AliRICHParam::Pad2Loc(TVector pad)
 //   |  3 4        sector numbers
 //   |  1 2
 //    -------> x  
-  Double_t x=kBad,y=kBad;
+  Double_t x=-1,y=-1;
   if(pad[0] > 0 && pad[0] <= NpadsXsec())//it's 1 or 3 or 5
     x=(pad[0]-0.5)*PadSizeX();
   else if(pad[0] > NpadsXsec() && pad[0] <= NpadsX())//it's 2 or 4 or 6
@@ -273,7 +272,7 @@ Int_t AliRICHParam::TotQdc(TVector2 x2,Double_t eloss)
 //Calculates the total charge produced by the eloss in point x2 (Chamber RS).
 //Returns this change parametrised in QDC channels, or 0 if the hit in the dead zone.
 //eloss=0 means photon which produces 1 electron only eloss > 0 for Mip
-  if(Loc2Sec(x2)==kBad) return 0; //hit in the dead zone     
+  if(Loc2Sec(x2)==-1) return 0; //hit in the dead zone     
   Int_t iNelectrons=Int_t(eloss/IonisationPotential()); if(iNelectrons==0) iNelectrons=1;
   Double_t qdc=0;
   for(Int_t i=1;i<=iNelectrons;i++) qdc+=-Gain(x2)*TMath::Log(gRandom->Rndm());

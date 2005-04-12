@@ -9,9 +9,9 @@ public:
   enum EVersOpts  {kNo=-1,kVer0,kVer1,kTestBeam,kTestRadio,kOnTop,kDeclust=301,kSagita,kFeedback};
   enum EGenTypes  {kGunAlongZ=100,kBox1,kGun7,kPythia7,kHijing,kHijingPara,kRichLib,kSignalHijing,kHijingPara2Proton};
   
-  enum EDetectors {kPIPE=1,kITS,kTPC,kTRD,kTOF,kFRAME,kMAG,kCRT,kHALL,kPHOS,kSTART,kFMD,kABSO,kPMD,kDIPO,kEMCAL,kVZERO,kMUON,kZDC,kSHILD};
+  enum EDetectors {kPIPE=1,kITS,kTPC,kTRD,kTOF,kFRAME,kMAG,kCRT,kHALL,kPHOS,kSTART,kFMD,kABSO,kPMD,kDIPO,kEMCAL,kVZERO,kMUON,kZDC,kSHILD,kRICH,kVHMPID};
   enum EProcesses {kDCAY=1,kPAIR,kCOMP,kPHOT,kPFIS,kDRAY,kANNI,kBREM,kMUNU,kCKOV,kHADR,kLOSS,kMULS,kRAYL,kALL};
-  enum ERawFiles  {kNoRaw=0,kRawDdl,kRawDate,kRawRoot};
+  enum EBatchFlags{kNoRaw=0,kRawDdl,kRawDate,kRawRoot,kRecon,kFillEsd};
 //SLOTS  
   void    AddDetector(Int_t id)          {if(id==kTRD || id==kTOF) fDetBG->SetButton(kFRAME);}
   void    RemoveDetector(Int_t id)       {if(id==kFRAME) {fDetBG->SetButton(kTRD,kFALSE);fDetBG->SetButton(kTOF,kFALSE);}}
@@ -29,10 +29,11 @@ public:
   TGComboBox   *fRichCO;  TGButtonGroup *fRichBG;                                                                              //RICH
   TGComboBox   *fTicCO;   TGButtonGroup *fTicBG;                                                                               //TIC
   TGButton     *fMagCB;                                                                                                     //MAG
-  TGComboBox   *fGenTypeCO,*fGenPidCO,*fGenMinMomCO,*fGenMaxMomCO,*fGenChamberCO; TGGroupFrame *fGenGF,*fGenOptGF; TGNumberEntry *fGenPrimNE;             //GEN
+  TGComboBox   *fGenTypeCO,*fGenPidCO,*fGenMinMomCO,*fGenMaxMomCO,*fGenChamberCO; TGGroupFrame *fGenGF,*fGenOptGF,*fGenPrimGF; TGNumberEntry *fGenPrimNE;             //GEN
   TGButtonGroup *fDetBG;                                                                                                       //DETECTORS
   TGButtonGroup *fProcBG;                                                                                                      //PROCESSES
   TGButtonGroup *fRawBG;                                                                                                       //RAW 
+  TGButtonGroup *fRecoBG;                                                                                                      //RAW   
   char         *fFileName;
 };//class RichConfig
 //__________________________________________________________________________________________________	 
@@ -103,7 +104,7 @@ RichConfig::RichConfig(const char *sFileName):TGMainFrame(gClient->GetRoot(),700
   fGenTypeCO->AddEntry("Sr90 source"                  ,kSr90);
   fGenTypeCO->AddEntry("RICH lib"                     ,kRichLib);
   fGenTypeCO->AddEntry("RICH lib+HIJING"              ,kSignalHijing);
-  fGenTypeCO->Select(kHijingPara);
+  fGenTypeCO->Select(kHijing);
   fGenTypeCO->Resize(160,20);
   
   
@@ -136,8 +137,8 @@ RichConfig::RichConfig(const char *sFileName):TGMainFrame(gClient->GetRoot(),700
   for(int i=1;i<=7;i++) fGenChamberCO->AddEntry(Form("Chamber %i",i),i);
   fGenChamberCO->Select(4); fGenChamberCO->Resize(160,20);
   
-  fGenOptGF->AddFrame(pGenPrimGF=new TGGroupFrame(fGenOptGF,"Number of primaries"));
-  pGenPrimGF->AddFrame(fGenPrimNE=new TGNumberEntry(pGenPrimGF,500));  
+  fGenOptGF->AddFrame(fGenPrimGF=new TGGroupFrame(fGenOptGF,"Number of primaries"));
+  fGenPrimGF->AddFrame(fGenPrimNE=new TGNumberEntry(fGenPrimGF,500));  
 //Detectors
   pMainHF->AddFrame(fDetBG=new TGButtonGroup(pMainHF,"Detectors"));
   fDetBG->Connect("Pressed(Int_t)" ,"RichConfig",this,"AddDetector(Int_t)");
@@ -181,12 +182,16 @@ RichConfig::RichConfig(const char *sFileName):TGMainFrame(gClient->GetRoot(),700
     new TGCheckButton(fProcBG,"LOSS Energy losses"          ,kLOSS));  fProcBG->SetButton(kLOSS);       
     new TGCheckButton(fProcBG,"MULS Multiple scattering"    ,kMULS));  fProcBG->SetButton(kMULS);       
     new TGCheckButton(fProcBG,"RAYL"                        ,kRAYL));  fProcBG->SetButton(kRAYL);       
-//RAW
-  pMainHF->AddFrame(fRawBG=new TGButtonGroup(pMainHF,"RAW data"));
+//RichBatch part
+  pMainHF->AddFrame(pBatchVF=new TGVerticalFrame(pMainHF));    
+  pBatchVF->AddFrame(fRawBG=new TGButtonGroup(pBatchVF,"RichBatch"));
     new TGRadioButton(fRawBG,"No RAW files"      ,kNoRaw)) ;   fRawBG->SetButton(kNoRaw);
     new TGRadioButton(fRawBG,"RAW DDL"           ,kRawDdl)) ;
     new TGRadioButton(fRawBG,"RAW DATE"          ,kRawDate)) ;
     new TGRadioButton(fRawBG,"RAW ROOT"          ,kRawRoot)) ;
+  fRawBG->AddFrame(fRecoBG=new TGButtonGroup(fRawBG,""));
+    new TGCheckButton(fRecoBG,"Reconstruct"    ,kRecon)) ;  
+    new TGCheckButton(fRecoBG,"Fill ESD"       ,kFillEsd)) ;
 //File    
   AddFrame(pFileHF=new TGHorizontalFrame(this,100,200));
   pFileHF->AddFrame(pCrtTB=new TGTextButton(pFileHF,"Create"));
@@ -206,22 +211,22 @@ void RichConfig::GeneratorSlot(Int_t type)
   
   if(type==kHijingPara){
     fGenGF->ShowFrame(fGenOptGF);
+    fGenOptGF->ShowFrame(fGenPrimGF);        
+    fGenOptGF->HideFrame(fGenPidCO);
+    fGenOptGF->HideFrame(fGenMinMomCO);
+    fGenOptGF->HideFrame(fGenMaxMomCO);
+    fGenOptGF->HideFrame(fGenChamberCO);
   }
   
   if(type==kGunAlongZ) {
-    fGenOptGF->ShowFrame(fGenMaxMomCO);
-    fGenOptGF->ShowFrame(fGenChamberCO);
-    fGenOptGF->ShowFrame(fGenPrimNE);    
+    fGenGF->ShowFrame(fGenOptGF);
+    fGenOptGF->ShowFrame(fGenPidCO);
+    fGenOptGF->ShowFrame(fGenMinMomCO);
+    fGenOptGF->HideFrame(fGenMaxMomCO);
+    fGenOptGF->HideFrame(fGenChamberCO);
+    fGenOptGF->HideFrame(fGenPrimGF);    
   }
-}        
-
-
-
-
-
-
-
-
+}//GeneratorSlot()        
 //__________________________________________________________________________________________________          
 void RichConfig::CreateConfig()
 {   
@@ -305,14 +310,14 @@ void RichConfig::CreateConfig()
     case kBox1:     
       fprintf(fp,"  AliGenBox *pGen=new AliGenBox(1);\n");  
       fprintf(fp,"  pGen->SetPart(%i); pGen->SetOrigin(0,0,0);\n",fGenPidCO->GetSelected());  
-      fprintf(fp,"  pGen->SetMomentumRange(%3.1f,%3.1f); \n",float(fGenMinMomCO->GetSelected())/10,   float(fGenMaxMomCO->GetSelected())/10);
+      fprintf(fp,"  pGen->SetMomentumRange(%.1f,%.1f); \n",float(fGenMinMomCO->GetSelected())/10,   float(fGenMaxMomCO->GetSelected())/10);
       fprintf(fp,"  pGen->SetThetaRange(pRICH->C(%i)->ThetaD()-3,pRICH->C(%i)->ThetaD()-1); \n",fGenChamberCO->GetSelected(),fGenChamberCO->GetSelected());
       fprintf(fp,"  pGen->SetPhiRange(pRICH->C(%i)->PhiD()-1,pRICH->C(%i)->PhiD()+1); \n",fGenChamberCO->GetSelected(),fGenChamberCO->GetSelected());    
       fprintf(fp,"  pGen->Init();\n");
     break;    
     case kGunAlongZ:   
       fprintf(fp,"  AliGenFixed *pGen=new AliGenFixed(1);\n");
-      fprintf(fp,"  pGen->SetPart(kProton); pGen->SetOrigin(0,0,0); pGen->SetMomentum(15); pGen->SetTheta(0);\n");
+      fprintf(fp,"  pGen->SetPart(%i); pGen->SetOrigin(0,0,0); pGen->SetMomentum(%.1f); pGen->SetTheta(0);\n",fGenPidCO->GetSelected(),float(fGenMinMomCO->GetSelected())/10);
       fprintf(fp,"  pGen->Init();\n");
     break;
     case kGun7:   
@@ -460,11 +465,13 @@ void RichConfig::CreateRichBatch()
   
   fprintf(fp,"  pSim->Run(iNevents);\n  delete pSim;\n\n");
 //reconstraction section  
-  if(fRichCO->GetSelected()==kVer1){
+  if(fRecoBG->GetButton(kRecon)->GetState()){
     fprintf(fp,"  AliReconstruction *pRec=new AliReconstruction;\n");
-    fprintf(fp,"  pRec->SetRunLocalReconstruction(\"ITS TPC TRD TOF RICH\");\n");
-    fprintf(fp,"  pRec->SetFillESD(\"ITS TPC TRD TOF RICH\");\n");
-    fprintf(fp,"  pRec->Run();         delete pRec;\n\n");
+    fprintf(fp,"  pRec->SetRunLocalReconstruction(\"ITS TPC TRD TOF RICH VHMPID\");\n");
+    if(fRecoBG->GetButton(kFillEsd)->GetState())
+      fprintf(fp,"  pRec->SetFillESD(\"ITS TPC TRD TOF RICH VHMPID\");\n");
+    fprintf(fp,"  pRec->Run();\n");         
+    fprintf(fp,"  delete pRec;\n\n");
   }
 //benchmarks  
   fprintf(fp,"  cout<<\"!!!!!!!!!!!!Info in <my/RichBatch.C>: Start time: \";time.Print();\n");

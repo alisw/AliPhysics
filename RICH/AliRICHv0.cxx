@@ -76,7 +76,7 @@ void AliRICHv0::StepManager()
                       gMC->CurrentVolOffName(2),
                       gMC->CurrentVolOffName(3));
   
-  Float_t a,z,den,rad,abs; a=z=den=rad=abs=kBad;
+  Float_t a,z,den,rad,abs; a=z=den=rad=abs=-1;
   Int_t mid=gMC->CurrentMaterial(a,z,den,rad,abs);
   Info("Material","id=%i a=%7.2f z=%7.2f den=%9.4f rad=%9.2f abs=%9.2f",mid,a,z,den,rad,abs);
   

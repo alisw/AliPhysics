@@ -63,7 +63,7 @@ Double_t AliRICHRecon::ThetaCerenkov()
 // Pattern recognition method based on Hough transform
 // Return theta Cerenkov for a given track and list of clusters which are set in ctor  
 
-  if(fpClusters->GetEntries()==0) return kBad;//no clusters at all for a given track
+  if(fpClusters->GetEntries()==0) return -1;//no clusters at all for a given track
   Bool_t kPatRec = kFALSE;  
     
   AliDebug(1,Form("---Track Parameters--- Theta: %f , Phi: %f ",GetTrackTheta()*TMath::RadToDeg(),GetTrackPhi()*TMath::RadToDeg()));
@@ -80,8 +80,8 @@ Double_t AliRICHRecon::ThetaCerenkov()
     SetPhotonEta(-999.);
     SetPhotonWeight(0.);
     if (j == GetMipIndex()) continue; // do not consider MIP cluster as a candidate photon
-    Float_t xtoentr = ((AliRICHcluster*)fpClusters->UncheckedAt(j))->X() - GetShiftX();
-    Float_t ytoentr = ((AliRICHcluster*)fpClusters->UncheckedAt(j))->Y() - GetShiftY();
+    Float_t xtoentr = ((AliRICHCluster*)fpClusters->UncheckedAt(j))->X() - GetShiftX();
+    Float_t ytoentr = ((AliRICHCluster*)fpClusters->UncheckedAt(j))->Y() - GetShiftY();
     SetEntranceX(xtoentr);
     SetEntranceY(ytoentr);
     FindPhiPoint();
@@ -97,7 +97,7 @@ Double_t AliRICHRecon::ThetaCerenkov()
 
   if(candidatePhotons >= 1) kPatRec = kTRUE;
 
-  if(!kPatRec) return kBad;
+  if(!kPatRec) return -1;
 
   SetPhotonsNumber(fpClusters->GetEntries());
 
@@ -112,7 +112,7 @@ Double_t AliRICHRecon::ThetaCerenkov()
     {
       SetThetaCerenkov(999.);
       SetHoughPhotonsNorm(0.);
-      return kBad;
+      return -1;
     }
 
   if(fIsWEIGHT) FindWeightThetaCerenkov();

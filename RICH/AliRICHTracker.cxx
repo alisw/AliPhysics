@@ -9,6 +9,7 @@
 #include <AliStack.h>
 #include <TParticle.h>
 #include <TMath.h>
+#include <AliRun.h>
 ClassImp(AliRICHTracker)
 //__________________________________________________________________________________________________
 Int_t AliRICHTracker::PropagateBack(AliESD *pESD)
@@ -48,11 +49,11 @@ void AliRICHTracker::RecWithESD(AliESD *pESD)
     Int_t iChamber=helix.RichIntersect(pRich->P());        
     AliDebug(1,Form("intersection with %i chamber found",iChamber));
     if(!iChamber) continue;//intersection with no chamber found
-//find MIP cluster candidate (closest to track intersection point cluster)    
+//find MIP cluster candidate (cluster which is closest to track intersection point)    
     Double_t distMip=9999,distX=0,distY=0; //min distance between clusters and track position on PC 
     Int_t iMipId=0; //index of that min distance cluster 
     for(Int_t iClusN=0;iClusN<pRich->Clusters(iChamber)->GetEntries();iClusN++){//clusters loop for intersected chamber
-      AliRICHcluster *pClus=(AliRICHcluster*)pRich->Clusters(iChamber)->UncheckedAt(iClusN);//get pointer to current cluster
+      AliRICHCluster *pClus=(AliRICHCluster*)pRich->Clusters(iChamber)->UncheckedAt(iClusN);//get pointer to current cluster
       Double_t distCurrent=pClus->DistTo(helix.PosPc());//distance between current cluster and helix intersection with PC
       if(distCurrent<distMip){
         distMip=distCurrent;
@@ -144,12 +145,12 @@ void AliRICHTracker::RecWithStack(TNtupleD *hn)
     hnvec[4]=helix.PosPc().X();
     hnvec[5]=helix.PosPc().Y();
     Double_t distMip=9999;   //min distance between clusters and track position on PC 
-    Double_t mipX=kBad;      //min distance between clusters and track position on PC 
-    Double_t mipY=kBad;      //min distance between clusters and track position on PC 
-    Double_t chargeMip=kBad; // charge MIP to find
-    Int_t iMipId=kBad;       //index of that min distance cluster 
+    Double_t mipX=-1;      //min distance between clusters and track position on PC 
+    Double_t mipY=-1;      //min distance between clusters and track position on PC 
+    Double_t chargeMip=-1; // charge MIP to find
+    Int_t iMipId=-1;       //index of that min distance cluster 
     for(Int_t iClusN=0;iClusN<pRich->Clusters(iChamber)->GetEntries();iClusN++){//clusters loop for intersected chamber
-      AliRICHcluster *pClus=(AliRICHcluster*)pRich->Clusters(iChamber)->UncheckedAt(iClusN);//get pointer to current cluster
+      AliRICHCluster *pClus=(AliRICHCluster*)pRich->Clusters(iChamber)->UncheckedAt(iClusN);//get pointer to current cluster
       Double_t distCurrent=pClus->DistTo(helix.PosPc());//ditance between current cluster and helix intersection with PC
       if(distCurrent<distMip){distMip=distCurrent;mipX=pClus->X();
                                                   mipY=pClus->Y();

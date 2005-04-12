@@ -96,29 +96,28 @@ void RichGet()
   if(!(vl=vl()))   Warning("RICH/menu.C::ReadAlice","No VHMPID loader in file");        
 }
 
-
-//__________________________________________________________________________________________________
-void TestMenu()
-{
-  TControlBar *pMenu = new TControlBar("vertical","RICH test");
-  pMenu->Show();  
-}//TestMenu()
 //__________________________________________________________________________________________________
 void MenuRich()
 {
   TControlBar *pMenu = new TControlBar("vertical","RICH");
-  pMenu->AddButton("Charged flux on RICH"  ,"r->AnaHits()"  ,"????");
-  pMenu->AddButton("Recon with stack", "r()->CheckPR()"                                           , "Create RSR.root with ntuple hn");    
-  pMenu->AddButton("Display Fast"    , "AliRICHDisplFast *d = new AliRICHDisplFast(); d->Exec();" , "Display Fast");
+  pMenu->AddButton("Display"          ,"r->Display();"  , "Display Fast");
+  pMenu->AddButton("Print hits"       ,"rh();"          ,"????");
+  pMenu->AddButton("Print sdigits"    ,"rs();"          ,"????");
+  pMenu->AddButton("Print digits"     ,"rd();"          ,"????");
+  pMenu->AddButton("Print clusters"   ,"rc();"          ,"????");  
+  pMenu->AddButton("Hits plots"       ,"r->AnaHits()"   ,"????");
+  pMenu->AddButton("Recon with stack" ,"r->CheckPR()"                                           , "Create RSR.root with ntuple hn");    
   pMenu->Show();  
 }//TestMenu()
 //__________________________________________________________________________________________________
 void MenuTic()
 {
   TControlBar *pMenu = new TControlBar("vertical","VHMPID");
-  pMenu->AddButton("Print hits"       ,"v->HitsPrint()","????");
-  pMenu->AddButton("Hits cotrol plots","v->HitsAna()"  ,"????");
-  pMenu->AddButton("Display"          ,"v->Display()"  ,"????");
+  pMenu->AddButton("Display"          ,"v->Display();"      ,"????");
+  pMenu->AddButton("Print hits"       ,"vh();"              ,"Print list of hits for current event");
+  pMenu->AddButton("Print sdigits"    ,"vs();"              ,"Print list of sdigits for current event");
+  pMenu->AddButton("Print digits"     ,"vd();"  ,"????");
+  pMenu->AddButton("Hits cotrol plots","v->HitsAna()"      ,"????");
   pMenu->Show();  
 }//TestMenu()
 //__________________________________________________________________________________________________
@@ -163,20 +162,20 @@ AliLoader *rl(){return             al->GetLoader("RICHLoader");}
 AliVHMPID *v() {return (AliVHMPID*)a()->GetDetector("VHMPID");}  //provides pointer to VHMPID detector
 AliLoader *vl(){return             al->GetLoader("VHMPIDLoader");}
 
-void rh(Int_t event=0)    {r->PrintHits(event);}     //utility print hits for 'event' event
-void rs(Int_t event=0)    {r->PrintSDigits(event);}  //utility print sdigits
-void rd(Int_t event=0)    {r->PrintDigits(event);}   //utility print digits
-void rc(Int_t event=0)    {r->PrintClusters(event);} //utility print clusters
-void rt(Int_t event=0)    {r->PrintTracks(event);}   //utility print tracks
-Int_t nem(Int_t event=0)  {AliRICHDisplFast::Nparticles(kElectron  ,event,al);} //utility number of electrons
-Int_t nep(Int_t event=0)  {AliRICHDisplFast::Nparticles(kPositron  ,event,al);} //utility number of positrons
-Int_t nmup(Int_t event=0) {AliRICHDisplFast::Nparticles(kMuonPlus  ,event,al);} //utility number of positive muons
-Int_t nmum(Int_t event=0) {AliRICHDisplFast::Nparticles(kMuonMinus ,event,al);} //utility number of negative muons
-Int_t npi0(Int_t event=0) {AliRICHDisplFast::Nparticles(kPi0       ,event,al);} //utility number of neutral pions 
-Int_t npip(Int_t event=0) {AliRICHDisplFast::Nparticles(kPiPlus    ,event,al);} //utility number of positive pions
-Int_t npim(Int_t event=0) {AliRICHDisplFast::Nparticles(kPiMinus   ,event,al);} //utility number of negative pions
-Int_t nk0(Int_t event=0)  {AliRICHDisplFast::Nparticles(kK0        ,event,al);} //utility number of neutral kaons
-Int_t nkp(Int_t event=0)  {AliRICHDisplFast::Nparticles(kKPlus     ,event,al);} //utility number of positive kaons
-Int_t nkm(Int_t event=0)  {AliRICHDisplFast::Nparticles(kKMinus    ,event,al);} //utility number of negative kaons
-Int_t npp(Int_t event=0)  {AliRICHDisplFast::Nparticles(kProton    ,event,al);} //utility number of protons
-Int_t npm(Int_t event=0)  {AliRICHDisplFast::Nparticles(kProtonBar ,event,al);} //utility number of antiprotons
+void rh(Int_t event=0)    {r->HitsPrint    (event);} void vh(Int_t event=0)    {v->HitsPrint    (event);}  //utility print hits for 'event' event
+void rs(Int_t event=0)    {r->SDigitsPrint (event);} void vs(Int_t event=0)    {v->SDigitsPrint (event);}  //utility print sdigits
+void rd(Int_t event=0)    {r->DigitsPrint  (event);} void vd(Int_t event=0)    {v->DigitsPrint  (event);}  //utility print digits
+void rc(Int_t event=0)    {r->ClustersPrint(event);} void vc(Int_t event=0)    {v->ClustersPrint(event);}  //utility print clusters
+void rt(Int_t event=0)    {r->PrintTracks  (event);}                                                       //utility print tracks
+Int_t nem(Int_t event=0)  {AliRICH::Nparticles(kElectron  ,event,al);} //utility number of electrons
+Int_t nep(Int_t event=0)  {AliRICH::Nparticles(kPositron  ,event,al);} //utility number of positrons
+Int_t nmup(Int_t event=0) {AliRICH::Nparticles(kMuonPlus  ,event,al);} //utility number of positive muons
+Int_t nmum(Int_t event=0) {AliRICH::Nparticles(kMuonMinus ,event,al);} //utility number of negative muons
+Int_t npi0(Int_t event=0) {AliRICH::Nparticles(kPi0       ,event,al);} //utility number of neutral pions 
+Int_t npip(Int_t event=0) {AliRICH::Nparticles(kPiPlus    ,event,al);} //utility number of positive pions
+Int_t npim(Int_t event=0) {AliRICH::Nparticles(kPiMinus   ,event,al);} //utility number of negative pions
+Int_t nk0(Int_t event=0)  {AliRICH::Nparticles(kK0        ,event,al);} //utility number of neutral kaons
+Int_t nkp(Int_t event=0)  {AliRICH::Nparticles(kKPlus     ,event,al);} //utility number of positive kaons
+Int_t nkm(Int_t event=0)  {AliRICH::Nparticles(kKMinus    ,event,al);} //utility number of negative kaons
+Int_t npp(Int_t event=0)  {AliRICH::Nparticles(kProton    ,event,al);} //utility number of protons
+Int_t npm(Int_t event=0)  {AliRICH::Nparticles(kProtonBar ,event,al);} //utility number of antiprotons

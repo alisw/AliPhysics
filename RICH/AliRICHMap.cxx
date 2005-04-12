@@ -33,7 +33,7 @@ void  AliRICHMap::FillHits()
 // Loops over the list of digits filling the "pad fired by digits" structure
   if(!fNdigits) return;    
   for(Int_t iDigN=0;iDigN<fNdigits;iDigN++){
-    AliRICHdigit *pDig= (AliRICHdigit*)fDigits->At(iDigN);
+    AliRICHDigit *pDig= (AliRICHDigit*)fDigits->At(iDigN);
     SetHit(pDig->X(),pDig->Y(),iDigN);
   }
 }

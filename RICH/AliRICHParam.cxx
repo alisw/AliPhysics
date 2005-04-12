@@ -14,7 +14,6 @@
 //  **************************************************************************
 #include "AliRICHParam.h"
 #include "AliRICHChamber.h"
-#include "AliRICHDisplFast.h"
 #include <TCanvas.h>
 #include <TLatex.h>
 #include <THStack.h>

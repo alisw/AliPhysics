@@ -62,7 +62,7 @@ void AliRICHv1::StepManager()
       }        
       gMC->TrackPosition(cerX4); gMC->CurrentVolOffID(2,iCurrentChamber);//RICH-RPPF-RPC
 	
-      AddHit(iCurrentChamber,gAlice->GetMCApp()->GetCurrentTrackNumber(),cerX4.Vect(),cerX4.Vect());//HIT for PHOTON in conditions CF+CSI+DE
+      HitAdd(iCurrentChamber,gAlice->GetMCApp()->GetCurrentTrackNumber(),cerX4.Vect(),cerX4.Vect());//HIT for PHOTON in conditions CF+CSI+DE
       fCounters(8)++;//4- Ckovs converted to electron on CsI
       GenerateFeedbacks(iCurrentChamber);
     }//photon in PC and DE >0 
@@ -79,7 +79,7 @@ void AliRICHv1::StepManager()
     }else if(gMC->IsTrackExiting()||gMC->IsTrackStop()||gMC->IsTrackDisappeared()){//MIP in GAP exiting or disappeared
       eloss+=gMC->Edep();//take into account last step dEdX
       gMC->TrackPosition(mipOutX4);  
-      AddHit(iCurrentChamber,gAlice->GetMCApp()->GetCurrentTrackNumber(),mipInX4.Vect(),mipOutX4.Vect(),eloss);//HIT for MIP: MIP in GAP Exiting
+      HitAdd(iCurrentChamber,gAlice->GetMCApp()->GetCurrentTrackNumber(),mipInX4.Vect(),mipOutX4.Vect(),eloss);//HIT for MIP: MIP in GAP Exiting
       GenerateFeedbacks(iCurrentChamber,eloss);//MIP+GAP+Exit
     }else//MIP in GAP going inside
       eloss   += gMC->Edep();
@@ -113,7 +113,7 @@ void AliRICHv1::GenerateFeedbacks(Int_t iChamber,Float_t eloss)
   gMC->TrackPosition(x4);  
   TVector2 x2=C(iChamber)->Mrs2Pc(x4);//hit position on photocathode plane
   TVector2 xspe=x2;
-  Int_t sector=P()->Loc2Sec(xspe);  if(sector==kBad) return; //hit in dead zone, nothing to produce
+  Int_t sector=P()->Loc2Sec(xspe);  if(sector==-1) return; //hit in dead zone, nothing to produce
   Int_t iTotQdc=P()->TotQdc(x2,eloss);
   Int_t iNphotons=gMC->GetRandom()->Poisson(P()->C(iChamber)->AlphaFeedback(sector)*iTotQdc);    
   AliDebug(1,Form("N photons=%i",iNphotons));

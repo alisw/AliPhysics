@@ -28,9 +28,10 @@ void RICHMinMathieson(Int_t &npar, Double_t *gin, Double_t &chi2, Double_t *par,
 
 ClassImp(AliRICHClusterFinder)
 //__________________________________________________________________________________________________
-AliRICHClusterFinder::AliRICHClusterFinder(AliRICH *pRICH)   
+AliRICHClusterFinder::AliRICHClusterFinder(AliRunLoader *pRunLoader)   
 {//main ctor
-  fRICH = pRICH;
+  fRICH = (AliRICH*) pRunLoader->GetAliRun()->GetDetector("RICH");
+
   AliDebug(1,"main ctor Start.");
   
   fDigitMap = 0;
@@ -53,7 +54,7 @@ void AliRICHClusterFinder::Exec(const Option_t *)
     R()->GetLoader()->GetRunLoader()->GetEvent(iEventN);
     
     R()->GetLoader()->MakeTree("R");  R()->MakeBranch("R");
-    R()->ResetDigits();               R()->ResetClusters();
+    R()->ResetDigits();               R()->ClustersReset();
     
     R()->GetLoader()->TreeD()->GetEntry(0);
     for(Int_t iChamber=1;iChamber<=kNchambers;iChamber++){//chambers loop
@@ -63,7 +64,7 @@ void AliRICHClusterFinder::Exec(const Option_t *)
   }//events loop  
   
   R()->ResetDigits();//reset and unload everything
-  R()->ResetClusters();
+  R()->ClustersReset();
   R()->GetLoader()                ->UnloadDigits(); 
   R()->GetLoader()                ->UnloadRecPoints();  
 //  R()->GetLoader()->GetRunLoader()->UnloadHeader();
@@ -83,7 +84,7 @@ void AliRICHClusterFinder::FindClusters(Int_t iChamber)
   fDigitMap=new AliRICHMap(R()->Digits(iChamber));//create digit map for the given chamber
 
   for(Int_t iDigN=0;iDigN<iNdigits;iDigN++){//digits loop for a given chamber    
-    AliRICHdigit *dig=(AliRICHdigit*)R()->Digits(iChamber)->At(iDigN);
+    AliRICHDigit *dig=(AliRICHDigit*)R()->Digits(iChamber)->At(iDigN);
     Int_t i=dig->X();   Int_t j=dig->Y();
     if(fDigitMap->TestHit(i,j)==kUsed) continue;//this digit is already taken, go after next digit
 	
@@ -105,7 +106,7 @@ void AliRICHClusterFinder::FindClusters(Int_t iChamber)
   AliDebug(1,"Stop.");  
 }//FindClusters()
 //__________________________________________________________________________________________________
-void AliRICHClusterFinder::FindClusterContribs(AliRICHcluster *pCluster)
+void AliRICHClusterFinder::FindClusterContribs(AliRICHCluster *pCluster)
 {
 //Finds cerenkov-feedback-mip mixture for a given cluster
   AliDebug(1,"Start.");ToAliDebug(1,pCluster->Print());
@@ -122,11 +123,11 @@ void AliRICHClusterFinder::FindClusterContribs(AliRICHcluster *pCluster)
   TArrayI contribs(3*pCluster->Size());
   Int_t *pindex = new Int_t[3*pCluster->Size()];
   for(Int_t iDigN=0;iDigN<pCluster->Size();iDigN++) {//loop on digits of a given cluster
-    contribs[3*iDigN]  =((AliRICHdigit*)pDigits->At(iDigN))->GetTrack(0);
+    contribs[3*iDigN]  =((AliRICHDigit*)pDigits->At(iDigN))->GetTrack(0);
     if (contribs[3*iDigN] >= 10000000) contribs[3*iDigN] = 0;
-    contribs[3*iDigN+1]=((AliRICHdigit*)pDigits->At(iDigN))->GetTrack(1);
+    contribs[3*iDigN+1]=((AliRICHDigit*)pDigits->At(iDigN))->GetTrack(1);
     if (contribs[3*iDigN+1] >= 10000000) contribs[3*iDigN+1] = 0;
-    contribs[3*iDigN+2]=((AliRICHdigit*)pDigits->At(iDigN))->GetTrack(2);
+    contribs[3*iDigN+2]=((AliRICHDigit*)pDigits->At(iDigN))->GetTrack(2);
     if (contribs[3*iDigN+2] >= 10000000) contribs[3*iDigN+2] = 0;
   }//loop on digits of a given cluster
   TMath::Sort(contribs.GetSize(),contribs.GetArray(),pindex);
@@ -145,7 +146,7 @@ void AliRICHClusterFinder::FindClusterContribs(AliRICHcluster *pCluster)
     }
   }//loop on digits to sort Tid
   
-  if (contribs[pindex[3*pCluster->Size()-1]]!=kBad) {
+  if (contribs[pindex[3*pCluster->Size()-1]]!=-1) {
 
      TParticle* particle = pStack->Particle(contribs[pindex[3*pCluster->Size()-1]]);
      Int_t code   = particle->GetPdgCode();
@@ -167,9 +168,9 @@ void AliRICHClusterFinder::FindClusterContribs(AliRICHcluster *pCluster)
 void  AliRICHClusterFinder::FormRawCluster(Int_t i, Int_t j)
 {
 //Builds the raw cluster (before deconvolution). Starts from the first pad (i,j) then calls itself recursevly  for all neighbours.
-  AliDebug(1,Form("Start with digit(%i,%i) Q=%f",i,j,((AliRICHdigit*)fDigitMap->GetHit(i,j))->Q()));
+  AliDebug(1,Form("Start with digit(%i,%i) Q=%f",i,j,((AliRICHDigit*)fDigitMap->GetHit(i,j))->Q()));
   
-  fRawCluster.AddDigit((AliRICHdigit*) fDigitMap->GetHit(i,j));//take this pad in cluster
+  fRawCluster.AddDigit((AliRICHDigit*) fDigitMap->GetHit(i,j));//take this pad in cluster
   fDigitMap->FlagHit(i,j);//flag this pad as taken  
 
   Int_t listX[4], listY[4];    //  Now look recursively for all neighbours
@@ -184,13 +185,13 @@ void AliRICHClusterFinder::FindLocalMaxima()
   AliDebug(1,Form("Cluster size of the Raw cluster ---> %i",fRawCluster.Size()));
   for(Int_t iDig1=0;iDig1<fRawCluster.Size();iDig1++) {
     Int_t iNotMax = 0;
-    AliRICHdigit *pDig1 = (AliRICHdigit *)fRawCluster.Digits()->At(iDig1);
+    AliRICHDigit *pDig1 = (AliRICHDigit *)fRawCluster.Digits()->At(iDig1);
     if(!pDig1) {fNlocals=0;return;}
     TVector pad1 = pDig1->Pad();
     Int_t padQ1 = (Int_t)(pDig1->Q()+0.1);
     Int_t padC1 = pDig1->ChFbMi();
     for(Int_t iDig2=0;iDig2<fRawCluster.Size();iDig2++) {
-      AliRICHdigit *pDig2 = (AliRICHdigit *)fRawCluster.Digits()->At(iDig2);
+      AliRICHDigit *pDig2 = (AliRICHDigit *)fRawCluster.Digits()->At(iDig2);
       if(!pDig2) {fNlocals=0;return;}
       TVector pad2 = pDig2->Pad();
       Int_t padQ2 = (Int_t)(pDig2->Q()+0.1);
@@ -219,7 +220,7 @@ void AliRICHClusterFinder::WriteRawCluster()
   AliDebug(1,"Start.");
   
   FindClusterContribs(&fRawCluster);  
-  R()->AddCluster(fRawCluster);
+  R()->ClusterAdd(fRawCluster);
   
   ToAliDebug(1,fRawCluster.Print()); AliDebug(1,"Stop."); 
 }//WriteRawCluster()
@@ -230,7 +231,7 @@ void AliRICHClusterFinder::WriteResolvedCluster()
   AliDebug(1,"Start.");
   
   FindClusterContribs(&fResolvedCluster);
-  R()->AddCluster(fResolvedCluster);
+  R()->ClusterAdd(fResolvedCluster);
   
   ToAliDebug(1,fResolvedCluster.Print()); AliDebug(1,"Stop.");  
 }//WriteResolvedCluster()
@@ -324,7 +325,7 @@ void RICHMinMathieson(Int_t &npar, Double_t *, Double_t &chi2, Double_t *par, In
 {
 //Mathieson minimization function 
   
-  AliRICHcluster *pRawCluster = ((AliRICHClusterFinder*)gMinuit->GetObjectFit())->GetRawCluster();
+  AliRICHCluster *pRawCluster = ((AliRICHClusterFinder*)gMinuit->GetObjectFit())->GetRawCluster();
 
   TVector2 centroid[50];
   Double_t q[50];
@@ -341,8 +342,8 @@ void RICHMinMathieson(Int_t &npar, Double_t *, Double_t &chi2, Double_t *par, In
   chi2 = 0;
   Int_t qtot = pRawCluster->Q();
   for(Int_t i=0;i<pRawCluster->Size();i++) {
-    TVector  pad=((AliRICHdigit *)pRawCluster->Digits()->At(i))->Pad();
-    Double_t padQ = ((AliRICHdigit *)pRawCluster->Digits()->At(i))->Q();
+    TVector  pad=((AliRICHDigit *)pRawCluster->Digits()->At(i))->Pad();
+    Double_t padQ = ((AliRICHDigit *)pRawCluster->Digits()->At(i))->Q();
     Double_t qfracpar=0;
     for(Int_t j=0;j<nFunctions;j++) {
       qfracpar += q[j]*AliRICHParam::FracQdc(centroid[j],pad);

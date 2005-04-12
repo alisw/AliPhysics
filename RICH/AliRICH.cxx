@@ -39,47 +39,9 @@
 #include <TNtupleD.h>
 #include <AliTracker.h>
 #include <AliRawDataHeader.h>
-#include <Riostream.h>
-
+#include <TLatex.h> //Display()
+#include <TCanvas.h> //Display()
  
-ClassImp(AliRICHhit)
-//__________________________________________________________________________________________________
-void AliRICHhit::Print(Option_t*)const
-{
-  AliInfo(Form("Ch=%1i,TID=%6i,Elos=%9.3f eV,IN(%6.2f,%6.2f,%6.2f)-OUT(%6.2f,%6.2f,%6.2f)=%9.4f"
-      ,fChamber,fTrack,fEloss*1e9,fInX3.X() ,fInX3.Y() ,fInX3.Z(),
-                                  fOutX3.X(),fOutX3.Y(),fOutX3.Z(),Length()));
-}
-//__________________________________________________________________________________________________
-ClassImp(AliRICHdigit)
-//__________________________________________________________________________________________________
-void AliRICHdigit::Print(Option_t*)const
-{
-//Print current digit  
-  AliInfo(Form("cfm=%9i, cs=%2i, x=%3i, y=%3i, q=%8.3f, TID1=%5i, TID2=%5i, TID3=%5i",
-                  fCFM,fChamber,fPadX,fPadY,fQdc,fTracks[0],fTracks[1],fTracks[2]));
-}
-//__________________________________________________________________________________________________
-ClassImp(AliRICHcluster)
-//__________________________________________________________________________________________________
-void AliRICHcluster::Print(Option_t*)const
-{
-//Print current cluster  
-  const char *status=0;
-  switch(fStatus){
-    case      kRaw: status="raw"     ;break;
-    case kResolved: status="resolved";break;
-    case    kEmpty: status="empty"   ;break;
-  }
-  if(fDigits)    
-    ::Info("cluster","cfm=%10i, cs=%2i, SiMa=%6i, Shape=%5i, x=%7.3f, y=%7.3f, Q=%6i, %s with %i digits",
-                             fCFM,fChamber,fSize,fShape,fX,fY,fQdc,status,fDigits->GetEntriesFast());
-  else
-    AliInfo(Form("cfm=%10i, cs=%2i, SiMa=%6i, Shape=%5i, x=%7.3f, y=%7.3f, Q=%6i, %s with %i digits",
-                             fCFM,fChamber,fSize,fShape,fX,fY,fQdc,status,0));
-    
-}
-//__________________________________________________________________________________________________
 ClassImp(AliRICH)    
 //__________________________________________________________________________________________________
 // RICH manager class   
@@ -89,22 +51,22 @@ ClassImp(AliRICH)
 */
 //END_HTML
 //__________________________________________________________________________________________________
-AliRICH::AliRICH():AliDetector(),fpParam(0),  fSdigits(0),fNsdigits(0),fDigitsNew(0),fClusters(0) 
+AliRICH::AliRICH():AliDetector(),fParam(0),  fSdigits(0),fNsdigits(0),fDigs(0),fClus(0) 
 {
 //Default ctor should not contain any new operators
 //AliDetector ctor deals with Hits and Digits  
-  for(int i=0;i<kNchambers;i++) fNdigitsNew[i]  =0;
-  for(int i=0;i<kNchambers;i++) fNclusters[i]=0;
+  for(int i=0;i<kNchambers;i++) fNdigs[i]  =0;
+  for(int i=0;i<kNchambers;i++) fNclus[i]=0;
 //  fCounters.ResizeTo(20); fCounters.Zero();
 }//AliRICH::AliRICH()
 //__________________________________________________________________________________________________
 AliRICH::AliRICH(const char *name, const char *title)
-        :AliDetector(name,title),fpParam(new AliRICHParam),fSdigits(0),fNsdigits(0),fDigitsNew(0),fClusters(0)
+        :AliDetector(name,title),fParam(new AliRICHParam),fSdigits(0),fNsdigits(0),fDigs(0),fClus(0)
 {
 //Named ctor
   AliDebug(1,"Start.");
 //AliDetector ctor deals with Hits and Digits (reset them to 0, does not create them)
-  CreateHits();          gAlice->GetMCApp()->AddHitList(fHits);
+  HitsCreate();          gAlice->GetMCApp()->AddHitList(fHits);
   fCounters.ResizeTo(20); fCounters.Zero();
   AliDebug(1,"Stop.");
 }//AliRICH::AliRICH(const char *name, const char *title)
@@ -114,13 +76,13 @@ AliRICH::~AliRICH()
 //dtor
   AliDebug(1,"Start.");
 
-  if(fpParam)    delete fpParam;
+  if(fParam)     delete fParam;
   
   if(fHits)      delete fHits;
   if(fSdigits)   delete fSdigits;
   if(fDigits)    delete fDigits;
-  if(fDigitsNew) {fDigitsNew->Delete();   delete fDigitsNew;}
-  if(fClusters)  {fClusters->Delete();    delete fClusters;}
+  if(fDigs)      {fDigs->Delete();   delete fDigs;}
+  if(fClus)      {fClus->Delete();   delete fClus;}
   AliDebug(1,"Stop.");    
 }//AliRICH::~AliRICH()
 //__________________________________________________________________________________________________
@@ -138,7 +100,7 @@ void AliRICH::Hits2SDigits()
     for(Int_t iPrimN=0;iPrimN<GetLoader()->TreeH()->GetEntries();iPrimN++){//prims loop
       GetLoader()->TreeH()->GetEntry(iPrimN);
       for(Int_t iHitN=0;iHitN<Hits()->GetEntries();iHitN++){//hits loop 
-        AliRICHhit *pHit=(AliRICHhit*)Hits()->At(iHitN);//get current hit                
+        AliRICHHit *pHit=(AliRICHHit*)Hits()->At(iHitN);//get current hit                
         TVector2 x2 = C(pHit->C())->Mrs2Anod(0.5*(pHit->InX3()+pHit->OutX3()));//hit position in the anod plane
         Int_t iTotQdc=P()->TotQdc(x2,pHit->Eloss());//total charge produced by hit, 0 if hit in dead zone
         if(iTotQdc==0) continue;
@@ -158,7 +120,7 @@ void AliRICH::Hits2SDigits()
           for(pad[0]=area[0];pad[0]<=area[2];pad[0]++){                    
             Double_t padQdc=iTotQdc*P()->FracQdc(anod,pad);
             AliDebug(1,Form("current pad(%3.0f,%3.0f) with QDC  =%6.2f",pad[0],pad[1],padQdc));
-            if(padQdc>0.1) AddSDigit(pHit->C(),pad,padQdc,GetLoader()->GetRunLoader()->Stack()->Particle(pHit->GetTrack())->GetPdgCode(),pHit->GetTrack());
+            if(padQdc>0.1) SDigitAdd(pHit->C(),pad,padQdc,GetLoader()->GetRunLoader()->Stack()->Particle(pHit->GetTrack())->GetPdgCode(),pHit->GetTrack());
           }//affected pads loop 
       }//hits loop
     }//prims loop
@@ -174,6 +136,12 @@ void AliRICH::Hits2SDigits()
 void AliRICH::Digits2Raw()
 {
 //Loops over all digits and creates raw data files in DDL format. GetEvent() is done outside (AliSimulation)
+//RICH has 2 DDL per chamber, even number for right part(2-4-6) odd number for left part(1-3-5) 
+//RICH has no any propriate header just uses the common one
+//Each PC is divided by 8 rows counted from 1 to 8 from top to bottom for left PCs(1-3-5) and from bottom to top for right PCc(2-4-6)     (denoted  rrrrr 5 bits 32 values)
+//Each raw is composed from 10 DILOGIC chips counted from left to right from 1 to 10                                                      (denoted   dddd 4 bits 16 values)
+//Each DILOGIC chip serves 48 channels counted from 0 to 47                                                                               (denoted aaaaaa 6 bits 64 values)
+//So RICH info word is  32 bits word with structure:   0000 0rrr rrdd ddaa aaaa qqqq qqqq qqqq (five 0 five r six a twelve q) with QDC    (denoted q...q 12 bits 4096 values)
   AliDebug(1,"Start.");
   GetLoader()->LoadDigits();
   GetLoader()->TreeD()->GetEntry(0);
@@ -185,23 +153,17 @@ void AliRICH::Digits2Raw()
   UInt_t word32=1;        //32 bits data word 
   
   for(Int_t iChN=1;iChN<=kNchambers;iChN++){ //2 DDL per chamber open both in parallel   
-    file135.open(Form("RICH_%4i.ddl",kRichOffset+2*iChN-1));   //left part of chamber; sectors 1-3-5
-    file246.open(Form("RICH_%4i.ddl",kRichOffset+2*iChN));     //right part of chamber; sectors 2-4-6
+    file135.open(Form("RICH_%4i.ddl",kRichOffset+2*iChN-1));   //left part of chamber; sectors 1-3-5 odd DDL number
+    file246.open(Form("RICH_%4i.ddl",kRichOffset+2*iChN));     //right part of chamber; sectors 2-4-6 even DDL number
 //common DDL header defined by standart, now dummy as the total number of bytes is not yet known    
     file135.write((char*)&header,sizeof(header)); //dummy header just place holder
     file246.write((char*)&header,sizeof(header)); //actual will be written later
-//now coming RICH private header 16 32-bits wors currently signifying nothing
-    for(Int_t i=0;i<16;i++){    
-      word32='t';
-      file135.write((char*)&word32,sizeof(word32)); //dummy header just place holder
-      file246.write((char*)&word32,sizeof(word32)); //actual will be written later
-    }
     
     Int_t counter135=0,counter246=0;//counts total number of records per DDL 
     
     for(Int_t iDigN=0;iDigN<Digits(iChN)->GetEntriesFast();iDigN++){//digits loop for a given chamber
-      AliRICHdigit *pDig=(AliRICHdigit*)Digits(iChN)->At(iDigN);
-      word32=UInt_t (pDig->Q()+0x400*pDig->X()+0x4000*pDig->Y());            //arbitrary structure
+      AliRICHDigit *pDig=(AliRICHDigit*)Digits(iChN)->At(iDigN);
+      word32=UInt_t (pDig->Q()+0x400*pDig->X()+0x4000*pDig->Y());  //arbitrary structure
       switch(pDig->S()){//readout by vertical sectors: 1,3,5-left DDL 2,4,6-right DDL
         case 1: case 3: case 5: file135.write((char*)&word32,sizeof(word32)); counter135++; break;
         case 2: case 4: case 6: file246.write((char*)&word32,sizeof(word32)); counter246++; break;
@@ -425,25 +387,25 @@ void AliRICH::MakeBranch(Option_t* option)
   const char *cS = strstr(option,"S");
 
   if(cH&&TreeH()){//H
-    CreateHits();      //branch will be created in AliDetector::MakeBranch
+    HitsCreate();      //branch will be created in AliDetector::MakeBranch
   }//H     
   AliDetector::MakeBranch(option);//this is after cH because we need to guarantee that fHits array is created
       
   if(cS&&fLoader->TreeS()){//S  
-    CreateSDigits();   MakeBranchInTree(fLoader->TreeS(),"RICH",&fSdigits,kBufferSize,0) ;
+    SDigitsCreate();   MakeBranchInTree(fLoader->TreeS(),"RICH",&fSdigits,kBufferSize,0) ;
   }//S
    
   if(cD&&fLoader->TreeD()){//D
-    CreateDigits();
+    DigitsCreate();
     for(Int_t i=0;i<kNchambers;i++){ 
-      MakeBranchInTree(fLoader->TreeD(),Form("%s%d",GetName(),i+1),&((*fDigitsNew)[i]),kBufferSize,0);
+      MakeBranchInTree(fLoader->TreeD(),Form("%s%d",GetName(),i+1),&((*fDigs)[i]),kBufferSize,0);
     }
   }//D
   
   if(cR&&fLoader->TreeR()){//R
-    CreateClusters();
+    ClustersCreate();
     for(Int_t i=0;i<kNchambers;i++)
-      MakeBranchInTree(fLoader->TreeR(),Form("%sClusters%d",GetName(),i+1), &((*fClusters)[i]), kBufferSize, 0);    
+      MakeBranchInTree(fLoader->TreeR(),Form("%sClusters%d",GetName(),i+1), &((*fClus)[i]), kBufferSize, 0);    
   }//R
   AliDebug(1,"Stop.");   
 }//void AliRICH::MakeBranch(Option_t* option)
@@ -457,20 +419,20 @@ void AliRICH::SetTreeAddress()
     
   if(fLoader->TreeH()){//H
     AliDebug(1,"tree H is requested.");
-    CreateHits();//branch map will be in AliDetector::SetTreeAddress    
+    HitsCreate();//branch map will be in AliDetector::SetTreeAddress    
   }//H
   AliDetector::SetTreeAddress();//this is after TreeH because we need to guarantee that fHits array is created
 
   if(fLoader->TreeS()){//S
     AliDebug(1,"tree S is requested.");
-    branch=fLoader->TreeS()->GetBranch(GetName());        if(branch){CreateSDigits();   branch->SetAddress(&fSdigits);}
+    branch=fLoader->TreeS()->GetBranch(GetName());        if(branch){SDigitsCreate();   branch->SetAddress(&fSdigits);}
   }//S
     
   if(fLoader->TreeD()){//D    
     AliDebug(1,"tree D is requested.");
     for(int i=0;i<kNchambers;i++){      
       branch=fLoader->TreeD()->GetBranch(Form("%s%d",GetName(),i+1)); 
-      if(branch){CreateDigits(); branch->SetAddress(&((*fDigitsNew)[i]));}
+      if(branch){DigitsCreate(); branch->SetAddress(&((*fDigs)[i]));}
     }
   }//D
     
@@ -478,7 +440,7 @@ void AliRICH::SetTreeAddress()
     AliDebug(1,"tree R is requested.");
     for(int i=0;i<kNchambers;i++){         
       branch=fLoader->TreeR()->GetBranch(Form("%sClusters%d" ,GetName(),i+1));
-      if(branch){CreateClusters(); branch->SetAddress(&((*fClusters)[i]));}
+      if(branch){ClustersCreate(); branch->SetAddress(&((*fClus)[i]));}
     }
   }//R
   AliDebug(1,"Stop.");
@@ -569,12 +531,12 @@ void AliRICH::ControlPlots()
     for(Int_t iPrimN=0;iPrimN < GetLoader()->TreeH()->GetEntries();iPrimN++){//hit tree loop
       GetLoader()->TreeH()->GetEntry(iPrimN);      
       for(Int_t j=0;j<Hits()->GetEntries();j++){//hits loop
-        AliRICHhit *pHit = (AliRICHhit*)Hits()->At(j);
+        AliRICHHit *pHit = (AliRICHHit*)Hits()->At(j);
         TParticle *pParticle = GetLoader()->GetRunLoader()->Stack()->Particle(pHit->GetTrack());//get particle produced this hit
-        Double_t Radius = TMath::Sqrt(pParticle->Vx()*pParticle->Vx()+pParticle->Vy()*pParticle->Vy()+pParticle->Vz()*pParticle->Vz());
+        Double_t dRadius = TMath::Sqrt(pParticle->Vx()*pParticle->Vx()+pParticle->Vy()*pParticle->Vy()+pParticle->Vz()*pParticle->Vz());
         switch(pParticle->GetPdgCode()){
-          case kPositron : pElecP->Fill( pParticle->P());pelecRadius->Fill(Radius); break;
-          case kElectron : pElecP->Fill(-pParticle->P());pelecRadius->Fill(Radius); break;
+          case kPositron : pElecP->Fill( pParticle->P());pelecRadius->Fill(dRadius); break;
+          case kElectron : pElecP->Fill(-pParticle->P());pelecRadius->Fill(dRadius); break;
           
           case kMuonPlus : pMuonP->Fill( pParticle->P()); break;
           case kMuonMinus: pMuonP->Fill(-pParticle->P()); break;
@@ -585,8 +547,8 @@ void AliRICH::ControlPlots()
           case kKPlus    : pKaonP->Fill( pParticle->P()); break;
           case kKMinus   : pKaonP->Fill(-pParticle->P()); break;
           
-          case kProton   : pProtP->Fill( pParticle->P()); pprotRadius->Fill(Radius); break;
-          case kProtonBar: pProtP->Fill(-pParticle->P()); pprotbarRadius->Fill(Radius); break;
+          case kProton   : pProtP->Fill( pParticle->P()); pprotRadius->Fill(dRadius); break;
+          case kProtonBar: pProtP->Fill(-pParticle->P()); pprotbarRadius->Fill(dRadius); break;
               
         }//switch PdgCode
             
@@ -596,8 +558,8 @@ void AliRICH::ControlPlots()
     if(isSdig){
       GetLoader()->TreeS()->GetEntry(0);  
       for(Int_t iSdigN=0;iSdigN<SDigits()->GetEntries();iSdigN++){//sdigits loop 
-        AliRICHdigit *pSdig=(AliRICHdigit*)SDigits()->At(iSdigN); //get current sdigit pointer  
-        AliRICHhit   *pHit=Hit(pSdig->GetTrack(0));               //get hit of this sdigit (always one)
+        AliRICHDigit *pSdig=(AliRICHDigit*)SDigits()->At(iSdigN); //get current sdigit pointer  
+        AliRICHHit   *pHit=Hit(pSdig->GetTrack(0));               //get hit of this sdigit (always one)
         TVector2 hit2 =C(pHit->C())->Mrs2Pc(pHit->OutX3());       //this hit position  in local system
         TVector2 sdig2=P()->Pad2Loc(pSdig->Pad());                //center of pad for this sdigit
         pHxSd->Fill(hit2.X()-sdig2.X());        
@@ -611,8 +573,8 @@ void AliRICH::ControlPlots()
     for(Int_t iChamN=1;iChamN<=7;iChamN++){//chambers loop
       if(isDig){
         for(Int_t iDigN=0;iDigN<Digits(iChamN)->GetEntries();iDigN++){//digits loop
-          AliRICHdigit *pDig=(AliRICHdigit*)Digits(iChamN)->At(iDigN);
-          AliRICHhit   *pHit=Hit(pDig->GetTrack(0));           //get first hit of this digit
+          AliRICHDigit *pDig=(AliRICHDigit*)Digits(iChamN)->At(iDigN);
+          AliRICHHit   *pHit=Hit(pDig->GetTrack(0));           //get first hit of this digit
           TVector2 hitV2=C(iChamN)->Mrs2Pc(pHit->OutX3()); 
           TVector2 digV2=P()->Pad2Loc(pDig->Pad());            //center of pad for this digit
           pHxD->Fill(hitV2.X()-digV2.X());        pHyD->Fill(hitV2.Y()-digV2.Y());
@@ -621,7 +583,7 @@ void AliRICH::ControlPlots()
       if(isClus){
         Int_t iNclusCham=Clusters(iChamN)->GetEntries(); if(iNclusCham) pNumClusH1->Fill(iNclusCham);//number of clusters per event
         for(Int_t iClusN=0;iClusN<iNclusCham;iClusN++){//clusters loop
-          AliRICHcluster *pClus=(AliRICHcluster*)Clusters(iChamN)->At(iClusN);
+          AliRICHCluster *pClus=(AliRICHCluster*)Clusters(iChamN)->At(iClusN);
                                        pQdcH1        ->Fill(pClus->Q());   
                                        pSizeH1       ->Fill(pClus->Size());  
                                        pMapH2        ->Fill(pClus->X(),pClus->Y()); //common
@@ -658,14 +620,14 @@ void AliRICH::ControlPlots()
   gBenchmark->Show("ControlPlots");
 }//ControlPlots()
 //__________________________________________________________________________________________________
-AliRICHhit* AliRICH::Hit(Int_t tid)const
+AliRICHHit* AliRICH::Hit(Int_t tid)const
 {
 //defines which hit provided by given tid for the currently loaded event
   GetLoader()->LoadHits();
   for(Int_t iPrimN=0;iPrimN<GetLoader()->TreeH()->GetEntries();iPrimN++){//prims loop      
     GetLoader()->TreeH()->GetEntry(iPrimN);
     for(Int_t iHitN=0;iHitN<Hits()->GetEntries();iHitN++){
-      AliRICHhit *pHit=(AliRICHhit*)Hits()->At(iHitN);
+      AliRICHHit *pHit=(AliRICHHit*)Hits()->At(iHitN);
       if(tid==pHit->Track()) {GetLoader()->UnloadHits();return pHit;}
     }//hits
   }//prims loop
@@ -673,7 +635,7 @@ AliRICHhit* AliRICH::Hit(Int_t tid)const
   return 0;
 }
 //__________________________________________________________________________________________________
-void AliRICH::PrintHits(Int_t iEvtN)
+void AliRICH::HitsPrint(Int_t iEvtN)const
 {
 //Prints a list of RICH hits for a given event. Default is event number 0.
   if(GetLoader()->GetRunLoader()->GetEvent(iEvtN)) return;    
@@ -687,11 +649,10 @@ void AliRICH::PrintHits(Int_t iEvtN)
     iTotalHits+=Hits()->GetEntries();
   }
   GetLoader()->UnloadHits();
-  ResetHits();
   AliInfo(Form("totally %i hits",iTotalHits));
 }
 //__________________________________________________________________________________________________
-void AliRICH::PrintSDigits(Int_t iEvtN)
+void AliRICH::SDigitsPrint(Int_t iEvtN)const
 {
 //prints a list of RICH sdigits  for a given event
   if(GetLoader()->GetRunLoader()->GetEvent(iEvtN)) return;    
@@ -704,7 +665,7 @@ void AliRICH::PrintSDigits(Int_t iEvtN)
   Info("PrintSDigits","totally %i sdigits",SDigits()->GetEntries());
 }
 //__________________________________________________________________________________________________
-void AliRICH::PrintDigits(Int_t iEvtN)
+void AliRICH::DigitsPrint(Int_t iEvtN)const
 {
 //prints a list of RICH digits  for a given event
   if(GetLoader()->GetRunLoader()->GetEvent(iEvtN)) return;    
@@ -721,7 +682,7 @@ void AliRICH::PrintDigits(Int_t iEvtN)
   Info("PrintDigits","totally %i Digits",iTotalDigits);
 }
 //__________________________________________________________________________________________________
-void AliRICH::PrintClusters(Int_t iEvtN)
+void AliRICH::ClustersPrint(Int_t iEvtN)const
 {
 //prints a list of RICH clusters  for a given event
   AliInfo(Form("List of RICH clusters for event %i",iEvtN));
@@ -947,3 +908,158 @@ void AliRICH::CheckPR()const
   printf("\n\n");
   pFile->Write();pFile->Close();
 }
+//__________________________________________________________________________________________________
+void AliRICH::DisplayEvent(Int_t iEvtNmin,Int_t iEvtNmax)const
+{
+  TH2F *pDigitsH2[8];
+
+  Bool_t isDigits  =!GetLoader()->LoadDigits();
+  if(!isDigits){Error("ShoEvent","No digits. Nothing to display.");return;}
+  
+  TCanvas *canvas = new TCanvas("RICHDisplay","RICH Display",0,0,1226,900);   canvas->Divide(3,3);  
+//  gStyle->SetPalette(1);
+
+  
+  for(Int_t iChamber=1;iChamber<=7;iChamber++) {
+    pDigitsH2[iChamber] = new TH2F(Form("pDigitsH2_%i",iChamber),Form("Chamber %i",iChamber),165,0,P()->PcSizeX(),144,0,P()->PcSizeY());
+    pDigitsH2[iChamber]->SetMarkerColor(kGreen); 
+    pDigitsH2[iChamber]->SetMarkerStyle(29); 
+    pDigitsH2[iChamber]->SetMarkerSize(0.4);
+    pDigitsH2[iChamber]->SetStats(kFALSE);
+  }
+  
+  if(iEvtNmax>gAlice->GetEventsPerRun()) iEvtNmax=gAlice->GetEventsPerRun();
+
+  TLatex t;  t.SetTextSize(0.10);
+  t.DrawText(0.1,0.6,"RICH Display");
+  for(Int_t iEventN=iEvtNmin;iEventN<=iEvtNmax;iEventN++) {//events loop
+    canvas->cd(1);
+    t.DrawText(0.2,0.4,Form("Event Number %i",iEventN));        
+
+    GetLoader()->GetRunLoader()->GetEvent(iEventN); //get event
+    GetLoader()->TreeD()->GetEntry(0);              //get list of digits 
+    for(Int_t iChamber=1;iChamber<=7;iChamber++) {//chambers loop
+      pDigitsH2[iChamber]->Reset();    
+      for(Int_t j=0;j<Digits(iChamber)->GetEntries();j++) {//digits loop
+        AliRICHDigit *pDig = (AliRICHDigit*)Digits(iChamber)->At(j);
+        TVector2 x2=AliRICHParam::Pad2Loc(pDig->Pad());
+        pDigitsH2[iChamber]->Fill(x2.X(),x2.Y());
+      }//digits loop
+      if(iChamber==1) canvas->cd(7);
+      if(iChamber==2) canvas->cd(8);
+      if(iChamber==3) canvas->cd(4);
+      if(iChamber==4) canvas->cd(5);
+      if(iChamber==5) canvas->cd(6);
+      if(iChamber==6) canvas->cd(2);
+      if(iChamber==7) canvas->cd(3);
+      pDigitsH2[iChamber]->Draw();
+    }//chambers loop
+    canvas->Update();
+    canvas->Modified();
+    
+    if(iEvtNmin<iEvtNmax) gPad->WaitPrimitive();
+  }//events loop
+}//ShowEvent()
+//__________________________________________________________________________________________________
+void AliRICH::Display()const
+{
+//Provides fast event display
+//For RICH only, full display is .x Display.C    
+  Bool_t isHits    =!GetLoader()->LoadHits();
+  Bool_t isDigits  =!GetLoader()->LoadDigits();
+  Bool_t isClusters=!GetLoader()->LoadRecPoints();
+  
+  if(!isHits && !isDigits && !isClusters){Error("Exec","No hits digits and clusters. Nothing to display.");return;}
+  
+  TCanvas *pCanvas = new TCanvas("Display","RICH Display",0,0,600,600);
+  
+  TH2F *pHitsH2=0,*pDigitsH2=0,*pClustersH2=0;
+  
+  if(isHits)     pHitsH2     = new TH2F("pHitsH2"  ,  "Event Display;x,cm;y,cm",165,0,AliRICHParam::PcSizeX(),
+                                                                                144,0,AliRICHParam::PcSizeY());
+  if(pHitsH2)    pHitsH2->SetStats(kFALSE);
+  
+  if(isDigits)   pDigitsH2   = new TH2F("pDigitsH2"  ,"Event Display",165,0,AliRICHParam::PcSizeX(),
+                                                                      144,0,AliRICHParam::PcSizeY());
+  if(isClusters) pClustersH2 = new TH2F("pClustersH2","Event Display",165,0,AliRICHParam::PcSizeX(),
+                                                                      144,0,AliRICHParam::PcSizeY());
+  
+  for(Int_t iEventN=0;iEventN<gAlice->GetEventsPerRun();iEventN++){//events Loop
+    GetLoader()->GetRunLoader()->GetEvent(iEventN);  
+//display all the staff on chamber by chamber basis           
+    for(Int_t iChamber=1;iChamber<=7;iChamber++){//chambers loop       
+      if(isHits)     pHitsH2    ->Reset();     
+      if(isDigits)   pDigitsH2  ->Reset();     
+      if(isClusters) pClustersH2->Reset();
+//deals with hits
+      for(Int_t i=0;i<GetLoader()->TreeH()->GetEntries();i++){//TreeH loop
+        GetLoader()->TreeH()->GetEntry(i);
+        for(Int_t j=0;j<Hits()->GetEntries();j++){//hits loop
+          AliRICHHit *pHit = (AliRICHHit*)Hits()->At(j);
+          if(pHit->C()==iChamber){
+            TVector3 hitGlobX3= pHit->OutX3();
+            TVector2 hitLocX2 = C(iChamber)->Mrs2Pc(hitGlobX3);
+            pHitsH2->Fill(hitLocX2.X(),hitLocX2.Y(),200);
+          }//if
+        }//hits loop         
+      }//TreeH loop
+      pHitsH2->SetTitle(Form("event %i chamber %2i",iEventN,iChamber));
+      pHitsH2->SetMarkerColor(kRed); pHitsH2->SetMarkerStyle(29); pHitsH2->SetMarkerSize(0.4);
+      pHitsH2->Draw();
+      AliRICHParam::DrawSectors();
+      TLatex l; l.SetNDC(); l.SetTextSize(0.02);
+      if(!isHits)     {l.SetTextColor(kRed)  ;l.DrawLatex(0.1,0.01,"No Hits"    );}
+      if(!isDigits)   {l.SetTextColor(kGreen);l.DrawLatex(0.4,0.01,"No DIGITS"  );}
+      if(!isClusters) {l.SetTextColor(kBlue) ;l.DrawLatex(0.8,0.01,"No CLUSTERS");}
+      pCanvas->Update();        pCanvas->Modified();       gPad->WaitPrimitive();
+//deals with digits      
+      if(isDigits){
+        GetLoader()->TreeD()->GetEntry(0);
+        for(Int_t j=0;j<Digits(iChamber)->GetEntries();j++){//digits loop
+          AliRICHDigit *pDig = (AliRICHDigit*)Digits(iChamber)->At(j);
+	  TVector2 x2=AliRICHParam::Pad2Loc(pDig->Pad());
+	  pDigitsH2->Fill(x2.X(),x2.Y(),100);
+        }//digits loop
+        pDigitsH2->SetMarkerColor(kGreen); pDigitsH2->SetMarkerStyle(29); pDigitsH2->SetMarkerSize(0.4);
+        pDigitsH2->Draw("same");
+        pCanvas->Update();        pCanvas->Modified();       gPad->WaitPrimitive();
+      }//if(isDigits)      
+//deals with clusters      
+      if(isClusters){
+        GetLoader()->TreeR()->GetEntry(0);
+        for(Int_t j=0;j<Clusters(iChamber)->GetEntries();j++){//clusters loop
+          AliRICHCluster *pClus = (AliRICHCluster*)Clusters(iChamber)->At(j);
+          pClustersH2->Fill(pClus->X(),pClus->Y(),50);
+        }//clusters loop
+        pClustersH2->SetMarkerColor(kBlue); pClustersH2->SetMarkerStyle(29);  pClustersH2->SetMarkerSize(0.4);
+        pClustersH2->Draw("same");
+        pCanvas->Update();        pCanvas->Modified();       gPad->WaitPrimitive();
+      }//if(isClusters)
+    }//chambers loop
+  }//events Loop
+  
+  delete pCanvas;
+  GetLoader()->UnloadHits();
+  if(isDigits)   GetLoader()->UnloadDigits();
+  if(isClusters) GetLoader()->UnloadRecPoints();
+}//Display()
+//__________________________________________________________________________________________________
+Int_t AliRICH::Nparticles(Int_t iPartID,Int_t iEvtN,AliRunLoader *pRL)
+{
+//counts total number of particles of given type (including secondary) for a given event
+  pRL->GetEvent(iEvtN);    
+  if(pRL->LoadHeader()) return 0;
+  if(pRL->LoadKinematics()) return 0;
+  AliStack *pStack=pRL->Stack();
+  
+  Int_t iCounter=0;
+  for(Int_t i=0;i<pStack->GetNtrack();i++){
+    if(pStack->Particle(i)->GetPdgCode()==iPartID) iCounter++;
+  }
+  
+  pRL->UnloadHeader();
+  pRL->UnloadKinematics();
+  return iCounter;
+}
+//__________________________________________________________________________________________________
+

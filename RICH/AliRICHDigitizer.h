@@ -5,25 +5,16 @@
 
 
 #include <AliDigitizer.h>
-#include <AliRunDigitizer.h>
-#include <AliRun.h>
+class AliRunDigitizer;
 
-class AliRICH;
-
-class AliRICHDigitizer : public AliDigitizer 
+class AliRICHDigitizer : public AliDigitizer //TObject-TNamed-TTask-AliDigitizer-AliRICHDigitizer
 {
 public:
-           AliRICHDigitizer():fRich(0)                                       {;}
-           AliRICHDigitizer(AliRunDigitizer * manager):AliDigitizer(manager) {if(GetDebug())Info("main ctor","Start.");}
-  virtual ~AliRICHDigitizer()                                                {if(GetDebug())Info("dtor","Start.");}
-
-        
+           AliRICHDigitizer()                                                {}
+           AliRICHDigitizer(AliRunDigitizer *pRunDig):AliDigitizer(pRunDig)  {}
+  virtual ~AliRICHDigitizer()                                                {}
   void     Exec(Option_t* option=0);                //virtual
-  Bool_t   Init();                                  //virtual
-  Bool_t   GetDebug() const {return ((gAlice) ? gAlice->GetDebug() : kFALSE);}
-  AliRICH* R()        const {return fRich;}         //returns pointer to RICH
 protected:
-  AliRICH* fRich; //pointer to main RICH object
   ClassDef(AliRICHDigitizer,0)
 };    
 #endif

@@ -4,24 +4,20 @@
  * See cxx source for full Copyright notice                               */
 
 #include <AliReconstructor.h>
-#include <AliLog.h>
 #include "AliRICHTracker.h"
-
-class AliRICH;
+#include "AliRICHClusterFinder.h"
 
 class AliRICHReconstructor: public AliReconstructor 
 {
 public:
-           AliRICHReconstructor(): AliReconstructor()          {AliDebug(1,"Start.");}
-  virtual ~AliRICHReconstructor()                              {AliDebug(1,"Start.");}  
-  virtual AliTracker*  CreateTracker(AliRunLoader*)const       {AliDebug(1,"Start.");return new AliRICHTracker;}    //virtual from AliReconstructor
-  virtual void         Reconstruct(AliRunLoader* pAL) const;              //virtual from AliReconstructor
-  virtual void         FillESD(AliRunLoader* pAL, AliESD* pESD) const;    //virtual from AliReconstructor
-  using AliReconstructor::Reconstruct;                                    //to get rid of virtual hidden warning 
-  using AliReconstructor::FillESD;                                        //to get rid of virtual hidden warning 
-private:
-  AliRICH*             GetRICH(AliRunLoader* pAL) const;
-
+           AliRICHReconstructor(): AliReconstructor()              {}//default ctor
+  virtual ~AliRICHReconstructor()                                  {}//dtor  
+  virtual AliTracker*  CreateTracker(AliRunLoader*           )const{return new AliRICHTracker;}                         //interface from AliReconstructor
+  virtual void         Reconstruct  (AliRunLoader* pRunLoader)const{AliRICHClusterFinder clus(pRunLoader); clus.Exec();}//interface from AliReconstructor
+  using AliReconstructor::Reconstruct;                                                                                  //to get rid of virtual hidden warning 
+//  virtual void         FillESD(AliRunLoader* pAL, AliESD* pESD) const;    //virtual from AliReconstructor
+//  using AliReconstructor::FillESD;                                        //to get rid of virtual hidden warning 
+protected:
   ClassDef(AliRICHReconstructor, 0)   //class for the RICH reconstruction
 };
 

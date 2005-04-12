@@ -13,92 +13,70 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-
-#include <Riostream.h> 
-
-#include <TTree.h> 
-#include <TObjArray.h>
-#include <TFile.h>
-#include <TDirectory.h>
-#include <TParticle.h>
-
-#include <AliRunLoader.h>
-#include <AliLoader.h>
-
 #include "AliRICHDigitizer.h"
 #include "AliRICH.h"
+#include <AliRun.h>
+#include <AliRunLoader.h>
 #include "AliRunDigitizer.h"
+#include <AliLoader.h>
+#include <AliLog.h>
+
 
 ClassImp(AliRICHDigitizer)
 
 //__________________________________________________________________________________________________
-Bool_t AliRICHDigitizer::Init()
-{
-//This methode is called from AliRunDigitizer after the corresponding file is open
-  if(GetDebug())Info("Init","Start.");
-  AliRunLoader *pOutAL = AliRunLoader::GetRunLoader(fManager->GetOutputFolderName());
-  if (!pOutAL->GetAliRun()) pOutAL->LoadgAlice();
-  fRich=(AliRICH*)pOutAL->GetAliRun()->GetDetector("RICH");//retrive RICH pointer from OUTPUT stream
-  return kTRUE;
-}//Init()
-//__________________________________________________________________________________________________
 void AliRICHDigitizer::Exec(Option_t*)
 {
-//this method invoked   
-  if(GetDebug())Info("Exec","Start with %i input(s) for event %i",fManager->GetNinputs(),fManager->GetOutputEventNr());
-  
-  AliRunLoader *pInAL=0, *pOutAL;//in and out Run loaders
-  AliLoader    *pInRL=0, *pOutRL;//in and out RICH loaders
- 
-  pOutAL = AliRunLoader::GetRunLoader(fManager->GetOutputFolderName());
-  pOutRL = pOutAL->GetLoader("RICHLoader");
-  pOutRL->MakeTree("D");   R()->MakeBranch("D"); //create TreeD with RICH branches in output stream
-  
-  TClonesArray tmpCA("AliRICHdigit");//tmp storage for sdigits sum up from all input files
+//This methode is responsible for merging sdigits to a list of digits
+//Disintegration leeds to the fact that one hit affected several neighbouring pads, which means that the same pad might be
+//affected by few hits.     
+  AliDebug(1,Form("Start with %i input(s) for event %i",fManager->GetNinputs(),fManager->GetOutputEventNr()));
+//First we read all sdigits from all inputs  
+  AliRunLoader *pInRunLoader=0;//in and out Run loaders
+  AliLoader    *pInRichLoader=0;//in and out RICH loaders  
+  TClonesArray tmpCA("AliRICHDigit");//tmp storage for sdigits sum up from all input files
   Int_t total=0;
   for(Int_t inFileN=0;inFileN<fManager->GetNinputs();inFileN++){//files loop
-    pInAL = AliRunLoader::GetRunLoader(fManager->GetInputFolderName(inFileN));//get run loader from current input 
-    pInRL = pInAL->GetLoader("RICHLoader"); if(pInRL==0) continue;//no RICH in this input, check the next input
-    if (!pInAL->GetAliRun()) pInAL->LoadgAlice();
-    AliRICH* rich=(AliRICH*)pInAL->GetAliRun()->GetDetector("RICH");
-    pInRL->LoadSDigits(); pInRL->TreeS()->GetEntry(0);
-    if(GetDebug())Info("Exec","input %i has %i sdigits",inFileN,rich->SDigits()->GetEntries());
-    for(Int_t i=0;i<rich->SDigits()->GetEntries();i++){//collect sdigits from current input to tmpCA
-      new(tmpCA[total++]) AliRICHdigit(*(AliRICHdigit*)rich->SDigits()->At(i)); 
-      ((AliRICHdigit*)tmpCA[total-1])->AddTidOffset(fManager->GetMask(inFileN));
+    pInRunLoader  = AliRunLoader::GetRunLoader(fManager->GetInputFolderName(inFileN));          //get run loader from current input 
+    pInRichLoader = pInRunLoader->GetLoader("RICHLoader"); if(pInRichLoader==0) continue;       //no RICH in this input, check the next input
+    if (!pInRunLoader->GetAliRun()) pInRunLoader->LoadgAlice();
+    AliRICH* pInRich=(AliRICH*)pInRunLoader->GetAliRun()->GetDetector("RICH");                  //take RICH from current input
+    pInRichLoader->LoadSDigits(); pInRichLoader->TreeS()->GetEntry(0);                          //take list of RICH sdigits from current input 
+    AliDebug(1,Form("input %i has %i sdigits",inFileN,pInRich->SDigits()->GetEntries()));
+    for(Int_t i=0;i<pInRich->SDigits()->GetEntries();i++){//collect sdigits from current input to tmpCA
+      new(tmpCA[total++]) AliRICHDigit(*(AliRICHDigit*)pInRich->SDigits()->At(i)); 
+      ((AliRICHDigit*)tmpCA[total-1])->AddTidOffset(fManager->GetMask(inFileN));//apply TID shift since all inputs count tracks independently starting from 0
     }
-    pInRL->UnloadSDigits();   rich->ResetSDigits();
+    pInRichLoader->UnloadSDigits();   pInRich->ResetSDigits(); //close current input and reset 
   }//files loop
   
-  tmpCA.Sort();                     //sort them according to Id() method
+  tmpCA.Sort();                     //at this point we have a list of all sdigits from all inputs, now sort them according to fPad field
   
-  if(GetDebug()) {tmpCA.Print();Info("Exec","Totally %i sdigits in %i inputs",tmpCA.GetEntries(),fManager->GetNinputs());}
-  Int_t cfm=0,chamber=0,id=0; //cfm is cerenkov feedback mip mixture
-  TVector pad(2); pad[0]=0;pad[1]=0;
-  Double_t q=0;
-  Int_t tid[3]={0,0,0};
-  Int_t iNdigitsPerPad=0;//how many sdigits for a given pad
+  AliRunLoader *pOutRunLoader  = AliRunLoader::GetRunLoader(fManager->GetOutputFolderName());    //open output stream (only 1 possible)
+  AliLoader    *pOutRichLoader = pOutRunLoader->GetLoader("RICHLoader");                         //take output RICH loader
+  AliRICH      *pOutRich       = (AliRICH*)pOutRunLoader->GetAliRun()->GetDetector("RICH");      //take output RICH
+  pOutRichLoader->MakeTree("D");   pOutRich->MakeBranch("D");                                    //create TreeD in output stream
+  
+  TVector pad(2); pad[0]=0; pad[1]=0; Int_t iChamber=0,iCfm=0,aTids[3]={0,0,0},iId=0; Double_t dQdc=0;//current pad info   
+  Int_t iNdigsPerPad=0;                   //how many sdigits for a given pad
   for(Int_t i=0;i<tmpCA.GetEntries();i++){//sdigits loop (sorted)
-    AliRICHdigit *pSdig=(AliRICHdigit*)tmpCA.At(i);//get new sdigit
-    if(pSdig->Id()==id){//still the same pad
-      iNdigitsPerPad++;         q+=pSdig->Q();       cfm+=pSdig->ChFbMi();//sum up charge and cfm
-      if(pSdig->ChFbMi()==1) tid[0] = pSdig->GetTrack(0); // force the first tid to be mip's tid if it exists in the current pad
-      if(iNdigitsPerPad<=3)        tid[iNdigitsPerPad-1]=pSdig->GetTrack(0);
-      else                         if(GetDebug())Warning("Exec","More then 3 sdigits for the given pad");
+    AliRICHDigit *pSdig=(AliRICHDigit*)tmpCA.At(i);//get new sdigit
+    if(pSdig->Id()==iId){//still the same pad
+      iNdigsPerPad++;         dQdc+=pSdig->Q();      iCfm+=pSdig->ChFbMi();//sum up charge and cfm
+      if(pSdig->ChFbMi()==1) aTids[0] = pSdig->GetTrack(0); // force the first tid to be mip's tid if it exists in the current pad
+      if(iNdigsPerPad<=3)        aTids[iNdigsPerPad-1]=pSdig->GetTrack(0);
+      else                         AliWarning("More then 3 sdigits for the given pad");
     }else{//new pad, add the pevious one
-        if(id!=kBad&&R()->P()->IsOverTh(chamber,pad,q)) R()->AddDigit(chamber,pad,(Int_t)q,cfm,tid); //add newly created dig
-        cfm=pSdig->ChFbMi(); chamber=pSdig->C(); id=pSdig->Id();  pad=pSdig->Pad(); q=pSdig->Q();  //init all values by current sdig
-        iNdigitsPerPad=1; tid[0]=pSdig->GetTrack(0); tid[1]=tid[2]=kBad;
+        if(iId!=-1 && AliRICHParam::IsOverTh(iChamber,pad,dQdc)) pOutRich->DigitAdd(iChamber,pad,(Int_t)dQdc,iCfm,aTids); //add newly created dig
+        iChamber=pSdig->C(); pad=pSdig->Pad(); iCfm=pSdig->ChFbMi(); dQdc=pSdig->Q();  iId=pSdig->Id();                    //init all values by current sdig
+        iNdigsPerPad=1; aTids[0]=pSdig->GetTrack(0); aTids[1]=aTids[2]=-1;
       }
   }//sdigits loop (sorted)
-  if(tmpCA.GetEntries()&&R()->P()->IsOverTh(chamber,pad,q)) R()->AddDigit(chamber,pad,(Int_t)q,cfm,tid);//add the last dig
+  if(tmpCA.GetEntries() && AliRICHParam::IsOverTh(iChamber,pad,dQdc)) pOutRich->DigitAdd(iChamber,pad,(Int_t)dQdc,iCfm,aTids);//add the last dig
   
-  pOutRL->TreeD()->Fill();              //fill the tree with the list of digits
-  pOutRL->WriteDigits("OVERWRITE");     //serialize them to file
+  pOutRichLoader->TreeD()->Fill();              //fill the output tree with the list of digits
+  pOutRichLoader->WriteDigits("OVERWRITE");     //serialize them to file
   
-  tmpCA.Clear();
-  pOutRL->UnloadDigits();   R()->ResetDigits();
-            
-  if(GetDebug())Info("Exec","Stop.");
+  tmpCA.Clear();                      //remove all tmp sdigits
+  pOutRichLoader->UnloadDigits();   pOutRich->ResetDigits();
 }//Exec()
-//__________________________________________________________________________________________________

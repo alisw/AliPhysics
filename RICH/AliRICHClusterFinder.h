@@ -12,25 +12,24 @@ class AliHitMap;
 class AliRICHClusterFinder : public TTask
 {
 public:    
-           AliRICHClusterFinder(AliRICH *pRICH);
+           AliRICHClusterFinder(AliRunLoader *pRunLoader);
   virtual ~AliRICHClusterFinder()                                          {;}
   
   AliRICH        *R()                                              {return fRICH;}   //returns pointer to RICH  
   void            Exec(const Option_t *option="");                                   //loop on events and chambers  
   void            FindClusters(Int_t iChamber);                                      //find all clusters for a given chamber
-  void            FindClusterContribs(AliRICHcluster *pCluster);                     //find CFM for the current cluster
+  void            FindClusterContribs(AliRICHCluster *pCluster);                     //find CFM for the current cluster
   void            FormRawCluster(Int_t i, Int_t j);                                  //form a raw cluster
   void            FindLocalMaxima();                                                 //find local maxima in a cluster
   void            FitCoG();                                                          //evaluate the CoG as the best 
   void            WriteRawCluster();                                                 //write in the list of cluster  
   void            WriteResolvedCluster();                                            //write in the list of cluster  
-  AliRICHcluster *GetRawCluster()                           {return &fRawCluster;}   //returns pointer to the current raw cluster
-  Bool_t          GetDebug()                      const{return fRICH->GetDebug();}   //is debug printout needed?
+  AliRICHCluster *GetRawCluster()                           {return &fRawCluster;}   //returns pointer to the current raw cluster
 protected:
   AliRICH                *fRICH;                         //pointer to RICH
   AliHitMap              *fDigitMap;                     //map of digits positions
-  AliRICHcluster         fRawCluster;                    //current raw cluster before deconvolution
-  AliRICHcluster         fResolvedCluster;               //current cluster after deconvolution
+  AliRICHCluster         fRawCluster;                    //current raw cluster before deconvolution
+  AliRICHCluster         fResolvedCluster;               //current cluster after deconvolution
   Int_t                  fNlocals;                       //number of local maxima
   Double_t               fLocalX[100],fLocalY[100];      //list of locals X,Y
   Double_t               fLocalQ[100];                   //list of locals charge Q
