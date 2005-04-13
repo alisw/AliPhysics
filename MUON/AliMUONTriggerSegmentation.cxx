@@ -259,9 +259,13 @@ void AliMUONTriggerSegmentation::GetPadI(Float_t x, Float_t y, Int_t &ix, Int_t 
 		if (y > yMin && y < yMax) iy = iStrip;
 	    } else if (!fBending) {
 		xMin = xMax;
-		xMax = xMin + fStripXsize[modNum];
+		if (modNum==6 && iStrip>7) {
+		    xMax = xMin + fStripXsize[modNum]/2.;
+		} else {		    
+		    xMax = xMin + fStripXsize[modNum];
+		}		
 		if (x > xMin && x < xMax) iy = iStrip;
-	    }
+	    } //
 	} // loop on strips
     } // if ix!=0
 //    printf("in GetPadI ix iy x y %i %i %f %f \n",ix,iy,x,y);
@@ -436,8 +440,8 @@ void AliMUONTriggerSegmentation::Init(Int_t detectionElementId,
     } // loop on modules
 
 // associate nStripMax
-//    fNpx = (fBending) ? fNsec : nStripMax;
-//    fNpy = (fBending) ? nStripMax : 1;
+//   fNpx = (fBending) ? fNsec : nStripMax;
+//   fNpy = (fBending) ? nStripMax : 1;
     fNpx = 124; // tot num of modules (like with old segmentation)
     fNpy = 64; // max number of y strips within one module
 
