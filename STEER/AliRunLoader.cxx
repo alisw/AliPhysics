@@ -64,7 +64,6 @@ class TTask;
 #include "AliDetector.h"
 #include "AliRunDataStorage.h"
 #include "AliRunDataFile.h"
-#include "AliRunLoader.h"
 
 ClassImp(AliRunLoader)
 

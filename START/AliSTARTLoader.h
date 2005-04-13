@@ -2,6 +2,7 @@
 #define ALISTARTLOADER_H
 
 #include "AliLoader.h"
+#include "AliObjectLoader.h"
 
 class AliSTARTdigit;
 

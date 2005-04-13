@@ -64,11 +64,14 @@ class AliPID : public TObject {
   AliPID&              operator *= (const AliPID& pid);
 
  private:
+
+  void                 Init();
+
   Bool_t               fCharged;                   // flag for charged/neutral
   Double_t             fProbDensity[kSPECIESN];    // probability densities
   static Double_t      fgPrior[kSPECIESN];         // a priori probabilities
 
-  static const Float_t fgkParticleMass[kSPECIESN+1]; // particle masses
+  static /*const*/ Float_t fgkParticleMass[kSPECIESN+1]; // particle masses
   static const char*   fgkParticleName[kSPECIESN+1]; // particle names
   static const Int_t   fgkParticleCode[kSPECIESN+1]; // particle codes
 

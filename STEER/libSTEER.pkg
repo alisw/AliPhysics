@@ -1,4 +1,5 @@
 SRCS          = AliRunLoader.cxx AliLoader.cxx AliDataLoader.cxx  \
+AliObjectLoader.cxx AliBaseLoader.cxx AliTreeLoader.cxx AliTaskLoader.cxx \
 AliDetector.cxx	AliHeader.cxx	AliMagF.cxx \
 AliDigit.cxx	AliHit.cxx	AliPoints.cxx \
 AliDisplay.cxx	AliRun.cxx AliGenerator.cxx AliVertexGenerator.cxx \

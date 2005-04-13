@@ -45,11 +45,12 @@
 // --- Standard library ---
 
 // --- AliRoot header files ---
-#include "AliLog.h"
-#include "AliEMCALLoader.h"
 #include "AliEMCAL.h"
-#include "AliEMCALHit.h"
 #include "AliEMCALGetter.h"
+#include "AliEMCALHit.h"
+#include "AliEMCALLoader.h"
+#include "AliLog.h"
+#include "AliObjectLoader.h"
 
 ClassImp(AliEMCALLoader)
   

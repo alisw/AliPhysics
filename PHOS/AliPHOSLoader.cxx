@@ -47,6 +47,7 @@
 // --- Standard library ---
 
 // --- AliRoot header files ---
+#include "AliObjectLoader.h"
 #include "AliLog.h"
 #include "AliPHOSLoader.h"
 #include "AliPHOS.h"

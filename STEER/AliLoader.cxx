@@ -11,21 +11,18 @@
 
 //Root includes
 #include <TROOT.h>
-#include <TFolder.h>
 #include <TFile.h>
-#include <TTree.h>
-#include <TTask.h>
+#include <TFolder.h>
 #include <TString.h>
-#include <TError.h>
+#include <TTask.h>
 
 //AliRoot includes
-#include <AliLog.h>
-#include <AliRun.h>
-#include <AliRunLoader.h>
-#include <AliRunDigitizer.h>
-#include <AliDigitizer.h>
-#include <AliDetector.h>
 #include "AliConfig.h"
+#include "AliDetector.h"
+#include "AliDigitizer.h"
+#include "AliLog.h"
+#include "AliRun.h"
+#include "AliRunLoader.h"
 
 const TString AliLoader::fgkDefaultHitsContainerName("TreeH");
 const TString AliLoader::fgkDefaultDigitsContainerName = "TreeD";

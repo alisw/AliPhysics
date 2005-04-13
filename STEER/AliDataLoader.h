@@ -24,8 +24,8 @@
 #include <TDirectory.h>
 #include <TNamed.h>
 #include <TString.h>
-#include <TTask.h>
-#include <TTree.h>
+class TTask;
+class TTree;
 class TFile;
 class TFolder;
 
@@ -130,146 +130,6 @@ class AliDataLoader: public TNamed
    TFolder*     fFolder;//! folder with data
    
    ClassDef(AliDataLoader,2)
- };
-
-
-//__________________________________________
-////////////////////////////////////////////
-//                                        //
-//  class AliBaseLoader                   //
-//                                        //
-//                                        //
-////////////////////////////////////////////
-
-
-class AliBaseLoader: public TNamed
-{
-  public:
-    AliBaseLoader();
-    AliBaseLoader(const TString& name, AliDataLoader* dl, Bool_t storeontop = kFALSE);
-   AliBaseLoader(const AliBaseLoader& source);
-   AliBaseLoader& operator=(const AliBaseLoader& source);
-    
-    virtual ~AliBaseLoader(){};
-     
-    virtual Int_t      Load(Option_t* opt="");
-    virtual void       Unload();
-    virtual Int_t      Reload();
-    virtual Int_t      WriteData(Option_t* opt="");
-    virtual void       Clean();
-    virtual Int_t      Post();//Takes from file and sends to proper TFolder (Data Folder)
-    virtual Int_t      Post(TObject* data);//Sends to proper TFolder (Data Folder)
-    virtual TObject*   Get() const = 0; 
-    Bool_t             IsLoaded()const{return fIsLoaded;}
-    void               SetDataLoader(AliDataLoader* dl){fDataLoader = dl;}
-    void               SetEventFolder(TFolder* /*ef*/){;}
-    void               SetDoNotReload(Bool_t flag){fDoNotReload = flag;}
-    Bool_t             DoNotReload() const {return fDoNotReload;}
-    TDirectory*        GetDirectory() const;//returns pointer to directory where data are stored. 
-    TObject*           GetFromDirectory(const char *name) const
-      {return (GetDirectory())?GetDirectory()->Get(name):0x0;}    
-   protected:
-    
-    virtual Int_t      AddToBoard(TObject* obj) = 0;//add to white board - board can be TTask or TFolder
-    virtual void       RemoveFromBoard(TObject* obj) = 0;
-    
-    AliDataLoader*     GetDataLoader() const;
-
-    Bool_t             fIsLoaded;    //!  flag indicating if data are loaded
-    Bool_t             fStoreInTopOfFile;// if true, data are stored in top of file ->Indicates fDoNotReload == kTRUE
-
-   private:
-    Bool_t             fDoNotReload; // if this flag is on object is not reloaded while GetEvent is called.
-                                     //Specially important for tasks. Task loops over events while producing data, 
-	                 //and has a base loader which writes it to file every processed event.
-	                 //If this flag is not on, while taking next event, loader deletes task
-	                 // and tries to get new one from file
-    AliDataLoader*     fDataLoader;  //! pointer to Data Loader this Base Loader belongs to
-
- ClassDef(AliBaseLoader,1)    
-};
-
-//__________________________________________
-////////////////////////////////////////////
-//                                        //
-//  class AliObjectLoader                 //
-//                                        //
-//                                        //
-////////////////////////////////////////////
-
-class AliObjectLoader: public AliBaseLoader
- {
-   public:
-     AliObjectLoader(){};
-     AliObjectLoader(const TString& name, AliDataLoader* dl, Bool_t storeontop = kFALSE);
-     AliObjectLoader(const AliObjectLoader& source);
-     AliObjectLoader& operator=(const AliObjectLoader& source);
-     virtual          ~AliObjectLoader(){};
-     TObject*          Get() const;
-
-   protected:
-     TFolder*          GetFolder() const;
-     Int_t             AddToBoard(TObject* obj);
-     void              RemoveFromBoard(TObject* obj);
-
- ClassDef(AliObjectLoader,1)    
-  
- };
-
-//__________________________________________
-////////////////////////////////////////////
-//                                        //
-//  class AliTreeLoader                   //
-//                                        //
-//                                        //
-////////////////////////////////////////////
-
-class AliTreeLoader: public AliObjectLoader
- {
-   public:
-     AliTreeLoader(){};
-     AliTreeLoader(const TString& name, AliDataLoader* dl, Bool_t storeontop = kFALSE);
-     AliTreeLoader(const AliTreeLoader& source);
-     AliTreeLoader& operator=(const AliTreeLoader& source);
-     virtual ~AliTreeLoader(){};
-     
-     virtual TTree*     Tree() const {return dynamic_cast<TTree*>(Get());}
-     virtual void       MakeTree();
-     virtual Int_t      WriteData(Option_t* opt="");
-
-   ClassDef(AliTreeLoader,1)    
- };
-
-//__________________________________________
-////////////////////////////////////////////
-//                                        //
-//  class AliTaskLoader                   //
-//                                        //
-//                                        //
-////////////////////////////////////////////
- 
-class AliTaskLoader: public AliBaseLoader
- {
-  public:
-    AliTaskLoader():fParentalTask(0x0){};
-    AliTaskLoader(const TString& name, AliDataLoader* dl, TTask* parentaltask, Bool_t storeontop = kFALSE);
-    AliTaskLoader(const AliTaskLoader& source);
-    AliTaskLoader& operator=(const AliTaskLoader& source);
-    virtual ~AliTaskLoader(){};
-    
-    TObject*           Get() const; 
-    virtual TTask*     Task() const {return dynamic_cast<TTask*>(Get());}
-    virtual void       Clean();
-
-  protected:
-    Int_t              AddToBoard(TObject* obj);
-    void               RemoveFromBoard(TObject* obj);
-    TTask*             GetParentalTask() const;
-
-  private:
-    TTask*             fParentalTask; // Parental task
-
-  ClassDef(AliTaskLoader,1)    
  };
 
 #endif

@@ -1,19 +1,20 @@
 #ifndef ALILOADER_H
 #define ALILOADER_H
 
+class TDirectory;
+class TFile;
+class TString;
+class TTask;
+class TTree;
+
 #include <TFolder.h>
 #include <TObjArray.h>
 
-//#include <AliConfig.h>
-#include "AliDataLoader.h"
-
-class TString;
-class TFile;
-class TTree;
-class TTask;
-class AliRunLoader;
 class AliDigitizer;
-class TDirectory;
+class AliRunLoader;
+
+#include "AliDataLoader.h"
+#include "AliTaskLoader.h"
 
 
 //___________________________________________________________________
