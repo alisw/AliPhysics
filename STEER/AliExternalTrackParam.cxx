@@ -33,6 +33,8 @@
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
+#include <TMath.h>
+#include <TVector3.h>
 
 #include "AliExternalTrackParam.h"
 #include "AliKalmanTrack.h"

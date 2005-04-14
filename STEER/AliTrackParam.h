@@ -5,25 +5,34 @@
 
 /* $Id$ */
 
+///////////////////////////////////////////////////////////////////////////////
+//                                                                           //
+// class for fast math                                                       //
+//                                                                           //
+// Class for generic track parameters                                        //
+//                                                                           //
+///////////////////////////////////////////////////////////////////////////////
+
 
 #include <TObject.h>
-#include <TVector3.h>
+class TVector3;
 
 class AliCluster;
 class AliExternalTrackParam;
 
 
-class FastMath {
+class AliFastMath {
 public:
-  FastMath();  
+  AliFastMath();  
   static Double_t FastAsin(Double_t x);   
  private: 
-  static Double_t fgFastAsin[20000];
+  static Double_t fgFastAsin[20000];  //Array to contain the asin values
 };
 
 
 class AliTrackParam: public TObject {
- public:
+public:
+  virtual ~AliTrackParam() {}
   virtual const Double_t* GetParameter() const = 0;
   virtual const Double_t* GetCovariance() const = 0;
   virtual Double_t     X() const = 0;

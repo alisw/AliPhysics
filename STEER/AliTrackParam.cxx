@@ -15,6 +15,52 @@
 
 /* $Id$ */
 
+#include <TVector3.h>
+#include <TMath.h>
+
+#include "AliTrackParam.h"
+#include "AliExternalTrackParam.h"
+
+///////////////////////////////////////////////////////////////////////////////
+//                                                                           //
+// class for fast math                                                       //
+//                                                                           //
+// Class with a table for fast calculation of the                            //
+// asins. The valuse are calculated via                                      //
+// linear interpolation. The values and the deltas are stored                //
+//                                                                           //
+///////////////////////////////////////////////////////////////////////////////
+
+
+Double_t AliFastMath::fgFastAsin[20000];
+
+AliFastMath::AliFastMath()
+{
+  //
+  // Standard constructor
+  // Initialises the asin tables
+  //
+  for (Int_t i=0;i<10000;i++){
+    fgFastAsin[2*i] = TMath::ASin(i/10000.);
+    fgFastAsin[2*i+1] = (TMath::ASin((i+1)/10000.)-fgFastAsin[2*i]);
+  }
+}
+
+Double_t AliFastMath::FastAsin(Double_t x)
+{
+  //
+  // Fast interpolation for the Asin
+  //
+  if (x>0){
+    Int_t index = int(x*10000);
+    return fgFastAsin[2*index]+(x*10000.-index)*fgFastAsin[2*index+1];
+  } else {
+    x*=-1;
+    Int_t index = int(x*10000);
+    return -(fgFastAsin[2*index]+(x*10000.-index)*fgFastAsin[2*index+1]);
+  }
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
 // base class for track parameters                                           //
@@ -42,42 +88,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 
-#include "AliTrackParam.h"
-#include "AliExternalTrackParam.h"
-#include "AliRunLoader.h"
-#include "AliRun.h"
-#include "AliMagF.h"
-
-
-Double_t FastMath::fgFastAsin[20000];
-
-FastMath::FastMath()
-{
-  for (Int_t i=0;i<10000;i++){
-    fgFastAsin[2*i] = TMath::ASin(i/10000.);
-    fgFastAsin[2*i+1] = (TMath::ASin((i+1)/10000.)-fgFastAsin[2*i]);
-  }
-}
-
-Double_t FastMath::FastAsin(Double_t x)
-{
-  if (x>0){
-    Int_t index = int(x*10000);
-    return fgFastAsin[2*index]+(x*10000.-index)*fgFastAsin[2*index+1];
-  }
-  x*=-1;
-  Int_t index = int(x*10000);
-  return -(fgFastAsin[2*index]+(x*10000.-index)*fgFastAsin[2*index+1]);
-}
-
-FastMath gFastMath;
-
-
-
 ClassImp(AliTrackParam)
-
-
-
 
 //_____________________________________________________________________________
 Bool_t AliTrackParam::RotateAndPropagateTo(Double_t alpha, Double_t x, 
