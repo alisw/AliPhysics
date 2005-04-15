@@ -7,9 +7,6 @@
 
 #include  "AliMUONVGeometryDESegmentation.h"
 
-class TArrayF;
-class TArrayI;
-
 class AliMUONTriggerSegmentation : public AliMUONVGeometryDESegmentation 
 {
  public:
@@ -30,13 +27,13 @@ class AliMUONTriggerSegmentation : public AliMUONVGeometryDESegmentation
     virtual Bool_t   HasPad(Int_t ix, Int_t iy);
     virtual AliMUONGeometryDirection  GetDirection() { return kDirUndefined; } 
 
-    virtual Float_t  GetAnod(Float_t /*xhit*/) const {return 0; }  // Anod wire coordinate closest to xhit
+   virtual Float_t  GetAnod(Float_t /*xhit*/) const {return 0; }  // Anod wire coordinate closest to xhit
     virtual void     GetPadI(Float_t x ,Float_t y ,Int_t   &ix,Int_t &iy);  // Transform from pad to real coordinates
     virtual void     GetPadI(Float_t x, Float_t y , Float_t z, Int_t &ix, Int_t &iy);
     virtual void     GetPadC(Int_t ix, Int_t iy, Float_t &x, Float_t &y);
     virtual void     GetPadC(Int_t ix, Int_t iy, Float_t &x, Float_t &y, Float_t &z) {z=0; GetPadC(ix, iy, x , y);}
     virtual void GetPadLoc2Glo(Int_t ixLoc, Int_t iyLoc, Int_t &ixGlo, Int_t &iyGlo);
-    
+    virtual void GetPadGlo2Loc(Int_t ixLoc, Int_t iyLoc, Int_t &ixGlo, Int_t &iyGlo);
     virtual void     IntegrationLimits(Float_t& x1, Float_t& x2, Float_t& y1, Float_t& y2); //Current integration limits
     virtual Int_t    ISector()  {return fSector;} // Current Pad during Integration (current sector)
     virtual Int_t    Ix() {return fIx;} // x-coordinate
@@ -58,11 +55,12 @@ class AliMUONTriggerSegmentation : public AliMUONVGeometryDESegmentation
     virtual void     SetId(Int_t id) {fId=id;}  // Setting detection element
     virtual void     SetPad(Int_t ix, Int_t iy);         // Set pad position
     virtual void     SetPadDivision(Int_t /*ndiv[4]*/){} // Set Slat Segmentation Parameters
-    virtual void     SetPadSize(Float_t p1, Float_t p2); // Pad size Dx*Dy 
+    virtual void     SetPadSize(Float_t /*p1*/, Float_t /*p2*/){;}; // Pad size Dx*Dy 
     virtual void     SetPcbBoards(Int_t /*n[4]*/){}           // Set Segmentation Zones (PCB Boards)
 // add to St345SlatSegmentation
     virtual void     SetLineNumber(Int_t iLineNumber);
     virtual Int_t    ModuleColNum(Int_t ixGlo);
+// add to St345SlatSegmentation
     
     // The following function could be obsolet for this class, but they are pure virtual in AliSegmentation
     virtual void     GetNParallelAndOffset(Int_t /*iX*/, Int_t /*iY*/, Int_t */*Nparallel*/, Int_t */*Offset*/){};
@@ -79,37 +77,19 @@ class AliMUONTriggerSegmentation : public AliMUONVGeometryDESegmentation
 			  Float_t stripYsize[7],
 			  Float_t stripXsize[7],
 			  Float_t offset); // Initialisation
-    // Current integration limits
 
  protected:
 
     AliMUONTriggerSegmentation(const AliMUONTriggerSegmentation& rhs);
     AliMUONTriggerSegmentation& operator=(const AliMUONTriggerSegmentation& rhs);
     
-    //  Internal geometry of the slat 
+    //  Internal geometry 
     Bool_t      fBending;        // 0: Bending or 1:Non Bending segmentation
     Int_t       fId;             // Identifier of detection element
-    Int_t       fNsec;           // Number of density sectors (should be 4, if not not warranty about the output
-    TArrayI*    fNDiv;           // Densities (d1, d2, d3, d4). It should be (4, 4, 2, 1) which goes from beam to out-beam
-    TArrayF*    fDpxD;           // x pad width per density sector
-    TArrayF*    fDpyD;           // x pad width per density sector
-    Float_t     fDpx;            // x pad base width  
-    Float_t     fDpy;            // y pad base width
+    Int_t       fNsec;           // Number of density sectors 
     Int_t       fNpx;            // Number of pads in x
     Int_t       fNpy;            // Number of pads in y
-    Float_t     fWireD;          // wire pitch
-    // 
     Int_t       fSector;         // Current density sector
-    Float_t     fDxPCB;          // x-size of PCB board
-    Float_t     fDyPCB;          // y-size of PCB board
-    Int_t       fPcbBoards[4];   // number of PCB boards per density sector n1,n2,n3,n4 
-    // n1 PcbBoard with density d1, n2 PcbBoards with density d2, etc ....
-   
-    // Segmentation map
-    Int_t       fNpxS[10];       // Number of pads per sector in x
-    Int_t       fNpyS[10];       // Number of pads per sector in y    
-    Float_t     fCx[10];         // pad-sector contour x vs y      
-    Float_t     fCy;             // y offset      
 
     // Current pad and wire during tracking (cursor at hit centre)
     Float_t     fXhit;  // ! x-position of hit
@@ -121,11 +101,6 @@ class AliMUONTriggerSegmentation : public AliMUONVGeometryDESegmentation
     Float_t     fX;    // ! real coord. x
     Float_t     fY;    // ! real ccord. y
     
-    // Chamber region consideres during disintegration   
-    Int_t       fIxmin; // ! lower left  x
-    Int_t       fIxmax; // ! lower left  y
-    Int_t       fIymin; // ! upper right x
-    Int_t       fIymax; // ! upper right y 
 // add to St345SlatSegmentation
     Int_t fLineNumber;        // line number of the RPC (1:9 - top:bottom)
     Int_t fNstrip[7];         // number of strips per module in RPC
@@ -137,12 +112,6 @@ class AliMUONTriggerSegmentation : public AliMUONVGeometryDESegmentation
     Float_t fRpcHalfXsize;    // RPC half size in x 
     Float_t fRpcHalfYsize;    // RPC half size in y
 // add to St345SlatSegmentation
-    
-    // Chamber region consideres during disintegration  (lower left and upper right corner)
-    Float_t     fXmin;           // lower left  x
-    Float_t     fXmax;           // lower left  y
-    Float_t     fYmin;           // upper right x
-    Float_t     fYmax;           // upper right y 
     
     ClassDef(AliMUONTriggerSegmentation,1) 
 };
