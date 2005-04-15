@@ -34,7 +34,10 @@ class AliTRDparameter : public TNamed {
   virtual void     SetNRowPad();
   virtual void     SetNRowPad(Int_t p, Int_t c, Int_t npad);
   virtual void     SetColPadSize(Int_t p, Float_t s);
-  virtual void     SetNTimeBin(Int_t nbin);
+  virtual void     SetSamplingFrequency(Float_t freq)             { fSamplingFrequency = freq;
+                                                                    ReInit();                   };
+  virtual void     SetDriftVelocity(Float_t vd)                   { fDriftVelocity     = vd;
+                                                                    SampleTimeStruct();         };
   virtual void     SetExpandTimeBin(Int_t nbefore, Int_t nafter)
                                                                   { fTimeBefore = nbefore;
                                                                     fTimeAfter  = nafter; };
@@ -55,10 +58,9 @@ class AliTRDparameter : public TNamed {
                                                                     ReInit();                   };
   virtual void     SetCrossTalk(Int_t ctOn = 1)                   { fCTOn           = ctOn;   
                                                                     ReInit();                   };
+  virtual void     SetTimeStruct(Bool_t tsOn = 1)                 { fTimeStructOn   = tsOn;     };
   virtual void     SetTailCancelation(Int_t tcOn = 1)             { fTCOn           = tcOn;     };
   virtual void     SetNexponential(Int_t nexp)                    { fTCnexp         = nexp;     };
-  virtual void     SetDriftVelocity(Float_t v)                    { fDriftVelocity  = v;       
-                                                                    ReInit();                   };
   virtual void     SetPadCoupling(Float_t v)                      { fPadCoupling    = v;        };
   virtual void     SetTimeCoupling(Float_t v)                     { fTimeCoupling   = v;        };
   virtual void     SetTiltingAngle(Float_t v);
@@ -67,8 +69,6 @@ class AliTRDparameter : public TNamed {
   virtual void     SetClusMaxThresh(Int_t thresh)                 { fClusMaxThresh  = thresh;   };
   virtual void     SetClusSigThresh(Int_t thresh)                 { fClusSigThresh  = thresh;   };
 
-  virtual void     SetTimeStruct(Int_t timestrOn = 1)             { fTimeStructOn = timestrOn;
-                                                                    ReInit();                 };
   virtual void     SetAnodeWireOffset(Float_t offset = 0.25)      { fAnodeWireOffset = offset;};
   
           Int_t    GetRowMax(Int_t p, Int_t c, Int_t s)     
@@ -89,28 +89,27 @@ class AliTRDparameter : public TNamed {
           Float_t  GetRowPadSize(Int_t p, Int_t c, Int_t s) 
                                                             const { return fRowPadSize[p][c][s]; };
           Float_t  GetColPadSize(Int_t p)                   const { return fColPadSize[p];       };
-          Float_t  GetTimeBinSize()                         const { return fTimeBinSize;         };
 
-          Float_t  GetGasGain()                             const { return fGasGain;         };
-          Float_t  GetNoise()                               const { return fNoise;           };
-          Float_t  GetChipGain()                            const { return fChipGain;        };
-          Float_t  GetADCoutRange()                         const { return fADCoutRange;     };
-          Float_t  GetADCinRange()                          const { return fADCinRange;      };
-          Int_t    GetADCthreshold()                        const { return fADCthreshold;    };
-          Int_t    GetADCbaseline()                         const { return fADCbaseline;     };
-          Float_t  GetDiffusionT()                          const { return fDiffusionT;      };
-          Float_t  GetDiffusionL()                          const { return fDiffusionL;      };
-          Float_t  GetElAttachProp()                        const { return fElAttachProp;    };
-          Float_t  GetOmegaTau()                            const { return fOmegaTau;        };
-          Float_t  GetDriftVelocity()                       const { return fDriftVelocity;   };
-          Float_t  GetPadCoupling()                         const { return fPadCoupling;     };
-          Float_t  GetTimeCoupling()                        const { return fTimeCoupling;    };
-          Float_t  GetTimeBinWidth()                        const { return fTimeBinWidth;    };
-          Float_t  GetTRFlo()                               const { return fTRFlo;           };
-          Float_t  GetTRFhi()                               const { return fTRFhi;           };
-          Float_t  GetLorentzFactor()                       const { return fLorentzFactor;   };
-          Float_t  GetAnodeWireOffset()                     const { return fAnodeWireOffset; };
-          Int_t    GetTCnexp()                              const { return fTCnexp;          };
+          Float_t  GetGasGain()                             const { return fGasGain;           };
+          Float_t  GetNoise()                               const { return fNoise;             };
+          Float_t  GetChipGain()                            const { return fChipGain;          };
+          Float_t  GetADCoutRange()                         const { return fADCoutRange;       };
+          Float_t  GetADCinRange()                          const { return fADCinRange;        };
+          Int_t    GetADCthreshold()                        const { return fADCthreshold;      };
+          Int_t    GetADCbaseline()                         const { return fADCbaseline;       };
+          Float_t  GetDiffusionT()                          const { return fDiffusionT;        };
+          Float_t  GetDiffusionL()                          const { return fDiffusionL;        };
+          Float_t  GetElAttachProp()                        const { return fElAttachProp;      };
+          Float_t  GetOmegaTau()                            const { return fOmegaTau;          };
+	  Float_t  GetSamplingFrequency()                   const { return fSamplingFrequency; };
+          Float_t  GetDriftVelocity()                       const { return fDriftVelocity;     };
+          Float_t  GetPadCoupling()                         const { return fPadCoupling;       };
+          Float_t  GetTimeCoupling()                        const { return fTimeCoupling;      };
+          Float_t  GetTRFlo()                               const { return fTRFlo;             };
+          Float_t  GetTRFhi()                               const { return fTRFhi;             };
+          Float_t  GetLorentzFactor()                       const { return fLorentzFactor;     };
+          Float_t  GetAnodeWireOffset()                     const { return fAnodeWireOffset;   };
+          Int_t    GetTCnexp()                              const { return fTCnexp;            };
           Float_t  GetTiltingAngle() const;
   virtual Float_t  GetDiffusionL(Float_t vd, Float_t b);
   virtual Float_t  GetDiffusionT(Float_t vd, Float_t b);
@@ -119,15 +118,17 @@ class AliTRDparameter : public TNamed {
   virtual Int_t    GetClusMaxThresh()                       const { return fClusMaxThresh; };
   virtual Int_t    GetClusSigThresh()                       const { return fClusSigThresh; };
 
-          Int_t    ExBOn()                                  const { return fExBOn;         };
-          Int_t    PRFOn()                                  const { return fPRFOn;         };
-          Int_t    TRFOn()                                  const { return fTRFOn;         };
-          Int_t    ElAttachOn()                             const { return fElAttachOn;    }; 
-          Int_t    DiffusionOn()                            const { return fDiffusionOn;   };
-          Int_t    CTOn()                                   const { return fCTOn;          };
-          Int_t    TCOn()                                   const { return fTCOn;          };
-          Int_t    LUTOn()                                  const { return fLUTOn;         };
-          Int_t    TimeStructOn()                           const { return fTimeStructOn;  };
+          void     PrintDriftVelocity();
+
+          Bool_t   TimeStructOn()                           const { return fTimeStructOn;  };
+          Bool_t   ExBOn()                                  const { return fExBOn;         };
+          Bool_t   PRFOn()                                  const { return fPRFOn;         };
+          Bool_t   TRFOn()                                  const { return fTRFOn;         };
+          Bool_t   ElAttachOn()                             const { return fElAttachOn;    }; 
+          Bool_t   DiffusionOn()                            const { return fDiffusionOn;   };
+          Bool_t   CTOn()                                   const { return fCTOn;          };
+          Bool_t   TCOn()                                   const { return fTCOn;          };
+          Bool_t   LUTOn()                                  const { return fLUTOn;         };
 
   virtual Int_t    Diffusion(Float_t driftlength, Float_t *xyz);
   virtual Int_t    ExB(Float_t driftlength, Float_t *xyz) const;  
@@ -135,7 +136,7 @@ class AliTRDparameter : public TNamed {
   virtual Int_t    PadResponse(Float_t signal, Float_t dist, Int_t plane, Float_t *pad) const;
   virtual Float_t  CrossTalk(Float_t time) const; 
   virtual Float_t  TimeResponse(Float_t time) const;  
-  virtual Int_t    TimeStruct(Float_t time, Float_t z, Float_t *xyz) const;  
+  virtual Float_t  TimeStruct(Float_t time, Float_t z) const;  
   virtual Double_t LUTposition(Int_t iplane, Double_t ampL, Double_t ampC, Double_t ampR) const;
 
  protected:
@@ -155,7 +156,6 @@ class AliTRDparameter : public TNamed {
 
   Float_t              fRowPadSize[kNplan][kNcham][kNsect]; //  Pad size in z-direction
   Float_t              fColPadSize[kNplan];                 //  Pad size in rphi-direction
-  Float_t              fTimeBinSize;                        //  Size of the time buckets
 
   // Digitization parameter
   Float_t              fField;                              //  Magnetic field
@@ -191,12 +191,13 @@ class AliTRDparameter : public TNamed {
   Float_t             *fCTsmp;                              //! Integrated cross talk
   Int_t                fTCOn;                               //  Switch for the tail cancelation
   Int_t                fTCnexp;                             //  Number of exponential of the digital filter
-  Float_t             *fTimeStruct;                         //! Time Structure of Drift Cells
+  Float_t             *fTimeStruct1;                        //! Time Structure of Drift Cells
+  Float_t             *fTimeStruct2;                        //! Time Structure of Drift Cells
   Int_t                fTimeStructOn;                       //  Switch for cell time structure
   Float_t              fAnodeWireOffset;                    //  Distance of first anode wire from pad edge
 
   Float_t              fDriftVelocity;                      //  Drift velocity (cm / mus)
-  Float_t              fTimeBinWidth;                       //  Time bin width in ns
+  Float_t              fSamplingFrequency;                  //  Sampling Frequency in MHz
   Float_t              fPadCoupling;                        //  Pad coupling factor
   Float_t              fTimeCoupling;                       //  Time coupling factor (image charge of moving ions)
   Float_t              fTiltingAngle;                       //  Tilting angle of the readout pads
@@ -208,6 +209,9 @@ class AliTRDparameter : public TNamed {
   Int_t                fLUTbin;                             //  Number of bins of the LUT
   Float_t             *fLUT;                                //! The lookup table
 
+  Float_t              fVDlo;                               //  Lower drift velocity, for interpolation
+  Float_t              fVDhi;                               //  Higher drift velocity, for interpolation
+
  private:
 
   virtual void         SamplePRF();
@@ -215,7 +219,7 @@ class AliTRDparameter : public TNamed {
   virtual void         FillLUT();
   virtual void         SampleTimeStruct();
 
-  ClassDef(AliTRDparameter,4)                               //  TRD parameter class
+  ClassDef(AliTRDparameter,5)                               //  TRD parameter class
 
 };
 

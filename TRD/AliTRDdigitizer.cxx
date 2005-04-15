@@ -573,6 +573,8 @@ Bool_t AliTRDdigitizer::MakeDigits()
 
   // Half the width of the amplification region
   const Float_t kAmWidth = AliTRDgeometry::AmThick() / 2.;
+  // Width of the drit region
+  const Float_t kDrWidth = AliTRDgeometry::DrThick();
 
   Int_t   iRow, iCol, iTime, iPad;
   Int_t   iDict  = 0;
@@ -583,8 +585,7 @@ Bool_t AliTRDdigitizer::MakeDigits()
   Int_t   totalSizeDict1  = 0;
   Int_t   totalSizeDict2  = 0;
 
-  Int_t   timeTRDbeg = 0;
-  Int_t   timeTRDend = 1;
+  Int_t   timeBinTRFend = 1;
 
   Float_t pos[3];
   Float_t rot[3];
@@ -611,11 +612,10 @@ Bool_t AliTRDdigitizer::MakeDigits()
                                              ,AliTRDgeometry::Ndet());
 
   if (fPar->TRFOn()) {
-    timeTRDbeg = ((Int_t) (-fPar->GetTRFlo() / fPar->GetTimeBinSize())) - 1;
-    timeTRDend = ((Int_t) ( fPar->GetTRFhi() / fPar->GetTimeBinSize())) - 1;
+    timeBinTRFend = ((Int_t) ( fPar->GetTRFhi() * fPar->GetSamplingFrequency())) - 1;
     if (fDebug > 0) {
       printf("<AliTRDdigitizer::MakeDigits> ");
-      printf("Sample the TRF between -%d and %d\n",timeTRDbeg,timeTRDend);
+      printf("Sample the TRF up to bin %d\n",timeBinTRFend);
     }
   }
 
@@ -657,11 +657,10 @@ Bool_t AliTRDdigitizer::MakeDigits()
   Int_t countHits   =  0; 
 
   if (fDebug > 0) {
-    printf("<AliTRDdigitizer::MakeDigits> ");
-    printf("Driftvelocity = %.2f, Sampling = %.2fns\n",fPar->GetDriftVelocity(),
-	   fPar->GetTimeBinSize() / fPar->GetDriftVelocity() * 1000.);
-    printf("<AliTRDdigitizer::MakeDigits> ");
-    printf("Gain = %d, Noise = %d\n",(Int_t)fPar->GetGasGain(),(Int_t)fPar->GetNoise());
+    fPar->PrintDriftVelocity();
+    printf("<AliTRDdigitizer::MakeDigits> Sampling = %.0fMHz\n", fPar->GetSamplingFrequency());
+    printf("<AliTRDdigitizer::MakeDigits> Gain = %d\n",(Int_t)fPar->GetGasGain());
+    printf("<AliTRDdigitizer::MakeDigits> Noise = %d\n",(Int_t)fPar->GetNoise());
     if (fPar->TimeStructOn()) {
       printf("<AliTRDdigitizer::MakeDigits> ");
       printf("Time Structure of drift cells implemented.\n");
@@ -687,30 +686,30 @@ Bool_t AliTRDdigitizer::MakeDigits()
       countHits++;
       iHit++;
 
-              pos[0]      = hit->X();
-              pos[1]      = hit->Y();
-              pos[2]      = hit->Z();
-      Float_t q           = hit->GetCharge();
-      Int_t   track       = hit->Track();
-      Int_t   detector    = hit->GetDetector();
-      Int_t   plane       = fGeo->GetPlane(detector);
-      Int_t   sector      = fGeo->GetSector(detector);
-      Int_t   chamber     = fGeo->GetChamber(detector);
-      Int_t   nRowMax     = fPar->GetRowMax(plane,chamber,sector);
-      Int_t   nColMax     = fPar->GetColMax(plane);
-      Int_t   nTimeMax    = fPar->GetTimeMax();
-      Int_t   nTimeBefore = fPar->GetTimeBefore();
-      Int_t   nTimeAfter  = fPar->GetTimeAfter();
-      Int_t   nTimeTotal  = fPar->GetTimeTotal();
-      Float_t row0        = fPar->GetRow0(plane,chamber,sector);
-      Float_t col0        = fPar->GetCol0(plane);
-      Float_t time0       = fPar->GetTime0(plane);
-      Float_t rowPadSize  = fPar->GetRowPadSize(plane,chamber,sector);
-      Float_t colPadSize  = fPar->GetColPadSize(plane);
-      Float_t timeBinSize = fPar->GetTimeBinSize();
-      Float_t divideRow   = 1.0 / rowPadSize;
-      Float_t divideCol   = 1.0 / colPadSize;
-      Float_t divideTime  = 1.0 / timeBinSize;
+              pos[0]        = hit->X();
+              pos[1]        = hit->Y();
+              pos[2]        = hit->Z();
+      Float_t q             = hit->GetCharge();
+      Int_t   track         = hit->Track();
+      Int_t   detector      = hit->GetDetector();
+      Int_t   plane         = fGeo->GetPlane(detector);
+      Int_t   sector        = fGeo->GetSector(detector);
+      Int_t   chamber       = fGeo->GetChamber(detector);
+      Int_t   nRowMax       = fPar->GetRowMax(plane,chamber,sector);
+      Int_t   nColMax       = fPar->GetColMax(plane);
+      Int_t   nTimeMax      = fPar->GetTimeMax();
+      Int_t   nTimeBefore   = fPar->GetTimeBefore();
+      Int_t   nTimeAfter    = fPar->GetTimeAfter();
+      Int_t   nTimeTotal    = fPar->GetTimeTotal();
+      Float_t row0          = fPar->GetRow0(plane,chamber,sector);
+      Float_t col0          = fPar->GetCol0(plane);
+      Float_t time0         = fPar->GetTime0(plane);
+      Float_t rowPadSize    = fPar->GetRowPadSize(plane,chamber,sector);
+      Float_t colPadSize    = fPar->GetColPadSize(plane);
+      Float_t driftvelocity = fPar->GetDriftVelocity();
+      Float_t samplingRate  = fPar->GetSamplingFrequency();
+      Float_t divideRow     = 1.0 / rowPadSize;
+      Float_t divideCol     = 1.0 / colPadSize;
 
       if (fDebug > 1) {
         printf("Analyze hit no. %d ",iHit);
@@ -724,8 +723,8 @@ Bool_t AliTRDdigitizer::MakeDigits()
 	      ,nTimeBefore,nTimeAfter,nTimeTotal);
         printf("row0 = %f, col0 = %f, time0 = %f\n"
               ,row0,col0,time0);
-        printf("rowPadSize = %f, colPadSize = %f, timeBinSize = %f\n"
-	       ,rowPadSize,colPadSize,timeBinSize); 
+        printf("rowPadSize = %f, colPadSize = %f, SamplingRate = %f\n"
+	       ,rowPadSize,colPadSize,samplingRate); 
       }
        
       // Don't analyze test hits and switched off detectors
@@ -805,13 +804,12 @@ Bool_t AliTRDdigitizer::MakeDigits()
           fGeo->Rotate(detector,pos,rot);
 	}
 
-        // The driftlength. It is negative if the hit is in the 
-        // amplification region.
+        // The driftlength. It is negative if the hit is between pad plane and anode wires.
         Float_t driftlength = time0 - rot[0];
 
-        // Take also the drift in the amplification region into account
-        Float_t driftlengthL = TMath::Abs(driftlength + kAmWidth);
-        if (fPar->ExBOn()) driftlengthL /= TMath::Sqrt(fPar->GetLorentzFactor());
+        // Normalised drift length
+        Float_t absdriftlength = TMath::Abs(driftlength);
+        if (fPar->ExBOn()) absdriftlength /= TMath::Sqrt(fPar->GetLorentzFactor());
 
         // Loop over all electrons of this hit
         // TR photons produce hits with negative charge
@@ -835,11 +833,13 @@ Bool_t AliTRDdigitizer::MakeDigits()
 	      }
               continue;
 	    }
-            Int_t tt = ((Int_t) (10*(driftlength + 2.0*kAmWidth)));
-            if (tt < 0) {
+            Float_t tt = driftlength + kAmWidth;
+            if (tt < 0.0 || tt > kDrWidth + 2.*kAmWidth) {
               if (iEl == 0) {
                 printf("<AliTRDdigitizer::MakeDigits> ");
                 printf("Hit outside of sensitive volume, time (Q = %d)\n",((Int_t) q));
+                /*printf("track %d: tt=%f, xyz=%f, min=%f, max=%f\n",
+		  iTrack,tt,xyz[0],time0-kDrWidth-kAmWidth,time0+kAmWidth);*/
 	      }
               continue;
 	    }
@@ -847,31 +847,20 @@ Bool_t AliTRDdigitizer::MakeDigits()
 
           // Electron attachment
           if (fPar->ElAttachOn()) {
-            if (gRandom->Rndm() < (driftlengthL * elAttachProp)) continue;
+            if (gRandom->Rndm() < (absdriftlength * elAttachProp)) continue;
 	  }
 
           // Apply the diffusion smearing
           if (fPar->DiffusionOn()) {
-            if (!(fPar->Diffusion(driftlengthL,xyz))) continue;
+            if (!(fPar->Diffusion(absdriftlength,xyz))) continue;
 	  }
 
           // Apply E x B effects (depends on drift direction)
           if (fPar->ExBOn()) { 
-            if (!(fPar->ExB(driftlength+kAmWidth,xyz))) continue;
+            if (!(fPar->ExB(driftlength,xyz))) continue;
 	  }
 
-	  // Apply the drift time correction
-	  if (fPar->TimeStructOn()) {
-	    // Get z-position with respect to anode wire:
-	    Float_t Z  =  xyz[2] - row0 + fPar->GetAnodeWireOffset();
-	    Z -= ((Int_t)(2*Z))/2.;
-	    if (Z>0.25)   Z  = 0.5-Z;
-	    //if (Z>0.248) cout << Z << ": " << time0 - xyz[0] + kAmWidth << " -> ";
-            if (!(fPar->TimeStruct(driftlength+2*kAmWidth,Z,xyz))) continue;
-	    //if (Z>0.248) cout << time0 - xyz[0] + kAmWidth << endl;
-	  }
-
-          // The electron position after diffusion and ExB in pad coordinates 
+          // The electron position after diffusion and ExB in pad coordinates.
           // The pad row (z-direction)
           Float_t rowDist   = xyz[2] - row0;
           Int_t   rowE      = ((Int_t) (rowDist * divideRow));
@@ -883,29 +872,27 @@ Bool_t AliTRDdigitizer::MakeDigits()
           Float_t colDist   = xyz[1] - col0tilt;
           Int_t   colE      = ((Int_t) (colDist * divideCol));
           if ((colE < 0) || (colE >= nColMax)) continue;
-          Float_t colOffset = ((((Float_t) colE) + 0.5) * colPadSize) - colDist;    
+          Float_t colOffset = ((((Float_t) colE) + 0.5) * colPadSize) - colDist;
 
-          // The time bin (negative for hits in the amplification region)
-	  // In the amplification region the electrons drift from both sides
-	  // to the middle (anode wire plane)
-          Float_t timeDist   = time0 - xyz[0];
-          Float_t timeOffset = 0;
-          Int_t   timeE      = 0;
-          if (timeDist > 0) {
-	    // The time bin
-            timeE      = ((Int_t) (timeDist * divideTime));
-            // The distance of the position to the middle of the timebin
-            timeOffset = ((((Float_t) timeE) + 0.5) * timeBinSize) - timeDist;
+	  // Convert the position to drift time, using either constant drift velocity or
+          // time structure of drift cells (non-isochronity, GARFIELD calculation).
+	  Float_t drifttime;
+	  if (fPar->TimeStructOn()) {
+	    // Get z-position with respect to anode wire:
+	    Float_t Z  =  xyz[2] - row0 + fPar->GetAnodeWireOffset();
+	    Z -= ((Int_t)(2*Z))/2.;
+	    if (Z>0.25)   Z  = 0.5-Z;
+	    // use drift time map (GARFIELD)
+            drifttime = fPar->TimeStruct(time0 - xyz[0] + kAmWidth, Z);
+	  } else {
+	    // use constant drift velocity
+	    drifttime = TMath::Abs(time0 - xyz[0]) / driftvelocity;
 	  }
-          else {
-	    // Difference between half of the amplification gap width and
-	    // the distance to the anode wire
-            Float_t anodeDist = kAmWidth - TMath::Abs(timeDist + kAmWidth);
-            // The time bin
-            timeE      = -1 * (((Int_t ) (anodeDist * divideTime)) + 1);
-            // The distance of the position to the middle of the timebin
-            timeOffset = ((((Float_t) timeE) + 0.5) * timeBinSize) + anodeDist;
-	  }
+
+          // The time bin (always positive)
+	  Int_t timeE  = ((Int_t) (drifttime * samplingRate));
+	  // The distance of the position to the middle of the timebin
+	  Float_t timeOffset = ((((Float_t) timeE) + 0.5) / samplingRate) - drifttime;
  
           // Apply the gas gain including fluctuations
           Float_t ggRndm = 0.0;
@@ -930,14 +917,14 @@ Bool_t AliTRDdigitizer::MakeDigits()
 	  // Sample the time response inside the drift region
 	  // + additional time bins before and after.
           // The sampling is done always in the middle of the time bin
-          for (Int_t iTimeBin = TMath::Max(timeE-timeTRDbeg,        -nTimeBefore) 
-  	            ;iTimeBin < TMath::Min(timeE+timeTRDend,nTimeMax+nTimeAfter ) 
-        	    ;iTimeBin++) {
+          for (Int_t iTimeBin = TMath::Max(timeE,-nTimeBefore)                 ;
+	       iTimeBin < TMath::Min(timeE+timeBinTRFend,nTimeMax+nTimeAfter ) ;
+	       iTimeBin++                                                       ) {
 
      	    // Apply the time response
             Float_t timeResponse = 1.0;
             Float_t crossTalk    = 0.0;
-            Float_t time         = (iTimeBin - timeE) * timeBinSize + timeOffset;
+            Float_t time         = (iTimeBin - timeE) / samplingRate + timeOffset;
             if (fPar->TRFOn()) {
               timeResponse = fPar->TimeResponse(time);
               //printf("iTimeBin = %d, time = %f, timeResponse = %f\n"

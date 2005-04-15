@@ -174,7 +174,8 @@ AliTRDtracker::AliTRDtracker(const TFile *geomfile):AliTracker()
   Double_t dxAmp = (Double_t) fGeom->CamHght();   // Amplification region
   Double_t dxDrift = (Double_t) fGeom->CdrHght(); // Drift region
 
-  Double_t dx = (Double_t) fPar->GetTimeBinSize();   
+  Double_t dx = (Double_t) fPar->GetDriftVelocity()
+                         / fPar->GetSamplingFrequency();
   Int_t tbAmp = fPar->GetTimeBefore();
   Int_t maxAmp = (Int_t) ((dxAmp+0.000001)/dx);
   if(kTRUE) maxAmp = 0;  // intentional until we change the parameter class 
@@ -2106,7 +2107,8 @@ AliTRDtracker::AliTRDtrackingSector::AliTRDtrackingSector(AliTRDgeometry* geo, I
 
     }
 
-    dx = fPar->GetTimeBinSize(); 
+    dx  = fPar->GetDriftVelocity()
+        / fPar->GetSamplingFrequency();
     rho = 0.00295 * 0.85; radLength = 11.0;  
 
     Double_t x0 = (Double_t) fPar->GetTime0(plane);
@@ -2135,7 +2137,8 @@ AliTRDtracker::AliTRDtrackingSector::AliTRDtrackingSector(AliTRDgeometry* geo, I
     InsertLayer(ppl);
 
     // Drift region
-    dx = fPar->GetTimeBinSize();
+    dx = fPar->GetDriftVelocity()
+       / fPar->GetSamplingFrequency();
     steps = (Int_t) (dxDrift/dx);
 
     for(tb = 0; tb < steps; tb++) {
@@ -2215,7 +2218,8 @@ Int_t  AliTRDtracker::AliTRDtrackingSector::CookTimeBinIndex(Int_t plane, Int_t 
 
   Double_t dxAmp = (Double_t) fGeom->CamHght();   // Amplification region
   Double_t dxDrift = (Double_t) fGeom->CdrHght(); // Drift region  
-  Double_t dx = (Double_t) fPar->GetTimeBinSize();  
+  Double_t dx = (Double_t) fPar->GetDriftVelocity()
+                         / fPar->GetSamplingFrequency();
 
   Int_t tbAmp = fPar->GetTimeBefore();
   Int_t maxAmp = (Int_t) ((dxAmp+0.000001)/dx);

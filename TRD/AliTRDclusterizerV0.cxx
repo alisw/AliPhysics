@@ -150,7 +150,8 @@ Bool_t AliTRDclusterizerV0::MakeClusters()
 
         Float_t rowPadSize  = fPar->GetRowPadSize(iplan,icham,isect);
         Float_t colPadSize  = fPar->GetColPadSize(iplan);
-        Float_t timeBinSize = fPar->GetTimeBinSize();
+        Float_t timeBinSize = fPar->GetDriftVelocity()
+                            / fPar->GetSamplingFrequency();
 
         // Loop through all entries in the tree
         for (Int_t iTrack = 0; iTrack < nTrack; iTrack++) {

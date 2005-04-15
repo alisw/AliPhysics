@@ -298,7 +298,7 @@ Bool_t AliTRDgeometry::Local2Global(Int_t iplan, Int_t icham, Int_t isect
 
   // calculate (x,y,z) position in rotated chamber
   rot[0] = time0 - (timeSlice - par->GetTimeBefore()) 
-         * par->GetTimeBinSize();
+         * par->GetDriftVelocity()/par->GetSamplingFrequency();
   rot[1] = col0  + padCol                    
          * par->GetColPadSize(iplan);
   rot[2] = row0  + padRow                    
@@ -308,8 +308,6 @@ Bool_t AliTRDgeometry::Local2Global(Int_t iplan, Int_t icham, Int_t isect
   return RotateBack(idet,rot,global);
 
 }
-
-
 
 //_____________________________________________________________________________
 Bool_t AliTRDgeometry::Global2Local(Int_t mode, Float_t *local, Float_t *global
@@ -345,7 +343,7 @@ Bool_t AliTRDgeometry::Global2Local(Int_t mode, Float_t *local, Float_t *global
   // calculate (x,y,z) position in time bin pad row pad
   //
   //rot[0] = time0 - (timeSlice - par->GetTimeBefore()) 
-  //       * par->GetTimeBinSize();
+  //       * par->GetDriftVelocity()/par->GetSamplingFrequency();
   //rot[1] = col0  + padCol                    
   //       * par->GetColPadSize(iplan);
   //rot[2] = row0  + padRow                    

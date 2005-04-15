@@ -152,7 +152,8 @@ Bool_t AliTRDclusterizerMI::MakeClusters()
     printf("Create the default parameter object.\n");
   }
 
-  Float_t timeBinSize = fPar->GetTimeBinSize();
+  Float_t timeBinSize = fPar->GetDriftVelocity()
+                      / fPar->GetSamplingFrequency();
   // Half of ampl.region
   const Float_t kAmWidth = AliTRDgeometry::AmThick()/2.; 
 
