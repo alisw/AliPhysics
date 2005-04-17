@@ -84,25 +84,25 @@ void AliGenReaderEMD::Init()
     // **** neutrons
     Ntu->SetBranchAddress("Nleft",&fNnLeft);
     Ntu->SetBranchAddress("Eleft",&fEnLeft);
-    Ntu->SetBranchAddress("Pxl",  &fPxnLeft);
-    Ntu->SetBranchAddress("Pyl",  &fPynLeft);
-    Ntu->SetBranchAddress("Pzl",  &fPznLeft);
+    Ntu->SetBranchAddress("Pxl",  fPxnLeft);
+    Ntu->SetBranchAddress("Pyl",  fPynLeft);
+    Ntu->SetBranchAddress("Pzl",  fPznLeft);
     Ntu->SetBranchAddress("Nright",&fNnRight);
     Ntu->SetBranchAddress("Eright",&fEnRight);
-    Ntu->SetBranchAddress("Pxr",   &fPxnRight);
-    Ntu->SetBranchAddress("Pyr",   &fPynRight);
-    Ntu->SetBranchAddress("Pzr",   &fPznRight);
+    Ntu->SetBranchAddress("Pxr",   fPxnRight);
+    Ntu->SetBranchAddress("Pyr",   fPynRight);
+    Ntu->SetBranchAddress("Pzr",   fPznRight);
     // **** protons
     Ntu->SetBranchAddress("Nleft_p",&fNpLeft);
     Ntu->SetBranchAddress("Etaleft_p",&fEtapLeft);
-    Ntu->SetBranchAddress("Pxl_p",  &fPxpLeft);
-    Ntu->SetBranchAddress("Pyl_p",  &fPypLeft);
-    Ntu->SetBranchAddress("Pzl_p",  &fPzpLeft);
+    Ntu->SetBranchAddress("Pxl_p",  fPxpLeft);
+    Ntu->SetBranchAddress("Pyl_p",  fPypLeft);
+    Ntu->SetBranchAddress("Pzl_p",  fPzpLeft);
     Ntu->SetBranchAddress("Nright_p",&fNpRight);
     Ntu->SetBranchAddress("Etaright_p",&fEtapRight);
-    Ntu->SetBranchAddress("Pxr_p",   &fPxpRight);
-    Ntu->SetBranchAddress("Pyr_p",   &fPypRight);
-    Ntu->SetBranchAddress("Pzr_p",   &fPzpRight);
+    Ntu->SetBranchAddress("Pxr_p",   fPxpRight);
+    Ntu->SetBranchAddress("Pyr_p",   fPypRight);
+    Ntu->SetBranchAddress("Pzr_p",   fPzpRight);
 }
 
 // -----------------------------------------------------------------------------------

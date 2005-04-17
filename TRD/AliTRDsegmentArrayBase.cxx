@@ -21,6 +21,7 @@
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
+#include "AliTRDsegmentArrayBase.h"
 #include <TROOT.h>
 #include <TTree.h>
 #include <TClonesArray.h>
@@ -30,7 +31,6 @@
 
 #include "AliTRDarrayI.h"
 #include "AliTRDsegmentID.h"
-#include "AliTRDsegmentArrayBase.h"
 
 ClassImp(AliTRDsegmentArrayBase)
   

@@ -738,7 +738,7 @@ void AliPHOSDigitizer::WriteDigits()
 
   // -- create Digits branch
   Int_t bufferSize = 32000 ;    
-  TBranch * digitsBranch = treeD->Branch("PHOS",&digits,bufferSize);
+  TBranch * digitsBranch = treeD->Branch("PHOS","TClonesArray",&digits,bufferSize);
   digitsBranch->SetTitle(fEventFolderName);
   digitsBranch->Fill() ;
   

@@ -42,8 +42,6 @@
 
 #include "AliITSNeuralTracker.h"
 
-class AliITSNeuralPoint;
-
 //using namespace std;
 ClassImp(AliITSNeuralTracker)
 

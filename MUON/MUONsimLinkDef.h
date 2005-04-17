@@ -17,6 +17,8 @@
 #pragma link C++ class AliMUONSt1SpecialMotif+; 
 #pragma link C++ class AliMUONSt1ResponseParameter+; 
 #pragma link C++ class AliMUONSt1ResponseRule+; 
+#pragma link C++ class AliMUONSt1IniReader+; 
+#pragma link C++ namespace decoder; 
 
 #pragma link C++ class AliMUONPadHit+; 
 

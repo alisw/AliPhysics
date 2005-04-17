@@ -21,6 +21,7 @@
 // Files can be chained. 
 // Author: andreas.morsch@cern.ch
 
+#include "AliGenFLUKAsource.h"
 #include <stdlib.h>
 
 #include <TDatabasePDG.h>
@@ -31,7 +32,6 @@
 #include <TTree.h>
 #include <TVirtualMC.h>
 
-#include "AliGenFLUKAsource.h"
 #include "AliRun.h"
 
 ClassImp(AliGenFLUKAsource)

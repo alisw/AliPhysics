@@ -11,6 +11,7 @@
 // Author: andreas.morsch@cern.ch
 //
 #include "AliGenReader.h"
+#include <Rtypes.h>
 
 
 class AliGenReaderCwn : public AliGenReader

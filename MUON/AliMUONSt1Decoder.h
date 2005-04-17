@@ -19,6 +19,7 @@
 //                                                         |
 //                                             this is just ONE substring.
 
+#include <Rtypes.h>
 #include <string>
 #include <utility>
 #include <vector>
@@ -28,8 +29,6 @@
   using std::pair;
   using std::vector;
 #endif  
-
-#include <Rtypes.h>
 
 typedef vector<string>  StringVector; 
 typedef vector<Int_t>   IntVector; 

@@ -30,10 +30,10 @@
 #include <TFile.h>
 #include <TTree.h>
 
+#include "AliVertexGenFile.h"
 #include "AliLog.h"
 #include "AliGenEventHeader.h"
 #include "AliHeader.h"
-#include "AliVertexGenFile.h"
 
 
 ClassImp(AliVertexGenFile)

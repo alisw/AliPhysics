@@ -66,7 +66,6 @@
 #include <TGraphErrors.h>
 #include <TLegend.h>
 #include <TLine.h>
-#include <TMatrixD.h>
 #include <TNtuple.h>
 #include <TSystem.h>
 #include <TH2F.h>

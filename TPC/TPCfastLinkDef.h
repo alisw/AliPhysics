@@ -10,8 +10,8 @@
  
 #pragma link C++ class AliTPCFast;
 
-#pragma link C++ class AliTPCtrackerParam; 
-#pragma link C++ class AliTPCkineGrid;
+#pragma link C++ class AliTPCtrackerParam+; 
+#pragma link C++ class AliTPCkineGrid+;
 
 #endif
 

@@ -630,7 +630,7 @@ void AliEMCALDigitizer::WriteDigits()
 
   // -- create Digits branch
   Int_t bufferSize = 32000 ;    
-  TBranch * digitsBranch = treeD->Branch("EMCAL",&digits,bufferSize);
+  TBranch * digitsBranch = treeD->Branch("EMCAL","TClonesArray",&digits,bufferSize);
   digitsBranch->SetTitle(fEventFolderName);
   digitsBranch->Fill() ;
   
