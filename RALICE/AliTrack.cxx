@@ -116,6 +116,7 @@ void AliTrack::Init()
  fImpactYZ=0;
  fClosest=0;
  fParent=0;
+ fFit=0;
 }
 ///////////////////////////////////////////////////////////////////////////
 AliTrack::~AliTrack()
@@ -182,6 +183,11 @@ AliTrack::~AliTrack()
   delete fClosest;
   fClosest=0;
  }
+ if (fFit)
+ {
+  delete fFit;
+  fFit=0;
+ }
 }
 ///////////////////////////////////////////////////////////////////////////
 AliTrack::AliTrack(const AliTrack& t) : TNamed(t),Ali4Vector(t)
@@ -198,6 +204,7 @@ AliTrack::AliTrack(const AliTrack& t) : TNamed(t),Ali4Vector(t)
  if (t.fImpactXZ) fImpactXZ=new AliPositionObj(*(t.fImpactXZ));
  if (t.fImpactYZ) fImpactYZ=new AliPositionObj(*(t.fImpactYZ));
  if (t.fClosest) fClosest=new AliPositionObj(*(t.fClosest));
+ if (t.fFit) fFit=t.fFit->Clone();
  fUserId=t.fUserId;
  fChi2=t.fChi2;
  fNdf=t.fNdf;
@@ -303,6 +310,11 @@ void AliTrack::Reset()
   delete fClosest;
   fClosest=0;
  }
+ if (fFit)
+ {
+  delete fFit;
+  fFit=0;
+ }
 }
 ///////////////////////////////////////////////////////////////////////////
 void AliTrack::Set3Momentum(Ali3Vector& p)
@@ -348,14 +360,30 @@ void AliTrack::Data(TString f)
  const char* title=GetTitle();
 
  cout << " *" << ClassName() << "::Data*";
- if (strlen(name))  cout << " Name : " << GetName();
- if (strlen(title)) cout << " Title : " << GetTitle();
+ if (strlen(name))  cout << " Name : " << name;
+ if (strlen(title)) cout << " Title : " << title;
  cout << endl;
  cout << " Id : " << fUserId << " Code : " << fCode
       << " m : " << m << " dm : " << dm << " Charge : " << fQ
       << " p : " << GetMomentum() << endl;
  cout << " Nhypotheses : " << GetNhypotheses() << " Ndecay-tracks : " << GetNdecay()
       << " Nsignals : " << GetNsignals() << endl;
+ if (fParent)
+ {
+  cout << " Parent track Id : " << fParent->GetId() << " Code : " << fParent->GetParticleCode()
+       << " m : " << fParent->GetMass() << " Q : " << fParent->GetCharge()
+       << " p : " << fParent->GetMomentum();
+  const char* pname=fParent->GetName();
+  const char* ptitle=fParent->GetTitle();
+  if (strlen(pname))  cout << " Name : " << pname;
+  if (strlen(ptitle)) cout << " Title : " << ptitle;
+  cout << endl;
+ }
+ if (fFit)
+ {
+  cout << " Fit details present in object of class " << fFit->ClassName() << endl; 
+  if (fFit->InheritsFrom("AliSignal")) ((AliSignal*)fFit)->List(-1);
+ }
  Ali4Vector::Data(f); 
 } 
 ///////////////////////////////////////////////////////////////////////////
@@ -1190,6 +1218,48 @@ Float_t AliTrack::GetProb() const
 {
 // Provide the hypothesis probability for this track.
  return fProb;
+}
+///////////////////////////////////////////////////////////////////////////
+void AliTrack::SetFitDetails(TObject* obj)
+{
+// Enter the object containing the fit details.
+// In case an object to hold fit details was already present, this
+// will be deleted first before the new one is stored.
+// This means that SetFitDetails(0) can be used to just remove the
+// existing object with the fit details.
+// All objects derived from TObject can be entered in this way.
+// Obvious candidates for objects containing detailed fit information
+// are functions (e.g. TF1) and histograms (e.g. TH1F).
+// However, using an AliDevice object provides a very versatile facility
+// to store the parameters of various fit procedures.
+// In such a case the AliDevice can be used to provide the various fit
+// definitions and the corresponding fit parameters can be entered as
+// separate AliSignal objects which are stored as hits to the AliDevice.
+// In addition various functions and histograms can be linked to the
+// various AliSignal instances
+// The latter procedure is based on the original idea of Adam Bouchta.
+//
+// Note : The entered object is owned by this AliTrack instance.
+//        As such, a private copy of obj will be stored using the Clone()
+//        memberfunction.
+//        In case the entered object contains pointers to other objects,
+//        the user has to provide the appropriate Clone() memberfunction
+//        for the class to which the entered object belongs.
+//        An example can be seen from AliTrack::Clone().   
+//
+ if (fFit)
+ {
+  delete fFit;
+  fFit=0;
+ }
+
+ if (obj) fFit=obj->Clone();
+}
+///////////////////////////////////////////////////////////////////////////
+TObject* AliTrack::GetFitDetails()
+{
+// Provide the pointer to the object containing the fit details.
+ return fFit;
 }
 ///////////////////////////////////////////////////////////////////////////
 TObject* AliTrack::Clone(const char* name) const

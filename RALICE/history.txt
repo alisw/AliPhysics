@@ -576,3 +576,14 @@
                 effort of eliminating the TTimeStamp restrictions.
 04-mar-2005 NvE Installation scripts named amdgcclib.sh introduced in all /scripts directories to enable
                 shared library creation on AMD 64 (Athlon and Opteron) machines.
+31-mar-2005 NvE AliObjMatrix derived from TNamed instead of from TObject to allow specification of
+                a name and title for this class.
+13-apr-2005 NvE New memberfunctions SetFitDetails and GetFitDetails introduced in AliTrack
+                to enable a versatile facility to store details of various fit procedures
+                for a certain track. This new facility is based on the original idea of Adam Bouchta.
+                Destructor of AliSignal modified to remove the corresponding AliSignal instance
+                first from all related tracks before deleting the link matrix area.
+14-apr-2005 NvE Functionality of ShowDevices extended in AliEvent. Also memberfunction HeaderData() modified
+                to prevent long output lists when many devices (and/or tracks) are present.
+                New memberfunction ShowTracks introduced in AliJet and memberfunction Data() updated.
+18-apr-2005 NvE New memberfunction GetTracks introduced in AliJet to provide various track selections.

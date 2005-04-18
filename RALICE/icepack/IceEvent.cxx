@@ -21,6 +21,17 @@
 // Basically this class provides an IceCube tailored user interface
 // to the functionality of the class AliEvent.
 //
+// Notes :
+// ------
+// * In the event structure MC tracks are labeled with a negative track ID,
+//   whereas reconstructed tracks are labeled with a positive track ID.
+//   This allows for a direct selection of either MC or Reco tracks via the
+//   GetIdTrack() facility.
+// * The particle codes used for the various tracks are the PDG ones.
+//   For IceCube specific "particle" types (e.g. deltae) the PDG database
+//   has been extended, as can be seen in the IceF2k class which provides
+//   a conversion facility from the F2K into the Ralice/IcePack format.
+//
 // Examples :
 // ==========
 //

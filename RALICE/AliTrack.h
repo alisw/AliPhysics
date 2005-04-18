@@ -80,6 +80,9 @@ class AliTrack : public TNamed,public Ali4Vector
   AliTrack* GetParentTrack();             // Provide pointer to the parent track
   void SetProb(Double_t prob);            // Set the hypothesis probability for this track
   Float_t GetProb() const;                // Provide the hypothesis probability for this track
+  void SetFitDetails(TObject* obj);       // Enter the object containing the fit details
+  void SetFitDetails(TObject& obj) { SetFitDetails(&obj); }
+  TObject* GetFitDetails();               // Provide pointer to the object containing the fit details
 
  
  protected:
@@ -101,10 +104,11 @@ class AliTrack : public TNamed,public Ali4Vector
   Int_t fCode;               // The user defined particle id code
   AliTrack* fParent;         // Pointer to the parent track
   Float_t fProb;             // Probability for this track as a hypothesis
+  TObject* fFit;             // Object containing details of the fit
 
  private:
   void Dumps(AliTrack* t,Int_t n,TString f); // Recursively print all decay levels
  
- ClassDef(AliTrack,12) // Handling of the attributes of a reconstructed particle track.
+ ClassDef(AliTrack,13) // Handling of the attributes of a reconstructed particle track.
 };
 #endif

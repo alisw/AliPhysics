@@ -111,6 +111,7 @@ void AliJet::Init()
  fTracks=0;
  fNtinit=0;
  fTrackCopy=0;
+ fSelected=0;
 }
 ///////////////////////////////////////////////////////////////////////////
 AliJet::AliJet(Int_t n) : TNamed(),Ali4Vector()
@@ -140,6 +141,11 @@ AliJet::~AliJet()
  {
   delete fTracks;
   fTracks=0;
+ }
+ if (fSelected)
+ {
+  delete fSelected;
+  fSelected=0;
  }
 }
 ///////////////////////////////////////////////////////////////////////////
@@ -179,6 +185,8 @@ AliJet::AliJet(const AliJet& j) : TNamed(j),Ali4Vector(j)
  fNtrk=j.fNtrk;
  fTrackCopy=j.fTrackCopy;
  fUserId=j.fUserId;
+
+ fSelected=0;
 
  fTracks=0;
  if (fNtrk)
@@ -298,7 +306,9 @@ void AliJet::Data(TString f)
  if (strlen(title)) cout << " Title : " << GetTitle();
  cout << endl;
  cout << " Id : " << fUserId << " Invmass : " << GetInvmass() << " Charge : " << fQ
-      << " Momentum : " << GetMomentum() << " Ntracks : " << fNtrk << endl;
+      << " Momentum : " << GetMomentum() << endl;
+
+ ShowTracks(0);
 
  Ali4Vector::Data(f); 
 } 
@@ -403,23 +413,18 @@ Float_t AliJet::GetCharge() const
 AliTrack* AliJet::GetTrack(Int_t i) const
 {
 // Return the i-th track of this jet
- if (!fTracks)
+
+ if (!fTracks) return 0;
+
+ if (i<=0 || i>fNtrk)
  {
-  cout << " *AliJet*::GetTrack* No tracks present." << endl;
+  cout << " *AliJet*::GetTrack* Invalid argument i : " << i
+       << " Ntrk = " << fNtrk << endl;
   return 0;
  }
  else
  {
-  if (i<=0 || i>fNtrk)
-  {
-   cout << " *AliJet*::GetTrack* Invalid argument i : " << i
-        << " Ntrk = " << fNtrk << endl;
-   return 0;
-  }
-  else
-  {
-   return (AliTrack*)fTracks->At(i-1);
-  }
+  return (AliTrack*)fTracks->At(i-1);
  }
 }
 ///////////////////////////////////////////////////////////////////////////
@@ -435,6 +440,126 @@ AliTrack* AliJet::GetIdTrack(Int_t id) const
   if (id == tx->GetId()) return tx;
  }
  return 0; // No matching id found
+}
+///////////////////////////////////////////////////////////////////////////
+TObjArray* AliJet::GetTracks(Int_t idmode,Int_t chmode,Int_t pcode)
+{
+// Provide references to user selected tracks based on the idmode, chmode
+// and pcode selections as specified by the user.
+//
+// The following selection combinations are available :
+// ----------------------------------------------------
+// idmode = -1 ==> Select tracks with negative user identifier "id"
+//           0 ==> No selection on user identifier
+//           1 ==> Select tracks with positive user identifier "id"
+//
+// chmode = -1 ==> Select tracks with negative charge
+//           0 ==> Select neutral tracks
+//           1 ==> Select tracks with positive charge
+//           2 ==> No selection on charge
+//
+// pcode  =  0 ==> No selection on particle code
+//           X ==> Select tracks with particle code +X or -X
+//                 This allows selection of both particles and anti-particles
+//                 in case of PDG particle codes.
+//                 Selection of either particles or anti-particles can be
+//                 obtained in combination with the "chmode" selector.
+//
+// Examples :
+// ----------
+// idmode=-1 chmode=0 pcode=0   : Selection of all neutral tracks with negative id.
+// idmode=0  chmode=2 pcode=211 : Selection of all charged pions (PDG convention).
+// idmode=0  chmode=1 pcode=321 : Selection of all positive kaons (PDG convention).
+//
+// The default values are idmode=0 chmode=2 pcode=0 (i.e. no selections applied).
+//
+// Notes :
+// -------
+// 1) In case the user has labeled simulated tracks with negative id and
+//    reconstructed tracks with positive id, this memberfunction provides
+//    easy access to either all simulated or reconstructed tracks.
+// 2) Subsequent invokations of this memberfunction with e.g. chmode=-1 and chmode=1
+//    provides a convenient way to investigate particle pairs with opposite charge
+//    (e.g. for invariant mass analysis).
+
+ if (fSelected)
+ {
+  fSelected->Clear();
+ }
+ else
+ {
+  fSelected=new TObjArray();
+ }
+
+ if (!fTracks) return fSelected;
+
+ AliTrack* tx=0;
+ Int_t code=0;
+ Int_t id=0;
+ Float_t q=0;
+ for (Int_t i=0; i<fNtrk; i++)
+ {
+  tx=(AliTrack*)fTracks->At(i);
+  if (!tx) continue;
+
+  code=tx->GetParticleCode();
+  if (pcode && abs(pcode)!=abs(code)) continue;
+
+  id=tx->GetId();
+  if (idmode==-1 && id>=0) continue;
+  if (idmode==1 && id<=0) continue;
+
+  q=tx->GetCharge();
+  if (chmode==-1 && q>=0) continue;
+  if (chmode==0 && fabs(q)>1e-10) continue;
+  if (chmode==1 && q<=0) continue;
+
+  fSelected->Add(tx);
+ }
+
+ return fSelected;
+}
+///////////////////////////////////////////////////////////////////////////
+void AliJet::ShowTracks(Int_t mode) const
+{
+// Provide an overview of the available tracks.
+// The argument mode determines the amount of information as follows :
+// mode = 0 ==> Only printout of the number of tracks
+//        1 ==> Provide a listing with 1 line of info for each track
+//
+// The default is mode=1.
+//
+ Int_t ntk=GetNtracks();
+ if (ntk)
+ {
+  if (!mode)
+  {
+   cout << " There are " << ntk << " tracks available." << endl; 
+  }
+  else
+  {
+   cout << " The following " << ntk << " tracks are available :" << endl; 
+   for (Int_t i=1; i<=ntk; i++)
+   {
+    AliTrack* tx=GetTrack(i);
+    if (tx)
+    {
+     const char* name=tx->GetName();
+     const char* title=tx->GetTitle();
+     cout << " Track : " << i;
+     cout << " Id : " << tx->GetId();
+     cout << " Q : " << tx->GetCharge() << " m : " << tx->GetMass() << " p : " << tx->GetMomentum();
+     if (strlen(name)) cout << " Name : " << name;
+     if (strlen(title)) cout << " Title : " << title;
+     cout << endl;
+    }
+   }
+  }
+ }
+ else
+ {
+  cout << " No tracks are present." << endl;
+ }
 }
 ///////////////////////////////////////////////////////////////////////////
 Double_t AliJet::GetPt()

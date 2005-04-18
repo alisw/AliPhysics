@@ -36,6 +36,8 @@ class AliJet : public TNamed,public Ali4Vector
   Int_t GetNtracks() const;                // Return the number of tracks in the jet
   AliTrack* GetTrack(Int_t i) const;       // Provide i-th track of the jet (1=first track)
   AliTrack* GetIdTrack(Int_t id) const;    // Provide the track with user identifier "id"
+  TObjArray* GetTracks(Int_t idmode=0,Int_t chmode=2,Int_t pcode=0); // Provide references to selected tracks
+  void ShowTracks(Int_t mode=1) const;     // Provide on overview of the available tracks
   Double_t GetPt();                        // Provide trans. momentum w.r.t. z-axis
   Double_t GetPl();                        // Provide long. momentum w.r.t. z-axis
   Double_t GetEt();                        // Provide trans. energy w.r.t. z-axis
@@ -59,7 +61,8 @@ class AliJet : public TNamed,public Ali4Vector
   TObjArray* fTracks;                    // Array to hold the pointers to the tracks of the jet
   Int_t fTrackCopy;                      // Flag to denote creation of private copies in fTracks
   Int_t fUserId;                         // The user defined identifier
+  TObjArray* fSelected;                  //! Temp. array to hold user selected objects
  
- ClassDef(AliJet,9) // Creation and investigation of a jet of particle tracks.
+ ClassDef(AliJet,10) // Creation and investigation of a jet of particle tracks.
 };
 #endif

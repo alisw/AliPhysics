@@ -47,9 +47,9 @@ class AliEvent : public AliVertex,public AliTimestamp
   void SetDevCopy(Int_t j);               // (De)activate creation of private copies of the devices
   Int_t GetDevCopy() const;               // Provide DevCopy flag value      
   void AddDevice(TObject& d);             // Add a device to the event
-  void AddDevice(TObject* d) { AddDevice(*d); }
+  void AddDevice(TObject* d) { if (d) AddDevice(*d); }
   Int_t GetNdevices() const;              // Provide the number of devices
-  void ShowDevices() const;               // Provide on overview of the available devices
+  void ShowDevices(Int_t mode=1) const;   // Provide on overview of the available devices
   TObject* GetDevice(Int_t i) const;      // Provide i-th device of the event
   TObject* GetDevice(TString name) const; // Provide the device with name "name"
   TObject* GetIdDevice(Int_t id) const;   // Provide the device with unique identifier "id"
@@ -85,6 +85,6 @@ class AliEvent : public AliVertex,public AliTimestamp
   TObjArray* fOrdered;                  //! Temp. array to hold references to various ordered objects
   TObject* fDisplay;                    //! Temp. pointer to hold objects which serve event displays
 
- ClassDef(AliEvent,18) // Creation and investigation of an Alice physics event.
+ ClassDef(AliEvent,19) // Creation and investigation of an Alice physics event.
 };
 #endif

@@ -579,16 +579,14 @@ void AliEvent::HeaderData()
 // Provide event header information
  const char* name=GetName();
  const char* title=GetTitle();
- Int_t ndevs=GetNdevices();
  cout << " *" << ClassName() << "::Data*";
  if (strlen(name))  cout << " Name : " << GetName();
  if (strlen(title)) cout << " Title : " << GetTitle();
  cout << endl;
  Date(1);
- cout << "  Run : " << fRun << " Event : " << fEvent
-      << " Number of devices : " << ndevs << endl;
-
- if (ndevs) ShowDevices();
+ cout << "  Run : " << fRun << " Event : " << fEvent << endl;
+ ShowDevices(0);
+ ShowTracks(0);
 }
 ///////////////////////////////////////////////////////////////////////////
 void AliEvent::Data(TString f)
@@ -764,24 +762,38 @@ TObject* AliEvent::GetIdDevice(Int_t id) const
  return 0; // No matching id found
 }
 ///////////////////////////////////////////////////////////////////////////
-void AliEvent::ShowDevices() const
+void AliEvent::ShowDevices(Int_t mode) const
 {
 // Provide an overview of the available devices.
+// The argument mode determines the amount of information as follows :
+// mode = 0 ==> Only printout of the number of devices
+//        1 ==> Provide a listing with 1 line of info for each device
+//
+// The default is mode=1.
+//
  Int_t ndevs=GetNdevices();
  if (ndevs)
  {
-  cout << " The following " << ndevs << " devices are available :" << endl; 
-  for (Int_t i=1; i<=ndevs; i++)
+  if (!mode)
   {
-   TObject* dev=GetDevice(i);
-   if (dev)
+   cout << " There are " << ndevs << " devices available." << endl; 
+  }
+  else
+  {
+   cout << " The following " << ndevs << " devices are available :" << endl; 
+   for (Int_t i=1; i<=ndevs; i++)
    {
-    const char* name=dev->GetName();
-    cout << " Device number : " << i;
-    cout << " Class : " << dev->ClassName() << " Id : " << dev->GetUniqueID();
-    if (strlen(name)) cout << " Name : " << name;
-    if (dev->InheritsFrom("AliDevice")) cout << " Nhits : " << ((AliDevice*)dev)->GetNhits();
-    cout << endl;
+    TObject* dev=GetDevice(i);
+    if (dev)
+    {
+     const char* name=dev->GetName();
+     cout << " Device number : " << i;
+     cout << " Class : " << dev->ClassName() << " Id : " << dev->GetUniqueID();
+     if (strlen(name)) cout << " Name : " << name;
+     if (dev->InheritsFrom("AliDevice")) cout << " Nhits : " << ((AliDevice*)dev)->GetNhits();
+     if (dev->InheritsFrom("AliSignal")) cout << " Nwaveforms : " << ((AliSignal*)dev)->GetNwaveforms();
+     cout << endl;
+    }
    }
   }
  }

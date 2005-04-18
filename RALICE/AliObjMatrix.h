@@ -5,12 +5,11 @@
 
 // $Id$
 
-#include "TObject.h"
+#include "TNamed.h"
 #include "TObjArray.h"
-#include "TRefArray.h"
 #include "TArrayI.h"
 
-class AliObjMatrix : public TObject
+class AliObjMatrix : public TNamed
 {
  public:
   AliObjMatrix();                                                   // Default constructor
@@ -42,6 +41,6 @@ class AliObjMatrix : public TObject
   Int_t fMaxcol;       // The maximum column number index
   TObjArray* fObjects; // Linear reference array for fast looping over the stored objects
  
- ClassDef(AliObjMatrix,5) // Handling of a matrix structure of objects.
+ ClassDef(AliObjMatrix,6) // Handling of a matrix structure of objects.
 };
 #endif

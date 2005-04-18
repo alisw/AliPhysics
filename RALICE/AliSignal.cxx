@@ -130,6 +130,17 @@ AliSignal::~AliSignal()
  }
  if (fLinks)
  {
+  // Remove this signal from all related tracks
+  for (Int_t i=1; i<=fLinks->GetNobjects(); i++)
+  {
+   TObject* obj=fLinks->GetObject(i);
+   if (!obj) continue;
+   if (obj->InheritsFrom("AliTrack"))
+   {
+    AliTrack* tx=(AliTrack*)obj;
+    tx->RemoveSignal(*this);
+   }
+  }
   delete fLinks;
   fLinks=0;
  }
