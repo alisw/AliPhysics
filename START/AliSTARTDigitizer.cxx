@@ -124,7 +124,6 @@ void AliSTARTDigitizer::Exec(Option_t* /*option*/)
   //output loader 
   AliRunLoader *outRL = AliRunLoader::GetRunLoader(fManager->GetOutputFolderName());
   AliLoader * pOutStartLoader = outRL->GetLoader("STARTLoader");
-  AliSTART *fSTART  = (AliSTART*)outRL ->GetAliRun()->GetDetector("START");
 
   AliDebug(1,"start...");
   cout<<" AliSTARTDigitizer::Exec "<<endl;
@@ -167,6 +166,7 @@ void AliSTARTDigitizer::Exec(Option_t* /*option*/)
     AliRunLoader * inRL = AliRunLoader::GetRunLoader(fManager->GetInputFolderName(inputFile));
     AliLoader * pInStartLoader = inRL->GetLoader("STARTLoader");
     if (!inRL->GetAliRun()) inRL->LoadgAlice();
+    AliSTART *fSTART  = (AliSTART*)inRL ->GetAliRun()->GetDetector("START");
 
        //read Hits 
     pInStartLoader->LoadHits("READ");//probably it is necessary to load them before
@@ -281,6 +281,7 @@ void AliSTARTDigitizer::Exec(Option_t* /*option*/)
       pOutStartLoader->MakeTree("D");
       treeD = pOutStartLoader->TreeD();
     }
+    AliSTART *fSTART  = (AliSTART*)outRL ->GetAliRun()->GetDetector("START");
     fSTART->MakeBranch("D");
      treeD->Reset();
      treeD->Fill();
