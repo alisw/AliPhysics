@@ -32,9 +32,10 @@ class AliEMCALHadronCorrectionv1: public AliEMCALHadronCorrection {
  private:
     void SetParameters(TString name = "") {Warning("SetParameter","Dummy method with argument %s",name.Data());}
     
-    static AliEMCALHadronCorrectionv1* fHadrCorr;
+    static AliEMCALHadronCorrectionv1* fgHadrCorr;  // Pointer to global instance (singleton)
+    static Double_t fgParLookup[HCPARAMETERS][HCPARAMETERSETS]; // Global array with parameters for hadronic response
     Double_t fPar[6];
-    Float_t  fSamplingFraction;
+    Float_t  fSamplingFraction;  // Sampling fraction
     
     
     ClassDef(AliEMCALHadronCorrectionv1,2) // Hadron correction for EMC (version for MDC)

@@ -20,7 +20,10 @@
 #include "AliEMCALGeometry.h"
 #include "Riostream.h"
 #include "TMath.h"
-static Double_t par_look_up[HCPARAMETERS][HCPARAMETERSETS] = 
+
+ClassImp(AliEMCALHadronCorrectionv1)
+
+Double_t AliEMCALHadronCorrectionv1::fgParLookup[HCPARAMETERS][HCPARAMETERSETS] = 
 {  
     {-2.82271e-4 , -2.39954e-4},   
     {2.50796e-2  , 2.07172e-2},   
@@ -30,14 +33,11 @@ static Double_t par_look_up[HCPARAMETERS][HCPARAMETERSETS] =
     {1.65078e-6  , 1.51821e-6}
 };
 
-
-
-ClassImp(AliEMCALHadronCorrectionv1)
-
-AliEMCALHadronCorrectionv1* AliEMCALHadronCorrectionv1::fHadrCorr = 0;
+AliEMCALHadronCorrectionv1* AliEMCALHadronCorrectionv1::fgHadrCorr = 0;
 
 void AliEMCALHadronCorrectionv1::SetGeometry(AliEMCALGeometry *geometry)
 {
+  // Initialise EMCAL geometry
     if (!geometry)
     {
 	SetParameters();
@@ -54,6 +54,7 @@ void AliEMCALHadronCorrectionv1::SetGeometry(AliEMCALGeometry *geometry)
 	
 void AliEMCALHadronCorrectionv1::SetGeometry(TString name,Double_t fs)
 {
+  // Initialise EMCAL geometry
   cout << "Setting sampling fraction to "<<fSamplingFraction<<endl;	
    fSamplingFraction = fs;	
   if ( name == ""              ||
@@ -66,7 +67,7 @@ void AliEMCALHadronCorrectionv1::SetGeometry(TString name,Double_t fs)
      cout<<"HC parameters!"<<endl;
      for (Int_t i=0;i<6;i++)
      {
-	   fPar[i] = par_look_up[i][0];  
+	   fPar[i] = fgParLookup[i][0];  
 	   cout <<fPar[i]<<endl;
      }
   }else if( name == "EMCAL_6564_21" ||  
@@ -75,7 +76,7 @@ void AliEMCALHadronCorrectionv1::SetGeometry(TString name,Double_t fs)
       cout<<"HC parameters!"<<endl;
      for (Int_t i=0;i<6;i++)
      {
-	   fPar[i] = par_look_up[i][1];  
+	   fPar[i] = fgParLookup[i][1];  
 	   cout <<fPar[i]<<endl;
      }
   }else
@@ -89,7 +90,7 @@ void AliEMCALHadronCorrectionv1::SetGeometry(TString name,Double_t fs)
 AliEMCALHadronCorrectionv1::AliEMCALHadronCorrectionv1(const char *name,const char *title) 
                            :AliEMCALHadronCorrection(name, title)
 {
-  fHadrCorr = this;
+  fgHadrCorr = this;
 }
 
 /*
@@ -105,13 +106,15 @@ AliEMCALHadronCorrectionv1::AliEMCALHadronCorrectionv1(const char *name,const ch
 AliEMCALHadronCorrectionv1*
 AliEMCALHadronCorrectionv1::Instance()
 {
-  if (! fHadrCorr) new AliEMCALHadronCorrectionv1();
-  return fHadrCorr;
+  // return pointer to global instance. Instantiate if needed
+  if (! fgHadrCorr) new AliEMCALHadronCorrectionv1();
+  return fgHadrCorr;
 }
 
 Double_t 
 AliEMCALHadronCorrectionv1::GetEnergy(Double_t pmom, Double_t eta, Int_t /*gid*/)
 {
+  // Return parametrised energy response
   Double_t etai = TMath::Abs(eta); 
   Double_t value =  fPar[5]*pmom*pmom*pmom+ fPar[0]*pmom*pmom+fPar[1]*pmom +fPar[2]*pmom*etai +fPar[3]*etai + fPar[4];
   return fSamplingFraction*value;
