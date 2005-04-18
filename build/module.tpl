@@ -337,17 +337,15 @@ check-@MODULE@: $(@PACKAGE@CHECKS)
 # IRST coding rule check 
 @MODULE@/check/%.i : @MODULE@/%.cxx @MODULE@/%.h
 	@[ -d $(dir $@) ] || mkdir -p $(dir $@)
-	$(MUTE)$(CXX) -E $(@PACKAGE@DEFINE) $(@PACKAGE@INC) $< > $@ $(@PACKAGE@CXXFLAGS)
+	$(MUTE)$(CXX) -E $(@PACKAGE@DEFINE) $(@PACKAGE@INC) -I. $< > $@ $(@PACKAGE@CXXFLAGS)
 	@cd $(dir $@) ; $(IRST_INSTALLDIR)/patch/patch4alice.prl $(notdir $@)
 
 # IRST coding rule check
 @MODULE@/check/$(SUBDIR)/%.viol : @MODULE@/check/$(SUBDIR)/%.i
-	@cd @MODULE@ ; [ -r @MODULE@ ] || ln -s ../@MODULE@ @MODULE@
 	$(MUTE)echo $@ ; $(CODE_CHECK) $< ./@MODULE@/$(@PACKAGE@SDIR) > $@
 
 # IRST coding rule check
 @MODULE@/check/%.viol : @MODULE@/check/%.i
-	@cd @MODULE@ ; [ -r @MODULE@ ] || ln -s ../@MODULE@ @MODULE@
 	$(MUTE)echo $@ ; $(CODE_CHECK) $< ./@MODULE@ > $@
 
 @PACKAGE@PREPROC       = $(patsubst %.viol,%.i,$(@PACKAGE@CHECKS))
