@@ -473,7 +473,7 @@ void AliITSvBeamTestITS04::SetDefaults()
   
   if(kNTYPES>3){Warning("SetDefaults","Only the four basic detector types are initialised!");}
   return;
-};
+}
 
 //______________________________________________________________________
 void AliITSvBeamTestITS04::AddSPDGeometry(TGeoVolume *moth) const
@@ -505,7 +505,7 @@ void AliITSvBeamTestITS04::AddSPDGeometry(TGeoVolume *moth) const
     //draw options
     waferSPD->SetLineColor(4);
     sensVolSPD->SetLineColor(4);
-};
+}
 
 
 //______________________________________________________________________
@@ -533,7 +533,7 @@ void AliITSvBeamTestITS04::AddSDDGeometry(TGeoVolume *moth) const
     //draw options
     waferSDD->SetLineColor(3);
     sensVolSDD->SetLineColor(3);
-};
+}
 
 
 //______________________________________________________________________
@@ -569,7 +569,7 @@ void AliITSvBeamTestITS04::AddSSDGeometry(TGeoVolume *moth) const
     //draw options
     waferSSD->SetLineColor(2);
     sensVolSSD->SetLineColor(2);
-};
+}
 
 //______________________________________________________________________
 void AliITSvBeamTestITS04::StepManager()
@@ -648,7 +648,7 @@ void AliITSvBeamTestITS04::StepManager()
     position0 = position;
     stat0 = vol[3];
     return;
-};
+}
 
 //______________________________________________________________________
 Int_t AliITSvBeamTestITS04::GetCurrentLayLaddDet(Int_t &lay,Int_t &ladd, Int_t &det) const
@@ -682,7 +682,7 @@ Int_t AliITSvBeamTestITS04::GetCurrentLayLaddDet(Int_t &lay,Int_t &ladd, Int_t &
     };  
     
     return kTRUE;
-};
+}
 
 //_____________________________________________________________
 
