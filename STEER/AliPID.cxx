@@ -179,7 +179,7 @@ void AliPID::Init()
   // Initialise only once... 
   if(!fgkParticleMass[0]) 
     for (Int_t i = 0; i < kSPECIESN; i++) 
-      fgkParticleMass[i] = M(fgkParticleCode[i]);
+      fgkParticleMass[i] = M(i);
 }
 
 //_____________________________________________________________________________
