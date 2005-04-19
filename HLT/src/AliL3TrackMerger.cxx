@@ -3,15 +3,6 @@
 // Author: Uli Frankenfeld <mailto:franken@fi.uib.no>
 //*-- Copyright &copy ALICE HLT Group
 
-#include "AliL3StandardIncludes.h"
-
-#include "AliL3Logging.h"
-#include "AliL3TrackMerger.h"
-#include "AliL3Track.h"
-#include "AliL3TrackSegmentData.h"
-#include "AliL3Transform.h"
-#include "AliL3TrackArray.h"
-
 /** \class AliL3TrackMerger
 <pre>
 //_____________________________________________________________
@@ -21,6 +12,15 @@
 //
 </pre
 */
+
+#include "AliL3StandardIncludes.h"
+
+#include "AliL3Logging.h"
+#include "AliL3TrackMerger.h"
+#include "AliL3Track.h"
+#include "AliL3TrackSegmentData.h"
+#include "AliL3Transform.h"
+#include "AliL3TrackArray.h"
 
 ClassImp(AliL3TrackMerger)
 
@@ -52,6 +52,9 @@ AliL3TrackMerger::~AliL3TrackMerger(){
 }
 
 void AliL3TrackMerger::SetRows(Int_t *row){
+  //Set the indeces of the first and last
+  //TPC padrows
+  //
   for(Int_t i=0;i<fNSubSector;i++){
     fRowMin[i]=*(row+(2*i));
     fRowMax[i]=*(row+(2*i+1));
@@ -69,6 +72,10 @@ void AliL3TrackMerger::InitSector(Int_t slice,Int_t subsector){
 }
 
 void AliL3TrackMerger::SlowMerge(AliL3TrackArray *mergedtrack,AliL3TrackArray *tracksin,AliL3TrackArray *tracksout,Double_t xval){
+  // 
+  // Slow merging of two AliL3TrackArrays
+  // at reference plane x=xval
+  //
   void *ntuple=GetNtuple();
   const Int_t  kNOut=tracksout->GetNTracks();
   const Int_t  kNIn =tracksin->GetNTracks();
@@ -126,7 +133,10 @@ void AliL3TrackMerger::SlowMerge(){
 }
 
 void AliL3TrackMerger::InterMerge(){
-
+  // 
+  // Merging of the tracks
+  // between readout patches
+  //
   for(Int_t patch=0;patch< GetNIn();patch++){
     AliL3TrackArray * tracks = GetInTracks(patch);
     Double_t xval = AliL3Transform::Row2X((fRowMax[patch]+fRowMin[patch])/2);
