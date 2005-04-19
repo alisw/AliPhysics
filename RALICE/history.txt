@@ -587,3 +587,4 @@
                 to prevent long output lists when many devices (and/or tracks) are present.
                 New memberfunction ShowTracks introduced in AliJet and memberfunction Data() updated.
 18-apr-2005 NvE New memberfunction GetTracks introduced in AliJet to provide various track selections.
+19-apr-2005 NvE Memberfunctions GetNtracks and GetTracks of AliJet extended in functionality.

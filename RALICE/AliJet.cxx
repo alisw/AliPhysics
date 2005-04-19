@@ -361,10 +361,34 @@ void AliJet::ListAll(TString f)
  }
 } 
 ///////////////////////////////////////////////////////////////////////////
-Int_t AliJet::GetNtracks() const
+Int_t AliJet::GetNtracks(Int_t idmode,Int_t chmode,Int_t pcode)
 {
-// Return the current number of tracks of this jet
- return fNtrk;
+// Provide the number of user selected tracks in this jet based on the
+// idmode, chmode and pcode selections as specified by the user.
+// For specification of the selection parameters see GetTracks().
+// The default parameters correspond to no selection, which implies
+// that invokation of GetNtracks() just returns the total number of
+// tracks registered in this jet.
+//
+// Note : In case certain selections are specified, this function
+//        invokes GetTracks(idmode,chmode,pcode) to determine the
+//        number of tracks corresponding to the selections.
+//        When the jet contains a large number of tracks, invokation
+//        of GetTracks(idmode,chmode,pcode) and subsequently invoking
+//        GetEntries() for the resulting TObjArray* might be slightly
+//        faster.
+
+ Int_t n=0;
+ if (idmode==0 && chmode==2 && pcode==0)
+ {
+  return fNtrk;
+ }
+ else
+ {
+  TObjArray* arr=GetTracks(idmode,chmode,pcode);
+  n=arr->GetEntries();
+  return n;
+ }
 }
 ///////////////////////////////////////////////////////////////////////////
 Double_t AliJet::GetEnergy()
@@ -457,6 +481,7 @@ TObjArray* AliJet::GetTracks(Int_t idmode,Int_t chmode,Int_t pcode)
 //           0 ==> Select neutral tracks
 //           1 ==> Select tracks with positive charge
 //           2 ==> No selection on charge
+//           3 ==> Select all charged tracks
 //
 // pcode  =  0 ==> No selection on particle code
 //           X ==> Select tracks with particle code +X or -X
@@ -513,6 +538,7 @@ TObjArray* AliJet::GetTracks(Int_t idmode,Int_t chmode,Int_t pcode)
   if (chmode==-1 && q>=0) continue;
   if (chmode==0 && fabs(q)>1e-10) continue;
   if (chmode==1 && q<=0) continue;
+  if (chmode==3 && fabs(q)<1e-10) continue;
 
   fSelected->Add(tx);
  }
@@ -520,7 +546,7 @@ TObjArray* AliJet::GetTracks(Int_t idmode,Int_t chmode,Int_t pcode)
  return fSelected;
 }
 ///////////////////////////////////////////////////////////////////////////
-void AliJet::ShowTracks(Int_t mode) const
+void AliJet::ShowTracks(Int_t mode)
 {
 // Provide an overview of the available tracks.
 // The argument mode determines the amount of information as follows :

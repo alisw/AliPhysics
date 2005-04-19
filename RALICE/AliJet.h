@@ -33,11 +33,11 @@ class AliJet : public TNamed,public Ali4Vector
   Ali3Vector Get3Momentum() const;         // Provide the total jet 3-momentum
   Double_t GetInvmass();                   // Provide the invariant mass  
   Float_t GetCharge() const;               // Provide the total charge of the jet
-  Int_t GetNtracks() const;                // Return the number of tracks in the jet
+  Int_t GetNtracks(Int_t idmode=0,Int_t chmode=2,Int_t pcode=0); // Provide the number of selected tracks in the jet
   AliTrack* GetTrack(Int_t i) const;       // Provide i-th track of the jet (1=first track)
   AliTrack* GetIdTrack(Int_t id) const;    // Provide the track with user identifier "id"
   TObjArray* GetTracks(Int_t idmode=0,Int_t chmode=2,Int_t pcode=0); // Provide references to selected tracks
-  void ShowTracks(Int_t mode=1) const;     // Provide on overview of the available tracks
+  void ShowTracks(Int_t mode=1);           // Provide on overview of the available tracks
   Double_t GetPt();                        // Provide trans. momentum w.r.t. z-axis
   Double_t GetPl();                        // Provide long. momentum w.r.t. z-axis
   Double_t GetEt();                        // Provide trans. energy w.r.t. z-axis
@@ -63,6 +63,6 @@ class AliJet : public TNamed,public Ali4Vector
   Int_t fUserId;                         // The user defined identifier
   TObjArray* fSelected;                  //! Temp. array to hold user selected objects
  
- ClassDef(AliJet,10) // Creation and investigation of a jet of particle tracks.
+ ClassDef(AliJet,11) // Creation and investigation of a jet of particle tracks.
 };
 #endif

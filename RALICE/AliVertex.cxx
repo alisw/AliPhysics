@@ -266,7 +266,7 @@ AliVertex::AliVertex(const AliVertex& v) : AliJet(v.fNtinit),AliPosition(v)
  AliTrack* tx=0;
  Int_t jetflag=0,connect=0;
  AliTrack* tx2=0;
- for (Int_t it=1; it<=v.GetNtracks(); it++)
+ for (Int_t it=1; it<=v.fNtrk; it++)
  {
   tx=v.GetTrack(it);
   if (tx)
