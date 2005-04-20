@@ -70,7 +70,7 @@ class AliGenHBTprocessor : public AliGenerator
     virtual void SetSwitchCoulomb(Int_t scol = 2);
     virtual void SetSwitchFermiBose(Int_t sfb = 1);
     
-    virtual void SetMomentumRange(Float_t pmin=0, Float_t pmax=0); //Dummy method
+    virtual void SetMomentumRange(Float_t pmin=0, Float_t pmax=0) const; //Dummy method
     virtual void SetPtRange(Float_t ptmin = 0.1, Float_t ptmax = 0.98);
     virtual void SetPxRange(Float_t pxmin = -1.0, Float_t pxmax = 1.0);
     virtual void SetPyRange(Float_t pymin = -1.0, Float_t pymax = 1.0);  
@@ -113,6 +113,20 @@ class AliGenHBTprocessor : public AliGenerator
     void         SetActiveEventNumber(Int_t n);
     TParticle*   GetTrack(Int_t n);
     void         SetNEventsToMerge(Int_t nev);
+    
+    
+    //conveerts Eta (pseudorapidity) to etha(azimuthal angle). Returns radians 
+    static Double_t EtaToTheta(Double_t arg){return 2.*TMath::ATan(TMath::Exp(-arg));}
+    //converts tetha(azimuthal angle) to Eta (pseudorapidity). Argument in radians
+    static Double_t ThetaToEta(Double_t arg);
+    //converts Degrees To Radians
+    static Double_t DegreesToRadians(Double_t arg){return arg*TMath::Pi()/180.;}
+    //converts Radians To Degrees 
+    static Double_t RadiansToDegrees(Double_t arg){return arg*180./TMath::Pi();}
+    
+    static Int_t  GetDebug() {return fgDebug;}
+//    static Int_t  GetDebug() {return fgDebug;}
+    
 /***********************************************************************/
 /* * * * * * *    P R O T E C T E D   A R E A    * * * * * * * * * * * */ 
 /***********************************************************************/
@@ -236,22 +250,14 @@ class AliGenHBTprocessor : public AliGenerator
 
 
       Int_t fEventMerge;                //number of events that are masked as an one event
-      Int_t fActiveStack;
+      Int_t fActiveStack;               //current active stack
+
+      static Int_t    fgDebug;          //debug level
+
       /******* P R O T E C T E D   M E T H O D S  *****/
       void GetTrackEventIndex(Int_t n, Int_t &evno, Int_t &index) const; //returns event(stack) number and 
-  private:
-  public:    
-        //conveerts Eta (pseudorapidity) to etha(azimuthal angle). Returns radians 
-    static Double_t EtaToTheta(Double_t arg){return 2.*TMath::ATan(TMath::Exp(-arg));}
-        //converts etha(azimuthal angle) to Eta (pseudorapidity). Argument in radians
-    static Double_t ThetaToEta(Double_t arg);
-        //converts Degrees To Radians
-    static Double_t DegreesToRadians(Double_t arg){return arg*TMath::Pi()/180.;}
-          //converts Radians To Degrees 
-    static Double_t RadiansToDegrees(Double_t arg){return arg*180./TMath::Pi();}
-    static Int_t    fgDebug;
+
     ClassDef(AliGenHBTprocessor,1) // Interface class for AliMevsim
     
 };
-#include <Riostream.h>
 #endif

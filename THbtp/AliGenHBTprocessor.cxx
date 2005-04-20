@@ -72,16 +72,9 @@
 
 #include "AliGenHBTprocessor.h"
 
-#include <string.h>
-
-#include <TROOT.h>
-#include <TError.h>
-#include <TFile.h>
-#include <TTree.h>
 #include <TParticle.h>
 #include "THBTprocessor.h"
 
-#include "AliRun.h"
 #include "AliStack.h"
 #include "AliGenCocktailAfterBurner.h"
 
@@ -90,29 +83,34 @@
 ClassImp(AliGenHBTprocessor)
 
 Int_t AliGenHBTprocessor::fgDebug = 0;
-static TRandom* sRandom;
+static TRandom* gAliRandom;//RNG to be used by the fortran code
 
 AliGenCocktailAfterBurner*  GetGenerator();
 /*******************************************************************/
 AliGenHBTprocessor::AliGenHBTprocessor(const AliGenHBTprocessor& in):
-  AliGenerator(in), fEventMerge(1)
+  AliGenerator(in), 
+  fHBTprocessor(0x0),
+  fHbtPStatCodes(0x0),
+  fEventMerge(1)
 {
 //copy contructor
   // AliGenHBTprocessor::AliGenHBTprocessor();
-}
 
-AliGenHBTprocessor::AliGenHBTprocessor() : AliGenerator(), fEventMerge(1)
+}
+AliGenHBTprocessor::AliGenHBTprocessor(): 
+  AliGenerator(), 
+  fHBTprocessor(0x0),
+  fHbtPStatCodes(0x0),
+  fEventMerge(1)
 {
   //
   // Standard constructor
   // Sets default veues of all parameters
-  fHbtPStatCodes = 0x0;
-  fHBTprocessor = 0x0;
 
   SetName("AliGenHBTprocessor");
   SetTitle("AliGenHBTprocessor");
   
-  sRandom = fRandom;
+  gAliRandom = fRandom;
   fHBTprocessor = new THBTprocessor();
 
   fNPDGCodes = 0;
@@ -667,7 +665,7 @@ void AliGenHBTprocessor::SetPzRange(Float_t pzmin, Float_t pzmax)
    fPzMax =pzmax; 
    fHBTprocessor->SetPzRange(pzmin,pzmax);
  }
-void AliGenHBTprocessor::SetMomentumRange(Float_t /*pmin*/, Float_t /*pmax*/)
+void AliGenHBTprocessor::SetMomentumRange(Float_t /*pmin*/, Float_t /*pmax*/) const
  {
  //default pmin=0, pmax=0
  //Do not use this method!
@@ -843,6 +841,7 @@ void AliGenHBTprocessor::SetNBins3DFineProjectMesh(Int_t n )
 /*******************************************************************/
 void AliGenHBTprocessor::SetPrintFull(Int_t flag)
 {
+//sets the print full flag
  fPrintFull = flag;
  fHBTprocessor->SetPrintFull(flag);
 }
@@ -852,6 +851,7 @@ void AliGenHBTprocessor::SetPrintFull(Int_t flag)
 
 Int_t  AliGenHBTprocessor::GetNumberOfEvents()
 {
+//returns number of available events
   AliGenerator* g = gAlice->Generator();
   AliGenCocktailAfterBurner* cab = (g)?dynamic_cast<AliGenCocktailAfterBurner*>(g):0x0;
   if (cab == 0x0)
@@ -866,8 +866,9 @@ Int_t  AliGenHBTprocessor::GetNumberOfEvents()
 
 void AliGenHBTprocessor::SetActiveEventNumber(Int_t n)
 {
+//sets the active event
  fActiveStack =  n*fEventMerge;
- if (fgDebug)
+ if (GetDebug())
   Info("SetActiveEventNumber","Settimg active event %d passed %d",
         fActiveStack,n);
 }
@@ -875,6 +876,7 @@ void AliGenHBTprocessor::SetActiveEventNumber(Int_t n)
 
 Int_t  AliGenHBTprocessor::GetNumberOfTracks()
 {
+//returns number of tracks in active event
   AliGenerator* g = gAlice->Generator();
   AliGenCocktailAfterBurner* cab = (g)?dynamic_cast<AliGenCocktailAfterBurner*>(g):0x0;
   if (cab == 0x0)
@@ -898,6 +900,7 @@ Int_t  AliGenHBTprocessor::GetNumberOfTracks()
 
 void AliGenHBTprocessor::SetNEventsToMerge(Int_t nev)
 {
+ //sets number of events to merge
  if (nev > 0 ) fEventMerge = nev;
 }
 /*******************************************************************/
@@ -905,7 +908,7 @@ void AliGenHBTprocessor::SetNEventsToMerge(Int_t nev)
 TParticle* AliGenHBTprocessor::GetTrack(Int_t n)
 { 
 //returns track that hbtp thinks is n in active event
-  if (fgDebug > 5) Info("GetTrack","n = %d",n);
+  if (GetDebug() > 5) Info("GetTrack","n = %d",n);
   AliGenerator* g = gAlice->Generator();
   AliGenCocktailAfterBurner* cab = (g)?dynamic_cast<AliGenCocktailAfterBurner*>(g):0x0;
   if (cab == 0x0)
@@ -916,13 +919,13 @@ TParticle* AliGenHBTprocessor::GetTrack(Int_t n)
 
  Int_t ev, idx;
  GetTrackEventIndex(n,ev,idx);
- if (fgDebug > 5) Info("GetTrack","Event = %d Particle = %d",ev,idx);
+ if (GetDebug() > 5) Info("GetTrack","Event = %d Particle = %d",ev,idx);
  if ( (ev<0) || (idx<0) )
   {
     Error("GetTrack","GetTrackEventIndex returned error");
     return 0x0;
   }
- if (fgDebug > 5) Info("GetTrack","Number of Tracks in Event(%d) = %d",ev,cab->GetStack(ev)->GetNprimary());
+ if (GetDebug() > 5) Info("GetTrack","Number of Tracks in Event(%d) = %d",ev,cab->GetStack(ev)->GetNprimary());
  return cab->GetStack(ev)->Particle(idx);//safe - in case stack does not exist 
 }
 /*******************************************************************/
@@ -950,7 +953,7 @@ void AliGenHBTprocessor::GetTrackEventIndex(Int_t n, Int_t &evno, Int_t &index) 
      }
 
     Int_t ntracks = stack->GetNprimary();
-    if (fgDebug > 10) Info("GetTrackEventIndex","Event %d has %d tracks. n = %d",i,ntracks,n);
+    if (GetDebug() > 10) Info("GetTrackEventIndex","Event %d has %d tracks. n = %d",i,ntracks,n);
     
     if ( ntracks > n) 
      {
@@ -1167,13 +1170,13 @@ extern "C" void type_ofCall  alihbtp_initialize()
 extern "C" void type_ofCall alihbtp_getnumberevents(Int_t &nev)
  {
   //passes number of events to the fortran 
-   if(AliGenHBTprocessor::fgDebug) 
+   if(AliGenHBTprocessor::GetDebug()) 
     ::Info("AliGenHBTprocessor.cxx: alihbtp_getnumberevents","(%d) ....",nev);
 
    AliGenHBTprocessor* gen = GetAliGenHBTprocessor();//we dont check because it is done in function
    nev = gen->GetNumberOfEvents();
     
-   if(AliGenHBTprocessor::fgDebug>5) 
+   if(AliGenHBTprocessor::GetDebug()>5) 
     ::Info("AliGenHBTprocessor.cxx: alihbtp_getnumberevents","EXITED N Ev = %d",nev);
  }
 
@@ -1183,16 +1186,16 @@ extern "C" void type_ofCall  alihbtp_setactiveeventnumber(Int_t & nev)
  {
 //sets active event in generator (AliGenCocktailAfterBurner)
 
-   if(AliGenHBTprocessor::fgDebug>5) 
+   if(AliGenHBTprocessor::GetDebug()>5) 
     ::Info("AliGenHBTpocessor.cxx: alihbtp_setactiveeventnumber","(%d)",nev);
-   if(AliGenHBTprocessor::fgDebug>0)
+   if(AliGenHBTprocessor::GetDebug()>0)
     ::Info("AliGenHBTpocessor.cxx: alihbtp_setactiveeventnumber","Asked for event %d",nev-1);
     
    AliGenHBTprocessor* gen = GetAliGenHBTprocessor();//we dont check because it is done in function
    
    gen->SetActiveEventNumber(nev - 1); //fortran numerates events from 1 to N
    
-   if(AliGenHBTprocessor::fgDebug>5) 
+   if(AliGenHBTprocessor::GetDebug()>5) 
     ::Info("AliGenHBTpocessor.cxx: alihbtp_setactiveeventnumber","EXITED returned %d",nev);
  }
 /*******************************************************************/
@@ -1200,13 +1203,13 @@ extern "C" void type_ofCall  alihbtp_setactiveeventnumber(Int_t & nev)
 extern "C" void type_ofCall  alihbtp_getnumbertracks(Int_t &ntracks)
  {
 //passes number of particles in active event to the fortran  
-   if(AliGenHBTprocessor::fgDebug>5) 
+   if(AliGenHBTprocessor::GetDebug()>5) 
     ::Info("AliGenHBTpocessor.cxx: alihbtp_getnumbertracks","(%d)",ntracks);
 
    AliGenHBTprocessor* gen = GetAliGenHBTprocessor();//we dont check because it is done in function
 
    ntracks = gen->GetNumberOfTracks();
-   if(AliGenHBTprocessor::fgDebug>5)
+   if(AliGenHBTprocessor::GetDebug()>5)
     ::Info("AliGenHBTpocessor.cxx: alihbtp_getnumbertracks","EXITED Ntracks = %d",ntracks); 
  }
  
@@ -1223,7 +1226,7 @@ extern "C" void type_ofCall
 // px,py,pz - momenta
 // geantpid - type of the particle - Geant Particle ID
  
-   if(AliGenHBTprocessor::fgDebug>5)
+   if(AliGenHBTprocessor::GetDebug()>5)
     ::Info("AliGenHBTpocessor.cxx: alihbtp_puttrack","(%d)",n);
 
    AliGenHBTprocessor* gen = GetAliGenHBTprocessor();//we dont check because it is done in function
@@ -1242,12 +1245,12 @@ extern "C" void type_ofCall
               "SOMETHING IS GOING BAD:\n   GEANTPIDS ARE NOT THE SAME");
     }
    
-   if(AliGenHBTprocessor::fgDebug>0)
+   if(AliGenHBTprocessor::GetDebug()>0)
      if (px != track->Px()) 
        ::Info("AliGenHBTprocessor.cxx: alihbtp_puttrack",
               "Px diff. = %f", px - track->Px());
    
-   if(AliGenHBTprocessor::fgDebug>3)
+   if(AliGenHBTprocessor::GetDebug()>3)
      ::Info("AliGenHBTprocessor.cxx: alihbtp_puttrack",
             "track->GetPdgCode() --> %d",track->GetPdgCode());
    
@@ -1259,7 +1262,7 @@ extern "C" void type_ofCall
    
    gen->SetHbtPStatusCode(flag,n-1);
    
-   if(AliGenHBTprocessor::fgDebug>5) ::Info("AliGenHBTprocessor.cxx: alihbtp_puttrack","EXITED ");
+   if(AliGenHBTprocessor::GetDebug()>5) ::Info("AliGenHBTprocessor.cxx: alihbtp_puttrack","EXITED ");
  }
 
 /*******************************************************************/
@@ -1275,7 +1278,7 @@ extern "C" void type_ofCall
 // px,py,pz - momenta
 // geantpid - type of the particle - Geant Particle ID
  
-   if(AliGenHBTprocessor::fgDebug>5) ::Info("AliGenHBTprocessor.cxx: alihbtp_gettrack","(%d)",n);
+   if(AliGenHBTprocessor::GetDebug()>5) ::Info("AliGenHBTprocessor.cxx: alihbtp_gettrack","(%d)",n);
    AliGenHBTprocessor* g = GetAliGenHBTprocessor();
 
    TParticle * track = g->GetTrack(n-1);
@@ -1288,14 +1291,14 @@ extern "C" void type_ofCall
   
    geantpid = g->IdFromPDG( track->GetPdgCode() );
   
-   if(AliGenHBTprocessor::fgDebug>5) ::Info("AliGenHBTprocessor.cxx: alihbtp_gettrack","EXITED"); 
+   if(AliGenHBTprocessor::GetDebug()>5) ::Info("AliGenHBTprocessor.cxx: alihbtp_gettrack","EXITED"); 
  }
 
 /*******************************************************************/
 extern "C" Float_t type_ofCall hbtpran(Int_t &)
 {
 //interface to the random number generator
-  return sRandom->Rndm();
+  return gAliRandom->Rndm();
 }        
 
 /*******************************************************************/
