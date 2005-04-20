@@ -351,7 +351,7 @@ void AliTOF::CreateGeometry()
 }
 
 //_____________________________________________________________________________
-void AliTOF::DrawModule() const
+void AliTOF::DrawModule()
 {
   //
   // Draw a shaded view of the common part of the TOF geometry
@@ -536,7 +536,7 @@ void AliTOF::CreateMaterials()
 }
 
 //_____________________________________________________________________________
-Int_t AliTOF::DistancetoPrimitive(Int_t , Int_t ) const
+Int_t AliTOF::DistancetoPrimitive(Int_t , Int_t )
 {
   //
   // Returns distance from mouse pointer to detector, default version

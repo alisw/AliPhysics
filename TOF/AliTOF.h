@@ -44,6 +44,7 @@ public:
   virtual void    SetTreeAddress();
   virtual void    AddHit(Int_t track, Int_t* vol, Float_t* hits);
   virtual void    AddT0Hit(Int_t track, Int_t* vol, Float_t* hits);
+  virtual void    AddDigit(Int_t* /*tracks*/, Int_t* /*vol*/) {};
   virtual void    AddDigit(Int_t* tracks, Int_t* vol, Float_t* digits);
   virtual void    AddSDigit(Int_t tracknum, Int_t* vol, Float_t* digits);
   virtual void    CreateGeometry();
@@ -54,11 +55,11 @@ public:
   virtual void    Makehits(Bool_t hits=1);
   virtual void    FinishEvent();
   virtual Int_t   IsVersion() const =0;
-  Int_t           DistancetoPrimitive(Int_t px, Int_t py) const;
+  Int_t           DistancetoPrimitive(Int_t px, Int_t py);
   virtual void    StepManager()=0;
   virtual void    TOFpc(Float_t /*xtof*/, Float_t /*ytof*/, Float_t /*zlenC*/,
                         Float_t /*zlenB*/, Float_t /*zlenA*/, Float_t /*ztof0*/){}
-  virtual void    DrawModule() const;
+  virtual void    DrawModule();
   virtual void    DrawDetectorModules()=0;
   virtual void    DrawDetectorStrips()=0;
   //virtual void   DrawDetectorModulesinFrame()=0;

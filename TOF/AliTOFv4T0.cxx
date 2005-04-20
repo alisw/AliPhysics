@@ -651,7 +651,7 @@ void AliTOFv4T0::TOFpc(Float_t xtof, Float_t ytof, Float_t zlenC,
 
 }
 //_____________________________________________________________________________
-void AliTOFv4T0::DrawModule() const
+void AliTOFv4T0::DrawModule()
 {
   //
   // Draw a shaded view of the Time Of Flight version 4
