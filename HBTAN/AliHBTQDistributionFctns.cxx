@@ -31,6 +31,14 @@ AliHBTQInvDistributionVsKtFctn::AliHBTQInvDistributionVsKtFctn(Int_t nXbins, Dou
  Rename("QInvDistributionVsKt","Q_{Inv} Distribution vs. K_{t}");
 }
 /******************************************************************/
+
+TH1* AliHBTQInvDistributionVsKtFctn::GetResult()
+{
+ //returns the result histo
+ return this->GetNumerator();
+}
+
+/******************************************************************/
 /******************************************************************/
 
 ClassImp( AliHBTQOutDistributionVsKtFctn )
@@ -42,6 +50,14 @@ AliHBTQOutDistributionVsKtFctn::AliHBTQOutDistributionVsKtFctn(Int_t nXbins, Dou
  //ctor
  Rename("QOutDistributionVsKt","Q_{Out} Distribution vs. K_{t}");
 }
+/******************************************************************/
+
+TH1* AliHBTQOutDistributionVsKtFctn::GetResult()
+{
+ //returns the result histo
+ return this->GetNumerator();
+}
+
 /******************************************************************/
 /******************************************************************/
 
@@ -55,6 +71,14 @@ AliHBTQSideDistributionVsKtFctn::AliHBTQSideDistributionVsKtFctn(Int_t nXbins, D
  Rename("QSideDistributionVsKt","Q_{Side} Distribution vs. K_{t}");
 }
 /******************************************************************/
+
+TH1* AliHBTQSideDistributionVsKtFctn::GetResult()
+{
+ //returns the result histo
+ return this->GetNumerator();
+}
+
+/******************************************************************/
 /******************************************************************/
 
 ClassImp( AliHBTQLongDistributionVsKtFctn )
@@ -67,6 +91,14 @@ AliHBTQLongDistributionVsKtFctn::AliHBTQLongDistributionVsKtFctn(Int_t nXbins, D
  Rename("QLongDistributionVsKt","Q_{Long} Distribution vs. K_{t}");
 }
 /******************************************************************/
+
+TH1* AliHBTQLongDistributionVsKtFctn::GetResult()
+{
+ //returns the result histo
+ return this->GetNumerator();
+}
+
+/******************************************************************/
 /******************************************************************/
 
 ClassImp( AliHBTQOutDistributionVsQInvFctn )
@@ -78,6 +110,14 @@ AliHBTQOutDistributionVsQInvFctn::AliHBTQOutDistributionVsQInvFctn(Int_t nXbins,
  //ctor
  Rename("QOutDistributionVsQInv","Q_{Out} Distribution vs. Q_{inv}");
 }
+/******************************************************************/
+
+TH1* AliHBTQOutDistributionVsQInvFctn::GetResult()
+{
+ //returns the result histo
+ return this->GetNumerator();
+}
+
 
 /******************************************************************/
 /******************************************************************/
@@ -91,6 +131,14 @@ AliHBTQSideDistributionVsQInvFctn::AliHBTQSideDistributionVsQInvFctn(Int_t nXbin
  //ctor
  Rename("QSideDistributionVsQInv","Q_{Side} Distribution vs. Q_{inv}");
 }
+/******************************************************************/
+
+TH1* AliHBTQSideDistributionVsQInvFctn::GetResult()
+{
+ //returns the result histo
+ return this->GetNumerator();
+}
+
 
 /******************************************************************/
 /******************************************************************/
@@ -104,6 +152,14 @@ AliHBTQLongDistributionVsQInvFctn::AliHBTQLongDistributionVsQInvFctn(Int_t nXbin
  //ctor
  Rename("QLongDistributionVsQInv","Q_{Long} Distribution vs. Q_{inv}");
 }
+/******************************************************************/
+
+TH1* AliHBTQLongDistributionVsQInvFctn::GetResult()
+{
+ //returns the result histo
+ return this->GetNumerator();
+}
+
 
 /******************************************************************/
 /******************************************************************/
@@ -118,6 +174,14 @@ AliHBTPtDiffDistributionVsQInvFctn::AliHBTPtDiffDistributionVsQInvFctn(Int_t nXb
  Rename("PtDiffDistributionVsQInv","P_{t} Difference Distribution vs. Q_{inv}");
 }
 /******************************************************************/
+
+TH1* AliHBTPtDiffDistributionVsQInvFctn::GetResult()
+{
+ //returns the result histo
+ return this->GetNumerator();
+}
+
+/******************************************************************/
 /******************************************************************/
 
 ClassImp(AliHBTRStarDistribution)
@@ -129,6 +193,14 @@ AliHBTRStarDistribution::AliHBTRStarDistribution(Int_t nXbins, Double_t maxXval,
 //ctor
  Rename("RStarDistribution","R^{*} distribution");
 }
+/******************************************************************/
+
+TH1* AliHBTRStarDistribution::GetResult()
+{
+ //returns the result histo
+ return this->GetNumerator();
+}
+
 
 /******************************************************************/
 /******************************************************************/
@@ -140,6 +212,14 @@ AliHBTRDistribution::AliHBTRDistribution(Int_t nXbins, Double_t maxXval, Double_
 {
 //ctor
  Rename("RDistribution","R (distance between creation points) distribution ");
+}
+
+/******************************************************************/
+
+TH1* AliHBTRDistribution::GetResult()
+{
+ //returns the result histo
+ return this->GetNumerator();
 }
 
 

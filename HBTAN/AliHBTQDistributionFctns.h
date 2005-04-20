@@ -38,7 +38,7 @@ class AliHBTQOutDistributionVsKtFctn: public AliHBTOnePairFctn2D
    AliHBTQOutDistributionVsKtFctn(Int_t nXbins = 200, Double_t maxXval = 1., Double_t minXval = 0.0, 
                              Int_t nYbins = 500, Double_t maxYval = .15, Double_t minYval =-0.15);
    virtual ~AliHBTQOutDistributionVsKtFctn(){}
-   TH1* GetResult(){return this->GetNumerator();}
+   TH1* GetResult();
    void GetValues(AliHBTPair* partpair, Double_t& x, Double_t& y) const
     {
      y = partpair->GetQOutLCMS();
@@ -55,7 +55,7 @@ class AliHBTQSideDistributionVsKtFctn: public AliHBTOnePairFctn2D
    AliHBTQSideDistributionVsKtFctn(Int_t nXbins = 200, Double_t maxXval = 1.2, Double_t minXval = -0.1, 
                              Int_t nYbins = 500, Double_t maxYval = 1.2, Double_t minYval =-1.2);
    virtual ~AliHBTQSideDistributionVsKtFctn(){}
-   TH1* GetResult(){return this->GetNumerator();}
+   TH1* GetResult();
    void GetValues(AliHBTPair* partpair, Double_t& x, Double_t& y) const
     {
      y = partpair->GetQSideLCMS();
@@ -73,7 +73,7 @@ class AliHBTQLongDistributionVsKtFctn: public AliHBTOnePairFctn2D
    AliHBTQLongDistributionVsKtFctn(Int_t nXbins = 200, Double_t maxXval = 1.2, Double_t minXval = -0.1, 
                              Int_t nYbins = 500, Double_t maxYval = 1.2, Double_t minYval =-1.2);
    virtual ~AliHBTQLongDistributionVsKtFctn(){}
-   TH1* GetResult(){return this->GetNumerator();}
+   TH1* GetResult();
    void GetValues(AliHBTPair* partpair, Double_t& x, Double_t& y) const
     {
      y = partpair->GetQLongLCMS();
@@ -91,7 +91,7 @@ class AliHBTQInvDistributionVsKtFctn: public AliHBTOnePairFctn2D
    AliHBTQInvDistributionVsKtFctn(Int_t nXbins = 200, Double_t maxXval = 1.2, Double_t minXval = -0.1, 
                              Int_t nYbins = 500, Double_t maxYval = 1.2, Double_t minYval =-1.2);
    virtual ~AliHBTQInvDistributionVsKtFctn(){}
-   TH1* GetResult(){return this->GetNumerator();}
+   TH1* GetResult();
    void GetValues(AliHBTPair* partpair, Double_t& x, Double_t& y) const
     {
      y = partpair->GetQInv();
@@ -109,7 +109,7 @@ class AliHBTQOutDistributionVsQInvFctn: public AliHBTOnePairFctn2D
    AliHBTQOutDistributionVsQInvFctn(Int_t nXbins = 200, Double_t maxXval = 1., Double_t minXval = 0.0, 
                              Int_t nYbins = 500, Double_t maxYval = .15, Double_t minYval =-0.15);
    virtual ~AliHBTQOutDistributionVsQInvFctn(){}
-   TH1* GetResult(){return this->GetNumerator();}
+   TH1* GetResult();
    void GetValues(AliHBTPair* partpair, Double_t& x, Double_t& y) const
     {
      y = partpair->GetQOutLCMS();
@@ -126,7 +126,7 @@ class AliHBTQSideDistributionVsQInvFctn: public AliHBTOnePairFctn2D
    AliHBTQSideDistributionVsQInvFctn(Int_t nXbins = 200, Double_t maxXval = 1.2, Double_t minXval = -0.1, 
                              Int_t nYbins = 500, Double_t maxYval = 1.2, Double_t minYval =-1.2);
    virtual ~AliHBTQSideDistributionVsQInvFctn(){}
-   TH1* GetResult(){return this->GetNumerator();}
+   TH1* GetResult();
    void GetValues(AliHBTPair* partpair, Double_t& x, Double_t& y) const
     {
      y = partpair->GetQSideLCMS();
@@ -144,7 +144,7 @@ class AliHBTQLongDistributionVsQInvFctn: public AliHBTOnePairFctn2D
    AliHBTQLongDistributionVsQInvFctn(Int_t nXbins = 200, Double_t maxXval = 1.2, Double_t minXval = -0.1, 
                              Int_t nYbins = 500, Double_t maxYval = 1.2, Double_t minYval =-1.2);
    virtual ~AliHBTQLongDistributionVsQInvFctn(){}
-   TH1* GetResult(){return this->GetNumerator();}
+   TH1* GetResult();
    void GetValues(AliHBTPair* partpair, Double_t& x, Double_t& y) const
     {
      y = partpair->GetQLongLCMS();
@@ -161,7 +161,7 @@ class AliHBTPtDiffDistributionVsQInvFctn: public AliHBTOnePairFctn2D
    AliHBTPtDiffDistributionVsQInvFctn(Int_t nXbins = 800, Double_t maxXval = 4.0, Double_t minXval = 0., 
                              Int_t nYbins = 500, Double_t maxYval = 0.1, Double_t minYval =-0.1);
    virtual ~AliHBTPtDiffDistributionVsQInvFctn(){}
-   TH1* GetResult(){return this->GetNumerator();}
+   TH1* GetResult();
    void GetValues(AliHBTPair* partpair, Double_t& x, Double_t& y) const
     {
      y = partpair->Particle1()->Pt() - partpair->Particle2()->Pt();
@@ -178,7 +178,7 @@ class AliHBTRStarDistribution: public AliHBTOnePairFctn1D
   public:
     AliHBTRStarDistribution(Int_t nXbins = 500, Double_t maxXval = 5e-11, Double_t minXval = 0.);
     virtual ~AliHBTRStarDistribution(){}
-    TH1* GetResult(){return this->GetNumerator();}
+    TH1* GetResult();
   protected:
     Double_t GetValue(AliHBTPair* partpair) const
     {
@@ -197,7 +197,7 @@ class AliHBTRDistribution: public AliHBTOnePairFctn1D
   public:
     AliHBTRDistribution(Int_t nXbins = 500, Double_t maxXval = 5e-11, Double_t minXval = 0.);
     virtual ~AliHBTRDistribution(){}
-    TH1* GetResult(){return this->GetNumerator();}
+    TH1* GetResult();
   protected:
     Double_t GetValue(AliHBTPair* partpair) const
     {
