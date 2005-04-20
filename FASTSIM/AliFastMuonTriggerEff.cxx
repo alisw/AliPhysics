@@ -20,6 +20,7 @@
 #include <TTree.h>
 #include <TROOT.h>
 #include <stdlib.h>
+#include <Rtypes.h>
 
 // Debugging flag
 //#define MYTRIGDEBUG
