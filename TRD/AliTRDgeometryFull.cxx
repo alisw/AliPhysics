@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.14  2004/05/07 06:52:50  cblume
+Bug fix to allow for fPHOShole and not fRICHhole
+
 Revision 1.13  2004/02/27 15:40:18  cblume
 Fix definition of rotation matrices
 
@@ -119,19 +122,23 @@ void AliTRDgeometryFull::Init()
 
   // The outer lengths of the chambers for the sectors with holes for the PHOS
   Float_t lengthPH[kNplan][kNcham] = { { 124.0, 117.0,   0.0, 117.0, 124.0 }
+                                     , { 124.0, 117.0,   0.0, 117.0, 124.0 }
 				     , { 131.0, 124.0,   0.0, 124.0, 131.0 }
 				     , { 138.0, 131.0,   0.0, 131.0, 138.0 }
 				     , { 145.0, 138.0,   0.0, 138.0, 145.0 }
-				     , { 147.0, 140.0,   0.0, 140.0, 147.0 }
 				     , { 147.0, 140.0,   0.0, 140.0, 147.0 } };
+  // Old layer 6				     
+  //                                 , { 147.0, 140.0,   0.0, 140.0, 147.0 } };
 
   // The outer lengths of the chambers for the sectors with holes for the RICH
   Float_t lengthRH[kNplan][kNcham] = { {  87.5,   0.0,   0.0,   0.0,  87.5 }
+				     , {  87.5,   0.0,   0.0,   0.0,  87.5 }
 				     , { 101.5,   0.0,   0.0,   0.0, 101.5 }
 				     , { 115.5,   0.0,   0.0,   0.0, 115.5 }
 				     , { 129.5,   0.0,   0.0,   0.0, 129.5 }
-				     , { 133.5,   0.0,   0.0,   0.0, 133.5 }
 				     , { 133.5,   0.0,   0.0,   0.0, 133.5 } };
+  // Old layer 6
+  //				     , { 133.5,   0.0,   0.0,   0.0, 133.5 } };
 
   for (icham = 0; icham < kNcham; icham++) {
     for (iplan = 0; iplan < kNplan; iplan++) {
@@ -1375,40 +1382,5 @@ void AliTRDgeometryFull::CreateServices(Int_t *idtmed)
   }
 
   delete parameter;
-
-}
-
-//_____________________________________________________________________________
-void AliTRDgeometryFull::SetOldGeometry()
-{
-  //
-  // Use the old chamber lengths
-  //
-
-  Int_t icham;
-  Int_t iplan;
-
-  AliTRDgeometry::SetOldGeometry();
-
-  Float_t lengthPH[kNplan][kNcham] = { { 123.5, 116.5,   0.0, 116.5, 123.5 }
-				     , { 131.0, 124.0,   0.0, 124.0, 131.0 }
-				     , { 134.5, 131.5,   0.0, 131.5, 134.5 }
-				     , { 142.0, 139.0,   0.0, 139.0, 142.0 }
-				     , { 142.0, 146.0,   0.0, 146.0, 142.0 }
-                                     , { 134.5, 153.5,   0.0, 153.5, 134.5 } };
-
-  Float_t lengthRH[kNplan][kNcham] = { {  86.5,   0.0,   0.0,   0.0,  86.5 }
-				     , { 101.5,   0.0,   0.0,   0.0, 101.5 }
-				     , { 112.5,   0.0,   0.0,   0.0, 112.5 }
-				     , { 127.5,   0.0,   0.0,   0.0, 127.5 }
-				     , { 134.5,   0.0,   0.0,   0.0, 134.5 }
-                                     , { 134.5,   0.0,   0.0,   0.0, 134.5 } };
-                                                                               
-  for (icham = 0; icham < kNcham; icham++) {
-    for (iplan = 0; iplan < kNplan; iplan++) {
-      fClengthPH[iplan][icham] = lengthPH[iplan][icham];
-      fClengthRH[iplan][icham] = lengthRH[iplan][icham];
-    }
-  }
 
 }

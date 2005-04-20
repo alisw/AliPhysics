@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.12  2004/02/02 13:37:52  hristov
+Implementing of new function to check for holes (M.Ivanov)
+
 Revision 1.11  2003/09/18 09:06:07  cblume
 Geometry update, Removal of compiler warnings
 
@@ -746,43 +749,5 @@ void AliTRDgeometryHole::CreateGeometry(Int_t *idtmed)
   gMC->Gspos("UTR3",3,"BTR3",xpos,ypos,zpos,0,"ONLY");
 
 }
-
-//_____________________________________________________________________________
-void AliTRDgeometryHole::SetOldGeometry()
-{
-  //
-  // Use the old chamber lengths
-  //
-
-  Int_t icham;
-  Int_t iplan;
-
-  AliTRDgeometry::SetOldGeometry();
-
-  // The outer lengths of the chambers for the sectors with holes for the PHOS
-  Float_t lengthPH[kNplan][kNcham] = { {   0.0,   0.0,   0.0, 116.5, 123.5 }
-				     , {   0.0,   0.0,   0.0, 124.0, 131.0 }
-				     , {   0.0,   0.0,   0.0, 131.5, 134.5 }
-				     , {   0.0,   0.0,   0.0, 139.0, 142.0 }
-				     , {   0.0,   0.0,   0.0, 146.0, 142.0 }
-                                     , {   0.0,   0.0,   0.0, 153.5, 134.5 } };
-
-  // The outer lengths of the chambers for the sectors with holes for the RICH
-  Float_t lengthRH[kNplan][kNcham] = { {   0.0,   0.0,   0.0,   0.0,  86.5 }
-				     , {   0.0,   0.0,   0.0,   0.0, 101.5 }
-				     , {   0.0,   0.0,   0.0,   0.0, 112.5 }
-				     , {   0.0,   0.0,   0.0,   0.0, 127.5 }
-				     , {   0.0,   0.0,   0.0,   0.0, 134.5 }
-                                     , {   0.0,   0.0,   0.0,   0.0, 134.5 } };
-
-  for (icham = 0; icham < kNcham; icham++) {
-    for (iplan = 0; iplan < kNplan; iplan++) {
-      fClengthPH[iplan][icham] = lengthPH[iplan][icham];
-      fClengthRH[iplan][icham] = lengthRH[iplan][icham];
-    }
-  }
-
-}
-
 
 

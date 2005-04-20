@@ -64,8 +64,8 @@ ClassImp(AliTRDgeometry)
   const Float_t AliTRDgeometry::fgkSlenTR3 = 159.5;  
 
   // The super module side plates
-  const Float_t AliTRDgeometry::fgkSMpltT  = 0.2;
-  const Float_t AliTRDgeometry::fgkSMgapT  = 0.5;  
+  const Float_t AliTRDgeometry::fgkSMpltT  =   0.2;
+  const Float_t AliTRDgeometry::fgkSMgapT  =   0.5;  
 
   // Height of different chamber parts
   // Radiator
@@ -194,7 +194,7 @@ void AliTRDgeometry::Init()
   // Changed with the introduction of 
   // the new layer 0. The old layer 6
   // is removed.
-  fCwidth[0] =  92.6;
+  fCwidth[0] =  90.4;
   fCwidth[1] =  94.8;
   fCwidth[2] =  99.3;
   fCwidth[3] = 103.7;
@@ -478,31 +478,6 @@ Int_t AliTRDgeometry::GetSector(Int_t d) const
   //
 
   return ((Int_t) (d / (fgkNplan * fgkNcham)));
-
-}
-
-//_____________________________________________________________________________
-void AliTRDgeometry::SetOldGeometry()
-{
-  //
-  // Use the old chamber lengths
-  //
-
-  Int_t icham;
-  Int_t iplan;
-
-  Float_t length[kNplan][kNcham]   = { { 123.5, 123.5, 110.0, 123.5, 123.5 }
-				     , { 131.0, 131.0, 110.0, 131.0, 131.0 }
-				     , { 134.5, 138.5, 110.0, 138.5, 134.5 }
-				     , { 142.0, 146.0, 110.0, 146.0, 142.0 }
-				     , { 142.0, 153.0, 110.0, 153.0, 142.0 }
-                                     , { 134.0, 160.5, 110.0, 160.5, 134.0 } };
-
-  for (icham = 0; icham < kNcham; icham++) {
-    for (iplan = 0; iplan < kNplan; iplan++) {
-      fClength[iplan][icham]   = length[iplan][icham];
-    }
-  }
 
 }
 

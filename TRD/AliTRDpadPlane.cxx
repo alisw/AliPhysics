@@ -77,9 +77,6 @@ AliTRDpadPlane::AliTRDpadPlane(Int_t p, Int_t c):TObject()
   fPla = p;
   fCha = c;
 
-  //fRowSpacing = 0.025;
-  //fColSpacing = 0.025;
-
   fRowSpacing = 0.0;
   fColSpacing = 0.0;
 
@@ -97,7 +94,7 @@ AliTRDpadPlane::AliTRDpadPlane(Int_t p, Int_t c):TObject()
       // L0C0 type
       fNrows        =  12;
       fLength       = 108.0;
-      fWidth        =  94.4;
+      fWidth        =  92.2;
       fLengthOPad   =   8.0;
       fWidthOPad    =   0.515;
       fLengthIPad   =   9.0;
@@ -108,7 +105,7 @@ AliTRDpadPlane::AliTRDpadPlane(Int_t p, Int_t c):TObject()
       // L0C1 type
       fNrows        =  16;
       fLength       = 122.0;
-      fWidth        =  94.4;
+      fWidth        =  92.2;
       fLengthOPad   =   7.5;
       fWidthOPad    =   0.515;
       fLengthIPad   =   7.5;
@@ -268,6 +265,7 @@ AliTRDpadPlane::AliTRDpadPlane(Int_t p, Int_t c):TObject()
   if (fPadCol) delete [] fPadCol;
   fPadCol = new Double_t[fNcols];
   Double_t col = fGeo->GetChamberWidth(p) / 2. 
+               + fGeo->CroWid()
                - fWidthRim;
   for (Int_t ic = 0; ic < fNcols; ic++) {
     fPadCol[ic] = col;

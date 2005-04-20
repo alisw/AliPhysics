@@ -56,6 +56,7 @@ class AliTRDgeometry : public AliGeometry {
   static  Float_t  CdrHght() { return fgkCdrH;    };
   static  Float_t  CamHght() { return fgkCamH;    };
   static  Float_t  CroHght() { return fgkCroH;    };
+  static  Float_t  CroWid()  { return fgkCroW;    };
   static  Float_t  MyThick() { return fgkMyThick; };
   static  Float_t  DrThick() { return fgkDrThick; };
   static  Float_t  AmThick() { return fgkAmThick; };
@@ -65,8 +66,6 @@ class AliTRDgeometry : public AliGeometry {
 
   virtual void     SetPHOShole() = 0;
   virtual void     SetRICHhole() = 0;
-
-  virtual void     SetOldGeometry();
 
   virtual Bool_t   GetPHOShole() const = 0;
   virtual Bool_t   GetRICHhole() const = 0;
