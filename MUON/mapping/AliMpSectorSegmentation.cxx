@@ -41,7 +41,9 @@ const Double_t AliMpSectorSegmentation::fgkS2 = 100.;
 //______________________________________________________________________________
 AliMpSectorSegmentation::AliMpSectorSegmentation(const AliMpSector* sector) 
   : AliMpVSegmentation(),
-    fkSector(sector)
+    fkSector(sector),
+    fMaxIndexInX(0),
+    fMaxIndexInY(0)
 {
 //
   fPadBuffer = new AliMpPad(AliMpPad::Invalid());
@@ -54,7 +56,9 @@ AliMpSectorSegmentation::AliMpSectorSegmentation()
   : AliMpVSegmentation(),
     fkSector(0),
     fPadBuffer(0),
-    fPadDimensionsMap()      
+    fPadDimensionsMap(),      
+    fMaxIndexInX(0),
+    fMaxIndexInY(0)
 {
 //
 }
@@ -376,7 +380,10 @@ AliMpSectorSegmentation::PadByIndices(const AliMpIntPair& indices,
    
   AliMpMotifPosition* motifPos = FindMotifPosition(indices);
   if (!motifPos) {    
-    if (warning) Warning("PadByIndices","Pad indices not contained in any motif!");
+    if (warning) {
+      cout << "indices " <<  indices << endl;
+      Warning("PadByIndices","Pad indices not contained in any motif!");
+    }  
     return AliMpPad::Invalid();
   }
   
@@ -462,6 +469,34 @@ AliMpSectorSegmentation::PadByDirection(const TVector2& startPosition,
   
   Fatal("PadByDirection", "Incomplete switch on Sector direction");
   return AliMpPad::Invalid();  
+}
+
+//______________________________________________________________________________
+Int_t  AliMpSectorSegmentation::MaxPadIndexX()
+{
+// Return maximum pad index in x
+
+  if (fMaxIndexInX) return fMaxIndexInX;
+  
+  for (Int_t i=0; i<fkSector->GetNofRows(); i++) {
+    Int_t ixh = fkSector->GetRow(i)->GetHighIndicesLimit().GetFirst();
+    if ( ixh > fMaxIndexInX ) fMaxIndexInX = ixh;
+  }  
+  return fMaxIndexInX;
+}
+
+//______________________________________________________________________________
+Int_t  AliMpSectorSegmentation::MaxPadIndexY()
+{
+// Return maximum pad index in y
+
+  if (fMaxIndexInY) return fMaxIndexInY;
+  
+  for (Int_t i=0; i<fkSector->GetNofRows(); i++) {
+    Int_t iyh = fkSector->GetRow(i)->GetHighIndicesLimit().GetSecond();
+    if ( iyh > fMaxIndexInY ) fMaxIndexInY = iyh;
+  }  
+  return fMaxIndexInY;
 }
 
 //______________________________________________________________________________

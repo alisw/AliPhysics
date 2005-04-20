@@ -378,16 +378,7 @@ Int_t AliMUONSt12QuadrantSegmentation::Npx() const
 // hard coded for the time being
 // ---
 
-  //Fatal("Npx", "Not yet implemented.");
-  switch (fSector->GetDirection()) {
-    case kX:
-      return 142;
-    case kY:
-      return 108;
-    default:
-      AliError("Unknown sector direction");
-      return 0;  
-  }      
+  return fSectorSegmentation->MaxPadIndexX();
 }
 
 //______________________________________________________________________________
@@ -397,16 +388,7 @@ Int_t AliMUONSt12QuadrantSegmentation::Npy() const
 // hard coded for the time being
 // ---
 
-  //Fatal("Npy", "Not yet implemented.");
-  switch (fSector->GetDirection()) {
-    case kX:
-      return 160;
-    case kY:
-      return 213;
-    default:
-      AliError("Unknown sector direction");
-      return 0;  
-  }    
+  return fSectorSegmentation->MaxPadIndexY();
 }
 
 //______________________________________________________________________________

@@ -49,7 +49,7 @@ class AliMpVRowSegmentSpecial : public AliMpVRowSegment
 
     // set methods
     virtual void   SetOffset(const TVector2& /*offset*/) {}
-    virtual void   SetGlobalIndices();
+    virtual void   SetGlobalIndices(AliMpRow* rowBefore) = 0;
     virtual Int_t  SetIndicesToMotifPosition(Int_t i, 
                              const AliMpIntPair& indices) = 0;
 

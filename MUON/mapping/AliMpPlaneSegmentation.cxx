@@ -288,6 +288,26 @@ AliMpPad AliMpPlaneSegmentation::PadByPosition(const TVector2& position,
   return kTransformer->Transform(pad);	      
 }
 
+//______________________________________________________________________________
+Int_t  AliMpPlaneSegmentation::MaxPadIndexX()
+{
+// Return maximum pad index in x
+
+  Fatal("MaxPadIndexX", " not implemented.");
+  
+  return 0;
+}
+
+//______________________________________________________________________________
+Int_t  AliMpPlaneSegmentation::MaxPadIndexY()
+{
+// Return maximum pad index in y
+
+  Fatal("MaxPadIndexY", " not implemented.");
+  
+  return 0;
+}
+
 //_____________________________________________________________________________
 Bool_t AliMpPlaneSegmentation::HasPad(const AliMpIntPair& indices) const
 {

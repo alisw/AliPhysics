@@ -301,8 +301,8 @@ void AliMpRow::SetMotifPositions()
 void AliMpRow::SetGlobalIndices(AliMpDirection constPadSizeDirection, 
                                 AliMpRow* rowBefore)
 {
-// Sets the global indices limits to its row segments,
-// motif positions.
+// Sets the global indices limits to its row segments, motif positions
+// and itself.
 // ---
 
   Int_t ix = AliMpConstants::StartPadIndex();
@@ -333,15 +333,37 @@ void AliMpRow::SetGlobalIndices(AliMpDirection constPadSizeDirection,
        } 
 
        // Set (ix, iy) to k-th motif position and update ix
-       ix = rowSegment->SetIndicesToMotifPosition(k, AliMpIntPair(ix, iy));		   
+       ix = rowSegment->SetIndicesToMotifPosition(k, AliMpIntPair(ix, iy));
     }
-    rowSegment->SetGlobalIndices();    
+    rowSegment->SetGlobalIndices(rowBefore);    
   }
 
-  SetLowIndicesLimit(GetRowSegment(0)->GetLowIndicesLimit());
-  SetHighIndicesLimit(GetRowSegment(GetNofRowSegments()-1)->GetHighIndicesLimit());
+  // The low/high indices limits has to be taken as the highest/lowest from all 
+  // row segments
+  Int_t ixl = 9999;
+  Int_t iyl = 9999;
+  Int_t ixh = AliMpConstants::StartPadIndex();
+  Int_t iyh = AliMpConstants::StartPadIndex();
 
-  return ;
+  for (Int_t i=0; i<GetNofRowSegments(); i++) {
+    
+    AliMpVRowSegment* rowSegment = GetRowSegment(i);
+    
+    if ( rowSegment->GetLowIndicesLimit().GetFirst() < ixl ) 
+       ixl = rowSegment->GetLowIndicesLimit().GetFirst();
+       
+    if ( rowSegment->GetLowIndicesLimit().GetSecond() < iyl ) 
+       iyl = rowSegment->GetLowIndicesLimit().GetSecond();
+
+    if ( rowSegment->GetHighIndicesLimit().GetFirst() > ixh ) 
+       ixh = rowSegment->GetHighIndicesLimit().GetFirst();
+       
+    if ( rowSegment->GetHighIndicesLimit().GetSecond() > iyh ) 
+       iyh = rowSegment->GetHighIndicesLimit().GetSecond();
+  }     
+
+  SetLowIndicesLimit(AliMpIntPair(ixl, iyl));
+  SetHighIndicesLimit(AliMpIntPair(ixh, iyh));
 }
 
 //_____________________________________________________________________________

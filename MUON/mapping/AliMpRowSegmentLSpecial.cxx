@@ -205,6 +205,7 @@ TVector2 AliMpRowSegmentLSpecial::Position() const
   return TVector2(x, y);   
 }
 
+#include <Riostream.h>
 //______________________________________________________________________________
 Int_t AliMpRowSegmentLSpecial::SetIndicesToMotifPosition(Int_t i, 
                                          const AliMpIntPair& indices)
@@ -241,9 +242,10 @@ Int_t AliMpRowSegmentLSpecial::SetIndicesToMotifPosition(Int_t i,
   AliMpMotifType* motifType = motifPosition->GetMotif()->GetMotifType();  
   AliMpIntPair high 
     = motifPosition->GetLowIndicesLimit()
-      + AliMpIntPair(motifType->GetNofPadsX()-1, motifType->GetNofPadsY()-1);            
+      + AliMpIntPair(motifType->GetNofPadsX()-1, motifType->GetNofPadsY()-1);  
+                
   motifPosition->SetHighIndicesLimit(high);
-  
+
   // Increment index only if last motif position is processed 
   if (i != GetNofMotifs()-1) 
     return indices.GetFirst();
@@ -252,6 +254,45 @@ Int_t AliMpRowSegmentLSpecial::SetIndicesToMotifPosition(Int_t i,
     return indices.GetFirst() + MaxNofPadsInRow();  
     //return MaxNofPadsInRow();  
 }
+//______________________________________________________________________________
+void AliMpRowSegmentLSpecial::SetGlobalIndices(AliMpRow* rowBefore)
+{
+// Sets indices limits
+// The limits are defined as the limits of the smallest rectangle which
+// includes all pads of this special row segment.
+// ---
+
+  // Low ix
+  Int_t ixl = GetLowIndicesLimit().GetFirst() + AliMpConstants::StartPadIndex();
+      // the pads offset was already defined by Reader
+
+  // High ix
+  Int_t ixh = ixl + MaxNofPadsInRow() - 1;
+
+  // Low iy
+  Int_t iyl = AliMpConstants::StartPadIndex();
+  if (rowBefore) {
+    //if (constPadSizeDirection == kY) {
+      iyl = rowBefore->GetHighIndicesLimit().GetSecond()+1;
+    //} 
+    /*
+    else {
+      AliMpVRowSegment* seg = rowBefore->FindRowSegment(ixl);	
+      AliMpMotifPosition* motPos =  rowBefore->FindMotifPosition(seg, ixl);
+      if (!motPos) 
+        Fatal("SetGlobalIndices", "Motif position in rowBefore not found.");
+      iyl = motPos->GetHighIndicesLimit().GetSecond()+1;
+    }
+    */
+  }  
+
+  // High iy
+  Int_t iyh = iyl + GetNofPadRows() - 1;
+  
+  SetLowIndicesLimit(AliMpIntPair(ixl, iyl));
+  SetHighIndicesLimit(AliMpIntPair(ixh, iyh));
+}  
+
 
 
 

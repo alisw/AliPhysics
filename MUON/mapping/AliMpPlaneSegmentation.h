@@ -49,6 +49,9 @@ class AliMpPlaneSegmentation : public AliMpVSegmentation
                                    Bool_t warning = kTRUE) const;
     virtual AliMpPad PadByPosition(const TVector2& position,
                                    Bool_t warning = kTRUE) const;
+ 
+    virtual Int_t  MaxPadIndexX();
+    virtual Int_t  MaxPadIndexY();
 
     virtual Int_t    Zone(const AliMpPad& pad, Bool_t warning = kTRUE) const;
     virtual TVector2 PadDimensions(Int_t zone, Bool_t warning = kTRUE) const;

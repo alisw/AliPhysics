@@ -142,6 +142,51 @@ AliMUONTest::CreateSt1Segmentation(Int_t chamberId, Int_t cathod)
   return segmentation;
 }      
 
+//________________________________________________________________________
+AliMUONGeometrySegmentation*     
+AliMUONTest::CreateSt2Segmentation(Int_t chamberId, Int_t cathod)
+{
+// Create St1 geometry segmentation for given chamber and cathod
+
+  AliMUON* muon = (AliMUON*)gAlice->GetModule("MUON");
+  if (!muon) {
+    AliFatal("MUON detector not defined.");
+    return 0;   
+  }  
+
+  AliMUONGeometrySegmentation* segmentation
+    = new AliMUONGeometrySegmentation(muon->Chamber(chamberId).GetGeometry());
+    
+  // Quadrant segmentations:
+  AliMUONSt12QuadrantSegmentation* bendSt2
+    = new AliMUONSt12QuadrantSegmentation(kStation2, kBendingPlane);
+  AliMUONSt12QuadrantSegmentation* nonbendSt2
+    = new AliMUONSt12QuadrantSegmentation(kStation2, kNonBendingPlane);
+
+  // The same configuration for both chambers of Station 2
+  Int_t id0 = (chamberId+1)*100;
+
+  // Configure  St2 chamber segmentations
+  if (cathod == 0) {
+    segmentation->Add(id0,      bendSt2);
+    segmentation->Add(id0 +  1, nonbendSt2);
+    segmentation->Add(id0 + 50, bendSt2);
+    segmentation->Add(id0 + 51, nonbendSt2);
+  }
+  else if (cathod == 1) {
+    segmentation->Add(id0,      nonbendSt2);
+    segmentation->Add(id0 +  1, bendSt2);
+    segmentation->Add(id0 + 50, nonbendSt2);
+    segmentation->Add(id0 + 51, bendSt2);
+  }
+  else {
+    AliError("Wrong cathod number");
+    return 0;
+  }
+  
+  return segmentation;
+}      
+
 //_____________________________________________________________________________
 AliMUONGeometrySegmentation*     
 AliMUONTest::CreateSlatSegmentation(Int_t chamberId, Int_t cathod)
@@ -730,8 +775,7 @@ AliMUONTest::CreateSegmentation(Int_t chamberId, Int_t cath)
     // Station2
     case 2: 
     case 3:
-        AliWarning("Not yet implemented");
-	return 0;
+        return CreateSt2Segmentation(chamberId, cath);
 	break;
 
     // Slat stations
@@ -866,8 +910,8 @@ void AliMUONTest::ForWhole(AliMUONTests testCase)
   timer.Start();  
 
   // Loop over chambers
-//  for (Int_t iChamber=0; iChamber<AliMUONConstants::NCh(); iChamber++) {
-  for (Int_t iChamber=10; iChamber<14; iChamber++) {
+  for (Int_t iChamber=0; iChamber<AliMUONConstants::NCh(); iChamber++) {
+  // for (Int_t iChamber=0; iChamber<3; iChamber=iChamber+2) {
 
     // Loop over cathods
     //for (Int_t cath=0; cath<2; cath++) {
@@ -1003,11 +1047,20 @@ void AliMUONTest::PrintPad(Int_t& counter,
   Bool_t success
     = segmentation->GetPadC(detElemId, ix, iy, x, y, z);
   
-  if (!success) return;  
-
   cout << setw(6) << "counter " << counter++ << "   ";
   cout << "Pad indices:  ( " << detElemId << "; " << ix << ", " << iy << " )  " ;
-  cout << "Pad position: ( " << x << ", " << y << ", " << z << " )" << endl;
+
+  if (success) {
+    cout << "Pad position: ( " << x << ", " << y << ", " << z << " );  ";
+    Int_t sector = segmentation->Sector(detElemId, ix, iy);
+    Float_t dpx = segmentation->Dpx(detElemId, sector);
+    Float_t dpy = segmentation->Dpy(detElemId, sector);
+    cout << " dimensions: ( " << dpx << ", " << dpy << " )" << endl;
+  }  
+  else  {
+    counter--; 
+    cout << "... no pad " << endl; 
+  }  
 } 
    
 //______________________________________________________________________________

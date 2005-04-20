@@ -37,6 +37,7 @@ class AliMpRowSegmentRSpecial : public AliMpVRowSegmentSpecial
     virtual TVector2  Position() const;
 
     // set methods
+    virtual void   SetGlobalIndices(AliMpRow* rowBefore);
     virtual Int_t  SetIndicesToMotifPosition(Int_t i, 
                              const AliMpIntPair& indices);
 

@@ -19,6 +19,7 @@
 #include "AliMpMotifType.h"
 #include "AliMpMotifMap.h"
 #include "AliMpMotifPosition.h"
+#include "AliMpConstants.h"
 
 ClassImp(AliMpRowSegmentRSpecial)
 
@@ -209,7 +210,7 @@ Int_t AliMpRowSegmentRSpecial::SetIndicesToMotifPosition(Int_t i,
 
   // Update low indices limit for this row segment
   SetGlobalIndicesLow();
-  
+
   // Check for consistence
   if (GetLowIndicesLimit().GetFirst() != indices.GetFirst()) 
     Fatal("SetIndicesToMotifPosition", "Inconsistent indices");
@@ -217,34 +218,85 @@ Int_t AliMpRowSegmentRSpecial::SetIndicesToMotifPosition(Int_t i,
   // Get motif position
   AliMpMotifPosition* motifPosition
     = GetRow()->GetMotifMap()->FindMotifPosition(GetMotifPositionId(i));
+    
+  // Set limits only once
+  if ( motifPosition->GetHighIndicesLimit().IsValid() ) 
+    return indices.GetFirst();; 
 
   // Low limit
-  AliMpIntPair low = GetLowIndicesLimit();
-	  
-  if (! motifPosition->GetHighIndicesLimit().IsValid()) {   
-     motifPosition->SetLowIndicesLimit(low);
-  } 
-  else {
-    if (motifPosition->GetLowIndicesLimit().GetFirst() > low.GetFirst())
-      motifPosition->SetLowIndicesLimit(
-                        AliMpIntPair(low.GetFirst(),
-                                 motifPosition->GetLowIndicesLimit().GetSecond()));
+  //
+  Int_t ixl = GetLowIndicesLimit().GetFirst();
+  Int_t iyl = GetLowIndicesLimit().GetSecond();
 
-    if (motifPosition->GetLowIndicesLimit().GetSecond() > low.GetSecond())
-       motifPosition->SetLowIndicesLimit(
-                         AliMpIntPair(motifPosition->GetLowIndicesLimit().GetFirst(),
-                                  low.GetSecond()));
-  }
+  // Find the most down pad row segment with this motifPositionId.
+  AliMpVPadRowSegment* padRowSegment = FindPadRowSegment(GetMotifPositionId(i));
+  Int_t padRowID = padRowSegment->GetPadRow()->GetID();
+  iyl += padRowID; 
 
-  // High limit	     
+  // Add pads offset of this motif position in the row segment
+  for (Int_t im=0; im<i; im++) {
+    AliMpVPadRowSegment* rs = GetPadRow(padRowID)->GetPadRowSegment(im);
+    if ( rs->GetMotifPositionId() == GetMotifPositionId(i) ) break; 
+    ixl += rs->GetNofPads();
+  }  
+  motifPosition->SetLowIndicesLimit(AliMpIntPair(ixl, iyl));
+
+  // High limit	
+  //     
   AliMpMotifType* motifType = motifPosition->GetMotif()->GetMotifType();  
   AliMpIntPair high 
     = motifPosition->GetLowIndicesLimit()
       + AliMpIntPair(motifType->GetNofPadsX()-1, motifType->GetNofPadsY()-1);            
   motifPosition->SetHighIndicesLimit(high);
-  
+
   // No increment index needed (this is always the last element)
   return indices.GetFirst();
 }
+
+//______________________________________________________________________________
+void AliMpRowSegmentRSpecial::SetGlobalIndices(AliMpRow* rowBefore)
+{
+// Sets indices limits.
+// The limits are defined as the limits of the smallest rectangle which
+// includes all pads of this special row segment.
+// ---
+
+  // Get first motif position
+  AliMpMotifPosition* firstMotifPosition
+    = GetRow()->GetMotifMap()->FindMotifPosition(GetMotifPositionId(0));
+    
+  // Low ix
+  Int_t ixl = firstMotifPosition->GetLowIndicesLimit().GetFirst();
+              // We have to take the motif position limit
+	      // as it can overlap over more rows and the indices
+	      // of the right border of the precedent normal segment
+	      // differ from one row to another  
+
+  // High ix
+  Int_t ixh = ixl + MaxNofPadsInRow() - 1;
+
+  // Low iy
+  Int_t iyl = AliMpConstants::StartPadIndex();
+  if (rowBefore) {
+    //if (constPadSizeDirection == kY) {
+      iyl = rowBefore->GetHighIndicesLimit().GetSecond()+1;
+    //} 
+    /*
+    else {
+      AliMpVRowSegment* seg = rowBefore->FindRowSegment(ixl);	
+      AliMpMotifPosition* motPos =  rowBefore->FindMotifPosition(seg, ixl);
+      if (!motPos) 
+        Fatal("SetGlobalIndices", "Motif position in rowBefore not found.");
+      iyl = motPos->GetHighIndicesLimit().GetSecond()+1;
+    }
+    */
+  }  
+
+  // High iy
+  Int_t iyh = iyl + GetNofPadRows() - 1;
+  
+  SetLowIndicesLimit(AliMpIntPair(ixl, iyl));
+  SetHighIndicesLimit(AliMpIntPair(ixh, iyh));
+}  
 
 

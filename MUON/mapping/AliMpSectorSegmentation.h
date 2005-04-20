@@ -46,6 +46,9 @@ class AliMpSectorSegmentation : public AliMpVSegmentation
                                Bool_t warning = kTRUE) const;
     virtual AliMpPad PadByDirection(const TVector2& startPosition, 
                                Double_t distance) const;
+ 
+    virtual Int_t  MaxPadIndexX();
+    virtual Int_t  MaxPadIndexY();
 
     virtual Int_t    Zone(const AliMpPad& pad, Bool_t warning = kTRUE) const;
     virtual TVector2 PadDimensions(Int_t zone, Bool_t warning = kTRUE) const;
@@ -88,7 +91,10 @@ class AliMpSectorSegmentation : public AliMpVSegmentation
 #endif    
 #ifdef WITH_ROOT
     mutable PadDimensionsMap  fPadDimensionsMap; //  Map between zone IDs and pad dimensions
-#endif    
+#endif 
+
+    Int_t  fMaxIndexInX;  // maximum pad index in x    
+    Int_t  fMaxIndexInY;  // maximum pad index in y    
 
   ClassDef(AliMpSectorSegmentation,1)  // Segmentation
 };

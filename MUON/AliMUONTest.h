@@ -73,6 +73,8 @@ class AliMUONTest : public  TObject
   private:
     AliMUONGeometrySegmentation* CreateSt1Segmentation(
                                        Int_t chamberId, Int_t cathod);
+    AliMUONGeometrySegmentation* CreateSt2Segmentation(
+                                       Int_t chamberId, Int_t cathod);
     AliMUONGeometrySegmentation* CreateSlatSegmentation(
                                        Int_t chamberId, Int_t cathod);
         AliMUONGeometrySegmentation* CreateTriggerSegmentation(

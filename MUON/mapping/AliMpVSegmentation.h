@@ -46,6 +46,9 @@ class AliMpVSegmentation : public TObject
     virtual AliMpPadPair PadsLeft(const AliMpPad& pad) const;
     virtual AliMpPadPair PadsRight(const AliMpPad& pad) const;
 
+    virtual Int_t  MaxPadIndexX() = 0;
+    virtual Int_t  MaxPadIndexY() = 0;
+
     virtual Bool_t HasPad(const AliMpIntPair& indices) const = 0;
     
   private:  

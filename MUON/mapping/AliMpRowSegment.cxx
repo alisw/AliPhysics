@@ -18,6 +18,7 @@
 #include "AliMpMotifTypePadIterator.h"
 #include "AliMpMotifMap.h"
 #include "AliMpMotifPosition.h"
+#include "AliMpConstants.h"
 
 ClassImp(AliMpRowSegment)
 
@@ -298,26 +299,45 @@ void   AliMpRowSegment::SetOffset(const TVector2& offset)
   fOffset = TVector2(offsetX, offsetY);
 }
 
+#include <Riostream.h>
 //_____________________________________________________________________________
-void AliMpRowSegment::SetGlobalIndices()
+void AliMpRowSegment::SetGlobalIndices(AliMpRow* /*rowBefore*/)
 {
 // Sets indices limits.
 // ---
 
-  AliMpMotifPosition* firstPos
-    = GetRow()->GetMotifMap()
-        ->FindMotifPosition(GetMotifPositionId(0));
-  
-  AliMpMotifPosition* lastPos
-    = GetRow()->GetMotifMap()
-        ->FindMotifPosition(GetMotifPositionId(GetNofMotifs()-1));
-         
-  // Check if the motif positions has the limits set
-  if ( !firstPos->HasValidIndices() || !lastPos->HasValidIndices())
-    Fatal("SetGlobalIndices", "Indices of motif positions have to be set first.");
+  // The low/high indices limits has to be taken as the highest/lowest from all 
+  // motif positions
+  Int_t ixl = 9999;
+  Int_t iyl = 9999;
+  Int_t ixh = AliMpConstants::StartPadIndex();
+  Int_t iyh = AliMpConstants::StartPadIndex();
+
+  for (Int_t i=0; i<GetNofMotifs(); i++) {
+     
+     AliMpMotifPosition* mPos 
+       = GetRow()->GetMotifMap()->FindMotifPosition(GetMotifPositionId(i));
+       
+     // Check if the motif positions has the limits set
+     if ( !mPos->HasValidIndices() )
+       Fatal("SetGlobalIndices", 
+             "Indices of motif positions have to be set first.");
             
-  SetLowIndicesLimit(firstPos->GetLowIndicesLimit());
-  SetHighIndicesLimit(lastPos->GetHighIndicesLimit());
+     if ( mPos->GetLowIndicesLimit().GetFirst() < ixl ) 
+       ixl = mPos->GetLowIndicesLimit().GetFirst();
+       
+     if ( mPos->GetLowIndicesLimit().GetSecond() < iyl ) 
+       iyl = mPos->GetLowIndicesLimit().GetSecond();
+
+     if ( mPos->GetHighIndicesLimit().GetFirst() > ixh ) 
+       ixh = mPos->GetHighIndicesLimit().GetFirst();
+       
+     if ( mPos->GetHighIndicesLimit().GetSecond() > iyh ) 
+       iyh = mPos->GetHighIndicesLimit().GetSecond();
+  }     
+
+  SetLowIndicesLimit(AliMpIntPair(ixl, iyl));
+  SetHighIndicesLimit(AliMpIntPair(ixh, iyh));
 }  
 
 //_____________________________________________________________________________

@@ -404,39 +404,6 @@ TVector2 AliMpVRowSegmentSpecial::Dimensions() const
 }
 
 //______________________________________________________________________________
-void AliMpVRowSegmentSpecial::SetGlobalIndices()
-{
-// Sets indices limits.
-// ---
-
-  AliMpMotifPosition* firstPos = 0;
-  AliMpMotifPosition* lastPos = 0;
-	
-  for (Int_t i=0;i<GetNofMotifs();i++) {
-    AliMpMotifPosition* mPos
-      = GetRow()->GetMotifMap()
-        ->FindMotifPosition(GetMotifPositionId(i));
-	
-    if (!firstPos || 
-        mPos->GetLowIndicesLimit().GetFirst()
-	< firstPos->GetLowIndicesLimit().GetFirst())
-       firstPos = mPos;
-       
-    if (!lastPos || 
-        mPos->GetHighIndicesLimit().GetFirst()
-	>lastPos->GetHighIndicesLimit().GetFirst())
-       lastPos = mPos;
-  }
-
-  // Check if the motif positions has the limits set
-  if ( !firstPos->HasValidIndices() || !lastPos->HasValidIndices())
-    Fatal("SetGlobalIndices", "Indices of motif positions have to be set first.");
-
-  SetLowIndicesLimit(firstPos->GetLowIndicesLimit());
-  SetHighIndicesLimit(lastPos->GetHighIndicesLimit());
-}  
-
-//______________________________________________________________________________
 AliMpRow*  AliMpVRowSegmentSpecial::GetRow() const
 {
 // Returns the row.which this row segment belongs to.
