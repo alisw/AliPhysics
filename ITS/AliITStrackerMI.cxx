@@ -3076,14 +3076,14 @@ void  AliITStrackerMI::FindV0(AliESD *event)
   //
   //TTreeSRedirector cstream("itsv0.root");
   Int_t centries=0;
-  AliHelix helixes[30000];
+  AliHelix * helixes = new AliHelix[30000];
   TObjArray trackarray(30000);
   TObjArray trackarrayc(30000);
-  Float_t dist[30000];
-  Float_t normdist0[30000];
-  Float_t normdist1[30000];
-  Float_t normdist[30000];
-  Float_t norm[30000];
+  Float_t * dist = new Float_t[30000];
+  Float_t * normdist0 = new Float_t[30000];
+  Float_t * normdist1 = new Float_t[30000];
+  Float_t * normdist = new Float_t[30000];
+  Float_t * norm = new Float_t[30000];
   AliESDV0MI  *vertexarray    = new AliESDV0MI[100000];
   AliESDV0MI *pvertex     = &vertexarray[0];
   AliITStrackMI * dummy=0;
@@ -3400,6 +3400,14 @@ void  AliITStrackerMI::FindV0(AliESD *event)
       }
     }
   }
+
+  delete [] helixes;
+  delete [] dist;
+  delete [] normdist0;
+  delete [] normdist1;
+  delete [] normdist;
+  delete [] norm;
+
   delete[] vertexarray;
 }
 
