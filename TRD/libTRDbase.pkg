@@ -8,12 +8,11 @@ SRCS= AliTRDarrayI.cxx \
       AliTRDsegmentArray.cxx \
       AliTRDgeometry.cxx \
       AliTRDgeometryFull.cxx \
-      AliTRDgeometryDetail.cxx \
-      AliTRDgeometryHole.cxx \
       AliTRDparameter.cxx \
       AliTRDdigit.cxx \
       AliTRDdigitsManager.cxx \
       AliTRDrawData.cxx \
+      AliTRDpadPlane.cxx \
       AliTRDRawStream.cxx
 
 HDRS= $(SRCS:.cxx=.h)                

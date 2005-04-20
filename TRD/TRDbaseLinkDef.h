@@ -21,9 +21,8 @@
 
 #pragma link C++ class  AliTRDgeometry+;
 #pragma link C++ class  AliTRDgeometryFull+;
-#pragma link C++ class  AliTRDgeometryHole+;
-#pragma link C++ class  AliTRDgeometryDetail+;
 #pragma link C++ class  AliTRDparameter+;
+#pragma link C++ class  AliTRDpadPlane+;
 
 #pragma link C++ class  AliTRDdigit+;
 #pragma link C++ class  AliTRDdigitsManager+;
