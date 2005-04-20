@@ -6,7 +6,7 @@ class AliMpVPadIterator;
 void MarkPads(AliMpVPadIterator& it,Int_t xmax,Int_t ymax,Bool_t print=kTRUE)
 {
 // This function works with pad iterator, no matter which kind of iterator
-// it is. So it can be uses for drawing all pad of the sector (AliMpSectorPadIterator)
+// it is. So it can be used for drawing all pad of the sector (AliMpSectorPadIterator)
 // or all pad around a given pad (AliMpNeighboursPadIterator), as with pads
 // of a given motif type (AliMpMotifTypePadIterator)
 
@@ -34,9 +34,9 @@ void testAnyPadIterators(AliMpStationType station = kStation1,
   //canv_1->Divide(2);
   
   canv->cd(1);
-  MarkPads(AliMpSectorPadIterator(sect), 150,250,kFALSE);
+  MarkPads(AliMpSectorPadIterator(sect), 150, 250, kFALSE);
   canv->cd(2);
-  AliMpVMotif* motif = sect->FindMotif(TVector2(200,30));
+  AliMpVMotif* motif = sect->FindMotif(TVector2(300,30));
 
   if (motif) {
     AliMpMotifType* motifType = motif->GetMotifType();
@@ -60,5 +60,4 @@ void testAnyPadIterators(AliMpStationType station = kStation1,
     MarkPads(AliMpMotifPositionPadIterator(motifPos),15,15);
     cout<<"_________________ MotifPosition _________________________"<<endl;
   }
-
 }

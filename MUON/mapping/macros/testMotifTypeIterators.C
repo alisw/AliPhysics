@@ -5,13 +5,32 @@
 void testMotifTypeIterators(AliMpStationType station = kStation1,
                             AliMpPlaneType plane = kBendingPlane)
 {
-  TString names="ABCDEFGHI";
-  //TString names="FEG";
+  TString names;
+  TString names2;
+  Int_t nv =0;
+  if ( station == kStation1 )
+    if ( plane == kBendingPlane ) 
+      names ="ABCDEFGHI";
+    else
+      names = "ABCDEFGHIJKLMN";
+  else if ( station == kStation2 ) 
+    if ( plane == kBendingPlane ) {
+      names ="ABCDEFGHIJKLMNOPQRSTUVWXY";
+      names2 ="abcdefghimnptuvvvvv";
+      nv = 5;
+    }  
+    else {
+      names = "ABCDEFGHIIJKLMN";
+      names2 ="abcdefgijklmnopqrstuwvvvvvv";
+      nv = 6;
+    }  
+  Int_t nofMotifs = names.Length() + names2.Length(); 
+  // cout << " nofMotifs: " << nofMotifs << endl;   
     
   TH2C* histos[] = new TH2C* [names.Length()];
-  TCanvas* canv[] = new TCanvas* [1+(names.Length()-1)/4];
+  TCanvas* canv[] = new TCanvas* [1+(nofMotifs-1)/4];
   Int_t i;
-  for (i=0;i<1+(names.Length()-1)/4;++i){
+  for (i=0;i<1+(nofMotifs-1)/4;++i){
     // canv[i] = new TCanvas(Form("canv%d",i),"Iterator viewing...");
                // CINT limitation on DEC
 	       
@@ -24,8 +43,24 @@ void testMotifTypeIterators(AliMpStationType station = kStation1,
   AliMpReader r(station, plane);
   //r.SetVerboseLevel(2);
 
-  for (i=0;i<names.Length();++i){
-    AliMpMotifType *mt = r.BuildMotifType(names[i]);
+  for (i=0;i<nofMotifs;++i){
+
+    // Get motif name
+    TString mname;
+    if (i<names.Length())
+      mname = names(i, 1);
+    else {
+      mname = names2(i-names.Length(), 1); 
+      if (mname == "v")
+        mname += i - names.Length() - (names2.Length()-nv-1);
+      else 	   
+        mname += "1";
+    }	
+    // if (i==36) continue;  
+        // break for these motifs (St2, BP) - to be investigated
+   
+    AliMpMotifType *mt = r.BuildMotifType(mname);
+
     canv[i/4]->cd(1+ (i%4));
     //histos[i] = new TH2C(Form("h%d",i),Form("Motif type %c",names[i]),
     //                     mt->GetNofPadsX(),-0.5,mt->GetNofPadsX()-0.5,
@@ -33,7 +68,6 @@ void testMotifTypeIterators(AliMpStationType station = kStation1,
                // CINT limitation on DEC
 
     TString hname("h"); hname += i;
-    TString mname = names(i,1);	       
 
     histos[i] = new TH2C(hname.Data(), mname.Data(),
                          mt->GetNofPadsX(),-0.5,mt->GetNofPadsX()-0.5,
@@ -53,9 +87,7 @@ void testMotifTypeIterators(AliMpStationType station = kStation1,
     }
 
     delete mt;
-
     histos[i]->Draw("text");
     canv[i/4]->Update();
-    
   }
 }

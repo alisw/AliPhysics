@@ -6,8 +6,8 @@ void testExistingPads(AliMpStationType station = kStation1,
                       AliMpPlaneType plane = kBendingPlane) 
 {
   AliMpReader r(station, plane);
-
   AliMpSector *sector=r.BuildSector();
+  AliMpSectorSegmentation segmentation(sector);
   AliMpVPainter* painter = AliMpVPainter::CreatePainter(sector);
 
   TCanvas* c1 = new TCanvas("view",
@@ -15,13 +15,20 @@ void testExistingPads(AliMpStationType station = kStation1,
   painter->Draw("ZSSMP");
   c1->Update();
 
-  TH2C* histo = new TH2C("histo","Existing pads",150,-0.5,149.5,
-                                               200,-0.5,199.5);
+  Int_t maxPadIndexX = segmentation.MaxPadIndexX();
+  Int_t maxPadIndexY = segmentation.MaxPadIndexY();
+  
+  // Define histogram limits
+  Int_t nx = (maxPadIndexX/10 + 1)*10;
+  Int_t ny = (maxPadIndexY/10 + 1)*10;
+  TH2C* histo = new TH2C("histo","Existing pads", 
+                          nx, -0.5, nx-0.5, ny, -0.5, ny-0.5);
+
   TCanvas* c2 = new TCanvas("c2","Only existing pads are filled");
 
   AliMpSectorSegmentation segmentation(sector);
-  for (Int_t i=0; i<150;i++){
-    for (Int_t j=0;j<200;++j){
+  for (Int_t i=0; i<maxPadIndexX+1;i++){
+    for (Int_t j=0;j<maxPadIndexY+1;++j){
 
       AliMpIntPair indices(i,j);
       if (segmentation.HasPad(indices)) histo->Fill(i,j);

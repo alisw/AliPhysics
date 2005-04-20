@@ -47,11 +47,16 @@ void MarkPads(AliMpVPadIterator& it, Double_t xmax, Double_t ymax,
 }
 
 void testPlaneAreaIterator(AliMpStationType station = kStation1,
-                  AliMpPlaneType planeType = kBendingPlane, 
-                  AliMpArea area = AliMpArea(TVector2(0.,0.),TVector2(900.,900.)))
+                  AliMpPlaneType planeType = kBendingPlane)
 {
   AliMpPlane* plane = AliMpPlane::Create(station, planeType);
   AliMpPlaneSegmentation planeSeg(plane);
+
+  AliMpArea area;
+  if ( station == kStation1 )
+    area = AliMpArea(TVector2(0.,0.),TVector2(900.,900.));
+  else   
+    area = AliMpArea(TVector2(0.,0.),TVector2(1200.,1200.));
   AliMpVPadIterator* iter = planeSeg.CreateIterator(area);
 
   TCanvas* graph = new TCanvas("Graph");

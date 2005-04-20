@@ -2,16 +2,13 @@
 //
 // Test macro for testing which pad is seen as "existing" by AliMpSector.
 
-void testAllIndices() 
+void testAllIndices(AliMpStationType station = kStation1,
+                    AliMpPlaneType plane = kBendingPlane) 
 {
-  if (!gInterpreter->IsLoaded("mlibs.C")){ 
-    gROOT->LoadMacro("mlibs.C");
-    gInterpreter->ProcessLine("mlibs()");
-  }  
-
-  AliMpReader r(kStation1, kNonBendingPlane);
+  AliMpReader r(station, plane);
 
   AliMpSector *sector=r.BuildSector();
+  AliMpSectorSegmentation segmentation(sector);
   AliMpVPainter* painter = AliMpVPainter::CreatePainter(sector);
 
   TCanvas* c1 = new TCanvas("view",
@@ -19,15 +16,27 @@ void testAllIndices()
   painter->Draw("ZSSMP");
   c1->Update();
 
-  TH2C* histo = new TH2C("histo","Existing pads",90,-0.5,89.5,
-                                                 230,-0.5,229.5);
-  TH2F* histo2 = new TH2F("histo2","Existing positions",950/2,0,950,
-                                                        950/2,0,950);
+  Int_t maxPadIndexX = segmentation.MaxPadIndexX();
+  Int_t maxPadIndexY = segmentation.MaxPadIndexY();
+  
+  // Define histogram limits
+  Int_t nx = (maxPadIndexX/10 + 1)*10;
+  Int_t ny = (maxPadIndexY/10 + 1)*10;
+  TH2C* histo  = new TH2C("histo","Existing pads", 
+                          nx, -0.5, nx-0.5, ny, -0.5, ny-0.5);
+
+  Int_t nx2 = 950/2;
+  Int_t ny2 = 950/2;
+  if (station == kStation2) {
+    nx2 = 1200/2;
+    ny2 = 1200/2;
+  }
+  TH2F* histo2 = new TH2F("histo2","Existing positions",
+                          nx2, 0, nx2*2, ny2, 0, ny2*2);
+
+  // Define canvas
   TCanvas* c2 = new TCanvas("c2","Only existing pads are filled");
   TCanvas* c3 = new TCanvas("c3","Positions");
-
-  AliMpSectorSegmentation segmentation(sector);
-  
   
   for (Int_t irow=0;irow<sector->GetNofRows();irow++){
     AliMpRow* row = sector->GetRow(irow);

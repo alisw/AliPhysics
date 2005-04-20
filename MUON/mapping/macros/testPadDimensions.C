@@ -9,10 +9,11 @@ void testPadDimensions(AliMpStationType station = kStation1,
   AliMpReader r(station, plane);
   AliMpSector* sector=r.BuildSector();
   AliMpSectorSegmentation segmentation(sector);  
-
+  segmentation.PrintZones(); 
+  
   TVector2 previousDimensions;
-  for (Int_t i=0; i<150;i++) 
-    for (Int_t j=0;j<200;++j) {
+  for (Int_t i=1; i<segmentation.MaxPadIndexX()+1;i++) 
+    for (Int_t j=1;j<segmentation.MaxPadIndexY()+1;++j) {
 
       AliMpIntPair indices(i,j);
       if (segmentation.HasPad(indices)) {
