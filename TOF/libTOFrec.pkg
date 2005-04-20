@@ -2,8 +2,7 @@
 # $Id$
 
 SRCS  = AliTOFtrack.cxx  AliTOFtracker.cxx  AliTOFpidESD.cxx  \
-	AliTOFReconstructor.cxx  \
-	AliTOFPID.cxx  AliTOFProb.cxx
+	AliTOFReconstructor.cxx
 
 HDRS:= $(SRCS:.cxx=.h)
 

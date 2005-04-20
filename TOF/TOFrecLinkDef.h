@@ -13,7 +13,4 @@
 #pragma link C++ class  AliTOFpidESD+;
 #pragma link C++ class  AliTOFReconstructor+;
 
-#pragma link C++ class  AliTOFPID+;
-#pragma link C++ class  AliTOFProb+;
-
 #endif
