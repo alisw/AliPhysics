@@ -193,24 +193,6 @@ void IceF2k::Loop(TTree* otree,Int_t nentries,Int_t printfreq)
  // Set the fit definitions according to the F2000 header info
  SetFitdefs();
 
-/*************
-
- // The LEDA specific output data
- AliCalorimeter* ledaup=new AliCalorimeter(44,144);
- AliCalorimeter* ledalw=new AliCalorimeter(40,144);
-
- ledaup->SetName("LedaUp");
- ledalw->SetName("LedaDown");
-
- evt->InitLeda(ledaup);
- evt->InitLeda(ledalw);
-
- TDatime datim;
- Float_t pos[3],costh;
- AliSignal s;
- s.SetName("CPV signal ADC");
-************************/
-
  for (Int_t jentry=0; jentry<nentries; jentry++)
  {
   if (rdmc_revt(fInput,&fHeader,&fEvent) != 0) break;
@@ -227,58 +209,6 @@ void IceF2k::Loop(TTree* otree,Int_t nentries,Int_t printfreq)
   PutRecoTracks(evt);
 
   PutHits(evt);
-
-/*********************************
-  datim.Set(Jdate,Jtime);
-  evt->SetDayTime(datim);
-  evt->SetProjectile(207,82,158);
-  evt->SetTarget(207,82,0);
-  evt->SetWeight(Jwscal);
-  evt->SetTrig(Itword);
-  evt->SetZdc(Zdc*1000.);
-  evt->SetMiracE(1000.*Emir,Emire,Emirh);
-  evt->SetMiracEt(Etm,Etme,Etmh);
- 
-  ledaup->Reset();
-  ledalw->Reset();
-  // Fill calorimeter with module data
-  for (Int_t i=0; i<Nmod; i++)
-  {
-   if (Adcl[i] > 3) // Adc cut of 3 to remove noise
-   {
-    if (Irowl[i] > 0) ledaup->SetSignal(Irowl[i],Icoll[i],Adcl[i]);
-    if (Irowl[i] < 0) ledalw->SetSignal(-Irowl[i],Icoll[i],Adcl[i]);
-   }
-  }
-
-  // Store associated CPV signals
-  for (Int_t j=0; j<Ncluv; j++)
-  {
-   s.Reset();
-   s.SetSignal(Iadccv[j]);
-   pos[1]=Thetacv[j]*pi/180.;
-   pos[2]=Phicv[j]*pi/180.;
-   costh=cos(pos[1]);
-   pos[0]=0;
-   if (costh) pos[0]=2103./costh;
-   s.SetPosition(pos,"sph");
-   pos[0]=0.4;
-   pos[1]=2.2;
-   pos[2]=0;
-   s.SetPositionErrors(pos,"car");
-   if (Phicv[j]>=0. && Phicv[j]<=180.)
-   {
-    ledaup->AddVetoSignal(s);
-   }
-   else
-   {
-    ledalw->AddVetoSignal(s);
-   }
-  }
-
-  evt->AddDevice(ledaup);
-  evt->AddDevice(ledalw);
-************************************/
 
   if (!(jentry%printfreq))
   {
