@@ -8,6 +8,7 @@ SRCS= AliTRDarrayI.cxx \
       AliTRDsegmentArray.cxx \
       AliTRDgeometry.cxx \
       AliTRDgeometryFull.cxx \
+      AliTRDgeometryDetail.cxx \
       AliTRDparameter.cxx \
       AliTRDdigit.cxx \
       AliTRDdigitsManager.cxx \
