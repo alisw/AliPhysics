@@ -19,6 +19,7 @@
 // -------------------------------
 // MUON Station2 coarse geometry construction class.
 // Extracted from AliMUONv1
+// Dummy version of station 2 with the right DE id (Ch. Finck)
 
 
 #include <TVirtualMC.h>
@@ -106,7 +107,7 @@ void AliMUONSt2GeometryBuilderV2::CreateGeometry()
      //     Int_t idAlu2=idtmed[1104]; // medium 5
      Int_t idGas=idtmed[1108];  // medium 9 = Ar-CO2 gas (80%+20%)
 
-     const Float_t kDeltaQuad = 2.6;
+     const Float_t kDeltaQuad = 0.01;//2.6; dummy value til we find the good value
      const Float_t kDeltaZ = 6.5/2.;
 
      // Rotation matrices in the x-y plane  
@@ -160,7 +161,7 @@ void AliMUONSt2GeometryBuilderV2::CreateGeometry()
 
      posx = kDeltaQuad;
      posy = kDeltaQuad;
-     posz = kDeltaZ;
+     posz = -kDeltaZ;
 
      detElemId = 300;
      gMC->Gsvolu("LE01", "TUBS", idAir, tpar, 5);
