@@ -29,7 +29,7 @@
 
 #include "AliTRDgeometry.h"
 #include "AliTRDparameter.h"
-#include "AliTRDgeometryHole.h"
+#include "AliTRDgeometryFull.h"
 #include "AliTRDcluster.h" 
 #include "AliTRDtrack.h"
 #include "AliESD.h"
@@ -126,7 +126,7 @@ AliTRDtracker::AliTRDtracker(const TFile *geomfile):AliTracker()
     printf("AliTRDtracker::AliTRDtracker(): can't find TRD geometry!\n");
     //printf("The DETAIL TRD geometry will be used\n");
     //fGeom = new AliTRDgeometryDetail();
-    fGeom = new AliTRDgeometryHole();
+    fGeom = new AliTRDgeometryFull();
     fGeom->SetPHOShole();
     fGeom->SetRICHhole();    
   } 

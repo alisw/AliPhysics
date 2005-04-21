@@ -47,7 +47,6 @@
 #include "AliTRDdigitizer.h"
 #include "AliTRDdigitsManager.h"
 #include "AliTRDgeometryFull.h"
-#include "AliTRDgeometryHole.h"
 #include "AliTRDhit.h"
 #include "AliTRDpoints.h"
 #include "AliTRDrawData.h"
