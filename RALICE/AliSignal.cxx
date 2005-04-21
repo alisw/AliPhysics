@@ -560,7 +560,7 @@ void AliSignal::Data(TString f) const
  const char* name=GetName();
  const char* title=GetTitle();
 
- cout << " *" << ClassName() << "::Data* Id :" << GetUniqueID();
+ cout << " *" << ClassName() << "::Data* Id : " << GetUniqueID();
  if (strlen(name))  cout << " Name : " << name;
  if (strlen(title)) cout << " Title : " << title;
  cout << endl;
@@ -570,7 +570,8 @@ void AliSignal::Data(TString f) const
  {
   const char* devname=fDevice->GetName();
   const char* devtitle=fDevice->GetTitle();
-  cout << "   Owned by device : " << fDevice->ClassName();
+  cout << "   Owned by device : " << fDevice->ClassName()
+       << " Id : " << fDevice->GetUniqueID();
   if (strlen(devname))  cout << " Name : " << devname;
   if (strlen(devtitle)) cout << " Title : " << devtitle;
   cout << endl;

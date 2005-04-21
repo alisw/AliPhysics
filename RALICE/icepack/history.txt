@@ -5,3 +5,5 @@
 18-feb-2005 NvE Copyright format modified in all .cxx source files in line with Ralice
                 such that the text shows up correctly in the auto-generated html docs.
 13-apr-2005 NvE Documentation of IceEvent updated w.r.t. the labeling of MC and Reco tracks.
+21-apr-2005 NvE Directory iceconvert introduced to hold the various readers to
+                convert Amanda/IceCube data into the Ralice/IcePack event structures.

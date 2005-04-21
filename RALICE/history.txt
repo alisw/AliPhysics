@@ -588,3 +588,4 @@
                 New memberfunction ShowTracks introduced in AliJet and memberfunction Data() updated.
 18-apr-2005 NvE New memberfunction GetTracks introduced in AliJet to provide various track selections.
 19-apr-2005 NvE Memberfunctions GetNtracks and GetTracks of AliJet extended in functionality.
+20-apr-2005 NvE Id of owning device added to the output of AliSignal::Data().
