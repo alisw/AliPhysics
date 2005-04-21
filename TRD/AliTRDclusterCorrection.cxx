@@ -25,62 +25,91 @@
 
 ClassImp(AliTRDclusterCorrection)
 
-AliTRDclusterCorrection * gTRDclusterCorrection=0;
+AliTRDclusterCorrection * gAliTRDclusterCorrection=0;
 
+//_____________________________________________________________________________
 AliTRDclusterCorrection::AliTRDclusterCorrection()
 {
   //
   //default constructor for correction
   //
-  for (Int_t iplane=0;iplane<6;iplane++)
-    for (Int_t itime=0;itime<30;itime++)
+
+  for (Int_t iplane=0;iplane<6;iplane++) {
+    for (Int_t itime=0;itime<30;itime++) {
       for(Int_t iangle=0;iangle<20;iangle++){	
 	fCorrections[iplane][itime][iangle][0]=0;
 	fCorrections[iplane][itime][iangle][1]=0;
       }
+    }
+  }
+
   fOffsetAngle =0;
+
 }
 
-
+//_____________________________________________________________________________
 void AliTRDclusterCorrection::SetCorrection(Int_t plane,Int_t timebin, Float_t angle, 
 					    Float_t value, Float_t sigma)
 {
+  //
+  // Set the correction factors
+  //
+
   Int_t iangle = int( (angle-fOffsetAngle+1.)*10.+0.5);
   if (iangle<0) return;
   if (iangle>=20) return;
   fCorrections[plane][timebin][iangle][0] = value;
   fCorrections[plane][timebin][iangle][1] = sigma;
+
 }
 
-Float_t AliTRDclusterCorrection::GetCorrection(Int_t plane, Int_t timebin, Float_t angle)
+//_____________________________________________________________________________
+Float_t AliTRDclusterCorrection::GetCorrection(Int_t plane, Int_t timebin, Float_t angle) const
 {
+  //
+  // Get the correction factors
+  //
+
   Int_t iangle = int( (angle-fOffsetAngle+1.)*10.+0.5);
   if (iangle<0) return 0.;
   if (iangle>=20) return 0.;
   return fCorrections[plane][timebin][iangle][0];
+
 }
 
-Float_t AliTRDclusterCorrection::GetSigma(Int_t plane, Int_t timebin, Float_t angle)
+//_____________________________________________________________________________
+Float_t AliTRDclusterCorrection::GetSigma(Int_t plane, Int_t timebin, Float_t angle) const
 {
+  //
+  // Returns the sigma
+  //
+
   Int_t iangle = int( (angle-fOffsetAngle+1.)*10.+0.5);
   if (iangle<0) return 1.;
   if (iangle>=20) return 1.;
   return fCorrections[plane][timebin][iangle][1];
+
 }
 
-
+//_____________________________________________________________________________
 AliTRDclusterCorrection *  AliTRDclusterCorrection::GetCorrection()
 {
-  if (gTRDclusterCorrection!=0) return gTRDclusterCorrection;
+  //
+  // Return an instance of AliTRDclusterCorrection
+  //
+
+  if (gAliTRDclusterCorrection!=0) return gAliTRDclusterCorrection;
   //
   TFile * f  = new TFile("$ALICE_ROOT/TRD/TRDcorrection.root");
   if (!f){
     ////
-    gTRDclusterCorrection = new AliTRDclusterCorrection();
-    return gTRDclusterCorrection;
+    gAliTRDclusterCorrection = new AliTRDclusterCorrection();
+    return gAliTRDclusterCorrection;
   }
-  gTRDclusterCorrection = (AliTRDclusterCorrection*)f->Get("TRDcorrection");
-  if (gTRDclusterCorrection==0)  gTRDclusterCorrection = new AliTRDclusterCorrection();
-  return gTRDclusterCorrection;
+  gAliTRDclusterCorrection = (AliTRDclusterCorrection*) f->Get("TRDcorrection");
+  if (gAliTRDclusterCorrection==0)  
+    gAliTRDclusterCorrection = new AliTRDclusterCorrection();
+
+  return gAliTRDclusterCorrection;
   
 }
