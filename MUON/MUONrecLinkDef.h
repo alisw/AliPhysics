@@ -3,10 +3,10 @@
 #pragma link off all classes;
 #pragma link off all functions;
 
+// reconstruction
 #pragma link C++ class AliMUONClusterReconstructor+; 
 #pragma link C++ class AliMUONClusterFinderVS+; 
 #pragma link C++ class AliMUONClusterFinderAZ+; 
-#pragma link C++ class AliMUONMathieson+; 
 #pragma link C++ class AliMUONPixel+; 
 #pragma link C++ class AliMUONClusterInput+; 
 #pragma link C++ class AliMUONReconstructor+;
@@ -22,6 +22,7 @@
 #pragma link C++ class AliMUONSegment+;
 #pragma link C++ class AliMUONReconstHit+; 
 
+// raw data
 #pragma link C++ class AliMUONDDLTrigger+;
 #pragma link C++ class AliMUONSubEventTrigger+;
 #pragma link C++ class AliMUONScalerEventTrigger+;

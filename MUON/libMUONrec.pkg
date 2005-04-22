@@ -3,7 +3,6 @@
 SRCS:= AliMUONClusterReconstructor.cxx \
        AliMUONClusterFinderVS.cxx \
        AliMUONClusterFinderAZ.cxx \
-       AliMUONMathieson.cxx \
        AliMUONPixel.cxx \
        AliMUONClusterInput.cxx \
        AliMUONReconstructor.cxx \

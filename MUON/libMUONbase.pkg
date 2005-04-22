@@ -11,14 +11,11 @@ SRCS:=  AliMUON.cxx AliMUONv1.cxx \
         AliMUONSegmentationSlatModuleN.cxx \
         AliMUONSegmentationSlat.cxx \
         AliMUONSegmentationSlatN.cxx \
+        AliMUONSt1Segmentation.cxx \
         AliMUONSegmentationDetectionElement.cxx \
         AliMUONSegmentIndex.cxx \
         AliMUONSegmentManuIndex.cxx \
         AliMUONSegmentPosition.cxx\
-        AliMUONResponse.cxx \
-        AliMUONResponseV0.cxx \
-        AliMUONResponseTrigger.cxx \
-        AliMUONResponseTriggerV1.cxx\
         AliMUONGeometryDEIndexing.cxx \
         AliMUONCommonGeometryBuilder.cxx \
         AliMUONSt1GeometryBuilder.cxx \
@@ -27,6 +24,7 @@ SRCS:=  AliMUON.cxx AliMUONv1.cxx \
         AliMUONSt2GeometryBuilderV2.cxx \
         AliMUONSlatGeometryBuilder.cxx \
         AliMUONTriggerGeometryBuilder.cxx \
+        AliMUONMathieson.cxx \
         AliMUONConstants.cxx \
         AliMUONTriggerConstants.cxx \
         AliMUONDataInterface.cxx \
@@ -47,6 +45,7 @@ SRCS:=  AliMUON.cxx AliMUONv1.cxx \
         AliMUONDisplay.cxx \
         AliMUONRecoDisplay.cxx \
         AliMUONRecoCheck.cxx \
+        AliMUONSt12QuadrantSegmentation.cxx \
         AliMUONSt345SlatSegmentation.cxx \
         AliMUONTriggerSegmentation.cxx
 

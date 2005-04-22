@@ -16,18 +16,18 @@
 #pragma link C++ class AliMUONSegmentationSlatModule+; 
 #pragma link C++ class AliMUONSegmentationSlatModuleN+; 
 #pragma link C++ class AliMUONSegmentationSlat+; 
-#pragma link C++ class AliMUONSegmentationSlatN+; 
+#pragma link C++ class AliMUONSegmentationSlatN+;
+#pragma link C++ class AliMUONSt1Segmentation+; 
 #pragma link C++ class AliMUONSegmentationDetectionElement+;
 #pragma link C++ class AliMUONSegmentIndex+;
 #pragma link C++ class AliMUONSegmentManuIndex+;
 #pragma link C++ class AliMUONSegmentPosition+;
+#pragma link C++ class AliMUONSt12QuadrantSegmentation-; 
 #pragma link C++ class AliMUONSt345SlatSegmentation+;
 #pragma link C++ class AliMUONTriggerSegmentation+;
-// geometry & response
-#pragma link C++ class AliMUONResponse+; 
-#pragma link C++ class AliMUONResponseV0+;
-#pragma link C++ class AliMUONResponseTrigger+; 
-#pragma link C++ class AliMUONResponseTriggerV1+;
+
+// geometry 
+#pragma link C++ class AliMUONMathieson+; 
 #pragma link C++ class AliMUONGeometryDEIndexing+;
 #pragma link C++ class AliMUONCommonGeometryBuilder+;
 #pragma link C++ class AliMUONSt1GeometryBuilder+; 
@@ -36,6 +36,7 @@
 #pragma link C++ class AliMUONSt2GeometryBuilderV2+; 
 #pragma link C++ class AliMUONSlatGeometryBuilder+; 
 #pragma link C++ class AliMUONTriggerGeometryBuilder+; 
+
 // info classes 
 #pragma link C++ class AliMUONConstants+; 
 #pragma link C++ class AliMUONTriggerConstants+; 
