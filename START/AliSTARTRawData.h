@@ -14,8 +14,8 @@
 #include "TObject.h"
 class AliSTART;
 class AliSTARTdigit;
-class TTRee;
-class TBranch;
+//class TTRee;
+//class TBranch;
 //class AliRawDataHeader;
 class AliSTARTRawData : public TObject {
 
@@ -40,11 +40,10 @@ class AliSTARTRawData : public TObject {
 
  //START digits arrays
 
-  AliSTARTdigit *fDigits;  //! The START digits manager
 
-  TArrayI *timeTDC() {return ftimeTDC;}
+  TArrayI *TimeTDC() {return fTimeTDC;}
   TArrayI *ADC() {return fADC;}
-  TArrayI *timeTDCAmp() {return ftimeTDCAmp;}
+  TArrayI *TimeTDCAmp() {return fTimeTDCAmp;}
   TArrayI *ADCAmp() {return fADCAmp;}
   TArrayI *SumMult() {return fSumMult;}
 
@@ -57,13 +56,14 @@ class AliSTARTRawData : public TObject {
 
   Int_t fTimeDiff     ; //time difference 
   Int_t fMeanTime      ; // average time - ALICE start signal 
-  Int_t fBestTimeLeft;
-  Int_t fBestTimeRight;
-  TArrayI * ftimeTDC;
-  TArrayI *  fADC;
-  TArrayI * ftimeTDCAmp;
-  TArrayI *  fADCAmp;
-  TArrayI *  fSumMult;
+  Int_t fBestTimeLeft;   //first particle on the left
+  Int_t fBestTimeRight;  //first particle on the right
+  TArrayI * fTimeTDC;        //TDC on the each PMT
+  TArrayI *  fADC;           //QTC (ADC) on the each PMT
+  TArrayI * fTimeTDCAmp;    // TDC with amplified signal
+  TArrayI *  fADCAmp;        //QTC amplified
+  TArrayI *  fSumMult;       //multiplicity: left, right, left&right + all amplified
+  AliSTARTdigit *fDigits;  //! The START digits manager
 
   ClassDef(AliSTARTRawData,1)             //  START raw data class
 

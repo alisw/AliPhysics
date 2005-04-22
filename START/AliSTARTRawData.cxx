@@ -26,11 +26,6 @@
 #include "AliSTART.h"
 #include "AliSTARTRawData.h"
 #include "AliSTARTdigit.h"
-//#include "AliSTARTLoader.h"
-
-#include <AliLoader.h>
-#include <AliRunLoader.h>
-#include <TClonesArray.h>
 #include <TTree.h>
 #include "AliRawDataHeader.h"
 
@@ -39,14 +34,30 @@ ClassImp(AliSTARTRawData)
 //_____________________________________________________________________________
 AliSTARTRawData::AliSTARTRawData():TObject()
 {
+  /*
+-  48 channels (2 words each as in TOF DDL) for :
+word 1 :0-5bit number of PMT; word 2: 0-7 error sign, 8-31 TDC
+and the same but for amplified signal. Now I wrote the same time because
+CDF are not ready and differences didn't measured yet.
 
+-  96 channel for amplitude: very preliminary, QTC features are not
+known now, preliminary i put as T1 time signal for this PMT in first
+channel and T1+A in second, where A=Log(Amplitude);
+and the same for amplified but A=Log(10*Amplitude).
+
+- T0-A and T0-C 2 channels
+- T0A-T0C vertex information
+- Time Meaner where T0C TOF increase to the T0A TOF distance
+- 6 multiplicity signals the same way as amplitude and with the same
+uncertances
+  */
 
   fIndex=-1;
   fDigits = NULL;
 
-  ftimeTDC = new TArrayI(24);
+  fTimeTDC = new TArrayI(24);
   fADC = new TArrayI(24);
-  ftimeTDCAmp = new TArrayI(24);
+  fTimeTDCAmp = new TArrayI(24);
   fADCAmp = new TArrayI(24);
   fSumMult = new TArrayI(6);
    //   this->Dump();
@@ -74,9 +85,9 @@ AliSTARTRawData::~AliSTARTRawData()
     delete fDigits;
     fDigits = NULL;
   }
-  delete ftimeTDC;
+  delete fTimeTDC;
   delete fADC;
-  delete ftimeTDCAmp;
+  delete fTimeTDCAmp;
   delete fADCAmp;
   delete fSumMult;
 }
@@ -107,18 +118,18 @@ void AliSTARTRawData::GetDigits(AliSTARTdigit *fDigits, UInt_t *buf)
   Int_t error=0;
     // Get the digits array
 
-  fDigits->GetTime(*ftimeTDC);
+  fDigits->GetTime(*fTimeTDC);
   fDigits->GetADC(*fADC);
-  fDigits->GetTimeAmp(*ftimeTDCAmp);
+  fDigits->GetTimeAmp(*fTimeTDCAmp);
   fDigits->GetADCAmp(*fADCAmp);
   fDigits->GetSumMult(*fSumMult);
      
   // Loop through all PMT
  
   for (Int_t det = 0; det < 24; det++) {
-    Int_t time=ftimeTDC->At(det);
+    Int_t time=fTimeTDC->At(det);
     Int_t qtc=fADC->At(det);
-    Int_t timeAmp=ftimeTDCAmp->At(det);
+    Int_t timeAmp=fTimeTDCAmp->At(det);
     Int_t qtcAmp=fADCAmp->At(det);
 
     //conver ADC to time (preliminary algorithm)
@@ -364,9 +375,11 @@ void AliSTARTRawData::PackWord(UInt_t &BaseWord, UInt_t Word, Int_t StartBit, In
 }
 //---------------------------------------------------------------------------------------
 
-Int_t AliSTARTRawData::RawDataSTART(AliSTARTdigit *fDigits){
-  
-  //This method creates the Raw data files for TOF detector
+Int_t AliSTARTRawData::RawDataSTART(AliSTARTdigit *fDigits)
+{
+   //This method creates the Raw data files for START detector
+
+
   const Int_t kSize=512; //2*AliTOFGeometry::NpadXSector() 
                           //max number of digits per DDL file times 2
   UInt_t buf[kSize];
@@ -374,7 +387,6 @@ Int_t AliSTARTRawData::RawDataSTART(AliSTARTdigit *fDigits){
   UInt_t word;
 
   fIndex=-1;
-  // TClonesArray*& digits = * (TClonesArray**) branch->GetAddress();
 
   char fileName[15];
   ofstream outfile;         // logical name of the output file 

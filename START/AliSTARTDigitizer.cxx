@@ -59,7 +59,6 @@ AliSTARTDigitizer::AliSTARTDigitizer(AliRunDigitizer* manager)
    fSumMult(0),
    fEff(0)
 {
-  //	cout<<"AliSTARTDigitizer::AliSTARTDigitizer"<<endl;
 // ctor which should be used
 
   AliDebug(1,"processed");
@@ -126,7 +125,6 @@ void AliSTARTDigitizer::Exec(Option_t* /*option*/)
   AliLoader * pOutStartLoader = outRL->GetLoader("STARTLoader");
 
   AliDebug(1,"start...");
-  cout<<" AliSTARTDigitizer::Exec "<<endl;
   //input loader
   //
   // From hits to digits
@@ -252,7 +250,6 @@ void AliSTARTDigitizer::Exec(Option_t* /*option*/)
 	if (al>threshold) {
 	  qt=Int_t (TMath::Log(al*ph2mV) * mV2channel); 
 	  qtAmp=Int_t (TMath::Log(al*10*ph2mV) * mV2channel);
-	  cout<<i<<" "<<qt<<" "<<qtAmp<<endl;
 	  fADC->AddAt(qt,i);
 	  ftimeTDC->AddAt(tr,i);
 	  fADCAmp->AddAt(qtAmp,i);
@@ -301,7 +298,6 @@ Bool_t AliSTARTDigitizer::RegisterPhotoE(Double_t energy)
   
   //  Float_t hc=197.326960*1.e6; //mev*nm
   Double_t hc=1.973*1.e-6; //gev*nm
-  //  cout<<"AliSTARTDigitizer::RegisterPhotoE >> energy "<<energy<<endl;
   Float_t lambda=hc/energy;
   Int_t bin=  fEff->GetXaxis()->FindBin(lambda);
   Float_t eff=fEff->GetBinContent(bin);
