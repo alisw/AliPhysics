@@ -194,8 +194,10 @@ void AliGenHijing::Generate()
   {
 //    Generate one event
 // --------------------------------------------------------------------------
-      fSpecn	= 0;  
-      fSpecp	= 0;
+      fProjectileSpecn    = 0;  
+      fProjectileSpecp    = 0;
+      fTargetSpecn    = 0;  
+      fTargetSpecp    = 0;
 // --------------------------------------------------------------------------
       fHijing->GenerateEvent();
       fTrials++;
@@ -271,9 +273,13 @@ void AliGenHijing::Generate()
 	  
 // --------------------------------------------------------------------------
 // Count spectator neutrons and protons
-	  if(ks == 0 || ks == 1 || ks == 10 || ks == 11){
-	      if(kf == kNeutron) fSpecn += 1;
-	      if(kf == kProton)  fSpecp += 1;
+	  if(ks == 0 || ks == 1){
+	      if(kf == kNeutron) fProjectileSpecn += 1;
+	      if(kf == kProton)  fProjectileSpecp += 1;
+	  }
+	  else if(ks == 10 || ks == 11){
+	      if(kf == kNeutron) fTargetSpecn += 1;
+	      if(kf == kProton)  fTargetSpecp += 1;
 	  }
 // --------------------------------------------------------------------------
 //	    
@@ -490,7 +496,8 @@ void AliGenHijing::MakeHeader()
 						       fHijing->GetN01(),
 						       fHijing->GetN10(),
 						       fHijing->GetN11());
-    ((AliGenHijingEventHeader*) header)->SetSpectators(fSpecn, fSpecp);
+    ((AliGenHijingEventHeader*) header)->SetSpectators(fProjectileSpecn, fProjectileSpecp,
+    						       fTargetSpecn,fTargetSpecp);
 
 // 4-momentum vectors of the triggered jets.
 //

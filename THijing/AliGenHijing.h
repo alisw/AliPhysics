@@ -119,8 +119,10 @@ class AliGenHijing : public AliGenMC
     Int_t       fNoGammas;       // Don't write gammas if flag "on"
     
 // ZDC proposal (by Chiara) to store num. of SPECTATORS protons and neutrons
-    Int_t 	fSpecn;		 // Num. of spectator neutrons
-    Int_t 	fSpecp;		 // Num. of spectator protons
+    Int_t 	fProjectileSpecn;// Num. of spectator neutrons from projectile nucleus
+    Int_t 	fProjectileSpecp;// Num. of spectator protons from projectile nucleus
+    Int_t 	fTargetSpecn;	 // Num. of spectator neutrons from target nucleus
+    Int_t 	fTargetSpecp;	 // Num. of spectator protons from target nucleus
     Int_t       fLHC;            // Assume LHC as lab frame
  private:
     void Copy(TObject &rhs) const;
