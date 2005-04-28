@@ -15,7 +15,7 @@ FSRCS:= FLUKA_input.f crnkvp.f
 DHDR:= TFlukaLinkDef.h
 
 # Extra includes and libraries
-EINCLUDE:= $(FLUPRO)/flukapro
+EINCLUDE:= $(FLUPRO)/flukapro $(FLUPRO)/emfadd $(FLUPRO)/flukaadd
 ELIBSDIR:= $(FLUPRO)
 ELIBS   := flukahp
 
