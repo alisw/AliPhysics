@@ -17,8 +17,10 @@ public:
     Int_t   HardScatters() {return fNHardScatters;}
     Int_t   ProjectileParticipants()  {return fNProjectileParticipants;}
     Int_t   TargetParticipants()      {return fNTargetParticipants;}
-    Int_t   Spectatorsn()	{return fSpecn;}
-    Int_t   Spectatorsp()	{return fSpecp;}
+    Int_t   ProjSpectatorsn()	{return fProjectileSpecn;}
+    Int_t   ProjSpectatorsp()	{return fProjectileSpecp;}
+    Int_t   TargSpectatorsn()	{return fTargetSpecn;	 }
+    Int_t   TargSpectatorsp()	{return fTargetSpecp;	 }
     Int_t   NN()    {return fNNColl;}
     Int_t   NNw()   {return fNNwColl;}
     Int_t   NwN()   {return fNwNColl;}
@@ -30,8 +32,9 @@ public:
 	{fNProjectileParticipants=np, fNTargetParticipants=nt;}
     void SetCollisions(Int_t nn, Int_t nnw, Int_t nwn, Int_t nwnw)
 	{fNNColl=nn, fNNwColl=nnw, fNwNColl=nwn,  fNwNwColl=nwnw;}
-    void SetSpectators(Int_t nspecn, Int_t nspecp)
-	{fSpecn=nspecn, fSpecp=nspecp;}
+    void SetSpectators(Int_t nprojspecn, Int_t nprojspecp, Int_t ntargspecn, Int_t ntargspecp)
+	{fProjectileSpecn=nprojspecn, fProjectileSpecp=nprojspecp, 
+	 fTargetSpecn=ntargspecn, fTargetSpecp=ntargspecp;}
  protected:
     Int_t   fNHardScatters;            // Number of hard scatterings
     Int_t   fNProjectileParticipants;  // Number of projectiles participants
@@ -40,8 +43,10 @@ public:
     Int_t   fNNwColl;                  // Number of N-Nwounded collisions
     Int_t   fNwNColl;                  // Number of Nwounded-N collisons
     Int_t   fNwNwColl;                 // Number of Nwounded-Nwounded collisions
-    Int_t   fSpecn;                    // Number of spectators neutrons
-    Int_t   fSpecp;                    // Number of spectators protons
+    Int_t   fProjectileSpecn;	       // Num. of spectator neutrons from projectile nucleus
+    Int_t   fProjectileSpecp;	       // Num. of spectator protons from projectile nucleus
+    Int_t   fTargetSpecn;    	       // Num. of spectator neutrons from target nucleus
+    Int_t   fTargetSpecp;    	       // Num. of spectator protons from target nucleus
     Float_t fImpactParameter;          // Impact Parameter
 
   ClassDef(AliCollisionGeometry,1)     // Collision Geometry

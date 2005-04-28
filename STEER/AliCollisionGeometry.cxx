@@ -28,8 +28,10 @@ AliCollisionGeometry::AliCollisionGeometry() :
   fNNwColl(0),
   fNwNColl(0),
   fNwNwColl(0),
-  fSpecn(0),
-  fSpecp(0),
+  fProjectileSpecn(0),
+  fProjectileSpecp(0),
+  fTargetSpecn(0),
+  fTargetSpecp(0),
   fImpactParameter(0)
 {
 }
