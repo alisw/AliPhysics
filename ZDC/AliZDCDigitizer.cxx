@@ -148,9 +148,9 @@ void AliZDCDigitizer::Exec(Option_t* /*option*/)
     if (!genHeader) continue;
     if (!genHeader->InheritsFrom(AliGenHijingEventHeader::Class())) continue;
     impPar = ((AliGenHijingEventHeader*) genHeader)->ImpactParameter();
-    // Until there is only 1 ZDC set the # of spectators must be divided by 2!!!
-    specN = ((AliGenHijingEventHeader*) genHeader)->Spectatorsn() / 2;
-    specP = ((AliGenHijingEventHeader*) genHeader)->Spectatorsp() / 2;
+    // 
+    specN = ((AliGenHijingEventHeader*) genHeader)->ProjSpectatorsn();
+    specP = ((AliGenHijingEventHeader*) genHeader)->ProjSpectatorsp();
     AliDebug(2, Form("\n b = %f fm, Nspecn = %d, Nspecp = %d\n",
                      impPar, specN, specP));
   }
@@ -264,7 +264,7 @@ void AliZDCDigitizer::SpectatorSignal(Int_t SpecType, Int_t numEvents,
   }
   for(pl=0;pl<numEvents;pl++){
      rnd[pl] = (Int_t) (9999*gRandom->Rndm());
-     if(rnd[pl] >= 9998) rnd[pl] = 9997;
+     if(rnd[pl] >= 9999) rnd[pl] = 9998;
      //printf("	rnd[%d] = %d\n",pl,rnd[pl]);     
   }
   // Sorting vector in ascending order with C function QSORT 

@@ -120,11 +120,9 @@ void AliZDCMerger::Background(Float_t &fImpPar, Int_t &fSpecn, Int_t &fSpecp)
     AliHeader *header = gAlice->GetHeader();
     AliGenEventHeader* mcHeader = header->GenEventHeader();
     fImpPar = ((AliGenHijingEventHeader*) mcHeader)->ImpactParameter();
-    Int_t dSpecn  = ((AliGenHijingEventHeader*) mcHeader)->Spectatorsn();
-    Int_t dSpecp  = ((AliGenHijingEventHeader*) mcHeader)->Spectatorsp();
-    // Until there is only 1 ZDC set the # of spectators must be divided by 2!!!
-    fSpecn = dSpecn/2;
-    fSpecp = dSpecp/2;
+    fSpecn  = ((AliGenHijingEventHeader*) mcHeader)->ProjSpectatorsn();
+    fSpecp  = ((AliGenHijingEventHeader*) mcHeader)->ProjSpectatorsp();
+    // 
     printf("\n	HIJING ev. #%d - b = %f fm, Nspecn = %d, Nspecp = %d\n",
             fNEvBgr,fImpPar,fSpecn,fSpecp);
 }
@@ -286,7 +284,7 @@ void AliZDCMerger::ExtractSignal(Int_t SpecType)
   }
   for(pl=0;pl<numEvents;pl++){
      rnd[pl] = (Int_t) (9999*gRandom->Rndm());
-     if(rnd[pl] >= 9998) rnd[pl] = 9997;
+     if(rnd[pl] >= 9999) rnd[pl] = 9998;
      //printf("	rnd[%d] = %d\n",pl,rnd[pl]);     
   }
   // Sorting vector in ascending order with C function QSORT 
