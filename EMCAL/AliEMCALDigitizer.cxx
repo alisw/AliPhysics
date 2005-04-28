@@ -156,7 +156,7 @@ void AliEMCALDigitizer::Digitize(Int_t event)
   // helps to avoid scanning over the list of digits to add 
   // contribution of any new SDigit.
 
-  AliEMCALGetter * gime = AliEMCALGetter::Instance(GetTitle(), fEventFolderName) ; 
+  AliEMCALGetter * gime = AliEMCALGetter::Instance(GetTitle()) ; 
   Int_t ReadEvent = event ; 
   if (fManager) 
     ReadEvent = dynamic_cast<AliStream*>(fManager->GetInputStream(0))->GetCurrentEventNumber() ; 
@@ -624,7 +624,7 @@ void AliEMCALDigitizer::WriteDigits()
   //      and branch "AliEMCALDigitizer", with the same title to keep all the parameters
   //      and names of files, from which digits are made.
 
-  AliEMCALGetter * gime = AliEMCALGetter::Instance(GetTitle(), fEventFolderName) ; 
+  AliEMCALGetter * gime = AliEMCALGetter::Instance(GetTitle()) ; 
   const TClonesArray * digits = gime->Digits() ; 
   TTree * treeD = gime->TreeD(); 
 
