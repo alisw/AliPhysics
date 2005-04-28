@@ -391,7 +391,7 @@ void Config()
     if (iEMCAL)
     {
         //=================== EMCAL parameters ============================
-        AliEMCAL *EMCAL = new AliEMCALv1("EMCAL", "G56_2_55_19_104_14");
+        AliEMCAL *EMCAL = new AliEMCALv1("EMCAL", "EMCAL_55_25");
     }
 
      if (iCRT)
