@@ -416,10 +416,7 @@ class TFluka : public TVirtualMC {
     return 0;
   }
 
-  inline const char* TFluka::CurrentVolPath() {
-    Warning("CurrentVolPath", "New function - not yet implemented.");
-    return "";
-  }
+
 
 #endif //TFLUKA
 

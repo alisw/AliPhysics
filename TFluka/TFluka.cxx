@@ -191,14 +191,17 @@ void TFluka::Init() {
     
     if (!gGeoManager) new TGeoManager("geom", "FLUKA geometry");
     fApplication->ConstructGeometry();
-    TGeoVolume *top = (TGeoVolume*)gGeoManager->GetListOfVolumes()->First();
-    gGeoManager->SetTopVolume(top);
-    gGeoManager->CloseGeometry("di");
-    gGeoManager->DefaultColors();  // to be removed
-    
-    // Now we have TGeo geometry created and we have to patch FlukaVmc.inp
-    // with the material mapping file FlukaMat.inp
- 
+    if (!gGeoManager->IsClosed()) {
+       TGeoVolume *top = (TGeoVolume*)gGeoManager->GetListOfVolumes()->First();
+       gGeoManager->SetTopVolume(top);
+       gGeoManager->CloseGeometry("di");
+    } else {
+       TGeoNodeCache *cache = gGeoManager->GetCache();
+       if (!cache->HasIdArray()) {
+          printf("Node ID tracking must be enabled with TFluka: enabling...\n");
+          cache->BuildIdArray();
+       }   
+    }           
     fNVolumes = fGeom->NofVolumes();
     fGeom->CreateFlukaMatFile("flukaMat.inp");   
     if (fVerbosityLevel >=3) {
@@ -1772,6 +1775,10 @@ const char* TFluka::CurrentVolOffName(Int_t off) const
   return node->GetVolume()->GetName();
 }
 
+const char* TFluka::CurrentVolPath() {
+  // Return the current volume path
+  return gGeoManager->GetPath(); 
+}
 //______________________________________________________________________________ 
 Int_t TFluka::CurrentMaterial(Float_t & a, Float_t & z, 
 		      Float_t & dens, Float_t & radl, Float_t & absl) const
@@ -1970,6 +1977,7 @@ extern "C" {
 	fluka->SetZsco(z);
 	fluka->SetNCerenkov(nphot);
 	fluka->SetCaller(50);
+	if (fluka->GetVerbosityLevel() >= 3) 
 	printf("userstepping ckv: %10d %10d %13.3f %13.3f %13.2f %s\n", nphot, mreg, x, y, z, fluka->CurrentVolName());
 	(TVirtualMCApplication::Instance())->Stepping();
     }
