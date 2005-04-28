@@ -347,3 +347,12 @@ void AliZDCFragment::AttachNeutrons(Int_t *fZZ, Int_t *fNN, Int_t &fZtot,Int_t &
    
 
 }
+
+//_____________________________________________________________________________
+Float_t AliZDCFragment::DeuteronFraction()
+{
+    Float_t DeuteronProdPar[2] = {1.068,0.0385};
+    Float_t DeutFrac = DeuteronProdPar[0]-DeuteronProdPar[1]*fB;
+    if(DeutFrac>1.) DeutFrac=1.;
+    return DeutFrac;
+}

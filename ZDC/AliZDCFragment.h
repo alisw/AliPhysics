@@ -24,6 +24,7 @@ public:
   virtual      ~AliZDCFragment() {}
   void GenerateIMF(Int_t* fZZ, Int_t &fNalpha);
   void AttachNeutrons(Int_t* fZZ, Int_t* fNN, Int_t &Ztot, Int_t &Ntot);
+  Float_t DeuteronFraction();
   
   // Setting parameters
   virtual void SetImpactParameter(Float_t b) {fB=b;};
