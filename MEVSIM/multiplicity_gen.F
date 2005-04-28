@@ -430,7 +430,7 @@ CCC   Variables associated with trigger fluctuations:
       real*4 MultFac_xfunc_save(nmax_integ)
 CCC  Open I/O Files:
 
-      open(unit=4,type='old',access='sequential',name='mult_gen.in')
+      open(unit=4,status='old',access='sequential',file='mult_gen.in')
 C-->  Commented for AliRoot direct COMMON block access
 C      open(unit=7,type='new',access='sequential',name='mult_gen.out')
 C      open(unit=8,type='new',access='sequential',name='mult_gen.log')

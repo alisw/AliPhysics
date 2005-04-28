@@ -618,9 +618,9 @@ CCC   Initialize error code for ALICE application:
 CCC   Open Output Files:
 
       open(unit=7,status='unknown',access='sequential',
-     1     name='hbt_log.out')
+     1     file='hbt_log.out')
       open(unit=8,status='unknown',access='sequential',
-     1     name='hbt_simulation.out')
+     1     file='hbt_simulation.out')
 
 CCC   Initialize Arrays and Data Structures:
       If(ALICE .eq. 1) then
@@ -1518,8 +1518,8 @@ CCC   For ALICE-ROOT version (ALICE=1) load parameters from Call to C++ funct
          Call AliHbtp_SetParameters
       Else If(ALICE .eq. 0) Then
 
-         open(unit=1,type='old',access='sequential',
-     1        name='hbt_parameters.in')
+         open(unit=1,status='old',access='sequential',
+     1        file='hbt_parameters.in')
 
 CCC   Read Control Switches:  (See Main program listing for complete
 CCC                            description of input parameters)
@@ -1602,10 +1602,10 @@ C        'GENER:'  lines are assigned flag = 5
 C        All other lines are assigned flag = 0
 
       If(ALICE .eq. 0) Then
-      open(unit=2,type='old',access='sequential',
-     1     name='event_text.in')
+      open(unit=2,status='old',access='sequential',
+     1     file='event_text.in')
       open(unit=3,status='unknown',access='sequential',
-     1     name='event_line.flags')
+     1     file='event_line.flags')
 
 CCC   Set Event Counter:
 
@@ -1699,12 +1699,12 @@ C	    write(*,*) '  FFF: 2 calling PutTrack j = ',j
       
       Else If(ALICE .eq. 0) Then
 
-      open(unit=2,type='old',access='sequential',
-     1     name='event_text.in')
-      open(unit=3,type='old',access='sequential',
-     1     name='event_line.flags')
+      open(unit=2,status='old',access='sequential',
+     1     file='event_text.in')
+      open(unit=3,status='old',access='sequential',
+     1     file='event_line.flags')
       open(unit=4,status='unknown',access='sequential',
-     1     name='event_tracks.select')
+     1     file='event_tracks.select')
 
 CCC   Set Event Counter:
 
@@ -1790,8 +1790,8 @@ C     or two particle ID types.  Check switches, bins and mesh information
 C     to be sure the input reference histograms are compatible with the
 C     present run conditions.
 
-      open(unit=9,type='old',access='sequential',
-     1     name='hbt_pair_reference.hist')
+      open(unit=9,status='old',access='sequential',
+     1     file='hbt_pair_reference.hist')
 
       read(9,*) (check(i),i=1,3)
       read(9,*)  check(4),acheck(1),acheck(2)
@@ -1904,8 +1904,8 @@ CCC   with the present run parameters:
 
 CCC   Next read the one-body histograms for 1 or 2 particle ID types:
 
-      open(unit=11,type='old',access='sequential',
-     1     name='hbt_singles_reference.hist')
+      open(unit=11,status='old',access='sequential',
+     1     file='hbt_singles_reference.hist')
 
       read(11,*) (check(i),i=1,3)
       read(11,*)  check(4),acheck(1),acheck(2)
@@ -2249,48 +2249,48 @@ C     ALICE
         ENDIF
 
         FILNAM=CHROOT(1:LNROOT)//'/data/cpp_06.dat' 
-	open(unit=21,type='old',access='sequential',
-     1       name=FILNAM)
+	open(unit=21,status='old',access='sequential',
+     1       file=FILNAM)
 
         FILNAM=CHROOT(1:LNROOT)//'/data/cpp_08.dat' 
-	open(unit=22,type='old',access='sequential',
-     1       name=FILNAM)
+	open(unit=22,status='old',access='sequential',
+     1       file=FILNAM)
 
         FILNAM=CHROOT(1:LNROOT)//'/data/cpp_10.dat' 
-	open(unit=23,type='old',access='sequential',
-     1       name=FILNAM)
+	open(unit=23,status='old',access='sequential',
+     1       file=FILNAM)
 
         FILNAM=CHROOT(1:LNROOT)//'/data/cpp_12.dat' 
-	open(unit=24,type='old',access='sequential',
-     1       name=FILNAM)
+	open(unit=24,status='old',access='sequential',
+     1       file=FILNAM)
 
         FILNAM=CHROOT(1:LNROOT)//'/data/cpp_14.dat' 
-	open(unit=25,type='old',access='sequential',
-     1       name=FILNAM)
+	open(unit=25,status='old',access='sequential',
+     1       file=FILNAM)
 
         FILNAM=CHROOT(1:LNROOT)//'/data/cpp_16.dat' 
-	open(unit=26,type='old',access='sequential',
-     1       name=FILNAM)
+	open(unit=26,status='old',access='sequential',
+     1       file=FILNAM)
 
         FILNAM=CHROOT(1:LNROOT)//'/data/cpp_18.dat' 
-	open(unit=27,type='old',access='sequential',
-     1       name=FILNAM)
+	open(unit=27,status='old',access='sequential',
+     1       file=FILNAM)
 	
       ELSE
-        open(unit=21,type='old',access='sequential',
-     1       name='cpp_06.dat')
-        open(unit=22,type='old',access='sequential',
-     1       name='cpp_08.dat')
-        open(unit=23,type='old',access='sequential',
-     1       name='cpp_10.dat')
-        open(unit=24,type='old',access='sequential',
-     1       name='cpp_12.dat')
-        open(unit=25,type='old',access='sequential',
-     1       name='cpp_14.dat')
-        open(unit=26,type='old',access='sequential',
-     1       name='cpp_16.dat')
-        open(unit=27,type='old',access='sequential',
-     1       name='cpp_18.dat')
+        open(unit=21,status='old',access='sequential',
+     1       file='cpp_06.dat')
+        open(unit=22,status='old',access='sequential',
+     1       file='cpp_08.dat')
+        open(unit=23,status='old',access='sequential',
+     1       file='cpp_10.dat')
+        open(unit=24,status='old',access='sequential',
+     1       file='cpp_12.dat')
+        open(unit=25,status='old',access='sequential',
+     1       file='cpp_14.dat')
+        open(unit=26,status='old',access='sequential',
+     1       file='cpp_16.dat')
+        open(unit=27,status='old',access='sequential',
+     1       file='cpp_18.dat')
       ENDIF
       
 
@@ -2314,48 +2314,48 @@ CCC   Next read and interpolate the unlike pair Coulomb corrections:
 
       If(ALICE .eq. 1) then
         FILNAM=CHROOT(1:LNROOT)//'/data/cpm_06.dat' 
-	open(unit=31,type='old',access='sequential',
-     1       name=FILNAM)
+	open(unit=31,status='old',access='sequential',
+     1       file=FILNAM)
 
         FILNAM=CHROOT(1:LNROOT)//'/data/cpm_08.dat' 
-	open(unit=32,type='old',access='sequential',
-     1       name=FILNAM)
+	open(unit=32,status='old',access='sequential',
+     1       file=FILNAM)
 
         FILNAM=CHROOT(1:LNROOT)//'/data/cpm_10.dat' 
-	open(unit=33,type='old',access='sequential',
-     1       name=FILNAM)
+	open(unit=33,status='old',access='sequential',
+     1       file=FILNAM)
 
         FILNAM=CHROOT(1:LNROOT)//'/data/cpm_12.dat' 
-	open(unit=34,type='old',access='sequential',
-     1       name=FILNAM)
+	open(unit=34,status='old',access='sequential',
+     1       file=FILNAM)
 
         FILNAM=CHROOT(1:LNROOT)//'/data/cpm_14.dat' 
-	open(unit=35,type='old',access='sequential',
-     1       name=FILNAM)
+	open(unit=35,status='old',access='sequential',
+     1       file=FILNAM)
 
         FILNAM=CHROOT(1:LNROOT)//'/data/cpm_16.dat' 
-	open(unit=36,type='old',access='sequential',
-     1       name=FILNAM)
+	open(unit=36,status='old',access='sequential',
+     1       file=FILNAM)
 
         FILNAM=CHROOT(1:LNROOT)//'/data/cpm_18.dat' 
-	open(unit=37,type='old',access='sequential',
-     1       name=FILNAM)
+	open(unit=37,status='old',access='sequential',
+     1       file=FILNAM)
     
       else
-        open(unit=31,type='old',access='sequential',
-     1       name='cpm_06.dat')
-        open(unit=32,type='old',access='sequential',
-     1       name='cpm_08.dat')
-        open(unit=33,type='old',access='sequential',
-     1       name='cpm_10.dat')
-        open(unit=34,type='old',access='sequential',
-     1       name='cpm_12.dat')
-        open(unit=35,type='old',access='sequential',
-     1       name='cpm_14.dat')
-        open(unit=36,type='old',access='sequential',
-     1       name='cpm_16.dat')
-        open(unit=37,type='old',access='sequential',
-     1       name='cpm_18.dat')
+        open(unit=31,status='old',access='sequential',
+     1       file='cpm_06.dat')
+        open(unit=32,status='old',access='sequential',
+     1       file='cpm_08.dat')
+        open(unit=33,status='old',access='sequential',
+     1       file='cpm_10.dat')
+        open(unit=34,status='old',access='sequential',
+     1       file='cpm_12.dat')
+        open(unit=35,status='old',access='sequential',
+     1       file='cpm_14.dat')
+        open(unit=36,status='old',access='sequential',
+     1       file='cpm_16.dat')
+        open(unit=37,status='old',access='sequential',
+     1       file='cpm_18.dat')
       EndIf
       
       do i = 1,max_c2_coul
@@ -2453,9 +2453,9 @@ CCC   Initialize accepted track counters for this new event:
 CCC   Open temporary files:
 
       open(unit=12,status='unknown',access='sequential',
-     1     name='event_text_aux.in')
+     1     file='event_text_aux.in')
       open(unit=14,status='unknown',access='sequential',
-     1     name='event_tracks_aux.select')
+     1     file='event_tracks_aux.select')
 
 100   read(4,11,err=101,end=102) flag
       event_line_counter = event_line_counter + 1
@@ -2580,10 +2580,10 @@ C                 write(*,*) '  FFF: 3 calling PutTrack i = ',i
 
 CCC   Open temporary, auxiliary files:
 
-      open(unit=12,type='old',access='sequential',
-     1     name='event_text_aux.in')
-      open(unit=14,type='old',access='sequential',
-     1     name='event_tracks_aux.select')
+      open(unit=12,status='old',access='sequential',
+     1     file='event_text_aux.in')
+      open(unit=14,status='old',access='sequential',
+     1     file='event_tracks_aux.select')
 
 120   read(14,11,err=121,end=122) flag
       file10_line_counter = file10_line_counter + 1
@@ -2693,10 +2693,10 @@ CCC   calculate the pair and one-body histograms:
 CCC   Open event and flag files:
 
       If(ALICE .eq. 0) Then
-         open(unit=2,type='old',access='sequential',
-     1        name='event_text.in')
-         open(unit=4,type='old',access='sequential',
-     1        name='event_tracks.select')
+         open(unit=2,status='old',access='sequential',
+     1        file='event_text.in')
+         open(unit=4,status='old',access='sequential',
+     1        file='event_tracks.select')
       End If
 
 CCC   Initialize counters:
@@ -4877,12 +4877,12 @@ CCC   Initialize counters:
 CCC   Open event input, track selection flags and event output files:
 
       If(ALICE .eq. 0) Then
-      open(unit=2,type='old',access='sequential',
-     1     name='event_text.in')
-      open(unit=4,type='old',access='sequential',
-     1     name='event_tracks.select')
+      open(unit=2,status='old',access='sequential',
+     1     file='event_text.in')
+      open(unit=4,status='old',access='sequential',
+     1     file='event_tracks.select')
       open(unit=10,status='unknown',access='sequential',
-     1     name='event_hbt_text.out')
+     1     file='event_hbt_text.out')
 CCC   Read/Write event header from/to I/O event text files
          Call read_data(7)
          Call read_data(8)
@@ -6416,9 +6416,9 @@ C-----------------------------
 
 
       open(unit=9,status='unknown',access='sequential',
-     1     name='hbt_pair_reference.hist')
+     1     file='hbt_pair_reference.hist')
       open(unit=11,status='unknown',access='sequential',
-     1     name='hbt_singles_reference.hist')
+     1     file='hbt_singles_reference.hist')
 
 C     Write Pair Reference Hist:
 

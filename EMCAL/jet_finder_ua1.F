@@ -34,10 +34,12 @@ c#include "calorSize.inc"
       real occupationAll, occupationInJet  ! 3-oct-2001 by PAI 
       integer maxTowerInJet                ! 5-oct-2001 by PAI
       save    maxTowerInJet                ! This is obligatory
-      integer idPerfomance /119/
+      integer idPerfomance
+      data    idPerfomance /119/
       save    idPerfomance
 !  print parameter - 27-sep-2001 by PAI
-      integer kpri/0/
+      integer kpri
+      data    kpri /0/
       integer njet, ncellj
       real    etj, etaj, phij
 *    Results
