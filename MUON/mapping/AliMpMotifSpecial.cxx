@@ -146,7 +146,7 @@ TVector2 AliMpMotifSpecial::Dimensions() const
     if (tabSizeX[j]>sizeX) sizeX = tabSizeX[j];
   }
 
-  delete tabSizeX;
+  delete [] tabSizeX;
   
   return TVector2(sizeX,sizeY);
 }
