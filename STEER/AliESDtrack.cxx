@@ -833,10 +833,42 @@ Int_t AliESDtrack::GetTPCclusters(Int_t *idx) const {
   return fTPCncls;
 }
 
+Float_t AliESDtrack::GetTPCdensity(Int_t row0, Int_t row1) const{
+  //
+  // GetDensity of the clusters on given region between row0 and row1
+  // Dead zone effect takin into acoount
+  //
+  Int_t good  = 0;
+  Int_t found = 0;
+  //  
+  for (Int_t i=row0;i<=row1;i++){     
+    Int_t index = fTPCindex[i];
+    if (index!=-1)  good++;             // track outside of dead zone
+    if (index>0)    found++;
+  }
+  Float_t density=0.5;
+  if (good>(row1-row0)*0.5) density = Float_t(found)/Float_t(good);
+  return density;
+}
 //_______________________________________________________________________
 void AliESDtrack::SetTPCpid(const Double_t *p) {  
   // Sets values for the probability of each particle type (in TPC)
-  for (Int_t i=0; i<AliPID::kSPECIES; i++) fTPCr[i]=p[i];
+  // normalize probabiluty to 1
+  // 
+  //
+//   Double_t sump=0;
+//   for (Int_t i=0; i<AliPID::kSPECIES; i++) {
+//     sump+=p[i];
+//   }
+//   for (Int_t i=0; i<AliPID::kSPECIES; i++) {
+//     if (sump>0){
+//       fTPCr[i]=p[i]/sump;
+//     }
+//     else{
+//       fTPCr[i]=p[i];
+//     }
+//   }
+  for (Int_t i=0; i<AliPID::kSPECIES; i++) fTPCr[i] = p[i];
   SetStatus(AliESDtrack::kTPCpid);
 }
 

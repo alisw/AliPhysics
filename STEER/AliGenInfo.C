@@ -202,6 +202,7 @@ AliMCInfo::AliMCInfo()
   fTRDReferences  = new TClonesArray("AliTrackReference",10);
   fTOFReferences  = new TClonesArray("AliTrackReference",10);
   fTRdecay.SetTrack(-1);
+  fCharge = 0;
 }
 
 AliMCInfo::~AliMCInfo()
@@ -440,23 +441,23 @@ void AliGenV0Info::Update(Float_t vertex[3])
   fPointAngleFi = (v[0]*p[0]+v[1]*p[1])/(vnorm2*pnorm2);
   fPointAngleTh = (v[2]*p[2]+vnorm2*pnorm2)/(vnorm3*pnorm3);  
   fPointAngle   = (v[0]*p[0]+v[1]*p[1]+v[2]*p[2])/(vnorm3*pnorm3);
-  Float_t mass1 = fMCd.fMass;
-  Float_t mass2 = fMCm.fMass;
+  Double_t mass1 = fMCd.fMass;
+  Double_t mass2 = fMCm.fMass;
 
   
-  Float_t e1    = TMath::Sqrt(mass1*mass1+
-			      fMCPdr[0]*fMCPdr[0]+
-			      fMCPdr[1]*fMCPdr[1]+
-			      fMCPdr[2]*fMCPdr[2]);
-  Float_t e2    = TMath::Sqrt(mass2*mass2+
+  Double_t e1    = TMath::Sqrt(mass1*mass1+
+			      fMCPd[0]*fMCPd[0]+
+			      fMCPd[1]*fMCPd[1]+
+			      fMCPd[2]*fMCPd[2]);
+  Double_t e2    = TMath::Sqrt(mass2*mass2+
 			      fMCPm[0]*fMCPm[0]+
 			      fMCPm[1]*fMCPm[1]+
 			      fMCPm[2]*fMCPm[2]);
   
   fInvMass =  
-    (fMCPm[0]+fMCPdr[0])*(fMCPm[0]+fMCPdr[0])+
-    (fMCPm[1]+fMCPdr[1])*(fMCPm[1]+fMCPdr[1])+
-    (fMCPm[2]+fMCPdr[2])*(fMCPm[2]+fMCPdr[2]);
+    (fMCPm[0]+fMCPd[0])*(fMCPm[0]+fMCPd[0])+
+    (fMCPm[1]+fMCPd[1])*(fMCPm[1]+fMCPd[1])+
+    (fMCPm[2]+fMCPd[2])*(fMCPm[2]+fMCPd[2]);
   
   //  fInvMass = TMath::Sqrt((e1+e2)*(e1+e2)-fInvMass);
   fInvMass = (e1+e2)*(e1+e2)-fInvMass;
@@ -464,8 +465,6 @@ void AliGenV0Info::Update(Float_t vertex[3])
 
     
 }
-
-
 
 
 
@@ -1130,6 +1129,7 @@ Int_t  AliGenInfoMaker::BuildV0Info()
     if (dinfo){
       v0info->fMCm = (*info);
       v0info->fMCd = (*dinfo);
+      v0info->fMotherP = (*motherparticle);
       v0info->Update(fVPrim);
       br->SetAddress(&v0info);    
       fTreeV0->Fill();

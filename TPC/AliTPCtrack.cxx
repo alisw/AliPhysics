@@ -38,7 +38,7 @@ AliTPCtrack::AliTPCtrack(): AliKalmanTrack()
   fX = fP0 = fP1 = fP2 = fP3 = fP3 = fP4 = 0.0;
   fAlpha = fdEdx = 0.0;
   fNumber = 0;  // [SR, 01.04.2003]
-  for (Int_t i=0; i<3;i++) fKinkIndexes[i]=0;
+  for (Int_t i=0; i<3;i++) {fKinkIndexes[i]=0; fV0Indexes[i]=0;}
 }
 
 //_________________________________________________________________________
@@ -77,6 +77,7 @@ const Double_t cc[15], Double_t xref, Double_t alpha) : AliKalmanTrack() {
   fTrackType  = 0;
   fLab2       = 0;
   for (Int_t i=0; i<3;i++) fKinkIndexes[i]=0;
+  for (Int_t i=0; i<3;i++) fV0Indexes[i]=0;
 }
 
 //_____________________________________________________________________________
@@ -88,6 +89,7 @@ AliTPCtrack::AliTPCtrack(const AliESDtrack& t) : AliKalmanTrack() {
   SetLabel(t.GetLabel());
   SetMass(t.GetMass());
   for (Int_t i=0; i<3;i++) fKinkIndexes[i]=t.GetKinkIndex(i);
+  for (Int_t i=0; i<3;i++) fV0Indexes[i]=t.GetV0Index(i);
 
   fdEdx  = t.GetTPCsignal();
   fAlpha = t.GetAlpha();
@@ -165,6 +167,7 @@ AliTPCtrack::AliTPCtrack(const AliTPCtrack& t) : AliKalmanTrack(t) {
   fTrackType  = t.fTrackType;
   fLab2       = t.fLab2;
   for (Int_t i=0; i<3;i++) fKinkIndexes[i]=t.fKinkIndexes[i];
+  for (Int_t i=0; i<3;i++) fV0Indexes[i]=t.fV0Indexes[i];
 }
 
 //_____________________________________________________________________________

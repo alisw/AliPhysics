@@ -670,6 +670,10 @@ Int_t AliITStrackerV2::AliITSlayer::InsertCluster(AliITSclusterV2 *c) {
   //--------------------------------------------------------------------
   Float_t circ=TMath::TwoPi()*fR;
   Int_t sec=Int_t(kNsector*c->GetPhiR()/circ);
+  if (sec>=kNsector) {
+     ::Error("InsertCluster","Wrong sector !\n");
+     return 1;
+  }
   Int_t &n=fN[sec];
   if (n>=kMaxClusterPerSector) {
      ::Error("InsertCluster","Too many clusters !\n");

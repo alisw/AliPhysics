@@ -51,23 +51,50 @@ AliESDV0MI::AliESDV0MI() :
   //
   //Dafault constructor
   //
+  for (Int_t i=0;i<4;i++){fCausality[i]=0;}
+}
+
+
+void AliESDV0MI::SetCausality(Float_t pb0, Float_t pb1, Float_t pa0, Float_t pa1)
+{
+  //
+  // set probabilities
+  //
+  fCausality[0] = pb0;     // probability - track 0 exist before vertex
+  fCausality[1] = pb1;     // probability - track 1 exist before vertex
+  fCausality[2] = pa0;     // probability - track 0 exist close after vertex
+  fCausality[3] = pa1;     // probability - track 1 exist close after vertex
 }
 
 void AliESDV0MI::SetP(const AliExternalTrackParam & paramp)  {
   //
-  // set mother
+  // set track +
   //
   fParamP   = paramp;
 }
 
 void AliESDV0MI::SetM(const AliExternalTrackParam & paramm){
   //
-  //set daughter
+  //set track -
   //
   fParamM = paramm;
-
 }
   
+void AliESDV0MI::SetRp(const Double_t *rp){
+  //
+  // set pid +
+  //
+  for (Int_t i=0;i<5;i++) fRP[i]=rp[i];
+}
+
+void AliESDV0MI::SetRm(const Double_t *rm){
+  //
+  // set pid -
+  //
+  for (Int_t i=0;i<5;i++) fRM[i]=rm[i];
+}
+
+
 void  AliESDV0MI::UpdatePID(Double_t pidp[5], Double_t pidm[5])
 {
   //
@@ -136,7 +163,8 @@ void  AliESDV0MI::Update(Float_t vertex[3])
   //
   // updates Kink Info
   //
-  Float_t distance1,distance2;
+  //  Float_t distance1,distance2;
+  Float_t distance2;
   //
   AliHelix phelix(fParamP);
   AliHelix mhelix(fParamM);    
@@ -146,7 +174,7 @@ void  AliESDV0MI::Update(Float_t vertex[3])
   Double_t phase[2][2],radius[2];
   Int_t  points = phelix.GetRPHIintersections(mhelix, phase, radius,200);
   Double_t delta1=10000,delta2=10000;  
-
+  /*
   if (points<=0) return;
   if (points>0){
     phelix.LinearDCA(mhelix,phase[0][0],phase[0][1],radius[0],delta1);
@@ -159,6 +187,7 @@ void  AliESDV0MI::Update(Float_t vertex[3])
     phelix.LinearDCA(mhelix,phase[1][0],phase[1][1],radius[1],delta2);
   }
   distance1 = TMath::Min(delta1,delta2);
+  */
   //
   //find intersection parabolic
   //
@@ -215,13 +244,13 @@ void  AliESDV0MI::Update(Float_t vertex[3])
   fDist2 = TMath::Sqrt(distance2);      
   //            
   //
-  Float_t v[3] = {fXr[0]-vertex[0],fXr[1]-vertex[1],fXr[2]-vertex[2]};
-  Float_t p[3] = {fPP[0]+fPM[0], fPP[1]+fPM[1],fPP[2]+fPM[2]};
-  Float_t vnorm2 = v[0]*v[0]+v[1]*v[1];
-  Float_t vnorm3 = TMath::Sqrt(v[2]*v[2]+vnorm2);
+  Double_t v[3] = {fXr[0]-vertex[0],fXr[1]-vertex[1],fXr[2]-vertex[2]};
+  Double_t p[3] = {fPP[0]+fPM[0], fPP[1]+fPM[1],fPP[2]+fPM[2]};
+  Double_t vnorm2 = v[0]*v[0]+v[1]*v[1];
+  Double_t vnorm3 = TMath::Sqrt(v[2]*v[2]+vnorm2);
   vnorm2 = TMath::Sqrt(vnorm2);
-  Float_t pnorm2 = p[0]*p[0]+p[1]*p[1];
-  Float_t pnorm3 = TMath::Sqrt(p[2]*p[2]+pnorm2);
+  Double_t pnorm2 = p[0]*p[0]+p[1]*p[1];
+  Double_t pnorm3 = TMath::Sqrt(p[2]*p[2]+pnorm2);
   pnorm2 = TMath::Sqrt(pnorm2);  
   fPointAngleFi = (v[0]*p[0]+v[1]*p[1])/(vnorm2*pnorm2);
   fPointAngleTh = (v[2]*p[2]+vnorm2*pnorm2)/(vnorm3*pnorm3);  

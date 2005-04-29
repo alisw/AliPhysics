@@ -106,6 +106,7 @@ public:
   Float_t GetTPCsignal() const {return fTPCsignal;}
   Float_t GetTPCchi2() const {return fTPCchi2;}
   Int_t GetTPCclusters(Int_t *idx) const;
+  Float_t GetTPCdensity(Int_t row0, Int_t row1) const;
   Int_t GetTPCLabel() const {return fTPCLabel;}
   Int_t GetKinkIndex(Int_t i) const { return fKinkIndexes[i];}
   Int_t GetV0Index(Int_t i) const { return fV0Indexes[i];}
@@ -207,7 +208,7 @@ public:
   }; 
 protected:
   
-  AliESDtrack & operator=(const AliESDtrack & );
+  //AliESDtrack & operator=(const AliESDtrack & );
 
   ULong_t   fFlags;        // Reconstruction status flags 
   Int_t     fLabel;        // Track label
@@ -259,7 +260,7 @@ protected:
   // TPC related track information
   Float_t fTPCchi2;        // chi2 in the TPC
   Int_t   fTPCncls;        // number of clusters assigned in the TPC
-  Int_t  fTPCindex[180];  //! indices of the assigned TPC clusters
+  Int_t  fTPCindex[180];  // indices of the assigned TPC clusters
   TBits   fTPCClusterMap;  // Map of clusters, one bit per padrow; 1 if has a cluster on given padrow
   Float_t fTPCsignal;      // detector's PID signal
   Float_t fTPCr[AliPID::kSPECIES]; // "detector response probabilities" (for the PID)
@@ -287,7 +288,7 @@ protected:
   Float_t fTOFsignal;      // detector's PID signal
   Float_t fTOFr[AliPID::kSPECIES]; // "detector response probabilities" (for the PID)
   Int_t   fTOFLabel[3];       // TOF label 
-  Float_t fTOFInfo[10];       //! TOF informations
+  Float_t fTOFInfo[10];       // TOF informations
 
   // PHOS related track information 
   Float_t fPHOSpos[3]; // position localised by PHOS in global coordinate system
@@ -310,7 +311,7 @@ protected:
   Float_t fRICHdx;         // x of the track impact minus x of the MIP
   Float_t fRICHdy;         // y of the track impact minus y of the MIP
   	
-  ClassDef(AliESDtrack,13)  //ESDtrack 
+  ClassDef(AliESDtrack,14)  //ESDtrack 
 };
 
 #endif 

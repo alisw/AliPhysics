@@ -22,9 +22,15 @@ public:
   //  friend class AliITStrackerMI;
   AliESDV0MI();             //constructor
   //
+  const AliExternalTrackParam *GetParamP() const {return &fParamP;}
+  const AliExternalTrackParam *GetParamM() const {return &fParamM;}
   void SetP(const AliExternalTrackParam & paramp); 
   void SetM(const AliExternalTrackParam & paramd);
+  void SetRp(const Double_t *rp);
+  void SetRm(const Double_t *rm);
   void UpdatePID(Double_t pidp[5], Double_t pidm[5]);
+  void SetStatus(Int_t status){fStatus=status;}
+  Int_t  GetStatus() const {return fStatus;}
   Float_t GetEffMass(UInt_t p1, UInt_t p2);
   Float_t GetProb(UInt_t p1, UInt_t p2);
   void Update(Float_t vertex[3]);            //update
@@ -58,7 +64,8 @@ public:
   Float_t GetNBefore() const {return fNBefore;}
   void SetNBefore(Float_t nb) {fNBefore=nb;}  
   void SetLab(Int_t i, Int_t lab) {fLab[i]=lab;}
-
+  void SetCausality(Float_t pb0, Float_t pb1, Float_t pa0, Float_t pa1);
+  const Float_t * GetCausalityP() const {return fCausality;}
 private:
   AliExternalTrackParam fParamP;
   AliExternalTrackParam fParamM;
@@ -78,12 +85,13 @@ private:
   Double_t       fXr[3];      //rec. position according helix
   Double_t       fAngle[3];   //three angles
   Double_t       fRr;         //rec position of the vertex 
-  Int_t          fStatus;       //status 
+  Int_t          fStatus;       //status  - 1 - TPC V0  2- ITS V0  4- accepted - 0 -rejected
   Int_t          fRow0;         // critical layer
   Int_t          fOrder[3]; //order of the vertex 
   //  quality information
   Double_t       fDistNorm; //normalized  DCA
   Double_t       fDistSigma; //sigma of distance
+  Float_t        fCausality[4];  // causality information - see comments in SetCausality
   Float_t        fChi2Before;   //chi2 of the tracks before V0
   Float_t        fNBefore;      // number of possible points before V0
   Float_t        fChi2After;   // chi2 of the tracks after V0
@@ -92,9 +100,7 @@ private:
   Float_t        fPointAngleTh; //point angle theta
   Float_t        fPointAngle;   //point angle full
 
-
-
-  ClassDef(AliESDV0MI,1)      // ESD V0 vertex
+  ClassDef(AliESDV0MI,2)      // ESD V0 vertex
 };
 
 

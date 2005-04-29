@@ -108,8 +108,10 @@ public:
   Double_t GetD(Double_t x=0, Double_t y=0) const;
   AliExternalTrackParam & GetReference(){ return fReference;}
   void UpdateReference(){ new (&fReference) AliExternalTrackParam(*this);}
-  Int_t  GetKinkIndex(Int_t i) const{ return fKinkIndexes[i];}
+  Int_t   GetKinkIndex(Int_t i) const{ return fKinkIndexes[i];}
   Int_t*  GetKinkIndexes() { return fKinkIndexes;}
+  Int_t   GetV0Index(Int_t i) const{ return fV0Indexes[i];}
+  Int_t*  GetV0Indexes() { return fV0Indexes;}
 protected: 
   Double_t fX;              // X-coordinate of this track (reference plane)
   Double_t fAlpha;          // Rotation angle the local (TPC sector)
@@ -147,6 +149,7 @@ protected:
   AliExternalTrackParam   fReference; // track parameters at the middle of the chamber
   Float_t  fKinkPoint[12];      //radius, of kink,  dfi and dtheta
   Int_t    fKinkIndexes[3];     // kink indexes - minus = mother + daughter
+  Int_t    fV0Indexes[3];     // kink indexes - minus = mother + daughter
 
   ClassDef(AliTPCtrack,2)   // Time Projection Chamber reconstructed tracks
 };

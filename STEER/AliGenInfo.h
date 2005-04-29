@@ -80,6 +80,7 @@ class AliGenV0Info: public TObject {
 public:
   AliMCInfo fMCd;      //info about daughter particle - second particle for V0
   AliMCInfo fMCm;      //info about mother particle   - first particle for V0
+  TParticle fMotherP;   //particle info about mother particle
   void Update(Float_t vertex[3]);        // put some derived info to special field 
   Double_t    fMCDist1;    //info about closest distance according closest MC - linear DCA
   Double_t    fMCDist2;    //info about closest distance parabolic DCA

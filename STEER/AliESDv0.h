@@ -33,9 +33,9 @@ public:
   Double_t GetD(Double_t x0=0.,Double_t y0=0.,Double_t z0=0.) const;
   Int_t GetNindex() const {return fNidx;}
   Int_t GetPindex() const {return fPidx;}
+  void SetESDindexes(Int_t ip, Int_t im){fNidx=ip;fPidx=im;}
   void SetDcaDaughters(Double_t rDcaDaughters=0.);
   Double_t GetDcaDaughters() {return fDcaDaughters;}
-
 protected: 
   Int_t fPdgCode;           // reconstructed V0's type (PDG code)
   Double_t fEffMass;        // reconstructed V0's effective mass

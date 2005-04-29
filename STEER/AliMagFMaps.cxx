@@ -207,7 +207,7 @@ void AliMagFMaps::Field(Float_t *x, Float_t *b) const
       //
       //     Constant L3 field , if this option was selected
       //
-	  b[2] = - fSolenoid;
+	b[2] = (- fSolenoid)*fFactor;
 	  return;
       } 
   } else if (fFieldMap[1]->Inside(xm[0], xm[1], xm[2])) {

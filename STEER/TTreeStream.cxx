@@ -232,7 +232,7 @@ TTreeDataElement:: TTreeDataElement(Char_t type) :
 
 TTreeDataElement:: TTreeDataElement(TDataType* type) :
   fName(),
-  fType(' '),
+  fType(0),
   fDType(type),
   fClass(0),
   fPointer(0)
@@ -244,7 +244,7 @@ TTreeDataElement:: TTreeDataElement(TDataType* type) :
 
 TTreeDataElement:: TTreeDataElement(TClass* cl) :
   fName(),
-  fType(' '),
+  fType(0),
   fDType(0),
   fClass(cl),
   fPointer(0)

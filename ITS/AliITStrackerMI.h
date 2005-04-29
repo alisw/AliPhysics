@@ -23,6 +23,8 @@ class AliHelix;
 class AliV0vertex;
 class AliESDV0MI;
 
+class TTreeSRedirector;
+
 
 
 
@@ -110,7 +112,7 @@ public:
     Int_t GetSkip() const {return fSkip;}
     void  SetSkip(Int_t skip){fSkip=skip;}
     void IncAccepted(){fAccepted++;}
-    Int_t GetAccepted() const {return fAccepted;}
+    Int_t GetAccepted() const {return fAccepted;}    
   protected:
     AliITSlayer(const AliITSlayer& /*layer*/){;}
     Double_t fR;                // mean radius of this layer
@@ -172,13 +174,13 @@ public:
   AliITStrackerMI::AliITSdetector & GetDetector(Int_t layer, Int_t n) const {return GetLayer(layer).GetDetector(n); }
 
 protected:
-  void FindV0(AliESD *event);  //try to find V0
-  Double_t  TestV0(AliHelix *h1, AliHelix *h2, AliESDV0MI *vertex, Double_t &rmin);  //try to find V0 - return DCA
-  Bool_t  FindBestPair(Int_t esdtrack0, Int_t esdtrack1,AliESDV0MI *vertex, Int_t &ibest0, Int_t &ibest1);  // try to find best pair from the tree of track hyp.
+  Int_t GetNearestLayer(const Double_t *xr) const;  //get nearest upper layer close to the point xr
+  void FindV02(AliESD *event);  //try to find V0
+  void UpdateTPCV0(AliESD *event);  //try to update, or reject TPC  V0s
   void CookLabel(AliKalmanTrack *t,Float_t wrong) const;
   void CookLabel(AliITStrackMI *t,Float_t wrong) const;
   Double_t GetEffectiveThickness(Double_t y, Double_t z) const;
-  void FollowProlongationTree(AliITStrackMI * otrack, Int_t esdindex);
+  void FollowProlongationTree(AliITStrackMI * otrack, Int_t esdindex, Bool_t constrain);
   void ResetBestTrack() {
      fBestTrack.~AliITStrackMI();
      new(&fBestTrack) AliITStrackMI(fTrackToFollow);
@@ -218,6 +220,7 @@ protected:
   AliITStrackMI fBestTrack;              // "best" track 
   AliITStrackMI fTrackToFollow;          // followed track
   TObjArray     fTrackHypothesys;        // ! array with track hypothesys- ARRAY is the owner of tracks- MI
+  TObjArray     fBestHypothesys;         // ! array with track hypothesys- ARRAY is the owner of tracks- MI
   TObjArray     fOriginal;               // ! array with seeds from the TPC
   Int_t         fBestTrackIndex[100000]; // ! index of the best track
   Int_t         fCurrentEsdTrack;        // ! current esd track           - MI
@@ -227,6 +230,8 @@ protected:
   Int_t fLayersNotToSkip[kMaxLayer];     // layer masks
   Int_t fLastLayerToTrackTo;             // the innermost layer to track to
   Float_t * fCoeficients;                //! working array with errors and mean cluser shape
+  AliESD  * fEsd;                        //! pointer to the ESD event
+  TTreeSRedirector *fDebugStreamer;     //!debug streamer
  private:
   AliITStrackerMI(const AliITStrackerMI * /*tracker*/){;}
   ClassDef(AliITStrackerMI,2)   //ITS tracker MI

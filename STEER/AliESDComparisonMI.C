@@ -189,6 +189,49 @@ TProfile prof("prof","prof",10,0.5,5);
 
 
 
+TCut cprim("cprim","TMath::Sqrt(MC.fVDist[0]**2+MC.fVDist[1]**2)<0.01&&abs(MC.fVDist[2])<0.01");
+TCut citsin("citsin","TMath::Sqrt(MC.fVDist[0]**2+MC.fVDist[1]**2)<5");
+TCut csec("csec","TMath::Sqrt(MC.fVDist[0]**2+MC.fVDist[1]**2)>0.5");
+TCut crec("crec","fReconstructed==1");
+TCut cteta1("cteta1","abs(MC.fParticle.Theta()/3.1415-0.5)<0.25");
+TCut cteta05("cteta05","abs(MC.fParticle.Theta()/3.1415-0.5)<0.1");
+
+TCut cpos1("cpos1","abs(MC.fParticle.fVz/sqrt(MC.fParticle.fVx*MC.fParticle.fVx+MC.fParticle.fVy*MC.fParticle.fVy))<1");
+TCut csens("csens","abs(sqrt(fVDist[0]**2+fVDist[1]**2)-170)<50");
+TCut cmuon("cmuon","abs(MC.fParticle.fPdgCode==-13)");
+TCut cchi2("cchi2","fESDTrack.fITSchi2MIP[0]<7.&&fESDTrack.fITSchi2MIP[1]<5.&&fESDTrack.fITSchi2MIP[2]<7.&&fESDTrack.fITSchi2MIP[3]<7.5&&fESDTrack.fITSchi2MIP[4]<6.");
+  
+
+
+void MakeAliases(AliESDComparisonDraw&comp)
+{
+  //
+  // aliases definition
+  //
+  comp.fTree->SetAlias("radius","TMath::Sqrt(MC.fVDist[0]**2+MC.fVDist[1]**2)");
+  comp.fTree->SetAlias("direction","MC.fParticle.fVx*MC.fParticle.fPx+MC.fParticle.fVy*MC.fParticle.fPy");
+  comp.fTree->SetAlias("decaydir","MC.fTRdecay.fX*MC.fTRdecay.fPx+MC.fTRdecay.fY*MC.fTRdecay.fPy");
+  comp.fTree->SetAlias("theta","MC.fTrackRef.Theta()");
+  comp.fTree->SetAlias("primdca","sqrt(RC.fITStrack.fD[0]**2+RC.fITStrack.fD[1]**2)");
+  comp.fTree->SetAlias("trdchi2","fTRDtrack.fChi2/fTRDtrack.fN");
+  comp.fTree->SetAlias("trdchi2","fTRDtrack.fChi2/fTRDtrack.fN");
+  
+  comp.fTree->SetAlias("trddedx","(RC.fESDTrack.fTRDsignals[0]+RC.fESDTrack.fTRDsignals[1]+RC.fESDTrack.fTRDsignals[2]+RC.fESDTrack.fTRDsignals[3]+RC.fESDTrack.fTRDsignals[4]+RC.fESDTrack.fTRDsignals[5])/6.");
+  
+  comp.fTree->SetAlias("dtofmc2","fESDTrack.fTrackTime[2]-(10^12*MC.fTOFReferences[0].fTime)");
+  comp.fTree->SetAlias("dtofrc2","(fESDTrack.fTrackTime[2]-fESDTrack.fTOFsignal)");
+
+  comp.fTree->SetAlias("psum","fESDTrack.fTOFr[4]+fESDTrack.fTOFr[3]+fESDTrack.fTOFr[2]+fESDTrack.fTOFr[1]+fESDTrack.fTOFr[0]");
+  comp.fTree->SetAlias("P0","fESDTrack.fTOFr[0]/psum");
+  comp.fTree->SetAlias("P1","fESDTrack.fTOFr[1]/psum");
+  comp.fTree->SetAlias("P2","fESDTrack.fTOFr[2]/psum");
+  comp.fTree->SetAlias("P3","fESDTrack.fTOFr[3]/psum");
+  comp.fTree->SetAlias("P4","fESDTrack.fTOFr[4]/psum");
+  comp.fTree->SetAlias("MaxP","max(max(max(P0,P1),max(P2,P3)),P4)");
+}
+
+
+
 
 void  AliESDRecInfo::UpdatePoints(AliESDtrack*track)
 {
@@ -410,7 +453,7 @@ void AliESDRecInfo::Update(AliMCInfo* info,AliTPCParam * /*par*/, Bool_t reconst
   }
 
 
-  if (fStatus[1]>0 &&info->fNTPCRef>0){
+  if (fStatus[1]>0 &&info->fNTPCRef>0&&TMath::Abs(fTPCinP0[3])>0.0001){
     //TPC
     fESDTrack.GetInnerXYZ(fTPCinR1);
     fTPCinR1[3] = TMath::Sqrt(fTPCinR1[0]*fTPCinR1[0]+fTPCinR1[1]*fTPCinR1[1]);
@@ -930,6 +973,7 @@ Int_t ESDCmpTr::Exec()
    
   fNextTreeGenEntryToRead = 0;
   fNextKinkToRead = 0;
+  fNextV0ToRead   =0;
   cerr<<"fFirstEventNr, fNEvents: "<<fFirstEventNr<<" "<<fNEvents<<endl;
   for (Int_t eventNr = fFirstEventNr; eventNr < fFirstEventNr+fNEvents;
        eventNr++) {
@@ -1298,6 +1342,9 @@ Int_t ESDCmpTr::TreeGenLoop(Int_t eventNr)
       fRecInfo->fESDTrack =*track; 
       if (track->GetITStrack())
 	fRecInfo->fITStrack = *((AliITStrackMI*)track->GetITStrack());
+      else{
+	fRecInfo->fITStrack = *track;
+      }
       if (track->GetTRDtrack()){
 	fRecInfo->fTRDtrack = *((AliTRDtrack*)track->GetTRDtrack());
       }

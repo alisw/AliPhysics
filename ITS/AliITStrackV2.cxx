@@ -107,9 +107,9 @@ AliKalmanTrack() {
   }
   fESDtrack=&t;
 
+  //  if (!Invariant()) throw "AliITStrackV2: conversion failed !\n";
   for(Int_t i=0; i<4; i++) fdEdxSample[i]=0;
 
-  if (!Invariant()) throw "AliITStrackV2: conversion failed !\n";
 }
 
 void AliITStrackV2::UpdateESDtrack(ULong_t flags) const {
@@ -278,10 +278,12 @@ Int_t AliITStrackV2::PropagateTo(Double_t xk, Double_t d, Double_t x0) {
   //------------------------------------------------------------------
   Double_t x1=fX, x2=xk, dx=x2-x1;
   Double_t f1=fP2, f2=f1 + fP4*dx;
-  if (TMath::Abs(f2) >= 0.9999) {
-    Int_t n=GetNumberOfClusters();
-    if (n>kWARN) 
-       Warning("PropagateTo","Propagation failed !\n",n);
+  if (TMath::Abs(f2) >= 0.98) {   
+    // MI change  - don't propagate highly inclined tracks
+    //              covariance matrix distorted
+    // Int_t n=GetNumberOfClusters();
+    //     if (n>kWARN) 
+    //        Warning("PropagateTo","Propagation failed !\n",n);
     return 0;
   }
 
@@ -504,12 +506,16 @@ Int_t AliITStrackV2::Propagate(Double_t alp,Double_t xk) {
   {
   Double_t dx=xk-fX;
   Double_t f1=fP2, f2=f1 + fP4*dx;
-  if (TMath::Abs(f2) >= 0.9999) {
-    Int_t n=GetNumberOfClusters();
-    if (n>kWARN) 
-       Warning("Propagate","Propagation failed (%d) !\n",n);
+  if (TMath::Abs(f2) >= 0.98) {  
+    // don't propagate highly inclined tracks MI
     return 0;
   }
+ //  if (TMath::Abs(f2) >= 0.9999) {
+//     Int_t n=GetNumberOfClusters();
+//     if (n>kWARN) 
+//        Warning("Propagate","Propagation failed (%d) !\n",n);
+//     return 0;
+//   }
   Double_t r1=TMath::Sqrt(1.- f1*f1), r2=TMath::Sqrt(1.- f2*f2);
   
   fX=xk;

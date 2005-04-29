@@ -31,7 +31,7 @@ public:
   void Evaluate(Double_t t, Double_t r[3],  //radius vector
                      Double_t g[3],  //first defivatives
 		Double_t gg[3]);     //second derivatives
-  void GetMomentum(Double_t phase, Double_t p[4], Double_t conversion=0.);  // return  momentum  
+  void GetMomentum(Double_t phase, Double_t p[4], Double_t conversion=0., Double_t *xr=0);  // return  momentum  
   void  GetAngle(Double_t t1, AliHelix &h, Double_t t2, Double_t angle[3]);
   inline Double_t GetHelixR(Double_t phase=0);
   inline Double_t GetHelixZ(Double_t phase=0);
@@ -41,6 +41,7 @@ public:
   Int_t     GetPhase(Double_t r0, Double_t t[2]);               //return phase for the nearest point
   Int_t     GetRPHIintersections(AliHelix &h, Double_t phase[2][2], Double_t ri[2], Double_t cut=3.);
   Int_t     GetClosestPhases(AliHelix &h, Double_t phase[2][2]);
+  Double_t  GetPointAngle(AliHelix &h, Double_t phase[2],const Float_t *vertex);
   Int_t     LinearDCA(AliHelix &h, Double_t &t1, Double_t &t2, 
 		      Double_t &R, Double_t &dist);
   //
