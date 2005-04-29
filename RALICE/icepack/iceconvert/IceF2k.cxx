@@ -161,8 +161,6 @@ void IceF2k::Loop(TTree* otree,Int_t nentries,Int_t printfreq)
 
  if (!otree) otree=new TTree("T","F2K Data");
 
- Double_t pi=acos(-1.);
-
  IceEvent* evt=new IceEvent();
 
  evt->SetTrackCopy(1);

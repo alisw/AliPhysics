@@ -37,7 +37,7 @@ long rdmc_nint(double a)
 /*******************************/
 /* Work around missing isnan() */
 /*******************************/
-int isnan(float r)
+int isnan(double r)
 {
  return 0;
 }
