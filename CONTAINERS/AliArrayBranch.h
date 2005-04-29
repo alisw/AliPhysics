@@ -21,9 +21,10 @@ class AliObjectArray;
  
 class AliArraySubBranch : public TBranch {
 public: 
-  AliArraySubBranch(){;}
+  AliArraySubBranch(){}
   AliArraySubBranch(const char* name, void* address, const char* leaflist, Int_t basketsize = 32000, 
-    Int_t compress = -1):TBranch(name, address, leaflist, basketsize, compress){;}
+    Int_t compress = -1):TBranch(name, address, leaflist, basketsize, compress){}
+  virtual ~AliArraySubBranch() {}
   virtual Int_t  GetEntryExport(Long64_t entry, Int_t getall, TClonesArray* list, Int_t n) { return TBranch::GetEntryExport(entry, getall, list, n); }
   virtual Int_t  GetEntryExport(Int_t entry, Int_t getall, AliObjectArray* list, Int_t n);
   virtual void ReadBasketExport(TBuffer &b, TLeaf *leaf, AliObjectArray *list, Int_t n); 
@@ -31,16 +32,6 @@ public:
 };
 
 class AliArrayBranch : public TBranch {
-
-private: 
-  void Import(TLeaf * leaf, Int_t n);  //integer fill leef buffer 
-protected:
-    AliObjectArray     *fList;           //Pointer to the clonesarray
-    Int_t            fRead;            //flag = 1 if clonesarray has been read
-    Int_t            fN;               //Number of elements in ClonesArray
-    Int_t            fNdataMax;        //Maximum value of fN
-    TString          fClassName;       //name of the class of the objets in the ClonesArray
-    TBranch          *fBranchCount;    //Branch with clones count
 
 public:
     AliArrayBranch();
@@ -50,14 +41,26 @@ public:
     virtual void    Browse(TBrowser *b);
     virtual Int_t   Fill();
     virtual Int_t   GetEntry(Long64_t entry=0, Int_t getall = 0);
-    virtual Int_t   GetN() {return fN;}
-    AliObjectArray    *GetList() {return fList;}
-    Bool_t          IsFolder() {return kTRUE;}
+    virtual Int_t   GetN() const {return fN;}
+    AliObjectArray    *GetList() const {return fList;}
     virtual void    Print(Option_t *option="") const;
     virtual void    Reset(Option_t *option="");
     virtual void    SetAddress(void *add);
     virtual void    SetBasketSize(Int_t buffsize);
     virtual Bool_t          IsFolder() const {return kTRUE;}
+
+protected:
+    AliObjectArray     *fList;           //Pointer to the clonesarray
+    Int_t            fRead;            //flag = 1 if clonesarray has been read
+    Int_t            fN;               //Number of elements in ClonesArray
+    Int_t            fNdataMax;        //Maximum value of fN
+    TString          fClassName;       //name of the class of the objets in the ClonesArray
+    TBranch          *fBranchCount;    //Branch with clones count
+
+private: 
+    AliArrayBranch(const AliArrayBranch &);
+    AliArrayBranch & operator=(const AliArrayBranch &);
+    void Import(TLeaf * leaf, Int_t n);  //integer fill leef buffer 
     ClassDef(AliArrayBranch,1)  //Branch in case of an array of clone objects
 };
 

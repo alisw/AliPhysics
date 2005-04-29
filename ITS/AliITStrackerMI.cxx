@@ -13,6 +13,8 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+/* $Id$ */
+
 //-------------------------------------------------------------------------
 //               Implementation of the ITS tracker class
 //    It reads AliITSclusterV2 clusters and creates AliITStrackMI tracks
@@ -21,19 +23,18 @@
 //     dEdx analysis by: Boris Batyunya, JINR, Boris.Batiounia@cern.ch
 //     
 //-------------------------------------------------------------------------
-#include "AliITSrecoV2.h"
+
+#include <TMatrixD.h>
 #include <TTree.h>
-#include "AliITSgeom.h"
+#include <TTreeStream.h>
+#include <TTree.h>
+
 #include "AliESD.h"
-#include "AliITSclusterV2.h"
-#include "AliITStrackerMI.h"
-#include "TMatrixD.h"
-#include "TFile.h"
-#include "TTree.h"
-#include "AliHelix.h"
 #include "AliESDV0MI.h"
-#include "AliLog.h"
-#include "TTreeStream.h"
+#include "AliHelix.h"
+#include "AliITSclusterV2.h"
+#include "AliITSgeom.h"
+#include "AliITStrackerMI.h"
 
 ClassImp(AliITStrackerMI)
 
@@ -3177,11 +3178,11 @@ Int_t AliITStrackerMI::GetNearestLayer(const Double_t *xr) const{
   //Get nearest upper layer close to the point xr.
   // rough approximation 
   //
-  const Float_t radiuses[6]={4,6.5,15.03,24.,38.5,43.7};
+  const Float_t kRadiuses[6]={4,6.5,15.03,24.,38.5,43.7};
   Float_t radius = TMath::Sqrt(xr[0]*xr[0]+xr[1]*xr[1]);
   Int_t res =6;
   for (Int_t i=0;i<6;i++){
-    if (radius<radiuses[i]){
+    if (radius<kRadiuses[i]){
       res =i;
       break;
     }
@@ -3770,21 +3771,21 @@ void  AliITStrackerMI::FindV02(AliESD *event)
       Float_t    sigmap0   = 0.0001+0.001/(0.1+pvertex->GetRr()); 
       Float_t    sigmap    = 0.5*sigmap0*(0.6+0.4*p12);           // "resolution: of point angle - as a function of radius and momenta
 
-      Float_t CausalityA  = (1.0-pvertex->GetCausalityP()[0])*(1.0-pvertex->GetCausalityP()[1]);
-      Float_t CausalityB  = TMath::Sqrt(TMath::Min(pvertex->GetCausalityP()[2],Float_t(0.7))*
+      Float_t causalityA  = (1.0-pvertex->GetCausalityP()[0])*(1.0-pvertex->GetCausalityP()[1]);
+      Float_t causalityB  = TMath::Sqrt(TMath::Min(pvertex->GetCausalityP()[2],Float_t(0.7))*
 					TMath::Min(pvertex->GetCausalityP()[3],Float_t(0.7)));
       //
-      Float_t Likelihood0 = (TMath::Exp(-pvertex->GetDistNorm())+0.1) *(pvertex->GetDist2()<0.5)*(pvertex->GetDistNorm()<5);
+      Float_t likelihood0 = (TMath::Exp(-pvertex->GetDistNorm())+0.1) *(pvertex->GetDist2()<0.5)*(pvertex->GetDistNorm()<5);
 
-      Float_t Likelihood1 = TMath::Exp(-(1.0001-pvertex->GetPointAngle())/sigmap)+
+      Float_t likelihood1 = TMath::Exp(-(1.0001-pvertex->GetPointAngle())/sigmap)+
 	0.4*TMath::Exp(-(1.0001-pvertex->GetPointAngle())/(4.*sigmap))+
 	0.4*TMath::Exp(-(1.0001-pvertex->GetPointAngle())/(8.*sigmap))+
 	0.1*TMath::Exp(-(1.0001-pvertex->GetPointAngle())/0.01);
       //
-      if (CausalityA<kCausality0Cut)                                          v0OK = kFALSE;
-      if (TMath::Sqrt(Likelihood0*Likelihood1)<kLikelihood01Cut)              v0OK = kFALSE;
-      if (Likelihood1<kLikelihood1Cut)                                        v0OK = kFALSE;
-      if (TMath::Power(Likelihood0*Likelihood1*CausalityB,0.33)<kCombinedCut) v0OK = kFALSE;
+      if (causalityA<kCausality0Cut)                                          v0OK = kFALSE;
+      if (TMath::Sqrt(likelihood0*likelihood1)<kLikelihood01Cut)              v0OK = kFALSE;
+      if (likelihood1<kLikelihood1Cut)                                        v0OK = kFALSE;
+      if (TMath::Power(likelihood0*likelihood1*causalityB,0.33)<kCombinedCut) v0OK = kFALSE;
       
       //
       //

@@ -13,6 +13,8 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+/* $Id$ */
+
 ////////////////////////////////////////////////////
 //  Stand alone tracker class                     //
 //  Origin:  Elisabetta Crescio                   //
@@ -21,22 +23,24 @@
 ////////////////////////////////////////////////////
 
 #include <stdlib.h>
-#include "TArrayI.h"
+
+#include <TArrayI.h>
 #include <TBranch.h>
 #include <TMath.h>
 #include <TObjArray.h>
 #include <TTree.h>
-#include "AliRun.h"
+
+#include "AliESD.h"
+#include "AliESDVertex.h"
+#include "AliESDtrack.h"
+#include "AliITSRiemannFit.h"
+#include "AliITSVertexer.h"
 #include "AliITSclusterTable.h"
 #include "AliITSclusterV2.h"
 #include "AliITSgeom.h"
-#include "AliITSRiemannFit.h"
-#include "AliITStrackerSA.h"
 #include "AliITStrackSA.h"
-#include "AliITSVertexer.h"
-#include "AliESDVertex.h"
-#include "AliESD.h"
-#include "AliESDtrack.h"
+#include "AliITStrackerSA.h"
+#include "AliRun.h"
 
 ClassImp(AliITStrackerSA)
 
@@ -64,23 +68,6 @@ AliITStrackerSA::AliITStrackerSA(AliITSgeom *geom, AliESDVertex *vert):AliITStra
   fVert = vert;
   fGeom = geom;
  
-}
-
-//______________________________________________________________________
-AliITStrackerSA::AliITStrackerSA(const AliITStrackerSA &trkr) : 
-                    AliITStrackerMI(trkr) {
-  // Copy constructor
-  // Copies are not allowed. The method is protected to avoid misuse.
-  Error("AliITStrackerSA","Copy constructor not allowed\n");
-}
-
-//______________________________________________________________________
-AliITStrackerSA& AliITStrackerSA::operator=(const 
-                    AliITStrackerSA& /* trkr */){
-  // Assignment operator
-  // Assignment is not allowed. The method is protected to avoid misuse.
-  Error("= operator","Assignment operator not allowed\n");
-  return *this;
 }
 
 //____________________________________________________________________________

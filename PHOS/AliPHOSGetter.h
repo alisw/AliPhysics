@@ -197,7 +197,7 @@ public:
   virtual void PostSDigitizer (AliPHOSSDigitizer * sdigitizer) 
     const {PhosLoader()->PostSDigitizer(sdigitizer);}    
   virtual void PostDigitizer (AliPHOSDigitizer * digitizer)    
-    const {PhosLoader()->PostDigitizer(dynamic_cast<AliDigitizer *>(digitizer));}
+    const {PhosLoader()->PostDigitizer(digitizer);}
   
   virtual TString Version() const  { return PhosLoader()->GetTitle() ; } 
   virtual AliPHOSLoader * PhosLoader() const { return  fgPhosLoader ; }

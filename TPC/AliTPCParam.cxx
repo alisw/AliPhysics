@@ -28,14 +28,7 @@
 
 //
 
-#include <Riostream.h>
-#include <TMath.h>
-#include <TObject.h>
-#include <TRandom.h>
 #include <AliTPCParam.h>
-
-
-
 
 ClassImp(AliTPCParam)
 
@@ -503,7 +496,7 @@ Bool_t AliTPCParam::Update()
 
 
 
-Bool_t AliTPCParam::GetStatus()
+Bool_t AliTPCParam::GetStatus() const
 {
   //get information about object consistency
   return fbStatus;

@@ -1,26 +1,32 @@
-#include <Rtypes.h>
 #ifndef ALIITSSPDTESTBEAM_H
 #define ALIITSSPDTESTBEAM_H
 
 /* Copyright (c) 1998-2001, ALICE Experiment at CERN, All rights reserved *
  * See cxx source for full Copyright notice                               */
 
+/* $Id$ */
+
+//
+// Class for the reading of the SPD 
+// Test beam data
+// More information on this class will follow
+// 
+
+#include <Rtypes.h>
 #include <TTask.h>
 
-//class ifstream;
 class AliITS;
 class AliITSspdTestBeamHeader;
 class AliITSspdTestBeamTail;
 class AliITSspdTestBeamBurst;
 class AliITSspdTestBeamData;
 
-class AliITSspdTestBeam : public TTask{
-  public:
+class AliITSspdTestBeam : public TTask
+{
+public:
     AliITSspdTestBeam();
     AliITSspdTestBeam(const Char_t *filename,const Char_t *opt="2002",
                       AliITS *its=0);
-    AliITSspdTestBeam(const AliITSspdTestBeam &s):TTask(s){if(this==&s) return;Error("Copy constructor","You are not allowed to make a copy of AliITSspdTestBeam");exit(1);} //Not to be used!
-    AliITSspdTestBeam& operator=(AliITSspdTestBeam &s){if(this==&s) return *this;Error("operator=","You are not allowed to make a copy of AliITSspdTestBeam");exit(1);return *this;} //Not to be used!
     virtual ~AliITSspdTestBeam();
     //
     virtual Int_t OpenInputFile(const Char_t *filename,Int_t start=0,
@@ -28,7 +34,9 @@ class AliITSspdTestBeam : public TTask{
     virtual Int_t Read(Int_t i=0);
     virtual Int_t Decode();
     virtual Int_t GetNumberOfPilots()const{return 3;}
-  private:
+private:
+    AliITSspdTestBeam(const AliITSspdTestBeam &);
+    AliITSspdTestBeam & operator=(const AliITSspdTestBeam &);
     void SetTerminationWord(){fTermination=0xffffd9f0;}
     //
     AliITSspdTestBeamHeader  *fRH;    //! Run Header
@@ -80,12 +88,10 @@ class AliITSTestBeamData{
 #ifndef ALIITSSPDTESTBEAMHEADER_H
 #define ALIITSSPDTESTBEAMHEADER_H
 
-#include <Riostream.h>
-
-//class ostream;
-
 /* Copyright (c) 1998-2001, ALICE Experiment at CERN, All rights reserved *
  * See cxx source for full Copyright notice                               */
+
+#include <Riostream.h>
 
 class AliITSspdTestBeamHeader : public AliITSTestBeamData{
   public:
@@ -128,8 +134,6 @@ ostream &operator<<(ostream &os,AliITSspdTestBeamHeader &source);
 
 #include <Riostream.h>
 
-//class ostream;
-
 class AliITSspdTestBeamTail : public AliITSTestBeamData{
   public:
     AliITSspdTestBeamTail(){};
@@ -159,8 +163,6 @@ ostream &operator<<(ostream &os,AliITSspdTestBeamTail &source);
  * See cxx source for full Copyright notice                               */
 
 #include <Riostream.h>
-
-//class ostream;
 
 class AliITSspdTestBeamBurst : public AliITSTestBeamData{
   public:

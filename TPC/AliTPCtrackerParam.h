@@ -16,15 +16,12 @@
 //-----------------------------------------------------------------------------
 
 //----- Root headers ---------
+class TTree;
 #include <TMatrixD.h>
 //---- AliRoot headers -------
-//#include "alles.h"
-#include "AliRun.h"
-//#include "AliGausCorr.h"
-//#include "AliMagF.h"
+#include "AliConfig.h"
 #include "AliTPCkineGrid.h"
 #include "AliTPCtrack.h"
-//#include "AliTrackReference.h"
 //----------------------------
 
 class AliTPC;

@@ -25,11 +25,8 @@
 // the class AliITSvSPD002 must be read in, one way or the other, so that
 // the Geometry transoformation class AliITSgeom will prpoerly be inilized.
 
-#include <stdlib.h>
-#include <stddef.h>
-#include <iomanip>
-#include <Riostream.h>
-#include <fstream>
+
+//#include <Riostream.h>
 #include <TArrayI.h>
 
 #include "AliITSspdTestBeam.h"

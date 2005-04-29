@@ -15,6 +15,12 @@
 
 /* $Id$ */
 
+//-----------------------------------------------------
+// A Branch for the case of an array of clone objects. 
+//-----------------------------------------------------
+// Author M.Ivanov
+//*KEND.
+
 #include "TROOT.h"
 #include "AliArrayBranch.h"
 #include "TFile.h"
@@ -39,11 +45,6 @@
 #include "AliObjectArray.h"
 #include "AliDataType.h"
 
-//-----------------------------------------------------
-// A Branch for the case of an array of clone objects. 
-//-----------------------------------------------------
-
-//*KEND.
 
 R__EXTERN TTree *gTree;
 
@@ -657,6 +658,9 @@ void AliArrayBranch::Streamer(TBuffer &b)
 
 void AliArrayBranch::Import(TLeaf * leaf, Int_t n)
 {
+  //
+  // Import leaf n from the branch
+  //
 
   const Int_t kIntUndefined = -9999;
   Int_t j = 0;
@@ -996,6 +1000,9 @@ AliTree::AliTree(const char *name,const char *title, Int_t maxvirtualsize):
 TBranch * AliTree::AliBranch(const char *name, void *clonesaddress, Int_t bufsize, Int_t splitlevel,
 			     Int_t compres)
 {
+  //
+  // Create an AliBranch and returns a reference to the TBranch
+  //
   if (clonesaddress == 0) return 0;
   char *cpointer =(char*)clonesaddress;
   char **ppointer =(char**)cpointer;
@@ -1016,6 +1023,9 @@ TBranch * AliTree::AliBranch(const char *name, void *clonesaddress, Int_t bufsiz
 TBranch* AliTree::AliBranch(const char *name, const char *classname, void *addobj, 
 		     Int_t bufsize, Int_t splitlevel)
 {
+  //
+  // Create an AliBranch and returns a reference to the TBranch
+  //
   gTree = this;
   TClass *cl = gROOT->GetClass(classname);
   if (!cl) {

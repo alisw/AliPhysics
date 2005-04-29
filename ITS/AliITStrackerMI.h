@@ -3,30 +3,27 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
+/* $Id$ */
+
 //-------------------------------------------------------------------------
 //                          ITS tracker
 //     reads AliITSclusterMI clusters and creates AliITStrackMI tracks
 //           Origin: Marian Ivanov, CERN, Marian.Ivanov@cern.ch
 //-------------------------------------------------------------------------
 
+class TTree;
+class TTreeSRedirector;
 #include <TObjArray.h>
 
-#include "AliTracker.h"
-#include "AliITStrackMI.h"
-#include "AliITSclusterV2.h"
-#include "AliV0vertex.h"
-
 class AliESD;
-class AliITSgeom;
-class TTree;
-class AliHelix;
-class AliV0vertex;
 class AliESDV0MI;
-
-class TTreeSRedirector;
-
-
-
+class AliHelix;
+class AliITSgeom;
+class AliV0vertex;
+#include "AliITSclusterV2.h"
+#include "AliITStrackMI.h"
+#include "AliTracker.h"
+#include "AliV0vertex.h"
 
 //-------------------------------------------------------------------------
 class AliITStrackerMI : public AliTracker {
@@ -101,7 +98,7 @@ public:
     Double_t GetR() const {return fR;}
     Int_t FindClusterIndex(Float_t z) const;
     AliITSclusterV2 *GetCluster(Int_t i) const {return i<fN? fClusters[i]:0;} 
-    Float_t         *GetWeight(Int_t i)   {return i<fN ?&fClusterWeight[i]:0;}
+    Float_t         *GetWeight(Int_t i)  {return i<fN ?&fClusterWeight[i]:0;}
     AliITSdetector &GetDetector(Int_t n) const { return fDetectors[n]; }
     Int_t FindDetectorIndex(Double_t phi, Double_t z) const;
     Double_t GetThickness(Double_t y, Double_t z, Double_t &x0) const;
@@ -114,7 +111,8 @@ public:
     void IncAccepted(){fAccepted++;}
     Int_t GetAccepted() const {return fAccepted;}    
   protected:
-    AliITSlayer(const AliITSlayer& /*layer*/){;}
+    AliITSlayer(const AliITSlayer& /*layer*/);
+    AliITSlayer & operator=(const AliITSlayer& /*layer*/);
     Double_t fR;                // mean radius of this layer
     Double_t fPhiOffset;        // offset of the first detector in Phi
     Int_t fNladders;            // number of ladders
@@ -232,8 +230,9 @@ protected:
   Float_t * fCoeficients;                //! working array with errors and mean cluser shape
   AliESD  * fEsd;                        //! pointer to the ESD event
   TTreeSRedirector *fDebugStreamer;     //!debug streamer
- private:
-  AliITStrackerMI(const AliITStrackerMI * /*tracker*/){;}
+private:
+  AliITStrackerMI(const AliITStrackerMI &);
+  AliITStrackerMI & operator=(const AliITStrackerMI &);
   ClassDef(AliITStrackerMI,2)   //ITS tracker MI
 };
 

@@ -12,8 +12,6 @@
 #include "AliDetectorParam.h"
 #include "TMath.h"
 
-
-
 class AliTPCParam : public AliDetectorParam {
   //////////////////////////////////////////////////////
   //////////////////////////////////////////////////////
@@ -97,7 +95,7 @@ public:
   //return number of valid response bin
   virtual void SetDefault();          //set defaut TPCparam 
   virtual Bool_t Update();            //recalculate and check geometric parameters 
-  Bool_t GetStatus();         //get information about object consistency  
+  Bool_t GetStatus() const;         //get information about object consistency  
   Int_t GetIndex(Int_t sector, Int_t row) const;  //give index of the given sector and pad row 
   Int_t GetNSegmentsTotal() const {return fNtRows;} 
   Double_t GetLowMaxY(Int_t irow) const {return irow*0.;}
@@ -227,7 +225,7 @@ public:
   Float_t  GetOuterWWPitch() const {return fOuterWWPitch;}  
   Int_t    GetOuterDummyWire() const {return fOuterDummyWire;}
   Float_t  GetOuterOffWire() const {return fOuterOffWire;}
-  Float_t  GetLastWireUp1()  {return fLastWireUp1;}
+  Float_t  GetLastWireUp1()  const {return fLastWireUp1;}
   Float_t  GetROuterFirstWire() const {return fROuterFirstWire;}
   Float_t  GetROuterLastWire() const {return fROuterLastWire;}  
   Float_t  GetWWPitch(Int_t isector = 0) const  {
@@ -250,18 +248,14 @@ public:
   Float_t  GetPadPitchWidth(Int_t isector = 0) const  {
     return ( (isector < fNInnerSector) ? fInnerPadPitchWidth :fOuterPadPitchWidth);}
   Float_t  GetPadPitchLength(Int_t isector = 0, Int_t padrow=0)  const
-  {
-    if (isector < fNInnerSector) {return fInnerPadPitchLength;} 
-    else { 
-     return ((padrow<fNRowUp1) ? fOuter1PadPitchLength:fOuter2PadPitchLength);
-    }
-  }
+  { if (isector < fNInnerSector) return fInnerPadPitchLength; 
+    else return ((padrow<fNRowUp1) ? fOuter1PadPitchLength:fOuter2PadPitchLength);}
   Int_t GetNRowLow() const;   //get the number of pad rows in low sector
   Int_t GetNRowUp() const;    //get the number of pad rows in up sector
   Int_t GetNRowUp1() const;  // number of short rows in up sector  
   Int_t GetNRowUp2() const;  // number of long rows in up sector
   Int_t GetNRow(Int_t isec) const {return  ((isec<fNInnerSector) ?  fNRowLow:fNRowUp);}
-  Int_t GetNRowsTotal(){return fNtRows;}  //get total nuber of rows
+  Int_t GetNRowsTotal() const {return fNtRows;}  //get total nuber of rows
   Float_t GetPadRowRadiiLow(Int_t irow) const; //get the pad row (irow) radii
   Float_t GetPadRowRadiiUp(Int_t irow) const;  //get the pad row (irow) radii
   Float_t GetPadRowRadii(Int_t isec,Int_t irow) const {
@@ -296,7 +290,7 @@ public:
   Float_t  GetZWidth() const {return fZWidth;}
   Float_t  GetTFWHM() const {return fTSigma*2.35;}
   Float_t  GetZSigma() const {return fTSigma*fDriftV;}  
-  virtual  Float_t  GetZOffset() {return 3*fTSigma*fDriftV;}
+  virtual  Float_t  GetZOffset() const {return 3*fTSigma*fDriftV;}
   Int_t    GetMaxTBin() const {return fMaxTBin;}
   Int_t    GetADCSat() const {return fADCSat;}
   Float_t  GetADCDynRange() const {return fADCDynRange;}
@@ -346,7 +340,7 @@ protected :
   Float_t fRInnerLastWire;    //position of the last wire                 -calculated
   Float_t fLastWireUp1;     //position of the last wire in outer1 sector
   Int_t   fNOuter1WiresPerPad; //Number of wires per pad
-  Int_t   fNOuter2WiresPerPad;  
+  Int_t   fNOuter2WiresPerPad; // Number of wires per pad
   Float_t fOuterWWPitch;      //pitch between wires in outer sector      -calculated
   Int_t   fOuterDummyWire;    //number of wires without pad readout
   Float_t fOuterOffWire;      //oofset of first wire to the begining of the sector
@@ -360,10 +354,10 @@ protected :
   Float_t   fInnerPadLength;         //Inner pad  length
   Float_t   fInnerPadWidth;          //Inner pad  width
   Float_t   fOuter1PadPitchLength;    //Outer pad pitch length
-  Float_t   fOuter2PadPitchLength;    
+  Float_t   fOuter2PadPitchLength;    //Outer pad pitch length
   Float_t   fOuterPadPitchWidth;     //Outer pad pitch width
   Float_t   fOuter1PadLength;         //Outer pad  length
-  Float_t   fOuter2PadLength;
+  Float_t   fOuter2PadLength;         //Outer pad length
   Float_t   fOuterPadWidth;          //Outer pad  width
   Bool_t    fBMWPCReadout;           //indicate wire readout - kTRUE or GEM readout -kFALSE
   Int_t     fNCrossRows;             //number of rows to crostalk calculation
@@ -407,8 +401,6 @@ protected :
   Float_t fTotalNormFac;    //full normalisation factor - calculated
   Float_t fNoiseNormFac;    //normalisation factor to transform noise in electron to ADC channel   
   
- 
-protected:
   //---------------------------------------------------------------------
   // ALICE TPC response data 
   //---------------------------------------------------------------------
@@ -418,6 +410,9 @@ protected:
   Int_t   *fResponseBin;    //!array with bins                     -calulated
   Float_t *fResponseWeight; //!array with response                 -calulated
 
+private:
+  AliTPCParam(const AliTPCParam &);
+  AliTPCParam & operator=(const AliTPCParam &);
   ClassDef(AliTPCParam,3)  //parameter  object for set:TPC
 };
 
