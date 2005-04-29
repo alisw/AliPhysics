@@ -49,7 +49,7 @@ public:
     Int_t   fTargetSpecp;    	       // Num. of spectator protons from target nucleus
     Float_t fImpactParameter;          // Impact Parameter
 
-  ClassDef(AliCollisionGeometry,1)     // Collision Geometry
+  ClassDef(AliCollisionGeometry,2)     // Collision Geometry
 };
 #endif
 
