@@ -3746,7 +3746,7 @@ void  AliITStrackerMI::FindV02(AliESD *event)
 	pvertex->SetChi2After(minchi2before1);
 	if (pvertex->GetAnglep()[2]>0.2){
 	  pb0    =  TMath::Exp(-TMath::Min(minchi2before0,Float_t(16))/12.);
-	  pb1    =  TMath::Exp(-TMath::Min(minchi2before1,float_t(16))/12.);
+	  pb1    =  TMath::Exp(-TMath::Min(minchi2before1,Float_t(16))/12.);
 	}
 	pvertex->SetNAfter(maxLayer);
 	pvertex->SetNBefore(maxLayer);
