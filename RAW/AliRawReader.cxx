@@ -43,6 +43,7 @@ ClassImp(AliRawReader)
 
 
 AliRawReader::AliRawReader() :
+  fRequireHeader(kTRUE),
   fHeader(NULL),
   fCount(0),
   fSelectEquipmentType(-1),
@@ -58,6 +59,7 @@ AliRawReader::AliRawReader() :
 
 AliRawReader::AliRawReader(const AliRawReader& rawReader) :
   TObject(rawReader),
+  fRequireHeader(rawReader.fRequireHeader),
   fHeader(rawReader.fHeader),
   fCount(rawReader.fCount),
   fSelectEquipmentType(rawReader.fSelectEquipmentType),

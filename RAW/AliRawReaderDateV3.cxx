@@ -53,7 +53,6 @@ ClassImp(AliRawReaderDateV3)
 
 
 AliRawReaderDateV3::AliRawReaderDateV3(void* event) :
-  fRequireHeader(kTRUE),
   fFile(NULL),
   fEvent(NULL),
   fSubEvent(NULL),
@@ -67,7 +66,6 @@ AliRawReaderDateV3::AliRawReaderDateV3(void* event) :
 
 AliRawReaderDateV3::AliRawReaderDateV3(const char* fileName, 
 				       Int_t eventNumber) :
-  fRequireHeader(kTRUE),
   fFile(NULL),
   fEvent(NULL),
   fSubEvent(NULL),
@@ -100,7 +98,6 @@ AliRawReaderDateV3::AliRawReaderDateV3(const char* fileName,
 
 AliRawReaderDateV3::AliRawReaderDateV3(const AliRawReaderDateV3& rawReader) :
   AliRawReader(rawReader),
-  fRequireHeader(rawReader.fRequireHeader),
   fFile(rawReader.fFile),
   fEvent(rawReader.fEvent),
   fSubEvent(rawReader.fSubEvent),

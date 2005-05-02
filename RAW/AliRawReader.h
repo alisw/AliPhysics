@@ -30,6 +30,8 @@ class AliRawReader: public TObject {
     void             SkipInvalid(Bool_t skip = kTRUE)
       {fSkipInvalid = skip;};
     void             SelectEvents(Int_t type);
+    void             RequireHeader(Bool_t required = kTRUE)
+      {fRequireHeader = required;};
 
     virtual UInt_t   GetType() const = 0;
     virtual UInt_t   GetRunNumber() const = 0;
@@ -101,6 +103,8 @@ class AliRawReader: public TObject {
     Bool_t           IsEventSelected() const;
 
     virtual Bool_t   ReadNext(UChar_t* data, Int_t size) = 0;
+
+    Bool_t           fRequireHeader; // if false, data without header is accepted
 
     AliRawDataHeader* fHeader;     // current data header
     Int_t            fCount;       // counter of bytes to be read for current DDL

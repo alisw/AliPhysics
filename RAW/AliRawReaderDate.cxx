@@ -39,7 +39,6 @@ AliRawReaderDate::AliRawReaderDate(
 				   void* /* event */
 #endif
 				   ) :
-  fRequireHeader(kTRUE),
   fFile(NULL),
   fEvent(NULL),
   fSubEvent(NULL),
@@ -64,7 +63,6 @@ AliRawReaderDate::AliRawReaderDate(
 				   Int_t /*eventNumber*/
 #endif
 				   ) :
-  fRequireHeader(kTRUE),
   fFile(NULL),
   fEvent(NULL),
   fSubEvent(NULL),
@@ -103,7 +101,6 @@ AliRawReaderDate::AliRawReaderDate(
 
 AliRawReaderDate::AliRawReaderDate(const AliRawReaderDate& rawReader) :
   AliRawReader(rawReader),
-  fRequireHeader(rawReader.fRequireHeader),
   fFile(rawReader.fFile),
   fEvent(rawReader.fEvent),
   fSubEvent(rawReader.fSubEvent),
@@ -575,25 +572,21 @@ Int_t AliRawReaderDate::CheckData() const
     // continue with the next sub event if no data left in the payload
     if (position >= end) continue;
 
+    if (fRequireHeader) {
     // check that there are enough bytes left for the data header
-    if (position + sizeof(AliRawDataHeader) > end) {
-      result |= kErrNoDataHeader;
-      position = end;
-      continue;
-    }
-
-    // check consistency of data size in the data header and in the sub event
-    AliRawDataHeader* header = (AliRawDataHeader*) position;
-    if (header->fSize != 0xFFFFFFFF) {
-      if (position + header->fSize > end) {
-	result |= kErrSize;
+      if (position + sizeof(AliRawDataHeader) > end) {
+	result |= kErrNoDataHeader;
 	position = end;
-      } else {
-	position += header->fSize;
+	continue;
       }
-    } else {
-      position = end;
+
+      // check consistency of data size in the data header and in the sub event
+      AliRawDataHeader* header = (AliRawDataHeader*) position;
+      if (header->fSize != 0xFFFFFFFF) {
+	if (position + header->fSize > end) result |= kErrSize;
+      }
     }
+    position = end;
   };
 
 #endif

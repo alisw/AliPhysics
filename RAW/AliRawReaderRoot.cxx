@@ -352,20 +352,23 @@ Bool_t AliRawReaderRoot::ReadHeader()
     // continue with the next equipment if no data left in the payload
     if (fPosition >= fEnd) continue;
 
-    // check that there are enough bytes left for the data header
-    if (fPosition + sizeof(AliRawDataHeader) > fEnd) {
-      Error("ReadHeader", "could not read data header!");
-      Warning("ReadHeader", "skipping %d bytes", fEnd - fPosition);
-      fEquipment->GetEquipmentHeader()->Dump();
-      fCount = 0;
-      fPosition = fEnd;
-      fErrorCode = kErrNoDataHeader;
-      continue;
+    if (fRequireHeader) {
+      // check that there are enough bytes left for the data header
+      if (fPosition + sizeof(AliRawDataHeader) > fEnd) {
+	Error("ReadHeader", "could not read data header!");
+	Warning("ReadHeader", "skipping %d bytes", fEnd - fPosition);
+	fEquipment->GetEquipmentHeader()->Dump();
+	fCount = 0;
+	fPosition = fEnd;
+	fErrorCode = kErrNoDataHeader;
+	continue;
+      }
+
+      // "read" the data header
+      fHeader = (AliRawDataHeader*) fPosition;
+      fPosition += sizeof(AliRawDataHeader);
     }
 
-    // "read" the data header
-    fHeader = (AliRawDataHeader*) fPosition;
-    fPosition += sizeof(AliRawDataHeader);
     if (fHeader->fSize != 0xFFFFFFFF) {
       fCount = fHeader->fSize - sizeof(AliRawDataHeader);
     } else {
@@ -512,17 +515,19 @@ Int_t AliRawReaderRoot::CheckData() const
     // continue with the next sub event if no data left in the payload
     if (position >= end) continue;
 
+    if (fRequireHeader) {
     // check that there are enough bytes left for the data header
-    if (position + sizeof(AliRawDataHeader) > end) {
-      result |= kErrNoDataHeader;
-      continue;
-    }
+      if (position + sizeof(AliRawDataHeader) > end) {
+	result |= kErrNoDataHeader;
+	continue;
+      }
 
-    // check consistency of data size in the header and in the equipment
-    AliRawDataHeader* header = (AliRawDataHeader*) position;
-    if (header->fSize != 0xFFFFFFFF) {
-      if (position + header->fSize > end) {
-	result |= kErrSize;
+      // check consistency of data size in the header and in the equipment
+      AliRawDataHeader* header = (AliRawDataHeader*) position;
+      if (header->fSize != 0xFFFFFFFF) {
+	if (position + header->fSize > end) {
+	  result |= kErrSize;
+	}
       }
     }
   };

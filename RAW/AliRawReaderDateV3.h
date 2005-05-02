@@ -22,9 +22,6 @@ class AliRawReaderDateV3: public AliRawReader {
     AliRawReaderDateV3(const char* fileName, Int_t eventNumber = -1);
     virtual ~AliRawReaderDateV3();
 
-    void             RequireHeader(Bool_t required = kTRUE)
-      {fRequireHeader = required;};
-
     virtual UInt_t   GetType() const;
     virtual UInt_t   GetRunNumber() const;
     virtual const UInt_t* GetEventId() const;
@@ -53,8 +50,6 @@ class AliRawReaderDateV3: public AliRawReader {
 
   protected :
     virtual Bool_t   ReadNext(UChar_t* data, Int_t size);
-
-    Bool_t           fRequireHeader; // if false, data without header is accepted
 
     FILE*            fFile;         // DATE file
     eventHeaderStruct* fEvent;      // raw data super event
