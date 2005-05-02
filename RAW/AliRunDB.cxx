@@ -172,6 +172,12 @@ void AliRunDB::UpdateAliEn(AliStats *stats)
 
    TGrid *g = TGrid::Connect(fAlienHost, "");
 
+   //Protection in case root is compiled without AliEn support
+   if(!g) {
+      Error("UpdateAliEn", "ROOT compiled without AliEn support");
+      return;
+   }
+
    TString lfn = fAlienDir;
    TDatime dt;
 
