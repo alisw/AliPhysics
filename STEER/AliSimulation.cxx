@@ -736,6 +736,7 @@ Bool_t AliSimulation::ConvertDateToRoot(const char* dateFileName,
 
   // ALIMDC setup
   const Int_t kDBSize = 1000000000;
+  const Int_t kTagDBSize = 1000000000;
   const Bool_t kFilter = kFALSE;
   const Int_t kCompression = 1;
 
@@ -752,9 +753,13 @@ Bool_t AliSimulation::ConvertDateToRoot(const char* dateFileName,
 
   gSystem->Exec("rm -rf /tmp/mdc1");
   gSystem->Exec("rm -rf /tmp/mdc2");
+
+  gSystem->Exec("mkdir /tmp/mdc1");
+  gSystem->Exec("mkdir /tmp/mdc2");
+
   char command[256];
-  sprintf(command, "alimdc %d %d %d %s", 
-	  kDBSize, kFilter, kCompression, dateFileName);
+  sprintf(command, "alimdc %d %d %d %d %s", 
+	  kDBSize, kTagDBSize, kFilter, kCompression, dateFileName);
   Int_t result = gSystem->Exec(command);
   sprintf(command, "mv /tmp/mdc1/*.root %s", rootFileName);
   gSystem->Exec(command);
