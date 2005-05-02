@@ -723,7 +723,7 @@ SelectClusters(Float_t zmin,Float_t zmax,Float_t ymin, Float_t ymax) {
     if (ymin>circ) ymin-=circ; else if (ymin<0) ymin+=circ;
     if (ymax>circ) ymax-=circ; else if (ymax<0) ymax+=circ;
 
-    Int_t i1=Int_t(kNsector*ymin/circ);
+    Int_t i1=Int_t(kNsector*ymin/circ); if (i1==kNsector) i1--;
     if (fN[i1]!=0) {
        Float_t ym = (ymax<ymin) ? ymax+circ : ymax;
        Int_t i=FindClusterIndex(zmin,i1), imax=i1*kMaxClusterPerSector+fN[i1];
@@ -737,7 +737,7 @@ SelectClusters(Float_t zmin,Float_t zmax,Float_t ymin, Float_t ymax) {
        }
     }
 
-    Int_t i2=Int_t(kNsector*ymax/circ);
+    Int_t i2=Int_t(kNsector*ymax/circ); if (i2==kNsector) i2--;
     if (i2==i1) return fNsel;
 
     if (fN[i2]!=0) {
