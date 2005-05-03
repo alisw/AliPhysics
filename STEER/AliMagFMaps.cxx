@@ -90,6 +90,7 @@ AliMagFMaps::~AliMagFMaps()
   delete fFieldMap[0];
   delete fFieldMap[1];
   delete fFieldMap[2];    
+  fgReadField = kTRUE;
 }
 
 //_______________________________________________________________________
