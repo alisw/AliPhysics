@@ -16,10 +16,10 @@ class TTreeSRedirector;
 #include <TObjArray.h>
 
 class AliESD;
-class AliESDV0MI;
 class AliHelix;
 class AliITSgeom;
 class AliV0vertex;
+
 #include "AliITSclusterV2.h"
 #include "AliITStrackMI.h"
 #include "AliTracker.h"
@@ -42,6 +42,7 @@ public:
   Int_t PropagateBack(AliESD *event);
   Int_t RefitInward(AliESD *event);
   Bool_t RefitAt(Double_t x, AliITStrackMI *seed, const AliITStrackMI *t);
+  Bool_t RefitAt(Double_t x, AliITStrackMI *seed, const Int_t *clindex);
   void SetupFirstPass(Int_t *flags, Double_t *cuts=0);
   void SetupSecondPass(Int_t *flags, Double_t *cuts=0);
 
@@ -174,6 +175,7 @@ public:
 protected:
   Int_t GetNearestLayer(const Double_t *xr) const;  //get nearest upper layer close to the point xr
   void FindV02(AliESD *event);  //try to find V0
+  void RefitV02(AliESD *event);  //try to refit  V0's
   void UpdateTPCV0(AliESD *event);  //try to update, or reject TPC  V0s
   void CookLabel(AliKalmanTrack *t,Float_t wrong) const;
   void CookLabel(AliITStrackMI *t,Float_t wrong) const;

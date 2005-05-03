@@ -439,6 +439,7 @@ Int_t AliITStrackerMI::RefitInward(AliESD *event) {
   // "inward propagated" TPC tracks
   // The clusters must be loaded !
   //--------------------------------------------------------------------
+  RefitV02(event);
   Int_t nentr=event->GetNumberOfTracks();
   Info("RefitInward", "Number of ESD tracks: %d\n", nentr);
 
@@ -1511,22 +1512,24 @@ AliITStrackerMI::RefitAt(Double_t xx,AliITStrackMI *t,const AliITStrackMI *c) {
      Int_t idx=index[i];
      if (idx>0) {
         const AliITSclusterV2 *c=(AliITSclusterV2 *)GetCluster(idx); 
-        if (idet != c->GetDetectorIndex()) {
-           idet=c->GetDetectorIndex();
-           const AliITSdetector &det=layer.GetDetector(idet);
-           if (!t->Propagate(det.GetPhi(),det.GetR())) {
-             return kFALSE;
-           }
-           t->SetDetectorIndex(idet);
-        }
-        //Double_t chi2=t->GetPredictedChi2(c);
-	Int_t layer = (idx & 0xf0000000) >> 28;;
-        Double_t chi2=GetPredictedChi2MI(t,c,layer);
-        if (chi2<maxchi2) { 
-	  cl=c; 
-	  maxchi2=chi2; 
-	} else {
-	  return kFALSE;
+	if (c){
+	  if (idet != c->GetDetectorIndex()) {
+	    idet=c->GetDetectorIndex();
+	    const AliITSdetector &det=layer.GetDetector(idet);
+	    if (!t->Propagate(det.GetPhi(),det.GetR())) {
+	      return kFALSE;
+	    }
+	    t->SetDetectorIndex(idet);
+	  }
+	  //Double_t chi2=t->GetPredictedChi2(c);
+	  Int_t layer = (idx & 0xf0000000) >> 28;;
+	  Double_t chi2=GetPredictedChi2MI(t,c,layer);
+	  if (chi2<maxchi2) { 
+	    cl=c; 
+	    maxchi2=chi2; 
+	  } else {
+	    return kFALSE;
+	  }
 	}
      }
      /*
@@ -1577,6 +1580,145 @@ AliITStrackerMI::RefitAt(Double_t xx,AliITStrackMI *t,const AliITStrackMI *c) {
   if (!t->PropagateTo(xx,0.,0.)) return kFALSE;
   return kTRUE;
 }
+
+
+Bool_t 
+AliITStrackerMI::RefitAt(Double_t xx,AliITStrackMI *t,const Int_t *clindex) {
+  //--------------------------------------------------------------------
+  // This function refits the track "t" at the position "x" using
+  // the clusters from array
+  //--------------------------------------------------------------------
+  Int_t index[kMaxLayer];
+  Int_t k;
+  for (k=0; k<kMaxLayer; k++) index[k]=-1;
+  //
+  for (k=0; k<kMaxLayer; k++) { 
+    index[k]=clindex[k]; 
+  }
+
+  Int_t from, to, step;
+  if (xx > t->GetX()) {
+      from=0; to=kMaxLayer;
+      step=+1;
+  } else {
+      from=kMaxLayer-1; to=-1;
+      step=-1;
+  }
+
+  for (Int_t i=from; i != to; i += step) {
+     AliITSlayer &layer=fgLayers[i];
+     Double_t r=layer.GetR();
+     if (step<0 && xx>r) break;  //
+     {
+     Double_t hI=i-0.5*step; 
+     if (TMath::Abs(hI-1.5)<0.01 || TMath::Abs(hI-3.5)<0.01) {             
+        Double_t rs=0.5*(fgLayers[i-step].GetR() + r);
+        Double_t d=0.0034, x0=38.6; 
+        if (TMath::Abs(hI-1.5)<0.01) {rs=9.; d=0.0097; x0=42;}
+        if (!t->PropagateTo(rs,-step*d,x0)) {
+          return kFALSE;
+        }
+     }
+     }
+
+     // remember old position [SR, GSI 18.02.2003]
+     Double_t oldX=0., oldY=0., oldZ=0.;
+     if (t->IsStartedTimeIntegral() && step==1) {
+        t->GetGlobalXYZat(t->GetX(),oldX,oldY,oldZ);
+     }
+     //
+
+     Double_t x,y,z;
+     if (!t->GetGlobalXYZat(r,x,y,z)) { 
+       return kFALSE;
+     }
+     Double_t phi=TMath::ATan2(y,x);
+     Int_t idet=layer.FindDetectorIndex(phi,z);
+     if (idet<0) { 
+       return kFALSE;
+     }
+     const AliITSdetector &det=layer.GetDetector(idet);
+     phi=det.GetPhi();
+     if (!t->Propagate(phi,det.GetR())) {
+       return kFALSE;
+     }
+     t->SetDetectorIndex(idet);
+
+     const AliITSclusterV2 *cl=0;
+     Double_t maxchi2=1000.*kMaxChi2;
+
+     Int_t idx=index[i];
+     if (idx>0) {
+        const AliITSclusterV2 *c=(AliITSclusterV2 *)GetCluster(idx); 
+	if (c){
+	  if (idet != c->GetDetectorIndex()) {
+	    idet=c->GetDetectorIndex();
+	    const AliITSdetector &det=layer.GetDetector(idet);
+	    if (!t->Propagate(det.GetPhi(),det.GetR())) {
+	      return kFALSE;
+	    }
+	    t->SetDetectorIndex(idet);
+	  }
+	  //Double_t chi2=t->GetPredictedChi2(c);
+	  Int_t layer = (idx & 0xf0000000) >> 28;;
+	  Double_t chi2=GetPredictedChi2MI(t,c,layer);
+	  if (chi2<maxchi2) { 
+	    cl=c; 
+	    maxchi2=chi2; 
+	  } else {
+	    return kFALSE;
+	  }
+	}
+     }
+     /*
+     if (cl==0)
+     if (t->GetNumberOfClusters()>2) {
+        Double_t dz=4*TMath::Sqrt(t->GetSigmaZ2()+kSigmaZ2[i]);
+        Double_t dy=4*TMath::Sqrt(t->GetSigmaY2()+kSigmaY2[i]);
+        Double_t zmin=t->GetZ() - dz;
+        Double_t zmax=t->GetZ() + dz;
+        Double_t ymin=t->GetY() + phi*r - dy;
+        Double_t ymax=t->GetY() + phi*r + dy;
+        layer.SelectClusters(zmin,zmax,ymin,ymax);
+
+        const AliITSclusterV2 *c=0; Int_t ci=-1;
+        while ((c=layer.GetNextCluster(ci))!=0) {
+           if (idet != c->GetDetectorIndex()) continue;
+           Double_t chi2=t->GetPredictedChi2(c);
+           if (chi2<maxchi2) { cl=c; maxchi2=chi2; idx=ci; }
+        }
+     }
+     */
+     if (cl) {
+       //if (!t->Update(cl,maxchi2,idx)) {
+       if (!UpdateMI(t,cl,maxchi2,idx)) {
+          return kFALSE;
+       }
+       t->SetSampledEdx(cl->GetQ(),t->GetNumberOfClusters()-1);
+     }
+
+     {
+     Double_t x0;
+     Double_t d=layer.GetThickness(t->GetY(),t->GetZ(),x0);
+     t->CorrectForMaterial(-step*d,x0);
+     }
+                 
+     // track time update [SR, GSI 17.02.2003]
+     if (t->IsStartedTimeIntegral() && step==1) {
+        Double_t newX, newY, newZ;
+        t->GetGlobalXYZat(t->GetX(),newX,newY,newZ);
+        Double_t dL2 = (oldX-newX)*(oldX-newX) + (oldY-newY)*(oldY-newY) + 
+                       (oldZ-newZ)*(oldZ-newZ);
+        t->AddTimeStep(TMath::Sqrt(dL2));
+     }
+     //
+
+  }
+
+  if (!t->PropagateTo(xx,0.,0.)) return kFALSE;
+  return kTRUE;
+}
+
 
 
 Double_t AliITStrackerMI::GetNormalizedChi2(AliITStrackMI * track, Int_t mode)
@@ -3301,6 +3443,8 @@ void AliITStrackerMI::UpdateTPCV0(AliESD *event){
   //
 }
 
+
+
 void  AliITStrackerMI::FindV02(AliESD *event)
 {
   //
@@ -3459,8 +3603,11 @@ void  AliITStrackerMI::FindV02(AliESD *event)
 	normdist0[itsindex] = TMath::Abs(trackat0.fP0/norm[itsindex]);
 	normdist1[itsindex] = TMath::Abs((trackat0.fP1-primvertex[2])/TMath::Sqrt(trackat0.fC11));
 	normdist[itsindex]  = TMath::Sqrt(normdist0[itsindex]*normdist0[itsindex]+normdist1[itsindex]*normdist1[itsindex]);
-	if (TMath::Abs(trackat0.fP3)>1.1){
-	  if (normdist[itsindex]<10) forbidden[itsindex]=kTRUE;
+	if (TMath::Abs(trackat0.fP3)>1.05){
+	  if (normdist[itsindex]<3) forbidden[itsindex]=kTRUE;
+	  if (normdist[itsindex]>3) {
+	    minr[itsindex] = TMath::Max(Float_t(40.),minr[itsindex]);
+	  }
 	}
       }
     }
@@ -3614,12 +3761,16 @@ void  AliITStrackerMI::FindV02(AliESD *event)
       pvertex->SetM(*track0);
       pvertex->SetP(*track1);
       pvertex->Update(primvertex);
+      pvertex->SetClusters(track0->fClIndex,track1->fClIndex);  // register clusters
+
       if (pvertex->GetRr()<kMinR) continue;
       if (pvertex->GetRr()>kMaxR) continue;
       if (pvertex->GetPointAngle()<kMinPointAngle) continue;
       if (pvertex->GetDist2()>maxDist) continue;
       pvertex->SetLab(0,track0->GetLabel());
       pvertex->SetLab(1,track1->GetLabel());
+      pvertex->SetIndex(0,track0->fESDtrack->GetID());
+      pvertex->SetIndex(1,track1->fESDtrack->GetID());
       
       //      
       AliITStrackMI * htrackc0 = trackc0 ? trackc0:dummy;      
@@ -3725,6 +3876,9 @@ void  AliITStrackerMI::FindV02(AliESD *event)
 	pvertex->SetM(*track0b);
 	pvertex->SetP(*track1b);
 	pvertex->Update(primvertex);
+	pvertex->SetClusters(track0b->fClIndex,track1b->fClIndex);  // register clusters
+	pvertex->SetIndex(0,track0->fESDtrack->GetID());
+	pvertex->SetIndex(1,track1->fESDtrack->GetID());
       }
       pvertex->SetDistSigma(sigmad);
       pvertex->SetDistNorm(pvertex->GetDist2()/sigmad);       
@@ -3733,10 +3887,10 @@ void  AliITStrackerMI::FindV02(AliESD *event)
       //
       Float_t pa0=1, pa1=1, pb0=0.26, pb1=0.26;      
       if (maxLayer<2){
-	if (pvertex->GetAnglep()[2]>0.2){
-	  pb0    =  TMath::Exp(-TMath::Min(normdist[itrack0],Float_t(16.))/12.);
-	  pb1    =  TMath::Exp(-TMath::Min(normdist[itrack1],Float_t(16.))/12.);
-	}
+ 	if (pvertex->GetAnglep()[2]>0.2){
+ 	  pb0    =  TMath::Exp(-TMath::Min(normdist[itrack0],Float_t(16.))/12.);
+ 	  pb1    =  TMath::Exp(-TMath::Min(normdist[itrack1],Float_t(16.))/12.);
+ 	}
 	pvertex->SetChi2Before(normdist[itrack0]);
 	pvertex->SetChi2After(normdist[itrack1]);       
 	pvertex->SetNAfter(0);
@@ -3789,7 +3943,7 @@ void  AliITStrackerMI::FindV02(AliESD *event)
       
       //
       //
-      if (kTRUE){	
+      if (kFALSE){	
 	Bool_t gold = TMath::Abs(TMath::Abs(track0->GetLabel())-TMath::Abs(track1->GetLabel()))==1;
 	cstream<<"It0"<<
 	  "Tr0.="<<track0<<                       //best without constrain
@@ -3820,11 +3974,11 @@ void  AliITStrackerMI::FindV02(AliESD *event)
       //	pvertex->SetStatus(-100);
       //}
       if (pvertex->GetPointAngle()>kMinPointAngle2) {
-	if (v0OK){
-	  AliV0vertex vertexjuri(*track0,*track1);
-	  vertexjuri.SetESDindexes(track0->fESDtrack->GetID(),track1->fESDtrack->GetID());
 	  pvertex->SetESDindexes(track0->fESDtrack->GetID(),track1->fESDtrack->GetID());
-	  event->AddV0(&vertexjuri);
+	if (v0OK){
+	  //	  AliV0vertex vertexjuri(*track0,*track1);
+	  //	  vertexjuri.SetESDindexes(track0->fESDtrack->GetID(),track1->fESDtrack->GetID());
+	  //	  event->AddV0(&vertexjuri);
 	  pvertex->SetStatus(100);
 	}
 	event->AddV0MI(pvertex);
@@ -3849,9 +4003,88 @@ void  AliITStrackerMI::FindV02(AliESD *event)
 }
 
 
-
-
-
+void AliITStrackerMI::RefitV02(AliESD *event)
+{
+  //
+  //try to refit  V0s in the third path of the reconstruction
+  //
+  TTreeSRedirector &cstream = *fDebugStreamer;
+  //
+  Int_t  nv0s = event->GetNumberOfV0MIs();
+  Float_t primvertex[3]={GetX(),GetY(),GetZ()};
+  AliESDV0MI v0temp;
+  for (Int_t iv0 = 0; iv0<nv0s;iv0++){
+    AliESDV0MI * v0mi = event->GetV0MI(iv0);
+    if (!v0mi) continue;
+    Int_t     itrack0   = v0mi->GetIndex(0);
+    Int_t     itrack1   = v0mi->GetIndex(1);
+    AliESDtrack *esd0   = event->GetTrack(itrack0);
+    AliESDtrack *esd1   = event->GetTrack(itrack1);
+    if (!esd0||!esd1) continue;
+    AliITStrackMI tpc0(*esd0);  
+    AliITStrackMI tpc1(*esd1);
+    Double_t alpha =TMath::ATan2(v0mi->GetXr(1),v0mi->GetXr(0));
+    if (v0mi->GetRr()>85){
+      if (tpc0.Propagate(alpha,v0mi->GetRr())&&tpc1.Propagate(alpha,v0mi->GetRr())){
+	v0temp.SetM(tpc0);
+	v0temp.SetP(tpc1);
+	v0temp.Update(primvertex);
+	cstream<<"Refit"<<
+	  "V0.="<<v0mi<<
+	  "V0refit.="<<&v0temp<<
+	  "Tr0.="<<&tpc0<<
+	  "Tr1.="<<&tpc1<<
+	  "\n";
+	if (v0temp.GetDist2()<v0mi->GetDist2() || v0temp.GetPointAngle()>v0mi->GetPointAngle()){
+	  v0mi->SetM(tpc0);
+	  v0mi->SetP(tpc1);
+	  v0mi->Update(primvertex);
+	}
+      }
+      continue;
+    }
+    if (v0mi->GetRr()>35){
+      CorrectForDeadZoneMaterial(&tpc0);
+      CorrectForDeadZoneMaterial(&tpc1);
+      if (tpc0.Propagate(alpha,v0mi->GetRr())&&tpc1.Propagate(alpha,v0mi->GetRr())){
+	v0temp.SetM(tpc0);
+	v0temp.SetP(tpc1);
+	v0temp.Update(primvertex);
+	cstream<<"Refit"<<
+	  "V0.="<<v0mi<<
+	  "V0refit.="<<&v0temp<<
+	  "Tr0.="<<&tpc0<<
+	  "Tr1.="<<&tpc1<<
+	  "\n";
+	if (v0temp.GetDist2()<v0mi->GetDist2() || v0temp.GetPointAngle()>v0mi->GetPointAngle()){
+	  v0mi->SetM(tpc0);
+	  v0mi->SetP(tpc1);
+	  v0mi->Update(primvertex);
+	}	
+      }
+      continue;
+    }
+    CorrectForDeadZoneMaterial(&tpc0);
+    CorrectForDeadZoneMaterial(&tpc1);    
+    //    if (tpc0.Propagate(alpha,v0mi->GetRr())&&tpc1.Propagate(alpha,v0mi->GetRr())){
+    if (RefitAt(v0mi->GetRr(),&tpc0, v0mi->GetClusters(0)) && RefitAt(v0mi->GetRr(),&tpc1, v0mi->GetClusters(1))){
+      v0temp.SetM(tpc0);
+      v0temp.SetP(tpc1);
+      v0temp.Update(primvertex);
+      cstream<<"Refit"<<
+	"V0.="<<v0mi<<
+	"V0refit.="<<&v0temp<<
+	"Tr0.="<<&tpc0<<
+	"Tr1.="<<&tpc1<<
+	"\n";
+      if (v0temp.GetDist2()<v0mi->GetDist2() || v0temp.GetPointAngle()>v0mi->GetPointAngle()){
+	v0mi->SetM(tpc0);
+	v0mi->SetP(tpc1);
+	v0mi->Update(primvertex);
+      }	
+    }    
+  }
+}
 
 
 

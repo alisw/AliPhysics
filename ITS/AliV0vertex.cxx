@@ -29,6 +29,11 @@ AliV0vertex::AliV0vertex(const AliITStrackV2 &n, const AliITStrackV2 &p) {
   //--------------------------------------------------------------------
   // Main constructor
   //--------------------------------------------------------------------
+  for (Int_t i=0; i<6; i++) {
+    fPosCov[i]= 0.;
+    fNmomCov[i] = 0.;
+    fPmomCov[i] = 0.;
+  }
   fPdgCode=kK0Short;
   fNidx=n.GetLabel(); fPidx=p.GetLabel(); //indices in the array of ESD tracks
 
