@@ -1781,7 +1781,7 @@ Int_t AliTPCtrackerMI::FollowBackProlongation(AliTPCseed& t, Int_t rf) {
   //
   if (first<0) first=0;
   for (Int_t nr=first; nr<=rf; nr++) {
-    //if ( (t.GetSnp()<0.9))
+    if ( (TMath::Abs(t.GetSnp())>0.95)) break;
     if (t.GetKinkIndexes()[0]<0){
       for (Int_t i=0;i<3;i++){
 	Int_t index = t.GetKinkIndexes()[i];
@@ -5615,12 +5615,12 @@ TObjArray * AliTPCtrackerMI::Tracking()
   cuts[0]=0.0080;
 
   // find secondaries
-  for (Int_t delta = 30; delta<70; delta+=10){
+  for (Int_t delta = 30; delta<90; delta+=10){
     //
     cuts[0] = 0.3;
-    cuts[1] = 1.5;
+    cuts[1] = 3.5;
     cuts[2] = 3.;
-    cuts[3] = 1.5;
+    cuts[3] = 3.5;
     arr = Tracking(4,nup-1-delta,nup-1-delta-gap,cuts,-1);
     SumTracks(seeds,arr);   
     SignClusters(seeds,fnumber,fdensity);   
