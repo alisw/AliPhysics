@@ -16,7 +16,7 @@ EINCLUDE+=TPC CONTAINERS ITS RAW HLT/src HLT/hough HLT/comp HLT/ITS
 ifdef DATE_ROOT
 
 ELIBSDIR:=${DATE_MONITOR_DIR}/${DATE_SYS}
-ELIBS:=ESD STEER RAW TPCbase TPCsim TPCrec CONTAINERS AliL3Src AliL3Misc AliL3Hough AliL3Comp AliL3ITS ITS monitor shift pythia6 pdf microcern
+ELIBS:=ESD STEER RAWData TPCbase TPCsim TPCrec CONTAINERS AliL3Src AliL3Misc AliL3Hough AliL3Comp AliL3ITS ITS monitor shift pythia6 pdf microcern
 EINCLUDE+= ${DATE_COMMON_DEFS} ${DATE_MONITOR_DIR}
 
 else

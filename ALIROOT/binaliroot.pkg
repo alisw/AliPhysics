@@ -14,7 +14,7 @@ ELIBS:= MUONgeometry MUONrec MUONsim MUONbase MUONmapping \
         STRUCT STARTbase STARTsim STARTrec EVGEN ESD STEER CONTAINERS \
         pythia6 AliPythia6 pdf THijing \
         hijing TMEVSIM mevsim THbtp HBTP THerwig herwig TEPEMGEN EPEMGEN \
-        TPHIC FASTSIM microcern RAW AliL3Src AliL3Comp AliL3Misc AliL3Hough AliL3ITS
+        TPHIC FASTSIM microcern RAWData AliL3Src AliL3Comp AliL3Misc AliL3Hough AliL3ITS
 
 ifeq (macosx,$(ALICE_TARGET))
 
@@ -84,7 +84,7 @@ ARLIBS:= \
    STEER/tgt_$(ALICE_TARGET)/G__STEER.o $(LIBPATH)/libSTEER.a \
    STEER/tgt_$(ALICE_TARGET)/G__ESD.o $(LIBPATH)/libESD.a \
    CONTAINERS/tgt_$(ALICE_TARGET)/G__CONTAINERS.o $(LIBPATH)/libCONTAINERS.a \
-   RAW/tgt_$(ALICE_TARGET)/G__RAW.o $(LIBPATH)/libRAW.a
+   RAW/tgt_$(ALICE_TARGET)/G__RAW.o $(LIBPATH)/libRAWData.a
 
 SHLIBS:= $(BINLIBDIRS) -lEVGEN -lpythia6 -lAliPythia6 -lpdf -lTHijing -lhijing -lTMEVSIM -lmevsim -lTHbtp -lHBTP -lTHerwig -lherwig -lTEPEMGEN -lEPEMGEN -lTPHIC -lFASTSIM -lmicrocern
 

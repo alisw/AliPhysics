@@ -410,6 +410,9 @@ PDF/ctmp/%.c: PDF/%.F
 ifeq (macosx,$(ALICE_TARGET))
 	$(F77) -E $(pdfINC) $(pdfFFLAGS) $< | f2c -E | sed -e 's/\([0-9,a-z]*_[0-9,a-z]*\)__/\1_/g' > $@
 endif
+ifeq (macosxgcc4,$(ALICE_TARGET))
+	$(F77) -E $(pdfINC) $(pdfFFLAGS) $< | f2c -E | sed -e 's/\([0-9,a-z]*_[0-9,a-z]*\)__/\1_/g' > $@
+endif
 ifeq (macosxxlc,$(ALICE_TARGET))
 	$(F77) -d $(pdfINC) -c -o /dev/null $(pdfFFLAGS) $< ; \
 	tmpf=F`basename $@ .c`.f ; export tmpf ; \

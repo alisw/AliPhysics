@@ -10,7 +10,7 @@ void loadlibs ()
   gSystem->Load("libVMC");
   gSystem->Load("libEGPythia6");
 
-  gSystem->Load("libRAW");
+  gSystem->Load("libRAWData");
   gSystem->Load("libESD");
   gSystem->Load("libSTEER");
   gSystem->Load("libEVGEN");
