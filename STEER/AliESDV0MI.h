@@ -66,14 +66,17 @@ public:
   void SetLab(Int_t i, Int_t lab) {fLab[i]=lab;}
   void SetCausality(Float_t pb0, Float_t pb1, Float_t pa0, Float_t pa1);
   const Float_t * GetCausalityP() const {return fCausality;}
+  void SetClusters(Int_t *clp, Int_t *clm);
+  const Int_t * GetClusters(Int_t i) const {return fClusters[i];}
 private:
   AliExternalTrackParam fParamP;
   AliExternalTrackParam fParamM;
   Float_t        fRP[5];         // combined pid positive
   Float_t        fRM[5];         // combined pid positive
   Int_t          fID;
-  Int_t          fLab[2];     //MC label of the partecle
-  Int_t          fIndex[2];   //reconstructed labels of the tracks
+  Int_t          fLab[2];         // MC label of the particle
+  Int_t          fIndex[2];       // reconstructed labels of the tracks
+  Int_t          fClusters[2][6]; //! its clusters 
   //
   //  
   Double_t       fDist1;    //info about closest distance according closest MC - linear DCA
@@ -100,7 +103,7 @@ private:
   Float_t        fPointAngleTh; //point angle theta
   Float_t        fPointAngle;   //point angle full
 
-  ClassDef(AliESDV0MI,2)      // ESD V0 vertex
+  ClassDef(AliESDV0MI,3)      // ESD V0 vertex
 };
 
 

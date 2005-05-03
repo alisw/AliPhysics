@@ -46,8 +46,18 @@ AliESDv0::AliESDv0() :
   //--------------------------------------------------------------------
   // Default constructor  (K0s)
   //--------------------------------------------------------------------
-  fPos[0]=fPos[1]=fPos[2]=0.;
-  fPosCov[0]=fPosCov[1]=fPosCov[2]=fPosCov[3]=fPosCov[4]=fPosCov[5]=0.;
+
+  for (Int_t i=0; i<3; i++) {
+    fPos[i] = 0.;
+    fNmom[i] = 0.;
+    fPmom[i] = 0.;
+  }
+
+  for (Int_t i=0; i<6; i++) {
+    fPosCov[i]= 0.;
+    fNmomCov[i] = 0.;
+    fPmomCov[i] = 0.;
+  }
 }
 
 Double_t AliESDv0::ChangeMassHypothesis(Int_t code) {

@@ -52,6 +52,7 @@ AliESDV0MI::AliESDV0MI() :
   //Dafault constructor
   //
   for (Int_t i=0;i<4;i++){fCausality[i]=0;}
+  for (Int_t i=0;i<6;i++){fClusters[0][i]=0; fClusters[1][i]=0;}
 }
 
 
@@ -65,6 +66,15 @@ void AliESDV0MI::SetCausality(Float_t pb0, Float_t pb1, Float_t pa0, Float_t pa1
   fCausality[2] = pa0;     // probability - track 0 exist close after vertex
   fCausality[3] = pa1;     // probability - track 1 exist close after vertex
 }
+void  AliESDV0MI::SetClusters(Int_t *clp, Int_t *clm)
+{
+  //
+  // Set its clusters indexes
+  //
+  for (Int_t i=0;i<6;i++) fClusters[0][i] = clp[i]; 
+  for (Int_t i=0;i<6;i++) fClusters[1][i] = clm[i]; 
+}
+
 
 void AliESDV0MI::SetP(const AliExternalTrackParam & paramp)  {
   //
@@ -136,10 +146,10 @@ Float_t AliESDV0MI::GetEffMass(UInt_t p1, UInt_t p2){
   Double_t *m1 = fPP;
   Double_t *m2 = fPM;
   //
-  if (fRP[p1]+fRM[p2]<fRP[p2]+fRM[p1]){
-    m1 = fPM;
-    m2 = fPP;
-  }
+  //if (fRP[p1]+fRM[p2]<fRP[p2]+fRM[p1]){
+  //  m1 = fPM;
+  //  m2 = fPP;
+  //}
   //
   Float_t e1    = TMath::Sqrt(mass1*mass1+
                               m1[0]*m1[0]+
