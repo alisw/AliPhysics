@@ -158,7 +158,7 @@ void AliSTARTDigitizer::Exec(Option_t* /*option*/)
     
     for (Int_t i0=0; i0<24; i0++)
       {
-	time[i0]=99999;  besttime[i0]=99999;	countE[i0]=0;
+	time[i0]=besttime[i0]=timeGaus[i0]=99999; countE[i0]=0;
       }
     for ( Int_t imu=0; imu<3; imu++) sumMult[imu]=0;
     AliRunLoader * inRL = AliRunLoader::GetRunLoader(fManager->GetInputFolderName(inputFile));
