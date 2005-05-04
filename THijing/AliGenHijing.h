@@ -54,6 +54,7 @@ class AliGenHijing : public AliGenMC
     virtual void    SetJetPhiRange(Float_t phimin = -180., Float_t phimax = 180.)
 	{fPhiMinJet = TMath::Pi()*phimin/180.; fPhiMaxJet = TMath::Pi()*phimax/180.;}
     virtual void    SetBoostLHC(Int_t flag = 0)         {fLHC        = flag;}
+    virtual void    SetRandomPz(Bool_t flag = 0)        {fRandomPz   = flag;}
 // Getters
     virtual Float_t GetEnergyCMS()       const {return fEnergyCMS;}
     virtual TString GetReferenceFrame()  const {return fFrame;}
@@ -124,6 +125,7 @@ class AliGenHijing : public AliGenMC
     Int_t 	fTargetSpecn;	 // Num. of spectator neutrons from target nucleus
     Int_t 	fTargetSpecp;	 // Num. of spectator protons from target nucleus
     Int_t       fLHC;            // Assume LHC as lab frame
+    Int_t       fRandomPz;       // Randomise sign of pz  event by event 
  private:
     void Copy(TObject &rhs) const;
     // adjust the weight from kinematic cuts

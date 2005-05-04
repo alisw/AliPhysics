@@ -190,14 +190,16 @@ void AliGenHijing::Generate()
       for (j=0; j < 3; j++) origin0[j] = fVertex[j];
   } 
 
+
+  Float_t sign = (fRandomPz && (Rndm() < 0.5))? -1. : 1.;
   while(1)
   {
 //    Generate one event
 // --------------------------------------------------------------------------
       fProjectileSpecn    = 0;  
       fProjectileSpecp    = 0;
-      fTargetSpecn    = 0;  
-      fTargetSpecp    = 0;
+      fTargetSpecn        = 0;  
+      fTargetSpecp        = 0;
 // --------------------------------------------------------------------------
       fHijing->GenerateEvent();
       fTrials++;
@@ -309,7 +311,7 @@ void AliGenHijing::Generate()
 	      ks   = iparticle->GetStatusCode();
 	      p[0] = iparticle->Px();
 	      p[1] = iparticle->Py();
-	      p[2] = iparticle->Pz();
+	      p[2] = iparticle->Pz() * sign;
 	      origin[0] = origin0[0]+iparticle->Vx()/10;
 	      origin[1] = origin0[1]+iparticle->Vy()/10;
 	      origin[2] = origin0[2]+iparticle->Vz()/10;
