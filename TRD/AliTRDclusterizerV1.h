@@ -34,9 +34,10 @@ class AliTRDclusterizerV1 : public AliTRDclusterizer {
 
  private:
 
-  virtual Float_t  Unfold(Float_t eps, Int_t plane, Float_t *padSignal);
+  virtual Double_t Unfold(Double_t eps, Int_t plane, Double_t *padSignal);
 
   ClassDef(AliTRDclusterizerV1,5)           // TRD-Cluster finder, slow simulator
+
 };
 
 #endif

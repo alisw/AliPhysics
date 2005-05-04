@@ -236,6 +236,11 @@ AliTRDpadPlane::AliTRDpadPlane(Int_t p, Int_t c):TObject()
   };
 
   //
+  // Store tilting angle as tangens (opposite direction!)
+  //
+  fTiltingAngle = TMath::Tan(TMath::Pi()/180.0 * -fTiltingAngle);
+
+  //
   // The positions of the borders of the pads
   //
   // Row direction
@@ -245,6 +250,7 @@ AliTRDpadPlane::AliTRDpadPlane(Int_t p, Int_t c):TObject()
   Double_t row = fGeo->GetChamberLength(p,0)
     	       + fGeo->GetChamberLength(p,1)
                + fGeo->GetChamberLength(p,2) / 2.
+               - fGeo->RpadW()
                - fLengthRim;
   for (Int_t ic = 0; ic < c; ic++) {
     row -= fGeo->GetChamberLength(p,ic);
@@ -252,7 +258,7 @@ AliTRDpadPlane::AliTRDpadPlane(Int_t p, Int_t c):TObject()
   for (Int_t ir = 0; ir < fNrows; ir++) {
     fPadRow[ir] = row;
     row -= fRowSpacing;
-    if (ir == 1) {
+    if (ir == 0) {
       row -= fLengthOPad;
     }
     else {
@@ -270,7 +276,7 @@ AliTRDpadPlane::AliTRDpadPlane(Int_t p, Int_t c):TObject()
   for (Int_t ic = 0; ic < fNcols; ic++) {
     fPadCol[ic] = col;
     col -= fColSpacing;
-    if (ic == 1) {
+    if (ic == 0) {
       col -= fWidthOPad;
     }
     else {
@@ -375,7 +381,7 @@ void AliTRDpadPlane::Copy(TObject &p) const
 }
 
 //_____________________________________________________________________________
-Int_t AliTRDpadPlane::GetPadRowNumber(const Double_t z)
+Int_t AliTRDpadPlane::GetPadRowNumber(const Double_t z) const
 {
   //
   // Finds the pad row number for a given global z-position
@@ -386,11 +392,13 @@ Int_t AliTRDpadPlane::GetPadRowNumber(const Double_t z)
   Int_t nbelow = 0;
   Int_t middle = 0;
 
-  if ((z > fPadRow[0]) ||
-      (z < fPadRow[0] - fLength + 2.0*fLengthRim)) {
+  if ((z > GetRow0()) || (z < GetRowEnd())) {
+
     row = -1;
+
   }
   else {
+
     nabove = fNrows+1;
     nbelow = 0;
     while (nabove - nbelow > 1) {
@@ -400,6 +408,7 @@ Int_t AliTRDpadPlane::GetPadRowNumber(const Double_t z)
       else                        nbelow = middle;
     }
     row = nbelow - 1;
+
   }
 
   return row;
@@ -407,22 +416,33 @@ Int_t AliTRDpadPlane::GetPadRowNumber(const Double_t z)
 }
 
 //_____________________________________________________________________________
-Int_t AliTRDpadPlane::GetPadColNumber(const Double_t rphi)
+Int_t AliTRDpadPlane::GetPadColNumber(const Double_t rphi
+                                    , const Double_t rowOffset) const
 {
   //
   // Finds the pad column number for a given global rphi-position
   //
 
-  Int_t col    = 0;
-  Int_t nabove = 0;
-  Int_t nbelow = 0;
-  Int_t middle = 0;
+  Int_t    col       = 0;
+  Int_t    nabove    = 0;
+  Int_t    nbelow    = 0;
+  Int_t    middle    = 0;
+  Double_t rphiShift = 0;
 
-  if ((rphi > fPadCol[0]) ||
-      (rphi < fPadCol[0] - fWidth + 2.0*fWidthRim)) {
+  if ((rphi > GetCol0()) || (rphi < GetColEnd())) {
+
     col = -1;
+
   }
   else {
+
+    //
+    // Take the tilting angle into account by shifting the hit position
+    // into the opposite direction
+    //
+
+    rphiShift = rphi + fTiltingAngle * rowOffset;
+
     nabove = fNcols+1;
     nbelow = 0;
     while (nabove - nbelow > 1) {
@@ -432,40 +452,12 @@ Int_t AliTRDpadPlane::GetPadColNumber(const Double_t rphi)
       else                           nbelow = middle;
     }
     col = nbelow - 1;
+
+    //printf("rphi=%f, rphiShift=%f, col=%d, colH=%f\n"
+    //   ,rphi,rphiShift,col,fPadCol[col]);
+
   }
 
   return col;
-
-}
-
-//_____________________________________________________________________________
-Double_t AliTRDpadPlane::GetPadRowOffset(const Int_t row, const Double_t z)
-{
-  //
-  // Calculates the distance to the pad border in row direction
-  //
-
-  if ((row < 0) || (row >= fNrows)) {
-    return -1.0;
-  }
-  else {
-    return fPadRow[row] - z;
-  }
-
-}
-
-//_____________________________________________________________________________
-Double_t AliTRDpadPlane::GetPadColOffset(const Int_t col, const Double_t rphi)
-{
-  //
-  // Calculates the distance to the pad border in column direction
-  //
-
-  if ((col < 0) || (col >= fNcols)) {
-    return -1.0;
-  }
-  else {
-    return fPadCol[col] - rphi;
-  }
 
 }

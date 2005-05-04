@@ -29,14 +29,16 @@ class AliTRDgeometry : public AliGeometry {
   virtual Int_t    IsVersion() const = 0;
   virtual void     Init();
   virtual Bool_t   Impact(const TParticle* ) const { return kTRUE; };
-  virtual Bool_t   Local2Global(Int_t d, Float_t *local, Float_t *global, AliTRDparameter *par) const;
-  virtual Bool_t   Local2Global(Int_t p, Int_t c, Int_t s, Float_t *local, Float_t *global, AliTRDparameter *par) const;
+  virtual Bool_t   Local2Global(Int_t d, Double_t *local, Double_t *global, AliTRDparameter *par) const;
+  virtual Bool_t   Local2Global(Int_t p, Int_t c, Int_t s
+                                , Double_t *local, Double_t *global, AliTRDparameter *par) const;
 
-  virtual Bool_t   Global2Local(Int_t mode, Float_t *local, Float_t *global, Int_t* index,  AliTRDparameter *par) const;
-  virtual Bool_t   Global2Detector(Float_t global[3], Int_t index[3],  AliTRDparameter *par);
+  virtual Bool_t   Global2Local(Int_t mode, Double_t *local, Double_t *global
+                               , Int_t* index,  AliTRDparameter *par) const;
+  virtual Bool_t   Global2Detector(Double_t global[3], Int_t index[3],  AliTRDparameter *par);
 
-  virtual Bool_t   Rotate(Int_t d, Float_t *pos, Float_t *rot) const;
-  virtual Bool_t   RotateBack(Int_t d, Float_t *rot, Float_t *pos) const;
+  virtual Bool_t   Rotate(Int_t d, Double_t *pos, Double_t *rot) const;
+  virtual Bool_t   RotateBack(Int_t d, Double_t *rot, Double_t *pos) const;
 
   static  Int_t    Nsect()   { return fgkNsect; };
   static  Int_t    Nplan()   { return fgkNplan; };
@@ -76,7 +78,7 @@ class AliTRDgeometry : public AliGeometry {
   virtual Int_t    GetChamber(Int_t d) const;
   virtual Int_t    GetSector(Int_t d)  const;
 
-          Float_t  GetChamberWidth(Int_t p) const { return fCwidth[p];     };
+          Float_t  GetChamberWidth(Int_t p) const           { return fCwidth[p];     };
           Float_t  GetChamberLength(Int_t p, Int_t c) const { return fClength[p][c]; }; 
 
   virtual void     GetGlobal(const AliRecPoint* , TVector3& , TMatrix& ) const { }; 

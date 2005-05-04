@@ -37,6 +37,7 @@
 #include "AliTRDdataArrayI.h"
 #include "AliTRDdigitsManager.h"
 #include "AliTRDparameter.h"
+#include "AliTRDpadPlane.h"
 
 ClassImp(AliTRDclusterizerV1)
 
@@ -192,24 +193,24 @@ Bool_t AliTRDclusterizerV1::MakeClusters()
   const Int_t   kNsig    = 5;
   const Int_t   kNtrack  = 3 * kNclus;
 
-  Int_t   iType          = 0;
-  Int_t   iUnfold        = 0;
+  Int_t    iType         = 0;
+  Int_t    iUnfold       = 0;
 
-  Float_t ratioLeft      = 1.0;
-  Float_t ratioRight     = 1.0;
+  Double_t ratioLeft     = 1.0;
+  Double_t ratioRight    = 1.0;
 
-  Float_t padSignal[kNsig];   
-  Float_t clusterSignal[kNclus];
-  Float_t clusterPads[kNclus];   
-  Int_t   clusterDigit[kNclus];
-  Int_t   clusterTracks[kNtrack];   
+  Double_t padSignal[kNsig];   
+  Double_t clusterSignal[kNclus];
+  Double_t clusterPads[kNclus];   
+  Int_t    clusterDigit[kNclus];
+  Int_t    clusterTracks[kNtrack];   
 
-  Int_t chamBeg = 0;
-  Int_t chamEnd = AliTRDgeometry::Ncham();
-  Int_t planBeg = 0;
-  Int_t planEnd = AliTRDgeometry::Nplan();
-  Int_t sectBeg = 0;
-  Int_t sectEnd = AliTRDgeometry::Nsect();
+  Int_t    chamBeg = 0;
+  Int_t    chamEnd = AliTRDgeometry::Ncham();
+  Int_t    planBeg = 0;
+  Int_t    planEnd = AliTRDgeometry::Nplan();
+  Int_t    sectBeg = 0;
+  Int_t    sectEnd = AliTRDgeometry::Nsect();
 
   // Start clustering in every chamber
   for (Int_t icham = chamBeg; icham < chamEnd; icham++) {
@@ -231,15 +232,12 @@ Bool_t AliTRDclusterizerV1::MakeClusters()
                 ,icham,iplan,isect);
 	}
 
-        Int_t   nRowMax     = fPar->GetRowMax(iplan,icham,isect);
-        Int_t   nColMax     = fPar->GetColMax(iplan);
-        Int_t   nTimeBefore = fPar->GetTimeBefore();
-        Int_t   nTimeTotal  = fPar->GetTimeTotal();  
+        Int_t    nRowMax     = fPar->GetRowMax(iplan,icham,isect);
+        Int_t    nColMax     = fPar->GetColMax(iplan);
+        Int_t    nTimeBefore = fPar->GetTimeBefore();
+        Int_t    nTimeTotal  = fPar->GetTimeTotal();  
 
-        Float_t row0        = fPar->GetRow0(iplan,icham,isect);
-        Float_t col0        = fPar->GetCol0(iplan);
-        Float_t rowSize     = fPar->GetRowPadSize(iplan,icham,isect);
-        Float_t colSize     = fPar->GetColPadSize(iplan);
+        AliTRDpadPlane *padPlane = fPar->GetPadPlane(iplan,icham);
 
         // Get the digits
         digits = fDigitsManager->GetDigits(idet);
@@ -383,9 +381,9 @@ Bool_t AliTRDclusterizerV1::MakeClusters()
                   iUnfold = 1;
                 }
 
-                Float_t clusterCharge = clusterSignal[0]
-                                      + clusterSignal[1]
-                                      + clusterSignal[2];
+                Double_t clusterCharge = clusterSignal[0]
+                                       + clusterSignal[1]
+                                       + clusterSignal[2];
                 
 		// The position of the cluster
                 clusterPads[0] = row + 0.5;
@@ -396,7 +394,11 @@ Bool_t AliTRDclusterizerV1::MakeClusters()
 
   		  // Calculate the position of the cluster by using the
 		  // lookup table method
-                  clusterPads[1] = col + 0.5
+//                   clusterPads[1] = col + 0.5
+//                                  + fPar->LUTposition(iplan,clusterSignal[0]
+//                                                           ,clusterSignal[1]
+// 					                  ,clusterSignal[2]);
+                  clusterPads[1] = 0.5
                                  + fPar->LUTposition(iplan,clusterSignal[0]
                                                           ,clusterSignal[1]
 					                  ,clusterSignal[2]);
@@ -406,27 +408,21 @@ Bool_t AliTRDclusterizerV1::MakeClusters()
 
   		  // Calculate the position of the cluster by using the
 		  // center of gravity method
-                  clusterPads[1] = col + 0.5 
+//                   clusterPads[1] = col + 0.5 
+//                                  + (clusterSignal[2] - clusterSignal[0]) 
+// 		                 / clusterCharge;
+                  clusterPads[1] = 0.5 
                                  + (clusterSignal[2] - clusterSignal[0]) 
 		                 / clusterCharge;
 
 		}
 
-                Float_t q0 = clusterSignal[0];
-		Float_t q1 = clusterSignal[1];
-                Float_t q2 = clusterSignal[2];
-                Float_t clusterSigmaY2 = (q1*(q0+q2)+4*q0*q2) /
-                                         (clusterCharge*clusterCharge);
+                Double_t q0 = clusterSignal[0];
+		Double_t q1 = clusterSignal[1];
+                Double_t q2 = clusterSignal[2];
+                Double_t clusterSigmaY2 = (q1*(q0+q2)+4*q0*q2) /
+                                          (clusterCharge*clusterCharge);
 
-                // Correct for ExB displacement
-                if (fPar->ExBOn()) { 
-                  Int_t   local_time_bin = (Int_t) clusterPads[2];
-                  Float_t driftLength    = local_time_bin * timeBinSize + kAmWidth;
-                  Float_t colSize        = fPar->GetColPadSize(iplan);
-                  Float_t deltaY         = omegaTau*driftLength/colSize;
-                  clusterPads[1]         = clusterPads[1] - deltaY;
-                }
-                                       
                 if (fVerbose > 1) {
                   printf("-----------------------------------------------------------\n");
                   printf("Create cluster no. %d\n",nClusters);
@@ -450,21 +446,33 @@ Bool_t AliTRDclusterizerV1::MakeClusters()
                 }
 
 		// Calculate the position and the error
-                Float_t clusterPos[3];
-                clusterPos[0] = clusterPads[1] * colSize + col0;
-                clusterPos[1] = clusterPads[0] * rowSize + row0;
+                Double_t clusterPos[3];
+//                 clusterPos[0] = clusterPads[1] * colSize + col0;
+//                 clusterPos[1] = clusterPads[0] * rowSize + row0;
+                clusterPos[0] = padPlane->GetColPos(col) - clusterPads[1];
+                clusterPos[1] = padPlane->GetRowPos(row) - clusterPads[0];
                 clusterPos[2] = clusterPads[2];
-                Float_t clusterSig[2];
+                Double_t clusterSig[2];
+                Double_t colSize = padPlane->GetColSize(col);
+                Double_t rowSize = padPlane->GetRowSize(row);
                 clusterSig[0] = (clusterSigmaY2 + 1./12.) * colSize*colSize;
                 clusterSig[1] = rowSize * rowSize / 12.;
 
+                // Correct for ExB displacement
+                if (fPar->ExBOn()) { 
+                  Int_t    local_time_bin = (Int_t) clusterPads[2];
+                  Double_t driftLength    = local_time_bin * timeBinSize + kAmWidth;
+                  Double_t deltaY         = omegaTau * driftLength;
+                  clusterPos[1]           = clusterPos[1] - deltaY;
+                }
+                                       
                 // Add the cluster to the output array 
                 AddCluster(clusterPos
-			   ,idet
-			   ,clusterCharge
-			   ,clusterTracks
-			   ,clusterSig
-			   ,iType);
+			  ,idet
+			  ,clusterCharge
+			  ,clusterTracks
+			  ,clusterSig
+			  ,iType);
 
               }
             } 
@@ -474,7 +482,7 @@ Bool_t AliTRDclusterizerV1::MakeClusters()
 	// Compress the arrays
         digits->Compress(1,0);
         track0->Compress(1,0);
-        track1->Compress(1,0);
+ track1->Compress(1,0);
         track2->Compress(1,0);
 
         // Write the cluster and reset the array
@@ -506,7 +514,7 @@ Bool_t AliTRDclusterizerV1::MakeClusters()
 }
 
 //_____________________________________________________________________________
-Float_t AliTRDclusterizerV1::Unfold(Float_t eps, Int_t plane, Float_t* padSignal)
+Double_t AliTRDclusterizerV1::Unfold(Double_t eps, Int_t plane, Double_t* padSignal)
 {
   //
   // Method to unfold neighbouring maxima.
@@ -515,15 +523,15 @@ Float_t AliTRDclusterizerV1::Unfold(Float_t eps, Int_t plane, Float_t* padSignal
   // The resulting ratio is then returned to the calling method.
   //
 
-  Int_t   irc               = 0;
-  Int_t   itStep            = 0;      // Count iteration steps
+  Int_t   irc                = 0;
+  Int_t   itStep             = 0;      // Count iteration steps
 
-  Float_t ratio             = 0.5;    // Start value for ratio
-  Float_t prevRatio         = 0;      // Store previous ratio
+  Double_t ratio             = 0.5;    // Start value for ratio
+  Double_t prevRatio         = 0;      // Store previous ratio
 
-  Float_t newLeftSignal[3]  = {0};    // Array to store left cluster signal
-  Float_t newRightSignal[3] = {0};    // Array to store right cluster signal
-  Float_t newSignal[3]      = {0};
+  Double_t newLeftSignal[3]  = {0};    // Array to store left cluster signal
+  Double_t newRightSignal[3] = {0};    // Array to store right cluster signal
+  Double_t newSignal[3]      = {0};
 
   // Start the iteration
   while ((TMath::Abs(prevRatio - ratio) > eps) && (itStep < 10)) {
@@ -532,23 +540,23 @@ Float_t AliTRDclusterizerV1::Unfold(Float_t eps, Int_t plane, Float_t* padSignal
     prevRatio = ratio;
 
     // Cluster position according to charge ratio
-    Float_t maxLeft  = (ratio*padSignal[2] - padSignal[0]) 
-                     / (padSignal[0] + padSignal[1] + ratio*padSignal[2]);
-    Float_t maxRight = (padSignal[4] - (1-ratio)*padSignal[2]) 
-                     / ((1-ratio)*padSignal[2] + padSignal[3] + padSignal[4]);
+    Double_t maxLeft  = (ratio*padSignal[2] - padSignal[0]) 
+                      / (padSignal[0] + padSignal[1] + ratio*padSignal[2]);
+    Double_t maxRight = (padSignal[4] - (1-ratio)*padSignal[2]) 
+                      / ((1-ratio)*padSignal[2] + padSignal[3] + padSignal[4]);
 
     // Set cluster charge ratio
     irc = fPar->PadResponse(1.0,maxLeft ,plane,newSignal);
-    Float_t ampLeft  = padSignal[1] / newSignal[1];
+    Double_t ampLeft  = padSignal[1] / newSignal[1];
     irc = fPar->PadResponse(1.0,maxRight,plane,newSignal);
-    Float_t ampRight = padSignal[3] / newSignal[1];
+    Double_t ampRight = padSignal[3] / newSignal[1];
 
     // Apply pad response to parameters
     irc = fPar->PadResponse(ampLeft ,maxLeft ,plane,newLeftSignal );
     irc = fPar->PadResponse(ampRight,maxRight,plane,newRightSignal);
 
     // Calculate new overlapping ratio
-    ratio = TMath::Min((Float_t)1.0,newLeftSignal[2] / 
+    ratio = TMath::Min((Double_t)1.0,newLeftSignal[2] / 
                           (newLeftSignal[2] + newRightSignal[0]));
 
   }

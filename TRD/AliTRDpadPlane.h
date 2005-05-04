@@ -32,12 +32,44 @@ class AliTRDpadPlane : public TObject {
   AliTRDpadPlane    &operator=(const AliTRDpadPlane &p);
   virtual void       Copy(TObject &p) const;
 
-  Int_t    GetPadRowNumber(const Double_t z);
-  Int_t    GetPadColNumber(const Double_t rphi);
+  Int_t    GetPadRowNumber(const Double_t z) const;
+  Int_t    GetPadColNumber(const Double_t rphi, const Double_t rowOffset) const;
 
-  Double_t GetPadRowOffset(const Int_t row, const Double_t z);
-  Double_t GetPadColOffset(const Int_t col, const Double_t rphi);
+  Double_t GetPadRowOffset(const Int_t row, const Double_t z) const
+                                             { if ((row < 0) || (row >= fNrows))
+                                                 return -1.0;
+                                               else 
+                                                 return fPadRow[row] - z;    };
+
+  Double_t GetPadColOffset(const Int_t col, const Double_t rphi) const
+                                             { if ((col < 0) || (col >= fNcols))
+                                                 return -1.0;
+                                               else
+                                                 return fPadCol[col] - rphi; };
+
+  Double_t GetTiltingAngle() const           { return fTiltingAngle; };
+
+  Int_t    GetNrows() const                  { return fNrows;        };
+  Int_t    GetNcols() const                  { return fNcols;        };
+
+  Double_t GetRow0() const                   { return fPadRow[0];    };
+  Double_t GetCol0() const                   { return fPadCol[0];    };
+
+  Double_t GetRowEnd() const                 { return fPadRow[fNrows-1]  - fLengthOPad; };
+  Double_t GetColEnd() const                 { return fPadCol[fNcols-11] - fWidthOPad;  };
+
+  Double_t GetRowPos(const Int_t row) const  { return fPadRow[row];  };
+  Double_t GetColPos(const Int_t col) const  { return fPadCol[col];  };
   
+  Double_t GetRowSize(const Int_t row) const { if ((row == 0) || (row == fNrows-1))
+                                                 return fLengthOPad;
+                                               else
+                                                 return fLengthIPad; };
+  Double_t GetColSize(const Int_t col) const { if ((col == 0) || (col == fNcols-1))
+                                                 return fWidthOPad;
+                                               else
+                                                 return fWidthIPad;  };
+
  protected:
 
   AliTRDgeometry *fGeo;       //! TRD geometry       

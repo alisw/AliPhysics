@@ -28,6 +28,7 @@
 
 #include "AliTRDparameter.h"
 #include "AliTRDgeometryFull.h"
+#include "AliTRDpadPlane.h"
 
 ClassImp(AliTRDparameter)
 
@@ -39,6 +40,7 @@ AliTRDparameter::AliTRDparameter():TNamed()
   //
 
   fGeo                = 0;
+  fPadPlaneArray      = 0;
   fPRFsmp             = 0;
   fTRFsmp             = 0;
   fCTsmp              = 0;
@@ -58,7 +60,6 @@ AliTRDparameter::AliTRDparameter():TNamed()
   fPadCoupling        = 0.0;
   fTimeCoupling       = 0.0;
   fField              = 0.0;
-  fTiltingAngle       = 0.0;
   fPRFbin             = 0;
   fPRFlo              = 0.0;
   fPRFhi              = 0.0;
@@ -99,6 +100,8 @@ AliTRDparameter::AliTRDparameter(const Text_t *name, const Text_t *title)
   //
 
   fGeo                = new AliTRDgeometryFull();
+  fPadPlaneArray      = new TObjArray(AliTRDgeometry::Nplan() 
+                                    * AliTRDgeometry::Ncham());
   fPRFsmp             = 0;
   fTRFsmp             = 0;
   fCTsmp              = 0;
@@ -119,7 +122,6 @@ AliTRDparameter::AliTRDparameter(const Text_t *name, const Text_t *title)
   fPadCoupling        = 0.0;
   fTimeCoupling       = 0.0;
   fField              = 0.0;
-  fTiltingAngle       = 0.0;
   fPRFbin             = 0;
   fPRFlo              = 0.0;
   fPRFhi              = 0.0;
@@ -197,6 +199,12 @@ AliTRDparameter::~AliTRDparameter()
     fGeo    = 0;
   }
 
+  if (fPadPlaneArray) {
+    fPadPlaneArray->Delete();
+    delete fPadPlaneArray;
+    fPadPlaneArray = 0;
+  }
+
   if (fTimeStruct1) {
     delete [] fTimeStruct1;
     fTimeStruct1 = 0;
@@ -254,7 +262,6 @@ void AliTRDparameter::Copy(TObject &p) const
   ((AliTRDparameter &) p).fTRFOn              = fTRFOn;
   ((AliTRDparameter &) p).fCTOn               = fCTOn;
   ((AliTRDparameter &) p).fTCOn               = fTCOn;
-  ((AliTRDparameter &) p).fTiltingAngle       = fTiltingAngle;
   ((AliTRDparameter &) p).fPRFbin             = fPRFbin;
   ((AliTRDparameter &) p).fPRFlo              = fPRFlo;
   ((AliTRDparameter &) p).fPRFhi              = fPRFhi;
@@ -314,59 +321,30 @@ void AliTRDparameter::Init()
   //
   // Initializes the parameter
   //
-  // The maximum number of pads
-  // and the position of pad 0,0,0
-  //
-  // chambers seen from the top:
-  //     +----------------------------+
-  //     |                            |
-  //     |                            |      ^
-  //     |                            |  rphi|
-  //     |                            |      |
-  //     |0                           |      |
-  //     +----------------------------+      +------>
-  //                                             z
-  // chambers seen from the side:            ^
-  //     +----------------------------+ drift|
-  //     |0                           |      |
-  //     |                            |      |
-  //     +----------------------------+      +------>
-  //                                             z
-  //
-  // IMPORTANT: time bin 0 is now the first one in the drift region
-  // closest to the readout !!!
-  //
+
+  Int_t iplan;
+  Int_t icham;
 
   //
   // ----------------------------------------------------------------------------
-  // The pad definition
+  // The pad planes
   // ----------------------------------------------------------------------------
   //
-
-  // The pad size in column direction (rphi-direction)
-
-  //SetColPadSize(0,0.65);
-  //SetColPadSize(1,0.68);
-  //SetColPadSize(2,0.71);
-  //SetColPadSize(3,0.74);
-  //SetColPadSize(4,0.77);
-  //SetColPadSize(5,0.80);
-
-  SetColPadSize(0,0.664);
-  SetColPadSize(1,0.695);
-  SetColPadSize(2,0.726);
-  SetColPadSize(3,0.756);
-  SetColPadSize(4,0.788);
-  SetColPadSize(5,0.818);
-
-  // The pad row (z-direction)
-  SetNRowPad();
+  for (iplan = 0; iplan < AliTRDgeometry::Nplan(); iplan++) {
+    for (icham = 0; icham < AliTRDgeometry::Ncham(); icham++) {
+      Int_t ipp = iplan + icham * AliTRDgeometry::Nplan();
+      fPadPlaneArray->AddAt(new AliTRDpadPlane(iplan,icham),ipp);
+    }
+  }
 
   // !CHANGED!
   // Time position of anode wire plane
-  for (Int_t iplan = 0; iplan < AliTRDgeometry::Nplan(); iplan++) {
-    fTime0[iplan] = AliTRDgeometry::Rmin() + AliTRDgeometry::CraHght() + AliTRDgeometry::CdrHght()
-	+ AliTRDgeometry::CamHght()/2. + iplan * (AliTRDgeometry::Cheight() + AliTRDgeometry::Cspace());
+  for (iplan = 0; iplan < AliTRDgeometry::Nplan(); iplan++) {
+    fTime0[iplan] = AliTRDgeometry::Rmin() 
+                  + AliTRDgeometry::CraHght() 
+                  + AliTRDgeometry::CdrHght()
+	          + AliTRDgeometry::CamHght()/2. 
+                  + iplan * (AliTRDgeometry::Cheight() + AliTRDgeometry::Cspace());
   }
 
   //
@@ -434,9 +412,6 @@ void AliTRDparameter::Init()
 
   // Distance of first Anode wire from first pad edge
   fAnodeWireOffset = 0.25;
-
-  // The tilting angle for the readout pads
-  SetTiltingAngle(2.0);
 
   // The magnetic field strength in Tesla
   Double_t x[3] = { 0.0, 0.0, 0.0 };
@@ -509,89 +484,63 @@ void AliTRDparameter::ReInit()
 }
 
 //_____________________________________________________________________________
-void AliTRDparameter::SetNRowPad(Int_t p, Int_t c, Int_t npad)
+AliTRDpadPlane *AliTRDparameter::GetPadPlane(Int_t p, Int_t c) const
 {
   //
-  // Redefines the number of pads in raw direction for
-  // a given plane and chamber number
+  // Returns the pad plane for a given plane <p> and chamber <c> number
   //
 
-  for (Int_t isect = 0; isect < AliTRDgeometry::Nsect(); isect++) {
-
-    fRowMax[p][c][isect] = npad;
-
-    fRowPadSize[p][c][isect] = (fGeo->GetChamberLength(p,c) 
-				- 2.* AliTRDgeometry::RpadW())
-                             / ((Float_t) npad);
-
-  }
+  Int_t ipp = p + c * AliTRDgeometry::Nplan();
+  return ((AliTRDpadPlane *) fPadPlaneArray->At(ipp));
 
 }
 
 //_____________________________________________________________________________
-void AliTRDparameter::SetNRowPad()
+Int_t AliTRDparameter::GetRowMax(Int_t p, Int_t c, Int_t /*s*/) const
 {
   //
-  // Defines the number of pads in row direction
+  // Returns the number of rows on the pad plane
   //
 
-  Int_t isect;
-  Int_t icham;
-  Int_t iplan;
-
-  Int_t rowMax[kNplan][kNcham] = { { 16, 16, 12, 16, 16 }
-                                 , { 16, 16, 12, 16, 16 }
-                                 , { 16, 16, 12, 16, 16 }
-                                 , { 16, 16, 12, 16, 16 }
-                                 , { 16, 16, 12, 16, 16 }
-                                 , { 16, 16, 12, 16, 16 } };
-
-  Float_t rpadW = AliTRDgeometry::RpadW();
-
-  for (isect = 0; isect < kNsect; isect++) {
-    for (icham = 0; icham < kNcham; icham++) {
-      for (iplan = 0; iplan < kNplan; iplan++) {
-
-        fRowMax[iplan][icham][isect]     = rowMax[iplan][icham];
-
-        fRowPadSize[iplan][icham][isect] = (fGeo->GetChamberLength(iplan,icham) 
-                                            - 2.*rpadW)
-                                         / ((Float_t) rowMax[iplan][icham]);
-
-        Float_t row0 = rpadW - fGeo->GetChamberLength(iplan,0)
-  	                     - fGeo->GetChamberLength(iplan,1)
-                             - fGeo->GetChamberLength(iplan,2) / 2.;
-        for (Int_t ic = 0; ic < icham; ic++) {
-          row0 += fGeo->GetChamberLength(iplan,ic);
-        }
-
-        fRow0[iplan][icham][isect]          = row0;
-	// For new chamber ordering
-        //fRow0[iplan][kNcham-icham-1][isect] = row0;
-
-      }
-    }
-  }
+  return GetPadPlane(p,c)->GetNrows();
 
 }
 
 //_____________________________________________________________________________
-void AliTRDparameter::SetColPadSize(Int_t p, Float_t s)
+Int_t AliTRDparameter::GetColMax(Int_t p) const
 {
   //
-  // Redefines the pad size in column direction
+  // Returns the number of rows on the pad plane
   //
 
-  Float_t cpadW  = AliTRDgeometry::CpadW();
-
-  fColPadSize[p] = s;
-  fCol0[p]       = - fGeo->GetChamberWidth(p)/2. + cpadW;
-  fColMax[p]     = ((Int_t) ((fGeo->GetChamberWidth(p) - 2.*cpadW) / s));
+  return GetPadPlane(p,0)->GetNcols();
 
 }
 
 //_____________________________________________________________________________
-Float_t AliTRDparameter::CrossTalk(Float_t time) const
+Double_t AliTRDparameter::GetRow0(Int_t p, Int_t c, Int_t /*s*/) const
+{
+  //
+  // Returns the position of the border of the first pad in a row
+  //
+
+  return GetPadPlane(p,c)->GetRow0();
+
+}
+
+//_____________________________________________________________________________
+Double_t AliTRDparameter::GetCol0(Int_t p) const
+{
+  //
+  // Returns the position of the border of the first pad in a column
+  //
+
+  return GetPadPlane(p,0)->GetCol0();
+
+}
+
+//_____________________________________________________________________________
+Double_t AliTRDparameter::CrossTalk(Double_t time) const
 {
   //
   // Applies the pad-pad capacitive cross talk
@@ -610,11 +559,17 @@ Float_t AliTRDparameter::CrossTalk(Float_t time) const
 //_____________________________________________________________________________
 void AliTRDparameter::PrintDriftVelocity()
 {
-  printf("<AliTRDparameter::PrintDriftVelocity> Driftvelocity = %.3f\n", fDriftVelocity);
+  //
+  // Prints the used drift velocity
+  //
+
+  printf("<AliTRDparameter::PrintDriftVelocity> Driftvelocity = %.3f\n"
+        ,fDriftVelocity);
+
 }
 
 //_____________________________________________________________________________
-Float_t AliTRDparameter::TimeStruct(Float_t dist, Float_t z) const
+Double_t AliTRDparameter::TimeStruct(Double_t dist, Double_t z) const
 {
   //
   // Applies the time structure of the drift cells (by C.Lippmann).
@@ -688,7 +643,7 @@ Float_t AliTRDparameter::TimeStruct(Float_t dist, Float_t z) const
 }
 
 //_____________________________________________________________________________
-Int_t AliTRDparameter::Diffusion(Float_t driftlength, Float_t *xyz)
+Int_t AliTRDparameter::Diffusion(Double_t driftlength, Double_t *xyz)
 {
   //
   // Applies the diffusion smearing to the position of a single electron
@@ -706,7 +661,7 @@ Int_t AliTRDparameter::Diffusion(Float_t driftlength, Float_t *xyz)
 }
 
 //_____________________________________________________________________________
-Int_t AliTRDparameter::ExB(Float_t driftlength, Float_t *xyz) const
+Int_t AliTRDparameter::ExB(Double_t driftlength, Double_t *xyz) const
 {
   //
   // Applies E x B effects to the position of a single electron
@@ -721,8 +676,8 @@ Int_t AliTRDparameter::ExB(Float_t driftlength, Float_t *xyz) const
 }
 
 //_____________________________________________________________________________
-Int_t AliTRDparameter::PadResponse(Float_t signal, Float_t dist
-                                 , Int_t plane, Float_t *pad) const
+Int_t AliTRDparameter::PadResponse(Double_t signal, Double_t dist
+                                 , Int_t plane, Double_t *pad) const
 {
   //
   // Applies the pad response
@@ -762,7 +717,7 @@ Int_t AliTRDparameter::PadResponse(Float_t signal, Float_t dist
 }
 
 //_____________________________________________________________________________
-Float_t AliTRDparameter::TimeResponse(Float_t time) const
+Double_t AliTRDparameter::TimeResponse(Double_t time) const
 {
   //
   // Applies the preamp shaper time response
@@ -776,19 +731,6 @@ Float_t AliTRDparameter::TimeResponse(Float_t time) const
   else {
     return 0.0;
   }    
-
-}
-
-//_____________________________________________________________________________
-Float_t AliTRDparameter::Col0Tilted(Float_t col0, Float_t rowOffset
-                                  , Int_t plane)
-{
-  //
-  // Calculates col0 for tilted pads
-  //
-
-  Float_t diff = fTiltingAngle * rowOffset;
-  return (col0 + TMath::Power(-1.0,(plane+1)) * diff);
 
 }
 
@@ -1062,12 +1004,14 @@ void AliTRDparameter::SampleTimeStruct()
 
   if ( fDriftVelocity < fVDsmp[0] ) {
     printf("<AliTRDparameter::SampleTimeStruct> !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
-    printf("<AliTRDparameter::SampleTimeStruct> Drift Velocity too small (%.3f<%.3f)\n", fDriftVelocity, fVDsmp[0]);
+    printf("<AliTRDparameter::SampleTimeStruct> Drift Velocity too small (%.3f<%.3f)\n"
+          , fDriftVelocity, fVDsmp[0]);
     printf("<AliTRDparameter::SampleTimeStruct> !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
     fDriftVelocity = fVDsmp[0];
   } else if ( fDriftVelocity > fVDsmp[7] ) {
     printf("<AliTRDparameter::SampleTimeStruct> !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
-    printf("<AliTRDparameter::SampleTimeStruct> Drift Velocity too large (%.3f>%.3f)\n", fDriftVelocity,fVDsmp[6]);
+    printf("<AliTRDparameter::SampleTimeStruct> Drift Velocity too large (%.3f>%.3f)\n"
+          , fDriftVelocity,fVDsmp[6]);
     printf("<AliTRDparameter::SampleTimeStruct> !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
     fDriftVelocity = fVDsmp[7];
   }
@@ -2031,28 +1975,6 @@ void AliTRDparameter::FillLUT()
       fLUT[iplan*kNlut+ilut] = lut[iplan][ilut];
     }
   }
-
-}
-
-//_____________________________________________________________________________
-void AliTRDparameter::SetTiltingAngle(Float_t v)
-{
-  //
-  // Set the tilting angle for the readout pads
-  //
-
-  fTiltingAngle = TMath::Tan(TMath::Pi()/180.0 * v);
-
-}
-
-//_____________________________________________________________________________
-Float_t AliTRDparameter::GetTiltingAngle() const
-{
-  //
-  // Get the tilting angle for the readout pads
-  //
-
-  return 180.0 / TMath::Pi() * TMath::ATan(fTiltingAngle);
 
 }
 

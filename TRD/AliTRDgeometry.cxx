@@ -27,6 +27,7 @@
 #include "AliRunLoader.h"
 #include "AliTRDgeometry.h"
 #include "AliTRDparameter.h"
+#include "AliTRDpadPlane.h"
 
 #include "AliRun.h"
 #include "AliTRD.h"
@@ -252,8 +253,8 @@ void AliTRDgeometry::CreateGeometry(Int_t* )
 }
 
 //_____________________________________________________________________________
-Bool_t AliTRDgeometry::Local2Global(Int_t idet, Float_t *local
-                                   , Float_t *global
+Bool_t AliTRDgeometry::Local2Global(Int_t idet, Double_t *local
+                                   , Double_t *global
                                    , AliTRDparameter *par) const
 {
   //
@@ -271,7 +272,7 @@ Bool_t AliTRDgeometry::Local2Global(Int_t idet, Float_t *local
  
 //_____________________________________________________________________________
 Bool_t AliTRDgeometry::Local2Global(Int_t iplan, Int_t icham, Int_t isect
-                                  , Float_t *local, Float_t *global
+                                  , Double_t *local, Double_t *global
                                   , AliTRDparameter *par) const
 {
   //
@@ -284,34 +285,29 @@ Bool_t AliTRDgeometry::Local2Global(Int_t iplan, Int_t icham, Int_t isect
     return kFALSE;
   }
 
-  Int_t    idet      = GetDetector(iplan,icham,isect); // Detector number
-
-  Float_t  padRow    = local[0]+0.5;                   // Pad Row position
-  Float_t  padCol    = local[1]+0.5;                   // Pad Column position
-  Float_t  timeSlice = local[2]+0.5;                   // Time "position"
-
-  Float_t  row0      = par->GetRow0(iplan,icham,isect);
-  Float_t  col0      = par->GetCol0(iplan);
-  Float_t  time0     = par->GetTime0(iplan);
-
-  Float_t  rot[3];
+  AliTRDpadPlane *padPlane = par->GetPadPlane(iplan,icham);
 
   // calculate (x,y,z) position in rotated chamber
+  Int_t    row       = ((Int_t) local[0]);
+  Int_t    col       = ((Int_t) local[1]);
+  Float_t  timeSlice = local[2] + 0.5;
+  Float_t  time0     = par->GetTime0(iplan);
+
+  Double_t  rot[3];
   rot[0] = time0 - (timeSlice - par->GetTimeBefore()) 
          * par->GetDriftVelocity()/par->GetSamplingFrequency();
-  rot[1] = col0  + padCol                    
-         * par->GetColPadSize(iplan);
-  rot[2] = row0  + padRow                    
-         * par->GetRowPadSize(iplan,icham,isect);
+  rot[1] = padPlane->GetColPos(col) - 0.5 * padPlane->GetColSize(col);
+  rot[2] = padPlane->GetRowPos(row) - 0.5 * padPlane->GetRowSize(row);
 
   // Rotate back to original position
+  Int_t idet = GetDetector(iplan,icham,isect); 
   return RotateBack(idet,rot,global);
 
 }
 
 //_____________________________________________________________________________
-Bool_t AliTRDgeometry::Global2Local(Int_t mode, Float_t *local, Float_t *global
-                                  , Int_t* index,  AliTRDparameter *par) const
+Bool_t AliTRDgeometry::Global2Local(Int_t mode, Double_t *local, Double_t *global
+                                   , Int_t* index,  AliTRDparameter *par) const
 {
   //
   // Converts local pad-coordinates (row,col,time) into 
@@ -353,8 +349,9 @@ Bool_t AliTRDgeometry::Global2Local(Int_t mode, Float_t *local, Float_t *global
 
 }
 
-//___________________________________________________________________
-Bool_t   AliTRDgeometry::Global2Detector(Float_t global[3], Int_t index[3], AliTRDparameter *par)
+//_____________________________________________________________________________
+Bool_t AliTRDgeometry::Global2Detector(Double_t global[3], Int_t index[3]
+                                      , AliTRDparameter *par)
 {
   //  
   // input    = global position
@@ -389,7 +386,7 @@ Bool_t   AliTRDgeometry::Global2Detector(Float_t global[3], Int_t index[3], AliT
 
 
 //_____________________________________________________________________________
-Bool_t AliTRDgeometry::Rotate(Int_t d, Float_t *pos, Float_t *rot) const
+Bool_t AliTRDgeometry::Rotate(Int_t d, Double_t *pos, Double_t *rot) const
 {
   //
   // Rotates all chambers in the position of sector 0 and transforms
@@ -408,7 +405,7 @@ Bool_t AliTRDgeometry::Rotate(Int_t d, Float_t *pos, Float_t *rot) const
 }
 
 //_____________________________________________________________________________
-Bool_t AliTRDgeometry::RotateBack(Int_t d, Float_t *rot, Float_t *pos) const
+Bool_t AliTRDgeometry::RotateBack(Int_t d, Double_t *rot, Double_t *pos) const
 {
   //
   // Rotates a chambers from the position of sector 0 into its

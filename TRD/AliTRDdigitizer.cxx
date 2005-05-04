@@ -71,6 +71,7 @@
 #include "AliTRDdigitsManager.h"
 #include "AliTRDgeometry.h"
 #include "AliTRDparameter.h"
+#include "AliTRDpadPlane.h"
 
 ClassImp(AliTRDdigitizer)
 
@@ -566,36 +567,38 @@ Bool_t AliTRDdigitizer::MakeDigits()
   ///////////////////////////////////////////////////////////////
 
   // Number of pads included in the pad response
-  const Int_t kNpad  = 3;
+  const Int_t kNpad      = 3;
 
   // Number of track dictionary arrays
-  const Int_t kNDict = AliTRDdigitsManager::kNDict;
+  const Int_t kNDict     = AliTRDdigitsManager::kNDict;
 
   // Half the width of the amplification region
   const Float_t kAmWidth = AliTRDgeometry::AmThick() / 2.;
   // Width of the drit region
   const Float_t kDrWidth = AliTRDgeometry::DrThick();
 
-  Int_t   iRow, iCol, iTime, iPad;
-  Int_t   iDict  = 0;
-  Int_t   nBytes = 0;
+  Int_t    iRow, iCol, iTime, iPad;
+  Int_t    iDict  = 0;
+  Int_t    nBytes = 0;
 
-  Int_t   totalSizeDigits = 0;
-  Int_t   totalSizeDict0  = 0;
-  Int_t   totalSizeDict1  = 0;
-  Int_t   totalSizeDict2  = 0;
+  Int_t    totalSizeDigits = 0;
+  Int_t    totalSizeDict0  = 0;
+  Int_t    totalSizeDict1  = 0;
+  Int_t    totalSizeDict2  = 0;
 
-  Int_t   timeBinTRFend = 1;
+  Int_t    timeBinTRFend   = 1;
 
-  Float_t pos[3];
-  Float_t rot[3];
-  Float_t xyz[3];
-  Float_t padSignal[kNpad];
-  Float_t signalOld[kNpad];
+  Double_t pos[3];
+  Double_t rot[3];
+  Double_t xyz[3];
+  Double_t padSignal[kNpad];
+  Double_t signalOld[kNpad];
 
-  AliTRDdataArrayF *signals = 0;
-  AliTRDdataArrayI *digits  = 0;
+  AliTRDdataArrayF *signals  = 0;
+  AliTRDdataArrayI *digits   = 0;
   AliTRDdataArrayI *dictionary[kNDict];
+
+  AliTRDpadPlane   *padPlane = 0;
 
   // Create a default parameter class if none is defined
   if (!fPar) {
@@ -695,21 +698,19 @@ Bool_t AliTRDdigitizer::MakeDigits()
       Int_t   plane         = fGeo->GetPlane(detector);
       Int_t   sector        = fGeo->GetSector(detector);
       Int_t   chamber       = fGeo->GetChamber(detector);
-      Int_t   nRowMax       = fPar->GetRowMax(plane,chamber,sector);
-      Int_t   nColMax       = fPar->GetColMax(plane);
       Int_t   nTimeMax      = fPar->GetTimeMax();
       Int_t   nTimeBefore   = fPar->GetTimeBefore();
       Int_t   nTimeAfter    = fPar->GetTimeAfter();
       Int_t   nTimeTotal    = fPar->GetTimeTotal();
-      Float_t row0          = fPar->GetRow0(plane,chamber,sector);
-      Float_t col0          = fPar->GetCol0(plane);
       Float_t time0         = fPar->GetTime0(plane);
-      Float_t rowPadSize    = fPar->GetRowPadSize(plane,chamber,sector);
-      Float_t colPadSize    = fPar->GetColPadSize(plane);
       Float_t driftvelocity = fPar->GetDriftVelocity();
       Float_t samplingRate  = fPar->GetSamplingFrequency();
-      Float_t divideRow     = 1.0 / rowPadSize;
-      Float_t divideCol     = 1.0 / colPadSize;
+
+      padPlane              = fPar->GetPadPlane(plane,chamber);
+      Float_t row0          = padPlane->GetRow0();
+      Float_t col0          = padPlane->GetCol0();
+      Int_t   nRowMax       = padPlane->GetNrows();
+      Int_t   nColMax       = padPlane->GetNcols();
 
       if (fDebug > 1) {
         printf("Analyze hit no. %d ",iHit);
@@ -723,8 +724,8 @@ Bool_t AliTRDdigitizer::MakeDigits()
 	      ,nTimeBefore,nTimeAfter,nTimeTotal);
         printf("row0 = %f, col0 = %f, time0 = %f\n"
               ,row0,col0,time0);
-        printf("rowPadSize = %f, colPadSize = %f, SamplingRate = %f\n"
-	       ,rowPadSize,colPadSize,samplingRate); 
+        printf("samplingRate = %f\n"
+              ,samplingRate); 
       }
        
       // Don't analyze test hits and switched off detectors
@@ -805,10 +806,10 @@ Bool_t AliTRDdigitizer::MakeDigits()
 	}
 
         // The driftlength. It is negative if the hit is between pad plane and anode wires.
-        Float_t driftlength = time0 - rot[0];
+        Double_t driftlength = time0 - rot[0];
 
         // Normalised drift length
-        Float_t absdriftlength = TMath::Abs(driftlength);
+        Double_t absdriftlength = TMath::Abs(driftlength);
         if (fPar->ExBOn()) absdriftlength /= TMath::Sqrt(fPar->GetLorentzFactor());
 
         // Loop over all electrons of this hit
@@ -824,12 +825,12 @@ Bool_t AliTRDdigitizer::MakeDigits()
 	  // outside the chamber volume. A real fix would actually need
 	  // a more clever implementation of the TR hit generation
           if (q < 0.0) {
-            Float_t zz = xyz[2] - row0;
-            if ((zz < 0.0) || (zz > rowPadSize*nRowMax)) {
+	    if ((xyz[2] < padPlane->GetRowEnd()) ||
+                (xyz[2] > padPlane->GetRow0())) {
               if (iEl == 0) {
                 printf("<AliTRDdigitizer::MakeDigits> ");
-                printf("Hit outside of sensitive volume, row (Q = %d)\n",((Int_t) q));
-                //printf("zz=%f, xyz=%f, row0=%f, max=%f\n",zz,xyz[2],row0,rowPadSize*nRowMax);
+                printf("Hit outside of sensitive volume, row (z=%f, row0=%f, rowE=%f)\n"
+                      ,xyz[2],padPlane->GetRow0(),padPlane->GetRowEnd());
 	      }
               continue;
 	    }
@@ -838,8 +839,6 @@ Bool_t AliTRDdigitizer::MakeDigits()
               if (iEl == 0) {
                 printf("<AliTRDdigitizer::MakeDigits> ");
                 printf("Hit outside of sensitive volume, time (Q = %d)\n",((Int_t) q));
-                /*printf("track %d: tt=%f, xyz=%f, min=%f, max=%f\n",
-		  iTrack,tt,xyz[0],time0-kDrWidth-kAmWidth,time0+kAmWidth);*/
 	      }
               continue;
 	    }
@@ -862,40 +861,39 @@ Bool_t AliTRDdigitizer::MakeDigits()
 
           // The electron position after diffusion and ExB in pad coordinates.
           // The pad row (z-direction)
-          Float_t rowDist   = xyz[2] - row0;
-          Int_t   rowE      = ((Int_t) (rowDist * divideRow));
-          if ((rowE < 0) || (rowE >= nRowMax)) continue;
-          Float_t rowOffset = ((((Float_t) rowE) + 0.5) * rowPadSize) - rowDist;
+          Int_t    rowE      = padPlane->GetPadRowNumber(xyz[2]);
+          if (rowE < 0) continue;
+          Double_t rowOffset = padPlane->GetPadRowOffset(rowE,xyz[2]);
 
           // The pad column (rphi-direction)
-          Float_t col0tilt  = fPar->Col0Tilted(col0,rowOffset,plane);
-          Float_t colDist   = xyz[1] - col0tilt;
-          Int_t   colE      = ((Int_t) (colDist * divideCol));
-          if ((colE < 0) || (colE >= nColMax)) continue;
-          Float_t colOffset = ((((Float_t) colE) + 0.5) * colPadSize) - colDist;
+          Int_t    colE      = padPlane->GetPadColNumber(xyz[1],rowOffset);
+          if (colE < 0) continue;
+          Double_t colOffset = padPlane->GetPadColOffset(colE,xyz[1]);
 
 	  // Convert the position to drift time, using either constant drift velocity or
           // time structure of drift cells (non-isochronity, GARFIELD calculation).
-	  Float_t drifttime;
+	  Double_t drifttime;
 	  if (fPar->TimeStructOn()) {
 	    // Get z-position with respect to anode wire:
-	    Float_t Z  =  xyz[2] - row0 + fPar->GetAnodeWireOffset();
+	    //Double_t Z  =  xyz[2] - row0 + fPar->GetAnodeWireOffset();
+	    Double_t Z  =  row0 - xyz[2] + fPar->GetAnodeWireOffset();
 	    Z -= ((Int_t)(2*Z))/2.;
 	    if (Z>0.25)   Z  = 0.5-Z;
 	    // use drift time map (GARFIELD)
             drifttime = fPar->TimeStruct(time0 - xyz[0] + kAmWidth, Z);
-	  } else {
+	  } 
+          else {
 	    // use constant drift velocity
 	    drifttime = TMath::Abs(time0 - xyz[0]) / driftvelocity;
 	  }
 
           // The time bin (always positive)
-	  Int_t timeE  = ((Int_t) (drifttime * samplingRate));
+	  Int_t    timeE      = ((Int_t) (drifttime * samplingRate));
 	  // The distance of the position to the middle of the timebin
-	  Float_t timeOffset = ((((Float_t) timeE) + 0.5) / samplingRate) - drifttime;
+	  Double_t timeOffset = ((((Float_t) timeE) + 0.5) / samplingRate) - drifttime;
  
           // Apply the gas gain including fluctuations
-          Float_t ggRndm = 0.0;
+          Double_t ggRndm = 0.0;
           do {
             ggRndm = gRandom->Rndm();
 	  } while (ggRndm <= 0);
@@ -905,7 +903,9 @@ Bool_t AliTRDdigitizer::MakeDigits()
           if (fPar->PRFOn()) {
   	    // The distance of the electron to the center of the pad 
 	    // in units of pad width
-            Float_t dist = - colOffset * divideCol;
+            //Double_t dist = - colOffset / padPlane->GetColSize(colE);
+            Double_t dist = (0.5 * padPlane->GetRowSize(colE) - colOffset) 
+                          / padPlane->GetColSize(colE);
             if (!(fPar->PadResponse(signal,dist,plane,padSignal))) continue;
 	  }
 	  else {
@@ -922,13 +922,11 @@ Bool_t AliTRDdigitizer::MakeDigits()
 	       iTimeBin++                                                       ) {
 
      	    // Apply the time response
-            Float_t timeResponse = 1.0;
-            Float_t crossTalk    = 0.0;
-            Float_t time         = (iTimeBin - timeE) / samplingRate + timeOffset;
+            Double_t timeResponse = 1.0;
+            Double_t crossTalk    = 0.0;
+            Double_t time         = (iTimeBin - timeE) / samplingRate + timeOffset;
             if (fPar->TRFOn()) {
               timeResponse = fPar->TimeResponse(time);
-              //printf("iTimeBin = %d, time = %f, timeResponse = %f\n"
-	      //	     ,iTimeBin,time,timeResponse);
 	    }
             if (fPar->CTOn()) {
               crossTalk    = fPar->CrossTalk(time);
@@ -992,12 +990,12 @@ Bool_t AliTRDdigitizer::MakeDigits()
   }
 
   // The coupling factor
-  Float_t coupling = fPar->GetPadCoupling() 
-                   * fPar->GetTimeCoupling();
+  Double_t coupling = fPar->GetPadCoupling() 
+                    * fPar->GetTimeCoupling();
 
   // The conversion factor
-  Float_t convert  = kEl2fC
-                   * fPar->GetChipGain();
+  Double_t convert  = kEl2fC
+                    * fPar->GetChipGain();
 
   // Loop through all chambers to finalize the digits
   Int_t iDetBeg = 0;

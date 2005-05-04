@@ -22,20 +22,22 @@ class AliTRDclusterizerMI : public AliTRDclusterizerV1 {
   AliTRDclusterizerMI(const Text_t* name, const Text_t* title);
   virtual ~AliTRDclusterizerMI();
   virtual Bool_t   MakeClusters(); 
-  void MakeCluster(Float_t * padSignal, Float_t * pos, Float_t &sigma, Float_t & relpad);
-  virtual void AddCluster(Float_t*, int, float, Int_t*, Float_t*, int) {};
+  void MakeCluster(Double_t * padSignal, Double_t * pos, Double_t &sigma, Double_t & relpad);
+  virtual void AddCluster(Double_t*, int, float, Int_t*, Double_t*, int) {};
   AliTRDclusterMI *  AddCluster();
-  void SetCluster(AliTRDclusterMI * cl, Float_t *pos, Int_t det, Float_t amp
-		  , Int_t *tracks, Float_t *sig, Int_t iType, Float_t sigmay,Float_t relpos);
+  virtual void    AddCluster(Double_t*, Int_t, Double_t, Int_t*, Double_t*, Int_t) { };
+  void SetCluster(AliTRDclusterMI * cl, Double_t *pos, Int_t det, Double_t amp
+		  , Int_t *tracks, Double_t *sig, Int_t iType, Double_t sigmay,Double_t relpos);
  protected:
 
  private:
   //  AliTRDclusterizerMI &operator=(const AliTRDclusterizerMI &c){;}
   //AliTRDclusterizerMI(const AliTRDclusterizerMI &c){;}
   TObjArray * fClusterContainer;
-  virtual Float_t  Unfold(Float_t eps, Int_t plane, Float_t *padSignal);
+  virtual Double_t Unfold(Double_t eps, Int_t plane, Double_t *padSignal);
 
   ClassDef(AliTRDclusterizerMI,1)           // TRD-Cluster finder, slow simulator
+
 };
 
 #endif

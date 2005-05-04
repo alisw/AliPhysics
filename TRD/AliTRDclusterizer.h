@@ -35,20 +35,20 @@ class AliTRDclusterizer : public TNamed {
   virtual Bool_t  OpenOutput();
   virtual Bool_t  MakeClusters() = 0;
   virtual Bool_t  WriteClusters(Int_t det);
-  virtual void     SetParameter(AliTRDparameter *par)      { fPar           = par; };
-  void     SetVerbose(Int_t v = 1)                 { fVerbose       = v;   };
+  virtual void    SetParameter(AliTRDparameter *par)      { fPar           = par; };
+  void            SetVerbose(Int_t v = 1)                 { fVerbose       = v;   };
 
-  AliTRDparameter *GetParameter()                    const { return fPar;          };
+  AliTRDparameter *GetParameter()                   const { return fPar;          };
 
   TObjArray*      RecPoints() {if (!fRecPoints) fRecPoints = new TObjArray(400); return fRecPoints;}
-  virtual void    AddCluster(Float_t *pos, Int_t det, Float_t amp, Int_t *tracks
-			     , Float_t *sig, Int_t iType);
+  virtual void    AddCluster(Double_t *pos, Int_t det, Double_t amp, Int_t *tracks
+			   , Double_t *sig, Int_t iType);
   void            ResetRecPoints() {if (fRecPoints) fRecPoints->Delete();}
 
 
  protected:
 
-  AliRunLoader * fRunLoader;       //! Run Loader
+  AliRunLoader    *fRunLoader;     //! Run Loader
   
   TTree           *fClusterTree;   //! Tree with the cluster
   AliTRDparameter *fPar;           //  TRD digitization parameter object

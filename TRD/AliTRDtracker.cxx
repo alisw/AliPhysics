@@ -29,6 +29,7 @@
 
 #include "AliTRDgeometry.h"
 #include "AliTRDparameter.h"
+#include "AliTRDpadPlane.h"
 #include "AliTRDgeometryFull.h"
 #include "AliTRDcluster.h" 
 #include "AliTRDtrack.h"
@@ -140,7 +141,6 @@ AliTRDtracker::AliTRDtracker(const TFile *geomfile):AliTracker()
 
   savedir->cd();  
 
-
   //  fGeom->SetT0(fTzero);
 
   fNclusters = 0;
@@ -158,7 +158,8 @@ AliTRDtracker::AliTRDtracker(const TFile *geomfile):AliTracker()
     }
   }
 
-  Float_t tiltAngle = TMath::Abs(fPar->GetTiltingAngle()); 
+  AliTRDpadPlane *padPlane = fPar->GetPadPlane(0,0);
+  Float_t tiltAngle = TMath::Abs(padPlane->GetTiltingAngle()); 
   if(tiltAngle < 0.1) {
     fNoTilt = kTRUE;
   }
@@ -218,6 +219,7 @@ AliTRDtracker::~AliTRDtracker()
   for(Int_t geomS = 0; geomS < kTrackingSectors; geomS++) {
     delete fTrSec[geomS];
   }
+
 }   
 
 //_____________________________________________________________________
@@ -1938,6 +1940,8 @@ AliTRDtracker::AliTRDtrackingSector::AliTRDtrackingSector(AliTRDgeometry* geo, I
   // AliTRDtrackingSector Constructor
   //
 
+  AliTRDpadPlane *padPlane = 0;
+
   fGeom = geo;
   fPar = par;
   fGeomSector = gs;
@@ -2093,11 +2097,18 @@ AliTRDtracker::AliTRDtrackingSector::AliTRDtrackingSector(AliTRDgeometry* geo, I
     }
 
     ymax          = fGeom->GetChamberWidth(plane)/2.;
-    ymaxsensitive = (fPar->GetColPadSize(plane)*fPar->GetColMax(plane)-4)/2.;
+    //
+    // Modidified for new pad plane class, 22.04.05 (C.B.)
+    // ymaxsensitive = (fPar->GetColPadSize(plane)*fPar->GetColMax(plane)-4)/2.;
+    padPlane = fPar->GetPadPlane(plane,0);
+    ymaxsensitive = (padPlane->GetColSize(1)*padPlane->GetNcols()-4)/2.;
     
     for(Int_t ch = 0; ch < kNchambers; ch++) {
       zmax[ch] = fGeom->GetChamberLength(plane,ch)/2;
-      Float_t pad = fPar->GetRowPadSize(plane,ch,0);
+      //
+      // Modidified for new pad plane class, 22.04.05 (C.B.)
+      //Float_t pad = fPar->GetRowPadSize(plane,ch,0);
+      Float_t pad = padPlane->GetRowSize(1);
       Float_t row0 = fPar->GetRow0(plane,ch,0);
       Int_t nPads = fPar->GetRowMax(plane,ch,0);
       zmaxsensitive[ch] = Float_t(nPads)*pad/2.;      
@@ -2539,7 +2550,8 @@ Double_t AliTRDtracker::GetTiltFactor(const AliTRDcluster* c) {
 //  Returns correction factor for tilted pads geometry 
 //
 
-  Double_t h01 = sin(TMath::Pi() / 180.0 * fPar->GetTiltingAngle());
+  AliTRDpadPlane *padPlane = fPar->GetPadPlane(0,0);
+  Double_t h01 = sin(TMath::Pi() / 180.0 * padPlane->GetTiltingAngle());
   Int_t det = c->GetDetector();    
   Int_t plane = fGeom->GetPlane(det);
 

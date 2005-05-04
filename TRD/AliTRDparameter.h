@@ -13,7 +13,9 @@
 
 #include "TNamed.h"
 
+class TObjArray;
 class AliTRDgeometry;
+class AliTRDpadPlane;
 
 class AliTRDparameter : public TNamed {
 
@@ -31,16 +33,13 @@ class AliTRDparameter : public TNamed {
   virtual void     Init();
   virtual void     ReInit();
  
-  virtual void     SetNRowPad();
-  virtual void     SetNRowPad(Int_t p, Int_t c, Int_t npad);
-  virtual void     SetColPadSize(Int_t p, Float_t s);
   virtual void     SetSamplingFrequency(Float_t freq)             { fSamplingFrequency = freq;
                                                                     ReInit();                   };
   virtual void     SetDriftVelocity(Float_t vd)                   { fDriftVelocity     = vd;
                                                                     SampleTimeStruct();         };
   virtual void     SetExpandTimeBin(Int_t nbefore, Int_t nafter)
                                                                   { fTimeBefore = nbefore;
-                                                                    fTimeAfter  = nafter; };
+                                                                    fTimeAfter  = nafter;       };
 
   virtual void     SetGasGain(Float_t gasgain)                    { fGasGain        = gasgain;  };
   virtual void     SetNoise(Float_t noise)                        { fNoise          = noise;    };
@@ -63,7 +62,6 @@ class AliTRDparameter : public TNamed {
   virtual void     SetNexponential(Int_t nexp)                    { fTCnexp         = nexp;     };
   virtual void     SetPadCoupling(Float_t v)                      { fPadCoupling    = v;        };
   virtual void     SetTimeCoupling(Float_t v)                     { fTimeCoupling   = v;        };
-  virtual void     SetTiltingAngle(Float_t v);
 
   virtual void     SetLUT(Int_t lutOn = 1)                        { fLUTOn          = lutOn;    };
   virtual void     SetClusMaxThresh(Int_t thresh)                 { fClusMaxThresh  = thresh;   };
@@ -71,24 +69,13 @@ class AliTRDparameter : public TNamed {
 
   virtual void     SetAnodeWireOffset(Float_t offset = 0.25)      { fAnodeWireOffset = offset;};
   
-          Int_t    GetRowMax(Int_t p, Int_t c, Int_t s)     
-                                                            const { return fRowMax[p][c][s]; };
-          Int_t    GetColMax(Int_t p)                       const { return fColMax[p];       };
-          Int_t    GetTimeMax()                             const { return fTimeMax;         };
-          Int_t    GetTimeBefore()                          const { return fTimeBefore;      }; 
-          Int_t    GetTimeAfter()                           const { return fTimeAfter;       }; 
+          Int_t    GetTimeMax()                             const { return fTimeMax;           };
+          Int_t    GetTimeBefore()                          const { return fTimeBefore;        }; 
+          Int_t    GetTimeAfter()                           const { return fTimeAfter;         }; 
           Int_t    GetTimeTotal()                           const { return fTimeMax 
                                                                          + fTimeBefore 
-                                                                         + fTimeAfter; };
-
-          Float_t  GetRow0(Int_t p, Int_t c, Int_t s)       
-                                                            const { return fRow0[p][c][s]; };
-          Float_t  GetCol0(Int_t p)                         const { return fCol0[p];       };
-          Float_t  GetTime0(Int_t p)                        const { return fTime0[p];      };
-
-          Float_t  GetRowPadSize(Int_t p, Int_t c, Int_t s) 
-                                                            const { return fRowPadSize[p][c][s]; };
-          Float_t  GetColPadSize(Int_t p)                   const { return fColPadSize[p];       };
+                                                                         + fTimeAfter;         };
+          Float_t  GetTime0(Int_t p)                        const { return fTime0[p];          };
 
           Float_t  GetGasGain()                             const { return fGasGain;           };
           Float_t  GetNoise()                               const { return fNoise;             };
@@ -110,13 +97,18 @@ class AliTRDparameter : public TNamed {
           Float_t  GetLorentzFactor()                       const { return fLorentzFactor;     };
           Float_t  GetAnodeWireOffset()                     const { return fAnodeWireOffset;   };
           Int_t    GetTCnexp()                              const { return fTCnexp;            };
-          Float_t  GetTiltingAngle() const;
   virtual Float_t  GetDiffusionL(Float_t vd, Float_t b);
   virtual Float_t  GetDiffusionT(Float_t vd, Float_t b);
   virtual Float_t  GetOmegaTau(Float_t vd, Float_t b);
 
   virtual Int_t    GetClusMaxThresh()                       const { return fClusMaxThresh; };
   virtual Int_t    GetClusSigThresh()                       const { return fClusSigThresh; };
+
+  virtual AliTRDpadPlane *GetPadPlane(Int_t p, Int_t c) const;
+          Int_t    GetRowMax(Int_t p, Int_t c, Int_t /*s*/) const;
+          Int_t    GetColMax(Int_t p) const;
+          Double_t GetRow0(Int_t p, Int_t c, Int_t /*s*/) const;
+          Double_t GetCol0(Int_t p) const;
 
           void     PrintDriftVelocity();
 
@@ -130,32 +122,23 @@ class AliTRDparameter : public TNamed {
           Bool_t   TCOn()                                   const { return fTCOn;          };
           Bool_t   LUTOn()                                  const { return fLUTOn;         };
 
-  virtual Int_t    Diffusion(Float_t driftlength, Float_t *xyz);
-  virtual Int_t    ExB(Float_t driftlength, Float_t *xyz) const;  
-  virtual Float_t  Col0Tilted(Float_t col0, Float_t rowOffset, Int_t plane);
-  virtual Int_t    PadResponse(Float_t signal, Float_t dist, Int_t plane, Float_t *pad) const;
-  virtual Float_t  CrossTalk(Float_t time) const; 
-  virtual Float_t  TimeResponse(Float_t time) const;  
-  virtual Float_t  TimeStruct(Float_t time, Float_t z) const;  
-  virtual Double_t LUTposition(Int_t iplane, Double_t ampL, Double_t ampC, Double_t ampR) const;
+  virtual Int_t     Diffusion(Double_t driftlength, Double_t *xyz);
+  virtual Int_t     ExB(Double_t driftlength, Double_t *xyz) const;  
+  virtual Int_t     PadResponse(Double_t signal, Double_t dist, Int_t plane, Double_t *pad) const;
+  virtual Double_t  CrossTalk(Double_t time) const; 
+  virtual Double_t  TimeResponse(Double_t time) const;  
+  virtual Double_t  TimeStruct(Double_t time, Double_t z) const;  
+  virtual Double_t  LUTposition(Int_t iplane, Double_t ampL, Double_t ampC, Double_t ampR) const;
 
  protected:
 
   AliTRDgeometry      *fGeo;                                //! TRD geometry       
+  TObjArray           *fPadPlaneArray;                      //  Array of pad plane objects
 
-  // Pad plane geometry
-  Int_t                fRowMax[kNplan][kNcham][kNsect];     //  Number of pad-rows
-  Int_t                fColMax[kNplan];                     //  Number of pad-columns
   Int_t                fTimeMax;                            //  Number of timebins in the drift region
   Int_t                fTimeBefore;                         //  Number of timebins before the drift region
-  Int_t                fTimeAfter;                          //  Number of timebins after the drift region
-
-  Float_t              fRow0[kNplan][kNcham][kNsect];       //  Row-position of pad 0
-  Float_t              fCol0[kNplan];                       //  Column-position of pad 0
   Float_t              fTime0[kNplan];                      //  Time-position of pad 0
-
-  Float_t              fRowPadSize[kNplan][kNcham][kNsect]; //  Pad size in z-direction
-  Float_t              fColPadSize[kNplan];                 //  Pad size in rphi-direction
+  Int_t                fTimeAfter;                          //  Number of timebins after the drift region
 
   // Digitization parameter
   Float_t              fField;                              //  Magnetic field
@@ -200,7 +183,6 @@ class AliTRDparameter : public TNamed {
   Float_t              fSamplingFrequency;                  //  Sampling Frequency in MHz
   Float_t              fPadCoupling;                        //  Pad coupling factor
   Float_t              fTimeCoupling;                       //  Time coupling factor (image charge of moving ions)
-  Float_t              fTiltingAngle;                       //  Tilting angle of the readout pads
 
   // Clusterization parameter
   Int_t                fClusMaxThresh;                      //  Threshold value for cluster maximum
@@ -219,7 +201,7 @@ class AliTRDparameter : public TNamed {
   virtual void         FillLUT();
   virtual void         SampleTimeStruct();
 
-  ClassDef(AliTRDparameter,5)                               //  TRD parameter class
+  ClassDef(AliTRDparameter,6)                               //  TRD parameter class
 
 };
 

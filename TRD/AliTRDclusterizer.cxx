@@ -261,8 +261,8 @@ Bool_t AliTRDclusterizer::WriteClusters(Int_t det)
 
 
 //_____________________________________________________________________________
-void AliTRDclusterizer::AddCluster(Float_t *pos, Int_t det, Float_t amp
-				   , Int_t *tracks, Float_t *sig, Int_t iType)
+void AliTRDclusterizer::AddCluster(Double_t *pos, Int_t det, Double_t amp
+				 , Int_t *tracks, Double_t *sig, Int_t iType)
 {
   //
   // Add a cluster for the TRD

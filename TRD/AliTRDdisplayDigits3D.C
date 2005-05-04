@@ -150,16 +150,16 @@ Int_t AliTRDdisplayDigits3D(Int_t event = 0, Int_t thresh = 2
 
             if (amp > thresh) {
           
-              Float_t glb[3];
-              Float_t loc[3];
+              Double_t glb[3];
+              Double_t loc[3];
 
               loc[0] = row;
               loc[1] = col;
               loc[2] = time;
               geo->Local2Global(idet,loc,glb,par);
-              Float_t x = glb[0];
-              Float_t y = glb[1];
-              Float_t z = glb[2];
+              Double_t x = glb[0];
+              Double_t y = glb[1];
+              Double_t z = glb[2];
 
               if      (type == 1) {
                 pmSignal->SetPoint(isignal,x,y,z);

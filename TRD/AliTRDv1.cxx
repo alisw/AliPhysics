@@ -504,7 +504,7 @@ void AliTRDv1::StepManagerErmilova()
   Int_t    qTot;
 
   Float_t  hits[3];
-  Double_t  random[1];
+  Double_t random[1];
   Float_t  charge;
   Float_t  aMass;
 
@@ -587,7 +587,7 @@ void AliTRDv1::StepManagerErmilova()
       cIdChamber[0] = cIdCurrent[2];
       cIdChamber[1] = cIdCurrent[3];
       Int_t idChamber = (atoi(cIdChamber) % kNdetsec);
-      cha = ((Int_t) idChamber / kNplan);
+      cha = kNcham - ((Int_t) idChamber / kNplan) - 1;
       pla = ((Int_t) idChamber % kNplan);
 
       // Check on selected volumes
@@ -760,7 +760,7 @@ void AliTRDv1::StepManagerFixedStep()
   cIdChamber[0] = cIdCurrent[2];
   cIdChamber[1] = cIdCurrent[3];
   Int_t idChamber = (atoi(cIdChamber) % kNdetsec);
-  cha = ((Int_t) idChamber / kNplan);
+  cha = kNcham - ((Int_t) idChamber / kNplan) - 1;
   pla = ((Int_t) idChamber % kNplan);
 
   // Check on selected volumes
