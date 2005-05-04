@@ -1,4 +1,4 @@
-SRCS= AliTRDclusterizerV0.cxx
+SRCS=
 
 HDRS= $(SRCS:.cxx=.h)                
 
