@@ -184,7 +184,7 @@ ABSO 49 1.e-3 1.e-2 1.e-3 1.e-3
 * unshielded
 *ABSO 10 1.e-4 1.e-4 1.e-3 2.e-4 1.e-4 1.e-4 1.e-4
 * shielded
-*ABSO 20 1.e-4 1.e-4 1.e-3 2.e-4 1.e-4 1.e-4 1.e-4
+*ABSO 20 1.e-3 1.e-2 1.e-3 2.e-3 
 * very shielded
 *ABSO 50 1.e-3 1.e-2 1.e-3 1.e-3
 
@@ -193,7 +193,7 @@ ABSO 49 1.e-3 1.e-2 1.e-3 1.e-3
 * unshielded
 *ABSO 11 1.e-4 1.e-4 1.e-3 2.e-4 1.e-4 1.e-4 1.e-4
 * shielded
-*ABSO 21 1.e-4 1.e-4 1.e-3 2.e-4 1.e-4 1.e-4 1.e-4
+*ABSO 21 1.e-3 1.e-2 1.e-3 2.e-3 
 * very shielded
 *ABSO 51 1.e-3 1.e-2 1.e-3 1.e-3
 
@@ -202,18 +202,18 @@ ABSO 49 1.e-3 1.e-2 1.e-3 1.e-3
 * unshielded
 ABSO 12 1.e-4 1.e-4 1.e-3 2.e-4 1.e-4 1.e-4 1.e-4
 * shielded
-ABSO 32 1.e-4 1.e-4 1.e-3 2.e-4 1.e-4 1.e-4 1.e-4
+ABSO 32 1.e-3 1.e-2 1.e-3 2.e-3 
 * very shielded
-ABSO 52 1.e-4 1.e-3 1.e-3 1.e-3
+ABSO 52 1.e-3 1.e-2 1.e-3 1.e-3
 
 * LEAD
 * ^^^^
 * unshielded
 ABSO 13 1.e-4 1.e-4 1.e-3 1.e-4 1.e-4 1.e-4 1.e-4
 * shielded
-ABSO 33 1.e-4 1.e-4 1.e-3 1.e-4 1.e-4 1.e-4 1.e-4
+ABSO 33 1.e-3 1.e-2 1.e-3 1.e-3 
 * very shielded
-ABSO 53 1.e-4 1.e-3 1.e-3 1.e-3
+ABSO 53 1.e-3 1.e-2 1.e-3 1.e-3
 
 * Air
 * ^^^
@@ -222,7 +222,7 @@ ABSO 15 1.e-4 1.e-4 1.e-3 1.e-4 1.e-4 1.e-4 1.e-4
 * shielded
 ABSO 35 1.e-3 1.e-2 1.e-3 1.e-3
 * very shielded
-ABSO 55 1.e-4 1.e-3 1.e-3 1.e-3
+ABSO 55 1.e-3 1.e-2 1.e-3 1.e-3
 
 * VACUUM
 * ^^^^^^
@@ -231,7 +231,7 @@ ABSO 16 1.e-4 1.e-4 1.e-3 1.e-4 1.e-4 1.e-4 1.e-4
 * shielded
 ABSO 36 1.e-3 1.e-2 1.e-3 1.e-3
 * very shielded
-ABSO 56 1.e-4 1.e-3 1.e-3 1.e-3
+ABSO 56 1.e-3 1.e-2 1.e-3 1.e-3
 
 * CONCRETE
 * ^^^^^^^^
@@ -241,7 +241,7 @@ ABSO 17 1.e-4 1.e-4 1.e-3 2.e-4 1.e-4 1.e-4 1.e-4 -1.    -1.   -1.  -1   -1   -1
 * shielded
 ABSO 37 1.e-3 1.e-2 1.e-3 1.e-3
 * very shielded
-ABSO 57 1.e-4 1.e-2 1.e-3 1.e-3
+ABSO 57 1.e-3 1.e-2 1.e-3 1.e-3
 
 * POLY CH_2
 * ^^^^^^^^^
@@ -250,7 +250,7 @@ ABSO 18 1.e-4 1.e-4 1.e-3 2.e-4 1.e-4 1.e-4 1.e-4
 * shielded
 ABSO 38 1.e-3 1.e-2 1.e-3 1.e-3
 * very shielded
-ABSO 58 1.e-4 1.e-2 1.e-3 1.e-3
+ABSO 58 1.e-3 1.e-2 1.e-3 1.e-3
 
 * STEEL
 * ^^^^^
@@ -259,7 +259,7 @@ ABSO 19 1.e-4 1.e-4 1.e-3 1.e-4 1.e-4 1.e-4 1.e-4
 * shielded
 ABSO 39 1.e-3 1.e-2 1.e-3 1.e-3
 * very shielded
-ABSO 59 1.e-4 1.e-2 1.e-3 1.e-3
+ABSO 59 1.e-3 1.e-2 1.e-3 1.e-3
 
 * Ni-W-Cu
 * ^^^^^^^
@@ -268,7 +268,7 @@ ABSO 21 1.e-4 1.e-4 1.e-3 1.e-4 1.e-4 1.e-4 1.e-4
 * shielded
 ABSO 41 1.e-3 1.e-2 1.e-3 1.e-3
 * very shielded
-ABSO 61 1.e-4 1.e-2 1.e-3 1.e-3
+ABSO 61 1.e-3 1.e-2 1.e-3 1.e-3
 
 * Insulation Powder
 * ^^^^^^^^^^^^^^^^^
@@ -277,7 +277,7 @@ ABSO 14 1.e-4 1.e-4 1.e-3 1.e-4 1.e-4 1.e-4 1.e-4
 * shielded
 ABSO 34 1.e-3 1.e-2 1.e-3 1.e-3
 * very shielded
-ABSO 54 1.e-4 1.e-2 1.e-3 1.e-3
+ABSO 54 1.e-3 1.e-2 1.e-3 1.e-3
 
 * Beam Shield SHIL
 * ================
@@ -325,7 +325,7 @@ SHIL 13 1.e-4 1.e-4 1.e-3 1.e-4 1.e-3 1.e-3 1.e-3
 * shielded
 SHIL 33 1.e-3 1.e-2 1.e-3 1.e-3
 * very shielded
-SHIL 53 1.e-4 1.e-2 1.e-3 1.e-3
+SHIL 53 1.e-3 1.e-2 1.e-3 1.e-3
 
 * Air
 * ^^^
@@ -334,7 +334,7 @@ SHIL 15 1.e-4 1.e-4 1.e-3 1.e-4 1.e-3 1.e-3 1.e-3
 * shielded
 SHIL 35 1.e-3 1.e-2 1.e-3 1.e-3
 * very shielded
-SHIL 55 1.e-4 1.e-2 1.e-3 1.e-3
+SHIL 55 1.e-3 1.e-2 1.e-3 1.e-3
 
 * VACUUM
 * ^^^^^^
@@ -343,7 +343,7 @@ SHIL 16 1.e-4 1.e-4 1.e-3 1.e-4 1.e-3 1.e-3 1.e-3
 * shielded
 SHIL 36 1.e-3 1.e-2 1.e-3 1.e-3
 * very shielded
-SHIL 56 1.e-4 1.e-2 1.e-3 1.e-3
+SHIL 56 1.e-3 1.e-2 1.e-3 1.e-3
 
 * STEEL
 * ^^^^^
@@ -352,7 +352,7 @@ SHIL 19 1.e-4 1.e-4 1.e-3 1.e-4 1.e-3 1.e-3 1.e-3
 * shielded
 SHIL 39 1.e-3 1.e-2 1.e-3 1.e-3
 * very shielded
-SHIL 59 1.e-4 1.e-2 1.e-3 1.e-3
+SHIL 59 1.e-3 1.e-2 1.e-3 1.e-3
 
 * Ni-W-Cu
 * ^^^^^^^
@@ -361,7 +361,7 @@ SHIL 21 1.e-4 1.e-4 1.e-3 1.e-4 1.e-3 1.e-3 1.e-3
 * shielded
 SHIL 41 1.e-3 1.e-2 1.e-3 1.e-3
 * very shielded
-SHIL 61 1.e-4 1.e-2 1.e-3 1.e-3
+SHIL 61 1.e-3 1.e-2 1.e-3 1.e-3
 
 * Insulation Powder
 * ^^^^^^^^^^^^^^^^^
@@ -370,7 +370,7 @@ SHIL 14 1.e-4 1.e-4 1.e-3 1.e-4 1.e-4 1.e-4 1.e-4
 * shielded
 SHIL 34 1.e-3 1.e-2 1.e-3 1.e-3
 * very shielded
-SHIL 54 1.e-4 1.e-2 1.e-3 1.e-3
+SHIL 54 1.e-3 1.e-2 1.e-3 1.e-3
 
 
 * L3 Magnet MAG
