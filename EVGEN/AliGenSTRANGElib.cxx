@@ -223,13 +223,17 @@ ClassImp(AliGenSTRANGElib)
   return ka*TMath::Exp(-ex);
 }
 
- Int_t AliGenSTRANGElib::IpLambda(TRandom *)
+ Int_t AliGenSTRANGElib::IpLambda(TRandom *ran)
 {
 //                 particle composition
 //                 generation of fixed type of particle
 //
-
-        return  3122; //   Lambda 
+    Float_t random = ran->Rndm();
+    if (random < 0.5) {       
+      return  3122;   //   Lambda 
+    } else {  
+      return -3122;   //   Anti-Lambda
+    }
 }
 // End Lambda
 //============================================================================
@@ -258,14 +262,17 @@ ClassImp(AliGenSTRANGElib)
   return ka*TMath::Exp(-ex);
 }
 
- Int_t AliGenSTRANGElib::IpXiMinus(TRandom *)
+ Int_t AliGenSTRANGElib::IpXiMinus(TRandom *ran)
 {
 //                 particle composition
 //                 generation of fixed type of particle
 //
-
-        return  3312; //   Xi- (only)
-//        return  -3312; //   Xi+
+    Float_t random = ran->Rndm();
+    if (random < 0.5) {       
+      return  3312;   //   Xi- 
+    } else {  
+      return -3312;   //   Xi+
+    }
 }
 // End Ximinus
 //============================================================================
@@ -294,13 +301,18 @@ ClassImp(AliGenSTRANGElib)
   return ka*TMath::Exp(-ex);
 }
 
- Int_t AliGenSTRANGElib::IpOmegaMinus(TRandom *)
+ Int_t AliGenSTRANGElib::IpOmegaMinus(TRandom * ran)
 {
 //                 particle composition
 //                 generation of fixed type of particle
 //
 
-        return  3334; //   Omega- 
+    Float_t random = ran->Rndm();
+    if (random < 0.5) {       
+      return  3334;   //   Omega- 
+    } else {  
+      return -3334;   //   Omega+
+    }
 }
 // End Omegaminus
 //============================================================================
