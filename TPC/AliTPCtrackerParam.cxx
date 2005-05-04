@@ -60,28 +60,31 @@
 //
 // *
 //------- Root headers --------
+#include <Riostream.h>
+#include <TCanvas.h>
 #include <TChain.h>
 #include <TF1.h>
 #include <TGraph.h>
 #include <TGraphErrors.h>
+#include <TH2F.h>
 #include <TLegend.h>
 #include <TLine.h>
-#include <TNtuple.h>
+#include <TParticle.h>
+#include <TStyle.h>
 #include <TSystem.h>
-#include <TH2F.h>
 //------ AliRoot headers ------
-#include "alles.h"
 #include "AliGausCorr.h"
 #include "AliKalmanTrack.h"
+#include "AliMC.h"
 #include "AliMagF.h"
-#include "AliMagFCM.h"
+#include "AliRun.h"
 #include "AliRunLoader.h"
-#include "AliTPCLoader.h"
+#include "AliTPC.h"
+#include "AliTPCParamSR.h"
 #include "AliTPCkineGrid.h"
 #include "AliTPCtrack.h"
-#include "AliTrackReference.h"
 #include "AliTPCtrackerParam.h"
-#include "AliMC.h"
+#include "AliTrackReference.h"
 //-----------------------------
 
 Double_t RegFunc(Double_t *x,Double_t *par) {
@@ -1888,20 +1891,20 @@ void AliTPCtrackerParam::MakeDataBase() {
 
   // create the trees for cov. matrices
   // trees for pions
-  TTree *covTreePi_ = NULL;
-  covTreePi_ = new TTree[knBinsPi]; 
+  TTree *covTreePi1 = NULL;
+  covTreePi1 = new TTree[knBinsPi]; 
   // trees for kaons
-  TTree *covTreeKa_ = NULL;
-  covTreeKa_ = new TTree[knBinsKa]; 
+  TTree *covTreeKa1 = NULL;
+  covTreeKa1 = new TTree[knBinsKa]; 
   // trees for protons
-  TTree *covTreePr_ = NULL;
-  covTreePr_ = new TTree[knBinsPr]; 
+  TTree *covTreePr1 = NULL;
+  covTreePr1 = new TTree[knBinsPr]; 
   // trees for electrons
-  TTree *covTreeEl_ = NULL;
-  covTreeEl_ = new TTree[knBinsEl]; 
+  TTree *covTreeEl1 = NULL;
+  covTreeEl1 = new TTree[knBinsEl]; 
   // trees for muons
-  TTree *covTreeMu_ = NULL;
-  covTreeMu_ = new TTree[knBinsMu]; 
+  TTree *covTreeMu1 = NULL;
+  covTreeMu1 = new TTree[knBinsMu]; 
 
   Char_t hname[100], htitle[100];
   COVMATRIX covmat;
@@ -1910,32 +1913,32 @@ void AliTPCtrackerParam::MakeDataBase() {
   for(Int_t i=0; i<knBinsPi; i++) {
     sprintf(hname,"CovTreePi_bin%d",i);
     sprintf(htitle,"Tree with cov matrix elements for bin %d",i);
-    covTreePi_[i].SetName(hname); covTreePi_[i].SetTitle(htitle);
-    covTreePi_[i].Branch("matrix",&covmat,"c00/D:c10:c11:c20:c21:c22:c30:c31:c32:c33:c40:c41:c42:c43:c44",5000000);
+    covTreePi1[i].SetName(hname); covTreePi1[i].SetTitle(htitle);
+    covTreePi1[i].Branch("matrix",&covmat,"c00/D:c10:c11:c20:c21:c22:c30:c31:c32:c33:c40:c41:c42:c43:c44",5000000);
   }
   for(Int_t i=0; i<knBinsKa; i++) {
     sprintf(hname,"CovTreeKa_bin%d",i);
     sprintf(htitle,"Tree with cov matrix elements for bin %d",i);
-    covTreeKa_[i].SetName(hname); covTreeKa_[i].SetTitle(htitle);
-    covTreeKa_[i].Branch("matrix",&covmat,"c00/D:c10:c11:c20:c21:c22:c30:c31:c32:c33:c40:c41:c42:c43:c44",1000000);
+    covTreeKa1[i].SetName(hname); covTreeKa1[i].SetTitle(htitle);
+    covTreeKa1[i].Branch("matrix",&covmat,"c00/D:c10:c11:c20:c21:c22:c30:c31:c32:c33:c40:c41:c42:c43:c44",1000000);
   }
   for(Int_t i=0; i<knBinsPr; i++) {
     sprintf(hname,"CovTreePr_bin%d",i);
     sprintf(htitle,"Tree with cov matrix elements for bin %d",i);
-    covTreePr_[i].SetName(hname); covTreePr_[i].SetTitle(htitle);
-    covTreePr_[i].Branch("matrix",&covmat,"c00/D:c10:c11:c20:c21:c22:c30:c31:c32:c33:c40:c41:c42:c43:c44",1000000);
+    covTreePr1[i].SetName(hname); covTreePr1[i].SetTitle(htitle);
+    covTreePr1[i].Branch("matrix",&covmat,"c00/D:c10:c11:c20:c21:c22:c30:c31:c32:c33:c40:c41:c42:c43:c44",1000000);
   }
   for(Int_t i=0; i<knBinsEl; i++) {
     sprintf(hname,"CovTreeEl_bin%d",i);
     sprintf(htitle,"Tree with cov matrix elements for bin %d",i);
-    covTreeEl_[i].SetName(hname); covTreeEl_[i].SetTitle(htitle);
-    covTreeEl_[i].Branch("matrix",&covmat,"c00/D:c10:c11:c20:c21:c22:c30:c31:c32:c33:c40:c41:c42:c43:c44",1000000);
+    covTreeEl1[i].SetName(hname); covTreeEl1[i].SetTitle(htitle);
+    covTreeEl1[i].Branch("matrix",&covmat,"c00/D:c10:c11:c20:c21:c22:c30:c31:c32:c33:c40:c41:c42:c43:c44",1000000);
   }
   for(Int_t i=0; i<knBinsMu; i++) {
     sprintf(hname,"CovTreeMu_bin%d",i);
     sprintf(htitle,"Tree with cov matrix elements for bin %d",i);
-    covTreeMu_[i].SetName(hname); covTreeMu_[i].SetTitle(htitle);
-    covTreeMu_[i].Branch("matrix",&covmat,"c00/D:c10:c11:c20:c21:c22:c30:c31:c32:c33:c40:c41:c42:c43:c44",1000000);
+    covTreeMu1[i].SetName(hname); covTreeMu1[i].SetTitle(htitle);
+    covTreeMu1[i].Branch("matrix",&covmat,"c00/D:c10:c11:c20:c21:c22:c30:c31:c32:c33:c40:c41:c42:c43:c44",1000000);
   }
 
   /*  
@@ -2017,23 +2020,23 @@ void AliTPCtrackerParam::MakeDataBase() {
     // fill the tree
     switch (trkPdg) {
     case 211: // pions
-      covTreePi_[trkBin].Fill();
+      covTreePi1[trkBin].Fill();
       nPerBinPi[trkBin]++;
       break;
     case 321: // kaons
-      covTreeKa_[trkBin].Fill();
+      covTreeKa1[trkBin].Fill();
       nPerBinKa[trkBin]++;
       break;
     case 2212: // protons
-      covTreePr_[trkBin].Fill();
+      covTreePr1[trkBin].Fill();
       nPerBinPr[trkBin]++;
       break;
     case 11: // electrons
-      covTreeEl_[trkBin].Fill();
+      covTreeEl1[trkBin].Fill();
       nPerBinEl[trkBin]++;
       break;
     case 13: // muons
-      covTreeMu_[trkBin].Fill();
+      covTreeMu1[trkBin].Fill();
       nPerBinMu[trkBin]++;
       break;
     }
@@ -2051,23 +2054,23 @@ void AliTPCtrackerParam::MakeDataBase() {
   // store pions
   gDirectory->cd("/CovMatrices/Pions");
   fDBgridPi.SetName("DBgridPi"); fDBgridPi.Write();
-  for(Int_t i=0;i<knBinsPi;i++) covTreePi_[i].Write();
+  for(Int_t i=0;i<knBinsPi;i++) covTreePi1[i].Write();
   // store kaons
   gDirectory->cd("/CovMatrices/Kaons");
   fDBgridKa.SetName("DBgridKa"); fDBgridKa.Write();
-  for(Int_t i=0;i<knBinsKa;i++) covTreeKa_[i].Write();
+  for(Int_t i=0;i<knBinsKa;i++) covTreeKa1[i].Write();
   // store kaons
   gDirectory->cd("/CovMatrices/Protons");
   fDBgridPr.SetName("DBgridPr"); fDBgridPr.Write();
-  for(Int_t i=0;i<knBinsPr;i++) covTreePr_[i].Write();
+  for(Int_t i=0;i<knBinsPr;i++) covTreePr1[i].Write();
   // store electrons
   gDirectory->cd("/CovMatrices/Electrons");
   fDBgridEl.SetName("DBgridEl"); fDBgridEl.Write();
-  for(Int_t i=0;i<knBinsEl;i++) covTreeEl_[i].Write();
+  for(Int_t i=0;i<knBinsEl;i++) covTreeEl1[i].Write();
   // store kaons
   gDirectory->cd("/CovMatrices/Muons");
   fDBgridMu.SetName("DBgridMu"); fDBgridMu.Write();
-  for(Int_t i=0;i<knBinsMu;i++) covTreeMu_[i].Write();
+  for(Int_t i=0;i<knBinsMu;i++) covTreeMu1[i].Write();
 
   dbfile->Close();
   delete [] nPerBinPi;

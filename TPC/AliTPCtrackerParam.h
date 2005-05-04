@@ -6,14 +6,22 @@
 /* $Id$ */
 
 
-//-----------------------------------------------------------------------------
-//                    TPC Tracking Parameterization Class
-//
-//   Origin: Andrea Dainese, Padova - e-mail: andrea.dainese@pd.infn.it
-//
-//
-//
-//-----------------------------------------------------------------------------
+/////////////////////////////////////////////////////////////////////////
+//                                                                        
+// This class builds AliTPCtrack objects from generated tracks to feed    
+// ITS tracking (V2). The AliTPCtrack is built from its first hit in      
+// the TPC. The track is assigned a Kalman-like covariance matrix         
+// depending on its pT and pseudorapidity and track parameters are        
+// smeared according to this covariance matrix.                           
+// Output file contains sorted tracks, ready for matching with ITS.        
+//                                                                        
+// See implementation file for more details.  
+//                                  
+//                                                                        
+//  Origin: Andrea Dainese, Padova - e-mail: andrea.dainese@pd.infn.it     
+//                                                                        
+/////////////////////////////////////////////////////////////////////////
+
 
 //----- Root headers ---------
 class TTree;
@@ -30,21 +38,6 @@ class AliTPCtrackerParam:
   public TObject
 {
    
-  /////////////////////////////////////////////////////////////////////////
-  //                                                                        
-  // This class builds AliTPCtrack objects from generated tracks to feed    
-  // ITS tracking (V2). The AliTPCtrack is built from its first hit in      
-  // the TPC. The track is assigned a Kalman-like covariance matrix         
-  // depending on its pT and pseudorapidity and track parameters are        
-  // smeared according to this covariance matrix.                           
-  // Output file contains sorted tracks, ready for matching with ITS.        
-  //                                                                        
-  // See implementation file for more details.  
-  //                                  
-  //                                                                        
-  //  Origin: Andrea Dainese, Padova - e-mail: andrea.dainese@pd.infn.it     
-  //                                                                        
-  /////////////////////////////////////////////////////////////////////////
  public:
   AliTPCtrackerParam(Int_t coll=0, Double_t Bz=0.4, Int_t n=1,
 		     const char* evfoldname = AliConfig::GetDefaultEventFolderName());
@@ -83,7 +76,6 @@ class AliTPCtrackerParam:
     void AssignMass(Double_t mass) {SetMass(mass); return;}
     
   private:
-
   };
   //********* end of internal class ***********
 
@@ -126,6 +118,8 @@ class AliTPCtrackerParam:
   //******* end of internal class ****************
   
  private:
+  AliTPCtrackerParam & operator=(const AliTPCtrackerParam & );
+
   TString fEvFolderName;//! name of data folder
 
   Int_t           fNevents;     // number of events in the file to be processed
