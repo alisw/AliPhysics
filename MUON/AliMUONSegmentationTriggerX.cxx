@@ -295,7 +295,7 @@ void AliMUONSegmentationTriggerX::Draw(const char* opt)
   if (!strcmp(opt,"eventdisplay")) { 
       
     TNode *node, *nodeS;
-    char nameChamber[10], nameNode[11];
+    char nameChamber[10], nameNode[12];
     char nameSense1[10], nameSense2[10], nameSense3[10], nameSense4[10];
     
     TNode* top=gAlice->GetGeometry()->GetNode("alice"); 
