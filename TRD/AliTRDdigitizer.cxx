@@ -904,7 +904,7 @@ Bool_t AliTRDdigitizer::MakeDigits()
   	    // The distance of the electron to the center of the pad 
 	    // in units of pad width
             //Double_t dist = - colOffset / padPlane->GetColSize(colE);
-            Double_t dist = (0.5 * padPlane->GetRowSize(colE) - colOffset) 
+            Double_t dist = (0.5 * padPlane->GetColSize(colE) - colOffset) 
                           / padPlane->GetColSize(colE);
             if (!(fPar->PadResponse(signal,dist,plane,padSignal))) continue;
 	  }
