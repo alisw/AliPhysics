@@ -24,7 +24,6 @@
 #include <TRandom.h>
 
 #include "AliRun.h"
-#include "AliMagF.h"
 
 #include "AliTRDparameter.h"
 #include "AliTRDgeometryFull.h"
@@ -594,49 +593,49 @@ Double_t AliTRDparameter::TimeStruct(Double_t dist, Double_t z) const
   Int_t r2 = r1+1;
   if (r1<0)  r1 = 0;
   if (r1>37) r1 = 37;
-  const Int_t z1 = (Int_t)(100*z/2.5);
-  const Int_t z2 = z1+1;
+  const Int_t kz1 = (Int_t)(100*z/2.5);
+  const Int_t kz2 = kz1+1;
 
-  if (r1<0 || r1>37 || z1<0 || z1>10) {
+  if (r1<0 || r1>37 || kz1<0 || kz1>10) {
     printf("<AliTRDparameter::TimeStruct> Warning. Indices out of range: ");
-    printf("dist=%.2f, z=%.2f, r1=%d, z1=%d\n",dist,z,r1,z1);
+    printf("dist=%.2f, z=%.2f, r1=%d, kz1=%d\n",dist,z,r1,kz1);
   }
 
-  const Float_t y111 = fTimeStruct1[r1+38*z1];
-  const Float_t y221 = (r2 <= 37 && z2 <= 10) ? fTimeStruct1[r2+38*z2] : fTimeStruct1[37+38*10];
-  const Float_t y121 = (z2 <= 10)             ? fTimeStruct1[r1+38*z2] : fTimeStruct1[r1+38*10];
-  const Float_t y211 = (r2 <= 37)             ? fTimeStruct1[r2+38*z1] : fTimeStruct1[37+38*z1];
+  const Float_t ky111 = fTimeStruct1[r1+38*kz1];
+  const Float_t ky221 = (r2 <= 37 && kz2 <= 10) ? fTimeStruct1[r2+38*kz2] : fTimeStruct1[37+38*10];
+  const Float_t ky121 = (kz2 <= 10)             ? fTimeStruct1[r1+38*kz2] : fTimeStruct1[r1+38*10];
+  const Float_t ky211 = (r2 <= 37)             ? fTimeStruct1[r2+38*kz1] : fTimeStruct1[37+38*kz1];
 
   // 2D Interpolation, lower drift time map
-  const Float_t y11  = (y211-y111)*10*dist + y111 - (y211-y111)*r1;
-  const Float_t y21  = (y221-y121)*10*dist + y121 - (y221-y121)*r1;
+  const Float_t ky11  = (ky211-ky111)*10*dist + ky111 - (ky211-ky111)*r1;
+  const Float_t ky21  = (ky221-ky121)*10*dist + ky121 - (ky221-ky121)*r1;
 
-  const Float_t y112 = fTimeStruct2[r1+38*z1];
-  const Float_t y222 = (r2 <= 37 && z2 <= 10) ? fTimeStruct2[r2+38*z2] : fTimeStruct2[37+38*10];
-  const Float_t y122 = (z2 <= 10)             ? fTimeStruct2[r1+38*z2] : fTimeStruct2[r1+38*10];
-  const Float_t y212 = (r2 <= 37)             ? fTimeStruct2[r2+38*z1] : fTimeStruct2[37+38*z1];
+  const Float_t ky112 = fTimeStruct2[r1+38*kz1];
+  const Float_t ky222 = (r2 <= 37 && kz2 <= 10) ? fTimeStruct2[r2+38*kz2] : fTimeStruct2[37+38*10];
+  const Float_t ky122 = (kz2 <= 10)             ? fTimeStruct2[r1+38*kz2] : fTimeStruct2[r1+38*10];
+  const Float_t ky212 = (r2 <= 37)             ? fTimeStruct2[r2+38*kz1] : fTimeStruct2[37+38*kz1];
 
   // 2D Interpolation, larger drift time map
-  const Float_t y12  = (y212-y112)*10*dist + y112 - (y212-y112)*r1;
-  const Float_t y22  = (y222-y122)*10*dist + y122 - (y222-y122)*r1;
+  const Float_t ky12  = (ky212-ky112)*10*dist + ky112 - (ky212-ky112)*r1;
+  const Float_t ky22  = (ky222-ky122)*10*dist + ky122 - (ky222-ky122)*r1;
 
   // dist now is the drift distance to the anode wires (negative if electrons are
   // between anode wire plane and cathode pad plane)
   dist -= AliTRDgeometry::AmThick()/2.0;
 
   // Get the drift times for the drift velocities fVDlo and fVDhi
-  const Float_t tdrift1 =
-    ( TMath::Abs(dist)>0.005 || z>0.005 ) ? (y21-y11)*100*z/2.5+y11-(y21-y11)*z1 : 0.0;
-  const Float_t tdrift2 =
-    ( TMath::Abs(dist)>0.005 || z>0.005 ) ? (y22-y12)*100*z/2.5+y12-(y22-y12)*z1 : 0.0;
+  const Float_t ktdrift1 =
+    ( TMath::Abs(dist)>0.005 || z>0.005 ) ? (ky21-ky11)*100*z/2.5+ky11-(ky21-ky11)*kz1 : 0.0;
+  const Float_t ktdrift2 =
+    ( TMath::Abs(dist)>0.005 || z>0.005 ) ? (ky22-ky12)*100*z/2.5+ky12-(ky22-ky12)*kz1 : 0.0;
 
   // 1D Interpolation between the values at fVDlo and fVDhi
-  Float_t a = (tdrift2 - tdrift1) / (fVDhi - fVDlo);
-  Float_t b = tdrift2 - a * fVDhi;
+  Float_t a = (ktdrift2 - ktdrift1) / (fVDhi - fVDlo);
+  Float_t b = ktdrift2 - a * fVDhi;
 
 
   //printf("(%.2f, %.2f): %f, %f -> %f\n",
-  //	 dist+AliTRDgeometry::AmThick()/2.0, z, tdrift1, tdrift2, a*fDriftVelocity+b);
+  //	 dist+AliTRDgeometry::AmThick()/2.0, z, ktdrift1, ktdrift2, a*fDriftVelocity+b);
 
   return a * fDriftVelocity + b;
 

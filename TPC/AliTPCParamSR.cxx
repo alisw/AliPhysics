@@ -27,15 +27,13 @@
 //                                                                   //  
 ///////////////////////////////////////////////////////////////////////
 
-
-#include <Riostream.h>
+//#include <Riostream.h>
 #include <TMath.h>
-#include <TObject.h>
-#include <AliTPCParamSR.h>
+
 #include "AliTPCPRF2D.h"
+#include "AliTPCParamSR.h"
 #include "AliTPCRF1D.h"
 #include "TH1.h"
-
 
 ClassImp(AliTPCParamSR)
 static const  Int_t kMaxRows=600;
@@ -429,20 +427,20 @@ Int_t  AliTPCParamSR::CalcResponseFast(Float_t* xyz, Int_t * index, Int_t row)
     return -1;
   }
   
-  const Int_t padn =  500;
-  const Float_t fpadn =  500.;
-  const Int_t timen = 500;
-  const Float_t ftimen = 500.;
-  const Int_t padrn = 500;
-  const Float_t fpadrn = 500.;
+  const Int_t kpadn =  500;
+  const Float_t kfpadn =  500.;
+  const Int_t ktimen = 500;
+  const Float_t kftimen = 500.;
+  const Int_t kpadrn = 500;
+  const Float_t kfpadrn = 500.;
 
  
 
-  static Float_t prfinner[2*padrn][5*padn];  //pad divided by 50
-  static Float_t prfouter1[2*padrn][5*padn];  //prfouter division
-  static Float_t prfouter2[2*padrn][5*padn];
+  static Float_t prfinner[2*kpadrn][5*kpadn];  //pad divided by 50
+  static Float_t prfouter1[2*kpadrn][5*kpadn];  //prfouter division
+  static Float_t prfouter2[2*kpadrn][5*kpadn];
 
-  static Float_t rftime[5*timen];         //time division
+  static Float_t rftime[5*ktimen];         //time division
   static Int_t blabla=0;
   static Float_t zoffset=0;
   static Float_t zwidth=0;
@@ -460,22 +458,22 @@ Int_t  AliTPCParamSR::CalcResponseFast(Float_t* xyz, Int_t * index, Int_t row)
     zoffset = GetZOffset();
     zwidth  = fZWidth;
     zoffset2 = zoffset/zwidth;
-    for (Int_t i=0;i<5*timen;i++){
-      rftime[i] = fTimeRF->GetRF(((i-2.5*ftimen)/ftimen)*zwidth+zoffset);
+    for (Int_t i=0;i<5*ktimen;i++){
+      rftime[i] = fTimeRF->GetRF(((i-2.5*kftimen)/kftimen)*zwidth+zoffset);
     }
-    for (Int_t i=0;i<5*padn;i++){    
-      for (Int_t j=0;j<2*padrn;j++){
+    for (Int_t i=0;i<5*kpadn;i++){    
+      for (Int_t j=0;j<2*kpadrn;j++){
 	prfinner[j][i] =
-	  fInnerPRF->GetPRF((i-2.5*fpadn)/fpadn
-			    *fInnerPadPitchWidth,(j-fpadrn)/fpadrn*fInnerPadPitchLength);
+	  fInnerPRF->GetPRF((i-2.5*kfpadn)/kfpadn
+			    *fInnerPadPitchWidth,(j-kfpadrn)/kfpadrn*fInnerPadPitchLength);
 	prfouter1[j][i] =
-	  fOuter1PRF->GetPRF((i-2.5*fpadn)/fpadn
-			    *fOuterPadPitchWidth,(j-fpadrn)/fpadrn*fOuter1PadPitchLength);
+	  fOuter1PRF->GetPRF((i-2.5*kfpadn)/kfpadn
+			    *fOuterPadPitchWidth,(j-kfpadrn)/kfpadrn*fOuter1PadPitchLength);
 
 	//
 	prfouter2[j][i] =
-	  fOuter2PRF->GetPRF((i-2.5*fpadn)/fpadn
-			    *fOuterPadPitchWidth,(j-fpadrn)/fpadrn*fOuter2PadPitchLength);
+	  fOuter2PRF->GetPRF((i-2.5*kfpadn)/kfpadn
+			    *fOuterPadPitchWidth,(j-kfpadrn)/kfpadrn*fOuter2PadPitchLength);
       }
     }      
   } // the above is calculated only once
@@ -523,11 +521,11 @@ Int_t  AliTPCParamSR::CalcResponseFast(Float_t* xyz, Int_t * index, Int_t row)
     
   }
   // "normal"
-  Int_t apadrow = TMath::Nint((dpadrow-fpadrow)*fpadrn+fpadrn);
+  Int_t apadrow = TMath::Nint((dpadrow-fpadrow)*kfpadrn+kfpadrn);
   for (Int_t ipadrow = fpadrow; ipadrow<=lpadrow;ipadrow++){
-    if ( (apadrow<0) || (apadrow>=2*padrn)) 
+    if ( (apadrow<0) || (apadrow>=2*kpadrn)) 
       continue;
-    Int_t apad= TMath::Nint((dpad-fpad)*fpadn+2.5*fpadn);
+    Int_t apad= TMath::Nint((dpad-fpad)*kfpadn+2.5*kfpadn);
     for (Int_t ipad = fpad; ipad<=lpad;ipad++){
 	Float_t cweight;
 	if (index[1]<fNInnerSector)
@@ -539,7 +537,7 @@ Int_t  AliTPCParamSR::CalcResponseFast(Float_t* xyz, Int_t * index, Int_t row)
 	}
 
 	//	if (cweight<fResponseThreshold) continue;
-	Int_t atime = TMath::Nint((dtime-ftime)*ftimen+2.5*ftimen);
+	Int_t atime = TMath::Nint((dtime-ftime)*kftimen+2.5*kftimen);
 	for (Int_t itime = ftime;itime<=ltime;itime++){	
 	  Float_t cweight2 = cweight*rftime[atime];
 	  if (cweight2>fResponseThreshold) {
@@ -554,11 +552,11 @@ Int_t  AliTPCParamSR::CalcResponseFast(Float_t* xyz, Int_t * index, Int_t row)
 	      }
 	    
 	  }
-	  atime-=timen;
+	  atime-=ktimen;
 	}
-	apad-= padn;	
+	apad-= kpadn;	
     }
-    apadrow-=padrn;
+    apadrow-=kpadrn;
   }
   fCurrentMax=cindex;	
   return fCurrentMax;    
