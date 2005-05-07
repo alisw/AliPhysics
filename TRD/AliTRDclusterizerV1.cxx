@@ -162,6 +162,7 @@ Bool_t AliTRDclusterizerV1::MakeClusters()
     printf("<AliTRDclusterizerV1::MakeCluster> ");
     printf("Create the default parameter object.\n");
   }
+  fPar->Init();
 
   Float_t timeBinSize = fPar->GetDriftVelocity()
                       / fPar->GetSamplingFrequency();

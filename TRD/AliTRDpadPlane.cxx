@@ -245,7 +245,6 @@ AliTRDpadPlane::AliTRDpadPlane(Int_t p, Int_t c):TObject()
   //
   // Row direction
   //
-  if (fPadRow) delete [] fPadRow;
   fPadRow = new Double_t[fNrows];
   Double_t row = fGeo->GetChamberLength(p,0)
     	       + fGeo->GetChamberLength(p,1)
@@ -268,7 +267,6 @@ AliTRDpadPlane::AliTRDpadPlane(Int_t p, Int_t c):TObject()
   //
   // Column direction
   //
-  if (fPadCol) delete [] fPadCol;
   fPadCol = new Double_t[fNcols];
   Double_t col = fGeo->GetChamberWidth(p) / 2. 
                + fGeo->CroWid()

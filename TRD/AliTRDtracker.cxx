@@ -137,7 +137,7 @@ AliTRDtracker::AliTRDtracker(const TFile *geomfile):AliTracker()
     printf("The DEFAULT TRD parameter will be used\n");
     fPar = new AliTRDparameter();
   }
-  fPar->ReInit();
+  fPar->Init();
 
   savedir->cd();  
 
