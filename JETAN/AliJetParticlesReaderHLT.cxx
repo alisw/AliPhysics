@@ -18,7 +18,6 @@
 #include <AliESDtrack.h>
 #include <AliESDHLTtrack.h>
 #include <AliL3Track.h>
-#include <AliL3ITStrack.h>
 #include <AliL3Vertex.h>
 #include <AliKalmanTrack.h>
 #include <AliJetEventParticles.h>
@@ -149,17 +148,11 @@ Int_t AliJetParticlesReaderHLT::ReadESD(AliESD* esd)
     if(0&&fTrackerType){
 #if 0
       //kesdtrack->SetCharge(-kesdtrack->GetCharge());
-      try {
 	Double_t mom[3];
-	AliL3ITStrack l3(*kesdtrack,0);
-	if(!l3.GetPxPyPzAt(0,mom)) continue;
+	if(!kesdtrack->GetPxPyPzAt(0,mom)) continue;
 	px=mom[0];
 	py=mom[1];
 	pz=mom[2];
-      } catch (const Char_t *msg) {
-        //Warning("Clusters2Tracks",msg);
-        continue;
-      }
 #else
       AliL3Track l3;
       //if(!kesdtrack->ComesFromMainVertex()) continue;

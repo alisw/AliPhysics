@@ -324,7 +324,7 @@ void AliJetParticlesReaderESD::PrintESDtrack(const AliESDtrack *kesdtrack) const
   if((status & AliESDtrack::kTRDout) == AliESDtrack::kTRDout) cout << "TRDout ";
   if((status & AliESDtrack::kTRDrefit) == AliESDtrack::kTRDrefit) cout << "TRDrefit ";
   if((status & AliESDtrack::kTRDpid) == AliESDtrack::kTRDpid) cout << "TRDpid ";
-  if((status & AliESDtrack::kTRDbackup) == AliESDtrack::kTRDbackup) cout << "TRDbackup ";
+  //  if((status & AliESDtrack::kTRDbackup) == AliESDtrack::kTRDbackup) cout << "TRDbackup ";
   if((status & AliESDtrack::kTRDStop) == AliESDtrack::kTRDStop) cout << "TRDstop ";
 
   if((status & AliESDtrack::kTOFin) == AliESDtrack::kTOFin) cout << "TOFin ";

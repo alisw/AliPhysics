@@ -83,7 +83,7 @@ Int_t AliJetParticlesReader::Next()
   //here we have event
   if(fTree && fEventParticles){
       if(fNewTree){
-	fTree->Branch("particles","AliJetEventParticles",&fEventParticles,32000,1);
+	fTree->Branch("particles","AliJetEventParticles",&fEventParticles,32000,99);
 	fNewTree=0;
       }
       fEventParticles->SetEventNr(fCurrentDir*1000+fCurrentEvent);
