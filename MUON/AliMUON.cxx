@@ -270,13 +270,10 @@ void AliMUON::BuildGeometry()
       }
     }
   } else { 
-//     for (Int_t i=0; i<14; i++) {
-//       for (Int_t j=0; j<100; j++) {
-// 	Int_t id= (i+1)*100 + j;
-// 	this->Chamber(i).SegmentationModel2(1)->Draw(id,"eventdisplay");// to be check !
-//       }
-//     }
- }
+//     for (Int_t i = 0; i < AliMUONConstants::NCh(); i++)     
+//       this->Chamber(i).SegmentationModel2(1)->Draw("eventdisplay");// to be check !
+     
+  }
 }
 
 //__________________________________________________________________
