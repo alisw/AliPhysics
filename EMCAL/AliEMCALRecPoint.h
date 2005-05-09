@@ -94,7 +94,7 @@ protected:
 	  Float_t fCoreRadius;        // The radius in which the core energy is evaluated
           Int_t fMulParent;           // Multiplicity of the parents
           Int_t fMaxParent;           // Maximum number of parents allowed
-          Int_t * fParentsList;       // [fMaxParent] list of the parents of the digits
+          Int_t * fParentsList;       // [fMulParent] list of the parents of the digits
 
   ClassDef(AliEMCALRecPoint,6) // RecPoint for EMCAL (Base Class)
  
