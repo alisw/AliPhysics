@@ -12,7 +12,6 @@
 
 #include <TObject.h>
 
-class AliMUONHit;
 class AliMUONHitForRec;
 class AliMUONSegment;
 class TClonesArray;

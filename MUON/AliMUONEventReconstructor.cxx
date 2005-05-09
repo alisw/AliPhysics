@@ -41,7 +41,6 @@
 #include "AliMUONEventReconstructor.h"
 #include "AliMUON.h"
 #include "AliMUONConstants.h"
-#include "AliMUONHit.h"
 #include "AliMUONHitForRec.h"
 #include "AliMUONTriggerTrack.h"
 #include "AliMUONTriggerCircuit.h"
