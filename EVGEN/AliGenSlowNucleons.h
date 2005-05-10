@@ -28,6 +28,7 @@ public:
     virtual void SetPmax(Float_t pmax = 10.) {fPmax = pmax;}
     virtual void SetNominalCmsEnergy(Float_t energy = 14000.) {fCMS = energy;}
     virtual void SetTarget(Float_t a=208, Float_t z=82) {fATarget = a; fZTarget = z;}
+    virtual void SetProtonDirection(Float_t dir = 1.);
     virtual void SetCharge(Int_t c = 1) {fCharge = c;}
     virtual void SetTemperature(Double_t t1 = 0.04, Double_t t2 = 0.004)
 	{fTemperatureG = t1; fTemperatureB = t2;}
@@ -50,24 +51,25 @@ public:
     void Copy(TObject&) const;
     AliGenSlowNucleons & operator=(const AliGenSlowNucleons & rhs);
  protected:
-    Float_t  fCMS;          // Center of mass energy
-    Float_t  fMomentum;     // Target nucleus momentum
-    Float_t  fBeta;         // Target nucleus beta
-    Float_t  fPmax;         // Maximum slow nucleon momentum
-    Float_t  fATarget;      // Target nucleus mass number
-    Float_t  fZTarget;      // Target nucleus charge number
-    Int_t    fCharge;       // Slow nucleon charge
-    Float_t  fTemperatureG; // Source Temperature for gray nucleons
-    Float_t  fBetaSourceG;  // Source beta for gray nucleons
-    Float_t  fTemperatureB; // Source Temperature for black nucleons
-    Float_t  fBetaSourceB;  // Source beta for black nucleons
-    Int_t    fNgp;          // Number of gray  protons
-    Int_t    fNgn;          // Number of gray  neutrons
-    Int_t    fNbp;          // Number of black protons
-    Int_t    fNbn;          // Number of black neutrons
-    Int_t    fDebug;        // Debug flag
-    TH2F*    fDebugHist1;   // Histogram for debugging
-    TH2F*    fDebugHist2;   // Histogram for debugging
+    Float_t  fCMS;             // Center of mass energy
+    Float_t  fMomentum;        // Target nucleus momentum
+    Float_t  fBeta;            // Target nucleus beta
+    Float_t  fPmax;            // Maximum slow nucleon momentum
+    Float_t  fATarget;         // Target nucleus mass number
+    Float_t  fZTarget;         // Target nucleus charge number
+    Int_t    fCharge;          // Slow nucleon charge
+    Float_t  fProtonDirection; // Direction of the proton
+    Float_t  fTemperatureG;    // Source Temperature for gray nucleons
+    Float_t  fBetaSourceG;     // Source beta for gray nucleons
+    Float_t  fTemperatureB;    // Source Temperature for black nucleons
+    Float_t  fBetaSourceB;     // Source beta for black nucleons
+    Int_t    fNgp;             // Number of gray  protons
+    Int_t    fNgn;             // Number of gray  neutrons
+    Int_t    fNbp;             // Number of black protons
+    Int_t    fNbn;             // Number of black neutrons
+    Int_t    fDebug;           // Debug flag
+    TH2F*    fDebugHist1;      // Histogram for debugging
+    TH2F*    fDebugHist2;      // Histogram for debugging
     
     //
     AliSlowNucleonModel* fSlowNucleonModel; // The slow nucleon model

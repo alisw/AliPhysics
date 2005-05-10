@@ -73,6 +73,10 @@ AliGenSlowNucleons::~AliGenSlowNucleons()
     delete  fSlowNucleonModel;
 }
 
+void AliGenSlowNucleons::SetProtonDirection(Float_t dir) {
+// Set direction of the proton to change between pA (1) and Ap (-1)
+  fProtonDirection = dir / TMath::Abs(dir);
+}
 
 void AliGenSlowNucleons::Init()
 {
@@ -236,6 +240,7 @@ void AliGenSlowNucleons::GenerateSlow(Int_t charge, Double_t T, Double_t beta, F
 
  /* Transform to laboratory system */
  Lorentz(m, fBeta, q);
+ q[2] *= fProtonDirection; 
 }
 
 Double_t AliGenSlowNucleons::Maxwell(Double_t m, Double_t p, Double_t T)
