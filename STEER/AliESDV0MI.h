@@ -68,6 +68,8 @@ public:
   const Float_t * GetCausalityP() const {return fCausality;}
   void SetClusters(Int_t *clp, Int_t *clm);
   const Int_t * GetClusters(Int_t i) const {return fClusters[i];}
+  void SetNormDCAPrim(Float_t nd0, Float_t nd1){fNormDCAPrim[0] = nd0; fNormDCAPrim[1]=nd1;}
+  const Float_t  *GetNormDCAPrimP(){return fNormDCAPrim;}
 private:
   AliExternalTrackParam fParamP;
   AliExternalTrackParam fParamM;
@@ -79,6 +81,7 @@ private:
   Int_t          fClusters[2][6]; //! its clusters 
   //
   //  
+  Float_t       fNormDCAPrim[2];  // normalize distance to the priary vertex
   Double_t       fDist1;    //info about closest distance according closest MC - linear DCA
   Double_t       fDist2;    //info about closest distance parabolic DCA
   //
@@ -101,9 +104,9 @@ private:
   Float_t        fNAfter;      // number of possible points after V0
   Float_t        fPointAngleFi; //point angle fi
   Float_t        fPointAngleTh; //point angle theta
-  Float_t        fPointAngle;   //point angle full
+  Double_t       fPointAngle;   //point angle full
 
-  ClassDef(AliESDV0MI,3)      // ESD V0 vertex
+  ClassDef(AliESDV0MI,4)      // ESD V0 vertex
 };
 
 

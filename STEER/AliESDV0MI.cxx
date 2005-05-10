@@ -53,6 +53,7 @@ AliESDV0MI::AliESDV0MI() :
   //
   for (Int_t i=0;i<4;i++){fCausality[i]=0;}
   for (Int_t i=0;i<6;i++){fClusters[0][i]=0; fClusters[1][i]=0;}
+  for (Int_t i=0;i<2;i++){fNormDCAPrim[0]=0;fNormDCAPrim[1]=0;}
 }
 
 
@@ -204,10 +205,26 @@ void  AliESDV0MI::Update(Float_t vertex[3])
   points = phelix.GetRPHIintersections(mhelix, phase, radius);
   delta1=10000,delta2=10000;  
   Double_t d1=1000.,d2=10000.;
+  Double_t err[3],angles[3];
   if (points<=0) return;
   if (points>0){
     phelix.ParabolicDCA(mhelix,phase[0][0],phase[0][1],radius[0],delta1);
     phelix.ParabolicDCA(mhelix,phase[0][0],phase[0][1],radius[0],delta1);
+    if (TMath::Abs(fParamP.X()-TMath::Sqrt(radius[0])<3) && TMath::Abs(fParamM.X()-TMath::Sqrt(radius[0])<3)){
+      // if we are close to vertex use error parama
+      //
+      err[1] = fParamP.GetCovariance()[0]+fParamM.GetCovariance()[0]+0.05*0.05
+	+0.3*(fParamP.GetCovariance()[2]+fParamM.GetCovariance()[2]);
+      err[2] = fParamP.GetCovariance()[2]+fParamM.GetCovariance()[2]+0.05*0.05
+	+0.3*(fParamP.GetCovariance()[0]+fParamM.GetCovariance()[0]);
+      
+      phelix.GetAngle(phase[0][0],mhelix,phase[0][1],angles);
+      Double_t tfi  = TMath::Abs(TMath::Tan(angles[0]));
+      Double_t tlam = TMath::Abs(TMath::Tan(angles[1]));
+      err[0] = err[1]/((0.2+tfi)*(0.2+tfi))+err[2]/((0.2+tlam)*(0.2+tlam));
+      err[0] = ((err[1]*err[2]/((0.2+tfi)*(0.2+tfi)*(0.2+tlam)*(0.2+tlam))))/err[0];
+      phelix.ParabolicDCA2(mhelix,phase[0][0],phase[0][1],radius[0],delta1,err);
+    }
     Double_t xd[3],xm[3];
     phelix.Evaluate(phase[0][0],xd);
     mhelix.Evaluate(phase[0][1],xm);
@@ -216,6 +233,21 @@ void  AliESDV0MI::Update(Float_t vertex[3])
   if (points==2){    
     phelix.ParabolicDCA(mhelix,phase[1][0],phase[1][1],radius[1],delta2);
     phelix.ParabolicDCA(mhelix,phase[1][0],phase[1][1],radius[1],delta2);
+    if (TMath::Abs(fParamP.X()-TMath::Sqrt(radius[1])<3) && TMath::Abs(fParamM.X()-TMath::Sqrt(radius[1])<3)){
+      // if we are close to vertex use error paramatrization
+      //
+      err[1] = fParamP.GetCovariance()[0]+fParamM.GetCovariance()[0]+0.05*0.05
+	+0.3*(fParamP.GetCovariance()[2]+fParamM.GetCovariance()[2]);
+      err[2] = fParamP.GetCovariance()[2]+fParamM.GetCovariance()[2]+0.05*0.05
+	+0.3*(fParamP.GetCovariance()[0]+fParamM.GetCovariance()[0]);
+      
+      phelix.GetAngle(phase[1][0],mhelix,phase[1][1],angles);
+      Double_t tfi  = TMath::Abs(TMath::Tan(angles[0]));
+      Double_t tlam = TMath::Abs(TMath::Tan(angles[1]));
+      err[0] = err[1]/((0.2+tfi)*(0.2+tfi))+err[2]/((0.2+tlam)*(0.2+tlam));     
+      err[0] = ((err[1]*err[2]/((0.2+tfi)*(0.2+tfi)*(0.2+tlam)*(0.2+tlam))))/err[0];
+      phelix.ParabolicDCA2(mhelix,phase[1][0],phase[1][1],radius[1],delta2,err);
+    }
     Double_t xd[3],xm[3];
     phelix.Evaluate(phase[1][0],xd);
     mhelix.Evaluate(phase[1][1],xm);
@@ -231,6 +263,12 @@ void  AliESDV0MI::Update(Float_t vertex[3])
     fXr[0] = 0.5*(xd[0]+xm[0]);
     fXr[1] = 0.5*(xd[1]+xm[1]);
     fXr[2] = 0.5*(xd[2]+xm[2]);
+
+    Float_t wy = fParamP.GetCovariance()[0]/(fParamP.GetCovariance()[0]+fParamM.GetCovariance()[0]);
+    Float_t wz = fParamP.GetCovariance()[2]/(fParamP.GetCovariance()[2]+fParamM.GetCovariance()[2]);
+    fXr[0] = 0.5*( (1.-wy)*xd[0]+ wy*xm[0] + (1.-wz)*xd[0]+ wz*xm[0] );
+    fXr[1] = (1.-wy)*xd[1]+ wy*xm[1];
+    fXr[2] = (1.-wz)*xd[2]+ wz*xm[2];
     //
     phelix.GetMomentum(phase[0][0],fPP);
     mhelix.GetMomentum(phase[0][1],fPM);
@@ -244,6 +282,11 @@ void  AliESDV0MI::Update(Float_t vertex[3])
     fXr[0] = 0.5*(xd[0]+xm[0]);
     fXr[1] = 0.5*(xd[1]+xm[1]);
     fXr[2] = 0.5*(xd[2]+xm[2]);
+    Float_t wy = fParamP.GetCovariance()[0]/(fParamP.GetCovariance()[0]+fParamM.GetCovariance()[0]);
+    Float_t wz = fParamP.GetCovariance()[2]/(fParamP.GetCovariance()[2]+fParamM.GetCovariance()[2]);
+    fXr[0] = 0.5*( (1.-wy)*xd[0]+ wy*xm[0] + (1.-wz)*xd[0]+ wz*xm[0] );
+    fXr[1] = (1.-wy)*xd[1]+ wy*xm[1];
+    fXr[2] = (1.-wz)*xd[2]+ wz*xm[2];
     //
     phelix.GetMomentum(phase[1][0], fPP);
     mhelix.GetMomentum(phase[1][1], fPM);

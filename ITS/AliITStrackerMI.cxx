@@ -3583,12 +3583,21 @@ void  AliITStrackerMI::FindV02(AliESD *event)
     trackat0.Propagate(alpha,0);      
     // calculate normalized distances to the vertex 
     //
-    if ( bestLong->fN>3 ){
+    Float_t ptfac  = (1.+100.*TMath::Abs(trackat0.fP4));
+    if ( bestLong->fN>3 ){      
       dist[itsindex]      = trackat0.fP0;
-      norm[itsindex]      = TMath::Sqrt(trackat0.fC00);
+      norm[itsindex]      = ptfac*TMath::Sqrt(trackat0.fC00);
       normdist0[itsindex] = TMath::Abs(trackat0.fP0/norm[itsindex]);
-      normdist1[itsindex] = TMath::Abs((trackat0.fP1-primvertex[2])/TMath::Sqrt(trackat0.fC11));
+      normdist1[itsindex] = TMath::Abs((trackat0.fP1-primvertex[2])/(ptfac*TMath::Sqrt(trackat0.fC11)));
       normdist[itsindex]  = TMath::Sqrt(normdist0[itsindex]*normdist0[itsindex]+normdist1[itsindex]*normdist1[itsindex]);
+      if (!bestConst){
+	if (bestLong->fN+bestLong->fNDeadZone<6) normdist[itsindex]*=2.;
+	if (bestLong->fN+bestLong->fNDeadZone<5) normdist[itsindex]*=2.;
+	if (bestLong->fN+bestLong->fNDeadZone<4) normdist[itsindex]*=2.;
+      }else{
+	if (bestConst->fN+bestConst->fNDeadZone<6) normdist[itsindex]*=1.5;
+	if (bestConst->fN+bestConst->fNDeadZone<5) normdist[itsindex]*=1.5;
+      }
     }
     else{      
       if (bestConst&&bestConst->fN+bestConst->fNDeadZone>4.5){
@@ -3599,9 +3608,9 @@ void  AliITStrackerMI::FindV02(AliESD *event)
 	normdist[itsindex]  = TMath::Sqrt(normdist0[itsindex]*normdist0[itsindex]+normdist1[itsindex]*normdist1[itsindex]);
       }else{
 	dist[itsindex]      = trackat0.fP0;
-	norm[itsindex]      = TMath::Sqrt(trackat0.fC00);
+	norm[itsindex]      = ptfac*TMath::Sqrt(trackat0.fC00);
 	normdist0[itsindex] = TMath::Abs(trackat0.fP0/norm[itsindex]);
-	normdist1[itsindex] = TMath::Abs((trackat0.fP1-primvertex[2])/TMath::Sqrt(trackat0.fC11));
+	normdist1[itsindex] = TMath::Abs((trackat0.fP1-primvertex[2])/(ptfac*TMath::Sqrt(trackat0.fC11)));
 	normdist[itsindex]  = TMath::Sqrt(normdist0[itsindex]*normdist0[itsindex]+normdist1[itsindex]*normdist1[itsindex]);
 	if (TMath::Abs(trackat0.fP3)>1.05){
 	  if (normdist[itsindex]<3) forbidden[itsindex]=kTRUE;
@@ -3639,15 +3648,22 @@ void  AliITStrackerMI::FindV02(AliESD *event)
     //
     if (esdtrack->GetKinkIndex(0)>0) forbidden[itsindex] = kTRUE;
     Bool_t isElectron = kTRUE;
+    Bool_t isProton   = kTRUE;
     Double_t pid[5];
     esdtrack->GetESDpid(pid);
     for (Int_t i=1;i<5;i++){
       if (pid[0]<pid[i]) isElectron= kFALSE;
+      if (pid[4]<pid[i]) isProton= kFALSE;
     }
     if (isElectron){
       forbidden[itsindex]=kFALSE;	
-      normdist[itsindex]+=4;
+      normdist[itsindex]*=-1;
     }
+    if (isProton){
+      if (normdist[itsindex]>2) forbidden[itsindex]=kFALSE;	
+      normdist[itsindex]*=-1;
+    }
+
     //
     // Causality cuts in TPC volume
     //
@@ -3659,7 +3675,7 @@ void  AliITStrackerMI::FindV02(AliESD *event)
     if (esdtrack->GetTPCdensity(0,60)<0.4&&bestLong->fN<3) minr[itsindex]=100;    
     //
     //
-    if (0){
+    if (kFALSE){
       cstream<<"Track"<<
 	"Tr0.="<<best<<
 	"Tr1.="<<((bestConst)? bestConst:dummy)<<
@@ -3801,10 +3817,19 @@ void  AliITStrackerMI::FindV02(AliESD *event)
 	AliITStrackMI * btrack = (AliITStrackMI*)array0b->At(i);
 	if (!btrack) continue;
 	if (btrack->fN>track0l->fN) track0l = btrack;     
-	if (btrack->fX<pvertex->GetRr()-2) {
-	  if (maxLayer>i+2 && btrack->fN==(6-i)&&i<2){
+	//	if (btrack->fX<pvertex->GetRr()-2.-0.5/(0.1+pvertex->GetAnglep()[2])) {
+	if (btrack->fX<pvertex->GetRr()-2.) {
+	  if ( (maxLayer>i+2|| (i==0)) && btrack->fN==(6-i)&&i<2){
 	    Float_t sumchi2= 0;
 	    Float_t sumn   = 0;
+	    if (maxLayer<3){   // take prim vertex as additional measurement
+	      if (normdist[itrack0]>0 && htrackc0){
+		sumchi2 += (3-maxLayer)*normdist[itrack0]*normdist[itrack0];
+	      }else{
+		sumchi2 += (3-maxLayer)*(3*normdist[itrack0]*normdist[itrack0]+3.);
+	      }
+	      sumn    +=  3-maxLayer;
+	    }
 	    for (Int_t ilayer=i;ilayer<maxLayer;ilayer++){
 	      sumn+=1.;
 	      if (!btrack->fClIndex[ilayer]){
@@ -3829,10 +3854,19 @@ void  AliITStrackerMI::FindV02(AliESD *event)
 	AliITStrackMI * btrack = (AliITStrackMI*)array1b->At(i);
 	if (!btrack) continue;
 	if (btrack->fN>track1l->fN) track1l = btrack;     
+	//	if (btrack->fX<pvertex->GetRr()-2-0.5/(0.1+pvertex->GetAnglep()[2])){
 	if (btrack->fX<pvertex->GetRr()-2){
-	  if (maxLayer>i+2&&btrack->fN==(6-i)&&(i<2)){
+	  if ((maxLayer>i+2 || (i==0))&&btrack->fN==(6-i)&&(i<2)){
 	    Float_t sumchi2= 0;
 	    Float_t sumn   = 0;
+	    if (maxLayer<3){   // take prim vertex as additional measurement
+	      if (normdist[itrack1]>0 && htrackc1){
+		sumchi2 += (3-maxLayer)*normdist[itrack1]*normdist[itrack1];
+	      }else{
+		sumchi2 += (3-maxLayer)*(3*normdist[itrack1]*normdist[itrack1]+3.);
+	      }
+	      sumn    +=  3-maxLayer;
+	    }
 	    for (Int_t ilayer=i;ilayer<maxLayer;ilayer++){
 	      sumn+=1.;
 	      if (!btrack->fClIndex[ilayer]){
@@ -3882,14 +3916,19 @@ void  AliITStrackerMI::FindV02(AliESD *event)
       }
       pvertex->SetDistSigma(sigmad);
       pvertex->SetDistNorm(pvertex->GetDist2()/sigmad);       
+      pvertex->SetNormDCAPrim(normdist[itrack0],normdist[itrack1]);
       //
       // define likelihhod and causalities
       //
       Float_t pa0=1, pa1=1, pb0=0.26, pb1=0.26;      
-      if (maxLayer<2){
- 	if (pvertex->GetAnglep()[2]>0.2){
- 	  pb0    =  TMath::Exp(-TMath::Min(normdist[itrack0],Float_t(16.))/12.);
- 	  pb1    =  TMath::Exp(-TMath::Min(normdist[itrack1],Float_t(16.))/12.);
+      if (maxLayer<1){
+	Float_t fnorm0 = normdist[itrack0];
+	if (fnorm0<0) fnorm0*=-3;
+	Float_t fnorm1 = normdist[itrack1];
+	if (fnorm1<0) fnorm1*=-3;
+ 	if (pvertex->GetAnglep()[2]>0.1 ||  (pvertex->GetRr()<10.5)&& pvertex->GetAnglep()[2]>0.05 || pvertex->GetRr()<3){
+ 	  pb0    =  TMath::Exp(-TMath::Min(fnorm0,Float_t(16.))/12.);
+ 	  pb1    =  TMath::Exp(-TMath::Min(fnorm1,Float_t(16.))/12.);
  	}
 	pvertex->SetChi2Before(normdist[itrack0]);
 	pvertex->SetChi2After(normdist[itrack1]);       
@@ -3898,12 +3937,12 @@ void  AliITStrackerMI::FindV02(AliESD *event)
       }else{
 	pvertex->SetChi2Before(minchi2before0);
 	pvertex->SetChi2After(minchi2before1);
-	if (pvertex->GetAnglep()[2]>0.2){
-	  pb0    =  TMath::Exp(-TMath::Min(minchi2before0,Float_t(16))/12.);
-	  pb1    =  TMath::Exp(-TMath::Min(minchi2before1,Float_t(16))/12.);
-	}
-	pvertex->SetNAfter(maxLayer);
-	pvertex->SetNBefore(maxLayer);
+	 if (pvertex->GetAnglep()[2]>0.1 || ( pvertex->GetRr()<10.5 && pvertex->GetAnglep()[2]>0.05) || pvertex->GetRr()<3){
+	   pb0    =  TMath::Exp(-TMath::Min(minchi2before0,Float_t(16))/12.);
+	   pb1    =  TMath::Exp(-TMath::Min(minchi2before1,Float_t(16))/12.);
+	 }
+	 pvertex->SetNAfter(maxLayer);
+	 pvertex->SetNBefore(maxLayer);      
       }
       if (pvertex->GetRr()<90){
 	pa0  *= TMath::Min(track0->fESDtrack->GetTPCdensity(0,60),Float_t(1.));
@@ -4029,7 +4068,7 @@ void AliITStrackerMI::RefitV02(AliESD *event)
 	v0temp.SetM(tpc0);
 	v0temp.SetP(tpc1);
 	v0temp.Update(primvertex);
-	cstream<<"Refit"<<
+	if (kFALSE) cstream<<"Refit"<<
 	  "V0.="<<v0mi<<
 	  "V0refit.="<<&v0temp<<
 	  "Tr0.="<<&tpc0<<
@@ -4050,7 +4089,7 @@ void AliITStrackerMI::RefitV02(AliESD *event)
 	v0temp.SetM(tpc0);
 	v0temp.SetP(tpc1);
 	v0temp.Update(primvertex);
-	cstream<<"Refit"<<
+	if (kFALSE) cstream<<"Refit"<<
 	  "V0.="<<v0mi<<
 	  "V0refit.="<<&v0temp<<
 	  "Tr0.="<<&tpc0<<
@@ -4071,7 +4110,7 @@ void AliITStrackerMI::RefitV02(AliESD *event)
       v0temp.SetM(tpc0);
       v0temp.SetP(tpc1);
       v0temp.Update(primvertex);
-      cstream<<"Refit"<<
+      if (kFALSE) cstream<<"Refit"<<
 	"V0.="<<v0mi<<
 	"V0refit.="<<&v0temp<<
 	"Tr0.="<<&tpc0<<
