@@ -55,6 +55,9 @@ class AliGenHijing : public AliGenMC
 	{fPhiMinJet = TMath::Pi()*phimin/180.; fPhiMaxJet = TMath::Pi()*phimax/180.;}
     virtual void    SetBoostLHC(Int_t flag = 0)         {fLHC        = flag;}
     virtual void    SetRandomPz(Bool_t flag = 0)        {fRandomPz   = flag;}
+    virtual void    SwitchOffHeavyQuarks(Bool_t flag = kTRUE) {fNoHeavyQuarks = flag;}
+    
+	    
 // Getters
     virtual Float_t GetEnergyCMS()       const {return fEnergyCMS;}
     virtual TString GetReferenceFrame()  const {return fFrame;}
@@ -125,7 +128,9 @@ class AliGenHijing : public AliGenMC
     Int_t 	fTargetSpecn;	 // Num. of spectator neutrons from target nucleus
     Int_t 	fTargetSpecp;	 // Num. of spectator protons from target nucleus
     Int_t       fLHC;            // Assume LHC as lab frame
-    Int_t       fRandomPz;       // Randomise sign of pz  event by event 
+    Bool_t      fRandomPz;       // Randomise sign of pz  event by event
+    Bool_t      fNoHeavyQuarks;  // If true no heavy quarks are produced
+    
  private:
     void Copy(TObject &rhs) const;
     // adjust the weight from kinematic cuts

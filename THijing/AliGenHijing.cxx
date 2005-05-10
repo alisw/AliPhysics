@@ -76,6 +76,8 @@ AliGenHijing::AliGenHijing(Int_t npart)
     //
     SetSimpleJets();
     SetNoGammas();
+    SetRandomPz();
+    SwitchOffHeavyQuarks(kFALSE);
 //
     fParticles = new TClonesArray("TParticle",10000);    
 //
@@ -149,6 +151,15 @@ void AliGenHijing::Init()
 	fHijing->SetIHPR2(50, 1);
 	fHijing->SetHIPR1(14, 0.34);
 	fHijing->SetHIPR1(11, 2.5);
+    }
+    
+//
+// Heavy quarks
+//    
+    if (fNoHeavyQuarks) {
+	fHijing->SetIHPR2(49, 1);
+    } else {
+	fHijing->SetIHPR2(49, 0);
     }
     
     
