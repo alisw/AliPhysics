@@ -589,3 +589,10 @@
 18-apr-2005 NvE New memberfunction GetTracks introduced in AliJet to provide various track selections.
 19-apr-2005 NvE Memberfunctions GetNtracks and GetTracks of AliJet extended in functionality.
 20-apr-2005 NvE Id of owning device added to the output of AliSignal::Data().
+10-may-2005 NvE Support for timestamps introduced in AliTrack and AliPosition.
+                Memberfunction GetX introduced in Ali3Vector for easy component access.
+                Picosecond support and calculation of time difference introduced in AliTimestamp 
+                to enable investigation of both very short (i.e. time of flight analysis in
+                particle physics experiments) and very long (i.e. astrophysical phenomena)
+                time intervals.
+ 

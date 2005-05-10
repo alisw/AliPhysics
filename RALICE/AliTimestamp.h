@@ -29,23 +29,26 @@ class AliTimestamp : public TTimeStamp
   void GetJD(Int_t& jd,Int_t& sec,Int_t& ns);   // Provide corresponding Julian Date and time
   Double_t GetJD();                             // Provide corresponding Julian Date in fractional days
   Double_t GetJE();                             // Provide corresponding Julian Epoch
-  void SetMJD(Int_t mjd,Int_t sec,Int_t ns);    // Set Modified Julian Date and time
-  void SetMJD(Double_t mjd);                    // Set Modified Julian Date and time
-  void SetJD(Int_t jd,Int_t sec,Int_t ns);      // Set Julian Date and time
-  void SetJD(Double_t jd);                      // Set Julian Date and time
-  void SetTJD(Int_t mjd,Int_t sec,Int_t ns);    // Set Modified Julian Date and time
-  void SetTJD(Double_t mjd);                    // Set Modified Julian Date and time
+  void SetMJD(Int_t mjd,Int_t sec,Int_t ns,Int_t ps=0); // Set Modified Julian Date and time
+  void SetMJD(Double_t mjd);                            // Set Modified Julian Date and time
+  void SetJD(Int_t jd,Int_t sec,Int_t ns,Int_t ps=0);   // Set Julian Date and time
+  void SetJD(Double_t jd);                              // Set Julian Date and time
+  void SetTJD(Int_t tjd,Int_t sec,Int_t ns,Int_t ps=0); // Set Truncated Julian Date and time
+  void SetTJD(Double_t tjd);                            // Set Truncated Julian Date and time
+  Int_t GetPicoSec() const;                     // Provide remaining fractional number of ns in picoseconds
+  Int_t GetDifference(AliTimestamp& t,Int_t& days,Int_t& sec,Int_t& ns,Int_t& ps) const; // Provide time difference
 
  protected:
   Int_t fMJD;  // Modified Julian Date
   Int_t fJsec; // Number of seconds elapsed within the MJD
   Int_t fJns;  // Remaining fractional number of seconds (in nanoseconds) elapsed within the MJD
+  Int_t fJps;  // Remaining fractional number of nanoseconds (in picoseconds) elapsed within the MJD
 
  private:
   void FillJulian(); // Calculation and setting of the corresponding Julian parameters  
   Int_t fCalcs;      // The TTimeStamp seconds counter value at Julian parameter calculation
   Int_t fCalcns;     // The TTimeStamp nanoseconds counter value at Julian parameter calculation
 
- ClassDef(AliTimestamp,1) // Handling of timestamps for (astro)particle physics research.
+ ClassDef(AliTimestamp,2) // Handling of timestamps for (astro)particle physics research.
 };
 #endif

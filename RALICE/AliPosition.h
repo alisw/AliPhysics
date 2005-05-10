@@ -11,6 +11,7 @@
 #include "TString.h"
 
 #include "Ali3Vector.h"
+#include "AliTimestamp.h"
  
 class AliPosition : public Ali3Vector
 {
@@ -33,10 +34,15 @@ class AliPosition : public Ali3Vector
   void ResetPosition();                                  // Reset position and errors to 0
   void SetUnitScale(Float_t s);                          // Set unit scale for the position coordinates
   Float_t GetUnitScale() const;                          // Provide unit scale for the position coordinates
+  void SetTimestamp(AliTimestamp& t);                    // Set the timestamp for this position
+  AliTimestamp* GetTimestamp();                          // Provide the timestamp for this position
+  void RemoveTimestamp();                                // Remove the timestamp from this position
+  virtual void Data(TString f="car") const;              // Print all position/time info for coord. frame f
 
  protected:
-  Float_t fScale; // The unit scale used for the position coordinates
+  Float_t fScale;        // The unit scale used for the position coordinates
+  AliTimestamp* fTstamp; // The timestamp for this position
 
- ClassDef(AliPosition,6) // Handling of positions in various reference frames.
+ ClassDef(AliPosition,7) // Handling of positions (with timestamps) in various reference frames.
 };
 #endif

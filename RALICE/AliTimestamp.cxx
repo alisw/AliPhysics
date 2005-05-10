@@ -45,8 +45,11 @@
 // they provide an absolute timescale irrespective of timezone or daylight
 // saving time (DST).
 //
-// This AliTimestamp facility allows for nanosecond precision.
-// However, when the fractional JD, MJD and TJD counts are used instead
+// This AliTimestamp facility allows for picosecond precision, in view
+// of time of flight analyses for particle physics experiments.
+// For normal date/time indication the standard nanosecond precision
+// will in general be sufficient.
+// Note that when the fractional JD, MJD and TJD counts are used instead
 // of the integer (days,sec,ns) specification, the nanosecond precision
 // may be lost due to computer accuracy w.r.t. floating point operations.
 //
@@ -134,6 +137,7 @@ AliTimestamp::AliTimestamp() : TTimeStamp()
 // in the docs of TTimeStamp.
 
  FillJulian();
+ fJps=0;
 }
 ///////////////////////////////////////////////////////////////////////////
 AliTimestamp::AliTimestamp(TTimeStamp& t) : TTimeStamp(t)
@@ -142,6 +146,7 @@ AliTimestamp::AliTimestamp(TTimeStamp& t) : TTimeStamp(t)
 // All attributes are initialised to the values of the input TTimeStamp.
 
  FillJulian();
+ fJps=0;
 }
 ///////////////////////////////////////////////////////////////////////////
 AliTimestamp::~AliTimestamp()
@@ -156,6 +161,7 @@ AliTimestamp::AliTimestamp(const AliTimestamp& t) : TTimeStamp(t)
  fMJD=t.fMJD;
  fJsec=t.fJsec;
  fJns=t.fJns;
+ fJps=t.fJps;
  fCalcs=t.fCalcs;
  fCalcns=t.fCalcns;
 }
@@ -552,7 +558,7 @@ Double_t AliTimestamp::GetJE()
  return je;
 }
 ///////////////////////////////////////////////////////////////////////////
-void AliTimestamp::SetMJD(Int_t mjd,Int_t sec,Int_t ns)
+void AliTimestamp::SetMJD(Int_t mjd,Int_t sec,Int_t ns,Int_t ps)
 {
 // Set the Modified Julian Date (MJD) and time and update the TTimeStamp
 // parameters accordingly (if possible).
@@ -577,8 +583,11 @@ void AliTimestamp::SetMJD(Int_t mjd,Int_t sec,Int_t ns)
 // mjd : The modified Julian date.
 // sec : The number of seconds elapsed within the MJD.
 // ns  : The remaining fractional number of seconds (in ns) elapsed within the MJD.
+// ps  : The remaining fractional number of nanoseconds (in ps) elapsed within the MJD.
+//
+// Note : ps=0 is the default value.
 
- if (sec<0 || ns<0)
+ if (sec<0 || sec>=24*3600 || ns<0 || ns>=1e9 || ps<0 || ps>=1000)
  {
   cout << " *AliTimestamp::SetMJD* Invalid input."
        << " sec : " << sec << " ns : " << ns << endl; 
@@ -588,6 +597,7 @@ void AliTimestamp::SetMJD(Int_t mjd,Int_t sec,Int_t ns)
  fMJD=mjd;
  fJsec=sec;
  fJns=ns;
+ fJps=ps;
 
  Int_t epoch=40587;
  
@@ -649,7 +659,7 @@ void AliTimestamp::SetMJD(Double_t mjd)
  SetMJD(days,secs,ns);
 }
 ///////////////////////////////////////////////////////////////////////////
-void AliTimestamp::SetJD(Int_t jd,Int_t sec,Int_t ns)
+void AliTimestamp::SetJD(Int_t jd,Int_t sec,Int_t ns,Int_t ps)
 {
 // Set the Julian Date (JD) and time and update the TTimeStamp
 // parameters accordingly (if possible).
@@ -674,6 +684,9 @@ void AliTimestamp::SetJD(Int_t jd,Int_t sec,Int_t ns)
 // jd  : The Julian date.
 // sec : The number of seconds elapsed within the JD.
 // ns  : The remaining fractional number of seconds (in ns) elapsed within the JD.
+// ps  : The remaining fractional number of nanoseconds (in ps) elapsed within the JD.
+//
+// Note : ps=0 is the default value.
 
  Int_t mjd=jd-2400000;
  sec-=12*3600;
@@ -683,7 +696,7 @@ void AliTimestamp::SetJD(Int_t jd,Int_t sec,Int_t ns)
   mjd-=1;
  }
 
- SetMJD(mjd,sec,ns);
+ SetMJD(mjd,sec,ns,ps);
 }
 ///////////////////////////////////////////////////////////////////////////
 void AliTimestamp::SetJD(Double_t jd)
@@ -721,7 +734,7 @@ void AliTimestamp::SetJD(Double_t jd)
  SetJD(days,secs,ns);
 }
 ///////////////////////////////////////////////////////////////////////////
-void AliTimestamp::SetTJD(Int_t tjd,Int_t sec,Int_t ns)
+void AliTimestamp::SetTJD(Int_t tjd,Int_t sec,Int_t ns,Int_t ps)
 {
 // Set the Truncated Julian Date (TJD) and time and update the TTimeStamp
 // parameters accordingly (if possible).
@@ -746,6 +759,9 @@ void AliTimestamp::SetTJD(Int_t tjd,Int_t sec,Int_t ns)
 // tjd : The Truncated Julian date.
 // sec : The number of seconds elapsed within the JD.
 // ns  : The remaining fractional number of seconds (in ns) elapsed within the JD.
+// ps  : The remaining fractional number of nanoseconds (in ps) elapsed within the JD.
+//
+// Note : ps=0 is the default value.
 
  Int_t mjd=tjd+40000;
 
@@ -785,5 +801,89 @@ void AliTimestamp::SetTJD(Double_t tjd)
  Convert(tjd,days,secs,ns);
 
  SetTJD(days,secs,ns);
+}
+///////////////////////////////////////////////////////////////////////////
+Int_t AliTimestamp::GetPicoSec() const
+{
+// Provide remaining fractional number of nanoseconds in picoseconds.
+// This memberfunction supports time of flight analysis for particle physics
+// experiments.
+
+ return fJps; 
+}
+///////////////////////////////////////////////////////////////////////////
+Int_t AliTimestamp::GetDifference(AliTimestamp& t,Int_t& d,Int_t& s,Int_t& ns,Int_t& ps) const
+{
+// Provide the time difference w.r.t the AliTimestamp specified on the input.
+// This memberfunction supports both very small (i.e. time of flight analysis
+// for particle physics experiments) and very long (i.e. investigation of
+// astrophysical phenomena) timescales.
+//
+// The time difference is returned via the following output arguments :
+// d  : elapsed number of days
+// s  : remaining elapsed number of seconds
+// ns : remaining elapsed number of nanoseconds
+// ps : remaining elapsed number of picoseconds
+//
+// The integer return argument indicates whether the AliTimestamp specified
+// on the input argument occurred earlier (-1), simultaneously (0) or later (1).
+
+ Int_t tmjd=0;
+ Int_t tsec=0;
+ Int_t tnsec=0;
+ t.GetMJD(tmjd,tsec,tnsec);
+ Int_t tpsec=t.GetPicoSec();
+
+ // Convert all stamps to seconds, nanoseconds and picoseconds
+ // to simplify the algebra.
+ tsec+=tmjd*24*3600;
+ Int_t sec=fJsec+fMJD*24*3600;
+
+ d=0;
+ s=tsec-sec;
+ ns=tnsec-fJns;
+ ps=tpsec-fJps;
+
+ if (!d && !s && !ns && !ps) return 0;
+
+ Int_t sign=0;
+
+ if (s>0) sign=1;
+ if (s<0) sign=-1;
+
+ if (!sign && ns>0) sign=1; 
+ if (!sign && ns<0) sign=-1;
+
+ if (!sign && ps>0) sign=1; 
+ if (!sign && ps<0) sign=-1;
+
+ // In case the input stamp was earlier, take the reverse difference
+ // to simplify the algebra.
+ if (sign<0)
+ {
+  s=-s;
+  ns=-ns;
+  ps=-ps;
+ }
+
+ // Here we always have a positive time difference
+ // and can now unambiguously correct for other negative values
+ // and determine the resulting daycount.
+ if (ps<0)
+ {
+  ns-=1;
+  ps+=1000;
+ }
+
+ if (ns<0)
+ {
+  s-=1;
+  ns+=1e9;
+ }
+
+ d=s/(24*3600);
+ s=s%(24*3600);
+
+ return sign;
 }
 ///////////////////////////////////////////////////////////////////////////

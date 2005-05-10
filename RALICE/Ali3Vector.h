@@ -45,12 +45,13 @@ class Ali3Vector
   Ali3Vector GetVecLong() const;                 // Provide longitudinal vector w.r.t. z-axis
   Ali3Vector GetPrimed(TRotMatrix* m) const;     // Provide vector components in a rotated frame
   Ali3Vector GetUnprimed(TRotMatrix* m) const;   // Provide original vector components from a rotated one
+  Double_t GetX(Int_t i,TString f);              // Provide i-th vector component in frame f
 
  protected:
   Double_t fV,fTheta,fPhi;    // Vector in spherical coordinates
   Double_t fDx,fDy,fDz;       // Errors on Cartesian coordinates
   Double_t fDresult;          // Error on scalar result (e.g. norm or dotproduct)
 
- ClassDef(Ali3Vector,8) // Handling of 3-vectors in various reference frames.
+ ClassDef(Ali3Vector,9) // Handling of 3-vectors in various reference frames.
 };
 #endif

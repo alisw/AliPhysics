@@ -117,6 +117,7 @@ void AliTrack::Init()
  fClosest=0;
  fParent=0;
  fFit=0;
+ fTstamp=0;
 }
 ///////////////////////////////////////////////////////////////////////////
 AliTrack::~AliTrack()
@@ -188,6 +189,11 @@ AliTrack::~AliTrack()
   delete fFit;
   fFit=0;
  }
+ if (fTstamp)
+ {
+  delete fTstamp;
+  fTstamp=0;
+ }
 }
 ///////////////////////////////////////////////////////////////////////////
 AliTrack::AliTrack(const AliTrack& t) : TNamed(t),Ali4Vector(t)
@@ -205,6 +211,7 @@ AliTrack::AliTrack(const AliTrack& t) : TNamed(t),Ali4Vector(t)
  if (t.fImpactYZ) fImpactYZ=new AliPositionObj(*(t.fImpactYZ));
  if (t.fClosest) fClosest=new AliPositionObj(*(t.fClosest));
  if (t.fFit) fFit=t.fFit->Clone();
+ if (t.fTstamp) fTstamp=new AliTimestamp(*(t.fTstamp));
  fUserId=t.fUserId;
  fChi2=t.fChi2;
  fNdf=t.fNdf;
@@ -315,6 +322,11 @@ void AliTrack::Reset()
   delete fFit;
   fFit=0;
  }
+ if (fTstamp)
+ {
+  delete fTstamp;
+  fTstamp=0;
+ }
 }
 ///////////////////////////////////////////////////////////////////////////
 void AliTrack::Set3Momentum(Ali3Vector& p)
@@ -363,6 +375,7 @@ void AliTrack::Data(TString f)
  if (strlen(name))  cout << " Name : " << name;
  if (strlen(title)) cout << " Title : " << title;
  cout << endl;
+ if (fTstamp) fTstamp->Date(1);
  cout << " Id : " << fUserId << " Code : " << fCode
       << " m : " << m << " dm : " << dm << " Charge : " << fQ
       << " p : " << GetMomentum() << endl;
@@ -1260,6 +1273,29 @@ TObject* AliTrack::GetFitDetails()
 {
 // Provide the pointer to the object containing the fit details.
  return fFit;
+}
+///////////////////////////////////////////////////////////////////////////
+void AliTrack::SetTimestamp(AliTimestamp& t)
+{
+// Store the timestamp for this track.
+ if (fTstamp) delete fTstamp;
+ fTstamp=new AliTimestamp(t);
+}
+///////////////////////////////////////////////////////////////////////////
+AliTimestamp* AliTrack::GetTimestamp()
+{
+// Provide the timestamp of this track.
+ return fTstamp;
+}
+///////////////////////////////////////////////////////////////////////////
+void AliTrack::RemoveTimestamp()
+{
+// Remove the timestamp from this track.
+ if (fTstamp)
+ {
+  delete fTstamp;
+  fTstamp=0;
+ }
 }
 ///////////////////////////////////////////////////////////////////////////
 TObject* AliTrack::Clone(const char* name) const

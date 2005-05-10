@@ -565,7 +565,7 @@ void AliSignal::Data(TString f) const
  if (strlen(title)) cout << " Title : " << title;
  cout << endl;
  cout << "   Position";
- Ali3Vector::Data(f);
+ AliPosition::Data(f);
  if (fDevice)
  {
   const char* devname=fDevice->GetName();

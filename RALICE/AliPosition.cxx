@@ -71,17 +71,24 @@ AliPosition::AliPosition()
 // Creation of an AliPosition object and initialisation of parameters.
 // The unit scale for position coordinates is initialised to cm.
  fScale=0.01;
+ fTstamp=0;
 }
 ///////////////////////////////////////////////////////////////////////////
 AliPosition::~AliPosition()
 {
 // Destructor to delete dynamically allocated memory
+ if (fTstamp)
+ {
+  delete fTstamp;
+  fTstamp=0;
+ }
 }
 ///////////////////////////////////////////////////////////////////////////
 AliPosition::AliPosition(const AliPosition& p) : Ali3Vector(p)
 {
 // Copy constructor
  fScale=p.fScale;
+ if (p.fTstamp) fTstamp=new AliTimestamp(*(p.fTstamp));
 }
 ///////////////////////////////////////////////////////////////////////////
 void AliPosition::SetPosition(Double_t* r,TString f)
@@ -210,4 +217,34 @@ Float_t AliPosition::GetUnitScale() const
 // means that all position coordinates are in cm.
  return fScale;
 }
+///////////////////////////////////////////////////////////////////////////
+void AliPosition::SetTimestamp(AliTimestamp& t)
+{
+// Store the timestamp for this position.
+ if (fTstamp) delete fTstamp;
+ fTstamp=new AliTimestamp(t);
+}
+///////////////////////////////////////////////////////////////////////////
+AliTimestamp* AliPosition::GetTimestamp()
+{
+// Provide the timestamp of this position.
+ return fTstamp;
+}
+///////////////////////////////////////////////////////////////////////////
+void AliPosition::RemoveTimestamp()
+{
+// Remove the timestamp from this postion.
+ if (fTstamp)
+ {
+  delete fTstamp;
+  fTstamp=0;
+ }
+}
+///////////////////////////////////////////////////////////////////////////
+void AliPosition::Data(TString f) const
+{
+// Provide all position/time information within the coordinate frame f.
+ Ali3Vector::Data(f);
+ if (fTstamp) fTstamp->Date(1);
+} 
 ///////////////////////////////////////////////////////////////////////////

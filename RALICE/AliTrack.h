@@ -15,6 +15,7 @@
 #include "AliSignal.h"
 #include "AliBoost.h"
 #include "AliPositionObj.h"
+#include "AliTimestamp.h"
  
 class AliTrack : public TNamed,public Ali4Vector
 {
@@ -83,7 +84,9 @@ class AliTrack : public TNamed,public Ali4Vector
   void SetFitDetails(TObject* obj);       // Enter the object containing the fit details
   void SetFitDetails(TObject& obj) { SetFitDetails(&obj); }
   TObject* GetFitDetails();               // Provide pointer to the object containing the fit details
-
+  void SetTimestamp(AliTimestamp& t);     // Set the track timestamp
+  AliTimestamp* GetTimestamp();           // Provide the track timestamp
+  void RemoveTimestamp();                 // Remove timestamp from this track
  
  protected:
   void Init();               // Initialisation of pointers etc...
@@ -105,10 +108,11 @@ class AliTrack : public TNamed,public Ali4Vector
   AliTrack* fParent;         // Pointer to the parent track
   Float_t fProb;             // Probability for this track as a hypothesis
   TObject* fFit;             // Object containing details of the fit
+  AliTimestamp* fTstamp;     // The track timestamp
 
  private:
   void Dumps(AliTrack* t,Int_t n,TString f); // Recursively print all decay levels
  
- ClassDef(AliTrack,13) // Handling of the attributes of a reconstructed particle track.
+ ClassDef(AliTrack,14) // Handling of the attributes of a reconstructed particle track.
 };
 #endif

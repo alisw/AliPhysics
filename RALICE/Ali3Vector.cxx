@@ -879,3 +879,25 @@ Ali3Vector Ali3Vector::GetUnprimed(TRotMatrix* m) const
  return v;
 }
 ///////////////////////////////////////////////////////////////////////////
+Double_t Ali3Vector::GetX(Int_t i,TString f)
+{
+// Provide i-th vector component according to reference frame f.
+// The vector components are addressed via the generic x1,x2,x3 notation.
+// So, i=1 denotes the first vector component.
+// The error on the selected component can be obtained via the
+// usual GetResultError() facility.
+ 
+ fDresult=0;
+
+ if (i<1 || i>3) return 0;
+
+ Double_t vec[3];
+ Double_t err[3];
+ GetVector(vec,f);
+ GetErrors(err,f);
+
+ fDresult=err[i-1];
+
+ return vec[i-1];
+}
+///////////////////////////////////////////////////////////////////////////
