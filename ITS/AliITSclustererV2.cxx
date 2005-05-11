@@ -119,6 +119,10 @@ Int_t AliITSclustererV2::Digits2Clusters(TTree *dTree, TTree *cTree) {
   else branch->SetAddress(&clusters);
 
   Int_t mmax=(Int_t)dTree->GetEntries();
+  if (mmax!=fNModules) {
+    Error("Digits2Clusters","Number of entries != number of modules !");
+    return 1;
+  }
 
   for (fI=0; fI<mmax; fI++) {
     dTree->GetEvent(fI);
