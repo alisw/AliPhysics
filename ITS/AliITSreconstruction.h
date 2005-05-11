@@ -23,6 +23,8 @@ class AliITSreconstruction : public TTask{
     virtual void Exec(const Option_t *opt="ALL");
     virtual void SetOutputFile(TString filename);
  private:
+    AliITSreconstruction(const AliITSreconstruction &);
+    AliITSreconstruction & operator=(const AliITSreconstruction &);
     Bool_t InitRec();  // Standard Reconstrution initilization.
  private:
     Bool_t  fDet[3];   //! logical specifing which detectors to reconstruct.

@@ -8,7 +8,7 @@
 #include "AliITS.h"
 #include "AliITSgeom.h"
 #include "AliITSdigitSSD.h"
-#include "AliRawReaderDate.h"
+#include "AliRawReader.h"
 #include "AliITSRawStreamSSDv1.h"
 #include "AliITSBeamTestDigSSD.h"
 #include <TBranch.h>
@@ -70,11 +70,11 @@ void AliITSBeamTestDigSSD::Exec(Option_t* /*opt*/) {
   
   // this constructor sets the flag to select SSD data only 
   // the Next method below will then jump to SSD data for this event
-  AliITSRawStreamSSDv1 str(fReaderDate);
+  AliITSRawStreamSSDv1 str(fReader);
 
   // no selection of equipment 
-  //fReaderDate->SelectEquipment(-1);
-  //fReaderDate->SelectEquipment(17,102,102);
+  //fReader->SelectEquipment(-1);
+  //fReader->SelectEquipment(17,102,102);
 
   while(str.Next()){   
     
@@ -100,7 +100,7 @@ void AliITSBeamTestDigSSD::Exec(Option_t* /*opt*/) {
   
   fTreeD->SetEntries(maxn);
     
-  fReaderDate->Reset();
+  fReader->Reset();
   
   fTreeD->AutoSave();
   

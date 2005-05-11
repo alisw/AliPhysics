@@ -14,6 +14,11 @@
  **************************************************************************/
  
 /* $Id$ */
+/////////////////////////////////////////////////////////////////////////
+//                                                                     //
+//                                                                     //
+//                                                                     //
+////////////////////////////////////////////////////////////////////////
 
 #include <TROOT.h>
 #include <TFile.h>
@@ -158,7 +163,8 @@ Bool_t AliITSreconstruction::Init(){
     fDet[0] = fDet[1] = fDet[2] = kTRUE;
     fEnt0 = 0;
 
-    fEnt  = gAlice->GetEventsPerRun();
+    //fEnt  = gAlice->GetEventsPerRun();
+    fEnt = Int_t(fRunLoader->TreeE()->GetEntries());
 
     fLoader->LoadDigits("read");
     fLoader->LoadRecPoints("recreate");

@@ -11,7 +11,7 @@
 #include "TTask.h"
 
 class AliITS;
-class AliRawReaderDate;
+class AliRawReader;
 class TTree;
 class AliITSEventHeader;
 
@@ -26,7 +26,7 @@ class AliITSBeamTestDig: public TTask {
   AliITSBeamTestDig& operator=(const AliITSBeamTestDig &source);
   virtual ~AliITSBeamTestDig() {}
  
-  void SetRawReaderDate(AliRawReaderDate* rd) {fReaderDate=rd;}
+  void SetRawReader(AliRawReader* rd) {fReader=rd;}
   void SetTree(TTree* treedig) {fTreeD=treedig;}
   void SetITSEventHeader(AliITSEventHeader* header){fITSHeader = header;}
 
@@ -36,12 +36,12 @@ class AliITSBeamTestDig: public TTask {
  protected:      
   
   AliITSEventHeader* fITSHeader;     // its event header
-  AliRawReaderDate* fReaderDate;     // !reader date;
+  AliRawReader* fReader;             // !reader ;
   TTree* fTreeD;                     // tree of digits
  
   AliITS* fBt;               // !beam test object
 
-  ClassDef(AliITSBeamTestDig,2)   // its beam test digitization 
+  ClassDef(AliITSBeamTestDig,3)   // its beam test digitization 
 
  };
 

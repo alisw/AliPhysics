@@ -7,7 +7,7 @@
 ////////////////////////////////////////////////////
 #include "AliITS.h"
 #include "AliITSdigitSDD.h"
-#include "AliRawReaderDate.h"
+#include "AliRawReader.h"
 #include "AliVMERawStream.h"
 #include "AliITSRawStreamSDDv2.h"
 #include "AliITSRawStreamSDDv3.h"
@@ -88,21 +88,21 @@ void AliITSBeamTestDigSDD::Exec(Option_t* /*opt*/)
 
   switch(fBtPer){
   case kNov04:
-    fStreamer = new AliITSRawStreamSDDv3(fReaderDate);
+    fStreamer = new AliITSRawStreamSDDv3(fReader);
     break;
   case kAug04:
-    AliVMERawStream vmeStreamer(fReaderDate);
-    fReaderDate->RequireHeader(kFALSE);
-    while(fReaderDate->ReadHeader()){
-      fSubEventAttributes = fReaderDate->GetSubEventAttributes();
+    AliVMERawStream vmeStreamer(fReader);
+    fReader->RequireHeader(kFALSE);
+    while(fReader->ReadHeader()){
+      fSubEventAttributes = fReader->GetSubEventAttributes();
     }
     
     fSDDEvType=GetEventType();
     if(fSDDEvType==1) fITSHeader->SetEventTypeSDD(kReal);
     if(fSDDEvType==2) fITSHeader->SetEventTypeSDD(kCalibration1);
     if(fSDDEvType==3) fITSHeader->SetEventTypeSDD(kCalibration2);
-    fReaderDate->Reset();
-    fStreamer = new AliITSRawStreamSDDv2(fReaderDate);
+    fReader->Reset();
+    fStreamer = new AliITSRawStreamSDDv2(fReader);
     break;
   }
 
@@ -114,7 +114,6 @@ void AliITSBeamTestDigSDD::Exec(Option_t* /*opt*/)
   //set compressed fSignal of AliITSdigitSDD to -1000
   //set expanded fSignalExpanded of AliITSdigitSDD equal to fStreamer.GetSignal() 
   while(fStreamer->Next()){   
-
     Int_t ndet =0;
     if(GetBtPeriod()==kNov04) ndet=fStreamer->GetChannel()+nspd;
     if(GetBtPeriod()==kAug04) ndet=fStreamer->GetChannel();
@@ -149,7 +148,7 @@ void AliITSBeamTestDigSDD::Exec(Option_t* /*opt*/)
   }
       
   fTreeD->SetEntries(maxn);
-  fReaderDate->Reset();
+  fReader->Reset();
   fTreeD->AutoSave();
 
   for(Int_t n=0;n<maxn;n++){

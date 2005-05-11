@@ -11,8 +11,6 @@
 #include "AliITSBeamTestDig.h"
 
 
-class AliRawReaderDate;
-
 class AliITSBeamTestDigSPD: public AliITSBeamTestDig {
  
  public:

@@ -18,6 +18,7 @@
 #include "AliITSBeamTestDigSSD.h"
 #include "AliITSBeamTestDigitizer.h"
 #include "AliRawReaderDate.h"
+#include "AliRawReaderRoot.h"
 #include "TGeoManager.h"
 #include "TGeoMaterial.h"
 #include "TGeoMedium.h"
@@ -44,6 +45,7 @@ AliITSBeamTestDigitizer::AliITSBeamTestDigitizer():TTask()
   fDATEEvType=7;
   fRunNumber=-1;
   SetFlagInit();
+  SetOptDate();
   fBt=0;
   fPeriod=kNov04;
 } 
@@ -62,6 +64,7 @@ AliITSBeamTestDigitizer::AliITSBeamTestDigitizer():TTask()
   fDATEEvType=7;
   fFlagHeader=kTRUE;
   fRunNumber=-1;
+  SetOptDate();
 
   TString choice(opt);
   Bool_t aug04 = choice.Contains("Aug04");
@@ -86,6 +89,7 @@ AliITSBeamTestDigitizer::AliITSBeamTestDigitizer():TTask()
   fDATEEvType=7;
   fFlagHeader=kTRUE;
   fRunNumber=run;
+  SetOptDate();
   TString choice(opt);
   Bool_t aug04 = choice.Contains("Aug04");
   Bool_t nov04 = choice.Contains("Nov04");
@@ -179,6 +183,7 @@ void AliITSBeamTestDigitizer::Init(){
 
   fEvIn=0;
   fEvFin=0;
+  SetOptDate();
   
 }
 
@@ -236,7 +241,11 @@ void AliITSBeamTestDigitizer::ExecDigitization(){
   fLoader->SetDigitsFileName(fDigitsFileName);
   fLoader->LoadDigits("recreate");
  
-  AliRawReaderDate rd(fRawdataFileName,fEvIn);
+  AliRawReader* rd;
+
+  if(GetOptDate()) rd = new AliRawReaderDate(fRawdataFileName,fEvIn);
+  else rd = new AliRawReaderRoot(fRawdataFileName,fEvIn);
+
   AliHeader* header = fRunLoader->GetHeader();
   
   Int_t iev=fEvIn-1;
@@ -255,12 +264,12 @@ void AliITSBeamTestDigitizer::ExecDigitization(){
     AliITSEventHeader* itsh = new AliITSEventHeader("ITSHeader");
     fRunLoader->SetEventNumber(iev);
    
-    rd.RequireHeader(fFlagHeader);
-    rd.SelectEvents(fDATEEvType);
+    rd->RequireHeader(fFlagHeader);
+    rd->SelectEvents(fDATEEvType);
  
-    digSDD->SetRawReaderDate(&rd);
-    digSPD->SetRawReaderDate(&rd);
-    digSSD->SetRawReaderDate(&rd);
+    digSDD->SetRawReader(rd);
+    digSPD->SetRawReader(rd);
+    digSSD->SetRawReader(rd);
     
     if(fLoader->TreeD() == 0x0) fLoader->MakeTree("D");
 
@@ -306,12 +315,13 @@ void AliITSBeamTestDigitizer::ExecDigitization(){
     delete digitsSDD;
     delete digitsSSD;
 
-   }while(rd.NextEvent());
+   }while(rd->NextEvent());
 
- 
+  
   fRunLoader->WriteHeader("OVERWRITE");
   fRunLoader->WriteRunLoader("OVERWRITE");
 
+  delete rd;
   fLoader->UnloadDigits();
   fLoader->UnloadRawClusters();
   fRunLoader->UnloadHeader();

@@ -10,7 +10,7 @@
 
 #include "AliITSBeamTestDig.h"
 
-class AliRawReaderDate;
+
 class AliITSRawStreamSDD;
 
 typedef enum {kAug04,kNov04} BeamtestPeriod_t;

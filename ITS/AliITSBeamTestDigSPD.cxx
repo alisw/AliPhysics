@@ -8,7 +8,8 @@
 
 #include "AliITS.h"
 #include "AliITSdigitSPD.h"
-#include "AliRawReaderDate.h"
+#include "AliRawReader.h"
+#include "AliRawReader.h"
 #include "AliRawDataHeader.h"
 #include "AliITSRawStreamSPD.h"
 #include "AliITSBeamTestDigSPD.h"
@@ -85,15 +86,15 @@ void AliITSBeamTestDigSPD::Exec(Option_t* /*opt*/)
    }
   
 
-  AliITSRawStreamSPD str(fReaderDate);
+  AliITSRawStreamSPD str(fReader);
 
-  fReaderDate->SelectEquipment(17,211,211);
+  fReader->SelectEquipment(17,211,211);
 
   while(str.Next()){  
 
-    const AliRawDataHeader* rdh = fReaderDate->GetDataHeader();
-    UChar_t blockAttributes = fReaderDate->GetBlockAttributes();     
-    UInt_t statusBits = fReaderDate->GetStatusBits();     
+    const AliRawDataHeader* rdh = fReader->GetDataHeader();
+    UChar_t blockAttributes = fReader->GetBlockAttributes();     
+    UInt_t statusBits = fReader->GetStatusBits();     
     UInt_t orbitNumber = rdh->fEventID2; 			 
     UShort_t  bunchCross = rdh->fEventID1;      
       // UInt_t DataSize = rdh->fSize;				      
@@ -148,7 +149,7 @@ void AliITSBeamTestDigSPD::Exec(Option_t* /*opt*/)
     fTreeD->SetEntries(maxn);
   
 	
-    fReaderDate->Reset();
+    fReader->Reset();
     fTreeD->AutoSave();
    
 

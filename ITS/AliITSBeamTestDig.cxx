@@ -17,7 +17,7 @@ ClassImp(AliITSBeamTestDig)
   //
   // Default constructor
   //
-  fReaderDate=0;
+  fReader=0;
   fTreeD=0;
   fBt=0;
   fITSHeader=0;
@@ -30,7 +30,7 @@ ClassImp(AliITSBeamTestDig)
   // Standard constructor
   //
 
-  fReaderDate=0;
+  fReader=0;
   fTreeD=0;
   fBt=0;
   fITSHeader=0;
@@ -41,7 +41,7 @@ ClassImp(AliITSBeamTestDig)
 AliITSBeamTestDig::AliITSBeamTestDig(const AliITSBeamTestDig &bt):TTask(bt){
     // Copy constructor. 
 
-  fReaderDate=bt.fReaderDate;
+  fReader=bt.fReader;
   fTreeD=bt.fTreeD;
   fBt=bt.fBt;
   fITSHeader=bt.fITSHeader;

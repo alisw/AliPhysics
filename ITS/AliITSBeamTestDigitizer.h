@@ -54,6 +54,7 @@ class AliITSBeamTestDigitizer : public TTask {
   void SelectEvents(Int_t eventtype) {fDATEEvType=eventtype;}
   void SetBeamTestPeriod(BeamtestPeriod_t per=kNov04) {fPeriod=per;}
   void SetRunNumber(Int_t run) {fRunNumber=run;}
+  void SetOptDate(Bool_t opt=kFALSE) {fOptDate=opt;}
 
   void SetBeamTestGeometry(AliITS* bt){fBt=bt;}
 
@@ -64,6 +65,7 @@ class AliITSBeamTestDigitizer : public TTask {
  
   Int_t GetRunNumber()  const {return fRunNumber;}
   Bool_t GetFlagInit()  const {return fFlagInit;}
+  Bool_t GetOptDate() const {return fOptDate;}
   BeamtestPeriod_t GetBeamTestPeriod() const {return fPeriod;}
   AliITS* GetBeamTestGeometry() const {return fBt;}
 
@@ -77,6 +79,8 @@ class AliITSBeamTestDigitizer : public TTask {
 
   Bool_t   fFlagHeader;             //flag for the hader 
   Bool_t   fFlagInit;               //flag for initialization
+  Bool_t   fOptDate;                //option for reading date format files
+                                    //(default: reads root files)                                    
 
   TString  fDigitsFileName;         //Digits file name
   TString  fRawdataFileName;        //Raw data file name
@@ -91,7 +95,7 @@ class AliITSBeamTestDigitizer : public TTask {
 
   static const TString fgkDefaultDigitsFileName; // default name for dig. file  
 
-  ClassDef(AliITSBeamTestDigitizer,1)  // An Alice SDD beam test digitization class 
+  ClassDef(AliITSBeamTestDigitizer,2)  // An Alice SDD beam test digitization class 
 
   };
 

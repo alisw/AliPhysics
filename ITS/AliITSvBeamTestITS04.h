@@ -55,7 +55,7 @@ class AliITSvBeamTestITS04 : public AliITS {
   void AddSSDGeometry(TGeoVolume *moth) const;
   Int_t GetCurrentLayLaddDet(Int_t &lay,Int_t &ladd, Int_t &det) const;
 
-  TGeoVolume *fITSmotherVolume;            //ITS mother volume
+  TGeoVolume *fITSmotherVolume;            //! ITS mother volume
   static const Int_t fgkNumberOfSPD;       //number of SPD
   static const Int_t fgkNumberOfSDD;       //number of SDD
   static const Int_t fgkNumberOfSSD;       //number of SSD
@@ -100,7 +100,7 @@ class AliITSvBeamTestITS04 : public AliITS {
    char   fWrite[60];        //! file name to write .det file 
    char   fRead[60];         // file name to read .det file (JC)
    
-   ClassDef(AliITSvBeamTestITS04,1) 
+   ClassDef(AliITSvBeamTestITS04,2) 
 
  };
 

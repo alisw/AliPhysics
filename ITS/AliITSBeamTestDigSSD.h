@@ -12,7 +12,7 @@
 #include "AliITSBeamTestDig.h"
 
 
-class AliRawReaderDate;
+
 
 class AliITSBeamTestDigSSD: public AliITSBeamTestDig {
  
