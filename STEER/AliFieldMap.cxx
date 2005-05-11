@@ -221,9 +221,9 @@ void AliFieldMap::Field(Float_t *x, Float_t *b) const
     b[0]=b[1]=b[2]=0;
     //
     
-    xl[0]=TMath::Abs(x[0])-fXbeg;
-    xl[1]=TMath::Abs(x[1])-fYbeg;
-    xl[2]=x[2]-fZbeg;
+    xl[0] = x[0] - fXbeg;
+    xl[1] = x[1] - fYbeg;
+    xl[2] = x[2] - fZbeg;
     
     hix=xl[0]*fXdeli;
     ratx=hix-int(hix);
