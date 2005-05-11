@@ -14,6 +14,11 @@
 
 #include "AliITS.h"
 
+typedef enum {
+  kNoTarg=0,kIron=4,kLead,kSteel,
+  kCarbon=8,kAl,kBe,kTi,kSn,kCopper,kGe,kTungsten=19
+} TargTyp_t;
+
 class AliITSvSDD03 : public AliITS{
  public:
     AliITSvSDD03(); // default constructor
@@ -30,6 +35,10 @@ class AliITSvSDD03 : public AliITS{
     virtual void   SetDefaults();
     virtual void   DrawModule() const;
     virtual void   StepManager(); 
+    virtual void   SetTargMat(TargTyp_t tt=kNoTarg){ // set target material 
+                                                 fTarg=tt;}    
+    virtual void   SetTargThick(Float_t th=1){ // set target thickness 
+                                                 fTargThick=th;}    
     virtual void   SetWriteDet(Bool_t det=kTRUE){ // set .det write
                                                  fGeomDetOut = det;}
     virtual void   SetWriteDet(const char *f){ // set write file
@@ -56,6 +65,7 @@ class AliITSvSDD03 : public AliITS{
          fChip2 = v;}
     // Replacement default simulation initilization.
     virtual void SetDefaultSimulation();
+    TargTyp_t GetTargMat() const {return fTarg;}
     // Decodes the id and copy nuber to give the layer, ladder, and detector 
     // numbers . Returns the module number.
     virtual Int_t DecodeDetector(Int_t id,Int_t cpy,Int_t &lay,
@@ -76,7 +86,9 @@ class AliITSvSDD03 : public AliITS{
     Float_t  fChip2;          // thickness of chip in SDD layer 2 
     Int_t fIDMother;          //! ITS Mother Volume id.
     Int_t fYear;              // Year flag to select different geometries.
+    TargTyp_t fTarg;          // Target material
+    Float_t fTargThick;       // TargetThickness in mm
 
-    ClassDef(AliITSvSDD03,1) // Hits manager and geometry for SDD testbeam
+    ClassDef(AliITSvSDD03,2) // Hits manager and geometry for SDD testbeam
 };
 #endif
