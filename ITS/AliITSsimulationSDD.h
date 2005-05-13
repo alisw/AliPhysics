@@ -35,7 +35,8 @@ class AliITSsimulationSDD : public AliITSsimulation {
     AliITSsimulationSDD(AliITSsimulationSDD &source);
     virtual ~AliITSsimulationSDD(); // Destructor
     // = opporator
-    AliITSsimulationSDD& operator=(AliITSsimulationSDD &source);
+    AliITSsimulationSDD& operator=(const AliITSsimulationSDD &source);
+    virtual AliITSsimulationSDD& operator=(const AliITSsimulation &source);
     // Initilize variables for this simulation
     void Init();
 
@@ -148,7 +149,7 @@ class AliITSsimulationSDD : public AliITSsimulation {
     void SetDoFFT(Int_t doFFT=1) {fDoFFT=doFFT;}
 
     // Print SSD simulation Parameters
-    virtual void Print();
+    virtual void PrintStatus() const;
 
   private:
     // Variables and pointers for local use only. Not Streamed out.

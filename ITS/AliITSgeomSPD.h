@@ -70,6 +70,8 @@ class AliITSgeomSPD : public TObject {
     virtual void DetToL(Int_t row,Int_t col,Float_t &xl,Float_t &zl);
     virtual void Print(ostream *os) const; // output streamer to standard out.
     virtual void Read(istream *is); // input streamer from standard in.
+    virtual void Print(Option_t *option="") const {TObject::Print(option);}
+    virtual Int_t Read(const char *name) {return TObject::Read(name);}
 
  protected:
     TBRIK  *fShapeSPD; // SPD active area shape

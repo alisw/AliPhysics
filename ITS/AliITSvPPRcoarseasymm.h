@@ -25,7 +25,7 @@ class AliITSvPPRcoarseasymm : public AliITS {
     virtual void   Init(); 
     virtual Int_t  IsVersion() const {// returns the ITS version number 
 	return 6;}
-    virtual void   DrawModule();
+    virtual void   DrawModule() const;
     virtual void   StepManager();
     virtual void   SetRails(Int_t v=1){ 
 	 // Set flag for rails
@@ -39,9 +39,9 @@ class AliITSvPPRcoarseasymm : public AliITS {
     virtual Int_t GetSupportMaterial(){ 
 	 // Get material of the services supports 
 	 return fSuppMat;}	 	  
-    virtual Int_t GetMajorVersion(){// return Major Version Number
+    virtual Int_t GetMajorVersion() const {// return Major Version Number
 	return fMajorVersion;}
-    virtual Int_t GetMinorVersion(){// return Major Version Number
+    virtual Int_t GetMinorVersion() const {// return Major Version Number
 	return fMinorVersion;}
 
 

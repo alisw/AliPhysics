@@ -119,7 +119,8 @@ class AliITSresponseSDD : public AliITSresponse {
     //********
     void    PrintGains();
     void    Print();
-
+    virtual void Print(ostream *os) const {AliITSresponseSDD::Print(os);}
+    virtual void Print(Option_t *option="") const {AliITSresponseSDD::Print(option);}
     // not implemented virtual methods (devlared in the mother class
     virtual  void   SetDetParam(Double_t *)
       {NotImplemented("SetDetParam");}

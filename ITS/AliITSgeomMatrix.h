@@ -40,6 +40,8 @@ class AliITSgeomMatrix : public TObject {
 	void PrintTitles(ostream *os) const;
 	// Reads in the content of this class in the format of Print
 	void Read(istream *is);
+        virtual void Print(Option_t *option="") const {TObject::Print(option);}
+        virtual Int_t Read(const char *name) {return TObject::Read(name);}
 
 	// Given the rotation angles [radians] it fills frot and computes
 	// the rotation matrix fm.

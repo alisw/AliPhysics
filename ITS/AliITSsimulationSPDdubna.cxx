@@ -159,6 +159,23 @@ AliITSsimulationSPDdubna&  AliITSsimulationSPDdubna::operator=(const
     return *this;
 }
 //______________________________________________________________________
+AliITSsimulationSPDdubna&  AliITSsimulationSPDdubna::operator=(const 
+                                           AliITSsimulation &s){
+    //    Assignment operator
+    // Inputs:
+    //    AliITSsimulationSPDdubna &s The original class for which
+    //                                this class is a copy of
+    // Outputs:
+    //    none.
+    // Return:
+
+    if(&s == this) return *this;
+    Error("AliITSsimulationSPDdubna","Not allowed to make a = with "
+          "AliITSsimulationSPDdubna","Using default creater instead");
+
+    return *this;
+}
+//______________________________________________________________________
 void AliITSsimulationSPDdubna::InitSimulationModule(Int_t module, Int_t event){
     //  This function creates maps to build the list of tracks for each
     //  summable digit. Inputs defined by base class.

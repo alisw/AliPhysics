@@ -26,7 +26,8 @@ class AliITSTransientDigit : public AliITSdigitSDD {
     void PutTrackItem(TObject *obj,Int_t i){fTrackList->AddAt(obj,i);}
     void Print(ostream *os); // Class ascii print function
     void Read(istream *os);  // Class ascii read function
-
+    virtual Int_t Read(const char *name) {return AliITSdigitSDD::Read(name);}
+    virtual void Print(Option_t *option="") const {AliITSdigitSDD::Print(option);}
  protected:
     TObjArray *fTrackList;  // track list 
 

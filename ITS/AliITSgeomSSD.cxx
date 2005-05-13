@@ -304,6 +304,18 @@ istream &operator>>(istream &is,AliITSgeomSSD175 &r){
     r.Read(&is);
     return is;
 }
+AliITSgeomSSD175& AliITSgeomSSD175::operator=(const AliITSgeomSSD &source) {
+////////////////////////////////////////////////////////////////////////
+//    assignment operator
+////////////////////////////////////////////////////////////////////////
+  
+
+    if(this == &source) return *this;
+    Error("AliITSgeomSSD175","Not allowed to make a = with "
+          "AliITSgeomSSD175 Using default creater instead");
+
+    return *this;
+}
 //======================================================================
 
 ClassImp(AliITSgeomSSD275and75)
@@ -371,6 +383,19 @@ istream &operator>>(istream &is,AliITSgeomSSD275and75 &r){
     r.Read(&is);
     return is;
 }
+AliITSgeomSSD275and75& AliITSgeomSSD275and75::operator=(const AliITSgeomSSD &source) {
+////////////////////////////////////////////////////////////////////////
+//    assignment operator
+////////////////////////////////////////////////////////////////////////
+  
+
+    if(this == &source) return *this;
+    Error("AliITSgeomSSD275and75","Not allowed to make a = with "
+          "AliITSgeomSSD275and75 Using default creater instead");
+
+    return *this;
+}
+
 //======================================================================
 
 ClassImp(AliITSgeomSSD75and275)
@@ -437,4 +462,17 @@ istream &operator>>(istream &is,AliITSgeomSSD75and275 &r){
     r.Read(&is);
     return is;
 }
+AliITSgeomSSD75and275& AliITSgeomSSD75and275::operator=(const AliITSgeomSSD &source) {
+////////////////////////////////////////////////////////////////////////
+//    assignment operator
+////////////////////////////////////////////////////////////////////////
+  
+
+    if(this == &source) return *this;
+    Error("AliITSgeomSSD75and275","Not allowed to make a = with "
+          "AliITSgeomSSD75and275 Using default creater instead");
+
+    return *this;
+}
+
 //======================================================================

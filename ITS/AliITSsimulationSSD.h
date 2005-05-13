@@ -22,6 +22,7 @@ class AliITSsimulationSSD: public AliITSsimulation {
     AliITSsimulationSSD(const AliITSsimulationSSD &source); // copy constructor
     // operator =
     AliITSsimulationSSD& operator=(const AliITSsimulationSSD &source);
+    virtual AliITSsimulationSSD& operator=(const AliITSsimulation &source);
     //Standard Constructor
     AliITSsimulationSSD(AliITSsegmentation *seg,AliITSresponse *resp);
     //Destructor
@@ -65,6 +66,8 @@ class AliITSsimulationSSD: public AliITSsimulation {
     void Print(ostream *os);
     // Standard ascii class read function
     void Read(istream *is);
+    virtual void Print(Option_t *option="") const {TObject::Print(option);}
+    virtual Int_t Read(const char *name) {return TObject::Read(name);}
 
  private:
     // Return the Response class

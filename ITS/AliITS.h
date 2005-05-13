@@ -58,7 +58,7 @@ class AliITS : public AliDetector {
     AliITS(const AliITS &source); // copy constructor. Not to be used!
     AliITS& operator=(AliITS &source); // = operator. Not to be used!
     virtual Int_t IsVersion() const {return 1;}
-    virtual Int_t DistancetoPrimitive(Int_t,Int_t) const{return 999;};
+    virtual Int_t DistancetoPrimitive(Int_t , Int_t )  {return 999;}
 
     //===================== Simulation Geometry ========================
     // get geometry version - detailed (major) or coarse (minor)

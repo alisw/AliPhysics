@@ -2,7 +2,9 @@
 #define ALIITSSIMULATIONFASTPOINTSV0_H
 
 #include "AliITSsimulation.h"
-
+/////////////////////////////////////////////////////////
+//  fast simulation V0
+/////////////////////////////////////////////////////////
 class AliITSmodule;
 class AliITSstatistics;
 class TRandom;
@@ -16,6 +18,9 @@ public:
   virtual ~AliITSsimulationFastPointsV0(); 
   void CreateFastRecPoints(AliITSmodule *mod,Int_t module,TRandom *rndm);
 private:
+  virtual AliITSsimulation& operator=(const AliITSsimulation &src);
+  AliITSsimulationFastPointsV0(const AliITSsimulationFastPointsV0 &);
+  AliITSsimulationFastPointsV0 & operator=(const AliITSsimulationFastPointsV0 &);
   void AddSPD(Float_t &e,AliITSmodule *mod,Int_t trackNumber);
   void AddSDD(Float_t &e,AliITSmodule *mod,Int_t trackNumber);
   void AddSSD(Float_t &e,AliITSmodule *mod,Int_t trackNumber);

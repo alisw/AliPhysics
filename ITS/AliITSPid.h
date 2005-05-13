@@ -21,6 +21,7 @@ public:
 	void	SetPmom(Int_t track,Float_t Pmom);
 	void	SetPcod(Int_t track,Int_t Pcod);
 	void	Print(Int_t track);
+        virtual void Print(Option_t *option="") const {TObject::Print(option);}
 	void	Tab(void);
 	void    Reset(void);
 	void	SetVec(Int_t track,TVector info);

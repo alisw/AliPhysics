@@ -74,7 +74,7 @@ class AliITSClusterFinderSDD : public AliITSClusterFinder{
     Double_t ChiSqr(Int_t xdim,Int_t zdim,Double_t *spe,Double_t *speFit)const;
     void  PeakFunc( Int_t xdim, Int_t zdim, Double_t *par, Double_t *spe,
                     Double_t *Integral=0 );
-    void  Print() const;
+    void  PrintStatus() const;
 
   private:
     virtual AliITSresponseSDD* GetResp()const{

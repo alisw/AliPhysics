@@ -1123,7 +1123,7 @@ void AliITSvPPRcoarseasymm::Init(){
 }  
  
 //_____________________________________________________________________________
-void AliITSvPPRcoarseasymm::DrawModule(){
+void AliITSvPPRcoarseasymm::DrawModule() const {
 ////////////////////////////////////////////////////////////////////////
 //     Draw a shaded view of the FMD version 6.
 ////////////////////////////////////////////////////////////////////////

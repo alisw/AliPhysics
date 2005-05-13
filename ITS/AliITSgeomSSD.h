@@ -65,6 +65,8 @@ class AliITSgeomSSD : public TObject {
 
     virtual void Print(ostream *os) const;  // Output streamer to standard out.
     virtual void Read(istream *is);   // Input streamer to standard in.
+    virtual void Print(Option_t *option="") const {TObject::Print(option);}
+    virtual Int_t Read(const char *name) {return TObject::Read(name);}
 
  protected:
     // -+-> x
@@ -106,6 +108,7 @@ class AliITSgeomSSD175 : public AliITSgeomSSD {
 
  public:
     AliITSgeomSSD175();
+    virtual AliITSgeomSSD175& operator=(const AliITSgeomSSD &source);
 
     // This clas now has version 0 so that it will not be written to a root
     // file. This is good since there are no longer any data members to this
@@ -138,7 +141,9 @@ class AliITSgeomSSD275and75 : public AliITSgeomSSD {
  public:
     AliITSgeomSSD275and75();
     AliITSgeomSSD275and75(Int_t npar,Float_t *par);
+    virtual AliITSgeomSSD275and75& operator=(const AliITSgeomSSD &source);
 
+ // This clas now has version 0 so that it will not be
     // This clas now has version 0 so that it will not be written to a root
     // file. This is good since there are no longer any data members to this
     // class. It is only designed to make it easer to define this standard
@@ -169,7 +174,9 @@ class AliITSgeomSSD75and275 : public AliITSgeomSSD {
  public:
     AliITSgeomSSD75and275();
     AliITSgeomSSD75and275(Int_t npar,Float_t *par);
+    virtual AliITSgeomSSD75and275& operator=(const AliITSgeomSSD &source);
 
+ // This clas now has version 0 so that it will not be
     // This clas now has version 0 so that it will not be written to a root
     // file. This is good since there are no longer any data members to this
     // class. It is only designed to make it easer to define this standard
@@ -181,3 +188,5 @@ class AliITSgeomSSD75and275 : public AliITSgeomSSD {
 ostream &operator<<(ostream &os,AliITSgeomSSD75and275 &source);
 istream &operator>>(istream &os,AliITSgeomSSD75and275 &source);
 #endif
+
+

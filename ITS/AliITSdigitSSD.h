@@ -43,6 +43,9 @@ class AliITSdigitSSD: public AliITSdigit {
     virtual void SetHit(Int_t i,Int_t hit){fHits[i]=hit;}
     void Print(ostream *os); // Class ascii print function
     void Read(istream *os);  // Class ascii read function
+    virtual void Print(Option_t *option="") const {TObject::Print(option);}
+    virtual Int_t Read(const char *name) {return TObject::Read(name);}
+
 
  protected:
     static const Int_t fgkSssd = 10; // size of fTracks and fHits arrays

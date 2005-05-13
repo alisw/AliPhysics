@@ -81,7 +81,7 @@ class AliITSClusterFinder :public TObject{
     virtual void   FillCluster(AliITSRawCluster *,Int_t) {}// fiil cluster
     virtual void   FillCluster(AliITSRawCluster *cluster) {// fill cluster
         FillCluster(cluster,1);}
-    virtual void FindCluster(Int_t,Int_t,AliITSRawCluster *) {}// find cluster
+
     //
     virtual void SetModule(Int_t module){fModule = module;}// Set module number
     virtual Int_t GetModule()const{return fModule;}// Returns module number
@@ -116,6 +116,8 @@ class AliITSClusterFinder :public TObject{
     // IO functions
     void Print(ostream *os); // Class ascii print function
     void Read(istream *os);  // Class ascii read function
+    virtual void Print(Option_t *option="") const {TObject::Print(option);}
+    virtual Int_t Read(const char *name) {return TObject::Read(name);}
 
     // Conversion from RecPoints to V2Clusters
     void RecPoints2Clusters(const TClonesArray *points, Int_t idx, TClonesArray *clusters);

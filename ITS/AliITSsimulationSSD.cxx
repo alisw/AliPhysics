@@ -120,6 +120,17 @@ AliITSsimulationSSD& AliITSsimulationSSD::operator=(
   return *this;
 }
 //______________________________________________________________________
+AliITSsimulationSSD& AliITSsimulationSSD::operator=(
+                                         const AliITSsimulation &s){
+  // Operator =
+
+  if(this==&s) return *this;
+  Error("AliITSsimulationSSD","Not allowed to make a = with "
+	"AliITSsimulationSSD Using default creater instead");
+  
+  return *this;
+}
+//______________________________________________________________________
 AliITSsimulationSSD::AliITSsimulationSSD(const AliITSsimulationSSD &source):
     AliITSsimulation(source){
   // copy constructor

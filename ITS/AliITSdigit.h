@@ -44,8 +44,11 @@ class AliITSdigit: public TObject  {
     virtual void SetCoord1(Int_t i){fCoord1 = i;} // Sets fCoord1 value
     virtual void SetCoord2(Int_t i){fCoord2 = i;} // Sets fCoord12value
     virtual void SetSignal(Int_t i){fSignal = i;} // Sets fSignal value
-    void Print(ostream *os); // Class ascii print function
-    void Read(istream *os);  // Class ascii read function
+
+    virtual void Print(Option_t *option="") const {TObject::Print(option);}
+    virtual void Print(ostream *os); // Class ascii print function
+    virtual Int_t Read(const char *name) {return TObject::Read(name);}
+    virtual void Read(istream *os);  // Class ascii read function
 
  protected:
     Int_t fCoord1; // Cell number on Z axis (SPD+SDD), flag for side type (SSD)

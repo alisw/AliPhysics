@@ -62,6 +62,8 @@ class AliITSgeomSDD: public TObject {
     virtual void Det2Local(Int_t a,Int_t t,Int_t s,Float_t &xl,Float_t &zl);
     virtual void Print(ostream *os) const; // Output streamer to standard out.
     virtual void Read(istream *is);   // Input streamer to standard in.
+    virtual void Print(Option_t *option="") const {TObject::Print(option);}
+    virtual Int_t Read(const char *name) {return TObject::Read(name);}
     // or what other or different information that is needed.
 
  protected:

@@ -44,6 +44,9 @@ class AliITSRecPoint : public TObject {
     void Print(ostream *os); 
     // Reads in the content of this class in the format of Print
     void Read(istream *is);
+    virtual void Print(Option_t *option="") const {TObject::Print(option);}
+    virtual Int_t Read(const char *name) {return TObject::Read(name);}
+
  public:
     Int_t     fTracks[3]; //labels of overlapped tracks
     Float_t   fX ;        //X of cluster

@@ -179,12 +179,21 @@ AliITSsimulationSDD::AliITSsimulationSDD(AliITSsimulationSDD &source) :
     // Copy constructor to satify Coding roules only.
 
     if(this==&source) return;
-    Error("AliITSsimulationSSD","Not allowed to make a copy of "
+    Error("AliITSsimulationSDD","Not allowed to make a copy of "
           "AliITSsimulationSDD Using default creater instead");
     AliITSsimulationSDD();
 }
 //______________________________________________________________________
-AliITSsimulationSDD& AliITSsimulationSDD::operator=(AliITSsimulationSDD &src){
+AliITSsimulationSDD& AliITSsimulationSDD::operator=(const AliITSsimulationSDD &src){
+    // Assignment operator to satify Coding roules only.
+
+    if(this==&src) return *this;
+    Error("AliITSsimulationSDD","Not allowed to make a = with "
+          "AliITSsimulationSDD Using default creater instead");
+    return *this ;
+}
+//______________________________________________________________________
+AliITSsimulationSDD& AliITSsimulationSDD::operator=(const AliITSsimulation &src){
     // Assignment operator to satify Coding roules only.
 
     if(this==&src) return *this;
@@ -192,6 +201,7 @@ AliITSsimulationSDD& AliITSsimulationSDD::operator=(AliITSsimulationSDD &src){
           "AliITSsimulationSDD Using default creater instead");
     return *this ;
 }
+
 //______________________________________________________________________
 AliITSsimulationSDD::AliITSsimulationSDD(AliITSsegmentation *seg,
                                          AliITSresponse *resp):
@@ -1640,7 +1650,7 @@ void AliITSsimulationSDD::WriteSDigits(){
     return;
 }
 //______________________________________________________________________
-void AliITSsimulationSDD::Print() {
+void AliITSsimulationSDD::PrintStatus() const {
     // Print SDD simulation Parameters
 
     cout << "**************************************************" << endl;

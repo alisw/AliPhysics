@@ -17,6 +17,8 @@ class AliITSTableSSD : public TObject{
     void Clear(); // Clears the contents of the table
     void DumpTable(); // it dumps the contents of the table
     Int_t Use(Int_t side); // use current element - returns -1 if none
+    
+    virtual void Clear(Option_t*)  {return TObject::Clear();}
 
  private:
     Int_t SearchValue(Int_t *arr, Int_t refer, Int_t max){

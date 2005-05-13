@@ -169,6 +169,24 @@ AliITSsimulationSPD& AliITSsimulationSPD::operator=(const AliITSsimulationSPD
     return *this;
 } 
 //______________________________________________________________________
+AliITSsimulationSPD& AliITSsimulationSPD::operator=(const AliITSsimulation 
+						    &source) {
+    //    Assignment operator
+    // Inputs: 
+    //    none.
+    // Outputs:
+    //    none.
+    // Return:
+    //    A new AliITSsimulationSPD class with the same parameters as source.
+
+    if(&source == this) return *this;
+    Error("AliITSsimulationSPD","Not allowed to make a = with "
+          "AliITSsimulationSPD Using default creater instead");
+
+    return *this;
+} 
+
+//______________________________________________________________________
 void AliITSsimulationSPD::InitSimulationModule(Int_t module,Int_t event){
     // Creates maps to build the list of tracks for each sumable digit
     // Inputs:

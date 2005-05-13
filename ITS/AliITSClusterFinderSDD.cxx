@@ -15,6 +15,9 @@
 /*
   $Id$
   $Log$
+  Revision 1.38  2005/02/15 13:39:35  masera
+  V2 clusterer moved to the standard framework. V2 clusters and recpoints are still different objects for the moment
+
   Revision 1.37  2004/06/10 21:00:24  nilsen
   Modifications associated with remerging the Ba/Sa and Dubna pixel simulations,
   some cleaning of general code (including coding convensions), and adding some
@@ -1136,7 +1139,7 @@ void AliITSClusterFinderSDD::FindRawClusters(Int_t mod){
     GetRecPoints();
 }
 //_______________________________________________________________________
-void AliITSClusterFinderSDD::Print() const{
+void AliITSClusterFinderSDD::PrintStatus() const{
     // Print SDD cluster finder Parameters
 
     cout << "**************************************************" << endl;

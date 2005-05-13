@@ -52,8 +52,10 @@ class AliITSdigitSDD: public AliITSdigit {
     //set array element i of fHits to hit.
     virtual void SetHit(Int_t i,Int_t hit){fHits[i]=hit;}
     void SetSignalExpanded(Int_t sig){fSignalExpanded = sig;}
-    void Print(ostream *os); // Class ascii print function
-    void Read(istream *os);  // Class ascii read function
+    virtual void Print(ostream *os); // Class ascii print function
+    virtual void Read(istream *os);  // Class ascii read function
+    virtual void Print(Option_t *option="") const {TObject::Print(option);}
+    virtual Int_t Read(const char *name) {return TObject::Read(name);}
 
  protected:
     void InitObject(Float_t phys,const Int_t *tracks,

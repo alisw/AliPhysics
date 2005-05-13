@@ -15,14 +15,10 @@
 
 /* $Id$ */
 
-#include <TParticle.h>
-#include <TRandom.h>
-
 #include "AliITS.h"
 #include "AliITShit.h"
 #include "AliITSRecPoint.h"
 #include "AliITSmodule.h"
-#include "AliITSgeom.h"
 #include "AliITSsimulationFastPointsV0.h"
 #include "AliITSstatistics.h"
 
@@ -51,7 +47,7 @@ AliITSsimulationFastPointsV0::~AliITSsimulationFastPointsV0()
 }
 
 //-------------------------------------------------------------
-void AliITSsimulationFastPointsV0::CreateFastRecPoints(AliITSmodule *mod,Int_t module,TRandom *rndm){
+void AliITSsimulationFastPointsV0::CreateFastRecPoints(AliITSmodule *mod,Int_t module,TRandom *rndm) {
   // Fast points simulator for all of the ITS.
   Int_t   nhit,h,trk,ifirst;
   Float_t x,y,z,t,e;// local coordinate (cm) and time of flight, and dedx.
@@ -105,6 +101,8 @@ void AliITSsimulationFastPointsV0::CreateFastRecPoints(AliITSmodule *mod,Int_t m
 //_______________________________________________________________________
 void AliITSsimulationFastPointsV0::AddSPD(Float_t &e,
 					 AliITSmodule *mod,Int_t trackNumber){
+  //
+
   const Float_t kmicronTocm = 1.0e-4;
   //  const Float_t kdEdXtoQ = ;
   const Float_t kRMSx = 12.0*kmicronTocm; // microns->cm ITS TDR Table 1.3
@@ -132,6 +130,7 @@ void AliITSsimulationFastPointsV0::AddSPD(Float_t &e,
 //_______________________________________________________________________
 void AliITSsimulationFastPointsV0::AddSDD(Float_t &e,
 					 AliITSmodule *mod,Int_t trackNumber){
+  //
 
   const Float_t kmicronTocm = 1.0e-4;
   const Float_t kdEdXtoQ = 2.778e+8; 
@@ -160,6 +159,7 @@ void AliITSsimulationFastPointsV0::AddSDD(Float_t &e,
 //_______________________________________________________________________
 void AliITSsimulationFastPointsV0::AddSSD(Float_t &e,
 					 AliITSmodule *mod,Int_t trackNumber){
+  // 
 
   const Float_t kmicronTocm = 1.0e-4;
   const Float_t kdEdXtoQ = 2.778e+8;

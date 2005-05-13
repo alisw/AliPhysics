@@ -66,6 +66,9 @@ class AliITSpListItem: public TObject {
     void Print(ostream *os) const;
     // Standard ascii class read function
     void Read(istream *is);
+    virtual void Print(Option_t *option="") const {TObject::Print(option);}
+    virtual Int_t Read(const char *name) {return TObject::Read(name);}
+
     // Returns max size of array for for Tracks, Hits, and signals.
     static Int_t GetMaxKept() {return fgksize;};
 

@@ -32,6 +32,7 @@ public:
     virtual Int_t OpenInputFile(const Char_t *filename,Int_t start=0,
                                 Int_t end=-1);
     virtual Int_t Read(Int_t i=0);
+    virtual Int_t Read(const char *name) {return TObject::Read(name);}
     virtual Int_t Decode();
     virtual Int_t GetNumberOfPilots()const{return 3;}
 private:

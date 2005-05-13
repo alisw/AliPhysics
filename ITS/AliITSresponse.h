@@ -168,6 +168,8 @@ class AliITSresponse : public TObject {
     virtual void Print(ostream *os) const;
     // Reads in the content of this class in the format of Print
     virtual void Read(istream *is);
+    virtual void Print(Option_t *option="") const {TObject::Print(option);}
+    virtual Int_t Read(const char *name) {return TObject::Read(name);}
  protected:
     void NotImplemented(const char *method) const {if(gDebug>0)
          Warning(method,"This method is not implemented for this sub-class");}
