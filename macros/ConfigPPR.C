@@ -74,7 +74,7 @@ enum PprRun_t
     kRunMax
 };
 
-const char* pprRunName[kRunMax] = {
+const char* pprRunName[] = {
     "test50",
     "kParam_8000",   "kParam_4000",  "kParam_2000", 
     "kHijing_cent1", "kHijing_cent2", 
