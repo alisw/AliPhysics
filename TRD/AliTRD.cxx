@@ -693,7 +693,7 @@ void AliTRD::CreateMaterials()
 }
 
 //_____________________________________________________________________________
-void AliTRD::DrawModule()
+void AliTRD::DrawModule() const
 {
   //
   // Draw a shaded view of the Transition Radiation Detector version 0

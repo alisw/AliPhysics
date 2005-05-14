@@ -46,7 +46,7 @@ public:
   virtual void   Digits2Raw();
   virtual void   SetTreeAddress();  
   virtual void   MakeBranch(Option_t *option) =0;
-  virtual void   DrawModule() {};
+  virtual void   DrawModule() const {};
   virtual void   StepManager() {};
   virtual void   SetThickness(Float_t thick)  {fThickness = thick;};
   virtual void   SetThickness1(Float_t thick) {fThickness1 = thick;};

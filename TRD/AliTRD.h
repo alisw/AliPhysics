@@ -41,7 +41,7 @@ class AliTRD : public AliDetector {
   virtual void       Copy(TObject &trd) const;
   virtual void       CreateGeometry();
   virtual void       CreateMaterials();
-  virtual void       DrawModule();
+  virtual void       DrawModule() const;
   virtual Int_t      DistancetoPrimitive(Int_t px, Int_t py);
   virtual void       LoadPoints(Int_t track);    
   virtual void       Init();

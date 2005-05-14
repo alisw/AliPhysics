@@ -281,7 +281,7 @@ void AliMAG::CreateMaterials()
 }
 
 //_____________________________________________________________________________
-void AliMAG::DrawModule()
+void AliMAG::DrawModule() const
 {
   //
   // Draw a shaded view of the L3 magnet

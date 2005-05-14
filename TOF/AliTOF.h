@@ -59,7 +59,7 @@ public:
   virtual void    StepManager()=0;
   virtual void    TOFpc(Float_t /*xtof*/, Float_t /*ytof*/, Float_t /*zlenC*/,
                         Float_t /*zlenB*/, Float_t /*zlenA*/, Float_t /*ztof0*/){}
-  virtual void    DrawModule();
+  virtual void    DrawModule() const;
   virtual void    DrawDetectorModules()=0;
   virtual void    DrawDetectorStrips()=0;
   //virtual void   DrawDetectorModulesinFrame()=0;

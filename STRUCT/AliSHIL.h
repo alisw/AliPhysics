@@ -22,7 +22,7 @@ public:
   virtual void  CreateMaterials();
   virtual void  Init();
   virtual Int_t IsVersion() const {return 0;}
-  virtual void  DrawModule();
+  virtual void  DrawModule() const;
  
   ClassDef(AliSHIL,1)  // Muon Shield Class
 };

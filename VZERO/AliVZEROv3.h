@@ -25,7 +25,7 @@ public:
   virtual void   CreateGeometry();
   virtual void   BuildGeometry();
   virtual void   CreateMaterials();
-  virtual void   DrawModule();
+  virtual void   DrawModule() const;
   virtual void   Init();
   virtual void   MakeBranch(Option_t *option);
   virtual Int_t  IsVersion() const {return 3;}

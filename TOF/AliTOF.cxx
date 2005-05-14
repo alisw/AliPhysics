@@ -351,7 +351,7 @@ void AliTOF::CreateGeometry()
 }
 
 //_____________________________________________________________________________
-void AliTOF::DrawModule()
+void AliTOF::DrawModule() const
 {
   //
   // Draw a shaded view of the common part of the TOF geometry

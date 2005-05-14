@@ -834,7 +834,7 @@ void AliVZEROv4::CreateMaterials()
 }
 
 //_____________________________________________________________________________
-void AliVZEROv4::DrawModule()
+void AliVZEROv4::DrawModule() const
 {
 
 //  Drawing is done in DrawVZERO.C

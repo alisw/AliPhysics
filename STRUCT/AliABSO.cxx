@@ -72,7 +72,7 @@ void AliABSO::CreateGeometry()
 }
 
 //_____________________________________________________________________________
-void AliABSO::DrawModule()
+void AliABSO::DrawModule() const
 {
   //
   // Draw a shaded view of the muon absorber

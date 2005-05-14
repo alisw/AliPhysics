@@ -274,7 +274,7 @@ void AliSTARTv2::CreateMaterials()
 //////////////////////////////////////////////////////////////////////
 // Draw a shaded view of the Forward multiplicity detector version 2
 //////////////////////////////////////////////////////////////////////
-void AliSTARTv2::DrawModule()
+void AliSTARTv2::DrawModule() const
 {  
   //Set ALIC mother transparent
   gMC->Gsatt ("ALIC", "SEEN", 0);

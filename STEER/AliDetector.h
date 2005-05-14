@@ -56,7 +56,7 @@ public:
   virtual void        SetTimeGate(Float_t gate) {fTimeGate=gate;}
   virtual Float_t     GetTimeGate() const {return fTimeGate;}
   virtual void        StepManager() {}
-  virtual void        DrawModule() {}
+  virtual void        DrawModule() const {}
   virtual AliHit*     FirstHit(Int_t track);
   virtual AliHit*     NextHit();
   virtual void        SetBufferSize(Int_t bufsize=8000) {fBufferSize = bufsize;}  

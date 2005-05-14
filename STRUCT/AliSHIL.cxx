@@ -250,7 +250,7 @@ void AliSHIL::CreateMaterials()
 }
 
 //_____________________________________________________________________________
-void AliSHIL::DrawModule () 
+void AliSHIL::DrawModule () const
 {
     // Drawing options
 }

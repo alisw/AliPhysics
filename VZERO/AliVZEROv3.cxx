@@ -792,7 +792,7 @@ void AliVZEROv3::CreateMaterials()
 }
 
 //_____________________________________________________________________________
-void AliVZEROv3::DrawModule()
+void AliVZEROv3::DrawModule() const
 {
 
 //  Drawing is done in DrawVZERO.C
