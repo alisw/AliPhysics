@@ -20,7 +20,8 @@ public:
   
 private:
 
-  virtual AliITSsimulationFastPoints& operator=(const AliITSsimulation &source); 
+  virtual AliITSsimulationFastPoints& operator=(const AliITSsimulation &)
+    {return *this;} 
   
     virtual void SetSigmaRPhi(Double_t sigmarphi[6]);  
     virtual void SetSigmaZ(Double_t sigmaz[6]);  

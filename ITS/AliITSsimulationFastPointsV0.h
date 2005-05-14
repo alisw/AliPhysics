@@ -18,9 +18,11 @@ public:
   virtual ~AliITSsimulationFastPointsV0(); 
   void CreateFastRecPoints(AliITSmodule *mod,Int_t module,TRandom *rndm);
 private:
-  virtual AliITSsimulation& operator=(const AliITSsimulation &src);
+  virtual AliITSsimulation& operator=(const AliITSsimulation &)
+    {return *this;};
   AliITSsimulationFastPointsV0(const AliITSsimulationFastPointsV0 &);
-  AliITSsimulationFastPointsV0 & operator=(const AliITSsimulationFastPointsV0 &);
+  AliITSsimulationFastPointsV0 & operator=(const AliITSsimulationFastPointsV0 &)
+    { return *this;}
   void AddSPD(Float_t &e,AliITSmodule *mod,Int_t trackNumber);
   void AddSDD(Float_t &e,AliITSmodule *mod,Int_t trackNumber);
   void AddSSD(Float_t &e,AliITSmodule *mod,Int_t trackNumber);
