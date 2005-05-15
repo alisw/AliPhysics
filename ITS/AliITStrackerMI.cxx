@@ -499,6 +499,9 @@ Int_t AliITStrackerMI::RefitInward(AliESD *event) {
 
 	 if (fTrackToFollow.Propagate(fv+a,xv)) {
             fTrackToFollow.UpdateESDtrack(AliESDtrack::kITSrefit);
+	    Float_t d=fTrackToFollow.GetD(GetX(),GetY());
+            Float_t z=fTrackToFollow.GetZ()-GetZ();
+            fTrackToFollow.GetESDtrack()->SetImpactParameters(d,z);
             //UseClusters(&fTrackToFollow);
             {
             AliITSclusterV2 c; c.SetY(yv); c.SetZ(GetZ());
@@ -3819,23 +3822,30 @@ void  AliITStrackerMI::FindV02(AliESD *event)
 	if (btrack->fN>track0l->fN) track0l = btrack;     
 	//	if (btrack->fX<pvertex->GetRr()-2.-0.5/(0.1+pvertex->GetAnglep()[2])) {
 	if (btrack->fX<pvertex->GetRr()-2.) {
-	  if ( (maxLayer>i+2|| (i==0)) && btrack->fN==(6-i)&&i<2){
+	  if ( (maxLayer>i+2|| (i==0)) && btrack->fN==(6-i)&&i<3){
 	    Float_t sumchi2= 0;
 	    Float_t sumn   = 0;
 	    if (maxLayer<3){   // take prim vertex as additional measurement
 	      if (normdist[itrack0]>0 && htrackc0){
-		sumchi2 += (3-maxLayer)*normdist[itrack0]*normdist[itrack0];
+		sumchi2 += TMath::Min((3.-maxLayer)*normdist[itrack0]*normdist[itrack0],16.);
 	      }else{
-		sumchi2 += (3-maxLayer)*(3*normdist[itrack0]*normdist[itrack0]+3.);
+		sumchi2 +=  TMath::Min((3.-maxLayer)*(3*normdist[itrack0]*normdist[itrack0]+3.),16.);
 	      }
 	      sumn    +=  3-maxLayer;
 	    }
 	    for (Int_t ilayer=i;ilayer<maxLayer;ilayer++){
-	      sumn+=1.;
+	      sumn+=1.;	      
 	      if (!btrack->fClIndex[ilayer]){
 		sumchi2+=25;
 		continue;
 	      }else{
+		Int_t c=( btrack->fClIndex[ilayer] & 0x0fffffff);
+		for (Int_t itrack=0;itrack<4;itrack++){
+		  if (fgLayers[ilayer].fClusterTracks[itrack][c]>=0 && fgLayers[ilayer].fClusterTracks[itrack][c]!=itrack0){
+		    sumchi2+=18.;  //shared cluster
+		    break;
+		  }
+		}
 		sumchi2+=btrack->fDy[ilayer]*btrack->fDy[ilayer]/(btrack->fSigmaY[ilayer]*btrack->fSigmaY[ilayer]);
 		sumchi2+=btrack->fDz[ilayer]*btrack->fDz[ilayer]/(btrack->fSigmaZ[ilayer]*btrack->fSigmaZ[ilayer]);	       
 	      }
@@ -3856,14 +3866,14 @@ void  AliITStrackerMI::FindV02(AliESD *event)
 	if (btrack->fN>track1l->fN) track1l = btrack;     
 	//	if (btrack->fX<pvertex->GetRr()-2-0.5/(0.1+pvertex->GetAnglep()[2])){
 	if (btrack->fX<pvertex->GetRr()-2){
-	  if ((maxLayer>i+2 || (i==0))&&btrack->fN==(6-i)&&(i<2)){
+	  if ((maxLayer>i+2 || (i==0))&&btrack->fN==(6-i)&&(i<3)){
 	    Float_t sumchi2= 0;
 	    Float_t sumn   = 0;
 	    if (maxLayer<3){   // take prim vertex as additional measurement
 	      if (normdist[itrack1]>0 && htrackc1){
-		sumchi2 += (3-maxLayer)*normdist[itrack1]*normdist[itrack1];
+		sumchi2 +=  TMath::Min((3.-maxLayer)*normdist[itrack1]*normdist[itrack1],16.);
 	      }else{
-		sumchi2 += (3-maxLayer)*(3*normdist[itrack1]*normdist[itrack1]+3.);
+		sumchi2 += TMath::Min((3.-maxLayer)*(3*normdist[itrack1]*normdist[itrack1]+3.),16.);
 	      }
 	      sumn    +=  3-maxLayer;
 	    }
@@ -3873,6 +3883,13 @@ void  AliITStrackerMI::FindV02(AliESD *event)
 		sumchi2+=30;
 		continue;
 	      }else{
+		Int_t c=( btrack->fClIndex[ilayer] & 0x0fffffff);
+		for (Int_t itrack=0;itrack<4;itrack++){
+		  if (fgLayers[ilayer].fClusterTracks[itrack][c]>=0 && fgLayers[ilayer].fClusterTracks[itrack][c]!=itrack1){
+		    sumchi2+=18.;  //shared cluster
+		    break;
+		  }
+		}
 		sumchi2+=btrack->fDy[ilayer]*btrack->fDy[ilayer]/(btrack->fSigmaY[ilayer]*btrack->fSigmaY[ilayer]);
 		sumchi2+=btrack->fDz[ilayer]*btrack->fDz[ilayer]/(btrack->fSigmaZ[ilayer]*btrack->fSigmaZ[ilayer]);	       
 	      }
