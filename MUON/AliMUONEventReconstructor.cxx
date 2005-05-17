@@ -62,7 +62,7 @@
 
 //************* Defaults parameters for reconstruction
 const Double_t AliMUONEventReconstructor::fgkDefaultMinBendingMomentum = 3.0;
-const Double_t AliMUONEventReconstructor::fgkDefaultMaxBendingMomentum = 500.0;
+const Double_t AliMUONEventReconstructor::fgkDefaultMaxBendingMomentum = 2000.0;
 const Double_t AliMUONEventReconstructor::fgkDefaultMaxChi2 = 100.0;
 const Double_t AliMUONEventReconstructor::fgkDefaultMaxSigma2Distance = 16.0;
 const Double_t AliMUONEventReconstructor::fgkDefaultBendingResolution = 0.01;
