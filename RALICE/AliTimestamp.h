@@ -35,8 +35,14 @@ class AliTimestamp : public TTimeStamp
   void SetJD(Double_t jd);                              // Set Julian Date and time
   void SetTJD(Int_t tjd,Int_t sec,Int_t ns,Int_t ps=0); // Set Truncated Julian Date and time
   void SetTJD(Double_t tjd);                            // Set Truncated Julian Date and time
-  Int_t GetPicoSec() const;                     // Provide remaining fractional number of ns in picoseconds
+  void SetNs(Int_t ns);                                 // Set the remaining fractional number of sec in nanoseconds
+  Int_t GetNs() const;                                  // Provide remaining fractional number of sec in nanoseconds
+  void SetPs(Int_t ps);                                 // Set the remaining fractional number of ns in picoseconds
+  Int_t GetPs() const;                                  // Provide remaining fractional number of ns in picoseconds
+  using TTimeStamp::Add;
+  void Add(Int_t d,Int_t s,Int_t ns,Int_t ps=0);        // Add (or subtract) a certain time difference
   Int_t GetDifference(AliTimestamp& t,Int_t& days,Int_t& sec,Int_t& ns,Int_t& ps) const; // Provide time difference
+  Double_t GetDifference(AliTimestamp& t,TString u,Int_t mode=1) const; // Provide time diff. in specified units
 
  protected:
   Int_t fMJD;  // Modified Julian Date
@@ -49,6 +55,6 @@ class AliTimestamp : public TTimeStamp
   Int_t fCalcs;      // The TTimeStamp seconds counter value at Julian parameter calculation
   Int_t fCalcns;     // The TTimeStamp nanoseconds counter value at Julian parameter calculation
 
- ClassDef(AliTimestamp,2) // Handling of timestamps for (astro)particle physics research.
+ ClassDef(AliTimestamp,3) // Handling of timestamps for (astro)particle physics research.
 };
 #endif

@@ -96,6 +96,14 @@
 //
 // t.Date();
 //
+// // Time intervals for e.g. trigger or TOF analysis
+// AliEvent evt;
+// AliTimestamp hit((AliTimestamp)evt);
+// hit.Add(0,0,2,173);
+// Double_t dt=evt.GetDifference(hit,"ps");
+// Int_t d,s,ns,ps;
+// evt.GetDifference(hit,d,s,ns,ps);
+//
 // // Some practical conversion facilities
 // // Note : They don't influence the actual date/time settings
 // //        and as such can also be invoked as AliTimestamp::Convert(...) etc...
@@ -190,11 +198,11 @@ void AliTimestamp::Date(Int_t mode)
   Int_t tjd,tjsec,tjns;
   GetTJD(tjd,tjsec,tjns);
   cout << " Julian Epoch : " << setprecision(25) << GetJE() << endl;
-  cout << " JD : " << jd << " sec : " << jsec << " ns : " << jns
+  cout << " JD : " << jd << " sec : " << jsec << " ns : " << jns << " ps : " << fJps
        << " Fractional : " << setprecision(25) << GetJD() << endl;
-  cout << " MJD : " << mjd << "  sec : " << mjsec << " ns : " << mjns
+  cout << " MJD : " << mjd << "  sec : " << mjsec << " ns : " << mjns << " ps : " << fJps
        << " Fractional : " << setprecision(25) << GetMJD() << endl;
-  cout << " TJD : " << tjd << "  sec : " << tjsec << " ns : " << tjns
+  cout << " TJD : " << tjd << "  sec : " << tjsec << " ns : " << tjns << " ps : " << fJps
        << " Fractional : " << setprecision(25) << GetTJD() << endl;
  }
 }
@@ -803,13 +811,109 @@ void AliTimestamp::SetTJD(Double_t tjd)
  SetTJD(days,secs,ns);
 }
 ///////////////////////////////////////////////////////////////////////////
-Int_t AliTimestamp::GetPicoSec() const
+void AliTimestamp::SetNs(Int_t ns)
+{
+// Set the remaining fractional number of seconds in nanosecond precision.
+// Notes :
+// -------
+// 1) The allowed range for the argument "ns" is [0,99999999].
+//    Outside that range no action is performed.
+// 2) The ns fraction can also be entered directly via SetMJD() etc...
+// 3) For additional accuracy see SetPs().
+
+ if (ns>=0 && ns<=99999999) fJns=ns; 
+}
+///////////////////////////////////////////////////////////////////////////
+Int_t AliTimestamp::GetNs() const
+{
+// Provide the remaining fractional number of seconds in nanosecond precision.
+// This function allows trigger/timing analysis for (astro)particle physics
+// experiments.
+// Note : For additional accuracy see also GetPs().
+
+ return fJns; 
+}
+///////////////////////////////////////////////////////////////////////////
+void AliTimestamp::SetPs(Int_t ps)
+{
+// Set the remaining fractional number of nanoseconds in picoseconds.
+// Notes :
+// -------
+// 1) The allowed range for the argument "ps" is [0,999].
+//    Outside that range no action is performed.
+// 2) The ps fraction can also be entered directly via SetMJD() etc...
+
+ if (ps>=0 && ps<=999) fJps=ps; 
+}
+///////////////////////////////////////////////////////////////////////////
+Int_t AliTimestamp::GetPs() const
 {
 // Provide remaining fractional number of nanoseconds in picoseconds.
-// This memberfunction supports time of flight analysis for particle physics
+// This function allows time of flight analysis for particle physics
 // experiments.
 
  return fJps; 
+}
+///////////////////////////////////////////////////////////////////////////
+void AliTimestamp::Add(Int_t d,Int_t s,Int_t ns,Int_t ps)
+{
+// Add (or subtract) a certain time difference to the current timestamp.
+//
+// The time difference is entered via the following output arguments :
+// d  : elapsed number of days
+// s  : remaining elapsed number of seconds
+// ns : remaining elapsed number of nanoseconds
+// ps : remaining elapsed number of picoseconds
+//
+// Note : ps=0 is the default value.
+
+ Int_t days=fMJD;
+ Int_t secs=fJsec;
+ Int_t nsec=fJns;
+ Int_t psec=fJps;
+
+ psec+=ps;
+ if (psec<0)
+ {
+  nsec-=1;
+  psec+=1000;
+ }
+ if (psec>999)
+ {
+  nsec+=1;
+  psec-=1000;
+ }
+
+ nsec+=ns;
+ if (nsec<0)
+ {
+  secs-=1;
+  nsec+=1000000000;
+ }
+ if (nsec>999999999)
+ {
+  secs+=1;
+  nsec-=1000000000;
+ }
+
+ secs+=s;
+ if (secs<0)
+ {
+  days-=1;
+  secs+=24*3600;
+ }
+ if (secs>=24*3600)
+ {
+  days+=1;
+  secs-=24*3600;
+ }
+
+ days+=d;
+
+ fMJD=days;
+ fJsec=secs;
+ fJns=nsec;
+ fJps=psec;
 }
 ///////////////////////////////////////////////////////////////////////////
 Int_t AliTimestamp::GetDifference(AliTimestamp& t,Int_t& d,Int_t& s,Int_t& ns,Int_t& ps) const
@@ -825,31 +929,28 @@ Int_t AliTimestamp::GetDifference(AliTimestamp& t,Int_t& d,Int_t& s,Int_t& ns,In
 // ns : remaining elapsed number of nanoseconds
 // ps : remaining elapsed number of picoseconds
 //
+// Note :
+// ------
+// The calculated time difference is the absolute value of the time interval.
+// This implies that the values of d, s, ns and ps are always positive or zero.
+//
 // The integer return argument indicates whether the AliTimestamp specified
 // on the input argument occurred earlier (-1), simultaneously (0) or later (1).
 
- Int_t tmjd=0;
- Int_t tsec=0;
- Int_t tnsec=0;
- t.GetMJD(tmjd,tsec,tnsec);
- Int_t tpsec=t.GetPicoSec();
-
- // Convert all stamps to seconds, nanoseconds and picoseconds
- // to simplify the algebra.
- tsec+=tmjd*24*3600;
- Int_t sec=fJsec+fMJD*24*3600;
-
- d=0;
- s=tsec-sec;
- ns=tnsec-fJns;
- ps=tpsec-fJps;
+ d=t.fMJD-fMJD;
+ s=t.fJsec-fJsec;
+ ns=t.fJns-fJns;
+ ps=t.fJps-fJps;
 
  if (!d && !s && !ns && !ps) return 0;
 
  Int_t sign=0;
 
- if (s>0) sign=1;
- if (s<0) sign=-1;
+ if (d>0) sign=1;
+ if (d<0) sign=-1;
+
+ if (!sign && s>0) sign=1;
+ if (!sign && s<0) sign=-1;
 
  if (!sign && ns>0) sign=1; 
  if (!sign && ns<0) sign=-1;
@@ -861,14 +962,14 @@ Int_t AliTimestamp::GetDifference(AliTimestamp& t,Int_t& d,Int_t& s,Int_t& ns,In
  // to simplify the algebra.
  if (sign<0)
  {
+  d=-d;
   s=-s;
   ns=-ns;
   ps=-ps;
  }
 
  // Here we always have a positive time difference
- // and can now unambiguously correct for other negative values
- // and determine the resulting daycount.
+ // and can now unambiguously correct for other negative values.
  if (ps<0)
  {
   ns-=1;
@@ -878,12 +979,105 @@ Int_t AliTimestamp::GetDifference(AliTimestamp& t,Int_t& d,Int_t& s,Int_t& ns,In
  if (ns<0)
  {
   s-=1;
-  ns+=1e9;
+  ns+=1000000000;
  }
 
- d=s/(24*3600);
- s=s%(24*3600);
+ if (s<0)
+ {
+  d-=1;
+  s+=24*3600;
+ }
 
  return sign;
+}
+///////////////////////////////////////////////////////////////////////////
+Double_t AliTimestamp::GetDifference(AliTimestamp& t,TString u,Int_t mode) const
+{
+// Provide the time difference w.r.t the AliTimestamp specified on the input
+// argument in the units as specified by the TString argument.
+// A positive return value means that the AliTimestamp specified on the input
+// argument occurred later, whereas a negative return value indicates an
+// earlier occurence. 
+//  
+// The units may be specified as :
+// u = "d"  ==> Time difference returned as (fractional) day count
+//     "s"  ==> Time difference returned as (fractional) second count
+//     "ns" ==> Time difference returned as (fractional) nanosecond count
+//     "ps" ==> Time difference returned as picosecond count
+//
+// It may be clear that for a time difference of several days, the picosecond
+// and even the nanosecond accuracy may be lost.
+// To cope with this, the "mode" argument has been introduced to allow 
+// timestamp comparison on only the specified units.
+//
+// The following operation modes are supported :
+// mode = 1 : Full time difference is returned in specified units
+//        2 : Time difference is returned in specified units by
+//            neglecting the elapsed time for the larger units than the
+//            ones specified.
+//        3 : Time difference is returned in specified units by only
+//            comparing the timestamps on the level of the specified units.
+//
+// Example :
+// ---------
+// AliTimestamp t1; // Corresponding to days=3, secs=501, ns=31, ps=7 
+// AliTimestamp t2; // Corresponding to days=5, secs=535, ns=12, ps=15
+//
+// The statement : Double_t val=t1.GetDifference(t2,....)
+// would return the following values :
+// val=(2*24*3600)+34-(19*1e-9)+(8*1e-12) for u="s" and mode=1
+// val=34-(19*1e-9)+(8*1e-12)             for u="s" and mode=2
+// val=34                                 for u="s" and mode=3
+// val=-19                                for u="ns" and mode=3
+//
+// The default is mode=1.
+
+ if (mode<1 || mode>3) return 0;
+
+ Double_t dt=0;
+
+ Int_t dd=t.fMJD-fMJD;
+ Int_t ds=t.fJsec-fJsec;
+ Int_t dns=t.fJns-fJns;
+ Int_t dps=t.fJps-fJps;
+
+ // Time difference for the specified units only
+ if (mode==3)
+ {
+  if (u=="d") dt=dd;
+  if (u=="s") dt=ds;
+  if (u=="ns") dt=dns;
+  if (u=="ps") dt=dps;
+  return dt;
+ }
+
+ // Suppress elapsed time for the larger units than specified
+ if (mode==2)
+ {
+  if (u=="s") dd=0;
+  if (u=="ns")
+  {
+   dd=0;
+   ds=0;
+  }
+  if (u=="ps")
+  {
+   dd=0;
+   ds=0;
+   dns=0;
+  }
+ }
+
+ // Compute the time difference as requested 
+ if (u=="s" || u=="d")
+ {
+  // The time difference in (fractional) seconds
+  dt=double(dd*24*3600+ds)+(double(dns)*1e-9)+(double(dps)*1e-12);
+  if (u=="d") dt=dt/double(24*3600);
+ }
+ if (u=="ns") dt=(double(dd*24*3600+ds)*1e9)+double(dns)+(double(dps)*1e-3);
+ if (u=="ps") dt=(double(dd*24*3600+ds)*1e12)+(double(dns)*1e3)+double(dps);
+
+ return dt;
 }
 ///////////////////////////////////////////////////////////////////////////

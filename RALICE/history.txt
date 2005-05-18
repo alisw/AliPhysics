@@ -595,4 +595,6 @@
                 to enable investigation of both very short (i.e. time of flight analysis in
                 particle physics experiments) and very long (i.e. astrophysical phenomena)
                 time intervals.
+17-may-2005 NvE Functionality of AliTimestamp extended w.r.t. treatment of time intervals and
+                accuracy bug fixed in the calculation of time difference.
  
