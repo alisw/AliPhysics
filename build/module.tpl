@@ -185,6 +185,13 @@ endif
 
 #------------------------------------------------------------------------
 
+ifeq ($(MACOSX_MINOR),4)
+$(@PACKAGE@LIB): $(@PACKAGE@DLIB) $(@PACKAGE@O) $(@PACKAGE@DO) @MODULE@/module.mk
+ifndef ALIQUIET
+	  @echo "***** Linking library $@ *****"
+endif
+	  $(MUTE)rm -f $@; cd $(dir $@); ln -s $(notdir $(@PACKAGE@DLIB)) $(notdir $@)
+else
 $(@PACKAGE@LIB):$(@PACKAGE@O) $(@PACKAGE@DO) @MODULE@/module.mk
 ifndef ALIQUIET
 	  @echo "***** Linking library $@ *****"
@@ -197,6 +204,7 @@ endif
 	  $(SHLD) $(@PACKAGE@SOFLAGS) -o $(CURDIR)/$@ $(notdir $(@PACKAGE@O) $(@PACKAGE@DO))  $(@PACKAGE@ELIBSDIR) $(@PACKAGE@ELIBS) $(SHLIB);\
 	  chmod a-w $(CURDIR)/$@ ;\
 	  cd $(ALICE_ROOT) ; \rm -rf $$TMPDIR
+endif
 
 ifneq ($(DYEXT),)
 $(@PACKAGE@DLIB):$(@PACKAGE@O) $(@PACKAGE@DO) @MODULE@/module.mk

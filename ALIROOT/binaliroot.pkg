@@ -27,7 +27,7 @@ ifeq (macosx,$(ALICE_TARGET))
 PACKLDFLAGS:=$(LDFLAGS) $(@PACKAGE@LIBSINIT:%=-Wl,-u,_G__cpp_setupG__%)
 # On Mac OS X gcc we need g2c
 ELIBS+=g2c
-
+ELIBSDIR+=$(dir $(shell find $(FINK_ROOT) -name 'libg2c.*'))
 endif
 
 # The two variables below are used for the creation of profile target.

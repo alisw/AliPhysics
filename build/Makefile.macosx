@@ -1,9 +1,25 @@
 # Makefile for AliRoot for MacOS X with gcc
 
+# OS version
+MACOSX_MAJOR := $(strip $(shell sw_vers | sed -n 's/ProductVersion://p' | cut -d . -f 1))
+MACOSX_MINOR := $(strip $(shell sw_vers | sed -n 's/ProductVersion://p' | cut -d . -f 2))
+
+# fink directories
+FINK_ROOT := $(shell which fink | sed -e 's?/bin/fink??')
+
 # The compilers
 CXX           = g++ 
-F77	      = g77
 CC	      = gcc
+
+ifneq ($(MACOSX_MINOR),4)
+F77	      = g77
+else
+ifeq (g95,$(findstring g95,$(ROOTBUILD)))
+F77	      = g95
+else
+F77	      = gfortran
+endif
+endif
 
 # Global optimisation
 OPT           = -O0 -g
@@ -21,9 +37,9 @@ CLIBCOPT      =
 CLIBFOPT      = $(CLIBDEFS)
 
 # Compiler flags
-CXXFLAGS      = $(CXXOPT)   -Wall -W -pipe -fsigned-char -fno-common -fweak-coalesced -fmessage-length=0 -I/sw/include  -Wno-long-double #-Weffc++ -Woverloaded-virtual 
-CXXFLAGSNO    = $(CXXNOOPT) -Wall -W -pipe -fsigned-char -fno-common -fweak-coalesced -fmessage-length=0 -I/sw/include  -Wno-long-double
-CFLAGS	      = $(COPT) -Wall -W -fno-common -fweak-coalesced -pipe -I/sw/include
+CXXFLAGS      = $(CXXOPT)   -Wall -W -pipe -fsigned-char -fno-common -fweak-coalesced -fmessage-length=0 -I$(FINK_ROOT)/include  -Wno-long-double #-Weffc++ -Woverloaded-virtual 
+CXXFLAGSNO    = $(CXXNOOPT) -Wall -W -pipe -fsigned-char -fno-common -fweak-coalesced -fmessage-length=0 -I$(FINK_ROOT)/include  -Wno-long-double
+CFLAGS	      = $(COPT) -Wall -W -fno-common -fweak-coalesced -pipe -I$(FINK_ROOT)/include
 FFLAGS        = $(CLIBFOPT) $(FOPT)
 # rmkdepend flags for building dependencies of FORTRAN files
 DEPENDFFLAGS  = $(FFLAGS)
@@ -31,19 +47,19 @@ DEPENDFFLAGS  = $(FFLAGS)
 # rootcint flags
 CINTFLAGS     = 
 
-LD            = export MACOSX_DEPLOYMENT_TARGET=10.3 ; \
+LD            = export MACOSX_DEPLOYMENT_TARGET=$(MACOSX_MAJOR).$(MACOSX_MINOR) ; \
 		unset LD_PREBIND ; \
 		g++
 LDFLAGS       = $(OPT) $(DICTLOAD)
 
 SHLD	     := $(LD)
 SOFLAGS      := -bundle -undefined dynamic_lookup
-SHLIB        := -L/sw/lib -lg2c
+SHLIB        := 
 SOEXT 	     := so
 
 DYLD	     := $(LD)
 DYFLAGS       = -dynamiclib -undefined dynamic_lookup -single_module
-DYLIB        := -L/sw/lib -lg2c
+DYLIB        := 
 DYEXT        := dylib
 
 ALLD	      = ar
@@ -55,8 +71,17 @@ DEPENDCXXFLAGS = $(CXXFLAGS) -I/usr/include/sys
 
 GLIBS         = -L/usr/X11R6/lib -lX11
 
-#System libraries
-SYSLIBS = -ldl
+EXEFLAGS     += -bind_at_load 
 
-EXEFLAGS+= -bind_at_load 
+#System libraries
+ifneq ($(MACOSX_MINOR),4)
+SYSLIBS := -lg2c
+else
+ifeq (g95,$(findstring g95,$(ROOTBUILD)))
+SYSLIBS := -L$(dir $(shell find $(FINK_ROOT) -name libf95.a)) -lf95
+else
+SYSLIBS := -ldl -L$(dir $(shell find $(FINK_ROOT) -name libgfortran.dylib)) -lgfortranbegin -lgfortran
+endif
+endif
+
 
