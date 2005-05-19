@@ -2302,18 +2302,6 @@ void AliMUONSt1GeometryBuilderV2::CreateMaterials()
        // was id: 9
        // from PDG and "The Particle Detector BriefBook", Bock and Vasilescu, P.18  
         // ??? same but the last but one argument < 0 
-  
-  fMUON->AliMaterial(42, "Copper$", 63.546,29.,8.96,-1.43,9.6);
-       // was id: 30
-
-  fMUON->AliMaterial(43, "FR4$", 17.749, 8.875, 1.7, -19.4, 999.);    // from DPG
-       // was id: 31
-
-  fMUON->AliMaterial(44, "FrameEpoxy",12.24,6.0,1.85,-19.14,999);// use 16.75cm
-        // was id: 36
-        // Density of FrameEpoxy only from manufacturer's specifications
-        // Frame composite epoxy , X0 in g/cm**2 (guestimation!)
-  
   //
   // --- Define mixtures for GEANT ---
   //
@@ -2355,7 +2343,6 @@ void AliMUONSt1GeometryBuilderV2::CreateMaterials()
  
   // Not used, to be removed
   //
-  fMUON->AliMaterial(49, "Kapton$", 12.01,6,1.42,-28.6,999);          // from DPG
        // was id: 34
 
   // Inox/Stainless Steel (18%Cr, 9%Ni)
@@ -2387,12 +2374,7 @@ void AliMUONSt1GeometryBuilderV2::CreateMaterials()
 
   fMUON->AliMedium(21, "ALU_II$",    41, 0, iSXFLD, sXMGMX, 
                    tmaxfd, maxStepAlu, maxDestepAlu, epsil, stmin);
-		   // was med: 4  mat: 9
-  fMUON->AliMedium(22, "COPPER_II$", 42, 0, iSXFLD, sXMGMX, 
-                   tmaxfd, maxStepAlu, maxDestepAlu, epsil, stmin);
-		   // was med: 10  mat: 30
-  fMUON->AliMedium(23, "FR4_CH$",    43, 0, iSXFLD, sXMGMX, 
-                   10.0, 0.01, 0.1, 0.003, 0.003);
+
 		   // was med: 15  mat: 31 
   fMUON->AliMedium(24, "FrameCH$",   44, 1, iSXFLD, sXMGMX, 
                    10.0, 0.001, 0.001, 0.001, 0.001);
@@ -2412,9 +2394,7 @@ void AliMUONSt1GeometryBuilderV2::CreateMaterials()
 
   // Not used, to be romoved
   //
-  fMUON->AliMedium(29, "Kapton$",    49, 0, iSXFLD, sXMGMX,  
-                   10.0, 0.01, 1.0, 0.003, 0.003);
-		   // was med: 18  mat: 34 
+
   fMUON->AliMedium(30, "InoxBolts$", 50, 1, iSXFLD, sXMGMX, 
                    10.0, 0.01, 1.0, 0.003, 0.003);
 		   // was med: 21  mat: 37

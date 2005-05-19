@@ -19,6 +19,8 @@
 #include "AliSegmentation.h"
 #include "AliMUONGeometryDirection.h"
 
+class AliMUONSegmentManuIndex;
+
 class AliMUONVGeometryDESegmentation : public AliSegmentation
 {
   public:
@@ -38,6 +40,9 @@ class AliMUONVGeometryDESegmentation : public AliSegmentation
                        // Normally kDirY will correspond with cathode segmentation 
 		       // for the bending plane and kDirX with cathode segmentation 
 		       // for the non bending plane
+
+    virtual void     GetPadE(Int_t &ix, Int_t &iy,  AliMUONSegmentManuIndex* connect) = 0;
+    virtual AliMUONSegmentManuIndex*     GetMpConnection(Int_t ix, Int_t iy) = 0;
 
   protected:
     AliMUONVGeometryDESegmentation(const AliMUONVGeometryDESegmentation& rhs);

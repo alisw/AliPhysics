@@ -31,6 +31,8 @@
 #include "AliMUONRawData.h"
 #include "AliMUONDigit.h"
 
+#include "AliMUON.h"
+#include "AliMUONChamber.h"
 #include "AliMUONConstants.h"
 #include "AliMUONData.h"
 #include "AliLoader.h"
@@ -42,7 +44,11 @@
 
 #include "AliMUONLocalTrigger.h"
 #include "AliMUONGlobalTrigger.h"
+
+#include "AliMUONGeometrySegmentation.h"
+#include "AliMUONSegmentManuIndex.h"
 #include "AliLog.h"
+#include "AliRun.h"
 
 const Int_t AliMUONRawData::fgkDefaultPrintLevel = 0;
 
@@ -224,14 +230,27 @@ Int_t AliMUONRawData::WriteTrackerDDL(Int_t iCh)
   Int_t index;
   Int_t indexDsp;
   Int_t indexBlk;
-
+  Int_t padX;
+  Int_t padY;
+  Int_t cathode = 0;
+  Int_t detElemId;
   Int_t nDigits;
   const AliMUONDigit* digit;
 
-   if (fPrintLevel == 1)
-      printf("WriteDDL chamber %d\n", iCh+1);
+  AliMUON *pMUON;
+  AliMUONChamber* iChamber = 0x0;
+  AliMUONGeometrySegmentation* segmentation2[2];
 
-  for (Int_t iCath = 0; iCath < 2; iCath++) {
+  segmentation2[0]=iChamber->SegmentationModel2(1); // cathode 0
+  segmentation2[1]=iChamber->SegmentationModel2(2); // cathode 1
+
+   pMUON = (AliMUON*) gAlice->GetModule("MUON");
+   iChamber =  &(pMUON->Chamber(iCh));
+
+
+   AliDebug(1, Form("WriteDDL chamber %d\n", iCh+1));
+
+   for (Int_t iCath = 0; iCath < 2; iCath++) {
 
     fMUONData->ResetDigits();
     fMUONData->GetCathode(iCath);
@@ -247,9 +266,32 @@ Int_t AliMUONRawData::WriteTrackerDDL(Int_t iCh)
 
       digit = (AliMUONDigit*) muonDigits->UncheckedAt(idig);
 
-      // mapping
-      GetDummyMapping(iCh, iCath, digit, busPatchId, manuId, channelId, charge);
+      padX = digit->PadX();
+      padY = digit->PadY();
+      charge = digit->Signal();
+      charge &= 0xFFF;
+      cathode = digit->Cathode();
+      detElemId = digit->DetElemId();
 
+      // mapping
+      if (detElemId == 0) {
+	AliWarning("\ndetElemId = 0, old segmentation !\n");
+	GetDummyMapping(iCh, iCath, digit, busPatchId, manuId, channelId);
+      } else {
+      // mapping (not far from real one)
+	AliMUONSegmentManuIndex* connect = segmentation2[iCath]->GetMpConnection(detElemId, padX, padY);
+	if (connect != 0x0) {
+	  busPatchId = connect->GetBusPatchId(); 
+	  manuId     = connect->GetManuId();
+	  channelId  = connect->GetManuChannelId();
+	  AliDebug(3,Form("busPatchId %d, manuId: %d, channelId: %d\n", busPatchId, manuId, channelId));
+	} else {
+	  busPatchId = 0; 
+	  manuId     = 0;
+	  channelId  = 0;
+	}
+
+      }
       //packing word
       AliBitPacking::PackWord((UInt_t)parity,word,29,31);
       AliBitPacking::PackWord((UInt_t)manuId,word,18,28);
@@ -573,7 +615,7 @@ Int_t AliMUONRawData::WriteTriggerDDL()
 }
 //____________________________________________________________________
 void AliMUONRawData::GetDummyMapping(Int_t iCh, Int_t iCath, const AliMUONDigit* digit,
-				     Int_t &busPatchId, UShort_t &manuId, UChar_t &channelId, UShort_t &charge)
+				     Int_t &busPatchId, UShort_t &manuId, UChar_t &channelId)
 {
 // Dummy mapping for tracker
 
@@ -624,16 +666,12 @@ void AliMUONRawData::GetDummyMapping(Int_t iCh, Int_t iCath, const AliMUONDigit*
       channelId = (id % chPerBus) % 64; //start at zero 
       channelId &= 0x3F; // 6 bits
 
-      if (fPrintLevel == 2)
-	printf("id: %d, busPatchId %d, manuId: %d, channelId: %d, maxchannel: %d, chPerBus %d\n",
-	       id, busPatchId, manuId, channelId, maxChannel, chPerBus);
-      // charge
-      charge = digit->Signal();
-      charge &= 0xFFF;
+     
+      AliDebug(2,Form("id: %d, busPatchId %d, manuId: %d, channelId: %d, maxchannel: %d, chPerBus %d\n",
+		      id, busPatchId, manuId, channelId, maxChannel, chPerBus));
 
-      if (fPrintLevel == 2)
-	printf("id: %d, busPatchId %d, manuId: %d, channelId: %d, padx: %d pady %d, charge %d\n",
-	       id, busPatchId, manuId, channelId, digit->PadX(), digit->PadY(), digit->Signal());
+      AliDebug(2,Form("id: %d, busPatchId %d, manuId: %d, channelId: %d, padx: %d pady %d, charge %d\n",
+		      id, busPatchId, manuId, channelId, digit->PadX(), digit->PadY(), digit->Signal()));
 
 }
 

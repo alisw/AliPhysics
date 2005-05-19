@@ -42,7 +42,7 @@ class AliMUONRawData : public TObject
   }
 
   void GetDummyMapping(Int_t iCh, Int_t iCath, const AliMUONDigit* digit, Int_t &busPatchId,
-		       UShort_t &manuId, UChar_t &channelId, UShort_t &charge);
+		       UShort_t &manuId, UChar_t &channelId);
 
   Int_t GetGlobalTriggerPattern(const AliMUONGlobalTrigger* gloTrg);
 

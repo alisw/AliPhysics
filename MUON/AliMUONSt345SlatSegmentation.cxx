@@ -23,18 +23,24 @@
 //  and the differents PCB densities. 
 //  (from old AliMUONSegmentationSlatModule)
 //  Gines, Subatech, Nov04
+//  Add electronics mapping
+//  Christian, Subatech, Mai 05
 //*********************************************************
 
 #include <TArrayI.h>
 #include <TArrayF.h>
 #include "AliMUONSt345SlatSegmentation.h"
+#include "AliMUONSegmentationDetectionElement.h"
+#include "AliMUONSegmentManuIndex.h"
+#include "AliMUONSegmentIndex.h"
+
 #include "AliLog.h"
 
 ClassImp(AliMUONSt345SlatSegmentation)
 
 
 AliMUONSt345SlatSegmentation::AliMUONSt345SlatSegmentation() 
-  : AliMUONVGeometryDESegmentation(),
+  :     AliMUONVGeometryDESegmentation(),
  	fBending(0),
  	fId(0),
         fNsec(0),
@@ -55,7 +61,9 @@ AliMUONSt345SlatSegmentation::AliMUONSt345SlatSegmentation()
 	fIxmin(0),
 	fIxmax(0),
 	fIymin(0),
-	fIymax(0)
+        fIymax(0),
+	fInitDone(kFALSE),
+	fSegmentationDetectionElement(0x0)
 {
   // default constructor
 
@@ -84,7 +92,11 @@ AliMUONSt345SlatSegmentation::AliMUONSt345SlatSegmentation(Bool_t bending)
 	fIxmin(0),
 	fIxmax(0),
 	fIymin(0),
-	fIymax(0)
+	fIymax(0),
+	fInitDone(kFALSE),
+	fSegmentationDetectionElement(0x0)
+
+
 {
   // Non default constructor
   fNsec = 4;  // 4 sector densities at most per slat 
@@ -93,7 +105,9 @@ AliMUONSt345SlatSegmentation::AliMUONSt345SlatSegmentation(Bool_t bending)
   fDpyD = new TArrayF(fNsec);      
   (*fNDiv)[0]=(*fNDiv)[1]=(*fNDiv)[2]=(*fNDiv)[3]=0;     
   (*fDpxD)[0]=(*fDpxD)[1]=(*fDpxD)[2]=(*fDpxD)[3]=0;       
-  (*fDpyD)[0]=(*fDpyD)[1]=(*fDpyD)[2]=(*fDpyD)[3]=0;       
+  (*fDpyD)[0]=(*fDpyD)[1]=(*fDpyD)[2]=(*fDpyD)[3]=0;   
+
+
 }
 //----------------------------------------------------------------------
 AliMUONSt345SlatSegmentation::AliMUONSt345SlatSegmentation(const AliMUONSt345SlatSegmentation& rhs) 
@@ -114,7 +128,8 @@ AliMUONSt345SlatSegmentation::AliMUONSt345SlatSegmentation(const AliMUONSt345Sla
 	fIxmin(0),
 	fIxmax(0),
 	fIymin(0),
-	fIymax(0)
+	fIymax(0),
+	fSegmentationDetectionElement(0x0)
 {
   // default constructor
 }
@@ -125,6 +140,7 @@ AliMUONSt345SlatSegmentation::~AliMUONSt345SlatSegmentation()
   if (fNDiv) delete fNDiv;
   if (fDpxD) delete fDpxD;
   if (fDpyD) delete fDpyD;
+  // if (fSegmentationDetectionElement) fSegmentationDetectionElement->Delete();
 }
 //----------------------------------------------------------------------
 AliMUONSt345SlatSegmentation& AliMUONSt345SlatSegmentation::operator=(const AliMUONSt345SlatSegmentation& rhs)
@@ -228,6 +244,45 @@ void AliMUONSt345SlatSegmentation::GetPadI(Float_t x, Float_t y , Float_t /*z*/,
 {
   GetPadI(x, y, ix, iy);
 }
+
+//-------------------------------------------------------------------------
+void AliMUONSt345SlatSegmentation::GetPadE(Int_t &ix, Int_t &iy,  AliMUONSegmentManuIndex* manuIndex)
+{
+  //
+  // return Padx and Pady
+  // input value: electronic connection number
+
+  Int_t icathode = (fBending == 1) ? 0 : 1; // cathode 0 == bending
+
+  //  Int_t busPatchId     = manuIndex->GetBusPatchId(); //
+  Int_t manuId         = manuIndex->GetManuId();
+  Int_t manuChannelId  = manuIndex->GetManuChannelId();
+  //  Int_t channelId      = manuIndex->GetChannelId();
+
+  AliMUONSegmentIndex* index = fSegmentationDetectionElement->GetIndex(manuId,  manuChannelId);
+
+  ix = index->GetPadX();
+  iy = index->GetPadY();
+  swap(ix,iy); // swap cos origin in segmentation and mapping file are different for iy (temporary solution)
+
+  if (index->GetCathode() != icathode)
+    AliWarning("Wrong cathode number !");
+
+}
+
+//-------------------------------------------------------------------------
+ AliMUONSegmentManuIndex* AliMUONSt345SlatSegmentation::GetMpConnection(Int_t ix, Int_t iy)
+{
+  //
+  // return electronic connection number
+  // input value: Padx and Pady
+
+  Int_t icathode = (fBending == 1) ? 0 : 1; // cathode 0 == bending
+
+  return fSegmentationDetectionElement->GetManuIndex(ix, iy, icathode);
+  
+}
+
 //_______________________________________________________________
 void AliMUONSt345SlatSegmentation::SetPadDivision(Int_t ndiv[4])
 {
@@ -252,9 +307,13 @@ void AliMUONSt345SlatSegmentation::SetPcbBoards(Int_t n[4])
 {
   //
   // Set PcbBoard segmentation zones for each density
-  // n[0] PcbBoards for maximum density sector fNDiv[0]
-  // n[1] PcbBoards for next density sector fNDiv[1] etc ...
+  // n[0] slat type parameter
+  // n[1] PcbBoards for highest density sector fNDiv[1] etc ...
+
+  fRtype = n[0];
+  n[0] = 0;
   for (Int_t i=0; i<4; i++) fPcbBoards[i]=n[i];
+
 }
 //-------------------------------------------------------------------------
 void AliMUONSt345SlatSegmentation::SetPad(Int_t ix, Int_t iy)
@@ -472,6 +531,7 @@ void AliMUONSt345SlatSegmentation::Init(Int_t detectionElementId)
   
   //  printf(" fBending: %d \n",fBending);
 
+  if (fInitDone) return; // security if init is already done in AliMUONFactory
   fDxPCB=40;
   fDyPCB=40;
 
@@ -515,15 +575,100 @@ void AliMUONSt345SlatSegmentation::Init(Int_t detectionElementId)
   fCy = fDyPCB/2.;
   //
   fId = detectionElementId;
+
+  //
+  // initalize mapping
+  //
+//   Int_t icathode = (fBending == 1) ? 0 : 1; // cathode 0 == bending
+//   Char_t name[15];
+//   GetMpFileName(name);
+//   fSegmentationDetectionElement = new AliMUONSegmentationDetectionElement();
+//   fSegmentationDetectionElement->Init(name, icathode);
+  fInitDone = kTRUE;
 }
 
+//--------------------------------------------------------------------------
+void AliMUONSt345SlatSegmentation::GetMpFileName(Char_t* name) const
+{
+  //
+  // Get mapping file name
+  //
+
+   strcpy(name,"slat");
+
+   for (Int_t isec = 1; isec < 4; isec++) {
+
+     switch(isec) {
+     case 1:
+       for (Int_t i = 0; i < fPcbBoards[isec]; i++)
+	 strcat(name,"1");
+       break;
+     case 2 :
+       for (Int_t i = 0; i < fPcbBoards[isec]; i++)
+	 strcat(name,"2");
+       break;
+     case 3:
+       for (Int_t i = 0; i < fPcbBoards[isec]; i++)
+	 strcat(name,"3");
+       break;
+     }
+   }
+
+   while (strlen(name) < 10)
+     strcat(name,"0");
+   
+   switch(fRtype) {
+   case 0:
+     strcat(name, "N");
+     break;
+   case 1:
+     strcat(name, "NR1");
+     break;
+   case 2:
+     strcat(name, "NR2");
+     break;
+   case 3:
+     strcat(name, "NR3");
+     break;
+   case 4:
+     strcat(name, "S");
+     break;
+   case -1:
+     strcat(name, "SR1");
+     break;
+   case -2:
+     strcat(name, "SR2");
+     break;
+   case -3:
+     strcat(name, "SR3"); // should not exist
+     AliFatal("SR3 Slat type does not exist !!");
+     break;
+   }
+}
+
+//--------------------------------------------------------------------------
+void AliMUONSt345SlatSegmentation::Swap(Int_t padX, Int_t &padY)
+{
+
+  // swap the numbering between segmentation (i.e. pady = [0,40]) 
+  // and mapping file  (i.e. pady = [-20,20]) 
 
 
+  if (fBending == 1) {
+    if (padY < 0) 
+      padY += fNpy + 1; 
+    else
+      padY += fNpy; 
+  }
 
 
+  if (fBending == 0) {
+    if (padY < 0) 
+      padY += fNpyS[Sector(padX, padY)] + 1; 
+    else
+      padY += fNpyS[Sector(padX, padY)]; 
+  }
 
-
-
-
+}
 
 

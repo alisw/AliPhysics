@@ -35,6 +35,7 @@ class AliMUONSegmentManuIndex : public TNamed {
 
   static TString Name(Int_t manuId, Int_t manuchannel);
   
+  void   SetBusPatchId(Int_t b) {fBusPatchId = b;}
   void   Print(const char* opt="") const;
 
  private:

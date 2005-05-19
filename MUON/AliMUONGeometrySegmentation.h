@@ -26,6 +26,7 @@ class AliMUONGeometryModule;
 class AliMUONGeometryStore;
 class AliMUONGeometryDetElement;
 class AliMUONVGeometryDESegmentation;
+class AliMUONSegmentManuIndex;
 
 class AliMUONGeometrySegmentation : public TObject
 {
@@ -67,7 +68,10 @@ class AliMUONGeometrySegmentation : public TObject
                           Int_t ix, Int_t iy,
                           Float_t& x, Float_t& y, Float_t& z);
                        // Transform from real to pad coordinates
-
+                       // get pad for a given connection
+    virtual Bool_t     GetPadE(Int_t detElemId, Int_t &ix, Int_t &iy,  AliMUONSegmentManuIndex* connect);
+    virtual AliMUONSegmentManuIndex*     GetMpConnection(Int_t detElemId, Int_t ix, Int_t iy); 
+                       // get electronics connection for given pad
     // Initialisation
     //
     virtual void Init(Int_t chamber);

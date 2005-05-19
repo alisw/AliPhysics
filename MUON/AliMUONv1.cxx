@@ -178,12 +178,12 @@ void AliMUONv1::Init()
 
    if (fSegmentationType == 1) {
      fFactory = new AliMUONFactory("Old MUON Factory");
-     printf("\n Old Segmentation \n");
+     printf("\n Old Segmentation \n\n");
    }
 
    if (fSegmentationType == 2) {
      fFactory = new AliMUONFactoryV2("New MUON Factory");
-     printf("\n New Segmentation \n");
+     printf("\n New Segmentation \n\n");
    } 
 
    fFactory->Build(this, "default");

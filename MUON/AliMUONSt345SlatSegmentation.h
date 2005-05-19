@@ -17,6 +17,8 @@
 
 class TArrayF;
 class TArrayI;
+class AliMUONSegmentManuIndex;
+class AliMUONSegmentationDetectionElement;
 
 class AliMUONSt345SlatSegmentation : public AliMUONVGeometryDESegmentation 
 {
@@ -43,7 +45,10 @@ class AliMUONSt345SlatSegmentation : public AliMUONVGeometryDESegmentation
     virtual void     GetPadI(Float_t x, Float_t y , Float_t z, Int_t &ix, Int_t &iy);
     virtual void     GetPadC(Int_t ix, Int_t iy, Float_t &x, Float_t &y);
     virtual void     GetPadC(Int_t ix, Int_t iy, Float_t &x, Float_t &y, Float_t &z) {z=0; GetPadC(ix, iy, x , y);}
- 
+
+    virtual void     GetPadE(Int_t &ix, Int_t &iy,  AliMUONSegmentManuIndex* connect); // get pad for a given connection
+    virtual AliMUONSegmentManuIndex*     GetMpConnection(Int_t ix, Int_t iy); // get electronics connection for given pad
+
  
     virtual void     IntegrationLimits(Float_t& x1, Float_t& x2, Float_t& y1, Float_t& y2); //Current integration limits
     virtual Int_t    ISector()  {return fSector;} // Current Pad during Integration (current sector)
@@ -83,7 +88,9 @@ class AliMUONSt345SlatSegmentation : public AliMUONVGeometryDESegmentation
 
     AliMUONSt345SlatSegmentation(const AliMUONSt345SlatSegmentation& rhs);
     AliMUONSt345SlatSegmentation& operator=(const AliMUONSt345SlatSegmentation& rhs);
-    
+    void GetMpFileName(Char_t* name) const;
+    void Swap(Int_t padX, Int_t &padY);
+
  private:
     //  Internal geometry of the slat 
     Bool_t      fBending;        // 0: Bending or 1:Non Bending segmentation
@@ -97,6 +104,7 @@ class AliMUONSt345SlatSegmentation : public AliMUONVGeometryDESegmentation
     Int_t       fNpx;            // Number of pads in x
     Int_t       fNpy;            // Number of pads in y
     Float_t     fWireD;          // wire pitch
+    Int_t       fRtype;          // type of the slat: rounded R=1,2,3, rounded short R=-1,-2,-3, short R=4, normal R=0
     // 
     Int_t       fSector;         // Current density sector
     Float_t     fDxPCB;          // x-size of PCB board
@@ -132,7 +140,12 @@ class AliMUONSt345SlatSegmentation : public AliMUONVGeometryDESegmentation
     Float_t     fYmin;           // upper right x
     Float_t     fYmax;           // upper right y 
 
-    ClassDef(AliMUONSt345SlatSegmentation,1) 
+    Bool_t      fInitDone;       // flag for initialization
+
+    // electronics mapping
+    AliMUONSegmentationDetectionElement* fSegmentationDetectionElement; //! pointer to the electronics mapping
+
+    ClassDef(AliMUONSt345SlatSegmentation,3) 
 };
 #endif
 

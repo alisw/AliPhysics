@@ -466,7 +466,7 @@ void AliMUONFactoryV2::BuildStation4()
   slatsegB[3]->SetPcbBoards(n7);
   slatsegB[3]->Init(0); // 0 detection element id
   slatsegNB[3]->SetPcbBoards(n7);
-  slatsegNB[4]->Init(0); // 0 detection element id
+  slatsegNB[3]->Init(0); // 0 detection element id
     
   // Type 223300 for 704, 709, 717, 722 in Ch7 (similar for Ch8) 
   // for the futur official numbering

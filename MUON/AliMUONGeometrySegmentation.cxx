@@ -33,7 +33,7 @@
 #include "AliMUONGeometryModule.h"
 #include "AliMUONGeometryDetElement.h"
 #include "AliMUONGeometryStore.h"
-
+#include "AliMUONSegmentManuIndex.h"
 
 ClassImp(AliMUONGeometrySegmentation)
 
@@ -240,6 +240,55 @@ Bool_t  AliMUONGeometrySegmentation::GetPadC(Int_t detElemId,
 
   fGeometryModule->Local2Global(detElemId, xl, yl, zl, xg, yg, zg); 
   return true;
+}
+
+//______________________________________________________________________________
+Bool_t  AliMUONGeometrySegmentation::GetPadE(Int_t detElemId,
+                                        Int_t &ix, Int_t &iy, 
+                                        AliMUONSegmentManuIndex* connect)
+{
+// Get pads for a given electronic connection
+// ---
+
+  if (!OwnNotify(detElemId)) return false;
+
+  if (!fCurrentSegmentation->HasPad(ix, iy)) return false;
+
+  fCurrentSegmentation->GetPadE(ix, iy, connect);
+  return true;
+}
+
+//______________________________________________________________________________
+AliMUONSegmentManuIndex* AliMUONGeometrySegmentation:: GetMpConnection(Int_t detElemId,
+							       Int_t ix, Int_t iy)
+{					
+// Get electronic connection for given pads
+// ---
+
+  if (!OwnNotify(detElemId)) return 0x0;
+
+  AliMUONSegmentManuIndex* connect;
+
+  connect = fCurrentSegmentation->GetMpConnection(ix, iy);
+  if (connect == 0x0) return 0x0;
+
+  Int_t busPatchId = connect->GetBusPatchId(); 
+
+  Int_t dBusPatch = 0;
+  // not very clean way, to be changed (Ch.F.)
+
+  if (detElemId/100 > 4 && detElemId/100 < 11) 
+    dBusPatch = 4; 
+  else if (detElemId/100 < 5) 
+    dBusPatch = 25; 
+
+  if (detElemId % 100 < 50)
+    busPatchId+= (detElemId/100 - 1)*100 + (detElemId % 100)*dBusPatch;
+  else 
+    busPatchId+= (detElemId/100 - 1)*100 + ((detElemId-50) % 100)*dBusPatch + 50;
+
+  connect->SetBusPatchId(busPatchId); 
+  return connect;
 }
 
 

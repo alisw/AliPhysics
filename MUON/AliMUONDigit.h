@@ -32,9 +32,17 @@ class AliMUONDigit : public TObject {
     virtual Int_t    Hit() const          {return fHit;}    
     virtual Int_t    Cathode() const      {return fCathode;}
     virtual Int_t    Track(Int_t i) const {return fTracks[i];}
-    virtual Int_t    TrackCharge(Int_t i) const {return fTcharges[i];}    
-    virtual void     AddSignal(Int_t q)   {fSignal += q;}
-    virtual void     AddPhysicsSignal(Int_t q)   {fPhysics += q;}	    
+    virtual Int_t    TrackCharge(Int_t i) const {return fTcharges[i];} 
+
+    virtual void     SetDetElemId(Int_t id)    {fDetElemId = id;}
+    virtual void     SetPadX(Int_t pad)        {fPadX = pad;}
+    virtual void     SetPadY(Int_t pad)        {fPadY = pad;}
+    virtual void     AddSignal(Int_t q)        {fSignal += q;}
+    virtual void     AddPhysicsSignal(Int_t q) {fPhysics += q;}
+    virtual void     SetHit(Int_t n)           {fHit = n;}    
+    virtual void     SetCathode(Int_t c)       {fCathode = c;}
+  
+	    
  private:
     Int_t     fPadX;          // Pad number along x
     Int_t     fPadY;          // Pad number along y
