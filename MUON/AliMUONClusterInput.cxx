@@ -40,7 +40,7 @@ AliMUONClusterInput::AliMUONClusterInput()
     fChargeCorrel(1.),
     fSegmentationType(1),
     fDetElemId(0)
-
+  
 {
   fDigits[0]=0;
   fDigits[1]=0;
@@ -192,20 +192,20 @@ void AliMUONClusterInput::SetDigits(Int_t chamber, Int_t idDE, TClonesArray* dig
 void  AliMUONClusterInput::SetCluster(AliMUONRawCluster* cluster)
 {
 // Set the current cluster
-    //PH printf("\n %p \n", cluster);
-    fCluster=cluster;
-    Float_t qtot;
-    Int_t   i, cath, ix, iy;
-    AliMUONDigit* digit;
-    fNmul[0]=cluster->GetMultiplicity(0);
-    fNmul[1]=cluster->GetMultiplicity(1);
-    //PH printf("\n %p %p ", fDigits[0], fDigits[1]);
-    
-    for (cath=0; cath<2; cath++) {
-	qtot=0;
-	for (i=0; i<fNmul[cath]; i++) {
-	    // pointer to digit
-	    digit =(AliMUONDigit*)
+  //PH printf("\n %p \n", cluster);
+  fCluster=cluster;
+  Float_t qtot;
+  Int_t   i, cath, ix, iy;
+  AliMUONDigit* digit;
+  fNmul[0]=cluster->GetMultiplicity(0);
+  fNmul[1]=cluster->GetMultiplicity(1);
+  //PH printf("\n %p %p ", fDigits[0], fDigits[1]);
+  
+  for (cath=0; cath<2; cath++) {
+    qtot=0;
+    for (i=0; i<fNmul[cath]; i++) {
+      // pointer to digit
+      digit =(AliMUONDigit*)
 		(fDigits[cath]->UncheckedAt(cluster->GetIndex(i,cath)));
 	    // pad coordinates
 	    ix = digit->PadX();
@@ -225,7 +225,6 @@ void  AliMUONClusterInput::SetCluster(AliMUONRawCluster* cluster)
 	      fSegmentation[cath]->GetPadC(ix,iy,xc,yc,fZ);
 	    else 
 	      fSegmentation2[cath]->GetPadC(fDetElemId,ix,iy,xc,yc,fZ);
-	    
 	} // loop over cluster digits
 	fQtot[cath]=qtot;
 	fChargeTot[cath]=Int_t(qtot);  

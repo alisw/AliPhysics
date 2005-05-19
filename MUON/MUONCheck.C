@@ -239,10 +239,9 @@ void MUONrecpoints(char * filename="galice.root", Int_t event2Check=0) {
       printf(">>> Chamber %d\n",ichamber);
       sprintf(branchname,"MUONRawClusters%d",ichamber+1);
       //printf(">>>  branchname %s\n",branchname);
-  
       Int_t irecpoint, nrecpoints;
       nrecpoints = (Int_t) muondata.RawClusters(ichamber)->GetEntriesFast();
-      
+      printf("number of recpoints = %6d \n",nrecpoints);
       for(irecpoint=0; irecpoint<nrecpoints; irecpoint++) {
 	mRecPoint = static_cast<AliMUONRawCluster*>(muondata.RawClusters(ichamber)->At(irecpoint));
 //     Int_t       fTracks[3];        //labels of overlapped tracks
@@ -278,9 +277,12 @@ void MUONrecpoints(char * filename="galice.root", Int_t event2Check=0) {
 	Float_t z1 = mRecPoint->GetZ(1);
 	Float_t chi2_0 =  mRecPoint->GetChi2(0);
 	Float_t chi2_1 =  mRecPoint->GetChi2(1);
-
-	printf(">>> RecPoint %4d x %6.3f %6.3f y %6.3f %6.3f z %6.3f %6.3f Q0 %4d  Q1 %4d Hit %4d Track1 %4d Track2 %4d Chi2 %6.3f %6.3f \n",
-irecpoint, x0, x1, y0, y1, z0, z1, Q0, Q1, Track0, Track1, Track2, chi2_0, chi2_1);
+	//	Int_t de = mRecPoint->GetDetElementID();
+	Int_t de = mRecPoint->DetElemId();
+	//	printf(">>> RecPoint %4d x %6.3f %6.3f y %6.3f %6.3f z %6.3f %6.3f Q0 %4d  Q1 %4d Hit %4d Track1 %4d Track2 %4d Chi2 %6.3f %6.3f \n",
+	//irecpoint, x0, x1, y0, y1, z0, z1, Q0, Q1, Track0, Track1, Track2, chi2_0, chi2_1);
+	cout << mRecPoint->DetElemId() << endl;
+	printf(">>> RecPoint %4d x %6.3f y %6.3f z %6.3f DetElem %2d \n",irecpoint,x0,y0,z0,de);
       } // end recpoint loop
     } // end chamber loop
     muondata.ResetRawClusters();

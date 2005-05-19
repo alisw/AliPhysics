@@ -96,7 +96,7 @@ void AliMUONClusterFinderVS::Decluster(AliMUONRawCluster *cluster)
 //____________________________________________________________________________
 void AliMUONClusterFinderVS::SplitByLocalMaxima(AliMUONRawCluster *c)
 {
-// Split complex cluster by local maxima 
+  // Split complex cluster by local maxima 
     Int_t cath, i;
 
     fInput->SetCluster(c);
@@ -183,11 +183,11 @@ void AliMUONClusterFinderVS::SplitByLocalMaxima(AliMUONRawCluster *c)
 	  c->SetX(0, fSeg2[0]->GetAnod(fInput->DetElemId(), c->GetX(0)));
 	  c->SetX(1, fSeg2[1]->GetAnod(fInput->DetElemId(), c->GetX(1)));
 	}
-	
-// If reasonable chi^2 add result to the list of rawclusters
+	//	c->SetDetElementID(fInput->DetElemId());
+	// If reasonable chi^2 add result to the list of rawclusters
 	if (chi2 < 0.3) {
 	    AddRawCluster(*c);
-// If not try combined double Mathieson Fit
+	    // If not try combined double Mathieson Fit
 	} else {
 	  	AliDebug(1," MAUVAIS CHI2 !!!\n");
 	    if (fNLocal[0]==1 &&  fNLocal[1]==1) {
@@ -226,7 +226,7 @@ void AliMUONClusterFinderVS::SplitByLocalMaxima(AliMUONRawCluster *c)
 	    } else {
 	      AliDebug(1,"Do not Split");
 		// Don't split
-		AddRawCluster(*c);
+	      AddRawCluster(*c);
 	    }
 	}
 
@@ -360,7 +360,7 @@ void AliMUONClusterFinderVS::SplitByLocalMaxima(AliMUONRawCluster *c)
 // No combinations found between the 2 cathodes
 // We keep the center of gravity of the cluster
 	if (iacc==0) {
-	    AddRawCluster(*c);
+	  AddRawCluster(*c);
 	}
 
 // ******* iacc = 1 *******
@@ -456,7 +456,6 @@ void AliMUONClusterFinderVS::SplitByLocalMaxima(AliMUONRawCluster *c)
 				cnew.SetX(cath, Float_t(xm[ico][1]));
 				cnew.SetY(cath, Float_t(ym[ico][0]));
 				cnew.SetZ(cath, fZPlane);
-				
 				cnew.SetMultiplicity(cath,c->GetMultiplicity(cath));
 			      	for (i=0; i<fMul[cath]; i++) {
 				  cnew.SetIndex(i, cath, c->GetIndex(i,cath));
@@ -989,6 +988,7 @@ void AliMUONClusterFinderVS::SplitByLocalMaxima(AliMUONRawCluster *c)
 		    FillCluster(&cnew,cath);
 		} 
 		cnew.SetClusterType(cnew.PhysicsContribution());
+		//		cnew.SetDetElementID(fInput->DetElemId());
 		AddRawCluster(cnew);
 		fNPeaks++;
 	    }
@@ -1264,160 +1264,163 @@ void AliMUONClusterFinderVS::FindLocalMaxima(AliMUONRawCluster* /*c*/)
 
 void  AliMUONClusterFinderVS::FillCluster(AliMUONRawCluster* c, Int_t flag, Int_t cath) 
 {
-//
-//  Completes cluster information starting from list of digits
-//
-    AliMUONDigit* dig;
-    Float_t x, y, z;
-    Int_t  ix, iy;
-    
-    if (cath==1) {
-	c->SetPeakSignal(cath,c->GetPeakSignal(0));	
-    } else {
-	c->SetPeakSignal(cath,0);
-    }
-    
-    
-    if (flag) {
-	c->SetX(cath,0.);
-	c->SetY(cath,0.);
-	c->SetCharge(cath,0);
-    }
-
-    AliDebug(1,Form("\n fPeakSignal %d\n",c->GetPeakSignal(cath)));
-    for (Int_t i=0; i<c->GetMultiplicity(cath); i++)
+  //
+  //  Completes cluster information starting from list of digits
+  //
+  AliMUONDigit* dig;
+  Float_t x, y, z;
+  Int_t  ix, iy;
+  
+  if (cath==1) {
+    c->SetPeakSignal(cath,c->GetPeakSignal(0));	
+  } else {
+    c->SetPeakSignal(cath,0);
+  }
+  
+  
+  if (flag) {
+    c->SetX(cath,0.);
+    c->SetY(cath,0.);
+    c->SetCharge(cath,0);
+  }
+  
+  AliDebug(1,Form("\n fPeakSignal %d\n",c->GetPeakSignal(cath)));
+  for (Int_t i=0; i<c->GetMultiplicity(cath); i++)
     {
-	dig= fInput->Digit(cath,c->GetIndex(i,cath));
-	ix=dig->PadX()+c->GetOffset(i,cath);
-	iy=dig->PadY();
-	Int_t q=dig->Signal();
-	if (!flag) q=Int_t(q*c->GetContrib(i,cath));
-//	fprintf(stderr,"q %d c->fPeakSignal[ %d ] %d\n",q,cath,c->fPeakSignal[cath]);
-	if (dig->Physics() >= dig->Signal()) {
-	    c->SetPhysics(i,2);
-	} else if (dig->Physics() == 0) {
-	    c->SetPhysics(i,0);
-	} else  c->SetPhysics(i,1);
-//
-// 
-	AliDebug(2,Form("q %d c->fPeakSignal[cath] %d\n",q,c->GetPeakSignal(cath)));
-// peak signal and track list
-	if (q>c->GetPeakSignal(cath)) {
-	    c->SetPeakSignal(cath, q);
-	    c->SetTrack(0,dig->Hit());
-	    c->SetTrack(1,dig->Track(0));
-	    c->SetTrack(2,dig->Track(1));
-//	    fprintf(stderr," c->fTracks[0] %d c->fTracks[1] %d\n",dig->fHit,dig->fTracks[0]);
-	}
-//
-	if (flag) {
-	  if (fSegmentationType == 1) 
-	    fSeg[cath]->GetPadC(ix, iy, x, y, z);
-	  else
-	    fSeg2[cath]->GetPadC(fInput->DetElemId(), ix, iy, x, y, z);
-	
-	    c->AddX(cath, q*x);
-	    c->AddY(cath, q*y);
-	    c->AddCharge(cath, q);
-	}
-    } // loop over digits
-    AliDebug(1," fin du cluster c\n");
-
-
-    if (flag) {
-      	c->SetX(cath, c->GetX(cath)/c->GetCharge(cath));
-// Force on anod
+      dig= fInput->Digit(cath,c->GetIndex(i,cath));
+      ix=dig->PadX()+c->GetOffset(i,cath);
+      iy=dig->PadY();
+      Int_t q=dig->Signal();
+      if (!flag) q=Int_t(q*c->GetContrib(i,cath));
+      //	fprintf(stderr,"q %d c->fPeakSignal[ %d ] %d\n",q,cath,c->fPeakSignal[cath]);
+      if (dig->Physics() >= dig->Signal()) {
+	c->SetPhysics(i,2);
+      } else if (dig->Physics() == 0) {
+	c->SetPhysics(i,0);
+      } else  c->SetPhysics(i,1);
+      //
+      // 
+      AliDebug(2,Form("q %d c->fPeakSignal[cath] %d\n",q,c->GetPeakSignal(cath)));
+      // peak signal and track list
+      if (q>c->GetPeakSignal(cath)) {
+	c->SetPeakSignal(cath, q);
+	c->SetTrack(0,dig->Hit());
+	c->SetTrack(1,dig->Track(0));
+	c->SetTrack(2,dig->Track(1));
+	//	    fprintf(stderr," c->fTracks[0] %d c->fTracks[1] %d\n",dig->fHit,dig->fTracks[0]);
+      }
+      //
+      if (flag) {
 	if (fSegmentationType == 1) 
-	  c->SetX(cath, fSeg[cath]->GetAnod(c->GetX(cath)));
-	else
-	  c->SetX(cath, fSeg2[cath]->GetAnod(fInput->DetElemId(), c->GetX(cath)));
-      	c->SetY(cath, c->GetY(cath)/c->GetCharge(cath)); 
-//
-//  apply correction to the coordinate along the anode wire
-//
-     	x=c->GetX(cath);   
-     	y=c->GetY(cath);
-	TF1* cogCorr;
-	Int_t isec;
-	if (fSegmentationType == 1) {
-	  fSeg[cath]->GetPadI(x, y, fZPlane, ix, iy);
 	  fSeg[cath]->GetPadC(ix, iy, x, y, z);
-	  isec=fSeg[cath]->Sector(ix,iy);
-	  cogCorr = fSeg[cath]->CorrFunc(isec-1);
-	} else {
-	  fSeg2[cath]->GetPadI(fInput->DetElemId(), x, y, fZPlane, ix, iy);
+	else
 	  fSeg2[cath]->GetPadC(fInput->DetElemId(), ix, iy, x, y, z);
-	  isec=fSeg2[cath]->Sector(fInput->DetElemId(), ix,iy);
-	  cogCorr = fSeg2[cath]->CorrFunc(fInput->DetElemId(), isec-1);
-	}
 	
-     	if (cogCorr) {
-	  Float_t yOnPad;
-	  if (fSegmentationType == 1) 
-	    yOnPad=(c->GetY(cath)-y)/fSeg[cath]->Dpy(isec);
-	  else 
-	    yOnPad=(c->GetY(cath)-y)/fSeg2[cath]->Dpy(fInput->DetElemId(), isec);
-
-	  c->SetY(cath, c->GetY(cath)-cogCorr->Eval(yOnPad, 0, 0));
-     	}
+	c->AddX(cath, q*x);
+	c->AddY(cath, q*y);
+	c->AddCharge(cath, q);
+      }
+    } // loop over digits
+  AliDebug(1," fin du cluster c\n");
+  
+  
+  if (flag) {
+    c->SetX(cath, c->GetX(cath)/c->GetCharge(cath));
+    // Force on anod
+    if (fSegmentationType == 1) 
+      c->SetX(cath, fSeg[cath]->GetAnod(c->GetX(cath)));
+    else
+      c->SetX(cath, fSeg2[cath]->GetAnod(fInput->DetElemId(), c->GetX(cath)));
+    c->SetY(cath, c->GetY(cath)/c->GetCharge(cath)); 
+    //
+    //  apply correction to the coordinate along the anode wire
+    //
+    x=c->GetX(cath);   
+    y=c->GetY(cath);
+    TF1* cogCorr;
+    Int_t isec;
+    if (fSegmentationType == 1) {
+      fSeg[cath]->GetPadI(x, y, fZPlane, ix, iy);
+      fSeg[cath]->GetPadC(ix, iy, x, y, z);
+      isec=fSeg[cath]->Sector(ix,iy);
+      cogCorr = fSeg[cath]->CorrFunc(isec-1);
+    } else {
+      fSeg2[cath]->GetPadI(fInput->DetElemId(), x, y, fZPlane, ix, iy);
+      fSeg2[cath]->GetPadC(fInput->DetElemId(), ix, iy, x, y, z);
+      isec=fSeg2[cath]->Sector(fInput->DetElemId(), ix,iy);
+      cogCorr = fSeg2[cath]->CorrFunc(fInput->DetElemId(), isec-1);
     }
+    
+    if (cogCorr) {
+      Float_t yOnPad;
+      if (fSegmentationType == 1) 
+	yOnPad=(c->GetY(cath)-y)/fSeg[cath]->Dpy(isec);
+      else 
+	yOnPad=(c->GetY(cath)-y)/fSeg2[cath]->Dpy(fInput->DetElemId(), isec);
+      
+      c->SetY(cath, c->GetY(cath)-cogCorr->Eval(yOnPad, 0, 0));
+      // slat ID from digit
+      
+    }
+  }
 }
 
 void  AliMUONClusterFinderVS::FillCluster(AliMUONRawCluster* c, Int_t cath) 
 {
-//
-//  Completes cluster information starting from list of digits
-//
-    static Float_t dr0;
-
-    AliMUONDigit* dig;
-
-    if (cath==0) {
-	dr0 = 10000;
-    }
-    
-    Float_t xpad, ypad, zpad;
-    Float_t dx, dy, dr;
-
-    for (Int_t i=0; i<c->GetMultiplicity(cath); i++)
+  //
+  //  Completes cluster information starting from list of digits
+  //
+  static Float_t dr0;
+  
+  AliMUONDigit* dig;
+  
+  if (cath==0) {
+    dr0 = 10000;
+  }
+  
+  Float_t xpad, ypad, zpad;
+  Float_t dx, dy, dr;
+  
+  for (Int_t i=0; i<c->GetMultiplicity(cath); i++)
     {
-	dig = fInput->Digit(cath,c->GetIndex(i,cath));
-	if (fSegmentationType == 1) 
-	  fSeg[cath]->
-	    GetPadC(dig->PadX(),dig->PadY(),xpad,ypad, zpad);
-	else
-	  fSeg2[cath]->
-	    GetPadC(fInput->DetElemId(),dig->PadX(),dig->PadY(),xpad,ypad, zpad);
-	AliDebug(1,Form("x %f y %f cx %f cy %f\n",xpad,ypad,c->GetX(0),c->GetY(0)));
-	dx = xpad - c->GetX(0);
-	dy = ypad - c->GetY(0);
-	dr = TMath::Sqrt(dx*dx+dy*dy);
-
-	if (dr < dr0) {
-	    dr0 = dr;
-	    AliDebug(1,Form(" dr %f\n",dr));
-	    Int_t q=dig->Signal();
-	    if (dig->Physics() >= dig->Signal()) {
-		c->SetPhysics(i,2);
-	    } else if (dig->Physics() == 0) {
-		c->SetPhysics(i,0);
-	    } else  c->SetPhysics(i,1);
-	    c->SetPeakSignal(cath,q);
-	    c->SetTrack(0,dig->Hit());
-	    c->SetTrack(1,dig->Track(0));
-	    c->SetTrack(2,dig->Track(1));
-	    AliDebug(1,Form(" c->fTracks[0] %d c->fTracks[1] %d\n",dig->Hit(),
-		    dig->Track(0)));
-	}
-//
+      dig = fInput->Digit(cath,c->GetIndex(i,cath));
+      if (fSegmentationType == 1) 
+	fSeg[cath]->
+	  GetPadC(dig->PadX(),dig->PadY(),xpad,ypad, zpad);
+      else
+	fSeg2[cath]->
+	  GetPadC(fInput->DetElemId(),dig->PadX(),dig->PadY(),xpad,ypad, zpad);
+      AliDebug(1,Form("x %f y %f cx %f cy %f\n",xpad,ypad,c->GetX(0),c->GetY(0)));
+      dx = xpad - c->GetX(0);
+      dy = ypad - c->GetY(0);
+      dr = TMath::Sqrt(dx*dx+dy*dy);
+      
+      if (dr < dr0) {
+	dr0 = dr;
+	AliDebug(1,Form(" dr %f\n",dr));
+	Int_t q=dig->Signal();
+	if (dig->Physics() >= dig->Signal()) {
+	  c->SetPhysics(i,2);
+	} else if (dig->Physics() == 0) {
+	  c->SetPhysics(i,0);
+	} else  c->SetPhysics(i,1);
+	c->SetPeakSignal(cath,q);
+	c->SetTrack(0,dig->Hit());
+	c->SetTrack(1,dig->Track(0));
+	c->SetTrack(2,dig->Track(1));
+	
+	AliDebug(1,Form(" c->fTracks[0] %d c->fTracks[1] %d\n",dig->Hit(),
+			dig->Track(0)));
+      }
+      //
     } // loop over digits
-
-//  apply correction to the coordinate along the anode wire
-// Force on anod
-    if (fSegmentationType == 1) 
-      c->SetX(cath,fSeg[cath]->GetAnod(c->GetX(cath)));
-    else
-      c->SetX(cath,fSeg2[cath]->GetAnod(fInput->DetElemId(), c->GetX(cath)));
+  
+  //  apply correction to the coordinate along the anode wire
+  // Force on anod
+  if (fSegmentationType == 1) 
+    c->SetX(cath,fSeg[cath]->GetAnod(c->GetX(cath)));
+  else
+    c->SetX(cath,fSeg2[cath]->GetAnod(fInput->DetElemId(), c->GetX(cath)));
 }
 
 void  AliMUONClusterFinderVS::FindCluster(Int_t i, Int_t j, Int_t cath, AliMUONRawCluster &c){
@@ -1626,7 +1629,7 @@ void AliMUONClusterFinderVS::FindRawClusters()
     } else {
       fSeg2[0] = fInput->Segmentation2(0);
       fSeg2[1] = fInput->Segmentation2(1);
-
+      
       fHitMap[0]  = new AliMUONHitMapA1(fInput->DetElemId(), fSeg2[0], fInput->Digits(0));
       fHitMap[1]  = new AliMUONHitMapA1(fInput->DetElemId(), fSeg2[1], fInput->Digits(1));
     }
@@ -1641,90 +1644,90 @@ void AliMUONClusterFinderVS::FindRawClusters()
 //
 //  Outer Loop over Cathodes
     for (cath=0; cath<2; cath++) {
-
+      
 	for (ndig=0; ndig<fInput->NDigits(cath); ndig++) {
-	    dig = fInput->Digit(cath, ndig);
-	    Int_t padx = dig->PadX();
-	    Int_t pady = dig->PadY();
-	    if (fHitMap[cath]->TestHit(padx,pady)==kUsed ||fHitMap[0]->TestHit(padx,pady)==kEmpty) {
-		nskip++;
-		continue;
-	    }
-	    AliDebug(1,Form("\n CATHODE %d CLUSTER %d\n",cath,ncls));
-	    AliMUONRawCluster clus;
-	    clus.SetMultiplicity(0, 0);
-	    clus.SetMultiplicity(1, 0);
-	    clus.SetPeakSignal(cath,dig->Signal());
-	    clus.SetTrack(0, dig->Hit());
-	    clus.SetTrack(1, dig->Track(0));
-	    clus.SetTrack(2, dig->Track(1));
-
-	    AliDebug(1,Form("idDE %d Padx %d Pady %d", fInput->DetElemId(), padx, pady));
-
-	    // tag the beginning of cluster list in a raw cluster
-	    clus.SetNcluster(0,-1);
-	    Float_t xcu, ycu;
-	    if (fSegmentationType == 1) {
-	      fSeg[cath]->GetPadC(padx,pady, xcu, ycu, fZPlane);
-	      fSector= fSeg[cath]->Sector(padx,pady)/100;
-	    } else {
-	      fSeg2[cath]->GetPadC(fInput->DetElemId(), padx, pady, xcu, ycu, fZPlane);
-	      fSector= fSeg2[cath]->Sector(fInput->DetElemId(), padx, pady)/100;
-	    }
-
-
-            
-	    FindCluster(padx,pady,cath,clus);
-//          ^^^^^^^^^^^^^^^^^^^^^^^^
-	    // center of gravity
-	    if (clus.GetX(0)!=0.) clus.SetX(0, clus.GetX(0)/clus.GetCharge(0)); // clus.fX[0] /= clus.fQ[0];
-
-	    // Force on anod
-	    if (fSegmentationType == 1) 
-	      clus.SetX(0,fSeg[0]->GetAnod(clus.GetX(0)));
-	    else 
-	      clus.SetX(0,fSeg2[0]->GetAnod(fInput->DetElemId(), clus.GetX(0)));
-	    if (clus.GetY(0)!=0.) clus.SetY(0, clus.GetY(0)/clus.GetCharge(0)); // clus.fY[0] /= clus.fQ[0];
-      	    
-	    if(clus.GetCharge(1)!=0.) clus.SetX(1, clus.GetX(1)/clus.GetCharge(1));  // clus.fX[1] /= clus.fQ[1];
-	    	    			
-	   // Force on anod
-	    if (fSegmentationType == 1) 
-	      clus.SetX(1, fSeg[0]->GetAnod(clus.GetX(1)));
-	    else 
-	      clus.SetX(1, fSeg2[0]->GetAnod(fInput->DetElemId(),clus.GetX(1)));
-	    if(clus.GetCharge(1)!=0.) clus.SetY(1, clus.GetY(1)/clus.GetCharge(1));// clus.fY[1] /= clus.fQ[1];
-	    
-	    clus.SetZ(0, fZPlane);
-	    clus.SetZ(1, fZPlane);	    
-
-		AliDebug(1,Form("\n Cathode 1 multiplicite %d X(CG) %f Y(CG) %f\n",
-			clus.GetMultiplicity(0),clus.GetX(0),clus.GetY(0)));
-		AliDebug(1,Form(" Cathode 2 multiplicite %d X(CG) %f Y(CG) %f\n",
-			clus.GetMultiplicity(1),clus.GetX(1),clus.GetY(1)));
-//      Analyse cluster and decluster if necessary
-//	
-	ncls++;
-	clus.SetNcluster(1,fNRawClusters);
-	clus.SetClusterType(clus.PhysicsContribution());
-
-	fNPeaks=0;
-//
-//
-	Decluster(&clus);
-//
-//      reset Cluster object
-	{ // begin local scope
+	  dig = fInput->Digit(cath, ndig);
+	  Int_t padx = dig->PadX();
+	  Int_t pady = dig->PadY();
+	  if (fHitMap[cath]->TestHit(padx,pady)==kUsed ||fHitMap[0]->TestHit(padx,pady)==kEmpty) {
+	    nskip++;
+	    continue;
+	  }
+	  AliDebug(1,Form("\n CATHODE %d CLUSTER %d\n",cath,ncls));
+	  AliMUONRawCluster clus;
+	  clus.SetMultiplicity(0, 0);
+	  clus.SetMultiplicity(1, 0);
+	  clus.SetPeakSignal(cath,dig->Signal());
+	  clus.SetTrack(0, dig->Hit());
+	  clus.SetTrack(1, dig->Track(0));
+	  clus.SetTrack(2, dig->Track(1));
+	  
+	  AliDebug(1,Form("idDE %d Padx %d Pady %d", fInput->DetElemId(), padx, pady));
+	  
+	  // tag the beginning of cluster list in a raw cluster
+	  clus.SetNcluster(0,-1);
+	  Float_t xcu, ycu;
+	  if (fSegmentationType == 1) {
+	    fSeg[cath]->GetPadC(padx,pady, xcu, ycu, fZPlane);
+	    fSector= fSeg[cath]->Sector(padx,pady)/100;
+	  } else {
+	    fSeg2[cath]->GetPadC(fInput->DetElemId(), padx, pady, xcu, ycu, fZPlane);
+	    fSector= fSeg2[cath]->Sector(fInput->DetElemId(), padx, pady)/100;
+	  }
+	  
+	  
+	  
+	  FindCluster(padx,pady,cath,clus);
+	  //^^^^^^^^^^^^^^^^^^^^^^^^
+	  // center of gravity
+	  if (clus.GetX(0)!=0.) clus.SetX(0, clus.GetX(0)/clus.GetCharge(0)); // clus.fX[0] /= clus.fQ[0];
+	  
+	  // Force on anod
+	  if (fSegmentationType == 1) 
+	    clus.SetX(0,fSeg[0]->GetAnod(clus.GetX(0)));
+	  else 
+	    clus.SetX(0,fSeg2[0]->GetAnod(fInput->DetElemId(), clus.GetX(0)));
+	  if (clus.GetY(0)!=0.) clus.SetY(0, clus.GetY(0)/clus.GetCharge(0)); // clus.fY[0] /= clus.fQ[0];
+	  
+	  if(clus.GetCharge(1)!=0.) clus.SetX(1, clus.GetX(1)/clus.GetCharge(1));  // clus.fX[1] /= clus.fQ[1];
+	  
+	  // Force on anod
+	  if (fSegmentationType == 1) 
+	    clus.SetX(1, fSeg[0]->GetAnod(clus.GetX(1)));
+	  else 
+	    clus.SetX(1, fSeg2[0]->GetAnod(fInput->DetElemId(),clus.GetX(1)));
+	  if(clus.GetCharge(1)!=0.) clus.SetY(1, clus.GetY(1)/clus.GetCharge(1));// clus.fY[1] /= clus.fQ[1];
+	  
+	  clus.SetZ(0, fZPlane);
+	  clus.SetZ(1, fZPlane);	    
+	  
+	  AliDebug(1,Form("\n Cathode 1 multiplicite %d X(CG) %f Y(CG) %f\n",
+			  clus.GetMultiplicity(0),clus.GetX(0),clus.GetY(0)));
+	  AliDebug(1,Form(" Cathode 2 multiplicite %d X(CG) %f Y(CG) %f\n",
+			  clus.GetMultiplicity(1),clus.GetX(1),clus.GetY(1)));
+	  //      Analyse cluster and decluster if necessary
+	  //	
+	  ncls++;
+	  clus.SetNcluster(1,fNRawClusters);
+	  clus.SetClusterType(clus.PhysicsContribution());
+	  
+	  fNPeaks=0;
+	  //
+	  //
+	  Decluster(&clus);
+	  //
+	  //      reset Cluster object
+	  { // begin local scope
 	    for (int k=0;k<clus.GetMultiplicity(0);k++) clus.SetIndex(k, 0, 0);
-	} // end local scope
-
-	{ // begin local scope
+	  } // end local scope
+	  
+	  { // begin local scope
 	    for (int k=0;k<clus.GetMultiplicity(1);k++) clus.SetIndex(k, 1, 0);
-	} // end local scope
-	
-	clus.SetMultiplicity(0,0);
-	clus.SetMultiplicity(1,0);
-
+	  } // end local scope
+	  
+	  clus.SetMultiplicity(0,0);
+	  clus.SetMultiplicity(1,0);
+	  
 	
 	} // end loop ndig
     } // end loop cathodes
@@ -2324,26 +2327,27 @@ void AliMUONClusterFinderVS::Split(AliMUONRawCluster* c)
 	    }
 	    FillCluster(&cnew,0,cath);
 	} // cathode loop
-	
 	cnew.SetClusterType(cnew.PhysicsContribution());
 	if (cnew.GetCharge(0)>0 && cnew.GetCharge(1)>0) AddRawCluster(cnew);
 	fNPeaks++;
     }
 }
-void AliMUONClusterFinderVS::AddRawCluster(const AliMUONRawCluster& c)
+void AliMUONClusterFinderVS::AddRawCluster(AliMUONRawCluster& c)
 {
   //
   // Add a raw cluster copy to the list
   //
-
-//     AliMUON *pMUON=(AliMUON*)gAlice->GetModule("MUON");
-//     pMUON->GetMUONData()->AddRawCluster(fInput->Chamber(),c); 
-//     fNRawClusters++;
-
+  //     AliMUON *pMUON=(AliMUON*)gAlice->GetModule("MUON");
+  //     pMUON->GetMUONData()->AddRawCluster(fInput->Chamber(),c); 
+  //     fNRawClusters++;
   
-    TClonesArray &lrawcl = *fRawClusters;
-    new(lrawcl[fNRawClusters++]) AliMUONRawCluster(c);
-    AliDebug(1,Form("\nfNRawClusters %d\n",fNRawClusters));
+  // Setting detection element in raw cluster for alignment
+  // BB 19/05/05
+  c.SetDetElementID(fInput->DetElemId());
+  
+  TClonesArray &lrawcl = *fRawClusters;
+  new(lrawcl[fNRawClusters++]) AliMUONRawCluster(c);
+  AliDebug(1,Form("\nfNRawClusters %d\n",fNRawClusters));
 }
 
 AliMUONClusterFinderVS& AliMUONClusterFinderVS

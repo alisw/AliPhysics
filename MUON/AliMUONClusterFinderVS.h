@@ -53,7 +53,7 @@ class AliMUONClusterFinderVS : public TObject
     virtual void   FillCluster(AliMUONRawCluster *cluster, Int_t cath);
     virtual void   FillCluster(AliMUONRawCluster *cluster) {FillCluster(cluster,1,0);}
 // Add a new raw cluster    
-    virtual void AddRawCluster(const AliMUONRawCluster& cluster);
+    virtual void AddRawCluster(AliMUONRawCluster& cluster);
 //  Set tracks for debugging    
     virtual void SetTracks(Int_t t1, Int_t t2) {fTrack[0]=t1; fTrack[1]=t2;}
 //  debug level
@@ -82,13 +82,13 @@ class AliMUONClusterFinderVS : public TObject
     Float_t                 fGhostChi2Cut;       // Cut in charge matching chi2
 	                                         // (2 degrees of freedom)
                                                  // Used by ghost removal
-// Current decluster result    
+    // Current decluster result    
     Int_t                   fMul[2];             // current multiplicity
     Int_t                   fNPeaks;             // number of local maxima
     Int_t                   fNRawClusters;       // Number of Raw Clusters
     TClonesArray*           fRawClusters;        // array of cluster per ch.
 
-// Local data store    
+    // Local data store    
     AliMUONDigit*           fDig[100][2];        // current list of digits 
     Int_t                   fIx[100][2];         // current list of x-pad-coord.
     Int_t                   fIy[100][2];         // current list of y-pad-coord.
@@ -101,7 +101,7 @@ class AliMUONClusterFinderVS : public TObject
     Float_t                 fZPlane;             // currenz z-plane position
     Int_t                   fSector;             // current sector
     
-// Current Fit
+    // Current Fit
     Double_t                 fXFit[2];         // x-coordinate
     Double_t                 fYFit[2];         // y-coordinate
     Double_t                 fQrFit[2];        // charge ratio
@@ -111,15 +111,15 @@ class AliMUONClusterFinderVS : public TObject
     Float_t                  fQrInit[2];       // start values
     Int_t                    fFitStat;         // status of fit
     
-// Selected track for debugging
+    // Selected track for debugging
     Int_t                    fTrack[2];        // Only digits with main contributions from these tracks are
-                                               // considered 
+    // considered 
     Int_t                    fDebugLevel;      // prinout control
     Int_t                    fSegmentationType;// new seg
-
-//  Return pointer to raw clusters    
+    
+    //  Return pointer to raw clusters    
     ClassDef(AliMUONClusterFinderVS,2) //Class for clustering and reconstruction of space points
-};
+      };
 #endif
 
 

@@ -50,6 +50,7 @@ AliMUONRawCluster::AliMUONRawCluster()
     }
     fNcluster[0]=fNcluster[1]=-1;
     fGhost=0;
+    fDetElementID = 0;
 }
 //____________________________________________________
 Int_t AliMUONRawCluster::Compare(const TObject *obj) const
@@ -397,3 +398,4 @@ Int_t AliMUONRawCluster::SetChi2(Int_t i, Float_t chi2)
   }
   else return 0;
 }
+

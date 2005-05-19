@@ -84,7 +84,7 @@ class AliMUONClusterInput : public TObject
     Float_t              fZ;               // ! Current z-position
     Float_t              fChargeCorrel;    // ! charge correlation 
     Int_t                fSegmentationType;// ! Segmentation type old or new
-    Int_t                fDetElemId;       // ! detection elt id
+    Int_t                fDetElemId;       // ! detection elt id    
 
     // Fitter
     static TMinuit*      fgMinuit;          // ! Fitter
