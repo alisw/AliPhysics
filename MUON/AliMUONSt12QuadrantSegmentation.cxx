@@ -40,6 +40,7 @@
 #include "AliMUONChamber.h"
 #include "AliLog.h"
 #include "AliMpFiles.h"
+#include "AliMpNeighboursPadIterator.h"
 #include <TSystem.h>
 
 ClassImp(AliMUONSt12QuadrantSegmentation)
@@ -505,19 +506,16 @@ void AliMUONSt12QuadrantSegmentation::Neighbours(Int_t iX, Int_t iY,
   AliMpPad pad = fSectorSegmentation->PadByIndices(AliMpIntPair(iX,iY));
   Int_t &i = *Nlist;
   i=0;
-  AliMpVPadIterator* iter
-    = fSectorSegmentation
-      ->CreateIterator(AliMpArea(pad.Position(),2.*pad.Dimensions()*1.1));
+  AliMpNeighboursPadIterator iter
+    = AliMpNeighboursPadIterator(fSectorSegmentation, pad, kFALSE);
 
-  for( iter->First(); !iter->IsDone() && i<10; iter->Next()) {
-    Xlist[i] = iter->CurrentItem().GetIndices().GetFirst();
-    Ylist[i] = iter->CurrentItem().GetIndices().GetSecond();
+  for( iter.First(); !iter.IsDone() && i<10; iter.Next()) {
+    Xlist[i] = iter.CurrentItem().GetIndices().GetFirst();
+    Ylist[i] = iter.CurrentItem().GetIndices().GetSecond();
     i++;
   }
-  
-  delete iter;
 }
-
+ 
 //______________________________________________________________________________
 Int_t  AliMUONSt12QuadrantSegmentation::Ix()
 {
