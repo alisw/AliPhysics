@@ -2425,11 +2425,15 @@ void AliMUONSt1GeometryBuilderV2::CreateGeometry()
   fMUON->AliMatrix(reflXY,  90., 180., 90., 270., 0., 0.);
 */
   // Define transformations for each quadrant
+  // In old coordinate system:        In new coordinate system:
   // 
-  //     II. |  I.
-  //   _____ | ____
-  //         |
-  //    III. |  IV.
+  // 
+  //     II. |  I.                   I. |  II. 
+  //         |                    (151) | (100)
+  //   _____ | ____               _____ | ____                         
+  //         |                          |
+  //    III. |  IV.                 IV. | III.
+  //                              (150) | (101) 
   // 
 /*
   Int_t rotm[4];
@@ -2451,10 +2455,10 @@ void AliMUONSt1GeometryBuilderV2::CreateGeometry()
   scale[3] = TVector3( 1, -1, -1);  // quadrant IV
   
   Int_t  detElemId[4];  
-  detElemId[0] =  0;  // quadrant I
-  detElemId[1] = 51;  // quadrant II
-  detElemId[2] = 50;  // quadrant III
-  detElemId[3] =  1;  // quadrant IV
+  detElemId[0] = 51;  // quadrant I
+  detElemId[1] =  0;  // quadrant II
+  detElemId[2] =  1;  // quadrant III
+  detElemId[3] = 50;  // quadrant IV
   
   // Shift in Z of the middle layer
   Double_t deltaZ = 6.5/2.;         
