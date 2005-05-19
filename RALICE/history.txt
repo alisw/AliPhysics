@@ -597,4 +597,8 @@
                 time intervals.
 17-may-2005 NvE Functionality of AliTimestamp extended w.r.t. treatment of time intervals and
                 accuracy bug fixed in the calculation of time difference.
+19-may-2005 NvE AliTimestamp* pointer arguments supported in AliTimestamp::GetDifference for convenience
+                when investigating e.g. TOF or trigger times for tracks and/or hits in analysing
+                AliEvent structures.
+                Also GetMJD() invoked in GetDifference to ensure to always have updated Julian parameters.
  

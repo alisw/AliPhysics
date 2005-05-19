@@ -41,8 +41,10 @@ class AliTimestamp : public TTimeStamp
   Int_t GetPs() const;                                  // Provide remaining fractional number of ns in picoseconds
   using TTimeStamp::Add;
   void Add(Int_t d,Int_t s,Int_t ns,Int_t ps=0);        // Add (or subtract) a certain time difference
-  Int_t GetDifference(AliTimestamp& t,Int_t& days,Int_t& sec,Int_t& ns,Int_t& ps) const; // Provide time difference
-  Double_t GetDifference(AliTimestamp& t,TString u,Int_t mode=1) const; // Provide time diff. in specified units
+  Int_t GetDifference(AliTimestamp* t,Int_t& days,Int_t& sec,Int_t& ns,Int_t& ps); // Provide time difference
+  Int_t GetDifference(AliTimestamp& t,Int_t& days,Int_t& sec,Int_t& ns,Int_t& ps); // Provide time difference
+  Double_t GetDifference(AliTimestamp* t,TString u,Int_t mode=1); // Provide time diff. in specified units
+  Double_t GetDifference(AliTimestamp& t,TString u,Int_t mode=1); // Provide time diff. in specified units
 
  protected:
   Int_t fMJD;  // Modified Julian Date
@@ -55,6 +57,6 @@ class AliTimestamp : public TTimeStamp
   Int_t fCalcs;      // The TTimeStamp seconds counter value at Julian parameter calculation
   Int_t fCalcns;     // The TTimeStamp nanoseconds counter value at Julian parameter calculation
 
- ClassDef(AliTimestamp,3) // Handling of timestamps for (astro)particle physics research.
+ ClassDef(AliTimestamp,4) // Handling of timestamps for (astro)particle physics research.
 };
 #endif

@@ -98,11 +98,16 @@
 //
 // // Time intervals for e.g. trigger or TOF analysis
 // AliEvent evt;
-// AliTimestamp hit((AliTimestamp)evt);
-// hit.Add(0,0,2,173);
-// Double_t dt=evt.GetDifference(hit,"ps");
+// AliTrack* tx=evt.GetTrack(5);
+// AliTimestamp* timex=tx->GetTimestamp();
+// Double_t dt=evt.GetDifference(timex,"ps");
+// AliTimestamp trig((AliTimestamp)evt);
+// trig.Add(0,0,2,173);
+// AliSignal* sx=evt.GetHit(23);
+// AliTimestamp* timex=sx->GetTimestamp();
+// Double_t dt=trig.GetDifference(timex,"ps");
 // Int_t d,s,ns,ps;
-// evt.GetDifference(hit,d,s,ns,ps);
+// trig.GetDifference(timex,d,s,ns,ps);
 //
 // // Some practical conversion facilities
 // // Note : They don't influence the actual date/time settings
@@ -858,6 +863,7 @@ Int_t AliTimestamp::GetPs() const
 void AliTimestamp::Add(Int_t d,Int_t s,Int_t ns,Int_t ps)
 {
 // Add (or subtract) a certain time difference to the current timestamp.
+// Subtraction can be achieved by entering negative values as input arguments.
 //
 // The time difference is entered via the following output arguments :
 // d  : elapsed number of days
@@ -867,10 +873,17 @@ void AliTimestamp::Add(Int_t d,Int_t s,Int_t ns,Int_t ps)
 //
 // Note : ps=0 is the default value.
 
- Int_t days=fMJD;
- Int_t secs=fJsec;
- Int_t nsec=fJns;
- Int_t psec=fJps;
+// Int_t days=fMJD;
+// Int_t secs=fJsec;
+// Int_t nsec=fJns;
+// Int_t psec=fJps;
+
+ Int_t days=0;
+ Int_t secs=0;
+ Int_t nsec=0;
+ // Use Get functions to ensure updated Julian parameters. 
+ GetMJD(days,secs,nsec);
+ Int_t psec=GetPs();
 
  psec+=ps;
  if (psec<0)
@@ -916,7 +929,7 @@ void AliTimestamp::Add(Int_t d,Int_t s,Int_t ns,Int_t ps)
  fJps=psec;
 }
 ///////////////////////////////////////////////////////////////////////////
-Int_t AliTimestamp::GetDifference(AliTimestamp& t,Int_t& d,Int_t& s,Int_t& ns,Int_t& ps) const
+Int_t AliTimestamp::GetDifference(AliTimestamp* t,Int_t& d,Int_t& s,Int_t& ns,Int_t& ps)
 {
 // Provide the time difference w.r.t the AliTimestamp specified on the input.
 // This memberfunction supports both very small (i.e. time of flight analysis
@@ -937,10 +950,19 @@ Int_t AliTimestamp::GetDifference(AliTimestamp& t,Int_t& d,Int_t& s,Int_t& ns,In
 // The integer return argument indicates whether the AliTimestamp specified
 // on the input argument occurred earlier (-1), simultaneously (0) or later (1).
 
- d=t.fMJD-fMJD;
- s=t.fJsec-fJsec;
- ns=t.fJns-fJns;
- ps=t.fJps-fJps;
+ if (!t) return 0;
+
+ // Ensure updated Julian parameters for this AliTimestamp instance 
+ if (fCalcs != GetSec() || fCalcns != GetNanoSec()) FillJulian();
+
+ // Use Get functions to ensure updated Julian parameters. 
+ t->GetMJD(d,s,ns);
+ ps=t->GetPs();
+
+ d-=fMJD;
+ s-=fJsec;
+ ns-=fJns;
+ ps-=fJps;
 
  if (!d && !s && !ns && !ps) return 0;
 
@@ -991,7 +1013,31 @@ Int_t AliTimestamp::GetDifference(AliTimestamp& t,Int_t& d,Int_t& s,Int_t& ns,In
  return sign;
 }
 ///////////////////////////////////////////////////////////////////////////
-Double_t AliTimestamp::GetDifference(AliTimestamp& t,TString u,Int_t mode) const
+Int_t AliTimestamp::GetDifference(AliTimestamp& t,Int_t& d,Int_t& s,Int_t& ns,Int_t& ps)
+{
+// Provide the time difference w.r.t the AliTimestamp specified on the input.
+// This memberfunction supports both very small (i.e. time of flight analysis
+// for particle physics experiments) and very long (i.e. investigation of
+// astrophysical phenomena) timescales.
+//
+// The time difference is returned via the following output arguments :
+// d  : elapsed number of days
+// s  : remaining elapsed number of seconds
+// ns : remaining elapsed number of nanoseconds
+// ps : remaining elapsed number of picoseconds
+//
+// Note :
+// ------
+// The calculated time difference is the absolute value of the time interval.
+// This implies that the values of d, s, ns and ps are always positive or zero.
+//
+// The integer return argument indicates whether the AliTimestamp specified
+// on the input argument occurred earlier (-1), simultaneously (0) or later (1).
+
+ return GetDifference(&t,d,s,ns,ps);
+}
+///////////////////////////////////////////////////////////////////////////
+Double_t AliTimestamp::GetDifference(AliTimestamp* t,TString u,Int_t mode)
 {
 // Provide the time difference w.r.t the AliTimestamp specified on the input
 // argument in the units as specified by the TString argument.
@@ -1032,14 +1078,26 @@ Double_t AliTimestamp::GetDifference(AliTimestamp& t,TString u,Int_t mode) const
 //
 // The default is mode=1.
 
- if (mode<1 || mode>3) return 0;
+ if (!t || mode<1 || mode>3) return 0;
 
  Double_t dt=0;
 
- Int_t dd=t.fMJD-fMJD;
- Int_t ds=t.fJsec-fJsec;
- Int_t dns=t.fJns-fJns;
- Int_t dps=t.fJps-fJps;
+ // Ensure updated Julian parameters for this AliTimestamp instance 
+ if (fCalcs != GetSec() || fCalcns != GetNanoSec()) FillJulian();
+
+ Int_t dd=0;
+ Int_t ds=0;
+ Int_t dns=0;
+ Int_t dps=0;
+
+ // Use Get functions to ensure updated Julian parameters. 
+ t->GetMJD(dd,ds,dns);
+ dps=t->GetPs();
+
+ dd-=fMJD;
+ ds-=fJsec;
+ dns-=fJns;
+ dps-=fJps;
 
  // Time difference for the specified units only
  if (mode==3)
@@ -1079,5 +1137,49 @@ Double_t AliTimestamp::GetDifference(AliTimestamp& t,TString u,Int_t mode) const
  if (u=="ps") dt=(double(dd*24*3600+ds)*1e12)+(double(dns)*1e3)+double(dps);
 
  return dt;
+}
+///////////////////////////////////////////////////////////////////////////
+Double_t AliTimestamp::GetDifference(AliTimestamp& t,TString u,Int_t mode)
+{
+// Provide the time difference w.r.t the AliTimestamp specified on the input
+// argument in the units as specified by the TString argument.
+// A positive return value means that the AliTimestamp specified on the input
+// argument occurred later, whereas a negative return value indicates an
+// earlier occurence. 
+//  
+// The units may be specified as :
+// u = "d"  ==> Time difference returned as (fractional) day count
+//     "s"  ==> Time difference returned as (fractional) second count
+//     "ns" ==> Time difference returned as (fractional) nanosecond count
+//     "ps" ==> Time difference returned as picosecond count
+//
+// It may be clear that for a time difference of several days, the picosecond
+// and even the nanosecond accuracy may be lost.
+// To cope with this, the "mode" argument has been introduced to allow 
+// timestamp comparison on only the specified units.
+//
+// The following operation modes are supported :
+// mode = 1 : Full time difference is returned in specified units
+//        2 : Time difference is returned in specified units by
+//            neglecting the elapsed time for the larger units than the
+//            ones specified.
+//        3 : Time difference is returned in specified units by only
+//            comparing the timestamps on the level of the specified units.
+//
+// Example :
+// ---------
+// AliTimestamp t1; // Corresponding to days=3, secs=501, ns=31, ps=7 
+// AliTimestamp t2; // Corresponding to days=5, secs=535, ns=12, ps=15
+//
+// The statement : Double_t val=t1.GetDifference(t2,....)
+// would return the following values :
+// val=(2*24*3600)+34-(19*1e-9)+(8*1e-12) for u="s" and mode=1
+// val=34-(19*1e-9)+(8*1e-12)             for u="s" and mode=2
+// val=34                                 for u="s" and mode=3
+// val=-19                                for u="ns" and mode=3
+//
+// The default is mode=1.
+
+ return GetDifference(&t,u,mode);
 }
 ///////////////////////////////////////////////////////////////////////////
