@@ -277,11 +277,10 @@ void MUONrecpoints(char * filename="galice.root", Int_t event2Check=0) {
 	Float_t z1 = mRecPoint->GetZ(1);
 	Float_t chi2_0 =  mRecPoint->GetChi2(0);
 	Float_t chi2_1 =  mRecPoint->GetChi2(1);
-	//	Int_t de = mRecPoint->GetDetElementID();
-	Int_t de = mRecPoint->DetElemId();
+	Int_t de = mRecPoint->GetDetElementID();
 	//	printf(">>> RecPoint %4d x %6.3f %6.3f y %6.3f %6.3f z %6.3f %6.3f Q0 %4d  Q1 %4d Hit %4d Track1 %4d Track2 %4d Chi2 %6.3f %6.3f \n",
 	//irecpoint, x0, x1, y0, y1, z0, z1, Q0, Q1, Track0, Track1, Track2, chi2_0, chi2_1);
-	cout << mRecPoint->DetElemId() << endl;
+	cout << mRecPoint->GetDetElemId() << endl;
 	printf(">>> RecPoint %4d x %6.3f y %6.3f z %6.3f DetElem %2d \n",irecpoint,x0,y0,z0,de);
       } // end recpoint loop
     } // end chamber loop

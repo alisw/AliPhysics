@@ -37,7 +37,7 @@ ClassImp(AliMUONSt2GeometryBuilderV2)
 
 //______________________________________________________________________________
 AliMUONSt2GeometryBuilderV2::AliMUONSt2GeometryBuilderV2(AliMUON* muon)
- : AliMUONVGeometryBuilder("st2.dat",
+ : AliMUONVGeometryBuilder("st2V2.dat",
                            muon->Chamber(2).GetGeometry(), 
 			   muon->Chamber(3).GetGeometry()),
    fMUON(muon)
