@@ -281,7 +281,7 @@ void AliMUONFactoryV2::BuildStation3()
     slatsegB[i]->SetDAnod(AliMUONConstants::Pitch());
     slatsegNB[i] = new AliMUONSt345SlatSegmentation(0);
     fDESegmentations->Add(slatsegNB[i]);  
-    slatsegNB[i]->SetPadSize(0.713,10.); // Nbending
+    slatsegNB[i]->SetPadSize(1./1.4,10.); // Nbending
     slatsegNB[i]->SetPadDivision(ndiv);
     slatsegNB[i]->SetId(1);
     slatsegNB[i]->SetDAnod(AliMUONConstants::Pitch());
@@ -422,7 +422,7 @@ void AliMUONFactoryV2::BuildStation4()
     slatsegB[i]->SetDAnod(AliMUONConstants::Pitch());
     slatsegNB[i] = new AliMUONSt345SlatSegmentation(0);
     fDESegmentations->Add(slatsegNB[i]);  
-    slatsegNB[i]->SetPadSize(0.713,10.); 
+    slatsegNB[i]->SetPadSize(1./1.4,10.); 
     slatsegNB[i]->SetPadDivision(ndiv);
     slatsegNB[i]->SetId(1);
     slatsegNB[i]->SetDAnod(AliMUONConstants::Pitch());
@@ -630,7 +630,7 @@ void AliMUONFactoryV2::BuildStation5()
     slatsegB[i]->SetDAnod(AliMUONConstants::Pitch());
     slatsegNB[i] = new AliMUONSt345SlatSegmentation(0);
     fDESegmentations->Add(slatsegNB[i]);  
-    slatsegNB[i]->SetPadSize(0.713,10.); 
+    slatsegNB[i]->SetPadSize(1./1.4,10.); 
     slatsegNB[i]->SetPadDivision(ndiv);
     slatsegNB[i]->SetId(1);
     slatsegNB[i]->SetDAnod(AliMUONConstants::Pitch());
