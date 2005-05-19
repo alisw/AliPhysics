@@ -66,7 +66,7 @@ AliTRDpadPlane::AliTRDpadPlane():TObject()
 }
 
 //_____________________________________________________________________________
-AliTRDpadPlane::AliTRDpadPlane(Int_t p, Int_t c):TObject()
+AliTRDpadPlane::AliTRDpadPlane(Int_t p, Int_t c):TObject(),fPadRow(0),fPadCol(0)
 {
   //
   // Constructor that initializes a given pad plane type
