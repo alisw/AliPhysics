@@ -35,7 +35,7 @@
 #include "AliRunLoader.h"
 #include "AliTPCLoader.h"
 #include "AliTPCParam.h"
-#include "AliTPCcluster.h"
+#include "AliTPCclusterMI.h"
 
 ClassImp(AliDisplayClusters)
 
@@ -174,7 +174,7 @@ void AliDisplayClusters::LoadTPCClusters(Int_t nevent)
   Float_t noiseth = 10;
 
    AliClusters *clusters=new AliClusters(); 
-   clusters->SetClass("AliTPCcluster");
+   clusters->SetClass("AliTPCclusterMI");
 
    cTree->SetBranchAddress("Segment",&clusters);
 
@@ -186,7 +186,7 @@ void AliDisplayClusters::LoadTPCClusters(Int_t nevent)
        TClonesArray &clrow=*clusters->GetArray();
        Int_t ncl=clrow.GetEntriesFast();
        while (ncl--) {
-           AliTPCcluster *cl=(AliTPCcluster*)clrow[ncl];
+           AliTPCclusterMI *cl=(AliTPCclusterMI*)clrow[ncl];
            Double_t x=dig->GetPadRowRadii(sec,row), y=cl->GetY(), z=cl->GetZ();
 	   if (cl->GetQ()<noiseth) continue;
            Float_t cs, sn, tmp;
