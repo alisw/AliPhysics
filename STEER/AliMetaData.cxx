@@ -17,7 +17,8 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
-// meta data of run dependent objects                                        //
+// base class of the metadata of run dependent objects                       //
+// Derived classes: AliObjectMetaData, AliSelectionMetaData		     //
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -25,6 +26,7 @@
 #include <TRegexp.h>
 
 #include "AliMetaData.h"
+#include "AliLog.h"
 
 
 ClassImp(AliMetaData)
@@ -40,7 +42,7 @@ AliMetaData::AliMetaData() :
 {
 // default constructor
 // the default values mean no selection
-
+  DecodeName();
 }
 
 //_____________________________________________________________________________
@@ -53,7 +55,7 @@ AliMetaData::AliMetaData(const char* name, Int_t firstRun, Int_t lastRun,
   fVersion(version)
 {
 // constructor
-
+  DecodeName();
 }
 
 
@@ -66,7 +68,7 @@ AliMetaData::AliMetaData(const AliMetaData& entry) :
   fVersion(entry.fVersion)
 {
 // copy constructor
-
+  DecodeName();
 }
 
 //_____________________________________________________________________________
@@ -78,6 +80,7 @@ AliMetaData& AliMetaData::operator = (const AliMetaData& entry)
   fFirstRun = entry.fFirstRun;
   fLastRun = entry.fLastRun;
   fVersion = entry.fVersion;
+  DecodeName();
   return *this;
 }
 
@@ -86,16 +89,81 @@ AliMetaData& AliMetaData::operator = (const AliMetaData& entry)
 //_____________________________________________________________________________
 const char* AliMetaData::GetName() const
 {
-// get the name
+// get the name ("Detector/DBType/DetSpecType", example: "ZDC/Calib/Pedestals")
 
   return fName.Data();
 }
 
+//_____________________________________________________________________________
+const char* AliMetaData::GetDetector() const
+{
+// get the detector's name (ZDC,ITS ...)
+
+  return fDetector.Data();
+}
 
 //_____________________________________________________________________________
-Bool_t AliMetaData::IsValid(Int_t runNumber, AliMetaData* metaData) const
+const char* AliMetaData::GetDBType() const
 {
-// check the validity of the object
+// get the database type (Calib, Align ...)
+
+  return fDBType.Data();
+}
+
+//_____________________________________________________________________________
+const char* AliMetaData::GetDetSpecType() const
+{
+// get the detector's specific type name (Pedestals, GainConst, DeadChannelMaps...)
+
+  return fDetSpecType.Data();
+}
+
+//_____________________________________________________________________________
+void AliMetaData::EncodeName(){
+// Encode name from single elements ("Detector", "DBType", "DetSpecType" -> "Detector/DBType/DetSpecType")   
+   fName = fDetector+'/'+fDBType+'/'+fDetSpecType;
+   if(fDBType == "*" && fDetSpecType == "*") fName = fDetector+'/'+'*';
+   if(fDetector == "*" && fDBType == "*" && fDetSpecType == "*") fName = "*";
+
+}
+
+//_____________________________________________________________________________
+void AliMetaData::DecodeName(){
+// Decode name into single elements ("Detector/DBType/DetSpecType" -> "Detector", "DBType", "DetSpecType")   
+
+ if(fName==""){fDetector=""; fDBType=""; fDetSpecType=""; return;}
+
+ while(fName.EndsWith("/")) fName.Remove(fName.Last('/'));
+ while(fName.BeginsWith("/")) fName.Remove(fName.First('/'),1);
+ 
+ // fName= "fDetector/fDBType/fDetSpecType
+ int nslashes=fName.CountChar('/');
+ 
+ if(nslashes>2){AliError("Wrong format!\n");fDetector=""; fDBType=""; fDetSpecType="";}
+
+ if(nslashes == 0){
+   if(fName == "*"){fDetector="*"; fDBType="*"; fDetSpecType="*";}
+   else{AliError("Wrong format!\n"); fDetector=""; fDBType=""; fDetSpecType="";}
+ }
+ if(nslashes == 1){
+   if(fName.EndsWith("*"))
+     {fDetector=fName(0, fName.Index('/')); fDBType="*"; fDetSpecType="*";}
+   else {AliError("Wrong format!\n"); fDetector=""; fDBType=""; fDetSpecType="";}
+ }
+
+ if(nslashes == 2){
+   int firstsl=fName.First('/'), lastsl=fName.Last('/'), lgth=fName.Length();
+   fDetector=fName(0, firstsl); 
+   fDBType=fName(firstsl+1, lastsl-(firstsl+1));
+   fDetSpecType=fName(lastsl+1, lgth-(lastsl+1)); 
+ }
+ EncodeName();
+}
+
+//_____________________________________________________________________________
+Bool_t AliMetaData::IsStrictlyValid(Int_t runNumber, AliMetaData* metaData) const
+{
+// check if the object is valid for runNumber. TRUE if metaData version is equal to this's version 
 
   if ((fFirstRun >= 0) && (runNumber < fFirstRun)) return kFALSE;
   if ((fLastRun >= 0) && (runNumber > fLastRun)) return kFALSE;
@@ -107,9 +175,23 @@ Bool_t AliMetaData::IsValid(Int_t runNumber, AliMetaData* metaData) const
 }
 
 //_____________________________________________________________________________
+Bool_t AliMetaData::IsValid(Int_t runNumber, AliMetaData* metaData) const
+{
+// check if the object is valid for runNumber. TRUE if metaData version less or equal wrt to this's
+
+  if ((fFirstRun >= 0) && (runNumber < fFirstRun)) return kFALSE;
+  if ((fLastRun >= 0) && (runNumber > fLastRun)) return kFALSE;
+  if (metaData) {
+    if ((metaData->fVersion >= 0) && (metaData->fVersion < fVersion)) 
+      return kFALSE;
+  }
+  return kTRUE;
+}
+
+//_____________________________________________________________________________
 Int_t AliMetaData::Compare(const TObject* object) const
 {
-// check whether this is prefered to object
+// check whether this is preferred to object
 
   if (!object || !object->InheritsFrom(AliMetaData::Class())) return 1;
   if (fVersion < ((AliMetaData*)object)->GetVersion()) return -1;
@@ -124,7 +206,7 @@ Bool_t AliMetaData::Matches(const char* name, Int_t runNumber) const
 
   if ((fFirstRun >= 0) && (runNumber < fFirstRun)) return kFALSE;
   if ((fLastRun >= 0) && (runNumber > fLastRun)) return kFALSE;
-  if (TString(name).Contains(TRegexp(fName))) return kTRUE;
+  if (!TString(name).Contains(TRegexp(fName))) return kFALSE;
   return kTRUE;
 }
 
@@ -140,3 +222,4 @@ Bool_t operator == (const AliMetaData& entry1, const AliMetaData& entry2)
   if (entry1.GetVersion() != entry2.GetVersion()) return kFALSE;
   return kTRUE;
 }
+

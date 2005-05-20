@@ -17,7 +17,7 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
-// access classes for a data base in a (local) file                          //
+// access classes for a data base in a LOCAL file                            //
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -27,6 +27,8 @@
 #include <TROOT.h>
 #include "AliLog.h"
 #include "AliRunData.h"
+#include "AliSelectionMetaData.h"
+#include "AliObjectMetaData.h"
 #include "AliRunDataFile.h"
 
 
@@ -85,29 +87,31 @@ AliRunDataFile& AliRunDataFile::operator = (const AliRunDataFile& /*db*/)
 
 
 //_____________________________________________________________________________
-AliRunData* AliRunDataFile::GetEntry(AliMetaData& metaData, Int_t runNumber)
+AliRunData* AliRunDataFile::GetEntry(AliSelectionMetaData& selMetaData, Int_t runNumber)
 {
 // get an object from the data base
 
   // go to the directory
   TDirectory* saveDir = gDirectory;
-  TString name(metaData.GetName());
+  TDirectory *dir = fFile;
+  TString name(selMetaData.GetName());
   Int_t last = name.Last('/');
   if (last < 0) {
     fFile->cd();
   } else {
     TString dirName(name(0, last));
-    if (!fFile->cd(dirName)) {
-      AliDebug(1, Form("no directory %s found", dirName.Data()));
+      if (!dir->cd(dirName)) {
+      AliError(Form("no directory %s found", dirName.Data()));
       if (saveDir) saveDir->cd(); else gROOT->cd();
       return NULL;
     }
     name.Remove(0, last+1);
   }
 
-  TKey* key = fFile->GetKey(name);
+  dir = gDirectory;
+  TKey* key = dir->GetKey(name); 
   if (!key) {
-    AliDebug(1, Form("no object with name %s found", metaData.GetName()));
+    AliError(Form("no object with name %s found", selMetaData.GetName()));
     if (saveDir) saveDir->cd(); else gROOT->cd();
     return NULL;
   }
@@ -116,15 +120,16 @@ AliRunData* AliRunDataFile::GetEntry(AliMetaData& metaData, Int_t runNumber)
   // find the closest entry
   AliRunData* closestEntry = NULL;
   for (Int_t iCycle = nCycles; iCycle > 0; iCycle--) {
-    key = fFile->GetKey(name, iCycle);
+    key = dir->GetKey(name, iCycle);
+    
     if (!key) continue;
     AliRunData* entry = (AliRunData*) key->ReadObj();
     if (!entry) continue;
     if (!entry->InheritsFrom(AliRunData::Class())) {
-      AliMetaData metaData;
-      entry = new AliRunData(entry, metaData);
+      AliObjectMetaData objMetaData;
+      entry = new AliRunData(entry, objMetaData);
     }
-    if (!entry->GetMetaData().IsValid(runNumber, &metaData) ||
+    if (!entry->GetObjectMetaData().IsValid(runNumber, &selMetaData) ||
 	(entry->Compare(closestEntry) <= 0)) {
       delete entry;
       continue;
@@ -133,14 +138,27 @@ AliRunData* AliRunDataFile::GetEntry(AliMetaData& metaData, Int_t runNumber)
     closestEntry = entry;
   }
   if (saveDir) saveDir->cd(); else gROOT->cd();
+  if(!closestEntry) AliError(Form("No valid entry found for: name %s, version %d, run %d!!!",
+            selMetaData.GetName(),selMetaData.GetVersion(),runNumber));
   if (!closestEntry) return NULL;
+  if(selMetaData.GetVersion() > -1 && (closestEntry->GetObjectMetaData()).GetVersion() != selMetaData.GetVersion()) 
+     AliWarning(Form("Warning: selected version (%d) not found, got version %d instead",
+            selMetaData.GetVersion(),(closestEntry->GetObjectMetaData()).GetVersion()));
   return closestEntry;
 }
 
 //_____________________________________________________________________________
 Bool_t AliRunDataFile::PutEntry(AliRunData* entry)
 {
-// put an object into the data base
+// puts an object into the database
+
+// AliRunData entry is composed by the object and its MetaData
+// this method takes the metaData, reads the name, runRange and Version
+// creates the TDirectory structure into the file
+// looks for runs with same name, if exist increment version
+// (therefore version should not be put in the metadata)
+// Note: the key name of the entry is "DetSpecType"
+// return result 
 
   if (!entry || !fFile) return kFALSE;
   if (!fFile->IsWritable()) {
@@ -148,6 +166,8 @@ Bool_t AliRunDataFile::PutEntry(AliRunData* entry)
 		  "The object %s was not inserted", entry->GetName()));
     return kFALSE;
   }
+  
+  fFile->cd();
   TDirectory* saveDir = gDirectory;
 
   // go to or create the directory
@@ -165,17 +185,17 @@ Bool_t AliRunDataFile::PutEntry(AliRunData* entry)
 
   // determine the version number
   Int_t version = 0;
-  TKey* key = fFile->GetKey(name);
+  TKey* key = dir->GetKey(name); 
   if (key) {
     Int_t nCycles = key->GetCycle();
     for (Int_t iCycle = nCycles; iCycle > 0; iCycle--) {
-      key = fFile->GetKey(entry->GetName(), iCycle);
+      key = dir->GetKey(name, iCycle); 
       if (!key) continue;
       AliRunData* oldEntry = (AliRunData*) key->ReadObj();
       if (!oldEntry) continue;
       if (oldEntry->InheritsFrom(AliRunData::Class())) {
-	if (version <= oldEntry->GetMetaData().GetVersion()) {
-	  version = oldEntry->GetMetaData().GetVersion()+1;
+	if (version <= oldEntry->GetObjectMetaData().GetVersion()) {
+	  version = oldEntry->GetObjectMetaData().GetVersion()+1;
 	}
       }
       delete oldEntry;

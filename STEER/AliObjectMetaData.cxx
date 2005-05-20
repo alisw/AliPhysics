@@ -17,84 +17,105 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
-// class that contains an object from the data base and knows about its      //
-// validity range (meta data)                                                //
+// Object meta data: full description of a run dependent database object     // 
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
 
-#include "AliRunData.h"
-#include "AliObjectMetaData.h"
+#include <TRegexp.h>
+#include <TObjArray.h>
+#include <TObjString.h>
+#include <TSystem.h>
 
-ClassImp(AliRunData)
+#include "AliObjectMetaData.h"
+#include "AliMetaData.h"
+#include "AliLog.h"
+
+
+ClassImp(AliObjectMetaData)
 
 
 //_____________________________________________________________________________
-AliRunData::AliRunData() :
-  TObject(),
-  fObject(NULL),
-  fObjMetaData()
+AliObjectMetaData::AliObjectMetaData() :
+  AliMetaData(),
+  fPeriod(-1),
+  fFormat(""),
+  fResponsible("Duck, Donald"),
+  fExtraInfo("")
 {
 // default constructor
-
+// the default values mean no selection
 }
 
 //_____________________________________________________________________________
-AliRunData::AliRunData(TObject* object, const AliObjectMetaData& objMetaData) :
-  TObject(),
-  fObject(object),
-  fObjMetaData(objMetaData)
+AliObjectMetaData::AliObjectMetaData
+         (const char* name, Int_t firstRun, Int_t lastRun, Int_t period, 
+	  const char* objFormat, const char* responsible, 
+	  const char* extraInfo):
+  AliMetaData(name, firstRun, lastRun),
+  fPeriod(period),
+  fFormat(objFormat),
+  fResponsible(responsible),
+  fExtraInfo(extraInfo)
 {
 // constructor
-
 }
 
 //_____________________________________________________________________________
-AliRunData::~AliRunData()
-{
-// destructor
-
-  delete fObject;
-}
-
-
-//_____________________________________________________________________________
-AliRunData::AliRunData(const AliRunData& entry) :
-  TObject(entry),
-  fObjMetaData(entry.fObjMetaData)
+AliObjectMetaData::AliObjectMetaData(const AliObjectMetaData& entry) :
+  AliMetaData(entry),
+  fPeriod(entry.fPeriod),
+  fFormat(entry.fFormat),
+  fResponsible(entry.fResponsible),
+  fExtraInfo(entry.fExtraInfo)
 {
 // copy constructor
-
 }
 
 //_____________________________________________________________________________
-AliRunData& AliRunData::operator = (const AliRunData& entry)
+AliObjectMetaData& AliObjectMetaData::operator = (const AliObjectMetaData& entry)
 {
 // assignment operator
-
-  delete fObject;
-  fObject = entry.fObject->Clone();
-  fObjMetaData = entry.fObjMetaData;
+  fName = entry.fName;
+  fFirstRun = entry.fFirstRun;
+  fLastRun = entry.fLastRun;
+  fPeriod=entry.fPeriod;
+  fFormat=entry.fFormat;
+  fResponsible=entry.fResponsible;
+  fExtraInfo=entry.fExtraInfo;
+  DecodeName();
   return *this;
 }
 
-
-
 //_____________________________________________________________________________
-const char* AliRunData::GetName() const
+const int AliObjectMetaData::GetPeriod() const
 {
-// get the name
+// get the beam period
 
-  return fObjMetaData.GetName();
+  return fPeriod;
 }
 
+//_____________________________________________________________________________
+const char* AliObjectMetaData::GetFormat() const
+{
+// get the object's format
+
+  return fFormat.Data();
+}
 
 //_____________________________________________________________________________
-Int_t AliRunData::Compare(const TObject* object) const
+const char* AliObjectMetaData::GetResponsible() const
 {
-// check whether this is preferred to object
+// get the object's responsible (the person who made it)
 
-  if (!object || !object->InheritsFrom(AliRunData::Class())) return 1;
-  return fObjMetaData.Compare(&((AliRunData*)object)->GetObjectMetaData());
+  return fResponsible.Data();
+}
+
+//_____________________________________________________________________________
+const char* AliObjectMetaData::GetExtraInfo() const
+{
+// get the object's extra info
+
+  return fExtraInfo.Data();
 }
 

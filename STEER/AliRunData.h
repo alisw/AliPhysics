@@ -11,32 +11,35 @@
 ///
 
 #include <TObject.h>
-#include "AliMetaData.h"
+#include "AliObjectMetaData.h"
 
 
 class AliRunData: public TObject {
 public:
   AliRunData();
-  AliRunData(TObject* object, const AliMetaData& metaData);
+  AliRunData(TObject* object, const AliObjectMetaData& objMetaData);
   virtual ~AliRunData();
 
   AliRunData(const AliRunData& entry);
   AliRunData& operator = (const AliRunData& entry);
 
   void                 SetVersion(Int_t version = -1)
-    {fMetaData.SetVersion(version);}
+    {fObjMetaData.SetVersion(version);}
+
+  void                 SetRunRange(Int_t firstRun = -1, Int_t lastRun=-1)
+    {fObjMetaData.SetRunRange(firstRun, lastRun);}
 
   virtual const char*  GetName() const;
   const TObject*       GetObject() const {return fObject;}
-  const AliMetaData&   GetMetaData() const {return fMetaData;}
+  const AliObjectMetaData&   GetObjectMetaData() const {return fObjMetaData;}
 
   virtual Int_t        Compare(const TObject* object) const;
 
 private:
   TObject*             fObject;         // pointer to the data base entry obj.
-  AliMetaData          fMetaData;       // meta data
+  AliObjectMetaData    fObjMetaData;    // object's meta data
 
-  ClassDef(AliRunData, 1)   // container for a data base entry object
+  ClassDef(AliRunData, 2)   // container for a data base entry object
 };
 
 #endif

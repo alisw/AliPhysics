@@ -17,84 +17,61 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
-// class that contains an object from the data base and knows about its      //
-// validity range (meta data)                                                //
+// subsample of the object metadata, used to retrieve                        //
+// a stored database object:                                                 // 
+// name="Detector/DBType/DetSpecType", run validity, version                 //
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
 
-#include "AliRunData.h"
-#include "AliObjectMetaData.h"
+#include <TSystem.h>
 
-ClassImp(AliRunData)
+#include "AliSelectionMetaData.h"
+#include "AliMetaData.h"
+#include "AliLog.h"
+
+
+ClassImp(AliSelectionMetaData)
 
 
 //_____________________________________________________________________________
-AliRunData::AliRunData() :
-  TObject(),
-  fObject(NULL),
-  fObjMetaData()
+AliSelectionMetaData::AliSelectionMetaData() :
+  AliMetaData()
 {
 // default constructor
-
+// the default values mean no selection
 }
 
 //_____________________________________________________________________________
-AliRunData::AliRunData(TObject* object, const AliObjectMetaData& objMetaData) :
-  TObject(),
-  fObject(object),
-  fObjMetaData(objMetaData)
+AliSelectionMetaData::AliSelectionMetaData(const char* name, Int_t firstRun, Int_t lastRun, Int_t Version) :
+  AliMetaData(name, firstRun, lastRun, Version)
 {
 // constructor
-
 }
 
 //_____________________________________________________________________________
-AliRunData::~AliRunData()
-{
-// destructor
-
-  delete fObject;
-}
-
-
-//_____________________________________________________________________________
-AliRunData::AliRunData(const AliRunData& entry) :
-  TObject(entry),
-  fObjMetaData(entry.fObjMetaData)
+AliSelectionMetaData::AliSelectionMetaData(const AliSelectionMetaData& entry) :
+  AliMetaData(entry)
 {
 // copy constructor
-
 }
 
 //_____________________________________________________________________________
-AliRunData& AliRunData::operator = (const AliRunData& entry)
+AliSelectionMetaData::AliSelectionMetaData(const AliMetaData& entry) :
+  AliMetaData(entry)
+{
+// constructor of AliSelectionMetaData from AliMetaData
+}
+
+
+//_____________________________________________________________________________
+AliSelectionMetaData& AliSelectionMetaData::operator = (const AliSelectionMetaData& entry)
 {
 // assignment operator
-
-  delete fObject;
-  fObject = entry.fObject->Clone();
-  fObjMetaData = entry.fObjMetaData;
+  fName = entry.fName,
+  fFirstRun = entry.fFirstRun;
+  fLastRun = entry.fLastRun;
+  fVersion = entry.fVersion;
   return *this;
-}
-
-
-
-//_____________________________________________________________________________
-const char* AliRunData::GetName() const
-{
-// get the name
-
-  return fObjMetaData.GetName();
-}
-
-
-//_____________________________________________________________________________
-Int_t AliRunData::Compare(const TObject* object) const
-{
-// check whether this is preferred to object
-
-  if (!object || !object->InheritsFrom(AliRunData::Class())) return 1;
-  return fObjMetaData.Compare(&((AliRunData*)object)->GetObjectMetaData());
 }
 

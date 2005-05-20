@@ -6,10 +6,11 @@
 /* $Id$ */
 
 ///
-/// access classes for a data base in a (local) file
+/// access classes for a data base in a LOCAL file
 ///
 
 #include "AliRunDataStorage.h"
+#include "AliSelectionMetaData.h"
 
 class TFile;
 
@@ -20,7 +21,7 @@ public:
   virtual ~AliRunDataFile();
 
 protected:
-  virtual AliRunData*    GetEntry(AliMetaData& metaData, Int_t runNumber);
+  virtual AliRunData*    GetEntry(AliSelectionMetaData& selMetaData, Int_t runNumber);
 
   virtual Bool_t         PutEntry(AliRunData* entry);
 
@@ -28,9 +29,9 @@ private:
   AliRunDataFile(const AliRunDataFile& db);
   AliRunDataFile& operator = (const AliRunDataFile& db);
 
-  TFile*                 fFile;    //! the DB file
+  TFile*                 fFile;    //! the DB local file
 
-  ClassDef(AliRunDataFile, 0)   // access classes for a data base in a (local) file
+  ClassDef(AliRunDataFile, 0)   // access classes for a data base in a LOCAL file
 };
 
 #endif

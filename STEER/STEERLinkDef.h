@@ -74,9 +74,12 @@
 #pragma link C++ class  AliVertexGenFile+;
 #pragma link C++ class  AliVertexer+;
 #pragma link C++ class  AliMetaData+;
+#pragma link C++ class  AliObjectMetaData+;
+#pragma link C++ class  AliSelectionMetaData+;
 #pragma link C++ class  AliRunData+;
 #pragma link C++ class  AliRunDataStorage;
 #pragma link C++ class  AliRunDataFile;
+#pragma link C++ class  AliRunDataOrganizedFile;
 #pragma link C++ class  AliDetectorEventHeader+;
 
 #pragma link C++ class  TTreeDataElement+;

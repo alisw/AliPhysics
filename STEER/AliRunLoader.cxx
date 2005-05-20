@@ -63,7 +63,7 @@ class TTask;
 #include "AliStack.h"
 #include "AliDetector.h"
 #include "AliRunDataStorage.h"
-#include "AliRunDataFile.h"
+#include "AliRunDataOrganizedFile.h"
 
 ClassImp(AliRunLoader)
 
@@ -355,10 +355,10 @@ const TObject* AliRunLoader::GetRunObject(const char* name) const
 //Get an object from the run data storage
 
   if (!AliRunDataStorage::Instance()) {
-    AliWarning("No run data storage defined. Using AliRunDataFile.");
-    new AliRunDataFile;
+    AliWarning("No run data storage defined. Using AliRunDataOrganizedFile.");
+    new AliRunDataOrganizedFile;
   }
-  return AliRunDataStorage::Instance()->Get(name, GetEventNumber());
+  return AliRunDataStorage::Instance()->Get(name, GetHeader()->GetRun());
 }
 
 /**************************************************************************/

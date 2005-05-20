@@ -13,7 +13,8 @@
 #include <TObjArray.h>
 
 class TFile;
-class AliMetaData;
+class AliSelectionMetaData;
+class AliObjectMetaData;
 class AliRunData;
 
 
@@ -21,23 +22,27 @@ class AliRunDataStorage: public TObject {
 public:
   virtual ~AliRunDataStorage();
 
-  const TObject*         Get(const char* name, Int_t runNumber);
+  const TObject*         Get(const char* name, Int_t runNumber);	// Gets an object from the database
 
   Bool_t                 Put(const TObject* object, 
-			     const AliMetaData& metaData);
+			     const AliObjectMetaData& objMetaData);	// Put an object into the database
 
-  void                   Select(const AliMetaData& metaData);
+  void                   Select(const AliSelectionMetaData& selMetaData);	// Add a selection criterion 
 
-  Bool_t                 RecordToFile(const char* fileName = "DB.root");
+  Bool_t                 RecordToFile(const char* fileName = "DB.root");	// prepares to record the retrieved entries to a local file
+  
+  const AliObjectMetaData& GetObjectMetaData(const char* name);		// Gets the ObjectMetaData of the retrieved entry (name=entry's name)
+  
+//  virtual void		 TagForProduction(const AliSelectionMetaData& selMetaData, Uint_t prodVers);
 
-  static AliRunDataStorage* Instance();
+  static AliRunDataStorage* Instance();		// Instance of the current AliRunDataStorage object (AliRunDataFile, AliRunDataOrganizedFile etc...)
 
 protected:
   AliRunDataStorage();
 
-  virtual AliRunData*    GetEntry(AliMetaData& metaData, Int_t runNumber) = 0;
+  virtual AliRunData*    GetEntry(AliSelectionMetaData& selMetaData, Int_t runNumber) = 0;	// virtual, see the correspondent method of the derived classes
 
-  virtual Bool_t         PutEntry(AliRunData* entry);
+  virtual Bool_t         PutEntry(AliRunData* entry);			// virtual, see the correspondent method of the derived classes
 
   AliRunData*            GetCurrentEntry(const char* name) const
     {return (AliRunData*) fEntries.FindObject(name);}

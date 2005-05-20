@@ -27,7 +27,8 @@
 #include <TROOT.h>
 
 #include "AliLog.h"
-#include "AliMetaData.h"
+#include "AliSelectionMetaData.h"
+#include "AliObjectMetaData.h"
 #include "AliRunData.h"
 #include "AliRunDataStorage.h"
 
@@ -46,7 +47,6 @@ AliRunDataStorage::AliRunDataStorage() :
   fRecordFile(NULL)
 {
 // default constructor
-
   if (fgInstance) delete fgInstance;
   fgInstance = this;
 }
@@ -91,14 +91,16 @@ AliRunDataStorage& AliRunDataStorage::operator = (const AliRunDataStorage& /*db*
 const TObject* AliRunDataStorage::Get(const char* name, Int_t runNumber)
 {
 // get an object from the data base
-// (AliRunDataStorage is the owner of the returned object)
+// (AliRunDataStorage is NOT the owner of the returned object)
+// name must be in the form "Detector/DBType/DetSpecType"
+// es: "ZDC/Calib/Pedestals"
 
-  AliMetaData defaultMetaData;
-  AliMetaData* selectedMetaData = &defaultMetaData;
+  AliSelectionMetaData defaultMetaData;
+  AliSelectionMetaData* selectedMetaData = &defaultMetaData;
 
   // look for a meta data selection
   for (Int_t i = 0; i < fSelection.GetEntriesFast(); i++) {
-    AliMetaData* selection = (AliMetaData*) fSelection[i];
+    AliSelectionMetaData* selection = (AliSelectionMetaData*) fSelection[i];
     if (!selection) continue;
     if (selection->Matches(name, runNumber)) {
       selectedMetaData = selection;
@@ -106,9 +108,9 @@ const TObject* AliRunDataStorage::Get(const char* name, Int_t runNumber)
   }
 
   // get the entry
-  AliMetaData metaData(*selectedMetaData);
-  metaData.SetName(name);
-  AliRunData* entry = GetEntry(metaData, runNumber);
+  AliSelectionMetaData selMetaData(*selectedMetaData);
+  selMetaData.SetName(name);
+  AliRunData* entry = GetEntry(selMetaData, runNumber);
   if (entry) {
     AliDebug(2, "got the entry:");
     ToAliDebug(2, entry->Dump());
@@ -117,55 +119,56 @@ const TObject* AliRunDataStorage::Get(const char* name, Int_t runNumber)
   }
 
   // update array of current entries
-  if (!entry) return NULL;
+  if (!entry) return NULL;  
   TObject* oldEntry = fEntries.FindObject(entry->GetName());
   if (oldEntry) {
     delete fEntries.Remove(oldEntry);
   }
   fEntries.Add(entry);
 
-  // record entry to a file
-  if (fRecordFile) {
-    Bool_t isAlreadyRecorded = kFALSE;
-    TDirectory* dir = gDirectory;
-    fRecordFile->cd();
-    TKey* key = fRecordFile->GetKey(entry->GetName());
-    if (key) {
-      Int_t nCycles = key->GetCycle();
-      for (Int_t iCycle = nCycles; iCycle > 0; iCycle--) {
-	key = fRecordFile->GetKey(entry->GetName(), iCycle);
-	if (!key) continue;
-	AliRunData* recEntry = (AliRunData*) key->ReadObj();
-	if (!recEntry) continue;
-	if (recEntry->InheritsFrom(AliRunData::Class()) && 
-	    (recEntry->GetMetaData() == entry->GetMetaData())) {
-	  isAlreadyRecorded = kTRUE;
-	}
-	delete recEntry;
-	if (isAlreadyRecorded) break;
-      }
-    }
-    if (!isAlreadyRecorded) {
-      if (entry->Write() == 0) {
-	AliError(Form("could not record entry %s", entry->GetName()));
-      }
-    }
-    if (dir) dir->cd(); else gROOT->cd();
-  }
+  // record entry to a file (in the same way as AliRunDataFile::PutEntry, 
+  // so that the file can be opened as a AliRunDataFile!)
 
-  return entry->GetObject();
+  if (fRecordFile) {
+    fRecordFile->cd();
+    TDirectory* saveDir = gDirectory;
+
+    // go to or create the directory
+    TString strname(name);
+    while (strname.BeginsWith("/")) strname.Remove(0);
+    TDirectory* dir = fRecordFile;
+    Int_t index = -1;
+    while ((index = strname.Index("/")) >= 0) {
+      TString dirName(strname(0, index));
+      if ((index > 0) && !dir->Get(dirName)) dir->mkdir(dirName);
+      dir->cd(dirName);
+      dir = gDirectory;
+      strname.Remove(0, index+1);
+    } 
+
+    entry->Write(strname);
+    if (saveDir) saveDir->cd(); else gROOT->cd();
+  
+  }
+  
+  return (entry->GetObject())->Clone();
+
 }
 
 
 //_____________________________________________________________________________
 Bool_t AliRunDataStorage::Put(const TObject* object, 
-			      const AliMetaData& metaData)
+			      const AliObjectMetaData& objMetaData)
 {
 // put an object into the data base
 // (AliRunDataStorage does not adopt the object)
+// location of where the object is stored is defined by 
+// the AliObjectMetaData's name ("Detector/DBType/DetSpecType")
+// and run Range. Storage is handled by the PutEntry method
+// of the current AliRunDataStorage instance. 
 
   if (!object) return kFALSE;
-  AliRunData entry(object->Clone(), metaData);
+  AliRunData entry(object->Clone(), objMetaData);
   return PutEntry(&entry);
 }
 
@@ -173,6 +176,8 @@ Bool_t AliRunDataStorage::Put(const TObject* object,
 Bool_t AliRunDataStorage::PutEntry(AliRunData* entry)
 {
 // put an object into the data base
+// Refer to the specific method of the current AliRunDataStorage instance
+// (AliRunDataFile, AliRunDataOrganizedFile, AliRunDataAlien)
 
   if (!entry) return kFALSE;
   AliError(Form("This is a read only data base. "
@@ -182,11 +187,11 @@ Bool_t AliRunDataStorage::PutEntry(AliRunData* entry)
 
 
 //_____________________________________________________________________________
-void AliRunDataStorage::Select(const AliMetaData& metaData)
+void AliRunDataStorage::Select(const AliSelectionMetaData& selMetaData)
 {
 // add some meta data selection criteria
 
-  fSelection.Add(new AliMetaData(metaData));
+  fSelection.Add(new AliSelectionMetaData(selMetaData));
 }
 
 
@@ -216,7 +221,25 @@ Bool_t AliRunDataStorage::RecordToFile(const char* fileName)
 //_____________________________________________________________________________
 AliRunDataStorage* AliRunDataStorage::Instance()
 {
-// return the current instance of the DB
+// return the current instance of the DB (AliRunDataFile, AliRunOrganizedDataFile...)
+// Example of usage: after creating an istance of AliRunDataStorage:
+// AliRunDataStorage::Instance()->Get(...)
 
   return fgInstance;
+}
+
+
+//_____________________________________________________________________________
+const AliObjectMetaData& AliRunDataStorage::GetObjectMetaData(const char* name)
+{
+// Returns the object's metadata of the already retrieved object
+// (useful, for example, if you want to know the format of the object you have 
+// retrieved)
+
+AliRunData *entry = (AliRunData*) fEntries.FindObject(name);
+ if(!entry){
+    AliError(Form("Entry %s not found! You make me crash!",name));
+ }
+ return entry->GetObjectMetaData(); 
+
 }
