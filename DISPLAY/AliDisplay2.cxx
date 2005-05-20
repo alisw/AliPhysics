@@ -79,7 +79,7 @@ AliDisplay2::AliDisplay2(const TGWindow *p, UInt_t w, UInt_t h)
   fMode =0;
   FindModules();
   
-  fIconsPath = new char[32];
+  fIconsPath = new char[256];
   strcpy(fIconsPath,gSystem->Getenv("ALICE_ROOT"));
   strcat(fIconsPath,"/DISPLAY/icons/");
   LoadFromRC();
