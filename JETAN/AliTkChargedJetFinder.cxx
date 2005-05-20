@@ -557,7 +557,7 @@ list<jet>::iterator AliTkChargedJetFinder::findHighestJet()
   list<jet>::iterator high;
 
   if (fJets.empty()) {
-    return NULL;
+    return fJets.begin();
   }
 
   high = fJets.begin();

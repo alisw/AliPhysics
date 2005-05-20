@@ -62,13 +62,13 @@ tower::~tower()
   clearParticles();
 }
 
-inline tower& tower::operator+=(const Float_t E) 
+tower& tower::operator+=(const Float_t E) 
 {
   fEt += E;
   return *this;
 }
 
-inline tower& tower::operator+=(const TParticle *part) 
+tower& tower::operator+=(const TParticle *part) 
 {
   fEt += part->Pt();   // Et for a massless particle...
   addParticle(part);
@@ -84,7 +84,7 @@ ostream& operator<<(ostream& s,const tower& t)
 	   << " Et=" << t.getEt();
 }
 
-inline list<const TParticle*> *tower::getParticles() 
+list<const TParticle*> *tower::getParticles() 
 {
   list<const TParticle*> *newList = new list<const TParticle*>;
   list<const TParticle*> &myList = *newList;
@@ -148,14 +148,14 @@ void protojet::update()
   fUpdate=kFALSE;
 }
 
-inline list<tower*> protojet::getTowerList() const 
+list<tower*> protojet::getTowerList() const 
 {
   list<tower*> newList;
   copy(fTowers.begin(),fTowers.end(),back_inserter(newList));
   return newList;
 }
 
-inline list<tower*> protojet::getSharedTowerList(const protojet *other) const 
+list<tower*> protojet::getSharedTowerList(const protojet *other) const 
 {
   list<tower*> newList;
   for (list<tower*>::const_iterator i = fTowers.begin();
@@ -167,7 +167,7 @@ inline list<tower*> protojet::getSharedTowerList(const protojet *other) const
   return newList;
 }
 
-inline bool protojet::hasTower(tower *pTower) const 
+bool protojet::hasTower(tower *pTower) const 
 {
   bool bHasTower = false;
   for (list<tower*>::const_iterator iter = fTowers.begin();
@@ -180,7 +180,7 @@ inline bool protojet::hasTower(tower *pTower) const
   return bHasTower;
 }
 
-inline bool protojet::shareTowers(const protojet *other) const 
+bool protojet::shareTowers(const protojet *other) const 
 {
   bool bShareTowers = false;
   for (list<tower*>::const_iterator iter = fTowers.begin();
@@ -193,7 +193,7 @@ inline bool protojet::shareTowers(const protojet *other) const
   return bShareTowers;
 }
 
-inline Float_t protojet::diffToCenter(tower *pTower) const 
+Float_t protojet::diffToCenter(tower *pTower) const 
 {
   AliTkEtaPhiVector v(pTower->getEta(),pTower->getPhi());
   AliTkEtaPhiVector center = getCentroidPosition();
@@ -585,7 +585,7 @@ void AliTkConeJetFinderV2::fillTowersFromAliParticles(const TClonesArray *partic
 
 #endif
 
-inline Int_t AliTkConeJetFinderV2::findTower(Float_t phi,Float_t eta) 
+Int_t AliTkConeJetFinderV2::findTower(Float_t phi,Float_t eta) 
 {
   if ((phi < fPhiMin) || (phi > fPhiMax) ||
       (eta < fEtaMin) || (eta > fEtaMax)) {
@@ -744,8 +744,7 @@ void AliTkConeJetFinderV2::findJets()
   while(!fProtojets.empty()) {
     // find the protojet with maximum Et
     // should be easy to have a sorted list...
-    list<protojet*>::iterator maxEtProtojet = NULL;
-    maxEtProtojet = fProtojets.begin();
+    list<protojet*>::iterator maxEtProtojet = fProtojets.begin();
     Float_t maxEt = 0;
     for (list<protojet*>::iterator iter = fProtojets.begin();
 	 iter != fProtojets.end(); ++iter) {
@@ -758,7 +757,7 @@ void AliTkConeJetFinderV2::findJets()
     protojet *jet1 = *maxEtProtojet;
     fProtojets.erase(maxEtProtojet);
     // loop again over all protojets to find sharing jet with highest Et
-    list<protojet*>::iterator maxEtNeighbor = NULL;
+    list<protojet*>::iterator maxEtNeighbor = fProtojets.begin();
     maxEt = 0;
     for (list<protojet*>::iterator iter = fProtojets.begin();
 	 iter != fProtojets.end(); ++iter) {
@@ -768,7 +767,7 @@ void AliTkConeJetFinderV2::findJets()
 	maxEtNeighbor = iter;
       }
     }
-    if (maxEtNeighbor != NULL) {
+    if (maxEt>0) {
       // jet's share towers
       // merging splitting step...
       protojet *jet2 = (*maxEtNeighbor);
