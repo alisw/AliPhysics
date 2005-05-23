@@ -10,6 +10,8 @@
 #include <TSystem.h>
 #include <TVirtualMC.h>
 #include <TGeant3.h>
+#include <TPDGCode.h>
+#include <TF1.h>
 #include "STEER/AliRunLoader.h"
 #include "STEER/AliRun.h"
 #include "STEER/AliConfig.h"
@@ -22,7 +24,11 @@
 #include "EVGEN/AliSlowNucleonModelExp.h"
 #include "EVGEN/AliGenParam.h"
 #include "EVGEN/AliGenMUONlib.h"
+#include "EVGEN/AliGenSTRANGElib.h"
 #include "EVGEN/AliGenMUONCocktail.h"
+#include "EVGEN/AliGenCocktail.h"
+#include "EVGEN/AliGenGeVSim.h"
+#include "EVGEN/AliGeVSimParticle.h"
 #include "PYTHIA6/AliGenPythia.h"
 #include "STEER/AliMagFMaps.h"
 #include "STRUCT/AliBODY.h"
@@ -71,7 +77,8 @@ enum PprRun_t
     kMuonCocktailCent1, kMuonCocktailPer1, kMuonCocktailPer4, 
     kMuonCocktailCent1HighPt, kMuonCocktailPer1HighPt, kMuonCocktailPer4HighPt,
     kMuonCocktailCent1Single, kMuonCocktailPer1Single, kMuonCocktailPer4Single,
-    kRunMax
+    kFlow_2_2000, kFlow_10_2000, kFlow_6_2000, kFlow_6_5000,
+    kHIJINGplus, kRunMax
 };
 
 const char* pprRunName[] = {
@@ -92,7 +99,8 @@ const char* pprRunName[] = {
     "kCocktailTRD", "kPyJJ", "kPyGJ", 
     "kMuonCocktailCent1", "kMuonCocktailPer1", "kMuonCocktailPer4",  
     "kMuonCocktailCent1HighPt", "kMuonCocktailPer1HighPt", "kMuonCocktailPer4HighPt",
-    "kMuonCocktailCent1Single", "kMuonCocktailPer1Single", "kMuonCocktailPer4Single"
+    "kMuonCocktailCent1Single", "kMuonCocktailPer1Single", "kMuonCocktailPer4Single",
+    "kFlow_2_2000", "kFlow_10_2000", "kFlow_6_2000", "kFlow_6_5000", "kHIJINGplus"
 };
 
 enum PprGeo_t 
@@ -113,7 +121,7 @@ enum PprMag_t
 
 // This part for configuration    
 //static PprRun_t srun = test50;
-static PprRun_t srun = kCocktailTRD;
+static PprRun_t srun = kHIJINGplus;
 static PprGeo_t sgeo = kNoHoles;
 static PprRad_t srad = kGluonRadiation;
 static PprMag_t smag = k5kG;
@@ -126,6 +134,7 @@ static TString  comment;
 Float_t EtaToTheta(Float_t arg);
 AliGenerator* GeneratorFactory(PprRun_t srun);
 AliGenHijing* HijingStandard();
+AliGenGeVSim* GeVSimStandard(Float_t, Float_t);
 void ProcessEnvironmentVars();
 
 void Config()
@@ -1400,8 +1409,101 @@ AliGenerator* GeneratorFactory(PprRun_t srun) {
 	gGener=gener;
       }
       break;
+    case kFlow_2_2000:
+    {
+	comment = comment.Append(" Flow with dN/deta  = 2000, vn = 2%");
+	gGener = GeVSimStandard(2000., 2.);
+    }
+    break;
+    
+    case kFlow_10_2000:
+    {
+	comment = comment.Append(" Flow with dN/deta  = 2000, vn = 10%");
+	gGener = GeVSimStandard(2000., 10.);
+    }
+    break;
+    
+    case kFlow_6_2000:
+    {
+	comment = comment.Append(" Flow with dN/deta  = 2000, vn = 6%");
+	gGener = GeVSimStandard(2000., 6.);
+    }
+    break;
+    
+    case kFlow_6_5000:
+    {
+	comment = comment.Append(" Flow with dN/deta  = 5000, vn = 6%");
+	gGener = GeVSimStandard(5000., 6.);
+    }
+    break;
+    case kHIJINGplus:
+    {
+	//
+	// The cocktail
+	AliGenCocktail *gener  = new AliGenCocktail();
+
+	//
+	// Charm production by Pythia
+	AliGenPythia * genpyc = new AliGenPythia(230);
+	genpyc->SetProcess(kPyCharmPbPbMNR);
+	genpyc->SetStrucFunc(kCTEQ4L);
+	genpyc->SetPtHard(2.1,-1.0);
+	genpyc->SetEnergyCMS(5500.);
+	genpyc->SetNuclei(208,208);
+	genpyc->SetYRange(-999,999);
+	genpyc->SetForceDecay(kAll);
+	genpyc->SetFeedDownHigherFamily(kFALSE);
+	genpyc->SetCountMode(AliGenPythia::kCountParents);
+	//
+	// Beauty production by Pythia
+	AliGenPythia * genpyb = new AliGenPythia(9);
+	genpyb->SetProcess(kPyBeautyPbPbMNR);
+	genpyb->SetStrucFunc(kCTEQ4L);
+	genpyb->SetPtHard(2.75,-1.0);
+	genpyb->SetEnergyCMS(5500.);
+	genpyb->SetNuclei(208,208);
+	genpyb->SetYRange(-999,999);
+	genpyb->SetForceDecay(kAll);
+	genpyb->SetFeedDownHigherFamily(kFALSE);
+	genpyb->SetCountMode(AliGenPythia::kCountParents);
+        //
+        // Hyperons
+	//
+	AliGenSTRANGElib *lib = new AliGenSTRANGElib();
+	Int_t particle;
+	// Xi
+	particle = AliGenSTRANGElib::kXiMinus;
+	AliGenParam *genXi = new AliGenParam(16,particle,lib->GetPt(particle),lib->GetY(particle),lib->GetIp(particle));
+	genXi->SetPtRange(0., 12.);
+	genXi->SetYRange(-1.1, 1.1);
+	genXi->SetForceDecay(kNoDecay);	
+ 
+	//
+	// Omega
+	particle = AliGenSTRANGElib::kOmegaMinus;
+	AliGenParam *genOmega = new AliGenParam(10,particle,lib->GetPt(particle),lib->GetY(particle),lib->GetIp(particle));     
+	genOmega->SetPtRange(0, 12.);
+	genOmega->SetYRange(-1.1, 1.1);
+	genOmega->SetForceDecay(kNoDecay);
+	
+	//
+	// Central Hijing 
+	AliGenHijing *genHi = HijingStandard();
+	genHi->SwitchOffHeavyQuarks(kTRUE);
+	genHi->SetImpactParameterRange(0.,5.);
+        //
+	// Add everything to the cocktail and shake ...
+	gener->AddGenerator(genHi,    "Hijing cent1", 1);
+	gener->AddGenerator(genpyc,   "Extra charm",  1);
+	gener->AddGenerator(genpyb,   "Extra beauty", 1);
+	gener->AddGenerator(genXi,    "Xi"          , 1);
+	gener->AddGenerator(genOmega, "Omega",        1);
+	gGener = gener;
+    }
+    break;
     default: break;
     }
+    
     return gGener;
 }
 
@@ -1429,6 +1531,95 @@ AliGenHijing* HijingStandard()
      gener->SetSelectAll(0);
      return gener;
 }
+
+AliGenGeVSim* GeVSimStandard(Float_t mult, Float_t vn)
+{
+    AliGenGeVSim* gener = new AliGenGeVSim(0);
+//
+// Mult is the number of charged particles in |eta| < 0.5
+// Vn is in (%)
+//
+// Sigma of the Gaussian dN/deta
+    Float_t sigma_eta  = 2.75;
+//
+// Maximum eta
+    Float_t etamax     = 7.00;
+//
+//
+// Scale from multiplicity in |eta| < 0.5 to |eta| < |etamax|	
+    Float_t mm = mult * (TMath::Erf(etamax/sigma_eta/sqrt(2.)) / TMath::Erf(0.5/sigma_eta/sqrt(2.))); 
+//
+// Scale from charged to total multiplicity
+// 
+    mm *= 1.587;
+//
+// Vn 
+    vn /= 100.;    	 
+//
+// Define particles
+//
+//
+// 78% Pions (26% pi+, 26% pi-, 26% p0)              T = 250 MeV
+    AliGeVSimParticle *pp =  new AliGeVSimParticle(kPiPlus,  1, 0.26 * mm, 0.25, sigma_eta) ;
+    AliGeVSimParticle *pm =  new AliGeVSimParticle(kPiMinus, 1, 0.26 * mm, 0.25, sigma_eta) ;
+    AliGeVSimParticle *p0 =  new AliGeVSimParticle(kPi0,     1, 0.26 * mm, 0.25, sigma_eta) ;
+//
+// 12% Kaons (3% K0short, 3% K0long, 3% K+, 3% K-)   T = 300 MeV
+    AliGeVSimParticle *ks =  new AliGeVSimParticle(kK0Short, 1, 0.03 * mm, 0.30, sigma_eta) ;
+    AliGeVSimParticle *kl =  new AliGeVSimParticle(kK0Long,  1, 0.03 * mm, 0.30, sigma_eta) ;
+    AliGeVSimParticle *kp =  new AliGeVSimParticle(kKPlus,   1, 0.03 * mm, 0.30, sigma_eta) ;
+    AliGeVSimParticle *km =  new AliGeVSimParticle(kKMinus,  1, 0.03 * mm, 0.30, sigma_eta) ;
+//
+// 10% Protons / Neutrons (5% Protons, 5% Neutrons)  T = 250 MeV
+    AliGeVSimParticle *pr =  new AliGeVSimParticle(kProton,  1, 0.05 * mm, 0.25, sigma_eta) ;
+    AliGeVSimParticle *ne =  new AliGeVSimParticle(kNeutron, 1, 0.05 * mm, 0.25, sigma_eta) ;
+//
+// Set Elliptic Flow properties 	
+    pp->SetEllipticParam(vn,1.0,0.) ;
+    pm->SetEllipticParam(vn,1.0,0.) ;
+    p0->SetEllipticParam(vn,1.0,0.) ;
+    pr->SetEllipticParam(vn,1.0,0.) ;
+    ne->SetEllipticParam(vn,1.0,0.) ;
+    ks->SetEllipticParam(vn,1.0,0.) ;
+    kl->SetEllipticParam(vn,1.0,0.) ;
+    kp->SetEllipticParam(vn,1.0,0.) ;
+    km->SetEllipticParam(vn,1.0,0.) ;
+//
+// Set Direct Flow properties	
+    pp->SetDirectedParam(vn,1.0,0.) ;
+    pm->SetDirectedParam(vn,1.0,0.) ;
+    p0->SetDirectedParam(vn,1.0,0.) ;
+    pr->SetDirectedParam(vn,1.0,0.) ;
+    ne->SetDirectedParam(vn,1.0,0.) ;
+    ks->SetDirectedParam(vn,1.0,0.) ;
+    kl->SetDirectedParam(vn,1.0,0.) ;
+    kp->SetDirectedParam(vn,1.0,0.) ;
+    km->SetDirectedParam(vn,1.0,0.) ;
+//
+// Add particles to the list
+    gener->AddParticleType(pp) ;
+    gener->AddParticleType(pm) ;
+    gener->AddParticleType(p0) ;
+    gener->AddParticleType(pr) ;
+    gener->AddParticleType(ne) ;
+    gener->AddParticleType(ks) ;
+    gener->AddParticleType(kl) ;
+    gener->AddParticleType(kp) ;
+    gener->AddParticleType(km) ;
+//	
+// Random Ev.Plane ----------------------------------
+    TF1 *rpa = new TF1("gevsimPsiRndm","1", 0, 360);
+// --------------------------------------------------
+    gener->SetPtRange(0., 9.) ; // Use a resonable range! (used for bin size in numerical integration)
+    gener->SetPhiRange(0, 360);
+    //
+    // Set pseudorapidity range 
+    Float_t thmin = EtaToTheta(+etamax);   
+    Float_t thmax = EtaToTheta(-etamax);   
+    gener->SetThetaRange(thmin,thmax);     
+    return gener;
+}
+
 
 
 void ProcessEnvironmentVars()
