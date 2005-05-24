@@ -1007,7 +1007,7 @@ Double_t AliMath::FratioPvalue(Double_t f,Int_t ndf1,Int_t ndf2,Int_t sides,Int_
   // Sigma is only defined for ndf2>4
   if (ndf2>4)
   {
-   Double_t s=sqrt(double(ndf2*ndf2*(2*ndf2+2*ndf1-4))/double(ndf1*pow(ndf2-1,2)*(ndf2-4)));
+   Double_t s=sqrt(double(ndf2*ndf2*(2*ndf2+2*ndf1-4))/double(ndf1*pow(double(ndf2-1),2)*(ndf2-4)));
    val=(f-mean)/s;
   }
  }
