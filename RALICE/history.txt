@@ -601,4 +601,10 @@
                 when investigating e.g. TOF or trigger times for tracks and/or hits in analysing
                 AliEvent structures.
                 Also GetMJD() invoked in GetDifference to ensure to always have updated Julian parameters.
+22-may-2005 NvE Class AliMath extended to provide full distribution functions of several standard
+                distributions (e.g. Binomial, Poisson, Gauss) and key statistics (e.g. Chi-squared,
+                Student's T, F-test) in view of analysis using Bayesian logic.
+                The various distributions are provided as TF1 objects.
+                In addition, functions to provide the P-values of the various key statistics are also
+                introduced to allow a classical frequentist analysis as well.
  

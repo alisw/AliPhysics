@@ -288,6 +288,8 @@ Double_t AliMath::Prob(Double_t chi2,Int_t ndf,Int_t mode) const
 // Computation of the probability for a certain Chi-squared (chi2)
 // and number of degrees of freedom (ndf).
 //
+// A more clear and flexible facility is offered by Chi2Pvalue. 
+//
 // According to the value of the parameter "mode" various algorithms
 // can be selected.
 //
@@ -607,5 +609,704 @@ Double_t AliMath::BesselI(Int_t n,Double_t x) const
  if ((x < 0) && (n%2 == 1)) result=-result;
 
  return result;
+}
+///////////////////////////////////////////////////////////////////////////
+TF1 AliMath::Chi2Dist(Int_t ndf) const
+{
+// Provide the Chi-squared distribution function corresponding to the
+// specified ndf degrees of freedom.
+//
+// Details can be found in the excellent textbook of Phil Gregory
+// "Bayesian Logical Data Analysis for the Physical Sciences".
+//
+// Note : <chi2>=ndf  Var(chi2)=2*ndf
+ 
+ TF1 chi2dist("chi2dist","1./(TMath::Gamma([0]/2.)*pow(2,[0]/2.))*pow(x,[0]/2.-1.)*exp(-x/2.)");
+ TString title="#chi^{2} distribution for ndf = ";
+ title+=ndf; 
+ chi2dist.SetTitle(title.Data());
+ chi2dist.SetParName(0,"ndf");
+ chi2dist.SetParameter(0,ndf);
+
+ return chi2dist;
+}
+///////////////////////////////////////////////////////////////////////////
+TF1 AliMath::StudentDist(Double_t ndf) const
+{
+// Provide the Student's T distribution function corresponding to the
+// specified ndf degrees of freedom.
+//
+// In a frequentist approach, the Student's T distribution is particularly
+// useful in making inferences about the mean of an underlying population
+// based on the data from a random sample.
+//
+// In a Bayesian context it is used to characterise the posterior PDF
+// for a particular state of information. 
+//
+// Note : ndf is not restricted to integer values
+//
+// Details can be found in the excellent textbook of Phil Gregory
+// "Bayesian Logical Data Analysis for the Physical Sciences".
+//
+// Note : <T>=0  Var(T)=ndf/(ndf-2)
+ 
+ Double_t pi=acos(-1.);
+
+ TF1 tdist("tdist","(TMath::Gamma(([0]+1.)/2.)/(sqrt(pi*[0])*TMath::Gamma([0]/2.)))*pow(1.+x*x/[0],-([0]+1.)/2.)");
+ TString title="Student's t distribution for ndf = ";
+ title+=ndf; 
+ tdist.SetTitle(title.Data());
+ tdist.SetParName(0,"ndf");
+ tdist.SetParameter(0,ndf);
+
+ return tdist;
+}
+///////////////////////////////////////////////////////////////////////////
+TF1 AliMath::FratioDist(Int_t ndf1,Int_t ndf2) const
+{
+// Provide the F (ratio) distribution function corresponding to the
+// specified ndf1 and ndf2 degrees of freedom of the two samples.
+//
+// In a frequentist approach, the F (ratio) distribution is particularly useful
+// in making inferences about the ratio of the variances of two underlying
+// populations based on a measurement of the variance of a random sample taken
+// from each one of the two populations.
+// So the F test provides a means to investigate the degree of equality of
+// two populations.
+//
+// Details can be found in the excellent textbook of Phil Gregory
+// "Bayesian Logical Data Analysis for the Physical Sciences".
+//
+// Note : <F>=ndf2/(ndf2-2)  Var(F)=2*ndf2*ndf2*(ndf2+ndf1-2)/(ndf1*(ndf2-1)*(ndf2-1)*(ndf2-4))
+ 
+ TF1 fdist("fdist",
+ "(TMath::Gamma(([0]+[1])/2.)/(TMath::Gamma([0]/2.)*TMath::Gamma([1]/2.)))*pow([0]/[1],[0]/2.)*pow(x,([0]-2.)/2.)/pow(1.+x*[0]/[1],([0]+[1])/2.)");
+ TString title="F (ratio) distribution for ndf1 = ";
+ title+=ndf1;
+ title+=" ndf2 = "; 
+ title+=ndf2;
+ fdist.SetTitle(title.Data());
+ fdist.SetParName(0,"ndf1");
+ fdist.SetParameter(0,ndf1);
+ fdist.SetParName(1,"ndf2");
+ fdist.SetParameter(1,ndf2);
+
+ return fdist;
+}
+///////////////////////////////////////////////////////////////////////////
+TF1 AliMath::BinomialDist(Int_t n,Double_t p) const
+{
+// Provide the Binomial distribution function corresponding to the
+// specified number of trials n and probability p of success.
+//
+// p(k|n,p) = probability to obtain exactly k successes in n trials. 
+//
+// Details can be found in the excelent textbook of Phil Gregory
+// "Bayesian Logical Data Analysis for the Physical Sciences".
+//
+// Note : <k>=n*p  Var(k)=n*p*(1-p)
+ 
+ TF1 bindist("bindist","TMath::Binomial(int([0]),int(x))*pow([1],int(x))*pow(1.-[1],int([0])-int(x))");
+ TString title="Binomial distribution for n = ";
+ title+=n;
+ title+=" p = "; 
+ title+=p;
+ bindist.SetTitle(title.Data());
+ bindist.SetParName(0,"n");
+ bindist.SetParameter(0,n);
+ bindist.SetParName(1,"p");
+ bindist.SetParameter(1,p);
+
+ return bindist;
+}
+///////////////////////////////////////////////////////////////////////////
+TF1 AliMath::NegBinomialDist(Int_t k,Double_t p) const
+{
+// Provide the Negative Binomial distribution function corresponding to the
+// specified number of successes k and probability p of success.
+//
+// p(n|k,p) = probability to have reached k successes after n trials.
+//
+// Details can be found in the excelent textbook of Phil Gregory
+// "Bayesian Logical Data Analysis for the Physical Sciences".
+//
+// Note : <n>=k*(1-p)/p  Var(n)=k*(1-p)/(p*p) 
+ 
+ TF1 negbindist("negbindist","TMath::Binomial(int(x)-1,int([0])-1)*pow([1],int([0]))*pow(1.-[1],int(x)-int([0]))");
+ TString title="Negative Binomial distribution for k = ";
+ title+=k;
+ title+=" p = "; 
+ title+=p;
+ negbindist.SetTitle(title.Data());
+ negbindist.SetParName(0,"k");
+ negbindist.SetParameter(0,k);
+ negbindist.SetParName(1,"p");
+ negbindist.SetParameter(1,p);
+
+ return negbindist;
+}
+///////////////////////////////////////////////////////////////////////////
+TF1 AliMath::PoissonDist(Double_t mu) const
+{
+// Provide the Poisson distribution function corresponding to the
+// specified average rate (in time or space) mu of occurrences.
+//
+// p(n|mu) = probability for n occurrences in a certain time or space interval.
+//
+// Details can be found in the excelent textbook of Phil Gregory
+// "Bayesian Logical Data Analysis for the Physical Sciences".
+//
+// Note : <n>=mu  Var(n)=mu
+ 
+ TF1 poissdist("poissdist","exp(-[0])*pow([0],int(x))/TMath::Factorial(int(x))");
+ TString title="Poisson distribution for mu = ";
+ title+=mu;
+ poissdist.SetTitle(title.Data());
+ poissdist.SetParName(0,"mu");
+ poissdist.SetParameter(0,mu);
+
+ return poissdist;
+}
+///////////////////////////////////////////////////////////////////////////
+Double_t AliMath::Chi2Pvalue(Double_t chi2,Int_t ndf,Int_t sides,Int_t sigma,Int_t mode) const
+{
+// Computation of the P-value for a certain specified Chi-squared (chi2) value 
+// for a Chi-squared distribution with ndf degrees of freedom.
+//
+// The P-value for a certain Chi-squared value chi2 corresponds to the fraction of
+// repeatedly drawn equivalent samples from a certain population, which is expected
+// to yield a Chi-squared value exceeding (less than) the value chi2 for an
+// upper (lower) tail test in case a certain hypothesis is true.
+//
+// Further details can be found in the excellent textbook of Phil Gregory
+// "Bayesian Logical Data Analysis for the Physical Sciences".
+//
+// Note : <Chi2>=ndf  Var(Chi2)=2*ndf
+// 
+// With the "sides" parameter a one-sided or two-sided test can be selected
+// using either the upper or lower tail contents.
+// In case of automatic upper/lower selection the decision is made on basis
+// of the location of the input chi2 value w.r.t. <Chi2> of the distribution. 
+//
+// sides =  1 : One-sided test using the upper tail contents
+//          2 : Two-sided test using the upper tail contents
+//         -1 : One-sided test using the lower tail contents
+//         -2 : Two-sided test using the lower tail contents
+//          0 : One-sided test using the auto-selected upper or lower tail contents
+//          3 : Two-sided test using the auto-selected upper or lower tail contents
+//
+// The argument "sigma" allows for the following return values :
+//
+// sigma = 0 : P-value is returned as the above specified fraction
+//         1 : The difference chi2-<Chi2> expressed in units of sigma
+//             Note : This difference may be negative.
+//  
+// According to the value of the parameter "mode" various algorithms
+// can be selected.
+//
+// mode = 0 : Calculations are based on the incomplete gamma function.
+//
+//        1 : Same as for mode=0. However, in case ndf=1 an exact expression
+//            based on the error function Erf() is used.
+//
+//        2 : Same as for mode=0. However, in case ndf>30 a Gaussian approximation
+//            is used instead of the gamma function.
+//
+// The default values are sides=0, sigma=0 and mode=1.
+//
+//--- NvE 21-may-2005 Utrecht University
+
+ if (ndf<=0) return 0;
+
+ Double_t mean=ndf;
+
+ if (!sides) // Automatic one-sided test
+ {
+  sides=1;
+  if (chi2<mean) sides=-1;
+ }
+
+ if (sides==3) // Automatic two-sided test
+ {
+  sides=2;
+  if (chi2<mean) sides=-2;
+ }
+
+ Double_t val=0;
+ if (sigma) // P-value in units of sigma
+ {
+  Double_t s=sqrt(double(2*ndf));
+  val=(chi2-mean)/s;
+ }
+ else // P-value from tail contents
+ {
+  if (sides>0) // Upper tail
+  { 
+   val=Prob(chi2,ndf,mode);
+  }
+  else // Lower tail
+  {
+   val=1.-Prob(chi2,ndf,mode);
+  }
+ }
+
+ if (abs(sides)==2) val=val*2.;
+
+ return val;
+}
+///////////////////////////////////////////////////////////////////////////
+Double_t AliMath::StudentPvalue(Double_t t,Double_t ndf,Int_t sides,Int_t sigma) const
+{
+// Computation of the P-value for a certain specified Student's t value 
+// for a Student's T distribution with ndf degrees of freedom.
+//
+// In a frequentist approach, the Student's T distribution is particularly
+// useful in making inferences about the mean of an underlying population
+// based on the data from a random sample.
+//
+// The P-value for a certain t value corresponds to the fraction of
+// repeatedly drawn equivalent samples from a certain population, which is expected
+// to yield a T value exceeding (less than) the value t for an upper (lower)
+// tail test in case a certain hypothesis is true.
+//
+// Further details can be found in the excellent textbook of Phil Gregory
+// "Bayesian Logical Data Analysis for the Physical Sciences".
+//
+// Note : <T>=0  Var(T)=ndf/(ndf-2)
+// 
+// With the "sides" parameter a one-sided or two-sided test can be selected
+// using either the upper or lower tail contents.
+// In case of automatic upper/lower selection the decision is made on basis
+// of the location of the input t value w.r.t. <T> of the distribution. 
+//
+// sides =  1 : One-sided test using the upper tail contents
+//          2 : Two-sided test using the upper tail contents
+//         -1 : One-sided test using the lower tail contents
+//         -2 : Two-sided test using the lower tail contents
+//          0 : One-sided test using the auto-selected upper or lower tail contents
+//          3 : Two-sided test using the auto-selected upper or lower tail contents
+//
+// The argument "sigma" allows for the following return values :
+//
+// sigma = 0 : P-value is returned as the above specified fraction
+//         1 : The difference t-<T> expressed in units of sigma
+//             Note : This difference may be negative and sigma
+//                    is only defined for ndf>2.
+//  
+// The default values are sides=0 and sigma=0.
+//
+//--- NvE 21-may-2005 Utrecht University
+
+ if (ndf<=0) return 0;
+
+ Double_t mean=0;
+
+ if (!sides) // Automatic one-sided test
+ {
+  sides=1;
+  if (t<mean) sides=-1;
+ }
+
+ if (sides==3) // Automatic two-sided test
+ {
+  sides=2;
+  if (t<mean) sides=-2;
+ }
+
+ Double_t val=0;
+ if (sigma) // P-value in units of sigma
+ { 
+  if (ndf>2) // Sigma is only defined for ndf>2
+  {
+   Double_t s=sqrt(ndf/(ndf-2.));
+   val=t/s;
+  }
+ }
+ else // P-value from tail contents
+ {
+  if (sides>0) // Upper tail
+  {
+   val=1.-TMath::StudentI(t,ndf);
+  }
+  else // Lower tail
+  {
+   val=TMath::StudentI(t,ndf);
+  }
+ }
+
+ if (abs(sides)==2) val=val*2.;
+
+ return val;
+}
+///////////////////////////////////////////////////////////////////////////
+Double_t AliMath::FratioPvalue(Double_t f,Int_t ndf1,Int_t ndf2,Int_t sides,Int_t sigma) const
+{
+// Computation of the P-value for a certain specified F ratio f value 
+// for an F (ratio) distribution with ndf1 and ndf2 degrees of freedom
+// for the two samples X,Y respectively to be compared in the ratio X/Y.
+//
+// In a frequentist approach, the F (ratio) distribution is particularly useful
+// in making inferences about the ratio of the variances of two underlying
+// populations based on a measurement of the variance of a random sample taken
+// from each one of the two populations.
+// So the F test provides a means to investigate the degree of equality of
+// two populations.
+//
+// The P-value for a certain f value corresponds to the fraction of
+// repeatedly drawn equivalent samples from a certain population, which is expected
+// to yield an F value exceeding (less than) the value f for an upper (lower)
+// tail test in case a certain hypothesis is true.
+//
+// Further details can be found in the excellent textbook of Phil Gregory
+// "Bayesian Logical Data Analysis for the Physical Sciences".
+//
+// Note : <F>=ndf2/(ndf2-2)  Var(F)=2*ndf2*ndf2*(ndf2+ndf1-2)/(ndf1*(ndf2-1)*(ndf2-1)*(ndf2-4))
+// 
+// With the "sides" parameter a one-sided or two-sided test can be selected
+// using either the upper or lower tail contents.
+// In case of automatic upper/lower selection the decision is made on basis
+// of the location of the input f value w.r.t. <F> of the distribution. 
+//
+// sides =  1 : One-sided test using the upper tail contents
+//          2 : Two-sided test using the upper tail contents
+//         -1 : One-sided test using the lower tail contents
+//         -2 : Two-sided test using the lower tail contents
+//          0 : One-sided test using the auto-selected upper or lower tail contents
+//          3 : Two-sided test using the auto-selected upper or lower tail contents
+//
+// The argument "sigma" allows for the following return values :
+//
+// sigma = 0 : P-value is returned as the above specified fraction
+//         1 : The difference f-<F> expressed in units of sigma
+//             Note : This difference may be negative and sigma
+//                    is only defined for ndf2>4.
+//  
+// The default values are sides=0 and sigma=0.
+//
+//--- NvE 21-may-2005 Utrecht University
+
+ if (ndf1<=0 || ndf2<=0 || f<=0) return 0;
+
+ Double_t mean=double(ndf2/(ndf2-2));
+
+ if (!sides) // Automatic one-sided test
+ {
+  sides=1;
+  if (f<mean) sides=-1;
+ }
+
+ if (sides==3) // Automatic two-sided test
+ {
+  sides=2;
+  if (f<mean) sides=-2;
+ }
+
+ Double_t val=0;
+ if (sigma) // P-value in units of sigma
+ { 
+  // Sigma is only defined for ndf2>4
+  if (ndf2>4)
+  {
+   Double_t s=sqrt(double(ndf2*ndf2*(2*ndf2+2*ndf1-4))/double(ndf1*pow(ndf2-1,2)*(ndf2-4)));
+   val=(f-mean)/s;
+  }
+ }
+ else // P-value from tail contents 
+ {
+  if (sides>0) // Upper tail
+  {
+   val=1.-TMath::FDistI(f,ndf1,ndf2);
+  }
+  else // Lower tail
+  {
+   val=TMath::FDistI(f,ndf1,ndf2);
+  }
+ }
+
+ if (abs(sides)==2) val=val*2.;
+
+ return val;
+}
+///////////////////////////////////////////////////////////////////////////
+Double_t AliMath::BinomialPvalue(Int_t k,Int_t n,Double_t p,Int_t sides,Int_t sigma,Int_t mode) const
+{
+// Computation of the P-value for a certain specified number of successes k
+// for a Binomial distribution with n trials and success probability p.
+//
+// The P-value for a certain number of successes k corresponds to the fraction of
+// repeatedly drawn equivalent samples from a certain population, which is expected
+// to yield a number of successes exceeding (less than) the value k for an
+// upper (lower) tail test in case a certain hypothesis is true.
+//
+// Further details can be found in the excellent textbook of Phil Gregory
+// "Bayesian Logical Data Analysis for the Physical Sciences".
+//
+// Note : <K>=n*p  Var(K)=n*p*(1-p)
+// 
+// With the "sides" parameter a one-sided or two-sided test can be selected
+// using either the upper or lower tail contents.
+// In case of automatic upper/lower selection the decision is made on basis
+// of the location of the input k value w.r.t. <K> of the distribution. 
+//
+// sides =  1 : One-sided test using the upper tail contents
+//          2 : Two-sided test using the upper tail contents
+//         -1 : One-sided test using the lower tail contents
+//         -2 : Two-sided test using the lower tail contents
+//          0 : One-sided test using the auto-selected upper or lower tail contents
+//          3 : Two-sided test using the auto-selected upper or lower tail contents
+//
+// The argument "sigma" allows for the following return values :
+//
+// sigma = 0 : P-value is returned as the above specified fraction
+//         1 : The difference k-<K> expressed in units of sigma
+//             Note : This difference may be negative.
+//
+// mode = 0 : Incomplete Beta function will be used to calculate the tail content.
+//        1 : Straightforward summation of the Binomial terms is used.
+//
+// The Incomplete Beta function in general provides the most accurate values.
+//
+// The default values are sides=0, sigma=0 and mode=0.
+//
+//--- NvE 24-may-2005 Utrecht University
+
+ Double_t mean=double(n)*p;
+
+ if (!sides) // Automatic one-sided test
+ {
+  sides=1;
+  if (k<mean) sides=-1;
+ }
+
+ if (sides==3) // Automatic two-sided test
+ {
+  sides=2;
+  if (k<mean) sides=-2;
+ }
+
+ Double_t val=0;
+
+ if (sigma) // P-value in units of sigma
+ {
+  Double_t s=sqrt(double(n)*p*(1.-p));
+  val=(double(k)-mean)/s;
+ }
+ else // P-value from tail contents
+ {
+  if (sides>0)
+  {
+   if (!mode) // Use Incomplete Beta function
+   {
+    val=TMath::BetaIncomplete(p,k+1,n-k);
+   }
+   else // Use straightforward summation
+   {
+    for (Int_t i=k+1; i<=n; i++)
+    {
+     val+=TMath::Binomial(n,i)*pow(p,i)*pow(1.-p,n-i);
+    }
+   }
+  }
+  else
+  {
+   if (!mode) // Use Incomplete Beta function
+   {
+    val=1.-TMath::BetaIncomplete(p,k+1,n-k);
+   }
+   else
+   {
+    for (Int_t j=0; j<=k; j++)
+    {
+     val+=TMath::Binomial(n,j)*pow(p,j)*pow(1.-p,n-j);
+    }
+   }
+  }
+ }
+
+ if (abs(sides)==2) val=val*2.;
+
+ return val;
+}
+///////////////////////////////////////////////////////////////////////////
+Double_t AliMath::PoissonPvalue(Int_t k,Double_t mu,Int_t sides,Int_t sigma) const
+{
+// Computation of the P-value for a certain specified number of occurrences k
+// for a Poisson distribution with a specified average rate (in time or space)
+// mu of occurrences.
+//
+// The P-value for a certain number of occurrences k corresponds to the fraction of
+// repeatedly drawn equivalent samples from a certain population, which is expected
+// to yield a number of occurrences exceeding (less than) the value k for an
+// upper (lower) tail test in case a certain hypothesis is true.
+//
+// Further details can be found in the excellent textbook of Phil Gregory
+// "Bayesian Logical Data Analysis for the Physical Sciences".
+//
+// Note : <K>=mu  Var(K)=mu
+// 
+// With the "sides" parameter a one-sided or two-sided test can be selected
+// using either the upper or lower tail contents.
+// In case of automatic upper/lower selection the decision is made on basis
+// of the location of the input k value w.r.t. <K> of the distribution. 
+//
+// sides =  1 : One-sided test using the upper tail contents
+//          2 : Two-sided test using the upper tail contents
+//         -1 : One-sided test using the lower tail contents
+//         -2 : Two-sided test using the lower tail contents
+//          0 : One-sided test using the auto-selected upper or lower tail contents
+//          3 : Two-sided test using the auto-selected upper or lower tail contents
+//
+// The argument "sigma" allows for the following return values :
+//
+// sigma = 0 : P-value is returned as the above specified fraction
+//         1 : The difference k-<K> expressed in units of sigma
+//             Note : This difference may be negative.
+//
+// The default values are sides=0 and sigma=0.
+//
+// Note : The tail contents are given by the incomplete Gamma function P(a,x).
+//        Lower tail contents = 1-P(k,mu)
+//        Upper tail contents = P(k,mu)
+//
+//--- NvE 24-may-2005 Utrecht University
+
+ Double_t mean=mu;
+
+ if (!sides) // Automatic one-sided test
+ {
+  sides=1;
+  if (k<mean) sides=-1;
+ }
+
+ if (sides==3) // Automatic two-sided test
+ {
+  sides=2;
+  if (k<mean) sides=-2;
+ }
+
+ Double_t val=0;
+
+ if (sigma) // P-value in units of sigma
+ {
+  Double_t s=sqrt(mu);
+  val=(double(k)-mean)/s;
+ }
+ else // P-value from tail contents
+ {
+  if (sides>0) // Upper tail
+  {
+   val=Gamma(k,mu);
+  }
+  else // Lower tail
+  {
+   val=1.-Gamma(k,mu);
+  }
+ }
+
+ if (abs(sides)==2) val=val*2.;
+
+ return val;
+}
+///////////////////////////////////////////////////////////////////////////
+Double_t AliMath::NegBinomialPvalue(Int_t n,Int_t k,Double_t p,Int_t sides,Int_t sigma,Int_t mode) const
+{
+// Computation of the P-value for a certain specified number of trials n
+// for a Negative Binomial distribution where exactly k successes are to
+// be reached which have each a probability p.
+//
+// The P-value for a certain number of trials n corresponds to the fraction of
+// repeatedly drawn equivalent samples from a certain population, which is expected
+// to yield a number of trials exceeding (less than) the value n for an
+// upper (lower) tail test in case a certain hypothesis is true.
+//
+// Further details can be found in the excellent textbook of Phil Gregory
+// "Bayesian Logical Data Analysis for the Physical Sciences".
+//
+// Note : <N>=k*(1-p)/p  Var(N)=k*(1-p)/(p*p) 
+// 
+// With the "sides" parameter a one-sided or two-sided test can be selected
+// using either the upper or lower tail contents.
+// In case of automatic upper/lower selection the decision is made on basis
+// of the location of the input n value w.r.t. <N> of the distribution. 
+//
+// sides =  1 : One-sided test using the upper tail contents
+//          2 : Two-sided test using the upper tail contents
+//         -1 : One-sided test using the lower tail contents
+//         -2 : Two-sided test using the lower tail contents
+//          0 : One-sided test using the auto-selected upper or lower tail contents
+//          3 : Two-sided test using the auto-selected upper or lower tail contents
+//
+// The argument "sigma" allows for the following return values :
+//
+// sigma = 0 : P-value is returned as the above specified fraction
+//         1 : The difference n-<N> expressed in units of sigma
+//             Note : This difference may be negative.
+//
+// mode = 0 : Incomplete Beta function will be used to calculate the tail content.
+//        1 : Straightforward summation of the Negative Binomial terms is used.
+//
+// The Incomplete Beta function in general provides the most accurate values.
+//
+// The default values are sides=0, sigma=0 and mode=0.
+//
+//--- NvE 24-may-2005 Utrecht University
+
+ Double_t mean=double(k)*(1.-p)/p;
+
+ if (!sides) // Automatic one-sided test
+ {
+  sides=1;
+  if (n<mean) sides=-1;
+ }
+
+ if (sides==3) // Automatic two-sided test
+ {
+  sides=2;
+  if (n<mean) sides=-2;
+ }
+
+ Double_t val=0;
+
+ if (sigma) // P-value in units of sigma
+ {
+  Double_t s=sqrt(double(k)*(1.-p)/(p*p));
+  val=(double(n)-mean)/s;
+ }
+ else // P-value from tail contents
+ {
+  if (sides>0) // Upper tail
+  {
+   if (!mode) // Use Incomplete Beta function
+   {
+    val=1.-TMath::BetaIncomplete(p,k,n-k);
+   }
+   else // Use straightforward summation
+   {
+    for (Int_t i=1; i<n; i++)
+    {
+     val+=TMath::Binomial(i-1,k-1)*pow(p,k)*pow(1.-p,i-k);
+    }
+    val=1.-val;
+   }
+  }
+  else // Lower tail
+  {
+   if (!mode) // Use Incomplete Beta function
+   {
+    val=TMath::BetaIncomplete(p,k,n-k);
+   }
+   else
+   {
+    for (Int_t j=1; j<n; j++)
+    {
+     val+=TMath::Binomial(j-1,k-1)*pow(p,k)*pow(1.-p,j-k);
+    }
+   }
+  }
+ }
+
+ if (abs(sides)==2) val=val*2.;
+
+ return val;
 }
 ///////////////////////////////////////////////////////////////////////////
