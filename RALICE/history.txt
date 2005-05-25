@@ -607,4 +607,8 @@
                 The various distributions are provided as TF1 objects.
                 In addition, functions to provide the P-values of the various key statistics are also
                 introduced to allow a classical frequentist analysis as well.
+25-may-2005 NvE Declaration of unused variable pi removed in AliMath::StudentDist and explicit double
+                specification of integer first argument to pow() in AliMath::FratioPvalue in order
+                to prevent messages from the gcc compiler (thanks Dipo, Philippe and Peter).
+                
  

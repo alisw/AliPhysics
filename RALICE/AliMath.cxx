@@ -650,8 +650,6 @@ TF1 AliMath::StudentDist(Double_t ndf) const
 //
 // Note : <T>=0  Var(T)=ndf/(ndf-2)
  
- Double_t pi=acos(-1.);
-
  TF1 tdist("tdist","(TMath::Gamma(([0]+1.)/2.)/(sqrt(pi*[0])*TMath::Gamma([0]/2.)))*pow(1.+x*x/[0],-([0]+1.)/2.)");
  TString title="Student's t distribution for ndf = ";
  title+=ndf; 
