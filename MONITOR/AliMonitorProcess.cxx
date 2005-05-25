@@ -65,7 +65,7 @@
 #include <AliL3Vertex.h>
 #include <AliLevel3.h>
 
-ClassImp(AliMonitorProcess) 
+ClassImp(AliMonitorProcess)
 
 
 const Int_t AliMonitorProcess::fgkPort = 9327;
@@ -130,7 +130,7 @@ AliMonitorProcess::AliMonitorProcess(
 #endif
 
   fRunLoader = AliRunLoader::Open(fileNameGalice);
-  if (!fRunLoader) AliFatal(Form("could not get run loader from file %s", 
+  if (!fRunLoader) AliFatal(Form("could not get run loader from file %s",
 				 fileNameGalice));
 
   fRunLoader->CdGAFile();
@@ -226,7 +226,7 @@ AliMonitorProcess::AliMonitorProcess(const AliMonitorProcess& process) :
 }
 
 //_____________________________________________________________________________
-AliMonitorProcess& AliMonitorProcess::operator = (const AliMonitorProcess& 
+AliMonitorProcess& AliMonitorProcess::operator = (const AliMonitorProcess&
 						  /*process*/)
 {
   AliFatal("assignment operator not implemented");
@@ -283,7 +283,7 @@ void AliMonitorProcess::SetStatus(EStatus status)
 //_____________________________________________________________________________
 void AliMonitorProcess::Run()
 {
-// run the monitor process: 
+// run the monitor process:
 //  check for a raw data file, process the raw data file and delete it
 
   fStopping = kFALSE;
@@ -344,6 +344,7 @@ Bool_t AliMonitorProcess::CheckForNewFile()
 {
 // check whether a new file was registered in alien
 
+#if ROOT_VERSION_CODE < ROOT_VERSION(5,0,0)
 #if ROOT_VERSION_CODE <= 199169   // 3.10/01
   TGridResult* result = fGrid->Ls();
 #else
@@ -354,7 +355,7 @@ Bool_t AliMonitorProcess::CheckForNewFile()
   sprintf(findName, "*.root");
   Grid_ResultHandle_t handle = fGrid->Find(dirName, findName);
   if (!handle) {
-    AliError(Form("could not open alien directory %s", 
+    AliError(Form("could not open alien directory %s",
 		  dirName));
     return kFALSE;
   }
@@ -401,7 +402,7 @@ Bool_t AliMonitorProcess::CheckForNewFile()
   fileName = dirName + ("/" + fLogicalFileName);
   handle = fGrid->GetPhysicalFileNames(fileName.Data());
   if (!handle) {
-    AliError(Form("could not get physical file names for %s", 
+    AliError(Form("could not get physical file names for %s",
 		  fileName.Data()));
     return kFALSE;
   }
@@ -409,7 +410,7 @@ Bool_t AliMonitorProcess::CheckForNewFile()
   result->Reset();
   Grid_Result_t* resultEntry = result->Next();
   if (!resultEntry) {
-    AliError(Form("could not get physical file names for %s", 
+    AliError(Form("could not get physical file names for %s",
 		  fileName.Data()));
     return kFALSE;
   }
@@ -417,7 +418,9 @@ Bool_t AliMonitorProcess::CheckForNewFile()
   fFileName.ReplaceAll("castor:/", "rfio:/");
 #endif
   delete result;
-
+#else
+  Error("CheckForNewFile", "needs to be ported to new TGrid");
+#endif
   return kTRUE;
 }
 
@@ -429,7 +432,7 @@ Bool_t AliMonitorProcess::ProcessFile()
 
   Int_t nEvents = GetNumberOfEvents(fFileName);
   if (nEvents <= 0) return kFALSE;
-  AliDebug(1, Form("found %d event(s) in file %s", 
+  AliDebug(1, Form("found %d event(s) in file %s",
 		   nEvents, fFileName.Data()));
   if (IsSelected("HLTConfMap")) CreateHLT(fFileName);
   if (IsSelected("HLTHough")) CreateHLTHough(fFileName);
@@ -454,7 +457,7 @@ Bool_t AliMonitorProcess::ProcessFile()
     // monitor only central physics events
     if (rawReader.GetType() != 7) continue;
     if ((rawReader.GetAttributes()[0] & 0x02) == 0) continue;
-    AliInfo(Form("run: %d  event: %d %d\n", rawReader.GetRunNumber(), 
+    AliInfo(Form("run: %d  event: %d %d\n", rawReader.GetRunNumber(),
 		 rawReader.GetEventId()[0], rawReader.GetEventId()[1]));
 
     AliESD esd;
@@ -490,7 +493,7 @@ Bool_t AliMonitorProcess::ProcessFile()
     for (Int_t iMonitor = 0; iMonitor < fMonitors.GetEntriesFast(); iMonitor++) {
       CheckForConnections();
       SetStatus(kFilling);
-      ((AliMonitor*) fMonitors[iMonitor])->FillHistos(fRunLoader, &rawReader, 
+      ((AliMonitor*) fMonitors[iMonitor])->FillHistos(fRunLoader, &rawReader,
 						      &esd);
       if (fStopping) break;
     }
@@ -693,7 +696,7 @@ void AliMonitorProcess::CreateHLT(const char* fileName)
   fHLT->Init("./", AliLevel3::kRaw, 1);
 
   fHLT->SetClusterFinderParam(-1, -1, kTRUE);
-  
+
   Int_t phiSegments = 50;
   Int_t etaSegments = 100;
   Int_t trackletlength = 3;
@@ -708,13 +711,13 @@ void AliMonitorProcess::CreateHLT(const char* fileName)
   Double_t hitChi2Cut = 15;//100 or 15
   Double_t goodHitChi2 = 5;//20 or 5
   Double_t trackChi2Cut = 10;//50 or 10
-  fHLT->SetTrackerParam(phiSegments, etaSegments, 
+  fHLT->SetTrackerParam(phiSegments, etaSegments,
 			trackletlength, tracklength,
 			rowscopetracklet, rowscopetrack,
 			minPtFit, maxangle, goodDist, hitChi2Cut,
 			goodHitChi2, trackChi2Cut, 50, maxphi, maxeta, kTRUE);
-  
-  fHLT->WriteFiles("./hlt/");  
+
+  fHLT->WriteFiles("./hlt/");
 }
 
 //_____________________________________________________________________________
@@ -800,7 +803,7 @@ Bool_t AliMonitorProcess::ReconstructHLTHough(Int_t iEvent)
   fitter->SetInnerWidthFactor(1,1.5);
   fitter->SetOuterWidthFactor(1,1.5);
   fitter->SetNmaxOverlaps(5);
-  
+
   //fitter->SetChiSqMax(5,kFALSE); //isolated clusters
   fitter->SetChiSqMax(5,kTRUE);  //overlapping clusters
 
@@ -844,7 +847,7 @@ Bool_t AliMonitorProcess::ReconstructHLTHough(Int_t iEvent)
       track->UpdateToFirstPoint();
     }
   delete ft;
-        
+
   //Write the final tracks
   fitter->WriteTracks(20);
 
@@ -864,7 +867,7 @@ Bool_t AliMonitorProcess::ReconstructHLTHough(Int_t iEvent)
 //_____________________________________________________________________________
 Bool_t AliMonitorProcess::WriteHistos()
 {
-// write the monitor tree and the monitor histograms to the file 
+// write the monitor tree and the monitor histograms to the file
 // "monitor_<run number>[_<sub_run_number>].root"
 // if at least fNEventsMin events were monitored
 
@@ -1027,7 +1030,7 @@ void AliMonitorProcess::BroadcastHistos(TSocket* toSocket)
 
   SetStatus(kBroadcasting);
   TMessage message(kMESS_OBJECT);
-  message.WriteObject(fTopFolder); 
+  message.WriteObject(fTopFolder);
 
   for (Int_t iSocket = 0; iSocket < fSockets.GetEntriesFast(); iSocket++) {
     TSocket* socket = (TSocket*) fSockets[iSocket];
@@ -1087,8 +1090,8 @@ void AliMonitorProcess::BroadcastHistos(TSocket* toSocket)
 //_____________________________________________________________________________
 AliMonitorProcess::AliMonitorInterruptHandler::AliMonitorInterruptHandler
   (AliMonitorProcess* process):
-  TSignalHandler(kSigUser1, kFALSE), 
-  fProcess(process) 
+  TSignalHandler(kSigUser1, kFALSE),
+  fProcess(process)
 {
 // constructor: set process
 }
@@ -1104,22 +1107,22 @@ AliMonitorProcess::AliMonitorInterruptHandler::AliMonitorInterruptHandler
 }
 
 //_____________________________________________________________________________
-AliMonitorProcess::AliMonitorInterruptHandler& 
-  AliMonitorProcess::AliMonitorInterruptHandler::operator = 
-  (const AliMonitorInterruptHandler& /*handler*/) 
+AliMonitorProcess::AliMonitorInterruptHandler&
+  AliMonitorProcess::AliMonitorInterruptHandler::operator =
+  (const AliMonitorInterruptHandler& /*handler*/)
 {
 // assignment operator
 
-  AliFatal("assignment operator not implemented"); 
+  AliFatal("assignment operator not implemented");
   return *this;
 }
 
 //_____________________________________________________________________________
-Bool_t AliMonitorProcess::AliMonitorInterruptHandler::Notify() 
+Bool_t AliMonitorProcess::AliMonitorInterruptHandler::Notify()
 {
 // interrupt signal -> stop process
 
   AliInfo("the monitoring process will be stopped.");
-  fProcess->Stop(); 
+  fProcess->Stop();
   return kTRUE;
 }

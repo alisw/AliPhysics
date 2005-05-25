@@ -16,45 +16,49 @@
 
 //_________________________________________________________________________
 // To navigate in the Grid catalogue (very elementary)
-// check here : /afs/cern.ch/user/p/peters/public/README.ALIEN                   
+// check here : /afs/cern.ch/user/p/peters/public/README.ALIEN
 //-- Author: Yves Schutz (CERN)
 
 // --- ROOT system ---
-#include "TObjString.h"   
+#include "TObjString.h"
+#include "TGrid.h"
 #include "TGridResult.h"
 
 // --- Standard library ---
 
 // --- AliRoot header files ---
 #include "AliLog.h"
-#include "AliPHOSGridFile.h" 
+#include "AliPHOSGridFile.h"
 
 ClassImp(AliPHOSGridFile)
 
 //____________________________________________________________________________
 AliPHOSGridFile::AliPHOSGridFile(TString grid)
 {
-  // default ctor; Doing initialisation ; 
-  fGrid = 0 ; 
-  if (grid == "alien") 
+  // default ctor; Doing initialisation ;
+  fGrid = 0 ;
+  if (grid == "alien")
     fGrid = TGrid::Connect("alien://aliendb1.cern.ch:15000/?direct") ;
-  else 
-    Error("AliPHOSGridFile", " %s is an unknown grid system", grid.Data()) ; 
-  if ( !fGrid ) 
-    Error("ctor", "Cannot connect to alien://aliendb1.cern.ch:15000/?direct") ; 
-    
-  fRoot = "/alice/production/aliprod" ; 
-  if ( !fGrid->OpenDir(fRoot) ) 
-    Error("ctor", "Cannot find directory %s ", fRoot.Data() ) ; 
-  
-  fYear = "" ; 
-  fProd = "" ; 
-  fVers = "" ; 
-  fType = "" ; 
-  fRun  = "" ; 
-  fEvt  = "" ; 
-  
-  fPath += fRoot ; 
+  else
+    Error("AliPHOSGridFile", " %s is an unknown grid system", grid.Data()) ;
+  if ( !fGrid )
+    Error("ctor", "Cannot connect to alien://aliendb1.cern.ch:15000/?direct") ;
+
+  fRoot = "/alice/production/aliprod" ;
+#if ROOT_VERSION_CODE < ROOT_VERSION(5,0,0)
+  if ( !fGrid->OpenDir(fRoot) )
+    Error("ctor", "Cannot find directory %s ", fRoot.Data() ) ;
+#else
+  Error("AliPHOSGridFile", "needs to be ported to new TGrid");
+#endif
+  fYear = "" ;
+  fProd = "" ;
+  fVers = "" ;
+  fType = "" ;
+  fRun  = "" ;
+  fEvt  = "" ;
+
+  fPath += fRoot ;
 
 }
 
@@ -67,36 +71,40 @@ AliPHOSGridFile::~AliPHOSGridFile()
 TString AliPHOSGridFile::GetLFN() const
 {
   TString fileName(Pwd()) ;
-  fileName += "galice.root" ; 
-  if ( !fGrid->GetAccessPath(fileName) ) { 
-    AliWarning(Form("file %s does not exist", fileName.Data())) ; 
-    fileName = "" ; 
+  fileName += "galice.root" ;
+#if ROOT_VERSION_CODE < ROOT_VERSION(5,0,0)
+  if ( !fGrid->GetAccessPath(fileName) ) {
+    AliWarning(Form("file %s does not exist", fileName.Data())) ;
+    fileName = "" ;
   }
-  else 
-    fileName.Prepend("alien://") ; 
-  return fileName ; 
+  else
+    fileName.Prepend("alien://") ;
+#else
+  Error("GetLFN", "needs to be ported to new TGrid");
+#endif
+  return fileName ;
 }
 
 //____________________________________________________________________________
-void AliPHOSGridFile::Copy(AliPHOSGridFile & lfn) 
+void AliPHOSGridFile::Copy(AliPHOSGridFile & lfn)
 {
-  //Copy method used by the Copy ctor 
-  fRoot = lfn.fRoot ; 
-  fYear = lfn.fYear ; 
-  fProd = lfn.fProd ; 
-  fVers = lfn.fVers ; 
-  fType = lfn.fType ; 
-  fRun  = lfn.fRun ; 
-  fEvt  = lfn.fEvt ; 
-  TObject::Copy(lfn) ; 
+  //Copy method used by the Copy ctor
+  fRoot = lfn.fRoot ;
+  fYear = lfn.fYear ;
+  fProd = lfn.fProd ;
+  fVers = lfn.fVers ;
+  fType = lfn.fType ;
+  fRun  = lfn.fRun ;
+  fEvt  = lfn.fEvt ;
+  TObject::Copy(lfn) ;
 }
 
 //____________________________________________________________________________
 void AliPHOSGridFile::Help()
 {
   // Prints information on available lfn's
-  
-  AliInfo(Form("")) ; 
+
+  AliInfo(Form("")) ;
 
 }
 
@@ -105,12 +113,16 @@ void AliPHOSGridFile::ListEvents() const
 {
   // list the available events for the current path and run selected
 
-  char path[80] ; 
-  sprintf(path, "%s/%s-%s/%s/%s/%s", fRoot.Data(), fYear.Data(), fProd.Data(), fVers.Data(), fType.Data(), fRun.Data()) ; 
-  AliInfo(Form("Searching %s", path)) ; 
-  Grid_ResultHandle_t gr = fGrid->Find(path, "galice.root") ; 
+  char path[80] ;
+  sprintf(path, "%s/%s-%s/%s/%s/%s", fRoot.Data(), fYear.Data(), fProd.Data(), fVers.Data(), fType.Data(), fRun.Data()) ;
+  AliInfo(Form("Searching %s", path)) ;
+#if ROOT_VERSION_CODE < ROOT_VERSION(5,0,0)
+  Grid_ResultHandle_t gr = fGrid->Find(path, "galice.root") ;
   TGridResult ar(gr) ;
-  ar.Print() ; 
+  ar.Print() ;
+#else
+  Error("ListEvents", "needs to be ported to new TGrid");
+#endif
 }
 
 //____________________________________________________________________________
@@ -118,12 +130,16 @@ void AliPHOSGridFile::ListRuns() const
 {
   // list the available runs for the current path selected
 
-  char path[80] ; 
-  sprintf(path, "%s/%s-%s/%s/%s", fRoot.Data(), fYear.Data(), fProd.Data(), fVers.Data(), fType.Data()) ; 
-  AliInfo(Form("Searching %s", path)) ; 
-  Grid_ResultHandle_t gr = fGrid->OpenDir(path) ; 
+  char path[80] ;
+  sprintf(path, "%s/%s-%s/%s/%s", fRoot.Data(), fYear.Data(), fProd.Data(), fVers.Data(), fType.Data()) ;
+  AliInfo(Form("Searching %s", path)) ;
+#if ROOT_VERSION_CODE < ROOT_VERSION(5,0,0)
+  Grid_ResultHandle_t gr = fGrid->OpenDir(path) ;
   TGridResult ar(gr) ;
-  ar.Print() ; 
+  ar.Print() ;
+#else
+  Error("ListRuns", "needs to be ported to new TGrid");
+#endif
 }
 
 //____________________________________________________________________________
@@ -131,141 +147,163 @@ Bool_t AliPHOSGridFile::SetYearProd(TString year, TString prod)
 {
   // set the year and verifies if the directory exists
   Bool_t rv = kFALSE ;
-  char tempo[80] ; 
-  sprintf(tempo, "/%s-%s", year.Data(), prod.Data()) ; 
-  
-  TString path(fRoot) ; 
-  path += tempo ; 
-  if ( !fGrid->OpenDir(path) ) {  
-    AliError(Form("Cannot find directory %s", path.Data() )) ; 
-  } else {
-    rv = kTRUE ; 
-    fYear = year ;  
-    fProd = prod ; 
-    fPath = path ; 
-  }
-  return rv ; 
-}
+  char tempo[80] ;
+  sprintf(tempo, "/%s-%s", year.Data(), prod.Data()) ;
 
-//____________________________________________________________________________
-Bool_t AliPHOSGridFile::SetVers(TString vers) 
-{
-  // set the year and verifies if the directory exists
-  Bool_t rv = kFALSE ;
-  char tempo[80] ; 
-  sprintf(tempo, "/%s-%s/%s", fYear.Data(), fProd.Data(), vers.Data()) ; 
-  fVers = tempo ;  
-
-  TString path(fRoot) ; 
-  path += tempo ; 
-  if ( !fGrid->OpenDir(path) ) {  
-    AliError(Form("Cannot find directory %s ", path.Data() )) ; 
+  TString path(fRoot) ;
+  path += tempo ;
+#if ROOT_VERSION_CODE < ROOT_VERSION(5,0,0)
+  if ( !fGrid->OpenDir(path) ) {
+    AliError(Form("Cannot find directory %s", path.Data() )) ;
   } else {
-    rv = kTRUE ; 
-    fVers = vers ; 
+    rv = kTRUE ;
+    fYear = year ;
+    fProd = prod ;
     fPath = path ;
   }
-  return rv ; 
+#else
+  Error("SetYearProd", "needs to be ported to new TGrid");
+#endif
+  return rv ;
 }
 
 //____________________________________________________________________________
-Bool_t AliPHOSGridFile::SetType(TString type) 
+Bool_t AliPHOSGridFile::SetVers(TString vers)
 {
   // set the year and verifies if the directory exists
   Bool_t rv = kFALSE ;
-  char tempo[80] ; 
-  sprintf(tempo, "/%s-%s/%s/%s", fYear.Data(), fProd.Data(), fVers.Data(), type.Data()) ; 
- 
+  char tempo[80] ;
+  sprintf(tempo, "/%s-%s/%s", fYear.Data(), fProd.Data(), vers.Data()) ;
+  fVers = tempo ;
+
   TString path(fRoot) ;
-  path += tempo ; 
-  if ( !fGrid->OpenDir(path) ) {  
-    AliError(Form("Cannot find directory %s ", path.Data() )) ; 
+  path += tempo ;
+#if ROOT_VERSION_CODE < ROOT_VERSION(5,0,0)
+  if ( !fGrid->OpenDir(path) ) {
+    AliError(Form("Cannot find directory %s ", path.Data() )) ;
   } else {
-    rv = kTRUE ; 
-    fType = type ;  
-    fPath = path ; 
+    rv = kTRUE ;
+    fVers = vers ;
+    fPath = path ;
   }
-  return rv ; 
+#else
+  Error("SetVers", "needs to be ported to new TGrid");
+#endif
+  return rv ;
 }
 
 //____________________________________________________________________________
-Bool_t AliPHOSGridFile::SetPath(TString year, TString prod, TString vers, TString type) 
+Bool_t AliPHOSGridFile::SetType(TString type)
 {
   // set the year and verifies if the directory exists
-  Bool_t rv = kFALSE ; 
-  char tempo[80] ; 
-  sprintf(tempo, "/%s-%s/%s/%s", year.Data(), prod.Data(), vers.Data(), type.Data()) ; 
-    
-  TString path(fRoot) ; 
-  path += tempo ; 
-  if ( !fGrid->OpenDir(path) ) {  
-    AliError(Form("Cannot find directory %s ", path.Data() )) ; 
+  Bool_t rv = kFALSE ;
+  char tempo[80] ;
+  sprintf(tempo, "/%s-%s/%s/%s", fYear.Data(), fProd.Data(), fVers.Data(), type.Data()) ;
+
+  TString path(fRoot) ;
+  path += tempo ;
+#if ROOT_VERSION_CODE < ROOT_VERSION(5,0,0)
+  if ( !fGrid->OpenDir(path) ) {
+    AliError(Form("Cannot find directory %s ", path.Data() )) ;
   } else {
-    rv = kTRUE ; 
-    fPath = path ; 
-    fYear += year ; 
-    fProd += prod ; 
-    fVers += vers ; 
+    rv = kTRUE ;
+    fType = type ;
+    fPath = path ;
+  }
+#else
+  Error("SetType", "needs to be ported to new TGrid");
+#endif
+  return rv ;
+}
+
+//____________________________________________________________________________
+Bool_t AliPHOSGridFile::SetPath(TString year, TString prod, TString vers, TString type)
+{
+  // set the year and verifies if the directory exists
+  Bool_t rv = kFALSE ;
+  char tempo[80] ;
+  sprintf(tempo, "/%s-%s/%s/%s", year.Data(), prod.Data(), vers.Data(), type.Data()) ;
+
+  TString path(fRoot) ;
+  path += tempo ;
+#if ROOT_VERSION_CODE < ROOT_VERSION(5,0,0)
+  if ( !fGrid->OpenDir(path) ) {
+    AliError(Form("Cannot find directory %s ", path.Data() )) ;
+  } else {
+    rv = kTRUE ;
+    fPath = path ;
+    fYear += year ;
+    fProd += prod ;
+    fVers += vers ;
     fType += type ;
   }
-  return rv ; 
+#else
+  Error("SetPath", "needs to be ported to new TGrid");
+#endif
+  return rv ;
 }
 
 //____________________________________________________________________________
-Bool_t AliPHOSGridFile::SetRun(Int_t run) 
+Bool_t AliPHOSGridFile::SetRun(Int_t run)
 {
   // set the year and verifies if the directory exists
   Bool_t rv = kFALSE ;
 
-  TString zero("00000") ; 
-  TString srun ; 
-  srun += run ; 
-  Int_t nzero = zero.Length() - srun.Length() ; 
+  TString zero("00000") ;
+  TString srun ;
+  srun += run ;
+  Int_t nzero = zero.Length() - srun.Length() ;
   Int_t index ;
-  for (index = 0 ; index < nzero ; index++) 
-    srun.Prepend("0") ; 
+  for (index = 0 ; index < nzero ; index++)
+    srun.Prepend("0") ;
 
-  char tempo[80] ; 
-  sprintf(tempo, "/%s-%s/%s/%s/%s", fYear.Data(), fProd.Data(), fVers.Data(), fType.Data(), srun.Data()) ; 
+  char tempo[80] ;
+  sprintf(tempo, "/%s-%s/%s/%s/%s", fYear.Data(), fProd.Data(), fVers.Data(), fType.Data(), srun.Data()) ;
 
-  TString path(fRoot) ; 
+  TString path(fRoot) ;
   path += tempo ;
-  if ( !fGrid->OpenDir(path) ) {  
-    AliError(Form("Cannot find directory %s ", path.Data() )) ; 
+#if ROOT_VERSION_CODE < ROOT_VERSION(5,0,0)
+  if ( !fGrid->OpenDir(path) ) {
+    AliError(Form("Cannot find directory %s ", path.Data() )) ;
   } else {
-    rv = kTRUE ; 
-    fRun = srun ; 
-    fPath = path ; 
+    rv = kTRUE ;
+    fRun = srun ;
+    fPath = path ;
   }
-  return rv ; 
+#else
+  Error("SetRun", "needs to be ported to new TGrid");
+#endif
+  return rv ;
 }
 
 //____________________________________________________________________________
-Bool_t AliPHOSGridFile::SetEvt(Int_t evt) 
+Bool_t AliPHOSGridFile::SetEvt(Int_t evt)
 {
   // set the year and verifies if the directory exists
-  Bool_t rv = kFALSE ; 
+  Bool_t rv = kFALSE ;
 
-  TString zero("00000") ; 
-  TString sevt ; 
-  sevt += evt ; 
-  Int_t nzero = zero.Length() - sevt.Length() ; 
+  TString zero("00000") ;
+  TString sevt ;
+  sevt += evt ;
+  Int_t nzero = zero.Length() - sevt.Length() ;
   Int_t index ;
-  for (index = 0 ; index < nzero ; index++) 
+  for (index = 0 ; index < nzero ; index++)
     sevt.Prepend("0") ;
- 
-  char tempo[80] ; 
-  sprintf(tempo, "/%s-%s/%s/%s/%s/%s/", fYear.Data(), fProd.Data(), fVers.Data(), fType.Data(), fRun.Data(), sevt.Data()) ; 
-  TString path(fRoot) ; 
+
+  char tempo[80] ;
+  sprintf(tempo, "/%s-%s/%s/%s/%s/%s/", fYear.Data(), fProd.Data(), fVers.Data(), fType.Data(), fRun.Data(), sevt.Data()) ;
+  TString path(fRoot) ;
   path += tempo ;
-  if ( !fGrid->OpenDir(path) ) {  
-    AliError(Form("Cannot find directory %s ", path.Data() )) ; 
+#if ROOT_VERSION_CODE < ROOT_VERSION(5,0,0)
+  if ( !fGrid->OpenDir(path) ) {
+    AliError(Form("Cannot find directory %s ", path.Data() )) ;
   } else {
-    rv = kTRUE ; 
-    fEvt = sevt ; 
-    fPath = path ; 
+    rv = kTRUE ;
+    fEvt = sevt ;
+    fPath = path ;
   }
-  return rv ; 
+#else
+  Error("SetEvt", "needs to be ported to new TGrid");
+#endif
+  return rv ;
 }
-
-
