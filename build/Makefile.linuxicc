@@ -10,11 +10,7 @@ ICC_MAJOR    := $(shell $(CXX) -V 2>&1 | awk '{ if (NR==1) print $$8 }' | \
 ICC_MINOR    := $(shell $(CXX) -V 2>&1 | awk '{ if (NR==1) print $$8 }' | \
                 cut -d'.' -f2)
 
-ifeq ($(ICC_MAJOR),8)
 F77           = ifort
-else
-F77           = ifc
-endif
 
 # Global optimisation
 OPT           = -O -ip
@@ -42,7 +38,7 @@ DEPENDFFLAGS  = $(FFLAGS)
 # rootcint flags
 CINTFLAGS     =
 
-LD            = icc
+LD            = icpc
 LDFLAGS       = $(OPT)
 
 SHLD          = $(LD)
@@ -65,10 +61,5 @@ GLIBS         = $(LIBNOVER)
 SYSLIBS =
 
 EXEFLAGS     += -L/usr/local/lib -lXt
-ifeq ($(ICC_MAJOR),8)
 EXEFLAGS     += -L$(shell which ifort | sed -e 's|bin/ifort|lib|') \
                 -lifcore -lifport
-else
-EXEFLAGS     += -L$(shell which ifc | sed -e 's|bin/ifc|lib|') \
-                -lF90 -lCEPCF90 -lintrins
-endif

@@ -1,9 +1,9 @@
 # Makefile for AliRoot for Itanium/Linux with Intel icc compiler
 
 # The compilers
-CXX           = ecc 
-F77	      = efc
-CC	      = ecc
+CXX           = icc 
+F77	      = ifort
+CC	      = icc
 
 # Global optimisation
 OPT           = -g #-O
@@ -31,7 +31,7 @@ DEPENDFFLAGS  = $(FFLAGS)
 # rootcint flags
 CINTFLAGS     = 
 
-LD            = ecc
+LD            = icpc
 LDFLAGS       = $(OPT) 
 
 SHLD	      = $(LD)
