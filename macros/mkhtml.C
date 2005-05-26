@@ -15,7 +15,7 @@ void mkhtml (char *macro=0, Int_t force=0) {
     html.Convert(macro,"Example Macro");
   } else {
     gSystem->Load("$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET)/libRALICE");
-    html.MakeAll(force);
+    html.MakeAll(force,"[A-Z]*");
   }
   timer.Stop();
   timer.Print();
