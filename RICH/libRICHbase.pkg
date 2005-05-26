@@ -1,4 +1,4 @@
-SRCS:= AliRICHParam.cxx AliRICHChamber.cxx AliRICHHit.cxx AliRICHDigit.cxx AliRICHCluster.cxx AliRICH.cxx
+SRCS:= AliRICHParam.cxx AliRICHChamber.cxx AliRICHHit.cxx AliRICHDigit.cxx AliRICHCluster.cxx AliRICH.cxx AliRICHDigitizer.cxx  AliRICHTracker.cxx AliRICHRecon.cxx AliRICHHelix.cxx
 
 HDRS:= $(SRCS:.cxx=.h)
 DHDR:= RICHbaseLinkDef.h
