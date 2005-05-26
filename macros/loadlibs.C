@@ -25,7 +25,7 @@ void loadlibs ()
 
   gSystem->Load("libEGPythia6");
 
-  gSystem->Load("libRAW");
+  gSystem->Load("libRAWData");
 
   gSystem->Load("libESD");
   gSystem->Load("libSTEER");
@@ -80,10 +80,10 @@ void loadlibs ()
   gSystem->Load("libTOFsim");
   gSystem->Load("libTOFrec");
 
+  gSystem->Load("libAliL3ITS");
   gSystem->Load("libAliL3Src");
   gSystem->Load("libAliL3Misc");
   gSystem->Load("libAliL3Comp");
   gSystem->Load("libThread");
   gSystem->Load("libAliL3Hough");
-  gSystem->Load("libAliL3ITS");
 }
