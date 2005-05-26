@@ -7,17 +7,17 @@
 //
 // Fluka include
 #include "Fdimpar.h"  //(DIMPAR) fluka include
+
 // Fluka commons
 #include "Fdblprc.h"  //(DBLPRC) fluka common
 #include "Femfstk.h"  //(EMFSTK) fluka common
 #include "Fevtflg.h"  //(EVTFLG) fluka common
 #include "Fpaprop.h"  //(PAPROP) fluka common
 #include "Ftrackr.h"  //(TRACKR) fluka common
+#include "Femfrgn.h"  //(EFMRGN) fluka common
 
 //Virtual MC
-
 #include "TFluka.h"
-
 #include "TVirtualMCStack.h"
 #include "TVirtualMCApplication.h"
 #include "TParticle.h"
@@ -31,29 +31,31 @@ void stupre()
 //*  SeT User PRoperties for Emf particles                               *
 //*                                                                      *
 //*----------------------------------------------------------------------*
+  static Double_t emassmev = PAPROP.am[9] * 1000.;
+    
   Int_t lbhabh = 0;
   if (EVTFLG.ldltry == 1) {
     if (EMFSTK.ichemf[EMFSTK.npemf-1] * EMFSTK.ichemf[EMFSTK.npemf-2] < 0) lbhabh = 1;
   }
-
-// mkbmx1 = dimension for kwb real spare array in fluka stack in DIMPAR
-// mkbmx2 = dimension for kwb int. spare array in fluka stack in DIMPAR
+  
+// mkbmx1         = dimension for kwb real spare array in fluka stack in DIMPAR
+// mkbmx2         = dimension for kwb int. spare array in fluka stack in DIMPAR
 // EMFSTK.espark  = spare real variables available for 
 // EMFSTK.iespak  = spare integer variables available for
-// TRACKR.spausr = user defined spare variables for the current particle
-// TRACKR.ispusr = user defined spare flags for the current particle
-// EMFSTK.louemf = user flag
-// TRACKR.llouse = user defined flag for the current particle
+// TRACKR.spausr  = user defined spare variables for the current particle
+// TRACKR.ispusr  = user defined spare flags for the current particle
+// EMFSTK.louemf  = user flag
+// TRACKR.llouse  = user defined flag for the current particle
 
   Int_t npnw, ispr;
-  for (npnw=EMFSTK.npstrt-1; npnw<=EMFSTK.npemf-1; npnw++) {
+  for (npnw = EMFSTK.npstrt-1; npnw <= EMFSTK.npemf-1; npnw++) {
 
-    for (ispr=0; ispr<=mkbmx1-1; ispr++) 
+    for (ispr = 0; ispr <= mkbmx1-1; ispr++) 
       EMFSTK.espark[npnw][ispr] = TRACKR.spausr[ispr];
-
-    for (ispr=0; ispr<=mkbmx2-1; ispr++) 
+    
+    for (ispr = 0; ispr <= mkbmx2-1; ispr++) 
       EMFSTK.iespak[npnw][ispr] = TRACKR.ispusr[ispr];
-
+    
     EMFSTK.louemf[npnw] = TRACKR.llouse;
   }
 
@@ -62,7 +64,7 @@ void stupre()
   Int_t verbosityLevel = fluka->GetVerbosityLevel();
   Bool_t debug = (verbosityLevel>=3)?kTRUE:kFALSE;
   fluka->SetTrackIsNew(kTRUE);
-//  TVirtualMC* fluka = TFluka::GetMC();
+
 // Get the stack produced from the generator
   TVirtualMCStack* cppstack = fluka->GetStack();
   
@@ -70,22 +72,39 @@ void stupre()
 // Increment the track number and put it into the last flag
 
   Int_t kp;
+  
   for (kp = EMFSTK.npstrt - 1; kp <= EMFSTK.npemf - 1; kp++) {
+    
+// Ckeck transport cut first
+    Int_t ireg = EMFSTK.iremf[kp];
+    Double_t cut = (TMath::Abs(EMFSTK.ichemf[kp]) == 1) ? EFMRGN.ecut[ireg-1] :  EFMRGN.pcut[ireg-1];
+    Double_t e      = EMFSTK.etemf[kp];
+    if ((e < cut) 
+	&& ( 
+	    (EMFSTK.ichemf[kp] ==  0) ||
+	    (EMFSTK.ichemf[kp] == -1) ||
+	    (EMFSTK.ichemf[kp] ==  1 &&  EFMRGN.pcut[ireg-1] > emassmev)
+	    )
+	)
+    {
+	EMFSTK.iespak[kp][mkbmx2-1] = -1;
+	EMFSTK.iespak[kp][mkbmx2-2] =  0;
+	continue;
+    }
 
 //* save the parent track number and reset it at each loop
     Int_t done = 0;
-
     Int_t parent =  TRACKR.ispusr[mkbmx2-1];
-    
     Int_t flukaid = 0;
-
-    if (EMFSTK.ichemf[kp] == -1) flukaid = 3;
-    else if (EMFSTK.ichemf[kp] == 0)  flukaid = 7;
-    else if (EMFSTK.ichemf[kp] == 1)  flukaid = 4;
     
-    Int_t pdg       = fluka->PDGFromId(flukaid);
-    Double_t e      = EMFSTK.etemf[kp] * emvgev;
-    if (flukaid + 6 < 0) printf("stupre: Calling PDGFromId for %10d %10d  \n", kp, flukaid);
+// Identify particle type
+    if      (EMFSTK.ichemf[kp] == -1)  flukaid = 3;
+    else if (EMFSTK.ichemf[kp] ==  0)  flukaid = 7;
+    else if (EMFSTK.ichemf[kp] ==  1)  flukaid = 4;
+    
+
+    e      *= emvgev;
+    Int_t    pdg    = fluka->PDGFromId(flukaid);
     Double_t p      = sqrt(e * e - PAPROP.am[flukaid+6] * PAPROP.am[flukaid+6]);
     Double_t px     = p * EMFSTK.u[kp];
     Double_t pz     = p * EMFSTK.v[kp];
@@ -114,7 +133,7 @@ void stupre()
         cppstack->PushTrack(done, parent, pdg,
 			   px, py, pz, e, vx, vy, vz, tof,
 			   polx, poly, polz, mech, ntr, weight, is);
-	if (debug) cout << endl << " !!! stupre (PAIR, ..) : ntr=" << ntr << "pdg " << pdg << " parent=" << parent << endl;
+	if (debug) cout << endl << " !!! stupre (PAIR, ..) : ntr=" << ntr << "pdg " << pdg << " parent=" << parent << "energy " << e-PAPROP.am[flukaid+6] << endl;
 
 	EMFSTK.iespak[kp][mkbmx2-1] = ntr;
 	EMFSTK.iespak[kp][mkbmx2-2] = 0;
@@ -175,8 +194,6 @@ void stupre()
     } // end of ldltry
     
   } // end of loop
-  
-// !!! TO BE CONFIRMED !!!
 } // end of stupre
 } // end of extern "C"
 
