@@ -79,6 +79,10 @@ public:
    virtual  void  InitMC(const char *setup="Config.C");
    virtual  void  Init(const char *setup="Config.C") {InitMC(setup);}
    Bool_t         IsFolder() const {return kTRUE;}
+   Bool_t         IsRootGeometry() const {return fIsRootGeometry;}
+   void           SetRootGeometry(Bool_t flag=kTRUE);
+   const char*    GetGeometryFileName() const {return fGeometryFileName.Data();}
+   void           SetGeometryFileName(const char *name) {fGeometryFileName = name;}
    virtual AliLego* Lego() const {return fLego;}
 
    virtual  void  ResetDigits();
@@ -158,6 +162,8 @@ protected:
   TString        fConfigFunction;    //  Configuration file to be executed
   TRandom       *fRandom;            //  Pointer to the random number generator
   TString        fBaseFileName;      //  Name of the base root file
+  Bool_t         fIsRootGeometry;    //! Flag telling if the geometry is loaded from file
+  TString        fGeometryFileName;  //! Name of the geometry file    
 
   AliRunLoader  *fRunLoader;         //!run getter - written as a separate object
 private:

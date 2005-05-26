@@ -26,9 +26,9 @@
 #include <TStopwatch.h>
 #include <TSystem.h>
 #include <TVirtualMC.h>
-#include "TGeant3.h"
+#include <TGeoManager.h>
+#include "TGeant3.h" 
 
- 
 #include "AliLog.h"
 #include "AliDetector.h"
 #include "AliGenerator.h"
@@ -144,9 +144,26 @@ void AliMC::Copy(TObject &) const
 void  AliMC::ConstructGeometry() 
 {
   //
-  // Create modules, materials, geometry
+  // Either load geometry from file or create it through usual
+  // loop on detectors. In the first case the method
+  // AliModule::CreateMaterials() only builds fIdtmed and is postponed
+  // at InitGeometry().
   //
 
+  if(gAlice->IsRootGeometry()){
+    // Load geometry 
+    const char *geomfilename = gAlice->GetGeometryFileName();
+    if(gSystem->ExpandPathName(geomfilename)){
+      AliInfo(Form("Loading geometry from file:\n %40s\n\n",geomfilename));
+      TGeoManager::Import(geomfilename);
+    }else{
+      AliInfo(Form("Geometry file %40s not found!\n",geomfilename));
+      return;
+    }
+
+  }else{
+
+    // Create modules, materials, geometry
     TStopwatch stw;
     TIter next(gAlice->Modules());
     AliModule *detector;
@@ -159,6 +176,9 @@ void  AliMC::ConstructGeometry()
       AliInfo(Form("%10s R:%.2fs C:%.2fs",
 		   detector->GetName(),stw.RealTime(),stw.CpuTime()));
     }
+
+  }
+  
 }
 
 //_______________________________________________________________________
@@ -175,6 +195,7 @@ void  AliMC::InitGeometry()
     while((detector = dynamic_cast<AliModule*>(next()))) {
       stw.Start();
       // Initialise detector and display geometry
+      if (gAlice->IsRootGeometry()) detector->CreateMaterials();
       detector->Init();
       detector->BuildGeometry();
       AliInfo(Form("%10s R:%.2fs C:%.2fs",
@@ -480,12 +501,12 @@ void AliMC::ResetHits()
 void AliMC::PostTrack()
 {
   // Posts tracks for each module
-     TObjArray &dets = *gAlice->Modules();
-     AliModule *module;
-
-     for(Int_t i=0; i<=gAlice->GetNdets(); i++)
-       if((module = dynamic_cast<AliModule*>(dets[i])))
-	 module->PostTrack();
+  TObjArray &dets = *gAlice->Modules();
+  AliModule *module;
+  
+  for(Int_t i=0; i<=gAlice->GetNdets(); i++)
+    if((module = dynamic_cast<AliModule*>(dets[i])))
+      module->PostTrack();
 }
 
 //_______________________________________________________________________

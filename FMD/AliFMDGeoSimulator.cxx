@@ -157,13 +157,13 @@ AliFMDGeoSimulator::DefineMaterials()
     return;
   }
   AliFMDSimulator::DefineMaterials();
-  fSi      = gGeoManager->GetMedium("FMD Si$");
-  fC       = gGeoManager->GetMedium("FMD Carbon$");
-  fAl      = gGeoManager->GetMedium("FMD Aluminum$");
-  fChip    = gGeoManager->GetMedium("FMD Chip$");
-  fAir     = gGeoManager->GetMedium("FMD Air$");
-  fPCB     = gGeoManager->GetMedium("FMD PCB$");
-  fPlastic = gGeoManager->GetMedium("FMD Plastic$");
+  fSi      = gGeoManager->GetMedium("FMDSi$");
+  fC       = gGeoManager->GetMedium("FMDCarbon$");
+  fAl      = gGeoManager->GetMedium("FMDAluminum$");
+  fChip    = gGeoManager->GetMedium("FMDChip$");
+  fAir     = gGeoManager->GetMedium("FMDAir$");
+  fPCB     = gGeoManager->GetMedium("FMDPCB$");
+  fPlastic = gGeoManager->GetMedium("FMDPlastic$");
 }
 
 //____________________________________________________________________

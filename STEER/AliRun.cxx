@@ -49,6 +49,7 @@
 #include <TRandom3.h>
 #include <TSystem.h>
 #include <TVirtualMC.h>
+#include <TGeoManager.h>
 // 
 #include "AliLog.h"
 #include "AliDetector.h"
@@ -89,6 +90,7 @@ AliRun::AliRun():
   fPDGDB(0),  //Particle factory object
   fConfigFunction("\0"),
   fRandom(0),
+  fIsRootGeometry(kFALSE),
   fRunLoader(0x0)
 {
   //
@@ -117,6 +119,7 @@ AliRun::AliRun(const AliRun& arun):
   fPDGDB(0),  //Particle factory object
   fConfigFunction("\0"),
   fRandom(0),
+  fIsRootGeometry(kFALSE),
   fRunLoader(0x0)
 {
   //
@@ -144,7 +147,8 @@ AliRun::AliRun(const char *name, const char *title):
   fPDGDB(TDatabasePDG::Instance()),        //Particle factory object!
   fConfigFunction("Config();"),
   fRandom(new TRandom3()),
-  fRunLoader(0x0)
+  fIsRootGeometry(kFALSE),
+ fRunLoader(0x0)
 {
   //
   //  Constructor for the main processor.
@@ -279,6 +283,14 @@ void  AliRun::SetField(AliMagF* magField)
   fField = magField;
   fField->ReadField();
 }
+
+//_______________________________________________________________________
+void AliRun::SetRootGeometry(Bool_t flag)
+{
+// Instruct application that the geometry is to be retreived from a root file.
+   fIsRootGeometry = flag;
+   if (flag) gMC->SetRootGeometry();
+}   
 
 //_______________________________________________________________________
 void AliRun::SetField(Int_t type, Int_t version, Float_t scale,
@@ -616,6 +628,7 @@ void AliRun::RunMC(Int_t nevent, const char *setup)
   //Hits moved to begin event -> now we are crating separate tree for each event
 
   gMC->ProcessRun(nevent);
+//   cout<<"\n***** "<<gGeoManager->GetMaterial("TPCEpoxy")->GetA()<<"  ****\n";
 
   // End of this run, close files
   if(nevent>0) FinishRun();
