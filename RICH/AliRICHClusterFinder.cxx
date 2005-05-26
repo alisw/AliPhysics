@@ -134,8 +134,10 @@ void AliRICHClusterFinder::FindClusterContribs(AliRICHCluster *pCluster)
   for(Int_t iDigN=0;iDigN<3*pCluster->Size()-1;iDigN++) {//loop on digits to sort tids
     AliDebug(1,Form("%4i for digit n. %4i",contribs[pindex[iDigN]],iDigN));
     if(contribs[pindex[iDigN]]!=contribs[pindex[iDigN+1]]) {
-      TParticle* particle = pStack->Particle(contribs[pindex[iDigN]]);
-      if (!particle) continue;
+      Int_t thecontrib = contribs[pindex[iDigN]];
+      if (thecontrib>=pStack->GetNtrack()) continue;//PH this should not happen 
+      TParticle* particle = pStack->Particle(thecontrib);
+      if (!particle) continue;//PH this should not happen
       Int_t code   = particle->GetPdgCode();
       Double_t charge = 0;
       if(particle->GetPDG()) charge=particle->GetPDG()->Charge();
