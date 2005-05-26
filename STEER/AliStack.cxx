@@ -368,6 +368,7 @@ void AliStack::PurifyKine()
       }
     }
   }
+
   
   // Now loop on all registered hit lists
   TList* hitLists = gAlice->GetMCApp()->GetHitLists();
@@ -431,7 +432,7 @@ void AliStack::ReorderKine()
   //
   // Howmany secondaries have been produced ?
   Int_t nNew = fNtrack - fHgwmk - 1;
-  
+    
   if (nNew > 0) {
       Int_t i, j;
       TObjArray &particles = *fParticleMap;
@@ -442,13 +443,7 @@ void AliStack::ReorderKine()
       
       for (i = 0; i < nNew; i++) {
 	  if (particles.At(fHgwmk + 1 + i)) {
-//	      tmp[i] = (TParticle*) (particles.At(fHgwmk + 1 + i))->Clone();
 	      tmp[i] = (TParticle*) (particles.At(fHgwmk + 1 + i));
-
-//	      if (((TParticle*) (particles.At(fHgwmk + 1 + i)))->TestBit(kKeepBit))
-//		  tmp[i]->SetBit(kKeepBit);
-//	      if (((TParticle*) (particles.At(fHgwmk + 1 + i)))->TestBit(kDoneBit))
-//		  tmp[i]->SetBit(kDoneBit);
 	  } else {
 	      tmp[i] = 0x0;
 	  }
@@ -465,7 +460,7 @@ void AliStack::ReorderKine()
       // The outer loop is over parents, the inner over children.
       // -1 refers to the primary particle
       //
-      for (i = -1; i < nNew - 1; i++) {
+      for (i = -1; i < nNew-1; i++) {
 	  Int_t ipa;
 	  TParticle* parP;
 	  if (i == -1) {
@@ -480,9 +475,12 @@ void AliStack::ReorderKine()
 	      parP = tmp[i];
 	  }
           // Reset daughter information
+
+	  Int_t idaumin = parP->GetFirstDaughter() - fHgwmk - 1;
+	  Int_t idaumax = parP->GetLastDaughter()  - fHgwmk - 1;
 	  parP->SetFirstDaughter(-1);
 	  parP->SetLastDaughter(-1);
-	  for (j = i + 1; j < nNew; j++) {
+	  for (j = idaumin; j <= idaumax; j++) {
               // Skip deleted particles
 	      if (!tmp[j])        continue;
               // Skip particles already handled
