@@ -6,6 +6,7 @@
 #include "AliL3StandardIncludes.h"
 #include <TClonesArray.h>
 #include <TSystem.h>
+#include <TMath.h>
 
 #ifdef use_newio
 #include <AliRunLoader.h>
@@ -502,7 +503,7 @@ AliL3DigitRowData * AliL3FileHandler::AliDigits2Memory(UInt_t & nrow,Int_t event
     return data;
   }
 
-  Int_t * ndigits = new Int_t[entries];
+  Int_t * ndigits = new Int_t[fRowMax+1];
   Float_t xyz[3];
 
   for(Int_t r=fRowMin;r<=fRowMax;r++){
@@ -670,7 +671,7 @@ AliL3DigitRowData * AliL3FileHandler::AliAltroDigits2Memory(UInt_t & nrow,Int_t 
     }
     return data;
   }
-  Int_t * ndigits = new Int_t[entries];
+  Int_t * ndigits = new Int_t[fRowMax+1];
   Int_t lslice,lrow;
   Int_t zerosupval=AliL3Transform::GetZeroSup();
   Float_t xyz[3];
