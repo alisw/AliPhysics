@@ -77,13 +77,18 @@ void TFlukaConfigOption::SetCut(const char* flagname, Double_t val)
 
 void TFlukaConfigOption::SetProcess(const char* flagname, Int_t flag)
 {
+    printf("SetProcess %s %5d %5d \n", flagname, flag, fMedium);
+    
     // Set a process flag
     const TString process[15] = 
 	{"DCAY", "PAIR", "COMP", "PHOT", "PFIS", "DRAY", "ANNI", "BREM", "MUNU", "CKOV", 
 	 "HADR", "LOSS", "MULS", "RAYL", "STRA"};
+    
     Int_t i;
     for (i = 0; i < 15; i++) {
 	if (process[i].CompareTo(flagname) == 0) {
+	    printf("flag %5d\n", i);
+	    
 	    fProcessFlag[i] = flag;
 	    if (fMedium == -1) fgDProcessFlag[i] = flag;
 	    break;
@@ -194,7 +199,7 @@ void TFlukaConfigOption::ProcessPAIR()
     if (fProcessFlag[kPAIR] >  0 && fProcessFlag[kBREM]  > 0) flag =  3.;    
     if (fProcessFlag[kPAIR] == 0 && fProcessFlag[kBREM] == 0) flag = -3.;
     // Flag BREM card as handled
-    fProcessFlag[kBREM] = -1;
+    fProcessFlag[kBREM] = - fProcessFlag[kBREM];
     
     //
     // Energy cut for pair prodution
@@ -237,7 +242,7 @@ void TFlukaConfigOption::ProcessBREM()
     if (fCutValue[kBCUTE]   == -1.) cutB = fgDCutValue[kBCUTE];	
     
     
-    if (fProcessFlag[kBREM] > 0) {
+    if (TMath::Abs(fProcessFlag[kBREM]) > 0) {
 	fprintf(fgFile,"EMFCUT    %10.4g%10.1f%10.1f%10.1f%10.1f%10.1fELPO-THR\n",cutB,  0., 0.,  fCMatMin, fCMatMax, 1.);
     } else {
 	fprintf(fgFile,"EMFCUT    %10.4g%10.1f%10.1f%10.1f%10.1f%10.1fELPO-THR\n",1.e10, 0., 0.,  fCMatMin, fCMatMax, 1.);
@@ -532,7 +537,7 @@ void TFlukaConfigOption::ProcessCUTGAM()
 	}
     }
     fprintf(fgFile,"EMFCUT    %10.4g%10.4g%10.1f%10.1f%10.1f%10.1fPROD-CUT\n", 
-	    0., fCutValue[kCUTGAM], 0., fCMatMin, fCMatMax, 1.);
+	    0., fCutValue[kCUTGAM], 1., fCMatMin, fCMatMax, 1.);
 }
 
 void TFlukaConfigOption::ProcessCUTELE()
@@ -554,7 +559,7 @@ void TFlukaConfigOption::ProcessCUTELE()
 	}
     }
     fprintf(fgFile,"EMFCUT    %10.4g%10.4g%10.1f%10.1f%10.1f%10.1fPROD-CUT\n", 
-	    -fCutValue[kCUTELE], 0., 0., fCMatMin, fCMatMax, 1.);
+	    -fCutValue[kCUTELE], 0., 1., fCMatMin, fCMatMax, 1.);
 }
 
 void TFlukaConfigOption::ProcessCUTNEU()
