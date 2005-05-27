@@ -155,7 +155,7 @@ void Config()
     gSystem->Load("libgeant321");
 #endif
 
-    new     TGeant3("C++ Interface to Geant3");
+    new     TGeant3TGeo("C++ Interface to Geant3");
 
     AliRunLoader* rl=0x0;
 
