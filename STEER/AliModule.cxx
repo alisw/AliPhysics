@@ -247,6 +247,7 @@ void AliModule::AliMaterial(Int_t imat, const char* name, Float_t a,
   //
   Int_t kmat;
   TString uniquename = GetName();
+  uniquename.Append("_");
   uniquename.Append(name);
   if(gAlice->IsRootGeometry()){
     TGeoMaterial *mat = gGeoManager->GetMaterial(uniquename.Data());
@@ -309,6 +310,7 @@ void AliModule::AliMixture(Int_t imat, const char *name, Float_t *a,
   //
   Int_t kmat;
   TString uniquename = GetName();
+  uniquename.Append("_");
   uniquename.Append(name);
   if(gAlice->IsRootGeometry()){
     TGeoMaterial *mat = gGeoManager->GetMaterial(uniquename.Data());
@@ -350,6 +352,7 @@ void AliModule::AliMedium(Int_t numed, const char *name, Int_t nmat,
   //  
   Int_t kmed;
   TString uniquename = GetName();
+  uniquename.Append("_");
   uniquename.Append(name);
   if(gAlice->IsRootGeometry()){
     TList *medialist = gGeoManager->GetListOfMedia();

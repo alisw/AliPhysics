@@ -310,9 +310,9 @@ void AliMC::Stepping()
     AddEnergyDeposit(gMC->CurrentVolID(copy),gMC->Edep());
     //
     // write tracke reference for track which is dissapearing - MI
-    if (gMC->IsTrackDisappeared()) {      
-	if (gMC->Etot()>0.05) AddTrackReference(GetCurrentTrackNumber());
-    }
+//     if (gMC->IsTrackDisappeared()) {      
+// 	if (gMC->Etot()>0.05) AddTrackReference(GetCurrentTrackNumber());
+//     }
   
     //Call the appropriate stepping routine;
     AliModule *det = dynamic_cast<AliModule*>(gAlice->Modules()->At(id));
