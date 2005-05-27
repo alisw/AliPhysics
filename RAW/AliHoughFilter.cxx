@@ -75,6 +75,8 @@ AliHoughFilter::AliHoughFilter()
   if (!fITSgeom)
     AliError("ITS geometry not found!");
 
+  // Init PID
+  AliPID pid;
 }
 
 //_____________________________________________________________________________
