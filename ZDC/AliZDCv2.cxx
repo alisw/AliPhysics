@@ -937,11 +937,11 @@ void AliZDCv2::CreateMaterials()
   
   // --- Iron (energy loss taken into account)
   ubuf[0] = 1.1;
-  AliMaterial(7, "IRON", 55.85, 26., 7.87, 1.76, 0., ubuf, 1);
+  AliMaterial(7, "IRON0", 55.85, 26., 7.87, 1.76, 0., ubuf, 1);
   
   // --- Iron (no energy loss)
   ubuf[0] = 1.1;
-  AliMaterial(8, "IRON", 55.85, 26., 7.87, 1.76, 0., ubuf, 1);
+  AliMaterial(8, "IRON1", 55.85, 26., 7.87, 1.76, 0., ubuf, 1);
   
   // ---------------------------------------------------------  
   Float_t aResGas[3]={1.008,12.0107,15.9994};
