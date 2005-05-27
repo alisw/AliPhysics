@@ -150,15 +150,22 @@ void AliRICHClusterFinder::FindClusterContribs(AliRICHCluster *pCluster)
   }//loop on digits to sort Tid
   
   if (contribs[pindex[3*pCluster->Size()-1]]!=-1) {
+     Int_t thecontrib = contribs[pindex[3*pCluster->Size()-1]];
+     if (thecontrib<pStack->GetNtrack()){
+       //PH the opposite should not happen 
 
-     TParticle* particle = pStack->Particle(contribs[pindex[3*pCluster->Size()-1]]);
-     Int_t code   = particle->GetPdgCode();
-     Double_t charge = 0;
-     if(particle->GetPDG()) charge=particle->GetPDG()->Charge();
-     AliDebug(1,Form(" charge of particle %f",charge));
-     if(code==50000050) iNckovs++;
-     if(code==50000051) iNfeeds++;
-     if(charge!=0) iNmips++;
+       TParticle* particle = pStack->Particle(thecontrib);
+       if (particle) {
+	 //PH the opposite should not happen
+	 Int_t code   = particle->GetPdgCode();
+	 Double_t charge = 0;
+	 if(particle->GetPDG()) charge=particle->GetPDG()->Charge();
+	 AliDebug(1,Form(" charge of particle %f",charge));
+	 if(code==50000050) iNckovs++;
+	 if(code==50000051) iNfeeds++;
+	 if(charge!=0) iNmips++;
+       }
+     }
   }
     
   pCluster->CFM(iNckovs,iNfeeds,iNmips);
