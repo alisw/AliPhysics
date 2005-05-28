@@ -4,6 +4,12 @@
  * See cxx source for full Copyright notice     */
 /* $Id$ */
 
+/* History of cvs commits:
+ *
+ * $Log$
+ */
+
+
 //_________________________________________________________________________
 //  Base Class for PHOS     
 //                  
@@ -29,7 +35,8 @@ public:
   AliPHOS() ;
   AliPHOS(const char* name, const char* title="") ;  
   AliPHOS(AliPHOS & phos) : AliDetector(phos) {
-    Copy(*this) ; 
+    //Copy(*this) ; 
+    phos.Copy(*this);
   }
   virtual ~AliPHOS() ; 
   virtual void   AddHit(Int_t, Int_t*, Float_t *) {
@@ -39,7 +46,7 @@ public:
   }
   virtual void   AddHit( Int_t shunt, Int_t primary, Int_t track, 
 			 Int_t id, Float_t *hits ) = 0 ;   
-  virtual void Copy(AliPHOS & phos) ; 
+  virtual void Copy(TObject &phos)const; 
   virtual AliDigitizer* CreateDigitizer(AliRunDigitizer* manager) const;
   virtual void  CreateMaterials() ;            
   virtual void  Digits2Raw();

@@ -13,6 +13,10 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 /* $Id$ */
+/* History of cvs commits:
+ *
+ * $Log$
+ */
 
 //_________________________________________________________________________
 // Base Class for PHOS description:
@@ -83,10 +87,13 @@ AliPHOS::~AliPHOS()
 }
 
 //____________________________________________________________________________
-void AliPHOS::Copy(AliPHOS & phos)
+void AliPHOS::Copy(TObject &obj)const
 {
   // copy method to be used byy the cpy ctor
-  TObject::Copy(phos) ; 
+  TObject::Copy(obj);
+  
+  AliPHOS &phos = static_cast<AliPHOS &>(obj); 
+  
   phos.fHighCharge        = fHighCharge ;
   phos.fHighGain          = fHighGain ; 
   phos.fHighLowGainFactor = fHighLowGainFactor ;  
