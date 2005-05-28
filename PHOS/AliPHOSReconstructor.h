@@ -5,6 +5,11 @@
 
 /* $Id$ */
 
+/* History of cvs commits:
+ *
+ * $Log$
+ */
+
 //_________________________________________________________________________
 //  Wrapping class for reconstruction
 //*--
@@ -43,7 +48,9 @@ public:
   static void                ResetDebug() { fgDebug = kFALSE ; }
   static Bool_t              Debug() { return fgDebug ; }
   AliTracker *CreateTracker(AliRunLoader* runLoader) const;
+  using AliReconstructor::FillESD;
   virtual void               FillESD(AliRunLoader* runLoader, AliESD* esd) const ;
+  using AliReconstructor::Reconstruct;
   virtual void               Reconstruct(AliRunLoader* runLoader) const ;
   virtual void               Reconstruct(AliRunLoader* runLoader, AliRawReader * rawreader) const ;
 

@@ -5,6 +5,10 @@
 
 /* $Id$ */
 
+/* History of cvs commits:
+ *
+ * $Log$
+ */
 
 //_________________________________________________________________________
 // Implementation version v1 of the PHOS particle identifier 
@@ -89,7 +93,7 @@ public:
 
   //Switch to "on flyght" mode, without writing to TreeR and file  
   void SetWriting(Bool_t toWrite = kFALSE){fWrite = toWrite;} 
-  void Print() const ; 
+  void Print(const Option_t * = "") const ; 
 
   virtual const char * Version() const { return "pid-v1" ; }  
 

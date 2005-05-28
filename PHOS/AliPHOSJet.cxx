@@ -282,7 +282,7 @@ void AliPHOSJet::CalculateAll(void){
   fSumPhi = 0. ;
 }
 //____________________________________________________________________________ 
-void AliPHOSJet::Print(){
+void AliPHOSJet::Print(const Option_t *) const {
   //Print jet parameters
   printf("-------------- AliPHOSJet ------------\n") ;
   printf(" Energy............. %f \n",fEnergy) ;

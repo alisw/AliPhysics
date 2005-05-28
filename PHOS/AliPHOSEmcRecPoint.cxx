@@ -15,6 +15,11 @@
 
 /* $Id$ */
 
+/* History of cvs commits:
+ *
+ * $Log$
+ */
+
 //_________________________________________________________________________
 //  RecPoint implementation for PHOS-EMC 
 //  An EmcRecPoint is a cluster of digits   
@@ -207,7 +212,7 @@ Int_t AliPHOSEmcRecPoint::Compare(const TObject * obj) const
   return rv ; 
 }
 //______________________________________________________________________________
-void AliPHOSEmcRecPoint::ExecuteEvent(Int_t event, Int_t, Int_t) const
+void AliPHOSEmcRecPoint::ExecuteEvent(Int_t event, Int_t, Int_t) /*const*/
 {
   
   // Execute action corresponding to one event

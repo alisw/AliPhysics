@@ -5,6 +5,11 @@
                             
 /* $Id$ */
 
+/* History of cvs commits:
+ *
+ * $Log$
+ */
+
 //_________________________________________________________________________
 //  Base class for the clusterization algorithm 
 //*-- Author: Yves Schutz (SUBATECH) & Dmitri Peressounko (SUBATECH & Kurchatov Institute)
@@ -37,7 +42,7 @@ public:
   virtual Int_t GetRecPointsInRun()  const {Warning("GetRecPointsInRun", "Not Defined" ) ; return 0 ; } 
 
   virtual void MakeClusters() {Warning("MakeClusters", "Not Defined" ) ; } 
-  virtual void Print()const {Warning("Print", "Not Defined" ) ; } 
+  virtual void Print(const Option_t * = "")const {Warning("Print", "Not Defined" ) ; } 
 
   virtual void SetEmcClusteringThreshold(Float_t) = 0;
   virtual void SetEmcLocalMaxCut(Float_t )        = 0;

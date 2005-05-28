@@ -3,6 +3,13 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
+/* $Id$ */
+
+/* History of cvs commits:
+ *
+ * $Log$
+ */
+
 
 //_________________________________________________________________________
 //  Class for performing calibration in PHOS     
@@ -48,7 +55,7 @@ public:
   void PlotGain(Int_t channel) ; //Plot histo with gains for a channel
   void PlotGains() ;             //Plot all gains
 
-  virtual void Print() const ;
+  virtual void Print(const Option_t * = "") const ;
 
   TH1F * PedestalHisto(Int_t channel)
     {return dynamic_cast<TH1F* >(fPedHistos->At(channel)) ;} ;

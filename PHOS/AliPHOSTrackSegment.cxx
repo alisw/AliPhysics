@@ -13,6 +13,12 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 /* $Id$ */
+
+/* History of cvs commits:
+ *
+ * $Log$
+ */
+
 //_________________________________________________________________________
 //  Track segment in PHOS
 //  Can be : 1 EmcRecPoint
@@ -87,7 +93,7 @@ AliPHOSTrackSegment::AliPHOSTrackSegment( const AliPHOSTrackSegment & ts)
 
 
 //____________________________________________________________________________
-void AliPHOSTrackSegment::Copy(TObject & obj) 
+void AliPHOSTrackSegment::Copy(TObject & obj) const
 {
   // Copy of a track segment into another track segment
 
@@ -100,7 +106,7 @@ void AliPHOSTrackSegment::Copy(TObject & obj)
 
 
 //____________________________________________________________________________
-void AliPHOSTrackSegment::Print() const
+void AliPHOSTrackSegment::Print(const Option_t *) const
 {
   // Print all information on this track Segment
   

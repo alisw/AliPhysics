@@ -15,6 +15,10 @@
 
 /* $Id$ */
 
+/* History of cvs commits:
+ *
+ * $Log$
+ */
 
 //_________________________________________________________________________
 //*-- Author :  Dmitri Peressounko (SUBATECH & Kurchatov Institute) 
@@ -600,7 +604,7 @@ void AliPHOSDigitizer::MixWith(TString alirunFileName, TString eventFolderName)
 }
 
 //__________________________________________________________________
-void AliPHOSDigitizer::Print()const 
+void AliPHOSDigitizer::Print(const Option_t *)const 
 {
   // Print Digitizer's parameters
   AliInfo(Form("\n------------------- %s -------------", GetName() )) ; 

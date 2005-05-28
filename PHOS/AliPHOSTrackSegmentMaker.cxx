@@ -13,6 +13,12 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 /* $Id$ */
+
+/* History of cvs commits:
+ *
+ * $Log$
+ */
+
 //_________________________________________________________________________
 // Algorithm Base class to construct PHOS track segments
 // Associates EMC and PPSD clusters

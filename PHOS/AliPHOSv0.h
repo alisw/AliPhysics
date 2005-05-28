@@ -3,6 +3,13 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
+/* $Id$ */
+
+/* History of cvs commits:
+ *
+ * $Log$
+ */
+
 //_________________________________________________________________________
 // Implementation version v0 of PHOS Manager class 
 // Layout EMC + CPV  has name IHEP
@@ -29,9 +36,12 @@ class AliPHOSv0 : public AliPHOS {
   virtual ~AliPHOSv0(void){
     // dtor
   } 
-  virtual void Copy(AliPHOSv0 & phos) ; 
+  virtual void Copy(TObject &phos) const; 
 
 //    virtual void   AddHit( Int_t shunt, Int_t primary, Int_t track, Int_t id, Float_t *hits ) {
+  //this function is not a final-overrider for AliPHOS::AddHit, to
+  //supress warning, I use using-declaration :)
+  using AliPHOS::AddHit;
   virtual void   AddHit( Int_t, Int_t, Int_t, Int_t, Float_t*) {
     // useless since there are no hits
     Fatal("AddHit", "not to be used with v0") ;

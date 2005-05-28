@@ -3,6 +3,13 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
+/* $Id$ */
+
+/* History of cvs commits:
+ *
+ * $Log$
+ */
+
 //_________________________________________________________________________
 // Implementation version v1 of PHOS Manager class 
 // Layout EMC + CPV  has name IHEP
@@ -28,7 +35,9 @@ public:
   }
   virtual ~AliPHOSv1(void) ;
 
-  virtual void   Copy(AliPHOSv1 & phos) ; 
+  virtual void   Copy(TObject &phos) const; 
+
+  using AliPHOSv0::AddHit;
   virtual void   AddHit( Int_t shunt, Int_t primary, Int_t id, Float_t *hits) ; 
   virtual void   FinishEvent() ;
   virtual void   FinishPrimary() ;

@@ -76,6 +76,7 @@ public:
 				  Option_t * openingOption = "READ" ) ; 
   static AliPHOSGetter * Instance() ; 
   
+  void Print(const Option_t *)const{}
   static void Print() ; 
   
   //=========== General information about run ==============

@@ -13,6 +13,12 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 /* $Id$ */
+
+/* History of cvs commits:
+ *
+ * $Log$
+ */
+
 //_________________________________________________________________________
 // Version of AliPHOSv1 which keeps all hits in TreeH
 // AddHit, StepManager,and FinishEvent are redefined 
@@ -57,7 +63,7 @@ AliPHOSv2::~AliPHOSv2()
 }
 
 //____________________________________________________________________________
-void AliPHOSv2::Copy(AliPHOSv2 & phos)
+void AliPHOSv2::Copy(TObject & phos)const
 {
   TObject::Copy(phos) ; 
   AliPHOSv1::Copy(phos) ;   

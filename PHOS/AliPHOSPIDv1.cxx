@@ -15,6 +15,11 @@
 
 /* $Id$ */
 
+/* History of cvs commits:
+ *
+ * $Log$
+ */
+
 //_________________________________________________________________________
 // Implementation version v1 of the PHOS particle identifier 
 // Particle identification based on the 
@@ -1359,7 +1364,7 @@ void  AliPHOSPIDv1::MakeRecParticles()
 }
   
 //____________________________________________________________________________
-void  AliPHOSPIDv1::Print() const
+void  AliPHOSPIDv1::Print(const Option_t *) const
 {
   // Print the parameters used for the particle type identification
 

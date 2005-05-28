@@ -16,6 +16,11 @@
 
 /* $Id$ */
 
+/* History of cvs commits:
+ *
+ * $Log$
+ */
+
 //_________________________________________________________________________
 // Implementation version vImpacts of PHOS Manager class.
 // This class inherits from v1 and adds impacts storing.
@@ -117,7 +122,7 @@ AliPHOSvImpacts::~AliPHOSvImpacts()
 }
 
 //____________________________________________________________________________
-void AliPHOSvImpacts::Copy(AliPHOSvImpacts & phos) 
+void AliPHOSvImpacts::Copy(TObject & phos) const
 {
   TObject::Copy(phos) ; 
   AliPHOS::Copy(phos) ; 

@@ -5,6 +5,11 @@
 
 /* $Id$ */
 
+/* History of cvs commits:
+ *
+ * $Log$
+ */
+
 //_________________________________________________________________________
 //  A  Particle modified by PHOS response and produced by AliPHOSvFast
 //  This is also a base class for AliPHOSRecParticle produced by AliPHOSPIDv1
@@ -74,7 +79,7 @@ class AliPHOSFastRecParticle : public TParticle {
 
   TString Name() const ; 
   virtual void Paint(Option_t * option="");
-  virtual void Print() const ; 
+  virtual void Print(const Option_t * = "") const ; 
   
   void SetTof(Float_t tof) { fTof = tof ; } 
   Float_t ToF() const { return fTof ; } 

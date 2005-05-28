@@ -5,6 +5,11 @@
 
 /* $Id$ */
 
+/* History of cvs commits:
+ *
+ * $Log$
+ */
+
 //_________________________________________________________________________
 //  Hit impact class for PHOS     
 //  A hit impact in PHOS is a set of parameters of a track which
@@ -47,7 +52,7 @@ public:
     // returns momentum of the particle which initiated this hit
     return  fMomentum;
   }
-  void Print();
+  void Print(const Option_t * = "")const;
 
 private:
 

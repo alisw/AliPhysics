@@ -15,6 +15,11 @@
 
 /* $Id$ */
 
+/* History of cvs commits:
+ *
+ * $Log$
+ */
+
 //_________________________________________________________________________
 //  PHOS digit: Id
 //              energy
@@ -136,7 +141,7 @@ Int_t AliPHOSDigit::GetPrimary(Int_t index) const
   
 }
 //____________________________________________________________________________
-void AliPHOSDigit::Print() const
+void AliPHOSDigit::Print(const Option_t *) const
 {
   // Print the digit together with list of primaries
   printf("PHOS digit: Amp=%d, Id=%d, Time=%e, TimeR=%e, NPrim=%d ",fAmp,fId,fTime,fTimeR,fNprimary);

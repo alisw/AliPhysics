@@ -5,6 +5,11 @@
 
 /* $Id$ */
 
+/* History of cvs commits:
+ *
+ * $Log$
+ */
+
 //_________________________________________________________________________
 //  RecPoint implementation for PHOS-EMC 
 //  An EmcRecPoint is a cluster of digits   
@@ -30,12 +35,17 @@ public:
  
   virtual ~AliPHOSEmcRecPoint() ;  
 
+  //This virtual function has signature different from AliPHOSRecPoint::AddDigit
+  //it hides, not overrides. using - declaration should fix the problem, at least for
+  //g++
+  using AliPHOSRecPoint::AddDigit;
   virtual void  AddDigit(AliPHOSDigit & digit, Float_t Energy) ;          // add a digit to the digits list  
   Int_t       Compare(const TObject * obj) const;                         // method for sorting  
 
   virtual void  EvalAll(Float_t logWeight,TClonesArray * digits) ;
 
-  virtual void  ExecuteEvent(Int_t event, Int_t px, Int_t py) const; 
+  //in base class this functions is non-const
+  virtual void  ExecuteEvent(Int_t event, Int_t px, Int_t py) /*const*/; 
 
   Float_t         GetCoreEnergy()const {return fCoreEnergy ;}
   virtual Float_t GetDispersion()const {return fDispersion ;}

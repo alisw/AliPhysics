@@ -5,6 +5,11 @@
 
 /* $Id$ */
 
+/* History of cvs commits:
+ *
+ * $Log$
+ */
+
 //_________________________________________________________________________
 //  Implementation version 1 of the clusterization algorithm                     
 //  Performs clusterization (collects neighbouring active cells) and 
@@ -60,7 +65,7 @@ public:
 
   virtual void    Exec(Option_t *option);   // Does the job
 
-  void Print()const ;
+  void Print(const Option_t * = "")const ;
 
   void SetEmcMinE(Float_t e){fEmcMinE = e ;}
   void SetCpvMinE(Float_t e){fCpvMinE = e ;}

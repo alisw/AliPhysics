@@ -5,6 +5,11 @@
 
 /* $Id$ */
 
+/* History of cvs commits:
+ *
+ * $Log$
+ */
+
 //_________________________________________________________________________
 //  Track segment in PHOS
 //  Can be : 1 EmcRecPoint
@@ -37,14 +42,14 @@ public:
   AliPHOSTrackSegment(const AliPHOSTrackSegment & ts) ;  // ctor                   
   virtual ~AliPHOSTrackSegment() {  } 
 
-  void Copy(TObject & obj) ;  
+  void Copy(TObject & obj) const;  
 
   Int_t   GetIndexInList() const {  return fIndexInList ;   } 
   Int_t   GetEmcIndex()    const {  return fEmcRecPoint ;   }
   Int_t   GetCpvIndex()    const {  return fCpvRecPoint; }
   Int_t   GetTrackIndex()  const {  return fTrack; }
 
-  virtual void  Print() const;
+  virtual void  Print(const Option_t * = "") const;
   void    SetIndexInList(Int_t val){ fIndexInList = val ;     } 
   void    SetCpvRecPoint(AliPHOSRecPoint * CpvRecPoint ); //sets CPV Rec Point
 

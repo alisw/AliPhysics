@@ -14,6 +14,11 @@
  **************************************************************************/
 /* $Id$ */
 
+/* History of cvs commits:
+ *
+ * $Log$
+ */
+
 //_________________________________________________________________________
 // Class for the analysis of gamma-jet correlations 
 //  Basically it seaches for a prompt photon in the PHOS acceptance, 
@@ -2537,7 +2542,7 @@ void AliPHOSGammaJet::Plot(TString what, Option_t * option) const
 }
 
 //____________________________________________________________________________
-void AliPHOSGammaJet::Print(char * opt) 
+void AliPHOSGammaJet::Print(const Option_t * opt) const
 {
 
   //Print some relevant parameters set for the analysis

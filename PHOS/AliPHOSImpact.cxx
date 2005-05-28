@@ -15,6 +15,11 @@
 
 /* $Id$ */
 
+/* History of cvs commits:
+ *
+ * $Log$
+ */
+
 //_________________________________________________________________________
 //  Hit impact class for PHOS     
 //  A hit impact in PHOS is a set of parameters of a track which
@@ -70,7 +75,7 @@ AliPHOSImpact::AliPHOSImpact(Int_t shunt, Int_t primary, Int_t track, Int_t pid,
 }
 
 //____________________________________________________________________________
-void AliPHOSImpact::Print()
+void AliPHOSImpact::Print(const Option_t *)const
 {
   // Prints particle info
   printf("Impact Pid=%4d, p=(%6.2f,%6.2f,%6.2f,%6.2f) GeV, x=(%6.1f,%6.1f,%6.1f) cm\n",

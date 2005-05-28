@@ -15,6 +15,11 @@
 
 /* $Id$ */
 
+/* History of cvs commits:
+ *
+ * $Log$
+ */
+
 //_________________________________________________________________________
 // Implementation of the PHOS manager class for fast simulations     
 // Tracks particles until the reach a grossly designed PHOS module
@@ -104,10 +109,11 @@ AliPHOSvFast::~AliPHOSvFast()
 }
 
 //____________________________________________________________________________
-void AliPHOSvFast::Copy(AliPHOSvFast & fast)
+void AliPHOSvFast::Copy(TObject & base)const
 {
-  TObject::Copy(fast) ; 
-  AliPHOS::Copy(fast) ; 
+  TObject::Copy(base) ; 
+  AliPHOS::Copy(base) ; 
+  AliPHOSvFast &fast = static_cast<AliPHOSvFast &>(base);
   fast.fBigBoxX = fBigBoxX ; 
   fast.fBigBoxY = fBigBoxY ; 
   fast.fBigBoxZ = fBigBoxZ ;

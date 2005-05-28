@@ -14,6 +14,11 @@
  **************************************************************************/
 /* $Id$ */
 
+/* History of cvs commits:
+ *
+ * $Log$
+ */
+
 //_________________________________________________________________________
 // Implementation version v0 of PHOS Manager class 
 // An object of this class does not produce hits nor digits
@@ -58,7 +63,7 @@ AliPHOSv0::AliPHOSv0(const char *name, const char *title):
 }
 
 //____________________________________________________________________________
-void AliPHOSv0::Copy(AliPHOSv0 & phos) 
+void AliPHOSv0::Copy(TObject & phos) const
 {
   TObject::Copy(phos) ; 
   AliPHOS::Copy(phos) ; 

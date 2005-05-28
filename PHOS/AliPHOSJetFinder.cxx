@@ -21,6 +21,13 @@
 //*-- Author : D.Peressounko after UA1 coll. etc
 //////////////////////////////////////////////////////////////////////////////
 
+/* $Id$ */
+
+/* History of cvs commits:
+ *
+ * $Log$
+ */
+
 // --- ROOT system ---
 #include "TClonesArray.h"
 //      #include "TIter.h"
@@ -328,7 +335,7 @@ void AliPHOSJetFinder::CalculateEEtaPhi(const AliPHOSDigit * d,Double_t &e, Doub
   phi = pos.Phi() ;
 }
 //____________________________________________________________________________ 
-void AliPHOSJetFinder::Print(){	
+void AliPHOSJetFinder::Print(const Option_t *) const {	
   //Print parameters of the found jet
   printf("\n --------------- AliPHOSJetFinder --------------- \n") ;
   printf(" Jets found .........%d \n",fNJets) ;

@@ -14,6 +14,11 @@
  **************************************************************************/
 /* $Id$ */
 
+/* History of cvs commits:
+ *
+ * $Log$
+ */
+
 //_________________________________________________________________________
 // To navigate in the Grid catalogue (very elementary)
 // check here : /afs/cern.ch/user/p/peters/public/README.ALIEN
@@ -86,9 +91,11 @@ TString AliPHOSGridFile::GetLFN() const
 }
 
 //____________________________________________________________________________
-void AliPHOSGridFile::Copy(AliPHOSGridFile & lfn)
+void AliPHOSGridFile::Copy(TObject & obj)const
 {
   //Copy method used by the Copy ctor
+  AliPHOSGridFile &lfn = static_cast<AliPHOSGridFile &>(obj);
+  /* incorrect Copy, destination is OBJ, not this.
   fRoot = lfn.fRoot ;
   fYear = lfn.fYear ;
   fProd = lfn.fProd ;
@@ -96,6 +103,15 @@ void AliPHOSGridFile::Copy(AliPHOSGridFile & lfn)
   fType = lfn.fType ;
   fRun  = lfn.fRun ;
   fEvt  = lfn.fEvt ;
+  TObject::Copy(lfn) ;
+  */
+  lfn.fRoot = fRoot ;
+  lfn.fYear = fYear ;
+  lfn.fProd = fProd ;
+  lfn.fVers = fVers ;
+  lfn.fType = fType ;
+  lfn.fRun  = fRun ;
+  lfn.fEvt  = fEvt ;
   TObject::Copy(lfn) ;
 }
 

@@ -4,6 +4,11 @@
  * See cxx source for full Copyright notice     */
 /* $Id$ */
 
+/* History of cvs commits:
+ *
+ * $Log$
+ */
+
 //_________________________________________________________________________
 //  Class for the analysis of gamma-jet correlations.     
 //  Basically it seaches for a prompt photon in the PHOS acceptance, 
@@ -69,7 +74,7 @@ public:
    Bool_t   IsOnlyCharged() const {return fOnlyCharged ; }
 
   void Plot(TString what="all", Option_t *option="") const;
-  void Print(char * opt);
+  void Print(const Option_t * opt)const;
 
   void SetAngleMaxParam(Int_t i, Double_t par)
   {fAngleMaxParam.AddAt(par,i) ; }

@@ -5,6 +5,11 @@
 
 /* $Id$ */
 
+/* History of cvs commits:
+ *
+ * $Log$
+ */
+
 //_________________________________________________________________________
 // Algorithm Base class to construct PHOS track segments
 // Associates EMC and CPV clusters
@@ -38,7 +43,7 @@ public:
 
   virtual Int_t GetTrackSegmentsInRun()  const {Warning("GetTrackSegmentsInRun", "Not Defined" ) ; return 0 ; } 
 
-  virtual void    Print()const {Warning("Print", "Not Defined" ) ; }
+  virtual void    Print(const Option_t * = "")const {Warning("Print", "Not Defined" ) ; }
   void SetEventRange(Int_t first=0, Int_t last=-1) {fFirstEvent=first; fLastEvent=last; }
   void SetEventFolderName(TString name) { fEventFolderName = name ; }
   void SetESD(AliESD *esd) { fESD = esd; }

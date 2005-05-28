@@ -5,6 +5,10 @@
 
 /* $Id$ */
 
+/* History of cvs commits:
+ *
+ * $Log$
+ */
 
 //_________________________________________________________________________
 // Implementation version v0 of the PHOS particle identifier 
@@ -38,7 +42,7 @@ public:
   virtual Int_t GetRecParticlesInRun() const  {return fRecParticlesInRun ;}  
 
   virtual void PlotDispersionCuts()const ;
-  virtual void Print()const ; 
+  virtual void Print(const Option_t * = "")const ; 
   virtual void SetIdentificationMethod(const char * option = "CPV DISP" ){fIDOptions = option ;} 
   virtual void SetShowerProfileCut(const char * formula = "0.35*0.35 - (x-1.386)*(x-1.386) - 1.707*1.707*(y-1.008)*(y-1.008)") ;
   virtual void SetDispersionCut(Float_t cut){fDispersion = cut ; } 

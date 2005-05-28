@@ -5,6 +5,11 @@
 
 /* $Id$ */
 
+/* History of cvs commits:
+ *
+ * $Log$
+ */
+
 //_________________________________________________________________________
 //  A singleton that returns various objects 
 //  Should be used on the analysis stage to avoid confusing between different
@@ -72,20 +77,20 @@ public:
   Int_t   LoadTracks(Option_t* opt="");  //reads Tracks from disk and sends them to folder; array as well as tree
   Int_t   LoadRecParticles(Option_t* opt="");
    
-  Int_t   PostHits();  //Posts the 
-  Int_t   PostSDigits();
-  Int_t   PostDigits();
-  Int_t   PostRecPoints();
-  Int_t   PostTracks();
-  Int_t   PostRecParticles();
+  Int_t   PostHits()const;  //Posts the 
+  Int_t   PostSDigits()const;
+  Int_t   PostDigits()const;
+  Int_t   PostRecPoints()const;
+  Int_t   PostTracks()const;
+  Int_t   PostRecParticles()const;
   
   void    CleanFolders();//cleans all the stuff loaded by this detector + calls AliLoader::Clean
 
-  void    CleanHits();
-  void    CleanSDigits();
-  void    CleanDigits();
-  void    CleanRecPoints();
-  void    CleanTracks();
+  void    CleanHits()const;
+  void    CleanSDigits()const;
+  void    CleanDigits()const;
+  void    CleanRecPoints()const;
+  void    CleanTracks()const;
   void    CleanRecParticles();
 
 //up to now it is only here -> no definition about global/incremental tracking/PID

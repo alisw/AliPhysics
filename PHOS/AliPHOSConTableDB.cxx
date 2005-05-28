@@ -15,6 +15,11 @@
 
 /* $Id$ */
 
+/* History of cvs commits:
+ *
+ * $Log$
+ */
+
 //_________________________________________________________________________
 // Class provides correspondence between "raw numbers" i.e. number of crustall 
 // in prototype and PHOT AbsId numer, used in reconstruction.
@@ -191,7 +196,7 @@ Int_t AliPHOSConTableDB::Raw2AbsId(Int_t rawId)const{
     return 0 ;
 }
 //____________________________________________________________________________ 
-void AliPHOSConTableDB::Print()const {
+void AliPHOSConTableDB::Print(const Option_t *)const {
 //prints configuraion
 
   TString message ; 

@@ -16,6 +16,11 @@
 
 /* $Id$ */
 
+/* History of cvs commits:
+ *
+ * $Log$
+ */
+
 //_________________________________________________________________________
 // This is a TTask that makes SDigits out of Hits
 // The name of the TTask is also the title of the branch that will contain 
@@ -273,7 +278,7 @@ void AliPHOSSDigitizer::Exec(Option_t *option)
 }
 
 //__________________________________________________________________
-void AliPHOSSDigitizer::Print()const
+void AliPHOSSDigitizer::Print(const Option_t *)const
 {
   // Prints parameters of SDigitizer
   Info("Print", "\n------------------- %s -------------", GetName() ) ; 

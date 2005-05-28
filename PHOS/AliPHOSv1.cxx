@@ -15,6 +15,11 @@
 
 /* $Id$ */
 
+/* History of cvs commits:
+ *
+ * $Log$
+ */
+
 //_________________________________________________________________________
 // Implementation version v1 of PHOS Manager class 
 //---
@@ -117,10 +122,11 @@ AliPHOSv1::~AliPHOSv1()
 }
 
 //____________________________________________________________________________
-void AliPHOSv1::Copy(AliPHOSv1 & phos)
+void AliPHOSv1::Copy(TObject & base)const
 {
-  TObject::Copy(phos) ; 
-  AliPHOSv0::Copy(phos) ; 
+  TObject::Copy(base) ; 
+  AliPHOSv0::Copy(base) ;
+  AliPHOSv1 &phos = static_cast<AliPHOSv1 &>(base); 
   phos.fLightYieldMean         = fLightYieldMean ; 
   phos.fIntrinsicPINEfficiency = fIntrinsicPINEfficiency ; 
   phos.fLightYieldAttenuation  = fLightYieldAttenuation ; 

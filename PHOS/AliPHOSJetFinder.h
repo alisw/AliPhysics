@@ -3,6 +3,13 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
+/* $Id$ */
+
+/* History of cvs commits:
+ *
+ * $Log$
+ */
+
 //_________________________________________________________________________
 //                  
 //*-- Author: D.Peressounko
@@ -31,7 +38,7 @@ public:
   void FindJetsFromParticles(const TClonesArray * plist,TObjArray * jetslist) ; //Do the job
   void FindJetsFromDigits(const TClonesArray * digits,TObjArray * jetslist) ; //Do the job
 
-  void Print() ;
+  void Print(const Option_t * = "") const ;
 
   void SetEtSeed(Double_t etseed){fEtSeed = etseed ;} ;
   void SetEtMin(Double_t etmin){fEtMin = etmin ;} ;

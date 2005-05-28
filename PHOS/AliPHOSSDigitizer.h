@@ -6,6 +6,11 @@
 
 /* $Id$ */
 
+/* History of cvs commits:
+ *
+ * $Log$
+ */
+
 //_________________________________________________________________________
 //  Task Class for making SDigits in PHOS      
 // A Summable Digits is the sum of all hits originating 
@@ -34,7 +39,7 @@ public:
   Int_t          Digitize(Float_t Energy)const { return (Int_t ) ( fA + Energy*fB); }
   virtual void   Exec(Option_t *option); 
   Int_t    GetSDigitsInRun() const {return fSDigitsInRun ;}  
-  virtual void   Print() const ;
+  virtual void   Print(const Option_t * = "") const ;
   void           SetEventFolderName(TString name) { fEventFolderName = name ; }
   void           SetEventRange(Int_t first=0, Int_t last=-1) {fFirstEvent=first; fLastEvent=last; }
 

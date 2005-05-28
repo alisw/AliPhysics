@@ -3,6 +3,13 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
+/* $Id$ */
+
+/* History of cvs commits:
+ *
+ * $Log$
+ */
+
 //_________________________________________________________________________
 // Implementation version vImpacts of PHOS Manager class.
 // This class inherits from v1 and adds impacts storing.
@@ -32,7 +39,7 @@ public:
   }
   virtual ~AliPHOSvImpacts(void) ;
 
-  virtual void   Copy(AliPHOSvImpacts & phos) ; 
+  virtual void   Copy(TObject & phos) const; 
   virtual void   AddImpact(const char* detector, Int_t shunt, Int_t primary, Int_t track,
 			   Int_t module, Int_t pid, TLorentzVector p, Float_t *xyz) ;
   virtual void   MakeBranch(Option_t *opt=" ");
@@ -42,7 +49,7 @@ public:
     return 1 ; 
   }
   virtual void   StepManager(void) ;                              
-  virtual TString Version(void){ 
+  virtual const TString Version(void)const{ 
     // returns the version number 
     return TString("vImpacts") ; 
   }

@@ -15,6 +15,11 @@
 
 /* $Id$ */
 
+/* History of cvs commits:
+ *
+ * $Log$
+ */
+
 //_________________________________________________________________________
 //  A singleton. This class should be used in the analysis stage to get 
 //  reconstructed objects: Digits, RecPoints, TrackSegments and RecParticles,
@@ -288,8 +293,10 @@ Int_t AliPHOSLoader::LoadRecParticles(Option_t* opt)
 }
 
 //____________________________________________________________________________ 
-
-Int_t AliPHOSLoader::PostHits()
+//PostHits etc. PostXXX must be const - not to hide virtual functions
+//from base class AliLoader, but they call non-constant functions ReadXXX
+//so I have to const_cast this pointer
+Int_t AliPHOSLoader::PostHits()const
 {
   // -------------- Hits -------------------------------------------
   Int_t reval = AliLoader::PostHits();
@@ -298,11 +305,12 @@ Int_t AliPHOSLoader::PostHits()
      AliError("returned error");
      return reval;
    }
-  return ReadHits();
+   
+  return const_cast<AliPHOSLoader *>(this)->ReadHits();
 }
 //____________________________________________________________________________ 
 
-Int_t AliPHOSLoader::PostSDigits()
+Int_t AliPHOSLoader::PostSDigits()const
 {
   // -------------- SDigits -------------------------------------------
   Int_t reval = AliLoader::PostSDigits();
@@ -311,11 +319,11 @@ Int_t AliPHOSLoader::PostSDigits()
      AliError("returned error");
      return reval;
    }
-  return ReadSDigits();
+  return const_cast<AliPHOSLoader *>(this)->ReadSDigits();
 }
 //____________________________________________________________________________ 
 
-Int_t AliPHOSLoader::PostDigits()
+Int_t AliPHOSLoader::PostDigits()const
 {
   // -------------- Digits -------------------------------------------
   Int_t reval = AliLoader::PostDigits();
@@ -324,11 +332,11 @@ Int_t AliPHOSLoader::PostDigits()
      AliError("returned error");
      return reval;
    }
-  return ReadDigits();
+  return const_cast<AliPHOSLoader *>(this)->ReadDigits();
 }
 //____________________________________________________________________________ 
 
-Int_t AliPHOSLoader::PostRecPoints()
+Int_t AliPHOSLoader::PostRecPoints()const
 {
   // -------------- RecPoints -------------------------------------------
   Int_t reval = AliLoader::PostRecPoints();
@@ -337,12 +345,12 @@ Int_t AliPHOSLoader::PostRecPoints()
      AliError("returned error");
      return reval;
    }
-  return ReadRecPoints();
+  return const_cast<AliPHOSLoader *>(this)->ReadRecPoints();
 }
 
 //____________________________________________________________________________ 
 
-Int_t AliPHOSLoader::PostRecParticles()
+Int_t AliPHOSLoader::PostRecParticles()const
 {
   // -------------- RecParticles -------------------------------------------
   Int_t reval = AliLoader::PostRecParticles();
@@ -351,11 +359,11 @@ Int_t AliPHOSLoader::PostRecParticles()
      AliError("returned error");
      return reval;
    }
-  return ReadRecParticles();
+  return const_cast<AliPHOSLoader *>(this)->ReadRecParticles();
 }
 //____________________________________________________________________________ 
 
-Int_t AliPHOSLoader::PostTracks()
+Int_t AliPHOSLoader::PostTracks()const
 {
   // -------------- Tracks -------------------------------------------
   Int_t reval = AliLoader::PostTracks();
@@ -364,7 +372,7 @@ Int_t AliPHOSLoader::PostTracks()
      AliError("returned error");
      return reval;
    }
-  return ReadTracks();
+  return const_cast<AliPHOSLoader *>(this)->ReadTracks();
 }
 //____________________________________________________________________________ 
 
@@ -765,55 +773,57 @@ void AliPHOSLoader::SetBranchTitle(const TString& btitle)
   fBranchTitle = btitle;
   ReloadAll();
  }
+ 
 //____________________________________________________________________________ 
-
-void AliPHOSLoader::CleanHits()
+//Again, must be const not to hide virtual functions from AliLoader
+//but there are calls to non-const functions, so I have to const_cast this pointer
+void AliPHOSLoader::CleanHits()const
 {
   // Clean Hits array
   AliLoader::CleanHits();
   //Clear an array 
-  TClonesArray* hits = Hits();
+  TClonesArray* hits = const_cast<AliPHOSLoader *>(this)->Hits();
   if (hits) hits->Clear();
 }
 //____________________________________________________________________________ 
 
-void AliPHOSLoader::CleanSDigits()
+void AliPHOSLoader::CleanSDigits()const
 {
   // Clean SDigits array
   AliLoader::CleanSDigits();
-  TClonesArray* sdigits = SDigits();
+  TClonesArray* sdigits = const_cast<AliPHOSLoader *>(this)->SDigits();
   if (sdigits) sdigits->Clear();
   
 }
 //____________________________________________________________________________ 
 
-void AliPHOSLoader::CleanDigits()
+void AliPHOSLoader::CleanDigits()const
 {
   // Clean Digits array
   AliLoader::CleanDigits();
-  TClonesArray* digits = Digits();
+  TClonesArray* digits = const_cast<AliPHOSLoader *>(this)->Digits();
   if (digits) digits->Clear();
 }
 //____________________________________________________________________________ 
 
-void AliPHOSLoader::CleanRecPoints()
+void AliPHOSLoader::CleanRecPoints()const
 {
   // Clean RecPoints array
   AliLoader::CleanRecPoints();
-  TObjArray* recpoints = EmcRecPoints();
+  TObjArray* recpoints = const_cast<AliPHOSLoader *>(this)->EmcRecPoints();
   if (recpoints) recpoints->Clear();
-  recpoints = CpvRecPoints();
+  recpoints = const_cast<AliPHOSLoader *>(this)->CpvRecPoints();
   if (recpoints) recpoints->Clear();
 }
 //____________________________________________________________________________ 
 
-void AliPHOSLoader::CleanTracks()
+void AliPHOSLoader::CleanTracks()const
 {
   //Cleans Tracks stuff
   AliLoader::CleanTracks();//tree
   
   //and clear the array
-  TClonesArray* tracks = TrackSegments();
+  TClonesArray* tracks = const_cast<AliPHOSLoader *>(this)->TrackSegments();
   if (tracks) tracks->Clear();
 
 }

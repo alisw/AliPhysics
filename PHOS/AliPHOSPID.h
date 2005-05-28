@@ -5,6 +5,11 @@
                             
 /* $Id$ */
 
+/* History of cvs commits:
+ *
+ * $Log$
+ */
+
 //_________________________________________________________________________
 //  Algorithm class for the identification of particles detected in PHOS        
 //  base  class                             
@@ -37,7 +42,7 @@ class AliPHOSPID : public TTask {
   virtual ~AliPHOSPID() ; // dtor
 
   virtual Int_t GetRecParticlesInRun()  const { Warning("GetRecParticlesInRun", "not defined" ) ; return 0 ;} 
-  virtual void Print() const { Warning("Print", "not defined" ) ;}
+  virtual void Print(const Option_t * = "") const { Warning("Print", "not defined" ) ;}
   void SetEventRange(Int_t first=0, Int_t last=-1) {fFirstEvent=first; fLastEvent=last; }
   void SetEventFolderName(TString name) { fEventFolderName = name ; }
   virtual const char * Version() const { Warning("Version", "not defined" ) ; return 0 ; }  

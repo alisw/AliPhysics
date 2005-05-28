@@ -13,6 +13,12 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+/* $Id$ */
+
+/* History of cvs commits:
+ *
+ * $Log$
+ */
 
 //_________________________________________________________________________
 // Class to calculate calibration parameters  from beam tests etc.
@@ -687,7 +693,7 @@ void AliPHOSCalibrator::WriteGains(const char * version)
   cmngr->WriteData(gains) ;
 }	
 //_____________________________________________________________________________
-void AliPHOSCalibrator::Print()const 
+void AliPHOSCalibrator::Print(const Option_t *)const 
 {
   // prints everything
   AliInfo(Form("--------------PHOS Calibrator-----------------\n")) ;

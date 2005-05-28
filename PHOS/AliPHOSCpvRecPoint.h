@@ -5,6 +5,11 @@
 
 /* $Id$ */
 
+/* History of cvs commits:
+ *
+ * $Log$
+ */
+
 //_________________________________________________________________________
 //  RecPoint implementation for PHOS-CPV
 //  An CpvRecPoint is a cluster of digits   
@@ -41,13 +46,13 @@ public:
   void   EvalLocalPosition(Float_t logWeight,TClonesArray * digits ) ;  
   void   EvalClusterLengths(TClonesArray * digits) ;
 
-  virtual void ExecuteEvent(Int_t event, Int_t px, Int_t py) const ; 
+  virtual void ExecuteEvent(Int_t event, Int_t px, Int_t py) /*const*/ ; 
 
   void   GetClusterLengths(Int_t &lengX, Int_t &lengZ) const {lengX = fLengX ;lengZ = fLengZ ;}
   Bool_t IsEmc(void) const {return kFALSE ; }        // tells that this is not a EMC
   Bool_t IsCPV(void) const {return kTRUE  ; }        // true if the recpoint is in CPV
   Bool_t IsSortable() const { return kTRUE ; }    // tells that this is a sortable object
-  void   Print() ; 
+  void   Print(const Option_t * = "") const ; 
 
   AliPHOSCpvRecPoint & operator = (const AliPHOSCpvRecPoint & /*rvalue*/)  {
    Fatal("operator =", "not implemented") ; return *this ; 

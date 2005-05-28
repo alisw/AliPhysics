@@ -2,6 +2,14 @@
 #define ALIPHOSV2_H
 /* Copyright(c) 1998-1999-2000, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
+
+/* $Id$ */
+
+/* History of cvs commits:
+ *
+ * $Log$
+ */
+
 //_________________________________________________________________________
 // Version of AliPHOSv0 which keeps all hits in TreeH
 // I mean real hits not cumulated hits
@@ -25,7 +33,7 @@ public:
   }
   virtual ~AliPHOSv2(void) ;
 
-  virtual void    Copy(AliPHOSv2 & phos) ; 
+  virtual void    Copy(TObject &phos) const; 
   virtual void    AddHit( Int_t shunt, Int_t primary, Int_t id, Float_t *hits); 
   virtual Int_t   IsVersion(void) const { 
     // Gives the version number 

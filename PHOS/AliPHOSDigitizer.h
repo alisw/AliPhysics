@@ -5,6 +5,11 @@
 
 /* $Id$ */
 
+/* History of cvs commits:
+ *
+ * $Log$
+ */
+
 //_________________________________________________________________________
 //  Task Class for making SDigits in PHOS      
 // Class performs digitization of Summable digits (in the PHOS case this is just
@@ -71,7 +76,8 @@ public:
   Int_t   GetDigitsInRun()  const { return fDigitsInRun ;}  
   void    MixWith(TString alirunFileName, 
 		  TString eventFolderName = AliConfig::GetDefaultEventFolderName()) ; // Add another one file to mix
-  void    Print()const ;
+
+  void    Print(const Option_t * = "")const ;
  
   AliPHOSDigitizer & operator = (const AliPHOSDigitizer & /*rvalue*/)  {
     // assignement operator requested by coding convention but not needed

@@ -15,6 +15,11 @@
 
 /* $Id$ */
 
+/* History of cvs commits:
+ *
+ * $Log$
+ */
+
 //*-- Author: Yves Schutz (SUBATECH)  & Dmitri Peressounko (SUBATECH & Kurchatov Institute)
 //////////////////////////////////////////////////////////////////////////////
 //  Clusterization class. Performs clusterization (collects neighbouring active cells) and 
@@ -938,7 +943,7 @@ void AliPHOSClusterizerv1::UnfoldingChiSquare(Int_t & nPar, Double_t * Grad, Dou
 }
 
 //____________________________________________________________________________
-void AliPHOSClusterizerv1::Print()const
+void AliPHOSClusterizerv1::Print(const Option_t *)const
 {
   // Print clusterizer parameters
 

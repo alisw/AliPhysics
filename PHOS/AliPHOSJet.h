@@ -60,7 +60,7 @@ public:
                           else return fSumPhi/fSumEnergy ;}
   Int_t GetNJetParticles(void)const{return fNpart;}
 
-  void Print() ;
+  void Print(const Option_t * = "") const ;
   AliPHOSJet & operator = (const AliPHOSJet & /*rvalue*/)  {
     // assignement operator requested by coding convention but not needed
     Fatal("operator =", "not implemented") ; return *this ; 

@@ -15,6 +15,11 @@
 
 /* $Id$ */
 
+/* History of cvs commits:
+ *
+ * $Log$
+ */
+
 //_________________________________________________________________________
 // Class designed to convert raw data to aliroot format. We assume, that
 // prototype is situated in the center of 3 PHOS module and convert prototype
@@ -166,7 +171,7 @@ AliPHOSRaw2Digits::~AliPHOSRaw2Digits()
   
 }
 //____________________________________________________________________________ 
-void AliPHOSRaw2Digits::Exec(){
+void AliPHOSRaw2Digits::Exec(const Option_t *){
   //This is steering method performing all the conversion
 
   if(!fIsInitialized) //need initialization
@@ -633,7 +638,7 @@ void AliPHOSRaw2Digits::WriteDigits(void){
   gAlice->TreeE()->Fill();
 }
 //____________________________________________________________________________ 
-void AliPHOSRaw2Digits::Print()const{
+void AliPHOSRaw2Digits::Print(const Option_t *)const{
   //prints current configuration and status.
 
   printf("----------AliPHOSRaw2Digits---------- \n") ;

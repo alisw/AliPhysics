@@ -15,6 +15,11 @@
 
 /* $Id$ */
 
+/* History of cvs commits:
+ *
+ * $Log$
+ */
+
 //_________________________________________________________________________
 //  A  Particle modified by PHOS response and produced by AliPHOSvFast
 //  To become a general class of AliRoot ?    
@@ -489,7 +494,7 @@ void AliPHOSFastRecParticle::Paint(Option_t *)
 }
 
 //____________________________________________________________________________
-void AliPHOSFastRecParticle::Print()const
+void AliPHOSFastRecParticle::Print(const Option_t *)const
 {
   // Print the type, energy and momentum of the reconstructed particle
 

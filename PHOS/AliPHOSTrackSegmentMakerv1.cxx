@@ -13,6 +13,12 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 /* $Id$ */
+
+/* History of cvs commits:
+ *
+ * $Log$
+ */
+
 //_________________________________________________________________________
 // Implementation version 1 of algorithm class to construct PHOS track segments
 // Track segment for PHOS is list of 
@@ -456,7 +462,7 @@ void AliPHOSTrackSegmentMakerv1::Unload()
 }
 
 //____________________________________________________________________________
-void AliPHOSTrackSegmentMakerv1::Print()const
+void AliPHOSTrackSegmentMakerv1::Print(const Option_t *)const
 {
   //  Print TrackSegmentMaker parameters
 

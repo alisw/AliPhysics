@@ -5,6 +5,11 @@
 
 /* $Id$ */
 
+/* History of cvs commits:
+ *
+ * $Log$
+ */
+
 //_________________________________________________________________________
 // Implementation of the PHOS manager class for fast simulations     
 // Tracks particles until the reach a grossly designed PHOS module
@@ -37,7 +42,7 @@ public:
   }
   virtual ~AliPHOSvFast(void) ;
 
-  virtual void Copy(AliPHOSvFast & fast) ; 
+  virtual void Copy(TObject &fast) const; 
   void           AddRecParticle(const AliPHOSFastRecParticle & rp) ; // adds primary particle to the RecParticles list
   virtual void   BuildGeometry(void) ;                               // creates the geometry for the ROOT display
   virtual void   CreateGeometry(void) ;                              // creates the geometry for GEANT

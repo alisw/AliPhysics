@@ -5,6 +5,11 @@
 
 /* $Id$ */
 
+/* History of cvs commits:
+ *
+ * $Log$
+ */
+
 //_________________________________________________________________________
 //  PHOS digit: Id
 //              energy
@@ -47,7 +52,7 @@ class AliPHOSDigit : public AliDigitNew {
   Float_t GetTime(void) const {return fTime ;}
   Float_t GetTimeR(void) const {return fTimeR ;}
   Bool_t  IsSortable() const { return kTRUE ; }
-  void    Print() const;
+  void    Print(const Option_t * = "") const;
   void    SetAmp(Int_t Amp) { fAmp=Amp ; } 
   void    SetTime(Float_t time) {fTime = time ;}
   void    SetTimeR(Float_t time) {fTimeR = time ;}

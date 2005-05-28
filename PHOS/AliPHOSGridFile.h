@@ -3,6 +3,11 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
+/* History of cvs commits:
+ *
+ * $Log$
+ */
+
 //_________________________________________________________________________
 // Description of logical filename in Grid catalogue
 // check here : /afs/cern.ch/user/p/peters/public/README.GRID 
@@ -25,7 +30,8 @@ class AliPHOSGridFile : public TObject {
     lfn.Copy(*this) ; 
   } 
   virtual ~AliPHOSGridFile(void) ; 
-  virtual void Copy(AliPHOSGridFile & lfn) ;
+
+  virtual void Copy(TObject & obj) const;
   
   void ListEvents() const ; 
   void ListRuns() const ; 

@@ -4,6 +4,10 @@
  * See cxx source for full Copyright notice                               */
 
 /* $Id$ */
+/* History of cvs commits:
+ *
+ * $Log$
+ */
 
 //_________________________________________________________________________
 // Implementation version 1 of algorithm class to construct PHOS track segments
@@ -45,7 +49,7 @@ public:
 
           void   MakeLinks() const;      //Evaluates distances(links) between EMC and CPV
           void   MakePairs() ;           //Finds pairs(triplets) with smallest link
-  virtual void   Print() const ;
+  virtual void   Print(const Option_t * = "") const ;
   //Switch to "on flyght" mode, without writing to TreeR and file  
   void SetWriting(Bool_t toWrite = kFALSE){fWrite = toWrite;} 
   virtual void   SetMaxEmcCPVDistance(Float_t r){ fRcpv = r ;} //Maximal distance (in PHOS plane) 

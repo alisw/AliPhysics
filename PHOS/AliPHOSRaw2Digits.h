@@ -3,7 +3,12 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-/* $id */
+/* $Id$ */
+
+/* History of cvs commits:
+ *
+ * $Log$
+ */
 
 //_________________________________________________________________________
 //  Base Class for PHOS     
@@ -31,7 +36,7 @@ public:
   AliPHOSRaw2Digits(AliPHOSRaw2Digits & r2d) ;          // cpy ctor
   virtual ~AliPHOSRaw2Digits() ; // dtor
 
-  void Exec() ;
+  void Exec(const Option_t * = "") ;
 
   void SetBeamEnergy(Float_t energy){fBeamEnergy = energy ;}
   void SetInputFile(TString inname="Run_1234.fz"){fInName=inname ; }
@@ -46,7 +51,7 @@ public:
     {for(Int_t i=0;i<3;i++)fTarget[i]=pos[i] ;}
   void SetConTableDB(AliPHOSConTableDB * ctdb){fctdb = ctdb ;}
   void SetMaxEventsPerFile(Int_t nev=20000){fMaxPerFile = nev ;}
-  void Print()const ;
+  void Print(const Option_t * = "")const ;
   AliPHOSRaw2Digits & operator = ( AliPHOSRaw2Digits & /*r2d*/ ) { return *this ; } 
   
 private:

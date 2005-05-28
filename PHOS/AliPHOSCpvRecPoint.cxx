@@ -15,6 +15,11 @@
 
 /* $Id$ */
 
+/* History of cvs commits:
+ *
+ * $Log$
+ */
+
 //_________________________________________________________________________
 //  RecPoint implementation for PHOS-CPV
 //  An CpvRecPoint is a cluster of digits   
@@ -131,7 +136,7 @@ Int_t AliPHOSCpvRecPoint::Compare(const TObject * obj) const
 }
 
 //______________________________________________________________________________
-void AliPHOSCpvRecPoint::ExecuteEvent(Int_t, Int_t, Int_t ) const
+void AliPHOSCpvRecPoint::ExecuteEvent(Int_t, Int_t, Int_t ) /*const*/
 {
 //   // Execute action corresponding to one event
 //   //  This member function is called when a AliPHOSRecPoint is clicked with the locator
@@ -341,7 +346,7 @@ void AliPHOSCpvRecPoint::EvalClusterLengths(TClonesArray * digits)
 
 
 //____________________________________________________________________________
-void AliPHOSCpvRecPoint::Print() 
+void AliPHOSCpvRecPoint::Print(const Option_t *) const
 {
   // Print the list of digits belonging to the cluster
   
