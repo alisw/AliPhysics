@@ -213,11 +213,13 @@ void AliRICHClusterFinder::FindLocalMaxima()
       }
     }
     if(iNotMax==0) {
-      TVector2 x2=AliRICHParam::Pad2Loc(pad1);
-      fLocalX[fNlocals]=x2.X();fLocalY[fNlocals]=x2.Y();
-      fLocalQ[fNlocals] = (Double_t)padQ1;
-      fLocalC[fNlocals] = padC1;
-      fNlocals++;
+      if (fNlocals<100) {
+	TVector2 x2=AliRICHParam::Pad2Loc(pad1);
+	fLocalX[fNlocals]=x2.X();fLocalY[fNlocals]=x2.Y();
+	fLocalQ[fNlocals] = (Double_t)padQ1;
+	fLocalC[fNlocals] = padC1;
+	fNlocals++;
+      }
     }
   }
   AliDebug(1,Form("Number of local maxima found ---> %i",fNlocals));
