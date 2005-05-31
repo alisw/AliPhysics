@@ -40,7 +40,6 @@
 #include <TSystem.h>
 #include <TDirectory.h>
 #include <TVirtualMC.h>
-#include <TGeoManager.h>
 
 #include "AliLog.h"
 #include "AliConfig.h"
@@ -246,19 +245,10 @@ void AliModule::AliMaterial(Int_t imat, const char* name, Float_t a,
   // nwbuf       number of user words
   //
   Int_t kmat;
-  TString uniquename = GetName();
-  uniquename.Append("_");
-  uniquename.Append(name);
-  if(gAlice->IsRootGeometry()){
-    TGeoMaterial *mat = gGeoManager->GetMaterial(uniquename.Data());
-    kmat = mat->GetUniqueID();
-    (*fIdmate)[imat]=kmat;
-  }else{
-    gMC->Material(kmat, uniquename.Data(), a, z, dens, radl, absl, buf, nwbuf);
-    (*fIdmate)[imat]=kmat;
-  }
+  gMC->Material(kmat, name, a, z, dens, radl, absl, buf, nwbuf);
+  (*fIdmate)[imat]=kmat;
 }
-
+  
 //_______________________________________________________________________
 void AliModule::AliGetMaterial(Int_t imat, char* name, Float_t &a, 
                                Float_t &z, Float_t &dens, Float_t &radl,
@@ -283,6 +273,7 @@ void AliModule::AliGetMaterial(Int_t imat, char* name, Float_t &a,
   kmat=(*fIdmate)[imat];
   gMC->Gfmate(kmat, name, a, z, dens, radl, absl, buf, nwbuf);
 }
+  
 
 //_______________________________________________________________________
 void AliModule::AliMixture(Int_t imat, const char *name, Float_t *a,
@@ -309,19 +300,10 @@ void AliModule::AliMixture(Int_t imat, const char *name, Float_t *a,
   // wmat        array of concentrations
   //
   Int_t kmat;
-  TString uniquename = GetName();
-  uniquename.Append("_");
-  uniquename.Append(name);
-  if(gAlice->IsRootGeometry()){
-    TGeoMaterial *mat = gGeoManager->GetMaterial(uniquename.Data());
-    kmat = mat->GetUniqueID();
-    (*fIdmate)[imat]=kmat;
-  }else{
-    gMC->Mixture(kmat, uniquename.Data(), a, z, dens, nlmat, wmat);
-    (*fIdmate)[imat]=kmat;
-  }
+  gMC->Mixture(kmat, name, a, z, dens, nlmat, wmat);
+  (*fIdmate)[imat]=kmat;
 } 
-
+ 
 //_______________________________________________________________________
 void AliModule::AliMedium(Int_t numed, const char *name, Int_t nmat,
                           Int_t isvol, Int_t ifield, Float_t fieldm,
@@ -351,27 +333,11 @@ void AliModule::AliMedium(Int_t numed, const char *name, Int_t nmat,
   //        =  3       constant magnetic field along z
   //  
   Int_t kmed;
-  TString uniquename = GetName();
-  uniquename.Append("_");
-  uniquename.Append(name);
-  if(gAlice->IsRootGeometry()){
-    TList *medialist = gGeoManager->GetListOfMedia();
-    TIter next(medialist);
-    TGeoMedium *med = 0;
-    while((med = (TGeoMedium*) next())){
-      if(!strcmp(uniquename.Data(),med->GetName())){
-	kmed = med->GetId();
-	(*fIdtmed)[numed]=kmed;
-	break;
-      }
-    }
-  }else{
-    gMC->Medium(kmed, uniquename.Data(), (*fIdmate)[nmat], isvol, ifield,
-                fieldm, tmaxfd, stemax, deemax, epsil,	stmin, ubuf, nbuf); 
-    (*fIdtmed)[numed]=kmed;
-  }
+  gMC->Medium(kmed,name, (*fIdmate)[nmat], isvol, ifield, fieldm,
+			 tmaxfd, stemax, deemax, epsil,	stmin, ubuf, nbuf); 
+  (*fIdtmed)[numed]=kmed;
 } 
-
+ 
 //_______________________________________________________________________
 void AliModule::AliMatrix(Int_t &nmat, Float_t theta1, Float_t phi1,
                           Float_t theta2, Float_t phi2, Float_t theta3,

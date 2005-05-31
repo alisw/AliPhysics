@@ -196,9 +196,9 @@ AliFMDSimulator::DefineMaterials()
   precision        = .001;
   minStepSize      = .001;
   id               = kSiId;
-  fFMD->AliMaterial(id, "Si$", 
+  fFMD->AliMaterial(id, "FMD Si$", 
 		      a, z, density, radiationLength, absorbtionLength);
-  fFMD->AliMedium(kSiId, "Si$",
+  fFMD->AliMedium(kSiId, "FMD Si$",
 		    id,1,fieldType,maxField,maxBending,
 		    maxStepSize,maxEnergyLoss,precision,minStepSize);
   
@@ -213,9 +213,9 @@ AliFMDSimulator::DefineMaterials()
   precision        = .003;
   minStepSize      = .003;
   id               = kCarbonId;
-  fFMD->AliMaterial(id, "Carbon$", 
+  fFMD->AliMaterial(id, "FMD Carbon$", 
 		      a, z, density, radiationLength, absorbtionLength);
-  fFMD->AliMedium(kCarbonId, "Carbon$",
+  fFMD->AliMedium(kCarbonId, "FMD Carbon$",
 		    id,0,fieldType,maxField,maxBending,
 		    maxStepSize,maxEnergyLoss,precision,minStepSize);
 
@@ -225,9 +225,9 @@ AliFMDSimulator::DefineMaterials()
   density          = 2.7;
   radiationLength  = 8.9;
   id               = kAlId;
-  fFMD->AliMaterial(id, "Aluminum$", 
+  fFMD->AliMaterial(id, "FMD Aluminum$", 
 		      a, z, density, radiationLength, absorbtionLength);
-  fFMD->AliMedium(kAlId, "Aluminum$", 
+  fFMD->AliMedium(kAlId, "FMD Aluminum$", 
 		    id, 0, fieldType, maxField, maxBending,
 		    maxStepSize, maxEnergyLoss, precision, minStepSize);
   
@@ -246,8 +246,8 @@ AliFMDSimulator::DefineMaterials()
     precision        = .003;
     minStepSize      = .003;
     id = kSiChipId;
-    fFMD->AliMixture(id, "Si Chip$", as, zs, density, 6, ws);
-    fFMD->AliMedium(kSiChipId, "Si Chip$", 
+    fFMD->AliMixture(id, "FMD Si Chip$", as, zs, density, 6, ws);
+    fFMD->AliMedium(kSiChipId, "FMD Si Chip$", 
 		      id, 0, fieldType, maxField, maxBending, 
 		      maxStepSize, maxEnergyLoss, precision, minStepSize);
   }
@@ -264,8 +264,8 @@ AliFMDSimulator::DefineMaterials()
     precision        = .001;
     minStepSize      = .001;
     id               = KaptionId;
-    fFMD->AliMixture(id, "Kaption$", as, zs, density, 4, ws);
-    fFMD->AliMedium(kAlId, "Kaption$",
+    fFMD->AliMixture(id, "FMD Kaption$", as, zs, density, 4, ws);
+    fFMD->AliMedium(kAlId, "FMD Kaption$",
 		      id,0,fieldType,maxField,maxBending,
 		      maxStepSize,maxEnergyLoss,precision,minStepSize);
   }
@@ -282,8 +282,8 @@ AliFMDSimulator::DefineMaterials()
     precision    = .001;
     minStepSize  = .001;
     id           = kAirId;
-    fFMD->AliMixture(id, "Air$", as, zs, density, 4, ws);
-    fFMD->AliMedium(kAirId, "Air$", 
+    fFMD->AliMixture(id, "FMD Air$", as, zs, density, 4, ws);
+    fFMD->AliMedium(kAirId, "FMD Air$", 
 		      id,0,fieldType,maxField,maxBending,
 		      maxStepSize,maxEnergyLoss,precision,minStepSize);
   }
@@ -308,8 +308,8 @@ AliFMDSimulator::DefineMaterials()
     precision    = .001;
     minStepSize  = .001;
     id           = kPcbId;
-    fFMD->AliMixture(id, "PCB$", as, zs, density, 14, ws);
-    fFMD->AliMedium(kPcbId, "PCB$", 
+    fFMD->AliMixture(id, "FMD PCB$", as, zs, density, 14, ws);
+    fFMD->AliMedium(kPcbId, "FMD PCB$", 
 		      id,0,fieldType,maxField,maxBending,
 		      maxStepSize,maxEnergyLoss,precision,minStepSize);
   }
@@ -325,8 +325,8 @@ AliFMDSimulator::DefineMaterials()
     precision    = .003;
     minStepSize  = .003;
     id           = kPlasticId;
-    fFMD->AliMixture(id, "Plastic$", as, zs, density, -2, ws);
-    fFMD->AliMedium(kPlasticId, "Plastic$", 
+    fFMD->AliMixture(id, "FMD Plastic$", as, zs, density, -2, ws);
+    fFMD->AliMedium(kPlasticId, "FMD Plastic$", 
 		      id,0,fieldType,maxField,maxBending,
 		      maxStepSize,maxEnergyLoss,precision,minStepSize);
   }

@@ -129,8 +129,13 @@ void AliMUONCommonGeometryBuilder::CreateMaterials()
   Float_t sXMGMX = gAlice->Field()->Max();
   //
   // --- Define the various materials for GEANT --- 
-  fMUON->AliMaterial(9, "ALUMINIUM0$", 26.98, 13., 2.7, 8.9, 37.2);
-  fMUON->AliMaterial(10, "ALUMINIUM1$", 26.98, 13., 2.7, 8.9, 37.2);
+  fMUON->AliMaterial(9, "ALUMINIUM$", 26.98, 13., 2.7, 8.9, 37.2);
+  fMUON->AliMaterial(10, "ALUMINIUM$", 26.98, 13., 2.7, 8.9, 37.2);
+  fMUON->AliMaterial(49, "Kapton$", 12.01,6,1.42,-28.6,999);          // from DPG
+  fMUON->AliMaterial(42, "Copper$", 63.546,29.,8.96,-1.43,9.6);
+  fMUON->AliMaterial(43, "FR4$", 17.749, 8.875, 1.7, -19.4, 999.);    // from DPG
+  fMUON->AliMaterial(44, "FrameEpoxy",12.24,6.0,1.85,-19.14,999);// use 16.75cm
+
   // Air
   Float_t aAir[4]={12.0107,14.0067,15.9994,39.948};
   Float_t zAir[4]={6.,7.,8.,18.};
@@ -202,9 +207,9 @@ void AliMUONCommonGeometryBuilder::CreateMaterials()
  
   //
   //    Aluminum 
-  fMUON->AliMedium(4, "ALU_CH_US0         ", 9, 0, iSXFLD, sXMGMX, tmaxfd, maxStepAlu, 
+  fMUON->AliMedium(4, "ALU_CH_US          ", 9, 0, iSXFLD, sXMGMX, tmaxfd, maxStepAlu, 
 		   maxDestepAlu, epsil, stmin);
-  fMUON->AliMedium(5, "ALU_CH_US1          ", 10, 0, iSXFLD, sXMGMX, tmaxfd, maxStepAlu, 
+  fMUON->AliMedium(5, "ALU_CH_US          ", 10, 0, iSXFLD, sXMGMX, tmaxfd, maxStepAlu, 
 		   maxDestepAlu, epsil, stmin);
   //
   //    Ar-isoC4H10 gas 
@@ -236,6 +241,19 @@ void AliMUONCommonGeometryBuilder::CreateMaterials()
 		   maxStepAlu, maxDestepAlu, epsil, stmin);
   fMUON->AliMedium(17, "Nomex bulk        ", 37, 0, iSXFLD, sXMGMX, tmaxfd, 
 		   maxStepAlu, maxDestepAlu, epsil, stmin);
+
+  // for station 2 only
+		   // was med: 4  mat: 9
+  fMUON->AliMedium(22, "COPPER_II        ", 42, 0, iSXFLD, sXMGMX, 
+                   tmaxfd, maxStepAlu, maxDestepAlu, epsil, stmin);
+		   // was med: 10  mat: 30
+  fMUON->AliMedium(23, "FR4_CH           ", 43, 0, iSXFLD, sXMGMX, 
+                   10.0, 0.01, 0.1, 0.003, 0.003);
+  fMUON->AliMedium(24, "FrameCH$",   44, 1, iSXFLD, sXMGMX, 
+                   10.0, 0.001, 0.001, 0.001, 0.001);
+  fMUON->AliMedium(29, "Kapton            ", 49, 0, iSXFLD, sXMGMX,  
+                   10.0, 0.01, 1.0, 0.003, 0.003);
+		   // was med: 18  mat: 34 
 }
 
 
