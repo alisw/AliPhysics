@@ -62,6 +62,7 @@ AliTRDpadPlane::AliTRDpadPlane():TObject()
   fPadCol       = 0;
 
   fTiltingAngle = 0.0;
+  fTiltingTan   = 0.0;
 
 }
 
@@ -238,7 +239,7 @@ AliTRDpadPlane::AliTRDpadPlane(Int_t p, Int_t c):TObject(),fPadRow(0),fPadCol(0)
   //
   // Store tilting angle as tangens (opposite direction!)
   //
-  fTiltingAngle = TMath::Tan(TMath::Pi()/180.0 * -fTiltingAngle);
+  fTiltingTan = TMath::Tan(TMath::Pi()/180.0 * -fTiltingAngle);
 
   //
   // The positions of the borders of the pads
@@ -361,6 +362,7 @@ void AliTRDpadPlane::Copy(TObject &p) const
   ((AliTRDpadPlane &) p).fNcols        = fNcols;
 
   ((AliTRDpadPlane &) p).fTiltingAngle = fTiltingAngle;
+  ((AliTRDpadPlane &) p).fTiltingTan   = fTiltingTan;
 
   if (((AliTRDpadPlane &) p).fPadRow) delete [] ((AliTRDpadPlane &) p).fPadRow;
   ((AliTRDpadPlane &) p).fPadRow = new Double_t[fNrows];
@@ -439,7 +441,7 @@ Int_t AliTRDpadPlane::GetPadColNumber(const Double_t rphi
     // into the opposite direction
     //
 
-    rphiShift = rphi + fTiltingAngle * rowOffset;
+    rphiShift = rphi + fTiltingTan * rowOffset;
 
     nabove = fNcols+1;
     nbelow = 0;

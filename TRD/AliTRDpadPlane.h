@@ -96,11 +96,12 @@ class AliTRDpadPlane : public TObject {
   Int_t     fNcols;           //  Number of columns
 
   Double_t  fTiltingAngle;    //  Pad tilting angle  
+  Double_t  fTiltingTan;      //  Tangens of pad tilting angle
 
   Double_t *fPadRow;          //! Pad border positions in row direction
   Double_t *fPadCol;          //! Pad border positions in column direction
 
-  ClassDef(AliTRDpadPlane,1)  //  TRD ROC pad plane
+  ClassDef(AliTRDpadPlane,2)  //  TRD ROC pad plane
 
 };
 
