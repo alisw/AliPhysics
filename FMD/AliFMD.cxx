@@ -263,11 +263,11 @@ void AliFMD::CreateMaterials()
   }
   AliFMDGeometry* geometry = AliFMDGeometry::Instance();
   geometry->Init();
-  TVirtualMC* mc = TVirtualMC::GetMC();
-  Bool_t geo = mc->IsRootGeometrySupported();
-  if (geo)
-    fSimulator = new AliFMDGeoSimulator(this, fDetailed);
-  else 
+//   TVirtualMC* mc = TVirtualMC::GetMC();
+//   Bool_t geo = mc->IsRootGeometrySupported();
+//   if (geo)
+//     fSimulator = new AliFMDGeoSimulator(this, fDetailed);
+//   else 
     fSimulator = new AliFMDG3Simulator(this, fDetailed);
   
   fSimulator->DefineMaterials();
