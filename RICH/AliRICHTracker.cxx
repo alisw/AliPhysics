@@ -68,18 +68,38 @@ void AliRICHTracker::RecWithESD(AliESD *pESD)
     AliDebug(1,Form("Min distance cluster: %i dist is %f",iMipId,distMip));
     
     AliRICHRecon recon(&helix,pRich->Clusters(iChamber),iMipId); //actual job is done there
+
+    Double_t thetaCerenkov=recon.ThetaCerenkov(); //search for mean Cerenkov angle for this track
     
     pTrack->SetRICHcluster(iMipId);
     pTrack->SetRICHdxdy(distX,distY);
     pTrack->SetRICHthetaPhi(helix.Ploc().Theta(),helix.Ploc().Phi());
-    pTrack->SetRICHsignal(recon.ThetaCerenkov());
+    pTrack->SetRICHsignal(thetaCerenkov);
     pTrack->SetRICHnclusters(recon.GetHoughPhotons());
     
     AliDebug(1,Form("FINAL Theta Cerenkov=%f",pTrack->GetRICHsignal()));
-        
-//    Double_t richPID[5]={0.2,0.2,0.2,0.2,0.2}; //start with equal probs for (e,mu,pi,k,p)
-//    CalcProb(thetaCerenkov,p0.Mag(),richPID);
-//    pTrack->SetRICHpid(richPID);         
+//
+    if(pTrack->GetRICHsignal()>0) {
+      AliDebug(1,Form("Start to assign the probabilities"));
+      Double_t sigmaPID[AliPID::kSPECIES];
+      Double_t richPID[AliPID::kSPECIES];
+      for (Int_t iPart=0;iPart<AliPID::kSPECIES;iPart++) {
+        sigmaPID[iPart] = 0;
+        for(Int_t iphot=0;iphot<pRich->Clusters(iChamber)->GetEntries();iphot++) {
+          recon.SetPhotonIndex(iphot);
+          if(recon.GetPhotonFlag() == 2) {
+            Double_t sigma = AliRICHParam::SigmaSinglePhoton(iPart,pTrack->GetP(),recon.GetTrackTheta(),recon.GetPhiPoint()-recon.GetTrackPhi()).Mag();
+            sigmaPID[iPart] += 1/(sigma*sigma);
+          }
+        }
+        sigmaPID[iPart] = 1/TMath::Sqrt(sigmaPID[iPart])*0.001;
+        AliDebug(1,Form("sigma for %s is %f rad",AliPID::ParticleName(iPart),sigmaPID[iPart]));
+      }
+      CalcProb(thetaCerenkov,pTrack->GetP(),sigmaPID,richPID);
+      pTrack->SetRICHpid(richPID);         
+      AliDebug(1,Form("PROBABILITIES ---> %f - %f - %f - %f - %f",richPID[0],richPID[1],richPID[2],richPID[3],richPID[4]));
+    }
+    
     
   }//ESD tracks loop
   AliDebug(1,"Stop.");  
@@ -184,23 +204,32 @@ Int_t AliRICHTracker::LoadClusters(TTree *pTree)
   AliDebug(1,"Start.");  pTree->GetEntry(0);  AliDebug(1,"Stop."); return 0;
 }
 //__________________________________________________________________________________________________
-void AliRICHTracker::CalcProb(Double_t thetaCer,Double_t pmod, Double_t *richPID)
+void AliRICHTracker::CalcProb(Double_t thetaCer,Double_t pmod, Double_t *sigmaPID, Double_t *richPID)
 {
 // Calculates probability to be a electron-muon-pion-kaon-proton 
 // from the given Cerenkov angle and momentum assuming no initial particle composition
 // (i.e. apriory probability to be the particle of the given sort is the same for all sorts)  
   Double_t height[AliPID::kSPECIES];Double_t totalHeight=0;
+  Double_t thetaTh[AliPID::kSPECIES];
   for(Int_t iPart=0;iPart<AliPID::kSPECIES;iPart++){
+    height[iPart]=0;
     Double_t mass = AliPID::ParticleMass(iPart);
-    Double_t refIndex=AliRICHParam::RefIdxC6F14(6.755);
+    Double_t refIndex=AliRICHParam::RefIdxC6F14(AliRICHParam::MeanCkovEnergy());
     Double_t cosThetaTh = TMath::Sqrt(mass*mass+pmod*pmod)/(refIndex*pmod);
-    if(cosThetaTh>=1) {break;}
-    Double_t thetaTh = TMath::ACos(cosThetaTh);
-    Double_t sinThetaThNorm = TMath::Sin(thetaTh)/TMath::Sqrt(1-1/(refIndex*refIndex));
-    Double_t sigmaThetaTh = (0.014*(1/sinThetaThNorm-1) + 0.0043)*1.25;
-    height[iPart] = TMath::Gaus(thetaCer,thetaTh,sigmaThetaTh);
+    thetaTh[iPart]=0;
+    if(cosThetaTh>=1) continue;
+    thetaTh[iPart] = TMath::ACos(cosThetaTh);
+//    Double_t sinThetaThNorm = TMath::Sin(thetaTh)/TMath::Sqrt(1-1/(refIndex*refIndex));
+//    Double_t sigmaThetaTh = (0.014*(1/sinThetaThNorm-1) + 0.0043)*1.25;
+//    height[iPart] = TMath::Gaus(thetaCer,thetaTh,sigmaThetaTh);
+    height[iPart] = TMath::Gaus(thetaCer,thetaTh[iPart],sigmaPID[iPart],kTRUE);
     totalHeight +=height[iPart];
+    AliDebug(1,Form(" Particle %s with mass %f with height %f and thetaTH %f",AliPID::ParticleName(iPart),mass,height[iPart],thetaTh[iPart]));
   }
-  for(Int_t iPart=0;iPart<AliPID::kSPECIES;iPart++) richPID[iPart] = height[iPart]/totalHeight;    
+  for(Int_t iPart=0;iPart<AliPID::kSPECIES;iPart++) richPID[iPart] = height[iPart]/totalHeight;
+  Int_t iPartNear = TMath::LocMax(AliPID::kSPECIES,richPID);
+  if(TMath::Abs(thetaCer-thetaTh[iPartNear])/sigmaPID[iPartNear]>3) for(Int_t iPart=0;iPart<AliPID::kSPECIES;iPart++)richPID[iPart]=1.0/AliPID::kSPECIES;
+  //last line is to check if the nearest thetacerenkov to the teorethical one is within 3 sigma, otherwise no response (equal prob to every particle
+
 }//CalcProb
 //__________________________________________________________________________________________________

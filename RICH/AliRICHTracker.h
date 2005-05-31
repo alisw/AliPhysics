@@ -21,7 +21,7 @@ public:
   Int_t PropagateBack(AliESD *);                                                //pure virtual from AliTracker 
   void RecWithESD(AliESD *);                                                    //recon with ESD
   void RecWithStack(TNtupleD *hn);                                              //recon from Stack in case ESD empty
-  void CalcProb(Double_t thetaCer,Double_t pmod,Double_t *richPID);             // calculate pid for RICH
+  void CalcProb(Double_t thetaCer,Double_t pmod,Double_t *sigmaPID, Double_t *richPID);             // calculate pid for RICH
   Int_t LoadClusters(TTree *);                                                  //pure virtual from AliTracker 
 
 protected:

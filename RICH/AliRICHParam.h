@@ -93,6 +93,7 @@ public:
   static Int_t    HV(Int_t sector)           {if (sector>=1 && sector <=6) return fgHV[sector-1];  else return -1;} //high voltage for this sector
   static void     SetHV(Int_t sector,Int_t hv){fgHV[sector-1]=hv;}  
 //optical properties methodes  
+  static Double_t MeanCkovEnergy()         {return 6.766;}                 //mean Ckov energy according to the total trasmission curve
   static Float_t  PhotonEnergy(Int_t i)    {return 0.1*i+5.5;}             //photon energy (eV) for i-th point
   static Float_t  AbsCH4(Float_t ev);                                      //CH4 absorption length (cm) for photon with given energy (eV)
   static Float_t  AbsGel(Float_t)          {return 500;}                   //Aerogel absorption length (cm) for photon with given energy (eV)
@@ -130,6 +131,10 @@ public:
          static Double_t CogCorr(Double_t x) {return 3.31267e-2*TMath::Sin(2*TMath::Pi()/PadSizeX()*x) //correction of cluster CoG due to sinoidal
                                                     -2.66575e-3*TMath::Sin(4*TMath::Pi()/PadSizeX()*x)
                                                     +2.80553e-3*TMath::Sin(6*TMath::Pi()/PadSizeX()*x);}
+         static void ReadErrFiles();                                                                  //Read Err file parameters
+         static TVector3 SigmaSinglePhoton(Int_t Npart, Double_t mom, Double_t theta, Double_t phi);  //Find Sigma for single photon
+         static Double_t Interpolate(Double_t par[4][330],Double_t x, Double_t y, Double_t phi);          //Find the error value from interpolation
+         
   
   static Bool_t     fgIsAerogel;                            //aerogel geometry instead of normal RICH flag
 protected:
@@ -144,7 +149,12 @@ protected:
   static Int_t      fgNsigmaTh;                             //n. of sigmas to cut for zero suppression
   static Float_t    fgSigmaThMean;                          //sigma threshold value
   static Float_t    fgSigmaThSpread;                        //spread of sigma
-  ClassDef(AliRICHParam,5)                                  //RICH main parameters class
+  
+  static Double_t fgErrChrom[4][330];                       //
+  static Double_t fgErrGeom[4][330];                        //
+  static Double_t fgErrLoc[4][330];                         //Chromatic, Geometric and Localization array to parametrize SigmaCerenkov
+  
+  ClassDef(AliRICHParam,6)                                  //RICH main parameters class
 };
 //__________________________________________________________________________________________________
 Int_t AliRICHParam::PadNeighbours(Int_t iPadX,Int_t iPadY,Int_t listX[4],Int_t listY[4])

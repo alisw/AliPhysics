@@ -33,7 +33,7 @@ public :
   void HoughResponse();                       //
   void HoughFiltering(float HCS[]);           //
   void FlagPhotons();                         //
-  void FindWeightThetaCerenkov();             //
+  void FindThetaCerenkov();                   //
   void FindIntersectionWithDetector();        //
   Float_t Cerenkovangle(Float_t n, Float_t b);//
   Int_t   PhotonInBand();                     //
@@ -67,7 +67,7 @@ public :
   Float_t GetThetaPhotonInTRS()                     const{ return fThetaPhotonInTRS;}               //
   Float_t GetPhiPhotonInTRS()                       const{ return fPhiPhotonInTRS;}                 //
   Float_t GetThetaAtQuartz()                        const{ return fThetaAtQuartz;}                  //
-  Float_t GetPhiPoint()                             const{ return fPhiPoint;}                       //
+  Float_t GetPhiPoint()                             const{ return fPhiPoint[fPhotonIndex];}         //
   Float_t GetXCoordOfEmission()                     const{ return fXEmiss;}                         //
   Float_t GetYCoordOfEmission()                     const{ return fYEmiss;}                         //
   Float_t GetXInnerRing()                           const{ return fXInner;}                         //
@@ -105,7 +105,7 @@ public :
   void SetThetaPhotonInDRS(Float_t Theta) {fThetaPhotonInDRS = Theta;}                              //
   void SetPhiPhotonInDRS(Float_t Phi) {fPhiPhotonInDRS = Phi;}                                      //
   void SetThetaAtQuartz(Float_t ThetaAtQuartz) {fThetaAtQuartz = ThetaAtQuartz;}                    //
-  void SetPhiPoint(Float_t PhiPoint){ fPhiPoint = PhiPoint;}                                        //
+  void SetPhiPoint(Float_t PhiPoint){ fPhiPoint[fPhotonIndex] = PhiPoint;}                          //
   void SetXCoordOfEmission(Float_t XEmiss) {fXEmiss = XEmiss;}                                      //
   void SetYCoordOfEmission(Float_t YEmiss) {fYEmiss = YEmiss;}                                      //
   void SetXPointOnCathode(Float_t PhotonLimitX) { fPhotonLimitX = PhotonLimitX;}                    //
@@ -172,7 +172,7 @@ protected:
   Float_t fThetaPhotonInDRS;                  // Theta of photon in Detector Reference System (DRS)
   Float_t fPhiPhotonInDRS;                    // Phi of photon in DRS
   Float_t fThetaAtQuartz;                     // Theta at the quartz entrance
-  Float_t fPhiPoint;                          // phi of ring point
+  Float_t fPhiPoint[3000];                    // array of phi of ring photons
   Float_t fXEmiss;                            //  x emission
   Float_t fYEmiss;                            //  y emission
   Float_t fXInner;                            // X inner ring

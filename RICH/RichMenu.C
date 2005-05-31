@@ -10,7 +10,7 @@
 
 //globals for easy manual manipulations
 AliRun *a;    AliStack *s;  AliRunLoader *al; 
-AliRICH   *r; AliVHMPID *v; AliLoader    *rl,*vl;
+AliRICH   *r; AliLoader    *rl,*vl;
 
 
 //__________________________________________________________________________________________________
@@ -91,9 +91,6 @@ void RichGet()
 {
   if(!(r=r()))     Warning("RICH/menu.C::ReadAlice","No RICH in file");
   if(!(rl=rl()))   Warning("RICH/menu.C::ReadAlice","No RICH loader in file");        
-  
-  if(!(v=v()))     Warning("RICH/menu.C::ReadAlice","No VHMPID in file");
-  if(!(vl=vl()))   Warning("RICH/menu.C::ReadAlice","No VHMPID loader in file");        
 }
 
 //__________________________________________________________________________________________________
@@ -110,24 +107,12 @@ void MenuRich()
   pMenu->Show();  
 }//TestMenu()
 //__________________________________________________________________________________________________
-void MenuTic()
-{
-  TControlBar *pMenu = new TControlBar("vertical","VHMPID");
-  pMenu->AddButton("Display"          ,"v->Display();"      ,"????");
-  pMenu->AddButton("Print hits"       ,"vh();"              ,"Print list of hits for current event");
-  pMenu->AddButton("Print sdigits"    ,"vs();"              ,"Print list of sdigits for current event");
-  pMenu->AddButton("Print digits"     ,"vd();"  ,"????");
-  pMenu->AddButton("Hits cotrol plots","v->HitsAna()"      ,"????");
-  pMenu->Show();  
-}//TestMenu()
-//__________________________________________________________________________________________________
 void RichMenu()
 {   
   TControlBar *pMenu = new TControlBar("vertical","MAIN");
        
   if(AliceRead()){//it's from file, show some info
     if(r) pMenu->AddButton("RICH submenu"    , "MenuRich()"               , "Show RICH submenu"       );
-    if(v) pMenu->AddButton("VHMPID submenu"  , "MenuTic()"                , "Show VHMPID submenu"     );    
   }else{//it's aliroot, simulate
     pMenu->AddButton("Debug ON",     "DebugON();",   "Switch debug on-off");   
     pMenu->AddButton("Debug OFF",    "DebugOFF();",  "Switch debug on-off");   
@@ -159,13 +144,6 @@ AliRun    *a() {return al->GetAliRun();}                         //provides poin
 AliRICH   *r() {return (AliRICH*)  a()->GetDetector("RICH");}    //provides pointer to RICH detector
 AliLoader *rl(){return             al->GetLoader("RICHLoader");}
 
-AliVHMPID *v() {return (AliVHMPID*)a()->GetDetector("VHMPID");}  //provides pointer to VHMPID detector
-AliLoader *vl(){return             al->GetLoader("VHMPIDLoader");}
-
-void rh(Int_t event=0)    {r->HitsPrint    (event);} void vh(Int_t event=0)    {v->HitsPrint    (event);}  //utility print hits for 'event' event
-void rs(Int_t event=0)    {r->SDigitsPrint (event);} void vs(Int_t event=0)    {v->SDigitsPrint (event);}  //utility print sdigits
-void rd(Int_t event=0)    {r->DigitsPrint  (event);} void vd(Int_t event=0)    {v->DigitsPrint  (event);}  //utility print digits
-void rc(Int_t event=0)    {r->ClustersPrint(event);} void vc(Int_t event=0)    {v->ClustersPrint(event);}  //utility print clusters
 void rt(Int_t event=0)    {r->PrintTracks  (event);}                                                       //utility print tracks
 Int_t nem(Int_t event=0)  {AliRICH::Nparticles(kElectron  ,event,al);} //utility number of electrons
 Int_t nep(Int_t event=0)  {AliRICH::Nparticles(kPositron  ,event,al);} //utility number of positrons

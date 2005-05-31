@@ -13,6 +13,7 @@
 //  * provided "as is" without express or implied warranty.                  *
 //  **************************************************************************
 #include "AliRICHParam.h"
+#include "AliESD.h"
 #include "AliRICHChamber.h"
 #include <TCanvas.h>
 #include <TLatex.h>
@@ -22,6 +23,7 @@
 #include <TPolyMarker3D.h>
 #include <TPolyLine3D.h>
 #include <TPolyLine.h>
+#include <TSystem.h>
 
 ClassImp(AliRICHParam)
 Bool_t   AliRICHParam::fgIsWireSag            =kTRUE;   //take ware sagita into account?
@@ -35,6 +37,10 @@ Int_t    AliRICHParam::fgHV[kNsectors]        ={2050,2050,2050,2050,2050,2050};
 Int_t    AliRICHParam::fgNsigmaTh             =4;
 Float_t  AliRICHParam::fgSigmaThMean          =1.132; //QDC 
 Float_t  AliRICHParam::fgSigmaThSpread        =0.035; //     
+Double_t AliRICHParam::fgErrChrom[4][330];                       //
+Double_t AliRICHParam::fgErrGeom[4][330];                        //
+Double_t AliRICHParam::fgErrLoc[4][330];                         //Chromatic, Geometric and Localization array to parametrize SigmaCerenkov
+  
 
 //__________________________________________________________________________________________________
 void AliRICHParam::Print(Option_t*) const
@@ -232,3 +238,101 @@ void AliRICHParam::DrawSectors()
   TPolyLine *sec5 = new TPolyLine(5,xLeft, yUp);      sec5->SetLineColor(21);  sec5->Draw();
   TPolyLine *sec6 = new TPolyLine(5,xRight,yUp);      sec6->SetLineColor(21);  sec6->Draw();
 }//DrawSectors()
+//__________________________________________________________________________________________________
+void AliRICHParam::ReadErrFiles()
+{
+// Read the three files corresponding to Chrom,Geom and Loc
+// They are parameters of a polynomial of 6th order...
+  
+  static Bool_t count = kFALSE;
+  
+  Float_t c0,c1,c2,c3,c;
+  Float_t g0,g1,g2,g3,g;
+  Float_t l0,l1,l2,l3,l;
+  
+  FILE *pChromErr, *pGeomErr, *pLocErr;  
+
+  if(!count) {
+     AliInfoGeneral("ReadErrFiles","reading RICH error parameters...");
+     pChromErr = fopen(Form("%s/RICH/RICHConfig/SigmaChromErr.txt",gSystem->Getenv("ALICE_ROOT")),"r");
+     pGeomErr  = fopen(Form("%s/RICH/RICHConfig/SigmaGeomErr.txt",gSystem->Getenv("ALICE_ROOT")),"r");
+     pLocErr   = fopen(Form("%s/RICH/RICHConfig/SigmaLocErr.txt",gSystem->Getenv("ALICE_ROOT")),"r");
+     if(!pChromErr||!pGeomErr||!pLocErr) {AliErrorGeneral("ReadErrFiles"," RICH ERROR READING Parameter FILES: can't open files!!! ");return;}
+     for(Int_t i=0;i<330;i++) {
+       fscanf(pChromErr,"%f%f%f%f%f\n",&c0,&c1,&c2,&c3,&c);
+       fscanf(pGeomErr,"%f%f%f%f%f\n",&g0,&g1,&g2,&g3,&g);
+       fscanf(pLocErr,"%f%f%f%f%f\n",&l0,&l1,&l2,&l3,&l);
+       fgErrChrom[0][i] = c0;
+       fgErrChrom[1][i] = c1;
+       fgErrChrom[2][i] = c2;
+       fgErrChrom[3][i] = c3;	
+       fgErrGeom[0][i] = g0;
+       fgErrGeom[1][i] = g1;
+       fgErrGeom[2][i] = g2;
+       fgErrGeom[3][i] = g3;	
+       fgErrLoc[0][i] = l0;
+       fgErrLoc[1][i] = l1;
+       fgErrLoc[2][i] = l2;
+       fgErrLoc[3][i] = l3;	
+     }
+     AliInfoGeneral("ReadErrFiles","DONE successfully!");
+     fclose(pChromErr);
+     fclose(pGeomErr);
+     fclose(pLocErr);
+  }
+  count = kTRUE;
+}//ReadErrFiles()
+//__________________________________________________________________________________________________
+TVector3 AliRICHParam::SigmaSinglePhoton(Int_t partID, Double_t mom, Double_t theta, Double_t phi)
+
+{
+// Find sigma for single photon. It returns the thrree different errors. If you want
+// to have the error---> TVector3.Mag()
+  
+  TVector3 v(-999,-999,-999);
+  Double_t pmom;
+
+  ReadErrFiles();
+  Double_t mass = AliPID::ParticleMass(partID);
+  Double_t massRef = AliPID::ParticleMass(AliPID::kProton); // all the files are calculated for protons...so mass ref is proton mass
+  pmom = mom*massRef/mass; // normalized momentum respect to proton...
+  if(pmom>6.5) pmom = 6.5;
+  Double_t oneOverRefIndex = 1/RefIdxC6F14(6.755);
+  Double_t pmin = mass*oneOverRefIndex/TMath::Sqrt(1-oneOverRefIndex*oneOverRefIndex);
+  if(pmom<pmin) return v;
+  v.SetX(Interpolate(fgErrChrom,pmom,theta,phi));
+  v.SetY(Interpolate(fgErrGeom,pmom,theta,phi));
+  v.SetZ(Interpolate(fgErrLoc,pmom,theta,phi));
+
+  return v;
+}//SigmaSinglePhoton
+//__________________________________________________________________________________________________
+Double_t AliRICHParam::Interpolate(Double_t par[4][330], Double_t x, Double_t y, Double_t phi)
+  
+{
+  static Double_t amin = 1.15; static Double_t astep  = 0.2;
+  static Double_t bmin = 0; static Double_t bstep  = 1;
+  
+  Double_t Phi = (phi - 180)/300.;
+  
+  Double_t Sigma[30][11];
+  
+  for(Int_t j=0;j<11;j++) { for(Int_t i=0;i<30;i++) {
+    Sigma[i][j] = par[0][j+11*i] + par[1][j+11*i]*Phi*Phi + par[2][j+11*i]*TMath::Power(Phi,4) + par[3][j+11*i]*TMath::Power(Phi,6);
+    }
+  }
+
+  Int_t i=0;Int_t j=0;
+  
+  i = (Int_t)((x-amin)/astep);
+  j = (Int_t)((y-bmin)/bstep);
+  Double_t ai = amin+i*astep;
+  Double_t ai1 = ai+astep;
+  Double_t bj = bmin+j*bstep;
+  Double_t bj1 = bj+bstep;
+  Double_t t = (x-ai)/(ai1-ai);
+  Double_t gj = (1-t)*Sigma[i][j]+t*Sigma[i+1][j];
+  Double_t gj1 = (1-t)*Sigma[i][j+1]+t*Sigma[i+1][j+1];
+  Double_t u = (y-bj)/(bj1-bj);
+  return (1-u)*gj+u*gj1;
+}//Interpolate

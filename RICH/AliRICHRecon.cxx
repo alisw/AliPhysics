@@ -115,13 +115,12 @@ Double_t AliRICHRecon::ThetaCerenkov()
       return -1;
     }
 
-  if(fIsWEIGHT) FindWeightThetaCerenkov();
-
-  Float_t thetaCerenkov = GetThetaCerenkov();
+  FindThetaCerenkov();
 
   AliDebug(1,Form("Number of clusters accepted --->  %i",nPhotonHough));
   
-  SetThetaOfRing(thetaCerenkov);
+//  Float_t thetaCerenkov = GetThetaCerenkov();  
+//  SetThetaOfRing(thetaCerenkov);
 //  FindAreaAndPortionOfRing();
 
 //  Float_t nPhotonHoughNorm = ((Float_t)nPhotonHough)/GetPortionOfRing();
@@ -166,8 +165,7 @@ void AliRICHRecon::FindEmissionPoint()
   SetEmissionPoint(emissionPoint);
   SetEmissionPoint(fRadiatorWidth/2); // tune the emission point
 }
-
-
+//__________________________________________________________________________________________________
 Int_t AliRICHRecon::PhotonInBand()
 {
   //search band fro photon candidates
@@ -260,7 +258,7 @@ Int_t AliRICHRecon::PhotonInBand()
   if(padradius>=innerRadius && padradius<=outerRadius) return 1;
   return 0;
 }
-
+//__________________________________________________________________________________________________
 void AliRICHRecon::FindThetaAtQuartz(Float_t thetaCerenkov)
 {
   //find the theta at the quartz plate
@@ -314,7 +312,7 @@ void AliRICHRecon::FindThetaAtQuartz(Float_t thetaCerenkov)
 
   SetThetaAtQuartz(thetaAtQuartz);
 }
-
+//__________________________________________________________________________________________________
 void AliRICHRecon::FindThetaPhotonCerenkov()
 {
   //find theta cerenkov of ring
@@ -331,14 +329,14 @@ void AliRICHRecon::FindThetaPhotonCerenkov()
 
   Float_t phiPoint = GetPhiPoint();
 
-  SetPhotonEnergy(6.85);
+  SetPhotonEnergy(AliRICHParam::MeanCkovEnergy());
   SetEmissionPoint(fRadiatorWidth/2);
 
   Float_t xPoint = GetEntranceX();
   Float_t yPoint = GetEntranceY();
   Float_t distPoint = TMath::Sqrt(xPoint*xPoint + yPoint*yPoint);
 
-  AliDebug(1,Form(" DistPoint %f ",distPoint));
+//  AliDebug(1,Form(" DistPoint %f ",distPoint));
 
   // Star minimization...
 
@@ -389,7 +387,7 @@ void AliRICHRecon::FindThetaPhotonCerenkov()
       radiusMean = FromEmissionToCathode();
     }
 
-  AliDebug(1,Form(" r1 %f rmean %f r2 %f",radiusMin,radiusMean,radiusMax));
+//  AliDebug(1,Form(" r1 %f rmean %f r2 %f",radiusMin,radiusMean,radiusMax));
 
   while (TMath::Abs(radiusMean-distPoint) > kTollerance)
     {
@@ -422,11 +420,11 @@ void AliRICHRecon::FindThetaPhotonCerenkov()
       }
     }
 
-  AliDebug(1,Form(" distpoint %f radius %f ",distPoint,radiusMean));
+//  AliDebug(1,Form(" distpoint %f radius %f ",distPoint,radiusMean));
   SetThetaPhotonCerenkov(thetaCerMean);
 
 }
-
+//__________________________________________________________________________________________________
 void AliRICHRecon::FindAreaAndPortionOfRing()
 {
   //find fraction of the ring accepted by the RICH
@@ -445,7 +443,7 @@ void AliRICHRecon::FindAreaAndPortionOfRing()
   Float_t y0 = yemiss + shiftY;
 
 
-  SetPhotonEnergy(6.85);
+  SetPhotonEnergy(AliRICHParam::MeanCkovEnergy());
   SetFreonRefractiveIndex();
 
   SetEmissionPoint(fRadiatorWidth/2.);
@@ -516,7 +514,7 @@ void AliRICHRecon::FindAreaAndPortionOfRing()
   SetAreaOfRing(area);
   SetPortionOfRing(portionOfRing);
 }
-
+//__________________________________________________________________________________________________
 void AliRICHRecon::FindIntersectionWithDetector()
 {
   // find ring intersection with CsI edges
@@ -663,7 +661,7 @@ void AliRICHRecon::FindPhotonAnglesInDRS()
   SetPhiPhotonInDRS(phi);
 
 }
-
+//__________________________________________________________________________________________________
 Float_t AliRICHRecon::FromEmissionToCathode()
 {
   // trace from emission point to cathode
@@ -732,8 +730,7 @@ Float_t AliRICHRecon::FromEmissionToCathode()
   return distanceFromEntrance;
 
 }
-
-
+//__________________________________________________________________________________________________
 void AliRICHRecon::FindPhiPoint()
 {
   //find phi of generated point 
@@ -748,12 +745,12 @@ void AliRICHRecon::FindPhiPoint()
 
   Float_t argY = ytoentr - emissionPoint*tan(trackTheta)*sin(trackPhi);
   Float_t argX = xtoentr - emissionPoint*tan(trackTheta)*cos(trackPhi);
-  Float_t phi = atan2(argY,argX); 
+  Float_t phi = atan2(argY,argX);
 
   SetPhiPoint(phi);
 
 }
-
+//__________________________________________________________________________________________________
 Float_t AliRICHRecon::Cerenkovangle(Float_t n, Float_t beta)
 {
   // cerenkov angle from n and beta
@@ -771,7 +768,7 @@ Float_t AliRICHRecon::Cerenkovangle(Float_t n, Float_t beta)
   thetacer = acos (1./(n*beta));
   return thetacer;
 }
-
+//__________________________________________________________________________________________________
 Float_t AliRICHRecon::SnellAngle(Float_t n1, Float_t n2, Float_t theta1)
 {
   // Snell law
@@ -792,8 +789,7 @@ Float_t AliRICHRecon::SnellAngle(Float_t n1, Float_t n2, Float_t theta1)
   refractangle = asin(sinrefractangle);  
   return refractangle;
 }
-
-
+//__________________________________________________________________________________________________
 void AliRICHRecon::HoughResponse()
 {
   //Hough response
@@ -936,8 +932,7 @@ void AliRICHRecon::HoughResponse()
 
   SetThetaCerenkov(thetaCerenkov);
 }
-
-
+//__________________________________________________________________________________________________
 void AliRICHRecon::HoughFiltering(float hcs[])
 {
   // filter for Hough
@@ -967,8 +962,8 @@ void AliRICHRecon::HoughFiltering(float hcs[])
      hcs[nx] = hcsFilt[nx];
    }
 }
-
-void AliRICHRecon::FindWeightThetaCerenkov()
+//__________________________________________________________________________________________________
+void AliRICHRecon::FindThetaCerenkov()
 {
   // manage with weight for photons
 
@@ -1000,10 +995,9 @@ void AliRICHRecon::FindWeightThetaCerenkov()
   
   SetThetaCerenkov(weightThetaCerenkov);
 
-  cout << " thetac weighted -> " << weightThetaCerenkov << endl;
+  AliDebug(1,Form(" thetac weighted -> %f",weightThetaCerenkov));
 }
-
-
+//__________________________________________________________________________________________________
 void AliRICHRecon::FlagPhotons()
 {
   // flag photons
