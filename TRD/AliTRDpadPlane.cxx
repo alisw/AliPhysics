@@ -237,9 +237,9 @@ AliTRDpadPlane::AliTRDpadPlane(Int_t p, Int_t c):TObject(),fPadRow(0),fPadCol(0)
   };
 
   //
-  // Store tilting angle as tangens (opposite direction!)
+  // Store tilting angle as tangens
   //
-  fTiltingTan = TMath::Tan(TMath::Pi()/180.0 * -fTiltingAngle);
+  fTiltingTan = TMath::Tan(TMath::Pi()/180.0 * fTiltingAngle);
 
   //
   // The positions of the borders of the pads
@@ -429,32 +429,28 @@ Int_t AliTRDpadPlane::GetPadColNumber(const Double_t rphi
   Int_t    middle    = 0;
   Double_t rphiShift = 0;
 
-  if ((rphi > GetCol0()) || (rphi < GetColEnd())) {
+  //
+  // Take the tilting angle into account by shifting the hit position
+  // into the opposite direction
+  //
+  rphiShift = rphi - (fTiltingTan * rowOffset);
+
+  if ((rphiShift > GetCol0()) || (rphiShift < GetColEnd())) {
 
     col = -1;
 
   }
   else {
 
-    //
-    // Take the tilting angle into account by shifting the hit position
-    // into the opposite direction
-    //
-
-    rphiShift = rphi + fTiltingTan * rowOffset;
-
     nabove = fNcols+1;
     nbelow = 0;
     while (nabove - nbelow > 1) {
       middle = (nabove + nbelow) / 2;
-      if (rphi == fPadCol[middle-1]) col    = middle;
-      if (rphi  > fPadCol[middle-1]) nabove = middle;
-      else                           nbelow = middle;
+      if (rphiShift == fPadCol[middle-1]) col    = middle;
+      if (rphiShift  > fPadCol[middle-1]) nabove = middle;
+      else                                nbelow = middle;
     }
     col = nbelow - 1;
-
-    //printf("rphi=%f, rphiShift=%f, col=%d, colH=%f\n"
-    //   ,rphi,rphiShift,col,fPadCol[col]);
 
   }
 
