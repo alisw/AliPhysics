@@ -241,18 +241,10 @@ void AliTRDv1::CreateTRhit(Int_t det)
       }
 
       // The absorbtion cross sections in the drift gas
-      if (fGasMix == 1) {
-        // Gas-mixture (Xe/CO2)
-        Double_t muXe = fTR->GetMuXe(energyMeV);
-        Double_t muCO = fTR->GetMuCO(energyMeV);
-        sigma = (0.85 * muXe + 0.15 * muCO) * fGasDensity * fTR->GetTemp();
-      }
-      else {
-        // Gas-mixture (Xe/Isobutane) 
-        Double_t muXe = fTR->GetMuXe(energyMeV);
-        Double_t muBu = fTR->GetMuBu(energyMeV);
-        sigma = (0.97 * muXe + 0.03 * muBu) * fGasDensity * fTR->GetTemp();
-      }
+      // Gas-mixture (Xe/CO2)
+      Double_t muXe = fTR->GetMuXe(energyMeV);
+      Double_t muCO = fTR->GetMuCO(energyMeV);
+      sigma = (0.85 * muXe + 0.15 * muCO) * fGasDensity * fTR->GetTemp();
 
       // The distance after which the energy of the TR photon
       // is deposited.

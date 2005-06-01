@@ -63,7 +63,6 @@ AliTRD::AliTRD()
   //
 
   fIshunt        = 0;
-  fGasMix        = 0;
   fHits          = 0;
   fDigits        = 0;
 
@@ -110,14 +109,13 @@ AliTRD::AliTRD(const char *name, const char *title)
   saveDir->cd();
 
   // Allocate the hit array
-  fHits           = new TClonesArray("AliTRDhit"     ,405);
+  fHits          = new TClonesArray("AliTRDhit"     ,405);
   gAlice->GetMCApp()->AddHitList(fHits);
 
   // Allocate the digits array
-  fDigits         = 0;
+  fDigits        = 0;
 
   fIshunt        = 0;
-  fGasMix        = 1;
 
   fGasDensity    = 0;
   fFoilDensity   = 0;
@@ -430,7 +428,6 @@ void AliTRD::Copy(TObject &trd) const
   // Copy function
   //
 
-  ((AliTRD &) trd).fGasMix      = fGasMix;
   ((AliTRD &) trd).fGeometry    = fGeometry;       
   ((AliTRD &) trd).fGasDensity  = fGasDensity;
   ((AliTRD &) trd).fFoilDensity = fFoilDensity;
@@ -464,76 +461,73 @@ void AliTRD::CreateMaterials()
 {
   //
   // Create the materials for the TRD
-  // Origin Y.Foka
   //
 
   Int_t   isxfld = gAlice->Field()->Integ();
   Float_t sxmgmx = gAlice->Field()->Max();
   
   // For polyethilene (CH2) 
-  Float_t ape[2] = { 12., 1. };
-  Float_t zpe[2] = {  6., 1. };
-  Float_t wpe[2] = {  1., 2. };
+  Float_t ape[2] = { 12.011 ,  1.0079 };
+  Float_t zpe[2] = {  6.0   ,  1.0    };
+  Float_t wpe[2] = {  1.0   ,  2.0    };
   Float_t dpe    = 0.95;
 
   // For mylar (C5H4O2) 
-  Float_t amy[3] = { 12., 1., 16. };
-  Float_t zmy[3] = {  6., 1.,  8. };
-  Float_t wmy[3] = {  5., 4.,  2. };
+  Float_t amy[3] = { 12.011 ,  1.0079, 15.9994 };
+  Float_t zmy[3] = {  6.0   ,  1.0   ,  8.0    };
+  Float_t wmy[3] = {  5.0   ,  4.0   ,  2.0    };
   Float_t dmy    = 1.39;
 
   // For CO2 
-  Float_t aco[2] = { 12., 16. };
-  Float_t zco[2] = {  6.,  8. };
-  Float_t wco[2] = {  1.,  2. };
+  Float_t aco[2] = { 12.011 , 15.9994 };
+  Float_t zco[2] = {  6.0   ,  8.0    };
+  Float_t wco[2] = {  1.0   ,  2.0    };
   Float_t dco    = 0.001977;
 
   // For water
-  Float_t awa[2] = {  1., 16. };
-  Float_t zwa[2] = {  1.,  8. };
-  Float_t wwa[2] = {  2.,  1. };
+  Float_t awa[2] = {  1.0079, 15.9994 };
+  Float_t zwa[2] = {  1.0   ,  8.0    };
+  Float_t wwa[2] = {  2.0   ,  1.0    };
   Float_t dwa    = 1.0;
 
   // For isobutane (C4H10)
-  Float_t ais[2] = { 12.,  1. };
-  Float_t zis[2] = {  6.,  1. };
-  Float_t wis[2] = {  4., 10. };
+  Float_t ais[2] = { 12.011 ,  1.0079 };
+  Float_t zis[2] = {  6.0   ,  1.0    };
+  Float_t wis[2] = {  4.0   , 10.0    };
   Float_t dis    = 0.00267;
 
   // For plexiglas (C5H8O2)
-  Float_t apg[3] = { 12.011 ,  1.0    , 15.9994 };
-  Float_t zpg[3] = {  6.0   ,  1.0    ,  8.0    };
-  Float_t wpg[3] = {  5.0   ,  8.0    ,  2.0    };
+  Float_t apg[3] = { 12.011 ,  1.0079, 15.9994 };
+  Float_t zpg[3] = {  6.0   ,  1.0   ,  8.0    };
+  Float_t wpg[3] = {  5.0   ,  8.0   ,  2.0    };
   Float_t dpg    = 1.18; 
   
   // For epoxy (C18H19O3)
-  Float_t aEpoxy[3] = { 15.9994 ,  1.00794 , 12.0107 }; 
-  Float_t zEpoxy[3] = {  8.0    ,  1.0     ,  6.0    }; 
-  Float_t wEpoxy[3] = {  3.0    , 19.0     , 18.0    }; 
+  Float_t aEpoxy[3] = { 15.9994,  1.0079, 12.011  }; 
+  Float_t zEpoxy[3] = {  8.0   ,  1.0   ,  6.0    }; 
+  Float_t wEpoxy[3] = {  3.0   , 19.0   , 18.0    }; 
   Float_t dEpoxy    = 1.8 ; 
 
   // For air  
-  Float_t aAir[4]   = { 12.0      , 14.0      , 16.0      , 36.0     };
-  Float_t zAir[4]   = {  6.0      ,  7.0      ,  8.0      , 18.0     };
-  Float_t wAir[4]   = {  0.000124 ,  0.755267 ,  0.231781 ,  0.012827};
+  Float_t aAir[4]   = { 12.011   , 14.0     , 15.9994  , 36.0      };
+  Float_t zAir[4]   = {  6.0     ,  7.0     ,  8.0     , 18.0      };
+  Float_t wAir[4]   = {  0.000124,  0.755267,  0.231781,  0.012827 };
   Float_t dAir      = 1.20479E-3;
 
   // For G10
-  Float_t aG10[4]   = {  1.0         , 12.011       , 15.9994      , 28.086       };
-  Float_t zG10[4]   = {  1.0         ,  6.0         ,  8.0         , 14.0         };
-  //PH  Float_t wG10[4]   = {  0.148648649 ,  0.104054054 ,  0.483499056 ,  0.241666667 };
-  Float_t wG10[4]={0.15201,0.10641,0.49444,0.24714};
+  Float_t aG10[4]   = {  1.0079  , 12.011   , 15.9994  , 28.086    };
+  Float_t zG10[4]   = {  1.0     ,  6.0     ,  8.0     , 14.0      };
+  Float_t wG10[4]   = {  0.15201 ,  0.10641 ,  0.49444 ,  0.24714  };
   Float_t dG10      = 1.7;
 
   // For Xe/CO2-gas-mixture 
-  Float_t aXeCO2[3] = { 39.948, 12.0107, 15.9994 };
-  Float_t zXeCO2[3] = { 18.0,    6.0,     8.0    };
-  Float_t wXeCO2[3] = {  0.85,   0.0375,  0.1125 };
+  Float_t aXeCO2[3] = { 131.29   ,  12.0107 ,  15.9994  };
+  Float_t zXeCO2[3] = {  54.0    ,   6.0    ,   8.0     };
+  Float_t wXeCO2[3] = {   0.85   ,   0.0375 ,   0.1125  };
   // Xe-content of the Xe/CO2-mixture (85% / 15%) 
-  Float_t fxc    = .85;
-  // Xe-content of the Xe/Isobutane-mixture (97% / 3%) 
-  Float_t fxi    = .97;
-  Float_t dxe    = .005858;
+  Float_t fxc       = 0.85;
+  Float_t dxe       = 0.00549;
+  Float_t dgm       = fxc * dxe + (1.0 - fxc) * dco;
   
   // General tracking parameter
   Float_t tmaxfd = -10.;
@@ -542,60 +536,29 @@ void AliTRD::CreateMaterials()
   Float_t epsil  =  1e-4;
   Float_t stmin  = -0.001;
   
-  Float_t absl, radl, d, buf[1];
-  Float_t agm[2], zgm[2], wgm[2];
-  Float_t dgm1, dgm2;
-  Int_t   nbuf;
-  
   //////////////////////////////////////////////////////////////////////////
   //     Define Materials 
   //////////////////////////////////////////////////////////////////////////
 
   AliMaterial( 1, "Al"   ,  26.98, 13.0, 2.7     ,     8.9 ,    37.2);
-  //AliMaterial( 2, "Air"  ,  14.61,  7.3, 0.001205, 30420.0 , 67500.0);
-  AliMaterial( 4, "Xe"   , 131.29, 54.0, dxe     ,  1447.59,     0.0);
+  AliMaterial( 4, "Xe"   , 131.29, 54.0, dxe     ,  1546.16,     0.0);
   AliMaterial( 5, "Cu"   ,  63.54, 29.0, 8.96    ,     1.43,    14.8);
   AliMaterial( 6, "C"    ,  12.01,  6.0, 2.265   ,    18.8 ,    74.4);
-  //AliMaterial(12, "G10"  ,  20.00, 10.0, 1.7     ,    19.4 ,   999.0);
   AliMaterial(15, "Sn"   , 118.71, 50.0, 7.31    ,     1.21,    14.8);
   AliMaterial(16, "Si"   ,  28.09, 14.0, 2.33    ,     9.36,    37.2);
-  //AliMaterial(17, "Epoxy",  17.75,  8.9, 1.8     ,    21.82,   999.0);
 
   // Mixtures 
-  AliMixture(2, "Air"         ,  aAir,  zAir,  dAir,  4,   wAir);
-  AliMixture(3, "Polyethilene",   ape,   zpe,   dpe, -2,    wpe);
-  AliMixture(7, "Mylar",          amy,   zmy,   dmy, -3,    wmy);
-  AliMixture(8, "CO2",            aco,   zco,   dco, -2,    wco);
-  AliMixture(9, "Isobutane",      ais,   zis,   dis, -2,    wis);
-  AliMixture(12,"G10",           aG10,  zG10,  dG10,  4,   wG10);
-  AliMixture(13,"Water",          awa,   zwa,   dwa, -2,    wwa);
-  AliMixture(14,"Plexiglas",      apg,   zpg,   dpg, -3,    wpg);
-  AliMixture(17,"Epoxy",       aEpoxy,zEpoxy,dEpoxy, -3, wEpoxy);
+  AliMixture(2, "Air"         , aAir,   zAir,   dAir,    4, wAir  );
+  AliMixture(3, "Polyethilene", ape,    zpe,    dpe,    -2, wpe   );
+  AliMixture(7, "Mylar",        amy,    zmy,    dmy,    -3, wmy   );
+  AliMixture(8, "CO2",          aco,    zco,    dco,    -2, wco   );
+  AliMixture(9, "Isobutane",    ais,    zis,    dis,    -2, wis   );
+  AliMixture(10,"Gas mixture",  aXeCO2, zXeCO2, dgm,     3, wXeCO2);
+  AliMixture(12,"G10",          aG10,   zG10,   dG10,    4, wG10  );
+  AliMixture(13,"Water",        awa,    zwa,    dwa,    -2, wwa   );
+  AliMixture(14,"Plexiglas",    apg,    zpg,    dpg,    -3, wpg   );
+  AliMixture(17,"Epoxy",        aEpoxy, zEpoxy, dEpoxy, -3, wEpoxy);
 
-  // Gas mixtures
-  Char_t namate[21]="";
-  // Xe/CO2-mixture
-  // Get properties of Xe 
-  //gMC->Gfmate((*fIdmate)[4], namate, agm[0], zgm[0], d, radl, absl, buf, nbuf);
-  // Get properties of CO2 
-  //gMC->Gfmate((*fIdmate)[8], namate, agm[1], zgm[1], d, radl, absl, buf, nbuf);
-  // Create gas mixture 
-  wgm[0] = fxc;
-  wgm[1] = 1. - fxc;
-  dgm1   = wgm[0] * dxe + wgm[1] * dco;
-  AliMixture(10, "Gas mixture 1", aXeCO2, zXeCO2, dgm1,  3, wXeCO2);
-
-  // Xe/Isobutane-mixture
-  // Get properties of Xe 
-  gMC->Gfmate((*fIdmate)[4], namate, agm[0], zgm[0], d, radl, absl, buf, nbuf);
-  // Get properties of Isobutane
-  gMC->Gfmate((*fIdmate)[9], namate, agm[1], zgm[1], d, radl, absl, buf, nbuf);
-  // Create gas mixture 
-  wgm[0] = fxi;
-  wgm[1] = 1. - fxi;
-  dgm2   = wgm[0] * dxe + wgm[1] * dis;
-  AliMixture(11, "Gas mixture 2", agm, zgm, dgm2,  2, wgm);
- 
   //////////////////////////////////////////////////////////////////////////
   //     Tracking Media Parameters 
   //////////////////////////////////////////////////////////////////////////
@@ -624,16 +587,9 @@ void AliTRD::CreateMaterials()
   // Mylar foils 
   AliMedium(8, "Mylar",      7, 0, isxfld, sxmgmx
                 , tmaxfd, stemax, deemax, epsil, stmin);
-  if (fGasMix == 1) {
-    // Gas-mixture (Xe/CO2) 
-    AliMedium(9, "Gas-mix",   10, 1, isxfld, sxmgmx
-                  , tmaxfd, stemax, deemax, epsil, stmin);
-  }
-  else {
-    // Gas-mixture (Xe/Isobutane) 
-    AliMedium(9, "Gas-mix",   11, 1, isxfld, sxmgmx
-                  , tmaxfd, stemax, deemax, epsil, stmin);
-  }
+  // Gas-mixture (Xe/CO2) 
+  AliMedium(9, "Gas-mix",   10, 1, isxfld, sxmgmx
+                , tmaxfd, stemax, deemax, epsil, stmin);
   // Nomex-honeycomb (use carbon for the time being) 
   AliMedium(10, "Nomex",      6, 0, isxfld, sxmgmx
                 , tmaxfd, stemax, deemax, epsil, stmin);
@@ -685,10 +641,7 @@ void AliTRD::CreateMaterials()
 
   // Save the density values for the TRD absorbtion
   fFoilDensity = dmy;
-  if (fGasMix == 1)
-    fGasDensity = dgm1;
-  else
-    fGasDensity = dgm2;
+  fGasDensity  = dgm;
 
 }
 
@@ -790,13 +743,6 @@ void AliTRD::Init()
     printf("%s: Not a valid geometry\n",ClassName());
   }
   
-  if (fGasMix == 1) {
-    printf("%s: Gas Mixture: 85%% Xe + 15%% CO2\n",ClassName());
-  }
-  else {
-    printf("%s: Gas Mixture: 97%% Xe + 3%% Isobutane\n",ClassName());
-  }
-
 }
 
 //_____________________________________________________________________________
@@ -980,24 +926,6 @@ void AliTRD::SetTreeAddress()
     fHits = new TClonesArray("AliTRDhit",405);
   }
   AliDetector::SetTreeAddress();
-
-}
-
-//_____________________________________________________________________________
-void AliTRD::SetGasMix(Int_t imix)
-{
-  //
-  // Defines the gas mixture (imix=0:  Xe/Isobutane imix=1: Xe/CO2)
-  //
-  
-  if ((imix < 0) || (imix > 1)) {
-    printf("Wrong input value: %d\n",imix);
-    printf("Use standard setting\n");
-    fGasMix = 1;
-    return;
-  }
-
-  fGasMix = imix;
 
 }
 
