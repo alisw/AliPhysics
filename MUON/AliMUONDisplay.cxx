@@ -54,6 +54,7 @@
 #include "AliMUONTrack.h"
 #include "AliMUONTrackParam.h"
 
+#include "AliMUONGeometrySegmentation.h"
 #include "AliSegmentation.h"
 #include "AliMUONChamber.h"
 #include "AliMUONConstants.h"
@@ -551,9 +552,11 @@ void AliMUONDisplay::DrawSegmentation()
     
     AliMUON *pMUON  = (AliMUON*)gAlice->GetModule("MUON");
     AliMUONChamber*   iChamber;
+
     AliSegmentation*  seg;
     iChamber = &(pMUON->Chamber(fChamber));
     seg=iChamber->SegmentationModel(icat);
+
     Float_t zpos=iChamber->Z();
     Float_t r=iChamber->ROuter();
     
@@ -919,8 +922,9 @@ void AliMUONDisplay::LoadDigits(Int_t chamber, Int_t cathode)
     
     AliMUON *pMUON  =     (AliMUON*)gAlice->GetModule("MUON");
     AliMUONChamber*       iChamber;
-    AliSegmentation*      segmentation;
-   
+    AliSegmentation*      segmentation = 0x0;
+    AliMUONGeometrySegmentation*  segmentation2 = 0x0;
+
     GetMUONData()->SetTreeAddress("D");
 
     TClonesArray *muonDigits  = GetMUONData()->Digits(chamber-1);
@@ -941,7 +945,11 @@ void AliMUONDisplay::LoadDigits(Int_t chamber, Int_t cathode)
     
     iChamber = &(pMUON->Chamber(chamber-1));
 
-    segmentation = iChamber->SegmentationModel(cathode);
+    if (pMUON->WhichSegmentation()==1) 
+      segmentation = iChamber->SegmentationModel(cathode);
+    else
+      segmentation2 = iChamber->SegmentationModel2(cathode);
+
     Float_t zpos = iChamber->Z();
 
     AliMUONDigit  *mdig;
@@ -983,11 +991,21 @@ void AliMUONDisplay::LoadDigits(Int_t chamber, Int_t cathode)
 
 	// get the center of the pad - add on x and y half of pad size
 	Float_t xpad, ypad, zpad;
-	segmentation->GetPadC(mdig->PadX(), mdig->PadY(), xpad, ypad, zpad);
-	
-        Int_t   isec = segmentation->Sector(mdig->PadX(), mdig->PadY());
-        Float_t  dpx = segmentation->Dpx(isec)/2;
-        Float_t  dpy = segmentation->Dpy(isec)/2;
+	Int_t isec;
+	Float_t dpx, dpy;
+
+	if (pMUON->WhichSegmentation()==1) {
+	  segmentation->GetPadC(mdig->PadX(), mdig->PadY(), xpad, ypad, zpad);
+	  isec = segmentation->Sector(mdig->PadX(), mdig->PadY());
+	  dpx = segmentation->Dpx(isec)/2;
+	  dpy = segmentation->Dpy(isec)/2;
+	} else {
+	  Int_t detElemId = mdig->DetElemId();
+	  segmentation2->GetPadC(detElemId, mdig->PadX(), mdig->PadY(), xpad, ypad, zpad);
+	  isec = segmentation2->Sector(detElemId, mdig->PadX(), mdig->PadY());
+	  dpx = segmentation2->Dpx(detElemId, isec)/2;
+	  dpy = segmentation2->Dpy(detElemId, isec)/2;
+	}
 //
 //	segmentation->Dump();
 	
