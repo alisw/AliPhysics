@@ -94,7 +94,7 @@ void AliRICH::Hits2SDigits()
     GetLoader()->GetRunLoader()->GetEvent(iEventN);//get next event
   
     if(!GetLoader()->TreeH()) GetLoader()->LoadHits();    GetLoader()->GetRunLoader()->LoadHeader(); 
-             if(!GetLoader()->GetRunLoader()->TreeK())    GetLoader()->GetRunLoader()->LoadKinematics();//from
+    if(!GetLoader()->GetRunLoader()->TreeK())             GetLoader()->GetRunLoader()->LoadKinematics();//from
     if(!GetLoader()->TreeS()) GetLoader()->MakeTree("S"); MakeBranch("S");//to
           
     for(Int_t iPrimN=0;iPrimN<GetLoader()->TreeH()->GetEntries();iPrimN++){//prims loop
@@ -126,7 +126,7 @@ void AliRICH::Hits2SDigits()
     }//prims loop
     GetLoader()->TreeS()->Fill();
     GetLoader()->WriteSDigits("OVERWRITE");
-    ResetSDigits();
+    SDigitsReset();
   }//events loop  
   GetLoader()->UnloadHits(); GetLoader()->GetRunLoader()->UnloadHeader(); GetLoader()->GetRunLoader()->UnloadKinematics();
   GetLoader()->UnloadSDigits();  
@@ -930,8 +930,7 @@ void AliRICH::DisplayEvent(Int_t iEvtNmin,Int_t iEvtNmax)const
   
   if(iEvtNmax>gAlice->GetEventsPerRun()) iEvtNmax=gAlice->GetEventsPerRun();
 
-  TLatex t;  t.SetTextSize(0.10);
-  t.DrawText(0.1,0.6,"RICH Display");
+  TLatex t;  t.SetTextSize(0.1);
   for(Int_t iEventN=iEvtNmin;iEventN<=iEvtNmax;iEventN++) {//events loop
     canvas->cd(1);
     t.DrawText(0.2,0.4,Form("Event Number %i",iEventN));        
@@ -1061,5 +1060,3 @@ Int_t AliRICH::Nparticles(Int_t iPartID,Int_t iEvtN,AliRunLoader *pRL)
   pRL->UnloadKinematics();
   return iCounter;
 }
-//__________________________________________________________________________________________________
-

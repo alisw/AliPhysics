@@ -97,12 +97,13 @@ void RichGet()
 void MenuRich()
 {
   TControlBar *pMenu = new TControlBar("vertical","RICH");
-  pMenu->AddButton("Display"          ,"r->Display();"  , "Display Fast");
-  pMenu->AddButton("Print hits"       ,"rh();"          ,"????");
-  pMenu->AddButton("Print sdigits"    ,"rs();"          ,"????");
-  pMenu->AddButton("Print digits"     ,"rd();"          ,"????");
-  pMenu->AddButton("Print clusters"   ,"rc();"          ,"????");  
-  pMenu->AddButton("Hits plots"       ,"r->AnaHits()"   ,"????");
+  pMenu->AddButton("Display single chambers"          ,"r->Display();"  , "Display Fast");
+  pMenu->AddButton("Display ALL chambers"          ,"r->DisplayEvent(0,0);"  , "Display Fast");
+  pMenu->AddButton("Print hits"       ,"r->HitsPrint();"      ,"????");
+  pMenu->AddButton("Print sdigits"    ,"r->SDigitsPrint();"   ,"????");
+  pMenu->AddButton("Print digits"     ,"r->DigitsPrint();"    ,"????");
+  pMenu->AddButton("Print clusters"   ,"r->ClustersPrint();"  ,"????");  
+  pMenu->AddButton("Hits plots"       ,"r->AnaHits()"         ,"????");
   pMenu->AddButton("Recon with stack" ,"r->CheckPR()"                                           , "Create RSR.root with ntuple hn");    
   pMenu->Show();  
 }//TestMenu()

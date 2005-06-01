@@ -131,10 +131,15 @@ public:
          static Double_t CogCorr(Double_t x) {return 3.31267e-2*TMath::Sin(2*TMath::Pi()/PadSizeX()*x) //correction of cluster CoG due to sinoidal
                                                     -2.66575e-3*TMath::Sin(4*TMath::Pi()/PadSizeX()*x)
                                                     +2.80553e-3*TMath::Sin(6*TMath::Pi()/PadSizeX()*x);}
-         static void ReadErrFiles();                                                                  //Read Err file parameters
-         static TVector3 SigmaSinglePhoton(Int_t Npart, Double_t mom, Double_t theta, Double_t phi);  //Find Sigma for single photon
+         static void     ReadErrFiles();                                                                  //Read Err file parameters
+         static TVector3 SigmaSinglePhoton(Int_t Npart, Double_t mom, Double_t theta, Double_t phi);      //Find Sigma for single photon
          static Double_t Interpolate(Double_t par[4][330],Double_t x, Double_t y, Double_t phi);          //Find the error value from interpolation
          
+         static void     FowardTracing(TVector3 entranceTrackPoint,TVector3 vectorTrack, Double_t thetaC, Double_t phiC); //it traces foward a photon from Emission Point to PC
+         static TVector3 PlaneIntersect(TVector3 vstart,TVector3 p0,TVector3 n,TVector3 v0);              //it finds intersection between straight track and plane
+         static Double_t SnellAngle(Float_t n1, Float_t n2, Float_t theta1);                              // Snell law
+         static void     AnglesInDRS(Double_t trackTheta,Double_t trackPhi,Double_t thetaCerenkov,Double_t phiCerenkov,Double_t &tout,Double_t &pout);//It finds photon angles in 
+                                                                                                                                                      //Detector Reference System
   
   static Bool_t     fgIsAerogel;                            //aerogel geometry instead of normal RICH flag
 protected:

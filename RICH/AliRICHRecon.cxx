@@ -414,7 +414,7 @@ void AliRICHRecon::FindThetaPhotonCerenkov()
 
       nIteration++;
       if(nIteration>=50) {
-	AliDebug(1,Form(" max iterations in FindPhotonCerenkov ",nIteration));
+//	AliDebug(1,Form(" max iterations in FindPhotonCerenkov ",nIteration));
 	SetThetaPhotonCerenkov(999.);
 	return;
       }
