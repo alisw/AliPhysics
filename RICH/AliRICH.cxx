@@ -1092,27 +1092,31 @@ void AliRICH::ReadESD(Int_t iEventN, Int_t iChamber)const
   
   for(Int_t iTrackN=0;iTrackN<iNtracks;iTrackN++){//ESD tracks loop
     AliESDtrack *pTrack = pESD->GetTrack(iTrackN);// get next reconstructed track
-    Int_t iChTrack = pTrack->GetRICHcluster()/100000;
-    if(iChTrack==iChamber) {
-      Double_t thetaCer = pTrack->GetRICHsignal();
-      if(thetaCer<0) continue;
-      Int_t charge = (Int_t)(-TMath::Sign(1.,pTrack->GetSign()*b));
-      AliRICHHelix helix(pTrack->X3(),pTrack->P3(),charge,b);
-      helix.RichIntersect(P());        
-      TVector3 entrance(helix.PosRad().X(),helix.PosRad().Y(),0);
-      Double_t thetaTrack,phiTrack;
-      pTrack->GetRICHthetaPhi(thetaTrack,phiTrack);
-      TVector3 vectorTrack;
-      vectorTrack.SetMagThetaPhi(pTrack->GetP(),thetaTrack,phiTrack);
-      AliInfo(Form("Draw ring started for track %i on chamber %i",iTrackN,iChamber));
-      AliInfo(Form("ThetaCer %f TrackTheta %f TrackPhi %f Momentum %f",thetaCer,thetaTrack,phiTrack,pTrack->GetP()));
-      Double_t dx,dy;
-      pTrack->GetRICHdxdy(dx,dy);
-      AliInfo(Form("dx %f dy %f ",dx,dy));
-      DrawRing(entrance,vectorTrack,thetaCer);
+    Int_t charge = (Int_t)(-TMath::Sign(1.,pTrack->GetSign()*b));
+    AliRICHHelix helix(pTrack->X3(),pTrack->P3(),charge,b);
+    Int_t iChamberOnRICH=helix.RichIntersect(P());        
+    if(iChamberOnRICH==iChamber) {
+//
       TMarker *trackImpact = new TMarker(helix.PosPc().X(),helix.PosPc().Y(),kStar);
       trackImpact->SetMarkerColor(kRed);
       trackImpact->Draw();
+//
+      Int_t iChamberRecon = pTrack->GetRICHcluster()/100000;
+      if(iChamberRecon==iChamber) {
+        Double_t thetaCer = pTrack->GetRICHsignal();
+        if(thetaCer<0) continue;
+        TVector3 entrance(helix.PosRad().X(),helix.PosRad().Y(),0);
+        Double_t thetaTrack,phiTrack;
+        pTrack->GetRICHthetaPhi(thetaTrack,phiTrack);
+        TVector3 vectorTrack;
+        vectorTrack.SetMagThetaPhi(pTrack->GetP(),thetaTrack,phiTrack);
+        AliInfo(Form("Draw ring started for track %i on chamber %i",iTrackN,iChamber));
+        AliInfo(Form("ThetaCer %f TrackTheta %f TrackPhi %f Momentum %f",thetaCer,thetaTrack,phiTrack,pTrack->GetP()));
+        Double_t dx,dy;
+        pTrack->GetRICHdxdy(dx,dy);
+        AliInfo(Form("dx %f dy %f ",dx,dy));
+        DrawRing(entrance,vectorTrack,thetaCer);
+      }
     }
   }
   delete pESD;  pFile->Close();//close AliESDs.root
@@ -1129,7 +1133,7 @@ void AliRICH::DrawRing(TVector3 entrance,TVector3 vectorTrack,Double_t thetaCer)
     if(pos.X()==-999) continue;
     xGraph[nPointsToDraw] = pos.X();yGraph[nPointsToDraw] = pos.Y();nPointsToDraw++;
   }
-  AliInfo(Form("Npoints per ring %i",nPointsToDraw));
+//  AliInfo(Form("Npoints per ring %i",nPointsToDraw));
   TGraph *gra = new TGraph(nPointsToDraw,xGraph,yGraph);
   gra->Draw("C");  
 }
