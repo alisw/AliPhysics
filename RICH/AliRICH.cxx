@@ -17,6 +17,7 @@
 #include "AliRICHParam.h"
 #include "AliRICHChamber.h"
 #include "AliRICHTracker.h"
+#include "AliRICHHelix.h"
 //#include <TArrayF.h>
 #include <TGeometry.h>
 #include <TBRIK.h>
@@ -41,6 +42,7 @@
 #include <AliRawDataHeader.h>
 #include <TLatex.h> //Display()
 #include <TCanvas.h> //Display()
+#include <TGraph.h> //Display()
  
 ClassImp(AliRICH)    
 //__________________________________________________________________________________________________
@@ -1005,6 +1007,9 @@ void AliRICH::Display()const
       pHitsH2->SetTitle(Form("event %i chamber %2i",iEventN,iChamber));
       pHitsH2->SetMarkerColor(kRed); pHitsH2->SetMarkerStyle(29); pHitsH2->SetMarkerSize(0.4);
       pHitsH2->Draw();
+
+      ReadESD(iEventN,iChamber);
+
       AliRICHParam::DrawSectors();
       TLatex l; l.SetNDC(); l.SetTextSize(0.02);
       if(!isHits)     {l.SetTextColor(kRed)  ;l.DrawLatex(0.1,0.01,"No Hits"    );}
@@ -1059,4 +1064,59 @@ Int_t AliRICH::Nparticles(Int_t iPartID,Int_t iEvtN,AliRunLoader *pRL)
   pRL->UnloadHeader();
   pRL->UnloadKinematics();
   return iCounter;
+}
+//__________________________________________________________________________________________________
+void AliRICH::ReadESD(Int_t iEventN, Int_t iChamber)const
+{
+//
+//  AliInfo("Start.");
+  TFile *pFile=TFile::Open("AliESDs.root","read");
+  if(!pFile || !pFile->IsOpen()) {AliInfo("ESD file not open.");return;}      //open AliESDs.root                                                                    
+  TTree *pTree = (TTree*) pFile->Get("esdTree");
+  if(!pTree){AliInfo("ESD not found.");return;}                               //get ESD tree
+  
+//  AliInfo("ESD found. Try to draw ring");
+                                                                 
+  AliESD *pESD=new AliESD;  pTree->SetBranchAddress("ESD", &pESD);
+  
+  pTree->GetEvent(iEventN);
+  
+  Double_t b = pESD->GetMagneticField()/10.;
+  
+  Int_t iNtracks=pESD->GetNumberOfTracks();    
+  
+  for(Int_t iTrackN=0;iTrackN<iNtracks;iTrackN++){//ESD tracks loop
+    AliESDtrack *pTrack = pESD->GetTrack(iTrackN);// get next reconstructed track
+    Int_t iChTrack = pTrack->GetRICHcluster()/100000;
+    if(iChTrack==iChamber) {
+      if(pTrack->GetRICHsignal()<0) continue;
+      Int_t charge = (Int_t)(-TMath::Sign(1.,pTrack->GetSign()*b));
+      AliRICHHelix helix(pTrack->X3(),pTrack->P3(),charge,b);
+      helix.RichIntersect(P());        
+      TVector3 entrance(helix.PosRad().X(),helix.PosRad().Y(),0);
+      Double_t thetaTrack,phiTrack;
+      pTrack->GetRICHthetaPhi(thetaTrack,phiTrack);
+      TVector3 vectorTrack;
+      vectorTrack.SetMagThetaPhi(pTrack->GetP(),thetaTrack,phiTrack);
+//      vectorTrack.SetMagThetaPhi(pTrack->GetP(),thetaTrack,1.5*TMath::Pi());
+//      AliInfo("Draw ring started");
+      DrawRing(entrance,vectorTrack,pTrack->GetRICHsignal());
+    }
+  }
+  delete pESD;  pFile->Close();//close AliESDs.root
+}
+//__________________________________________________________________________________________________
+void AliRICH::DrawRing(TVector3 entrance,TVector3 vectorTrack,Double_t thetaCer)const
+{
+  Double_t xGraph[100],yGraph[100];
+  Int_t nPointsToDraw = 0;
+  for(Int_t i=0;i<100;i++) {
+    Double_t phiCer = 2*TMath::Pi()*i/100;
+    TVector3 pos = AliRICHParam::ForwardTracing(entrance,vectorTrack,thetaCer,phiCer);
+    if(pos.X()==-999.) continue;
+    xGraph[nPointsToDraw] = pos.X();yGraph[nPointsToDraw] = pos.Y();nPointsToDraw++;
+  }
+//  AliInfo(Form("Npoints per ring %i",nPointsToDraw));
+  TGraph *gra = new TGraph(nPointsToDraw,xGraph,yGraph);
+  gra->Draw("C");
 }

@@ -82,6 +82,9 @@ public:
   static Int_t     Nparticles(Int_t iPid,Int_t iEventN,AliRunLoader *pRunLoader); //counts total number of particle with iPid
   void            PrintTracks  (Int_t iEvent=0);                        //prints a list of tracks for a given event
   void            CheckPR      ()const;                                 //utility-> run staff for stack ??????     
+  void            ReadESD(Int_t iEventN, Int_t iChamber)const;
+  void            DrawRing(TVector3 entrance,TVector3 vectorTrack,Double_t thetaCer)const;
+
 protected:  
   enum                  EMedia {kAir=1,kRoha,kSiO2,kC6F14,kCH4,kCsI,kGridCu,kOpSiO2,kGap,kAl,kGlass,kCu,kW,kSteel,kPerpex,kSr90,kMylar,kGel,kReflector};
   enum                  ECounters {kStepManager=0,kCerProdTot,kCerProdRad,kCerKillTot,kCerKillRad,kCerKillRef,kEleProdTot};

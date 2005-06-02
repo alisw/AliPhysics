@@ -71,7 +71,7 @@ void AliRICHTracker::RecWithESD(AliESD *pESD)
 
     Double_t thetaCerenkov=recon.ThetaCerenkov(); //search for mean Cerenkov angle for this track
     
-    pTrack->SetRICHcluster(iMipId);
+    pTrack->SetRICHcluster(iMipId+100000*iChamber);
     pTrack->SetRICHdxdy(distX,distY);
     pTrack->SetRICHthetaPhi(helix.Ploc().Theta(),helix.Ploc().Phi());
     pTrack->SetRICHsignal(thetaCerenkov);

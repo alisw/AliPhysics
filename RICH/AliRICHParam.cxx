@@ -341,46 +341,47 @@ Double_t AliRICHParam::Interpolate(Double_t par[4][330], Double_t x, Double_t y,
   return (1-u)*gj+u*gj1;
 }//Interpolate
 //__________________________________________________________________________________________________
-void AliRICHParam::FowardTracing(TVector3 entranceTrackPoint, TVector3 vectorTrack, Double_t thetaC, Double_t phiC)
+TVector3 AliRICHParam::ForwardTracing(TVector3 entranceTrackPoint, TVector3 vectorTrack, Double_t thetaC, Double_t phiC)
 {
 //
   TVector3 nPlane(0,0,1);
   Double_t planeZposition = 0.5*Zfreon();
   TVector3 planePoint(0,0,planeZposition);
   TVector3 emissionPoint = PlaneIntersect(vectorTrack,entranceTrackPoint,nPlane,planePoint);
-  emissionPoint.Dump();
+//  emissionPoint.Dump();
   Double_t thetaout,phiout;
   AnglesInDRS(vectorTrack.Theta(),vectorTrack.Phi(),thetaC,phiC,thetaout,phiout);
 //  cout << "thetaout "<<thetaout << " phiout " << phiout << endl;
   TVector3 vectorPhotonInC6F14;  
   vectorPhotonInC6F14.SetMagThetaPhi(1,thetaout,phiout);
-  vectorPhotonInC6F14.Dump();
+//  vectorPhotonInC6F14.Dump();
 //  planeZposition=AliRICHParam::C6F14Thickness();
   planeZposition=Zfreon();
   planePoint.SetXYZ(0,0,planeZposition);
   TVector3 entranceToSiO2Point = PlaneIntersect(vectorPhotonInC6F14,emissionPoint,nPlane,planePoint);
-  entranceToSiO2Point.Dump();
+//  entranceToSiO2Point.Dump();
 
   Double_t photonEn = MeanCkovEnergy();
   //  Double_t angleInSiO2 = SnellAngle(AliRICHParam::IndOfRefC6F14(6.755),AliRICHParam::IndOfRefSiO2(6.755),thetaC);
   Double_t angleInSiO2 = SnellAngle(RefIdxC6F14(photonEn),RefIdxSiO2(photonEn),vectorPhotonInC6F14.Theta());
   TVector3 vectorPhotonInSiO2;
-  vectorPhotonInSiO2.SetMagThetaPhi(1,angleInSiO2,phiC);
+  vectorPhotonInSiO2.SetMagThetaPhi(1,angleInSiO2,phiout);
 //  planeZposition+=AliRICHParam::SiO2Thickness();
   planeZposition+=Zwin();
   planePoint.SetXYZ(0,0,planeZposition);
   TVector3 entranceToCH4 = PlaneIntersect(vectorPhotonInSiO2,entranceToSiO2Point,nPlane,planePoint);
-  entranceToCH4.Dump();
+//  entranceToCH4.Dump();
 
   //  Double_t angleInCH4 = SnellAngle(AliRICHParam::IndOfRefSiO2(6.755),AliRICHParam::IndOfRefCH4,angleInSiO2);
   Double_t angleInCH4 = SnellAngle(RefIdxSiO2(photonEn),RefIdxCH4(photonEn),vectorPhotonInSiO2.Theta());
   TVector3 vectorPhotonInCH4;
-  vectorPhotonInCH4.SetMagThetaPhi(1,angleInCH4,phiC);
+  vectorPhotonInCH4.SetMagThetaPhi(1,angleInCH4,phiout);
 //  planeZposition+=AliRICHParam::GapProx();
   planeZposition+=Pc2Win();
   planePoint.SetXYZ(0,0,planeZposition);
   TVector3 impactToPC = PlaneIntersect(vectorPhotonInCH4,entranceToCH4,nPlane,planePoint);
-  impactToPC.Dump();
+//  impactToPC.Dump();
+  return impactToPC;
 }//FowardTracing
 //__________________________________________________________________________________________________
 TVector3 AliRICHParam::PlaneIntersect(TVector3 vstart,TVector3 p0,TVector3 n,TVector3 v0)
@@ -441,6 +442,8 @@ void AliRICHParam::AnglesInDRS(Double_t trackTheta,Double_t trackPhi,Double_t th
   tout=photonInRadiator.Theta();
   pout=photonInRadiator.Phi();
 }//AnglesInDRS
+//__________________________________________________________________________________________________
+
 //__________________________________________________________________________________________________
 //__________________________________________________________________________________________________
 /*

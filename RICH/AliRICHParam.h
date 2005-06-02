@@ -135,7 +135,7 @@ public:
          static TVector3 SigmaSinglePhoton(Int_t Npart, Double_t mom, Double_t theta, Double_t phi);      //Find Sigma for single photon
          static Double_t Interpolate(Double_t par[4][330],Double_t x, Double_t y, Double_t phi);          //Find the error value from interpolation
          
-         static void     FowardTracing(TVector3 entranceTrackPoint,TVector3 vectorTrack, Double_t thetaC, Double_t phiC); //it traces foward a photon from Emission Point to PC
+         static TVector3 ForwardTracing(TVector3 entranceTrackPoint,TVector3 vectorTrack, Double_t thetaC, Double_t phiC); //it traces foward a photon from Emission Point to PC
          static TVector3 PlaneIntersect(TVector3 vstart,TVector3 p0,TVector3 n,TVector3 v0);              //it finds intersection between straight track and plane
          static Double_t SnellAngle(Float_t n1, Float_t n2, Float_t theta1);                              // Snell law
          static void     AnglesInDRS(Double_t trackTheta,Double_t trackPhi,Double_t thetaCerenkov,Double_t phiCerenkov,Double_t &tout,Double_t &pout);//It finds photon angles in 
