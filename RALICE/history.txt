@@ -610,5 +610,13 @@
 25-may-2005 NvE Declaration of unused variable pi removed in AliMath::StudentDist and explicit double
                 specification of integer first argument to pow() in AliMath::FratioPvalue in order
                 to prevent messages from the gcc compiler (thanks Dipo, Philippe and Peter).
+02-jun-2005 NvE Bug fix in copy ctor of AliPosition and beginpoint etc... setting of AliTrack.
+                In AliTrack all points are now set after first deleting the existing AliPositionObj
+                object instead of using the Ali3Vector::Load() memberfunction. 
+                The bug arose because of the extension of AliPosition with the possibility to
+                store an AliTimestamp. This made AliPosition differ from Ali3Vector w.r.t. datamembers.
+                Also "cout << endl;" introduced after the Pylist() call in AliCollider in order to
+                separate the Pythia event listing from subsequent output due to the mis-interpretation
+                of Fortran carriage-control characters on some systems.
                 
  

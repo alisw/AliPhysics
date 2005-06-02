@@ -88,6 +88,7 @@ AliPosition::AliPosition(const AliPosition& p) : Ali3Vector(p)
 {
 // Copy constructor
  fScale=p.fScale;
+ fTstamp=0;
  if (p.fTstamp) fTstamp=new AliTimestamp(*(p.fTstamp));
 }
 ///////////////////////////////////////////////////////////////////////////

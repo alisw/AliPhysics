@@ -740,7 +740,11 @@ void AliCollider::MakeEvent(Int_t npt,Int_t mlist,Int_t medit)
 
    if (medit >= 0) Pyedit(medit); // Define which particles are to be kept
 
-   if (mlist>=0 && select) Pylist(mlist);
+   if (mlist>=0 && select)
+   {
+    Pylist(mlist);
+    cout << endl;
+   }
 
    npart=GetN();
    for (Int_t jpart=1; jpart<=npart; jpart++)

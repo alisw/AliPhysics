@@ -125,7 +125,6 @@ AliTrack::~AliTrack()
 // Destructor to delete memory allocated for decay tracks array.
 // This destructor automatically cleares the pointer of this AliTrack
 // from all the link slots of the related AliSignal objects.
-
  Int_t nsig=GetNsignals();
  for (Int_t i=1; i<=nsig; i++)
  {
@@ -870,14 +869,8 @@ AliTrack* AliTrack::GetTrackHypothesis(Int_t j) const
 void AliTrack::SetBeginPoint(AliPosition& p)
 {
 // Store the position of the track begin-point.
- if (!fBegin)
- {
-  fBegin=new AliPositionObj(p);
- }
- else
- {
-  fBegin->Load(p);
- }
+ if (fBegin) delete fBegin;
+ fBegin=new AliPositionObj(p);
 }
 ///////////////////////////////////////////////////////////////////////////
 AliPosition* AliTrack::GetBeginPoint()
@@ -889,14 +882,8 @@ AliPosition* AliTrack::GetBeginPoint()
 void AliTrack::SetEndPoint(AliPosition& p)
 {
 // Store the position of the track end-point.
- if (!fEnd)
- {
-  fEnd=new AliPositionObj(p);
- }
- else
- {
-  fEnd->Load(p);
- }
+ if (fEnd) delete fEnd;
+ fEnd=new AliPositionObj(p);
 }
 ///////////////////////////////////////////////////////////////////////////
 AliPosition* AliTrack::GetEndPoint()
@@ -912,14 +899,8 @@ void AliTrack::SetReferencePoint(AliPosition& p)
 // 3-momentum vector components have been defined.
 // This reference point is the preferable point to start track extrapolations
 // etc... which are sensitive to the components of the 3-momentum vector.
- if (!fRef)
- {
-  fRef=new AliPositionObj(p);
- }
- else
- {
-  fRef->Load(p);
- }
+ if (fRef) delete fRef;
+ fRef=new AliPositionObj(p);
 }
 ///////////////////////////////////////////////////////////////////////////
 AliPosition* AliTrack::GetReferencePoint()
@@ -1060,36 +1041,18 @@ void AliTrack::SetImpactPoint(AliPosition& p,TString q)
  switch (axis)
  {
   case 1: // Impact-point in the plane X=0
-   if (!fImpactYZ)
-   {
-    fImpactYZ=new AliPositionObj(p);
-   }
-   else
-   {
-    fImpactYZ->Load(p);
-   }
+   if (fImpactYZ) delete fImpactYZ;
+   fImpactYZ=new AliPositionObj(p);
    break;
 
   case 2: // Impact-point in the plane Y=0
-   if (!fImpactXZ)
-   {
-    fImpactXZ=new AliPositionObj(p);
-   }
-   else
-   {
-    fImpactXZ->Load(p);
-   }
+   if (fImpactXZ) delete fImpactXZ;
+   fImpactXZ=new AliPositionObj(p);
    break;
 
   case 3: // Impact-point in the plane Z=0
-   if (!fImpactXY)
-   {
-    fImpactXY=new AliPositionObj(p);
-   }
-   else
-   {
-    fImpactXY->Load(p);
-   }
+   if (fImpactXY) delete fImpactXY;
+   fImpactXY=new AliPositionObj(p);
    break;
 
   default: // Unsupported axis
@@ -1143,14 +1106,8 @@ Int_t AliTrack::GetId() const
 void AliTrack::SetClosestPoint(AliPosition& p)
 {
 // Set position p as the point of closest approach w.r.t. some reference
- if (!fClosest)
- {
-  fClosest=new AliPositionObj(p);
- }
- else
- {
-  fClosest->Load(p);
- }
+ if (fClosest) delete fClosest;
+ fClosest=new AliPositionObj(p);
 }
 ///////////////////////////////////////////////////////////////////////////
 AliPosition* AliTrack::GetClosestPoint()
