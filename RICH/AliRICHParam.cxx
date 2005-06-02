@@ -344,6 +344,7 @@ Double_t AliRICHParam::Interpolate(Double_t par[4][330], Double_t x, Double_t y,
 TVector3 AliRICHParam::ForwardTracing(TVector3 entranceTrackPoint, TVector3 vectorTrack, Double_t thetaC, Double_t phiC)
 {
 //
+  TVector3 vBad(-999,-999,-999);
   TVector3 nPlane(0,0,1);
   Double_t planeZposition = 0.5*Zfreon();
   TVector3 planePoint(0,0,planeZposition);
@@ -362,8 +363,7 @@ TVector3 AliRICHParam::ForwardTracing(TVector3 entranceTrackPoint, TVector3 vect
 //  entranceToSiO2Point.Dump();
 
   Double_t photonEn = MeanCkovEnergy();
-  //  Double_t angleInSiO2 = SnellAngle(AliRICHParam::IndOfRefC6F14(6.755),AliRICHParam::IndOfRefSiO2(6.755),thetaC);
-  Double_t angleInSiO2 = SnellAngle(RefIdxC6F14(photonEn),RefIdxSiO2(photonEn),vectorPhotonInC6F14.Theta());
+  Double_t angleInSiO2 = SnellAngle(RefIdxC6F14(photonEn),RefIdxSiO2(photonEn),vectorPhotonInC6F14.Theta());if(angleInSiO2<0) return vBad;
   TVector3 vectorPhotonInSiO2;
   vectorPhotonInSiO2.SetMagThetaPhi(1,angleInSiO2,phiout);
 //  planeZposition+=AliRICHParam::SiO2Thickness();
@@ -373,7 +373,7 @@ TVector3 AliRICHParam::ForwardTracing(TVector3 entranceTrackPoint, TVector3 vect
 //  entranceToCH4.Dump();
 
   //  Double_t angleInCH4 = SnellAngle(AliRICHParam::IndOfRefSiO2(6.755),AliRICHParam::IndOfRefCH4,angleInSiO2);
-  Double_t angleInCH4 = SnellAngle(RefIdxSiO2(photonEn),RefIdxCH4(photonEn),vectorPhotonInSiO2.Theta());
+  Double_t angleInCH4 = SnellAngle(RefIdxSiO2(photonEn),RefIdxCH4(photonEn),vectorPhotonInSiO2.Theta());if(angleInCH4<0) return vBad;
   TVector3 vectorPhotonInCH4;
   vectorPhotonInCH4.SetMagThetaPhi(1,angleInCH4,phiout);
 //  planeZposition+=AliRICHParam::GapProx();
@@ -411,7 +411,7 @@ Double_t AliRICHParam::SnellAngle(Float_t n1, Float_t n2, Float_t theta1)
 
   if(sinrefractangle>1.) {
     //    cout << " PROBLEMS IN SNELL ANGLE !!!!! " << endl;
-    refractangle = 999.;
+    refractangle = -999.;
     return refractangle;
   }
 

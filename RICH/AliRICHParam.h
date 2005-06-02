@@ -130,7 +130,7 @@ public:
                 
          static Double_t CogCorr(Double_t x) {return 3.31267e-2*TMath::Sin(2*TMath::Pi()/PadSizeX()*x) //correction of cluster CoG due to sinoidal
                                                     -2.66575e-3*TMath::Sin(4*TMath::Pi()/PadSizeX()*x)
-                                                    +2.80553e-3*TMath::Sin(6*TMath::Pi()/PadSizeX()*x);}
+                                                    +2.80553e-3*TMath::Sin(6*TMath::Pi()/PadSizeX()*x)+0.0070;}
          static void     ReadErrFiles();                                                                  //Read Err file parameters
          static TVector3 SigmaSinglePhoton(Int_t Npart, Double_t mom, Double_t theta, Double_t phi);      //Find Sigma for single photon
          static Double_t Interpolate(Double_t par[4][330],Double_t x, Double_t y, Double_t phi);          //Find the error value from interpolation

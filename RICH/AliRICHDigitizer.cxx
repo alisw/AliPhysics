@@ -47,7 +47,7 @@ void AliRICHDigitizer::Exec(Option_t*)
       new(tmpCA[total++]) AliRICHDigit(*(AliRICHDigit*)pInRich->SDigits()->At(i)); 
       ((AliRICHDigit*)tmpCA[total-1])->AddTidOffset(fManager->GetMask(inFileN));//apply TID shift since all inputs count tracks independently starting from 0
     }
-    pInRichLoader->UnloadSDigits();   pInRich->ResetSDigits(); //close current input and reset 
+    pInRichLoader->UnloadSDigits();   pInRich->SDigitsReset(); //close current input and reset 
   }//files loop
   
   tmpCA.Sort();                     //at this point we have a list of all sdigits from all inputs, now sort them according to fPad field
@@ -78,5 +78,5 @@ void AliRICHDigitizer::Exec(Option_t*)
   pOutRichLoader->WriteDigits("OVERWRITE");     //serialize them to file
   
   tmpCA.Clear();                      //remove all tmp sdigits
-  pOutRichLoader->UnloadDigits();   pOutRich->ResetDigits();
+  pOutRichLoader->UnloadDigits();   pOutRich->DigitsReset();
 }//Exec()

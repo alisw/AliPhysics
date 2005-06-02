@@ -51,7 +51,8 @@ void AliRICHTracker::RecWithESD(AliESD *pESD)
     if(!iChamber) continue;//intersection with no chamber found
 //find MIP cluster candidate (cluster which is closest to track intersection point)    
     Double_t distMip=9999,distX=0,distY=0; //min distance between clusters and track position on PC 
-    Int_t iMipId=0; //index of that min distance cluster 
+    Int_t iMipId=0; //index of that min distance cluster
+    Double_t chargeMip=0; //charge of the MIP
     for(Int_t iClusN=0;iClusN<pRich->Clusters(iChamber)->GetEntries();iClusN++){//clusters loop for intersected chamber
       AliRICHCluster *pClus=(AliRICHCluster*)pRich->Clusters(iChamber)->UncheckedAt(iClusN);//get pointer to current cluster
       Double_t distCurrent=pClus->DistTo(helix.PosPc());//distance between current cluster and helix intersection with PC
@@ -60,13 +61,22 @@ void AliRICHTracker::RecWithESD(AliESD *pESD)
         iMipId=iClusN;
         distX=pClus->DistX(helix.PosPc());
         distY=pClus->DistY(helix.PosPc());
+        chargeMip=pClus->Q();
       }//find cluster nearest to the track       
       AliDebug(1,Form("Ploc (%f,%f,%f) dist= %f",helix.Ploc().Mag(),helix.Ploc().Theta()*TMath::RadToDeg(),
                                        helix.Ploc().Phi()*TMath::RadToDeg(),pClus->DistTo(helix.PosPc())));
     }//clusters loop for intersected chamber
     
     AliDebug(1,Form("Min distance cluster: %i dist is %f",iMipId,distMip));
-    
+//
+// HERE CUTS ON GOLD RINGS....
+//
+    if(distMip>1||chargeMip<100) {
+      //track not accepted for pattern recognition
+      pTrack->SetRICHsignal(-999.); //to be improved by flags...
+      continue;
+    }
+//
     AliRICHRecon recon(&helix,pRich->Clusters(iChamber),iMipId); //actual job is done there
 
     Double_t thetaCerenkov=recon.ThetaCerenkov(); //search for mean Cerenkov angle for this track

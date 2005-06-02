@@ -43,6 +43,8 @@
 #include <TLatex.h> //Display()
 #include <TCanvas.h> //Display()
 #include <TGraph.h> //Display()
+#include <TStyle.h> //Display()
+#include <TMarker.h> //Display()
  
 ClassImp(AliRICH)    
 //__________________________________________________________________________________________________
@@ -918,8 +920,8 @@ void AliRICH::DisplayEvent(Int_t iEvtNmin,Int_t iEvtNmax)const
   Bool_t isDigits  =!GetLoader()->LoadDigits();
   if(!isDigits){Error("ShoEvent","No digits. Nothing to display.");return;}
   
-  TCanvas *canvas = new TCanvas("RICHDisplay","RICH Display",0,0,1226,900);   canvas->Divide(3,3);  
-//  gStyle->SetPalette(1);
+  TCanvas *canvas = new TCanvas("RICHDisplay","RICH Display",0,0,1226,900);     
+  gStyle->SetPalette(1);
 
   
   for(Int_t iChamber=1;iChamber<=7;iChamber++) {
@@ -928,12 +930,14 @@ void AliRICH::DisplayEvent(Int_t iEvtNmin,Int_t iEvtNmax)const
     pDigitsH2[iChamber]->SetMarkerStyle(29); 
     pDigitsH2[iChamber]->SetMarkerSize(0.4);
     pDigitsH2[iChamber]->SetStats(kFALSE);
+    pDigitsH2[iChamber]->SetMaximum(300);
   }
   
-  if(iEvtNmax>gAlice->GetEventsPerRun()) iEvtNmax=gAlice->GetEventsPerRun();
+  if(iEvtNmax>gAlice->GetEventsPerRun()||iEvtNmax==0) iEvtNmax=gAlice->GetEventsPerRun()-1;
 
   TLatex t;  t.SetTextSize(0.1);
   for(Int_t iEventN=iEvtNmin;iEventN<=iEvtNmax;iEventN++) {//events loop
+    canvas->Divide(3,3);    
     canvas->cd(1);
     t.DrawText(0.2,0.4,Form("Event Number %i",iEventN));        
 
@@ -944,7 +948,7 @@ void AliRICH::DisplayEvent(Int_t iEvtNmin,Int_t iEvtNmax)const
       for(Int_t j=0;j<Digits(iChamber)->GetEntries();j++) {//digits loop
         AliRICHDigit *pDig = (AliRICHDigit*)Digits(iChamber)->At(j);
         TVector2 x2=AliRICHParam::Pad2Loc(pDig->Pad());
-        pDigitsH2[iChamber]->Fill(x2.X(),x2.Y());
+        pDigitsH2[iChamber]->Fill(x2.X(),x2.Y(),pDig->Q());
       }//digits loop
       if(iChamber==1) canvas->cd(7);
       if(iChamber==2) canvas->cd(8);
@@ -953,12 +957,14 @@ void AliRICH::DisplayEvent(Int_t iEvtNmin,Int_t iEvtNmax)const
       if(iChamber==5) canvas->cd(6);
       if(iChamber==6) canvas->cd(2);
       if(iChamber==7) canvas->cd(3);
-      pDigitsH2[iChamber]->Draw();
+      pDigitsH2[iChamber]->Draw("col");
+      ReadESD(iEventN,iChamber);
+      AliRICHParam::DrawSectors();
     }//chambers loop
     canvas->Update();
     canvas->Modified();
-    
-    if(iEvtNmin<iEvtNmax) gPad->WaitPrimitive();
+
+    if(iEventN<iEvtNmax) {gPad->WaitPrimitive();canvas->Clear();}
   }//events loop
 }//ShowEvent()
 //__________________________________________________________________________________________________
@@ -1006,10 +1012,9 @@ void AliRICH::Display()const
       }//TreeH loop
       pHitsH2->SetTitle(Form("event %i chamber %2i",iEventN,iChamber));
       pHitsH2->SetMarkerColor(kRed); pHitsH2->SetMarkerStyle(29); pHitsH2->SetMarkerSize(0.4);
-      pHitsH2->Draw();
-
       ReadESD(iEventN,iChamber);
-
+      pHitsH2->Draw();
+      ReadESD(iEventN,iChamber);
       AliRICHParam::DrawSectors();
       TLatex l; l.SetNDC(); l.SetTextSize(0.02);
       if(!isHits)     {l.SetTextColor(kRed)  ;l.DrawLatex(0.1,0.01,"No Hits"    );}
@@ -1069,13 +1074,13 @@ Int_t AliRICH::Nparticles(Int_t iPartID,Int_t iEvtN,AliRunLoader *pRL)
 void AliRICH::ReadESD(Int_t iEventN, Int_t iChamber)const
 {
 //
-//  AliInfo("Start.");
+  AliInfo("Start.");
   TFile *pFile=TFile::Open("AliESDs.root","read");
   if(!pFile || !pFile->IsOpen()) {AliInfo("ESD file not open.");return;}      //open AliESDs.root                                                                    
   TTree *pTree = (TTree*) pFile->Get("esdTree");
   if(!pTree){AliInfo("ESD not found.");return;}                               //get ESD tree
   
-//  AliInfo("ESD found. Try to draw ring");
+  AliInfo("ESD found. Try to draw ring");
                                                                  
   AliESD *pESD=new AliESD;  pTree->SetBranchAddress("ESD", &pESD);
   
@@ -1089,7 +1094,8 @@ void AliRICH::ReadESD(Int_t iEventN, Int_t iChamber)const
     AliESDtrack *pTrack = pESD->GetTrack(iTrackN);// get next reconstructed track
     Int_t iChTrack = pTrack->GetRICHcluster()/100000;
     if(iChTrack==iChamber) {
-      if(pTrack->GetRICHsignal()<0) continue;
+      Double_t thetaCer = pTrack->GetRICHsignal();
+      if(thetaCer<0) continue;
       Int_t charge = (Int_t)(-TMath::Sign(1.,pTrack->GetSign()*b));
       AliRICHHelix helix(pTrack->X3(),pTrack->P3(),charge,b);
       helix.RichIntersect(P());        
@@ -1098,12 +1104,19 @@ void AliRICH::ReadESD(Int_t iEventN, Int_t iChamber)const
       pTrack->GetRICHthetaPhi(thetaTrack,phiTrack);
       TVector3 vectorTrack;
       vectorTrack.SetMagThetaPhi(pTrack->GetP(),thetaTrack,phiTrack);
-//      vectorTrack.SetMagThetaPhi(pTrack->GetP(),thetaTrack,1.5*TMath::Pi());
-//      AliInfo("Draw ring started");
-      DrawRing(entrance,vectorTrack,pTrack->GetRICHsignal());
+      AliInfo(Form("Draw ring started for track %i on chamber %i",iTrackN,iChamber));
+      AliInfo(Form("ThetaCer %f TrackTheta %f TrackPhi %f Momentum %f",thetaCer,thetaTrack,phiTrack,pTrack->GetP()));
+      Double_t dx,dy;
+      pTrack->GetRICHdxdy(dx,dy);
+      AliInfo(Form("dx %f dy %f ",dx,dy));
+      DrawRing(entrance,vectorTrack,thetaCer);
+      TMarker *trackImpact = new TMarker(helix.PosPc().X(),helix.PosPc().Y(),kStar);
+      trackImpact->SetMarkerColor(kRed);
+      trackImpact->Draw();
     }
   }
   delete pESD;  pFile->Close();//close AliESDs.root
+  AliInfo("Stop.");
 }
 //__________________________________________________________________________________________________
 void AliRICH::DrawRing(TVector3 entrance,TVector3 vectorTrack,Double_t thetaCer)const
@@ -1113,10 +1126,10 @@ void AliRICH::DrawRing(TVector3 entrance,TVector3 vectorTrack,Double_t thetaCer)
   for(Int_t i=0;i<100;i++) {
     Double_t phiCer = 2*TMath::Pi()*i/100;
     TVector3 pos = AliRICHParam::ForwardTracing(entrance,vectorTrack,thetaCer,phiCer);
-    if(pos.X()==-999.) continue;
+    if(pos.X()==-999) continue;
     xGraph[nPointsToDraw] = pos.X();yGraph[nPointsToDraw] = pos.Y();nPointsToDraw++;
   }
-//  AliInfo(Form("Npoints per ring %i",nPointsToDraw));
+  AliInfo(Form("Npoints per ring %i",nPointsToDraw));
   TGraph *gra = new TGraph(nPointsToDraw,xGraph,yGraph);
-  gra->Draw("C");
+  gra->Draw("C");  
 }

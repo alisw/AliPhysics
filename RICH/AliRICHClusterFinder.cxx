@@ -54,7 +54,7 @@ void AliRICHClusterFinder::Exec(const Option_t *)
     R()->GetLoader()->GetRunLoader()->GetEvent(iEventN);
     
     R()->GetLoader()->MakeTree("R");  R()->MakeBranch("R");
-    R()->ResetDigits();               R()->ClustersReset();
+    R()->DigitsReset();               R()->ClustersReset();
     
     R()->GetLoader()->TreeD()->GetEntry(0);
     for(Int_t iChamber=1;iChamber<=kNchambers;iChamber++){//chambers loop
@@ -63,7 +63,7 @@ void AliRICHClusterFinder::Exec(const Option_t *)
     R()->GetLoader()->TreeR()->Fill();  R()->GetLoader()->WriteRecPoints("OVERWRITE");//write out clusters for current event
   }//events loop  
   
-  R()->ResetDigits();//reset and unload everything
+  R()->DigitsReset();//reset and unload everything
   R()->ClustersReset();
   R()->GetLoader()                ->UnloadDigits(); 
   R()->GetLoader()                ->UnloadRecPoints();  
