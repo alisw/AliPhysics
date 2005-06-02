@@ -28,7 +28,7 @@ class AliPHOSCalibData: public TNamed {
   Float_t GetADCpedestalEmc(Int_t module, Int_t column, Int_t row) const {return fADCpedestalEmc[module][column][row];}
   //
   void SetADCchannelEmc(Int_t module, Int_t column, Int_t row, Float_t value)  {fADCchannelEmc[module][column][row] = value;}
-  void SetADCedestalEmc(Int_t module, Int_t column, Int_t row, Float_t value) {fADCpedestalEmc[module][column][row] = value;}
+  void SetADCpedestalEmc(Int_t module, Int_t column, Int_t row, Float_t value) {fADCpedestalEmc[module][column][row] = value;}
 
  protected:
   Float_t  fADCchannelEmc[5][64][56] ;           // width of one ADC channel in GeV

@@ -98,7 +98,7 @@ void  AliPHOSCalibData::Print(Option_t *option) const
 {
   // Print tables of pedestals and ADC channels
 
-  if (strstr(option,"ped") == 0) {
+  if (strstr(option,"ped")) {
     printf("\n	----	Pedestal values	----\n\n");
     for (Int_t module=0; module<5; module++){
       printf("============== Module %d\n",module+1);
@@ -111,7 +111,7 @@ void  AliPHOSCalibData::Print(Option_t *option) const
     }
   }
 
-  if (strstr(option,"gain") == 0) {
+  if (strstr(option,"gain")) {
     printf("\n	----	ADC channel values	----\n\n");
     for (Int_t module=0; module<5; module++){
       printf("============== Module %d\n",module+1);
