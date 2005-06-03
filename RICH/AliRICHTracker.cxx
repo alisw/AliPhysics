@@ -216,9 +216,9 @@ Int_t AliRICHTracker::LoadClusters(TTree *pTree)
 //__________________________________________________________________________________________________
 void AliRICHTracker::CalcProb(Double_t thetaCer,Double_t pmod, Double_t *sigmaPID, Double_t *richPID)
 {
-// Calculates probability to be a electron-muon-pion-kaon-proton 
+// Calculates probability to be a electron-muon-pion-kaon-proton
 // from the given Cerenkov angle and momentum assuming no initial particle composition
-// (i.e. apriory probability to be the particle of the given sort is the same for all sorts)  
+// (i.e. apriory probability to be the particle of the given sort is the same for all sorts)
   Double_t height[AliPID::kSPECIES];Double_t totalHeight=0;
   Double_t thetaTh[AliPID::kSPECIES];
   for(Int_t iPart=0;iPart<AliPID::kSPECIES;iPart++){
@@ -235,7 +235,9 @@ void AliRICHTracker::CalcProb(Double_t thetaCer,Double_t pmod, Double_t *sigmaPI
     height[iPart] = TMath::Gaus(thetaCer,thetaTh[iPart],sigmaPID[iPart],kTRUE);
     totalHeight +=height[iPart];
     AliDebug(1,Form(" Particle %s with mass %f with height %f and thetaTH %f",AliPID::ParticleName(iPart),mass,height[iPart],thetaTh[iPart]));
+    AliDebug(1,Form(" partial height %15.14f total height %15.14f",height[iPart],totalHeight));
   }
+  if(totalHeight<1e-5) {for(Int_t iPart=0;iPart<AliPID::kSPECIES;iPart++)richPID[iPart]=1.0/AliPID::kSPECIES;return;}
   for(Int_t iPart=0;iPart<AliPID::kSPECIES;iPart++) richPID[iPart] = height[iPart]/totalHeight;
   Int_t iPartNear = TMath::LocMax(AliPID::kSPECIES,richPID);
   if(TMath::Abs(thetaCer-thetaTh[iPartNear])/sigmaPID[iPartNear]>3) for(Int_t iPart=0;iPart<AliPID::kSPECIES;iPart++)richPID[iPart]=1.0/AliPID::kSPECIES;
