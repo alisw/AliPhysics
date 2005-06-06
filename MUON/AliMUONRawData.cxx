@@ -237,16 +237,15 @@ Int_t AliMUONRawData::WriteTrackerDDL(Int_t iCh)
   Int_t nDigits;
   const AliMUONDigit* digit;
 
-  AliMUON *pMUON;
-  AliMUONChamber* iChamber = 0x0;
-  AliMUONGeometrySegmentation* segmentation2[2];
+//   AliMUON *pMUON;
+//   AliMUONChamber* iChamber = 0x0;
+//   AliMUONGeometrySegmentation* segmentation2[2];
 
-  segmentation2[0]=iChamber->SegmentationModel2(1); // cathode 0
-  segmentation2[1]=iChamber->SegmentationModel2(2); // cathode 1
+//   pMUON = (AliMUON*) gAlice->GetModule("MUON");
+//   iChamber =  &(pMUON->Chamber(iCh));
 
-   pMUON = (AliMUON*) gAlice->GetModule("MUON");
-   iChamber =  &(pMUON->Chamber(iCh));
-
+//   segmentation2[0]=iChamber->SegmentationModel2(1); // cathode 0
+//   segmentation2[1]=iChamber->SegmentationModel2(2); // cathode 1
 
    AliDebug(1, Form("WriteDDL chamber %d\n", iCh+1));
 
@@ -274,24 +273,24 @@ Int_t AliMUONRawData::WriteTrackerDDL(Int_t iCh)
       detElemId = digit->DetElemId();
 
       // mapping
-      if (detElemId == 0) {
-	AliWarning("\ndetElemId = 0, old segmentation !\n");
-	GetDummyMapping(iCh, iCath, digit, busPatchId, manuId, channelId);
-      } else {
-      // mapping (not far from real one)
-	AliMUONSegmentManuIndex* connect = segmentation2[iCath]->GetMpConnection(detElemId, padX, padY);
-	if (connect != 0x0) {
-	  busPatchId = connect->GetBusPatchId(); 
-	  manuId     = connect->GetManuId();
-	  channelId  = connect->GetManuChannelId();
-	  AliDebug(3,Form("busPatchId %d, manuId: %d, channelId: %d\n", busPatchId, manuId, channelId));
-	} else {
-	  busPatchId = 0; 
-	  manuId     = 0;
-	  channelId  = 0;
-	}
+//       if (detElemId == 0) {
+// 	AliWarning("\ndetElemId = 0, old segmentation !\n");
+ 	GetDummyMapping(iCh, iCath, digit, busPatchId, manuId, channelId);
+//       } else {
+//       // mapping (not far from real one)
+// 	AliMUONSegmentManuIndex* connect = segmentation2[iCath]->GetMpConnection(detElemId, padX, padY);
+// 	if (connect != 0x0) {
+// 	  busPatchId = connect->GetBusPatchId(); 
+// 	  manuId     = connect->GetManuId();
+// 	  channelId  = connect->GetManuChannelId();
+// 	  AliDebug(3,Form("busPatchId %d, manuId: %d, channelId: %d\n", busPatchId, manuId, channelId));
+// 	} else {
+// 	  busPatchId = 0; 
+// 	  manuId     = 0;
+// 	  channelId  = 0;
+// 	}
 
-      }
+//       }
       //packing word
       AliBitPacking::PackWord((UInt_t)parity,word,29,31);
       AliBitPacking::PackWord((UInt_t)manuId,word,18,28);
