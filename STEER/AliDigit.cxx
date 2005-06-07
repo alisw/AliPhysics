@@ -30,6 +30,7 @@ AliDigit::AliDigit()
   //
   // Default constructor
   //
+  fTracks[0]=fTracks[1]=fTracks[2]=-1;  
 }
 
 AliDigit::AliDigit(Int_t *tracks)
