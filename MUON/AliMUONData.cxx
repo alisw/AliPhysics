@@ -253,11 +253,11 @@ void AliMUONData::AddHit2(Int_t fIshunt, Int_t track, Int_t detElemId,
 				  Xref,Yref,Zref, true);
 }
 //____________________________________________________________________________
-void AliMUONData::AddLocalTrigger(Int_t *localtr)
+void AliMUONData::AddLocalTrigger(const Int_t *localtr, const TArrayI& digits)
 {
   // add a MUON Local Trigger to the list
   TClonesArray &localTrigger = *fLocalTrigger;
-  new(localTrigger[fNlocaltrigger++]) AliMUONLocalTrigger(localtr);
+  new(localTrigger[fNlocaltrigger++]) AliMUONLocalTrigger(localtr, digits);
 }
 //____________________________________________________________________________
 void AliMUONData::AddLocalTrigger(const  AliMUONLocalTrigger& trigger)

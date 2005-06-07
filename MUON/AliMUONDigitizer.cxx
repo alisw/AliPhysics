@@ -15,6 +15,8 @@
 
 /* $Id$ */
 
+#include <assert.h>
+
 #include "AliRun.h"
 #include "AliRunDigitizer.h"
 #include "AliRunLoader.h"
@@ -277,6 +279,8 @@ void AliMUONDigitizer::CreateDigits()
         AliDebug(2, "Creating digits...");
 	for (Int_t icat = 0; icat < 2; icat++) {
 
+          Int_t digitindex[14] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+
 	  //
 	  // Filling Digit List
 	  Int_t nentries = fTDList->GetEntriesFast();
@@ -292,14 +296,18 @@ void AliMUONDigitizer::CreateDigits()
 	    AliDebug(3,Form( "Creating digit from transient digit 0x%X", (void*)td));
 
 	    Int_t q = GetSignalFrom(td);
-	    if (q > 0) AddDigit(td, q);
+            assert( 0 <= td->Chamber() && td->Chamber() <= 13 );
+	    if (q > 0) AddDigit(td, q, digitindex[td->Chamber()]++);
 	  }
 	  FillOutputData();
 	}
 }
 
 //------------------------------------------------------------------------
-void AliMUONDigitizer::AddDigit(AliMUONTransientDigit* td, Int_t responseCharge)
+void AliMUONDigitizer::AddDigit(
+		AliMUONTransientDigit* td, Int_t responseCharge,
+		const Int_t digitindex
+	)
 {
 // Prepares the digits, track and charge arrays in preparation for a call to
 // AddDigit(Int_t, Int_t[kMAXTRACKS], Int_t[kMAXTRACKS], Int_t[6])
@@ -356,7 +364,7 @@ void AliMUONDigitizer::AddDigit(AliMUONTransientDigit* td, Int_t responseCharge)
 
 	OnWriteTransientDigit(td);
 	AddDigit(td->Chamber(), tracks, charges, digits);
-	AddDigitTrigger(td->Chamber(), tracks, charges, digits);
+	AddDigitTrigger(td->Chamber(), tracks, charges, digits, digitindex);
 }
 
 //------------------------------------------------------------------------

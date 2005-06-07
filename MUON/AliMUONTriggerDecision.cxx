@@ -111,6 +111,7 @@ AliMUONTriggerDecision::AliMUONTriggerDecision(AliLoader* loader, Int_t iprint, 
   fDigits = new TObjArray(AliMUONConstants::NCh()); //NTriggerCh
   for (Int_t i=0; i<AliMUONConstants::NCh() ;i++) 
     fDigits->AddAt(new TClonesArray("AliMUONDigit",10000),i);
+  fDigitIndices = new TArrayI[AliMUONConstants::NCh()];
 }
 
 //----------------------------------------------------------------------
@@ -122,6 +123,7 @@ AliMUONTriggerDecision::AliMUONTriggerDecision()
     fMUON(0)
 {
 // Default constructor
+  fDigitIndices = NULL;
 }
 
 //----------------------------------------------------------------------
@@ -136,8 +138,11 @@ AliMUONTriggerDecision::AliMUONTriggerDecision(const AliMUONTriggerDecision& rhs
 //----------------------------------------------------------------------
 void AliMUONTriggerDecision::ClearDigits()
 {
-  for ( int i=0;i<AliMUONConstants::NCh();i++ ) 
+  for ( int i=0;i<AliMUONConstants::NCh();i++ )
+  {
     if ((*fDigits)[i]) ((TClonesArray*)fDigits->At(i))->Clear();
+    fDigitIndices[i].Set(0);
+  };
 }
 
 //----------------------------------------------------------------------
@@ -151,13 +156,21 @@ TClonesArray* AliMUONTriggerDecision::Digits(Int_t DetectionPlane)
 }
 
 //_____________________________________________________________________________
-void AliMUONTriggerDecision::AddDigit(Int_t id, Int_t *tracks, Int_t *charges, Int_t *digits)
+void AliMUONTriggerDecision::AddDigit(
+		Int_t id, Int_t *tracks, Int_t *charges, Int_t *digits,
+		const Int_t digitindex
+	)
 {
   //
   // Add a MUON digit to the list of Digits of the detection plane id
+  // Also adds the digit index to the corresponding fDigitIndices arrays.
   //
   TClonesArray &ldigits = *Digits(id); 
   new(ldigits[ldigits.GetEntriesFast()]) AliMUONDigit(tracks,charges,digits);
+
+  TArrayI& indices = fDigitIndices[id];
+  indices.Set(indices.GetSize() + 1);
+  indices[indices.GetSize() - 1] = digitindex;
 }
 
 //----------------------------------------------------------------------
@@ -176,6 +189,8 @@ AliMUONTriggerDecision::~AliMUONTriggerDecision()
     delete fDigits;
   }
 
+  if (fDigitIndices)
+    delete [] fDigitIndices;
 }
 
 //----------------------------------------------------------------------
@@ -288,8 +303,6 @@ void AliMUONTriggerDecision::SetBit(){
   AliMUONTriggerCircuit* triggerCircuit;
 
   for (Int_t chamber = 11; chamber < 15; chamber++){
-    //    for (Int_t cathode=1; cathode<3; cathode++){  
-    //     fMUONData->GetCathode(cathode-1);
 
       TClonesArray *muonDigits = Digits(chamber-1);
       Int_t ndigits = muonDigits->GetEntriesFast();
@@ -322,6 +335,11 @@ void AliMUONTriggerDecision::SetBit(){
 	  Int_t istrip;
 	  Int_t nStrip;
 
+          // If I want to fetch the digits as in MUONCheck.C then I need to
+          // know the correct digit index. These were stored in fDigitIndices
+          // by the digitizer so we just need to fetch the correct value.
+          Int_t digitindex = fDigitIndices[chamber-1][digit];
+
 	  if (cathode==1) {
 	    switch (chamber)
 	      {
@@ -329,8 +347,11 @@ void AliMUONTriggerDecision::SetBit(){
 		for (icirc=0; icirc<234; icirc++) {		  
 		  triggerCircuit = (AliMUONTriggerCircuit*) fTriggerCircuit->At(icirc);  
 		  for (istrip=0; istrip<16; istrip++) {
-		    if (triggerCircuit->GetXcode(0,istrip)==code) 
+		    if (triggerCircuit->GetXcode(0,istrip)==code)
+                    {
 		      fXbit11[icirc][istrip]=1;
+                      DigitFiredCircuit(icirc, cathode-1, chamber-1, digitindex);
+                    };
 		  }
 		}
 		break;
@@ -339,7 +360,10 @@ void AliMUONTriggerDecision::SetBit(){
 		  triggerCircuit = (AliMUONTriggerCircuit*)fTriggerCircuit->At(icirc);
 		  for (istrip=0; istrip<16; istrip++) {
 		    if (triggerCircuit->GetXcode(1,istrip)==code) 
+                    {
 		      fXbit12[icirc][istrip]=1;
+                      DigitFiredCircuit(icirc, cathode-1, chamber-1, digitindex);
+                    };
 		  }
 		}
 		break;
@@ -348,7 +372,10 @@ void AliMUONTriggerDecision::SetBit(){
 		  triggerCircuit = (AliMUONTriggerCircuit*)fTriggerCircuit->At(icirc); 
 		  for (istrip=0; istrip<32; istrip++) {
 		    if (triggerCircuit->GetXcode(2,istrip)==code) 
+                    {
 		      fXbit21[icirc][istrip]=1;
+                      DigitFiredCircuit(icirc, cathode-1, chamber-1, digitindex);
+                    };
 		  }
 		}
 		break;
@@ -357,7 +384,10 @@ void AliMUONTriggerDecision::SetBit(){
 		  triggerCircuit = (AliMUONTriggerCircuit*)fTriggerCircuit->At(icirc);
 		  for (istrip=0; istrip<32; istrip++) {
 		    if (triggerCircuit->GetXcode(3,istrip)==code) 
+                    {
 		      fXbit22[icirc][istrip]=1;		    
+                      DigitFiredCircuit(icirc, cathode-1, chamber-1, digitindex);
+                    };
 		  }
 		}		
 		break;
@@ -372,7 +402,10 @@ void AliMUONTriggerDecision::SetBit(){
 		  nStrip=triggerCircuit->GetNstripY();
 		  for (istrip=0; istrip<nStrip; istrip++) {
 		    if (triggerCircuit->GetYcode(0,istrip)==code) 
+                    {
 		      fYbit11[icirc][istrip]=1;
+                      DigitFiredCircuit(icirc, cathode-1, chamber-1, digitindex);
+                    };
 		  }
 		}
 		break;
@@ -382,7 +415,10 @@ void AliMUONTriggerDecision::SetBit(){
 		  nStrip=triggerCircuit->GetNstripY(); 
 		  for (istrip=0; istrip<nStrip; istrip++) {
 		    if (triggerCircuit->GetYcode(1,istrip)==code) 
+                    {
 		      fYbit12[icirc][istrip]=1;
+                      DigitFiredCircuit(icirc, cathode-1, chamber-1, digitindex);
+                    };
 		  }
 		}
 		break;
@@ -392,7 +428,10 @@ void AliMUONTriggerDecision::SetBit(){
 		  nStrip=triggerCircuit->GetNstripY();    
 		  for (istrip=0; istrip<nStrip; istrip++) {
 		    if (triggerCircuit->GetYcode(2,istrip)==code) 
+                    {
 		      fYbit21[icirc][istrip]=1;
+                      DigitFiredCircuit(icirc, cathode-1, chamber-1, digitindex);
+                    };
 		  }
 		}
 		break;
@@ -402,7 +441,10 @@ void AliMUONTriggerDecision::SetBit(){
 		  nStrip=triggerCircuit->GetNstripY();    
 		  for (istrip=0; istrip<nStrip; istrip++) {
 		    if (triggerCircuit->GetYcode(3,istrip)==code) 
+                    {
 		      fYbit22[icirc][istrip]=1;		      		 
+                      DigitFiredCircuit(icirc, cathode-1, chamber-1, digitindex);
+                    };
 		  }
 		}		
 		break;
@@ -411,7 +453,7 @@ void AliMUONTriggerDecision::SetBit(){
 	}  // remove soft background
       }   // end loop on digit
       fMUONData->ResetDigits();
-      //    }    // end loop on cathode
+//  }    // end loop on cathode
   }     // end loop on chamber
 }  
 
@@ -1391,6 +1433,7 @@ void AliMUONTriggerDecision::GetGlobalTrigger(Int_t singlePlus[3],
 void AliMUONTriggerDecision::Digits2Trigger(){
 // call the Trigger Algorithm and fill TreeD
 
+  ClearDigitNumbers();
 
   fMUONData->ResetTrigger();
   Trigger();   
@@ -1429,8 +1472,34 @@ void AliMUONTriggerDecision::Digits2Trigger(){
 	localtr[14] |= (fYbit22[icirc][i] << i);
       }
 
-      AliMUONLocalTrigger* pLocTrig = new AliMUONLocalTrigger(localtr);
+      AliMUONLocalTrigger* pLocTrig = new AliMUONLocalTrigger(localtr, fDigitNumbers[icirc]);
       fMUONData->AddLocalTrigger(*pLocTrig);  // add a local trigger in the list
     }
   }
 }
+
+//_______________________________________________________________________
+void AliMUONTriggerDecision::ClearDigitNumbers()
+{
+// Clears the fDigitNumbers arrays so that they are all empty.
+
+	for (Int_t i = 0; i < AliMUONConstants::NTriggerCircuit(); i++)
+		fDigitNumbers[i].Set(0);
+};
+
+//_______________________________________________________________________
+void AliMUONTriggerDecision::DigitFiredCircuit(
+		const Int_t circuit, const Int_t cathode,
+		const Int_t chamber, const Int_t digit
+	)
+{
+// Registers that the specified digit fired the specified circuit.
+// This digit gets added to an array which will be copied to
+// AliMUONLocalTrigger when such an object is created for each circuit.
+
+	Int_t digitnumber = AliMUONLocalTrigger::EncodeDigitNumber(chamber, cathode, digit);
+	Int_t last = fDigitNumbers[circuit].GetSize();
+	fDigitNumbers[circuit].Set(last + 1);
+	fDigitNumbers[circuit][last] = digitnumber;
+};
+

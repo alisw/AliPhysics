@@ -13,6 +13,7 @@
 //
 
 #include <TNamed.h>
+#include <TArrayI.h>
 
 #include "AliLoader.h"
 
@@ -66,7 +67,7 @@ class AliMUONData : public TNamed
 				    Int_t *pairLike);
     virtual void   AddGlobalTrigger(const AliMUONGlobalTrigger& trigger); // use copy constructor
 
-    virtual void   AddLocalTrigger(Int_t* ltrigger);
+    virtual void   AddLocalTrigger(const Int_t* ltrigger, const TArrayI& digits);
     virtual void   AddLocalTrigger(const AliMUONLocalTrigger& trigger); // use copy constructor
 
     virtual void   AddRawCluster(Int_t id, const AliMUONRawCluster& clust);

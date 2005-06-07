@@ -43,7 +43,9 @@ class AliMUONSDigitizerv1 : public AliMUONDigitizer
 	void CleanupTriggerArrays(){return;}
 	void FillTriggerOutput(){return;}
 	void AddDigitTrigger(Int_t /*chamber*/, Int_t* /*tracks[kMAXTRACKS]*/, 
-			     Int_t* /*charges[kMAXTRACKS]*/, Int_t* /*digits[6]*/){return;}
+			     Int_t* /*charges[kMAXTRACKS]*/, Int_t* /*digits[6]*/,
+                             const Int_t /*digitindex*/
+		) {return;}
 
 	ClassDef(AliMUONSDigitizerv1, 0)
 };    

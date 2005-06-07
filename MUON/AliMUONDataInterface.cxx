@@ -536,13 +536,13 @@ Int_t AliMUONDataInterface::NumberOfLocalTriggers(TString filename, TString fold
 
 	if ( ! FetchLoaders(filename, foldername) ) return -1;
 	if ( ! FetchEvent(event) ) return -1;
-	if ( ! FetchTreeR() ) return -1;
+	if ( ! FetchTreeD() ) return -1;
 	if ( ! fTriggerAddressSet )
 	{
-		// If the local trigger address in TreeR is not set yet then set it now.
+		// If the local trigger address in TreeD is not set yet then set it now.
 		fData.SetTreeAddress("GLT");
 		fData.ResetTrigger();
-		fData.GetTrigger();
+		fData.GetTriggerD();
 		fTriggerAddressSet = kTRUE;
 	}
 	return fData.LocalTrigger()->GetEntriesFast();
@@ -558,13 +558,13 @@ AliMUONLocalTrigger* AliMUONDataInterface::LocalTrigger(
 
 	if ( ! FetchLoaders(filename, foldername) ) return NULL;
 	if ( ! FetchEvent(event) ) return NULL;
-	if ( ! FetchTreeR() ) return NULL;
+	if ( ! FetchTreeD() ) return NULL;
 	if ( ! fTriggerAddressSet )
 	{
-		// If the local trigger address in TreeR is not set yet then set it now.
+		// If the local trigger address in TreeD is not set yet then set it now.
 		fData.SetTreeAddress("GLT");
 		fData.ResetTrigger();
-		fData.GetTrigger();
+		fData.GetTriggerD();
 		fTriggerAddressSet = kTRUE;
 	}
 	return static_cast<AliMUONLocalTrigger*>( fData.LocalTrigger()->At(trigger) );
@@ -916,12 +916,12 @@ Int_t AliMUONDataInterface::NumberOfLocalTriggers()
 		return -1;
 	}
 
-	if ( ! FetchTreeR() ) return -1;
+	if ( ! FetchTreeD() ) return -1;
 	if ( ! fTriggerAddressSet )
 	{
 		fData.SetTreeAddress("GLT");
 		fData.ResetTrigger();
-		fData.GetTrigger();
+		fData.GetTriggerD();
 		fTriggerAddressSet = kTRUE;
 	}
 	return fData.LocalTrigger()->GetEntriesFast();
@@ -944,12 +944,12 @@ AliMUONLocalTrigger* AliMUONDataInterface::LocalTrigger(Int_t trigger)
 		return NULL;
 	}
 
-	if ( ! FetchTreeR() ) return NULL;
+	if ( ! FetchTreeD() ) return NULL;
 	if ( ! fTriggerAddressSet )
 	{
 		fData.SetTreeAddress("GLT");
 		fData.ResetTrigger();
-		fData.GetTrigger();
+		fData.GetTriggerD();
 		fTriggerAddressSet = kTRUE;
 	}
 	return static_cast<AliMUONLocalTrigger*>( fData.LocalTrigger()->At(trigger) );

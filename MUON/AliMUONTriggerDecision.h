@@ -12,6 +12,7 @@
 ////////////////////////////////////////////////
 
 #include <TObject.h>
+#include "AliMUONLocalTrigger.h"
 
 class TClonesArray;
 
@@ -51,7 +52,11 @@ class AliMUONTriggerDecision : public TObject
 
   void ClearDigits();
   TClonesArray* Digits(Int_t DetectionPlane);
-  void AddDigit(Int_t id, Int_t* tracks, Int_t* charges, Int_t* digits);
+
+  void AddDigit(
+		Int_t id, Int_t* tracks, Int_t* charges, Int_t* digits,
+		const Int_t digitindex
+	);
 
   // print-debug
   void PrintBitPatXInput(Int_t icirc);
@@ -68,15 +73,23 @@ class AliMUONTriggerDecision : public TObject
   void GetGlobalTrigger(Int_t singlePlus[3], Int_t singleMinus[3], 
 			Int_t singleUndef[3], Int_t pairUnlike[3], 
 			Int_t pairLike[3]) const;  
-  
-
 
 
   ClassDef(AliMUONTriggerDecision,1) // Trigger Decision class
 
-    protected:     
+
+protected:
+
   AliMUONTriggerDecision(const AliMUONTriggerDecision& rhs);
   AliMUONTriggerDecision& operator=(const AliMUONTriggerDecision& rhs);
+
+  void ClearDigitNumbers();
+
+  void DigitFiredCircuit(
+                const Int_t circuit, const Int_t cathode,
+                const Int_t chamber, const Int_t digit
+        );
+
 
   Int_t fDebug;               // print option     
 
@@ -111,10 +124,12 @@ class AliMUONTriggerDecision : public TObject
   Int_t fYbit21D[234][16]; // bit pattern YM21 Down
   Int_t fYbit22D[234][16]; // bit pattern YM22 Down
 
+  TArrayI fDigitNumbers[234];  //! The digit number that fired a circuit.
   
   AliLoader*     fLoader;             //! alice loader
   TObjArray*     fTriggerCircuit;     //! List of Trigger Circuit
   TObjArray*     fDigits;             // temp array for digits (both cathodes !) for trigger
+  TArrayI*       fDigitIndices;       //! Array of digit index numbers, one for each entry in fDigits.
 
   AliMUONData*   fMUONData;           //! Data container for MUON subsystem 
   AliMUON*       fMUON;               //! pointer to MUON  

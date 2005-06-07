@@ -16,11 +16,13 @@
 /* $Id$ */
 
 #include "AliMUONLocalTrigger.h"
+#include <assert.h>
+#include "AliLog.h"
 
 ClassImp(AliMUONLocalTrigger)
 //----------------------------------------------------------------------
 AliMUONLocalTrigger::AliMUONLocalTrigger()
-  : TObject()
+  : TObject(), fDigits(0)
 {
 // constructor
   fLoCircuit = 0;
@@ -42,7 +44,6 @@ AliMUONLocalTrigger::AliMUONLocalTrigger()
   fY4Pattern  = 0;
 
   fLoDecision = 0;
-
 }
 //----------------------------------------------------------------------
 AliMUONLocalTrigger::AliMUONLocalTrigger(const AliMUONLocalTrigger& theMUONLocalTrig)
@@ -68,6 +69,8 @@ AliMUONLocalTrigger::AliMUONLocalTrigger(const AliMUONLocalTrigger& theMUONLocal
   fY4Pattern  = theMUONLocalTrig.fY4Pattern;
 
   fLoDecision =  theMUONLocalTrig.fLoDecision;
+
+  fDigits = theMUONLocalTrig.fDigits;
 }
 //----------------------------------------------------------------------
 AliMUONLocalTrigger& AliMUONLocalTrigger::operator=(const AliMUONLocalTrigger& theMUONLocalTrig)
@@ -99,11 +102,13 @@ AliMUONLocalTrigger& AliMUONLocalTrigger::operator=(const AliMUONLocalTrigger& t
 
   fLoDecision =  theMUONLocalTrig.fLoDecision;
 
+  fDigits = theMUONLocalTrig.fDigits;
+
   return *this;
 }
 
 //----------------------------------------------------------------------
-AliMUONLocalTrigger::AliMUONLocalTrigger(Int_t* localtr)
+AliMUONLocalTrigger::AliMUONLocalTrigger(const Int_t* localtr, const TArrayI& digits)
 {
 // add a local trigger object 
   fLoCircuit = localtr[0];
@@ -124,6 +129,8 @@ AliMUONLocalTrigger::AliMUONLocalTrigger(Int_t* localtr)
   fY2Pattern = (UShort_t)localtr[12];
   fY3Pattern = (UShort_t)localtr[13];
   fY4Pattern = (UShort_t)localtr[14];
+
+  fDigits = digits;
 }
 //----------------------------------------------------------------------
 Char_t AliMUONLocalTrigger::GetLoDecision()
@@ -133,3 +140,56 @@ Char_t AliMUONLocalTrigger::GetLoDecision()
 
   return fLoDecision;
 }
+
+//----------------------------------------------------------------------
+void AliMUONLocalTrigger::GetDigit(
+		const Int_t i, Int_t& chamber, Int_t& cathode, Int_t& digit
+	) const
+{
+// Returns the i'th digit that fired this circuit.
+// The number of digits can be found with NumberOfDigits(), that is 
+// i is valid in the range [ 0 , NumberOfDigits() - 1 ]
+
+	Int_t digitnumber = fDigits[i];
+	DecodeDigitNumber(digitnumber, chamber, cathode, digit);
+};
+
+//----------------------------------------------------------------------
+Int_t AliMUONLocalTrigger::EncodeDigitNumber(
+		const Int_t chamber, const Int_t cathode, const Int_t digit
+	)
+{
+// Encodes a 32-bit digit number from digit information to be stored
+// in internal integer arrays. Note that the value of the digit parameter
+// can not be larger than 0x07FFFFFF.
+
+	assert( 0 <= cathode && cathode <= 1 );
+	assert( 0 <= chamber && chamber <= 13 );
+
+	if ((digit & 0xF8000000) != 0)
+	{
+		AliErrorGeneral("AliMUONLocalTrigger", Form(
+			"Digit index value is to large: 0x%8.8X. Maximum supported value is 0x07FFFFFF.",
+			cathode, chamber, digit
+		));
+		return -1;
+	};
+
+	return ((cathode & 0x1) << 31) | ((chamber & 0xF) << 27) | digit;
+};
+
+//----------------------------------------------------------------------
+void AliMUONLocalTrigger::DecodeDigitNumber(
+		const Int_t digitnumber,
+		Int_t& chamber, Int_t& cathode, Int_t& digit
+	)
+{
+// Decodes a digit number into information about the digit.
+// One can subsequently fetch the digit with
+// AliMUONDataInterface::Digit(chamber, cathode, digit)
+
+	cathode = (digitnumber >> 31) & 0x1;
+	chamber = (digitnumber >> 27) & 0xF;
+	digit = digitnumber & 0x7FFFFFF;
+};
+

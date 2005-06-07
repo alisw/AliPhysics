@@ -8,12 +8,13 @@
 // Revision of includes 07/05/2004
 
 #include <TObject.h>
+#include <TArrayI.h>
 
 class AliMUONLocalTrigger : public TObject {
  public:
   AliMUONLocalTrigger();
   AliMUONLocalTrigger(const AliMUONLocalTrigger& rhs); // copy constructor !
-  AliMUONLocalTrigger(Int_t* localtr);
+  AliMUONLocalTrigger(const Int_t* localtr, const TArrayI& digits);
   virtual ~AliMUONLocalTrigger(){;}
   AliMUONLocalTrigger& operator=(const AliMUONLocalTrigger& rhs); 
 
@@ -38,6 +39,13 @@ class AliMUONLocalTrigger : public TObject {
 
   Char_t GetLoDecision();
 
+  Int_t NumberOfDigits() const { return fDigits.GetSize(); };
+  Int_t GetDigitNumber(const Int_t i) const { return fDigits[i]; };
+  void GetDigit(const Int_t i, Int_t& chamber, Int_t& cathode, Int_t& digit) const;
+
+  static Int_t EncodeDigitNumber(const Int_t chamber, const Int_t cathode, const Int_t digit);
+  static void DecodeDigitNumber(const Int_t digitnumber, Int_t& chamber, Int_t& cathode, Int_t& digit);
+
   ClassDef(AliMUONLocalTrigger,2)  // reconstructed Local Trigger object
 
 private:
@@ -60,6 +68,8 @@ private:
   UShort_t fY4Pattern;
 
   Char_t fLoDecision; // local decision word (4 bits)
+
+  TArrayI fDigits;    // List of digit numbers from which this object was created.
 };
 #endif
 
