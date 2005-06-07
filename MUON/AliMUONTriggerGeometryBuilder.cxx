@@ -128,10 +128,15 @@ void AliMUONTriggerGeometryBuilder::CreateGeometry()
     const Float_t kZm=-3.6;
     const Float_t kZp=+3.6;     
 
-    AliMUONChamber *iChamber, *iChamber1;
+    AliMUONChamber *iChamber, *iChamber1, *iChamber2;
     iChamber1 = &fMUON->Chamber(10);
     Float_t zpos1=-iChamber1->Z(); 
-    
+    iChamber2 = &fMUON->Chamber(11);
+
+    Double_t dstation =  ( (-iChamber2->Z()) - (-iChamber1->Z()) ) /2.1;
+    Float_t par[3];
+    par[2] = dstation;
+
 // ratio of zpos1m/zpos1p and inverse for first plane
     Float_t zmp=(zpos1-3.6)/(zpos1+3.6);
     Float_t zpm=1./zmp;
@@ -146,6 +151,13 @@ void AliMUONTriggerGeometryBuilder::CreateGeometry()
 		Int_t(istation*TMath::Power(2,1));
 	    
 	    iChamber = &fMUON->Chamber(10+icount);
+	    par[0] = iChamber->RInner(); 
+	    par[1] = iChamber->ROuter();
+	    Char_t volName[6];
+	    sprintf(volName,"%s%d", "CH",11+icount);
+ 	    gMC->Gsvolu(volName,"TUBE", idAir, par, 3);
+ 	    iChamber->GetGeometry()->SetVolume(volName);
+
 	    Float_t zpos = - iChamber->Z();	     
 	    
 /* removed 03/18/05
@@ -191,7 +203,7 @@ void AliMUONTriggerGeometryBuilder::CreateGeometry()
 	    char volGaz[5];     // Gas streamer	    
 	    sprintf(volAlu,"SC%dA",icount+1);
 	    sprintf(volBak,"SB%dA",icount+1);
-	    sprintf(volGaz,"SG%dA",icount+1);
+	    sprintf(volGaz,"S%dG",icount+11);
 	    gMC->Gsvolu(volAlu,"BOX",idAlu1,tpar,0);         // Al
 	    gMC->Gsvolu(volBak,"BOX",idtmed[1107],tpar,0);   // Bakelite
 	    gMC->Gsvolu(volGaz,"BOX",idtmed[1106],tpar,0);   // Gas streamer
@@ -361,9 +373,9 @@ void AliMUONTriggerGeometryBuilder::SetSensitiveVolumes()
 // Defines the sensitive volumes for trigger station chambers.
 // ---
 
-  GetGeometry(10)->SetSensitiveVolume("SG1A");
-  GetGeometry(11)->SetSensitiveVolume("SG2A");
-  GetGeometry(12)->SetSensitiveVolume("SG3A");
-  GetGeometry(13)->SetSensitiveVolume("SG4A");
+  GetGeometry(10)->SetSensitiveVolume("S11G");
+  GetGeometry(11)->SetSensitiveVolume("S12G");
+  GetGeometry(12)->SetSensitiveVolume("S13G");
+  GetGeometry(13)->SetSensitiveVolume("S14G");
 }
 
