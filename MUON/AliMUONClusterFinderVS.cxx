@@ -183,7 +183,7 @@ void AliMUONClusterFinderVS::SplitByLocalMaxima(AliMUONRawCluster *c)
 	  c->SetX(0, fSeg2[0]->GetAnod(fInput->DetElemId(), c->GetX(0)));
 	  c->SetX(1, fSeg2[1]->GetAnod(fInput->DetElemId(), c->GetX(1)));
 	}
-	//	c->SetDetElementID(fInput->DetElemId());
+	//	c->SetDetElemId(fInput->DetElemId());
 	// If reasonable chi^2 add result to the list of rawclusters
 	if (chi2 < 0.3) {
 	    AddRawCluster(*c);
@@ -988,7 +988,7 @@ void AliMUONClusterFinderVS::SplitByLocalMaxima(AliMUONRawCluster *c)
 		    FillCluster(&cnew,cath);
 		} 
 		cnew.SetClusterType(cnew.PhysicsContribution());
-		//		cnew.SetDetElementID(fInput->DetElemId());
+		//		cnew.SetDetElemId(fInput->DetElemId());
 		AddRawCluster(cnew);
 		fNPeaks++;
 	    }
@@ -2343,7 +2343,7 @@ void AliMUONClusterFinderVS::AddRawCluster(AliMUONRawCluster& c)
   
   // Setting detection element in raw cluster for alignment
   // BB 19/05/05
-  c.SetDetElementID(fInput->DetElemId());
+  c.SetDetElemId(fInput->DetElemId());
   
   TClonesArray &lrawcl = *fRawClusters;
   new(lrawcl[fNRawClusters++]) AliMUONRawCluster(c);

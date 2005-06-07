@@ -50,7 +50,7 @@ AliMUONRawCluster::AliMUONRawCluster()
     }
     fNcluster[0]=fNcluster[1]=-1;
     fGhost=0;
-    fDetElementID = 0;
+    fDetElemId = 0;
 }
 //____________________________________________________
 Int_t AliMUONRawCluster::Compare(const TObject *obj) const

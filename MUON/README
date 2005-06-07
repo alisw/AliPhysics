@@ -49,7 +49,6 @@ If you want to change the option or to define a new directory
 for hits, you have to do the following before:
 root [0] gAlice->SetConfigFunction("Config( \"/home/martinez/aliroot/work_NewIO/test/\" , \"box\" );"); 
 
-
 ============================================================
  How to run MUONCheck macro
 ============================================================
@@ -82,11 +81,19 @@ MUONTestTrigger() or MUONTestTrigger("galice.root",##) for the event number ##
 
 
 ============================================================
- How to check the Geometry
+ How to check the Geometry 
 ============================================================
 gAlice->Init("$ALICE_ROOT/MUON/Config.C");
 .L $ALICE/geant3/TGeant3/G3GUI.C
 G3GUI()
+
+============================================================
+ How to check the Geometry with the new Geometrical modeler
+ ftp://root.cern.ch/root/doc/chapter16.pdf
+ http://agenda.cern.ch/fullAgenda.php?ida=a05212
+============================================================
+gAlice->Init("$ALICE_ROOT/MUON/Config.C");
+gGeoManager->GetMasterVolume()->Draw();
 
 
 ============================================================
@@ -164,34 +171,8 @@ gener->Init();
 ===========================================================
  csh Script for the full reconstruction with raw data generator
 ===========================================================
-
-
-aliroot -b << EOF  
-AliSimulation MuonSim("YourConfig.C")
-MuonSim.SetWriteRawData("MUON");
-MuonSim.Run(XXX)
-.q
-EOF
-
-aliroot -b << EOF 
-TPluginManager* pluginManager = gROOT->GetPluginManager();
-pluginManager->AddHandler("AliReconstructor", "MUON","AliMUONReconstructor", "MUON","AliMUONReconstructor()")
-AliReconstruction MuonRec("galice.root") 
-MuonRec.SetRunTracking("")
-MuonRec.SetRunVertexFinder(kFALSE)
-MuonRec.SetRunLocalReconstruction("MUON")
-MuonRec.SetFillESD("MUON")
-MuonRec.Run() 
-.q
-EOF
-
-aliroot -b << EOF  
-.includepath $ALICE_ROOT/STEER
-.includepath $ALICE_ROOT/MUON
-.L $ALICE_ROOT/MUON/MUONmassPlot_ESD.C++
-MUONmassPlot("galice.root",0,99999);
-.q
-EOF
+See file AlirootRun_MUONtest.script
+in $ALICE_ROOT/MUON
 
 
 ============================================================

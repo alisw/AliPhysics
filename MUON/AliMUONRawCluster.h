@@ -48,13 +48,13 @@ public:
    Int_t        GetOffset(Int_t i, Int_t j) const;
    Float_t      GetContrib(Int_t i, Int_t j) const;
    Int_t        GetPhysics(Int_t i) const;
-   Int_t        GetDetElementID() const ; // BB added
+   Int_t        GetDetElemId() const ; 
 
    Int_t        SetCharge(Int_t i,Int_t Q);
    Int_t        SetX(Int_t i, Float_t X);
    Int_t        SetY(Int_t i, Float_t Y);
    Int_t        SetZ(Int_t i, Float_t Z);
-   void         SetDetElementID(Int_t ID); // BB Added
+   void         SetDetElemId(Int_t Id); 
    Int_t        SetTrack(Int_t i, Int_t track);
    Int_t        SetPeakSignal(Int_t i, Int_t peaksignal);
    Int_t        SetMultiplicity(Int_t i, Int_t mul);
@@ -88,7 +88,7 @@ private:
                                   // 2 none give satisfactory chi2
    Int_t       fNcluster[2];      // Number of clusters
    Float_t     fChi2[2];          // Chi**2 of fit
-   Int_t       fDetElementID;         // ID number of the detection element (slat) on which the cluster is found. 
+   Int_t       fDetElemId;        // ID number of the detection element (slat) on which the cluster is found. 
    ClassDef(AliMUONRawCluster,1)  //Cluster class for MUON
 };
 
@@ -118,11 +118,11 @@ inline  void  AliMUONRawCluster::SetContrib(Int_t i, Int_t j, Float_t contrib)
 inline  void  AliMUONRawCluster::SetPhysics(Int_t i, Int_t physics)
 { fPhysicsMap[i] = physics; }
 
-inline void AliMUONRawCluster::SetDetElementID(Int_t ID)
-{ fDetElementID = ID; }
+inline void AliMUONRawCluster::SetDetElemId(Int_t Id)
+{ fDetElemId = Id; }
 
-inline Int_t AliMUONRawCluster::GetDetElementID() const
-{ return fDetElementID;}
+inline Int_t AliMUONRawCluster::GetDetElemId() const
+{ return fDetElemId;}
 #endif
 
 

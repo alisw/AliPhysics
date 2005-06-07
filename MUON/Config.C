@@ -6,13 +6,12 @@ void Config(char directory[100]="", char option[6]="param")
 {
   //
   // Config file for MUON test
-  // Gines MARTINEZ, Subatech, mai 2003, august 2003
-  // 
+  //
 
   //=====================================================================
   //  Libraries required by geant321
   gSystem->Load("libgeant321.so");
-  new TGeant3("C++ Interface to Geant3");
+  new TGeant3TGeo("C++ Interface to Geant3");
   //=======================================================================
   //  Create the output file    
   Text_t filename[100];
@@ -153,17 +152,16 @@ void Config(char directory[100]="", char option[6]="param")
   // New MUONv1 version (geometry defined via builders)
   AliMUON *MUON = new AliMUONv1("MUON", "default");
   
+  // If align = true, the detection elements transformations
+  // are taken from the input files and not from the code
   //MUON->SetAlign(true);
-         // If align = true, the detection elements transformations
-	 // are taken from the input files and not from the code
-  
-//   ((AliMUONv1*)MUON)->SetStepManagerVersionDE(true);
-        // To save detection element Id in the hits
-  MUON->SetSegmentationType(1);// default wise to old (1), new (2)
-  
-  //MUON->AddGeometryBuilder(new AliMUONSt1GeometryBuilder(MUON));
+
+   // To save detection element Id in the hits
+  ((AliMUONv1*)MUON)->SetStepManagerVersionDE(true);
+ 
+  MUON->SetSegmentationType(2);// default wise to old (1), new (2)  
   MUON->AddGeometryBuilder(new AliMUONSt1GeometryBuilderV2(MUON));
-  MUON->AddGeometryBuilder(new AliMUONSt2GeometryBuilder(MUON));
+  MUON->AddGeometryBuilder(new AliMUONSt2GeometryBuilderV2(MUON));
   MUON->AddGeometryBuilder(new AliMUONSlatGeometryBuilder(MUON));
   MUON->AddGeometryBuilder(new AliMUONTriggerGeometryBuilder(MUON));
 }
