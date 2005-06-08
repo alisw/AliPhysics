@@ -152,7 +152,7 @@ void AliMUONLocalTrigger::GetDigit(
 
 	Int_t digitnumber = fDigits[i];
 	DecodeDigitNumber(digitnumber, chamber, cathode, digit);
-};
+}
 
 //----------------------------------------------------------------------
 Int_t AliMUONLocalTrigger::EncodeDigitNumber(
@@ -176,7 +176,7 @@ Int_t AliMUONLocalTrigger::EncodeDigitNumber(
 	};
 
 	return ((cathode & 0x1) << 31) | ((chamber & 0xF) << 27) | digit;
-};
+}
 
 //----------------------------------------------------------------------
 void AliMUONLocalTrigger::DecodeDigitNumber(
@@ -191,5 +191,5 @@ void AliMUONLocalTrigger::DecodeDigitNumber(
 	cathode = (digitnumber >> 31) & 0x1;
 	chamber = (digitnumber >> 27) & 0xF;
 	digit = digitnumber & 0x7FFFFFF;
-};
+}
 

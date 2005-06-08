@@ -1485,7 +1485,7 @@ void AliMUONTriggerDecision::ClearDigitNumbers()
 
 	for (Int_t i = 0; i < AliMUONConstants::NTriggerCircuit(); i++)
 		fDigitNumbers[i].Set(0);
-};
+}
 
 //_______________________________________________________________________
 void AliMUONTriggerDecision::DigitFiredCircuit(
@@ -1501,5 +1501,5 @@ void AliMUONTriggerDecision::DigitFiredCircuit(
 	Int_t last = fDigitNumbers[circuit].GetSize();
 	fDigitNumbers[circuit].Set(last + 1);
 	fDigitNumbers[circuit][last] = digitnumber;
-};
+}
 

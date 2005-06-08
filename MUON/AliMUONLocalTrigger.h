@@ -18,13 +18,13 @@ class AliMUONLocalTrigger : public TObject {
   virtual ~AliMUONLocalTrigger(){;}
   AliMUONLocalTrigger& operator=(const AliMUONLocalTrigger& rhs); 
 
-  Int_t LoCircuit() const {return fLoCircuit;}; 
-  Int_t LoStripX() const {return fLoStripX;};    
-  Int_t LoDev() const {return fLoDev;};     
-  Int_t LoStripY() const {return fLoStripY;};  
-  Int_t LoLpt() const {return fLoLpt;};     
-  Int_t LoHpt() const {return fLoHpt;};     
-  Int_t LoApt() const {return fLoApt;}; 
+  Int_t LoCircuit() const {return fLoCircuit;}
+  Int_t LoStripX() const {return fLoStripX;}   
+  Int_t LoDev() const {return fLoDev;}
+  Int_t LoStripY() const {return fLoStripY;}
+  Int_t LoLpt() const {return fLoLpt;}
+  Int_t LoHpt() const {return fLoHpt;}
+  Int_t LoApt() const {return fLoApt;}
 
    
   UShort_t GetX1Pattern() const {return fX1Pattern;}
@@ -39,14 +39,12 @@ class AliMUONLocalTrigger : public TObject {
 
   Char_t GetLoDecision();
 
-  Int_t NumberOfDigits() const { return fDigits.GetSize(); };
-  Int_t GetDigitNumber(const Int_t i) const { return fDigits[i]; };
+  Int_t NumberOfDigits() const { return fDigits.GetSize(); }
+  Int_t GetDigitNumber(const Int_t i) const { return fDigits[i]; }
   void GetDigit(const Int_t i, Int_t& chamber, Int_t& cathode, Int_t& digit) const;
 
   static Int_t EncodeDigitNumber(const Int_t chamber, const Int_t cathode, const Int_t digit);
   static void DecodeDigitNumber(const Int_t digitnumber, Int_t& chamber, Int_t& cathode, Int_t& digit);
-
-  ClassDef(AliMUONLocalTrigger,2)  // reconstructed Local Trigger object
 
 private:
   Int_t fLoCircuit; // circuit number 
@@ -70,6 +68,8 @@ private:
   Char_t fLoDecision; // local decision word (4 bits)
 
   TArrayI fDigits;    // List of digit numbers from which this object was created.
+
+  ClassDef(AliMUONLocalTrigger,2)  // reconstructed Local Trigger object
 };
 #endif
 
