@@ -30,6 +30,7 @@ CXXNOOPT      = $(NOOPT)
 COPT	      = $(OPT)
 FOPT	      = $(OPT) -fno-second-underscore 
 
+
 # CERNLIB defines
 CLIBDEFS      = -DCERNLIB_LINUX -DCERNLIB_BLDLIB -DCERNLIB_CZ
 CLIBCXXOPTS   =
@@ -37,9 +38,21 @@ CLIBCOPT      =
 CLIBFOPT      = $(CLIBDEFS)
 
 # Compiler flags
-CXXFLAGS      = $(CXXOPT)   -Wall -W -pipe -fsigned-char -fno-common -fweak-coalesced -fmessage-length=0 -I$(FINK_ROOT)/include  -Wno-long-double #-Weffc++ -Woverloaded-virtual 
-CXXFLAGSNO    = $(CXXNOOPT) -Wall -W -pipe -fsigned-char -fno-common -fweak-coalesced -fmessage-length=0 -I$(FINK_ROOT)/include  -Wno-long-double
-CFLAGS	      = $(COPT) -Wall -W -fno-common -fweak-coalesced -pipe -I$(FINK_ROOT)/include
+CXXFLAGS      = $(CXXOPT)   -Wall -W -Wno-long-double -pipe -fsigned-char -fno-common -fmessage-length=0 -I$(FINK_ROOT)/include 
+ifneq ($(MACOSX_MINOR),4)
+CXXFLAGS+=-fweak-coalesced
+endif
+ifeq (g95,$(findstring g95,$(ROOTBUILD)))
+CXXFLAGS+=-DFORTRAN_G95
+endif
+CXXFLAGSNO    = $(CXXNOOPT) -Wall -W -pipe -fsigned-char -fno-common -fmessage-length=0 -I$(FINK_ROOT)/include  -Wno-long-double
+ifneq ($(MACOSX_MINOR),4)
+CXXFLAGSNO+=-fweak-coalesced
+endif
+CFLAGS	      = $(COPT) -Wall -W -fno-common -pipe -I$(FINK_ROOT)/include
+ifneq ($(MACOSX_MINOR),4)
+CFLAGS+=-fweak-coalesced
+endif
 FFLAGS        = $(CLIBFOPT) $(FOPT)
 # rmkdepend flags for building dependencies of FORTRAN files
 DEPENDFFLAGS  = $(FFLAGS)
