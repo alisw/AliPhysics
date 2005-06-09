@@ -2731,6 +2731,7 @@ AliITStrackMI * AliITStrackerMI::GetBestHypothesys(Int_t esdindex, AliITStrackMI
   array->Compress();
   SortTrackHypothesys(esdindex,checkmax,1);
   array = (TObjArray*) fTrackHypothesys.At(esdindex);
+  if (!array) return 0; // PH What can be the reason? Check SortTrackHypothesys
   besttrack = (AliITStrackMI*)array->At(0);  
   if (!besttrack)  return 0;
   besttrack->fChi2MIP[8]=0;
