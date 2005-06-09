@@ -686,6 +686,22 @@ void AliRICH::DigitsPrint(Int_t iEvtN)const
   Info("PrintDigits","totally %i Digits",iTotalDigits);
 }
 //__________________________________________________________________________________________________
+void AliRICH::OccupancyPrint(Int_t iEvtN)const
+{
+//prints occupancy for each chamber in a given event
+  if(GetLoader()->GetRunLoader()->GetEvent(iEvtN)) return;    
+  Info("Occupancy","for event %i",iEvtN);
+  if(GetLoader()->LoadDigits()) return;
+
+  Int_t totPadsPerChamber = AliRICHParam::NpadsX()*AliRICHParam::NpadsY();  
+  GetLoader()->TreeD()->GetEntry(0);
+  for(Int_t iChamber=1;iChamber<=kNchambers;iChamber++){
+    Double_t occupancy = (Double_t)Digits(iChamber)->GetEntries()/(Double_t)totPadsPerChamber;
+    Info("Occupancy","for chamber %i = %4.2f per cent",iChamber,occupancy*100.);
+  }
+  GetLoader()->UnloadDigits();
+}
+//__________________________________________________________________________________________________
 void AliRICH::ClustersPrint(Int_t iEvtN)const
 {
 //prints a list of RICH clusters  for a given event

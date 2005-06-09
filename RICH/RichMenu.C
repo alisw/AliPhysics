@@ -103,6 +103,7 @@ void MenuRich()
   pMenu->AddButton("Print sdigits"    ,"r->SDigitsPrint();"   ,"????");
   pMenu->AddButton("Print digits"     ,"r->DigitsPrint();"    ,"????");
   pMenu->AddButton("Print clusters"   ,"r->ClustersPrint();"  ,"????");  
+  pMenu->AddButton("Print occupancy"  ,"r->OccupancyPrint();" ,"????");  
   pMenu->AddButton("Hits plots"       ,"r->ControlPlots()"    ,"????");
   pMenu->AddButton("Recon with stack" ,"r->CheckPR()"                                           , "Create RSR.root with ntuple hn");    
   pMenu->Show();  
