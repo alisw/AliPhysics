@@ -11,7 +11,7 @@ else
 MUTE:=@
 endif
 
-CLEAN=$(findstring clean,$(patsubst %clean%,clean,$(MAKECMDGOALS)))
+CLEAN=$(findstring clean,$(MAKECMDGOALS))
 
 #-------------------------------------------------------------------------------
 # IRST coding rule check
@@ -136,9 +136,11 @@ BINLIBS      :=
 EXPORTFILES  :=
 
 #-------------------------------------------------------------------------------
-# Dependencies of module.mk files
+# Dependencies of module.mk files if not cleaning
 
+ifeq ($CLEAN),)
 include build/module.dep
+endif
 
 #-------------------------------------------------------------------------------
 # Check if module.mk is present for the library
