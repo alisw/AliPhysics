@@ -522,7 +522,7 @@ Bool_t AliSimulation::RunHitsDigitization(const char* detectors)
   TStopwatch stopwatch;
   stopwatch.Start();
 
-  AliRunLoader* runLoader = LoadRun();
+  AliRunLoader* runLoader = LoadRun("READ");
   if (!runLoader) return kFALSE;
 
   TString detStr = detectors;
@@ -542,7 +542,9 @@ Bool_t AliSimulation::RunHitsDigitization(const char* detectors)
     if (fStopOnError) return kFALSE;
   }
 
-  delete runLoader;
+  //PH  delete runLoader;
+  //PH Temporary fix to avoid interference with the PHOS loder/getter
+  //PH The problem has to be solved in more general way 09/06/05
 
   AliInfo("execution time:");
   StdoutToAliInfo(stopwatch.Print(););
