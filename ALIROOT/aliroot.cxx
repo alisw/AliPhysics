@@ -44,6 +44,10 @@ int xargv=0;
 int xargc=0;
 #endif
 
+#ifdef FORTRAN_G95
+extern "C" void g95_runtime_start();
+#endif
+
 #if defined WIN32 
   extern "C" int __fastflag=0; 
   extern "C" int _pctype=0; 
@@ -73,6 +77,9 @@ int main(int argc, char **argv)
   // Start interactive geant
   
   TRint *theApp = new TRint("aliroot", &argc, argv);
+#ifdef FORTRAN_G95
+  g95_runtime_start();
+#endif
   
   // --- Start the event loop ---
   theApp->Run();
