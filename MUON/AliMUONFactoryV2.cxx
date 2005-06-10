@@ -897,7 +897,7 @@ void AliMUONFactoryV2::BuildStation6()
       for (Int_t i=5; i<6; i++) nStrip[5]=8;  
       nStrip[6]=16;  
       stripYsize[0]=stripLength[2];
-      for (Int_t i=1; i<8; i++) stripYsize[i]=stripLength[3];
+      for (Int_t i=1; i<7; i++) stripYsize[i]=stripLength[3];
       for (Int_t i=0; i<5; i++) stripXsize[i]=stripWidth[1];
       for (Int_t i=5; i<7; i++) stripXsize[i]=stripWidth[2];
       trigSegY[5]->Init(0,nStrip,stripYsize,stripXsize,stripLength[0]);  
