@@ -27,6 +27,9 @@
 #include <TObjArray.h>
 #include <TParticle.h>
 #include <AliStack.h>
+#include <AliHeader.h>
+#include <AliGenEventHeader.h>
+#include <AliGenHijingEventHeader.h>
 #include <AliMagF.h>
 #include <AliRun.h>
 #include <AliRunDigitizer.h>
@@ -686,20 +689,57 @@ void AliRICH::DigitsPrint(Int_t iEvtN)const
   Info("PrintDigits","totally %i Digits",iTotalDigits);
 }
 //__________________________________________________________________________________________________
-void AliRICH::OccupancyPrint(Int_t iEvtN)const
+void AliRICH::OccupancyPrint(Int_t iEvtNreq)const
 {
 //prints occupancy for each chamber in a given event
-  if(GetLoader()->GetRunLoader()->GetEvent(iEvtN)) return;    
-  Info("Occupancy","for event %i",iEvtN);
+  Int_t iEvtNmin,iEvtNmax;
+  if(iEvtNreq==-1){
+    iEvtNmin=0;
+    iEvtNmax=gAlice->GetEventsPerRun();
+  } else { 
+    iEvtNmin=iEvtNreq;iEvtNmax=iEvtNreq+1;
+  }
+    
+  if(GetLoader()->GetRunLoader()->LoadHeader()) return;    
+  if(GetLoader()->GetRunLoader()->LoadKinematics()) return;    
+  
+//  Info("Occupancy","for event %i",iEvtN);
+  if(GetLoader()->LoadHits()) return;
   if(GetLoader()->LoadDigits()) return;
 
   Int_t totPadsPerChamber = AliRICHParam::NpadsX()*AliRICHParam::NpadsY();  
-  GetLoader()->TreeD()->GetEntry(0);
+
+  Int_t nDigCh[kNchambers]={0,0,0,0,0,0,0};  
+  Int_t iChHits[kNchambers]={0,0,0,0,0,0,0};
+  Int_t nPrim[kNchambers]={0,0,0,0,0,0,0};
+  Int_t nSec[kNchambers]={0,0,0,0,0,0,0};
+  
+  for(Int_t iEvtN=iEvtNmin;iEvtN<iEvtNmax;iEvtN++){
+    if(iEvtN%10==0) AliInfo(Form("events processed %i",iEvtN));
+    if(GetLoader()->GetRunLoader()->GetEvent(iEvtN)) return;    
+    AliStack *pStack = GetLoader()->GetRunLoader()->Stack();
+    for(Int_t iPrimN=0;iPrimN<GetLoader()->TreeH()->GetEntries();iPrimN++){//prims loop
+      GetLoader()->TreeH()->GetEntry(iPrimN);      
+      for(Int_t iHitN=0;iHitN<Hits()->GetEntries();iHitN++){
+        AliRICHHit *pHit = (AliRICHHit *)Hits()->At(iHitN);
+        if(pHit->Eloss()>0){
+          iChHits[pHit->C()-1]++;
+          if(pStack->Particle(pHit->GetTrack())->Rho()<0.01) nPrim[pHit->C()-1]++;else nSec[pHit->C()-1]++;
+        }
+      }
+    }
+    GetLoader()->TreeD()->GetEntry(0);
+    for(Int_t iChamber=1;iChamber<=kNchambers;iChamber++) nDigCh[iChamber-1]= Digits(iChamber)->GetEntries();
+  }  
   for(Int_t iChamber=1;iChamber<=kNchambers;iChamber++){
-    Double_t occupancy = (Double_t)Digits(iChamber)->GetEntries()/(Double_t)totPadsPerChamber;
-    Info("Occupancy","for chamber %i = %4.2f per cent",iChamber,occupancy*100.);
-  }
+    Double_t occupancy = (Double_t)nDigCh[iChamber-1]/(Double_t)totPadsPerChamber;
+    Info("Occupancy","for chamber %i = %4.2f %% and charged prim tracks %i and sec. tracks %i with total %i",
+        iChamber,occupancy*100.,nPrim[iChamber-1],nSec[iChamber-1],iChHits[iChamber-1]);
+  }    
+  GetLoader()->UnloadHits();
   GetLoader()->UnloadDigits();
+  GetLoader()->GetRunLoader()->UnloadHeader();    
+  GetLoader()->GetRunLoader()->UnloadKinematics();    
 }
 //__________________________________________________________________________________________________
 void AliRICH::ClustersPrint(Int_t iEvtN)const
@@ -1153,3 +1193,178 @@ void AliRICH::DrawRing(TVector3 entrance,TVector3 vectorTrack,Double_t thetaCer)
   TGraph *gra = new TGraph(nPointsToDraw,xGraph,yGraph);
   gra->Draw("C");  
 }
+//__________________________________________________________________________________________________
+void AliRICH::SummaryOfEvent(Int_t iEvtN) const
+{
+//prints a summary for a given event
+  AliInfo(Form("Summary of event %i",iEvtN));
+  GetLoader()->GetRunLoader()->GetEvent(iEvtN);    
+  if(GetLoader()->GetRunLoader()->LoadHeader()) return;
+  if(GetLoader()->GetRunLoader()->LoadKinematics()) return;
+  AliStack *pStack=GetLoader()->GetRunLoader()->Stack();
+  
+  AliGenEventHeader* pGenHeader =  gAlice->GetHeader()->GenEventHeader();
+  if(pGenHeader->InheritsFrom("AliGenHijingEventHeader")) {
+    AliInfo(Form(" Hijing event with impact parameter b = %.2f (fm)",((AliGenHijingEventHeader*) pGenHeader)->ImpactParameter()));
+  }
+  Int_t nChargedPrimaries=0;
+  for(Int_t i=0;i<pStack->GetNtrack();i++) {
+    TParticle *pParticle = pStack->Particle(i);
+    if(pParticle->IsPrimary()&&pParticle->GetPDG()->Charge()!=0) nChargedPrimaries++;
+    }
+  AliInfo(Form("Total number of         primaries %i",pStack->GetNprimary()));
+  AliInfo(Form("Total number of charged primaries %i",nChargedPrimaries));
+  AliInfo(Form("Total n. of tracks in stack(+sec) %i",pStack->GetNtrack()));
+  GetLoader()->GetRunLoader()->UnloadHeader();
+  GetLoader()->GetRunLoader()->UnloadKinematics();
+}
+//__________________________________________________________________________________________________
+void AliRICH::HitsQA(Double_t cut,Double_t cutele,Double_t cutR)
+{
+// Provides a set of control plots intended primarily for charged particle flux analisys
+// Arguments: cut (GeV)    - cut on momentum of any charged particles but electrons, 
+//            cetele (GeV) - the same for electrons-positrons
+//            cutR (cm)    - cut on production vertex radius (cylindrical system)        
+  gBenchmark->Start("HitsAna");
+  
+  Double_t cutPantiproton    =cut;
+  Double_t cutPkaonminus     =cut;
+  Double_t cutPpionminus     =cut;
+  Double_t cutPmuonminus     =cut;
+  Double_t cutPpositron      =cutele;
+                    
+  Double_t cutPelectron      =cutele;
+  Double_t cutPmuonplus      =cut;
+  Double_t cutPpionplus      =cut;
+  Double_t cutPkaonplus      =cut;
+  Double_t cutPproton        =cut;
+                       
+
+  TH2F *pEleHitRZ    =new TH2F("EleHitRZ"    ,Form("e^{+} e^{-} hit %s;z[cm];R[cm]" ,GetName())     , 400,-300,300 ,400,-500,500);   //R-z plot 0cm<R<550cm -300cm<z<300cm  
+  TH2F *pEleHitRP    =new TH2F("EleHitRP"    ,Form("e^{+} e^{-} hit %s;p[GeV];R[cm]",GetName())     ,1000,-1  ,1   ,400,   0,550);   //R-p plot 0cm<R<550cm -1GeV<p<1GeV 
+  TH1F *pEleAllP     =new TH1F("EleAllP"     ,     "e^{+} e^{-} all;p[GeV]"                         ,1000,-1  ,1                );  
+  TH1F *pEleHitP     =new TH1F("EleHitP"     ,Form("e^{+} e^{-} hit %s;p[GeV]"      ,GetName())     ,1000,-1  ,1                );   
+  TH1F *pMuoHitP     =new TH1F("MuoHitP"     ,Form("#mu^{-} #mu^{+} hit %s;p[GeV]"  ,GetName())     ,1000,-4  ,4                ); 
+  TH1F *pPioHitP     =new TH1F("PioHitP"     ,Form("#pi^{-} #pi^{+} hit %s;p[GeV]"  ,GetName())     ,1000,-4  ,4                ); 
+  TH1F *pKaoHitP     =new TH1F("KaoHitP"     ,Form("K^{-} K^{+} hit %s;p[GeV]"      ,GetName())     ,1000,-4  ,4                ); 
+  TH1F *pProHitP     =new TH1F("ProHitP"     ,Form("p^{-} p^{+} hit %s;p[GeV]"      ,GetName())     ,1000,-4  ,4                ); 
+  TH2F *pFlux        =new TH2F("flux"        ,Form("%s flux with Rvertex<%.1fcm"    ,GetName(),cutR),10  ,-5  ,5   , 10,0    ,10); //special text hist
+  pFlux->SetStats(0);
+  pFlux->GetXaxis()->SetBinLabel(1 ,Form("p^{-}>%.3fGeV/c"   ,cutPantiproton));        
+  pFlux->GetXaxis()->SetBinLabel(2 ,Form("K^{-}>%.3fGeV/c"   ,cutPkaonminus ));        
+  pFlux->GetXaxis()->SetBinLabel(3 ,Form("#pi^{-}>%.3fGeV/c" ,cutPpionminus ));      
+  pFlux->GetXaxis()->SetBinLabel(4 ,Form("#mu^{-}>%.3fGeV/c" ,cutPmuonminus ));      
+  pFlux->GetXaxis()->SetBinLabel(5 ,Form("e^{+}>%.3fGeV/c"   ,cutPpositron  ));        
+  
+  pFlux->GetXaxis()->SetBinLabel(6 ,Form("e^{-}>%.3fGeV/c"   ,cutPelectron  ));        
+  pFlux->GetXaxis()->SetBinLabel(7 ,Form("#mu^{+}>%.3fGeV/c" ,cutPmuonplus  ));      
+  pFlux->GetXaxis()->SetBinLabel(8 ,Form("#pi^{+}>%.3fGeV/c" ,cutPpionplus  ));      
+  pFlux->GetXaxis()->SetBinLabel(9 ,Form("K^{+}>%.3fGeV/c"   ,cutPkaonplus  ));        
+  pFlux->GetXaxis()->SetBinLabel(10,Form("p^{+}>%.3fGeV/c"   ,cutPproton    ));        
+  
+  pFlux->GetYaxis()->SetBinLabel(1,"sum");  
+  pFlux->GetYaxis()->SetBinLabel(2,"ch1");  
+  pFlux->GetYaxis()->SetBinLabel(3,"ch2");  
+  pFlux->GetYaxis()->SetBinLabel(4,"ch3");  
+  pFlux->GetYaxis()->SetBinLabel(5,"ch4");  
+  pFlux->GetYaxis()->SetBinLabel(6,"ch5");  
+  pFlux->GetYaxis()->SetBinLabel(7,"ch6");  
+  pFlux->GetYaxis()->SetBinLabel(8,"ch7");  
+  pFlux->GetYaxis()->SetBinLabel(9,"prim"); 
+  pFlux->GetYaxis()->SetBinLabel(10,"tot");  
+  
+//end of hists definition
+   
+  Int_t iNevents=fLoader->GetRunLoader()->GetAliRun()->GetEventsPerRun(),iCntPrimParts=0,iCntTotParts=0;
+//load all needed trees   
+  fLoader->LoadHits(); 
+  fLoader->GetRunLoader()->LoadHeader(); 
+  fLoader->GetRunLoader()->LoadKinematics();  
+  
+  for(Int_t iEvtN=0;iEvtN < iNevents;iEvtN++){//events loop
+    fLoader->GetRunLoader()->GetEvent(iEvtN);
+    AliInfo(Form(" %i event processes",fLoader->GetRunLoader()->GetEventNumber()));
+    AliStack *pStack= fLoader->GetRunLoader()->Stack(); 
+    
+    for(Int_t iParticleN=0;iParticleN<pStack->GetNtrack();iParticleN++){//stack loop
+      TParticle *pPart=pStack->Particle(iParticleN);
+
+      if(iParticleN%10000==0) AliInfo(Form(" %i particles read",iParticleN));
+    
+      switch(pPart->GetPdgCode()){
+        case kProtonBar: pFlux->Fill(-4.5,9); if(pPart->Rho()<0.01) pFlux->Fill(-4.5,8); break;
+        case kKMinus:    pFlux->Fill(-3.5,9); if(pPart->Rho()<0.01) pFlux->Fill(-3.5,8); break;
+        case kPiMinus:   pFlux->Fill(-2.5,9); if(pPart->Rho()<0.01) pFlux->Fill(-2.5,8); break;
+        case kMuonMinus: pFlux->Fill(-1.5,9); if(pPart->Rho()<0.01) pFlux->Fill(-1.5,8); break;
+        case kPositron:  pFlux->Fill(-0.5,9); if(pPart->Rho()<0.01) pFlux->Fill(-0.5,8); pEleAllP->Fill(-pPart->P()); break;
+      
+        case kElectron:  pFlux->Fill( 0.5,9); if(pPart->Rho()<0.01) pFlux->Fill( 0.5,8); pEleAllP->Fill( pPart->P()); break;      
+        case kMuonPlus:  pFlux->Fill( 1.5,9); if(pPart->Rho()<0.01) pFlux->Fill( 1.5,8); break;      
+        case kPiPlus:    pFlux->Fill( 2.5,9); if(pPart->Rho()<0.01) pFlux->Fill( 2.5,8); break;      
+        case kKPlus:     pFlux->Fill( 3.5,9); if(pPart->Rho()<0.01) pFlux->Fill( 3.5,8); break;      
+        case kProton:    pFlux->Fill( 4.5,9); if(pPart->Rho()<0.01) pFlux->Fill( 4.5,8); break;            
+      }//switch
+    }//stack loop
+//now hits analiser        
+    for(Int_t iEntryN=0;iEntryN < fLoader->TreeH()->GetEntries();iEntryN++){//TreeH loop
+      fLoader->TreeH()->GetEntry(iEntryN);                                  //get current entry (prim)                
+      for(Int_t iHitN=0;iHitN < Hits()->GetEntries();iHitN++){//hits loop
+        AliRICHHit *pHit = (AliRICHHit*)Hits()->At(iHitN);            //get current hit
+        TParticle  *pPart=pStack->Particle(pHit->GetTrack());      //get stack particle which produced the current hit
+      
+        if(pPart->R()>cutR) continue;                                   //cut on production radius (cylindrical system) 
+      
+        switch(pPart->GetPdgCode()){
+          case kProtonBar: if(pPart->P()>cutPantiproton) {pProHitP->Fill(-pPart->P()); pFlux->Fill(-4.5,pHit->C());}break;
+          case kKMinus   : if(pPart->P()>cutPkaonminus)  {pKaoHitP->Fill(-pPart->P()); pFlux->Fill(-3.5,pHit->C());}break;
+          case kPiMinus  : if(pPart->P()>cutPpionminus)  {pPioHitP->Fill(-pPart->P()); pFlux->Fill(-2.5,pHit->C());}break;
+          case kMuonMinus: if(pPart->P()>cutPmuonminus)  {pMuoHitP->Fill(-pPart->P()); pFlux->Fill(-1.5,pHit->C());}break;        
+          case kPositron : if(pPart->P()>cutPpositron)   {pEleHitP->Fill(-pPart->P()); pFlux->Fill(-0.5,pHit->C()); 
+               pEleHitRP->Fill(-pPart->P(),pPart->R());  pEleHitRZ->Fill(pPart->Vz(),pPart->R()); }break;
+          
+          case kElectron : if(pPart->P()>cutPelectron)   {pEleHitP->Fill( pPart->P()); pFlux->Fill( 0.5,pHit->C()); 
+               pEleHitRP->Fill( pPart->P(),pPart->R());  pEleHitRZ->Fill(pPart->Vz(),pPart->R()); }break;
+          case kMuonPlus : if(pPart->P()>cutPmuonplus)   {pMuoHitP->Fill( pPart->P()); pFlux->Fill( 1.5,pHit->C());}break;                     
+          case kPiPlus   : if(pPart->P()>cutPpionplus)   {pPioHitP->Fill( pPart->P()); pFlux->Fill( 2.5,pHit->C());}break;           
+          case kKPlus    : if(pPart->P()>cutPkaonplus)   {pKaoHitP->Fill( pPart->P()); pFlux->Fill( 3.5,pHit->C());}break;           
+          case kProton   : if(pPart->P()>cutPproton)     {pProHitP->Fill( pPart->P()); pFlux->Fill( 4.5,pHit->C());}break;
+        }
+      }//hits loop      
+    }//TreeH loop
+    iCntPrimParts +=pStack->GetNprimary();
+    iCntTotParts  +=pStack->GetNtrack();
+  }//events loop                        
+//unload all loaded staff  
+  fLoader->UnloadHits();  
+  fLoader->GetRunLoader()->UnloadHeader(); 
+  fLoader->GetRunLoader()->UnloadKinematics();  
+//Calculater some sums
+  Stat_t sum=0;
+//sum row, sum over rows  
+  for(Int_t i=1;i<=pFlux->GetNbinsX();i++){
+    sum=0; for(Int_t j=2;j<=8;j++)    sum+=pFlux->GetBinContent(i,j);    
+    pFlux->SetBinContent(i,1,sum);
+  }
+    
+//display everything  
+  new TCanvas("canvas1",Form("Events %i Nprims=%i Nparticles=%i",iNevents,iCntPrimParts,iCntTotParts),1000,900); pFlux->Draw("text");  gPad->SetGrid();  
+//total prims and particles
+  TLatex latex; latex.SetTextSize(0.02);
+  sum=0; for(Int_t i=1;i<=pFlux->GetNbinsX();i++) sum+=pFlux->GetBinContent(i,10);    latex.DrawLatex(5.1,9.5,Form("%.0f",sum));
+  sum=0; for(Int_t i=1;i<=pFlux->GetNbinsX();i++) sum+=pFlux->GetBinContent(i,9);     latex.DrawLatex(5.1,8.5,Form("%.0f",sum));
+  for(Int_t iChN=1;iChN<=kNchambers;iChN++) {
+    sum=0; for(Int_t i=1;i<=pFlux->GetNbinsX();i++) sum+=pFlux->GetBinContent(i,iChN+1);latex.DrawLatex(5.1,iChN+0.5,Form("%.0f",sum));
+  }  
+  sum=0; for(Int_t i=1;i<=pFlux->GetNbinsX();i++) sum+=pFlux->GetBinContent(i,1);    latex.DrawLatex(5.1,0.5,Form("%.0f",sum));
+  
+  new TCanvas("cEleAllP"   ,"e" ,200,100); pEleAllP->Draw();
+  new TCanvas("cEleHitRP"  ,"e" ,200,100); pEleHitRP->Draw();
+  new TCanvas("cEleHitRZ"  ,"e" ,200,100); pEleHitRZ->Draw();
+  new TCanvas("cEleHitP"   ,"e" ,200,100); pEleHitP->Draw();
+  new TCanvas("cMuoHitP"   ,"mu",200,100); pMuoHitP->Draw();
+  new TCanvas("cPioHitP"   ,"pi",200,100); pPioHitP->Draw();
+  new TCanvas("cKaoHitP"   ,"K" ,200,100); pKaoHitP->Draw();
+  new TCanvas("cProHitP"   ,"p" ,200,100); pProHitP->Draw();
+  
+  gBenchmark->Show("HitsPlots");
+}//HitsPlots()

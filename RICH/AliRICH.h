@@ -52,6 +52,7 @@ public:
   inline void          HitAdd        (Int_t c,Int_t tid,TVector3 in,TVector3 out,Double_t e=0);                                                      //add new hit
   inline void          HitsCreate    (                                                       );                                                      //create hits container
          void          HitsPrint     (Int_t iEvent=0                                         )const;                                                 //prints hits
+         void          HitsQA        (Double_t cut=0,Double_t cutele=0,Double_t cutR=999);
             
          TClonesArray* SDigits       (                                                       )const{return fSdigits;}                                //pointer to sdigits list 
   inline void          SDigitAdd     (Int_t c,TVector pad,Double_t q,Int_t pid,Int_t tid     )     ;                                                 //add new sdigit
@@ -72,7 +73,8 @@ public:
          void          ClustersReset (                                                       )     {if(fClus)for(int i=0;i<kNchambers;i++){fClus ->At(i)->Clear();fNclus[i]=0;}}
          void          ClustersPrint (Int_t iEvent=0                                         )const;                        //prints a list of clusters for a given event
 
-         void          OccupancyPrint(Int_t iEvent=0                                         )const;
+         void          OccupancyPrint(Int_t iEvent=-1                                        )const;
+         void          SummaryOfEvent(Int_t iEvent=0                                         )const;
          
   AliRICHChamber* C(Int_t iC)           const{return fParam->C(iC);}   //provides pointer to a given chamber
   AliRICHParam*   P()                   const{return fParam;}          //provides pointer to a RICH params
