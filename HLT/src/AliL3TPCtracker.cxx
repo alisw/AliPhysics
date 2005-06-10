@@ -55,6 +55,7 @@ Int_t AliL3TPCtracker::Clusters2Tracks(AliESD *event)
     AliError("Missing runloader!");
     return kTRUE;
   }
+  Int_t iEvent = fRunLoader->GetEventNumber();
   
   Float_t ptmin = 0.1*AliL3Transform::GetSolenoidField();
 
@@ -73,7 +74,7 @@ Int_t AliL3TPCtracker::Clusters2Tracks(AliESD *event)
 
   for(Int_t slice=0; slice<=35; slice++)
     {
-      hough->ReadData(slice);
+      hough->ReadData(slice,iEvent);
       hough->Transform();
       hough->AddAllHistogramsRows();
       hough->FindTrackCandidatesRow();
