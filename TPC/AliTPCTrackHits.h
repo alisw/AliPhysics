@@ -68,10 +68,11 @@ public:
  private:
   Short_t fHitDistance; //distance to previous hit
   Short_t fCharge; //deponed charge
+  Short_t fTime; //hit time
   static Int_t fgCounter1; //counter
   static Int_t fgCounter2;  //counter
 
-  LClassDef(AliHitInfo,1)
+  LClassDef(AliHitInfo,2)
 };
 
 
@@ -87,9 +88,9 @@ public:
 
   void Clear();
   void AddHitKartez(Int_t volumeID, Int_t trackID, Double_t x, 
-		    Double_t y, Double_t z,Int_t q);
+		    Double_t y, Double_t z,Int_t q, Float_t time);
   void AddHit(Int_t volumeID, Int_t trackID, Double_t r, 
-	      Double_t z, Double_t fi,Int_t q);
+	      Double_t z, Double_t fi,Int_t q,Float_t time);
  
   Bool_t First(); //set current hit to first hit 
   Bool_t Next(Int_t id = -1);  //set current hit to next
@@ -114,10 +115,11 @@ private:
   AliTPCCurrentHit  * fCurrentHit; //!information about current hit 
   static const Double_t fgkPrecision;  //precision 
   static const Double_t fgkPrecision2;  //precision
+  static const Double_t fgkTimePrecision;  //hit time precision 
   static Int_t fgCounter1;  // counter1
   static Int_t fgCounter2;  // counter2
 
-  ClassDef(AliTPCTrackHits,1) 
+  ClassDef(AliTPCTrackHits,2) 
 };
 
 

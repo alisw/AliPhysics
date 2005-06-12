@@ -46,13 +46,14 @@ public:
   Int_t   fNHits; //nuber of thits
   Short_t * fHitDistance; //[fNHits] array of hits distances
   Short_t * fCharge; //[fNHits] array of charges
+  Short_t * fTime; //[fNHits] array of hits time
   static Int_t fgCounter1; //First internal counter
   static Int_t fgCounter2; // Second internal counter
 
   void Copy(TObject &) const
   {Error("Copy","Not Implemented");}
 
-  ClassDef(AliTrackHitsParamV2,1)  
+  ClassDef(AliTrackHitsParamV2,2)  
 };
 
 
@@ -68,9 +69,9 @@ public:
      {hit.Copy(*this); return (*this);}
   void Clear();
   void AddHitKartez(Int_t volumeID, Int_t trackID, Double_t x, 
-		    Double_t y, Double_t z,Int_t q);
+		    Double_t y, Double_t z,Int_t q,Float_t time);
   void AddHit(Int_t volumeID, Int_t trackID, Double_t r, 
-	      Double_t z, Double_t fi,Int_t q);
+	      Double_t z, Double_t fi,Int_t q,Float_t time);
  
   Bool_t First(); //set current hit to first hit 
   Bool_t Next();  //set current hit to next
@@ -103,6 +104,7 @@ protected:
   AliHit * fHit;                     //! current hit information
   static const Double_t fgkPrecision;  //precision 
   static const Double_t fgkPrecision2;  //precision
+  static const Double_t fgkTimePrecision;  //hit time precision 
   static Int_t fgCounter1; // First internal counter
   static Int_t fgCounter2; // Second internal counter
 
@@ -111,7 +113,7 @@ private:
   {Error("Copy","Not Implemented");}
 
 
-  ClassDef(AliTPCTrackHitsV2,1) 
+  ClassDef(AliTPCTrackHitsV2,2) 
 };
 
 struct AliTPCCurrentHitV2 {

@@ -1719,7 +1719,7 @@ void AliTPCv1::StepManager()
   // Called at every step in the Time Projection Chamber
   //
   Int_t         copy, id, i;
-  Float_t       hits[4];
+  Float_t       hits[5];
   Int_t         vol[2];
   TLorentzVector p;
  //
@@ -1769,6 +1769,9 @@ void AliTPCv1::StepManager()
         hits[3]=0.; // this hit has no energy loss
 	// new(lhits[fNhits++]) AliTPChit(fIshunt,gAlice->GetCurrentTrackNumber(),vol,hits);
 
+	// Get also the track time for pileup simulation
+	hits[4]=gMC->TrackTime();
+
         AddHit(gAlice->GetMCApp()->GetCurrentTrackNumber(), vol,hits); // M.I. 
 
         gMC->TrackPosition(p);
@@ -1778,6 +1781,9 @@ void AliTPCv1::StepManager()
         hits[3]=0.; // this hit has no energy loss
         // new(lhits[fNhits++]) AliTPChit(fIshunt,gAlice->GetCurrentTrackNumber(),vol,hits);
 
+	// Get also the track time for pileup simulation
+	hits[4]=gMC->TrackTime();
+
 	AddHit(gAlice->GetMCApp()->GetCurrentTrackNumber(), vol,hits); // M.I. 
 
       } 
@@ -1786,6 +1792,9 @@ void AliTPCv1::StepManager()
       for(i=0;i<3;++i) hits[i]=p[i];
       hits[3]=1; //I'd like to have something positive here (I.Belikov)
       // new(lhits[fNhits++]) AliTPChit(fIshunt,gAlice->GetCurrentTrackNumber(),vol,hits);
+
+      // Get also the track time for pileup simulation
+      hits[4]=gMC->TrackTime();
 
       AddHit(gAlice->GetMCApp()->GetCurrentTrackNumber(), vol,hits); // M.I. 
 

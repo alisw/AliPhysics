@@ -1633,7 +1633,7 @@ void AliTPCv3::StepManager()
 
   Int_t id,copy;
   TLorentzVector pos;
-  Float_t hits[4];
+  Float_t hits[5];
   Int_t vol[2];  
   
   vol[1]=0;
@@ -1670,6 +1670,9 @@ void AliTPCv3::StepManager()
     hits[0]=pos[0];
     hits[1]=pos[1];
     hits[2]=pos[2];
+
+    // Get also the track time for pileup simulation
+    hits[4]=gMC->TrackTime();
 
     //
     // check the selected side of the TPC

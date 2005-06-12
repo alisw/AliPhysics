@@ -164,16 +164,19 @@ public:
    Int_t     fSector;     //sector number
    Int_t     fPadRow;     //Pad Row number
    Float_t   fQ ;         //charge
+   Float_t   fTime;       //hit time
  
 public:
-   AliTPChit() {}
+   AliTPChit() {fTime = 0.;}
    AliTPChit(Int_t shunt, Int_t track, Int_t *vol, Float_t *hits);
    virtual ~AliTPChit() {}
    void SetX(Float_t x){fX = x;}
    void SetY(Float_t y){fY = y;}
    void SetZ(Float_t z){fZ = z;}
+
+   Float_t Time() const {return fTime;}
  
-   ClassDef(AliTPChit,1)  // Time Projection Chamber hits
+   ClassDef(AliTPChit,2)  // Time Projection Chamber hits
 };
 
 

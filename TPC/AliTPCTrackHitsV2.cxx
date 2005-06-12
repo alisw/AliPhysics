@@ -71,6 +71,7 @@ Int_t AliTPCTrackHitsV2::fgCounter2 =0;
 //
 const Double_t AliTPCTrackHitsV2::fgkPrecision=1e-6;  //precision 
 const Double_t AliTPCTrackHitsV2::fgkPrecision2=1e-20;  //precision
+const Double_t AliTPCTrackHitsV2::fgkTimePrecision=20.e-9;  //hit time precision 
 
 
 
@@ -84,8 +85,8 @@ protected:
     {hit.Copy(*this);}
   AliTPCTempHitInfoV2& operator = (const AliTPCTempHitInfoV2 &hit)
      {hit.Copy(*this); return (*this);}
-  void     NewParam(Double_t r, Double_t z, Double_t fi, Int_t q);
-  void     SetHit(Double_t r, Double_t z, Double_t fi, Int_t q);
+  void     NewParam(Double_t r, Double_t z, Double_t fi, Int_t q, Float_t time);
+  void     SetHit(Double_t r, Double_t z, Double_t fi, Int_t q, Float_t time);
   Double_t * GetPosition(Int_t index){return &fPositionStack[index*3];}
   void    UpdateParam(Double_t maxdelta); //recal
   void   Fit2(Double_t fSumY, Double_t fSumYX, Double_t fSumYX2,
@@ -106,6 +107,7 @@ protected:
   Double_t fOldR;     //previos r
   Double_t fPositionStack[3*kStackSize];  //position stack 
   UInt_t   fQStack[kStackSize];           //Q stack
+  Float_t  fTimeStack[kStackSize];        //time stack
   UInt_t fStackIndex;   //current stack index 
   //  UInt_t fInfoIndex;    //current track info index
   UInt_t fParamIndex;   //current track parameters index
@@ -132,7 +134,7 @@ AliTPCTempHitInfoV2::AliTPCTempHitInfoV2()
 }
 
 
-void AliTPCTempHitInfoV2::NewParam(Double_t r, Double_t z, Double_t fi, Int_t q)
+void AliTPCTempHitInfoV2::NewParam(Double_t r, Double_t z, Double_t fi, Int_t q, Float_t time)
 {
   //
   //reset stack and sum parameters
@@ -150,10 +152,10 @@ void AliTPCTempHitInfoV2::NewParam(Double_t r, Double_t z, Double_t fi, Int_t q)
   fParam->fAd = 0.;
   fParam->fTheta =0.;
   fParam->fThetaD =0.;
-  SetHit(r,z,fi,q);
+  SetHit(r,z,fi,q,time);
 }
 
-void AliTPCTempHitInfoV2::SetHit(Double_t r, Double_t z, Double_t fi, Int_t q)
+void AliTPCTempHitInfoV2::SetHit(Double_t r, Double_t z, Double_t fi, Int_t q, Float_t time)
 {
   //
   //add hit to the stack
@@ -163,6 +165,7 @@ void AliTPCTempHitInfoV2::SetHit(Double_t r, Double_t z, Double_t fi, Int_t q)
   f[1] = z;
   f[2] = fi;
   fQStack[fStackIndex]=q;
+  fTimeStack[fStackIndex]=time;
   if (fStackIndex==0) return;
   Double_t dr  = (r-fParam->fR);
   if (TMath::Abs(dr)<AliTPCTrackHitsV2::fgkPrecision) dr =AliTPCTrackHitsV2::fgkPrecision;
@@ -286,6 +289,7 @@ AliTrackHitsParamV2::AliTrackHitsParamV2()
   fgCounter2++;
   fHitDistance=0;
   fCharge=0;
+  fTime=0;
   fNHits=0;
 }
 
@@ -302,6 +306,10 @@ AliTrackHitsParamV2::~AliTrackHitsParamV2()
   if (fCharge){
     delete[]fCharge;  
     fCharge =0;
+  }
+  if (fTime){
+    delete[]fTime;  
+    fTime =0;
   }
 }
 
@@ -386,7 +394,7 @@ void AliTPCTrackHitsV2::Clear()
 
 
 void AliTPCTrackHitsV2::AddHitKartez(Int_t volumeID, Int_t trackID, Double_t x, 
-	      Double_t y, Double_t z,Int_t q)
+	      Double_t y, Double_t z,Int_t q, Float_t time)
 {
   //
   // add hit to the container - it add hit at the end - input in global coordinata
@@ -394,12 +402,12 @@ void AliTPCTrackHitsV2::AddHitKartez(Int_t volumeID, Int_t trackID, Double_t x,
   Double_t r = TMath::Sqrt(x*x+y*y);
   Double_t fi = TMath::ACos(x/r);
   if (y<0) fi*=-1.;
-    AddHit(volumeID,trackID,r,z,fi,q);
+    AddHit(volumeID,trackID,r,z,fi,q,time);
 }
 
 
 void AliTPCTrackHitsV2::AddHit(Int_t volumeID, Int_t trackID, 
-			     Double_t r, Double_t z, Double_t fi, Int_t q)
+			     Double_t r, Double_t z, Double_t fi, Int_t q, Float_t time)
 {
   //
   // Adding one hit
@@ -414,7 +422,7 @@ void AliTPCTrackHitsV2::AddHit(Int_t volumeID, Int_t trackID,
     AddVolume(volumeID);
     //
     fTempInfo->fParamIndex = 0;
-    fTempInfo->NewParam(r,z,fi,q);
+    fTempInfo->NewParam(r,z,fi,q,time);
     return;
   }
     
@@ -429,7 +437,7 @@ void AliTPCTrackHitsV2::AddHit(Int_t volumeID, Int_t trackID,
     fTempInfo->fParam =  new((*fArray)[fTempInfo->fParamIndex]) AliTrackHitsParamV2;   
     fTempInfo->fParam->fVolumeID = volumeID;
     fTempInfo->fParam->fTrackID = trackID;   
-    fTempInfo->NewParam(r,z,fi,q);
+    fTempInfo->NewParam(r,z,fi,q,time);
     return;
   }
      
@@ -476,7 +484,7 @@ void AliTPCTrackHitsV2::AddHit(Int_t volumeID, Int_t trackID,
     diff=kTRUE;
   else{  // if precision OK
     fTempInfo->fStackIndex++;   
-    fTempInfo->SetHit(r,z,fi,q);
+    fTempInfo->SetHit(r,z,fi,q,time);
     return;
   }  
 
@@ -487,11 +495,11 @@ void AliTPCTrackHitsV2::AddHit(Int_t volumeID, Int_t trackID,
     fTempInfo->fParam =  new((*fArray)[fTempInfo->fParamIndex]) AliTrackHitsParamV2;   
     fTempInfo->fParam->fVolumeID = volumeID;
     fTempInfo->fParam->fTrackID = trackID;   
-    fTempInfo->NewParam(r,z,fi,q);
+    fTempInfo->NewParam(r,z,fi,q,time);
   }
   else{
     fTempInfo->fStackIndex++;
-    fTempInfo->SetHit(r,z,fi,q);              
+    fTempInfo->SetHit(r,z,fi,q,time);              
   }
 }   
 
@@ -513,8 +521,10 @@ Bool_t AliTPCTrackHitsV2::FlushHitStack(Bool_t force)
   param.fNHits = fTempInfo->fStackIndex+1;
   if (param.fHitDistance) delete []param.fHitDistance;
   if (param.fCharge) delete []param.fCharge;
+  if (param.fTime) delete []param.fTime;
   param.fHitDistance = new Short_t[param.fNHits];
   param.fCharge = new Short_t[param.fNHits];
+  param.fTime = new Short_t[param.fNHits];
 
    
   for (i=0; i <= fTempInfo->fStackIndex; i++){
@@ -570,17 +580,22 @@ Bool_t AliTPCTrackHitsV2::FlushHitStack(Bool_t force)
 
     param.fHitDistance[i]= Short_t(TMath::Nint(dl/fStep));
     param.fCharge[i]= Short_t(fTempInfo->fQStack[i]);
+    param.fTime[i]= Short_t(fTempInfo->fTimeStack[i]/AliTPCTrackHitsV2::fgkTimePrecision);
   }    
   
   if (i<=fTempInfo->fStackIndex){ //if previous iteration not succesfull 
     Short_t * charge = new Short_t[i];
+    Short_t * time = new Short_t[i];
     Short_t * hitDistance= new Short_t[i];
     memcpy(charge, param.fCharge,sizeof(Short_t)*i);
+    memcpy(time, param.fTime,sizeof(Short_t)*i);
     memcpy(hitDistance, param.fHitDistance,sizeof(Short_t)*i);
     delete [] param.fCharge;
+    delete [] param.fTime;
     delete [] param.fHitDistance;
     param.fNHits= i;
     param.fCharge = charge;
+    param.fTime = time;
     param.fHitDistance = hitDistance;
     //
     Int_t volumeID = fTempInfo->fParam->fVolumeID;
@@ -589,7 +604,7 @@ Bool_t AliTPCTrackHitsV2::FlushHitStack(Bool_t force)
     fTempInfo->fParam = new((*fArray)[fTempInfo->fParamIndex]) AliTrackHitsParamV2; 
     Double_t * p = fTempInfo->GetPosition(i);
     UInt_t index2 = fTempInfo->fStackIndex;
-    fTempInfo->NewParam(p[0],p[1],p[2],fTempInfo->fQStack[i]);
+    fTempInfo->NewParam(p[0],p[1],p[2],fTempInfo->fQStack[i],fTempInfo->fTimeStack[i]);
     fTempInfo->fParam->fVolumeID= volumeID;
     fTempInfo->fParam->fTrackID= trackID;
     if (i+1<=index2) FlushHitStack2(i+1,index2);
@@ -609,16 +624,19 @@ void AliTPCTrackHitsV2::FlushHitStack2(Int_t index1, Int_t index2)
   //
   Double_t * positionstack = new Double_t[3*(index2-index1+1)];
   UInt_t   * qstack        = new UInt_t[index2-index1+1];
+  Float_t  * timestack     = new Float_t[index2-index1+1];
   memcpy(positionstack, &fTempInfo->fPositionStack[3*index1],
 	 (3*(index2-index1+1))*sizeof(Double_t));
   memcpy(qstack, &fTempInfo->fQStack[index1],(index2-index1+1)*sizeof(UInt_t));
+  memcpy(timestack, &fTempInfo->fTimeStack[index1],(index2-index1+1)*sizeof(Float_t));
   Double_t *p = positionstack;
   for (Int_t j=0; j<=index2-index1;j++){ 
     fTempInfo->fStackIndex++;
-    fTempInfo->SetHit(p[3*j+0],p[3*j+1],p[3*j+2],qstack[j]);
+    fTempInfo->SetHit(p[3*j+0],p[3*j+1],p[3*j+2],qstack[j],timestack[j]);
   }  
   delete []positionstack;
   delete []qstack;
+  delete []timestack;
 }
 
 
@@ -664,6 +682,7 @@ Bool_t AliTPCTrackHitsV2::First()
   ((AliTPChit*)fHit)->SetY(param->fR*TMath::Sin(param->fFi));
   ((AliTPChit*)fHit)->SetZ(param->fZ); 
   ((AliTPChit*)fHit)->fQ = param->fCharge[0];     
+  ((AliTPChit*)fHit)->fTime = (Float_t)(param->fTime[0]*AliTPCTrackHitsV2::fgkTimePrecision);     
   /*
     fCurrentHit->fHit.fSector = param->fVolumeID;
     fCurrentHit->fHit.SetTrack(param->fTrackID);
@@ -671,6 +690,7 @@ Bool_t AliTPCTrackHitsV2::First()
     fCurrentHit->fHit.SetY(param->fR*TMath::Sin(param->fFi));
     fCurrentHit->fHit.SetZ(param->fZ); 
     fCurrentHit->fHit.fQ = param->fCharge[0];   
+    fCurrentHit->fHit.fTime = (Float_t)(param->fTime[0]*AliTPCTrackHitsV2::fgkTimePrecision);   
   */
   fCurrentHit->fR = param->fR;
   
@@ -719,6 +739,7 @@ Bool_t AliTPCTrackHitsV2::Next()
   Double_t z  = param->fZ + (param->fTheta*dR+param->fThetaD*dR*dR);
   /*
   fCurrentHit->fHit.fQ = param->fCharge[fCurrentHit->fStackIndex];  
+  fCurrentHit->fHit.fTime = (Float_t)(param->fTime[fCurrentHit->fStackIndex]*AliTPCTrackHitsV2::fgkTimePrecision);  
   fCurrentHit->fHit.SetX(fCurrentHit->fR*TMath::Cos(fi));
   fCurrentHit->fHit.SetY(fCurrentHit->fR*TMath::Sin(fi));
   fCurrentHit->fHit.SetZ(z);   
@@ -726,6 +747,7 @@ Bool_t AliTPCTrackHitsV2::Next()
   fCurrentHit->fHit.SetTrack(param->fTrackID);
   */
   ((AliTPChit*)fHit)->fQ = param->fCharge[fCurrentHit->fStackIndex];  
+  ((AliTPChit*)fHit)->fTime = (Float_t)(param->fTime[fCurrentHit->fStackIndex]*AliTPCTrackHitsV2::fgkTimePrecision);  
   ((AliTPChit*)fHit)->SetX(fCurrentHit->fR*TMath::Cos(fi));
   ((AliTPChit*)fHit)->SetY(fCurrentHit->fR*TMath::Sin(fi));
   ((AliTPChit*)fHit)->SetZ(z);   

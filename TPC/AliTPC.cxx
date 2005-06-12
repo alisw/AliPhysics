@@ -1482,7 +1482,7 @@ Float_t AliTPC::GetSignal(TObjArray *p1, Int_t ntr,
   Float_t label = v(0);
   Int_t centralPad = (fTPCParam->GetNPads(fCurrentIndex[1],fCurrentIndex[3]-1)-1)/2;
 
-  Int_t nElectrons = (tv->GetNrows()-1)/4;
+  Int_t nElectrons = (tv->GetNrows()-1)/5;
   indexRange[0]=9999; // min pad
   indexRange[1]=-1; // max pad
   indexRange[2]=9999; //min time
@@ -1494,10 +1494,10 @@ Float_t AliTPC::GetSignal(TObjArray *p1, Int_t ntr,
   //  Loop over all electrons
   //
   for(Int_t nel=0; nel<nElectrons; nel++){
-    Int_t idx=nel*4;
+    Int_t idx=nel*5;
     Float_t aval =  v(idx+4);
     Float_t eltoadcfac=aval*fTPCParam->GetTotalNormFac(); 
-    Float_t xyz[3]={v(idx+1),v(idx+2),v(idx+3)};
+    Float_t xyz[4]={v(idx+1),v(idx+2),v(idx+3),v(idx+5)};
     Int_t n = ((AliTPCParamSR*)fTPCParam)->CalcResponseFast(xyz,fCurrentIndex,fCurrentIndex[3]);
 
     Int_t *index = fTPCParam->GetResBin(0);  
@@ -1632,7 +1632,7 @@ void AliTPC::MakeSector(Int_t isec,Int_t nrows,TTree *TH,
 
   Float_t gasgain = fTPCParam->GetGasGain();
   Int_t i;
-  Float_t xyz[4]; 
+  Float_t xyz[5]; 
 
   AliTPChit *tpcHit; // pointer to a sigle TPC hit    
   //MI change
@@ -1701,7 +1701,7 @@ void AliTPC::MakeSector(Int_t isec,Int_t nrows,TTree *TH,
 	    if(nofElectrons[i]>0){
 	      TVector &v = *tracks[i];
 	      v(0) = previousTrack;
-	      tracks[i]->ResizeTo(4*nofElectrons[i]+1); // shrink if necessary
+	      tracks[i]->ResizeTo(5*nofElectrons[i]+1); // shrink if necessary
 	      row[i]->Add(tracks[i]);                     
 	    }
 	    else {
@@ -1711,7 +1711,7 @@ void AliTPC::MakeSector(Int_t isec,Int_t nrows,TTree *TH,
 	  }
 
 	  nofElectrons[i]=0;
-	  tracks[i] = new TVector(481); // TVectors for the next fTrack
+	  tracks[i] = new TVector(601); // TVectors for the next fTrack
 
 	} // end of loop over rows
 	       
@@ -1752,6 +1752,8 @@ void AliTPC::MakeSector(Int_t isec,Int_t nrows,TTree *TH,
 	TransportElectron(xyz,index);    
 	Int_t rowNumber;
 	fTPCParam->GetPadRow(xyz,index); 
+	// Electron track time (for pileup simulation)
+	xyz[4] = tpcHit->Time()/fTPCParam->GetTSample();
 	// row 0 - cross talk from the innermost row
 	// row fNRow+1 cross talk from the outermost row
 	rowNumber = index[2]+1; 
@@ -1778,16 +1780,16 @@ void AliTPC::MakeSector(Int_t isec,Int_t nrows,TTree *TH,
 	//----------------------------------
 	if(nofElectrons[rowNumber]>120){
 	  Int_t range = tracks[rowNumber]->GetNrows();
-	  if((nofElectrons[rowNumber])>(range-1)/4){
+	  if((nofElectrons[rowNumber])>(range-1)/5){
 	    
-	    tracks[rowNumber]->ResizeTo(range+400); // Add 100 electrons
+	    tracks[rowNumber]->ResizeTo(range+500); // Add 100 electrons
 	  }
 	}
 	
 	TVector &v = *tracks[rowNumber];
-	Int_t idx = 4*nofElectrons[rowNumber]-3;
+	Int_t idx = 5*nofElectrons[rowNumber]-4;
 	Real_t * position = &(((TVector&)v)(idx)); //make code faster
-	memcpy(position,xyz,4*sizeof(Float_t));
+	memcpy(position,xyz,5*sizeof(Float_t));
 	
       } // end of loop over electrons
 
@@ -1804,7 +1806,7 @@ void AliTPC::MakeSector(Int_t isec,Int_t nrows,TTree *TH,
     if(nofElectrons[i]>0){
       TVector &v = *tracks[i];
       v(0) = previousTrack;
-      tracks[i]->ResizeTo(4*nofElectrons[i]+1); // shrink if necessary
+      tracks[i]->ResizeTo(5*nofElectrons[i]+1); // shrink if necessary
       row[i]->Add(tracks[i]);  
     }
     else{
@@ -2026,6 +2028,7 @@ AliHit(shunt,track)
   fY          = hits[1];
   fZ          = hits[2];
   fQ          = hits[3];
+  fTime       = hits[4];
 }
  
 //________________________________________________________________________
@@ -2132,7 +2135,7 @@ void AliTPC::AddHit2(Int_t track, Int_t *vol, Float_t *hits)
   }  
   if (fTrackHits && fHitType&4) 
     fTrackHits->AddHitKartez(vol[0],rtrack, hits[0],
-                             hits[1],hits[2],(Int_t)hits[3]);
+                             hits[1],hits[2],(Int_t)hits[3],hits[4]);
  //  if (fTrackHitsOld &&fHitType&2 ) 
 //     fTrackHitsOld->AddHitKartez(vol[0],rtrack, hits[0],
 //                                 hits[1],hits[2],(Int_t)hits[3]);

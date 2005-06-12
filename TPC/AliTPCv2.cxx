@@ -1836,7 +1836,7 @@ void AliTPCv2::StepManager()
   const Float_t kbig = 1.e10;
 
   Int_t id,copy;
-  Float_t hits[4];
+  Float_t hits[5];
   Int_t vol[2];  
   TLorentzVector p;
   
@@ -1905,6 +1905,9 @@ void AliTPCv2::StepManager()
       hits[3]=0.; // this hit has no energy loss
       // new(lhits[fNhits++]) AliTPChit(fIshunt,gAlice->GetCurrentTrackNumber(),vol,hits);
 
+      // Get also the track time for pileup simulation
+      hits[4]=gMC->TrackTime();
+
       AddHit(gAlice->GetMCApp()->GetCurrentTrackNumber(), vol,hits);  //MI change
 
     }
@@ -1915,6 +1918,9 @@ void AliTPCv2::StepManager()
      hits[2]=p[2];
      hits[3]=0.; // this hit has no energy loss
      // new(lhits[fNhits++]) AliTPChit(fIshunt,gAlice->GetCurrentTrackNumber(),vol,hits);
+
+     // Get also the track time for pileup simulation
+     hits[4]=gMC->TrackTime();
 
      AddHit(gAlice->GetMCApp()->GetCurrentTrackNumber(), vol,hits);  //MI change    
 
@@ -1945,6 +1951,10 @@ void AliTPCv2::StepManager()
       Float_t precision =   (momentum>0.1) ? 0.002 :0.01;
       fTrackHits->SetHitPrecision(precision);
     }
+
+    // Get also the track time for pileup simulation
+    hits[4]=gMC->TrackTime();
+
     AddHit(gAlice->GetMCApp()->GetCurrentTrackNumber(), vol,hits);  //MI change 
     
   } 
