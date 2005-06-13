@@ -40,15 +40,16 @@ class AliMDC : public TObject {
 public:
    enum EWriteMode { kLOCAL, kRFIO, kROOTD, kCASTOR, kDEVNULL };
    enum EFilterMode { kFilterOff, kFilterTransparent, kFilterOn };
-   enum EErrorCode { kFilterReject = 0, 
-		     kErrStartEndRun = -1, 
+   enum EErrorCode { kErrStartEndRun = -1, 
 		     kErrHeader = -2, 
 		     kErrHeaderSize = -3, 
 		     kErrSubHeader = -4, 
 		     kErrDataSize = -5, 
 		     kErrEquipmentHeader = -6, 
 		     kErrEquipment = -7,
-                     kErrFileSize = -8 };
+                     kErrFileSize = -8,
+		     kFilterReject = -9,
+                     kErrWriting = -10 };
 
    AliMDC(Int_t compress, Bool_t deleteFiles, 
 	  EFilterMode filterMode = kFilterTransparent, 

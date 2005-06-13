@@ -57,6 +57,12 @@ AliRunDB::AliRunDB(const char* localFS, Bool_t rdbms,
    // check that fs exists (crude check fails if fs is a file)
    gSystem->MakeDirectory(localFS);
 
+   // Put wide read-write permissions
+   if(gSystem->Chmod(localFS,1023)) {
+     Error("AliRunDB","can't set permissions for run DB directory");
+     return;
+   }
+
    strcpy(hostname, gSystem->HostName());
 
    char *s;
@@ -69,6 +75,12 @@ AliRunDB::AliRunDB(const char* localFS, Bool_t rdbms,
       fRunDB = new TFile(filename, "UPDATE");
    else
       fRunDB = new TFile(filename, "CREATE", Form("ALICE MDC%d Run DB", AliRawDB::kMDC));
+
+   // Put wide read-write permissions
+   if(gSystem->Chmod(filename,438)) {
+     Error("AliRunDB","can't set permissions for run DB file");
+     return;
+   }
 }
 
 //______________________________________________________________________________

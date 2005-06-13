@@ -48,21 +48,33 @@ const char *AliRawNullDB::GetFileName() const
 }
 
 //______________________________________________________________________________
-void AliRawNullDB::Close()
+Int_t AliRawNullDB::Close()
 {
    // Close raw RFIO DB.
 
-   if (!fRawDB) return;
+   if (!fRawDB) return 0;
+
+   if (!fRawDB->IsOpen()) return 0;
 
    fRawDB->cd();
 
    // Write the tree.
-   fTree->Write();
-   if (fESDTree) fESDTree->Write();
+   Bool_t error = kFALSE;
+   if (fTree->Write() == 0)
+     error = kTRUE;
+   if (fESDTree)
+     if (fESDTree->Write() == 0)
+       error = kTRUE;
 
    // Close DB, this also deletes the fTree
    fRawDB->Close();
 
+   Int_t filesize = fRawDB->GetEND();
+
    delete fRawDB;
    fRawDB = 0;
+   if(!error)
+     return filesize;
+   else
+     return -1;
 }

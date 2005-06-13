@@ -77,7 +77,6 @@
 
 #include "AliMDC.h"
 
-
 ClassImp(AliMDC)
 
 
@@ -208,7 +207,7 @@ Int_t AliMDC::Open(EWriteMode mode, const char* fileName)
   if (fRawDB->IsZombie()) {
     delete fRawDB;
     fRawDB = NULL;
-    return 1;
+    return -1;
   }
   Info("Open", "Filling raw DB %s\n", fRawDB->GetDBName());
 
@@ -378,7 +377,10 @@ Int_t AliMDC::ProcessEvent(void* event, Bool_t isIovecArray)
   // Clean up HLT ESD for the next event
   if (fESD) fESD->Reset();
 
-  return nBytes;
+  if(nBytes >= 0)
+    return nBytes;
+  else
+    return kErrWriting;
 }
 
 //______________________________________________________________________________
@@ -396,15 +398,16 @@ Int_t AliMDC::Close()
 {
 // close the current raw DB file
 
-  if (!fRawDB) return 1;
+  if (!fRawDB) return -1;
 
   fRawDB->WriteStats(fStats);
   fRunDB->Update(fStats);
+  Int_t filesize = fRawDB->Close();
   delete fRawDB;
   fRawDB = NULL;
   delete fStats;
   fStats = NULL;
-  return 0;
+  return filesize;
 }
 
 //______________________________________________________________________________
@@ -545,6 +548,8 @@ Int_t AliMDC::Run(const char* inputFile, Bool_t loop,
     }
 
     Int_t result = ProcessEvent(event, !inputFile);
+    if(result < -1)
+      Error("Run", "error writing data. Error code: %d",result);
 
     if (result >= 0) {
       numEvents++;

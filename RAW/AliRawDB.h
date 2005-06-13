@@ -42,12 +42,12 @@ public:
 	    AliESD *esd,
 	    Int_t compress,
             const char* fileName = NULL);
-   virtual ~AliRawDB() { Close(); }
+   virtual ~AliRawDB() { if(Close()==-1) Error("~AliRawDB", "cannot close output file!"); }
 
    virtual const char *GetOpenOption() const { return "RECREATE"; }
    virtual Int_t       GetNetopt() const { return 0; }
    virtual Bool_t      Create(const char* fileName = NULL);
-   virtual void        Close();
+   virtual Int_t       Close();
    Int_t               Fill();
    Int_t               GetTotalSize();
 

@@ -185,7 +185,7 @@ Bool_t AliRawDB::Create(const char* fileName)
 {
    // Create a new raw DB.
 
-   const Int_t kMaxRetry = 200;
+   const Int_t kMaxRetry = 1;
    const Int_t kMaxSleep = 1;      // seconds
    const Int_t kMaxSleepLong = 10; // seconds
    Int_t retry = 0;
@@ -203,8 +203,8 @@ again:
    retry++;
 
    fRawDB = TFile::Open(fname, GetOpenOption(),
-                        Form("ALICE MDC%d raw DB", kMDC), fCompress,
-                        GetNetopt());
+			Form("ALICE MDC%d raw DB", kMDC), fCompress,
+			GetNetopt());
    if (!fRawDB) {
       if (retry < kMaxRetry) {
          Warning("Create", "failure to open file, sleeping %d %s before retrying...",
@@ -275,26 +275,36 @@ void AliRawDB::MakeTree()
 }
 
 //______________________________________________________________________________
-void AliRawDB::Close()
+Int_t AliRawDB::Close()
 {
    // Close raw DB.
+   if (!fRawDB) return 0;
 
-   if (!fRawDB) return;
+   if (!fRawDB->IsOpen()) return 0;
 
    fRawDB->cd();
 
    // Write the tree.
-   fTree->Write();
-   if (fESDTree) fESDTree->Write();
+   Bool_t error = kFALSE;
+   if (fTree->Write() == 0)
+     error = kTRUE;
+   if (fESDTree)
+     if (fESDTree->Write() == 0)
+       error = kTRUE;
 
    // Close DB, this also deletes the fTree
    fRawDB->Close();
+
+   Int_t filesize = fRawDB->GetEND();
 
    if (fDeleteFiles) {
       gSystem->Unlink(fRawDB->GetName());
       delete fRawDB;
       fRawDB = 0;
-      return;
+      if(!error)
+	return filesize;
+      else
+	return -1;
    }
 
    // Create semaphore to say this file is finished
@@ -303,6 +313,10 @@ void AliRawDB::Close()
 
    delete fRawDB;
    fRawDB = 0;
+   if(!error)
+     return filesize;
+   else
+     return -1;
 }
 
 //______________________________________________________________________________
@@ -311,9 +325,16 @@ Int_t AliRawDB::Fill()
    // Fill the trees and return the number of written bytes
 
    Double_t bytes = fRawDB->GetBytesWritten();
-   fTree->Fill();
-   if (fESDTree) fESDTree->Fill();
-   return Int_t(fRawDB->GetBytesWritten() - bytes);
+   Bool_t error = kFALSE;
+   if (fTree->Fill() == -1)
+     error = kTRUE;
+   if (fESDTree) 
+     if (fESDTree->Fill() == -1)
+       error = kTRUE;
+   if(!error)
+     return Int_t(fRawDB->GetBytesWritten() - bytes);
+   else
+     return -1;
 }
 
 //______________________________________________________________________________

@@ -103,20 +103,28 @@ const char *AliRawRFIODB::GetFileName() const
 }
 
 //______________________________________________________________________________
-void AliRawRFIODB::Close()
+Int_t AliRawRFIODB::Close()
 {
    // Close raw RFIO DB.
 
-   if (!fRawDB) return;
+   if (!fRawDB) return 0;
+
+   if (!fRawDB->IsOpen()) return 0;
 
    fRawDB->cd();
 
    // Write the tree.
-   fTree->Write();
-   if (fESDTree) fESDTree->Write();
+   Bool_t error = kFALSE;
+   if (fTree->Write() == 0)
+     error = kTRUE;
+   if (fESDTree)
+     if (fESDTree->Write() == 0)
+       error = kTRUE;
 
    // Close DB, this also deletes the fTree
    fRawDB->Close();
+
+   Int_t filesize = fRawDB->GetEND();
 
    if (fDeleteFiles) {
       TUrl u(fRawDB->GetName());
@@ -125,4 +133,9 @@ void AliRawRFIODB::Close()
 
    delete fRawDB;
    fRawDB = 0;
+
+   if(!error)
+     return filesize;
+   else
+     return -1;
 }

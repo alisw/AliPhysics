@@ -81,4 +81,5 @@ void  alimdcEnableDebug()
   AliLog::SetGlobalLogLevel(AliLog::kMaxType);
   AliLog::SetGlobalDebugLevel(AliLog::kMaxType);
   AliLog::SetPrintRepetitions(kFALSE);
+  AliLog::SetHandleRootMessages(kTRUE);
 }

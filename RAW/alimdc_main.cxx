@@ -160,7 +160,8 @@ int main(int argc, char **argv)
    const char* castorFS   = castorStr.Data();
 #endif
    const char* rootdFS    = "root://localhost//tmp/mdc1";
-   const char* alienHost  = "alien://aliens7.cern.ch:15000/?direct";
+   //   const char* alienHost  = "alien://aliens7.cern.ch:15000/?direct";
+   const char* alienHost  = NULL;
    const char* alienDir   = "/alice_mdc/DC";
 
    // User defined file system locations

@@ -84,6 +84,12 @@ Bool_t AliTagDB::Create(const char* fileName)
       fTagDB = 0;
       return kFALSE;
    }
+   // Put wide read-write permissions
+   if(gSystem->Chmod(name,438)) {
+     Error("Create", "can't set permissions for tag DB file");
+     fTagDB = 0;
+     return kFALSE;
+   }
 
    // Create ROOT Tree object container
    fTree = new TTree("TAG", Form("ALICE MDC%d header data tree", AliRawDB::kMDC));
