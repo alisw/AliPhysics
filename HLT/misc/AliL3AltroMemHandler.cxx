@@ -18,6 +18,10 @@
 #include "AliL3AltroMemHandler.h"
 #include "AliL3Logging.h"
 
+#if __GNUC__ >= 3
+using namespace std;
+#endif
+
 ClassImp(AliL3AltroMemHandler)
 
 AliL3AltroMemHandler::AliL3AltroMemHandler(){

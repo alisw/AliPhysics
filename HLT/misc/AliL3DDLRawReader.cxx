@@ -9,6 +9,10 @@
 
 #include "AliL3DDLRawReader.h"
 
+#if __GNUC__ >= 3
+using namespace std;
+#endif
+
 /**************************************************************************
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *

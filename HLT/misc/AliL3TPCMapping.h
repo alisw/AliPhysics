@@ -12,6 +12,7 @@
 class AliL3TPCMapping {
 
  public:
+  virtual ~AliL3TPCMapping() {}
   //taken from GSI TPC numbering document
   static Int_t GetRealNPads(Int_t slicerow);           //Number of pads per row
   static Double_t GetRealX(Int_t slicerow);            //Local X in cm for modules 0,36

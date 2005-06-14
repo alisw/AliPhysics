@@ -3,7 +3,7 @@
 #ifndef ALIL3STANDARDINCLUDESH
 #define ALIL3STANDARDINCLUDESH
 
-#if __GNUC__ == 3
+#if __GNUC__ >= 3
 #include <fstream>
 #include <iostream>
 

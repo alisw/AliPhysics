@@ -24,7 +24,7 @@
 #include "AliL3Logging.h"
 #include "AliL3Transform.h"
 
-#if defined(__GNUC__) && __GNUC__ == 3
+#if defined(__GNUC__) && __GNUC__ >= 3
 using namespace std;
 #endif
 

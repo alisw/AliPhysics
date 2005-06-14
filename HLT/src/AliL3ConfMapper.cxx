@@ -25,6 +25,9 @@
 #include "AliL3Transform.h"
 #include "AliL3ConfMapper.h"
 
+#if __GNUC__ >= 3
+using namespace std;
+#endif
 
 ClassImp(AliL3ConfMapper)
 

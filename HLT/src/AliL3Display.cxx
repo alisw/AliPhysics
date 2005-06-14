@@ -38,7 +38,7 @@
 #include "AliL3SpacePointData.h"
 #include "AliL3MemHandler.h"
 
-#if __GNUC__ == 3
+#if __GNUC__ >= 3
 using namespace std;
 #endif
 

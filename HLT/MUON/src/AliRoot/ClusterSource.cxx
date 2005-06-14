@@ -11,6 +11,9 @@
 #include "AliMUONHit.h"
 #include "AliMUONRawCluster.h"
 #include "AliMUONDataInterface.h"
+#ifdef __APPLE__
+#include "math.h"
+#endif
 
 ClassImp(AliMUONHLT::ClusterSource);
 ClassImp(AliMUONHLT::ClusterSource::BlockData);

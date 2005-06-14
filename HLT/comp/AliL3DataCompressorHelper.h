@@ -8,6 +8,8 @@
 class AliL3DataCompressorHelper {
   
  public:
+  virtual ~AliL3DataCompressorHelper() {}
+
   static void SetBitNumbers(Int_t pad,Int_t time,Int_t charge,Int_t shape);
   static void SetTransverseResolutions(Float_t res1,Float_t res2,Float_t res3,Float_t width=0.005);
   static void SetLongitudinalResolutions(Float_t res1,Float_t res2,Float_t res3,Float_t width=0.005);

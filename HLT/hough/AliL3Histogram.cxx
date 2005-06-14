@@ -8,7 +8,7 @@
 #include "AliL3Logging.h"
 #include "AliL3Histogram.h"
 
-#if __GNUC__ == 3
+#if __GNUC__ >= 3
 using namespace std;
 #endif
 

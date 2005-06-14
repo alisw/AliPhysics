@@ -19,6 +19,7 @@ class AliL3AltroMemHandler {
   public: 
 
    AliL3AltroMemHandler();
+   virtual ~AliL3AltroMemHandler() {}
    void Write(UShort_t row, UChar_t pad, UShort_t time, UShort_t charge);
    Bool_t Read(UShort_t &row, UChar_t &pad, UShort_t &time, UShort_t &charge);
    Bool_t ReadSequence(UShort_t &row, UChar_t &pad, UShort_t &time, UChar_t &n, UShort_t **charges);

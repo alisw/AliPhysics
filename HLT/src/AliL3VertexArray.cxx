@@ -30,7 +30,12 @@
 </pre>
 */
 
+#if __GNUC__ >= 3
+using namespace std;
+#endif
+
 ClassImp(AliL3VertexArray)
+
 void AliL3VertexArray::AnalyzeSector(Float_t *vertex, Int_t *array, Int_t len)
 {
   //loop over all seeds and all vertex position

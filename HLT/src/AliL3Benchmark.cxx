@@ -27,6 +27,10 @@
 #include "AliL3Logging.h"
 #include "AliL3Benchmark.h"
 
+#if __GNUC__ >= 3
+using namespace std;
+#endif
+
 ClassImp(AliL3Benchmark)
 
 AliL3Benchmark::AliL3Benchmark()

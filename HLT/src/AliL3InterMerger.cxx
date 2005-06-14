@@ -22,6 +22,10 @@
 </pre>
 */
 
+#if __GNUC__ >= 3
+using namespace std;
+#endif
+
 ClassImp(AliL3InterMerger)
 
 AliL3InterMerger::AliL3InterMerger()

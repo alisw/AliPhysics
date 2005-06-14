@@ -68,6 +68,7 @@ class AliL3Transform {
   static Double_t fgSin[36]; //stores the sin value for local to global rotations  
 
  public:
+  virtual ~AliL3Transform() {}
 #ifdef use_aliroot
   static Bool_t Init(AliRunLoader *runLoader); //init transformer params using a run loader
 #endif

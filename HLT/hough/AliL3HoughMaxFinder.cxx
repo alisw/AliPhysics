@@ -704,7 +704,7 @@ void AliL3HoughMaxFinder::FindAdaptedRowPeaks(Int_t kappawindow,Int_t xsize,Int_
   Short_t *nmaxs = new Short_t[hist->GetNbinsY()];
   memset(nmaxs,0,hist->GetNbinsY()*sizeof(Short_t));
   Int_t lastvalue=0,value=0;
-  for(Int_t ybin=fNextRow[ymin]; ybin<=ymax; ybin = fNextRow[++ybin])
+  for(Int_t ybin=fNextRow[ymin]; ybin<=ymax; ybin = fNextRow[ybin+1])
     {
       localmaxima[ybin-ymin] = new AliL3PreYPeak[nxbins-2];
       lastvalue = 0;
@@ -908,7 +908,7 @@ void AliL3HoughMaxFinder::FindAdaptedRowPeaks(Int_t kappawindow,Int_t xsize,Int_
   fN1PeaksPrevEtaSlice = currentnpeaks;    
   fN2PeaksPrevEtaSlice = fNPeaks;
 
-  for(Int_t ybin=fNextRow[ymin]; ybin<=ymax; ybin = fNextRow[++ybin])
+  for(Int_t ybin=fNextRow[ymin]; ybin<=ymax; ybin = fNextRow[ybin+1])
     delete [] localmaxima[ybin-ymin];
 
   delete [] localmaxima;

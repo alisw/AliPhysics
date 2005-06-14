@@ -23,7 +23,7 @@
 #include "AliL3HoughTrack.h"
 #include "AliL3SpacePointData.h"
 
-#if __GNUC__ == 3
+#if __GNUC__ >= 3
 using namespace std;
 #endif
 
