@@ -1,6 +1,6 @@
 #ifndef ALIHBTFUNCTION_H
 #define ALIHBTFUNCTION_H
-
+ 
 /* Id: $ */
 
 ///////////////////////////////////////////////////////
@@ -40,7 +40,7 @@ class AliHBTFunction: public TNamed
     virtual TH1* GetDenominator() const = 0;
     virtual TH1* GetResult() = 0;
 
-    virtual void WriteFunction();
+    virtual Int_t WriteFunction();
     virtual void InitFunction();
     
     TH1* GetRatio(Double_t normfactor = 1.0);
@@ -125,7 +125,7 @@ class AliHBTOnePairFctn
     virtual void ProcessDiffEventParticles(AliHBTPair* pair) = 0;
 
     virtual void Init() = 0;
-    virtual void Write() = 0;
+    virtual Int_t Write(const char* /*x1*/ = 0,Int_t /*x2*/ = 0, Int_t /*x3*/ = 0) = 0;
     virtual const char* Name() = 0;
     
    ClassDef(AliHBTOnePairFctn,2)
@@ -163,7 +163,7 @@ class AliHBTTwoPairFctn
     ProcessDiffEventParticles(AliHBTPair* trackpair, AliHBTPair* partpair) = 0;
     
     virtual void Init() = 0;
-    virtual void Write(const char* /*x1*/ = 0 , int/*x2*/ = 0, int /*x3*/ = 0) = 0;
+    virtual Int_t Write(const char* /*x1*/ = 0,Int_t /*x2*/ = 0, Int_t /*x3*/ = 0) = 0;
     virtual const char* Name() = 0;
 	     
    ClassDef(AliHBTTwoPairFctn,2)
@@ -406,7 +406,7 @@ class AliHBTOnePairFctn1D: public AliHBTOnePairFctn, public AliHBTFunction1D
 
   void ProcessSameEventParticles(AliHBTPair* pair);
   void ProcessDiffEventParticles(AliHBTPair* pair);
-  void Write(){WriteFunction();}
+  Int_t Write(const char* /*x1*/ = 0,Int_t /*x2*/ = 0, Int_t /*x3*/ = 0){return WriteFunction();}
   void Init(){InitFunction();}
   const char* Name(){return GetName();}
   
@@ -450,7 +450,7 @@ class AliHBTOnePairFctn2D: public AliHBTOnePairFctn, public AliHBTFunction2D
   
   void ProcessSameEventParticles(AliHBTPair* pair);
   void ProcessDiffEventParticles(AliHBTPair* pair);
-  void Write(){WriteFunction();}
+  Int_t Write(const char* /*x1*/ = 0,Int_t /*x2*/ = 0, Int_t /*x3*/ = 0){return WriteFunction();}
   void Init(){InitFunction();}
   const char* Name(){return GetName();}
  protected:
@@ -494,7 +494,7 @@ class AliHBTOnePairFctn3D: public AliHBTOnePairFctn, public AliHBTFunction3D
 
   void ProcessSameEventParticles(AliHBTPair* pair);
   void ProcessDiffEventParticles(AliHBTPair* pair);
-  void Write(){WriteFunction();}
+  Int_t Write(const char* /*x1*/ = 0,Int_t /*x2*/ = 0, Int_t /*x3*/ = 0){return WriteFunction();}
   void Init(){InitFunction();}
   const char* Name(){return GetName();}
  protected:
@@ -531,7 +531,7 @@ class AliHBTTwoPairFctn1D: public AliHBTTwoPairFctn, public AliHBTFunction1D
 
   void ProcessSameEventParticles(AliHBTPair* trackpair, AliHBTPair* partpair);
   void ProcessDiffEventParticles(AliHBTPair* trackpair, AliHBTPair* partpair);
-  void Write(){WriteFunction();}
+  Int_t Write(const char* /*x1*/ = 0,Int_t /*x2*/ = 0, Int_t /*x3*/ = 0){return WriteFunction();}
   void Init(){InitFunction();}
   const char* Name(){return GetName();}
   
@@ -576,7 +576,7 @@ class AliHBTTwoPairFctn2D: public AliHBTTwoPairFctn, public AliHBTFunction2D
   
   void ProcessSameEventParticles(AliHBTPair* trackpair, AliHBTPair* partpair);
   void ProcessDiffEventParticles(AliHBTPair* trackpair, AliHBTPair* partpair);
-  void Write(){WriteFunction();}
+  Int_t Write(const char* /*x1*/ = 0,Int_t /*x2*/ = 0, Int_t /*x3*/ = 0){return WriteFunction();}
   void Init(){InitFunction();}
   const char* Name(){return GetName();}
 
@@ -623,7 +623,7 @@ class AliHBTTwoPairFctn3D: public AliHBTTwoPairFctn, public AliHBTFunction3D
 
   void ProcessSameEventParticles(AliHBTPair* trackpair, AliHBTPair* partpair);
   void ProcessDiffEventParticles(AliHBTPair* trackpair, AliHBTPair* partpair);
-  void Write(){WriteFunction();}
+  Int_t Write(const char* /*x1*/ = 0,Int_t /*x2*/ = 0, Int_t /*x3*/ = 0){return WriteFunction();}
   void Init(){InitFunction();}
   const char* Name(){return GetName();}
 

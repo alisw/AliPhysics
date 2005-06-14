@@ -24,7 +24,7 @@ class AliHBTCorrFitFctn: public AliHBTOnePairFctn1D
    void ProcessDiffEventParticles(AliHBTPair* trackpair);
    
    TH1* GetResult();
-   void WriteFunction();
+   virtual Int_t WriteFunction();
 
    void SetMaxNumberOfPairs(Int_t  fit, Int_t  norm){fNMaxPairsFitArea = fit; fNMaxPairsNormArea = norm;}
    void SetFitRange(Float_t max) {fFitRangeMax = max;}

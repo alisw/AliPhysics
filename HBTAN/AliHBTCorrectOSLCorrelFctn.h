@@ -38,7 +38,7 @@ class AliHBTCorrectOSLCorrelFctn: public AliHBTOnePairFctn3D, public AliHBTCorre
 
    void     SetInitialValues(Double_t lambda, Double_t rout, Double_t rside, Double_t rlong);
    void     Init();
-   void     WriteFunction();//overloaded 
+   Int_t    WriteFunction();//overloaded 
 
    TH1*     GetResult();//returns the result histogram
    void     GetValues(AliHBTPair* pair, Double_t& x, Double_t& y, Double_t& z) const ;

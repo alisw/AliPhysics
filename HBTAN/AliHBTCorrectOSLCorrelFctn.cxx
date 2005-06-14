@@ -224,12 +224,14 @@ void AliHBTCorrectOSLCorrelFctn::ProcessDiffEventParticles(AliHBTPair* pair)
 }
 /******************************************************************/
 
-void AliHBTCorrectOSLCorrelFctn::WriteFunction()
+Int_t AliHBTCorrectOSLCorrelFctn::WriteFunction()
 {
-  AliHBTFunction::WriteFunction();
-  if (fSmearedNumer) fSmearedNumer->Write();
-  if (fSmearedDenom) fSmearedDenom->Write();
-
+  //Writes the function
+  Int_t retval = 0;
+  retval += AliHBTFunction::WriteFunction();
+  if (fSmearedNumer) retval += fSmearedNumer->Write();
+  if (fSmearedDenom) retval += fSmearedDenom->Write();
+  return retval;
 }
 /******************************************************************/
 

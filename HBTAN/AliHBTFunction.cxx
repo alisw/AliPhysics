@@ -102,9 +102,10 @@ AliHBTFunction & AliHBTFunction::operator= (const AliHBTFunction & source)
   return * this;
 }
 
-void AliHBTFunction::WriteFunction()
+Int_t AliHBTFunction::WriteFunction()
 {
 //writes result of the function to file
+  Int_t retval =0;
    AliDebug(1,"Entering");
    if (fWriteNumAndDen)
     { 
@@ -120,9 +121,10 @@ void AliHBTFunction::WriteFunction()
    if (res) 
     { 
       AliDebug(1,"Writing Result");
-      res->Write();
+      retval = res->Write();
       AliDebug(1,"Writing Result Done");
     }
+   return retval;
 }
 /******************************************************************/
 
