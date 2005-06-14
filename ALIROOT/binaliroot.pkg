@@ -13,21 +13,23 @@ ELIBS:= MUONgeometry MUONrec MUONsim MUONbase MUONmapping \
         ZDCbase ZDCsim ZDCrec VZERObase VZEROsim VZEROrec EMCAL \
         STRUCT STARTbase STARTsim STARTrec EVGEN ESD STEER CONTAINERS \
         pythia6 AliPythia6 pdf THijing \
-        hijing TMEVSIM mevsim THbtp HBTP THerwig herwig TEPEMGEN EPEMGEN \
-        TPHIC FASTSIM microcern RAWData AliL3Src AliL3Comp AliL3Misc AliL3Hough AliL3ITS
+        hijing TMEVSIM mevsim THbtp HBTP TEPEMGEN EPEMGEN \
+        FASTSIM microcern RAWData AliL3Src AliL3Comp AliL3Misc \
+	AliL3Hough AliL3ITS \
+#	THerwig herwig TPHIC
 
 ifeq (macosx,$(ALICE_TARGET))
 
-@PACKAGE@LIBSINIT:=$(filter-out microcern,$(ELIBS))
-@PACKAGE@LIBSINIT:=$(filter-out pdf,$(@PACKAGE@LIBSINIT))
-@PACKAGE@LIBSINIT:=$(filter-out mevsim,$(@PACKAGE@LIBSINIT))
-@PACKAGE@LIBSINIT:=$(filter-out HBTP,$(@PACKAGE@LIBSINIT))
-@PACKAGE@LIBSINIT:=$(filter-out herwig,$(@PACKAGE@LIBSINIT))
-@PACKAGE@LIBSINIT:=$(filter-out EPEMGEN,$(@PACKAGE@LIBSINIT))
-PACKLDFLAGS:=$(LDFLAGS) $(@PACKAGE@LIBSINIT:%=-Wl,-u,_G__cpp_setupG__%)
-# On Mac OS X gcc we need g2c
-ELIBS+=g2c
-ELIBSDIR+=$(dir $(shell find $(FINK_ROOT) -name 'libg2c.*'))
+ELIBSCPP:=$(filter-out microcern,$(ELIBS))
+ELIBSCPP:=$(filter-out pdf,$(ELIBSCPP))
+ELIBSCPP:=$(filter-out mevsim,$(ELIBSCPP))
+ELIBSCPP:=$(filter-out HBTP,$(ELIBSCPP))
+ELIBSCPP:=$(filter-out herwig,$(ELIBSCPP))
+ELIBSCPP:=$(filter-out EPEMGEN,$(ELIBSCPP))
+PACKLDFLAGS:=$(LDFLAGS) $(ELIBSCPP:%=-Wl,-u,_G__cpp_setupG__%)
+# On Mac OS X gcc we need f2c
+ELIBS+=f2c
+ELIBSDIR+=$(dir $(shell find $(FINK_ROOT) -name 'libf2c.*'))
 endif
 
 # The two variables below are used for the creation of profile target.
