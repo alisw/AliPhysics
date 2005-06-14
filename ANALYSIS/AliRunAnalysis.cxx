@@ -1,4 +1,23 @@
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+
+/* $Id$ */
+
 #include "AliRunAnalysis.h"
+#include "AliLog.h"
+
 //________________________________
 ///////////////////////////////////////////////////////////
 //
@@ -58,30 +77,25 @@ Int_t AliRunAnalysis::Run()
 
  if (fReader == 0x0)
   {
-    Error("Run","Reader is not set");
+    AliError("Reader is not set");
     return 1;
   }
  TDirectory* cwd = gDirectory; 
  Int_t nanal = fAnalysies.GetEntries();
- if (AliVAODParticle::GetDebug()) Info("Run","There is %d analysies",nanal);
+ AliDebug(1,Form("There are %d analyses",nanal));
  /******************************/ 
  /*  Init Event                */ 
  /******************************/ 
- if (AliVAODParticle::GetDebug()) Info("Run","Intializing analyses...");
+ AliDebug(1,"Intializing analyses...");
  for (Int_t an = 0; an < nanal; an++)
   {   
-      if (AliVAODParticle::GetDebug()) Info("Run","Intializing analysis %d", an);
       AliAnalysis* analysis = (AliAnalysis*)fAnalysies.At(an);
-      if (AliVAODParticle::GetDebug()) 
-       { 
-         Info("Run","Intializing analysis %d address %#x", an, analysis);
-         Info("Run","Intializing analysis %d name %d", an, analysis->GetName());
-         Info("Run","Intializing analysis %d: Calling Init...", an);
-       } 
+      AliDebug(1,Form("Intializing analysis %d,address=%#x, name=%s", 
+		      an, analysis, analysis->GetName()));
       analysis->Init();
-      if (AliVAODParticle::GetDebug()) Info("Run","Intializing analysis %d: Calling Init... Done");
+      AliDebug(1,Form("Init done for analysis %d",an));
   }
- if (AliVAODParticle::GetDebug()) Info("Run","Intializing analyses... Done.");
+ AliDebug(1,"Intializing analyses... Done.");
   
  while (fReader->Next() == kFALSE)
   {
@@ -93,14 +107,14 @@ Int_t AliRunAnalysis::Run()
      /******************************/ 
      if ( Rejected(eventrec,eventsim) )
       {
-        if (AliVAODParticle::GetDebug()) Info("Run","Event rejected by Event Cut");
+        AliDebug(1,"Event rejected by Event Cut");
         continue; //Did not pass the 
       }
       
      /******************************/ 
      /*  Process Event             */ 
      /******************************/ 
-     if (AliVAODParticle::GetDebug())  Info("Run","There is %d analyses",fAnalysies.GetEntries());
+     AliDebug(1,Form("There is %d analyses",fAnalysies.GetEntries()));
      
      for (Int_t an = 0; an < fAnalysies.GetEntries(); an++)
       {
@@ -113,23 +127,17 @@ Int_t AliRunAnalysis::Run()
  /******************************/ 
  /*  Finish Event              */ 
  /******************************/ 
- if (AliVAODParticle::GetDebug()) Info("Run","Finishing analyses... ");
- if (AliVAODParticle::GetDebug()) Info("Run","There is %d anlyses",fAnalysies.GetEntries());
+ AliDebug(1,Form("Finishing analyses...\n There are %d anlyses",fAnalysies.GetEntries()));
  if (cwd) cwd->cd();
  for (Int_t an = 0; an < fAnalysies.GetEntries(); an++)
   {
-      if (AliVAODParticle::GetDebug()) Info("Run","Finishing analysis %d", an);
       AliAnalysis* analysis = (AliAnalysis*)fAnalysies.At(an);
-      if (AliVAODParticle::GetDebug()) 
-       { 
-         Info("Run","Finishing analysis %d address %#x", an, analysis);
-         Info("Run","Finishing analysis %d name %d", an, analysis->GetName());
-         Info("Run","Finishing analysis %d: Calling Finish...",an);
-       } 
+      AliDebug(1,Form("Calling Finish for analysis %d address %#x name=%s", 
+		      an, analysis,analysis->GetName()));
       analysis->Finish();
-      if (AliVAODParticle::GetDebug()) Info("Run","Finishing analysis %d: Calling Finish... Done");
+      AliDebug(1,Form("Called Finish for analysis %d",an));
   }
- if (AliVAODParticle::GetDebug()) Info("Run","Finishing done");
+ AliDebug(1,"Finishing done");
 
  return 0;   
 }

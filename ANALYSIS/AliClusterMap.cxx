@@ -1,4 +1,19 @@
-#include "AliClusterMap.h"
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+
+/* $Id$ */
 
 //_________________________________________________
 ///////////////////////////////////////////////////
@@ -14,12 +29,17 @@
 //
 ///////////////////////////////////////////////////////////////////////////
 
+#include <TString.h>
 
+#include "AliClusterMap.h"
 #include "AliESDtrack.h"
+#include "AliLog.h"
 #include "AliTPCtrack.h"
 #include "AliVAODParticle.h"
-#include <TString.h>
+
 const Int_t AliClusterMap::fNPadRows = 159;
+
+ClassImp(AliClusterMap)
 
 AliClusterMap::AliClusterMap():
  fPadRawMap(fNPadRows)
@@ -33,11 +53,8 @@ AliClusterMap::AliClusterMap(AliESDtrack* track):
 {
  //ctor
  
- if (AliVAODParticle::GetDebug() > 2)
-  { 
-    Info("AliClusterMap(AliESDtrack*)","");
-    Print();
-  } 
+ StdoutToAliDebug(3,Print());
+
 } 
 /***********************************************************************/
 
@@ -46,11 +63,7 @@ AliClusterMap::AliClusterMap(AliTPCtrack* track):
 {
  //ctor
  
- //Does not work since indeces in the claster index array 
- //in the TPC track does not correspond to the padraw segmatation
- if (AliVAODParticle::GetDebug() > 9) 
-   Info("AliClusterMap",
-      "#####################################################################"); 
+ AliDebug(10,"#####################################################################"); 
  if (track == 0x0)
   {
     Error("AliClusterMap","Pointer to TPC track is NULL");
@@ -64,8 +77,7 @@ AliClusterMap::AliClusterMap(AliTPCtrack* track):
     Int_t sect = (idx&0xff000000)>>24;
     Int_t row = (idx&0x00ff0000)>>16;
     if (sect > 18) row +=63; //if it is outer sector, add number of inner sectors
-    if (AliVAODParticle::GetDebug() > 9)  
-      Info("AliClusterMap","Cl.idx is %d, sect %d, row %d",idx,sect,row);
+    AliDebug(9,Form("Cl.idx is %d, sect %d, row %d",idx,sect,row));
       
     fPadRawMap.SetBitNumber(row,kTRUE);
     
@@ -96,11 +108,8 @@ AliClusterMap::AliClusterMap(AliTPCtrack* track):
      }
   }
   
- if (AliVAODParticle::GetDebug() > 2)
-  { 
-    Info("AliClusterMap(AliTPCtrack*)","");
-    Print();
-  } 
+ StdoutToAliDebug(3,Print());
+
 }
 /***********************************************************************/
 
@@ -135,8 +144,6 @@ Float_t AliClusterMap::GetOverlapFactor(const AliClusterMap& clmap) const
   //  -0.5 (low probability that these tracks are a split track)
   //  and
   //   1.0 (high probability that these tracks are a split track)
-  TString msg1;
-  TString msg2;
   
   Int_t nh = 0;
   Int_t an = 0;
@@ -144,9 +151,6 @@ Float_t AliClusterMap::GetOverlapFactor(const AliClusterMap& clmap) const
    {
      Bool_t x = HasClAtPadRow(i);
      Bool_t y = clmap.HasClAtPadRow(i);
-     
-     if (x) msg1+="1";else msg1+="0";
-     if (y) msg2+="1";else msg2+="0";
      
      if (x && y)//both have clasters
       {
@@ -169,24 +173,5 @@ Float_t AliClusterMap::GetOverlapFactor(const AliClusterMap& clmap) const
   if (nh > 0) retval = ((Float_t)an)/((Float_t)nh);
   else Warning("GetOverlapFactor","Number of counted cluters is 0.");
   
-  if (AliVAODParticle::GetDebug() > 2)
-   {
-     Info("GetOverlapFactor","Splitting Quality Factor is %f. SumAn = %d, SumClusters %d",retval,an,nh); 
-     if (retval == 1.0) 
-      { 
-        Print();
-        Info("AliClusterMap","BitMap is\n  %s\n",msg1.Data());
-        clmap.Print(); 
-        Info("AliClusterMap","BitMap is\n  %s\n\n\n\n",msg2.Data());
-      }
-     if (retval == -.5) 
-      { 
-        Print();
-        Info("AliClusterMap","BitMap is\n  %s\n",msg1.Data());
-        clmap.Print(); 
-        Info("AliClusterMap","BitMap is\n  %s\n\n\n\n",msg2.Data());
-      }
-   } 
- 
   return retval;
 }

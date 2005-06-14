@@ -6,7 +6,7 @@
 // Class AliAODPairCut:
 //
 // implements cut on the pair of particles
-// more info: http://alisoft.cern.ch/people/skowron/analyzer/index.html
+// more info: http://aliweb.cern.ch/people/skowron/analyzer/index.html
 // Author: Piotr.Skowronski@cern.ch
 //-------------------------------------------------------------------
 #include "AliAODPair.h"

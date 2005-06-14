@@ -1,4 +1,20 @@
-#include "AliReaderAOD.h"
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+
+/* $Id$ */
+
 //______________________________________________________________________________
 ////////////////////////////////////////////////////////////////////////////////
 //                                                                            //
@@ -22,18 +38,21 @@
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-ClassImp(AliReaderAOD)
 
 #include <TError.h>
 #include <TFile.h>
 #include <TTree.h>
 #include <TH1.h>
-#include "AliAOD.h"
 
+#include "AliAOD.h"
+#include "AliLog.h"
+#include "AliReaderAOD.h"
 
 const TString AliReaderAOD::fgkTreeName("TAOD");
 const TString AliReaderAOD::fgkReconstructedDataBranchName("reconstructed.");
 const TString AliReaderAOD::fgkSimulatedDataBranchName("simulated.");
+
+ClassImp(AliReaderAOD)
 
 AliReaderAOD::AliReaderAOD(const Char_t* aodfilename):
  fFileName(aodfilename),
@@ -312,11 +331,8 @@ Int_t AliReaderAOD::OpenFile(Int_t n)
  const TString dirname = GetDirName(n);
  if (dirname == "")
   {
-    if (AliVAODParticle::GetDebug() > 2 )
-      {
-        Info("OpenFile","Got empty string as a directory name."); 
-      }
-   return 1;
+    AliDebug(3,"Got empty string as a directory name."); 
+    return 1;
   }
  
  TString filename = dirname +"/"+ fFileName;
@@ -339,10 +355,7 @@ Int_t AliReaderAOD::OpenFile(Int_t n)
  fTree = dynamic_cast<TTree*>(fFile->Get(fgkTreeName));
  if (fTree == 0x0)
   {
-    if (AliVAODParticle::GetDebug() > 2 )
-      {
-        Info("ReadNext","Can not find TTree object named %s",fgkTreeName.Data());
-      }
+    AliDebug(3,Form("Can not find TTree object named %s",fgkTreeName.Data()));
     delete fFile;
     fFile = 0x0;
     return 4;

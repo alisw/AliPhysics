@@ -1,4 +1,23 @@
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+
+/* $Id$ */
+
 #include "AliTrackPoints.h"
+#include "AliLog.h"
+
 //_________________________________
 ////////////////////////////////////////////////////////////
 //                                                        //
@@ -95,8 +114,7 @@ AliTrackPoints::AliTrackPoints(Int_t n, AliESDtrack* track, Float_t mf, Float_t 
        ((track->GetStatus() & AliESDtrack::kTPCin) == kFALSE)  )
    {
      //could happend: its stand alone tracking
-     if (GetDebug() > 3) 
-       Warning("AliTrackPoints","This ESD track does not contain TPC information");
+     AliDebug(3,"This ESD track does not contain TPC information");
        
      fN = 0;
      delete [] fX;
@@ -203,11 +221,9 @@ void AliTrackPoints::MakePoints( Float_t dr, Float_t r0, Double_t x, Double_t* p
   Double_t r = TMath::Hypot(x,y);
   
 
-  if (GetDebug() > 9) 
-    Info("AliTrackPoints","Radius0 %f, Real Radius %f",r0,r); 
+  AliDebug(9,Form("Radius0 %f, Real Radius %f",r0,r)); 
   
-  if (GetDebug() > 5) 
-    Info("AliTrackPoints","Phi Global at first padraw %f, Phi locat %f",phi0global,phi0local);
+  AliDebug(5,Form("Phi Global at first padraw %f, Phi locat %f",phi0global,phi0local));
     
   Double_t eta = x*c - par[2] ;//par[2] = fX*C - eta; eta==fP2 ; C==fP4
   
@@ -232,14 +248,12 @@ void AliTrackPoints::MakePoints( Float_t dr, Float_t r0, Double_t x, Double_t* p
      Double_t ftmp = (c2*rc + cst1/rc)/cst2;
      if (ftmp > 1.0) 
       {
-        if (GetDebug() > 1) 
-          Warning("AliTrackPoints","ASin argument > 1 %f:",ftmp);
+        AliDebug(1,Form("ASin argument > 1 %f:",ftmp));
         ftmp=1.0;
       }
      else if (ftmp < -1.0) 
       {
-        if (GetDebug() > 1) 
-          Warning("AliTrackPoints","ASin argument < -1 %f:",ftmp);
+        AliDebug(1,Form("ASin argument < -1 %f:",ftmp));
         ftmp=-1.0;
       }
       
@@ -249,22 +263,19 @@ void AliTrackPoints::MakePoints( Float_t dr, Float_t r0, Double_t x, Double_t* p
      ftmp = (rc*rc-dcasq)/cst2;
      if (ftmp < 0.0) 
       {
-        if (GetDebug() > 1) 
-          Warning("AliTrackPoints","Sqrt argument < 0: %f",ftmp);
+        AliDebug(1,Form("Sqrt argument < 0: %f",ftmp));
         ftmp=0.0;
       }
      
      ftmp = c2*TMath::Sqrt(ftmp);
      if (ftmp > 1.0) 
       {
-        if (GetDebug() > 1) 
-          Warning("AliTrackPoints","ASin argument > 1: %f",ftmp);
+        AliDebug(1,Form("ASin argument > 1: %f",ftmp));
         ftmp=1.0;
       }
      else if (ftmp < -1.0) 
       {
-        if (GetDebug() > 1) 
-          Warning("AliTrackPoints","ASin argument < -1: %f",ftmp);
+        AliDebug(2,Form("ASin argument < -1: %f",ftmp));
         ftmp=-1.0;
       }
      Double_t factorZ = TMath::ASin(ftmp)*par[3]/c2;
@@ -272,11 +283,8 @@ void AliTrackPoints::MakePoints( Float_t dr, Float_t r0, Double_t x, Double_t* p
      fX[i] = rc*TMath::Cos(phi);
      fY[i] = rc*TMath::Sin(phi);
      
-     if ( GetDebug() > 2 )
-      {
-        Info("AliTrackPoints","X %f Y %f Z %f R asked %f R obtained %f",
-             fX[i],fY[i],fZ[i],rc,TMath::Hypot(fX[i],fY[i]));
-      }
+     AliDebug(3,Form("AliTrackPoints","X %f Y %f Z %f R asked %f R obtained %f",
+             fX[i],fY[i],fZ[i],rc,TMath::Hypot(fX[i],fY[i])));
    }
 }
 /***************************************************************/
@@ -316,11 +324,8 @@ void AliTrackPoints::MakeITSPointsInnerFromVertexOuterFromTPC(AliESDtrack* track
     fX[i] = x;
     fY[i] = y;
     fZ[i] = z;
-    if ( GetDebug() > 2 )
-      {
-         Info("MakeITSPoints","X %f Y %f Z %f R asked %f R obtained %f",
-                fX[i],fY[i],fZ[i],r[i],TMath::Hypot(fX[i],fY[i]));
-      }
+    AliDebug(3,Form("X %f Y %f Z %f R asked %f R obtained %f",
+                fX[i],fY[i],fZ[i],r[i],TMath::Hypot(fX[i],fY[i])));
   }   
  
  for (Int_t i = 3; i < 6; i++)
@@ -331,11 +336,8 @@ void AliTrackPoints::MakeITSPointsInnerFromVertexOuterFromTPC(AliESDtrack* track
     fX[i] = ax;
     fY[i] = ay;
     fZ[i] = az;
-    if ( GetDebug() > 2 )
-     {
-       Info("MakeITSPoints","X %f Y %f Z %f R asked %f R obtained %f",
-                fX[i],fY[i],fZ[i],r[i],TMath::Hypot(fX[i],fY[i]));
-     }
+    AliDebug(3,Form("X %f Y %f Z %f R asked %f R obtained %f",
+                fX[i],fY[i],fZ[i],r[i],TMath::Hypot(fX[i],fY[i])));
   }
  
 }
@@ -355,10 +357,8 @@ void AliTrackPoints::PositionAt(Int_t n, Float_t &x,Float_t &y,Float_t &z)
   x = fX[n];
   y = fY[n];
   z = fZ[n];
-  if ( GetDebug() > 1 )
-    {
-      Info("AliTrackPoints","n %d; X %f; Y %f; Z %f",n,x,y,z);
-    }
+  AliDebug(2,Form("n %d; X %f; Y %f; Z %f",n,x,y,z));
+
 }
 /***************************************************************/
 
@@ -380,7 +380,7 @@ Double_t AliTrackPoints::AvarageDistance(const AliTrackPoints& tr)
 //  Info("AvarageDistance","Entered");
   if ( (fN <= 0) || (tr.fN <=0) )
    {
-     if (GetDebug()) Warning("AvarageDistance","One of tracks is empty");
+     AliDebug(1,"One of tracks is empty");
      return -1;
    }
 
@@ -393,14 +393,9 @@ Double_t AliTrackPoints::AvarageDistance(const AliTrackPoints& tr)
   Double_t sum = 0;
   for (Int_t i = 0; i<fN; i++)
    {
-     if (GetDebug()>9)
-      {
+     AliDebug(10,Form("radii: %f %f",TMath::Hypot(fX[i],fY[i]),TMath::Hypot(tr.fX[i],tr.fY[i])));
 //       Float_t r1sq = fX[i]*fX[i]+fY[i]*fY[i];
 //       Float_t r2sq = tr.fX[i]*tr.fX[i]+tr.fY[i]*tr.fY[i];
-       Float_t r1sq = TMath::Hypot(fX[i],fY[i]);
-       Float_t r2sq = TMath::Hypot(tr.fX[i],tr.fY[i]);
-       Info("AvarageDistance","radii: %f %f",r1sq,r2sq);
-      } 
 
       
      Double_t dx = fX[i]-tr.fX[i];
@@ -408,19 +403,14 @@ Double_t AliTrackPoints::AvarageDistance(const AliTrackPoints& tr)
      Double_t dz = fZ[i]-tr.fZ[i];
      sum+=TMath::Sqrt(dx*dx + dy*dy + dz*dz);
      
-     if (GetDebug()>1)
-      {
-       Info("AvarageDistance","Diff: x ,y z: %f , %f, %f",dx,dy,dz);
-       Info("AvarageDistance","xxyyzz %f %f %f %f %f %f",
-            fX[i],tr.fX[i],fY[i],tr.fY[i],fZ[i],tr.fZ[i]);
-      } 
+     AliDebug(2,Form("Diff: x ,y z: %f , %f, %f",dx,dy,dz));
+     AliDebug(2,Form("xxyyzz %f %f %f %f %f %f",
+            fX[i],tr.fX[i],fY[i],tr.fY[i],fZ[i],tr.fZ[i]));
    }
    
   Double_t retval = sum/((Double_t)fN);
-  if ( GetDebug() )
-    {
-      Info("AvarageDistance","Avarage distance is %f.",retval);
-    }
+  AliDebug(1,Form("Avarage distance is %f.",retval));
+
   return retval;
 }
 /***************************************************************/

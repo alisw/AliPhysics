@@ -9,7 +9,7 @@
 // designed for fast acces                           //
 //                                                   //
 // Piotr.Skowronski@cern.ch                          //
-// http://alisoft.cern.ch/people/skowron/analyzer    //
+// http://aliweb.cern.ch/people/skowron/analyzer    //
 //                                                   //
 ///////////////////////////////////////////////////////
 

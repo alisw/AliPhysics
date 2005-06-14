@@ -11,7 +11,7 @@
 // implemented and described by Michael A. Lisa      //
 //                                                   //
 // Piotr.Skowronski@cern.ch                          //
-// http://alisoft.cern.ch/people/skowron/analyzer    //
+// http://aliweb.cern.ch/people/skowron/analyzer    //
 //                                                   //
 ///////////////////////////////////////////////////////
 

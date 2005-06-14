@@ -1,4 +1,20 @@
-#include "AliReader.h"
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+
+/* $Id$ */
+
 //_________________________________________________________________________
 ///////////////////////////////////////////////////////////////////////////
 //
@@ -49,18 +65,19 @@
 //
 ///////////////////////////////////////////////////////////////////////////
 
-#include <TString.h>
-#include <TObjString.h>
-#include <TObjArray.h>
 #include <TClass.h>
-#include <TRandom.h>
-#include <TH1.h>
-
 #include <TGliteXmlEventlist.h>
+#include <TH1.h>
+#include <TObjArray.h>
+#include <TObjString.h>
+#include <TRandom.h>
+#include <TString.h>
 
-#include "AliAODParticleCut.h"
 #include "AliAOD.h"
+#include "AliAODParticleCut.h"
 #include "AliAODRun.h"
+#include "AliLog.h"
+#include "AliReader.h"
  
 ClassImp(AliReader)
 //pure virtual
@@ -419,10 +436,8 @@ TString AliReader::GetDirName(Int_t entry)
         retval = ".";
         return retval;
       }
-     if (AliVAODParticle::GetDebug() > 0)
-      {
-        Warning("GetDirName","Index %d out of bounds",entry);
-      }
+     AliDebug(1,Form("Index %d out of bounds",entry));
+
      return retval;
    }
 
@@ -437,7 +452,7 @@ TString AliReader::GetDirName(Int_t entry)
      Error("GetDirName","Object in TObjArray is not a TObjString or its descendant");
      return retval;
    }
-  if (gDebug > 0) Info("GetDirName","Returned ok %s",dir->String().Data());
+  AliDebug(1,Form("Returned ok %s",dir->String().Data()));
   retval = dir->String();
   return retval;
 }

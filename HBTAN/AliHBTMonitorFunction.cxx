@@ -1,4 +1,23 @@
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+
+/* $Id$ */
+
+#include "AliLog.h"
 #include "AliHBTMonitorFunction.h"
+
 //__________________________________________________________________
 ////////////////////////////////////////////////////////////////////
 //
@@ -91,7 +110,7 @@ void AliHBTMonitorFunction::Write()
 void AliHBTMonitorFunction::Init()
  {
    //Writes an function to disk
-   if (AliVAODParticle::GetDebug()>0) Info("Init","%s",GetName());
+   AliDebug(1,"Entering");
    
    if (GetResult() == 0x0)
     {
@@ -100,7 +119,7 @@ void AliHBTMonitorFunction::Init()
     }
    GetResult()->Reset();
    GetResult()->SetDirectory(0x0);
-   if (AliVAODParticle::GetDebug()>0) Info("Init","%s Done.",GetName());
+   AliDebug(1,"Done");
  }
 /******************************************************************/
 

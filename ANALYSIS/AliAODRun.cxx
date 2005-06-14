@@ -7,7 +7,7 @@
 // Class storing and managing events                 //
 //                                                   //
 // Piotr.Skowronski@cern.ch                          //
-// http://alisoft.cern.ch/people/skowron/analyzer    //
+// http://aliweb.cern.ch/people/skowron/analyzer    //
 //                                                   //
 ///////////////////////////////////////////////////////
 

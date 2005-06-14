@@ -10,7 +10,7 @@
 // Abstract Base Calss for all the function classes  //
 //                                                   //
 // Piotr.Skowronski@cern.ch                          //
-// http://alisoft.cern.ch/people/skowron/analyzer    //
+// http://aliweb.cern.ch/people/skowron/analyzer    //
 //                                                   //
 ///////////////////////////////////////////////////////
 
@@ -111,7 +111,7 @@ class AliHBTCorrelFunction
 // one pair to fill function                         //
 //                                                   //
 // Piotr.Skowronski@cern.ch                          //
-// http://alisoft.cern.ch/people/skowron/analyzer    //
+// http://aliweb.cern.ch/people/skowron/analyzer    //
 //                                                   //
 ///////////////////////////////////////////////////////
 
@@ -147,7 +147,7 @@ class AliHBTOnePairFctn
 // Lednicky's algorithm uses that as well            //
 //                                                   //
 // Piotr.Skowronski@cern.ch                          //
-// http://alisoft.cern.ch/people/skowron/analyzer    //
+// http://aliweb.cern.ch/people/skowron/analyzer    //
 //                                                   //
 ///////////////////////////////////////////////////////
 
@@ -163,7 +163,7 @@ class AliHBTTwoPairFctn
     ProcessDiffEventParticles(AliHBTPair* trackpair, AliHBTPair* partpair) = 0;
     
     virtual void Init() = 0;
-    virtual void Write() = 0;
+    virtual void Write(const char* /*x1*/ = 0 , int/*x2*/ = 0, int /*x3*/ = 0) = 0;
     virtual const char* Name() = 0;
 	     
    ClassDef(AliHBTTwoPairFctn,2)
@@ -181,7 +181,7 @@ class AliHBTTwoPairFctn
 // Base Calss for 1-dimensinal Functions             //
 //                                                   //
 // Piotr.Skowronski@cern.ch                          //
-// http://alisoft.cern.ch/people/skowron/analyzer    //
+// http://aliweb.cern.ch/people/skowron/analyzer    //
 //                                                   //
 ///////////////////////////////////////////////////////
 
@@ -238,7 +238,7 @@ class AliHBTFunction1D: public AliHBTFunction
 // Base Calss for 2-dimensinal Functions             //
 //                                                   //
 // Piotr.Skowronski@cern.ch                          //
-// http://alisoft.cern.ch/people/skowron/analyzer    //
+// http://aliweb.cern.ch/people/skowron/analyzer    //
 //                                                   //
 ///////////////////////////////////////////////////////
  
@@ -309,7 +309,7 @@ class AliHBTFunction2D: public AliHBTFunction
 // one pair to fill function                         //
 //                                                   //
 // Piotr.Skowronski@cern.ch                          //
-// http://alisoft.cern.ch/people/skowron/analyzer    //
+// http://aliweb.cern.ch/people/skowron/analyzer    //
 //                                                   //
 ///////////////////////////////////////////////////////
 
@@ -390,7 +390,7 @@ class AliHBTFunction3D: public AliHBTFunction
 // one pair to fill function                         //
 //                                                   //
 // Piotr.Skowronski@cern.ch                          //
-// http://alisoft.cern.ch/people/skowron/analyzer    //
+// http://aliweb.cern.ch/people/skowron/analyzer    //
 //                                                   //
 ///////////////////////////////////////////////////////
 
@@ -428,7 +428,7 @@ class AliHBTOnePairFctn1D: public AliHBTOnePairFctn, public AliHBTFunction1D
 // one pair to fill function                         //
 //                                                   //
 // Piotr.Skowronski@cern.ch                          //
-// http://alisoft.cern.ch/people/skowron/analyzer    //
+// http://aliweb.cern.ch/people/skowron/analyzer    //
 //                                                   //
 ///////////////////////////////////////////////////////
 
@@ -470,7 +470,7 @@ class AliHBTOnePairFctn2D: public AliHBTOnePairFctn, public AliHBTFunction2D
 // one pair to fill function                         //
 //                                                   //
 // Piotr.Skowronski@cern.ch                          //
-// http://alisoft.cern.ch/people/skowron/analyzer    //
+// http://aliweb.cern.ch/people/skowron/analyzer    //
 //                                                   //
 ///////////////////////////////////////////////////////
 
@@ -515,7 +515,7 @@ class AliHBTOnePairFctn3D: public AliHBTOnePairFctn, public AliHBTFunction3D
 // to fill function                                  //
 //                                                   //
 // Piotr.Skowronski@cern.ch                          //
-// http://alisoft.cern.ch/people/skowron/analyzer    //
+// http://aliweb.cern.ch/people/skowron/analyzer    //
 //                                                   //
 ///////////////////////////////////////////////////////
 
@@ -554,7 +554,7 @@ class AliHBTTwoPairFctn1D: public AliHBTTwoPairFctn, public AliHBTFunction1D
 // to fill function                                  //
 //                                                   //
 // Piotr.Skowronski@cern.ch                          //
-// http://alisoft.cern.ch/people/skowron/analyzer    //
+// http://aliweb.cern.ch/people/skowron/analyzer    //
 //                                                   //
 ///////////////////////////////////////////////////////
 
@@ -599,7 +599,7 @@ class AliHBTTwoPairFctn2D: public AliHBTTwoPairFctn, public AliHBTFunction2D
 // to fill function                                  //
 //                                                   //
 // Piotr.Skowronski@cern.ch                          //
-// http://alisoft.cern.ch/people/skowron/analyzer    //
+// http://aliweb.cern.ch/people/skowron/analyzer    //
 //                                                   //
 ///////////////////////////////////////////////////////
 

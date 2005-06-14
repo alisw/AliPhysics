@@ -1,6 +1,23 @@
-#include "AliHBTFunction.h"
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
 
-/* $Id: */
+/* $Id$ */
+
+#include "AliHBTFunction.h"
+#include "AliLog.h"
+
 
 //--------------------------------------------------------------------
 //AliHBTFunction
@@ -72,10 +89,7 @@ AliHBTFunction::AliHBTFunction(const AliHBTFunction & source):
 AliHBTFunction::~AliHBTFunction()
 {
 //destructor  
-  if (AliVAODParticle::GetDebug() > 1)
-   {
-     Info("~AliHBTFunction","Deleting %s",GetName());
-   }
+  AliDebug(1,"Deleting");
   delete fPairCut;
 }
 /******************************************************************/
@@ -91,23 +105,23 @@ AliHBTFunction & AliHBTFunction::operator= (const AliHBTFunction & source)
 void AliHBTFunction::WriteFunction()
 {
 //writes result of the function to file
-   if (AliVAODParticle::GetDebug()) Info("AliHBTFunction","%s",GetName());
+   AliDebug(1,"Entering");
    if (fWriteNumAndDen)
     { 
-     if (AliVAODParticle::GetDebug()) Info("AliHBTFunction","Writing Num & Den");
+     AliDebug(1,"Writing Num & Den");
      if (GetNumerator()) GetNumerator()->Write();
      if (GetDenominator()) GetDenominator()->Write();
-     if (AliVAODParticle::GetDebug()) Info("AliHBTFunction","Writing Num & Den Done");
+     AliDebug(1,"Writing Num & Den Done");
     } 
-   if (AliVAODParticle::GetDebug()) Info("AliHBTFunction","Getting Result");
+   AliDebug(1,"Getting Result");
    TH1* res = GetResult();
-   if (AliVAODParticle::GetDebug()) Info("AliHBTFunction","Getting Result Done");
+   AliDebug(1,"Getting Result Done");
    
    if (res) 
     { 
-      if (AliVAODParticle::GetDebug()) Info("AliHBTFunction","Writing Result");
+      AliDebug(1,"Writing Result");
       res->Write();
-      if (AliVAODParticle::GetDebug()) Info("AliHBTFunction","Writing Result Done");
+      AliDebug(1,"Writing Result Done");
     }
 }
 /******************************************************************/
@@ -116,11 +130,11 @@ TH1* AliHBTFunction::GetRatio(Double_t normfactor)
  {
  //returns ratio of numerator and denominator
  //
-   if (AliVAODParticle::GetDebug()>0) Info("GetRatio","Norm. Factor is %f for %s",normfactor,GetName());
+   AliDebug(1,Form("Norm. Factor is %f for %s",normfactor,GetName()));
    
    if (normfactor == 0.0)
     {
-      Error("GetRatio","Scaling Factor is 0. Null poiner returned");
+      AliError("Scaling Factor is 0. Null poiner returned");
       return 0x0;
     }
    TString str = fName + " ratio";
@@ -147,7 +161,7 @@ void AliHBTFunction::SetPairCut(AliAODPairCut* cut)
 
  if(!cut) 
    {
-     Error("AliHBTFunction::SetPairCut","argument is NULL");
+     AliError("argument is NULL");
      return;
    }
  delete fPairCut;
@@ -210,14 +224,14 @@ void AliHBTFunction::InitFunction()
 {
 //Iniotializes fctn.: Resets histograms
 //In case histograms are not created in ctor, builds with default parameters
-  if (AliVAODParticle::GetDebug()>1) Info("InitFunction","%s",GetName());
+  AliDebug(1,"Entering");
   if ( !(GetNumerator()&&GetDenominator()) ) BuildHistos();
   GetNumerator()->Reset();
   GetDenominator()->Reset();
 
   GetNumerator()->SetDirectory(0x0);
   GetDenominator()->SetDirectory(0x0);
-  if (AliVAODParticle::GetDebug()>1) Info("InitFunction","Done");
+  AliDebug(1,"Done");
 }
 /******************************************************************/
 /******************************************************************/
@@ -365,30 +379,30 @@ Double_t AliHBTFunction1D::Scale(TH1D* num,TH1D* den)
  //Calculates the factor that should be used to scale 
  //quatience of num and den to 1 at tail
  
-  if (AliVAODParticle::GetDebug()>0) Info("Scale","Enetered Scale()");
+  AliDebug(1,"Entered");
   if(!num) 
    {
-     Error("Scale","No numerator");
+     AliError("No numerator");
      return 0.0;
    }
   if(!den) 
    {
-     Error("Scale","No denominator");
+     AliError("No denominator");
      return 0.0;
    }
   
   if(fNBinsToScale < 1) 
    {
-    Error("Scale","Number of bins for scaling is smaller thnan 1");
+    AliError("Number of bins for scaling is smaller than 1");
     return 0.0;
    }
   UInt_t nbins = num->GetNbinsX();
   if (fNBinsToScale > nbins) 
    {
-    Error("Scale","Number of bins for scaling is bigger thnan number of bins in histograms");
+    AliError("Number of bins for scaling is bigger thnan number of bins in histograms");
     return 0.0;
    }
-  if (AliVAODParticle::GetDebug()>0) Info("Scale","No errors detected");
+  AliDebug(1,"No errors detected");
 
   Double_t densum = 0.0;
   Double_t numsum = 0.0;
@@ -404,13 +418,12 @@ Double_t AliHBTFunction1D::Scale(TH1D* num,TH1D* den)
      }
    }
   
-  if(AliVAODParticle::GetDebug() > 0)
-    Info("Scale","numsum=%f densum=%f fNBinsToScaleX=%d",numsum,densum,fNBinsToScale);
+  AliDebug(1,Form("numsum=%f densum=%f fNBinsToScaleX=%d",numsum,densum,fNBinsToScale));
   
   if (numsum == 0) return 0.0;
   Double_t ret = densum/numsum;
 
-  if(AliVAODParticle::GetDebug() > 0) Info("Scale","returning %f",ret);
+  AliDebug(1,Form("returning %f",ret));
   return ret;
 } 
 
@@ -426,7 +439,7 @@ Double_t AliHBTFunction1D::Scale(TH1D* num,TH1D* den)
 // Base Calss for 2-dimensinal Functions             //
 //                                                   //
 // Piotr.Skowronski@cern.ch                          //
-// http://alisoft.cern.ch/people/skowron/analyzer    //
+// http://aliweb.cern.ch/people/skowron/analyzer    //
 //                                                   //
 ///////////////////////////////////////////////////////
 
@@ -549,38 +562,38 @@ Double_t AliHBTFunction2D::Scale()
 // Calculates the factor that should be used to scale 
 // quatience of fNumerator and fDenominator to 1 at 
 // given region
-  if (AliVAODParticle::GetDebug()>0) Info("Scale","Enetered Scale()");
+  AliDebug(1,"Entered");
   if(!fNumerator) 
    {
-     Error("Scale","No numerator");
+     AliError("No numerator");
      return 0.0;
    }
   if(!fDenominator) 
    {
-     Error("Scale","No denominator");
+     AliError("No denominator");
      return 0.0;
    }
   
   if( (fNBinsToScaleX < 1) || (fNBinsToScaleY < 1) ) 
    {
-    Error("Scale","Number of bins for scaling is smaller thnan 1");
+    AliError("Number of bins for scaling is smaller thnan 1");
     return 0.0;
    }
   UInt_t nbinsX = fNumerator->GetNbinsX();
   if (fNBinsToScaleX > nbinsX) 
    {
-    Error("Scale","Number of X bins for scaling is bigger thnan number of bins in histograms");
+    AliError("Number of X bins for scaling is bigger thnan number of bins in histograms");
     return 0.0;
    }
    
   UInt_t nbinsY = fNumerator->GetNbinsX();
   if (fNBinsToScaleY > nbinsY) 
    {
-    Error("Scale","Number of Y bins for scaling is bigger thnan number of bins in histograms");
+    AliError("Number of Y bins for scaling is bigger thnan number of bins in histograms");
     return 0.0;
    }
 
-  if (AliVAODParticle::GetDebug()>0) Info("Scale","No errors detected");
+  AliDebug(1,"No errors detected");
 
   Int_t offsetX = nbinsX - fNBinsToScaleX - 1; //bin that we start loop over bins in axis X
   Int_t offsetY = nbinsY - fNBinsToScaleY - 1; //bin that we start loop over bins in axis X
@@ -598,13 +611,13 @@ Double_t AliHBTFunction2D::Scale()
        }
      }
   
-  if(AliVAODParticle::GetDebug() > 0) 
-    Info("Scale","numsum=%f densum=%f fNBinsToScaleX=%d fNBinsToScaleY=%d",numsum,densum,fNBinsToScaleX,fNBinsToScaleY);
+  AliDebug(1,Form("numsum=%f densum=%f fNBinsToScaleX=%d fNBinsToScaleY=%d",
+		  numsum,densum,fNBinsToScaleX,fNBinsToScaleY));
   
   if (numsum == 0) return 0.0;
   Double_t ret = densum/numsum;
 
-  if(AliVAODParticle::GetDebug() > 0) Info("Scale","returning %f",ret);
+  AliDebug(1,Form("returning %f",ret));
   return ret;
 } 
 
@@ -620,7 +633,7 @@ Double_t AliHBTFunction2D::Scale()
 // Base Calss for 3-dimensinal Functions             //
 //                                                   //
 // Piotr.Skowronski@cern.ch                          //
-// http://alisoft.cern.ch/people/skowron/analyzer    //
+// http://aliweb.cern.ch/people/skowron/analyzer    //
 //                                                   //
 ///////////////////////////////////////////////////////
 
@@ -734,7 +747,7 @@ void AliHBTFunction3D::BuildHistos(Int_t nxbins, Float_t xmax, Float_t xmin,
 {
   //Builds numerator and denominator histograms (3d-case)
   
-   if (AliVAODParticle::GetDebug()>1) Info("BuildHistos","Enetered AliHBTFunction3D::BuildHistos(...)");
+   AliDebug(1,"Entered");
    
    if (fNumerator )
     {
@@ -770,45 +783,45 @@ Double_t AliHBTFunction3D::Scale()
   // Calculates the factor that should be used to scale 
   // quatience of fNumerator and fDenominator to 1 at 
   // given volume
-  if (AliVAODParticle::GetDebug()>0) Info("Scale","Enetered Scale()");
+  AliDebug(1,"Entered");
   if(!fNumerator) 
    {
-     Error("Scale","No numerator");
+     AliError("No numerator");
      return 0.0;
    }
   if(!fDenominator) 
    {
-     Error("Scale","No denominator");
+     AliError("No denominator");
      return 0.0;
    }
   
   if( (fNBinsToScaleX < 1) || (fNBinsToScaleY < 1) || (fNBinsToScaleZ < 1)) 
    {
-    Error("Scale","Number of bins for scaling is smaller thnan 1");
+    AliError("Number of bins for scaling is smaller thnan 1");
     return 0.0;
    }
   UInt_t nbinsX = fNumerator->GetNbinsX();
   if (fNBinsToScaleX > nbinsX) 
    {
-    Error("Scale","Number of X bins for scaling is bigger thnan number of bins in histograms");
+    AliError("Number of X bins for scaling is bigger thnan number of bins in histograms");
     return 0.0;
    }
    
   UInt_t nbinsY = fNumerator->GetNbinsX();
   if (fNBinsToScaleY > nbinsY) 
    {
-    Error("Scale","Number of Y bins for scaling is bigger thnan number of bins in histograms");
+    AliError("Number of Y bins for scaling is bigger thnan number of bins in histograms");
     return 0.0;
    }
 
   UInt_t nbinsZ = fNumerator->GetNbinsZ();
   if (fNBinsToScaleZ > nbinsZ) 
    {
-    Error("Scale","Number of Z bins for scaling is bigger thnan number of bins in histograms");
+    AliError("Number of Z bins for scaling is bigger thnan number of bins in histograms");
     return 0.0;
    }
 
-  if (AliVAODParticle::GetDebug()>0) Info("Scale","No errors detected");
+  AliDebug(1,"No errors detected");
 
   Int_t offsetX = nbinsX - fNBinsToScaleX - 1; //bin that we start loop over bins in axis X
   Int_t offsetY = nbinsY - fNBinsToScaleY - 1; //bin that we start loop over bins in axis Y
@@ -829,14 +842,13 @@ Double_t AliHBTFunction3D::Scale()
          }
        }
   
-  if(AliVAODParticle::GetDebug() > 0) 
-    Info("Scale","numsum=%f densum=%f fNBinsToScaleX=%d fNBinsToScaleY=%d fNBinsToScaleZ=%d",
-          numsum,densum,fNBinsToScaleX,fNBinsToScaleY,fNBinsToScaleZ);
+  AliDebug(1,Form("numsum=%f densum=%f fNBinsToScaleX=%d fNBinsToScaleY=%d fNBinsToScaleZ=%d",
+          numsum,densum,fNBinsToScaleX,fNBinsToScaleY,fNBinsToScaleZ));
   
   if (numsum == 0) return 0.0;
   Double_t ret = densum/numsum;
 
-  if(AliVAODParticle::GetDebug() > 0) Info("Scale","returning %f",ret);
+  AliDebug(1,Form("returning %f",ret));
   return ret;
 } 
 /******************************************************************/
@@ -868,7 +880,7 @@ void AliHBTFunction3D::SetNumberOfBinsToScale(UInt_t xn, UInt_t yn,UInt_t zn)
 // one pair to fill function                         //
 //                                                   //
 // Piotr.Skowronski@cern.ch                          //
-// http://alisoft.cern.ch/people/skowron/analyzer    //
+// http://aliweb.cern.ch/people/skowron/analyzer    //
 //                                                   //
 ///////////////////////////////////////////////////////
 
@@ -924,7 +936,7 @@ void AliHBTOnePairFctn1D::ProcessDiffEventParticles(AliHBTPair* pair)
 // one pair to fill function                         //
 //                                                   //
 // Piotr.Skowronski@cern.ch                          //
-// http://alisoft.cern.ch/people/skowron/analyzer    //
+// http://aliweb.cern.ch/people/skowron/analyzer    //
 //                                                   //
 ///////////////////////////////////////////////////////
 
@@ -992,7 +1004,7 @@ void AliHBTOnePairFctn2D::ProcessDiffEventParticles(AliHBTPair* pair)
 // one pair to fill function                         //
 //                                                   //
 // Piotr.Skowronski@cern.ch                          //
-// http://alisoft.cern.ch/people/skowron/analyzer    //
+// http://aliweb.cern.ch/people/skowron/analyzer    //
 //                                                   //
 ///////////////////////////////////////////////////////
 ClassImp( AliHBTOnePairFctn3D)
@@ -1066,7 +1078,7 @@ void AliHBTOnePairFctn3D::ProcessDiffEventParticles(AliHBTPair* pair)
 // to fill function                                  //
 //                                                   //
 // Piotr.Skowronski@cern.ch                          //
-// http://alisoft.cern.ch/people/skowron/analyzer    //
+// http://aliweb.cern.ch/people/skowron/analyzer    //
 //                                                   //
 ///////////////////////////////////////////////////////
 ClassImp(AliHBTTwoPairFctn1D)
@@ -1128,7 +1140,7 @@ void AliHBTTwoPairFctn1D::ProcessDiffEventParticles(AliHBTPair* trackpair, AliHB
 // to fill function                                  //
 //                                                   //
 // Piotr.Skowronski@cern.ch                          //
-// http://alisoft.cern.ch/people/skowron/analyzer    //
+// http://aliweb.cern.ch/people/skowron/analyzer    //
 //                                                   //
 ///////////////////////////////////////////////////////
 
@@ -1197,7 +1209,7 @@ void AliHBTTwoPairFctn2D::ProcessDiffEventParticles(AliHBTPair* trackpair, AliHB
 // to fill function                                  //
 //                                                   //
 // Piotr.Skowronski@cern.ch                          //
-// http://alisoft.cern.ch/people/skowron/analyzer    //
+// http://aliweb.cern.ch/people/skowron/analyzer    //
 //                                                   //
 ///////////////////////////////////////////////////////
 

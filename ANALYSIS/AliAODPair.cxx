@@ -7,7 +7,7 @@
 // class implements pair of particles and taking care of caluclation (almost)
 // all of pair properties (Qinv, InvMass,...)
 // 
-// more info: http://alisoft.cern.ch/people/skowron/analyzer/index.html
+// more info: http://aliweb.cern.ch/people/skowron/analyzer/index.html
 //
 ////////////////////////////////////////////////////////////////////////////
 

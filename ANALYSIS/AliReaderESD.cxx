@@ -1,4 +1,20 @@
-#include "AliReaderESD.h"
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+
+/* $Id$ */
+
 //____________________________________________________________________
 //////////////////////////////////////////////////////////////////////
 //                                                                  //
@@ -10,30 +26,30 @@
 //                                                                  //
 //////////////////////////////////////////////////////////////////////
 
-#include <TPDGCode.h>
-#include <TString.h>
-#include <TObjString.h>
-#include <TTree.h>
 #include <TFile.h>
-#include <TKey.h>
-#include <TParticle.h>
-#include <TH1.h>
-
 #include <TGliteXmlEventlist.h>
+#include <TH1.h>
+#include <TKey.h>
+#include <TObjString.h>
+#include <TPDGCode.h>
+#include <TParticle.h>
+#include <TString.h>
+#include <TTree.h>
 
-#include <AliRun.h>
-#include <AliRunLoader.h>
-#include <AliStack.h>
-#include <AliESDtrack.h>
-#include <AliKalmanTrack.h>
-#include <AliESD.h>
-
-#include "AliAnalysis.h"
-#include "AliAODRun.h"
 #include "AliAOD.h"
 #include "AliAODParticle.h"
 #include "AliAODParticleCut.h"
+#include "AliAODRun.h"
+#include "AliAnalysis.h"
 #include "AliClusterMap.h"
+#include "AliESD.h"
+#include "AliESDtrack.h"
+#include "AliKalmanTrack.h"
+#include "AliLog.h"
+#include "AliReaderESD.h"
+#include "AliRun.h"
+#include "AliRunLoader.h"
+#include "AliStack.h"
 
 ClassImp(AliReaderESD)
 
@@ -155,8 +171,7 @@ Int_t AliReaderESD::ReadNext()
 //reads next event from fFile
   //fRunLoader is for reading Kine
   
-  if (AliVAODParticle::GetDebug())
-    Info("ReadNext","Entered");
+  AliDebug(1,"Entered");
     
   if (fEventSim == 0x0)  fEventSim = new AliAOD();
   if (fEventRec == 0x0)  fEventRec = new AliAOD();
@@ -182,10 +197,7 @@ Int_t AliReaderESD::ReadNext()
      AliESD* esd = dynamic_cast<AliESD*>(fFile->Get(esdname));
      if (esd == 0x0)
       {
-        if (AliVAODParticle::GetDebug() > 2 )
-          {
-            Info("ReadNext","Can not find AliESD object named %s",esdname.Data());
-          }
+        AliDebug(3,Form("Can not find AliESD object named %s",esdname.Data()));
         fCurrentDir++;
         delete fFile;//we have to assume there is no more ESD objects in the fFile
         fFile = 0x0;
@@ -278,10 +290,7 @@ Int_t AliReaderESD::ReadESDCentral(AliESD* esd)
      vertex->GetXYZ(vertexpos);
    }
    
-  if (AliVAODParticle::GetDebug() > 0)
-   {
-     Info("ReadESD","Primary Vertex is (%f,%f,%f)",vertexpos[0],vertexpos[1],vertexpos[2]);
-   }
+  AliDebug(1,Form("Primary Vertex is (%f,%f,%f)",vertexpos[0],vertexpos[1],vertexpos[2]));
    
   Info("ReadESD","Reading Event %d",fCurrentEvent);
 
@@ -299,8 +308,7 @@ Int_t AliReaderESD::ReadESDCentral(AliESD* esd)
      //if (esdtrack->HasVertexParameters() == kFALSE) 
      if ((esdtrack->GetStatus() & AliESDtrack::kITSrefit) == kFALSE)
       {
-        if (AliVAODParticle::GetDebug() > 2) 
-          Info("ReadNext","Particle skipped: Data at vertex not available.");
+        AliDebug(3,Form("Particle skipped: Data at vertex not available."));
         continue;
       }
 
@@ -308,16 +316,14 @@ Int_t AliReaderESD::ReadESDCentral(AliESD* esd)
       {
        if ((esdtrack->GetStatus() & AliESDtrack::kTPCin) == kFALSE)
         {
-          if (AliVAODParticle::GetDebug() > 2) 
-            Info("ReadNext","Particle skipped: Was not reconstructed in TPC.");
+          AliDebug(3,"Particle skipped: Was not reconstructed in TPC.");
           continue;
         }
       }     
 
      if ((esdtrack->GetStatus() & AliESDtrack::kESDpid) == kFALSE) 
       {
-        if (AliVAODParticle::GetDebug() > 2) 
-          Info("ReadNext","Particle skipped: PID BIT is not set.");
+        AliDebug(3,"Particle skipped: PID BIT is not set.");
         continue;
       }
 
@@ -327,8 +333,7 @@ Int_t AliReaderESD::ReadESDCentral(AliESD* esd)
      esdtrack->GetConstrainedExternalParameters(extx,extp);
      if (extp[4] == 0.0)
       {
-        if (AliVAODParticle::GetDebug() > 2) 
-          Info("ReadNext","Track has 0 contrianed curvature -> Probobly parameters never updated. Skipping.");
+        AliDebug(3,"Track has 0 contrianed curvature -> Probobly parameters never updated. Skipping.");
         continue;
       } 
      esdtrack->GetESDpid(pidtable);
@@ -357,8 +362,7 @@ Int_t AliReaderESD::ReadESDCentral(AliESD* esd)
          {
            if(Rejected(p->GetPdgCode())) 
             {
-              if ( AliVAODParticle::GetDebug() > 5 )
-                Info("ReadNext","Simulated Particle PID (%d) did not pass the cut.",p->GetPdgCode());
+              AliDebug(6,Form("Simulated Particle PID (%d) did not pass the cut.",p->GetPdgCode()));
               continue; //check if we are intersted with particles of this type 
             }
          }  
@@ -374,14 +378,13 @@ Int_t AliReaderESD::ReadESDCentral(AliESD* esd)
      for (Int_t s=0; s<AliPID::kSPECIES; s++) rc+=concentr[s]*pidtable[s];
      if (rc==0.0) 
       {
-        if (AliVAODParticle::GetDebug() > 2) 
-          Info("ReadNext","Particle rejected since total bayessian PID probab. is zero.");
+        AliDebug(3,"Particle rejected since total bayessian PID probab. is zero.");
         continue;
       }
 
      for (Int_t s=0; s<AliPID::kSPECIES; s++) w[s]=concentr[s]*pidtable[s]/rc;
 
-     if (AliVAODParticle::GetDebug() > 4)
+     if (AliDebugLevel() > 4)
       { 
         Info("ReadNext","###########################################################################");
         Info("ReadNext","Momentum: %f %f %f",mom[0],mom[1],mom[2]);
@@ -400,7 +403,7 @@ Int_t AliReaderESD::ReadESDCentral(AliESD* esd)
            msg+=")";
          }
         Info("ReadNext","%s",msg.Data());
-      }//if (AliVAODParticle::GetDebug()>4)
+      }//if (AliDebugLevel()>4)
 
       AliTrackPoints* tpts = 0x0;
       if (fNTrackPoints > 0) 
@@ -453,15 +456,13 @@ Int_t AliReaderESD::ReadESDCentral(AliESD* esd)
         Float_t pp = w[s];
         if (pp == 0.0) 
          {
-           if ( AliVAODParticle::GetDebug() > 5 )
-             Info("ReadNext","Probability of being PID %d is zero. Continuing.",pdgcode);
+           AliDebug(6,Form("Probability of being PID %d is zero. Continuing.",pdgcode));
            continue;
          }
 
         if(Rejected(pdgcode)) 
          {
-           if ( AliVAODParticle::GetDebug() > 5 )
-             Info("ReadNext","PID (%d) did not pass the cut.",pdgcode);
+           AliDebug(6,Form("PID (%d) did not pass the cut.",pdgcode));
            continue; //check if we are intersted with particles of this type 
          }
 
@@ -482,8 +483,7 @@ Int_t AliReaderESD::ReadESDCentral(AliESD* esd)
         if(Rejected(track))//check if meets all criteria of any of our cuts
                        //if it does not delete it and take next good track
          { 
-           if ( AliVAODParticle::GetDebug() > 4 )
-             Info("ReadNext","Track did not pass the cut");
+           AliDebug(5,"Track did not pass the cut");
            delete track;
            continue;
          }
@@ -508,7 +508,7 @@ Int_t AliReaderESD::ReadESDCentral(AliESD* esd)
         if (particle) fEventSim->AddParticle(particle);
         keeppart = kTRUE;
 
-        if (AliVAODParticle::GetDebug() > 4 )
+        if (AliDebugLevel() > 4 )
          {
            Info("ReadNext","\n\nAdding Particle with incarnation %d",pdgcode);
            track->Print();
@@ -579,10 +579,8 @@ Int_t AliReaderESD::ReadESDMuon(AliESD* esd)
 
  Int_t nTracks = (Int_t)esd->GetNumberOfMuonTracks() ;
 
- if (AliVAODParticle::GetDebug() > 0) {
-   Info("ReadESD","Reading Event %d",fCurrentEvent);
-   Info("ReadESD","Found %d tracks.",nTracks);
- }
+ AliDebug(1,Form("Reading Event %d \nFound %d tracks.",fCurrentEvent,nTracks));
+
  // settings
   Float_t Chi2Cut = 100.;
   Float_t PtCutMin = 1.;

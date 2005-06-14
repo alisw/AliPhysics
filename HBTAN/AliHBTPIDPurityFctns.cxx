@@ -1,4 +1,23 @@
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+
+/* $Id$ */
+
 #include "AliHBTPIDPurityFctns.h"
+#include "AliLog.h"
+
 //_______________________________________________________________________________
 /////////////////////////////////////////////////////////////////////////////////
 //
@@ -75,11 +94,11 @@ void AliHBTMonPIDPurityVsPtFctn::Write()
 void AliHBTMonPIDPurityVsPtFctn::Init()
 {
 //Initializes fuction
-  if (AliVAODParticle::GetDebug()>0) Info("Init","%s",GetName());
+  AliDebug(1,"Entering");
 
   if (fResult == 0x0)
    {   
-      Warning("Init","Function has NULL result histogram!");
+      AliWarning("Function has NULL result histogram!");
       return;
    }
   
@@ -109,7 +128,7 @@ void AliHBTMonPIDPurityVsPtFctn::Init()
   fAll->SetDirectory(0x0);
   fAll->Sumw2();
 
-  if (AliVAODParticle::GetDebug()>0) Info("Init","%s Done.",GetName());
+  AliDebug(1,"Done");
 }
 
 /******************************************************************/
@@ -260,11 +279,11 @@ void AliHBTMonPIDContaminationVsPtFctn::Write()
 void AliHBTMonPIDContaminationVsPtFctn::Init()
 {
 //Initializes fuction
-  if (AliVAODParticle::GetDebug()>0) Info("Init","%s",GetName());
+  AliDebug(1,"Entering");
 
   if (fResult == 0x0)
    {   
-      Warning("Init","Function has NULL result histogram!");
+      AliWarning("Function has NULL result histogram!");
       return;
    }
   
@@ -293,7 +312,7 @@ void AliHBTMonPIDContaminationVsPtFctn::Init()
   fAll->SetDirectory(0x0);
   fAll->Sumw2();
   
-  if (AliVAODParticle::GetDebug()>0) Info("Init","%s Done.",GetName());
+  AliDebug(1,"Done");
 }
 
 /******************************************************************/
