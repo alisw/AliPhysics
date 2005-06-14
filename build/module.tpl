@@ -185,7 +185,7 @@ endif
 
 #------------------------------------------------------------------------
 
-ifeq ($(MACOSX_MINOR),4)
+ifneq (,$(findstring macosx,$(ALICE_TARGET)))
 $(@PACKAGE@LIB): $(@PACKAGE@DLIB) $(@PACKAGE@O) $(@PACKAGE@DO) @MODULE@/module.mk
 ifndef ALIQUIET
 	  @echo "***** Linking library $@ *****"
