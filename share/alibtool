@@ -8,6 +8,9 @@
 #
 # modification history
 # $Log$
+# Revision 1.9  2004/06/18 10:30:54  rdm
+# fix typo in comment.
+#
 # Revision 1.8  2004/06/03 23:41:51  rdm
 # wrap some insanely long lines into mulitple lines.
 #
@@ -124,10 +127,12 @@
 
 MkDepend()
 {
+echo "#"
 rmkdepend -f- -Y -w 3000 -- $* 2>/dev/null | sed -e "s@^\(.*\)\/\(.*\)\.o:@\1\/tgt_${ALICE_TARGET}\/\2.d \1\/tgt_${ALICE_TARGET}/\\2.o:@" -e 's@^#.*$@@' -e '/^$/d'
 }
 MkDependF()
 {
+echo "#"
 rmkdepend -f- -Y -w 3000 -- $* 2>/dev/null | sed -e "s@^\(.*\)\/\(.*\)\.o:@\1\/tgt_${ALICE_TARGET}\/\2.d \1\/tgt_${ALICE_TARGET}/\\2.o:@" -e 's@^#.*$@@' -e '/^$/d'
 }
 
