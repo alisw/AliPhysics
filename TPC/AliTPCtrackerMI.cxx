@@ -3735,7 +3735,8 @@ AliTPCseed *AliTPCtrackerMI::ReSeed(AliTPCseed *track,Int_t r0, Bool_t forward)
   //reseed using founded clusters 
   //
   Double_t  xyz[3][3];
-  Int_t     row[3]={0,0,0},sec[3]={0,0,0};
+  Int_t     row[3]={0,0,0};
+  Int_t     sec[3]={0,0,0};
   //
   // forward direction
   if (forward){
@@ -4487,14 +4488,32 @@ void  AliTPCtrackerMI::FindKinks(TObjArray * array, AliESD *esd)
     //
     if (track0->fKinkIndexes[0]!=0) continue;
     if (track0->GetNumberOfClusters()<80) continue;
-    AliTPCseed mother;
-    AliTPCseed daughter;
-    AliESDkink kink;
+
+    AliTPCseed *pmother = new AliTPCseed();
+    AliTPCseed *pdaughter = new AliTPCseed();
+    AliESDkink *pkink = new AliESDkink;
+
+    AliTPCseed & mother = *pmother;
+    AliTPCseed & daughter = *pdaughter;
+    AliESDkink & kink = *pkink;
     if (CheckKinkPoint(track0,mother,daughter, kink)){
-      if (mother.fN<30||daughter.fN<20) continue;  //too short tracks
-      if (mother.Pt()<1.4) continue;
+      if (mother.fN<30||daughter.fN<20) {
+	delete pmother;
+	delete pdaughter;
+	delete pkink;
+	continue;  //too short tracks
+      }
+      if (mother.Pt()<1.4) {
+	delete pmother;
+	delete pdaughter;
+	delete pkink;
+	continue;
+      }
       Int_t row0= kink.GetTPCRow0();
       if (kink.GetDistance()>0.5 || kink.GetR()<110. || kink.GetR()>240.) {
+	delete pmother;
+	delete pdaughter;
+	delete pkink;
 	continue;
       }
       //
@@ -4518,6 +4537,9 @@ void  AliTPCtrackerMI::FindKinks(TObjArray * array, AliESD *esd)
       }
       //
     }
+    delete pmother;
+    delete pdaughter;
+    delete pkink;
   }
 
   delete [] daughters;
