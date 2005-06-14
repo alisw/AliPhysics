@@ -2,6 +2,8 @@
 //
 // Test macro for reading sector data.
 
+#include <iomanip>
+
 void testReadSector(AliMpStationType station = kStation1,
                     AliMpPlaneType plane = kBendingPlane) 
 {
@@ -30,29 +32,21 @@ void testReadSector(AliMpStationType station = kStation1,
   cout << endl;
   
   // Find motif position test
-  for (Int_t i=1; i<4 ; i++) {
-    for (Int_t j=0; j<5; j++) {
-
-      Int_t start = 0;
-      if (plane == kBendingPlane) start = 0;
-      if (plane == kNonBendingPlane) start = 3000;
-    
-      Int_t id = start + i*1010 + 5*j;
-
-      cout << "Motif pos " << id;
-      if (!sector->FindRowSegment(id)) {
-         cout << " not found." << endl;
-      }
-      else {	 
-         cout << " found in : "
-              << sector->FindRow(id)->GetID() << " row, "
-              << " motif id: "
-              << sector->FindRowSegment(id)->GetMotif(0)->GetID().Data()
-	      << endl;
-      }      
-    }	   
+  Int_t ids[15] = { 19, 14, 9, 32, 36, 136, 187, 212, 207, 220, 1, 131, 239, 243, 250 };  
+  for (Int_t i=0; i<15 ; i++) {
+    Int_t id = ids[i];
+    cout << "Motif pos " << std::setw(3) << id;
+    if (!sector->FindRowSegment(id)) {
+       cout << " not found." << endl;
+    }
+    else {	 
+       cout << " found in : "
+            << sector->FindRow(id)->GetID() << " row, "
+            << " motif id: "
+            << sector->FindRowSegment(id)->GetMotif(0)->GetID().Data()
+	    << endl;
+    }      
   }
-
   cout << endl;
 
   // Find motif by coordinates test
@@ -69,9 +63,12 @@ void testReadSector(AliMpStationType station = kStation1,
   }
 
   // Find special motif test
-  if (plane == kNonBendingPlane)
+  if (plane == kNonBendingPlane) {
+  
+    Int_t ids[6] = { 20, 46, 47, 74, 75, 76 };
     for (Int_t i=0; i<6 ; i++) {
-      Int_t id = 4001 + i;
+      
+      Int_t id = ids[i];
       cout << "Motif pos " << id;
       if (!sector->FindRowSegment(id)) {
          cout << " not found." << endl;
@@ -83,7 +80,8 @@ void testReadSector(AliMpStationType station = kStation1,
 	      << sector->FindPosition(id).X() << "  " <<  sector->FindPosition(id).Y()
 	      << endl;
       }
-    }           
+    }
+  }             
   cout << endl;
 
   // Motif map

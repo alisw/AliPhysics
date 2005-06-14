@@ -41,7 +41,8 @@ void testAnyPadIterators(AliMpStationType station = kStation1,
   if (motif) {
     AliMpMotifType* motifType = motif->GetMotifType();
     MarkPads(AliMpMotifTypePadIterator(motifType),15,15);
-    cout<<"______________ MotifType ____________________________"<<endl;
+    cout<<"______________ MotifType " << motifType->GetID() 
+        <<"__________________________"<<endl;
   } else cout<<"No motif found at given position..."<<endl;
   
   canv->cd(3);
@@ -52,8 +53,8 @@ void testAnyPadIterators(AliMpStationType station = kStation1,
            ,i+8,j+8);
   cout<<"________________ Neighbours __________________________"<<endl;
   canv->cd(4);
-  Int_t motifPosId = 1010; 
-  if (plane == kNonBendingPlane) motifPosId = 4010;
+  Int_t motifPosId = 20; 
+  if (plane == kNonBendingPlane) motifPosId = 19;
   AliMpMotifPosition* motifPos = sect->GetMotifMap()->FindMotifPosition(motifPosId);
   if (motifPos){
     //MarkPads(*AliMpPadIteratorPtr(motifPos->CreateIterator()),15,15);

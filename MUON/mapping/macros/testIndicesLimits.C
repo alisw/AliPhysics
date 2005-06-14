@@ -1,6 +1,6 @@
 // $Id$
 //
-// Test macro for reading sector data.
+// Test macro for indices limits.
 
 void testIndicesLimits(AliMpStationType station = kStation1,
                        AliMpPlaneType plane = kBendingPlane) 

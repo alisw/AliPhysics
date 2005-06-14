@@ -110,6 +110,7 @@ const char  AliMUONSt1GeometryBuilderV2::fgkFoamLayerSuffix='F';  // prefix for 
 const char* AliMUONSt1GeometryBuilderV2::fgkQuadrantMLayerName="SQM";
 const char* AliMUONSt1GeometryBuilderV2::fgkQuadrantNLayerName="SQN";
 const char* AliMUONSt1GeometryBuilderV2::fgkQuadrantFLayerName="SQF";
+const Int_t AliMUONSt1GeometryBuilderV2::fgkDaughterCopyNoOffset=1000;
 
 //______________________________________________________________________________
 AliMUONSt1GeometryBuilderV2::AliMUONSt1GeometryBuilderV2(AliMUON* muon)
@@ -485,16 +486,16 @@ void AliMUONSt1GeometryBuilderV2::CreateQuadrant(Int_t chamber)
 
 #ifdef ST1_WITH_STL
   SpecialMap specialMap;
-  specialMap[1001] = AliMUONSt1SpecialMotif(TVector2( 0.1, 0.84), 90.);
-  specialMap[1002] = AliMUONSt1SpecialMotif(TVector2( 0.5, 0.36));
-  specialMap[1003] = AliMUONSt1SpecialMotif(TVector2(1.01, 0.36));
+  specialMap[76] = AliMUONSt1SpecialMotif(TVector2( 0.1, 0.84), 90.);
+  specialMap[75] = AliMUONSt1SpecialMotif(TVector2( 0.5, 0.36));
+  specialMap[47] = AliMUONSt1SpecialMotif(TVector2(1.01, 0.36));
 #endif
   
 #ifdef ST1_WITH_ROOT
   SpecialMap specialMap;
-  specialMap.Add(1001, (Long_t) new AliMUONSt1SpecialMotif(TVector2( 0.1, 0.84), 90.));
-  specialMap.Add(1002, (Long_t) new AliMUONSt1SpecialMotif(TVector2( 0.5, 0.36)));
-  specialMap.Add(1003, (Long_t) new AliMUONSt1SpecialMotif(TVector2(1.01, 0.36)));
+  specialMap.Add(76, (Long_t) new AliMUONSt1SpecialMotif(TVector2( 0.1, 0.84), 90.));
+  specialMap.Add(75, (Long_t) new AliMUONSt1SpecialMotif(TVector2( 0.5, 0.36)));
+  specialMap.Add(47, (Long_t) new AliMUONSt1SpecialMotif(TVector2(1.01, 0.36)));
 #endif
 
   AliMpReader reader1(kStation1, kBendingPlane);
@@ -506,22 +507,22 @@ void AliMUONSt1GeometryBuilderV2::CreateQuadrant(Int_t chamber)
   
 #ifdef ST1_WITH_STL
   specialMap.clear();
-  specialMap[4001] = AliMUONSt1SpecialMotif(TVector2(1.01,0.59),90.);
-  specialMap[4002] = AliMUONSt1SpecialMotif(TVector2(1.96, 0.17));
-  specialMap[4003] = AliMUONSt1SpecialMotif(TVector2(1.61,-1.18));
-  specialMap[4004] = AliMUONSt1SpecialMotif(TVector2(0.2 ,-0.08));
-  specialMap[4005] = AliMUONSt1SpecialMotif(TVector2(0.2 , 0.25));
-  specialMap[4006] = AliMUONSt1SpecialMotif(TVector2(0.28, 0.21));
+  specialMap[76] = AliMUONSt1SpecialMotif(TVector2(1.01,0.59),90.);
+  specialMap[75] = AliMUONSt1SpecialMotif(TVector2(1.96, 0.17));
+  specialMap[47] = AliMUONSt1SpecialMotif(TVector2(1.61,-1.18));
+  specialMap[20] = AliMUONSt1SpecialMotif(TVector2(0.2 ,-0.08));
+  specialMap[46] = AliMUONSt1SpecialMotif(TVector2(0.2 , 0.25));
+  specialMap[74] = AliMUONSt1SpecialMotif(TVector2(0.28, 0.21));
 #endif
 
 #ifdef ST1_WITH_ROOT
   specialMap.Delete();
-  specialMap.Add(4001,(Long_t) new AliMUONSt1SpecialMotif(TVector2(1.01,0.59),90.));
-  specialMap.Add(4002,(Long_t) new AliMUONSt1SpecialMotif(TVector2(1.96, 0.17)));
-  specialMap.Add(4003,(Long_t) new AliMUONSt1SpecialMotif(TVector2(1.61,-1.18)));
-  specialMap.Add(4004,(Long_t) new AliMUONSt1SpecialMotif(TVector2(0.2 ,-0.08)));
-  specialMap.Add(4005,(Long_t) new AliMUONSt1SpecialMotif(TVector2(0.2 , 0.25)));
-  specialMap.Add(4006,(Long_t) new AliMUONSt1SpecialMotif(TVector2(0.28, 0.21)));
+  specialMap.Add(76,(Long_t) new AliMUONSt1SpecialMotif(TVector2(1.01,0.59),90.));
+  specialMap.Add(75,(Long_t) new AliMUONSt1SpecialMotif(TVector2(1.96, 0.17)));
+  specialMap.Add(47,(Long_t) new AliMUONSt1SpecialMotif(TVector2(1.61,-1.18)));
+  specialMap.Add(20,(Long_t) new AliMUONSt1SpecialMotif(TVector2(0.2 ,-0.08)));
+  specialMap.Add(46,(Long_t) new AliMUONSt1SpecialMotif(TVector2(0.2 , 0.25)));
+  specialMap.Add(74,(Long_t) new AliMUONSt1SpecialMotif(TVector2(0.28, 0.21)));
 #endif
 
   AliMpReader reader2(kStation1, kNonBendingPlane);
@@ -2136,14 +2137,20 @@ void AliMUONSt1GeometryBuilderV2::PlaceSector(AliMpSector* sector,SpecialMap spe
 
         // and place all the daughter boards of this segment
         for (Int_t motifNum=0;motifNum<seg->GetNofMotifs();motifNum++) {
+
+	  // Copy number
           Int_t motifPosId = seg->GetMotifPositionId(motifNum);
           AliMpMotifPosition* motifPos = 
             sector->GetMotifMap()->FindMotifPosition(motifPosId);
+	  Int_t copyNo = motifPosId;
+	  if ( sector->GetDirection() == kX) copyNo += fgkDaughterCopyNoOffset;
   
+          // Position
           posX = where.X() + motifPos->Position().X()/10.+fgkOffsetX;
           posY = where.Y() + motifPos->Position().Y()/10.+fgkOffsetY;
 	  posZ = where.Z() + sgn * (fgkMotherThick1 - TotalHzDaughter()); 
-          gMC->Gspos(fgkDaughterName, motifPosId, QuadrantMLayerName(chamber), posX, posY, posZ, reflZ, "ONLY");
+
+          gMC->Gspos(fgkDaughterName, copyNo, QuadrantMLayerName(chamber), posX, posY, posZ, reflZ, "ONLY");
         }  
         segNum++;
 	
@@ -2176,19 +2183,23 @@ void AliMUONSt1GeometryBuilderV2::PlaceSector(AliMpSector* sector,SpecialMap spe
 
           AliMpMotifPosition* motifPos = sector->GetMotifMap()->FindMotifPosition(motifPosId);
 
+          // Copy number
+	  Int_t copyNo = motifPosId;
+	  if ( sector->GetDirection() == kX) copyNo += fgkDaughterCopyNoOffset;
+
           // place the hole for the motif, wrt the requested rotation angle
           Int_t rot = ( spMot.GetRotAngle()<0.1 ) ? reflZ:rotMat;
 
           posX = where.X() + motifPos->Position().X()/10.+spMot.GetDelta().X();
           posY = where.Y() + motifPos->Position().Y()/10.+spMot.GetDelta().Y();
           posZ = where.Z() + sgn * (TotalHzPlane() + fgkHzGas + 2.*fgkHzPadPlane);
-          gMC->Gspos(fgkHoleName, motifPosId, QuadrantMLayerName(chamber), posX, posY, posZ, rot, "ONLY");
+          gMC->Gspos(fgkHoleName, copyNo, QuadrantMLayerName(chamber), posX, posY, posZ, rot, "ONLY");
 
           // then place the daughter board for the motif, wrt the requested rotation angle
           posX = posX+fgkDeltaFilleEtamX;
           posY = posY+fgkDeltaFilleEtamY;
 	  posZ = where.Z() + sgn * (fgkMotherThick1 - TotalHzDaughter()); 
-          gMC->Gspos(fgkDaughterName, motifPosId, QuadrantMLayerName(chamber), posX, posY, posZ, rot, "ONLY");
+          gMC->Gspos(fgkDaughterName, copyNo, QuadrantMLayerName(chamber), posX, posY, posZ, rot, "ONLY");
 
 #ifdef ST1_WITH_STL
           alreadyDone.push_back(motifPosId);// mark this motif as done

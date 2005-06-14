@@ -94,6 +94,8 @@ class AliMUONSt1GeometryBuilderV2 : public AliMUONVGeometryBuilder
     static const char* fgkQuadrantFLayerName;// prefix for automatic volume naming
     static const char* fgkDaughterName;      // prefix for automatic volume naming
     static const char  fgkFoamLayerSuffix;   // suffix for automatic volume naming
+    static const Int_t fgkDaughterCopyNoOffset; // copy number offset for daugher
+                                                // boards positions in non-bending plane
 
     // Methods
     //

@@ -34,5 +34,17 @@ void testNeighboursPadIterator(AliMpStationType station = kStation1,
     marker->Draw();
   }
   
+  AliMpVPadIterator* iter2
+    = segm.CreateIterator(AliMpArea(pad.Position(),2.*pad.Dimensions()*1.1));
+
+  Int_t i=0;
+  for( iter2->First(); !iter2->IsDone() && i<10; iter2->Next()) {
+    Int_t ix = iter2->CurrentItem().GetIndices().GetFirst();
+    Int_t iy = iter2->CurrentItem().GetIndices().GetSecond();
+    cout<<"Iterator number "<< i << " at "<< iter2->CurrentItem().GetIndices() <<endl;
+    i++;
+  }
+  
+  delete iter2;
   delete sect;
 }

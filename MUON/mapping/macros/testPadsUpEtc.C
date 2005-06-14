@@ -7,23 +7,24 @@
 void testPadsUpEtc(AliMpStationType station = kStation1,
                    AliMpPlaneType  planeType = kBendingPlane)
 {
-  AliMpPlane* plane = AliMpPlane::Create(station, planeType);
-  AliMpPlaneSegmentation planeSegmentation(plane);
+  AliMpReader reader(station, planeType);  
+  AliMpSector* sector = reader.BuildSector();
+  AliMpSectorSegmentation segmentation(sector);
   
-  //AliMpIntPair indices(85, 101);
-  AliMpIntPair indices(-129, 10);
+  AliMpIntPair indices(85, 101);
+  if( planeType == kNonBendingPlane) indices = AliMpIntPair(129, 10);
  
   AliMpPad pad;
-  if (planeSegmentation.HasPad(indices)) {
+  if (segmentation.HasPad(indices)) {
 	  
-    pad = planeSegmentation.PadByIndices(indices);
+    pad = segmentation.PadByIndices(indices);
     cout << "Pad:      "  << pad << endl << endl;
   
     cout << "######### GO UP  ############### " << endl;
 
     AliMpPadPair nextPads(pad, pad);
     while (nextPads.GetFirst().IsValid()) {
-      nextPads = planeSegmentation.PadsUp(nextPads.GetFirst());
+      nextPads = segmentation.PadsUp(nextPads.GetFirst());
       cout << " up    1: "  << nextPads.GetFirst() << endl;    
       cout << "       2: "  << nextPads.GetSecond() << endl;    
     }
@@ -32,7 +33,7 @@ void testPadsUpEtc(AliMpStationType station = kStation1,
 
     nextPads = AliMpPadPair(pad, pad);
     while (nextPads.GetFirst().IsValid()) {
-      nextPads = planeSegmentation.PadsDown(nextPads.GetFirst());
+      nextPads = segmentation.PadsDown(nextPads.GetFirst());
       cout << " down  1: "  << nextPads.GetFirst() << endl;    
       cout << "       2: "  << nextPads.GetSecond() << endl;    
     }
@@ -41,7 +42,7 @@ void testPadsUpEtc(AliMpStationType station = kStation1,
 
     nextPads = AliMpPadPair(pad, pad);
     while (nextPads.GetFirst().IsValid()) {
-      nextPads = planeSegmentation.PadsRight(nextPads.GetFirst());
+      nextPads = segmentation.PadsRight(nextPads.GetFirst());
       cout << " right 1: "  << nextPads.GetFirst() << endl;    
       cout << "       2: "  << nextPads.GetSecond() << endl;    
     }
@@ -50,7 +51,7 @@ void testPadsUpEtc(AliMpStationType station = kStation1,
 
     nextPads = AliMpPadPair(pad, pad);
     while (nextPads.GetFirst().IsValid()) {
-      nextPads = planeSegmentation.PadsLeft(nextPads.GetFirst());
+      nextPads = segmentation.PadsLeft(nextPads.GetFirst());
       cout << " left  1: "  << nextPads.GetFirst() << endl;    
       cout << "       2: "  << nextPads.GetSecond() << endl;    
     }
