@@ -15,6 +15,7 @@ class AliESD;
 class AliTRDpidESD {
 public:
   AliTRDpidESD(Double_t *param);
+  virtual ~AliTRDpidESD() {}
   Int_t MakePID(AliESD *event);
   static Double_t Bethe(Double_t bg);
 private:

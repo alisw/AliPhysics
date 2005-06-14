@@ -40,6 +40,8 @@
 #include "AliConst.h"
 #include "AliDigit.h"
 #include "AliLoader.h"
+#include "AliLog.h"
+#include "AliMC.h"
 #include "AliMagF.h"
 #include "AliRun.h"
 #include "AliTRD.h"
@@ -51,7 +53,6 @@
 #include "AliTRDpoints.h"
 #include "AliTRDrawData.h"
 #include "AliTrackReference.h"
-#include "AliMC.h"
 
 ClassImp(AliTRD)
  
@@ -165,7 +166,7 @@ void AliTRD::Hits2Digits()
   // Create digits
   //
   AliTRDdigitizer digitizer("TRDdigitizer","TRD digitizer class");
-  digitizer.SetDebug(GetDebug());
+  AliLog::SetClassDebugLevel("TRDdigitizer",AliDebugLevel());
   
   // Initialization
   digitizer.InitDetector();
@@ -195,7 +196,7 @@ void AliTRD::Hits2SDigits()
   AliTRDdigitizer digitizer("TRDdigitizer","TRD digitizer class");
   // For the summable digits
   digitizer.SetSDigits(kTRUE);
-  digitizer.SetDebug(GetDebug());
+  AliLog::SetClassDebugLevel("TRDdigitizer",AliDebugLevel());
 
   // Initialization
   digitizer.InitDetector();
@@ -235,7 +236,7 @@ void AliTRD::SDigits2Digits()
 
    // Create the TRD digitizer
   AliTRDdigitizer digitizer("TRDdigitizer","TRD digitizer class");  
-  digitizer.SetDebug(GetDebug());
+  AliLog::SetClassDebugLevel("TRDdigitizer",AliDebugLevel());
 
   // Set the parameter
   digitizer.SetEvent(gAlice->GetEvNumber());
@@ -246,7 +247,7 @@ void AliTRD::SDigits2Digits()
   // Read the s-digits via digits manager
   AliTRDdigitsManager sdigitsManager;
  
-  sdigitsManager.SetDebug(GetDebug());
+  AliLog::SetClassDebugLevel("TRDdigitisManager",AliDebugLevel());
   sdigitsManager.SetSDigits(kTRUE);
   sdigitsManager.CreateArrays();
   
@@ -448,8 +449,7 @@ void AliTRD::CreateGeometry()
   // Check that FRAME is there otherwise we have no place where to put the TRD
   AliModule* frame = gAlice->GetModule("FRAME");
   if (!frame) {
-    printf(" The TRD needs the FRAME to be defined first\n");
-    return;
+    AliFatal("The TRD needs the FRAME to be defined first");
   }
 
   fGeometry->CreateGeometry(fIdtmed->GetArray() - 1299);
@@ -722,25 +722,17 @@ void AliTRD::Init()
   // Initialize the TRD detector after the geometry has been created
   //
 
-  Int_t i;
-
-  if (fDebug) {
-    printf("\n%s: ",ClassName());
-    for (i = 0; i < 35; i++) printf("*");
-    printf(" TRD_INIT ");
-    for (i = 0; i < 35; i++) printf("*");
-    printf("\n");
-  }
+  AliDebug(1,"++++++++++++++++++++++++++++++++++++++++++++++");
 
   if (fGeometry->IsVersion() == 1) {
-    printf("%s: Full geometry version initialized\n",ClassName());
+    AliInfo("Full geometry version initialized");
     if (fGeometry->GetPHOShole())
-      printf("%s: Leave space in front of PHOS free\n",ClassName());
+      AliInfo("Leave space in front of PHOS free");
     if (fGeometry->GetRICHhole())
-      printf("%s: Leave space in front of RICH free\n",ClassName());
+      AliInfo("Leave space in front of RICH free");
   }
   else {
-    printf("%s: Not a valid geometry\n",ClassName());
+    AliError("Not a valid geometry");
   }
   
 }

@@ -38,12 +38,13 @@
 #include <TVirtualMC.h>
 
 #include "AliConst.h"
+#include "AliLog.h"
+#include "AliMC.h"
 #include "AliRun.h"
 #include "AliTRDgeometry.h"
 #include "AliTRDhit.h"
 #include "AliTRDsim.h"
 #include "AliTRDv1.h"
-#include "AliMC.h"
 
 ClassImp(AliTRDv1)
  
@@ -216,9 +217,7 @@ void AliTRDv1::CreateTRhit(Int_t det)
     Float_t pTot = mom.Rho();
     fTR->CreatePhotons(iPdg,pTot,nTR,eTR);
     if (nTR > kNTR) {
-      printf("AliTRDv1::CreateTRhit -- ");
-      printf("Boundary error: nTR = %d, kNTR = %d\n",nTR,kNTR);
-      exit(1);
+      AliFatal(Form("Boundary error: nTR = %d, kNTR = %d",nTR,kNTR));
     }
 
     // Loop through the TR photons
@@ -288,25 +287,24 @@ void AliTRDv1::Init()
 
   AliTRD::Init();
 
-  if(fDebug) printf("%s: Slow simulator\n",ClassName());
+  AliDebug(1,"Slow simulator\n");
   if (fSensSelect) {
     if (fSensPlane   >= 0)
-      printf("          Only plane %d is sensitive\n",fSensPlane);
+      AliInfo(Form("Only plane %d is sensitive"));
     if (fSensChamber >= 0)   
-      printf("          Only chamber %d is sensitive\n",fSensChamber);
+      AliInfo(Form("Only chamber %d is sensitive",fSensChamber));
     if (fSensSector  >= 0) {
       Int_t sens1  = fSensSector;
       Int_t sens2  = fSensSector + fSensSectorRange;
             sens2 -= ((Int_t) (sens2 / AliTRDgeometry::Nsect())) 
                    * AliTRDgeometry::Nsect();
-      printf("          Only sectors %d - %d are sensitive\n",sens1,sens2-1);
+	    AliInfo(Form("Only sectors %d - %d are sensitive\n",sens1,sens2-1));
     }
   }
   if (fTR) 
-    printf("%s: TR simulation on\n",ClassName());
+    AliInfo("TR simulation on")
   else
-    printf("%s: TR simulation off\n",ClassName());
-  printf("\n");
+    AliInfo("TR simulation off");
 
   // First ionization potential (eV) for the gas mixture (90% Xe + 10% CO2)
   const Float_t kPoti = 12.1;
@@ -322,11 +320,7 @@ void AliTRDv1::Init()
   // Geant3 distribution for the delta-ray spectrum
   fDeltaG = new TF1("deltaeg",IntSpecGeant,poti,eEnd,0);
 
-  if(fDebug) {
-    printf("%s: ",ClassName());
-    for (Int_t i = 0; i < 80; i++) printf("*");
-    printf("\n");
-  }
+  AliDebug(1,"+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
 
 }
 
@@ -350,8 +344,8 @@ void AliTRDv1::SetSensPlane(Int_t iplane)
   //
 
   if ((iplane < 0) || (iplane > 5)) {
-    printf("Wrong input value: %d\n",iplane);
-    printf("Use standard setting\n");
+    AliWarning(Form("Wrong input value:%d",iplane));
+    AliWarning("Use standard setting");
     fSensPlane  = -1;
     fSensSelect =  0;
     return;
@@ -370,8 +364,8 @@ void AliTRDv1::SetSensChamber(Int_t ichamber)
   //
 
   if ((ichamber < 0) || (ichamber > 4)) {
-    printf("Wrong input value: %d\n",ichamber);
-    printf("Use standard setting\n");
+    AliWarning(Form("Wrong input value: %d",ichamber));
+    AliWarning("Use standard setting");
     fSensChamber = -1;
     fSensSelect  =  0;
     return;
@@ -403,8 +397,8 @@ void AliTRDv1::SetSensSector(Int_t isector, Int_t nsector)
   //
 
   if ((isector < 0) || (isector > 17)) {
-    printf("Wrong input value <isector>: %d\n",isector);
-    printf("Use standard setting\n");
+    AliWarning(Form("Wrong input value <isector>: %d",isector));
+    AliWarning("Use standard setting");
     fSensSector      = -1;
     fSensSectorRange =  0;
     fSensSelect      =  0;
@@ -412,8 +406,8 @@ void AliTRDv1::SetSensSector(Int_t isector, Int_t nsector)
   }
 
   if ((nsector < 1) || (nsector > 18)) {
-    printf("Wrong input value <nsector>: %d\n",nsector);
-    printf("Use standard setting\n");
+    AliWarning(Form("Wrong input value <nsector>: %d",nsector));
+    AliWarning("Use standard setting");
     fSensSector      = -1;
     fSensSectorRange =  0;
     fSensSelect      =  0;
@@ -438,7 +432,7 @@ void AliTRDv1::StepManager()
     case 0  : StepManagerErmilova();  break;  // 0 is Ermilova
     case 1  : StepManagerGeant();     break;  // 1 is Geant
     case 2  : StepManagerFixedStep(); break;  // 2 is fixed step
-    default : printf("<AliTRDv1::StepManager>: Not a valid Step Manager.\n");
+    default : AliWarning("Not a valid Step Manager.");
   }
 
 }
@@ -454,13 +448,11 @@ void AliTRDv1::SelectStepManager(Int_t t)
   //
 
   if (t == 1) {
-    printf("<AliTRDv1::SelectStepManager>: Sorry, Geant parametrization step"
-	   "manager is not implemented yet. Please ask K.Oyama for detail.\n");
+    AliWarning("Sorry, Geant parametrization step manager is not implemented yet. Please ask K.Oyama for detail.");
   }
 
   fTypeOfStepManager = t;
-  printf("<AliTRDv1::SelectStepManager>: Step Manager type %d was selected.\n"
-        , fTypeOfStepManager);
+  AliInfo(Form("Step Manager type %d was selected",fTypeOfStepManager));
 
 }
 
@@ -474,7 +466,7 @@ void AliTRDv1::StepManagerGeant()
   // a spectrum taken from Geant3.
   //
 
-  printf("AliTRDv1::StepManagerGeant: Not implemented yet.\n");
+  AliWarning("Not implemented yet.");
 
 }
 
@@ -1016,8 +1008,7 @@ Double_t IntSpecGeant(Double_t *x, Double_t *)
     if( energy < arr_e[i] ) break;
 
   if( i == 0 )
-    printf("Error in AliTRDv1::IntSpecGeant: "
-	   "given energy value is too small or zero.\n");
+    AliErrorGeneral("AliTRDv1","Given energy value is too small or zero");
 
   // Interpolate
   dnde = (arr_dndx[i-1] - arr_dndx[i]) / (arr_e[i] - arr_e[i-1]);
