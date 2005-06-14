@@ -14,17 +14,10 @@ SRCS:= alimdc_main.cxx ${ESRCS}
 EINCLUDE+=TPC CONTAINERS ITS RAW HLT/src HLT/hough HLT/comp HLT/ITS
 # -DUSE_DEBUG for alimdc debug printout
 
-ELIBS:=ESD RAWData MDC MDCFilter STEER TPCbase TPCsim TPCrec CONTAINERS AliL3Src AliL3Misc AliL3Hough AliL3Comp AliL3ITS ITS pythia6 pdf microcern
+ELIBS:=ESD RAWData MDC MDCFilter STEER TPCbase TPCsim TPCrec CONTAINERS AliL3Src AliL3Misc AliL3Hough AliL3Comp AliL3ITS ITS 
 
 ifneq (,$(findstring macosx,$(ALICE_TARGET)))
-@PACKAGE@LIBSINIT:=$(filter-out microcern,$(ELIBS))
-@PACKAGE@LIBSINIT:=$(filter-out pdf,$(@PACKAGE@LIBSINIT))
 PACKLDFLAGS:=$(LDFLAGS) $(@PACKAGE@LIBSINIT:%=-Wl,-u,_G__cpp_setupG__%)
-# On Mac OS X gcc we need g2c for versions before 10.4
-ifneq ($(MACOSX_MINOR),4)
-ELIBS+=g2c
-ELIBSDIR+=$(dir $(shell find $(FINK_ROOT) -name 'libg2c.*'))
-endif
 endif
 
 ifdef DATE_ROOT

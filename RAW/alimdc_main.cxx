@@ -33,6 +33,12 @@ extern "C" {
 
 #include "AliMDC.h"
 
+#ifdef __APPLE__
+// avoid loading pythia and pdf
+#include <Hepevt.h>
+HEPEVT_DEF HEPEVT;
+#endif
+
 //______________________________________________________________________________
 static void AliMDCErrorHandler(int level, Bool_t abort, const char *location,
                                const char *msg)
