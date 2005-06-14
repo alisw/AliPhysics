@@ -1,0 +1,46 @@
+////////////////////////////////////////////////////////////////////////////////
+//
+// Author: Artur Szostak
+// Email:  artur@alice.phy.uct.ac.za | artursz@iafrica.com
+//
+////////////////////////////////////////////////////////////////////////////////
+
+#ifndef dHLT_ALIROOT_POINT_HPP
+#define dHLT_ALIROOT_POINT_HPP
+
+#include "TObject.h"
+#include <ostream>
+
+
+namespace AliMUONHLT
+{
+
+
+class Point : public TObject
+{
+public:
+
+	/* Default constructor initialises everything to zero.
+	 */
+	Point();
+	
+	/* Constructs the point from the specified x and y coordinates.
+	 */
+	Point(const Float_t x, const Float_t y);
+
+	virtual ~Point() {};
+	
+	// ostream operator usefull for text output.
+	friend std::ostream& operator << (std::ostream& os, const Point& p);
+
+
+	Float_t fX;    // X coordinate of the 2D point.
+	Float_t fY;    // Y coordinate of the 2D point.
+
+	ClassDef(Point, 1);  // A 2D space point.
+};
+
+
+}; // AliMUONHLT
+
+#endif // dHLT_ALIROOT_POINT_HPP

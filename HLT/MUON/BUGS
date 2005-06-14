@@ -1,0 +1,48 @@
+###############################################################################
+# This file contains the list of bugs (features) found in this software.      #
+# Any new problems should be appended to this file with a new sequential      #
+# number and current date and time, for example the output of the date        #
+# command.                                                                    #
+# Hopefully at some point these will be fixed at which point the bug listing  #
+# can be removed from this file. Please check carefully that the problem has  #
+# infact been resolved before you remove the bug listing. Rather add a tag of #
+# RESOLVED to the bug heading for a while before removing the bug if you are  #
+# not sure.                                                                   #
+###############################################################################
+===============================================================================
+
+1) Wed Nov 24 21:30:19 SAST 2004
+
+Strange segfault with triggerDDL when running:
+ > ./bin/Linux-debug/triggerDDL list <x>
+where <x> is in the range 1 to 1023 we get a SegFault.
+For <x> larger than 1023 the program runs normally.
+
+list is a file containing the line:
+"file"
+and file is a empty file.
+
+===============================================================================
+
+2) Wed Nov 24 21:30:19 SAST 2004
+
+Assertion failure in triggerDDL when running
+ > ./bin/Linux-debug/triggerDDL list
+
+Message:
+triggerDDL: /home/artur/HLT/dHLT/src/new.cpp:144: void operator delete [](void*): Assertion `checkmem.RemoveArrayAlloc(memory)' failed.
+
+list is a file containing the line:
+"file"
+and file is a empty file.
+
+===============================================================================
+
+3) Wed Nov 24 22:30:35 SAST 2004
+
+Data packets in BCMP::Receiver can be received multiple times. We need to fix
+this by adding code that checks if the packet was already received or not.
+Could use some kind of windowing algorithm like TCP uses.
+
+===============================================================================
+

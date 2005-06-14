@@ -1,0 +1,84 @@
+////////////////////////////////////////////////////////////////////////////////
+//
+// Author: Artur Szostak
+// Email:  artur@alice.phy.uct.ac.za | artursz@iafrica.com
+//
+////////////////////////////////////////////////////////////////////////////////
+
+#include "AliRoot/ADCStream.hpp"
+#include "TMath.h"
+#include "Utils.hpp"
+
+
+ClassImp(AliMUONHLT::ADCStream);
+
+namespace AliMUONHLT
+{
+
+
+ADCStream::ADCStream() : TObject()
+{
+	fData.Set(0);
+};
+
+
+ADCStream::ADCStream(const UInt_t* data, const UInt_t size)
+{
+	fData.Set(size, (Int_t*)data);
+};
+
+
+ADCStream::~ADCStream()
+{
+	fData.Reset();
+};
+
+
+UInt_t ADCStream::Size()
+{
+	return fData.GetSize();
+};
+
+
+void ADCStream::Size(const UInt_t size)
+{
+	fData.Set(size);
+};
+
+
+void ADCStream::Fill(const UInt_t* data, const UInt_t size)
+{
+	fData.Set(size, (Int_t*)data);
+};
+
+
+// UInt_t& ADCStream::operator [] (const UInt_t index)
+// {
+// 	Assert( index < (UInt_t) fData.GetSize() );
+// 	return (UInt_t) fData[index];
+// };
+
+
+UInt_t ADCStream::operator [] (const UInt_t index) const
+{
+	Assert( index < (UInt_t) fData.GetSize() );
+	return fData[index];
+};
+
+
+std::ostream& operator << (std::ostream& os, const ADCStream& s)
+{
+	os << "{ADCStream: " << (void*)s.Data() << "}";
+	os << std::endl;
+	for (Int_t i = 0; i < s.fData.GetSize(); i++)
+	{
+		char buffer[32];
+		char* str = (char*)&buffer[0];
+		sprintf(str, "0x%X", s.fData[i]);
+		os << i << "\t" << str << std::endl;
+	};
+	return os;
+};
+
+
+}; // AliMUONHLT

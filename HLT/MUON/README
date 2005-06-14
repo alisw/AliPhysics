@@ -1,0 +1,122 @@
+
+================================
+dHLT - Dimuon High level Trigger
+================================
+
+This module is the implementation of the dHLT algorithm.
+
+
+Building:
+=========
+
+1) To build the dHLT modules type the following command in the shell in the top
+directory of the dHLT project:
+
+> make
+
+
+2) To generate a distribution tar.gz file:
+
+> make dist
+
+The distribution archive will be found in the same directory as this readme file.
+
+
+3) To generate a distribution for debugging:
+
+> make debug-dist
+
+
+4) To compile all objects in debug mode for debugging with gdb for example:
+
+> make debug
+
+
+5) To run build process in verbose mode:
+
+> make verbose
+
+
+6) To generate source code documentation using doxygen:
+
+> make doc
+
+
+7) To remove all intermediate files generated during the build process (excluding
+binaries and libraries):
+
+> make clean
+
+
+8) To remove all files generated during the build process (including output 
+binaries and libraries):
+
+> make clean-all
+
+
+
+Directories:
+============
+
+src/ 
+	Contains all source code.
+
+examples/ 
+	Contains scripts for running certain example uses of the dHLT
+	
+
+macros/
+	Contains ROOT and AliRoot macros used to run parts of the software.
+        Can contain other scripts also.
+
+
+build/
+	Contains all files (such as make files) required to build the binaries and libraries.	 
+
+
+doc/
+	Contains any specification or design documentation.
+	(BB 26/11/04) Also contains a dHLTconfig file for generating doxygen
+	documentation easily.
+
+Generated Directories:
+======================
+
+bin/
+	Contains binary executables.
+
+
+lib/
+	Contains libraries (shared objects / DLL's).
+
+
+include/
+	Contains include C++ header files required to compile against the libraries in lib/
+
+srcdoc/
+	Documentation generated from the source code using doxygen is placed into this
+	directory.
+
+output/
+	All temporary files that get generated during the build process such as .d and .o files
+	are written to this directory. The directory contains a subdirectory for every module
+	built containing that modules specific files.
+
+
+      Files:
+===================
+
+README
+	This file. Should add any general or important information to help get people started
+	with working with this module.
+
+BUGS
+	Any known bugs are described in this file. Any new bugs discovered with this module
+	should be added to this file. Please read the file header for more details.
+
+TODO
+	This is a list describing things that need to be done. It can also contain a wish list,
+	i.e. things that would be nice to implement in the future. Read the files header for
+	more details.
+
+

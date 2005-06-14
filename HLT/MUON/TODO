@@ -1,0 +1,135 @@
+###############################################################################
+# This file contains the list of things still to be implemented or done in    #
+# this module. Wish list items can also be described in this list.            #
+# For any features that need or you want to be implemented, add them to this  #
+# file. For each such item give it a new sequential number and write the      #
+# time/date stamp next to that. This can be the output of the date command    #
+# for example. A full description should be given of what should be           #
+# implemented and if possible, how to go about doing that.                    #
+# Any features that get implemented can then be removed from this wish list.  #
+# If something is partially implemented then update the status in this file.  #
+# If a item is referenced by an as yet unimplemented item then rather than    #
+# removing that item, leave it and just add the IMPLEMENTED tag to the item.  #
+###############################################################################
+===============================================================================
+
+1) Wed Nov 24 21:30:19 SAST 2004
+
+Integrate cluster finder with the dHLT by taking the Indian code and wrapping
+that into the CenterOfGravityFinder template.
+This might require rearranging large parts of the Indian code or even rewrites.
+--> BB adds Wed Nov 24 23:01  
+	I am working on validating the Indian code. I suggest :
+	i) 	breaking up single macro into a set of functions, which will make it 
+	   	easier to write into a class for aliroot. 
+	ii) 	macros to easily generate raw data from aliroot events  
+	    	and standardised Simulation macro to generate reference event.  
+--> BB adds Friday Nov 24 23:44
+	Added examples directory, where there is a raw data generation example. 
+	Currently, all LUT for raw data generation are in the examples dir.
+	These will be moved to DDL, while hit reconstruction will be implemented in
+	Clustering, soon to be renamed to "HitReconstruction". This will implement a
+	clean version of the Calcutta software hit reconstruction from raw data. 
+	
+===============================================================================
+
+2) Wed Nov 24 21:30:19 SAST 2004
+
+Create the following pipe I/O components:
+	L2 accept signal simulator - Most of the network level code is complete.
+	triggerDDL - almost done.
+	chamberDDL - Simulating DDL output from the tracking chambers.
+	trigger DDL to TriggerRecord translator.
+	dummy TriggerRecord publisher.
+	CenterOfGravityFinder - refer to item (1).
+	dummy ClusterPoint block publisher.
+	MansoTracker component - The MansoTracker algorithm is implemented but
+		everything has not yet been intergrated into a component.
+	dummy Track publisher.
+	Decision component
+	dummy Decision publisher.
+	DDL output data packer for Track data.
+	DDL output data packer for Decision data.
+	analysis tools.
+	debug tools. (utilities to dump an analyze data/signals etc as it passes
+		through the system)
+	timing tools. (Not that trivial).
+
+===============================================================================
+
+3) Wed Nov 24 21:30:19 SAST 2004
+
+Create Pub/Sub components similar to those described in item (2).
+Will need to see what code can be used in both component types. Hopefully most.
+
+===============================================================================
+
+4) Wed Nov 24 21:30:19 SAST 2004
+
+Intergrate with AliRoot. Exactly what this means is yet to be defined, but for
+now the obvious components required are:
+	GUI interface - a lot to be done here. Ideally one should be able to
+		monitor and control everything from some kind of GUI. Perhaps
+		some form of HTTP/HTML application/front end would be usefull.
+	dHLTInterface - API through which AliRoot talks to dHLT proper.
+	Driver components - Here I am talking about things like MicrodHLT. It
+		does all the dirty work behind the scenes to talk to dHLT code.
+		We will require one for a more full blow dHLT using a memory
+		resident framework (here I am thinking about Framework/Global).
+		Also one that talks to the different external implementation
+		of dHLT running on Pub/Sub etc...
+
+===============================================================================
+
+5) Wed Nov 24 21:30:19 SAST 2004
+
+Prepare tools to manage and manipulate the mappings for the chambers and trigger.
+That is: create, transform, upload, download (to the running components) etc..
+the LUTs.
+
+===============================================================================
+
+6) Wed Nov 24 21:30:19 SAST 2004
+
+Add a packet delivered event to the BCMP::Sender class so that we can tell if
+our messages get delivered or not.
+
+===============================================================================
+
+7) Fri Nov 26 23:49:41 SAST 2004
+
+Rename Clustering namespace and subdir to HitReconstruction. Refer to item (1).
+
+===============================================================================
+
+8) Fri Nov 26 23:49:41 SAST 2004
+
+Add functionality to print DDL raw data fromats (ADC and L0) to screen.
+i.e. extend the printrawdata program.
+
+===============================================================================
+
+9) Fri Nov 26 23:49:41 SAST 2004
+
+Implement all functionality behind cammand line switched added to the
+signalL2 program. (requires random number generator, might give option to build
+against ROOT's random number generator).
+
+===============================================================================
+
+10) Sun Nov 28 16:15:33 SAST 2004
+
+Perform better error checking on the triggernumber parameter of GetTrigger
+method for TriggerSource class. It currently SegFaults if this parameter
+is not correct.
+
+===============================================================================
+
+11) Sun Nov 28 22:25:54 SAST 2004
+
+Add functionality to make macros and scripts directory be added to distribution
+archive. Also have symbolic links created for scripts into the bin directory.
+For the distribution the scripts can be copied into the bin directory.
+
+===============================================================================
+

@@ -1,0 +1,24 @@
+////////////////////////////////////////////////////////////////////////////////
+//
+// Author: Artur Szostak
+// Email:  artur@alice.phy.uct.ac.za | artursz@iafrica.com
+//
+////////////////////////////////////////////////////////////////////////////////
+
+#ifndef dHLT_ADC_STREAM_HPP
+#define dHLT_ADC_STREAM_HPP
+
+#include "BasicTypes.hpp"
+
+namespace dHLT
+{
+
+
+class ADCStream
+{
+};
+
+
+} // dHLT
+
+#endif // dHLT_ADC_STREAM_HPP

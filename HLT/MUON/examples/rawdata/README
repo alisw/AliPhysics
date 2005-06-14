@@ -1,0 +1,25 @@
+RAW DATA EXAMPLE 
+Bruce Becker | brucellino@gmail.com
+
+This is the directory with macros to generate digitised data with AliRoot 
+and generate binary raw data streams with the Indian code. The raw data is reconstricuted 
+
+The macros are :
+1) Config_MUON_test.C 
+	This is the basic config script with the simulation and generation 
+	parameters.
+2) Simulation.C
+	to simulate 1 muon in the spectrometer acceptance (with 
+	Config_MUON_test.C) , and simulate the digitised data. After running 
+	Simulation.C you will have MUON.Digits.root
+3) rawddl4.C and rawdl5.C
+	These macros generate the raw data DDL-wise for the stations 4 and 5 
+	respectively. The raw data reads look-up tables for each DDL (13-20) 
+	and produces the hit files DDL-wise. These are ddl<DDLn>.dat. This is 
+	unformatted binary data.
+4) dhlt_v2.C 
+	This macro reads the DDL of choice and generates reconstructed hit 
+	positions from the binary data. The files produced are separated into 
+	bending and non-bending planes - hit(n|b)<DDLn>.dat. 
+
+

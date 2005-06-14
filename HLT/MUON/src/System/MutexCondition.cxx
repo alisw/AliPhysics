@@ -1,0 +1,14 @@
+////////////////////////////////////////////////////////////////////////////////
+//
+// Author: Artur Szostak
+// Email:  artur@alice.phy.uct.ac.za | artursz@iafrica.com
+//
+////////////////////////////////////////////////////////////////////////////////
+
+#ifdef WIN32
+#	include "System/Win32/MutexCondition.cxx"
+#endif // WIN32
+
+#ifdef LINUX
+#	include "System/Linux/MutexCondition.cxx"
+#endif // LINUX

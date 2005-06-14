@@ -1,0 +1,22 @@
+////////////////////////////////////////////////////////////////////////////////
+//
+// Author: Artur Szostak
+// Email:  artur@alice.phy.uct.ac.za | artursz@iafrica.com
+//
+////////////////////////////////////////////////////////////////////////////////
+
+#ifndef dHLT_CLUSTER_HPP
+#define dHLT_CLUSTER_HPP
+
+#include "Point.hpp"
+
+namespace dHLT
+{
+
+
+typedef Point ClusterPoint;
+
+
+} // dHLT
+
+#endif // dHLT_POINT_HPP
