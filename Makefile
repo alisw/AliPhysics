@@ -138,7 +138,7 @@ EXPORTFILES  :=
 #-------------------------------------------------------------------------------
 # Dependencies of module.mk files if not cleaning
 
-ifeq ($CLEAN),)
+ifeq ($(CLEAN),)
 include build/module.dep
 endif
 
