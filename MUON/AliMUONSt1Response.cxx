@@ -30,11 +30,10 @@
 #include <Riostream.h>
 
 #include "AliMpIntPair.h"
-#include "AliMpPlaneSegmentation.h"
+#include "AliMpSectorSegmentation.h"
 #include "AliMpPad.h"
 #include "AliMpMotifMap.h"
 #include "AliMpSector.h"
-#include "AliMpPlane.h"
 #include "AliMpZone.h"
 #include "AliMpSubZone.h"
 #include "AliMpVRowSegment.h"
@@ -45,6 +44,9 @@
 #include "AliMUONSt1IniReader.h"
 #include "AliMUONSt1Decoder.h"
 #include "AliMUONTransientDigit.h"
+#include "AliMUONGeometrySegmentation.h"
+#include "AliMUONSt12QuadrantSegmentation.h"
+#include "AliMUONChamber.h"
 #include "AliLog.h"
 
 ClassImp(AliMUONSt1Response)
@@ -80,8 +82,9 @@ const TString AliMUONSt1Response::fgkNofSigmaName ="nofSigma";
 
 
 //__________________________________________________________________________
-AliMUONSt1Response::AliMUONSt1Response(Int_t chamber)
+AliMUONSt1Response::AliMUONSt1Response(AliMUONChamber* chamber)
   : AliMUONResponseV0(),
+    fReadFiles(kTRUE),
     fCountNofCalls(0),
     fCountUnknownZone(0),
     fCountUnknownIndices(0),
@@ -101,8 +104,33 @@ AliMUONSt1Response::AliMUONSt1Response(Int_t chamber)
    Int_t i;
    for (i=0;i<2;i++){
      fIniFileName[i]="";
-     fPlane[0]=0;
-     fPlaneSegmentation[i]=0;
+     for (Int_t j=0;j<fgkNofZones;j++)
+     {
+       fDefaultParameters[i][j]=0;
+     }
+   }
+   fTrashList.SetOwner(kTRUE);
+}
+
+
+//__________________________________________________________________________
+AliMUONSt1Response::AliMUONSt1Response()
+  : AliMUONResponseV0(),
+    fReadFiles(kTRUE),
+    fCountNofCalls(0),
+    fCountUnknownZone(0),
+    fCountUnknownIndices(0),
+    fChamber(0),
+    fParams(),
+    fRegions(),
+    fTrashList()
+  
+{
+// Standard constructor
+
+   Int_t i;
+   for (i=0;i<2;i++){
+     fIniFileName[i]="";
      for (Int_t j=0;j<fgkNofZones;j++)
      {
        fDefaultParameters[i][j]=0;
@@ -127,8 +155,6 @@ AliMUONSt1Response::~AliMUONSt1Response()
 //destructor
   Int_t i;
   for (i=0;i<2;i++){
-    if (fPlaneSegmentation[i]) delete fPlaneSegmentation[i];
-    if (fPlane[i]) delete fPlane[i];
     fTrashList.Delete();
   }
 }
@@ -157,6 +183,39 @@ void AliMUONSt1Response::SetIniFileName(Int_t plane,const TString& fileName)
 // Set the file to be read for the response parameters
   if ((plane>=0) && (plane<=1)) fIniFileName[plane] = fileName;
 }
+
+
+//__________________________________________________________________________
+const AliMUONGeometrySegmentation* 
+AliMUONSt1Response::GetGeometrySegmentation(Int_t cathod)
+{
+// Get geometry segmentation for given cathod plane
+
+  if (!fChamber->SegmentationModel2(cathod))
+    AliFatal(Form("Geometry segmentation for cathod %d not defined.", cathod));
+
+  return fChamber->SegmentationModel2(cathod);
+}  
+
+//__________________________________________________________________________
+const AliMpSectorSegmentation* 
+AliMUONSt1Response::GetMpSegmentation(Int_t detElemId, Int_t cathod)
+{
+// Get mapping segmentation for given detection elemnt
+
+  const AliMUONVGeometryDESegmentation* deSegmentation
+    = GetGeometrySegmentation(cathod)->GetDESegmentation(detElemId);
+
+  if (!deSegmentation) {
+    AliFatal(Form("DE segmentation for detElemId= %d not defined.",
+                  detElemId));
+  }
+  
+  const AliMUONSt12QuadrantSegmentation* quadrantSegmentation
+    = static_cast<const AliMUONSt12QuadrantSegmentation*>(deSegmentation);
+  
+  return quadrantSegmentation->GetMpSegmentation();
+}         
 
 
 //__________________________________________________________________________
@@ -306,6 +365,8 @@ void AliMUONSt1Response::SetPairToListElem(const string& name,
 void AliMUONSt1Response::ReadIniFile(Int_t plane)
 {
   //Read the ini file and fill the <plane>th structures 
+
+  cout << "ReadIniFile now ..." << endl;
 
   TString path = fgkTopDir + fgkDataDir ;
   //read .ini file
@@ -470,12 +531,11 @@ void AliMUONSt1Response::ReadFiles()
     }
   }
   //book memory and fill them with .ini files
-  fPlane[0]=AliMpPlane::Create(kStation1, kBendingPlane);
-  fPlane[1]=AliMpPlane::Create(kStation1, kNonBendingPlane);
   for (i=0;i<2;i++){
-    fPlaneSegmentation[i]= new AliMpPlaneSegmentation(fPlane[i]);
     ReadIniFile(i);
   }
+  
+  fReadFiles = kFALSE;
 }
 
 //__________________________________________________________________________
@@ -497,7 +557,7 @@ Float_t AliMUONSt1Response::IntPH(Float_t eloss)
 
 
 //__________________________________________________________________________
-AliMpZone* AliMUONSt1Response::FindZone(AliMpSector* sector, Int_t posId) const
+AliMpZone* AliMUONSt1Response::FindZone(const AliMpSector* sector, Int_t posId) const
 {
 // to be moved to AliMpSector::
 
@@ -524,26 +584,34 @@ Int_t  AliMUONSt1Response::DigitResponse(Int_t digit, AliMUONTransientDigit* whe
     //                          <<" on plane "<<where->Cathode()<<endl;
     
     //read the files the first time this function is called
-    if (!fPlane[0]) ReadFiles();
+    if (fReadFiles) ReadFiles();
 
     fCountNofCalls++;
     
+    const AliMpSectorSegmentation* segmentation 
+      = GetMpSegmentation(where->DetElemId(), where->Cathode());
+    const AliMpSector* sector = segmentation->GetSector();
+       
     AliMpIntPair indices(where->PadX(),where->PadY());
-    AliMpPad pad = fPlaneSegmentation[where->Cathode()]->PadByIndices(indices,kFALSE);
+    AliMpPad pad = segmentation->PadByIndices(indices,kFALSE);
     Int_t gc=0;
     Int_t numZone=0;
     AliMpZone* zone=0;
+    cout << "Digit: DE=" << where->DetElemId()
+         << "  cathod=" <<  where->Cathode() << endl;
+    cout << "Found pad: " << pad << endl;
 
     if (pad.IsValid()) {
       AliMpIntPair location = pad.GetLocation();
       //cout<<location.GetFirst()<<endl;
       Int_t posId=abs(location.GetFirst());
+/*
       AliMpSector* sector=0;
       if (fPlane[0]->GetFrontSector()->GetMotifMap()->FindMotifPosition(posId))
         	sector=(AliMpSector*)fPlane[0]->GetFrontSector();
       else if (fPlane[0]->GetBackSector()->GetMotifMap()->FindMotifPosition(posId))
          	sector=(AliMpSector*)fPlane[0]->GetBackSector();
-
+*/
       if (sector) zone=FindZone(sector,posId);
       if (zone){
       	numZone=zone->GetID()-1;
@@ -555,19 +623,23 @@ Int_t  AliMUONSt1Response::DigitResponse(Int_t digit, AliMUONTransientDigit* whe
       fCountUnknownIndices++;
     }
 
+    cout << "Zone: " << zone << endl;
+
     if (!zone) {
       cout<<"Probleme electronic of pad "<<where->PadX()<<' '<<where->PadY()
       	  <<" on plane "<<where->Cathode()<<endl;
       return 6666;
     }
+    cout << "Loop1: " << endl;
     TList listParams;
-    TIter next(&fRulesList[where->Cathode()]);
+    TIter next(&fRulesList[where->Cathode()-1]);
     AliMUONSt1ResponseRule* rule;
     while ( (rule = static_cast<AliMUONSt1ResponseRule*>(next())))
       if (rule->Contains(pad)) listParams.AddAll(rule->GetParameters());
-    if (fDefaultParameters[where->Cathode()][numZone])
-      listParams.Add(fDefaultParameters[where->Cathode()][numZone]);
+    if (fDefaultParameters[where->Cathode()-1][numZone])
+      listParams.Add(fDefaultParameters[where->Cathode()-1][numZone]);
 
+    cout << "Loop2: " << endl;
     AliMUONSt1ResponseParameter* param;
     TIter nextParam(&listParams);
     while ( (param = static_cast<AliMUONSt1ResponseParameter*>(nextParam()))){
@@ -575,6 +647,7 @@ Int_t  AliMUONSt1Response::DigitResponse(Int_t digit, AliMUONTransientDigit* whe
         return 0;
       }
     }
+    cout << "Loop3: " << endl;
     nextParam.Reset();
     while ( (param = static_cast<AliMUONSt1ResponseParameter*>(nextParam()))){
       if (param->HasPedestal()) {

@@ -26,18 +26,20 @@
 #include "AliMUONResponseV0.h"
 #include "AliMUONSt1ElectronicElement.h"
 
-class AliMpPlane;
-class AliMpPlaneSegmentation;
+class AliMpSector;
+class AliMpSectorSegmentation;
 class AliMpZone;
 class AliMpSector;
 class TArrayF;
 class TObjArray;
 class AliMUONSt1ResponseParameter;
+class AliMUONChamber;
 
 class AliMUONSt1Response : public AliMUONResponseV0 
 {
   public:
-    AliMUONSt1Response(Int_t chamber=1);
+    AliMUONSt1Response(AliMUONChamber* chamber);
+    AliMUONSt1Response();
     virtual ~AliMUONSt1Response();
     
     //
@@ -63,7 +65,10 @@ class AliMUONSt1Response : public AliMUONResponseV0
     typedef map<string, TList*>  ListMap;
 
     // private methods
-    AliMpZone* FindZone(AliMpSector* sector,Int_t posId) const; // to be moved in AliMpSector::
+    const AliMUONGeometrySegmentation* GetGeometrySegmentation(Int_t cathod);
+    const AliMpSectorSegmentation*     GetMpSegmentation(Int_t detElemId, Int_t cathod);
+    const AliMpSector*                 GetMpSector(Int_t detElemId, Int_t cathod);
+    AliMpZone* FindZone(const AliMpSector* sector,Int_t posId) const; // to be moved in AliMpSector::
     void ReadFiles();
     void ReadIniFile(Int_t plane,const TString& fileName,Bool_t rdParam,Bool_t rdRegion,Bool_t rdRule);
     void ReadIniFile(Int_t plane);
@@ -104,10 +109,9 @@ class AliMUONSt1Response : public AliMUONResponseV0
     static const TString fgkNofSigmaName ;      // nof sigma name
 
     // data members
-    AliMpPlane* fPlane[2];  // !The mapping planes
-    AliMpPlaneSegmentation* fPlaneSegmentation[2]; // !The mapping plane segmentation
     TString fIniFileName[2];// file names for initialisation of each cathode
-
+    Bool_t  fReadFiles;     // flag to read initalization files only once
+    
     AliMUONSt1ResponseParameter* fDefaultParameters[2][fgkNofZones]; // !Response for each zone
     TList fRulesList[2]; //! list of special rules
 
@@ -115,7 +119,7 @@ class AliMUONSt1Response : public AliMUONResponseV0
     Int_t fCountUnknownZone; // ntimes the DigitResponse was called in an unknown zone
     Int_t fCountUnknownIndices; // ntimes the DigitResponse was called with unknown indices
 
-    Int_t fChamber;                // The chamber number
+    AliMUONChamber* fChamber;   // The MUON chamber
 
     ParamsMap  fParams;    //! internal parameter list
     ListMap    fRegions;   //! internal list of regions
