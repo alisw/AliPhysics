@@ -77,6 +77,7 @@
 
 #include "AliStack.h"
 #include "AliGenCocktailAfterBurner.h"
+#include "AliLog.h"
 
 
 
@@ -665,7 +666,7 @@ void AliGenHBTprocessor::SetPzRange(Float_t pzmin, Float_t pzmax)
    fPzMax =pzmax; 
    fHBTprocessor->SetPzRange(pzmin,pzmax);
  }
-void AliGenHBTprocessor::SetMomentumRange(Float_t /*pmin*/, Float_t /*pmax*/) const
+void AliGenHBTprocessor::SetMomentumRange(Float_t /*pmin*/, Float_t /*pmax*/)
  {
  //default pmin=0, pmax=0
  //Do not use this method!
@@ -868,9 +869,7 @@ void AliGenHBTprocessor::SetActiveEventNumber(Int_t n)
 {
 //sets the active event
  fActiveStack =  n*fEventMerge;
- if (GetDebug())
-  Info("SetActiveEventNumber","Settimg active event %d passed %d",
-        fActiveStack,n);
+ AliDebug(1,Form("Settimg active event %d passed %d",fActiveStack,n));
 }
 /*******************************************************************/
 
@@ -908,7 +907,7 @@ void AliGenHBTprocessor::SetNEventsToMerge(Int_t nev)
 TParticle* AliGenHBTprocessor::GetTrack(Int_t n)
 { 
 //returns track that hbtp thinks is n in active event
-  if (GetDebug() > 5) Info("GetTrack","n = %d",n);
+  AliDebug(5,Form("n = %d",n));
   AliGenerator* g = gAlice->Generator();
   AliGenCocktailAfterBurner* cab = (g)?dynamic_cast<AliGenCocktailAfterBurner*>(g):0x0;
   if (cab == 0x0)
@@ -919,13 +918,13 @@ TParticle* AliGenHBTprocessor::GetTrack(Int_t n)
 
  Int_t ev, idx;
  GetTrackEventIndex(n,ev,idx);
- if (GetDebug() > 5) Info("GetTrack","Event = %d Particle = %d",ev,idx);
+ AliDebug(5,Form("Event = %d Particle = %d",ev,idx));
  if ( (ev<0) || (idx<0) )
   {
     Error("GetTrack","GetTrackEventIndex returned error");
     return 0x0;
   }
- if (GetDebug() > 5) Info("GetTrack","Number of Tracks in Event(%d) = %d",ev,cab->GetStack(ev)->GetNprimary());
+ AliDebug(5,Form("Number of Tracks in Event(%d) = %d",ev,cab->GetStack(ev)->GetNprimary()));
  return cab->GetStack(ev)->Particle(idx);//safe - in case stack does not exist 
 }
 /*******************************************************************/
@@ -953,7 +952,7 @@ void AliGenHBTprocessor::GetTrackEventIndex(Int_t n, Int_t &evno, Int_t &index) 
      }
 
     Int_t ntracks = stack->GetNprimary();
-    if (GetDebug() > 10) Info("GetTrackEventIndex","Event %d has %d tracks. n = %d",i,ntracks,n);
+    AliDebug(10,Form("Event %d has %d tracks. n = %d",i,ntracks,n));
     
     if ( ntracks > n) 
      {
@@ -1169,15 +1168,15 @@ extern "C" void type_ofCall  alihbtp_initialize()
 
 extern "C" void type_ofCall alihbtp_getnumberevents(Int_t &nev)
  {
-  //passes number of events to the fortran 
+   //passes number of events to the fortran 
    if(AliGenHBTprocessor::GetDebug()) 
-    ::Info("AliGenHBTprocessor.cxx: alihbtp_getnumberevents","(%d) ....",nev);
+    AliInfoGeneral("alihbtp_getnumberevents",Form("(%d) ....",nev));
 
    AliGenHBTprocessor* gen = GetAliGenHBTprocessor();//we dont check because it is done in function
    nev = gen->GetNumberOfEvents();
     
    if(AliGenHBTprocessor::GetDebug()>5) 
-    ::Info("AliGenHBTprocessor.cxx: alihbtp_getnumberevents","EXITED N Ev = %d",nev);
+    AliInfoGeneral("alihbtp_getnumberevents",Form("EXITED N Ev = %d",nev));
  }
 
 /*******************************************************************/

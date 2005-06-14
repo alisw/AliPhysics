@@ -70,7 +70,7 @@ class AliGenHBTprocessor : public AliGenerator
     virtual void SetSwitchCoulomb(Int_t scol = 2);
     virtual void SetSwitchFermiBose(Int_t sfb = 1);
     
-    virtual void SetMomentumRange(Float_t pmin=0, Float_t pmax=0) const; //Dummy method
+    virtual void SetMomentumRange(Float_t pmin=0, Float_t pmax=0); //Dummy method
     virtual void SetPtRange(Float_t ptmin = 0.1, Float_t ptmax = 0.98);
     virtual void SetPxRange(Float_t pxmin = -1.0, Float_t pxmax = 1.0);
     virtual void SetPyRange(Float_t pymin = -1.0, Float_t pymax = 1.0);  
