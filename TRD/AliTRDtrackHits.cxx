@@ -37,7 +37,7 @@ void  AliTRDtrackHits::AddHitTRD(Int_t volumeID, Int_t trackID, Double_t x,
 
   if (inDrift) q=2*q+1;
   else q=2*q;
-  AddHitKartez(volumeID, trackID,x,y,z,q);
+  AddHitKartez(volumeID, trackID,x,y,z,q,0);
 }
 
 Bool_t AliTRDtrackHits::First()
