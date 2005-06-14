@@ -4,15 +4,12 @@
 #pragma link off all functions;
 
 // builder
-#pragma link C++ class AliMUONFactoryV2+; 
-
-#pragma link C++ class AliMUONPadHit+; 
+#pragma link C++ class AliMUONFactoryV2+;  
 
 // digitizer
 #pragma link C++ class AliMUONDigitizer+; 
 #pragma link C++ class AliMUONDigitizerv2+; 
-#pragma link C++ class AliMUONSDigitizerv1+; 
-#pragma link C++ class AliMUONMerger+; 
+#pragma link C++ class AliMUONSDigitizerv1+;  
 #pragma link C++ class AliMUONTriggerDecision+; 
 
 #pragma link C++ class AliMUONTest+; 

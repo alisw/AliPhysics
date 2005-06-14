@@ -25,12 +25,9 @@ class AliMUONGeometrySegmentation;
 class AliMUONTriggerCircuit;
 class AliMUONData;
 class AliMUONResponse;
-class AliMUONMerger;
 class AliMUONHit;
-class AliMUONPadHit;
 class AliMUONRawCluster;
 class AliMUONReconstHit;
-class AliMUONMerger;
 class AliMUONGeometryBuilder;
 class AliMUONVGeometryBuilder;
 class AliMUONGeometryDEIndexing;
@@ -90,10 +87,6 @@ class AliMUON : public  AliDetector
     virtual void   SetResponseModel(Int_t id, AliMUONResponse *response);
     virtual void   SetNsec(Int_t id, Int_t nsec);
 
-    // Set Merger/Digitizer
-    virtual void   SetMerger(AliMUONMerger* merger);
-    virtual AliMUONMerger* Merger();
-    
     // Set Stepping Parameters
     virtual void   SetMaxStepGas(Float_t p1);
     virtual void   SetMaxStepAlu(Float_t p1);
@@ -115,9 +108,6 @@ class AliMUON : public  AliDetector
     // Return reference to Circuit #id
     virtual AliMUONTriggerCircuit& TriggerCircuit(Int_t id)
       {return *((AliMUONTriggerCircuit *) (*fTriggerCircuits)[id]);}
-    // Retrieve pad hits for a given Hit
-    virtual AliMUONPadHit* FirstPad(AliMUONHit *hit, TClonesArray *padHits);
-    virtual AliMUONPadHit* NextPad(TClonesArray *padHits);
     // Return pointers to digits
     AliMUONRawCluster    *RawCluster(Int_t ichamber, Int_t icathod,
 				     Int_t icluster);
@@ -154,7 +144,6 @@ class AliMUON : public  AliDetector
     Int_t fMaxIterPad;        // Maximum pad index
     Int_t fCurIterPad;        // Current pad index
     // Background eent for event mixing
-    AliMUONMerger *fMerger;   // ! pointer to merger
     AliMUONFactoryV2* fFactory; // ! MUON factory
     
     ClassDef(AliMUON,8)  // MUON Detector base class

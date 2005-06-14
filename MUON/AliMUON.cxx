@@ -53,9 +53,7 @@
 #include "AliMUON.h"
 #include "AliMUONChamberTrigger.h"
 #include "AliMUONConstants.h"
-#include "AliMUONHit.h"
-#include "AliMUONMerger.h"	
-#include "AliMUONPadHit.h"
+#include "AliMUONHit.h"	
 #include "AliMUONRawCluster.h"
 #include "AliMUONTransientDigit.h"
 #include "AliMUONTriggerCircuit.h"
@@ -107,7 +105,6 @@ AliMUON::AliMUON()
     fMaxDestepAlu(0.),
     fMaxIterPad(0),
     fCurIterPad(0),
-    fMerger(0),
     fFactory(0)
 {
 // Default Constructor
@@ -136,7 +133,6 @@ AliMUON::AliMUON(const char *name, const char *title)
     fMaxDestepAlu(-1), // in the calculation of the tracking parameters
     fMaxIterPad(0),
     fCurIterPad(0),
-    fMerger(0),
     fFactory(0)
 {
 
@@ -215,7 +211,6 @@ AliMUON::~AliMUON()
 // Destructor
   AliDebug(1,"Calling AliMUON destructor");
   fIshunt  = 0;
-  if (fMerger) delete fMerger;
 
   if (fChambers){
     fChambers->Delete();
@@ -433,13 +428,6 @@ void AliMUON::SDigits2Digits()
 
 // write TreeD here 
 
-    if (!fMerger) {
-		AliDebug(1,"Create default AliMUONMerger ");
-		AliDebug(1," no merging, just digitization of 1 event will be done");
-     	fMerger = new AliMUONMerger();
-    }
-    fMerger->Init();
-    fMerger->Digitise();
     char hname[30];
     //    sprintf(hname,"TreeD%d",fLoader->GetHeader()->GetEvent());
     fLoader->TreeD()->Write(hname,TObject::kOverwrite);
@@ -487,35 +475,6 @@ AliLoader* AliMUON::MakeLoader(const char* topfoldername)
  return fLoader;
 }
 //_______________________________________________________________________
-AliMUONPadHit* AliMUON::FirstPad(AliMUONHit*  hit, TClonesArray *clusters) 
-{
-// to be removed
-    // Initialise the pad iterator
-    // Return the address of the first padhit for hit
-    TClonesArray *theClusters = clusters;
-    Int_t nclust = theClusters->GetEntriesFast();
-    if (nclust && hit->PHlast() > 0) {
-	fMaxIterPad=hit->PHlast();
-	fCurIterPad=hit->PHfirst();
-	return (AliMUONPadHit*) clusters->UncheckedAt(fCurIterPad-1);
-    } else {
-	return 0;
-    }
-}
-//_______________________________________________________________________
-AliMUONPadHit* AliMUON::NextPad(TClonesArray *clusters) 
-{
-  // To be removed
-// Get next pad (in iterator) 
-//
-    fCurIterPad++;
-    if (fCurIterPad <= fMaxIterPad) {
-	return (AliMUONPadHit*) clusters->UncheckedAt(fCurIterPad-1);
-    } else {
-	return 0;
-    }
-}
-//_______________________________________________________________________
 
 AliMUONRawCluster *AliMUON::RawCluster(Int_t ichamber, Int_t icathod, Int_t icluster)
 {
@@ -536,42 +495,4 @@ AliMUONRawCluster *AliMUON::RawCluster(Int_t ichamber, Int_t icathod, Int_t iclu
     return  mRaw;
 }
 //________________________________________________________________________
-void   AliMUON::SetMerger(AliMUONMerger* merger)
-{
-// Set pointer to merger 
-    fMerger = merger;
-}
-//________________________________________________________________________
-AliMUONMerger*  AliMUON::Merger()
-{
-// Return pointer to merger
-    return fMerger;
-}
-/* PH Commented out waiting for correct implementation
-//________________________________________________________________________
-void AliMUON::RemapTrackHitIDs(Int_t* map)
-{
-// Remaps the track numbers in the hits arrays, so that they correspond
-// to the entry indices in the Kine tree.
-// The correspondance is not direct. To get the real index into the Kine tree
-// compute the particle index as follows:
-//
-//   num_primaries = AliStack::GetNprimary();
-//   num_tracks = AliStack::GetNtracks();
-//   track = AliMUONHit::Track()
-//
-//   if (track < num_primaries)
-//       particleindex = track + num_tracks - num_primaries;
-//   else
-//       particleindex = track - num_primaries;
-	
-	// Remap the track numbers based on the specified map.
-	AliMUONData* data = GetMUONData();
-	TClonesArray* hits = data->Hits();
-	for (Int_t i = 0; i < hits->GetEntriesFast(); i++)
-	{
-		AliMUONHit* hit = static_cast<AliMUONHit*>( hits->At(i) );
-		hit->SetTrack( map[hit->Track()] );
-	};
-};
-*/
+

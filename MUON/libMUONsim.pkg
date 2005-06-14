@@ -7,12 +7,10 @@ SRCS:= AliMUONFactoryV2.cxx \
        AliMUONSt1ResponseParameter.cxx \
        AliMUONSt1ResponseRule.cxx \
        AliMUONSt1IniReader.cxx \
-       AliMUONPadHit.cxx \
        AliMUONSt1Decoder.cxx \
        AliMUONDigitizer.cxx \
        AliMUONDigitizerv2.cxx \
        AliMUONSDigitizerv1.cxx \
-       AliMUONMerger.cxx \
        AliMUONTriggerDecision.cxx \
        AliMUONTest.cxx \
        AliMUONResponse.cxx \
