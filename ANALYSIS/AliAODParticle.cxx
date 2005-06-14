@@ -1,4 +1,20 @@
-#include "AliAODParticle.h"
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+
+/* $Id$ */
+
 //___________________________________________________________
 /////////////////////////////////////////////////////////////
 //
@@ -15,8 +31,11 @@
 //
 /////////////////////////////////////////////////////////////
 #include <TParticle.h>
-#include "AliTrackPoints.h"
+
+#include "AliAODParticle.h"
 #include "AliClusterMap.h"
+#include "AliLog.h"
+#include "AliTrackPoints.h"
 
 ClassImp(AliAODParticle)
 
@@ -271,7 +290,7 @@ void AliAODParticle::SetPIDprobability(Int_t pdg, Float_t prob)
 //Ids are set in decreasing order
 //Check if total probability is not overcoming unity is performed
 //in case, warning is printed
-  if (GetDebug() > 9) Info("SetPIDprobability","Setting PID %d prob %f",pdg,prob);
+  AliDebug(9,Form("SetPIDprobability","Setting PID %d prob %f",pdg,prob));
 
   Float_t totprob = 0.0;//sums up probabilities
   Int_t idx = GetPidSlot(pdg);
@@ -285,10 +304,7 @@ void AliAODParticle::SetPIDprobability(Int_t pdg, Float_t prob)
        {
          Warning("SetPIDprobability","Total probability greater than unity (%f)",totprob);
        }
-     if (GetDebug() > 9) 
-      {
-        Info("SetPIDprobability","Current Total probability: %f",totprob);
-      }
+     AliDebug(9,Form("Current Total probability: %f",totprob));
      return;
    }
     
@@ -301,7 +317,7 @@ void AliAODParticle::SetPIDprobability(Int_t pdg, Float_t prob)
    {
      if ( fPidProb[i] > prob)
       {
-        if (GetDebug()>9) Info("SetPID","Copying entry %d",i);
+        AliDebug(9,Form("Copying entry %d",i));
         aPidProbNew[i] = fPidProb[i];
         aPidsNew[i] = fPids[i];
         totprob+=fPidProb[i];
@@ -309,7 +325,7 @@ void AliAODParticle::SetPIDprobability(Int_t pdg, Float_t prob)
      else break;
    }
 
-  if (GetDebug() > 9) Info("SetPID","Setting new PID on entry %d",i);
+  AliDebug(9,Form("SetPID","Setting new PID on entry %d",i));
   aPidProbNew[i] = prob;
   aPidsNew[i] = pdg;
   totprob+=prob;
@@ -317,7 +333,7 @@ void AliAODParticle::SetPIDprobability(Int_t pdg, Float_t prob)
 
   for (Int_t j = fNPids-1; j > i ;j--)//copy rest of old arays 
    {
-     if (GetDebug() > 9) Info("SetPID","Copying from old entry %d to new entry %d",j-1,j);
+     AliDebug(9,Form("SetPID","Copying from old entry %d to new entry %d",j-1,j));
      aPidProbNew[j] = fPidProb[j-1];
      aPidsNew[j] = fPids[j-1];
      totprob+=fPidProb[j-1];

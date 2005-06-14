@@ -14,7 +14,7 @@
 // ALICE Off-Line framework:
 //
 // Piotr.Skowronski@cern.ch
-// more info: http://alisoft.cern.ch/people/skowron/analyzer/index.html
+// more info: http://aliweb.cern.ch/people/skowron/analyzer/index.html
 //
 ////////////////////////////////////////////////////////////////////////////
 //_________________________________________________________
@@ -36,6 +36,7 @@
 #include "AliHBTPair.h"
 #include "AliHBTFunction.h"
 #include "AliHBTMonitorFunction.h"
+#include "AliLog.h"
  
 
 ClassImp(AliHBTAnalysis)
@@ -126,7 +127,7 @@ AliHBTAnalysis::~AliHBTAnalysis()
     
    if (fIsOwner)
     {
-      if (AliVAODParticle::GetDebug()>5)Info("~AliHBTAnalysis","Is Owner: Attempting to delete functions");
+      AliDebug(5,"Is Owner: Attempting to delete functions");
       DeleteFunctions();
       if (AliVAODParticle::GetDebug()>5)Info("~AliHBTAnalysis","Delete functions done");
     }
