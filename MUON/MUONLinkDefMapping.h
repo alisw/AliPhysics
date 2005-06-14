@@ -7,10 +7,8 @@
 #pragma link C++ class  AliMpPadPair+;
 #pragma link C++ class  AliMpVIndexed+;
 #pragma link C++ class  AliMpVSegmentation+;
-#pragma link C++ class  AliMpTransformer+;
 #pragma link C++ class  AliMpVPadIterator+;
 #pragma link C++ class  AliMpPadIteratorPtr+;
-#pragma link C++ class  AliMpTransformPadIterator+;
 
 #pragma link C++ enum   AliMpDirection;
 #pragma link C++ enum   AliMpXDirection;
@@ -60,13 +58,6 @@
 
 #pragma link C++ enum   AliMpPlaneType;
 #pragma link C++ enum   AliMpStationType;
-
-// $Id$ 
-
-#pragma link C++ class  AliMpSectorPosition+;
-#pragma link C++ class  AliMpPlane+;
-#pragma link C++ class  AliMpPlaneSegmentation+;
-#pragma link C++ class  AliMpPlaneAreaPadIterator+;
 
 // $Id$ 
 

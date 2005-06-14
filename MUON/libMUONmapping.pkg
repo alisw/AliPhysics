@@ -12,8 +12,6 @@ SRCS +=  \
 	 mapping/AliMpPad.cxx  \
 	 mapping/AliMpPadIteratorPtr.cxx  \
 	 mapping/AliMpPadPair.cxx  \
-	 mapping/AliMpTransformer.cxx  \
-	 mapping/AliMpTransformPadIterator.cxx  \
 	 mapping/AliMpVIndexed.cxx  \
 	 mapping/AliMpVPadIterator.cxx  \
 	 mapping/AliMpVSegmentation.cxx  \
@@ -54,14 +52,6 @@ SRCS +=  \
 	 mapping/AliMpVRowSegment.cxx  \
 	 mapping/AliMpVRowSegmentSpecial.cxx  \
 	 mapping/AliMpZone.cxx  \
-
-# Category plane
-#
-SRCS +=  \
-	 mapping/AliMpPlaneAreaPadIterator.cxx  \
-	 mapping/AliMpPlane.cxx  \
-	 mapping/AliMpPlaneSegmentation.cxx  \
-	 mapping/AliMpSectorPosition.cxx  \
 
 # Category graphics
 #
