@@ -58,6 +58,8 @@ class AliMpSectorSegmentation : public AliMpVSegmentation
     TVector2 GetMinPadDimensions() const;
     Bool_t CircleTest(const AliMpIntPair& indices) const;
     void   PrintZones() const;
+   
+    const AliMpSector* GetSector() const;
 
   protected:
     AliMpSectorSegmentation(const AliMpSectorSegmentation& right);
@@ -98,6 +100,12 @@ class AliMpSectorSegmentation : public AliMpVSegmentation
 
   ClassDef(AliMpSectorSegmentation,1)  // Segmentation
 };
+
+
+// inline functions
+
+inline const AliMpSector* AliMpSectorSegmentation::GetSector() const
+{ return fkSector; }
 
 #endif //ALI_MP_SECTOR_SEGMENTATION_H
 

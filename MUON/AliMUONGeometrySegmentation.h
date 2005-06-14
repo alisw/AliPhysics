@@ -41,6 +41,8 @@ class AliMUONGeometrySegmentation : public TObject
  
     // get methods
     AliMUONGeometryModule* GetGeometry() const;	      
+    virtual const AliMUONVGeometryDESegmentation* GetDESegmentation(Int_t detElemId) const;
+                       // DE segmentation
     virtual AliMUONGeometryDirection GetDirection(Int_t detElemId) const;
                        // Direction with a constant pad size  
 		       // (Direction or coordinate where the resolution is the best)

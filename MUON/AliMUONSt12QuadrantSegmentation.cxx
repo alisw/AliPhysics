@@ -253,6 +253,16 @@ AliMUONGeometryDirection  AliMUONSt12QuadrantSegmentation::GetDirection()
 }  
 
 //______________________________________________________________________________
+const AliMpSectorSegmentation*  
+AliMUONSt12QuadrantSegmentation::GetMpSegmentation() const
+{
+// Returns the mapping segmentation
+// (provides access to electronics info)
+
+  return fSectorSegmentation;
+}  
+
+//______________________________________________________________________________
 Float_t AliMUONSt12QuadrantSegmentation::GetAnod(Float_t xhit) const
 {
 // Anod wire coordinate closest to xhit

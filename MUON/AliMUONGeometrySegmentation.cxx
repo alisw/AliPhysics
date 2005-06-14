@@ -152,6 +152,18 @@ void AliMUONGeometrySegmentation::Add(Int_t detElemId,
   fDESegmentations->Add(detElemId, segmentation); 
 }  
 
+
+//______________________________________________________________________________
+const AliMUONVGeometryDESegmentation* 
+AliMUONGeometrySegmentation::GetDESegmentation(Int_t detElemId) const
+{
+// Return the DE segmentation 
+
+  if (!OwnNotify(detElemId)) return 0;
+
+  return fCurrentSegmentation;
+}
+
 //______________________________________________________________________________
 AliMUONGeometryDirection 
 AliMUONGeometrySegmentation::GetDirection(Int_t detElemId) const
