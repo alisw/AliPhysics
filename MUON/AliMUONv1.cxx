@@ -182,7 +182,7 @@ void AliMUONv1::Init()
 
    if (fSegmentationType == 2) {
      fFactory = new AliMUONFactoryV2("New MUON Factory");
-     printf("\n New Segmentation \n\n");
+     AliInfo("New Segmentation");
    } 
 
    fFactory->Build(this, "default");
@@ -296,11 +296,10 @@ void AliMUONv1::StepManager()
      if ((TMath::Pi()-theta)*kRaddeg>=15.) gMC->SetMaxStep(fStepMaxInActiveGas); // We use Pi-theta because z is negative
   }
 
-//  if (GetDebug()) {
-//     Float_t z = ( (AliMUONChamber*)(*fChambers)[idvol])->Z() ;
-//      Info("StepManager Step","Active volume found %d chamber %d Z chamber is %f ",idvol,iChamber, z);
-//   }  
-  // Particule id and mass, 
+   //  AliDebug(1,
+   //    Form("Active volume found %d chamber %d Z chamber is %f ",idvol,iChamber,
+   //    ( (AliMUONChamber*)(*fChambers)[idvol])->Z()));
+   // Particule id and mass, 
   Int_t     ipart = gMC->TrackPid();
   Float_t   mass  = gMC->TrackMass();
 
@@ -309,12 +308,19 @@ void AliMUONv1::StepManager()
   if ( fStepSum[idvol]==0.0 )  gMC->TrackMomentum(fTrackMomentum);
   fStepSum[idvol]+=gMC->TrackStep();
   
-//   if (GetDebug()) {
-//     Info("StepManager Step","iChamber %d, Particle %d, theta %f phi %f mass %f StepSum %f eloss %g",
-//       iChamber,ipart, fTrackMomentum.Theta()*kRaddeg, fTrackMomentum.Phi()*kRaddeg, mass, fStepSum[idvol], gMC->Edep());//     Info("StepManager Step","Track Momentum %f %f %f", fTrackMomentum.X(), fTrackMomentum.Y(), fTrackMomentum.Z()) ;
-//     gMC->TrackPosition(fTrackPosition);
-//     Info("StepManager Step","Track Position %f %f %f",fTrackPosition.X(),fTrackPosition.Y(),fTrackPosition.Z()) ;
-//   }
+  //  if(AliDebugLevel()) {
+  //  AliDebug(1,
+  //	     Form("iChamber %d, Particle %d, theta %f phi %f mass %f StepSum %f eloss %g",
+  //		  iChamber,ipart, fTrackMomentum.Theta()*kRaddeg, fTrackMomentum.Phi()*kRaddeg, 
+  //		  mass, fStepSum[idvol], gMC->Edep()));
+  //  AliDebug(1,
+  //	     Form("Track Momentum %f %f %f", fTrackMomentum.X(), fTrackMomentum.Y(), 
+  //		  fTrackMomentum.Z()));
+  //  gMC->TrackPosition(fTrackPosition);
+  //  AliDebug(1,
+  //	     Form("Track Position %f %f %f",fTrackPosition.X(),fTrackPosition.Y(),
+  //	  fTrackPosition.Z())) ;
+  //   }
 
   // Track left chamber or StepSum larger than fStepMaxInActiveGas
   if ( gMC->IsTrackExiting() || 
@@ -333,10 +339,10 @@ void AliMUONv1::StepManager()
     TLorentzVector backToWire( fStepSum[idvol]/2.*sin(theta)*cos(phi),
                                fStepSum[idvol]/2.*sin(theta)*sin(phi),
                                fStepSum[idvol]/2.*cos(theta),0.0       );
-    //     if (GetDebug()) 
-    //       Info("StepManager Exit","Track Position %f %f %f",fTrackPosition.X(),fTrackPosition.Y(),fTrackPosition.Z()) ;
-    //     if (GetDebug()) 
-    //        Info("StepManager Exit ","Track backToWire %f %f %f",backToWire.X(),backToWire.Y(),backToWire.Z()) ;
+    //     AliDebug(1,Form("Exit: Track Position %f %f %f",fTrackPosition.X(),
+    //                     fTrackPosition.Y(),fTrackPosition.Z())) ;
+    //     AliDebug(1,Form("Exit: Track backToWire %f %f %f",backToWire.X(),
+    //                     backToWire.Y(),backToWire.Z()) ;
     fTrackPosition-=backToWire;
     
     //-------------- Angle effect 
@@ -407,10 +413,10 @@ void AliMUONv1::StepManager()
 			  fTrackPosition.Y(),
 			  fTrackPosition.Z());
 
-//     if (GetDebug()){
-//       Info("StepManager Exit","Particle exiting from chamber %d",iChamber);
-//       Info("StepManager Exit","StepSum %f eloss geant %g ",fStepSum[idvol],fDestepSum[idvol]);
-//       Info("StepManager Exit","Track Position %f %f %f",fTrackPosition.X(),fTrackPosition.Y(),fTrackPosition.Z()) ;
+//     if (AliDebugLevel()){
+//       AliDebug(1,Form("Exit: Particle exiting from chamber %d",iChamber));
+//       AliDebug(1,Form("Exit: StepSum %f eloss geant %g ",fStepSum[idvol],fDestepSum[idvol]));
+//       AliDebug(1,Form("Exit: Track Position %f %f %f",fTrackPosition.X(),fTrackPosition.Y(),fTrackPosition.Z())) ;
 //     }
     fStepSum[idvol]  =0; // Reset for the next event
     fDestepSum[idvol]=0; // Reset for the next event
@@ -453,10 +459,9 @@ void AliMUONv1::StepManager2()
      if ((TMath::Pi()-theta)*kRaddeg>=15.) gMC->SetMaxStep(fStepMaxInActiveGas); // We use Pi-theta because z is negative
   }
 
-//  if (GetDebug()) {
-//     Float_t z = ( (AliMUONChamber*)(*fChambers)[idvol])->Z() ;
-//      Info("StepManager Step","Active volume found %d chamber %d Z chamber is %f ",idvol,iChamber, z);
-//   }  
+   //   AliDebug(1,
+   //	    Form("Active volume found %d chamber %d Z chamber is %f ",idvol,iChamber,
+   //		 ( (AliMUONChamber*)(*fChambers)[idvol])->Z())) ;
   // Particule id and mass, 
   Int_t     ipart = gMC->TrackPid();
   Float_t   mass  = gMC->TrackMass();
@@ -466,12 +471,16 @@ void AliMUONv1::StepManager2()
   if ( fStepSum[idvol]==0.0 )  gMC->TrackMomentum(fTrackMomentum);
   fStepSum[idvol]+=gMC->TrackStep();
   
-//   if (GetDebug()) {
-//     Info("StepManager Step","iChamber %d, Particle %d, theta %f phi %f mass %f StepSum %f eloss %g",
-//       iChamber,ipart, fTrackMomentum.Theta()*kRaddeg, fTrackMomentum.Phi()*kRaddeg, mass, fStepSum[idvol], gMC->Edep());//     Info("StepManager Step","Track Momentum %f %f %f", fTrackMomentum.X(), fTrackMomentum.Y(), fTrackMomentum.Z()) ;
-//     gMC->TrackPosition(fTrackPosition);
-//     Info("StepManager Step","Track Position %f %f %f",fTrackPosition.X(),fTrackPosition.Y(),fTrackPosition.Z()) ;
-//   }
+  //  if (AliDebugLevel()) {
+  //   AliDebug(1,Form("Step, iChamber %d, Particle %d, theta %f phi %f mass %f StepSum %f eloss %g",
+  //		     iChamber,ipart, fTrackMomentum.Theta()*kRaddeg, fTrackMomentum.Phi()*kRaddeg,
+  //	     mass, fStepSum[idvol], gMC->Edep()));
+  // AliDebug(1,Form("Step:Track Momentum %f %f %f", fTrackMomentum.X(), fTrackMomentum.Y(), 
+  //	     fTrackMomentum.Z()));
+  // gMC->TrackPosition(fTrackPosition);
+  // AliDebug(1,Form("Step: Track Position %f %f %f",fTrackPosition.X(),
+  //	     fTrackPosition.Y(),fTrackPosition.Z())) ;
+  //}
 
   // Track left chamber or StepSum larger than fStepMaxInActiveGas
   if ( gMC->IsTrackExiting() || 
@@ -490,10 +499,10 @@ void AliMUONv1::StepManager2()
     TLorentzVector backToWire( fStepSum[idvol]/2.*sin(theta)*cos(phi),
                                fStepSum[idvol]/2.*sin(theta)*sin(phi),
                                fStepSum[idvol]/2.*cos(theta),0.0       );
-    //     if (GetDebug()) 
-    //       Info("StepManager Exit","Track Position %f %f %f",fTrackPosition.X(),fTrackPosition.Y(),fTrackPosition.Z()) ;
-    //     if (GetDebug()) 
-    //        Info("StepManager Exit ","Track backToWire %f %f %f",backToWire.X(),backToWire.Y(),backToWire.Z()) ;
+    //    AliDebug(1,
+    //	     Form("Track Position %f %f %f",fTrackPosition.X(),fTrackPosition.Y(),fTrackPosition.Z()));
+    // AliDebug(1,
+    //	     Form("Exit: Track backToWire %f %f %f",backToWire.X(),backToWire.Y(),backToWire.Z())) ;
     fTrackPosition-=backToWire;
     
     //-------------- Angle effect 
@@ -564,11 +573,10 @@ void AliMUONv1::StepManager2()
 			  fTrackPosition.Y(),
 			  fTrackPosition.Z());
 
-//     if (GetDebug()){
-//       Info("StepManager Exit","Particle exiting from chamber %d",iChamber);
-//       Info("StepManager Exit","StepSum %f eloss geant %g ",fStepSum[idvol],fDestepSum[idvol]);
-//       Info("StepManager Exit","Track Position %f %f %f",fTrackPosition.X(),fTrackPosition.Y(),fTrackPosition.Z()) ;
-//     }
+    //       AliDebug(1,Form("Exit: Particle exiting from chamber %d",iChamber));
+    //       AliDebug(1,Form("Exit: StepSum %f eloss geant %g ",fStepSum[idvol],fDestepSum[idvol]));
+    //       AliDebug(1,Form("Exit: Track Position %f %f %f",fTrackPosition.X(),fTrackPosition.Y(),fTrackPosition.Z()) ;
+
     fStepSum[idvol]  =0; // Reset for the next event
     fDestepSum[idvol]=0; // Reset for the next event
   }

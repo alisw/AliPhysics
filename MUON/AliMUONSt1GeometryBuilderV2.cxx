@@ -2418,8 +2418,7 @@ void AliMUONSt1GeometryBuilderV2::CreateGeometry()
 {
 // Create the detailed GEANT geometry for the dimuon arm station1
 // --
-  cout << "AliMUONSt1GeometryBuilderV2::CreateGeometry()" << endl;
-  cout << "_________________________________________" << endl;
+  AliDebug(1,"Called");
 
   // Create basic volumes
   // 
