@@ -12,108 +12,108 @@ MOTIF 3  56 i1
 
 ROW 3
     PAD_ROWS  8
-        PAD_ROW_SEGMENT  3   48   1063   
+        PAD_ROW_SEGMENT  3   48    79   
     PAD_ROWS  8
-        PAD_ROW_SEGMENT  2   48   1063
+        PAD_ROW_SEGMENT  2   48    79
 ROW 4
     PAD_ROWS  4
-        PAD_ROW_SEGMENT  2   48   1063   
+        PAD_ROW_SEGMENT  2   48    79   
     PAD_ROWS  12
-        PAD_ROW_SEGMENT  1   48   1063   
+        PAD_ROW_SEGMENT  1   48    79   
 ROW 5
     PAD_ROWS  2
-        PAD_ROW_SEGMENT  1   48   1063   
+        PAD_ROW_SEGMENT  1   48    79   
     PAD_ROWS  14
-        PAD_ROW_SEGMENT  0   48   1063   
+        PAD_ROW_SEGMENT  0   48    79   
 ROW 6
     PAD_ROWS  1
-        PAD_ROW_SEGMENT  4   49   1133   
+        PAD_ROW_SEGMENT  4   49   157   
     PAD_ROWS  15
-        PAD_ROW_SEGMENT  3   49   1133   
+        PAD_ROW_SEGMENT  3   49   157   
 ROW 7
     PAD_ROWS  14
-        PAD_ROW_SEGMENT  2   50   1153   
+        PAD_ROW_SEGMENT  2   50   183   
     PAD_ROWS  2 
-        PAD_ROW_SEGMENT  1   50   1153   
+        PAD_ROW_SEGMENT  1   50   183   
 ROW 8
     PAD_ROWS  9 
-        PAD_ROW_SEGMENT  1   50   1153   
+        PAD_ROW_SEGMENT  1   50   183   
     PAD_ROWS  7 
-        PAD_ROW_SEGMENT  0   50   1153   
+        PAD_ROW_SEGMENT  0   50   183   
 ROW 9   
     PAD_ROWS  5 
-        PAD_ROW_SEGMENT  3   51   1181   
+        PAD_ROW_SEGMENT  3   51   214   
     PAD_ROWS  6 
-        PAD_ROW_SEGMENT  2   51   1181   
+        PAD_ROW_SEGMENT  2   51   214   
     PAD_ROWS  5 
-        PAD_ROW_SEGMENT  1   51   1181   
+        PAD_ROW_SEGMENT  1   51   214   
 ROW 10  
     PAD_ROWS  1 
-        PAD_ROW_SEGMENT  5   53   1193   
+        PAD_ROW_SEGMENT  5   53   226   
     PAD_ROWS  6 
-        PAD_ROW_SEGMENT  4   53   1193   
+        PAD_ROW_SEGMENT  4   53   226   
     PAD_ROWS  6 
-        PAD_ROW_SEGMENT  3   53   1193   
+        PAD_ROW_SEGMENT  3   53   226   
     PAD_ROWS  6 
-        PAD_ROW_SEGMENT  2   53   1193   
+        PAD_ROW_SEGMENT  2   53   226   
     PAD_ROWS  5 
-        PAD_ROW_SEGMENT  1   53   1193   
+        PAD_ROW_SEGMENT  1   53   226   
     PAD_ROWS  8 
-        PAD_ROW_SEGMENT  0   53   1193   
+        PAD_ROW_SEGMENT  0   53   226   
 ROW 11  
     PAD_ROWS  2 
-        PAD_ROW_SEGMENT  2   54   1213   
-        PAD_ROW_SEGMENT  3   55   1199
-        PAD_ROW_SEGMENT  6   56   1196
+        PAD_ROW_SEGMENT  2   54   246   
+        PAD_ROW_SEGMENT  3   55   232
+        PAD_ROW_SEGMENT  6   56   229
     PAD_ROWS  1 
-        PAD_ROW_SEGMENT  2   54   1213   
-        PAD_ROW_SEGMENT  3   55   1199
-        PAD_ROW_SEGMENT  5   56   1196
+        PAD_ROW_SEGMENT  2   54   246   
+        PAD_ROW_SEGMENT  3   55   232
+        PAD_ROW_SEGMENT  5   56   229
     PAD_ROWS  3 
-        PAD_ROW_SEGMENT  2   54   1213   
-        PAD_ROW_SEGMENT  3   55   1199
-        PAD_ROW_SEGMENT  4   56   1196
+        PAD_ROW_SEGMENT  2   54   246   
+        PAD_ROW_SEGMENT  3   55   232
+        PAD_ROW_SEGMENT  4   56   229
     PAD_ROWS  1 
-        PAD_ROW_SEGMENT  2   54   1213   
-        PAD_ROW_SEGMENT  4   55   1199
-        PAD_ROW_SEGMENT  3   56   1196
+        PAD_ROW_SEGMENT  2   54   246   
+        PAD_ROW_SEGMENT  4   55   232
+        PAD_ROW_SEGMENT  3   56   229
     PAD_ROWS  3 
-        PAD_ROW_SEGMENT  2   54   1213   
-        PAD_ROW_SEGMENT  4   55   1199
-        PAD_ROW_SEGMENT  2   56   1196
+        PAD_ROW_SEGMENT  2   54   246   
+        PAD_ROW_SEGMENT  4   55   232
+        PAD_ROW_SEGMENT  2   56   229
     PAD_ROWS  1 
-        PAD_ROW_SEGMENT  2   54   1213   
-        PAD_ROW_SEGMENT  4   55   1199
-        PAD_ROW_SEGMENT  1   56   1196
+        PAD_ROW_SEGMENT  2   54   246   
+        PAD_ROW_SEGMENT  4   55   232
+        PAD_ROW_SEGMENT  1   56   229
     PAD_ROWS  1 
-        PAD_ROW_SEGMENT  3   54   1213   
-        PAD_ROW_SEGMENT  3   55   1199
-        PAD_ROW_SEGMENT  1   56   1196
+        PAD_ROW_SEGMENT  3   54   246   
+        PAD_ROW_SEGMENT  3   55   232
+        PAD_ROW_SEGMENT  1   56   229
     PAD_ROWS  3 
-        PAD_ROW_SEGMENT  3   54   1213   
-        PAD_ROW_SEGMENT  3   55   1199
+        PAD_ROW_SEGMENT  3   54   246   
+        PAD_ROW_SEGMENT  3   55   232
     PAD_ROWS  2 
-        PAD_ROW_SEGMENT  3   54   1213   
-        PAD_ROW_SEGMENT  2   55   1199
+        PAD_ROW_SEGMENT  3   54   246   
+        PAD_ROW_SEGMENT  2   55   232
     PAD_ROWS  3 
-        PAD_ROW_SEGMENT  3   54   1213 
-        PAD_ROW_SEGMENT  1   55   1199
+        PAD_ROW_SEGMENT  3   54   246 
+        PAD_ROW_SEGMENT  1   55   232
     PAD_ROWS  2 
-        PAD_ROW_SEGMENT  3   54   1213 
+        PAD_ROW_SEGMENT  3   54   246 
     PAD_ROWS  3 
-        PAD_ROW_SEGMENT  2   54   1213 
+        PAD_ROW_SEGMENT  2   54   246 
     PAD_ROWS  3 
-        PAD_ROW_SEGMENT  1   54   1213 
+        PAD_ROW_SEGMENT  1   54   246 
     PAD_ROWS  4 
-        PAD_ROW_SEGMENT  0   54   1213 
+        PAD_ROW_SEGMENT  0   54   246 
 ROW 12
     PAD_ROWS  3 
-        PAD_ROW_SEGMENT  6   52   1217   
+        PAD_ROW_SEGMENT  6   52   250   
     PAD_ROWS  2 
-        PAD_ROW_SEGMENT  5   52   1217   
+        PAD_ROW_SEGMENT  5   52   250   
     PAD_ROWS  3 
-        PAD_ROW_SEGMENT  4   52   1217   
+        PAD_ROW_SEGMENT  4   52   250   
     PAD_ROWS  2 
-        PAD_ROW_SEGMENT  3   52   1217   
+        PAD_ROW_SEGMENT  3   52   250   
     PAD_ROWS  2 
-        PAD_ROW_SEGMENT  2   52   1217   
+        PAD_ROW_SEGMENT  2   52   250   

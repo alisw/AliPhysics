@@ -3,54 +3,54 @@ SECTOR_DATA
 
 ZONE 1  7.5   5.0
 	SUBZONE 7        A  
-		ROW_SEGMENT 36  0  0  9   4018  -1
+		ROW_SEGMENT 36  0  0  9    18  -1
 	SUBZONE 8        B  
-		ROW_SEGMENT 32  0  1  10  4038  -1
-		ROW_SEGMENT 24  0  2  12  4060  -1
-		ROW_SEGMENT 24  0  3  10  4081  -1
-		ROW_SEGMENT  0  0  4  14  4110  -1
-		ROW_SEGMENT  0  0  5  12  4132  -1
-		ROW_SEGMENT  0  0  6  8   4152  -1
+		ROW_SEGMENT 32  0  1  10   45  -1
+		ROW_SEGMENT 24  0  2  12   73  -1
+		ROW_SEGMENT 24  0  3  10   97  -1
+		ROW_SEGMENT  0  0  4  14  127  -1
+		ROW_SEGMENT  0  0  5  12  152  -1
+		ROW_SEGMENT  0  0  6  8   176  -1
 ZONE 2  7.5   10.0
         SUBZONE 10       E
-                ROW_SEGMENT  0  0  0  7   4009  -1
+                ROW_SEGMENT  0  0  0  7     9  -1
         SUBZONE 11       F
-                ROW_SEGMENT  0  0  1  7   4028  -1
-                ROW_SEGMENT  0  0  2  7   4048  -1
-                ROW_SEGMENT  0  0  3  6   4071  -1
-                ROW_SEGMENT  0  0  4  7   4096  -1
-                ROW_SEGMENT  0  0  5  8   4120  -1
-                ROW_SEGMENT  0  0  6  10  4144  -1
-                ROW_SEGMENT  0  0  7  12  4167  -1
-                ROW_SEGMENT  0  0  8  10  4180  -1
-                ROW_SEGMENT  0  0  9  10  4193  -1
+                ROW_SEGMENT  0  0  1  7    35  -1
+                ROW_SEGMENT  0  0  2  7    61  -1
+                ROW_SEGMENT  0  0  3  6    87  -1
+                ROW_SEGMENT  0  0  4  7   113  -1
+                ROW_SEGMENT  0  0  5  8   140  -1
+                ROW_SEGMENT  0  0  6  10  168  -1
+                ROW_SEGMENT  0  0  7  12  197  -1
+                ROW_SEGMENT  0  0  8  10  213  -1
+                ROW_SEGMENT  0  0  9  10  226  -1
         SUBZONE 12       C
-                ROW_SEGMENT  0  0 10  10  4211  -1
+                ROW_SEGMENT  0  0 10  10  244  -1
 ZONE 3  7.5   20.0
         SUBZONE 13       K
-                ROW_SEGMENT  0  0  0  1   4002   1
-                ROW_SEGMENT  0  0  1  1   4021   1
-                ROW_SEGMENT  0  0  2  1   4041   1
+                ROW_SEGMENT  0  0  0  1     2   1
+                ROW_SEGMENT  0  0  1  1    28   1
+                ROW_SEGMENT  0  0  2  1    54   1
         SUBZONE 14       L
-                ROW_SEGMENT  0  0  0  1   4001   1
-                ROW_SEGMENT  0  0  1  1   4020   1
-                ROW_SEGMENT  0  0  2  1   4040   1
+                ROW_SEGMENT  0  0  0  1     1   1
+                ROW_SEGMENT  0  0  1  1    27   1
+                ROW_SEGMENT  0  0  2  1    53   1
         SUBZONE 15       H
-                ROW_SEGMENT  0  0  3  1   4065   1
-                ROW_SEGMENT  0  0  4  1   4089   1
-                ROW_SEGMENT  0  0  5  1   4112   1
-                ROW_SEGMENT  0  0  6  1   4134   1
+                ROW_SEGMENT  0  0  3  1    81   1
+                ROW_SEGMENT  0  0  4  1   106   1
+                ROW_SEGMENT  0  0  5  1   132   1
+                ROW_SEGMENT  0  0  6  1   158   1
         SUBZONE 16       J
-                ROW_SEGMENT  0  0  3  1   4064   1
-                ROW_SEGMENT  0  0  4  1   4088   1
+                ROW_SEGMENT  0  0  3  1    80   1
+                ROW_SEGMENT  0  0  4  1   105   1
         SUBZONE 17       I
-                ROW_SEGMENT  0  0  7  1   4155   1
-                ROW_SEGMENT  0  0  8  2   4170  -1
-                ROW_SEGMENT  0  0  9  2   4183  -1
+                ROW_SEGMENT  0  0  7  1   185   1
+                ROW_SEGMENT  0  0  8  2   203  -1
+                ROW_SEGMENT  0  0  9  2   216  -1
         SUBZONE 18       N
-                ROW_SEGMENT  0  0  7  1   4154  -1
+                ROW_SEGMENT  0  0  7  1   184  -1
         SUBZONE 19       G
-                ROW_SEGMENT  0  0 10  6   4201  -1
+                ROW_SEGMENT  0  0 10  6   234  -1
         SUBZONE 20       M
-                ROW_SEGMENT 11  0 11  3   4220  -1
+                ROW_SEGMENT 11  0 11  3   253  -1
 

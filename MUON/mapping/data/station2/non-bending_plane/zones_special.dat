@@ -15,82 +15,82 @@ MOTIF 3  47  l1
 
 ROW 0
     PAD_ROWS  1
-        PAD_ROW_SEGMENT  2   35   4019   
+        PAD_ROW_SEGMENT  2   35    19   
     PAD_ROWS  1
-        PAD_ROW_SEGMENT  3   35   4019
+        PAD_ROW_SEGMENT  3   35    19
     PAD_ROWS  11
-        PAD_ROW_SEGMENT  4   35   4019   
+        PAD_ROW_SEGMENT  4   35    19   
     PAD_ROWS  3 
-        PAD_ROW_SEGMENT  5   35   4019   
+        PAD_ROW_SEGMENT  5   35    19   
 ROW 1
     PAD_ROWS  3
-        PAD_ROW_SEGMENT  2   32   4039      
+        PAD_ROW_SEGMENT  2   32    46      
     PAD_ROWS  4
-        PAD_ROW_SEGMENT  3   32   4039      
+        PAD_ROW_SEGMENT  3   32    46      
     PAD_ROWS  4
-        PAD_ROW_SEGMENT  4   32   4039      
+        PAD_ROW_SEGMENT  4   32    46      
     PAD_ROWS  2
-        PAD_ROW_SEGMENT  5   32   4039      
+        PAD_ROW_SEGMENT  5   32    46      
     PAD_ROWS  1
-        PAD_ROW_SEGMENT  6   32   4039      
+        PAD_ROW_SEGMENT  6   32    46      
     PAD_ROWS  2
-        PAD_ROW_SEGMENT  7   32   4039
+        PAD_ROW_SEGMENT  7   32    46
 ROW 2
     PAD_ROWS  1
-        PAD_ROW_SEGMENT  0   33   4061
+        PAD_ROW_SEGMENT  0   33    74
     PAD_ROWS  1
-        PAD_ROW_SEGMENT  1   33   4061
+        PAD_ROW_SEGMENT  1   33    74
     PAD_ROWS  2
-        PAD_ROW_SEGMENT  2   33   4061
+        PAD_ROW_SEGMENT  2   33    74
     PAD_ROWS  1
-        PAD_ROW_SEGMENT  3   33   4061
+        PAD_ROW_SEGMENT  3   33    74
     PAD_ROWS  2
-        PAD_ROW_SEGMENT  4   33   4061
+        PAD_ROW_SEGMENT  4   33    74
     PAD_ROWS  1
-        PAD_ROW_SEGMENT  5   33   4061   
+        PAD_ROW_SEGMENT  5   33    74   
     PAD_ROWS  1
-        PAD_ROW_SEGMENT  5   33   4061
-        PAD_ROW_SEGMENT  2   39   4062
+        PAD_ROW_SEGMENT  5   33    74
+        PAD_ROW_SEGMENT  2   39    75
     PAD_ROWS  1
-        PAD_ROW_SEGMENT  5   33   4061
-        PAD_ROW_SEGMENT  3   39   4062
+        PAD_ROW_SEGMENT  5   33    74
+        PAD_ROW_SEGMENT  3   39    75
     PAD_ROWS  1
-        PAD_ROW_SEGMENT  4   33   4061
-        PAD_ROW_SEGMENT  6   39   4062
+        PAD_ROW_SEGMENT  4   33    74
+        PAD_ROW_SEGMENT  6   39    75
     PAD_ROWS  2
-        PAD_ROW_SEGMENT  4   33   4061
-        PAD_ROW_SEGMENT  7   39   4062
+        PAD_ROW_SEGMENT  4   33    74
+        PAD_ROW_SEGMENT  7   39    75
     PAD_ROWS  1
-        PAD_ROW_SEGMENT  4   33   4061
-        PAD_ROW_SEGMENT  10  39   4062
+        PAD_ROW_SEGMENT  4   33    74
+        PAD_ROW_SEGMENT  10  39    75
     PAD_ROWS  1
-        PAD_ROW_SEGMENT  3   33   4061
-        PAD_ROW_SEGMENT  12  39   4062
+        PAD_ROW_SEGMENT  3   33    74
+        PAD_ROW_SEGMENT  12  39    75
     PAD_ROWS  1
-        PAD_ROW_SEGMENT  4   33   4061
-        PAD_ROW_SEGMENT  17  39   4062
+        PAD_ROW_SEGMENT  4   33    74
+        PAD_ROW_SEGMENT  17  39    75
 ROW 3
     PAD_ROWS  1
-        PAD_ROW_SEGMENT  4   33   4061
-        PAD_ROW_SEGMENT  4   41   4083   
-        PAD_ROW_SEGMENT  4   42   4084   
-        PAD_ROW_SEGMENT  4   43   4085   
-        PAD_ROW_SEGMENT  4   44   4086   
-        PAD_ROW_SEGMENT  4   45   4087 
+        PAD_ROW_SEGMENT  4   33    74
+        PAD_ROW_SEGMENT  4   41    99   
+        PAD_ROW_SEGMENT  4   42   100   
+        PAD_ROW_SEGMENT  4   43   101   
+        PAD_ROW_SEGMENT  4   44   102   
+        PAD_ROW_SEGMENT  4   45   103 
     PAD_ROWS  15
-        PAD_ROW_SEGMENT  4   34   4082   
-        PAD_ROW_SEGMENT  4   41   4083   
-        PAD_ROW_SEGMENT  4   42   4084   
-        PAD_ROW_SEGMENT  4   43   4085   
-        PAD_ROW_SEGMENT  4   44   4086   
-        PAD_ROW_SEGMENT  4   45   4087 
+        PAD_ROW_SEGMENT  4   34    98   
+        PAD_ROW_SEGMENT  4   41    99   
+        PAD_ROW_SEGMENT  4   42   100   
+        PAD_ROW_SEGMENT  4   43   101   
+        PAD_ROW_SEGMENT  4   44   102   
+        PAD_ROW_SEGMENT  4   45   103 
 ROW 11     
     PAD_ROWS  5   
-        PAD_ROW_SEGMENT  5   46   4221
-        PAD_ROW_SEGMENT  6   47   4222
+        PAD_ROW_SEGMENT  5   46   254
+        PAD_ROW_SEGMENT  6   47   255
     PAD_ROWS  2   
-        PAD_ROW_SEGMENT  6   46   4221
-        PAD_ROW_SEGMENT  5   47   4222
+        PAD_ROW_SEGMENT  6   46   254
+        PAD_ROW_SEGMENT  5   47   255
     PAD_ROWS  4   
-        PAD_ROW_SEGMENT  5   46   4221
-        PAD_ROW_SEGMENT  6   47   4222
+        PAD_ROW_SEGMENT  5   46   254
+        PAD_ROW_SEGMENT  6   47   255
