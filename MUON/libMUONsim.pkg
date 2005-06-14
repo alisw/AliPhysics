@@ -1,8 +1,6 @@
 # $Id$
 
-SRCS:= AliMUONv0.cxx \
-       AliMUONFactory.cxx \
-       AliMUONFactoryV2.cxx \
+SRCS:= AliMUONFactoryV2.cxx \
        AliMUONSt1Response.cxx \
        AliMUONSt1ElectronicElement.cxx \
        AliMUONSt1SpecialMotif.cxx \
@@ -17,10 +15,10 @@ SRCS:= AliMUONv0.cxx \
        AliMUONMerger.cxx \
        AliMUONTriggerDecision.cxx \
        AliMUONTest.cxx \
-        AliMUONResponse.cxx \
-        AliMUONResponseV0.cxx \
-        AliMUONResponseTrigger.cxx \
-        AliMUONResponseTriggerV1.cxx\
+       AliMUONResponse.cxx \
+       AliMUONResponseV0.cxx \
+       AliMUONResponseTrigger.cxx \
+       AliMUONResponseTriggerV1.cxx\
 
 HDRS:= $(SRCS:.cxx=.h)
 

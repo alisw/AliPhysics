@@ -21,7 +21,6 @@ class TFile;
 class TTree;
 
 class AliLoader;
-class AliSegmentation;
 class AliMUONGeometrySegmentation;
 class AliMUONTriggerCircuit;
 class AliMUONData;
@@ -35,7 +34,7 @@ class AliMUONMerger;
 class AliMUONGeometryBuilder;
 class AliMUONVGeometryBuilder;
 class AliMUONGeometryDEIndexing;
-class AliMUONFactory;
+class AliMUONFactoryV2;
 class AliESD;
 
 class AliMUON : public  AliDetector 
@@ -76,15 +75,12 @@ class AliMUON : public  AliDetector
     // Set Z values for all chambers
     virtual void SetChambersZ(const Float_t *Z);
     virtual void SetChambersZToDefault(void);
-    virtual void SetPadSize(Int_t id, Int_t isec, Float_t p1, Float_t p2);
     // Set Signal Generation Parameters
     virtual void   SetSigmaIntegration(Int_t id, Float_t p1);
     virtual void   SetChargeSlope(Int_t id, Float_t p1);
     virtual void   SetChargeSpread(Int_t id, Float_t p1, Float_t p2);
     virtual void   SetMaxAdc(Int_t id, Int_t p1);
     // Set Segmentation and Response Model
-    virtual void   SetSegmentationModel(Int_t id, Int_t isec,
-					AliSegmentation *segmentation);
     virtual void   SetSegmentationModel(Int_t id, Int_t isec,
 					AliMUONGeometrySegmentation* segmentation);
 
@@ -159,7 +155,7 @@ class AliMUON : public  AliDetector
     Int_t fCurIterPad;        // Current pad index
     // Background eent for event mixing
     AliMUONMerger *fMerger;   // ! pointer to merger
-    AliMUONFactory* fFactory; // ! MUON factory
+    AliMUONFactoryV2* fFactory; // ! MUON factory
     
     ClassDef(AliMUON,8)  // MUON Detector base class
 };

@@ -3,10 +3,7 @@
 #pragma link off all classes;
 #pragma link off all functions;
 
-#pragma link C++ class AliMUONv0+; 
-
 // builder
-#pragma link C++ class AliMUONFactory+; 
 #pragma link C++ class AliMUONFactoryV2+; 
 
 #pragma link C++ class AliMUONPadHit+; 

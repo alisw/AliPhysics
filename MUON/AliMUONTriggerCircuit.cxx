@@ -21,7 +21,6 @@
 #include "AliRun.h"
 #include "AliMUON.h"
 #include "AliMUONTriggerConstants.h"
-#include "AliSegmentation.h"
 #include "AliMUONGeometrySegmentation.h"
 #include "AliMUONChamber.h"
 #include "AliMUONConstants.h"
@@ -84,13 +83,12 @@ void AliMUONTriggerCircuit::Init(Int_t iCircuit) {
   LoadXCode();
   LoadYCode();
 
-  if (pMUON->WhichSegmentation() == 1) {
-    LoadXPos();
-    LoadYPos();
-  } else {
-    LoadXPos2();
-    LoadYPos2();
-  }
+  if (pMUON->WhichSegmentation() == 1) 
+      AliFatal("Old Segmentation no more supported.");
+
+  LoadXPos2();
+  LoadYPos2();
+  
 }
 
 //----------------------------------------------------------------------
@@ -287,101 +285,6 @@ void AliMUONTriggerCircuit::LoadYCode(){
     fYcode[2][istrip]=sign*(TMath::Abs(idModule)*100+istrip); 
     fYcode[3][istrip]=sign*(TMath::Abs(idModule)*100+istrip); 
   }
-}
-
-//----------------------------------------------------------------------
-void AliMUONTriggerCircuit::LoadYPos(){
-// fill fYpos11 and fYpos21 -> y position of X declusterized strips
-
-  Int_t chamber, cathode;
-  Int_t code, idModule, idStrip, idSector;
-  Float_t x, y, z, width;
-  Int_t istrip;
-
-  AliMUON *pMUON  = (AliMUON*)gAlice->GetModule("MUON");  
-  AliMUONChamber*  iChamber;
-  AliSegmentation*  segmentation;    
-
-// first plane (11)
-  chamber=11;
-  cathode=1;
-  iChamber = &(pMUON->Chamber(chamber-1));
-  segmentation=iChamber->SegmentationModel(cathode);
-  
-  for (istrip=0; istrip<16; istrip++) {
-    code=fXcode[0][istrip];           // decode current strip
-    idModule=Int_t(code/100);           // corresponding module Id.
-    idStrip=TMath::Abs(code-idModule*100); // corresp. strip number in module
-    idSector=segmentation->Sector(idModule,idStrip); // corresponding sector
-    width=segmentation->Dpy(idSector);      // corresponding strip width
-    segmentation->GetPadC(idModule,idStrip,x,y,z); // get strip real position
-    
-    fYpos11[2*istrip]=y;
-    if (istrip!=15) fYpos11[2*istrip+1]=y+width/2.;
-  }   
-   
-// second plane (21)
-  chamber=13;
-  cathode=1;
-  iChamber = &(pMUON->Chamber(chamber-1));
-  segmentation=iChamber->SegmentationModel(cathode);
-  
-  for (istrip=0; istrip<32; istrip++) {
-    code=fXcode[2][istrip];    // decode current strip
-    idModule=Int_t(code/100);           // corresponding module Id.
-    idStrip=TMath::Abs(code-idModule*100); // corresp. strip number in module
-    idSector=segmentation->Sector(idModule,idStrip); // corresponding sector
-    width=segmentation->Dpy(idSector);      // corresponding strip width
-    segmentation->GetPadC(idModule,idStrip,x,y,z); // get strip real position
-    
-// using idModule!=0 prevents to fill garbage in case of circuits 
-// in the first and last rows 
-    if (idModule!=0) { 
-      fYpos21[2*istrip]=y;
-      if (istrip!=31) fYpos21[2*istrip+1]=y+width/2.;
-    }
-  }   
-}
-
-//----------------------------------------------------------------------
-void AliMUONTriggerCircuit::LoadXPos(){
-// fill fXpos11 -> x position of Y strips for the first plane only
-// fXpos11 contains the x position of Y strip for the current circuit
-// taking into account whether or nor not part(s) of the circuit
-// (middle, up or down) has(have) 16 strips
-  
-  Float_t x, y, z;
-  Int_t istrip;  
-
-  Int_t chamber=11;
-  Int_t cathode=2;
-  AliMUON *pMUON  = (AliMUON*)gAlice->GetModule("MUON");  
-  AliMUONChamber*  iChamber;
-  AliSegmentation*  segmentation; 
-  iChamber = &(pMUON->Chamber(chamber-1));
-  segmentation=iChamber->SegmentationModel(cathode);
-  
-  Int_t idModule=Module(fIdCircuit);        // corresponding module Id.  
-// number of Y strips
-  Int_t nStrY=AliMUONTriggerConstants::NstripY(ModuleNumber(idModule)); 
-  Int_t idSector=segmentation->Sector(idModule,0); // corresp. sector
-  Float_t width=segmentation->Dpx(idSector);      // corresponding strip width
-  
-// first case : up middle and down parts have all 8 or 16 strip 
-  if ((nStrY==16)||(nStrY==8&&fX2m==0&&fX2ud==0)) { 
-    for (istrip=0; istrip<nStrY; istrip++) {
-      segmentation->GetPadC(idModule,istrip,x,y,z); 
-      fXpos11[istrip]=x;
-    }
-// second case : mixing 8 and 16 strips within same circuit      
-  } else {
-    for (istrip=0; istrip<nStrY; istrip++) {
-      if (nStrY!=8) { printf(" bug in LoadXpos \n");}
-      segmentation->GetPadC(idModule,istrip,x,y,z); 
-      fXpos11[2*istrip]=x-width/4.;
-      fXpos11[2*istrip+1]=fXpos11[2*istrip]+width/2.;
-    }
-  }   
 }
 
 //----------------------------------------------------------------------

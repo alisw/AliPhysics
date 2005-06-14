@@ -101,10 +101,8 @@ void AliMUONSDigitizerv1::GenerateTransientDigits()
 			{
 				// Tracking Chamber
 				// Initialize hit position (cursor) in the segmentation model 
-			  if (GetSegmentation() == 1) // old segmentation
-			    chamber.SigGenInit(mHit->X(), mHit->Y(), mHit->Z());
-			  else 
-			    chamber.SigGenInit(mHit);
+			  
+			  chamber.SigGenInit(mHit);
 
 			} // else do nothing for Trigger Chambers
 			
@@ -132,10 +130,8 @@ void AliMUONSDigitizerv1::MakeTransientDigitsFromHit(Int_t track, Int_t iHit, Al
 	Int_t nnew=0;              // Number of touched Pads per hit
 	Int_t ichamber = mHit->Chamber()-1;
 	AliMUONChamber& chamber = fMUON->Chamber(ichamber);
-	if (GetSegmentation() == 1)
-	  chamber.DisIntegration(mHit->Eloss(), mHit->Age(), mHit->X(), mHit->Y(), mHit->Z(), nnew, newdigit);
-	else
-	  chamber.DisIntegration(mHit, nnew, newdigit);
+
+	chamber.DisIntegration(mHit, nnew, newdigit);
 
 	// Creating new TransientDigits from hit
 	for(Int_t iTD = 0; iTD < nnew; iTD++) 
@@ -158,10 +154,7 @@ void AliMUONSDigitizerv1::MakeTransientDigitsFromHit(Int_t track, Int_t iHit, Al
 			digits[4] = 0;    // No signal due to physics since this is now background.
 		}
 		digits[5] = iHit+fMask;    // Hit number in the list
-		if (GetSegmentation() == 1)
-		  digits[6] = 0;
-		else
-		  digits[6] =  mHit->DetElemId();
+		digits[6] =  mHit->DetElemId();
 
 		AliDebug(5,Form("MakeTransientDigitsFromHit", 
 				"DisIntegration result %d: PadX %d\tPadY %d\tPlane %d\tCharge %d\tHit %d\tidDE %d",

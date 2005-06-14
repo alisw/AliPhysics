@@ -36,8 +36,6 @@ class AliMUONTest : public  TObject
     // other tests
     //
     void DetElemTransforms();
-    void PrintPadPositionsOld();
-
 
     // selected tests
     //							  

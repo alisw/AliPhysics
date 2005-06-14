@@ -114,10 +114,7 @@ void AliMUONDigitizerv2::MakeTransientDigitFromSDigit(Int_t iChamber, AliMUONDig
 		digits[4] = 0;
 		
 	digits[5] = sDigit->Hit();    // Hit number in the list
-	if (GetSegmentation() == 1)
-	  digits[6] = 0;
-	else
-	  digits[6] = sDigit->DetElemId();
+	digits[6] = sDigit->DetElemId();
 
 	AliDebug(5,Form("Made digit from sDigit 0x%X: PadX %d\tPadY %d\tPlane %d\tCharge %d\tHit %d\tidDE %d",
 			(void*)sDigit, digits[0], digits[1], digits[2], digits[3], digits[5], digits[6]));

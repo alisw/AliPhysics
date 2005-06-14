@@ -60,8 +60,6 @@ class AliMUONTriggerCircuit : public TObject
   void LoadX2();
   void LoadXCode();
   void LoadYCode();
-  void LoadYPos();
-  void LoadXPos();
   void LoadYPos2();
   void LoadXPos2();
    

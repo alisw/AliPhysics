@@ -25,9 +25,6 @@ class AliMUONChamberTrigger : public AliMUONChamber
     
     // Cluster formation method (charge disintegration)
     
-    virtual void   DisIntegration(Float_t eloss, Float_t tof, Float_t xhit, Float_t yhit, Float_t zhit,
-       				Int_t& nnew, Float_t newclust[6][500]);
-
     virtual void   DisIntegration(AliMUONHit* hit,
        				Int_t& nnew, Float_t newclust[6][500]);
 

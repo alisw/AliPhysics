@@ -40,7 +40,6 @@ AliMUONChamber::AliMUONChamber()
     frMin(0.),
     frMax(0.),
     fCurrentCorrel(1), // to avoid mistakes if ChargeCorrelInit is not called
-    fSegmentation(0),
     fSegmentation2(0),
     fResponse(0),
     fGeometry(0),
@@ -60,7 +59,6 @@ AliMUONChamber::AliMUONChamber(Int_t id)
     frMin(0.),
     frMax(0.),
     fCurrentCorrel(1), // to avoid mistakes if ChargeCorrelInit is not called
-    fSegmentation(0),
     fSegmentation2(0),
     fResponse(0),
     fGeometry(0),
@@ -73,11 +71,7 @@ AliMUONChamber::AliMUONChamber(Int_t id)
       AliFatal("MUON detector not defined.");
       return;
     }  
-// Construtor with chamber id 
-    fSegmentation = new TObjArray(2);
-    fSegmentation->AddAt(0,0);
-    fSegmentation->AddAt(0,1);
-    
+
     // new segmentation
     fSegmentation2 = new TObjArray(2);
     fSegmentation2->AddAt(0,0);
@@ -101,17 +95,12 @@ AliMUONChamber::AliMUONChamber(const AliMUONChamber& rChamber)
 AliMUONChamber::~AliMUONChamber() 
 {
   // Destructor
-  if (fMUON->WhichSegmentation() == 1) {
-    if (fSegmentation) {
-      fSegmentation->Delete();
-      delete fSegmentation;
-    } 
-  } else {
-    if (fSegmentation2) {
-      fSegmentation2->Delete();
-      delete fSegmentation2;
-    }
+
+  if (fSegmentation2) {
+    fSegmentation2->Delete();
+    delete fSegmentation2;
   }
+  
   delete fGeometry;
 }
 
@@ -136,57 +125,6 @@ Bool_t  AliMUONChamber::IsSensId(Int_t volId) const
   return fGeometry->IsSensitiveVolume(volId);
 }  
 
-//_______________________________________________________
-void AliMUONChamber::Init()
-{
-  // Initalisation ..
-  //
-  // ... for chamber segmentation
-
-  if (fSegmentation->At(0)) 
-    ((AliSegmentation *) fSegmentation->At(0))->Init(fId);
-
-  if (fnsec==2) {
-    if (fSegmentation->At(1))
-      ((AliSegmentation *) fSegmentation->At(1))->Init(fId);
-  }
-
-  
-}
-
-//_________________________________________________________________
-Int_t   AliMUONChamber::SigGenCond(Float_t x, Float_t y, Float_t z)
-{
-  // Ask segmentation if signal should be generated 
-
-  if (fnsec==1) {
-    return ((AliSegmentation*) fSegmentation->At(0))
-      ->SigGenCond(x, y, z) ;
-  } else {
-    return (((AliSegmentation*) fSegmentation->At(0))
-	    ->SigGenCond(x, y, z)) ||
-      (((AliSegmentation*) fSegmentation->At(1))
-       ->SigGenCond(x, y, z)) ;
-  }
-  
-}
-
-//_________________________________________________________________
-void    AliMUONChamber::SigGenInit(Float_t x, Float_t y, Float_t z)
-{
-  //
-  // Initialisation of segmentation for hit
-  //  
-
-
-  if (fnsec==1) {
-    ((AliSegmentation*) fSegmentation->At(0))->SigGenInit(x, y, z) ;
-  } else {
-    ((AliSegmentation*) fSegmentation->At(0))->SigGenInit(x, y, z) ;
-    ((AliSegmentation*) fSegmentation->At(1))->SigGenInit(x, y, z) ;
-  }
-  
-}
 
 //_____________________________________________________
 void AliMUONChamber::ChargeCorrelationInit() {
@@ -198,65 +136,6 @@ void AliMUONChamber::ChargeCorrelationInit() {
     // exponential is here to avoid eventual problems in 0 
     // factor 2 because chargecorrel is q1/q2 and not q1/qtrue
     fCurrentCorrel = TMath::Exp(gRandom->Gaus(0,fResponse->ChargeCorrel()/2));
-}
-
-//_______________________________________________________
-void AliMUONChamber::DisIntegration(Float_t eloss, Float_t /*tof*/, 
-				    Float_t xhit, Float_t yhit, Float_t zhit,
-				    Int_t& nnew,Float_t newclust[6][500]) 
-{
-  //    
-  //  Generates pad hits (simulated cluster) 
-  //  using the segmentation and the response model 
-  Float_t dx, dy;
-  //
-  // Width of the integration area
-  //
-  dx=fResponse->SigmaIntegration()*fResponse->ChargeSpreadX();
-  dy=fResponse->SigmaIntegration()*fResponse->ChargeSpreadY();
-  //
-  // Get pulse height from energy loss
-  Float_t qtot = fResponse->IntPH(eloss);
-  //
-  // Loop Over Pads
-    
-  Float_t qp; 
-  nnew=0;
-    
-  // Cathode plane loop
-  for (Int_t i=1; i<=fnsec; i++) {
-    Float_t qcath = qtot * (i==1? fCurrentCorrel : 1/fCurrentCorrel);
-    AliSegmentation* segmentation=
-      (AliSegmentation*) fSegmentation->At(i-1);
-    for (segmentation->FirstPad(xhit, yhit, zhit, dx, dy); 
-	 segmentation->MorePads(); 
-	 segmentation->NextPad()) 
-      {
-	qp=fResponse->IntXY(segmentation);
-	qp=TMath::Abs(qp);
-	//
-	//
-	if (qp > 1.e-4) 
-	  {
-	    if (nnew >= 500) // Perform a bounds check on nnew since it is assumed
-	      // newclust only contains 500 elements.
-	      {
-		AliError("Limit of 500 pad responses reached.");
-		return;
-	      };
-	    //
-	    // --- store signal information
-	    newclust[0][nnew]=qcath;                     // total charge
-	    newclust[1][nnew]=segmentation->Ix();       // ix-position of pad
-	    newclust[2][nnew]=segmentation->Iy();       // iy-position of pad
-	    newclust[3][nnew]=qp * qcath;                // charge on pad
-	    newclust[4][nnew]=segmentation->ISector();  // sector id
-	    newclust[5][nnew]=(Float_t) i;              // counter
-	    nnew++;
-		
-	  }
-      } // Pad loop
-  } // Cathode plane loop
 }
 
 //_______________________________________________________

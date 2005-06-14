@@ -175,7 +175,7 @@ protected:
 			Int_t charges[kMAXTRACKS], Int_t digits[6],
 			const Int_t digitindex
 		) = 0;
-	virtual Int_t GetSegmentation();
+	virtual void CheckSegmentation();
 
 	AliRunLoader* fRunLoader;         //! Global run loader.
 	AliMUONLoader* fGime;             //! MUON specific loader.

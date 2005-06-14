@@ -844,57 +844,6 @@ void  AliMUONTest::DetElemTransforms()
   }
 }    	 
 
-//________________________________________________________________________
-void AliMUONTest::PrintPadPositionsOld()
-{
-// Iterate over all old chamber segmentations and prints
-// global pad positions
-
-  AliMUON* muon = (AliMUON*)gAlice->GetModule("MUON");
-  if (!muon) {
-    AliFatal("MUON detector not defined.");
-    return;
-  }  
-
-  // Loop over chambers
-  for (Int_t i=0; i<1; i++) {
-
-    // Create chamber segmentations
-    AliSegmentation* seg[2];
-    seg[0] = muon->Chamber(i).SegmentationModel(0);
-    seg[1] = muon->Chamber(i).SegmentationModel(1);
-
-    // Iterate over the whole plane and return pad indices and 
-    // global/local positions
-    cout << "Go to loop over pads" << endl;
-    for (Int_t cath=0; cath<2; cath++) {
-      
-      cout << setw(6) << "Pads in chamber " << i << " cathod " << cath << endl;
-      cout << "===================================" << endl;  
-      TStopwatch timer;
-      timer.Start();  
-
-      Int_t counter = 0;
-      for ( seg[cath]->FirstPad(70., 70., 0., 80., 80.);
-            seg[cath]->MorePads(); 
-            seg[cath]->NextPad() )
-      {
-        cout << setw(6) << "counter " << counter++ << "   ";
-  
-        Int_t ix = seg[cath]->Ix();
-        Int_t iy = seg[cath]->Iy();
-        cout << "Pad indices:  ( " << ix << ", " << iy << " )  " ;
-
-        Float_t x, y, z;
-        seg[cath]->GetPadC(ix, iy, x, y, z);
-        cout << "Pad position: ( " << x << ", " << y << ", " << z << " )" << endl;
-      }
-      timer.Stop();
-      timer.Print();
-    }  
-  }  
-}
-
 //______________________________________________________________________________
 void AliMUONTest::ForWhole(AliMUONTests testCase)
 {

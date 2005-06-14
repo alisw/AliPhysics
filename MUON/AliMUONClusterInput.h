@@ -23,8 +23,6 @@ class AliMUONClusterInput : public TObject
     virtual ~AliMUONClusterInput();
     static AliMUONClusterInput* Instance();
 //  Configuration
-    void SetDigits(Int_t chamber, TClonesArray* dig1, TClonesArray* dig2);
-    void SetDigits(Int_t chamber, TClonesArray* dig);
     void SetDigits(Int_t chamber, Int_t idDE, TClonesArray* dig1, TClonesArray* dig2);
     void SetDigits(Int_t chamber, Int_t idDE, TClonesArray* dig);
     void SetCluster(AliMUONRawCluster* cluster);
@@ -33,7 +31,6 @@ class AliMUONClusterInput : public TObject
     AliMUONDigit* Digit(Int_t cath, Int_t i) const {return (AliMUONDigit*) (fDigits[cath]->UncheckedAt(i));}
     TClonesArray* Digits(Int_t cath) const {return fDigits[cath];}
     Int_t NDigits(Int_t cath) const {return fNDigits[cath];}
-    AliSegmentation* Segmentation(Int_t cath) const {return fSegmentation[cath];}
     AliMUONGeometrySegmentation* Segmentation2(Int_t cath) const {return fSegmentation2[cath];}
 
     AliMUONMathieson* Mathieson() const {return fgMathieson;}    
@@ -66,7 +63,6 @@ class AliMUONClusterInput : public TObject
     // Digits
     TClonesArray*        fDigits[2];       // ! Array of pointers to digits
     Int_t                fNDigits[2];      // ! Number of digits
-    AliSegmentation*     fSegmentation[2]; // ! Segmentation per cathode
     AliMUONGeometrySegmentation*     fSegmentation2[2]; // ! Geometry Segmentation per cathode
 
     Int_t                fNseg;            // ! number of cathode planes

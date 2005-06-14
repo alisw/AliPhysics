@@ -120,13 +120,12 @@ AliMUONDigitizer::operator=(const AliMUONDigitizer& rhs)
 }    
 
 //------------------------------------------------------------------------
-Int_t AliMUONDigitizer::GetSegmentation()
+void AliMUONDigitizer::CheckSegmentation()
 {
-  if (!fMUON->WhichSegmentation()) {
-      AliFatal("No Segmentation Type defined.");
-      return kFALSE;
-  } else 
-    return fMUON->WhichSegmentation();
+  if (fMUON->WhichSegmentation()==1) {
+      AliFatal("Old Segmentation no more supported.");
+      return;
+  }
 
 }
          
@@ -328,10 +327,7 @@ void AliMUONDigitizer::AddDigit(
 	digits[3] = responseCharge;
 	digits[4] = td->Physics();
 	digits[5] = td->Hit();
-	if (GetSegmentation() == 1)
-	  digits[6] = 0;
-	else
-	  digits[6] =  td->DetElemId();
+	digits[6] =  td->DetElemId();
 
 	Int_t nptracks = td->GetNTracks();
 	if (nptracks > kMAXTRACKS) {
@@ -505,39 +501,26 @@ void AliMUONDigitizer::InitArrays()
     // Array of pointer of the AliMUONHitMapA1:
     //  two HitMaps per chamber, or one HitMap per cahtode plane
     fHitMap = new AliMUONHitMapA1* [2*AliMUONConstants::NCh()];
+    CheckSegmentation(); // check it one for all
 
-    if (fMUON->WhichSegmentation() == 1) {
-      // Loop over chambers for the definition AliMUONHitMap
-      for (Int_t i = 0; i < AliMUONConstants::NCh(); i++)  {
+    for (Int_t i = 0; i < AliMUONConstants::NCh(); i++) {
 
-	AliDebug(4,Form( "Creating hit map for chamber %d, cathode 1.", i+1));
-	AliMUONChamber* chamber = &(fMUON->Chamber(i));
-	AliSegmentation* c1Segmentation = chamber->SegmentationModel(1); // Cathode plane 1
-	fHitMap[i] = new AliMUONHitMapA1(c1Segmentation, fTDList);
-	AliDebug(4,Form( "Creating hit map for chamber %d, cathode 2.", i+1));
-	AliSegmentation* c2Segmentation = chamber->SegmentationModel(2); // Cathode plane 2
-	fHitMap[i+AliMUONConstants::NCh()] = new AliMUONHitMapA1(c2Segmentation, fTDList);
-      }
+      Int_t idDE = 100*(i+1);// central DE = max # of pads ?
+      if (i == 4 || i == 5) //St3
+	idDE += 4;
 
-    } else {
-      for (Int_t i = 0; i < AliMUONConstants::NCh(); i++) {
+      if (i > 5)
+	idDE += 5;// DE for max # of pads in St45 and Trigger Station
 
-	Int_t idDE = 100*(i+1);// central DE = max # of pads ?
-	if (i == 4 || i == 5) //St3
-	  idDE += 4;
-
-	if (i > 5)
-	  idDE += 5;// DE for max # of pads in St45 and Trigger Station
-
-	AliDebug(4,Form( "Creating hit map for chamber %d, cathode 1.", i+1));
-	AliMUONChamber* chamber = &(fMUON->Chamber(i));
-	AliMUONGeometrySegmentation* c1Segmentation = chamber->SegmentationModel2(1); // Cathode plane 1
-	fHitMap[i] = new AliMUONHitMapA1(idDE,c1Segmentation, fTDList); 
-	AliDebug(4,Form( "Creating hit map for chamber %d, cathode 2.", i+1));
-	AliMUONGeometrySegmentation* c2Segmentation = chamber->SegmentationModel2(2); // Cathode plane 2
-	fHitMap[i+AliMUONConstants::NCh()] = new AliMUONHitMapA1(idDE,c2Segmentation, fTDList);
-      }
+      AliDebug(4,Form( "Creating hit map for chamber %d, cathode 1.", i+1));
+      AliMUONChamber* chamber = &(fMUON->Chamber(i));
+      AliMUONGeometrySegmentation* c1Segmentation = chamber->SegmentationModel2(1); // Cathode plane 1
+      fHitMap[i] = new AliMUONHitMapA1(idDE,c1Segmentation, fTDList); 
+      AliDebug(4,Form( "Creating hit map for chamber %d, cathode 2.", i+1));
+      AliMUONGeometrySegmentation* c2Segmentation = chamber->SegmentationModel2(2); // Cathode plane 2
+      fHitMap[i+AliMUONConstants::NCh()] = new AliMUONHitMapA1(idDE,c2Segmentation, fTDList);
     }
+    
 }
 //------------------------------------------------------------------------
 void AliMUONDigitizer::CleanupArrays()

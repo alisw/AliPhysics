@@ -42,7 +42,7 @@ protected:
   Int_t      fnPads[2];        // ! number of pads in the cluster on 2 cathodes
   Float_t    fXyq[6][fgkDim];    // ! pad information
   Int_t      fPadIJ[2][fgkDim];  // ! pad information
-  AliSegmentation *fSegmentation[2]; // ! segmentation
+  //  AliSegmentation *fSegmentation[2]; // ! segmentation
   AliMUONResponse *fResponse;// ! response
   Float_t    fZpad;            // ! z-coordinate of the hit
   Int_t      fNpar;            // ! number of fit parameters

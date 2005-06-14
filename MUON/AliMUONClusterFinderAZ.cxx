@@ -56,7 +56,7 @@ AliMUONClusterFinderAZ::AliMUONClusterFinderAZ(Bool_t draw, Int_t iReco)
 // Constructor
   for (Int_t i=0; i<4; i++) {fHist[i] = 0;}
   fMuonDigits = 0;
-  fSegmentation[1] = fSegmentation[0] = 0; 
+  //  fSegmentation[1] = fSegmentation[0] = 0; 
   fgClusterFinder = 0x0;
   fgMinuit = 0x0; 
   if (!fgClusterFinder) fgClusterFinder = this;
@@ -178,8 +178,9 @@ newchamber:
   fMuonDigits  = muon->GetMUONData()->Digits(ch);
   if (fMuonDigits == 0) return;
   iChamber = &(muon->Chamber(ch));
-  fSegmentation[0] = iChamber->SegmentationModel(1);
-  fSegmentation[1] = iChamber->SegmentationModel(2);
+  fSeg2[0] = iChamber->SegmentationModel2(1);
+  fSeg2[1] = iChamber->SegmentationModel2(2);
+  
   fResponse = iChamber->ResponseModel();
     
   nent = 0;
@@ -230,10 +231,12 @@ next:
       if (first) {
 	// Find first unused pad
 	if (fUsed[cath][digit]) continue;
-	fSegmentation[cath]->GetPadC(mdig->PadX(),mdig->PadY(),xpad,ypad,zpad0);
+	fSeg2[cath]->GetPadC(fInput->DetElemId(), mdig->PadX(),mdig->PadY(),xpad,ypad,zpad0);
+
       } else {
 	if (fUsed[cath][digit]) continue;
-	fSegmentation[cath]->GetPadC(mdig->PadX(),mdig->PadY(),xpad,ypad,zpad);
+	fSeg2[cath]->GetPadC(fInput->DetElemId(), mdig->PadX(),mdig->PadY(),xpad,ypad,zpad);
+
 	if (TMath::Abs(zpad-zpad0)>0.1) continue; // different slats
 	// Find a pad overlapping with the cluster
 	if (!Overlap(cath,mdig)) continue;
@@ -647,15 +650,19 @@ void AliMUONClusterFinderAZ::AddPad(Int_t cath, Int_t digit)
   Int_t charge = mdig->Signal();
   // get the center of the pad
   Float_t xpad, ypad, zpad;
-  fSegmentation[cath]->GetPadC(mdig->PadX(), mdig->PadY(), xpad, ypad, zpad);
-  
-  Int_t   isec = fSegmentation[cath]->Sector(mdig->PadX(), mdig->PadY());
+  fSeg2[cath]->GetPadC(fInput->DetElemId(), mdig->PadX(), mdig->PadY(), xpad, ypad, zpad);
+
+  Int_t   isec;
+  isec = fSeg2[cath]->Sector(fInput->DetElemId(), mdig->PadX(), mdig->PadY());
+
   Int_t nPads = fnPads[0] + fnPads[1];
   fXyq[0][nPads] = xpad;
   fXyq[1][nPads] = ypad;
   fXyq[2][nPads] = charge;
-  fXyq[3][nPads] = fSegmentation[cath]->Dpx(isec)/2;
-  fXyq[4][nPads] = fSegmentation[cath]->Dpy(isec)/2;
+
+  fXyq[3][nPads] = fSeg2[cath]->Dpx(fInput->DetElemId(),isec)/2;
+  fXyq[4][nPads] = fSeg2[cath]->Dpy(fInput->DetElemId(),isec)/2;
+  
   fXyq[5][nPads] = digit;
   fPadIJ[0][nPads] = cath;
   fPadIJ[1][nPads] = 0;
@@ -668,7 +675,8 @@ void AliMUONClusterFinderAZ::AddPad(Int_t cath, Int_t digit)
   AliMUONDigit  *mdig1;
 
   Int_t ndigits = fMuonDigits->GetEntriesFast();
-  fSegmentation[cath]->Neighbours(mdig->PadX(),mdig->PadY(),&nn,xList,yList); 
+  fSeg2[cath]->Neighbours(fInput->DetElemId(), mdig->PadX(),mdig->PadY(),&nn,xList,yList); 
+
   for (Int_t in=0; in<nn; in++) {
     ix=xList[in];
     iy=yList[in];
@@ -694,14 +702,17 @@ Bool_t AliMUONClusterFinderAZ::Overlap(Int_t cath, TObject *dig)
   AliMUONDigit *mdig = (AliMUONDigit*) dig;
 
   Float_t xpad, ypad, zpad;
-  fSegmentation[cath]->GetPadC(mdig->PadX(), mdig->PadY(), xpad, ypad, zpad);
-  Int_t   isec = fSegmentation[cath]->Sector(mdig->PadX(), mdig->PadY());
-
+  Int_t   isec;
   Float_t xy1[4], xy12[4];
-  xy1[0] = xpad - fSegmentation[cath]->Dpx(isec)/2;
-  xy1[1] = xy1[0] + fSegmentation[cath]->Dpx(isec);
-  xy1[2] = ypad - fSegmentation[cath]->Dpy(isec)/2;
-  xy1[3] = xy1[2] + fSegmentation[cath]->Dpy(isec);
+
+  fSeg2[cath]->GetPadC(fInput->DetElemId(), mdig->PadX(), mdig->PadY(), xpad, ypad, zpad);
+  isec = fSeg2[cath]->Sector(fInput->DetElemId(), mdig->PadX(), mdig->PadY());
+  xy1[0] = xpad - fSeg2[cath]->Dpx(fInput->DetElemId(),isec)/2;
+  xy1[1] = xy1[0] + fSeg2[cath]->Dpx(fInput->DetElemId(), isec);
+  xy1[2] = ypad - fSeg2[cath]->Dpy(fInput->DetElemId(), isec)/2;
+  xy1[3] = xy1[2] + fSeg2[cath]->Dpy(fInput->DetElemId(), isec);
+ 
+
   //cout << " ok " << fnPads[0]+fnPads[1] << xy1[0] << xy1[1] << xy1[2] << xy1[3] << endl;
 
   Int_t cath1 = TMath::Even(cath);
@@ -1133,19 +1144,21 @@ Bool_t AliMUONClusterFinderAZ::MainLoop()
       for (Int_t j=0; j<npadTot; j++) {
 	if (fPadIJ[1][j] < 0) { coef[j*nPix+ipix] = 0; continue; }
 	cath = fPadIJ[0][j];
-	fSegmentation[cath]->GetPadI(fXyq[0][j],fXyq[1][j],fZpad,ix,iy);
-	fSegmentation[cath]->SetPad(ix,iy);
-	/*
-	  fSegmentation[cath]->Neighbours(ix,iy,&nn,xList,yList); 
-	  if (nn != 4) {
-	  cout << nn << ": ";
-	  for (Int_t i=0; i<nn; i++) {cout << xList[i] << " " << yList[i] << ", ";}
-	  cout << endl;
-	  }
-	*/
 	Double_t sum = 0;
-	fSegmentation[cath]->SetHit(pixPtr->Coord(0),pixPtr->Coord(1),fZpad);
-	sum += fResponse->IntXY(fSegmentation[cath]);
+
+	fSeg2[cath]->GetPadI(fInput->DetElemId(),fXyq[0][j],fXyq[1][j],fZpad,ix,iy);
+	fSeg2[cath]->SetPad(fInput->DetElemId(),ix,iy);
+	  /*
+	    fSeg2[cath]->Neighbours(fInput->DetElemId(),ix,iy,&nn,xList,yList); 
+	    if (nn != 4) {
+	    cout << nn << ": ";
+	    for (Int_t i=0; i<nn; i++) {cout << xList[i] << " " << yList[i] << ", ";}
+	    cout << endl;
+	    }
+	  */
+	fSeg2[cath]->SetHit(fInput->DetElemId(),pixPtr->Coord(0),pixPtr->Coord(1),fZpad);
+	sum += fResponse->IntXY(fInput->DetElemId(),fSeg2[cath]);
+	
 	indx = j*nPix + ipix;
 	coef[indx] = sum; 
 	probi[ipix] += coef[indx];
@@ -2238,23 +2251,24 @@ void AliMUONClusterFinderAZ::Fcn1(Int_t & /*npar*/, Double_t * /*gin*/, Double_t
   
   Int_t cath, ix, iy, indx, npads=0;
   Double_t charge, delta, coef=0, chi2=0;
+ 
   for (Int_t j=0; j<c.fnPads[0]+c.fnPads[1]; j++) {
     if (c.fPadIJ[1][j] != 1) continue;
     cath = c.fPadIJ[0][j];
     npads++;
-    c.fSegmentation[cath]->GetPadI(c.fXyq[0][j],c.fXyq[1][j],c.fZpad,ix,iy);
-    c.fSegmentation[cath]->SetPad(ix,iy);
+    c.fSeg2[cath]->GetPadI(fInput->DetElemId(),c.fXyq[0][j],c.fXyq[1][j],c.fZpad,ix,iy);
+    c.fSeg2[cath]->SetPad(fInput->DetElemId(),ix,iy);
     charge = 0;
     for (Int_t i=c.fNpar/3; i>=0; i--) { // sum over tracks
       indx = i<2 ? 2*i : 2*i+1;
-      c.fSegmentation[cath]->SetHit(par[indx],par[indx+1],c.fZpad);
+      c.fSeg2[cath]->SetHit(fInput->DetElemId(),par[indx],par[indx+1],c.fZpad);
       //charge += c.fResponse->IntXY(c.fSegmentation[cath])*par[icl*3+2];
       if (c.fNpar == 2) coef = 1;
       else coef = i==c.fNpar/3 ? par[indx+2] : 1-coef;
       //coef = TMath::Max (coef, 0.);
       if (c.fNpar == 8 && i < 2) coef = i==1 ? coef*par[indx+2] : coef - par[7];
       //coef = TMath::Max (coef, 0.);
-      charge += c.fResponse->IntXY(c.fSegmentation[cath])*coef;
+      charge += c.fResponse->IntXY(fInput->DetElemId(),c.fSeg2[cath])*coef;
     }
     charge *= c.fQtot;
     //if (c.fXyq[2][j] > c.fResponse->MaxAdc()-1 && charge > 
@@ -2264,6 +2278,7 @@ void AliMUONClusterFinderAZ::Fcn1(Int_t & /*npar*/, Double_t * /*gin*/, Double_t
     //chi2 += TMath::Abs(delta);
     chi2 += delta*delta;
   } // for (Int_t j=0;
+  
   f = chi2; 
   Double_t qAver = c.fQtot/npads; //(c.fnPads[0]+c.fnPads[1]);
   f = chi2/qAver;
@@ -2276,26 +2291,28 @@ void AliMUONClusterFinderAZ::UpdatePads(Int_t /*nfit*/, Double_t *par)
 
   Int_t cath, ix, iy, indx;
   Double_t charge, coef=0;
+
   for (Int_t j=0; j<fnPads[0]+fnPads[1]; j++) {
     if (fPadIJ[1][j] != -1) continue;
     if (fNpar != 0) {
       cath = fPadIJ[0][j];
-      fSegmentation[cath]->GetPadI(fXyq[0][j],fXyq[1][j],fZpad,ix,iy);
-      fSegmentation[cath]->SetPad(ix,iy);
+      fSeg2[cath]->GetPadI(fInput->DetElemId(),fXyq[0][j],fXyq[1][j],fZpad,ix,iy);
+      fSeg2[cath]->SetPad(fInput->DetElemId(),ix,iy);
       charge = 0;
       for (Int_t i=fNpar/3; i>=0; i--) { // sum over tracks
 	indx = i<2 ? 2*i : 2*i+1;
-	fSegmentation[cath]->SetHit(par[indx],par[indx+1],fZpad);
+	fSeg2[cath]->SetHit(fInput->DetElemId(),par[indx],par[indx+1],fZpad);
 	if (fNpar == 2) coef = 1;
 	else coef = i==fNpar/3 ? par[indx+2] : 1-coef;
 	if (fNpar == 8 && i < 2) coef = i==1 ? coef*par[indx+2] : coef - par[7];
-	charge += fResponse->IntXY(fSegmentation[cath])*coef;
+	charge += fResponse->IntXY(fInput->DetElemId(),fSeg2[cath])*coef;
       }
       charge *= fQtot;
       fXyq[2][j] -= charge;
     } // if (fNpar != 0)
     if (fXyq[2][j] > fResponse->ZeroSuppression()) fPadIJ[1][j] = 0; // return pad for further using
   } // for (Int_t j=0;
+  
 }  
 
 //_____________________________________________________________________________

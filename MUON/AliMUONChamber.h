@@ -9,7 +9,6 @@
 #include <TObject.h>
 #include <TObjArray.h>
 
-#include "AliSegmentation.h"
 #include "AliMUONResponse.h"
 #include "AliMUONGeometrySegmentation.h"
 
@@ -35,7 +34,6 @@ class AliMUONChamber : public TObject
   virtual Bool_t  IsSensId(Int_t volId) const;
   
 // Initialisation
-  virtual void    Init();
   virtual void    Init(Int_t flag);
 // Set z-position of chamber  
   virtual void    SetZ(Float_t Z) {fZ = Z;}
@@ -55,9 +53,6 @@ class AliMUONChamber : public TObject
   virtual void    SetResponseModel(AliMUONResponse* thisResponse) {fResponse=thisResponse;}
 //  
 // Set segmentation model
-  virtual void    SetSegmentationModel(Int_t isec, AliSegmentation* thisSegmentation) {
-      fSegmentation->AddAt(thisSegmentation,isec-1);
-  }
   virtual void    SetSegmentationModel(Int_t isec, AliMUONGeometrySegmentation* thissegmentation) {
       fSegmentation2->AddAt(thissegmentation,isec-1);
   }
@@ -66,11 +61,6 @@ class AliMUONChamber : public TObject
   virtual AliMUONResponse* &ResponseModel(){return fResponse;}
 //  
 //  Get reference to segmentation model
-  virtual AliSegmentation*  SegmentationModel(Int_t isec) {
-      return (AliSegmentation *) (*fSegmentation)[isec-1];
-  }
-  virtual TObjArray* ChamberSegmentation() {return fSegmentation;}
-
   virtual AliMUONGeometrySegmentation*  SegmentationModel2(Int_t isec) {
       return (AliMUONGeometrySegmentation*) (*fSegmentation2)[isec-1];
   }
@@ -86,11 +76,9 @@ class AliMUONChamber : public TObject
   virtual Float_t IntPH(Float_t eloss) {return fResponse->IntPH(eloss);}
 //  
 // Ask segmentation if signal should be generated  
-  virtual Int_t   SigGenCond(Float_t x, Float_t y, Float_t z);
   virtual Int_t   SigGenCond(AliMUONHit* hit);
 //
 // Initialisation of segmentation for hit  
-  virtual void    SigGenInit(Float_t x, Float_t y, Float_t z);
   virtual void    SigGenInit(AliMUONHit* hit);
 // Initialisation of charge fluctuation for given hit
   virtual void    ChargeCorrelationInit();
@@ -107,15 +95,8 @@ class AliMUONChamber : public TObject
   virtual void   SetChargeSpread(Float_t p1, Float_t p2) {fResponse->SetChargeSpread(p1,p2);}
 // Set maximum ADC count value
   virtual void   SetMaxAdc(Int_t p1)                   {fResponse->SetMaxAdc(p1);}
-// Set Pad size
-  virtual void   SetPadSize(Int_t isec, Float_t p1, Float_t p2) {
-      ((AliSegmentation*) (*fSegmentation)[isec-1])->SetPadSize(p1,p2);
-  }
 //  
 // Cluster formation method (charge disintegration)
-  virtual void   DisIntegration(Float_t eloss, Float_t tof,
-				Float_t xhit, Float_t yhit, Float_t zhit,
-				Int_t& x, Float_t newclust[6][500]);
   virtual void   DisIntegration(AliMUONHit* hit,
 				Int_t& x, Float_t newclust[6][500]);
 // Initialize geometry related parameters  
@@ -146,7 +127,6 @@ class AliMUONChamber : public TObject
   Float_t frMax; // outermost sensitive radius
   Float_t fCurrentCorrel; //! charge correlation for current hit.
 
-  TObjArray              *fSegmentation;    // pointer to segmentation
   TObjArray              *fSegmentation2;   // pointer to geometry segmentation bending & NBending
 
   AliMUONResponse        *fResponse;        // pointer to response

@@ -32,9 +32,7 @@ class AliMUONv1 : public AliMUON
    virtual void   StepManager();
                   //TBR
    virtual void   StepManager2();
-   void StepManagerOld();
-                  //TBR
-   void StepManagerOld2();
+
    void SetStepManagerVersionOld(Bool_t Opt) 
      { fStepManagerVersionOld = Opt; }
    void SetStepManagerVersionDE(Bool_t Opt) 

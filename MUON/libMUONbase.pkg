@@ -1,17 +1,6 @@
 # $Id$
 
 SRCS:=  AliMUON.cxx AliMUONv1.cxx \
-        AliMUONSegmentationV0.cxx \
-        AliMUONSegmentationV01.cxx \
-        AliMUONSegmentationV02.cxx \
-        AliMUONSegmentationTrigger.cxx  \
-        AliMUONSegmentationTriggerX.cxx \
-        AliMUONSegmentationTriggerY.cxx \
-        AliMUONSegmentationSlatModule.cxx \
-        AliMUONSegmentationSlatModuleN.cxx \
-        AliMUONSegmentationSlat.cxx \
-        AliMUONSegmentationSlatN.cxx \
-        AliMUONSt1Segmentation.cxx \
         AliMUONSegmentationDetectionElement.cxx \
         AliMUONSegmentIndex.cxx \
         AliMUONSegmentManuIndex.cxx \

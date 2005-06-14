@@ -55,7 +55,6 @@
 #include "AliMUONTrackParam.h"
 
 #include "AliMUONGeometrySegmentation.h"
-#include "AliSegmentation.h"
 #include "AliMUONChamber.h"
 #include "AliMUONConstants.h"
 #include "AliMC.h"
@@ -546,65 +545,66 @@ void AliMUONDisplay::PrintKinematics()
 
 void AliMUONDisplay::DrawSegmentation()
 {
+  // to be re-written for new seg
 // Draw graphical representation of segmenatation
 // Attention: still experimental code
-    Int_t icat=1;
+//     Int_t icat=1;
     
-    AliMUON *pMUON  = (AliMUON*)gAlice->GetModule("MUON");
-    AliMUONChamber*   iChamber;
+//     AliMUON *pMUON  = (AliMUON*)gAlice->GetModule("MUON");
+//     AliMUONChamber*   iChamber;
 
-    AliSegmentation*  seg;
-    iChamber = &(pMUON->Chamber(fChamber));
-    seg=iChamber->SegmentationModel(icat);
+//     AliSegmentation*  seg;
+//     iChamber = &(pMUON->Chamber(fChamber));
+//     seg=iChamber->SegmentationModel(icat);
 
-    Float_t zpos=iChamber->Z();
-    Float_t r=iChamber->ROuter();
+//     Float_t zpos=iChamber->Z();
+//     Float_t r=iChamber->ROuter();
     
-    TMarker3DBox *marker;
-    if (icat == 1) {
-	for (Int_t j=0; j<seg->Npy(); j++) {
-	    Float_t y0;
-	    y0=j*seg->Dpy()-seg->Dpy()/2.;
-	    for (seg->FirstPad(0.,y0,0,300,0.); 
-		 seg->MorePads();
-		 seg->NextPad())
-	    {
-		if (seg->ISector()==0) continue;
-		Float_t x,y,z;
-		seg->GetPadC(seg->Ix(), seg->Iy(), x, y, z);
-		Float_t dpx=seg->Dpx(seg->ISector())/2;
-		Float_t dpy=seg->Dpy(seg->ISector())/2;
-		marker=new TMarker3DBox(x,y,zpos,dpx,dpy,0,0,0);
-		marker->SetLineColor(seg->ISector()+1);
-		marker->SetFillStyle(1001);
-		marker->SetFillColor(0);
-		marker->Draw();
-	    }
-	}
-    } else {
-	for (Int_t j=0; j<250; j++) {
-	    Float_t x0=j*seg->Dpx();
-	    Float_t y0=TMath::Sqrt(r*r-x0*x0);
+//     TMarker3DBox *marker;
+//     if (icat == 1) {
+// 	for (Int_t j=0; j<seg->Npy(); j++) {
+// 	    Float_t y0;
+// 	    y0=j*seg->Dpy()-seg->Dpy()/2.;
+// 	    for (seg->FirstPad(0.,y0,0,300,0.); 
+// 		 seg->MorePads();
+// 		 seg->NextPad())
+// 	    {
+// 		if (seg->ISector()==0) continue;
+// 		Float_t x,y,z;
+// 		seg->GetPadC(seg->Ix(), seg->Iy(), x, y, z);
+// 		Float_t dpx=seg->Dpx(seg->ISector())/2;
+// 		Float_t dpy=seg->Dpy(seg->ISector())/2;
+// 		marker=new TMarker3DBox(x,y,zpos,dpx,dpy,0,0,0);
+// 		marker->SetLineColor(seg->ISector()+1);
+// 		marker->SetFillStyle(1001);
+// 		marker->SetFillColor(0);
+// 		marker->Draw();
+// 	    }
+// 	}
+//     } else {
+// 	for (Int_t j=0; j<250; j++) {
+// 	    Float_t x0=j*seg->Dpx();
+// 	    Float_t y0=TMath::Sqrt(r*r-x0*x0);
 	    
-	    for (seg->FirstPad(x0,0,0,0,y0); 
-		 seg->MorePads();
-		 seg->NextPad())
-	    {
-		if (seg->ISector()==0) continue;
+// 	    for (seg->FirstPad(x0,0,0,0,y0); 
+// 		 seg->MorePads();
+// 		 seg->NextPad())
+// 	    {
+// 		if (seg->ISector()==0) continue;
 		
-		Float_t x,y,z;
-		seg->GetPadC(seg->Ix(), seg->Iy(), x, y, z);
-		Float_t dpx=seg->Dpx(seg->ISector())/2;
-		Float_t dpy=seg->Dpy(seg->ISector())/2;
-		marker=new TMarker3DBox(x,y,zpos,dpx,dpy,0,0,0);
-		marker->SetLineColor(seg->ISector()+1);
-		marker->SetFillStyle(1001);
-		marker->SetFillColor(0);
-		marker->Draw();
-	    }
-	}
-    }
-}
+// 		Float_t x,y,z;
+// 		seg->GetPadC(seg->Ix(), seg->Iy(), x, y, z);
+// 		Float_t dpx=seg->Dpx(seg->ISector())/2;
+// 		Float_t dpy=seg->Dpy(seg->ISector())/2;
+// 		marker=new TMarker3DBox(x,y,zpos,dpx,dpy,0,0,0);
+// 		marker->SetLineColor(seg->ISector()+1);
+// 		marker->SetFillStyle(1001);
+// 		marker->SetFillColor(0);
+// 		marker->Draw();
+// 	    }
+// 	}
+//     }
+ }
 
 //_____________________________________________________________________________
 void AliMUONDisplay::DrawClusters()
@@ -922,7 +922,6 @@ void AliMUONDisplay::LoadDigits(Int_t chamber, Int_t cathode)
     
     AliMUON *pMUON  =     (AliMUON*)gAlice->GetModule("MUON");
     AliMUONChamber*       iChamber;
-    AliSegmentation*      segmentation = 0x0;
     AliMUONGeometrySegmentation*  segmentation2 = 0x0;
 
     GetMUONData()->SetTreeAddress("D");
@@ -945,10 +944,7 @@ void AliMUONDisplay::LoadDigits(Int_t chamber, Int_t cathode)
     
     iChamber = &(pMUON->Chamber(chamber-1));
 
-    if (pMUON->WhichSegmentation()==1) 
-      segmentation = iChamber->SegmentationModel(cathode);
-    else
-      segmentation2 = iChamber->SegmentationModel2(cathode);
+    segmentation2 = iChamber->SegmentationModel2(cathode);
 
     Float_t zpos = iChamber->Z();
 
@@ -994,18 +990,12 @@ void AliMUONDisplay::LoadDigits(Int_t chamber, Int_t cathode)
 	Int_t isec;
 	Float_t dpx, dpy;
 
-	if (pMUON->WhichSegmentation()==1) {
-	  segmentation->GetPadC(mdig->PadX(), mdig->PadY(), xpad, ypad, zpad);
-	  isec = segmentation->Sector(mdig->PadX(), mdig->PadY());
-	  dpx = segmentation->Dpx(isec)/2;
-	  dpy = segmentation->Dpy(isec)/2;
-	} else {
-	  Int_t detElemId = mdig->DetElemId();
-	  segmentation2->GetPadC(detElemId, mdig->PadX(), mdig->PadY(), xpad, ypad, zpad);
-	  isec = segmentation2->Sector(detElemId, mdig->PadX(), mdig->PadY());
-	  dpx = segmentation2->Dpx(detElemId, isec)/2;
-	  dpy = segmentation2->Dpy(detElemId, isec)/2;
-	}
+	Int_t detElemId = mdig->DetElemId();
+	segmentation2->GetPadC(detElemId, mdig->PadX(), mdig->PadY(), xpad, ypad, zpad);
+	isec = segmentation2->Sector(detElemId, mdig->PadX(), mdig->PadY());
+	dpx = segmentation2->Dpx(detElemId, isec)/2;
+	dpy = segmentation2->Dpy(detElemId, isec)/2;
+	
 //
 //	segmentation->Dump();
 	

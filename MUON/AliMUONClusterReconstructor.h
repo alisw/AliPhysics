@@ -30,9 +30,6 @@ class AliMUONClusterReconstructor : public TObject
     
   // Cluster Finding & Trigger
   virtual void   Digits2Clusters();
-  virtual void   Digits2ClustersOld();
-  virtual void   Digits2ClustersNew();
-
   virtual void   Digits2Clusters(AliRawReader* rawReader);
   virtual void   Trigger2Trigger() ;
   virtual void   Trigger2Trigger(AliRawReader* rawReader);

@@ -67,7 +67,7 @@
 #include "AliMUONDigitizerv2.h"
 #include "AliMUONSDigitizerv1.h"
 #include "AliMUONRawData.h"
-#include "AliMUONFactory.h"
+#include "AliMUONFactoryV2.h"
 #include "AliLog.h"
 
 // Defaults parameters for Z positions of chambers
@@ -96,7 +96,7 @@ AliMUON::AliMUON()
     fChambers(0),
     fTriggerCircuits(0),
     fGeometryBuilder(0),
-    fSegmentationType(1),// set to 1 default wise old seg
+    fSegmentationType(2),// set to 2 default wise new seg
     fDEIndexing(0),
     fAccCut(kFALSE),
     fAccMin(0.),
@@ -125,7 +125,7 @@ AliMUON::AliMUON(const char *name, const char *title)
     fChambers(0),
     fTriggerCircuits(0),
     fGeometryBuilder(0),
-    fSegmentationType(1),// set to 1 default wise old seg
+    fSegmentationType(2),// set to 2 default wise new seg
     fDEIndexing(0),
     fAccCut(kFALSE),
     fAccMin(0.),
@@ -262,18 +262,11 @@ void AliMUON::BuildGeometry()
     return;
   }
 
-  if (fSegmentationType == 1) {
-    for (Int_t i=0; i<7; i++) {
-      for (Int_t j=0; j<2; j++) {
-	Int_t id=2*i+j+1;
-	this->Chamber(id-1).SegmentationModel(1)->Draw("eventdisplay");
-      }
-    }
-  } else { 
+
 //     for (Int_t i = 0; i < AliMUONConstants::NCh(); i++)     
 //       this->Chamber(i).SegmentationModel2(1)->Draw("eventdisplay");// to be check !
      
-  }
+  
 }
 
 //__________________________________________________________________
@@ -291,15 +284,6 @@ void  AliMUON::SetTreeAddress()
       }  
   }
   fHits = GetMUONData()->Hits(); // Added by Ivana to use the methods FisrtHit, NextHit of AliDetector    
-}
-
-//____________________________________________________________________
-void AliMUON::SetPadSize(Int_t id, Int_t isec, Float_t p1, Float_t p2)
-{
-// Set the pad size for chamber id and cathode isec
-    Int_t i=2*(id-1);
-    ((AliMUONChamber*) fChambers->At(i))  ->SetPadSize(isec,p1,p2);
-    ((AliMUONChamber*) fChambers->At(i+1))->SetPadSize(isec,p1,p2);
 }
 
 //___________________________________________
@@ -419,12 +403,6 @@ Float_t  AliMUON::GetMaxDestepAlu() const
    fGeometryBuilder->SetAlign(align);
 }   
     
-//____________________________________________________________________
-void   AliMUON::SetSegmentationModel(Int_t id, Int_t isec, AliSegmentation *segmentation)
-{
-// Set the segmentation for chamber id cathode isec
-    ((AliMUONChamber*) fChambers->At(id))->SetSegmentationModel(isec, segmentation);
-}
 //____________________________________________________________________
 void   AliMUON::SetSegmentationModel(Int_t id, Int_t isec, AliMUONGeometrySegmentation*  segmentation)
 {

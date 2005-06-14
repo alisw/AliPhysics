@@ -21,7 +21,6 @@
 
 #include "AliMUONFactoryV2.h"
 #include "AliRun.h"
-#include "AliSegmentation.h"
 #include "AliLog.h"
 
 #include "AliMUON.h"
@@ -42,7 +41,7 @@ ClassImp(AliMUONFactoryV2)
 
 //__________________________________________________________________________
   AliMUONFactoryV2::AliMUONFactoryV2(const char* name)
-    : AliMUONFactory(name),
+    : TNamed(name, ""),
       fMUON(0),
       fResponse0(0),
       fDESegmentations(0)
@@ -56,7 +55,7 @@ ClassImp(AliMUONFactoryV2)
 
 //__________________________________________________________________________
   AliMUONFactoryV2::AliMUONFactoryV2()
-    : AliMUONFactory(),
+    : TNamed(),
       fMUON(0),
       fResponse0(0),
       fDESegmentations(0)
@@ -66,7 +65,7 @@ ClassImp(AliMUONFactoryV2)
 
 //__________________________________________________________________________
 AliMUONFactoryV2::AliMUONFactoryV2(const AliMUONFactoryV2& rhs)
-  : AliMUONFactory(rhs)
+ : TNamed(rhs)
 {
   // Protected copy constructor
 

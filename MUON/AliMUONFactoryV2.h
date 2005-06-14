@@ -9,18 +9,16 @@
 ////////////////////////////////////////////////////////////
 //  Factory for muon chambers, segmentations and response 
 //  The number 2 is refering to new segmentation
-//  For the moment derive from AliMUONFactory
-//  only for used of switching from standart to V2 version 
-//  in AliMUONv1
+//
 ////////////////////////////////////////////////////////////
 
 #include <TObject.h>
-#include "AliMUONFactory.h"
+#include <TNamed.h>
 
 class AliMUON;
 class AliMUONResponseV0;
 
-class AliMUONFactoryV2 : public  AliMUONFactory {
+class AliMUONFactoryV2 : public  TNamed {
 
   public:
     AliMUONFactoryV2(const char* name);
