@@ -1,7 +1,14 @@
+#-*- Mode: Makefile -*-
+# $Id$
+
 FSRCS= cltou.F gamma.F gamma64.F sortzv.F ufill.F fint.F abend.F \
 cfill.F mtlprt.F mtlset.F kerset.F gauss.F getenvf.F gauss64.F
 
 CSRCS= geteni.c fchput.c fchtak.c dummies.c
+
+ifneq (,$(findstring macosx,$(ALICE_TARGET)))
+CSRCS+=lnblnk.c
+endif 
 
 EINCLUDE:= 
 
