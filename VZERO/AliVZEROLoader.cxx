@@ -10,6 +10,7 @@
 /////////////////////////////////////////////////////////////////////
 
 #include "AliVZEROLoader.h"
+#include "AliLog.h"
 
 const TString AliVZEROLoader::fgkDefaultHitsFileName      = "VZERO.Hits.root";
 const TString AliVZEROLoader::fgkDefaultDigitsFileName    = "VZERO.Digits.root";
@@ -26,8 +27,7 @@ AliVZEROLoader::AliVZEROLoader()
 AliVZEROLoader::AliVZEROLoader(const Char_t *name,const Char_t *topfoldername)
  :AliLoader(name,topfoldername)
 {
-  if (GetDebug()) 
-   Info("AliVZEROLoader"," name = %s; topfolder = %s",name,topfoldername);
+  AliDebug(1,Form("Name = %s; topfolder = %s",name,topfoldername));
 }
 
 //_____________________________________________________________________________

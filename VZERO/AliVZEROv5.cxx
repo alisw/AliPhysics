@@ -54,6 +54,7 @@
 #include "AliVZEROdigit.h"
 #include "AliVZEROhit.h"
 #include "AliVZEROv5.h"
+#include "AliLog.h"
  
 ClassImp(AliVZEROv5)
 
@@ -70,13 +71,7 @@ AliVZEROv5::AliVZEROv5(const char *name, const char *title):
 
 // Standard constructor for V-zero Detector  version 5
 
-  Int_t i;
-
-  printf("\n");
-  for(i=0;i<26;i++) printf("*");
-  printf(" Create VZERO object ");
-  for(i=0;i<26;i++) printf("*");
-  printf("\n");
+  AliDebug(2,"Create VZERO object ");
       
   fLightYield              =  93.75; // Light yield in BC408 (93.75 eV per photon)
   fLightAttenuation        =   0.05; // Light attenuation in fiber (0.05 per meter)
@@ -90,13 +85,7 @@ void AliVZEROv5::CreateGeometry()
 
 // Creates the GEANT geometry of the V-zero Detector  version 5
   
-  Int_t i;
-  
-  printf("\n");
-  for(i=0;i<26;i++) printf("*");
-  printf(" Create VZERO Geometry ");
-  for(i=0;i<26;i++) printf("*");
-  printf("\n");
+  AliDebug(2,"Create Geometry ");
       
   Int_t    *idtmed = fIdtmed->GetArray()-2999;
 
@@ -321,7 +310,7 @@ void AliVZEROv5::CreateGeometry()
   gMC->Gspos("V0RI",1,"ALIC",0.0,0.0,-zdet,0,"ONLY");
  
   ncellsR = (ndetR - 1) * 6;  
-  printf("    Number of cells on Right side =   %d\n",  ncellsR);    
+  AliInfo(Form("Number of cells on Right side =   %d\n",  ncellsR));
 
 // Left part :
   
@@ -336,9 +325,7 @@ void AliVZEROv5::CreateGeometry()
   gMC->Gspos("V0LE",1,"ALIC",0.0,0.0,339.0+fThickness1/2.0,0,"ONLY");
  
   ncellsL = (ndetL - 1) * 4;
-  printf("    Number of cells on Left side  =   %d\n",  ncellsL);    
-  for(i=0;i<75;i++) printf("*");
-  printf("\n");
+  AliInfo(Form("Number of cells on Left side  =   %d\n",  ncellsL));    
            
 }
             
@@ -348,13 +335,7 @@ void AliVZEROv5::BuildGeometry()
   
 // Builds simple ROOT TNode geometry for event display
 
-  Int_t i;
-
-  printf("\n");
-  for(i=0;i<30;i++) printf("*");
-  printf(" VZERO BuildGeometry ");
-  for(i=0;i<30;i++) printf("*");
-  printf("\n");
+  AliDebug(2,"VZERO BuildGeometry");
 
   TNode *top; 
 
@@ -718,13 +699,7 @@ void AliVZEROv5::CreateMaterials()
 
 // Creates materials used for geometry 
 
-    Int_t i;
-
-    printf("\n");
-    for(i=0;i<25;i++) printf("*");
-    printf(" VZERO create materials ");
-    for(i=0;i<26;i++) printf("*");
-    printf("\n");
+    AliDebug(2,"Create materials");
     
 /*
     Float_t ppckov[14] = { 5.5e-9, 5.7e-9, 5.9e-9, 6.1e-9, 6.3e-9, 6.5e-9, 6.7e-9, 
@@ -889,13 +864,7 @@ void AliVZEROv5::DrawModule() const
 
 //  Drawing is done in DrawVZERO.C
 
-   Int_t i;
-
-   printf("\n");
-   for(i=0;i<30;i++) printf("*");
-   printf(" VZERO DrawModule ");
-   for(i=0;i<30;i++) printf("*");
-   printf("\n");
+   AliDebug(2,"DrawModule");
 }
 
 //_____________________________________________________________________________
@@ -904,7 +873,7 @@ void AliVZEROv5::Init()
 // Initialises version 2 of the VZERO Detector
 // Just prints an information message
   
-   printf(" VZERO version %d initialized \n",IsVersion());
+   AliInfo(Form("VZERO version %d initialized \n",IsVersion()));
    
 //   gMC->SetMaxStep(fMaxStepAlu);
 //   gMC->SetMaxStep(fMaxStepQua);
@@ -1065,20 +1034,20 @@ void AliVZEROv5::MakeBranch(Option_t *option)
     
   char branchname[10];
   sprintf(branchname,"%s",GetName());
-  printf(" fBufferSize = %d \n",fBufferSize);
+  AliDebug(2,Form("fBufferSize = %d",fBufferSize));
   
   const char *cH = strstr(option,"H");
   
   if (fHits   && TreeH() && cH) {
     TreeH()->Branch(branchname,&fHits, fBufferSize);
-    printf("* AliDetector::MakeBranch * Making Branch %s for hits\n",branchname);
+    AliDebug(2,Form("Making Branch %s for hits",branchname));
   }     
 
   const char *cD = strstr(option,"D");
   
   if (fDigits   && fLoader->TreeD() && cD) {
     fLoader->TreeD()->Branch(branchname,&fDigits, fBufferSize);
-    printf("* AliDetector::MakeBranch * Making Branch %s for digits\n",branchname);
+    AliDebug(2,Form("Making Branch %s for digits",branchname));
   }  
    
 }
