@@ -332,7 +332,7 @@ void AliGenHijing::Generate()
 	      if (hasMother) {
 		  imo = iparticle->GetFirstMother();
 		  mother = (TParticle *) fParticles->At(imo);
-		  imo = (mother->GetPdgCode() != 92) ? imo = newPos[imo] : -1;
+		  imo = (mother->GetPdgCode() != 92) ? newPos[imo] : -1;
 	      } // if has mother   
 	      Bool_t tFlag = (fTrackIt && !hasDaughter);
 	      PushTrack(tFlag,imo,kf,p,origin,polar,
