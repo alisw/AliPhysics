@@ -903,7 +903,7 @@ Bool_t AliLoader::IsOptionWritable(const TString& opt)
 
 Int_t AliLoader::GetDebug()
 {
-  AliWarningClass("Don't use this method any more, use AliDebug instead");
+  AliFatalClass("Don't use this method any more, use AliDebug instead");
   return AliDebugLevelClass();
 }
 /*****************************************************************************/ 

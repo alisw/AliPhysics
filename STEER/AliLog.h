@@ -20,10 +20,10 @@ class AliLog: public TObject {
   virtual ~AliLog();
   static AliLog* Instance() {return fgInstance;}
 
-  enum EType {kFatal = 0, kError, kWarning, kInfo, kDebug, kMaxType};
+  enum EType_t {kFatal = 0, kError, kWarning, kInfo, kDebug, kMaxType};
 
   static void  EnableDebug(Bool_t enabled);
-  static void  SetGlobalLogLevel(EType type);
+  static void  SetGlobalLogLevel(EType_t type);
   static Int_t GetGlobalLogLevel();
   static void  SetGlobalDebugLevel(Int_t level);
   static Int_t GetGlobalDebugLevel();
@@ -33,23 +33,23 @@ class AliLog: public TObject {
   static void  ClearClassDebugLevel(const char* className);
 
   static void  SetStandardOutput();
-  static void  SetStandardOutput(EType type);
+  static void  SetStandardOutput(EType_t type);
   static void  SetErrorOutput();
-  static void  SetErrorOutput(EType type);
+  static void  SetErrorOutput(EType_t type);
   static void  SetFileOutput(const char* fileName);
-  static void  SetFileOutput(EType type, const char* fileName);
+  static void  SetFileOutput(EType_t type, const char* fileName);
   static void  Flush();
 
   static void  SetHandleRootMessages(Bool_t on);
 
   static void  SetPrintType(Bool_t on);
-  static void  SetPrintType(EType type, Bool_t on);
+  static void  SetPrintType(EType_t type, Bool_t on);
   static void  SetPrintModule(Bool_t on);
-  static void  SetPrintModule(EType type, Bool_t on);
+  static void  SetPrintModule(EType_t type, Bool_t on);
   static void  SetPrintScope(Bool_t on);
-  static void  SetPrintScope(EType type, Bool_t on);
+  static void  SetPrintScope(EType_t type, Bool_t on);
   static void  SetPrintLocation(Bool_t on);
-  static void  SetPrintLocation(EType type, Bool_t on);
+  static void  SetPrintLocation(EType_t type, Bool_t on);
 
   static void  SetPrintRepetitions(Bool_t on);
 
@@ -66,16 +66,16 @@ class AliLog: public TObject {
                      const char* module, const char* className,
                      const char* function, const char* file, Int_t line);
 
-  static Int_t RedirectStdoutTo(EType type, UInt_t level, const char* module, 
+  static Int_t RedirectStdoutTo(EType_t type, UInt_t level, const char* module, 
                                 const char* className, const char* function,
                                 const char* file, Int_t line, Bool_t print);
-  static Int_t RedirectStderrTo(EType type, UInt_t level, const char* module, 
+  static Int_t RedirectStderrTo(EType_t type, UInt_t level, const char* module, 
                                 const char* className, const char* function,
                                 const char* file, Int_t line, Bool_t print);
   static void  RestoreStdout(Int_t original);
   static void  RestoreStderr(Int_t original);
 
-  static ostream& Stream(EType type, UInt_t level,
+  static ostream& Stream(EType_t type, UInt_t level,
                          const char* module, const char* className,
                          const char* function, const char* file, Int_t line);
 
@@ -98,12 +98,12 @@ class AliLog: public TObject {
                               const char* file, Int_t line);
   void           PrintRepetitions();
 
-  Int_t          RedirectTo(FILE* stream, EType type, UInt_t level,
+  Int_t          RedirectTo(FILE* stream, EType_t type, UInt_t level,
                             const char* module, const char* className,
                             const char* function,
                             const char* file, Int_t line, Bool_t print);
 
-  ostream&       GetStream(EType type, UInt_t level,
+  ostream&       GetStream(EType_t type, UInt_t level,
                            const char* module, const char* className,
                            const char* function, const char* file, Int_t line);
 

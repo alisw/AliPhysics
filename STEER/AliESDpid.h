@@ -17,6 +17,7 @@ class AliESD;
 class AliESDpid {
 public:
   AliESDpid(){}
+  virtual ~AliESDpid() {}
   static Int_t MakePID(AliESD *event);
 private:
   ClassDef(AliESDpid,1)   // TPC PID class

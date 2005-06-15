@@ -953,14 +953,14 @@ void AliRun::AddModule(AliModule* mod)
 //_______________________________________________________________________
 Int_t AliRun::GetDebug() const
 {
-  AliWarning("Don't use this method any more, use AliDebug instead");
+  AliFatal("Don't use this method any more, use AliDebug instead");
   return AliDebugLevel();
 }
 
 //_______________________________________________________________________
 void AliRun::SetDebug(Int_t level)
 {
-  AliWarning("Don't use this method any more, use AliLog instead");
+  AliFatal("Don't use this method any more, use AliLog instead");
   AliLog::SetClassDebugLevel("AliRun", level);
 }
 

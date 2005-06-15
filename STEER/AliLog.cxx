@@ -235,15 +235,15 @@ void AliLog::ReadEnvSettings()
     if (gEnv->Defined(name)) {
       TString stream = gEnv->GetValue(name, "Standard");
       if (stream.CompareTo("standard", TString::kIgnoreCase) == 0) {
-        SetStandardOutput(EType(iType));
+        SetStandardOutput(EType_t(iType));
         AliDebug(3, Form("output stream set to standard output for type %s",
                          typeNames[iType]));
       } else if (stream.CompareTo("error", TString::kIgnoreCase) == 0) {
-        SetErrorOutput(EType(iType));
+        SetErrorOutput(EType_t(iType));
         AliDebug(3, Form("output stream set to error output for type %s",
                          typeNames[iType]));
       } else if (!stream.IsNull()) {
-        SetFileOutput(EType(iType), stream);
+        SetFileOutput(EType_t(iType), stream);
         AliDebug(3, Form("output stream set to file %s for type %s", 
                          stream.Data(), typeNames[iType]));
       }
@@ -329,7 +329,7 @@ void AliLog::EnableDebug(Bool_t enabled)
 }
 
 //_____________________________________________________________________________
-void AliLog::SetGlobalLogLevel(EType type)
+void AliLog::SetGlobalLogLevel(EType_t type)
 {
 // set the global debug level
 
@@ -435,7 +435,7 @@ void AliLog::SetStandardOutput()
 }
 
 //_____________________________________________________________________________
-void AliLog::SetStandardOutput(EType type)
+void AliLog::SetStandardOutput(EType_t type)
 {
 // write log messages of the given type to the standard output (stdout)
 
@@ -458,7 +458,7 @@ void AliLog::SetErrorOutput()
 }
 
 //_____________________________________________________________________________
-void AliLog::SetErrorOutput(EType type)
+void AliLog::SetErrorOutput(EType_t type)
 {
 // write log messages of the given type to the error output (stderr)
 
@@ -487,7 +487,7 @@ void AliLog::SetFileOutput(const char* fileName)
 }
 
 //_____________________________________________________________________________
-void AliLog::SetFileOutput(EType type, const char* fileName)
+void AliLog::SetFileOutput(EType_t type, const char* fileName)
 {
 // write log messages of the given type to the given file
 
@@ -607,7 +607,7 @@ void AliLog::SetPrintType(Bool_t on)
 }
 
 //_____________________________________________________________________________
-void AliLog::SetPrintType(EType type, Bool_t on)
+void AliLog::SetPrintType(EType_t type, Bool_t on)
 {
 // switch on or off the printing of the message type for the given message type
 
@@ -628,7 +628,7 @@ void AliLog::SetPrintModule(Bool_t on)
 }
 
 //_____________________________________________________________________________
-void AliLog::SetPrintModule(EType type, Bool_t on)
+void AliLog::SetPrintModule(EType_t type, Bool_t on)
 {
 // switch on or off the printing of the module for the given message type
 
@@ -649,7 +649,7 @@ void AliLog::SetPrintScope(Bool_t on)
 }
 
 //_____________________________________________________________________________
-void AliLog::SetPrintScope(EType type, Bool_t on)
+void AliLog::SetPrintScope(EType_t type, Bool_t on)
 {
 // switch on or off the printing of the scope/class name
 // for the given message type
@@ -672,7 +672,7 @@ void AliLog::SetPrintLocation(Bool_t on)
 }
 
 //_____________________________________________________________________________
-void AliLog::SetPrintLocation(EType type, Bool_t on)
+void AliLog::SetPrintLocation(EType_t type, Bool_t on)
 {
 // switch on or off the printing of the file name and line number 
 // for the given message type
@@ -851,7 +851,7 @@ void AliLog::Debug(UInt_t level, const char* message,
 
 
 //_____________________________________________________________________________
-Int_t AliLog::RedirectStdoutTo(EType type, UInt_t level, const char* module, 
+Int_t AliLog::RedirectStdoutTo(EType_t type, UInt_t level, const char* module, 
                                const char* className, const char* function,
                                const char* file, Int_t line, Bool_t print)
 {
@@ -863,7 +863,7 @@ Int_t AliLog::RedirectStdoutTo(EType type, UInt_t level, const char* module,
 }
 
 //_____________________________________________________________________________
-Int_t AliLog::RedirectStderrTo(EType type, UInt_t level, const char* module, 
+Int_t AliLog::RedirectStderrTo(EType_t type, UInt_t level, const char* module, 
                                const char* className, const char* function,
                                const char* file, Int_t line, Bool_t print)
 {
@@ -875,7 +875,7 @@ Int_t AliLog::RedirectStderrTo(EType type, UInt_t level, const char* module,
 }
 
 //_____________________________________________________________________________
-Int_t AliLog::RedirectTo(FILE* stream, EType type, UInt_t level, 
+Int_t AliLog::RedirectTo(FILE* stream, EType_t type, UInt_t level, 
                          const char* module, const char* className,
                          const char* function, const char* file, Int_t line,
 			 Bool_t print)
@@ -933,7 +933,7 @@ void AliLog::RestoreStderr(Int_t original)
 
 
 //_____________________________________________________________________________
-ostream& AliLog::Stream(EType type, UInt_t level,
+ostream& AliLog::Stream(EType_t type, UInt_t level,
                         const char* module, const char* className,
                         const char* function, const char* file, Int_t line)
 {
@@ -945,7 +945,7 @@ ostream& AliLog::Stream(EType type, UInt_t level,
 }
 
 //_____________________________________________________________________________
-ostream& AliLog::GetStream(EType type, UInt_t level,
+ostream& AliLog::GetStream(EType_t type, UInt_t level,
                            const char* module, const char* className,
                            const char* function, const char* file, Int_t line)
 {

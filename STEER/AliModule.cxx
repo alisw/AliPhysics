@@ -877,6 +877,6 @@ void AliModule::Digits2Raw()
 //_____________________________________________________________________________
 Int_t AliModule::GetDebug() const
 {
-  AliWarning("Don't use this method any more, use AliDebug instead");
+  AliFatal("Don't use this method any more, use AliDebug instead");
   return 0;
 }

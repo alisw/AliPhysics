@@ -8,6 +8,8 @@
 #pragma link off all classes;
 #pragma link off all functions;
  
+#pragma link C++ enum   AliLog::EType_t;
+
 #pragma link C++ class  AliESD+;
 #pragma link C++ class  AliESDtrack+;
 #pragma link C++ class  AliESDMuonTrack+;

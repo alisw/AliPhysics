@@ -167,7 +167,6 @@ TBranch* AliDetector::MakeBranchInTree(TTree *tree, const char* name,
 // 
 //
 //
-// if (GetDebug()>1)
     
  AliDebug(2,Form("Making Branch %s",name));
  if (tree == 0x0) 
