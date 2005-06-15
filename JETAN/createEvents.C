@@ -2,7 +2,7 @@
 
 #ifndef __CINT__
 #include <stdio.h>
-#include <iostream.h>
+#include <Riostream.h>
 #include <time.h>
 #include <TROOT.h>
 #include <TCanvas.h>

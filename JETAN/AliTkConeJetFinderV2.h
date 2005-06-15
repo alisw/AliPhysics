@@ -263,7 +263,7 @@ class AliTkConeJetFinderV2 : public TObject {
   ClassDef(AliTkConeJetFinderV2,1)
 };
 
-inline Bool_t AliTkConeJetFinderV2::AliTkConeJetFinderV2::isTParticleAccepted(TParticle *particle) 
+inline Bool_t AliTkConeJetFinderV2::AliTkConeJetFinderV2::isTParticleAccepted(TParticle * /* particle */) 
 {
   // check if particle is accepted
   // makes sense to write this into a own class, but now I'm lazy

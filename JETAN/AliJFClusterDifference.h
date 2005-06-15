@@ -13,7 +13,7 @@ class AliJFClusterDifference
   AliJFClusterDifference(const AliJFClusterDifference &copy);
   AliJFClusterDifference(AliJFCluster *i, AliJFCluster *j);
   AliJFClusterDifference(Float_t dij,AliJFCluster *i, AliJFCluster *j);
-  //virtual ~AliJFClusterDifference();
+  virtual ~AliJFClusterDifference() {}
 
   AliJFClusterDifference& operator=(const AliJFClusterDifference &copy);
   friend ostream& operator<<(ostream &o, const AliJFClusterDifference &j);
