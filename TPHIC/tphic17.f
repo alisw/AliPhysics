@@ -598,19 +598,19 @@ CDECK  ID>, GGEXIT.
      &               gvconst(4,10)
       REAL nc
 *
-      WRITE (6,'(/x,79(''=''))')
-      WRITE (6,'(x,''I'',36x,''TPHIC'',36x,      ''I'')')
-      WRITE (6,'(x,''I'',34x,''Process '',i1,34x,''I'')') iproc
-      WRITE (6,'(x,''I'',34x,''---------'',  34x,''I'')')
-      WRITE (6,'(x,''I'',77x,                    ''I'')')
-      WRITE (6,'(x,''I'',20x,''Events thrown   : '',i8,31x,''I'')')
+      WRITE (6,'(/1x,79(''=''))')
+      WRITE (6,'(1x,''I'',36x,''TPHIC'',36x,      ''I'')')
+      WRITE (6,'(1x,''I'',34x,''Process '',i1,34x,''I'')') iproc
+      WRITE (6,'(1x,''I'',34x,''---------'',  34x,''I'')')
+      WRITE (6,'(1x,''I'',77x,                    ''I'')')
+      WRITE (6,'(1x,''I'',20x,''Events thrown   : '',i8,31x,''I'')')
      &       ntry
-      WRITE (6,'(x,''I'',20x,''Events accepted : '',i8,31x,''I'')')
+      WRITE (6,'(1x,''I'',20x,''Events accepted : '',i8,31x,''I'')')
      &       nevent
-      WRITE (6,'(x,''I'',20x,''Cross section   : '',e10.3,'' +- '','//
+      WRITE (6,'(1x,''I'',20x,''Cross section   : '',e10.3,'' +- '','//
      &      'e10.3,'' nb'',12x ''I'')') xstot, xstote
-      WRITE (6,'(x,''I'',77x,                    ''I'')')
-      WRITE (6,'(x,79(''=''))')
+      WRITE (6,'(1x,''I'',77x,                    ''I'')')
+      WRITE (6,'(1x,79(''=''))')
 *
       IF (iproc .EQ. 1) THEN
 *   ---  Alternative cross section for minimum bias events ---
