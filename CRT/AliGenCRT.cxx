@@ -260,14 +260,14 @@ void AliGenCRT::GenerateOneSingleMuon(Bool_t withFlatMomentum)
   // Finaly the origin, with the smearing
   Rndm(random,6);
   origin[0] = AliCRTConstants::Instance()->Depth()*TMath::Tan(zenith*kDegrad)*
-    TMath::Sin(azimuth*kDegrad);
+    TMath::Sin(azimuth*kDegrad)
     + fOsigma[0]* TMath::Cos(2*random[0]*TMath::Pi())*TMath::Sqrt(-2*TMath::Log(random[1]));
 
   origin[1] = AliCRTConstants::Instance()->Depth();
 
   origin[2] = AliCRTConstants::Instance()->Depth()*TMath::Tan(zenith*kDegrad)*
-    TMath::Cos(azimuth*kDegrad);
-    + fOsigma[2]* TMath::Cos(2*random[2]*TMath::Pi())*TMath::Sqrt(-2*TMath::Log(random[3]));;
+    TMath::Cos(azimuth*kDegrad)
+    + fOsigma[2]* TMath::Cos(2*random[2]*TMath::Pi())*TMath::Sqrt(-2*TMath::Log(random[3]));
 
   // Put the track on the stack.
   PushTrack(fTrackIt,-1,fIpart,p,origin,polar,0,kPPrimary,nt);
