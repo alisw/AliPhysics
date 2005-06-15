@@ -260,7 +260,7 @@ protected:
   // TPC related track information
   Float_t fTPCchi2;        // chi2 in the TPC
   Int_t   fTPCncls;        // number of clusters assigned in the TPC
-  Int_t  fTPCindex[180];  // indices of the assigned TPC clusters
+  Int_t   fTPCindex[180];  //! indices of the assigned TPC clusters
   TBits   fTPCClusterMap;  // Map of clusters, one bit per padrow; 1 if has a cluster on given padrow
   Float_t fTPCsignal;      // detector's PID signal
   Float_t fTPCr[AliPID::kSPECIES]; // "detector response probabilities" (for the PID)
@@ -311,7 +311,7 @@ protected:
   Float_t fRICHdx;         // x of the track impact minus x of the MIP
   Float_t fRICHdy;         // y of the track impact minus y of the MIP
   	
-  ClassDef(AliESDtrack,14)  //ESDtrack 
+  ClassDef(AliESDtrack,15)  //ESDtrack 
 };
 
 #endif 
