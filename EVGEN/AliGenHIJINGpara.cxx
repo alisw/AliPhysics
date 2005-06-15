@@ -52,6 +52,7 @@
 #include "AliDecayer.h"
 #include "AliGenEventHeader.h"
 #include "AliGenHIJINGpara.h"
+#include "AliLog.h"
 #include "AliRun.h"
 
 ClassImp(AliGenHIJINGpara)
@@ -266,16 +267,15 @@ void AliGenHIJINGpara::Init()
     }
     
     
-    printf("%s: The number of particles in the selected kinematic region corresponds to %f percent of a full event\n ", 
-	   ClassName(),100.*fParentWeight);
+    AliInfo(Form("The number of particles in the selected kinematic region corresponds to %f percent of a full event", 
+		 100.*fParentWeight));
 
 // Issue warning message if etaMin or etaMax are outside the alowed range 
 // of the parametrization
     if (etaMin < -8.001 || etaMax > 8.001) {
-	printf("\n \n WARNING FROM AliGenHIJINGPara !");
-	printf("\n YOU ARE USING THE PARAMETERISATION OUTSIDE ");	
-	printf("\n THE ALLOWED PSEUDORAPIDITY RANGE (-8. - 8.)");	    
-	printf("\n YOUR LIMITS: %f %f \n \n ", etaMin, etaMax);
+	AliWarning("\nYOU ARE USING THE PARAMETERISATION OUTSIDE ");	
+	AliWarning("THE ALLOWED PSEUDORAPIDITY RANGE (-8. - 8.)");	    
+	AliWarning(Form("YOUR LIMITS: %f %f \n ", etaMin, etaMax));
     }
 //
 //

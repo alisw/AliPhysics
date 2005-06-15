@@ -1,4 +1,23 @@
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+
+/* $Id$ */
+
 #include "AliGenHBTosl.h" 
+#include "AliLog.h"
+
 //__________________________________________________________
 /////////////////////////////////////////////////////////////
 //                                                         //
@@ -590,7 +609,7 @@ void AliGenHBTosl::GetOneD(TParticle* first, TParticle* second,Double_t qinv)
 //        TParticle(pdg, is, parent, -1, kFirstDaughter, kLastDaughter,
 //                px, py, pz, e, vx, vy, vz, tof);
  
-  if (GetDebug()) Info("GetOneD","Randomized qinv = %f, obtained = %f",qinv,GetQInv(first,second));
+  AliDebug(1,Form("Randomized qinv = %f, obtained = %f",qinv,GetQInv(first,second)));
 
 }
 /***********************************************************/
@@ -714,7 +733,7 @@ Int_t AliGenHBTosl::GetThreeD(TParticle* first,TParticle* second, Double_t qout,
   second->SetMomentum(vector.X(),vector.Y(),vector.Z(),e);
   
 ////////////  
-  if ( GetDebug() > 3 )
+  if ( AliDebugLevel() > 3 )
    {
      e=TMath::Sqrt(m2+px*px);  
      TParticle* f = new TParticle(first->GetPdgCode(),0,-1,-1,-1,-1, px , 0.0, 0.0, e,0.0,0.0,0.0,0.0);
@@ -1278,7 +1297,7 @@ void AliGenHBTosl::FillCoarseSignal()
        }  
     }   
  
-  //if (GetDebug()) 
+  //if (AliDebugLevel()) 
   TestCoarseSignal();
  
   Info("FillCoarseSignal","DONE"); 
@@ -1523,22 +1542,22 @@ Double_t AliGenHBTosl::Scale(TH3D* num, TH3D* den)
  //Calculates the factor that should be used to scale
  //quatience of num and den to 1 at tail
 
-  if (GetDebug()) Info("Scale","Entered Scale()");
+  AliDebug(1,"Entered");
   if(!num)
    {
-     Error("Scale","No numerator");
+     AliError("No numerator");
      return 0.0;
    }
   if(!den)
    {
-     Error("Scale","No denominator");
+     AliError("No denominator");
      return 0.0;
    }
 
   if(fNBinsToScale < 1)
    {
     return 0.0;
-    Error("Scale","Number of bins for scaling is smaller thnan 1");
+    AliError("Number of bins for scaling is smaller thnan 1");
    }
   Int_t fNBinsToScaleX = fNBinsToScale;
   Int_t fNBinsToScaleY = fNBinsToScale;
@@ -1547,25 +1566,25 @@ Double_t AliGenHBTosl::Scale(TH3D* num, TH3D* den)
   Int_t nbinsX = num->GetNbinsX();
   if (fNBinsToScaleX > nbinsX) 
    {
-    Error("Scale","Number of X bins for scaling is bigger thnan number of bins in histograms");
+    AliError("Number of X bins for scaling is bigger thnan number of bins in histograms");
     return 0.0;
    }
    
   Int_t nbinsY = num->GetNbinsX();
   if (fNBinsToScaleY > nbinsY) 
    {
-    Error("Scale","Number of Y bins for scaling is bigger thnan number of bins in histograms");
+    AliError("Number of Y bins for scaling is bigger thnan number of bins in histograms");
     return 0.0;
    }
 
   Int_t nbinsZ = num->GetNbinsZ();
   if (fNBinsToScaleZ > nbinsZ) 
    {
-    Error("Scale","Number of Z bins for scaling is bigger thnan number of bins in histograms");
+    AliError("Number of Z bins for scaling is bigger thnan number of bins in histograms");
     return 0.0;
    }
 
-  if (GetDebug()>0) Info("Scale","No errors detected");
+  AliDebug(1,"No errors detected");
 
   Int_t offsetX = nbinsX - fNBinsToScaleX - 1; //bin that we start loop over bins in axis X
   Int_t offsetY = nbinsY - fNBinsToScaleY - 1; //bin that we start loop over bins in axis Y
@@ -1586,14 +1605,13 @@ Double_t AliGenHBTosl::Scale(TH3D* num, TH3D* den)
          }
        }
   
-  if(GetDebug() > 0) 
-    Info("Scale","numsum=%f densum=%f fNBinsToScaleX=%d fNBinsToScaleY=%d fNBinsToScaleZ=%d",
-          numsum,densum,fNBinsToScaleX,fNBinsToScaleY,fNBinsToScaleZ);
+  AliDebug(1,Form("numsum=%f densum=%f fNBinsToScaleX=%d fNBinsToScaleY=%d fNBinsToScaleZ=%d",
+          numsum,densum,fNBinsToScaleX,fNBinsToScaleY,fNBinsToScaleZ));
   
   if (numsum == 0) return 0.0;
   Double_t ret = densum/numsum;
 
-  if(GetDebug() > 0) Info("Scale","returning %f",ret);
+  AliDebug(1,Form("returning %f",ret));
   return ret;
    
 }
@@ -1712,7 +1730,7 @@ void AliGenHBTosl::Rotate(TVector3& relvector, TVector3& vector)
 //In other words: To make equations easier
 
   static TVector3 first;
-  if (GetDebug()) 
+  if (AliDebugLevel()>=1) 
    {
      first.SetXYZ(relvector.x(),relvector.y(),relvector.z());
    }
@@ -1729,14 +1747,14 @@ void AliGenHBTosl::Rotate(TVector3& relvector, TVector3& vector)
   vector.RotateY(rotAngleY);
   vector.RotateZ(rotAngleZ);
   
-  if (GetDebug()>5)
+  if (AliDebugLevel()>5)
    {
     TVector3 test(firstPx,0.0,0.0);
     test.RotateY(rotAngleY);
     test.RotateZ(rotAngleZ);
-    ::Info("Rotate","Rotation test: px %f %f",first.x(),test.x());
-    ::Info("Rotate","Rotation test: py %f %f",first.y(),test.y());
-    ::Info("Rotate","Rotation test: pz %f %f",first.z(),test.z());
+    AliInfo(Form("Rotation test: px %f %f",first.x(),test.x()));
+    AliInfo(Form("Rotation test: py %f %f",first.y(),test.y()));
+    AliInfo(Form("Rotation test: pz %f %f",first.z(),test.z()));
    }
 }
 /***********************************************************/
@@ -1755,11 +1773,11 @@ Double_t AliGenHBTosl::Rotate(Double_t x,Double_t y,Double_t z)
   TVector3 v(x,y,z);
   Double_t a1 = -TMath::ATan2(v.Y(),v.X());
   
-  if (GetDebug()>5)
+  if (AliDebugLevel()>5)
    {
-     ::Info("Rotate","Xpr = %f  Ypr = %f",xprime,yprime);
-     ::Info("Rotate","Calc sin = %f, and %f",sinphi,TMath::Sin(a1));
-     ::Info("Rotate","Calc cos = %f, and %f",cosphi,TMath::Cos(a1));
+     AliInfo(Form("Xpr = %f  Ypr = %f",xprime,yprime));
+     AliInfo(Form("Calc sin = %f, and %f",sinphi,TMath::Sin(a1)));
+     AliInfo(Form("Calc cos = %f, and %f",cosphi,TMath::Cos(a1)));
    }
 
   Double_t xprimezlength = TMath::Hypot(xprime,z);
@@ -1770,7 +1788,7 @@ Double_t AliGenHBTosl::Rotate(Double_t x,Double_t y,Double_t z)
   
   Double_t xbis = sintheta*z + costheta*(cosphi*x - sinphi*y);
   
-  ::Info("Rotate","Calculated rot %f, modulus %f",xbis,TMath::Sqrt(x*x+y*y+z*z));
+  AliInfo(Form("Calculated rot %f, modulus %f",xbis,TMath::Sqrt(x*x+y*y+z*z)));
   return xbis;
 }
 /***********************************************************/
