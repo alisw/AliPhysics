@@ -23,9 +23,9 @@ void testReadMotifType(AliMpStationType station = kStation1,
       nv = 5;
     }  
     else {
-      names = "ABCDEFGHIIJKLMN";
+      names = "ABCEFGHIJKLMN";
       names2 ="abcdefgijklmnopqrstuwv";
-      nv = 6;
+      nv = 5;
     }  
     
   for (Int_t i=0;i<names.Length();++i){

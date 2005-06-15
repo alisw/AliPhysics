@@ -20,14 +20,14 @@ void testMotifTypeIterators(AliMpStationType station = kStation1,
       nv = 5;
     }  
     else {
-      names = "ABCDEFGHIIJKLMN";
-      names2 ="abcdefgijklmnopqrstuwvvvvvv";
-      nv = 6;
+      names = "ABCEFGHIJKLMN";
+      names2 ="abcdefgijklmnopqrstuwvvvvv";
+      nv = 5;
     }  
   Int_t nofMotifs = names.Length() + names2.Length(); 
   // cout << " nofMotifs: " << nofMotifs << endl;   
     
-  TH2C* histos[] = new TH2C* [names.Length()];
+  TH2C* histos[] = new TH2C* [nofMotifs];
   TCanvas* canv[] = new TCanvas* [1+(nofMotifs-1)/4];
   Int_t i;
   for (i=0;i<1+(nofMotifs-1)/4;++i){
@@ -56,7 +56,7 @@ void testMotifTypeIterators(AliMpStationType station = kStation1,
       else 	   
         mname += "1";
     }	
-    // if (i==36) continue;  
+    //if (i==36) continue;  
         // break for these motifs (St2, BP) - to be investigated
    
     AliMpMotifType *mt = r.BuildMotifType(mname);
@@ -86,7 +86,7 @@ void testMotifTypeIterators(AliMpStationType station = kStation1,
                       it.CurrentItem().GetIndices().GetSecond(),num);
     }
 
-    delete mt;
+    //delete mt;
     histos[i]->Draw("text");
     canv[i/4]->Update();
   }
