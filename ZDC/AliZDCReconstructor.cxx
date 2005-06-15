@@ -223,7 +223,7 @@ void AliZDCReconstructor::ReconstructEvent(AliLoader* loader, Int_t znraw,
 {
 // reconstruct one event
 
-//  if (GetDebug()) printf("\n	---	znraw = %d, zpraw = %d, zemraw = %d\n",znraw, zpraw, zemraw);
+//  if AliDebug(1,Form("\n	---	znraw = %d, zpraw = %d, zemraw = %d\n",znraw, zpraw, zemraw);
     
   //  ---      Pedestal subtraction
   Int_t zncorr, zpcorr, zemcorr, meanPed=50;
@@ -233,7 +233,7 @@ void AliZDCReconstructor::ReconstructEvent(AliLoader* loader, Int_t znraw,
   if(zncorr<0)  zncorr=0;
   if(zpcorr<0)  zpcorr=0;
   if(zemcorr<0) zemcorr=0;
-//  if (GetDebug()) printf("\n    zncorr = %d, zpcorr = %d, zemcorr = %d\n",zncorr,zpcorr,zemcorr);
+//  if AliDebug(1,Form("\n    zncorr = %d, zpcorr = %d, zemcorr = %d\n",zncorr,zpcorr,zemcorr);
   
   //  ---      ADCchannel -> photoelectrons
   // NB-> PM gain = 10^(5), ADC resolution = 6.4*10^(-7)
@@ -242,7 +242,7 @@ void AliZDCReconstructor::ReconstructEvent(AliLoader* loader, Int_t znraw,
   znphe  = zncorr/convFactor;
   zpphe  = zpcorr/convFactor;
   zemphe = zemcorr/convFactor;
-//  if (GetDebug()) printf("\n    znphe = %f, zpphe = %f, zemphe = %f\n",znphe, zpphe, zemphe);
+//  if AliDebug(1,Form("\n    znphe = %f, zpphe = %f, zemphe = %f\n",znphe, zpphe, zemphe);
   
   //  ---      Energy calibration
   // Conversion factors for hadronic ZDCs goes from phe yield to TRUE 
@@ -259,19 +259,19 @@ void AliZDCReconstructor::ReconstructEvent(AliLoader* loader, Int_t znraw,
   zdcenergy = znenergy+zpenergy;
   zemenergy = -4.81+0.3238*zemphe;
   if(zemenergy<0) zemenergy=0;
-//  if (GetDebug()) printf("    znenergy = %f TeV, zpenergy = %f TeV, zdcenergy = %f GeV, "
+//  if AliDebug(1,Form("    znenergy = %f TeV, zpenergy = %f TeV, zdcenergy = %f GeV, "
 //			   "\n		zemenergy = %f TeV\n", znenergy, zpenergy, 
 //			   zdcenergy, zemenergy);
   
 //  if(zdcenergy==0)
-//    if (GetDebug()) printf("\n\n	###	ATTENZIONE!!! -> ev# %d: znenergy = %f TeV, zpenergy = %f TeV, zdcenergy = %f GeV, "
+//    if AliDebug(1,Form("\n\n	###	ATTENZIONE!!! -> ev# %d: znenergy = %f TeV, zpenergy = %f TeV, zdcenergy = %f GeV, "
 //			     " zemenergy = %f TeV\n\n", fMerger->EvNum(), znenergy, zpenergy, zdcenergy, zemenergy); 
 
   //  ---      Number of incident spectator nucleons
   Int_t nDetSpecN, nDetSpecP;
   nDetSpecN = (Int_t) (znenergy/2.760);
   nDetSpecP = (Int_t) (zpenergy/2.760);
-//  if (GetDebug()) printf("\n    nDetSpecN = %d, nDetSpecP = %d\n",nDetSpecN, nDetSpecP);
+//  if AliDebug(1,Form("\n    nDetSpecN = %d, nDetSpecP = %d\n",nDetSpecN, nDetSpecP);
 
   Int_t nGenSpecN=0, nGenSpecP=0, nGenSpec=0;
   Double_t impPar=0;
@@ -329,7 +329,7 @@ void AliZDCReconstructor::ReconstructEvent(AliLoader* loader, Int_t znraw,
   nPart = 207-nGenSpecN-nGenSpecP;
   nPartTot = 207-nGenSpec;
   //printf("	###	nPart(ZP+ZN) = %d, nPart(ZDC) = %d, b = %f fm\n",nPart,nPartTot,impPar);
-//  if (GetDebug()) printf("	###	nPart = %d, b = %f fm\n",nPartTot,impPar);
+//  if AliDebug(1,Form("	###	nPart = %d, b = %f fm\n",nPartTot,impPar);
 
   // create the output tree
   loader->MakeTree("R");

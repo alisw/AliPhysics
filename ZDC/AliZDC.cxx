@@ -46,6 +46,7 @@
 #include "AliLoader.h"
 #include "AliRun.h"
 #include "AliMC.h"
+#include "AliLog.h"
 
  
 ClassImp(AliZDC)
@@ -241,7 +242,7 @@ void AliZDC::Hits2SDigits()
 {
   // Create summable digits from hits
   
-  if (GetDebug()) printf("\n	Entering AliZDC::Hits2Digits() ");
+  AliDebug(1,"\n	Entering AliZDC::Hits2Digits() ");
   
   fLoader->LoadHits("read");
   fLoader->LoadSDigits("recreate");
