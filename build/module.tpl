@@ -266,7 +266,7 @@ endif
 
 $(MODDIRO)/@PACKAGE@_srcslist: FORCE
 	@for i in $(@PACKAGE@CS) $(@PACKAGE@S); do echo $$i; done | sort > $@.new ;\
-	diff $@ $@.new | sed -n -e "s?^\< *@MODULE@?@MODULE@/tgt_$(ALICE_TARGET)?p" | \
+	diff $@ $@.new 2>/dev/null | sed -n -e "s?^\< *@MODULE@?@MODULE@/tgt_$(ALICE_TARGET)?p" | \
 	sed -e "s?\.c.*\$$?.\*?" | xargs \rm -f ;\
 	diff -q -w >/dev/null 2>&1 $@ $@.new ;\
 	if [ $$? -ne 0 ]; then \mv $@.new $@; echo "***** Source changed, remaking $(@PACKAGE@DS) *****";\
