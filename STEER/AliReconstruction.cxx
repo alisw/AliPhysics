@@ -445,8 +445,9 @@ Bool_t AliReconstruction::RunLocalReconstruction(const TString& detectors)
     } else {
       reconstructor->Reconstruct(fRunLoader);
     }
-    AliInfo(Form("execution time for %s:", fgkDetectorName[iDet]));
-    ToAliInfo(stopwatchDet.Print());
+    AliInfo(Form("Execution time for %s: R:%.2fs C:%.2fs",
+		 fgkDetectorName[iDet],
+		 stopwatchDet.RealTime(),stopwatchDet.CpuTime()));
   }
 
   if ((detStr.CompareTo("ALL") != 0) && !detStr.IsNull()) {
@@ -455,8 +456,8 @@ Bool_t AliReconstruction::RunLocalReconstruction(const TString& detectors)
     if (fStopOnError) return kFALSE;
   }
 
-  AliInfo("execution time:");
-  ToAliInfo(stopwatch.Print());
+  AliInfo(Form("Execution time: R:%.2fs C:%.2fs",
+	       stopwatch.RealTime(),stopwatch.CpuTime()));
 
   return kTRUE;
 }
@@ -489,8 +490,9 @@ Bool_t AliReconstruction::RunLocalEventReconstruction(const TString& detectors)
       reconstructor->ConvertDigits(fRawReader, digitsTree);
       loader->WriteDigits("OVERWRITE");
       loader->UnloadDigits();
-      AliDebug(1, Form("execution time for %s:", fgkDetectorName[iDet]));
-      ToAliDebug(1, stopwatchDet.Print());
+      AliInfo(Form("Execution time for %s: R:%.2fs C:%.2fs",
+		   fgkDetectorName[iDet],
+		   stopwatchDet.RealTime(),stopwatchDet.CpuTime()));
     }
 
     // local reconstruction
@@ -517,8 +519,9 @@ Bool_t AliReconstruction::RunLocalEventReconstruction(const TString& detectors)
     }
     loader->WriteRecPoints("OVERWRITE");
     loader->UnloadRecPoints();
-    AliDebug(1, Form("execution time for %s:", fgkDetectorName[iDet]));
-    ToAliDebug(1, stopwatchDet.Print());
+    AliDebug(1,Form("Execution time for %s: R:%.2fs C:%.2fs",
+		    fgkDetectorName[iDet],
+		    stopwatchDet.RealTime(),stopwatchDet.CpuTime()));
   }
 
   if ((detStr.CompareTo("ALL") != 0) && !detStr.IsNull()) {
@@ -526,9 +529,9 @@ Bool_t AliReconstruction::RunLocalEventReconstruction(const TString& detectors)
                   detStr.Data()));
     if (fStopOnError) return kFALSE;
   }
-
-  AliInfo("execution time:");
-  ToAliInfo(stopwatch.Print());
+  
+  AliInfo(Form("Execution time: R:%.2fs C:%.2fs",
+	       stopwatch.RealTime(),stopwatch.CpuTime()));
 
   return kTRUE;
 }
@@ -581,8 +584,8 @@ Bool_t AliReconstruction::RunVertexFinder(AliESD*& esd)
   }  
   delete vertex;
 
-  AliInfo("execution time:");
-  ToAliInfo(stopwatch.Print());
+  AliInfo(Form("Execution time: R:%.2fs C:%.2fs",
+	       stopwatch.RealTime(),stopwatch.CpuTime()));
 
   return kTRUE;
 }
@@ -640,8 +643,8 @@ Bool_t AliReconstruction::RunHLTTracking(AliESD*& esd)
     delete tracker;
   }
 
-  AliInfo("execution time:");
-  ToAliInfo(stopwatch.Print());
+  AliInfo(Form("Execution time: R:%.2fs C:%.2fs",
+	       stopwatch.RealTime(),stopwatch.CpuTime()));
 
   return kTRUE;
 }
@@ -747,8 +750,8 @@ Bool_t AliReconstruction::RunTracking(AliESD*& esd)
     fLoader[iDet]->UnloadRecPoints();
   }
 
-  AliInfo("execution time:");
-  ToAliInfo(stopwatch.Print());
+  AliInfo(Form("Execution time: R:%.2fs C:%.2fs",
+	       stopwatch.RealTime(),stopwatch.CpuTime()));
 
   return kTRUE;
 }
@@ -815,8 +818,8 @@ Bool_t AliReconstruction::FillESD(AliESD*& esd, const TString& detectors)
     if (fStopOnError) return kFALSE;
   }
 
-  AliInfo("execution time:");
-  ToAliInfo(stopwatch.Print());
+  AliInfo(Form("Execution time: R:%.2fs C:%.2fs",
+	       stopwatch.RealTime(),stopwatch.CpuTime()));
 
   return kTRUE;
 }

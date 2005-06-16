@@ -403,8 +403,8 @@ Bool_t AliSimulation::RunSimulation(Int_t nEvents)
 
   delete runLoader;
 
-  AliInfo("execution time:");
-  StdoutToAliInfo(stopwatch.Print(););
+  AliInfo(Form("Execution time: R:%.2fs C:%.2fs",
+	       stopwatch.RealTime(),stopwatch.CpuTime()));
 
   return kTRUE;
 }
@@ -430,8 +430,8 @@ Bool_t AliSimulation::RunSDigitization(const char* detectors)
       TStopwatch stopwatchDet;
       stopwatchDet.Start();
       det->Hits2SDigits();
-      AliInfo(Form("execution time for %s:", det->GetName()));
-      StdoutToAliInfo(stopwatchDet.Print(););
+      AliInfo(Form("Execution time for %s: R:%.2fs C:%.2fs",
+	   det->GetName(),stopwatchDet.RealTime(),stopwatchDet.CpuTime()));
     }
   }
 
@@ -443,8 +443,8 @@ Bool_t AliSimulation::RunSDigitization(const char* detectors)
 
   delete runLoader;
 
-  AliInfo("execution time:");
-  StdoutToAliInfo(stopwatch.Print(););
+  AliInfo(Form("Execution time: R:%.2fs C:%.2fs",
+	   stopwatch.RealTime(),stopwatch.CpuTime()));
 
   return kTRUE;
 }
@@ -508,9 +508,9 @@ Bool_t AliSimulation::RunDigitization(const char* detectors,
 
   delete manager;
 
-  AliInfo("execution time:");
-  StdoutToAliInfo(stopwatch.Print(););
-
+  AliInfo(Form("Execution time: R:%.2fs C:%.2fs",
+	       stopwatch.RealTime(),stopwatch.CpuTime()));
+  
   return kTRUE;
 }
 
@@ -546,8 +546,8 @@ Bool_t AliSimulation::RunHitsDigitization(const char* detectors)
   //PH Temporary fix to avoid interference with the PHOS loder/getter
   //PH The problem has to be solved in more general way 09/06/05
 
-  AliInfo("execution time:");
-  StdoutToAliInfo(stopwatch.Print(););
+  AliInfo(Form("Execution time: R:%.2fs C:%.2fs",
+	       stopwatch.RealTime(),stopwatch.CpuTime()));
 
   return kTRUE;
 }
@@ -600,8 +600,8 @@ Bool_t AliSimulation::WriteRawData(const char* detectors,
     }
   }
 
-  AliInfo("execution time:");
-  StdoutToAliInfo(stopwatch.Print(););
+  AliInfo(Form("Execution time: R:%.2fs C:%.2fs",
+	       stopwatch.RealTime(),stopwatch.CpuTime()));
 
   return kTRUE;
 }
