@@ -286,14 +286,16 @@ void AliRICH::CreateMaterials()
   Float_t aGlass[5]={12.01,28.09,16,10.8,23}; Float_t zGlass[5]={6,14,8,5,11};  Float_t wGlass[5]={0.5,0.105,0.355,0.03,0.01};
   AliMixture(++material,"RichGlass",aGlass, zGlass, den=1.74, 5, wGlass);                                    //11 Glass 50%-C 10.5%-Si 35.5%-O 3%-B 1%-Na
   AliMedium(kGlass, "RichGlass", material, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
-  
-  AliMaterial(++material, "RichW",  a=183.84,z=74.0,den=19.3,    radl=0.35,    absl=185.0/den);              //13 W - anod wires
+
+  den=19.3;
+  AliMaterial(++material, "RichW",  a=183.84,z=74.0,den,    radl=0.35,    absl=185.0/den);              //13 W - anod wires
   AliMedium(kW, "RichW", material, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
   
   
   if(P()->IsRadioSrc()){
     AliInfo("Special radioactive source materials");
-    AliMaterial(++material, "RichSteel",  a=55.845,z=26.0,den=7.87,    radl=1.76,    absl=131.9/den);        //14 Steel (Fe)
+    den=7.87;
+    AliMaterial(++material, "RichSteel",  a=55.845,z=26.0,den,    radl=1.76,    absl=131.9/den);        //14 Steel (Fe)
     AliMedium(kSteel, "RichSteel", material, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
   
     AliMaterial(++material, "RichPerpex",  a=63.54,z=29.0,den=8.96,    radl=1.4,    absl=0);                 //15 Perpex
@@ -817,8 +819,9 @@ void AliRICH::GeomAmpGap()const
   Double_t cm=1,mm=0.1*cm,mkm=0.001*mm;//default is cm
   Int_t matrixIdReturn=0; //matrix id returned by AliMatrix
   Float_t par[3];
-  
-  par[0]=648*mm/2;par[1]=  411*mm/2 ;par[2]=4.45*mm/2;gMC->Gsvolu("RGAP ","BOX ",(*fIdtmed)[kCH4] ,par,3);//xy as PPF 2001P2 z WP 2099P1
+
+
+  par[0]=648*mm/2;par[1]=  411*mm/2 ;par[2]=4.45*mm/2;gMC->Gsvolu("RGAP","BOX ",(*fIdtmed)[kCH4] ,par,3);//xy as PPF 2001P2 z WP 2099P1
   par[0]=  0*mm  ;par[1]=  20*mkm/2 ;par[2]= 648*mm/2;gMC->Gsvolu("RANO","TUBE",(*fIdtmed)[kW]   ,par,3);//WP 2099P1 z = gap x PPF 2001P2
   AliMatrix(matrixIdReturn,180,0, 90,90, 90,0); //wires along x
   
