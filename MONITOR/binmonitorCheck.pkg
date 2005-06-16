@@ -16,22 +16,15 @@ EINCLUDE+=TPC CONTAINERS ITS RAW HLT/src HLT/hough HLT/comp HLT/ITS
 ifdef DATE_ROOT
 
 ELIBSDIR:=${DATE_MONITOR_DIR}/${DATE_SYS}
-ELIBS:= ESD STEER CONTAINERS RAWData monitor shift pythia6 pdf microcern TPCbase TPCsim TPCrec ITS AliL3Src AliL3Comp AliL3Misc AliL3Hough AliL3ITS
+ELIBS:= ESD STEER CONTAINERS RAWData monitor shift TPCbase TPCsim TPCrec ITS AliL3Src AliL3Comp AliL3Misc AliL3Hough AliL3ITS
 EINCLUDE+= ${DATE_COMMON_DEFS} ${DATE_MONITOR_DIR}
 
 else
 
-ELIBS:= pythia6 pdf microcern
+PACKBLIBS := $(ROOTCLIBS) $(SYSLIBS)
 
 endif
 
 ifneq (,$(findstring macosx,$(ALICE_TARGET)))
-@PACKAGE@LIBSINIT:=$(filter-out microcern,$(ELIBS))
-@PACKAGE@LIBSINIT:=$(filter-out pdf,$(@PACKAGE@LIBSINIT))
-PACKLDFLAGS:=$(LDFLAGS) $(@PACKAGE@LIBSINIT:%=-Wl,-u,_G__cpp_setupG__%)
-# On Mac OS X gcc we need g2c for versions before 10.4
-ifneq ($(MACOSX_MINOR),4)
-ELIBS+=g2c
-ELIBSDIR+=$(dir $(shell find $(FINK_ROOT) -name 'libg2c.*'))
-endif
+PACKLDFLAGS:=$(LDFLAGS) $(ELIBS:%=-Wl,-u,_G__cpp_setupG__%)
 endif

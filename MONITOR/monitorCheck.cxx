@@ -37,12 +37,6 @@
 #include "monitor.h"
 #endif
 
-#ifdef __APPLE__
-// avoid loading pythia and pdf
-#include <Hepevt.h>
-HEPEVT_DEF HEPEVT;
-#endif
-
 //_____________________________________________________________________________
 class AliGDCInterruptHandler : public TSignalHandler {
 public:

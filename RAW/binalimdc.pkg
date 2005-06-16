@@ -9,8 +9,6 @@ PACKDCXXFLAGS:= ${HLTDCXXFLAGS}
 
 SRCS:= alimdc_main.cxx ${ESRCS}
 
-#EDEFINE+= -DUSE_EB
-
 EINCLUDE+=TPC CONTAINERS ITS RAW HLT/src HLT/hough HLT/comp HLT/ITS
 # -DUSE_DEBUG for alimdc debug printout
 
