@@ -1249,6 +1249,8 @@ void AliRICH::HitsQA(Double_t cut,Double_t cutele,Double_t cutR)
   TH1F *pKaoHitP     =new TH1F("KaoHitP"     ,Form("K^{-} K^{+} hit %s;p[GeV]"      ,GetName())     ,1000,-4  ,4                ); 
   TH1F *pProHitP     =new TH1F("ProHitP"     ,Form("p^{-} p^{+} hit %s;p[GeV]"      ,GetName())     ,1000,-4  ,4                ); 
   TH2F *pFlux        =new TH2F("flux"        ,Form("%s flux with Rvertex<%.1fcm"    ,GetName(),cutR),10  ,-5  ,5   , 10,0    ,10); //special text hist
+  TH2F *pVertex      =new TH2F("vertex"      ,Form("%s 2D vertex of RICH hit;x;y"   ,GetName())     ,120 ,0   ,600 ,120,0    ,600); //special text hist
+  TH1F *pRho         =new TH1F("rho"         ,Form("%s r of RICH hit"               ,GetName())     ,600 ,0   ,600); //special text hist
   pFlux->SetStats(0);
   pFlux->GetXaxis()->SetBinLabel(1 ,Form("p^{-}>%.3fGeV/c"   ,cutPantiproton));        
   pFlux->GetXaxis()->SetBinLabel(2 ,Form("K^{-}>%.3fGeV/c"   ,cutPkaonminus ));        
@@ -1311,7 +1313,9 @@ void AliRICH::HitsQA(Double_t cut,Double_t cutele,Double_t cutR)
       for(Int_t iHitN=0;iHitN < Hits()->GetEntries();iHitN++){//hits loop
         AliRICHHit *pHit = (AliRICHHit*)Hits()->At(iHitN);            //get current hit
         TParticle  *pPart=pStack->Particle(pHit->GetTrack());      //get stack particle which produced the current hit
-      
+        
+        if(pPart->GetPDG()->Charge()!=0&&pPart->Rho()>0.1) pVertex->Fill(pPart->Vx(),pPart->Vy()); //safe margin for sec.
+        if(pPart->GetPDG()->Charge()!=0) pRho->Fill(pPart->Rho()); //safe margin for sec.
         if(pPart->R()>cutR) continue;                                   //cut on production radius (cylindrical system) 
       
         switch(pPart->GetPdgCode()){
@@ -1365,6 +1369,8 @@ void AliRICH::HitsQA(Double_t cut,Double_t cutele,Double_t cutR)
   new TCanvas("cPioHitP"   ,"pi",200,100); pPioHitP->Draw();
   new TCanvas("cKaoHitP"   ,"K" ,200,100); pKaoHitP->Draw();
   new TCanvas("cProHitP"   ,"p" ,200,100); pProHitP->Draw();
+  new TCanvas("cVertex"    ,"2d vertex" ,200,100); pVertex->Draw();
+  new TCanvas("cRho"    ,"Rho of sec" ,200,100); pRho->Draw();
   
   gBenchmark->Show("HitsPlots");
 }//HitsPlots()
