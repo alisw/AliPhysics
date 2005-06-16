@@ -59,12 +59,11 @@ ALFLAGS       = cr
 ALLIB         = 
 AEXT 	      = a
 
-GLIBS         = -L/usr/X11R6/lib -lX11
 
 #System libraries
-SYSLIBS = -ldl
+SYSLIBS      := -ldl -L/usr/X11R6/lib -lX11
 
-EXEFLAGS+= -Wl,-bind_at_load
+EXEFLAGS     := -Wl,-bind_at_load
 
 
 

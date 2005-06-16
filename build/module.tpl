@@ -45,6 +45,12 @@ else
 @PACKAGE@DCXXFLAGS:=$(PACKDCXXFLAGS)
 endif
 
+ifndef PACKBLIBS
+@PACKAGE@BLIBS:=$(LIBS)
+else
+@PACKAGE@BLIBS:=$(PACKBLIBS)
+endif
+
 
 ifdef DHDR
 WITHDICT=YES
@@ -95,9 +101,7 @@ endif
 #############################################################################
 
 # Package Dictionary 
-
 @PACKAGE@DH:=$(MODDIR)/$(DHDR)
-
 
 #All objects
 @PACKAGE@CO:=$(patsubst %,$(MODDIRO)/%, $(CSRCS:.c=.o))
@@ -241,12 +245,12 @@ ifndef ALIQUIET
 	  @echo "***** Making executable $@ *****"
 endif
 ifeq ($(ALIPROFILE),YES)
-	$(MUTE)$(LD) $(@PACKAGE@LDFLAGS) $(@PACKAGE@O) $(ARLIBS) $(SHLIBS) $(LIBS) $(EXEFLAGS) -o $@
+	$(MUTE)$(LD) $(@PACKAGE@LDFLAGS) $(@PACKAGE@O) $(ARLIBS) $(SHLIBS) $(@PACKAGE@BLIBS) $(EXEFLAGS) -o $@
 else
-	  $(MUTE)$(LD) $(@PACKAGE@LDFLAGS) $(@PACKAGE@O) $(@PACKAGE@DO) $(BINLIBDIRS) $(@PACKAGE@ELIBSDIR) $(@PACKAGE@ELIBS) $(LIBS) $(EXEFLAGS) -o $@
+	  $(MUTE)$(LD) $(@PACKAGE@LDFLAGS) $(@PACKAGE@O) $(@PACKAGE@DO) $(BINLIBDIRS) $(@PACKAGE@ELIBSDIR) $(@PACKAGE@ELIBS) $(@PACKAGE@BLIBS) $(EXEFLAGS) -o $@
 endif
 
-$(@PACKAGE@DS): $(@PACKAGE@CINTHDRS) $(@PACKAGE@DH) @MODULE@/module.mk
+$(@PACKAGE@DS): $(@PACKAGE@CINTHDRS) $(@PACKAGE@DH) @MODULE@/module.mk @MODULE@/tgt_$(ALICE_TARGET)/@PACKAGE@_srcslist
 ifndef ALIQUIET
 	 @echo "***** Creating $@ *****";	
 endif
@@ -259,6 +263,14 @@ ifndef ALIQUIET
 		@echo "***** Compiling $< *****";
 endif
 		$(MUTE)$(CXX) $(@PACKAGE@DEFINE) -c $(@PACKAGE@INC)  -I$(ALICE_ROOT) $< -o $@ $(@PACKAGE@DCXXFLAGS)
+
+$(MODDIRO)/@PACKAGE@_srcslist: FORCE
+	@for i in $(@PACKAGE@CS) $(@PACKAGE@S); do echo $$i; done | sort > $@.new ;\
+	diff $@ $@.new | sed -n -e "s?^\< *@MODULE@?@MODULE@/tgt_$(ALICE_TARGET)?p" | \
+	sed -e "s?\.c.*\$$?.\*?" | xargs \rm -f ;\
+	diff -q -w >/dev/null 2>&1 $@ $@.new ;\
+	if [ $$? -ne 0 ]; then \mv $@.new $@; echo "***** Source changed, remaking $(@PACKAGE@DS) *****";\
+	else \rm $@.new; fi
 
 #Different targets for the module
 

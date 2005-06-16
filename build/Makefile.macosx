@@ -29,6 +29,9 @@ CXXOPT        = $(OPT)
 CXXNOOPT      = $(NOOPT) 
 COPT	      = $(OPT)
 FOPT	      = $(OPT) -fno-second-underscore 
+ifeq (g95,$(findstring g95,$(ROOTBUILD)))
+FOPT	     += -fbounds-check
+endif
 
 # CERNLIB defines
 CLIBDEFS      = -DCERNLIB_LINUX -DCERNLIB_BLDLIB -DCERNLIB_CZ -DCERNLIB_PPC
@@ -37,7 +40,7 @@ CLIBCOPT      =
 CLIBFOPT      = $(CLIBDEFS)
 
 # Compiler flags
-CXXFLAGS      = $(CXXOPT)   -Wall -W -Wno-long-double -pipe -fsigned-char -fno-common -fmessage-length=0 -I$(FINK_ROOT)/include 
+CXXFLAGS      = $(CXXOPT)   -Wall -W -Wno-long-double -pipe -fbounds-check -fsigned-char -fno-common -fmessage-length=0 -I$(FINK_ROOT)/include #-Weffc++ -Woverloaded-virtual 
 
 ifeq (g95,$(findstring g95,$(ROOTBUILD)))
 CXXFLAGS+=-DFORTRAN_G95
@@ -75,16 +78,14 @@ AEXT 	      = a
 
 DEPENDCXXFLAGS = $(CXXFLAGS) -I/usr/include/sys
 
-GLIBS         = -L/usr/X11R6/lib -lX11
+SYSLIBS      := -L/usr/X11R6/lib -lX11
 
-EXEFLAGS     += -bind_at_load 
+EXEFLAGS     := -bind_at_load 
 
 #System libraries
 
 ifeq (g95,$(findstring g95,$(ROOTBUILD)))
-SYSLIBS := -L$(dir $(shell find $(FINK_ROOT) -name libf95.a)) -lf95
+SYSLIBS += -L$(dir $(shell find $(FINK_ROOT) -name libf95.a)) -lf95
 else
-SYSLIBS := -ldl -L$(dir $(shell find $(FINK_ROOT) -name libgfortran.dylib)) -lgfortranbegin -lgfortran
+SYSLIBS += -ldl -L$(dir $(shell find $(FINK_ROOT) -name libgfortran.dylib)) -lgfortranbegin -lgfortran
 endif
-
-

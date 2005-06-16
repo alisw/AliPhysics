@@ -52,14 +52,10 @@ ALLIB         =
 AEXT 	      = a
 
 # additional ROOT libraries
-ROOTLIBS     += -lcrypt
 
 LIBNOVER      = `find /lib -name 'libNoVersion*.so' | xargs --replace basename {} .so | sed -e 's/lib/ -l/'`
-GLIBS         = $(LIBNOVER)
 
 #System libraries
-SYSLIBS =
-
-EXEFLAGS     += -L/usr/local/lib -lXt
-EXEFLAGS     += -L$(shell which ifort | sed -e 's|bin/ifort|lib|') \
+SYSLIBS      := -lcrypt -L/usr/X11R6/lib -lX11 $(LIBNOVER) -L/usr/local/lib \
+                -lXt -L$(shell which ifort | sed -e 's|bin/ifort|lib|') 
                 -lifcore -lifport

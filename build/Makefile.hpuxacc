@@ -39,11 +39,8 @@ SOFLAGS       = -b /usr/lib/libm.sl
 SOEXT 	      = sl
 
 # additional ROOT libraries
-ROOTLIBS  += -lcrypt 
+SYSLIBS      := -lcrypt -L/usr/lib/X11R6 -lX11 
 
-GLIBS         = -L/usr/lib/X11R6 -lX11 
-
-# System libraries
 
 
 

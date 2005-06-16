@@ -44,15 +44,12 @@ ALLIB         =
 AEXT 	      = a
 
 # additional ROOT libraries
-ROOTLIBS  += -lcrypt 
 
 LIBNOVER      = `find /lib -name 'libNoVersion*.so' | xargs --replace basename {} .so | sed -e 's/lib/ -l/'`
-GLIBS         = -L/usr/X11R6/lib -lX11  $(LIBNOVER)
 
 #System libraries
-SYSLIBS = -ldl -lbsd
+SYSLIBS      := -ldl -lbsd -lg2c -L/usr/X11R6/lib -lX11  $(LIBNOVER)
 
-EXEFLAGS+= -lg2c
 
 
 

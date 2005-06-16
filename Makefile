@@ -24,11 +24,6 @@ CODE_CHECK=java rules.ALICE.ALICERuleChecker
 REV_ENG=$(IRST_INSTALLDIR)/scripts/revEng.sh
 
 #-------------------------------------------------------------------------------
-# Include library definition
-
-include build/Makefile.config
-
-#-------------------------------------------------------------------------------
 # Include machine dependent macros
 
 -include build/Makefile.$(ALICE_TARGET)
@@ -117,14 +112,25 @@ DEPINC     += $(GENINC)
 #-------------------------------------------------------------------------------
 # Libraries to link binaries against
 # Libraries will be linked against SHLIB
+# ROOT libraries 
 
-LIBS := $(GLIBS) $(ROOTLIBS) $(SYSLIBS)
+ROOTCLIBS     := $(shell root-config --glibs) -lThread -lMinuit -lHtml -lVMC -lGeom
+
+ROOTPLIBS     := -lEG -lEGPythia6
+
+ALILIBS	      := -L$(LIBDIR) -lMUON -lTPC -lPMD -lTRD -lFMD -lTOF \
+                -lITS -lPHOS -lCRT -lRICH -lVZERO -lZDC -lSTRUCT \
+                -lSTART -lEVGEN -lSTEER -lCONTAINERS
+
+LIBS := $(ROOTCLIBS) $(ROOTPLIBS) $(SYSLIBS)
 
 #-------------------------------------------------------------------------------
 # default target
 
 default:
 	$(MUTE)$(MAKE) aliroot
+
+FORCE:
 
 #-------------------------------------------------------------------------------
 # Each module will add to these macros
