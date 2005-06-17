@@ -121,7 +121,7 @@ AliTRDtracker::AliTRDtracker(const TFile *geomfile):AliTracker()
 
   if(fGeom) {
     //    fTzero = geo->GetT0();
-    printf("Found geometry version %d on file \n", fGeom->IsVersion());
+    //    printf("Found geometry version %d on file \n", fGeom->IsVersion());
   }
   else { 
     printf("AliTRDtracker::AliTRDtracker(): can't find TRD geometry!\n");
@@ -1057,7 +1057,7 @@ Int_t AliTRDtracker::FollowBackProlongation(AliTRDtrack& t)
     y = t.GetY();
     z = t.GetZ();
 
-    if(fVocal) printf("nr+1=%d, x %f, z %f, y %f, ymax %f\n",nr+1,x,z,y,ymax);
+    //    if(fVocal) printf("nr+1=%d, x %f, z %f, y %f, ymax %f\n",nr+1,x,z,y,ymax);
     //    printf("label %d, pl %d, lookForCluster %d \n",
     //     trackIndex, nr+1, lookForCluster);
 
@@ -1752,7 +1752,7 @@ Int_t AliTRDtracker::ReadClusters(TObjArray *array, TTree *ClusterTree) const
       clusterArray->RemoveAt(iCluster); 
     }
   }
-  cout<<"Allocated"<<nsize<<"\tLoaded"<<array->GetEntriesFast()<<"\n";
+//   cout<<"Allocated"<<nsize<<"\tLoaded"<<array->GetEntriesFast()<<"\n";
 
   delete clusterArray;
 
@@ -2285,15 +2285,15 @@ void AliTRDtracker::AliTRDtrackingSector::MapTimeBinLayers()
     x2 = fLayers[i+1]->GetX();
     dx2 = fLayers[i+1]->GetdX();
     gap = (x2 - dx2/2) - (x1 + dx1/2);
-    if(gap < -0.01) {
-      printf("*** warning: layers %d and %d are overlayed:\n",i,i+1);
-      printf("             %f + %f + %f > %f\n", x1, dx1/2, dx2/2, x2);
-    }
-    if(gap > 0.01) { 
-      printf("*** warning: layers %d and %d have a large gap:\n",i,i+1);
-      printf("             (%f - %f) - (%f + %f) = %f\n", 
-             x2, dx2/2, x1, dx1, gap);
-    }
+//     if(gap < -0.01) {
+//       printf("*** warning: layers %d and %d are overlayed:\n",i,i+1);
+//       printf("             %f + %f + %f > %f\n", x1, dx1/2, dx2/2, x2);
+//     }
+//     if(gap > 0.01) { 
+//       printf("*** warning: layers %d and %d have a large gap:\n",i,i+1);
+//       printf("             (%f - %f) - (%f + %f) = %f\n", 
+//              x2, dx2/2, x1, dx1, gap);
+//     }
   }
 }
   
