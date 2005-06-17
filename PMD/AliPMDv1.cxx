@@ -28,14 +28,15 @@
 ///////////////////////////////////////////////////////////////////////////////
 ////
 
-#include "AliPMDv1.h"
-#include "AliRun.h"
-#include "AliConst.h" 
-#include "AliMagF.h" 
 #include "Riostream.h"
 #include <TVirtualMC.h>
-#include "AliMC.h"
+
+#include "AliConst.h" 
 #include "AliLog.h"
+#include "AliMC.h"
+#include "AliMagF.h" 
+#include "AliPMDv1.h"
+#include "AliRun.h"
 
 const Int_t   AliPMDv1::fgkNcolUM1    = 48;  // Number of cols in UM, type 1
 const Int_t   AliPMDv1::fgkNcolUM2    = 96;  // Number of cols in UM, type 2
@@ -653,7 +654,7 @@ void AliPMDv1::DrawModule() const
   //gMC->Gdman(17, 5, "MAN");
   gMC->Gdopt("hide", "off");
 
-  cout << " Outside Draw Modules " << endl;
+  AliDebug(1,"Outside Draw Modules");
 }
 
 //_____________________________________________________________________________
@@ -780,7 +781,7 @@ void AliPMDv1::CreateMaterials()
   gMC->Gstpar(idtmed[604], "CUTHAD", 1e-5);
   gMC->Gstpar(idtmed[604], "CUTMUO", 1e-5);
 
-  cout << " Outside create materials " << endl;
+  AliDebug(1,"Outside create materials");
 
 }
 
@@ -791,25 +792,12 @@ void AliPMDv1::Init()
   // Initialises PMD detector after it has been built
   //
 
-  Int_t i;
-  //  gAliKdet=1;
   //
-  cout << " Inside Init " << endl;
-  if(AliLog::GetGlobalDebugLevel()>0) {
-      printf("\n%s: ",ClassName());
-      for(i=0;i<35;i++) printf("*");
-      printf(" PMD_INIT ");
-      for(i=0;i<35;i++) printf("*");
-      printf("\n%s: ",ClassName());
-      printf("                 PMD simulation package (v1) initialised\n");
-      printf("%s: parameters of pmd\n",ClassName());
-      printf("%s: %10.2f %10.2f %10.2f \
-      %10.2f\n",ClassName(),fgkCellRadius,fgkCellWall,fgkCellDepth,fgkZdist );
-      printf("%s: ",ClassName());
-      for(i=0;i<80;i++) printf("*");
-      printf("\n");
-  }
-  
+  AliDebug(2,"Inside Init");
+  AliDebug(2,"PMD simulation package (v1) initialised");
+  AliDebug(2,"parameters of pmd");
+  AliDebug(2,Form("%10.2f %10.2f %10.2f %10.2f\n",
+		  fgkCellRadius,fgkCellWall,fgkCellDepth,fgkZdist));
   Int_t *idtmed = fIdtmed->GetArray()-599;
   fMedSens=idtmed[605-1];
 
