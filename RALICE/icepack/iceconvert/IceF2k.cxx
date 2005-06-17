@@ -18,6 +18,12 @@
 ///////////////////////////////////////////////////////////////////////////
 // Class IceF2k
 // Conversion of Amanda F2K data into IceEvent physics event structures.
+// This class is derived from AliJob providing a task-based processing
+// structure on an event-by-event basis.
+// The main object in the job environment is an IceEvent* pointer.
+// In case the user has provided sub-tasks, these will be executed
+// on an event-by-event basis after the IceEvent structure has been filled
+// with the F2K data and before the final structures are written out.
 //
 // Usage example :
 // ---------------
@@ -26,24 +32,45 @@
 // gSystem->Load("icepack");
 // gSystem->Load("iceconvert");
 //
-// // Output file for the event structures
-// TFile* ofile=new TFile("events.root","RECREATE","F2K data in IceEvent structure");
-// TTree* otree=new TTree("T","Data of an Amanda run");
+// IceF2k q("IceF2k","F2K to IcePack data structure conversion");
 //
 // // Limit the number of entries for testing
-// Int_t nentries=300;
+// q.SetMaxEvents(10);
 //
 // // Print frequency to produce a short summary print every printfreq events
-// Int_t printfreq=10;
+// q.SetPrintFreq(1);
 //
 // // Split level for the output structures
-// Int_t split=2;
+// q.SetSplitLevel(2);
 //
 // // Buffer size for the output structures
-// Int_t bsize=32000;
+// q.SetBufferSize(32000);
 //
-// IceF2k q("run8000.f2k",split,bsize);
-// q.Loop(otree,nentries,printfreq);
+// // The F2K input filename
+// q.SetInputFile("run7825.f2k");
+//
+// // Output file for the event structures
+// TFile* ofile=new TFile("events.root","RECREATE","F2K data in IceEvent structure");
+// q.SetOutputFile(ofile);
+//
+// ///////////////////////////////////////////////////////////////////
+// // Here the user can specify his/her sub-tasks to be executed
+// // on an event-by-event basis after the IceEvent structure
+// // has been filled and before the data is written out.
+// // Sub-tasks (i.e. a user classes derived from TTask) are entered
+// // as follows :
+// //
+// //    MyXtalk task1("task1","Cross talk correction");
+// //    MyClean task2("task2","Hit cleaning");
+// //    q.Add(&task1);
+// //    q.Add(&task2);
+// //
+// // The sub-tasks will be executed in the order as they are entered.
+// ///////////////////////////////////////////////////////////////////
+//
+// // Perform the conversion and execute subtasks (if any)
+// // on an event-by-event basis
+// q.ExecuteJob();
 //
 // // Select various objects to be added to the output file
 //
@@ -69,46 +96,29 @@
 
 ClassImp(IceF2k) // Class implementation to enable ROOT I/O
 
-IceF2k::IceF2k(char* fname,Int_t split,Int_t bsize)
+IceF2k::IceF2k(const char* name,const char* title) : AliJob(name,title)
 {
 // Default constructor.
-// Initialise the input file and data structres to be converted.
-// Also the required split level and buffer size of the output tree
-// can be specified in this constructor.
-// By default tree=0, split=0 and bsize=32000.
+// By default maxevent=-1, split=99, bsize=32000, printfreq=1.
 
- fSplit=split;
- fBsize=bsize;
+ fSplit=99;
+ fBsize=32000;
+ fMaxevt=-1;
+ fPrintfreq=1;
+ fInfile="";
+ fOutfile=0;
 
  fPdg=0;
  fOmdb=0;
  fFitdefs=0;
-
- if (!fname)
- {
-  cout << " *IceF2k ctor* No data input file specified." << endl;
-  return;
- }
-
- // Open the input file in the default ascii format (autodetection) for reading 
- fInput=rdmc_mcopen(fname,"r",RDMC_DEFAULT_ASCII_F);
-
- if (!fInput)
- {
-  cout << " *IceF2k ctor* No input file found with name : " << fname << endl;
-  return;
- }
-
- // Initialise the event structure 
- rdmc_init_mevt(&fEvent);
-
- // Read the file header information
- rdmc_rarr(fInput,&fHeader);
 }
 ///////////////////////////////////////////////////////////////////////////
 IceF2k::~IceF2k()
 {
 // Default destructor.
+ IceEvent* evt=(IceEvent*)GetMainObject();
+ if (evt) delete evt;
+
  if (fPdg)
  {
   delete fPdg;
@@ -126,6 +136,47 @@ IceF2k::~IceF2k()
   delete fFitdefs;
   fFitdefs=0;
  }
+}
+///////////////////////////////////////////////////////////////////////////
+void IceF2k::SetMaxEvents(Int_t n)
+{
+// Set the maximum number of events to be processed.
+// n=-1 implies processing of the complete input file, which is the default
+// initialisation in the constructor.
+ fMaxevt=n;
+}
+///////////////////////////////////////////////////////////////////////////
+void IceF2k::SetPrintFreq(Int_t f)
+{
+// Set the printfrequency to produce info every f events.
+// f=1 is the default initialisation in the constructor.
+ if (f>0) fPrintfreq=f;
+}
+///////////////////////////////////////////////////////////////////////////
+void IceF2k::SetSplitLevel(Int_t split)
+{
+// Set the split level for the ROOT data file.
+// split=99 is the default initialisation in the constructor.
+ if (split>=0) fSplit=split;
+}
+///////////////////////////////////////////////////////////////////////////
+void IceF2k::SetBufferSize(Int_t bsize)
+{
+// Set the buffer size for the ROOT data file.
+// bsize=32000 is the default initialisation in the constructor.
+ if (bsize>=0) fBsize=bsize;
+}
+///////////////////////////////////////////////////////////////////////////
+void IceF2k::SetInputFile(TString name)
+{
+// Set the name of the F2K input file.
+ fInfile=name;
+}
+///////////////////////////////////////////////////////////////////////////
+void IceF2k::SetOutputFile(TFile* ofile)
+{
+// Set the output file for the ROOT data.
+ fOutfile=ofile;
 }
 ///////////////////////////////////////////////////////////////////////////
 TDatabasePDG* IceF2k::GetPDG()
@@ -146,23 +197,55 @@ AliDevice* IceF2k::GetFitdefs()
  return fFitdefs;
 }
 ///////////////////////////////////////////////////////////////////////////
-void IceF2k::Loop(TTree* otree,Int_t nentries,Int_t printfreq)
+void IceF2k::Exec(Option_t* opt)
 {
-// Loop over the specified number of entries and convert the 
+// Job to loop over the specified number of events and convert the 
 // F2K data into the IceEvent structure.
-// The output will be written on the output tree specified as "otree".
-// If otree=0, a default standard output tree will be created.
-// If nentries<0 (default) all the entries of the input file
+// If maxevents<0 (default) all the entries of the input file
 // will be processed.
 // Every "printfreq" events a short event summary will be printed.
 // The default value is printfreq=1.
+// The output will be written on a standard output tree named "T".
+//
+// Notes :
+// -------
+// 1) This class is derived from AliJob, allowing a task based processing.
+//    After the conversion of an F2K event into an IceEvent structure,
+//    the processing of all available sub-tasks (if any) is invoked.
+//    This provides an event-by-event (sub)task processing before the
+//    final data structures are written out.
+// 2) The main object in this job environment is an IceEvent* pointer.
 
- if (!fInput || fSplit<0) return;
+ if (fInfile=="")
+ {
+  cout << " *IceF2k Exec* No data input file specified." << endl;
+  return;
+ }
 
- if (!otree) otree=new TTree("T","F2K Data");
+ // Open the input file in the default ascii format (autodetection) for reading 
+ fInput=rdmc_mcopen(fInfile.Data(),"r",RDMC_DEFAULT_ASCII_F);
+
+ if (!fInput)
+ {
+  cout << " *IceF2k Exec* No input file found with name : " << fInfile.Data() << endl;
+  return;
+ }
+
+ // Initialise the event structure 
+ rdmc_init_mevt(&fEvent);
+
+ // Read the file header information
+ rdmc_rarr(fInput,&fHeader);
+
+ if (!fOutfile)
+ {
+  cout << " *IceF2k Exec* No ROOT output file specified." << endl;
+  return;
+ }
+
+ TTree* otree=new TTree("T","F2K Data converted to IceEvent structures");
 
  IceEvent* evt=new IceEvent();
-
  evt->SetTrackCopy(1);
  evt->SetDevCopy(1);
 
@@ -191,9 +274,26 @@ void IceF2k::Loop(TTree* otree,Int_t nentries,Int_t printfreq)
  // Set the fit definitions according to the F2000 header info
  SetFitdefs();
 
- for (Int_t jentry=0; jentry<nentries; jentry++)
+ // Initialise the job working environment
+ SetMainObject(evt);
+ AddObject(fOutfile);
+ AddObject(otree);
+
+ cout << " ***" << endl;
+ cout << " *** Start processing of job " << GetName() << " ***" << endl;
+ cout << " ***" << endl;
+ cout << " F2K input file : " << fInfile.Data() << endl;
+ cout << " Maximum number of events to be processed : " << fMaxevt << endl;
+ cout << " Print frequency : " << fPrintfreq << endl;
+ cout << " ROOT output file : " << fOutfile->GetName() << endl;
+ cout << " Output characteristics : splitlevel = " << fSplit << " buffersize = " << fBsize << endl;
+
+ ListEnvironment();
+ 
+ Int_t nevt=0;
+ while (!rdmc_revt(fInput,&fHeader,&fEvent))
  {
-  if (rdmc_revt(fInput,&fHeader,&fEvent) != 0) break;
+  if (fMaxevt>-1 && nevt>=fMaxevt) break;
 
   // Reset the complete Event structure
   evt->Reset();
@@ -202,22 +302,23 @@ void IceF2k::Loop(TTree* otree,Int_t nentries,Int_t printfreq)
   evt->SetEventNumber(fEvent.enr);
   evt->SetMJD(fEvent.mjd,fEvent.secs,fEvent.nsecs);
 
-  PutMcTracks(evt);
+  PutMcTracks();
 
-  PutRecoTracks(evt);
+  PutRecoTracks();
 
-  PutHits(evt);
+  PutHits();
 
-  if (!(jentry%printfreq))
-  {
-   evt->HeaderData();
-  }
+  // Invoke all available sub-tasks (if any)
+  ExecuteTasks(opt);
+
+  if (!(nevt%fPrintfreq)) evt->HeaderData();
 
   // Write the complete structure to the output Tree
   otree->Fill();
- }
 
- if (evt) delete evt;
+  // Update event counter
+  nevt++;
+ }
 }
 ///////////////////////////////////////////////////////////////////////////
 void IceF2k::FillOMdbase()
@@ -337,12 +438,13 @@ void IceF2k::SetFitdefs()
  }
 }
 ///////////////////////////////////////////////////////////////////////////
-void IceF2k::PutMcTracks(IceEvent* evt)
+void IceF2k::PutMcTracks()
 {
 // Get the MC tracks from the F2000 file into the IcePack structure.
 // Note : MC tracks are given negative track id's in the event structure.
 // This memberfunction is based on the original code by Adam Bouchta.
 
+ IceEvent* evt=(IceEvent*)GetMainObject();
  if (!evt || fEvent.ntrack<=0) return;
 
  // Loop over all the tracks and add them to the current event
@@ -439,12 +541,13 @@ void IceF2k::PutMcTracks(IceEvent* evt)
  }
 }
 ///////////////////////////////////////////////////////////////////////////
-void IceF2k::PutRecoTracks(IceEvent* evt)
+void IceF2k::PutRecoTracks()
 {
 // Get the reconstructed tracks from the F2000 file into the IcePack structure.
 // Note : Reco tracks are given positive track id's in the event structure.
 // This memberfunction is based on the original code by Adam Bouchta.
 
+ IceEvent* evt=(IceEvent*)GetMainObject();
  if (!evt || fEvent.nfit<=0) return;
 
  // Loop over all the tracks and add them to the current event
@@ -545,11 +648,12 @@ void IceF2k::PutRecoTracks(IceEvent* evt)
  }
 }
 ///////////////////////////////////////////////////////////////////////////
-void IceF2k::PutHits(IceEvent* evt)
+void IceF2k::PutHits()
 {
 // Get the hit and waveform info from the F2000 file into the IcePack structure.
 // This memberfunction is based on the original code by Adam Bouchta.
 
+ IceEvent* evt=(IceEvent*)GetMainObject();
  if (!evt) return;
 
  // Loop over all the hits and add them to the current event

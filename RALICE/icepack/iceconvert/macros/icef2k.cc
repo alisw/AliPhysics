@@ -1,35 +1,51 @@
-//////////////////////////////////////////////
-// Macro to test new IceF2k conversion class
+/////////////////////////////////////////////////
+// Macro to test the IceF2k conversion job class
 //
 // To run this macro in batch, just do
 //
-// root -b -q 
+// root -b -q icef2k.cc
+//
+// For more details see the docs of class IceF2k
 //
 // NvE 11-mar-2005 Utrecht University
-//////////////////////////////////////////////
+/////////////////////////////////////////////////
 {
  gSystem->Load("ralice");
  gSystem->Load("icepack");
  gSystem->Load("iceconvert");
 
- // Output file for the event structures
- TFile* ofile=new TFile("events.root","RECREATE","F2K data in IceEvent structure");
- TTree* otree=new TTree("T","Data of an Amanda run");
+ IceF2k q("IceF2k","Test of IceF2k conversion job");
 
  // Limit the number of entries for testing
- Int_t nentries=5;
+ q.SetMaxEvents(100);
 
  // Print frequency to produce a short summary print every printfreq events
- Int_t printfreq=1;
+ q.SetPrintFreq(10);
 
- // Split level for the output structures
- Int_t split=2;
+ // The F2K input filename
+ q.SetInputFile("run7825.f2k");
 
- // Buffer size for the output structures
- Int_t bsize=32000;
+ // Output file for the event structures
+ TFile* ofile=new TFile("events.root","RECREATE","F2K data in IceEvent structure");
+ q.SetOutputFile(ofile);
 
- IceF2k q("run7825.f2k",split,bsize);
- q.Loop(otree,nentries,printfreq);
+ ///////////////////////////////////////////////////////////////////
+ // Here the user can specify his/her sub-tasks to be executed
+ // on an event-by-event basis after the IceEvent structure
+ // has been filled and before the data is written out.
+ // Sub-tasks (i.e. a user classes derived from TTask) are entered
+ // as follows :
+ //
+ //    MyXtalk task1("task1","Cross talk correction");
+ //    MyClean task2("task2","Hit cleaning");
+ //    q.Add(&task1);
+ //    q.Add(&task2);
+ //
+ // The sub-tasks will be executed in the order as they are entered.
+ ///////////////////////////////////////////////////////////////////
+
+ // Perform the conversion
+ q.ExecuteJob();
 
  // Select various objects to be added to the output file
 
@@ -41,7 +57,7 @@
 
  TDatabasePDG* pdg=q.GetPDG();
  if (pdg) pdg->Write();
- 
+
  // Close output file
  ofile->Write();
  ofile->Close();

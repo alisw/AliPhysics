@@ -618,5 +618,7 @@
                 Also "cout << endl;" introduced after the Pylist() call in AliCollider in order to
                 separate the Pythia event listing from subsequent output due to the mis-interpretation
                 of Fortran carriage-control characters on some systems.
+17-jun-2005 NvE New class AliJob introduced to provide a flexible (physics) analysis environment.
+                Bug (forgotten ps transfer in AliTimestamp::SetTJD) fixed (thanks Federico Carminati).
                 
  

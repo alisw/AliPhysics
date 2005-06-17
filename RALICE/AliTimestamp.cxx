@@ -778,7 +778,7 @@ void AliTimestamp::SetTJD(Int_t tjd,Int_t sec,Int_t ns,Int_t ps)
 
  Int_t mjd=tjd+40000;
 
- SetMJD(mjd,sec,ns);
+ SetMJD(mjd,sec,ns,ps);
 }
 ///////////////////////////////////////////////////////////////////////////
 void AliTimestamp::SetTJD(Double_t tjd)

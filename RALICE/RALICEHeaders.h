@@ -35,3 +35,4 @@
 #include "AliHelix.h"
 #include "AliDevice.h"
 #include "AliTimestamp.h"
+#include "AliJob.h"
