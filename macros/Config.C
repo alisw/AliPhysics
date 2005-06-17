@@ -60,7 +60,7 @@ void Config()
 
     // Set Random Number seed
   gRandom->SetSeed(123456); // Set 0 to use the currecnt time
-    cout<<"Seed for random number generation= "<<gRandom->GetSeed()<<endl; 
+  AliLog::Message(AliLog::kInfo, Form("Seed for random number generation = %d",gRandom->GetSeed()), "Config.C", "Config.C", "Config()","Config.C", __LINE__);
 
 
    // libraries required by geant321
@@ -72,7 +72,8 @@ void Config()
 
     AliRunLoader* rl=0x0;
 
-    cout<<"Config.C: Creating Run Loader ..."<<endl;
+    AliLog::Message(AliLog::kInfo, "Creating Run Loader", "Config.C", "Config.C", "Config()"," Config.C", __LINE__);
+
     rl = AliRunLoader::Open("galice.root",
 			    AliConfig::GetDefaultEventFolderName(),
 			    "recreate");
@@ -425,7 +426,7 @@ void Config()
         AliVZERO *VZERO = new AliVZEROv3("VZERO", "normal VZERO");
     }
 
-     cout << "End of Config.C" << endl;
+     AliLog::Message(AliLog::kInfo, "End of Config", "Config.C", "Config.C", "Config()"," Config.C", __LINE__);
 
 }
 
