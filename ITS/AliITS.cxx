@@ -89,15 +89,17 @@ the AliITS class.
 #include "AliITSClusterFinderV2SDD.h"
 #include "AliITSClusterFinderV2SPD.h"
 #include "AliITSClusterFinderV2SSD.h"
+#include "AliITSDDLRawData.h"
 #include "AliITSDetType.h"
+#include "AliITSDigitizer.h"
 #include "AliITSLoader.h"
-#include "AliITSRawClusterSPD.h"
 #include "AliITSRawClusterSDD.h"
+#include "AliITSRawClusterSPD.h"
 #include "AliITSRawClusterSSD.h"
 #include "AliITSRecPoint.h"
 #include "AliITSclusterV2.h"
-#include "AliITSdigitSPD.h"
 #include "AliITSdigitSDD.h"
+#include "AliITSdigitSPD.h"
 #include "AliITSdigitSSD.h"
 #include "AliITSgeom.h"
 #include "AliITShit.h"
@@ -112,12 +114,10 @@ the AliITS class.
 #include "AliITSsimulationSDD.h"
 #include "AliITSsimulationSPD.h"
 #include "AliITSsimulationSSD.h"
-#include "AliMC.h"
-#include "AliITSDigitizer.h"
-#include "AliITSDDLRawData.h"
-#include "AliRun.h"
-#include "AliRawReader.h"
 #include "AliLog.h"
+#include "AliMC.h"
+#include "AliRawReader.h"
+#include "AliRun.h"
 
 ClassImp(AliITS)
 
@@ -1654,8 +1654,7 @@ void AliITS::HitsToFastRecPoints(Int_t evNumber,Int_t bgrev,Int_t size,
     //m.b. : this change is nothing but a nice way to make sure
     //the CPU goes up !
     
-    AliDebugClassStream(1) <<"HitsToFastRecPoints: N mod = "<<
-                       geom->GetIndexMax()<<endl;
+    AliDebug(1,Form("N mod = %d",geom->GetIndexMax()));
     for(module=0;module<geom->GetIndexMax();module++){
         id       = geom->GetModuleType(module);
         if (!all && !det[id]) continue;

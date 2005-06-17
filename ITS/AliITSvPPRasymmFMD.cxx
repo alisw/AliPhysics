@@ -30,30 +30,14 @@
 // See AliITSvPPRasymmFMD::StepManager().
 
 #include <Riostream.h>
-// #include <stdio.h>
-// #include <stdlib.h>
-
-// #include <TBRIK.h>
-// #include <TCanvas.h>
 #include <TClonesArray.h>
-// #include <TFile.h>    // only required for Tracking function?
 #include <TGeometry.h>
 #include <TLorentzVector.h>
 #include <TMath.h>
 #include <TNode.h>
-// #include <TObjArray.h>
-// #include <TObjString.h>
-// #include <TPCON.h>
-// #include <TSystem.h>
 #include <TTUBE.h>
-// #include <TTUBS.h>
-// #include <TVirtualMC.h>
 
-// #include "AliConst.h"
 #include "AliITS.h"
-// #include "AliITSClusterFinderSDD.h"
-// #include "AliITSClusterFinderSPD.h"
-// #include "AliITSClusterFinderSSD.h"
 #include "AliITSDetType.h"
 #include "AliITSGeant3Geometry.h"
 #include "AliITSgeom.h"
@@ -67,14 +51,12 @@
 #include "AliITSsegmentationSDD.h"
 #include "AliITSsegmentationSPD.h"
 #include "AliITSsegmentationSSD.h"
-// #include "AliITSsimulationSDD.h"
-// #include "AliITSsimulationSPD.h"
-// #include "AliITSsimulationSSD.h"
 #include "AliITSvPPRasymmFMD.h"
+#include "AliLog.h"
+#include "AliMC.h"
 #include "AliMagF.h"
 #include "AliRun.h"
 #include "AliTrackReference.h"
-#include "AliMC.h"
 
 #define GEANTGEOMETRY kTRUE
 
@@ -326,31 +308,31 @@ void AliITSvPPRasymmFMD::CreateGeometry(){
     dchip2 = GetThicknessChip2();    
 
     if(ddet1 < 100. || ddet1 > 300.) {
-	cout << "ITS - WARNING: the detector thickness for layer 1 is outside "
-	    "the range of [100,300] microns. The default value of 200 microns "
-	    "will be used." << endl;
+      AliWarning("The detector thickness for layer 1 is outside ");
+      AliWarning("the range of [100,300] microns. The default value of 200 microns ");
+      AliWarning("will be used.");
 	ddet1=200.;
     } // end if
   
     if(ddet2 < 100. || ddet2 > 300.) {
-	cout << "ITS - WARNING: the detector thickness for layer 2 is outside "
-	    "the range of [100,300] microns. The default value of 200 microns "
-	    "will be used." << endl;
+      AliWarning("The detector thickness for layer 2 is outside ");
+      AliWarning("the range of [100,300] microns. The default value of 200 microns ");
+      AliWarning("will be used.");
 	ddet2=200.;
     }// end if
   
     if(dchip1 < 100. || dchip1 > 300.) {
-	cout << "ITS - WARNING: the chip thickness for layer 1 is outside "
-	    "the range of [100,300] microns. The default value of 200 microns "
-	    "will be used." << endl;
-	dchip1=200.;
+      AliWarning("The chip thickness for layer 1 is outside");
+      AliWarning("the range of [100,300] microns. The default value of 200 microns");
+      AliWarning("will be used.");
+      dchip1=200.;
     }// end if
   
     if(dchip2 < 100. || dchip2 > 300.) {
-	cout << "ITS - WARNING: the chip thickness for layer 2 is outside "
-	    "the range of [100,300] microns. The default value of 200 microns"
-	    " will be used." << endl;
-	dchip2=200.;
+      AliWarning("The chip thickness for layer 2 is outside");
+      AliWarning("the range of [100,300] microns. The default value of 200 microns");
+      AliWarning("will be used");
+      dchip2=200.;
     }// end if
 
     Int_t rails = 1;  // flag for rails (1 --> rails in; 0 --> rails out)
@@ -363,24 +345,21 @@ void AliITSvPPRasymmFMD::CreateGeometry(){
     fluid = GetCoolingFluid();
 
     if(rails != 0 && rails != 1) {
-	cout << "ITS - WARNING: the switch for rails is not set neither "
-	    "to 0 (rails out) nor to 1 (rails in). The default value of "
-	    "1 (rails in) will be used." << endl;
+      AliWarning("The switch for rails is not set neither");
+      AliWarning("to 0 (rails out) nor to 1 (rails in). The default value of");
+      AliWarning("1 (rails in) will be used");
+      rails=1;
     }// end if
 
 
-    cout << "ITS: Detector thickness on layer 1 is set to " << 
-	ddet1 << " microns." << endl;
-    cout << "ITS: Chip thickness on layer 1 is set to " << 
-	dchip1 << " microns." << endl;
-    cout << "ITS: Detector thickness on layer 2 is set to " << 
-	ddet2 << " microns." << endl;
-    cout << "ITS: Chip thickness on layer 2 is set to " << 
-	dchip2 << " microns." << endl;
+    AliInfo(Form("Detector thickness on layer 1 is set to %f microns",ddet1));
+    AliInfo(Form("Chip thickness on layer 1 is set to %f microns",dchip1));
+    AliInfo(Form("Detector thickness on layer 2 is set to %f microns",ddet2));
+    AliInfo(Form("Chip thickness on layer 2 is set to %f microns",dchip2));
     if(rails == 0 ) {
-	cout << "ITS: Rails are out." << endl; 
+      AliInfo("Rails are out.");
     } else {
-	cout << "ITS: Rails are in." << endl;
+      AliInfo("Rails are in.");
     }// end if
 
     ddet1  = ddet1*0.0001/2.; // conversion from tot length in um to half in cm
@@ -5018,7 +4997,7 @@ void AliITSvPPRasymmFMD::InitAliITSgeom(){
 	      "Wrong Monte Carlo. InitAliITSgeom uses TGeant3 calls");
 	return;
     } // end if
-    cout << "Reading Geometry transformation directly from Geant 3." << endl;
+    AliDebug(1,"Reading Geometry transformation directly from Geant 3.");
     const Int_t knlayers = 6;
     const Int_t kndeep = 9;
     Int_t itsGeomTreeNames[knlayers][kndeep],lnam[20],lnum[20];
@@ -5070,7 +5049,7 @@ void AliITSvPPRasymmFMD::InitAliITSgeom(){
     // Sorry, but this is not very pritty code. It should be replaced
     // at some point with a version that can search through the geometry
     // tree its self.
-    cout << "Reading Geometry informaton from Geant3 common blocks" << endl;
+    AliDebug(1,"Reading Geometry informaton from Geant3 common blocks");
     for(i=0;i<20;i++) lnam[i] = lnum[i] = 0;
     for(i=0;i<knlayers;i++)for(j=0;j<kndeep;j++)
         strncpy((char*) &itsGeomTreeNames[i][j],names[i][j],4); 
@@ -5158,12 +5137,8 @@ void AliITSvPPRasymmFMD::Init(){
     //   none.
     // Return:
     //   none.
-    Int_t i;
 
-    cout << endl;
-    for(i=0;i<26;i++) cout << "*";
-    cout << " ITSvPPRasymmFMD" << fMinorVersion << "_Init ";
-    for(i=0;i<25;i++) cout << "*";cout << endl;
+    AliInfo(Form("Minor version %d",fMinorVersion));
     //
     if(fRead[0]=='\0') strncpy(fRead,fEuclidGeomDet,60);
     if(fWrite[0]=='\0') strncpy(fWrite,fEuclidGeomDet,60);
@@ -5174,8 +5149,6 @@ void AliITSvPPRasymmFMD::Init(){
     if(fGeomDetOut) fITSgeom->WriteNewFile(fWrite);
     AliITS::Init();
     //
-    for(i=0;i<72;i++) cout << "*";
-    cout << endl;
     fIDMother = gMC->VolId("ITSV"); // ITS Mother Volume ID.
 }
 //______________________________________________________________________
@@ -5189,7 +5162,7 @@ void AliITSvPPRasymmFMD::SetDefaults(){
     //   none.
     const Float_t kconv = 1.0e+04; // convert cm to microns
 
-    cout << "AliITSvPPRasymmFMD::SetDefaults" << endl;
+    AliInfo("Called");
 
     AliITSDetType *iDetType;
     AliITSgeomSPD  *s0;

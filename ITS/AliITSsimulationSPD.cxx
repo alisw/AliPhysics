@@ -34,6 +34,7 @@
 #include "AliITSresponse.h"
 #include "AliITSsegmentationSPD.h"
 #include "AliITSresponseSPD.h"
+#include "AliLog.h"
 
 //#define DEBUG
 
@@ -295,10 +296,8 @@ void AliITSsimulationSPD::SDigitsToDigits(Int_t module,AliITSpList *pList) {
     // Return:
     //   none.
 
-    if(GetDebug()){
-        cout << "Entering AliITSsimulatinSPD::SDigitsToDigits for module=";
-        cout << module << endl;
-    } // end if GetDebug
+    AliDebug(1,Form("Entering AliITSsimulatinSPD::SDigitsToDigits for module=%d",
+		  module));
     fModule = module;
 
     // noise setting
@@ -803,13 +802,9 @@ void AliITSsimulationSPD::CreateDigit(Int_t module,AliITSpList *pList) {
                 } // end for j1
                 Float_t phys = 0;
                 aliITS->AddSimDigit(0,phys,digits,tracks,hits,charges);
-                if(GetDebug()){
-                    cout << " CreateSPDDigit mod=" << fModule << " r,c=" << r;
-                    cout <<","<<c<< " sig=" << fpList->GetSignalOnly(r,c);
-                    cout << " noise=" << fpList->GetNoise(r,c);
-                    cout << " Msig="<< signal << " Thres=" << GetThreshold();
-                    cout <<endl;
-                }// end if GetDebug
+                AliDebug(1,Form("mod=%d r,c=%d,%d sig=%f noise=%f Msig=%d Thres=%f",
+				fModule,r,c,fpList->GetSignalOnly(r,c),fpList->GetNoise(r,c),
+				signal,GetThreshold()));
             } // end if of threshold condition
         } // for c
     }// end do on pixels
@@ -942,11 +937,10 @@ void AliITSsimulationSPD::WriteSDigits(AliITSpList *pList){
     for(i=0;i<ni;i++)for(j=0;j<nj;j++){
         if(pList->GetSignalOnly(i,j)>0.0){
             aliITS->AddSumDigit(*(pList->GetpListItem(i,j)));
-            if(GetDebug()){
+            if(AliDebugLevel()){
                 cout << "pListSPD: " << *(pList->GetpListItem(i,j)) << endl;
-                cout << " CreateSPDSDigit mod=" << fModule << " r,c=";
-                cout << i  <<","<< j << " sig=" << fpList->GetSignalOnly(i,j);
-                cout << " noise=" << fpList->GetNoise(i,j) <<endl;
+                AliDebug(1,Form("mod=%s r,c=%d %d sig=%f noise=%f",
+				fModule,i,j,fpList->GetSignalOnly(i,j),fpList->GetNoise(i,j)))
             } //  end if GetDebug
         } // end if
     } // end for i,j

@@ -195,7 +195,7 @@ void AliITSv11GeometrySupport::SPDThermalSheald(TGeoVolume *moth){
     yco[6] = 0.0;
     xci[6] = xci[5];
     yci[6] = 0.0;
-    if(GetDebug()){
+    if(AliDebugLevel()){
         Info("SPDThermalSheald","i     \t  xo  yo    \t  xi yi     \t  xbo "
              "ybo   \t   xbi ybi  \t   xco yco   \t   xci yxi");
         for(i=0;i<7;i++){
@@ -205,7 +205,7 @@ void AliITSv11GeometrySupport::SPDThermalSheald(TGeoVolume *moth){
                  xbo[i],ybo[i],xbi[i],ybi[i],
                  xco[i],yco[i],xci[i],yci[i]);
         } // end for i
-    } // end if GetDebug()
+    } // end if AliDebugLevel()
     //+++++++++++++++++++++++++
     sA1->SetVertex(0,xo[0],yo[0]);
     sA1->SetVertex(1,xo[1],yo[1]);
@@ -516,7 +516,7 @@ void AliITSv11GeometrySupport::SPDThermalSheald(TGeoVolume *moth){
                                 "ITSspdShealdWingVV:ITSspdShealdVVt2)+"
                                 "ITSspdShealdWingVV:ITSspdShealdVVt3");
     //
-    if(GetDebug()){
+    if(AliDebugLevel()){
         tranITSspdShealdVVt0->Print();
         rotITSspdShealdVVt1->Print();
         rotITSspdShealdVVt2->Print();
@@ -546,7 +546,7 @@ void AliITSv11GeometrySupport::SPDThermalSheald(TGeoVolume *moth){
         sM1->InspectShape();
         sM2->InspectShape();
         sM->InspectShape();
-    } // end if GetDebug
+    } // end if AliDebugLevel
     //
     TGeoManager *mgr = gGeoManager;
     medSPDcf = mgr->GetMedium("ITSspdCarbonFiber");
@@ -730,7 +730,7 @@ void AliITSv11GeometrySupport::SPDThermalSheald(TGeoVolume *moth){
     vM->AddNode(vB3,7,new TGeoCombiTrans(*tranb,*rot));
     vM->AddNode(vB3,8,new TGeoCombiTrans(*tranbm,*rot));
     vM->AddNode(vC3,4,new TGeoCombiTrans(*tranc,*rot));
-    if(GetDebug()){
+    if(AliDebugLevel()){
         vA1->PrintNodes();
         vAh1->PrintNodes();
         vA2->PrintNodes();
@@ -795,12 +795,12 @@ void AliITSv11GeometrySupport::SDDCone(TGeoVolume *moth){
                     ktsOuterR-ktscarbonFiberth,0.5*ktsLength);
     sD = new TGeoTube("ITS SDD CC M6 bolt end",0.0,0.5*ktsBoltDiameter,
                     0.5*ktsBoltDepth);
-    if(GetDebug()){
+    if(AliDebugLevel()){
         sA->InspectShape();
         sB->InspectShape();
         sC->InspectShape();
         sD->InspectShape();
-    } // end if GetDebug
+    } // end if AliDebugLevel
     //
     TGeoManager *mgr = gGeoManager;
     medSDDcf = mgr->GetMedium("ITSssdCarbonFiber");
@@ -847,7 +847,7 @@ void AliITSv11GeometrySupport::SDDCone(TGeoVolume *moth){
         tran = new TGeoTranslation("",x,y,-z);
         vC->AddNode(vD,i+n+1,tran);
     } // end for i
-    if(GetDebug()){
+    if(AliDebugLevel()){
         vA->PrintNodes();
         vB->PrintNodes();
         vC->PrintNodes();
@@ -1071,37 +1071,37 @@ void AliITSv11GeometrySupport::SDDCone(TGeoVolume *moth){
     //
     rot = new TGeoRotation("ITSsddRotZ30",0.0,0.0,30.0);
     rot->RegisterYourself();
-    if(GetDebug()) rot->Print();
+    if(AliDebugLevel()) rot->Print();
     rot = new TGeoRotation("ITSsddRotZ60",0.0,0.0,60.0);
     rot->RegisterYourself();
-    if(GetDebug()) rot->Print();
+    if(AliDebugLevel()) rot->Print();
     rot = new TGeoRotation("ITSsddRotZ90",0.0,0.0,90.0);
     rot->RegisterYourself();
-    if(GetDebug()) rot->Print();
+    if(AliDebugLevel()) rot->Print();
     rot = new TGeoRotation("ITSsddRotZ120",0.0,0.0,120.0);
     rot->RegisterYourself();
-    if(GetDebug()) rot->Print();
+    if(AliDebugLevel()) rot->Print();
     rot = new TGeoRotation("ITSsddRotZ150",0.0,0.0,150.0);
     rot->RegisterYourself();
-    if(GetDebug()) rot->Print();
+    if(AliDebugLevel()) rot->Print();
     rot = new TGeoRotation("ITSsddRotZ180",0.0,0.0,180.0);
     rot->RegisterYourself();
-    if(GetDebug()) rot->Print();
+    if(AliDebugLevel()) rot->Print();
     rot = new TGeoRotation("ITSsddRotZ210",0.0,0.0,210.0);
     rot->RegisterYourself();
-    if(GetDebug()) rot->Print();
+    if(AliDebugLevel()) rot->Print();
     rot = new TGeoRotation("ITSsddRotZ240",0.0,0.0,240.0);
     rot->RegisterYourself();
-    if(GetDebug()) rot->Print();
+    if(AliDebugLevel()) rot->Print();
     rot = new TGeoRotation("ITSsddRotZ270",0.0,0.0,270.0);
     rot->RegisterYourself();
-    if(GetDebug()) rot->Print();
+    if(AliDebugLevel()) rot->Print();
     rot = new TGeoRotation("ITSsddRotZ300",0.0,0.0,300.0);
     rot->RegisterYourself();
-    if(GetDebug()) rot->Print();
+    if(AliDebugLevel()) rot->Print();
     rot = new TGeoRotation("ITSsddRotZ330",0.0,0.0,330.0);
     rot->RegisterYourself();
-    if(GetDebug()) rot->Print();
+    if(AliDebugLevel()) rot->Print();
     sL = new TGeoCompositeShape("ITS SDD Suport Cone","((((((((((((((((("
                                 "ITSsddSuportConeCarbonFiberSurfaceE -"
                                 "ITSsddSuportConeHoleH)  -"
@@ -1165,7 +1165,7 @@ void AliITSv11GeometrySupport::SDDCone(TGeoVolume *moth){
                                 "ITSsddSuportConeHoleK:ITSsddRotZ240) -"
                                 "ITSsddSuportConeHoleK:ITSsddRotZ300");
     //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    if(GetDebug()){
+    if(AliDebugLevel()){
         sE->InspectShape();
         sF->InspectShape();
         sG->InspectShape();
@@ -1176,7 +1176,7 @@ void AliITSv11GeometrySupport::SDDCone(TGeoVolume *moth){
         sL->InspectShape();
         sM->InspectShape();
         sN->InspectShape();
-    } // end if GetDebug()
+    } // end if AliDebugLevel()
     //
     TGeoVolume *vL,*vM,*vN;
     vL = new TGeoVolume("ITSsddConeL",sL,medSDDcf);
@@ -1205,7 +1205,7 @@ void AliITSv11GeometrySupport::SDDCone(TGeoVolume *moth){
     rot = new TGeoRotation("",0.0,180.0*fgkDegree,0.0);
     rotran = new TGeoCombiTrans("",0.0,0.0,kconZ0,rot);
     moth->AddNode(vL,2,rotran);
-    if(GetDebug()){
+    if(AliDebugLevel()){
         tran->Print();
         rot->Print();
         rotran->Print();
@@ -1322,7 +1322,7 @@ void AliITSv11GeometrySupport::SSDCone(TGeoVolume *moth){
     sCE = new TGeoTube("ITS SSD Thermal Centeral Cylinder PinCE",
                       0.0,kcylRPin,0.5*kcylZPin);
     //
-    if(GetDebug()){
+    if(AliDebugLevel()){
         sCA->InspectShape();
         sCB->InspectShape();
         sCC->InspectShape();
@@ -1364,7 +1364,7 @@ void AliITSv11GeometrySupport::SSDCone(TGeoVolume *moth){
     vCB->AddNode(vCC,1,0);
     vCA->AddNode(vCB,1,0);
     moth->AddNode(vCA,1,0);
-    if(GetDebug()){
+    if(AliDebugLevel()){
         vCA->PrintNodes();
         vCB->PrintNodes();
         vCC->PrintNodes();
@@ -1817,7 +1817,7 @@ void AliITSv11GeometrySupport::SSDCone(TGeoVolume *moth){
     TGeoCombiTrans *rotranBrTZ300 = new TGeoCombiTrans("ITSssdConeBrTZ300",
                                                   vg[0],vg[1],vg[2],rotZ300);
     rotranBrTZ300->RegisterYourself();
-    if(GetDebug()){
+    if(AliDebugLevel()){
         rotZ225->Print();
         rotZ675->Print();
         rotZ90->Print();
@@ -1848,7 +1848,7 @@ void AliITSv11GeometrySupport::SSDCone(TGeoVolume *moth){
         rotranBrTZ60->Print();
         rotranBrTZ180->Print();
         rotranBrTZ300->Print();
-    } // end if GetDebug()
+    } // end if AliDebugLevel()
     sA = new TGeoCompositeShape("ITSssdSuportConeCarbonFiberSurfaceA",
         "(((((((((((((((((((((((((((("
         "ITSssdSuportConeCarbonFiberSurfaceA0 +"
@@ -1969,7 +1969,7 @@ void AliITSv11GeometrySupport::SSDCone(TGeoVolume *moth){
     sS = new TGeoTube("ITS Air in front of Stainless Steal Screw end, M6S",
                       sQ->GetRmin(3),sQ->GetRmax(3),0.5*kconCthick);
     //
-    if(GetDebug()){
+    if(AliDebugLevel()){
         sA0->InspectShape();
         sB0->InspectShape();
         sC0->InspectShape();
@@ -1994,7 +1994,7 @@ void AliITSv11GeometrySupport::SSDCone(TGeoVolume *moth){
         sB->InspectShape();
         sC->InspectShape();
         sF->InspectShape();
-    } // end if GetDebug()
+    } // end if AliDebugLevel()
     TGeoVolume *vA,*vB,*vC,*vD,*vE,*vF,*vQ,*vR,*vS,*vT;
     //
     vA = new TGeoVolume("ITSssdConeA",sA,medSSDcf); // Carbon Fiber
@@ -2184,7 +2184,7 @@ void AliITSv11GeometrySupport::SSDCone(TGeoVolume *moth){
             vB->AddNode(vE,++nCopyvE,tran);
         } // end for j
     } // end for i
-    if(GetDebug()){
+    if(AliDebugLevel()){
         vA->PrintNodes();
         vB->PrintNodes();
         vC->PrintNodes();
@@ -2289,11 +2289,11 @@ void AliITSv11GeometrySupport::ServicesCableSupport(TGeoVolume *moth){
     sM24->Z(2)    = zA24[kfrm24NZsections] + kfrm24Width;
     sM24->Rmin(2) = sA24[kfrm24NZsections]->GetRmin();
     sM24->Rmax(2) = sA24[kfrm24NZsections]->GetRmax();
-    if(GetDebug()){
+    if(AliDebugLevel()){
         sM24->InspectShape();
         for(i=0;i<kfrm24NZsections+1;i++) sA24[i]->InspectShape();
         for(i=0;i<kfrm24NZsections;i++)   sB24[i]->InspectShape();
-    } // end if GetDebug()
+    } // end if AliDebugLevel()
     TGeoVolume *vA24[kfrm24NZsections+1],*vB24[kfrm24NZsections],*vM24;
     TGeoTranslation *tran;
     TGeoRotation    *rot,*rot1;
@@ -2353,7 +2353,7 @@ void AliITSv11GeometrySupport::ServicesCableSupport(TGeoVolume *moth){
         delete rot;// rot not explicity used in AddNode functions.
         moth->AddNode(vM24,i+1,tranrot);
     } // end for i
-    if(GetDebug()){
+    if(AliDebugLevel()){
         for(i=0;i<kfrm24NZsections+1;i++) vA24[i]->PrintNodes();
         for(i=0;i<kfrm24NZsections;i++) vB24[i]->PrintNodes();
         vM24->PrintNodes();
@@ -2666,7 +2666,7 @@ void AliITSv11GeometrySupport::ServicesCableSupport(TGeoVolume *moth){
     sMT24->Rmax(4) = TMath::Hypot(sT24->GetX(3)+sT24->GetXOffset(2),
                                   sT24->GetY(3)+sT24->GetYOffset(2));
     //
-    if(GetDebug()){
+    if(AliDebugLevel()){
         sT24->InspectShape();
         sW24->InspectShape();
         sTl24->InspectShape();
@@ -2680,7 +2680,7 @@ void AliITSv11GeometrySupport::ServicesCableSupport(TGeoVolume *moth){
         sV3PP24->InspectShape();
         sV2PP24->InspectShape();
         sMT24->InspectShape();
-    } // end if GetDebug()
+    } // end if AliDebugLevel()
     //
     TGeoVolume *vC24[kct24Ntrays],*vT24[kct24Ntrays],*vPP24[kft24NPatchPannels];
     TGeoVolume *vWTV024,*vW24,*vU24,*vUFMD24,*vVl24,*vVlFMD24,*vVs24,*vMT24;
@@ -2766,7 +2766,7 @@ void AliITSv11GeometrySupport::ServicesCableSupport(TGeoVolume *moth){
         tha[i+  kct24Ntrays/2] = 180.0 + tha[i];
         tha[i+3*kct24Ntrays/4] = 270.0 + tha[i];
     } // end for i
-    if(GetDebug()) for(i=0;i<kct24Ntrays;i++) Info("ServicesCableSupport",
+    if(AliDebugLevel()) for(i=0;i<kct24Ntrays;i++) Info("ServicesCableSupport",
                                                   "tha[%d]=%f",i,tha[i]);
     Char_t *airName[kct24Ntrays]={"FMD0","SDD0","SSD0","SSD1","SPD0","SPD1",
                                   "TV00","SDD1","SDD2","SPD2","SPD3","ALG0",
@@ -2815,7 +2815,7 @@ void AliITSv11GeometrySupport::ServicesCableSupport(TGeoVolume *moth){
         vT24[i]->SetFillColor(vT24[i]->GetLineColor());
         vT24[i]->SetFillStyle(4000); // 0% transparent
         rot = new TGeoRotation("",0.0,0.0,tha[i]-90.0);
-        if(GetDebug()) rot->Print();
+        if(AliDebugLevel()) rot->Print();
         vMT24->AddNode(vT24[i],1,rot);
         //
         if(strncmp(trayName[i],"FMD",3)==0){
@@ -2872,12 +2872,12 @@ void AliITSv11GeometrySupport::ServicesCableSupport(TGeoVolume *moth){
         vPP24[i]->SetFillColor(vPP24[i]->GetLineColor());
         vPP24[i]->SetFillStyle(4000); // 0% transparent
         rot = new TGeoRotation("",0.0,0.0,thb[i]-90.0);
-        if(GetDebug()) rot->Print();
+        if(AliDebugLevel()) rot->Print();
         vMT24->AddNode(vPP24[i],1,rot);
     } // end for i
     tran = new TGeoTranslation("",0.0,0.0,kfrm24Z0);
     moth->AddNode(vMT24,1,tran);
-    if(GetDebug()){
+    if(AliDebugLevel()){
         for(i=0;i<kct24Ntrays;i++) vT24[i]->PrintNodes();
         for(i=0;i<kct24Ntrays-8;i++) vC24[i]->PrintNodes();
         vU24->PrintNodes();
@@ -2935,11 +2935,11 @@ void AliITSv11GeometrySupport::ServicesCableSupport(TGeoVolume *moth){
     sB26->SetVertex(5,sA26[1]->GetRmax1()-r,-0.5*kfrm26Width);
     sB26->SetVertex(6,sA26[1]->GetRmin1()-r,-0.5*kfrm26Width);
     sB26->SetVertex(7,sA26[1]->GetRmin1()-r,+0.5*kfrm26Width);
-    if(GetDebug()){
+    if(AliDebugLevel()){
         for(i=0;i<kfrm26NZsections+1;i++) sA26[i]->InspectShape();
         sM26->InspectShape();
         sB26->InspectShape();
-    } // end if GetDebug()
+    } // end if AliDebugLevel()
     //
     TGeoVolume *vA26[kfrm26NZsections+1],*vB26,*vM26;
     //
@@ -2994,7 +2994,7 @@ void AliITSv11GeometrySupport::ServicesCableSupport(TGeoVolume *moth){
         delete rot; // rot not explicity used in AddNode functions.
         moth->AddNode(vM26,i+1,tranrot);
     } // end for i
-    if(GetDebug()){
+    if(AliDebugLevel()){
         for(i=0;i<kfrm26NZsections+1;i++) vA26[i]->PrintNodes();
         vB26->PrintNodes();
         vM26->PrintNodes();

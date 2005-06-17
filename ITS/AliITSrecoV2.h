@@ -17,7 +17,7 @@
    const Int_t kMaxClusterPerLayer20=7000*10*2/20;
    const Int_t kMaxDetectorPerLayer=1000;
 
-   const Int_t kLayersNotToSkip[]={0,0,0,0,0,0};
+   const Int_t kLayersNotToSkip[6]={0,0,0,0,0,0};
    const Int_t kLastLayerToTrackTo=0;
 
    const Int_t kMaxLayer  = 6;

@@ -117,18 +117,15 @@ pixel coordinate system.
 // and AliITSgeomSSD for a more detailed example.
 ////////////////////////////////////////////////////////////////////////
 #include <Riostream.h>
-//#include <stdlib.h>
-//#include <stdio.h>
-//#include <string.h>
-//#include <ctype.h>
 
-#include <TSystem.h>
 #include <TRandom.h>
+#include <TSystem.h>
 
 #include "AliITSgeom.h"
-#include "AliITSgeomSPD.h"
 #include "AliITSgeomSDD.h"
+#include "AliITSgeomSPD.h"
 #include "AliITSgeomSSD.h"
+#include "AliLog.h"
 
 ClassImp(AliITSgeom)
 
@@ -265,18 +262,18 @@ void AliITSgeom::ReadNewFile(const char *filename){
     char *filtmp=0;
 
     filtmp = gSystem->ExpandPathName(filename);
-    cout << "AliITSgeom, Reading New .det file " << filtmp << endl;
+    AliInfo(Form("Reading New .det file %s",filtmp));
     fp = new ifstream(filtmp,ios::in);  // open file to write
     while(fp->get(c)!=NULL){ // for ever loop
 	if(c==' ') continue; // remove blanks
 	if(c=='\n') continue;
-	if(c=='#' || c=='!'){for(;fp->get(c)!=NULL,c!='\n';); continue;}
+	if(c=='#' || c=='!') {while(fp->get(c)) if(c=='\n') break; continue;}
 	if(c=='/'){
 	    fp->get(c);{
-		if(c=='/'){for(;fp->get(c)!=NULL,c!='\n';);continue;}
+	      if(c=='/') {while(fp->get(c)) if(c=='\n') break; continue;}
 		if(c=='*'){
 		NotYet:
-		    for(;fp->get(c)!=NULL,c!='*';);
+		    while(fp->get(c)) if(c=='*') break;
 		    fp->get(c);{
 			if(c=='/') continue;
 			goto NotYet;
@@ -346,8 +343,8 @@ void AliITSgeom::ReadNewFile(const char *filename){
 		ssd = 0;
 		break;
 	    default:
-		Error("ReadNewFile","Unknown fShape type number=%d c=%c",ldet,c);
-		for(;fp->get(c)==NULL,c!='\n';); // skip to end of line.
+		AliError(Form("Unknown fShape type number=%d c=%c",ldet,c));
+		while(fp->get(c)) if(c=='\n') break; // skip to end of line.
 		break;
 	    } // end switch
 	    break;
@@ -361,8 +358,8 @@ void AliITSgeom::ReadNewFile(const char *filename){
 	    m = 0;
 	    break;
 	default:
-	    Error("ReadNewFile","Data line i=%d c=%c",i,c);
-	    for(;fp->get(c)==NULL,c!='\n';); // skip this line
+	    AliError(Form("ReadNewFile","Data line i=%d c=%c",i,c));
+	    while(fp->get(c)) if(c=='\n') break; // skip this line
 	    break;
 	} // end switch i
     } // end while

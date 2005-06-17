@@ -14,169 +14,6 @@
  **************************************************************************/
 /*
   $Id$
-  $Log$
-  Revision 1.38  2005/02/15 13:39:35  masera
-  V2 clusterer moved to the standard framework. V2 clusters and recpoints are still different objects for the moment
-
-  Revision 1.37  2004/06/10 21:00:24  nilsen
-  Modifications associated with remerging the Ba/Sa and Dubna pixel simulations,
-  some cleaning of general code (including coding convensions), and adding some
-  protections associated with SetDefaults/SetDefaultSimulations which should help
-  with the Test beam simulations. Details below. The default SPD simulation for
-  the general ITS runs/geometry is still the Ba/Sa, but for the Test beam
-  geometries this has been changed to the merged versions.
-  File: AliITS.cxx                         Modified
-  File: AliITS.h                           Modified
-        In lined many one-two line functions. Added some protection to
-        SetDefaults(), SetDefaultSimulation(), and SetDefaultClusterFinders(),
-        such that they should now even work when only one detector type has
-        been defined (as it should be for the test beams...). Some mostly
-        cosmetic issues associated with getting branch names for digits. And
-        Generally some cleaning up of the code.
-  File: AliITSClusterFinder.cxx            Modified
-  File: AliITSClusterFinder.h              Modified
-        Did some additional consolidation of data into the base class, added
-        TClonesArray *fClusters, a fDebug, and fModule variables. Otherwise
-        some cosmetic and coding conversion changes.
-  File: AliITSClusterFinderSDD.cxx         Modified
-  File: AliITSClusterFinderSDD.h           Modified
-        Changes to be consistent with the modified base class, and cosmetic
-        and coding conversion changes.
-  File: AliITSClusterFinderSPD.cxx         Modified
-  File: AliITSClusterFinderSPD.h           Modified
-        Changes to be consistent with the modified base class, and cosmetic
-        and coding conversion changes.
-  File: AliITSClusterFinderSPDdubna.h       Removed
-  File: AliITSClusterFinderSPDdubna.cxx     Removed
-        Since we have ClusterFinderSPD and V2 and this version isn't being
-        maintained, it is being retired.
-  File: AliITSClusterFinderSSD.cxx         Modified
-  File: AliITSClusterFinderSSD.h           Modified
-        Changes to be consistent with the modified base class, and cosmetic
-        and coding conversion changes.
-  File: AliITSDetType.cxx                  Modified
-  File: AliITSDetType.h                    Modified
-        Added a new class variable to indicate what the detector type is
-        AliITSDetector fDetType;  values of kSPD, kSDD, kSSD, .... Otherwise
-        cosmetic and Coding convention changes.
-  File: AliITSLoader.cxx                   Modified
-  File: AliITSLoader.h                     Modified
-        Some changes which are not complete. The idea is to be able to get,
-        simply via one call, a specific hit, Sdigit, digit, RecPoint,...
-        without all of the usual over head of initializing TClonesArrays setting
-        branch addresses and the like. Work is far form ready.
-  File: AliITSdcsSSD.cxx                   Modified
-        Some nearly cosmetic changes necessary due to changes to response and
-        segmentation class'.
-  File: AliITSgeom.h                       Modified
-        In the definition of AliITSDetector type, added kND=-1, no detector
-        defined. Expect to use it later(?).
-  File: AliITSresponse.h                   Modified
-        Basically cosmetic. Mostly changing Float_t to Double_t.
-  File: AliITSresponseSDD.cxx              Modified
-  File: AliITSresponseSDD.h                Modified
-        Basically the cosmetic and Float_t to Double_t
-  File: AliITSresponseSPD.cxx              Modified
-  File: AliITSresponseSPD.h                Modified
-        Mostly Float_t to Double_t and added in the IsPixelDead function for
-        the dubna version (otherwise the merging had been done).
-  File: AliITSresponseSPDdubna.h           Removed
-  File: AliITSresponseSPDdubna.cxx         Removed
-        We should be able to remove this class now. AliITSresponseSPD is now
-        used for both the Bari-Salerno and the dubna models.
-  File: AliITSresponseSSD.cxx              Modified
-  File: AliITSresponseSSD.h                Modified
-        Float_t to Double_t changes.
-  File: AliITSsegmentation.h               Modified
-        Made LocaltoDet return a Bool_t. Now if the x,z location is outside
-        of the volume, it returns kFALSE. see below.
-  File: AliITSsegmentationSDD.cxx          Modified
-  File: AliITSsegmentationSDD.h            Modified
-        Made LocaltoDet return a Bool_t. Now if the x,z location is outside
-        of the volume, it returns kFALSE.
-  File: AliITSsegmentationSPD.cxx          Modified
-  File: AliITSsegmentationSPD.h            Modified
-        Made LocaltoDet return a Bool_t. Now if the x,z location is outside
-        of the volume, it returns kFALSE.
-  File: AliITSsegmentationSSD.cxx          Modified
-  File: AliITSsegmentationSSD.h            Modified
-        Made LocaltoDet return a Bool_t. Now if the x,z location is outside
-        of the volume, it returns kFALSE. see below.
-  File: AliITSsimulation.cxx               Modified
-  File: AliITSsimulation.h                 Modified
-        Added fDebug variable, new Constructor for use below. Cosmetic and
-        coding convention changes
-  File: AliITSsimulationSDD.cxx            Modified
-  File: AliITSsimulationSDD.h              Modified
-        Added new Constructor, removed redundant variables and Cosmetic and
-        coding convention changes.
-  File: AliITSsimulationSPD.cxx            Modified
-  File: AliITSsimulationSPD.h              Modified
-        Removed some dead code, made changes as needed by the changes above
-        (response and segmentation classes...). a few cosmetic and coding
-        convention changes.
-  File: AliITSsimulationSPDdubna.cxx       Modified
-  File: AliITSsimulationSPDdubna.h         Modified
-        New merged version, implemented new and old coupling with switch,
-        coding convention and similar changes. (found 1 bugs, missing
-        ! in front of if(mod-LineSegmentL(....,).
-  File: AliITSsimulationSSD.cxx            Modified
-  File: AliITSsimulationSSD.h              Modified
-        removed redundant variables with base class. Fixed for coding
-        convention and other cosmetic changes.
-  File: AliITSvSDD03.cxx                   Modified
-  File: AliITSvSPD02.cxx                   Modified
-  File: AliITSvSSD03.cxx                   Modified
-        These two have their private versions of SetDefaults and
-        SetDefaultSimulation which have been similarly protected as in AliITS.cxx
-  File: ITSLinkDef.h                       Modified
-  File: libITS.pkg                         Modified
-        Versions which include v11 geometry and other private changes
-
-  Revision 1.36  2004/01/27 16:12:03  masera
-  Coding conventions for AliITSdigitXXX classes and AliITSTrackerV1
-
-  Revision 1.35  2003/11/10 16:33:50  masera
-  Changes to obey our coding conventions
-
-  Revision 1.34  2003/09/11 13:48:52  masera
-  Data members of AliITSdigit classes defined as protected (They were public)
-
-  Revision 1.33  2003/07/21 14:20:51  masera
-  Fix to track labes in SDD Rec-points
-
-  Revision 1.31.2.1  2003/07/16 13:18:04  masera
-  Proper fix to track labels associated to SDD rec-points
-
-  Revision 1.31  2003/05/19 14:44:41  masera
-  Fix to track labels associated to SDD rec-points
-
-  Revision 1.30  2003/03/03 16:34:35  masera
-  Corrections to comply with coding conventions
-
-  Revision 1.29  2002/10/25 18:54:22  barbera
-  Various improvements and updates from B.S.Nilsen and T. Virgili
-
-  Revision 1.28  2002/10/22 14:45:29  alibrary
-  Introducing Riostream.h
-
-  Revision 1.27  2002/10/14 14:57:00  hristov
-  Merging the VirtualMC branch to the main development branch (HEAD)
-
-  Revision 1.23.4.2  2002/10/14 13:14:07  hristov
-  Updating VirtualMC to v3-09-02
-
-  Revision 1.26  2002/09/09 17:23:28  nilsen
-  Minor changes in support of changes to AliITSdigitS?D class'.
-
-  Revision 1.25  2002/05/10 22:29:40  nilsen
-  Change my Massimo Masera in the default constructor to bring things into
-  compliance.
-
-  Revision 1.24  2002/04/24 22:02:31  nilsen
-  New SDigits and Digits routines, and related changes,  (including new
-  noise values).
-
  */
 /////////////////////////////////////////////////////////////////////////// 
 //  Cluster finder                                                       //
@@ -188,14 +25,15 @@
 #include <TMath.h>
 #include <math.h>
 
+#include "AliITS.h"
 #include "AliITSClusterFinderSDD.h"
 #include "AliITSMapA1.h"
-#include "AliITS.h"
-#include "AliITSdigitSDD.h"
 #include "AliITSRawClusterSDD.h"
 #include "AliITSRecPoint.h"
-#include "AliITSsegmentationSDD.h"
+#include "AliITSdigitSDD.h"
 #include "AliITSresponseSDD.h"
+#include "AliITSsegmentationSDD.h"
+#include "AliLog.h"
 #include "AliRun.h"
 
 ClassImp(AliITSClusterFinderSDD)
@@ -298,7 +136,7 @@ void AliITSClusterFinderSDD::Find1DClusters(){
         } // anodes
 
         for(k=0;k<fNofAnodes;k++) {
-            if(GetDebug(5)) cout<<"Anode: "<<k+1<<", Wing: "<<j+1<< endl;
+            AliDebug(5,Form("Anode: %d, Wing: %d",k+1,j+1));
             idx = j*fNofAnodes+k;
             Int_t imax  = 0;
             Int_t imaxd = 0;
@@ -489,7 +327,7 @@ void AliITSClusterFinderSDD::Find1DClustersE(){
                                                       nTsteps,start,stop,
                                                       start, stop, 1, k, k );
                             fITS->AddCluster( 1, &clust );
-                            if(GetDebug(5)) clust.PrintInfo();
+                            if(AliDebugLevel()>=5) clust.PrintInfo();
                             nClu++;
                         } // end if nTsteps
                         on = kFALSE;
@@ -498,7 +336,7 @@ void AliITSClusterFinderSDD::Find1DClustersE(){
             } // samples
         } // anodes
     } // wings
-    if(GetDebug(3)) cout << "# Rawclusters " << nClu << endl;         
+    AliDebug(3,Form("# Rawclusters %d",nClu));         
     return; 
 }
 //_______________________________________________________________________
@@ -983,7 +821,7 @@ void AliITSClusterFinderSDD::ResolveClusters(){
                 if( peakpos < 0 ) { 
                     //Warning("ResolveClusters",
                     //        "Digit not found for cluster");
-                    //if(GetDebug(3)) clusterI.PrintInfo(); 
+                    //if(AliDebugLevel()>=3) clusterI.PrintInfo(); 
                    continue;
                 }
                 clusterI.SetPeakPos( peakpos );    
@@ -1038,10 +876,10 @@ void  AliITSClusterFinderSDD::GroupClusters(){
             if(clusterI->T() < fTimeStep*10) fDAnode = 1.5;  // TB 1.
             Bool_t pair = clusterI->Brother(clusterJ,fDAnode,fDTime);
             if(!pair) continue;
-            if(GetDebug(4)){
+            if(AliDebugLevel()>=4){
                 clusterI->PrintInfo();
                 clusterJ->PrintInfo();
-            } // end if GetDebug
+            } // end if AliDebugLevel
             clusterI->Add(clusterJ);
             label[j] = 1;
             Clusters()->RemoveAt(j);

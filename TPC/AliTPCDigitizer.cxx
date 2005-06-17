@@ -31,7 +31,7 @@
 #include "AliPDG.h"
 #include "AliRunDigitizer.h"
 #include "AliSimDigits.h"
-
+#include "AliLog.h"
 
 ClassImp(AliTPCDigitizer)
 
@@ -48,9 +48,7 @@ AliTPCDigitizer::AliTPCDigitizer(AliRunDigitizer* manager)
 {
 // ctor which should be used
   fDebug =0;
-  if (GetDebug()>2) 
-    cerr<<"AliTPCDigitizer::AliTPCDigitizer"
-       <<"(AliRunDigitizer* manager) was processed"<<endl;
+  AliDebug(2,"(AliRunDigitizer* manager) was processed");
 }
 
 //------------------------------------------------------------------------

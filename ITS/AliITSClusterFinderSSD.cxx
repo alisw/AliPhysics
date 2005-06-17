@@ -18,20 +18,23 @@
 //  * period of March - June 2001                                            //
 // **************************************************************************//
 ///////////////////////////////////////////////////////////////////////////////
+
 #include <Riostream.h>
 #include <TArrayI.h>
-#include "AliRun.h"
+
 #include "AliITS.h"
-#include "AliITSdigitSSD.h"
+#include "AliITSClusterFinderSSD.h"
+#include "AliITSMapA1.h"
 #include "AliITSRawClusterSSD.h"
 #include "AliITSRecPoint.h"
-#include "AliITSMapA1.h"
-#include "AliITSClusterFinderSSD.h"
 #include "AliITSclusterSSD.h"
+#include "AliITSdigitSSD.h"
+#include "AliITSgeom.h"
 #include "AliITSpackageSSD.h"
 #include "AliITSresponseSSD.h"
 #include "AliITSsegmentationSSD.h"
-#include "AliITSgeom.h"
+#include "AliLog.h"
+#include "AliRun.h"
 
 const Bool_t AliITSClusterFinderSSD::fgkSIDEP=kTRUE;
 const Bool_t AliITSClusterFinderSSD::fgkSIDEN=kFALSE;
@@ -177,7 +180,7 @@ void AliITSClusterFinderSSD::InitReconstruction(){
     Float_t stereoP,stereoN;
     GetSeg()->Angles(stereoP,stereoN);
     CalcStepFactor(stereoP,stereoN);
-    if(GetDebug(1)) cout<<"fSFF = "<<fSFF<<"  fSFB = "<<fSFB<<"\n";
+    AliDebug(1,Form("fSFF = %d   fSFB = %d",fSFF,fSFB));
 }
 //______________________________________________________________________
 void AliITSClusterFinderSSD::FindRawClusters(Int_t module){
@@ -267,8 +270,7 @@ void AliITSClusterFinderSSD::FindNeighbouringDigits(){
 
     } // end condition on  NDigits 
 
-    if (GetDebug(1)) cout<<"\n Found clusters: fNClusterP = "<<fNClusterP
-		   <<"  fNClusterN ="<<fNClusterN<<"\n";
+    AliDebug(1,Form("\n Found clusters: fNClusterP = %d  fNClusterN =%d",fNClusterP,fNClusterN));
 }
 //______________________________________________________________________
 void AliITSClusterFinderSSD::SeparateOverlappedClusters(){
@@ -452,7 +454,7 @@ void AliITSClusterFinderSSD::FillDigitsIndex(){
             // CPU consuming double check
             for( k=0;k<pns;k++){
                 if (tmp==psidx[k]){
-                    if (GetDebug(1)) cout<<"Such a digit exists \n";
+                    AliDebug(1,"Such a digit exists");
                     bit=0;
                 } // end if
             } // end for k
@@ -467,7 +469,7 @@ void AliITSClusterFinderSSD::FillDigitsIndex(){
             // same as above
             for( k=0;k<nns;k++){
                 if (tmp==nsidx[k]){
-                    if (GetDebug(1)) cout<<"Such a digit exists \n";
+                    AliDebug(1,"Such a digit exists");
                     bit=0;
                 } // end if
             } // for k
@@ -482,7 +484,7 @@ void AliITSClusterFinderSSD::FillDigitsIndex(){
     delete [] psidx;
     delete [] nsidx;
 
-    if(GetDebug(1)) cout<<"Digits: P = "<<fNDigitsP<<" N = "<<fNDigitsN<<endl;
+    AliDebug(1,Form("Digits: P = %d N = %d",fNDigitsP,fNDigitsN));
 }
 //______________________________________________________________________
 void AliITSClusterFinderSSD::SortDigits(){

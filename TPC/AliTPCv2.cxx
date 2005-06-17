@@ -33,17 +33,18 @@
 
 #include <TLorentzVector.h>
 #include <TMath.h>
-#include <TVirtualMC.h>
 #include <TPDGCode.h>
+#include <TVirtualMC.h>
 
 #include "AliConst.h"
+#include "AliLog.h"
+#include "AliMC.h"
 #include "AliRun.h"
 #include "AliTPCDigitsArray.h"
 #include "AliTPCParam.h"
 #include "AliTPCParamSR.h"
 #include "AliTPCTrackHitsV2.h"
 #include "AliTPCv2.h"
-#include "AliMC.h"
 
 ClassImp(AliTPCv2)
  
@@ -115,18 +116,18 @@ void AliTPCv2::CreateGeometry()
     for (i = 0; i < 6; ++i) {
       if (fSecLows[i] >= 0 && fSecLows[i] < 2*nInnerSector) {
        ifl1 = 1;
-       printf("%s: *** SECTOR %d selected\n",ClassName(),fSecLows[i]);
+       AliInfo(Form("*** SECTOR %d selected",fSecLows[i]));
       }
     }
 
   } else {
-    printf("%s: *** ALL LOWER SECTORS SELECTED ***\n",ClassName());
+    AliInfo("*** ALL LOWER SECTORS SELECTED ***");
     ifl1 = 1;
   }
 
   if (ifl1 == 0) {
-    printf("%s: *** ERROR: AT LEAST ONE LOWER SECTOR MUST BE SPECIFIED ***\n",ClassName());
-    printf("%s: !!! PROGRAM STOPPED !!!\n",ClassName());
+    AliError("*** AT LEAST ONE LOWER SECTOR MUST BE SPECIFIED ***");
+    AliError("!!! PROGRAM STOPPED !!!");
     exit(1);
   }
 
@@ -135,12 +136,12 @@ void AliTPCv2::CreateGeometry()
     for (i = 0; i < 12; ++i) {
       if (fSecUps[i] > 2*nInnerSector-1 && 
           fSecUps[i] < 2*(nInnerSector+nOuterSector)) {
-	printf("%s: *** SECTOR %d selected\n",ClassName(),fSecUps[i]);
+	AliInfo(Form("*** SECTOR %d selected",fSecUps[i]));
       }
     }
     
   } else {
-    printf("%s: *** ALL UPPER SECTORS SELECTED ***\n",ClassName());
+    AliInfo("*** ALL UPPER SECTORS SELECTED ***");
   }
   
  
@@ -1811,8 +1812,8 @@ void AliTPCv2::Init()
 
   gMC->Gstpar(idtmed[2],"LOSS",5); // specific energy loss
 
-  printf("%s: *** TPC version 2 initialized ***\n",ClassName());
-  printf("%s: Maximum number of steps = %d\n",ClassName(),gMC->GetMaxNStep());
+  AliInfo("*** TPC version 2 initialized ***");
+  AliInfo(Form("Maximum number of steps = %d",gMC->GetMaxNStep()));
 
   //
   

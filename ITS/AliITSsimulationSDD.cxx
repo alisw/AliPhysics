@@ -32,24 +32,25 @@
 #include <TArrayI.h>
 #include <TArrayF.h>
 
-#include "AliRun.h"
 #include "AliITS.h"
-#include "AliITShit.h"
-#include "AliITSdigitSDD.h"
-#include "AliITSdigitSPD.h"
-#include "AliITSmodule.h"
-#include "AliITSpList.h"
+#include "AliITSHuffman.h"
 #include "AliITSMapA1.h"
 #include "AliITSMapA2.h"
-#include "AliITSetfSDD.h"
 #include "AliITSRawData.h"
-#include "AliITSHuffman.h"
+#include "AliITSdigitSDD.h"
+#include "AliITSdigitSPD.h"
+#include "AliITSetfSDD.h"
 #include "AliITSgeom.h"
-#include "AliITSsegmentation.h"
+#include "AliITShit.h"
+#include "AliITSmodule.h"
+#include "AliITSpList.h"
 #include "AliITSresponse.h"
-#include "AliITSsegmentationSDD.h"
 #include "AliITSresponseSDD.h"
+#include "AliITSsegmentation.h"
+#include "AliITSsegmentationSDD.h"
 #include "AliITSsimulationSDD.h"
+#include "AliLog.h"
+#include "AliRun.h"
 
 ClassImp(AliITSsimulationSDD)
 ////////////////////////////////////////////////////////////////////////
@@ -553,12 +554,9 @@ void AliITSsimulationSDD::HitsToAnalogDigits( AliITSmodule *mod ) {
         // continue if the particle did not lose energy
         // passing through detector
         if (!depEnergy) {
-            if(GetDebug()){ 
-                Warning("HitsToAnalogDigits", 
-                        "fTrack = %d hit=%d module=%d This particle has"
-                        " passed without losing energy!",
-                        itrack,ii,mod->GetIndex());
-            }
+            AliDebug(1,
+             Form("fTrack = %d hit=%d module=%d This particle has passed without losing energy!",
+		  itrack,ii,mod->GetIndex()));
             continue;
         } // end if !depEnergy
 
@@ -569,12 +567,9 @@ void AliITSsimulationSDD::HitsToAnalogDigits( AliITSmodule *mod ) {
         if(drPath < 0) drPath = -drPath;
         drPath = sddLength-drPath;
         if(drPath < 0) {
-            if(GetDebug()){ // this should be fixed at geometry level
-                Warning("HitsToAnalogDigits",
-                        "negative drift path drPath=%e sddLength=%e dxL[0]=%e "
-                        "xL[0]=%e",
-                        drPath,sddLength,dxL[0],xL[0]);
-            }
+            AliDebug(1, // this should be fixed at geometry level
+              Form("negative drift path drPath=%e sddLength=%e dxL[0]=%e xL[0]=%e",
+		   drPath,sddLength,dxL[0],xL[0]));
             continue;
         } // end if drPath < 0
 
@@ -602,12 +597,9 @@ void AliITSsimulationSDD::HitsToAnalogDigits( AliITSmodule *mod ) {
             driftPath = sddLength-driftPath;
             detector  = 2*(hitDetector-1) + iWing;
             if(driftPath < 0) {
-                if(GetDebug()){ // this should be fixed at geometry level
-                    Warning("HitsToAnalogDigits","negative drift path "
-                            "driftPath=%e sddLength=%e avDrft=%e dxL[0]=%e "
-                            "xL[0]=%e",driftPath,sddLength,avDrft,dxL[0],
-                            xL[0]);
-                }
+                AliDebug(1, // this should be fixed at geometry level
+                 Form("negative drift path driftPath=%e sddLength=%e avDrft=%e dxL[0]=%e xL[0]=%e",
+		      driftPath,sddLength,avDrft,dxL[0],xL[0]));
                 continue;
             } // end if driftPath < 0
 
@@ -805,7 +797,7 @@ void AliITSsimulationSDD::ListOfFiredCells(Int_t *arg,Double_t timeAmplitude,
             trlist->Add(&trinfo);
         } // end if lasttrack==idtrack
 
-        if(GetDebug()){
+        if(AliDebugLevel()){
             // check the track list - debugging
             Int_t trk[20], htrk[20];
             Float_t chtrk[20];  
@@ -821,7 +813,7 @@ void AliITSsimulationSDD::ListOfFiredCells(Int_t *arg,Double_t timeAmplitude,
                     cout << "nptracks "<<nptracks << endl;
                 } // end for tr
             } // end if nptracks
-        } // end if GetDebug()
+        } // end if AliDebugLevel()
     } //  end if pdigit
 
     // update counter and countadr for next call.

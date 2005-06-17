@@ -63,6 +63,7 @@ class AliTPCTrackerPoint  {
  public:
 
   AliTPCTrackerPoint(){fTX=0; fTY=0; fTZ=0; fTAngleZ=0; fTAngleY=0; fIsShared = 0;}
+  virtual ~AliTPCTrackerPoint(){}
   Float_t  GetX() const  {return (fTX*0.01);}
   Float_t  GetZ() const {return (fTZ*0.01);}
   Float_t  GetY() const {return (fTY*0.01);}
@@ -102,6 +103,7 @@ class AliTPCTrackerPoint  {
 class AliTPCClusterPoint  {
  public:
   AliTPCClusterPoint(){fCZ=fCY=fSigmaZ=fSigmaY=fQ=fMax=fCType=0;}
+  virtual ~AliTPCClusterPoint(){}
   Float_t  GetZ() const    {return (fCZ*0.01);}
   Float_t  GetY() const   {return (fCY*0.01);}
   Float_t  GetSigmaZ() const {return (fSigmaZ*0.02);}

@@ -49,6 +49,7 @@ class AliTPCclusterLMI  {
 
 public:
   AliTPCclusterLMI(){fCZ=fCY=fSigmaZ=fSigmaY=fQ=fMax=fCType=0;}
+  virtual ~AliTPCclusterLMI(){}
   Float_t  GetZ()            const {return (fCZ*0.01);}
   Float_t  GetY()            const {return (fCY*0.01);}
   Float_t  GetSigmaZ()       const {return (fSigmaZ*0.02);}

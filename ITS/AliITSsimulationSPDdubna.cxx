@@ -17,22 +17,23 @@
 $Id$
 */
 #include <Riostream.h>
-#include <TRandom.h>
 #include <TH1.h>
 #include <TMath.h>
-#include <TString.h>
 #include <TParticle.h>
+#include <TRandom.h>
+#include <TString.h>
 
-#include "AliRun.h"
 #include "AliITS.h"
-#include "AliITShit.h"
-#include "AliITSdigitSPD.h"
-#include "AliITSmodule.h"
 #include "AliITSMapA2.h" 
+#include "AliITSdigitSPD.h"
+#include "AliITShit.h"
+#include "AliITSmodule.h"
 #include "AliITSpList.h"
-#include "AliITSsimulationSPDdubna.h"
-#include "AliITSsegmentationSPD.h"
 #include "AliITSresponseSPD.h"
+#include "AliITSsegmentationSPD.h"
+#include "AliITSsimulationSPDdubna.h"
+#include "AliLog.h"
+#include "AliRun.h"
 
 //#define DEBUG
 
@@ -59,8 +60,7 @@ fCoupling(0){
     // Return:
     //    A default constructed AliITSsimulationSPDdubna class.
 
-    if(GetDebug(1)) Info("AliITSsimulationSPDdubda()",
-                         "Calling degault constructor");
+    AliDebug(1,Form("Calling degault constructor"));
 }
 //______________________________________________________________________
 AliITSsimulationSPDdubna::AliITSsimulationSPDdubna(AliITSsegmentation *seg,
@@ -85,9 +85,8 @@ fCoupling(cup){
     // Return:
     //    A default constructed AliITSsimulationSPDdubna class.
 
-    if(GetDebug(1)) Info("AliITSsimulationSPDdubda",
-                         "Calling degault constructor seg=%p resp=%p cup=%d",
-                         seg,resp,cup);
+    AliDebug(1,
+	     Form("Calling degault constructor seg=%p resp=%p cup=%d",seg,resp,cup));
     if(cup==1||cup==2){ // For the moment, remove defusion if Coupling is
         // set.
         resp->SetTemperature(0.0);
@@ -187,8 +186,7 @@ void AliITSsimulationSPDdubna::InitSimulationModule(Int_t module, Int_t event){
     //  Returns:
     //    none
 
-    if(GetDebug(1)) Info("InitSimulationModule","(module=%d,event=%d)",
-                         module,event);
+    AliDebug(1,Form("(module=%d,event=%d)",module,event));
     SetModuleNumber(module);
     SetEventNumber(event);
     ClearMap();
@@ -208,11 +206,10 @@ void AliITSsimulationSPDdubna::SDigitiseModule(AliITSmodule *mod,Int_t,
     //    test              //  test returns kTRUE if the module contained hits
     //                      //  test returns kFALSE if it did not contain hits
 
-    if(GetDebug(1)) Info("SDigitiseModule","(mod=%p, ,event=%d)",mod,event);
+    AliDebug(1,Form("(mod=%p, ,event=%d)",mod,event));
     if(!(mod->GetNhits())){
-        if(GetDebug(1)) Info("SDigitiseModule","In event %d module %d there "
-                             "are %d hits returning.",event,
-                             mod->GetIndex(),mod->GetNhits());
+        AliDebug(1,Form("In event %d module %d there are %d hits returning.",
+			event, mod->GetIndex(),mod->GetNhits()));
         return;// if module has no hits don't create Sdigits
     } // end if
     SetModuleNumber(mod->GetIndex());
@@ -233,15 +230,14 @@ void AliITSsimulationSPDdubna::WriteSDigits(){
     Int_t ix, nix, iz, niz;
     static AliITS *aliITS = (AliITS*)gAlice->GetModule("ITS");
 
-    if(GetDebug(1))Info("WriteSDigits","Writing SDigits for module %d",
-                        GetModuleNumber());
+    AliDebug(1,Form("Writing SDigits for module %d",GetModuleNumber()));
     GetMap()->GetMaxMapIndex(niz, nix);
     for(iz=0; iz<niz; iz++)for(ix=0; ix<nix; ix++){
         if(GetMap()->GetSignalOnly(iz,ix)>0.0){
             aliITS->AddSumDigit(*(GetMap()->GetpListItem(iz,ix)));
-            if(GetDebug(1)){
-                cout <<"AliITSsimulationSPDdubna:WriteSDigits " << iz << "," 
-                     << ix << "," << *(GetMap()->GetpListItem(iz,ix)) << endl;
+	    if(AliDebugLevel()>0) {
+	      AliDebug(1,Form("%d, %d",iz,ix));
+	      cout << *(GetMap()->GetpListItem(iz,ix)) << endl;
             } // end if GetDebug
         } // end if GetMap()->GetSignalOnly(iz,ix)>0.0
     } // end for iz,ix
@@ -257,7 +253,7 @@ void AliITSsimulationSPDdubna::FinishSDigitiseModule(){
     //  Return
     //    none
 
-    if(GetDebug(1)) Info("SDigitiseModule","()");
+    AliDebug(1,"()");
     pListToDigits(); // Charge To Signal both adds noise and
     ClearMap();
     return;
@@ -277,7 +273,7 @@ void AliITSsimulationSPDdubna::DigitiseModule(AliITSmodule *mod,Int_t,
     //  Return:
     //    none.
 
-    if(GetDebug(1)) Info("DigitiseModule","(mod=%p,,)",mod);
+    AliDebug(1,Form("(mod=%p,,)",mod));
     HitToSDigit(mod);
     pListToDigits();
     ClearMap();
@@ -300,13 +296,13 @@ void AliITSsimulationSPDdubna::HitToSDigit(AliITSmodule *mod){
     Double_t x,y,z,t,tp,st,dt=0.2,el,sig;
     Double_t thick = kmictocm*GetSeg()->Dy();
 
-    if(GetDebug(1)) Info("HitsToSDigits","(mod=%p) fCoupling=%d",
-                         mod,fCoupling);
+    AliDebug(1,Form("(mod=%p) fCoupling=%d",mod,fCoupling));
     if(nhits<=0) return;
     for(h=0;h<nhits;h++){
-        if(GetDebug(1)){
-            cout << "Hits=" << h << "," << *(mod->GetHit(h)) << endl;
-        } // end if GetDebug
+      if(AliDebugLevel()>0) {
+	AliDebug(1,Form("Hits, %d", h));
+	cout << *(mod->GetHit(h)) << endl;
+      } // end if GetDebug
         if(!mod->LineSegmentL(h,x0,x1,y0,y1,z0,z1,de,idtrack)) continue;
         st = TMath::Sqrt(x1*x1+y1*y1+z1*z1);
         if(st>0.0){

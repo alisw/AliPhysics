@@ -246,7 +246,7 @@ void AliITSv11GeometrySPD::CarbonFiberSector(TGeoVolume *moth){
     secY[ksecNRadii-1] = TanD(90.+0.5*ksecAngleSide13)*
                           (secX[ksecNRadii-1]-secX[0]) + secY[0];
     //
-    if(GetDebug(2)){
+    if(AliDebugLevel()>=2){
         cout <<"    X    \t  Y  \t  R  \t  S  \t  E"<<endl;
         for(i=0;i<ksecNRadii;i++){
             cout <<"{"<< secX[i] <<",";

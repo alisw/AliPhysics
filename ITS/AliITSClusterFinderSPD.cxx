@@ -17,13 +17,15 @@
 //  for Silicon pixels                                                    // 
 //                                                                        //
 ////////////////////////////////////////////////////////////////////////////        
-#include "AliITSClusterFinderSPD.h"
+
 #include "AliITS.h"
-#include "AliITSdigitSPD.h"
+#include "AliITSClusterFinderSPD.h"
 #include "AliITSRawClusterSPD.h"
 #include "AliITSRecPoint.h"
+#include "AliITSdigitSPD.h"
 #include "AliITSresponseSPD.h"
 #include "AliITSsegmentationSPD.h"
+#include "AliLog.h"
 #include "AliRun.h"
 
 //#define DEBUG
@@ -109,10 +111,8 @@ void AliITSClusterFinderSPD::FindRawClusters(Int_t module){
     AliITSdigitSPD *dig;
     Int_t ndig=0,i;
     /*
-    if(GetDebug(4)){
-        cout << "SPD - FindRawclusters"<<endl;
+    AliDebug(4," ");
         scanf("%d",&ndig);
-    } // end if GetDebug
     */
     for(ndig=0; ndig<ndigits; ndig++) {
         dig= (AliITSdigitSPD*)GetDigit(ndig);
@@ -121,28 +121,22 @@ void AliITSClusterFinderSPD::FindRawClusters(Int_t module){
         digtr1[digitcount] = dig->GetTrack(0);
         digtr2[digitcount] = -3;
         digtr3[digitcount] = -3;
-        if(GetDebug(5)){
-            cout << "digtr1["<<digitcount <<"]="<<digtr1[digitcount];
-            cout << " fTracks["<<0<<"]="<<dig->GetTrack(0)<<": ";
-        } // end if GetDebug
+        AliDebug(5,Form("digtr1[%d]=%d fTracks[%d]=%d: ",
+			digitcount,digtr1[digitcount],0,dig->GetTrack(0)));
         i=1;
         while(digtr1[digitcount]==dig->GetTrack(i) && i<dig->GetNTracks()) i++;
-        if(GetDebug(5)) cout << " fTracks["<<i<<"]="<<dig->GetTrack(i);
+        AliDebug(5,Form(" fTracks[%d]=%d",i,dig->GetTrack(i)));
         if(i<dig->GetNTracks()){
             digtr2[digitcount] = dig->GetTrack(i);
-            if(GetDebug(5)) cout<<"digtr2["<<digitcount <<"]="
-                                <<digtr2[digitcount]<<": ";
+            AliDebug(5,Form("digtr2[%d]=%d: ",digitcount,digtr2[digitcount]));
             while((digtr1[digitcount]==dig->GetTrack(i) || 
                    digtr2[digitcount]==dig->GetTrack(i))&&
                   i<=dig->GetNTracks()) i++;
             if(i<dig->GetNTracks()) digtr3[digitcount] = dig->GetTrack(i);
-            if(GetDebug(5)){
-                cout << " fTracks["<<i<<"]=";
-                if(i<dig->GetNTracks()) cout <<dig->GetTrack(i);
-                cout << "digtr3["<<digitcount <<"]="<<digtr3[digitcount];
-            } // end if GetDebug
+	    AliDebug(5,Form(" fTracks[%d]=%d digtr3[%d]=%d",
+			    i,i<dig->GetNTracks()?dig->GetTrack(i):-1,digitcount,digtr3[digitcount]));
         } // end if
-        if(GetDebug(4)) cout<<endl;
+    //        if(GetDebug(4)) cout<<endl;
         digtr4[digitcount] = dig->GetSignal();
         digitcount++;
     } // end for ndig
