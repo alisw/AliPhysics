@@ -114,9 +114,9 @@ DEPINC     += $(GENINC)
 # Libraries will be linked against SHLIB
 # ROOT libraries 
 
-ROOTCLIBS     := $(shell root-config --glibs) -lThread -lMinuit -lHtml -lVMC -lGeom
+ROOTCLIBS     := $(shell root-config --glibs) -lThread -lMinuit -lHtml -lVMC -lEG -lGeom
 
-ROOTPLIBS     := -lEG -lEGPythia6
+ROOTPLIBS     := -lEGPythia6
 
 ALILIBS	      := -L$(LIBDIR) -lMUON -lTPC -lPMD -lTRD -lFMD -lTOF \
                 -lITS -lPHOS -lCRT -lRICH -lVZERO -lZDC -lSTRUCT \
