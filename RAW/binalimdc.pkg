@@ -12,6 +12,8 @@ SRCS:= alimdc_main.cxx ${ESRCS}
 EINCLUDE+=TPC CONTAINERS ITS RAW HLT/src HLT/hough HLT/comp HLT/ITS
 # -DUSE_DEBUG for alimdc debug printout
 
+PACKBLIBS := $(ROOTCLIBS) $(SYSLIBS)
+
 ELIBS:=ESD RAWData MDC MDCFilter STEER TPCbase TPCsim TPCrec CONTAINERS AliL3Src AliL3Misc AliL3Hough AliL3Comp AliL3ITS ITS 
 
 ifneq (,$(findstring macosx,$(ALICE_TARGET)))
