@@ -46,6 +46,7 @@
 #include "AliEMCALv0.h"
 #include "AliEMCALGeometry.h"
 #include "AliRun.h"
+#include "AliLog.h"
 
 ClassImp(AliEMCALv0)
 
@@ -151,7 +152,7 @@ void AliEMCALv0::CreateGeometry()
 
     gMC->Gspos("XEN1", 1, "ALIC", 0.0, 0.0, 0.0, idrotm, "ONLY") ;
     
-    if (gDebug==2) {
+    if (AliLog::GetGlobalDebugLevel()>=2) {
       printf("CreateGeometry: XEN1 = %f, %f\n", envelopA[5], envelopA[6]); 
       printf("CreateGeometry: XU0 = %f, %f\n", envelopA[5], envelopA[6]); 
     }
@@ -188,7 +189,7 @@ void AliEMCALv0::CreateGeometry()
 	
 	gMC->Gspos(label.Data(), 1, "XEN1", 0.0, 0.0, 0.0, idrotm, "ONLY") ;
 
-	if (gDebug == 2)
+	if (AliLog::GetGlobalDebugLevel() >= 2)
 	  printf("CreateGeometry: XU%d = %f, %f\n", i, envelopA[5], envelopA[6]); 
 
     } // end  i
@@ -213,7 +214,7 @@ void AliEMCALv0::CreateGeometry()
   
     gMC->Gspos(label.Data(), 1, "XEN1", 0.0, 0.0, 0.0, idrotm, "ONLY") ;
     
-    if(gDebug == 2) 
+    if(AliLog::GetGlobalDebugLevel() >= 2) 
     printf("CreateGeometry: XEN%d = %f, %f\n", i, envelopA[5], envelopA[6]);
   
     // Create the shapes of active material (LEAD/Aluminium/Scintillator)
@@ -267,7 +268,7 @@ void AliEMCALv0::CreateGeometry()
       envelopC[8] = envelopC[5] ;           //rmin
       envelopC[9] = envelopC[6] ;           //rmax
 
-      if(gDebug == 2 ) 
+      if(AliLog::GetGlobalDebugLevel() >= 2 ) 
 	printf("CreateGeometry: volume = %s, name = XPST thickness = %f deb = %f/%f fin = %f/%f", label.Data(), scthick, envelopC[5], envelopC[8], envelopC[6], envelopC[9]) ; 
 
       for (int j =0; j < (geom->GetNEta()) ; j++){
@@ -294,7 +295,7 @@ void AliEMCALv0::CreateGeometry()
 	  envelopD[6] = envelopD[5] + radthick ; // rmax
 	  envelopD[9] = envelopD[6] ; //rmax
 	  
-	  if(gDebug == 2 ) 
+	  if(AliLog::GetGlobalDebugLevel() >= 2 ) 
 	    printf("CreateGeometry: volume = %s, name = %s thickness = %f deb = %f/%f fin = %f/%f", label.Data(), radname.Data(), radthick, envelopD[5], envelopD[8], envelopD[6], envelopD[9]) ; 
 
 	  for (int j =0; j < (geom->GetNEta()) ; j++){
@@ -319,7 +320,7 @@ void AliEMCALv0::Init(void)
 {
     // Just prints an information message
   
-  if(fDebug) { 
+  if(AliLog::GetGlobalDebugLevel()>0) { 
     TString message("\n") ; 
     message += "*****************************************\n" ;
     

@@ -19,6 +19,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.21  2005/05/28 14:19:05  schutz
+ * Compilation warnings fixed by T.P.
+ *
  */
 
 //_________________________________________________________________________
@@ -46,6 +49,7 @@
 #include "AliPHOSvImpacts.h"
 #include "AliRun.h"
 #include "AliMC.h"
+#include "AliLog.h"
 
 ClassImp(AliPHOSvImpacts)
 
@@ -151,10 +155,9 @@ void AliPHOSvImpacts::AddImpact(const char* det, Int_t shunt, Int_t primary, Int
 
   new((*impacts)[nImpacts]) AliPHOSImpact(shunt,primary,track,pid,p,xyz) ;
 
-  if (fDebug==1) {
-    printf("Module %d %s: ",module,det);
+  AliDebugClass(1,Form("Module %d %s: ",module,det));
+  if (AliLog::GetGlobalDebugLevel()>0)
     (dynamic_cast<AliPHOSImpact*>((impacts->At(nImpacts))))->Print();
-  }
 }
 
 //____________________________________________________________________________

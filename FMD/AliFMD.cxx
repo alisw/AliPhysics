@@ -281,7 +281,7 @@ AliFMD::Init()
   // Initialis the FMD after it has been built
   Int_t i;
   //
-  if (fDebug) {
+  if (AliLog::GetGlobalDebugLevel()) {
     cout << "\n" << ClassName() << ": " << flush;
     for (i = 0; i < 35; i++) cout << "*";
     cout << " FMD_INIT ";

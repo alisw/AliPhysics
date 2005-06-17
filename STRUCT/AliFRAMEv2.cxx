@@ -29,6 +29,7 @@
 #include "AliRun.h"
 #include "AliConst.h"
 #include "AliMC.h"
+#include "AliLog.h"
  
 ClassImp(AliFRAMEv2)
  
@@ -1287,7 +1288,7 @@ void AliFRAMEv2::Init()
   //
   // Initialise the module after the geometry has been defined
   //
-    if(fDebug) {
+    if(AliLog::GetGlobalDebugLevel()>0) {
 	printf("%s: **************************************"
 	       " FRAME "
 	       "**************************************\n",ClassName());

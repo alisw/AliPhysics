@@ -33,6 +33,7 @@
 #include "AliRun.h"
 #include "AliMagF.h"
 #include "AliConst.h"
+#include "AliLog.h"
 
 ClassImp(AliSHIL)
  
@@ -263,7 +264,7 @@ void AliSHIL::Init()
   //
   Int_t i;
   //
-  if(fDebug) {
+  if(AliLog::GetGlobalDebugLevel()>0) {
     printf("\n%s: ",ClassName());
     for(i=0;i<35;i++) printf("*");
     printf(" SHIL_INIT ");

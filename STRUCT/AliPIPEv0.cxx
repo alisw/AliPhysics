@@ -30,6 +30,7 @@
 #include "AliMagF.h"
 #include "AliPIPEv0.h"
 #include "AliRun.h"
+#include "AliLog.h"
  
 ClassImp(AliPIPEv0)
  
@@ -65,7 +66,7 @@ void AliPIPEv0::CreateGeometry()
 */
 //End_Html
 
-    if(fDebug) printf("%s: Create PIPEv0 geometry \n",ClassName());
+    AliDebugClass(1,"Create PIPEv0 geometry");
   
 
     Int_t *idtmed = fIdtmed->GetArray();
@@ -706,7 +707,7 @@ void AliPIPEv0::CreateMaterials()
   // Define materials for beam pipe
   //
 
-  if(fDebug) printf("%s: Create PIPEv0 materials \n",ClassName());
+  AliDebugClass(1,"Create PIPEv0 materials");
   Int_t   isxfld = gAlice->Field()->Integ();
   Float_t sxmgmx = gAlice->Field()->Max();
   // Steel (Inox)  

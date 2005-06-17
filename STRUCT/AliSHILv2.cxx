@@ -27,6 +27,7 @@
 #include "AliSHILv2.h"
 #include "AliConst.h"
 #include "AliALIFE.h"
+#include "AliLog.h"
 
 ClassImp(AliSHILv2)
  
@@ -1885,7 +1886,7 @@ void AliSHILv2::Init()
   //
   Int_t i;
   //
-  if(fDebug) {
+  if(AliLog::GetGlobalDebugLevel()>0) {
     printf("\n%s: ",ClassName());
     for(i=0;i<35;i++) printf("*");
     printf(" SHILv2_INIT ");

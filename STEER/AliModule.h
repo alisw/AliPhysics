@@ -59,7 +59,6 @@ public:
   virtual  Bool_t        IsFolder() const {return kTRUE;}
   virtual  Int_t&        LoMedium() {return fLoMedium;}
   virtual  Int_t&        HiMedium() {return fHiMedium;}
-  virtual  Int_t         GetDebug() const;
 
   // Module composition
   virtual void AliMaterial(Int_t imat, const char* name, Float_t a, 
@@ -171,7 +170,6 @@ protected:
   Bool_t        fActive;      //Detector activity flag
   TList        *fHistograms;  //List of histograms
   TList        *fNodes;       //List of geometry nodes
-  Int_t         fDebug;       //Debug flag
   Bool_t        fEnable;      //StepManager enabling flag
   TClonesArray *fTrackReferences;     //!list of track references - for one primary track only -MI
   Int_t         fMaxIterTrackRef;     //!for track refernce iterator routines
@@ -179,6 +177,6 @@ protected:
 
   AliRunLoader* fRunLoader;   //!local pointer to run loader
 
-  ClassDef(AliModule,6)  //Base class for ALICE Modules
+  ClassDef(AliModule,7)  //Base class for ALICE Modules
 };
 #endif

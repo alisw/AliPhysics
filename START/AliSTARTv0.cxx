@@ -43,6 +43,7 @@
 #include "AliRun.h"
 #include "AliSTARThit.h"
 #include "AliSTARTv0.h"
+#include "AliLog.h"
 
 ClassImp(AliSTARTv0)
 
@@ -271,7 +272,7 @@ void AliSTARTv0::CreateGeometry()
    // Bottom glass
    gMC->Gsvolu("0BOT","TUBE",idtmed[kGlass],pbot,3);
    z=ppmt[2]-pbot[2];
-   if(fDebug) printf("%s: Z bottom %f\n",ClassName(),z);
+   AliDebugClass(1,Form(" Z bottom %f\n",z));
    gMC->Gspos("0BOT",1,"0PMT",0,0,z,0,"ONLY");
    // Side cylinder glass
    gMC->Gsvolu("0OUT","TUBE",idtmed[kGlass],pglass,3);
@@ -523,7 +524,7 @@ void AliSTARTv0::CreateMaterials()
    AliMedium(14, "PenoPlast$", 9, 0, isxfld, sxmgmx, 10., .01, 1., .003, .003);  
    AliMedium(15, "Aluminium$", 11, 0, isxfld, sxmgmx, 10., .01, 1., .003, .003);  
 
-   if(fDebug) cout<<ClassName()<<": ++++++++++++++Medium set++++++++++"<<endl;
+   AliDebugClass(1,": ++++++++++++++Medium set++++++++++");
 
 }
 //---------------------------------------------------------------------

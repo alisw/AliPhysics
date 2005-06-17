@@ -59,6 +59,7 @@
 #include "AliCRTModule.h"
 #include "AliCRTConstants.h"
 #include "AliMC.h"
+#include "AliLog.h"
 
 ClassImp(AliCRTv1)
  
@@ -597,7 +598,7 @@ void AliCRTv1::Init()
   // Initialise L3 magnet after it has been built
   Int_t i;
   //
-  if(fDebug) {
+  if(AliLog::GetGlobalDebugLevel()>0) {
     printf("\n%s: ",ClassName());
     for(i=0;i<35;i++) printf("*");
     printf(" CRTv1_INIT ");

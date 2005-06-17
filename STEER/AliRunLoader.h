@@ -27,6 +27,7 @@
 #include "AliConfig.h"
 #include "AliLoader.h"
 #include "AliDataLoader.h"
+#include "AliLog.h"
 
 class TFile;
 class TString;
@@ -155,7 +156,6 @@ class AliRunLoader: public TNamed
                                                                //made on Jiri Chudoba demand
     TString     GetFileName() const;//returns name of galice file
     const TObjArray* GetArrayOfLoaders() const {return fLoaders;}
-    Int_t GetDebug() const {return AliLoader::GetDebug();}
     void Cd(){fgRunLoader = this;}
     void Synchronize();
     

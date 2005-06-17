@@ -36,6 +36,7 @@
 #include "AliMagF.h"
 #include "AliPIPEvGEO.h"
 #include "AliRun.h"
+#include "AliLog.h"
  
 ClassImp(AliPIPEvGEO)
  
@@ -85,7 +86,7 @@ void AliPIPEvGEO::CreateGeometry()
 //  CP/3 The double-bellow and flange on the absorber side: 40.5 cm 
 //
 //
-    if(fDebug) printf("%s: Create PIPEv0 geometry \n",ClassName());
+    AliDebug(1,"Create PIPEv0 geometry");
     Int_t *idtmed = fIdtmed->GetArray();
     Float_t dz;
     Float_t cpcon[39];
@@ -736,7 +737,7 @@ void AliPIPEvGEO::CreateMaterials()
   // Define materials for beam pipe
   //
 
-  if(fDebug) printf("%s: Create PIPEvGEO materials \n",ClassName());
+  AliDebugClass(1,"Create PIPEvGEO materials");
   Int_t   isxfld = gAlice->Field()->Integ();
   Float_t sxmgmx = gAlice->Field()->Max();
   // Steel (Inox)  

@@ -295,7 +295,7 @@ void AliMAG::Init()
   // Initialise L3 magnet after it has been built
   Int_t i;
   //
-  if(fDebug) {
+  if(AliLog::GetGlobalDebugLevel()>0) {
     printf("\n%s: ",ClassName());
     for(i=0;i<35;i++) printf("*");
     printf(" MAG_INIT ");

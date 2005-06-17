@@ -17,6 +17,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.79  2005/05/28 14:19:05  schutz
+ * Compilation warnings fixed by T.P.
+ *
  */
 
 //_________________________________________________________________________
@@ -51,6 +54,7 @@
 #include "AliPHOSLoader.h"
 #include "AliPHOSv0.h"
 #include "AliRun.h"
+#include "AliLog.h"
 
 ClassImp(AliPHOSv0)
 
@@ -884,7 +888,7 @@ void AliPHOSv0::Init(void)
   
   Int_t i;
 
-  if(fDebug) {
+  if(AliLog::GetGlobalDebugLevel()>0) {
     TString st ; 
     for(i=0;i<35;i++) 
       st += "*";

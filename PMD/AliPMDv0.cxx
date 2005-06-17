@@ -36,6 +36,7 @@
 #include "AliPMDv0.h"
 #include "AliRun.h"
 #include "AliMC.h"
+#include "AliLog.h"
 
 const Int_t   AliPMDv0::fgkNcellHole  = 24;       // Hole dimension
 const Float_t AliPMDv0::fgkCellRadius = 0.25;     // Radius of a hexagonal cell
@@ -698,13 +699,12 @@ void AliPMDv0::CreatePMD()
 	 ysup[i]*TMath::Sin(theta[j]);
        ypos[i]=ymod[j] + xsup[i]*TMath::Sin(theta[j]) +
 	 ysup[i]*TMath::Cos(theta[j]);
-       if(fDebug) 
-	 printf("%s: %f %f \n", ClassName(), xpos[i], ypos[i]);
+        
+       AliDebugClass(1,Form("xpos: %f, ypos: %f", xpos[i], ypos[i]));
        
        nummod = nummod+1;
        
-       if(fDebug) 
-	 printf("\n%s: nummod %d\n",ClassName(),nummod);
+       AliDebugClass(1,Form("nummod %d",nummod));
        
        gMC->Gspos("EMM1", nummod + 6, "EPMD", xpos[i],ypos[i], 0., irotate[j], "ONLY");
        
@@ -902,7 +902,7 @@ void AliPMDv0::Init()
   Int_t i;
   //  kdet=1;
   //
-  if(fDebug) {
+  if(AliLog::GetGlobalDebugLevel()>0) {
       printf("\n%s: ",ClassName());
       for(i=0;i<35;i++) printf("*");
       printf(" PMD_INIT ");

@@ -58,7 +58,6 @@ public:
    Int_t          GetEventNrInRun() const {return fEventNrInRun;}
    Int_t          GetEventsPerRun() const {return fEventsPerRun;}
    Int_t          GetNdets() const {return fNdets;}
-   Int_t          GetDebug() const;
    AliModule     *GetModule(const char *name) const;
    AliDetector   *GetDetector(const char *name) const;
    Int_t          GetModuleID(const char *name) const;
@@ -92,7 +91,6 @@ public:
                           Float_t rmax=430,Float_t zmax=10000, AliLegoGenerator* gener=NULL);
    virtual  Bool_t IsLegoRun() const {return (fLego!=0);}
    virtual  void  RunReco(const char *detector=0, Int_t first = 0, Int_t last = 0);
-   virtual  void  SetDebug(Int_t level=0);
    virtual  void  SetDisplay(AliDisplay *display) {fDisplay = display;}
    virtual  void  SetField(Int_t type=2, Int_t version=1, Float_t scale=1, Float_t maxField=10, const char* filename="$(ALICE_ROOT)/data/field01.dat");
    virtual  void  SetField(AliMagF* magField);

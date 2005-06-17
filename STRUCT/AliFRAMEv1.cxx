@@ -40,7 +40,7 @@ AliFRAMEv1::AliFRAMEv1(const char *name, const char *title)
   : AliFRAME(name,title)
 {
 // Constructor
-  if(fDebug>1) printf("%s: Create FRAMEv1 object\n",ClassName());  
+  AliDebugClass(1,"Create FRAMEv1 object");  
   fEuclidGeometry="$(ALICE_ROOT)/Euclid/frame1099i.euc";
   fEuclidMaterial="$(ALICE_ROOT)/Euclid/frame.tme";
 }
@@ -72,7 +72,7 @@ void AliFRAMEv1::CreateGeometry()
   delete [] filetmp;
   if(file) {
     fclose(file);
-    if(fDebug) printf("%s: Reading FRAME geometry\n",ClassName());
+    AliDebugClass(1,"Reading FRAME geometry");
     ReadEuclid(fEuclidGeometry.Data(),topvol);
   } else 
     Fatal("CreateGeometry","The Euclid file %s does not exist!\n",
@@ -94,7 +94,7 @@ void AliFRAMEv1::CreateMaterials()
 {
 // Create materials and media (from Euclid file)
   char *filetmp;
-  if(fDebug) printf("%s: Create FRAMEv1 materials\n",ClassName());
+  AliDebugClass(1,"Create FRAMEv1 materials\n");
   filetmp = gSystem->ExpandPathName(fEuclidMaterial.Data());
   FILE *file = fopen(filetmp,"r");
   delete [] filetmp;
@@ -115,7 +115,7 @@ void AliFRAMEv1::Init()
   // Initialise the module after the geometry has been defined
   //
 
-  if(fDebug) {
+  if(AliLog::GetGlobalDebugLevel()>0) {
     printf("%s: **************************************"
 	   " FRAME "
 	   "**************************************\n",ClassName());

@@ -41,6 +41,7 @@
 #include "AliABSOv0.h"
 #include "AliConst.h"
 #include "AliRun.h"
+#include "AliLog.h"
 
 ClassImp(AliABSOv0)
  
@@ -479,7 +480,7 @@ void AliABSOv0::Init()
   // Initialisation of the muon absorber after it has been built
   Int_t i;
   //
-  if(fDebug) {
+  if(AliLog::GetGlobalDebugLevel()>0) {
     printf("\n%s: ",ClassName());
     for(i=0;i<35;i++) printf("*");
     printf(" ABSOv0_INIT ");

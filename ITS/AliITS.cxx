@@ -117,6 +117,7 @@ the AliITS class.
 #include "AliITSDDLRawData.h"
 #include "AliRun.h"
 #include "AliRawReader.h"
+#include "AliLog.h"
 
 ClassImp(AliITS)
 
@@ -391,7 +392,7 @@ void AliITS::SetDefaults(){
     AliITSresponse    *resp;
     AliITSDetType *iDetType;
 
-    if(fDebug) Info("SetDefauls","%s: SetDefaults",ClassName());
+    AliInfoClass("Seting Defaults");
 
     //SPD
     iDetType = DetType(kSPD);
@@ -1653,7 +1654,7 @@ void AliITS::HitsToFastRecPoints(Int_t evNumber,Int_t bgrev,Int_t size,
     //m.b. : this change is nothing but a nice way to make sure
     //the CPU goes up !
     
-    if(GetDebug()) cout<<"HitsToFastRecPoints: N mod = "<<
+    AliDebugClassStream(1) <<"HitsToFastRecPoints: N mod = "<<
                        geom->GetIndexMax()<<endl;
     for(module=0;module<geom->GetIndexMax();module++){
         id       = geom->GetModuleType(module);

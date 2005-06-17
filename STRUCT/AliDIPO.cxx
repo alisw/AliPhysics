@@ -39,6 +39,7 @@
 
 #include "AliDIPO.h"
 #include "AliRun.h"
+#include "AliLog.h"
  
 ClassImp(AliDIPO)
  
@@ -70,7 +71,7 @@ void AliDIPO::Init()
   //
   Int_t i;
   //
-  if(fDebug) {
+  if(AliLog::GetGlobalDebugLevel()>0) {
     printf("\n%s: ",ClassName());
     for(i=0;i<35;i++) printf("*");
     printf(" DIPO_INIT ");

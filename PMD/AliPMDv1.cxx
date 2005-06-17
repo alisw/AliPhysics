@@ -35,6 +35,7 @@
 #include "Riostream.h"
 #include <TVirtualMC.h>
 #include "AliMC.h"
+#include "AliLog.h"
 
 const Int_t   AliPMDv1::fgkNcolUM1    = 48;  // Number of cols in UM, type 1
 const Int_t   AliPMDv1::fgkNcolUM2    = 96;  // Number of cols in UM, type 2
@@ -794,7 +795,7 @@ void AliPMDv1::Init()
   //  gAliKdet=1;
   //
   cout << " Inside Init " << endl;
-  if(fDebug) {
+  if(AliLog::GetGlobalDebugLevel()>0) {
       printf("\n%s: ",ClassName());
       for(i=0;i<35;i++) printf("*");
       printf(" PMD_INIT ");

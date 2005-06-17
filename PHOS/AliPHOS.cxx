@@ -16,6 +16,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.89  2005/05/28 12:10:07  schutz
+ * Copy constructor is corrected (by T.P.)
+ *
  */
 
 //_________________________________________________________________________
@@ -64,7 +67,6 @@ Double_t AliPHOS::fgTimeTrigger = 100E-9 ;      // 100ns, just for a reference
 {
   // Default ctor
   fName   = "PHOS" ;
-  fDebug  = 0; 
 
 }
 
@@ -73,7 +75,6 @@ AliPHOS::AliPHOS(const char* name, const char* title): AliDetector(name, title)
 {
   //   ctor : title is used to identify the layout
   
-  fDebug  = 0 ; 
   fHighCharge        = 8.2 ;          // adjusted for a high gain range of 5.12 GeV (10 bits)
   fHighGain          = 6.64 ; 
   fHighLowGainFactor = 16. ;          // adjusted for a low gain range of 82 GeV (10 bits) 

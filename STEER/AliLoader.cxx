@@ -899,13 +899,7 @@ Bool_t AliLoader::IsOptionWritable(const TString& opt)
   if (opt.CompareTo("update",TString::kIgnoreCase)) return kTRUE;
   return kFALSE;
 }
-/*****************************************************************************/ 
 
-Int_t AliLoader::GetDebug()
-{
-  AliFatalClass("Don't use this method any more, use AliDebug instead");
-  return AliDebugLevelClass();
-}
 /*****************************************************************************/ 
 
 void AliLoader::SetDebug(Int_t deb)

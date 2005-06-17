@@ -1,4 +1,5 @@
 #include "AliTPCLoader.h"
+#include "AliLog.h"
 
 const TString AliTPCLoader::fgkDefaultHitsFileName      = "TPC.Hits.root";
 const TString AliTPCLoader::fgkDefaultSDigitsFileName   = "TPC.SDigits.root";
@@ -15,8 +16,7 @@ AliTPCLoader::AliTPCLoader()
 AliTPCLoader::AliTPCLoader(const Char_t *name,const Char_t *topfoldername)
  :AliLoader(name,topfoldername)
 {
-  if (GetDebug()) 
-   Info("AliTPCLoader"," name = %s; topfolder = %s",name,topfoldername);
+  AliInfoClass(Form(" name = %s; topfolder = %s",name,topfoldername));
 }
 /*****************************************************************************/ 
 

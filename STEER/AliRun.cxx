@@ -949,22 +949,6 @@ void AliRun::AddModule(AliModule* mod)
   fNdets++;
 }
 
-
-//_______________________________________________________________________
-Int_t AliRun::GetDebug() const
-{
-  AliFatal("Don't use this method any more, use AliDebug instead");
-  return AliDebugLevel();
-}
-
-//_______________________________________________________________________
-void AliRun::SetDebug(Int_t level)
-{
-  AliFatal("Don't use this method any more, use AliLog instead");
-  AliLog::SetClassDebugLevel("AliRun", level);
-}
-
-
 // added by Alberto Colla
 //_____________________________________________________________________________
 /*inline*/ Bool_t AliRun::IsFileAccessible(const char* fnam, EAccessMode mode)

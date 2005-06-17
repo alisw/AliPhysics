@@ -34,6 +34,7 @@
 #include "AliConst.h"
 #include "AliRun.h"
 #include "AliSHILv0.h"
+#include "AliLog.h"
 
 ClassImp(AliSHILv0)
  
@@ -1197,7 +1198,7 @@ void AliSHILv0::Init()
   Int_t i;
   //
   
-  if(fDebug) {
+  if(AliLog::GetGlobalDebugLevel()>0) {
       printf("\n%s: ",ClassName());
       for(i=0;i<35;i++) printf("*");
       printf(" SHILv0_INIT ");
