@@ -2,8 +2,10 @@ Int_t TestNewIO(Int_t n = 5,Char_t SlowOrFast='s')
 {
    Int_t rc=0;
    
-   AliLoader::SetDebug(kTRUE);//set it to kTRUE for debug print-out
-   gAlice->SetDebug(100);
+   // Debug and log level
+   AliLog::SetGlobalDebugLevel(10);
+   AliLog::SetGlobalLogLevel(10);
+
    /**********************************************/
    /************ G E N E R A T I O N *************/
    /**********************************************/

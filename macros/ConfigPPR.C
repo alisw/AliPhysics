@@ -232,9 +232,11 @@ void Config()
     gMC->SetCut("PPCUTM", cut);
     gMC->SetCut("TOFMAX", tofmax); 
 
+    // Debug and log level
+    AliLog::SetGlobalDebugLevel(0);
+    AliLog::SetGlobalLogLevel(0);
 
-// Generator Configuration
-    gAlice->SetDebug(0);
+    // Generator Configuration
     AliGenerator* gener = GeneratorFactory(srun);
     gener->SetOrigin(0, 0, 0);    // vertex position
     gener->SetSigma(0, 0, 5.3);   // Sigma in (X,Y,Z) (cm) on IP position
