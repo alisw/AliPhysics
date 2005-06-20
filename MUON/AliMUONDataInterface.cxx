@@ -401,7 +401,7 @@ Int_t AliMUONDataInterface::NumberOfSDigits(
 	if ( fSCathode != cathode )
 	{
 		fData.ResetSDigits();
-		fData.GetCathodeS(cathode);
+		fData.GetSDigits();
 		fSCathode = cathode;
 	}
 	return fData.SDigits(chamber)->GetEntriesFast();
@@ -426,7 +426,7 @@ AliMUONDigit* AliMUONDataInterface::SDigit(
 	if ( fSCathode != cathode )
 	{
 		fData.ResetSDigits();
-		fData.GetCathodeS(cathode);
+		fData.GetSDigits();
 		fSCathode = cathode;
 	}
 	return static_cast<AliMUONDigit*>( fData.SDigits(chamber)->At(sdigit) );
@@ -450,7 +450,7 @@ Int_t AliMUONDataInterface::NumberOfDigits(
 	if ( fCathode != cathode )
 	{
 		fData.ResetDigits();
-		fData.GetCathode(cathode);
+		fData.GetDigits();
 		fCathode = cathode;
 	}
 	return fData.Digits(chamber)->GetEntriesFast();
@@ -475,7 +475,7 @@ AliMUONDigit* AliMUONDataInterface::Digit(
 	if ( fCathode != cathode )
 	{
 		fData.ResetDigits();
-		fData.GetCathode(cathode);
+		fData.GetDigits();
 		fCathode = cathode;
 	}
 	return static_cast<AliMUONDigit*>( fData.Digits(chamber)->At(digit) );
@@ -536,13 +536,13 @@ Int_t AliMUONDataInterface::NumberOfLocalTriggers(TString filename, TString fold
 
 	if ( ! FetchLoaders(filename, foldername) ) return -1;
 	if ( ! FetchEvent(event) ) return -1;
-	if ( ! FetchTreeD() ) return -1;
+	if ( ! FetchTreeR() ) return -1;
 	if ( ! fTriggerAddressSet )
 	{
-		// If the local trigger address in TreeD is not set yet then set it now.
+		// If the local trigger address in TreeR is not set yet then set it now.
 		fData.SetTreeAddress("GLT");
 		fData.ResetTrigger();
-		fData.GetTriggerD();
+		fData.GetTrigger();
 		fTriggerAddressSet = kTRUE;
 	}
 	return fData.LocalTrigger()->GetEntriesFast();
@@ -558,13 +558,13 @@ AliMUONLocalTrigger* AliMUONDataInterface::LocalTrigger(
 
 	if ( ! FetchLoaders(filename, foldername) ) return NULL;
 	if ( ! FetchEvent(event) ) return NULL;
-	if ( ! FetchTreeD() ) return NULL;
+	if ( ! FetchTreeR() ) return NULL;
 	if ( ! fTriggerAddressSet )
 	{
-		// If the local trigger address in TreeD is not set yet then set it now.
+		// If the local trigger address in TreeR is not set yet then set it now.
 		fData.SetTreeAddress("GLT");
 		fData.ResetTrigger();
-		fData.GetTriggerD();
+		fData.GetTrigger();
 		fTriggerAddressSet = kTRUE;
 	}
 	return static_cast<AliMUONLocalTrigger*>( fData.LocalTrigger()->At(trigger) );
@@ -743,7 +743,7 @@ Int_t AliMUONDataInterface::NumberOfSDigits(Int_t chamber, Int_t cathode)
 	if ( fSCathode != cathode )
 	{
 		fData.ResetSDigits();
-		fData.GetCathodeS(cathode);
+		fData.GetSDigits();
 		fSCathode = cathode;
 	}
 	return fData.SDigits(chamber)->GetEntriesFast();
@@ -773,7 +773,7 @@ AliMUONDigit* AliMUONDataInterface::SDigit(Int_t chamber, Int_t cathode, Int_t s
 	if ( fSCathode != cathode )
 	{
 		fData.ResetSDigits();
-		fData.GetCathodeS(cathode);
+		fData.GetSDigits();
 		fSCathode = cathode;
 	}
 	return static_cast<AliMUONDigit*>( fData.SDigits(chamber)->At(sdigit) );
@@ -803,7 +803,7 @@ Int_t AliMUONDataInterface::NumberOfDigits(Int_t chamber, Int_t cathode)
 	if ( fCathode != cathode )
 	{
 		fData.ResetDigits();
-		fData.GetCathode(cathode);
+		fData.GetDigits();
 		fCathode = cathode;
 	}
 	return fData.Digits(chamber)->GetEntriesFast();
@@ -833,7 +833,7 @@ AliMUONDigit* AliMUONDataInterface::Digit(Int_t chamber, Int_t cathode, Int_t di
 	if ( fCathode != cathode )
 	{
 		fData.ResetDigits();
-		fData.GetCathode(cathode);
+		fData.GetDigits();
 		fCathode = cathode;
 	}
 	return static_cast<AliMUONDigit*>( fData.Digits(chamber)->At(digit) );
@@ -916,12 +916,12 @@ Int_t AliMUONDataInterface::NumberOfLocalTriggers()
 		return -1;
 	}
 
-	if ( ! FetchTreeD() ) return -1;
+	if ( ! FetchTreeR() ) return -1;
 	if ( ! fTriggerAddressSet )
 	{
 		fData.SetTreeAddress("GLT");
 		fData.ResetTrigger();
-		fData.GetTriggerD();
+		fData.GetTrigger();
 		fTriggerAddressSet = kTRUE;
 	}
 	return fData.LocalTrigger()->GetEntriesFast();
@@ -944,12 +944,12 @@ AliMUONLocalTrigger* AliMUONDataInterface::LocalTrigger(Int_t trigger)
 		return NULL;
 	}
 
-	if ( ! FetchTreeD() ) return NULL;
+	if ( ! FetchTreeR() ) return NULL;
 	if ( ! fTriggerAddressSet )
 	{
 		fData.SetTreeAddress("GLT");
 		fData.ResetTrigger();
-		fData.GetTriggerD();
+		fData.GetTrigger();
 		fTriggerAddressSet = kTRUE;
 	}
 	return static_cast<AliMUONLocalTrigger*>( fData.LocalTrigger()->At(trigger) );

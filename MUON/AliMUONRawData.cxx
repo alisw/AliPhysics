@@ -249,10 +249,10 @@ Int_t AliMUONRawData::WriteTrackerDDL(Int_t iCh)
 
    AliDebug(1, Form("WriteDDL chamber %d\n", iCh+1));
 
-   for (Int_t iCath = 0; iCath < 2; iCath++) {
+   //  for (Int_t iCath = 0; iCath < 2; iCath++) {
 
     fMUONData->ResetDigits();
-    fMUONData->GetCathode(iCath);
+    fMUONData->GetDigits();
     muonDigits = fMUONData->Digits(iCh);
 
     nDigits = muonDigits->GetEntriesFast();
@@ -275,7 +275,7 @@ Int_t AliMUONRawData::WriteTrackerDDL(Int_t iCh)
       // mapping
 //       if (detElemId == 0) {
 // 	AliWarning("\ndetElemId = 0, old segmentation !\n");
- 	GetDummyMapping(iCh, iCath, digit, busPatchId, manuId, channelId);
+ 	GetDummyMapping(iCh, cathode, digit, busPatchId, manuId, channelId);
 //       } else {
 //       // mapping (not far from real one)
 // 	AliMUONSegmentManuIndex* connect = segmentation2[iCath]->GetMpConnection(detElemId, padX, padY);
@@ -310,7 +310,7 @@ Int_t AliMUONRawData::WriteTrackerDDL(Int_t iCh)
       }
       delete subEvent;
     }
-  }
+    //   }
   fSubEventArray[0]->Sort();
   fSubEventArray[1]->Sort();
 
@@ -346,7 +346,7 @@ Int_t AliMUONRawData::WriteTrackerDDL(Int_t iCh)
       printf("\n");
     }
   
-  }
+   }
   
   Int_t iBusPatch;
   Int_t iEntries;

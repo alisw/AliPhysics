@@ -276,7 +276,7 @@ void AliMUONDigitizer::CreateDigits()
 
 	fTDList->Sort(); // sort by idDE
         AliDebug(2, "Creating digits...");
-	for (Int_t icat = 0; icat < 2; icat++) {
+	//	for (Int_t icat = 0; icat < 2; icat++) {
 
           Int_t digitindex[14] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
@@ -290,7 +290,7 @@ void AliMUONDigitizer::CreateDigits()
 			
 	    // Must be the same cathode, otherwise we will fill a mixture
 	    // of digits from both cathodes.
-	    if (icat != td->Cathode() - 1) continue;
+	    //if (icat != td->Cathode() - 1) continue;
 			
 	    AliDebug(3,Form( "Creating digit from transient digit 0x%X", (void*)td));
 
@@ -299,7 +299,7 @@ void AliMUONDigitizer::CreateDigits()
 	    if (q > 0) AddDigit(td, q, digitindex[td->Chamber()]++);
 	  }
 	  FillOutputData();
-	}
+	  //	}
 }
 
 //------------------------------------------------------------------------

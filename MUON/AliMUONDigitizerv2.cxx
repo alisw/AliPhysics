@@ -74,7 +74,7 @@ void AliMUONDigitizerv2::GenerateTransientDigits()
 	for (Int_t ich = 0; ich < AliMUONConstants::NCh(); ich++)  // loop over chamber
 	{
 		fMUONData->ResetSDigits();
-		fMUONData->GetCathodeS(0);
+		fMUONData->GetSDigits();
 		muonSDigits = fMUONData->SDigits(ich); 
 		ndig = muonSDigits->GetEntriesFast();
 		for (k = 0; k < ndig; k++)
@@ -82,15 +82,15 @@ void AliMUONDigitizerv2::GenerateTransientDigits()
 			sDigit = (AliMUONDigit*) muonSDigits->UncheckedAt(k);
 			MakeTransientDigitFromSDigit(ich,sDigit);
 		}
-		fMUONData->ResetSDigits();
-		fMUONData->GetCathodeS(1);
-		muonSDigits = fMUONData->SDigits(ich); 
-		ndig=muonSDigits->GetEntriesFast();
-		for (k = 0; k < ndig; k++)
-		{
-			sDigit = (AliMUONDigit*) muonSDigits->UncheckedAt(k);
-			MakeTransientDigitFromSDigit(ich,sDigit);
-		}
+// 		fMUONData->ResetSDigits();
+// 		fMUONData->GetCathodeS(1);
+// 		muonSDigits = fMUONData->SDigits(ich); 
+// 		ndig=muonSDigits->GetEntriesFast();
+// 		for (k = 0; k < ndig; k++)
+// 		{
+// 			sDigit = (AliMUONDigit*) muonSDigits->UncheckedAt(k);
+// 			MakeTransientDigitFromSDigit(ich,sDigit);
+// 		}
 	} // SDigits loop, end loop over chamber
 }
 

@@ -935,7 +935,7 @@ void AliMUONDisplay::LoadDigits(Int_t chamber, Int_t cathode)
    if (GetLoader()->TreeD()) {
      nent = (Int_t) GetLoader()->TreeD()->GetEntries();
      //     gAlice->TreeD()->GetEvent(nent-2+cathode-1);
-     GetMUONData()->GetCathode(cathode-1);
+     GetMUONData()->GetDigits();
     }
     
     Int_t ndigits = muonDigits->GetEntriesFast();

@@ -124,22 +124,21 @@ void AliMUONClusterReconstructor::Digits2Clusters()
     TClonesArray* muonDigits;
     Int_t n2;
     Int_t n1;
-    Int_t flag = 0;
-
+  
     for (Int_t ich = 0; ich < AliMUONConstants::NTrackingCh(); ich++) {
  
       id.Reset();
       n1 = 0;
       n2 = 0;
-      //cathode 0
+      //cathode 0 & 1
       fMUONData->ResetDigits();
-      fMUONData->GetCathode(0);
+      fMUONData->GetDigits();
       muonDigits = fMUONData->Digits(ich); 
       ndig = muonDigits->GetEntriesFast();
       TClonesArray &lDigit = *digAll;
 
       idDE_prev = 0;
-
+      muonDigits->Sort();
       for (k = 0; k < ndig; k++) {
 
 	digit = (AliMUONDigit*) muonDigits->UncheckedAt(k);
@@ -151,33 +150,8 @@ void AliMUONClusterReconstructor::Digits2Clusters()
 	idDE_prev = idDE;
       }
 
-      //cathode 1
-      fMUONData->ResetDigits();
-      fMUONData->GetCathode(1);
-      muonDigits =  fMUONData->Digits(ich);  
-      ndig = muonDigits->GetEntriesFast();
 
       Int_t idSize = n2;
-    
-      for (k = 0; k < ndig; k++) {
-
-	digit = (AliMUONDigit*) muonDigits->UncheckedAt(k);
-	new(lDigit[n1++]) AliMUONDigit(*digit);
-	idDE = digit->DetElemId();
-	flag = 0;
-
-	// looking for new idDE in cathode 1 (method to be checked CF)
-	for (Int_t n = 0; n < idSize; n++) {
-	  if (idDE == id[n]) {
-	    flag = 1;
-	    break;
-	  }
-	}
-	if (flag) continue;
-	id.AddAt(idDE,n2++);
-      }
-
-      idSize = n2;
 
       // loop over id DE
       for (idDE = 0; idDE < idSize; idDE++) {

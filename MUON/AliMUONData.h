@@ -87,8 +87,8 @@ class AliMUONData : public TNamed
 
     void           GetTrack(Int_t it) const  {fLoader->TreeH()->GetEvent(it);}
     Int_t          GetNtracks() const      {return (Int_t) fLoader->TreeH()->GetEntries();}
-    void           GetCathode(Int_t ic) const {fLoader->TreeD()->GetEvent(ic);}
-    void           GetCathodeS(Int_t ic) const {fLoader->TreeS()->GetEvent(ic);}
+    void           GetDigits() const {fLoader->TreeD()->GetEvent(0);}
+    void           GetSDigits() const {fLoader->TreeS()->GetEvent(0);}
     void           GetRawClusters() const {fLoader->TreeR()->GetEvent(0);}
     void           GetTrigger() const {fLoader->TreeR()->GetEvent(0);}
     void           GetTriggerD() const {fLoader->TreeD()->GetEvent(0);}

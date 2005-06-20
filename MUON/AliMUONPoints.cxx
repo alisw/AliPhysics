@@ -234,7 +234,7 @@ AliMUONDigit *AliMUONPoints::GetDigit() const
   AliMUON *pMUON  = (AliMUON*)gAlice->GetModule("MUON");
   TClonesArray *muonDigits  = pMUON->GetMUONData()->Digits(chamber-1);
   Int_t nent=(Int_t)gAlice->TreeD()->GetEntries();
-  pMUON->GetMUONData()->GetCathode(nent-2+cathode-1);
+  pMUON->GetMUONData()->GetDigits();
   //gAlice->TreeD()->GetEvent(cathode);
   Int_t ndigits = muonDigits->GetEntriesFast();
   if (fDigitIndex < 0 || fDigitIndex >= ndigits) return 0;
