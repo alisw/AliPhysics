@@ -258,19 +258,21 @@ endif
 	 @\rm -f $(patsubst %.cxx,%.d, $@)
 	 $(MUTE)rootcint -f $@ -c $(@PACKAGE@DEFINE) $(CINTFLAGS) $(@PACKAGE@INC) $(@PACKAGE@CINTHDRS) $(@PACKAGE@DH) 
 
-$(@PACKAGE@DO): $(@PACKAGE@DS)
+$(@PACKAGE@DO): $(@PACKAGE@DS) 
 ifndef ALIQUIET
 		@echo "***** Compiling $< *****";
 endif
 		$(MUTE)$(CXX) $(@PACKAGE@DEFINE) -c $(@PACKAGE@INC)  -I$(ALICE_ROOT) $< -o $@ $(@PACKAGE@DCXXFLAGS)
 
-$(MODDIRO)/@PACKAGE@_srcslist: FORCE
-	@for i in $(@PACKAGE@CS) $(@PACKAGE@S); do echo $$i; done | sort > $@.new ;\
-	diff $@ $@.new 2>/dev/null | sed -n -e "s?^\< *@MODULE@?@MODULE@/tgt_$(ALICE_TARGET)?p" | \
-	sed -e "s?\.c.*\$$?.\*?" | xargs \rm -f ;\
-	diff -q -w >/dev/null 2>&1 $@ $@.new ;\
-	if [ $$? -ne 0 ]; then \mv $@.new $@; echo "***** Source changed, remaking $(@PACKAGE@DS) *****";\
-	else \rm $@.new; fi
+$(MODDIRO)/@PACKAGE@_srcslist: @MODULE@/@TYPE@@PACKAGE@.pkg
+	@if [ ! -d '$(dir $@)' ]; then echo "***** Making directory $(dir $@) *****"; mkdir -p $(dir $@); fi
+	@for i in $(@PACKAGE@CS) $(@PACKAGE@S); do echo $$i; done | sort > $@.new
+	@for j in `diff -w $@ $@.new 2>/dev/null | awk '/^\</{sub(".c.*",".",$$2); print $$2}' | xargs basename` ;\
+	do grep -l $$j `find */tgt_$(ALICE_TARGET) -name "*.d"` | xargs echo \rm -f ;\
+	(find @MODULE@/tgt_$(ALICE_TARGET) -name "$${j}d" ; find @MODULE@/tgt_$(ALICE_TARGET) -name "$${j}o") | xargs echo \rm -f ;\
+	done
+	@diff -q -w >/dev/null 2>&1 $@ $@.new ;\
+	if [ $$? -ne 0 ]; then \mv $@.new $@; else \rm $@.new; fi
 
 #Different targets for the module
 
@@ -355,7 +357,7 @@ endif
 check-@MODULE@: $(@PACKAGE@CHECKS)
 
 # IRST coding rule check 
-@MODULE@/check/%.i : @MODULE@/%.cxx @MODULE@/%.h
+@MODULE@/check/%.i : @MODULE@/%.cxx @MODULE@/tgt_$(ALICE_TARGET)/%.d
 	@[ -d $(dir $@) ] || mkdir -p $(dir $@)
 	$(MUTE)$(CXX) -E $(@PACKAGE@DEFINE) $(@PACKAGE@INC) -I. $< > $@ $(@PACKAGE@CXXFLAGS)
 	@cd $(dir $@) ; $(IRST_INSTALLDIR)/patch/patch4alice.prl $(notdir $@)
