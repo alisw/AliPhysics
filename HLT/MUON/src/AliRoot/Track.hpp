@@ -8,8 +8,8 @@
 #ifndef dHLT_ALIROOT_TRACK_HPP
 #define dHLT_ALIROOT_TRACK_HPP
 
-#include "TObject.h"
-#include <ostream>
+#include <TObject.h>
+#include <Riostream.h>
 
 #include "AliRoot/Point.hpp"
 #include "AliRoot/Region.hpp"
@@ -92,7 +92,7 @@ public:
 	Bool_t HitsInRegions() const;
 
 	// ostream operator usefull for text output.
-	friend std::ostream& operator << (std::ostream& os, const Track& t);
+	friend ostream& operator << (ostream& os, const Track& t);
 
 private:
 

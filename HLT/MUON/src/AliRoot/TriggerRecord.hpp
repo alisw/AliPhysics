@@ -8,8 +8,9 @@
 #ifndef dHLT_ALIROOT_TRIGGER_RECORD_HPP
 #define dHLT_ALIROOT_TRIGGER_RECORD_HPP
 
-#include "TObject.h"
+#include <TObject.h>
 #include "AliRoot/Point.hpp"
+#include "Utils.hpp"
 
 namespace AliMUONHLT
 {
@@ -72,7 +73,7 @@ public:
 	const Point& Station2Point() const { return fSt2Point; };
 
 	// ostream operator usefull for text output.
-	friend std::ostream& operator << (std::ostream& os, const TriggerRecord& r);
+	friend ostream& operator << (ostream& os, const TriggerRecord& r);
 
 private:
 

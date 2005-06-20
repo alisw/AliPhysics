@@ -8,8 +8,8 @@
 #ifndef dHLT_ALIROOT_POINT_HPP
 #define dHLT_ALIROOT_POINT_HPP
 
-#include "TObject.h"
-#include <ostream>
+#include <TObject.h>
+#include <Riostream.h>
 
 
 namespace AliMUONHLT
@@ -31,7 +31,7 @@ public:
 	virtual ~Point() {};
 	
 	// ostream operator usefull for text output.
-	friend std::ostream& operator << (std::ostream& os, const Point& p);
+	friend ostream& operator << (ostream& os, const Point& p);
 
 
 	Float_t fX;    // X coordinate of the 2D point.

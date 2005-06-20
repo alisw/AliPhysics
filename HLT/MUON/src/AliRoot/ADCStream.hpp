@@ -8,9 +8,9 @@
 #ifndef dHLT_ALIROOT_ADC_STREAM_HPP
 #define dHLT_ALIROOT_ADC_STREAM_HPP
 
-#include "TObject.h"
-#include "TArrayI.h"
-#include <ostream>
+#include <TObject.h>
+#include <TArrayI.h>
+#include <Riostream.h>
 
 
 namespace AliMUONHLT
@@ -40,7 +40,7 @@ public:
 	UInt_t operator [] (const UInt_t index) const;
 
 	// ostream operator usefull for text output.
-	friend std::ostream& operator << (std::ostream& os, const ADCStream& s);
+	friend ostream& operator << (ostream& os, const ADCStream& s);
 
 private:
 

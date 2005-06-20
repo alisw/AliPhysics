@@ -7,7 +7,8 @@
 
 #include "AliRoot/Region.hpp"
 #include "AliRoot/Point.hpp"
-#include "TMath.h"
+#include <TMath.h>
+#include "Utils.hpp"
 
 ClassImp(AliMUONHLT::Region);
 
@@ -86,7 +87,7 @@ Bool_t Region::Contains(const Point& p) const
 };
 
 
-std::ostream& operator << (std::ostream& os, const Region& r)
+ostream& operator << (ostream& os, const Region& r)
 {
 	os << "[(" << r.fLeft << ", " << r.fRight << "), (" << r.fLeft << ", " << r.fRight << ")]";
 	return os;

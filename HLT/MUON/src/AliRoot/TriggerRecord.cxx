@@ -103,7 +103,7 @@ void TriggerRecord::Pt(const Float_t value)
 };
 
 
-std::ostream& operator << (std::ostream& os, const TriggerRecord& r)
+ostream& operator << (ostream& os, const TriggerRecord& r)
 {
 	os << "{trig#: " << r.fTriggerNumber << ", sign: " << r.fParticleSign
 	   << ", pt: " << r.fPt << ", st1: " << r.fSt1Point << ", st2: "

@@ -10,7 +10,7 @@
 
 #include "BasicTypes.hpp"
 #include <exception>
-#include <ostream>
+#include <Riostream.h>
 
 namespace dHLT
 {
@@ -43,7 +43,7 @@ public:
                Error myerror;
                cout << myerror << endl;
 	*/
-	friend std::ostream& operator << (std::ostream& os, const dHLT::Error& error)
+	friend ostream& operator << (ostream& os, const dHLT::Error& error)
 	{
 		os << error.Message();
 		return os;

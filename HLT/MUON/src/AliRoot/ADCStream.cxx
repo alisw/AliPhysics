@@ -6,7 +6,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 #include "AliRoot/ADCStream.hpp"
-#include "TMath.h"
+#include <TMath.h>
 #include "Utils.hpp"
 
 
@@ -66,16 +66,16 @@ UInt_t ADCStream::operator [] (const UInt_t index) const
 };
 
 
-std::ostream& operator << (std::ostream& os, const ADCStream& s)
+ostream& operator << (ostream& os, const ADCStream& s)
 {
 	os << "{ADCStream: " << (void*)s.Data() << "}";
-	os << std::endl;
+	os << endl;
 	for (Int_t i = 0; i < s.fData.GetSize(); i++)
 	{
 		char buffer[32];
 		char* str = (char*)&buffer[0];
 		sprintf(str, "0x%X", s.fData[i]);
-		os << i << "\t" << str << std::endl;
+		os << i << "\t" << str << endl;
 	};
 	return os;
 };

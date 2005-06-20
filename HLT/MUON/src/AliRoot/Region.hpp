@@ -8,8 +8,8 @@
 #ifndef dHLT_ALIROOT_REGION_HPP
 #define dHLT_ALIROOT_REGION_HPP
 
-#include "TObject.h"
-#include <ostream>
+#include <TObject.h>
+#include <Riostream.h>
 
 
 namespace AliMUONHLT
@@ -56,7 +56,7 @@ public:
 	Bool_t Contains(const Point& p) const;
 
 	// ostream operator usefull for text output.
-	friend std::ostream& operator << (std::ostream& os, const Region& r);
+	friend ostream& operator << (ostream& os, const Region& r);
 
 private:
 

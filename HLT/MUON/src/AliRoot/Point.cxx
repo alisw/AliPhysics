@@ -24,7 +24,7 @@ Point::Point(const Float_t x, const Float_t y) : TObject()
 	fY = y;
 };
 
-std::ostream& operator << (std::ostream& os, const Point& p)
+ostream& operator << (ostream& os, const Point& p)
 {
 	os << "[" << p.fX << ", " << p.fY << "]";
 	return os;

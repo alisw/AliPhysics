@@ -36,7 +36,7 @@
    or = ||
    not = !
  */
-#ifndef __GNUC__
+#if !defined(__GNUC__) && !defined(__CINT__)
 
 #	define and &&
 #	define or ||
@@ -102,7 +102,7 @@ namespace dHLT
 	// We are defining this DebugMsg_PREECODE macro to use in DebugMsg in such a way
 	// so that the code is removed when the LOG_NO_DEBUG macro is specified but 
 	// compiled otherwise.
-#	include <sstream>
+#	include <Rstrstream.h>
 #	ifndef LOG_NO_DEBUG
 #		define __DebugMsg_PREECODE__(message) std::ostringstream os; os << message;
 #	else // LOG_NO_DEBUG

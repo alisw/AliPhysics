@@ -18,6 +18,11 @@
 #include "AliMUONTriggerCircuit.h"
 #include "AliMUONDataInterface.h"
 #include "TDatabasePDG.h"
+#ifndef __alpha
+#include <math.h>
+#else
+#include <float.h>
+#endif
 
 ClassImp(AliMUONHLT::TriggerSource);
 ClassImp(AliMUONHLT::TriggerSource::EventData);
@@ -687,8 +692,11 @@ Bool_t TriggerSource::FillTriggerFromHits(AliMUONDataInterface* data, const Int_
 	DebugMsg(2, "Creating TriggerRecord from hits on track: " << track );
 	
 	Float_t x1, y1, z1, x2, y2, z2, x3, y3, z3, x4, y4, z4;
+#ifndef __alpha
 	x1 = y1 = z1 = x2 = y2 = z2 = x3 = y3 = z3 = x4 = y4 = z4 = NAN;
-
+#else
+	x1 = y1 = z1 = x2 = y2 = z2 = x3 = y3 = z3 = x4 = y4 = z4 = FLT_QNAN;
+#endif
 	// Find the hit that corresponds to chambers. 11 to 14. We can ignore any
 	// hits above the first 14. If there are that many it means the particle
 	// is cycling in the detector.

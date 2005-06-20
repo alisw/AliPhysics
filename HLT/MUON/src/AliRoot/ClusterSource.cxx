@@ -11,8 +11,10 @@
 #include "AliMUONHit.h"
 #include "AliMUONRawCluster.h"
 #include "AliMUONDataInterface.h"
-#ifdef __APPLE__
-#include "math.h"
+#ifndef __alpha
+#include <math.h>
+#else
+#include <float.h>
 #endif
 
 ClassImp(AliMUONHLT::ClusterSource);
@@ -567,7 +569,11 @@ void ClusterSource::AddChamberFrom(AliMUONDataInterface* data, const Int_t chamb
 	
 	AddBlock(chamber);
 	UInt_t currentblocksize = 0;
+#ifndef __alpha
 	Float_t x = NAN, y = NAN;
+#else
+	Float_t x = FLT_QNAN, y = FLT_QNAN;
+#endif
 	
 	switch (fDataToUse)
 	{
@@ -646,8 +652,11 @@ void ClusterSource::AddClusterFrom(
 	)
 {
 	DebugMsg(1, "Entering AddClusterFrom");
-	
+#ifndef __alpha	
 	Float_t x = NAN, y = NAN;
+#else
+	Float_t x = FLT_QNAN, y = FLT_QNAN;
+#endif
 
 	switch (fDataToUse)
 	{

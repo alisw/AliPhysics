@@ -6,7 +6,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 #include "AliRoot/Track.hpp"
-#include "TMath.h"
+#include <TMath.h>
+#include "Utils.hpp"
 
 ClassImp(AliMUONHLT::Track);
 
@@ -200,7 +201,7 @@ Bool_t Track::HitsInRegions() const
 };
 
 
-std::ostream& operator << (std::ostream& os, const Track& t)
+ostream& operator << (ostream& os, const Track& t)
 {
 	os << "{trigid: " << t.fTriggerID << ", sign: " << t.fParticleSign
 	   << ", p: " << t.fP << ", pt: " << t.fPt << "}";
