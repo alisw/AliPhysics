@@ -266,7 +266,7 @@ endif
 
 $(MODDIRO)/@PACKAGE@_srcslist: @MODULE@/@TYPE@@PACKAGE@.pkg
 	@if [ ! -d '$(dir $@)' ]; then echo "***** Making directory $(dir $@) *****"; mkdir -p $(dir $@); fi
-	@for i in $(@PACKAGE@CS) $(@PACKAGE@S); do echo $$i; done | sort > $@.new
+	@for i in '$(@PACKAGE@CS) $(@PACKAGE@S)'; do echo $$i; done | sort > $@.new
 	@for j in `diff -w $@ $@.new 2>/dev/null | awk '/^\</{sub(".c.*",".",$$2); print $$2}' | xargs basename` ;\
 	do grep -l $$j `find */tgt_$(ALICE_TARGET) -name "*.d"` | xargs echo \rm -f ;\
 	(find @MODULE@/tgt_$(ALICE_TARGET) -name "$${j}d" ; find @MODULE@/tgt_$(ALICE_TARGET) -name "$${j}o") | xargs echo \rm -f ;\
