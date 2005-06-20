@@ -80,7 +80,7 @@ const Double_t AliMUONEventReconstructor::fgkDefaultSimpleBPosition = 1019.0;
 const Int_t    AliMUONEventReconstructor::fgkDefaultRecTrackRefHits = 0;
 const Double_t AliMUONEventReconstructor::fgkDefaultEfficiency = 0.95;
 
-const Int_t    AliMUONEventReconstructor::fgkDefaultPrintLevel = -1;
+const Int_t    AliMUONEventReconstructor::fgkDefaultPrintLevel = -1;  // Obsolete and replaced by AliLog frame work
 
 ClassImp(AliMUONEventReconstructor) // Class implementation in ROOT context
 
@@ -123,12 +123,11 @@ AliMUONEventReconstructor::AliMUONEventReconstructor(AliLoader* loader)
   // See how to get fSimple(BValue, BLength, BPosition)
   // automatically calculated from the actual magnetic field ????
 
-  if (fPrintLevel >= 0) {
-    cout << "AliMUONEventReconstructor constructed with defaults" << endl; Dump();
-    cout << endl << "Magnetic field from root file:" << endl;
-    gAlice->Field()->Dump();
-    cout << endl;
-  }
+  AliDebug(1,"AliMUONEventReconstructor constructed with defaults"); 
+  if ( AliLog::GetGlobalDebugLevel()>0) Dump();
+  AliDebug(1,"Magnetic field from root file:");
+  if ( AliLog::GetGlobalDebugLevel()>0) gAlice->Field()->Dump();
+
   
   // Initializions for track ref. background events
   fBkgTrackRefFile = 0;
@@ -242,7 +241,7 @@ void AliMUONEventReconstructor::SetReconstructionParametersToDefaults(void)
   fSimpleBPosition = fgkDefaultSimpleBPosition;
   fRecTrackRefHits = fgkDefaultRecTrackRefHits;
   fEfficiency = fgkDefaultEfficiency;
-  fPrintLevel = fgkDefaultPrintLevel;
+  fPrintLevel = fgkDefaultPrintLevel;  // Obsolete and replaced by AliLog framework
   return;
 }
 
@@ -273,16 +272,20 @@ void AliMUONEventReconstructor::SetBkgTrackRefFile(Text_t *BkgTrackRefFileName)
 {
   // Set background file ... for track ref. hits
   // Must be called after having loaded the firts signal event
-  if (fPrintLevel >= 0) {
-    cout << "Enter SetBkgTrackRefFile with BkgTrackRefFileName ``"
-	 << BkgTrackRefFileName << "''" << endl;}
+  AliDebug(1,Form("Enter SetBkgTrackRefFile with BkgTrackRefFileName %s",BkgTrackRefFileName));
+  
   if (strlen(BkgTrackRefFileName)) {
     // BkgTrackRefFileName not empty: try to open the file
-    if (fPrintLevel >= 2) {cout << "Before File(Bkg)" << endl; gDirectory->Dump();}
+
+    if(AliLog::GetGlobalDebugLevel()>1) {
+      cout << "Before File(Bkg)" << endl; gDirectory->Dump();
+    }
     fBkgTrackRefFile = new TFile(BkgTrackRefFileName);
-    if (fPrintLevel >= 2) {cout << "After File(Bkg)" << endl; gDirectory->Dump();}
+    if(AliLog::GetGlobalDebugLevel()>1) {
+      cout << "After File(Bkg)" << endl; gDirectory->Dump();
+    }
     if (fBkgTrackRefFile-> IsOpen()) {
-      if (fPrintLevel >= 0) {
+      if(AliLog::GetGlobalDebugLevel()>0) {
 	cout << "Background for Track ref. hits in file: ``" << BkgTrackRefFileName
 	     << "'' successfully opened" << endl;}
     }
@@ -300,7 +303,7 @@ void AliMUONEventReconstructor::SetBkgTrackRefFile(Text_t *BkgTrackRefFileName)
     // otherwise, Segmentation violation at the next instruction
     // How is it possible to do smething better ????
     ((gAlice->TreeK())->GetCurrentFile())->cd();
-    if (fPrintLevel >= 2) {cout << "After cd(gAlice)" << endl; gDirectory->Dump();}
+    if(AliLog::GetGlobalDebugLevel()>1) cout << "After cd(gAlice)" << endl; gDirectory->Dump();
   }
   return;
 }
@@ -311,8 +314,8 @@ void AliMUONEventReconstructor::NextBkgTrackRefEvent(void)
   // Get next event in background file for track ref. hits
   // Goes back to event number 0 when end of file is reached
   char treeName[20];
-  if (fPrintLevel >= 0) {
-    cout << "Enter NextBkgTrackRefEvent" << endl;}
+  
+  AliDebug(1,"Enter NextBkgTrackRefEvent");
   // Clean previous event
   if(fBkgTrackRefTK) delete fBkgTrackRefTK;
   fBkgTrackRefTK = NULL;
@@ -322,18 +325,17 @@ void AliMUONEventReconstructor::NextBkgTrackRefEvent(void)
   // Increment event number
   fBkgTrackRefEventNumber++;
   // Get access to Particles and Hits for event from background file
-  if (fPrintLevel >= 2) {cout << "Before cd(Bkg)" << endl; gDirectory->Dump();}
+  if (AliLog::GetGlobalDebugLevel()>1) cout << "Before cd(Bkg)" << endl; gDirectory->Dump();
   fBkgTrackRefFile->cd();
-  if (fPrintLevel >= 2) {cout << "After cd(Bkg)" << endl; gDirectory->Dump();}
+  if (AliLog::GetGlobalDebugLevel()>1) cout << "After cd(Bkg)" << endl; gDirectory->Dump();
   // Particles: TreeK for event and branch "Particles"
   sprintf(treeName, "TreeK%d", fBkgTrackRefEventNumber);
   fBkgTrackRefTK = (TTree*)gDirectory->Get(treeName);
   if (!fBkgTrackRefTK) {
-    if (fPrintLevel >= 0) {
-      cout << "Cannot find Kine Tree for background event: " <<
-	fBkgTrackRefEventNumber << endl;
-      cout << "Goes back to event 0" << endl;
-    }
+   
+    AliDebug(1,Form("Cannot find Kine Tree for background event: %d",fBkgTrackRefEventNumber));
+    AliDebug(1,"Goes back to event 0");
+    
     fBkgTrackRefEventNumber = 0;
     sprintf(treeName, "TreeK%d", fBkgTrackRefEventNumber);
     fBkgTrackRefTK = (TTree*)gDirectory->Get(treeName);
@@ -355,7 +357,8 @@ void AliMUONEventReconstructor::NextBkgTrackRefEvent(void)
   fBkgTrackRefTTR->GetEntries(); // necessary ????
   // Back to the signal file
   ((gAlice->TreeK())->GetCurrentFile())->cd();
-  if (fPrintLevel >= 2) {cout << "After cd(gAlice)" << endl; gDirectory->Dump();}
+  if (AliLog::GetGlobalDebugLevel()>1) 
+    cout << "After cd(gAlice)" << endl; gDirectory->Dump();
   return;
 }
 
@@ -363,7 +366,7 @@ void AliMUONEventReconstructor::NextBkgTrackRefEvent(void)
 void AliMUONEventReconstructor::EventReconstruct(void)
 {
   // To reconstruct one event
-  if (fPrintLevel >= 1) cout << "enter EventReconstruct" << endl;
+  AliDebug(1,"Enter EventReconstruct");
   MakeEventToBeReconstructed();
   MakeSegments();
   MakeTracks();
@@ -383,7 +386,7 @@ void AliMUONEventReconstructor::EventReconstruct(void)
 void AliMUONEventReconstructor::EventReconstructTrigger(void)
 {
   // To reconstruct one event
-  if (fPrintLevel >= 1) cout << "enter EventReconstructTrigger" << endl;
+  AliDebug(1,"Enter EventReconstructTrigger");
   MakeTriggerTracks();  
   return;
 }
@@ -468,7 +471,7 @@ void AliMUONEventReconstructor::MakeEventToBeReconstructed(void)
 //    }
   AliRunLoader *runLoader = fLoader->GetRunLoader();
 
-  if (fPrintLevel >= 1) cout << "enter MakeEventToBeReconstructed" << endl;
+  AliDebug(1,"Enter MakeEventToBeReconstructed");
   ResetHitsForRec();
   if (fRecTrackRefHits == 1) {
     // Reconstruction from track ref. hits
@@ -508,19 +511,19 @@ void AliMUONEventReconstructor::MakeEventToBeReconstructed(void)
     AddHitsForRecFromRawClusters(treeR);
     // No sorting: it is done automatically in the previous function
   }
-  if (fPrintLevel >= 10) {
-    cout << "end of MakeEventToBeReconstructed" << endl;
-    cout << "NHitsForRec: " << fNHitsForRec << endl;
-    for (Int_t ch = 0; ch < fgkMaxMuonTrackingChambers; ch++) {
-      cout << "chamber(0...): " << ch
-	   << "  NHitsForRec: " << fNHitsForRecPerChamber[ch]
-	   << "  index(first HitForRec): " << fIndexOfFirstHitForRecPerChamber[ch]
-	   << endl;
-      for (Int_t hit = fIndexOfFirstHitForRecPerChamber[ch];
-	   hit < fIndexOfFirstHitForRecPerChamber[ch] + fNHitsForRecPerChamber[ch];
-	   hit++) {
-	cout << "HitForRec index(0...): " << hit << endl;
-	((*fHitsForRecPtr)[hit])->Dump();
+ 
+  AliDebug(1,"End of MakeEventToBeReconstructed");
+    if (AliLog::GetGlobalDebugLevel() > 0) {
+      AliDebug(1, Form("NHitsForRec: %d",fNHitsForRec));
+      for (Int_t ch = 0; ch < fgkMaxMuonTrackingChambers; ch++) {
+	AliDebug(1, Form("Chamber(0...): %d",ch));
+	AliDebug(1, Form("NHitsForRec: %d", fNHitsForRecPerChamber[ch]));
+	AliDebug(1, Form("Index(first HitForRec): %d", fIndexOfFirstHitForRecPerChamber[ch]));
+	for (Int_t hit = fIndexOfFirstHitForRecPerChamber[ch];
+	     hit < fIndexOfFirstHitForRecPerChamber[ch] + fNHitsForRecPerChamber[ch];
+	     hit++) {
+	  AliDebug(1, Form("HitForRec index(0...): %d",hit));
+	  ((*fHitsForRecPtr)[hit])->Dump();
       }
     }
   }
@@ -536,16 +539,14 @@ void AliMUONEventReconstructor::AddHitsForRecFromTrackRef(TTree *TTR, Int_t sign
   AliTrackReference *trackRef;
   
   Int_t track = 0;
-  if (fPrintLevel >= 2)
-    cout << "enter AddHitsForRecFromTrackRef with TTR: " << TTR << endl;
+  AliDebug(2,Form("Enter AddHitsForRecFromTrackRef with TTR: %d",  TTR));
   if (TTR == NULL) return;
   
   listOfTrackRefs = CleanTrackRefs(TTR);
 
   Int_t ntracks = listOfTrackRefs->GetEntriesFast();
 
-  if (fPrintLevel >= 2)
-    cout << "ntracks: " << ntracks << endl;
+  AliDebug(2,Form("ntracks: %d", ntracks));
 
   for (Int_t index = 0; index < ntracks; index++) {
     trackRef = (AliTrackReference*) listOfTrackRefs->At(index);
@@ -606,11 +607,12 @@ AliMUONHitForRec* AliMUONEventReconstructor::NewHitForRecFromTrackRef(AliTrackRe
   //   track ref. info
   hitForRec->SetTTRTrack(TrackNumber);
   hitForRec->SetTrackRefSignal(Signal);
-  if (fPrintLevel >= 10) {
-    cout << "track: " << TrackNumber << endl;
+  if (AliLog::GetGlobalDebugLevel()> 1) {
+    AliDebug(2,Form("Track: %d", TrackNumber));
     Hit->Dump();
     cout << "AliMUONHitForRec number (1...): " << fNHitsForRec << endl;
-    hitForRec->Dump();}
+    hitForRec->Dump();
+  }
   return hitForRec;
 }
   //__________________________________________________________________________
@@ -786,7 +788,7 @@ void AliMUONEventReconstructor::AddHitsForRecFromRawClusters(TTree* TR)
   AliMUONRawCluster *clus;
   Int_t iclus, nclus, nTRentries;
   TClonesArray *rawclusters;
-  if (fPrintLevel >= 1) cout << "enter AddHitsForRecFromRawClusters" << endl;
+  AliDebug(1,"Enter AddHitsForRecFromRawClusters");
 
 //   TString evfoldname = AliConfig::GetDefaultEventFolderName();//to be interfaced properly
 //   AliRunLoader* rl = AliRunLoader::GetRunLoader(evfoldname);
@@ -845,7 +847,7 @@ void AliMUONEventReconstructor::AddHitsForRecFromRawClusters(TTree* TR)
       hitForRec->SetHitNumber(iclus);
       // Z coordinate of the raw cluster (cm)
       hitForRec->SetZ(clus->GetZ(0));
-      if (fPrintLevel >= 10) {
+      if (AliLog::GetGlobalDebugLevel() > 1) {
 	cout << "chamber (0...): " << ch <<
 	  " raw cluster (0...): " << iclus << endl;
 	clus->Dump();
@@ -862,14 +864,14 @@ void AliMUONEventReconstructor::MakeSegments(void)
 {
   // To make the list of segments in all stations,
   // from the list of hits to be reconstructed
-  if (fPrintLevel >= 1) cout << "enter MakeSegments" << endl;
+  AliDebug(1,"Enter MakeSegments");
   ResetSegments();
   // Loop over stations
   Int_t nb = (fTrackMethod == 2) ? 3 : 0; //AZ
   //AZ for (Int_t st = 0; st < fgkMaxMuonTrackingStations; st++)
   for (Int_t st = nb; st < fgkMaxMuonTrackingStations; st++) //AZ
     MakeSegmentsPerStation(st); 
-  if (fPrintLevel >= 10) {
+  if (AliLog::GetGlobalDebugLevel() > 1) {
     cout << "end of MakeSegments" << endl;
     for (Int_t st = 0; st < fgkMaxMuonTrackingStations; st++) {
       cout << "station(0...): " << st
@@ -899,8 +901,7 @@ void AliMUONEventReconstructor::MakeSegmentsPerStation(Int_t Station)
   Bool_t last2st;
   Double_t bendingSlope, distBend, distNonBend, extBendCoor, extNonBendCoor,
       impactParam = 0., maxImpactParam = 0., minImpactParam = 0.; // =0 to avoid compilation warnings.
-  if (fPrintLevel >= 1)
-    cout << "enter MakeSegmentsPerStation (0...) " << Station << endl;
+  AliDebug(1,Form("Enter MakeSegmentsPerStation (0...) %d",Station));
   // first and second chambers (0...) in the station
   Int_t ch1 = 2 * Station;
   Int_t ch2 = ch1 + 1;
@@ -966,7 +967,7 @@ void AliMUONEventReconstructor::MakeSegmentsPerStation(Int_t Station)
 	if (hit1Ptr->GetNSegments() == 0)
 	  hit1Ptr->SetIndexOfFirstSegment(segmentIndex);
 	hit1Ptr->SetNSegments(hit1Ptr->GetNSegments() + 1);
-	if (fPrintLevel >= 10) {
+	if (AliLog::GetGlobalDebugLevel() > 1) {
 	  cout << "segmentIndex(0...): " << segmentIndex
 	       << "  distBend: " << distBend
 	       << "  distNonBend: " << distNonBend
@@ -990,8 +991,7 @@ void AliMUONEventReconstructor::MakeSegmentsPerStation(Int_t Station)
   // of the HitForRec in the first chamber to explore all segments formed with it.
   // Is this sorting really needed ????
   if ((Station == 3) || (Station == 4)) (fSegmentsPtr[Station])->Sort();
-  if (fPrintLevel >= 1) cout << "Station: " << Station << "  NSegments: "
-			     << fNSegments[Station] << endl;
+  AliDebug(1,Form("Station: %d  NSegments:  %d ", Station, fNSegments[Station]));
   return;
 }
 
@@ -1000,7 +1000,7 @@ void AliMUONEventReconstructor::MakeTracks(void)
 {
   // To make the tracks,
   // from the list of segments and points in all stations
-  if (fPrintLevel >= 1) cout << "enter MakeTracks" << endl;
+  AliDebug(1,"Enter MakeTracks");
   // The order may be important for the following Reset's
   ResetTracks();
   ResetTrackHits();
@@ -1052,7 +1052,7 @@ void AliMUONEventReconstructor::ValidateTracksWithTrigger(void)
 Bool_t AliMUONEventReconstructor::MakeTriggerTracks(void)
 {
     // To make the trigger tracks from Local Trigger
-    if (fPrintLevel >= 1) cout << "enter MakeTriggerTracks" << endl;
+  AliDebug(1, "Enter MakeTriggerTracks");
     //    ResetTriggerTracks();
     
     Int_t nTRentries;
@@ -1145,7 +1145,7 @@ Int_t AliMUONEventReconstructor::MakeTrackCandidatesWithTwoSegments(AliMUONSegme
   AliMUONSegment *extrapSegment = NULL;
   AliMUONTrack *recTrack;
   Double_t mcsFactor;
-  if (fPrintLevel >= 1) cout << "enter MakeTrackCandidatesWithTwoSegments" << endl;
+  AliDebug(1,"Enter MakeTrackCandidatesWithTwoSegments");
   // Station for the end segment
   endStation = 7 - (BegSegment->GetHitForRec1())->GetChamberNumber() / 2;
   // multiple scattering factor corresponding to one chamber
@@ -1168,9 +1168,7 @@ Int_t AliMUONEventReconstructor::MakeTrackCandidatesWithTwoSegments(AliMUONSegme
 				   fMaxSigma2Distance)) <= 4.0) {
       // both segments compatible:
       // make track candidate from "begSegment" and "endSegment"
-      if (fPrintLevel >= 2)
-	cout << "TrackCandidate with Segment " << iEndSegment <<
-	  " in Station(0..) " << endStation << endl;
+      AliDebug(2,Form("TrackCandidate with Segment %d in Station(0..) %d", iEndSegment, endStation));
       // flag for both segments in one track:
       // to be done in track constructor ????
       BegSegment->SetInTrack(kTRUE);
@@ -1178,7 +1176,7 @@ Int_t AliMUONEventReconstructor::MakeTrackCandidatesWithTwoSegments(AliMUONSegme
       recTrack = new ((*fRecTracksPtr)[fNRecTracks])
 	AliMUONTrack(BegSegment, endSegment, this);
       fNRecTracks++;
-      if (fPrintLevel >= 10) recTrack->RecursiveDump();
+      if (AliLog::GetGlobalDebugLevel() > 1) recTrack->RecursiveDump();
       // increment number of track candidates with 2 segments
       nbCan2Seg++;
     }
@@ -1198,8 +1196,7 @@ Int_t AliMUONEventReconstructor::MakeTrackCandidatesWithOneSegmentAndOnePoint(Al
   AliMUONHitForRec *hit;
   AliMUONTrack *recTrack;
   Double_t mcsFactor;
-  if (fPrintLevel >= 1)
-    cout << "enter MakeTrackCandidatesWithOneSegmentAndOnePoint" << endl;
+  AliDebug(1,"Enter MakeTrackCandidatesWithOneSegmentAndOnePoint");
   // station for the end point
   endStation = 7 - (BegSegment->GetHitForRec1())->GetChamberNumber() / 2;
   // multiple scattering factor corresponding to one chamber
@@ -1230,9 +1227,7 @@ Int_t AliMUONEventReconstructor::MakeTrackCandidatesWithOneSegmentAndOnePoint(Al
 				       fMaxSigma2Distance)) <= 2.0) {
 	// both HitForRec's compatible:
 	// make track candidate from begSegment and current HitForRec
-	if (fPrintLevel >= 2)
-	  cout << "TrackCandidate with HitForRec " << iHit <<
-	    " in Chamber(0..) " << ch << endl;
+	AliDebug(2, Form("TrackCandidate with HitForRec  %d in Chamber(0..) %d", iHit, ch));
 	// flag for beginning segments in one track:
 	// to be done in track constructor ????
 	BegSegment->SetInTrack(kTRUE);
@@ -1240,7 +1235,7 @@ Int_t AliMUONEventReconstructor::MakeTrackCandidatesWithOneSegmentAndOnePoint(Al
 	  AliMUONTrack(BegSegment, hit, this);
 	// the right place to eliminate "double counting" ???? how ????
 	fNRecTracks++;
-	if (fPrintLevel >= 10) recTrack->RecursiveDump();
+	if (AliLog::GetGlobalDebugLevel() > 1) recTrack->RecursiveDump();
 	// increment number of track candidates
 	nbCan1Seg1Hit++;
       }
@@ -1258,16 +1253,14 @@ void AliMUONEventReconstructor::MakeTrackCandidates(void)
   // (two Segment's or one Segment and one HitForRec)
   Int_t begStation, iBegSegment, nbCan1Seg1Hit, nbCan2Seg;
   AliMUONSegment *begSegment;
-  if (fPrintLevel >= 1) cout << "enter MakeTrackCandidates" << endl;
+  AliDebug(1,"Enter MakeTrackCandidates");
   // Loop over stations(1..) 5 and 4 for the beginning segment
   for (begStation = 4; begStation > 2; begStation--) {
     // Loop over segments in the beginning station
     for (iBegSegment = 0; iBegSegment < fNSegments[begStation]; iBegSegment++) {
       // pointer to segment
       begSegment = (AliMUONSegment*) ((*fSegmentsPtr[begStation])[iBegSegment]);
-      if (fPrintLevel >= 2)
-	cout << "look for TrackCandidate's with Segment " << iBegSegment <<
-	  " in Station(0..) " << begStation << endl;
+      AliDebug(2,Form("Look for TrackCandidate's with Segment %d  in Station(0..) %d", iBegSegment, begStation));
       // Look for track candidates with two segments,
       // "begSegment" and all compatible segments in other station.
       // Only for beginning station(1..) 5
@@ -1301,8 +1294,7 @@ void AliMUONEventReconstructor::FollowTracks(void)
   AliMUON *pMUON = (AliMUON*) gAlice->GetModule("MUON"); // necessary ????
   // local maxSigma2Distance, for easy increase in testing
   maxSigma2Distance = fMaxSigma2Distance;
-  if (fPrintLevel >= 2)
-    cout << "enter FollowTracks" << endl;
+  AliDebug(2,"Enter FollowTracks");
   // Loop over track candidates
   track = (AliMUONTrack*) fRecTracksPtr->First();
   trackIndex = -1;
@@ -1310,14 +1302,13 @@ void AliMUONEventReconstructor::FollowTracks(void)
     // Follow function for each track candidate ????
     trackIndex++;
     nextTrack = (AliMUONTrack*) fRecTracksPtr->After(track); // prepare next track
-    if (fPrintLevel >= 2)
-      cout << "FollowTracks: track candidate(0..): " << trackIndex << endl;
+    AliDebug(2,Form("FollowTracks: track candidate(0..): %d", trackIndex));
     // Fit track candidate
     track->SetFitMCS(0); // without multiple Coulomb scattering
     track->SetFitNParam(3); // with 3 parameters (X = Y = 0)
     track->SetFitStart(0); // from parameters at vertex
     track->Fit();
-    if (fPrintLevel >= 10) {
+    if (AliLog::GetGlobalDebugLevel()> 2) {
       cout << "FollowTracks: track candidate(0..): " << trackIndex
 	   << " after fit in stations(0..) 3 and 4" << endl;
       track->RecursiveDump();
@@ -1353,7 +1344,7 @@ void AliMUONEventReconstructor::FollowTracks(void)
 	 trackParam1->GetInverseBendingMomentum());
       bestChi2 = 5.0;
       bestSegment = NULL;
-      if (fPrintLevel >= 10) {
+      if (AliLog::GetGlobalDebugLevel() > 2) {
 	cout << "FollowTracks: track candidate(0..): " << trackIndex
 	     << " Look for segment in station(0..): " << station << endl;
       }
@@ -1388,11 +1379,8 @@ void AliMUONEventReconstructor::FollowTracks(void)
 	// set track parameters at these two TrakHit's
 	track->SetTrackParamAtHit(track->GetNTrackHits() - 2, &(trackParam[0]));
 	track->SetTrackParamAtHit(track->GetNTrackHits() - 1, &(trackParam[1]));
-	if (fPrintLevel >= 10) {
-	  cout << "FollowTracks: track candidate(0..): " << trackIndex
-	       << " Added segment in station(0..): " << station << endl;
-	  track->RecursiveDump();
-	}
+	AliDebug(3, Form("FollowTracks: track candidate(0..): %d  Added segment in station(0..): %d", trackIndex, station));
+	if (AliLog::GetGlobalDebugLevel()>2) track->RecursiveDump();
       }
       else {
 	// No best segment found:
@@ -1402,11 +1390,9 @@ void AliMUONEventReconstructor::FollowTracks(void)
 	extrapHit = new AliMUONHitForRec(); //  empty hit
 	bestChi2 = 3.0;
 	bestHit = NULL;
-	if (fPrintLevel >= 10) {
-	  cout << "FollowTracks: track candidate(0..): " << trackIndex
-	       << " Segment not found, look for hit in station(0..): " << station
-	       << endl;
-	}
+	AliDebug(3, Form("FollowTracks: track candidate(0..): %d Segment not found, look for hit in station(0..): %d ", 
+			 trackIndex, station));
+	
 	// Loop over chambers of the station
 	for (chInStation = 0; chInStation < 2; chInStation++) {
 	  ch = 2 * station + chInStation;
@@ -1442,7 +1428,7 @@ void AliMUONEventReconstructor::FollowTracks(void)
 	  // set track parameters at this TrackHit
 	  track->SetTrackParamAtHit(track->GetNTrackHits() - 1,
 				    &(trackParam[chBestHit]));
-	  if (fPrintLevel >= 10) {
+	  if (AliLog::GetGlobalDebugLevel() > 2) {
 	    cout << "FollowTracks: track candidate(0..): " << trackIndex
 		 << " Added hit in station(0..): " << station << endl;
 	    track->RecursiveDump();
@@ -1494,7 +1480,7 @@ void AliMUONEventReconstructor::FollowTracks(void)
 	break; // stop the search for this candidate:
 	// exit from the loop over station 
       }
-      if (fPrintLevel >= 10) {
+      if (AliLog::GetGlobalDebugLevel() > 2) {
 	cout << "FollowTracks: track candidate(0..): " << trackIndex
 	     << " after fit from station(0..): " << station << " to 4" << endl;
 	track->RecursiveDump();
@@ -1505,7 +1491,7 @@ void AliMUONEventReconstructor::FollowTracks(void)
 	trackParamVertex = *trackParam1;
 	(&trackParamVertex)->ExtrapToVertex(0.,0.,0.);
 	track->SetTrackParamAtVertex(&trackParamVertex);
-	if (fPrintLevel >= 1) {
+	if (AliLog::GetGlobalDebugLevel() > 0) {
 	  cout << "FollowTracks: track candidate(0..): " << trackIndex
 	       << " after extrapolation to vertex" << endl;
 	  track->RecursiveDump();
@@ -1629,21 +1615,18 @@ void AliMUONEventReconstructor::EventDump(void)
   Double_t pX, pY, pZ, x, y, z, c;
   Int_t np, trackIndex, nTrackHits;
  
-  if (fPrintLevel >= 1) cout << "****** enter EventDump ******" << endl;
-  if (fPrintLevel >= 1) {
-    cout << " Number of Reconstructed tracks :" <<  fNRecTracks << endl; 
-  }
+  AliDebug(1,"****** enter EventDump ******");
+  AliDebug(1, Form("Number of Reconstructed tracks : %d", fNRecTracks)); 
+  
   fRecTracksPtr->Compress(); // for simple loop without "Next" since no hole
   // Loop over reconstructed tracks
   for (trackIndex = 0; trackIndex < fNRecTracks; trackIndex++) {
     if (fTrackMethod != 1) continue; //AZ - skip the rest for now
-    if (fPrintLevel >= 1)
-      cout << " track number: " << trackIndex << endl;
+    AliDebug(1, Form("track number: %d", trackIndex));
     // function for each track for modularity ????
     track = (AliMUONTrack*) ((*fRecTracksPtr)[trackIndex]);
     nTrackHits = track->GetNTrackHits();
-    if (fPrintLevel >= 1)
-      cout << " number of track hits: " << nTrackHits << endl;
+    AliDebug(1, Form("Number of track hits: %d ", nTrackHits));
     // track parameters at Vertex
     trackParam = track->GetTrackParamAtVertex();
     x = trackParam->GetNonBendingCoor();
@@ -1656,9 +1639,8 @@ void AliMUONEventReconstructor::EventDump(void)
     pX = pZ * nonBendingSlope;
     pY = pZ * bendingSlope;
     c = TMath::Sign(1.0, trackParam->GetInverseBendingMomentum());
-    if (fPrintLevel >= 1)
-      printf(" track parameters at Vertex z= %f: X= %f Y= %f pX= %f pY= %f pZ= %f c= %f\n",
-	     z, x, y, pX, pY, pZ, c);
+    AliDebug(1, Form("Track parameters at Vertex z= %f: X= %f Y= %f pX= %f pY= %f pZ= %f c= %f\n",
+		     z, x, y, pX, pY, pZ, c));
 
     // track parameters at first hit
     trackParam1 = ((AliMUONTrackHit*)
@@ -1673,9 +1655,8 @@ void AliMUONEventReconstructor::EventDump(void)
     pX = pZ * nonBendingSlope;
     pY = pZ * bendingSlope;
     c = TMath::Sign(1.0, trackParam1->GetInverseBendingMomentum());
-    if (fPrintLevel >= 1)
-      printf(" track parameters at z= %f: X= %f Y= %f pX= %f pY= %f pZ= %f c= %f\n",
-	     z, x, y, pX, pY, pZ, c);
+    AliDebug(1, Form("track parameters at z= %f: X= %f Y= %f pX= %f pY= %f pZ= %f c= %f\n",
+		     z, x, y, pX, pY, pZ, c));
   }
   // informations about generated particles
   np = gAlice->GetMCApp()->GetNtrack();
@@ -1699,10 +1680,9 @@ void AliMUONEventReconstructor::EventDumpTrigger(void)
   AliMUONTriggerTrack *triggertrack ;
   Int_t nTriggerTracks = fMUONData->RecTriggerTracks()->GetEntriesFast();
  
-  if (fPrintLevel >= 1) {
-    cout << "****** enter EventDumpTrigger ******" << endl;
-    cout << " Number of Reconstructed tracks :" <<  nTriggerTracks << endl;
-  }
+  AliDebug(1, "****** enter EventDumpTrigger ******");
+  AliDebug(1, Form("Number of Reconstructed tracks : %d ",  nTriggerTracks));
+  
   // Loop over reconstructed tracks
   for (Int_t trackIndex = 0; trackIndex < nTriggerTracks; trackIndex++) {
     triggertrack = (AliMUONTriggerTrack*)fMUONData->RecTriggerTracks()->At(trackIndex);
@@ -1731,7 +1711,7 @@ void AliMUONEventReconstructor::FillEvent()
    if (!fEventTree) fEventTree = new TTree("TreeRecoEvent", "MUON reconstructed events");
    //AZif (fRecoEvent->MakeDumpTracks(fRecTracksPtr)) {
    if (fRecoEvent->MakeDumpTracks(fMuons, fRecTracksPtr, this)) { //AZ
-      if (fPrintLevel > 1) fRecoEvent->EventInfo();
+     if (AliLog::GetGlobalDebugLevel() > 1) fRecoEvent->EventInfo();
       TBranch *branch = fEventTree->GetBranch("Event");
       if (!branch) branch = fEventTree->Branch("Event", "AliMUONRecoEvent", &fRecoEvent, 64000);
       branch->SetAutoDelete();
@@ -1751,7 +1731,7 @@ void AliMUONEventReconstructor::MakeTrackCandidatesK(void)
   AliMUONSegment *segment;
   AliMUONTrackK *trackK;
 
-  if (fPrintLevel >= 1) cout << "enter MakeTrackCandidatesK" << endl;
+  AliDebug(1,"Enter MakeTrackCandidatesK");
   // Reset the TClonesArray of reconstructed tracks
   if (fRecTracksPtr) fRecTracksPtr->Delete();
   // Delete in order that the Track destructors are called,
