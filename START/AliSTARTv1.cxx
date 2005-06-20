@@ -13,6 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+/* $Id$ */
 
 /////////////////////////////////////////////////////////////////////
 //                                                                 //
@@ -225,7 +226,7 @@ void AliSTARTv1::CreateGeometry()
              
 // first ring: 12 units of Scintillator+PMT+divider
   Float_t  theta  = (180 / TMath::Pi()) * TMath::ATan(6.5 / zdetRight);
-  printf(" theta %f", theta);
+  AliInfo(Form("theta %f", theta));
   Float_t angle  = 2 * TMath::Pi() / 12;
   Float_t phi[3];
     
