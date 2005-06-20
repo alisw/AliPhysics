@@ -194,7 +194,7 @@ AliITSsimulationSDD& AliITSsimulationSDD::operator=(const AliITSsimulationSDD &s
     return *this ;
 }
 //______________________________________________________________________
-AliITSsimulationSDD& AliITSsimulationSDD::operator=(const AliITSsimulation &src){
+AliITSsimulation& AliITSsimulationSDD::operator=(const AliITSsimulation &src){
     // Assignment operator to satify Coding roules only.
 
     if(this==&src) return *this;

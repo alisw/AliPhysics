@@ -26,7 +26,7 @@ class AliITSsimulationSPD : public AliITSsimulation {
     AliITSsimulationSPD(const AliITSsimulationSPD &source); // copy constructo
     // assignment operator
     AliITSsimulationSPD& operator=(const AliITSsimulationSPD &source);
-    virtual AliITSsimulationSPD& operator=(const AliITSsimulation &source);
+    virtual AliITSsimulation& operator=(const AliITSsimulation &source);
     // Initilizes the variables
     void Init();
     // Initilizes the variables with replacement segmentation/response class

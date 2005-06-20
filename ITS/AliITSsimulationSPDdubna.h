@@ -25,7 +25,7 @@ class AliITSsimulationSPDdubna : public AliITSsimulation {
     AliITSsimulationSPDdubna(const AliITSsimulationSPDdubna &source); 
      // ass. operator
     AliITSsimulationSPDdubna& operator=(const AliITSsimulationSPDdubna &s);
-    virtual AliITSsimulationSPDdubna& operator=(const AliITSsimulation &source);
+    virtual AliITSsimulation& operator=(const AliITSsimulation &source);
     // Initilizes the variables
     void Init();
 

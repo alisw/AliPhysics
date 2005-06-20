@@ -170,7 +170,7 @@ AliITSsimulationSPD& AliITSsimulationSPD::operator=(const AliITSsimulationSPD
     return *this;
 } 
 //______________________________________________________________________
-AliITSsimulationSPD& AliITSsimulationSPD::operator=(const AliITSsimulation 
+AliITSsimulation& AliITSsimulationSPD::operator=(const AliITSsimulation 
 						    &source) {
     //    Assignment operator
     // Inputs: 

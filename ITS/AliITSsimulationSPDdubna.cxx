@@ -158,7 +158,7 @@ AliITSsimulationSPDdubna&  AliITSsimulationSPDdubna::operator=(const
     return *this;
 }
 //______________________________________________________________________
-AliITSsimulationSPDdubna&  AliITSsimulationSPDdubna::operator=(const 
+AliITSsimulation&  AliITSsimulationSPDdubna::operator=(const 
                                            AliITSsimulation &s){
     //    Assignment operator
     // Inputs:

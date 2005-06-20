@@ -108,7 +108,7 @@ class AliITSgeomSSD175 : public AliITSgeomSSD {
 
  public:
     AliITSgeomSSD175();
-    virtual AliITSgeomSSD175& operator=(const AliITSgeomSSD &source);
+    virtual AliITSgeomSSD& operator=(const AliITSgeomSSD &source);
 
     // This clas now has version 0 so that it will not be written to a root
     // file. This is good since there are no longer any data members to this
@@ -141,7 +141,7 @@ class AliITSgeomSSD275and75 : public AliITSgeomSSD {
  public:
     AliITSgeomSSD275and75();
     AliITSgeomSSD275and75(Int_t npar,Float_t *par);
-    virtual AliITSgeomSSD275and75& operator=(const AliITSgeomSSD &source);
+    virtual AliITSgeomSSD& operator=(const AliITSgeomSSD &source);
 
  // This clas now has version 0 so that it will not be
     // This clas now has version 0 so that it will not be written to a root
@@ -174,7 +174,7 @@ class AliITSgeomSSD75and275 : public AliITSgeomSSD {
  public:
     AliITSgeomSSD75and275();
     AliITSgeomSSD75and275(Int_t npar,Float_t *par);
-    virtual AliITSgeomSSD75and275& operator=(const AliITSgeomSSD &source);
+    virtual AliITSgeomSSD& operator=(const AliITSgeomSSD &source);
 
  // This clas now has version 0 so that it will not be
     // This clas now has version 0 so that it will not be written to a root

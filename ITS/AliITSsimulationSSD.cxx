@@ -120,7 +120,7 @@ AliITSsimulationSSD& AliITSsimulationSSD::operator=(
   return *this;
 }
 //______________________________________________________________________
-AliITSsimulationSSD& AliITSsimulationSSD::operator=(
+AliITSsimulation& AliITSsimulationSSD::operator=(
                                          const AliITSsimulation &s){
   // Operator =
 
