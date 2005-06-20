@@ -937,9 +937,9 @@ void AliITSsimulationSPD::WriteSDigits(AliITSpList *pList){
     for(i=0;i<ni;i++)for(j=0;j<nj;j++){
         if(pList->GetSignalOnly(i,j)>0.0){
             aliITS->AddSumDigit(*(pList->GetpListItem(i,j)));
-            if(AliDebugLevel()){
+            if(AliDebugLevel()>0){
                 cout << "pListSPD: " << *(pList->GetpListItem(i,j)) << endl;
-                AliDebug(1,Form("mod=%s r,c=%d %d sig=%f noise=%f",
+                AliDebug(1,Form("mod=%d r,c=%d %d sig=%f noise=%f",
 				fModule,i,j,fpList->GetSignalOnly(i,j),fpList->GetNoise(i,j)))
             } //  end if GetDebug
         } // end if
