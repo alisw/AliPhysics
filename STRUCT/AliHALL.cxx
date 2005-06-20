@@ -299,17 +299,17 @@ void AliHALL::CreateMaterials()
 
   //     FOR CONCRETE 
   
-  AliMaterial(10, "IRON$     ", 55.85, 26., 7.87, 1.76, 17.1);
-  AliMaterial(30, "IRON$     ", 55.85, 26., 7.87, 1.76, 17.1);
-  AliMaterial(50, "IRON$     ", 55.85, 26., 7.87, 1.76, 17.1); 
+  AliMaterial(10, "IRON0$     ", 55.85, 26., 7.87, 1.76, 17.1);
+  AliMaterial(30, "IRON1$     ", 55.85, 26., 7.87, 1.76, 17.1);
+  AliMaterial(50, "IRON2$     ", 55.85, 26., 7.87, 1.76, 17.1); 
 
-  AliMixture(15, "AIR$      ", aAir, zAir, dAir, 4, wAir);
-  AliMixture(35, "AIR$      ", aAir, zAir, dAir, 4, wAir);
-  AliMixture(55, "AIR$      ", aAir, zAir, dAir, 4, wAir);
+  AliMixture(15, "AIR0$      ", aAir, zAir, dAir, 4, wAir);
+  AliMixture(35, "AIR1$      ", aAir, zAir, dAir, 4, wAir);
+  AliMixture(55, "AIR2$      ", aAir, zAir, dAir, 4, wAir);
 
-  AliMixture(17, "CONCRETE$", aconc, zconc, 2.35, 10, wconc);
-  AliMixture(37, "CONCRETE$", aconc, zconc, 2.35, 10, wconc);
-  AliMixture(57, "CONCRETE$", aconc, zconc, 2.35, 10, wconc);
+  AliMixture(17, "CONCRETE0$", aconc, zconc, 2.35, 10, wconc);
+  AliMixture(37, "CONCRETE1$", aconc, zconc, 2.35, 10, wconc);
+  AliMixture(57, "CONCRETE2$", aconc, zconc, 2.35, 10, wconc);
   
   // **************** 
   //     Defines tracking media parameters. 

@@ -40,6 +40,8 @@
 #include <TSystem.h>
 #include <TDirectory.h>
 #include <TVirtualMC.h>
+#include <TGeoManager.h>
+#include <TString.h>
 
 #include "AliLog.h"
 #include "AliConfig.h"
@@ -242,8 +244,19 @@ void AliModule::AliMaterial(Int_t imat, const char* name, Float_t a,
   // nwbuf       number of user words
   //
   Int_t kmat;
-  gMC->Material(kmat, name, a, z, dens, radl, absl, buf, nwbuf);
-  (*fIdmate)[imat]=kmat;
+  //Build the string uniquename as "DET_materialname"
+  TString uniquename = GetName();
+  uniquename.Append("_");
+  uniquename.Append(name);
+  //if geometry loaded from file only fill fIdmate, else create material too
+  if(gAlice->IsRootGeometry()){
+    TGeoMaterial *mat = gGeoManager->GetMaterial(uniquename.Data());
+    kmat = mat->GetUniqueID();
+    (*fIdmate)[imat]=kmat;
+  }else{
+    gMC->Material(kmat, uniquename.Data(), a, z, dens, radl, absl, buf, nwbuf);
+    (*fIdmate)[imat]=kmat;
+  }
 }
   
 //_______________________________________________________________________
@@ -297,8 +310,19 @@ void AliModule::AliMixture(Int_t imat, const char *name, Float_t *a,
   // wmat        array of concentrations
   //
   Int_t kmat;
-  gMC->Mixture(kmat, name, a, z, dens, nlmat, wmat);
-  (*fIdmate)[imat]=kmat;
+  //Build the string uniquename as "DET_mixturename"
+  TString uniquename = GetName();
+  uniquename.Append("_");
+  uniquename.Append(name);
+  //if geometry loaded from file only fill fIdmate, else create mixture too
+  if(gAlice->IsRootGeometry()){
+    TGeoMaterial *mat = gGeoManager->GetMaterial(uniquename.Data());
+    kmat = mat->GetUniqueID();
+    (*fIdmate)[imat]=kmat;
+  }else{
+    gMC->Mixture(kmat, uniquename.Data(), a, z, dens, nlmat, wmat);
+    (*fIdmate)[imat]=kmat;
+  }
 } 
  
 //_______________________________________________________________________
@@ -330,9 +354,20 @@ void AliModule::AliMedium(Int_t numed, const char *name, Int_t nmat,
   //        =  3       constant magnetic field along z
   //  
   Int_t kmed;
-  gMC->Medium(kmed,name, (*fIdmate)[nmat], isvol, ifield, fieldm,
-			 tmaxfd, stemax, deemax, epsil,	stmin, ubuf, nbuf); 
-  (*fIdtmed)[numed]=kmed;
+  //Build the string uniquename as "DET_mediumname"
+  TString uniquename = GetName();
+  uniquename.Append("_");
+  uniquename.Append(name);
+  //if geometry loaded from file only fill fIdtmed, else create medium too
+  if(gAlice->IsRootGeometry()){
+    TGeoMedium *med = gGeoManager->GetMedium(uniquename.Data());
+    kmed = med->GetId();
+    (*fIdtmed)[numed]=kmed;
+  }else{
+    gMC->Medium(kmed, uniquename.Data(), (*fIdmate)[nmat], isvol, ifield,
+                fieldm, tmaxfd, stemax, deemax, epsil, stmin, ubuf, nbuf);
+    (*fIdtmed)[numed]=kmed;
+  }
 } 
  
 //_______________________________________________________________________

@@ -129,8 +129,8 @@ void AliMUONCommonGeometryBuilder::CreateMaterials()
   Float_t sXMGMX = gAlice->Field()->Max();
   //
   // --- Define the various materials for GEANT --- 
-  fMUON->AliMaterial(9, "ALUMINIUM$", 26.98, 13., 2.7, 8.9, 37.2);
-  fMUON->AliMaterial(10, "ALUMINIUM$", 26.98, 13., 2.7, 8.9, 37.2);
+  fMUON->AliMaterial(9, "ALUMINIUM0$", 26.98, 13., 2.7, 8.9, 37.2);
+  fMUON->AliMaterial(10, "ALUMINIUM1$", 26.98, 13., 2.7, 8.9, 37.2);
   fMUON->AliMaterial(49, "Kapton$", 12.01,6,1.42,-28.6,999);          // from DPG
   fMUON->AliMaterial(42, "Copper$", 63.546,29.,8.96,-1.43,9.6);
   fMUON->AliMaterial(43, "FR4$", 17.749, 8.875, 1.7, -19.4, 999.);    // from DPG
@@ -207,9 +207,9 @@ void AliMUONCommonGeometryBuilder::CreateMaterials()
  
   //
   //    Aluminum 
-  fMUON->AliMedium(4, "ALU_CH_US          ", 9, 0, iSXFLD, sXMGMX, tmaxfd, maxStepAlu, 
+  fMUON->AliMedium(4, "ALU_CH_US0         ", 9, 0, iSXFLD, sXMGMX, tmaxfd, maxStepAlu, 
 		   maxDestepAlu, epsil, stmin);
-  fMUON->AliMedium(5, "ALU_CH_US          ", 10, 0, iSXFLD, sXMGMX, tmaxfd, maxStepAlu, 
+  fMUON->AliMedium(5, "ALU_CH_US1         ", 10, 0, iSXFLD, sXMGMX, tmaxfd, maxStepAlu, 
 		   maxDestepAlu, epsil, stmin);
   //
   //    Ar-isoC4H10 gas 

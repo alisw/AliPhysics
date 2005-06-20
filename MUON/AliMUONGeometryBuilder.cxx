@@ -34,6 +34,8 @@
 #include "AliMUONGeometryConstituent.h"	
 #include "AliModule.h"
 #include "AliLog.h"
+#include "AliRun.h"
+
 
 ClassImp(AliMUONGeometryBuilder)
  
@@ -377,9 +379,16 @@ void AliMUONGeometryBuilder::InitGeometry()
     AliMUONVGeometryBuilder* builder
       = (AliMUONVGeometryBuilder*)fGeometryBuilders->At(i);
 
+    // Read alignement data if geometry is read from Root file
+    if (gAlice->IsRootGeometry()) {
+      fAlign = true;
+      builder->ReadTransformations();
+    }
+
     // Set sesitive volumes with each builder
     builder->SetSensitiveVolumes();
     
+
     // Read sensitive volume map from a file
     builder->ReadSVMap();
     if (!fAlign)  builder->FillTransformations();

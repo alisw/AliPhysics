@@ -466,9 +466,9 @@ void AliSTARTv1::CreateMaterials()
    Float_t densupport=0.1;
     
 //*** Definition Of avaible START materials ***
-   AliMaterial(0, "START Steel$", 55.850,26.,7.87,1.76,999);
-   AliMaterial(1, "START Vacuum$", 1.e-16,1.e-16,1.e-16,1.e16,999);
-   AliMixture(2, "START Air$", aAir, zAir, dAir,4,wAir);
+   AliMaterial(0, "Steel$", 55.850,26.,7.87,1.76,999);
+   AliMaterial(1, "Vacuum$", 1.e-16,1.e-16,1.e-16,1.e16,999);
+   AliMixture(2, "Air$", aAir, zAir, dAir,4,wAir);
    AliMaterial(10, "CarbonPlastic$", 12.01, 6.0, 2.26, 18.8,999); 
    AliMaterial(11, "Aliminium$", 26.98, 13.0, 2.7, 8.9,999); 
 

@@ -119,21 +119,21 @@ void AliCRT::CreateMaterials()
   Float_t epsil, stmin, tmaxfd, deemax, stemax;
   //
   //     Aluminum 
-  AliMaterial(9,  "ALUMINIUM$", 26.98, 13., 2.7, 8.9, 37.2);
-  AliMaterial(29, "ALUMINIUM$", 26.98, 13., 2.7, 8.9, 37.2);
-  AliMaterial(49, "ALUMINIUM$", 26.98, 13., 2.7, 8.9, 37.2);
+  AliMaterial(9,  "ALUMINIUM0$", 26.98, 13., 2.7, 8.9, 37.2);
+  AliMaterial(29, "ALUMINIUM1$", 26.98, 13., 2.7, 8.9, 37.2);
+  AliMaterial(49, "ALUMINIUM2$", 26.98, 13., 2.7, 8.9, 37.2);
   //
   //     Iron 
-  AliMaterial(10, "IRON$     ", 55.85, 26., 7.87, 1.76, 17.1);
-  AliMaterial(30, "IRON$     ", 55.85, 26., 7.87, 1.76, 17.1);
-  AliMaterial(50, "IRON$     ", 55.85, 26., 7.87, 1.76, 17.1);
+  AliMaterial(10, "IRON0$    ", 55.85, 26., 7.87, 1.76, 17.1);
+  AliMaterial(30, "IRON1$    ", 55.85, 26., 7.87, 1.76, 17.1);
+  AliMaterial(50, "IRON2$    ", 55.85, 26., 7.87, 1.76, 17.1);
   //
   //     Air 
-  AliMaterial(15, "AIR$      ", 14.61, 7.3, .001205, 30423.24, 67500.);
-  AliMaterial(35, "AIR$      ", 14.61, 7.3, .001205, 30423.24, 67500.);
-  AliMaterial(55, "AIR$      ", 14.61, 7.3, .001205, 30423.24, 67500.);
-  AliMaterial(75, "AIR$      ", 14.61, 7.3, .001205, 30423.24, 67500.);
-  AliMaterial(95, "AIR$      ", 14.61, 7.3, .001205, 30423.24, 67500.);
+  AliMaterial(15, "AIR0$     ", 14.61, 7.3, .001205, 30423.24, 67500.);
+  AliMaterial(35, "AIR1$     ", 14.61, 7.3, .001205, 30423.24, 67500.);
+  AliMaterial(55, "AIR2$     ", 14.61, 7.3, .001205, 30423.24, 67500.);
+  AliMaterial(75, "AIR3$     ", 14.61, 7.3, .001205, 30423.24, 67500.);
+  AliMaterial(95, "AIR4$     ", 14.61, 7.3, .001205, 30423.24, 67500.);
 
 
   // Scintillator material polystyrene 
@@ -187,9 +187,9 @@ void AliCRT::CreateMaterials()
 
   // The scintillator of the CPV made of Polystyrene 
   // scintillator -> idtmed[1112]
-  AliMedium(12 , "CPV scint.      ", 13, 1, isxfld, sxmgmx, 10., stemax, deemax, epsil, stmin);
-  AliMedium(13 , "CPV scint.      ", 13, 1, isxfld, sxmgmx, 10., stemax, deemax, epsil, stmin);
-  AliMedium(14 , "CPV scint.      ", 13, 1, isxfld, sxmgmx, 10., stemax, deemax, epsil, stmin);
+  AliMedium(12 , "CPV scint.0     ", 13, 1, isxfld, sxmgmx, 10., stemax, deemax, epsil, stmin);
+  AliMedium(13 , "CPV scint.1     ", 13, 1, isxfld, sxmgmx, 10., stemax, deemax, epsil, stmin);
+  AliMedium(14 , "CPV scint.2     ", 13, 1, isxfld, sxmgmx, 10., stemax, deemax, epsil, stmin);
 
   //     Molasse -> idtmed[1123]
   AliMedium(24 , "Molasse         ", 24, 0, xfield, xfieldm, tmaxfd, stemax, deemax, xepsil, stmin);

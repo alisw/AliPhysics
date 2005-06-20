@@ -242,16 +242,16 @@ void AliMAG::CreateMaterials()
 
 
   //     Aluminum 
-  AliMaterial(9, "Al$", 26.98, 13., 2.7, 8.9, 37.2);
-  AliMaterial(29, "Al$", 26.98, 13., 2.7, 8.9, 37.2);
+  AliMaterial(9, "Al0$", 26.98, 13., 2.7, 8.9, 37.2);
+  AliMaterial(29, "Al1$", 26.98, 13., 2.7, 8.9, 37.2);
   
   //     Iron 
-  AliMaterial(10, "Fe$", 55.85, 26., 7.87, 1.76, 17.1);
-  AliMaterial(30, "Fe$", 55.85, 26., 7.87, 1.76, 17.1);
+  AliMaterial(10, "Fe0$", 55.85, 26., 7.87, 1.76, 17.1);
+  AliMaterial(30, "Fe1$", 55.85, 26., 7.87, 1.76, 17.1);
   
   //     Air 
-  AliMixture(15, "AIR$      ", aAir, zAir, dAir, 4, wAir);
-  AliMixture(35, "AIR$      ", aAir, zAir, dAir, 4, wAir);
+  AliMixture(15, "AIR0$      ", aAir, zAir, dAir, 4, wAir);
+  AliMixture(35, "AIR1$      ", aAir, zAir, dAir, 4, wAir);
   
   // **************** 
   //     Defines tracking media parameters. 

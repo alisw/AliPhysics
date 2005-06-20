@@ -144,79 +144,79 @@ void AliABSO::CreateMaterials()
   Float_t epsil, stmin, tmaxfd, deemax, stemax;
   //
   //     Carbon 
-  AliMaterial( 6, "CARBON$   ", 12.01, 6., 1.75, 24.4, 49.9);
-  AliMaterial(26, "CARBON$   ", 12.01, 6., 1.75, 24.4, 49.9);
-  AliMaterial(46, "CARBON$   ", 12.01, 6., 1.75, 24.4, 49.9);
+  AliMaterial( 6, "CARBON0$   ", 12.01, 6., 1.75, 24.4, 49.9);
+  AliMaterial(26, "CARBON1$   ", 12.01, 6., 1.75, 24.4, 49.9);
+  AliMaterial(46, "CARBON2$   ", 12.01, 6., 1.75, 24.4, 49.9);
   //
   //     Aluminum 
-  AliMaterial(9,  "ALUMINIUM$", 26.98, 13., 2.7, 8.9, 37.2);
-  AliMaterial(29, "ALUMINIUM$", 26.98, 13., 2.7, 8.9, 37.2);
-  AliMaterial(49, "ALUMINIUM$", 26.98, 13., 2.7, 8.9, 37.2);
+  AliMaterial(9,  "ALUMINIUM0$", 26.98, 13., 2.7, 8.9, 37.2);
+  AliMaterial(29, "ALUMINIUM1$", 26.98, 13., 2.7, 8.9, 37.2);
+  AliMaterial(49, "ALUMINIUM2$", 26.98, 13., 2.7, 8.9, 37.2);
   //
   //     Iron 
-  AliMaterial(10, "IRON$     ", 55.85, 26., 7.87, 1.76, 17.1);
-  AliMaterial(30, "IRON$     ", 55.85, 26., 7.87, 1.76, 17.1);
-  AliMaterial(50, "IRON$     ", 55.85, 26., 7.87, 1.76, 17.1);
+  AliMaterial(10, "IRON0$     ", 55.85, 26., 7.87, 1.76, 17.1);
+  AliMaterial(30, "IRON1$     ", 55.85, 26., 7.87, 1.76, 17.1);
+  AliMaterial(50, "IRON2$     ", 55.85, 26., 7.87, 1.76, 17.1);
   //
   //     Copper
-  AliMaterial(11, "COPPER$   ", 63.55, 29., 8.96, 1.43, 15.1);
-  AliMaterial(31, "COPPER$   ", 63.55, 29., 8.96, 1.43, 15.1);
-  AliMaterial(51, "COPPER$   ", 63.55, 29., 8.96, 1.43, 15.1);
+  AliMaterial(11, "COPPER0$   ", 63.55, 29., 8.96, 1.43, 15.1);
+  AliMaterial(31, "COPPER1$   ", 63.55, 29., 8.96, 1.43, 15.1);
+  AliMaterial(51, "COPPER2$   ", 63.55, 29., 8.96, 1.43, 15.1);
   //
   //     Tungsten 
-  AliMaterial(12, "TUNGSTEN$ ", 183.85, 74., 19.3, .35, 10.3);
-  AliMaterial(32, "TUNGSTEN$ ", 183.85, 74., 19.3, .35, 10.3);
-  AliMaterial(52, "TUNGSTEN$ ", 183.85, 74., 19.3, .35, 10.3);
+  AliMaterial(12, "TUNGSTEN0$ ", 183.85, 74., 19.3, .35, 10.3);
+  AliMaterial(32, "TUNGSTEN1$ ", 183.85, 74., 19.3, .35, 10.3);
+  AliMaterial(52, "TUNGSTEN2$ ", 183.85, 74., 19.3, .35, 10.3);
   //
   //     Ni-W-Cu 
-  AliMixture(21, "Ni-W-Cu$", aniwcu, zniwcu, 18.78, 3, wniwcu);
-  AliMixture(41, "Ni-W-Cu$", aniwcu, zniwcu, 18.78, 3, wniwcu);
-  AliMixture(61, "Ni-W-Cu$", aniwcu, zniwcu, 18.78, 3, wniwcu);
+  AliMixture(21, "Ni-W-Cu0$", aniwcu, zniwcu, 18.78, 3, wniwcu);
+  AliMixture(41, "Ni-W-Cu1$", aniwcu, zniwcu, 18.78, 3, wniwcu);
+  AliMixture(61, "Ni-W-Cu2$", aniwcu, zniwcu, 18.78, 3, wniwcu);
   //
   //     Lead 
-  AliMaterial(13, "LEAD$     ", 207.19, 82., 11.35, .56, 18.5);
-  AliMaterial(33, "LEAD$     ", 207.19, 82., 11.35, .56, 18.5);
-  AliMaterial(53, "LEAD$     ", 207.19, 82., 11.35, .56, 18.5);
+  AliMaterial(13, "LEAD0$     ", 207.19, 82., 11.35, .56, 18.5);
+  AliMaterial(33, "LEAD1$     ", 207.19, 82., 11.35, .56, 18.5);
+  AliMaterial(53, "LEAD2$     ", 207.19, 82., 11.35, .56, 18.5);
   //
   //     Air 
-  AliMixture(15, "AIR$      ", aAir, zAir, dAir, 4, wAir);
-  AliMixture(35, "AIR$      ", aAir, zAir, dAir, 4, wAir);
-  AliMixture(55, "AIR$      ", aAir, zAir, dAir, 4, wAir);
+  AliMixture(15, "AIR0$      ", aAir, zAir, dAir, 4, wAir);
+  AliMixture(35, "AIR1$      ", aAir, zAir, dAir, 4, wAir);
+  AliMixture(55, "AIR2$      ", aAir, zAir, dAir, 4, wAir);
   //
   //     Vacuum 
-  AliMixture(16, "VACUUM$ ", aAir, zAir, dAir1, 4, wAir);
-  AliMixture(36, "VACUUM$ ", aAir, zAir, dAir1, 4, wAir);
-  AliMixture(56, "VACUUM$ ", aAir, zAir, dAir1, 4, wAir);
+  AliMixture(16, "VACUUM0$ ", aAir, zAir, dAir1, 4, wAir);
+  AliMixture(36, "VACUUM1$ ", aAir, zAir, dAir1, 4, wAir);
+  AliMixture(56, "VACUUM2$ ", aAir, zAir, dAir1, 4, wAir);
   //
   //     Concrete 
-  AliMixture(17, "CONCRETE$", aconc, zconc, 2.35, 10, wconc);
-  AliMixture(37, "CONCRETE$", aconc, zconc, 2.35, 10, wconc);
-  AliMixture(57, "CONCRETE$", aconc, zconc, 2.35, 10, wconc);
+  AliMixture(17, "CONCRETE0$", aconc, zconc, 2.35, 10, wconc);
+  AliMixture(37, "CONCRETE1$", aconc, zconc, 2.35, 10, wconc);
+  AliMixture(57, "CONCRETE2$", aconc, zconc, 2.35, 10, wconc);
   //
   //     Poly CH2 
-  AliMixture(18, "POLYETHYLEN$", apoly, zpoly, .95, -2, wpoly);
+  AliMixture(18, "POLYETHYLEN0$", apoly, zpoly, .95, -2, wpoly);
   //
   // After a call with ratios by number (negative number of elements), 
   // the ratio array is changed to the ratio by weight, so all successive 
   // calls with the same array must specify the number of elements as 
   // positive 
   //
-  AliMixture(38, "POLYETHYLEN$", apoly, zpoly, .95, 2, wpoly);
-  AliMixture(58, "POLYETHYLEN$", apoly, zpoly, .95, 2, wpoly);
+  AliMixture(38, "POLYETHYLEN1$", apoly, zpoly, .95, 2, wpoly);
+  AliMixture(58, "POLYETHYLEN2$", apoly, zpoly, .95, 2, wpoly);
   //
   //     stainless Steel 
-  AliMixture(19, "STAINLESS STEEL$", asteel, zsteel, 7.88, 4, wsteel);
-  AliMixture(39, "STAINLESS STEEL$", asteel, zsteel, 7.88, 4, wsteel);
-  AliMixture(59, "STAINLESS STEEL$", asteel, zsteel, 7.88, 4, wsteel);
+  AliMixture(19, "STAINLESS STEEL0$", asteel, zsteel, 7.88, 4, wsteel);
+  AliMixture(39, "STAINLESS STEEL1$", asteel, zsteel, 7.88, 4, wsteel);
+  AliMixture(59, "STAINLESS STEEL2$", asteel, zsteel, 7.88, 4, wsteel);
   //
   //     Insulation powder 
-  AliMixture(14, "INSULATION$", ains, zins, 0.41, 4, wins);
-  AliMixture(34, "INSULATION$", ains, zins, 0.41, 4, wins);
-  AliMixture(54, "INSULATION$", ains, zins, 0.41, 4, wins);
+  AliMixture(14, "INSULATION0$", ains, zins, 0.41, 4, wins);
+  AliMixture(34, "INSULATION1$", ains, zins, 0.41, 4, wins);
+  AliMixture(54, "INSULATION2$", ains, zins, 0.41, 4, wins);
   // Polymere Concrete 
-  AliMixture(20, "Poly Concrete$", aPolyCc, zPolyCc, 3.53, -9, wPolyCc);
-  AliMixture(40, "Poly Concrete$", aPolyCc, zPolyCc, 3.53,  9, wPolyCc);
-  AliMixture(60, "Poly Concrete$", aPolyCc, zPolyCc, 3.53,  9, wPolyCc);
+  AliMixture(20, "Poly Concrete0$", aPolyCc, zPolyCc, 3.53, -9, wPolyCc);
+  AliMixture(40, "Poly Concrete1$", aPolyCc, zPolyCc, 3.53,  9, wPolyCc);
+  AliMixture(60, "Poly Concrete2$", aPolyCc, zPolyCc, 3.53,  9, wPolyCc);
 
   //
   // **************** 

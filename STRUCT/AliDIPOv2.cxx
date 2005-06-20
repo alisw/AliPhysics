@@ -852,46 +852,46 @@ void AliDIPOv2::CreateMaterials()
   
   // --- Define the various materials for GEANT --- 
   //     Aluminum 
-  AliMaterial( 9, "ALUMINIUM$", 26.98, 13., 2.7, 8.9, 37.2);
-  AliMaterial(29, "ALUMINIUM$", 26.98, 13., 2.7, 8.9, 37.2);
-  AliMaterial(49, "ALUMINIUM$", 26.98, 13., 2.7, 8.9, 37.2);
+  AliMaterial( 9, "ALUMINIUM0$", 26.98, 13., 2.7, 8.9, 37.2);
+  AliMaterial(29, "ALUMINIUM1$", 26.98, 13., 2.7, 8.9, 37.2);
+  AliMaterial(49, "ALUMINIUM2$", 26.98, 13., 2.7, 8.9, 37.2);
   
   //     Iron 
-  AliMaterial(10, "IRON$     ", 55.85, 26., 7.87, 1.76, 17.1);
-  AliMaterial(30, "IRON$     ", 55.85, 26., 7.87, 1.76, 17.1);
-  AliMaterial(50, "IRON$     ", 55.85, 26., 7.87, 1.76, 17.1);
+  AliMaterial(10, "IRON0$     ", 55.85, 26., 7.87, 1.76, 17.1);
+  AliMaterial(30, "IRON1$     ", 55.85, 26., 7.87, 1.76, 17.1);
+  AliMaterial(50, "IRON2$     ", 55.85, 26., 7.87, 1.76, 17.1);
   //     Copper
-  AliMaterial(17, "COPPER$   ", 63.55, 29., 8.96, 1.43, 15.1);
-  AliMaterial(37, "COPPER$   ", 63.55, 29., 8.96, 1.43, 15.1);
-  AliMaterial(57, "COPPER$   ", 63.55, 29., 8.96, 1.43, 15.1);
+  AliMaterial(17, "COPPER0$   ", 63.55, 29., 8.96, 1.43, 15.1);
+  AliMaterial(37, "COPPER1$   ", 63.55, 29., 8.96, 1.43, 15.1);
+  AliMaterial(57, "COPPER2$   ", 63.55, 29., 8.96, 1.43, 15.1);
   //     Air 
-  AliMixture(15, "AIR$      ", aAir, zAir, dAir, 4, wAir);
-  AliMixture(35, "AIR$      ", aAir, zAir, dAir, 4, wAir);
-  AliMixture(55, "AIR$      ", aAir, zAir, dAir, 4, wAir);
+  AliMixture(15, "AIR0$      ", aAir, zAir, dAir, 4, wAir);
+  AliMixture(35, "AIR1$      ", aAir, zAir, dAir, 4, wAir);
+  AliMixture(55, "AIR2$      ", aAir, zAir, dAir, 4, wAir);
   //     Vacuum 
-  AliMixture(16, "VACUUM$ ", aAir, zAir, dAir1, 4, wAir);
-  AliMixture(36, "VACUUM$ ", aAir, zAir, dAir1, 4, wAir);
-  AliMixture(56, "VACUUM$ ", aAir, zAir, dAir1, 4, wAir);
+  AliMixture(16, "VACUUM0$ ", aAir, zAir, dAir1, 4, wAir);
+  AliMixture(36, "VACUUM1$ ", aAir, zAir, dAir1, 4, wAir);
+  AliMixture(56, "VACUUM2$ ", aAir, zAir, dAir1, 4, wAir);
   
   //     stainless Steel 
-  AliMixture(19, "STAINLESS STEEL$", asteel, zsteel, 7.88, 4, wsteel);
-  AliMixture(39, "STAINLESS STEEL$", asteel, zsteel, 7.88, 4, wsteel);
-  AliMixture(59, "STAINLESS STEEL$", asteel, zsteel, 7.88, 4, wsteel);
+  AliMixture(19, "STAINLESS STEEL0$", asteel, zsteel, 7.88, 4, wsteel);
+  AliMixture(39, "STAINLESS STEEL1$", asteel, zsteel, 7.88, 4, wsteel);
+  AliMixture(59, "STAINLESS STEEL2$", asteel, zsteel, 7.88, 4, wsteel);
   
   //     Coil 
-  AliMixture(14, "Al$", acoil, zcoil, 2.122, 3, wcoil);
-  AliMixture(34, "Al$", acoil, zcoil, 2.122, 3, wcoil);
-  AliMixture(54, "Al$", acoil, zcoil, 2.122, 3, wcoil);
+  AliMixture(14, "Al0$", acoil, zcoil, 2.122, 3, wcoil);
+  AliMixture(34, "Al1$", acoil, zcoil, 2.122, 3, wcoil);
+  AliMixture(54, "Al2$", acoil, zcoil, 2.122, 3, wcoil);
 
   //RESIN
-  AliMixture(13, "RESIN$", aresi, zresi, 1.05, 3, wresi);
-  AliMixture(33, "RESIN$", aresi, zresi, 1.05, 3, wresi);
-  AliMixture(53, "RESIN$", aresi, zresi, 1.05, 3, wresi);  
+  AliMixture(13, "RESIN0$", aresi, zresi, 1.05, 3, wresi);
+  AliMixture(33, "RESIN1$", aresi, zresi, 1.05, 3, wresi);
+  AliMixture(53, "RESIN2$", aresi, zresi, 1.05, 3, wresi);  
 
   //G10
-  AliMixture(11, "G10$", aG10, zG10, 1.7, 5, wG10);
-  AliMixture(31, "G10$", aG10, zG10, 1.7, 5, wG10);
-  AliMixture(51, "G10$", aG10, zG10, 1.7, 5, wG10); 
+  AliMixture(11, "G100$", aG10, zG10, 1.7, 5, wG10);
+  AliMixture(31, "G101$", aG10, zG10, 1.7, 5, wG10);
+  AliMixture(51, "G102$", aG10, zG10, 1.7, 5, wG10); 
  
   // **************** 
   //     Defines tracking media parameters. 
