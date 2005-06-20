@@ -229,11 +229,9 @@ AliMUONDigit *AliMUONPoints::GetDigit() const
 
   AliMUONDisplay *display=(AliMUONDisplay*)gAlice->Display();
   Int_t chamber=display->GetChamber();
-  Int_t cathode=display->GetCathode();
    
   AliMUON *pMUON  = (AliMUON*)gAlice->GetModule("MUON");
   TClonesArray *muonDigits  = pMUON->GetMUONData()->Digits(chamber-1);
-  Int_t nent=(Int_t)gAlice->TreeD()->GetEntries();
   pMUON->GetMUONData()->GetDigits();
   //gAlice->TreeD()->GetEvent(cathode);
   Int_t ndigits = muonDigits->GetEntriesFast();
