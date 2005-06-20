@@ -618,6 +618,7 @@ Bool_t AliReconstruction::RunHLTTracking(AliESD*& esd)
     if (!tracker) {
       AliWarning(Form("couldn't create a HLT tracker for %s", detName.Data()));
       if (fStopOnError) return kFALSE;
+      continue;
     }
     Double_t vtxPos[3];
     Double_t vtxErr[3]={0.005,0.005,0.010};
