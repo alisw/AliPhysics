@@ -342,59 +342,58 @@ void AliMUONFactoryV2::BuildStation3()
 
     // cathode 0
     // type 220000
-    segmentation[0]->Add(id0, slatsegB[3]);
-    segmentation[0]->Add(id0+ 8, slatsegB[3]);  
-    segmentation[0]->Add(id0+50, slatsegB[3]);  
-    segmentation[0]->Add(id0+58, slatsegB[3]);
+    segmentation[0]->Add(id0+14, slatsegB[3]);
+    segmentation[0]->Add(id0+ 4, slatsegB[3]);  
+    segmentation[0]->Add(id0+13, slatsegB[3]);  
+    segmentation[0]->Add(id0+ 5, slatsegB[3]);
     // type 222000
-    segmentation[0]->Add(id0+ 1, slatsegB[2]);
-    segmentation[0]->Add(id0+ 7, slatsegB[2]);  
-    segmentation[0]->Add(id0+51, slatsegB[2]);  
-    segmentation[0]->Add(id0+57, slatsegB[2]);
+    segmentation[0]->Add(id0+15, slatsegB[2]);
+    segmentation[0]->Add(id0+ 3, slatsegB[2]);  
+    segmentation[0]->Add(id0+12, slatsegB[2]);  
+    segmentation[0]->Add(id0+ 6, slatsegB[2]);
     // type 122200
-    segmentation[0]->Add(id0+ 2, slatsegB[1]);
-    segmentation[0]->Add(id0+ 6, slatsegB[1]);  
-    segmentation[0]->Add(id0+52, slatsegB[1]);  
-    segmentation[0]->Add(id0+56, slatsegB[1]);
+    segmentation[0]->Add(id0+16, slatsegB[1]);
+    segmentation[0]->Add(id0+ 2, slatsegB[1]);  
+    segmentation[0]->Add(id0+11, slatsegB[1]);  
+    segmentation[0]->Add(id0+ 7, slatsegB[1]);
     // type 112200
-    segmentation[0]->Add(id0+ 3, slatsegB[0]);
-    segmentation[0]->Add(id0+ 4, slatsegB[0]);  
-    segmentation[0]->Add(id0+ 5, slatsegB[0]);  
-    segmentation[0]->Add(id0+53, slatsegB[0]);
-    segmentation[0]->Add(id0+54, slatsegB[0]);     
-    segmentation[0]->Add(id0+55, slatsegB[0]);
+    segmentation[0]->Add(id0+17, slatsegB[0]);
+    segmentation[0]->Add(id0, slatsegB[0]);  
+    segmentation[0]->Add(id0+ 1, slatsegB[0]);  
+    segmentation[0]->Add(id0+10, slatsegB[0]);
+    segmentation[0]->Add(id0+ 9, slatsegB[0]);     
+    segmentation[0]->Add(id0+ 8, slatsegB[0]);
     fMUON->SetSegmentationModel(chamber, 1, segmentation[0]);   
 
     // cathode 1
     // type 220000
-    segmentation[1]->Add(id0, slatsegNB[3]);
-    segmentation[1]->Add(id0+ 8, slatsegNB[3]);  
-    segmentation[1]->Add(id0+50, slatsegNB[3]);  
-    segmentation[1]->Add(id0+58, slatsegNB[3]);
+    segmentation[1]->Add(id0+14, slatsegNB[3]);
+    segmentation[1]->Add(id0+ 4, slatsegNB[3]);  
+    segmentation[1]->Add(id0+13, slatsegNB[3]);  
+    segmentation[1]->Add(id0+ 5, slatsegNB[3]);
     // type 222000
-    segmentation[1]->Add(id0+ 1, slatsegNB[2]);
-    segmentation[1]->Add(id0+ 7, slatsegNB[2]);  
-    segmentation[1]->Add(id0+51, slatsegNB[2]);  
-    segmentation[1]->Add(id0+57, slatsegNB[2]);
+    segmentation[1]->Add(id0+15, slatsegNB[2]);
+    segmentation[1]->Add(id0+ 3, slatsegNB[2]);  
+    segmentation[1]->Add(id0+12, slatsegNB[2]);  
+    segmentation[1]->Add(id0+ 6, slatsegNB[2]);
     // type 122200
-    segmentation[1]->Add(id0+ 2, slatsegNB[1]);
-    segmentation[1]->Add(id0+ 6, slatsegNB[1]);  
-    segmentation[1]->Add(id0+52, slatsegNB[1]);  
-    segmentation[1]->Add(id0+56, slatsegNB[1]);
+    segmentation[1]->Add(id0+16, slatsegNB[1]);
+    segmentation[1]->Add(id0+ 2, slatsegNB[1]);  
+    segmentation[1]->Add(id0+11, slatsegNB[1]);  
+    segmentation[1]->Add(id0+ 7, slatsegNB[1]);
     // type 112200
-    segmentation[1]->Add(id0+ 3, slatsegNB[0]);
-    segmentation[1]->Add(id0+ 4, slatsegNB[0]);  
-    segmentation[1]->Add(id0+ 5, slatsegNB[0]);  
-    segmentation[1]->Add(id0+53, slatsegNB[0]);
-    segmentation[1]->Add(id0+54, slatsegNB[0]);     
-    segmentation[1]->Add(id0+55, slatsegNB[0]);
+    segmentation[1]->Add(id0+17, slatsegNB[0]);
+    segmentation[1]->Add(id0, slatsegNB[0]);  
+    segmentation[1]->Add(id0+ 1, slatsegNB[0]);  
+    segmentation[1]->Add(id0+10, slatsegNB[0]);
+    segmentation[1]->Add(id0+ 9, slatsegNB[0]);     
+    segmentation[1]->Add(id0+ 8, slatsegNB[0]);
     fMUON->SetSegmentationModel(chamber, 2, segmentation[1]);
 
     fMUON->SetResponseModel(chamber, fResponse0);      
     fMUON->Chamber(chamber).SetChargeCorrel(0.11); // 11% charge spread
   }
 }
-
         
 //__________________________________________________________________________
 void AliMUONFactoryV2::BuildStation4() 
@@ -518,86 +517,86 @@ void AliMUONFactoryV2::BuildStation4()
 
     // cathode 0
     // type 122330
-    segmentation[0]->Add(id0+ 6, slatsegB[0]);
-    segmentation[0]->Add(id0+56, slatsegB[0]);
+    segmentation[0]->Add(id0+13, slatsegB[0]);
+    segmentation[0]->Add(id0   , slatsegB[0]);
   
     // type 112233
-    segmentation[0]->Add(id0+ 5, slatsegB[1]);
-    segmentation[0]->Add(id0+ 7, slatsegB[1]);  
-    segmentation[0]->Add(id0+55, slatsegB[1]);  
-    segmentation[0]->Add(id0+57, slatsegB[1]);
+    segmentation[0]->Add(id0+14, slatsegB[1]);
+    segmentation[0]->Add(id0+12, slatsegB[1]);  
+    segmentation[0]->Add(id0+25, slatsegB[1]);  
+    segmentation[0]->Add(id0+ 1, slatsegB[1]);
    
     // type 112230
-    segmentation[0]->Add(id0+ 4, slatsegB[2]);
-    segmentation[0]->Add(id0+ 8, slatsegB[2]);  
-    segmentation[0]->Add(id0+54, slatsegB[2]);  
-    segmentation[0]->Add(id0+58, slatsegB[2]);
+    segmentation[0]->Add(id0+15, slatsegB[2]);
+    segmentation[0]->Add(id0+11, slatsegB[2]);  
+    segmentation[0]->Add(id0+24, slatsegB[2]);  
+    segmentation[0]->Add(id0+ 2, slatsegB[2]);
 
     // type 222330 
+    segmentation[0]->Add(id0+16, slatsegB[3]);
+    segmentation[0]->Add(id0+10, slatsegB[3]);  
+    segmentation[0]->Add(id0+23, slatsegB[3]);
     segmentation[0]->Add(id0+ 3, slatsegB[3]);
-    segmentation[0]->Add(id0+ 9, slatsegB[3]);  
-    segmentation[0]->Add(id0+53, slatsegB[3]);
-    segmentation[0]->Add(id0+59, slatsegB[3]);
 
     // type 223300 
-    segmentation[0]->Add(id0+ 2, slatsegB[4]);
-    segmentation[0]->Add(id0+10, slatsegB[4]);  
-    segmentation[0]->Add(id0+52, slatsegB[4]);
-    segmentation[0]->Add(id0+60, slatsegB[4]);
+    segmentation[0]->Add(id0+17, slatsegB[4]);
+    segmentation[0]->Add(id0+ 9, slatsegB[4]);  
+    segmentation[0]->Add(id0+22, slatsegB[4]);
+    segmentation[0]->Add(id0+ 4, slatsegB[4]);
 
     // type 333000 
-    segmentation[0]->Add(id0+ 1, slatsegB[5]);
-    segmentation[0]->Add(id0+11, slatsegB[5]);  
-    segmentation[0]->Add(id0+51, slatsegB[5]);
-    segmentation[0]->Add(id0+61, slatsegB[5]);
+    segmentation[0]->Add(id0+18, slatsegB[5]);
+    segmentation[0]->Add(id0+ 8, slatsegB[5]);  
+    segmentation[0]->Add(id0+21, slatsegB[5]);
+    segmentation[0]->Add(id0+ 5, slatsegB[5]);
 
     // type 330000 
-    segmentation[0]->Add(id0   , slatsegB[6]);
-    segmentation[0]->Add(id0+12, slatsegB[6]);  
-    segmentation[0]->Add(id0+50, slatsegB[6]);
-    segmentation[0]->Add(id0+62, slatsegB[6]);
+    segmentation[0]->Add(id0+19, slatsegB[6]);
+    segmentation[0]->Add(id0+ 7, slatsegB[6]);  
+    segmentation[0]->Add(id0+20, slatsegB[6]);
+    segmentation[0]->Add(id0+ 6, slatsegB[6]);
     fMUON->SetSegmentationModel(chamber, 1, segmentation[0]);   
 
     // cathode 1
     // type 122330
-    segmentation[1]->Add(id0+ 6, slatsegNB[0]);
-    segmentation[1]->Add(id0+56, slatsegNB[0]);
+    segmentation[1]->Add(id0+13, slatsegNB[0]);
+    segmentation[1]->Add(id0   , slatsegNB[0]);
 
     // type 112233
-    segmentation[1]->Add(id0+ 5, slatsegNB[1]);
-    segmentation[1]->Add(id0+ 7, slatsegNB[1]);  
-    segmentation[1]->Add(id0+55, slatsegNB[1]);  
-    segmentation[1]->Add(id0+57, slatsegNB[1]);
+    segmentation[1]->Add(id0+14, slatsegNB[1]);
+    segmentation[1]->Add(id0+12, slatsegNB[1]);  
+    segmentation[1]->Add(id0+25, slatsegNB[1]);  
+    segmentation[1]->Add(id0+ 1, slatsegNB[1]);
   
     // type 112230
-    segmentation[1]->Add(id0+ 4, slatsegNB[2]);
-    segmentation[1]->Add(id0+ 8, slatsegNB[2]);  
-    segmentation[1]->Add(id0+54, slatsegNB[2]);  
-    segmentation[1]->Add(id0+58, slatsegNB[2]);
+    segmentation[1]->Add(id0+15, slatsegNB[2]);
+    segmentation[1]->Add(id0+11, slatsegNB[2]);  
+    segmentation[1]->Add(id0+24, slatsegNB[2]);  
+    segmentation[1]->Add(id0+ 2, slatsegNB[2]);
 
     // type 222330 
+    segmentation[1]->Add(id0+16, slatsegNB[3]);
+    segmentation[1]->Add(id0+10, slatsegNB[3]);  
+    segmentation[1]->Add(id0+23, slatsegNB[3]);
     segmentation[1]->Add(id0+ 3, slatsegNB[3]);
-    segmentation[1]->Add(id0+ 9, slatsegNB[3]);  
-    segmentation[1]->Add(id0+53, slatsegNB[3]);
-    segmentation[1]->Add(id0+59, slatsegNB[3]);
 
     // type 223300 
-    segmentation[1]->Add(id0+ 2, slatsegNB[4]);
-    segmentation[1]->Add(id0+10, slatsegNB[4]);  
-    segmentation[1]->Add(id0+52, slatsegNB[4]);
-    segmentation[1]->Add(id0+60, slatsegNB[4]);
+    segmentation[1]->Add(id0+17, slatsegNB[4]);
+    segmentation[1]->Add(id0+ 9, slatsegNB[4]);  
+    segmentation[1]->Add(id0+22, slatsegNB[4]);
+    segmentation[1]->Add(id0+ 4, slatsegNB[4]);
 
     // type 333000 
-    segmentation[1]->Add(id0+ 1, slatsegNB[5]);
-    segmentation[1]->Add(id0+11, slatsegNB[5]);  
-    segmentation[1]->Add(id0+51, slatsegNB[5]);
-    segmentation[1]->Add(id0+61, slatsegNB[5]);
+    segmentation[1]->Add(id0+18, slatsegNB[5]);
+    segmentation[1]->Add(id0+ 8, slatsegNB[5]);  
+    segmentation[1]->Add(id0+21, slatsegNB[5]);
+    segmentation[1]->Add(id0+ 5, slatsegNB[5]);
 
     // type 330000 
-    segmentation[1]->Add(id0   , slatsegNB[6]);
-    segmentation[1]->Add(id0+12, slatsegNB[6]);  
-    segmentation[1]->Add(id0+50, slatsegNB[6]);
-    segmentation[1]->Add(id0+62, slatsegNB[6]);
+    segmentation[1]->Add(id0+19, slatsegNB[6]);
+    segmentation[1]->Add(id0+ 7, slatsegNB[6]);  
+    segmentation[1]->Add(id0+20, slatsegNB[6]);
+    segmentation[1]->Add(id0+ 6, slatsegNB[6]);
     fMUON->SetSegmentationModel(chamber, 2, segmentation[1]);
 
     fMUON->SetResponseModel(chamber, fResponse0);      
@@ -711,82 +710,82 @@ void AliMUONFactoryV2::BuildStation5()
 
     // cathode 0
     // type 122330
-    segmentation[0]->Add(id0+ 6, slatsegB[0]);
-    segmentation[0]->Add(id0+56, slatsegB[0]);
+    segmentation[0]->Add(id0+13, slatsegB[0]);
+    segmentation[0]->Add(id0   , slatsegB[0]);
   
     // type 112233
-    segmentation[0]->Add(id0+ 4, slatsegB[1]);
-    segmentation[0]->Add(id0+ 5, slatsegB[1]);
-    segmentation[0]->Add(id0+ 7, slatsegB[1]);  
-    segmentation[0]->Add(id0+ 8, slatsegB[1]);  
-    segmentation[0]->Add(id0+54, slatsegB[1]);  
-    segmentation[0]->Add(id0+55, slatsegB[1]);  
-    segmentation[0]->Add(id0+57, slatsegB[1]);
-    segmentation[0]->Add(id0+58, slatsegB[1]);
+    segmentation[0]->Add(id0+15, slatsegB[1]);
+    segmentation[0]->Add(id0+14, slatsegB[1]);
+    segmentation[0]->Add(id0+12, slatsegB[1]);  
+    segmentation[0]->Add(id0+11, slatsegB[1]);  
+    segmentation[0]->Add(id0+24, slatsegB[1]);  
+    segmentation[0]->Add(id0+25, slatsegB[1]);  
+    segmentation[0]->Add(id0+ 1, slatsegB[1]);
+    segmentation[0]->Add(id0+ 2, slatsegB[1]);
 
     // type 333000 
-    segmentation[0]->Add(id0   , slatsegB[2]);
-    segmentation[0]->Add(id0+12, slatsegB[2]);  
-    segmentation[0]->Add(id0+50, slatsegB[2]);
-    segmentation[0]->Add(id0+62, slatsegB[2]);
+    segmentation[0]->Add(id0+19, slatsegB[2]);
+    segmentation[0]->Add(id0+ 7, slatsegB[2]);  
+    segmentation[0]->Add(id0+20, slatsegB[2]);
+    segmentation[0]->Add(id0+ 6, slatsegB[2]);
  
     // type 222333 
+    segmentation[0]->Add(id0+16, slatsegB[3]);
+    segmentation[0]->Add(id0+10, slatsegB[3]);  
+    segmentation[0]->Add(id0+23, slatsegB[3]);
     segmentation[0]->Add(id0+ 3, slatsegB[3]);
-    segmentation[0]->Add(id0+ 9, slatsegB[3]);  
-    segmentation[0]->Add(id0+53, slatsegB[3]);
-    segmentation[0]->Add(id0+59, slatsegB[3]);
  
     // type 223330 
-    segmentation[0]->Add(id0+ 2, slatsegB[4]);
-    segmentation[0]->Add(id0+10, slatsegB[4]);  
-    segmentation[0]->Add(id0+52, slatsegB[4]);
-    segmentation[0]->Add(id0+60, slatsegB[4]);
+    segmentation[0]->Add(id0+17, slatsegB[4]);
+    segmentation[0]->Add(id0+ 9, slatsegB[4]);  
+    segmentation[0]->Add(id0+22, slatsegB[4]);
+    segmentation[0]->Add(id0+ 4, slatsegB[4]);
   
     // type 333300 
-    segmentation[0]->Add(id0+ 1, slatsegB[5]);
-    segmentation[0]->Add(id0+11, slatsegB[5]);  
-    segmentation[0]->Add(id0+51, slatsegB[5]);
-    segmentation[0]->Add(id0+61, slatsegB[5]);
+    segmentation[0]->Add(id0+18, slatsegB[5]);
+    segmentation[0]->Add(id0+ 8, slatsegB[5]);  
+    segmentation[0]->Add(id0+21, slatsegB[5]);
+    segmentation[0]->Add(id0+ 5, slatsegB[5]);
     fMUON->SetSegmentationModel(chamber, 1, segmentation[0]);
 
     // cathode 1
     // type 122330
-    segmentation[1]->Add(id0+ 6, slatsegNB[0]);
-    segmentation[1]->Add(id0+56, slatsegNB[0]);
+    segmentation[1]->Add(id0+13, slatsegNB[0]);
+    segmentation[1]->Add(id0   , slatsegNB[0]);
   
     // type 112233
-    segmentation[1]->Add(id0+ 4, slatsegNB[1]);
-    segmentation[1]->Add(id0+ 5, slatsegNB[1]);
-    segmentation[1]->Add(id0+ 7, slatsegNB[1]);  
-    segmentation[1]->Add(id0+ 8, slatsegNB[1]);  
-    segmentation[1]->Add(id0+54, slatsegNB[1]);  
-    segmentation[1]->Add(id0+55, slatsegNB[1]);  
-    segmentation[1]->Add(id0+57, slatsegNB[1]);
-    segmentation[1]->Add(id0+58, slatsegNB[1]);
+    segmentation[1]->Add(id0+15, slatsegNB[1]);
+    segmentation[1]->Add(id0+14, slatsegNB[1]);
+    segmentation[1]->Add(id0+12, slatsegNB[1]);  
+    segmentation[1]->Add(id0+11, slatsegNB[1]);  
+    segmentation[1]->Add(id0+24, slatsegNB[1]);  
+    segmentation[1]->Add(id0+25, slatsegNB[1]);  
+    segmentation[1]->Add(id0+ 1, slatsegNB[1]);
+    segmentation[1]->Add(id0+ 2, slatsegNB[1]);
 
     // type 333000 
-    segmentation[1]->Add(id0   , slatsegNB[2]);
-    segmentation[1]->Add(id0+12, slatsegNB[2]);  
-    segmentation[1]->Add(id0+50, slatsegNB[2]);
-    segmentation[1]->Add(id0+62, slatsegNB[2]);
+    segmentation[1]->Add(id0+19 , slatsegNB[2]);
+    segmentation[1]->Add(id0+ 7, slatsegNB[2]);  
+    segmentation[1]->Add(id0+20, slatsegNB[2]);
+    segmentation[1]->Add(id0+ 6, slatsegNB[2]);
  
     // type 222333 
+    segmentation[1]->Add(id0+16, slatsegNB[3]);
+    segmentation[1]->Add(id0+10, slatsegNB[3]);  
+    segmentation[1]->Add(id0+23, slatsegNB[3]);
     segmentation[1]->Add(id0+ 3, slatsegNB[3]);
-    segmentation[1]->Add(id0+ 9, slatsegNB[3]);  
-    segmentation[1]->Add(id0+53, slatsegNB[3]);
-    segmentation[1]->Add(id0+59, slatsegNB[3]);
  
     // type 223330 
-    segmentation[1]->Add(id0+ 2, slatsegNB[4]);
-    segmentation[1]->Add(id0+10, slatsegNB[4]);  
-    segmentation[1]->Add(id0+52, slatsegNB[4]);
-    segmentation[1]->Add(id0+60, slatsegNB[4]);
+    segmentation[1]->Add(id0+17, slatsegNB[4]);
+    segmentation[1]->Add(id0+ 9, slatsegNB[4]);  
+    segmentation[1]->Add(id0+22, slatsegNB[4]);
+    segmentation[1]->Add(id0+ 4, slatsegNB[4]);
   
     // type 333300 
-    segmentation[1]->Add(id0+ 1, slatsegNB[5]);
-    segmentation[1]->Add(id0+11, slatsegNB[5]);  
-    segmentation[1]->Add(id0+51, slatsegNB[5]);
-    segmentation[1]->Add(id0+61, slatsegNB[5]);
+    segmentation[1]->Add(id0+18, slatsegNB[5]);
+    segmentation[1]->Add(id0+ 8, slatsegNB[5]);  
+    segmentation[1]->Add(id0+21, slatsegNB[5]);
+    segmentation[1]->Add(id0+ 5, slatsegNB[5]);
     fMUON->SetSegmentationModel(chamber, 2, segmentation[1]);
         
     fMUON->SetResponseModel(chamber, fResponse0);           

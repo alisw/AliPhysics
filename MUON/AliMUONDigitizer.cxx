@@ -506,11 +506,11 @@ void AliMUONDigitizer::InitArrays()
     for (Int_t i = 0; i < AliMUONConstants::NCh(); i++) {
 
       Int_t idDE = 100*(i+1);// central DE = max # of pads ?
-      if (i == 4 || i == 5) //St3
-	idDE += 4;
+//       if (i == 4 || i == 5) //St3
+// 	idDE += 4;
 
-      if (i > 5)
-	idDE += 5;// DE for max # of pads in St45 and Trigger Station
+//       if (i > 5)
+//	 idDE += 5;// DE for max # of pads in St45 and Trigger Station
 
       AliDebug(4,Form( "Creating hit map for chamber %d, cathode 1.", i+1));
       AliMUONChamber* chamber = &(fMUON->Chamber(i));

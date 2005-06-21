@@ -19,7 +19,6 @@
 #include <TMath.h>
 
 #include "AliMUONHitMapA1.h"
-#include "AliSegmentation.h"
 #include "AliMUONGeometrySegmentation.h"
 #include "AliMUONDigit.h"
 #include "AliLog.h"
@@ -37,19 +36,7 @@ AliMUONHitMapA1::AliMUONHitMapA1()
     fHitMap       = 0;
     fDigits       = 0;
 }
-//____________________________________________________________________
-AliMUONHitMapA1::AliMUONHitMapA1(AliSegmentation *seg, TObjArray *dig)
-  : AliHitMap()
-{
-// Constructor
-    fNpx  = seg->Npx()+1;
-    fNpy  = seg->Npy()+1;
-    fMaxIndex=2*(fNpx+1)*2*(fNpy+1)+2*fNpy;
-    
-    fHitMap = new Int_t[fMaxIndex];
-    fDigits =  dig;
-    Clear();
-}
+
 //________________________________________________________________________________
 AliMUONHitMapA1::AliMUONHitMapA1(Int_t idDE, AliMUONGeometrySegmentation* seg, TObjArray* dig)
   : AliHitMap()

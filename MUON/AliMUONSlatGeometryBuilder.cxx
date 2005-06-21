@@ -333,53 +333,53 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
 	Float_t dzCh3 = dzCh; 
 	Float_t zSlat3 = (i%2 ==0)? -zSlat : zSlat; // seems not that zSlat3 = zSlat4 & 5 refering to plan PQ7EN345-6 ?
 
-	sprintf(idSlatCh5,"LA%d",kNslats3-1+i);
+	sprintf(idSlatCh5,"LA%d",i+kNslats3-1);
 	gMC->Gsvolu(idSlatCh5,"BOX",kSlatMaterial,spar2,3);
-	detElemId = 500 + i + kNslats3-1;
+	detElemId = 509 - (i + kNslats3-1-4);
 	GetEnvelopes(4)->AddEnvelope(idSlatCh5, detElemId, true, TGeoTranslation(xSlat3, ySlat3, -zSlat3 + dzCh3),
 				     TGeoRotation("rot1",90,angle,90,90+angle,0,0) );
 
 	sprintf(idSlatCh5,"LA%d",3*kNslats3-2+i);
 	gMC->Gsvolu(idSlatCh5,"BOX",kSlatMaterial,spar2,3);
-	detElemId = 550 + i + kNslats3-1;
+	detElemId = 500 + (i + kNslats3-1-4);
 	GetEnvelopes(4)->AddEnvelope(idSlatCh5, detElemId, true, TGeoTranslation(-xSlat3, ySlat3, zSlat3 - dzCh3),
 				     TGeoRotation("rot2",90,180+angle,90,90+angle,180,0) );
 
 	if (i > 0) { 
 	  sprintf(idSlatCh5,"LA%d",kNslats3-1-i);
 	  gMC->Gsvolu(idSlatCh5,"BOX",kSlatMaterial,spar2,3);
-	  detElemId = 500 - i + kNslats3-1;
+	  detElemId = 509 + (i + kNslats3-1-4);
 	  GetEnvelopes(4)->AddEnvelope(idSlatCh5, detElemId, true, TGeoTranslation(xSlat3, -ySlat3, -zSlat3 + dzCh3), 
 				       TGeoRotation("rot3",90,angle,90,270+angle,180,0) );
 
 	  sprintf(idSlatCh5,"LA%d",3*kNslats3-2-i);
 	  gMC->Gsvolu(idSlatCh5,"BOX",kSlatMaterial,spar2,3);
-	  detElemId = 550 - i + kNslats3-1;
+	  detElemId = 518 - (i + kNslats3-1-4);
 	  GetEnvelopes(4)->AddEnvelope(idSlatCh5, detElemId, true, TGeoTranslation(-xSlat3, -ySlat3, zSlat3 - dzCh3),
 				       TGeoRotation("rot4",90,180+angle,90,270+angle,0,0) );
 	}
 
 	sprintf(idSlatCh6,"LB%d",kNslats3-1+i);  
 	gMC->Gsvolu(idSlatCh6,"BOX",kSlatMaterial,spar,3);
-	detElemId = 600 + i  + kNslats3-1;
+	detElemId = 609 - (i  + kNslats3-1-4);
 	GetEnvelopes(5)->AddEnvelope(idSlatCh6, detElemId, true, TGeoTranslation(xSlat3, ySlat3, -zSlat3 + dzCh3),
 				     TGeoRotation("rot5",90,angle,90,90+angle,0,0) );
 	sprintf(idSlatCh6,"LB%d",3*kNslats3-2+i);
 	gMC->Gsvolu(idSlatCh6,"BOX",kSlatMaterial,spar,3);
-	detElemId = 650 + i + kNslats3-1;
+	detElemId = 600 + (i + kNslats3-1-4);
 	GetEnvelopes(5)->AddEnvelope(idSlatCh6, detElemId, true, TGeoTranslation(-xSlat3, ySlat3, zSlat3 - dzCh3),
 				     TGeoRotation("rot6",90,180+angle,90,90+angle,180,0) );
 
 	if (i > 0) { 
 	  sprintf(idSlatCh6,"LB%d",kNslats3-1-i);
 	  gMC->Gsvolu(idSlatCh6,"BOX",kSlatMaterial,spar,3);
-	  detElemId = 600 - i + kNslats3-1;
+	  detElemId = 609 + (i + kNslats3-1-4);
 	  GetEnvelopes(5)->AddEnvelope(idSlatCh6, detElemId, true, TGeoTranslation(xSlat3, -ySlat3, -zSlat3 + dzCh3),
 				       TGeoRotation("rot7",90,angle,90,270+angle,180,0) );
 
 	  sprintf(idSlatCh6,"LB%d",3*kNslats3-2-i);
 	  gMC->Gsvolu(idSlatCh6,"BOX",kSlatMaterial,spar,3);
-	  detElemId = 650 - i + kNslats3-1;
+	  detElemId = 618 - (i + kNslats3-1-4);
 	  GetEnvelopes(5)->AddEnvelope(idSlatCh6, detElemId, true, TGeoTranslation(-xSlat3, -ySlat3, zSlat3 - dzCh3),
 				       TGeoRotation("rot8",90,180+angle,90,270+angle,0,0) );
 	}
@@ -696,25 +696,25 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
 
       sprintf(idSlatCh7,"LC%d",kNslats4-1+i);
       gMC->Gsvolu(idSlatCh7,"BOX",kSlatMaterial,spar,3);
-      detElemId = 700 + i + kNslats4-1;
+      detElemId = 713 - (i + kNslats4-1-6);
       GetEnvelopes(6)->AddEnvelope(idSlatCh7, detElemId, true, TGeoTranslation(xSlat4, ySlat41, -zSlat4 + dzCh4),
 				   TGeoRotation("rot1",90,angle,90,90+angle,0,0) );
 
       sprintf(idSlatCh7,"LC%d",3*kNslats4-2+i);
       gMC->Gsvolu(idSlatCh7,"BOX",kSlatMaterial,spar,3);
-      detElemId = 750 + i + kNslats4-1;
+      detElemId = 700 + (i + kNslats4-1-6);
       GetEnvelopes(6)->AddEnvelope(idSlatCh7, detElemId, true, TGeoTranslation(-xSlat4, ySlat41, zSlat4 - dzCh4),
 				   TGeoRotation("rot2",90,180+angle,90,90+angle,180,0) );
  
       if (i > 0) { 
 	sprintf(idSlatCh7,"LC%d",kNslats4-1-i);
 	gMC->Gsvolu(idSlatCh7,"BOX",kSlatMaterial,spar,3);
-	detElemId = 700 - i + kNslats4-1;
+	detElemId = 713 + (i + kNslats4-1-6);
 	GetEnvelopes(6)->AddEnvelope(idSlatCh7, detElemId, true, TGeoTranslation(xSlat4, -ySlat41, -zSlat4 + dzCh4),
 				     TGeoRotation("rot3",90,angle,90,270+angle,180,0) );
 
 	sprintf(idSlatCh7,"LC%d",3*kNslats4-2-i);
-	detElemId = 750 - i + kNslats4-1;
+	detElemId = 726 - (i + kNslats4-1-6);
 	gMC->Gsvolu(idSlatCh7,"BOX",kSlatMaterial,spar,3);
 	GetEnvelopes(6)->AddEnvelope(idSlatCh7, detElemId, true, 
 				     TGeoTranslation(-xSlat4, -ySlat41, zSlat4 - dzCh4),
@@ -723,23 +723,23 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
 
       sprintf(idSlatCh8,"LD%d",kNslats4-1+i);
       gMC->Gsvolu(idSlatCh8,"BOX",kSlatMaterial,spar,3);
-      detElemId = 800 + i + kNslats4-1;
+      detElemId = 813 - (i + kNslats4-1-6);
       GetEnvelopes(7)->AddEnvelope(idSlatCh8, detElemId, true, TGeoTranslation(xSlat4, ySlat42, -zSlat4 + dzCh4),
 				   TGeoRotation("rot5",90,angle,90,90+angle,0,0) );
 
       sprintf(idSlatCh8,"LD%d",3*kNslats4-2+i);
-      detElemId = 850 + i + kNslats4-1;
+      detElemId = 800 + (i + kNslats4-1-6);
       gMC->Gsvolu(idSlatCh8,"BOX",kSlatMaterial,spar,3);
       GetEnvelopes(7)->AddEnvelope(idSlatCh8, detElemId, true, TGeoTranslation(-xSlat4, ySlat42, zSlat4 - dzCh4),
 				   TGeoRotation("rot6",90,180+angle,90,90+angle,180,0) );
       if (i > 0) { 
 	sprintf(idSlatCh8,"LD%d",kNslats4-1-i);
-	detElemId = 800 - i + kNslats4-1;
+	detElemId = 813 + (i + kNslats4-1-6);
 	gMC->Gsvolu(idSlatCh8,"BOX",kSlatMaterial,spar,3);
 	GetEnvelopes(7)->AddEnvelope(idSlatCh8, detElemId, true, TGeoTranslation(xSlat4, -ySlat42, -zSlat4 + dzCh4),
 				     TGeoRotation("rot7",90,angle,90,270+angle,180,0) );
 	sprintf(idSlatCh8,"LD%d",3*kNslats4-2-i);
-	detElemId = 850 - i + kNslats4-1;
+	detElemId = 826 - (i + kNslats4-1-6);
 	gMC->Gsvolu(idSlatCh8,"BOX",kSlatMaterial,spar,3);
 	GetEnvelopes(7)->AddEnvelope(idSlatCh8, detElemId, true, TGeoTranslation(-xSlat4, -ySlat42, zSlat4 - dzCh4),
 				     TGeoRotation("rot8",90,180+angle,90,270+angle,0,0) );
@@ -968,51 +968,51 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
       Float_t zSlat5 = (i%2 ==0)? -zSlat : zSlat; 
 
       sprintf(idSlatCh9,"LE%d",kNslats5-1+i);
-      detElemId = 900 + i + kNslats5-1;
+      detElemId = 913 - (i + kNslats5-1-6);
       gMC->Gsvolu(idSlatCh9,"BOX",kSlatMaterial,spar,3);
       GetEnvelopes(8)->AddEnvelope(idSlatCh9, detElemId, true, TGeoTranslation(xSlat5, ySlat5, -zSlat5 + dzCh5),
 				   TGeoRotation("rot1",90,angle,90,90+angle,0,0) );
 
       sprintf(idSlatCh9,"LE%d",3*kNslats5-2+i);
-      detElemId = 950 + i + kNslats5-1;
+      detElemId = 900 + (i + kNslats5-1-6);
       gMC->Gsvolu(idSlatCh9,"BOX",kSlatMaterial,spar,3);
       GetEnvelopes(8)->AddEnvelope(idSlatCh9, detElemId, true, TGeoTranslation(-xSlat5, ySlat5, zSlat5 - dzCh5),
 				   TGeoRotation("rot2",90,180+angle,90,90+angle,180,0) );
  
       if (i > 0) { 
 	sprintf(idSlatCh9,"LE%d",kNslats5-1-i);
-	detElemId = 900 - i + kNslats5-1;
+	detElemId = 913 + (i + kNslats5-1-6);
 	gMC->Gsvolu(idSlatCh9,"BOX",kSlatMaterial,spar,3);
 	GetEnvelopes(8)->AddEnvelope(idSlatCh9, detElemId, true, TGeoTranslation(xSlat5, -ySlat5, -zSlat5 + dzCh5),
 				     TGeoRotation("rot3",90,angle,90,270+angle,180,0) );
 
 	sprintf(idSlatCh9,"LE%d",3*kNslats5-2-i);
-	detElemId = 950 - i + kNslats5-1;
+	detElemId = 926 - (i + kNslats5-1-6);
 	gMC->Gsvolu(idSlatCh9,"BOX",kSlatMaterial,spar,3);
 	GetEnvelopes(8)->AddEnvelope(idSlatCh9, detElemId, true, TGeoTranslation(-xSlat5, -ySlat5, zSlat5 - dzCh5),
 				     TGeoRotation("rot4",90,180+angle,90,270+angle,0,0)  );
       }
 
       sprintf(idSlatCh10,"LF%d",kNslats5-1+i);
-      detElemId = 1000 + i + kNslats5-1;
+      detElemId = 1013 - (i + kNslats5-1-6);
       gMC->Gsvolu(idSlatCh10,"BOX",kSlatMaterial,spar,3);
       GetEnvelopes(9)->AddEnvelope(idSlatCh10, detElemId, true, TGeoTranslation(xSlat5, ySlat5, -zSlat5 + dzCh5),
 				   TGeoRotation("rot5",90,angle,90,90+angle,0,0) );
 
       sprintf(idSlatCh10,"LF%d",3*kNslats5-2+i);
-      detElemId = 1050 + i + kNslats5-1;
+      detElemId = 1000 + (i + kNslats5-1-6);
       gMC->Gsvolu(idSlatCh10,"BOX",kSlatMaterial,spar,3);
       GetEnvelopes(9)->AddEnvelope(idSlatCh10, detElemId, true, TGeoTranslation(-xSlat5, ySlat5, zSlat5 - dzCh5),
 				   TGeoRotation("rot6",90,180+angle,90,90+angle,180,0) );
 
       if (i > 0) { 
 	sprintf(idSlatCh10,"LF%d",kNslats5-1-i);
-	detElemId = 1000 - i + kNslats5-1;
+	detElemId = 1013 + (i + kNslats5-1-6);
 	gMC->Gsvolu(idSlatCh10,"BOX",kSlatMaterial,spar,3);
 	GetEnvelopes(9)->AddEnvelope(idSlatCh10, detElemId, true, TGeoTranslation(xSlat5, -ySlat5, -zSlat5 + dzCh5),
 				     TGeoRotation("rot7",90,angle,90,270+angle,180,0) );
 	sprintf(idSlatCh10,"LF%d",3*kNslats5-2-i);
-	detElemId = 1050 - i + kNslats5-1;
+	detElemId = 1026 - (i + kNslats5-1-6);
 	gMC->Gsvolu(idSlatCh10,"BOX",kSlatMaterial,spar,3);
 	GetEnvelopes(9)->AddEnvelope(idSlatCh10, detElemId, true, TGeoTranslation(-xSlat5, -ySlat5, zSlat5 - dzCh5),
 				     TGeoRotation("rot8",90,180+angle,90,270+angle,0,0) );
