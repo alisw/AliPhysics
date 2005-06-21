@@ -42,7 +42,6 @@ class AliD0toKpiAnalysis : public TNamed {
 		 Double_t cut7=100000000.,Double_t cut8=-1.1); 
   void SetD0Cuts(const Double_t cuts[9]); 
   void SetPID(const Char_t * pid="TOFparam_PbPb") { fPID=pid; }
-  void SetDebug() { fDebug=kTRUE; }
   //
  private:
   //
@@ -68,7 +67,6 @@ class AliD0toKpiAnalysis : public TNamed {
                        // 7 = d0d0 [micron^2]
                        // 8 = cosThetaPoint
 
-  Bool_t fDebug;       // debug option
   //
   Double_t CalculateTOFmass(Double_t mom,Double_t length,Double_t time) const;
   void     MakeTracksRefFile(Int_t evFirst=0,Int_t evLast=0) const;
@@ -88,7 +86,7 @@ class AliD0toKpiAnalysis : public TNamed {
   void     SimulationInfo(TTree *treeD0in,TTree *treeD0out) const;
   Bool_t   SingleTrkCuts(const AliITStrackV2& trk) const;
   //
-  ClassDef(AliD0toKpiAnalysis,1)  // Reconstruction of D0 candidates class
+  ClassDef(AliD0toKpiAnalysis,2)  // Reconstruction of D0 candidates class
 };
 
 

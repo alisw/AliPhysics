@@ -36,6 +36,7 @@
 #include "AliV0vertex.h"
 #include "AliD0toKpi.h"
 #include "AliD0toKpiAnalysis.h"
+#include "AliLog.h"
 
 typedef struct {
   Int_t lab;
@@ -62,7 +63,6 @@ AliD0toKpiAnalysis::AliD0toKpiAnalysis() {
   fVertexOnTheFly = kFALSE;
   fSim = kFALSE;
   fOnlySignal = kFALSE;
-  fDebug = kFALSE;
 }
 //----------------------------------------------------------------------------
 AliD0toKpiAnalysis::~AliD0toKpiAnalysis() {}
@@ -172,7 +172,6 @@ void AliD0toKpiAnalysis::FindCandidates(Int_t evFirst,Int_t evLast,
   // (it will be used only if fVertexOnTheFly=kTrue)
   AliITSVertexerTracks *vertexer1 = new AliITSVertexerTracks;
   vertexer1->SetMinTracks(2);
-  vertexer1->SetDebug(0);
   Int_t  skipped[2];
   Bool_t goodVtx1;
   
@@ -403,7 +402,6 @@ void AliD0toKpiAnalysis::FindCandidatesESD(Int_t evFirst,Int_t evLast,
   // (it will be used only if fVertexOnTheFly=kTrue)
   AliITSVertexerTracks *vertexer1 = new AliITSVertexerTracks;
   vertexer1->SetMinTracks(2);
-  vertexer1->SetDebug(0);
   Int_t  skipped[2];
   Bool_t goodVtx1;
   
@@ -470,13 +468,13 @@ void AliD0toKpiAnalysis::FindCandidatesESD(Int_t evFirst,Int_t evLast,
 	        	     trksN,trkEntryN,nTrksN);
     }      
 
-    if(fDebug) printf(" pos. tracks: %d    neg .tracks: %d\n",nTrksP,nTrksN);
+    AliDebugClass(1,Form(" pos. tracks: %d    neg .tracks: %d",nTrksP,nTrksN));
 
     nD0rec1ev = 0;
 
     // loop on positive tracks
     for(iTrkP=0; iTrkP<nTrksP; iTrkP++) {
-      if((iTrkP%10==0) || fDebug) printf("  Processing positive track number %d of %d\n",iTrkP,nTrksP);
+      if(iTrkP%10==0) AliDebugClass(1,Form("  Processing positive track number %d of %d",iTrkP,nTrksP));
 	  
       // get track from track array
       postrack = (AliITStrackV2*)trksP.UncheckedAt(iTrkP);
@@ -747,7 +745,6 @@ void AliD0toKpiAnalysis::SelectTracksESD(AliESD &event,
  
   // transfer ITS tracks from ESD to arrays and to a tree
   for(Int_t i=0; i<entr; i++) {
-    //if(fDebug) printf(" SelectTracksESD: %d/%d\n",i,entr);
 
     AliESDtrack *esdtrack = (AliESDtrack*)event.GetTrack(i);
     UInt_t status = esdtrack->GetStatus();
