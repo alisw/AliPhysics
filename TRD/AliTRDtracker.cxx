@@ -30,12 +30,15 @@
 #include "AliTRDgeometry.h"
 #include "AliTRDparameter.h"
 #include "AliTRDpadPlane.h"
-#include "AliTRDgeometryFull.h"
+#include "AliTRDgeometryDetail.h"
 #include "AliTRDcluster.h" 
 #include "AliTRDtrack.h"
 #include "AliESD.h"
 
+#include "TTreeStream.h"
+#include "TGraph.h"
 #include "AliTRDtracker.h"
+//
 
 ClassImp(AliTRDtracker) 
 
@@ -64,9 +67,25 @@ ClassImp(AliTRDtracker)
 
   const  Double_t    AliTRDtracker::fgkMaxChi2            = 12.; 
 
+//   const  Double_t    AliTRDtracker::fgkOffset             = -0.012;
+//   const  Double_t    AliTRDtracker::fgkOffsetX            = 0.35;
+//   const  Double_t    AliTRDtracker::fgkCoef               = 0.00;
+//   const  Double_t    AliTRDtracker::fgkMean               = 8.;
+//   const  Double_t    AliTRDtracker::fgkDriftCorrection    = 1.07;
+//   const  Double_t    AliTRDtracker::fgkExB                = 0.072;
+
+  const  Double_t    AliTRDtracker::fgkOffset             = -0.015;
+const  Double_t    AliTRDtracker::fgkOffsetX            = 0.26;       // "time offset"  
+  const  Double_t    AliTRDtracker::fgkCoef               = 0.0096;   // angular shift 
+  const  Double_t    AliTRDtracker::fgkMean               = 0.;
+  const  Double_t    AliTRDtracker::fgkDriftCorrection    = 1.04;   // drift coefficient correction
+  const  Double_t    AliTRDtracker::fgkExB                = 0.072;  // ExB angle - for error parameterization
+
+
+//     poscorrection =  fgkCoef*(GetLocalTimeBin() - fgkMean)+fgkOffset; 
+
 const Int_t AliTRDtracker::fgkFirstPlane = 5;
 const Int_t AliTRDtracker::fgkLastPlane = 17;
-
 
 //____________________________________________________________________
 AliTRDtracker::AliTRDtracker():AliTracker(),
@@ -91,6 +110,7 @@ AliTRDtracker::AliTRDtracker():AliTracker(),
   for(Int_t i=0;i<kTrackingSectors;i++) fTrSec[i]=0;
   for(Int_t j=0;j<5;j++)
     for(Int_t k=0;k<18;k++) fHoles[j][k]=kFALSE;
+  fDebugStreamer = 0;
 } 
 //____________________________________________________________________
 AliTRDtracker::AliTRDtracker(const TFile *geomfile):AliTracker()
@@ -127,7 +147,7 @@ AliTRDtracker::AliTRDtracker(const TFile *geomfile):AliTracker()
     printf("AliTRDtracker::AliTRDtracker(): can't find TRD geometry!\n");
     //printf("The DETAIL TRD geometry will be used\n");
     //fGeom = new AliTRDgeometryDetail();
-    fGeom = new AliTRDgeometryFull();
+    fGeom = new AliTRDgeometryDetail();
     fGeom->SetPHOShole();
     fGeom->SetRICHhole();    
   } 
@@ -135,11 +155,13 @@ AliTRDtracker::AliTRDtracker(const TFile *geomfile):AliTracker()
   if (!fPar) {  
     printf("AliTRDtracker::AliTRDtracker(): can't find TRD parameter!\n");
     printf("The DEFAULT TRD parameter will be used\n");
-    fPar = new AliTRDparameter();
+    fPar = new AliTRDparameter("Pica","Vyjebana");
   }
+  fPar = new AliTRDparameter("Pica","Vyjebana");
   fPar->Init();
 
   savedir->cd();  
+
 
   //  fGeom->SetT0(fTzero);
 
@@ -157,9 +179,9 @@ AliTRDtracker::AliTRDtracker(const TFile *geomfile):AliTracker()
       fHoles[icham][trS]=fGeom->IsHole(0,icham,geomS);
     }
   }
-
   AliTRDpadPlane *padPlane = fPar->GetPadPlane(0,0);
-  Float_t tiltAngle = TMath::Abs(padPlane->GetTiltingAngle()); 
+  Float_t tiltAngle = TMath::Abs(padPlane->GetTiltingAngle());
+  //  Float_t tiltAngle = TMath::Abs(fPar->GetTiltingAngle()); 
   if(tiltAngle < 0.1) {
     fNoTilt = kTRUE;
   }
@@ -175,8 +197,9 @@ AliTRDtracker::AliTRDtracker(const TFile *geomfile):AliTracker()
   Double_t dxAmp = (Double_t) fGeom->CamHght();   // Amplification region
   Double_t dxDrift = (Double_t) fGeom->CdrHght(); // Drift region
 
-  Double_t dx = (Double_t) fPar->GetDriftVelocity()
+  Double_t dx = fgkDriftCorrection*(Double_t) fPar->GetDriftVelocity()
                          / fPar->GetSamplingFrequency();
+
   Int_t tbAmp = fPar->GetTimeBefore();
   Int_t maxAmp = (Int_t) ((dxAmp+0.000001)/dx);
   if(kTRUE) maxAmp = 0;  // intentional until we change the parameter class 
@@ -190,6 +213,8 @@ AliTRDtracker::AliTRDtracker(const TFile *geomfile):AliTracker()
   fMaxGap = (Int_t) (fTimeBinsPerPlane * fGeom->Nplan() * fgkSkipDepth);
 
   fVocal = kFALSE;
+  
+  fDebugStreamer = new TTreeSRedirector("TRDdebug.root");
 
   savedir->cd();
 }   
@@ -219,7 +244,10 @@ AliTRDtracker::~AliTRDtracker()
   for(Int_t geomS = 0; geomS < kTrackingSectors; geomS++) {
     delete fTrSec[geomS];
   }
-
+  if (fDebugStreamer) {    
+    //fDebugStreamer->Close();
+    delete fDebugStreamer;
+  }
 }   
 
 //_____________________________________________________________________
@@ -300,7 +328,7 @@ inline Double_t f3trd(Double_t x1,Double_t y1,
 }            
 
 
-AliTRDcluster * AliTRDtracker::GetCluster(AliTRDtrack * track, Int_t plane, Int_t timebin){
+AliTRDcluster * AliTRDtracker::GetCluster(AliTRDtrack * track, Int_t plane, Int_t timebin, UInt_t &index){
   //
   //try to find cluster in the backup list
   //
@@ -314,6 +342,7 @@ AliTRDcluster * AliTRDtracker::GetCluster(AliTRDtrack * track, Int_t plane, Int_
     Int_t iplane = fGeom->GetPlane(cli->GetDetector());
     if (iplane==plane) {
       cl = cli;
+      index = indexes[i];
       break;
     }
   }
@@ -360,7 +389,7 @@ Int_t AliTRDtracker::Clusters2Tracks(AliESD* event)
     if ( (status & AliESDtrack::kTRDout ) == 0 ) continue;
     if ( (status & AliESDtrack::kTRDin) != 0 ) continue;
     nseed++;
-
+    
     AliTRDtrack* seed2 = new AliTRDtrack(*seed);
     //seed2->ResetCovariance(); 
     AliTRDtrack *pt = new AliTRDtrack(*seed2,seed2->GetAlpha());
@@ -512,11 +541,13 @@ Int_t AliTRDtracker::PropagateBack(AliESD* event) {
 	Bool_t isGold = kFALSE;
 	
 	if (track->GetChi2()/track->GetNumberOfClusters()<5) {  //full gold track
-	  seed->UpdateTrackParams(track, AliESDtrack::kTRDbackup);
+	  // seed->UpdateTrackParams(track, AliESDtrack::kTRDbackup);
+	   if (track->GetBackupTrack()) seed->UpdateTrackParams(track->GetBackupTrack(), AliESDtrack::kTRDbackup);
 	  isGold = kTRUE;
 	}
 	if (!isGold && track->GetNCross()==0&&track->GetChi2()/track->GetNumberOfClusters()<7){ //almost gold track
-	  seed->UpdateTrackParams(track, AliESDtrack::kTRDbackup);
+	  //	  seed->UpdateTrackParams(track, AliESDtrack::kTRDbackup);
+	  if (track->GetBackupTrack()) seed->UpdateTrackParams(track->GetBackupTrack(), AliESDtrack::kTRDbackup);
 	  isGold = kTRUE;
 	}
 	if (!isGold && track->GetBackupTrack()){
@@ -526,11 +557,14 @@ Int_t AliTRDtracker::PropagateBack(AliESD* event) {
 	    isGold = kTRUE;
 	  }
 	}
+	if (track->StatusForTOF()>0 &&track->fNCross==0 && Float_t(track->fN)/Float_t(track->fNExpected)>0.4){
+	  seed->UpdateTrackParams(track, AliESDtrack::kTRDbackup);
+	}
       }
     }
     //
     //Propagation to the TOF (I.Belikov)
-    CookdEdxTimBin(*track);
+    
     if (track->GetStop()==kFALSE){
       
       Double_t xtof=371.;
@@ -570,7 +604,7 @@ Int_t AliTRDtracker::PropagateBack(AliESD* event) {
            seed->SetTRDsignals(track->GetPIDsignals(i),i);
            seed->SetTRDTimBin(track->GetPIDTimBin(i),i);
         }
-	seed->SetTRDtrack(new AliTRDtrack(*track));
+	//	seed->SetTRDtrack(new AliTRDtrack(*track));
 	if (track->GetNumberOfClusters()>foundMin) found++;
       }
     }else{
@@ -581,13 +615,32 @@ Int_t AliTRDtracker::PropagateBack(AliESD* event) {
            seed->SetTRDsignals(track->GetPIDsignals(i),i);
            seed->SetTRDTimBin(track->GetPIDTimBin(i),i);
         }
-	seed->SetTRDtrack(new AliTRDtrack(*track));
+	//seed->SetTRDtrack(new AliTRDtrack(*track));
 	found++;
       }
     }
-    seed->SetTRDQuality(track->StatusForTOF());
+    seed->SetTRDQuality(track->StatusForTOF());    
+    //
+    // Debug part of tracking
+    TTreeSRedirector& cstream = *fDebugStreamer;
+    Int_t eventNr = event->GetEventNumber();
+    if (track->GetBackupTrack()){
+      cstream<<"Tracks"<<
+	"EventNr="<<eventNr<<
+	"ESD.="<<seed<<
+	"trd.="<<track<<
+	"trdback.="<<track->GetBackupTrack()<<	
+	"\n";
+    }else{
+      cstream<<"Tracks"<<
+	"EventNr="<<eventNr<<
+	"ESD.="<<seed<<
+	"trd.="<<track<<
+	"trdback.="<<track<<
+	"\n";
+    }
     delete track;
-    
+    //
     //End of propagation to the TOF
     //if (foundClr>foundMin)
     //  seed->UpdateTrackParams(track, AliESDtrack::kTRDout);
@@ -597,6 +650,9 @@ Int_t AliTRDtracker::PropagateBack(AliESD* event) {
   
   cerr<<"Number of seeds: "<<fNseeds<<endl;  
   cerr<<"Number of back propagated TRD tracks: "<<found<<endl;
+
+  //  MakeSeedsMI(3,5); //new seeding
+
 
   fSeeds->Clear(); fNseeds=0;
   delete [] index;
@@ -641,22 +697,22 @@ Int_t AliTRDtracker::RefitInward(AliESD* event)
       continue;
     }
     nseed++;    
-    if (1/seed2.Get1Pt()>5.&& seed2.GetX()>260.) {
-      Double_t oldx = seed2.GetX();
-      seed2.PropagateTo(500.);
-      seed2.ResetCovariance(1.);
-      seed2.PropagateTo(oldx);
-    }
-    else{
-      seed2.ResetCovariance(5.); 
-    }
+//     if (1/seed2.Get1Pt()>1.5&& seed2.GetX()>260.) {
+//       Double_t oldx = seed2.GetX();
+//       seed2.PropagateTo(500.);
+//       seed2.ResetCovariance(1.);
+//       seed2.PropagateTo(oldx);
+//     }
+//     else{
+//       seed2.ResetCovariance(5.); 
+//     }
 
     AliTRDtrack *pt = new AliTRDtrack(seed2,seed2.GetAlpha());
     UInt_t * indexes2 = seed2.GetIndexes();
-//     for (Int_t i=0;i<kNPlane;i++) {
-//       pt->SetPIDsignals(seed2.GetPIDsignals(i),i);
-//       pt->SetPIDTimBin(seed2.GetPIDTimBin(i),i);
-//     }
+    for (Int_t i=0;i<kNPlane;i++) {
+      pt->SetPIDsignals(seed2.GetPIDsignals(i),i);
+      pt->SetPIDTimBin(seed2.GetPIDTimBin(i),i);
+    }
 
     UInt_t * indexes3 = pt->GetBackupIndexes();
     for (Int_t i=0;i<200;i++) {
@@ -669,17 +725,18 @@ Int_t AliTRDtracker::RefitInward(AliESD* event)
     if (t.GetNumberOfClusters() >= foundMin) {
       //      UseClusters(&t);
       //CookLabel(pt, 1-fgkLabelFraction);
-      //      t.CookdEdx();
+      t.CookdEdx();
+      CookdEdxTimBin(t);
     }
     found++;
 //    cout<<found<<'\r';     
 
     if(PropagateToTPC(t)) {
       seed->UpdateTrackParams(pt, AliESDtrack::kTRDrefit);
-     //  for (Int_t i=0;i<kNPlane;i++) {
-//         seed->SetTRDsignals(pt->GetPIDsignals(i),i);
-//         seed->SetTRDTimBin(pt->GetPIDTimBin(i),i);
-//       }
+      for (Int_t i=0;i<kNPlane;i++) {
+        seed->SetTRDsignals(pt->GetPIDsignals(i),i);
+        seed->SetTRDTimBin(pt->GetPIDTimBin(i),i);
+      }
     }else{
       //if not prolongation to TPC - propagate without update
       AliTRDtrack* seed2 = new AliTRDtrack(*seed);
@@ -690,10 +747,10 @@ Int_t AliTRDtracker::RefitInward(AliESD* event)
         pt2->CookdEdx(0.,1.);
         CookdEdxTimBin(*pt2);
 	seed->UpdateTrackParams(pt2, AliESDtrack::kTRDrefit);
-       //  for (Int_t i=0;i<kNPlane;i++) {
-//           seed->SetTRDsignals(pt2->GetPIDsignals(i),i);
-//           seed->SetTRDTimBin(pt2->GetPIDTimBin(i),i);
-//         }
+        for (Int_t i=0;i<kNPlane;i++) {
+          seed->SetTRDsignals(pt2->GetPIDsignals(i),i);
+          seed->SetTRDTimBin(pt2->GetPIDTimBin(i),i);
+        }
       }
       delete pt2;
     }  
@@ -854,7 +911,7 @@ Int_t AliTRDtracker::FollowProlongation(AliTRDtrack& t, Int_t rf)
 	Int_t plane = fGeom->GetPlane(cl0->GetDetector());
 	if (plane>lastplane) continue;
 	Int_t timebin = cl0->GetLocalTimeBin();
-	AliTRDcluster * cl2= GetCluster(&t,plane, timebin);
+	AliTRDcluster * cl2= GetCluster(&t,plane, timebin,index);
 	if (cl2) {
 	  cl =cl2;	
 	  Double_t h01 = GetTiltFactor(cl);
@@ -867,44 +924,6 @@ Int_t AliTRDtracker::FollowProlongation(AliTRDtrack& t, Int_t rf)
 	  continue;
 	}             
 
-	/*
-	if(!cl){
-	  Int_t maxn = timeBin;
-	  for (Int_t i=timeBin.Find(y-road); i<maxn; i++) {
-	    AliTRDcluster* c=(AliTRDcluster*)(timeBin[i]);
-	    if (c->GetY() > y+road) break;
-	    if (c->IsUsed() > 0) continue;
-	    if((c->GetZ()-z)*(c->GetZ()-z) > 3 * sz2) continue;
-	    
-	    Double_t h01 = GetTiltFactor(c);
-	    Double_t chi2=t.GetPredictedChi2(c,h01);
-	    
-	    if (chi2 > maxChi2) continue;
-	    maxChi2=chi2;
-	    cl=c;
-	    index=timeBin.GetIndex(i);
-	  }               
-	}
-
-        if(!cl) {
-	  Int_t maxn = timeBin;
-          for (Int_t i=timeBin.Find(y-road); i<maxn; i++) {
-            AliTRDcluster* c=(AliTRDcluster*)(timeBin[i]);
-            
-            if (c->GetY() > y+road) break;
-            if (c->IsUsed() > 0) continue;
-            if((c->GetZ()-z)*(c->GetZ()-z) > 12 * sz2) continue;
-            
-            Double_t h01 = GetTiltFactor(c);
-            Double_t chi2=t.GetPredictedChi2(c, h01);
-            
-            if (chi2 > maxChi2) continue;
-            maxChi2=chi2;
-            cl=c;
-            index=timeBin.GetIndex(i);
-          }
-        } 
-	*/       
         if (cl) {
 	  
           wYclosest = cl->GetY();
@@ -912,9 +931,7 @@ Int_t AliTRDtracker::FollowProlongation(AliTRDtrack& t, Int_t rf)
           Double_t h01 = GetTiltFactor(cl);
 
           if (cl->GetNPads()<5) 
-	    t.SetSampledEdx(cl->GetQ()/dx); 
-	  //printf("Track   position\t%f\t%f\t%f\n",t.GetX(),t.GetY(),t.GetZ());
-	  //printf("Cluster position\t%d\t%f\t%f\n",cl->GetLocalTimeBin(),cl->GetY(),cl->GetZ());
+	    t.SetSampledEdx(TMath::Abs(cl->GetQ()/dx)); 
 	  Int_t det = cl->GetDetector();    
 	  Int_t plane = fGeom->GetPlane(det);
 
@@ -945,13 +962,6 @@ Int_t AliTRDtracker::FollowBackProlongation(AliTRDtrack& t)
   // layers confirms prolongation if a close cluster is found. 
   // Returns the number of clusters expected to be found in sensitive layers
 
-
-  Float_t  wIndex, wTB, wChi2;
-  Float_t  wYrt, wYclosest, wYcorrect, wYwindow;
-  Float_t  wZrt, wZclosest, wZcorrect, wZwindow;
-  Float_t  wSigmaC2, wSigmaTgl2, wSigmaY2, wSigmaZ2;
-
-  Int_t trackIndex = t.GetLabel();  
   Int_t tryAgain=fMaxGap;
 
   Double_t alpha=t.GetAlpha();
@@ -963,7 +973,8 @@ Int_t AliTRDtracker::FollowBackProlongation(AliTRDtrack& t)
   for (Int_t i=0;i<1000;i++) clusters[i]=-1;
 
   Int_t outerTB = fTrSec[0]->GetOuterTimeBin();
-  Double_t radLength, rho, x, dx, y, ymax = 0, z;
+  //Double_t radLength, rho, x, dx, y, ymax = 0, z;
+  Double_t radLength, rho, x, dx, y, z;
   Bool_t lookForCluster;
 
   Int_t expectedNumberOfClusters = 0;
@@ -971,18 +982,15 @@ Int_t AliTRDtracker::FollowBackProlongation(AliTRDtrack& t)
 
   alpha=AliTRDgeometry::GetAlpha();  // note: change in meaning
 
-  Int_t nRefPlane = fgkFirstPlane;
-  Bool_t isNewLayer = kFALSE; 
-
-  Double_t chi2;
-  Double_t minDY;
-  Int_t zone =-10;
+  //  Int_t zone =0;
   Int_t nr;
+  Float_t ratio0=0;
+  AliTRDtracklet tracklet;
+  //
   for (nr=fTrSec[0]->GetLayerNumber(t.GetX()); nr<outerTB+1; nr++) { 
-    
+   
     y = t.GetY(); 
     z = t.GetZ();
-
     // first propagate to the outer surface of the current time bin 
 
     s = t.GetSector();
@@ -992,210 +1000,83 @@ Int_t AliTRDtracker::FollowBackProlongation(AliTRDtrack& t)
     z = t.GetZ();
 
     if(!t.PropagateTo(x,radLength,rho)) break;
-    //    if (!AdjustSector(&t)) break;
     //
     // MI -fix untill correct material desription will be implemented
     //
-    Float_t angle =  t.GetAlpha();  // MI - if rotation - we go through the material 
-    if (!AdjustSector(&t)) break;
-    Int_t cross = kFALSE;
-    Int_t crosz = kFALSE;
-    if (TMath::Abs(angle -  t.GetAlpha())>0.000001) cross = kTRUE; //better to stop track
-    Int_t currentzone = fTrSec[s]->GetLayer(nr)->GetZone(z);
-    if (currentzone==-10) {cross = kTRUE,crosz=kTRUE;}  // we are in the frame
-    if (currentzone>-10){   // layer knows where we are
-      if (zone==-10) zone = currentzone;
-      if (zone!=currentzone) {
-	cross=kTRUE;  
-	crosz=kTRUE;
-      }
-    }
-    if (TMath::Abs(t.GetSnp())>0.8 && t.GetBackupTrack()==0) t.MakeBackupTrack();
-    if (cross) {
-      if (t.GetNCross()==0 && t.GetBackupTrack()==0) t.MakeBackupTrack();
-      t.IncCross();
-      if (t.GetNCross()>4) break;
-    }
+    //Int_t nrotate = t.GetNRotate();
+    if (!AdjustSector(&t)) break;    
     //
     //
-    s = t.GetSector();
-    if (!t.PropagateTo(x,radLength,rho)) break;
-
     y = t.GetY();
     z = t.GetZ();
-
-    // Barrel Tracks [SR, 04.04.2003]
-
     s = t.GetSector();
-    if (fTrSec[s]->GetLayer(nr)->IsSensitive() != 
-        fTrSec[s]->GetLayer(nr+1)->IsSensitive() ) {
-
-//      if (IsStoringBarrel()) StoreBarrelTrack(&t, nRefPlane++, kTrackBack);
-    }
-
-    if (fTrSec[s]->GetLayer(nr-1)->IsSensitive() && 
-          ! fTrSec[s]->GetLayer(nr)->IsSensitive()) {
-      isNewLayer = kTRUE;
-    } else {isNewLayer = kFALSE;}
-
-    y = t.GetY();
-    z = t.GetZ();
 
     // now propagate to the middle plane of the next time bin 
     fTrSec[s]->GetLayer(nr+1)->GetPropagationParameters(y,z,dx,rho,radLength,lookForCluster);
-    if (crosz){
-      rho = 1000*2.7; radLength = 24.01;  //TEMPORARY - aluminium in between z - will be detected using GeoModeler in future versions
-    }
+//     if (nrotate!=t.GetNRotate()){
+//       rho = 1000*2.7; radLength = 24.01;  //TEMPORARY - aluminium in between z - will be detected using GeoModeler in future versions
+//     }
     x = fTrSec[s]->GetLayer(nr+1)->GetX(); 
     if(!t.PropagateTo(x,radLength,rho)) break;
     if (!AdjustSector(&t)) break;
     s = t.GetSector();
-    if(!t.PropagateTo(x,radLength,rho)) break;
+    //    if(!t.PropagateTo(x,radLength,rho)) break;
     
     if (TMath::Abs(t.GetSnp())>0.95) break;
 
     y = t.GetY();
     z = t.GetZ();
 
-    //    if(fVocal) printf("nr+1=%d, x %f, z %f, y %f, ymax %f\n",nr+1,x,z,y,ymax);
-    //    printf("label %d, pl %d, lookForCluster %d \n",
-    //     trackIndex, nr+1, lookForCluster);
-
     if(lookForCluster) {
-//       if (clusters[nr]==-1) {
-// 	FindClusters(s,nr,nr+30,&t,clusters);
-//       }
+      if (clusters[nr]==-1) {
+	Float_t  ncl   = FindClusters(s,nr,nr+30,&t,clusters,tracklet);
+	ratio0 = ncl/Float_t(fTimeBinsPerPlane);
+	Float_t  ratio1 = Float_t(t.fN+1)/Float_t(t.fNExpected+1.);	
+	if (tracklet.GetChi2()<18.&&ratio0>0.8 && ratio1>0.6 && ratio0+ratio1>1.5 && t.GetNCross()==0 && TMath::Abs(t.GetSnp())<0.85&&t.fN>20){
+	  t.MakeBackupTrack();                            // make backup of the track until is gold
+	}
+// 	if (ncl>4){
+//  	  t.PropagateTo(tracklet.GetX());
+//  	  t.UpdateMI(tracklet);
+//  	  nr = fTrSec[0]->GetLayerNumber(t.GetX())+1;
+//  	  continue;
+// 	}
+      }
 
       expectedNumberOfClusters++;       
       t.fNExpected++;
       if (t.fX>345) t.fNExpectedLast++;
-      wIndex = (Float_t) t.GetLabel();
-      wTB = fTrSec[s]->GetLayer(nr+1)->GetTimeBinIndex();
 
       AliTRDpropagationLayer& timeBin=*(fTrSec[s]->GetLayer(nr+1));
       Double_t sy2=ExpectedSigmaY2(t.GetX(),t.GetTgl(),t.GetPt());
-      Double_t sz2=ExpectedSigmaZ2(t.GetX(),t.GetTgl());
-      if((t.GetSigmaY2() + sy2) < 0) break;
+      if((t.GetSigmaY2() + sy2) < 0) {
+	printf("problem\n");
+	break;
+      }
       Double_t road = 10.*sqrt(t.GetSigmaY2() + sy2); 
-      Double_t y=t.GetY(), z=t.GetZ();
-
-      wYrt = (Float_t) y;
-      wZrt = (Float_t) z;
-      wYwindow = (Float_t) road;
-      wSigmaC2 = (Float_t) t.GetSigmaC2();
-      wSigmaTgl2    = (Float_t) t.GetSigmaTgl2();
-      wSigmaY2 = (Float_t) t.GetSigmaY2();
-      wSigmaZ2 = (Float_t) t.GetSigmaZ2();
-      wChi2 = -1;            
       
       if (road>fgkWideRoad) {
-        if (t.GetNumberOfClusters()>4)
-          cerr<<t.GetNumberOfClusters()
-              <<"FindProlongation warning: Too broad road !\n";
         return 0;
       }      
 
       AliTRDcluster *cl=0;
       UInt_t index=0;
-
       Double_t maxChi2=fgkMaxChi2;
-
-      if (isNewLayer) { 
-        road = 3 * road;
-        //sz2 = 3 * sz2;
-        maxChi2 = 10 * fgkMaxChi2;
-      }
       
-      if (nRefPlane == fgkFirstPlane) maxChi2 = 20 * fgkMaxChi2; 
-      if (nRefPlane == fgkFirstPlane+2) maxChi2 = 15 * fgkMaxChi2;
-      if (t.GetNRotate() > 0) maxChi2 = 3 * maxChi2;
-      
-
-      wYclosest = 12345678;
-      wYcorrect = 12345678;
-      wZclosest = 12345678;
-      wZcorrect = 12345678;
-      wZwindow  = TMath::Sqrt(2.25 * 12 * sz2);   
-
-      // Find the closest correct cluster for debugging purposes
-      if (timeBin&&fVocal) {
-        minDY = 1000000;
-        for (Int_t i=0; i<timeBin; i++) {
-          AliTRDcluster* c=(AliTRDcluster*)(timeBin[i]);
-          if((c->GetLabel(0) != trackIndex) &&
-             (c->GetLabel(1) != trackIndex) &&
-             (c->GetLabel(2) != trackIndex)) continue;
-          if(TMath::Abs(c->GetY() - y) > minDY) continue;
-          //minDY = TMath::Abs(c->GetY() - y);
-          minDY = c->GetY() - y;
-          wYcorrect = c->GetY();
-          wZcorrect = c->GetZ();
-
-          Double_t h01 = GetTiltFactor(c);
-          wChi2 = t.GetPredictedChi2(c, h01);
-        }
-      }                    
-
       // Now go for the real cluster search
 
       if (timeBin) {
-	/*
-	  if (clusters[nr+1]>0) {
+	
+	if (clusters[nr+1]>0) {
 	  index = clusters[nr+1];
 	  cl    = (AliTRDcluster*)GetCluster(index);
 	  Double_t h01 = GetTiltFactor(cl);
           maxChi2=t.GetPredictedChi2(cl,h01);          
-	  }
-	*/
-
-	if (!cl){
-	  Int_t maxn = timeBin;
-	  for (Int_t i=timeBin.Find(y-road); i<maxn; i++) {
-	    AliTRDcluster* c=(AliTRDcluster*)(timeBin[i]);
-	    if (c->GetY() > y+road) break;
-	    if (c->IsUsed() > 0) continue;
-	    if((c->GetZ()-z)*(c->GetZ()-z) > 3 * sz2) continue;
-
-	    Double_t h01 = GetTiltFactor(c);
-	    chi2=t.GetPredictedChi2(c,h01);
-	    
-	    if (chi2 > maxChi2) continue;
-	    maxChi2=chi2;
-	    cl=c;
-	    index=timeBin.GetIndex(i);
-	    
-          //check is correct
-	    if((c->GetLabel(0) != trackIndex) &&
-	       (c->GetLabel(1) != trackIndex) &&
-	       (c->GetLabel(2) != trackIndex)) t.AddNWrong();
-	  }      	
 	}
-        if(!cl) {
-	  Int_t maxn = timeBin;
-          for (Int_t i=timeBin.Find(y-road); i<maxn; i++) {
-            AliTRDcluster* c=(AliTRDcluster*)(timeBin[i]);
-            
-            if (c->GetY() > y+road) break;
-            if (c->IsUsed() > 0) continue;
-	    //  if((c->GetZ()-z)*(c->GetZ()-z) > 2.25 * 12 * sz2) continue;
-	    if((c->GetZ()-z)*(c->GetZ()-z) > 12. * sz2) continue;
-	    //
-	    //            
-            Double_t h01 = GetTiltFactor(c);
-            chi2=t.GetPredictedChi2(c,h01);
-            
-            if (chi2 > maxChi2) continue;
-            maxChi2=chi2;
-            cl=c;
-            index=timeBin.GetIndex(i);
-          }
-        }        
-        
+	
         if (cl) {
-          wYclosest = cl->GetY();
-          wZclosest = cl->GetZ();
 	  if (cl->GetNPads()<5) 
-	    t.SetSampledEdx(cl->GetQ()/dx); 
+	    t.SetSampledEdx(TMath::Abs(cl->GetQ()/dx)); 
           Double_t h01 = GetTiltFactor(cl);
 	  Int_t det = cl->GetDetector();    
 	  Int_t plane = fGeom->GetPlane(det);
@@ -1205,18 +1086,26 @@ Int_t AliTRDtracker::FollowBackProlongation(AliTRDtrack& t)
 	  }
 	  if(!t.UpdateMI(cl,maxChi2,index,h01,plane)) {
 	    if(!t.Update(cl,maxChi2,index,h01)) {
-	      if(!tryAgain--) return 0;
+	      //if(!tryAgain--) return 0;
 	    }
           }  
           else tryAgain=fMaxGap;
-        }
+	  //
+	  
+	  if (cl->GetLocalTimeBin()==1&&t.fN>20 && float(t.fChi2)/float(t.fN)<5){
+	    Float_t  ratio1 = Float_t(t.fN)/Float_t(t.fNExpected);	
+	    if (tracklet.GetChi2()<18&&ratio0>0.8&&ratio1>0.6 &&ratio0+ratio1>1.5 && t.GetNCross()==0 && TMath::Abs(t.GetSnp())<0.85){
+	      t.MakeBackupTrack();                            // make backup of the track until is gold
+	    }
+	  }
+	  
+	}			
         else {
-          if (tryAgain==0) break; 
-          tryAgain--;                                                                               
+	  // if (tryAgain==0) break; 
+          //tryAgain--;                                                                               
         }
-
-        isNewLayer = kFALSE;
-
+	
+	
       }
     }  
   }
@@ -1225,8 +1114,8 @@ Int_t AliTRDtracker::FollowBackProlongation(AliTRDtrack& t)
   else
     t.SetStop(kFALSE);
   return expectedNumberOfClusters;
-
-
+  
+  
 }         
 
 //---------------------------------------------------------------------------
@@ -1318,7 +1207,7 @@ Int_t AliTRDtracker::Refit(AliTRDtrack& t, Int_t rf)
     AliTRDcluster *cl=(AliTRDcluster*)GetCluster(iCluster[nr-1]);
     Double_t h01 = GetTiltFactor(cl);
     Double_t chi2=t.GetPredictedChi2(cl, h01);
-    if (cl->GetNPads()<5) t.SetSampledEdx(cl->GetQ()/dx); 
+    if (cl->GetNPads()<5) t.SetSampledEdx(TMath::Abs(cl->GetQ()/dx)); 
 
       //t.SetSampledEdx(cl->GetQ()/dx,t.GetNumberOfClusters()); 
     t.Update(cl,chi2,iCluster[nr-1],h01);
@@ -1699,6 +1588,171 @@ void AliTRDtracker::MakeSeeds(Int_t inner, Int_t outer, Int_t turn)
     }
   }
 }            
+//__________________________________________________________________________
+void AliTRDtracker::MakeSeedsMI(Int_t /*inner*/, Int_t /*outer*/)
+{
+  //
+  // Creates  seeds using clusters between  position inner plane  and outer plane 
+  //
+
+  const Double_t maxtheta = 2;
+  const Double_t maxphi   = 1.5;
+  Int_t maxSec=AliTRDgeometry::kNsect;
+
+  //  
+  // find the maximal and minimal layer for the planes
+  // fucking "object oriented" geometry - find the time bin range for different planes
+  //
+  Int_t layers[6][2];
+  for (Int_t i=0;i<6;i++){layers[i][0]=10000; layers[i][1]=0;}
+
+  for (Int_t ns=0;ns<maxSec;ns++){
+    for (Int_t ilayer=0;ilayer<fTrSec[ns]->GetNumberOfLayers();ilayer++){
+      AliTRDpropagationLayer& layer=*(fTrSec[ns]->GetLayer(ilayer));
+      if (layer==0) continue;
+      Int_t det   = layer[0]->GetDetector();    
+      Int_t plane = fGeom->GetPlane(det);
+      if (ilayer<layers[plane][0]) layers[plane][0] = ilayer;
+      if (ilayer>layers[plane][1]) layers[plane][1] = ilayer;
+    }
+  }
+  //
+      
+  Int_t ilayer1 = layers[5][1];  // time bin in mplification region
+  Int_t ilayer2 = layers[3][1];  //
+  Int_t ilayerM = layers[4][1];  //
+  //    
+  Double_t x1 = fTrSec[0]->GetX(ilayer1);
+  Double_t x2 = fTrSec[0]->GetX(ilayer2);
+  Double_t xm = fTrSec[0]->GetX(ilayerM);
+  Double_t dist = x2-x1;
+  //  Int_t indexes1[20];
+  //Int_t indexes2[20];
+  AliTRDcluster *clusters1[15],*clusters2[15],*clustersM[15];
+  //
+  //      
+  for (Int_t ns=0; ns<maxSec; ns++) {
+    AliTRDpropagationLayer& layer1=*(fTrSec[ns]->GetLayer(ilayer1));  //select propagation layers
+    AliTRDpropagationLayer& layer2=*(fTrSec[ns]->GetLayer(ilayer2));
+    //  
+    for (Int_t icl1=0;icl1<layer1;icl1++){
+      AliTRDcluster *cl1 = layer1[icl1];
+      if (!cl1) continue;
+      Double_t y1 = cl1->GetY();
+      Double_t z1 = cl1->GetZ();
+      //
+      for (Int_t icl2=0;icl2<layer2;icl2++){
+	AliTRDcluster *cl2 = layer2[icl2];
+	if (!cl2) continue;
+	Double_t y2 = cl2->GetY();
+	Double_t z2 = cl2->GetZ();	
+	Double_t tanphi   = (y2-y1)/dist; 
+	Double_t tantheta = (z2-z1)/dist; 
+	if (TMath::Abs(tanphi)>maxphi) continue;
+	if (TMath::Abs(tantheta)>maxtheta) continue;
+	//
+	clusters1[0] = cl1;
+	clusters2[0] = cl2;
+	Double_t road =  0.5+TMath::Abs(tanphi)*1;
+	Int_t ncl=0;
+	Double_t sum1=0, sumx1=0,sum2x1=0,sumxy1=0, sumy1=0;
+	Double_t sum2=0, sumx2=0,sum2x2=0,sumxy2=0, sumy2=0;
+	//
+	for (Int_t dlayer=1;dlayer<15;dlayer++){
+	  clusters1[dlayer]=0;
+	  clusters2[dlayer]=0;
+	  AliTRDpropagationLayer& layer1C=*(fTrSec[ns]->GetLayer(ilayer1-dlayer));  //select propagation layers
+	  AliTRDpropagationLayer& layer2C=*(fTrSec[ns]->GetLayer(ilayer2-dlayer));  //
+	  Double_t yy1 = y1+(tanphi)  *(layer1C.GetX()-x1);
+	  Double_t zz1 = z1+(tantheta)*(layer1C.GetX()-x1);
+	  Double_t yy2 = y1+(tanphi)  *(layer2C.GetX()-x1);
+	  Double_t zz2 = z1+(tantheta)*(layer2C.GetX()-x1);
+	  Int_t index1 = layer1C.FindNearestCluster(yy1,zz1,road);
+	  Int_t index2 = layer2C.FindNearestCluster(yy2,zz2,road);
+	  if (index1>=0) {
+	    clusters1[dlayer]= (AliTRDcluster*)GetCluster(index1);
+	    ncl++;
+	    sum1++;
+	    Double_t dx = layer1C.GetX()-x1;
+	    sumx1 +=dx;
+	    sum2x1+=dx*dx;
+	    sumxy1+=dx*clusters1[dlayer]->GetY();	
+	    sumy1 +=clusters1[dlayer]->GetY();
+	  }
+	  if (index2>=0) {
+	    clusters2[dlayer]= (AliTRDcluster*)GetCluster(index2);
+	    ncl++;
+	    sum2++;
+	    Double_t dx = layer2C.GetX()-x2;
+	    sumx2 +=dx;
+	    sum2x2+=dx*dx;
+	    sumxy2+=dx*clusters2[dlayer]->GetY();
+	    sumy2 +=clusters2[dlayer]->GetY();
+	  }
+	}
+	if (sum1<10) continue;
+	if (sum2<10) continue;
+	//
+	Double_t det1   = sum1*sum2x1-sumx1*sumx1;
+	Double_t angle1 = (sum1*sumxy1-sumx1*sumy1)/det1;
+	Double_t pos1   = (sum2x1*sumy1-sumx1*sumxy1)/det1;  // at x1 
+	//
+	Double_t det2   = sum2*sum2x2-sumx2*sumx2;
+	Double_t angle2 = (sum2*sumxy2-sumx2*sumy2)/det2;
+	Double_t pos2   = (sum2x2*sumy2-sumx2*sumxy2)/det2;  // at x2
+	//
+	//
+
+	Double_t sumM=0, sumxM=0,sum2xM=0,sumxyM=0, sumyM=0;
+	//
+	for (Int_t dlayer=1;dlayer<15;dlayer++){
+	  clustersM[dlayer]=0;
+	  AliTRDpropagationLayer& layerM=*(fTrSec[ns]->GetLayer(ilayerM-dlayer));  //select propagation layers
+	  Double_t yyM = y1+(tanphi)  *(layerM.GetX()-x1);
+	  Double_t zzM = z1+(tantheta)*(layerM.GetX()-x1);
+	  Int_t indexM = layerM.FindNearestCluster(yyM,zzM,road);
+	  if (indexM>=0) {
+	    clustersM[dlayer]= (AliTRDcluster*)GetCluster(indexM);
+	    ncl++;
+	    sumM++;
+	    Double_t dx = layerM.GetX()-xm;
+	    sumxM +=dx;
+	    sum2xM+=dx*dx;
+	    sumxyM+=dx*clustersM[dlayer]->GetY();	
+	    sumyM +=clustersM[dlayer]->GetY();
+	  }
+	}
+	Double_t detM   = sumM*sum2xM-sumxM*sumxM;
+	Double_t posM=0, angleM=0;
+	if (TMath::Abs(detM)>0.0000001){
+	  angleM = (sumM*sumxyM-sumxM*sumyM)/detM;
+	  posM   = (sum2xM*sumyM-sumxM*sumxyM)/detM;  // at xm
+	}
+	//
+
+	if (ncl>15){
+	  TTreeSRedirector& cstream = *fDebugStreamer;
+	  cstream<<"Seeds"<<
+	    "Ncl="<<ncl<<
+	    "SumM="<<sumM<<
+	    "x1="<<x1<<
+	    "x2="<<x2<<
+	    "Cl1.="<<cl1<<
+	    "Cl2.="<<cl2<<
+	    "Phi="<<tanphi<<
+	    "Theta="<<tantheta<<
+	    "Pos1="<<pos1<<
+	    "Pos2="<<pos2<<
+	    "PosM="<<posM<<
+	    "Angle1="<<angle1<<
+	    "Angle2="<<angle2<<
+	    "AngleM="<<angleM<<
+	    "\n";
+	}
+      }
+    }
+  }
+}            
 
 //_____________________________________________________________________________
 Int_t AliTRDtracker::ReadClusters(TObjArray *array, TTree *ClusterTree) const
@@ -1737,10 +1791,10 @@ Int_t AliTRDtracker::ReadClusters(TObjArray *array, TTree *ClusterTree) const
     // Loop through all TRD digits
     for (Int_t iCluster = 0; iCluster < nCluster; iCluster++) { 
       c = (AliTRDcluster*)clusterArray->UncheckedAt(iCluster);
-      if (c->GetNPads()>3&&(iCluster%3>0)) {
-	delete clusterArray->RemoveAt(iCluster);
-	continue;
-      }
+//       if (c->GetNPads()>3&&(iCluster%3>0)) {
+// 	delete clusterArray->RemoveAt(iCluster);
+// 	continue;
+//       }
       //      AliTRDcluster *co = new AliTRDcluster(*c);  //remove unnecesary coping - + clusters are together in memory
       AliTRDcluster *co = c;
       co->SetSigmaY2(c->GetSigmaY2() * fSY2corr);
@@ -1939,7 +1993,6 @@ AliTRDtracker::AliTRDtrackingSector::AliTRDtrackingSector(AliTRDgeometry* geo, I
   //
   // AliTRDtrackingSector Constructor
   //
-
   AliTRDpadPlane *padPlane = 0;
 
   fGeom = geo;
@@ -2097,11 +2150,12 @@ AliTRDtracker::AliTRDtrackingSector::AliTRDtrackingSector(AliTRDgeometry* geo, I
     }
 
     ymax          = fGeom->GetChamberWidth(plane)/2.;
-    //
     // Modidified for new pad plane class, 22.04.05 (C.B.)
     // ymaxsensitive = (fPar->GetColPadSize(plane)*fPar->GetColMax(plane)-4)/2.;
     padPlane = fPar->GetPadPlane(plane,0);
     ymaxsensitive = (padPlane->GetColSize(1)*padPlane->GetNcols()-4)/2.;
+
+    //    ymaxsensitive = (fPar->GetColPadSize(plane)*fPar->GetColMax(plane)-4)/2.;
     
     for(Int_t ch = 0; ch < kNchambers; ch++) {
       zmax[ch] = fGeom->GetChamberLength(plane,ch)/2;
@@ -2109,16 +2163,18 @@ AliTRDtracker::AliTRDtrackingSector::AliTRDtrackingSector(AliTRDgeometry* geo, I
       // Modidified for new pad plane class, 22.04.05 (C.B.)
       //Float_t pad = fPar->GetRowPadSize(plane,ch,0);
       Float_t pad = padPlane->GetRowSize(1);
+      //Float_t pad = fPar->GetRowPadSize(plane,ch,0);
       Float_t row0 = fPar->GetRow0(plane,ch,0);
       Int_t nPads = fPar->GetRowMax(plane,ch,0);
       zmaxsensitive[ch] = Float_t(nPads)*pad/2.;      
       //      zc[ch] = (pad * nPads)/2 + row0 - pad/2;
-      zc[ch] = (pad * nPads)/2 + row0;
+      //      zc[ch] = (pad * nPads)/2 + row0;
+      zc[ch] = -(pad * nPads)/2 + row0;
       //zc[ch] = row0+zmax[ch]-AliTRDgeometry::RpadW();
 
     }
 
-    dx  = fPar->GetDriftVelocity()
+    dx  = fgkDriftCorrection*fPar->GetDriftVelocity()
         / fPar->GetSamplingFrequency();
     rho = 0.00295 * 0.85; radLength = 11.0;  
 
@@ -2130,7 +2186,7 @@ AliTRDtracker::AliTRDtrackingSector::AliTRDtrackingSector(AliTRDgeometry* geo, I
     steps = (Int_t) (dxAmp/dx);
 
     for(tb = 0; tb < steps; tb++) {
-      x = x0 + tb * dx + dx/2;
+      x = x0 + tb * dx + dx/2+ fgkOffsetX;
       tbIndex = CookTimeBinIndex(plane, -tb-1);
       ppl = new AliTRDpropagationLayer(x,dx,rho,radLength,tbIndex);
       ppl->SetYmax(ymax,ymaxsensitive);
@@ -2148,12 +2204,13 @@ AliTRDtracker::AliTRDtrackingSector::AliTRDtrackingSector(AliTRDgeometry* geo, I
     InsertLayer(ppl);
 
     // Drift region
-    dx = fPar->GetDriftVelocity()
+
+    dx = fgkDriftCorrection*fPar->GetDriftVelocity()
        / fPar->GetSamplingFrequency();
     steps = (Int_t) (dxDrift/dx);
 
     for(tb = 0; tb < steps; tb++) {
-      x = x0 - tb * dx - dx/2;
+      x = x0 - tb * dx - dx/2 + fgkOffsetX;                      //temporary fix - fix it the parameters
       tbIndex = CookTimeBinIndex(plane, tb);
 
       ppl = new AliTRDpropagationLayer(x,dx,rho,radLength,tbIndex);
@@ -2229,7 +2286,8 @@ Int_t  AliTRDtracker::AliTRDtrackingSector::CookTimeBinIndex(Int_t plane, Int_t 
 
   Double_t dxAmp = (Double_t) fGeom->CamHght();   // Amplification region
   Double_t dxDrift = (Double_t) fGeom->CdrHght(); // Drift region  
-  Double_t dx = (Double_t) fPar->GetDriftVelocity()
+  
+  Double_t dx = fgkDriftCorrection*(Double_t) fPar->GetDriftVelocity()
                          / fPar->GetSamplingFrequency();
 
   Int_t tbAmp = fPar->GetTimeBefore();
@@ -2397,6 +2455,10 @@ Int_t AliTRDtracker::AliTRDtrackingSector::Find(Double_t x) const
   return m;
 }             
 
+
+
+
+
 //______________________________________________________
 void AliTRDtracker::AliTRDpropagationLayer::SetZ(Double_t* center, Double_t *w, Double_t *wsensitive )
 {
@@ -2424,7 +2486,7 @@ void AliTRDtracker::AliTRDpropagationLayer::SetHoles(Bool_t *holes)
 
 
 
-void AliTRDtracker::AliTRDpropagationLayer::GetPropagationParameters(
+Bool_t AliTRDtracker::AliTRDpropagationLayer::GetPropagationParameters(
         Double_t y, Double_t z, Double_t &dx, Double_t &rho, Double_t &radLength, 
         Bool_t &lookForCluster) const
 {
@@ -2467,15 +2529,15 @@ void AliTRDtracker::AliTRDpropagationLayer::GetPropagationParameters(
 	radLength = 36.66;
       }
     }else{
-      rho = 2.7; radLength = 24.01;  //aluminium in between
+      cross = kTRUE; rho = 2.7; radLength = 24.01;  //aluminium in between
     }        
   }
   //
-  if (fTimeBinIndex>=0) return;
+  if (fTimeBinIndex>=0) return cross;
   //
   //
   // check hole
-  if (fHole==kFALSE) return;
+  if (fHole==kFALSE) return cross;
   //
   for(Int_t ch = 0; ch < (Int_t) kZones; ch++) {
     if  (TMath::Abs(z - fZc[ch]) < fZmax[ch]){ 
@@ -2486,7 +2548,7 @@ void AliTRDtracker::AliTRDpropagationLayer::GetPropagationParameters(
       }    
     }
   }
-  return;
+  return cross;
 }
 
 Int_t  AliTRDtracker::AliTRDpropagationLayer::GetZone( Double_t z) const
@@ -2543,15 +2605,42 @@ Int_t AliTRDtracker::AliTRDpropagationLayer::Find(Double_t y) const {
   return m;
 }    
 
+Int_t AliTRDtracker::AliTRDpropagationLayer::FindNearestCluster(Double_t y, Double_t z, Double_t maxroad) const 
+{
+  //
+  // Returns index of the cluster nearest to the given y,z
+  //
+  Int_t index = -1;
+  Int_t maxn = fN;
+  Double_t mindist = maxroad;			
+  Float_t padlength =-1;
+  //
+  for (Int_t i=Find(y-maxroad); i<maxn; i++) {
+    AliTRDcluster* c=(AliTRDcluster*)(fClusters[i]);
+    if (padlength<0){
+      padlength = TMath::Sqrt(c->GetSigmaZ2()*12); 
+    }
+    //
+    if (c->GetY() > y+maxroad) break;
+    if((c->GetZ()-z)*(c->GetZ()-z) > padlength*0.75) continue;      
+    if (TMath::Abs(c->GetY()-y)<mindist){
+      mindist = TMath::Abs(c->GetY()-y);
+      index = GetIndex(i);
+    }        
+  }						
+  return index;
+}             
+
+
 //---------------------------------------------------------
 
 Double_t AliTRDtracker::GetTiltFactor(const AliTRDcluster* c) {
 //
 //  Returns correction factor for tilted pads geometry 
 //
-
   AliTRDpadPlane *padPlane = fPar->GetPadPlane(0,0);
   Double_t h01 = sin(TMath::Pi() / 180.0 * padPlane->GetTiltingAngle());
+  //Double_t h01 = sin(TMath::Pi() / 180.0 * fPar->GetTiltingAngle());
   Int_t det = c->GetDetector();    
   Int_t plane = fGeom->GetPlane(det);
 
@@ -2630,169 +2719,448 @@ void AliTRDtracker::CookdEdxTimBin(AliTRDtrack& TRDtrack)
 } // end of function
 
 
-Int_t AliTRDtracker::FindClusters(Int_t sector, Int_t t0, Int_t t1, AliTRDtrack * track, Int_t *clusters)
+Int_t AliTRDtracker::FindClusters(Int_t sector, Int_t t0, Int_t t1, AliTRDtrack * track, Int_t *clusters,AliTRDtracklet&tracklet)
 {
   //
   //
   //  try to find nearest clusters to the track in timebins from t0 to t1 
   //  
   //
-  Double_t x[1000],yt[1000],zt[10000];
-  Double_t dz[1000],dy[10000];
-  Int_t    indexes[2][10000];
-  AliTRDcluster *cl[2][10000];
-  
-  for (Int_t it=t0;it<t1; it++){
-    clusters[it]=-2;
-    indexes[0][it]=-2;              //reset indexes1
-    indexes[1][it]=-2;              //reset indexes1
+  //  
+  // correction coeficients   - depends on TRD parameters  - to be changed according it
+  //
+
+  Double_t x[100],yt[100],zt[100];
+  Double_t xmean=0;   //reference x
+  Double_t dz[10][100],dy[10][100];
+  Float_t zmean[100], nmean[100];
+  Int_t    clfound=0;
+  Int_t    indexes[10][100];    // indexes of the clusters in the road
+  AliTRDcluster *cl[10][100];   // pointers to the clusters in the road
+  Int_t    best[10][100];       // index of best matching cluster 
+  //
+  //
+  TClonesArray array0("AliTRDcluster",1);
+  TClonesArray array1("AliTRDcluster",1);
+  for (Int_t it=0;it<t1-t0; it++){
     x[it]=0;
     yt[it]=0;
     zt[it]=0;
-    dz[it]=0;
-    dy[it]=0;
-    cl[0][it]=0;
-    cl[1][it]=0;
+    clusters[it+t0]=-2;
+    zmean[it]=0;
+    nmean[it]=0;
+    //
+    for (Int_t ih=0;ih<10;ih++){
+      indexes[ih][it]=-2;              //reset indexes1
+      cl[ih][it]=0;
+      dz[ih][it]=-100;
+      dy[ih][it]=-100;
+      best[ih][it]=0;
+    }
   }  
   //
   Double_t x0 = track->GetX();
-  Double_t sy2=ExpectedSigmaY2(x0,track->GetTgl(),track->GetPt());
-  Double_t sz2=ExpectedSigmaZ2(x0,track->GetTgl());
-  Double_t road = 10.*sqrt(track->GetSigmaY2() + sy2);
+  Double_t sigmaz = TMath::Sqrt(track->GetSigmaZ2());
   Int_t nall=0;
   Int_t nfound=0;
+  Double_t h01 =0;
+  Int_t plane =-1;
+  Float_t padlength=0;
+  AliTRDtrack track2(*track);
+  Float_t snpy = track->GetSnp();
+  Float_t tany = TMath::Sqrt(snpy*snpy/(1.-snpy*snpy)); 
+  if (snpy<0) tany*=-1;
+  //
+  Double_t sy2=ExpectedSigmaY2(x0,track->GetTgl(),track->GetPt());
+  Double_t sz2=ExpectedSigmaZ2(x0,track->GetTgl());
+  Double_t road = 15.*sqrt(track->GetSigmaY2() + sy2);
+  if (road>6.) road=6.;
 
-  for (Int_t it=t0;it<t1;it++){
-    Double_t maxChi2=fgkMaxChi2;      
-    AliTRDpropagationLayer& timeBin=*(fTrSec[sector]->GetLayer(it));
+  //
+  for (Int_t it=0;it<t1-t0;it++){
+    Double_t maxChi2[2]={fgkMaxChi2,fgkMaxChi2};      
+    AliTRDpropagationLayer& timeBin=*(fTrSec[sector]->GetLayer(it+t0));
     if (timeBin==0) continue;  // no indexes1
     Int_t maxn = timeBin;
     x[it] = timeBin.GetX();
-    Double_t  y,z;
-    if (!track->GetProlongation(x[it],y,z)) continue;  
-    yt[it]=y;
-    zt[it]=z;
+    track2.PropagateTo(x[it]);
+    yt[it] = track2.GetY();
+    zt[it] = track2.GetZ();
+    
+    Double_t  y=yt[it],z=zt[it];
     Double_t chi2 =1000000;
     nall++;
     //
-    // find nearest cluster at given pad
+    // find 2 nearest cluster at given time bin
+    // 
+    // 
     for (Int_t i=timeBin.Find(y-road); i<maxn; i++) {
       AliTRDcluster* c=(AliTRDcluster*)(timeBin[i]);
-      Double_t h01 = GetTiltFactor(c);
-      if (c->GetY() > y+road) break;
-      if (c->IsUsed() > 0) continue;
-      if((c->GetZ()-z)*(c->GetZ()-z) > 3 * sz2) continue;      
-      chi2=track->GetPredictedChi2(c,h01);
-      if (chi2 > maxChi2) continue;
-      maxChi2=chi2;
-      cl[0][it]=c;
-      indexes[0][it] =timeBin.GetIndex(i);         
-    }         
-    //
-    // find nearest cluster also in adjacent 2 pads
-    //
-    for (Int_t i=timeBin.Find(y-road); i<maxn; i++) {
-      AliTRDcluster* c=(AliTRDcluster*)(timeBin[i]);	
-      Double_t h01 = GetTiltFactor(c);
-      if (c->GetY() > y+road) break;
-      if (c->IsUsed() > 0) continue;
-      if((c->GetZ()-z)*(c->GetZ()-z) >  12 * sz2) continue;
-      chi2=track->GetPredictedChi2(c,h01);	
-      if (chi2 > maxChi2) continue;
-      maxChi2=chi2;
-      cl[1][it]=c;
-      indexes[1][it]=timeBin.GetIndex(i);
-      if (!cl[0][it]) {
-	cl[0][it]=c;
-	indexes[0][it]=timeBin.GetIndex(i);
+      h01 = GetTiltFactor(c);
+      if (plane<0){
+	Int_t det = c->GetDetector();    
+	plane = fGeom->GetPlane(det);
+	padlength = TMath::Sqrt(c->GetSigmaZ2()*12.);
       }
-    }    
-    if (cl[0][it]||cl[1][it]) nfound++;
+      //      if (c->GetLocalTimeBin()==0) continue;
+      if (c->GetY() > y+road) break;
+      if((c->GetZ()-z)*(c->GetZ()-z) > 12. * sz2) continue;      
+
+      Double_t dist = TMath::Abs(c->GetZ()-z);
+      if (dist> (0.5*padlength+6.*sigmaz)) continue;   // 6 sigma boundary cut
+      Double_t cost = 0;
+      //
+      if (dist> (0.5*padlength-sigmaz)){   //  sigma boundary cost function
+	cost =  (dist-0.5*padlength)/(2.*sigmaz);
+	if (cost>-1) cost= (cost+1.)*(cost+1.);
+	else cost=0;
+      }      
+      //      Int_t label = TMath::Abs(track->GetLabel());
+      //      if (c->GetLabel(0)!=label && c->GetLabel(1)!=label&&c->GetLabel(2)!=label) continue;
+      chi2=track2.GetPredictedChi2(c,h01)+cost;
+      //
+      clfound++;      
+      if (chi2 > maxChi2[1]) continue;
+      
+      for (Int_t ih=2;ih<9; ih++){  //store the clusters in the road
+	if (cl[ih][it]==0){
+	  cl[ih][it] = c;
+	  indexes[ih][it] =timeBin.GetIndex(i);   // index - 9 - reserved for outliers
+	  break;
+	}
+      }
+      //
+      if (chi2 <maxChi2[0]){
+	maxChi2[1]     = maxChi2[0];
+	maxChi2[0]     = chi2;
+	indexes[1][it] = indexes[0][it];
+	cl[1][it]      = cl[0][it];
+	indexes[0][it] = timeBin.GetIndex(i);
+	cl[0][it]      = c;
+	continue;
+      }
+      maxChi2[1]=chi2;
+      cl[1][it] = c;
+      indexes[1][it] =timeBin.GetIndex(i); 
+    }         
+    if (cl[0][it]){
+      nfound++;
+      xmean += x[it];
+    }
   }
   //
-  if (nfound<5) return 0;  
+  if (nfound<4) return 0;  
+  xmean /=Float_t(nfound);     // middle x
+  track2.PropagateTo(xmean);   // propagate track to the center
   //
   // choose one of the variants
   //
-  Int_t changes[2]={0,0};
-  Float_t sigmay[2]={1000,1000};
-  Float_t meany[2] ={1000,1000};
-  Float_t meanz[2] ={1000,1000};
-  Int_t sumall[2]  ={0,0};
-  Int_t ngood[2] ={0,0};
-  Int_t nbad[2]  ={0,0};
+  Int_t changes[10];
+  Float_t sumz      = 0;
+  Float_t sum       = 0;
+  Double_t sumdy    = 0;
+  Double_t sumdy2   = 0;
+  Double_t sumx     = 0;
+  Double_t sumxy    = 0;
+  Double_t sumx2    = 0;
+  Double_t mpads    = 0;
   //
+  Int_t   ngood[10];
+  Int_t   nbad[10];
   //
-  for (Int_t ih=0; ih<2;ih++){    
-    Float_t lastz    =-10000;
-    Float_t sumz   =0;
-    Float_t sum    =0;
-    Double_t sumdy = 0;
-    Double_t sumdy2= 0;
-    //
-    // how many changes ++ mean z ++mean y ++ sigma y
-    for (Int_t it=t0;it<t1;it++){
+  Double_t meanz[10];
+  Double_t moffset[10];    // mean offset
+  Double_t mean[10];       // mean value
+  Double_t angle[10];      // angle
+  //
+  Double_t smoffset[10];   // sigma of mean offset
+  Double_t smean[10];      // sigma of mean value
+  Double_t sangle[10];     // sigma of angle
+  Double_t smeanangle[10]; // correlation
+  //
+  Double_t sigmas[10];     
+  Double_t tchi2s[10];      // chi2s for tracklet
+  //
+  // calculate zmean
+  //
+  for (Int_t it=0;it<t1-t0;it++){
+    if (!cl[0][it]) continue;
+    for (Int_t dt=-3;dt<=3;dt++){
+      if (it+dt<0) continue;
+      if (it+dt>t1) continue;
+      if (!cl[0][it+dt]) continue;
+      zmean[it]+=cl[0][it+dt]->GetZ();
+      nmean[it]+=1.;
+    }
+    zmean[it]/=nmean[it]; 
+  }
+  //
+  for (Int_t it=0; it<t1-t0;it++){
+    best[0][it]=0;
+    for (Int_t ih=0;ih<10;ih++){
+      dz[ih][it]=-100;
+      dy[ih][it]=-100;
       if (!cl[ih][it]) continue;
-      sumall[ih]++;
-      if (lastz<-9999) lastz = cl[ih][it]->GetZ();
-      if (TMath::Abs(lastz-cl[ih][it]->GetZ())>1) {
-	lastz = cl[ih][it]->GetZ();
-	changes[ih]++;
+      Float_t poscor =  fgkCoef*(cl[ih][it]->GetLocalTimeBin() - fgkMean)+fgkOffset;      
+      dz[ih][it]  = cl[ih][it]->GetZ()- zt[it];                               // calculate distance from track  in z
+      dy[ih][it]  = cl[ih][it]->GetY()+ dz[ih][it]*h01 - poscor  -yt[it];     //                                in y
+    }
+    // minimize changes
+    if (!cl[0][it]) continue;
+    if (TMath::Abs(cl[0][it]->GetZ()-zmean[it])> padlength*0.8 &&cl[1][it])
+      if (TMath::Abs(cl[1][it]->GetZ()-zmean[it])< padlength*0.5){
+	best[0][it]=1;
       }
-      sumz = cl[ih][it]->GetZ();
+  }
+  //
+  // iterative choosing of "best path"
+  //
+  //
+  Int_t label = TMath::Abs(track->GetLabel());
+  Int_t bestiter=0;
+  //
+  for (Int_t iter=0;iter<9;iter++){
+    //
+    changes[iter]= 0;
+    sumz      = 0; sum=0; sumdy=0;sumdy2=0;sumx=0;sumx2=0;sumxy=0;mpads=0; ngood[iter]=0; nbad[iter]=0; 
+    // linear fit
+    for (Int_t it=0;it<t1-t0;it++){
+      if (!cl[best[iter][it]][it]) continue;
+      //calculates pad-row changes
+      Double_t zbefore= cl[best[iter][it]][it]->GetZ();
+      Double_t zafter = cl[best[iter][it]][it]->GetZ();
+      for (Int_t itd = it-1; itd>=0;itd--) {
+	if (cl[best[iter][itd]][itd]) {
+	  zbefore= cl[best[iter][itd]][itd]->GetZ();
+	  break;
+	}
+      }
+      for (Int_t itd = it+1; itd<t1-t0;itd++) {
+	if (cl[best[iter][itd]][itd]) {
+	  zafter= cl[best[iter][itd]][itd]->GetZ();
+	  break;
+	}
+      }
+      if (TMath::Abs(cl[best[iter][it]][it]->GetZ()-zbefore)>0.1&&TMath::Abs(cl[best[iter][it]][it]->GetZ()-zafter)>0.1) changes[iter]++;
+      //
+      Double_t dx = x[it]-xmean;  // distance to reference x
+      sumz += cl[best[iter][it]][it]->GetZ();      
       sum++;
-      Double_t h01 = GetTiltFactor(cl[ih][it]);
-      dz[it]  = cl[ih][it]->GetZ()- zt[it]; 
-      dy[it]  = cl[ih][it]->GetY()+ dz[it]*h01 -yt[it];
-      sum++;
-      sumdy += dy[it];
-      sumdy2+= dy[it]*dy[it];
-      Int_t label = TMath::Abs(track->GetLabel());
-      if (cl[ih][it]->GetLabel(0)==label || cl[ih][it]->GetLabel(1)==label||cl[ih][it]->GetLabel(2)==label){
-	ngood[ih]++;
+      sumdy += dy[best[iter][it]][it];
+      sumdy2+= dy[best[iter][it]][it]*dy[best[iter][it]][it];
+      sumx  += dx;
+      sumx2 += dx*dx;
+      sumxy  += dx*dy[best[iter][it]][it];
+      mpads += cl[best[iter][it]][it]->GetNPads();
+      if (cl[best[iter][it]][it]->GetLabel(0)==label || cl[best[iter][it]][it]->GetLabel(1)==label||cl[best[iter][it]][it]->GetLabel(2)==label){
+	ngood[iter]++;
       }
       else{
-	nbad[ih]++;
+	nbad[iter]++;
       }
     }
-    if (sumall[ih]>4){
-      meanz[ih]  = sumz/sum;    
-      meany[ih]  = sumdy/sum;
-      sigmay[ih] = TMath::Sqrt(sumdy2/sum-meany[ih]*meany[ih]);
-    }
-  }
-  Int_t best =0;
-  /*
-    if (sumall[0]<sumall[1]-2&&sigmay[1]<0.1){
-    if (sigmay[1]<sigmay[0]) best = 1;               // if sigma is better
-    }
-  */
-  Float_t quality0 = (sigmay[0]+TMath::Abs(meany[0]))*(1.+Float_t(changes[0])/Float_t(sumall[0]));
-  Float_t quality1 = (sigmay[1]+TMath::Abs(meany[1]))*(1.+Float_t(changes[1])/Float_t(sumall[1]));
-
-  if (quality0>quality1){
-    best = 1;
-  }
-
-
-  //
-  for (Int_t it=t0;it<t1;it++){
-    if (!cl[best][it]) continue;
-    Double_t h01 = GetTiltFactor(cl[best][it]);
-    dz[it]  = cl[best][it]->GetZ()- zt[it]; 
-    dy[it]  = cl[best][it]->GetY()+ dz[it]*h01 -yt[it];
     //
-    if (TMath::Abs(dy[it])<2.5*sigmay[best])
-      clusters[it] = indexes[best][it];    
-  }
+    // calculates line parameters
+    //
+    Double_t det  = sum*sumx2-sumx*sumx;
+    angle[iter]   = (sum*sumxy-sumx*sumdy)/det;
+    mean[iter]    = (sumx2*sumdy-sumx*sumxy)/det;
+    meanz[iter]   = sumz/sum;    
+    moffset[iter] = sumdy/sum;
+    mpads        /= sum;                         // mean number of pads
+    //
+    //
+    Double_t  sigma2 = 0;   // normalized residuals - for line fit
+    Double_t  sigma1 = 0;   // normalized residuals - constant fit
+    //
+    for (Int_t it=0;it<t1-t0;it++){
+      if (!cl[best[iter][it]][it]) continue;
+      Double_t dx = x[it]-xmean;
+      Double_t ytr = mean[iter]+angle[iter]*dx;
+      sigma2 += (dy[best[iter][it]][it]-ytr)*(dy[best[iter][it]][it]-ytr);
+      sigma1 +=  (dy[best[iter][it]][it]-moffset[iter])*(dy[best[iter][it]][it]-moffset[iter]);
+      sum++;
+    }
+    sigma2      /=(sum-2);                    // normalized residuals
+    sigma1      /=(sum-1);                    // normalized residuals
+    //
+    smean[iter]       = sigma2*(sumx2/det);   // estimated error2 of mean
+    sangle[iter]      = sigma2*(sum/det);     // estimated error2 of angle
+    smeanangle[iter]  = sigma2*(-sumx/det);   // correlation
+    //
+    //
+    sigmas[iter]  = TMath::Sqrt(sigma1);      //
+    smoffset[iter]= (sigma1/sum)+0.01*0.01;             // sigma of mean offset + unisochronity sigma 
+    //
+    // iterative choosing of "better path"
+    //
+    for (Int_t it=0;it<t1-t0;it++){
+      if (!cl[best[iter][it]][it]) continue;
+      //
+      Double_t sigmatr2 = smoffset[iter]+0.5*tany*tany;             //add unisochronity + angular effect contribution
+      Double_t sweight  = 1./sigmatr2+1./track->fCyy;
+      Double_t weighty  = (moffset[iter]/sigmatr2)/sweight;         // weighted mean
+      Double_t sigmacl  = TMath::Sqrt(sigma1*sigma1+track->fCyy);   //
+      Double_t mindist=100000; 
+      Int_t ihbest=0;
+      for (Int_t ih=0;ih<10;ih++){
+	if (!cl[ih][it]) break;
+	Double_t dist2 = (dy[ih][it]-weighty)/sigmacl;
+	dist2*=dist2;    //chi2 distance
+	if (dist2<mindist){
+	  mindist = dist2;
+	  ihbest =ih;
+	}
+      }
+      best[iter+1][it]=ihbest;
+    }
+    //
+    //  update best hypothesy if better chi2 according tracklet position and angle
+    //
+    Double_t sy2 = smean[iter]  + track->fCyy;
+    Double_t sa2 = sangle[iter] + track->fCee;
+    Double_t say = track->fCey;
+    //    Double_t chi20 = mean[bestiter]*mean[bestiter]/sy2+angle[bestiter]*angle[bestiter]/sa2;
+    // Double_t chi21 = mean[iter]*mean[iter]/sy2+angle[iter]*angle[iter]/sa2;
+
+    Double_t detchi    = sy2*sa2-say*say;
+    Double_t invers[3] = {sa2/detchi, sy2/detchi, -say/detchi};   //inverse value of covariance matrix  
     
-  if (nbad[0]>4){
-    nbad[0] = nfound;
+    Double_t chi20 = mean[bestiter]*mean[bestiter]*invers[0]+angle[bestiter]*angle[bestiter]*invers[1]+
+      2.*mean[bestiter]*angle[bestiter]*invers[2];
+    Double_t chi21 = mean[iter]*mean[iter]*invers[0]+angle[iter]*angle[iter]*invers[1]+
+      2*mean[iter]*angle[iter]*invers[2];
+    tchi2s[iter] =chi21;
+    //
+    if (changes[iter]<=changes[bestiter] && chi21<chi20) {
+      bestiter =iter;      
+    }
   }
+  //
+  //set clusters 
+  //
+  Double_t sigma2 = sigmas[0];   // choose as sigma  from 0 iteration
+  //if (tchi2s[bestiter]>25.) sigma2*=tchi2s[bestiter]/25.;
+  //if (tchi2s[bestiter]>25.) sigma2=1000.;  // dont'accept
+
+  Double_t expectederr = sigma2*sigma2+0.01*0.01;
+  if (mpads>3.5) expectederr  +=   (mpads-3.5)*0.04;
+  if (changes[bestiter]>1) expectederr+=   changes[bestiter]*0.01; 
+  expectederr+=(0.03*(tany-fgkExB)*(tany-fgkExB))*15;
+  //  if (tchi2s[bestiter]>18.) expectederr*= tchi2s[bestiter]/18.;
+  //expectederr+=10000;
+  for (Int_t it=0;it<t1-t0;it++){
+    if (!cl[best[bestiter][it]][it]) continue;
+    Float_t poscor =  fgkCoef*(cl[best[bestiter][it]][it]->GetLocalTimeBin() - fgkMean)+fgkOffset;          
+    cl[best[bestiter][it]][it]->SetSigmaY2(expectederr);  // set cluster error
+    if (!cl[best[bestiter][it]][it]->IsUsed()){
+      cl[best[bestiter][it]][it]->SetY( cl[best[bestiter][it]][it]->GetY()-poscor);  // ExB corrction correction    
+      cl[best[bestiter][it]][it]->Use();
+    }
+    clusters[it+t0] = indexes[best[bestiter][it]][it];    
+  } 
+  //
+  // set tracklet parameters
+  //
+  Double_t trackleterr2 = smoffset[bestiter]+0.01*0.01;
+  if (mpads>3.5) trackleterr2  +=   (mpads-3.5)*0.04;
+  trackleterr2+=   changes[bestiter]*0.01;
+  trackleterr2*=   TMath::Max(14.-nfound,1.);
+  trackleterr2+=   0.2*(tany-fgkExB)*(tany-fgkExB); 
+  //
+  tracklet.Set(xmean, track2.GetY()+moffset[bestiter], meanz[bestiter], track2.GetAlpha(), trackleterr2);  //set tracklet parameters
+  tracklet.SetTilt(h01);
+  tracklet.SetP0(mean[bestiter]);
+  tracklet.SetP1(angle[bestiter]);
+  tracklet.SetN(nfound);
+  tracklet.SetNCross(changes[bestiter]);
+  tracklet.SetPlane(plane);
+  tracklet.SetSigma2(expectederr);
+  tracklet.SetChi2(tchi2s[bestiter]);
+  track->fTracklets[plane] = tracklet;
+  track->fNWrong+=nbad[0];
+  //
+  // Debuging part
+  //
+  TTreeSRedirector& cstream = *fDebugStreamer;
+  AliTRDcluster dummy;
+  Double_t dy0[100];
+  Double_t dyb[100];  
+  for (Int_t it=0;it<t1-t0;it++){
+    dy0[it] = dy[0][it];
+    dyb[it] = dy[best[bestiter][it]][it];
+    if(cl[0][it]) {
+      new(array0[it]) AliTRDcluster(*cl[0][it]);
+    }
+    else{
+      new(array0[it]) AliTRDcluster(dummy);
+    }
+    if(cl[best[bestiter][it]][it]) {
+      new(array1[it]) AliTRDcluster(*cl[best[bestiter][it]][it]);
+    }
+    else{
+      new(array1[it]) AliTRDcluster(dummy);
+    }
+  }
+  TGraph graph0(t1-t0,x,dy0);
+  TGraph graph1(t1-t0,x,dyb);
+  TGraph graphy(t1-t0,x,yt);
+  TGraph graphz(t1-t0,x,zt);
+  //
+  //
+  cstream<<"tracklet"<<
+    "track.="<<track<<                                       // track parameters
+    "tany="<<tany<<                                          // tangent of the local track angle 
+    "xmean="<<xmean<<                                        // xmean - reference x of tracklet  
+    "tilt="<<h01<<                                           // tilt angle
+    "nall="<<nall<<                                          // number of foundable clusters 
+    "nfound="<<nfound<<                                      // number of found clusters
+    "clfound="<<clfound<<                                    // total number of found clusters in road 
+    "mpads="<<mpads<<                                        // mean number of pads per cluster
+    "plane="<<plane<<                                        // plane number 
+    "road="<<road<<                                          // the width of the used road
+    "graph0.="<<&graph0<<                                    // x - y = dy for closest cluster
+    "graph1.="<<&graph1<<                                    // x - y = dy for second closest cluster    
+    "graphy.="<<&graphy<<                                    // y position of the track
+    "graphz.="<<&graphz<<                                    // z position of the track
+    "fCl.="<<&array0<<                                       // closest cluster
+    "fCl2.="<<&array1<<                                      // second closest cluster
+    //
+    "bestiter="<<bestiter<<                                  // best iteration number 
+    "tracklet.="<<&tracklet<<                                // corrspond to the best iteration
+    "tchi20="<<tchi2s[0]<<                                   // chi2 of cluster in the 0 iteration
+    "tchi2b="<<tchi2s[bestiter]<<                            // chi2 of cluster in the best  iteration
+    "sigmas0="<<sigmas[0]<<                                  // residuals sigma 
+    "sigmasb="<<sigmas[bestiter]<<                           // residulas sigma
+    //
+    "ngood0="<<ngood[0]<<                                    // number of good clusters in 0 iteration
+    "nbad0="<<nbad[0]<<                                      // number of bad clusters in 0 iteration
+    "ngoodb="<<ngood[bestiter]<<                             //                        in  best iteration    
+    "nbadb="<<nbad[bestiter]<<                               //                        in  best iteration
+    //
+    "changes0="<<changes[0]<<                                // changes of pardrows in iteration number 0 
+    "changesb="<<changes[bestiter]<<                         // changes of pardrows in best iteration
+    //
+    "moffset0="<<moffset[0]<<                                // offset fixing angle in iter=0
+    "smoffset0="<<smoffset[0]<<                              // sigma of offset fixing angle in iter=0
+    "moffsetb="<<moffset[bestiter]<<                         // offset fixing angle in iter=best
+    "smoffsetb="<<smoffset[bestiter]<<                       // sigma of offset fixing angle in iter=best
+    //
+    "mean0="<<mean[0]<<                                      // mean dy in iter=0;
+    "smean0="<<smean[0]<<                                    // sigma of mean dy in iter=0
+    "meanb="<<mean[bestiter]<<                               // mean dy in iter=best
+    "smeanb="<<smean[bestiter]<<                             // sigma of mean dy in iter=best
+    //
+    "angle0="<<angle[0]<<                                    // angle deviation in the iteration number 0 
+    "sangle0="<<sangle[0]<<                                  // sigma of angular deviation in iteration number 0
+    "angleb="<<angle[bestiter]<<                             // angle deviation in the best iteration   
+    "sangleb="<<sangle[bestiter]<<                           // sigma of angle deviation in the best iteration   
+    //
+    "expectederr="<<expectederr<<                            // expected error of cluster position
+    "\n";
+  //
+  //
   return nfound;
 }
-
-
-
 
 

@@ -164,10 +164,10 @@ Bool_t AliTRDclusterizerV1::MakeClusters()
   }
   fPar->Init();
 
-  Float_t timeBinSize = fPar->GetDriftVelocity()
-                      / fPar->GetSamplingFrequency();
+  //Float_t timeBinSize = fPar->GetDriftVelocity()
+  //                    / fPar->GetSamplingFrequency();
   // Half of ampl.region
-  const Float_t kAmWidth = AliTRDgeometry::AmThick()/2.; 
+  //  const Float_t kAmWidth = AliTRDgeometry::AmThick()/2.; 
 
   Float_t omegaTau = fPar->GetOmegaTau();
   if (fVerbose > 0) {
@@ -186,7 +186,6 @@ Bool_t AliTRDclusterizerV1::MakeClusters()
   Int_t maxThresh = fPar->GetClusMaxThresh();   
   // Threshold value for the digit signal
   Int_t sigThresh = fPar->GetClusSigThresh();   
-
   // Iteration limit for unfolding procedure
   const Float_t kEpsilon = 0.01;             
 
@@ -195,11 +194,11 @@ Bool_t AliTRDclusterizerV1::MakeClusters()
   const Int_t   kNtrack  = 3 * kNclus;
 
   Int_t    iType         = 0;
-  Int_t    iUnfold       = 0;
-
+  Int_t    iUnfold       = 0;  
   Double_t ratioLeft     = 1.0;
   Double_t ratioRight    = 1.0;
 
+  //
   Double_t padSignal[kNsig];   
   Double_t clusterSignal[kNclus];
   Double_t clusterPads[kNclus];   
@@ -260,12 +259,19 @@ Bool_t AliTRDclusterizerV1::MakeClusters()
               Int_t signalM = TMath::Abs(digits->GetDataUnchecked(row,col-1,time));
               Int_t signalR = TMath::Abs(digits->GetDataUnchecked(row,col-2,time));
  
+// 	      // Look for the maximum
+//               if (signalM >= maxThresh) {
+//                 if (((signalL >= sigThresh) &&
+//                      (signalL <  signalM))  ||
+//                     ((signalR >= sigThresh) &&
+//                      (signalR <  signalM))) {
+//                   // Maximum found, mark the position by a negative signal
+//                   digits->SetDataUnchecked(row,col-1,time,-signalM);
+// 		}
+// 	      }
 	      // Look for the maximum
               if (signalM >= maxThresh) {
-                if (((signalL >= sigThresh) &&
-                     (signalL <  signalM))  ||
-                    ((signalR >= sigThresh) &&
-                     (signalR <  signalM))) {
+                if ( (signalL<=signalM) && (signalR<=signalM) && (signalL+signalR)>sigThresh ) {
                   // Maximum found, mark the position by a negative signal
                   digits->SetDataUnchecked(row,col-1,time,-signalM);
 		}
@@ -336,10 +342,7 @@ Bool_t AliTRDclusterizerV1::MakeClusters()
                   break;
 		};
 
-		// Don't analyze large clusters
-                //if (iType == 4) continue;
-
-                // Look for 5 pad cluster with minimum in the middle
+		 // Look for 5 pad cluster with minimum in the middle
                 Bool_t fivePadCluster = kFALSE;
                 if (col < nColMax-3) {
                   if (digits->GetDataUnchecked(row,col+2,time) < 0) {
@@ -362,7 +365,7 @@ Bool_t AliTRDclusterizerV1::MakeClusters()
 		// of the cluster which remains from a previous unfolding
                 if (iUnfold) {
                   clusterSignal[0] *= ratioLeft;
-                  iType   = 3;
+                  iType   = 5;
                   iUnfold = 0;
 		}
 
@@ -378,9 +381,10 @@ Bool_t AliTRDclusterizerV1::MakeClusters()
                   ratioRight        = Unfold(kEpsilon,iplan,padSignal);
                   ratioLeft         = 1.0 - ratioRight; 
                   clusterSignal[2] *= ratioRight;
-                  iType   = 3;
+                  iType   = 5;
                   iUnfold = 1;
                 }
+
 
                 Double_t clusterCharge = clusterSignal[0]
                                        + clusterSignal[1]
@@ -392,29 +396,31 @@ Bool_t AliTRDclusterizerV1::MakeClusters()
                 clusterPads[2] = time - nTimeBefore + 0.5;
 
                 if (fPar->LUTOn()) {
-
   		  // Calculate the position of the cluster by using the
 		  // lookup table method
-//                   clusterPads[1] = col + 0.5
-//                                  + fPar->LUTposition(iplan,clusterSignal[0]
-//                                                           ,clusterSignal[1]
-// 					                  ,clusterSignal[2]);
-                  clusterPads[1] = 0.5
-                                 + fPar->LUTposition(iplan,clusterSignal[0]
+                  clusterPads[1] =
+                                  fPar->LUTposition(iplan,clusterSignal[0]
                                                           ,clusterSignal[1]
 					                  ,clusterSignal[2]);
-
 		}
 		else {
-
   		  // Calculate the position of the cluster by using the
 		  // center of gravity method
-//                   clusterPads[1] = col + 0.5 
-//                                  + (clusterSignal[2] - clusterSignal[0]) 
-// 		                 / clusterCharge;
-                  clusterPads[1] = 0.5 
-                                 + (clusterSignal[2] - clusterSignal[0]) 
-		                 / clusterCharge;
+		  for (Int_t i=0;i<5;i++) padSignal[i]=0;
+		  padSignal[2] = TMath::Abs(digits->GetDataUnchecked(row,col,time));   // central  pad
+		  padSignal[1] = TMath::Abs(digits->GetDataUnchecked(row,col-1,time)); // left     pad
+		  padSignal[3] = TMath::Abs(digits->GetDataUnchecked(row,col+1,time)); // right    pad
+		  if (col>2 &&TMath::Abs(digits->GetDataUnchecked(row,col-2,time)<padSignal[1])){
+		    padSignal[0] = TMath::Abs(digits->GetDataUnchecked(row,col-2,time));
+		  }
+		  if (col<nColMax-3 &&TMath::Abs(digits->GetDataUnchecked(row,col+2,time)<padSignal[3])){
+		    padSignal[4] = TMath::Abs(digits->GetDataUnchecked(row,col+2,time));
+		  }		  
+		  clusterPads[1] =  GetCOG(padSignal);
+		  Double_t check = fPar->LUTposition(iplan,clusterSignal[0]
+                                                          ,clusterSignal[1]
+					                  ,clusterSignal[2]);
+		  //		  clusterPads[1] = check;
 
 		}
 
@@ -424,49 +430,16 @@ Bool_t AliTRDclusterizerV1::MakeClusters()
                 Double_t clusterSigmaY2 = (q1*(q0+q2)+4*q0*q2) /
                                           (clusterCharge*clusterCharge);
 
-                if (fVerbose > 1) {
-                  printf("-----------------------------------------------------------\n");
-                  printf("Create cluster no. %d\n",nClusters);
-                  printf("Position: row = %f, col = %f, time = %f\n",clusterPads[0]
-			                                            ,clusterPads[1]
-                                                                    ,clusterPads[2]);
-                  printf("Indices: %d, %d, %d\n",clusterDigit[0]
-			                        ,clusterDigit[1]
-                                                ,clusterDigit[2]);
-                  printf("Total charge = %f\n",clusterCharge);
-                  printf("Tracks: pad0 %d, %d, %d\n",clusterTracks[0]
-			                            ,clusterTracks[1]
-                                                    ,clusterTracks[2]);
-                  printf("        pad1 %d, %d, %d\n",clusterTracks[3]
-			                            ,clusterTracks[4]
-                                                    ,clusterTracks[5]);
-                  printf("        pad2 %d, %d, %d\n",clusterTracks[6]
-			                            ,clusterTracks[7]
-                                                    ,clusterTracks[8]);
-                  printf("Type = %d, Number of pads = %d\n",iType,nPadCount);
-                }
-
 		// Calculate the position and the error
-                Double_t clusterPos[3];
-//                 clusterPos[0] = clusterPads[1] * colSize + col0;
-//                 clusterPos[1] = clusterPads[0] * rowSize + row0;
-                clusterPos[0] = padPlane->GetColPos(col) - clusterPads[1];
-                clusterPos[1] = padPlane->GetRowPos(row) - clusterPads[0];
-                clusterPos[2] = clusterPads[2];
-                Double_t clusterSig[2];
                 Double_t colSize = padPlane->GetColSize(col);
                 Double_t rowSize = padPlane->GetRowSize(row);
+                Double_t clusterPos[3];
+		clusterPos[0] = padPlane->GetColPos(col) + (clusterPads[1]-0.5)*colSize;  // MI change
+		clusterPos[1] = padPlane->GetRowPos(row) -0.5*rowSize; //MI change
+                clusterPos[2] = clusterPads[2];
+                Double_t clusterSig[2];
                 clusterSig[0] = (clusterSigmaY2 + 1./12.) * colSize*colSize;
-                clusterSig[1] = rowSize * rowSize / 12.;
-
-                // Correct for ExB displacement
-                if (fPar->ExBOn()) { 
-                  Int_t    local_time_bin = (Int_t) clusterPads[2];
-                  Double_t driftLength    = local_time_bin * timeBinSize + kAmWidth;
-                  Double_t deltaY         = omegaTau * driftLength;
-                  clusterPos[1]           = clusterPos[1] - deltaY;
-                }
-                                       
+                clusterSig[1] = rowSize * rowSize / 12.;                                       
                 // Add the cluster to the output array 
                 AddCluster(clusterPos
 			  ,idet
@@ -483,24 +456,12 @@ Bool_t AliTRDclusterizerV1::MakeClusters()
 	// Compress the arrays
         digits->Compress(1,0);
         track0->Compress(1,0);
- track1->Compress(1,0);
+	track1->Compress(1,0);
         track2->Compress(1,0);
 
         // Write the cluster and reset the array
 	WriteClusters(idet);
 	ResetRecPoints();
-
-        if (fVerbose > 0) {
-          printf("<AliTRDclusterizerV1::MakeCluster> ");
-          printf("Found %d clusters in total.\n"
-                ,nClusters);
-          printf("                                    2pad:  %d\n",nClusters2pad);
-          printf("                                    3pad:  %d\n",nClusters3pad);
-          printf("                                    4pad:  %d\n",nClusters4pad);
-          printf("                                    5pad:  %d\n",nClusters5pad);
-          printf("                                    Large: %d\n",nClustersLarge);
-	}
-
       }    
     }      
   }        
@@ -513,6 +474,18 @@ Bool_t AliTRDclusterizerV1::MakeClusters()
   return kTRUE;
 
 }
+
+Double_t AliTRDclusterizerV1::GetCOG(Double_t signal[5])
+{
+  //
+  // get COG position
+  // used for clusters with more than 3 pads - where LUT not applicable
+  Double_t sum = signal[0]+signal[1]+signal[2]+signal[3]+signal[4];
+  Double_t res = (0.0*(-signal[0]+signal[4])+(-signal[1]+signal[3]))/sum;
+  return res;		  
+}
+
+
 
 //_____________________________________________________________________________
 Double_t AliTRDclusterizerV1::Unfold(Double_t eps, Int_t plane, Double_t* padSignal)

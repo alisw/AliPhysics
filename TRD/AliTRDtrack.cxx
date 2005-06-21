@@ -23,14 +23,18 @@
 #include "AliTRDtrack.h"
 #include "AliTRDclusterCorrection.h"
 
+ClassImp(AliTRDtracklet)
 ClassImp(AliTRDtrack)
+
+
+  AliTRDtracklet::AliTRDtracklet():fY(0),fX(0),fAlpha(0),fSigma2(0),fP0(0),fP1(0),fNFound(0),fNCross(0),fPlane(0),fExpectedSigma2(0),fChi2(0){
+}
 
 //_____________________________________________________________________________
 
 AliTRDtrack::AliTRDtrack(const AliTRDcluster *c, UInt_t index, 
                          const Double_t xx[5], const Double_t cc[15], 
-                         Double_t xref, Double_t alpha) : AliKalmanTrack() 
-{
+                         Double_t xref, Double_t alpha) : AliKalmanTrack() {
   //-----------------------------------------------------------------
   // This is the main track constructor.
   //-----------------------------------------------------------------
@@ -77,7 +81,7 @@ AliTRDtrack::AliTRDtrack(const AliTRDcluster *c, UInt_t index,
   fdQdl[0] = q;
   
   // initialisation [SR, GSI 18.02.2003] (i startd for 1)
-  for(UInt_t i=1; i<kMAXCLUSTERSPERTRACK; i++) {
+  for(UInt_t i=1; i<kMAX_CLUSTERS_PER_TRACK; i++) {
     fdQdl[i] = 0;
     fIndex[i] = 0;
     fIndexBackup[i] = 0;  //bacup indexes MI    
@@ -133,10 +137,13 @@ AliTRDtrack::AliTRDtrack(const AliTRDtrack& t) : AliKalmanTrack(t) {
   }
 
   // initialisation (i starts from n) [SR, GSI, 18.02.2003]
-  for(UInt_t i=n; i<kMAXCLUSTERSPERTRACK; i++) {
+  for(UInt_t i=n; i<kMAX_CLUSTERS_PER_TRACK; i++) {
     fdQdl[i] = 0;
     fIndex[i] = 0;
     fIndexBackup[i] = 0;  //MI backup indexes
+  }
+  for (Int_t i=0;i<6;i++){
+    fTracklets[i]=t.fTracklets[i];
   }
 }                                
 
@@ -202,14 +209,13 @@ AliTRDtrack::AliTRDtrack(const AliKalmanTrack& t, Double_t alpha)
   fCcy=c[10];   fCcz=c[11];   fCce=c42;   fCct=c[13]; fCcc=c[14];  
 
   // Initialization [SR, GSI, 18.02.2003]
-  for(UInt_t i=0; i<kMAXCLUSTERSPERTRACK; i++) {
+  for(UInt_t i=0; i<kMAX_CLUSTERS_PER_TRACK; i++) {
     fdQdl[i] = 0;
     fIndex[i] = 0;
     fIndexBackup[i] = 0;  // MI backup indexes    
   }
   
 }              
-
 //_____________________________________________________________________________
 AliTRDtrack::AliTRDtrack(const AliESDtrack& t) 
            :AliKalmanTrack() {
@@ -222,7 +228,7 @@ AliTRDtrack::AliTRDtrack(const AliESDtrack& t)
   SetMass(t.GetMass());
   SetNumberOfClusters(t.GetTRDclusters(fIndex)); 
   Int_t ncl = t.GetTRDclusters(fIndexBackup);
-  for (UInt_t i=ncl;i<kMAXCLUSTERSPERTRACK;i++) {
+  for (UInt_t i=ncl;i<kMAX_CLUSTERS_PER_TRACK;i++) {
     fIndexBackup[i]=0;
     fIndex[i] = 0; //MI store indexes
   }
@@ -281,7 +287,7 @@ AliTRDtrack::AliTRDtrack(const AliESDtrack& t)
   fCcy=c[10];   fCcz=c[11];   fCce=c42;   fCct=c[13]; fCcc=c[14];  
 
   // Initialization [SR, GSI, 18.02.2003]
-  for(UInt_t i=0; i<kMAXCLUSTERSPERTRACK; i++) {
+  for(UInt_t i=0; i<kMAX_CLUSTERS_PER_TRACK; i++) {
     fdQdl[i] = 0;
     //    fIndex[i] = 0; //MI store indexes
   }
@@ -293,11 +299,9 @@ AliTRDtrack::AliTRDtrack(const AliESDtrack& t)
 
 }  
 
-//_____________________________________________________________________________
 AliTRDtrack::~AliTRDtrack()
 {
   //
-  // TRD track destructor
   //
 
   if (fBackupTrack) delete fBackupTrack;
@@ -305,25 +309,24 @@ AliTRDtrack::~AliTRDtrack()
 
 }
 
-//_____________________________________________________________________________
-Float_t AliTRDtrack::StatusForTOF()
-{
-  //
-  // Returns a status flag for TOF
-  //
 
+Float_t    AliTRDtrack::StatusForTOF()
+{
   Int_t status=0;
+  if (fNRotate>2) return -1;   // sure it's stopped
   if (GetNumberOfClusters()<20) return 0;   //
-  if (fN>110&&fChi2/(Float_t(fN))<3) return 3;            //gold
-  if (fNLast>30&&fChi2Last/(Float_t(fNLast))<3) return 3; //gold
-  if (fNLast>20&&fChi2Last/(Float_t(fNLast))<2) return 3; //gold
-  if (fNLast/(fNExpectedLast+3.)>0.8 && fChi2Last/Float_t(fNLast)<5&&fNLast>20) return 2; //silber
-  if (fNLast>5 &&((fNLast+1.)/(fNExpectedLast+1.))>0.8&&fChi2Last/(fNLast-5.)<6)   return 1; 
-  //
+
+  //comp->fTree->SetAlias("nlast2","track.fTracklets[5].fNFound+track.fTracklets[4].fNFound");
+  //comp->fTree->SetAlias("goldtrack","abs((track.fTracklets[5].fP1+track.fTracklets[4].fP1))<0.5&&nlast2>14");
+  Int_t nlast2 = fTracklets[5].fNFound+fTracklets[4].fNFound;
+  if (abs((fTracklets[5].fP1+fTracklets[4].fP1))<0.3 &&nlast2>20) return 3;
+  if (abs((fTracklets[5].fP1+fTracklets[4].fP1))<0.3 &&nlast2>14) return 2;
+  if (abs((fTracklets[5].fP1+fTracklets[4].fP1))<0.5 &&nlast2>14) return 1;
 
   return status;
 }
             
+
 //____________________________________________________________________________
 void AliTRDtrack::GetExternalParameters(Double_t& xr, Double_t x[5]) const {
   //
@@ -356,12 +359,9 @@ void AliTRDtrack::GetExternalCovariance(Double_t cc[15]) const {
   
 }               
                        
+
 //_____________________________________________________________________________
-void AliTRDtrack::GetCovariance(Double_t cc[15]) const 
-{
-  //
-  // Returns the covariance matrix
-  //
+void AliTRDtrack::GetCovariance(Double_t cc[15]) const {
 
   cc[0]=fCyy;
   cc[1]=fCzy;  cc[2]=fCzz;
@@ -402,32 +402,21 @@ void AliTRDtrack::CookdEdx(Double_t low, Double_t up) {
     return;
   }
 
-  Float_t sorted[kMAXCLUSTERSPERTRACK];
+  Float_t sorted[kMAX_CLUSTERS_PER_TRACK];
   for (i=0; i < nc; i++) {
-    sorted[i]=fdQdl[i];
+    sorted[i]=TMath::Abs(fdQdl[i]);
   }
-  /*
-  Int_t swap; 
+  Int_t * index = new Int_t[nc];
+  TMath::Sort(nc, sorted, index,kFALSE);
 
-  do {
-    swap=0;
-    for (i=0; i<nc-1; i++) {
-      if (sorted[i]<=sorted[i+1]) continue;
-      Float_t tmp=sorted[i];
-      sorted[i]=sorted[i+1]; sorted[i+1]=tmp;
-      swap++;
-    }
-  } while (swap);
-  */
   Int_t nl=Int_t(low*nc), nu=Int_t(up*nc);
   Float_t dedx=0;
-  //for (i=nl; i<=nu; i++) dedx += sorted[i];
-  //dedx /= (nu-nl+1);
-  for (i=0; i<nc; i++) dedx += sorted[i];       // ADDED by PS
-  if((nu-nl)) dedx /= (nu-nl);                  // ADDED by PS
+  for (i=nl; i<=nu; i++) dedx += sorted[index[i]];
+  dedx /= (nu-nl+1);
 
   SetdEdx(dedx);
 }                     
+
 
 //_____________________________________________________________________________
 Int_t AliTRDtrack::PropagateTo(Double_t xk,Double_t x0,Double_t rho)
@@ -495,7 +484,9 @@ Int_t AliTRDtrack::PropagateTo(Double_t xk,Double_t x0,Double_t rho)
   Double_t p2=(1.+ GetTgl()*GetTgl())/(Get1Pt()*Get1Pt());
   Double_t beta2=p2/(p2 + GetMass()*GetMass());
   Double_t theta2=14.1*14.1/(beta2*p2*1e6)*d/x0*rho;
-
+  theta2*= 3.;                                      // magic const - to normalize pools - waiting for geo manager
+  if (p2>2.) beta2*= 0.4;                           // magic const - theta2 for relativistic particles 
+                                                    // - not valid for electrons
   Double_t ey=fC*fX - fE, ez=fT;
   Double_t xz=fC*ez, zz1=ez*ez+1, xy=fE+ey;
   
@@ -522,12 +513,18 @@ Int_t AliTRDtrack::PropagateTo(Double_t xk,Double_t x0,Double_t rho)
   //Energy losses************************
   if((5940*beta2/(1-beta2+1e-10) - beta2) < 0) return 0;
 
-  Double_t dE=0.153e-3/beta2*(log(5940*beta2/(1-beta2+1e-10)) - beta2)*d*rho;
+  Double_t dE=0.153e-3/beta2*(log(5940*beta2/(1-beta2+1e-10)) - beta2)*d*rho; 
+  dE *= 1.2;                                      // magic const - to normalize pools - waiting for geo manager
   if (x1 < x2) dE=-dE;
   cc=fC;
   fC*=(1.- sqrt(p2+GetMass()*GetMass())/p2*dE);
   fE+=fX*(fC-cc);    
-
+  //
+  Double_t deltac = fC-cc;
+  fCcc   += 4*deltac*deltac;                    // fluctuation of energy losses
+  fCee   += 4*fX*fX*deltac*deltac;              // local angle unchanged
+  fCce   += 4*fX*deltac*deltac;                 // correlation 1
+  //
   // track time measurement [SR, GSI 17.02.2002]
   if (x1 < x2)
   if (IsStartedTimeIntegral()) {
@@ -537,6 +534,7 @@ Int_t AliTRDtrack::PropagateTo(Double_t xk,Double_t x0,Double_t rho)
 
   return 1;            
 }     
+
 
 //_____________________________________________________________________________
 Int_t AliTRDtrack::Update(const AliTRDcluster *c, Double_t chisq, UInt_t index,                          Double_t h01)
@@ -581,7 +579,7 @@ Int_t AliTRDtrack::Update(const AliTRDcluster *c, Double_t chisq, UInt_t index, 
     fC  = cur;
   }
   else {
-    Double_t xuFactor = 100.;  // empirical factor set by C.Xu
+    Double_t xu_factor = 100.;  // empirical factor set by C.Xu
                                 // in the first tilt version      
     dy=c->GetY() - fY; dz=c->GetZ() - fZ;     
     dy=dy+h01*dz;
@@ -596,7 +594,7 @@ Int_t AliTRDtrack::Update(const AliTRDcluster *c, Double_t chisq, UInt_t index, 
    
 
 
-    r00=c->GetSigmaY2()+errang+add, r01=0., r11=c->GetSigmaZ2()*xuFactor; 
+    r00=c->GetSigmaY2()+errang+add, r01=0., r11=c->GetSigmaZ2()*xu_factor; 
     r00+=(fCyy+2.0*h01*fCzy+h01*h01*fCzz);
 
     r01+=(fCzy+h01*fCzz);  
@@ -659,7 +657,6 @@ Int_t AliTRDtrack::Update(const AliTRDcluster *c, Double_t chisq, UInt_t index, 
 
   return 1;     
 }                     
-
 //_____________________________________________________________________________
 Int_t AliTRDtrack::UpdateMI(const AliTRDcluster *c, Double_t chisq, UInt_t index, Double_t h01, 
 			    Int_t /*plane*/)
@@ -677,14 +674,7 @@ Int_t AliTRDtrack::UpdateMI(const AliTRDcluster *c, Double_t chisq, UInt_t index
   }
   Double_t tangent = TMath::Sqrt(tangent2);
   if ((fC*fX-fE)<0) tangent*=-1;
-  //  Double_t correction = 0*plane;
-  Double_t errang = tangent2*0.04;  //
-  Double_t errsys =0.025*0.025*20;  //systematic error part 
-  Float_t extend =1;
-  if (c->GetNPads()==4) extend=2;
-  //if (c->GetNPads()==5)  extend=3;
-  //if (c->GetNPads()==6)  extend=3;
-  //if (c->GetQ()<15) return 1;
+  Double_t errsys =(0.025*0.025*20)*(1+tangent2);  //systematic error part 
 
   /*
   if (corrector!=0){
@@ -699,9 +689,7 @@ Int_t AliTRDtrack::UpdateMI(const AliTRDcluster *c, Double_t chisq, UInt_t index
   }
   */
   //
-  //  Double_t padlength = TMath::Sqrt(c->GetSigmaZ2()*12.);
-
-  Double_t r00=(c->GetSigmaY2() +errang+errsys)*extend, r01=0., r11=c->GetSigmaZ2()*10000.;
+  Double_t r00=(c->GetSigmaY2()+errsys), r01=0., r11=c->GetSigmaZ2()*10000.;
   r00+=fCyy; r01+=fCzy; r11+=fCzz;
   Double_t det=r00*r11 - r01*r01;
   Double_t tmp=r00; r00=r11/det; r11=tmp/det; r01=-r01/det;
@@ -729,30 +717,17 @@ Int_t AliTRDtrack::UpdateMI(const AliTRDcluster *c, Double_t chisq, UInt_t index
     fC  = cur;
   }
   else {
-    Double_t padlength = TMath::Sqrt(c->GetSigmaZ2()*12);
+    //    Double_t padlength = TMath::Sqrt(c->GetSigmaZ2()*12);
   
-    Double_t xuFactor = 1000.;  // empirical factor set by C.Xu
+    Double_t xu_factor = 1000.;  // empirical factor set by C.Xu
                                 // in the first tilt version      
     dy=c->GetY() - fY; dz=c->GetZ() - fZ;     
-    //dy=dy+h01*dz+correction;
     
     Double_t tiltdz = dz;
-    if (TMath::Abs(tiltdz)>padlength/2.) {
-      tiltdz = TMath::Sign(padlength/2,dz);
-    }
-    //    dy=dy+h01*dz;
     dy=dy+h01*tiltdz;
 
-    Double_t add=0;
-    if (TMath::Abs(dz)>padlength/2.){
-      //Double_t dy2 = c->GetY() - fY;
-      //Double_t sign = (dz>0) ? -1.: 1.;
-      //dy2-=h01*sign*padlength/2.;	
-      //dy = dy2;
-      add =1;
-    }
-    Double_t s00 = (c->GetSigmaY2()+errang)*extend+errsys+add;  // error pad
-    Double_t s11 = c->GetSigmaZ2()*xuFactor;   // error pad-row
+    Double_t s00 = c->GetSigmaY2()+errsys;  // error pad
+    Double_t s11 = c->GetSigmaZ2()*xu_factor;   // error pad-row
     //
     r00 = fCyy + 2*fCzy*h01 + fCzz*h01*h01+s00;
     r01 = fCzy + fCzz*h01;
@@ -828,6 +803,116 @@ Int_t AliTRDtrack::UpdateMI(const AliTRDcluster *c, Double_t chisq, UInt_t index
   return 1;      
 }                     
 
+
+
+
+
+//_____________________________________________________________________________
+Int_t AliTRDtrack::UpdateMI(const AliTRDtracklet &tracklet)
+{
+  //
+  // Assignes found tracklet to the track and updates track information
+  //
+  //
+  Double_t r00=(tracklet.GetTrackletSigma2()), r01=0., r11= 10000.;
+  r00+=fCyy; r01+=fCzy; r11+=fCzz;
+  //
+  Double_t det=r00*r11 - r01*r01;
+  Double_t tmp=r00; r00=r11/det; r11=tmp/det; r01=-r01/det;
+  //
+
+  Double_t dy=tracklet.GetY() - fY, dz=tracklet.GetZ() - fZ;
+
+  
+  Double_t s00 = tracklet.GetTrackletSigma2();  // error pad
+  Double_t s11 = 100000;   // error pad-row
+  Float_t  h01 = tracklet.GetTilt();
+  //
+  //  r00 = fCyy + 2*fCzy*h01 + fCzz*h01*h01+s00;
+  r00 = fCyy + fCzz*h01*h01+s00;
+  //  r01 = fCzy + fCzz*h01;
+  r01 = fCzy ;
+  r11 = fCzz + s11;
+  det = r00*r11 - r01*r01;
+  // inverse matrix
+  tmp=r00; r00=r11/det; r11=tmp/det; r01=-r01/det;
+
+  Double_t k00=fCyy*r00+fCzy*r01, k01=fCyy*r01+fCzy*r11;
+  Double_t k10=fCzy*r00+fCzz*r01, k11=fCzy*r01+fCzz*r11;
+  Double_t k20=fCey*r00+fCez*r01, k21=fCey*r01+fCez*r11;
+  Double_t k30=fCty*r00+fCtz*r01, k31=fCty*r01+fCtz*r11;
+  Double_t k40=fCcy*r00+fCcz*r01, k41=fCcy*r01+fCcz*r11;
+  
+  // K matrix
+//   k00=fCyy*r00+fCzy*(r01+h01*r00),k01=fCyy*r01+fCzy*(r11+h01*r01);
+//   k10=fCzy*r00+fCzz*(r01+h01*r00),k11=fCzy*r01+fCzz*(r11+h01*r01);
+//   k20=fCey*r00+fCez*(r01+h01*r00),k21=fCey*r01+fCez*(r11+h01*r01);
+//   k30=fCty*r00+fCtz*(r01+h01*r00),k31=fCty*r01+fCtz*(r11+h01*r01);
+//   k40=fCcy*r00+fCcz*(r01+h01*r00),k41=fCcy*r01+fCcz*(r11+h01*r01);  
+  //
+  //Update measurement
+  Double_t cur=fC + k40*dy + k41*dz, eta=fE + k20*dy + k21*dz;  
+  //  cur=fC + k40*dy + k41*dz; eta=fE + k20*dy + k21*dz;
+  if (TMath::Abs(cur*fX-eta) >= 0.90000) {
+    //Int_t n=GetNumberOfClusters();
+    //      if (n>4) cerr<<n<<" AliTRDtrack warning: Filtering failed !\n";
+    return 0;
+  }                           
+//   k01+=h01*k00;
+//   k11+=h01*k10;
+//   k21+=h01*k20;
+//   k31+=h01*k30;
+//   k41+=h01*k40;  
+
+
+  fY += k00*dy + k01*dz;
+  fZ += k10*dy + k11*dz;
+  fE  = eta;
+  fT += k30*dy + k31*dz;
+  fC  = cur;
+    
+  
+  //Update covariance
+  //
+  //
+  Double_t oldyy = fCyy, oldzz = fCzz; //, oldee=fCee, oldcc =fCcc;
+  Double_t oldzy = fCzy, oldey = fCey, oldty=fCty, oldcy =fCcy;
+  Double_t oldez = fCez, oldtz = fCtz, oldcz=fCcz;
+  //Double_t oldte = fCte, oldce = fCce;
+  //Double_t oldct = fCct;
+
+  fCyy-=k00*oldyy+k01*oldzy;   
+  fCzy-=k10*oldyy+k11*oldzy;
+  fCey-=k20*oldyy+k21*oldzy;   
+  fCty-=k30*oldyy+k31*oldzy;
+  fCcy-=k40*oldyy+k41*oldzy;  
+  //
+  fCzz-=k10*oldzy+k11*oldzz;
+  fCez-=k20*oldzy+k21*oldzz;   
+  fCtz-=k30*oldzy+k31*oldzz;
+  fCcz-=k40*oldzy+k41*oldzz;
+  //
+  fCee-=k20*oldey+k21*oldez;   
+  fCte-=k30*oldey+k31*oldez;
+  fCce-=k40*oldey+k41*oldez;
+  //
+  fCtt-=k30*oldty+k31*oldtz;
+  fCct-=k40*oldty+k41*oldtz;
+  //
+  fCcc-=k40*oldcy+k41*oldcz;                 
+  //
+  /*
+  Int_t n=GetNumberOfClusters();
+  fIndex[n]=index;
+  SetNumberOfClusters(n+1);
+
+  SetChi2(GetChi2()+chisq);
+  //  cerr<<"in update: fIndex["<<fN<<"] = "<<index<<endl;
+  */
+  return 1;      
+}                     
+
+
 //_____________________________________________________________________________
 Int_t AliTRDtrack::Rotate(Double_t alpha)
 {
@@ -891,13 +976,11 @@ Int_t AliTRDtrack::Rotate(Double_t alpha)
   return 1;                            
 }                         
 
+
 //_____________________________________________________________________________
 Double_t AliTRDtrack::GetPredictedChi2(const AliTRDcluster *c, Double_t h01) const
 {
-  //
-  // Returns the predicted chi^2
-  //  
-
+  
   Bool_t fNoTilt = kTRUE;
   if(TMath::Abs(h01) > 0.003) fNoTilt = kFALSE;
   Double_t chi2, dy, r00, r01, r11;
@@ -931,8 +1014,8 @@ Double_t AliTRDtrack::GetPredictedChi2(const AliTRDcluster *c, Double_t h01) con
     chi2 = (dy*r00*dy + 2*r01*dy*dz + dz*r11*dz)/det; 
   }
   return chi2;
-
 }      
+
 
 //_________________________________________________________________________
 void AliTRDtrack::GetPxPyPz(Double_t& px, Double_t& py, Double_t& pz) const
@@ -982,7 +1065,6 @@ void AliTRDtrack::ResetCovariance() {
   fCcy=0.;  fCcz=0.;  fCce=0.;  fCct=0.;  fCcc*=10.;  
 }                                                         
 
-//_________________________________________________________________________
 void AliTRDtrack::ResetCovariance(Float_t mult) {
   //
   // Resets covariance matrix
@@ -995,31 +1077,29 @@ void AliTRDtrack::ResetCovariance(Float_t mult) {
   fCcy*=0.;  fCcz*=0.;  fCce*=0.;  fCct*=0.;  fCcc*=mult;  
 }                                                         
 
-//_________________________________________________________________________
+
+
+
+
 void AliTRDtrack::MakeBackupTrack()
 {
   //
-  // Creates a backup track
   //
-
   if (fBackupTrack) delete fBackupTrack;
   fBackupTrack = new AliTRDtrack(*this);
   
 }
 
-//_________________________________________________________________________
-Int_t  AliTRDtrack::GetProlongation(Double_t xk, Double_t &y, Double_t &z)
-{
+Int_t  AliTRDtrack::GetProlongation(Double_t xk, Double_t &y, Double_t &z){
   //
   // Find prolongation at given x
   // return 0 if not exist
-  //
   
   Double_t c1=fC*fX - fE;
-  if (TMath::Abs(c1)>1.) return 0;
+  if (TMath::Abs(c1)>0.9) return 0;
   Double_t r1=TMath::Sqrt(1.- c1*c1);
   Double_t c2=fC*xk - fE;
-  if (TMath::Abs(c2)>1.) return 0;  
+  if (TMath::Abs(c2)>0.9) return 0;  
   Double_t r2=TMath::Sqrt(1.- c2*c2);
   y =fY + (xk-fX)*(c1+c2)/(r1+r2);
   z =fZ + (xk-fX)*(c1+c2)/(c1*r2 + c2*r1)*fT;

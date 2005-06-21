@@ -15,8 +15,10 @@ class TParticlePDG;
 class AliTRDgeometry;
 class AliTRDparameter;
 class AliTRDtrack;
+class AliTRDtracklet;
 class AliTRDcluster;
 class AliESD;
+class TTreeSRedirector;
 
 const unsigned kMaxLayersPerSector = 1000;  
 const unsigned kMaxTimeBinIndex = 216;  // (30 drift + 6 ampl) * 6 planes  
@@ -24,9 +26,13 @@ const unsigned kMaxClusterPerTimeBin = 7000;
 const unsigned kZones = 5; 
 const Int_t    kTrackingSectors = 18; 
 
+
+
+
 class AliTRDtracker : public AliTracker { 
 
  public:
+
 
   AliTRDtracker();
   AliTRDtracker(const TFile *in);
@@ -35,7 +41,7 @@ class AliTRDtracker : public AliTracker {
   Int_t         Clusters2Tracks(AliESD* event);
   Int_t         PropagateBack(AliESD* event);
   Int_t         RefitInward(AliESD* event);
-
+  
   Int_t         LoadClusters(TTree *cTree);
   void          UnloadClusters();
   AliCluster   *GetCluster(Int_t index) const { if (index >= fNclusters) return NULL; 
@@ -50,9 +56,9 @@ class AliTRDtracker : public AliTracker {
 
   Int_t         ReadClusters(TObjArray *array, TTree *in) const;
   Int_t         CookSectorIndex(Int_t gs) const { return kTrackingSectors - 1 - gs; }
-  AliTRDcluster * GetCluster(AliTRDtrack * track, Int_t plane, Int_t timebin);
+  AliTRDcluster * GetCluster(AliTRDtrack * track, Int_t plane, Int_t timebin, UInt_t &index);
   Int_t         GetLastPlane(AliTRDtrack * track); //return last updated plane
-  Int_t FindClusters(Int_t sector, Int_t t0, Int_t t1, AliTRDtrack * track, Int_t *clusters);
+  Int_t FindClusters(Int_t sector, Int_t t0, Int_t t1, AliTRDtrack * track, Int_t *clusters, AliTRDtracklet& tracklet);
 
   Float_t  GetSeedGap()       const {return fgkSeedGap;}   
   Int_t    GetMaxGap()        const {return fMaxGap;}   
@@ -101,11 +107,12 @@ class AliTRDtracker : public AliTracker {
      Double_t       GetRho() const { return fRho; }
      Double_t       GetX0() const { return fX0; }
      Int_t          GetTimeBinIndex() const { return fTimeBinIndex; }     
-     void           GetPropagationParameters(Double_t y, Double_t z,
+     Bool_t         GetPropagationParameters(Double_t y, Double_t z,
                                 Double_t &dx, Double_t &rho, Double_t &x0, 
-                                Bool_t &lookForCluster) const;
+					     Bool_t &lookForCluster) const;
      Int_t          GetZone( Double_t z) const;
      Int_t          Find(Double_t y) const; 
+     Int_t          FindNearestCluster(Double_t y, Double_t z, Double_t maxroad) const;
      void           SetZmax(Int_t cham, Double_t center, Double_t w)
                       { fZc[cham] = center;  fZmax[cham] = w; }
      void           SetZ(Double_t* center, Double_t *w, Double_t *wsensitive);
@@ -181,6 +188,8 @@ class AliTRDtracker : public AliTracker {
 
  protected:
 
+  friend class AliTRDtracker::AliTRDtrackingSector;
+
   AliTRDgeometry     *fGeom;            // Pointer to TRD geometry
   AliTRDparameter    *fPar;             // Pointer to TRD parameter
 
@@ -231,6 +240,13 @@ class AliTRDtracker : public AliTracker {
   static const Double_t fgkSeedErrorSZ;    // sz parameter in MakeSeeds
   static const Float_t  fgkLabelFraction;  // min fraction of same label
   static const Float_t  fgkWideRoad;       // max road width in FindProlongation
+  //
+  static const Double_t  fgkDriftCorrection; // correction coeficients for drift velocity
+  static const Double_t  fgkOffset;         // correction coeficients 
+  static const Double_t  fgkOffsetX;         // correction coeficients offset in X 
+  static const Double_t  fgkCoef;           // correction coeficients
+  static const Double_t  fgkMean;           // correction coeficients
+  static const Double_t  fgkExB;            // correction coeficients
 
   Bool_t                fVocal;            // Whatever...
   Bool_t                fAddTRDseeds;      // Something else
@@ -249,6 +265,7 @@ class AliTRDtracker : public AliTracker {
  private:
 
   virtual void  MakeSeeds(Int_t inner, Int_t outer, Int_t turn);
+  void  MakeSeedsMI(Int_t inner, Int_t outer);
 
   Int_t         FollowProlongation(AliTRDtrack& t, Int_t rf);
   Int_t         FollowBackProlongation(AliTRDtrack& t);
@@ -262,7 +279,7 @@ class AliTRDtracker : public AliTracker {
   void          SetSZ2corr(Float_t w)    {fSZ2corr = w;}
   Double_t      ExpectedSigmaY2(Double_t r, Double_t tgl, Double_t pt) const;
   Double_t      ExpectedSigmaZ2(Double_t r, Double_t tgl) const;
-
+  TTreeSRedirector *fDebugStreamer;     //!debug streamer
   ClassDef(AliTRDtracker,2)           // manager base class  
 
 };

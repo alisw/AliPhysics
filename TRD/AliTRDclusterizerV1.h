@@ -33,9 +33,8 @@ class AliTRDclusterizerV1 : public AliTRDclusterizer {
   AliTRDdigitsManager *fDigitsManager;      //! TRD digits manager
 
  private:
-
   virtual Double_t Unfold(Double_t eps, Int_t plane, Double_t *padSignal);
-
+  Double_t GetCOG(Double_t signal[5]);      // get COG position
   ClassDef(AliTRDclusterizerV1,5)           // TRD-Cluster finder, slow simulator
 
 };
