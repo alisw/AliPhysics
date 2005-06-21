@@ -13,17 +13,32 @@
 //-------------------------------------------------------------------------
 
 #include "AliESDv0.h"
+#include "AliESDV0MIParams.h"
 #include "AliExternalTrackParam.h"
 
 class AliESDtrack;
+
 
 class AliESDV0MI :  public AliESDv0 {
 public:
   //  friend class AliITStrackerMI;
   AliESDV0MI();             //constructor
+  Double_t GetSigmaY();     // sigma of y coordinate at vertex posistion
+  Double_t GetSigmaZ();     // sigma of z coordinate at vertex posistion
+  Double_t GetSigmaAP0();   // calculate sigma of Point angle resolution at vertex pos.
+  Double_t GetSigmaD0();    // calculate sigma of position resolution at vertex pos.
+  Double_t GetEffectiveSigmaAP0();   // calculate sigma of point angle resolution at vertex pos. effecive parameterization
+  Double_t GetEffectiveSigmaD0();    // calculate sigma of position resolution at vertex pos.
+  Double_t GetMinimaxSigmaAP0();    // calculate mini-max sigma of point angle resolution
+  Double_t GetMinimaxSigmaD0();     // calculate mini-max sigma of dca resolution
+  Double_t GetLikelihoodAP(Int_t mode0, Int_t mode1);   // get likelihood for point angle
+  Double_t GetLikelihoodD(Int_t mode0, Int_t mode1);    // get likelihood for DCA
+  Double_t GetLikelihoodC(Int_t mode0, Int_t mode1);    // get likelihood for Causality
+  //
   //
   const AliExternalTrackParam *GetParamP() const {return &fParamP;}
   const AliExternalTrackParam *GetParamM() const {return &fParamM;}
+  static const AliESDV0MIParams & GetParameterization(){return fgkParams;}
   void SetP(const AliExternalTrackParam & paramp); 
   void SetM(const AliExternalTrackParam & paramd);
   void SetRp(const Double_t *rp);
@@ -69,19 +84,19 @@ public:
   void SetClusters(Int_t *clp, Int_t *clm);
   const Int_t * GetClusters(Int_t i) const {return fClusters[i];}
   void SetNormDCAPrim(Float_t nd0, Float_t nd1){fNormDCAPrim[0] = nd0; fNormDCAPrim[1]=nd1;}
-  const Float_t  *GetNormDCAPrimP(){return fNormDCAPrim;}
+  const Float_t  *GetNormDCAPrimP() const {return fNormDCAPrim;}
 private:
-  AliExternalTrackParam fParamP;
-  AliExternalTrackParam fParamM;
+  AliExternalTrackParam fParamP;  // external parameters of positive particle
+  AliExternalTrackParam fParamM;  // external parameters of negative particle
   Float_t        fRP[5];         // combined pid positive
   Float_t        fRM[5];         // combined pid positive
-  Int_t          fID;
+  Int_t          fID;            // ID number of the V0 in the ESDV0 container
   Int_t          fLab[2];         // MC label of the particle
   Int_t          fIndex[2];       // reconstructed labels of the tracks
   Int_t          fClusters[2][6]; //! its clusters 
   //
   //  
-  Float_t       fNormDCAPrim[2];  // normalize distance to the priary vertex
+  Float_t        fNormDCAPrim[2];  // normalize distance to the priary vertex
   Double_t       fDist1;    //info about closest distance according closest MC - linear DCA
   Double_t       fDist2;    //info about closest distance parabolic DCA
   //
@@ -91,7 +106,7 @@ private:
   Double_t       fXr[3];      //rec. position according helix
   Double_t       fAngle[3];   //three angles
   Double_t       fRr;         //rec position of the vertex 
-  Int_t          fStatus;       //status  - 1 - TPC V0  2- ITS V0  4- accepted - 0 -rejected
+  Int_t          fStatus;       //status
   Int_t          fRow0;         // critical layer
   Int_t          fOrder[3]; //order of the vertex 
   //  quality information
@@ -105,7 +120,9 @@ private:
   Float_t        fPointAngleFi; //point angle fi
   Float_t        fPointAngleTh; //point angle theta
   Double_t       fPointAngle;   //point angle full
-
+  //
+  // parameterization coefficients
+  static AliESDV0MIParams fgkParams;  // resolution and likelihood parameterization  
   ClassDef(AliESDV0MI,4)      // ESD V0 vertex
 };
 

@@ -4,7 +4,7 @@ SRCS = AliESD.cxx \
        AliESDv0.cxx AliESDcascade.cxx AliESDVertex.cxx \
        AliESDpid.cxx AliESDkink.cxx AliESDV0MI.cxx \
        AliKalmanTrack.cxx AliHelix.cxx AliExternalTrackParam.cxx \
-       AliTrackParam.cxx AliLog.cxx AliPID.cxx
+       AliTrackParam.cxx AliLog.cxx AliPID.cxx AliESDV0MIParams.cxx
 
 HDRS:= $(SRCS:.cxx=.h) 
 
