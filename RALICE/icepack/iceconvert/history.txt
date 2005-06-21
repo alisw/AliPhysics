@@ -9,4 +9,6 @@
 17-jun-2005 NvE Class IceF2k modified to provide a task-based processing environment.
                 For this IceF2k has been derived from the new RALICE class AliJob.
                 The example macro icef2k.cc has been updated accordingly.
+21-jun-2005 NvE Install scripts for gcc corrected to also include the rdmc stuff
+                in the produced shared libs.
  

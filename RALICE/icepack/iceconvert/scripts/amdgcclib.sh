@@ -9,7 +9,7 @@ lib=iceconvert.so
 ### The option string for GCC compilation of the .c code ***
 ### For the GCC ROOT loadable shared lib the strict requirements are ***
 ### dropped to avoid many warnings from the rootcint generated code ***
-gcccomp="-c -g0 -Wall -Wno-long-long -I$ROOTSYS/include -I$ALIROOT/RALICE -I$ALIROOT/RALICE/icepack"
+gcccomp="-fPIC -c -g0 -Wall -Wno-long-long -I$ROOTSYS/include -I$ALIROOT/RALICE -I$ALIROOT/RALICE/icepack"
 #
 ### The option string for GCC shared lib compilation and linking ***
 ### For the GCC ROOT loadable shared lib the strict requirements are ***
@@ -28,7 +28,7 @@ rootcint -f zzziceconvertdict.cxx -c -p -I$ALIROOT/RALICE -I$ALIROOT/RALICE/icep
 # 
 ### Compile and create the ROOT loadable shared library
 gcc $gcccomp *.c   
-g++ $gccroot *.cxx   
+g++ $gccroot *.cxx *.o   
 # 
 rm zzziceconvertdict.*
 rm *.o

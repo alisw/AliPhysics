@@ -24,7 +24,7 @@ rootcint zzziceconvertdict.cxx -c -p -I$ALIROOT/RALICE -I$ALIROOT/RALICE/icepack
 
 ### Compile and create the ROOT loadable shared library
 cxx $alphacomp *.c   
-cxx $alpharoot *.cxx   
+cxx $alpharoot *.cxx *.o   
 
 rm zzziceconvertdict.*
 rm *.o

@@ -33,10 +33,10 @@ rootcint -f zzziceconvertdict.cxx -c -p -I$ALIROOT/RALICE -I$ALIROOT/RALICE/icep
 gcc $gcccomp *.c   
 g++ $gccroot *.cxx   
 #
-# Creating ralice.so library 
+# Creating iceconvert.so library 
 g++ -v -bundle -undefined dynamic_lookup -o $lib1 *.o
 #
-# Creating ralice.dylib library 
+# Creating iceconvert.dylib library 
 g++ -v -dynamiclib -undefined dynamic_lookup -single_module -o $lib2 *.o
 ### On some systems the following extra "-read_only_relocs" flag might be needed
 # g++ -v -dynamiclib -undefined dynamic_lookup -single_module -read_only_relocs -o $lib2 *.o
