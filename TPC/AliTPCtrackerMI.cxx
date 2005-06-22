@@ -3492,15 +3492,14 @@ AliTPCseed *AliTPCtrackerMI::MakeSeed(AliTPCseed *track, Float_t r0, Float_t r1,
   Int_t p2 = int(r2*track->GetNumberOfClusters());   // last point
   Int_t pp2=0;
   Double_t  x0[3],x1[3],x2[3];
-  x0[0]=-1;
-  x0[0]=-1;
-  x0[0]=-1;
+  for (Int_t i=0;i<3;i++){
+    x0[i]=-1;
+    x1[i]=-1;
+    x2[i]=-1;
+  }
 
   // find track position at given ratio of the length
-  Int_t  sec0, sec1, sec2;
-  sec0=0;
-  sec1=0;
-  sec2=0;
+  Int_t  sec0=0, sec1=0, sec2=0;
   Int_t index=-1;
   Int_t clindex;
   for (Int_t i=0;i<160;i++){
