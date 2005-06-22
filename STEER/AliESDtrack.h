@@ -60,6 +60,7 @@ public:
   Bool_t GetXYZAt(Double_t x, Double_t r[3]) const;
 
   void GetImpactParameters(Float_t &xy,Float_t &z) const {xy=fD; z=fZ;}
+  Double_t GetD(Double_t x=0, Double_t y=0) const; //calculate the transverse impact parameter w.r.t. (x,y)
   Double_t GetIntegratedLength() const {return fTrackLength;}
   void GetIntegratedTimes(Double_t *times) const;
   Double_t GetMass() const;

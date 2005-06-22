@@ -576,6 +576,27 @@ Double_t AliESDtrack::GetP() const {
   return pt*TMath::Sqrt(1.+ fRp[3]*fRp[3]);
 }
 
+//_______________________________________________________________________
+Double_t AliESDtrack::GetD(Double_t x, Double_t y) const {
+  //------------------------------------------------------------------
+  // This function calculates the transverse impact parameter
+  // with respect to a point with global coordinates (x,y)
+  //------------------------------------------------------------------
+  Double_t rp4=fRp[4]/AliKalmanTrack::GetConvConst();
+
+  Double_t xt=fRx, yt=fRp[0];
+
+  Double_t sn=TMath::Sin(fRalpha), cs=TMath::Cos(fRalpha);
+  Double_t a = x*cs + y*sn;
+  y = -x*sn + y*cs; x=a;
+  xt-=x; yt-=y;
+
+  sn=rp4*xt - fRp[2]; cs=rp4*yt + TMath::Sqrt(1.- fRp[2]*fRp[2]);
+  a=2*(xt*fRp[2] - yt*TMath::Sqrt(1.- fRp[2]*fRp[2]))-rp4*(xt*xt + yt*yt);
+  if (rp4<0) a=-a;
+  return a/(1 + TMath::Sqrt(sn*sn + cs*cs));
+}
+
 Bool_t Local2GlobalMomentum(Double_t p[3],Double_t alpha) {
   //----------------------------------------------------------------
   // This function performs local->global transformation of the
@@ -1043,7 +1064,7 @@ void AliESDtrack::Print(Option_t *) const {
     printf("\n           signal = %f\n", GetTOFsignal()) ;
   }
   if( IsOn(kRICHpid) ){
-    printf("From TOF: ") ; 
+    printf("From RICH: ") ; 
     GetRICHpid(p) ; 
     for(index = 0 ; index < AliPID::kSPECIES; index++) 
       printf("%f, ", p[index]) ;
