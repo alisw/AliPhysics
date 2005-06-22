@@ -319,9 +319,9 @@ Float_t    AliTRDtrack::StatusForTOF()
   //comp->fTree->SetAlias("nlast2","track.fTracklets[5].fNFound+track.fTracklets[4].fNFound");
   //comp->fTree->SetAlias("goldtrack","abs((track.fTracklets[5].fP1+track.fTracklets[4].fP1))<0.5&&nlast2>14");
   Int_t nlast2 = fTracklets[5].fNFound+fTracklets[4].fNFound;
-  if (abs((fTracklets[5].fP1+fTracklets[4].fP1))<0.3 &&nlast2>20) return 3;
-  if (abs((fTracklets[5].fP1+fTracklets[4].fP1))<0.3 &&nlast2>14) return 2;
-  if (abs((fTracklets[5].fP1+fTracklets[4].fP1))<0.5 &&nlast2>14) return 1;
+  if (TMath::Abs((fTracklets[5].fP1+fTracklets[4].fP1))<0.3 &&nlast2>20) return 3;
+  if (TMath::Abs((fTracklets[5].fP1+fTracklets[4].fP1))<0.3 &&nlast2>14) return 2;
+  if (TMath::Abs((fTracklets[5].fP1+fTracklets[4].fP1))<0.5 &&nlast2>14) return 1;
 
   return status;
 }
