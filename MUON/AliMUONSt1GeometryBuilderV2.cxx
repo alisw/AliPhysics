@@ -2439,11 +2439,11 @@ void AliMUONSt1GeometryBuilderV2::CreateGeometry()
   // 
   // 
   //     II. |  I.                   I. |  II. 
-  //         |                    (151) | (100)
+  //         |                    (101) | (100)
   //   _____ | ____               _____ | ____                         
   //         |                          |
   //    III. |  IV.                 IV. | III.
-  //                              (150) | (101) 
+  //                              (102) | (103) 
   // 
 /*
   Int_t rotm[4];
@@ -2465,10 +2465,10 @@ void AliMUONSt1GeometryBuilderV2::CreateGeometry()
   scale[3] = TVector3( 1, -1, -1);  // quadrant IV
   
   Int_t  detElemId[4];  
-  detElemId[0] = 51;  // quadrant I
+  detElemId[0] =  1;  // quadrant I
   detElemId[1] =  0;  // quadrant II
-  detElemId[2] =  1;  // quadrant III
-  detElemId[3] = 50;  // quadrant IV
+  detElemId[2] =  3;  // quadrant III
+  detElemId[3] =  2;  // quadrant IV
   
   // Shift in Z of the middle layer
   Double_t deltaZ = 6.5/2.;         

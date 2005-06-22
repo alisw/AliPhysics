@@ -182,16 +182,16 @@ void AliMUONFactoryV2::BuildStation1()
 
     // cathode 0
     segmentation[0]->Add(id0,      bendSt1);
-    segmentation[0]->Add(id0 +  1, nonbendSt1);
-    segmentation[0]->Add(id0 + 50, bendSt1);
-    segmentation[0]->Add(id0 + 51, nonbendSt1); 
+    segmentation[0]->Add(id0 +  3, nonbendSt1);
+    segmentation[0]->Add(id0 +  2, bendSt1);
+    segmentation[0]->Add(id0 +  1, nonbendSt1); 
     fMUON->SetSegmentationModel(chamber, 1, segmentation[0]);   
 
     // cathode 1
     segmentation[1]->Add(id0,      nonbendSt1);
+    segmentation[1]->Add(id0 +  3, bendSt1);
+    segmentation[1]->Add(id0 +  2, nonbendSt1);
     segmentation[1]->Add(id0 +  1, bendSt1);
-    segmentation[1]->Add(id0 + 50, nonbendSt1);
-    segmentation[1]->Add(id0 + 51, bendSt1);
     fMUON->SetSegmentationModel(chamber, 2, segmentation[1]);
         
     fMUON->SetResponseModel(chamber, responseSt1); // special response      
@@ -333,10 +333,6 @@ void AliMUONFactoryV2::BuildStation3()
         
     // id detection elt for chamber 1
     Int_t id0 = (chamber+1)*100;
-
-    //--------------------------------------------------------
-    // Configuration for Chamber TC3/4  (Station 2) ----------           
-
 
     fMUON->SetNsec(chamber,2);
 
