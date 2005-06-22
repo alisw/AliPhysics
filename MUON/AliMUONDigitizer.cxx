@@ -300,6 +300,7 @@ void AliMUONDigitizer::CreateDigits()
 	  }
 	  FillOutputData();
 	  //	}
+	  fTDCounter = 0;
 }
 
 //------------------------------------------------------------------------
