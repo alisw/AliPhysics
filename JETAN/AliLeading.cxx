@@ -1,0 +1,125 @@
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+ 
+//---------------------------------------------------------------------
+// Class to find and store the leading particle in event and
+// store its correlation to associated particles
+// Author: jgcn@mda.cinvestav.mx
+//---------------------------------------------------------------------
+
+#include <Riostream.h>
+#include <TMath.h>
+#include <TClonesArray.h>
+#include <TLorentzVector.h>
+
+#include "AliLeading.h"
+#include <AliJetReader.h>
+
+ClassImp(AliLeading)
+
+////////////////////////////////////////////////////////////////////////
+
+AliLeading::AliLeading() 
+{
+  //
+  // Constructor
+  //
+  fNassoc=0;
+  fLeading = new TLorentzVector(0.,0.,0.,0.);
+  fLow = -TMath::Pi()/2.0;
+  fnBin=45;
+  fCorr = TArrayI(fnBin);
+}
+
+////////////////////////////////////////////////////////////////////////
+
+AliLeading::~AliLeading()
+{
+  //
+  // Destructor
+  //
+  delete fLeading;
+}
+
+////////////////////////////////////////////////////////////////////////
+
+void AliLeading::FindLeading(AliJetReader *reader)
+
+{
+  //
+  // find leading particle in the array of lorentz vectors
+  // lvArray and fill the correlation histogram
+  //
+  TClonesArray* lvArray = reader->GetMomentumArray();
+  Int_t nIn = lvArray->GetEntries();
+  fNassoc = nIn-1;
+
+  if (fNassoc < 0) return;
+
+  // find max
+  Double_t ptMax = 0.0;
+  Int_t idxMax = -1;
+  for (Int_t i=0; i<nIn;i++){
+    TLorentzVector *lv = (TLorentzVector*) lvArray->At(i);
+    if (lv->Pt() > ptMax) {
+      ptMax = lv->Pt();
+      idxMax = i;
+    }
+  }
+
+  // fill correlation array
+  fLeading = (TLorentzVector*) lvArray->At(idxMax);
+  for (Int_t i=0; i<nIn;i++){
+    if (i == idxMax) continue;
+    TLorentzVector *lv = (TLorentzVector*) lvArray->At(i);
+    Double_t dphi = fLeading->DeltaPhi(*lv);
+    if (dphi < fLow) dphi=2.0*TMath::Pi()+dphi;
+    // find bin and fill array
+
+    Int_t iBin = (Int_t) TMath::Floor((dphi-fLow)
+			       *((Double_t)fnBin)/(2.0*TMath::Pi()));
+    fCorr.AddAt(fCorr.At(iBin)+1,iBin);
+  }
+}
+
+////////////////////////////////////////////////////////////////////////
+
+void AliLeading::Reset()
+
+{
+// Reset leding particle information
+  fLeading->SetPxPyPzE(0.,0.,0.,0.);
+  fNassoc=0;
+  fCorr.Reset();
+}
+
+////////////////////////////////////////////////////////////////////////
+
+void AliLeading::PrintLeading()
+
+{
+// Print leading particle information
+  if (fNassoc<0) {
+    cout << " No leading particle in this event" << endl;
+    return;
+  }
+  cout << " Leading particle: " << endl;
+  cout << "    (px,py,pz,e) = (" << fLeading->Px() << ","
+       << fLeading->Py() << "," << fLeading->Pz() << ","
+       << fLeading->E() << ")" << endl;
+  cout << "    (pt,eta,phi) = (" << fLeading->Pt() << ","
+       << fLeading->Eta() << "," << fLeading->Phi() << ")" << endl;
+  cout << "    " << fNassoc << " associated particles." << endl;
+}
