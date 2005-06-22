@@ -148,18 +148,12 @@ void Config(char directory[100]="", char option[6]="param")
   AliSHIL *SHIL = new AliSHILv2("SHIL", "Shielding Version 2");
   //=================== MUON Subsystem ===========================
   cout << ">>> Config.C: Creating AliMUONv1 ..."<<endl;
-  
   // New MUONv1 version (geometry defined via builders)
   AliMUON *MUON = new AliMUONv1("MUON", "default");
-  
   // If align = true, the detection elements transformations
   // are taken from the input files and not from the code
   //MUON->SetAlign(true);
-
-   // To save detection element Id in the hits
   ((AliMUONv1*)MUON)->SetStepManagerVersionDE(true);
- 
-  MUON->SetSegmentationType(2);// default wise to old (1), new (2)  
   MUON->AddGeometryBuilder(new AliMUONSt1GeometryBuilderV2(MUON));
   MUON->AddGeometryBuilder(new AliMUONSt2GeometryBuilderV2(MUON));
   MUON->AddGeometryBuilder(new AliMUONSlatGeometryBuilder(MUON));
