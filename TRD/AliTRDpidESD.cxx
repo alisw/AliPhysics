@@ -93,10 +93,6 @@ Int_t AliTRDpidESD::MakePID(AliESD *event)
   //
   // The class AliTRDprobdist contains precalculated prob dis.
   AliTRDprobdist *pd = new AliTRDprobdist();
-  //  Double_t ebin[200], ppi[200], pel[200];
-  //  pd->GetData(2,ebin,ppi,pel);
-  //  for(Int_t ie=0; ie<10; ie++)  
-  //    printf(" %f %f %f \n", ebin[ie], ppi[ie], pel[ie]);
 
   Int_t ntrk=event->GetNumberOfTracks();
   for (Int_t i=0; i<ntrk; i++) {
@@ -109,68 +105,25 @@ Int_t AliTRDpidESD::MakePID(AliESD *event)
     Int_t ns=AliPID::kSPECIES;
     Double_t p[10];
     Double_t mom=t->GetP();
+    Double_t probTotal=0.0;
     for (Int_t j=0; j<ns; j++) {
       p[j]=1.;
       for (Int_t ilayer=0; ilayer <6; ilayer++) {
         Double_t dedx=t->GetTRDsignals(ilayer);
         Int_t timbin=t->GetTRDTimBin(ilayer);
-        if (j==0 || j==2){
-          p[j]*= pd->GetProbability(j,mom,dedx);
-          p[j]*= pd->GetProbabilityT(j,mom,timbin);
-          p[j]*= 100;
-        }
+	p[j]*= pd->GetProbability(j,mom,dedx);
+	p[j]*= pd->GetProbabilityT(j,mom,timbin);
+	p[j]*= 100;
       } // loop over layers
+      probTotal+=p[j];
     } //loop over particle species
     //    printf(" %f  %d  %f  %f  %f \n", mom, timbin, p[0], p[1], p[2]);
-    if(p[0]) p[0]= p[0]/(p[0]+p[2]); 
-    if(p[2]) p[2]= 1.-p[0];
-    if(p[0]==0 && p[2]==0){
-      p[0]=1.;
-      p[2]=1.;
-    }
+    for (Int_t j=0; j<ns; j++) {
+      if(probTotal) p[j]/= probTotal;
+      else p[j]=1.0;
+    } //loop over particle species
     t->SetTRDpid(p);
-  } //loop over track
+  } //loop over tracks
   delete pd;
   return 0;
 }
-
-
-/*
-//_________________________________________________________________________
-MakePID(AliESD *event)
-{
-  //
-  //  This function calculates the "detector response" PID probabilities 
-  //
-  Int_t ntrk=event->GetNumberOfTracks();
-  for (Int_t i=0; i<ntrk; i++) {
-    AliESDtrack *t=event->GetTrack(i);
-    if ((t->GetStatus()&AliESDtrack::kTRDin)==0)
-       if ((t->GetStatus()&AliESDtrack::kTRDout)==0)
-          if ((t->GetStatus()&AliESDtrack::kTRDrefit)==0) continue;
-	  //    Int_t ns=AliESDtrack::kSPECIES;
-    Int_t ns=AliPID::kSPECIES;
-    Double_t p[10];
-    for (Int_t j=0; j<ns; j++) {
-      Double_t mass=AliPID::ParticleMass(j);
-      Double_t mass=masses[j];
-      Double_t mom=t->GetP();
-      Double_t dedx=t->GetTRDsignal()/fMIP;
-      Double_t bethe= AliTRDpidESD::Bethe(mom/mass); 
-      Double_t sigma=fRes*bethe;
-      if (TMath::Abs(dedx-bethe) > fRange*sigma) {
-	p[j]=TMath::Exp(-0.5*fRange*fRange)/sigma;
-        continue;
-      }
-      p[j]=TMath::Exp(-0.5*(dedx-bethe)*(dedx-bethe)/(sigma*sigma))/sigma;
-    }
-    t->SetTRDpid(p);
-    //    if(i==50) printf("%f %f %f \n", p[0], p[1], p[2]);
-  }
-  return 0;
-}
-
-*/
-
-
-
