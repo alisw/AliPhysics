@@ -7,4 +7,4 @@
 
 #include "AliRoot/TrackerCallback.hpp"
 
-ClassImp(AliMUONHLT::TrackerCallback);
+ClassImp(AliMUONHLT::TrackerCallback)

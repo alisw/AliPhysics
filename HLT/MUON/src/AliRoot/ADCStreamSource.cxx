@@ -13,8 +13,8 @@
 // TODO: Change all the Error message statements to AliError at some stage.
 
 
-ClassImp(AliMUONHLT::ADCStreamSource);
-ClassImp(AliMUONHLT::ADCStreamSource::DataBlock);
+ClassImp(AliMUONHLT::ADCStreamSource)
+ClassImp(AliMUONHLT::ADCStreamSource::DataBlock)
 
 namespace AliMUONHLT
 {
@@ -23,13 +23,13 @@ namespace AliMUONHLT
 ADCStreamSource::ADCStreamSource() : TObject()
 {
 	fCurrentStream = -1;
-};
+}
 
 
 ADCStreamSource::~ADCStreamSource()
 {
 	// Everything is cleaned up implicitly.
-};
+}
 
 
 void ADCStreamSource::FillFromFile(const TString& filename, const Int_t eventnumber)
@@ -64,7 +64,7 @@ void ADCStreamSource::FillFromFile(const TString& filename, const Int_t eventnum
 	);
 	
 	DebugMsg(1, "Leaving FillFromFile");
-};
+}
 
 
 void ADCStreamSource::FillFrom(const TString& directory, const Int_t eventnumber)
@@ -92,7 +92,7 @@ void ADCStreamSource::FillFrom(const TString& directory, const Int_t eventnumber
 	
 	
 	DebugMsg(1, "Leaving FillFrom");
-};
+}
 
 
 void ADCStreamSource::FillFrom(const TString& dirprefix, const UInt_t firstevent, const UInt_t lastevent)
@@ -107,20 +107,20 @@ void ADCStreamSource::FillFrom(const TString& dirprefix, const UInt_t firstevent
 	};
 	
 	DebugMsg(1, "Leaving FillFrom");
-};
+}
 
 
 void ADCStreamSource::Clear()
 {
 	fCurrentStream = -1;
 	fList.erase( fList.begin(), fList.end() );
-};
+}
 
 
 Int_t ADCStreamSource::NumberOfStreams() const
 {
 	return fList.size();
-};
+}
 
 
 Bool_t ADCStreamSource::GetStream(const Int_t index) const
@@ -144,8 +144,8 @@ Bool_t ADCStreamSource::GetStream(const Int_t index) const
 				index
 			);
 		return kFALSE;
-	};
-};
+	}
+}
 
 
 Bool_t ADCStreamSource::FirstStream() const
@@ -157,7 +157,7 @@ Bool_t ADCStreamSource::FirstStream() const
 	}
 	else
 		return kFALSE;
-};
+}
 
 
 Bool_t ADCStreamSource::NextStream() const
@@ -183,8 +183,8 @@ Int_t ADCStreamSource::EventNumber() const
 	{
 		Error("EventNumber", "No ADC stream selected.");
 		return -1;
-	};
-};
+	}
+}
 
 
 Bool_t ADCStreamSource::FetchStream(ADCStream& stream) const
@@ -199,8 +199,8 @@ Bool_t ADCStreamSource::FetchStream(ADCStream& stream) const
 	{
 		Error("FetchStream", "No ADC stream selected.");
 		return kFALSE;
-	};
-};
+	}
+}
 
 
 Bool_t ADCStreamSource::FetchStream(const Int_t index, ADCStream& stream) const
@@ -209,7 +209,7 @@ Bool_t ADCStreamSource::FetchStream(const Int_t index, ADCStream& stream) const
 		return FetchStream(stream);
 	else
 		return kFALSE;
-};
+}
 
 
 const ADCStream* ADCStreamSource::FetchStream() const
@@ -223,8 +223,8 @@ const ADCStream* ADCStreamSource::FetchStream() const
 	{
 		Error("FetchStream", "No ADC stream selected.");
 		return NULL;
-	};
-};
+	}
+}
 
 
 void ADCStreamSource::AddStream(ADCStream& stream, const UInt_t eventnumber)
@@ -238,7 +238,7 @@ void ADCStreamSource::AddStream(ADCStream& stream, const UInt_t eventnumber)
 	fCurrentStream = fList.size() - 1;
 	
 	DebugMsg(1, "Leaving AddStream");
-};
+}
 
 
-}; // AliMUONHLT
+} // AliMUONHLT

@@ -74,7 +74,7 @@ public:
 	static void SetZ13(const Float value) { z13 = value; };
 
 
-protected:
+  //protected:
 
 
 	class RegionOfInterest

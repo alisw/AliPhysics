@@ -9,7 +9,7 @@
 #include <TMath.h>
 #include "Utils.hpp"
 
-ClassImp(AliMUONHLT::Track);
+ClassImp(AliMUONHLT::Track)
 
 namespace AliMUONHLT
 {
@@ -18,7 +18,7 @@ namespace AliMUONHLT
 Track::Track() : TObject()
 {
 	Init();
-};
+}
 
 
 Track::Track(
@@ -53,9 +53,9 @@ Track::Track(
 		{
 			fHit[i] = hits[i];
 			fRegionOfInterest[i] = regions[i];
-		};
-	};
-};
+		}
+	}
+}
 
 
 void Track::Init()
@@ -63,7 +63,7 @@ void Track::Init()
 	fTriggerID = -1;
 	fParticleSign = 0;
 	fP = fPt = 0.0;
-};
+}
 
 
 void Track::ParticleSign(const Int_t value)
@@ -75,7 +75,7 @@ void Track::ParticleSign(const Int_t value)
 			"The particle sign must be a value of -1, 0 or +1, but got %d",
 			value
 		);
-};
+}
 
 
 void Track::P(const Float_t value)
@@ -87,7 +87,7 @@ void Track::P(const Float_t value)
 			"Trying to assing momentum (%f) which is smaller than the pt value (%f).",
 			value, fPt
 		);
-};
+}
 
 void Track::Pt(const Float_t value)
 {
@@ -117,8 +117,8 @@ Point& Track::Hit(const UInt_t chamber)
 			chamber
 		);
 		return fHit[0];
-	};
-};
+	}
+}
 
 
 const Point& Track::Hit(const UInt_t chamber) const
@@ -145,7 +145,7 @@ void Track::Hit(const UInt_t chamber, const Point& value)
 			"The chamber is out of range. Got: %d, but should be in [0..9].",
 			chamber
 		);
-};
+}
 
 
 Region& Track::RegionOfInterest(const UInt_t chamber)
@@ -159,8 +159,8 @@ Region& Track::RegionOfInterest(const UInt_t chamber)
 			chamber
 		);
 		return fRegionOfInterest[0];
-	};
-};
+	}
+}
 
 
 const Region& Track::RegionOfInterest(const UInt_t chamber) const
@@ -174,8 +174,8 @@ const Region& Track::RegionOfInterest(const UInt_t chamber) const
 			chamber
 		);
 		return fRegionOfInterest[0];
-	};
-};
+	}
+}
 
 
 void Track::RegionOfInterest(const UInt_t chamber, const Region& value)
@@ -187,7 +187,7 @@ void Track::RegionOfInterest(const UInt_t chamber, const Region& value)
 			"The chamber is out of range. Got: %d, but should be in [0..9].",
 			chamber
 		);
-};
+}
 
 
 Bool_t Track::HitsInRegions() const
@@ -196,9 +196,9 @@ Bool_t Track::HitsInRegions() const
 	{
 		if ( not fRegionOfInterest[i].Contains(fHit[i]) )
 			return kFALSE;
-	};
+	}
 	return kTRUE;
-};
+}
 
 
 ostream& operator << (ostream& os, const Track& t)
@@ -206,7 +206,7 @@ ostream& operator << (ostream& os, const Track& t)
 	os << "{trigid: " << t.fTriggerID << ", sign: " << t.fParticleSign
 	   << ", p: " << t.fP << ", pt: " << t.fPt << "}";
 	return os;
-};
+}
 
 
-}; // AliMUONHLT
+} // AliMUONHLT

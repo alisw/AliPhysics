@@ -33,7 +33,7 @@ public:
 	 */
 	Region(const Float_t left, const Float_t right, const Float_t bottom, const Float_t top);
 
-	virtual ~Region() {};
+	virtual ~Region() {}
 	
 	/* Get/Set methods for the boundary lines.
 	   Note: before assignment we check for the following parameter consistency:
@@ -42,13 +42,13 @@ public:
 	   and nothing is changed internally.
 	 */
 	void Left(const Float_t value);
-	Float_t Left() const { return fLeft; };
+	Float_t Left() const { return fLeft; }
 	void Right(const Float_t value);
-	Float_t Right() const { return fRight; };
+	Float_t Right() const { return fRight; }
 	void Bottom(const Float_t value);
-	Float_t Bottom() const { return fBottom; };
+	Float_t Bottom() const { return fBottom; }
 	void Top(const Float_t value);
-	Float_t Top() const { return fTop; };
+	Float_t Top() const { return fTop; }
 	
 	/* Checks if the point is within this region. If it is then kTRUE is returned
 	   otherwise kFALSE is returned.
@@ -65,10 +65,10 @@ private:
 	Float_t fBottom;  // Bottom boundary of boundary box.
 	Float_t fTop;     // Top boundary of boundary box.
 
-	ClassDef(Region, 1);  // A boundary box region.
+	ClassDef(Region, 1)  // A boundary box region.
 };
 
 
-}; // AliMUONHLT
+} // AliMUONHLT
 
 #endif // dHLT_ALIROOT_REGION_HPP

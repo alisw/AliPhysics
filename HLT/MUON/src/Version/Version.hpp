@@ -44,6 +44,6 @@ UInt MinorVersion();
 UInt BuildNumber();
 
 
-}; // dHLT
+} // dHLT
 
 #endif // dHLT_VERSION_FUNCTIONS_HPP

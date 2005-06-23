@@ -40,7 +40,7 @@ private:
 };
 
 
-}; // AliRoot
-}; // dHLT
+} // AliRoot
+} // dHLT
 
 #endif // dHLT_ALIROOT_CLUSTER_FINDER_PROXY_HPP

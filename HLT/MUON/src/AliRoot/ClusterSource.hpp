@@ -305,10 +305,10 @@ private:
 
 	TClonesArray fEventList;  // List of clusters per event.
 
-	ClassDef(ClusterSource, 1);  // The source of cluster point blocks for dHLT.
+	ClassDef(ClusterSource, 1)  // The source of cluster point blocks for dHLT.
 };
 
 
-}; // AliMUONHLT
+} // AliMUONHLT
 
 #endif // dHLT_ALIROOT_CLUSTER_SOURCE_HPP

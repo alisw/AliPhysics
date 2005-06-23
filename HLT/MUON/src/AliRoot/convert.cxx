@@ -19,14 +19,14 @@ AliMUONHLT::Point Convert(const dHLT::Point& point)
 {
 	DebugMsg(5, "Convert from dHLT::Point");
 	return AliMUONHLT::Point(point.x, point.y);
-};
+}
 
 
 dHLT::Point Convert(const AliMUONHLT::Point& point)
 {
 	DebugMsg(5, "Convert from AliMUONHLT::Point");
 	return dHLT::Point(point.fX, point.fY);
-};
+}
 
 
 AliMUONHLT::TriggerRecord Convert(const dHLT::TriggerRecord& record, const Int_t triggernumber)
@@ -52,8 +52,8 @@ AliMUONHLT::TriggerRecord Convert(const dHLT::TriggerRecord& record, const Int_t
 					Convert( record.station1impact ),
 					Convert( record.station2impact )
 				);
-	};
-};
+	}
+}
 
 
 dHLT::TriggerRecord Convert(const AliMUONHLT::TriggerRecord& record)
@@ -65,7 +65,7 @@ dHLT::TriggerRecord Convert(const AliMUONHLT::TriggerRecord& record)
 				Convert( record.Station1Point() ),
 				Convert( record.Station2Point() )
 			);
-};
+}
 
 
 AliMUONHLT::Track Convert(const dHLT::Track& track)
@@ -84,9 +84,9 @@ AliMUONHLT::Track Convert(const dHLT::Track& track)
 		// is filled with NaN's.
 		if (track.region[i] != dHLT::INVALID_ROI)
 			t.RegionOfInterest(i) = Convert( track.region[i] );
-	};
+	}
 	return t;
-};
+}
 
 
 dHLT::Track Convert(const AliMUONHLT::Track& track)
@@ -101,9 +101,9 @@ dHLT::Track Convert(const AliMUONHLT::Track& track)
 	{
 		t.point[i] = Convert( track.Hit(i) );
 		t.region[i] = Convert( track.RegionOfInterest(i), i );
-	};
+	}
 	return t;
-};
+}
 
 
 AliMUONHLT::Region Convert(const dHLT::ROI region)
@@ -111,7 +111,7 @@ AliMUONHLT::Region Convert(const dHLT::ROI region)
 	DebugMsg(5, "Convert from dHLT::ROI");
 	dHLT::RegionOfInterest roi(region);
 	return AliMUONHLT::Region( roi.Left(), roi.Right(), roi.Bottom(), roi.Top() );
-};
+}
 
 
 dHLT::ROI Convert(const AliMUONHLT::Region& region, const UInt_t chamber)
@@ -133,9 +133,9 @@ dHLT::ROI Convert(const AliMUONHLT::Region& region, const UInt_t chamber)
 				dHLT::Chamber10
 			);
 		return roi;
-	};
-};
+	}
+}
 
 
-}; // AliRoot
-}; // dHLT
+} // AliRoot
+} // dHLT

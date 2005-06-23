@@ -36,7 +36,7 @@ extern AliMUONHLT::Region        Convert(const dHLT::ROI                  region
 extern dHLT::ROI                 Convert(const AliMUONHLT::Region&        region, const UInt_t chamber);
 
 
-}; // AliRoot
-}; // dHLT
+} // AliRoot
+} // dHLT
 
 #endif // dHLT_ALIROOT_CONVERT_HPP

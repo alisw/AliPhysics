@@ -33,8 +33,8 @@ public:
 	void Size(const UInt_t size);
 	void Fill(const UInt_t* data, const UInt_t size);
 	
-	UInt_t* Data() { return (UInt_t*) fData.GetArray(); };
-	const UInt_t* Data() const { return (UInt_t*) fData.GetArray(); };
+	UInt_t* Data() { return (UInt_t*) fData.GetArray(); }
+	const UInt_t* Data() const { return (UInt_t*) fData.GetArray(); }
 	
 // 	UInt_t& operator [] (const UInt_t index);
 	UInt_t operator [] (const UInt_t index) const;
@@ -47,10 +47,10 @@ private:
 	// TODO: complete the ADC stream specification.
 	TArrayI fData;
 
-	ClassDef(ADCStream, 1);  // ADC stream data.
+	ClassDef(ADCStream, 1)  // ADC stream data.
 };
 
 
-}; // AliMUONHLT
+} // AliMUONHLT
 
 #endif // dHLT_ALIROOT_ADC_STREAM_HPP

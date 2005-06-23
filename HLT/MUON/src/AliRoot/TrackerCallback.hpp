@@ -27,7 +27,7 @@ public:
 	virtual void FoundTrack() = 0;
 	virtual void NoTrackFound() = 0;
 	
-	ClassDef(TrackerCallback, 0);  // Abstract tracker callback class.
+	ClassDef(TrackerCallback, 0)  // Abstract tracker callback class.
 };
 
 

@@ -23,19 +23,19 @@ CenterOfGravityFinder::CenterOfGravityFinder() : ClusterFinder()
 	DigitMax = 35; // maximum number of padhits in columns or rows.
 	DDLMax = 200; // Maximum number of padhits in one ddl;
 	DDLTot = 500; // totoal number of padhits in one ddl;
-};
+}
 
 
 CenterOfGravityFinder::~CenterOfGravityFinder()
 {
 	// TODO
-};
+}
 
 
 void CenterOfGravityFinder::FindClusters(const ADCStream* stream)
 {
 	// TODO
-};
+}
 
 
 UInt CenterOfGravityFinder::FillClusterData(
@@ -44,14 +44,14 @@ UInt CenterOfGravityFinder::FillClusterData(
 {
 	// TODO
 	return 0;
-};
+}
 
 
 void CenterOfGravityFinder::Reset() {
 	    // TODO
-};
+}
 
 
-}; // Clustering
-}; // dHLT
+} // Clustering
+} // dHLT
 

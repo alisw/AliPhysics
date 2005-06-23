@@ -106,17 +106,17 @@ public:  // Unfortunately ROOT requires the following to be public.
 		Int_t fEventNumber;  // Event number of the stream.
 		ADCStream fStream;  // The ADC stream block.
 		
-		ClassDef(DataBlock, 1);  // Data per event.
+		ClassDef(DataBlock, 1)  // Data per event.
 	};
 
 private:
 
 	std::vector<DataBlock> fList;  // List of ADC streams.
 
-	ClassDef(ADCStreamSource, 1);  // The source of ADC stream data for dHLT.
+	ClassDef(ADCStreamSource, 1)  // The source of ADC stream data for dHLT.
 };
 
 
-}; // AliMUONHLT
+} // AliMUONHLT
 
 #endif // dHLT_ALIROOT_ADC_STREAM_SOURCE_HPP

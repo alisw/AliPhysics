@@ -21,7 +21,7 @@ ClusterFinderProxy::ClusterFinderProxy(AliMUONHLT::ClusterFinderInterface* clien
 	: Clustering::ClusterFinder(), AliMUONHLT::ClusterFinderCallback()
 {
 	clusterfinder = client;
-};
+}
 
 
 void ClusterFinderProxy::FindClusters(const ADCStream* stream)
@@ -31,7 +31,7 @@ void ClusterFinderProxy::FindClusters(const ADCStream* stream)
 	AliMUONHLT::ADCStream adc;
 	DebugMsg(6, "ClusterFinderProxy::FindClusters: " << adc);
 	clusterfinder->FindClusters(&adc);
-};
+}
 
 
 UInt ClusterFinderProxy::FillClusterData(ClusterPoint* clusters, const UInt arraysize)
@@ -46,36 +46,36 @@ UInt ClusterFinderProxy::FillClusterData(ClusterPoint* clusters, const UInt arra
 		{
 			clusters[i] = Convert(points[i]);
 			DebugMsg(6, "\tpoints[" << i << "] = " << points[i] );
-		};
+		}
 	}
 	finally
 	(
 		delete [] points;
-	);
+	)
 	return result;
-};
+}
 
 
 void ClusterFinderProxy::Reset()
 {
 	DebugMsg(6, "ClusterFinderProxy::Reset");
 	clusterfinder->Reset();
-};
+}
 
 
 void ClusterFinderProxy::FoundClusters(const UInt_t numberfound)
 {
 	DebugMsg(6, "ClusterFinderProxy::FoundClusters");
 	Clustering::ClusterFinder::FoundClusters(numberfound);
-};
+}
 
 
 void ClusterFinderProxy::NoClustersFound()
 {
 	DebugMsg(6, "ClusterFinderProxy::NoClustersFound");
 	Clustering::ClusterFinder::NoClustersFound();
-};
+}
 
 
-}; // AliRoot
-}; // dHLT
+} // AliRoot
+} // dHLT

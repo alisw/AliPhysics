@@ -68,8 +68,8 @@ public:
 	void Clear();
 	
 	// Get methods for file and folder names.
-	TString FileName()   const { return fFilename; };
-	TString FolderName() const { return fFoldername; };
+	TString FileName()   const { return fFilename; }
+	TString FolderName() const { return fFoldername; }
 	
 	/* Returns the number of events stored.
 	 */
@@ -220,10 +220,10 @@ private:
 
 	TClonesArray fEventList;  // List of tracks per event.
 
-	ClassDef(TrackSink, 1);  // The data sink for track blocks for dHLT.
+	ClassDef(TrackSink, 1)  // The data sink for track blocks for dHLT.
 };
 
 
-}; // AliMUONHLT
+} // AliMUONHLT
 
 #endif // dHLT_ALIROOT_TRACK_SINK_HPP

@@ -8,8 +8,8 @@
 #include "AliRoot/TrackSink.hpp"
 #include "AliRoot/Base.hpp"
 
-ClassImp(AliMUONHLT::TrackSink);
-ClassImp(AliMUONHLT::TrackSink::EventData);
+ClassImp(AliMUONHLT::TrackSink)
+ClassImp(AliMUONHLT::TrackSink::EventData)
 
 namespace AliMUONHLT
 {
@@ -21,14 +21,14 @@ TrackSink::TrackSink() :
 	fFilename = "";
 	fFoldername = "";
 	ResetAllPointers();
-};
+}
 
 
 TrackSink::~TrackSink()
 {
 	DebugMsg(1, "TrackSink::~TrackSink()");
 	fEventList.Clear("C");
-};
+}
 
 
 void TrackSink::AddEvent(const Int_t eventnumber)
@@ -63,7 +63,7 @@ void TrackSink::AddEvent(const Int_t eventnumber)
 	DebugMsg(2, "\tfEventIndex = " << fEventIndex << " , fBlockIndex = " << fBlockIndex
 		<< " , fTrackIndex = " << fTrackIndex
 	);
-};
+}
 
 
 void TrackSink::AddBlock()
@@ -86,7 +86,7 @@ void TrackSink::AddBlock()
 	DebugMsg(2, "\tfEventIndex = " << fEventIndex << " , fBlockIndex = " << fBlockIndex
 		<< " , fTrackIndex = " << fTrackIndex
 	);
-};
+}
 
 
 void TrackSink::AddTrack(const Track& track)
@@ -106,7 +106,7 @@ void TrackSink::AddTrack(const Track& track)
 	DebugMsg(2, "\tfEventIndex = " << fEventIndex << " , fBlockIndex = " << fBlockIndex
 		<< " , fTrackIndex = " << fTrackIndex
 	);
-};
+}
 
 
 Track* TrackSink::AddTrack()
@@ -152,14 +152,14 @@ void TrackSink::AddTrack(
 	DebugMsg(2, "\tfEventIndex = " << fEventIndex << " , fBlockIndex = " << fBlockIndex
 		<< " , fTrackIndex = " << fTrackIndex
 	);
-};
+}
 
 
 void TrackSink::SetNames(const TriggerSource* triggersource)
 {
 	fFilename = triggersource->FileName();
 	fFoldername = triggersource->FolderName();
-};
+}
 
 
 void TrackSink::Clear()
@@ -168,7 +168,7 @@ void TrackSink::Clear()
 	fFoldername = "";
 	ResetAllPointers();
 	fEventList.Clear("C");
-};
+}
 
 
 Bool_t TrackSink::GetEvent(const Int_t eventnumber) const
@@ -188,10 +188,10 @@ Bool_t TrackSink::GetEvent(const Int_t eventnumber) const
 				<< " , fTrackIndex = " << fTrackIndex
 			);
 			return kTRUE;
-		};
-	};
+		}
+	}
 	return kFALSE;
-};
+}
 
 
 Bool_t TrackSink::GetFirstEvent() const
@@ -213,14 +213,14 @@ Bool_t TrackSink::GetFirstEvent() const
 			<< " , fTrackIndex = " << fTrackIndex
 		);
 		return kFALSE;
-	};
-};
+	}
+}
 
 
 Bool_t TrackSink::MoreEvents() const
 {
 	return 0 <= fEventIndex and fEventIndex < fEventList.GetEntriesFast();
-};
+}
 
 
 Bool_t TrackSink::GetNextEvent() const
@@ -249,7 +249,7 @@ Int_t TrackSink::CurrentEvent() const
 		return fCurrentEvent->fEventNumber;
 	else
 		return -1;
-};
+}
 
 
 Int_t TrackSink::NumberOfBlocks() const
@@ -262,7 +262,7 @@ Int_t TrackSink::NumberOfBlocks() const
 	}
 	else
 		return fCurrentEvent->fBlocks.GetEntriesFast();
-};
+}
 
 
 Bool_t TrackSink::GetBlock(const Int_t index) const
@@ -297,8 +297,8 @@ Bool_t TrackSink::GetBlock(const Int_t index) const
 				index
 			);
 		return kFALSE;
-	};
-};
+	}
+}
 
 
 Bool_t TrackSink::GetFirstBlock() const
@@ -317,13 +317,13 @@ Bool_t TrackSink::GetFirstBlock() const
 	}
 	else
 		return kFALSE;
-};
+}
 
 
 Bool_t TrackSink::MoreBlocks() const
 {
 	return 0 <= fBlockIndex and fBlockIndex < NumberOfBlocks();
-};
+}
 
 
 Bool_t TrackSink::GetNextBlock() const
@@ -345,8 +345,8 @@ Bool_t TrackSink::GetNextBlock() const
 	{
 		ResetBlockPointers();
 		return kFALSE;
-	};
-};
+	}
+}
 
 
 Int_t TrackSink::NumberOfTracks() const
@@ -393,8 +393,8 @@ const Track* TrackSink::GetTrack(const Int_t index) const
 				index
 			);
 		return NULL;
-	};
-};
+	}
+}
 
 
 const Track* TrackSink::GetFirstTrack() const
@@ -412,13 +412,13 @@ const Track* TrackSink::GetFirstTrack() const
 	}
 	else
 		return NULL;
-};
+}
 
 
 Bool_t TrackSink::MoreTracks() const
 {
 	return 0 <= fTrackIndex and fTrackIndex < NumberOfTracks();
-};
+}
 
 
 const Track* TrackSink::GetNextTrack() const
@@ -439,8 +439,8 @@ const Track* TrackSink::GetNextTrack() const
 	{
 		ResetTrackPointers();
 		return NULL;
-	};
-};
+	}
+}
 
 
 void TrackSink::ResetAllPointers() const
@@ -454,7 +454,7 @@ void TrackSink::ResetAllPointers() const
 	DebugMsg(2, "\tfEventIndex = " << fEventIndex << " , fBlockIndex = " << fBlockIndex
 		<< " , fTrackIndex = " << fTrackIndex
 	);
-};
+}
 
 
 void TrackSink::ResetBlockPointers() const
@@ -466,7 +466,7 @@ void TrackSink::ResetBlockPointers() const
 	DebugMsg(2, "\tfEventIndex = " << fEventIndex << " , fBlockIndex = " << fBlockIndex
 		<< " , fTrackIndex = " << fTrackIndex
 	);
-};
+}
 
 
 void TrackSink::ResetTrackPointers() const
@@ -476,13 +476,13 @@ void TrackSink::ResetTrackPointers() const
 	DebugMsg(2, "\tfEventIndex = " << fEventIndex << " , fBlockIndex = " << fBlockIndex
 		<< " , fTrackIndex = " << fTrackIndex
 	);
-};
+}
 
 
 TrackSink::EventData::EventData() : fBlocks(TClonesArray::Class())
 {
 	fEventNumber = -1;
-};
+}
 
 
 TrackSink::EventData::EventData(const Int_t eventnumber)
@@ -492,14 +492,14 @@ TrackSink::EventData::EventData(const Int_t eventnumber)
 	
 	// If the following is not set then we do not write the fBlocks properly.
 	fBlocks.BypassStreamer(kFALSE);
-};
+}
 
 
 TrackSink::EventData::~EventData()
 {
 	DebugMsg(1, "TrackSink::EventData::~EventData()");
 	fBlocks.Clear("C");
-};
+}
 
 
-}; // AliMUONHLT
+} // AliMUONHLT

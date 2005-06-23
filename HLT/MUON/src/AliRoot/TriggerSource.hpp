@@ -296,7 +296,7 @@ public:  // Unfortunately ROOT requires the following to be public.
 		Int_t fEventNumber;  // Event number in AliMUONDataInterface from which the triggers were taken.
 		TClonesArray fBlocks; // The list of blocks of trigger records.
 		
-		ClassDef(EventData, 1);  // Data per event.
+		ClassDef(EventData, 1)  // Data per event.
 	};
 	
 private:
@@ -320,10 +320,10 @@ private:
 	
 	Bool_t fHadToLoadgAlice;  //! Flag indicating if this object had to load the AliRun object.
 
-	ClassDef(TriggerSource, 1);  // The source of trigger records for dHLT.
+	ClassDef(TriggerSource, 1)  // The source of trigger records for dHLT.
 };
 
 
-}; // AliMUONHLT
+} // AliMUONHLT
 
 #endif // dHLT_ALIROOT_TRIGGER_SOURCE_HPP

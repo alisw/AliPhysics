@@ -17,9 +17,9 @@
 #include <float.h>
 #endif
 
-ClassImp(AliMUONHLT::ClusterSource);
-ClassImp(AliMUONHLT::ClusterSource::BlockData);
-ClassImp(AliMUONHLT::ClusterSource::EventData);
+ClassImp(AliMUONHLT::ClusterSource)
+ClassImp(AliMUONHLT::ClusterSource::BlockData)
+ClassImp(AliMUONHLT::ClusterSource::EventData)
 
 namespace AliMUONHLT
 {
@@ -34,7 +34,7 @@ ClusterSource::ClusterSource()
 	fFilename = "";
 	fFoldername = "";
 	ResetAllPointers();
-};
+}
 
 
 ClusterSource::ClusterSource(AliMUONDataInterface* data)
@@ -47,13 +47,13 @@ ClusterSource::ClusterSource(AliMUONDataInterface* data)
 	fFoldername = "";
 	ResetAllPointers();
 	FillFrom(data);
-};
+}
 
 
 ClusterSource::~ClusterSource()
 {
 	fEventList.Clear("C");
-};
+}
 
 
 void ClusterSource::FillFrom(AliMUONDataInterface* data)
@@ -65,9 +65,9 @@ void ClusterSource::FillFrom(AliMUONDataInterface* data)
 		for (Int_t i = 0; i < data->NumberOfEvents(); i++)
 		{
 			AddEventFrom(data, i);
-		};
-	};
-};
+		}
+	}
+}
 
 
 void ClusterSource::FillFrom(AliMUONDataInterface* data, const Int_t event)
@@ -76,7 +76,7 @@ void ClusterSource::FillFrom(AliMUONDataInterface* data, const Int_t event)
 	
 	if (FileAndFolderOk(data))
 		AddEventFrom(data, event);
-};
+}
 
 
 void ClusterSource::FillFrom(AliMUONDataInterface* data, const Int_t event, const Int_t chamber)
@@ -89,9 +89,9 @@ void ClusterSource::FillFrom(AliMUONDataInterface* data, const Int_t event, cons
 		{
 			AddEvent(event);
 			AddChamberFrom(data, chamber);
-		};
-	};
-};
+		}
+	}
+}
 
 
 void ClusterSource::FillFrom(
@@ -143,8 +143,8 @@ void ClusterSource::FillFrom(
 			AddBlock(chamber);  // No block selected so we need to create a new block.
 
 		AddClusterFrom(data, chamber, cluster);
-	};
-};
+	}
+}
 
 
 void ClusterSource::Clear()
@@ -153,7 +153,7 @@ void ClusterSource::Clear()
 	fFoldername = "";
 	ResetAllPointers();
 	fEventList.Clear("C");
-};
+}
 
 
 Bool_t ClusterSource::GetEvent(const Int_t eventnumber) const
@@ -173,10 +173,10 @@ Bool_t ClusterSource::GetEvent(const Int_t eventnumber) const
 				<< " , fClusterIndex = " << fClusterIndex
 			);
 			return kTRUE;
-		};
-	};
+		}
+	}
 	return kFALSE;
-};
+}
 
 
 Bool_t ClusterSource::GetFirstEvent() const
@@ -198,14 +198,14 @@ Bool_t ClusterSource::GetFirstEvent() const
 			<< " , fClusterIndex = " << fClusterIndex
 		);
 		return kFALSE;
-	};
-};
+	}
+}
 
 
 Bool_t ClusterSource::MoreEvents() const
 {
 	return 0 <= fEventIndex and fEventIndex < fEventList.GetEntriesFast();
-};
+}
 
 
 Bool_t ClusterSource::GetNextEvent() const
@@ -247,7 +247,7 @@ Int_t ClusterSource::NumberOfBlocks() const
 	}
 	else
 		return fCurrentEvent->fBlocks.GetEntriesFast();
-};
+}
 
 
 Bool_t ClusterSource::GetBlock(const Int_t index) const
@@ -282,8 +282,8 @@ Bool_t ClusterSource::GetBlock(const Int_t index) const
 				index
 			);
 		return kFALSE;
-	};
-};
+	}
+}
 
 
 Bool_t ClusterSource::GetFirstBlock() const
@@ -302,13 +302,13 @@ Bool_t ClusterSource::GetFirstBlock() const
 	}
 	else
 		return kFALSE;
-};
+}
 
 
 Bool_t ClusterSource::MoreBlocks() const
 {
 	return 0 <= fBlockIndex and fBlockIndex < NumberOfBlocks();
-};
+}
 
 
 Bool_t ClusterSource::GetNextBlock() const
@@ -330,8 +330,8 @@ Bool_t ClusterSource::GetNextBlock() const
 	{
 		ResetBlockPointers();
 		return kFALSE;
-	};
-};
+	}
+}
 
 
 Int_t ClusterSource::Chamber() const
@@ -343,7 +343,7 @@ Int_t ClusterSource::Chamber() const
 	}
 	else
 		return fCurrentBlock->fChamber;
-};
+}
 
 
 Int_t ClusterSource::NumberOfClusters() const
@@ -356,7 +356,7 @@ Int_t ClusterSource::NumberOfClusters() const
 	}
 	else
 		return fCurrentBlock->fClusters.GetEntriesFast();
-};
+}
 
 
 const Point* ClusterSource::GetCluster(const Int_t index) const
@@ -390,8 +390,8 @@ const Point* ClusterSource::GetCluster(const Int_t index) const
 				index
 			);
 		return NULL;
-	};
-};
+	}
+}
 
 
 const Point* ClusterSource::GetFirstCluster() const
@@ -409,7 +409,7 @@ const Point* ClusterSource::GetFirstCluster() const
 	}
 	else
 		return NULL;
-};
+}
 
 
 Bool_t ClusterSource::MoreClusters() const
@@ -452,8 +452,8 @@ Bool_t ClusterSource::FetchCluster(Float_t& x, Float_t& y) const
 	{
 		Error("FetchCluster", "No cluster point selected.");
 		return kFALSE;
-	};
-};
+	}
+}
 
 
 void ClusterSource::AddEvent(const Int_t eventnumber)
@@ -472,7 +472,7 @@ void ClusterSource::AddEvent(const Int_t eventnumber)
 	DebugMsg(2, "\tfEventIndex = " << fEventIndex << " , fBlockIndex = " << fBlockIndex
 		<< " , fClusterIndex = " << fClusterIndex
 	);
-};
+}
 
 
 void ClusterSource::AddBlock(const Int_t chamber)
@@ -495,7 +495,7 @@ void ClusterSource::AddBlock(const Int_t chamber)
 	DebugMsg(2, "\tfEventIndex = " << fEventIndex << " , fBlockIndex = " << fBlockIndex
 		<< " , fClusterIndex = " << fClusterIndex
 	);
-};
+}
 
 
 void ClusterSource::AddPoint(const Float_t x, const Float_t y)
@@ -515,7 +515,7 @@ void ClusterSource::AddPoint(const Float_t x, const Float_t y)
 	DebugMsg(2, "\tfEventIndex = " << fEventIndex << " , fBlockIndex = " << fBlockIndex
 		<< " , fClusterIndex = " << fClusterIndex
 	);
-};
+}
 
 
 Bool_t ClusterSource::FileAndFolderOk(AliMUONDataInterface* data)
@@ -544,10 +544,10 @@ Bool_t ClusterSource::FileAndFolderOk(AliMUONDataInterface* data)
 			fFoldername.Data(), data->CurrentFolder().Data()
 		);
 		return kFALSE;
-	};
+	}
 	
 	return kTRUE;
-};
+}
 
 
 void ClusterSource::AddEventFrom(AliMUONDataInterface* data, const Int_t event)
@@ -558,9 +558,9 @@ void ClusterSource::AddEventFrom(AliMUONDataInterface* data, const Int_t event)
 		for (Int_t chamber = 0; chamber < AliMUONConstants::NTrackingCh(); chamber++)
 		{
 			AddChamberFrom(data, chamber);
-		};
-	};
-};
+		}
+	}
+}
 
 
 void ClusterSource::AddChamberFrom(AliMUONDataInterface* data, const Int_t chamber)
@@ -570,7 +570,11 @@ void ClusterSource::AddChamberFrom(AliMUONDataInterface* data, const Int_t chamb
 	AddBlock(chamber);
 	UInt_t currentblocksize = 0;
 #ifndef __alpha
+#ifndef __sparc
 	Float_t x = NAN, y = NAN;
+#else
+	Float_t x = 0, y = 0;
+#endif
 #else
 	Float_t x = FLT_QNAN, y = FLT_QNAN;
 #endif
@@ -641,10 +645,10 @@ void ClusterSource::AddChamberFrom(AliMUONDataInterface* data, const Int_t chamb
 
 	default:
 		Error("AddChamberFrom", "fDataToUse is not set to a valid value.");
-	};
+	}
 	
 	DebugMsg(1, "Leaving AddChamberFrom");
-};
+}
 
 
 void ClusterSource::AddClusterFrom(
@@ -652,8 +656,12 @@ void ClusterSource::AddClusterFrom(
 	)
 {
 	DebugMsg(1, "Entering AddClusterFrom");
-#ifndef __alpha	
+#ifndef __alpha
+#ifndef __sparc	
 	Float_t x = NAN, y = NAN;
+#else
+	Float_t x = 0, y = 0;
+#endif
 #else
 	Float_t x = FLT_QNAN, y = FLT_QNAN;
 #endif
@@ -745,7 +753,7 @@ void ClusterSource::ResetBlockPointers() const
 	DebugMsg(2, "\tfEventIndex = " << fEventIndex << " , fBlockIndex = " << fBlockIndex
 		<< " , fClusterIndex = " << fClusterIndex
 	);
-};
+}
 
 
 void ClusterSource::ResetClusterPointers() const
@@ -755,28 +763,28 @@ void ClusterSource::ResetClusterPointers() const
 	DebugMsg(2, "\tfEventIndex = " << fEventIndex << " , fBlockIndex = " << fBlockIndex
 		<< " , fClusterIndex = " << fClusterIndex
 	);
-};
+}
 
 
 ClusterSource::BlockData::BlockData() : fClusters(Point::Class())
 {
 	fChamber = -1;
-};
+}
 
 ClusterSource::BlockData::BlockData(const Int_t chamber) : fClusters(Point::Class())
 {
 	fChamber = chamber;
-};
+}
 
 ClusterSource::BlockData::~BlockData()
 {
 	fClusters.Clear("C");
-};
+}
 
 ClusterSource::EventData::EventData() : fBlocks(ClusterSource::BlockData::Class())
 {
 	fEventNumber = -1;
-};
+}
 
 ClusterSource::EventData::EventData(const Int_t eventnumber)
 	: fBlocks(ClusterSource::BlockData::Class())
@@ -785,12 +793,12 @@ ClusterSource::EventData::EventData(const Int_t eventnumber)
 
 	// If the following is not set then we do not write the fBlocks properly.
 	fBlocks.BypassStreamer(kFALSE);
-};
+}
 
 ClusterSource::EventData::~EventData()
 {
 	fBlocks.Clear("C");
-};
+}
 
 
-}; // AliMUONHLT
+} // AliMUONHLT

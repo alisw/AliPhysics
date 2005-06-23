@@ -37,10 +37,10 @@ public:
 	Float_t fX;    // X coordinate of the 2D point.
 	Float_t fY;    // Y coordinate of the 2D point.
 
-	ClassDef(Point, 1);  // A 2D space point.
+	ClassDef(Point, 1)  // A 2D space point.
 };
 
 
-}; // AliMUONHLT
+} // AliMUONHLT
 
 #endif // dHLT_ALIROOT_POINT_HPP

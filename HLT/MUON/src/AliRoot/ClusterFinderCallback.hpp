@@ -22,7 +22,7 @@ public:
 	virtual void FoundClusters(const UInt_t numberfound) = 0;
 	virtual void NoClustersFound() = 0;
 	
-	ClassDef(ClusterFinderCallback, 0);  // Abstract cluster finder callback class.
+	ClassDef(ClusterFinderCallback, 0)  // Abstract cluster finder callback class.
 };
 
 

@@ -44,6 +44,6 @@ private:
 };
 
 
-}; // AliMUONHLT
+} // AliMUONHLT
 
 #endif // dHLT_ALIROOT_CLUSTER_FINDER_INTERFACE_HPP

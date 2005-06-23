@@ -8,7 +8,7 @@
 #include "AliRoot/TriggerRecord.hpp"
 #include "TMath.h"
 
-ClassImp(AliMUONHLT::TriggerRecord);
+ClassImp(AliMUONHLT::TriggerRecord)
 
 namespace AliMUONHLT
 {
@@ -16,7 +16,7 @@ namespace AliMUONHLT
 TriggerRecord::TriggerRecord()
 {
 	Init();
-};
+}
 
 
 TriggerRecord::TriggerRecord(
@@ -55,8 +55,8 @@ TriggerRecord::TriggerRecord(
 		fPt = pt;
 		fSt1Point = station1point;
 		fSt2Point = station2point;
-	};
-};
+	}
+}
 
 
 void TriggerRecord::Init()
@@ -64,7 +64,7 @@ void TriggerRecord::Init()
 	fTriggerNumber = -1;
 	fParticleSign = 0;
 	fPt = 0.0;
-};
+}
 
 
 void TriggerRecord::TriggerNumber(const Int_t value)
@@ -76,7 +76,7 @@ void TriggerRecord::TriggerNumber(const Int_t value)
 			"The trigger number must be a positive number. Got: %d",
 			value
 		);
-};
+}
 
 
 void TriggerRecord::ParticleSign(const Int_t value)
@@ -88,7 +88,7 @@ void TriggerRecord::ParticleSign(const Int_t value)
 			"The particle sign must a value of -1, 0 or +1. Got: %d",
 			value
 		);
-};
+}
 
 
 void TriggerRecord::Pt(const Float_t value)
@@ -100,7 +100,7 @@ void TriggerRecord::Pt(const Float_t value)
 			"The transverse momentum must be a positive number. Got: %f",
 			value
 		);
-};
+}
 
 
 ostream& operator << (ostream& os, const TriggerRecord& r)
@@ -109,7 +109,7 @@ ostream& operator << (ostream& os, const TriggerRecord& r)
 	   << ", pt: " << r.fPt << ", st1: " << r.fSt1Point << ", st2: "
 	   << r.fSt2Point << "}";
 	return os;
-};
+}
 
 
-}; // AliMUONHLT
+} // AliMUONHLT

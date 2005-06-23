@@ -75,6 +75,6 @@ enum
 };
 
 
-}; // dHLT
+} // dHLT
 
 #endif // dHLT_ERROR_HPP

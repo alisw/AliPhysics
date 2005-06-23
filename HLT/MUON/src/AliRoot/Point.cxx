@@ -8,7 +8,7 @@
 #include "AliRoot/Point.hpp"
 #include "TMath.h"
 
-ClassImp(AliMUONHLT::Point);
+ClassImp(AliMUONHLT::Point)
 
 namespace AliMUONHLT
 {
@@ -16,19 +16,19 @@ namespace AliMUONHLT
 Point::Point() : TObject()
 {
 	fX = fY = 0.0;
-};
+}
 
 Point::Point(const Float_t x, const Float_t y) : TObject()
 {
 	fX = x;
 	fY = y;
-};
+}
 
 ostream& operator << (ostream& os, const Point& p)
 {
 	os << "[" << p.fX << ", " << p.fY << "]";
 	return os;
-};
+}
 
-}; // AliMUONHLT
+} // AliMUONHLT
 

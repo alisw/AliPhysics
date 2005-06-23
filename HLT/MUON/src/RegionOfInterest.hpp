@@ -58,7 +58,7 @@ public:
 	{
 		chamber = Chamber1;
 		left = right = top = bottom = 0.0;
-	};
+	}
 	
 	/* This constructor decodes the ROI bit pattern into a region of
 	   interest object.
@@ -66,36 +66,36 @@ public:
 	RegionOfInterest(const ROI& code)
 	{
 		Decode(code);
-	};
+	}
 
 	/* Creates a region of interest around the given point for the
 	   specified chamber.
 	 */
-	RegionOfInterest(const ClusterPoint& point, const ChamberID chamber)
+	RegionOfInterest(const ClusterPoint& point0, const ChamberID chamber0)
 	{
-		CreateToContain(point, chamber);
-	};
+		CreateToContain(point0, chamber0);
+	}
 
 	/* Creates a region of interest around all the given points and for the
 	   specified chamber.
 	 */
-	RegionOfInterest(const ClusterPoint* points, const UInt count, const ChamberID chamber)
+	RegionOfInterest(const ClusterPoint* points0, const UInt count0, const ChamberID chamber0)
 	{
-		CreateToContain(points, count, chamber);
-	};
+		CreateToContain(points0, count0, chamber0);
+	}
 
 	/* Creates a region of interest with the specified boundaries and for
 	   the specified chamber.
 	 */
-	RegionOfInterest(const Float left, const Float right, const Float bottom, const Float top, const ChamberID chamber)
+	RegionOfInterest(const Float left0, const Float right0, const Float bottom0, const Float top0, const ChamberID chamber0)
 	{
-		Assert( 0 <= chamber and chamber < NUMBER_OF_TRACKING_CHAMBERS );
-		this->chamber = chamber;
-		this->left = left;
-		this->right = right;
-		this->bottom = bottom;
-		this->top = top;
-	};
+		Assert( 0 <= chamber0 and chamber0 < NUMBER_OF_TRACKING_CHAMBERS );
+		this->chamber = chamber0;
+		this->left = left0;
+		this->right = right0;
+		this->bottom = bottom0;
+		this->top = top0;
+	}
 
 
 	/* Checks if the point is contained in this region of interest.
@@ -104,18 +104,18 @@ public:
 	{
 		return left <= point.x and point.x <= right and
 			bottom <= point.y and point.y <= top;
-	};
+	}
 
 
 	/* Checks if the point is contained in this region of interest and the
 	   chamber number corresponds to this region object.
 	 */
-	bool Contains(const ClusterPoint& point, const ChamberID chamber) const
+	bool Contains(const ClusterPoint& point, const ChamberID chamber0) const
 	{
 		return left <= point.x and point.x <= right and
 			bottom <= point.y and point.y <= top and
-			this->chamber == chamber;
-	};
+			this->chamber == chamber0;
+	}
 
 
 	/* Checks if the specified region of interest is contained in this
@@ -126,7 +126,7 @@ public:
 		return chamber == roi.chamber and 
 			left <= roi.left and right >= roi.right and
 			bottom <= roi.bottom and top >= roi.top;
-	};
+	}
 
 
 	/* Creates a region of interest around the given point for the

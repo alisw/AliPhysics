@@ -24,8 +24,8 @@
 #include <float.h>
 #endif
 
-ClassImp(AliMUONHLT::TriggerSource);
-ClassImp(AliMUONHLT::TriggerSource::EventData);
+ClassImp(AliMUONHLT::TriggerSource)
+ClassImp(AliMUONHLT::TriggerSource::EventData)
 
 namespace AliMUONHLT
 {
@@ -41,7 +41,7 @@ TriggerSource::TriggerSource()
 	fFoldername = "";
 	ResetAllPointers();
 	fHadToLoadgAlice = kFALSE;
-};
+}
 
 
 TriggerSource::TriggerSource(AliMUONDataInterface* data)
@@ -56,13 +56,13 @@ TriggerSource::TriggerSource(AliMUONDataInterface* data)
 	ResetAllPointers();
 	fHadToLoadgAlice = kFALSE;
 	FillFrom(data);
-};
+}
 
 
 TriggerSource::~TriggerSource()
 {
 	fEventList.Clear("C");
-};
+}
 
 
 void TriggerSource::FillFrom(AliMUONDataInterface* data)
@@ -77,11 +77,11 @@ void TriggerSource::FillFrom(AliMUONDataInterface* data)
 		for (Int_t i = 0; i < data->NumberOfEvents(); i++)
 		{
 			AddEventFrom(data, module, i);
-		};
+		}
 		
 		FinishedWithAliMUON();
-	};
-};
+	}
+}
 
 
 void TriggerSource::FillFrom(AliMUONDataInterface* data, const Int_t event)
@@ -94,8 +94,8 @@ void TriggerSource::FillFrom(AliMUONDataInterface* data, const Int_t event)
 		if ( not FetchAliMUON(module) ) return;
 		AddEventFrom(data, module, event);
 		FinishedWithAliMUON();
-	};
-};
+	}
+}
 
 
 void TriggerSource::FillFrom(
@@ -139,8 +139,8 @@ void TriggerSource::FillFrom(
 
 		AddTriggerFrom(data, module, trigger);
 		FinishedWithAliMUON();
-	};
-};
+	}
+}
 
 
 void TriggerSource::Clear()
@@ -149,7 +149,7 @@ void TriggerSource::Clear()
 	fFoldername = "";
 	ResetAllPointers();
 	fEventList.Clear("C");
-};
+}
 
 
 Bool_t TriggerSource::GetEvent(const Int_t eventnumber) const
@@ -172,7 +172,7 @@ Bool_t TriggerSource::GetEvent(const Int_t eventnumber) const
 		};
 	};
 	return kFALSE;
-};
+}
 
 
 Bool_t TriggerSource::GetFirstEvent() const
@@ -194,14 +194,14 @@ Bool_t TriggerSource::GetFirstEvent() const
 			<< " , fTriggerIndex = " << fTriggerIndex
 		);
 		return kFALSE;
-	};
-};
+	}
+}
 
 
 Bool_t TriggerSource::MoreEvents() const
 {
 	return 0 <= fEventIndex and fEventIndex < fEventList.GetEntriesFast();
-};
+}
 
 
 Bool_t TriggerSource::GetNextEvent() const
@@ -220,8 +220,8 @@ Bool_t TriggerSource::GetNextEvent() const
 	{
 		ResetAllPointers();
 		return kFALSE;
-	};
-};
+	}
+}
 
 
 Int_t TriggerSource::CurrentEvent() const
@@ -230,7 +230,7 @@ Int_t TriggerSource::CurrentEvent() const
 		return fCurrentEvent->fEventNumber;
 	else
 		return -1;
-};
+}
 
 
 Int_t TriggerSource::NumberOfBlocks() const
@@ -243,7 +243,7 @@ Int_t TriggerSource::NumberOfBlocks() const
 	}
 	else
 		return fCurrentEvent->fBlocks.GetEntriesFast();
-};
+}
 
 
 Bool_t TriggerSource::GetBlock(const Int_t index) const
@@ -278,8 +278,8 @@ Bool_t TriggerSource::GetBlock(const Int_t index) const
 				index
 			);
 		return kFALSE;
-	};
-};
+	}
+}
 
 
 Bool_t TriggerSource::GetFirstBlock() const
@@ -298,13 +298,13 @@ Bool_t TriggerSource::GetFirstBlock() const
 	}
 	else
 		return kFALSE;
-};
+}
 
 
 Bool_t TriggerSource::MoreBlocks() const
 {
 	return 0 <= fBlockIndex and fBlockIndex < NumberOfBlocks();
-};
+}
 
 
 Bool_t TriggerSource::GetNextBlock() const
@@ -326,8 +326,8 @@ Bool_t TriggerSource::GetNextBlock() const
 	{
 		ResetBlockPointers();
 		return kFALSE;
-	};
-};
+	}
+}
 
 
 Int_t TriggerSource::NumberOfTriggers() const
@@ -340,7 +340,7 @@ Int_t TriggerSource::NumberOfTriggers() const
 	}
 	else
 		return fCurrentBlock->GetEntriesFast();
-};
+}
 
 
 const TriggerRecord* TriggerSource::GetTrigger(const Int_t triggernumber) const
@@ -365,10 +365,10 @@ const TriggerRecord* TriggerSource::GetTrigger(const Int_t triggernumber) const
 				<< " , fTriggerIndex = " << fTriggerIndex
 			);
 			return current;
-		};
-	};
+		}
+	}
 	return NULL;
-};
+}
 
 
 const TriggerRecord* TriggerSource::GetFirstTrigger() const
@@ -392,7 +392,7 @@ const TriggerRecord* TriggerSource::GetFirstTrigger() const
 Bool_t TriggerSource::MoreTriggers() const
 {
 	return 0 <= fTriggerIndex and fTriggerIndex < NumberOfTriggers();
-};
+}
 
 
 const TriggerRecord* TriggerSource::GetNextTrigger() const
@@ -427,8 +427,8 @@ Int_t TriggerSource::CurrentTrigger() const
 	{
 		Error("CurrentTrigger", "No trigger record selected.");
 		return -1;
-	};
-};
+	}
+}
 
 
 void TriggerSource::AddEvent(const Int_t eventnumber)
@@ -447,7 +447,7 @@ void TriggerSource::AddEvent(const Int_t eventnumber)
 	DebugMsg(2, "\tfEventIndex = " << fEventIndex << " , fBlockIndex = " << fBlockIndex
 		<< " , fTriggerIndex = " << fTriggerIndex
 	);
-};
+}
 
 
 void TriggerSource::AddBlock()
@@ -470,7 +470,7 @@ void TriggerSource::AddBlock()
 	DebugMsg(2, "\tfEventIndex = " << fEventIndex << " , fBlockIndex = " << fBlockIndex
 		<< " , fTriggerIndex = " << fTriggerIndex
 	);
-};
+}
 
 
 void TriggerSource::AddTrigger(const TriggerRecord& data)
@@ -481,7 +481,7 @@ void TriggerSource::AddTrigger(const TriggerRecord& data)
 	{
 		Error("AddTrigger", "No block selected.");
 		return;
-	};
+	}
 	
 	fTriggerIndex = fCurrentBlock->GetEntriesFast();
 	new ( (*fCurrentBlock)[fTriggerIndex] ) TriggerRecord(data);
@@ -490,7 +490,7 @@ void TriggerSource::AddTrigger(const TriggerRecord& data)
 	DebugMsg(2, "\tfEventIndex = " << fEventIndex << " , fBlockIndex = " << fBlockIndex
 		<< " , fTriggerIndex = " << fTriggerIndex
 	);
-};
+}
 
 
 Bool_t TriggerSource::FileAndFolderOk(AliMUONDataInterface* data)
@@ -522,7 +522,7 @@ Bool_t TriggerSource::FileAndFolderOk(AliMUONDataInterface* data)
 	};
 	
 	return kTRUE;
-};
+}
 
 
 void TriggerSource::AddEventFrom(AliMUONDataInterface* data, AliMUON* module, const Int_t event)
@@ -583,9 +583,9 @@ void TriggerSource::AddEventFrom(AliMUONDataInterface* data, AliMUON* module, co
 
 		default:
 			Error("AddChamberFrom", "fDataToUse is not set to a valid value.");
-		};
-	};  // Loop on events.
-};
+		}
+	}  // Loop on events.
+}
 
 
 void TriggerSource::AddTriggerFrom(AliMUONDataInterface* data, AliMUON* module, const Int_t trigger)
@@ -621,7 +621,7 @@ void TriggerSource::AddTriggerFrom(AliMUONDataInterface* data, AliMUON* module, 
 	AddTrigger(trigdata);
 	
 	DebugMsg(1, "Leaving AddTriggerFrom");
-};
+}
 
 
 Bool_t TriggerSource::InFillRegion(const TriggerRecord& data)
@@ -635,8 +635,8 @@ Bool_t TriggerSource::InFillRegion(const TriggerRecord& data)
 	default:
 		Error("InFillRegion", "fAreaToUse is not set to a valid value.");
 		return kFALSE;
-	};
-};
+	}
+}
 
 
 void TriggerSource::FillTriggerFromLocalTrigger(
@@ -684,7 +684,7 @@ void TriggerSource::FillTriggerFromLocalTrigger(
 	DebugMsg(2, "fStation1y = " << record.Station1Point().fY);
 	DebugMsg(2, "fStation2x = " << record.Station2Point().fX);
 	DebugMsg(2, "fStation2y = " << record.Station2Point().fY);
-};
+}
 
 
 Bool_t TriggerSource::FillTriggerFromHits(AliMUONDataInterface* data, const Int_t track, TriggerRecord& record)
@@ -693,7 +693,11 @@ Bool_t TriggerSource::FillTriggerFromHits(AliMUONDataInterface* data, const Int_
 	
 	Float_t x1, y1, z1, x2, y2, z2, x3, y3, z3, x4, y4, z4;
 #ifndef __alpha
+#ifndef __sparc
 	x1 = y1 = z1 = x2 = y2 = z2 = x3 = y3 = z3 = x4 = y4 = z4 = NAN;
+#else
+	x1 = y1 = z1 = x2 = y2 = z2 = x3 = y3 = z3 = x4 = y4 = z4 = 0;
+#endif
 #else
 	x1 = y1 = z1 = x2 = y2 = z2 = x3 = y3 = z3 = x4 = y4 = z4 = FLT_QNAN;
 #endif
@@ -798,7 +802,7 @@ Bool_t TriggerSource::FillTriggerFromHits(AliMUONDataInterface* data, const Int_
 	DebugMsg(3, "Pt = " << record.Pt());
 	
 	return kTRUE;
-};
+}
 
 
 Bool_t TriggerSource::FetchAliMUON(AliMUON*& module)
@@ -840,7 +844,7 @@ Bool_t TriggerSource::FetchAliMUON(AliMUON*& module)
 	// Get the MUON module pointer and return it.
 	module = dynamic_cast<AliMUON*>( alirun->GetModule("MUON") );
 	return kTRUE;
-};
+}
 
 
 void TriggerSource::FinishedWithAliMUON()
@@ -848,7 +852,7 @@ void TriggerSource::FinishedWithAliMUON()
 	// Only unload the gAlice object if we had to load it ourselves.
 	if (fHadToLoadgAlice)
 		AliRunLoader::GetRunLoader()->UnloadgAlice();
-};
+}
 
 
 void TriggerSource::ResetAllPointers() const
@@ -862,7 +866,7 @@ void TriggerSource::ResetAllPointers() const
 	DebugMsg(2, "\tfEventIndex = " << fEventIndex << " , fBlockIndex = " << fBlockIndex
 		<< " , fTriggerIndex = " << fTriggerIndex
 	);
-};
+}
 
 
 void TriggerSource::ResetBlockPointers() const
@@ -874,7 +878,7 @@ void TriggerSource::ResetBlockPointers() const
 	DebugMsg(2, "\tfEventIndex = " << fEventIndex << " , fBlockIndex = " << fBlockIndex
 		<< " , fTriggerIndex = " << fTriggerIndex
 	);
-};
+}
 
 
 void TriggerSource::ResetTriggerPointers() const
@@ -884,13 +888,13 @@ void TriggerSource::ResetTriggerPointers() const
 	DebugMsg(2, "\tfEventIndex = " << fEventIndex << " , fBlockIndex = " << fBlockIndex
 		<< " , fTriggerIndex = " << fTriggerIndex
 	);
-};
+}
 
 
 TriggerSource::EventData::EventData() : fBlocks(TClonesArray::Class())
 {
 	fEventNumber = -1;
-};
+}
 
 
 TriggerSource::EventData::EventData(const Int_t eventnumber)
@@ -900,13 +904,13 @@ TriggerSource::EventData::EventData(const Int_t eventnumber)
 
 	// If the following is not set then we do not write the fBlocks properly.
 	fBlocks.BypassStreamer(kFALSE);
-};
+}
 
 
 TriggerSource::EventData::~EventData()
 {
 	fBlocks.Clear("C");
-};
+}
 
 
-}; // AliMUONHLT
+} // AliMUONHLT

@@ -47,6 +47,6 @@ private:
 };
 
 
-}; // AliMUONHLT
+} // AliMUONHLT
 
 #endif // dHLT_ALIROOT_TRACKER_INTERFACE_HPP

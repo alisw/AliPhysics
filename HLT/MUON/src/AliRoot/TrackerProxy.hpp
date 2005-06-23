@@ -47,7 +47,7 @@ private:
 };
 
 
-}; // AliRoot
-}; // dHLT
+} // AliRoot
+} // dHLT
 
 #endif // dHLT_ALIROOT_TRACKER_PROXY_HPP

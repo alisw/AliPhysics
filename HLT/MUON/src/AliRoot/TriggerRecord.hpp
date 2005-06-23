@@ -86,10 +86,10 @@ private:
 	Point fSt1Point;       // Coordinate on trigger station 1.
 	Point fSt2Point;       // Coordinate on trigger station 2.
 
-	ClassDef(TriggerRecord, 1);  // Trigger information.
+	ClassDef(TriggerRecord, 1)  // Trigger information.
 };
 
 
-}; // AliMUONHLT
+} // AliMUONHLT
 
 #endif // dHLT_ALIROOT_TRIGGER_RECORD_HPP

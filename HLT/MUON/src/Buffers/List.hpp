@@ -28,7 +28,9 @@ namespace Buffers
 template <typename DataType>
 class List
 {
-protected:
+  //protected:
+
+public:
 
 	struct Node
 	{
@@ -38,8 +40,6 @@ protected:
 
 	Node* first;
 
-public:
-
 	class ConstIterator
 	{
 	public:
@@ -47,34 +47,34 @@ public:
 		ConstIterator()
 		{
 			current = NULL;
-		};
+		}
 
 		ConstIterator(const ConstIterator& iter)
 		{
 			current = iter.current;
-		};
+		}
 
 		ConstIterator(Node* node)
 		{
 			current = node;
-		};
+		}
 
 		const DataType& operator * () const
 		{
 			return current->data;
-		};
+		}
 
 		const DataType* operator -> () const
 		{
 			return &current->data;
-		};
+		}
 
 		ConstIterator& operator ++ ()
 		{
 			Assert( current != NULL );
 			current = current->next;
 			return *this;
-		};
+		}
 
 		ConstIterator operator ++ (int)
 		{
@@ -82,22 +82,22 @@ public:
 			ConstIterator copy = *this;
 			current = current->next;
 			return copy;
-		};
+		}
 		
 		operator const DataType* () const
 		{
 			return &current->data;
-		};
+		}
 
 		friend bool operator == (const ConstIterator& a, const ConstIterator& b)
 		{
 			return a.current == b.current;
-		};
+		}
 
 		friend bool operator != (const ConstIterator& a, const ConstIterator& b)
 		{
 			return a.current != b.current;
-		};
+		}
 
 	protected:
 	
@@ -114,27 +114,27 @@ public:
 		Iterator() : ConstIterator()
 		{
 			previous = NULL;
-		};
+		}
 
 		Iterator(const Iterator& iter) : ConstIterator(iter)
 		{
 			previous = iter.previous;
-		};
+		}
 
 		Iterator(Node* current, Node* prev) : ConstIterator(current)
 		{
 			previous = prev;
-		};
+		}
 
 		DataType& operator * ()
 		{
 			return ConstIterator::current->data;
-		};
+		}
 
 		DataType* operator -> ()
 		{
 			return &ConstIterator::current->data;
-		};
+		}
 
 		Iterator& operator ++ ()
 		{
@@ -142,7 +142,7 @@ public:
 			previous = ConstIterator::current;
 			ConstIterator::current = ConstIterator::current->next;
 			return *this;
-		};
+		}
 
 		Iterator operator ++ (int)
 		{
@@ -151,7 +151,7 @@ public:
 			previous = ConstIterator::current;
 			ConstIterator::current = ConstIterator::current->next;
 			return copy;
-		};
+		}
 		
 		operator DataType* ()
 		{
@@ -159,7 +159,7 @@ public:
 				return &ConstIterator::current->data;
 			else
 				return NULL;
-		};
+		}
 
 	protected:
 	
@@ -172,7 +172,7 @@ public:
 	List()
 	{
 		first = NULL;
-	};
+	}
 	
 	
 	~List()
@@ -183,14 +183,14 @@ public:
 			Node* temp = current;
 			current = current->next;
 			delete temp;
-		};
-	};
+		}
+	}
 	
 
 	bool Empty() const
 	{
 		return first == NULL;
-	};
+	}
 
 	
 	DataType* New()
@@ -199,20 +199,20 @@ public:
 		newnode->next = first;
 		first = newnode;
 		return &newnode->data;
-	};
+	}
 	
 	
 	inline DataType* Add()
 	{
 		return New();
-	};
+	}
 	
 
 	void Add(const DataType& data)
 	{
 		DataType* newdata = New();
 		*newdata = data;
-	};
+	}
 	
 
 	DataType* AddNew(const DataType& data)
@@ -220,7 +220,7 @@ public:
 		DataType* newdata = Add();
 		*newdata = data;
 		return newdata;
-	};
+	}
 
 
 	DataType* AddUniquely(const DataType& data)
@@ -230,7 +230,7 @@ public:
 			return AddNew(data);
 		else
 			return result;
-	};
+	}
 
 	
 	void Remove(const UInt index)
@@ -242,7 +242,7 @@ public:
 			Assert( current != NULL );
 			previous = current;
 			current = current->next;
-		};
+		}
 		Node* temp;
 		if (previous == NULL)
 		{
@@ -253,9 +253,9 @@ public:
 		{
 			temp = current;
 			previous->next = current->next;
-		};
+		}
 		delete temp;
-	};
+	}
 	
 
 	bool Remove(const DataType& data)
@@ -268,7 +268,7 @@ public:
 		}
 		else
 			return false;
-	};
+	}
 	
 
 	void Remove(Iterator& iter)
@@ -287,9 +287,9 @@ public:
 		{
 			temp = current;
 			previous->next = current->next;
-		};
+		}
 		delete temp;
-	};
+	}
 
 
 	Iterator Find(const DataType& data)
@@ -302,9 +302,9 @@ public:
 				return Iterator(current, previous);
 			previous = current;
 			current = current->next;
-		};
+		}
 		return End();
-	};
+	}
 
 
 	ConstIterator Find(const DataType& data) const
@@ -317,7 +317,7 @@ public:
 			current = current->next;
 		};
 		return End();
-	};
+	}
 
 
 	template <typename PredicateType>
@@ -331,9 +331,9 @@ public:
 				return Iterator(current, previous);
 			previous = current;
 			current = current->next;
-		};
+		}
 		return End();
-	};
+	}
 
 
 	template <typename PredicateType>
@@ -345,15 +345,15 @@ public:
 			if ( predicate(current->data) )
 				return current;
 			current = current->next;
-		};
+		}
 		return End();
-	};
+	}
 
 
 	bool Contains(const DataType& data) const
 	{
 		return Find(data) != End();
-	};
+	}
 
 
 	void Clear()
@@ -366,31 +366,31 @@ public:
 			delete temp;
 		};
 		first = NULL;
-	};
+	}
 
 
 	Iterator First()
 	{
 		return Iterator(first, NULL);
-	};
+	}
 
 
 	ConstIterator First() const
 	{
 		return first;
-	};
+	}
 
 
 	Iterator End()
 	{
 		return Iterator(NULL, NULL);
-	};
+	}
 
 
 	ConstIterator End() const
 	{
 		return NULL;
-	};
+	}
 
 	
 #	ifdef DEBUG
@@ -402,8 +402,8 @@ public:
 		{
 			cout << current->data << endl;
 			current = current->next;
-		};
-	};
+		}
+	}
 
 #	endif // DEBUG
 };

@@ -10,7 +10,7 @@
 #include <TMath.h>
 #include "Utils.hpp"
 
-ClassImp(AliMUONHLT::Region);
+ClassImp(AliMUONHLT::Region)
 
 namespace AliMUONHLT
 {
@@ -19,7 +19,7 @@ namespace AliMUONHLT
 Region::Region() : TObject()
 {
 	fLeft = fRight = fBottom = fTop = 0.0;
-};
+}
 
 
 Region::Region(const Float_t left, const Float_t right, const Float_t bottom, const Float_t top)
@@ -41,8 +41,8 @@ Region::Region(const Float_t left, const Float_t right, const Float_t bottom, co
 		fRight = right;
 		fBottom = bottom;
 		fTop = top;
-	};
-};
+	}
+}
 
 
 void Region::Left(const Float_t value)
@@ -51,7 +51,7 @@ void Region::Left(const Float_t value)
 		Error("Left", "Trying to assign fLeft (%f) larger than fRight (%f).", value, fRight);
 	else
 		fLeft = value;
-};
+}
 
 
 void Region::Right(const Float_t value)
@@ -60,7 +60,7 @@ void Region::Right(const Float_t value)
 		Error("Right", "Trying to assign fRight (%f) smaller than fLeft (%f).", value, fLeft);
 	else
 		fRight = value;
-};
+}
 
 
 void Region::Bottom(const Float_t value)
@@ -69,7 +69,7 @@ void Region::Bottom(const Float_t value)
 		Error("Bottom", "Trying to assign fBottom (%f) larger than fTop (%f).", value, fTop);
 	else
 		fBottom = value;
-};
+}
 
 
 void Region::Top(const Float_t value)
@@ -78,20 +78,20 @@ void Region::Top(const Float_t value)
 		Error("Top", "Trying to assign fTop (%f) smaller than fBottom (%f).", value, fBottom);
 	else
 		fTop = value;
-};
+}
 
 
 Bool_t Region::Contains(const Point& p) const
 {
 	return fLeft <= p.fX and p.fX <= fRight and fBottom <= p.fY and p.fY <= fTop;
-};
+}
 
 
 ostream& operator << (ostream& os, const Region& r)
 {
 	os << "[(" << r.fLeft << ", " << r.fRight << "), (" << r.fLeft << ", " << r.fRight << ")]";
 	return os;
-};
+}
 
 
-}; // AliMUONHLT
+} // AliMUONHLT

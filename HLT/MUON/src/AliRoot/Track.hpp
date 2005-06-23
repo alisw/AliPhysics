@@ -38,7 +38,7 @@ public:
 		const Point hits[10], const Region regions[10]
 	);
 
-	virtual ~Track() {};
+	virtual ~Track() {}
 	
 	
 	// Get/et methods for the trigger ID.
@@ -106,10 +106,10 @@ private:
 	Point fHit[10];   // Fitted track hit coordinates for the 10 tracking chambers.
 	Region fRegionOfInterest[10];  // Region of interest per chamber.
 
-	ClassDef(Track, 1);  // Track data.
+	ClassDef(Track, 1)  // Track data.
 };
 
 
-}; // AliMUONHLT
+} // AliMUONHLT
 
 #endif // dHLT_ALIROOT_TRACK_HPP

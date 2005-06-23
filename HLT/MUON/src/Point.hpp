@@ -28,13 +28,13 @@ public:
 	{
 		x = 0.0;
 		y = 0.0;
-	};
+	}
 
-	Point(const Float x, const Float y)
+	Point(const Float x0, const Float y0)
 	{
-		this->x = x;
-		this->y = y;
-	};
+		this->x = x0;
+		this->y = y0;
+	}
 };
 
 

@@ -35,7 +35,7 @@ public:
 
 	virtual void RequestClusters(
 			Tracking::Tracker* tracker, 
-			const Float left, const Float right, const Float bottom, const Float top,
+			const Float /*left*/, const Float /*right*/, const Float /*bottom*/, const Float /*top*/,
 			const ChamberID chamber, const void* tag
 		)
 	{
@@ -48,7 +48,7 @@ public:
 	};
 
 	
-	virtual void EndOfClusterRequests(Tracking::Tracker* tracker)
+  virtual void EndOfClusterRequests(Tracking::Tracker* /*tracker*/)
 	{
 		DebugMsg(2, "EndOfClusterRequests");
 		// We can ignore this. Nothing special to do here.
@@ -228,13 +228,13 @@ private:
 };
 
 
-}; // dHLT
+} // dHLT
 
 
 ////////////////////////////////////////////////////////////////////////////////
 
 
-ClassImp(AliMUONHLT::MicrodHLT);
+ClassImp(AliMUONHLT::MicrodHLT)
 
 namespace AliMUONHLT
 {
@@ -377,4 +377,4 @@ Int_t MicrodHLT::DebugLevel()
 };
 
 
-}; // AliMUONHLT
+} // AliMUONHLT
