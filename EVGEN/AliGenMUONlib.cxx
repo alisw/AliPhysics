@@ -173,7 +173,7 @@ Double_t AliGenMUONlib::PtJpsiCDFscaled( Double_t *px, Double_t */*dummy*/)
   return x/TMath::Power(pass1,kxn);
 }
 
-Double_t AliGenMUONlib::PtJpsiFlat( Double_t *px, Double_t */*dummy*/ )
+Double_t AliGenMUONlib::PtJpsiFlat( Double_t */*px*/, Double_t */*dummy*/ )
 {
   return 1.;
 }
@@ -261,7 +261,7 @@ Double_t AliGenMUONlib::YJpsi(Double_t *py, Double_t */*dummy*/)
   return yj;
 }
 
-Double_t AliGenMUONlib::YJpsiFlat( Double_t *py, Double_t */*dummy*/ )
+Double_t AliGenMUONlib::YJpsiFlat( Double_t */*py*/, Double_t */*dummy*/ )
 {
   return 1.;
 }
@@ -414,7 +414,7 @@ Double_t AliGenMUONlib::PtUpsilonCDFscaled( Double_t *px, Double_t */*dummy*/ )
   return x/TMath::Power(pass1,kxn);
 }
 
-Double_t AliGenMUONlib::PtUpsilonFlat( Double_t *px, Double_t */*dummy*/ )
+Double_t AliGenMUONlib::PtUpsilonFlat( Double_t */*px*/, Double_t */*dummy*/ )
 {
   return 1.;
 }
@@ -526,7 +526,7 @@ Double_t AliGenMUONlib::YUpsilonCDFscaled( Double_t *px, Double_t *dummy)
     return AliGenMUONlib::YUpsilonPbPb(px, dummy);
     
 }
-Double_t AliGenMUONlib::YUpsilonFlat( Double_t *px, Double_t *dummy)
+Double_t AliGenMUONlib::YUpsilonFlat( Double_t */*px*/, Double_t */*dummy*/)
 {
     // Upsilon y
     return 1.;
