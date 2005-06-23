@@ -258,17 +258,17 @@ void AliGenHIJINGpara::Init()
     Float_t phiFrac    = (fPhiMax-fPhiMin)/2/TMath::Pi();
 
     
-    fParentWeight = Float_t(fNpart)/(intETASel*ptFrac*phiFrac);
+    fParentWeight = (intETASel*ptFrac*phiFrac) / Float_t(fNpart);
     
     if (fAnalog != 0) {
 	fPtWgtPi = (fPtMax - fPtMin) / fPtpi->Integral(0., 20.);
 	fPtWgtKa = (fPtMax - fPtMin) / fPtka->Integral(0., 20.);
-	fParentWeight = Float_t(fNpart)/(intETASel*phiFrac);
+	fParentWeight = (intETASel*phiFrac) / Float_t(fNpart);
     }
     
     
     AliInfo(Form("The number of particles in the selected kinematic region corresponds to %f percent of a full event", 
-		 100.*fParentWeight));
+		 100./ fParentWeight));
 
 // Issue warning message if etaMin or etaMax are outside the alowed range 
 // of the parametrization
@@ -371,11 +371,11 @@ void AliGenHIJINGpara::Generate()
 	    if (part == kPi0 && fPi0Decays){
 //
 //          Decay pi0 if requested
-		PushTrack(0,-1,part,p,origin,polar,0,kPPrimary,fNt,fParentWeight);
+		PushTrack(0,-1,part,p,origin,polar,0,kPPrimary,fNt,wgt);
 		KeepTrack(fNt);
 		DecayPi0(origin, p);
 	    } else {
-		PushTrack(fTrackIt,-1,part,p,origin,polar,0,kPPrimary,fNt,fParentWeight);
+		PushTrack(fTrackIt,-1,part,p,origin,polar,0,kPPrimary,fNt,wgt);
 		KeepTrack(fNt);
 	    }
 
