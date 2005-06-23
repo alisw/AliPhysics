@@ -620,5 +620,11 @@
                 of Fortran carriage-control characters on some systems.
 17-jun-2005 NvE New class AliJob introduced to provide a flexible (physics) analysis environment.
                 Bug (forgotten ps transfer in AliTimestamp::SetTJD) fixed (thanks Federico Carminati).
+22-jun-2005 NvE Specific job folder recursively removed from the generic AliJob folder environment
+                in the AliJob destructor before actually deleting the specific job folder itself. 
+                Also main object pointer updated in case of a match with removal of object(s) from
+                the specific job environment.
+23-jun-2005 NvE Creation of specific job folder made optionally in AliJob.
+               
                 
  

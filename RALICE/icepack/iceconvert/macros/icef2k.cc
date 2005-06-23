@@ -49,6 +49,8 @@
 
  // Select various objects to be added to the output file
 
+ ofile->cd(); // Switch to the output file directory
+
  AliObjMatrix* omdb=q.GetOMdbase();
  if (omdb) omdb->Write();
 
@@ -58,7 +60,7 @@
  TDatabasePDG* pdg=q.GetPDG();
  if (pdg) pdg->Write();
 
- // Close output file
+ // Flush and close the output file
  ofile->Write();
  ofile->Close();
 }

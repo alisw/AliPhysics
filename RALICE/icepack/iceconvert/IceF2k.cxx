@@ -24,6 +24,10 @@
 // In case the user has provided sub-tasks, these will be executed
 // on an event-by-event basis after the IceEvent structure has been filled
 // with the F2K data and before the final structures are written out.
+// Note that the data structures are only written out if an outputfile has
+// been specified via the SetOutputFile memberfunction.
+// In case no outputfile has been specified, this class provides a facility
+// to investigate/analyse F2K data using the Ralice/IcePack analysis tools. 
 //
 // Usage example :
 // ---------------
@@ -74,6 +78,8 @@
 //
 // // Select various objects to be added to the output file
 //
+// ofile->cd(); // Switch to the output file directory
+//
 // AliObjMatrix* omdb=q.GetOMdbase();
 // if (omdb) omdb->Write();
 //
@@ -83,7 +89,7 @@
 // TDatabasePDG* pdg=q.GetPDG();
 // if (pdg) pdg->Write();
 //
-// // Close output file
+// // Flush and close output file
 // ofile->Write();
 // ofile->Close();
 //
@@ -116,8 +122,6 @@ IceF2k::IceF2k(const char* name,const char* title) : AliJob(name,title)
 IceF2k::~IceF2k()
 {
 // Default destructor.
- IceEvent* evt=(IceEvent*)GetMainObject();
- if (evt) delete evt;
 
  if (fPdg)
  {
@@ -237,20 +241,19 @@ void IceF2k::Exec(Option_t* opt)
  // Read the file header information
  rdmc_rarr(fInput,&fHeader);
 
- if (!fOutfile)
+ TTree* otree=0;
+ if (fOutfile)
  {
-  cout << " *IceF2k Exec* No ROOT output file specified." << endl;
-  return;
+  otree=new TTree("T","F2K Data converted to IceEvent structures");
+  otree->SetDirectory(fOutfile);
  }
-
- TTree* otree=new TTree("T","F2K Data converted to IceEvent structures");
 
  IceEvent* evt=new IceEvent();
  evt->SetTrackCopy(1);
  evt->SetDevCopy(1);
 
  // Branch in the tree for the event structure
- otree->Branch("IceEvent","IceEvent",&evt,fBsize,fSplit); 
+ if (otree) otree->Branch("IceEvent","IceEvent",&evt,fBsize,fSplit); 
 
  // Create the particle database and extend it with some F2000 specific definitions
  if (!fPdg) fPdg=new TDatabasePDG();
@@ -276,8 +279,11 @@ void IceF2k::Exec(Option_t* opt)
 
  // Initialise the job working environment
  SetMainObject(evt);
- AddObject(fOutfile);
- AddObject(otree);
+ if (fOutfile)
+ {
+  AddObject(fOutfile);
+  AddObject(otree);
+ }
 
  cout << " ***" << endl;
  cout << " *** Start processing of job " << GetName() << " ***" << endl;
@@ -285,8 +291,11 @@ void IceF2k::Exec(Option_t* opt)
  cout << " F2K input file : " << fInfile.Data() << endl;
  cout << " Maximum number of events to be processed : " << fMaxevt << endl;
  cout << " Print frequency : " << fPrintfreq << endl;
- cout << " ROOT output file : " << fOutfile->GetName() << endl;
- cout << " Output characteristics : splitlevel = " << fSplit << " buffersize = " << fBsize << endl;
+ if (fOutfile)
+ {
+  cout << " ROOT output file : " << fOutfile->GetName() << endl;
+  cout << " Output characteristics : splitlevel = " << fSplit << " buffersize = " << fBsize << endl;
+ }
 
  ListEnvironment();
  
@@ -314,10 +323,18 @@ void IceF2k::Exec(Option_t* opt)
   if (!(nevt%fPrintfreq)) evt->HeaderData();
 
   // Write the complete structure to the output Tree
-  otree->Fill();
+  if (otree) otree->Fill();
 
   // Update event counter
   nevt++;
+ }
+
+ // Remove the IceEvent object from the environment
+ // and delete it as well
+ if (evt)
+ {
+  RemoveObject(evt);
+  delete evt;
  }
 }
 ///////////////////////////////////////////////////////////////////////////

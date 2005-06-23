@@ -27,7 +27,22 @@
 // This base class provides a working environment for the derived
 // (user defined) processor class and all of its subtasks.
 //
-// The working environment consists of (a.o.) :
+// The default working environment consists of :
+//
+// * An array containing pointers to the objects which are stored
+//   via the AddObject() facility of this AliJob class.
+//   From this storage the objects can be directly accessed via the
+//   GetObject() and GetObjects() memberfunctions.
+// * A pointer to the main object structure during job processing.
+//   This pointer can be initiated/updated only by the derived top level
+//   processor via the SetMainObject() facility but all sub-tasks can access
+//   it via the above array facilities or the GetMainObject() memberfunction.
+//   The latter provides faster access to the main object structure than
+//   the GetObject (search) based procedures.
+//
+// Optionally one may invoke the MakeFolder() memberfunction to provide
+// in addition to the above the following job-specific folder structure :
+//
 // * A folder which may serve as a whiteboard for transferring pointers to
 //   objects which are posted there by the top level processor or any
 //   of its subtasks.
@@ -36,16 +51,6 @@
 //   Access to the job folder is obtained via the GetFolder() memberfunction
 //   and from this the various objects can be accessed via the usual TFolder
 //   FindObject and/or iterator facilities.
-// * An array containing pointers to the objects which are stored
-//   via the AddObject() facility of this AliJob class.
-//   From this storage the objects can be (more directly) accessed via the
-//   GetObject() and GetObjects() memberfunctions.
-// * A pointer to the main object structure during job processing.
-//   This pointer can be initiated/updated only by the derived top level
-//   processor via the SetMainObject() facility but all sub-tasks can access
-//   it via the above folder/array facilities or the GetMainObject() memberfunction.
-//   The latter provides faster access to the main object structure than
-//   the GetObject() or TFolder search based procedures.
 //
 // Notes :
 // -------
@@ -56,7 +61,7 @@
 //
 // 2) Only references to the various introduced objects are stored.
 //    It is the user's responsibility to delete all introduced objects,
-//    either in the destructor of the derived top level processor class
+//    either in the Exec() or destructor of the derived top level processor class
 //    or via Clear() facility as provided by the TTask machinery.
 //
 // 3) The top level processor instance is entered into the standard ROOT
@@ -70,15 +75,17 @@
 //
 //      AliJob* parent=(AliJob*)gROOT->GetListOfTasks()->FindObject(opt)
 //
-// 4) The job-specific folder will be created in the generic folder called
-//    "AliJob-folders" as a sub-folder under the same name as the one
+// 4) If selected, the job-specific folder will be created in the generic folder
+//    called "AliJob-folders" as a sub-folder under the same name as the one
 //    introduced in the constructor of the derived top level processor class.
-//    The folder will only be created when the first object is posted via
-//    the AddObject() or SetMainObject() facilities.
+//    The folder will only be created if the MakeFolder() member function has been
+//    invoked explicitly and when the first object is posted via the AddObject()
+//    or SetMainObject() facilities.
 //
 // Execution of the (user defined) top level processor has to be invoked via
 // the memberfunction ExecuteJob() of this AliJob base class.
-// This will invoke the (user written) Exec() memberfunction of the top level
+// This will set the default gROOT as the global working directory and then
+// invoke the (user written) Exec() memberfunction of the top level
 // processor class with as argument the name of the top level processor instance
 // as specified by the user in the top level processor constructor.
 // This will allow stepwise (e.g. event-by-event) execution of the various sub-tasks.
@@ -102,6 +109,7 @@ AliJob::AliJob(const char* name,const char* title) : TTask(name,title)
 // Initialise the working environment for general data access
 // by the derived task and its subtasks.
 
+ fMakefolder=0;
  fMainObject=0;
  fFolder=0;
  fObjects=0;
@@ -115,7 +123,9 @@ AliJob::AliJob(const char* name,const char* title) : TTask(name,title)
 AliJob::~AliJob()
 {
 // Default destructor.
-// Note : The objects belonging to the various pointers in the folder
+// The internal array and job specific folder (if any) holding the various
+// references are deleted.
+// Note : The objects belonging to the various pointers in the array/folder
 //        and the main processing object are NOT deleted by this base class.
 
  if (fObjects)
@@ -125,6 +135,12 @@ AliJob::~AliJob()
  }
  if (fFolder)
  {
+  TList* list=gROOT->GetListOfBrowsables();
+  if (list)
+  {
+   TFolder* top=(TFolder*)list->FindObject("AliJob-folders");
+   if (top) RecursiveRemove(fFolder);
+  }
   delete fFolder;
   fFolder=0;
  }
@@ -144,15 +160,27 @@ void AliJob::ListEnvironment()
  cout << " ***" << endl;
  cout << " === Available (sub)tasks : " << endl;
  ls();
- cout << " === Current job-folder contents : " << endl;
- fFolder->ls();
+ if (fFolder)
+ {
+  cout << " === Current job-folder contents : " << endl;
+  fFolder->ls();
+ }
  cout << endl;
 }
 ///////////////////////////////////////////////////////////////////////////
 void AliJob::ExecuteJob()
 {
 // Invokation of the top level processor via its Exec() memberfunction.
+// Note : Before execution gROOT is set as the global working directory.
+ gROOT->cd(); 
  Exec(GetName());
+}
+///////////////////////////////////////////////////////////////////////////
+void AliJob::MakeFolder()
+{
+// Select creation of the folder structure in addition to the internal
+// array storage of objects.
+ fMakefolder=1;
 }
 ///////////////////////////////////////////////////////////////////////////
 TFolder* AliJob::GetFolder() const
@@ -185,7 +213,7 @@ void AliJob::AddObject(TObject* obj)
 
  if (!fObjects) fObjects=new TObjArray();
 
- if (!fFolder)
+ if (fMakefolder && !fFolder)
  {
   // Create the top level environment folder for all AliJobs if needed 
   TList* list=gROOT->GetListOfBrowsables();
@@ -215,7 +243,7 @@ void AliJob::AddObject(TObject* obj)
  if (!exist)
  {
   fObjects->Add(obj);
-  fFolder->Add(obj);
+  if (fFolder) fFolder->Add(obj);
  }
 }
 ///////////////////////////////////////////////////////////////////////////
@@ -236,13 +264,19 @@ void AliJob::AddObjects(TObjArray* arr)
 void AliJob::RemoveObject(TObject* obj)
 {
 // Remove pointer of specified object from the working environment.
+// In case the specified object is also the main object, the main object
+// pointer will be set to 0 as well.
 
  if (!obj) return;
 
  if (fObjects)
  {
   TObject* test=fObjects->Remove(obj);
-  if (test) fObjects->Compress();
+  if (test)
+  {
+   fObjects->Compress();
+   if (test==fMainObject) fMainObject=0;
+  }
  }
 
  if (fFolder) fFolder->Remove(obj);
@@ -251,6 +285,8 @@ void AliJob::RemoveObject(TObject* obj)
 void AliJob::RemoveObjects(const char* classname)
 {
 // Remove all stored objects inheriting from classname.
+// In case one of the removed objects is also the main object, the main object
+// pointer will be set to 0 as well.
 
  if (!fObjects) return;
 
@@ -261,7 +297,11 @@ void AliJob::RemoveObjects(const char* classname)
   if (obj->InheritsFrom(classname))
   {
    TObject* test=fObjects->Remove(obj);
-   if (test) remove=1;
+   if (test)
+   {
+    remove=1;
+    if (test==fMainObject) fMainObject=0;
+   }
    if (fFolder) fFolder->Remove(obj);
   }
  }
