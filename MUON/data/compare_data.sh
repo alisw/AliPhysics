@@ -23,7 +23,7 @@ fi
 
 DATATYPE=$1
 
-for builder in st1 st1V2 st2 slat trigger
+for builder in st1 st1V2 st2 st2V2 slat trigger
 do
   if [ -f $DATATYPE"_"$builder".dat.out" ] ; then
     echo "Comparing $DATATYPE"_"$builder".dat $DATATYPE"_"$builder.dat.out ...
