@@ -124,15 +124,15 @@ AliMUONTest::CreateSt1Segmentation(Int_t chamberId, Int_t cathod)
   // Configure  St1 chamber segmentations
   if (cathod == 0) {
     segmentation->Add(id0,      bendSt1);
+    segmentation->Add(id0 +  3, nonbendSt1);
+    segmentation->Add(id0 +  2, bendSt1);
     segmentation->Add(id0 +  1, nonbendSt1);
-    segmentation->Add(id0 + 50, bendSt1);
-    segmentation->Add(id0 + 51, nonbendSt1);
   }
   else if (cathod == 1) {
     segmentation->Add(id0,      nonbendSt1);
+    segmentation->Add(id0 +  3, bendSt1);
+    segmentation->Add(id0 +  2, nonbendSt1);
     segmentation->Add(id0 +  1, bendSt1);
-    segmentation->Add(id0 + 50, nonbendSt1);
-    segmentation->Add(id0 + 51, bendSt1);
   }
   else {
     AliError("Wrong cathod number");
@@ -169,15 +169,15 @@ AliMUONTest::CreateSt2Segmentation(Int_t chamberId, Int_t cathod)
   // Configure  St2 chamber segmentations
   if (cathod == 0) {
     segmentation->Add(id0,      bendSt2);
+    segmentation->Add(id0 +  3, nonbendSt2);
+    segmentation->Add(id0 +  2, bendSt2);
     segmentation->Add(id0 +  1, nonbendSt2);
-    segmentation->Add(id0 + 50, bendSt2);
-    segmentation->Add(id0 + 51, nonbendSt2);
   }
   else if (cathod == 1) {
     segmentation->Add(id0,      nonbendSt2);
+    segmentation->Add(id0 +  3, bendSt2);
+    segmentation->Add(id0 +  2, nonbendSt2);
     segmentation->Add(id0 +  1, bendSt2);
-    segmentation->Add(id0 + 50, nonbendSt2);
-    segmentation->Add(id0 + 51, bendSt2);
   }
   else {
     AliError("Wrong cathod number");
@@ -362,55 +362,55 @@ AliMUONTest::CreateSlatSegmentation(Int_t chamberId, Int_t cathod)
     id0=(chamberId+1)*100;
     // type 220000
     if (cathod == 0) {
-      chamberSeg->Add(id0, slatsegB[3]);
-      chamberSeg->Add(id0+ 8, slatsegB[3]);  
-      chamberSeg->Add(id0+50, slatsegB[3]);  
-      chamberSeg->Add(id0+58, slatsegB[3]);
+      chamberSeg->Add(id0+14, slatsegB[3]);
+      chamberSeg->Add(id0+ 4, slatsegB[3]);  
+      chamberSeg->Add(id0+13, slatsegB[3]);  
+      chamberSeg->Add(id0+ 5, slatsegB[3]);
     } else {
-      chamberSeg->Add(id0, slatsegNB[3]);
-      chamberSeg->Add(id0+ 8, slatsegNB[3]);  
-      chamberSeg->Add(id0+50, slatsegNB[3]);  
-      chamberSeg->Add(id0+58, slatsegNB[3]);
+      chamberSeg->Add(id0+14, slatsegNB[3]);
+      chamberSeg->Add(id0+ 4, slatsegNB[3]);  
+      chamberSeg->Add(id0+13, slatsegNB[3]);  
+      chamberSeg->Add(id0+ 5, slatsegNB[3]);
     }
     // type 222000
     if (cathod == 0) {
-      chamberSeg->Add(id0+ 1, slatsegB[2]);
-      chamberSeg->Add(id0+ 7, slatsegB[2]);  
-      chamberSeg->Add(id0+51, slatsegB[2]);  
-      chamberSeg->Add(id0+57, slatsegB[2]);
+      chamberSeg->Add(id0+15, slatsegB[2]);
+      chamberSeg->Add(id0+ 3, slatsegB[2]);  
+      chamberSeg->Add(id0+12, slatsegB[2]);  
+      chamberSeg->Add(id0+ 6, slatsegB[2]);
     } else {
-      chamberSeg->Add(id0+ 1, slatsegNB[2]);
-      chamberSeg->Add(id0+ 7, slatsegNB[2]);  
-      chamberSeg->Add(id0+51, slatsegNB[2]);  
-      chamberSeg->Add(id0+57, slatsegNB[2]);
+      chamberSeg->Add(id0+15, slatsegNB[2]);
+      chamberSeg->Add(id0+ 3, slatsegNB[2]);  
+      chamberSeg->Add(id0+12, slatsegNB[2]);  
+      chamberSeg->Add(id0+ 6, slatsegNB[2]);
     }
     // type 122200
     if (cathod == 0) {
-      chamberSeg->Add(id0+ 2, slatsegB[1]);
-      chamberSeg->Add(id0+ 6, slatsegB[1]);  
-      chamberSeg->Add(id0+52, slatsegB[1]);  
-      chamberSeg->Add(id0+56, slatsegB[1]);
+      chamberSeg->Add(id0+16, slatsegB[1]);
+      chamberSeg->Add(id0+ 2, slatsegB[1]);  
+      chamberSeg->Add(id0+11, slatsegB[1]);  
+      chamberSeg->Add(id0+ 7, slatsegB[1]);
     } else {
-      chamberSeg->Add(id0+ 2, slatsegNB[1]);
-      chamberSeg->Add(id0+ 6, slatsegNB[1]);  
-      chamberSeg->Add(id0+52, slatsegNB[1]);  
-      chamberSeg->Add(id0+56, slatsegNB[1]);
+      chamberSeg->Add(id0+16, slatsegNB[1]);
+      chamberSeg->Add(id0+ 2, slatsegNB[1]);  
+      chamberSeg->Add(id0+11, slatsegNB[1]);  
+      chamberSeg->Add(id0+ 7, slatsegNB[1]);
     }
     // type 112200
     if (cathod == 0) {
-      chamberSeg->Add(id0+ 3, slatsegB[0]);
-      chamberSeg->Add(id0+ 4, slatsegB[0]);  
-      chamberSeg->Add(id0+ 5, slatsegB[0]);  
-      chamberSeg->Add(id0+53, slatsegB[0]);
-      chamberSeg->Add(id0+54, slatsegB[0]);     
-      chamberSeg->Add(id0+55, slatsegB[0]);
+      chamberSeg->Add(id0+17, slatsegB[0]);
+      chamberSeg->Add(id0, slatsegB[0]);  
+      chamberSeg->Add(id0+ 1, slatsegB[0]);  
+      chamberSeg->Add(id0+10, slatsegB[0]);
+      chamberSeg->Add(id0+ 9, slatsegB[0]);     
+      chamberSeg->Add(id0+ 8, slatsegB[0]);
     } else {
-      chamberSeg->Add(id0+ 3, slatsegNB[0]);
-      chamberSeg->Add(id0+ 4, slatsegNB[0]);  
-      chamberSeg->Add(id0+ 5, slatsegNB[0]);  
-      chamberSeg->Add(id0+53, slatsegNB[0]);
-      chamberSeg->Add(id0+54, slatsegNB[0]);     
-      chamberSeg->Add(id0+55, slatsegNB[0]);
+      chamberSeg->Add(id0+17, slatsegNB[0]);
+      chamberSeg->Add(id0, slatsegNB[0]);  
+      chamberSeg->Add(id0+ 1, slatsegNB[0]);  
+      chamberSeg->Add(id0+10, slatsegNB[0]);
+      chamberSeg->Add(id0+ 9, slatsegNB[0]);     
+      chamberSeg->Add(id0+ 8, slatsegNB[0]);
     }
 
   }
@@ -421,83 +421,83 @@ AliMUONTest::CreateSlatSegmentation(Int_t chamberId, Int_t cathod)
     id0=(chamberId+1)*100;
     // type 122330
     if (cathod == 0) {
-      chamberSeg->Add(id0+ 6, slatsegB[4]);
-      chamberSeg->Add(id0+56, slatsegB[4]);
+      chamberSeg->Add(id0+13, slatsegB[4]);
+      chamberSeg->Add(id0   , slatsegB[4]);
     } else {
-      chamberSeg->Add(id0+ 6, slatsegNB[4]);
-      chamberSeg->Add(id0+56, slatsegNB[4]);
+      chamberSeg->Add(id0+13, slatsegNB[4]);
+      chamberSeg->Add(id0   , slatsegNB[4]);
     }
     // type 112233
     if (cathod == 0) {
-      chamberSeg->Add(id0+ 5, slatsegB[5]);
-      chamberSeg->Add(id0+ 7, slatsegB[5]);  
-      chamberSeg->Add(id0+55, slatsegB[5]);  
-      chamberSeg->Add(id0+57, slatsegB[5]);
+      chamberSeg->Add(id0+14, slatsegB[5]);
+      chamberSeg->Add(id0+12, slatsegB[5]);  
+      chamberSeg->Add(id0+25, slatsegB[5]);  
+      chamberSeg->Add(id0+ 1, slatsegB[5]);
     } else {
-      chamberSeg->Add(id0+ 5, slatsegNB[5]);
-      chamberSeg->Add(id0+ 7, slatsegNB[5]);  
-      chamberSeg->Add(id0+55, slatsegNB[5]);  
-      chamberSeg->Add(id0+57, slatsegNB[5]);
+      chamberSeg->Add(id0+14, slatsegNB[5]);
+      chamberSeg->Add(id0+12, slatsegNB[5]);  
+      chamberSeg->Add(id0+25, slatsegNB[5]);  
+      chamberSeg->Add(id0+ 1, slatsegNB[5]);
     }
     // type 112230
     if (cathod == 0) {
-      chamberSeg->Add(id0+ 4, slatsegB[6]);
-      chamberSeg->Add(id0+ 8, slatsegB[6]);  
-      chamberSeg->Add(id0+54, slatsegB[6]);  
-      chamberSeg->Add(id0+58, slatsegB[6]);
+      chamberSeg->Add(id0+15, slatsegB[6]);
+      chamberSeg->Add(id0+11, slatsegB[6]);  
+      chamberSeg->Add(id0+24, slatsegB[6]);  
+      chamberSeg->Add(id0+ 2, slatsegB[6]);
     } else {
-      chamberSeg->Add(id0+ 4, slatsegNB[6]);
-      chamberSeg->Add(id0+ 8, slatsegNB[6]);  
-      chamberSeg->Add(id0+54, slatsegNB[6]);  
-      chamberSeg->Add(id0+58, slatsegNB[6]);
+      chamberSeg->Add(id0+15, slatsegNB[6]);
+      chamberSeg->Add(id0+11, slatsegNB[6]);  
+      chamberSeg->Add(id0+24, slatsegNB[6]);  
+      chamberSeg->Add(id0+ 2, slatsegNB[6]);
     }
     // type 222330 
     if (cathod == 0) {
+      chamberSeg->Add(id0+16, slatsegB[7]);
+      chamberSeg->Add(id0+10, slatsegB[7]);  
+      chamberSeg->Add(id0+23, slatsegB[7]);
       chamberSeg->Add(id0+ 3, slatsegB[7]);
-      chamberSeg->Add(id0+ 9, slatsegB[7]);  
-      chamberSeg->Add(id0+53, slatsegB[7]);
-      chamberSeg->Add(id0+59, slatsegB[7]);
     } else {
+      chamberSeg->Add(id0+16, slatsegNB[7]);
+      chamberSeg->Add(id0+10, slatsegNB[7]);  
+      chamberSeg->Add(id0+23, slatsegNB[7]);
       chamberSeg->Add(id0+ 3, slatsegNB[7]);
-      chamberSeg->Add(id0+ 9, slatsegNB[7]);  
-      chamberSeg->Add(id0+53, slatsegNB[7]);
-      chamberSeg->Add(id0+59, slatsegNB[7]);
     }
     // type 223300 
     if (cathod == 0) {
-      chamberSeg->Add(id0+ 2, slatsegB[8]);
-      chamberSeg->Add(id0+10, slatsegB[8]);  
-      chamberSeg->Add(id0+52, slatsegB[8]);
-      chamberSeg->Add(id0+60, slatsegB[8]);
+      chamberSeg->Add(id0+17, slatsegB[8]);
+      chamberSeg->Add(id0+ 9, slatsegB[8]);  
+      chamberSeg->Add(id0+22, slatsegB[8]);
+      chamberSeg->Add(id0+ 4, slatsegB[8]);
     } else {
-      chamberSeg->Add(id0+ 2, slatsegNB[8]);
-      chamberSeg->Add(id0+10, slatsegNB[8]);  
-      chamberSeg->Add(id0+52, slatsegNB[8]);
-      chamberSeg->Add(id0+60, slatsegNB[8]);
+      chamberSeg->Add(id0+17, slatsegNB[8]);
+      chamberSeg->Add(id0+ 9, slatsegNB[8]);  
+      chamberSeg->Add(id0+22, slatsegNB[8]);
+      chamberSeg->Add(id0+ 4, slatsegNB[8]);
     }
     // type 333000 
     if (cathod == 0) {
-      chamberSeg->Add(id0+ 1, slatsegB[9]);
-      chamberSeg->Add(id0+11, slatsegB[9]);  
-      chamberSeg->Add(id0+51, slatsegB[9]);
-      chamberSeg->Add(id0+61, slatsegB[9]);
+      chamberSeg->Add(id0+18, slatsegB[9]);
+      chamberSeg->Add(id0+ 8, slatsegB[9]);  
+      chamberSeg->Add(id0+21, slatsegB[9]);
+      chamberSeg->Add(id0+ 5, slatsegB[9]);
     } else {
-      chamberSeg->Add(id0+ 1, slatsegNB[9]);
-      chamberSeg->Add(id0+11, slatsegNB[9]);  
-      chamberSeg->Add(id0+51, slatsegNB[9]);
-      chamberSeg->Add(id0+61, slatsegNB[9]);
+      chamberSeg->Add(id0+18, slatsegNB[9]);
+      chamberSeg->Add(id0+ 8, slatsegNB[9]);  
+      chamberSeg->Add(id0+21, slatsegNB[9]);
+      chamberSeg->Add(id0+ 5, slatsegNB[9]);
     }
     // type 330000 
     if (cathod == 0) {
-      chamberSeg->Add(id0   , slatsegB[10]);
-      chamberSeg->Add(id0+12, slatsegB[10]);  
-      chamberSeg->Add(id0+50, slatsegB[10]);
-      chamberSeg->Add(id0+62, slatsegB[10]);
+      chamberSeg->Add(id0+19, slatsegB[10]);
+      chamberSeg->Add(id0+ 7, slatsegB[10]);  
+      chamberSeg->Add(id0+20, slatsegB[10]);
+      chamberSeg->Add(id0+ 6, slatsegB[10]);
     } else {
-      chamberSeg->Add(id0   , slatsegNB[10]);
-      chamberSeg->Add(id0+12, slatsegNB[10]);  
-      chamberSeg->Add(id0+50, slatsegNB[10]);
-      chamberSeg->Add(id0+62, slatsegNB[10]);
+      chamberSeg->Add(id0+19, slatsegNB[10]);
+      chamberSeg->Add(id0+ 7, slatsegNB[10]);  
+      chamberSeg->Add(id0+20, slatsegNB[10]);
+      chamberSeg->Add(id0+ 6, slatsegNB[10]);
     }
   }
 
@@ -507,79 +507,79 @@ AliMUONTest::CreateSlatSegmentation(Int_t chamberId, Int_t cathod)
     id0=(chamberId+1)*100;
     // type 122330
     if (cathod == 0) {
-      chamberSeg->Add(id0+ 6, slatsegB[4]);
-      chamberSeg->Add(id0+56, slatsegB[4]);
+      chamberSeg->Add(id0+13, slatsegB[4]);
+      chamberSeg->Add(id0   , slatsegB[4]);
     } else {
-      chamberSeg->Add(id0+ 6, slatsegNB[4]);
-      chamberSeg->Add(id0+56, slatsegNB[4]);
+      chamberSeg->Add(id0+13, slatsegNB[4]);
+      chamberSeg->Add(id0   , slatsegNB[4]);
     }
     // type 112233
     if (cathod == 0) {
-      chamberSeg->Add(id0+ 4, slatsegB[5]);
-      chamberSeg->Add(id0+ 5, slatsegB[5]);
-      chamberSeg->Add(id0+ 7, slatsegB[5]);  
-      chamberSeg->Add(id0+ 8, slatsegB[5]);  
-      chamberSeg->Add(id0+54, slatsegB[5]);  
-      chamberSeg->Add(id0+55, slatsegB[5]);  
-      chamberSeg->Add(id0+57, slatsegB[5]);
-      chamberSeg->Add(id0+58, slatsegB[5]);
+      chamberSeg->Add(id0+15, slatsegB[5]);
+      chamberSeg->Add(id0+14, slatsegB[5]);
+      chamberSeg->Add(id0+12, slatsegB[5]);  
+      chamberSeg->Add(id0+11, slatsegB[5]);  
+      chamberSeg->Add(id0+24, slatsegB[5]);  
+      chamberSeg->Add(id0+25, slatsegB[5]);  
+      chamberSeg->Add(id0+ 1, slatsegB[5]);
+      chamberSeg->Add(id0+ 2, slatsegB[5]);
     } else {
-      chamberSeg->Add(id0+ 4, slatsegNB[5]);
-      chamberSeg->Add(id0+ 5, slatsegNB[5]);
-      chamberSeg->Add(id0+ 7, slatsegNB[5]);  
-      chamberSeg->Add(id0+ 8, slatsegNB[5]);  
-      chamberSeg->Add(id0+54, slatsegNB[5]);  
-      chamberSeg->Add(id0+55, slatsegNB[5]);  
-      chamberSeg->Add(id0+57, slatsegNB[5]);
-      chamberSeg->Add(id0+58, slatsegNB[5]);
+      chamberSeg->Add(id0+15, slatsegNB[5]);
+      chamberSeg->Add(id0+14, slatsegNB[5]);
+      chamberSeg->Add(id0+12, slatsegNB[5]);  
+      chamberSeg->Add(id0+11, slatsegNB[5]);  
+      chamberSeg->Add(id0+24, slatsegNB[5]);  
+      chamberSeg->Add(id0+25, slatsegNB[5]);  
+      chamberSeg->Add(id0+ 1, slatsegNB[5]);
+      chamberSeg->Add(id0+ 2, slatsegNB[5]);
     }
     // type 222333 
     if (cathod == 0) {
+      chamberSeg->Add(id0+16, slatsegB[11]);
+      chamberSeg->Add(id0+10, slatsegB[11]);  
+      chamberSeg->Add(id0+23, slatsegB[11]);
       chamberSeg->Add(id0+ 3, slatsegB[11]);
-      chamberSeg->Add(id0+ 9, slatsegB[11]);  
-      chamberSeg->Add(id0+53, slatsegB[11]);
-      chamberSeg->Add(id0+59, slatsegB[11]);
     } else {
+      chamberSeg->Add(id0+16, slatsegNB[11]);
+      chamberSeg->Add(id0+10, slatsegNB[11]);  
+      chamberSeg->Add(id0+23, slatsegNB[11]);
       chamberSeg->Add(id0+ 3, slatsegNB[11]);
-      chamberSeg->Add(id0+ 9, slatsegNB[11]);  
-      chamberSeg->Add(id0+53, slatsegNB[11]);
-      chamberSeg->Add(id0+59, slatsegNB[11]);
     }
     // type 223330 
     if (cathod == 0) {
-      chamberSeg->Add(id0+ 2, slatsegB[12]);
-      chamberSeg->Add(id0+10, slatsegB[12]);  
-      chamberSeg->Add(id0+52, slatsegB[12]);
-      chamberSeg->Add(id0+60, slatsegB[12]);
+      chamberSeg->Add(id0+17, slatsegB[12]);
+      chamberSeg->Add(id0+ 9, slatsegB[12]);  
+      chamberSeg->Add(id0+22, slatsegB[12]);
+      chamberSeg->Add(id0+ 4, slatsegB[12]);
     } else {
-      chamberSeg->Add(id0+ 2, slatsegNB[12]);
-      chamberSeg->Add(id0+10, slatsegNB[12]);  
-      chamberSeg->Add(id0+52, slatsegNB[12]);
-      chamberSeg->Add(id0+60, slatsegNB[12]);
+      chamberSeg->Add(id0+17, slatsegNB[12]);
+      chamberSeg->Add(id0+ 9, slatsegNB[12]);  
+      chamberSeg->Add(id0+22, slatsegNB[12]);
+      chamberSeg->Add(id0+ 4, slatsegNB[12]);
     }
     // type 333300 
     if (cathod == 0) {
-      chamberSeg->Add(id0+ 1, slatsegB[13]);
-      chamberSeg->Add(id0+11, slatsegB[13]);  
-      chamberSeg->Add(id0+51, slatsegB[13]);
-      chamberSeg->Add(id0+61, slatsegB[13]);
+      chamberSeg->Add(id0+18, slatsegB[13]);
+      chamberSeg->Add(id0+ 8, slatsegB[13]);  
+      chamberSeg->Add(id0+21, slatsegB[13]);
+      chamberSeg->Add(id0+ 5, slatsegB[13]);
     } else {
-      chamberSeg->Add(id0+ 1, slatsegNB[13]);
-      chamberSeg->Add(id0+11, slatsegNB[13]);  
-      chamberSeg->Add(id0+51, slatsegNB[13]);
-      chamberSeg->Add(id0+61, slatsegNB[13]);
+      chamberSeg->Add(id0+18, slatsegNB[13]);
+      chamberSeg->Add(id0+ 8, slatsegNB[13]);  
+      chamberSeg->Add(id0+21, slatsegNB[13]);
+      chamberSeg->Add(id0+ 5, slatsegNB[13]);
     }
     // type 333000 
     if (cathod == 0) {
-      chamberSeg->Add(id0   , slatsegB[9]);
-      chamberSeg->Add(id0+12, slatsegB[9]);  
-      chamberSeg->Add(id0+50, slatsegB[9]);
-      chamberSeg->Add(id0+62, slatsegB[9]);
+      chamberSeg->Add(id0+19, slatsegB[9]);
+      chamberSeg->Add(id0+ 7, slatsegB[9]);  
+      chamberSeg->Add(id0+20, slatsegB[9]);
+      chamberSeg->Add(id0+ 6, slatsegB[9]);
     } else {
-      chamberSeg->Add(id0   , slatsegNB[9]);
-      chamberSeg->Add(id0+12, slatsegNB[9]);  
-      chamberSeg->Add(id0+50, slatsegNB[9]);
-      chamberSeg->Add(id0+62, slatsegNB[9]);
+      chamberSeg->Add(id0+19, slatsegNB[9]);
+      chamberSeg->Add(id0+ 7, slatsegNB[9]);  
+      chamberSeg->Add(id0+20, slatsegNB[9]);
+      chamberSeg->Add(id0+ 6, slatsegNB[9]);
     }
   }  
   

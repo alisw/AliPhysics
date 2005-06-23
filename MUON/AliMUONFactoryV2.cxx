@@ -237,16 +237,16 @@ void AliMUONFactoryV2::BuildStation2()
 
     // cathode 0
     segmentation[0]->Add(id0,      bendSt2);
-    segmentation[0]->Add(id0 +  1, nonbendSt2);
-    segmentation[0]->Add(id0 + 50, bendSt2);
-    segmentation[0]->Add(id0 + 51, nonbendSt2); 
+    segmentation[0]->Add(id0 +  3, nonbendSt2);
+    segmentation[0]->Add(id0 +  2, bendSt2);
+    segmentation[0]->Add(id0 +  1, nonbendSt2); 
     fMUON->SetSegmentationModel(chamber, 1, segmentation[0]);   
 
     // cathode 1
     segmentation[1]->Add(id0,      nonbendSt2);
+    segmentation[1]->Add(id0 +  3, bendSt2);
+    segmentation[1]->Add(id0 +  2, nonbendSt2);
     segmentation[1]->Add(id0 +  1, bendSt2);
-    segmentation[1]->Add(id0 + 50, nonbendSt2);
-    segmentation[1]->Add(id0 + 51, bendSt2);
     fMUON->SetSegmentationModel(chamber, 2, segmentation[1]);
         
     fMUON->SetResponseModel(chamber, fResponse0); // normal response        
