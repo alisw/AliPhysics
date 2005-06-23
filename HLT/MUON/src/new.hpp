@@ -14,8 +14,8 @@
    These new operators throw dHLT::OutOfMemory exceptions if the system is out of
    memory.
  */
-void* operator new (std::size_t size) throw (std::bad_alloc);
-void* operator new [] (std::size_t size) throw (std::bad_alloc);
+void* operator new (size_t size) throw (std::bad_alloc);
+void* operator new [] (size_t size) throw (std::bad_alloc);
 void operator delete (void* memory) throw ();
 void operator delete [] (void* memory) throw ();
 
