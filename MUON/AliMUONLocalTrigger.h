@@ -40,11 +40,11 @@ class AliMUONLocalTrigger : public TObject {
   Char_t GetLoDecision();
 
   Int_t NumberOfDigits() const { return fDigits.GetSize(); }
-  Int_t GetDigitNumber(const Int_t i) const { return fDigits[i]; }
-  void GetDigit(const Int_t i, Int_t& chamber, Int_t& cathode, Int_t& digit) const;
+  Int_t GetDigitNumber(Int_t i) const { return fDigits[i]; }
+  void GetDigit(Int_t i, Int_t& chamber, Int_t& cathode, Int_t& digit) const;
 
-  static Int_t EncodeDigitNumber(const Int_t chamber, const Int_t cathode, const Int_t digit);
-  static void DecodeDigitNumber(const Int_t digitnumber, Int_t& chamber, Int_t& cathode, Int_t& digit);
+  static Int_t EncodeDigitNumber(Int_t chamber, Int_t cathode, Int_t digit);
+  static void DecodeDigitNumber(Int_t digitnumber, Int_t& chamber, Int_t& cathode, Int_t& digit);
 
 private:
   Int_t fLoCircuit; // circuit number 

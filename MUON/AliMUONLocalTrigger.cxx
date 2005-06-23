@@ -143,7 +143,7 @@ Char_t AliMUONLocalTrigger::GetLoDecision()
 
 //----------------------------------------------------------------------
 void AliMUONLocalTrigger::GetDigit(
-		const Int_t i, Int_t& chamber, Int_t& cathode, Int_t& digit
+		Int_t i, Int_t& chamber, Int_t& cathode, Int_t& digit
 	) const
 {
 // Returns the i'th digit that fired this circuit.
@@ -156,7 +156,7 @@ void AliMUONLocalTrigger::GetDigit(
 
 //----------------------------------------------------------------------
 Int_t AliMUONLocalTrigger::EncodeDigitNumber(
-		const Int_t chamber, const Int_t cathode, const Int_t digit
+		Int_t chamber, Int_t cathode, Int_t digit
 	)
 {
 // Encodes a 32-bit digit number from digit information to be stored
@@ -180,7 +180,7 @@ Int_t AliMUONLocalTrigger::EncodeDigitNumber(
 
 //----------------------------------------------------------------------
 void AliMUONLocalTrigger::DecodeDigitNumber(
-		const Int_t digitnumber,
+		Int_t digitnumber,
 		Int_t& chamber, Int_t& cathode, Int_t& digit
 	)
 {
