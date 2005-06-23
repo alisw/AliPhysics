@@ -650,7 +650,7 @@ AliMUONTest::CreateTriggerSegmentation(Int_t chamberId, Int_t cathod)
 
 // chamber 8 7 1 0 cathode 1
   for (Int_t i=0; i<6; i++) nStrip[i]=8;
-  nStrip[7]=16;
+  nStrip[6]=16;
   for (Int_t i=0; i<7; i++) stripYsize[i]=stripLength[3];  
   for (Int_t i=0; i<7; i++) stripXsize[i]=stripWidth[2];
   trigSegY[8]->Init(0,nStrip,stripYsize,stripXsize,0.);  
