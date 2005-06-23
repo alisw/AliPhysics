@@ -56,6 +56,8 @@ class AliGenMUONlib :
     static Int_t    IpJpsi(TRandom *ran);
     static Int_t    IpJpsiFamily(TRandom *ran);
     static Int_t    IpPsiP(TRandom *ran);
+    static Double_t PtJpsiFlat( Double_t *px, Double_t *dummy );
+    static Double_t YJpsiFlat(Double_t *py, Double_t *dummy);
 
 // Upsilon    
     static Double_t PtUpsilon( Double_t *px, Double_t *dummy );
@@ -70,6 +72,8 @@ class AliGenMUONlib :
     static Int_t    IpUpsilonFamily(TRandom *ran);
     static Int_t    IpUpsilonP(TRandom *ran);
     static Int_t    IpUpsilonPP(TRandom *ran);
+    static Double_t PtUpsilonFlat( Double_t *px, Double_t *dummy );
+    static Double_t YUpsilonFlat(Double_t *py, Double_t *dummy);
 //
 // Charm    
     static Double_t PtCharm( Double_t *px, Double_t *dummy );

@@ -173,6 +173,11 @@ Double_t AliGenMUONlib::PtJpsiCDFscaled( Double_t *px, Double_t */*dummy*/)
   return x/TMath::Power(pass1,kxn);
 }
 
+Double_t AliGenMUONlib::PtJpsiFlat( Double_t *px, Double_t */*dummy*/ )
+{
+  return 1.;
+}
+
 Double_t AliGenMUONlib::PtJpsiPbPb( Double_t *px, Double_t */*dummy*/)
 {
 // J/Psi pT spectrum
@@ -254,6 +259,11 @@ Double_t AliGenMUONlib::YJpsi(Double_t *py, Double_t */*dummy*/)
   else
     yj=kb*TMath::Exp(-(y-ky0)*(y-ky0)/2);
   return yj;
+}
+
+Double_t AliGenMUONlib::YJpsiFlat( Double_t *py, Double_t */*dummy*/ )
+{
+  return 1.;
 }
 
 
@@ -404,6 +414,11 @@ Double_t AliGenMUONlib::PtUpsilonCDFscaled( Double_t *px, Double_t */*dummy*/ )
   return x/TMath::Power(pass1,kxn);
 }
 
+Double_t AliGenMUONlib::PtUpsilonFlat( Double_t *px, Double_t */*dummy*/ )
+{
+  return 1.;
+}
+
 Double_t AliGenMUONlib::PtUpsilonPbPb( Double_t *px, Double_t */*dummy*/)
 {
 
@@ -509,6 +524,12 @@ Double_t AliGenMUONlib::YUpsilonCDFscaled( Double_t *px, Double_t *dummy)
 {
     // Upsilon y
     return AliGenMUONlib::YUpsilonPbPb(px, dummy);
+    
+}
+Double_t AliGenMUONlib::YUpsilonFlat( Double_t *px, Double_t *dummy)
+{
+    // Upsilon y
+    return 1.;
     
 }
 
@@ -839,6 +860,8 @@ GenFunc AliGenMUONlib::GetPt(Int_t param,  const char* tname) const
 	    func=PtJpsiPP;
 	} else if (sname == "CDF scaled") {
 	    func=PtJpsiCDFscaled;
+	} else if (sname == "Flat") {
+	    func=PtJpsiFlat;
 	} else {
 	    func=PtJpsi;
 	}
@@ -856,6 +879,8 @@ GenFunc AliGenMUONlib::GetPt(Int_t param,  const char* tname) const
 	    func=PtUpsilonPP;
 	} else if (sname == "CDF scaled") {
 	    func=PtUpsilonCDFscaled;
+	} else if (sname == "Flat") {
+	    func=PtUpsilonFlat;
 	} else {
 	    func=PtUpsilon;
 	}
@@ -914,6 +939,8 @@ GenFunc AliGenMUONlib::GetY(Int_t param, const char* tname) const
 	    func=YJpsiPP;
 	} else if (sname == "CDF scaled") {
 	    func=YJpsiCDFscaled;
+	} else if (sname == "Flat") {
+	    func=YJpsiFlat;
 	} else {
 	    func=YJpsi;
 	}
@@ -931,6 +958,8 @@ GenFunc AliGenMUONlib::GetY(Int_t param, const char* tname) const
 	    func = YUpsilonPP;
 	} else if (sname == "CDF scaled") {
 	    func=YUpsilonCDFscaled;
+	} else if (sname == "Flat") {
+	    func=YUpsilonFlat;
 	} else {
 	    func=YUpsilon;
 	}
