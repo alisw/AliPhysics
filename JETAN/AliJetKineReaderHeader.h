@@ -19,7 +19,7 @@ class AliJetKineReaderHeader : public AliJetReaderHeader
   
   // Setters
   void SetFastSimTPC(Bool_t flag = kTRUE) {fFastSimTPC = flag;}
-  virtual void SetPtCut(const Float_t par = 2.0) {fPtCut = par;}
+  virtual void SetPtCut(Float_t par = 2.0) {fPtCut = par;}
   // Getter
   Bool_t  FastSimTPC() const  {return fFastSimTPC;}
   Float_t GetPtCut()   const  {return fPtCut;}

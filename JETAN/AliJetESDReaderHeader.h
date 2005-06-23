@@ -25,9 +25,9 @@ class AliJetESDReaderHeader : public AliJetReaderHeader
   
 	  
   // Setters
-  virtual void SetPtCut(const Float_t par = 2.0) {fPtCut = par;}
-  virtual void SetDCA(const Float_t dca = 3.0) {fDCA = dca;}
-  virtual void SetTLength(const Float_t length = 0.0) {fTLength = length;}
+  virtual void SetPtCut(Float_t par = 2.0) {fPtCut = par;}
+  virtual void SetDCA(Float_t dca = 3.0) {fDCA = dca;}
+  virtual void SetTLength(Float_t length = 0.0) {fTLength = length;}
   virtual void SetReadSignalOnly(Bool_t flag = kTRUE) {fReadSignalOnly = flag;}
   
  protected:
