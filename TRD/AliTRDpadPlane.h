@@ -32,16 +32,16 @@ class AliTRDpadPlane : public TObject {
   AliTRDpadPlane    &operator=(const AliTRDpadPlane &p);
   virtual void       Copy(TObject &p) const;
 
-  Int_t    GetPadRowNumber(const Double_t z) const;
-  Int_t    GetPadColNumber(const Double_t rphi, const Double_t rowOffset) const;
+  Int_t    GetPadRowNumber(Double_t z) const;
+  Int_t    GetPadColNumber(Double_t rphi, Double_t rowOffset) const;
 
-  Double_t GetPadRowOffset(const Int_t row, const Double_t z) const
+  Double_t GetPadRowOffset(Int_t row, Double_t z) const
                                              { if ((row < 0) || (row >= fNrows))
                                                  return -1.0;
                                                else 
                                                  return fPadRow[row] - z;    };
 
-  Double_t GetPadColOffset(const Int_t col, const Double_t rphi) const
+  Double_t GetPadColOffset(Int_t col, Double_t rphi) const
                                              { if ((col < 0) || (col >= fNcols))
                                                  return -1.0;
                                                else
@@ -58,14 +58,14 @@ class AliTRDpadPlane : public TObject {
   Double_t GetRowEnd() const                 { return fPadRow[fNrows-1]  - fLengthOPad; };
   Double_t GetColEnd() const                 { return fPadCol[fNcols-11] - fWidthOPad;  };
 
-  Double_t GetRowPos(const Int_t row) const  { return fPadRow[row];  };
-  Double_t GetColPos(const Int_t col) const  { return fPadCol[col];  };
+  Double_t GetRowPos(Int_t row) const  { return fPadRow[row];  };
+  Double_t GetColPos(Int_t col) const  { return fPadCol[col];  };
   
-  Double_t GetRowSize(const Int_t row) const { if ((row == 0) || (row == fNrows-1))
+  Double_t GetRowSize(Int_t row) const { if ((row == 0) || (row == fNrows-1))
                                                  return fLengthOPad;
                                                else
                                                  return fLengthIPad; };
-  Double_t GetColSize(const Int_t col) const { if ((col == 0) || (col == fNcols-1))
+  Double_t GetColSize(Int_t col) const { if ((col == 0) || (col == fNcols-1))
                                                  return fWidthOPad;
                                                else
                                                  return fWidthIPad;  };

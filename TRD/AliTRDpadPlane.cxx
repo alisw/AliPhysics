@@ -381,7 +381,7 @@ void AliTRDpadPlane::Copy(TObject &p) const
 }
 
 //_____________________________________________________________________________
-Int_t AliTRDpadPlane::GetPadRowNumber(const Double_t z) const
+Int_t AliTRDpadPlane::GetPadRowNumber(Double_t z) const
 {
   //
   // Finds the pad row number for a given global z-position
@@ -416,8 +416,8 @@ Int_t AliTRDpadPlane::GetPadRowNumber(const Double_t z) const
 }
 
 //_____________________________________________________________________________
-Int_t AliTRDpadPlane::GetPadColNumber(const Double_t rphi
-                                    , const Double_t rowOffset) const
+Int_t AliTRDpadPlane::GetPadColNumber(Double_t rphi
+                                    , Double_t rowOffset) const
 {
   //
   // Finds the pad column number for a given global rphi-position
