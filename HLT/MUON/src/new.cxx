@@ -110,7 +110,7 @@ namespace
 }; // end of namespace
 
 
-void* operator new (size_t size) throw (dHLT::OutOfMemory)
+void* operator new (size_t size) throw (std::bad_alloc)
 {
 	void* memory = malloc(size);
 	if (memory == NULL) dHLT::ThrowOutOfMemory();
@@ -120,7 +120,7 @@ void* operator new (size_t size) throw (dHLT::OutOfMemory)
 };
 
 
-void* operator new [] (size_t size) throw (dHLT::OutOfMemory)
+void* operator new [] (size_t size) throw (std::bad_alloc)
 {
 	void* memory = malloc(size);
 	if (memory == NULL) dHLT::ThrowOutOfMemory();
