@@ -220,8 +220,9 @@ void AliL3HistogramAdaptive::Draw(Char_t *option)
     }
   fRootHisto->Draw(option);
   return;
-#endif
+#else
   cerr<<"AliL3HistogramAdaptive::Draw : You need to compile with ROOT in order to draw histogram"<<endl;
+#endif
 }
 
 void AliL3HistogramAdaptive::Print() const

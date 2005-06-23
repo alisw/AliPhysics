@@ -30,7 +30,7 @@ public:
 		y = 0.0;
 	}
 
-	Point(const Float x0, const Float y0)
+	Point(Float x0, Float y0)
 	{
 		this->x = x0;
 		this->y = y0;

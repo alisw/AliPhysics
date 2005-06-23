@@ -35,8 +35,8 @@ public:
 
 	virtual void RequestClusters(
 			Tracking::Tracker* tracker, 
-			const Float /*left*/, const Float /*right*/, const Float /*bottom*/, const Float /*top*/,
-			const ChamberID chamber, const void* tag
+			Float /*left*/, Float /*right*/, Float /*bottom*/, Float /*top*/,
+			ChamberID chamber, const void* tag
 		)
 	{
 		Assert( 0 <= chamber and chamber <= 10 );
@@ -140,7 +140,7 @@ private:
 	};
 	
 
-	void CreateClusterBlocks(const AliMUONHLT::ClusterSource* cs, const Int eventnumber)
+	void CreateClusterBlocks(const AliMUONHLT::ClusterSource* cs, Int eventnumber)
 	{
 		// Must select the proper event before counting or filling the arrays.
 		if ( not cs->GetEvent(eventnumber) ) return;

@@ -71,7 +71,7 @@ public:
 	/* Creates a region of interest around the given point for the
 	   specified chamber.
 	 */
-	RegionOfInterest(const ClusterPoint& point0, const ChamberID chamber0)
+	RegionOfInterest(const ClusterPoint& point0, ChamberID chamber0)
 	{
 		CreateToContain(point0, chamber0);
 	}
@@ -79,7 +79,7 @@ public:
 	/* Creates a region of interest around all the given points and for the
 	   specified chamber.
 	 */
-	RegionOfInterest(const ClusterPoint* points0, const UInt count0, const ChamberID chamber0)
+	RegionOfInterest(const ClusterPoint* points0, UInt count0, ChamberID chamber0)
 	{
 		CreateToContain(points0, count0, chamber0);
 	}
@@ -87,7 +87,7 @@ public:
 	/* Creates a region of interest with the specified boundaries and for
 	   the specified chamber.
 	 */
-	RegionOfInterest(const Float left0, const Float right0, const Float bottom0, const Float top0, const ChamberID chamber0)
+	RegionOfInterest(Float left0, Float right0, Float bottom0, Float top0, ChamberID chamber0)
 	{
 		Assert( 0 <= chamber0 and chamber0 < NUMBER_OF_TRACKING_CHAMBERS );
 		this->chamber = chamber0;
@@ -110,7 +110,7 @@ public:
 	/* Checks if the point is contained in this region of interest and the
 	   chamber number corresponds to this region object.
 	 */
-	bool Contains(const ClusterPoint& point, const ChamberID chamber0) const
+	bool Contains(const ClusterPoint& point, ChamberID chamber0) const
 	{
 		return left <= point.x and point.x <= right and
 			bottom <= point.y and point.y <= top and
@@ -132,7 +132,7 @@ public:
 	/* Creates a region of interest around the given point for the
 	   specified chamber.
 	 */
-	void CreateToContain(const ClusterPoint& point, const ChamberID chamber);
+	void CreateToContain(const ClusterPoint& point, ChamberID chamber);
 
 	/* Extends the region of interest to contain the specified point.
 	 */
@@ -141,7 +141,7 @@ public:
 	/* Creates a region of interest around all the given points and for the
 	   specified chamber.
 	 */
-	void CreateToContain(const ClusterPoint* points, const UInt count, const ChamberID chamber);
+	void CreateToContain(const ClusterPoint* points, UInt count, ChamberID chamber);
 
 	/* Checks if the region of interest is within the boundaries imposed on
 	   the specific chamber plane. This boundary is aproximately the square
@@ -162,17 +162,17 @@ public:
 	/* Decodes a 32 bit region of interest code into this region of interest
 	   object.
 	 */
-	void Decode(const ROI code);
+	void Decode(ROI code);
 
 	/* Decodes the chamber number of the region of interest 32 bit code.
 	 */
-	static ChamberID DecodeChamber(const ROI code);
+	static ChamberID DecodeChamber(ROI code);
 
 	/* Decodes the 32 bit region of interest code into the chamber number,
 	   hierarchal level, left and right grid coordinates of the region
 	   boundary box. 
 	 */
-	static void Decode(const ROI code, ChamberID& chamber, UChar& level, UInt& l, UInt& b);
+	static void Decode(ROI code, ChamberID& chamber, UChar& level, UInt& l, UInt& b);
 
 	/* Returns the chamber number of the region of interest.
 	 */
@@ -213,12 +213,12 @@ private:
 	   That is converts from a regular integer grid back to the internal
 	   floating point boundary box specification.
 	 */
-	inline void ConvertBackFromGrid(const UInt l, const UInt r, const UInt b, const UInt t);
+	inline void ConvertBackFromGrid(register UInt l, register UInt r, register UInt b, register UInt t);
 
 	/* Internal method for decoding 32 bit region codes. This method is
 	   called by the Decode methods.
 	 */
-	static void DecodeBits(const ROI code, ChamberID& chamber, UChar& colevel, UInt& l, UInt& b);
+	static void DecodeBits(ROI code, ChamberID& chamber, UChar& colevel, UInt& l, UInt& b);
 
 
 	// Boundary box scale numbers for each chamber. These are the boundary

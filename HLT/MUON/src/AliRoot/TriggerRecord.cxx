@@ -20,7 +20,7 @@ TriggerRecord::TriggerRecord()
 
 
 TriggerRecord::TriggerRecord(
-		const Int_t triggernumber, const Int_t sign, const Float_t pt,
+		Int_t triggernumber, Int_t sign, Float_t pt,
 		const Point& station1point, const Point& station2point
 	)
 {
@@ -67,7 +67,7 @@ void TriggerRecord::Init()
 }
 
 
-void TriggerRecord::TriggerNumber(const Int_t value)
+void TriggerRecord::TriggerNumber(Int_t value)
 {
 	if (value >= 0)
 		fTriggerNumber = value;
@@ -79,7 +79,7 @@ void TriggerRecord::TriggerNumber(const Int_t value)
 }
 
 
-void TriggerRecord::ParticleSign(const Int_t value)
+void TriggerRecord::ParticleSign(Int_t value)
 {
 	if (-1 <= value and value <= +1)
 		fParticleSign = value;
@@ -91,7 +91,7 @@ void TriggerRecord::ParticleSign(const Int_t value)
 }
 
 
-void TriggerRecord::Pt(const Float_t value)
+void TriggerRecord::Pt(Float_t value)
 {
 	if (value >= 0)
 		fPt = value;

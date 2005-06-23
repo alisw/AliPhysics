@@ -991,7 +991,7 @@ Bool_t AliL3FileHandler::GetDigitsTree(Int_t event)
   if(!fDigitsTree) 
     {
       LOG(AliL3Log::kError,"AliL3FileHandler::GetDigitsTree","Digits Tree")
-	<<AliL3Log::kHex<<"Error getting digitstree "<<(Int_t)fDigitsTree<<ENDLOG;
+	<<AliL3Log::kHex<<"Error getting digitstree "<<(void*)fDigitsTree<<ENDLOG;
       return kFALSE;
     }
   fDigitsTree->GetBranch("Segment")->SetAddress(&fDigits);

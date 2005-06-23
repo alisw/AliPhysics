@@ -27,7 +27,7 @@ public:
 	// Inherited from ClusterFinder
 	virtual void FindClusters(const ADCStream * stream);
 	virtual UInt FillClusterData(ClusterPoint * clusters,
-				     const UInt arraysize);
+				     UInt arraysize);
 	virtual void Reset();
 private:
 	FILE* lut13;

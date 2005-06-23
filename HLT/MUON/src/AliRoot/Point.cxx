@@ -18,7 +18,7 @@ Point::Point() : TObject()
 	fX = fY = 0.0;
 }
 
-Point::Point(const Float_t x, const Float_t y) : TObject()
+Point::Point(Float_t x, Float_t y) : TObject()
 {
 	fX = x;
 	fY = y;

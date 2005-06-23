@@ -21,7 +21,7 @@ namespace
 
 using dHLT::Tracking::MansoTracker;
 
-std::ostream& operator << (std::ostream& os, const MansoTracker::StatesSM4 state)
+std::ostream& operator << (std::ostream& os, MansoTracker::StatesSM4 state)
 {
 	switch (state)
 	{
@@ -35,7 +35,7 @@ std::ostream& operator << (std::ostream& os, const MansoTracker::StatesSM4 state
 	return os;
 };
 
-std::ostream& operator << (std::ostream& os, const MansoTracker::StatesSM5 state)
+std::ostream& operator << (std::ostream& os, MansoTracker::StatesSM5 state)
 {
 	switch (state)
 	{
@@ -81,7 +81,7 @@ Float MansoTracker::z11 = 1603.5f;
 Float MansoTracker::z13 = 1703.5f;
 
 
-void MansoTracker::RegionOfInterest::Create(const Point p, const Float a, const Float b)
+void MansoTracker::RegionOfInterest::Create(Point p, Float a, Float b)
 {
 	centre = p;
 	// Compute the radius Rp
@@ -98,7 +98,7 @@ void MansoTracker::RegionOfInterest::Create(const Point p, const Float a, const 
 };
 
 
-bool MansoTracker::RegionOfInterest::Contains(const Point p) const
+bool MansoTracker::RegionOfInterest::Contains(Point p) const
 {
 	// Compute the distance between the centre of the region of interest and
 	// the point p. This distance must be less than the radius of the region
@@ -122,7 +122,7 @@ void MansoTracker::RegionOfInterest::GetBoundaryBox(Float& left, Float& right, F
 };
 
 
-MansoTracker::Vertex::Vertex(const Float x, const Float y, const Float z)
+MansoTracker::Vertex::Vertex(Float x, Float y, Float z)
 {
 	this->x = x;
 	this->y = y;
@@ -130,7 +130,7 @@ MansoTracker::Vertex::Vertex(const Float x, const Float y, const Float z)
 };
 
 
-MansoTracker::Vertex::Vertex(const Point xy, const Float z)
+MansoTracker::Vertex::Vertex(Point xy, Float z)
 {
 	x = xy.x;
 	y = xy.y;
@@ -139,8 +139,8 @@ MansoTracker::Vertex::Vertex(const Point xy, const Float z)
 
 
 MansoTracker::Line::Line(
-        const Float Ax, const Float Ay, const Float Az,
-        const Float Bx, const Float By, const Float Bz
+        Float Ax, Float Ay, Float Az,
+        Float Bx, Float By, Float Bz
     )
 {
 	Mx = Ax - Bx;
@@ -152,7 +152,7 @@ MansoTracker::Line::Line(
 };
 
 
-MansoTracker::Line::Line(const Vertex A, const Vertex B)
+MansoTracker::Line::Line(Vertex A, Vertex B)
 {
 	Mx = A.x - B.x;
 	My = A.y - B.y;
@@ -163,7 +163,7 @@ MansoTracker::Line::Line(const Vertex A, const Vertex B)
 };
 
 
-Point MansoTracker::Line::FindIntersectWithXYPlain(const Float z) const
+Point MansoTracker::Line::FindIntersectWithXYPlain(Float z) const
 {
 	Assert( Mz != 0.0 );    // Should not have a ray perpendicular to the beam axis.
 	Float t = (z - Cz) / Mz;
@@ -210,7 +210,7 @@ void MansoTracker::FindTrack(const TriggerRecord& trigger)
 };
 
 
-void MansoTracker::ReturnClusters(void* tag, const ClusterPoint* clusters, const UInt count)
+void MansoTracker::ReturnClusters(void* tag, const ClusterPoint* clusters, UInt count)
 {
 	Assert( count > 0 );
 	Assert( clusters != NULL );
@@ -344,7 +344,7 @@ void MansoTracker::Reset()
 // In general one should only call the callback methods at the end of any of the
 // following routines.
 
-void MansoTracker::ReceiveClustersChamber7(const ClusterPoint* clusters, const UInt count, const TagData* data)
+void MansoTracker::ReceiveClustersChamber7(const ClusterPoint* clusters, UInt count, const TagData* data)
 {
 	switch (sm4state)
 	{
@@ -370,7 +370,7 @@ void MansoTracker::ReceiveClustersChamber7(const ClusterPoint* clusters, const U
 };
 
 
-void MansoTracker::ReceiveClustersChamber8(const ClusterPoint* clusters, const UInt count, const TagData* data)
+void MansoTracker::ReceiveClustersChamber8(const ClusterPoint* clusters, UInt count, const TagData* data)
 {
 	switch (sm4state)
 	{
@@ -398,7 +398,7 @@ void MansoTracker::ReceiveClustersChamber8(const ClusterPoint* clusters, const U
 };
 
 
-void MansoTracker::ReceiveClustersChamber9(const ClusterPoint* clusters, const UInt count)
+void MansoTracker::ReceiveClustersChamber9(const ClusterPoint* clusters, UInt count)
 {
 	switch (sm5state)
 	{
@@ -427,7 +427,7 @@ void MansoTracker::ReceiveClustersChamber9(const ClusterPoint* clusters, const U
 };
 
 
-void MansoTracker::ReceiveClustersChamber10(const ClusterPoint* clusters, const UInt count)
+void MansoTracker::ReceiveClustersChamber10(const ClusterPoint* clusters, UInt count)
 {
 	switch (sm5state)
 	{

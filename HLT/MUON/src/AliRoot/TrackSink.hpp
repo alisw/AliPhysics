@@ -32,7 +32,7 @@ public:
 	   Cannot have duplicate event numbers so this method will display an error
 	   message if one attempts to add the same event number more than once.
 	 */ 
-	void AddEvent(const Int_t eventnumber);
+	void AddEvent(Int_t eventnumber);
 	
 	/* Adds a new block to the current event and updates fCurrentBlock and
 	   fCurrentTrack.
@@ -55,8 +55,8 @@ public:
 	   The fCurrentTrack is updated appropriately.
 	 */
 	void AddTrack(
-			const Int_t triggerid, const Int_t sign, const Float_t momentum,
-			const Float_t pt, const Point hits[10], const Region regions[10]
+			Int_t triggerid, Int_t sign, Float_t momentum,
+			Float_t pt, const Point hits[10], const Region regions[10]
 		);
 	
 	/* Sets the internal file and folder names from the trigger source.
@@ -82,7 +82,7 @@ public:
 	   kTRUE is returned if the event was found. kFALSE is returned if the
 	   event was not found and the internal pointers left untouched.
 	 */
-	Bool_t GetEvent(const Int_t eventnumber) const;
+	Bool_t GetEvent(Int_t eventnumber) const;
 	
 	/* Fetches the first event stored in this TrackSink.
 	   Sets the current block and track to the first block and track of the
@@ -120,7 +120,7 @@ public:
 	   If there are no tracks then the track pointers are reset.
 	   kTRUE is returned if the block was found, kFALSE otherwise.
 	 */
-	Bool_t GetBlock(const Int_t index) const;
+	Bool_t GetBlock(Int_t index) const;
 	
 	/* Fetches the first block in the current event.
 	   Sets the current track to the first track in the block.
@@ -151,7 +151,7 @@ public:
 	/* Fetches the index'th track in the current block.
 	   NULL is returned if the track was not found.
 	 */
-	const Track* GetTrack(const Int_t index) const;
+	const Track* GetTrack(Int_t index) const;
 	
 	/* Fetches the first track in the current block.
 	   NULL is returned if the track was not found.
@@ -185,7 +185,7 @@ public:  // Unfortunately ROOT requires the following to be public.
 	{
 	public:
 		EventData();
-		EventData(const Int_t eventnumber);
+		EventData(Int_t eventnumber);
 		virtual ~EventData();
 
 		Int_t fEventNumber;  // Event number for this set of track blocks.

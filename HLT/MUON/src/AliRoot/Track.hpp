@@ -34,7 +34,7 @@ public:
 	   error message is displayed.
 	 */
 	Track(
-		const Int_t triggerid, const Int_t sign, const Float_t momentum, const Float_t pt,
+		Int_t triggerid, Int_t sign, Float_t momentum, Float_t pt,
 		const Point hits[10], const Region regions[10]
 	);
 
@@ -42,7 +42,7 @@ public:
 	
 	
 	// Get/et methods for the trigger ID.
-	void TriggerID(const Int_t value) { fTriggerID = value; };
+	void TriggerID(Int_t value) { fTriggerID = value; };
 	Int_t TriggerID() const { return fTriggerID; };
 	
 	/* Get/Set method for the particle sign. The particle sign must be one
@@ -50,7 +50,7 @@ public:
 	   If the new value is not in this range then an error message is
 	   displayed and the internal value remain unchanged.
 	 */
-	void ParticleSign(const Int_t value);
+	void ParticleSign(Int_t value);
 	Int_t ParticleSign() const { return fParticleSign; };
 	
 	/* The get and set methods for the momentum and transverse momentum pt.
@@ -58,32 +58,32 @@ public:
 	   the pt. If not then the internal value are left unchanged and an
 	   error message is displayed. The numbers must also be positive.
 	 */
-	void P(const Float_t value);
+	void P(Float_t value);
 	Float_t P() const { return fP; };
-	void Pt(const Float_t value);
+	void Pt(Float_t value);
 	Float_t Pt() const { return fPt; };
 	
 	/* Returns the hit point for the specified chamber.
 	   If the chamber number in out of bounds the point on the first
 	   chamber is returned and an error message displayed.
 	 */
-	Point& Hit(const UInt_t chamber);
-	const Point& Hit(const UInt_t chamber) const;
+	Point& Hit(UInt_t chamber);
+	const Point& Hit(UInt_t chamber) const;
 	
 	/* Set method for hits. The chamber must be in the range [0..9]
 	 */
-	void Hit(const UInt_t chamber, const Point& value);
+	void Hit(UInt_t chamber, const Point& value);
 	
 	/* Returns the region of interest for the specified chamber.
 	   If the chamber number in out of bounds the region on the first
 	   chamber is returned and an error message displayed.
 	 */
-	Region& RegionOfInterest(const UInt_t chamber);
-	const Region& RegionOfInterest(const UInt_t chamber) const;
+	Region& RegionOfInterest(UInt_t chamber);
+	const Region& RegionOfInterest(UInt_t chamber) const;
 	
 	/* Set method for regions. The chamber must be in the range [0..9]
 	 */
-	void RegionOfInterest(const UInt_t chamber, const Region& value);
+	void RegionOfInterest(UInt_t chamber, const Region& value);
 	
 	/* Checks to see if the all the hits are within their respective regions
 	   of interest for each chamber. kTRUE is returned if they are and kFALSE

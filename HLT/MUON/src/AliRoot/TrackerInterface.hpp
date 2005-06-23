@@ -35,7 +35,7 @@ public:
 	};
 	
 	void FindTrack(const TriggerRecord& trigger);
-	void ReturnClusters(void* tag, const Point* clusters, const UInt_t count);
+	void ReturnClusters(void* tag, const Point* clusters, UInt_t count);
 	void EndOfClusters(void* tag);
 	void FillTrackData(Track& track);
 	void Reset();

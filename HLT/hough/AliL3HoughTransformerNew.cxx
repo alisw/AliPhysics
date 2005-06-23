@@ -53,7 +53,7 @@ void AliL3HoughTransformerNew::CreateHistograms(Int_t nxbins,Float_t xlow,Float_
 {
   //Create the histogram which contain the hough space
   Char_t name[1024];
-  sprintf(name,"paramspace_%d",(Int_t)this);
+  sprintf(name,"paramspace_%p",(void*)this);
   fParamSpace3D = new TH3F(name,"",nxbins,xlow,xup,nybins,ylow,yup,nzbins,zlow,zup);
 }
 

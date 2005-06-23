@@ -28,12 +28,12 @@ namespace AliRoot
  */
 extern AliMUONHLT::Point         Convert(const dHLT::Point&               point);
 extern dHLT::Point               Convert(const AliMUONHLT::Point&         point);
-extern AliMUONHLT::TriggerRecord Convert(const dHLT::TriggerRecord&       record, const Int_t triggernumber);
+extern AliMUONHLT::TriggerRecord Convert(const dHLT::TriggerRecord&       record, Int_t triggernumber);
 extern dHLT::TriggerRecord       Convert(const AliMUONHLT::TriggerRecord& record);
 extern AliMUONHLT::Track         Convert(const dHLT::Track&               track);
 extern dHLT::Track               Convert(const AliMUONHLT::Track&         track);
 extern AliMUONHLT::Region        Convert(const dHLT::ROI                  region);
-extern dHLT::ROI                 Convert(const AliMUONHLT::Region&        region, const UInt_t chamber);
+extern dHLT::ROI                 Convert(const AliMUONHLT::Region&        region, UInt_t chamber);
 
 
 } // AliRoot

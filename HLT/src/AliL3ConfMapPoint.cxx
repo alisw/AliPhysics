@@ -97,8 +97,8 @@ void AliL3ConfMapPoint::Setup(AliL3Vertex *vertex)
   return;
 }
 
-void AliL3ConfMapPoint::SetIntPoint(const Double_t inx,const Double_t iny,const Double_t inz,
-			            const Double_t inxerr,const Double_t inyerr,const Double_t inzerr)
+void AliL3ConfMapPoint::SetIntPoint(Double_t inx, Double_t iny, Double_t inz,
+			            Double_t inxerr, Double_t inyerr, Double_t inzerr)
 {
   // Defines a new interaction point. This point is needed to calculate
   // the conformal coordinates.

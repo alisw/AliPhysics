@@ -33,7 +33,7 @@ public:
 	 */
 	virtual void FindTrack(const TriggerRecord& trigger);
 	
-	virtual void ReturnClusters(void* tag, const ClusterPoint* clusters, const UInt count);
+	virtual void ReturnClusters(void* tag, const ClusterPoint* clusters, UInt count);
 	virtual void EndOfClusters(void* tag);
 	virtual void FillTrackData(Track& track);
 	virtual void Reset();
@@ -43,35 +43,35 @@ public:
 	   of interests. Refer to MansoFilter() for details about a and b parameters.
 	 */
 	static Float GetA7()                  { return a7; };
-	static void SetA7(const Float value)  { a7 = a7; };
+	static void SetA7(Float value)  { a7 = a7; };
 	static Float GetA8()                  { return a8; };
-	static void SetA8(const Float value)  { a8 = value; };
+	static void SetA8(Float value)  { a8 = value; };
 	static Float GetA9()                  { return a9; };
-	static void SetA9(const Float value)  { a9 = value; };
+	static void SetA9(Float value)  { a9 = value; };
 	static Float GetA10()                 { return a10; };
-	static void SetA10(const Float value) { a10 = value; };
+	static void SetA10(Float value) { a10 = value; };
 
 	static Float GetB7()                  { return b7; };
-	static void SetB7(const Float value)  { b7 = value; };
+	static void SetB7(Float value)  { b7 = value; };
 	static Float GetB8()                  { return b8; };
-	static void SetB8(const Float value)  { b8 = value; };
+	static void SetB8(Float value)  { b8 = value; };
 	static Float GetB9()                  { return b9; };
-	static void SetB9(const Float value)  { b9 = value; };
+	static void SetB9(Float value)  { b9 = value; };
 	static Float GetB10()                 { return b10; };
-	static void SetB10(const Float value) { b10 = value; };
+	static void SetB10(Float value) { b10 = value; };
 	
 	static Float GetZ7()                  { return z7; };
-	static void SetZ7(const Float value)  { z7 = value; };
+	static void SetZ7(Float value)  { z7 = value; };
 	static Float GetZ8()                  { return z8; };
-	static void SetZ8(const Float value)  { z8 = value; };
+	static void SetZ8(Float value)  { z8 = value; };
 	static Float GetZ9()                  { return z9; };
-	static void SetZ9(const Float value)  { z9 = value; };
+	static void SetZ9(Float value)  { z9 = value; };
 	static Float GetZ10()                 { return z10; };
-	static void SetZ10(const Float value) { z10 = value; };
+	static void SetZ10(Float value) { z10 = value; };
 	static Float GetZ11()                 { return z11; };
-	static void SetZ11(const Float value) { z11 = value; };
+	static void SetZ11(Float value) { z11 = value; };
 	static Float GetZ13()                 { return z13; };
-	static void SetZ13(const Float value) { z13 = value; };
+	static void SetZ13(Float value) { z13 = value; };
 
 
   //protected:
@@ -83,7 +83,7 @@ public:
 		
 		RegionOfInterest() {};
 
-		RegionOfInterest(const Point p, const Float a, const Float b)
+		RegionOfInterest(Point p, Float a, Float b)
 		{
 			Create(p, a, b);
 		};
@@ -99,11 +99,11 @@ public:
 		     Rs = a * Rp + b
 		   given on page 3 section 4.
 		 */
-		void Create(const Point p, const Float a, const Float b);
+		void Create(Point p, Float a, Float b);
 
 		/* Returns true if the point p is within the region of interest.
 		 */
-		bool Contains(const Point p) const;
+		bool Contains(Point p) const;
 
 		void GetBoundaryBox(Float& left, Float& right, Float& bottom, Float& top);
 
@@ -120,8 +120,8 @@ public:
 
 		Float x, y, z;
 
-		Vertex(const Float x = 0.0, const Float y = 0.0, const Float z = 0.0);
-		Vertex(const Point xy, const Float z);
+		Vertex(Float x = 0.0, Float y = 0.0, Float z = 0.0);
+		Vertex(Point xy, Float z);
 
 		Point AsXYPoint() const
 		{
@@ -139,19 +139,19 @@ public:
 		   simmilarly for B.
 		 */
 		Line(
-			const Float Ax = 0.0, const Float Ay = 0.0, const Float Az = 0.0,
-			const Float Bx = 0.0, const Float By = 0.0, const Float Bz = 0.0
+			Float Ax = 0.0, Float Ay = 0.0, Float Az = 0.0,
+			Float Bx = 0.0, Float By = 0.0, Float Bz = 0.0
 		);
 
 		/* Creates a vector line between vertices A and B.
 		 */
-		Line(const Vertex A, const Vertex B);
+		Line(Vertex A, Vertex B);
 
 		/* Finds the intersection point with the xy plain specified by the z coordinate.
 		   The z coordiante would be the distance of the n'th chamber to the interaction
 		   vertex.
 		 */
-		Point FindIntersectWithXYPlain(const Float z) const;
+		Point FindIntersectWithXYPlain(Float z) const;
 
 	private:
 
@@ -177,10 +177,10 @@ public:
 	typedef Buffers::List<ClusterPoint> Station4List;
 	
 	
-	void ReceiveClustersChamber7(const ClusterPoint* clusters, const UInt count, const TagData* data);
-	void ReceiveClustersChamber8(const ClusterPoint* clusters, const UInt count, const TagData* data);
-	void ReceiveClustersChamber9(const ClusterPoint* clusters, const UInt count);
-	void ReceiveClustersChamber10(const ClusterPoint* clusters, const UInt count);
+	void ReceiveClustersChamber7(const ClusterPoint* clusters, UInt count, const TagData* data);
+	void ReceiveClustersChamber8(const ClusterPoint* clusters, UInt count, const TagData* data);
+	void ReceiveClustersChamber9(const ClusterPoint* clusters, UInt count);
+	void ReceiveClustersChamber10(const ClusterPoint* clusters, UInt count);
 	void EndOfClustersChamber7();
 	void EndOfClustersChamber8();
 	void EndOfClustersChamber9();

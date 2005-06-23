@@ -45,11 +45,11 @@ public:
 	/* Get and set methods to specify how the FillFrom methods should fill the
 	   internal data structures.
 	 */
-	void AreaToUse(const AreaType value) { fAreaToUse = value; };
+	void AreaToUse(AreaType value) { fAreaToUse = value; };
 	AreaType AreaToUse() const { return fAreaToUse; };
-	void DataToUse(const SourceType value) { fDataToUse = value; };
+	void DataToUse(SourceType value) { fDataToUse = value; };
 	SourceType DataToUse() const { return fDataToUse; };
-	void MaxBlockSize(const UInt_t value) { fMaxBlockSize = value; };
+	void MaxBlockSize(UInt_t value) { fMaxBlockSize = value; };
 	UInt_t MaxBlockSize() const { return fMaxBlockSize; };
 
 	/* Fills the internal data structures from the specified data interface
@@ -60,12 +60,12 @@ public:
 	/* Fills the internal data structures from the specified data interface
 	   for the given event.
 	 */
-	void FillFrom(AliMUONDataInterface* data, const Int_t event);
+	void FillFrom(AliMUONDataInterface* data, Int_t event);
 	
 	/* Fills the internal data structures from the specified data interface
 	   for the given event and chamber.
 	 */
-	void FillFrom(AliMUONDataInterface* data, const Int_t event, const Int_t chamber);
+	void FillFrom(AliMUONDataInterface* data, Int_t event, Int_t chamber);
 	
 	/* Fills the internal data structures from the specified data interface
 	   for the given event, chamber and cluster number.
@@ -79,8 +79,8 @@ public:
 	 */
 	void FillFrom(
 			AliMUONDataInterface* data, 
-			const Int_t event, const Int_t chamber, const Int_t cluster,
-			const Bool_t newblock = kFALSE
+			Int_t event, Int_t chamber, Int_t cluster,
+			Bool_t newblock = kFALSE
 		);
 	
 	/* Clears all the internal arrays.
@@ -101,7 +101,7 @@ public:
 	   are set to NULL.
 	   kTRUE is returned if the event was found, kFALSE otherwise.
 	 */
-	Bool_t GetEvent(const Int_t eventnumber) const;
+	Bool_t GetEvent(Int_t eventnumber) const;
 	
 	/* Fetches the first event stored in this ClusterSource.
 	   Sets the current block and cluster point to the first block and cluster
@@ -135,7 +135,7 @@ public:
 	   If there are no cluster points then this pointer is set to NULL.
 	   kTRUE is returned if the block was found, kFALSE otherwise.
 	 */
-	Bool_t GetBlock(const Int_t index) const;
+	Bool_t GetBlock(Int_t index) const;
 	
 	/* Fetches the first block in the current event.
 	   Sets the current cluster point to the first cluster point in the block.
@@ -171,7 +171,7 @@ public:
 	/* Fetches the index'th cluster point in the current block.
 	   kTRUE is returned if the point was found, kFALSE otherwise.
 	 */
-	const Point* GetCluster(const Int_t index) const;
+	const Point* GetCluster(Int_t index) const;
 	
 	/* Fetches the first cluster point in the current block.
 	   NULL is returned if the point was not found.
@@ -202,17 +202,17 @@ private:
 	/* Adds a new EventData block to the fEventList and updates the fCurrentEvent,
 	   fCurrentBlock and fCurrentCluster pointers.
 	 */ 
-	void AddEvent(const Int_t eventnumber);
+	void AddEvent(Int_t eventnumber);
 	
 	/* Adds a new block to the current event and updates fCurrentBlock and fCurrentCluster.
 	   The chamber number is assigned to the blocks fChamber value.
 	 */
-	void AddBlock(const Int_t chamber);
+	void AddBlock(Int_t chamber);
 	
 	/* Adds a new cluster point to the current event and block.
 	   The fCurrentCluster is updated appropriately.
 	 */
-	void AddPoint(const Float_t x, const Float_t y);
+	void AddPoint(Float_t x, Float_t y);
 	
 	/* Checks if the file and folder names correspond to this ClusterSource's 
 	   file and folder names. kTRUE is returned if they do.
@@ -225,25 +225,25 @@ private:
 	   It is assumed that FileAndFolderOk(data) returns true just before calling
 	   this method.
 	 */
-	void AddEventFrom(AliMUONDataInterface* data, const Int_t event);
+	void AddEventFrom(AliMUONDataInterface* data, Int_t event);
 	
 	/* Adds all cluster points found on the given chamber from the specified data
 	   interface. The data interface should be initialised correctly, that is the
 	   event should already be selected before calling this method.
 	 */
-	void AddChamberFrom(AliMUONDataInterface* data, const Int_t chamber);
+	void AddChamberFrom(AliMUONDataInterface* data, Int_t chamber);
 	
 	/* Adds the cluster point from the specified data interface.
 	   The data interface should be initialised correctly, that is the event
 	   should already be selected before calling this method.
 	 */
-	void AddClusterFrom(AliMUONDataInterface* data, const Int_t chamber, const Int_t cluster);
+	void AddClusterFrom(AliMUONDataInterface* data, Int_t chamber, Int_t cluster);
 	
 	/* Checks to see if the x and y coordinate of the cluster point are in the
 	   chamber region we want to fill from.
 	   kTRUE is returned if (x, y) is in the region, and kFALSE otherwise.
 	 */
-	Bool_t InFillRegion(const Float_t x, const Float_t y);
+	Bool_t InFillRegion(Float_t x, Float_t y);
 
 	/* Sets all the current pointers to NULL and indices to -1.
 	 */
@@ -264,7 +264,7 @@ public:  // Unfortunately ROOT requires the following to be public.
 	{
 	public:
 		BlockData();
-		BlockData(const Int_t chamber);
+		BlockData(Int_t chamber);
 		virtual ~BlockData();
 
 		Int_t fChamber;  // The chamber number this block of clusters came from.
@@ -277,7 +277,7 @@ public:  // Unfortunately ROOT requires the following to be public.
 	{
 	public:
 		EventData();
-		EventData(const Int_t eventnumber);
+		EventData(Int_t eventnumber);
 		virtual ~EventData();
 
 		Int_t fEventNumber;  // Event number in AliMUONDataInterface from which the clusters were taken.

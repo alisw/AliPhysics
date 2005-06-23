@@ -39,7 +39,7 @@ void CenterOfGravityFinder::FindClusters(const ADCStream* stream)
 
 
 UInt CenterOfGravityFinder::FillClusterData(
-		ClusterPoint* clusters, const UInt arraysize
+		ClusterPoint* clusters, UInt arraysize
 	)
 {
 	// TODO

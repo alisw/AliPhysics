@@ -25,19 +25,19 @@ public:
 	 */
 	ADCStream();
 	
-	ADCStream(const UInt_t* data, const UInt_t size);
+	ADCStream(const UInt_t* data, UInt_t size);
 
 	virtual ~ADCStream();
 	
 	UInt_t Size();
-	void Size(const UInt_t size);
-	void Fill(const UInt_t* data, const UInt_t size);
+	void Size(UInt_t size);
+	void Fill(const UInt_t* data, UInt_t size);
 	
 	UInt_t* Data() { return (UInt_t*) fData.GetArray(); }
 	const UInt_t* Data() const { return (UInt_t*) fData.GetArray(); }
 	
 // 	UInt_t& operator [] (const UInt_t index);
-	UInt_t operator [] (const UInt_t index) const;
+	UInt_t operator [] (UInt_t index) const;
 
 	// ostream operator usefull for text output.
 	friend ostream& operator << (ostream& os, const ADCStream& s);

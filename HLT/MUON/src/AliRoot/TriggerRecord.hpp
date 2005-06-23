@@ -33,7 +33,7 @@ public:
 	   the object is filled like it is in the default constructor. 
 	 */
 	TriggerRecord(
-			const Int_t triggernumber, const Int_t sign, const Float_t pt,
+			Int_t triggernumber, Int_t sign, Float_t pt,
 			const Point& station1point, const Point& station2point
 		);
 
@@ -44,7 +44,7 @@ public:
 	   If it is not then an error message is displayed and the internal value
 	   remains untouched.
 	 */
-	void TriggerNumber(const Int_t value);
+	void TriggerNumber(Int_t value);
 	Int_t TriggerNumber() const { return fTriggerNumber; };
 	
 	/* Get/Set method for the particle sign.
@@ -52,7 +52,7 @@ public:
 	   If it is not then an error message is displayed and the internal value
 	   remains untouched.
 	 */
-	void ParticleSign(const Int_t value);
+	void ParticleSign(Int_t value);
 	Int_t ParticleSign() const { return fParticleSign; };
 	
 	/* Get/Set method for the particle Pt, as measured by the L0 trigger.
@@ -60,7 +60,7 @@ public:
 	   If it is not then an error message is displayed and the internal value
 	   remains untouched.
 	 */
-	void Pt(const Float_t value);
+	void Pt(Float_t value);
 	Float_t Pt() const { return fPt; };
 	
 	/* Get/Set methods for the two trigger stations.

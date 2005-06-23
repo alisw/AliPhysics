@@ -84,13 +84,13 @@ void AliL3DataHandler::Convert10to8Bit()
   if(!fInBinary)
     {
       LOG(AliL3Log::kError,"AliL3DataHandler::Convert10to8Bit","File")
-	<<AliL3Log::kHex<<"Pointer to input file : "<<(Int_t)fInBinary<<ENDLOG;
+	<<AliL3Log::kHex<<"Pointer to input file : "<<(void*)fInBinary<<ENDLOG;
       return;
     }
   if(!fOutBinary)
     {
       LOG(AliL3Log::kError,"AliL3DataHandler::Convert10to8Bit","File")
-	<<AliL3Log::kHex<<"Pointer to output file : "<<(Int_t)fOutBinary<<ENDLOG;
+	<<AliL3Log::kHex<<"Pointer to output file : "<<(void*)fOutBinary<<ENDLOG;
       return;
     }
   
@@ -190,13 +190,13 @@ Bool_t AliL3DataHandler::Memory2CompMemory(UInt_t nrow,AliL3DigitRowData *data,B
   if(!data)
     {
       LOG(AliL3Log::kError,"AliL3DataHandler::Memory2CompMemory","Data")
-	<<AliL3Log::kHex<<" Pointer to data = "<<(Int_t)data<<ENDLOG;
+	<<AliL3Log::kHex<<" Pointer to data = "<<(void*)data<<ENDLOG;
       return 0;  
     }
   if(!comp)
     {
       LOG(AliL3Log::kError,"AliL3DataHandler::Memory2CompMemory","Data")
-	<<AliL3Log::kHex<<" Pointer to compressed data = "<<(Int_t)comp<<ENDLOG;
+	<<AliL3Log::kHex<<" Pointer to compressed data = "<<(void*)comp<<ENDLOG;
       return 0;  
     }
 
@@ -333,7 +333,7 @@ UInt_t AliL3DataHandler::GetCompMemorySize(UInt_t nrow,AliL3DigitRowData *data)
   if(!data)
     {
       LOG(AliL3Log::kError,"AliL3DataHandler::GetCompMemorySize","Data")
-	<<AliL3Log::kHex<<" Data pointer = "<<(Int_t)data<<ENDLOG;
+	<<AliL3Log::kHex<<" Data pointer = "<<(void*)data<<ENDLOG;
       return 0;
     }
   
@@ -441,13 +441,13 @@ UInt_t AliL3DataHandler::CompMemory2Memory(UInt_t nrow,AliL3DigitRowData *data,B
   if(!data)
     {
       LOG(AliL3Log::kError,"AliL3DataHandler::CompMemory2Memory","Array")
-	<<AliL3Log::kHex<<"Pointer to data: "<<(Int_t)data<<ENDLOG;
+	<<AliL3Log::kHex<<"Pointer to data: "<<(void*)data<<ENDLOG;
       return 0;
     }
   if(!comp)
     {
       LOG(AliL3Log::kError,"AliL3DataHandler::CompMemory2Memory","Array")
-	<<AliL3Log::kHex<<"Pointer to compressed data: "<<(Int_t)data<<ENDLOG;
+	<<AliL3Log::kHex<<"Pointer to compressed data: "<<(void*)comp<<ENDLOG;
       return 0;
     }
   

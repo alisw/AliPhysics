@@ -391,9 +391,9 @@ void AliL3Histogram::Draw(Char_t *option)
   //fRootHisto->SetStats(kFALSE);
   fRootHisto->Draw(option);
   return;
-#endif
+#else
   cerr<<"AliL3Histogram::Draw : You need to compile with ROOT in order to draw histogram"<<endl;
-  
+#endif  
 }
 
 void AliL3Histogram::CreateRootHisto()
@@ -402,8 +402,9 @@ void AliL3Histogram::CreateRootHisto()
 #ifdef use_root
   fRootHisto = new TH2F(fName,"",fNxbins,fXmin,fXmax,fNybins,fYmin,fYmax);
   return;
-#endif
+#else
   cerr<<"AliL3Histogram::CreateRootHisto : You need to compile with ROOT in order to create ROOT histogram"<<endl;
+#endif
 }
 
 ofstream& operator<<(ofstream &o, const AliL3Histogram &h)

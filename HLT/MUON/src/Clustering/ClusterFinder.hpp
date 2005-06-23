@@ -30,7 +30,7 @@ namespace dHLT {
 	       The numberfound parameter indicated how many clusters were actually found.
 	     */
 	    virtual void FoundClusters(ClusterFinder * clusterfinder,
-				       const UInt numberfound) = 0;
+				       UInt numberfound) = 0;
 
 	    /* Called when the cluster finder has finished its job however no clusters were
 	       found in the ADC stream. At this point the ADC stream is no longer is use by
@@ -70,7 +70,7 @@ namespace dHLT {
 	       in the previous call to FillClusterData.
 	     */
 	    virtual UInt FillClusterData(ClusterPoint * clusters,
-					 const UInt arraysize) = 0;
+					 UInt arraysize) = 0;
 
 	    /* This is called when the cluster finder should be reset to an initial state.
 	       All extra internal memory allocated during processing should be released.
@@ -90,7 +90,7 @@ namespace dHLT {
 	       the memory block MUST NOT be accessed.
 	       The numberfound parameter should indicate how many clusters were found.
 	     */
-	     inline void FoundClusters(const UInt numberfound) {
+	     inline void FoundClusters(UInt numberfound) {
 		Assert(callback != NULL);
 		callback->FoundClusters(this, numberfound);
 	    };

@@ -32,7 +32,7 @@ ADCStreamSource::~ADCStreamSource()
 }
 
 
-void ADCStreamSource::FillFromFile(const TString& filename, const Int_t eventnumber)
+void ADCStreamSource::FillFromFile(const TString& filename, Int_t eventnumber)
 {
 	DebugMsg(1, "Entering FillFromFile, file = " << filename.Data()
 		<< ", event number = " << eventnumber
@@ -67,7 +67,7 @@ void ADCStreamSource::FillFromFile(const TString& filename, const Int_t eventnum
 }
 
 
-void ADCStreamSource::FillFrom(const TString& directory, const Int_t eventnumber)
+void ADCStreamSource::FillFrom(const TString& directory, Int_t eventnumber)
 {
 	DebugMsg(1, "Entering FillFrom, directory = " << directory.Data()
 		<< ", event number = " << eventnumber
@@ -95,7 +95,7 @@ void ADCStreamSource::FillFrom(const TString& directory, const Int_t eventnumber
 }
 
 
-void ADCStreamSource::FillFrom(const TString& dirprefix, const UInt_t firstevent, const UInt_t lastevent)
+void ADCStreamSource::FillFrom(const TString& dirprefix, UInt_t firstevent, UInt_t lastevent)
 {
 	DebugMsg(1, "Entering FillFrom");
 	
@@ -123,7 +123,7 @@ Int_t ADCStreamSource::NumberOfStreams() const
 }
 
 
-Bool_t ADCStreamSource::GetStream(const Int_t index) const
+Bool_t ADCStreamSource::GetStream(Int_t index) const
 {
 	if ( 0 <= index and index < NumberOfStreams() )
 	{
@@ -203,7 +203,7 @@ Bool_t ADCStreamSource::FetchStream(ADCStream& stream) const
 }
 
 
-Bool_t ADCStreamSource::FetchStream(const Int_t index, ADCStream& stream) const
+Bool_t ADCStreamSource::FetchStream(Int_t index, ADCStream& stream) const
 {
 	if ( GetStream(index) )
 		return FetchStream(stream);
@@ -227,7 +227,7 @@ const ADCStream* ADCStreamSource::FetchStream() const
 }
 
 
-void ADCStreamSource::AddStream(ADCStream& stream, const UInt_t eventnumber)
+void ADCStreamSource::AddStream(ADCStream& stream, UInt_t eventnumber)
 {
 	DebugMsg(1, "Entering AddStream");
 	

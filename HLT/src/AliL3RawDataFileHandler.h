@@ -46,7 +46,7 @@ class AliL3RawDataFileHandler:public AliL3MemHandler {
   void CloseRawInput(); 
   Int_t ReadRawInput();
 
-  Int_t ReadRawInputPointer(Char_t const *ptr);
+  Int_t ReadRawInputPointer(const Char_t *ptr);
 
   Short_t** GetRawData(Int_t &channels, Int_t & timebins);
 

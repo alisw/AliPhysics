@@ -183,9 +183,9 @@ class AliL3ConfMapPoint {
 
   void Setup(AliL3Vertex *vertex);// does the usual setup in the right order
   void SetAngles();               // calculate spherical angles and set values
-  void SetIntPoint(const Double_t inx = 0.,const Double_t iny = 0.,
-	           const Double_t inz = 0.,const Double_t inxerr = 0., 
-		   const Double_t inyerr = 0., const Double_t inzerr = 0.);  
+  void SetIntPoint(Double_t inx = 0., Double_t iny = 0.,
+	           Double_t inz = 0., Double_t inxerr = 0., 
+		   Double_t inyerr = 0., Double_t inzerr = 0.);  
   //-> set interaction point
   void SetShiftedCoord();// set shifted coordinates  
   void SetAllCoord(const AliL3ConfMapPoint *hit);// set conformal mapping coordinates in respect to given hit

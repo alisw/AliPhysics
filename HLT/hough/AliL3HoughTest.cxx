@@ -298,8 +298,8 @@ void AliL3HoughTest::Transform2CircleF(AliL3Histogram *hist)
 		}
 	    }
 	}
-      return;
     }
+  return;
 }
 
 void AliL3HoughTest::Transform2Line(AliL3Histogram *hist,Int_t *rowrange)

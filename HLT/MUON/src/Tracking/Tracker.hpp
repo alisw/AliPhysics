@@ -37,8 +37,8 @@ public:
 	 */
 	virtual void RequestClusters(
 			Tracker* tracker, 
-			const Float left, const Float right, const Float bottom, const Float top,
-			const ChamberID chamber, const void* tag
+			Float left, Float right, Float bottom, Float top,
+			ChamberID chamber, const void* tag
 		) = 0;
 
 	/* When this method is called then one knows no more RequestClusters method
@@ -84,7 +84,7 @@ public:
 	   made using RequestClusters. The tag parameter will be the same one as was
 	   passed to RequestClusters.
 	 */
-	virtual void ReturnClusters(void* tag, const ClusterPoint* clusters, const UInt count) = 0;
+	virtual void ReturnClusters(void* tag, const ClusterPoint* clusters, UInt count) = 0;
 
 	/* When no more clusters are to be expected for the request with the corresponding
 	   tag value, then this method is called.
@@ -124,8 +124,8 @@ protected:
 	   EndOfClusters methods.
 	 */
 	inline void RequestClusters(
-			const Float left, const Float right, const Float bottom, const Float top,
-			const ChamberID chamber, const void* tag = NULL
+			Float left, Float right, Float bottom, Float top,
+			ChamberID chamber, const void* tag = NULL
 		)
 	{
 		Assert( callback != NULL );

@@ -22,7 +22,7 @@ Track::Track() : TObject()
 
 
 Track::Track(
-		const Int_t triggerid, const Int_t sign, const Float_t momentum, const Float_t pt,
+		Int_t triggerid, Int_t sign, Float_t momentum, Float_t pt,
 		const Point hits[10], const Region regions[10]
 	) : TObject()
 {
@@ -66,7 +66,7 @@ void Track::Init()
 }
 
 
-void Track::ParticleSign(const Int_t value)
+void Track::ParticleSign(Int_t value)
 {
 	if (-1 <= value and value <= +1)
 		fParticleSign = value;
@@ -78,7 +78,7 @@ void Track::ParticleSign(const Int_t value)
 }
 
 
-void Track::P(const Float_t value)
+void Track::P(Float_t value)
 {
 	if (value >= fPt)
 		fP = value;
@@ -89,7 +89,7 @@ void Track::P(const Float_t value)
 		);
 }
 
-void Track::Pt(const Float_t value)
+void Track::Pt(Float_t value)
 {
 	if (value >= 0.0)
 	{
@@ -106,9 +106,9 @@ void Track::Pt(const Float_t value)
 };
 
 
-Point& Track::Hit(const UInt_t chamber)
+Point& Track::Hit(UInt_t chamber)
 {
-	if (0 <= chamber and chamber < 10)
+	if (chamber < 10)
 		return fHit[chamber];
 	else
 	{
@@ -121,9 +121,9 @@ Point& Track::Hit(const UInt_t chamber)
 }
 
 
-const Point& Track::Hit(const UInt_t chamber) const
+const Point& Track::Hit(UInt_t chamber) const
 {
-	if (0 <= chamber and chamber < 10)
+	if (chamber < 10)
 		return fHit[chamber];
 	else
 	{
@@ -136,9 +136,9 @@ const Point& Track::Hit(const UInt_t chamber) const
 };
 
 
-void Track::Hit(const UInt_t chamber, const Point& value)
+void Track::Hit(UInt_t chamber, const Point& value)
 {
-	if (0 <= chamber and chamber < 10)
+	if (chamber < 10)
 		fHit[chamber] = value;
 	else
 		Error("Hit",
@@ -148,9 +148,9 @@ void Track::Hit(const UInt_t chamber, const Point& value)
 }
 
 
-Region& Track::RegionOfInterest(const UInt_t chamber)
+Region& Track::RegionOfInterest(UInt_t chamber)
 {
-	if (0 <= chamber and chamber < 10)
+	if (chamber < 10)
 		return fRegionOfInterest[chamber];
 	else
 	{
@@ -163,9 +163,9 @@ Region& Track::RegionOfInterest(const UInt_t chamber)
 }
 
 
-const Region& Track::RegionOfInterest(const UInt_t chamber) const
+const Region& Track::RegionOfInterest(UInt_t chamber) const
 {
-	if (0 <= chamber and chamber < 10)
+	if (chamber < 10)
 		return fRegionOfInterest[chamber];
 	else
 	{
@@ -178,9 +178,9 @@ const Region& Track::RegionOfInterest(const UInt_t chamber) const
 }
 
 
-void Track::RegionOfInterest(const UInt_t chamber, const Region& value)
+void Track::RegionOfInterest(UInt_t chamber, const Region& value)
 {
-	if (0 <= chamber and chamber < 10)
+	if (chamber < 10)
 		fRegionOfInterest[chamber] = value;
 	else
 		Error("RegionOfInterest",

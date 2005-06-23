@@ -229,7 +229,7 @@ void AliL3Evaluate::AssignIDs()
 #ifndef do_mc
   cerr<<"AliL3Evaluate::AssignIDs() : You need to compile with the do_mc flag!"<<endl;
   return;
-#endif
+#else
   if(!fTracks) return;
   fGoodFound=0;
   fTracks->QSort();
@@ -246,6 +246,7 @@ void AliL3Evaluate::AssignIDs()
       track->SetMCid(tID);
     }
   //cout<<"Found "<<fGoodFound<<" good tracks "<<endl;
+#endif
 }
 
 Float_t AliL3Evaluate::GetTrackPID(AliL3Track *track)

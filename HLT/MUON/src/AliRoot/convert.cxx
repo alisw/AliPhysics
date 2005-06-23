@@ -29,7 +29,7 @@ dHLT::Point Convert(const AliMUONHLT::Point& point)
 }
 
 
-AliMUONHLT::TriggerRecord Convert(const dHLT::TriggerRecord& record, const Int_t triggernumber)
+AliMUONHLT::TriggerRecord Convert(const dHLT::TriggerRecord& record, Int_t triggernumber)
 {
 	DebugMsg(5, "Convert from dHLT::TriggerRecord");
 	// If the trigger number is negative then set it to zero.
@@ -114,7 +114,7 @@ AliMUONHLT::Region Convert(const dHLT::ROI region)
 }
 
 
-dHLT::ROI Convert(const AliMUONHLT::Region& region, const UInt_t chamber)
+dHLT::ROI Convert(const AliMUONHLT::Region& region, UInt_t chamber)
 {
 	DebugMsg(5, "Convert from AliMUONHLT::Region");
 	// If the chamber number is too big then truncate it.

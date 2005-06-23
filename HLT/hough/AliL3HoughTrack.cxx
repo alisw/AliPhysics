@@ -72,12 +72,12 @@ void AliL3HoughTrack::Set(AliL3Track *track)
   SetSector(tpt->GetSector());
   return;
 
-  fWeight = tpt->GetWeight();
-  fDLine = tpt->GetDLine();
-  fPsiLine = tpt->GetPsiLine();
-  SetNHits(tpt->GetWeight());
-  SetRowRange(tpt->GetFirstRow(),tpt->GetLastRow());
-  fIsHelix = false;
+//    fWeight = tpt->GetWeight();
+//    fDLine = tpt->GetDLine();
+//    fPsiLine = tpt->GetPsiLine();
+//    SetNHits(tpt->GetWeight());
+//    SetRowRange(tpt->GetFirstRow(),tpt->GetLastRow());
+//    fIsHelix = false;
 }
 
 Int_t AliL3HoughTrack::Compare(const AliL3Track *tpt) const

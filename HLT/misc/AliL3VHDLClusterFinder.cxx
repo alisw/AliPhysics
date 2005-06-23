@@ -331,8 +331,8 @@ void AliL3VHDLClusterFinder::OutputMemory()
     fprintf(fdeb,"OutputMemory %d: Row %d Pad %.3f Time %.3f TC %d Merge %d\n",fNClusters,row,mpad,mtime,tc,mno);
 #endif    
 
-    if(stdout)
-      cout<<"WriteCluster: padrow "<<row<<" pad "<<mpad<< " +- "<<mpad2<<" time "<<mtime<<" +- "<<mtime2<<" charge "<<tc<<endl;
+    //    if(stdout)
+    //      cout<<"WriteCluster: padrow "<<row<<" pad "<<mpad<< " +- "<<mpad2<<" time "<<mtime<<" +- "<<mtime2<<" charge "<<tc<<endl;
     
     fNClusters++;
     FreeSeq(index);

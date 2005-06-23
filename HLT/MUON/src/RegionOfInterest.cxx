@@ -41,7 +41,7 @@ Float RegionOfInterest::planescale[NUMBER_OF_TRACKING_CHAMBERS]
 */
 
 
-void RegionOfInterest::CreateToContain(const ClusterPoint& point, const ChamberID chamber)
+void RegionOfInterest::CreateToContain(const ClusterPoint& point, ChamberID chamber)
 {
 	Assert( 0 <= chamber and chamber < NUMBER_OF_TRACKING_CHAMBERS );
 	this->chamber = chamber;
@@ -63,7 +63,7 @@ void RegionOfInterest::ExpandToContain(const ClusterPoint& point)
 };
 
 
-void RegionOfInterest::CreateToContain(const ClusterPoint* points, const UInt count, const ChamberID chamber)
+void RegionOfInterest::CreateToContain(const ClusterPoint* points, UInt count, ChamberID chamber)
 {
 	Assert( 0 <= chamber and chamber < NUMBER_OF_TRACKING_CHAMBERS );
 	Assert( count > 0 );
@@ -456,7 +456,7 @@ ROI RegionOfInterest::Encode(UChar& level, UInt& l, UInt& b) const
 };
 
 
-void RegionOfInterest::Decode(const ROI code)
+void RegionOfInterest::Decode(ROI code)
 {
 	UInt l, r, b, t;
 	UChar colevel;
@@ -474,7 +474,7 @@ void RegionOfInterest::Decode(const ROI code)
 };
 
 
-void RegionOfInterest::Decode(const ROI code, ChamberID& chamber, UChar& level, UInt& l, UInt& b)
+void RegionOfInterest::Decode(ROI code, ChamberID& chamber, UChar& level, UInt& l, UInt& b)
 {
 	UChar colevel;
 	DecodeBits(code, chamber, colevel, l, b);
@@ -482,7 +482,7 @@ void RegionOfInterest::Decode(const ROI code, ChamberID& chamber, UChar& level, 
 };
 
 
-void RegionOfInterest::DecodeBits(const ROI code, ChamberID& chamber, UChar& colevel, UInt& l, UInt& b)
+void RegionOfInterest::DecodeBits(ROI code, ChamberID& chamber, UChar& colevel, UInt& l, UInt& b)
 {
 	// First decode the chamber number and the remainder 
 	// contains the location index.
@@ -619,7 +619,7 @@ void RegionOfInterest::DecodeBits(const ROI code, ChamberID& chamber, UChar& col
 };
 
 
-ChamberID RegionOfInterest::DecodeChamber(const ROI code)
+ChamberID RegionOfInterest::DecodeChamber(ROI code)
 {
 	return (ChamberID)(code / MAX_INDICES);
 };

@@ -20,8 +20,8 @@ class TrackerCallback : public TObject
 public:
 
 	virtual void RequestClusters(
-			const Float_t left, const Float_t right, const Float_t bottom, const Float_t top,
-			const Int_t chamber, const void* tag = NULL
+			Float_t left, Float_t right, Float_t bottom, Float_t top,
+			Int_t chamber, const void* tag = NULL
 		) = 0;
 	virtual void EndOfClusterRequests() = 0;
 	virtual void FoundTrack() = 0;

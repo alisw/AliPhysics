@@ -34,7 +34,7 @@ void ClusterFinderProxy::FindClusters(const ADCStream* stream)
 }
 
 
-UInt ClusterFinderProxy::FillClusterData(ClusterPoint* clusters, const UInt arraysize)
+UInt ClusterFinderProxy::FillClusterData(ClusterPoint* clusters, UInt arraysize)
 {
 	UInt result;
 	AliMUONHLT::Point* points = new AliMUONHLT::Point[arraysize];
@@ -63,7 +63,7 @@ void ClusterFinderProxy::Reset()
 }
 
 
-void ClusterFinderProxy::FoundClusters(const UInt_t numberfound)
+void ClusterFinderProxy::FoundClusters(UInt_t numberfound)
 {
 	DebugMsg(6, "ClusterFinderProxy::FoundClusters");
 	Clustering::ClusterFinder::FoundClusters(numberfound);

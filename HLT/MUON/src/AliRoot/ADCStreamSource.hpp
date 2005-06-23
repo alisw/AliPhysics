@@ -28,19 +28,19 @@ public:
 
 	/* Fills the internal data structures from the specified file
 	 */
-	void FillFromFile(const TString& filename, const Int_t eventnumber);
+	void FillFromFile(const TString& filename, Int_t eventnumber);
 	
 	/* Fills the internal data structures from the specified directory.
 	   FillFromFile is called for every file in the directory that is
 	   prefixed with MUON_ and ends in .ddl
 	 */
-	void FillFrom(const TString& directory, const Int_t eventnumber);
+	void FillFrom(const TString& directory, Int_t eventnumber);
 	
 	/* Same as the methods above except the directory name is created as
 	   dirprefix + eventnumber, where eventnumber is looped from firstevent
 	   to lastevent.
 	 */
-	void FillFrom(const TString& dirprefix, const UInt_t firstevent, const UInt_t lastevent);
+	void FillFrom(const TString& dirprefix, UInt_t firstevent, UInt_t lastevent);
 	
 	/* Clears all the internal arrays.
 	 */
@@ -56,7 +56,7 @@ public:
 	/* Fetches the index'th ADC stream stored.
 	   kTRUE is returned if the stream was found, kFALSE otherwise.
 	 */
-	Bool_t GetStream(const Int_t index) const;
+	Bool_t GetStream(Int_t index) const;
 	
 	/* Fetches the first ADC stream stored.
 	   kTRUE is returned if the stream was found, kFALSE otherwise.
@@ -81,7 +81,7 @@ public:
 	/* Returns the index'th ADC stream.
 	   kTRUE is returned if the stream was found, kFALSE otherwise.
 	 */
-	Bool_t FetchStream(const Int_t index, ADCStream& stream) const;
+	Bool_t FetchStream(Int_t index, ADCStream& stream) const;
 	
 	/* Returns the current ADC stream selected.
 	   A NULL pointer is returned if no ADC stream is selected.
@@ -92,7 +92,7 @@ private:
 
 	/* Adds a new ADCStream object to the internal arrays.
 	 */
-	void AddStream(ADCStream& stream, const UInt_t eventnumber);
+	void AddStream(ADCStream& stream, UInt_t eventnumber);
 
 	mutable Int_t fCurrentStream;  //! The currently selected stream index.
 	

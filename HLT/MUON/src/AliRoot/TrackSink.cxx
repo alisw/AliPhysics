@@ -31,7 +31,7 @@ TrackSink::~TrackSink()
 }
 
 
-void TrackSink::AddEvent(const Int_t eventnumber)
+void TrackSink::AddEvent(Int_t eventnumber)
 {
 	DebugMsg(1, "TrackSink::AddEvent(" << eventnumber << ")");
 	
@@ -130,8 +130,8 @@ Track* TrackSink::AddTrack()
 
 
 void TrackSink::AddTrack(
-		const Int_t triggerid, const Int_t sign, const Float_t momentum,
-		const Float_t pt, const Point hits[10], const Region regions[10]
+		Int_t triggerid, Int_t sign, Float_t momentum,
+		Float_t pt, const Point hits[10], const Region regions[10]
 	)
 {
 	DebugMsg(1, "TrackSink::AddTrack(" << triggerid << ", " << sign << ", "
@@ -171,7 +171,7 @@ void TrackSink::Clear()
 }
 
 
-Bool_t TrackSink::GetEvent(const Int_t eventnumber) const
+Bool_t TrackSink::GetEvent(Int_t eventnumber) const
 {
 	DebugMsg(1, "TrackSink::GetEvent(" << eventnumber << ")" );
 	
@@ -265,7 +265,7 @@ Int_t TrackSink::NumberOfBlocks() const
 }
 
 
-Bool_t TrackSink::GetBlock(const Int_t index) const
+Bool_t TrackSink::GetBlock(Int_t index) const
 {
 	DebugMsg(1, "TrackSink::GetBlock(" << index << ")");
 	
@@ -362,7 +362,7 @@ Int_t TrackSink::NumberOfTracks() const
 };
 
 
-const Track* TrackSink::GetTrack(const Int_t index) const
+const Track* TrackSink::GetTrack(Int_t index) const
 {
 	DebugMsg(1, "TrackSink::GetTrack(" << index << ")");
 
@@ -485,7 +485,7 @@ TrackSink::EventData::EventData() : fBlocks(TClonesArray::Class())
 }
 
 
-TrackSink::EventData::EventData(const Int_t eventnumber)
+TrackSink::EventData::EventData(Int_t eventnumber)
 	: fBlocks(TClonesArray::Class())
 {
 	fEventNumber = eventnumber;

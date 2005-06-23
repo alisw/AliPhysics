@@ -27,11 +27,11 @@ public:
 
 	// inherited methods from Clustering::ClusterFinder:
 	virtual void FindClusters(const ADCStream* stream);
-	virtual UInt FillClusterData(ClusterPoint* clusters, const UInt arraysize);
+	virtual UInt FillClusterData(ClusterPoint* clusters, UInt arraysize);
 	virtual void Reset();
 
 	// inherited methods from AliMUONHLT::ClusterFinderCallback:
-	virtual void FoundClusters(const UInt_t numberfound);
+	virtual void FoundClusters(UInt_t numberfound);
 	virtual void NoClustersFound();
 
 private:

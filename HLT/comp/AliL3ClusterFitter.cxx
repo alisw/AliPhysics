@@ -1128,9 +1128,9 @@ void AliL3ClusterFitter::AddClusters()
 	     time < -1 || time >= AliL3Transform::GetNTimeBins())
 	    {
 	      continue;
-	      cout<<"slice "<<fSlice<<" row "<<i<<" pad "<<pad<<" time "<<time<<endl;
-	      tr->Print();
-	      exit(5);
+//  	      cout<<"slice "<<fSlice<<" row "<<i<<" pad "<<pad<<" time "<<time<<endl;
+//  	      tr->Print();
+//  	      exit(5);
 	    }
 	  
 	  tr->CalculateClusterWidths(i,kTRUE); //Parametrize errors

@@ -26,7 +26,7 @@ public:
 	
 	/* Constructs the point from the specified x and y coordinates.
 	 */
-	Point(const Float_t x, const Float_t y);
+	Point(Float_t x, Float_t y);
 
 	virtual ~Point() {};
 	

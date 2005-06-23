@@ -31,7 +31,7 @@ public:
 	   If this is not the case then an error message is shown and everything
 	   is set to zero.
 	 */
-	Region(const Float_t left, const Float_t right, const Float_t bottom, const Float_t top);
+	Region(Float_t left, Float_t right, Float_t bottom, Float_t top);
 
 	virtual ~Region() {}
 	
@@ -41,13 +41,13 @@ public:
 	   If this is condition cannot be achieved then an error message is shown
 	   and nothing is changed internally.
 	 */
-	void Left(const Float_t value);
+	void Left(Float_t value);
 	Float_t Left() const { return fLeft; }
-	void Right(const Float_t value);
+	void Right(Float_t value);
 	Float_t Right() const { return fRight; }
-	void Bottom(const Float_t value);
+	void Bottom(Float_t value);
 	Float_t Bottom() const { return fBottom; }
-	void Top(const Float_t value);
+	void Top(Float_t value);
 	Float_t Top() const { return fTop; }
 	
 	/* Checks if the point is within this region. If it is then kTRUE is returned

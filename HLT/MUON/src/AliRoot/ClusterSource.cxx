@@ -70,7 +70,7 @@ void ClusterSource::FillFrom(AliMUONDataInterface* data)
 }
 
 
-void ClusterSource::FillFrom(AliMUONDataInterface* data, const Int_t event)
+void ClusterSource::FillFrom(AliMUONDataInterface* data, Int_t event)
 {
 	DebugMsg(1, "FillFrom(AliMUONDataInterface*, Int_t)");
 	
@@ -79,7 +79,7 @@ void ClusterSource::FillFrom(AliMUONDataInterface* data, const Int_t event)
 }
 
 
-void ClusterSource::FillFrom(AliMUONDataInterface* data, const Int_t event, const Int_t chamber)
+void ClusterSource::FillFrom(AliMUONDataInterface* data, Int_t event, Int_t chamber)
 {
 	DebugMsg(1, "FillFrom(AliMUONDataInterface*, Int_t)");
 	
@@ -96,8 +96,8 @@ void ClusterSource::FillFrom(AliMUONDataInterface* data, const Int_t event, cons
 
 void ClusterSource::FillFrom(
 		AliMUONDataInterface* data,
-		const Int_t event, const Int_t chamber, const Int_t cluster,
-		const Bool_t newblock
+		Int_t event, Int_t chamber, Int_t cluster,
+		Bool_t newblock
 	)
 {
 	DebugMsg(1, "FillFrom(AliMUONDataInterface*, Int_t, Int_t, Int_t, Bool_t)");
@@ -156,7 +156,7 @@ void ClusterSource::Clear()
 }
 
 
-Bool_t ClusterSource::GetEvent(const Int_t eventnumber) const
+Bool_t ClusterSource::GetEvent(Int_t eventnumber) const
 {
 	DebugMsg(1, "ClusterSource::GetEvent(" << eventnumber << ")" );
 	
@@ -250,7 +250,7 @@ Int_t ClusterSource::NumberOfBlocks() const
 }
 
 
-Bool_t ClusterSource::GetBlock(const Int_t index) const
+Bool_t ClusterSource::GetBlock(Int_t index) const
 {
 	DebugMsg(1, "ClusterSource::GetBlock(" << index << ")");
 	
@@ -359,7 +359,7 @@ Int_t ClusterSource::NumberOfClusters() const
 }
 
 
-const Point* ClusterSource::GetCluster(const Int_t index) const
+const Point* ClusterSource::GetCluster(Int_t index) const
 {
 	DebugMsg(1, "ClusterSource::GetCluster(" << index << ")");
 
@@ -456,7 +456,7 @@ Bool_t ClusterSource::FetchCluster(Float_t& x, Float_t& y) const
 }
 
 
-void ClusterSource::AddEvent(const Int_t eventnumber)
+void ClusterSource::AddEvent(Int_t eventnumber)
 {
 	DebugMsg(1, "ClusterSource::AddEvent(" << eventnumber << ")");
 	Assert( eventnumber >= 0 );
@@ -475,7 +475,7 @@ void ClusterSource::AddEvent(const Int_t eventnumber)
 }
 
 
-void ClusterSource::AddBlock(const Int_t chamber)
+void ClusterSource::AddBlock(Int_t chamber)
 {
 	DebugMsg(1, "ClusterSource::AddBlock()");
 	
@@ -498,7 +498,7 @@ void ClusterSource::AddBlock(const Int_t chamber)
 }
 
 
-void ClusterSource::AddPoint(const Float_t x, const Float_t y)
+void ClusterSource::AddPoint(Float_t x, Float_t y)
 {
 	DebugMsg(1, "ClusterSource::AddPoint(" << x << ", " << y << ")");
 
@@ -550,7 +550,7 @@ Bool_t ClusterSource::FileAndFolderOk(AliMUONDataInterface* data)
 }
 
 
-void ClusterSource::AddEventFrom(AliMUONDataInterface* data, const Int_t event)
+void ClusterSource::AddEventFrom(AliMUONDataInterface* data, Int_t event)
 {
 	if ( data->GetEvent(event) )
 	{
@@ -563,7 +563,7 @@ void ClusterSource::AddEventFrom(AliMUONDataInterface* data, const Int_t event)
 }
 
 
-void ClusterSource::AddChamberFrom(AliMUONDataInterface* data, const Int_t chamber)
+void ClusterSource::AddChamberFrom(AliMUONDataInterface* data, Int_t chamber)
 {
 	DebugMsg(1, "Entering AddChamberFrom");
 	
@@ -652,7 +652,7 @@ void ClusterSource::AddChamberFrom(AliMUONDataInterface* data, const Int_t chamb
 
 
 void ClusterSource::AddClusterFrom(
-		AliMUONDataInterface* data, const Int_t chamber, const Int_t cluster
+		AliMUONDataInterface* data, Int_t chamber, Int_t cluster
 	)
 {
 	DebugMsg(1, "Entering AddClusterFrom");
@@ -715,7 +715,7 @@ void ClusterSource::AddClusterFrom(
 };
 
 
-Bool_t ClusterSource::InFillRegion(const Float_t x, const Float_t y)
+Bool_t ClusterSource::InFillRegion(Float_t x, Float_t y)
 {
 	switch (fAreaToUse)
 	{
@@ -771,7 +771,7 @@ ClusterSource::BlockData::BlockData() : fClusters(Point::Class())
 	fChamber = -1;
 }
 
-ClusterSource::BlockData::BlockData(const Int_t chamber) : fClusters(Point::Class())
+ClusterSource::BlockData::BlockData(Int_t chamber) : fClusters(Point::Class())
 {
 	fChamber = chamber;
 }
@@ -786,7 +786,7 @@ ClusterSource::EventData::EventData() : fBlocks(ClusterSource::BlockData::Class(
 	fEventNumber = -1;
 }
 
-ClusterSource::EventData::EventData(const Int_t eventnumber)
+ClusterSource::EventData::EventData(Int_t eventnumber)
 	: fBlocks(ClusterSource::BlockData::Class())
 {
 	fEventNumber = eventnumber;

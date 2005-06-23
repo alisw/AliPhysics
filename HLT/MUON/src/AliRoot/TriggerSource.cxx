@@ -84,7 +84,7 @@ void TriggerSource::FillFrom(AliMUONDataInterface* data)
 }
 
 
-void TriggerSource::FillFrom(AliMUONDataInterface* data, const Int_t event)
+void TriggerSource::FillFrom(AliMUONDataInterface* data, Int_t event)
 {
 	DebugMsg(1, "FillFrom(AliMUONDataInterface*, Int_t)");
 	
@@ -100,7 +100,7 @@ void TriggerSource::FillFrom(AliMUONDataInterface* data, const Int_t event)
 
 void TriggerSource::FillFrom(
 		AliMUONDataInterface* data,
-		const Int_t event, const Int_t trigger, const Bool_t newblock
+		Int_t event, Int_t trigger, Bool_t newblock
 	)
 {
 	DebugMsg(1, "FillFrom(AliMUONDataInterface*, Int_t, Int_t, Bool_t)");
@@ -152,7 +152,7 @@ void TriggerSource::Clear()
 }
 
 
-Bool_t TriggerSource::GetEvent(const Int_t eventnumber) const
+Bool_t TriggerSource::GetEvent(Int_t eventnumber) const
 {
 	DebugMsg(1, "TriggerSource::GetEvent(" << eventnumber << ")" );
 	
@@ -246,7 +246,7 @@ Int_t TriggerSource::NumberOfBlocks() const
 }
 
 
-Bool_t TriggerSource::GetBlock(const Int_t index) const
+Bool_t TriggerSource::GetBlock(Int_t index) const
 {
 	DebugMsg(1, "TriggerSource::GetBlock(" << index << ")");
 	
@@ -343,7 +343,7 @@ Int_t TriggerSource::NumberOfTriggers() const
 }
 
 
-const TriggerRecord* TriggerSource::GetTrigger(const Int_t triggernumber) const
+const TriggerRecord* TriggerSource::GetTrigger(Int_t triggernumber) const
 {
 	DebugMsg(1, "TriggerSource::GetTrigger(" << triggernumber << ")");
 
@@ -431,7 +431,7 @@ Int_t TriggerSource::CurrentTrigger() const
 }
 
 
-void TriggerSource::AddEvent(const Int_t eventnumber)
+void TriggerSource::AddEvent(Int_t eventnumber)
 {
 	DebugMsg(1, "TriggerSource::AddEvent(" << eventnumber << ")");
 	Assert( eventnumber >= 0 );
@@ -525,7 +525,7 @@ Bool_t TriggerSource::FileAndFolderOk(AliMUONDataInterface* data)
 }
 
 
-void TriggerSource::AddEventFrom(AliMUONDataInterface* data, AliMUON* module, const Int_t event)
+void TriggerSource::AddEventFrom(AliMUONDataInterface* data, AliMUON* module, Int_t event)
 {
 	if ( data->GetEvent(event) )
 	{
@@ -588,7 +588,7 @@ void TriggerSource::AddEventFrom(AliMUONDataInterface* data, AliMUON* module, co
 }
 
 
-void TriggerSource::AddTriggerFrom(AliMUONDataInterface* data, AliMUON* module, const Int_t trigger)
+void TriggerSource::AddTriggerFrom(AliMUONDataInterface* data, AliMUON* module, Int_t trigger)
 {
 	DebugMsg(1, "Entering AddTriggerFrom");
 
@@ -687,7 +687,7 @@ void TriggerSource::FillTriggerFromLocalTrigger(
 }
 
 
-Bool_t TriggerSource::FillTriggerFromHits(AliMUONDataInterface* data, const Int_t track, TriggerRecord& record)
+Bool_t TriggerSource::FillTriggerFromHits(AliMUONDataInterface* data, Int_t track, TriggerRecord& record)
 {
 	DebugMsg(2, "Creating TriggerRecord from hits on track: " << track );
 	
@@ -897,7 +897,7 @@ TriggerSource::EventData::EventData() : fBlocks(TClonesArray::Class())
 }
 
 
-TriggerSource::EventData::EventData(const Int_t eventnumber)
+TriggerSource::EventData::EventData(Int_t eventnumber)
 	: fBlocks(TClonesArray::Class())
 {
 	fEventNumber = eventnumber;

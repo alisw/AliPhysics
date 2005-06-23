@@ -22,7 +22,7 @@ ADCStream::ADCStream() : TObject()
 }
 
 
-ADCStream::ADCStream(const UInt_t* data, const UInt_t size)
+ADCStream::ADCStream(const UInt_t* data, UInt_t size)
 {
 	fData.Set(size, (Int_t*)data);
 }
@@ -40,13 +40,13 @@ UInt_t ADCStream::Size()
 }
 
 
-void ADCStream::Size(const UInt_t size)
+void ADCStream::Size(UInt_t size)
 {
 	fData.Set(size);
 }
 
 
-void ADCStream::Fill(const UInt_t* data, const UInt_t size)
+void ADCStream::Fill(const UInt_t* data, UInt_t size)
 {
 	fData.Set(size, (Int_t*)data);
 }
@@ -59,7 +59,7 @@ void ADCStream::Fill(const UInt_t* data, const UInt_t size)
 // };
 
 
-UInt_t ADCStream::operator [] (const UInt_t index) const
+UInt_t ADCStream::operator [] (UInt_t index) const
 {
 	Assert( index < (UInt_t) fData.GetSize() );
 	return fData[index];

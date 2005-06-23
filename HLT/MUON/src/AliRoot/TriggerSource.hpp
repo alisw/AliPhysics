@@ -52,13 +52,13 @@ public:
 	/* Get and set methods to specify how the FillFrom methods should fill the
 	   internal data structures.
 	 */
-	void AreaToUse(const AreaType value) { fAreaToUse = value; };
+	void AreaToUse(AreaType value) { fAreaToUse = value; };
 	AreaType AreaToUse() const { return fAreaToUse; };
-	void DataToUse(const SourceType value) { fDataToUse = value; };
+	void DataToUse(SourceType value) { fDataToUse = value; };
 	SourceType DataToUse() const { return fDataToUse; };
-	void MaxBlockSize(const UInt_t value) { fMaxBlockSize = value; };
+	void MaxBlockSize(UInt_t value) { fMaxBlockSize = value; };
 	UInt_t MaxBlockSize() const { return fMaxBlockSize; };
-	void UseLookupTable(const Bool_t value) { fUseLookupTable = value; };
+	void UseLookupTable(Bool_t value) { fUseLookupTable = value; };
 	Bool_t UseLookupTable() const { return fUseLookupTable; };
 	
 	/* Fills the internal data structures from the specified data interface
@@ -69,7 +69,7 @@ public:
 	/* Fills the internal data structures from the specified data interface
 	   for the given event.
 	 */
-	void FillFrom(AliMUONDataInterface* data, const Int_t event);
+	void FillFrom(AliMUONDataInterface* data, Int_t event);
 	
 	/* Fills the internal data structures from the specified data interface
 	   for the given event and trigger number.
@@ -83,7 +83,7 @@ public:
 	 */
 	void FillFrom(
 			AliMUONDataInterface* data, 
-			const Int_t event, const Int_t trigger, const Bool_t newblock = kFALSE
+			Int_t event, Int_t trigger, Bool_t newblock = kFALSE
 		);
 
 	/* Clears all the internal arrays.
@@ -103,7 +103,7 @@ public:
 	   the event. If there are no blocks or trigger records then these pointers are
 	   set to NULL. kTRUE is returned if the event was found, kFALSE otherwise.
 	 */
-	Bool_t GetEvent(const Int_t eventnumber) const;
+	Bool_t GetEvent(Int_t eventnumber) const;
 	
 	/* Fetches the first event stored in this TriggerSource.
 	   Sets the current block and trigger record to the first block and trigger
@@ -137,7 +137,7 @@ public:
 	   If there are no trigger records then this pointer is set to NULL.
 	   kTRUE is returned if the block was found, kFALSE otherwise.
 	 */
-	Bool_t GetBlock(const Int_t index) const;
+	Bool_t GetBlock(Int_t index) const;
 	
 	/* Fetches the first block in the current event.
 	   Sets the current trigger record to the first trigger in the block.
@@ -169,7 +169,7 @@ public:
 	   the current block.
 	   NULL is returned if the record was not found.
 	 */
-	const TriggerRecord* GetTrigger(const Int_t triggernumber) const;
+	const TriggerRecord* GetTrigger(Int_t triggernumber) const;
 	
 	/* Fetches the first trigger record in the current block.
 	   NULL is returned if the record was not found.
@@ -203,7 +203,7 @@ private:
 	/* Adds a new EventData block to the fEventList and updates the fCurrentEvent,
 	   fCurrentBlock and fCurrentTrigger pointers.
 	 */ 
-	void AddEvent(const Int_t eventnumber);
+	void AddEvent(Int_t eventnumber);
 	
 	/* Adds a new block to the current event and updates fCurrentBlock and fCurrentTrigger.
 	 */
@@ -225,13 +225,13 @@ private:
 	   It is assumed that FileAndFolderOk(data) returns true just before calling
 	   this method.
 	 */
-	void AddEventFrom(AliMUONDataInterface* data, AliMUON* module, const Int_t event);
+	void AddEventFrom(AliMUONDataInterface* data, AliMUON* module, Int_t event);
 	
 	/* Adds the specified trigger record from the given data interface.
 	   The data interface should be initialised correctly, that is the event
 	   should already be selected before calling this method.
 	 */
-	void AddTriggerFrom(AliMUONDataInterface* data, AliMUON* module, const Int_t trigger);
+	void AddTriggerFrom(AliMUONDataInterface* data, AliMUON* module, Int_t trigger);
 	
 	/* Checks to see if the specified trigger record is in the chamber region
 	   we want to fill from.
@@ -252,7 +252,7 @@ private:
 	   The hits on the last 4 chambers are used (i.e. chambers 11 to 14).
 	   kTRUE is returned if the structure was filled successfully.
 	 */
-	Bool_t FillTriggerFromHits(AliMUONDataInterface* data, const Int_t track, TriggerRecord& record);
+	Bool_t FillTriggerFromHits(AliMUONDataInterface* data, Int_t track, TriggerRecord& record);
 	
 	/* Fetches the AliMUON module from the AliRun global object. AliRun will be loaded
 	   by the runloader if it has not yet been loaded. In such a case the AliRun object
@@ -290,7 +290,7 @@ public:  // Unfortunately ROOT requires the following to be public.
 	{
 	public:
 		EventData();
-		EventData(const Int_t eventnumber);
+		EventData(Int_t eventnumber);
 		virtual ~EventData();
 
 		Int_t fEventNumber;  // Event number in AliMUONDataInterface from which the triggers were taken.

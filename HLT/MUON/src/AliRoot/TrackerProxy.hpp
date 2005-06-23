@@ -27,15 +27,15 @@ public:
 
 	// inherited methods from Tracking::Tracker:
 	virtual void FindTrack(const TriggerRecord& trigger);
-	virtual void ReturnClusters(void* tag, const ClusterPoint* clusters, const UInt count);
+	virtual void ReturnClusters(void* tag, const ClusterPoint* clusters, UInt count);
 	virtual void EndOfClusters(void* tag);
 	virtual void FillTrackData(Track& track);
 	virtual void Reset();
 
 	// inherited methods from AliMUONHLT::TrackerCallback:
 	virtual void RequestClusters(
-			const Float_t left, const Float_t right, const Float_t bottom, const Float_t top,
-			const Int_t chamber, const void* tag = NULL
+			Float_t left, Float_t right, Float_t bottom, Float_t top,
+			Int_t chamber, const void* tag = NULL
 		);
 	virtual void EndOfClusterRequests();
 	virtual void FoundTrack();
