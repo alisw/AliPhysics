@@ -196,7 +196,6 @@ AliMpSectorSegmentation::FindMotifPosition(const AliMpIntPair& indices) const
       }
       return 0;
     }
-    break;
     ////////////////////////////////////////////////////////////////////////////////
     case kY : {
       // Case where all the pads have the same size along Y direction   
