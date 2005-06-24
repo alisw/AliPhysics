@@ -21,12 +21,12 @@ class AliESDtrack;
 class AliTrackPoints: public TObject
 {
   public:
-    typedef enum ETypes
+    typedef enum
       {//defines the type and the track points are calculated
         kITS = 1,//points calculated in ITS, made out of the vector at vertex
         kITSInnerFromVertexOuterFromTPC //for ITS, for 3 inner layers calculated out of the vector at vertex
                                         //         for 3 outer ---------------//------------------ at inner TPC
-      };
+      } ETypes;
 
     AliTrackPoints();
     AliTrackPoints(AliTrackPoints::ETypes type, AliESDtrack* track, Float_t mf);
