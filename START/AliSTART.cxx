@@ -105,7 +105,6 @@ AliSTART::~AliSTART() {
   if (fHits) {
     fHits->Delete();
     delete fHits;
-    cout<<"  delete fHits; "<<endl;
   }
   /*
   if (fDigits) {
