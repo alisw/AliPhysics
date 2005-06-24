@@ -421,7 +421,7 @@ void AliEMCALJetFinderInputSimPrep::FillTracks()
 	   break;
 	   default:
 	   break;
-	   delete mPart;
+	   //	   delete mPart;
         }	//end of switch
 //	Info("FillTracks","After Particle Storage");
 	//if (part%10) gObjectTable->Print();
