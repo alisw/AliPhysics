@@ -16,8 +16,10 @@
 // The current pulse height responses do not contain any physics
 
 #include <map>
+#include <string>
 #ifndef __HP_aCC
-  using std::map;
+using std::map;
+using std::string;
 #endif
 
 #include <TString.h>
