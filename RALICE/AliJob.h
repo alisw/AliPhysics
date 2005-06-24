@@ -16,7 +16,7 @@ class AliJob : public TTask
   AliJob(const char* name="AliJob",const char* title=""); // Constructor
   virtual ~AliJob();                                      // Destructor
   void ListEnvironment();                                 // Provide listing of the job environment
-  void ExecuteJob();                                      // Invokation of the top level processing
+  void ExecuteJob(Int_t mode=0);                          // Invokation of the top level processing
   void MakeFolder();                                      // Select creation of the folder structure 
   TFolder* GetFolder() const;                             // Provide pointer to the whiteboard folder 
   TObject* GetMainObject() const;                         // Provide pointer to the main object structure
@@ -38,6 +38,6 @@ class AliJob : public TTask
 
   void SetMainObject(TObject* obj); // Store pointer to the main object structure
 
- ClassDef(AliJob,2) // Base class for top level job in a task based procedure 
+ ClassDef(AliJob,3) // Base class for top level job in a task based procedure 
 };
 #endif

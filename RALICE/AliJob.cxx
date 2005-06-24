@@ -40,8 +40,9 @@
 //   The latter provides faster access to the main object structure than
 //   the GetObject (search) based procedures.
 //
-// Optionally one may invoke the MakeFolder() memberfunction to provide
-// in addition to the above the following job-specific folder structure :
+// Optionally one may invoke the MakeFolder() memberfunction or use the
+// "mode" argument of ExecuteJob (see below) to provide in addition to the above
+// the following job-specific folder structure :
 //
 // * A folder which may serve as a whiteboard for transferring pointers to
 //   objects which are posted there by the top level processor or any
@@ -79,7 +80,9 @@
 //    called "AliJob-folders" as a sub-folder under the same name as the one
 //    introduced in the constructor of the derived top level processor class.
 //    The folder will only be created if the MakeFolder() member function has been
-//    invoked explicitly and when the first object is posted via the AddObject()
+//    invoked or when selected explicitly by the "mode" argument of ExecuteJob().
+//    Actual creation of the folder environment (and internal array storage as well)
+//    only takes place when the first object is posted via the AddObject()
 //    or SetMainObject() facilities.
 //
 // Execution of the (user defined) top level processor has to be invoked via
@@ -89,6 +92,9 @@
 // processor class with as argument the name of the top level processor instance
 // as specified by the user in the top level processor constructor.
 // This will allow stepwise (e.g. event-by-event) execution of the various sub-tasks.
+// In addition the "mode" argument of ExecuteJob() may be used to select/overrule
+// creation of the folder environment for the complete job.
+// See the docs of ExecuteJob() for further details.
 //
 // It is the user's responsibility to invoke the sub-tasks via the
 // ExecuteTasks() statement at the appropriate location in the top level
@@ -127,6 +133,10 @@ AliJob::~AliJob()
 // references are deleted.
 // Note : The objects belonging to the various pointers in the array/folder
 //        and the main processing object are NOT deleted by this base class.
+
+ // Remove this AliJob based instance into the ROOT task list
+ TSeqCollection* tasks=gROOT->GetListOfTasks();
+ if (tasks) tasks->Remove(this);
 
  if (fObjects)
  {
@@ -168,10 +178,24 @@ void AliJob::ListEnvironment()
  cout << endl;
 }
 ///////////////////////////////////////////////////////////////////////////
-void AliJob::ExecuteJob()
+void AliJob::ExecuteJob(Int_t mode)
 {
 // Invokation of the top level processor via its Exec() memberfunction.
+// The input argument "mode" can be used to explicitly specify the
+// (de)selection of the folder environment creation.
+//
+// mode = -1 : Explicitly prohibit folder creation for the complete job
+//         0 : Folder creation selection steered by MakeFolder()
+//         1 : Explicitly select creation of the folder environment
+//             for the complete job.
+//
+// The default is mode=0.
+//
 // Note : Before execution gROOT is set as the global working directory.
+
+ if (mode<0) fMakefolder=-1;
+ if (mode>0) fMakefolder=1;
+
  gROOT->cd(); 
  Exec(GetName());
 }
@@ -180,7 +204,11 @@ void AliJob::MakeFolder()
 {
 // Select creation of the folder structure in addition to the internal
 // array storage of objects.
- fMakefolder=1;
+// Creation of the folder structure is only activated if it was not
+// explicitly forbidden by the specified "mode" on invokation of the
+// ExecuteJob() memberfunction.
+
+ if (!fMakefolder) fMakefolder=1;
 }
 ///////////////////////////////////////////////////////////////////////////
 TFolder* AliJob::GetFolder() const
@@ -213,7 +241,7 @@ void AliJob::AddObject(TObject* obj)
 
  if (!fObjects) fObjects=new TObjArray();
 
- if (fMakefolder && !fFolder)
+ if (fMakefolder>0 && !fFolder)
  {
   // Create the top level environment folder for all AliJobs if needed 
   TList* list=gROOT->GetListOfBrowsables();

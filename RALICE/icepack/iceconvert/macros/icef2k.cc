@@ -60,7 +60,9 @@
  TDatabasePDG* pdg=q.GetPDG();
  if (pdg) pdg->Write();
 
- // Flush and close the output file
+ // Flush the output file.
+ // The output file is not explicitly closed here
+ // to allow ineractive investigation of the data tree
+ // when this macro is run in an interactive ROOT/CINT session.
  ofile->Write();
- ofile->Close();
 }

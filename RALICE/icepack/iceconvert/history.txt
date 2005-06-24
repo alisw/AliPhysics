@@ -11,8 +11,12 @@
                 The example macro icef2k.cc has been updated accordingly.
 21-jun-2005 NvE Install scripts for gcc corrected to also include the rdmc stuff
                 in the produced shared libs.
-23-jun-2005 NvE Specification and consequently writing-out of datastructures made
-                optionally in IceF2k. This will allow IceF2k to be used as a facility
-                to investigate/analyse F2K data using the Ralice/IcePack analysis tools
-                without producing output data files.
+23-jun-2005 NvE Specification of output file and consequently writing-out of the
+                produced datastructures made optionally in IceF2k.
+                This will allow IceF2k to be used as a facility to investigate/analyse
+                F2K data using the Ralice/IcePack analysis tools without producing output
+                data files.
+24-jun-2005 NvE In the IceF2k docs and the icef2k.cc example macro the output file is
+                not explicitly closed to allow interactive investigation of the output
+                data tree when the macro is run in an interactive ROOT/CINT session.
  
