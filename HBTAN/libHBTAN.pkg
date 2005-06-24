@@ -17,4 +17,4 @@ HDRS:= $(SRCS:.cxx=.h)
 
 DHDR= HBTAnalysisLinkDef.h
 
-EINCLUDE:= TPC CONTAINERS ITS
+EINCLUDE:= TPC ITS

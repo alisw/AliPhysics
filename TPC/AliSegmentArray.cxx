@@ -28,7 +28,7 @@
 
 #include "TClonesArray.h"
 #include "TDirectory.h"
-#include "AliArrayI.h"
+#include <TArrayI.h>
 #include "TError.h"
 #include "TClass.h"
 #include "TFile.h"
@@ -274,7 +274,7 @@ Bool_t  AliSegmentArray::MakeDictionary(Int_t size)
   //  
   if (size<1) return kFALSE;
   if (fTreeIndex) delete fTreeIndex;
-  fTreeIndex = new AliArrayI(); 
+  fTreeIndex = new TArrayI(); 
   fTreeIndex->Set(size);
   
   AliSegmentID * psegment = NewSegment(); //MI change
@@ -284,7 +284,7 @@ Bool_t  AliSegmentArray::MakeDictionary(Int_t size)
   for (Int_t i = 0; i<nevent; i++){
     brindix->GetEvent(i);
     Int_t treeIndex=psegment->GetID();
-    if (fTreeIndex->fN<treeIndex) fTreeIndex->Expand(Int_t(Float_t(treeIndex)*1.5)+1);
+    if (fTreeIndex->fN<treeIndex) fTreeIndex->Set(Int_t(Float_t(treeIndex)*1.5)+1);
     //    Int_t index = segment.GetID(); 
     (*fTreeIndex)[treeIndex]=i+1; //  
   }

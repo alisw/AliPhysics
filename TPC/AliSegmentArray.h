@@ -17,7 +17,7 @@
 class TTree;
 class TBranch;
 class TFile;
-class AliArrayI;
+class TArrayI;
 class AliSegmentID;
  
 class AliSegmentArray: public TNamed{
@@ -53,14 +53,14 @@ protected:
   AliSegmentArray(const AliSegmentArray &segment); //copy constructor
   AliSegmentArray &operator = (const AliSegmentArray & segment); //assignment operator
   TObjArray  * fSegment;  //!pointer to array of pointers to segment
-  AliArrayI    * fTreeIndex; //!pointers(index) table in tree
+  TArrayI    * fTreeIndex; //!pointers(index) table in tree
   Int_t      fNSegment; //number of alocated segments   
   TTree    * fTree;   //!tree with segment objects
   Bool_t   fTreeOwner;// flag determing the ownership of the fTree
   TBranch  * fBranch; //!total branch
 private: 
   TClass  *   fClass;    //!class type of included objects 
-  ClassDef(AliSegmentArray,2) 
+  ClassDef(AliSegmentArray,3) 
 };
 
 

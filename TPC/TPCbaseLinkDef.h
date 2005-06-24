@@ -8,6 +8,12 @@
 #pragma link off all classes;
 #pragma link off all functions;
  
+#pragma link C++ class AliSegmentID+;
+#pragma link C++ class AliSegmentArray-;
+#pragma link C++ class AliDigits+;
+
+#pragma link C++ class AliH2F+;
+
 #pragma link C++ class AliTPCLoader+;
 
 #pragma link C++ class AliTPCRF1D-;

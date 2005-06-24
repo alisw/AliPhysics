@@ -63,7 +63,6 @@ void loadlibs ()
   gSystem->Load("libVZEROsim");
   gSystem->Load("libVZEROrec");
   gSystem->Load("libEMCAL");
-  gSystem->Load("libCONTAINERS");
 
   // The following lines have to be commented on Darwin
   // for the moment due to cross dependencies

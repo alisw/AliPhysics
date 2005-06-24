@@ -30,8 +30,7 @@
 #include "TError.h"
 #include "AliSegmentID.h"
 #include "AliH2F.h"
-#include "AliArrayI.h"
-#include "AliArrayS.h"
+#include "TArrayI.h"
 #include "AliDigits.h"
 #include "AliSimDigits.h"
 #include "AliTPCdigit.h"
@@ -68,9 +67,9 @@ void AliSimDigits::InvalidateTrack()
   //
   //set default (invalid parameters)
   if ( fTracks != 0) delete fTracks;
-  fTracks = new AliArrayI;
+  fTracks = new TArrayI;
   if ( fTrIndex  != 0) delete fTrIndex;
-  fTrIndex = new AliArrayI;
+  fTrIndex = new TArrayI;
 
   for (Int_t i = 0; i<3; i++){
     fTracks->Set(0);
@@ -187,7 +186,7 @@ void  AliSimDigits::ExpandTrackBuffer1()
   Int_t all   = fNrows*fNcols;  //total number of digits
   Int_t elems = all*fNlevel;  //length of the buffer
 
-  AliArrayI * buf = new AliArrayI;
+  TArrayI * buf = new TArrayI;
   buf->Set(elems);
   fTrIndex->Set(0);
   //
@@ -228,9 +227,9 @@ void  AliSimDigits::CompresTrackBuffer1()
   //
   fTrBufType = 1;  
 
-  AliArrayI *  buf = new AliArrayI;   //create  new buffer 
+  TArrayI *  buf = new TArrayI;   //create  new buffer 
   buf->Set(fNrows*fNcols*fNlevel); //lets have the nearly the "worst case"
-  AliArrayI *  index = new AliArrayI;
+  TArrayI *  index = new TArrayI;
   index->Set(fNcols*fNlevel);
   //  Int_t * pindex = 
 
@@ -255,7 +254,7 @@ void  AliSimDigits::CompresTrackBuffer1()
 	if (id <= 0) {
 	  if ( inum> 0 ) { //if we have some tracks in buffer
 	    icurrent++;
-	    if ((icurrent+1)>=buf->fN) buf->Expand(icurrent*2+1); //MI change - allocate +1
+	    if ((icurrent+1)>=buf->fN) buf->Set(icurrent*2+1); //MI change - allocate +1
 	    (*buf)[icurrent] = inum;
 	    icurrent++;
 	    (*buf)[icurrent] = lastID;	
@@ -269,7 +268,7 @@ void  AliSimDigits::CompresTrackBuffer1()
 	    if ( izero > 0 ) { 
 	      //if we have currently izero count of non tracks digits
 	      icurrent++;	  
-	      if (icurrent>=buf->fN) buf->Expand(icurrent*2+1);
+	      if (icurrent>=buf->fN) buf->Set(icurrent*2+1);
 	      (*buf)[icurrent]= -izero;  //write how many under zero
 	      inum++;
 	      izero = 0;	     
@@ -278,7 +277,7 @@ void  AliSimDigits::CompresTrackBuffer1()
 	    else{ 
 	      //if we change track id from another track id	    
 	      icurrent++;	  
-	      if ((icurrent+1)>=buf->fN) buf->Expand(icurrent*2+1);
+	      if ((icurrent+1)>=buf->fN) buf->Set(icurrent*2+1);
 	      (*buf)[icurrent] = inum;
 	      icurrent++;
 	      (*buf)[icurrent] = lastID;	
@@ -294,19 +293,19 @@ void  AliSimDigits::CompresTrackBuffer1()
       if ( izero > 0 ) { 
 	//if we have currently izero count of non tracks digits
 	icurrent++;	  
-	if (icurrent>=buf->fN) buf->Expand(icurrent*2);
+	if (icurrent>=buf->fN) buf->Set(icurrent*2);
 	(*buf)[icurrent]= -izero;  //write how many under zero	
       }
       if ( inum> 0 ) { //if we have some tracks in buffer
 	icurrent++;
-	if ((icurrent+1)>=buf->fN) buf->Expand(icurrent*2);
+	if ((icurrent+1)>=buf->fN) buf->Set(icurrent*2);
 	(*buf)[icurrent] = inum;
 	icurrent++;
 	(*buf)[icurrent] = id;	
       }      
     }//end of loop over columns
   }//end of loop over differnet track level  
-  buf->Expand(icurrent+1);
+  buf->Set(icurrent+1);
   delete fTracks;
   fTracks = buf;
   delete fTrIndex;

@@ -12,7 +12,6 @@
 #include "TObject.h"
 
 class TClonesArray;
-class AliArrayS;
 class AliTPChit;
 class AliTPCTempHitInfoV2;
 class AliTPCCurrentHitV2;

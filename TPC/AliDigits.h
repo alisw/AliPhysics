@@ -10,8 +10,8 @@
 //  segment is for example one pad row in TPC //
 ////////////////////////////////////////////////
 
-#include   "AliArrayI.h"
-#include   "AliArrayS.h"
+#include   <TArrayI.h>
+#include   <TArrayS.h>
 #include   "AliSegmentID.h"
 class AliH2F;
 
@@ -59,8 +59,8 @@ protected:
   Int_t     fNrows;   //number of rows in Segment
   Int_t     fNcols; //number of collumns in Segment 
 private:
-  AliArrayS *fElements;  //buffer of 2 bytes integers for digits
-  AliArrayI *fIndex;  //index position of column
+  TArrayS *fElements;  //buffer of 2 bytes integers for digits
+  TArrayI *fIndex;  //index position of column
   Int_t     fBufType; //type of the buffer - define compression algorithm  
   Int_t     fThreshold; //treshold for zero suppresion
   Int_t     fNelems;  //total number of elements 
@@ -68,7 +68,7 @@ private:
   Int_t fCurrentCol;   //!current column iteration
   Int_t fCurrentIndex; //!current index in field
  
-  ClassDef(AliDigits,1) 
+  ClassDef(AliDigits,2) 
 };
  
 

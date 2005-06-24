@@ -54,7 +54,6 @@
 #include <TF2.h>
 #include <TStopwatch.h>
 
-#include "AliArrayBranch.h"
 #include "AliDigits.h"
 #include "AliMagF.h"
 #include "AliPoints.h"

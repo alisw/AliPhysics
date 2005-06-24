@@ -9,5 +9,5 @@ HDRS:= $(SRCS:.cxx=.h)
 
 DHDR:= TPCsimLinkDef.h
 
-EINCLUDE:= CONTAINERS RAW
+EINCLUDE:= RAW
 

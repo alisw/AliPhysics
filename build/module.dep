@@ -2,7 +2,6 @@
 ALIFAST/module.mk:	 ALIFAST/libALIFAST.pkg
 ALIROOT/module.mk:	 ALIROOT/binaliroot.pkg 
 ANALYSIS/module.mk:	 ANALYSIS/libANALYSIS.pkg 
-CONTAINERS/module.mk: 	 CONTAINERS/libCONTAINERS.pkg
 CRT/module.mk:           CRT/libCRT.pkg
 DISPLAY/module.mk: 	 DISPLAY/libDISPLAY.pkg
 EMCAL/module.mk:	 EMCAL/libEMCAL.pkg

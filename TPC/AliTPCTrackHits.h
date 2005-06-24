@@ -13,7 +13,6 @@ class TClonesArray;
 #include "AliCTypes.h"
 #include "TArrayOfArray.h"
 
-class AliArrayS;
 class AliTPChit;
 class AliTPCTempHitInfo;
 class AliTPCCurrentHit;

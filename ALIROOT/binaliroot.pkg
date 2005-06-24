@@ -11,7 +11,7 @@ ELIBS:= MUONgeometry MUONrec MUONsim MUONbase MUONmapping \
 	FMDbase FMDsim FMDrec TOFbase TOFrec TOFsim PHOS CRT \
         RICHbase RICHrec RICHsim \
         ZDCbase ZDCsim ZDCrec VZERObase VZEROsim VZEROrec EMCAL \
-        STRUCT STARTbase STARTsim STARTrec EVGEN ESD STEER CONTAINERS \
+        STRUCT STARTbase STARTsim STARTrec EVGEN ESD STEER \
         pythia6 AliPythia6 pdf THijing \
         hijing TMEVSIM mevsim THbtp HBTP TEPEMGEN EPEMGEN \
         FASTSIM microcern RAWData AliL3Src AliL3Comp AliL3Misc \
@@ -39,8 +39,7 @@ endif
 # variable SHLIBS (SHared LIBrarieS).
 # Please note that the order of static libraries is important, the ones
 # which provide code for the others have to be placed after their "clients".
-# For example ITS uses TPC code, TPC uses CONTAINERS code, so the order has
-# to be ITS TPC CONTAINERS 
+# For example if ITS uses TPC code, the order has to be ITS TPC 
 
 ARLIBS:= \
    FMD/tgt_$(ALICE_TARGET)/G__FMDbase.o $(LIBPATH)/libFMDbase.a \
@@ -85,7 +84,6 @@ ARLIBS:= \
    TPC/tgt_$(ALICE_TARGET)/G__TPCfast.o $(LIBPATH)/libTPCfast.a \
    STEER/tgt_$(ALICE_TARGET)/G__STEER.o $(LIBPATH)/libSTEER.a \
    STEER/tgt_$(ALICE_TARGET)/G__ESD.o $(LIBPATH)/libESD.a \
-   CONTAINERS/tgt_$(ALICE_TARGET)/G__CONTAINERS.o $(LIBPATH)/libCONTAINERS.a \
    RAW/tgt_$(ALICE_TARGET)/G__RAW.o $(LIBPATH)/libRAWData.a
 
 SHLIBS:= $(BINLIBDIRS) -lEVGEN -lpythia6 -lAliPythia6 -lpdf -lTHijing -lhijing -lTMEVSIM -lmevsim -lTHbtp -lHBTP -lTHerwig -lherwig -lTEPEMGEN -lEPEMGEN -lTPHIC -lFASTSIM -lmicrocern

@@ -37,8 +37,8 @@
 #include "TError.h"
 #include "AliSegmentID.h"
 #include "AliH2F.h"
-#include "AliArrayI.h"
-#include "AliArrayS.h"
+#include <TArrayI.h>
+#include <TArrayS.h>
 #include "AliDigits.h"
 
 
@@ -66,8 +66,8 @@ AliDigits::AliDigits(const AliDigits& digits):
   //copy constructor
   fNrows = digits.fNrows;
   fNcols = digits.fNcols;
-  fElements = new AliArrayS(*(digits.fElements));
-  fIndex = new AliArrayI(*(digits.fIndex));
+  fElements = new TArrayS(*(digits.fElements));
+  fIndex = new TArrayI(*(digits.fIndex));
   fBufType = digits.fBufType;
   fThreshold = digits.fThreshold;
   fNelems    = digits.fNelems;
@@ -79,9 +79,9 @@ AliDigits & AliDigits::operator =(const AliDigits & digits)
   fNrows = digits.fNrows;
   fNcols = digits.fNcols;
   if (fElements) delete fElements;
-  fElements = new AliArrayS(*(digits.fElements));
+  fElements = new TArrayS(*(digits.fElements));
   if (fIndex) delete fIndex;
-  fIndex = new AliArrayI(*(digits.fIndex));
+  fIndex = new TArrayI(*(digits.fIndex));
   fBufType = digits.fBufType;
   fThreshold = digits.fThreshold;
   fNelems    = digits.fNelems; 
@@ -117,11 +117,11 @@ void AliDigits::Invalidate()
   //
   //set default (invalid parameters)
   if (fIndex != 0)  delete  fIndex;
-  fIndex = new AliArrayI;
+  fIndex = new TArrayI;
   
   if (fElements!= 0)     delete  fElements;
   
-  fElements = new AliArrayS;
+  fElements = new TArrayS;
   
   fNrows = fNcols =fNelems= -1; 
   fElements->Set(0); 
@@ -356,9 +356,9 @@ void AliDigits::CompresBuffer1()
   //
   //compres buffer according  algorithm 1
   //
-  AliArrayS  buf;  //lets have the nearly the "worst case"
+  TArrayS  buf;  //lets have the nearly the "worst case"
   buf.Set(fNelems);
-  AliArrayI  index;
+  TArrayI  index;
   index.Set(fNcols);
   Int_t icurrent=-1;
   Int_t izero;
@@ -376,12 +376,12 @@ void AliDigits::CompresBuffer1()
 	if (izero>0) {
 	  //if we have currently izero count under threshold
 	  icurrent++;	  
-	  if (icurrent>=buf.fN) buf.Expand(icurrent*2);
+	  if (icurrent>=buf.fN) buf.Set(icurrent*2);
 	  buf[icurrent]= -izero;  //write how many under zero
 	  izero = 0;
 	} //end of reseting izero
 	icurrent++;
-	if (icurrent>=buf.fN) buf.Expand(icurrent*2);
+	if (icurrent>=buf.fN) buf.Set(icurrent*2);
 	//buf[icurrent] = GetDigitFast(row,col);	    
 	buf[icurrent] = *cbuff;	    
       }//if signal bigger then threshold	
@@ -389,11 +389,11 @@ void AliDigits::CompresBuffer1()
     } //end of loop over rows
     if (izero>0) {
       icurrent++;	  
-      if (icurrent>=buf.fN) buf.Expand(icurrent*2);
+      if (icurrent>=buf.fN) buf.Set(icurrent*2);
       buf[icurrent]= -izero;  //write how many under zero
     }
   }//end of lopping over digits
-  buf.Expand(icurrent+1);
+  buf.Set(icurrent+1);
   (*fElements)=buf;
   fNelems = fElements->fN;
   fBufType = 1;

@@ -12,5 +12,5 @@ HDRS:= $(SRCS:.cxx=.h)
 
 DHDR:= TPCrecLinkDef.h
 
-EINCLUDE:= CONTAINERS RAW
+EINCLUDE:= RAW
 

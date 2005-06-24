@@ -108,9 +108,9 @@ SHLIB and binaries against LIBS. If desired extra libraries can be
 specified with the ELIBS variable. *DO NOT* specify the -l flag, just
 write the library like
 
-ELIBS:= CONTAINERS
+ELIBS:= TPC
 
-this will be translated into -lCONTAINERS
+this will be translated into -lTPC
 
 Extra library directories can be specified with ELIBSDIR
 

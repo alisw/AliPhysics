@@ -28,4 +28,4 @@ EXPORT:=AliAOD.h AliEventBuffer.h\
       AliFlowAnalysis.h     AliReaderESDTree.h \
       AliMuonAnalysis.h     AliAODv0.h
 
-EINCLUDE:= TPC CONTAINERS ITS
+EINCLUDE:= TPC ITS

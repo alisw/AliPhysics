@@ -9,11 +9,10 @@
 //  Manager class generaol Alice segment digits
 //  segment is for example one pad row in TPC //
 ////////////////////////////////////////////////
-#include "TError.h"
-#include   "AliArrayI.h"
-#include   "AliArrayS.h"
-#include   "AliDigits.h"
+#include <TError.h>
+#include <TArrayI.h>
 #include <TClonesArray.h>
+#include   "AliDigits.h"
 
 class AliH2F;
 
@@ -44,12 +43,12 @@ private:
   void  ExpandTrackBuffer2(); //comress track according algorithm 2 (track ID comression according  digit compression)
   void  CompresTrackBuffer2(); //comress track according algorithm 2 (track ID comression according  digit compression)
 
-  AliArrayI * fTracks;     //buffer of track index 
-  AliArrayI * fTrIndex;    //index position of column
+  TArrayI * fTracks;     //buffer of track index 
+  TArrayI * fTrIndex;    //index position of column
   Int_t       fNlevel;   //number of tracks etries  for one digit
   Int_t       fTrBufType;  //buffer type of the tracks
   // Bool_t      ClassError( ); //signalize class error 
-  ClassDef(AliSimDigits,1) 
+  ClassDef(AliSimDigits,2) 
 };
 
 

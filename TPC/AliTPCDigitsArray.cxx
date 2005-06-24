@@ -31,10 +31,6 @@
 #include "AliSegmentID.h" 
 #include "AliSegmentArray.h" 
 
-#include "AliArrayI.h"
-#include "AliArrayS.h"
-
-
 #include "AliDigits.h"
 #include "AliSimDigits.h"
 #include "AliDigitsArray.h" 

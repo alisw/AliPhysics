@@ -20,4 +20,4 @@ HDRS:= $(SRCS:.cxx=.h)
 
 DHDR:= MONITORLinkDef.h
 
-EINCLUDE:=TPC CONTAINERS ITS RAW HLT/src HLT/hough HLT/comp
+EINCLUDE:= TPC ITS RAW HLT/src HLT/hough HLT/comp
