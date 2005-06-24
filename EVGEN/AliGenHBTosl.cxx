@@ -1556,8 +1556,8 @@ Double_t AliGenHBTosl::Scale(TH3D* num, TH3D* den)
 
   if(fNBinsToScale < 1)
    {
+    AliError("Number of bins for scaling is smaller than 1");
     return 0.0;
-    AliError("Number of bins for scaling is smaller thnan 1");
    }
   Int_t fNBinsToScaleX = fNBinsToScale;
   Int_t fNBinsToScaleY = fNBinsToScale;
@@ -1834,7 +1834,7 @@ Bool_t AliGenHBTosl::CheckParticle(TParticle* p, TParticle* aupair ,AliStack* st
 {
  //Checks if a given particle is falling into signal region with any other particle
  //already existing on stack
- return kFALSE;
+  //PH return kFALSE;
   
  if (fSignalRegion <=0) return kFALSE;
  
