@@ -189,6 +189,8 @@ protected:
 	Int_t fMask;                    //! mask dependent on input file
 	Bool_t fSignal;                 //! kTRUE if signal file is processed 
 	Int_t fSegmentation;            //! segmentation type 1=old, 2=new;
+	Int_t fNDetElemId[1500];       //! detection element number array 
+
 
 private:
 

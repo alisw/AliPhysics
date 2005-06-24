@@ -24,6 +24,7 @@ Int_t   AliMUONConstants::fgNCh = 14;
 Int_t   AliMUONConstants::fgNTrackingCh = 10;
 Int_t   AliMUONConstants::fgNTriggerCh = 4;
 Int_t   AliMUONConstants::fgNTriggerCircuit = 234;
+Int_t   AliMUONConstants::fgNDetElem = 228;
 
 Float_t AliMUONConstants::fgDefaultChamberZ[14] = 
   {-533.5, -546.5, -678.5, -693.5, // St12

@@ -31,7 +31,8 @@
 #include "AliMUONTransientDigit.h"
 #include "AliMUONTriggerDecision.h"
 #include "AliLog.h"
-
+#include "AliMUONGeometryModule.h"
+#include "AliMUONGeometryStore.h"
 
 /////////////////////////////////////////////////////////////////////////////////////
 //
@@ -217,7 +218,10 @@ void AliMUONDigitizer::UpdateTransientDigit(AliMUONTransientDigit* mTD)
 
 	AliDebug(4,Form( "Updating transient digit 0x%X", (void*)mTD));
 	// Choosing the maping of the cathode plane of the chamber:
-	Int_t iNchCpl= mTD->Chamber() + (mTD->Cathode()-1) * AliMUONConstants::NCh();
+	Int_t detElemId =  mTD->DetElemId();
+
+	Int_t iNchCpl= fNDetElemId[detElemId] + (mTD->Cathode()-1) * AliMUONConstants::NDetElem();
+
 	AliMUONTransientDigit *pdigit = 
 		static_cast<AliMUONTransientDigit*>( fHitMap[iNchCpl]->GetHit(mTD->PadX(),mTD->PadY()) );
 
@@ -250,7 +254,10 @@ void AliMUONDigitizer::AddTransientDigit(AliMUONTransientDigit* mTD)
 
 	AliDebug(4,Form( "Adding transient digit 0x%X", (void*)mTD));
 	// Choosing the maping of the cathode plane of the chamber:
-	Int_t iNchCpl= mTD->Chamber() + (mTD->Cathode()-1) * AliMUONConstants::NCh();
+
+	Int_t detElemId =  mTD->DetElemId();
+	Int_t iNchCpl= fNDetElemId[detElemId] + (mTD->Cathode()-1) * AliMUONConstants::NDetElem();
+
 	fTDList->AddAtAndExpand(mTD, fTDCounter);
 	fHitMap[iNchCpl]->SetHit( mTD->PadX(), mTD->PadY(), fTDCounter);
 	fTDCounter++;
@@ -264,7 +271,11 @@ Bool_t AliMUONDigitizer::ExistTransientDigit(AliMUONTransientDigit* mTD)
 // as mTD. If yes then kTRUE is returned else kFASLE is returned.
 
 	// Choosing the maping of the cathode plane of the chamber:
-	Int_t iNchCpl= mTD->Chamber() + (mTD->Cathode()-1) * AliMUONConstants::NCh();
+	Int_t detElemId =  mTD->DetElemId();
+
+	Int_t iNchCpl= fNDetElemId[detElemId] + (mTD->Cathode()-1) *AliMUONConstants::NDetElem() ;
+
+	//	Int_t iNchCpl= mTD->Chamber() + (mTD->Cathode()-1) * AliMUONConstants::NCh();
 	return( fHitMap[iNchCpl]->TestHit(mTD->PadX(), mTD->PadY()) );
 }
 
@@ -495,33 +506,49 @@ void AliMUONDigitizer::InitArrays()
 //
 // Note: the fTDList and fHitMap arrays must be NULL before calling this method.
 
+    AliMUON* muon = (AliMUON*)gAlice->GetModule("MUON");
+    if (!muon) {
+      AliFatal("MUON detector not defined.");
+      return;
+    }  
+
     AliDebug(2, "Initialising internal arrays.");
     AliDebug(4, "Creating transient digits list.");
     fTDList = new TObjArray;
 	
     // Array of pointer of the AliMUONHitMapA1:
     //  two HitMaps per chamber, or one HitMap per cahtode plane
-    fHitMap = new AliMUONHitMapA1* [2*AliMUONConstants::NCh()];
+    fHitMap = new AliMUONHitMapA1* [2*AliMUONConstants::NDetElem()];
     CheckSegmentation(); // check it one for all
+
+    Int_t k = 0;
+    Int_t idDE;
 
     for (Int_t i = 0; i < AliMUONConstants::NCh(); i++) {
 
-      Int_t idDE = 100*(i+1);// central DE = max # of pads ?
-//       if (i == 4 || i == 5) //St3
-// 	idDE += 4;
-
-       if (i > 5)
-	 idDE += 1;// DE for max # of pads in St45 and Trigger Station
 
       AliDebug(4,Form( "Creating hit map for chamber %d, cathode 1.", i+1));
       AliMUONChamber* chamber = &(fMUON->Chamber(i));
       AliMUONGeometrySegmentation* c1Segmentation = chamber->SegmentationModel2(1); // Cathode plane 1
-      fHitMap[i] = new AliMUONHitMapA1(idDE,c1Segmentation, fTDList); 
       AliDebug(4,Form( "Creating hit map for chamber %d, cathode 2.", i+1));
       AliMUONGeometrySegmentation* c2Segmentation = chamber->SegmentationModel2(2); // Cathode plane 2
-      fHitMap[i+AliMUONConstants::NCh()] = new AliMUONHitMapA1(idDE,c2Segmentation, fTDList);
-    }
+
+      AliMUONGeometryModule* geometry    = muon->Chamber(i).GetGeometry();
+      AliMUONGeometryStore*  detElements = geometry->GetDetElementStore();
     
+
+    // Loop over detection elements
+      for (Int_t j=0; j<detElements->GetNofEntries(); j++) {
+       
+	idDE = detElements->GetEntry(j)->GetUniqueID();
+	fNDetElemId[idDE] = k;
+
+	fHitMap[k] = new AliMUONHitMapA1(idDE,c1Segmentation, fTDList); 
+     
+	fHitMap[k+AliMUONConstants::NDetElem()] = new AliMUONHitMapA1(idDE,c2Segmentation, fTDList);
+	k++;
+      }
+    }
 }
 //------------------------------------------------------------------------
 void AliMUONDigitizer::CleanupArrays()
@@ -529,10 +556,7 @@ void AliMUONDigitizer::CleanupArrays()
 // The arrays fTDList and fHitMap are deleted and the pointers set to NULL.
 
 	AliDebug(2, "Deleting internal arrays.");
-	for(Int_t i = 0; i < 2*AliMUONConstants::NCh(); i++)
-	{
-		AliDebug(4,Form( "Deleting hit map for chamber %d, cathode %d.", 
-			i%AliMUONConstants::NCh()+1, i/AliMUONConstants::NCh()+1));
+	for(Int_t i = 0; i < 2*AliMUONConstants::NDetElem(); i++) {
 		delete fHitMap[i];
 	}
 	delete [] fHitMap;

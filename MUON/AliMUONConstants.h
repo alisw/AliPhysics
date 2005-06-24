@@ -18,6 +18,8 @@ class AliMUONConstants : public TObject {
     static Int_t    NTriggerCh() {return fgNTriggerCh;}
     // return number of trigger circuits
     static Int_t    NTriggerCircuit() {return fgNTriggerCircuit;}
+    // return number of detection element
+    static Int_t    NDetElem() {return fgNDetElem;}
     // return position of chamber i
     static Float_t  DefaultChamberZ(Int_t i) {return fgDefaultChamberZ[i];}
     // return pointer to array of positions
@@ -55,6 +57,7 @@ class AliMUONConstants : public TObject {
     static Int_t  fgNTrackingCh;        //  Number of Tracking Chambers
     static Int_t  fgNTriggerCh;         //  Number of Trigger Chambers
     static Int_t  fgNTriggerCircuit;    //  Number of Trigger Circuits
+    static Int_t  fgNDetElem;           //  Number of Detection Elements.
 //
     static Float_t  fgDefaultChamberZ[14];    // ! Z-positions of chambers
     static Float_t  fgDmin[7];                // ! inner diameter
