@@ -41,7 +41,7 @@ class AliMUONDigitizerv2 : public AliMUONDigitizer
 	virtual void AddDigitTrigger(
 			Int_t chamber, Int_t tracks[kMAXTRACKS],
 			Int_t charges[kMAXTRACKS], Int_t digits[7],
-			const Int_t digitindex
+			Int_t digitindex
 		);
 	virtual void FillTriggerOutput();
 

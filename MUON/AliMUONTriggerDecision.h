@@ -55,7 +55,7 @@ class AliMUONTriggerDecision : public TObject
 
   void AddDigit(
 		Int_t id, Int_t* tracks, Int_t* charges, Int_t* digits,
-		const Int_t digitindex
+		Int_t digitindex
 	);
 
   // print-debug
@@ -86,8 +86,8 @@ protected:
   void ClearDigitNumbers();
 
   void DigitFiredCircuit(
-                const Int_t circuit, const Int_t cathode,
-                const Int_t chamber, const Int_t digit
+                Int_t circuit, Int_t cathode,
+                Int_t chamber, Int_t digit
         );
 
 

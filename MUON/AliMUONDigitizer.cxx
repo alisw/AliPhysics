@@ -317,7 +317,7 @@ void AliMUONDigitizer::CreateDigits()
 //------------------------------------------------------------------------
 void AliMUONDigitizer::AddDigit(
 		AliMUONTransientDigit* td, Int_t responseCharge,
-		const Int_t digitindex
+		Int_t digitindex
 	)
 {
 // Prepares the digits, track and charge arrays in preparation for a call to

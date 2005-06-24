@@ -248,7 +248,7 @@ void AliMUONDigitizerv2::CleanupTriggerArrays()
 void AliMUONDigitizerv2::AddDigitTrigger(
 		Int_t chamber, Int_t tracks[kMAXTRACKS],
 		Int_t charges[kMAXTRACKS], Int_t digits[7],
-		const Int_t digitindex
+		Int_t digitindex
 	)
 {
 // Derived to add digits to TreeD for trigger.

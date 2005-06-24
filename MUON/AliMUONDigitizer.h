@@ -131,7 +131,7 @@ protected:
 	virtual void OnWriteTransientDigit(AliMUONTransientDigit* digit);
 	
 	// Wrapper method for AddDigit(Int_t, Int_t[kMAXTRACKS], Int_t[kMAXTRACKS], Int_t[6])
-	void AddDigit(AliMUONTransientDigit* td, Int_t responseCharge, const Int_t digitindex);
+	void AddDigit(AliMUONTransientDigit* td, Int_t responseCharge, Int_t digitindex);
 
 	// Creates a new fTDList object, and creates and fills the fHitMap arrays.
 	// Note: this method assumes the array pointers are NULL when calling this method.
@@ -173,7 +173,7 @@ protected:
 	virtual void AddDigitTrigger(
 			Int_t chamber, Int_t tracks[kMAXTRACKS],
 			Int_t charges[kMAXTRACKS], Int_t digits[6],
-			const Int_t digitindex
+			Int_t digitindex
 		) = 0;
 	virtual void CheckSegmentation();
 
