@@ -73,7 +73,6 @@ ClassImp(AliSTARTReconstructor)
   AliDebug(2,Form(" timediff in ns %f  real point%f",timeDiff,ds));
   
 
-  fDigits->Print();
   fDigits->GetSumMult(*fSumMult);
   Int_t multipl[6]; 
  for (Int_t i=0; i<6; i++)
