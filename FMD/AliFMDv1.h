@@ -23,10 +23,18 @@
 class AliFMDv1 : public AliFMD 
 {
 public:
-  AliFMDv1() { fDetailed = kTRUE; }
+  AliFMDv1()
+    : AliFMD(),
+      fCurrentDeltaE(0),
+      fCurrentV(),
+      fCurrentP(),
+      fCurrentPdg(0) { fDetailed = kTRUE; }
   AliFMDv1(const char *name, const char *title="Detailed geometry") 
-    : AliFMD(name, title) 
-  { fDetailed = kTRUE; }
+    : AliFMD(name, title),
+      fCurrentDeltaE(0),
+      fCurrentV(),
+      fCurrentP(),
+      fCurrentPdg(0) { fDetailed = kTRUE; }
   virtual ~AliFMDv1() {}
 
   // Required member functions 

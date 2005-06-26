@@ -123,7 +123,8 @@ ClassImp(AliFMD)
 
 //____________________________________________________________________
 AliFMD::AliFMD()
-  : fSDigits(0), 
+  : AliDetector(),
+    fSDigits(0), 
     fNsdigits(0),
     fDetailed(kTRUE),
     fSimulator(0)
