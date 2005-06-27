@@ -235,11 +235,11 @@ AliFMDReconstructor::Reconstruct(TTree* digitsTree,
   AliDebug(1, "Reconstructing from digits in a tree");
   
   TBranch *digitBranch = digitsTree->GetBranch("FMD");
-  TClonesArray* digits = new TClonesArray("AliFMDDigit");
   if (!digitBranch) {
     Error("Exec", "No digit branch for the FMD found");
     return;
   }
+  TClonesArray* digits = new TClonesArray("AliFMDDigit");
   digitBranch->SetAddress(&digits);
 
   TIter next(&fAlgorithms);
@@ -255,6 +255,8 @@ AliFMDReconstructor::Reconstruct(TTree* digitsTree,
   while ((algorithm = static_cast<AliFMDMultAlgorithm*>(next()))) 
     algorithm->PostEvent();
   clusterTree->Fill();
+  digits->Delete();
+  delete digits;
 }
  
 //____________________________________________________________________
