@@ -1135,6 +1135,7 @@ Int_t AliITStrackerSA::SearchClusters(Int_t layer,Double_t phiwindow,Double_t la
   Int_t indmax = lay.FindClusterIndex(zmax);
   for (Int_t index=indmin; index<indmax; index++) {
      AliITSclusterV2 *c=lay.GetCluster(index);
+     if (!c) continue;
      if (c->IsUsed()) continue;
      if (c->GetQ()<=0) continue;
      if (c->TestBit(kSAflag)==kTRUE) continue;
