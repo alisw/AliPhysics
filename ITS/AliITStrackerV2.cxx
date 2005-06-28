@@ -1065,8 +1065,8 @@ void AliITStrackerV2::UseClusters(const AliKalmanTrack *t, Int_t from) const {
   AliTracker::UseClusters(t,from);
 
   AliITSclusterV2 *c=(AliITSclusterV2 *)GetCluster(t->GetClusterIndex(0));
-  if (c->GetSigmaZ2()>0.1) c->UnUse();
+  if (c && c->GetSigmaZ2()>0.1) c->UnUse();
   c=(AliITSclusterV2 *)GetCluster(t->GetClusterIndex(1));
-  if (c->GetSigmaZ2()>0.1) c->UnUse();
+  if (c && c->GetSigmaZ2()>0.1) c->UnUse();
 
 }
