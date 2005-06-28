@@ -345,7 +345,7 @@ AliESDVertex* AliITSVertexerTracks::FindVertexForCurrentEvent(AliESD *esdEvent)
 
   for(Int_t i=0; i<entr; i++) {
     AliESDtrack *esdTrack = (AliESDtrack*)esdEvent->GetTrack(i);
-    if(!esdTrack->GetStatus()&AliESDtrack::kITSin)
+    if(!(esdTrack->GetStatus()&AliESDtrack::kITSin))
       { delete esdTrack; continue; }
     try {
       itstrack = new AliITStrackV2(*esdTrack);
