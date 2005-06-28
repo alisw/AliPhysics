@@ -265,13 +265,13 @@ endif
 		$(MUTE)$(CXX) $(@PACKAGE@DEFINE) -c $(@PACKAGE@INC)  -I$(ALICE_ROOT) $< -o $@ $(@PACKAGE@DCXXFLAGS)
 
 $(MODDIRO)/@PACKAGE@_srcslist: @MODULE@/@TYPE@@PACKAGE@.pkg
-	@if [ ! -d '$(dir $@)' ]; then echo "***** Making directory $(dir $@) *****"; mkdir -p $(dir $@); fi
-	@for i in '$(@PACKAGE@CS) $(@PACKAGE@S)'; do echo $$i; done | sort > $@.new
-	@for j in `diff -w $@ $@.new 2>/dev/null | awk '/^\</{sub(".c.*",".",$$2); print $$2}' | xargs basename` ;\
+	$(MUTE)if [ ! -d '$(dir $@)' ]; then echo "***** Making directory $(dir $@) *****"; mkdir -p $(dir $@); fi
+	$(MUTE)for i in $(@PACKAGE@CS) $(@PACKAGE@S) xyz; do echo $$i; done | sort > $@.new
+	$(MUTE)for j in `diff -w $@ $@.new 2>/dev/null | awk '/^\</{sub(".c.*",".",$$2); print $$2}' | xargs basename` ;\
 	do grep -l $$j `find */tgt_$(ALICE_TARGET) -name "*.d"` | xargs echo \rm -f ;\
 	(find @MODULE@/tgt_$(ALICE_TARGET) -name "$${j}d" ; find @MODULE@/tgt_$(ALICE_TARGET) -name "$${j}o") | xargs echo \rm -f ;\
 	done
-	@diff -q -w >/dev/null 2>&1 $@ $@.new ;\
+	$(MUTE)diff -q -w >/dev/null 2>&1 $@ $@.new ;\
 	if [ $$? -ne 0 ]; then \mv $@.new $@; else \rm $@.new; fi
 
 #Different targets for the module
