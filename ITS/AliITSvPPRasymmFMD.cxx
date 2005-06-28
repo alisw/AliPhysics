@@ -4797,8 +4797,11 @@ void AliITSvPPRasymmFMD::CreateMaterials(){
 
     AliMixture(83,"SDD anode microcab$",aALVm,zALVm,dALVm,5,wALVm);
     AliMedium(83,"SDD anode microcab$",83,0,ifield,fieldm,tmaxfd,stemax,deemax,epsil,stmin);
-
-    AliMaterial(84,"SDD/SSD rings$",0.123565E+02,0.64561E+01,0.18097E+01,0.229570E+02,0.99900E+03);
+    Float_t aDSring[4]={12.0107,      1.00794,     14.0067,      15.9994};
+    Float_t zDSring[4]={ 6.,          1.,           7.,           8.};
+    Float_t wDSring[4]={ 0.854323888, 0.026408778,  0.023050265,  0.096217069};
+    Float_t dDSring = 0.2875;
+    AliMixture(84,"SDD/SSD rings$",aDSring,zDSring,dDSring,4,wDSring);
     AliMedium(84,"SDD/SSD rings$",84,0,ifield,fieldm,tmaxfd,stemax,deemax,epsil,stmin);
 
     AliMixture(85,"inox/alum$",aInAl,zInAl,dInAl,5,wInAl);
