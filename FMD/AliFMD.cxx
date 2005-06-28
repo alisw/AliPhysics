@@ -814,6 +814,7 @@ AliFMD::Hits2Digits()
   
   /* AliDigitizer* dig =*/ CreateDigitizer(manager);
   manager->Exec("");
+  delete manager;
 }
 
 //____________________________________________________________________
@@ -825,6 +826,7 @@ AliFMD::Hits2SDigits()
   // 
   AliFMDSDigitizer* digitizer = new AliFMDSDigitizer("galice.root");
   digitizer->Exec("");
+  delete digitizer;
 }
 
   
