@@ -55,6 +55,7 @@ class AliGenHijing : public AliGenMC
 	{fPhiMinJet = TMath::Pi()*phimin/180.; fPhiMaxJet = TMath::Pi()*phimax/180.;}
     virtual void    SetBoostLHC(Int_t flag = 0)         {fLHC        = flag;}
     virtual void    SetRandomPz(Bool_t flag = 0)        {fRandomPz   = flag;}
+    virtual void    AddHeader(AliGenEventHeader* header);
     virtual void    SwitchOffHeavyQuarks(Bool_t flag = kTRUE) {fNoHeavyQuarks = flag;}
     
 	    

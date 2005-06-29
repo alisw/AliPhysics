@@ -316,7 +316,6 @@ void AliGenHijing::Generate()
 	  TParticle *  iparticle = (TParticle *) fParticles->At(i);
 	  Bool_t  hasMother   = (iparticle->GetFirstMother()     >=0);
 	  Bool_t  hasDaughter = (iparticle->GetFirstDaughter()   >=0);
-
 	  if (pSelected[i]) {
 	      kf   = iparticle->GetPdgCode();
 	      ks   = iparticle->GetStatusCode();
@@ -337,6 +336,8 @@ void AliGenHijing::Generate()
 	      Bool_t tFlag = (fTrackIt && !hasDaughter);
 	      PushTrack(tFlag,imo,kf,p,origin,polar,
 		       tof,kPNoProcess,nt, 1., ks);
+
+	      
 	      KeepTrack(nt);
 	      newPos[i] = nt;
 	  } // if selected
@@ -539,9 +540,20 @@ void AliGenHijing::MakeHeader()
     ((AliGenHijingEventHeader*) header)->SetTrials(fTrials);
 // Event Vertex
     header->SetPrimaryVertex(fVertex);
-    if (gAlice) gAlice->SetGenEventHeader(header);   
+    AddHeader(header);
     fCollisionGeometry = (AliGenHijingEventHeader*)  header;
 }
+
+void AliGenHijing::AddHeader(AliGenEventHeader* header)
+{
+    // Passes header either to the container or to gAlice
+    if (fContainer) {
+	fContainer->AddHeader(header);
+    } else {
+	gAlice->SetGenEventHeader(header);	
+    }
+}
+
 
 Bool_t AliGenHijing::CheckTrigger()
 {
