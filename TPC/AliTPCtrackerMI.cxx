@@ -1426,7 +1426,7 @@ Int_t AliTPCtrackerMI::FollowToNext(AliTPCseed& t, Int_t nr) {
   } 
   else
     {
-      if (TMath::Abs(z)<(AliTPCReconstructor::GetCtgRange()*x+10)) t.fNFoundable++;
+      if (TMath::Abs(z)<(AliTPCReconstructor::GetCtgRange()*x+10) && TMath::Abs(z)<fParam->GetZLength() ) t.fNFoundable++;
       else
 	return 0;
     }   
