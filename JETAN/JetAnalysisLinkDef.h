@@ -21,5 +21,6 @@
 #pragma link C++ class AliJetKineReaderHeader+;
 #pragma link C++ class AliJetControlPlots+;
 #pragma link C++ class AliLeading+;
-
+#pragma link C++ class AliJetProductionData+;
+#pragma link C++ class AliJetProductionDataPDC2004+;
 #endif
