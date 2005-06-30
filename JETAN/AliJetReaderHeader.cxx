@@ -34,6 +34,8 @@ AliJetReaderHeader::AliJetReaderHeader():
   //
   fFirst = 0;
   fLast = -1;
+  fFiducialEtaMin = -0.5;
+  fFiducialEtaMax =  0.5;
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -47,6 +49,8 @@ AliJetReaderHeader::AliJetReaderHeader(const char * name):
   //
   fFirst = 0;
   fLast = -1;
+  fFiducialEtaMin = -0.5;
+  fFiducialEtaMax =  0.5;
 }
 
 ////////////////////////////////////////////////////////////////////////
