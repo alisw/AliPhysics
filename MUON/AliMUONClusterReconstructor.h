@@ -11,11 +11,12 @@
 ////////////////////////////////////
 
 #include <TObject.h>
+#include "AliMUONClusterFinderVS.h" //AZ
 
 class AliLoader;
 class AliMUON;
 class AliMUONRawCluster;
-class AliMUONClusterFinderVS;
+//AZ class AliMUONClusterFinderVS;
 class AliMUONData;
 class AliRawReader;
 
@@ -40,7 +41,8 @@ class AliMUONClusterReconstructor : public TObject
   // Reco Model
   AliMUONClusterFinderVS* GetRecoModel() {return fRecModel;}
   //  AliMUONClusterFinderAZ* GetRecoModel() {return fRecModel;}
-  void   SetRecoModel(AliMUONClusterFinderVS* rec) {fRecModel = rec;}
+  //AZ void   SetRecoModel(AliMUONClusterFinderVS* rec) {fRecModel = rec;}
+  void   SetRecoModel(AliMUONClusterFinderVS* rec) {if (fRecModel) delete fRecModel; fRecModel = rec;} //AZ
   //  void   SetRecoModel(AliMUONClusterFinderAZ* rec) {fRecModel = rec;}
 
   // print level
