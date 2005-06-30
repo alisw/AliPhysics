@@ -81,9 +81,7 @@ c:>------------------------------------------------------------------
      +      ,' ncell_tot ', i6)
         endif 
       endif
-      call hf1(idPerfomance, 1., 1.)
       occupationAll = float(ncell) / float(ncell_tot)
-      call hf1(111, occupationAll, 1.)
 ! print parameter - 27-sep-2001 by PAI
       ierror =0
       n_iter =0
@@ -116,7 +114,6 @@ c*-Initiator cell is the one with highest Et of not yet used ones
       j=index(i)
       if(i.eq.1. and. etc(j).lt.et_seed) then
         if(mode.eq.0 .or. (mode.eq.1 .and. n_iter.eq.1)) then
-          call hf1(idPerfomance, 2., 1.)
           print *,' no cell with Et higher than et_seed ->', etc(j)       
           return
         endif
@@ -244,7 +241,6 @@ c* protection (am)
                do k=1,ncell
                   if(flag(k).le.0) flag(k)=0
                enddo
-               if(njet.eq.0) call hf1(idPerfomance, 3., 1.)
             else
 c*-eles, store flags and jet variables
                do k=1,ncell
@@ -264,7 +260,6 @@ c*-eles, store flags and jet variables
                etaj(njet,2)=etas
                phij(njet,2)=phi
                ncellj(njet)=nc
-               call hf1(112, float(nc)/float(maxTowerInJet), 1.) ! 8-oct-2001
             endif 
          endif
          i=i+1
@@ -297,7 +292,6 @@ c*-after 10 iteration, stop working and finish
 c*-Watch out!!! Here is a big jump!!! 
          endif
          occupationInJet = float(ncell) / float(ncell_tot)
-         call hf1(111, occupationInJet, 1.)
          write(*,*) njet,' jet found in ',n_iter,
      +     ' iteration(s) : EtSum, EtAve =',
      +     et_sum,et_sum/float(ncell_tot-nc)
