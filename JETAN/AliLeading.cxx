@@ -25,7 +25,8 @@
 #include <TLorentzVector.h>
 
 #include "AliLeading.h"
-#include <AliJetReader.h>
+#include "AliJetReader.h"
+#include "AliJetReaderHeader.h"
 
 ClassImp(AliLeading)
 
@@ -62,6 +63,10 @@ void AliLeading::FindLeading(AliJetReader *reader)
   // find leading particle in the array of lorentz vectors
   // lvArray and fill the correlation histogram
   //
+
+    
+  AliJetReaderHeader* header = reader->GetReaderHeader();
+    
   TClonesArray* lvArray = reader->GetMomentumArray();
   Int_t nIn = lvArray->GetEntries();
   fNassoc = nIn-1;
@@ -71,26 +76,29 @@ void AliLeading::FindLeading(AliJetReader *reader)
   // find max
   Double_t ptMax = 0.0;
   Int_t idxMax = -1;
-  for (Int_t i=0; i<nIn;i++){
-    TLorentzVector *lv = (TLorentzVector*) lvArray->At(i);
-    if (lv->Pt() > ptMax) {
-      ptMax = lv->Pt();
-      idxMax = i;
-    }
+  for (Int_t i = 0; i < nIn; i++){
+      TLorentzVector *lv = (TLorentzVector*) lvArray->At(i);
+      if (lv->Pt()   > ptMax                       && 
+	  lv->Eta()  > header->GetFiducialEtaMin() &&
+	  lv->Eta()  < header->GetFiducialEtaMax()) 
+      {
+	  ptMax  = lv->Pt();
+	  idxMax = i;
+      }
   }
-
+  
   // fill correlation array
   fLeading = (TLorentzVector*) lvArray->At(idxMax);
-  for (Int_t i=0; i<nIn;i++){
-    if (i == idxMax) continue;
-    TLorentzVector *lv = (TLorentzVector*) lvArray->At(i);
-    Double_t dphi = fLeading->DeltaPhi(*lv);
-    if (dphi < fLow) dphi=2.0*TMath::Pi()+dphi;
-    // find bin and fill array
-
-    Int_t iBin = (Int_t) TMath::Floor((dphi-fLow)
-			       *((Double_t)fnBin)/(2.0*TMath::Pi()));
-    fCorr.AddAt(fCorr.At(iBin)+1,iBin);
+  for (Int_t i = 0; i < nIn; i++) {
+      if (i == idxMax) continue;
+      TLorentzVector *lv = (TLorentzVector*) lvArray->At(i);
+      Double_t dphi = fLeading->DeltaPhi(*lv);
+      if (dphi < fLow) dphi = 2.0 * TMath::Pi() + dphi;
+      // find bin and fill array
+      
+      Int_t iBin = (Int_t) TMath::Floor((dphi - fLow)
+					*((Double_t) fnBin) / (2.0 * TMath::Pi()));
+      fCorr.AddAt(fCorr.At(iBin)+1,iBin);
   }
 }
 
@@ -100,7 +108,7 @@ void AliLeading::Reset()
 
 {
 // Reset leding particle information
-  fLeading->SetPxPyPzE(0.,0.,0.,0.);
+  fLeading->SetPxPyPzE(0., 0., 0., 0.);
   fNassoc=0;
   fCorr.Reset();
 }
