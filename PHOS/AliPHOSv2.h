@@ -8,6 +8,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.18  2005/05/28 14:19:05  schutz
+ * Compilation warnings fixed by T.P.
+ *
  */
 
 //_________________________________________________________________________
@@ -34,6 +37,7 @@ public:
   virtual ~AliPHOSv2(void) ;
 
   virtual void    Copy(TObject &phos) const; 
+  using AliPHOSv1::AddHit;
   virtual void    AddHit( Int_t shunt, Int_t primary, Int_t id, Float_t *hits); 
   virtual Int_t   IsVersion(void) const { 
     // Gives the version number 
