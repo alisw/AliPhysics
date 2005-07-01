@@ -34,7 +34,7 @@ AliJetProductionDataPDC2004::AliJetProductionDataPDC2004()
 	{20., 24., 29., 35., 42., 50., 60., 72., 86., 104., 125., 150., 180.};
 
     const TString kRunTitle[12] = 
-	{"20-24GeV",  "24-29GeV",   "29-35GeV",   "35-42GeV", "42-50GeV", "50-60GeV", "60-72GeV", "72-86GeV"
+	{"20-24GeV",  "24-29GeV",   "29-35GeV",   "35-42GeV", "42-50GeV", "50-60GeV", "60-72GeV", "72-86GeV",
 	 "86-104GeV", "104-125GeV", "125-150GeV", "150-180GeV"};
     
     const Float_t kXsection[12]  =
