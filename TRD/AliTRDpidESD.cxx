@@ -93,6 +93,8 @@ Int_t AliTRDpidESD::MakePID(AliESD *event)
   //
   // The class AliTRDprobdist contains precalculated prob dis.
   AliTRDprobdist *pd = new AliTRDprobdist();
+  pd->SetADCNorm(1.0);
+  //  pd->SetADCNorm(.72);
 
   Int_t ntrk=event->GetNumberOfTracks();
   for (Int_t i=0; i<ntrk; i++) {
@@ -117,10 +119,11 @@ Int_t AliTRDpidESD::MakePID(AliESD *event)
       } // loop over layers
       probTotal+=p[j];
     } //loop over particle species
-    //    printf(" %f  %d  %f  %f  %f \n", mom, timbin, p[0], p[1], p[2]);
+    //  printf(" %f  %d  %f  %f  %f \n", mom, timbin, p[0], p[1], p[2]);
     for (Int_t j=0; j<ns; j++) {
       if(probTotal) p[j]/= probTotal;
       else p[j]=1.0;
+      //      p[j]=1.;
     } //loop over particle species
     t->SetTRDpid(p);
   } //loop over tracks
