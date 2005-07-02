@@ -3736,7 +3736,7 @@ void  AliITStrackerMI::FindV02(AliESD *event)
       Double_t phase[2][2],radius[2];
       Int_t  points = h1.GetRPHIintersections(h2, phase, radius);
       if    (points==0)  continue;
-      Double_t delta[2]={1000,1000};        
+      Double_t delta[2]={1000000,1000000};        
       rmin = radius[0];
       h1.ParabolicDCA(h2,phase[0][0],phase[0][1],radius[0],delta[0]);
       if (points==2){    
@@ -3747,7 +3747,7 @@ void  AliITStrackerMI::FindV02(AliESD *event)
       Double_t distance = 0;
       Double_t radiusC  = 0;
       Int_t    iphase   = 0;
-      if (delta[0]<delta[1]){
+      if (points==1 || delta[0]<delta[1]){
 	distance = TMath::Sqrt(delta[0]);
 	radiusC  = TMath::Sqrt(radius[0]);
       }else{
