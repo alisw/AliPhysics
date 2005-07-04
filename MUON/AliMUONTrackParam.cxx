@@ -120,24 +120,28 @@ void AliMUONTrackParam::ExtrapToZ(Double_t Z)
   // Interpolation back to exact Z (2nd order)
   // should be in function ???? using TArray ????
   Double_t dZ12 = vGeant3New[2] - vGeant3[2]; // 1->2
-  Double_t dZ1i = Z - vGeant3[2]; // 1-i
-  Double_t dZi2 = vGeant3New[2] - Z; // i->2
-  Double_t xPrime = (vGeant3New[0] - vGeant3[0]) / dZ12;
-  Double_t xSecond =
-    ((vGeant3New[3] / vGeant3New[5]) - (vGeant3[3] / vGeant3[5])) / dZ12;
-  Double_t yPrime = (vGeant3New[1] - vGeant3[1]) / dZ12;
-  Double_t ySecond =
-    ((vGeant3New[4] / vGeant3New[5]) - (vGeant3[4] / vGeant3[5])) / dZ12;
-  vGeant3[0] = vGeant3[0] + xPrime * dZ1i - 0.5 * xSecond * dZ1i * dZi2; // X
-  vGeant3[1] = vGeant3[1] + yPrime * dZ1i - 0.5 * ySecond * dZ1i * dZi2; // Y
-  vGeant3[2] = Z; // Z
-  Double_t xPrimeI = xPrime - 0.5 * xSecond * (dZi2 - dZ1i);
-  Double_t yPrimeI = yPrime - 0.5 * ySecond * (dZi2 - dZ1i);
-  // (PX, PY, PZ)/PTOT assuming forward motion
-  vGeant3[5] =
-    1.0 / TMath::Sqrt(1.0 + xPrimeI * xPrimeI + yPrimeI * yPrimeI); // PZ/PTOT
-  vGeant3[3] = xPrimeI * vGeant3[5]; // PX/PTOT
-  vGeant3[4] = yPrimeI * vGeant3[5]; // PY/PTOT
+  if (TMath::Abs(dZ12) > 0) {
+    Double_t dZ1i = Z - vGeant3[2]; // 1-i
+    Double_t dZi2 = vGeant3New[2] - Z; // i->2
+    Double_t xPrime = (vGeant3New[0] - vGeant3[0]) / dZ12;
+    Double_t xSecond =
+      ((vGeant3New[3] / vGeant3New[5]) - (vGeant3[3] / vGeant3[5])) / dZ12;
+    Double_t yPrime = (vGeant3New[1] - vGeant3[1]) / dZ12;
+    Double_t ySecond =
+      ((vGeant3New[4] / vGeant3New[5]) - (vGeant3[4] / vGeant3[5])) / dZ12;
+    vGeant3[0] = vGeant3[0] + xPrime * dZ1i - 0.5 * xSecond * dZ1i * dZi2; // X
+    vGeant3[1] = vGeant3[1] + yPrime * dZ1i - 0.5 * ySecond * dZ1i * dZi2; // Y
+    vGeant3[2] = Z; // Z
+    Double_t xPrimeI = xPrime - 0.5 * xSecond * (dZi2 - dZ1i);
+    Double_t yPrimeI = yPrime - 0.5 * ySecond * (dZi2 - dZ1i);
+    // (PX, PY, PZ)/PTOT assuming forward motion
+    vGeant3[5] =
+      1.0 / TMath::Sqrt(1.0 + xPrimeI * xPrimeI + yPrimeI * yPrimeI); // PZ/PTOT
+    vGeant3[3] = xPrimeI * vGeant3[5]; // PX/PTOT
+    vGeant3[4] = yPrimeI * vGeant3[5]; // PY/PTOT
+  } else {
+    AliWarning(Form("Extrap. to Z not reached, Z = %f",Z));    
+  }
   // Track parameters from Geant3 parameters,
   // with charge back for forward motion
   GetFromGeant3Parameters(vGeant3, chargeExtrap * forwardBackward);
