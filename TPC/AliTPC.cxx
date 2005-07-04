@@ -364,7 +364,7 @@ void AliTPC::CreateMaterials()
   amol[0] = amat[0]*wmat[0]+amat[1]*wmat[1];
 
   AliMixture(10,"CO2",amat,zmat,density,-2,wmat);
-  
+   
   // CF4
 
   amat[0]=12.011;
@@ -441,18 +441,49 @@ void AliTPC::CreateMaterials()
 
   // Drift gases 1 - nonsensitive, 2 - sensitive
 
-  AliMixture(31,"Drift gas 1",amat,zmat,density,fNoComp,wmat);
-  AliMixture(32,"Drift gas 2",amat,zmat,density,fNoComp,wmat);
+  //  AliMixture(31,"Drift gas 1",amat,zmat,density,fNoComp,wmat);
+  //  AliMixture(32,"Drift gas 2",amat,zmat,density,fNoComp,wmat);
+
+  amat[0]= 20.18;
+  amat[1]=12.011;
+  amat[2]=15.9994;
+
+  zmat[0]= 10.; 
+  zmat[1]=6.;
+  zmat[2]=8.;
+
+  wmat[2] = wmat[1]*0.728; 
+  wmat[1] *= 0.272;
+
+
+
+  AliMixture(31,"Drift gas 1",amat,zmat,density,3,wmat);
+  AliMixture(32,"Drift gas 2",amat,zmat,density,3,wmat);
 
 
   // Air
 
-  amat[0] = 14.61;
+  /*  amat[0] = 14.61;
   zmat[0] = 7.3;
   density = 0.001205;
 
   AliMaterial(24,"Air",amat[0],zmat[0],density,999.,999.); 
+  */
 
+
+  // Air (79% N 21% 0)
+
+  
+  amat[0]=15.9994;
+  amat[1]=14.007;
+  zmat[0]=8.;
+  zmat[1]=7.;
+  density = 0.001205;
+
+  wmat[0]=0.233;
+  wmat[1]=0.767;
+
+  AliMixture(24,"Air",amat,zmat,density,2,wmat); 
 
   //----------------------------------------------------------------------
   //               solid materials
@@ -649,23 +680,63 @@ void AliTPC::CreateMaterials()
 
   // Carbon fiber
 
-  wmat[0]=0.644; // by weight!
-  wmat[1]=0.356;
+
+
+  amat[1]=12.011;
+  amat[2]=1.;
+  amat[3]=15.9994;
+
+  zmat[1]=6.;
+  zmat[2]=1.;
+  zmat[3]=8.;
+
+  wmat[0]=0.644; // by weight! C
+  wmat[1]=0.356;  // epoxy altogether
+  
+
+  wmat[3]=wmat[1]*0.203;
+  wmat[2]=wmat[1]*0.085;
+  wmat[1] *= 0.712;
+
 
   density=0.5*(1.25+2.265);
 
-  AliMixture(47,"Cfiber",amat,zmat,density,2,wmat);
+  AliMixture(47,"Cfiber",amat,zmat,density,4,wmat);
 
   // get SiO2
 
   gMC->Gfmate((*fIdmate)[38],namate,amat[0],zmat[0],rho,x0,absl,buf,nbuf); 
 
+
+  //
+  amat[0]=28.086;
+  amat[1]=15.9994;
+
+  zmat[0]=14.;
+  zmat[1]=8.;
+
+  //
+ 
+  amat[2]=12.011;
+  amat[3]=1.;
+  amat[4]=15.9994;
+
+  zmat[2]=6.;
+  zmat[3]=1.;
+  zmat[4]=8.;  
+
   wmat[0]=0.725; // by weight!
-  wmat[1]=0.275;
+  wmat[1]=wmat[0]*0.533;
+  wmat[0] *=0.467;
+
+  wmat[2]=0.275;
+  wmat[3]=wmat[2]*0.085;
+  wmat[4]=wmat[2]*0.203;
+  wmat[2] *= 0.712;
 
   density=1.7;
 
-  AliMixture(39,"G10",amat,zmat,density,2,wmat);
+  AliMixture(39,"G10",amat,zmat,density,5,wmat);
 
  
 
