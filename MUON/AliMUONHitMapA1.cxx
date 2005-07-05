@@ -147,7 +147,10 @@ FlagType AliMUONHitMapA1::TestHit(Int_t ix, Int_t iy)
 {
 // Check if hit cell is empty, used or unused
 //
-    Int_t inf=fHitMap[CheckedIndex(ix, iy)];
+    Int_t index = CheckedIndex(ix, iy);
+    if (index<0 || index >= fMaxIndex) return kEmpty;
+
+    Int_t inf=fHitMap[index];
     if (inf < 0) {
 	return kUsed;
     } else if (inf == 0) {
