@@ -58,7 +58,6 @@ class AliEMCAL : public AliDetector {
   Double_t GetRawFormatTimeMax() const { return fgTimeMax ; }   
   Double_t GetRawFormatTimePeak() const { return fgTimePeak ; }    
   Double_t GetRawFormatTimeTrigger() const { return fgTimeTrigger ; }   
-  static Double_t RawResponseFunction(Double_t *x, Double_t *par) ; 
   static Double_t RawResponseFunctionMax(Double_t charge, Double_t gain) ;
   //  
   virtual AliLoader* MakeLoader(const char* topfoldername);
@@ -69,6 +68,8 @@ class AliEMCAL : public AliDetector {
  
 protected:
   
+  friend class AliEMCALGetter;
+  static Double_t RawResponseFunction(Double_t *x, Double_t *par) ; 
   Bool_t   RawSampledResponse(const Double_t dtime, const Double_t damp, Int_t * adcH, Int_t * adcL) const ; 
 
 

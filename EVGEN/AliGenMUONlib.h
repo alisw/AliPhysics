@@ -20,6 +20,10 @@ class AliGenMUONlib :
   enum constants{kPhi, kOmega, kEta, kJpsi, kJpsiFamily, kPsiP, kJpsiFromB, kUpsilon, kUpsilonFamily,
 		   kUpsilonP, kUpsilonPP, kCharm, kBeauty, kPion, kKaon};
     
+    GenFunc   GetPt(Int_t param, const char* tname=0) const;
+    GenFunc   GetY (Int_t param, const char* tname=0) const;
+    GenFuncIp GetIp(Int_t param, const char* tname=0) const;
+ private:
     
 // pions
     static Double_t PtPion(Double_t *px, Double_t *dummy);
@@ -87,10 +91,6 @@ class AliGenMUONlib :
     static Double_t YBeauty(Double_t *py, Double_t *dummy);
     static Int_t    IpBeauty(TRandom *ran);
 //
-    GenFunc   GetPt(Int_t param, const char* tname=0) const;
-    GenFunc   GetY (Int_t param, const char* tname=0) const;
-    GenFuncIp GetIp(Int_t param, const char* tname=0) const;
- private:
     
     static Float_t Interpolate(Float_t x, Float_t* y, Float_t x0, 
 			Float_t dx,

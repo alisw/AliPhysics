@@ -36,23 +36,6 @@ class AliFastGlauber : public TObject {
     void SetFileName(TString &fn){fName=fn;}
     void SetFileName(const char *fn="$(ALICE_ROOT)/FASTSIM/data/glauberPbPb.root"){fName=fn;}
 
-    static Double_t WSb            (Double_t *xx, Double_t *par);
-    static Double_t WSbz           (Double_t *xx, Double_t *par);
-    static Double_t WSz            (Double_t *xx, Double_t *par);
-    static Double_t WSta           (Double_t *xx, Double_t *par);
-    static Double_t WStarfi        (Double_t *xx, Double_t *par);
-    static Double_t WStaa          (Double_t *xx, Double_t *par);
-    static Double_t WKParticipants (Double_t *xx, Double_t *par);
-    static Double_t WParticipants  (Double_t *xx, Double_t *par);    
-    static Double_t WSgeo          (Double_t *xx, Double_t *par);
-    static Double_t WSbinary       (Double_t *xx, Double_t *par);
-    static Double_t WSN            (Double_t *xx, Double_t *par);
-    static Double_t WAlmond        (Double_t *xx, Double_t *par);
-    static Double_t WPathLength0   (Double_t *xx, Double_t *par);
-    static Double_t WPathLength    (Double_t *xx, Double_t *par);
-    static Double_t WIntRadius     (Double_t *xx, Double_t *par);
-    static Double_t WEnergyDensity (Double_t *xx, Double_t *par);
-
     const TF1* GetWSB()            const {return fgWSb;}
     const TF2* GetWSbz()           const {return fgWSbz;}
     const TF1* GetWSz()            const {return fgWSz;} 
@@ -170,6 +153,23 @@ class AliFastGlauber : public TObject {
 			  const char *fname="i0i1B2B.root");
     void PlotAlmonds() const;
  protected:
+    static Double_t WSb            (Double_t *xx, Double_t *par);
+    static Double_t WSbz           (Double_t *xx, Double_t *par);
+    static Double_t WSz            (Double_t *xx, Double_t *par);
+    static Double_t WSta           (Double_t *xx, Double_t *par);
+    static Double_t WStarfi        (Double_t *xx, Double_t *par);
+    static Double_t WStaa          (Double_t *xx, Double_t *par);
+    static Double_t WKParticipants (Double_t *xx, Double_t *par);
+    static Double_t WParticipants  (Double_t *xx, Double_t *par);    
+    static Double_t WSgeo          (Double_t *xx, Double_t *par);
+    static Double_t WSbinary       (Double_t *xx, Double_t *par);
+    static Double_t WSN            (Double_t *xx, Double_t *par);
+    static Double_t WAlmond        (Double_t *xx, Double_t *par);
+    static Double_t WPathLength0   (Double_t *xx, Double_t *par);
+    static Double_t WPathLength    (Double_t *xx, Double_t *par);
+    static Double_t WIntRadius     (Double_t *xx, Double_t *par);
+    static Double_t WEnergyDensity (Double_t *xx, Double_t *par);
+
     void Reset();
 
     static Float_t fgBMax;           // Maximum Impact Parameter

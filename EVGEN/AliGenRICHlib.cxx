@@ -29,6 +29,7 @@
 #include <TString.h>
 #include <AliLog.h>
 #include "AliGenRICHlib.h"
+#include <TPDGCode.h>
 
 ClassImp(AliGenRICHlib)
 

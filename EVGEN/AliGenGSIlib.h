@@ -20,7 +20,13 @@ class TRandom;
 
 class AliGenGSIlib :public AliGenLib {
  public:
+    GenFunc   GetPt(Int_t param, const char * tname=0) const;
+    GenFunc   GetY(Int_t param, const char * tname=0) const;
+    GenFuncIp GetIp(Int_t param, const char * tname=0) const;    
+
     enum constants{kUpsilon, kJPsi, kCharm, kBeauty, kEta, kEtaprime, kOmega, kRho, kKaon, kPion, kPhi, kLambda, kBaryons};
+
+ private:
 
     static Double_t PtScal(Double_t pt, Int_t np);
 
@@ -128,12 +134,6 @@ class AliGenGSIlib :public AliGenLib {
     static Double_t YBaryons(Double_t *py, Double_t *dummy);
 
 
-    typedef Double_t (*GenFunc)  (Double_t *, Double_t *);
-    typedef Int_t    (*GenFuncIp)(TRandom *ran);
-    
-    GenFunc   GetPt(Int_t param, const char * tname=0) const;
-    GenFunc   GetY(Int_t param, const char * tname=0) const;
-    GenFuncIp GetIp(Int_t param, const char * tname=0) const;    
 
   ClassDef(AliGenGSIlib,0)
 };

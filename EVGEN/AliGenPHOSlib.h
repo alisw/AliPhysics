@@ -25,6 +25,10 @@ public AliGenLib
     enum constants{kPion, kChargedPion, kPi0Flat, kKaon, kChargedKaon, kKaon0L,
 		   kEta, kEtaFlat,kOmega, kEtaPrime, kPhi, 
 		   kBaryon, kProton, kAProton, kNeutron, kANeutron};
+    GenFunc   GetPt(Int_t param, const char* tname=0) const;
+    GenFunc   GetY (Int_t param, const char* tname=0) const;
+    GenFuncIp GetIp(Int_t param, const char* tname=0) const;   
+ private:
 // pions
     static Double_t PtPion(Double_t *px, Double_t *dummy);
     static Double_t PtScal(Double_t pt, Int_t np);
@@ -76,9 +80,6 @@ public AliGenLib
     static Int_t    IpAProton(TRandom *ran);
     static Int_t    IpNeutron(TRandom *ran);
     static Int_t    IpANeutron(TRandom *ran);
-    GenFunc   GetPt(Int_t param, const char* tname=0) const;
-    GenFunc   GetY (Int_t param, const char* tname=0) const;
-    GenFuncIp GetIp(Int_t param, const char* tname=0) const;   
 
     ClassDef(AliGenPHOSlib,0) // Library providing y and pT parameterisations
 };

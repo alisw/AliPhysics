@@ -7,6 +7,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.61  2005/05/28 12:10:07  schutz
+ * Copy constructor is corrected (by T.P.)
+ *
  */
 
 
@@ -68,7 +71,6 @@ public:
   Double_t GetRawFormatTimeMax() const { return fgTimeMax ; }   
   Double_t GetRawFormatTimePeak() const { return fgTimePeak ; }    
   Double_t GetRawFormatTimeTrigger() const { return fgTimeTrigger ; }   
-  static Double_t RawResponseFunction(Double_t *x, Double_t *par) ; 
   static Double_t RawResponseFunctionMax(Double_t charge, Double_t gain) ;
   //
   virtual AliLoader* MakeLoader(const char* topfoldername);
@@ -80,6 +82,7 @@ public:
 
 protected:
 
+  static Double_t RawResponseFunction(Double_t *x, Double_t *par) ; 
   Bool_t   RawSampledResponse(const Double_t dtime, const Double_t damp, Int_t * adcH, Int_t * adcL) const ; 
   
   

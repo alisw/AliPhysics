@@ -13,14 +13,20 @@
 // Author: Annalisa Mastroserio <Annalisa.Mastroserio@ba.infn.it>
 
 #include "AliGenLib.h"
-#include <TPDGCode.h>
+
 class TRandom;
 
 class AliGenRICHlib :public AliGenLib {
 
  public:
-   enum EPartId {kPhi=333};
+  enum EPartId {kPhi=333};
 
+  //Getters
+    
+  GenFunc   GetPt(Int_t iPID, const char * sForm=0) const;
+  GenFunc   GetY (Int_t iPID, const char * sForm=0) const;
+  GenFuncIp GetIp(Int_t iPID, const char * sForm=0) const;    
+ private:
 
 //Pi+
   static Int_t IpPiPlus(TRandom *ran);
@@ -81,16 +87,6 @@ class AliGenRICHlib :public AliGenLib {
   static Double_t PtLambdaBarFlat(Double_t *px, Double_t *dummy);
   static Double_t PtLambdaBarExp (Double_t *px, Double_t *dummy);
   static Double_t YLambdaBarFlat (Double_t *py, Double_t *dummy);
-
-
-  typedef Double_t (*GenFunc)  (Double_t *, Double_t *);
-  typedef Int_t    (*GenFuncIp)(TRandom *ran);
-
-  //Getters
-    
-  GenFunc   GetPt(Int_t iPID, const char * sForm=0) const;
-  GenFunc   GetY (Int_t iPID, const char * sForm=0) const;
-  GenFuncIp GetIp(Int_t iPID, const char * sForm=0) const;    
 
   ClassDef(AliGenRICHlib,0)
 };

@@ -22,6 +22,10 @@ public AliGenLib
 {
  public:
     enum constants{kKaon, kPhi, kLambda, kXiMinus, kOmegaMinus};
+    GenFunc   GetPt(Int_t param, const char* tname=0) const;
+    GenFunc   GetY (Int_t param, const char* tname=0) const;
+    GenFuncIp GetIp(Int_t param, const char* tname=0) const;    
+ private:
 // pions
     static Double_t PtPion(Double_t *px, Double_t *dummy);
     static Double_t PtScal(Double_t pt, Int_t np);
@@ -46,9 +50,6 @@ public AliGenLib
     static Double_t YOmegaMinus( Double_t *py, Double_t *dummy);
     static Int_t    IpOmegaMinus(TRandom *ran);
     
-    GenFunc   GetPt(Int_t param, const char* tname=0) const;
-    GenFunc   GetY (Int_t param, const char* tname=0) const;
-    GenFuncIp GetIp(Int_t param, const char* tname=0) const;    
     ClassDef(AliGenSTRANGElib,0) // Library providing y and pT parameterisations
 };
 #endif

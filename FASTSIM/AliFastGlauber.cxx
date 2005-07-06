@@ -148,7 +148,7 @@ void AliFastGlauber::Init(Int_t mode)
   fgWSb->SetParameter(2, fWSw);
   fgWSb->SetParameter(3, fWSn);
 
-  fgWSbz = new TF2("WSbz", WSbz, 0, fgBMax, 4);
+  fgWSbz = new TF2("WSbz", WSbz, 0, fgBMax, 0, fgBMax, 4);
   fgWSbz->SetParameter(0, fWSr0);
   fgWSbz->SetParameter(1, fWSd);
   fgWSbz->SetParameter(2, fWSw);
