@@ -82,7 +82,7 @@ TF1*    AliFastGlauber::fgWIntRadius     = NULL;
 TF2*    AliFastGlauber::fgWKParticipants = NULL; 
 TF1*    AliFastGlauber::fgWParticipants  = NULL; 
 TF2*    AliFastGlauber::fgWAlmondCurrent = NULL;    
-TF2     AliFastGlauber::fgWAlmondFixedB[40]; 
+TF2*    AliFastGlauber::fgWAlmondFixedB[40]; 
 const Int_t AliFastGlauber::fgkMCInts = 100000;
 Int_t AliFastGlauber::fgCounter = 0;       
 
@@ -103,6 +103,7 @@ AliFastGlauber::AliFastGlauber() : fName()
 AliFastGlauber::~AliFastGlauber()
 {
   fgCounter--;
+  for(Int_t k=0; k<40; k++) delete fgWAlmondFixedB[k];
   //if(fgCounter==0) Reset();
 }
 
@@ -247,7 +248,7 @@ void AliFastGlauber::Init(Int_t mode)
     for(Int_t k=0; k<40; k++) {
       sprintf(almondName,"WAlmondFixedB%d",k);
       fgWAlmondCurrent = (TF2*)ff->Get(almondName);
-      new(&fgWAlmondFixedB[k]) TF2(*fgWAlmondCurrent);
+      fgWAlmondFixedB[k] = fgWAlmondCurrent;
     }
     delete ff;
   }
@@ -1217,7 +1218,7 @@ void AliFastGlauber::GetRandomBHard(Double_t& b)
   b = fgWSbinary->GetRandom();
   Int_t bin = 2*(Int_t)b;
   if( (b-(Int_t)b) > 0.5) bin++;
-  fgWAlmondCurrent = &fgWAlmondFixedB[bin]; 
+  fgWAlmondCurrent = fgWAlmondFixedB[bin]; 
   return;
 }
 
@@ -1470,13 +1471,13 @@ void AliFastGlauber::PlotAlmonds() const
   gStyle->SetPalette(1,0);
   c->Divide(2,2);
   c->cd(1);
-  fgWAlmondFixedB[0].Draw("cont1");
+  fgWAlmondFixedB[0]->Draw("cont1");
   c->cd(2);
-  fgWAlmondFixedB[10].Draw("cont1");
+  fgWAlmondFixedB[10]->Draw("cont1");
   c->cd(3);
-  fgWAlmondFixedB[20].Draw("cont1");
+  fgWAlmondFixedB[20]->Draw("cont1");
   c->cd(4);
-  fgWAlmondFixedB[30].Draw("cont1");
+  fgWAlmondFixedB[30]->Draw("cont1");
   return;
 }
 

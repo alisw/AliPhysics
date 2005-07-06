@@ -54,7 +54,7 @@ class AliFastGlauber : public TObject {
     const TF1* GetWSbinary()       const {return fgWSbinary;}
     const TF1* GetWSN()            const {return fgWSN;}     
     const TF1* GetWEnergyDensity() const {return fgWEnergyDensity;} 
-    const TF2* GetWAlmondFixedB(Int_t i) const {return &fgWAlmondFixedB[i];}
+    const TF2* GetWAlmondFixedB(Int_t i) const {return fgWAlmondFixedB[i];}
     
     Float_t GetWr0() const {return fWSr0;}
     Float_t GetWSd() const {return fWSd;}
@@ -192,7 +192,7 @@ class AliFastGlauber : public TObject {
     static TF1*    fgWSbinary;       // dSigma/db binary
     static TF1*    fgWSN;            // dN/db binary
     static TF1*    fgWEnergyDensity; // Energy density as a function of impact parameter
-    static TF2     fgWAlmondFixedB[40]; // Interaction Almonds read from file
+    static TF2*    fgWAlmondFixedB[40]; // Interaction Almonds read from file
     static TF2*    fgWAlmondCurrent;    // Interaction Almond used for length
     
     Float_t fWSr0;      // Wood-Saxon Parameter r0
@@ -209,7 +209,7 @@ class AliFastGlauber : public TObject {
 
     Int_t fEllDef;      // definition of length (see CalculateLength())
     TString fName;     // filename of stored distributions
-    ClassDef(AliFastGlauber,1) // Event geometry simulation in the Glauber Model
+    ClassDef(AliFastGlauber,2) // Event geometry simulation in the Glauber Model
 };
 
 #endif 
