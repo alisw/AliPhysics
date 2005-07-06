@@ -119,7 +119,7 @@ class AliITS : public AliDetector {
                              const char *filename);
     void HitsToSDigits(Int_t evNumber,Int_t bgrev,Int_t size,
                        Option_t *add, Option_t *det, const char *filename)
-      {HitsToPreDigits(evNumber,bgrev,size,add,det,filename);};
+      {HitsToPreDigits(evNumber,bgrev,size,add,det,filename);}
     
     virtual void ResetDigits();
     virtual void ResetDigits(Int_t branch);
@@ -142,7 +142,7 @@ class AliITS : public AliDetector {
 
     //===================== Raw Data IO ================================
     // Write digits into raw data format
-    virtual void Digits2Raw();                                          ;
+    virtual void Digits2Raw();
 
  protected:
     static const Int_t fgkNTYPES=3; //number of detector types
