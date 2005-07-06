@@ -9,7 +9,7 @@
 #include <TRandom.h>
 #include <TSystem.h>
 #include <TVirtualMC.h>
-#include <TGeant3.h>
+#include <TGeant3TGeo.h>
 #include "STEER/AliRunLoader.h"
 #include "STEER/AliRun.h"
 #include "STEER/AliConfig.h"
@@ -33,8 +33,8 @@
 #include "TRD/AliTRDv1.h"
 #include "FMD/AliFMDv1.h"
 #include "MUON/AliMUONv1.h"
-#include "MUON/AliMUONSt1GeometryBuilder.h"
-#include "MUON/AliMUONSt2GeometryBuilder.h"
+#include "MUON/AliMUONSt1GeometryBuilderV2.h"
+#include "MUON/AliMUONSt2GeometryBuilderV2.h"
 #include "MUON/AliMUONSlatGeometryBuilder.h"
 #include "MUON/AliMUONTriggerGeometryBuilder.h"
 #include "PHOS/AliPHOSv1.h"
@@ -42,11 +42,10 @@
 #include "START/AliSTARTv1.h"
 #include "EMCAL/AliEMCALv1.h"
 #include "CRT/AliCRTv0.h"
-#include "VZERO/AliVZEROv3.h"
+#include "VZERO/AliVZEROv5.h"
 #endif
 
 Float_t EtaToTheta(Float_t arg);
-static Int_t    eventsPerRun = 100;
 enum PprGeo_t 
 {
     kHoles, kNoHoles
@@ -423,7 +422,7 @@ void Config()
      if (iVZERO)
     {
         //=================== CRT parameters ============================
-        AliVZERO *VZERO = new AliVZEROv3("VZERO", "normal VZERO");
+        AliVZERO *VZERO = new AliVZEROv5("VZERO", "normal VZERO");
     }
 
      AliLog::Message(AliLog::kInfo, "End of Config", "Config.C", "Config.C", "Config()"," Config.C", __LINE__);

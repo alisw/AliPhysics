@@ -9,13 +9,14 @@
 #include <TRandom.h>
 #include <TSystem.h>
 #include <TVirtualMC.h>
-#include <TGeant3.h>
+#include <TGeant3TGeo.h>
 #include <TPDGCode.h>
 #include <TF1.h>
 #include "STEER/AliRunLoader.h"
 #include "STEER/AliRun.h"
 #include "STEER/AliConfig.h"
 #include "STEER/AliGenerator.h"
+#include "STEER/AliLog.h"
 #include "PYTHIA6/AliDecayerPythia.h"
 #include "EVGEN/AliGenHIJINGpara.h"
 #include "THijing/AliGenHijing.h"
@@ -48,7 +49,7 @@
 #include "FMD/AliFMDv1.h"
 #include "MUON/AliMUONv1.h"
 #include "MUON/AliMUONSt1GeometryBuilderV2.h"
-#include "MUON/AliMUONSt2GeometryBuilder.h"
+#include "MUON/AliMUONSt2GeometryBuilderV2.h"
 #include "MUON/AliMUONSlatGeometryBuilder.h"
 #include "MUON/AliMUONTriggerGeometryBuilder.h"
 #include "PHOS/AliPHOSv1.h"
@@ -56,7 +57,7 @@
 #include "START/AliSTARTv1.h"
 #include "EMCAL/AliEMCALv1.h"
 #include "CRT/AliCRTv0.h"
-#include "VZERO/AliVZEROv2.h"
+#include "VZERO/AliVZEROv5.h"
 #endif
 
 enum PprRun_t 
@@ -234,7 +235,7 @@ void Config()
 
     // Debug and log level
     AliLog::SetGlobalDebugLevel(0);
-    AliLog::SetGlobalLogLevel(0);
+    AliLog::SetGlobalLogLevel(AliLog::kError);
 
     // Generator Configuration
     AliGenerator* gener = GeneratorFactory(srun);
@@ -539,7 +540,7 @@ void Config()
      if (iVZERO)
     {
         //=================== CRT parameters ============================
-        AliVZERO *VZERO = new AliVZEROv2("VZERO", "normal VZERO");
+        AliVZERO *VZERO = new AliVZEROv5("VZERO", "normal VZERO");
     }
  
              
