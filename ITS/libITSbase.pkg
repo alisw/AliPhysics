@@ -1,0 +1,43 @@
+SRCS = 	AliITSgeom.cxx \
+		AliITSgeomMatrix.cxx \
+		AliITSgeomSPD.cxx \
+		AliITSgeomSDD.cxx \
+		AliITSgeomSSD.cxx \
+		AliITSLoader.cxx \
+		AliITSRecPoint.cxx \
+		AliITSclusterV2.cxx \
+		AliITSdigit.cxx \
+		AliITSdigitSPD.cxx \
+		AliITSdigitSDD.cxx \
+		AliITSTransientDigit.cxx \
+		AliITSdigitSSD.cxx \
+		AliITSMap.cxx \
+		AliITSMapA1.cxx \
+		AliITSMapA2.cxx \
+		AliITSpList.cxx \
+		AliITSpListItem.cxx \
+		AliITSsegmentation.cxx \
+		AliITSsegmentationSPD.cxx \
+		AliITSsegmentationSDD.cxx \
+		AliITSsegmentationSSD.cxx \
+		AliITSresponse.cxx \
+		AliITSresponseSPD.cxx \
+		AliITSresponseSDD.cxx \
+		AliITSresponseSSD.cxx \
+		AliITSDDLRawData.cxx \
+		AliITSRawStream.cxx \
+		AliITSRawStreamSDDv2.cxx \
+		AliITSRawStreamSDDv3.cxx \
+		AliITSRawStreamSSD.cxx \
+		AliITSRawStreamSDD.cxx \
+		AliITSRawStreamSPD.cxx \
+		AliITSEventHeader.cxx \
+		AliITSRawStreamSSDv1.cxx \
+		AliITSRawData.cxx 
+
+HDRS:=  $(SRCS:.cxx=.h)
+
+DHDR=ITSbaseLinkDef.h
+
+EINCLUDE:=$(ALICE)/geant3/TGeant3 TPC RAW
+

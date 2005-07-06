@@ -54,16 +54,20 @@ void AliITSPrintRecPoints(TString rfn="galice.root",Int_t mod=-1,
   } // end if mod>=0
   TClonesArray *rpa;
   AliITSRecPoint *rp = 0;
+  AliITSDetTypeRec* rec = new AliITSDetTypeRec();
+  rec->SetLoader(ITSloader);
+  rec->SetITSgeom(ITS->GetITSgeom());
+  rec->SetDefaults();
 
   Int_t event,m,i,i2;
   for(event = evNumber1; event < evNumber2; event++){
     rl->GetEvent(event);
-    ITS->SetTreeAddress();
+    rec->SetTreeAddress();
     for(m=mod1;m<mod2;m++){
-      ITS->ResetRecPoints();
+      rec->ResetRecPoints();
       TTree *TR = ITSloader->TreeR();
       TR->GetEvent(m);
-      rpa = ITS->RecPoints();
+      rpa = rec->RecPoints();
       i2 = rpa->GetEntriesFast();
       cout <<  "Event=" << event << " module=" << m <<
 	" Number of Recpoints=" << i2 <<endl;

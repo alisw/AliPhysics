@@ -15,11 +15,9 @@
 
 #include <TH1.h>
 #include <TObjArray.h>
-#include <TMath.h>
 
 #include "AliITSMapA2.h"
 #include "AliITSsegmentation.h"
-#include "AliITSresponse.h"
 #include "AliITSdigit.h"
 
 ////////////////////////////////////////////////////////////////////////

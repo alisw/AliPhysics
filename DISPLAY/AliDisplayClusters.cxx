@@ -26,7 +26,6 @@
 #include "AliClusters.h"
 #include "AliDisplay2.h"
 #include "AliDisplayClusters.h"
-#include "AliITS.h"
 #include "AliITSLoader.h"
 #include "AliITSclusterV2.h"
 #include "AliITSgeom.h"
@@ -91,7 +90,6 @@ void AliDisplayClusters::LoadITSClusters(Int_t nevent)
     return;
   }
   AliITSLoader *itsl = (AliITSLoader*)rl->GetLoader("ITSLoader");
-  AliITS *its  = (AliITS*)gAlice->GetModule("ITS");
   
   rl->GetEvent(nevent);
   itsl->LoadRecPoints();
@@ -102,7 +100,10 @@ void AliDisplayClusters::LoadITSClusters(Int_t nevent)
     return;
   }
 
-  AliITSgeom *geom=its->GetITSgeom();
+  TDirectory * olddir = gDirectory;
+  rl->CdGAFile();
+  AliITSgeom *geom = (AliITSgeom*)gDirectory->Get("AliITSgeom"); 
+  olddir->cd(); 
   Int_t count = 0;
 
   TClonesArray *clusters=new TClonesArray("AliITSclusterV2",10000);

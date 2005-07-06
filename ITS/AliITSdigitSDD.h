@@ -2,7 +2,9 @@
 #define ALIITSDIGITSDD_H
 /* Copyright(c) 2004-2006, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice     */
-
+////////////////////////////////////////////////////////
+// Digit class for SDD                                //
+////////////////////////////////////////////////////////
 #include <AliITSdigit.h>
 
 class AliITSresponseSDD;
@@ -28,9 +30,9 @@ class AliITSdigitSDD: public AliITSdigit {
     // returns the array size used to store Tracks and Hits
     static Int_t GetNTracks() {return fgkSsdd;}
     // returns pointer to the array of tracks which make this digit
-    virtual Int_t *GetTracks() {return &fTracks[0];}
+    virtual Int_t *GetTracks()  {return &fTracks[0];}
     // returns the pointer to the array of hits which made this digit
-    virtual Int_t *GetHits() {return &fHits[0];}
+    virtual Int_t *GetHits()  {return &fHits[0];}
     virtual Int_t GetSignal() const {return fSignalExpanded;}
     virtual Int_t GetCompressedSignal() const {return fSignal;}
     // returns track number kept in the array element i of fTracks 

@@ -19,11 +19,10 @@
 // **************************************************************************//
 ///////////////////////////////////////////////////////////////////////////////
 
-#include <Riostream.h>
 #include <TArrayI.h>
 
-#include "AliITS.h"
 #include "AliITSClusterFinderSSD.h"
+#include "AliITSDetTypeRec.h"
 #include "AliITSMapA1.h"
 #include "AliITSRawClusterSSD.h"
 #include "AliITSRecPoint.h"
@@ -31,10 +30,8 @@
 #include "AliITSdigitSSD.h"
 #include "AliITSgeom.h"
 #include "AliITSpackageSSD.h"
-#include "AliITSresponseSSD.h"
 #include "AliITSsegmentationSSD.h"
 #include "AliLog.h"
-#include "AliRun.h"
 
 const Bool_t AliITSClusterFinderSSD::fgkSIDEP=kTRUE;
 const Bool_t AliITSClusterFinderSSD::fgkSIDEN=kFALSE;
@@ -190,22 +187,26 @@ void AliITSClusterFinderSSD::FindRawClusters(Int_t module){
     // 3. If necesery, resolves for each group of neighbouring digits 
     //    how many clusters creates it.
     // 4. Colculate the x and z coordinate  
-    Int_t lay, lad, detect;
-    AliITSgeom *geom = fITS->GetITSgeom();
 
-    SetModule(module);
-    geom->GetModuleId(GetModule(),lay, lad, detect);
-    if ( lay == 6 ) ((AliITSsegmentationSSD*)GetSeg())->SetLayer(6);
-    if ( lay == 5 ) ((AliITSsegmentationSSD*)GetSeg())->SetLayer(5);
 
-    InitReconstruction();  //ad. 1
-    Map()->FillMap();
-    FillDigitsIndex();
-    SortDigits();
-    FindNeighbouringDigits(); //ad. 2
-    //SeparateOverlappedClusters();  //ad. 3
-    ClustersToPackages();  //ad. 4
-    Map()->ClearMap();
+  if(!fITSgeom) {
+    Error("FindRawClusters","ITS geom is null!");
+    return;
+  }
+  Int_t lay, lad, detect;
+  SetModule(module);
+  fITSgeom->GetModuleId(GetModule(),lay, lad, detect);
+  if ( lay == 6 ) ((AliITSsegmentationSSD*)GetSeg())->SetLayer(6);
+  if ( lay == 5 ) ((AliITSsegmentationSSD*)GetSeg())->SetLayer(5);
+
+  InitReconstruction();  //ad. 1
+  Map()->FillMap();
+  FillDigitsIndex();
+  SortDigits();
+  FindNeighbouringDigits(); //ad. 2
+  //SeparateOverlappedClusters();  //ad. 3
+  ClustersToPackages();  //ad. 4
+  Map()->ClearMap();
 }
 //______________________________________________________________________
 void AliITSClusterFinderSSD::FindNeighbouringDigits(){
@@ -647,7 +648,7 @@ Bool_t AliITSClusterFinderSSD::CreateNewRecPoint(Double_t P,Double_t dP,
         cnew.SetMultN(nstripsN);
         cnew.SetQErr(TMath::Abs(SigP-SigN));
         cnew.SetNTrack(ntracks);
-        fITS->AddCluster(2,&cnew);
+	fDetTypeRec->AddCluster(2,&cnew);
         AliITSRecPoint rnew;
         rnew.SetX(P*kconv);
         rnew.SetZ(N*kconv);
@@ -658,8 +659,9 @@ Bool_t AliITSClusterFinderSSD::CreateNewRecPoint(Double_t P,Double_t dP,
         rnew.fTracks[0]=tr[0];
         rnew.fTracks[1]=tr[1];
         rnew.fTracks[2]=tr[2];
-        fITS->AddRecPoint(rnew);
+	fDetTypeRec->AddRecPoint(rnew);
         return kTRUE;
+
     } // end if
     return kFALSE;  
 }

@@ -33,12 +33,12 @@ class AliITSclusterSSD : public TObject{
     TObjArray* GetPointer2Digits(){return fDigits;}// comment to be written
     void SetPointer2Digits(TObjArray *digits){// comment to be written
 	fDigits = digits;}
-    Int_t GetNumOfDigits(){//Returns number of digits that creates this cluster
+    Int_t GetNumOfDigits() const {//Returns number of digits that creates this cluster
 	return fNDigits;}
     Int_t GetDigitSignal(Int_t digit);
     AliITSdigitSSD *GetDigit(Int_t idx) { // comment to be written
 	return (AliITSdigitSSD *)((*fDigits)[GetDigitIndex(idx)]);}
-    Int_t GetDigitIndex (Int_t digit) {// comment to be written
+    Int_t GetDigitIndex (Int_t digit) const {// comment to be written
 	return (*fDigitsIndex)[digit];}
     Int_t GetDigitStripNo(Int_t digit);
     // comment to be written
@@ -49,12 +49,12 @@ class AliITSclusterSSD : public TObject{
     Int_t SplitCluster(Int_t where,Int_t *outdigits);
     void AddCross(Int_t clIndex);  //Add index of cluster that it crosses with
      //return index of cluster that it crosses with
-    Int_t GetCross(Int_t crIndex);
-    Int_t GetCrossNo() {// Returns number of crosses
+    Int_t GetCross(Int_t crIndex) const ;
+    Int_t GetCrossNo()  const {// Returns number of crosses
 	return fNCrosses;}
     void DelCross(Int_t index);
     Double_t GetPosition();
-    Double_t GetPositionError();
+    Double_t GetPositionError() const;
     Float_t GetTotalSignal();  
     Float_t GetTotalSignalError();
     void CutTotalSignal(Float_t sx) {// comment to be written
@@ -68,15 +68,15 @@ class AliITSclusterSSD : public TObject{
     //comment to be written
     void SetLeftNeighbour(Bool_t nei){fLeftNeighbour=nei;}
     void SetNTracks(Int_t ntracks) {fNTracks=ntracks;}// set ntracks
-    Int_t GetNTracks(){return fNTracks;}// comment to be written
-    Bool_t GetSide(){return fSide;}// comment to be written
-    Int_t CheckSatus(Int_t *){return 0;}//check if dig's comes from same track
+    Int_t GetNTracks() const {return fNTracks;}// comment to be written
+    Bool_t GetSide() const {return fSide;}// comment to be written
+    Int_t CheckSatus(Int_t *) const {return 0;}//check if dig's comes from same track
     Int_t *GetTracks(Int_t &nt);
     void Consume(){// comment
 	fConsumed = kTRUE;}
     Bool_t IsConsumed() const{// comment
 	return fConsumed;}
-    Bool_t IsCrossingWith(Int_t idx);
+    Bool_t IsCrossingWith(Int_t idx) const;
  protected:
     Bool_t    fSide;        //True if P
     TObjArray *fDigits;     //Pointer to List of Digitsbelonging to AliITS

@@ -5,7 +5,6 @@
 //                                                // 
 //                                                //
 ////////////////////////////////////////////////////
-#include "AliITS.h"
 #include "AliITSdigitSDD.h"
 #include "AliRawReader.h"
 #include "AliVMERawStream.h"
@@ -63,17 +62,22 @@ void AliITSBeamTestDigSDD::Exec(Option_t* /*opt*/)
 
   TBranch* branch = fTreeD->GetBranch("ITSDigitsSDD");
   Int_t maxn=0;
-  AliITSgeom* geom = fBt->GetITSgeom();
+
+  if(!fITSgeom){
+    Error("Exec","fITSgeom is null!");
+    return;
+  }
+
   Int_t nsdd=0;
   Int_t nspd=0;
   Int_t nssd=0;
-  for(Int_t nlay=1;nlay<=geom->GetNlayers();nlay++){
-    for(Int_t nlad=1;nlad<=geom->GetNladders(nlay);nlad++){
-      for(Int_t ndet=1;ndet<=geom->GetNdetectors(nlay);ndet++){
-	Int_t index=geom->GetModuleIndex(nlay,nlad,ndet);
-	if(geom->GetModuleTypeName(index)=="kSPD") nspd++;
-	if(geom->GetModuleTypeName(index)=="kSDD") nsdd++;
-	if(geom->GetModuleTypeName(index)=="kSSD") nssd++;
+  for(Int_t nlay=1;nlay<=fITSgeom->GetNlayers();nlay++){
+    for(Int_t nlad=1;nlad<=fITSgeom->GetNladders(nlay);nlad++){
+      for(Int_t ndet=1;ndet<=fITSgeom->GetNdetectors(nlay);ndet++){
+	Int_t index=fITSgeom->GetModuleIndex(nlay,nlad,ndet);
+	if(fITSgeom->GetModuleTypeName(index)=="kSPD") nspd++;
+	if(fITSgeom->GetModuleTypeName(index)=="kSDD") nsdd++;
+	if(fITSgeom->GetModuleTypeName(index)=="kSSD") nssd++;
       }
     }
   }

@@ -4,6 +4,14 @@
  * See cxx source for full Copyright notice                               */
 
 /* $Id$ */
+////////////////////////////////////////////////////////////////////////
+// Version: 0                                                         //
+// Written by Piergiorgio Cerello                                     //
+// November 24 1999                                                   //  
+//                                                                    //
+// AliITSetfSDD is the class describing                               //
+// the electronics for the ITS SDDs.                                  //
+////////////////////////////////////////////////////////////////////////
 
 #include <TObject.h>
 
@@ -12,14 +20,6 @@ class TString;
 
 class AliITSetfSDD : public TObject {
 
-////////////////////////////////////////////////////////////////////////
-// Version: 0
-// Written by Piergiorgio Cerello
-// November 24 1999
-//
-// AliITSetfSDD is the class describing the electronics for the ITS SDDs. 
-//
-////////////////////////////////////////////////////////////////////////
   
  public:
     

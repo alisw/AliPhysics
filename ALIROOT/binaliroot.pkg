@@ -7,7 +7,8 @@ ELIBSDIR:=
 
 ELIBS:= MUONgeometry MUONrec MUONsim MUONbase MUONmapping \
         TPCbase TPCsim TPCrec TPCfast \
-	ITS PMDbase PMDsim PMDrec TRDbase TRDsim TRDrec TRDfast \
+	ITSbase ITSsim ITSrec PMDbase PMDsim PMDrec TRDbase \
+        TRDsim TRDrec TRDfast \
 	FMDbase FMDsim FMDrec TOFbase TOFrec TOFsim PHOS CRT \
         RICHbase RICHrec RICHsim \
         ZDCbase ZDCsim ZDCrec VZERObase VZEROsim VZEROrec EMCAL \
@@ -76,7 +77,9 @@ ARLIBS:= \
    MUON/tgt_$(ALICE_TARGET)/G__MUONsim.o $(LIBPATH)/libMUONsim.a \
    MUON/tgt_$(ALICE_TARGET)/G__MUONrec.o $(LIBPATH)/libMUONrec.a \
    PHOS/tgt_$(ALICE_TARGET)/G__PHOS.o $(LIBPATH)/libPHOS.a \
-   ITS/tgt_$(ALICE_TARGET)/G__ITS.o $(LIBPATH)/libITS.a \
+   ITS/tgt_$(ALICE_TARGET)/G__ITSbase.o $(LIBPATH)/libITSbase.a \
+   ITS/tgt_$(ALICE_TARGET)/G__ITSsim.o $(LIBPATH)/libITSsim.a \
+   ITS/tgt_$(ALICE_TARGET)/G__ITSrec.o $(LIBPATH)/libITSrec.a \
    STRUCT/tgt_$(ALICE_TARGET)/G__STRUCT.o $(LIBPATH)/libSTRUCT.a \
    TPC/tgt_$(ALICE_TARGET)/G__TPCbase.o $(LIBPATH)/libTPCbase.a \
    TPC/tgt_$(ALICE_TARGET)/G__TPCsim.o $(LIBPATH)/libTPCsim.a \

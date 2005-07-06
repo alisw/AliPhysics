@@ -36,7 +36,6 @@ public:
   void FindClustersSSD(AliITSRawStream* input, TClonesArray** clusters);
 
   void RecPoints2Clusters(const TClonesArray *p, Int_t idx, TClonesArray *c);
-  Int_t Hits2Clusters(TTree *in, TTree *out);
 
 private:
   class Ali1Dcluster {

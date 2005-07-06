@@ -20,21 +20,17 @@
 //  for Silicon                                                          //
 //  Drift Detector                                                       //
 ////////////////////////////////////////////////////////////////////////// 
-#include <Riostream.h>
 
-#include <TMath.h>
-#include <math.h>
 
-#include "AliITS.h"
 #include "AliITSClusterFinderSDD.h"
 #include "AliITSMapA1.h"
 #include "AliITSRawClusterSDD.h"
 #include "AliITSRecPoint.h"
 #include "AliITSdigitSDD.h"
+#include "AliITSDetTypeRec.h"
 #include "AliITSresponseSDD.h"
 #include "AliITSsegmentationSDD.h"
 #include "AliLog.h"
-#include "AliRun.h"
 
 ClassImp(AliITSClusterFinderSDD)
 
@@ -233,7 +229,7 @@ void AliITSClusterFinderSDD::Find1DClusters(){
                                               clusteranodePath, //f
                                               clusterMult, //i
                                               0,0,0,0,0,0,0);//7*i
-                    fITS->AddCluster(1,&clust);
+		    fDetTypeRec->AddCluster(1,&clust);
                     it = tstop;
                 } // ilcl
                 it++;
@@ -326,7 +322,7 @@ void AliITSClusterFinderSDD::Find1DClustersE(){
                                                       driftPath,anodePath,
                                                       nTsteps,start,stop,
                                                       start, stop, 1, k, k );
-                            fITS->AddCluster( 1, &clust );
+			    fDetTypeRec->AddCluster( 1, &clust );
                             if(AliDebugLevel()>=5) clust.PrintInfo();
                             nClu++;
                         } // end if nTsteps
@@ -835,7 +831,7 @@ void AliITSClusterFinderSDD::ResolveClusters(){
                 clusterI.SetTsigma( tau[i]*fTimeStep );
                 clusterI.SetQ( integral[i] );
                 
-                fITS->AddCluster( 1, &clusterI );
+		fDetTypeRec->AddCluster( 1, &clusterI );
             } // end for i
             Clusters()->RemoveAt( j );
             delete [] par;
@@ -961,7 +957,7 @@ void AliITSClusterFinderSDD::GetRecPoints(){
         if(dig) rnew.fTracks[1]=dig->GetTrack(1);
         if(dig) rnew.fTracks[2]=dig->GetTrack(2);
 
-        fITS->AddRecPoint(rnew);
+	fDetTypeRec->AddRecPoint(rnew);        
     } // I clusters
 //    Map()->ClearMap();
 }

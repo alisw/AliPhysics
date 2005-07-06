@@ -22,10 +22,7 @@
 
 #include "AliRun.h"
 #include "AliITSClusterFinderV2.h"
-#include "AliITSRecPoint.h"
 #include "AliITSclusterV2.h"
-#include "AliITSsimulationFastPoints.h"
-#include "AliITS.h"
 #include "AliITSgeom.h"
 #include <TParticle.h>
 #include "AliMC.h"
@@ -34,15 +31,13 @@ ClassImp(AliITSClusterFinderV2)
 
 extern AliRun *gAlice;
 
-AliITSClusterFinderV2::AliITSClusterFinderV2():AliITSClusterFinder(){
+AliITSClusterFinderV2::AliITSClusterFinderV2(AliITSgeom* geom):AliITSClusterFinder(){
 
   //Default constructor
   fEvent = 0;
   fModule = 0;
-
-  AliITSgeom *geom=(AliITSgeom*)fITS->GetITSgeom();
-
-  fNModules = geom->GetIndexMax();
+  fITSgeom = geom;
+  fNModules = fITSgeom->GetIndexMax();
 }
 
 //______________________________________________________________________
@@ -252,45 +247,3 @@ MakeCluster(Int_t k,Int_t max,AliBin *bins,UInt_t m,AliITSclusterV2 &c) {
   if (bins[k+max].GetMask() == m) MakeCluster(k+max,max,bins,m,c);
   if (bins[k+1  ].GetMask() == m) MakeCluster(k+1  ,max,bins,m,c);
 }
-
-//______________________________________________________________________
-Int_t AliITSClusterFinderV2::Hits2Clusters(TTree *hTree, TTree *cTree) {
-  //------------------------------------------------------------
-  // This function creates ITS clusters
-  //------------------------------------------------------------
-
-  AliITSgeom *geom=fITS->GetITSgeom();
-  Int_t mmax=geom->GetIndexMax();
-
-  fITS->InitModules(-1,mmax);
-  fITS->FillModules(hTree,0);
-
-  TClonesArray *clusters=new TClonesArray("AliITSclusterV2",1000);
-  TBranch *branch=cTree->GetBranch("Clusters");
-  if (!branch) cTree->Branch("Clusters",&clusters);
-  else branch->SetAddress(&clusters);
-
-  static TClonesArray *points=fITS->RecPoints();
-  AliITSsimulationFastPoints sim;
-  Int_t ncl=0;
-  for (Int_t m=0; m<mmax; m++) {
-    AliITSmodule *mod=fITS->GetModule(m);      
-    sim.CreateFastRecPoints(mod,m,gRandom);      
-
-    RecPoints2Clusters(points, m, clusters);
-    fITS->ResetRecPoints();
-
-    ncl+=clusters->GetEntriesFast();
-    cTree->Fill();
-    clusters->Clear();
-  }
-
-  Info("Hits2Clusters","Number of found fast clusters : %d",ncl);
-
-  //cTree->Write();
-
-  delete clusters;
-
-  return 0;
-}
-

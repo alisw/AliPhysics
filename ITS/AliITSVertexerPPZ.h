@@ -13,7 +13,6 @@
 //                                                                 //
 /////////////////////////////////////////////////////////////////////
 
-class AliITS;
 class TH1F; 
 class TArrayF;
 
@@ -35,8 +34,6 @@ class AliITSVertexerPPZ : public AliITSVertexer {
   static Float_t Curv(Double_t x1,Double_t y1, Double_t x2,Double_t y2,
 		       Double_t x3,Double_t y3); 
 
- private:
-  void EvalZ(TH1F *hist,Int_t sepa, Int_t ncoinc, TArrayF *zval);
 
  protected:
   Int_t fFirstL1;          // first module of the first pixel layer
@@ -46,13 +43,15 @@ class AliITSVertexerPPZ : public AliITSVertexer {
   Float_t fDiffPhiMax;     // Maximum delta phi allowed among corr. pixels
   Float_t fX0;             // Nominal x coordinate of the vertex
   Float_t fY0;             // Nominal y coordinate of the vertex
-  AliITS *fITS;            //! pointer to the AliITS object
+  //AliITS *fITS;            //! pointer to the AliITS object
   Float_t fZFound;         //! found value for the current event
   Float_t fZsig;           //! RMS of Z
   Float_t fWindow;         // window width for Z search in mm (3 mm by def.)
 
+ private:
+  void EvalZ(TH1F *hist,Int_t sepa, Int_t ncoinc, TArrayF *zval);
 
-  ClassDef(AliITSVertexerPPZ,2);
+  ClassDef(AliITSVertexerPPZ,3);
 };
 
 #endif

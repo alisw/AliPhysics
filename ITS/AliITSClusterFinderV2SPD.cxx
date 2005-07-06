@@ -19,15 +19,14 @@
 //                                                                        //
 ///////////////////////////////////////////////////////////////////////////
 
-#include "AliRun.h"
 
 #include "AliITSClusterFinderV2SPD.h"
 #include "AliITSclusterV2.h"
+#include "AliITSDetTypeRec.h"
 #include "AliRawReader.h"
 #include "AliITSRawStreamSPD.h"
 
 #include <TClonesArray.h>
-#include "AliITS.h"
 #include "AliITSgeom.h"
 #include "AliITSdigitSPD.h"
 
@@ -35,13 +34,13 @@ ClassImp(AliITSClusterFinderV2SPD)
 
 extern AliRun *gAlice;
 
-AliITSClusterFinderV2SPD::AliITSClusterFinderV2SPD():AliITSClusterFinderV2(){
+AliITSClusterFinderV2SPD::AliITSClusterFinderV2SPD(AliITSgeom* geom):AliITSClusterFinderV2(geom){
 
   //Default constructor
-  AliITSgeom *geom=(AliITSgeom*)fITS->GetITSgeom();
 
+  fITSgeom = geom;
+  fLastSPD1=fITSgeom->GetModuleIndex(2,1,1)-1;
 
-  fLastSPD1=geom->GetModuleIndex(2,1,1)-1;
   fNySPD=256; fNzSPD=160;
   fYpitchSPD=0.0050;
   fZ1pitchSPD=0.0425; fZ2pitchSPD=0.0625;
@@ -201,7 +200,7 @@ Int_t AliITSClusterFinderV2SPD::ClustersSPD(AliBin* bins, TClonesArray* digits,T
 	Int_t info[3] = {ymax-ymin+1,zmax-zmin+1,fNlayer[iModule]};
 	if(!rawdata){
 	 AliITSclusterV2 cl(milab,hit,info); 
-	 fITS->AddClusterV2(cl);
+	 fDetTypeRec->AddClusterV2(cl);
 	}
         else{
 	  Int_t label[4]={milab[0],milab[1],milab[2],milab[3]};

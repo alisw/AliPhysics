@@ -13,11 +13,11 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-//-------------------------------------------------------------------------
-//               Implementation of the cascade vertex class
-//
-//    Origin: Christian Kuhn, IReS, Strasbourg, christian.kuhn@ires.in2p3.fr
-//-------------------------------------------------------------------------
+////////////////////////////////////////////////////////////////////////////
+//               Implementation of the cascade vertex class               //
+//                                                                        //
+//  Origin: Christian Kuhn, IReS, Strasbourg, christian.kuhn@ires.in2p3.fr//
+////////////////////////////////////////////////////////////////////////////
 #include <TMath.h>
 
 #include "AliCascadeVertex.h"

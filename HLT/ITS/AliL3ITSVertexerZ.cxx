@@ -41,7 +41,7 @@ AliL3ITSVertexerZ::AliL3ITSVertexerZ():AliITSVertexerZ(){
   SetSecondLayerModules();
   fZFound = 0;
   fZsig = 0.;
-  fITS = 0;
+  //fITS = 0;
   fZCombc = 0;
   fZCombf = 0;
   SetLowLimit();
@@ -67,20 +67,22 @@ AliESDVertex* AliL3ITSVertexerZ::FindVertexForCurrentEvent(Int_t evnumber){
   itsLoader->LoadRecPoints();
   rl->GetEvent(evnumber);
 
-  if(!fITS)  {
+  /*  if(!fITS)  {
     fITS = (AliITS*)gAlice->GetModule("ITS");
     if(!fITS) {
       Error("FindVertexForCurrentEvent","AliITS object was not found");
       return fCurrentVertex;
     }
   }
+  */
 
-  fITS->SetTreeAddress();
+  // fITS->SetTreeAddress();
+  rl->CdGAFile();
 
-  AliITSgeom *geom = fITS->GetITSgeom();
-
+  // AliITSgeom *geom = fITS->GetITSgeom();
+  AliITSgeom *geom = (AliITSgeom*)gDirectory->Get("AliITSgeom");
   TTree *tR = itsLoader->TreeR();
-
+  
   return FindVertexForCurrentEvent(geom,tR);
 }
 

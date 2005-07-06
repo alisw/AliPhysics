@@ -19,7 +19,7 @@ class AliITStrackSA : public AliITStrackMI {
   AliITStrackSA();
   AliITStrackSA(const AliITStrackMI& t);
   AliITStrackSA(const AliITStrackSA& t);
-  AliITStrackSA(Int_t layer, Int_t ladder, Int_t detector, 
+  AliITStrackSA(AliITSgeom* geom,Int_t layer, Int_t ladder, Int_t detector, 
                 Double_t Ycoor, Double_t Zcoor, Double_t phi, 
                 Double_t tanlambda, Double_t curv, Int_t lab);
 

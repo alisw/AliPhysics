@@ -16,31 +16,18 @@
 /* $Id$ */
 /////////////////////////////////////////////////////////////////////////
 //                                                                     //
-//                                                                     //
+// Class for ITS RecPoint reconstruction                               //
 //                                                                     //
 ////////////////////////////////////////////////////////////////////////
 
-#include <TROOT.h>
-#include <TFile.h>
-#include <TSeqCollection.h>
 #include <TString.h>
-#include <TClonesArray.h>
-
 #include "AliRun.h"
 #include "AliRunLoader.h"
-
-#include "AliITS.h"
-#include "AliITSDetType.h"
+#include "AliITSDetTypeRec.h"
 #include "AliITSLoader.h"
 #include "AliITSreconstruction.h"
-#include "AliITSsegmentationSPD.h"
-#include "AliITSsegmentationSDD.h"
-#include "AliITSsegmentationSSD.h"
-#include "AliITSClusterFinderSPD.h"
-#include "AliITSClusterFinderSDD.h"
-#include "AliITSClusterFinderSSD.h"
-#include "AliITSresponseSDD.h"
 #include "AliITSgeom.h"
+
 
 ClassImp(AliITSreconstruction)
 
@@ -49,7 +36,7 @@ AliITSreconstruction::AliITSreconstruction():
  fInit(kFALSE),
  fEnt(0),
  fEnt0(0),
- fITS(0x0),
+ //fITS(0x0),
  fDfArp(kFALSE),
  fLoader(0x0),
  fRunLoader(0x0)
@@ -69,7 +56,7 @@ AliITSreconstruction::AliITSreconstruction(AliRunLoader *rl):
  fInit(kFALSE),
  fEnt(0),
  fEnt0(0),
- fITS(0x0),
+ //fITS(0x0),
  fDfArp(kFALSE),
  fLoader(0x0),
  fRunLoader(rl)
@@ -81,7 +68,7 @@ AliITSreconstruction::AliITSreconstruction(const char* filename):
  fInit(kFALSE),
  fEnt(0),
  fEnt0(0),
- fITS(0x0),
+ //fITS(0x0),
  fDfArp(kFALSE),
  fLoader(0x0),
  fRunLoader(0x0)
@@ -117,10 +104,27 @@ AliITSreconstruction::AliITSreconstruction(const char* filename):
 
 }
 //______________________________________________________________________
+AliITSreconstruction::AliITSreconstruction(const AliITSreconstruction &/*rec*/):TTask(/*rec*/){
+    // Copy constructor. 
+
+  Error("Copy constructor","Copy constructor not allowed");
+  
+}
+//______________________________________________________________________
+AliITSreconstruction& AliITSreconstruction::operator=(const AliITSreconstruction& /*source*/){
+    // Assignment operator. This is a function which is not allowed to be
+    // done.
+    Error("operator=","Assignment operator not allowed\n");
+    return *this; 
+}
+
+//______________________________________________________________________
 AliITSreconstruction::~AliITSreconstruction(){
     //    A destroyed AliITSreconstruction class.
+    
+    //fITS      = 0;
     delete fRunLoader;
-    fITS      = 0;
+    
 }
 //______________________________________________________________________
 Bool_t AliITSreconstruction::Init(){
@@ -146,20 +150,14 @@ Bool_t AliITSreconstruction::Init(){
       fInit = kFALSE;
     }
 
-    //Int_t retcode;
-    fITS = (AliITS*) gAlice->GetDetector("ITS");
-    if(!fITS){
-      cout << "ITS not found aborting. fITS=" << fITS << endl;
-      fInit = kFALSE;
-      return fInit;
-    } // end if !fITS
-    if(!(fITS->GetITSgeom())){
-      cout << "ITSgeom not found aborting."<< endl;
-      fInit = kFALSE;
-      return fInit;
-    } // end if !GetITSgeom()
     // Now ready to init.
+ 
+    fRunLoader->CdGAFile();
+    fITSgeom = (AliITSgeom*)gDirectory->Get("AliITSgeom");
 
+    fDetTypeRec = new AliITSDetTypeRec();
+    fDetTypeRec->SetITSgeom(fITSgeom);
+    fDetTypeRec->SetDefaults();
     fDet[0] = fDet[1] = fDet[2] = kTRUE;
     fEnt0 = 0;
 
@@ -170,9 +168,14 @@ Bool_t AliITSreconstruction::Init(){
     fLoader->LoadRecPoints("recreate");
     fLoader->LoadRawClusters("recreate");
     if (fLoader->TreeR() == 0x0) fLoader->MakeTree("R");
-    fITS->MakeBranch("R");
-    fITS->MakeBranchC();
-    fITS->SetTreeAddress();
+    if (fLoader->TreeC() == 0x0) fLoader->MakeTree("C");
+ 
+    fDetTypeRec->SetLoader(fLoader);
+    fDetTypeRec->MakeBranchR(0);
+    fDetTypeRec->MakeBranchC();
+    fDetTypeRec->SetTreeAddress();
+    fDetTypeRec->SetTreeAddressR(fLoader->TreeR());
+
     fInit = InitRec();
 
     Info("Init","  Done\n\n\n");
@@ -188,45 +191,49 @@ Bool_t AliITSreconstruction::InitRec(){
     //      none.
     // Return:
     //      none.
-    AliITSDetType *idt;
-
+  /*
+  //AliITSDetType *idt;
+  fDetTypeRec->SetLoader(fLoader);
     // SPD
-    if(fDet[kSPD]){
-      Info("InitRec","SPD");
-      idt = fITS->DetType(kSPD);
-      AliITSsegmentationSPD *segSPD = (AliITSsegmentationSPD*)idt->GetSegmentationModel();
-      TClonesArray *digSPD = fITS->DigitsAddress(kSPD);
-      TClonesArray *recpSPD = fITS->ClustersAddress(kSPD);
-      Info("InitRec","idt = %#x; digSPD = %#x; recpSPD = %#x",idt,digSPD,recpSPD);
+  if(fDet[kSPD]){
+    Info("InitRec","SPD");
+    //idt = fITS->DetType(kSPD);
+    AliITSsegmentationSPD *segSPD = (AliITSsegmentationSPD*)fDetTypeRec->GetSegmentationModel(0);
+      TClonesArray *digSPD = fDetTypeRec->DigitsAddress(kSPD);
+      TClonesArray *recpSPD = fDetTypeRec->ClustersAddress(kSPD);
+      Info("InitRec","idt = %#x; digSPD = %#x; recpSPD = %#x",fDetTypeRec,digSPD,recpSPD);
       AliITSClusterFinderSPD *recSPD = new AliITSClusterFinderSPD(segSPD,digSPD,recpSPD);
-      fITS->SetReconstructionModel(kSPD,recSPD);
+      fDetTypeRec->SetReconstructionModel(kSPD,recSPD);
     } // end if fDet[kSPD].
-    // SDD
-    if(fDet[kSDD]){
-      Info("InitRec","SDD");
-      idt = fITS->DetType(kSDD);
-      AliITSsegmentationSDD *segSDD = (AliITSsegmentationSDD*)
-                                         idt->GetSegmentationModel();
-      AliITSresponseSDD *resSDD = (AliITSresponseSDD*)
-                                         idt->GetResponseModel();
-      TClonesArray *digSDD = fITS->DigitsAddress(kSDD);
-      TClonesArray *recpSDD = fITS->ClustersAddress(kSDD);
-      AliITSClusterFinderSDD *recSDD =new AliITSClusterFinderSDD(segSDD,
-                                                   resSDD,
-                                                 digSDD,recpSDD);
-      fITS->SetReconstructionModel(kSDD,recSDD);
-    } // end if fDet[kSDD]
+  // SDD
+  if(fDet[kSDD]){
+    Info("InitRec","SDD");
+    //    idt = fITS->DetType(kSDD);
+    AliITSsegmentationSDD *segSDD = (AliITSsegmentationSDD*)
+      fDetTypeRec->GetSegmentationModel(1);
+    AliITSresponseSDD *resSDD = (AliITSresponseSDD*)
+      fDetTypeRec->GetCalibrationModel(fDetTypeRec->GetITSgeom()->GetStartSDD()); 
+    TClonesArray *digSDD = fDetTypeRec->DigitsAddress(kSDD);
+    TClonesArray *recpSDD = fDetTypeRec->ClustersAddress(kSDD);
+    AliITSClusterFinderSDD *recSDD =new AliITSClusterFinderSDD(segSDD,
+							       resSDD,
+							       digSDD,recpSDD);
+    fDetTypeRec->SetReconstructionModel(kSDD,recSDD);
+  } // end if fDet[kSDD]
     // SSD
-    if(fDet[kSSD]){
-      Info("InitRec","SSD");
-      idt = fITS->DetType(kSSD);
-      AliITSsegmentationSSD *segSSD = (AliITSsegmentationSSD*)
-                                       idt->GetSegmentationModel();
-      TClonesArray *digSSD = fITS->DigitsAddress(kSSD);
+  if(fDet[kSSD]){
+    Info("InitRec","SSD");
+    //idt = fITS->DetType(kSSD);
+    AliITSsegmentationSSD *segSSD = (AliITSsegmentationSSD*)
+                                       fDetTypeRec->GetSegmentationModel(2);
+      TClonesArray *digSSD = fDetTypeRec->DigitsAddress(kSSD);
       AliITSClusterFinderSSD *recSSD =new AliITSClusterFinderSSD(segSSD,
-                                                   digSSD);
-      fITS->SetReconstructionModel(kSSD,recSSD);
+								 digSSD);
+      recSSD->SetITSgeom(fDetTypeRec->GetITSgeom());
+      fDetTypeRec->SetReconstructionModel(kSSD,recSSD);
     } // end if fDet[kSSD]
+  */
+  fDetTypeRec->SetDefaultClusterFinders();
     Info("InitRec","    Done\n");
     return kTRUE;
 }
@@ -258,7 +265,6 @@ void AliITSreconstruction::Exec(const Option_t *opt){
       cout << "Initilization Failed, Can't run Exec." << endl;
       return;
     } // end if !fInit
-
     for(evnt=0;evnt<fEnt;evnt++)
      {
       Info("Exec","");
@@ -266,11 +272,17 @@ void AliITSreconstruction::Exec(const Option_t *opt){
       Info("Exec","");
 
       fRunLoader->GetEvent(evnt);
+      fDetTypeRec->SetITSgeom(fITSgeom);
+      fDetTypeRec->SetLoader(fLoader);
       if (fLoader->TreeR() == 0x0) fLoader->MakeTree("R");
-      fITS->MakeBranch("R");
-      if (fLoader->TreeC() == 0x0) fITS->MakeTreeC();
-      fITS->SetTreeAddress();
-      fITS->DigitsToRecPoints(evnt,0,lopt);
+      fDetTypeRec->MakeBranchR(0);
+      if (fLoader->TreeC() == 0x0){
+	fDetTypeRec->MakeTreeC();
+	fDetTypeRec->MakeBranchC();
+      }
+      fDetTypeRec->SetTreeAddressR(fLoader->TreeR());
+      fDetTypeRec->SetTreeAddressD(fLoader->TreeD());
+      fDetTypeRec->DigitsToRecPoints(evnt,0,lopt);
     } // end for evnt
 }
 //______________________________________________________________________ 

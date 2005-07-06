@@ -26,6 +26,7 @@
 #include "AliRunLoader.h"
 #include "AliRawReader.h"
 #include "AliITSclustererV2.h"
+#include "AliITSLoader.h"
 #include "AliITStrackerMI.h"
 #include "AliITStrackerSA.h"
 #include "AliITSVertexerIons.h"
@@ -36,17 +37,16 @@
 #include "AliITSpidESD.h"
 #include "AliV0vertexer.h"
 #include "AliCascadeVertexer.h"
-#include "AliRun.h"
-#include "AliITS.h"
-
 
 ClassImp(AliITSReconstructor)
 
-
+  
+  
 //_____________________________________________________________________________
 void AliITSReconstructor::Reconstruct(AliRunLoader* runLoader) const
 {
 // reconstruct clusters
+
 
   AliLoader* loader = runLoader->GetLoader("ITSLoader");
   if (!loader) {
@@ -58,13 +58,12 @@ void AliITSReconstructor::Reconstruct(AliRunLoader* runLoader) const
   runLoader->LoadKinematics();
 
   AliITSgeom* geom = GetITSgeom(runLoader);
-  if (!geom) return;
+
   AliITSclustererV2 clusterer(geom);
   Int_t nEvents = runLoader->GetNumberOfEvents();
 
   for (Int_t iEvent = 0; iEvent < nEvents; iEvent++) {
     runLoader->GetEvent(iEvent);
-
     TTree* treeClusters = loader->TreeR();
     if (!treeClusters) {
       loader->MakeTree("R");
@@ -75,7 +74,7 @@ void AliITSReconstructor::Reconstruct(AliRunLoader* runLoader) const
       Error("Reconstruct", "Can't get digits tree !");
       return;
     }
-
+    
     clusterer.Digits2Clusters(treeDigits, treeClusters);
          
     loader->WriteRecPoints("OVERWRITE");
@@ -86,13 +85,14 @@ void AliITSReconstructor::Reconstruct(AliRunLoader* runLoader) const
   runLoader->UnloadKinematics();
 }
 
+
 //_____________________________________________________________________________
 void AliITSReconstructor::Reconstruct(AliRunLoader* runLoader,
 				      AliRawReader* rawReader) const
 {
 // reconstruct clusters from raw data
 
-  AliLoader* loader = runLoader->GetLoader("ITSLoader");
+  AliITSLoader* loader = (AliITSLoader*)runLoader->GetLoader("ITSLoader");
   if (!loader) {
     Error("Reconstruct", "ITS loader not found");
     return;
@@ -100,7 +100,6 @@ void AliITSReconstructor::Reconstruct(AliRunLoader* runLoader,
   loader->LoadRecPoints("recreate");
 
   AliITSgeom* geom = GetITSgeom(runLoader);
-  if (!geom) return;
   AliITSclustererV2 clusterer(geom);
 
   Int_t iEvent = 0;
@@ -119,6 +118,7 @@ void AliITSReconstructor::Reconstruct(AliRunLoader* runLoader,
   }
 
   loader->UnloadRecPoints();
+
 }
 
 //_____________________________________________________________________________
@@ -126,11 +126,14 @@ AliTracker* AliITSReconstructor::CreateTracker(AliRunLoader* runLoader) const
 {
 // create a ITS tracker
 
+  
   AliITSgeom* geom = GetITSgeom(runLoader);
-  if (!geom) return NULL; 
   TString selectedTracker = GetOption();
   if (selectedTracker.Contains("MI")) return new AliITStrackerMI(geom);
   return new AliITStrackerSA(geom);
+  
+
+  
 }
 
 //_____________________________________________________________________________
@@ -209,14 +212,16 @@ AliITSgeom* AliITSReconstructor::GetITSgeom(AliRunLoader* runLoader) const
     Error("GetITSgeom", "couldn't get AliRun object");
     return NULL;
   }
-  AliITS* its = (AliITS*) runLoader->GetAliRun()->GetDetector("ITS");
-  if (!its) {
-    Error("GetITSgeom", "couldn't get ITS detector");
+  
+  TDirectory * olddir = gDirectory;
+  runLoader->CdGAFile();
+  AliITSgeom* geom = (AliITSgeom*)gDirectory->Get("AliITSgeom");
+  olddir->cd();
+  if(!geom){
+    Error("GetITSgeom","no ITS geometry available");
     return NULL;
   }
-  if (!its->GetITSgeom()) {
-    Error("GetITSgeom", "no ITS geometry available");
-    return NULL;
-  }
-  return its->GetITSgeom();
+  
+  return geom;
 }
+

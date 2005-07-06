@@ -17,11 +17,37 @@
  $Id$
 */
 
-/*********************************************************************
- * This class defines the "Standard" reconstruction for the ITS 
- * detector.
- **********************************************************************/
+/////////////////////////////////////////////////////////////////////
+// Base simulation functions for ITS                               //
+//                                                                 //
+//                                                                 //
+/////////////////////////////////////////////////////////////////////          
+#include "TBranch.h"
+#include "TClonesArray.h"
+#include "TObjArray.h"
+#include "TTree.h"
+
+#include "AliRun.h"
+#include "AliITSdigit.h"
+#include "AliITSdigitSPD.h"
+#include "AliITSdigitSDD.h"
+#include "AliITSdigitSSD.h"
 #include "AliITSDetTypeSim.h"
+#include "AliITSgeom.h"
+#include "AliITSpListItem.h"
+#include "AliITSresponseSPD.h"
+#include "AliITSresponseSDD.h"
+#include "AliITSresponseSSD.h"
+#include "AliITSsegmentationSPD.h"
+#include "AliITSsegmentationSDD.h"
+#include "AliITSsegmentationSSD.h"
+#include "AliITSsimulation.h"
+#include "AliITSsimulationSPD.h"
+#include "AliITSsimulationSDD.h"
+#include "AliITSsimulationSSD.h"
+
+
+const Int_t AliITSDetTypeSim::fgkNdettypes = 3;
 
 ClassImp(AliITSDetTypeSim)
 
@@ -34,9 +60,6 @@ fSegmentation(), // [NDet]
 fResponse(),     // [NMod]
 fPreProcess(),   // [] e.g. Fill fHitModule with hits
 fPostProcess(),  // [] e.g. Wright Raw data
-fHitModule(),    //! [NMod][Nhits]
-fNhits(0),       //! number of hits
-fHits(),         //! local pointer
 fNSDigits(0),    //! number of SDigits
 fSDigits(),      //! [NMod][NSDigits]
 fNDigits(0),     //! number of Digits
@@ -51,6 +74,17 @@ fDigClassName(){ // String with digit class name.
     //    none.
     // Return:
     //    A properly zero-ed AliITSDetTypeSim class.
+  fGeom = 0;
+  fSimulation = new TObjArray(fgkNdettypes);
+  fSegmentation = new TObjArray(fgkNdettypes);
+  fResponse = 0;
+  fPreProcess = 0;
+  fPostProcess = 0;
+  fNSDigits = 0;
+  fSDigits = new TClonesArray("AliITSpListItem",1000);
+  fDigits = new TObjArray(fgkNdettypes);
+  fNDigits = new Int_t[fgkNdettypes];
+  fLoader = 0;
 }
 //----------------------------------------------------------------------
 AliITSDetTypeSim::~AliITSDetTypeSim(){
@@ -61,156 +95,499 @@ AliITSDetTypeSim::~AliITSDetTypeSim(){
     //    none.
     // Return:
     //    Nothing.
-
-    delete fGeom;
-    delete fSimulation;
-    delete fSegmentation;
-    delete fResponse;
-    delete fPreProcess;
-    delete fPostProcess;
-    delete fHitModule;
-    // Do not delete fSDigits Not owned by this class see AliITS
-    // Do not delete fDigits Not owned by this class see AliITS
+  
+    if(fGeom) delete fGeom;
+    if(fSimulation){
+      fSimulation->Delete();
+      delete fSimulation;
+      fSimulation = 0;
+    }
+    
+    if(fSegmentation){
+      fSegmentation->Delete();
+      delete fSegmentation;
+      fSegmentation = 0;
+    }
+    
+    if(fResponse){
+      fResponse->Delete();
+      delete fResponse;
+      fResponse = 0;
+    }
+    
+    if(fPreProcess){
+      fPreProcess->Delete();
+      delete fPreProcess;
+      fPreProcess = 0;
+    }
+    
+    if(fPostProcess){
+      fPostProcess->Delete();
+      delete fPostProcess;
+      fPostProcess = 0;
+    }
+    
+    if (fLoader)
+      {
+	fLoader->GetModulesFolder()->Remove(this);
+      }
+    
+        
+    if (fSDigits) {
+      fSDigits->Delete();
+      delete fSDigits;
+      fSDigits=0;
+    }
+    if (fDigits) {
+      fDigits->Delete();
+      delete fDigits;
+      fDigits=0;
+    }
+  
 }
 //----------------------------------------------------------------------
-AliITSDetTypeSim::AliITSDetTypeSim(const AliITSDetTypeSim &s) : TObject(s){
-    // Copy Constructor for object AliITSDetTypeSim
-    // Inputs:
-    //   AliITSDetTypeSim &s  The copy Sourse
-    // Outputs:
-    //   none.
-    // Return:
-    //   A new AliITSDetTypeSim Object with the same data as that in the
-    //   source s.
+AliITSDetTypeSim::AliITSDetTypeSim(const AliITSDetTypeSim &source) : TObject(source){
+    // Copy Constructor for object AliITSDetTypeSim not allowed
+  if(this==&source) return;
+  Error("Copy constructor",
+	"You are not allowed to make a copy of the AliITSDetTypeSim");
+  exit(1);
 
-    if(&s==this) return;
-    *this = source;
-    return;
+        
 }
 //----------------------------------------------------------------------
-AliITSDetTypeSim::operator=(const AliITSDetTypeSim &s) : TObject(s){
+AliITSDetTypeSim& AliITSDetTypeSim::operator=(const AliITSDetTypeSim &source){
     // The = operator for object AliITSDetTypeSim
-    // Inputs:
-    //   AliITSDetTypeSim &s  The copy Sourse
-    // Outputs:
-    //   none.
-    // Return:
-    //   A new AliITSDetTypeSim Object with the same data as that in the
-    //   source s.
-
-    if(&s==this) return;
-    // Make copies of the objects in the arrays as well
-    this->fGeom            = new AliITSgeom(s.fGeom);// Create a new instance
-    if(this->fSimulation!=0) delete this->fSimulation;
-    this->fSimulation      = new TObjArray(s.fSimulation->GetSize(),
-                                           s.fSimulation->LowerBound());
-    for(i=0;i<s.fSimulation->GetSize();i++) if(s.fSimulation[i]!=0)
-        this->fSimulation[i] = new AliITSsimulation(*(s.fSimulation[i]));
-        else this->fSimulation[i] = 0;
-    if(this->fSegmentation!=0) delete this->fSegentation;
-    this->fSegmentation = new TObjArray(s.fSegmentation->GetSize(),
-                                        s.fSegmentation->GetLowerBound());
-    for(i=0;i<s.fSegmentation->GetSize();i++) if(s.fSegmentation[i]!=0)
-        this->fSegmentation[i] = new AliITSsegmentation(*(s.fSegmentation[i]));
-        else this->fSegmentation[i] = 0;
-    if(this->fResponse!=0) delete fResponse;
-    this->fResponse = new TObjArray(s.fResponse->GetSize(),
-                                    s.fResponse->GetLowerBound());
-    for(i=0;i<s.fResponse->GetSize();i++) if(s.Response[i]!=0)
-        this->fResponse[i] = new AliITSresponse(*(s.fResponse[i]));
-        else this->fResponse[i] = 0;
-    this->fPreProcess      = s.fPreProcess;  // Improper copy
-    this->fPostProcess     = s.fPostProcess; // Improper copy
-    this->fHitModule       = s.fHitModule;   // Improper copy
-    this->fNhits           = s.fNhits;       //
-    this->fHits            = s.fHits;        // copy pointer address only
-    this->fNSDigits        = s.fNSDigits;    //
-    this->fSDigits         = s.fSDigits;     // copy pointer address only
-    this->fNDigits         = s.fNDigits;     //
-    this->fDigits          = s.fDigits;      // copy pointer address only
-    this->fHitClassName    = s.fHitClassName;
-    this->fSDigitClassName = s.fSDigitClassName;
-    this->fDigitClassName  = s.FDigitClassName;
+ 
+    if(&source==this) return *this;
+    Error("operator=","You are not allowed to make a copy of the AliITSDetTypeSIm");
+    exit(1);
     return *this;
 }
+
+
 //______________________________________________________________________
-void AliITSDetTypeSim::InitModules(Int_t size,Int_t &nmodules){
-    // Initialize the modules array.
-    // Inputs:
-    //      Int_t size  Size of array of the number of modules to be
-    //                  created. If size <=0 then the number of modules
-    //                  is gotten from AliITSgeom class kept in fGeom.
-    // Outputs:
-    //      Int_t &nmodules The number of modules existing.
-    // Return:
-    //      none.
+void AliITSDetTypeSim::SetSimulationModel(Int_t dettype,AliITSsimulation *sim){
 
-    if(fHitModule){ 
-        fHitModule->Delete();
-        delete fHitModule;
-    } // end fir fITSmoudles
+  //Set simulation model for detector type
 
-    Int_t nl,indexMAX,index;
-
-    if(size<=0){ // default to using data stored in AliITSgeom
-        if(fGeom==0) {
-            Error("InitModules","fGeom not defined");
-            return;
-        } // end if fGeom==0
-        nl = fGeom->GetNlayers();
-        indexMAX = fGeom->GetIndexMax();
-        nmodules = indexMAX;
-        fHitModule = new TObjArray(indexMAX);
-        for(index=0;index<indexMAX;index++){
-            fHitModule->AddAt( new AliITSmodule(index),index);
-        } // end for index
-    }else{
-        fHitModule = new TObjArray(size);
-        for(index=0;index<size;index++) {
-            fHitModule->AddAt( new AliITSmodule(index),index);
-        } // end for index
-
-        nmodules = size;
-    } // end i size<=0
+  if(fSimulation==0) fSimulation = new TObjArray(fgkNdettypes);
+  fSimulation->AddAt(sim,dettype);
 }
 //______________________________________________________________________
-void AliITSDetTypeSim::FillModules(TTree *treeH, Int_t mask) {
-    // fill the modules with the sorted by module hits; 
-    // can be called many times to do a merging
-    // Inputs:
-    //      TTree *treeH  The tree containing the hits to be copied into
-    //                    the modules.
-    //      Int_t mask    The track number mask to indecate which file
-    //                    this hits came from.
-    // Outputs:
-    //      none.
-    // Return:
-    //      none.
+AliITSsimulation* AliITSDetTypeSim::GetSimulationModel(Int_t dettype){
 
-    if (treeH == 0x0){Error("FillModules","Tree is NULL");return;}
+  //Get simulation model for detector type
+  if(fSimulation==0)  {
+    Warning("GetSimulationModel","fSimulation is 0!");
+    return 0;     
+  }
+  return (AliITSsimulation*)(fSimulation->At(dettype));
+}
+//______________________________________________________________________
+AliITSsimulation* AliITSDetTypeSim::GetSimulationModelByModule(Int_t module){
 
-    Int_t lay,lad,det,index;
-    AliITShit *itsHit=0;
-    AliITSmodule *mod=0;
-    TBranch *branch = treeH->GetBranch(fHitClassName.Data());
-    if (!branch){Error("FillModules","%s branch in TreeH not found",
-                       fHitClassName.Data());return;} // end if !branch
-    branch->SetAddress(&fHits);
-    Int_t nTracks =(Int_t) treeH->GetEntries();
-    Int_t iPrimTrack,h;
-    for(iPrimTrack=0; iPrimTrack<nTracks; iPrimTrack++){
-        ResetHits();
-        Int_t nBytes = treeH->GetEvent(iPrimTrack);
-        if (nBytes <= 0) continue;
-        Int_t nHits = fHits->GetEntriesFast();
-        for(h=0; h<nHits; h++){
-            itsHit = (AliITShit *)fHits->UncheckedAt(h);
-            itsHit->GetDetectorID(lay,lad,det);
-            if (fGeom) index = fGeom->GetModuleIndex(lay,lad,det);
-            else index=det-1; // This should not be used.
-            mod = GetModule(index);
-            itsHit->SetTrack(itsHit->GetTrack()+mask); // Set track mask.
-            mod->AddHit(itsHit,iPrimTrack,h);
-        } // end loop over hits 
-    } // end loop over tracks
+  //Get simulation model by module number
+  if(fGeom==0) {
+    Warning("GetSimulationModelByModule","fGeom is 0!");
+    return 0;
+  }
+  
+  return GetSimulationModel(fGeom->GetModuleType(module));
+}
+//______________________________________________________________________
+void AliITSDetTypeSim::SetSegmentationModel(Int_t dettype,AliITSsegmentation *seg){
+   
+  //Set segmentation model for detector type
+  if(fSegmentation==0x0) fSegmentation = new TObjArray(fgkNdettypes);
+  fSegmentation->AddAt(seg,dettype);
+
+}
+//______________________________________________________________________
+AliITSsegmentation* AliITSDetTypeSim::GetSegmentationModel(Int_t dettype){
+
+  //Get segmentation model for detector type
+   
+   if(fSegmentation==0) {
+     Warning("GetSegmentationModel","fSegmentation is 0!");
+     return 0; 
+   } 
+   return (AliITSsegmentation*)(fSegmentation->At(dettype));
+
+}
+//_______________________________________________________________________
+AliITSsegmentation* AliITSDetTypeSim::GetSegmentationModelByModule(Int_t module){
+  
+  //Get segmentation model by module number
+   if(fGeom==0){
+     Warning("GetSegmentationModelByModule","fGeom is 0!");
+     return 0;
+   }     
+   return GetSegmentationModel(fGeom->GetModuleType(module));
+
+}
+//_______________________________________________________________________
+void AliITSDetTypeSim::SetResponseModel(Int_t module,AliITSresponse *resp){
+
+  
+  //Set segmentation model for module number
+  if(fResponse==0) fResponse = new TObjArray(fGeom->GetIndexMax());
+  fResponse->AddAt(resp,module);
+}
+//______________________________________________________________________
+void AliITSDetTypeSim::ResetResponse(){
+
+  //resets response array
+  if(fResponse){
+    for(Int_t i=0;i<fResponse->GetEntries();i++){
+      if(fResponse->At(i)) delete (AliITSresponse*)fResponse->At(i);
+    }
+  }
+}
+//______________________________________________________________________
+void AliITSDetTypeSim::ResetSegmentation(){
+ 
+ //Resets segmentation array
+  if(fSegmentation){
+    for(Int_t i=0;i<fgkNdettypes;i++){
+      if(fSegmentation->At(i)) delete (AliITSsegmentation*)fSegmentation->At(i);
+    }
+  }
+}
+
+//_______________________________________________________________________
+AliITSresponse* AliITSDetTypeSim::GetResponseModel(Int_t module){
+  
+  //Get segmentation model for module number
+  
+  if(fResponse==0) {
+    Warning("GetResponseModel","fResponse is 0!");
+    return 0; 
+  }  
+  return (AliITSresponse*)(fResponse->At(module));
+}
+//_______________________________________________________________________
+void AliITSDetTypeSim::SetDefaults(){
+
+  //Set defaults for segmentation and response
+  
+
+  if(fGeom==0){
+    Warning("SetDefaults","fGeom is 0!");
+    return;
+  }
+
+  if(!fResponse) fResponse = new TObjArray(fGeom->GetIndexMax());  
+
+  AliITSsegmentation* seg;
+  AliITSresponse* res;
+  ResetResponse();
+  ResetSegmentation();
+
+  for(Int_t imod=0;imod<fGeom->GetIndexMax();imod++){
+      Int_t dettype = fGeom->GetModuleType(imod);
+    //SPD
+    if(dettype==0){
+      if(!GetSegmentationModel(dettype)){
+	seg = new AliITSsegmentationSPD(fGeom);
+	SetSegmentationModel(dettype,seg);
+      }
+      if(!GetResponseModel(imod)){
+	res = new AliITSresponseSPD();
+	SetResponseModel(imod,res);
+      }
+      const char *kData0=(GetResponseModel(imod))->DataType();
+      if (strstr(kData0,"real")) {
+	SetDigitClassName(dettype,"AliITSdigit");
+      } else SetDigitClassName(dettype,"AliITSdigitSPD");
+    }
+    //SDD
+    if(dettype==1){
+      if(!GetResponseModel(imod)){
+	SetResponseModel(imod,new AliITSresponseSDD("simulated"));
+      }
+      if(!GetSegmentationModel(dettype)){
+	res = GetResponseModel(imod);
+	seg = new AliITSsegmentationSDD(fGeom,res);
+	SetSegmentationModel(dettype,seg);
+      }
+      const char *kopt = GetResponseModel(imod)->ZeroSuppOption();
+      if((!strstr(kopt,"2D"))&&(!strstr(kopt,"1D"))) SetDigitClassName(dettype,"AliITSdigit");
+      else SetDigitClassName(dettype,"AliITSdigitSDD");
+    }
+    //SSD
+    if(dettype==2){
+      if(!GetSegmentationModel(dettype)){
+	seg = new AliITSsegmentationSSD(fGeom);
+	SetSegmentationModel(dettype,seg);
+      }
+      if(!GetResponseModel(imod)){
+	SetResponseModel(imod,new AliITSresponseSSD("simulated"));
+      }
+      const char *kData2 = (GetResponseModel(imod))->DataType();
+      if (strstr(kData2,"real")) {
+	SetDigitClassName(dettype,"AliITSdigit");
+      } else SetDigitClassName(dettype,"AliITSdigitSSD");
+      
+    }
+
+  }
+
+}
+
+//_______________________________________________________________________
+void AliITSDetTypeSim::SetDefaultSimulation(){
+
+  //Set default simulation for detector type
+
+ 
+  if(fGeom==0){
+    Warning("SetDefaults","fGeom is 0!");
+    return;
+  }
+  
+  if(!fResponse) fResponse = new TObjArray(fGeom->GetIndexMax());
+
+  AliITSsegmentation* seg;
+  AliITSresponse* res;
+  AliITSsimulation* sim;
+
+  for(Int_t idet=0;idet<fgkNdettypes;idet++){
+   //SPD
+    if(idet==0){
+      sim = GetSimulationModel(idet);
+      if(!sim){
+	seg = (AliITSsegmentationSPD*)GetSegmentationModel(idet);
+	res = (AliITSresponseSPD*)GetResponseModel(fGeom->GetStartSPD());      
+	sim = new AliITSsimulationSPD(seg,res);
+	SetSimulationModel(idet,sim);
+      } else{
+	sim->SetResponseModel(GetResponseModel(fGeom->GetStartSPD()));
+	sim->SetSegmentationModel((AliITSsegmentationSPD*)GetSegmentationModel(idet));
+	sim->Init();
+      }
+    }
+    //SDD
+    if(idet==1){
+      sim = GetSimulationModel(idet);
+      if(!sim){
+	seg = (AliITSsegmentationSDD*)GetSegmentationModel(idet);
+	res = (AliITSresponseSDD*)GetResponseModel(fGeom->GetStartSDD());
+	sim = new AliITSsimulationSDD(seg,res);
+	SetSimulationModel(idet,sim);
+      } else {
+	sim->SetResponseModel((AliITSresponseSDD*)GetResponseModel(fGeom->GetStartSDD()));
+	sim->SetSegmentationModel((AliITSsegmentationSDD*)GetSegmentationModel(idet));
+	sim->Init();
+      }
+      
+    }
+    //SSD
+    if(idet==2){
+      sim = GetSimulationModel(idet);
+      if(!sim){
+	seg = (AliITSsegmentationSSD*)GetSegmentationModel(idet);
+	res = (AliITSresponseSSD*)GetResponseModel(fGeom->GetStartSSD());
+	sim = new AliITSsimulationSSD(seg,res);
+	SetSimulationModel(idet,sim);
+      } else{
+	sim->SetResponseModel((AliITSresponseSSD*)GetResponseModel(fGeom->GetStartSSD()));
+	sim->SetSegmentationModel((AliITSsegmentationSSD*)GetSegmentationModel(idet));
+	sim->Init();
+      }
+
+    }
+
+  }
+}
+
+//___________________________________________________________________
+void AliITSDetTypeSim::SetTreeAddressS(TTree* treeS, Char_t* name){
+  // Set branch address for the ITS summable digits Trees.
+  
+  char branchname[30];
+
+  if(!treeS){
+    return;
+  }
+  if (fSDigits == 0x0){
+    fSDigits = new TClonesArray("AliITSpListItem",1000);
+  }
+  TBranch *branch;
+  sprintf(branchname,"%s",name);
+  branch = treeS->GetBranch(branchname);
+  if (branch) branch->SetAddress(&fSDigits);
+
+}
+//___________________________________________________________________
+void AliITSDetTypeSim::SetTreeAddressD(TTree* treeD, Char_t* name){
+  // Set branch address for the digit Trees.
+  
+  const char *det[3] = {"SPD","SDD","SSD"};
+  TBranch *branch;
+  
+  char branchname[30];
+  
+  if(!treeD){
+    return;
+  }
+  if(!fDigits){
+    fDigits = new TObjArray(fgkNdettypes); 
+  }
+  for(Int_t i=0;i<fgkNdettypes;i++){
+    Char_t* digclass = GetDigitClassName(i);
+    if(digclass==0x0){
+      if(i==0) SetDigitClassName(i,"AliITSdigitSPD");
+      if(i==1) SetDigitClassName(i,"AliITSdigitSDD");
+      if(i==2) SetDigitClassName(i,"AliITSdigitSSD");
+      digclass = GetDigitClassName(i);
+    }
+    TString classn = digclass;
+    if(!(fDigits->At(i))){
+      fDigits->AddAt(new TClonesArray(classn.Data(),1000),i);
+    }else{
+      ResetDigits(i);
+    }
+    
+    if(fgkNdettypes==3) sprintf(branchname,"%sDigits%s",name,det[i]);
+    else sprintf(branchname,"%sDigits%d",name,i+1);
+    if(fDigits){
+      branch = treeD->GetBranch(branchname);
+      if(branch) branch->SetAddress(&((*fDigits)[i]));
+    }
+  }
+
+}
+//___________________________________________________________________
+void AliITSDetTypeSim::ResetDigits(){
+  // Reset number of digits and the digits array for the ITS detector.
+  
+
+  if(!fDigits){
+    Error("ResetDigits","fDigits is null!");
+    return;
+  }
+  for(Int_t i=0;i<fgkNdettypes;i++){
+    ResetDigits(i);
+  }
+}
+//___________________________________________________________________
+void AliITSDetTypeSim::ResetDigits(Int_t branch){
+  // Reset number of digits and the digits array for this branch.
+
+  if(fDigits->At(branch)){
+    ((TClonesArray*)fDigits->At(branch))->Clear();
+  }
+  if(fNDigits) fNDigits[branch]=0;
+
+}
+
+
+
+//_______________________________________________________________________
+void AliITSDetTypeSim::SDigitsToDigits(Option_t* opt, Char_t* name){
+  // Standard Summable digits to Digits function.
+  if(!fGeom){
+    Warning("SDigitsToDigits","fGeom is null!!");
+    return;
+  }
+  
+  const char *all = strstr(opt,"All");
+  const char *det[3] = {strstr(opt,"SPD"),strstr(opt,"SDD"),
+			strstr(opt,"SSD")};
+  if( !det[0] && !det[1] && !det[2] ) all = "All";
+  else all = 0;
+  static Bool_t setDef = kTRUE;
+  if(setDef) SetDefaultSimulation();
+  setDef = kFALSE;
+  
+  AliITSsimulation *sim =0;
+  TTree* trees = fLoader->TreeS();
+  if( !(trees && GetSDigits()) ){
+    Error("SDigits2Digits","Error: No trees or SDigits. Returning.");
+    return;
+  } 
+  sprintf(name,"%s",name);
+  TBranch* brchSDigits = trees->GetBranch(name);
+  
+  Int_t id;
+  for(Int_t module=0;module<fGeom->GetIndexMax();module++){
+     id = fGeom->GetModuleType(module);
+    if (!all && !det[id]) continue;
+    sim = (AliITSsimulation*)GetSimulationModel(id);
+    if(!sim){
+      Error("SDigit2Digits","The simulation class was not "
+	    "instanciated for module %d type %s!",module,
+	    fGeom->GetModuleTypeName(module));
+      exit(1);
+    }
+    sim->InitSimulationModule(module,gAlice->GetEvNumber());
+    
+    fSDigits->Clear();
+    brchSDigits->GetEvent(module);
+    sim->AddSDigitsToModule(fSDigits,0);
+    sim->FinishSDigitiseModule();
+    fLoader->TreeD()->Fill();
+    ResetDigits();
+  }
+  fLoader->TreeD()->GetEntries();
+  fLoader->TreeD()->AutoSave();
+  fLoader->TreeD()->Reset();
+}
+
+
+
+//_________________________________________________________
+void AliITSDetTypeSim::AddSumDigit(AliITSpListItem &sdig){
+  
+  //Adds the module full of summable digits to the summable digits tree.
+  TClonesArray &lsdig = *fSDigits;
+  new(lsdig[fNSDigits++]) AliITSpListItem(sdig);
+}
+//__________________________________________________________
+void AliITSDetTypeSim::AddRealDigit(Int_t branch, Int_t *digits){
+  //   Add a real digit - as coming from data.
+  TClonesArray &ldigits = *((TClonesArray*)fDigits->At(branch));
+  new(ldigits[fNDigits[branch]++]) AliITSdigit(digits); 
+}
+//__________________________________________________________
+void AliITSDetTypeSim::AddSimDigit(Int_t branch, AliITSdigit* d){
+  
+  //    Add a simulated digit.
+  TClonesArray &ldigits = *((TClonesArray*)fDigits->At(branch));
+  switch(branch){
+  case 0:
+    new(ldigits[fNDigits[branch]++]) AliITSdigitSPD(*((AliITSdigitSPD*)d));
+    break;
+  case 1:
+    new(ldigits[fNDigits[branch]++]) AliITSdigitSDD(*((AliITSdigitSDD*)d));
+    break;
+  case 2:
+    new(ldigits[fNDigits[branch]++]) AliITSdigitSSD(*((AliITSdigitSSD*)d));
+    break;
+  } 
+  
+
+}
+
+//______________________________________________________________________
+void AliITSDetTypeSim::AddSimDigit(Int_t branch,Float_t phys,Int_t *digits,
+				   Int_t *tracks,Int_t *hits,Float_t *charges){
+  //   Add a simulated digit to the list.
+
+  TClonesArray &ldigits = *((TClonesArray*)fDigits->At(branch));
+  AliITSresponseSDD *resp = 0;
+  switch(branch){
+  case 0:
+    new(ldigits[fNDigits[branch]++]) AliITSdigitSPD(digits,tracks,hits);
+    break;
+  case 1:
+    resp = (AliITSresponseSDD*)GetResponseModel(fGeom->GetStartSDD());
+    new(ldigits[fNDigits[branch]++]) AliITSdigitSDD(phys,digits,tracks,
+						   hits,charges,resp);
+    break;
+  case 2:
+    new(ldigits[fNDigits[branch]++]) AliITSdigitSSD(digits,tracks,hits);
+    break;
+  } 
 }

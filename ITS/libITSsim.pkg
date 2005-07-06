@@ -1,0 +1,38 @@
+SRCS = 	AliITS.cxx \
+		AliITSvSPD02.cxx \
+          	AliITSvSDD03.cxx \
+		AliITSvSSD03.cxx \
+		AliITSvPPRcoarseasymm.cxx \
+		AliITSvPPRasymmFMD.cxx \
+		AliITSvBeamTestITS04.cxx \
+		AliITShit.cxx \
+		AliITSDetTypeSim.cxx \
+		AliITSmodule.cxx \
+		AliITSGeant3Geometry.cxx \
+		AliITSsimulationFastPoints.cxx \
+		AliITSsimulationFastPointsV0.cxx \
+		AliITSsimulation.cxx \
+		AliITSsimulationSPD.cxx \
+		AliITSsimulationSPDdubna.cxx \
+		AliITSsimulationSDD.cxx \
+		AliITSsimulationSSD.cxx \
+		AliITSTableSSD.cxx \
+		AliITSetfSDD.cxx \
+		AliITSdcsSSD.cxx \
+		AliITSHuffman.cxx \
+		AliITSstatistics.cxx \
+		AliITSstatistics2.cxx \
+		AliITSvtest.cxx	\
+		AliITSsDigitize.cxx \
+		AliITSDigitizer.cxx \
+		AliITSFDigitizer.cxx \
+                AliITSspdTestBeam.cxx \
+
+
+HDRS:=  $(SRCS:.cxx=.h)
+
+DHDR=ITSsimLinkDef.h
+
+EINCLUDE:=$(ALICE)/geant3/TGeant3 TPC RAW
+
+

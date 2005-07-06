@@ -4,16 +4,20 @@
  * See cxx source for full Copyright notice                               */
 
 /* $Id$ */
-
+/////////////////////////////////////////////////////////////////////
+// Class for helix fit on the Riemann sphere                       //
+/////////////////////////////////////////////////////////////////////
 #include<TLorentzVector.h>
 class TTree;
-class AliITS;
 class TVector3;
 
 class AliITSRiemannFit : public TObject{
  public:
   AliITSRiemannFit();
   AliITSRiemannFit(Int_t size,Int_t ntracks);
+  AliITSRiemannFit(const AliITSRiemannFit& rec);
+  AliITSRiemannFit& operator=(const AliITSRiemannFit &source);
+
   ~AliITSRiemannFit();
   class  AliPointtl {
     public :
@@ -88,7 +92,7 @@ class AliITSRiemannFit : public TObject{
   Float_t GetdY(Int_t i) const {return this->fPointRecs[i]->GetdY();}
   Float_t GetdZ(Int_t i) const {return this->fPointRecs[i]->GetdZ();}
   
-  void     InitPoints(Int_t ntracks,AliITS *ITS,TTree *TR,Int_t nparticles);
+  void     InitPoints(Int_t ntracks,TTree *TR,Int_t nparticles);
   void     WritePoints(void);
   void     ReadPoints(void);
   static Int_t SolveCubic(Double_t a,Double_t b,Double_t c,Double_t& x1,Double_t& x2,Double_t& x3);
@@ -106,10 +110,6 @@ class AliITSRiemannFit : public TObject{
 		  Double_t &corrLin);
 
  private:
-  // copy constructor (NO copy ctr. allowed)
- AliITSRiemannFit(const AliITSRiemannFit& rf );
-  // assignment operator (NO assignment allowed)
- AliITSRiemannFit& operator=(const AliITSRiemannFit& /* rf */);
 
   static Double_t Fitfunction(Double_t *x, Double_t* par);
 

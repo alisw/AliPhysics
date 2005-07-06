@@ -7,6 +7,14 @@
 */
 // ITS step manager and geometry class for the ITS SPD test beam geometry
 // of Summer 2002.
+///////////////////////////////////////////////////////////////////////
+// Step manager and 
+// geometry class
+// for the ITS 
+// SPD test beam
+// geometry of summer 2002
+// 
+///////////////////////////////////////////////////////////////////////
 
 #include "AliITS.h"
 

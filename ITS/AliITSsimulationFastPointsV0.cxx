@@ -11,9 +11,14 @@
  * appear in the supporting documentation. The authors make no claims     *
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
- **************************************************************************/
+ ***********************************************************************/
 
 /* $Id$ */
+/////////////////////////////////////////////////////////
+//  fast simulation V0                                 //
+//                                                     //
+//                                                     //
+/////////////////////////////////////////////////////////
 
 #include "AliITS.h"
 #include "AliITShit.h"
@@ -36,6 +41,20 @@ AliITSsimulationFastPointsV0::AliITSsimulationFastPointsV0(const char *dataType)
   fSx = new AliITSstatistics(2);
   fSz = new AliITSstatistics(2);
 }
+//______________________________________________________________________
+AliITSsimulationFastPointsV0::AliITSsimulationFastPointsV0(const AliITSsimulationFastPointsV0 &/*rec*/):AliITSsimulation(/*rec*/){
+    // Copy constructor. 
+
+  Error("Copy constructor","Copy constructor not allowed");
+  
+}
+//______________________________________________________________________
+AliITSsimulationFastPointsV0& AliITSsimulationFastPointsV0::operator=(const AliITSsimulationFastPointsV0& /*source*/){
+    // Assignment operator. This is a function which is not allowed to be
+    // done.
+    Error("operator=","Assignment operator not allowed\n");
+    return *this; 
+}
 
 //----------------------------------------------------------
 AliITSsimulationFastPointsV0::~AliITSsimulationFastPointsV0()
@@ -47,8 +66,9 @@ AliITSsimulationFastPointsV0::~AliITSsimulationFastPointsV0()
 }
 
 //-------------------------------------------------------------
-void AliITSsimulationFastPointsV0::CreateFastRecPoints(AliITSmodule *mod,Int_t module,TRandom *rndm) {
+void AliITSsimulationFastPointsV0::CreateFastRecPoints(AliITSmodule *mod,Int_t module,TRandom *rndm, TClonesArray* recp) {
   // Fast points simulator for all of the ITS.
+
   Int_t   nhit,h,trk,ifirst;
   Float_t x,y,z,t,e;// local coordinate (cm) and time of flight, and dedx.
   Float_t x1,y1,z1;
@@ -81,13 +101,13 @@ void AliITSsimulationFastPointsV0::CreateFastRecPoints(AliITSmodule *mod,Int_t m
       //      }
       switch (mod->GetLayer()){
       case 1: case 2:  // SPDs
-	AddSPD(e,mod,trk);
+	AddSPD(e,mod,trk,recp);
 	break;
       case 3: case 4:  // SDDs
-	AddSDD(e,mod,trk);
+	AddSDD(e,mod,trk,recp);
 	break;
       case 5: case 6:  // SSDs
-	AddSSD(e,mod,trk);
+	AddSSD(e,mod,trk,recp);
 	break;
       } // end switch
       fSx->Reset();
@@ -100,9 +120,9 @@ void AliITSsimulationFastPointsV0::CreateFastRecPoints(AliITSmodule *mod,Int_t m
 }
 //_______________________________________________________________________
 void AliITSsimulationFastPointsV0::AddSPD(Float_t &e,
-					 AliITSmodule *mod,Int_t trackNumber){
+					  AliITSmodule* /*mod*/,Int_t trackNumber,TClonesArray* recp){
   //
-
+  TClonesArray &pt=*recp;
   const Float_t kmicronTocm = 1.0e-4;
   //  const Float_t kdEdXtoQ = ;
   const Float_t kRMSx = 12.0*kmicronTocm; // microns->cm ITS TDR Table 1.3
@@ -125,13 +145,15 @@ void AliITSsimulationFastPointsV0::AddSPD(Float_t &e,
   //  if(a1>1.E5) printf(" sigmaZ2= %e\n",a2);
   rpSPD.SetSigmaZ2(a2);
 
-  (mod->GetITS())->AddRecPoint(rpSPD);
+  //(mod->GetITS())->AddRecPoint(rpSPD);
+  new (pt[fNrecp]) AliITSRecPoint(rpSPD);
+  fNrecp++;
 }
 //_______________________________________________________________________
 void AliITSsimulationFastPointsV0::AddSDD(Float_t &e,
-					 AliITSmodule *mod,Int_t trackNumber){
+					  AliITSmodule* /*mod*/,Int_t trackNumber,TClonesArray* recp){
   //
-
+  TClonesArray &pt=*recp;
   const Float_t kmicronTocm = 1.0e-4;
   const Float_t kdEdXtoQ = 2.778e+8; 
   const Float_t kRMSx = 38.0*kmicronTocm; // microns->cm ITS TDR Table 1.3
@@ -154,13 +176,15 @@ void AliITSsimulationFastPointsV0::AddSDD(Float_t &e,
   //  if(a1>1.E5) printf(" sigmaZ2= %e\n",a2);
   rpSDD.SetSigmaZ2(a2);
 
-  (mod->GetITS())->AddRecPoint(rpSDD);
+  new (pt[fNrecp]) AliITSRecPoint(rpSDD);
+  fNrecp++;
+
 }
 //_______________________________________________________________________
 void AliITSsimulationFastPointsV0::AddSSD(Float_t &e,
-					 AliITSmodule *mod,Int_t trackNumber){
+					  AliITSmodule* /*mod*/,Int_t trackNumber,TClonesArray* recp){
   // 
-
+  TClonesArray &pt=*recp;
   const Float_t kmicronTocm = 1.0e-4;
   const Float_t kdEdXtoQ = 2.778e+8;
   const Float_t kRMSx = 20.0*kmicronTocm;  // microns->cm ITS TDR Table 1.3
@@ -183,7 +207,10 @@ void AliITSsimulationFastPointsV0::AddSSD(Float_t &e,
   //  if(a1>1.E5) printf(" sigmaZ2= %e RMSx=%e RMSz=%e\n",a2,fSx->GetRMS(),fSz->GetRMS());
   rpSSD.SetSigmaZ2(a2);
 
-  (mod->GetITS())->AddRecPoint(rpSSD);
+  new (pt[fNrecp]) AliITSRecPoint(rpSSD);
+  fNrecp++;
+
+
 }
 //_______________________________________________________________________
 

@@ -17,11 +17,10 @@
 
 ////////////////////////////////////////////////
 //  Digits classes for all ITS detectors      //
+//                                            //
+//                                            //
 ////////////////////////////////////////////////
-#include <TObjArray.h>
-#include <TArrayI.h>
-#include <TArrayF.h>
-#include <TMath.h>
+
 #include "AliITSdigit.h"
 
 //______________________________________________________________________
@@ -34,13 +33,13 @@ AliITSdigit::AliITSdigit(const Int_t *digits) {
   fSignal       = digits[2];
 }
 //______________________________________________________________________
-void AliITSdigit::Print(ostream *os){
+void AliITSdigit::Print(ostream *os) {
     //Standard output format for this class
 
     *os << fCoord1 <<","<< fCoord2 <<","<< fSignal;
 }
 //______________________________________________________________________
-void AliITSdigit::Read(istream *os){
+void AliITSdigit::Read(istream *os) {
     //Standard input for this class
 
     *os >> fCoord1 >> fCoord2 >> fSignal;

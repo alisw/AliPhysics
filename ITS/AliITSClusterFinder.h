@@ -19,9 +19,10 @@ class AliITSMap;
 class AliITSresponse;
 class AliITSsegmentation;
 class AliITSRawCluster;
-class AliITS;
+class AliITSgeom;
 class AliITSdigit;
 class AliITSRecPoint;
+class AliITSDetTypeRec;
 
 //----------------------------------------------------------------------
 class AliITSClusterFinder :public TObject{
@@ -42,6 +43,9 @@ class AliITSClusterFinder :public TObject{
     void SetNoDebug(){fDebug=0;}
     // Returns the debug flag value
     Bool_t GetDebug(Int_t level=1)const {return fDebug>=level;}
+
+    void SetITSgeom(AliITSgeom* geom) {fITSgeom=geom;}
+    AliITSgeom* GetITSgeom() const {return fITSgeom;}
     //
     // Setters and Getters
     // segmentation
@@ -114,19 +118,18 @@ class AliITSClusterFinder :public TObject{
     //split by local maxima
     virtual void SplitByLocalMaxima(AliITSRawCluster *){}
     // IO functions
-    void Print(ostream *os); // Class ascii print function
+    void Print(ostream *os) const; // Class ascii print function
     void Read(istream *os);  // Class ascii read function
     virtual void Print(Option_t *option="") const {TObject::Print(option);}
     virtual Int_t Read(const char *name) {return TObject::Read(name);}
 
-    // Conversion from RecPoints to V2Clusters
-    void RecPoints2Clusters(const TClonesArray *points, Int_t idx, TClonesArray *clusters);
+    virtual void SetDetTypeRec(AliITSDetTypeRec* dtr) {fDetTypeRec=dtr;}
+    AliITSDetTypeRec* GetDetTypeRec() const {return fDetTypeRec;}
 
+    void InitGeometry(); 
  
   protected:
     // methods 
-    static void CheckLabels(Int_t lab[3]);
-    void Init();                      
     AliITSClusterFinder(const AliITSClusterFinder &source); // copy constructor
     // assignment operator
     AliITSClusterFinder& operator=(const AliITSClusterFinder &source);
@@ -143,7 +146,6 @@ class AliITSClusterFinder :public TObject{
                                        // and want to keep track of 
                                        // the cluster which was splitted
     AliITSMap          *fMap;          //! map
-    AliITS             *fITS;          //! pointer to the ITS      
     Int_t              fNperMax;       //! NperMax
     Int_t              fDeclusterFlag; //! DeclusterFlag
     Int_t              fClusterSize;   //! ClusterSize
@@ -153,8 +155,10 @@ class AliITSClusterFinder :public TObject{
     Float_t fZshift[2200];       // z-shifts of detector local coor. systems 
     Int_t fNdet[2200];           // detector index  
     Int_t fNlayer[2200];         // detector layer
+    AliITSDetTypeRec* fDetTypeRec; //ITS object for reconstruction
+    AliITSgeom*       fITSgeom;    //!ITS geometry
 
-    ClassDef(AliITSClusterFinder,4) //Class for clustering and reconstruction of space points
+    ClassDef(AliITSClusterFinder,5) //Class for clustering and reconstruction of space points
 };
 // Input and output functions for standard C++ input/output.
 ostream &operator<<(ostream &os,AliITSClusterFinder &source);

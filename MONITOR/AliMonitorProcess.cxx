@@ -35,8 +35,8 @@
 
 #include "AliLog.h"
 #include "AliESD.h"
-#include "AliITS.h"
 #include "AliITSclustererV2.h"
+#include "AliITSgeom.h"
 #include "AliITStrackerV2.h"
 #include "AliLoader.h"
 #include "AliMonitorHLT.h"
@@ -140,9 +140,7 @@ AliMonitorProcess::AliMonitorProcess(
   fRunLoader->LoadgAlice();
   gAlice = fRunLoader->GetAliRun();
   if (!gAlice) AliFatal("no gAlice object found");
-  AliITS* its = (AliITS*) gAlice->GetModule("ITS");
-  if (!its) AliFatal("no ITS detector found");
-  fITSgeom = its->GetITSgeom();
+  fITSgeom = (AliITSgeom*)gDirectory->Get("AliITSgeom");
   if (!fITSgeom) AliFatal("could not load ITS geometry");
 
   // Init TPC parameters for HLT

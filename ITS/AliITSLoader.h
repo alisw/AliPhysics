@@ -1,10 +1,12 @@
 #ifndef ALIITSLOADER_H
 #define ALIITSLOADER_H
-
+//////////////////////////////////////////////////////////
+// Loader class for ITS                                 //
+//////////////////////////////////////////////////////////
 #include <AliLoader.h>
 #include <AliESDVertex.h>
+#include <AliITSgeom.h>
 
-class AliITS;
 class AliITSdigit;
 class TObjArray;
 
@@ -17,16 +19,12 @@ class AliITSLoader: public AliLoader{
     virtual ~AliITSLoader();
 
     void           MakeTree(Option_t* opt);
-
-    // General ITS shortcuts
-    virtual AliITS* GetITS(); // Return pointer to the ITS.
-    virtual void    SetupDigits(AliITS *its); // Sets up digit using AliITS
-    virtual void    SetupDigits(TObjArray *digPerDet,Int_t n,
+    virtual void   SetupDigits(TObjArray *digPerDet,Int_t n,
                                 const Char_t **digclass); // Sets up digits
     // Gets the AliITSdigit for a given module and a specific digit in that
     // module. Array of digits stored in AliITS (must use 
     // SetupDigits(AliITS *its)).
-    virtual AliITSdigit* GetDigit(AliITS *its,Int_t module,Int_t digit);
+    // virtual AliITSdigit* GetDigit(AliITS *its,Int_t module,Int_t digit);
     // Gets the AliITSdigit for a given module and a specific digit in that
     // module. Array of digits stored in a user defined TObjArray digPerDet
     virtual AliITSdigit* GetDigit(TObjArray *digPerDet,Int_t module,Int_t digit);
@@ -66,7 +64,6 @@ class AliITSLoader: public AliLoader{
     AliESDVertex *GetVertex(){
         return static_cast <AliESDVertex*>(GetVertexDataLoader()->
                                            GetBaseLoader(0)->Get());}
-
     //V0s
     AliDataLoader* GetV0DataLoader() {return GetDataLoader("V0 Vertices");}
     virtual void   CleanV0s() {GetV0DataLoader()->GetBaseLoader(0)->Clean();}
@@ -109,6 +106,8 @@ class AliITSLoader: public AliLoader{
     virtual Int_t  WriteBackTracks(Option_t* opt=""){
         return GetBackTracksDataLoader()->GetBaseLoader(0)->WriteData(opt);}
 
+    // Geometry
+    AliITSgeom* GetITSgeom();
   protected:
 
     // METHODS

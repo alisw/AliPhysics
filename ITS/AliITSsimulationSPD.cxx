@@ -15,16 +15,12 @@
 
 /* $Id$ */
 
-#include <Riostream.h>
 #include <TRandom.h>
 #include <TH1.h>
-#include <TMath.h>
 #include <TString.h>
-#include <TParticle.h>
 
 #include "AliRun.h"
 #include "AliITS.h"
-#include "AliITShit.h"
 #include "AliITSdigitSPD.h"
 #include "AliITSmodule.h"
 #include "AliITSMapA2.h"
@@ -32,8 +28,6 @@
 #include "AliITSsimulationSPD.h"
 #include "AliITSsegmentation.h"
 #include "AliITSresponse.h"
-#include "AliITSsegmentationSPD.h"
-#include "AliITSresponseSPD.h"
 #include "AliLog.h"
 
 //#define DEBUG

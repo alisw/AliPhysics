@@ -6,6 +6,15 @@
 /*
 $Id$
 */
+////////////////////////////////////////////////////////////////////////
+// Version: 0                                                         //
+// Written by Rocco Caliandro                                         //
+// from a model developed with T. Virgili and R.A. Fini               //
+// June 15 2000                                                       //
+//                                                                    //
+// AliITSsimulationSPD is the simulation of SPDs                      //
+////////////////////////////////////////////////////////////////////////
+
 #include "AliITSresponseSPD.h"
 #include "AliITSsegmentationSPD.h"
 #include "AliITSsimulation.h"
@@ -22,7 +31,7 @@ class AliITSsimulationSPD : public AliITSsimulation {
     AliITSsimulationSPD(); // Default constructor
     // Standard constructor
     AliITSsimulationSPD(AliITSsegmentation *seg, AliITSresponse *res);
-    ~AliITSsimulationSPD();// destructor
+    virtual ~AliITSsimulationSPD();// destructor
     AliITSsimulationSPD(const AliITSsimulationSPD &source); // copy constructo
     // assignment operator
     AliITSsimulationSPD& operator=(const AliITSsimulationSPD &source);

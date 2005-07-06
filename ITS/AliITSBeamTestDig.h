@@ -10,10 +10,11 @@
 
 #include "TTask.h"
 
-class AliITS;
+
 class AliRawReader;
 class TTree;
 class AliITSEventHeader;
+class AliITSgeom;
 
 class AliITSBeamTestDig: public TTask {
  
@@ -29,8 +30,7 @@ class AliITSBeamTestDig: public TTask {
   void SetRawReader(AliRawReader* rd) {fReader=rd;}
   void SetTree(TTree* treedig) {fTreeD=treedig;}
   void SetITSEventHeader(AliITSEventHeader* header){fITSHeader = header;}
-
-  void SetBeamTest(AliITS* bt) {fBt=bt;}
+  void SetITSgeom(AliITSgeom* geom) {fITSgeom=geom;}  
 
 
  protected:      
@@ -38,10 +38,10 @@ class AliITSBeamTestDig: public TTask {
   AliITSEventHeader* fITSHeader;     // its event header
   AliRawReader* fReader;             // !reader ;
   TTree* fTreeD;                     // tree of digits
- 
-  AliITS* fBt;               // !beam test object
+  AliITSgeom* fITSgeom;              // !ITS geometry
 
-  ClassDef(AliITSBeamTestDig,3)   // its beam test digitization 
+
+  ClassDef(AliITSBeamTestDig,4)   // its beam test digitization 
 
  };
 

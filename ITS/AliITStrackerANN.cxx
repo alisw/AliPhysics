@@ -18,8 +18,6 @@
 // Email : alberto.pulvirenti@ct.infn.it
 // ---------------------------------------------------------------------------------
 
-#include <Riostream.h>
-#include <TMath.h>
 #include <TString.h>
 #include <TObjArray.h>
 #include <TVector3.h>
@@ -1442,7 +1440,7 @@ Int_t AliITStrackerANN::SaveTracks(Int_t sector)
 				fGeom->GetModuleId(mod, lay, lad, det);
 				Float_t y0 = cluster->GetY();
 				Float_t z0 = cluster->GetZ();
-				AliITStrackSA* trac = new AliITStrackSA(lay, lad, det, 
+				AliITStrackSA* trac = new AliITStrackSA(fGeom,lay, lad, det, 
 				                                        y0, z0, 
 																	 param[4], param[7], param[3], 1);
 				for (l = 0; l < fNLayers; l++) {
@@ -1606,7 +1604,7 @@ Int_t AliITStrackerANN::StoreTracks()
 			fGeom->GetModuleId(mod, lay, lad, det);
 			Float_t y0 = cluster->GetY();
 			Float_t z0 = cluster->GetZ();
-			AliITStrackSA* trac = new AliITStrackSA(lay, lad, det, y0, z0, 
+			AliITStrackSA* trac = new AliITStrackSA(fGeom,lay, lad, det, y0, z0, 
 																 annTrack.Phi(), annTrack.TanLambda(), 
 																 annTrack.Curv(), 1);
 			for (Int_t l = 0; l < fNLayers; l++) {

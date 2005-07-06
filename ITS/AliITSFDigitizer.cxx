@@ -15,13 +15,14 @@
  
 /* $Id$ */
 
+//////////////////////////////////////////////////////////////////
+// Class for fast reconstruction of recpoints                   //
+//                                                              //
+//                                                              //
+//////////////////////////////////////////////////////////////////
+
 #include <stdlib.h>
-#include <Riostream.h>
-#include <TObjArray.h>
-#include <TClonesArray.h>
 #include <TTree.h>
-#include <TBranch.h>
-#include <TFile.h>
 
 #include <AliRun.h>
 #include <AliRunLoader.h>
@@ -29,8 +30,6 @@
 #include <AliRunDigitizer.h>
 
 #include "AliITSFDigitizer.h"
-// #include "AliITSpList.h"
-#include "AliITSmodule.h"
 #include "AliITSgeom.h"
 #include "AliITSsimulationFastPoints.h"
 
@@ -52,6 +51,22 @@ AliITSFDigitizer::AliITSFDigitizer(AliRunDigitizer *mngr) : AliDigitizer(mngr){
     fITS      = 0;
     fInit     = kFALSE;
 }
+//______________________________________________________________________
+AliITSFDigitizer::AliITSFDigitizer(const AliITSFDigitizer &/*rec*/):AliDigitizer(/*rec*/){
+    // Copy constructor. 
+
+  Error("Copy constructor","Copy constructor not allowed");
+  
+}
+//______________________________________________________________________
+AliITSFDigitizer& AliITSFDigitizer::operator=(const AliITSFDigitizer& /*source*/){
+
+    // Assignment operator. This is a function which is not allowed to be
+    // done.
+    Error("operator=","Assignment operator not allowed\n");
+    return *this; 
+}
+
 //______________________________________________________________________
 AliITSFDigitizer::~AliITSFDigitizer(){
 //
@@ -115,10 +130,11 @@ void AliITSFDigitizer::Exec(Option_t* opt){
 	outgime->MakeTree("R");
 	outputTreeR = outgime->TreeR();
     }
-    TClonesArray *recPoints = fITS->RecPoints();
-//  TBranch *branch =
-    fITS->MakeBranchInTree(outputTreeR,"ITSRecPointsF",&recPoints,4000,0);
-  
+    
+    TClonesArray* recPoints = new TClonesArray("AliITSRecPoint",1000);
+    TBranch* branch = outputTreeR->GetBranch("ITSRecPointsF");
+    if(branch) branch->SetAddress(recPoints);
+    else outputTreeR->Branch("ITSRecPointsF",&recPoints);
     Int_t nModules;
     fITS->InitModules(-1,nModules);
 
@@ -147,10 +163,9 @@ void AliITSFDigitizer::Exec(Option_t* opt){
 
     AliITSgeom *geom = fITS->GetITSgeom();
     for(Int_t moduleIndex = 0; moduleIndex<geom->GetIndexMax(); moduleIndex++){
-	sim->CreateFastRecPoints(moduleIndex);
-//      branch->Fill();
+	sim->CreateFastRecPoints(moduleIndex,recPoints);
 	outputTreeR->Fill();
-	fITS->ResetRecPoints();
+	recPoints->Clear();
     }
     outrl->WriteRecPoints("OVERWRITE");
 //  outputTreeR->AutoSave();

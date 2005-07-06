@@ -23,6 +23,7 @@ void AliITSDDLRawData(Int_t eventNumber=0){
   const char * inFile_new = "galice.root";
   AliRunLoader *rl = AliRunLoader::Open(inFile_new,"Event","read");
   rl->LoadgAlice();
+  gAlice=rl->GetAliRun();
   Int_t nevents=rl->GetNumberOfEvents();
   cout<<"Number of Events:"<<nevents<<endl;
   while (eventNumber<=0 || eventNumber>nevents){
@@ -43,7 +44,7 @@ void AliITSDDLRawData(Int_t eventNumber=0){
 
   Int_t nmodules;
   ITS->InitModules(-1,nmodules);
-  ITS->SetTreeAddressD(TD);
+  ITS->GetDetTypeSim()->SetTreeAddressD(TD,"ITS");
 
     AliITSDDLRawData *util=new AliITSDDLRawData();
     //Verbose level

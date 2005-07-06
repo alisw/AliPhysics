@@ -12,7 +12,11 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-
+//////////////////////////////////////////////////////////////////////////////
+// This is the base class for ITS detector signal simulations. Data members //
+// include are a pointer to the detectors specific response and segmentation//
+// classes. See the detector specific implementations for the propper code. //
+//////////////////////////////////////////////////////////////////////////////
 #include "TClonesArray.h"
 
 #include "AliITSsimulation.h"

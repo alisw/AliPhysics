@@ -14,10 +14,11 @@
 class TClonesArray;
 class AliRawReader;
 class AliITSRawStream;
+class AliITSgeom;
 
 class AliITSClusterFinderV2SPD : public AliITSClusterFinderV2 {
 public:
-  AliITSClusterFinderV2SPD();
+  AliITSClusterFinderV2SPD(AliITSgeom* geom);
   virtual ~AliITSClusterFinderV2SPD(){;}
   virtual void FindRawClusters(Int_t mod);
   virtual void RawdataToClusters(AliRawReader* rawReader,TClonesArray** clusters);

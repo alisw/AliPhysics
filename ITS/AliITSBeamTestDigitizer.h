@@ -23,7 +23,6 @@ class AliITSBeamTestDigSDD;
 class AliRawReaderDate;
 class AliRunLoader;
 class AliITSLoader;
-class AliITS;
 class AliITSEventHeader;
 class AliRawDataHeader;
 
@@ -34,10 +33,9 @@ class AliITSBeamTestDigitizer : public TTask {
  
   AliITSBeamTestDigitizer(); 
   AliITSBeamTestDigitizer(const Text_t* name,const Text_t* title, 
-			  Char_t* opt="Nov04");
+			  Char_t* opt="Nov04",const char* filename="galice.root");
   AliITSBeamTestDigitizer(const Text_t* name,const Text_t* title, 
-			  Int_t run,Char_t* opt="Nov04");
-  AliITSBeamTestDigitizer(const char* filename);
+			  Int_t run,Char_t* opt="Nov04",const char* filename="galice.root");
   AliITSBeamTestDigitizer(const AliITSBeamTestDigitizer& bt);
   AliITSBeamTestDigitizer& operator=(const AliITSBeamTestDigitizer &source);
 
@@ -56,18 +54,16 @@ class AliITSBeamTestDigitizer : public TTask {
   void SetRunNumber(Int_t run) {fRunNumber=run;}
   void SetOptDate(Bool_t opt=kFALSE) {fOptDate=opt;}
 
-  void SetBeamTestGeometry(AliITS* bt){fBt=bt;}
-
   void SetActive(const TString& subdet,Bool_t value);
 
   void ExecDigitization();
-  void Init();
+  void Init(const char* filename);
  
   Int_t GetRunNumber()  const {return fRunNumber;}
   Bool_t GetFlagInit()  const {return fFlagInit;}
   Bool_t GetOptDate() const {return fOptDate;}
   BeamtestPeriod_t GetBeamTestPeriod() const {return fPeriod;}
-  AliITS* GetBeamTestGeometry() const {return fBt;}
+
 
  protected:
 
@@ -86,8 +82,6 @@ class AliITSBeamTestDigitizer : public TTask {
   TString  fRawdataFileName;        //Raw data file name
   BeamtestPeriod_t  fPeriod;                 //Beam test period
 
-  AliITS*     fBt;                  //! Local pointer to ITS geometry.
-  
   AliRunLoader* fRunLoader;         // Local pointer to run loader
   AliITSLoader* fLoader;            // Pointer to ITS loader
 
@@ -95,7 +89,7 @@ class AliITSBeamTestDigitizer : public TTask {
 
   static const TString fgkDefaultDigitsFileName; // default name for dig. file  
 
-  ClassDef(AliITSBeamTestDigitizer,2)  // An Alice SDD beam test digitization class 
+  ClassDef(AliITSBeamTestDigitizer,3)  // An Alice SDD beam test digitization class 
 
   };
 

@@ -10,7 +10,6 @@
 
 //#include "AliITSclusterSSD.h"
 
-class AliITS;
 class AliITSclusterSSD;
 
 //-------------------------------------------------------------------

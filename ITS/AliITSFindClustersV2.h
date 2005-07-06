@@ -6,7 +6,9 @@
 /*
   $Id$
  */
-
+///////////////////////////////////////////////////////////////////
+//Class for reconstruction of clusters V2                        //
+///////////////////////////////////////////////////////////////////
 #include <TTask.h>
 
 class TString;
@@ -23,6 +25,9 @@ class AliITSFindClustersV2 : public TTask{
     AliITSFindClustersV2(TFile *in,TFile *out=0);
     // Standard constructor for AliRun already read in.
     AliITSFindClustersV2(AliRun *ar, const TString outfile = "");
+    AliITSFindClustersV2(const AliITSFindClustersV2& rec);
+    AliITSFindClustersV2& operator=(const AliITSFindClustersV2 &source);
+
     virtual ~AliITSFindClustersV2();//Destructor
     virtual Bool_t FastSimulation() const {return fSlowFast;}
     virtual void SetSlowSimulation(){fSlowFast = kFALSE;}

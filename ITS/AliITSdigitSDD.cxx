@@ -17,7 +17,6 @@
 #include <AliITSresponseSDD.h>
 #include <TArrayI.h>
 #include <TArrayF.h>
-#include <TMath.h>
 
 ///////////////////////////////////////////////////////////////////
 //                                                               //
@@ -44,9 +43,9 @@ AliITSdigitSDD::AliITSdigitSDD():AliITSdigit(){
     SetSignalExpanded(-1000);
 }
 //________________________________________________________________________
-AliITSdigitSDD::AliITSdigitSDD(Float_t phys,const Int_t *digits):
-    AliITSdigit(digits){
-    // Creates a simulated SDD digit object to be updated
+AliITSdigitSDD::AliITSdigitSDD(Float_t phys,const Int_t *digits): AliITSdigit(digits){
+ 
+   // Creates a simulated SDD digit object to be updated
 
     fPhysics = phys;
     SetSignalExpanded(-1000);
@@ -55,6 +54,7 @@ AliITSdigitSDD::AliITSdigitSDD(Float_t phys,const Int_t *digits):
 //________________________________________________________________________
 void AliITSdigitSDD::InitObject(Float_t phys,const Int_t *tracks,
 			   const Int_t *hits,const Float_t *charges){
+
   // Protected function used by standard constructors
   fPhysics = phys;
   for(Int_t i=0; i<fgkSsdd; i++) {
@@ -67,16 +67,16 @@ void AliITSdigitSDD::InitObject(Float_t phys,const Int_t *tracks,
 //_____________________________________________________________________________
 AliITSdigitSDD::AliITSdigitSDD(Float_t phys,const Int_t *digits,
 			       const Int_t *tracks,const Int_t *hits,
-			       const Float_t *charges):
-    AliITSdigit(digits){
-  // standard constructor
+			       const Float_t *charges):AliITSdigit(digits){
+
+// standard constructor
   InitObject(phys,tracks,hits,charges);
   SetSignalExpanded(-1000);
 }
 //_____________________________________________________________________________
 AliITSdigitSDD::AliITSdigitSDD( Float_t phys,const Int_t *digits,
-    const Int_t *tracks,const Int_t *hits,const Float_t *charges, Int_t sige):
-    AliITSdigit(digits) {
+    const Int_t *tracks,const Int_t *hits,const Float_t *charges, Int_t sige): AliITSdigit(digits) {
+
   //constructor setting also fSignalExpanded
   InitObject(phys,tracks,hits,charges);
   SetSignalExpanded(sige);
@@ -85,8 +85,8 @@ AliITSdigitSDD::AliITSdigitSDD( Float_t phys,const Int_t *digits,
 //_____________________________________________________________________________
 AliITSdigitSDD::AliITSdigitSDD( Float_t phys,const Int_t *digits,
     const Int_t *tracks,const Int_t *hits,const Float_t *charges,
-    AliITSresponseSDD* resp):
-    AliITSdigit(digits) {
+    AliITSresponseSDD* resp): AliITSdigit(digits) {
+
   //constructor setting fSignalExpanded through AliITSresponseSDD
   InitObject(phys,tracks,hits,charges);
   SetSignalExpanded(resp->Convert8to10(digits[2]));
@@ -94,6 +94,7 @@ AliITSdigitSDD::AliITSdigitSDD( Float_t phys,const Int_t *digits,
 
 //______________________________________________________________________
 Int_t AliITSdigitSDD::GetListOfTracks(TArrayI &t,TArrayF &c){
+
     // Fills the TArrayI t with the tracks found in fTracks removing
     // duplicated tracks, summing up their charge, and ordering the tracks
     // by the charge contributed to this digit. It will return
@@ -159,7 +160,9 @@ Int_t AliITSdigitSDD::GetListOfTracks(TArrayI &t,TArrayF &c){
 
 //______________________________________________________________________
 void AliITSdigitSDD::Print(ostream *os){
-    //Standard output format for this class
+
+
+  //Standard output format for this class
     Int_t i;
 
     AliITSdigit::Print(os);
@@ -171,8 +174,9 @@ void AliITSdigitSDD::Print(ostream *os){
 }
 //______________________________________________________________________
 void AliITSdigitSDD::Read(istream *os){
-    //Standard input for this class
-    Int_t i;
+
+  //Standard input for this class
+  Int_t i;
 
     AliITSdigit::Read(os);
     *os >>fPhysics;
@@ -183,14 +187,16 @@ void AliITSdigitSDD::Read(istream *os){
 }
 //______________________________________________________________________
 ostream &operator<<(ostream &os,AliITSdigitSDD &source){
-    // Standard output streaming function.
+
+  // Standard output streaming function.
 
     source.Print(&os);
     return os;
 }
 //______________________________________________________________________
 istream &operator>>(istream &os,AliITSdigitSDD &source){
-    // Standard output streaming function.
+  
+  // Standard output streaming function.
 
     source.Read(&os);
     return os;

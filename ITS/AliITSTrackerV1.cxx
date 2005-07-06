@@ -30,16 +30,16 @@
 // them to resolve some problems.  July-2000
 
 #include <Riostream.h>
-#include <Riostream.h>
 #include <TMath.h>
 #include <TBranch.h>
 #include <TVector.h>
 #include <TFile.h>
+#include <TRandom.h>
 #include <TTree.h>
 
 #include "TParticle.h"
 #include "AliRun.h"
-#include "AliITS.h"
+#include "AliITSDetTypeRec.h"
 #include "AliITSgeomSPD.h"
 #include "AliITSgeomSDD.h"
 #include "AliITSgeomSSD.h"
@@ -59,7 +59,7 @@ ClassImp(AliITSTrackerV1)
  //______________________________________________________________________
 AliITSTrackerV1::AliITSTrackerV1() {
   //Default constructor
-  fITS = 0;
+  //fITS = 0;
   fresult = 0;
   fPtref=0.;
   fChi2max=0.;
@@ -87,60 +87,65 @@ AliITSTrackerV1::AliITSTrackerV1() {
   fRecCylPhi=0;
   fRecCylZ=0;
   fFieldFactor=0;
+  fDetTypeRec = 0;
 }
 //______________________________________________________________________
-AliITSTrackerV1::AliITSTrackerV1(AliITS* IITTSS, Int_t evnumber, Bool_t flag) {
+AliITSTrackerV1::AliITSTrackerV1(Int_t evnumber, Bool_t flag) {
     //Origin   A. Badala' and G.S. Pappalardo:  
     // e-mail Angela.Badala@ct.infn.it, Giuseppe.S.Pappalardo@ct.infn.it
     // Class constructor. It does some initializations.
 
   //PH Initialisation taken from the default constructor
-    fITS      = IITTSS;
-    fresult = 0;
-    fPtref    = 0.;
-    fChi2max  =0.; 
-    frecPoints = 0;	  	 
-    fvettid = 0;
-    fflagvert = flag;	 
-    frl = 0;
-    fzmin = 0;
-    fzmax = 0;
-    fphimin = 0;
-    fphimax = 0;
-    fphidet = 0;
+  //fITS      = IITTSS;
+  fDetTypeRec = new AliITSDetTypeRec();
+  fresult = 0;
+  fPtref    = 0.;
+  fChi2max  =0.; 
+  frecPoints = 0;	  	 
+  fvettid = 0;
+  fflagvert = flag;	 
+  frl = 0;
+  fzmin = 0;
+  fzmax = 0;
+  fphimin = 0;
+  fphimax = 0;
+  fphidet = 0;
   
-    Int_t imax = 200,jmax = 450;
-    frl       = new AliITSRad(imax,jmax);
+  Int_t imax = 200,jmax = 450;
+  frl       = new AliITSRad(imax,jmax);
+  
+  //////////  gets information on geometry /////////////////////////////
+  AliRunLoader* rl = AliRunLoader::Open("galice.root");
+  rl->CdGAFile();
+  AliITSgeom* g1 = (AliITSgeom*)gDirectory->Get("AliITSgeom");
 
-    //////////  gets information on geometry /////////////////////////////
-	 AliITSgeom *g1 = fITS->GetITSgeom();  
-    Int_t ll=1, dd=1;
-    TVector det(9);
-
-    Int_t ia;
-    for(ia=0; ia<6; ia++) {
-	fNlad[ia]=g1->GetNladders(ia+1);
-	fNdet[ia]=g1->GetNdetectors(ia+1);
-	//cout<<fNlad[i]<<" "<<fNdet[i]<<"\n"; 
-    } // end for ia
-
+  Int_t ll=1, dd=1;
+  TVector det(9);
+  
+  Int_t ia;
+  for(ia=0; ia<6; ia++) {
+    fNlad[ia]=g1->GetNladders(ia+1);
+    fNdet[ia]=g1->GetNdetectors(ia+1);
+    //cout<<fNlad[i]<<" "<<fNdet[i]<<"\n"; 
+  } // end for ia
+  
     //cout<<" mean radius = ";
-    Int_t ib;
-    for(ib=0; ib<6; ib++) {  
-	g1->GetCenterThetaPhi(ib+1,ll,dd,det);
-	Double_t r1=TMath::Sqrt(det(0)*det(0)+det(1)*det(1));
-	g1->GetCenterThetaPhi(ib+1,ll,dd+1,det);
-	Double_t r2=TMath::Sqrt(det(0)*det(0)+det(1)*det(1));
-	fAvrad[ib]=(r1+r2)/2.;
-	//cout<<fAvrad[ib]<<" ";
-    } // end for ib
+  Int_t ib;
+  for(ib=0; ib<6; ib++) {  
+    g1->GetCenterThetaPhi(ib+1,ll,dd,det);
+    Double_t r1=TMath::Sqrt(det(0)*det(0)+det(1)*det(1));
+    g1->GetCenterThetaPhi(ib+1,ll,dd+1,det);
+    Double_t r2=TMath::Sqrt(det(0)*det(0)+det(1)*det(1));
+    fAvrad[ib]=(r1+r2)/2.;
+    //cout<<fAvrad[ib]<<" ";
+  } // end for ib
     //cout<<"\n"; getchar();
-
-    fDetx[0] = ((AliITSgeomSPD*)(g1->GetShape(1, ll, dd)))->GetDx();
-    fDetz[0] = ((AliITSgeomSPD*)(g1->GetShape(1, ll, dd)))->GetDz();
-
-    fDetx[1] = ((AliITSgeomSPD*)(g1->GetShape(2, ll, dd)))->GetDx();
-    fDetz[1] = ((AliITSgeomSPD*)(g1->GetShape(2, ll, dd)))->GetDz();
+  
+  fDetx[0] = ((AliITSgeomSPD*)(g1->GetShape(1, ll, dd)))->GetDx();
+  fDetz[0] = ((AliITSgeomSPD*)(g1->GetShape(1, ll, dd)))->GetDz();
+  
+  fDetx[1] = ((AliITSgeomSPD*)(g1->GetShape(2, ll, dd)))->GetDx();
+  fDetz[1] = ((AliITSgeomSPD*)(g1->GetShape(2, ll, dd)))->GetDz();
 
     fDetx[2] = ((AliITSgeomSDD*)(g1->GetShape(3, ll, dd)))->GetDx();
     fDetz[2] = ((AliITSgeomSDD*)(g1->GetShape(3, ll, dd)))->GetDz();
@@ -239,9 +244,9 @@ AliITSTrackerV1::AliITSTrackerV1(AliITS* IITTSS, Int_t evnumber, Bool_t flag) {
   fNRecPoints = new Int_t[numOfModules];
    
 		 for(Int_t module=0; module<numOfModules; module++) {				
-		  fITS->ResetRecPoints();		     
-        gAlice->TreeR()->GetEvent(module);		  
-		  frecPoints=fITS->RecPoints();
+		  fDetTypeRec->ResetRecPoints();		     
+		  gAlice->TreeR()->GetEvent(module);		  
+		  frecPoints=fDetTypeRec->RecPoints();
 		  Int_t nRecPoints=fNRecPoints[module]=frecPoints->GetEntries();
 		  fRecCylR[module] = new Double_t[nRecPoints];
 		  fRecCylPhi[module] = new Double_t[nRecPoints];
@@ -276,6 +281,8 @@ AliITSTrackerV1::AliITSTrackerV1(AliITS* IITTSS, Int_t evnumber, Bool_t flag) {
    // fFieldFactor = (Double_t)fieldPointer->Factor();
     fFieldFactor =(Double_t)fieldPointer-> SolenoidField()/10/.2;
    // cout<< " field factor = "<<fFieldFactor<<"\n"; getchar();
+    delete rl;
+    
 }
 //______________________________________________________________________
 AliITSTrackerV1::AliITSTrackerV1(const AliITSTrackerV1 &cobj) : TObject(cobj) {
@@ -283,7 +290,7 @@ AliITSTrackerV1::AliITSTrackerV1(const AliITSTrackerV1 &cobj) : TObject(cobj) {
     // e-mail Angela.Badala@ct.infn.it, Giuseppe.S.Pappalardo@ct.infn.it
     // copy constructor
 	 
-	 *fITS = *cobj.fITS;
+  //	 *fITS = *cobj.fITS;
     *fresult = *cobj.fresult;
     fPtref = cobj.fPtref;
     fChi2max = cobj.fChi2max;    
@@ -336,7 +343,10 @@ AliITSTrackerV1::AliITSTrackerV1(const AliITSTrackerV1 &cobj) : TObject(cobj) {
     } // end for im2
 
 
-	AliITSgeom *g1 = fITS->GetITSgeom();  
+    AliRunLoader* rl = AliRunLoader::Open("galice.root");
+    rl->CdGAFile();
+    AliITSgeom* g1 = (AliITSgeom*)gDirectory->Get("AliITSgeom");
+
    Int_t numOfModules = g1->GetIndexMax();
 	/*
   fRecCylR = new Float_t *[numOfModules];
@@ -364,6 +374,7 @@ AliITSTrackerV1::AliITSTrackerV1(const AliITSTrackerV1 &cobj) : TObject(cobj) {
 			 fRecCylZ[module][ind]=cobj.fRecCylZ[module][ind];			 
 		  } 		
 		}	 
+		delete rl;
  
 }
 /*
@@ -408,7 +419,7 @@ AliITSTrackerV1 &AliITSTrackerV1::operator=(const AliITSTrackerV1 &obj) {
     // e-mail Angela.Badala@ct.infn.it, Giuseppe.S.Pappalardo@ct.infn.it  
     // assignement operator
 
-	 *fITS = *obj.fITS;
+  //	 *fITS = *obj.fITS;
     *fresult = *obj.fresult;
     fPtref = obj.fPtref;
     fChi2max = obj.fChi2max;      
@@ -461,7 +472,10 @@ AliITSTrackerV1 &AliITSTrackerV1::operator=(const AliITSTrackerV1 &obj) {
 	} // end for im2
     } // end for im1
 
-	AliITSgeom *g1 = fITS->GetITSgeom();  
+    AliRunLoader* rl = AliRunLoader::Open("galice.root");
+    rl->CdGAFile();
+    AliITSgeom* g1 = (AliITSgeom*)gDirectory->Get("AliITSgeom");
+    //	AliITSgeom *g1 = fITS->GetITSgeom();  
    Int_t numOfModules = g1->GetIndexMax();
   fRecCylR = new Double_t *[numOfModules];
   fRecCylPhi = new Double_t *[numOfModules]; 
@@ -481,6 +495,7 @@ AliITSTrackerV1 &AliITSTrackerV1::operator=(const AliITSTrackerV1 &obj) {
 		}	 
          
 	 
+	  delete rl;
     return *this;
 }
 //______________________________________________________________________
@@ -508,8 +523,11 @@ void AliITSTrackerV1::DoTracking(Int_t evNumber,Int_t minTr,Int_t maxTr,
     if (!digp) { cerr<<"TPC parameters have not been found !\n"; getchar();}
 
     cf->cd();
-    TString foldname(fITS->GetLoader()->GetEventFolder()->GetName());
-    
+    AliRunLoader* rl = AliRunLoader::Open("galice.root");
+    AliITSLoader* itsl = (AliITSLoader*)rl->GetLoader("ITSLoader");
+    TString foldname(itsl->GetEventFolder()->GetName());
+    //TString foldname(fITS->GetLoader()->GetEventFolder()->GetName());
+    delete rl;   
     printf("This method is not converted to the NewIO !\n");  //I.B.
     return; //I.B.
     AliTPCtracker *tracker = new AliTPCtracker(digp);            //I.B.
@@ -554,7 +572,7 @@ void AliITSTrackerV1::DoTracking(Int_t evNumber,Int_t minTr,Int_t maxTr,
     TVector vec(5);
     TTree *tr=gAlice->TreeR();
     Int_t nent=(Int_t)tr->GetEntries();  
-    frecPoints = fITS->RecPoints();
+    frecPoints = fDetTypeRec->RecPoints();
 
     Int_t numbpoints;
     Int_t totalpoints=0;
@@ -564,7 +582,7 @@ void AliITSTrackerV1::DoTracking(Int_t evNumber,Int_t minTr,Int_t maxTr,
 
     for (mod=0; mod<nent; mod++) {
 	fvettid[mod]=0;
-	fITS->ResetRecPoints();  
+	fDetTypeRec->ResetRecPoints();  
 	gAlice->TreeR()->GetEvent(mod); 
 	numbpoints = frecPoints->GetEntries();
 	totalpoints+=numbpoints;
@@ -828,7 +846,7 @@ void AliITSTrackerV1::DoTracking(Int_t evNumber,Int_t minTr,Int_t maxTr,
 		////  for q definition
   	        if(il>1){
 	          if(idmodule>0.){			
-	            fITS->ResetRecPoints();
+	            fDetTypeRec->ResetRecPoints();
 	            gAlice->TreeR()->GetEvent(idmodule);
 	            recp=(AliITSRecPoint*)frecPoints->UncheckedAt(idpoint);
 	            q[il-2]=recp->GetQ()*(*fresult).Getfcor(il-2);
@@ -929,7 +947,10 @@ void AliITSTrackerV1::RecursiveTracking(TList *trackITSlist) {
     sigmazl[5]=0.6889;	
     ///////////////////////////////////////////////////////////
     Int_t index; 
-    AliITSgeom *g1 = fITS->GetITSgeom();
+    AliRunLoader* rl = AliRunLoader::Open("galice.root");
+    rl->CdGAFile();
+    AliITSgeom* g1 = (AliITSgeom*)gDirectory->Get("AliITSgeom");
+
     AliITSRecPoint *recp;        
     for(index =0; index<trackITSlist->GetSize(); index++) {
 	AliITSTrackV1 *trackITS = (AliITSTrackV1 *) trackITSlist->At(index);
@@ -1136,7 +1157,7 @@ void AliITSTrackerV1::RecursiveTracking(TList *trackITSlist) {
 		Int_t indexmod;       
 		indexmod = g1->GetModuleIndex(lycur,(Int_t)toucLad(iriv),
 					      (Int_t)toucDet(iriv)); 
-		fITS->ResetRecPoints();   
+		fDetTypeRec->ResetRecPoints();   
 		gAlice->TreeR()->GetEvent(indexmod); 
 		Int_t npoints=frecPoints->GetEntries();
        
@@ -1245,6 +1266,8 @@ void AliITSTrackerV1::RecursiveTracking(TList *trackITSlist) {
     } // end of for on tracks (index)
 
     //gObjectTable->Print();   // stampa memoria
+     delete rl;
+    
 }
 //______________________________________________________________________
 Int_t AliITSTrackerV1::Intersection(AliITSTrackV1 &track,Int_t layer,

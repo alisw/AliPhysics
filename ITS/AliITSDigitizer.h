@@ -1,12 +1,14 @@
-#ifndef ALIITSDIGITZER_H
-#define ALIITSDIGITZER_H
+#ifndef ALIITSDIGITIZER_H
+#define ALIITSDIGITIZER_H
 /* Copyright (c) 1998-2001, ALICE Experiment at CERN, All rights reserved *
  * See cxx source for full Copyright notice                               */
 
 /*
   $Id$
  */
-
+//////////////////////////////////////////////////////////////////
+// Digitizer class for ITS                                      //
+//////////////////////////////////////////////////////////////////
 class TObjArray;
 class TTree;
 
@@ -20,6 +22,9 @@ class AliITSDigitizer : public AliDigitizer{
  public:
     AliITSDigitizer();
     AliITSDigitizer(AliRunDigitizer *manager);
+    AliITSDigitizer(const AliITSDigitizer& dig);
+    AliITSDigitizer& operator=(const AliITSDigitizer &source);
+
     virtual ~AliITSDigitizer();
     // Standard routines.
     virtual Bool_t Init();

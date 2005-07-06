@@ -14,6 +14,12 @@
  **************************************************************************/
 
 /* $Id$ */
+//////////////////////////////////////////////////////////
+// implements fast simulation                           //
+//                                                      //
+//                                                      //
+//////////////////////////////////////////////////////////
+
 
 #include <TRandom.h>
 
@@ -46,91 +52,94 @@ AliITSsimulationFastPoints::AliITSsimulationFastPoints()
 }
 
 //-------------------------------------------------------------
-void AliITSsimulationFastPoints::CreateFastRecPoints(Int_t module){
+void AliITSsimulationFastPoints::CreateFastRecPoints(Int_t module, TClonesArray* recp){
     // Fast points simulator
     AliITS *aliITS  = (AliITS*)gAlice->GetModule("ITS");
 
     CreateFastRecPoints((AliITSmodule *)(aliITS->GetModule(module)),
-			module,gRandom);
+			module,gRandom,recp);
 }
 //-------------------------------------------------------------
 void AliITSsimulationFastPoints::CreateFastRecPoints(AliITSmodule *mod,
 						     Int_t module,
-						     TRandom *random){
-    // Fast points simulator 
-    AliITS *aliITS  = (AliITS*)gAlice->GetModule("ITS");
-    AliITSgeom *gm = aliITS->GetITSgeom();
+						     TRandom *random,
+						     TClonesArray* recp) {
+  // Fast points simulator 
 
-    const Float_t kdEdXtoQ = 2.778e+8; 
+  TClonesArray &pt=*recp;
+  AliITS *aliITS  = (AliITS*)gAlice->GetModule("ITS");
+  AliITSgeom *gm = aliITS->GetITSgeom();
+  const Float_t kdEdXtoQ = 2.778e+8; 
 
-    Int_t ihit,flag,numofhits;
-    Float_t locals[3];
-    Float_t globals[3];
-    Double_t sigmarphi=0., sigmaz=0., sigmade=0., thrde=0.;
-    Float_t deltaXl,deltaZl,deltaDe;
+  Int_t ihit,flag,numofhits;
+  Float_t locals[3];
+  Float_t globals[3];
+  Double_t sigmarphi=0., sigmaz=0., sigmade=0., thrde=0.;
+  Float_t deltaXl,deltaZl,deltaDe;
 
-    Int_t hitlay, hitlad, hitdet, hitstatus;
-    Float_t hitpx, hitpy, hitpz, hitdestep;
+  Int_t hitlay, hitlad, hitdet, hitstatus;
+  Float_t hitpx, hitpy, hitpz, hitdestep;
 
-    Int_t   hitstatus1, hittrack1;
-    Float_t hitx1, hity1, hitz1;
-    Float_t hitdestep1;
-    Float_t xMg,yMg,zMg;
-
-    numofhits = mod->GetNhits();
-    //printf("numofhits %d \n",numofhits);
-    for(ihit=0;ihit<numofhits;ihit++){
-	AliITShit *hit=mod->GetHit(ihit);
-	hit->GetPositionG(hitx1,hity1,hitz1);
-	hitstatus1 = hit->GetTrackStatus();
-	hitdestep1 = hit->GetIonization();
-	hittrack1 = hit->GetTrack();
-
-	mod->MedianHit(module,hitx1,hity1,hitz1,hitstatus1,xMg,yMg,zMg,flag);
-	if (flag!=1) {
-	    hitdestep = hit->GetIonization();
-
-	    if (hitdestep > 0) {
-		hit->GetDetectorID(hitlay,hitlad,hitdet);
-		hit->GetMomentumG(hitpx,hitpy,hitpz);            
-		hitstatus = hitstatus1;
+  Int_t   hitstatus1, hittrack1;
+  Float_t hitx1, hity1, hitz1;
+  Float_t hitdestep1;
+  Float_t xMg,yMg,zMg;
+  Int_t irecp=0;
+  numofhits = mod->GetNhits();
+  //printf("numofhits %d \n",numofhits);
+  for(ihit=0;ihit<numofhits;ihit++){
+    AliITShit *hit=mod->GetHit(ihit);
+    hit->GetPositionG(hitx1,hity1,hitz1);
+    hitstatus1 = hit->GetTrackStatus();
+    hitdestep1 = hit->GetIonization();
+    hittrack1 = hit->GetTrack();
+    
+    mod->MedianHit(module,hitx1,hity1,hitz1,hitstatus1,xMg,yMg,zMg,flag);
+    if (flag!=1) {
+      hitdestep = hit->GetIonization();
+      
+      if (hitdestep > 0) {
+	hit->GetDetectorID(hitlay,hitlad,hitdet);
+	hit->GetMomentumG(hitpx,hitpy,hitpz);            
+	hitstatus = hitstatus1;
 		// Transform to the module local frame
-		globals[0] = xMg; 
-		globals[1] = yMg;
-		globals[2] = zMg;
-		gm->GtoL(hitlay,hitlad,hitdet,globals,locals);
-		// Retrieve sigma values for position and energy, and energy
-		// threshold
-		sigmarphi = SigmaRPhi(hitlay);
-		sigmaz = SigmaZ(hitlay);
-		sigmade = SigmaDe(hitlay);
-		thrde = ThrDe(hitlay);
-		deltaXl = random->Gaus(0,sigmarphi);
-		deltaZl = random->Gaus(0,sigmaz);
-		deltaDe = random->Gaus(0,sigmade);
-
-		// Apply energy threshold and trasform back to global reference
-		// system
-
-		if ( (hitdestep+deltaDe) > thrde ){
-		    locals[0] += deltaXl;
-		    locals[2] += deltaZl;
-		    AliITSRecPoint rp;
-		    rp.fTracks[0]=hit->GetTrack();
-		    //		    rp.fTracks[0]=mod->GetHitTrackIndex(ihit);
-		    rp.fTracks[1]=-3;
-		    rp.fTracks[2]=-3;
-		    rp.SetX(locals[0]);
-		    rp.SetZ(locals[2]);
-		    rp.SetdEdX(hitdestep+deltaDe);
-		    rp.SetQ(kdEdXtoQ*(hitdestep+deltaDe));  // number of e
-		    rp.SetSigmaX2(sigmarphi*sigmarphi);
-		    rp.SetSigmaZ2(sigmaz*sigmaz);
-		    aliITS->AddRecPoint(rp);
-		} // end if ( (hitdestep+deltaDe)
-	    } // end if (hitdestep > 0)
-	} // end if (flag!=1)
-    } // end for ihit
+	globals[0] = xMg; 
+	globals[1] = yMg;
+	globals[2] = zMg;
+	gm->GtoL(hitlay,hitlad,hitdet,globals,locals);
+	// Retrieve sigma values for position and energy, and energy
+	// threshold
+	sigmarphi = SigmaRPhi(hitlay);
+	sigmaz = SigmaZ(hitlay);
+	sigmade = SigmaDe(hitlay);
+	thrde = ThrDe(hitlay);
+	deltaXl = random->Gaus(0,sigmarphi);
+	deltaZl = random->Gaus(0,sigmaz);
+	deltaDe = random->Gaus(0,sigmade);
+	
+	// Apply energy threshold and trasform back to global reference
+	// system
+	
+	if ( (hitdestep+deltaDe) > thrde ){
+	  locals[0] += deltaXl;
+	  locals[2] += deltaZl;
+	  AliITSRecPoint rp;
+	  rp.fTracks[0]=hit->GetTrack();
+	  //		    rp.fTracks[0]=mod->GetHitTrackIndex(ihit);
+	  rp.fTracks[1]=-3;
+	  rp.fTracks[2]=-3;
+	  rp.SetX(locals[0]);
+	  rp.SetZ(locals[2]);
+	  rp.SetdEdX(hitdestep+deltaDe);
+	  rp.SetQ(kdEdXtoQ*(hitdestep+deltaDe));  // number of e
+	  rp.SetSigmaX2(sigmarphi*sigmarphi);
+	  rp.SetSigmaZ2(sigmaz*sigmaz);
+	  new (pt[irecp]) AliITSRecPoint(rp);
+	  irecp++;
+	} // end if ( (hitdestep+deltaDe)
+      } // end if (hitdestep > 0)
+    } // end if (flag!=1)
+  } // end for ihit
 }
 //_______________________________________________________________________
 void AliITSsimulationFastPoints::SetSigmaRPhi(Double_t  srphi[6])

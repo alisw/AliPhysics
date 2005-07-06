@@ -69,7 +69,9 @@ void loadlibs ()
   gSystem->Load("libTPCrec");
   gSystem->Load("libTPCsim");
   gSystem->Load("libTPCfast");
-  gSystem->Load("libITS");
+  gSystem->Load("libITSbase");
+  gSystem->Load("libITSsim");
+  gSystem->Load("libITSrec");
   gSystem->Load("libTRDbase");
   gSystem->Load("libTRDsim");
   gSystem->Load("libTRDrec");

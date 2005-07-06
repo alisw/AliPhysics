@@ -1,16 +1,13 @@
+#include "AliITSDetTypeRec.h"
 #include "AliITSVertexerIons.h"
 #include "AliITSVertexerPPZ.h"
 #include "AliESDVertex.h"
-#include "AliRun.h"
-#include "AliITS.h"
 #include "AliITSgeom.h"
 #include "AliITSLoader.h"
 #include "AliITSRecPoint.h"
-#include <TMath.h>
 #include <TTree.h>
 #include <TH1.h>
 #include <TF1.h>
-#include <TObjArray.h>
 
 //////////////////////////////////////////////////////////////////////
 // AliITSVertexerIons is a class for full 3D primary vertex         //
@@ -35,7 +32,7 @@ ClassImp(AliITSVertexerIons)
   AliITSVertexerIons::AliITSVertexerIons():AliITSVertexer() {
   // Default Constructor
 
-  fITS = 0;
+  //fITS = 0;
   SetNpThreshold();
   SetMaxDeltaPhi();
   SetMaxDeltaZ();
@@ -45,7 +42,7 @@ ClassImp(AliITSVertexerIons)
 AliITSVertexerIons::AliITSVertexerIons(TString fn):AliITSVertexer(fn) {
   // Standard constructor
   
-  fITS = 0;
+  //fITS = 0;
   SetNpThreshold();
   SetMaxDeltaPhi();
   SetMaxDeltaZ();
@@ -70,7 +67,7 @@ AliITSVertexerIons& AliITSVertexerIons::operator=(const AliITSVertexerIons &/*so
 //______________________________________________________________________
 AliITSVertexerIons::~AliITSVertexerIons() {
   // Default Destructor
-  fITS = 0;
+  //fITS = 0;
 }
 
 //______________________________________________________________________
@@ -80,19 +77,20 @@ AliESDVertex* AliITSVertexerIons::FindVertexForCurrentEvent(Int_t evnumber){
   fCurrentVertex = 0;
 
   AliRunLoader *rl = AliRunLoader::GetRunLoader();
-  AliITSLoader* itsloader =  (AliITSLoader*) rl->GetLoader("ITSLoader");
-  if(!fITS) {
-    fITS =(AliITS *)gAlice->GetDetector("ITS");
-    if(!fITS) {
-      Error("FindVertexForCurrentEvent","AliITS object was not found");
-      return fCurrentVertex;
-    }
-  }
-  fITS->SetTreeAddress();
-  AliITSgeom *g2 = fITS->GetITSgeom();
-  TClonesArray  *recpoints = fITS->RecPoints();
-  AliITSRecPoint *pnt;
+  AliITSLoader* itsloader = (AliITSLoader*)rl->GetLoader("ITSLoader");
+  TDirectory * olddir = gDirectory;
+  rl->CdGAFile();
+  AliITSgeom* g2  = (AliITSgeom*)gDirectory->Get("AliITSgeom");
+  olddir->cd(); 
+
   TTree *tr =  itsloader->TreeR();
+  AliITSDetTypeRec detTypeRec;
+
+  detTypeRec.SetTreeAddressR(tr);
+
+  TClonesArray  *recpoints = detTypeRec.RecPoints();
+  AliITSRecPoint *pnt;
+
 
   Int_t npoints=0;
   Int_t nopoints1=40000;
@@ -119,7 +117,7 @@ AliESDVertex* AliITSVertexerIons::FindVertexForCurrentEvent(Int_t evnumber){
 
   Int_t np1=0, np2=0;
   for(Int_t i=g2->GetStartSPD();i<=g2->GetLastSPD();i++) {
-    fITS->ResetRecPoints();
+    detTypeRec.ResetRecPoints();
     tr->GetEvent(i);
     npoints = recpoints->GetEntries();
     for (Int_t ipoint=0;ipoint<npoints;ipoint++) {
@@ -203,12 +201,12 @@ AliESDVertex* AliITSVertexerIons::FindVertexForCurrentEvent(Int_t evnumber){
 
   // Fitting ...
   Double_t max;
-  Int_t bin_max;
+  Int_t binMax;
   Double_t maxcenter;
   
   max = hzv->GetMaximum();
-  bin_max=hzv->GetMaximumBin();
-  maxcenter=hzv->GetBinCenter(bin_max);
+  binMax=hzv->GetMaximumBin();
+  maxcenter=hzv->GetBinCenter(binMax);
   Double_t dxy=1.5;
   
   TF1 *fz = new TF1 ("fz","([0]*exp(-0.5*((x-[1])/[2])*((x-[1])/[2])))+[3]",maxcenter-dxy,maxcenter+dxy);  
@@ -284,6 +282,7 @@ AliESDVertex* AliITSVertexerIons::FindVertexForCurrentEvent(Int_t evnumber){
   if(fDebug>0)Info("FindVertexForCurrentEvent","Vertex found for event %d",evnumber);
   sprintf(name,"Vertex");
   fCurrentVertex = new AliESDVertex(position,resolution,snr,name);
+
   return fCurrentVertex;
 }
 

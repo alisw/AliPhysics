@@ -1,5 +1,10 @@
 #ifndef ALIITSPID_H
 #define ALIITSPID_H
+/////////////////////////////////////////////////////////////////
+// Class for identification of pions,kaons and protons in ITS  //
+// Prior particles population (probabilities) are taken from   //
+// Hijing event generator.                                     //
+/////////////////////////////////////////////////////////////////
 
 #include <TObject.h>
 
@@ -24,7 +29,7 @@ public:
         virtual void Print(Option_t *option="") const {TObject::Print(option);}
 	void	Tab(void);
 	void    Reset(void);
-	void	SetVec(Int_t track,TVector info);
+	void	SetVec(Int_t track,TVector info) const;
 	TVector* GetVec(Int_t track) const;
 	Int_t	GetPcode(TClonesArray* rps,Float_t pm);
 	Int_t	GetPcode(Float_t p,Float_t pm);

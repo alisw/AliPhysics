@@ -113,7 +113,7 @@ Int_t AliITSmodule::AddHit(AliITShit* hit,Int_t t,Int_t h) {
 }
 //___________________________________________________________________________
 Double_t AliITSmodule::PathLength(Int_t index,AliITShit *itsHit1,
-				  AliITShit *itsHit2){
+				  AliITShit *itsHit2) {
   // path lenght
    Float_t  x1g,y1g,z1g;   
    Float_t  x2g,y2g,z2g;
@@ -134,7 +134,7 @@ void AliITSmodule::PathLength(Int_t index,
 			      Int_t status,Int_t &nseg,
 			      Float_t &x1,Float_t &y1,Float_t &z1,
 			      Float_t &dx1,Float_t &dy1,Float_t &dz1,
-			      Int_t &flag){
+			      Int_t &flag) const{
   // path length
     static Float_t x0,y0,z0;
 
@@ -343,7 +343,7 @@ void AliITSmodule::MedianHitG(Int_t index,
 //___________________________________________________________________________
 Bool_t AliITSmodule::MedianHitL( AliITShit *itsHit1, 
 	       	    	     AliITShit *itsHit2, 
-	       		     Float_t &xMl, Float_t &yMl, Float_t &zMl){
+	       		     Float_t &xMl, Float_t &yMl, Float_t &zMl) const{
   // median hit
    Float_t x1l,y1l,z1l;
    Float_t x2l,y2l,z2l;

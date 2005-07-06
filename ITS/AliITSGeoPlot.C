@@ -17,7 +17,7 @@
 #include <AliRun.h>
 #include <AliITS.h>
 #include <AliITSgeom.h>
-#include <AliITSDetType.h>
+#include <AliITSDetTypeRec.h>
 #include <AliITSRecPoint.h>
 #include <AliITSclusterV2.h>
 #include <AliITSdigit.h>
@@ -37,7 +37,7 @@ Int_t GetRecCoor(TObject *ge, TClonesArray *ITSrec, Int_t mod, TH2F *h2, TH1F *h
 Int_t GetClusCoor(TObject *ge, TClonesArray *ITSrec, Int_t mod, TH2F *h2, TH1F *h1, Bool_t verb);
 void GetDigits(TObject *tmps,TObject *ge,TClonesArray *ITSdigits, Int_t subd, Int_t mod, Bool_t verbose, TObjArray & histos);
 
-Int_t AliITSGeoPlot (Int_t evesel=0, char *opt="All+Rec", char *filename="galice.root", Int_t isfastpoints = 0) {
+Int_t AliITSGeoPlot (Int_t evesel=0, char *opt="All+ClustersV2", char *filename="galice.root", Int_t isfastpoints = 0) {
   /*******************************************************************
    *  This macro displays geometrical information related to the
    *  hits, digits and rec points (or V2 clusters) in ITS.
@@ -159,13 +159,18 @@ Int_t AliITSGeoPlot (Int_t evesel=0, char *opt="All+Rec", char *filename="galice
   cout<<"Filling modules... It takes a while, now. Please be patient"<<endl;
   ITS->FillModules(0,0,nmodules," "," ");
   cout<<"ITS modules .... DONE!"<<endl;
-
+  
+  AliITSDetTypeRec* detTypeRec = new AliITSDetTypeRec();
+  detTypeRec->SetLoader(ITSloader);
+  detTypeRec->SetITSgeom(ITS->GetITSgeom());
+  detTypeRec->SetDefaults();
   // DIGITS
   TTree *TD = ITSloader->TreeD();
 
   //RECPOINTS (V2 clusters)
   TTree *TR = ITSloader->TreeR();
-  TClonesArray *ITSrec  = ITS->RecPoints();
+  TClonesArray *ITSrec  = detTypeRec->RecPoints();
+  TClonesArray *ITScl   = detTypeRec->ClustersV2();
   TBranch *branch = 0;
   if(userec && TR && ITSrec){
     if(isfastpoints==1){
@@ -184,10 +189,9 @@ Int_t AliITSGeoPlot (Int_t evesel=0, char *opt="All+Rec", char *filename="galice
     cout<<"WARNING: there are no RECPOINTS on this file ! \n";
     cout<<"======================================================= \n \n";
   }
-  if(useclustersv2 && TR && ITSrec){
-  
+  if(useclustersv2 && TR && ITScl){
     branch = ITSloader->TreeR()->GetBranch("Clusters");
-    if(branch)branch->SetAddress(&ITSrec);
+    if(branch)branch->SetAddress(&ITScl);
   }
 
   if(useclustersv2 && (!TR || !ITSrec || !branch)){
@@ -315,11 +319,10 @@ Int_t AliITSGeoPlot (Int_t evesel=0, char *opt="All+Rec", char *filename="galice
         cout<<"======================================================= \n \n";
       }
       // Get segmentation model
-      AliITSDetType *iDetType=ITS->DetType(subd);
       if(subd==0)detna="SPD";
       if(subd==1)detna="SDD";
       if(subd==2)detna="SSD";
-      AliITSsegmentation *seg=(AliITSsegmentation*)iDetType->GetSegmentationModel();
+      AliITSsegmentation *seg=(AliITSsegmentation*)detTypeRec->GetSegmentationModel(subd);
       // Loop on modules
       first = geom->GetStartDet(subd);
       last = geom->GetLastDet(subd);
@@ -350,23 +353,24 @@ Int_t AliITSGeoPlot (Int_t evesel=0, char *opt="All+Rec", char *filename="galice
 
         //RecPoints     
         if(userec){
-          ITS->ResetRecPoints();
+          detTypeRec->ResetRecPoints();
           branch->GetEvent(mod);
           TH2F *bidi=(TH2F*)histos.At(6+subd*9);
           TH1F *uni=(TH1F*)histos.At(7+subd*9);
           nrecp=GetRecCoor(geom,ITSrec,mod,bidi,uni,verbose);
         }
         if(useclustersv2){
-          ITS->ResetRecPoints();
+          detTypeRec->ResetClustersV2();
           branch->GetEvent(mod);
           TH2F *bidi=(TH2F*)histos.At(6+subd*9);
           TH1F *uni=(TH1F*)histos.At(7+subd*9);
-          nrecp=GetClusCoor(geom,ITSrec,mod,bidi,uni,verbose);
+          nrecp=GetClusCoor(geom,ITScl,mod,bidi,uni,verbose);
+	  
         }
      
         // Digits
         if(usedigits){
-          ITS->ResetDigits();
+          detTypeRec->ResetDigits();
           nbytes += TD->GetEvent(mod);
           GetDigits(seg,geom,ITSdigits,subd,mod,verbose,histos);
         }
@@ -480,6 +484,7 @@ void GetHitsCoor(TObject *its, Int_t mod, TObjArray & histos, Int_t subd,Bool_t 
 
 
 Int_t GetClusCoor(TObject *ge, TClonesArray *ITSrec, Int_t mod, TH2F *h2, TH1F *h1, Bool_t verb){
+
   AliITSgeom *geom = (AliITSgeom*)ge;
   Int_t nrecp = ITSrec->GetEntries();
   if(nrecp>0){
@@ -516,6 +521,7 @@ Int_t GetClusCoor(TObject *ge, TClonesArray *ITSrec, Int_t mod, TH2F *h2, TH1F *
       }
       h2->Fill(gc[0],gc[1]);
       h1->Fill(gc[2]);
+
     }
   }
   return nrecp;

@@ -1,5 +1,5 @@
-#ifndef ALIITSVITS04_H
-#define ALIITSVITS04_H
+#ifndef ALIITSVBEAMTESTITS04_H
+#define ALIITSVBEAMTESTITS04_H
 
 ////////////////////////////////////////////////
 // ITS geometry class and step manager for the//

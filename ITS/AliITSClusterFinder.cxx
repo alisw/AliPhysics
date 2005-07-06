@@ -21,17 +21,11 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #include "AliITSClusterFinder.h"
-#include "AliITSclusterV2.h"
 #include "AliITSRecPoint.h"
-#include "AliITSdigitSPD.h"
-#include "AliITSdigitSDD.h"
-#include "AliITSdigitSSD.h"
+#include "AliITSdigit.h"
+#include "AliITSDetTypeRec.h"
 #include "AliITSgeom.h"
 #include "AliITSMap.h"
-#include "AliRun.h"
-#include "AliMC.h"
-#include "AliITS.h"
-#include "TParticle.h"
 
 ClassImp(AliITSClusterFinder)
 
@@ -58,7 +52,6 @@ fNPeaks(-1){
     //   none.
     // Return:
     //   A default constructed AliITSCulsterFinder
-  Init();
 }
 //----------------------------------------------------------------------
 AliITSClusterFinder::AliITSClusterFinder(AliITSsegmentation *seg, 
@@ -89,7 +82,6 @@ fNPeaks(-1){
     SetNperMax();
     SetClusterSize();
     SetDeclusterFlag();
-    Init();
 }
 //----------------------------------------------------------------------
 AliITSClusterFinder::AliITSClusterFinder(AliITSsegmentation *seg, 
@@ -123,7 +115,6 @@ fNPeaks(-1){
     SetNperMax();
     SetClusterSize();
     SetDeclusterFlag();
-    Init();
 }
 //______________________________________________________________________
 AliITSClusterFinder::AliITSClusterFinder(const AliITSClusterFinder &source) : TObject(source) {
@@ -162,35 +153,38 @@ AliITSClusterFinder::~AliITSClusterFinder(){
     fDeclusterFlag= 0;
     fClusterSize  = 0;
     fNPeaks       = 0;
-    fITS          = 0;
+    // fITS          = 0;
+    fDetTypeRec   = 0;
+    fITSgeom      = 0;
+
 }
-
 //__________________________________________________________________________
-void AliITSClusterFinder::Init(){
+void AliITSClusterFinder::InitGeometry(){
 
-  //Initialisation of ITS geometry
 
-  fITS = (AliITS*)gAlice->GetModule("ITS");
-  AliITSgeom *geom=(AliITSgeom*)fITS->GetITSgeom();
-
-  Int_t mmax=geom->GetIndexMax();
+ //Initialisation of ITS geometry
+  if(!fITSgeom) {
+    Error("InitGeometry","ITS geom is null!");
+    return;
+  }
+  Int_t mmax=fITSgeom->GetIndexMax();
   if (mmax>2200) {
     Fatal("AliITSClusterFinder","Too many ITS subdetectors !"); 
   }
   Int_t m;
   for (m=0; m<mmax; m++) {
-    Int_t lay,lad,det; geom->GetModuleId(m,lay,lad,det);
-    Float_t x,y,z;     geom->GetTrans(lay,lad,det,x,y,z); 
-    Double_t rot[9];   geom->GetRotMatrix(lay,lad,det,rot);
+    Int_t lay,lad,det; fITSgeom->GetModuleId(m,lay,lad,det);
+    Float_t x,y,z;     fITSgeom->GetTrans(lay,lad,det,x,y,z); 
+    Double_t rot[9];   fITSgeom->GetRotMatrix(lay,lad,det,rot);
     Double_t alpha=TMath::ATan2(rot[1],rot[0])+TMath::Pi();
     Double_t ca=TMath::Cos(alpha), sa=TMath::Sin(alpha);
     fYshift[m] = x*ca + y*sa;
     fZshift[m] = (Double_t)z;
-    fNdet[m] = (lad-1)*geom->GetNdetectors(lay) + (det-1);
+    fNdet[m] = (lad-1)*fITSgeom->GetNdetectors(lay) + (det-1);
     fNlayer[m] = lay-1;
   }
-
 }
+
 
 
 //----------------------------------------------------------------------
@@ -204,8 +198,12 @@ void AliITSClusterFinder::AddCluster(Int_t branch, AliITSRawCluster *c){
     // Return:
     //   none.
 
-    fITS->AddCluster(branch,c); 
-    fNRawClusters++;
+   if(!fDetTypeRec) {
+    Error("AddCluster","fDetTypeRec is null!");
+    return;
+  }
+  fDetTypeRec->AddCluster(branch,c); 
+  fNRawClusters++;
 }
 //----------------------------------------------------------------------
 void AliITSClusterFinder::AddCluster(Int_t branch, AliITSRawCluster *c, 
@@ -219,12 +217,17 @@ void AliITSClusterFinder::AddCluster(Int_t branch, AliITSRawCluster *c,
     //   none.
     // Return:
     //   none.
+  if(!fDetTypeRec) {
+    Error("AddCluster","fDetTypeRec is null!");
+    return;
+  }
 
-    fITS->AddCluster(branch,c); 
-    fNRawClusters++;
-    fITS->AddRecPoint(rp); 
+  fDetTypeRec->AddCluster(branch,c); 
+  fNRawClusters++;
+  fDetTypeRec->AddRecPoint(rp); 
+
 }
-
+/*
 //______________________________________________________________________
 void AliITSClusterFinder::CheckLabels(Int_t lab[3]) {
   //------------------------------------------------------------
@@ -255,7 +258,7 @@ void AliITSClusterFinder::CheckLabels(Int_t lab[3]) {
   }
   
 }
-
+*/
 //______________________________________________________________________
 void AliITSClusterFinder::FindRawClusters(Int_t module){
     // Default Cluster finder.
@@ -397,7 +400,7 @@ Bool_t AliITSClusterFinder::IsNeighbor(TObjArray *digs,Int_t i,Int_t n[])const{
 }
 
 //______________________________________________________________________
-void AliITSClusterFinder::Print(ostream *os){
+void AliITSClusterFinder::Print(ostream *os) const{
     //Standard output format for this class
     // Inputs:
     //    ostream *os   Output stream
@@ -415,6 +418,7 @@ void AliITSClusterFinder::Print(ostream *os){
     *os << fClusterSize<<",";
     *os << fNPeaks<<endl;
 }
+/*
 //______________________________________________________________________
 void AliITSClusterFinder::RecPoints2Clusters
 (const TClonesArray *points, Int_t idx, TClonesArray *clusters) {
@@ -422,8 +426,11 @@ void AliITSClusterFinder::RecPoints2Clusters
   // Conversion AliITSRecPoint -> AliITSclusterV2 for the ITS 
   // subdetector indexed by idx 
   //------------------------------------------------------------
-  AliITSgeom* geom = (AliITSgeom*)fITS->GetITSgeom();
-  Int_t lastSPD1=geom->GetModuleIndex(2,1,1)-1;
+  if(!fITSgeom) {
+    Error("RecPoints2Clusters","ITS geom is null!");
+    return;
+  }
+  Int_t lastSPD1=fITSgeom->GetModuleIndex(2,1,1)-1;
   TClonesArray &cl=*clusters;
   Int_t ncl=points->GetEntriesFast();
   for (Int_t i=0; i<ncl; i++) {
@@ -442,9 +449,9 @@ void AliITSClusterFinder::RecPoints2Clusters
     new (cl[i]) AliITSclusterV2(lab,lp, dummy);
   }  
 } 
-
+*/
 //______________________________________________________________________
-void AliITSClusterFinder::Read(istream *is){
+void AliITSClusterFinder::Read(istream *is)  {
     //Standard input for this class
     // Inputs:
     //    istream *is   Input stream

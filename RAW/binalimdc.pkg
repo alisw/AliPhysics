@@ -14,7 +14,7 @@ EINCLUDE+= TP ITS RAW HLT/src HLT/hough HLT/comp HLT/ITS
 
 PACKBLIBS := $(ROOTCLIBS) $(SYSLIBS)
 
-ELIBS:=ESD RAWData MDC MDCFilter STEER TPCbase TPCsim TPCrec AliL3Src AliL3Misc AliL3Hough AliL3Comp AliL3ITS ITS 
+ELIBS:=ESD RAWData MDC MDCFilter STEER TPCbase TPCsim TPCrec AliL3Src AliL3Misc AliL3Hough AliL3Comp AliL3ITS ITSbase ITSsim ITSrec 
 
 ifneq (,$(findstring macosx,$(ALICE_TARGET)))
 PACKLDFLAGS:=$(LDFLAGS) $(@PACKAGE@LIBSINIT:%=-Wl,-u,_G__cpp_setupG__%)

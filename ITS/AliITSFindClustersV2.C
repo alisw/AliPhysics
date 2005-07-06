@@ -57,40 +57,50 @@ Int_t AliITSFindClustersV2(Int_t nev=5, Char_t SlowOrFast='s') {
    itsl->LoadRecPoints("recreate");
    if (SlowOrFast=='s') itsl->LoadDigits("read");
    else itsl->LoadHits("read");
+   
+   if(SlowOrFast=='s'){
+     AliITSclustererV2 clusterer(geom);
 
-   AliITSclustererV2 clusterer(geom);
-
-   TStopwatch timer;
-   if (nev>rl->GetNumberOfEvents()) nev=rl->GetNumberOfEvents();
-   for (Int_t i=0; i<nev; i++) {
+     TStopwatch timer;
+     if (nev>rl->GetNumberOfEvents()) nev=rl->GetNumberOfEvents();
+     for (Int_t i=0; i<nev; i++) {
        cerr<<"Processing event number: "<<i<<endl;
        rl->GetEvent(i);
-
+       
        TTree *out=itsl->TreeR();
        if (!out) {
-          itsl->MakeTree("R");
-          out=itsl->TreeR();
+	 itsl->MakeTree("R");
+	 out=itsl->TreeR();
        }
-
-       if (SlowOrFast=='s') {
-	  TTree *in=itsl->TreeD();
-          if (!in) {
-	    cerr<<"Can't get digits tree !\n";
-            return 4;
-          }
-          clusterer.Digits2Clusters(in,out);
-       } else {
-	  TTree *in=itsl->TreeH();
-          if (!in) {
-	    cerr<<"Can't get hits tree !\n";
-            return 5;
-          }
-          clusterer.Hits2Clusters(in,out);
+       
+       TTree *in=itsl->TreeD();
+       if (!in) {
+	 cerr<<"Can't get digits tree !\n";
+	 return 4;
        }
-
+       clusterer.Digits2Clusters(in,out);       
        itsl->WriteRecPoints("OVERWRITE");
+       timer.Stop(); timer.Print();
+     }
+
+   } else{
+     
+     for(Int_t i=0;i<3;i++){
+       ITS->SetSimulationModel(i,new AliITSsimulationFastPoints());
+     }
+
+     TStopwatch timer;
+     for (Int_t i=0; i<nev; i++) {
+       rl->GetEvent(i);
+       if(itsl->TreeR()== 0x0) itsl->MakeTree("R");
+       TTree* in = (TTree*)itsl->TreeH();
+       TTree* out= (TTree*)itsl->TreeR();
+       timer.Start();
+       ITS->Hits2Clusters(in,out);
+       timer.Stop(); timer.Print();
+       itsl->WriteRecPoints("OVERWRITE");
+     }
    }
-   timer.Stop(); timer.Print();
 
    delete rl;
 

@@ -4,6 +4,19 @@
  * See cxx source for full Copyright notice                               */
 
 /* $Id$ */
+///////////////////////////////////////////////////////////////////////
+//                                                                   //
+//  Class AliITSmodule                                               //
+//  is a superclass for AliITSmoduleSSD, SPD and SDD.                //
+//  The main function of modules is to simulate DIGITS from          //
+//  GEANT HITS and produce POINTS from DIGITS                        //
+//  It also make fast simulation without use of DIGITS               //
+//                                                                   //
+//  created by: A.Boucham, W.Peryt, S.Radomski, P.Skowronski         //
+//              R.Barbera, B. Batynia, B. Nilsen                     //
+//  ver. 1.0    CERN, 16.09.1999                                     //
+//                                                                   //
+///////////////////////////////////////////////////////////////////////
 
 #include <TObject.h>
 #include <TObjArray.h>
@@ -15,20 +28,6 @@ class AliITShit;
 
 class AliITSmodule:public TObject{
 
-//________________________________________________________________
-//
-//  Class AliITSmodule 
-//  is a superclass for AliITSmoduleSSD, SPD and SDD.
-//  The main function of modules is to simulate DIGITS from  
-//  GEANT HITS and produce POINTS from DIGITS
-//  It also make fast simulation without use of DIGITS
-//
-//  created by: A.Boucham, W.Peryt, S.Radomski, P.Skowronski
-//              R.Barbera, B. Batynia, B. Nilsen
-//  ver. 1.0    CERN, 16.09.1999  
-// 
-//________________________________________________________________
-//
 
  public:
     //________________________________________________________________
@@ -107,7 +106,7 @@ class AliITSmodule:public TObject{
     // Computes mean local location from hits that make up a track passing
     // through a volume.
     Bool_t MedianHitL(AliITShit *h1,AliITShit *h2,
-		      Float_t &x,Float_t &y,Float_t &z);
+		      Float_t &x,Float_t &y,Float_t &z) const;
     void MedianHitL(Int_t,AliITShit *,AliITShit *,Float_t &,Float_t &,
 		    Float_t &){};
     Double_t PathLength(Int_t index, AliITShit *itsHit1, AliITShit *itsHit2);
@@ -118,7 +117,7 @@ class AliITSmodule:public TObject{
 	       	    	           Int_t &flag);
     void PathLength(Int_t index,Float_t x,Float_t y,Float_t z,Int_t status,
                     Int_t &nseg,Float_t &x1,Float_t &y1,Float_t &z1,
-		    Float_t &dx1,Float_t &dy1, Float_t &dz1,Int_t &flag);
+		    Float_t &dx1,Float_t &dy1, Float_t &dz1,Int_t &flag) const;
     Bool_t LineSegmentL(Int_t hindex,Double_t &a,Double_t &b, 
 			Double_t &c,Double_t &d,Double_t &e,Double_t &f,
 			Double_t &de);

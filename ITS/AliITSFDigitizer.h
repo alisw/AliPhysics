@@ -1,16 +1,17 @@
-#ifndef ALIITSFDIGITZER_H
-#define ALIITSFDIGITZER_H
+#ifndef ALIITSFDIGITIZER_H
+#define ALIITSFDIGITIZER_H
 /* Copyright (c) 1998-2001, ALICE Experiment at CERN, All rights reserved *
  * See cxx source for full Copyright notice                               */
 
 /*
   $Id$
  */
-
+//////////////////////////////////////////////////////////////////
+// Class for fast reconstruction of recpoints                   //
+//////////////////////////////////////////////////////////////////
 class TObjArray;
 class TTree;
 
-#include <TClonesArray.h> // function of this class used in inline functions.
 
 class AliRunDigitizer;
 
@@ -22,6 +23,8 @@ class AliITSFDigitizer : public AliDigitizer{
  public:
     AliITSFDigitizer();
     AliITSFDigitizer(AliRunDigitizer *manager);
+    AliITSFDigitizer(const AliITSFDigitizer& rec);
+    AliITSFDigitizer& operator=(const AliITSFDigitizer &source);    
     virtual ~AliITSFDigitizer();
     // Standard routines.
     virtual Bool_t Init();

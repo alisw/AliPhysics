@@ -1,8 +1,12 @@
 #ifndef ALIITSNEURALPOINT_H
 #define ALIITSNEURALPOINT_H
-
-#include <TMath.h>
-
+///////////////////////////////////////////////////////////////
+// AliITSneuralPoint                                         //
+//                                                           //
+// A class which resumes the information of ITS clusters     //
+// in the global reference frame.                            //
+// Author: A. Pulvirenti                                     //
+///////////////////////////////////////////////////////////////
 class AliITSgeom;
 class AliITSgeomMatrix;
 class AliITSRecPoint;
@@ -52,7 +56,7 @@ public:
 	void      SetUser(Short_t val)          {fUser = val;}
 	
 	Bool_t    HasID (Int_t ID) const;
-	Int_t*    SharedID(AliITSNeuralPoint *p);
+	Int_t*    SharedID(AliITSNeuralPoint *p) const;
 
 protected:
 	

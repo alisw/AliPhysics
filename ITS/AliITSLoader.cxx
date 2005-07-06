@@ -1,9 +1,6 @@
-#include "AliITS.h"
-#include "AliITSgeom.h"
 #include "AliITSdigit.h"
-#include "AliRun.h"
-#include "AliDetector.h"
 #include "AliITSLoader.h"
+#include "AliRunLoader.h"
 
 ///////////////////////////////////////////////////////////////////////////
 // Loader for ITS
@@ -17,7 +14,6 @@ const TString AliITSLoader::fgkDefaultBackTracksContainerName = "TreeB";
 const TString AliITSLoader::fgkDefaultVerticesContainerName = "Vertex";
 const TString AliITSLoader::fgkDefaultV0ContainerName = "V0";
 const TString AliITSLoader::fgkDefaultCascadeContainerName = "Cascade";
-
 ClassImp(AliITSLoader)
 
 /**********************************************************************/
@@ -124,6 +120,7 @@ AliITSLoader::~AliITSLoader(){
     dl = GetCascadeDataLoader();
     fDataLoaders->Remove(dl);
 }
+/*
 //----------------------------------------------------------------------
 AliITS* AliITSLoader::GetITS(){
     // Returns the pointer to the ITS, kept on the file. A short cut metthod
@@ -161,6 +158,7 @@ void AliITSLoader::SetupDigits(AliITS *its){
 
     its->SetTreeAddressD(TreeD());
 }
+*/
 //----------------------------------------------------------------------
 void AliITSLoader::SetupDigits(TObjArray *digPerDet,Int_t n,
                                const Char_t **digclass){
@@ -244,6 +242,7 @@ AliITSdigit * AliITSLoader::GetDigit(TObjArray *digPerDet,Int_t module,
     } // end if
     return 0;
 }
+/*
 //---------------------------------------------------------------------
 AliITSdigit * AliITSLoader::GetDigit(AliITS *its,Int_t module,Int_t digit){
     // Gets the digit for for a specific detector type and module.
@@ -270,6 +269,7 @@ AliITSdigit * AliITSLoader::GetDigit(AliITS *its,Int_t module,Int_t digit){
     } // end if
     return 0;
 }
+*/
 //----------------------------------------------------------------------
 void AliITSLoader::MakeTree(Option_t *opt){
     // invokes AliLoader::MakeTree + specific ITS tree(s)
@@ -287,3 +287,24 @@ void AliITSLoader::MakeTree(Option_t *opt){
     const char *oX = strstr(opt,"X");
     if (oX) MakeCascadeContainer();
 }
+
+//----------------------------------------------------------------------
+AliITSgeom* AliITSLoader::GetITSgeom() {
+  // retrieves the ITS geometry from file
+  AliRunLoader *runLoader = GetRunLoader();
+ if (!runLoader->GetAliRun()) runLoader->LoadgAlice();
+  if (!runLoader->GetAliRun()) {
+    Error("GetITSgeom", "couldn't get AliRun object");
+    return NULL;
+  }
+  
+  runLoader->CdGAFile();
+  AliITSgeom* geom = (AliITSgeom*)gDirectory->Get("AliITSgeom");
+  if(!geom){
+    Error("GetITSgeom","no ITS geometry available");
+    return NULL;
+  }
+  
+  return geom;
+}
+

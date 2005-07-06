@@ -54,26 +54,21 @@
 
 
 
-#include <Riostream.h>
-#include "AliITS.h"
 #include "AliITSRiemannFit.h"
 #include "AliRun.h"
 #include "TClonesArray.h"
 #include "stdio.h"
 #include "stdlib.h"
 #include "Riostream.h"
-#include "TMath.h"
 #include "TF1.h"
 #include "TGraphErrors.h"
-#include "TStyle.h"
 #include "TParticle.h"
 #include "TTree.h"
 #include "TVector3.h"
 #include "AliITSRecPoint.h"
 #include "AliITSgeom.h"
-#include "AliITSmodule.h"
 #include "AliMC.h"
-
+#include "AliITSDetTypeRec.h"
 
 ClassImp(AliITSRiemannFit)
 
@@ -226,8 +221,7 @@ void FillPoints(AliITSRiemannFit::AliPointtl **Points,Int_t &index,Float_t *xpoi
 }
 // -----------------------------------------------------------------------
 
-void AliITSRiemannFit::InitPoints(Int_t ntracks,AliITS *ITS,
-				    TTree *TR,Int_t nparticles){
+void AliITSRiemannFit::InitPoints(Int_t ntracks,TTree *TR,Int_t nparticles){
   //////////////////////////////////////////////////////////////////////
   // Fill the class member fPointRecs with the reconstructed points
   // Set All other members to the real values
@@ -235,23 +229,23 @@ void AliITSRiemannFit::InitPoints(Int_t ntracks,AliITS *ITS,
   /////////////////////////////////////////////////////////////////////
   printf("\n ************* Starting Init Points *************\n");
   TParticle *part;
-  AliITSgeom *gm = (AliITSgeom*)ITS->GetITSgeom();
+
+  AliRunLoader* rl = AliRunLoader::Open("galice.root");
+  rl->CdGAFile();
+  AliITSgeom* gm = (AliITSgeom*)gDirectory->Get("AliITSgeom");
+
   //get pointer to modules array
-  TObjArray *iTSmodules = ITS->GetModules();
-  Int_t nmodules=iTSmodules->GetEntriesFast();
-  printf("nmodules = %d \n",nmodules);
+  Int_t nmodules = gm->GetIndexMax();
   // Get the points from points file
-  AliITSmodule *itsModule;
   Int_t mod,irec;
   Stat_t nent;
   AliITSRecPoint  *recp;
   nent=TR->GetEntries();
-  TClonesArray *iTSrec  = ITS->RecPoints();
-
+  AliITSDetTypeRec detTypeRec;
+  TClonesArray *iTSrec  = detTypeRec.RecPoints();
   Int_t totRP=0;
   for (mod=0; mod<nmodules; mod++) {
-    itsModule=(AliITSmodule*)iTSmodules->At(mod);
-    ITS->ResetRecPoints();
+    detTypeRec.ResetRecPoints();
     TR->GetEvent(mod);
     Int_t nrecp = iTSrec->GetEntries();
     if(!nrecp) continue;
@@ -282,12 +276,14 @@ void AliITSRiemannFit::InitPoints(Int_t ntracks,AliITS *ITS,
   Int_t num=0,nspdi=0,nspdo=0,nsddi=0,nsddo=0,nssdi=0,nssdo=0;
  
   for (mod=0; mod<nmodules; mod++) {
-    itsModule=(AliITSmodule*)iTSmodules->At(mod);
-    ITS->ResetRecPoints();
+    //itsModule=(AliITSmodule*)iTSmodules->At(mod);
+    //ITS->ResetRecPoints();
+    detTypeRec.ResetRecPoints();
     TR->GetEvent(mod);
     Int_t nrecp = iTSrec->GetEntries();
     if (!nrecp) continue;
-    itsModule->GetID(layer,ladder,detector);
+    //itsModule->GetID(layer,ladder,detector);
+    gm->GetModuleId(mod,layer,ladder,detector);
 
     for (irec=0;irec<nrecp;irec++) {
       recp   = (AliITSRecPoint*)iTSrec->UncheckedAt(irec);
@@ -390,6 +386,8 @@ void AliITSRiemannFit::InitPoints(Int_t ntracks,AliITS *ITS,
   fPLay[3] = nsddo ;
   fPLay[4] = nssdi ;
   fPLay[5] = nssdo ;
+
+  delete rl;
   printf("%d primary tracks in eta=+-1\n",ieta);
   printf("%d primary tracks#2 in eta=+-0.5\n",ieta2);
   printf("\nInitPoints :\n\nPoints on Layer1 : %d on Layer2 : %d\n",nspdi,nspdo);

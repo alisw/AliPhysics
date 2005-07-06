@@ -2,7 +2,9 @@
 #define ALIITSDIGITSPD_H
 /* Copyright(c) 2004-2006, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice     */
-
+/////////////////////////////////////////////////////////////
+// Digit class for SPD                                     //
+/////////////////////////////////////////////////////////////
 #include <AliITSdigit.h>
 
 //______________________________________________________________________
@@ -19,7 +21,7 @@ class AliITSdigitSPD: public AliITSdigit {
     // returns the signal in electrons
     Int_t GetSignalSPD() const {return fSignalSPD;}
     // returns pointer to the array of tracks which make this digit
-    virtual Int_t *GetTracks() {return &fTracks[0];}
+    virtual Int_t *GetTracks()  {return &fTracks[0];}
      //returns the pointer to the array of hits which made this digit
     virtual Int_t *GetHits() {return &fHits[0];}
     // returns track number kept in the array element i of fTracks 

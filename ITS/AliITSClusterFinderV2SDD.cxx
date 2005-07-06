@@ -20,23 +20,21 @@
 ///////////////////////////////////////////////////////////////////////////
 
 
-#include "AliRun.h"
 
 #include "AliITSClusterFinderV2SDD.h"
 #include "AliITSclusterV2.h"
+#include "AliITSDetTypeRec.h"
 #include "AliRawReader.h"
 #include "AliITSRawStreamSDD.h"
 
 #include <TClonesArray.h>
-#include "AliITS.h"
-#include "AliITSgeom.h"
 #include "AliITSdigitSDD.h"
 
 ClassImp(AliITSClusterFinderV2SDD)
 
 extern AliRun *gAlice;
 
-AliITSClusterFinderV2SDD::AliITSClusterFinderV2SDD():AliITSClusterFinderV2(){
+AliITSClusterFinderV2SDD::AliITSClusterFinderV2SDD(AliITSgeom* geom):AliITSClusterFinderV2(geom){
 
   //Default constructor
 
@@ -246,7 +244,7 @@ FindClustersSDD(AliBin* bins[2], Int_t nMaxBin, Int_t nzBins,
 	 }
 	 if(clusters) new (cl[ncl]) AliITSclusterV2(c); 
 	 else {
-	   fITS->AddClusterV2(c);
+	   fDetTypeRec->AddClusterV2(c);
 	 }
 	 ncl++;
       }

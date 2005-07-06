@@ -23,15 +23,9 @@
 //SSD
 
 #include <stdlib.h>
-#include <Riostream.h>
 #include <TClonesArray.h>
 #include <TTree.h>
-#include <TMath.h>
-#include "AliITS.h"
-#include "AliITSgeom.h"
-#include "AliITSdigitSPD.h"
-#include "AliITSdigitSDD.h"
-#include "AliITSdigitSSD.h"
+#include "AliITSdigit.h"
 #include "AliITSDDLRawData.h"
 #include "AliRawDataHeader.h"
 #include "AliITSRawStreamSPD.h"

@@ -135,9 +135,10 @@ void AliITSDigitPlot(Int_t istart=0,Int_t iend=-1,
         return;
     } // end if !treeD
     digDet = new TObjArray(3);
+    its->SetDefaults();
     for(det=0;det<3;det++){
-        digDet->AddAt(new TClonesArray((its->DetType(det)->
-                                        GetDigitClassName()).Data(),1000),det);
+        digDet->AddAt(new TClonesArray(its->GetDetTypeSim()->
+                                        GetDigitClassName(det),1000),det);
         br = treeD->GetBranch(branchname[det]);
         br->SetAddress(&((*digDet)[det]));
     } // end for det

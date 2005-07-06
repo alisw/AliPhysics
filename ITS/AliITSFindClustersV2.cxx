@@ -14,8 +14,12 @@
  **************************************************************************/
  
 /* $Id$ */
+///////////////////////////////////////////////////////////////////
+//Class for reconstruction of clusters V2                        //
+//                                                               //
+//                                                               //
+///////////////////////////////////////////////////////////////////
 
-#include <TROOT.h>
 #include <TFile.h>
 #include <TTree.h>
 #include <TBranch.h>
@@ -25,7 +29,6 @@
 #include "AliRun.h"
 #include "AliHeader.h"
 
-#include "AliITS.h"
 #include "AliITSRecPoint.h"
 #include "AliITSFindClustersV2.h"
 #include "AliITSclusterV2.h"
@@ -98,7 +101,7 @@ AliITSFindClustersV2::AliITSFindClustersV2(const TString infile,
 	return;
     } // end if !fAr
     fDeletfAr = kTRUE; // Since gAlice was read in, delete it.
-
+    /*
     AliITS *its = (AliITS*) fAr->GetModule("ITS");
     if(!its){
 	Warning("AliITSFindClusterV2",
@@ -111,6 +114,16 @@ AliITSFindClustersV2::AliITSFindClustersV2(const TString infile,
 		"Can't fine the ITS geometry in gAlice. Aborting.");
 	return;
     } // end if !fGeom
+    */
+    AliRunLoader* rl = AliRunLoader::Open("galice.root");
+    rl->CdGAFile();
+    fGeom = (AliITSgeom*)gDirectory->Get("AliITSgeom");
+    if(!fGeom){
+	Warning("AliITSFindClusterV2",
+		"Can't fine the ITS geometry in gAlice. Aborting.");
+	return;
+    } // end if !fGeom
+    delete rl;
 
     if(fOut) fOut->cd();
     fInit = kTRUE;
@@ -149,6 +162,7 @@ AliITSFindClustersV2::AliITSFindClustersV2(TFile *in,
 	return;
     } // end if !fAr
     fDeletfAr = kTRUE; // Since gAlice was read in, delete it.
+    /*
     AliITS *its = (AliITS*) fAr->GetModule("ITS");
     if(!its){
 	Warning("AliITSFindClusterV2",
@@ -156,12 +170,17 @@ AliITSFindClustersV2::AliITSFindClustersV2(TFile *in,
 	return;
     } // end if !its
     fGeom = its->GetITSgeom();
+    */
+    AliRunLoader* rl = AliRunLoader::Open("galice.root");
+    rl->CdGAFile();
+    fGeom = (AliITSgeom*)gDirectory->Get("AliITSgeom");
     if(!fGeom){
 	Warning("AliITSFindClusterV2",
 		"Can't fine the ITS geometry in gAlice. Aborting.");
 	return;
     } // end if !fGeom
-
+    delete rl;
+ 
     if(fOut) fOut->cd();
     fInit = kTRUE;
 }
@@ -204,22 +223,43 @@ AliITSFindClustersV2::AliITSFindClustersV2(AliRun *ar,
 		"ar==0. Aborting.");
 	return;
     } // end if !fAr
-    AliITS *its = (AliITS*) fAr->GetModule("ITS");
+
+    /*   AliITS *its = (AliITS*) fAr->GetModule("ITS");
     if(!its){
 	Warning("AliITSFindClusterV2",
 		"Can't fine the ITS in gAlice. Aborting.");
 	return;
     } // end if !its
     fGeom = its->GetITSgeom();
+    */
+    AliRunLoader* rl = AliRunLoader::Open("galice.root");
+    rl->CdGAFile();
+    fGeom = (AliITSgeom*)gDirectory->Get("AliITSgeom");
     if(!fGeom){
 	Warning("AliITSFindClusterV2",
 		"Can't fine the ITS geometry in gAlice. Aborting.");
 	return;
     } // end if !fGeom
+    delete rl;
 
     if(fOut) fOut->cd();
     fInit = kTRUE;
 }
+//______________________________________________________________________
+AliITSFindClustersV2::AliITSFindClustersV2(const AliITSFindClustersV2 &/*rec*/):TTask(/*rec*/){
+    // Copy constructor. 
+
+  Error("Copy constructor","Copy constructor not allowed");
+  
+}
+//______________________________________________________________________
+AliITSFindClustersV2& AliITSFindClustersV2::operator=(const AliITSFindClustersV2& /*source*/){
+    // Assignment operator. This is a function which is not allowed to be
+    // done.
+    Error("operator=","Assignment operator not allowed\n");
+    return *this; 
+}
+
 //______________________________________________________________________
 AliITSFindClustersV2::~AliITSFindClustersV2(){
     // Default constructor.

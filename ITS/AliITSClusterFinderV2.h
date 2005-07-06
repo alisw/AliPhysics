@@ -9,24 +9,19 @@
 ////////////////////////////////////////////////////////////////////  
 #include "AliITSClusterFinder.h" 
 
-
-
-class AliITS;
 class AliITSclusterV2;
 class AliRawReader;
+class AliITSgeom;
 
 class AliITSClusterFinderV2 : public AliITSClusterFinder {
 public:
-  AliITSClusterFinderV2();
+  AliITSClusterFinderV2(AliITSgeom* geom);
   virtual ~AliITSClusterFinderV2() {;}
 
   void SetEvent(Int_t event) { fEvent=event; }
-  virtual void RawdataToClusters(AliRawReader* /*rawReader*/,TClonesArray** /*clusters*/){
+  virtual void RawdataToClusters(AliRawReader* /*rawReader*/,TClonesArray** /*clusters*/) {
     Warning("RawdataToClusters","Method not implemented in this class ");}
-  virtual Int_t  Hits2Clusters(TTree *in, TTree *out);
-
-
-
+  
 protected:
   class Ali1Dcluster {
   public:

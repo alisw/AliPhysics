@@ -4,22 +4,22 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-//____________________________________________________________________
-//
-//  Class AliITSdcsSSD 
-//  describes Detector Control System parameters for one SSD module.
-//   
-//  This class stores parametrers such as gain, threshold
-//  capacitive coupling.
-//  
-//  Class takes care of invalid strip menagement during 
-//  simulation and runtime
-//
-//
-//  created at: Warsaw University of Technology
-//  ver. 1.0    WARSAW, 23.12.1999  
-// 
-//___________________________________________________________________
+///////////////////////////////////////////////////////////////////////////
+//                                                                       //
+//  Class AliITSdcsSSD                                                   //
+//  describes Detector Control System parameters for one SSD module.     //
+//                                                                       //
+//  This class stores parametrers such as gain, threshold                //
+//  capacitive coupling.                                                 //
+//                                                                       //
+//  Class takes care of invalid strip menagement during                  //
+//  simulation and runtime                                               //
+//                                                                       //
+//                                                                       //
+//  created at: Warsaw University of Technology                          //
+//  ver. 1.0    WARSAW, 23.12.1999                                       //
+//                                                                       //
+///////////////////////////////////////////////////////////////////////////
 
 #include <TObject.h>
 
@@ -43,7 +43,7 @@ class AliITSdcsSSD: public TObject {
     //________________________________________________________________
     // Parameters for invalid strips MonteCarlo
     void SetInvalidParam(Float_t mean, Float_t sigma);
-    void GetInvalidParam(Float_t &mean, Float_t &sigma);
+    void GetInvalidParam(Float_t &mean, Float_t &sigma) const;
     // Methods for creating invalid strips
     void SetInvalidMC(Float_t mean, Float_t sigma);
     void SetInvalidMC();
@@ -58,13 +58,13 @@ class AliITSdcsSSD: public TObject {
     // Creating invalid strips
     void    SetInvalidP(Int_t,Bool_t){}//Set invalid if true
     void    SetInvalidN(Int_t,Bool_t){}//Set invalid if true
-    Float_t  GetCouplingPR() {// couplings
+    Float_t  GetCouplingPR() const {// couplings
       return fCouplingPR;}
-    Float_t  GetCouplingPL() {// couplings
+    Float_t  GetCouplingPL() const {// couplings
       return fCouplingPL;}
-    Float_t  GetCouplingNR() {// couplings
+    Float_t  GetCouplingNR() const {// couplings
       return fCouplingNR;}
-    Float_t  GetCouplingNL() {// couplings
+    Float_t  GetCouplingNL() const {// couplings
       return fCouplingNL;}
     
  protected:

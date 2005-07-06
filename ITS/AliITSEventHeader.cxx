@@ -1,12 +1,11 @@
+#include "AliITSEventHeader.h"
 ////////////////////////////////////////////////////
 //  Base class to define                          //
 //  ITS Event Header                              //
-//  
+//                                                //
 //  Origin: E. Crescio crescio@to.infn.it         //
 //                                                //
 ////////////////////////////////////////////////////
-
-#include "AliITSEventHeader.h"
 
 ClassImp(AliITSEventHeader)
 

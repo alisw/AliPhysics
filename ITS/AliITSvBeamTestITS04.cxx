@@ -5,16 +5,10 @@
 ////////////////////////////////////////////////////////
 #include "AliRun.h"
 #include "AliITSvBeamTestITS04.h"
-#include <TBranch.h>
 #include <TClonesArray.h>
 #include <TString.h>
-#include <TTree.h>
 #include "AliITS.h"
-#include "AliITSDetType.h"
-#include "AliITSLoader.h"
-#include "AliITSdigitSPD.h"
-#include "AliITSdigitSDD.h"
-#include "AliITSdigitSSD.h"
+#include "AliITSDetTypeSim.h"
 #include "AliITSgeom.h"
 #include "AliITShit.h"
 #include "AliITSresponseSDD.h"
@@ -30,7 +24,6 @@
 const Int_t AliITSvBeamTestITS04::fgkNumberOfSPD = 4;
 const Int_t AliITSvBeamTestITS04::fgkNumberOfSDD = 2;
 const Int_t AliITSvBeamTestITS04::fgkNumberOfSSD = 4;
-
 // Dimension (thickness:Y (beam direction), width:X, length:Z)
 
 const char*    AliITSvBeamTestITS04::fgSPDsensitiveVolName = "ITSspdSensitiv";
@@ -73,11 +66,10 @@ const Double_t AliITSvBeamTestITS04::fgkSSD1y = 80.6;
 
 //===============================================================
 
-#include <Riostream.h>
 
 #include <TLorentzVector.h>
 #include "AliTrackReference.h"
-#include "AliITSDetType.h"
+#include "AliITSDetTypeSim.h"
 #include "AliITSgeom.h"
 #include "AliITSgeomSDD.h"
 #include "AliITSgeomSPD.h"
@@ -293,21 +285,21 @@ void AliITSvBeamTestITS04::InitAliITSgeom()
     nlad[5] = 1; ndet[5] = 2;
 
     Int_t nModTot = fNspd + fNsdd + fNssd;
-    if (fITSgeom) delete fITSgeom;
-    fITSgeom = new AliITSgeom(0,knlayers,nlad,ndet,nModTot);
-    
+    if (GetITSgeom()) SetITSgeom(0x0);
+    AliITSgeom* geom = new AliITSgeom(0,knlayers,nlad,ndet,nModTot);
+    SetITSgeom(geom);
     //*** Set default shapes 
     const Float_t kDxyzSPD[] = {fgkSPDwidthSens/2, fgkSPDthickSens/2,fgkSPDlengthSens/2};  
-    if(!(fITSgeom->IsShapeDefined(kSPD)))
-	fITSgeom->ReSetShape(kSPD,new AliITSgeomSPD425Short(3,(Float_t *)kDxyzSPD));
+    if(!(GetITSgeom()->IsShapeDefined(kSPD)))
+	GetITSgeom()->ReSetShape(kSPD,new AliITSgeomSPD425Short(3,(Float_t *)kDxyzSPD));
     
     const Float_t kDxyzSDD[] = {fgkSDDwidthSens/2., fgkSDDthickSens/2.,fgkSDDlengthSens/2.};
-    if(!(fITSgeom->IsShapeDefined(kSDD)))
-	fITSgeom->ReSetShape(kSDD, new AliITSgeomSDD256(3,(Float_t *)kDxyzSDD));
+    if(!(GetITSgeom()->IsShapeDefined(kSDD)))
+	GetITSgeom()->ReSetShape(kSDD, new AliITSgeomSDD256(3,(Float_t *)kDxyzSDD));
     
     const Float_t kDxyzSSD[] = {fgkSSDlengthSens/2, fgkSSDthickSens/2,fgkSSDwidthSens/2};
-    if(!(fITSgeom->IsShapeDefined(kSSD)))
-	fITSgeom->ReSetShape(kSSD,new AliITSgeomSSD75and275(3,(Float_t *)kDxyzSSD));
+    if(!(GetITSgeom()->IsShapeDefined(kSSD)))
+	GetITSgeom()->ReSetShape(kSSD,new AliITSgeomSSD75and275(3,(Float_t *)kDxyzSSD));
     
     // Creating the matrices in AliITSgeom for each sensitive volume
     // (like in AliITSv11GeometrySDD) mln
@@ -332,7 +324,7 @@ void AliITSvBeamTestITS04::InitAliITSgeom()
 	    Int_t iLad = 1;
 	    Int_t iLay = 1;
 	    if (i+1>2) iLay = 2;
-	    fITSgeom->CreatMatrix(startMod,iLay,iLad,iDet,kSPD,trans,rot);
+	    GetITSgeom()->CreatMatrix(startMod,iLay,iLad,iDet,kSPD,trans,rot);
 	    startMod++;
 	};
     };
@@ -351,7 +343,7 @@ void AliITSvBeamTestITS04::InitAliITSgeom()
 	    Int_t iDet = 1;
 	    Int_t iLad = 1;
 	    Int_t iLay = fNspd-1+i;
-	    fITSgeom->CreatMatrix(startMod,iLay,iLad,iDet,kSDD,trans,rot);
+	    GetITSgeom()->CreatMatrix(startMod,iLay,iLad,iDet,kSDD,trans,rot);
 	    startMod++;
 	};
     };
@@ -372,7 +364,7 @@ void AliITSvBeamTestITS04::InitAliITSgeom()
 	    Int_t iLad = 1;
 	    Int_t iLay = 5;
 	    if (i+1>2) iLay = 6;
-	    fITSgeom->CreatMatrix(startMod,iLay,iLad,iDet,kSSD,trans,rot);
+	    GetITSgeom()->CreatMatrix(startMod,iLay,iLad,iDet,kSSD,trans,rot);
 	    startMod++;
 	};
     };
@@ -387,7 +379,11 @@ void AliITSvBeamTestITS04::SetDefaults()
     
     const Float_t kconv = 1.0e+04; // convert cm to microns
     
-    AliITSDetType *iDetType;
+    if(!fDetTypeSim) fDetTypeSim = new AliITSDetTypeSim();
+    fDetTypeSim->SetITSgeom(GetITSgeom());
+    fDetTypeSim->ResetResponse();
+    fDetTypeSim->ResetSegmentation();
+ 
     AliITSgeomSPD *s0;
     AliITSgeomSDD *s1;
     AliITSgeomSSD *s2;
@@ -396,20 +392,29 @@ void AliITSvBeamTestITS04::SetDefaults()
 
     // If fGeomDetIn is set true the geometry will
     // be initialised from file (JC)
-    if(fITSgeom!=0) delete fITSgeom;
-    fITSgeom = new AliITSgeom();
-    if(fGeomDetIn) fITSgeom->ReadNewFile(fRead);
+    if(GetITSgeom()!=0) SetITSgeom(0x0);
+    AliITSgeom* geom = new AliITSgeom();
+    SetITSgeom(geom);
+    if(fGeomDetIn) GetITSgeom()->ReadNewFile(fRead);
     if(!fGeomDetIn) this->InitAliITSgeom();
-    if(fGeomDetOut) fITSgeom->WriteNewFile(fWrite);
+    if(fGeomDetOut) GetITSgeom()->WriteNewFile(fWrite);
 
    
     // SPD
-    iDetType=DetType(kSPD);
-    s0 = (AliITSgeomSPD*) fITSgeom->GetShape(kSPD);// Get shape info.
+
+    s0 = (AliITSgeomSPD*) GetITSgeom()->GetShape(kSPD);// Get shape info.
     if (s0) {
-	AliITSresponse *resp0=new AliITSresponseSPD();
-	SetResponseModel(kSPD,resp0);
-	AliITSsegmentationSPD *seg0=new AliITSsegmentationSPD(fITSgeom);
+	AliITSresponse *resp0=0;
+	Int_t nspd=0;
+	for(Int_t nmod=0;nmod<GetITSgeom()->GetIndexMax();nmod++){
+	  if(GetITSgeom()->GetModuleType(nmod)==kSPD){
+	    resp0 = new AliITSresponseSPD();
+	    SetResponseModel(nmod,resp0);
+	    nspd=nmod;
+	  }
+	}
+
+	AliITSsegmentationSPD *seg0=new AliITSsegmentationSPD(GetITSgeom());
 	seg0->SetDetSize(s0->GetDx()*2.*kconv, // base this on AliITSgeomSPD
 			 s0->GetDz()*2.*kconv, // for now.
 			 s0->GetDy()*2.*kconv);// x,z,y full width in microns.
@@ -425,53 +430,68 @@ void AliITSvBeamTestITS04::SetDefaults()
 	seg0->SetBinSize(bx,bz);               // Based on AliITSgeomSPD for now.
 	SetSegmentationModel(kSPD,seg0);
 	// set digit and raw cluster classes to be used
-	const char *kData0=(iDetType->GetResponseModel())->DataType();
+	const char *kData0=(fDetTypeSim->GetResponseModel(nspd))->DataType();
 	if (strstr(kData0,"real")) 
-	    iDetType->ClassNames("AliITSdigit","AliITSRawClusterSPD");
-	else iDetType->ClassNames("AliITSdigitSPD","AliITSRawClusterSPD");
-    };
+	  fDetTypeSim->SetDigitClassName(kSPD,"AliITSdigit");
+	else fDetTypeSim->SetDigitClassName(kSPD,"AliITSdigitSPD");
+    }
   
     // SDD
-    iDetType=DetType(kSDD);
-    s1 = (AliITSgeomSDD*) fITSgeom->GetShape(kSDD);// Get shape info.
+   
+    s1 = (AliITSgeomSDD*) GetITSgeom()->GetShape(kSDD);// Get shape info.
     if (s1) {
-	AliITSresponseSDD *resp1=new AliITSresponseSDD("simulated");
-	SetResponseModel(kSDD,resp1);
-	AliITSsegmentationSDD *seg1=new AliITSsegmentationSDD(fITSgeom,resp1);
+      AliITSresponseSDD *resp1=0;
+      Int_t nsdd=0;
+      for(Int_t nmod=0;nmod<GetITSgeom()->GetIndexMax();nmod++){
+	if(GetITSgeom()->GetModuleType(nmod)==kSDD){
+	  resp1 = new AliITSresponseSDD("simulated");
+	  SetResponseModel(nmod,resp1);
+	  nsdd=nmod;
+	}
+      }
+	AliITSsegmentationSDD *seg1=new AliITSsegmentationSDD(GetITSgeom(),resp1);
 	seg1->SetDetSize(s1->GetDx()*kconv, // base this on AliITSgeomSDD
 			 s1->GetDz()*4.*kconv, // for now.
 			 s1->GetDy()*4.*kconv); // x,z,y full width in microns.
 	seg1->SetNPads(256,256);// Use AliITSgeomSDD for now
 	SetSegmentationModel(kSDD,seg1);
-	const char *kData1=(iDetType->GetResponseModel())->DataType();
-	const char *kopt=iDetType->GetResponseModel()->ZeroSuppOption();
+	const char *kData1=(fDetTypeSim->GetResponseModel(nsdd))->DataType();
+	const char *kopt=fDetTypeSim->GetResponseModel(GetITSgeom()->GetStartSDD())->ZeroSuppOption();
 	if((!strstr(kopt,"2D")) && (!strstr(kopt,"1D")) || strstr(kData1,"real") ){
-	    iDetType->ClassNames("AliITSdigit","AliITSRawClusterSDD");
-	} else iDetType->ClassNames("AliITSdigitSDD","AliITSRawClusterSDD");
-    };
+	  fDetTypeSim->SetDigitClassName(kSDD,"AliITSdigit");
+	} else fDetTypeSim->SetDigitClassName(kSDD,"AliITSdigitSDD");
+    }
     
     // SSD
-    iDetType=DetType(kSSD);
-    s2 = (AliITSgeomSSD*) fITSgeom->GetShape(kSSD);// Get shape info. Do it this way for now.
+    
+    s2 = (AliITSgeomSSD*) GetITSgeom()->GetShape(kSSD);// Get shape info. Do it this way for now.
     if (s2) {
-	AliITSresponse *resp2=new AliITSresponseSSD("simulated");
-	SetResponseModel(kSSD,resp2);
-	AliITSsegmentationSSD *seg2=new AliITSsegmentationSSD(fITSgeom);
-	seg2->SetDetSize(s2->GetDx()*2.*kconv, // base this on AliITSgeomSSD
-			 s2->GetDz()*2.*kconv, // for now.
-			 s2->GetDy()*2.*kconv); // x,z,y full width in microns.
-	seg2->SetPadSize(95.,0.); // strip x pitch in microns
-	seg2->SetNPads(768,0); // number of strips on each side.
-	seg2->SetAngles(0.0075,0.0275); // strip angels rad P and N side.
-	seg2->SetAnglesLay5(0.0075,0.0275); // strip angels rad P and N side.
-	seg2->SetAnglesLay6(0.0275,0.0075); // strip angels rad P and N side.
-	SetSegmentationModel(kSSD,seg2); 
-	const char *kData2=(iDetType->GetResponseModel())->DataType();
-	if(strstr(kData2,"real") ) iDetType->ClassNames("AliITSdigit","AliITSRawClusterSSD");
-	else iDetType->ClassNames("AliITSdigitSSD","AliITSRawClusterSSD");
-    };
-  
-  if(kNTYPES>3){Warning("SetDefaults","Only the four basic detector types are initialised!");}
+      AliITSresponse *resp2=0;
+      Int_t nssd=0;
+      for(Int_t nmod=0;nmod<GetITSgeom()->GetIndexMax();nmod++){
+	if(GetITSgeom()->GetModuleType(nmod)==kSSD){
+	  resp2 = new AliITSresponseSSD("simulated");
+	  SetResponseModel(nmod,resp2);
+	  nssd=nmod;
+	}
+      }
+
+      AliITSsegmentationSSD *seg2=new AliITSsegmentationSSD(GetITSgeom());
+      seg2->SetDetSize(s2->GetDx()*2.*kconv, // base this on AliITSgeomSSD
+		       s2->GetDz()*2.*kconv, // for now.
+		       s2->GetDy()*2.*kconv); // x,z,y full width in microns.
+      seg2->SetPadSize(95.,0.); // strip x pitch in microns
+      seg2->SetNPads(768,0); // number of strips on each side.
+      seg2->SetAngles(0.0075,0.0275); // strip angels rad P and N side.
+      seg2->SetAnglesLay5(0.0075,0.0275); // strip angels rad P and N side.
+      seg2->SetAnglesLay6(0.0275,0.0075); // strip angels rad P and N side.
+      SetSegmentationModel(kSSD,seg2); 
+      const char *kData2=(fDetTypeSim->GetResponseModel(nssd))->DataType();
+      if(strstr(kData2,"real") ) fDetTypeSim->SetDigitClassName(kSSD,"AliITSdigit");
+      else fDetTypeSim->SetDigitClassName(kSSD,"AliITSdigitSSD");
+    }
+    
+  if(fgkNTYPES>3){Warning("SetDefaults","Only the four basic detector types are initialised!");}
   return;
 }
 

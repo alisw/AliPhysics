@@ -6,6 +6,7 @@
 // implements fast simulation 
 /////////////////////////////////////////////////////////
 //
+class TClonesArray;
 class AliITSmodule;
 class TRandom;
 
@@ -15,8 +16,9 @@ class AliITSsimulationFastPoints : public AliITSsimulation
 public:
   AliITSsimulationFastPoints(); // default constructor
   virtual ~AliITSsimulationFastPoints() {;} 
-  void CreateFastRecPoints(AliITSmodule *mod,Int_t module,TRandom *rndm);
-  void CreateFastRecPoints(Int_t module);
+  void CreateFastRecPoints(AliITSmodule *mod,Int_t module,TRandom *rndm, 
+			   TClonesArray* recp);
+  void CreateFastRecPoints(Int_t module,TClonesArray* recp);
   
 private:
 

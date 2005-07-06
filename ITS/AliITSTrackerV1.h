@@ -24,19 +24,17 @@
 
 #include <TObject.h>
 
-class AliITS;
 class TObjArray;
 class TVector;
 class TMatrix;
 class AliITSTrackV1;
-class AliITS;
 class AliITSRad;
 class TStopwatch;
 
 class AliITSTrackerV1 : public TObject {
  public:
     AliITSTrackerV1();
-    AliITSTrackerV1(AliITS* IITTSS, Int_t evnumber, Bool_t flag);
+    AliITSTrackerV1(Int_t evnumber, Bool_t flag);
     AliITSTrackerV1(const AliITSTrackerV1 &cobj);
     ~AliITSTrackerV1();
     AliITSTrackerV1 &operator=(const AliITSTrackerV1 &obj);
@@ -53,7 +51,8 @@ class AliITSTrackerV1 : public TObject {
     //                      Double_t sigma[2], Double_t chi2pred);
 
  private:
-    AliITS* fITS;              //! pointer to AliITS
+    //AliITS* fITS;              //! pointer to AliITS
+    AliITSDetTypeRec *fDetTypeRec;//ITS obj. for reconstruction
     AliITSTrackV1 *fresult;    // result is a pointer to the final best track
     Double_t fPtref;           // transvers momentum obtained from TPC tracking
     Double_t fChi2max;         //  chi2 cut  
@@ -86,7 +85,7 @@ class AliITSTrackerV1 : public TObject {
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     Double_t fFieldFactor;     // Magnetic field factor 
  
-    ClassDef(AliITSTrackerV1,1)  
+    ClassDef(AliITSTrackerV1,2)  
 };
 
 #endif

@@ -1,9 +1,10 @@
-// AliITSneuralPoint
-//
-// A class which resumes the information of ITS clusters
-// in the global reference frame.
-// Author: A. Pulvirenti
-
+///////////////////////////////////////////////////////////////
+// AliITSneuralPoint                                         //
+//                                                           //
+// A class which resumes the information of ITS clusters     //
+// in the global reference frame.                            //
+// Author: A. Pulvirenti                                     //
+///////////////////////////////////////////////////////////////
 //#include <stdlib.h>
 //#include <Riostream.h>
 
@@ -204,7 +205,7 @@ Bool_t AliITSNeuralPoint::HasID(Int_t ID) const
 //
 //------------------------------------------------------------------------------------------------------
 //
-Int_t* AliITSNeuralPoint::SharedID(AliITSNeuralPoint *p)
+Int_t* AliITSNeuralPoint::SharedID(AliITSNeuralPoint *p) const
 {
 // Checks if there is a GEANT track owning both
 // <this> and the recpoint in the argument

@@ -23,8 +23,6 @@
 //  of cluster equal to fgkMaxNumberOfClusters    //
 ////////////////////////////////////////////////////
 
-#include "AliRun.h"
-#include "AliITS.h"
 #include "AliITSgeom.h"
 #include "AliITStrackSA.h"
 
@@ -52,6 +50,7 @@ AliITStrackSA::AliITStrackSA(const AliITStrackSA& t) :
 AliITStrackMI(t){
 // Copy constructor
 
+
   ResetIndexSA();
   Int_t number = t.GetNumberOfClustersSA();
   SetNumberOfClustersSA(number);
@@ -61,14 +60,9 @@ AliITStrackMI(t){
 
 }
 //____________________________________________________
-AliITStrackSA::AliITStrackSA(Int_t layer, Int_t ladder, Int_t detector, Double_t Ycoor, Double_t Zcoor, Double_t phi, Double_t tanlambda, Double_t curv, Int_t lab ) {
+AliITStrackSA::AliITStrackSA(AliITSgeom* geom,Int_t layer, Int_t ladder, Int_t detector, Double_t Ycoor, Double_t Zcoor, Double_t phi, Double_t tanlambda, Double_t curv, Int_t lab ) {
   // standard constructor. Used for ITS standalone tracking
-  AliITS* iTS = (AliITS*)gAlice->GetDetector("ITS");
-  if(!iTS){
-    Fatal("AliITStrackSA","ITS object not found - Abort\n");
-    return;
-  }
-  AliITSgeom *geom = iTS->GetITSgeom();
+
   if(!geom){
     Fatal("AliITStrackSA","ITS geometry not found - Abort\n");
     return;
@@ -129,6 +123,7 @@ AliITStrackSA::AliITStrackSA(Int_t layer, Int_t ladder, Int_t detector, Double_t
   SetMass(0.139);    // pion mass
   SetLabel(lab); 
   
+
 }
 
 //____________________________________________________________

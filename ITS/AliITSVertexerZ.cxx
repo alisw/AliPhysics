@@ -13,17 +13,14 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 #include <AliITSVertexerZ.h>
-#include <Riostream.h>
 #include <TString.h>
-#include <AliITS.h>
 #include "AliITSLoader.h"
-#include <AliRun.h>
 #include<TBranch.h>
 #include<TClonesArray.h>
 #include<TH1.h>
-#include<TMath.h>
 #include<TTree.h>
 #include <AliITSgeom.h>
+#include "AliITSDetTypeRec.h"
 #include <AliITSRecPoint.h>
 
 /////////////////////////////////////////////////////////////////
@@ -48,7 +45,6 @@ AliITSVertexerZ::AliITSVertexerZ():AliITSVertexer() {
   SetSecondLayerModules(0);
   fZFound = 0;
   fZsig = 0.;
-  fITS = 0;
   fZCombc = 0;
   fZCombf = 0;
   SetLowLimit(0.);
@@ -68,7 +64,6 @@ AliITSVertexerZ::AliITSVertexerZ(TString fn, Float_t x0, Float_t y0):AliITSVerte
   SetSecondLayerModules();
   fZFound = 0;
   fZsig = 0.;
-  fITS = 0;
   fZCombc = 0;
   fZCombf = 0;
   SetLowLimit();
@@ -98,7 +93,7 @@ AliITSVertexerZ& AliITSVertexerZ::operator=(const AliITSVertexerZ& /* vtxr */){
 //______________________________________________________________________
 AliITSVertexerZ::~AliITSVertexerZ() {
   // Default Destructor
-  fITS = 0;
+  //fITS = 0;
   if(fZCombc)delete fZCombc;
   if(fZCombf)delete fZCombf;
 }
@@ -106,35 +101,29 @@ AliITSVertexerZ::~AliITSVertexerZ() {
 //______________________________________________________________________
 AliESDVertex* AliITSVertexerZ::FindVertexForCurrentEvent(Int_t evnumber){
   // Defines the AliESDVertex for the current event
-
+  
   fCurrentVertex = 0;
   AliRunLoader *rl =AliRunLoader::GetRunLoader();
-  AliITSLoader* itsLoader =  (AliITSLoader*) rl->GetLoader("ITSLoader");
+  AliITSLoader* itsLoader = (AliITSLoader*)rl->GetLoader("ITSLoader");
+  TDirectory * olddir = gDirectory;
+  rl->CdGAFile();
+  AliITSgeom* geom = (AliITSgeom*)gDirectory->Get("AliITSgeom");
+  olddir->cd();
+
   itsLoader->LoadRecPoints();
   rl->GetEvent(evnumber);
 
-  if(!fITS)  {
-    fITS = (AliITS*)gAlice->GetModule("ITS");
-    if(!fITS) {
-      Error("FindVertexForCurrentEvent","AliITS object was not found");
-      return fCurrentVertex;
-    }
-  }
-
-  fITS->SetTreeAddress();
-
-  AliITSgeom *geom = fITS->GetITSgeom();
+  AliITSDetTypeRec detTypeRec;
 
   TTree *tR = itsLoader->TreeR();
+  detTypeRec.SetTreeAddressR(tR);
   TClonesArray *itsRec  = 0;
   Float_t lc[3]; for(Int_t ii=0; ii<3; ii++) lc[ii]=0.;
   Float_t gc[3]; for(Int_t ii=0; ii<3; ii++) gc[ii]=0.;
   Float_t lc2[3]; for(Int_t ii=0; ii<3; ii++) lc2[ii]=0.;
   Float_t gc2[3]; for(Int_t ii=0; ii<3; ii++) gc2[ii]=0.;
 
-  itsRec = fITS->RecPoints();
-
-  //cout<<"Address of itsRec = "<<itsRec<<endl;
+  itsRec = detTypeRec.RecPoints();
   TClonesArray dummy("AliITSclusterV2",10000), *clusters=&dummy;
   TBranch *branch;
   if(fUseV2Clusters){
@@ -163,7 +152,7 @@ AliESDVertex* AliITSVertexerZ::FindVertexForCurrentEvent(Int_t evnumber){
       Clusters2RecPoints(clusters,module,itsRec);
     }
     nrpL1+= itsRec->GetEntries();
-    fITS->ResetRecPoints();
+    detTypeRec.ResetRecPoints();
   }
   for(Int_t module= fFirstL2; module<=fLastL2;module++){
     branch->GetEvent(module);
@@ -171,7 +160,7 @@ AliESDVertex* AliITSVertexerZ::FindVertexForCurrentEvent(Int_t evnumber){
       Clusters2RecPoints(clusters,module,itsRec);
     }
     nrpL2+= itsRec->GetEntries();
-    fITS->ResetRecPoints();
+    detTypeRec.ResetRecPoints();
   }
   if(nrpL1 == 0 || nrpL2 == 0){
     ResetHistograms();
@@ -207,7 +196,7 @@ AliESDVertex* AliITSVertexerZ::FindVertexForCurrentEvent(Int_t evnumber){
       if(phi1[ind]<0)phi1[ind]=2*TMath::Pi()+phi1[ind];
       ind++;
     }
-    fITS->ResetRecPoints();
+    detTypeRec.ResetRecPoints();
   }
   ind = 0;
   for(Int_t module= fFirstL2; module<=fLastL2;module++){
@@ -230,7 +219,7 @@ AliESDVertex* AliITSVertexerZ::FindVertexForCurrentEvent(Int_t evnumber){
       if(phi2[ind]<0)phi2[ind]=2*TMath::Pi()+phi2[ind];
       ind++;
     }
-    fITS->ResetRecPoints();
+    detTypeRec.ResetRecPoints();
   }
   for(Int_t i=0;i<nrpL1;i++){
     Float_t r1=TMath::Sqrt(xc1[i]*xc1[i]+yc1[i]*yc1[i]);

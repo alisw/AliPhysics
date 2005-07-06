@@ -2,6 +2,9 @@
 #define ALIITSDIGITSSD_H
 /* Copyright(c) 2004-2006, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice     */
+////////////////////////////////////////////////////////
+// Digit class for SSD                                //
+////////////////////////////////////////////////////////
 
 #include <AliITSdigit.h>
 

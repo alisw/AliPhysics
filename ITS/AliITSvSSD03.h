@@ -3,9 +3,10 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-// ITS step manager and geometry class for the ITS SSD test beam geometry
-// of june 2003.
-
+////////////////////////////////////////////////////////////////////////////
+// ITS step manager and geometry class for the ITS SSD test beam geometry //
+// of june 2003.                                                          //
+////////////////////////////////////////////////////////////////////////////
 #include "AliITS.h"
 
 class AliITSvSSD03 : public AliITS{

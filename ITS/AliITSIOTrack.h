@@ -39,8 +39,8 @@ class AliITSIOTrack : public TObject {
   Float_t GetPz() const {return fPz;}    // gets the z momentum component at the fX,fY,fZ point  
   Double_t GetDz() const {return fDz;}   // gets the longitudinal impact parameter
   Int_t    GetPid() const {return fPid;} // gets the identified particle code
-  Double_t GetMass() {return fMass;}                             // get the tracking mass  
-  Float_t GetdEdx() {return fdEdx;}                              //get the track energy loss
+  Double_t GetMass()  const {return fMass;}                             // get the tracking mass  
+  Float_t GetdEdx() const {return fdEdx;}                              //get the track energy loss
   void SetMass(Double_t mass) {fMass=mass;}                      // put the tracking mass
   void SetPid(Int_t pid) {fPid=pid;}                             // put the identified particle code
   

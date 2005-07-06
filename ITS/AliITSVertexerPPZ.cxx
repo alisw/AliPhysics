@@ -13,16 +13,12 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 #include <AliITSVertexerPPZ.h>
-#include <Riostream.h>
 #include <TArrayF.h>
-#include <TDirectory.h>
 #include <TH1F.h>
-#include <TMath.h>
 #include <TObjArray.h>
 #include <TTree.h>
 #include <TClonesArray.h>
-#include "AliRun.h"
-#include "AliITS.h"
+#include "AliITSDetTypeRec.h"
 #include "AliITSgeom.h"
 #include "AliITSLoader.h"
 #include "AliITSRecPoint.h"
@@ -50,7 +46,7 @@ AliITSVertexerPPZ::AliITSVertexerPPZ():AliITSVertexer() {
   SetSecondLayerModules(0);
   fZFound = 0;
   fZsig = 0.;
-  fITS = 0;
+  //fITS = 0;
   SetWindow(0);
 }
 
@@ -63,23 +59,25 @@ AliITSVertexerPPZ::AliITSVertexerPPZ(TString fn, Float_t x0, Float_t y0):AliITSV
   SetSecondLayerModules();
   fZFound = 0;
   fZsig = 0.;
-  fITS = 0;
+  //fITS = 0;
   SetWindow();
 }
 
 //______________________________________________________________________
 AliITSVertexerPPZ::~AliITSVertexerPPZ() {
   // Default Destructor
-  fITS = 0;
+  //fITS = 0;
 }
 
 //________________________________________________________
 void  AliITSVertexerPPZ::EvalZ(TH1F *hist,Int_t sepa, Int_t ncoinc, TArrayF *zval) {
-  Float_t DeltaVal = hist->GetBinWidth(1)*fWindow; // max window in Z for searching
+
+  //Evaluation of Z
+  Float_t deltaVal = hist->GetBinWidth(1)*fWindow; // max window in Z for searching
   fZFound=0;
   fZsig=0;
-  Int_t N=0;
-  Int_t NbinNotZero=0;
+  Int_t nN=0;
+  Int_t nbinNotZero=0;
   Float_t totst = 0.;
   Float_t totst2 = 0.;
   Float_t curz = 0.;
@@ -88,27 +86,27 @@ void  AliITSVertexerPPZ::EvalZ(TH1F *hist,Int_t sepa, Int_t ncoinc, TArrayF *zva
     if(cont!=0)curz = hist->GetBinLowEdge(i)+0.5*hist->GetBinWidth(i);
     totst+=cont;
     totst2+=cont*cont;
-    N++;
-    if(cont!=0)NbinNotZero++;
+    nN++;
+    if(cont!=0)nbinNotZero++;
   }
-  if(NbinNotZero==0){fZFound=-100; fZsig=-100; return;}
-  if(NbinNotZero==1){
+  if(nbinNotZero==0){fZFound=-100; fZsig=-100; return;}
+  if(nbinNotZero==1){
     fZFound = curz;
     fZsig=0;
-    fCurrentVertex = new AliESDVertex(fZFound,fZsig,NbinNotZero);
+    fCurrentVertex = new AliESDVertex(fZFound,fZsig,nbinNotZero);
     return;
   }
-  Float_t errsq = totst2/(N-1)-totst*totst/N/(N-1);
+  Float_t errsq = totst2/(nN-1)-totst*totst/nN/(nN-1);
   if(errsq>=0){
   totst2=TMath::Sqrt(errsq);
   }
   else {
-    Error("EvalZ","Negative variance: %d - %12.7f - %12.7f",N,totst2,totst);
+    Error("EvalZ","Negative variance: %d - %12.7f - %12.7f",nN,totst2,totst);
     fZFound=-100; 
     fZsig=-100;
     return;
   }
-  totst /= N;
+  totst /= nN;
   Float_t cut = totst+totst2*2.;
   if(fDebug>1)cout<<"totst, totst2, cut: "<<totst<<", "<<totst2<<", "<<cut<<endl;
   Float_t val1=hist->GetBinLowEdge(sepa); 
@@ -128,15 +126,15 @@ void  AliITSVertexerPPZ::EvalZ(TH1F *hist,Int_t sepa, Int_t ncoinc, TArrayF *zva
     }
   }
   val2+=hist->GetBinWidth(1);
-  if((val2-val1)>DeltaVal){
-    val1 = zmax-DeltaVal/2.;
-    val2 = zmax+DeltaVal/2.;
+  if((val2-val1)>deltaVal){
+    val1 = zmax-deltaVal/2.;
+    val2 = zmax+deltaVal/2.;
     if(fDebug>0)cout<<"val1 and val2 recomputed\n";
   }
   if(fDebug>0)cout<<"Values for Z finding: "<<val1<<" "<<val2<<" "<<val2-val1<<endl;
   fZFound=0;
   fZsig=0;
-  N=0;
+  nN=0;
   for(Int_t i=0; i<ncoinc; i++){
     Float_t z=zval->At(i);
     if(z<val1)continue;
@@ -149,29 +147,29 @@ void  AliITSVertexerPPZ::EvalZ(TH1F *hist,Int_t sepa, Int_t ncoinc, TArrayF *zva
     fZFound+=z*wei;
     fZsig+=wei;
     */
-    N++;
+    nN++;
   }
-  if(N<1){fZFound=-110; fZsig=-110; return;}
-  if(N==1){
+  if(nN<1){fZFound=-110; fZsig=-110; return;}
+  if(nN==1){
     fZsig = 0;
-    fCurrentVertex = new AliESDVertex(fZFound,fZsig,N);
+    fCurrentVertex = new AliESDVertex(fZFound,fZsig,nN);
     return;
   }
-  errsq = (fZsig/(N-1)-fZFound*fZFound/N/(N-1))/N;
+  errsq = (fZsig/(nN-1)-fZFound*fZFound/nN/(nN-1))/nN;
   if(errsq>=0.){
     fZsig=TMath::Sqrt(errsq);
   }
   else {
-    Error("evalZ","Negative variance: %d - %12.7f %12.7f",N,fZsig,fZFound);
+    Error("evalZ","Negative variance: %d - %12.7f %12.7f",nN,fZsig,fZFound);
     fZsig=0;
   }
-  fZFound=fZFound/N;
+  fZFound=fZFound/nN;
   /* weights defined by the curvature
   fZsig=1./fZsig;
   fZFound*=fZsig;
   fZsig = TMath::Sqrt(fZsig);
   */
-  fCurrentVertex = new AliESDVertex(fZFound,fZsig,N);
+  fCurrentVertex = new AliESDVertex(fZFound,fZsig,nN);
 }
 
 //______________________________________________________________________
@@ -181,16 +179,14 @@ AliESDVertex* AliITSVertexerPPZ::FindVertexForCurrentEvent(Int_t evnumber){
   fZFound = -999;
   fZsig = -999;
   AliRunLoader *rl =AliRunLoader::GetRunLoader();
-  AliITSLoader* ITSloader =  (AliITSLoader*) rl->GetLoader("ITSLoader");
-  if(!fITS)  {
-    fITS = (AliITS*)gAlice->GetModule("ITS");
-    if(!fITS) {
-      Error("FindVertexForCurrentEvent","AliITS object was not found");
-      return fCurrentVertex;
-    }
-  }
-  fITS->SetTreeAddress();
-  AliITSgeom *geom = fITS->GetITSgeom();
+  AliITSLoader* iTSloader = (AliITSLoader*)rl->GetLoader("ITSLoader");
+  TDirectory * olddir = gDirectory;
+  rl->CdGAFile();
+  AliITSgeom* geom = (AliITSgeom*)gDirectory->Get("AliITSgeom");
+  olddir->cd(); 
+
+  AliITSDetTypeRec detTypeRec;
+
   if(!geom) {
     Error("FindVertexForCurrentEvent","ITS geometry is not defined");
     return fCurrentVertex;
@@ -202,12 +198,13 @@ AliESDVertex* AliITSVertexerPPZ::FindVertexForCurrentEvent(Int_t evnumber){
   Float_t lc2[3]; for(Int_t ii=0; ii<3; ii++) lc2[ii]=0.;
   Float_t gc2[3]; for(Int_t ii=0; ii<3; ii++) gc2[ii]=0.;
 
-  tR = ITSloader->TreeR();
+  tR = iTSloader->TreeR();
   if(!tR){
     Error("FindVertexForCurrentEvent","TreeR not found");
     return fCurrentVertex;
   }
-  itsRec  = fITS->RecPoints();  // uses slow points or fast points if slow are
+  detTypeRec.SetTreeAddressR(tR);
+  itsRec = detTypeRec.RecPoints();
   // missing
   TClonesArray dummy("AliITSclusterV2",10000), *clusters=&dummy;
   TBranch *branch;
@@ -244,7 +241,8 @@ AliESDVertex* AliITSVertexerPPZ::FindVertexForCurrentEvent(Int_t evnumber){
       zave2+=gc[2]*gc[2];
       firipixe++;
     }
-    fITS->ResetRecPoints();
+    //fITS->ResetRecPoints();
+    detTypeRec.ResetRecPoints();
   }
   if(firipixe>1){
     rmszav=TMath::Sqrt(zave2/(firipixe-1)-zave*zave/firipixe/(firipixe-1));
@@ -279,7 +277,8 @@ AliESDVertex* AliITSVertexerPPZ::FindVertexForCurrentEvent(Int_t evnumber){
     Int_t nrecp1 = itsRec->GetEntries();
     TObjArray *poiL1 = new TObjArray(nrecp1);
     for(Int_t i=0; i<nrecp1;i++)poiL1->AddAt(itsRec->At(i),i);
-    fITS->ResetRecPoints();
+    //fITS->ResetRecPoints();
+    detTypeRec.ResetRecPoints();
     for(Int_t i=0; i<nrecp1;i++){
       AliITSRecPoint *current = (AliITSRecPoint*)poiL1->At(i);
       lc[0]=current->GetX();
@@ -328,7 +327,8 @@ AliESDVertex* AliITSVertexerPPZ::FindVertexForCurrentEvent(Int_t evnumber){
 	    }
 	  }
 	}
-	fITS->ResetRecPoints();
+	//fITS->ResetRecPoints();
+	detTypeRec.ResetRecPoints();
       }
     }
     delete poiL1;
@@ -347,6 +347,7 @@ AliESDVertex* AliITSVertexerPPZ::FindVertexForCurrentEvent(Int_t evnumber){
     //    fCurrentVertex->SetName(name);
     fCurrentVertex->SetTitle("vertexer: PPZ");
   }
+
   return fCurrentVertex;
 }
 
@@ -354,8 +355,8 @@ AliESDVertex* AliITSVertexerPPZ::FindVertexForCurrentEvent(Int_t evnumber){
 void AliITSVertexerPPZ::FindVertices(){
   // computes the vertices of the events in the range FirstEvent - LastEvent
   AliRunLoader *rl = AliRunLoader::GetRunLoader();
-  AliITSLoader* ITSloader =  (AliITSLoader*) rl->GetLoader("ITSLoader");
-  ITSloader->ReloadRecPoints();
+  AliITSLoader* iTSloader =  (AliITSLoader*) rl->GetLoader("ITSLoader");
+  iTSloader->ReloadRecPoints();
   for(Int_t i=fFirstEvent;i<=fLastEvent;i++){
     cout<<"Processing event "<<i<<endl;
     rl->GetEvent(i);

@@ -4,6 +4,22 @@
 #include "AliITSdcsSSD.h"
 #include "AliITSresponseSSD.h"
 #include "AliITSsegmentationSSD.h"
+///////////////////////////////////////////////////////////////////////////
+//                                                                       //
+//  Class AliITSdcsSSD                                                   //
+//  describes Detector Control System parameters for one SSD module.     //
+//                                                                       //
+//  This class stores parametrers such as gain, threshold                //
+//  capacitive coupling.                                                 //
+//                                                                       //
+//  Class takes care of invalid strip menagement during                  //
+//  simulation and runtime                                               //
+//                                                                       //
+//                                                                       //
+//  created at: Warsaw University of Technology                          //
+//  ver. 1.0    WARSAW, 23.12.1999                                       //
+//                                                                       //
+///////////////////////////////////////////////////////////////////////////
 
 ClassImp(AliITSdcsSSD)
 
@@ -138,7 +154,7 @@ void AliITSdcsSSD::SetInvalidParam(Float_t mean, Float_t sigma) {
     fISigma = (fISigma > fNstrips/10) ? fNstrips/10 : fISigma;
 }
 //______________________________________________________________________
-void AliITSdcsSSD::GetInvalidParam(Float_t &mean, Float_t &sigma) {
+void AliITSdcsSSD::GetInvalidParam(Float_t &mean, Float_t &sigma) const {
     // get invalid param
 
     mean = fNInvalid;

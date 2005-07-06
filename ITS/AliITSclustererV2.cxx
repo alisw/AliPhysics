@@ -10,6 +10,7 @@
 
 #include "AliITSclustererV2.h"
 #include "AliITSclusterV2.h"
+#include "AliITSDetTypeRec.h"
 #include "AliRawReader.h"
 #include "AliITSRawStreamSPD.h"
 #include "AliITSRawStreamSDD.h"
@@ -224,13 +225,13 @@ void AliITSclustererV2::Digits2Clusters(AliRawReader* rawReader) {
 //**** Fast clusters *******************************
 #include "TParticle.h"
 
-#include "AliITS.h"
+//#include "AliITS.h"
 #include "AliITSmodule.h"
 #include "AliITSRecPoint.h"
 #include "AliITSsimulationFastPoints.h"
 #include "AliITSRecPoint.h"
 
-/*
+
 static void CheckLabels(Int_t lab[3]) {
   //------------------------------------------------------------
   // Tries to find mother's labels
@@ -257,7 +258,8 @@ static void CheckLabels(Int_t lab[3]) {
         else ;//cerr<<"CheckLabels : No empty labels !\n";
     }
 }
-*/
+
+/*
 static void CheckLabels(Int_t lab[3]) {
   //------------------------------------------------------------
   // Tries to find mother's labels
@@ -284,7 +286,7 @@ static void CheckLabels(Int_t lab[3]) {
   }
   
 }
-
+*/
 static void CheckLabels2(Int_t lab[10]) {
   //------------------------------------------------------------
   // Tries to find mother's labels
@@ -393,55 +395,6 @@ void AliITSclustererV2::RecPoints2Clusters
     new (cl[i]) AliITSclusterV2(lab,lp, dummy);
   }  
 } 
-
-Int_t AliITSclustererV2::Hits2Clusters(TTree *hTree, TTree *cTree) {
-  //------------------------------------------------------------
-  // This function creates ITS clusters
-  //------------------------------------------------------------
-  if (!gAlice) {
-     Error("Hits2Clusters","gAlice==0 !");
-     return 1;
-  }
-
-  AliITS *its  = (AliITS*)gAlice->GetModule("ITS");
-  if (!its) { 
-     Error("Hits2Clusters","Can't find the ITS !"); 
-     return 2; 
-  }
-  AliITSgeom *geom=its->GetITSgeom();
-  Int_t mmax=geom->GetIndexMax();
-
-  its->InitModules(-1,mmax);
-  its->FillModules(hTree,0);
-
-  TClonesArray *clusters=new TClonesArray("AliITSclusterV2",1000);
-  TBranch *branch=cTree->GetBranch("Clusters");
-  if (!branch) cTree->Branch("Clusters",&clusters);
-  else branch->SetAddress(&clusters);
-
-  static TClonesArray *points=its->RecPoints();
-  AliITSsimulationFastPoints sim;
-  Int_t ncl=0;
-  for (Int_t m=0; m<mmax; m++) {
-    AliITSmodule *mod=its->GetModule(m);      
-    sim.CreateFastRecPoints(mod,m,gRandom);      
-
-    RecPoints2Clusters(points, m, clusters);
-    its->ResetRecPoints();
-
-    ncl+=clusters->GetEntriesFast();
-    cTree->Fill();
-    clusters->Clear();
-  }
-
-  Info("Hits2Clusters","Number of found fast clusters : %d",ncl);
-
-  //cTree->Write();
-
-  delete clusters;
-
-  return 0;
-}
 
 //***********************************
 
@@ -1706,7 +1659,7 @@ void AliITSclustererV2::FindClustersSSD(AliITSRawStream* input,
 #else   //V1
 
 #include "AliITSDetType.h"
-
+#include "AliITS.h"
 #include "AliITSsegmentationSPD.h"
 #include "AliITSClusterFinderSPD.h"
 

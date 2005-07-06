@@ -4,6 +4,11 @@
  * See cxx source for full Copyright notice                               */
 
 /* $Id: */
+///////////////////////////////////////////////////////////////////////
+//  Version: 0                                                       //
+//  Written by Bjorn S. Nilsen with code stolen from Andreas Morsch's//
+//  AliGeant3GeometryGUI class.                                      //
+///////////////////////////////////////////////////////////////////////
 
 #include "TObject.h"
 #include "TGeant3.h"

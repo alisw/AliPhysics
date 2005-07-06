@@ -18,15 +18,13 @@
 //                                                                        //
 ////////////////////////////////////////////////////////////////////////////        
 
-#include "AliITS.h"
 #include "AliITSClusterFinderSPD.h"
+#include "AliITSDetTypeRec.h"
 #include "AliITSRawClusterSPD.h"
 #include "AliITSRecPoint.h"
 #include "AliITSdigitSPD.h"
-#include "AliITSresponseSPD.h"
 #include "AliITSsegmentationSPD.h"
 #include "AliLog.h"
-#include "AliRun.h"
 
 //#define DEBUG
 
@@ -383,7 +381,7 @@ void AliITSClusterFinderSPD::ClusterFinder(Int_t ndigits,Int_t digx[],
                                                              (Double_t) ndzmin,
                                                              (Double_t) ndzmax,
                                                              0,GetModule());
-        fITS->AddCluster(0,clust);
+	fDetTypeRec->AddCluster(0,clust);
         delete clust;
     }//end loop on clusters   
     delete[] ifpad;
@@ -428,6 +426,6 @@ void AliITSClusterFinderSPD::DigitToPoint(Int_t nclus,
         rnew.fTracks[0]=tr1clus[i];
         rnew.fTracks[1]=tr2clus[i];
         rnew.fTracks[2]=tr3clus[i];
-        fITS->AddRecPoint(rnew); 
+	fDetTypeRec->AddRecPoint(rnew); 
     } // end for i
 }

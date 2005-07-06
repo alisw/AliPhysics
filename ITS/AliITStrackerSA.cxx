@@ -26,7 +26,6 @@
 
 #include <TArrayI.h>
 #include <TBranch.h>
-#include <TMath.h>
 #include <TObjArray.h>
 #include <TTree.h>
 
@@ -81,7 +80,7 @@ AliITStrackerSA::AliITStrackerSA(AliITSgeom *geom, AliITSVertexer *vertexer):Ali
 }
 
 //____________________________________________________________________________
-AliITStrackerSA::AliITStrackerSA(AliITStrackerSA& tracker):AliITStrackerMI(){
+AliITStrackerSA::AliITStrackerSA(const AliITStrackerSA& tracker):AliITStrackerMI(){
   // Copy constructor
   fPhiEstimate = tracker.fPhiEstimate;
   for(Int_t i=0;i<2;i++){
@@ -108,6 +107,13 @@ AliITStrackerSA::AliITStrackerSA(AliITStrackerSA& tracker):AliITStrackerMI(){
   fGeom = tracker.fGeom;
   fTable = tracker.fTable;
   fListOfTracks = tracker.fListOfTracks;
+}
+//______________________________________________________________________
+AliITStrackerSA& AliITStrackerSA::operator=(const AliITStrackerSA& /*source*/){
+    // Assignment operator. This is a function which is not allowed to be
+    // done.
+    Error("operator=","Assignment operator not allowed\n");
+    return *this; 
 }
 
 //____________________________________________________________________________
@@ -427,14 +433,12 @@ Int_t AliITStrackerSA::FindTracks(AliESD* event){
     errorsprimvert[0]=0.005;
     errorsprimvert[1]=0.005;
   }
-
   //Fill array with cluster indices for each module
   if(!fTable){
     fTable = new AliITSclusterTable(fGeom,this,primaryVertex);
     fTable->FillArray(fITSclusters);
     fTable->FillArrayCoorAngles();
   }
-
   Int_t * firstmod = new Int_t[fGeom->GetNlayers()];
   for(Int_t i=0;i<fGeom->GetNlayers();i++){
     firstmod[i]=fGeom->GetModuleIndex(i+1,1,1);
@@ -793,7 +797,7 @@ AliITStrackV2* AliITStrackerSA::FitTrack(AliITStrackSA* tr,Double_t *primaryVert
             AliITSclusterV2* cl4 = (AliITSclusterV2*)listlayer[4]->At(l5);
             for(Int_t l6=0;l6<end[5];l6++){ //loop on layer 6  
               AliITSclusterV2* cl5 = (AliITSclusterV2*)listlayer[5]->At(l6);
-              AliITStrackSA* trac = new AliITStrackSA(layer,ladder,detector,yclu1,zclu1,phi,tgl,cv,1);
+              AliITStrackSA* trac = new AliITStrackSA(fGeom,layer,ladder,detector,yclu1,zclu1,phi,tgl,cv,1);
                               
               if(cl5!=0) trac->AddClusterV2(5,(clind5[l6] & 0x0fffffff)>>0);
               if(cl4!=0) trac->AddClusterV2(4,(clind4[l5] & 0x0fffffff)>>0);

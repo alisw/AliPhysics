@@ -82,15 +82,15 @@ void AliITSVertexer::Clusters2RecPoints
   // module "idx" (entry in the tree with the clusters).
   // Simplified version, supposed to work with the pixels only !
   //------------------------------------------------------------
-  const Int_t lastSPD1=79; //let's hope the number of the SPDs will not change
-  const Int_t lastSPD2=239;//let's hope the number of the SPDs will not change
+  const Int_t klastSPD1=79; //let's hope the number of the SPDs will not change
+  const Int_t klastSPD2=239;//let's hope the number of the SPDs will not change
 
   Float_t yshift = 0; //see AliITSclustererV2.cxx about these shifts
   Float_t zshift[4] = {-10.708000, -3.536000, 3.536000, 10.708000}; //let's hope the positioning of the SPDs will not change
 
-  if (idx<=lastSPD1) {
+  if (idx<=klastSPD1) {
     yshift=0.248499;  //let's hope the positioning of the SPDs will not change
-  } else if (idx<=lastSPD2) {
+  } else if (idx<=klastSPD2) {
     yshift=3.096207;  //let's hope the positioning of the SPDs will not change
   } else {
     Fatal("Clusters2RecPoints","This is not an SPD module ! %d",idx);
@@ -102,7 +102,7 @@ void AliITSVertexer::Clusters2RecPoints
     AliITSRecPoint p;
     AliITSclusterV2 *c = (AliITSclusterV2 *)clusters->UncheckedAt(i);
 
-    Float_t x=c->GetY();  if (idx<=lastSPD1) x=-x;
+    Float_t x=c->GetY();  if (idx<=klastSPD1) x=-x;
     x+=yshift;
 
     Float_t z=c->GetZ();

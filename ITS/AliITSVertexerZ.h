@@ -12,7 +12,6 @@
 class TFile;
 class TString;
 class AliESDVertex;
-class AliITS;
 class TH1F;
 
 class AliITSVertexerZ : public AliITSVertexer {
@@ -51,7 +50,6 @@ class AliITSVertexerZ : public AliITSVertexer {
   Float_t fDiffPhiMax;     // Maximum delta phi allowed among corr. pixels
   Float_t fX0;             // Nominal x coordinate of the vertex
   Float_t fY0;             // Nominal y coordinate of the vertex
-  AliITS *fITS;            //! pointer to the AliITS object
   Float_t fZFound;         //! found value for the current event
   Float_t fZsig;           //! RMS of Z
   TH1F *fZCombc;           //! histogram with coarse z distribution
@@ -62,7 +60,7 @@ class AliITSVertexerZ : public AliITSVertexer {
   Float_t fStepFine;       // bin width for fZCombf
   Float_t fTolerance;      // tolerance on the symmetry of the Z interval 
 
-  ClassDef(AliITSVertexerZ,1);
+  ClassDef(AliITSVertexerZ,2);
 };
 
 #endif

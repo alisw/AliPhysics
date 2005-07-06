@@ -13,11 +13,8 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 #include <TObjArray.h>
-#include <TMath.h>
-
 #include "AliITSMapA1.h"
 #include "AliITSsegmentation.h"
-#include "AliITSresponse.h"
 #include "AliITSdigit.h"
 
 ////////////////////////////////////////////////////////////////////////
@@ -199,7 +196,7 @@ Double_t AliITSMapA1::GetSignal(Int_t iz, Int_t ix){
     return signal;
 }
 //______________________________________________________________________
-FlagType AliITSMapA1::TestHit(Int_t iz, Int_t ix){
+FlagType AliITSMapA1::TestHit(Int_t iz, Int_t ix) {
     // check whether the digit has already been flagged
 
     if (CheckedIndex(iz, ix) < 0) return kEmpty;

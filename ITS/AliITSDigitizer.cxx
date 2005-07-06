@@ -14,18 +14,18 @@
  **************************************************************************/
  
 /* $Id$ */
-
-//Piotr.Skowronski@cern.ch :
-//Corrections applied in order to compile (only) with new I/O and folder structure
-//To be implemented correctly by responsible
-//
-//  Class used to steer
-//  the digitization for ITS
-//
-//
+///////////////////////////////////////////////////////////////////////////
+//Piotr.Skowronski@cern.ch :                                             //
+//Corrections applied in order to compile (only)                         // 
+//   with new I/O and folder structure                                   //
+//To be implemented correctly by responsible                             //
+//                                                                       //
+//  Class used to steer                                                  //
+//  the digitization for ITS                                             //
+//                                                                       //
+///////////////////////////////////////////////////////////////////////////
 
 #include <stdlib.h>
-#include <Riostream.h>
 #include <TClonesArray.h>
 #include <TTree.h>
 #include <TBranch.h>
@@ -35,10 +35,8 @@
 #include <AliLoader.h>
 #include <AliRunDigitizer.h>
 #include "AliITSDigitizer.h"
-#include "AliITSpList.h"
 #include "AliITSgeom.h"
 #include "AliITSsimulation.h"
-#include "AliITSDetType.h"
 
 ClassImp(AliITSDigitizer)
 
@@ -76,6 +74,22 @@ AliITSDigitizer::AliITSDigitizer(AliRunDigitizer *mngr) : AliDigitizer(mngr){
     fRoiifile = 0;
     fInit     = kFALSE;
 }
+
+//______________________________________________________________________
+AliITSDigitizer::AliITSDigitizer(const AliITSDigitizer &/*rec*/):AliDigitizer(/*rec*/){
+    // Copy constructor. 
+
+  Error("Copy constructor","Copy constructor not allowed");
+  
+}
+//______________________________________________________________________
+AliITSDigitizer& AliITSDigitizer::operator=(const AliITSDigitizer& /*source*/){
+    // Assignment operator. This is a function which is not allowed to be
+    // done.
+    Error("operator=","Assignment operator not allowed\n");
+    return *this; 
+}
+
 //______________________________________________________________________
 AliITSDigitizer::~AliITSDigitizer(){
     // Default destructor. 
@@ -144,21 +158,18 @@ void AliITSDigitizer::Exec(Option_t* opt){
     if( !det[0] && !det[1] && !det[2] ) all = "All";
     else all = 0;
     AliITSsimulation *sim      = 0;
-    AliITSDetType    *iDetType = 0;
-    static Bool_t    setDef    = kTRUE;
-
+    fITS->SetDefaults();
+    fITS->SetDefaultSimulation();
     if(!fInit){
 	Error("Exec","Init not succesfull, aborting.");
 	return;
     } // end if
 
-    if( setDef ) fITS->SetDefaultSimulation();
-    setDef = kFALSE;
     sprintf(name,"%s",fITS->GetName());
 
     Int_t nfiles = GetManager()->GetNinputs();
     Int_t event  = GetManager()->GetOutputEventNr();
-    Int_t size   = fITS->GetITSgeom()->GetIndexMax();
+     Int_t size   = fITS->GetITSgeom()->GetIndexMax();
     Int_t module,id,ifiles,mask;
     Bool_t lmod;
     Int_t *fl = new Int_t[nfiles];
@@ -192,6 +203,7 @@ void AliITSDigitizer::Exec(Option_t* opt){
        Error("Exec","Can not get Output ITS Loader");
        return;
      }
+
     outgime->LoadDigits("update");
     if (outgime->TreeD() == 0x0) outgime->MakeTree("D");
     
@@ -212,18 +224,15 @@ void AliITSDigitizer::Exec(Option_t* opt){
 
     for(module=0; module<size; module++ )
      {
-        if(fModActive && fRoif!=0) if(!fModActive[module]) continue;
-        id = fITS->GetITSgeom()->GetModuleType(module);
-        if(!all && !det[id]) continue;
-        iDetType = fITS->DetType( id );
-
-        sim      = (AliITSsimulation*)iDetType->GetSimulationModel();
-        if(!sim) {
+       if(fModActive && fRoif!=0) if(!fModActive[module]) continue;
+       id = fITS->GetITSgeom()->GetModuleType(module);
+       if(!all && !det[id]) continue;
+       sim      = (AliITSsimulation*)fITS->GetSimulationModel(id);
+       if(!sim) {
             Error( "Exec", "The simulation class was not instanciated!" );
             exit(1);
         } // end if !sim
-
-        // Fill the module with the sum of SDigits
+           // Fill the module with the sum of SDigits
         sim->InitSimulationModule(module, event);
 	//cout << "Module=" << module;
         for(ifiles=0; ifiles<nfiles; ifiles++ )
@@ -258,17 +267,16 @@ void AliITSDigitizer::Exec(Option_t* opt){
         } // end for ifiles
 	//cout << " end ifiles loop" << endl;
         // Digitize current module sum(SDigits)->Digits
-        sim->FinishSDigitiseModule();
+	sim->FinishSDigitiseModule();
 
         // fills all branches - wasted disk space
         outgime->TreeD()->Fill();
-        fITS->ResetDigits();
+	fITS->ResetDigits();
     } // end for module
-
+    
     outgime->TreeD()->AutoSave();
     outgime->WriteDigits("OVERWRITE");
     outgime->UnloadDigits();
-    
     for(ifiles=0; ifiles<nfiles; ifiles++ )
      {
        inRL =  AliRunLoader::GetRunLoader(fManager->GetInputFolderName(fl[ifiles]));
@@ -280,6 +288,8 @@ void AliITSDigitizer::Exec(Option_t* opt){
     sdig->Clear();
     delete sdig;
     for(Int_t i=0;i<fITS->GetITSgeom()->GetIndexMax();i++) fModActive[i] = kTRUE;
+    
+
     return;
 }
 //______________________________________________________________________

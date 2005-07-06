@@ -19,8 +19,8 @@ ClassImp(AliITSBeamTestDig)
   //
   fReader=0;
   fTreeD=0;
-  fBt=0;
   fITSHeader=0;
+  fITSgeom=0;
 }
 
 //_____________________________________________________________
@@ -32,9 +32,8 @@ ClassImp(AliITSBeamTestDig)
 
   fReader=0;
   fTreeD=0;
-  fBt=0;
   fITSHeader=0;
- 
+  fITSgeom = 0;
 }
 
 //______________________________________________________________________
@@ -43,8 +42,8 @@ AliITSBeamTestDig::AliITSBeamTestDig(const AliITSBeamTestDig &bt):TTask(bt){
 
   fReader=bt.fReader;
   fTreeD=bt.fTreeD;
-  fBt=bt.fBt;
   fITSHeader=bt.fITSHeader;
+  fITSgeom = bt.fITSgeom;
 }
 //______________________________________________________________________
 AliITSBeamTestDig& AliITSBeamTestDig::operator=(const AliITSBeamTestDig &source){

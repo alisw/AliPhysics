@@ -29,7 +29,8 @@ class AliITStrackerSA : public AliITStrackerMI {
   AliITStrackerSA(AliITSgeom *geom);
   AliITStrackerSA(AliITSgeom *geom,AliESDVertex *vert);
   AliITStrackerSA(AliITSgeom *geom,AliITSVertexer *vertexer);
-  AliITStrackerSA(AliITStrackerSA& tracker);
+  AliITStrackerSA(const AliITStrackerSA& tracker);
+  AliITStrackerSA& operator=(const AliITStrackerSA& /* trkr */);
   virtual ~AliITStrackerSA();  
   virtual Int_t Clusters2Tracks(AliESD *event){Int_t rc = AliITStrackerMI::Clusters2Tracks(event); if(!rc) rc=FindTracks(event); return rc;}
   Int_t FindTracks(AliESD* event);
@@ -51,11 +52,6 @@ class AliITStrackerSA : public AliITStrackerMI {
 
  protected:
 
-  // copy constructor (NO copy allowed: the constructor is protected
-  // to avoid misuse)
-  AliITStrackerSA(const AliITStrackerSA& trkr);
-  // assignment operator (NO assignment allowed)
-  AliITStrackerSA& operator=(const AliITStrackerSA& /* trkr */);
   //Initialization
   void Init();
   void ResetForFinding();

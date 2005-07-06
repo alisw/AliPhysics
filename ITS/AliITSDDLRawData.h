@@ -8,7 +8,6 @@
 #ifndef AliITSDDLRAWDATA_H
 #define AliITSDDLRAWDATA_H
 
-class AliITS;
 class TTree;
 
 class AliITSDDLRawData:public TObject{

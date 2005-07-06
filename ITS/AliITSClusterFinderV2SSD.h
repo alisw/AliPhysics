@@ -17,7 +17,7 @@ class AliITSRawStream;
 
 class AliITSClusterFinderV2SSD : public AliITSClusterFinderV2 {
 public:
-  AliITSClusterFinderV2SSD();
+  AliITSClusterFinderV2SSD(AliITSgeom* geom);
   virtual ~AliITSClusterFinderV2SSD(){;}
   virtual void FindRawClusters(Int_t mod);
   virtual void RawdataToClusters(AliRawReader* rawReader,TClonesArray** clusters);

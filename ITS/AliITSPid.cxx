@@ -5,7 +5,7 @@
 //------------------------------------------------------------//
 // #include <stdlib.h>
 #include "AliITSPid.h"
-#include "TMath.h"
+//#include "TMath.h"
 #include <Riostream.h>
 #include <TClonesArray.h>
 #include <TVector.h>
@@ -260,7 +260,7 @@ void	AliITSPid::SetCut(Int_t n,Float_t pm,Float_t pilo,Float_t pihi,
     return ;    
 }
 //------------------------------------------------------------
-void AliITSPid::SetVec(Int_t ntrack,TVector info) 
+void AliITSPid::SetVec(Int_t ntrack,TVector info) const
 {
   //Store track info in tracls table
 TClonesArray& arr=*fTrs;

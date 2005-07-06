@@ -19,28 +19,26 @@
 //                                                                        //
 ///////////////////////////////////////////////////////////////////////////
 
-#include "AliRun.h"
 
 #include "AliITSClusterFinderV2SSD.h"
 #include "AliITSclusterV2.h"
+#include "AliITSDetTypeRec.h"
 #include "AliRawReader.h"
 #include "AliITSRawStreamSSD.h"
 
 #include <TClonesArray.h>
-#include "AliITS.h"
 #include "AliITSgeom.h"
 #include "AliITSdigitSSD.h"
 
 ClassImp(AliITSClusterFinderV2SSD)
 
 
-AliITSClusterFinderV2SSD::AliITSClusterFinderV2SSD():AliITSClusterFinderV2(){
+AliITSClusterFinderV2SSD::AliITSClusterFinderV2SSD(AliITSgeom* geom):AliITSClusterFinderV2(geom){
 
   //Default constructor
 
-  AliITSgeom* geom = (AliITSgeom*)fITS->GetITSgeom();
-
-  fLastSSD1=geom->GetModuleIndex(6,1,1)-1;
+  fITSgeom = geom;
+  fLastSSD1=fITSgeom->GetModuleIndex(6,1,1)-1;
   fYpitchSSD=0.0095;
   fHwSSD=3.65;
   fHlSSD=2.00;
@@ -417,7 +415,7 @@ FindClustersSSD(Ali1Dcluster* neg, Int_t nn,
       if(clusters) cl2 = new (cl[ncl]) AliITSclusterV2(milab,lp,info);
       else{
 	cl2 = new AliITSclusterV2(milab,lp,info);
-	fITS->AddClusterV2(*cl2);
+	fDetTypeRec->AddClusterV2(*cl2);
       }
       ncl++;
       cl2->SetChargeRatio(ratio);    	
@@ -474,7 +472,7 @@ FindClustersSSD(Ali1Dcluster* neg, Int_t nn,
 	  if(clusters) cl2 = new (cl[ncl]) AliITSclusterV2(milab,lp,info);
 	  else{
 	    cl2 = new AliITSclusterV2(milab,lp,info);
-	    fITS->AddClusterV2(*cl2);
+	    fDetTypeRec->AddClusterV2(*cl2);
 	  }
 	  ncl++;
 	  cl2->SetChargeRatio(ratio);    	
@@ -518,7 +516,7 @@ FindClustersSSD(Ali1Dcluster* neg, Int_t nn,
 	  if(clusters) cl2 = new (cl[ncl]) AliITSclusterV2(milab,lp,info);
 	  else{
 	    cl2 = new AliITSclusterV2(milab,lp,info);
-	    fITS->AddClusterV2(*cl2);
+	    fDetTypeRec->AddClusterV2(*cl2);
 	  }
 	  ncl++;
 	  cl2->SetChargeRatio(ratio);    	
@@ -580,7 +578,7 @@ FindClustersSSD(Ali1Dcluster* neg, Int_t nn,
 	  if(clusters) cl2 = new (cl[ncl]) AliITSclusterV2(milab,lp,info);
 	  else{
 	    cl2 = new AliITSclusterV2(milab,lp,info);
-	    fITS->AddClusterV2(*cl2);
+	    fDetTypeRec->AddClusterV2(*cl2);
 	  }
 	  ncl++;
 	  cl2->SetChargeRatio(ratio);    	
@@ -622,7 +620,7 @@ FindClustersSSD(Ali1Dcluster* neg, Int_t nn,
 	  if(clusters) cl2 = new (cl[ncl]) AliITSclusterV2(milab,lp,info);
 	  else{
 	    cl2 = new AliITSclusterV2(milab,lp,info);
-	    fITS->AddClusterV2(*cl2);
+	    fDetTypeRec->AddClusterV2(*cl2);
 	  }
 
 	  ncl++;
@@ -712,7 +710,7 @@ FindClustersSSD(Ali1Dcluster* neg, Int_t nn,
       if(clusters) cl2 = new (cl[ncl]) AliITSclusterV2(milab,lp,info);
       else{
 	cl2 = new AliITSclusterV2(milab,lp,info);
-	    fITS->AddClusterV2(*cl2);
+	    fDetTypeRec->AddClusterV2(*cl2);
       }
       
 
@@ -769,7 +767,7 @@ FindClustersSSD(Ali1Dcluster* neg, Int_t nn,
 	if(clusters) cl2 = new (cl[ncl]) AliITSclusterV2(milab,lp,info);
 	else{
 	  cl2 = new AliITSclusterV2(milab,lp,info);
-	  fITS->AddClusterV2(*cl2);
+	  fDetTypeRec->AddClusterV2(*cl2);
 	}
       	ncl++;
 	cl2->SetChargeRatio(ratio);

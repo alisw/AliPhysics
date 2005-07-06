@@ -15,14 +15,15 @@
 
 /* $Id$ */
 
-/* 
- *  Version: 0
- *  Written by Bjorn S. Nilsen with code stolen from Andreas Morsch's
- *  AliGeant3GeometryGUI class.
- */
 
 #include <ctype.h>
 #include "AliITSGeant3Geometry.h"
+/////////////////////////////////////////////////////////////////////////
+//  Version: 0                                                         //
+//  Written by Bjorn S. Nilsen with code stolen from Andreas Morsch's  //
+//  AliGeant3GeometryGUI class.                                        //
+//                                                                     //
+/////////////////////////////////////////////////////////////////////////
 
 ClassImp(AliITSGeant3Geometry)
 
