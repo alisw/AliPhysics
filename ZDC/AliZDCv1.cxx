@@ -64,6 +64,12 @@ AliZDCv1::AliZDCv1() : AliZDC()
   fMedSensGR  = 0;
 //  fMedSensPI  = 0;
 //  fMedSensTDI = 0;
+  Float_t kDimZEMPb  = 0.15*(TMath::Sqrt(2.));  // z-dimension of the Pb slice
+  Float_t kDimZEMAir = 0.001; 			// scotch
+  Float_t kFibRadZEM = 0.0315; 			// External fiber radius (including cladding)
+  Int_t   kDivZEM[3] = {92, 0, 20}; 		// Divisions for EM detector
+  Float_t kDimZEM0 = 2*kDivZEM[2]*(kDimZEMPb+kDimZEMAir+kFibRadZEM*(TMath::Sqrt(2.)));
+  fZEMLength = kDimZEM0;
 }
  
 //_____________________________________________________________________________
@@ -139,6 +145,12 @@ AliZDCv1::AliZDCv1(const char *name, const char *title)
   fPosZEM[1] = 5.8;
   fPosZEM[2] = 11600.;
   
+  Float_t kDimZEMPb  = 0.15*(TMath::Sqrt(2.));  // z-dimension of the Pb slice
+  Float_t kDimZEMAir = 0.001; 			// scotch
+  Float_t kFibRadZEM = 0.0315; 			// External fiber radius (including cladding)
+  Int_t   kDivZEM[3] = {92, 0, 20}; 		// Divisions for EM detector
+  Float_t kDimZEM0 = 2*kDivZEM[2]*(kDimZEMPb+kDimZEMAir+kFibRadZEM*(TMath::Sqrt(2.)));
+  fZEMLength = kDimZEM0;
 }
  
 //_____________________________________________________________________________
