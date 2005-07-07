@@ -512,6 +512,9 @@ void AliGenHijing::MakeHeader()
 						       fHijing->GetN11());
     ((AliGenHijingEventHeader*) header)->SetSpectators(fProjectileSpecn, fProjectileSpecp,
     						       fTargetSpecn,fTargetSpecp);
+    ((AliGenHijingEventHeader*) header)->SetReactionPlaneAngle(fHijing->GetHINT1(20));
+    
+
 
 // 4-momentum vectors of the triggered jets.
 //
