@@ -483,8 +483,8 @@ void AliITSClusterFinderSDD::Minim( Int_t xdim, Int_t zdim, Double_t *param,
         delta = steprm[k];
         d1 = delta;
         // ENSURE THAT STEP SIZE IS SENSIBLY LARGER THAN MACHINE ROUND OFF
-        if( fabs( p1 ) > 1.0E-6 ) 
-            if ( fabs( delta/p1 ) < 1.0E-4 ) delta = p1/1000;
+        if( TMath::Abs( p1 ) > 1.0E-6 ) 
+            if ( TMath::Abs( delta/p1 ) < 1.0E-4 ) delta = p1/1000;
             else  delta = (Double_t)1.0E-4;
         //  EVALUATE CHI-SQUARED AT FIRST TWO SEARCH POINTS
         PeakFunc( xdim, zdim, param, speFit );
@@ -521,10 +521,10 @@ void AliITSClusterFinderSDD::Minim( Int_t xdim, Int_t zdim, Double_t *param,
                 if( param[k] <= 20 ) param[k] = fMinPeak;
                 break;
             case 1 :
-                if( fabs( param[k] - prm0[k] ) > 1.5 ) param[k] = prm0[k];
+                if( TMath::Abs( param[k] - prm0[k] ) > 1.5 ) param[k] = prm0[k];
                 break;
             case 2 :
-                if( fabs( param[k] - prm0[k] ) > 1. ) param[k] = prm0[k];
+                if( TMath::Abs( param[k] - prm0[k] ) > 1. ) param[k] = prm0[k];
                 break;
             case 3 :
                 if( param[k] < .5 ) param[k] = .5;        
@@ -551,8 +551,8 @@ void AliITSClusterFinderSDD::Minim( Int_t xdim, Int_t zdim, Double_t *param,
         //--IN CASE OF NEARLY EQUAL CHI-SQUARED AND TOO SMALL STEP SIZE PREVENT
         //   ERRONEOUS EVALUATION OF PARABOLA MINIMUM
         //---NEXT TWO LINES CAN BE OMITTED FOR HIGHER PRECISION MACHINES
-        //dp = (Double_t) max (fabs(p3-p2), fabs(p2-p1));
-        //if( fabs( p2-p0 ) > dp ) p0 = p2;
+        //dp = (Double_t) max (TMath::Abs(p3-p2), TMath::Abs(p2-p1));
+        //if( TMath::Abs( p2-p0 ) > dp ) p0 = p2;
         param[k] = p0;
         // Constrain paramiters
         Int_t kpos = (k-1) % knParam;
@@ -561,10 +561,10 @@ void AliITSClusterFinderSDD::Minim( Int_t xdim, Int_t zdim, Double_t *param,
             if( param[k] <= 20 ) param[k] = fMinPeak;   
             break;
         case 1 :
-            if( fabs( param[k] - prm0[k] ) > 1.5 ) param[k] = prm0[k];
+            if( TMath::Abs( param[k] - prm0[k] ) > 1.5 ) param[k] = prm0[k];
             break;
         case 2 :
-            if( fabs( param[k] - prm0[k] ) > 1. ) param[k] = prm0[k];
+            if( TMath::Abs( param[k] - prm0[k] ) > 1. ) param[k] = prm0[k];
             break;
         case 3 :
             if( param[k] < .5 ) param[k] = .5;        
@@ -627,7 +627,7 @@ Int_t AliITSClusterFinderSDD::NoLinearFit( Int_t xdim, Int_t zdim,
         iterNum++;
             chi0 = chi1;
             Minim( xdim, zdim, param, prm0, step, &chi1, spe, speFit );
-            reldif = ( chi1 > 0 ) ? ((Double_t) fabs( chi1-chi0)/chi1 ) : 0;
+            reldif = ( chi1 > 0 ) ? ((Double_t) TMath::Abs( chi1-chi0)/chi1 ) : 0;
         // EXIT conditions
         if( reldif < (float) kchilmt ){
             *chir  = (chi1>0) ? (float) TMath::Sqrt (chi1/degFree) :0;
@@ -667,7 +667,7 @@ Int_t AliITSClusterFinderSDD::NoLinearFit( Int_t xdim, Int_t zdim,
             if ((double)a < 1.0E-6) prmin = 0;
             else prmin = (float) (0.5*b/a);
             dp = 5*(tmp2-tmp0);
-            if( fabs(prmin-tmp2) > fabs(dp) ) prmin = tmp2+dp;
+            if( TMath::Abs(prmin-tmp2) > TMath::Abs(dp) ) prmin = tmp2+dp;
             param[k] = prmin;
             step[k]  = dp/10; // OPTIMIZE SEARCH STEP
         } // end for k
