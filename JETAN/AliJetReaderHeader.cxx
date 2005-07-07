@@ -58,7 +58,7 @@ AliJetReaderHeader::AliJetReaderHeader(const char * name):
 AliJetReaderHeader::~AliJetReaderHeader()
 {
   // destructor
-  delete fComment;
-  delete fDir;
-  delete fPattern;
+  //  delete fComment;
+  //delete fDir;
+  //delete fPattern;
 }

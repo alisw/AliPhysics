@@ -12,6 +12,7 @@
   
 #include <TObject.h>
 #include <TChain.h>
+#include <TArrayI.h>
 
 class TClonesArray;
 class AliJetReaderHeader;
@@ -30,10 +31,12 @@ class AliJetReader : public TObject
   virtual Int_t GetChainEntries() {return fChain->GetEntries();} 
   virtual AliJetReaderHeader* GetReaderHeader() { return fReaderHeader;}
   virtual AliHeader* GetAliHeader() { return fAliHeader;}
+  virtual Int_t GetSignalFlag(Int_t i) const {return fSignalFlag[i];}
 
   // Setters
   virtual void FillMomentumArray(Int_t) {}
-  virtual void SetReaderHeader(AliJetReaderHeader* header) {fReaderHeader = header;}
+  virtual void SetReaderHeader(AliJetReaderHeader* header) 
+    {fReaderHeader = header;}
 	  
   // others
   virtual void OpenInputFiles() {}
@@ -47,6 +50,9 @@ class AliJetReader : public TObject
   AliESD                  *fESD;           // pointer to esd
   AliJetReaderHeader      *fReaderHeader;  // pointer to header
   AliHeader               *fAliHeader;     // pointer to event header
+  TArrayI fSignalFlag;   // to flag if a particle comes from pythia or 
+                        // from the underlying event
+
   ClassDef(AliJetReader,1)
 };
  

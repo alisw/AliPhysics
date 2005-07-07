@@ -39,6 +39,7 @@ AliJetReader::AliJetReader()
   fMomentumArray = new TClonesArray("TLorentzVector",2000);
   fArrayMC = 0;
   fAliHeader = 0;
+  fSignalFlag = TArrayI();
 }
 
 ////////////////////////////////////////////////////////////////////////

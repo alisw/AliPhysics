@@ -28,6 +28,7 @@
 #include "AliUA1JetFinder.h"
 #include "AliUA1JetHeader.h"
 #include "UA1Common.h"
+#include "AliJetReaderHeader.h"
 #include "AliJetReader.h"
 #include "AliJet.h"
 
@@ -55,7 +56,7 @@ AliUA1JetFinder::~AliUA1JetFinder()
   // destructor
   //
 
-  delete fLego;            
+  // delete fLego;            
   
   // reset and delete header
 }
@@ -148,38 +149,52 @@ void AliUA1JetFinder::FindJets()
   ua1_jet_finder(nCell, nTot, etCell, etaCell, phiCell, 
 		 minmove, maxmove, mode, precbg, ierror);
 
-  // download jet info. 
-  Int_t* mult  = new Int_t[UA1JETS.njet];
+
   // sort jets
   Int_t * idx  = new Int_t[UA1JETS.njet];
   TMath::Sort(UA1JETS.njet, UA1JETS.etj, idx);
+
+  // download jet info.   
+  AliJetReaderHeader* rheader = fReader->GetReaderHeader();
+  for(Int_t i = 0; i < UA1JETS.njet; i++) {
+    // reject events outside acceptable eta range
+    if (((UA1JETS.etaj[1][idx[i]])> (rheader->GetFiducialEtaMax()))
+	|| ((UA1JETS.etaj[1][idx[i]]) < (rheader->GetFiducialEtaMin())))
+      continue;
+    Float_t px, py,pz,en; // convert to 4-vector
+    px = UA1JETS.etj[idx[i]] * TMath::Cos(UA1JETS.phij[1][idx[i]]);
+    py = UA1JETS.etj[idx[i]] * TMath::Sin(UA1JETS.phij[1][idx[i]]);
+    pz = UA1JETS.etj[idx[i]] /
+      TMath::Tan(2.0 * TMath::ATan(TMath::Exp(-UA1JETS.etaj[1][idx[i]])));
+    en = TMath::Sqrt(px * px + py * py + pz * pz);
+    fJets->AddJet(px, py, pz, en);
+  }
   
+  // find multiplicities and relationship jet-particle
+  // find also percentage of pt from pythia
   Int_t* injet = new Int_t[nIn];
   for (Int_t i = 0; i < nIn; i++) injet[i]= -1;
+  Int_t* mult  = new Int_t[fJets->GetNJets()];
+  Float_t* percentage  = new Float_t[fJets->GetNJets()];
 
-  for(Int_t i = 0; i < UA1JETS.njet; i++) {
-      Float_t px, py,pz,en; // convert to 4-vector
-      px = UA1JETS.etj[idx[i]] * TMath::Cos(UA1JETS.phij[1][idx[i]]);
-      py = UA1JETS.etj[idx[i]] * TMath::Sin(UA1JETS.phij[1][idx[i]]);
-      pz = UA1JETS.etj[idx[i]] /
-	   TMath::Tan(2.0 * TMath::ATan(TMath::Exp(-UA1JETS.etaj[1][idx[i]])));
-      en = TMath::Sqrt(px * px + py * py + pz * pz);
-      
-      fJets->AddJet(px, py, pz, en);
-      // find multiplicities and relationship jet-particle
-      mult[i] = 0;
-      for (Int_t j = 0; j < nIn; j++) {
-	  Float_t deta = etaT[j] - UA1JETS.etaj[1][idx[i]];
-	  Float_t dphi = phiT[j] - UA1JETS.phij[1][idx[i]];
-	  if (dphi < -TMath::Pi()) dphi= -dphi - 2.0 * TMath::Pi();
-	  if (dphi > TMath::Pi()) dphi = 2.0 * TMath::Pi() - dphi;
-	  Float_t dr = TMath::Sqrt(deta * deta + dphi * dphi);
-	  if (dr < fHeader->GetRadius() && injet[j] == -1) {
-	      injet[j] = i;
-	      mult[i]++;
-	  }
+  for(Int_t i = 0; i < (fJets->GetNJets()); i++) {
+    Float_t pt_sig = 0.0;
+    mult[i] = 0;
+    for (Int_t j = 0; j < nIn; j++) {
+      Float_t deta = etaT[j] - fJets->GetEta(i);
+      Float_t dphi = phiT[j] - fJets->GetPhi(i);
+      if (dphi < -TMath::Pi()) dphi= -dphi - 2.0 * TMath::Pi();
+      if (dphi > TMath::Pi()) dphi = 2.0 * TMath::Pi() - dphi;
+      Float_t dr = TMath::Sqrt(deta * deta + dphi * dphi);
+      if (dr < fHeader->GetRadius() && injet[j] == -1) {
+	if (fReader->GetSignalFlag(j) == 1) pt_sig+=ptT[j];
+	injet[j] = i;
+	mult[i]++;
       }
+    }
+    percentage[i] = pt_sig/((Double_t) fJets->GetPt(i));    
   }
+  fJets->SetPtFromSignal(percentage);
   fJets->SetMultiplicities(mult);
   fJets->SetInJet(injet);
 }

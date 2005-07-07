@@ -45,7 +45,7 @@ AliJetESDReader::AliJetESDReader()
 AliJetESDReader::~AliJetESDReader()
 {
   // Destructor
-  delete fReaderHeader;
+  //  delete fReaderHeader;
 }
 
 //____________________________________________________________________________
@@ -108,6 +108,9 @@ void AliJetESDReader::FillMomentumArray(Int_t event)
   fChainMC->GetEntry(event);
   // get number of tracks in event (for the loop)
   nt = fESD->GetNumberOfTracks();
+  // tmporary storage of signal flags
+  Int_t* flag  = new Int_t[nt];
+
   // get cuts set by user
   Float_t ptMin = ((AliJetESDReaderHeader*) fReaderHeader)->GetPtCut();
 
@@ -117,7 +120,8 @@ void AliJetESDReader::FillMomentumArray(Int_t event)
       UInt_t status = track->GetStatus();
       if ((status & AliESDtrack::kITSrefit) == 0) continue; // quality check
 
-      if (((AliJetESDReaderHeader*) fReaderHeader)->ReadSignalOnly() && TMath::Abs(track->GetLabel()) > 10000)  continue;
+      if (((AliJetESDReaderHeader*) fReaderHeader)->ReadSignalOnly() 
+	  && TMath::Abs(track->GetLabel()) > 10000)  continue;
     
       track->GetPxPyPz(p);
       pt = TMath::Sqrt(p[0] * p[0] + p[1] * p[1]); // pt of the track
@@ -127,8 +131,12 @@ void AliJetESDReader::FillMomentumArray(Int_t event)
       new ((*fMomentumArray)[goodTrack]) 
 	  TLorentzVector(p[0], p[1], p[2],
 			 TMath::Sqrt(pt * pt +p[2] * p[2]));
+      flag[goodTrack]=0;
+      if (TMath::Abs(track->GetLabel()) < 10000) flag[goodTrack]=1;
       goodTrack++;
   }
+  // set the signal flags
+  fSignalFlag.Set(goodTrack,flag);
 
   printf("\nIn event %d, number of good tracks %d \n", event, goodTrack);
 }
