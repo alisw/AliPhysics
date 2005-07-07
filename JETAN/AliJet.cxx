@@ -38,6 +38,7 @@ AliJet::AliJet()
   fNInput=0;
   fNJets=0;
   fInJet=TArrayI();
+  fPtFromSignal=TArrayF();
   fMultiplicities=TArrayI();
 } 
 
@@ -210,6 +211,15 @@ void AliJet::SetInJet(Int_t* j)
   // set information of which input object belongs
   // to each jet. filled in by AliJetFinder
   if (fNInput>0) fInJet.Set(fNInput, j);
+}
+
+////////////////////////////////////////////////////////////////////////
+
+void AliJet::SetPtFromSignal(Float_t* p)
+{
+  // set information of percentage of pt of jets
+  // coming from signal (ie Pythia)
+  if (fNJets>0) fPtFromSignal.Set(fNJets, p);
 }
 
 ////////////////////////////////////////////////////////////////////////

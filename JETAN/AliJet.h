@@ -13,7 +13,7 @@
  
 #include <TObject.h>
 #include <TArrayI.h>
-
+#include <TArrayF.h>
 
 class TClonesArray;
 class TLorentzVector;
@@ -31,6 +31,7 @@ class AliJet : public TObject
   TClonesArray* GetJets() const {return fJets;}
   TArrayI GetInJet() const {return fInJet;}
   TArrayI GetMultiplicities() const {return fMultiplicities;}
+  TArrayF GetPtFromSignal() const {return fPtFromSignal;}
 
   TLorentzVector* GetJet(Int_t i);
   Int_t GetMultiplicity(Int_t i);
@@ -50,6 +51,7 @@ class AliJet : public TObject
   void AddJet(Double_t px, Double_t py, Double_t pz, Double_t e);
   void SetInJet(Int_t* j);
   void SetMultiplicities(Int_t* m);
+  void SetPtFromSignal(Float_t* p);
 
   // others
   Bool_t OutOfRange(Int_t i, const char *s) const;
@@ -62,6 +64,7 @@ class AliJet : public TObject
   Int_t fNJets;                // number of jets found
   TArrayI fInJet;              // i-input object belongs to k-jet 
   TArrayI fMultiplicities;     // Multiplicity of each jet
+  TArrayF fPtFromSignal;       // percentage of pt from signal
   TClonesArray* fJets;         // 4-momenta of jets
 
   ClassDef(AliJet,1)
