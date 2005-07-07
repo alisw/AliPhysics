@@ -14,6 +14,7 @@ public:
     virtual ~AliCollisionGeometry(){;}
     // Getters
     Float_t ImpactParameter()   {return fImpactParameter;}
+    Float_t ReactionPlaneAngle() {return fReactionPlaneAngle;}
     Int_t   HardScatters() {return fNHardScatters;}
     Int_t   ProjectileParticipants()  {return fNProjectileParticipants;}
     Int_t   TargetParticipants()      {return fNTargetParticipants;}
@@ -27,6 +28,7 @@ public:
     Int_t   NwNw()  {return fNwNwColl;}
     // Setters
     void SetImpactParameter(Float_t b)     {fImpactParameter=b;}
+    void SetReactionPlaneAngle(Float_t phi)     {fReactionPlaneAngle = phi;}
     void SetHardScatters(Int_t n)  {fNHardScatters=n;}
     void SetParticipants(Int_t np, Int_t nt)
 	{fNProjectileParticipants=np, fNTargetParticipants=nt;}
@@ -48,8 +50,9 @@ public:
     Int_t   fTargetSpecn;    	       // Num. of spectator neutrons from target nucleus
     Int_t   fTargetSpecp;    	       // Num. of spectator protons from target nucleus
     Float_t fImpactParameter;          // Impact Parameter
-
-  ClassDef(AliCollisionGeometry,2)     // Collision Geometry
+    Float_t fReactionPlaneAngle;       // Reaction plane angle
+    
+  ClassDef(AliCollisionGeometry,3)     // Collision Geometry
 };
 #endif
 

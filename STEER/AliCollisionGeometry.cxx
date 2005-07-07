@@ -32,6 +32,7 @@ AliCollisionGeometry::AliCollisionGeometry() :
   fProjectileSpecp(0),
   fTargetSpecn(0),
   fTargetSpecp(0),
-  fImpactParameter(0)
+  fImpactParameter(0),
+  fReactionPlaneAngle(0)
 {
 }
