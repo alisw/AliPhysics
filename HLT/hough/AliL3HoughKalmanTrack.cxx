@@ -65,6 +65,8 @@ AliL3HoughKalmanTrack::AliL3HoughKalmanTrack(const AliL3HoughTrack& t) throw (co
   fP3=xx[3];
   fP4=xx[4];
 
+  SaveLocalConvConst();
+
   //and covariance matrix
   //For the moment estimate the covariance matrix numerically
   Double_t xx1[5];

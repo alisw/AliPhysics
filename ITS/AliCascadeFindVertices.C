@@ -8,7 +8,7 @@
   #include "AliRun.h"
   #include "AliMagF.h"
   #include "AliESD.h"
-  #include "AliKalmanTrack.h"
+  #include "AliTracker.h"
   #include "AliRunLoader.h"
 #endif
 
@@ -32,10 +32,8 @@ Int_t AliCascadeFindVertices(Int_t nev=5) {
       return 3;
    }
 
-   AliKalmanTrack::SetConvConst(
-      1000/0.299792458/rl->GetAliRun()->Field()->SolenoidField()
-   );
-       
+   // Magnetic field
+   AliTracker::SetFieldMap(gAlice->Field(),1); // 1 means uniform magnetic field
    Double_t cuts[]={33.,    // max. allowed chi2
                     0.05,   // min. allowed V0 impact parameter 
                     0.008,  // window around the Lambda mass 

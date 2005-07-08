@@ -48,6 +48,8 @@ AliTRDtrack::AliTRDtrack(const AliTRDcluster *c, UInt_t index,
   fX=xref;
 
   fY=xx[0]; fZ=xx[1]; fE=xx[2]; fT=xx[3]; fC=xx[4];
+ 
+  SaveLocalConvConst();
 
   fCyy=cc[0];
   fCzy=cc[1];  fCzz=cc[2];
@@ -142,9 +144,6 @@ AliTRDtrack::AliTRDtrack(const AliTRDtrack& t) : AliKalmanTrack(t) {
     fIndex[i] = 0;
     fIndexBackup[i] = 0;  //MI backup indexes
   }
-  for (Int_t i=0;i<6;i++){
-    fTracklets[i]=t.fTracklets[i];
-  }
 }                                
 
 //_____________________________________________________________________________
@@ -185,11 +184,9 @@ AliTRDtrack::AliTRDtrack(const AliKalmanTrack& t, Double_t alpha)
 
   fX=x;
 
-  x = GetConvConst();  
-
   fY=p[0];
   fZ=p[1];
-  fT=p[3];
+  fT=p[3]; x=GetLocalConvConst();
   fC=p[4]/x;
   fE=fC*fX - p[2];   
 
@@ -265,11 +262,9 @@ AliTRDtrack::AliTRDtrack(const AliESDtrack& t)
 
   fX=x;
 
-  x = GetConvConst();  
-
   fY=p[0];
-  fZ=p[1];
-  fT=p[3];
+  fZ=p[1]; SaveLocalConvConst();
+  fT=p[3]; x=GetLocalConvConst();
   fC=p[4]/x;
   fE=fC*fX - p[2];   
 
@@ -313,15 +308,13 @@ AliTRDtrack::~AliTRDtrack()
 Float_t    AliTRDtrack::StatusForTOF()
 {
   Int_t status=0;
-  if (fNRotate>2) return -1;   // sure it's stopped
   if (GetNumberOfClusters()<20) return 0;   //
-
-  //comp->fTree->SetAlias("nlast2","track.fTracklets[5].fNFound+track.fTracklets[4].fNFound");
-  //comp->fTree->SetAlias("goldtrack","abs((track.fTracklets[5].fP1+track.fTracklets[4].fP1))<0.5&&nlast2>14");
-  Int_t nlast2 = fTracklets[5].fNFound+fTracklets[4].fNFound;
-  if (TMath::Abs((fTracklets[5].fP1+fTracklets[4].fP1))<0.3 &&nlast2>20) return 3;
-  if (TMath::Abs((fTracklets[5].fP1+fTracklets[4].fP1))<0.3 &&nlast2>14) return 2;
-  if (TMath::Abs((fTracklets[5].fP1+fTracklets[4].fP1))<0.5 &&nlast2>14) return 1;
+  if (fN>110&&fChi2/(Float_t(fN))<3) return 3;            //gold
+  if (fNLast>30&&fChi2Last/(Float_t(fNLast))<3) return 3; //gold
+  if (fNLast>20&&fChi2Last/(Float_t(fNLast))<2) return 3; //gold
+  if (fNLast/(fNExpectedLast+3.)>0.8 && fChi2Last/Float_t(fNLast)<5&&fNLast>20) return 2; //silber
+  if (fNLast>5 &&((fNLast+1.)/(fNExpectedLast+1.))>0.8&&fChi2Last/(fNLast-5.)<6)   return 1; 
+  //
 
   return status;
 }
@@ -345,7 +338,7 @@ void AliTRDtrack::GetExternalCovariance(Double_t cc[15]) const {
   //
   // This function returns external representation of the covriance matrix.
   //
-  Double_t a=GetConvConst();
+  Double_t a=GetLocalConvConst();
 
   Double_t c22=fX*fX*fCcc-2*fX*fCce+fCee;
   Double_t c32=fX*fCct-fCte;
@@ -404,15 +397,27 @@ void AliTRDtrack::CookdEdx(Double_t low, Double_t up) {
 
   Float_t sorted[kMAX_CLUSTERS_PER_TRACK];
   for (i=0; i < nc; i++) {
-    sorted[i]=TMath::Abs(fdQdl[i]);
+    sorted[i]=fdQdl[i];
   }
-  Int_t * index = new Int_t[nc];
-  TMath::Sort(nc, sorted, index,kFALSE);
+  /*
+  Int_t swap; 
 
+  do {
+    swap=0;
+    for (i=0; i<nc-1; i++) {
+      if (sorted[i]<=sorted[i+1]) continue;
+      Float_t tmp=sorted[i];
+      sorted[i]=sorted[i+1]; sorted[i+1]=tmp;
+      swap++;
+    }
+  } while (swap);
+  */
   Int_t nl=Int_t(low*nc), nu=Int_t(up*nc);
   Float_t dedx=0;
-  for (i=nl; i<=nu; i++) dedx += sorted[index[i]];
-  dedx /= (nu-nl+1);
+  //for (i=nl; i<=nu; i++) dedx += sorted[i];
+  //dedx /= (nu-nl+1);
+  for (i=0; i<nc; i++) dedx += sorted[i];       // ADDED by PS
+  if((nu-nl)) dedx /= (nu-nl);                  // ADDED by PS
 
   SetdEdx(dedx);
 }                     
@@ -432,6 +437,7 @@ Int_t AliTRDtrack::PropagateTo(Double_t xk,Double_t x0,Double_t rho)
     //              << GetPt() << "\t" << GetLabel() << "\t" << GetMass() << endl;
     return 0;
   }
+  Double_t lcc=GetLocalConvConst();
 
   // track Length measurement [SR, GSI, 17.02.2003]
   Double_t oldX = fX, oldY = fY, oldZ = fZ;  
@@ -479,14 +485,18 @@ Int_t AliTRDtrack::PropagateTo(Double_t xk,Double_t x0,Double_t rho)
 
   fX=x2;                                                     
 
+  //Change of the magnetic field *************
+  SaveLocalConvConst();
+  cc=fC;
+  fC*=lcc/GetLocalConvConst();
+  fE+=fX*(fC-cc);
+
   //Multiple scattering  ******************
   Double_t d=sqrt((x1-fX)*(x1-fX)+(y1-fY)*(y1-fY)+(z1-fZ)*(z1-fZ));
   Double_t p2=(1.+ GetTgl()*GetTgl())/(Get1Pt()*Get1Pt());
   Double_t beta2=p2/(p2 + GetMass()*GetMass());
   Double_t theta2=14.1*14.1/(beta2*p2*1e6)*d/x0*rho;
-  theta2*= 3.;                                      // magic const - to normalize pools - waiting for geo manager
-  if (p2>2.) beta2*= 0.4;                           // magic const - theta2 for relativistic particles 
-                                                    // - not valid for electrons
+
   Double_t ey=fC*fX - fE, ez=fT;
   Double_t xz=fC*ez, zz1=ez*ez+1, xy=fE+ey;
   
@@ -513,18 +523,12 @@ Int_t AliTRDtrack::PropagateTo(Double_t xk,Double_t x0,Double_t rho)
   //Energy losses************************
   if((5940*beta2/(1-beta2+1e-10) - beta2) < 0) return 0;
 
-  Double_t dE=0.153e-3/beta2*(log(5940*beta2/(1-beta2+1e-10)) - beta2)*d*rho; 
-  dE *= 1.2;                                      // magic const - to normalize pools - waiting for geo manager
+  Double_t dE=0.153e-3/beta2*(log(5940*beta2/(1-beta2+1e-10)) - beta2)*d*rho;
   if (x1 < x2) dE=-dE;
   cc=fC;
   fC*=(1.- sqrt(p2+GetMass()*GetMass())/p2*dE);
   fE+=fX*(fC-cc);    
-  //
-  Double_t deltac = fC-cc;
-  fCcc   += 4*deltac*deltac;                    // fluctuation of energy losses
-  fCee   += 4*fX*fX*deltac*deltac;              // local angle unchanged
-  fCce   += 4*fX*deltac*deltac;                 // correlation 1
-  //
+
   // track time measurement [SR, GSI 17.02.2002]
   if (x1 < x2)
   if (IsStartedTimeIntegral()) {
@@ -674,7 +678,14 @@ Int_t AliTRDtrack::UpdateMI(const AliTRDcluster *c, Double_t chisq, UInt_t index
   }
   Double_t tangent = TMath::Sqrt(tangent2);
   if ((fC*fX-fE)<0) tangent*=-1;
-  Double_t errsys =(0.025*0.025*20)*(1+tangent2);  //systematic error part 
+  //  Double_t correction = 0*plane;
+  Double_t errang = tangent2*0.04;  //
+  Double_t errsys =0.025*0.025*20;  //systematic error part 
+  Float_t extend =1;
+  if (c->GetNPads()==4) extend=2;
+  //if (c->GetNPads()==5)  extend=3;
+  //if (c->GetNPads()==6)  extend=3;
+  //if (c->GetQ()<15) return 1;
 
   /*
   if (corrector!=0){
@@ -689,7 +700,9 @@ Int_t AliTRDtrack::UpdateMI(const AliTRDcluster *c, Double_t chisq, UInt_t index
   }
   */
   //
-  Double_t r00=(c->GetSigmaY2()+errsys), r01=0., r11=c->GetSigmaZ2()*10000.;
+  //  Double_t padlength = TMath::Sqrt(c->GetSigmaZ2()*12.);
+
+  Double_t r00=(c->GetSigmaY2() +errang+errsys)*extend, r01=0., r11=c->GetSigmaZ2()*10000.;
   r00+=fCyy; r01+=fCzy; r11+=fCzz;
   Double_t det=r00*r11 - r01*r01;
   Double_t tmp=r00; r00=r11/det; r11=tmp/det; r01=-r01/det;
@@ -717,16 +730,29 @@ Int_t AliTRDtrack::UpdateMI(const AliTRDcluster *c, Double_t chisq, UInt_t index
     fC  = cur;
   }
   else {
-    //    Double_t padlength = TMath::Sqrt(c->GetSigmaZ2()*12);
+    Double_t padlength = TMath::Sqrt(c->GetSigmaZ2()*12);
   
     Double_t xu_factor = 1000.;  // empirical factor set by C.Xu
                                 // in the first tilt version      
     dy=c->GetY() - fY; dz=c->GetZ() - fZ;     
+    //dy=dy+h01*dz+correction;
     
     Double_t tiltdz = dz;
+    if (TMath::Abs(tiltdz)>padlength/2.) {
+      tiltdz = TMath::Sign(padlength/2,dz);
+    }
+    //    dy=dy+h01*dz;
     dy=dy+h01*tiltdz;
 
-    Double_t s00 = c->GetSigmaY2()+errsys;  // error pad
+    Double_t add=0;
+    if (TMath::Abs(dz)>padlength/2.){
+      //Double_t dy2 = c->GetY() - fY;
+      //Double_t sign = (dz>0) ? -1.: 1.;
+      //dy2-=h01*sign*padlength/2.;	
+      //dy = dy2;
+      add =1;
+    }
+    Double_t s00 = (c->GetSigmaY2()+errang)*extend+errsys+add;  // error pad
     Double_t s11 = c->GetSigmaZ2()*xu_factor;   // error pad-row
     //
     r00 = fCyy + 2*fCzy*h01 + fCzz*h01*h01+s00;
@@ -802,8 +828,6 @@ Int_t AliTRDtrack::UpdateMI(const AliTRDcluster *c, Double_t chisq, UInt_t index
 
   return 1;      
 }                     
-
-
 
 
 
@@ -911,6 +935,7 @@ Int_t AliTRDtrack::UpdateMI(const AliTRDtracklet &tracklet)
   */
   return 1;      
 }                     
+
 
 
 //_____________________________________________________________________________
@@ -1096,10 +1121,10 @@ Int_t  AliTRDtrack::GetProlongation(Double_t xk, Double_t &y, Double_t &z){
   // return 0 if not exist
   
   Double_t c1=fC*fX - fE;
-  if (TMath::Abs(c1)>0.9) return 0;
+  if (TMath::Abs(c1)>1.) return 0;
   Double_t r1=TMath::Sqrt(1.- c1*c1);
   Double_t c2=fC*xk - fE;
-  if (TMath::Abs(c2)>0.9) return 0;  
+  if (TMath::Abs(c2)>1.) return 0;  
   Double_t r2=TMath::Sqrt(1.- c2*c2);
   y =fY + (xk-fX)*(c1+c2)/(r1+r2);
   z =fZ + (xk-fX)*(c1+c2)/(c1*r2 + c2*r1)*fT;

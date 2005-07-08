@@ -83,7 +83,7 @@ void AliL3OfflineDataCompressor::LoadData(Int_t event,Bool_t sp)
   fEvent = event;
 
   char filename[1024];
-  AliKalmanTrack::SetConvConst(1000/0.299792458/AliL3Transform::GetSolenoidField());
+  //AliKalmanTrack::SetConvConst(1000/0.299792458/AliL3Transform::GetSolenoidField());
   if(fMarian==kFALSE)
     sprintf(filename,"%s/offline/AliTPCclusters.root",fPath);
   else
@@ -102,7 +102,7 @@ void AliL3OfflineDataCompressor::LoadData(Int_t event,Bool_t sp)
     fTracker = new AliTPCtracker(param);
   else
     fTracker = new AliTPCtrackerMI(param);
-  fTracker->SetEventNumber(event);
+  //fTracker->SetEventNumber(event);
 #ifdef asvversion
   fTracker->LoadClusters();
 #endif  

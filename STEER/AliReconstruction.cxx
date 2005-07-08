@@ -71,6 +71,10 @@
 //                                                                           //
 //   rec.SetRunTracking("...");                                              //
 //                                                                           //
+// Uniform/nonuniform field tracking switches (default: uniform field)       //
+//                                                                           //
+//   rec.SetUniformFieldTracking();  ( rec.SetNonuniformFieldTracking(); )   //
+//                                                                           //
 // The filling of additional ESD information can be steered by               //
 //                                                                           //
 //   rec.SetFillESD("...");                                                  //
@@ -116,9 +120,9 @@
 #include "AliRawReaderFile.h"
 #include "AliRawReaderDate.h"
 #include "AliRawReaderRoot.h"
-#include "AliTracker.h"
 #include "AliESD.h"
 #include "AliESDVertex.h"
+#include "AliTracker.h"
 #include "AliVertexer.h"
 #include "AliHeader.h"
 #include "AliGenEventHeader.h"
@@ -138,6 +142,7 @@ AliReconstruction::AliReconstruction(const char* gAliceFilename,
   TNamed(name, title),
 
   fRunLocalReconstruction("ALL"),
+  fUniformField(kTRUE),
   fRunVertexFinder(kTRUE),
   fRunHLTTracking(kFALSE),
   fRunTracking("ALL"),
@@ -170,6 +175,7 @@ AliReconstruction::AliReconstruction(const AliReconstruction& rec) :
   TNamed(rec),
 
   fRunLocalReconstruction(rec.fRunLocalReconstruction),
+  fUniformField(rec.fUniformField),
   fRunVertexFinder(rec.fRunVertexFinder),
   fRunHLTTracking(rec.fRunHLTTracking),
   fRunTracking(rec.fRunTracking),
@@ -886,7 +892,7 @@ Bool_t AliReconstruction::InitRunLoader()
     if (gFile->GetKey(AliRunLoader::GetGAliceName())) {
       if (fRunLoader->LoadgAlice() == 0) {
 	gAlice = fRunLoader->GetAliRun();
-	AliTracker::SetFieldMap(gAlice->Field());
+	AliTracker::SetFieldMap(gAlice->Field(),fUniformField);
       }
     }
     if (!gAlice && !fRawReader) {

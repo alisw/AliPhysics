@@ -57,7 +57,7 @@ AliITSVertexerTracks::AliITSVertexerTracks():AliITSVertexer() {
 }
 //----------------------------------------------------------------------------
 AliITSVertexerTracks::AliITSVertexerTracks(TFile *inFile,TFile *outFile,
-                                           Double_t field,
+                                           const AliMagF *map,
                                            Int_t fEv,Int_t lEv,
                                            Double_t xStart,Double_t yStart) {
 //
@@ -68,7 +68,7 @@ AliITSVertexerTracks::AliITSVertexerTracks(TFile *inFile,TFile *outFile,
   fOutFile = outFile;
   SetFirstEvent(fEv);
   SetLastEvent(lEv);
-  SetField(field);
+  SetFieldMap(map);
   SetVtxStart(xStart,yStart);
   SetMinTracks();
   fTrksToSkip = 0;
@@ -77,7 +77,7 @@ AliITSVertexerTracks::AliITSVertexerTracks(TFile *inFile,TFile *outFile,
   SetDebug();
 }
 //----------------------------------------------------------------------------
-AliITSVertexerTracks::AliITSVertexerTracks(Double_t field, TString fn,
+AliITSVertexerTracks::AliITSVertexerTracks(const AliMagF *map, TString fn,
 					   Double_t xStart,Double_t yStart)
                                           :AliITSVertexer(fn) {
 //
@@ -85,7 +85,7 @@ AliITSVertexerTracks::AliITSVertexerTracks(Double_t field, TString fn,
 //
   fInFile  = 0;
   fOutFile = 0;
-  SetField(field);
+  SetFieldMap(map);
   SetVtxStart(xStart,yStart);
   SetMinTracks();
   fTrksToSkip = 0;
@@ -345,7 +345,7 @@ AliESDVertex* AliITSVertexerTracks::FindVertexForCurrentEvent(AliESD *esdEvent)
 
   for(Int_t i=0; i<entr; i++) {
     AliESDtrack *esdTrack = (AliESDtrack*)esdEvent->GetTrack(i);
-    if(!(esdTrack->GetStatus()&AliESDtrack::kITSin))
+    if(!esdTrack->GetStatus()&AliESDtrack::kITSin)
       { delete esdTrack; continue; }
     try {
       itstrack = new AliITStrackV2(*esdTrack);

@@ -36,6 +36,9 @@
 #include <TString.h>
 #include <TTree.h>
 
+#include "AliAnalysis.h"
+#include "AliAODRun.h"
+
 #include "AliAOD.h"
 #include "AliAODParticle.h"
 #include "AliAODParticleCut.h"
@@ -267,7 +270,7 @@ Int_t AliReaderESD::ReadESDCentral(AliESD* esd)
   if (fITSTrackPoints)
    {
      Info("ReadESD","Magnetic Field is %f",mf);
-     AliKalmanTrack::SetMagneticField(mf);
+     //AliKalmanTrack::SetMagneticField(mf);
    }
  
   AliStack* stack = 0x0;

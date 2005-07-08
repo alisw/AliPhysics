@@ -25,8 +25,8 @@ class AliReconstructor;
 class AliRunLoader;
 class AliRawReader;
 class AliLoader;
-class AliVertexer;
 class AliTracker;
+class AliVertexer;
 class AliESD;
 class TFile;
 
@@ -56,6 +56,9 @@ public:
     SetRunLocalReconstruction(detectors); 
     SetRunTracking(detectors);
     SetFillESD(detectors);};
+
+   void SetUniformFieldTracking(){fUniformField=kTRUE;} 
+   void SetNonuniformFieldTracking(){fUniformField=kFALSE;} 
 
   void           SetStopOnError(Bool_t stopOnError) 
     {fStopOnError = stopOnError;}
@@ -88,6 +91,7 @@ private:
   void           WriteESD(AliESD* esd, const char* recStep) const;
 
   TString        fRunLocalReconstruction; // run the local reconstruction for these detectors
+  Bool_t         fUniformField;       // uniform field tracking flag
   Bool_t         fRunVertexFinder;    // run the vertex finder
   Bool_t         fRunHLTTracking;     // run the HLT tracking
   TString        fRunTracking;        // run the tracking for these detectors
@@ -110,7 +114,7 @@ private:
   AliVertexer*   fVertexer;                //! vertexer for ITS
   AliTracker*    fTracker[fgkNDetectors];  //! trackers
 
-  ClassDef(AliReconstruction, 4)      // class for running the reconstruction
+  ClassDef(AliReconstruction, 5)      // class for running the reconstruction
 };
 
 #endif

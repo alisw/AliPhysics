@@ -11,7 +11,7 @@ if (!inkin->IsOpen()) {
 gAlice = (AliRun*)inkin->Get("gAlice");
 cout<<"AliRun object found on file "<<gAlice<<endl;
 cout<<"!!!! field ="<<gAlice->Field()->SolenoidField()<<endl;
-AliKalmanTrack::SetConvConst(1000/0.299792458/gAlice->Field()->SolenoidField());
+AliKalmanTrack::SetFieldMap(gAlice->Field());
 inkin->Close();                                  
  cout<<" Convconst="<<AliKalmanTrack::GetConvConst()<<endl;
 /////////////////////////////////////// 

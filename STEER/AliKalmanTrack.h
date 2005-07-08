@@ -13,7 +13,9 @@
 //-------------------------------------------------------------------------
 
 #include <TObject.h>
+#include "AliLog.h"
 #include "AliPID.h"
+#include "AliMagF.h"
 
 class AliCluster;
 
@@ -33,11 +35,11 @@ public:
   Double_t GetMass()    const {return fMass;}
   Int_t    GetNumberOfClusters() const {return fN;}
   virtual Int_t GetClusterIndex(Int_t) const { //reserved for AliTracker
-    Warning("GetClusterIndex(Int_t)","Method must be overloaded !\n");
+    AliWarning("Method must be overloaded !\n");
     return 0;
   } 
   virtual Double_t GetPIDsignal() const {
-    Warning("GetPIDsignal()","Method must be overloaded !\n");
+    AliWarning("Method must be overloaded !\n");
     return 0.;
   }
 
@@ -45,39 +47,42 @@ public:
   virtual 
   Double_t PropagateToDCA(AliKalmanTrack *p, Double_t d=0., Double_t x0=0.); 
   virtual Double_t GetAlpha() const {
-    Warning("GetAlpha()","Method must be overloaded !\n");
+    AliWarning("Method must be overloaded !\n");
     return 0.;
   }
   virtual Double_t GetSigmaY2() const {
-    Warning("GetSigmaY2()","Method must be overloaded !\n");
+    AliWarning("Method must be overloaded !\n");
     return 0.;
   }
   virtual Double_t GetSigmaZ2() const {
-    Warning("GetSigmaZ2()","Method must be overloaded !\n");
+    AliWarning("Method must be overloaded !\n");
     return 0.;
   }
 
   virtual Int_t Compare(const TObject *) const {return 0;} 
 
-  virtual void GetExternalParameters(Double_t &/*xr*/, Double_t /*x*/[5]) const {}
-  virtual void GetExternalCovariance(Double_t /*cov*/[15]) const {}
+  virtual void GetExternalParameters(Double_t&/*xr*/,Double_t/*x*/[5]) const=0;
+  virtual void GetExternalCovariance(Double_t /*cov*/[15]) const = 0;
 
-  virtual Double_t GetPredictedChi2(const AliCluster *) const {return 0.;}
-  virtual Int_t 
-  PropagateTo(Double_t /*xr*/, Double_t /*x0*/, Double_t /*rho*/) {return 0;}
-  virtual Int_t PropagateToVertex(Double_t /*d*/=0., Double_t /*x0*/=0.) 
-    {return 0;}
-  virtual Int_t 
-  Update(const AliCluster*, Double_t /*chi2*/, UInt_t) {return 0;}
+  virtual Double_t GetPredictedChi2(const AliCluster *) const = 0;
+  virtual Int_t PropagateTo(Double_t/*xr*/,Double_t/*x0*/,Double_t/*rho*/) = 0;
+  //virtual Int_t PropagateToVertex(Double_t /*d*/=0., Double_t /*x0*/=0.) = 0; 
+  virtual Int_t Update(const AliCluster*, Double_t /*chi2*/, UInt_t) = 0;
 
-  static void SetConvConst(Double_t cc) {fgConvConst=cc;}
-  static Double_t GetConvConst() {return fgConvConst;}
+  static void SetFieldMap(const AliMagF *map) { fgkFieldMap=map; }
+  static const AliMagF *GetFieldMap() { return fgkFieldMap; }
 
-  static void SetMagneticField(Double_t f) {// f - Magnetic field in T
-    fgConvConst=100/0.299792458/f;
+  static void SetUniformFieldTracking() {
+     if (fgkFieldMap==0) {
+        printf("AliKalmanTrack: Field map has not been set !\n"); 
+        exit(1);
+     } 
+     fgConvConst=1000/0.299792458/(fgkFieldMap->SolenoidField()+1e-13);
   }
-  Double_t GetMagneticField() const {return 100/0.299792458/fgConvConst;}
+  static void SetNonuniformFieldTracking() { fgConvConst=0.; }
 
+  static Double_t GetConvConst();
+ 
   // Time integration (S.Radomski@gsi.de)
   void   StartTimeIntegral();
   void SetIntegratedLength(Double_t l) {fIntegratedLength=l;}
@@ -91,6 +96,12 @@ public:
   void PrintTime() const;
 
 protected:
+  virtual void GetXYZ(Float_t r[3]) const = 0;
+  void     SaveLocalConvConst();
+  Double_t GetLocalConvConst() const;
+
+  void External2Helix(Double_t helix[6]) const;
+
   void SetChi2(Double_t chi2) {fChi2=chi2;} 
   void SetMass(Double_t mass) {fMass=mass;}
   void SetNumberOfClusters(Int_t n) {fN=n;} 
@@ -100,16 +111,45 @@ protected:
   Double_t fChi2;         // total chi2 value for this track
   Double_t fMass;         // mass hypothesis
   Int_t fN;               // number of associated clusters
- private:
-  static Double_t fgConvConst; //conversion constant cm -> GeV/c
+
+private:
+  static const AliMagF *fgkFieldMap;//pointer to the magnetic field map
+  static Double_t fgConvConst;      //conversion "curvature(1/cm) -> pt(GeV/c)"
+  Double_t fLocalConvConst;   //local conversion "curvature(1/cm) -> pt(GeV/c)"
 
   // variables for time integration (S.Radomski@gsi.de)
   Bool_t  fStartTimeIntegral;       // indicator wether integrate time
   Double_t fIntegratedTime[AliPID::kSPECIES];       // integrated time
   Double_t fIntegratedLength;        // integrated length
   
-  ClassDef(AliKalmanTrack,3)    // Reconstructed track
+  ClassDef(AliKalmanTrack,4)    // Reconstructed track
 };
+
+inline Double_t AliKalmanTrack::GetConvConst() {
+//
+//  For backward compatibility only !
+//
+    if (fgConvConst > 0 || fgConvConst < 0) return fgConvConst; 
+    return 1000/0.299792458/(fgkFieldMap->SolenoidField()+1e-13);
+}
+
+inline void AliKalmanTrack::SaveLocalConvConst() {
+  //---------------------------------------------------------------------
+  // Saves local conversion constant "curvature (1/cm) -> pt (GeV/c)" 
+  //---------------------------------------------------------------------
+     if (fgConvConst > 0 || fgConvConst < 0) return; //uniform field tracking
+     Float_t r[3]={0.,0.,0.}; GetXYZ(r);
+     Float_t b[3]; fgkFieldMap->Field(r,b);
+     fLocalConvConst=1000/0.299792458/(1e-13 - b[2]);
+} 
+
+inline Double_t AliKalmanTrack::GetLocalConvConst() const {
+  //---------------------------------------------------------------------
+  // Returns conversion constant "curvature (1/cm) -> pt (GeV/c)" 
+  //---------------------------------------------------------------------
+     if (fgConvConst > 0 || fgConvConst < 0) return fgConvConst; //uniform field tracking
+     return fLocalConvConst;
+} 
 
 #endif
 

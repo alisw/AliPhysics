@@ -960,7 +960,7 @@ void AliRICH::CheckPR()const
 //  printf("\n\n");
 //  printf("Pattern Recognition done for event %5i",0);
   AliMagF * magf = gAlice->Field();
-  AliTracker::SetFieldMap(magf);
+  AliTracker::SetFieldMap(magf,kTRUE);
   for(Int_t iEvtN=0;iEvtN<GetLoader()->GetRunLoader()->GetNumberOfEvents();iEvtN++) {
     GetLoader()->GetRunLoader()->GetEvent(iEvtN);
     AliRICHTracker *tr = new AliRICHTracker();

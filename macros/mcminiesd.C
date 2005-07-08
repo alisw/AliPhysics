@@ -38,6 +38,7 @@
 #include "AliHeader.h"
 #include "AliGenEventHeader.h"
 #include "AliTPCtrack.h"
+#include "AliTracker.h"
 
 #endif
 
@@ -378,9 +379,6 @@ void kinetree(AliRunLoader* runLoader, AliESD* &esdOut, TClonesArray* &ministack
 
   copyGeneralESDInfo(esdOut,esdNew);
 
-  // Needed by the TPC track
-  AliKalmanTrack::SetConvConst(1000/0.299792458/esdOut->GetMagneticField());
-
   // Tracks
   Int_t nrec = esdOut->GetNumberOfTracks();
   for(Int_t irec=0; irec<nrec; irec++) {
@@ -535,6 +533,9 @@ void mcminiesd() {
   // gAlice
   runLoader->LoadgAlice();
   gAlice = runLoader->GetAliRun();
+
+  // Magnetic field
+  AliTracker::SetFieldMap(gAlice->Field(),1); // 1 means uniform magnetic field
 
   // Now load kinematics and event header
   runLoader->LoadKinematics();

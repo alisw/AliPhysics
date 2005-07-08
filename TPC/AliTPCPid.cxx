@@ -201,7 +201,7 @@ Int_t   AliTPCPid::GetPcode(AliTPCtrack *track)
     cout<<"TPCtrack dedx,mom,pcode="<<dedx<<","<<mom<<","<<pcode<<endl;
     return pcode?pcode:211;
     }
-
+/*
 //-----------------------------------------------------------
 Int_t   AliTPCPid::GetPcode(AliKalmanTrack *track)
 {
@@ -223,7 +223,7 @@ Int_t   AliTPCPid::GetPcode(AliKalmanTrack *track)
     cout<<"ITS V2 dedx,mom,pcode="<<dedx<<","<<mom<<","<<pcode<<endl;
 return pcode?pcode:211;
 }
-
+*/
 //-----------------------------------------------------------
 Int_t	AliTPCPid::GetPcode(Float_t q,Float_t pm)
 {

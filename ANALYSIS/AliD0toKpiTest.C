@@ -18,8 +18,9 @@ void AliD0toKpiReco() {
   if(!gSystem->AccessPathName("galice.root",kFileExists)) {
     AliRunLoader *rl = AliRunLoader::Open("galice.root");
     rl->LoadgAlice();
-    field=(Double_t)(gAlice->Field()->SolenoidField())/10.;
-    printf(" B = %3.1f T read from gAlice and set\n",field);
+    field=gAlice->Field();
+    Double_t bz=field->SolenoidField()/10.;
+    printf("B = %3.1f T read from gAlice and set\n",bz);
     delete gAlice->GetRunLoader();
     delete gAlice; 
     gAlice=0;

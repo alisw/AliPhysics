@@ -514,7 +514,7 @@ void AliITSTrackerV1::DoTracking(Int_t evNumber,Int_t minTr,Int_t maxTr,
 
     gAlice->GetEvent(evNumber);  //modificato per gestire hbt
  
-    AliKalmanTrack::SetConvConst(1000/0.299792458/gAlice->Field()->SolenoidField());
+    AliKalmanTrack::SetFieldMap(gAlice->Field());
    // cout<<" field = "<<gAlice->Field()->SolenoidField()<<endl;
 
 

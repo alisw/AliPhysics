@@ -73,11 +73,9 @@ AliTOFtrack::AliTOFtrack(const AliESDtrack& t)
 
   fX=x;
 
-  x = GetConvConst();  
-
   fY=p[0];
-  fZ=p[1];
-  fT=p[3];
+  fZ=p[1]; SaveLocalConvConst();
+  fT=p[3]; x=GetLocalConvConst();
   fC=p[4]/x;
   fE=fC*fX - p[2];   
 
@@ -121,7 +119,7 @@ void AliTOFtrack::GetExternalCovariance(Double_t cc[15]) const {
   //
   // This function returns external representation of the covriance matrix.
   //
-  Double_t a=GetConvConst();
+  Double_t a=GetLocalConvConst();
   Double_t c22=fX*fX*fCcc-2*fX*fCce+fCee;
   Double_t c32=fX*fCct-fCte;
   Double_t c20=fX*fCcy-fCey, c21=fX*fCcz-fCez, c42=fX*fCcc-fCce;
@@ -161,6 +159,7 @@ Int_t AliTOFtrack::PropagateTo(Double_t xk,Double_t x0,Double_t rho)
   if (TMath::Abs(fC*xk - fE) >= 0.90000) {
     return 0;
   }
+  Double_t lcc=GetLocalConvConst();
 
   // track Length measurement [SR, GSI, 17.02.2003]
 
@@ -211,6 +210,12 @@ Int_t AliTOFtrack::PropagateTo(Double_t xk,Double_t x0,Double_t rho)
   fCcz += b41;
 
   fX=x2;                                                     
+
+  //Change of the magnetic field *************
+  SaveLocalConvConst();
+  cc=fC;
+  fC*=lcc/GetLocalConvConst();
+  fE+=fX*(fC-cc);
 
   //Multiple scattering  ******************
   Double_t d=sqrt((x1-fX)*(x1-fX)+(y1-fY)*(y1-fY)+(z1-fZ)*(z1-fZ));

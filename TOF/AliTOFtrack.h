@@ -32,7 +32,9 @@ public:
    Double_t GetSigmaY2() const {return fCyy;}
    Double_t GetSigmaZ2() const {return fCzz;}
 
-   Double_t Get1Pt()   const {return (1e-9*TMath::Abs(fC)/fC + fC)*GetConvConst();} 
+   Double_t Get1Pt() const {
+      return (TMath::Sign(1e-9,fC) + fC)*GetLocalConvConst();
+   }
    Double_t GetP()     const {  
      return TMath::Abs(GetPt())*sqrt(1.+GetTgl()*GetTgl());
    }
@@ -59,11 +61,14 @@ public:
    void     ResetCovariance(Float_t mult);   
    Int_t    Rotate(Double_t angle);
 
-
-
 protected:
-
+   void GetXYZ(Float_t r[3]) const;
   
+   Int_t Update(const AliCluster */*c*/, Double_t /*chi2*/, UInt_t /*idx*/) { 
+     return 0;
+   }
+   Double_t GetPredictedChi2(const AliCluster */*c*/) const {return 0.;}
+
    Int_t    fSeedInd;     // ESD seed track index  
    Int_t    fSeedLab;     // track label taken from seeding  
    Double_t fAlpha;       // rotation angle
@@ -88,5 +93,13 @@ protected:
    ClassDef(AliTOFtrack,0) // TOF reconstructed tracks
 
 };                     
+
+inline void AliTOFtrack::GetXYZ(Float_t r[3]) const {
+  //---------------------------------------------------------------------
+  // Returns the position of the track in the global coord. system 
+  //---------------------------------------------------------------------
+  Double_t cs=TMath::Cos(fAlpha), sn=TMath::Sin(fAlpha);
+  r[0]=fX*cs - fY*sn; r[1]=fX*sn + fY*cs; r[2]=fZ;
+}
 
 #endif

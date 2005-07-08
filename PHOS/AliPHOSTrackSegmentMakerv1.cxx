@@ -17,6 +17,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.73  2005/05/28 14:19:05  schutz
+ * Compilation warnings fixed by T.P.
+ *
  */
 
 //_________________________________________________________________________
@@ -169,11 +172,11 @@ Float_t  AliPHOSTrackSegmentMakerv1::GetDistanceInPHOSPlane(AliPHOSEmcRecPoint *
 	track = fESD->GetTrack(iTrack);
 	if (track->IsPHOS()) 
 	  continue ; 
-	if (!track->GetXYZAt(rPHOS,xyz))
+	if (!track->GetXYZAt(rPHOS, fESD->GetMagneticField(), xyz))
            continue; //track coord on the cylinder of PHOS radius
 	if ((TMath::Abs(xyz[0])+TMath::Abs(xyz[1])+TMath::Abs(xyz[2]))<=0)
 	   continue;
-	if (!track->GetPxPyPzAt(rPHOS,pxyz))
+	if (!track->GetPxPyPzAt(rPHOS, fESD->GetMagneticField(), pxyz))
            continue; // track momentum ibid.
 	vecDist = PropagateToPlane(xyz,pxyz,"CPV",cpvClu->GetPHOSMod());
 	// 	Info("GetDistanceInPHOSPlane","Track %d propagation to CPV = (%f,%f,%f)",
@@ -189,7 +192,7 @@ Float_t  AliPHOSTrackSegmentMakerv1::GetDistanceInPHOSPlane(AliPHOSEmcRecPoint *
 
       if (iClosestTrack != -1) {
 	track = fESD->GetTrack(iClosestTrack);
-	if (track->GetPxPyPzAt(rPHOS,pxyz)) { // track momentum ibid.
+	if (track->GetPxPyPzAt(rPHOS, fESD->GetMagneticField(), pxyz)) { // track momentum ibid.
 	TVector3 vecCpvGlobal; // Global position of the CPV recpoint
 	AliPHOSGetter * gime = AliPHOSGetter::Instance() ; 
 	const AliPHOSGeometry * geom = gime->PHOSGeometry() ; 

@@ -59,7 +59,7 @@ Int_t AliTPCComparison2(Int_t firstev=0, Int_t eventn=1) {
   //  if(gAlice)delete gAlice;   COMMENTED BECAUSE OF A BUG (IN COMPILED MODE)
   gAlice = (AliRun*)inkin->Get("gAlice");
   cout<<"AliRun object found on file "<<gAlice<<endl;
-  AliKalmanTrack::SetConvConst(1000/0.299792458/gAlice->Field()->SolenoidField());
+  AliKalmanTrack::SetFieldMap(gAlice->Field());
   inkin->Close();
   /*
     delete gAlice;  COMMENTED BECAUSE OF A BUG IN COMPILED MODE

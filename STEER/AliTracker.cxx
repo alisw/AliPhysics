@@ -24,8 +24,8 @@
 #include <TMath.h>
 
 #include "AliTracker.h"
-#include "AliCluster.h"
 #include "AliKalmanTrack.h"
+#include "AliCluster.h"
 #include "AliLog.h"
 #include "AliRun.h"
 #include "AliMagF.h"
@@ -35,8 +35,6 @@ const AliMagF *AliTracker::fgkFieldMap=0;
 ClassImp(AliTracker)
 
 AliTracker::AliTracker():
-  fEventN(0),
-  fStoreBarrel(1),
   fX(0),
   fY(0),
   fZ(0),
@@ -50,12 +48,13 @@ AliTracker::AliTracker():
   if (!fgkFieldMap) AliWarning("Field map is not set. Call AliTracker::SetFieldMap before creating a tracker!");
 }
 
-void AliTracker::SetFieldMap(const AliMagF* map) {
+void AliTracker::SetFieldMap(const AliMagF* map, Bool_t uni) {
   //--------------------------------------------------------------------
   //This passes the field map to the reconstruction.
   //--------------------------------------------------------------------
   if (map==0) AliFatalClass("Can't access the field map !");
-  AliKalmanTrack::SetConvConst(1000/0.299792458/(map->SolenoidField()+1e-13));
+  AliKalmanTrack::SetFieldMap(map);
+  if (uni) AliKalmanTrack::SetUniformFieldTracking();
   fgkFieldMap=map;
 }
 

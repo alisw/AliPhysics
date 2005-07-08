@@ -13,6 +13,7 @@
 #include <TString.h>
 #include <TNamed.h>
 #include "AliESD.h"
+#include "AliMagF.h"
 #include "AliITStrackV2.h"
 
 //-----------------------------------------------------------------------------
@@ -29,7 +30,9 @@ class AliD0toKpiAnalysis : public TNamed {
   void FindCandidatesESD(Int_t evFirst=0,Int_t evLast=0,
   			 const Char_t *outName="AliD0toKpi.root");
   void PrintStatus() const;
-  void SetBz(Double_t bz=-9999.) { fBz=bz; }
+  void SetBz(const AliMagF *map) { 
+     AliKalmanTrack::SetFieldMap(map); fBz=map->SolenoidField()/10.; 
+  }
   void SetVertexOnTheFly() { fVertexOnTheFly=kTRUE; }
   void SetSimulation() { fSim=kTRUE; }
   void SetOnlySignal() { fOnlySignal=kTRUE; }

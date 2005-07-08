@@ -300,7 +300,7 @@ Int_t AliTPCtrackerParam::BuildTPCtracks(const TFile *inp, TFile *out) {
   tpc->SetParam(digp);
 
   // Set the conversion constant between curvature and Pt
-  AliKalmanTrack::SetConvConst(100/0.299792458/fBz);
+  AliKalmanTrack::SetFieldMap(fiel);
 
   TParticle       *part=0;
   AliTPCseedGeant *seed=0;

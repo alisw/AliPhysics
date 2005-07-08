@@ -55,12 +55,12 @@ public:
   void GetExternalParameters(Double_t &x, Double_t p[5]) const;
   void GetExternalCovariance(Double_t cov[15]) const;
 
-  Bool_t GetExternalParametersAt(Double_t x, Double_t p[5]) const;
-  Bool_t GetPxPyPzAt(Double_t x, Double_t p[3]) const;
-  Bool_t GetXYZAt(Double_t x, Double_t r[3]) const;
+  Bool_t GetExternalParametersAt(Double_t x, Double_t b, Double_t p[5]) const;
+  Bool_t GetPxPyPzAt(Double_t x, Double_t b, Double_t p[3]) const;
+  Bool_t GetXYZAt(Double_t x, Double_t b, Double_t r[3]) const;
 
   void GetImpactParameters(Float_t &xy,Float_t &z) const {xy=fD; z=fZ;}
-  Double_t GetD(Double_t x=0, Double_t y=0) const; //calculate the transverse impact parameter w.r.t. (x,y)
+  Double_t GetD(Double_t b, Double_t x=0, Double_t y=0) const; 
   Double_t GetIntegratedLength() const {return fTrackLength;}
   void GetIntegratedTimes(Double_t *times) const;
   Double_t GetMass() const;
@@ -261,7 +261,7 @@ protected:
   // TPC related track information
   Float_t fTPCchi2;        // chi2 in the TPC
   Int_t   fTPCncls;        // number of clusters assigned in the TPC
-  Int_t   fTPCindex[180];  //! indices of the assigned TPC clusters
+  Int_t  fTPCindex[180];  //! indices of the assigned TPC clusters
   TBits   fTPCClusterMap;  // Map of clusters, one bit per padrow; 1 if has a cluster on given padrow
   Float_t fTPCsignal;      // detector's PID signal
   Float_t fTPCr[AliPID::kSPECIES]; // "detector response probabilities" (for the PID)
@@ -289,7 +289,7 @@ protected:
   Float_t fTOFsignal;      // detector's PID signal
   Float_t fTOFr[AliPID::kSPECIES]; // "detector response probabilities" (for the PID)
   Int_t   fTOFLabel[3];       // TOF label 
-  Float_t fTOFInfo[10];       // TOF informations
+  Float_t fTOFInfo[10];       //! TOF informations
 
   // PHOS related track information 
   Float_t fPHOSpos[3]; // position localised by PHOS in global coordinate system

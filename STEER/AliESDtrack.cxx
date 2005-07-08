@@ -518,13 +518,15 @@ void AliESDtrack::GetExternalParameters(Double_t &x, Double_t p[5]) const {
 }
 
 //_______________________________________________________________________
-Bool_t AliESDtrack::GetExternalParametersAt(Double_t x, Double_t p[5]) const {
+Bool_t AliESDtrack::
+GetExternalParametersAt(Double_t x, Double_t b, Double_t p[5]) const {
   //---------------------------------------------------------------------
-  // This function returns external representation of the track parameters
-  // at the position given by the first argument 
+  // This function returns external track parameters extrapolated to
+  // the radial position "x" (cm) in the magnetic field "b" (kG)  
   //---------------------------------------------------------------------
+  Double_t convconst=0.299792458*b/1000.;
   Double_t dx=x-fRx;
-  Double_t f1=fRp[2], f2=f1 + dx*fRp[4]/AliKalmanTrack::GetConvConst();
+  Double_t f1=fRp[2], f2=f1 + dx*fRp[4]*convconst;
 
   if (TMath::Abs(f2) >= 0.9999) return kFALSE;
   
@@ -577,12 +579,14 @@ Double_t AliESDtrack::GetP() const {
 }
 
 //_______________________________________________________________________
-Double_t AliESDtrack::GetD(Double_t x, Double_t y) const {
+Double_t AliESDtrack::GetD(Double_t b, Double_t x, Double_t y) const {
   //------------------------------------------------------------------
   // This function calculates the transverse impact parameter
   // with respect to a point with global coordinates (x,y)
+  // in the magnetic field "b" (kG)
   //------------------------------------------------------------------
-  Double_t rp4=fRp[4]/AliKalmanTrack::GetConvConst();
+  Double_t convconst=0.299792458*b/1000.;
+  Double_t rp4=fRp[4]*convconst;
 
   Double_t xt=fRx, yt=fRp[0];
 
@@ -779,24 +783,26 @@ void  AliESDtrack::GetTRDExternalParameters(Double_t &x, Double_t&alpha, Double_
   for (Int_t i=0; i<15; i++) cov[i]=fTc[i];
 }
 
-Bool_t AliESDtrack::GetPxPyPzAt(Double_t x,Double_t *p) const {
+Bool_t AliESDtrack::GetPxPyPzAt(Double_t x, Double_t b, Double_t *p) const {
   //---------------------------------------------------------------------
-  // This function returns the global track momentum components
-  // at the position "x" using the helix track approximation
+  // This function returns the global track momentum extrapolated to
+  // the radial position "x" (cm) in the magnetic field "b" (kG)
   //---------------------------------------------------------------------
+  Double_t convconst=0.299792458*b/1000.;
   p[0]=fRp[4]; 
-  p[1]=fRp[2]+(x-fRx)*fRp[4]/AliKalmanTrack::GetConvConst(); 
+  p[1]=fRp[2]+(x-fRx)*fRp[4]*convconst; 
   p[2]=fRp[3];
   return Local2GlobalMomentum(p,fRalpha);
 }
 
-Bool_t AliESDtrack::GetXYZAt(Double_t x, Double_t *r) const {
+Bool_t AliESDtrack::GetXYZAt(Double_t x, Double_t b, Double_t *r) const {
   //---------------------------------------------------------------------
-  // This function returns the global track position
-  // af the radius "x" using the helix track approximation
+  // This function returns the global track position extrapolated to
+  // the radial position "x" (cm) in the magnetic field "b" (kG)
   //---------------------------------------------------------------------
+  Double_t convconst=0.299792458*b/1000.;
   Double_t dx=x-fRx;
-  Double_t f1=fRp[2], f2=f1 + dx*fRp[4]/AliKalmanTrack::GetConvConst();
+  Double_t f1=fRp[2], f2=f1 + dx*fRp[4]*convconst;
 
   if (TMath::Abs(f2) >= 0.9999) return kFALSE;
   
@@ -871,25 +877,11 @@ Float_t AliESDtrack::GetTPCdensity(Int_t row0, Int_t row1) const{
   if (good>(row1-row0)*0.5) density = Float_t(found)/Float_t(good);
   return density;
 }
+
 //_______________________________________________________________________
 void AliESDtrack::SetTPCpid(const Double_t *p) {  
   // Sets values for the probability of each particle type (in TPC)
-  // normalize probabiluty to 1
-  // 
-  //
-//   Double_t sump=0;
-//   for (Int_t i=0; i<AliPID::kSPECIES; i++) {
-//     sump+=p[i];
-//   }
-//   for (Int_t i=0; i<AliPID::kSPECIES; i++) {
-//     if (sump>0){
-//       fTPCr[i]=p[i]/sump;
-//     }
-//     else{
-//       fTPCr[i]=p[i];
-//     }
-//   }
-  for (Int_t i=0; i<AliPID::kSPECIES; i++) fTPCr[i] = p[i];
+  for (Int_t i=0; i<AliPID::kSPECIES; i++) fTPCr[i]=p[i];
   SetStatus(AliESDtrack::kTPCpid);
 }
 

@@ -62,11 +62,8 @@ AliHoughFilter::AliHoughFilter()
     AliError("HLT initialization failed!");
 
   // Init magnetic field
-  AliKalmanTrack::SetConvConst(
-     1000/0.299792458/AliL3Transform::GetSolenoidField()
-  );
   AliMagF* field = new AliMagFMaps("Maps","Maps", 2, 1., 10., AliMagFMaps::k5kG);
-  AliTracker::SetFieldMap(field);
+  AliTracker::SetFieldMap(field,kTRUE);
   fPtmin = 0.1*AliL3Transform::GetSolenoidField();
 
   // Init ITS geometry

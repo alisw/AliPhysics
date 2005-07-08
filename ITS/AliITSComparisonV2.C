@@ -33,7 +33,6 @@
 
   #include "AliITS.h"
   #include "AliITSgeom.h"
-  #include "AliITStrackV2.h"
   #include "AliITSclusterV2.h"
   #include "AliITSLoader.h"
 #endif
@@ -159,9 +158,6 @@ Int_t AliITSComparisonV2
    while (esdTree->GetEvent(e)) {
      cout<<endl<<endl<<"********* Processing event number: "<<e<<"*******\n";
  
-     Float_t field=event->GetMagneticField();
-     AliKalmanTrack::SetConvConst(1000/0.299792458/field);
- 
      Int_t nentr=event->GetNumberOfTracks();
      allfound+=nentr;
 
@@ -192,15 +188,11 @@ Int_t AliITSComparisonV2
 
         AliESDtrack *esd=0;
         Int_t cnt=0;
-        Int_t pipe=0;
         for (Int_t i=0; i<nentr; i++) {
            AliESDtrack *t=event->GetTrack(i);
 	   UInt_t status=t->GetStatus();
-	   UInt_t flags=AliESDtrack::kTPCin|AliESDtrack::kITSin;
 
            if ((status&AliESDtrack::kITSrefit)==0) continue;
-
-           if ((status&flags)==status) pipe=1;
 
            Int_t lbl=t->GetLabel();
            if (lab==TMath::Abs(lbl)) {
@@ -224,14 +216,8 @@ Int_t AliITSComparisonV2
           hfake->Fill(ptg); 
         }
 
-        AliITStrackV2 track(*esd);
-        if (pipe!=0) {
-           track.PropagateTo(3.,0.0028,65.19);
-           track.PropagateToVertex();  // This is not "exactly" the vertex 
-        }
-
-        Double_t xv,par[5]; track.GetExternalParameters(xv,par);
-        Float_t phi=TMath::ASin(par[2]) + track.GetAlpha();
+        Double_t xv,par[5]; esd->GetExternalParameters(xv,par);
+        Float_t phi=TMath::ASin(par[2]) + esd->GetAlpha();
         if (phi<-TMath::Pi()) phi+=2*TMath::Pi();
         if (phi>=TMath::Pi()) phi-=2*TMath::Pi();
         Float_t lam=TMath::ATan(par[3]); 
@@ -243,16 +229,14 @@ Int_t AliITSComparisonV2
         Float_t lamg=TMath::ATan2(ref->Pz(),ptg);
         hl->Fill((lam - lamg)*1000.);
 
-        Double_t d=10000*track.GetD(ref->X(),ref->Y());
-        hmpt->Fill(d);
-
-        Double_t z=10000*(track.GetZ()-ref->Z());
-        hz->Fill(z);
+        Float_t d,z; esd->GetImpactParameters(d,z);
+        hmpt->Fill(10000*d);
+        hz->Fill(10000*(z-ref->Z()));
 
         hpt->Fill((pt_1 - 1/ptg)/(1/ptg)*100.);
 
         Float_t mom=1./(pt_1*TMath::Cos(lam));
-        Float_t dedx=track.GetdEdx();
+        Float_t dedx=esd->GetITSsignal();
         hep->Fill(mom,dedx,1.);
 
         Int_t pdg=(Int_t)ref->GetLength();  //this is particle's PDG !

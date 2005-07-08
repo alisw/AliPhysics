@@ -83,11 +83,11 @@ AliKalmanTrack() {
   Double_t x,p[5]; 
   if (c) t.GetConstrainedExternalParameters(x,p);
   else t.GetExternalParameters(x,p);
-  fX=x;    x=GetConvConst();
+  fX=x;   
   fP0=p[0]; 
-  fP1=p[1]; 
+  fP1=p[1];   SaveLocalConvConst(); 
   fP2=p[2];
-  fP3=p[3];
+  fP3=p[3];   x=GetLocalConvConst();
   fP4=p[4]/x; 
 
   //Conversion of the covariance matrix
@@ -109,7 +109,6 @@ AliKalmanTrack() {
 
   //  if (!Invariant()) throw "AliITStrackV2: conversion failed !\n";
   for(Int_t i=0; i<4; i++) fdEdxSample[i]=0;
-
 }
 
 void AliITStrackV2::UpdateESDtrack(ULong_t flags) const {
@@ -165,7 +164,7 @@ void AliITStrackV2::GetExternalCovariance(Double_t cc[15]) const {
   // This function returns an external representation of the covriance matrix.
   //   (See comments in AliTPCtrack.h about external track representation)
   //-------------------------------------------------------------------------
-  Double_t a=GetConvConst();
+  Double_t a=GetLocalConvConst();
 
   cc[0 ]=fC00;
   cc[1 ]=fC10;   cc[2 ]=fC11;
@@ -278,14 +277,15 @@ Int_t AliITStrackV2::PropagateTo(Double_t xk, Double_t d, Double_t x0) {
   //------------------------------------------------------------------
   Double_t x1=fX, x2=xk, dx=x2-x1;
   Double_t f1=fP2, f2=f1 + fP4*dx;
-  if (TMath::Abs(f2) >= 0.98) {   
+  if (TMath::Abs(f2) >= 0.98) {
     // MI change  - don't propagate highly inclined tracks
     //              covariance matrix distorted
-    // Int_t n=GetNumberOfClusters();
-    //     if (n>kWARN) 
-    //        Warning("PropagateTo","Propagation failed !\n",n);
+    //Int_t n=GetNumberOfClusters();
+    //if (n>kWARN) 
+    //   Warning("PropagateTo","Propagation failed !\n",n);
     return 0;
   }
+  Double_t lcc=GetLocalConvConst();  
 
   // old position [SR, GSI, 17.02.2003]
   Double_t oldX = fX, oldY = fP0, oldZ = fP1;
@@ -337,6 +337,10 @@ Int_t AliITStrackV2::PropagateTo(Double_t xk, Double_t d, Double_t x0) {
   fC42 += b42;
 
   fX=x2;
+
+  //Change of the magnetic field *************
+  SaveLocalConvConst();
+  fP4*=lcc/GetLocalConvConst();
 
   if (!CorrectForMaterial(d,x0)) return 0;
 
@@ -506,22 +510,27 @@ Int_t AliITStrackV2::Propagate(Double_t alp,Double_t xk) {
   {
   Double_t dx=xk-fX;
   Double_t f1=fP2, f2=f1 + fP4*dx;
-  if (TMath::Abs(f2) >= 0.98) {  
+  if (TMath::Abs(f2) >= 0.98) {
     // don't propagate highly inclined tracks MI
     return 0;
   }
- //  if (TMath::Abs(f2) >= 0.9999) {
-//     Int_t n=GetNumberOfClusters();
-//     if (n>kWARN) 
-//        Warning("Propagate","Propagation failed (%d) !\n",n);
-//     return 0;
-//   }
+  //    Int_t n=GetNumberOfClusters();
+  //  if (n>kWARN) 
+  //     Warning("Propagate","Propagation failed (%d) !\n",n);
+  //  return 0;
+  //}
+  Double_t lcc=GetLocalConvConst();  
+
   Double_t r1=TMath::Sqrt(1.- f1*f1), r2=TMath::Sqrt(1.- f2*f2);
-  
+
   fX=xk;
   fP0 += dx*(f1+f2)/(r1+r2);
   fP1 += dx*(f1+f2)/(f1*r2 + f2*r1)*fP3;
   fP2 += dx*fP4;
+
+  //Change of the magnetic field *************
+  SaveLocalConvConst();
+  fP4*=lcc/GetLocalConvConst();
 
   //f = F - 1
   

@@ -41,10 +41,10 @@ class AliITSVertexerTracks : public AliITSVertexer {
   AliITSVertexerTracks();  
   // standard constructor     
   AliITSVertexerTracks(TFile *inFile,TFile *outFile,
-		       Double_t field=0.4,Int_t fEv=0,Int_t lEv=0,
+	        const AliMagF *map,Int_t fEv=0,Int_t lEv=0,
 		       Double_t xStart=0.,Double_t yStart=0.);
   // alternative constructor
-  AliITSVertexerTracks(Double_t field, TString fn,
+  AliITSVertexerTracks(const AliMagF *map, TString fn,
 		       Double_t xStart=0,Double_t yStart=0); 
   // destructor
   virtual ~AliITSVertexerTracks();
@@ -59,8 +59,7 @@ class AliITSVertexerTracks : public AliITSVertexer {
   // computes the vertex for each event and stores it in the ESD
   void FindVerticesESD();
   virtual void  PrintStatus() const;
-  void  SetField(Double_t field) const
-    { AliKalmanTrack::SetConvConst(100./0.299792458/field); return; }
+  void  SetFieldMap(const AliMagF *map)const{AliKalmanTrack::SetFieldMap(map);}
   void  SetMinTracks(Int_t n=2) { fMinTracks = n; return; }
   void  SetSkipTracks(Int_t n,Int_t *skipped); 
   void  SetVtxStart(Double_t x=0,Double_t y=0) 

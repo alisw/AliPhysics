@@ -64,8 +64,9 @@ public:
   Double_t GetSnp()  const {return fP2;}
   Double_t GetTgl()  const {return fP3;}
   Double_t GetC()    const {return fP4;}
-  Double_t
-    Get1Pt() const { return (1e-9*TMath::Abs(fP4)/fP4 + fP4)*GetConvConst(); }
+  Double_t Get1Pt() const {
+      return (TMath::Sign(1e-9,fP4) + fP4)*GetLocalConvConst();
+  }
   Double_t GetD(Double_t x=0, Double_t y=0) const;
   Double_t GetZat(Double_t x=0) const;
 
@@ -80,6 +81,8 @@ public:
    Int_t Invariant() const;
  
 protected:
+  void GetXYZ(Float_t r[3]) const;
+
   Double_t fX;              // X-coordinate of this track (reference plane)
   Double_t fAlpha;          // rotation angle
 
@@ -125,6 +128,15 @@ void AliITStrackV2::SetSampledEdx(Float_t q, Int_t i) {
   q *= TMath::Sqrt((1-s*s)/(1+t*t));
   fdEdxSample[i]=q;
 }
+
+inline void AliITStrackV2::GetXYZ(Float_t r[3]) const {
+  //---------------------------------------------------------------------
+  // Returns the position of the track in the global coord. system 
+  //---------------------------------------------------------------------
+  Double_t cs=TMath::Cos(fAlpha), sn=TMath::Sin(fAlpha);
+  r[0]=fX*cs - fP0*sn; r[1]=fX*sn + fP0*cs; r[2]=fP1;
+}
+
 #endif
 
 

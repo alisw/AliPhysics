@@ -62,8 +62,6 @@ class AliTRDtracklet :public TObject{
 };
 
 
-
-
 class AliTRDtrack : public AliKalmanTrack {
 
 // Represents reconstructed TRD track
@@ -101,7 +99,9 @@ public:
 
    Double_t GetLikelihoodElectron() const { return fLhElectron; };
 
-   Double_t Get1Pt()   const {return (1e-9*TMath::Abs(fC)/fC + fC)*GetConvConst(); } 
+   Double_t Get1Pt() const {
+      return (TMath::Sign(1e-9,fC) + fC)*GetLocalConvConst();
+   }
    Double_t GetP()     const {  
      return TMath::Abs(GetPt())*sqrt(1.+GetTgl()*GetTgl());
    }
@@ -179,6 +179,12 @@ public:
 
 
 protected:
+   void GetXYZ(Float_t r[3]) const;
+
+   Double_t GetPredictedChi2(const AliCluster*/*c*/) const {return 0.;}
+   Int_t Update(const AliCluster*/*c*/, Double_t /*chi2*/, UInt_t /*i*/) {
+     return 0;
+   }
 
    Int_t    fSeedLab;     // track label taken from seeding  
    Float_t  fdEdx;        // dE/dx 
@@ -220,5 +226,12 @@ protected:
    ClassDef(AliTRDtrack,2) // TRD reconstructed tracks
 };                     
 
+inline void AliTRDtrack::GetXYZ(Float_t r[3]) const {
+  //---------------------------------------------------------------------
+  // Returns the position of the track in the global coord. system 
+  //---------------------------------------------------------------------
+  Double_t cs=TMath::Cos(fAlpha), sn=TMath::Sin(fAlpha);
+  r[0]=fX*cs - fY*sn; r[1]=fX*sn + fY*cs; r[2]=fZ;
+}
 
 #endif   

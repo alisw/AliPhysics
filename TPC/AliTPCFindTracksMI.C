@@ -48,7 +48,7 @@ Int_t AliTPCFindTracksMI(Int_t N=-1) {
       cerr<<"Error occured while l"<<endl;
       return 1;
     }
-   AliKalmanTrack::SetConvConst(1000/0.299792458/rl->GetAliRun()->Field()->SolenoidField());
+   AliKalmanTrack::SetFieldMap(rl->GetAliRun()->Field());
    
    rl->CdGAFile();
    

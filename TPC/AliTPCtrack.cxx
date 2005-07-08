@@ -38,7 +38,7 @@ AliTPCtrack::AliTPCtrack(): AliKalmanTrack()
   fX = fP0 = fP1 = fP2 = fP3 = fP3 = fP4 = 0.0;
   fAlpha = fdEdx = 0.0;
   fNumber = 0;  // [SR, 01.04.2003]
-  for (Int_t i=0; i<3;i++) {fKinkIndexes[i]=0; fV0Indexes[i]=0;}
+  for (Int_t i=0; i<3;i++) fKinkIndexes[i]=0;
 }
 
 //_________________________________________________________________________
@@ -57,6 +57,8 @@ const Double_t cc[15], Double_t xref, Double_t alpha) : AliKalmanTrack() {
   fdEdx=0.;
 
   fP0=xx[0]; fP1=xx[1]; fP2=xx[2]; fP3=xx[3]; fP4=xx[4];
+
+  SaveLocalConvConst();
 
   fC00=cc[0];
   fC10=cc[1];  fC11=cc[2];
@@ -100,10 +102,10 @@ AliTPCtrack::AliTPCtrack(const AliESDtrack& t) : AliKalmanTrack() {
   Double_t x,p[5]; t.GetExternalParameters(x,p);
   Double_t c[15]; t.GetExternalCovariance(c);
 
-  fX=x;    x=GetConvConst();
+  fX=x;    
   fP0=p[0];
-  fP1=p[1];
-  fP3=p[3];
+  fP1=p[1];    SaveLocalConvConst();
+  fP3=p[3];    x=GetLocalConvConst();
   fP4=p[4]/x;
   fP2=fP4*fX - p[2];
 
@@ -187,11 +189,11 @@ Int_t AliTPCtrack::Compare(const TObject *o) const {
 
 //_____________________________________________________________________________
 void AliTPCtrack::GetExternalCovariance(Double_t cc[15]) const {
-  //-------------------------------------------------------------------------
+ //-------------------------------------------------------------------------
   // This function returns an external representation of the covriance matrix.
   //   (See comments in AliTPCtrack.h about external track representation)
   //-------------------------------------------------------------------------
-  Double_t a=GetConvConst();
+  Double_t a=GetLocalConvConst();
 
   Double_t c22=fX*fX*fC44-2*fX*fC42+fC22;
   Double_t c32=fX*fC43-fC32;
@@ -252,7 +254,8 @@ Int_t AliTPCtrack::PropagateTo(Double_t xk,Double_t /*x0*/,Double_t rho) {
     //if (n>4) cerr<<n<<" AliTPCtrack warning: Propagation failed !\n";
     return 0;
   }
-  
+  Double_t lcc=GetLocalConvConst();  
+
   // old position for time [SR, GSI 17.02.2003]
   Double_t oldX = fX;
   Double_t oldY = fP0;
@@ -298,7 +301,13 @@ Int_t AliTPCtrack::PropagateTo(Double_t xk,Double_t /*x0*/,Double_t rho) {
 
   fX=x2;
 
-  //Multiple scattering******************
+  //Change of the magnetic field *************
+  SaveLocalConvConst();
+  cc=fP4;
+  fP4*=lcc/GetLocalConvConst();
+  fP2+=fX*(fP4-cc);
+
+  //Multiple scattering ******************
   Double_t d=sqrt((x1-fX)*(x1-fX)+(y1-fP0)*(y1-fP0)+(z1-fP1)*(z1-fP1));
   Double_t p2=(1.+ GetTgl()*GetTgl())/(Get1Pt()*Get1Pt());
   Double_t beta2=p2/(p2 + GetMass()*GetMass());
@@ -331,7 +340,7 @@ Int_t AliTPCtrack::PropagateTo(Double_t xk,Double_t /*x0*/,Double_t rho) {
   fC43 += dc43;
   fC44 += dc44;
   */
-  //Energy losses************************
+  //Energy losses ************************
   Double_t dE=0.153e-3/beta2*(log(5940*beta2/(1-beta2)) - beta2)*d*rho;
   if (x1 < x2) dE=-dE;
   cc=fP4;

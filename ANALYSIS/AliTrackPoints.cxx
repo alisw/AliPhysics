@@ -579,7 +579,7 @@ void AliTrackPoints::Testtpc(Int_t entr)
   AliRunLoader* rl = AliRunLoader::Open();
   AliLoader* l = rl->GetLoader("TPCLoader");
   rl->LoadgAlice();
-  AliKalmanTrack::SetConvConst(100/0.299792458/0.2/rl->GetAliRun()->Field()->Factor());
+  AliKalmanTrack::SetFieldMap(rl->GetAliRun()->Field());
   l->LoadTracks();
   AliTPCtrack* t = new AliTPCtrack();
   TBranch* b=l->TreeT()->GetBranch("tracks");

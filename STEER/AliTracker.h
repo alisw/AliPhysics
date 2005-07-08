@@ -11,11 +11,10 @@
 //       Origin: Iouri Belikov, CERN, Jouri.Belikov@cern.ch 
 //-------------------------------------------------------------------------
 #include <TObject.h>
-//#include "TError.h"
 
-class AliKalmanTrack;
 class AliCluster;
 class TTree;
+class AliKalmanTrack;
 class AliESD;
 class AliMagF;
 
@@ -37,7 +36,6 @@ public:
      fX=xyz[0]; fY=xyz[1]; fZ=xyz[2];
      if (ers) { fSigmaX=ers[0]; fSigmaY=ers[1]; fSigmaZ=ers[2]; } 
   }
-  void SetEventNumber(Int_t ev) { fEventN=ev; }
 
 //protected:
   virtual Int_t LoadClusters(TTree *)=0;
@@ -51,22 +49,15 @@ public:
   Double_t GetSigmaX() const {return fSigmaX;}
   Double_t GetSigmaY() const {return fSigmaY;}
   Double_t GetSigmaZ() const {return fSigmaZ;}
-  Int_t GetEventNumber() const {return fEventN;}
 
-  static void SetFieldMap(const AliMagF* map);
+  static void SetFieldMap(const AliMagF* map, Bool_t uni);
   static const AliMagF *GetFieldMap() {return fgkFieldMap;}
-  
-  Int_t IsStoringBarrel() const {return fStoreBarrel;}
-  void  SetStoreBarrel(Int_t s) {fStoreBarrel = s;}
 
 private:
 
   AliTracker & operator=(const AliTracker & atr);
 
   static const AliMagF *fgkFieldMap; //field map
-  Int_t fEventN;//event number
-
-  Int_t fStoreBarrel; //Store Barrel information
 
   Double_t fX;  //X-coordinate of the primary vertex
   Double_t fY;  //Y-coordinate of the primary vertex
@@ -76,7 +67,7 @@ private:
   Double_t fSigmaY; // error of the primary vertex position in Y
   Double_t fSigmaZ; // error of the primary vertex position in Z
 
-  ClassDef(AliTracker,1) //abstract tracker
+  ClassDef(AliTracker,2) //abstract tracker
 };
 
 #endif

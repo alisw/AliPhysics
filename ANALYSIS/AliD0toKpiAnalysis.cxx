@@ -53,7 +53,7 @@ ClassImp(AliD0toKpiAnalysis)
 AliD0toKpiAnalysis::AliD0toKpiAnalysis() {
   // Default constructor
 
-  SetBz();
+  fBz=-9999;
   SetPtCut();
   Setd0Cut();
   SetMassCut();
@@ -144,7 +144,6 @@ void AliD0toKpiAnalysis::FindCandidates(Int_t evFirst,Int_t evLast,
     printf("AliD0toKpiAnalysis::FindCandidates():  Set B!\n");
     return;
   }
-  AliKalmanTrack::SetConvConst(100/0.299792458/fBz);
 
   TString trkName("AliITStracksV2.root");
   if(gSystem->AccessPathName(trkName.Data(),kFileExists)) {
@@ -375,7 +374,6 @@ void AliD0toKpiAnalysis::FindCandidatesESD(Int_t evFirst,Int_t evLast,
     printf("AliD0toKpiAnalysis::FindCandidatesESD():  Set B!\n");
     return;
   }
-  AliKalmanTrack::SetConvConst(100/0.299792458/fBz);
 
   TString esdName("AliESDs.root");
   if(gSystem->AccessPathName(esdName.Data(),kFileExists)) {

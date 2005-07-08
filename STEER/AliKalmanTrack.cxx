@@ -22,31 +22,31 @@
 //-------------------------------------------------------------------------
 
 #include "AliKalmanTrack.h"
-#include "AliLog.h"
 
 ClassImp(AliKalmanTrack)
 
-Double_t AliKalmanTrack::fgConvConst = 0;
+const AliMagF *AliKalmanTrack::fgkFieldMap=0;
+Double_t AliKalmanTrack::fgConvConst=0.;
 
 //_______________________________________________________________________
 AliKalmanTrack::AliKalmanTrack():
-  TObject(),
   fLab(-3141593),
   fFakeRatio(0),
   fChi2(0),
   fMass(AliPID::ParticleMass(AliPID::kPion)),
   fN(0),
+  fLocalConvConst(0),
   fStartTimeIntegral(kFALSE),
   fIntegratedLength(0)
 {
   //
   // Default constructor
   //
-    if (fgConvConst==0) {
+    if (fgkFieldMap==0) {
       AliFatal("The magnetic field has not been set!");
     }
-    
-    for(Int_t i=0; i<5; i++) fIntegratedTime[i] = 0;
+
+    for(Int_t i=0; i<AliPID::kSPECIES; i++) fIntegratedTime[i] = 0;
 }
 
 //_______________________________________________________________________
@@ -57,19 +57,19 @@ AliKalmanTrack::AliKalmanTrack(const AliKalmanTrack &t):
   fChi2(t.fChi2),
   fMass(t.fMass),
   fN(t.fN),
+  fLocalConvConst(t.fLocalConvConst),
   fStartTimeIntegral(t.fStartTimeIntegral),
   fIntegratedLength(t.fIntegratedLength)
 {
   //
   // Copy constructor
   //
-  if (fgConvConst==0) {
+  if (fgkFieldMap==0) {
     AliFatal("The magnetic field has not been set!");
   }
-
   
-  for (Int_t i=0; i<5; i++) 
-    fIntegratedTime[i] = t.fIntegratedTime[i];
+  for (Int_t i=0; i<AliPID::kSPECIES; i++)
+      fIntegratedTime[i] = t.fIntegratedTime[i];
 }
 
 //_______________________________________________________________________
@@ -190,12 +190,12 @@ void AliKalmanTrack::PrintTime() const
   printf("\n");  
 }
 
-static void External2Helix(const AliKalmanTrack *t, Double_t helix[6]) { 
+void AliKalmanTrack::External2Helix(Double_t helix[6]) const { 
   //--------------------------------------------------------------------
   // External track parameters -> helix parameters 
   //--------------------------------------------------------------------
   Double_t alpha,x,cs,sn;
-  t->GetExternalParameters(x,helix); alpha=t->GetAlpha();
+  GetExternalParameters(x,helix); alpha=GetAlpha();
 
   cs=TMath::Cos(alpha); sn=TMath::Sin(alpha);
   helix[5]=x*cs - helix[0]*sn;            // x0
@@ -203,7 +203,7 @@ static void External2Helix(const AliKalmanTrack *t, Double_t helix[6]) {
 //helix[1]=                               // z0
   helix[2]=TMath::ASin(helix[2]) + alpha; // phi0
 //helix[3]=                               // tgl
-  helix[4]=helix[4]/t->GetConvConst();    // C
+  helix[4]=helix[4]/GetLocalConvConst();  // C
 }
 
 static void Evaluate(const Double_t *h, Double_t t,
@@ -240,9 +240,9 @@ GetDCA(const AliKalmanTrack *p, Double_t &xthis, Double_t &xp) const {
 
   //dx2=dy2=dz2=1.;
 
-  Double_t p1[8]; External2Helix(this,p1);
+  Double_t p1[8]; External2Helix(p1);
   p1[6]=TMath::Sin(p1[2]); p1[7]=TMath::Cos(p1[2]);
-  Double_t p2[8]; External2Helix(p,p2);
+  Double_t p2[8]; p->External2Helix(p2);
   p2[6]=TMath::Sin(p2[2]); p2[7]=TMath::Cos(p2[2]);
 
 
@@ -346,3 +346,4 @@ PropagateToDCA(AliKalmanTrack *p, Double_t d, Double_t x0) {
 
   return dca;
 }
+

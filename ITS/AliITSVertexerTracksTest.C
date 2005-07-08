@@ -14,10 +14,10 @@
 #include "AliRun.h"
 #include "AliRunLoader.h"
 #include "AliMagF.h"
-#include "AliKalmanTrack.h"
 #include "AliESDVertex.h"
 #include "AliITSVertexer.h"
 #include "AliITSVertexerTracks.h"
+#include "AliTracker.h"
 //-------------------------------------
 #endif
 void AliITSVertexerTracksTest(Int_t evFirst=0,Int_t evLast=0,Bool_t esd=kTRUE,
@@ -53,8 +53,9 @@ void AliITSVertexerTracksTest(Int_t evFirst=0,Int_t evLast=0,Bool_t esd=kTRUE,
     rl->LoadgAlice();
     AliMagF *fiel = (AliMagF*)gAlice->Field();
     field=(Double_t)fiel->SolenoidField()/10.;
-    AliKalmanTrack::SetConvConst(100/0.299792458/field);
     printf(" B = %3.1f read from gAlice and set\n",field);
+
+    AliTracker::SetFieldMap(gAlice->Field(),1); // 1 means uniform magnetic field
   } else {
     printf(" File galice.root not found: default 0.4 T being used!\n");
   }
@@ -97,8 +98,11 @@ void VertexRecoInESDChain() {
     rl->LoadgAlice();
     AliMagF *fiel = (AliMagF*)gAlice->Field();
     field=(Double_t)fiel->SolenoidField()/10.;
-    AliKalmanTrack::SetConvConst(100/0.299792458/field);
     printf(" B = %3.1f read from gAlice and set\n",field);
+
+    AliTracker::SetFieldMap(gAlice->Field(),1); // 1 means uniform magnetic field
+
+
   } else {
     printf(" File galice.root not found: default 0.4 T being used!\n");
   }
