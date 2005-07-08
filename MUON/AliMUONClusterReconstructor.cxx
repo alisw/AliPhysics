@@ -43,7 +43,7 @@ const Int_t AliMUONClusterReconstructor::fgkDefaultPrintLevel = 0;
 ClassImp(AliMUONClusterReconstructor) // Class implementation in ROOT context
 
 //__________________________________________________________________________
-AliMUONClusterReconstructor::AliMUONClusterReconstructor(AliLoader* loader)
+  AliMUONClusterReconstructor::AliMUONClusterReconstructor(AliLoader* loader, AliMUONData* data)
   : TObject(),
     fMUONData(0),
     fPrintLevel(fgkDefaultPrintLevel),
@@ -55,8 +55,11 @@ AliMUONClusterReconstructor::AliMUONClusterReconstructor(AliLoader* loader)
   fLoader = loader;
 
   // initialize container
-  fMUONData  = new AliMUONData(fLoader,"MUON","MUON");
-
+  if (data == 0x0)
+    fMUONData  = new AliMUONData(fLoader,"MUON","MUON");
+  else
+    fMUONData = data;
+  
   // reconstruction model
   fRecModel = new AliMUONClusterFinderVS();
   //fRecModel = new AliMUONClusterFinderAZ();
@@ -195,14 +198,6 @@ void AliMUONClusterReconstructor::Digits2Clusters()
     delete digAll;
 }
 
-//____________________________________________________________________
-void AliMUONClusterReconstructor::Digits2Clusters(AliRawReader* /*rawReader*/)
-{
-
-//  Perform cluster finding form raw data
-
-   AliFatal("clusterization not implemented for raw data input");
-}
 //_______________________________________________________________________
 void AliMUONClusterReconstructor::Trigger2Trigger() 
 {
@@ -210,12 +205,4 @@ void AliMUONClusterReconstructor::Trigger2Trigger()
 
   fMUONData->SetTreeAddress("GLT");
   fMUONData->GetTriggerD();
-}
-//_______________________________________________________________________
-void AliMUONClusterReconstructor::Trigger2Trigger(AliRawReader* /*rawReader*/) 
-{
-// call the Trigger Algorithm from raw data and fill TreeR 
-
-   AliFatal("Trigger not implemented for raw data input");
-
 }

@@ -36,6 +36,8 @@
 #include "AliMUONTrackParam.h"
 #include "AliMUONTriggerTrack.h"
 #include "AliESDMuonTrack.h"
+#include "AliMUONRawData.h"
+
 #include "AliRawReader.h"
 
 ClassImp(AliMUONReconstructor)
@@ -138,8 +140,10 @@ void AliMUONReconstructor::Reconstruct(AliRunLoader* runLoader, AliRawReader* ra
   AliMUONEventReconstructor* recoEvent = new AliMUONEventReconstructor(loader);
   AliMUONData* dataEvent = recoEvent->GetMUONData();
 
-  AliMUONClusterReconstructor* recoCluster = new AliMUONClusterReconstructor(loader);
-  AliMUONData* dataCluster = recoCluster->GetMUONData();
+  AliMUONRawData* rawData = new AliMUONRawData(loader);
+  AliMUONData* dataCluster = rawData->GetMUONData();
+
+  AliMUONClusterReconstructor* recoCluster = new AliMUONClusterReconstructor(loader, dataCluster);
   AliMUONClusterFinderVS *recModel = recoCluster->GetRecoModel();
   recModel->SetGhostChi2Cut(10);
 
@@ -152,6 +156,7 @@ void AliMUONReconstructor::Reconstruct(AliRunLoader* runLoader, AliRawReader* ra
   while (rawReader->NextEvent()) {
     printf("Event %d\n",iEvent);
     runLoader->GetEvent(iEvent++);
+    rawData->Raw2Digits(rawReader);
 
     //----------------------- digit2cluster & Trigger2Trigger -------------------
     if (!loader->TreeR()) loader->MakeRecPointsContainer();
@@ -159,13 +164,13 @@ void AliMUONReconstructor::Reconstruct(AliRunLoader* runLoader, AliRawReader* ra
     // tracking branch
     dataCluster->MakeBranch("RC");
     dataCluster->SetTreeAddress("D,RC");
-    recoCluster->Digits2Clusters(rawReader); 
+    recoCluster->Digits2Clusters(); 
     dataCluster->Fill("RC"); 
 
     // trigger branch
     dataCluster->MakeBranch("TC");
     dataCluster->SetTreeAddress("TC");
-    recoCluster->Trigger2Trigger(rawReader); 
+    recoCluster->Trigger2Trigger(); 
     dataCluster->Fill("TC");
 
     loader->WriteRecPoints("OVERWRITE");

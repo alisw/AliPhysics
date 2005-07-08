@@ -456,7 +456,7 @@ void AliMUON::Digits2Raw()
   AliMUONRawData* rawData;
 
   rawData = new AliMUONRawData(fLoader);
-  if (!rawData->WriteRawData()) AliInfo("pb writting raw data");
+  if (!rawData->Digits2Raw()) AliInfo("pb writting raw data");
   delete rawData;
   return;
 }

@@ -37,6 +37,7 @@
 #include "AliMUONData.h"
 #include "AliLoader.h"
 #include "AliBitPacking.h" 
+#include "AliRawReader.h"
 
 #include "AliMUONSubEventTrigger.h"
 #include "AliMUONDDLTracker.h"
@@ -46,23 +47,18 @@
 #include "AliMUONGlobalTrigger.h"
 
 #include "AliMUONGeometrySegmentation.h"
-#include "AliMUONSegmentManuIndex.h"
 #include "AliLog.h"
 #include "AliRun.h"
 
-const Int_t AliMUONRawData::fgkDefaultPrintLevel = 0;
 
 ClassImp(AliMUONRawData) // Class implementation in ROOT context
 
 //__________________________________________________________________________
-AliMUONRawData::AliMUONRawData(AliLoader* loader)
-  : TObject(),
-    fDebug(0)
+  AliMUONRawData::AliMUONRawData(AliLoader* loader)
+  : TObject()
 {
   // Standard Constructor
  
-  fPrintLevel = fgkDefaultPrintLevel;
-
   // initialize loader's
   fLoader = loader;
 
@@ -86,8 +82,6 @@ AliMUONRawData::AliMUONRawData(AliLoader* loader)
 AliMUONRawData::AliMUONRawData()
   : TObject(),
     fMUONData(0),
-    fPrintLevel(fgkDefaultPrintLevel),
-    fDebug(0),
     fLoader(0)
 {
   // Default Constructor
@@ -138,7 +132,7 @@ AliMUONRawData::~AliMUONRawData(void)
   return;
 }
 //____________________________________________________________________
-Int_t AliMUONRawData::WriteRawData()
+Int_t AliMUONRawData::Digits2Raw()
 {
  // convert digits of the current event to raw data
 
@@ -256,8 +250,7 @@ Int_t AliMUONRawData::WriteTrackerDDL(Int_t iCh)
     muonDigits = fMUONData->Digits(iCh);
 
     nDigits = muonDigits->GetEntriesFast();
-    if (fPrintLevel == 2)
-      printf("ndigits = %d\n",nDigits);
+    AliDebug(2,Form("ndigits = %d\n",nDigits));
 
     // open DDL file, on per 1/2 chamber
  
@@ -332,7 +325,7 @@ Int_t AliMUONRawData::WriteTrackerDDL(Int_t iCh)
     }
     fSubEventArray[iDDL]->Compress();
 
-    if (fPrintLevel == 3) {
+    if (AliLog::GetGlobalDebugLevel() == 3) {
       nEntries = fSubEventArray[iDDL]->GetEntriesFast();
       for (Int_t i = 0; i < nEntries; i++) {
 	AliMUONSubEventTracker* temp =  (AliMUONSubEventTracker*)fSubEventArray[iDDL]->At(i);
@@ -547,9 +540,8 @@ Int_t AliMUONRawData::WriteTriggerDDL()
 	  posY = locTrg->LoStripY();
 	  posX = locTrg->LoStripX();
 	  devX = locTrg->LoDev();
-	  if (fPrintLevel == 4) 
-	    printf("loctrg %d, posX %d, posY %d, devX %d\n", 
-		   locTrg-> LoCircuit(),locTrg->LoStripX(),locTrg->LoStripY(),locTrg->LoDev());
+	  AliDebug(4,Form("loctrg %d, posX %d, posY %d, devX %d\n", 
+			  locTrg-> LoCircuit(),locTrg->LoStripX(),locTrg->LoStripY(),locTrg->LoDev()));
 	} else { //no trigger (see PRR chpt 3.4)
 	  locCard = -1;
 	  locDec = 0;
@@ -702,4 +694,32 @@ Int_t AliMUONRawData::GetGlobalTriggerPattern(const AliMUONGlobalTrigger* gloTrg
   if (gloTrg->PairLikeApt())    gloTrigPat|= 0x4000;
 
   return gloTrigPat;
+}
+
+//____________________________________________________________________
+Int_t AliMUONRawData::Raw2Digits(AliRawReader* /*rawReader*/)
+{
+  return kFALSE;
+
+}
+
+//____________________________________________________________________
+Int_t AliMUONRawData::ReadTrackerDDL(AliRawReader* /*rawReader*/)
+{
+  return kFALSE;
+
+}
+
+//____________________________________________________________________
+void AliMUONRawData:: GetInvDummyMapping(Int_t /*iCh*/, Int_t /*buspatchId*/, UShort_t /*manuId*/, 
+					 UChar_t /*channelId*/, AliMUONDigit* /*digit*/ )
+{
+  return;
+}
+
+//____________________________________________________________________
+Int_t AliMUONRawData::ReadTriggerDDL(AliRawReader* /*rawReader*/)
+{
+  return kFALSE;
+
 }

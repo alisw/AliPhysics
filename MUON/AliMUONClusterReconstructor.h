@@ -23,7 +23,7 @@ class AliRawReader;
 class AliMUONClusterReconstructor : public TObject 
 {
  public:
-  AliMUONClusterReconstructor(AliLoader* loader); // Constructor
+  AliMUONClusterReconstructor(AliLoader* loader, AliMUONData* data = 0x0); // Constructor
   virtual ~AliMUONClusterReconstructor(void); // Destructor
 
   // Interface with AliMUONData
@@ -31,13 +31,10 @@ class AliMUONClusterReconstructor : public TObject
     
   // Cluster Finding & Trigger
   virtual void   Digits2Clusters();
-  virtual void   Digits2Clusters(AliRawReader* rawReader);
   virtual void   Trigger2Trigger() ;
-  virtual void   Trigger2Trigger(AliRawReader* rawReader);
 
   // pointer to data container
   AliMUONData*   GetMUONData() {return fMUONData;}
-
   // Reco Model
   AliMUONClusterFinderVS* GetRecoModel() {return fRecModel;}
   //  AliMUONClusterFinderAZ* GetRecoModel() {return fRecModel;}
