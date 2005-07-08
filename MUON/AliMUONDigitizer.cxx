@@ -506,12 +506,6 @@ void AliMUONDigitizer::InitArrays()
 //
 // Note: the fTDList and fHitMap arrays must be NULL before calling this method.
 
-    AliMUON* muon = (AliMUON*)gAlice->GetModule("MUON");
-    if (!muon) {
-      AliFatal("MUON detector not defined.");
-      return;
-    }  
-
     AliDebug(2, "Initialising internal arrays.");
     AliDebug(4, "Creating transient digits list.");
     fTDList = new TObjArray;
@@ -533,7 +527,7 @@ void AliMUONDigitizer::InitArrays()
       AliDebug(4,Form( "Creating hit map for chamber %d, cathode 2.", i+1));
       AliMUONGeometrySegmentation* c2Segmentation = chamber->SegmentationModel2(2); // Cathode plane 2
 
-      AliMUONGeometryModule* geometry    = muon->Chamber(i).GetGeometry();
+      AliMUONGeometryModule* geometry    = fMUON->Chamber(i).GetGeometry();
       AliMUONGeometryStore*  detElements = geometry->GetDetElementStore();
     
 

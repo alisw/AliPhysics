@@ -189,7 +189,7 @@ void AliMUONSt345SlatSegmentation::GetPadC(Int_t ix, Int_t iy, Float_t &x, Float
 {
   if (ix < 1 || ix > Npx() || iy < 1 || iy > Npy() ){
     AliWarning(Form("ix %d or iy %d out of boundaries: Npx=%d and Npy=%d",ix, iy, Npx(), Npy()));
-    x=-99999.; y=-99999.;
+    x = y= 0.;
 
   } else { 
 
@@ -198,7 +198,7 @@ void AliMUONSt345SlatSegmentation::GetPadC(Int_t ix, Int_t iy, Float_t &x, Float
     Int_t isec = Sector(ix,iy);
     if (isec == -1) AliWarning(Form("isector = %d  with ix %d, iy %d", isec, ix, iy));
     if (iy > fNpyS[isec]) {
-      x=-99999.; y=-99999.;
+      x = y = 0.;
       return;
     }
     if (isec>0) {
@@ -222,7 +222,7 @@ void AliMUONSt345SlatSegmentation::GetPadI(Float_t x, Float_t y, Int_t &ix, Int_
   for (Int_t i=fNsec-1; i > 0; i--) {
     if (x >= fCx[i-1]) {
       isec=i;
-      if (fCx[isec] == fCx[isec-1]  && isec > 1) isec--;
+      if (TMath::Abs(fCx[isec] - fCx[isec-1]) <0.1  && isec > 1) isec--;
       break;
     }
   }
@@ -367,19 +367,19 @@ void AliMUONSt345SlatSegmentation::FirstPad(Float_t xhit, Float_t yhit, Float_t 
     if (y01 < -fDyPCB/2) y01 = -fDyPCB/2;
 
     if (x02 >= fCx[fNsec-1]) x02 = fCx[fNsec-1]; // still ok ? (CF)
+    if (y02 >= fDyPCB/2.) y02 = fDyPCB/2.;
 
    
     Int_t isec=-1;
     for (Int_t i=fNsec-1; i > 0; i--) {
       if (x02 >= fCx[i-1]) {
 	isec=i;
-	if (fCx[isec] == fCx[isec-1] && isec > 1) isec--;
+	if (TMath::Abs(fCx[isec] - fCx[isec-1]) < 0.1 && isec > 1) isec--;
 	break;
       }
     }
 
-    y02 += Dpy(isec);// why ? (CF)
-    if (y02 >= fDyPCB/2.) y02 = fDyPCB/2;
+    //    y02 += Dpy(isec);// why ? (CF)
    
     //
     // find the pads over which the charge distributes
@@ -405,12 +405,7 @@ void AliMUONSt345SlatSegmentation::FirstPad(Float_t xhit, Float_t yhit, Float_t 
     
     GetPadC(fIx,fIy,fX,fY);
     fSector = Sector(fIx,fIy);
-/*
-    printf("\n \n First Pad: %d %d %f %f %d %d %d %f" , 
-	   fIxmin, fIxmax, fXmin, fXmax, fNpx, fId, isec, Dpy(isec));    
-    printf("\n \n First Pad: %d %d %f %f %d %d %d %f",
-	   fIymin, fIymax, fYmin, fYmax,  fNpyS[isec], fId, isec, Dpy(isec));
-*/
+
 }
 
 
@@ -437,7 +432,6 @@ void AliMUONSt345SlatSegmentation::NextPad()
     fIy++;
     GetPadC(fIx,fIy,fX,fY);
     fSector=Sector(fIx,fIy);
-
   } else {
     fIx=-999;
     fIy=-999;
@@ -564,8 +558,8 @@ void AliMUONSt345SlatSegmentation::Init(Int_t detectionElementId)
       fNpyS[0] = 0;
       fCx[0]   = -totalLength/2;
     } else {
-      fNpxS[isec] = fNpxS[isec-1] + fPcbBoards[isec]*Int_t(fDxPCB/(*fDpxD)[isec]); 
-      fNpyS[isec] = Int_t(fDyPCB/(*fDpyD)[isec]);
+      fNpxS[isec] = fNpxS[isec-1] + fPcbBoards[isec]*Int_t(fDxPCB/(*fDpxD)[isec]+0.5); 
+      fNpyS[isec] = Int_t(fDyPCB/(*fDpyD)[isec]+0.5);
       if (fNpyS[isec] >= fNpy) fNpy = fNpyS[isec]; 
       fCx[isec]= fCx[isec-1] + fPcbBoards[isec]*fDxPCB;
     }
