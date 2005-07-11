@@ -23,22 +23,22 @@ public:
    Char_t   GetRegId()     {return (Char_t)(fRegWord >> 12) &  0x0F;}
    Char_t   GetRegOutput() {return (Char_t)(fRegWord)       &  0xFF;}
 
-   UShort_t GetX2(Int_t n) {return (fLocalData[16*n]     >> 16) &  0xFFFF;}
-   UShort_t GetX1(Int_t n) {return (fLocalData[16*n])           &  0xFFFF;}
-   UShort_t GetX4(Int_t n) {return (fLocalData[16*n + 1] >> 16) &  0xFFFF;}
-   UShort_t GetX3(Int_t n) {return (fLocalData[16*n + 1])       &  0xFFFF;}
+   UShort_t GetX2(Int_t n) {return (fLocalData[5*n]     >> 16) &  0xFFFF;}
+   UShort_t GetX1(Int_t n) {return (fLocalData[5*n])           &  0xFFFF;}
+   UShort_t GetX4(Int_t n) {return (fLocalData[5*n + 1] >> 16) &  0xFFFF;}
+   UShort_t GetX3(Int_t n) {return (fLocalData[5*n + 1])       &  0xFFFF;}
 
-   UShort_t GetY2(Int_t n) {return (fLocalData[16*n + 2] >> 16) &  0xFFFF;}
-   UShort_t GetY1(Int_t n) {return (fLocalData[16*n + 2])       &  0xFFFF;}
-   UShort_t GetY4(Int_t n) {return (fLocalData[16*n + 3] >> 16) &  0xFFFF;}
-   UShort_t GetY3(Int_t n) {return (fLocalData[16*n + 3])       &  0xFFFF;}
+   UShort_t GetY2(Int_t n) {return (fLocalData[5*n + 2] >> 16) &  0xFFFF;}
+   UShort_t GetY1(Int_t n) {return (fLocalData[5*n + 2])       &  0xFFFF;}
+   UShort_t GetY4(Int_t n) {return (fLocalData[5*n + 3] >> 16) &  0xFFFF;}
+   UShort_t GetY3(Int_t n) {return (fLocalData[5*n + 3])       &  0xFFFF;}
 
-   Char_t   GetLocalId(Int_t n)  {return fLocalData[16*n + 4] >> 19 &  0xF;}
-   Char_t   GetLocalDec(Int_t n) {return fLocalData[16*n + 4] >> 15 &  0xF;}
-   Char_t   GetTriggerY(Int_t n) {return fLocalData[16*n + 4] >> 14 &  0x1;}
-   Char_t   GetYPos(Int_t n)     {return fLocalData[16*n + 4] >> 10 &  0xF;}
-   Char_t   GetXDev(Int_t n)     {return fLocalData[16*n + 4] >> 5  &  0x1F;}
-   Char_t   GetXPos(Int_t n)     {return fLocalData[16*n + 4]       &  0x1F;}
+   Char_t   GetLocalId(Int_t n)  {return fLocalData[5*n + 4] >> 19 &  0xF;}
+   Char_t   GetLocalDec(Int_t n) {return fLocalData[5*n + 4] >> 15 &  0xF;}
+   Char_t   GetTriggerY(Int_t n) {return fLocalData[5*n + 4] >> 14 &  0x1;}
+   Char_t   GetYPos(Int_t n)     {return fLocalData[5*n + 4] >> 10 &  0xF;}
+   Char_t   GetXDev(Int_t n)     {return fLocalData[5*n + 4] >> 5  &  0x1F;}
+   Char_t   GetXPos(Int_t n)     {return fLocalData[5*n + 4]       &  0x1F;}
 
    void    SetRegWord(UInt_t w) {fRegWord = w;}
    void    SetRegInput(UInt_t in, Int_t n) {fRegInput[n] = in;}
