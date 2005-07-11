@@ -42,7 +42,7 @@ AliRICHRecon::AliRICHRecon(AliRICHHelix *pHelix,TClonesArray *pClusters,Int_t iM
   SetFreonScaleFactor(1);
   fIsWEIGHT = kFALSE;
   fThetaBin=750; fThetaMin = 0.0; fThetaMax = 0.75; 
-  fDTheta       = 0.001;   fWindowWidth  = 0.060;
+  fDTheta       = 0.001;   fWindowWidth  = 0.045;
   fRadiatorWidth = AliRICHParam::Zfreon();
   fQuartzWidth   = AliRICHParam::Zwin();
   fGapWidth      = AliRICHParam::Freon2Pc() - fRadiatorWidth - fQuartzWidth;
