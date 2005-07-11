@@ -65,7 +65,7 @@ void AliRICHDigitizer::Exec(Option_t*)
       iNdigsPerPad++;         dQdc+=pSdig->Q();      iCfm+=pSdig->ChFbMi();//sum up charge and cfm
       if(pSdig->ChFbMi()==1) aTids[0] = pSdig->GetTrack(0); // force the first tid to be mip's tid if it exists in the current pad
       if(iNdigsPerPad<=3)        aTids[iNdigsPerPad-1]=pSdig->GetTrack(0);
-      else                         AliWarning("More then 3 sdigits for the given pad");
+      else                         AliWarning(Form("More then 3 sdigits for the given pad X:%3.0f Y:%3.0f",pSdig->Pad()(0),pSdig->Pad()(1)));
     }else{//new pad, add the pevious one
         if(iId!=-1 && AliRICHParam::IsOverTh(iChamber,pad,dQdc)) pOutRich->DigitAdd(iChamber,pad,(Int_t)dQdc,iCfm,aTids); //add newly created dig
         iChamber=pSdig->C(); pad=pSdig->Pad(); iCfm=pSdig->ChFbMi(); dQdc=pSdig->Q();  iId=pSdig->Id();                    //init all values by current sdig
