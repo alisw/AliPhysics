@@ -399,7 +399,7 @@ void RichConfig::CreateConfig()
   if(fDetBG->GetButton(kFRAME)->GetState())  fprintf(fp,"\n  AliFRAMEv2 *pFrame=new AliFRAMEv2(\"FRAME\",\"Space Frame\"); pFrame->SetHoles(1);\n");
   if(fDetBG->GetButton(kTRD  )->GetState()) {
     fprintf(fp,"\n  AliTRD *pTrd=new AliTRDv1(\"TRD\",\"TRD slow simulator\");\n");
-    fprintf(fp,"  pTrd->SetGasMix(1); pTrd->SetPHOShole(); pTrd->SetRICHhole();pTrd->CreateTR();\n");
+    fprintf(fp,"  pTrd->SetGasMix(1); pTrd->SetPHOShole();pTrd->CreateTR();\n");
   }  
   if(fDetBG->GetButton(kTOF  )->GetState()) fprintf(fp,"\n  new AliTOFv4T0(\"TOF\", \"normal TOF\");\n");
 //central after RICH detectors  
