@@ -131,7 +131,7 @@ AliPHOSGetter::~AliPHOSGetter()
   if (fESDTree) 
     delete fESDTree ;
  
-  //  fgObjGetter = 0;
+  fgObjGetter = 0;
 }
 
 //____________________________________________________________________________ 
@@ -360,8 +360,6 @@ AliPHOSGetter * AliPHOSGetter::Instance(const char* alirunFileName, const char* 
 {
   // Creates and returns the pointer of the unique instance
   // Must be called only when the environment has changed
-  
-  //::Info("Instance","alirunFileName=%s version=%s openingOption=%s",alirunFileName,version,openingOption);
   
   if(!fgObjGetter){ // first time the getter is called 
     fgObjGetter = new AliPHOSGetter(alirunFileName, version, openingOption) ;

@@ -18,6 +18,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.85  2005/05/28 14:19:04  schutz
+ * Compilation warnings fixed by T.P.
+ *
  */
 
 //_________________________________________________________________________
@@ -147,6 +150,10 @@ AliPHOSDigitizer::AliPHOSDigitizer(AliRunDigitizer * rd):
 //____________________________________________________________________________ 
   AliPHOSDigitizer::~AliPHOSDigitizer()
 {
+  AliPHOSGetter * gime = AliPHOSGetter::Instance(GetTitle()) ;
+
+  // Clean Digitizer from the white board
+  gime->PhosLoader()->CleanDigitizer() ;
   // dtor
   delete [] fInputFileNames ; 
   delete [] fEventNames ; 

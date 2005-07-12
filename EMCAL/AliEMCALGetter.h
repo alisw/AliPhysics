@@ -69,9 +69,6 @@ class AliEMCALGetter : public TObject {
 				  const char* version = AliConfig::GetDefaultEventFolderName(),
 				  Option_t * openingOption = "READ" ) ; 
   static AliEMCALGetter * Instance() ; 
-  void   OpenFile(const char* headerFile,
-		  const char* version = AliConfig::GetDefaultEventFolderName(),
-		  Option_t * openingOption = "READ" );
 
   static void Print() ; 
   
@@ -214,14 +211,10 @@ private:
 
 private:
 
-//   static TFile * fgFile;           //! 
-
-//  AliEMCALBeamTestEvent * fBTE ;           //! Header if BeamTest Event
 
   static Int_t          fgDebug ;             //! Debug level
 
   TString           fLoadingStatus ;     //! tells which trees are loaded
-  static TString           fVersion;            //! stores the current folder name
 
 //  AliEMCALCalibrationDB * fcdb ;       //!
    
@@ -231,7 +224,7 @@ private:
   enum EDataTypes{kHits,kSDigits,kDigits,kRecPoints,kTracks,kNDataTypes};
 
 
-  ClassDef(AliEMCALGetter,5)  // Algorithm class that provides methods to retrieve objects from a list knowing the index 
+  ClassDef(AliEMCALGetter,6)  // Algorithm class that provides methods to retrieve objects from a list knowing the index 
 
 };
 

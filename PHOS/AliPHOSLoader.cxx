@@ -18,6 +18,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.14  2005/05/28 14:19:04  schutz
+ * Compilation warnings fixed by T.P.
+ *
  */
 
 //_________________________________________________________________________
@@ -430,6 +433,7 @@ Int_t AliPHOSLoader::ReadHits()
          index++ ; 
        }
      }
+    tempo->Delete();
     delete tempo;
    }
   else 

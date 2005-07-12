@@ -140,6 +140,11 @@ AliEMCALDigitizer::AliEMCALDigitizer(AliRunDigitizer * rd):
 //____________________________________________________________________________ 
   AliEMCALDigitizer::~AliEMCALDigitizer()
 {
+  AliEMCALGetter * gime = AliEMCALGetter::Instance(GetTitle()) ;
+   
+  // Clean Digitizer from the white board
+  gime->EmcalLoader()->CleanDigitizer() ;
+
   delete [] fInputFileNames ; 
   delete [] fEventNames ; 
 

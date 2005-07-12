@@ -67,40 +67,11 @@ ClassImp(AliEMCALGetter)
 AliEMCALGetter * AliEMCALGetter::fgObjGetter = 0 ; 
 AliEMCALLoader * AliEMCALGetter::fgEmcalLoader = 0;
 Int_t AliEMCALGetter::fgDebug = 0;
-TString AliEMCALGetter::fVersion = "";
 
 //  TFile * AliEMCALGetter::fgFile = 0 ; 
 
 //____________________________________________________________________________ 
-AliEMCALGetter::AliEMCALGetter(const char* headerFile, const char* version, Option_t * openingOption) 
-{
-  // ctor only called by Instance()
-
-  // initialize data members
-  SetDebug(0) ; 
-  //fBTE = 0 ; 
-  
-  fLoadingStatus = "" ; 
-
-  fgObjGetter=this;
-  
-  OpenFile(headerFile,version,openingOption);
-}
-
-
-//____________________________________________________________________________ 
-AliEMCALGetter::~AliEMCALGetter()
-{
-  //PH  AliRunLoader * rl = AliRunLoader::GetRunLoader(fgEmcalLoader->GetTitle());
-  //PH  delete rl;
-  fgEmcalLoader = 0 ;
-  fgObjGetter = 0; 
-  fVersion = "";
-}
-
-//____________________________________________________________________________ 
-void AliEMCALGetter::OpenFile(const char* headerFile, const char* version, Option_t * openingOption) {
-  fVersion = version;
+AliEMCALGetter::AliEMCALGetter(const char* headerFile, const char* version, Option_t * openingOption) {
   AliRunLoader* rl = AliRunLoader::GetRunLoader(version) ; 
   if (!rl) {
     rl = AliRunLoader::Open(headerFile, version, openingOption);
@@ -118,13 +89,31 @@ void AliEMCALGetter::OpenFile(const char* headerFile, const char* version, Optio
     Error("AliEMCALGetter", "Could not find EMCALLoader") ; 
   else 
     fgEmcalLoader->SetTitle(version);
+
+   // initialize data members
+  SetDebug(0) ; 
+  fLoadingStatus = "" ; 
+
 }
+
+//____________________________________________________________________________ 
+AliEMCALGetter::~AliEMCALGetter()
+{
+  if (fgEmcalLoader) {
+    delete fgEmcalLoader;
+    fgEmcalLoader = 0 ;
+  }
+  fgObjGetter = 0;
+}
+
 
 //____________________________________________________________________________ 
 void AliEMCALGetter::Reset()
 {
   // resets things in case the getter is called consecutively with different files
   // the EMCAL Loader is already deleted by the Run Loader
+  fgEmcalLoader = 0;
+  fgObjGetter = 0;
 
 }
 
@@ -232,10 +221,10 @@ void AliEMCALGetter::Event(Int_t event, const char* opt)
 {
   // Reads the content of all Tree's S, D and R
 
-  if ( event >= MaxEvent() ) {
-    Error("Event", "%d not found in TreeE !", event) ; 
-    return ; 
-  }
+//   if ( event >= MaxEvent() ) {
+//     Error("Event", "%d not found in TreeE !", event) ; 
+//     return ; 
+//   }
 
   AliRunLoader * rl = AliRunLoader::GetRunLoader(EmcalLoader()->GetTitle());
   // checks if we are dealing with test-beam data
@@ -317,14 +306,13 @@ AliEMCALGetter * AliEMCALGetter::Instance(const char* alirunFileName, const char
     fgObjGetter = new AliEMCALGetter(alirunFileName, version, openingOption) ;
   }
   else { // the getter has been called previously
-    AliRunLoader * rl = AliRunLoader::GetRunLoader(fVersion);
-    if (rl == 0)  fgObjGetter->OpenFile(alirunFileName, version, openingOption) ; 
-    else if ( rl->GetFileName() == alirunFileName ) {// the alirunFile has the same name
+    AliRunLoader * rl = AliRunLoader::GetRunLoader(fgEmcalLoader->GetTitle());
+    if ( rl->GetFileName() == alirunFileName ) {// the alirunFile has the same name
       // check if the file is already open
       TFile * galiceFile = dynamic_cast<TFile *>(gROOT->FindObject(rl->GetFileName()) ) ; 
       
       if ( !galiceFile ) 
-	fgObjGetter->OpenFile(alirunFileName, version, openingOption);
+	fgObjGetter = new AliEMCALGetter(alirunFileName, version, openingOption);
       
       else {  // the file is already open check the version name
 	TString currentVersionName = rl->GetEventFolder()->GetName() ; 
@@ -333,15 +321,15 @@ AliEMCALGetter * AliEMCALGetter::Instance(const char* alirunFileName, const char
 	  if(fgDebug)
 	    ::Warning( "Instance", "Files with version %s already open", currentVersionName.Data() ) ;  
 	else {    
-	  fgEmcalLoader->SetTitle(version); fVersion = version;
+	  fgObjGetter = new AliEMCALGetter(alirunFileName, version, openingOption) ; 
 	}
       }
     }
     else { 
-      AliRunLoader * rl = AliRunLoader::GetRunLoader(fVersion);
+      AliRunLoader * rl = AliRunLoader::GetRunLoader(fgEmcalLoader->GetTitle());
       if ( strstr(version, AliConfig::GetDefaultEventFolderName()) ) // false in case of merging
 	delete rl ; 
-      fgObjGetter->OpenFile(alirunFileName, version, openingOption) ;      
+      fgObjGetter = new AliEMCALGetter(alirunFileName, version, openingOption) ;      
     }
   }
   if (!fgObjGetter) 
@@ -635,13 +623,9 @@ Int_t AliEMCALGetter::ReadTreeD()
   // Read the Digits
   
    EmcalLoader()->CleanDigits() ; 
-  // gets TreeD from the root file (EMCAL.Digits.root)
-  //if ( !IsLoaded("D") ) {
-    EmcalLoader()->LoadDigits("UPDATE") ;
-    EmcalLoader()->LoadDigitizer("UPDATE") ;
-    //  SetLoaded("D") ; 
-    //} 
-  return Digits()->GetEntries() ; 
+   EmcalLoader()->LoadDigits("UPDATE") ;
+   EmcalLoader()->LoadDigitizer("UPDATE") ;
+   return Digits()->GetEntries() ; 
 }
 
 //____________________________________________________________________________ 

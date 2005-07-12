@@ -275,7 +275,9 @@ void AliEMCALClusterizerv1::Init()
   // Make all memory allocations which can not be done in default constructor.
   // Attach the Clusterizer task to the list of EMCAL tasks
   
-  AliEMCALGetter * gime = AliEMCALGetter::Instance(GetTitle(), fEventFolderName.Data());
+  AliEMCALGetter * gime = AliEMCALGetter::Instance();
+  if(!gime)
+    gime = AliEMCALGetter::Instance(GetTitle(), fEventFolderName.Data());
 
   AliEMCALGeometry * geom = gime->EMCALGeometry() ;
 

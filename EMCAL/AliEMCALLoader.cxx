@@ -93,11 +93,9 @@ AliEMCALLoader::~AliEMCALLoader()
   Clean(fgkRecParticlesName);
   CleanFolders() ; 
  // set to 0x0 the objgetter in AliGetter ... weird isn it !
-  /* 
   AliEMCALGetter * gime = AliEMCALGetter::Instance() ; 
   if (gime) 
     gime->Reset() ;
-  */
 }
 
 //____________________________________________________________________________ 
@@ -285,13 +283,6 @@ Int_t AliEMCALLoader::LoadRecParticles(Option_t* opt)
       Error("LoadRecParticles","AliLoader::LoadRecParticles returned error");
       return res;
     }
-  
-  TFolder * emcalFolder = GetDetectorDataFolder();
-  if ( emcalFolder  == 0x0 ) 
-    {
-      Error("PostDigits","Can not get detector data folder");
-      return 1;
-    }
   return ReadRecParticles();
 }
 
@@ -305,7 +296,7 @@ Int_t AliEMCALLoader::PostHits()
      Error("PostHits","AliLoader::  returned error");
      return reval;
     }
-  return ReadHits();
+  return const_cast<AliEMCALLoader *>(this)->ReadHits();
 }
 
 //____________________________________________________________________________ 
@@ -318,7 +309,7 @@ Int_t AliEMCALLoader::PostSDigits()
      Error("PostSDigits","AliLoader::PostSDigits  returned error");
      return reval;
    }
-  return ReadSDigits();
+  return const_cast<AliEMCALLoader *>(this)->ReadSDigits();
 }
 
 //____________________________________________________________________________ 
@@ -331,7 +322,7 @@ Int_t AliEMCALLoader::PostDigits()
       Error("PostDigits","AliLoader::PostDigits  returned error");
       return reval;
     }
-  return ReadDigits();
+  return const_cast<AliEMCALLoader *>(this)->ReadDigits();
 }
 
 //____________________________________________________________________________ 
@@ -344,7 +335,7 @@ Int_t AliEMCALLoader::PostRecPoints()
      Error("PostRecPoints","AliLoader::PostRecPoints  returned error");
      return reval;
    }
-  return ReadRecPoints();
+  return const_cast<AliEMCALLoader *>(this)->ReadRecPoints();
 }
 
 //____________________________________________________________________________ 
@@ -358,7 +349,7 @@ Int_t AliEMCALLoader::PostRecParticles()
       Error("PostRecParticles","AliLoader::PostRecParticles  returned error");
       return reval;
     }
-  return ReadRecParticles();
+  return const_cast<AliEMCALLoader *>(this)->ReadRecParticles();
 }
 
 //____________________________________________________________________________ 
@@ -371,7 +362,7 @@ Int_t AliEMCALLoader::PostTracks()
       Error("PostTracks","AliLoader::PostTracks  returned error");
       return reval;
     }
-  return ReadTracks();
+  return const_cast<AliEMCALLoader *>(this)->ReadTracks();
 }
 
 //____________________________________________________________________________ 
