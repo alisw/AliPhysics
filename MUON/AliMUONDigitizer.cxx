@@ -259,8 +259,10 @@ void AliMUONDigitizer::AddTransientDigit(AliMUONTransientDigit* mTD)
 	Int_t iNchCpl= fNDetElemId[detElemId] + (mTD->Cathode()-1) * AliMUONConstants::NDetElem();
 
 	fTDList->AddAtAndExpand(mTD, fTDCounter);
-	fHitMap[iNchCpl]->SetHit( mTD->PadX(), mTD->PadY(), fTDCounter);
-	fTDCounter++;
+	if (iNchCpl>-1 && iNchCpl<2*AliMUONConstants::NDetElem()) {
+	  fHitMap[iNchCpl]->SetHit( mTD->PadX(), mTD->PadY(), fTDCounter);
+	  fTDCounter++;
+	}
 }
 
 //------------------------------------------------------------------------
@@ -276,7 +278,9 @@ Bool_t AliMUONDigitizer::ExistTransientDigit(AliMUONTransientDigit* mTD)
 	Int_t iNchCpl= fNDetElemId[detElemId] + (mTD->Cathode()-1) *AliMUONConstants::NDetElem() ;
 
 	//	Int_t iNchCpl= mTD->Chamber() + (mTD->Cathode()-1) * AliMUONConstants::NCh();
-	return( fHitMap[iNchCpl]->TestHit(mTD->PadX(), mTD->PadY()) );
+	if (iNchCpl>-1 && iNchCpl<2*AliMUONConstants::NDetElem())
+	  return( fHitMap[iNchCpl]->TestHit(mTD->PadX(), mTD->PadY()) );
+	else return kFALSE;
 }
 
 //-----------------------------------------------------------------------
@@ -513,6 +517,7 @@ void AliMUONDigitizer::InitArrays()
     // Array of pointer of the AliMUONHitMapA1:
     //  two HitMaps per chamber, or one HitMap per cahtode plane
     fHitMap = new AliMUONHitMapA1* [2*AliMUONConstants::NDetElem()];
+    for (Int_t i=0; i<2*AliMUONConstants::NDetElem(); i++) fHitMap[i] = 0x0;
     CheckSegmentation(); // check it one for all
 
     Int_t k = 0;
