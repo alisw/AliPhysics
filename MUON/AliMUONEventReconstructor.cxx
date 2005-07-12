@@ -80,8 +80,6 @@ const Double_t AliMUONEventReconstructor::fgkDefaultSimpleBPosition = 1019.0;
 const Int_t    AliMUONEventReconstructor::fgkDefaultRecTrackRefHits = 0;
 const Double_t AliMUONEventReconstructor::fgkDefaultEfficiency = 0.95;
 
-const Int_t    AliMUONEventReconstructor::fgkDefaultPrintLevel = -1;  // Obsolete and replaced by AliLog frame work
-
 ClassImp(AliMUONEventReconstructor) // Class implementation in ROOT context
 
   //__________________________________________________________________________
@@ -97,7 +95,7 @@ AliMUONEventReconstructor::AliMUONEventReconstructor(AliLoader* loader)
   fNHitsForRec = 0; // really needed or GetEntriesFast sufficient ????
   // Memory allocation for the TClonesArray's of segments in stations
   // Is 2000 the right size ????
-  for (Int_t st = 0; st < fgkMaxMuonTrackingStations; st++) {
+  for (Int_t st = 0; st < AliMUONConstants::NTrackingCh()/2; st++) {
     fSegmentsPtr[st] = new TClonesArray("AliMUONSegment", 2000);
     fNSegments[st] = 0; // really needed or GetEntriesFast sufficient ????
   }
@@ -181,7 +179,7 @@ AliMUONEventReconstructor::~AliMUONEventReconstructor(void)
 //  if (fEventTree) delete fEventTree;
   if (fRecoEvent) delete fRecoEvent;
   delete fHitsForRecPtr; // Correct destruction of everything ???? or delete [] ????
-  for (Int_t st = 0; st < fgkMaxMuonTrackingStations; st++)
+  for (Int_t st = 0; st < AliMUONConstants::NTrackingCh()/2; st++)
     delete fSegmentsPtr[st]; // Correct destruction of everything ????
   return;
 }
@@ -202,7 +200,7 @@ void AliMUONEventReconstructor::SetReconstructionParametersToDefaults(void)
   // like in TRACKF_STAT:
   // 2 degrees for stations 1 and 2, or ch(0...) from 0 to 3;
   // 30 cm for stations 3 to 5, or ch(0...) from 4 to 9
-  for (Int_t ch = 0; ch < fgkMaxMuonTrackingChambers; ch++) {
+  for (Int_t ch = 0; ch < AliMUONConstants::NTrackingCh(); ch++) {
     if (ch < 4) fRMin[ch] = TMath::Abs((&(pMUON->Chamber(ch)))->Z()) *
 		  2.0 * TMath::Pi() / 180.0;
     else fRMin[ch] = 30.0;
@@ -217,7 +215,7 @@ void AliMUONEventReconstructor::SetReconstructionParametersToDefaults(void)
   // Maximum distance in non bending plane
   // 5 * 0.22 just to remember the way it was made in TRACKF_STAT
   // SIGCUT*DYMAX(IZ)
-  for (Int_t st = 0; st < fgkMaxMuonTrackingStations; st++)
+  for (Int_t st = 0; st < AliMUONConstants::NTrackingCh()/2; st++)
     fSegmentMaxDistNonBending[st] = 5. * 0.22;
   // Maximum distance in bending plane:
   // values from TRACKF_STAT, corresponding to (J psi 20cm),
@@ -241,7 +239,6 @@ void AliMUONEventReconstructor::SetReconstructionParametersToDefaults(void)
   fSimpleBPosition = fgkDefaultSimpleBPosition;
   fRecTrackRefHits = fgkDefaultRecTrackRefHits;
   fEfficiency = fgkDefaultEfficiency;
-  fPrintLevel = fgkDefaultPrintLevel;  // Obsolete and replaced by AliLog framework
   return;
 }
 
@@ -399,7 +396,7 @@ void AliMUONEventReconstructor::ResetHitsForRec(void)
   // and the index of the first HitForRec per chamber
   if (fHitsForRecPtr) fHitsForRecPtr->Clear();
   fNHitsForRec = 0;
-  for (Int_t ch = 0; ch < fgkMaxMuonTrackingChambers; ch++)
+  for (Int_t ch = 0; ch < AliMUONConstants::NTrackingCh(); ch++)
     fNHitsForRecPerChamber[ch] = fIndexOfFirstHitForRecPerChamber[ch] = 0;
   return;
 }
@@ -409,7 +406,7 @@ void AliMUONEventReconstructor::ResetSegments(void)
 {
   // To reset the TClonesArray of segments and the number of Segments
   // for all stations
-  for (Int_t st = 0; st < fgkMaxMuonTrackingStations; st++) {
+  for (Int_t st = 0; st < AliMUONConstants::NTrackingCh()/2; st++) {
     if (fSegmentsPtr[st]) fSegmentsPtr[st]->Clear();
     fNSegments[st] = 0;
   }
@@ -515,7 +512,7 @@ void AliMUONEventReconstructor::MakeEventToBeReconstructed(void)
   AliDebug(1,"End of MakeEventToBeReconstructed");
     if (AliLog::GetGlobalDebugLevel() > 0) {
       AliDebug(1, Form("NHitsForRec: %d",fNHitsForRec));
-      for (Int_t ch = 0; ch < fgkMaxMuonTrackingChambers; ch++) {
+      for (Int_t ch = 0; ch < AliMUONConstants::NTrackingCh(); ch++) {
 	AliDebug(1, Form("Chamber(0...): %d",ch));
 	AliDebug(1, Form("NHitsForRec: %d", fNHitsForRecPerChamber[ch]));
 	AliDebug(1, Form("Index(first HitForRec): %d", fIndexOfFirstHitForRecPerChamber[ch]));
@@ -581,7 +578,7 @@ AliMUONHitForRec* AliMUONEventReconstructor::NewHitForRecFromTrackRef(AliTrackRe
   Int_t chamber = AliMUONConstants::ChamberNumber(Hit->Z()); // chamber(0...)
   if (chamber < 0) return NULL;
   // only in tracking chambers (fChamber starts at 1)
-  if (chamber >= fgkMaxMuonTrackingChambers) return NULL;
+  if (chamber >= AliMUONConstants::NTrackingCh()) return NULL;
   // only if hit is efficient (keep track for checking ????)
   if (gRandom->Rndm() > fEfficiency) return NULL;
   // only if radius between RMin and RMax
@@ -707,7 +704,7 @@ void AliMUONEventReconstructor::SortHitsForRecWithIncreasingChamber()
   // Update the information for HitsForRec per chamber too.
   Int_t ch, nhits, prevch;
   fHitsForRecPtr->Sort();
-  for (ch = 0; ch < fgkMaxMuonTrackingChambers; ch++) {
+  for (ch = 0; ch < AliMUONConstants::NTrackingCh(); ch++) {
     fNHitsForRecPerChamber[ch] = 0;
     fIndexOfFirstHitForRecPerChamber[ch] = 0;
   }
@@ -729,55 +726,6 @@ void AliMUONEventReconstructor::SortHitsForRecWithIncreasingChamber()
   return;
 }
 
-//   //__________________________________________________________________________
-// void AliMUONEventReconstructor::AddHitsForRecFromCathodeCorrelations(TTree* TC)
-// {
-//   // OLD VERSION WHEN ONE ONE WAS USING SO CALLED CATHODE CORRELATIONS
-//   // To add to the list of hits for reconstruction
-//   // the (cathode correlated) raw clusters
-//   // No condition added, like in Fortran TRACKF_STAT,
-//   // on the radius between RMin and RMax.
-//   AliMUONHitForRec *hitForRec;
-//   if (fPrintLevel >= 1) cout << "enter AddHitsForRecFromCathodeCorrelations" << endl;
-//   AliMUON *MUON  = (AliMUON*) gAlice->GetModule("MUON"); // necessary ????
-//   // Security on MUON ????
-//   // Loop over tracking chambers
-//   for (Int_t ch = 0; ch < fgkMaxMuonTrackingChambers; ch++) {
-//     // number of HitsForRec to 0 for the chamber
-//     fNHitsForRecPerChamber[ch] = 0;
-//     // index of first HitForRec for the chamber
-//     if (ch == 0) fIndexOfFirstHitForRecPerChamber[ch] = 0;
-//     else fIndexOfFirstHitForRecPerChamber[ch] = fNHitsForRec;
-//     TClonesArray *reconst_hits  = MUON->ReconstHitsAddress(ch);
-//     MUON->ResetReconstHits();
-//     TC->GetEvent();
-//     Int_t ncor = (Int_t)reconst_hits->GetEntries();
-//     // Loop over (cathode correlated) raw clusters
-//     for (Int_t cor = 0; cor < ncor; cor++) {
-//       AliMUONReconstHit * mCor = 
-// 	(AliMUONReconstHit*) reconst_hits->UncheckedAt(cor);
-//       // new AliMUONHitForRec from (cathode correlated) raw cluster
-//       // and increment number of AliMUONHitForRec's (total and in chamber)
-//       hitForRec = new ((*fHitsForRecPtr)[fNHitsForRec]) AliMUONHitForRec(mCor);
-//       fNHitsForRec++;
-//       (fNHitsForRecPerChamber[ch])++;
-//       // more information into HitForRec
-//       hitForRec->SetChamberNumber(ch);
-//       hitForRec->SetHitNumber(cor);
-//       // Z coordinate of the chamber (cm) with sign opposite to TRACKREF sign
-//       // could (should) be more exact from chamber geometry ???? 
-//       hitForRec->SetZ(-(&(MUON->Chamber(ch)))->Z());
-//       if (fPrintLevel >= 10) {
-// 	cout << "chamber (0...): " << ch <<
-// 	  " cathcorrel (0...): " << cor << endl;
-// 	mCor->Dump();
-// 	cout << "AliMUONHitForRec number (1...): " << fNHitsForRec << endl;
-// 	hitForRec->Dump();}
-//     } // end of cluster loop
-//   } // end of chamber loop
-//   return;
-// }
-
   //__________________________________________________________________________
 void AliMUONEventReconstructor::AddHitsForRecFromRawClusters(TTree* TR)
 {
@@ -790,28 +738,6 @@ void AliMUONEventReconstructor::AddHitsForRecFromRawClusters(TTree* TR)
   TClonesArray *rawclusters;
   AliDebug(1,"Enter AddHitsForRecFromRawClusters");
 
-//   TString evfoldname = AliConfig::GetDefaultEventFolderName();//to be interfaced properly
-//   AliRunLoader* rl = AliRunLoader::GetRunLoader(evfoldname);
-//   if (rl == 0x0)
-//    {
-//      Error("MakeEventToBeReconstructed",
-//            "Can not find Run Loader in Event Folder named %s.",
-//            evfoldname.Data());
-//      return;
-//    }
-//   AliLoader* gime = rl->GetLoader("MUONLoader");
-//   if (gime == 0x0)
-//    {
-//      Error("MakeEventToBeReconstructed","Can not get MUON Loader from Run Loader.");
-//      return;
-//    }
-//    // Loading AliRun master
-//   rl->LoadgAlice();
-//   gAlice = rl->GetAliRun();
-
-  // Loading MUON subsystem
-  //  AliMUON * pMUON = (AliMUON *) gAlice->GetDetector("MUON");
-
   nTRentries = Int_t(TR->GetEntries());
   if (nTRentries != 1) {
     AliError(Form("nTRentries = %d not equal to 1 ",nTRentries));
@@ -820,7 +746,7 @@ void AliMUONEventReconstructor::AddHitsForRecFromRawClusters(TTree* TR)
   fLoader->TreeR()->GetEvent(0); // only one entry  
 
   // Loop over tracking chambers
-  for (Int_t ch = 0; ch < fgkMaxMuonTrackingChambers; ch++) {
+  for (Int_t ch = 0; ch < AliMUONConstants::NTrackingCh(); ch++) {
     // number of HitsForRec to 0 for the chamber
     fNHitsForRecPerChamber[ch] = 0;
     // index of first HitForRec for the chamber
@@ -869,11 +795,11 @@ void AliMUONEventReconstructor::MakeSegments(void)
   // Loop over stations
   Int_t nb = (fTrackMethod == 2) ? 3 : 0; //AZ
   //AZ for (Int_t st = 0; st < fgkMaxMuonTrackingStations; st++)
-  for (Int_t st = nb; st < fgkMaxMuonTrackingStations; st++) //AZ
+  for (Int_t st = nb; st < AliMUONConstants::NTrackingCh()/2; st++) //AZ
     MakeSegmentsPerStation(st); 
   if (AliLog::GetGlobalDebugLevel() > 1) {
     cout << "end of MakeSegments" << endl;
-    for (Int_t st = 0; st < fgkMaxMuonTrackingStations; st++) {
+    for (Int_t st = 0; st < AliMUONConstants::NTrackingCh()/2; st++) {
       cout << "station(0...): " << st
 	   << "  Segments: " << fNSegments[st]
 	   << endl;

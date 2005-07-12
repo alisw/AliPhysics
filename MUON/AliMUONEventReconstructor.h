@@ -11,6 +11,7 @@
 ////////////////////////////////////
 
 #include <TObject.h>
+#include "AliMUONConstants.h"
 
 class AliMUONHitForRec;
 class AliMUONSegment;
@@ -55,8 +56,6 @@ class AliMUONEventReconstructor : public TObject {
   void SetRecTrackRefHits(Int_t RecTrackRefHits) {fRecTrackRefHits = RecTrackRefHits;}
   Double_t GetEfficiency(void) const {return fEfficiency;}
   void SetEfficiency(Double_t Efficiency) {fEfficiency = Efficiency;}
-  Int_t GetPrintLevel(void) const {return fPrintLevel;}
-  void SetPrintLevel(Int_t PrintLevel) {fPrintLevel = PrintLevel;}
   void SetReconstructionParametersToDefaults(void);
 
   // Parameters for Track Ref. background events
@@ -127,7 +126,6 @@ class AliMUONEventReconstructor : public TObject {
   static const Int_t fgkDefaultRecTrackRefHits; // default flag for reconstrution track ref. hits or Clusters
   static const Double_t fgkDefaultEfficiency; // default chamber efficiency for track ref. hits recontruction
 
-  static const Int_t fgkDefaultPrintLevel; // default print level
 
   Int_t fTrackMethod; // AZ - tracking method
 
@@ -150,7 +148,6 @@ class AliMUONEventReconstructor : public TObject {
   Double_t fSimpleBPosition; // simple magnetic field: Z central position (cm)
   Int_t fRecTrackRefHits; // reconstruction from raw clusters (0) or from track ref. hits (1)
   Double_t fEfficiency; // chamber efficiency (used for track ref. hits only)
-  Int_t fPrintLevel; // print level
 
   // Parameters for track ref. background events
   // should be in AliMUON class ????

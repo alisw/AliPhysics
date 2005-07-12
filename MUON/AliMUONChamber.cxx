@@ -167,45 +167,24 @@ void AliMUONChamber::Init(Int_t flag)
       ((AliMUONGeometrySegmentation*) fSegmentation2->At(1))->Init(fId);
   }
 }
+// //_________________________________________________________________
+// void    AliMUONChamber::SigGenInit(AliMUONHit *hit)
+// {
+//   //
+//   // Initialisation of segmentation for hit
+//   //  
+//   Float_t x = hit->X();
+//   Float_t y = hit->Y();
+//   Float_t z = hit->Z();
+//   Int_t  id = hit->DetElemId();
 
-//_________________________________________________________________
-Int_t   AliMUONChamber::SigGenCond(AliMUONHit *hit)
-{
-  // Ask segmentation if signal should be generated 
-
-  Float_t x = hit->X();
-  Float_t y = hit->Y();
-  Float_t z = hit->Z();
-  Int_t  id = hit->DetElemId();
-  
-  if (fnsec==1) {
-    return  ((AliMUONGeometrySegmentation*)fSegmentation2->At(0))->SigGenCond(id, x, y, z);
-  } else {
-    return (((AliMUONGeometrySegmentation*) fSegmentation2->At(0))
-	    ->SigGenCond(id, x, y, z)) ||
-      (((AliMUONGeometrySegmentation*) fSegmentation2->At(1))
-       ->SigGenCond(id, x, y, z)) ;
-  }
-}
-
-//_________________________________________________________________
-void    AliMUONChamber::SigGenInit(AliMUONHit *hit)
-{
-  //
-  // Initialisation of segmentation for hit
-  //  
-  Float_t x = hit->X();
-  Float_t y = hit->Y();
-  Float_t z = hit->Z();
-  Int_t  id = hit->DetElemId();
-
-  if (fnsec==1) {
-    ((AliMUONGeometrySegmentation*) fSegmentation2->At(0))->SigGenInit(id, x, y, z) ;
-  } else {
-    ((AliMUONGeometrySegmentation*) fSegmentation2->At(0))->SigGenInit(id, x, y, z) ;
-    ((AliMUONGeometrySegmentation*) fSegmentation2->At(1))->SigGenInit(id, x, y, z) ;
-  }
-}
+//   if (fnsec==1) {
+//     ((AliMUONGeometrySegmentation*) fSegmentation2->At(0))->SigGenInit(id, x, y, z) ;
+//   } else {
+//     ((AliMUONGeometrySegmentation*) fSegmentation2->At(0))->SigGenInit(id, x, y, z) ;
+//     ((AliMUONGeometrySegmentation*) fSegmentation2->At(1))->SigGenInit(id, x, y, z) ;
+//   }
+// }
 
 //_______________________________________________________
 void AliMUONChamber::DisIntegration(AliMUONHit *hit, 

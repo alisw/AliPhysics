@@ -97,14 +97,14 @@ void AliMUONSDigitizerv1::GenerateTransientDigits()
 			// Inititializing Correlation
 			AliMUONChamber& chamber = fMUON->Chamber(ichamber);
 			chamber.ChargeCorrelationInit();
-			if (ichamber < AliMUONConstants::NTrackingCh()) 
-			{
-				// Tracking Chamber
-				// Initialize hit position (cursor) in the segmentation model 
+// 			if (ichamber < AliMUONConstants::NTrackingCh()) 
+// 			{
+// 				// Tracking Chamber
+// 				// Initialize hit position (cursor) in the segmentation model 
 			  
-			  chamber.SigGenInit(mHit);
+// 			  chamber.SigGenInit(mHit);
 
-			} // else do nothing for Trigger Chambers
+// 			} // else do nothing for Trigger Chambers
 			
 			MakeTransientDigitsFromHit(itrack, ihit, mHit);
 		} // hit loop

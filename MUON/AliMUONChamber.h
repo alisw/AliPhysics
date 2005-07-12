@@ -76,10 +76,10 @@ class AliMUONChamber : public TObject
   virtual Float_t IntPH(Float_t eloss) {return fResponse->IntPH(eloss);}
 //  
 // Ask segmentation if signal should be generated  
-  virtual Int_t   SigGenCond(AliMUONHit* hit);
+//  virtual Int_t   SigGenCond(AliMUONHit* hit);
 //
 // Initialisation of segmentation for hit  
-  virtual void    SigGenInit(AliMUONHit* hit);
+//  virtual void    SigGenInit(AliMUONHit* hit);
 // Initialisation of charge fluctuation for given hit
   virtual void    ChargeCorrelationInit();
 
