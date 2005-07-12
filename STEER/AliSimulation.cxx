@@ -542,7 +542,7 @@ Bool_t AliSimulation::RunHitsDigitization(const char* detectors)
     if (fStopOnError) return kFALSE;
   }
 
-  //PH  delete runLoader;
+  delete runLoader;
   //PH Temporary fix to avoid interference with the PHOS loder/getter
   //PH The problem has to be solved in more general way 09/06/05
 
