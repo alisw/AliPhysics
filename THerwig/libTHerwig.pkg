@@ -5,3 +5,5 @@ HDRS= THerwig6.h AliGenHerwig.h
 DHDR:=THerwigLinkDef.h
 
 EXPORT:=THerwig6.h
+
+EINCLUDE:=HERWIG

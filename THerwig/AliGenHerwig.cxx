@@ -21,6 +21,7 @@
 // Uses the THerwig implementation of TGenerator.
 
 #include "AliGenHerwig.h"
+#include "AliHerwigRndm.h"
 #include "AliRun.h"
 
 #include <TParticle.h>
@@ -31,7 +32,6 @@
 
 ClassImp(AliGenHerwig)
 
-static TRandom * sRandom;
 
 AliGenHerwig::AliGenHerwig()
 {
@@ -50,13 +50,13 @@ AliGenHerwig::AliGenHerwig(Int_t npart)
     fDecaysOff=1;
     fSelectAll=0;
     fFlavor=0;
-    fPtHardMin=10.;
+    fPtHardMin=0.;
     fPtRMS=0.0;
     fEnSoft=1.0;
-    fMaxPr=1;
+    fMaxPr=10;
     fMaxErrors=1000;
-//  Set random number
-    if (!sRandom) sRandom=fRandom;
+    // Set random number generator   
+    AliHerwigRndm::SetHerwigRandom(GetRandom());
 }
 
 AliGenHerwig::AliGenHerwig(const AliGenHerwig & Herwig)
@@ -179,6 +179,8 @@ void AliGenHerwig::Generate()
 	fTrials++;
 	fHerwig->ImportParticles(particles,"All");
 	Int_t np = particles->GetEntriesFast()-1;
+	printf("Particles from Herwig %d \n", np);
+	
 	if (np == 0 ) continue;
 	
 	Int_t nc=0;
@@ -205,12 +207,12 @@ void AliGenHerwig::Generate()
 		Float_t tof = kconv*iparticle->T();
 		Int_t   iparent = (imo > -1) ? newPos[imo] : -1;
 		Int_t   trackIt = (ks == 1) && fTrackIt;
-		gAlice->GetMCApp()->PushTrack(trackIt, iparent, kf,
-				 p[0], p[1], p[2], p[3],
-				 origin[0], origin[1], origin[2], 
-				 tof,
-				 polar[0], polar[1], polar[2],
-				 kPPrimary, nt, 1., ks);
+		PushTrack(trackIt, iparent, kf,
+			  p[0], p[1], p[2], p[3],
+			  origin[0], origin[1], origin[2], 
+			  tof,
+			  polar[0], polar[1], polar[2],
+			  kPPrimary, nt, 1., ks);
 		KeepTrack(nt);
 		newPos[i]=nt;
 	    } // end of if: selection of particle
@@ -325,6 +327,3 @@ AliGenHerwig& AliGenHerwig::operator=(const  AliGenHerwig& rhs)
 }
 
 
-extern "C" {
-  Double_t hwr_() {return sRandom->Rndm();}
-}
