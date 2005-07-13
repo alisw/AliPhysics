@@ -105,13 +105,7 @@ THerwig6::THerwig6() : TGenerator("Herwig6","Herwig6") {
 //------------------------------------------------------------------------------
  THerwig6::~THerwig6()
  {
-// Destroys the object, deletes and disposes all TParticles currently on list.
-
-    if (fParticles) {
-      fParticles->Delete();
-      delete fParticles;
-      fParticles = 0;
-   }
+   // Destructor. The data members of TGenerator are delete by itself
  }
 
 //______________________________________________________________________________
