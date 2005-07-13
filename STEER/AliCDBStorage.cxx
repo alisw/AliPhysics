@@ -27,50 +27,48 @@
 #include <TROOT.h>
 
 #include "AliLog.h"
-#include "AliSelectionMetaData.h"
-#include "AliObjectMetaData.h"
-#include "AliRunData.h"
-#include "AliRunDataStorage.h"
+#include "AliCDBEntry.h"
+#include "AliCDBStorage.h"
 
 
-ClassImp(AliRunDataStorage)
+ClassImp(AliCDBStorage)
 
 
-AliRunDataStorage* AliRunDataStorage::fgInstance = NULL;
+AliCDBStorage* AliCDBStorage::fgInstance = NULL;
 
 
 //_____________________________________________________________________________
-AliRunDataStorage::AliRunDataStorage() :
+AliCDBStorage::AliCDBStorage() :
   TObject(),
   fSelection(),
   fEntries(),
-  fRecordFile(NULL)
+  fDumpFile(NULL)
 {
 // default constructor
   if (fgInstance) delete fgInstance;
   fgInstance = this;
+  fStorageMode=kDevelopment;
 }
 
 //_____________________________________________________________________________
-AliRunDataStorage::~AliRunDataStorage()
+AliCDBStorage::~AliCDBStorage()
 {
 // destructor
-
   fSelection.Delete();
   fEntries.Delete();
-  if (fRecordFile) {
-    fRecordFile->Close();
-    delete fRecordFile;
+  if (fDumpFile) {
+    fDumpFile->Close();
+    delete fDumpFile;
   }
   fgInstance = NULL;
 }
 
 //_____________________________________________________________________________
-AliRunDataStorage::AliRunDataStorage(const AliRunDataStorage& db) :
+AliCDBStorage::AliCDBStorage(const AliCDBStorage& db) :
   TObject(db),
   fSelection(),
   fEntries(),
-  fRecordFile(NULL)
+  fDumpFile(NULL)
 {
 // copy constructor
 
@@ -78,7 +76,7 @@ AliRunDataStorage::AliRunDataStorage(const AliRunDataStorage& db) :
 }
 
 //_____________________________________________________________________________
-AliRunDataStorage& AliRunDataStorage::operator = (const AliRunDataStorage& /*db*/)
+AliCDBStorage& AliCDBStorage::operator = (const AliCDBStorage& /*db*/)
 {
 // assignment operator
 
@@ -88,19 +86,19 @@ AliRunDataStorage& AliRunDataStorage::operator = (const AliRunDataStorage& /*db*
 
 
 //_____________________________________________________________________________
-const TObject* AliRunDataStorage::Get(const char* name, Int_t runNumber)
+const TObject* AliCDBStorage::Get(const char* name, Int_t runNumber)
 {
 // get an object from the data base
-// (AliRunDataStorage is NOT the owner of the returned object)
+// (AliCDBStorage is NOT the owner of the returned object)
 // name must be in the form "Detector/DBType/DetSpecType"
 // es: "ZDC/Calib/Pedestals"
 
-  AliSelectionMetaData defaultMetaData;
-  AliSelectionMetaData* selectedMetaData = &defaultMetaData;
+  AliCDBMetaDataSelect defaultMetaData;
+  AliCDBMetaDataSelect* selectedMetaData = &defaultMetaData;
 
   // look for a meta data selection
   for (Int_t i = 0; i < fSelection.GetEntriesFast(); i++) {
-    AliSelectionMetaData* selection = (AliSelectionMetaData*) fSelection[i];
+    AliCDBMetaDataSelect* selection = (AliCDBMetaDataSelect*) fSelection[i];
     if (!selection) continue;
     if (selection->Matches(name, runNumber)) {
       selectedMetaData = selection;
@@ -108,9 +106,9 @@ const TObject* AliRunDataStorage::Get(const char* name, Int_t runNumber)
   }
 
   // get the entry
-  AliSelectionMetaData selMetaData(*selectedMetaData);
+  AliCDBMetaDataSelect selMetaData(*selectedMetaData);
   selMetaData.SetName(name);
-  AliRunData* entry = GetEntry(selMetaData, runNumber);
+  AliCDBEntry* entry = GetEntry(selMetaData, runNumber);
   if (entry) {
     AliDebug(2, "got the entry:");
     ToAliDebug(2, entry->Dump());
@@ -126,17 +124,17 @@ const TObject* AliRunDataStorage::Get(const char* name, Int_t runNumber)
   }
   fEntries.Add(entry);
 
-  // record entry to a file (in the same way as AliRunDataFile::PutEntry, 
-  // so that the file can be opened as a AliRunDataFile!)
+  // Dump entry to a file (in the same way as AliCDBDump::PutEntry, 
+  // so that the file can be opened as a AliCDBDump!)
 
-  if (fRecordFile) {
-    fRecordFile->cd();
+  if (fDumpFile) {
+    fDumpFile->cd();
     TDirectory* saveDir = gDirectory;
 
     // go to or create the directory
     TString strname(name);
     while (strname.BeginsWith("/")) strname.Remove(0);
-    TDirectory* dir = fRecordFile;
+    TDirectory* dir = fDumpFile;
     Int_t index = -1;
     while ((index = strname.Index("/")) >= 0) {
       TString dirName(strname(0, index));
@@ -155,29 +153,34 @@ const TObject* AliRunDataStorage::Get(const char* name, Int_t runNumber)
 
 }
 
-
 //_____________________________________________________________________________
-Bool_t AliRunDataStorage::Put(const TObject* object, 
-			      const AliObjectMetaData& objMetaData)
+Bool_t AliCDBStorage::Put(const TObject* object, 
+			      const AliCDBMetaData& metaData)
 {
 // put an object into the data base
-// (AliRunDataStorage does not adopt the object)
+// (AliCDBStorage does not adopt the object)
 // location of where the object is stored is defined by 
-// the AliObjectMetaData's name ("Detector/DBType/DetSpecType")
+// the AliCDBMetaData's name ("Detector/DBType/DetSpecType")
 // and run Range. Storage is handled by the PutEntry method
-// of the current AliRunDataStorage instance. 
+// of the current AliCDBStorage instance. 
 
   if (!object) return kFALSE;
-  AliRunData entry(object->Clone(), objMetaData);
-  return PutEntry(&entry);
+
+  AliCDBEntry *entry= new AliCDBEntry(object, metaData);
+
+  Bool_t result = PutEntry(entry);
+    
+  delete entry;
+
+  return result;
 }
 
 //_____________________________________________________________________________
-Bool_t AliRunDataStorage::PutEntry(AliRunData* entry)
+Bool_t AliCDBStorage::PutEntry(AliCDBEntry* entry)
 {
 // put an object into the data base
-// Refer to the specific method of the current AliRunDataStorage instance
-// (AliRunDataFile, AliRunDataOrganizedFile, AliRunDataAlien)
+// Refer to the specific method of the current AliCDBStorage instance
+// (AliCDBDump, AliCDBLocalFile, AliCDBGrid)
 
   if (!entry) return kFALSE;
   AliError(Form("This is a read only data base. "
@@ -187,31 +190,31 @@ Bool_t AliRunDataStorage::PutEntry(AliRunData* entry)
 
 
 //_____________________________________________________________________________
-void AliRunDataStorage::Select(const AliSelectionMetaData& selMetaData)
+void AliCDBStorage::Select(const AliCDBMetaDataSelect& selMetaData)
 {
 // add some meta data selection criteria
 
-  fSelection.Add(new AliSelectionMetaData(selMetaData));
+  fSelection.Add(new AliCDBMetaDataSelect(selMetaData));
 }
 
 
 //_____________________________________________________________________________
-Bool_t AliRunDataStorage::RecordToFile(const char* fileName)
+Bool_t AliCDBStorage::DumpToFile(const char* fileName)
 {
-// record entries retrieved from the data base to a file with the given name
+// Dump entries retrieved from the data base to a file with the given name
 
-  if (fRecordFile) {
-    fRecordFile->Close();
-    delete fRecordFile;
+  if (fDumpFile) {
+    fDumpFile->Close();
+    delete fDumpFile;
   }
 
   TDirectory* dir = gDirectory;
-  fRecordFile = TFile::Open(fileName, "UPDATE");
+  fDumpFile = TFile::Open(fileName, "UPDATE");
   if (dir) dir->cd(); else gROOT->cd();
-  if (!fRecordFile || !fRecordFile->IsOpen()) {
+  if (!fDumpFile || !fDumpFile->IsOpen()) {
     AliError(Form("could not open file %s", fileName));
-    delete fRecordFile;
-    fRecordFile = NULL;
+    delete fDumpFile;
+    fDumpFile = NULL;
     return kFALSE;
   }
   return kTRUE;
@@ -219,27 +222,28 @@ Bool_t AliRunDataStorage::RecordToFile(const char* fileName)
 
 
 //_____________________________________________________________________________
-AliRunDataStorage* AliRunDataStorage::Instance()
+AliCDBStorage* AliCDBStorage::Instance()
 {
-// return the current instance of the DB (AliRunDataFile, AliRunOrganizedDataFile...)
-// Example of usage: after creating an istance of AliRunDataStorage:
-// AliRunDataStorage::Instance()->Get(...)
+// return the current instance of the DB (AliCDBDump, AliCDBLocalFile...)
+// Example of usage: after creating an istance of AliCDBStorage:
+// AliCDBStorage::Instance()->Get(...)
 
   return fgInstance;
 }
 
 
 //_____________________________________________________________________________
-const AliObjectMetaData& AliRunDataStorage::GetObjectMetaData(const char* name)
+const AliCDBMetaData& AliCDBStorage::GetCDBMetaData(const char* name)
 {
 // Returns the object's metadata of the already retrieved object
 // (useful, for example, if you want to know the format of the object you have 
 // retrieved)
 
-AliRunData *entry = (AliRunData*) fEntries.FindObject(name);
+AliCDBEntry *entry = (AliCDBEntry*) fEntries.FindObject(name);
  if(!entry){
     AliError(Form("Entry %s not found! You make me crash!",name));
  }
- return entry->GetObjectMetaData(); 
+ return entry->GetCDBMetaData(); 
 
 }
+

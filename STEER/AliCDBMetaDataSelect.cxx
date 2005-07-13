@@ -17,105 +17,66 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
-// Object meta data: full description of a run dependent database object     // 
+// subsample of the CDB metadata, used to retrieve                           //
+// a stored database object:                                                 // 
+// name="Detector/DBType/DetSpecType", run validity, version                 //
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
 
-#include <TRegexp.h>
-#include <TObjArray.h>
-#include <TObjString.h>
 #include <TSystem.h>
 
-#include "AliObjectMetaData.h"
-#include "AliMetaData.h"
+#include "AliCDBMetaDataSelect.h"
+#include "AliCDBMetaData.h"
 #include "AliLog.h"
 
 
-ClassImp(AliObjectMetaData)
+ClassImp(AliCDBMetaDataSelect)
 
 
 //_____________________________________________________________________________
-AliObjectMetaData::AliObjectMetaData() :
-  AliMetaData(),
-  fPeriod(-1),
-  fFormat(""),
-  fResponsible("Duck, Donald"),
-  fExtraInfo("")
+AliCDBMetaDataSelect::AliCDBMetaDataSelect() :
+  AliCDBMetaData()
 {
 // default constructor
 // the default values mean no selection
 }
 
 //_____________________________________________________________________________
-AliObjectMetaData::AliObjectMetaData
-         (const char* name, Int_t firstRun, Int_t lastRun, Int_t period, 
-	  const char* objFormat, const char* responsible, 
-	  const char* extraInfo):
-  AliMetaData(name, firstRun, lastRun),
-  fPeriod(period),
-  fFormat(objFormat),
-  fResponsible(responsible),
-  fExtraInfo(extraInfo)
+AliCDBMetaDataSelect::AliCDBMetaDataSelect(const char* name, Int_t firstRun, Int_t lastRun, Int_t Version) :
+  AliCDBMetaData(name, firstRun, lastRun)
 {
 // constructor
+  fVersion=Version;
 }
 
 //_____________________________________________________________________________
-AliObjectMetaData::AliObjectMetaData(const AliObjectMetaData& entry) :
-  AliMetaData(entry),
-  fPeriod(entry.fPeriod),
-  fFormat(entry.fFormat),
-  fResponsible(entry.fResponsible),
-  fExtraInfo(entry.fExtraInfo)
+AliCDBMetaDataSelect::AliCDBMetaDataSelect(const AliCDBMetaDataSelect& entry) :
+  AliCDBMetaData(entry)
 {
 // copy constructor
 }
 
 //_____________________________________________________________________________
-AliObjectMetaData& AliObjectMetaData::operator = (const AliObjectMetaData& entry)
+AliCDBMetaDataSelect::AliCDBMetaDataSelect(const AliCDBMetaData& entry) :
+  AliCDBMetaData(entry)
+{
+// constructor of AliCDBMetaDataSelect from AliCDBMetaData
+ fPeriod=-1;
+ fFormat="";
+ fResponsible="Duck, Donald";
+ fExtraInfo="";
+}
+
+
+//_____________________________________________________________________________
+AliCDBMetaDataSelect& AliCDBMetaDataSelect::operator = (const AliCDBMetaDataSelect& entry)
 {
 // assignment operator
-  fName = entry.fName;
+  fName = entry.fName,
   fFirstRun = entry.fFirstRun;
   fLastRun = entry.fLastRun;
-  fPeriod=entry.fPeriod;
-  fFormat=entry.fFormat;
-  fResponsible=entry.fResponsible;
-  fExtraInfo=entry.fExtraInfo;
-  DecodeName();
+  fVersion = entry.fVersion;
   return *this;
-}
-
-//_____________________________________________________________________________
-const int AliObjectMetaData::GetPeriod() const
-{
-// get the beam period
-
-  return fPeriod;
-}
-
-//_____________________________________________________________________________
-const char* AliObjectMetaData::GetFormat() const
-{
-// get the object's format
-
-  return fFormat.Data();
-}
-
-//_____________________________________________________________________________
-const char* AliObjectMetaData::GetResponsible() const
-{
-// get the object's responsible (the person who made it)
-
-  return fResponsible.Data();
-}
-
-//_____________________________________________________________________________
-const char* AliObjectMetaData::GetExtraInfo() const
-{
-// get the object's extra info
-
-  return fExtraInfo.Data();
 }
 

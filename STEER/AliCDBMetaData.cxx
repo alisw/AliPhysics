@@ -17,28 +17,34 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
-// base class of the metadata of run dependent objects                       //
-// Derived classes: AliObjectMetaData, AliSelectionMetaData		     //
+// Object meta data: full description of a run dependent database object     // 
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
 
 #include <TRegexp.h>
+#include <TObjArray.h>
+#include <TObjString.h>
+#include <TSystem.h>
 
-#include "AliMetaData.h"
+#include "AliCDBMetaData.h"
 #include "AliLog.h"
 
 
-ClassImp(AliMetaData)
+ClassImp(AliCDBMetaData)
 
 
 //_____________________________________________________________________________
-AliMetaData::AliMetaData() :
+AliCDBMetaData::AliCDBMetaData() :
   TObject(),
   fName(""),
   fFirstRun(-1),
   fLastRun(-1),
-  fVersion(-1)
+  fVersion(-1),
+  fPeriod(-1),
+  fFormat(""),
+  fResponsible("Duck, Donald"),
+  fExtraInfo("")
 {
 // default constructor
 // the default values mean no selection
@@ -46,80 +52,58 @@ AliMetaData::AliMetaData() :
 }
 
 //_____________________________________________________________________________
-AliMetaData::AliMetaData(const char* name, Int_t firstRun, Int_t lastRun, 
-			 Int_t version) :
+AliCDBMetaData::AliCDBMetaData
+         (const char* name, Int_t firstRun, Int_t lastRun, Int_t period, 
+	  const char* objFormat, const char* responsible, 
+	  const char* extraInfo):
   TObject(),
   fName(name),
   fFirstRun(firstRun),
   fLastRun(lastRun),
-  fVersion(version)
+  fVersion(-1),
+  fPeriod(period),
+  fFormat(objFormat),
+  fResponsible(responsible),
+  fExtraInfo(extraInfo)
 {
 // constructor
   DecodeName();
 }
 
-
 //_____________________________________________________________________________
-AliMetaData::AliMetaData(const AliMetaData& entry) :
+AliCDBMetaData::AliCDBMetaData(const AliCDBMetaData& entry) :
   TObject(entry),
   fName(entry.fName),
   fFirstRun(entry.fFirstRun),
   fLastRun(entry.fLastRun),
-  fVersion(entry.fVersion)
+  fVersion(entry.fVersion),
+  fPeriod(entry.fPeriod),
+  fFormat(entry.fFormat),
+  fResponsible(entry.fResponsible),
+  fExtraInfo(entry.fExtraInfo)
 {
 // copy constructor
   DecodeName();
 }
 
 //_____________________________________________________________________________
-AliMetaData& AliMetaData::operator = (const AliMetaData& entry)
+AliCDBMetaData& AliCDBMetaData::operator = (const AliCDBMetaData& entry)
 {
 // assignment operator
-
   fName = entry.fName;
   fFirstRun = entry.fFirstRun;
   fLastRun = entry.fLastRun;
   fVersion = entry.fVersion;
+  fPeriod=entry.fPeriod;
+  fFormat=entry.fFormat;
+  fResponsible=entry.fResponsible;
+  fExtraInfo=entry.fExtraInfo;
   DecodeName();
   return *this;
 }
 
-
-
 //_____________________________________________________________________________
-const char* AliMetaData::GetName() const
-{
-// get the name ("Detector/DBType/DetSpecType", example: "ZDC/Calib/Pedestals")
-
-  return fName.Data();
-}
-
-//_____________________________________________________________________________
-const char* AliMetaData::GetDetector() const
-{
-// get the detector's name (ZDC,ITS ...)
-
-  return fDetector.Data();
-}
-
-//_____________________________________________________________________________
-const char* AliMetaData::GetDBType() const
-{
-// get the database type (Calib, Align ...)
-
-  return fDBType.Data();
-}
-
-//_____________________________________________________________________________
-const char* AliMetaData::GetDetSpecType() const
-{
-// get the detector's specific type name (Pedestals, GainConst, DeadChannelMaps...)
-
-  return fDetSpecType.Data();
-}
-
-//_____________________________________________________________________________
-void AliMetaData::EncodeName(){
+void AliCDBMetaData::EncodeName(){
 // Encode name from single elements ("Detector", "DBType", "DetSpecType" -> "Detector/DBType/DetSpecType")   
    fName = fDetector+'/'+fDBType+'/'+fDetSpecType;
    if(fDBType == "*" && fDetSpecType == "*") fName = fDetector+'/'+'*';
@@ -128,7 +112,7 @@ void AliMetaData::EncodeName(){
 }
 
 //_____________________________________________________________________________
-void AliMetaData::DecodeName(){
+void AliCDBMetaData::DecodeName(){
 // Decode name into single elements ("Detector/DBType/DetSpecType" -> "Detector", "DBType", "DetSpecType")   
 
  if(fName==""){fDetector=""; fDBType=""; fDetSpecType=""; return;}
@@ -161,7 +145,7 @@ void AliMetaData::DecodeName(){
 }
 
 //_____________________________________________________________________________
-Bool_t AliMetaData::IsStrictlyValid(Int_t runNumber, AliMetaData* metaData) const
+Bool_t AliCDBMetaData::IsStrictlyValid(Int_t runNumber, AliCDBMetaData* metaData) const
 {
 // check if the object is valid for runNumber. TRUE if metaData version is equal to this's version 
 
@@ -175,7 +159,7 @@ Bool_t AliMetaData::IsStrictlyValid(Int_t runNumber, AliMetaData* metaData) cons
 }
 
 //_____________________________________________________________________________
-Bool_t AliMetaData::IsValid(Int_t runNumber, AliMetaData* metaData) const
+Bool_t AliCDBMetaData::IsValid(Int_t runNumber, AliCDBMetaData* metaData) const
 {
 // check if the object is valid for runNumber. TRUE if metaData version less or equal wrt to this's
 
@@ -189,18 +173,18 @@ Bool_t AliMetaData::IsValid(Int_t runNumber, AliMetaData* metaData) const
 }
 
 //_____________________________________________________________________________
-Int_t AliMetaData::Compare(const TObject* object) const
+Int_t AliCDBMetaData::Compare(const TObject* object) const
 {
 // check whether this is preferred to object
 
-  if (!object || !object->InheritsFrom(AliMetaData::Class())) return 1;
-  if (fVersion < ((AliMetaData*)object)->GetVersion()) return -1;
-  if (fVersion > ((AliMetaData*)object)->GetVersion()) return 1;
+  if (!object || !object->InheritsFrom(AliCDBMetaData::Class())) return 1;
+  if (fVersion < ((AliCDBMetaData*)object)->GetVersion()) return -1;
+  if (fVersion > ((AliCDBMetaData*)object)->GetVersion()) return 1;
   return 0;
 }
 
 //_____________________________________________________________________________
-Bool_t AliMetaData::Matches(const char* name, Int_t runNumber) const
+Bool_t AliCDBMetaData::Matches(const char* name, Int_t runNumber) const
 {
 // check whether name and run number match with this meta data
 
@@ -212,7 +196,7 @@ Bool_t AliMetaData::Matches(const char* name, Int_t runNumber) const
 
 
 //_____________________________________________________________________________
-Bool_t operator == (const AliMetaData& entry1, const AliMetaData& entry2)
+Bool_t operator == (const AliCDBMetaData& entry1, const AliCDBMetaData& entry2)
 {
 // compare two DB entries
 
@@ -222,4 +206,5 @@ Bool_t operator == (const AliMetaData& entry1, const AliMetaData& entry2)
   if (entry1.GetVersion() != entry2.GetVersion()) return kFALSE;
   return kTRUE;
 }
+
 

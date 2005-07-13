@@ -23,34 +23,33 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 
-#include "AliRunData.h"
-#include "AliObjectMetaData.h"
+#include "AliCDBEntry.h"
 
-ClassImp(AliRunData)
+ClassImp(AliCDBEntry)
 
 
 //_____________________________________________________________________________
-AliRunData::AliRunData() :
+AliCDBEntry::AliCDBEntry() :
   TObject(),
   fObject(NULL),
-  fObjMetaData()
+  fMetaData()
 {
 // default constructor
 
 }
 
 //_____________________________________________________________________________
-AliRunData::AliRunData(TObject* object, const AliObjectMetaData& objMetaData) :
+AliCDBEntry::AliCDBEntry(const TObject* object, const AliCDBMetaData& metaData) :
   TObject(),
-  fObject(object),
-  fObjMetaData(objMetaData)
+  fObject(object->Clone()),
+  fMetaData(metaData)
 {
 // constructor
 
 }
 
 //_____________________________________________________________________________
-AliRunData::~AliRunData()
+AliCDBEntry::~AliCDBEntry()
 {
 // destructor
 
@@ -59,42 +58,42 @@ AliRunData::~AliRunData()
 
 
 //_____________________________________________________________________________
-AliRunData::AliRunData(const AliRunData& entry) :
+AliCDBEntry::AliCDBEntry(const AliCDBEntry& entry) :
   TObject(entry),
-  fObjMetaData(entry.fObjMetaData)
+  fMetaData(entry.fMetaData)
 {
 // copy constructor
 
 }
 
 //_____________________________________________________________________________
-AliRunData& AliRunData::operator = (const AliRunData& entry)
+AliCDBEntry& AliCDBEntry::operator = (const AliCDBEntry& entry)
 {
 // assignment operator
 
   delete fObject;
   fObject = entry.fObject->Clone();
-  fObjMetaData = entry.fObjMetaData;
+  fMetaData = entry.fMetaData;
   return *this;
 }
 
 
 
 //_____________________________________________________________________________
-const char* AliRunData::GetName() const
+const char* AliCDBEntry::GetName() const
 {
 // get the name
 
-  return fObjMetaData.GetName();
+  return fMetaData.GetName();
 }
 
 
 //_____________________________________________________________________________
-Int_t AliRunData::Compare(const TObject* object) const
+Int_t AliCDBEntry::Compare(const TObject* object) const
 {
 // check whether this is preferred to object
 
-  if (!object || !object->InheritsFrom(AliRunData::Class())) return 1;
-  return fObjMetaData.Compare(&((AliRunData*)object)->GetObjectMetaData());
+  if (!object || !object->InheritsFrom(AliCDBEntry::Class())) return 1;
+  return fMetaData.Compare(&((AliCDBEntry*)object)->GetCDBMetaData());
 }
 

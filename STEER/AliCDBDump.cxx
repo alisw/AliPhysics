@@ -26,18 +26,17 @@
 #include <TKey.h>
 #include <TROOT.h>
 #include "AliLog.h"
-#include "AliRunData.h"
-#include "AliSelectionMetaData.h"
-#include "AliObjectMetaData.h"
-#include "AliRunDataFile.h"
+#include "AliCDBEntry.h"
+#include "AliCDBMetaData.h"
+#include "AliCDBDump.h"
 
 
-ClassImp(AliRunDataFile)
+ClassImp(AliCDBDump)
 
 
 //_____________________________________________________________________________
-AliRunDataFile::AliRunDataFile(const char* fileName, Bool_t readOnly) :
-  AliRunDataStorage(),
+AliCDBDump::AliCDBDump(const char* fileName, Bool_t readOnly) :
+  AliCDBStorage(),
   fFile(NULL)
 {
 // constructor
@@ -56,7 +55,7 @@ AliRunDataFile::AliRunDataFile(const char* fileName, Bool_t readOnly) :
 }
 
 //_____________________________________________________________________________
-AliRunDataFile::~AliRunDataFile()
+AliCDBDump::~AliCDBDump()
 {
 // destructor
 
@@ -67,8 +66,8 @@ AliRunDataFile::~AliRunDataFile()
 }
 
 //_____________________________________________________________________________
-AliRunDataFile::AliRunDataFile(const AliRunDataFile& /*db*/) :
-  AliRunDataStorage(),
+AliCDBDump::AliCDBDump(const AliCDBDump& /*db*/) :
+  AliCDBStorage(),
   fFile(NULL)
 {
 // copy constructor
@@ -77,7 +76,7 @@ AliRunDataFile::AliRunDataFile(const AliRunDataFile& /*db*/) :
 }
 
 //_____________________________________________________________________________
-AliRunDataFile& AliRunDataFile::operator = (const AliRunDataFile& /*db*/)
+AliCDBDump& AliCDBDump::operator = (const AliCDBDump& /*db*/)
 {
 // assignment operator
 
@@ -87,7 +86,7 @@ AliRunDataFile& AliRunDataFile::operator = (const AliRunDataFile& /*db*/)
 
 
 //_____________________________________________________________________________
-AliRunData* AliRunDataFile::GetEntry(AliSelectionMetaData& selMetaData, Int_t runNumber)
+AliCDBEntry* AliCDBDump::GetEntry(AliCDBMetaDataSelect& selMetaData, Int_t runNumber)
 {
 // get an object from the data base
 
@@ -118,18 +117,18 @@ AliRunData* AliRunDataFile::GetEntry(AliSelectionMetaData& selMetaData, Int_t ru
   Int_t nCycles = key->GetCycle();
 
   // find the closest entry
-  AliRunData* closestEntry = NULL;
+  AliCDBEntry* closestEntry = NULL;
   for (Int_t iCycle = nCycles; iCycle > 0; iCycle--) {
     key = dir->GetKey(name, iCycle);
     
     if (!key) continue;
-    AliRunData* entry = (AliRunData*) key->ReadObj();
+    AliCDBEntry* entry = (AliCDBEntry*) key->ReadObj();
     if (!entry) continue;
-    if (!entry->InheritsFrom(AliRunData::Class())) {
-      AliObjectMetaData objMetaData;
-      entry = new AliRunData(entry, objMetaData);
+    if (!entry->InheritsFrom(AliCDBEntry::Class())) {
+      AliCDBMetaData metaData;
+      entry = new AliCDBEntry(entry, metaData);
     }
-    if (!entry->GetObjectMetaData().IsValid(runNumber, &selMetaData) ||
+    if (!entry->GetCDBMetaData().IsStrictlyValid(runNumber, &selMetaData) ||
 	(entry->Compare(closestEntry) <= 0)) {
       delete entry;
       continue;
@@ -141,18 +140,20 @@ AliRunData* AliRunDataFile::GetEntry(AliSelectionMetaData& selMetaData, Int_t ru
   if(!closestEntry) AliError(Form("No valid entry found for: name %s, version %d, run %d!!!",
             selMetaData.GetName(),selMetaData.GetVersion(),runNumber));
   if (!closestEntry) return NULL;
-  if(selMetaData.GetVersion() > -1 && (closestEntry->GetObjectMetaData()).GetVersion() != selMetaData.GetVersion()) 
-     AliWarning(Form("Warning: selected version (%d) not found, got version %d instead",
-            selMetaData.GetVersion(),(closestEntry->GetObjectMetaData()).GetVersion()));
+
+//   if(selMetaData.GetVersion() > -1 && (closestEntry->GetCDBMetaData()).GetVersion() != selMetaData.GetVersion()) 
+//      AliWarning(Form("Warning: selected version (%d) not found, got version %d instead",
+//             selMetaData.GetVersion(),(closestEntry->GetCDBMetaData()).GetVersion()));
+
   return closestEntry;
 }
 
 //_____________________________________________________________________________
-Bool_t AliRunDataFile::PutEntry(AliRunData* entry)
+Bool_t AliCDBDump::PutEntry(AliCDBEntry* entry)
 {
 // puts an object into the database
 
-// AliRunData entry is composed by the object and its MetaData
+// AliCDBEntry entry is composed by the object and its MetaData
 // this method takes the metaData, reads the name, runRange and Version
 // creates the TDirectory structure into the file
 // looks for runs with same name, if exist increment version
@@ -191,11 +192,11 @@ Bool_t AliRunDataFile::PutEntry(AliRunData* entry)
     for (Int_t iCycle = nCycles; iCycle > 0; iCycle--) {
       key = dir->GetKey(name, iCycle); 
       if (!key) continue;
-      AliRunData* oldEntry = (AliRunData*) key->ReadObj();
+      AliCDBEntry* oldEntry = (AliCDBEntry*) key->ReadObj();
       if (!oldEntry) continue;
-      if (oldEntry->InheritsFrom(AliRunData::Class())) {
-	if (version <= oldEntry->GetObjectMetaData().GetVersion()) {
-	  version = oldEntry->GetObjectMetaData().GetVersion()+1;
+      if (oldEntry->InheritsFrom(AliCDBEntry::Class())) {
+	if (version <= oldEntry->GetCDBMetaData().GetVersion()) {
+	  version = oldEntry->GetCDBMetaData().GetVersion()+1;
 	}
       }
       delete oldEntry;
@@ -205,5 +206,18 @@ Bool_t AliRunDataFile::PutEntry(AliRunData* entry)
 
   Bool_t result = (entry->Write(name) != 0);
   if (saveDir) saveDir->cd(); else gROOT->cd();
+  
+  if(result) {
+    AliInfo(Form("Run object %s",entry->GetName()));
+    AliInfo(Form("was successfully written into file %s",fFile->GetName()));
+  }  
+  
   return result;
+}
+
+//_____________________________________________________________________________
+void AliCDBDump::TagForProduction
+		(const AliCDBMetaDataSelect& /* selMetaData */, UInt_t /* prodVers */){
+
+  AliError(Form("Not implemented in this case"));
 }

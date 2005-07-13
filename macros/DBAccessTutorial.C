@@ -36,7 +36,7 @@ printf("PM0=%f; PM1=%f; PM2=%f; PM3=%f \n",
  ***************************************************************************************************************/
 
 // a. Define the object's metadata (set of information which describes the object)
-// AliObjectMetaData(char* name, int firstRun, int lastRun,int Period,char* ObjectFormat, char* ResponsibleName, char* extraInfo)
+// AliCDBMetaData(char* name, int firstRun, int lastRun,int Period,char* ObjectFormat, char* ResponsibleName, char* extraInfo)
 //
 // name: Object's name ("Detector/DBType/DetSpecType")
 // firstRun: first run for which the object is valid
@@ -46,59 +46,58 @@ printf("PM0=%f; PM1=%f; PM2=%f; PM3=%f \n",
 // ResponsibleName: name of the person who created and stored the object
 // extraInfo: anything else you may want to know
 
-AliObjectMetaData omd("ZDC/Calib/GainFactors",1,10,1,"AliZDCCalibData: Pedestals (47 floats), En. calib factors (4 floats)","A. Colla", "Tutorial");
+AliCDBMetaData md("ZDC/Calib/GainFactors",1,10,1,"AliZDCCalibData: Pedestals (47 floats), En. calib factors (4 floats)","A. Colla", "Tutorial");
 
-// b. Create the specific AliRunDataStorage instance (AliRunDataOrganizedFile in this case)
+// b. Create the specific AliCDBStorage instance (AliCDBLocal in this case)
 
-AliRunDataOrganizedFile *orgf = new AliRunDataOrganizedFile(DBFolder.Data());
+AliCDBLocal *loc = new AliCDBLocal(DBFolder.Data());
 
-// c. Put the object in the database. Use Put method: AliRunDataStorage::Put(TObject object, AliObjectMetaData& metaData)
+// c. Put the object in the database. Use Put method: AliCDBStorage::Put(TObject object, AliCDBMetaData& metaData)
 // 
 // the object will be stored in the file DBFolder/ZDC/Calib/GainFactors/Run1-10_v0.root
 // Note that the version is automatically determined.
 
-AliRunDataStorage::Instance()->Put(calibda, omd); // we could also type: orgf->Put(calibda, omd)
+AliCDBStorage::Instance()->Put(calibda, md); // we could also type: loc->Put(calibda, md)
 
-// delete the AliRunDataStorage instance and the object (optional)
-AliRunDataStorage::Instance()->Delete();
+// delete the AliCDBStorage instance and the object (optional)
+AliCDBStorage::Instance()->Delete();
 
 
 /***************************************************************************************************************
  Part 2: 	Now we want to retrieve the object valid, say, for run 5 from the database folder. 
-		We will dump it in a local file called "dummyDBTutorail.root", for later usage. 
+		We will dump it in a dump file called "dummyDBTutorail.root", for later usage. 
  ***************************************************************************************************************/
 
-// a. Create the specific AliRunDataStorage instance (AliRunDataOrganizedFile in this case)
-AliRunDataOrganizedFile *orgf = new AliRunDataOrganizedFile(DBFolder.Data());
+// a. Create the specific AliCDBStorage instance (AliCDBLocal in this case)
+AliCDBLocal *loc = new AliCDBLocal(DBFolder.Data());
 
-// b. Prepare AliRunDataStorage to save the object in the local file
-AliRunDataStorage::Instance()->RecordToFile("dummyDBTutorial.root");
+// b. Prepare AliCDBStorage to save the object in the dump file
+AliCDBStorage::Instance()->DumpToFile("dummyDBTutorial.root");
 
 // c. Get the object! 
-// TObject *AliRunDataStorage::Get(char* name, int runNumber)
+// TObject *AliCDBStorage::Get(char* name, int runNumber)
 // if no selection criteria are specified, the highest version found is retrieved.
 
-AliZDCCalibData *calibda2 = (AliZDCCalibData*) AliRunDataStorage::Instance()->Get("ZDC/Calib/GainFactors",5);
+AliZDCCalibData *calibda2 = (AliZDCCalibData*) AliCDBStorage::Instance()->Get("ZDC/Calib/GainFactors",5);
 
 printf("\nI am in Part2. ZDC Energy calibration factors: \n");  
 printf("PM0=%f; PM1=%f; PM2=%f; PM3=%f \n",
    calibda2->GetEnCalib(0),  calibda2->GetEnCalib(1),  calibda2->GetEnCalib(2),  calibda2->GetEnCalib(3) );  
 
-AliRunDataStorage::Instance()->Delete();
+AliCDBStorage::Instance()->Delete();
 
 
 /***************************************************************************************************************
- Part 3: 	Now we will retrieve the object from the local file. 
+ Part 3: 	Now we will retrieve the object from the dump file. 
 		We will tune the energy calibration factors and we suppose that the new object is valid from run 1 to run 15.
 		Finally we will store the object in DBFolder again with the new run range specified in the object's metadata.  
  ***************************************************************************************************************/
 
-// a. Create the specific AliRunDataStorage instance (AliRunDataFile in this case)
-AliRunDataFile *df = new AliRunDataFile("dummyDBTutorial.root");
-//AliRunDataOrganizedFile *orgf = new AliRunDataOrganizedFile(DBFolder.Data());
+// a. Create the specific AliCDBStorage instance (AliCDBDump in this case)
+AliCDBDump *df = new AliCDBDump("dummyDBTutorial.root");
 
 // b. Get the object.
-AliZDCCalibData *calibda3 = (AliZDCCalibData*) AliRunDataStorage::Instance()->Get("ZDC/Calib/GainFactors",5);
+AliZDCCalibData *calibda3 = (AliZDCCalibData*) AliCDBStorage::Instance()->Get("ZDC/Calib/GainFactors",5);
 
 //AliZDCCalibData calibda3copy=*calibda3;
 
@@ -111,37 +110,37 @@ printf("PM0=%f; PM1=%f; PM2=%f; PM3=%f \n",
    calibda3->GetEnCalib(0),  calibda3->GetEnCalib(1),  calibda3->GetEnCalib(2),  calibda3->GetEnCalib(3) );  
 
 // d. Get the object's metadata, set the new run range
-AliObjectMetaData omd2 = AliRunDataStorage::Instance()->GetObjectMetaData("ZDC/Calib/GainFactors");
-omd2.SetRunRange(1,15);
+AliCDBMetaData md2 = AliCDBStorage::Instance()->GetCDBMetaData("ZDC/Calib/GainFactors");
+md2.SetRunRange(1,15);
 
 // e. Store the object in the "organized" database.
 // the object will be stored in the file DBFolder/ZDC/Calib/GainFactors/Run1-15_v1.root
 // Note that, since there is an "overlap" of the new run range with the one specified
 // in the previous version, the version is automatically increased.
 
-AliRunDataOrganizedFile *orgf = new AliRunDataOrganizedFile(DBFolder.Data());
-AliRunDataStorage::Instance()->Put(calibda3, omd2);
+AliCDBLocal *loc = new AliCDBLocal(DBFolder.Data());
+AliCDBStorage::Instance()->Put(calibda3, md2);
 
 /***************************************************************************************************************
  Part 3: 	Last act. 
 		We want to retrieve the object from the "organized" database folder again.
 		This time, anyway, we don't want the highest version but version 0 instead.
-		Therefore we have to specify the version wanted using the "Select" method of AliRunDataStorage
-		and the aliSelectionMetaData object.  
+		Therefore we have to specify the version wanted using the "Select" method of AliCDBStorage
+		and the aliCDBMetaDataSelect object.  
  ***************************************************************************************************************/
 
-// a. Create the specific AliRunDataStorage instance (AliRunDataOrganizedFile in this case)
-orgf = new AliRunDataOrganizedFile(DBFolder.Data());
+// a. Create the specific AliCDBStorage instance (AliCDBLocal in this case)
+loc = new AliCDBLocal(DBFolder.Data());
 
 // b. Specify the selection criterion. We want version 0 for the object valid for run range (1,100)
 // NOTE(1): TRegexp expression are valid! E.g. we could type "ZDC/Calib/*" if we want to specify version
 // for all the "ZDC/Calib" subsamples...
 // Note(2): we could also not specify the run range, if we want version 0 for any retrieved object
-AliSelectionMetaData smd("ZDC/Calib/GainFactors",1,100,0);
-AliRunDataStorage::Instance()->Select(smd);
+AliCDBMetaDataSelect smd("ZDC/Calib/GainFactors",1,100,0);
+AliCDBStorage::Instance()->Select(smd);
 
 // c. Get the object
-AliZDCCalibData *calibda4 = (AliZDCCalibData*) AliRunDataStorage::Instance()->Get("ZDC/Calib/GainFactors",5);
+AliZDCCalibData *calibda4 = (AliZDCCalibData*) AliCDBStorage::Instance()->Get("ZDC/Calib/GainFactors",5);
 printf("\nI am in Part4. I've just got \"ZDC/Calib/GainFactors\" object valid for run 5, version 0.\n");
 printf("ZDC Energy calibration factors: \n");  
 printf("PM0=%f; PM1=%f; PM2=%f; PM3=%f \n",
