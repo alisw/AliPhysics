@@ -33,7 +33,29 @@
 ClassImp(AliGenHerwig)
 
 
-AliGenHerwig::AliGenHerwig()
+  AliGenHerwig::AliGenHerwig() :
+    AliGenMC(),
+    fAutPDF("GRV"),
+    fModPDF(5),
+    fStrucFunc(kGRVHO),
+    fKeep(0),
+    fDecaysOff(1),
+    fTrigger(0),
+    fSelectAll(0),
+    fFlavor(0),
+    fEnergyCMS(14000),
+    fMomentum1(7000),
+    fMomentum2(7000),
+    fKineBias(1),
+    fTrials(0),
+    fXsection(0),
+    fHerwig(0x0),
+    fProcess(0),
+    fPtHardMin(0),
+    fPtRMS(0),
+    fMaxPr(10),
+    fMaxErrors(1000),
+    fEnSoft(1)
 {
 // Constructor
 }
