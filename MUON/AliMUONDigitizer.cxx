@@ -119,16 +119,6 @@ AliMUONDigitizer::operator=(const AliMUONDigitizer& rhs)
     
   return *this;  
 }    
-
-//------------------------------------------------------------------------
-void AliMUONDigitizer::CheckSegmentation()
-{
-  if (fMUON->WhichSegmentation()==1) {
-      AliFatal("Old Segmentation no more supported.");
-      return;
-  }
-
-}
          
 //------------------------------------------------------------------------
 Bool_t AliMUONDigitizer::Init()
@@ -518,7 +508,6 @@ void AliMUONDigitizer::InitArrays()
     //  two HitMaps per chamber, or one HitMap per cahtode plane
     fHitMap = new AliMUONHitMapA1* [2*AliMUONConstants::NDetElem()];
     for (Int_t i=0; i<2*AliMUONConstants::NDetElem(); i++) fHitMap[i] = 0x0;
-    CheckSegmentation(); // check it one for all
 
     Int_t k = 0;
     Int_t idDE;

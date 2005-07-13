@@ -9,7 +9,6 @@
 #include <TObject.h>
 #include <TObjArray.h>
 
-class AliSegmentation;
 class AliMUONGeometrtSegmentation;
 
 class TObjArray;
@@ -75,7 +74,6 @@ class AliMUONTriggerCircuit : public TObject
   Float_t fXpos11[16];         // X position of Y strips in MC11
   Float_t fYpos11[31];         // Y position of X strips in MC11
   Float_t fYpos21[63];         // Y position of X strips in MC21
-  //  Int_t fSegmentationType;     // segmentation old / new
 
 };
 #endif

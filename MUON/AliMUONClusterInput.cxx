@@ -38,7 +38,6 @@ AliMUONClusterInput::AliMUONClusterInput()
   : TObject(),
     fCluster(0),
     fChargeCorrel(1.),
-    fSegmentationType(2),
     fDetElemId(0)
   
 {
@@ -90,8 +89,6 @@ void AliMUONClusterInput::SetDigits(Int_t chamber, Int_t idDE, TClonesArray* dig
     iChamber =  &(pMUON->Chamber(chamber));
 
     fgMathieson = new AliMUONMathieson();
-    if ((fSegmentationType = pMUON->WhichSegmentation()) != 2)
-      AliFatal("Wrong segmentation type");
 
     fSegmentation2[0]=iChamber->SegmentationModel2(1);
     fSegmentation2[1]=iChamber->SegmentationModel2(2);
@@ -125,8 +122,6 @@ void AliMUONClusterInput::SetDigits(Int_t chamber, Int_t idDE, TClonesArray* dig
 
     pMUON = (AliMUON*) gAlice->GetModule("MUON");
     iChamber =  &(pMUON->Chamber(chamber));
-    if ((fSegmentationType = pMUON->WhichSegmentation()) != 2)
-      AliFatal("Wrong segmentation type");
     
     fSegmentation2[0]=iChamber->SegmentationModel2(1);
 

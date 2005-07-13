@@ -43,7 +43,6 @@ AliMUONClusterFinderVS::AliMUONClusterFinderVS()
 {
 // Default constructor
     fInput=AliMUONClusterInput::Instance();
-//     cout <<  " TYPE" << fSegmentationType << endl;
     fHitMap[0] = 0;
     fHitMap[1] = 0;
     fTrack[0]=fTrack[1]=-1;
@@ -1436,9 +1435,6 @@ void AliMUONClusterFinderVS::FindRawClusters()
     ResetRawClusters();
 //  Return if no input datad available
     if (!fInput->NDigits(0) && !fInput->NDigits(1)) return;
-
-    if(fInput->GetSegmentationType() == 1)
-      AliFatal("Old Segmentation no more supported.");
 
     fSeg2[0] = fInput->Segmentation2(0);
     fSeg2[1] = fInput->Segmentation2(1);

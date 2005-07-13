@@ -176,27 +176,18 @@ void AliMUONv1::Init()
    fGeometryBuilder->InitGeometry();
    AliDebug(1,"Finished Init for version 1 - CPC chamber type");   
 
-   if (fSegmentationType == 1) {
-     AliFatal("Old Segmentation no more supported");
-   }
+   fFactory = new AliMUONFactoryV2("New MUON Factory");
+   AliInfo("New Segmentation");
 
-   if (fSegmentationType == 2) {
-     fFactory = new AliMUONFactoryV2("New MUON Factory");
-     AliInfo("New Segmentation");
-   } 
 
    fFactory->Build(this, "default");
 
    //
    // Initialize segmentation
    //
-   if (!fSegmentationType) {
-     AliFatal("No Segmentation Type defined.");
-     return;
-   }
 
    for (i=0; i<AliMUONConstants::NCh(); i++) 
-     ( (AliMUONChamber*) (*fChambers)[i])->Init(fSegmentationType);// new segmentation
+     ( (AliMUONChamber*) (*fChambers)[i])->Init(2);// new segmentation
    
  
    // trigger circuit

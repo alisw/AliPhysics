@@ -79,7 +79,6 @@ class AliMUONResponseV0 : public AliMUONResponse
     // Pulse height from scored quantity (eloss)
     virtual Float_t  IntPH(Float_t eloss);
     // Charge disintegration
-    virtual Float_t  IntXY(AliSegmentation * segmentation);
     virtual Float_t  IntXY(Int_t idDE, AliMUONGeometrySegmentation* segmentation);
     // Noise, zero-suppression, adc saturation
     virtual Int_t DigitResponse(Int_t digit, AliMUONTransientDigit* where);
@@ -97,13 +96,6 @@ class AliMUONResponseV0 : public AliMUONResponse
                                        // is RMS of ln(q1/q2)
     AliMUONMathieson* fMathieson;      // pointer to mathieson fct
 
-/*     Float_t fSqrtKx3;                  // Mathieson Sqrt(Kx3) */
-/*     Float_t fKx2;                      // Mathieson Kx2 */
-/*     Float_t fKx4;                      // Mathieson Kx4 = Kx1/Kx2/Sqrt(Kx3)   */
-/*     Float_t fSqrtKy3;                  // Mathieson Sqrt(Ky3) */
-/*     Float_t fKy2;                      // Mathieson Ky2 */
-/*     Float_t fKy4;                      // Mathieson Ky4 = Ky1/Ky2/Sqrt(Ky3) */
-/*     Float_t fPitch;                    // anode-cathode pitch */
 };
 #endif
 

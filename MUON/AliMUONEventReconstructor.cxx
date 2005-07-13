@@ -1050,10 +1050,9 @@ Bool_t AliMUONEventReconstructor::MakeTriggerTracks(void)
       Float_t thetax = TMath::ATan2( x11 , z11 );
       Float_t thetay = TMath::ATan2( (y21-y11) , (z21-z11) );
 
-      recTriggerTrack = new AliMUONTriggerTrack(x11,y11,thetax,thetay,gloTrigPat,this);
+      recTriggerTrack = new AliMUONTriggerTrack(x11,y11,thetax,thetay,gloTrigPat);
       // since static statement does not work, set gloTrigPat for each track
 
-      // 	fNRecTriggerTracks++;
       fMUONData->AddRecTriggerTrack(*recTriggerTrack);
     } // end of loop on Local Trigger
     return kTRUE;    

@@ -19,7 +19,6 @@
 #include <TRandom.h>
 
 #include "AliMUONResponseV0.h"
-#include "AliSegmentation.h"
 #include "AliMUONGeometrySegmentation.h"
 
 ClassImp(AliMUONResponseV0)
@@ -72,14 +71,7 @@ Float_t AliMUONResponseV0::IntPH(Float_t eloss)
   }
   return charge;
 }
-  //-------------------------------------------
-Float_t AliMUONResponseV0::IntXY(AliSegmentation * segmentation)
-{
-  // Calculate charge on current pad according to Mathieson distribution
 
-  return fMathieson->IntXY(segmentation);
-
-}
   //-------------------------------------------
 Float_t AliMUONResponseV0::IntXY(Int_t idDE, AliMUONGeometrySegmentation* segmentation)
 {

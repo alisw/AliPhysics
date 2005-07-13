@@ -34,7 +34,6 @@ AliMUONTriggerCircuit::AliMUONTriggerCircuit()
     fIdCircuit(0),
     fX2m(0),
     fX2ud(0)
-    //    fSegmentationType(1)
 {
 // Constructor
 
@@ -77,14 +76,10 @@ AliMUONTriggerCircuit::operator=(const AliMUONTriggerCircuit& rhs)
 void AliMUONTriggerCircuit::Init(Int_t iCircuit) {
 // initialize circuit characteristics
   fIdCircuit=AliMUONTriggerConstants::CircuitId(iCircuit);
-  AliMUON *pMUON  = (AliMUON*)gAlice->GetModule("MUON");  
 
   LoadX2();
   LoadXCode();
   LoadYCode();
-
-  if (pMUON->WhichSegmentation() == 1) 
-      AliFatal("Old Segmentation no more supported.");
 
   LoadXPos2();
   LoadYPos2();

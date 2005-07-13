@@ -15,12 +15,8 @@
 
 /* $Id$ */
 
-//#include <TMath.h>
-//#include <TRandom.h>
-//#include <Riostream.h> 
 
 #include "AliMUONResponseTrigger.h"
-//#include "AliSegmentation.h"
 
 ClassImp(AliMUONResponseTrigger)
 

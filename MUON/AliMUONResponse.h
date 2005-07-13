@@ -9,7 +9,6 @@
 #include <TObject.h>
 
 class TF1;
-class AliSegmentation;
 class AliMUONGeometrySegmentation;
 class AliMUONTransientDigit;
 
@@ -61,7 +60,6 @@ class AliMUONResponse : public TObject
     // Pulse height from scored quantity (eloss)
     virtual Float_t IntPH(Float_t)                            {return 1.;}
     // Charge disintegration 
-    virtual Float_t IntXY(AliSegmentation *)                  {return 1.;}
     virtual Float_t IntXY(Int_t, AliMUONGeometrySegmentation*) {return 1.;}
 
     // Noise, zero-suppression, adc saturation

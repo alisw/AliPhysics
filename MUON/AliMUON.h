@@ -81,9 +81,6 @@ class AliMUON : public  AliDetector
     virtual void   SetSegmentationModel(Int_t id, Int_t isec,
 					AliMUONGeometrySegmentation* segmentation);
 
-    void SetSegmentationType(Int_t type) {fSegmentationType = type;}// 1 for old 2 for new, 0 undefined
-    Int_t WhichSegmentation() {return fSegmentationType; }
-
     virtual void   SetResponseModel(Int_t id, AliMUONResponse *response);
     virtual void   SetNsec(Int_t id, Int_t nsec);
 
@@ -126,7 +123,6 @@ class AliMUON : public  AliDetector
     TObjArray*            fChambers;           // List of Tracking Chambers
     TObjArray*            fTriggerCircuits;    // List of Trigger Circuits
     AliMUONGeometryBuilder*     fGeometryBuilder; // Geometry builder 
-    Int_t                 fSegmentationType;    // type for  segmentation
     AliMUONGeometryDEIndexing*  fDEIndexing;   // Geometry DE indexing 
    
     //

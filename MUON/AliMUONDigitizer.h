@@ -173,9 +173,7 @@ protected:
 	virtual void AddDigitTrigger(
 			Int_t chamber, Int_t tracks[kMAXTRACKS],
 			Int_t charges[kMAXTRACKS], Int_t digits[6],
-			Int_t digitindex
-		) = 0;
-	virtual void CheckSegmentation();
+			Int_t digitindex ) = 0;
 
 	AliRunLoader* fRunLoader;         //! Global run loader.
 	AliMUONLoader* fGime;             //! MUON specific loader.

@@ -19,7 +19,6 @@
 #include <TRandom.h>
 
 #include "AliMUONMathieson.h"
-#include "AliSegmentation.h"
 #include "AliMUONGeometrySegmentation.h"
 
 
@@ -64,33 +63,7 @@ void AliMUONMathieson::SetSqrtKy3AndDeriveKy2Ky4(Float_t SqrtKy3)
   Float_t cy1 = fKy2 * fSqrtKy3 / 4. / TMath::ATan(Double_t(fSqrtKy3));
   fKy4 = cy1 / fKy2 / fSqrtKy3;
 }
-// -------------------------------------------
-Float_t AliMUONMathieson::IntXY(AliSegmentation * segmentation)
-{
-// Calculate charge on current pad according to Mathieson distribution
-// 
-    const Float_t kInversePitch = 1/fPitch;      
-//
-//  Integration limits defined by segmentation model
-//  
-    Float_t xi1, xi2, yi1, yi2;
-    segmentation->IntegrationLimits(xi1,xi2,yi1,yi2);
-    xi1=xi1*kInversePitch;
-    xi2=xi2*kInversePitch;
-    yi1=yi1*kInversePitch;
-    yi2=yi2*kInversePitch;
-//
-// The Mathieson function 
-    Double_t ux1=fSqrtKx3*TMath::TanH(fKx2*xi1);
-    Double_t ux2=fSqrtKx3*TMath::TanH(fKx2*xi2);
 
-    Double_t uy1=fSqrtKy3*TMath::TanH(fKy2*yi1);
-    Double_t uy2=fSqrtKy3*TMath::TanH(fKy2*yi2);
-
-    
-    return Float_t(4.*fKx4*(TMath::ATan(ux2)-TMath::ATan(ux1))*
-		      fKy4*(TMath::ATan(uy2)-TMath::ATan(uy1)));
-}
 // -------------------------------------------
 Float_t AliMUONMathieson::IntXY(Int_t idDE, AliMUONGeometrySegmentation* segmentation)
 {

@@ -16,7 +16,6 @@ class TClonesArray;
 
 class AliMUONClusterInput;
 class AliMUONHitMapA1;
-class AliSegmentation;
 class AliMUONGeometrySegmentation;
 class AliMUONRawCluster;
 class AliMUONDigit;

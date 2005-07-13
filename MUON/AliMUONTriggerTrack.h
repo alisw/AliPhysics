@@ -22,7 +22,7 @@ class AliMUONTriggerTrack : public TObject
     AliMUONTriggerTrack (const AliMUONTriggerTrack& AliMUONTriggerTrack); // copy constructor
     AliMUONTriggerTrack& operator=(const AliMUONTriggerTrack& AliMUONTriggerTrack); // assignment operator
     AliMUONTriggerTrack(Float_t x11, Float_t y11, Float_t thetax, Float_t thetay,
-                        Long_t theGTPattern,  AliMUONEventReconstructor* eventReconstructor); 
+                        Long_t theGTPattern); 
 			// Constructor
     Float_t GetX11() const {return fx11;}
     Float_t GetY11() const {return fy11;}
@@ -34,7 +34,6 @@ class AliMUONTriggerTrack : public TObject
     
 protected:
   private:
-  AliMUONEventReconstructor* fEventReconstructor; //!   Pointer to EventReconstructor
   Float_t fx11;    // x position of fired Y strip in MC11
   Float_t fy11;    // y position of fired X strip in MC11
   Float_t fthetax; // track theta angle in X   

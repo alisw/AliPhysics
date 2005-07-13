@@ -94,7 +94,6 @@ AliMUON::AliMUON()
     fChambers(0),
     fTriggerCircuits(0),
     fGeometryBuilder(0),
-    fSegmentationType(2),// set to 2 default wise new seg
     fDEIndexing(0),
     fAccCut(kFALSE),
     fAccMin(0.),
@@ -122,7 +121,6 @@ AliMUON::AliMUON(const char *name, const char *title)
     fChambers(0),
     fTriggerCircuits(0),
     fGeometryBuilder(0),
-    fSegmentationType(2),// set to 2 default wise new seg
     fDEIndexing(0),
     fAccCut(kFALSE),
     fAccMin(0.),
@@ -251,11 +249,6 @@ void AliMUON::AddGeometryBuilder(AliMUONVGeometryBuilder* geomBuilder)
 void AliMUON::BuildGeometry()
 {
 // Geometry for event display
-
-  if (!fSegmentationType) {
-    AliFatal("No Segmentation Type defined.");
-    return;
-  }
 
 
 //     for (Int_t i = 0; i < AliMUONConstants::NCh(); i++)     

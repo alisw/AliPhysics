@@ -14,7 +14,6 @@ class TMinuit;
 
 class AliMUONDigit;
 class AliMUONRawCluster;
-class AliSegmentation;
 class AliMUONMathieson;
 
 class AliMUONClusterInput : public TObject 
@@ -36,7 +35,6 @@ class AliMUONClusterInput : public TObject
     AliMUONMathieson* Mathieson() const {return fgMathieson;}    
     Float_t ChargeCorrel() const {return fChargeCorrel;}    
     Int_t DetElemId() const {return fDetElemId;}
-    Int_t GetSegmentationType() const {return fSegmentationType;}
 
 // Fitting    
     TMinuit*      Fitter() const {return fgMinuit;}
@@ -79,7 +77,6 @@ class AliMUONClusterInput : public TObject
     Float_t              fQtot[2];         // ! Total charge
     Float_t              fZ;               // ! Current z-position
     Float_t              fChargeCorrel;    // ! charge correlation 
-    Int_t                fSegmentationType;// ! Segmentation type old or new
     Int_t                fDetElemId;       // ! detection elt id    
 
     // Fitter

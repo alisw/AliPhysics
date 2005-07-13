@@ -19,7 +19,6 @@
 #include <TRandom.h>
 
 #include "AliMUONResponseTriggerV1.h"
-#include "AliSegmentation.h"
 #include "AliMUONGeometrySegmentation.h"
 
 ClassImp(AliMUONResponseTriggerV1)
@@ -57,21 +56,6 @@ Int_t AliMUONResponseTriggerV1::SetGenerCluster(){
   return 1;
 } 
 
-//------------------------------------------------------------------   
-Float_t AliMUONResponseTriggerV1::IntXY(AliSegmentation * segmentation){
-// Returns 1 or 0 if the current strip is fired or not 
-// get the "parameters" needed to evaluate the strip response
-// x1 : hit x(y) position
-// x2 : x(y) coordinate of the main strip
-// x3 : current strip real x(y) coordinate  
-// x4 : dist. between x(y) hit pos. and the closest border of the current strip
-
-  Float_t x1,x2,x3,x4;  
-  segmentation->IntegrationLimits(x1,x2,x3,x4);    
-  Float_t theta = 0.; // incident angle to be implemented
-
-  return (fGenerCluster < FireStripProb(x4,theta)) ? 1:0; 
-}
 //------------------------------------------------------------------   
 Float_t AliMUONResponseTriggerV1::IntXY(Int_t idDE, AliMUONGeometrySegmentation * segmentation){
 // Returns 1 or 0 if the current strip is fired or not 

@@ -16,7 +16,6 @@ class AliMUONResponseTriggerV1 : public AliMUONResponseTrigger
     AliMUONResponseTriggerV1(Float_t hv);
     virtual ~AliMUONResponseTriggerV1(){} 
     // Charge disintegration
-    virtual Float_t  IntXY(AliSegmentation * segmentation);
     virtual Float_t  IntXY(Int_t idDE, AliMUONGeometrySegmentation * segmentation);
 
     // Set the GenerCluster parameter       
