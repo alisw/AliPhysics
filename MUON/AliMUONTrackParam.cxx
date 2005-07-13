@@ -28,7 +28,7 @@
 //#include <Riostream.h>
 #include "AliMUON.h"
 #include "AliMUONTrackParam.h" 
-//#include "AliMUONChamber.h"
+#include "AliMUONConstants.h"
 #include "AliRun.h" 
 #include "AliMagF.h" 
 #include "AliLog.h" 
@@ -193,10 +193,9 @@ void AliMUONTrackParam::ExtrapToStation(Int_t Station, AliMUONTrackParam *TrackP
   // pointed to by "TrackParam" (index 0 and 1 for first and second chambers).
   Double_t extZ[2], z1, z2;
   Int_t i1 = -1, i2 = -1; // = -1 to avoid compilation warnings
-  AliMUON *pMUON = (AliMUON*) gAlice->GetModule("MUON"); // necessary ????
   // range of Station to be checked ????
-  z1 = (&(pMUON->Chamber(2 * Station)))->Z(); // Z of first chamber
-  z2 = (&(pMUON->Chamber(2 * Station + 1)))->Z(); // Z of second chamber
+  z1 = AliMUONConstants::DefaultChamberZ(2 * Station);
+  z2 = AliMUONConstants::DefaultChamberZ(2 * Station + 1);
   // First and second Z to extrapolate at
   if ((z1 > this->fZ) && (z2 > this->fZ)) {i1 = 0; i2 = 1;}
   else if ((z1 < this->fZ) && (z2 < this->fZ)) {i1 = 1; i2 = 0;}

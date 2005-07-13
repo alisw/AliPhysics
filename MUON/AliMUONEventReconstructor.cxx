@@ -194,18 +194,17 @@ void AliMUONEventReconstructor::SetReconstructionParametersToDefaults(void)
   fMaxChi2 = fgkDefaultMaxChi2;
   fMaxSigma2Distance = fgkDefaultMaxSigma2Distance;
 
-  AliMUON *pMUON = (AliMUON*) gAlice->GetModule("MUON");
   // ******** Parameters for making HitsForRec
   // minimum radius,
   // like in TRACKF_STAT:
   // 2 degrees for stations 1 and 2, or ch(0...) from 0 to 3;
   // 30 cm for stations 3 to 5, or ch(0...) from 4 to 9
   for (Int_t ch = 0; ch < AliMUONConstants::NTrackingCh(); ch++) {
-    if (ch < 4) fRMin[ch] = TMath::Abs((&(pMUON->Chamber(ch)))->Z()) *
+    if (ch < 4) fRMin[ch] = TMath::Abs(AliMUONConstants::DefaultChamberZ(ch)) *
 		  2.0 * TMath::Pi() / 180.0;
     else fRMin[ch] = 30.0;
     // maximum radius at 10 degrees and Z of chamber
-    fRMax[ch] = TMath::Abs((&(pMUON->Chamber(ch)))->Z()) *
+    fRMax[ch] = TMath::Abs(AliMUONConstants::DefaultChamberZ(ch)) *
 		  10.0 * TMath::Pi() / 180.0;
   }
 
@@ -221,15 +220,16 @@ void AliMUONEventReconstructor::SetReconstructionParametersToDefaults(void)
   // values from TRACKF_STAT, corresponding to (J psi 20cm),
   // scaled to the real distance between chambers in a station
   fSegmentMaxDistBending[0] = TMath::Abs( 1.5 *
-    ((&(pMUON->Chamber(1)))->Z() - (&(pMUON->Chamber(0)))->Z()) / 20.0);
+					  (AliMUONConstants::DefaultChamberZ(1) - AliMUONConstants::DefaultChamberZ(0)) / 20.0);
   fSegmentMaxDistBending[1] = TMath::Abs( 1.5 *
-    ((&(pMUON->Chamber(3)))->Z() - (&(pMUON->Chamber(2)))->Z()) / 20.0);
+					  (AliMUONConstants::DefaultChamberZ(3) - AliMUONConstants::DefaultChamberZ(2)) / 20.0);
   fSegmentMaxDistBending[2] = TMath::Abs( 3.0 *
-    ((&(pMUON->Chamber(5)))->Z() - (&(pMUON->Chamber(4)))->Z()) / 20.0);
+					  (AliMUONConstants::DefaultChamberZ(5) - AliMUONConstants::DefaultChamberZ(4)) / 20.0);
   fSegmentMaxDistBending[3] = TMath::Abs( 6.0 *
-    ((&(pMUON->Chamber(7)))->Z() - (&(pMUON->Chamber(6)))->Z()) / 20.0);
+					  (AliMUONConstants::DefaultChamberZ(7) - AliMUONConstants::DefaultChamberZ(6)) / 20.0);
   fSegmentMaxDistBending[4] = TMath::Abs( 6.0 *
-    ((&(pMUON->Chamber(9)))->Z() - (&(pMUON->Chamber(8)))->Z()) / 20.0);
+					  (AliMUONConstants::DefaultChamberZ(9) - AliMUONConstants::DefaultChamberZ(8)) / 20.0);
+
   
   fBendingResolution = fgkDefaultBendingResolution;
   fNonBendingResolution = fgkDefaultNonBendingResolution;
@@ -1033,13 +1033,12 @@ Bool_t AliMUONEventReconstructor::MakeTriggerTracks(void)
       if (gloTrg->PairLikeApt())    gloTrigPat|= 0x4000;
     }
 
- 
-
     // local trigger for tracking 
     localTrigger = fMUONData->LocalTrigger();    
     Int_t nlocals = (Int_t) (localTrigger->GetEntries());
-    Float_t z11 = ( &(pMUON->Chamber(10)) )->Z();
-    Float_t z21 = ( &(pMUON->Chamber(12)) )->Z();
+
+    Float_t z11 = AliMUONConstants::DefaultChamberZ(10);
+    Float_t z21 = AliMUONConstants::DefaultChamberZ(12);
 
     for (Int_t i=0; i<nlocals; i++) { // loop on Local Trigger
       locTrg = (AliMUONLocalTrigger*)localTrigger->UncheckedAt(i);	
