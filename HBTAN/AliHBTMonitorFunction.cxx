@@ -200,6 +200,7 @@ AliHBTMonOneParticleFctn1D::AliHBTMonOneParticleFctn1D(Int_t nbins, Double_t max
    TString numstr = fName + " Result";  //title and name of the 
                                            //result histogram
    fResult   = new TH1D(numstr.Data(),numstr.Data(),nbins,minXval,maxXval);
+   fResult->Sumw2();
  }
 
 AliHBTMonOneParticleFctn1D::AliHBTMonOneParticleFctn1D(const Char_t *name, const Char_t *title,
@@ -211,6 +212,7 @@ AliHBTMonOneParticleFctn1D::AliHBTMonOneParticleFctn1D(const Char_t *name, const
                                            //result histogram
          
    fResult   = new TH1D(numstr.Data(),numstr.Data(),nbins,minXval,maxXval);
+   fResult->Sumw2();
    fResult->SetDirectory(0x0);
    
 }
@@ -244,6 +246,7 @@ AliHBTMonOneParticleFctn2D::AliHBTMonOneParticleFctn2D(Int_t nXbins, Double_t ma
    fResult   = new TH2D(numstr.Data(),numstr.Data(),
                            nXbins,minXval,maxXval,
 	       nYbins,minYval,maxYval);
+   fResult->Sumw2();
    fResult->SetDirectory(0x0);
 }	  
 /******************************************************************/
@@ -285,6 +288,7 @@ AliHBTMonOneParticleFctn3D(Int_t nXbins, Double_t maxXval, Double_t minXval,
                            nXbins,minXval,maxXval,
 	       nYbins,minYval,maxYval,
 	       nZbins,minZval,maxZval);
+   fResult->Sumw2();
    fResult->SetDirectory(0x0);
 
 }	  
@@ -312,6 +316,7 @@ AliHBTMonTwoParticleFctn1D(Int_t nbins, Double_t maxval, Double_t minval)
          
    fResult   = new TH1D(numstr.Data(),numstr.Data(),
                            nbins,minval,maxval);
+   fResult->Sumw2();
    fResult->SetDirectory(0x0);
  }
 
@@ -326,6 +331,7 @@ AliHBTMonTwoParticleFctn1D(const Char_t* name, const Char_t* title,
 
    fResult   = new TH1D(numstr.Data(),numstr.Data(),
                            nbins,minval,maxval);
+   fResult->Sumw2();
    fResult->SetDirectory(0x0);
  }
 
@@ -367,6 +373,7 @@ AliHBTMonTwoParticleFctn2D(Int_t nXbins, Double_t maxXval, Double_t minXval ,
    fResult   = new TH2D(numstr.Data(),numstr.Data(),
                            nXbins,minXval,maxXval,
 	       nYbins,minYval,maxYval);
+   fResult->Sumw2();
    fResult->SetDirectory(0x0);
 }	  
 /******************************************************************/
