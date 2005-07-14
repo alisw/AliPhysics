@@ -102,7 +102,8 @@ void AliRICHTracker::RecWithESD(AliESD *pESD)
             sigmaPID[iPart] += 1/(sigma*sigma);
           }
         }
-        sigmaPID[iPart] = 1/TMath::Sqrt(sigmaPID[iPart])*0.001;
+	if (sigmaPID[iPart]>0)
+	  sigmaPID[iPart] = 1/TMath::Sqrt(sigmaPID[iPart])*0.001;
         AliDebug(1,Form("sigma for %s is %f rad",AliPID::ParticleName(iPart),sigmaPID[iPart]));
       }
       CalcProb(thetaCerenkov,pTrack->GetP(),sigmaPID,richPID);
