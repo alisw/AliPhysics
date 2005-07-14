@@ -81,6 +81,13 @@
 #pragma link C++ class  AliCDBLocal;
 #pragma link C++ class  AliDetectorEventHeader+;
 
+#pragma link C++ class AliRunTag+;
+#pragma link C++ class AliLHCTag+;
+#pragma link C++ class AliDetectorTag+;
+#pragma link C++ class AliEventTag+;
+
+
+
 #pragma link C++ class  TTreeDataElement+;
 #pragma link C++ class  TTreeStream+;
 #pragma link C++ class  TTreeSRedirector+;

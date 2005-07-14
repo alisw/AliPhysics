@@ -30,6 +30,11 @@ class AliVertexer;
 class AliESD;
 class TFile;
 
+class AliRunTag;
+class AliLHCTag;
+class AliDetectorTag;
+class AliEventTag;
+
 
 class AliReconstruction: public TNamed {
 public:
@@ -89,6 +94,14 @@ private:
 
   Bool_t         ReadESD(AliESD*& esd, const char* recStep) const;
   void           WriteESD(AliESD* esd, const char* recStep) const;
+
+ 
+  //===========================================//
+  void           CreateTag(TFile* file);
+  //==========================================//
+
+
+
 
   TString        fRunLocalReconstruction; // run the local reconstruction for these detectors
   Bool_t         fUniformField;       // uniform field tracking flag

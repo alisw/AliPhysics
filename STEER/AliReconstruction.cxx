@@ -130,6 +130,15 @@
 #include "AliESDpid.h"
 #include "AliMagF.h"
 
+
+
+#include "AliRunTag.h"
+#include "AliLHCTag.h"
+#include "AliDetectorTag.h"
+#include "AliEventTag.h"
+
+
+
 ClassImp(AliReconstruction)
 
 
@@ -413,7 +422,8 @@ Bool_t AliReconstruction::Run(const char* input,
     // write HLT ESD
     hlttree->Fill();
 
-    if (fCheckPointLevel > 0) WriteESD(esd, "final");
+    if (fCheckPointLevel > 0)  WriteESD(esd, "final"); 
+ 
     delete esd; delete hltesd;
     esd = NULL; hltesd = NULL;
   }
@@ -421,6 +431,10 @@ Bool_t AliReconstruction::Run(const char* input,
   file->cd();
   tree->Write();
   hlttree->Write();
+
+  // Create tags for the events in the ESD tree (the ESD tree is always present)
+  // In case of empty events the tags will contain dummy values
+  CreateTag(file);
   CleanUp(file, fileOld);
 
   return kTRUE;
@@ -1117,6 +1131,7 @@ Bool_t AliReconstruction::ReadESD(AliESD*& esd, const char* recStep) const
 	  esd->GetRunNumber(), esd->GetEventNumber(), recStep);
   if (gSystem->AccessPathName(fileName)) return kFALSE;
 
+  AliInfo(Form("reading ESD from file %s", fileName));
   AliDebug(1, Form("reading ESD from file %s", fileName));
   TFile* file = TFile::Open(fileName);
   if (!file || !file->IsOpen()) {
@@ -1153,3 +1168,77 @@ void AliReconstruction::WriteESD(AliESD* esd, const char* recStep) const
   }
   delete file;
 }
+
+
+
+
+//_____________________________________________________________________________
+void AliReconstruction::CreateTag(TFile* file)
+{
+  AliRunTag *tag = new AliRunTag();
+  AliDetectorTag *detTag = new AliDetectorTag();
+  AliEventTag *evTag = new AliEventTag();
+  TTree ttag("T","A Tree with event tags");
+  TBranch * btag = ttag.Branch("AliTAG", "AliRunTag", &tag);
+  btag->SetCompressionLevel(9);
+
+  AliInfo(Form("Creating the tags......."));	
+  
+  if (!file || !file->IsOpen()) {
+    AliError(Form("opening failed"));
+    delete file;
+    return ;
+  }
+
+  TTree *t = (TTree*) file->Get("esdTree");
+  TBranch * b = t->GetBranch("ESD");
+  AliESD *esd = 0;
+  b->SetAddress(&esd);
+
+  tag->SetRunId(esd->GetRunNumber());
+
+  Int_t firstEvent = 0,lastEvent = 0;
+  Int_t i_NumberOfEvents = b->GetEntries();
+  for (Int_t i_EventNumber = 0; i_EventNumber < i_NumberOfEvents; i_EventNumber++)
+    {
+      b->GetEntry(i_EventNumber);
+      //      Int_t i_NumberOfTracks = esd->GetNumberOfTracks();
+      const AliESDVertex * VertexIn = esd->GetVertex();
+      
+      evTag->SetEventId(i_EventNumber+1);
+
+      evTag->SetVertexX(VertexIn->GetXv());
+      evTag->SetVertexY(VertexIn->GetYv());
+      evTag->SetVertexZ(VertexIn->GetZv());
+
+      evTag->SetNumOfTracks(esd->GetNumberOfTracks());
+      evTag->SetNumOfV0s(esd->GetNumberOfV0s());
+      evTag->SetNumOfCascades(esd->GetNumberOfCascades());
+      
+      evTag->SetNumOfPHOSTracks(esd->GetNumberOfPHOSParticles());
+      evTag->SetNumOfEMCALTracks(esd->GetNumberOfEMCALParticles());
+      evTag->SetNumOfMuons(esd->GetNumberOfMuonTracks());
+    
+      tag->AddEventTag(evTag);
+    }
+  lastEvent = i_NumberOfEvents;
+	
+  ttag.Fill();
+  tag->Clear();
+
+  char fileName[256];
+  sprintf(fileName, "Run%d.Event%d_%d.ESD.tag.root", 
+	  tag->GetRunId(),firstEvent,lastEvent );
+  AliInfo(Form("writing tags to file %s", fileName));
+  AliDebug(1, Form("writing tags to file %s", fileName));
+ 
+  TFile* ftag = TFile::Open(fileName, "recreate");
+  ftag->cd();
+  ttag.Write();
+  ftag->Close();
+  file->cd();
+  delete tag;
+  delete detTag;
+  delete evTag;
+}
+
