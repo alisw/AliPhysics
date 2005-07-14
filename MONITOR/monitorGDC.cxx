@@ -104,14 +104,31 @@ int main(int argc, char** argv)
     ::Fatal("AliL3Transform::Init", "HLT initialization failed");
   }
   AliESD *esd = new AliESD;
-  AliKalmanTrack::SetConvConst(
-     1000/0.299792458/AliL3Transform::GetSolenoidField()
-  );
+  //  AliKalmanTrack::SetConvConst(
+  //     1000/0.299792458/AliL3Transform::GetSolenoidField()
+  //  );
   AliITSgeom *geom = new AliITSgeom();
   geom->ReadNewFile("$ALICE_ROOT/ITS/ITSgeometry_vPPRasymmFMD.det");
   if (!geom) return 1;
-  AliMagF* field = new AliMagFMaps("Maps","Maps", 2, 1., 10., AliMagFMaps::k5kG);
-  AliTracker::SetFieldMap(field);
+  Int_t sfield = 0;
+  switch ((Int_t)(AliL3Transform::GetSolenoidField()+0.5)) {
+  case 2:
+    sfield = AliMagFMaps::k2kG;
+    break;
+  case 4:
+    sfield = AliMagFMaps::k4kG;
+    break;
+  case 5:
+    sfield = AliMagFMaps::k5kG;
+    break;
+  default:
+    ::Fatal("AliL3Transform::GetSolenoidField", "Incorrect magnetic field");
+  }
+  AliMagF* field = new AliMagFMaps("Maps","Maps", 2, 1., 10., sfield);
+  AliTracker::SetFieldMap(field,kTRUE);
+
+  // Init PID
+  AliPID pid;
 
   // create the signal handler
   AliGDCInterruptHandler* handler = new AliGDCInterruptHandler;
