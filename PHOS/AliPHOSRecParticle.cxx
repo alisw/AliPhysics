@@ -32,6 +32,7 @@
 #include "AliPHOSRecParticle.h"
 #include "AliPHOSGetter.h" 
 #include "AliPHOSGeometry.h" 
+#include "AliLog.h"
 
 //____________________________________________________________________________
   AliPHOSRecParticle::AliPHOSRecParticle(): fPHOSTrackSegment(0)  ,  fDebug( kFALSE )
@@ -146,28 +147,30 @@ const Int_t AliPHOSRecParticle::GetPrimaryIndex() const
   // in Digits which forms EmcRecPoint, which produces TrackSegment,
   // which the RecParticle is created from
 
+
   AliPHOSGetter * gime = AliPHOSGetter::Instance() ; 
   if (!gime) 
-    Error("GetPrimary", "Getter not yet instantiated") ; 
-  gime->Event(gime->EventNumber(), "SRTPX") ; 
-
+    AliError(Form("Getter not yet instantiated")) ; 
+  gime->Event(gime->EventNumber(), "DRTX") ; 
+  
   // Get TrackSegment corresponding to this RecParticle
   AliPHOSTrackSegment *ts          = gime->TrackSegment(fPHOSTrackSegment);
 
   // Get EmcRecPoint corresponding to this TrackSegment
   Int_t emcRecPointIndex = ts->GetEmcIndex();
+
   AliPHOSEmcRecPoint  *emcRecPoint = gime->EmcRecPoint(emcRecPointIndex);
 
   // Get the list of digits forming this EmcRecParticle
   Int_t  nDigits   = emcRecPoint->GetDigitsMultiplicity();
   Int_t *digitList = emcRecPoint->GetDigitsList();
-
+  
   // Find the digit with maximum amplitude
   AliPHOSDigit *digit = 0;
   Int_t maxAmp = 0;
   Int_t bestDigitIndex = -1;
   for (Int_t iDigit=0; iDigit<nDigits; iDigit++) {
-    digit = gime->Digit(digitList[nDigits]);
+    digit = gime->Digit(digitList[iDigit]);
     if (digit->GetAmp() > maxAmp) {
       maxAmp = digit->GetAmp();
       bestDigitIndex = iDigit;
@@ -185,6 +188,8 @@ const Int_t AliPHOSRecParticle::GetPrimaryIndex() const
   Int_t    trackHadron  = 0;
   for (Int_t iPrim=0; iPrim<nPrimary; iPrim++) {
     Int_t iPrimary = digit->GetPrimary(iPrim);
+    if (iPrimary == -1)
+      continue ; 
     track = gime->Primary(iPrimary);
     Int_t pdgCode   = track->GetPdgCode();
     Double_t energy = track->Energy();
