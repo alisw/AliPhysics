@@ -140,6 +140,74 @@ const TParticle * AliPHOSRecParticle::GetPrimary() const
 } 
   
 //____________________________________________________________________________
+const Int_t AliPHOSRecParticle::GetPrimaryIndex() const  
+{
+  // Get the primary track index in TreeK which deposits the most energy
+  // in Digits which forms EmcRecPoint, which produces TrackSegment,
+  // which the RecParticle is created from
+
+  AliPHOSGetter * gime = AliPHOSGetter::Instance() ; 
+  if (!gime) 
+    Error("GetPrimary", "Getter not yet instantiated") ; 
+  gime->Event(gime->EventNumber(), "SRTPX") ; 
+
+  // Get TrackSegment corresponding to this RecParticle
+  AliPHOSTrackSegment *ts          = gime->TrackSegment(fPHOSTrackSegment);
+
+  // Get EmcRecPoint corresponding to this TrackSegment
+  Int_t emcRecPointIndex = ts->GetEmcIndex();
+  AliPHOSEmcRecPoint  *emcRecPoint = gime->EmcRecPoint(emcRecPointIndex);
+
+  // Get the list of digits forming this EmcRecParticle
+  Int_t  nDigits   = emcRecPoint->GetDigitsMultiplicity();
+  Int_t *digitList = emcRecPoint->GetDigitsList();
+
+  // Find the digit with maximum amplitude
+  AliPHOSDigit *digit = 0;
+  Int_t maxAmp = 0;
+  Int_t bestDigitIndex = -1;
+  for (Int_t iDigit=0; iDigit<nDigits; iDigit++) {
+    digit = gime->Digit(digitList[nDigits]);
+    if (digit->GetAmp() > maxAmp) {
+      maxAmp = digit->GetAmp();
+      bestDigitIndex = iDigit;
+    }
+  }
+  digit = gime->Digit(digitList[bestDigitIndex]);
+
+  // Get the list of primary tracks producing this digit
+  // and find which track has more track energy.
+  Int_t nPrimary = digit->GetNprimary();
+  TParticle *track = 0;
+  Double_t energyEM     = 0;
+  Double_t energyHadron = 0;
+  Int_t    trackEM      = 0;
+  Int_t    trackHadron  = 0;
+  for (Int_t iPrim=0; iPrim<nPrimary; iPrim++) {
+    Int_t iPrimary = digit->GetPrimary(iPrim);
+    track = gime->Primary(iPrimary);
+    Int_t pdgCode   = track->GetPdgCode();
+    Double_t energy = track->Energy();
+    if (pdgCode==22 || TMath::Abs(pdgCode)==11) {
+      if (energy > energyEM) {
+	energyEM = energy;
+	trackEM = iPrimary;
+      }
+    }
+    else {
+      if (energy > energyHadron) {
+	energyHadron = energy;
+	trackHadron = iPrimary;
+      }
+    }
+  }
+  // Preferences are given to electromagnetic tracks
+  if (trackEM     != 0) return trackEM;     // track is gamma or e+-
+  if (trackHadron != 0) return trackHadron; // track is hadron
+  return -12345;                              // no track found :(
+}
+
+//____________________________________________________________________________
 const TParticle * AliPHOSRecParticle::GetPrimary(Int_t index) const  
 {
   // Get one of the primary particles at the origine of the RecParticle
