@@ -1619,7 +1619,7 @@ Int_t AliTPCtrackerMI::UpdateClusters(AliTPCseed& t,  Int_t nr) {
   }
     
   AliTPCclusterMI *cl=0;
-  UInt_t index=0;
+  Int_t index=0;
   //
   Double_t roady = 1.;
   Double_t roadz = 1.;
@@ -1638,12 +1638,15 @@ Int_t AliTPCtrackerMI::UpdateClusters(AliTPCseed& t,  Int_t nr) {
     }
   }
 
+  if (index<0) return 0;
+  UInt_t uindex = index;
+
   if (krow) {    
-    //cl = krow.FindNearest2(y+10,z,roady,roadz,index);      
-    cl = krow.FindNearest2(y,z,roady,roadz,index);      
+    //cl = krow.FindNearest2(y+10,z,roady,roadz,uindex);      
+    cl = krow.FindNearest2(y,z,roady,roadz,uindex);      
   }
 
-  if (cl) t.fCurrentClusterIndex1 = krow.GetIndex(index);   
+  if (cl) t.fCurrentClusterIndex1 = krow.GetIndex(uindex);   
   t.fCurrentCluster  = cl;
 
   return 1;
