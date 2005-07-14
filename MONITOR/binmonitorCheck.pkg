@@ -17,7 +17,7 @@ PACKBLIBS := $(ROOTCLIBS) $(SYSLIBS)
 ifdef DATE_ROOT
 
 ELIBSDIR:=${DATE_MONITOR_DIR}/${DATE_SYS}
-ELIBS:= ESD STEER RAWData monitor shift TPCbase TPCsim TPCrec ITSbase ITSsim ITSraw AliL3Src AliL3Comp AliL3Misc AliL3Hough AliL3ITS
+ELIBS:= ESD STEER RAWData monitor shift TPCbase TPCsim TPCrec ITSbase ITSsim ITSrec AliL3Src AliL3Comp AliL3Misc AliL3Hough AliL3ITS
 EINCLUDE+= ${DATE_COMMON_DEFS} ${DATE_MONITOR_DIR}
 
 endif
