@@ -123,6 +123,7 @@ void AliPHOSReconstructor::FillESD(AliRunLoader* runLoader, AliESD* esd) const
     et->SetPHOSposition(xyz) ; 
     et->SetPHOSsignal  (rp->Energy()) ; 
     et->SetPHOSpid     (rp->GetPID()) ;
+    et->SetLabel       (rp->GetPrimaryIndex());
     // add the track to the esd object
     esd->AddTrack(et);
     delete et;
