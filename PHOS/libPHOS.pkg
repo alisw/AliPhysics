@@ -25,7 +25,8 @@ SRCS          =    AliPHOS.cxx AliPHOSv0.cxx AliPHOSv1.cxx AliPHOSv2.cxx \
 		 AliPHOSFastGlobalReconstruction.cxx AliPHOSGetter.cxx \
 	         AliPHOSGammaJet.cxx \
 		 AliPHOSGridFile.cxx AliPHOSRawStream.cxx \
-                 AliPHOSGetterLight.cxx AliPHOSOnlineMonitor.cxx AliPHOSTracker.cxx
+                 AliPHOSGetterLight.cxx AliPHOSOnlineMonitor.cxx \
+		 AliPHOSTracker.cxx AliPHOSCalibData.cxx
 
 HDRS:= $(SRCS:.cxx=.h) 
 
