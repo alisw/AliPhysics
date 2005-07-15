@@ -45,6 +45,8 @@ class AliTRDcluster : public AliCluster {
   void    Set5pad()                    { SetBit(k5pad); fNPads=5; }
   void    SetLarge()                   { SetBit(kLarge);fNPads=6; }
   Int_t   GetNPads() const {return fNPads;}
+  void    SetCenter(Float_t center){fCenter =center;}
+  Float_t GetCenter() const {return fCenter;}
  protected:
 
   enum {
@@ -59,7 +61,9 @@ class AliTRDcluster : public AliCluster {
   Int_t    fTimeBin;        // Time bin number within the detector
   Float_t  fQ;              // amplitude 
   Int_t    fNPads;          // number of pads in cluster
-  ClassDef(AliTRDcluster,1) // Cluster for the TRD
+  Float_t  fCenter;         // center of the cluster relative to the pad 
+
+  ClassDef(AliTRDcluster,2) // Cluster for the TRD
  
 };
 
