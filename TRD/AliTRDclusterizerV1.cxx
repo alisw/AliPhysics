@@ -251,8 +251,8 @@ Bool_t AliTRDclusterizerV1::MakeClusters()
 
         // Loop through the chamber and find the maxima 
         for ( row = 0;  row <  nRowMax;    row++) {
-	  //          for ( col = 2;  col <  nColMax;    col++) {
-          for ( col = 4;  col <  nColMax-2;    col++) {
+	  for ( col = 2;  col <  nColMax;    col++) {
+	    //for ( col = 4;  col <  nColMax-2;    col++) {
             for (time = 0; time < nTimeTotal; time++) {
 
               Int_t signalL = TMath::Abs(digits->GetDataUnchecked(row,col  ,time));
@@ -271,7 +271,8 @@ Bool_t AliTRDclusterizerV1::MakeClusters()
 // 	      }
 	      // Look for the maximum
               if (signalM >= maxThresh) {
-                if ( (signalL<=signalM) && (signalR<=signalM) && (signalL+signalR)>sigThresh ) {
+                if ( (TMath::Abs(signalL)<=signalM) && (TMath::Abs(signalR)<=signalM) && 
+		     (TMath::Abs(signalL)+TMath::Abs(signalR))>sigThresh ) {
                   // Maximum found, mark the position by a negative signal
                   digits->SetDataUnchecked(row,col-1,time,-signalM);
 		}
@@ -420,7 +421,7 @@ Bool_t AliTRDclusterizerV1::MakeClusters()
 		  Double_t check = fPar->LUTposition(iplan,clusterSignal[0]
                                                           ,clusterSignal[1]
 					                  ,clusterSignal[2]);
-		  //		  clusterPads[1] = check;
+		  //		  Float_t diff = clusterPads[1] -  check;
 
 		}
 
@@ -446,7 +447,7 @@ Bool_t AliTRDclusterizerV1::MakeClusters()
 			  ,clusterCharge
 			  ,clusterTracks
 			  ,clusterSig
-			  ,iType);
+			   ,iType,clusterPads[1]);
 
               }
             } 

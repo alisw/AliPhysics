@@ -866,9 +866,10 @@ Bool_t AliTRDdigitizer::MakeDigits()
           Double_t rowOffset = padPlane->GetPadRowOffset(rowE,xyz[2]);
 
           // The pad column (rphi-direction)
-          Int_t    colE      = padPlane->GetPadColNumber(xyz[1],rowOffset);
-          if (colE < 0) continue;
-          Double_t colOffset = padPlane->GetPadColOffset(colE,xyz[1]);
+	  Float_t offsetTilt     = padPlane->GetTiltOffset(rowOffset);   // MI change
+          Int_t    colE      = padPlane->GetPadColNumber(xyz[1]+offsetTilt,rowOffset);
+          if (colE < 0) continue;	  
+          Double_t colOffset = padPlane->GetPadColOffset(colE,xyz[1]+offsetTilt);
 
 	  // Convert the position to drift time, using either constant drift velocity or
           // time structure of drift cells (non-isochronity, GARFIELD calculation).

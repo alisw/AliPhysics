@@ -2638,17 +2638,12 @@ Double_t AliTRDtracker::GetTiltFactor(const AliTRDcluster* c) {
 //
 //  Returns correction factor for tilted pads geometry 
 //
-  AliTRDpadPlane *padPlane = fPar->GetPadPlane(0,0);
-  Double_t h01 = sin(TMath::Pi() / 180.0 * padPlane->GetTiltingAngle());
-  //Double_t h01 = sin(TMath::Pi() / 180.0 * fPar->GetTiltingAngle());
   Int_t det = c->GetDetector();    
   Int_t plane = fGeom->GetPlane(det);
-
-  //if((plane == 1) || (plane == 3) || (plane == 5)) h01=-h01;
-  if((plane == 0) || (plane == 2) || (plane == 4)) h01=-h01;
+  AliTRDpadPlane *padPlane = fPar->GetPadPlane(plane,0);
+  Double_t h01 = TMath::Tan(-TMath::Pi() / 180.0 * padPlane->GetTiltingAngle());
 
   if(fNoTilt) h01 = 0;
-  
   return h01;
 }
 
