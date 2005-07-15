@@ -381,7 +381,6 @@ void Config()
         // New MUONv1 version (geometry defined via builders)
         AliMUON *MUON = new AliMUONv1("MUON", "default");
 	((AliMUONv1*)MUON)->SetStepManagerVersionDE(true);
-	MUON->SetSegmentationType(2);// default wise to old (1), new (2)
 	MUON->AddGeometryBuilder(new AliMUONSt1GeometryBuilderV2(MUON));
 	MUON->AddGeometryBuilder(new AliMUONSt2GeometryBuilderV2(MUON));
 	MUON->AddGeometryBuilder(new AliMUONSlatGeometryBuilder(MUON));
