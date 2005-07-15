@@ -105,7 +105,11 @@ void AliGenMC::Init()
     case kBPsiPrimeDiMuon:
     case kPiToMu:
     case kKaToMu:
+    case kWToMuon:
+    case kWToCharmToMuon:
 	fChildSelect[0]=kMuonMinus;
+	break;
+    case kWToCharm:
 	break;
     case kHadronicD:
 	fChildSelect[0]=kPiPlus;
