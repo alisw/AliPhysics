@@ -164,7 +164,7 @@ const Int_t AliPHOSRecParticle::GetPrimaryIndex() const
   // Get the list of digits forming this EmcRecParticle
   Int_t  nDigits   = emcRecPoint->GetDigitsMultiplicity();
   Int_t *digitList = emcRecPoint->GetDigitsList();
-  
+
   // Find the digit with maximum amplitude
   AliPHOSDigit *digit = 0;
   Int_t maxAmp = 0;
@@ -184,10 +184,10 @@ const Int_t AliPHOSRecParticle::GetPrimaryIndex() const
   TParticle *track = 0;
   Double_t energyEM     = 0;
   Double_t energyHadron = 0;
-  Int_t    trackEM      = 0;
-  Int_t    trackHadron  = 0;
+  Int_t    trackEM      = -1;
+  Int_t    trackHadron  = -1;
   for (Int_t iPrim=0; iPrim<nPrimary; iPrim++) {
-    Int_t iPrimary = digit->GetPrimary(iPrim);
+    Int_t iPrimary = digit->GetPrimary(iPrim+1);
     if (iPrimary == -1)
       continue ; 
     track = gime->Primary(iPrimary);
@@ -207,9 +207,9 @@ const Int_t AliPHOSRecParticle::GetPrimaryIndex() const
     }
   }
   // Preferences are given to electromagnetic tracks
-  if (trackEM     != 0) return trackEM;     // track is gamma or e+-
-  if (trackHadron != 0) return trackHadron; // track is hadron
-  return -12345;                              // no track found :(
+  if (trackEM     != -1) return trackEM;     // track is gamma or e+-
+  if (trackHadron != -1) return trackHadron; // track is hadron
+  return -12345;                             // no track found :(
 }
 
 //____________________________________________________________________________
