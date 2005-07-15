@@ -42,7 +42,7 @@ class AliTRDclusterizer : public TNamed {
 
   TObjArray*      RecPoints() {if (!fRecPoints) fRecPoints = new TObjArray(400); return fRecPoints;}
   virtual void    AddCluster(Double_t *pos, Int_t det, Double_t amp, Int_t *tracks
-			   , Double_t *sig, Int_t iType);
+			     , Double_t *sig, Int_t iType, Float_t center = 0);
   void            ResetRecPoints() {if (fRecPoints) fRecPoints->Delete();}
 
 

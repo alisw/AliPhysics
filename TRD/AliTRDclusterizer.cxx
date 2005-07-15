@@ -262,7 +262,7 @@ Bool_t AliTRDclusterizer::WriteClusters(Int_t det)
 
 //_____________________________________________________________________________
 void AliTRDclusterizer::AddCluster(Double_t *pos, Int_t det, Double_t amp
-				 , Int_t *tracks, Double_t *sig, Int_t iType)
+				   , Int_t *tracks, Double_t *sig, Int_t iType, Float_t center)
 {
   //
   // Add a cluster for the TRD
@@ -278,7 +278,7 @@ void AliTRDclusterizer::AddCluster(Double_t *pos, Int_t det, Double_t amp
   c->SetSigmaY2(sig[0]);   
   c->SetSigmaZ2(sig[1]);
   c->SetLocalTimeBin(((Int_t) pos[2]));
-
+  c->SetCenter(center);
   switch (iType) {
   case 0:
     c->Set2pad();
