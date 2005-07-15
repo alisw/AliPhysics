@@ -417,7 +417,7 @@ Int_t AliTRDpadPlane::GetPadRowNumber(Double_t z) const
 
 //_____________________________________________________________________________
 Int_t AliTRDpadPlane::GetPadColNumber(Double_t rphi
-                                    , Double_t rowOffset) const
+				      , Double_t /*rowOffset*/) const
 {
   //
   // Finds the pad column number for a given global rphi-position
@@ -429,11 +429,13 @@ Int_t AliTRDpadPlane::GetPadColNumber(Double_t rphi
   Int_t    middle    = 0;
   Double_t rphiShift = 0;
 
-  //
+  // MI change don't apply tilting angle here - better to do it directly on hit level
   // Take the tilting angle into account by shifting the hit position
   // into the opposite direction
-  //
-  rphiShift = rphi - (fTiltingTan * rowOffset);
+  // 
+
+
+  rphiShift = rphi ;
 
   if ((rphiShift > GetCol0()) || (rphiShift < GetColEnd())) {
 

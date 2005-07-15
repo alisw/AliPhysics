@@ -34,7 +34,7 @@ class AliTRDpadPlane : public TObject {
 
   Int_t    GetPadRowNumber(Double_t z) const;
   Int_t    GetPadColNumber(Double_t rphi, Double_t rowOffset) const;
-
+  Double_t GetTiltOffset(Double_t rowOffset) const {return fTiltingTan * (rowOffset-0.5*fLengthOPad);}
   Double_t GetPadRowOffset(Int_t row, Double_t z) const
                                              { if ((row < 0) || (row >= fNrows))
                                                  return -1.0;
