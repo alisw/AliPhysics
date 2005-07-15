@@ -188,8 +188,9 @@ const Int_t AliPHOSRecParticle::GetPrimaryIndex() const
   Int_t    trackHadron  = -1;
   for (Int_t iPrim=0; iPrim<nPrimary; iPrim++) {
     Int_t iPrimary = digit->GetPrimary(iPrim+1);
-    if (iPrimary == -1)
-      continue ; 
+    if (iPrimary == -1 || TMath::Abs(iPrimary)>10000000)
+      continue ;  //PH 10000000 is the shift of the track 
+                  //PH indexes in the underlying event
     track = gime->Primary(iPrimary);
     Int_t pdgCode   = track->GetPdgCode();
     Double_t energy = track->Energy();
