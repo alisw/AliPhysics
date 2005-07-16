@@ -37,11 +37,11 @@ AliLeading::AliLeading()
   //
   // Constructor
   //
-  fNassoc=0;
+  fNassoc =  0;
   fLeading = new TLorentzVector(0.,0.,0.,0.);
-  fLow = -TMath::Pi()/2.0;
-  fnBin=45;
-  fCorr = TArrayI(fnBin);
+  fLow     = -TMath::Pi()/2.0;
+  fnBin    = 45;
+  fCorr    = TArrayI(fnBin);
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -86,6 +86,8 @@ void AliLeading::FindLeading(AliJetReader *reader)
 	  idxMax = i;
       }
   }
+  
+  if (idxMax == -1) return;
   
   // fill correlation array
   fLeading = (TLorentzVector*) lvArray->At(idxMax);
