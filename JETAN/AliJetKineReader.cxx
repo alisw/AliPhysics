@@ -98,6 +98,7 @@ void AliJetKineReader::FillMomentumArray(Int_t event)
     fAliHeader = fRunLoader->GetHeader();
         
     // Loop over particles
+    Int_t* flag  = new Int_t[nt];
     for (Int_t it = 0; it < nt; it++) {
 	TParticle *part = stack->Particle(it);
 	Int_t   status  = part->GetStatusCode();
@@ -110,12 +111,18 @@ void AliJetKineReader::FillMomentumArray(Int_t event)
 	    || (pt < ptMin)             
 	    ) continue; 
 
+	Float_t p       = part->P();
+	Float_t eta     = part->Eta();
+	Float_t phi     = part->Phi();
+
 	if (((AliJetKineReaderHeader*)fReaderHeader)->FastSimTPC()) {
+	    // Charged particles only
 	    Float_t charge = TDatabasePDG::Instance()->GetParticle(pdg)->Charge();
-	      if (
-		  (charge == 0)  
-		  || (gRandom->Rndm() < 0.1) 
-		  ) continue;
+	    if (charge == 0)              continue;
+	    // Simulate efficiency
+	    if (!Efficiency(p, eta, phi)) continue;
+	    // Simulate resolution
+	    SmearMomentum(3, p);
 	}
 	
 	fMass = part->GetCalcMass();
@@ -126,7 +133,62 @@ void AliJetKineReader::FillMomentumArray(Int_t event)
 	    TLorentzVector(part->Px(),part->Py(),part->Pz(), part->Energy());
 	goodTrack++;
   }
+    fSignalFlag.Set(goodTrack,flag);
     printf("\nNumber of good tracks %d \n", goodTrack);
 }
 
+
+Float_t AliJetKineReader::SmearMomentum(Int_t ind, Float_t p)
+{
+//
+//  The relative momentum error, i.e. 
+//  (delta p)/p = sqrt (a**2 + (b*p)**2) * 10**-2,
+//  where typically a = 0.75 and b = 0.16 - 0.24 depending on multiplicity
+//  (the lower value is for dn/d(eta) about 2000, and the higher one for 8000)
+//
+//  If we include information from TRD b will be by a factor 2/3 smaller.
+//
+//  ind = 1: high multiplicity
+//  ind = 2: low  multiplicity
+//  ind = 3: high multiplicity + TRD
+//  ind = 4: low  multiplicity + TRD
+
+    Float_t pSmeared;
+    Float_t a = 0.75;
+    Float_t b = 0.12;
+
+    if (ind == 1) b = 0.12;
+    if (ind == 2) b = 0.08;
+    if (ind == 3) b = 0.12;    
+    if (ind == 4) b = 0.08;    
+    
+    Float_t sigma = p*TMath::Sqrt(a*a+b*b*p*p)*0.01;
+    pSmeared = p + gRandom->Gaus(0., sigma);
+    return pSmeared;
+}
+Bool_t AliJetKineReader::Efficiency(Float_t p, Float_t /*eta*/, Float_t phi)
+{
+//
+// Fast simulation of geometrical acceptance and tracking efficiency
+//
+//  Tracking
+    Float_t eff = 0.99;
+    if (p < 0.5) eff -= (0.5-p)*0.2/0.3;
+// Geometry
+    if (p > 0.5) {
+	phi *= 180. / TMath::Pi();
+	// Sector number 0 - 17
+	Int_t isec  = Int_t(phi / 20.);
+	// Sector centre
+	Float_t phi0 = isec * 20. + 10.;
+	Float_t phir = TMath::Abs(phi-phi0);
+	// 2 deg of dead space
+	if (phir > 9.) eff = 0.;
+    }
+    if (gRandom->Rndm() > eff) {
+	return kFALSE;
+    } else {
+	return kTRUE;
+    }
+}
 
