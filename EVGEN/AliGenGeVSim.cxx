@@ -87,18 +87,25 @@ ClassImp(AliGenGeVSim)
 
 //////////////////////////////////////////////////////////////////////////////////
 
-AliGenGeVSim::AliGenGeVSim() : AliGenerator(-1) {
+AliGenGeVSim::AliGenGeVSim() : 
+  AliGenerator(-1),
+  fModel(0),
+  fPsi(0),
+  fIsMultTotal(kTRUE),
+  fPtFormula(0),
+  fYFormula(0),
+  fPhiFormula(0),
+  fCurrentForm(0),
+  fPtYHist(0),
+  fPartTypes(0) {
   //
   //  Default constructor
   // 
 
-  fPsi = 0;
-  fIsMultTotal = kTRUE;
-
-  //PH  InitFormula();
   for (Int_t i=0; i<4; i++)  
     fPtYFormula[i] = 0;
-  fPartTypes = 0;
+  for (Int_t i=0; i<2; i++)
+    fHist[i] = 0;
 }
 
 //////////////////////////////////////////////////////////////////////////////////
@@ -192,24 +199,93 @@ Bool_t AliGenGeVSim::CheckAcceptance(Float_t p[3]) {
 
 //////////////////////////////////////////////////////////////////////////////////
 
+// Deconvoluted Pt Y formula
+
+static Double_t aPtForm(Double_t * x, Double_t * par) {
+  // ptForm: pt -> x[0] ,  mass -> [0] , temperature -> [1]
+  // Description as string: " x * exp( -sqrt([0]*[0] + x*x) / [1] )"
+
+    return x[0] * TMath::Exp( -sqrt(par[0]*par[0] + x[0]*x[0]) / par[1]);
+  }
+
+static  Double_t aYForm(Double_t * x, Double_t * par) {
+  // y Form: y -> x[0] , sigmaY -> [0]
+  // Description as string: " exp ( - x*x / (2 * [0]*[0] ) )"
+
+    return TMath::Exp ( - x[0]*x[0] / (2 * par[0]*par[0] ) );
+  }
+
+// Models 1-3
+// Description as strings:
+
+//  const char *kFormE = " ( sqrt([0]*[0] + x*x) * cosh(y) ) ";
+//  const char *kFormG = " ( 1 / sqrt( 1 - [2]*[2] ) ) ";
+//  const char *kFormYp = "( [2]*sqrt(([0]*[0]+x*x)*cosh(y)*cosh(y)-[0]*[0])/([1]*sqrt(1-[2]*[2]))) ";
+
+//  const char* kFormula[3] = {
+//    " x * %s * exp( -%s / [1]) ", 
+//    " (x * %s) / ( exp( %s / [1]) - 1 ) ",
+//    " x*%s*exp(-%s*%s/[1])*((sinh(%s)/%s)+([1]/(%s*%s))*(sinh(%s)/%s-cosh(%s)))"
+//  };
+//   printf(kFormula[0], kFormE, kFormE);
+//   printf(kFormula[1], kFormE, kFormE);
+//   printf(kFormula[2], kFormE, kFormG, kFormE, kFormYp, kFormYp, kFormG, kFormE, kFormYp, kFormYp, kFormYp);
+
+
+static Double_t aPtYFormula0(Double_t *x, Double_t * par) {
+  // pt -> x , Y -> y
+  // mass -> [0] , temperature -> [1] , expansion velocity -> [2]
+
+  Double_t aFormE = TMath::Sqrt(par[0]*par[0] + x[0]*x[0]) * TMath::CosH(x[1]);
+  return x[0] * aFormE * TMath::Exp(-aFormE/par[1]);
+}
+
+static Double_t aPtYFormula1(Double_t *x, Double_t * par) {
+  // pt -> x , Y -> y
+  // mass -> [0] , temperature -> [1] , expansion velocity -> [2]
+
+  Double_t aFormE = TMath::Sqrt(par[0]*par[0] + x[0]*x[0]) * TMath::CosH(x[1]);
+  return x[0] * aFormE / ( TMath::Exp( aFormE / par[1]) - 1 );
+}
+
+static Double_t aPtYFormula2(Double_t *x, Double_t * par) {
+  // pt -> x , Y -> y
+  // mass -> [0] , temperature -> [1] , expansion velocity -> [2]
+
+  Double_t aFormE = TMath::Sqrt(par[0]*par[0] + x[0]*x[0]) * TMath::CosH(x[1]);
+  Double_t aFormG = 1 / TMath::Sqrt( 1 - par[2]*par[2] );
+  Double_t aFormYp = par[2]*TMath::Sqrt( (par[0]*par[0] + x[0]*x[0]) 
+					 * TMath::CosH(x[1])*TMath::CosH(x[1])
+					 - par[0]*par[0] )
+    /( par[1]*TMath::Sqrt(1-par[2]*par[2]));
+
+  return x[0] * aFormE * TMath::Exp( - aFormG * aFormE / par[1])
+    *( TMath::SinH(aFormYp)/aFormYp 
+       + par[1]/(aFormG*aFormE) 
+       * ( TMath::SinH(aFormYp)/aFormYp-TMath::CosH(aFormYp) ) );
+}
+
+// Phi Flow Formula
+
+static Double_t aPhiForm(Double_t * x, Double_t * par) {
+  // phi -> x
+  // Psi -> [0] , Direct Flow -> [1] , Elliptical Flow -> [2]
+  // Description as string: " 1 + 2*[1]*cos(x-[0]) + 2*[2]*cos(2*(x-[0])) "
+
+  return 1 + 2*par[1]*TMath::Cos(x[0]-par[0]) 
+    + 2*par[2]*TMath::Cos(2*(x[0]-par[0]));
+}
+
 void AliGenGeVSim::InitFormula() {
   //
   // private function
   //
   // Initalizes formulas used in GeVSim.
-  // Manages strings and creates TFormula objects from strings
-  // 
 
   // Deconvoluted Pt Y formula
 
-  // ptForm: pt -> x ,  mass -> [0] , temperature -> [1]
-  // y Form: y -> x , sigmaY -> [0]
-
-  const char* kPtForm  = " x * exp( -sqrt([0]*[0] + x*x) / [1] )";
-  const char* kYForm   = " exp ( - x*x / (2 * [0]*[0] ) )";
-
-  fPtFormula  = new TF1("gevsimPt", kPtForm, 0, 3);
-  fYFormula   = new TF1("gevsimRapidity", kYForm, -3, 3);
+  fPtFormula  = new TF1("gevsimPt", &aPtForm, 0, 3, 2);
+  fYFormula   = new TF1("gevsimRapidity", &aYForm, -3, 3,1);
 
   fPtFormula->SetParNames("mass", "temperature");
   fPtFormula->SetParameters(1., 1.);
@@ -224,37 +300,18 @@ void AliGenGeVSim::InitFormula() {
 
   // Models 1-3
 
-  // pt -> x , Y -> y
-  // mass -> [0] , temperature -> [1] , expansion velocity -> [2]
+  fPtYFormula[0] = new TF2("gevsimPtY_2", &aPtYFormula0, 0, 3, -2, 2, 2);
 
-  
-  const char *kFormE = " ( sqrt([0]*[0] + x*x) * cosh(y) ) ";
-  const char *kFormG = " ( 1 / sqrt( 1 - [2]*[2] ) ) ";
-  const char *kFormYp = "( [2]*sqrt(([0]*[0]+x*x)*cosh(y)*cosh(y)-[0]*[0])/([1]*sqrt(1-[2]*[2]))) ";
+  fPtYFormula[1] = new TF2("gevsimPtY_3", &aPtYFormula1, 0, 3, -2, 2, 2);
 
-  const char* kFormula[3] = {
-    " x * %s * exp( -%s / [1]) ", 
-    " (x * %s) / ( exp( %s / [1]) - 1 ) ",
-    " x*%s*exp(-%s*%s/[1])*((sinh(%s)/%s)+([1]/(%s*%s))*(sinh(%s)/%s-cosh(%s)))"
-  };
-
-  const char* kParamNames[3] = {"mass", "temperature", "expVel"};
-
-  char buffer[1024];
-
-  sprintf(buffer, kFormula[0], kFormE, kFormE);
-  fPtYFormula[0] = new TF2("gevsimPtY_2", buffer, 0, 3, -2, 2);
-
-  sprintf(buffer, kFormula[1], kFormE, kFormE);
-  fPtYFormula[1] = new TF2("gevsimPtY_3", buffer, 0, 3, -2, 2);
-
-  sprintf(buffer, kFormula[2], kFormE, kFormG, kFormE, kFormYp, kFormYp, kFormG, kFormE, kFormYp, kFormYp, kFormYp);
-  fPtYFormula[2] = new TF2("gevsimPtY_4", buffer, 0, 3, -2, 2);
+  fPtYFormula[2] = new TF2("gevsimPtY_4", &aPtYFormula2, 0, 3, -2, 2, 3);
 
   fPtYFormula[3] = 0;
 
 
   // setting names & initialisation
+
+  const char* kParamNames[3] = {"mass", "temperature", "expVel"};
 
   Int_t i, j;
   for (i=0; i<3; i++) {    
@@ -272,11 +329,7 @@ void AliGenGeVSim::InitFormula() {
   
   // Phi Flow Formula
 
-  // phi -> x
-  // Psi -> [0] , Direct Flow -> [1] , Ellipticla Flow -> [2]
-
-  const char* kPhiForm = " 1 + 2*[1]*cos(x-[0]) + 2*[2]*cos(2*(x-[0])) ";
-  fPhiFormula = new TF1("gevsimPhi", kPhiForm, 0, 2*TMath::Pi());
+  fPhiFormula = new TF1("gevsimPhi", &aPhiForm, 0, 2*TMath::Pi(), 3);
 
   fPhiFormula->SetParNames("psi", "directed", "elliptic");
   fPhiFormula->SetParameters(0., 0., 0.);
