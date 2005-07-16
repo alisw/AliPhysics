@@ -41,12 +41,12 @@ AliJetFinder::AliJetFinder()
   //
   // Constructor
   //
-  fOut = 0;
-  fJets = new AliJet();
+  fOut     = 0x0;
+  fJets    = new AliJet();
   fGenJets = new AliJet();
   fLeading = new AliLeading();
-  fReader = 0;
-  fPlots = 0;
+  fReader  = 0x0;
+  fPlots   = 0x0;
   SetPlotMode(kFALSE);
 }
 
@@ -140,7 +140,6 @@ void AliJetFinder::WriteRHeaderToFile()
 void AliJetFinder::GetGenJets()
 {
 // Get the generated jet information from mc header
-  fGenJets->SetNinput(1);
   AliHeader* alih = fReader->GetAliHeader(); 
   if (alih == 0) return;
   AliGenEventHeader * genh = alih->GenEventHeader();
@@ -155,6 +154,7 @@ void AliJetFinder::GetGenJets()
     m[i]=1;
     k[i]=i;
   }
+  fGenJets->SetNinput(nj);
   fGenJets->SetMultiplicities(m);
   fGenJets->SetInJet(k);
 }
