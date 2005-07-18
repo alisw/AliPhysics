@@ -1576,10 +1576,10 @@ AliGenGeVSim* GeVSimStandard(Float_t mult, Float_t vn)
     AliGeVSimParticle *pr =  new AliGeVSimParticle(kProton,  1, 0.05 * mm, 0.25, sigma_eta) ;
     AliGeVSimParticle *ne =  new AliGeVSimParticle(kNeutron, 1, 0.05 * mm, 0.25, sigma_eta) ;
 //
+// Set Elliptic Flow properties 	
 
     Float_t pTsaturation = 2. ;
 
-// Set Elliptic Flow properties 	
     pp->SetEllipticParam(vn,pTsaturation,0.) ;
     pm->SetEllipticParam(vn,pTsaturation,0.) ;
     p0->SetEllipticParam(vn,pTsaturation,0.) ;
@@ -1591,15 +1591,15 @@ AliGenGeVSim* GeVSimStandard(Float_t mult, Float_t vn)
     km->SetEllipticParam(vn,pTsaturation,0.) ;
 //
 // Set Direct Flow properties	
-    pp->SetDirectedParam(vn,pTsaturation,0.) ;
-    pm->SetDirectedParam(vn,pTsaturation,0.) ;
-    p0->SetDirectedParam(vn,pTsaturation,0.) ;
-    pr->SetDirectedParam(vn,pTsaturation,0.) ;
-    ne->SetDirectedParam(vn,pTsaturation,0.) ;
-    ks->SetDirectedParam(vn,pTsaturation,0.) ;
-    kl->SetDirectedParam(vn,pTsaturation,0.) ;
-    kp->SetDirectedParam(vn,pTsaturation,0.) ;
-    km->SetDirectedParam(vn,pTsaturation,0.) ;
+    pp->SetDirectedParam(vn,1.0,0.) ;
+    pm->SetDirectedParam(vn,1.0,0.) ;
+    p0->SetDirectedParam(vn,1.0,0.) ;
+    pr->SetDirectedParam(vn,1.0,0.) ;
+    ne->SetDirectedParam(vn,1.0,0.) ;
+    ks->SetDirectedParam(vn,1.0,0.) ;
+    kl->SetDirectedParam(vn,1.0,0.) ;
+    kp->SetDirectedParam(vn,1.0,0.) ;
+    km->SetDirectedParam(vn,1.0,0.) ;
 //
 // Add particles to the list
     gener->AddParticleType(pp) ;
