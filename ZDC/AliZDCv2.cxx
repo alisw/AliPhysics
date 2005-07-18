@@ -604,14 +604,11 @@ void AliZDCv2::CreateZDC()
 
   // Parameters for EM calorimeter geometry
   // NB -> parameters used ONLY in CreateZDC()
-  Float_t fDimZEMPb  = 0.15*(TMath::Sqrt(2.));  // z-dimension of the Pb slice
-  Float_t fDimZEMAir = 0.001; 			// scotch
-  Float_t fFibRadZEM = 0.0315; 			// External fiber radius (including cladding)
+  Float_t kDimZEMPb  = 0.15*(TMath::Sqrt(2.));  // z-dimension of the Pb slice
+  Float_t kFibRadZEM = 0.0315; 			// External fiber radius (including cladding)
   Int_t   fDivZEM[3] = {92, 0, 20}; 		// Divisions for EM detector
-  Float_t fDimZEM0 = 2*fDivZEM[2]*(fDimZEMPb+fDimZEMAir+fFibRadZEM*(TMath::Sqrt(2.)));
-  fZEMLength = fDimZEM0;
-  Float_t fDimZEM[6] = {fDimZEM0, 3.5, 3.5, 45., 0., 0.}; // Dimensions of EM detector
-  Float_t fFibZEM2 = fDimZEM[2]/TMath::Sin(fDimZEM[3]*kDegrad)-fFibRadZEM;
+  Float_t fDimZEM[6] = {fZEMLength, 3.5, 3.5, 45., 0., 0.}; // Dimensions of EM detector
+  Float_t fFibZEM2 = fDimZEM[2]/TMath::Sin(fDimZEM[3]*kDegrad)-kFibRadZEM;
   Float_t fFibZEM[3] = {0., 0.0275, fFibZEM2};  // Fibers for EM calorimeter
 
   
@@ -730,7 +727,7 @@ void AliZDCv2::CreateZDC()
 
   gMC->Gsdvn("ZETR", "ZEM ", fDivZEM[2], 1); 	     	// Tranches 
   
-  dimPb[0] = fDimZEMPb;					// Lead slices 
+  dimPb[0] = kDimZEMPb;					// Lead slices 
   dimPb[1] = fDimZEM[2];
   dimPb[2] = fDimZEM[1];
   //dimPb[3] = fDimZEM[3]; //controllare
@@ -743,12 +740,12 @@ void AliZDCv2::CreateZDC()
   
   // --- Position the lead slices in the tranche 
   Float_t zTran = fDimZEM[0]/fDivZEM[2]; 
-  Float_t zTrPb = -zTran+fDimZEMPb;
+  Float_t zTrPb = -zTran+kDimZEMPb;
   gMC->Gspos("ZEL0", 1, "ZETR", zTrPb, 0., 0., 0, "ONLY");
-  gMC->Gspos("ZEL1", 1, "ZETR", fDimZEMPb, 0., 0., 0, "ONLY");
+  gMC->Gspos("ZEL1", 1, "ZETR", kDimZEMPb, 0., 0., 0, "ONLY");
   
   // --- Vacuum zone (to be filled with fibres)
-  dimVoid[0] = (zTran-2*fDimZEMPb)/2.;
+  dimVoid[0] = (zTran-2*kDimZEMPb)/2.;
   dimVoid[1] = fDimZEM[2];
   dimVoid[2] = fDimZEM[1];
   dimVoid[3] = 90.-fDimZEM[3];
@@ -780,11 +777,11 @@ void AliZDCv2::CreateZDC()
   gMC->Gspos("ZEM ", 2,"ALIC", fPosZEM[0], fPosZEM[1], fPosZEM[2]+fDimZEM[0], irot1, "ONLY");
   
   // --- Adding last slice at the end of the EM calorimeter 
-  Float_t zLastSlice = fPosZEM[2]+fDimZEMPb+2*fDimZEM[0];
+  Float_t zLastSlice = fPosZEM[2]+kDimZEMPb+2*fDimZEM[0];
   gMC->Gspos("ZEL2", 1,"ALIC", fPosZEM[0], fPosZEM[1], zLastSlice, irot1, "ONLY");
   //Ch debug
   //printf("\n ZEM lenght = %f cm\n",2*fZEMLength);
-  //printf("\n ZEM -> %f < z < %f cm\n",fPosZEM[2],fPosZEM[2]+2*fZEMLength+zLastSlice+fDimZEMPb);
+  //printf("\n ZEM -> %f < z < %f cm\n",fPosZEM[2],fPosZEM[2]+2*fZEMLength+zLastSlice+kDimZEMPb);
   
 }
  
