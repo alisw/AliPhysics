@@ -18,6 +18,9 @@ class AliJetKineReader : public AliJetReader
   AliJetKineReader();
   virtual ~AliJetKineReader();
 
+  Bool_t Efficiency(Float_t p, Float_t /*eta*/, Float_t phi);
+  Float_t SmearMomentum(Int_t ind, Float_t p);
+
   // Getters
   Float_t GetParticleMass() const {return fMass;}        // returns mass of the Track
   Int_t   GetParticlePdgCode() const {return fPdgC;}     // returns Pdg code
