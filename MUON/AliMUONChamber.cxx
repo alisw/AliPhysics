@@ -36,7 +36,6 @@ AliMUONChamber::AliMUONChamber()
     fdGas(0.),
     fdAlu(0.),
     fZ(0.),
-    fnsec(1),
     frMin(0.),
     frMax(0.),
     fCurrentCorrel(1), // to avoid mistakes if ChargeCorrelInit is not called
@@ -55,7 +54,6 @@ AliMUONChamber::AliMUONChamber(Int_t id)
     fdGas(0.),
     fdAlu(0.),
     fZ(0.),
-    fnsec(1),
     frMin(0.),
     frMax(0.),
     fCurrentCorrel(1), // to avoid mistakes if ChargeCorrelInit is not called
@@ -130,11 +128,9 @@ Bool_t  AliMUONChamber::IsSensId(Int_t volId) const
 void AliMUONChamber::ChargeCorrelationInit() {
   // Initialisation of charge correlation for current hit
   // the value is stored, and then used by Disintegration
-  if (fnsec==1) 
-    fCurrentCorrel =1;
-  else 
-    // exponential is here to avoid eventual problems in 0 
-    // factor 2 because chargecorrel is q1/q2 and not q1/qtrue
+
+  // exponential is here to avoid eventual problems in 0 
+  // factor 2 because chargecorrel is q1/q2 and not q1/qtrue
     fCurrentCorrel = TMath::Exp(gRandom->Gaus(0,fResponse->ChargeCorrel()/2));
 }
 
@@ -158,14 +154,11 @@ void AliMUONChamber::Init(Int_t flag)
 
   if (!flag)    AliFatal("wrong segmentation type.");
 
-
   if (fSegmentation2->At(0)) 
     ((AliMUONGeometrySegmentation*) fSegmentation2->At(0))->Init(fId);
-
-  if (fnsec==2) {
-    if (fSegmentation2->At(1))
-      ((AliMUONGeometrySegmentation*) fSegmentation2->At(1))->Init(fId);
-  }
+  if (fSegmentation2->At(1))
+    ((AliMUONGeometrySegmentation*) fSegmentation2->At(1))->Init(fId);
+ 
 }
 // //_________________________________________________________________
 // void    AliMUONChamber::SigGenInit(AliMUONHit *hit)
@@ -178,12 +171,9 @@ void AliMUONChamber::Init(Int_t flag)
 //   Float_t z = hit->Z();
 //   Int_t  id = hit->DetElemId();
 
-//   if (fnsec==1) {
-//     ((AliMUONGeometrySegmentation*) fSegmentation2->At(0))->SigGenInit(id, x, y, z) ;
-//   } else {
-//     ((AliMUONGeometrySegmentation*) fSegmentation2->At(0))->SigGenInit(id, x, y, z) ;
-//     ((AliMUONGeometrySegmentation*) fSegmentation2->At(1))->SigGenInit(id, x, y, z) ;
-//   }
+//   ((AliMUONGeometrySegmentation*) fSegmentation2->At(0))->SigGenInit(id, x, y, z) ;
+//   ((AliMUONGeometrySegmentation*) fSegmentation2->At(1))->SigGenInit(id, x, y, z) ;
+
 // }
 
 //_______________________________________________________
@@ -216,7 +206,7 @@ void AliMUONChamber::DisIntegration(AliMUONHit *hit,
   nnew=0;
     
   // Cathode plane loop
-  for (Int_t i=1; i<=fnsec; i++) {
+  for (Int_t i = 1; i <= 2; i++) {
     Float_t qcath = qtot * (i==1? fCurrentCorrel : 1/fCurrentCorrel);
 
     AliMUONGeometrySegmentation* segmentation=

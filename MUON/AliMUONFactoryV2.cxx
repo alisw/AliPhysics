@@ -177,9 +177,6 @@ void AliMUONFactoryV2::BuildStation1()
     //--------------------------------------------------------
     // Configuration for Chamber TC1/2  (Station 1) ----------           
 
-
-    fMUON->SetNsec(chamber,2);
-
     // cathode 0
     segmentation[0]->Add(id0,      bendSt1);
     segmentation[0]->Add(id0 +  3, nonbendSt1);
@@ -231,9 +228,6 @@ void AliMUONFactoryV2::BuildStation2()
 
     //--------------------------------------------------------
     // Configuration for Chamber TC3/4  (Station 2) ----------           
-
-
-    fMUON->SetNsec(chamber,2);
 
     // cathode 0
     segmentation[0]->Add(id0,      bendSt2);
@@ -333,8 +327,6 @@ void AliMUONFactoryV2::BuildStation3()
         
     // id detection elt for chamber 1
     Int_t id0 = (chamber+1)*100;
-
-    fMUON->SetNsec(chamber,2);
 
     // cathode 0
     // type 220000
@@ -507,9 +499,6 @@ void AliMUONFactoryV2::BuildStation4()
 
     //--------------------------------------------------------
     // Configuration for Chamber TC6/7  (Station 4) ----------           
-
-
-    fMUON->SetNsec(chamber,2);
 
     // cathode 0
     // type 122330
@@ -700,9 +689,6 @@ void AliMUONFactoryV2::BuildStation5()
 
     //--------------------------------------------------------
     // Configuration for Chamber TC8/9  (Station 5) ----------           
-
-
-    fMUON->SetNsec(chamber,2);
 
     // cathode 0
     // type 122330
@@ -928,7 +914,6 @@ void AliMUONFactoryV2::BuildStation6()
       chamberSeg[0] = new AliMUONGeometrySegmentation(fMUON->Chamber(chamber).GetGeometry());
       chamberSeg[1] = new AliMUONGeometrySegmentation(fMUON->Chamber(chamber).GetGeometry());
 
-      fMUON->SetNsec(chamber,2);
       Int_t icount=chamber-10;  // chamber counter (0 1 2 3)
       Int_t id0=(10+icount+1)*100;
 
@@ -999,8 +984,6 @@ void AliMUONFactoryV2::BuildStation(AliMUON* where, Int_t stationNumber)
   //
   // Version 0
   //
-  // First define the number of planes that are segmented (1 or 2) by a call
-  // to SetNsec.
   // Then chose for each chamber (chamber plane) the segmentation
   // and response model.
   // They should be equal for the two chambers of each station. In a future

@@ -65,10 +65,6 @@ class AliMUONChamber : public TObject
       return (AliMUONGeometrySegmentation*) (*fSegmentation2)[isec-1];
   }
 
-// Get number of segmentation sectors  
-  virtual Int_t Nsec() const        {return fnsec;}
-// Set number of segmented cathodes (1 or 2)  
-  virtual void  SetNsec(Int_t nsec) {fnsec=nsec;}
 //
 // Member function forwarding to the segmentation and response models
 //
@@ -122,7 +118,6 @@ class AliMUONChamber : public TObject
   Float_t fdGas; // half gaz gap
   Float_t fdAlu; // half Alu width  
   Float_t fZ;    // Z position (cm)
-  Int_t   fnsec; // number of semented cathode planes
   Float_t frMin; // innermost sensitive radius
   Float_t frMax; // outermost sensitive radius
   Float_t fCurrentCorrel; //! charge correlation for current hit.

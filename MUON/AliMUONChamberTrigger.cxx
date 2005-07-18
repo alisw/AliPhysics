@@ -63,7 +63,7 @@ void AliMUONChamberTrigger::DisIntegration(AliMUONHit* hit,
 
   Float_t qp;
   nnew=0;
-  for (Int_t i=1; i<=fnsec; i++) {
+  for (Int_t i = 1; i <= 2; i++) {
     AliMUONGeometrySegmentation * segmentation=
       (AliMUONGeometrySegmentation*) (*fSegmentation2)[i-1];
     

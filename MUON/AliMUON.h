@@ -82,7 +82,6 @@ class AliMUON : public  AliDetector
 					AliMUONGeometrySegmentation* segmentation);
 
     virtual void   SetResponseModel(Int_t id, AliMUONResponse *response);
-    virtual void   SetNsec(Int_t id, Int_t nsec);
 
     // Set Stepping Parameters
     virtual void   SetMaxStepGas(Float_t p1);

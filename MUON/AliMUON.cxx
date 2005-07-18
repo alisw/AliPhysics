@@ -405,12 +405,6 @@ void   AliMUON::SetResponseModel(Int_t id, AliMUONResponse *response)
     ((AliMUONChamber*) fChambers->At(id))->SetResponseModel(response);
 }
 //____________________________________________________________________
-void   AliMUON::SetNsec(Int_t id, Int_t nsec)
-{
-// Set number of segmented cathods for chamber id
-    ((AliMUONChamber*) fChambers->At(id))->SetNsec(nsec);
-}
-//____________________________________________________________________
 AliDigitizer* AliMUON::CreateDigitizer(AliRunDigitizer* manager) const
 {
   return new AliMUONDigitizerv2(manager);
