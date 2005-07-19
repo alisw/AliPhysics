@@ -1638,8 +1638,8 @@ Int_t AliTPCtrackerMI::UpdateClusters(AliTPCseed& t,  Int_t nr) {
     }
   }
 
-  if (index<0) return 0;
-  UInt_t uindex = index;
+  //  if (index<0) return 0;
+  UInt_t uindex = TMath::Abs(index);
 
   if (krow) {    
     //cl = krow.FindNearest2(y+10,z,roady,roadz,uindex);      
