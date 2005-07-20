@@ -19,4 +19,6 @@
 24-jun-2005 NvE In the IceF2k docs and the icef2k.cc example macro the output file is
                 not explicitly closed to allow interactive investigation of the output
                 data tree when the macro is run in an interactive ROOT/CINT session.
+20-jul-2005 NvE RDMC index "off by one" problem fixed in IceF2k.cxx when setting the
+                bin contents for a waveform histogram.
  

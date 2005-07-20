@@ -789,7 +789,7 @@ void IceF2k::PutHits()
 
   for (Int_t jbin=1; jbin<=fEvent.wf[iwf].ndigi; jbin++)
   {
-   histo.SetBinContent(jbin,fEvent.wf[iwf].digi[jbin]);
+   histo.SetBinContent(jbin,fEvent.wf[iwf].digi[jbin-1]);
   }
 
   omx->SetWaveform(&histo,omx->GetNwaveforms()+1);
