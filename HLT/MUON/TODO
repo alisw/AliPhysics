@@ -133,3 +133,11 @@ For the distribution the scripts can be copied into the bin directory.
 
 ===============================================================================
 
+12) Wed Jul 20 11:05:33 SAST 2005
+
+Change .hpp files to .h files,
+Remove obsolete IOInterface classes.
+Cleanup code to make it conform to AliRoot coding style.
+
+===============================================================================
+
