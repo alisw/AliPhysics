@@ -54,8 +54,7 @@ AliMUONDigitizer::AliMUONDigitizer() :
 	fTDList(0),
 	fTDCounter(0),
 	fMask(0),
-	fSignal(0),
-	fDebug(0)
+	fSignal(0)
 {
 // Default constructor.
 // Initializes all pointers to NULL.
@@ -74,8 +73,7 @@ AliMUONDigitizer::AliMUONDigitizer(AliRunDigitizer* manager) :
 	fTDList(0),
 	fTDCounter(0),
 	fMask(0),
-	fSignal(0),
-	fDebug(0)
+	fSignal(0)
 {
 // Constructor which should be used rather than the default constructor.
 // Initializes all pointers to NULL.
@@ -128,7 +126,7 @@ Bool_t AliMUONDigitizer::Init()
 }
 
 //------------------------------------------------------------------------
-void AliMUONDigitizer::Exec(Option_t* option)
+void AliMUONDigitizer::Exec(Option_t* /*option*/)
 {
 // The main work loop starts here. 
 // The digitization process is broken up into two steps: 
@@ -138,7 +136,6 @@ void AliMUONDigitizer::Exec(Option_t* option)
 //    stream. Done in CreateDigits()
 
 	AliDebug(1, "Running digitiser.");
-	ParseOptions(option);
 
 	if (fManager->GetNinputs() == 0)
 	{
@@ -468,26 +465,6 @@ Bool_t  AliMUONDigitizer::FetchTriggerPointer(AliMUONLoader* loader)
       fTrigDec = new AliMUONTriggerDecision(loader,0,fMUONData);
   
   return kTRUE;
-}
-//------------------------------------------------------------------------
-void AliMUONDigitizer::ParseOptions(Option_t* options)
-{
-// Called by the Exec method. ParseOptions should parse the option string given to the Exec method.
-// 
-// The following options are defined:
-// 	"debug" - Sets the debug level to 99, which will show all debug messages.
-// 	"deb"   - Same as "debug", implemented for backward comparability.
-//
-// If an invalid option is specified it is simply ignored.
-
-	TString optionString = options;
-	if (optionString.Data() == "debug" || 
-		optionString.Data() == "deb"   // maintained for compatability.
-	   )
-	{
-		AliInfo("Called with option \"debug\".");
-		SetDebug(99);
-	}
 }
 
 //------------------------------------------------------------------------

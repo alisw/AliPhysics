@@ -34,20 +34,13 @@
 #include "AliMUONClusterFinderVS.h"
 #include "AliMUONClusterInput.h"
 #include "AliMUONRawCluster.h"
-#include "AliRawReader.h" // for raw data
 #include "AliLog.h"
-
-
-const Int_t AliMUONClusterReconstructor::fgkDefaultPrintLevel = 0;
 
 ClassImp(AliMUONClusterReconstructor) // Class implementation in ROOT context
 
 //__________________________________________________________________________
   AliMUONClusterReconstructor::AliMUONClusterReconstructor(AliLoader* loader, AliMUONData* data)
-  : TObject(),
-    fMUONData(0),
-    fPrintLevel(fgkDefaultPrintLevel),
-    fDebug(0)
+  : TObject()
 {
   // Standard Constructor
 
@@ -56,7 +49,7 @@ ClassImp(AliMUONClusterReconstructor) // Class implementation in ROOT context
 
   // initialize container
   if (data == 0x0)
-    fMUONData  = new AliMUONData(fLoader,"MUON","MUON");
+    fMUONData = new AliMUONData(fLoader,"MUON","MUON");
   else
     fMUONData = data;
   
@@ -70,8 +63,7 @@ ClassImp(AliMUONClusterReconstructor) // Class implementation in ROOT context
 AliMUONClusterReconstructor::AliMUONClusterReconstructor()
   : TObject(),
     fMUONData(0),
-    fPrintLevel(fgkDefaultPrintLevel),
-    fDebug(0),
+    fRecModel(0),
     fLoader(0)
 {
   // Default Constructor
@@ -105,6 +97,8 @@ AliMUONClusterReconstructor::~AliMUONClusterReconstructor(void)
 
   if (fMUONData)
     delete fMUONData;
+  if (fRecModel)
+    delete fRecModel;
 
   return;
 }
@@ -153,7 +147,6 @@ void AliMUONClusterReconstructor::Digits2Clusters()
 	idDE_prev = idDE;
       }
 
-
       Int_t idSize = n2;
 
       // loop over id DE
@@ -174,8 +167,6 @@ void AliMUONClusterReconstructor::Digits2Clusters()
 	      new(lhits2[n2++]) AliMUONDigit(*digit);
 	  }
 	}
-
-	//	if (id[idDE] < 500 && id[idDE] > 299) continue; // temporary patch til St2 geometry is not yet ok (CF)
 
 	// cluster finder
 	if (fRecModel) {

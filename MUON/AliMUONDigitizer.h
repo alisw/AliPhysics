@@ -41,17 +41,9 @@ public:
 	// Override the TTask Exec method.
 	virtual void Exec(Option_t* option = 0);
 
-	Int_t GetDebug() const {return fDebug;}       // Get debug level.
-	void SetDebug(Int_t level){fDebug = level;}   // Set debug level.  
-  
-
 protected:
         AliMUONDigitizer(const AliMUONDigitizer& rhs);
         AliMUONDigitizer& operator=(const AliMUONDigitizer& rhs);
-
-
-	// Parses the option string given to the Exec method.
-	virtual void ParseOptions(Option_t* options);
 
 	/* Digitizers inheriting from AliMUONDigitizer should implement this abstract method 
 	   so that TransientDigit objects are generated and put onto the fTDList.
@@ -191,9 +183,6 @@ protected:
 
 
 private:
-
-	Int_t fDebug;                   //! Debug level.
-
 
 	ClassDef(AliMUONDigitizer, 1)   // MUON merging/digitization
 };    

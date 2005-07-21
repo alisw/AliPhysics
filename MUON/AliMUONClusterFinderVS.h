@@ -55,8 +55,6 @@ class AliMUONClusterFinderVS : public TObject
     virtual void AddRawCluster(AliMUONRawCluster& cluster);
 //  Set tracks for debugging    
     virtual void SetTracks(Int_t t1, Int_t t2) {fTrack[0]=t1; fTrack[1]=t2;}
-//  debug level
-    void SetDebugLevel(Int_t level) {fDebugLevel = level;}
     void SetGhostChi2Cut(Float_t cut) {fGhostChi2Cut = cut;}
 // get raw cluster pointer 
     TClonesArray*  GetRawClusters() {return fRawClusters;}
@@ -112,7 +110,6 @@ class AliMUONClusterFinderVS : public TObject
     // Selected track for debugging
     Int_t                    fTrack[2];        // Only digits with main contributions from these tracks are
     // considered 
-    Int_t                    fDebugLevel;      // prinout control
     
     //  Return pointer to raw clusters    
     ClassDef(AliMUONClusterFinderVS,2) //Class for clustering and reconstruction of space points

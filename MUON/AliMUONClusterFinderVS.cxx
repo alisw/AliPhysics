@@ -46,7 +46,6 @@ AliMUONClusterFinderVS::AliMUONClusterFinderVS()
     fHitMap[0] = 0;
     fHitMap[1] = 0;
     fTrack[0]=fTrack[1]=-1;
-    fDebugLevel = 0; // make silent default
     fGhostChi2Cut = 1e6; // nothing done by default
     fSeg2[0]    = 0;
     fSeg2[1]    = 0;
@@ -1543,7 +1542,7 @@ Float_t AliMUONClusterFinderVS::SingleMathiesonFit(AliMUONRawCluster *c, Int_t c
     
     clusterInput.Fitter()->SetFCN(fcnS1);
     clusterInput.Fitter()->mninit(2,10,7);
-    clusterInput.Fitter()->SetPrintLevel(-1+fDebugLevel);
+    clusterInput.Fitter()->SetPrintLevel(-1 + AliLog::GetGlobalDebugLevel());
     arglist[0]=-1;
     clusterInput.Fitter()->mnexcm("SET NOW", arglist, 0, ierflag);
 // Set starting values 
@@ -1605,7 +1604,7 @@ Float_t AliMUONClusterFinderVS::CombiSingleMathiesonFit(AliMUONRawCluster * /*c*
     AliMUONClusterInput& clusterInput = *(AliMUONClusterInput::Instance());
     clusterInput.Fitter()->SetFCN(fcnCombiS1);
     clusterInput.Fitter()->mninit(2,10,7);
-    clusterInput.Fitter()->SetPrintLevel(-1+fDebugLevel);
+    clusterInput.Fitter()->SetPrintLevel(-1 + AliLog::GetGlobalDebugLevel());
     arglist[0]=-1;
     clusterInput.Fitter()->mnexcm("SET NOW", arglist, 0, ierflag);
     static Double_t vstart[2];
@@ -1702,7 +1701,7 @@ Bool_t AliMUONClusterFinderVS::DoubleMathiesonFit(AliMUONRawCluster * /*c*/, Int
     AliMUONClusterInput& clusterInput = *(AliMUONClusterInput::Instance());
     clusterInput.Fitter()->SetFCN(fcnS2);
     clusterInput.Fitter()->mninit(5,10,7);
-    clusterInput.Fitter()->SetPrintLevel(-1+fDebugLevel);
+    clusterInput.Fitter()->SetPrintLevel(-1 + AliLog::GetGlobalDebugLevel());
     arglist[0]=-1;
     clusterInput.Fitter()->mnexcm("SET NOW", arglist, 0, ierflag);
 // Set starting values 
@@ -1781,7 +1780,7 @@ Float_t AliMUONClusterFinderVS::CombiDoubleMathiesonFit(AliMUONRawCluster * /*c*
     AliMUONClusterInput& clusterInput = *(AliMUONClusterInput::Instance());
     clusterInput.Fitter()->SetFCN(fcnCombiS2);
     clusterInput.Fitter()->mninit(6,10,7);
-    clusterInput.Fitter()->SetPrintLevel(-1+fDebugLevel);
+    clusterInput.Fitter()->SetPrintLevel(-1 + AliLog::GetGlobalDebugLevel());
     arglist[0]=-1;
     clusterInput.Fitter()->mnexcm("SET NOW", arglist, 0, ierflag);
 // Set starting values 

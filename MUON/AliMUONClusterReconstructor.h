@@ -26,9 +26,7 @@ class AliMUONClusterReconstructor : public TObject
   AliMUONClusterReconstructor(AliLoader* loader, AliMUONData* data = 0x0); // Constructor
   virtual ~AliMUONClusterReconstructor(void); // Destructor
 
-  // Interface with AliMUONData
-  virtual void       SetTreeAddress(){};
-    
+ 
   // Cluster Finding & Trigger
   virtual void   Digits2Clusters();
   virtual void   Trigger2Trigger() ;
@@ -42,9 +40,6 @@ class AliMUONClusterReconstructor : public TObject
   void   SetRecoModel(AliMUONClusterFinderVS* rec) {if (fRecModel) delete fRecModel; fRecModel = rec;} //AZ
   //  void   SetRecoModel(AliMUONClusterFinderAZ* rec) {fRecModel = rec;}
 
-  // print level
-  Int_t GetPrintLevel(void) const {return fPrintLevel;}
-  void SetPrintLevel(Int_t printLevel) {fPrintLevel = printLevel;}
 
  protected:
   AliMUONClusterReconstructor();                  // Default constructor
@@ -52,18 +47,11 @@ class AliMUONClusterReconstructor : public TObject
   AliMUONClusterReconstructor& operator=(const AliMUONClusterReconstructor& rhs); // assignment operator
 
  private:
-  static const Int_t fgkDefaultPrintLevel;     // Default print level
 
   AliMUONData*            fMUONData;           //! Data container for MUON subsystem 
   AliMUONClusterFinderVS* fRecModel;           //! cluster recontruction model
   //AliMUONClusterFinderAZ* fRecModel;           //! cluster recontruction model
 
- // print level
-  Int_t fPrintLevel;
-
-  // debug
-  Int_t fDebug;
-  
   // alice loader
   AliLoader* fLoader;
 
