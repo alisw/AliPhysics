@@ -89,11 +89,13 @@ void AliJetKineReader::FillMomentumArray(Int_t event)
     Int_t goodTrack = 0;
     // Clear array
     ClearArray();
-
+    // Get event from runloader
     fRunLoader->GetEvent(event);
+    // Get the stack
     AliStack* stack = fRunLoader->Stack();
+    // Number of primaries
     Int_t nt = stack->GetNprimary();
-    // Get cuts set by user
+    // Get cuts set by user and header
     Double_t ptMin = ((AliJetKineReaderHeader*) fReaderHeader)->GetPtCut();
     fAliHeader = fRunLoader->GetHeader();
         
@@ -105,36 +107,64 @@ void AliJetKineReader::FillMomentumArray(Int_t event)
 	Int_t   pdg     = TMath::Abs(part->GetPdgCode());
 	Float_t pt      = part->Pt(); 
 	
+	// Skip non-final state particles, neutrinos and particles with pt < pt_min 
+	
 	if (
 	    (status != 1)            
-	    || (pdg == 12 || pdg == 14) 
+	    || (pdg == 12 || pdg == 14 || pdg == 16) 
 	    || (pt < ptMin)             
 	    ) continue; 
 
+
 	Float_t p       = part->P();
+	Float_t p0      = p;
 	Float_t eta     = part->Eta();
 	Float_t phi     = part->Phi();
 
+        // Fast simulation of TPC if requested
 	if (((AliJetKineReaderHeader*)fReaderHeader)->FastSimTPC()) {
 	    // Charged particles only
 	    Float_t charge = TDatabasePDG::Instance()->GetParticle(pdg)->Charge();
-	    if (charge == 0)              continue;
+	    if (charge == 0)               continue;
 	    // Simulate efficiency
-	    if (!Efficiency(p, eta, phi)) continue;
+	    if (!Efficiency(p0, eta, phi)) continue;
 	    // Simulate resolution
-	    SmearMomentum(3, p);
-	}
+	    p = SmearMomentum(4, p0);
+	} // Fast TPC
+	
+        // Fast simulation of EMCAL if requested
+	if (((AliJetKineReaderHeader*)fReaderHeader)->FastSimEMCAL()) {
+	    Float_t charge = TDatabasePDG::Instance()->GetParticle(pdg)->Charge();
+	    // Charged particles
+	    if (charge != 0) {
+		// Simulate efficiency
+		if (!Efficiency(p0, eta, phi)) continue;
+		// Simulate resolution
+		p = SmearMomentum(4, p0);
+	    } // charged
+	    // Neutral particles
+	    // Exclude K0L, n, nbar
+	    if (pdg == kNeutron || pdg == kK0Long) continue;
+	} // Fast EMCAL
 	
 	fMass = part->GetCalcMass();
 	fPdgC = part->GetPdgCode();
 	// Fill momentum array
+	Float_t r  = p/p0;
+//	    	printf("smeared %13.3f %13.3f %13.3f\n", p0, p, r);
+	
+	Float_t px = r * part->Px(); 
+	Float_t py = r * part->Py(); 
+	Float_t pz = r * part->Pz();
+	Float_t m  = part->GetMass();
+	Float_t e  = TMath::Sqrt(px * px + py * py + pz * pz + m * m);
 	
 	new ((*fMomentumArray)[goodTrack]) 
-	    TLorentzVector(part->Px(),part->Py(),part->Pz(), part->Energy());
+	    TLorentzVector(px, py, pz, e);
 	goodTrack++;
   }
     fSignalFlag.Set(goodTrack,flag);
-    printf("\nNumber of good tracks %d \n", goodTrack);
+    printf("\nNumber of good tracks in event %d= %d \n",event,goodTrack);
 }
 
 
@@ -162,7 +192,7 @@ Float_t AliJetKineReader::SmearMomentum(Int_t ind, Float_t p)
     if (ind == 3) b = 0.12;    
     if (ind == 4) b = 0.08;    
     
-    Float_t sigma = p*TMath::Sqrt(a*a+b*b*p*p)*0.01;
+    Float_t sigma =  p * TMath::Sqrt(a * a + b * b * p * p)*0.01;
     pSmeared = p + gRandom->Gaus(0., sigma);
     return pSmeared;
 }

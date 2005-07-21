@@ -18,9 +18,6 @@ class AliJetKineReader : public AliJetReader
   AliJetKineReader();
   virtual ~AliJetKineReader();
 
-  Bool_t Efficiency(Float_t p, Float_t /*eta*/, Float_t phi);
-  Float_t SmearMomentum(Int_t ind, Float_t p);
-
   // Getters
   Float_t GetParticleMass() const {return fMass;}        // returns mass of the Track
   Int_t   GetParticlePdgCode() const {return fPdgC;}     // returns Pdg code
@@ -28,6 +25,9 @@ class AliJetKineReader : public AliJetReader
   // Setters
   void FillMomentumArray(Int_t event);
   void OpenInputFiles();
+  // Fast Simulation
+  Float_t SmearMomentum(Int_t ind, Float_t p);
+  Bool_t  Efficiency(Float_t pt, Float_t eta, Float_t phi);
 
  protected:
   AliRunLoader           *fRunLoader; // Pointer to the run loader
