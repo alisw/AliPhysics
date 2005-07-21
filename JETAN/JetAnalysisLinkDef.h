@@ -23,4 +23,5 @@
 #pragma link C++ class AliLeading+;
 #pragma link C++ class AliJetProductionData+;
 #pragma link C++ class AliJetProductionDataPDC2004+;
+#pragma link C++ class AliJetAnalysis+;
 #endif
