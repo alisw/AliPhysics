@@ -29,7 +29,8 @@ class AliLeading : public TObject
   Int_t GetNassoc() const { return fNassoc;}
   TLorentzVector* GetLeading() const { return fLeading;}
   TArrayI GetCorr() const { return fCorr;}
-
+  Bool_t LeadingFound() const { return fFound;}
+  
   // Setters
   // Others
   void FindLeading(AliJetReader* reader);
@@ -44,7 +45,8 @@ class AliLeading : public TObject
                 // between leading and assoc particles
   Int_t fnBin;  // number of bins in array
   Double_t fLow; // value corresponding to lower bound of bin 0
-
+  Bool_t  fFound;
+  
   ClassDef(AliLeading,1);
 };
 

@@ -42,6 +42,7 @@ AliLeading::AliLeading()
   fLow     = -TMath::Pi()/2.0;
   fnBin    = 45;
   fCorr    = TArrayI(fnBin);
+  fFound   = kFALSE;
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -87,10 +88,16 @@ void AliLeading::FindLeading(AliJetReader *reader)
       }
   }
   
-  if (idxMax == -1) return;
+  if (idxMax == -1) {
+      fFound = kFALSE;
+      Reset();
+      return;
+  }
   
   // fill correlation array
   fLeading = (TLorentzVector*) lvArray->At(idxMax);
+  fFound = kTRUE;
+  
   for (Int_t i = 0; i < nIn; i++) {
       if (i == idxMax) continue;
       TLorentzVector *lv = (TLorentzVector*) lvArray->At(i);
@@ -98,8 +105,9 @@ void AliLeading::FindLeading(AliJetReader *reader)
       if (dphi < fLow) dphi = 2.0 * TMath::Pi() + dphi;
       // find bin and fill array
       
-      Int_t iBin = (Int_t) TMath::Floor((dphi - fLow)
-					*((Double_t) fnBin) / (2.0 * TMath::Pi()));
+      Int_t iBin = (Int_t) 
+	  TMath::Floor((dphi - fLow)
+		       *((Double_t) fnBin) / (2.0 * TMath::Pi()));
       fCorr.AddAt(fCorr.At(iBin)+1,iBin);
   }
 }
@@ -109,7 +117,7 @@ void AliLeading::FindLeading(AliJetReader *reader)
 void AliLeading::Reset()
 
 {
-// Reset leding particle information
+// Reset leading particle information
   fLeading->SetPxPyPzE(0., 0., 0., 0.);
   fNassoc=0;
   fCorr.Reset();
