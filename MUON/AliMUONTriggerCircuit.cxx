@@ -394,6 +394,7 @@ void AliMUONTriggerCircuit::LoadXPos2(){
   Int_t idModule=Module(fIdCircuit);        // corresponding module Id.  
 // number of Y strips
   idDE = DetElemId(chamber, idModule);
+
   Int_t nStrY=AliMUONTriggerConstants::NstripY(ModuleNumber(idModule)); 
   Int_t idSector=segmentation->Sector(idDE, idModule,0); // corresp. sector
   Float_t width=segmentation->Dpx(idDE, idSector);      // corresponding strip width
@@ -522,9 +523,15 @@ Float_t AliMUONTriggerCircuit::GetX11Pos(Int_t istrip) const {
 
 Int_t AliMUONTriggerCircuit::DetElemId(Int_t ichamber, Int_t idModule)
 {
+// 07/22/05 bug found by Christophe. 
+// due to the inversion right-left of detElemId somewhere in the code
+// (AliMUONTriggerGeometrybuilder is correct!!!)
+// fixed temporary here. to be changed with official numbering of DeElemId.
+//
 // returns the detection element Id for given chamber and module
 // ichamber (from 11 to 14), idModule (from 11 to 97)
-    Int_t itmp = (idModule > 0) ? 0 : 50; // right=0, left=50   
+//    Int_t itmp = (idModule > 0) ? 0 : 50; // right=0, left=50   
+    Int_t itmp = (idModule > 0) ? 50 : 0; // right=50, left=0   
     return (ichamber*100)+itmp+(9-Int_t(TMath::Abs(idModule)/10));
 }
 
