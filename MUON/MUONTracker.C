@@ -24,7 +24,7 @@
 #include "AliRun.h"
 #include "AliMUON.h"
 #include "AliMUONData.h"
-#include "AliMUONEventReconstructor.h"
+#include "AliMUONTrackReconstructor.h"
 #endif
 
 void MUONTracker (Int_t FirstEvent = 0, Int_t LastEvent = 9999, Text_t *FileName = "galice.root")
@@ -54,7 +54,7 @@ void MUONTracker (Int_t FirstEvent = 0, Int_t LastEvent = 9999, Text_t *FileName
   Int_t nevents;
   nevents = RunLoader->GetNumberOfEvents();
   
-  AliMUONEventReconstructor* Reco = new AliMUONEventReconstructor(MUONLoader);
+  AliMUONTrackReconstructor* Reco = new AliMUONTrackReconstructor(MUONLoader);
   AliMUONData* muondata = Reco->GetMUONData();
 
   // Testing if Tracker has already been done
@@ -67,7 +67,7 @@ void MUONTracker (Int_t FirstEvent = 0, Int_t LastEvent = 9999, Text_t *FileName
     }
   }
   
-  // The right place for changing AliMUONEventReconstructor parameters
+  // The right place for changing AliMUONTrackReconstructor parameters
   // with respect to the default ones
   //   Reco->SetMaxSigma2Distance(100.0);
   //   Reco->SetPrintLevel(20);

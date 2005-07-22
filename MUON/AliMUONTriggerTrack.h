@@ -12,7 +12,7 @@
 
 #include <TObject.h>
 
-class AliMUONEventReconstructor;
+class AliMUONTrackReconstructor;
 
 class AliMUONTriggerTrack : public TObject 
 {

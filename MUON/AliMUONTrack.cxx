@@ -35,7 +35,7 @@
 
 #include "AliLog.h"
 
-#include "AliMUONEventReconstructor.h" 
+#include "AliMUONTrackReconstructor.h" 
 #include "AliMUONHitForRec.h" 
 #include "AliMUONSegment.h" 
 #include "AliMUONTrack.h"
@@ -61,7 +61,7 @@ AliMUONTrack::AliMUONTrack()
 {
   // Default constructor
   fgFitter = 0;
-  fEventReconstructor = 0;
+  fTrackReconstructor = 0;
   fTrackHitsPtr = new TObjArray(10);
   fTrackParamAtHit = new TClonesArray("AliMUONTrackParam",10);  
   fHitForRecAtHit = new TClonesArray("AliMUONHitForRec",10); 
@@ -69,11 +69,11 @@ AliMUONTrack::AliMUONTrack()
 }
 
   //__________________________________________________________________________
-AliMUONTrack::AliMUONTrack(AliMUONSegment* BegSegment, AliMUONSegment* EndSegment, AliMUONEventReconstructor* EventReconstructor)
+AliMUONTrack::AliMUONTrack(AliMUONSegment* BegSegment, AliMUONSegment* EndSegment, AliMUONTrackReconstructor* TrackReconstructor)
   : TObject()
 {
   // Constructor from two Segment's
-  fEventReconstructor = EventReconstructor; // link back to EventReconstructor
+  fTrackReconstructor = TrackReconstructor; // link back to TrackReconstructor
   // memory allocation for the TObjArray of pointers to reconstructed TrackHit's
   fTrackHitsPtr = new TObjArray(10);
   fNTrackHits = 0;
@@ -95,11 +95,11 @@ AliMUONTrack::AliMUONTrack(AliMUONSegment* BegSegment, AliMUONSegment* EndSegmen
 }
 
   //__________________________________________________________________________
-AliMUONTrack::AliMUONTrack(AliMUONSegment* Segment, AliMUONHitForRec* HitForRec, AliMUONEventReconstructor* EventReconstructor)
+AliMUONTrack::AliMUONTrack(AliMUONSegment* Segment, AliMUONHitForRec* HitForRec, AliMUONTrackReconstructor* TrackReconstructor)
   : TObject()
 {
   // Constructor from one Segment and one HitForRec
-  fEventReconstructor = EventReconstructor; // link back to EventReconstructor
+  fTrackReconstructor = TrackReconstructor; // link back to TrackReconstructor
   // memory allocation for the TObjArray of pointers to reconstructed TrackHit's
   fTrackHitsPtr = new TObjArray(10);
   fNTrackHits = 0;
@@ -147,11 +147,11 @@ AliMUONTrack::~AliMUONTrack()
 AliMUONTrack::AliMUONTrack (const AliMUONTrack& theMUONTrack)
   :  TObject(theMUONTrack)
 {
-  //fEventReconstructor = new AliMUONEventReconstructor(*MUONTrack.fEventReconstructor);
+  //fTrackReconstructor = new AliMUONTrackReconstructor(*MUONTrack.fTrackReconstructor);
                                // is it right ?
 			       // NO, because it would use dummy copy constructor
-			       // and AliMUONTrack is not the owner of its EventReconstructor 
-  fEventReconstructor = theMUONTrack.fEventReconstructor;
+			       // and AliMUONTrack is not the owner of its TrackReconstructor 
+  fTrackReconstructor = theMUONTrack.fTrackReconstructor;
   fTrackParamAtVertex = theMUONTrack.fTrackParamAtVertex;
 
  // necessary to make a copy of the objects and not only the pointers in TObjArray.
@@ -197,10 +197,10 @@ AliMUONTrack & AliMUONTrack::operator=(const AliMUONTrack& theMUONTrack)
   // base class assignement
   TObject::operator=(theMUONTrack);
 
-  // fEventReconstructor =  new AliMUONEventReconstructor(*MUONTrack.fEventReconstructor); 
+  // fTrackReconstructor =  new AliMUONTrackReconstructor(*MUONTrack.fTrackReconstructor); 
   // is it right ?
   // is it right ? NO because it would use dummy copy constructor
-  fEventReconstructor =  theMUONTrack.fEventReconstructor;
+  fTrackReconstructor =  theMUONTrack.fTrackReconstructor;
   fTrackParamAtVertex =  theMUONTrack.fTrackParamAtVertex;
 
  // necessary to make a copy of the objects and not only the pointers in TObjArray.
@@ -244,7 +244,7 @@ void AliMUONTrack::Remove()
   // and corresponding track hits from array of track hits.
   // Compress the TClonesArray it belongs to.
   AliMUONTrackHit *nextTrackHit;
-  AliMUONEventReconstructor *eventRec = this->fEventReconstructor;
+  AliMUONTrackReconstructor *eventRec = this->fTrackReconstructor;
   TClonesArray *trackHitsPtr = eventRec->GetRecTrackHitsPtr();
   // Loop over all track hits of track
   AliMUONTrackHit *trackHit = (AliMUONTrackHit*) fTrackHitsPtr->First();
@@ -422,7 +422,7 @@ void AliMUONTrack::MatchTriggerTrack(TClonesArray *triggerTrackArray)
   trackParam = *((AliMUONTrackParam*) fTrackParamAtHit->Last()); 
   trackParam.ExtrapToZ(AliMUONConstants::DefaultChamberZ(10)); // extrap to 1st trigger chamber
 
-  nSigmaCut2 =  fEventReconstructor->GetMaxSigma2Distance(); // nb of sigma**2 for cut
+  nSigmaCut2 =  fTrackReconstructor->GetMaxSigma2Distance(); // nb of sigma**2 for cut
   xTrack = trackParam.GetNonBendingCoor();
   yTrack = trackParam.GetBendingCoor();
   ySlopeTrack = trackParam.GetBendingSlope();
@@ -541,12 +541,12 @@ void AliMUONTrack::AddHitForRec(AliMUONHitForRec* HitForRec)
   // Add HitForRec to the track:
   // actual TrackHit into TClonesArray of TrackHit's for the event;
   // pointer to actual TrackHit in TObjArray of pointers to TrackHit's for the track
-  TClonesArray *recTrackHitsPtr = this->fEventReconstructor->GetRecTrackHitsPtr();
-  Int_t eventTrackHits = this->fEventReconstructor->GetNRecTrackHits();
+  TClonesArray *recTrackHitsPtr = this->fTrackReconstructor->GetRecTrackHitsPtr();
+  Int_t eventTrackHits = this->fTrackReconstructor->GetNRecTrackHits();
   // event
   AliMUONTrackHit* trackHit =
     new ((*recTrackHitsPtr)[eventTrackHits]) AliMUONTrackHit(HitForRec);
-  this->fEventReconstructor->SetNRecTrackHits(eventTrackHits + 1);
+  this->fTrackReconstructor->SetNRecTrackHits(eventTrackHits + 1);
   // track
   if (fTrackHitsPtr->IsOwner()) AliFatal("fTrackHitsPtr is owner");
   fTrackHitsPtr->Add(trackHit);
@@ -590,12 +590,12 @@ void AliMUONTrack::SetTrackParamAtVertex()
     firstHit->GetBendingCoor() - bendingSlope * firstHit->GetZ(); // same if from firstHit and  lastHit ????
   // signed bending momentum
   Double_t signedBendingMomentum =
-    fEventReconstructor->GetBendingMomentumFromImpactParam(impactParam);
+    fTrackReconstructor->GetBendingMomentumFromImpactParam(impactParam);
   trackParam->SetInverseBendingMomentum(1.0 / signedBendingMomentum);
   // bending slope at vertex
   trackParam->
     SetBendingSlope(bendingSlope +
-		    impactParam / fEventReconstructor->GetSimpleBPosition());
+		    impactParam / fTrackReconstructor->GetSimpleBPosition());
   // non bending slope
   Double_t nonBendingSlope =
     (firstHit->GetNonBendingCoor() - lastHit->GetNonBendingCoor()) / deltaZ;
@@ -832,7 +832,7 @@ Double_t MultipleScatteringAngle2(AliMUONTrackHit *TrackHit)
   // thickness in radiation length for the current track,
   // taking local angle into account
   radiationLength =
-    trackBeingFitted->GetEventReconstructor()->GetChamberThicknessInX0() *
+    trackBeingFitted->GetTrackReconstructor()->GetChamberThicknessInX0() *
     TMath::Sqrt(1.0 +
 		slopeBending * slopeBending + slopeNonBending * slopeNonBending);
   inverseBendingMomentum2 = 

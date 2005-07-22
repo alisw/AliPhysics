@@ -13,14 +13,12 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id$ */
-
 ////////////////////////////////////
 //
-// MUON event reconstructor in ALICE
+// MUON track reconstructor in ALICE (class renamed from AliMUONEventReconstructor)
 //
 // This class contains as data:
-// * the parameters for the event reconstruction
+// * the parameters for the track reconstruction
 // * a pointer to the array of hits to be reconstructed (the event)
 // * a pointer to the array of segments made with these hits inside each station
 // * a pointer to the array of reconstructed tracks
@@ -38,7 +36,7 @@
 #include <TFile.h>
 #include <TMatrixD.h> //AZ
 
-#include "AliMUONEventReconstructor.h"
+#include "AliMUONTrackReconstructor.h"
 #include "AliMUON.h"
 #include "AliMUONConstants.h"
 #include "AliMUONHitForRec.h"
@@ -60,32 +58,32 @@
 #include "AliTrackReference.h"
 
 //************* Defaults parameters for reconstruction
-const Double_t AliMUONEventReconstructor::fgkDefaultMinBendingMomentum = 3.0;
-const Double_t AliMUONEventReconstructor::fgkDefaultMaxBendingMomentum = 2000.0;
-const Double_t AliMUONEventReconstructor::fgkDefaultMaxChi2 = 100.0;
-const Double_t AliMUONEventReconstructor::fgkDefaultMaxSigma2Distance = 16.0;
-const Double_t AliMUONEventReconstructor::fgkDefaultBendingResolution = 0.01;
-const Double_t AliMUONEventReconstructor::fgkDefaultNonBendingResolution = 0.144;
-const Double_t AliMUONEventReconstructor::fgkDefaultChamberThicknessInX0 = 0.03;
+const Double_t AliMUONTrackReconstructor::fgkDefaultMinBendingMomentum = 3.0;
+const Double_t AliMUONTrackReconstructor::fgkDefaultMaxBendingMomentum = 2000.0;
+const Double_t AliMUONTrackReconstructor::fgkDefaultMaxChi2 = 100.0;
+const Double_t AliMUONTrackReconstructor::fgkDefaultMaxSigma2Distance = 16.0;
+const Double_t AliMUONTrackReconstructor::fgkDefaultBendingResolution = 0.01;
+const Double_t AliMUONTrackReconstructor::fgkDefaultNonBendingResolution = 0.144;
+const Double_t AliMUONTrackReconstructor::fgkDefaultChamberThicknessInX0 = 0.03;
 // Simple magnetic field:
 // Value taken from macro MUONtracking.C: 0.7 T, hence 7 kG
 // Length and Position from reco_muon.F, with opposite sign:
 // Length = ZMAGEND-ZCOIL
 // Position = (ZMAGEND+ZCOIL)/2
 // to be ajusted differently from real magnetic field ????
-const Double_t AliMUONEventReconstructor::fgkDefaultSimpleBValue = 7.0;
-const Double_t AliMUONEventReconstructor::fgkDefaultSimpleBLength = 428.0;
-const Double_t AliMUONEventReconstructor::fgkDefaultSimpleBPosition = 1019.0;
-const Int_t    AliMUONEventReconstructor::fgkDefaultRecTrackRefHits = 0;
-const Double_t AliMUONEventReconstructor::fgkDefaultEfficiency = 0.95;
+const Double_t AliMUONTrackReconstructor::fgkDefaultSimpleBValue = 7.0;
+const Double_t AliMUONTrackReconstructor::fgkDefaultSimpleBLength = 428.0;
+const Double_t AliMUONTrackReconstructor::fgkDefaultSimpleBPosition = 1019.0;
+const Int_t    AliMUONTrackReconstructor::fgkDefaultRecTrackRefHits = 0;
+const Double_t AliMUONTrackReconstructor::fgkDefaultEfficiency = 0.95;
 
-ClassImp(AliMUONEventReconstructor) // Class implementation in ROOT context
+ClassImp(AliMUONTrackReconstructor) // Class implementation in ROOT context
 
   //__________________________________________________________________________
-AliMUONEventReconstructor::AliMUONEventReconstructor(AliLoader* loader)
+AliMUONTrackReconstructor::AliMUONTrackReconstructor(AliLoader* loader)
   : TObject()
 {
-  // Constructor for class AliMUONEventReconstructor
+  // Constructor for class AliMUONTrackReconstructor
   SetReconstructionParametersToDefaults();
   fTrackMethod = 1; //AZ - tracking method (1-default, 2-Kalman)
   // Memory allocation for the TClonesArray of hits for reconstruction
@@ -117,7 +115,7 @@ AliMUONEventReconstructor::AliMUONEventReconstructor(AliLoader* loader)
   // See how to get fSimple(BValue, BLength, BPosition)
   // automatically calculated from the actual magnetic field ????
 
-  AliDebug(1,"AliMUONEventReconstructor constructed with defaults"); 
+  AliDebug(1,"AliMUONTrackReconstructor constructed with defaults"); 
   if ( AliLog::GetGlobalDebugLevel()>0) Dump();
   AliDebug(1,"Magnetic field from root file:");
   if ( AliLog::GetGlobalDebugLevel()>0) gAlice->Field()->Dump();
@@ -139,7 +137,7 @@ AliMUONEventReconstructor::AliMUONEventReconstructor(AliLoader* loader)
   return;
 }
   //__________________________________________________________________________
-AliMUONEventReconstructor::AliMUONEventReconstructor (const AliMUONEventReconstructor& rhs)
+AliMUONTrackReconstructor::AliMUONTrackReconstructor (const AliMUONTrackReconstructor& rhs)
   : TObject(rhs)
 {
 // Protected copy constructor
@@ -147,8 +145,8 @@ AliMUONEventReconstructor::AliMUONEventReconstructor (const AliMUONEventReconstr
   AliFatal("Not implemented.");
 }
 
-AliMUONEventReconstructor & 
-AliMUONEventReconstructor::operator=(const AliMUONEventReconstructor& rhs)
+AliMUONTrackReconstructor & 
+AliMUONTrackReconstructor::operator=(const AliMUONTrackReconstructor& rhs)
 {
 // Protected assignement operator
 
@@ -160,9 +158,9 @@ AliMUONEventReconstructor::operator=(const AliMUONEventReconstructor& rhs)
 }
 
   //__________________________________________________________________________
-AliMUONEventReconstructor::~AliMUONEventReconstructor(void)
+AliMUONTrackReconstructor::~AliMUONTrackReconstructor(void)
 {
-  // Destructor for class AliMUONEventReconstructor
+  // Destructor for class AliMUONTrackReconstructor
   delete fHitsForRecPtr; // Correct destruction of everything ???? or delete [] ????
   for (Int_t st = 0; st < AliMUONConstants::NTrackingCh()/2; st++)
     delete fSegmentsPtr[st]; // Correct destruction of everything ????
@@ -170,7 +168,7 @@ AliMUONEventReconstructor::~AliMUONEventReconstructor(void)
 }
 
   //__________________________________________________________________________
-void AliMUONEventReconstructor::SetReconstructionParametersToDefaults(void)
+void AliMUONTrackReconstructor::SetReconstructionParametersToDefaults(void)
 {
   // Set reconstruction parameters to default values
   // Would be much more convenient with a structure (or class) ????
@@ -228,7 +226,7 @@ void AliMUONEventReconstructor::SetReconstructionParametersToDefaults(void)
 }
 
 //__________________________________________________________________________
-Double_t AliMUONEventReconstructor::GetImpactParamFromBendingMomentum(Double_t BendingMomentum) const
+Double_t AliMUONTrackReconstructor::GetImpactParamFromBendingMomentum(Double_t BendingMomentum) const
 {
   // Returns impact parameter at vertex in bending plane (cm),
   // from the signed bending momentum "BendingMomentum" in bending plane (GeV/c),
@@ -239,7 +237,7 @@ Double_t AliMUONEventReconstructor::GetImpactParamFromBendingMomentum(Double_t B
 }
 
 //__________________________________________________________________________
-Double_t AliMUONEventReconstructor::GetBendingMomentumFromImpactParam(Double_t ImpactParam) const
+Double_t AliMUONTrackReconstructor::GetBendingMomentumFromImpactParam(Double_t ImpactParam) const
 {
   // Returns signed bending momentum in bending plane (GeV/c),
   // the sign being the sign of the charge for particles moving forward in Z,
@@ -250,7 +248,7 @@ Double_t AliMUONEventReconstructor::GetBendingMomentumFromImpactParam(Double_t I
 }
 
 //__________________________________________________________________________
-void AliMUONEventReconstructor::SetBkgTrackRefFile(Text_t *BkgTrackRefFileName)
+void AliMUONTrackReconstructor::SetBkgTrackRefFile(Text_t *BkgTrackRefFileName)
 {
   // Set background file ... for track ref. hits
   // Must be called after having loaded the firts signal event
@@ -291,7 +289,7 @@ void AliMUONEventReconstructor::SetBkgTrackRefFile(Text_t *BkgTrackRefFileName)
 }
 
 //__________________________________________________________________________
-void AliMUONEventReconstructor::NextBkgTrackRefEvent(void)
+void AliMUONTrackReconstructor::NextBkgTrackRefEvent(void)
 {
   // Get next event in background file for track ref. hits
   // Goes back to event number 0 when end of file is reached
@@ -345,7 +343,7 @@ void AliMUONEventReconstructor::NextBkgTrackRefEvent(void)
 }
 
 //__________________________________________________________________________
-void AliMUONEventReconstructor::EventReconstruct(void)
+void AliMUONTrackReconstructor::EventReconstruct(void)
 {
   // To reconstruct one event
   AliDebug(1,"Enter EventReconstruct");
@@ -365,7 +363,7 @@ void AliMUONEventReconstructor::EventReconstruct(void)
 }
 
 //__________________________________________________________________________
-void AliMUONEventReconstructor::EventReconstructTrigger(void)
+void AliMUONTrackReconstructor::EventReconstructTrigger(void)
 {
   // To reconstruct one event
   AliDebug(1,"Enter EventReconstructTrigger");
@@ -374,7 +372,7 @@ void AliMUONEventReconstructor::EventReconstructTrigger(void)
 }
 
   //__________________________________________________________________________
-void AliMUONEventReconstructor::ResetHitsForRec(void)
+void AliMUONTrackReconstructor::ResetHitsForRec(void)
 {
   // To reset the array and the number of HitsForRec,
   // and also the number of HitsForRec
@@ -387,7 +385,7 @@ void AliMUONEventReconstructor::ResetHitsForRec(void)
 }
 
   //__________________________________________________________________________
-void AliMUONEventReconstructor::ResetSegments(void)
+void AliMUONTrackReconstructor::ResetSegments(void)
 {
   // To reset the TClonesArray of segments and the number of Segments
   // for all stations
@@ -399,7 +397,7 @@ void AliMUONEventReconstructor::ResetSegments(void)
 }
 
   //__________________________________________________________________________
-void AliMUONEventReconstructor::ResetTracks(void)
+void AliMUONTrackReconstructor::ResetTracks(void)
 {
   // To reset the TClonesArray of reconstructed tracks
   if (fRecTracksPtr) fRecTracksPtr->Delete();
@@ -411,7 +409,7 @@ void AliMUONEventReconstructor::ResetTracks(void)
 
 
   //__________________________________________________________________________
-void AliMUONEventReconstructor::ResetTrackHits(void)
+void AliMUONTrackReconstructor::ResetTrackHits(void)
 {
   // To reset the TClonesArray of hits on reconstructed tracks
   if (fRecTrackHitsPtr) fRecTrackHitsPtr->Clear();
@@ -420,7 +418,7 @@ void AliMUONEventReconstructor::ResetTrackHits(void)
 }
 
   //__________________________________________________________________________
-void AliMUONEventReconstructor::MakeEventToBeReconstructed(void)
+void AliMUONTrackReconstructor::MakeEventToBeReconstructed(void)
 {
   // To make the list of hits to be reconstructed,
   // either from the track ref. hits or from the raw clusters
@@ -503,7 +501,7 @@ void AliMUONEventReconstructor::MakeEventToBeReconstructed(void)
 }
 
   //__________________________________________________________________________
-void AliMUONEventReconstructor::AddHitsForRecFromTrackRef(TTree *TTR, Int_t signal)
+void AliMUONTrackReconstructor::AddHitsForRecFromTrackRef(TTree *TTR, Int_t signal)
 {
   // To add to the list of hits for reconstruction
   // the signal hits from a track reference tree TreeTR.
@@ -534,7 +532,7 @@ void AliMUONEventReconstructor::AddHitsForRecFromTrackRef(TTree *TTR, Int_t sign
 
 
   //__________________________________________________________________________
-AliMUONHitForRec* AliMUONEventReconstructor::NewHitForRecFromTrackRef(AliTrackReference* Hit, Int_t TrackNumber, Int_t Signal)
+AliMUONHitForRec* AliMUONTrackReconstructor::NewHitForRecFromTrackRef(AliTrackReference* Hit, Int_t TrackNumber, Int_t Signal)
 {
   // To make a new hit for reconstruction from a track ref. hit pointed to by "Hit",
   // with  the track numbered "TrackNumber",
@@ -588,7 +586,7 @@ AliMUONHitForRec* AliMUONEventReconstructor::NewHitForRecFromTrackRef(AliTrackRe
   return hitForRec;
 }
   //__________________________________________________________________________
-TClonesArray* AliMUONEventReconstructor::CleanTrackRefs(TTree *treeTR)
+TClonesArray* AliMUONTrackReconstructor::CleanTrackRefs(TTree *treeTR)
 {
   // Make hits from track ref..  
   // Re-calculate hits parameters because two AliTrackReferences are recorded for
@@ -672,7 +670,7 @@ TClonesArray* AliMUONEventReconstructor::CleanTrackRefs(TTree *treeTR)
  
 }
   //__________________________________________________________________________
-void AliMUONEventReconstructor::SortHitsForRecWithIncreasingChamber()
+void AliMUONTrackReconstructor::SortHitsForRecWithIncreasingChamber()
 {
   // Sort HitsForRec's in increasing order with respect to chamber number.
   // Uses the function "Compare".
@@ -702,7 +700,7 @@ void AliMUONEventReconstructor::SortHitsForRecWithIncreasingChamber()
 }
 
   //__________________________________________________________________________
-void AliMUONEventReconstructor::AddHitsForRecFromRawClusters(TTree* TR)
+void AliMUONTrackReconstructor::AddHitsForRecFromRawClusters(TTree* TR)
 {
   // To add to the list of hits for reconstruction all the raw clusters
   // No condition added, like in Fortran TRACKF_STAT,
@@ -761,7 +759,7 @@ void AliMUONEventReconstructor::AddHitsForRecFromRawClusters(TTree* TR)
 }
 
   //__________________________________________________________________________
-void AliMUONEventReconstructor::MakeSegments(void)
+void AliMUONTrackReconstructor::MakeSegments(void)
 {
   // To make the list of segments in all stations,
   // from the list of hits to be reconstructed
@@ -790,7 +788,7 @@ void AliMUONEventReconstructor::MakeSegments(void)
 }
 
   //__________________________________________________________________________
-void AliMUONEventReconstructor::MakeSegmentsPerStation(Int_t Station)
+void AliMUONTrackReconstructor::MakeSegmentsPerStation(Int_t Station)
 {
   // To make the list of segments in station number "Station" (0...)
   // from the list of hits to be reconstructed.
@@ -897,7 +895,7 @@ void AliMUONEventReconstructor::MakeSegmentsPerStation(Int_t Station)
 }
 
   //__________________________________________________________________________
-void AliMUONEventReconstructor::MakeTracks(void)
+void AliMUONTrackReconstructor::MakeTracks(void)
 {
   // To make the tracks,
   // from the list of segments and points in all stations
@@ -930,7 +928,7 @@ void AliMUONEventReconstructor::MakeTracks(void)
 }
 
   //__________________________________________________________________________
-void AliMUONEventReconstructor::ValidateTracksWithTrigger(void)
+void AliMUONTrackReconstructor::ValidateTracksWithTrigger(void)
 {
   // Try to match track from tracking system with trigger track
   AliMUONTrack *track;
@@ -949,7 +947,7 @@ void AliMUONEventReconstructor::ValidateTracksWithTrigger(void)
 }
 
   //__________________________________________________________________________
-Bool_t AliMUONEventReconstructor::MakeTriggerTracks(void)
+Bool_t AliMUONTrackReconstructor::MakeTriggerTracks(void)
 {
     // To make the trigger tracks from Local Trigger
   AliDebug(1, "Enter MakeTriggerTracks");
@@ -1034,7 +1032,7 @@ Bool_t AliMUONEventReconstructor::MakeTriggerTracks(void)
 }
 
   //__________________________________________________________________________
-Int_t AliMUONEventReconstructor::MakeTrackCandidatesWithTwoSegments(AliMUONSegment *BegSegment)
+Int_t AliMUONTrackReconstructor::MakeTrackCandidatesWithTwoSegments(AliMUONSegment *BegSegment)
 {
   // To make track candidates with two segments in stations(1..) 4 and 5,
   // the first segment being pointed to by "BegSegment".
@@ -1085,7 +1083,7 @@ Int_t AliMUONEventReconstructor::MakeTrackCandidatesWithTwoSegments(AliMUONSegme
 }
 
   //__________________________________________________________________________
-Int_t AliMUONEventReconstructor::MakeTrackCandidatesWithOneSegmentAndOnePoint(AliMUONSegment *BegSegment)
+Int_t AliMUONTrackReconstructor::MakeTrackCandidatesWithOneSegmentAndOnePoint(AliMUONSegment *BegSegment)
 {
   // To make track candidates with one segment and one point
   // in stations(1..) 4 and 5,
@@ -1145,7 +1143,7 @@ Int_t AliMUONEventReconstructor::MakeTrackCandidatesWithOneSegmentAndOnePoint(Al
 }
 
   //__________________________________________________________________________
-void AliMUONEventReconstructor::MakeTrackCandidates(void)
+void AliMUONTrackReconstructor::MakeTrackCandidates(void)
 {
   // To make track candidates
   // with at least 3 aligned points in stations(1..) 4 and 5
@@ -1178,7 +1176,7 @@ void AliMUONEventReconstructor::MakeTrackCandidates(void)
 }
 
   //__________________________________________________________________________
-void AliMUONEventReconstructor::FollowTracks(void)
+void AliMUONTrackReconstructor::FollowTracks(void)
 {
   // Follow tracks in stations(1..) 3, 2 and 1
   // too long: should be made more modular !!!!
@@ -1406,7 +1404,7 @@ void AliMUONEventReconstructor::FollowTracks(void)
 }
 
   //__________________________________________________________________________
-void AliMUONEventReconstructor::RemoveDoubleTracks(void)
+void AliMUONTrackReconstructor::RemoveDoubleTracks(void)
 {
   // To remove double tracks.
   // Tracks are considered identical
@@ -1450,7 +1448,7 @@ void AliMUONEventReconstructor::RemoveDoubleTracks(void)
 }
 
   //__________________________________________________________________________
-void AliMUONEventReconstructor::UpdateTrackParamAtHit()
+void AliMUONTrackReconstructor::UpdateTrackParamAtHit()
 {
   // Set track parameters after track fitting. Fill fTrackParamAtHit of AliMUONTrack's
   AliMUONTrack *track;
@@ -1470,7 +1468,7 @@ void AliMUONEventReconstructor::UpdateTrackParamAtHit()
 }
 
   //__________________________________________________________________________
-void AliMUONEventReconstructor::UpdateHitForRecAtHit()
+void AliMUONTrackReconstructor::UpdateHitForRecAtHit()
 {
   // Set cluster parameterss after track fitting. Fill fHitForRecAtHit of AliMUONTrack's
   AliMUONTrack *track;
@@ -1490,7 +1488,7 @@ void AliMUONEventReconstructor::UpdateHitForRecAtHit()
 }
 
   //__________________________________________________________________________
-void AliMUONEventReconstructor::FillMUONTrack()
+void AliMUONTrackReconstructor::FillMUONTrack()
 {
   // Set track parameters at hits for Kalman track. Fill fTrackParamAtHit of AliMUONTrack's
   AliMUONTrackK *track;
@@ -1503,7 +1501,7 @@ void AliMUONEventReconstructor::FillMUONTrack()
 }
 
   //__________________________________________________________________________
-void AliMUONEventReconstructor::EventDump(void)
+void AliMUONTrackReconstructor::EventDump(void)
 {
   // Dump reconstructed event (track parameters at vertex and at first hit),
   // and the particle parameters
@@ -1571,7 +1569,7 @@ void AliMUONEventReconstructor::EventDump(void)
 
 
 //__________________________________________________________________________
-void AliMUONEventReconstructor::EventDumpTrigger(void)
+void AliMUONTrackReconstructor::EventDumpTrigger(void)
 {
   // Dump reconstructed trigger event 
   // and the particle parameters
@@ -1593,7 +1591,7 @@ void AliMUONEventReconstructor::EventDumpTrigger(void)
 }
 
 //__________________________________________________________________________
-void AliMUONEventReconstructor::MakeTrackCandidatesK(void)
+void AliMUONTrackReconstructor::MakeTrackCandidatesK(void)
 {
   // To make initial tracks for Kalman filter from the list of segments
   Int_t istat, iseg;
@@ -1622,7 +1620,7 @@ void AliMUONEventReconstructor::MakeTrackCandidatesK(void)
 }
 
 //__________________________________________________________________________
-void AliMUONEventReconstructor::FollowTracksK(void)
+void AliMUONTrackReconstructor::FollowTracksK(void)
 {
   // Follow tracks using Kalman filter
   Bool_t ok;
@@ -1763,7 +1761,7 @@ void AliMUONEventReconstructor::FollowTracksK(void)
 }
 
 //__________________________________________________________________________
-Bool_t AliMUONEventReconstructor::CheckCandidateK(Int_t icand, Int_t nSeeds) const
+Bool_t AliMUONTrackReconstructor::CheckCandidateK(Int_t icand, Int_t nSeeds) const
 {
   // Discards track candidate if it will produce the double track (having
   // the same seed segment hits as hits of a good track found before)
@@ -1796,7 +1794,7 @@ Bool_t AliMUONEventReconstructor::CheckCandidateK(Int_t icand, Int_t nSeeds) con
 }
 
 //__________________________________________________________________________
-void AliMUONEventReconstructor::RemoveDoubleTracksK(void)
+void AliMUONTrackReconstructor::RemoveDoubleTracksK(void)
 {
   // Removes double tracks (sharing more than half of their hits). Keeps
   // the track with higher quality
@@ -1830,7 +1828,7 @@ void AliMUONEventReconstructor::RemoveDoubleTracksK(void)
 }
 
 //__________________________________________________________________________
-void AliMUONEventReconstructor::GoToVertex(void)
+void AliMUONTrackReconstructor::GoToVertex(void)
 {
   // Propagates track to the vertex thru absorber
   // (using Branson correction for now)
@@ -1846,7 +1844,7 @@ void AliMUONEventReconstructor::GoToVertex(void)
 }
 
 //__________________________________________________________________________
-void AliMUONEventReconstructor::SetTrackMethod(Int_t iTrackMethod)
+void AliMUONTrackReconstructor::SetTrackMethod(Int_t iTrackMethod)
 {
   // Set track method and recreate track container if necessary
   

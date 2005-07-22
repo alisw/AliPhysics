@@ -21,7 +21,7 @@
 
 class TObjArray;
 class TVirtualFitter;
-class AliMUONEventReconstructor;
+class AliMUONTrackReconstructor;
 class AliMUONHitForRec;
 class AliMUONSegment;
 
@@ -33,11 +33,11 @@ class AliMUONTrack : public TObject
   AliMUONTrack (const AliMUONTrack& AliMUONTrack); // copy constructor
   AliMUONTrack& operator=(const AliMUONTrack& AliMUONTrack); // assignment operator
 
-  AliMUONTrack(AliMUONSegment* BegSegment, AliMUONSegment* EndSegment, AliMUONEventReconstructor* EventReconstructor); // Constructor from two Segment's
-  AliMUONTrack(AliMUONSegment* Segment, AliMUONHitForRec* HitForRec, AliMUONEventReconstructor* EventReconstructor); // Constructor from one Segment and one HitForRec
+  AliMUONTrack(AliMUONSegment* BegSegment, AliMUONSegment* EndSegment, AliMUONTrackReconstructor* TrackReconstructor); // Constructor from two Segment's
+  AliMUONTrack(AliMUONSegment* Segment, AliMUONHitForRec* HitForRec, AliMUONTrackReconstructor* TrackReconstructor); // Constructor from one Segment and one HitForRec
   void Remove(void);
 
-  AliMUONEventReconstructor* GetEventReconstructor(void) const {return fEventReconstructor;}
+  AliMUONTrackReconstructor* GetTrackReconstructor(void) const {return fTrackReconstructor;}
   AliMUONTrackParam* GetTrackParamAtVertex(void) {return &fTrackParamAtVertex;}
   void SetTrackParamAtVertex(void); // Set track parameters at vertex from last stations 4 & 5
   void SetTrackParamAtVertex(AliMUONTrackParam* TrackParam) {fTrackParamAtVertex = *TrackParam;}
@@ -82,7 +82,7 @@ class AliMUONTrack : public TObject
  protected:
  private:
   static TVirtualFitter* fgFitter; //!                  Pointer to track fitter
-  AliMUONEventReconstructor* fEventReconstructor; //!   Pointer to EventReconstructor
+  AliMUONTrackReconstructor* fTrackReconstructor; //!   Pointer to TrackReconstructor
   AliMUONTrackParam fTrackParamAtVertex; // Track parameters at vertex
   TClonesArray *fTrackParamAtHit; // Track parameters at hit
   TClonesArray *fHitForRecAtHit; // Cluster parameters at hit

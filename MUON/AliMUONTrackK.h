@@ -11,7 +11,7 @@
 
 class TArrayD;
 class TMatrixD;
-class AliMUONEventReconstructor;
+class AliMUONTrackReconstructor;
 class TClonesArray;
 class TObjArray;
 class AliMUONSegment;
@@ -26,8 +26,8 @@ class AliMUONTrackK : public AliMUONTrack {
   AliMUONTrackK(); // Default constructor
   virtual ~AliMUONTrackK(); // Destructor
 
-  //AliMUONTrackK(const AliMUONEventReconstructor *EventReconstructor, const AliMUONHitForRec *hitForRec); // Constructor
-  AliMUONTrackK(AliMUONEventReconstructor *EventReconstructor, TClonesArray *hitForRec); // Constructor
+  //AliMUONTrackK(const AliMUONTrackReconstructor *TrackReconstructor, const AliMUONHitForRec *hitForRec); // Constructor
+  AliMUONTrackK(AliMUONTrackReconstructor *TrackReconstructor, TClonesArray *hitForRec); // Constructor
   AliMUONTrackK(AliMUONSegment *segment); // Constructor from a segment
 
   // Pointer to hits on track
@@ -79,7 +79,7 @@ class AliMUONTrackK : public AliMUONTrack {
   static Int_t fgDebug; // debug level
   static Int_t fgNOfPoints; // number of points in event
   static AliMUON *fgMUON; // pointer to MUON module  
-  static AliMUONEventReconstructor *fgEventReconstructor; // pointer to event reconstructor
+  static AliMUONTrackReconstructor *fgTrackReconstructor; // pointer to event reconstructor
   static TClonesArray *fgHitForRec; // pointer to hits
 
   AliMUONSegment *fStartSegment; // seed segment  

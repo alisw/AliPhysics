@@ -27,9 +27,9 @@
 #include "AliGenEventHeader.h"
 #include "AliESD.h"
 #include "AliMUONReconstructor.h"
-
+ 
 #include "AliMUONData.h"
-#include "AliMUONEventReconstructor.h"
+#include "AliMUONTrackReconstructor.h"
 #include "AliMUONClusterReconstructor.h"
 #include "AliMUONClusterFinderVS.h"
 #include "AliMUONTrack.h"
@@ -39,6 +39,7 @@
 #include "AliMUONRawData.h"
 
 #include "AliRawReader.h"
+
 
 ClassImp(AliMUONReconstructor)
 //_____________________________________________________________________________
@@ -59,7 +60,7 @@ void AliMUONReconstructor::Reconstruct(AliRunLoader* runLoader) const
 
 // used local container for each method
 // passing fLoader as argument, could be avoided ???
-  AliMUONEventReconstructor* recoEvent = new AliMUONEventReconstructor(loader);
+  AliMUONTrackReconstructor* recoEvent = new AliMUONTrackReconstructor(loader);
   AliMUONData* dataEvent = recoEvent->GetMUONData();
 
   AliMUONClusterReconstructor* recoCluster = new AliMUONClusterReconstructor(loader);
@@ -108,7 +109,7 @@ void AliMUONReconstructor::Reconstruct(AliRunLoader* runLoader) const
     recoEvent->EventReconstruct();
     dataEvent->Fill("RT");
 
-    loader->WriteTracks("OVERWRITE");  
+    loader->WriteTracks("OVERWRITE"); 
   
     //--------------------------- Resetting branches -----------------------
     dataCluster->ResetDigits();
@@ -117,9 +118,9 @@ void AliMUONReconstructor::Reconstruct(AliRunLoader* runLoader) const
 
     dataEvent->ResetRawClusters();
     dataEvent->ResetTrigger();
-    dataEvent->ResetRecTracks();
+    dataEvent->ResetRecTracks();  
     dataEvent->ResetRecTriggerTracks();
-  
+
   }
   loader->UnloadDigits();
   loader->UnloadRecPoints();
@@ -137,7 +138,7 @@ void AliMUONReconstructor::Reconstruct(AliRunLoader* runLoader, AliRawReader* ra
 
 // used local container for each method
 // passing fLoader as argument, could be avoided ???
-  AliMUONEventReconstructor* recoEvent = new AliMUONEventReconstructor(loader);
+  AliMUONTrackReconstructor* recoEvent = new AliMUONTrackReconstructor(loader);
   AliMUONData* dataEvent = recoEvent->GetMUONData();
 
   AliMUONRawData* rawData = new AliMUONRawData(loader);

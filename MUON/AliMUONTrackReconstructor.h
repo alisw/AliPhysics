@@ -1,13 +1,8 @@
-#ifndef ALIMUONEVENTRECONSTRUCTOR_H
-#define ALIMUONEVENTRECONSTRUCTOR_H
-/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- * See cxx source for full Copyright notice                               */
-
-/*$Id$*/
-// Revision of includes 07/05/2004
+#ifndef ALIMUONTRACKTRECONSTRUCTOR_H
+#define ALIMUONTRACKRECONSTRUCTOR_H
 
 ////////////////////////////////////
-// MUON event reconstructor in ALICE
+// MUON track reconstructor in ALICE
 ////////////////////////////////////
 
 #include <TObject.h>
@@ -23,13 +18,13 @@ class AliRunLoader;
 class AliLoader;
 class AliTrackReference;
 
-class AliMUONEventReconstructor : public TObject {
+class AliMUONTrackReconstructor : public TObject {
 
  public:
-  AliMUONEventReconstructor(AliLoader* loader); // default Constructor
-  virtual ~AliMUONEventReconstructor(void); // Destructor
+  AliMUONTrackReconstructor(AliLoader* loader); // default Constructor
+  virtual ~AliMUONTrackReconstructor(void); // Destructor
 
-  // Parameters for event reconstruction: public methods
+  // Parameters for track reconstruction: public methods
   // Get and Set, Set to defaults
   Double_t GetMinBendingMomentum(void) const {return fMinBendingMomentum;}
   void SetMinBendingMomentum(Double_t MinBendingMomentum) {fMinBendingMomentum = MinBendingMomentum;}
@@ -91,8 +86,8 @@ class AliMUONEventReconstructor : public TObject {
   AliMUONData*  GetMUONData() {return fMUONData;}
 
  protected:
-  AliMUONEventReconstructor (const AliMUONEventReconstructor& rhs); // copy constructor
-  AliMUONEventReconstructor& operator=(const AliMUONEventReconstructor& rhs); // assignment operator
+  AliMUONTrackReconstructor (const AliMUONTrackReconstructor& rhs); // copy constructor
+  AliMUONTrackReconstructor& operator=(const AliMUONTrackReconstructor& rhs); // assignment operator
 
  private:
 
@@ -123,9 +118,9 @@ class AliMUONEventReconstructor : public TObject {
 
   Int_t fTrackMethod; // AZ - tracking method
 
-  // Parameters for event reconstruction
+  // Parameters for track reconstruction
   Double_t fMinBendingMomentum; // minimum value (GeV/c) of momentum in bending plane
-  // Parameters for event reconstruction
+  // Parameters for track reconstruction
   Double_t fMaxBendingMomentum; // maximum value (GeV/c) of momentum in bending plane
   Double_t fMaxChi2; // maximum Chi2 per degree of Freedom
   Double_t fMaxSigma2Distance; // maximum square distance in units of the variance (maximum chi2)
@@ -212,7 +207,7 @@ class AliMUONEventReconstructor : public TObject {
   Bool_t CheckCandidateK(Int_t icand, Int_t nSeeds) const;
 
 
-  ClassDef(AliMUONEventReconstructor, 0) // MUON event reconstructor in ALICE
+  ClassDef(AliMUONTrackReconstructor, 0) // MUON track reconstructor in ALICE
     };
 	
 #endif
