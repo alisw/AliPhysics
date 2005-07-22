@@ -13,10 +13,8 @@ SRCS:= AliMUONClusterReconstructor.cxx \
        AliMUONTriggerTrack.cxx \
        AliMUONRecoTrack.cxx \
        AliMUONHitForRec.cxx \
-       AliMUONRecoEvent.cxx \
        AliMUONTrackHit.cxx \
        AliMUONSegment.cxx \
-       AliMUONReconstHit.cxx \
        AliMUONDDLTrigger.cxx \
        AliMUONSubEventTrigger.cxx \
        AliMUONScalerEventTrigger.cxx \

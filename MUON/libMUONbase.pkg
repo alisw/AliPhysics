@@ -32,7 +32,6 @@ SRCS:=  AliMUON.cxx AliMUONv1.cxx \
         AliMUONLocalTrigger.cxx \
         AliMUONTriggerLut.cxx \
         AliMUONDisplay.cxx \
-        AliMUONRecoDisplay.cxx \
         AliMUONRecoCheck.cxx \
         AliMUONSt12QuadrantSegmentation.cxx \
         AliMUONSt345SlatSegmentation.cxx \

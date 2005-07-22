@@ -49,7 +49,6 @@
 
 // display
 #pragma link C++ class AliMUONDisplay+; 
-#pragma link C++ class AliMUONRecoDisplay+; 
 #pragma link C++ class AliMUONRecoCheck+; 
 #endif
 

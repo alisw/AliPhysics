@@ -17,10 +17,8 @@
 #pragma link C++ class AliMUONTriggerTrack+; 
 #pragma link C++ class AliMUONRecoTrack+; 
 #pragma link C++ class AliMUONHitForRec+; 
-#pragma link C++ class AliMUONRecoEvent-; 
 #pragma link C++ class AliMUONTrackHit+; 
 #pragma link C++ class AliMUONSegment+;
-#pragma link C++ class AliMUONReconstHit+; 
 
 // raw data
 #pragma link C++ class AliMUONDDLTrigger+;
