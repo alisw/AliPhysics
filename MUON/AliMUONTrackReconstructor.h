@@ -77,7 +77,7 @@ class AliMUONTrackReconstructor : public TObject {
   void EventReconstructTrigger(void);
   void EventDump(void);  // dump reconstructed event
   void EventDumpTrigger(void);  // dump reconstructed trigger event
-  void FillEvent();      // fill and write tree of reconstructed events
+  //PH  void FillEvent();      // fill and write tree of reconstructed events
   void SetTrackMethod(Int_t iTrackMethod); //AZ
   Int_t GetTrackMethod(void) const {return fTrackMethod;} 
   void FillMUONTrack(void); // set track parameters at hits for Kalman track
