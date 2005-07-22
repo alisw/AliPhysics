@@ -150,14 +150,25 @@ void AliMUONReconstructor::Reconstruct(AliRunLoader* runLoader, AliRawReader* ra
 
   loader->LoadRecPoints("RECREATE");
   loader->LoadTracks("RECREATE");
-  
+  loader->LoadDigits("RECREATE");
+
+
   //   Loop over events  
   Int_t iEvent = 0;
             
   while (rawReader->NextEvent()) {
     printf("Event %d\n",iEvent);
     runLoader->GetEvent(iEvent++);
+
+    //----------------------- raw2digits & raw2trigger-------------------
+    if (!loader->TreeD()) loader->MakeDigitsContainer();
+
+    dataCluster->MakeBranch("D,GLT");
+    dataCluster->SetTreeAddress("D,GLT");
     rawData->Raw2Digits(rawReader);
+    dataCluster->Fill("D,GLT"); 
+
+    loader->WriteDigits("OVERWRITE");
 
     //----------------------- digit2cluster & Trigger2Trigger -------------------
     if (!loader->TreeR()) loader->MakeRecPointsContainer();
@@ -206,6 +217,7 @@ void AliMUONReconstructor::Reconstruct(AliRunLoader* runLoader, AliRawReader* ra
   }
   loader->UnloadRecPoints();
   loader->UnloadTracks();
+  loader->UnloadDigits();
 
   delete recoCluster;
   delete recoEvent;
@@ -341,5 +353,6 @@ void AliMUONReconstructor::FillESD(AliRunLoader* runLoader, AliESD* esd) const
     runLoader->UnloadKinematics();
   delete theESDTrack;
   delete muonData;
+  delete particle;
   // delete particle;
 }

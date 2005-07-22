@@ -18,6 +18,7 @@ class AliMUONLocalTrigger : public TObject {
   virtual ~AliMUONLocalTrigger(){;}
   AliMUONLocalTrigger& operator=(const AliMUONLocalTrigger& rhs); 
 
+  // getter methods
   Int_t LoCircuit() const {return fLoCircuit;}
   Int_t LoStripX() const {return fLoStripX;}   
   Int_t LoDev() const {return fLoDev;}
@@ -39,6 +40,26 @@ class AliMUONLocalTrigger : public TObject {
 
   Char_t GetLoDecision();
 
+  // setter methods
+  void SetLoCircuit(Int_t loCir) {fLoCircuit = loCir;}
+  void SetLoStripX(Int_t loStrX) {fLoStripX = loStrX;}   
+  void SetLoDev(Int_t loDev)     {fLoDev = loDev;}
+  void SetLoStripY(Int_t loStrY) {fLoStripY = loStrY;}
+  void SetLoLpt(Int_t loLpt)     {fLoLpt = loLpt;}
+  void SetLoHpt(Int_t loHpt)     {fLoHpt = loHpt;}
+  void SetLoApt(Int_t loApt)     {fLoApt = loApt;}
+
+  void SetX1Pattern(UShort_t pat) {fX1Pattern = pat;}
+  void SetX2Pattern(UShort_t pat) {fX2Pattern = pat;}
+  void SetX3Pattern(UShort_t pat) {fX3Pattern = pat;}
+  void SetX4Pattern(UShort_t pat) {fX4Pattern = pat;}
+
+  void SetY1Pattern(UShort_t pat) {fY1Pattern = pat;}
+  void SetY2Pattern(UShort_t pat) {fY2Pattern = pat;}
+  void SetY3Pattern(UShort_t pat) {fY3Pattern = pat;}
+  void SetY4Pattern(UShort_t pat) {fY4Pattern = pat;}
+
+  // data link
   Int_t NumberOfDigits() const { return fDigits.GetSize(); }
   Int_t GetDigitNumber(Int_t i) const { return fDigits[i]; }
   void GetDigit(Int_t i, Int_t& chamber, Int_t& cathode, Int_t& digit) const;

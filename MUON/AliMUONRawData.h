@@ -17,6 +17,7 @@ class AliMUONDDLTrigger;
 class AliMUONGlobalTrigger;
 class AliMUONSubEventTrigger;
 class AliRawReader;
+class AliMUONGlobalTrigger;
 
 class AliMUONRawData : public TObject 
 {
@@ -48,6 +49,7 @@ class AliMUONRawData : public TObject
 
 
   Int_t GetGlobalTriggerPattern(const AliMUONGlobalTrigger* gloTrg);
+  AliMUONGlobalTrigger* GetGlobalTriggerPattern(Int_t gloTrg);
 
  protected:
   AliMUONRawData();                  // Default constructor
@@ -55,7 +57,6 @@ class AliMUONRawData : public TObject
   AliMUONRawData& operator=(const AliMUONRawData& rhs); // assignment operator
 
  private:
-  static const Int_t fgkDefaultPrintLevel;     // Default print level
 
   AliMUONData*  fMUONData;           //! Data container for MUON subsystem 
  
@@ -65,9 +66,7 @@ class AliMUONRawData : public TObject
   FILE*         fFile2;              //! DDL binary file pointer one per 1/2 chamber
 
   TClonesArray* fSubEventArray[2];   //! array to sub event tracker
-  
-  TClonesArray* fSubEventTrigArray[2]; //! array to sub event trigger
- 
+   
   AliMUONDDLTracker* fDDLTracker;      //! DDL tracker class pointers
   AliMUONDDLTrigger* fDDLTrigger;      //! DDL trigger class pointers
 
