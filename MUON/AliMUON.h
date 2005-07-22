@@ -27,7 +27,6 @@ class AliMUONData;
 class AliMUONResponse;
 class AliMUONHit;
 class AliMUONRawCluster;
-class AliMUONReconstHit;
 class AliMUONGeometryBuilder;
 class AliMUONVGeometryBuilder;
 class AliMUONGeometryDEIndexing;

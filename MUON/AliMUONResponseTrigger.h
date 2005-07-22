@@ -16,8 +16,9 @@ class AliMUONResponseTrigger : public AliMUONResponse
 
   virtual Int_t DigitResponse(Int_t digit, AliMUONTransientDigit* where);
 
+
   // Set the GenerCluster parameter       
-  virtual Int_t SetGenerCluster();
+  virtual Int_t SetGenerCluster(){return 0;}
 
   ClassDef(AliMUONResponseTrigger,1) // Implementation of RPC response
     
