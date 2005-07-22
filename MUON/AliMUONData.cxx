@@ -845,14 +845,14 @@ void AliMUONData::ResetRecTracks()
 {
   // Reset tracks information
   fNrectracks = 0;
-  if (fRecTracks) fRecTracks->Clear();
+  if (fRecTracks) fRecTracks->Delete(); // necessary to delete in case of memory allocation
 }
 //____________________________________________________________________________
 void AliMUONData::ResetRecTriggerTracks()
 {
   // Reset tracks information
   fNrectriggertracks = 0;
-  if (fRecTriggerTracks) fRecTriggerTracks->Clear();
+  if (fRecTriggerTracks) fRecTriggerTracks->Delete(); // necessary to delete in case of memory allocation
 }
 //_____________________________________________________________________________
 void AliMUONData::SetTreeAddress(Option_t* option)

@@ -18,7 +18,6 @@ class AliMUONSegment;
 class TClonesArray;
 class TFile;
 class TTree;
-class AliMUONRecoEvent;
 class AliMUONData;
 class AliRunLoader;
 class AliLoader;
@@ -71,11 +70,6 @@ class AliMUONEventReconstructor : public TObject {
   void SetNRecTracks(Int_t NRecTracks) {fNRecTracks = NRecTracks;}
   TClonesArray* GetRecTracksPtr(void) const {return fRecTracksPtr;} // Array
  
- // Reconstructed trigger tracks
-   Int_t GetNRecTriggerTracks() const {return fNRecTriggerTracks;} // Number
-   void SetNRecTriggerTracks(Int_t NRecTriggerTracks) {fNRecTriggerTracks = NRecTriggerTracks;}
-   TClonesArray* GetRecTriggerTracksPtr(void) const {return fRecTriggerTracksPtr;} // Array
-
   // Hits on reconstructed tracks
   Int_t GetNRecTrackHits() const {return fNRecTrackHits;} // Number
   void SetNRecTrackHits(Int_t NRecTrackHits) {fNRecTrackHits = NRecTrackHits;}
@@ -172,18 +166,9 @@ class AliMUONEventReconstructor : public TObject {
   TClonesArray *fRecTracksPtr; // pointer to array of reconstructed tracks
   Int_t fNRecTracks; // number of reconstructed tracks
 
-  // Reconstructed trigger tracks
-  TClonesArray *fRecTriggerTracksPtr; // pointer to array of reconstructed trigger tracks
-  Int_t fNRecTriggerTracks; // number of reconstructed trigger tracks
-
   // Track hits on reconstructed tracks
   TClonesArray *fRecTrackHitsPtr; // pointer to array of hits on reconstructed tracks
   Int_t fNRecTrackHits; // number of hits on reconstructed tracks
-
-  // Objects needed for tree writing
-  AliMUONRecoEvent *fRecoEvent; // the reconstructed event
-  TTree            *fEventTree; // tree of reconstructed events
-  TFile            *fTreeFile;  // file where the tree is outputed
 
   // data container
   AliMUONData* fMUONData; // Data container for MUON subsystem 
@@ -209,7 +194,6 @@ class AliMUONEventReconstructor : public TObject {
   Bool_t MakeTriggerTracks(void);
   void ResetTrackHits(void);
   void ResetTracks(void);
-  void ResetTriggerTracks(void);
   Int_t MakeTrackCandidatesWithTwoSegments(AliMUONSegment *BegSegment);
   Int_t MakeTrackCandidatesWithOneSegmentAndOnePoint(AliMUONSegment *BegSegment);
   void MakeTrackCandidates(void);

@@ -47,7 +47,6 @@
 #include "AliMUONRawCluster.h"
 #include "AliMUONLocalTrigger.h"
 #include "AliMUONGlobalTrigger.h"
-#include "AliMUONRecoEvent.h"
 #include "AliMUONSegment.h"
 #include "AliMUONTrack.h"
 #include "AliMUONTrackHit.h"
@@ -103,9 +102,6 @@ AliMUONEventReconstructor::AliMUONEventReconstructor(AliLoader* loader)
   // Is 10 the right size ????
   fRecTracksPtr = new TClonesArray("AliMUONTrack", 10);
   fNRecTracks = 0; // really needed or GetEntriesFast sufficient ????
-// trigger tracks
-  fRecTriggerTracksPtr = new TClonesArray("AliMUONTriggerTrack", 10);
-  fNRecTriggerTracks = 0; // really needed or GetEntriesFast sufficient ????
   // Memory allocation for the TClonesArray of hits on reconstructed tracks
   // Is 100 the right size ????
   //AZ fRecTrackHitsPtr = new TClonesArray("AliMUONTrack", 100);
@@ -133,12 +129,7 @@ AliMUONEventReconstructor::AliMUONEventReconstructor(AliLoader* loader)
   fBkgTrackRefParticles = 0;
   fBkgTrackRefTTR = 0;
   fBkgTrackRefEventNumber = -1;
-  
-  // Initialize to 0 pointers to RecoEvent, tree and tree file
-  fRecoEvent = 0;
-  fEventTree = 0;
-  fTreeFile  = 0;
- 
+   
   // initialize loader's
   fLoader = loader;
 
@@ -172,12 +163,6 @@ AliMUONEventReconstructor::operator=(const AliMUONEventReconstructor& rhs)
 AliMUONEventReconstructor::~AliMUONEventReconstructor(void)
 {
   // Destructor for class AliMUONEventReconstructor
-  if (fTreeFile) {
-     fTreeFile->Close();
-     delete fTreeFile;
-  }
-//  if (fEventTree) delete fEventTree;
-  if (fRecoEvent) delete fRecoEvent;
   delete fHitsForRecPtr; // Correct destruction of everything ???? or delete [] ????
   for (Int_t st = 0; st < AliMUONConstants::NTrackingCh()/2; st++)
     delete fSegmentsPtr[st]; // Correct destruction of everything ????
@@ -424,16 +409,6 @@ void AliMUONEventReconstructor::ResetTracks(void)
   return;
 }
 
-  //__________________________________________________________________________
-void AliMUONEventReconstructor::ResetTriggerTracks(void)
-{
-  // To reset the TClonesArray of reconstructed trigger tracks
-    if (fRecTriggerTracksPtr) fRecTriggerTracksPtr->Delete();
-  // Delete in order that the Track destructors are called,
-  // hence the space for the TClonesArray of pointers to TrackHit's is freed
-    fNRecTriggerTracks = 0;
-  return;
-}
 
   //__________________________________________________________________________
 void AliMUONEventReconstructor::ResetTrackHits(void)
@@ -961,7 +936,6 @@ void AliMUONEventReconstructor::ValidateTracksWithTrigger(void)
   AliMUONTrack *track;
   TClonesArray *recTriggerTracks;
   
-  fMUONData->ResetRecTriggerTracks();
   fMUONData->SetTreeAddress("RL");
   fMUONData->GetRecTriggerTracks();
   recTriggerTracks = fMUONData->RecTriggerTracks();
@@ -979,7 +953,6 @@ Bool_t AliMUONEventReconstructor::MakeTriggerTracks(void)
 {
     // To make the trigger tracks from Local Trigger
   AliDebug(1, "Enter MakeTriggerTracks");
-    //    ResetTriggerTracks();
     
     Int_t nTRentries;
     Long_t gloTrigPat;
@@ -1051,9 +1024,11 @@ Bool_t AliMUONEventReconstructor::MakeTriggerTracks(void)
       Float_t thetay = TMath::ATan2( (y21-y11) , (z21-z11) );
 
       recTriggerTrack = new AliMUONTriggerTrack(x11,y11,thetax,thetay,gloTrigPat);
+      
       // since static statement does not work, set gloTrigPat for each track
 
       fMUONData->AddRecTriggerTrack(*recTriggerTrack);
+      delete recTriggerTrack;
     } // end of loop on Local Trigger
     return kTRUE;    
 }
@@ -1615,36 +1590,6 @@ void AliMUONEventReconstructor::EventDumpTrigger(void)
 	     triggertrack->GetX11(),triggertrack->GetY11(),
 	     triggertrack->GetThetax(),triggertrack->GetThetay());      
   } 
-}
-
-//__________________________________________________________________________
-void AliMUONEventReconstructor::FillEvent()
-{
-// Create a new AliMUONRecoEvent, fill its track list, then add it as a
-// leaf in the Event branch of TreeRecoEvent tree
-   cout << "Enter FillEvent() ...\n";
-
-   if (!fRecoEvent) {
-      fRecoEvent = new AliMUONRecoEvent();
-   } else {
-      fRecoEvent->Clear();
-   }
-   //save current directory
-   TDirectory *current =  gDirectory;
-   if (!fTreeFile)  fTreeFile  = new TFile("tree_reco.root", "RECREATE");
-   if (!fEventTree) fEventTree = new TTree("TreeRecoEvent", "MUON reconstructed events");
-   //AZif (fRecoEvent->MakeDumpTracks(fRecTracksPtr)) {
-   if (fRecoEvent->MakeDumpTracks(fMuons, fRecTracksPtr, this)) { //AZ
-     if (AliLog::GetGlobalDebugLevel() > 1) fRecoEvent->EventInfo();
-      TBranch *branch = fEventTree->GetBranch("Event");
-      if (!branch) branch = fEventTree->Branch("Event", "AliMUONRecoEvent", &fRecoEvent, 64000);
-      branch->SetAutoDelete();
-      fTreeFile->cd();
-      fEventTree->Fill();
-      fTreeFile->Write();
-   }
-   // restore directory
-   current->cd();
 }
 
 //__________________________________________________________________________

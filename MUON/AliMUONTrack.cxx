@@ -33,6 +33,8 @@
 #include <TObjArray.h>
 #include <TVirtualFitter.h>
 
+#include "AliLog.h"
+
 #include "AliMUONEventReconstructor.h" 
 #include "AliMUONHitForRec.h" 
 #include "AliMUONSegment.h" 
@@ -123,21 +125,19 @@ AliMUONTrack::~AliMUONTrack()
 {
   // Destructor
   if (fTrackHitsPtr) {
-    fTrackHitsPtr->Clear();
-    delete fTrackHitsPtr; // delete the TObjArray of pointers to TrackHit's
+    // delete the TObjArray of pointers to TrackHit's   
+    delete fTrackHitsPtr; 
     fTrackHitsPtr = NULL;
   }
   
   if (fTrackParamAtHit) {
     // delete the TClonesArray of pointers to TrackParam
-    fTrackParamAtHit->Clear();
     delete fTrackParamAtHit;
     fTrackParamAtHit = NULL;
   }
 
   if (fHitForRecAtHit) {
     // delete the TClonesArray of pointers to HitForRec
-    fHitForRecAtHit->Clear();
     delete fHitForRecAtHit;
     fHitForRecAtHit = NULL;
   }
@@ -160,6 +160,7 @@ AliMUONTrack::AliMUONTrack (const AliMUONTrack& theMUONTrack)
     AliMUONTrackHit *trackHit = new AliMUONTrackHit(*(AliMUONTrackHit*)(theMUONTrack.fTrackHitsPtr)->At(index));
     fTrackHitsPtr->Add(trackHit);
   }
+  fTrackHitsPtr->SetOwner(); // nedeed for deleting TClonesArray
 
   // necessary to make a copy of the objects and not only the pointers in TClonesArray.
   fTrackParamAtHit  =  new TClonesArray("AliMUONTrackParam",10);
@@ -196,8 +197,9 @@ AliMUONTrack & AliMUONTrack::operator=(const AliMUONTrack& theMUONTrack)
   // base class assignement
   TObject::operator=(theMUONTrack);
 
-  // fEventReconstructor =  new AliMUONEventReconstructor(*MUONTrack.fEventReconstructor); // is it right ?
-                               // is it right ? NO because it would use dummy copy constructor
+  // fEventReconstructor =  new AliMUONEventReconstructor(*MUONTrack.fEventReconstructor); 
+  // is it right ?
+  // is it right ? NO because it would use dummy copy constructor
   fEventReconstructor =  theMUONTrack.fEventReconstructor;
   fTrackParamAtVertex =  theMUONTrack.fTrackParamAtVertex;
 
@@ -207,6 +209,7 @@ AliMUONTrack & AliMUONTrack::operator=(const AliMUONTrack& theMUONTrack)
     AliMUONTrackHit *trackHit = new AliMUONTrackHit(*(AliMUONTrackHit*)(theMUONTrack.fTrackHitsPtr)->At(index));
     fTrackHitsPtr->Add(trackHit);
   }
+  fTrackHitsPtr->SetOwner();  // nedeed for deleting TClonesArray
 
   // necessary to make a copy of the objects and not only the pointers in TClonesArray.
   fTrackParamAtHit  =  new TClonesArray("AliMUONTrackParam",10);
@@ -545,6 +548,7 @@ void AliMUONTrack::AddHitForRec(AliMUONHitForRec* HitForRec)
     new ((*recTrackHitsPtr)[eventTrackHits]) AliMUONTrackHit(HitForRec);
   this->fEventReconstructor->SetNRecTrackHits(eventTrackHits + 1);
   // track
+  if (fTrackHitsPtr->IsOwner()) AliFatal("fTrackHitsPtr is owner");
   fTrackHitsPtr->Add(trackHit);
   fNTrackHits++;
 }
