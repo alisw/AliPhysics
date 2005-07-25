@@ -41,16 +41,16 @@ class AliITSDetTypeRec : public TObject {
     AliITSLoader* GetLoader() const {return fLoader;}
     virtual void SetDefaults();
     virtual void SetDefaultClusterFinders();
-    virtual void SetDefaultClusterFindersV2();
+    virtual void SetDefaultClusterFindersV2(Bool_t rawdata=kFALSE);
     virtual void MakeBranch(Option_t *opt);
     virtual void SetTreeAddress();
     virtual void SetTreeAddressD(TTree* treeD);
 
     virtual void SetSegmentationModel(Int_t dettype, AliITSsegmentation *seg);
-    virtual void SetCalibrationModel(Int_t module, AliITSresponse *cal);
+    virtual void SetCalibrationModel(Int_t dettype, AliITSresponse *cal);
     virtual void SetReconstructionModel(Int_t dettype, AliITSClusterFinder *rec);
     virtual AliITSsegmentation* GetSegmentationModel(Int_t dettype);
-    virtual AliITSresponse* GetCalibrationModel(Int_t module);
+    virtual AliITSresponse* GetCalibrationModel(Int_t dettype);
     virtual AliITSClusterFinder* GetReconstructionModel(Int_t dettype);
 
     virtual void SetDigitClassName(Int_t i,Char_t *digit) 

@@ -227,12 +227,12 @@ AliITSsegmentation* AliITSDetTypeSim::GetSegmentationModelByModule(Int_t module)
 
 }
 //_______________________________________________________________________
-void AliITSDetTypeSim::SetResponseModel(Int_t module,AliITSresponse *resp){
+void AliITSDetTypeSim::SetResponseModel(Int_t dettype,AliITSresponse *resp){
 
   
   //Set segmentation model for module number
-  if(fResponse==0) fResponse = new TObjArray(fGeom->GetIndexMax());
-  fResponse->AddAt(resp,module);
+  if(fResponse==0) fResponse = new TObjArray(fgkNdettypes);
+  fResponse->AddAt(resp,dettype);
 }
 //______________________________________________________________________
 void AliITSDetTypeSim::ResetResponse(){
@@ -256,7 +256,7 @@ void AliITSDetTypeSim::ResetSegmentation(){
 }
 
 //_______________________________________________________________________
-AliITSresponse* AliITSDetTypeSim::GetResponseModel(Int_t module){
+AliITSresponse* AliITSDetTypeSim::GetResponseModel(Int_t dettype){
   
   //Get segmentation model for module number
   
@@ -264,7 +264,7 @@ AliITSresponse* AliITSDetTypeSim::GetResponseModel(Int_t module){
     Warning("GetResponseModel","fResponse is 0!");
     return 0; 
   }  
-  return (AliITSresponse*)(fResponse->At(module));
+  return (AliITSresponse*)(fResponse->At(dettype));
 }
 //_______________________________________________________________________
 void AliITSDetTypeSim::SetDefaults(){
@@ -277,57 +277,56 @@ void AliITSDetTypeSim::SetDefaults(){
     return;
   }
 
-  if(!fResponse) fResponse = new TObjArray(fGeom->GetIndexMax());  
+  if(!fResponse) fResponse = new TObjArray(fgkNdettypes);  
 
   AliITSsegmentation* seg;
   AliITSresponse* res;
   ResetResponse();
   ResetSegmentation();
 
-  for(Int_t imod=0;imod<fGeom->GetIndexMax();imod++){
-      Int_t dettype = fGeom->GetModuleType(imod);
+  for(Int_t idet=0;idet<fgkNdettypes;idet++){
     //SPD
-    if(dettype==0){
-      if(!GetSegmentationModel(dettype)){
+    if(idet==0){
+      if(!GetSegmentationModel(idet)){
 	seg = new AliITSsegmentationSPD(fGeom);
-	SetSegmentationModel(dettype,seg);
+	SetSegmentationModel(idet,seg);
       }
-      if(!GetResponseModel(imod)){
+      if(!GetResponseModel(idet)){
 	res = new AliITSresponseSPD();
-	SetResponseModel(imod,res);
+	SetResponseModel(idet,res);
       }
-      const char *kData0=(GetResponseModel(imod))->DataType();
+      const char *kData0=(GetResponseModel(idet))->DataType();
       if (strstr(kData0,"real")) {
-	SetDigitClassName(dettype,"AliITSdigit");
-      } else SetDigitClassName(dettype,"AliITSdigitSPD");
+	SetDigitClassName(idet,"AliITSdigit");
+      } else SetDigitClassName(idet,"AliITSdigitSPD");
     }
     //SDD
-    if(dettype==1){
-      if(!GetResponseModel(imod)){
-	SetResponseModel(imod,new AliITSresponseSDD("simulated"));
+    if(idet==1){
+      if(!GetResponseModel(idet)){
+	SetResponseModel(idet,new AliITSresponseSDD("simulated"));
       }
-      if(!GetSegmentationModel(dettype)){
-	res = GetResponseModel(imod);
+      if(!GetSegmentationModel(idet)){
+	res = GetResponseModel(idet);
 	seg = new AliITSsegmentationSDD(fGeom,res);
-	SetSegmentationModel(dettype,seg);
+	SetSegmentationModel(idet,seg);
       }
-      const char *kopt = GetResponseModel(imod)->ZeroSuppOption();
-      if((!strstr(kopt,"2D"))&&(!strstr(kopt,"1D"))) SetDigitClassName(dettype,"AliITSdigit");
-      else SetDigitClassName(dettype,"AliITSdigitSDD");
+      const char *kopt = GetResponseModel(idet)->ZeroSuppOption();
+      if((!strstr(kopt,"2D"))&&(!strstr(kopt,"1D"))) SetDigitClassName(idet,"AliITSdigit");
+      else SetDigitClassName(idet,"AliITSdigitSDD");
     }
     //SSD
-    if(dettype==2){
-      if(!GetSegmentationModel(dettype)){
+    if(idet==2){
+      if(!GetSegmentationModel(idet)){
 	seg = new AliITSsegmentationSSD(fGeom);
-	SetSegmentationModel(dettype,seg);
+	SetSegmentationModel(idet,seg);
       }
-      if(!GetResponseModel(imod)){
-	SetResponseModel(imod,new AliITSresponseSSD("simulated"));
+      if(!GetResponseModel(idet)){
+	SetResponseModel(idet,new AliITSresponseSSD("simulated"));
       }
-      const char *kData2 = (GetResponseModel(imod))->DataType();
+      const char *kData2 = (GetResponseModel(idet))->DataType();
       if (strstr(kData2,"real")) {
-	SetDigitClassName(dettype,"AliITSdigit");
-      } else SetDigitClassName(dettype,"AliITSdigitSSD");
+	SetDigitClassName(idet,"AliITSdigit");
+      } else SetDigitClassName(idet,"AliITSdigitSSD");
       
     }
 
@@ -346,7 +345,7 @@ void AliITSDetTypeSim::SetDefaultSimulation(){
     return;
   }
   
-  if(!fResponse) fResponse = new TObjArray(fGeom->GetIndexMax());
+  if(!fResponse) fResponse = new TObjArray(fgkNdettypes);
 
   AliITSsegmentation* seg;
   AliITSresponse* res;
@@ -358,11 +357,11 @@ void AliITSDetTypeSim::SetDefaultSimulation(){
       sim = GetSimulationModel(idet);
       if(!sim){
 	seg = (AliITSsegmentationSPD*)GetSegmentationModel(idet);
-	res = (AliITSresponseSPD*)GetResponseModel(fGeom->GetStartSPD());      
+	res = (AliITSresponseSPD*)GetResponseModel(idet);      
 	sim = new AliITSsimulationSPD(seg,res);
 	SetSimulationModel(idet,sim);
       } else{
-	sim->SetResponseModel(GetResponseModel(fGeom->GetStartSPD()));
+	sim->SetResponseModel(GetResponseModel(idet));
 	sim->SetSegmentationModel((AliITSsegmentationSPD*)GetSegmentationModel(idet));
 	sim->Init();
       }
@@ -372,11 +371,11 @@ void AliITSDetTypeSim::SetDefaultSimulation(){
       sim = GetSimulationModel(idet);
       if(!sim){
 	seg = (AliITSsegmentationSDD*)GetSegmentationModel(idet);
-	res = (AliITSresponseSDD*)GetResponseModel(fGeom->GetStartSDD());
+	res = (AliITSresponseSDD*)GetResponseModel(idet);
 	sim = new AliITSsimulationSDD(seg,res);
 	SetSimulationModel(idet,sim);
       } else {
-	sim->SetResponseModel((AliITSresponseSDD*)GetResponseModel(fGeom->GetStartSDD()));
+	sim->SetResponseModel((AliITSresponseSDD*)GetResponseModel(idet));
 	sim->SetSegmentationModel((AliITSsegmentationSDD*)GetSegmentationModel(idet));
 	sim->Init();
       }
@@ -387,11 +386,11 @@ void AliITSDetTypeSim::SetDefaultSimulation(){
       sim = GetSimulationModel(idet);
       if(!sim){
 	seg = (AliITSsegmentationSSD*)GetSegmentationModel(idet);
-	res = (AliITSresponseSSD*)GetResponseModel(fGeom->GetStartSSD());
+	res = (AliITSresponseSSD*)GetResponseModel(idet);
 	sim = new AliITSsimulationSSD(seg,res);
 	SetSimulationModel(idet,sim);
       } else{
-	sim->SetResponseModel((AliITSresponseSSD*)GetResponseModel(fGeom->GetStartSSD()));
+	sim->SetResponseModel((AliITSresponseSSD*)GetResponseModel(idet));
 	sim->SetSegmentationModel((AliITSsegmentationSSD*)GetSegmentationModel(idet));
 	sim->Init();
       }
@@ -582,7 +581,7 @@ void AliITSDetTypeSim::AddSimDigit(Int_t branch,Float_t phys,Int_t *digits,
     new(ldigits[fNDigits[branch]++]) AliITSdigitSPD(digits,tracks,hits);
     break;
   case 1:
-    resp = (AliITSresponseSDD*)GetResponseModel(fGeom->GetStartSDD());
+    resp = (AliITSresponseSDD*)GetResponseModel(branch);
     new(ldigits[fNDigits[branch]++]) AliITSdigitSDD(phys,digits,tracks,
 						   hits,charges,resp);
     break;

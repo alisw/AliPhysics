@@ -82,8 +82,8 @@ class AliITS : public AliDetector {
     Option_t* GetDetectors(){return fOpt;}
 
     // Set response
-    virtual void SetResponseModel(Int_t module, AliITSresponse *response){
-        fDetTypeSim->SetResponseModel(module,response);}
+    virtual void SetResponseModel(Int_t dettype, AliITSresponse *response){
+        fDetTypeSim->SetResponseModel(dettype,response);}
     // Set segmentation for Simulation
     virtual void SetSegmentationModel(Int_t id, AliITSsegmentation *seg){
         fDetTypeSim->SetSegmentationModel(id,seg);}

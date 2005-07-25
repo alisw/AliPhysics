@@ -845,26 +845,14 @@ void AliITSvSDD03::SetDefaults(){
  
     AliITSgeomSDD *s1;
     AliITSgeomSSD *s2;
-    for(Int_t nmod=0;nmod<GetITSgeom()->GetIndexMax();nmod++){
-      if(GetITSgeom()->GetModuleType(nmod)==kSPD)SetResponseModel(nmod,new AliITSresponseSPD());
-    }
-
+    SetResponseModel(kSPD,new AliITSresponseSPD());
     SetSegmentationModel(kSPD,new AliITSsegmentationSPD());
     fDetTypeSim->SetDigitClassName(kSPD,"AliITSdigitSPD");
 
     // SDD
     s1 = (AliITSgeomSDD*) GetITSgeom()->GetShape(kSDD);// Get shape info. Do it this way for now.
-    AliITSresponseSDD *resp1=0;
-    Int_t nsdd=0;
-
-    for(Int_t nmod=0;nmod<GetITSgeom()->GetIndexMax();nmod++){
-      if(GetITSgeom()->GetModuleType(nmod)==kSDD){
-	resp1 = new AliITSresponseSDD("simulated");
-	SetResponseModel(nmod,resp1);
-	nsdd=nmod;
-      }
-    }
-
+    AliITSresponseSDD *resp1=new AliITSresponseSDD("simulated");
+    SetResponseModel(kSDD,resp1);
 
     AliITSsegmentationSDD *seg1=new AliITSsegmentationSDD(GetITSgeom(),resp1);
     seg1->SetDetSize(s1->GetDx()*kconv, // base this on AliITSgeomSDD
@@ -873,8 +861,8 @@ void AliITSvSDD03::SetDefaults(){
 
     seg1->SetNPads(256,256);// Use AliITSgeomSDD for now
     SetSegmentationModel(kSDD,seg1);
-    const char *kData1=(fDetTypeSim->GetResponseModel(nsdd))->DataType();
-    const char *kopt=fDetTypeSim->GetResponseModel(nsdd)->ZeroSuppOption();
+    const char *kData1=(fDetTypeSim->GetResponseModel(kSDD))->DataType();
+    const char *kopt=fDetTypeSim->GetResponseModel(kSDD)->ZeroSuppOption();
     if((!strstr(kopt,"2D")) && (!strstr(kopt,"1D")) || strstr(kData1,"real") ){
 	fDetTypeSim->SetDigitClassName(kSDD,"AliITSdigit");
     } else fDetTypeSim->SetDigitClassName(kSDD,"AliITSdigitSDD");
@@ -883,16 +871,8 @@ void AliITSvSDD03::SetDefaults(){
 
     s2 = (AliITSgeomSSD*) GetITSgeom()->GetShape(kSSD);// Get shape info. Do it this way for now.
    
-    AliITSresponse *resp2=0;
-    Int_t nssd=0; 			
-    for(Int_t nmod=0;nmod<GetITSgeom()->GetIndexMax();nmod++){
-      if(GetITSgeom()->GetModuleType(nmod)==kSSD){
-	resp2 = new AliITSresponseSSD("simulated");
-	SetResponseModel(nmod,resp2);
-	nssd=nmod;
-      }
-    }
-
+    AliITSresponse *resp2= new AliITSresponseSSD("simulated");
+    SetResponseModel(kSSD,resp2);
 
     AliITSsegmentationSSD *seg2=new AliITSsegmentationSSD(GetITSgeom());
     seg2->SetDetSize(s2->GetDx()*2.*kconv, // base this on AliITSgeomSSD
@@ -906,7 +886,7 @@ void AliITSvSDD03::SetDefaults(){
     seg2->SetAnglesLay6(0.,0.); // strip angles rad P and N side.
 
     SetSegmentationModel(kSSD,seg2); 
-    const char *kData2=(fDetTypeSim->GetResponseModel(nsdd))->DataType();
+    const char *kData2=(fDetTypeSim->GetResponseModel(kSSD))->DataType();
     if(strstr(kData2,"real") ) fDetTypeSim->SetDigitClassName(kSSD,"AliITSdigit");
     else fDetTypeSim->SetDigitClassName(kSSD,"AliITSdigitSSD");
 
@@ -930,27 +910,19 @@ void AliITSvSDD03::SetDefaultSimulation(){
   AliITSsimulation *sim;
   AliITSsegmentation *seg;
   AliITSresponse *res;
-  Int_t nspd =0;
-  Int_t nsdd =0;
-  Int_t nssd =0;
-  for(Int_t i=0;i<GetITSgeom()->GetIndexMax();i++){
-    if(GetITSgeom()->GetModuleType(i)==kSPD) nspd=i;
-    if(GetITSgeom()->GetModuleType(i)==kSDD) nsdd=i;
-    if(GetITSgeom()->GetModuleType(i)==kSSD) nssd=i;    
-  }
   //SPD
   if(fDetTypeSim){
     sim = fDetTypeSim->GetSimulationModel(kSPD);
     if (!sim) {
       seg =(AliITSsegmentation*)fDetTypeSim->GetSegmentationModel(kSPD);
       if(seg==0) seg = new AliITSsegmentationSPD();
-      res = (AliITSresponse*)fDetTypeSim->GetResponseModel(nspd);
+      res = (AliITSresponse*)fDetTypeSim->GetResponseModel(kSPD);
       if(res==0) res = new AliITSresponseSPD();
       sim = new AliITSsimulationSPDdubna(seg,res,0);
       SetSimulationModel(kSPD,sim);
     }else{ // simulation exists, make sure it is set up properly.
       sim->SetSegmentationModel((AliITSsegmentation*)fDetTypeSim->GetSegmentationModel(kSPD));
-      sim->SetResponseModel((AliITSresponse*)fDetTypeSim->GetResponseModel(nspd));
+      sim->SetResponseModel((AliITSresponse*)fDetTypeSim->GetResponseModel(kSPD));
       sim->Init();
     } // end if
   } // end if iDetType
@@ -959,12 +931,12 @@ void AliITSvSDD03::SetDefaultSimulation(){
     sim = fDetTypeSim->GetSimulationModel(kSDD);
     if (!sim) {
       seg = (AliITSsegmentation*)fDetTypeSim->GetSegmentationModel(kSDD);
-      res = (AliITSresponse*)fDetTypeSim->GetResponseModel(nsdd);
+      res = (AliITSresponse*)fDetTypeSim->GetResponseModel(kSDD);
       sim = new AliITSsimulationSDD(seg,res);
       SetSimulationModel(kSDD,sim);
     }else{ // simulation exists, make sure it is set up properly.
       sim->SetSegmentationModel((AliITSsegmentation*)fDetTypeSim->GetSegmentationModel(kSDD));
-      sim->SetResponseModel((AliITSresponse*)fDetTypeSim->GetResponseModel(nsdd));
+      sim->SetResponseModel((AliITSresponse*)fDetTypeSim->GetResponseModel(kSDD));
       
       sim->Init();
     } //end if
@@ -974,12 +946,12 @@ void AliITSvSDD03::SetDefaultSimulation(){
     sim = fDetTypeSim->GetSimulationModel(kSSD);
     if (!sim) {
       seg = (AliITSsegmentation*)fDetTypeSim->GetSegmentationModel(kSSD);
-      res = (AliITSresponse*)fDetTypeSim->GetResponseModel(nsdd);
+      res = (AliITSresponse*)fDetTypeSim->GetResponseModel(kSSD);
       sim = new AliITSsimulationSSD(seg,res);
       SetSimulationModel(kSSD,sim);
     }else{ // simulation exists, make sure it is set up properly.
       sim->SetSegmentationModel((AliITSsegmentation*)fDetTypeSim->GetSegmentationModel(kSSD));
-      sim->SetResponseModel((AliITSresponse*)fDetTypeSim->GetResponseModel(nssd));
+      sim->SetResponseModel((AliITSresponse*)fDetTypeSim->GetResponseModel(kSSD));
       sim->Init();
     } // end if
   } // end if iDetType

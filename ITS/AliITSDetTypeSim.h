@@ -43,8 +43,8 @@ class AliITSDetTypeSim : public TObject {
     virtual AliITSsegmentation* GetSegmentationModel(Int_t dettype);
     virtual AliITSsegmentation* GetSegmentationModelByModule(Int_t module);
 
-    virtual void SetResponseModel(Int_t module,AliITSresponse *resp);
-    virtual AliITSresponse* GetResponseModel(Int_t module);
+    virtual void SetResponseModel(Int_t dettype,AliITSresponse *resp);
+    virtual AliITSresponse* GetResponseModel(Int_t dettype);
 
     TObjArray* GetResponse() const {return fResponse;}
     TObjArray* GetSegmentation() const {return fSegmentation;}
