@@ -18,6 +18,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.78  2005/05/28 14:19:04  schutz
+ * Compilation warnings fixed by T.P.
+ *
  */
 
 //*-- Author: Yves Schutz (SUBATECH)  & Dmitri Peressounko (SUBATECH & Kurchatov Institute)
@@ -144,7 +147,10 @@ void AliPHOSClusterizerv1::Exec(Option_t *option)
 
   Int_t ievent ;
   for (ievent = fFirstEvent; ievent <= fLastEvent; ievent++) {
-    gime->Event(ievent, "D");
+    if (fRawReader == 0)
+      gime->Event(ievent    ,"D"); // Read digits from simulated data
+    else
+      gime->Event(fRawReader,"W"); // Read digits from raw data
     
     fNumberOfEmcClusters  = fNumberOfCpvClusters  = 0 ;
     

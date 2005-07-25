@@ -323,10 +323,18 @@ void AliPHOSGetter::Event(Int_t event, const char* opt)
 
   if( strstr(opt,"E") ){
     ReadTreeE(event) ;
-  }    
+  }
 
-if( strstr(opt,"W")  ){
-    ReadRaw(event) ;
+}
+
+
+//____________________________________________________________________________ 
+void AliPHOSGetter::Event(AliRawReader *rawReader, const char* opt) 
+{
+  // Reads the raw event from rawReader
+
+  if( strstr(opt,"W")  ){
+    ReadRaw(rawReader) ;
   }    
  
 }
@@ -542,13 +550,12 @@ Bool_t AliPHOSGetter::OpenESDFile()
 }
 
 //____________________________________________________________________________ 
-Int_t AliPHOSGetter::ReadRaw(Int_t event)
+Int_t AliPHOSGetter::ReadRaw(AliRawReader *rawReader)
 {
   // reads the raw format data, converts it into digits format and store digits in Digits()
   // container.
 
-  AliRawReaderFile rawReader(event) ; 
-  AliPHOSRawStream in(&rawReader);
+  AliPHOSRawStream in(rawReader);
  
   TClonesArray * digits = Digits() ;
   digits->Clear() ; 

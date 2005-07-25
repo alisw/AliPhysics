@@ -41,6 +41,7 @@ class AliPHOSTrackSegmentMaker ;
 class AliPHOSPID ; 
 class AliPHOSBeamTestEvent ;
 class AliESD ; 
+class AliRawReader ;
 
 class AliPHOSGetter : public TObject {
   
@@ -95,6 +96,7 @@ public:
   
   //========== Methods to read something from file ==========
   virtual void   Event(Int_t event, const char * opt = "HSDRTP") ;    
+  void   Event(AliRawReader *rawReader, const char * opt = "W") ;    
   virtual void   Track(Int_t itrack) ;
  
   
@@ -186,7 +188,7 @@ public:
     return  PhosLoader()->WritePID(opt) ; }
 
   //========== Raw ===========
-  virtual Int_t ReadRaw(Int_t event) ; 
+  virtual Int_t ReadRaw(AliRawReader *rawReader) ; 
 
   void SetDebug(Int_t level) {fgDebug = level;} // Set debug level 
   virtual void PostClusterizer(AliPHOSClusterizer * clu) 
