@@ -8,6 +8,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.37  2005/05/28 14:19:04  schutz
+ * Compilation warnings fixed by T.P.
+ *
  */
 
 //_________________________________________________________________________
@@ -17,6 +20,7 @@
 
 #include "TTask.h" 
 #include "AliConfig.h"
+#include "AliRawReaderFile.h"
 
 class TFile ; 
 
@@ -55,6 +59,7 @@ public:
   virtual void SetUnfolding(Bool_t)               = 0;
   void SetEventRange(Int_t first=0, Int_t last=-1) {fFirstEvent=first; fLastEvent=last; }
   void SetEventFolderName(TString name) { fEventFolderName = name ; }
+  void SetRawReader(AliRawReader *reader) {fRawReader = reader;}
 
   AliPHOSClusterizer & operator = (const AliPHOSClusterizer & /*rvalue*/)  {return *this ;} 
  
@@ -64,6 +69,7 @@ protected:
   TString fEventFolderName ;  // event folder name
   Int_t   fFirstEvent;        // first event to process
   Int_t   fLastEvent;         // last  event to process
+  AliRawReader *fRawReader;   // reader of raw data
 
   ClassDef(AliPHOSClusterizer,4)  // Clusterization algorithm class 
 

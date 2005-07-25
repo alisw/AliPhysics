@@ -39,6 +39,7 @@ ClassImp(AliPHOSClusterizer)
   fEventFolderName = "" ; 
   fFirstEvent = 0 ; 
   fLastEvent  = -1 ; 
+  fRawReader  = 0 ;
 }
 
 //____________________________________________________________________________
@@ -51,6 +52,7 @@ AliPHOSClusterizer::AliPHOSClusterizer(const TString alirunFileName,
  
   fFirstEvent = 0 ; 
   fLastEvent  = -1 ; 
+  fRawReader  = 0 ;
 }
 
 //____________________________________________________________________________
