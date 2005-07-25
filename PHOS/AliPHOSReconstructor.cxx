@@ -33,7 +33,7 @@
 #include "AliPHOSPIDv1.h"
 #include "AliPHOSGetter.h"
 #include "AliPHOSTracker.h"
-#include "AliRawReaderFile.h"
+#include "AliRawReader.h"
 
  
 ClassImp(AliPHOSReconstructor)
@@ -88,11 +88,12 @@ void AliPHOSReconstructor::Reconstruct(AliRunLoader* runLoader, AliRawReader* ra
   TString branchName(runLoader->GetEventFolder()->GetName()) ;  
   
   AliPHOSClusterizerv1 clu(headerFile, branchName);
-  clu.SetEventRange(0, -1) ; // do all the events
+  clu.SetEventRange(0, 0) ; // reconstruct one events
+  clu.SetRawReader(rawreader);
   if ( Debug() ) 
     clu.ExecuteTask("deb all") ; 
   else 
-    clu.ExecuteTask("") ;  
+    clu.ExecuteTask("") ;
 
 }
 
