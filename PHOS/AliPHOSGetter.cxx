@@ -551,6 +551,76 @@ Bool_t AliPHOSGetter::OpenESDFile()
 }
 
 //____________________________________________________________________________ 
+void AliPHOSGetter::FitRaw(Bool_t lowGainFlag, TGraph * gLowGain, TGraph * gHighGain, TF1* signalF, Int_t & amp, Double_t & time)
+{
+  // Fits the raw signal time distribution 
+
+  const Int_t kNoiseThreshold = 0 ;
+  Double_t timezero1 = 0., timezero2 = 0., timemax = 0. ;
+  Double_t signal = 0., signalmax = 0. ;       
+  Double_t energy = time = 0. ; 
+
+  if (lowGainFlag) {
+    timezero1 = timezero2 = signalmax = timemax = 0. ;
+    signalF->FixParameter(0, PHOS()->GetRawFormatLowCharge()) ; 
+    signalF->FixParameter(1, PHOS()->GetRawFormatLowGain()) ; 
+    Int_t index ; 
+    for (index = 0; index < PHOS()->GetRawFormatTimeBins(); index++) {
+      gLowGain->GetPoint(index, time, signal) ; 
+      if (signal > kNoiseThreshold && timezero1 == 0.) 
+	timezero1 = time ;
+      if (signal <= kNoiseThreshold && timezero1 > 0. && timezero2 == 0.)
+	timezero2 = time ; 
+      if (signal > signalmax) {
+	signalmax = signal ; 
+	timemax   = time ; 
+      }
+    }
+    signalmax /= PHOS()->RawResponseFunctionMax(PHOS()->GetRawFormatLowCharge(), 
+						PHOS()->GetRawFormatLowGain()) ;
+    if ( timezero1 + PHOS()->GetRawFormatTimePeak() < PHOS()->GetRawFormatTimeMax() * 0.4 ) { // else its noise 
+      signalF->SetParameter(2, signalmax) ; 
+      signalF->SetParameter(3, timezero1) ;    	    
+      gLowGain->Fit(signalF, "QRON", "", 0., timezero2); //, "QRON") ; 
+      energy = signalF->GetParameter(2) ; 
+      time   = signalF->GetMaximumX() - PHOS()->GetRawFormatTimePeak() - PHOS()->GetRawFormatTimeTrigger() ;
+    }
+  } else {
+    timezero1 = timezero2 = signalmax = timemax = 0. ;
+    signalF->FixParameter(0, PHOS()->GetRawFormatHighCharge()) ; 
+    signalF->FixParameter(1, PHOS()->GetRawFormatHighGain()) ; 
+    Int_t index ; 
+    for (index = 0; index < PHOS()->GetRawFormatTimeBins(); index++) {
+      gHighGain->GetPoint(index, time, signal) ;               
+      if (signal > kNoiseThreshold && timezero1 == 0.) 
+	timezero1 = time ;
+      if (signal <= kNoiseThreshold && timezero1 > 0. && timezero2 == 0.)
+	timezero2 = time ; 
+      if (signal > signalmax) {
+	signalmax = signal ;   
+	timemax   = time ; 
+      }
+    }
+    signalmax /= PHOS()->RawResponseFunctionMax(PHOS()->GetRawFormatHighCharge(), 
+						PHOS()->GetRawFormatHighGain()) ;;
+    if ( timezero1 + PHOS()->GetRawFormatTimePeak() < PHOS()->GetRawFormatTimeMax() * 0.4 ) { // else its noise  
+      signalF->SetParameter(2, signalmax) ; 
+      signalF->SetParameter(3, timezero1) ;               
+      gHighGain->Fit(signalF, "QRON", "", 0., timezero2) ; 
+      energy = signalF->GetParameter(2) ; 
+      time   = signalF->GetMaximumX() - PHOS()->GetRawFormatTimePeak() - PHOS()->GetRawFormatTimeTrigger() ;
+    }
+  }
+  
+  if (time == 0. && energy == 0.) 
+    amp = 0 ; 
+  else {
+  AliPHOSDigitizer * digitizer = Digitizer() ; 
+  amp = static_cast<Int_t>( (energy - digitizer->GetEMCpedestal()) / digitizer->GetEMCchannel() + 0.5 ) ; 
+  }
+}
+
+//____________________________________________________________________________ 
 Int_t AliPHOSGetter::ReadRaw(AliRawReader *rawReader)
 {
   // reads the raw format data, converts it into digits format and store digits in Digits()
@@ -558,36 +628,103 @@ Int_t AliPHOSGetter::ReadRaw(AliRawReader *rawReader)
 
   AliPHOSRawStream in(rawReader);
  
+  Bool_t first = kTRUE ;
+  
+  TF1 * signalF = new TF1("signal", AliPHOS::RawResponseFunction, 0, PHOS()->GetRawFormatTimeMax(), 4);
+  signalF->SetParNames("Charge", "Gain", "Amplitude", "TimeZero") ; 
+
+  Int_t relId[4], id ;
+  Bool_t lowGainFlag = kFALSE ; 
+ 
   TClonesArray * digits = Digits() ;
   digits->Clear() ; 
   Int_t idigit = 0 ; 
+  Int_t amp = 0 ; 
+  Double_t time = 0. ; 
+
+  TGraph * gLowGain = new TGraph(PHOS()->GetRawFormatTimeBins()) ; 
+  TGraph * gHighGain= new TGraph(PHOS()->GetRawFormatTimeBins()) ;  
 
   while ( in.Next() ) { // PHOS entries loop 
- 
-    Int_t amp = in.GetSignal() ; 
-    Double_t time = in.GetTime() ; 
-    Int_t relId[4], id ;
+    if ( (in.IsNewRow() || in.IsNewColumn() || in.IsNewModule()) ) {
+      if (!first) {
+	FitRaw(lowGainFlag, gLowGain, gHighGain, signalF, amp, time) ; 
+	if (amp > 0) {
+	  new((*digits)[idigit]) AliPHOSDigit( -1, id, amp, time) ;	
+	  idigit++ ; 
+	}
+	Int_t index ; 
+	for (index = 0; index < PHOS()->GetRawFormatTimeBins(); index++) {
+	  gLowGain->SetPoint(index, index * PHOS()->GetRawFormatTimeMax() / PHOS()->GetRawFormatTimeBins(), 0) ;  
+	  gHighGain->SetPoint(index, index * PHOS()->GetRawFormatTimeMax() / PHOS()->GetRawFormatTimeBins(), 0) ; 
+	} 
+      }
+      first = kFALSE ; 
+      relId[0] = in.GetModule() ;
+      if ( relId[0] >= PHOS()->GetRawFormatLowGainOffset() ) { 
+	relId[0] -=  PHOS()->GetRawFormatLowGainOffset() ; 
+	lowGainFlag = kTRUE ; 
+      } else 
+	lowGainFlag = kFALSE ; 
+      relId[1] = 0 ; 
+      relId[2] = in.GetRow() ; 
+      relId[3] = in.GetColumn() ; 
+      PHOSGeometry()->RelToAbsNumbering(relId, id) ;	
+    }
+    if (lowGainFlag)
+      gLowGain->SetPoint(in.GetTime(), 
+		     in.GetTime()* PHOS()->GetRawFormatTimeMax() / PHOS()->GetRawFormatTimeBins(), 
+		     in.GetSignal()) ;
+    else 
+      gHighGain->SetPoint(in.GetTime(), 
+			 in.GetTime() * PHOS()->GetRawFormatTimeMax() / PHOS()->GetRawFormatTimeBins(), 
+			 in.GetSignal() ) ;
 
-    relId[0] = in.GetModule() ;
-    if ( relId[0] >= PHOS()->GetRawFormatLowGainOffset() ) { 
-      relId[0] -=  PHOS()->GetRawFormatLowGainOffset() ; 
-    }
-    relId[1] = 0 ; 
-    relId[2] = in.GetRow() ; 
-    relId[3] = in.GetColumn() ; 
-    PHOSGeometry()->RelToAbsNumbering(relId, id) ;	
-    
-    if (amp > 0 && id >=0 ) {
-      new((*digits)[idigit]) AliPHOSDigit( -1, id, amp, time) ;	
-      idigit++ ; 
-    }
-    
   } // PHOS entries loop
-  
+
+  FitRaw(lowGainFlag, gLowGain, gHighGain, signalF, amp, time) ; 
+  if (amp > 0 ) {
+    new((*digits)[idigit]) AliPHOSDigit( -1, id, amp, time) ;
+    idigit++ ; 
+  }
   digits->Sort() ; 
+
+  delete signalF ; 
+  delete gLowGain, gHighGain ; 
   
   return digits->GetEntriesFast() ; 
 }
+
+//   TClonesArray * digits = Digits() ;
+//   digits->Clear() ; 
+//   Int_t idigit = 0 ; 
+
+//   while ( in.Next() ) { // PHOS entries loop 
+ 
+//     Int_t amp = in.GetSignal() ; 
+//     Double_t time = in.GetTime() ; 
+//     Int_t relId[4], id ;
+
+//     relId[0] = in.GetModule() ;
+//     if ( relId[0] >= PHOS()->GetRawFormatLowGainOffset() ) { 
+//       relId[0] -=  PHOS()->GetRawFormatLowGainOffset() ; 
+//     }
+//     relId[1] = 0 ; 
+//     relId[2] = in.GetRow() ; 
+//     relId[3] = in.GetColumn() ; 
+//     PHOSGeometry()->RelToAbsNumbering(relId, id) ;	
+    
+//     if (amp > 0 && id >=0 ) {
+//       new((*digits)[idigit]) AliPHOSDigit( -1, id, amp, time) ;	
+//       idigit++ ; 
+//     }
+    
+//   } // PHOS entries loop
+  
+//   digits->Sort() ; 
+  
+//   return digits->GetEntriesFast() ; 
+// }
 //____________________________________________________________________________ 
 Int_t AliPHOSGetter::ReadTreeD()
 {

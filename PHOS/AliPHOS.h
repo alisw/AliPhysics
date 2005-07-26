@@ -7,6 +7,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.62  2005/07/06 10:10:32  hristov
+ * Moving the functions used to initialize TF1 and TF2 to the pivate part of the class
+ *
  * Revision 1.61  2005/05/28 12:10:07  schutz
  * Copy constructor is corrected (by T.P.)
  *
@@ -72,6 +75,8 @@ public:
   Double_t GetRawFormatTimePeak() const { return fgTimePeak ; }    
   Double_t GetRawFormatTimeTrigger() const { return fgTimeTrigger ; }   
   static Double_t RawResponseFunctionMax(Double_t charge, Double_t gain) ;
+  static Double_t RawResponseFunction(Double_t *x, Double_t *par) ; 
+  Bool_t   RawSampledResponse(const Double_t dtime, const Double_t damp, Int_t * adcH, Int_t * adcL) const ; 
   //
   virtual AliLoader* MakeLoader(const char* topfoldername);
   virtual void    SetTreeAddress();   
@@ -82,8 +87,6 @@ public:
 
 protected:
 
-  static Double_t RawResponseFunction(Double_t *x, Double_t *par) ; 
-  Bool_t   RawSampledResponse(const Double_t dtime, const Double_t damp, Int_t * adcH, Int_t * adcL) const ; 
   
   
   static Double_t fgCapa ;              // capacitor of the preamplifier for the raw RO signal
