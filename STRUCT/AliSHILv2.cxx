@@ -128,11 +128,11 @@ void AliSHILv2::CreateGeometry()
 
   par0[9]   = par0[6];
   par0[10]  = 0.;
-  par0[11]  = 17.9;
+  par0[11]  = kR11;
 
   par0[12]  = -dz+kZch12;
   par0[13]  = 0.;
-  par0[14]  = 17.9;
+  par0[14]  = kR11;
 
   par0[15]  = par0[12];
   par0[16]  = 0.;
@@ -1592,9 +1592,9 @@ void AliSHILv2::CreateGeometry()
   cpar[2]=17.9;
   cpar[3]=kR11;
   cpar[4]=17.9;
-  gMC->Gsvolu("YCS2", "CONE", idtmed[kAir], cpar, 5);
-  dz=-(kZvac12-zstart)/2.+(kZch11-zstart)+cpar[0];
-  gMC->Gspos("YCS2", 1, "YMOT", 0., 0., dz, 0, "ONLY");
+//  gMC->Gsvolu("YCS2", "CONE", idtmed[kAir], cpar, 5);
+  
+//  gMC->Gspos("YCS2", 1, "ALIC", 0., 0., dz,  idrotm[1705], "ONLY");
 
   Float_t ptubs[5];
   ptubs[0] = kR11;
@@ -1610,36 +1610,35 @@ void AliSHILv2::CreateGeometry()
   AliMatrix(idrotm[1703],90., 180., 90., 270., 0., 0.); 
   AliMatrix(idrotm[1704],90., 270., 90.,   0., 0., 0.); 
   //  Int_t ipos;
-  
-  dz=-cpar[0];
+  dz= - kZch11;  
 // 1.
   ptubs[2]=6.5/2.;
-  dz+=ptubs[2];
-  gMC->Gsposp("YCR0", 1, "YCS2", 0., 0., dz, idrotm[1701], "ONLY", ptubs, 5);
-  gMC->Gsposp("YCR0", 2, "YCS2", 0., 0., dz, idrotm[1703], "ONLY", ptubs, 5);
-  dz+=ptubs[2];
-  dz+=1.5;
+  dz-=ptubs[2];
+  gMC->Gsposp("YCR0", 1, "ALIC", 0., 0., dz, idrotm[1701], "ONLY", ptubs, 5);
+  gMC->Gsposp("YCR0", 2, "ALIC", 0., 0., dz, idrotm[1703], "ONLY", ptubs, 5);
+  dz-=ptubs[2];
+  dz-=1.5;
 // 2.
   ptubs[2]=5.0/2.;
-  dz+=ptubs[2];
-  gMC->Gsposp("YCR0", 3, "YCS2", 0., 0., dz, idrotm[1702], "ONLY", ptubs, 5);
-  gMC->Gsposp("YCR0", 4, "YCS2", 0., 0., dz, idrotm[1704], "ONLY", ptubs, 5);
-  dz+=ptubs[2];
-  dz+=1.5;
+  dz-=ptubs[2];
+  gMC->Gsposp("YCR0", 3, "ALIC", 0., 0., dz, idrotm[1702], "ONLY", ptubs, 5);
+  gMC->Gsposp("YCR0", 4, "ALIC", 0., 0., dz, idrotm[1704], "ONLY", ptubs, 5);
+  dz-=ptubs[2];
+  dz-=1.5;
 // 3. 
   ptubs[2]=5.0/2.;
-  dz+=ptubs[2];
-  gMC->Gsposp("YCR0", 5, "YCS2", 0., 0., dz, idrotm[1701], "ONLY", ptubs, 5);
-  gMC->Gsposp("YCR0", 6, "YCS2", 0., 0., dz, idrotm[1703], "ONLY", ptubs, 5);
-  dz+=ptubs[2];
-  dz+=1.5;
+  dz-=ptubs[2];
+  gMC->Gsposp("YCR0", 5, "ALIC", 0., 0., dz, idrotm[1701], "ONLY", ptubs, 5);
+  gMC->Gsposp("YCR0", 6, "ALIC", 0., 0., dz, idrotm[1703], "ONLY", ptubs, 5);
+  dz-=ptubs[2];
+  dz-=1.5;
 // 4. 
   ptubs[2]=6.5/2.;
-  dz+=ptubs[2];
-  gMC->Gsposp("YCR0", 7, "YCS2", 0., 0., dz, idrotm[1702], "ONLY", ptubs, 5);
-  gMC->Gsposp("YCR0", 8, "YCS2", 0., 0., dz, idrotm[1704], "ONLY", ptubs, 5);
-  dz+=ptubs[2];
-  dz+=1.5;
+  dz-=ptubs[2];
+  gMC->Gsposp("YCR0", 7, "ALIC", 0., 0., dz, idrotm[1702], "ONLY", ptubs, 5);
+  gMC->Gsposp("YCR0", 8, "ALIC", 0., 0., dz, idrotm[1704], "ONLY", ptubs, 5);
+  dz-=ptubs[2];
+  dz-=1.5;
 
 
   
@@ -1649,7 +1648,7 @@ void AliSHILv2::CreateGeometry()
   cpar[3]=kR21;
   cpar[4]=(kZvac4+2.*cpar[0])*TMath::Tan(kAccMin);
   gMC->Gsvolu("YCS4", "CONE", idtmed[kNiCuW+40], cpar, 5);
-  dz=-(kZvac12-zstart)/2.+(kZvac4-zstart)+cpar[0];
+  dz=-(kZvac12 - zstart)/2.+(kZvac4-zstart)+cpar[0];
   gMC->Gspos("YCS4", 1, "YMOT", 0., 0., dz, 0, "ONLY");
 
   cpar[0]=(kZvac6-kZch22)/2.;
@@ -1658,7 +1657,7 @@ void AliSHILv2::CreateGeometry()
   cpar[3]=kR21;
   cpar[4]=(kZch22+2.*cpar[0])*TMath::Tan(kAccMin);
   gMC->Gsvolu("YCS6", "CONE", idtmed[kNiCuW+40], cpar, 5);
-  dz=-(kZvac12-zstart)/2.+(kZch22-zstart)+cpar[0];
+  dz=-(kZvac12 - zstart)/2.+(kZch22-zstart)+cpar[0];
   gMC->Gspos("YCS6", 1, "YMOT", 0., 0., dz, 0, "ONLY");
   
 // Recess station 2
