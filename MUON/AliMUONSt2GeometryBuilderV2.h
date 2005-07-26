@@ -8,7 +8,8 @@
 // -----------------------------
 // MUON Station2 geometry construction class.
 //
-// Author: Ivana Hrivnacova, IPN Orsay
+// Author: SANJOY PAL ,Prof. SUKALYAN CHATTOPADHAYAY  [SINP, KOLKATA]
+//         &  Dr.SHAKEEL AHMAD (AMU), INDIA
 
 #ifndef ALI_MUON_ST2_GEOMETRY_BUILDER_V2_H
 #define ALI_MUON_ST2_GEOMETRY_BUILDER_V2_H
@@ -41,4 +42,4 @@ class AliMUONSt2GeometryBuilderV2 : public AliMUONVGeometryBuilder
   ClassDef(AliMUONSt2GeometryBuilderV2,1) // MUON chamber geometry base class
 };
 
-#endif //ALI_MUON_ST2_GEOMETRY_BUILDER_H_V2
+#endif //ALI_MUON_ST2_GEOMETRY_BUILDER_V2_H
