@@ -127,10 +127,11 @@ public:
   Int_t GetNumberOfPHOSParticles() const {return fPHOSParticles;}
   void  SetNumberOfPHOSParticles(Int_t part) { fPHOSParticles = part ; }
   void  SetFirstPHOSParticle(Int_t index) { fFirstPHOSParticle = index ; } 
+  Int_t GetFirstPHOSParticle() const  { return fFirstPHOSParticle ; }
   Int_t GetNumberOfEMCALParticles() const {return fEMCALParticles;}
   void  SetNumberOfEMCALParticles(Int_t part) { fEMCALParticles = part ; }
   void  SetFirstEMCALParticle(Int_t index) { fFirstEMCALParticle = index ; } 
-
+  Int_t GetFirstEMCALParticle() const { return fFirstEMCALParticle ; } 
 
   Float_t GetT0zVertex() const {return fT0zVertex;}
   void SetT0zVertex(Float_t z) {fT0zVertex=z;}
