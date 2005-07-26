@@ -140,7 +140,7 @@ class AliMUON : public  AliDetector
     // Background eent for event mixing
     AliMUONFactoryV2* fFactory; // ! MUON factory
     
-    ClassDef(AliMUON,8)  // MUON Detector base class
+    ClassDef(AliMUON,9)  // MUON Detector base class
 };
 #endif
 

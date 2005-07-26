@@ -312,7 +312,7 @@ protected:
   Float_t fRICHdx;         // x of the track impact minus x of the MIP
   Float_t fRICHdy;         // y of the track impact minus y of the MIP
   	
-  ClassDef(AliESDtrack,15)  //ESDtrack 
+  ClassDef(AliESDtrack,16)  //ESDtrack 
 };
 
 #endif 

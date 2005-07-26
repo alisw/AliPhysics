@@ -154,7 +154,7 @@ class AliITS : public AliDetector {
     Int_t        *fIdSens;     //[fIdN] layer identifier
     TString      *fIdName;     //[fIdN] layer identifier
     TObjArray    *fITSmodules; //! Pointer to ITS modules
-    ClassDef(AliITS,5) // Base class for ITS
+    ClassDef(AliITS,6) // Base class for ITS
 
 };
 
