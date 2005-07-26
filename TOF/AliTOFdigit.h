@@ -57,8 +57,12 @@ protected:
   Int_t   fStrip;   // number of strip
   Int_t   fPadx;    // number of pad along x
   Int_t   fPadz;    // number of pad along z
-  Float_t fTdc;     // tdc values for digit
-  Float_t fAdc;     // adc values for digit
+  Float_t fTdc;     // tdc channel value, to be multiplied by
+		    // AliTOFGeometry::TdcBinWidth() to have the
+		    // time-of-flight measurement
+  Float_t fAdc;     // adc channel value, to be multiplie by
+		    // AliTOFSDigitizer::GetAdcBin() to have the
+		    // 'charge' measurement
 
   ClassDef(AliTOFdigit,2)  // Digit for Time Of Flight
 };
