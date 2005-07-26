@@ -96,7 +96,7 @@ Int_t AliBaseLoader::Load(Option_t* opt)
   
   if (Get())
     {
-      AliWarning(Form("Data <<%s>> are already loaded. Use ReloadData to force reload. Nothing done",GetName()));
+      AliDebug(1,Form("Data <<%s>> are already loaded. Use ReloadData to force reload. Nothing done",GetName()));
       return 0;
     }
   
