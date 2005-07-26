@@ -88,6 +88,7 @@ AliPHOSGetter::AliPHOSGetter(const char* headerFile, const char* version, Option
     if (rl->GetAliRun() == 0x0) {
       rl->LoadgAlice();
       gAlice = rl->GetAliRun(); // should be removed
+      rl->LoadHeader();
     }
   }
   fgPhosLoader = dynamic_cast<AliPHOSLoader*>(rl->GetLoader("PHOSLoader"));
