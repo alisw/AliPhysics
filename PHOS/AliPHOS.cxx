@@ -16,6 +16,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.90  2005/06/17 07:39:07  hristov
+ * Removing GetDebug and SetDebug from AliRun and AliModule. Using AliLog for the messages
+ *
  * Revision 1.89  2005/05/28 12:10:07  schutz
  * Copy constructor is corrected (by T.P.)
  *
@@ -222,31 +225,16 @@ void AliPHOS::CreateMaterials()
   Float_t dAr = 0.001782 ; 
   AliMaterial(15, "Ar$", 39.948, 18.0, dAr, 14.0, 0., 0, 0) ;   
  
- // ArCo2
-  Char_t namate[21]="";
-  Float_t aGM[2] ; 
-  Float_t zGM[2] ; 
-  Float_t wGM[2] ; 
-  Float_t dGM ; 
-
-  Float_t absL, radL, density ;
-  Float_t buf[1] ;
-  Int_t nbuf ;
-
-  gMC->Gfmate((*fIdmate)[15], namate, aGM[0], zGM[0], density, radL, absL, buf, nbuf) ; // Get properties of Ar 
-  gMC->Gfmate((*fIdmate)[14], namate, aGM[1], zGM[1], density, radL, absL, buf, nbuf) ; // Get properties of CO2 
-
-
-  // Create gas mixture 
-
-  Float_t arContent    = 0.80 ;  // Ar-content of the Ar/CO2-mixture (80% / 20%) 
- 
-  wGM[0] = arContent;
-  wGM[1] = 1. - arContent ;
-  dGM    = wGM[0] * dAr + wGM[1] * dCO;
-
-  
-  AliMixture(16, "ArCO2$", aGM, zGM, dGM,  2, wGM) ;
+  // Ar+CO2 Mixture (80% / 20%)
+  Float_t arContent = 0.80 ;  // Ar-content of the ArCO2-mixture
+  Float_t aArCO[3]  = {39.948, 12.0, 16.0} ;
+  Float_t zArCO[3]  = {18.0  ,  6.0,  8.0} ;
+  Float_t wArCO[3];
+  wArCO[0] = arContent;
+  wArCO[1] = (1-arContent)*1;
+  wArCO[2] = (1-arContent)*2;
+  Float_t dArCO = arContent*dAr + (1-arContent)*dCO ;
+  AliMixture(16, "ArCO2$", aArCO, zArCO, dArCO,  -3, wArCO) ;
 
   // --- Stainless steel (let it be pure iron) ---
   AliMaterial(17, "Steel$", 55.845, 26, 7.87, 1.76, 0., 0, 0) ;
