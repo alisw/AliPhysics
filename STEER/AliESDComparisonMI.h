@@ -16,7 +16,8 @@ public:
   ~AliESDRecInfo(){}
   void UpdatePoints(AliESDtrack* track);
   void Update(AliMCInfo* info,AliTPCParam * par, Bool_t reconstructed);
-  Float_t    fTPCPoints[10]; //start , biggest end points,max density .. density at the last 30 pad-rows
+  void Reset();
+  Float_t  fTPCPoints[10]; //start , biggest end points,max density .. density at the last 30 pad-rows
   Double_t fTPCinR0[5];   //generated position of the track at inner tpc - radius [3] and fi [4]
   Double_t fTPCinR1[5];   //reconstructed postion of the track           - radius [3] and fi [
   Double_t fTPCinP0[5];   //generated position of the track at inner tpc
@@ -46,10 +47,9 @@ public:
   Bool_t fITSOn;           // ITS refitted inward
   Bool_t fTRDOn;           // ITS refitted inward
   Float_t fDeltaP;          //delta of momenta
-  Double_t fSign;
-  Int_t fLabels[2];
-  void Reset();
-  ClassDef(AliESDRecInfo,1)  // container for 
+  Double_t fSign;           // sign
+  Int_t fLabels[2];         // labels
+  ClassDef(AliESDRecInfo,2)  // container for 
 };
 ClassImp(AliESDRecInfo)
 

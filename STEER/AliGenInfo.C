@@ -737,7 +737,7 @@ AliGenInfoMaker::AliGenInfoMaker(const char * fnGalice, const char* fnRes,
     cerr<<"restricted number of events availaible"<<endl;
   }
   AliMagF * magf = gAlice->Field();
-  AliTracker::SetFieldMap(magf);
+  AliTracker::SetFieldMap(magf,0);
 }
 
 
@@ -1455,11 +1455,10 @@ TH1F * AliComparisonDraw::DrawXY(const char * chx, const char *chy, const char* 
 }
 
 TH1F * AliComparisonDraw::DrawLogXY(const char * chx, const char *chy, const char* selection, 
-		const char * quality, Int_t nbins, Float_t minx, Float_t maxx, Float_t miny, Float_t maxy)
+				    const char * quality, Int_t nbins, Float_t minx, Float_t maxx, Float_t miny, Float_t maxy, Int_t nBinsRes)
 {
   //
   Double_t* bins = CreateLogBins(nbins, minx, maxx);
-  Int_t nBinsRes = 30;
   TH2F* hRes2 = new TH2F("hRes2", "residuals", nbins, bins, nBinsRes, miny, maxy);
   char cut[1000];
   sprintf(cut,"%s&&%s",selection,quality);

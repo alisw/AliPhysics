@@ -95,7 +95,7 @@ public:
   Double_t     fMCRr;       // rec position of the vertex 
   Double_t     fMCR;        //exact r position of the vertex
   Int_t        fPdg[2];   //pdg code of mother and daugter particles
-  Int_t        fLab[2];   //MC label of the partecle
+  Int_t        fLab[2];   //MC label of the partecle  
   //
   Double_t       fInvMass;  //reconstructed invariant mass -
   Float_t        fPointAngleFi; //point angle fi
@@ -228,7 +228,7 @@ public:
 		Float_t miny, Float_t maxy, Int_t nBinsRes=30);
   TH1F * DrawLogXY(const char * chx, const char *chy, const char* selection, 
 		   const char * quality, Int_t nbins,Float_t minx, Float_t maxx, 
-		   Float_t miny, Float_t maxy); 
+		   Float_t miny, Float_t maxy, Int_t nBinsRes=30); 
   TH1F * Eff(const char *variable, const char* selection, const char * quality, 
 	     Int_t nbins,Float_t min, Float_t max); 
   TH1F * EffLog(const char *variable, const char* selection, const char * quality, 
