@@ -21,7 +21,7 @@ class AliGenSTRANGElib :
 public AliGenLib
 {
  public:
-    enum constants{kKaon, kPhi, kLambda, kXiMinus, kOmegaMinus};
+    enum constants{kKaon, kPhi, kLambda, kXiMinus, kOmegaMinus, kLambda1520};
     GenFunc   GetPt(Int_t param, const char* tname=0) const;
     GenFunc   GetY (Int_t param, const char* tname=0) const;
     GenFuncIp GetIp(Int_t param, const char* tname=0) const;    
@@ -49,6 +49,10 @@ public AliGenLib
     static Double_t PtOmegaMinus(Double_t *px, Double_t *dummy);
     static Double_t YOmegaMinus( Double_t *py, Double_t *dummy);
     static Int_t    IpOmegaMinus(TRandom *ran);
+// Lambda(1520)
+    static Double_t PtLambda1520(Double_t *px, Double_t *dummy);
+    static Double_t YLambda1520(Double_t *py, Double_t *dummy);
+    static Int_t    IpLambda1520(TRandom *ran);
     
     ClassDef(AliGenSTRANGElib,0) // Library providing y and pT parameterisations
 };

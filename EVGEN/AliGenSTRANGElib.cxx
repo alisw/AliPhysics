@@ -60,7 +60,7 @@ ClassImp(AliGenSTRANGElib)
 
   //    MASS SCALING RESPECT TO PIONS
   //    MASS                1=>PI,  2=>K, 3=>ETA,4=>OMEGA,5=>ETA',6=>PHI 
-  const Double_t khm[10] = {0.1396, 0.494,0.547, 0.782,   0.957,  1.02, 
+  const Double_t khm[11] = {0.1396, 0.494,0.547, 0.782,   0.957,  1.02, 
   //    MASS               7=>BARYON-BARYONBAR  
                                  0.938, 
   //    MASS               8=>Lambda-antiLambda  
@@ -68,9 +68,11 @@ ClassImp(AliGenSTRANGElib)
   //    MASS               9=>Xi-antiXi  
                                   1.3213, 
   //    MASS              10=>Omega-antiOmega  
-                                  1.6725};
+                                  1.6725,
+  //    MASS              11=>Lambda(1520)
+                                  1.5195};
   //     VALUE MESON/PI AT 5 GEV
-  const Double_t kfmax[10]={1., 1., 1., 1., 1., 1., 1., 1., 1., 1.};
+  const Double_t kfmax[11]={1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1.};
   np--;
   Double_t f5=TMath::Power(((sqrt(100.018215)+2.)/(sqrt(100.+khm[np]*khm[np])+2.0)),12.3);
   Double_t kfmax2=f5/kfmax[np];
@@ -316,7 +318,46 @@ ClassImp(AliGenSTRANGElib)
 }
 // End Omegaminus
 //============================================================================
+//     Lambda(1520)
+Double_t AliGenSTRANGElib::PtLambda1520( Double_t *px, Double_t *)
+{
+// Lambda(1520)
+//                  pt-distribution
+//____________________________________________________________
 
+  return PtScal(*px,11);   //   11=> Lambda(1520) in the PtScal function
+}
+
+Double_t AliGenSTRANGElib::YLambda1520( Double_t *py, Double_t *)
+{
+// y-distribution
+//____________________________________________________________
+
+  const Double_t ka   = 1000.;
+  const Double_t kdy  = 4.;
+
+  
+  Double_t y=TMath::Abs(*py);
+  //
+  Double_t ex = y*y/(2*kdy*kdy);
+  return ka*TMath::Exp(-ex);
+}
+
+Int_t AliGenSTRANGElib::IpLambda1520(TRandom * ran)
+{
+//                 particle composition
+//                 generation of fixed type of particle
+//
+
+   Float_t random = ran->Rndm();
+   if (random < 0.5) {       
+     return  3124;   //   Lambda(1520) 
+   } else {  
+     return -3124;   //   antiLambda(1520)
+   }
+}
+// End Lambda(1520)
+//============================================================================
 
 typedef Double_t (*GenFunc) (Double_t*,  Double_t*);
  GenFunc AliGenSTRANGElib::GetPt(Int_t param, const char* /*tname*/) const
@@ -340,6 +381,9 @@ typedef Double_t (*GenFunc) (Double_t*,  Double_t*);
         break;
     case kOmegaMinus:
         func=PtOmegaMinus;
+        break;
+    case kLambda1520:
+        func=PtLambda1520;
         break;
     default:
         func=0;
@@ -369,6 +413,9 @@ typedef Double_t (*GenFunc) (Double_t*,  Double_t*);
     case kOmegaMinus:
         func=YOmegaMinus;
         break;
+    case kLambda1520:
+        func=YLambda1520;
+        break;
     default:
         func=0;
         printf("<AliGenSTRANGElib::GetY> unknown parametrisationn");
@@ -396,6 +443,9 @@ typedef Int_t (*GenFuncIp) (TRandom *);
         break;
     case kOmegaMinus:
         func=IpOmegaMinus;
+        break;
+    case kLambda1520:
+        func=IpLambda1520;
         break;
     default:
         func=0;

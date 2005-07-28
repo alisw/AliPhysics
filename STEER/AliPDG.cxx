@@ -87,6 +87,9 @@ ClassImp(AliPDG)
 		     0,0,"Special",kspe+50);
   pdgDB->AddParticle("FeedbackPhoton","FeedbackPhoton",0,kFALSE,
 		     0,0,"Special",kspe+51);
+  pdgDB->AddParticle("Lambda1520","Lambda1520",1.5195,kFALSE,
+		     0.0156,0,"Resonance",3124);
+  pdgDB->AddAntiParticle("Lambda1520bar",-3124);
 }
 
 
