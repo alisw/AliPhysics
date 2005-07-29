@@ -133,8 +133,16 @@ void AliMUONCommonGeometryBuilder::CreateMaterials()
   fMUON->AliMaterial(10, "ALUMINIUM1$", 26.98, 13., 2.7, 8.9, 37.2);
   fMUON->AliMaterial(49, "Kapton$", 12.01,6,1.42,-28.6,999);          // from DPG
   fMUON->AliMaterial(42, "Copper$", 63.546,29.,8.96,-1.43,9.6);
-  fMUON->AliMaterial(43, "FR4$", 17.749, 8.875, 1.7, -19.4, 999.);    // from DPG
+
+  //fMUON->AliMaterial(43, "FR4$", 17.749, 8.875, 1.7, -19.4, 999.);    // from DPG
+  Float_t aFR[4] = {16.0, 28.09, 12.011, 1.00794} ;
+  Float_t zFR[4] = {8.0, 14.0, 6.0, 1.0} ;
+  Float_t wFR[4] = {292.0, 68.0, 462.0, 736.0} ;
+  Float_t dFR = 1.8 ; 
+  fMUON->AliMixture(43, "FR4$", aFR, zFR, dFR, -4, wFR);
+
   fMUON->AliMaterial(44, "FrameEpoxy",12.24,6.0,1.85,-19.14,999);// use 16.75cm
+
 
   // Air
   Float_t aAir[4]={12.0107,14.0067,15.9994,39.948};
