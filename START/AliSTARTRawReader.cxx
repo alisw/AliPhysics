@@ -53,6 +53,7 @@ void AliSTARTRawReader::NextThing()
   TArrayI *chargeTDC2 = new TArrayI(24);
   TArrayI *sumMult = new TArrayI(6);
 
+  fRawReader->Reset();
   fRawReader->Select(13);
  
   if (!fRawReader->ReadHeader()){
