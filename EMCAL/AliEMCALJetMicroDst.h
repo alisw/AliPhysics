@@ -23,8 +23,6 @@ class TVector3;
 class TBrowser;
 
 class AliEMCALJetMicroDst: public TNamed {
-
-
   public:
   AliEMCALJetMicroDst(const char *name="jetMicroDst",
   const char *tit="jet Micro Dst for preparation of proposal");
@@ -80,7 +78,12 @@ class AliEMCALJetMicroDst: public TNamed {
   virtual Bool_t  IsFolder() const;
   virtual void Browse(TBrowser* b) const ;
 
-  static TList *MoveHistsToList(const char* name="List of Hist", Bool_t putToBrowser=kTRUE);
+  // service routine
+  static TList *MoveHistsToList(const char* name="ListOfHists", Bool_t putToBrowser=kTRUE);
+  static void FillH1(TList *l=0, Int_t ind=0, Double_t x=-99999., Double_t w=1.);
+  static void FillH2(TList *l=0, Int_t ind=0, Double_t x=-99999., Double_t w=-99999., Double_t w=1.);
+  static int  SaveListOfHists(TList *list=0, const char* name="test", Bool_t kSingleKey=kFALSE,
+  const char* opt="RECREATE");
 
   AliEMCALJetMicroDst & operator = (const AliEMCALJetMicroDst &) {
     Fatal("operator =", "not implemented") ; return *this ; }
@@ -142,6 +145,9 @@ class AliEMCALJetMicroDst: public TNamed {
 };
 
 #endif // AliEMCALJETMICRODST_H
+
+typedef AliEMCALJetMicroDst sv; // for convinience
+
 /*
 What to do
 1. Common info about event

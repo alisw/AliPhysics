@@ -10,7 +10,8 @@
 //                  
 //*-- Author: Sahal Yacoob (LBL)
 // based on : AliPHOSDigit
-// July 2003 Yves Schutz : NewIO 
+// July     2003 Yves Schutz : NewIO 
+// November 2003 Aleksei Pavlinov : Shish-Kebab geometry 
 //_________________________________________________________________________ 
 
 
@@ -18,6 +19,8 @@
 #include "TObjString.h"
 class TArrayI ;
 class TClonesArray ; 
+class TList;
+class TBrowser;
 
 // --- Standard library ---
 
@@ -54,13 +57,23 @@ public:
   Int_t   GetDigitsInRun()  const { return fDigitsInRun; } 
   void  MixWith(TString alirunFileName, 
 		TString eventFolderName = AliConfig::GetDefaultEventFolderName()) ; // Add another one file to mix
-  void  Print()const ;
+  void  Print() const ;
+  void  Print1(Option_t * option); // *MENU*
  
   AliEMCALDigitizer & operator = (const AliEMCALDigitizer & /*rvalue*/)  {
     // assignement operator requested by coding convention but not needed
    Fatal("operator =", "not implemented") ;  
    return *this ; 
   }
+
+  virtual void Browse(TBrowser* b);
+  // hists
+  void   SetControlHists(const Int_t var=0) {fControlHists=var;}
+  Int_t  GetControlHist() const {return fControlHists;}
+  TList *GetListOfHists() {return fHists;}
+  TList* BookControlHists(const int var=0);
+  void   SaveHists(const char* name="RF/TRD1/Digitizations/DigiVar?",
+  Bool_t kSingleKey=kTRUE, const char* opt="RECREATE"); // *MENU*
 
 private:
 
@@ -100,9 +113,11 @@ private:
   TString fEventFolderName;         // skowron: name of EFN to read data from in stand alone mode
   Int_t   fFirstEvent;        // first event to process
   Int_t   fLastEvent;         // last  event to process
+  // Control hists
+  Int_t   fControlHists;          //!
+  TList  *fHists;                 //!
 
   ClassDef(AliEMCALDigitizer,5)  // description 
-
 };
 
 

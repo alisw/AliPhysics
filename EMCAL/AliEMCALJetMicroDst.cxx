@@ -759,3 +759,61 @@ TList* AliEMCALJetMicroDst::MoveHistsToList(const char* name, Bool_t putToBrowse
   if(putToBrowser) gROOT->GetListOfBrowsables()->Add((TObject*)list);
   return list;
 }
+
+void AliEMCALJetMicroDst::FillH1(TList *l, Int_t ind, Double_t x, Double_t w)
+{
+  static TH1* hid=0;
+  if(l == 0) return;
+  if(ind < l->GetSize()){
+    hid = (TH1*)l->At(ind);
+    hid->Fill(x,w);
+  }
+}
+
+void AliEMCALJetMicroDst::FillH2(TList *l, Int_t ind, Double_t x, Double_t y, Double_t w)
+{
+  static TH2* hid=0;
+  if(l == 0) return;
+  if(ind < l->GetSize()){
+    hid = (TH2*)l->At(ind);
+    hid->Fill(x,y,w);
+  }
+}
+
+int AliEMCALJetMicroDst::SaveListOfHists(TList *list,const char* name,Bool_t kSingleKey,const char* opt)
+{
+  printf(" Name of out file |%s|\n", name); 
+  int save = 0;
+  if(list && list->GetSize() && strlen(name)){
+    TString nf(name); 
+    if(nf.Contains(".root") == kFALSE) nf += ".root";
+    TFile file(nf.Data(),opt);
+    TIter nextHist(list);
+    TObject* objHist=0;
+    int nh=0;
+    if(kSingleKey) {
+       file.cd();
+       list->Write(list->GetName(),TObject::kSingleKey);
+       list->ls();
+       save = 1;
+    } else {
+      while((objHist=nextHist())) { // loop over list 
+        if(objHist->InheritsFrom("TH1")) {
+          TH1* hid = (TH1*)objHist;
+          file.cd();
+          hid->Write();
+          nh++;
+          printf("Save hist. %s \n",hid ->GetName());
+        }
+      }
+      printf("%i hists. save to file -> %s\n", nh,file.GetName());
+      if(nh>0) save = 1;
+    }
+    file.Close();
+  } else {
+    printf("TAliasPAI::saveListOfHists : N O  S A V I N G \n");
+    if(list==0) printf("List of object 0 : %i \n", (int)list);
+    else printf("Size of list %i \n", list->GetSize());
+  }
+  return save;
+}

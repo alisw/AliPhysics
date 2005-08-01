@@ -17,6 +17,9 @@
 // --- ROOT system ---
 #include "TTask.h"
 class TFile ;
+class TList;
+class TBrowser;
+//class TBrowser;
 
 // --- Standard library ---
 
@@ -32,16 +35,25 @@ public:
   virtual ~AliEMCALSDigitizer(); // dtor
 
   Float_t       Calibrate(Int_t amp)const {return (amp - fA)/fB ; }
-  Int_t         Digitize(Float_t Energy)const { return (Int_t ) ( fA + Energy*fB); }
+  Int_t         Digitize(Float_t energy)const { return (Int_t ) (fA + energy*fB); }
   virtual void  Exec(Option_t *option); 
   Int_t         GetSDigitsInRun() const {return fSDigitsInRun ;}  
-  virtual void  Print() const ;
+  virtual void  Print() const;
+  void          Print1(Option_t *option="all");  // *MENU*
   void          SetEventFolderName(TString name) { fEventFolderName = name ; }
   void          SetEventRange(Int_t first=0, Int_t last=-1) {fFirstEvent=first; fLastEvent=last; }
 
   Bool_t operator == (const AliEMCALSDigitizer & sd) const ;
   const AliEMCALSDigitizer & operator = (const AliEMCALSDigitizer & /*sd*/) {return *this ;}
 
+  virtual void Browse(TBrowser* b);
+  // hists
+  void   SetControlHists(const Int_t var=0) {fControlHists=var;}
+  Int_t  GetControlHist() const {return fControlHists;}
+  TList *GetListOfHists() {return fHists;}
+  TList* BookControlHists(const int var=0);
+  void   SaveHists(const char* name="RF/TRD1/Digitizations/SDigiVar?", 
+  Bool_t kSingleKey=kTRUE, const char* opt="RECREATE"); // *MENU*
 
 private:
   void     Init() ;
@@ -55,13 +67,16 @@ private:
   Float_t fECPrimThreshold ;       // To store primary if EC Shower Elos > threshold
   Bool_t  fDefaultInit;            //! Says if the task was created by defaut ctor (only parameters are initialized)
   TString fEventFolderName;        // event folder name
-  Bool_t  fInit ;                  //! tells if initialisation wennt OK, will revent exec if not
+  Bool_t  fInit ;                  //! tells if initialisation went OK, will revent exec if not
   Int_t   fSDigitsInRun ;          //! Total number of sdigits in one run
   Int_t   fFirstEvent;             // first event to process
   Int_t   fLastEvent;              // last  event to process
+  Float_t fSampling;               // See AliEMCALGeometry
+  // Control hists
+  Int_t   fControlHists;          //!
+  TList  *fHists;                 //!
 
   ClassDef(AliEMCALSDigitizer,5)  // description 
-
 };
 
 #endif // AliEMCALSDigitizer_H

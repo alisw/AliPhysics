@@ -57,7 +57,7 @@ AliEMCALv1::AliEMCALv1(const char *name, const char *title):
     // Standard Creator.
 
     fHits= new TClonesArray("AliEMCALHit",1000);
-    gAlice->GetMCApp()->AddHitList(fHits);
+    //    gAlice->GetMCApp()->AddHitList(fHits); // 20-dec-04 - advice of Andreas
 
     fNhits = 0;
     fIshunt     =  2; // All hits are associated with particles entering the calorimeter
@@ -104,7 +104,7 @@ void AliEMCALv1::AddHit(Int_t shunt, Int_t primary, Int_t tracknumber, Int_t ipa
 	new((*fHits)[fNhits]) AliEMCALHit(*newHit);
 	fNhits++;
     } // end if
-
+    
     delete newHit;
 }
 //______________________________________________________________________

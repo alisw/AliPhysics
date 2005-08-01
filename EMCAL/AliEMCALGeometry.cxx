@@ -26,6 +26,7 @@
 //*-- Author: Sahal Yacoob (LBL / UCT)
 //     and  : Yves Schutz (SUBATECH)
 //     and  : Jennifer Klay (LBL)
+//     SHASHLYK : Aleksei Pavlinov (WSU)
 
 // --- AliRoot header files ---
 #include <TMath.h>
@@ -41,6 +42,7 @@ ClassImp(AliEMCALGeometry)
 
 AliEMCALGeometry *AliEMCALGeometry::fgGeom = 0;
 Bool_t            AliEMCALGeometry::fgInit = kFALSE;
+TString name; // contains name of geometry
 
 //______________________________________________________________________
 AliEMCALGeometry::~AliEMCALGeometry(void){
@@ -66,9 +68,21 @@ void AliEMCALGeometry::Init(void){
   // WX inform about the composition of the EM calorimeter section: 
   //   thickness in mm of Pb radiator (W) and of scintillator (X), and number of scintillator layers (N)
   // New geometry: EMCAL_55_25
-
+  // 24-aug-04 for shish-kebab
+  // SHISH_25 or SHISH_62
   fgInit = kFALSE; // Assume failed until proven otherwise.
-  TString name(GetName()) ; 
+  name   = GetName();
+  name.ToUpper(); 
+
+  fNZ             = 114;	// granularity along Z (eta) 
+  fNPhi           = 168;	// granularity in phi (azimuth)
+  fArm1PhiMin     = 60.0;	// degrees, Starting EMCAL Phi position
+  fArm1PhiMax     = 180.0;	// degrees, Ending EMCAL Phi position
+  fArm1EtaMin     = -0.7;	// pseudorapidity, Starting EMCAL Eta position
+  fArm1EtaMax     = +0.7;	// pseudorapidity, Ending EMCAL Eta position
+  fIPDistance     = 454.0;      // cm, Radial distance to inner surface of EMCAL
+
+  // geometry
   if (name == "EMCAL_55_25") {
     fECPbRadThickness  = 0.5;  // cm, Thickness of the Pb radiators
     fECScintThick      = 0.5;  // cm, Thickness of the scintillator
@@ -82,21 +96,114 @@ void AliEMCALGeometry::Init(void){
   else if( name == "G56_2_55_19" || name == "EMCAL_5655_21" || name == "G56_2_55_19_104_14"|| name == "G65_2_64_19" || name == "EMCAL_6564_21"){
     Fatal("Init", "%s is an old geometry! Please update your Config file", name.Data()) ;
   }
+  else if(name.Contains("SHISH")){
+    fNumberOfSuperModules = 12; // 12 = 6 * 2 (6 in phi, 2 in Z);
+    fSteelFrontThick = 2.54;    //  9-sep-04
+    fIPDistance      = 460.0;
+    fFrontSteelStrip = fPassiveScintThick = 0.0; // 13-may-05
+    fLateralSteelStrip = 0.025; // before MAY 2005 
+    fPhiModuleSize   = fEtaModuleSize   = 11.4;
+    fPhiTileSize = fEtaTileSize      = 5.52; // (11.4-5.52*2)/2. = 0.18 cm (wall thickness)
+    fNPhi            = 14;
+    fNZ              = 30;
+    fAlFrontThick    = fGap2Active = 0;
+    fNPHIdiv = fNETAdiv = 2;
+
+    fNECLayers       = 62;
+    fECScintThick    = fECPbRadThickness = 0.2;
+    fSampling        = 1.;  // 30-aug-04 - should be calculated
+    if(name.Contains("TWIST")) { // all about EMCAL module
+      fNZ             = 27;  // 16-sep-04
+    } else if(name.Contains("TRD")) {
+      fIPDistance      = 428.0;  //  11-may-05
+      fSteelFrontThick = 0.0;    // 3.17 -> 0.0; 28-mar-05 : no stell plate
+      fNPhi            = 12;
+      fSampling       = 12.327;
+      fPhiModuleSize = fEtaModuleSize = 12.26;
+      fNZ            = 26;     // 11-oct-04
+      fTrd1Angle     = 1.3;    // in degree
+// 18-nov-04; 1./0.08112=12.327
+// http://pdsfweb01.nersc.gov/~pavlinov/ALICE/SHISHKEBAB/RES/linearityAndResolutionForTRD1.html
+      if(name.Contains("TRD1")) {       // 30-jan-05
+	// for final design
+        if(name.Contains("MAY05") || name.Contains("WSUC")){
+          fNumberOfSuperModules = 12; // 20-may-05
+          if(name.Contains("WSUC")) fNumberOfSuperModules = 1; // 27-may-05
+          fNECLayers     = 77;       // (13-may-05 from V.Petrov)
+          fPhiModuleSize = 12.5;     // 20-may-05 - rectangular shape
+          fEtaModuleSize = 11.9;
+          fECScintThick  = fECPbRadThickness = 0.16;// (13-may-05 from V.Petrov)
+          fFrontSteelStrip   = 0.025;// 0.025cm = 0.25mm  (13-may-05 from V.Petrov)
+          fLateralSteelStrip = 0.01; // 0.01cm  = 0.1mm   (13-may-05 from V.Petrov) - was 0.025
+          fPassiveScintThick = 0.8;  // 0.8cm   = 8mm     (13-may-05 from V.Petrov)
+          fNZ                = 24;
+          fTrd1Angle         = 1.5;  // 1.3 or 1.5
+	}
+      } else if(name.Contains("TRD2")) {       // 30-jan-05
+        fSteelFrontThick = 0.0;         // 11-mar-05
+        fIPDistance+= fSteelFrontThick; // 1-feb-05 - compensate absence of steel plate
+        fTrd1Angle  = 1.64;             // 1.3->1.64
+        fTrd2AngleY = fTrd1Angle;       //  symmetric case now
+        fEmptySpace    = 0.2; // 2 mm
+        fTubsR         = fIPDistance; // 31-jan-05 - as for Fred case
+
+        fPhiModuleSize  = fTubsR*2.*TMath::Tan(fTrd2AngleY*TMath::DegToRad()/2.);
+        fPhiModuleSize -= fEmptySpace/2.; // 11-mar-05  
+        fEtaModuleSize  = fPhiModuleSize; // 20-may-05 
+        fTubsTurnAngle  = 3.;
+      }
+      fNPHIdiv = fNETAdiv  = 2;   // 13-oct-04 - division again
+      if(name.Contains("3X3")) {   // 23-nov-04
+        fNPHIdiv = fNETAdiv  = 3;
+      } else if(name.Contains("4X4")) {
+        fNPHIdiv = fNETAdiv  = 4;
+      }
+    }
+    fPhiTileSize = fPhiModuleSize/2. - fLateralSteelStrip; // 13-may-05 
+    fEtaTileSize = fEtaModuleSize/2. - fLateralSteelStrip; // 13-may-05 
+
+    if(name.Contains("25")){
+      fNECLayers     = 25;
+      fECScintThick  = fECPbRadThickness = 0.5;
+    }
+    if(name.Contains("WSUC")){ // 18-may-05 - about common structure
+      fShellThickness = 30.; // should be change 
+      fNPhi = fNZ = 4; 
+    }
+    // constant for transition absid <--> indexes
+    fNCellsInTower  = fNPHIdiv*fNETAdiv;
+    fNCellsInSupMod = fNCellsInTower*fNPhi*fNZ;
+    fNCells         = fNCellsInSupMod*fNumberOfSuperModules;
+
+    fLongModuleSize = fNECLayers*(fECScintThick + fECPbRadThickness);
+    if(name.Contains("MAY05")) fLongModuleSize += (fFrontSteelStrip + fPassiveScintThick);
+
+    // 30-sep-04
+    if(name.Contains("TRD")) {
+      f2Trd1Dx2 = fEtaModuleSize + 2.*fLongModuleSize*TMath::Tan(fTrd1Angle*TMath::DegToRad()/2.);
+      if(name.Contains("TRD2")) {  // 27-jan-05
+        f2Trd2Dy2 = fPhiModuleSize + 2.*fLongModuleSize*TMath::Tan(fTrd2AngleY*TMath::DegToRad()/2.);
+      }
+    }
+  }
   else
     Fatal("Init", "%s is an undefined geometry!", name.Data()) ; 
 		 
-  // geometry
-  fNZ             = 114;	// granularity along Z (eta) 
-  fNPhi           = 168;	// granularity in phi (azimuth)
-  fArm1PhiMin     = 60.0;	// degrees, Starting EMCAL Phi position
-  fArm1PhiMax     = 180.0;	// degrees, Ending EMCAL Phi position
-  fArm1EtaMin     = -0.7;	// pseudorapidity, Starting EMCAL Eta position
-  fArm1EtaMax     = +0.7;	// pseudorapidity, Ending EMCAL Eta position
-  
-  fIPDistance     = 454.0; // cm, Radial distance to inner surface of EMCAL
 
+  fNPhiSuperModule = fNumberOfSuperModules/2;
+  if(fNPhiSuperModule<1) fNPhiSuperModule = 1;
   //There is always one more scintillator than radiator layer because of the first block of aluminium
   fShellThickness = fAlFrontThick + fGap2Active + fNECLayers*GetECScintThick()+(fNECLayers-1)*GetECPbRadThick();
+  if(name.Contains("SHISH")) {
+    fShellThickness = fSteelFrontThick + fLongModuleSize;
+    if(name.Contains("TWIST")) { // 13-sep-04
+      fShellThickness  = TMath::Sqrt(fLongModuleSize*fLongModuleSize + fPhiModuleSize*fEtaModuleSize);
+      fShellThickness += fSteelFrontThick;
+    } else if(name.Contains("TRD")) { // 1-oct-04
+      fShellThickness  = TMath::Sqrt(fLongModuleSize*fLongModuleSize + f2Trd1Dx2*f2Trd1Dx2);
+      fShellThickness += fSteelFrontThick;
+    }
+  }
 
   fZLength        = 2.*ZFromEtaR(fIPDistance+fShellThickness,fArm1EtaMax); // Z coverage
   fEnvelop[0]     = fIPDistance; // mother volume inner radius
@@ -105,12 +212,41 @@ void AliEMCALGeometry::Init(void){
   
   fgInit = kTRUE; 
   
-  if (gDebug) {
-    printf("Init: geometry of EMCAL named %s is as follows:", name.Data());
+  if (kTRUE) {
+    printf("Init: geometry of EMCAL named %s is as follows:\n", name.Data());
     printf( "               ECAL      : %d x (%f mm Pb, %f mm Sc) \n", GetNECLayers(), GetECPbRadThick(), GetECScintThick() ) ; 
+    if(name.Contains("SHISH")){
+      printf(" fIPDistance       %6.3f cm \n", fIPDistance);
+      if(fSteelFrontThick>0.) 
+      printf(" fSteelFrontThick  %6.3f cm \n", fSteelFrontThick);
+      printf(" fNPhi %i   |  fNZ %i \n", fNPhi, fNZ);
+      if(name.Contains("MAY05")){
+	printf(" fFrontSteelStrip         %6.4f cm (thickness of front steel strip)\n", 
+        fFrontSteelStrip);
+	printf(" fLateralSteelStrip       %6.4f cm (thickness of lateral steel strip)\n", 
+        fLateralSteelStrip);
+ 	printf(" fPassiveScintThick  %6.4f cm (thickness of front passive Sc tile)\n",
+        fPassiveScintThick);
+      }
+      printf(" X:Y module size   %6.3f , %6.3f cm \n", fPhiModuleSize, fEtaModuleSize);
+      printf(" X:Y   tile size   %6.3f , %6.3f cm \n", fPhiTileSize, fEtaTileSize);
+      printf(" fLongModuleSize   %6.3f cm \n", fLongModuleSize);
+      printf(" #supermodule in phi direction %i \n", fNPhiSuperModule );
+    }
+    if(name.Contains("TRD")) {
+      printf(" fTrd1Angle %7.4f\n", fTrd1Angle);
+      printf(" f2Trd1Dx2  %7.4f\n",  f2Trd1Dx2);
+      if(name.Contains("TRD2")) {
+        printf(" fTrd2AngleY     %7.4f\n", fTrd2AngleY);
+        printf(" f2Trd2Dy2       %7.4f\n", f2Trd2Dy2);
+        printf(" fTubsR          %7.2f\n", fTubsR);
+        printf(" fTubsTurnAngle  %7.4f\n", fTubsTurnAngle);
+        printf(" fEmptySpace     %7.4f\n", fEmptySpace);
+      }
+    }
     printf("Granularity: %d in eta and %d in phi\n", GetNZ(), GetNPhi()) ;
-    printf("Layout: phi = (%f, %f), eta = (%f, %f), y = %f\n",  
-	   GetArm1PhiMin(), GetArm1PhiMax(),GetArm1EtaMin(), GetArm1EtaMax(), GetIPDistance() ) ;    
+    printf("Layout: phi = (%7.1f, %7.1f), eta = (%5.2f, %5.2f), IP = %7.2f\n",  
+	   GetArm1PhiMin(), GetArm1PhiMax(),GetArm1EtaMin(), GetArm1EtaMax(), GetIPDistance() );
   }
 }
 
@@ -430,4 +566,67 @@ Bool_t AliEMCALGeometry::IsInEMCAL(Double_t x, Double_t y, Double_t z) const {
        return 1;
   }
   return 0;
+}
+
+//
+// == Shish-kebab cases ==
+//
+Int_t AliEMCALGeometry::GetAbsCellId(const int nSupMod, const int nTower, const int nIphi, const int nIeta)
+{ // 27-aug-04; corr. 21-sep-04
+  static Int_t id; // have to change from 1 to fNCells
+  id  = fNCellsInSupMod*(nSupMod-1);
+  id += fNCellsInTower *(nTower-1);
+  id += fNPHIdiv *(nIphi-1);
+  id += nIeta;
+  if(id<=0 || id > fNCells) {
+    printf(" wrong numerations !!\n");
+    printf("    id      %6i(will be force to -1)\n", id);
+    printf("    fNCells %6i\n", fNCells);
+    printf("    nSupMod %6i\n", nSupMod);
+    printf("    nTower  %6i\n", nTower);
+    printf("    nIphi   %6i\n", nIphi);
+    printf("    nIeta   %6i\n", nIeta);
+    id = -1;
+  }
+  return id;
+}
+
+Bool_t  AliEMCALGeometry::CheckAbsCellId(Int_t ind)
+{ // 17-niv-04 - analog of IsInECA
+   if(name.Contains("TRD")) {
+     if(ind<=0 || ind > fNCells) return kFALSE;
+     else                        return kTRUE;
+   } else return IsInECA(ind);
+}
+
+Bool_t AliEMCALGeometry::GetCellIndex(const Int_t absId,Int_t &nSupMod,Int_t &nTower,Int_t &nIphi,Int_t &nIeta)
+{ // 21-sep-04
+  static Int_t tmp=0;
+  if(absId<=0 || absId>fNCells) {
+    Info("GetCellIndex"," wrong abs Id %i !! \n", absId); 
+    return kFALSE;
+  }
+  nSupMod = (absId-1) / fNCellsInSupMod + 1;
+  tmp     = (absId-1) % fNCellsInSupMod;
+
+  nTower  = tmp / fNCellsInTower + 1;
+  tmp     = tmp % fNCellsInTower;
+
+  nIphi     = tmp / fNPHIdiv + 1;
+  nIeta     = tmp % fNPHIdiv + 1;
+
+  return kTRUE;
+}
+
+void AliEMCALGeometry::GetCellPhiEtaIndexInSModule(const int nTower, const int nIphi, const int nIeta, 
+int &iphi, int &ieta)
+{ // don't check validity of nTower, nIphi and nIeta index
+  // have to change  - 1-nov-04 ?? 
+  static Int_t iphit, ietat;
+
+  ietat = (nTower-1)/fNPhi;
+  ieta  = ietat*fNETAdiv + nIeta; // change from 1 to fNZ*fNETAdiv
+
+  iphit = (nTower-1)%fNPhi;
+  iphi  = iphit*fNPHIdiv + nIphi;  // change from 1 to fNPhi*fNPHIdiv
 }

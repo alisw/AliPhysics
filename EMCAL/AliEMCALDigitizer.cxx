@@ -55,14 +55,18 @@
 // Modif: 
 //  August 2002 Yves Schutz: clone PHOS as closely as possible and intoduction
 //                           of new  IO (à la PHOS)
-///_________________________________________________________________________________
+//  November 2003 Aleksei Pavlinov : adopted for Shish-Kebab geometry 
+//_________________________________________________________________________________
 
 // --- ROOT system ---
+#include "TROOT.h"
 #include "TTree.h"
 #include "TSystem.h"
 #include "TBenchmark.h"
-
-// --- Standard library ---
+#include "TList.h"
+#include "TH1.h"
+#include "TBrowser.h"
+#include "TObjectTable.h"
 
 // --- AliRoot header files ---
 #include "AliRunDigitizer.h"
@@ -73,6 +77,7 @@
 #include "AliEMCALSDigitizer.h"
 #include "AliEMCALGeometry.h"
 #include "AliEMCALTick.h"
+#include "AliEMCALJetMicroDst.h"
 
 ClassImp(AliEMCALDigitizer)
 
@@ -160,20 +165,35 @@ void AliEMCALDigitizer::Digitize(Int_t event)
   // after that adds contributions from SDigits. This design 
   // helps to avoid scanning over the list of digits to add 
   // contribution of any new SDigit.
+  static int isTrd1Geom = -1; // -1 - mean undefined 
+  static int nEMC=0; //max number of digits possible
 
+  //<<<<<<< AliEMCALDigitizer.cxx
+  int deb=0;
+  AliEMCALGetter * gime = AliEMCALGetter::Instance(GetTitle(), fEventFolderName) ; 
+  /* =======
   AliEMCALGetter * gime = AliEMCALGetter::Instance(GetTitle()) ; 
+  >>>>>>> 1.59 */
   Int_t ReadEvent = event ; 
+  // fManager is data member from AliDigitizer
   if (fManager) 
     ReadEvent = dynamic_cast<AliStream*>(fManager->GetInputStream(0))->GetCurrentEventNumber() ; 
-  Info("Digitize", "Adding event %d from input stream 0 %s %s", ReadEvent, GetTitle(), fEventFolderName.Data()) ; 
+  if(deb>0) Info("Digitize", "Adding event %d from input stream 0 %s %s", 
+  ReadEvent, GetTitle(), fEventFolderName.Data()) ; 
   gime->Event(ReadEvent, "S") ;
   TClonesArray * digits = gime->Digits() ; 
   digits->Clear() ;
 
-  const AliEMCALGeometry *geom = gime->EMCALGeometry() ; 
+  const AliEMCALGeometry *geom = gime->EMCALGeometry() ;
+  if(isTrd1Geom < 0) { 
+    TString ng(geom->GetName());
+    isTrd1Geom = 0;
+    if(ng.Contains("SHISH") &&  ng.Contains("TRD1")) isTrd1Geom = 1;
 
-  Int_t nEMC = geom->GetNPhi()*geom->GetNZ(); //max number of digits possible
-  
+    if(isTrd1Geom == 0) nEMC = geom->GetNPhi()*geom->GetNZ();
+    else                nEMC = geom->GetNCells();
+    printf(" nEMC %i (number cells in EMCAL) | %s | isTrd1Geom %i\n", nEMC, geom->GetName(), isTrd1Geom);
+  }
   Int_t absID ;
 
   digits->Expand(nEMC) ;
@@ -200,7 +220,7 @@ void AliEMCALDigitizer::Digitize(Int_t event)
     gime->Event(ReadEvent,"S");
     sdigArray->AddAt(gime->SDigits(), i) ;
   }
-  
+ 
   //Find the first tower with signal
   Int_t nextSig = nEMC + 1 ; 
   TClonesArray * sdigits ;  
@@ -211,7 +231,9 @@ void AliEMCALDigitizer::Digitize(Int_t event)
     Int_t curNext = dynamic_cast<AliEMCALDigit *>(sdigits->At(0))->GetId() ;
      if(curNext < nextSig) 
        nextSig = curNext ;
+     if(deb>0) printf("input %i : #sdigits %i \n", i, sdigits->GetEntriesFast());
   }
+  if(deb>0) printf("FIRST tower with signal %i \n", nextSig);
 
   TArrayI index(fInput) ;
   index.Reset() ;  //Set all indexes to zero
@@ -221,7 +243,7 @@ void AliEMCALDigitizer::Digitize(Int_t event)
 
   TClonesArray * ticks = new TClonesArray("AliEMCALTick",1000) ;
 
-  //Put Noise contribution
+  //Put Noise contributiony
   for(absID = 1; absID <= nEMC; absID++){
     Float_t amp = 0 ;
     // amplitude set to zero, noise will be added later
@@ -265,7 +287,7 @@ void AliEMCALDigitizer::Digitize(Int_t event)
 
 	  index[i]++ ;
 	  if( dynamic_cast<TClonesArray *>(sdigArray->At(i))->GetEntriesFast() > index[i] )
-	    curSDigit = dynamic_cast<AliEMCALDigit*>(dynamic_cast<TClonesArray *>(sdigArray->At(i))->At(index[i])) ; 		
+	    curSDigit = dynamic_cast<AliEMCALDigit*>(dynamic_cast<TClonesArray *>(sdigArray->At(i))->At(index[i])) ;
 	  else
 	    curSDigit = 0 ;
 	}
@@ -292,7 +314,8 @@ void AliEMCALDigitizer::Digitize(Int_t event)
     // add the noise now
     amp += TMath::Abs(gRandom->Gaus(0., fPinNoise)) ;
     digit->SetAmp(sDigitizer->Digitize(amp)) ;  
-  }
+    if(deb>=10) printf(" absID %5i amp %f nextSig %5i\n", absID, amp, nextSig);
+  } // for(absID = 1; absID <= nEMC; absID++)
   
   ticks->Delete() ;
   delete ticks ;
@@ -314,13 +337,20 @@ void AliEMCALDigitizer::Digitize(Int_t event)
   Int_t ndigits = digits->GetEntriesFast() ; 
   digits->Expand(ndigits) ;
   
-  //Set indexes in list of digits
+  //Set indexes in list of digits and fill hists.
+  sv::FillH1(fHists, 0, Double_t(ndigits));
+  Float_t energy=0., esum=0.;
   for (i = 0 ; i < ndigits ; i++) { 
     digit = dynamic_cast<AliEMCALDigit *>( digits->At(i) ) ; 
     digit->SetIndexInList(i) ; 
-    Float_t energy = sDigitizer->Calibrate(digit->GetAmp()) ;
-    digit->SetAmp(DigitizeEnergy(energy) ) ;
+    energy = sDigitizer->Calibrate(digit->GetAmp()) ;
+    esum += energy;
+    digit->SetAmp(DigitizeEnergy(energy) ) ; // for what ??
+    sv::FillH1(fHists, 2, double(digit->GetAmp()));
+    sv::FillH1(fHists, 3, double(energy));
+    sv::FillH1(fHists, 4, double(digit->GetId()));
   }
+  sv::FillH1(fHists, 1, esum);
 }
 
 //____________________________________________________________________________
@@ -364,14 +394,17 @@ void AliEMCALDigitizer::Exec(Option_t *option)
   if (fLastEvent == -1) 
     fLastEvent = gime->MaxEvent() - 1 ;
   else if (fManager) 
-    fLastEvent = fFirstEvent ; 
+    fLastEvent = fFirstEvent ; // what is this ??
 
   Int_t nEvents   = fLastEvent - fFirstEvent + 1;
-  
-  Int_t ievent ;
+  Int_t ievent, nfr=50;
 
-  for (ievent = fFirstEvent; ievent <= fLastEvent; ievent++) {
-  
+  fLastEvent = TMath::Min(fLastEvent, gime->MaxEvent());
+  printf("AliEMCALDigitizer::Exec : option: %s | %i -> %i events : Max events %i \n", 
+  option, fFirstEvent, fLastEvent,  gime->MaxEvent());
+  for (ievent = fFirstEvent; ievent < fLastEvent; ievent++) {
+    if(ievent%nfr==0 || ievent==fLastEvent-1);
+    printf(" processed event %i\n", ievent);
     gime->Event(ievent,"S") ; 
 
     Digitize(ievent) ; //Add prepared SDigits to digits and add the noise
@@ -380,11 +413,13 @@ void AliEMCALDigitizer::Exec(Option_t *option)
 
     if(strstr(option,"deb"))
       PrintDigits(option);
+    if(strstr(option,"table")) gObjectTable->Print();
 
     //increment the total number of Digits per run 
     fDigitsInRun += gime->Digits()->GetEntriesFast() ;  
   }
-  
+  //  gime->WriteDigitizer("OVERWRITE");
+
   gime->EmcalLoader()->CleanDigitizer() ;
 
   if(strstr(option,"tim")){
@@ -459,21 +494,24 @@ Bool_t AliEMCALDigitizer::Init()
 
 //____________________________________________________________________________ 
 void AliEMCALDigitizer::InitParameters()
-{
-  fMeanPhotonElectron = 18200 ; // electrons per GeV
-  fPinNoise           = 0.003 ; // noise equivalent GeV (random choice)
+{ // Tune parameters - 24-nov-04
+
+  fMeanPhotonElectron = 3300 ; // electrons per GeV 
+  fPinNoise           = 0.004; 
   if (fPinNoise == 0. ) 
     Warning("InitParameters", "No noise added\n") ; 
-  fDigitThreshold     = fPinNoise * 3; //2 sigma
-  fTimeResolution     = 1.0e-9 ;
+  fDigitThreshold     = fPinNoise * 3; // 3 * sigma
+  fTimeResolution     = 0.3e-9 ; // 300 psc
   fTimeSignalLength   = 1.0e-9 ;
 
-  fADCchannelEC    = 0.00305;                     // width of one ADC channel in GeV - HG fix so that we see 200 GeV gammas
-  fADCpedestalEC   = 0.005 ;                       // GeV
-  fNADCEC          = (Int_t) TMath::Power(2,16) ;  // number of channels in Tower ADC
+  fADCchannelEC    = 0.00305; // 200./65536 - width of one ADC channel in GeV
+  fADCpedestalEC   = 0.009 ;  // GeV
+  fNADCEC          = (Int_t) TMath::Power(2,16) ;  // number of channels in Tower ADC - 65536
 
-  fTimeThreshold      = 0.001*10000000 ; //Means 1 MeV in terms of SDigits amplitude
- 
+  fTimeThreshold      = 0.001*10000000 ; // Means 1 MeV in terms of SDigits amplitude ??
+  // hists. for control; no hists on default
+  fControlHists = 0;
+  fHists        = 0;
 }
 
 //__________________________________________________________________
@@ -527,7 +565,13 @@ void AliEMCALDigitizer::MixWith(TString alirunFileName, TString eventFolderName)
     fEventNames[fInput]     = eventFolderName ;
     fInput++ ;
 }  
- 
+
+void AliEMCALDigitizer::Print1(Option_t * option)
+{ // 19-nov-04 - just for convinience
+  Print(); 
+  PrintDigits(option);
+}
+
 //__________________________________________________________________
 void AliEMCALDigitizer::Print()const 
 {
@@ -569,11 +613,11 @@ void AliEMCALDigitizer::Print()const
 void AliEMCALDigitizer::PrintDigits(Option_t * option){
     
   AliEMCALGetter * gime = AliEMCALGetter::Instance(GetTitle(), fEventFolderName) ; 
-  TClonesArray * digits = gime->Digits() ;
+  TClonesArray * digits  = gime->Digits() ;
+  TClonesArray * sdigits = gime->SDigits() ;
   
-  printf("PrintDigits: %d", digits->GetEntriesFast()) ; 
-  printf("\nevent %d", gAlice->GetEvNumber()) ;
-  printf("\n       Number of entries in Digits list %d", digits->GetEntriesFast() )  ;  
+  printf("\n #Digits: %d : sdigits %d ", digits->GetEntriesFast(), sdigits->GetEntriesFast()) ; 
+  printf("\n event %d", gAlice->GetEvNumber()) ;
   
   if(strstr(option,"all")){  
     //loop over digits
@@ -591,6 +635,7 @@ void AliEMCALDigitizer::PrintDigits(Option_t * option){
       }
     }   
   }
+  printf("\n");
 }
 
 //__________________________________________________________________
@@ -629,7 +674,12 @@ void AliEMCALDigitizer::WriteDigits()
   //      and branch "AliEMCALDigitizer", with the same title to keep all the parameters
   //      and names of files, from which digits are made.
 
+  //<<<<<<< AliEMCALDigitizer.cxx
+  static Int_t writeSdigitizer=0;
+  AliEMCALGetter * gime = AliEMCALGetter::Instance(GetTitle(), fEventFolderName) ; 
+  /* =======
   AliEMCALGetter * gime = AliEMCALGetter::Instance(GetTitle()) ; 
+  >>>>>>> 1.59*/
   const TClonesArray * digits = gime->Digits() ; 
   TTree * treeD = gime->TreeD(); 
 
@@ -640,9 +690,41 @@ void AliEMCALDigitizer::WriteDigits()
   digitsBranch->Fill() ;
   
   gime->WriteDigits("OVERWRITE");
-  gime->WriteDigitizer("OVERWRITE");
+  if(writeSdigitizer==0) {
+    gime->WriteDigitizer("OVERWRITE");
+    writeSdigitizer = 1;
+  }
 
   Unload() ; 
 
 }
 
+void AliEMCALDigitizer::Browse(TBrowser* b)
+{
+  if(fHists) b->Add(fHists);
+  TTask::Browse(b);
+}
+
+TList *AliEMCALDigitizer::BookControlHists(const int var)
+{ // 22-nov-04
+  Info("BookControlHists"," started ");
+  gROOT->cd();
+  AliEMCALGetter * gime = AliEMCALGetter::Instance(GetTitle(), fEventFolderName);
+  const AliEMCALGeometry *geom = gime->EMCALGeometry() ;
+  if(var>=1){
+    new TH1F("hDigiN",  "#EMCAL digits with fAmp > fDigitThreshold", 
+    fNADCEC+1, -0.5, Double_t(fNADCEC));
+    new TH1F("HDigiSumEnergy","Sum.EMCAL energy from digi", 1000, 0.0, 200.);
+    new TH1F("hDigiAmp",  "EMCAL digital amplitude", fNADCEC+1, -0.5, Double_t(fNADCEC));
+    new TH1F("hDigiEnergy","EMCAL cell energy", 2000, 0.0, 200.);
+    new TH1F("hDigiAbsId","EMCAL absId cells with fAmp > fDigitThreshold ",
+    geom->GetNCells(), 0.5, Double_t(geom->GetNCells())+0.5);
+  }
+  fHists = sv::MoveHistsToList("EmcalDigiControlHists", kFALSE);
+  return fHists;
+}
+
+void AliEMCALDigitizer::SaveHists(const char* name, Bool_t kSingleKey, const char* opt)
+{
+  sv::SaveListOfHists(fHists, name, kSingleKey, opt); 
+}

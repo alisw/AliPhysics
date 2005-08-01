@@ -16,6 +16,7 @@
 #pragma link C++ class AliEMCALGeometry+; 
 #pragma link C++ class AliEMCALv0+;
 #pragma link C++ class AliEMCALv1+;
+#pragma link C++ class AliEMCALv2+;
 #pragma link C++ class AliEMCALHit+;
 #pragma link C++ class AliEMCALDigit+;
 #pragma link C++ class AliEMCALTick+;
@@ -49,9 +50,18 @@
 #pragma link C++ class AliEMCALFastRecParticle+;		
 #pragma link C++ class AliEMCALPID+;		
 #pragma link C++ class AliEMCALPIDv1+;
-#pragma link C++ class AliEMCALTracker+;
 #pragma link C++ class AliEMCALLoader+;	
 #pragma link C++ class AliEMCALReconstructor+;
 #pragma link C++ class AliEMCALRawStream+;
+// 23-aug-04
+#pragma link C++ class AliEMCALGeneratorFactory+;
+// 9-sep-04
+#pragma link C++ class AliEMCALShishKebabModule+;
+#pragma link C++ class AliEMCALShishKebabTrd1Module+;
+#pragma link C++ class AliEMCALGeometryOfflineTrd1+;
+// 17-may-05
+#pragma link C++ class AliEMCALWsuCosmicRaySetUp+;
+//#pragma link C++ enum  PprRunFact_t;
+//#pragma link C++ enum  PprRadFact_t;
 
 #endif

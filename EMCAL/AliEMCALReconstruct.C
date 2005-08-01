@@ -238,5 +238,4 @@ void EMCALHits2Digits (Bool_t split=kFALSE, TString fileName = "galice.root") {
   }
 }
 
-
  

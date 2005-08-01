@@ -153,7 +153,7 @@ Int_t AliEMCALDigit::Compare(const TObject * obj) const
 
 //____________________________________________________________________________
 Float_t AliEMCALDigit::GetEta() const
-{
+{ // should be change in EMCALGeometry - 19-nov-04
   Float_t eta=-10., phi=-10.;
   Int_t id = GetId();
   const AliEMCALGeometry *g = AliEMCALGetter::Instance()->EMCALGeometry();
@@ -163,7 +163,7 @@ Float_t AliEMCALDigit::GetEta() const
 
 //____________________________________________________________________________
 Float_t AliEMCALDigit::GetPhi() const
-{
+{ // should be change in EMCALGeometry - 19-nov-04
   Float_t eta=-10., phi=-10.;
   Int_t id = GetId();
   const AliEMCALGeometry *g = AliEMCALGetter::Instance()->EMCALGeometry();

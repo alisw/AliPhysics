@@ -47,13 +47,14 @@ public:
     return *this;}
  
     
-private:
+protected:
+  // Marco advice - 16-jan-05
   Int_t fCurPrimary;
   Int_t fCurParent;
   Int_t fCurTrack;
   Float_t fTimeCut;       // Cut to remove the background from the ALICE system
 
-  ClassDef(AliEMCALv1,8)//Implementation of EMCAL manager class to produce hits in a Central Calorimeter 
+  ClassDef(AliEMCALv1,9)//Implementation of EMCAL manager class to produce hits in a Central Calorimeter 
     
 };
 

@@ -65,7 +65,7 @@ class AliEMCAL : public AliDetector {
   virtual const TString Version() const {return TString(" ") ; }   
   AliEMCAL & operator = (const AliEMCAL & /*rvalue*/)  {
     Fatal("operator =", "not implemented") ;  return *this ; }
- 
+
 protected:
   
   friend class AliEMCALGetter;
@@ -76,6 +76,7 @@ protected:
   Int_t fBirkC0;    // constants for Birk's Law implementation
   Double_t fBirkC1; // constants for Birk's Law implementation
   Double_t fBirkC2; // constants for Birk's Law implementation
+
   static Double_t fgCapa ;              // capacitor of the preamplifier for the raw RO signal
   Double_t fHighCharge ;                // high charge (to convert energy to charge) for the raw RO signal
   Double_t fHighGain ;                  // high gain for the raw RO signal

@@ -38,7 +38,6 @@
 
 ClassImp(AliEMCALRecPoint)
 
-
 //____________________________________________________________________________
 AliEMCALRecPoint::AliEMCALRecPoint()
   : AliRecPoint()
@@ -135,10 +134,26 @@ Bool_t AliEMCALRecPoint::AreNeighbours(AliEMCALDigit * digit1, AliEMCALDigit * d
   AliEMCALGeometry * geom =  (AliEMCALGetter::Instance())->EMCALGeometry();
 
   Int_t relid1[2] ; 
-  geom->AbsToRelNumbering(digit1->GetId(), relid1) ; 
+    //copied for shish-kebab geometry, ieta,iphi is cast as float as eta,phi conversion
+    // for this geometry does not exist
+    int nSupMod=0, nTower=0, nIphi=0, nIeta=0;
+    int iphi=0, ieta=0;
+       geom->GetCellIndex(digit1->GetId(), nSupMod,nTower,nIphi,nIeta);
+       geom->GetCellPhiEtaIndexInSModule(nTower,nIphi,nIeta, iphi,ieta);
+       relid1[0]=ieta;
+       relid1[1]=iphi;
+//  geom->AbsToRelNumbering(digit1->GetId(), relid1) ; 
 
   Int_t relid2[2] ; 
-  geom->AbsToRelNumbering(digit2->GetId(), relid2) ; 
+    //copied for shish-kebab geometry, ieta,iphi is cast as float as eta,phi conversion
+    // for this geometry does not exist
+    int nSupMod1=0, nTower1=0, nIphi1=0, nIeta1=0;
+    int iphi1=0, ieta1=0;
+       geom->GetCellIndex(digit2->GetId(), nSupMod1,nTower1,nIphi1,nIeta1);
+       geom->GetCellPhiEtaIndexInSModule(nTower1,nIphi1,nIeta1, iphi1,ieta1);
+       relid2[0]=ieta1;
+       relid2[1]=iphi1;
+//  geom->AbsToRelNumbering(digit2->GetId(), relid2) ; 
   
   Int_t rowdiff = TMath::Abs( relid1[0] - relid2[0] ) ;  
   Int_t coldiff = TMath::Abs( relid1[1] - relid2[1] ) ;  
@@ -293,13 +308,20 @@ void AliEMCALRecPoint::EvalAll(Float_t logWeight,TClonesArray * digits)
   // Evaluates all shower parameters
 
   EvalLocalPosition(logWeight, digits) ;
+  printf("eval position done\n");
   EvalElipsAxis(logWeight, digits) ;
+  printf("eval axis done\n");
   EvalDispersion(logWeight, digits) ;
-  EvalCoreEnergy(logWeight, digits);
+  printf("eval dispersion done\n");
+ // EvalCoreEnergy(logWeight, digits);
+ // printf("eval energy done\n");
   EvalTime(digits) ;
+  printf("eval time done\n");
 
   EvalPrimaries(digits) ;
+  printf("eval pri done\n");
   EvalParents(digits);
+  printf("eval parent done\n");
 }
 
 //____________________________________________________________________________
@@ -320,7 +342,7 @@ void  AliEMCALRecPoint::EvalDispersion(Float_t logWeight, TClonesArray * digits)
   if (!fLocPos.X() || !fLocPos.Y()) 
     EvalLocalPosition(logWeight, digits) ;
   
-  const Float_t kDeg2Rad = TMath::DegToRad() ; 
+  //Sub const Float_t kDeg2Rad = TMath::DegToRad() ; 
     
   Float_t cluEta =  fLocPos.X() ; 
   Float_t cluPhi =  fLocPos.Y() ; 
@@ -335,8 +357,24 @@ void  AliEMCALRecPoint::EvalDispersion(Float_t logWeight, TClonesArray * digits)
     digit = (AliEMCALDigit *) digits->At(fDigitsList[iDigit])  ;
     Float_t etai = 0.;
     Float_t phii = 0.;
-    geom->EtaPhiFromIndex(digit->GetId(), etai, phii);
+    //copied for shish-kebab geometry, ieta,iphi is cast as float as eta,phi conversion
+    // for this geometry does not exist
+    int nSupMod=0, nTower=0, nIphi=0, nIeta=0;
+    int iphi=0, ieta=0;
+       geom->GetCellIndex(digit->GetId(), nSupMod,nTower,nIphi,nIeta);
+       geom->GetCellPhiEtaIndexInSModule(nTower,nIphi,nIeta, iphi,ieta);
+	etai=(Float_t)ieta;
+	phii=(Float_t)iphi;
+        printf("%f,%d,%d \n", fAmp, ieta, iphi) ;
+
+/* Sub
+  geom->EtaPhiFromIndex(digit->GetId(), etai, phii);
     phii = phii * kDeg2Rad;
+*/
+///////////////////////////
+  if(fAmp>0)printf("%f %d %f", fAmp,iDigit,fEnergyList[iDigit]) ;
+/////////////////////////
+
     if (gDebug == 2) 
       printf("EvalDispersion: id = %d, etai,phii = %f,%f", digit->GetId(), etai, phii) ;
 
@@ -351,7 +389,7 @@ void  AliEMCALRecPoint::EvalDispersion(Float_t logWeight, TClonesArray * digits)
     d = 0. ; 
 
   fDispersion = TMath::Sqrt(d) ;
- 
+      printf("Dispersion: = %f", fDispersion) ;
 }
 
 //____________________________________________________________________________
@@ -367,15 +405,23 @@ void AliEMCALRecPoint::EvalLocalPosition(Float_t logWeight, TClonesArray * digit
   Int_t iDigit;
   Float_t cluEta = 0;
   Float_t cluPhi = 0;
-  const Float_t kDeg2Rad = TMath::DegToRad();
+ //Sub const Float_t kDeg2Rad = TMath::DegToRad();
 
   for(iDigit=0; iDigit<fMulDigit; iDigit++) {
     digit = dynamic_cast<AliEMCALDigit *>(digits->At(fDigitsList[iDigit])) ;
 
     Float_t etai ;
     Float_t phii ;
-    geom->EtaPhiFromIndex(digit->GetId(), etai, phii);
-    phii = phii * kDeg2Rad;
+    //copied for shish-kebab geometry, ieta,iphi is cast as float as eta,phi conversion
+    // for this geometry does not exist
+    int nSupMod=0, nTower=0, nIphi=0, nIeta=0;
+    int iphi=0, ieta=0;
+       geom->GetCellIndex(digit->GetId(), nSupMod,nTower,nIphi,nIeta);
+       geom->GetCellPhiEtaIndexInSModule(nTower,nIphi,nIeta, iphi,ieta);
+	etai=(Float_t)ieta;
+	phii=(Float_t)iphi;
+//Sub    geom->EtaPhiFromIndex(digit->GetId(), etai, phii);
+//Sub    phii = phii * kDeg2Rad;
     Float_t w = TMath::Max( 0., logWeight + TMath::Log( fEnergyList[iDigit] / fAmp ) ) ;
     cluEta += (etai * w) ;
     cluPhi += (phii * w );
@@ -394,7 +440,7 @@ void AliEMCALRecPoint::EvalLocalPosition(Float_t logWeight, TClonesArray * digit
   fLocPos.SetY(cluPhi);
   fLocPos.SetZ(geom->GetIP2ECASection());
     
-  if (gDebug==2)
+//  if (gDebug==2)
     printf("EvalLocalPosition: eta,phi,r = %f,%f,%f", fLocPos.X(), fLocPos.Y(), fLocPos.Z()) ; 
   fLocPosM = 0 ;
 }
@@ -445,6 +491,7 @@ void  AliEMCALRecPoint::EvalElipsAxis(Float_t logWeight,TClonesArray * digits)
   AliEMCALDigit * digit ;
 
   AliEMCALGeometry * geom = (AliEMCALGetter::Instance())->EMCALGeometry();
+  TString gn(geom->GetName());
 
   Int_t iDigit;
   
@@ -452,15 +499,29 @@ void  AliEMCALRecPoint::EvalElipsAxis(Float_t logWeight,TClonesArray * digits)
     digit = (AliEMCALDigit *) digits->At(fDigitsList[iDigit])  ;
     Float_t etai = 0. ;
     Float_t phii = 0. ; 
-    geom->EtaPhiFromIndex(digit->GetId(), etai, phii);
-    phii = phii * kDeg2Rad;
+    if(gn.Contains("SHISH")) {
+    //copied for shish-kebab geometry, ieta,iphi is cast as float as eta,phi conversion
+    // for this geometry does not exist
+      int nSupMod=0, nTower=0, nIphi=0, nIeta=0;
+      int iphi=0, ieta=0;
+      geom->GetCellIndex(digit->GetId(), nSupMod,nTower,nIphi,nIeta);
+      geom->GetCellPhiEtaIndexInSModule(nTower,nIphi,nIeta, iphi,ieta);
+      etai=(Float_t)ieta;
+      phii=(Float_t)iphi;
+    } else {
+      geom->EtaPhiFromIndex(digit->GetId(), etai, phii);
+      phii = phii * kDeg2Rad;
+    }
+
     Double_t w = TMath::Max(0.,logWeight+TMath::Log(fEnergyList[iDigit]/fAmp ) ) ;
 
     dxx  += w * etai * etai ;
     x    += w * etai ;
     dzz  += w * phii * phii ;
     z    += w * phii ; 
+
     dxz  += w * etai * phii ; 
+
     wtot += w ;
   }
 
@@ -491,6 +552,7 @@ void  AliEMCALRecPoint::EvalElipsAxis(Float_t logWeight,TClonesArray * digits)
     fLambda[1]= 0. ;
   }
 
+  //  printf("Evalaxis: lambdas  = %f,%f", fLambda[0],fLambda[1]) ; 
 
 }
 

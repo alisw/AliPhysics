@@ -31,7 +31,6 @@
 #include "AliEMCALClusterizerv1.h"
 #include "AliEMCALPIDv1.h"
 #include "AliEMCALGetter.h"
-#include "AliEMCALTracker.h"
 #include "AliRawReaderFile.h"
 
 ClassImp(AliEMCALReconstructor)
@@ -100,6 +99,19 @@ void AliEMCALReconstructor::FillESD(AliRunLoader* runLoader, AliESD* esd) const
   
   Int_t eventNumber = runLoader->GetEventNumber() ;
 
+  TString headerFile(runLoader->GetFileName()) ; 
+  TString branchName(runLoader->GetEventFolder()->GetName()) ;  
+
+  AliEMCALPIDv1 pid(headerFile, branchName);
+
+
+  // do current event; the loop over events is done by AliReconstruction::Run()
+  pid.SetEventRange(eventNumber, eventNumber) ; 
+  if ( Debug() ) 
+    pid.ExecuteTask("deb all") ;
+  else 
+    pid.ExecuteTask("") ;
+ 
   // Creates AliESDtrack from AliEMCALRecParticles 
   AliEMCALGetter::Instance()->Event(eventNumber, "P") ; 
   TClonesArray *recParticles = AliEMCALGetter::Instance()->RecParticles();
@@ -122,11 +134,4 @@ void AliEMCALReconstructor::FillESD(AliRunLoader* runLoader, AliESD* esd) const
     esd->AddTrack(et);
     delete et;
   }
-}
-
-AliTracker* AliEMCALReconstructor::CreateTracker(AliRunLoader* runLoader) const
-{
-// creates the EMCAL tracker
-  if (!runLoader) return NULL; 
-  return new AliEMCALTracker(runLoader);
 }

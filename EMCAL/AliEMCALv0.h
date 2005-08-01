@@ -15,6 +15,8 @@
 // --- ROOT system ---
 
 class TFile;
+class TList;
+class TNode;
 
 // --- AliRoot header files ---
 #include "AliEMCAL.h"
@@ -35,6 +37,7 @@ class AliEMCALv0 : public AliEMCAL {
   virtual ~AliEMCALv0(){} 
 
   virtual void BuildGeometry();// creates the geometry for the ROOT display
+  TNode *BuildGeometryOfWSUC();  // WSUC - test environment
   virtual void CreateGeometry() ;// creates the geometry for GEANT
   virtual void   Init(void) ;                                       // does nothing
   virtual Int_t  IsVersion(void) const { 
@@ -51,6 +54,23 @@ class AliEMCALv0 : public AliEMCAL {
     Fatal("operator =", "not implemented") ;  
     return *this ; 
   }
+  // ShishKebab 
+  void CreateShishKebabGeometry();
+  void CreateSmod(const char* mother="XEN1");
+  void CreateEmod(const char* mother="SMOD", const char* child="EMOD");
+  // TRD1
+  void Trd1Tower3X3(const double parSCM0[5]);
+  void Trd1Tower4X4();
+  void PbInTrap(const double parTRAP[11], TString n);
+  // TRD2 - 1th design
+  void Scm0InTrd2(const AliEMCALGeometry * g, const Double_t parEMOD[5], Double_t parSCM0[5]);
+  void Division2X2InScm0(const AliEMCALGeometry * g, const Double_t parSCM0[5]);
+  void PbInTrapForTrd2(const double *parTRAP, TString name);
+  // TRD2 - 2th design
+  void PbmoInTrd2(const AliEMCALGeometry * g, const Double_t parEMOD[5], Double_t parPBMO[5]);
+  void Division2X2InPbmo(const AliEMCALGeometry * g, const Double_t parPBMO[5]);
+
+  TList *fShishKebabModules; //! list of modules for twist geometries
   
  protected:
 

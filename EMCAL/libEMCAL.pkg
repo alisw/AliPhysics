@@ -5,6 +5,7 @@ AliEMCAL.cxx \
 AliEMCALGeometry.cxx \
 AliEMCALv0.cxx \
 AliEMCALv1.cxx \
+AliEMCALv2.cxx \
 AliEMCALHit.cxx \
 AliEMCALDigit.cxx \
 AliEMCALSDigitizer.cxx \
@@ -38,14 +39,18 @@ AliEMCALRecParticle.cxx \
 AliEMCALFastRecParticle.cxx \
 AliEMCALPID.cxx \
 AliEMCALPIDv1.cxx \
-AliEMCALTracker.cxx \
 AliEMCALLoader.cxx \
 AliEMCALReconstructor.cxx \
-AliEMCALRawStream.cxx
+AliEMCALRawStream.cxx \
+AliEMCALGeneratorFactory.cxx \
+AliEMCALShishKebabModule.cxx\
+AliEMCALShishKebabTrd1Module.cxx\
+AliEMCALGeometryOfflineTrd1.cxx\
+AliEMCALWsuCosmicRaySetUp.cxx
 
 HDRS= $(SRCS:.cxx=.h) 
 
 DHDR:=EMCALLinkDef.h
 
-EINCLUDE:=PYTHIA6 RAW
+EINCLUDE:=PYTHIA6 RAW EVGEN THijing
 

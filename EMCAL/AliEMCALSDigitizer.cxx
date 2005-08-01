@@ -50,7 +50,9 @@
 
 // --- ROOT system ---
 #include "TBenchmark.h"
-	       //#include "TObjectTable.h"
+#include "TH1.h"
+#include "TBrowser.h"
+//#include "TObjectTable.h"
 
 // --- Standard library ---
 #include "stdlib.h"
@@ -62,7 +64,8 @@
 #include "AliEMCALHit.h"
 #include "AliEMCALSDigitizer.h"
 #include "AliEMCALGeometry.h"
-	       //#include "AliMemoryWatcher.h"
+#include "AliEMCALJetMicroDst.h"
+//#include "AliMemoryWatcher.h"
 
 ClassImp(AliEMCALSDigitizer)
            
@@ -70,8 +73,10 @@ ClassImp(AliEMCALSDigitizer)
   AliEMCALSDigitizer::AliEMCALSDigitizer():TTask("","") 
 {
   // ctor
-  fFirstEvent = fLastEvent  = 0 ;  
+  Info("AliEMCALSDigitizer()", " CTOR # 1 #");  
+  fFirstEvent = fLastEvent  = fControlHists = 0;  
   fDefaultInit = kTRUE ; 
+  fHists = 0;
 }
 
 //____________________________________________________________________________ 
@@ -81,16 +86,19 @@ AliEMCALSDigitizer::AliEMCALSDigitizer(const char * alirunFileName,
   fEventFolderName(eventFolderName)
 {
   // ctor
-  fFirstEvent = fLastEvent  = 0 ; // runs one event by defaut  
+  Info("AliEMCALSDigitizer()", " CTOR # 2 #");  
+  fFirstEvent = fLastEvent  = fControlHists = 0 ; // runs one event by defaut  
   Init();
   InitParameters() ; 
   fDefaultInit = kFALSE ; 
+  fHists = 0;
 }
 
 
 //____________________________________________________________________________ 
 AliEMCALSDigitizer::AliEMCALSDigitizer(const AliEMCALSDigitizer & sd) : TTask(sd) {
   //cpy ctor 
+  Info("AliEMCALSDigitizer()", " CPY CTOR # 3 #");  
 
   fFirstEvent    = sd.fFirstEvent ; 
   fLastEvent     = sd.fLastEvent ;
@@ -144,26 +152,25 @@ void AliEMCALSDigitizer::Init(){
 //____________________________________________________________________________ 
 void AliEMCALSDigitizer::InitParameters()
 {
-  // Initializes parameters
-  fA                      = 0;
-  fB                      = 10000000.;
-
   AliEMCALGetter * gime = AliEMCALGetter::Instance() ;
   const AliEMCALGeometry * geom = gime->EMCALGeometry() ; 
   if (geom->GetSampling() == 0.) {
     Fatal("InitParameters", "Sampling factor not set !") ; 
   }
-//   else
-//     Info("InitParameters", "Sampling factor set to %f", geom->GetSampling()) ; 
-  
-  // this threshold corresponds approximately to 100 MeV
-  fECPrimThreshold     = 100E-3;
+  // Initializes parameters
+  fA         = 0;
+  fB         = 1.e+7;
+  fSampling  = geom->GetSampling();
+
+ // threshold for deposit energy of hit
+  fECPrimThreshold  = 0.; // 24-nov-04 - was 1.e-6;
 }
 
 //____________________________________________________________________________
 void AliEMCALSDigitizer::Exec(Option_t *option) 
 { 
   // Collects all hit of the same tower into digits
+  TString o(option); o.ToUpper();
   if (strstr(option, "print") ) {
     Print() ; 
     return ; 
@@ -183,16 +190,19 @@ void AliEMCALSDigitizer::Exec(Option_t *option)
 
   if (fLastEvent == -1) 
     fLastEvent = gime->MaxEvent() - 1 ;
-  else 
-    fLastEvent = TMath::Min(fFirstEvent, gime->MaxEvent()); // only ine event at the time
+  else {
+    if(o != "EXACT") fLastEvent = TMath::Min(fFirstEvent, gime->MaxEvent());
+    fLastEvent = TMath::Min(fLastEvent, gime->MaxEvent());
+    printf("AliEMCALSDigitizer::Exec : option: %s | %i -> %i events : Max events %i \n \n", 
+    option, fFirstEvent, fLastEvent, gime->MaxEvent());
+  }
   Int_t nEvents   = fLastEvent - fFirstEvent + 1;
 
-  Int_t ievent ;   
-
-  //AliMemoryWatcher memwatcher;
-
-  for (ievent = fFirstEvent; ievent <= fLastEvent; ievent++) {
-    gime->Event(ievent,"H") ;  
+  Int_t ievent;
+  Float_t energy=0.; // de * fSampling - 23-nov-04
+  for (ievent = fFirstEvent; ievent < fLastEvent; ievent++) {
+    if(ievent%100==0 || ievent==fLastEvent-1) printf(" processed event %i \n", ievent);  
+    gime->Event(ievent,"XH"); // read primaries and hits onl  
     TTree * treeS = gime->TreeS(); 
     TClonesArray * hits = gime->Hits() ; 
     TClonesArray * sdigits = gime->SDigits() ;
@@ -207,28 +217,30 @@ void AliEMCALSDigitizer::Exec(Option_t *option)
       //=========== Get the EMCAL branch from Hits Tree for the Primary iprim
       gime->Track(iprim) ;
       Int_t i;
+      AliEMCALGeometry *geom = gime->EMCALGeometry(); 
       for ( i = 0 ; i < hits->GetEntries() ; i++ ) {
 	AliEMCALHit * hit = dynamic_cast<AliEMCALHit*>(hits->At(i)) ;
 	AliEMCALDigit * curSDigit = 0 ;
 	AliEMCALDigit * sdigit = 0 ;
 	Bool_t newsdigit = kTRUE; 
 
+        // hit->GetId() - Absolute Id number EMCAL segment
+	if(geom->CheckAbsCellId(hit->GetId())) { // was IsInECA(hit->GetId())
+          energy = hit->GetEnergy() * fSampling; // 23-nov-04
+	  if(energy >  fECPrimThreshold )
 	// Assign primary number only if deposited energy is significant
-	AliEMCALGeometry * geom = gime->EMCALGeometry() ; 
-	if( geom->IsInECA(hit->GetId()) ){
-	  if( hit->GetEnergy() >  fECPrimThreshold )
 	    curSDigit =  new AliEMCALDigit( hit->GetPrimary(),
 					    hit->GetIparent(), hit->GetId(), 
-					    Digitize(hit->GetEnergy()), hit->GetTime() ) ;
+					    Digitize(energy), hit->GetTime() ) ;
 	  else
 	    curSDigit =  new AliEMCALDigit( -1               , 
 					    -1               ,
 					    hit->GetId(), 
-					    Digitize(hit->GetEnergy()), hit->GetTime() ) ;
-	}
-	else{
-	  newsdigit = kFALSE;
-	}
+					    Digitize(energy), hit->GetTime() ) ;
+	} else {
+          Warning("Exec"," abs id %i is bad \n", hit->GetId());
+          newsdigit = kFALSE;
+        }
 
 	Int_t check = 0 ;
 
@@ -256,12 +268,21 @@ void AliEMCALSDigitizer::Exec(Option_t *option)
 
     Int_t nPrimarymax = -1 ; 
     Int_t i ;
+    Double_t e=0.,esum=0.;
+    sv::FillH1(fHists, 0, double(sdigits->GetEntriesFast()));
     for (i = 0 ; i < sdigits->GetEntriesFast() ; i++) { 
       AliEMCALDigit * sdigit = dynamic_cast<AliEMCALDigit *>(sdigits->At(i)) ;
       sdigit->SetIndexInList(i) ;
+
+      sv::FillH1(fHists, 2, double(sdigit->GetAmp()));
+      e = double(Calibrate(sdigit->GetAmp()));
+      esum += e;
+      sv::FillH1(fHists, 3, e);
+      sv::FillH1(fHists, 4, double(sdigit->GetId()));
     }
+    if(esum>0.) sv::FillH1(fHists, 1, esum);
     
-    for (i = 0 ; i < sdigits->GetEntriesFast() ; i++) {   
+    for (i = 0 ; i < sdigits->GetEntriesFast() ; i++) { // for what 
       if (((dynamic_cast<AliEMCALDigit *>(sdigits->At(i)))->GetNprimary()) > nPrimarymax)
 	nPrimarymax = ((dynamic_cast<AliEMCALDigit *>(sdigits->At(i)))->GetNprimary()) ;
     }
@@ -277,15 +298,12 @@ void AliEMCALSDigitizer::Exec(Option_t *option)
     gime->WriteSDigits("OVERWRITE");
     
     //NEXT - SDigitizer
-
-    gime->WriteSDigitizer("OVERWRITE");
+    if(ievent == fFirstEvent) gime->WriteSDigitizer("OVERWRITE");  // why in event cycle ?
     
     if(strstr(option,"deb"))
       PrintSDigits(option) ;  
-    
-    //gObjectTable->Print() ; 
-    //memwatcher.Watch(ievent); 
-  }// event loop
+  }
+  //  gime->WriteSDigitizer("OVERWRITE"); // 12-jan-04
 
   Unload();
   
@@ -293,7 +311,7 @@ void AliEMCALSDigitizer::Exec(Option_t *option)
   
   if(strstr(option,"tim")){
     gBenchmark->Stop("EMCALSDigitizer"); 
-    printf("Exec: took %f seconds for SDigitizing %f seconds per event", 
+    printf("\n Exec: took %f seconds for SDigitizing %f seconds per event\n", 
 	 gBenchmark->GetCpuTime("EMCALSDigitizer"), gBenchmark->GetCpuTime("EMCALSDigitizer")/nEvents ) ; 
   }
 
@@ -303,17 +321,26 @@ void AliEMCALSDigitizer::Exec(Option_t *option)
 }
 
 
+void AliEMCALSDigitizer::Print1(Option_t * option)
+{
+  Print(); 
+  PrintSDigits(option);
+}
+
 //__________________________________________________________________
-void AliEMCALSDigitizer::Print()const
+void AliEMCALSDigitizer::Print() const
 { 
   // Prints parameters of SDigitizer
-  printf("Print: \n------------------- %s -------------", GetName() ) ; 
+  printf("Print: \n------------------- %s -------------\n", GetName() ) ; 
+  printf("   fInit                                 %i\n", int(fInit));
+  printf("   fFirstEvent                           %i\n", fFirstEvent);
+  printf("   fLastEvent                            %i\n", fLastEvent);
   printf("   Writing SDigits to branch with title  %s\n", fEventFolderName.Data()) ;
-  printf("   with digitization parameters  A = %f\n", fA) ; 
-  printf("                                 B = %f\n", fB) ;
-  printf("   Threshold for EC Primary assignment= %f\n", fECPrimThreshold)  ; 
+  printf("   with digitization parameters       A = %f\n", fA) ; 
+  printf("                                      B = %f\n", fB) ;
+  printf("   Threshold for EC Primary assignment  = %f\n", fECPrimThreshold)  ;
+  printf("   Sampling                             = %f\n", fSampling);
   printf("---------------------------------------------------\n") ;
-
 }
 
 //__________________________________________________________________
@@ -339,19 +366,20 @@ void AliEMCALSDigitizer::PrintSDigits(Option_t * option)
   
   printf("\n") ;  
   printf("event %i", gAlice->GetEvNumber()) ;
-  printf("\n      Number of entries in SDigits list %i", sdigits->GetEntriesFast()); 
+  printf(" Number of entries in SDigits list %i", sdigits->GetEntriesFast()); 
   if(strstr(option,"all")||strstr(option,"EMC")){
     
     //loop over digits
     AliEMCALDigit * digit;
     printf("\n   Id  Amplitude    Time          Index Nprim: Primaries list \n") ;    
-    Int_t index ;
+    Int_t index, isum=0;
     char * tempo = new char[8192]; 
     for (index = 0 ; index < sdigits->GetEntries() ; index++) {
       digit = dynamic_cast<AliEMCALDigit *>( sdigits->At(index) ) ;
       sprintf(tempo, "\n%6d  %8d    %6.5e %4d      %2d :",
 	      digit->GetId(), digit->GetAmp(), digit->GetTime(), digit->GetIndexInList(), digit->GetNprimary()) ;  
-      printf(tempo); 
+      printf(tempo);
+      isum += digit->GetAmp();
       
       Int_t iprimary;
       for (iprimary=0; iprimary<digit->GetNprimary(); iprimary++) {
@@ -360,7 +388,8 @@ void AliEMCALSDigitizer::PrintSDigits(Option_t * option)
       }  	 
     }
     delete tempo ;
-  }
+    printf("\n** Sum %i : %10.3f GeV/c **\n ", isum, double(isum)*1.e-6);
+  } else printf("\n");
 }
 
 //____________________________________________________________________________ 
@@ -371,4 +400,32 @@ void AliEMCALSDigitizer::Unload() const
   AliEMCALLoader * loader = gime->EmcalLoader() ; 
   loader->UnloadHits() ; 
   loader->UnloadSDigits() ; 
+}
+
+void AliEMCALSDigitizer::Browse(TBrowser* b)
+{
+  if(fHists) b->Add(fHists);
+  TTask::Browse(b);
+}
+
+TList *AliEMCALSDigitizer::BookControlHists(const int var)
+{ // 22-nov-04
+  gROOT->cd();
+  AliEMCALGetter * gime = AliEMCALGetter::Instance(GetTitle(), fEventFolderName);
+  const AliEMCALGeometry *geom = gime->EMCALGeometry() ;
+  if(var>=1){
+    new TH1F("HSDigiN",  "#EMCAL  sdigits ", 1001, -0.5, 1000.5);
+    new TH1F("HSDigiSumEnergy","Sum.EMCAL energy", 1000, 0.0, 100.);
+    new TH1F("HSDigiAmp",  "EMCAL sdigits amplitude", 1000, 0., 2.e+9);
+    new TH1F("HSDigiEnergy","EMCAL cell energy", 1000, 0.0, 100.);
+    new TH1F("HSDigiAbsId","EMCAL absID for sdigits",
+    geom->GetNCells(), 0.5, Double_t(geom->GetNCells())+0.5);
+  }
+  fHists = sv::MoveHistsToList("EmcalSDigiControlHists", kFALSE);
+  return fHists;
+}
+
+void AliEMCALSDigitizer::SaveHists(const char* name, Bool_t kSingleKey, const char* opt)
+{
+  sv::SaveListOfHists(fHists, name, kSingleKey, opt); 
 }

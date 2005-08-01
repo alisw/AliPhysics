@@ -121,6 +121,12 @@ void AliEMCAL::CreateMaterials()
   AliMaterial(3, "Al$", 26.98, 13., 2.7, 8.9, 999., 0, 0) ;
   // ---         Absorption length is ignored ^
 
+  // 25-aug-04 by PAI - see  PMD/AliPMDv0.cxx for STEEL definition
+  Float_t asteel[4] = { 55.847,51.9961,58.6934,28.0855 };
+  Float_t zsteel[4] = { 26.,24.,28.,14. };
+  Float_t wsteel[4] = { .715,.18,.1,.005 };
+  AliMixture(4, "STAINLESS STEEL$", asteel, zsteel, 7.88, 4, wsteel);
+
   // DEFINITION OF THE TRACKING MEDIA
 
   // for EMCAL: idtmed[1599->1698] equivalent to fIdtmed[0->100]
@@ -145,6 +151,9 @@ void AliEMCAL::CreateMaterials()
   AliMedium(3, "Al parts     $", 3, 0,
              isxfld, sxmgmx, 10.0, 0.1, 0.1, 0.001, 0.001, 0, 0) ;
 
+  // 25-aug-04 by PAI : see  PMD/AliPMDv0.cxx for STEEL definition                 -> idtmed[1603]
+  AliMedium(4, "S steel$", 4, 0, 
+             isxfld, sxmgmx, 10.0, 0.1, 0.1, 0.001, 0.001, 0, 0) ;
 
 // --- Set decent energy thresholds for gamma and electron tracking
 
@@ -170,11 +179,20 @@ void AliEMCAL::CreateMaterials()
   gMC->Gstpar(idtmed[1601],"CUTELE",0.001) ;
   gMC->Gstpar(idtmed[1601],"BCUTE",0.0001) ;
 
+  // the same parameters as for Pb - 10-sep-04
+  gMC->Gstpar(idtmed[1603],"CUTGAM",0.00008) ;
+  gMC->Gstpar(idtmed[1603],"CUTELE",0.001) ;
+  gMC->Gstpar(idtmed[1603],"BCUTE", 0.0001); 
+  // --- Generate explicitly delta rays in Lead ---
+  gMC->Gstpar(idtmed[1603], "LOSS",3.);
+  gMC->Gstpar(idtmed[1603], "DRAY",1.);
+  gMC->Gstpar(idtmed[1603], "DCUTE",0.00001);
+  gMC->Gstpar(idtmed[1603], "DCUTM",0.00001);
+
   //set constants for Birk's Law implentation
   fBirkC0 =  1;
   fBirkC1 =  0.013/dP;
   fBirkC2 =  9.6e-6/(dP * dP);
-
 
 }
       
@@ -365,27 +383,21 @@ void AliEMCAL::SetTreeAddress()
 { 
   // Linking Hits in Tree to Hits array
   TBranch *branch;
-  char branchname[20];
-  sprintf(branchname,"%s",GetName());
-  
+  //  char branchname[20];
+  //  sprintf(branchname,"%s",GetName());
   // Branch address for hit tree
   TTree *treeH = TreeH();
   if (treeH) {
-    branch = treeH->GetBranch(branchname);
-    if (branch) 
-      { 
+    //    treeH->Print();
+    branch = treeH->GetBranch(GetName());
+    if (branch) { 
 	if (fHits == 0x0) 
-	  fHits= new TClonesArray("AliEMCALHit",1000);
+	fHits= new TClonesArray("AliEMCALHit",1000);
 	branch->SetAddress(&fHits);
-      }
-    else
-      {
-	Warning("SetTreeAddress","<%s> Failed",GetName());
-      }
+    } else {
+      Warning("SetTreeAddress","<%s> Failed",GetName());
+    }
+  } else {
+    //    Warning("SetTreeAddress"," no treeH ");
   }
 }
-
-
-
-
-

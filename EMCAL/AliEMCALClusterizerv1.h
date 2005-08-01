@@ -24,6 +24,7 @@
 // --- AliRoot header files ---
 
 #include "AliEMCALClusterizer.h"
+#include "TH1F.h"
 class AliEMCALRecPoint ; 
 class AliEMCALDigit ;
 class AliEMCALDigitizer ;
@@ -69,12 +70,27 @@ public:
                                             // Chi^2 of the fit. Should be static to be passes to MINUIT
   void Unload() ; 
   virtual const char * Version() const { return "clu-v1" ; }  
-
+ 
+  void BookHists();
+  void SaveHists();
 protected:
 
   void           WriteRecPoints() ;
   virtual void   MakeClusters( ) ;            
-  
+///////////////////// 
+   TH1F* pointE;
+   TH1F* pointL1;
+   TH1F* pointL2;
+   TH1F* pointDis;
+   TH1F* pointMult;
+   TH1F* digitAmp;
+   TH1F* MaxE;
+   TH1F* MaxL1;
+   TH1F* MaxL2;
+   TH1F* MaxDis;
+///////////////////////
+
+
 private:
 
   const TString BranchName() const ; 
@@ -90,7 +106,7 @@ private:
 			       AliEMCALDigit ** /*maxAt*/,
 			       Float_t * /*maxAtEnergy*/ ) const; //Unfolds cluster using TMinuit package
   void           PrintRecPoints(Option_t * option) ;
-
+  TFile* recofile;
 private:
 
   Bool_t  fDefaultInit;              //! Says if the task was created by defaut ctor (only parameters are initialized)
@@ -111,6 +127,7 @@ private:
   Float_t fTimeGate ;                // Maximum time difference between the digits in ont EMC cluster
   Float_t fMinECut;                  // Minimum energy for a digit to be a member of a cluster
 
+  void ReadFile();
     
   ClassDef(AliEMCALClusterizerv1,4)   // Clusterizer implementation version 1
 
