@@ -14,7 +14,7 @@
 
 DEFSTR = -Dno_root
 OBJDIR = lib_alone
-INCLUDES = -I$(ALIHLT_TOPDIR)/src -I$(ALIHLT_TOPDIR)/hough -I$(ALIHLT_TOPDIR)/comp -I$(ALIHLT_TOPDIR)/misc -I$(ALIHLT_TOPDIR)/trigger -I$(ALIHLT_TOPDIR)/kalman
+INCLUDES = -I$(ALIHLT_TOPDIR)/src -I$(ALIHLT_TOPDIR)/hough -I$(ALIHLT_TOPDIR)/comp -I$(ALIHLT_TOPDIR)/misc -I$(ALIHLT_TOPDIR)/trigger -I$(ALIHLT_TOPDIR)/kalman -I$(ALIHLT_TOPDIR)/BASE
 
 ifeq ($(ALIHLT_USEPACKAGE),ROOT) 
 INCLUDES += -I$(ROOTSYS)/include 
@@ -29,6 +29,7 @@ INCLUDES += -I$(ROOTSYS)/include -I$(ALICE_ROOT)/include/ -I$(ALICE_ROOT)/TPC -I
 DEFSTR = -Duse_aliroot -Duse_root
 ifeq ($(USENEWIO),1)
 DEFSTR += -Duse_newio
+INCLUDES += -I$(ALICE_ROOT)/RAW
 endif
 OBJDIR = lib
 ROOTSTR := $(shell $(ROOTSYS)/bin/root -n -b -q  | grep Version | cut -b 17-25 | cut -d" " -f1)
