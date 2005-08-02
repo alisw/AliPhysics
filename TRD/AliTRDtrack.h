@@ -14,6 +14,7 @@
 class AliTRDcluster;
 class AliTPCtrack;
 class AliESDtrack;
+class AliTrackReference;
 
 const unsigned kMAX_CLUSTERS_PER_TRACK=210; 
 
@@ -74,6 +75,7 @@ public:
    AliTRDtrack(const AliTRDtrack& t);    
    AliTRDtrack(const AliKalmanTrack& t, Double_t alpha); 
    AliTRDtrack(const AliESDtrack& t);    
+   static AliTRDtrack * MakeTrack(const AliTrackReference *ref, Double_t mass);
    ~AliTRDtrack();
    Int_t    Compare(const TObject *o) const;
    void     CookdEdx(Double_t low=0.05, Double_t up=0.55);   
@@ -136,10 +138,12 @@ public:
    Bool_t GetStop() const {return fStopped;}
 
    Int_t    PropagateTo(Double_t xr, Double_t x0=8.72, Double_t rho=5.86e-3);
+   Int_t    PropagateToX(Double_t xr, Double_t step);
+   Int_t    PropagateToR(Double_t xr, Double_t step);
    void     ResetCovariance();   
    void     ResetCovariance(Float_t mult);   
    void ResetClusters() { SetChi2(0.); SetNumberOfClusters(0); }
-   Int_t    Rotate(Double_t angle);
+   Int_t    Rotate(Double_t angle, Bool_t absolute=kFALSE);
 
    void     SetdEdx(Float_t dedx) {fdEdx=dedx;}  
    void SetPIDsignals(Float_t dedx, Int_t i) {fdEdxPlane[i]=dedx;}
@@ -188,6 +192,7 @@ protected:
 
    Int_t    fSeedLab;     // track label taken from seeding  
    Float_t  fdEdx;        // dE/dx 
+   Float_t  fDE;          // integrated delta energy
    Float_t  fdEdxPlane[kNPlane];  // dE/dx from all 6 planes
    Int_t  fTimBinPlane[kNPlane];  // time bin of Max cluster from all 6 planes
 

@@ -22,6 +22,7 @@
 #include "AliTRDcluster.h" 
 #include "AliTRDtrack.h"
 #include "AliTRDclusterCorrection.h"
+#include "AliTrackReference.h"
 
 ClassImp(AliTRDtracklet)
 ClassImp(AliTRDtrack)
@@ -61,6 +62,7 @@ AliTRDtrack::AliTRDtrack(const AliTRDcluster *c, UInt_t index,
   SetNumberOfClusters(1);
 
   fdEdx=0.;
+  fDE=0.;
   for (Int_t i=0;i<kNPlane;i++){
       fdEdxPlane[i] = 0.;
       fTimBinPlane[i] = -1;
@@ -102,6 +104,7 @@ AliTRDtrack::AliTRDtrack(const AliTRDtrack& t) : AliKalmanTrack(t) {
 
   SetChi2(t.GetChi2());
   fdEdx=t.fdEdx;
+  fDE=t.fDE;
   for (Int_t i=0;i<kNPlane;i++){
       fdEdxPlane[i] = t.fdEdxPlane[i];
       fTimBinPlane[i] = t.fTimBinPlane[i];
@@ -293,6 +296,41 @@ AliTRDtrack::AliTRDtrack(const AliESDtrack& t)
   SetIntegratedLength(t.GetIntegratedLength());
 
 }  
+
+
+AliTRDtrack * AliTRDtrack::MakeTrack(const AliTrackReference *ref, Double_t mass)
+{
+  //
+  // Make dummy track from the track reference 
+  // negative mass means opposite charge 
+  //
+  Double_t xx[5];
+  Double_t cc[15];
+  for (Int_t i=0;i<15;i++) cc[i]=0;
+  Double_t x = ref->X(), y = ref->Y(), z = ref->Z();
+  Double_t alpha = TMath::ATan2(y,x);
+  Double_t xr = TMath::Sqrt(x*x+y*y);
+  xx[0] = 0;
+  xx[1] = z;
+  xx[3] = ref->Pz()/ref->Pt();
+  Float_t b[3];
+  Float_t xyz[3]={x,y,z};
+  Float_t convConst = 0;
+  (AliKalmanTrack::GetFieldMap())->Field(xyz,b);
+  convConst=1000/0.299792458/(1e-13 - b[2]);
+  xx[4] = 1./(convConst*ref->Pt());
+  if (mass<0) xx[4]*=-1.;  // negative mass - negative direction
+  Double_t lcos = (x*ref->Px()+y*ref->Py())/(xr*ref->Pt());
+  Double_t lsin = TMath::Sin(TMath::ACos(lcos));
+  if (mass<0) lsin*=-1.;
+  xx[2]   = xr*xx[4]-lsin;
+  AliTRDcluster cl;
+  AliTRDtrack * track = new  AliTRDtrack(&cl,100,xx,cc,xr,alpha);
+  track->SetMass(TMath::Abs(mass));
+  track->StartTimeIntegral();  
+  return track;
+}
+
 
 AliTRDtrack::~AliTRDtrack()
 {
@@ -524,10 +562,16 @@ Int_t AliTRDtrack::PropagateTo(Double_t xk,Double_t x0,Double_t rho)
   if((5940*beta2/(1-beta2+1e-10) - beta2) < 0) return 0;
 
   Double_t dE=0.153e-3/beta2*(log(5940*beta2/(1-beta2+1e-10)) - beta2)*d*rho;
+  fDE+=dE;
   if (x1 < x2) dE=-dE;
   cc=fC;
   fC*=(1.- sqrt(p2+GetMass()*GetMass())/p2*dE);
   fE+=fX*(fC-cc);    
+  //  Double_t sigmade = 0.1*dE*TMath::Sqrt(TMath::Sqrt(1+fT*fT)*90./(d+0.0001));   // 20 percent fluctuation - normalized to some length 
+  Double_t sigmade = 0.02*TMath::Sqrt(TMath::Abs(dE));   // energy loss fluctuation 
+  Double_t sigmac2 = sigmade*sigmade*fC*fC*(p2+GetMass()*GetMass())/(p2*p2);
+  fCcc += sigmac2;
+  fCee += fX*fX*sigmac2;  
 
   // track time measurement [SR, GSI 17.02.2002]
   if (x1 < x2)
@@ -939,11 +983,18 @@ Int_t AliTRDtrack::UpdateMI(const AliTRDtracklet &tracklet)
 
 
 //_____________________________________________________________________________
-Int_t AliTRDtrack::Rotate(Double_t alpha)
+Int_t AliTRDtrack::Rotate(Double_t alpha, Bool_t absolute)
 {
   // Rotates track parameters in R*phi plane
+  // if absolute rotation alpha is in global system
+  // otherwise alpha rotation is relative to the current rotation angle
   
-  fNRotate++;
+  if (absolute) {
+    alpha -= fAlpha;
+  }
+  else{
+    fNRotate++;
+  }
 
   fAlpha += alpha;
   if (fAlpha<-TMath::Pi()) fAlpha += 2*TMath::Pi();
@@ -1132,3 +1183,85 @@ Int_t  AliTRDtrack::GetProlongation(Double_t xk, Double_t &y, Double_t &z){
   return 1;
   
 }
+
+
+Int_t   AliTRDtrack::PropagateToX(Double_t xr, Double_t step)
+{
+  //
+  // Propagate track to given x  position 
+  // works inside of the 20 degree segmentation (local cooordinate frame for TRD , TPC, TOF)
+  // 
+  // material budget from geo manager
+  // 
+  Double_t  xyz0[3], xyz1[3],y,z;
+  const Double_t alphac = TMath::Pi()/9.;   
+  const Double_t talphac = TMath::Tan(alphac*0.5);
+  // critical alpha  - cross sector indication
+  //
+  Double_t dir = (fX>xr) ? -1.:1.;
+  // direction +-
+  for (Double_t x=fX+dir*step;dir*x<dir*xr;x+=dir*step){
+    //
+    GetGlobalXYZ(xyz0[0],xyz0[1],xyz0[2]);	
+    GetProlongation(x,y,z);
+    xyz1[0] = x*TMath::Cos(fAlpha)+y*TMath::Sin(fAlpha); 
+    xyz1[1] = x*TMath::Sin(fAlpha)-y*TMath::Cos(fAlpha);
+    xyz1[2] = z;
+    Double_t param[7];
+    AliKalmanTrack::MeanMaterialBudget(xyz0,xyz1,param);
+    //
+    if (param[0]>0&&param[1]>0) PropagateTo(x,param[1],param[0]);
+    if (fY>fX*talphac){
+      Rotate(-alphac);
+    }
+    if (fY<-fX*talphac){
+      Rotate(alphac);
+    }
+  }
+  //
+  PropagateTo(xr);
+  return 0;
+}
+
+
+Int_t   AliTRDtrack::PropagateToR(Double_t r,Double_t step)
+{
+  //
+  // propagate track to the radial position
+  // rotation always connected to the last track position
+  //
+  Double_t  xyz0[3], xyz1[3],y,z; 
+  Double_t radius = TMath::Sqrt(fX*fX+fY*fY);
+  Double_t dir = (radius>r) ? -1.:1.;   // direction +-
+  //
+  for (Double_t x=radius+dir*step;dir*x<dir*r;x+=dir*step){
+    GetGlobalXYZ(xyz0[0],xyz0[1],xyz0[2]);	
+    Double_t alpha = TMath::ATan2(xyz0[1],xyz0[0]);
+    Rotate(alpha,kTRUE);
+    GetGlobalXYZ(xyz0[0],xyz0[1],xyz0[2]);	
+    GetProlongation(x,y,z);
+    xyz1[0] = x*TMath::Cos(alpha)+y*TMath::Sin(alpha); 
+    xyz1[1] = x*TMath::Sin(alpha)-y*TMath::Cos(alpha);
+    xyz1[2] = z;
+    Double_t param[7];
+    AliKalmanTrack::MeanMaterialBudget(xyz0,xyz1,param);
+    if (param[1]<=0) param[1] =100000000;
+    PropagateTo(x,param[1],param[0]);
+  } 
+  GetGlobalXYZ(xyz0[0],xyz0[1],xyz0[2]);	
+  Double_t alpha = TMath::ATan2(xyz0[1],xyz0[0]);
+  Rotate(alpha,kTRUE);
+  GetGlobalXYZ(xyz0[0],xyz0[1],xyz0[2]);	
+  GetProlongation(r,y,z);
+  xyz1[0] = r*TMath::Cos(alpha)+y*TMath::Sin(alpha); 
+  xyz1[1] = r*TMath::Sin(alpha)-y*TMath::Cos(alpha);
+  xyz1[2] = z;
+  Double_t param[7];
+  AliKalmanTrack::MeanMaterialBudget(xyz0,xyz1,param);
+  //
+  if (param[1]<=0) param[1] =100000000;
+  PropagateTo(r,param[1],param[0]);
+  return 0;
+}
+
+
