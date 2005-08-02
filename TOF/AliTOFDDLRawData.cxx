@@ -14,10 +14,16 @@
  **************************************************************************/
 
 /*
+Revision 0.02  2005/7/25 A.De Caro
+        Update number of bits allocated for time-of-flight
+               and 'charge' measurements
+
 Revision 0.01  2004/6/11 A.De Caro, S.B.Sellitto, R.Silvestri
         First implementation: global methods RawDataTOF
                                              GetDigits
 */
+
+//////////////////////////////////////////////////////////////////
 //
 // This class contains the methods to create the Raw Data files
 // for the TOF detector starting from the Digits.
@@ -25,6 +31,7 @@ Revision 0.01  2004/6/11 A.De Caro, S.B.Sellitto, R.Silvestri
 // of the ALICE-TOF raw data starting from the current format
 // for the TOF digits and the TOF raw data.
 //
+//////////////////////////////////////////////////////////////////
 
 #include <stdlib.h>
 #include <Riostream.h>
@@ -33,11 +40,13 @@ Revision 0.01  2004/6/11 A.De Caro, S.B.Sellitto, R.Silvestri
 #include <TMath.h>
 #include "AliLog.h"
 
-#include "AliTOFGeometry.h"
-#include "AliTOFdigit.h"
-#include "AliTOFDDLRawData.h"
 #include "AliRawDataHeader.h"
 #include "AliBitPacking.h"
+
+#include "AliTOFGeometry.h"
+#include "AliTOFdigit.h"
+#include "AliTOFRawStream.h"
+#include "AliTOFDDLRawData.h"
 
 ClassImp(AliTOFDDLRawData)
 
@@ -72,12 +81,14 @@ AliTOFDDLRawData& AliTOFDDLRawData::operator=(const AliTOFDDLRawData &source){
 
 void AliTOFDDLRawData::GetDigits(TClonesArray *TOFdigits,Int_t nDDL,UInt_t *buf)
 {
+
   //This method packs the TOF digits in a proper 32 bits structure
-  Int_t iDDL=(Int_t)((nDDL/4.-(Int_t)(nDDL/4.))*4);
-  Int_t iSector=(Int_t)(nDDL/4.);
-  Int_t iTRM=0;
-  Int_t iTDC=0;
-  Int_t iCH=-1;
+
+  Int_t iDDL    = nDDL%AliTOFGeometry::NDDL();//(Int_t)((nDDL/4.-(Int_t)(nDDL/4.))*4);
+  Int_t iSector = (Int_t)((Float_t)nDDL/AliTOFGeometry::NDDL());
+  Int_t iTRM = 0;
+  Int_t iTDC = 0;
+  Int_t iCH  =-1;
   Int_t sector; 
   Int_t plate;
   Int_t strip;
@@ -99,61 +110,49 @@ void AliTOFDDLRawData::GetDigits(TClonesArray *TOFdigits,Int_t nDDL,UInt_t *buf)
     }
 
   if (fVerbose==2) ftxt.open("TOFdigits.txt",ios::app);
+
   for (Int_t digit=0;digit<ndigits;digit++) {
     digs = (AliTOFdigit*)TOFdigits->UncheckedAt(digit);
-    sector=digs->GetSector(); // Sector Number (0-17)
-    plate=digs->GetPlate();   // Plate Number (0-4)
-    strip=digs->GetStrip();   // Strip Number (0-14/18/19)
-    padx=digs->GetPadx();     // Pad Number in x direction (0-47)
-    padz=digs->GetPadz();     // Pad Number in z direction (0-1)
-    eureka=digs->GetTotPad(); // Global Pad Number inside a Sector
+    sector = digs->GetSector(); // Sector Number (0-17)
+    plate  = digs->GetPlate();  // Plate Number (0-4)
+    strip  = digs->GetStrip();  // Strip Number (0-14/18/19)
+    padx   = digs->GetPadx();   // Pad Number in x direction (0-47)
+    padz   = digs->GetPadz();   // Pad Number in z direction (0-1)
+    eureka = digs->GetTotPad(); // Global Pad Number inside a Sector
     totCharge = (Int_t)digs->GetAdc();
     timeOfFlight = (Int_t)digs->GetTdc();
-    /*
-    Int_t istriPlate=0;
-    switch (plate)
-      {
-      case 0:
-	break;
-      case 1:
-	istriPlate = AliTOFGeometry::NStripC();
-	break;
-      case 2:
-	istriPlate = AliTOFGeometry::NStripC()+AliTOFGeometry::NStripB();
-	break;
-      case 3:
-	istriPlate = AliTOFGeometry::NStripC()+AliTOFGeometry::NStripB()+AliTOFGeometry::NStripA();
-	break;
-      case 4:
-	istriPlate = AliTOFGeometry::NStripC()+2*AliTOFGeometry::NStripB()+AliTOFGeometry::NStripA();
-	break;
-      }
 
-    eureka=2*padx+padz+AliTOFGeometry::NpadXStrip()*(strip+istriPlate);
-    
-    if (eureka!=digs->GetTotPad()) printf(" eureka = %d AND digs->GetTotPad() = %d",eureka,digs->GetTotPad());
-    */
     if (sector!=iSector || (Int_t)((Float_t)eureka/AliTOFGeometry::NPadXTRM()/AliTOFGeometry::NTRM())!=iDDL) continue;
     
-    if (fVerbose==2) ftxt <<" Sector: "<<sector<<" plate: "<<plate<<" strip "<<strip<<" padx "<<padx<<" padz "<<padz<<" eureka "<<eureka<<endl;
+    if (fVerbose==2) ftxt << " Sector: " << sector << " Plate: " << plate << " Strip: " << strip << " PadZ: " << padz << " PadX: " << padx << " totPadNumber " << eureka << endl;
     
-    iTRM = (Int_t)((Float_t)eureka/AliTOFGeometry::NPadXTRM() - AliTOFGeometry::NTRM()*iDDL);
+    iTRM = (Int_t)((Float_t)eureka/AliTOFGeometry::NPadXTRM()) - iDDL*AliTOFGeometry::NTRM();
+
     
+    iTDC = (Int_t)((Float_t)eureka/AliTOFGeometry::NCh()) - (iDDL*AliTOFGeometry::NTRM() + iTRM) * AliTOFGeometry::NTdc();
+    /*
     iTDC = (Int_t)(AliTOFGeometry::NTdc()* 
 		   (
 		    (Float_t)eureka/AliTOFGeometry::NPadXTRM() -
 		    (Int_t)((Float_t)eureka/AliTOFGeometry::NPadXTRM())
 		    )
 		   );
-    
+    */
+
+    iCH  = eureka - ((iDDL*AliTOFGeometry::NTRM() + iTRM) * AliTOFGeometry::NTdc() + iTDC) * AliTOFGeometry::NCh();
+    /*
     iCH  = (Int_t)(AliTOFGeometry::NCh() * 
 		   (
 		    (Float_t)eureka/AliTOFGeometry::NPadXTRM()*AliTOFGeometry::NTdc() - (Int_t)((Float_t)eureka/AliTOFGeometry::NPadXTRM()*AliTOFGeometry::NTdc()) -
 		    (Int_t)((Float_t)eureka/AliTOFGeometry::NPadXTRM()*AliTOFGeometry::NTdc() - (Int_t)((Float_t)eureka/AliTOFGeometry::NPadXTRM()*AliTOFGeometry::NTdc()))
 		    )
 		   );
-    
-    if (fVerbose==2) ftxt << "DDL: "<<iDDL<<" Sector: "<<sector<<" TRM: "<<iTRM<<" TDC: "<<iTDC<<" Channel: "<<iCH<<" totCharge: "<<totCharge<<" tof: "<<timeOfFlight<<endl;
+    */
+
+    if (fVerbose==2) ftxt << "DDL: "<<nDDL<<" TRM: "<<iTRM<<" TDC: "<<iTDC<<" Channel: "<<iCH<<" totCharge: "<<totCharge<<" tof: "<<timeOfFlight<<endl;
+
+    //AliInfo(Form("%2i %2i %2i %2i   %2i %2i %2i %2i %2i %7i %8i",nDDL,iTRM,iTDC,iCH,sector,plate,strip,padz,padx,totCharge,timeOfFlight));
+    AliDebug(2,Form("%2i %2i %2i %2i   %2i %2i %2i %2i %2i %7i %8i",nDDL,iTRM,iTDC,iCH,sector,plate,strip,padz,padx,totCharge,timeOfFlight));
     
     baseWord=0;
     
@@ -167,8 +166,10 @@ void AliTOFDDLRawData::GetDigits(TClonesArray *TOFdigits,Int_t nDDL,UInt_t *buf)
     // temporary control
     if (totCharge<0) word=TMath::Abs(totCharge);
     else word=totCharge;
-    AliBitPacking::PackWord(word,baseWord,12,31); // Charge (TOT)
-    
+    AliBitPacking::PackWord(word,baseWord,12,31); // Charge (TOT) // v0.01
+    //AliBitPacking::PackWord(word,baseWord,12,19); // Charge (TOT) // v0.02
+    //AliBitPacking::PackWord(0,baseWord,20,31); // v0.02
+
     fIndex++;
     buf[fIndex]=baseWord;
     
@@ -177,7 +178,10 @@ void AliTOFDDLRawData::GetDigits(TClonesArray *TOFdigits,Int_t nDDL,UInt_t *buf)
     word=error;
     AliBitPacking::PackWord(word,baseWord,0, 7); // Error flag
     word=timeOfFlight;
-    AliBitPacking::PackWord(word,baseWord,8,31); // time-of-flight
+    AliBitPacking::PackWord(word,baseWord,8,31); // time-of-flight // v0.01
+    //AliBitPacking::PackWord(word,baseWord,8,19); // time-of-flight // v0.02
+    //AliBitPacking::PackWord(0,baseWord,20,30); // v0.02
+    //AliBitPacking::PackWord(1,baseWord,31,31); // v0.02
     
     fIndex++;
     buf[fIndex]=baseWord;
@@ -195,12 +199,15 @@ void AliTOFDDLRawData::GetDigits(TClonesArray *TOFdigits,Int_t nDDL,UInt_t *buf)
 //---------------------------------------------------------------------------------------
 
 Int_t AliTOFDDLRawData::RawDataTOF(TBranch* branch){
-  //This method creates the Raw data files for TOF detector
-  const Int_t kSize=5000; //2*AliTOFGeometry::NpadXSector() 
-                          //max number of digits per DDL file times 2
+  //
+  // This method creates the Raw data files for TOF detector
+  //
+
+  const Int_t kSize = 5000; //max number of digits per DDL file times 2
+
   UInt_t buf[kSize];
-  UInt_t baseWord;
-  UInt_t word;
+  //UInt_t baseWord; // v0.01
+  //UInt_t word; // v0.01
 
   fIndex=-1;
 
@@ -208,25 +215,33 @@ Int_t AliTOFDDLRawData::RawDataTOF(TBranch* branch){
   char fileName[15];
   ofstream outfile;         // logical name of the output file 
   AliRawDataHeader header;
+  UInt_t sizeRawData = 0;
 
   //loop over TOF DDL files
-  for(Int_t i=0;i<72;i++){
-    sprintf(fileName,"TOF_%d.ddl",i+kDDLOffset); //The name of the output file
+  for(Int_t i = 0; i<AliTOFGeometry::NDDL()*AliTOFGeometry::NSectors(); i++){
+
+    sprintf(fileName,"TOF_%d.ddl",i+AliTOFRawStream::kDDLOffset); //The name of the output file
 #ifndef __DECCXX
     outfile.open(fileName,ios::binary);
 #else
     outfile.open(fileName);
 #endif
+
     //write Dummy DATA HEADER
     UInt_t dataHeaderPosition=outfile.tellp();
     outfile.write((char*)(&header),sizeof(header));
 
+    /*
+    // v0.01
     baseWord=0;
     word=i;
-    AliBitPacking::PackWord(word,baseWord,0, 31); // Number of DDL file
+    //AliBitPacking::PackWord(word,baseWord,0, 31); // Number of DDL file
+    AliBitPacking::PackWord(word,baseWord,0, 6); // Number of DDL file
+    AliBitPacking::PackWord(0,baseWord,7,31);
 
     fIndex++;
     buf[fIndex]=baseWord;
+    */
 
     branch->GetEvent();
 
@@ -240,10 +255,13 @@ Int_t AliTOFDDLRawData::RawDataTOF(TBranch* branch){
     
     //Write REAL DATA HEADER
     UInt_t currentFilePosition=outfile.tellp();
-    outfile.seekp(dataHeaderPosition);
+    sizeRawData = currentFilePosition - dataHeaderPosition - sizeof(header);
     header.fSize=currentFilePosition-dataHeaderPosition;
     header.SetAttribute(0);  // valid data
+    outfile.seekp(dataHeaderPosition);
     outfile.write((char*)(&header),sizeof(header));
+    outfile.seekp(currentFilePosition);
+
     outfile.close();
 
   }//end for
@@ -251,60 +269,4 @@ Int_t AliTOFDDLRawData::RawDataTOF(TBranch* branch){
   return 0;  
 }
 
-//-----------------------------------------------------------------------------------------
-/*
-void AliTOFDDLRawData::WriteChipHeader(Int_t ChipAddr,Int_t EventCnt,UInt_t &BaseWord)
-{
-  //This method writes a chip header 
-  BaseWord=0;
-  PackWord(BaseWord,ChipAddr,0,3);
-  PackWord(BaseWord,EventCnt,4,10);
-  PackWord(BaseWord,0x7,11,13);
-  PackWord(BaseWord,0x1,14,15);
-  return;
-}//end WriteChipHeader
-*/
-//----------------------------------------------------------------------------------------
-/*
-void AliTOFDDLRawData::ReadChipHeader(Int_t &ChipAddr,Int_t &EventCnt,UInt_t BaseWord)
-{
-  //This method reads a chip header
-  UInt_t temp=0;
-  UnpackWord(BaseWord,0,3,temp);
-  ChipAddr=(Int_t)temp;
-  UnpackWord(BaseWord,4,10,temp);
-  EventCnt=(Int_t)temp;
-  if(fVerbose)
-    Info("ReadChipHeader", "Chip:&d Half Stave module:%d",ChipAddr,EventCnt);
-  return;
-}//end ReadChipHeader
-*/
-//----------------------------------------------------------------------------------------
-/*
-void  AliTOFDDLRawData::WriteChipTrailer(UInt_t *buf,Int_t ChipHitCount,UInt_t &BaseWord)
-{
-  //This method writes a chip trailer
-  //pixel fill word
-  if((ChipHitCount%2)!=0){
-    PackWord(BaseWord,0xFEDC,0,15);
-  }
-  PackWord(BaseWord,ChipHitCount,16,28);
-  PackWord(BaseWord,0x0,30,31);
-  fIndex++;
-  buf[fIndex]=BaseWord;
-  BaseWord=0;
-  return;
-}//end WriteChipTrailer
-*/
-//------------------------------------------------------------------------------------------
-/*
-void  AliTOFDDLRawData::ReadChipTrailer(Int_t &ChipHitCount,UInt_t BaseWord)
-{
-  //This method reads a chip trailer
-  UInt_t temp=0;
-  UnpackWord(BaseWord,16,28,temp);
-  ChipHitCount=(Int_t)temp;
-  return;
-}//end ReadChipTrailer
-*/
-//------------------------------------------------------------------------------------------
+//---------------------------------------------------------------------------

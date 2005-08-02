@@ -26,21 +26,10 @@ class AliTOFDDLRawData:public TObject{
   void  GetDigits(TClonesArray *TOFdigits, Int_t ddl,UInt_t *buf);
   //This method formats and stores in buf all the digits of a TOF module
 
-  /*
-  void  WriteChipHeader(Int_t ChipAddr,Int_t EventCnt,UInt_t &BaseWord);
-  void  WriteChipTrailer(UInt_t *buf,Int_t ChipHitCount,UInt_t &BaseWord);
-  //The three previous  methods are used to store the data according to the 
-  //TOF detector data format
-
-  void  ReadChipHeader(Int_t &ChipAddr,Int_t &EventCnt,UInt_t BaseWord);
-  void  ReadChipTrailer(Int_t &ChipHitCount,UInt_t BaseWord);
-  //Methods used for reading and dubugging TOF data files
-  */
-
   Int_t fVerbose;            //Verbose level (0:no msg, 1:msg, 2:digits in txt files)
   Int_t fIndex;              //number of 32 words to be stored into the output file
-  enum {kDDLOffset = 0x500};  //offset for DDL number
   ClassDef(AliTOFDDLRawData,1)
+
 };
     
 #endif

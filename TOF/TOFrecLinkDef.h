@@ -8,6 +8,7 @@
 #pragma link off all classes;
 #pragma link off all functions;
  
+#pragma link C++ class  AliTOFcluster+;
 #pragma link C++ class  AliTOFtrack+;
 #pragma link C++ class  AliTOFtracker+;
 #pragma link C++ class  AliTOFpidESD+;

@@ -73,6 +73,7 @@
 #include "AliMC.h"
 #include "AliTOFDigitizer.h"
 #include "AliTOFDDLRawData.h"
+#include "AliTOFcluster.h"
  
 ClassImp(AliTOF)
  
@@ -231,6 +232,7 @@ AliTOF::~AliTOF()
       delete fSDigits;
       fSDigits = 0;
     }
+
   if (fReconParticles)
     {
       fReconParticles->Delete ();
@@ -311,6 +313,17 @@ void AliTOF::SetTreeAddress ()
       }
     }
 
+  if (fLoader->TreeR() ) 
+    {
+      branch = fLoader->TreeR()->GetBranch("TOF"); 
+      if (branch) 
+       {
+	 if (fReconParticles == 0x0) fReconParticles = new TClonesArray("AliTOFcluster",  1000);
+         branch->SetAddress(&fReconParticles);
+       }
+    }
+
+  /*
   if (fLoader->TreeR() && fReconParticles) //I do not know where this array is created - skowron
     {
       branch = fLoader->TreeR()->GetBranch("TOF"); 
@@ -318,7 +331,8 @@ void AliTOF::SetTreeAddress ()
        {
          branch->SetAddress(&fReconParticles) ;
        }
-    }   
+    }
+  */
 }
 
 //_____________________________________________________________________________
@@ -624,9 +638,16 @@ void AliTOF::MakeBranch(Option_t* option)
     MakeBranchInTree(fLoader->TreeS(), branchname, &fSDigits,buffersize, 0) ;
   }
 
+  if (fLoader->TreeR() && oR){
+    if (fReconParticles == 0x0) fReconParticles = new TClonesArray("AliTOFcluster",  1000);
+    MakeBranchInTree(fLoader->TreeR(), branchname, &fReconParticles,buffersize, 0) ;
+  }
+
+  /*
   if (fReconParticles && fLoader->TreeR() && oR){
     MakeBranchInTree(fLoader->TreeR(), branchname, &fReconParticles,buffersize, 0) ;
   }
+  */
 }
 
 //____________________________________________________________________________

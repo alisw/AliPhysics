@@ -23,14 +23,18 @@
 //--------------------------------------------------------------------
 
 #include <Rtypes.h>
-#include "AliTOFtracker.h"
-#include "AliTOFtrack.h"
+
 #include "TClonesArray.h"
+
 #include "AliLog.h"
-#include "AliTOFdigit.h"
-#include "AliTOFGeometry.h"
 #include "AliRun.h"
 #include "AliModule.h"
+
+#include "AliTOFdigit.h"
+#include "AliTOFcluster.h"
+#include "AliTOFtrack.h"
+#include "AliTOFGeometry.h"
+#include "AliTOFtracker.h"
 
 ClassImp(AliTOFtracker)
 

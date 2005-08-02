@@ -10,5 +10,6 @@
  
 #pragma link C++ class  AliTOFGeometry+;
 #pragma link C++ class  AliTOFdigit+;
+#pragma link C++ class  AliTOFRawStream+;
 
 #endif
