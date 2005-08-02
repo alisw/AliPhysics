@@ -1,7 +1,7 @@
 #-*- Mode: Makefile -*-
 # $Id$
 
-SRCS  = AliTOFcluster.cxx  AliTOFtrack.cxx  AliTOFtracker.cxx  \
+SRCS  = AliTOFcluster.cxx  AliTOFClusterFinder.cxx  AliTOFtrack.cxx  AliTOFtracker.cxx  \
 	AliTOFpidESD.cxx  AliTOFReconstructor.cxx
 
 HDRS:= $(SRCS:.cxx=.h)

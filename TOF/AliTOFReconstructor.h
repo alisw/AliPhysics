@@ -9,16 +9,17 @@
 
 class AliTOFGeometry;
 
-
 class AliTOFReconstructor: public AliReconstructor {
 public:
-  AliTOFReconstructor(): AliReconstructor() {};
-  virtual ~AliTOFReconstructor() {};
+  //AliTOFReconstructor(): AliReconstructor() {};
+  //virtual ~AliTOFReconstructor() {};
 
-  virtual void         Reconstruct(AliRunLoader*, AliRawReader*) const { };
-  virtual void         Reconstruct(AliRawReader*, TTree*) const { };
-  virtual void         Reconstruct(TTree*, TTree*) const { };
   virtual void         Reconstruct(AliRunLoader* runLoader) const;
+  virtual void         Reconstruct(AliRunLoader* runLoader,
+				   AliRawReader* rawReader) const;
+  virtual void         Reconstruct(AliRawReader* rawReader,
+				   TTree* clusterTree) const;
+  virtual void         Reconstruct(TTree*, TTree*) const { };
   virtual AliTracker*  CreateTracker(AliRunLoader* runLoader) const;
   virtual void         FillESD(AliRunLoader*, AliRawReader*, AliESD*) const { };
   virtual void         FillESD(AliRawReader*, TTree*, AliESD*) const { };

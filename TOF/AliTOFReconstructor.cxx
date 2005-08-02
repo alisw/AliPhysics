@@ -22,21 +22,61 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 
-#include "AliTOFReconstructor.h"
-#include "AliRunLoader.h"
-#include "AliRun.h"
-#include "AliTOFtracker.h"
-#include "AliLog.h"
 #include <TFile.h>
+
+#include "AliLog.h"
+#include "AliRun.h"
+#include "AliRunLoader.h"
+
+#include "AliTOFtracker.h"
+#include "AliTOFClusterFinder.h"
+#include "AliTOFReconstructor.h"
 
 
 ClassImp(AliTOFReconstructor)
 
 
 //_____________________________________________________________________________
-void AliTOFReconstructor::Reconstruct(AliRunLoader* /*runLoader*/) const
+  void AliTOFReconstructor::Reconstruct(AliRunLoader* /*runLoader*/) const
 {
-// nothing to be done
+// reconstruct clusters from digits
+/*
+  AliTOFClusterFinder *tofClus = new AliTOFClusterFinder(runLoader);
+  tofClus->Load();
+  for (Int_t iEvent = 0; iEvent < runLoader->GetNumberOfEvents(); iEvent++)
+    {
+      tofClus->Digits2RecPoints(iEvent);
+    }
+  tofClus->UnLoad();
+*/
+}
+
+//_____________________________________________________________________________
+void AliTOFReconstructor::Reconstruct(AliRunLoader* runLoader,
+                                      AliRawReader *rawReader) const
+{
+// reconstruct clusters from Raw Data
+
+  AliTOFClusterFinder tofClus(runLoader);
+  tofClus.LoadClusters();
+  Int_t iEvent = 0;
+  while (rawReader->NextEvent()) {
+    //tofClus.Digits2RecPoints(iEvent,rawReader);
+    tofClus.Raw2Digits(iEvent,rawReader); // temporary solution
+    iEvent++;
+  }
+  tofClus.UnLoadClusters();
+
+}
+
+//_____________________________________________________________________________
+void AliTOFReconstructor::Reconstruct(AliRawReader *rawReader,
+                                      TTree *clustersTree) const
+{
+// reconstruct clusters from Raw Data
+
+  AliTOFClusterFinder tofClus;
+  tofClus.Digits2RecPoints(rawReader, clustersTree);
 
 }
 
@@ -58,7 +98,6 @@ void AliTOFReconstructor::FillESD(AliRunLoader* /*runLoader*/,
 // nothing to be done
 
 }
-
 
 //_____________________________________________________________________________
 AliTOFGeometry* AliTOFReconstructor::GetTOFGeometry(AliRunLoader* runLoader) const
