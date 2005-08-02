@@ -82,6 +82,7 @@ public:
   static void SetNonuniformFieldTracking() { fgConvConst=0.; }
 
   static Double_t GetConvConst();
+  static Double_t MeanMaterialBudget(Double_t *start, Double_t *end, Double_t *mparam);
  
   // Time integration (S.Radomski@gsi.de)
   void   StartTimeIntegral();
