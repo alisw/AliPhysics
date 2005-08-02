@@ -27,7 +27,7 @@
 #include "AliEMCALShishKebabTrd1Module.h"
 #include "AliEMCALGeometry.h"
 
-ClassImp(AliEMCALGeometryOfflineTrd1);
+ClassImp(AliEMCALGeometryOfflineTrd1)
 
 AliEMCALGeometryOfflineTrd1* AliEMCALGeometryOfflineTrd1::fgGeomOfflineTrd1=0;
 
