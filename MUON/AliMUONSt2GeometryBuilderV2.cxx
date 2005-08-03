@@ -1417,10 +1417,10 @@ void AliMUONSt2GeometryBuilderV2::CreateGeometry()
                    => TGeoRotation("Qrot4",90.,0.,90.,-90.,180.,0.);
 **********************************************************************************************/
 
- Int_t detElemId1 =  0;  // quadrant I
- Int_t detElemId2 = 51;  // quadrant II
- Int_t detElemId3 = 50;  // quadrant III
- Int_t detElemId4 =  1;  // quadrant IV
+ Int_t detElemId1 =  1;  // quadrant I
+ Int_t detElemId2 =  0;  // quadrant II
+ Int_t detElemId3 =  3;  // quadrant III
+ Int_t detElemId4 =  2;  // quadrant IV
 
 Float_t half_chamber = zcbb + zcu + zRoha + zmeb + zcu2 + zsenv/2;
 //   cout<<  "\n half_chamber \t" << half_chamber << endl;

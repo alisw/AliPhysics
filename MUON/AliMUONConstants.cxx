@@ -26,9 +26,11 @@ Int_t   AliMUONConstants::fgNTriggerCh = 4;
 Int_t   AliMUONConstants::fgNTriggerCircuit = 234;
 Int_t   AliMUONConstants::fgNDetElem = 228;
 
+
+
 Float_t AliMUONConstants::fgDefaultChamberZ[14] = 
-  {-533.5, -546.5, -678.5, -693.5, // St12
-   -966.9, -997.9, -1274.5, -1305.5, -1408.6, -1439.6, // St345  update sept04 Ch. Finck 
+  {-526.16, -545.24, -676.4, -695.4, // St12
+   -967.5, -998.5, -1276.5, -1307.5, -1406.6, -1437.6,// updated 08/05, EDMS id 335328 (A. Tournaire)
    -1603.5, -1620.5, -1703.5, -1720.5}; // M1 & M2
 
 Float_t  AliMUONConstants::fgDzCh   = 15.5/2.;
