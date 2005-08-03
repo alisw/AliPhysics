@@ -57,5 +57,5 @@ LIBNOVER      = `find /lib -name 'libNoVersion*.so' | xargs --replace basename {
 
 #System libraries
 SYSLIBS      := -lcrypt -L/usr/X11R6/lib -lX11 $(LIBNOVER) -L/usr/local/lib \
-                -lXt -L$(shell which ifort | sed -e 's|bin/ifort|lib|') 
+                -lXt -L$(shell which ifort | sed -e 's|bin/ifort|lib|') \
                 -lifcore -lifport
