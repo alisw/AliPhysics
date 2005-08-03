@@ -35,12 +35,13 @@
 #include "AliLog.h"
 
 const Int_t AliMUONTrackK::fgkSize = 5;
-const Int_t AliMUONTrackK::fgkNSigma = 6; 
-const Double_t AliMUONTrackK::fgkChi2max = 25; 
+const Int_t AliMUONTrackK::fgkNSigma = 12; 
+const Double_t AliMUONTrackK::fgkChi2max = 100; 
 const Int_t AliMUONTrackK::fgkTriesMax = 10000; 
 const Double_t AliMUONTrackK::fgkEpsilon = 0.002; 
 
-void mnvertLocalK(Double_t* a, Int_t l, Int_t m, Int_t n, Int_t& ifail);
+void mnvertLocal(Double_t* a, Int_t l, Int_t m, Int_t n, Int_t& ifail); // from AliMUONTrack
+//void mnvertLocalK(Double_t* a, Int_t l, Int_t m, Int_t n, Int_t& ifail);
 
 ClassImp(AliMUONTrackK) // Class implementation in ROOT context
 
@@ -58,7 +59,7 @@ AliMUONTrackK::AliMUONTrackK()
 {
   // Default constructor
 
-  fgTrackReconstructor = NULL; // pointer to track reconstructor
+  fgTrackReconstructor = NULL; // pointer to event reconstructor
   fgMUON = NULL; // pointer to Muon module
   fgHitForRec = NULL; // pointer to points
   fgNOfPoints = 0; // number of points
@@ -87,7 +88,7 @@ AliMUONTrackK::AliMUONTrackK(AliMUONTrackReconstructor *TrackReconstructor, TClo
   // Constructor
 
   if (!TrackReconstructor) return;
-  fgTrackReconstructor = TrackReconstructor; // pointer to track reconstructor
+  fgTrackReconstructor = TrackReconstructor; // pointer to event reconstructor
   fgMUON = (AliMUON*) gAlice->GetModule("MUON"); // pointer to Muon module
   fgHitForRec = hitForRec; // pointer to points
   fgNOfPoints = fgHitForRec->GetEntriesFast(); // number of points
@@ -165,7 +166,9 @@ AliMUONTrackK::AliMUONTrackK(AliMUONSegment *segment)
   dY = hit2->GetBendingCoor() - hit1->GetBendingCoor();
   dX = hit2->GetNonBendingCoor() - hit1->GetNonBendingCoor();
   (*fTrackPar)(2,0) = TMath::ATan2(dY,dZ); // alpha
-  (*fTrackPar)(3,0) = TMath::ATan2(dX,dZ/TMath::Cos((*fTrackPar)(2,0))); // beta
+  if ((*fTrackPar)(2,0) < 0.) (*fTrackPar)(2,0) += 2*TMath::Pi(); // from 0 to 2*pi
+  (*fTrackPar)(3,0) = TMath::ATan2(-dX,dZ/TMath::Cos((*fTrackPar)(2,0))); // beta
+  (*fTrackPar)(2,0) -= TMath::Pi();
   (*fTrackPar)(4,0) = 1/fgTrackReconstructor->GetBendingMomentumFromImpactParam(segment->GetBendingImpact()); // 1/Pt
   (*fTrackPar)(4,0) *= TMath::Cos((*fTrackPar)(3,0)); // 1/p
   // Evaluate covariance (and weight) matrix
@@ -194,8 +197,8 @@ AliMUONTrackK::AliMUONTrackK(AliMUONSegment *segment)
       hit1 = (AliMUONHitForRec*) ((*fTrackHitsPtr)[i]);
       rawclusters = fgTrackReconstructor->GetMUONData()->RawClusters(hit1->GetChamberNumber());
       clus = (AliMUONRawCluster*) rawclusters->UncheckedAt(hit1->GetHitNumber());
-      cout << clus->GetTrack(1)-1;
-      if (clus->GetTrack(2) != 0) cout << " " << clus->GetTrack(2)-1;
+      cout << clus->GetTrack(1);
+      if (clus->GetTrack(2) != -1) cout << " " << clus->GetTrack(2);
       if (i == 0) cout << " <--> ";
     }
     cout << " @ " << fStartSegment->GetHitForRec1()->GetChamberNumber() << endl;
@@ -349,6 +352,7 @@ void AliMUONTrackK::EvalCovariance(Double_t dZ)
   // Evaluate covariance (and weight) matrix for track candidate
   Double_t sigmaB, sigmaNonB, tanA, tanB, dAdY, rad, dBdX, dBdY;
 
+  dZ = -dZ;
   sigmaB = fgTrackReconstructor->GetBendingResolution(); // bending resolution
   sigmaNonB = fgTrackReconstructor->GetNonBendingResolution(); // non-bending resolution
 
@@ -377,8 +381,9 @@ void AliMUONTrackK::EvalCovariance(Double_t dZ)
   // and do not calculate the Determinant in that case !!!!
   if (fWeight->Determinant() != 0) {
     // fWeight->Invert();
-    Int_t ifailWeight;
-    mnvertLocalK(&((*fWeight)(0,0)), fgkSize,fgkSize,fgkSize,ifailWeight);
+    Int_t ifail;
+    //mnvertLocalK(&((*fWeight)(0,0)), fgkSize,fgkSize,fgkSize,ifailWeight);
+    mnvertLocal(&((*fWeight)(0,0)), fgkSize,fgkSize,fgkSize,ifail);
   } else {
     AliWarning(" Determinant fWeight=0:");
   }
@@ -623,7 +628,8 @@ void AliMUONTrackK::ParPropagation(Double_t zEnd)
   Int_t iFB, nTries;
   Double_t dZ, step, distance, charge;
   Double_t vGeant3[7], vGeant3New[7];
-  AliMUONTrackParam* trackParam = 0;
+  AliMUONTrackParam trackParam;
+
   nTries = 0;
   // First step using linear extrapolation
   dZ = zEnd - fPosition;
@@ -635,19 +641,21 @@ void AliMUONTrackK::ParPropagation(Double_t zEnd)
   //AZ(z->-z) charge = iFB*TMath::Sign(Double_t(1.0),(*fTrackPar)(4,0));
   charge = -iFB*TMath::Sign(Double_t(1.0),(*fTrackPar)(4,0));
   SetGeantParam(vGeant3,iFB);
+  //fTrackParNew->Print();
 
   // Check if overstep
   do {
     step = TMath::Abs(step);
     // Propagate parameters
-    trackParam->ExtrapOneStepRungekutta(charge,step,vGeant3,vGeant3New);
-    //    extrap_onestep_rungekutta(charge,step,vGeant3,vGeant3New);
+    trackParam.ExtrapOneStepRungekutta(charge,step,vGeant3,vGeant3New);
+    //extrap_onestep_rungekutta(charge,step,vGeant3,vGeant3New);
     distance = zEnd - vGeant3New[2];
     step *= dZ/(vGeant3New[2]-fPositionNew);
     nTries ++;
   } while (distance*iFB < 0 && TMath::Abs(distance) > fgkEpsilon);
 
   GetFromGeantParam(vGeant3New,iFB);
+  //fTrackParNew->Print();
 
   // Position adjustment (until within tolerance)
   while (TMath::Abs(distance) > fgkEpsilon) {
@@ -659,9 +667,8 @@ void AliMUONTrackK::ParPropagation(Double_t zEnd)
     do {
       // binary search
       // Propagate parameters
-      //   extrap_onestep_rungekutta(charge,step,vGeant3,vGeant3New);
-      trackParam->ExtrapOneStepRungekutta(charge,step,vGeant3,vGeant3New);
-
+      trackParam.ExtrapOneStepRungekutta(charge,step,vGeant3,vGeant3New);
+      //extrap_onestep_rungekutta(charge,step,vGeant3,vGeant3New);
       distance = zEnd - vGeant3New[2];
       step /= 2;
       nTries ++;
@@ -674,6 +681,7 @@ void AliMUONTrackK::ParPropagation(Double_t zEnd)
     GetFromGeantParam(vGeant3New,iFB);
   }
   //cout << nTries << endl;
+  //fTrackParNew->Print();
   return;
 }
 /*
@@ -703,7 +711,6 @@ void AliMUONTrackK::WeightPropagation(Double_t zEnd, Bool_t smooth)
   // Save initial and propagated parameters
   TMatrixD trackPar0 = *fTrackPar;
   TMatrixD trackParNew0 = *fTrackParNew;
-  Double_t savePosition = fPositionNew;
 
   // Get covariance matrix
   *fCovariance = *fWeight;
@@ -711,45 +718,40 @@ void AliMUONTrackK::WeightPropagation(Double_t zEnd, Bool_t smooth)
   // and do not calculate the Determinant in that case !!!!
   if (fCovariance->Determinant() != 0) {
     //   fCovariance->Invert();
-    Int_t ifailCov;
-    mnvertLocalK(&((*fCovariance)(0,0)), fgkSize,fgkSize,fgkSize,ifailCov);
+    Int_t ifail;
+    mnvertLocal(&((*fCovariance)(0,0)), fgkSize,fgkSize,fgkSize,ifail);
+    //fCovariance->Print();
   } else {
     AliWarning(" Determinant fCovariance=0:");
   }
 
-  // Loop over parameters to find change of the initial vs propagated ones
-  zEnd = fPosition;
-  fPosition = fPositionNew;
+  // Loop over parameters to find change of the propagated vs initial ones
   for (i=0; i<fgkSize; i++) {
     dPar = TMath::Sqrt((*fCovariance)(i,i));
-    *fTrackPar = trackParNew0;
+    *fTrackPar = trackPar0;
+    if (i == 4) dPar *= TMath::Sign(1.,-trackPar0(4,0)); // 1/p
     (*fTrackPar)(i,0) += dPar;
     ParPropagation(zEnd);
     for (j=0; j<fgkSize; j++) {
-      jacob(j,i) = ((*fTrackParNew)(j,0)-trackPar0(j,0))/dPar;
+      jacob(j,i) = ((*fTrackParNew)(j,0)-trackParNew0(j,0))/dPar;
     }
   }
 
-  //jacob->Print();
   //trackParNew0.Print();
   //TMatrixD par1(jacob,TMatrixD::kMult,trackPar0); //
   //par1.Print();
-  /*
+  TMatrixD jacob0 = jacob;
   if (jacob.Determinant() != 0) {
-    //  jacob.Invert();
+    jacob.Invert();
   } else {
-    cout << " ***** Warning in WeightPropagation: Determinant jacob=0:" << endl;
+    AliWarning(" Determinant jacob=0:");
   }
-  */
   TMatrixD weight1(*fWeight,TMatrixD::kMult,jacob); // WD
   *fWeight = TMatrixD(jacob,TMatrixD::kTransposeMult,weight1); // DtWD
-  //fWeight->Print();
 
   // Restore initial and propagated parameters
   *fTrackPar = trackPar0;
   *fTrackParNew = trackParNew0;
-  fPosition = zEnd;
-  fPositionNew = savePosition;
 
   // Save for smoother
   if (!smooth) return; // do not use smoother
@@ -763,8 +765,8 @@ void AliMUONTrackK::WeightPropagation(Double_t zEnd, Bool_t smooth)
   tmp->SetUniqueID(1);
   *fCovariance = *fWeight;
   if (fCovariance->Determinant() != 0) {
-    Int_t ifailCov;
-    mnvertLocalK(&((*fCovariance)(0,0)), fgkSize,fgkSize,fgkSize,ifailCov);
+    Int_t ifail;
+    mnvertLocal(&((*fCovariance)(0,0)), fgkSize,fgkSize,fgkSize,ifail);
   } else {
     AliWarning(" Determinant fCovariance=0:");
   }
@@ -774,8 +776,7 @@ void AliMUONTrackK::WeightPropagation(Double_t zEnd, Bool_t smooth)
   tmp = new TMatrixD(*fCovariance); // filtered covariance (if no measurement will be found)
   fCovFilter->Add(tmp);
   tmp->SetUniqueID(1);
-  tmp = new TMatrixD(jacob); // Jacobian
-  tmp->Invert();
+  tmp = new TMatrixD(jacob0); // Jacobian
   fJacob->Add(tmp);
   tmp->SetUniqueID(1);
   if (fSteps->fN <= fNSteps) fSteps->Set(fSteps->fN+10);
@@ -803,10 +804,10 @@ Bool_t AliMUONTrackK::FindPoint(Int_t ichamb, Double_t zEnd, Int_t currIndx, Int
   // and do not calculate the Determinant in that case !!!!
   if (fCovariance->Determinant() != 0) {
     //  fCovariance->Invert();
-      Int_t ifailCov;
-      mnvertLocalK(&((*fCovariance)(0,0)), fgkSize,fgkSize,fgkSize,ifailCov);
+      Int_t ifail;
+      mnvertLocal(&((*fCovariance)(0,0)), fgkSize,fgkSize,fgkSize,ifail);
   } else {
-    AliWarning("Determinant fCovariance=0:");
+    AliWarning(" Determinant fCovariance=0:");
   }
   //windowB = fgkNSigma*TMath::Sqrt((*fCovariance)(0,0)+sigmaB*sigmaB);
   //windowNonB = fgkNSigma*TMath::Sqrt((*fCovariance)(1,1)+sigmaNonB*sigmaNonB);
@@ -826,9 +827,11 @@ Bool_t AliMUONTrackK::FindPoint(Int_t ichamb, Double_t zEnd, Int_t currIndx, Int
     if (hit->GetChamberNumber() == ichamb) {
       //if (TMath::Abs(hit->GetZ()-zEnd) < 0.1) {
       if (TMath::Abs(hit->GetZ()-zEnd) < 0.5) {
-        if (TMath::Abs(hit->GetZ()-zEnd) > 0.1) {
+        //if (TMath::Abs(hit->GetZ()-zEnd) > 0.1) {
+        if (TMath::Abs(hit->GetZ()-zEnd) > 0.05) {
 	  // adjust position: for multiple hits in the chamber
 	  // (mostly (only?) for GEANT hits)
+	  cout << " ******* adjust " << zEnd << " " << hit->GetZ() << endl;
 	  zEnd = hit->GetZ();
 	  *fTrackPar = *fTrackParNew;
 	  ParPropagation(zEnd);
@@ -838,20 +841,19 @@ Bool_t AliMUONTrackK::FindPoint(Int_t ichamb, Double_t zEnd, Int_t currIndx, Int
 	  // Get covariance
 	  *fCovariance = *fWeight;
 	  if (fCovariance->Determinant() != 0) {
-	    //fCovariance->Invert();
-	    Int_t ifailCov;
-	    mnvertLocalK(&((*fCovariance)(0,0)), fgkSize,fgkSize,fgkSize,ifailCov);
+	    Int_t ifail;
+	    mnvertLocal(&((*fCovariance)(0,0)), fgkSize,fgkSize,fgkSize,ifail);
 	  } else {
-	    AliWarning("Determinant fCovariance=0:" );
+	    AliWarning(" Determinant fCovariance=0:" );
 	  }
 	}
 	y = hit->GetBendingCoor();
 	x = hit->GetNonBendingCoor();
 	windowB = fgkNSigma*TMath::Sqrt((*fCovariance)(0,0)+hit->GetBendingReso2());
 	windowNonB = fgkNSigma*TMath::Sqrt((*fCovariance)(1,1)+hit->GetNonBendingReso2());
-	//fprintf(lun1,"%3d %10.4f %10.4f %10.4f \n", ichamb, windowB, windowNonB, TMath::Abs(hit->GetZ()-zLast));
 
-	windowB = TMath::Min (windowB,5.);
+	// windowB = TMath::Min (windowB,5.);
+	if (fgkNSigma > 6) windowB = TMath::Min (windowB,5.);
 	/*
 	if (TMath::Abs(hit->GetZ()-zLast) < 50) {
 	  windowB = TMath::Min (windowB,0.5);
@@ -883,6 +885,7 @@ Bool_t AliMUONTrackK::FindPoint(Int_t ichamb, Double_t zEnd, Int_t currIndx, Int
 	  //    TMath::Abs((*fTrackParNew)(1,0)-x) <= windowNonB &&
 	  //  hit->GetTrackRefSignal() == 1) { // just for test
 	  // Vector of measurements and covariance matrix
+	  //fprintf(lun1,"%3d %3d %10.4f %10.4f \n", gAlice->GetEvNumber(), ichamb, x, y);
 	  point.Zero();
 	  point(0,0) = y;
 	  point(1,0) = x;
@@ -918,8 +921,8 @@ Bool_t AliMUONTrackK::FindPoint(Int_t ichamb, Double_t zEnd, Int_t currIndx, Int
 	    /*
 	    *(trackK->fCovariance) = *(trackK->fWeight);
 	    if (trackK->fCovariance->Determinant() != 0) {
-	      Int_t ifailCov;
-	      mnvertLocalK(&((*(trackK->fCovariance))(0,0)), fgkSize,fgkSize,fgkSize,ifailCov);
+	      Int_t ifail;
+	      mnvertLocal(&((*(trackK->fCovariance))(0,0)), fgkSize,fgkSize,fgkSize,ifail);
 	    }
 	    cout << (*(trackK->fCovariance))(0,0) << " " << (*(trackK->fCovariance))(1,1) << " " << (*fCovariance)(0,0) << " " << (*fCovariance)(1,1) << endl;
 	    */
@@ -933,7 +936,7 @@ Bool_t AliMUONTrackK::FindPoint(Int_t ichamb, Double_t zEnd, Int_t currIndx, Int
 		    RemoveMatrices(trackK);
 		    cout << " *** Position adjustment 1 " << hit->GetZ() << " " 
                          << (*trackK->fSteps)[i] << endl;
-		    AliFatal("Position adjustment 1.");
+		    AliFatal(" Position adjustment 1.");
 		  }
 		  else break;
 		}
@@ -987,7 +990,7 @@ Bool_t AliMUONTrackK::FindPoint(Int_t ichamb, Double_t zEnd, Int_t currIndx, Int
 	if (TMath::Abs(fPosition-(*fSteps)[i]) > 0.1) {
 	//if (TMath::Abs(fPosition-fSteps[i]) > 0.1) {
 	  RemoveMatrices(this);
-	  if (fgDebug > 1) cout << " *** Position adjustment 2 " << fPosition << " " << (*fSteps)[i] << endl;
+	  if (fgDebug > 0) cout << " *** Position adjustment 2 " << fPosition << " " << (*fSteps)[i] << endl;
 	}
 	else break;
       } // for (Int_t i=fNSteps-1;
@@ -1022,10 +1025,10 @@ void AliMUONTrackK::TryPoint(TMatrixD &point, const TMatrixD &pointWeight, TMatr
   // and do not calculate the Determinant in that case !!!!
   if (wu.Determinant() != 0) {
     //  wu.Invert();
-     Int_t ifailWU;
-      mnvertLocalK(&((wu)(0,0)), fgkSize,fgkSize,fgkSize,ifailWU);
+     Int_t ifail;
+      mnvertLocal(&((wu)(0,0)), fgkSize,fgkSize,fgkSize,ifail);
   } else {
-    AliWarning("Determinant wu=0:");
+    AliWarning(" Determinant wu=0:");
   }
   trackParTmp = TMatrixD(wu,TMatrixD::kMult,right); 
 
@@ -1053,10 +1056,10 @@ void AliMUONTrackK::MSThin(Int_t sign)
   if (fWeight->Determinant() != 0) {
     //fWeight->Invert(); // covariance
 
-    Int_t ifailWeight;
-    mnvertLocalK(&((*fWeight)(0,0)), fgkSize,fgkSize,fgkSize,ifailWeight);
+    Int_t ifail;
+    mnvertLocal(&((*fWeight)(0,0)), fgkSize,fgkSize,fgkSize,ifail);
   } else {
-    AliWarning("Determinant fWeight=0:");
+    AliWarning(" Determinant fWeight=0:");
   }
 
   cosAlph = TMath::Cos((*fTrackParNew)(2,0));
@@ -1071,8 +1074,8 @@ void AliMUONTrackK::MSThin(Int_t sign)
   (*fWeight)(3,3) += sign*theta0*theta0; // beta
   //fWeight->Invert(); // weight
 
-  Int_t ifailWeight;
-  mnvertLocalK(&((*fWeight)(0,0)), fgkSize,fgkSize,fgkSize,ifailWeight);
+  Int_t ifail;
+  mnvertLocal(&((*fWeight)(0,0)), fgkSize,fgkSize,fgkSize,ifail);
   return;
 }
 
@@ -1135,10 +1138,8 @@ void AliMUONTrackK::SetGeantParam(Double_t *VGeant3, Int_t iFB)
   VGeant3[0] = (*fTrackParNew)(1,0); // X
   VGeant3[1] = (*fTrackParNew)(0,0); // Y
   VGeant3[2] = fPositionNew; // Z
-  //AZ(z->-z) VGeant3[3] = iFB*TMath::Sin((*fTrackParNew)(3,0)); // Px/Ptot
-  //AZ)z->-z) VGeant3[4] = iFB*TMath::Cos((*fTrackParNew)(3,0))*TMath::Sin((*fTrackParNew)(2,0)); // Py/Ptot
-  VGeant3[3] = -iFB*TMath::Sin((*fTrackParNew)(3,0)); // Px/Ptot
-  VGeant3[4] = -iFB*TMath::Cos((*fTrackParNew)(3,0))*TMath::Sin((*fTrackParNew)(2,0)); // Py/Ptot
+  VGeant3[3] = iFB*TMath::Sin((*fTrackParNew)(3,0)); // Px/Ptot
+  VGeant3[4] = iFB*TMath::Cos((*fTrackParNew)(3,0))*TMath::Sin((*fTrackParNew)(2,0)); // Py/Ptot
   VGeant3[5] = iFB*TMath::Sqrt(1.0-VGeant3[3]*VGeant3[3]-VGeant3[4]*VGeant3[4]); // Pz/Ptot
   VGeant3[6] = 1/TMath::Abs((*fTrackParNew)(4,0)); // Ptot
 }
@@ -1152,10 +1153,8 @@ void AliMUONTrackK::GetFromGeantParam(Double_t *VGeant3, Int_t iFB)
   fPositionNew = VGeant3[2]; // Z
   (*fTrackParNew)(0,0) = VGeant3[1]; // Y 
   (*fTrackParNew)(1,0) = VGeant3[0]; // X
-  //AZ(z->-z) (*fTrackParNew)(3,0) = TMath::ASin(iFB*VGeant3[3]); // beta
-  //AZ(z->-z) (*fTrackParNew)(2,0) = TMath::ASin(iFB*VGeant3[4]/TMath::Cos((*fTrackParNew)(3,0))); // alpha
-  (*fTrackParNew)(3,0) = TMath::ASin(-iFB*VGeant3[3]); // beta
-  (*fTrackParNew)(2,0) = TMath::ASin(iFB*VGeant3[4]/TMath::Cos((*fTrackParNew)(3,0))) - TMath::Pi(); // alpha
+  (*fTrackParNew)(3,0) = TMath::ASin(iFB*VGeant3[3]); // beta
+  (*fTrackParNew)(2,0) = TMath::ASin(iFB*VGeant3[4]/TMath::Cos((*fTrackParNew)(3,0))); // alpha
   (*fTrackParNew)(4,0) = 1/VGeant3[6]*TMath::Sign(Double_t(1.0),(*fTrackPar)(4,0)); // 1/Ptot
 }
 
@@ -1253,6 +1252,8 @@ void AliMUONTrackK::FillMUONTrack(void)
       SetTrackParam(&trackParam, (TMatrixD*)fParSmooth->UncheckedAt(i), ((AliMUONHitForRec*)((*fTrackHitsPtr)[i]))->GetZ());
     }
     ((AliMUONTrack*)this)->AddTrackParamAtHit(&trackParam); 
+    // Fill array of HitForRec's
+    ((AliMUONTrack*)this)->AddHitForRecAtHit((AliMUONHitForRec*)fTrackHitsPtr->UncheckedAt(i)); 
   }
 }
 
@@ -1275,7 +1276,8 @@ void AliMUONTrackK::Branson(void)
   // Propagates track to the vertex thru absorber using Branson correction
   // (makes use of the AliMUONTrackParam class)
  
-  AliMUONTrackParam *trackParam = new AliMUONTrackParam();
+  //AliMUONTrackParam *trackParam = new AliMUONTrackParam();
+  AliMUONTrackParam trackParam = AliMUONTrackParam();
   /*
   trackParam->SetBendingCoor((*fTrackPar)(0,0));
   trackParam->SetNonBendingCoor((*fTrackPar)(1,0));
@@ -1284,26 +1286,27 @@ void AliMUONTrackK::Branson(void)
   trackParam->SetInverseBendingMomentum((*fTrackPar)(4,0)/TMath::Cos((*fTrackPar)(3,0)));
   trackParam->SetZ(fPosition);
   */
-  SetTrackParam(trackParam, fTrackPar, fPosition);
+  SetTrackParam(&trackParam, fTrackPar, fPosition);
 
-  trackParam->ExtrapToVertex(Double_t(0.), Double_t(0.), Double_t(0.));
+  trackParam.ExtrapToVertex(Double_t(0.), Double_t(0.), Double_t(0.));
+  //trackParam.ExtrapToVertex();
 
-  (*fTrackPar)(0,0) = trackParam->GetBendingCoor();
-  (*fTrackPar)(1,0) = trackParam->GetNonBendingCoor();
-  (*fTrackPar)(2,0) = TMath::ATan(trackParam->GetBendingSlope());
-  (*fTrackPar)(3,0) = TMath::ATan(TMath::Cos((*fTrackPar)(2,0))*trackParam->GetNonBendingSlope());
-  (*fTrackPar)(4,0) = TMath::Cos((*fTrackPar)(3,0))*trackParam->GetInverseBendingMomentum();
-  fPosition = trackParam->GetZ();
-  delete trackParam;
+  (*fTrackPar)(0,0) = trackParam.GetBendingCoor();
+  (*fTrackPar)(1,0) = trackParam.GetNonBendingCoor();
+  (*fTrackPar)(2,0) = TMath::ATan(trackParam.GetBendingSlope());
+  (*fTrackPar)(3,0) = TMath::ATan(TMath::Cos((*fTrackPar)(2,0))*trackParam.GetNonBendingSlope());
+  (*fTrackPar)(4,0) = TMath::Cos((*fTrackPar)(3,0))*trackParam.GetInverseBendingMomentum();
+  fPosition = trackParam.GetZ();
+  //delete trackParam;
   cout << 1/(*fTrackPar)(4,0) << " " << fPosition << " " << (*fTrackPar)(0,0) << endl;
 
   // Get covariance matrix
   *fCovariance = *fWeight;
   if (fCovariance->Determinant() != 0) {
-      Int_t ifailCov;
-      mnvertLocalK(&((*fCovariance)(0,0)), fgkSize,fgkSize,fgkSize,ifailCov);
+      Int_t ifail;
+      mnvertLocal(&((*fCovariance)(0,0)), fgkSize,fgkSize,fgkSize,ifail);
   } else {
-    AliWarning("Determinant fCovariance=0:");
+    AliWarning(" Determinant fCovariance=0:");
   }
 }
 
@@ -1503,14 +1506,14 @@ vertex:
       hit =  (AliMUONHitForRec*) ((*fTrackHitsPtr)[i1]);
       rawclusters = fgTrackReconstructor->GetMUONData()->RawClusters(hit->GetChamberNumber());
       clus = (AliMUONRawCluster*) rawclusters->UncheckedAt(hit->GetHitNumber());
-      printf ("%4d", clus->GetTrack(1) - 1); 
+      printf ("%4d", clus->GetTrack(1)); 
     }
     cout << endl;
     for (Int_t i1=0; i1<fNTrackHits; i1++) {
       hit =  (AliMUONHitForRec*) ((*fTrackHitsPtr)[i1]);
       rawclusters = fgTrackReconstructor->GetMUONData()->RawClusters(hit->GetChamberNumber());
       clus = (AliMUONRawCluster*) rawclusters->UncheckedAt(hit->GetHitNumber());
-      if (clus->GetTrack(2) != 0) printf ("%4d", clus->GetTrack(2) - 1);
+      if (clus->GetTrack(2) != -1) printf ("%4d", clus->GetTrack(2));
       else printf ("%4s", "   ");
     }
   }
@@ -1530,10 +1533,10 @@ vertex:
   *fCovariance = *fWeight;
   if (fCovariance->Determinant() != 0) {
     //   fCovariance->Invert();
-    Int_t ifailCov;
-    mnvertLocalK(&((*fCovariance)(0,0)), fgkSize,fgkSize,fgkSize,ifailCov);
+    Int_t ifail;
+    mnvertLocal(&((*fCovariance)(0,0)), fgkSize,fgkSize,fgkSize,ifail);
   } else {
-    AliWarning("Determinant fCovariance=0:" );
+    AliWarning(" Determinant fCovariance=0:" );
   }
   */
 }
@@ -1572,10 +1575,10 @@ void AliMUONTrackK::MSLine(Double_t dZ, Double_t x0)
   *fCovariance = *fWeight;
   if (fCovariance->Determinant() != 0) {
     //   fCovariance->Invert();
-       Int_t ifailCov;
-       mnvertLocalK(&((*fCovariance)(0,0)), fgkSize,fgkSize,fgkSize,ifailCov);
+    Int_t ifail;
+    mnvertLocal(&((*fCovariance)(0,0)), fgkSize,fgkSize,fgkSize,ifail);
   } else {
-    AliWarning("Determinant fCovariance=0:" );
+    AliWarning(" Determinant fCovariance=0:" );
   }
 
   (*fCovariance)(0,0) += dl3*(dYdT*dYdT+dYdB*dYdB); // <yy>
@@ -1592,7 +1595,7 @@ void AliMUONTrackK::MSLine(Double_t dZ, Double_t x0)
   (*fCovariance)(0,3) += dl2*dYdB; // <yb>
   (*fCovariance)(3,0) = (*fCovariance)(0,3);
 
-  (*fCovariance)(1,2) += dl2*(dXdT*dAdT+dXdB*dAdB); // <xa>
+  (*fCovariance)(1,2) += dl2*(-dXdT*dAdT+dXdB*dAdB); // <xa>
   (*fCovariance)(2,1) = (*fCovariance)(1,2);
 
   (*fCovariance)(1,3) += dl2*dXdB; // <xb>
@@ -1605,10 +1608,10 @@ void AliMUONTrackK::MSLine(Double_t dZ, Double_t x0)
   *fWeight = *fCovariance;
   if (fWeight->Determinant() != 0) {
     //  fWeight->Invert();
-    Int_t ifailWeight;
-    mnvertLocalK(&((*fWeight)(0,0)), fgkSize,fgkSize,fgkSize,ifailWeight);
+    Int_t ifail;
+    mnvertLocal(&((*fWeight)(0,0)), fgkSize,fgkSize,fgkSize,ifail);
   } else {
-    AliWarning("Determinant fWeight=0:");
+    AliWarning(" Determinant fWeight=0:");
   }
 }
  
@@ -1724,10 +1727,10 @@ Bool_t AliMUONTrackK::Recover(void)
   *((TMatrixD*)trackK->fCovFilter->Last()) = *((TMatrixD*)fCovExtrap->Last());
   *(trackK->fWeight) = *((TMatrixD*)trackK->fCovFilter->Last());
   if (trackK->fWeight->Determinant() != 0) {
-    Int_t ifailCov;
-    mnvertLocalK(&((*(trackK->fWeight))(0,0)), fgkSize,fgkSize,fgkSize,ifailCov);
+    Int_t ifail;
+    mnvertLocal(&((*(trackK->fWeight))(0,0)), fgkSize,fgkSize,fgkSize,ifail);
   } else {
-    AliWarning("Determinant fWeight=0:");
+    AliWarning(" Determinant fWeight=0:");
   }
   trackK->fPosition = trackK->fPositionNew = (*fSteps)[fNSteps-1];
   trackK->fChi2 = 0;
@@ -1760,10 +1763,10 @@ void AliMUONTrackK::AddMatrices(AliMUONTrackK *trackK, Double_t dChi2, AliMUONHi
   // Covariance
   *(trackK->fCovariance) = *(trackK->fWeight);
   if (trackK->fCovariance->Determinant() != 0) {
-    Int_t ifailCov;
-    mnvertLocalK(&((*(trackK->fCovariance))(0,0)), fgkSize,fgkSize,fgkSize,ifailCov);
+    Int_t ifail;
+    mnvertLocal(&((*(trackK->fCovariance))(0,0)), fgkSize,fgkSize,fgkSize,ifail);
   } else {
-    AliWarning("Determinant fCovariance=0:");
+    AliWarning(" Determinant fCovariance=0:");
   }
   iD = trackK->fCovFilter->Last()->GetUniqueID();
   if (iD > 1) { 
@@ -1788,7 +1791,7 @@ void AliMUONTrackK::CreateMatrix(TObjArray *objArray)
 
   TMatrixD *matrix = (TMatrixD*) objArray->First();
   TMatrixD *tmp = new TMatrixD(*matrix);
-  objArray->AddAt(tmp,objArray->GetLast());
+  objArray->AddAtAndExpand(tmp,objArray->GetLast());
   //cout << " !!! " << tmp << " " << tmp->GetUniqueID() << " " << tmp->GetNoElements() << endl;
 }
 
@@ -1847,105 +1850,6 @@ void AliMUONTrackK::RemoveMatrices(AliMUONTrackK* trackK)
 }
 
   //__________________________________________________________________________
-void mnvertLocalK(Double_t *a, Int_t l, Int_t, Int_t n, Int_t &ifail)
-{
-//*-*-*-*-*-*-*-*-*-*-*-*Inverts a symmetric matrix*-*-*-*-*-*-*-*-*-*-*-*-*
-//*-*                    ==========================
-//*-*        inverts a symmetric matrix.   matrix is first scaled to
-//*-*        have all ones on the diagonal (equivalent to change of units)
-//*-*        but no pivoting is done since matrix is positive-definite.
-//*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
-
-  // taken from TMinuit package of Root (l>=n)
-  // fVERTs, fVERTq and fVERTpp changed to localVERTs, localVERTq and localVERTpp
-  //  Double_t localVERTs[n], localVERTq[n], localVERTpp[n];
-  Double_t * localVERTs = new Double_t[n];
-  Double_t * localVERTq = new Double_t[n];
-  Double_t * localVERTpp = new Double_t[n];
-  // fMaxint changed to localMaxint
-  Int_t localMaxint = n;
-
-    /* System generated locals */
-    Int_t aOffset;
-
-    /* Local variables */
-    Double_t si;
-    Int_t i, j, k, kp1, km1;
-
-    /* Parameter adjustments */
-    aOffset = l + 1;
-    a -= aOffset;
-
-    /* Function Body */
-    ifail = 0;
-    if (n < 1) goto L100;
-    if (n > localMaxint) goto L100;
-//*-*-                  scale matrix by sqrt of diag elements
-    for (i = 1; i <= n; ++i) {
-        si = a[i + i*l];
-        if (si <= 0) goto L100;
-        localVERTs[i-1] = 1 / TMath::Sqrt(si);
-    }
-    for (i = 1; i <= n; ++i) {
-        for (j = 1; j <= n; ++j) {
-            a[i + j*l] = a[i + j*l]*localVERTs[i-1]*localVERTs[j-1];
-        }
-    }
-//*-*-                                       . . . start main loop . . . .
-    for (i = 1; i <= n; ++i) {
-        k = i;
-//*-*-                  preparation for elimination step1
-        if (a[k + k*l] != 0) localVERTq[k-1] = 1 / a[k + k*l];
-        else goto L100;
-        localVERTpp[k-1] = 1;
-        a[k + k*l] = 0;
-        kp1 = k + 1;
-        km1 = k - 1;
-        if (km1 < 0) goto L100;
-        else if (km1 == 0) goto L50;
-        else               goto L40;
-L40:
-        for (j = 1; j <= km1; ++j) {
-            localVERTpp[j-1] = a[j + k*l];
-            localVERTq[j-1]  = a[j + k*l]*localVERTq[k-1];
-            a[j + k*l]   = 0;
-        }
-L50:
-        if (k - n < 0) goto L51;
-        else if (k - n == 0) goto L60;
-        else                goto L100;
-L51:
-        for (j = kp1; j <= n; ++j) {
-            localVERTpp[j-1] = a[k + j*l];
-            localVERTq[j-1]  = -a[k + j*l]*localVERTq[k-1];
-            a[k + j*l]   = 0;
-        }
-//*-*-                  elimination proper
-L60:
-        for (j = 1; j <= n; ++j) {
-            for (k = j; k <= n; ++k) { a[j + k*l] += localVERTpp[j-1]*localVERTq[k-1]; }
-        }
-    }
-//*-*-                  elements of left diagonal and unscaling
-    for (j = 1; j <= n; ++j) {
-        for (k = 1; k <= j; ++k) {
-            a[k + j*l] = a[k + j*l]*localVERTs[k-1]*localVERTs[j-1];
-            a[j + k*l] = a[k + j*l];
-        }
-    }
-    delete [] localVERTs;
-    delete [] localVERTq;
-    delete [] localVERTpp;
-    return;
-//*-*-                  failure return
-L100:
-    delete [] localVERTs;
-    delete [] localVERTq;
-    delete [] localVERTpp;
-    ifail = 1;
-} /* mnvertLocal */
-
-  //__________________________________________________________________________
 Bool_t AliMUONTrackK::Smooth(void)
 {
   // Apply smoother
@@ -1963,7 +1867,7 @@ Bool_t AliMUONTrackK::Smooth(void)
     /*
     for (Int_t i=fNSteps-1; i>=0; i--) cout << (*fSteps)[i] << " ";
     cout << endl;
-    for (Int_t i=fNSteps-1; i>=0; i--) {cout << i; ((TMatrixD*)fParFilter->UncheckedAt(i))->Print(); }
+    for (Int_t i=fNSteps-1; i>=0; i--) {cout << i << " " << (*fSteps)[i]; ((TMatrixD*)fParFilter->UncheckedAt(i))->Print(); ((TMatrixD*)fParExtrap->UncheckedAt(i))->Print(); ((TMatrixD*)fJacob->UncheckedAt(i))->Print();}
     */
     for (Int_t i=ihit; i>=0; i--) cout << ((AliMUONHitForRec*)(*fTrackHitsPtr)[i])->GetZ() << " ";
     cout << endl;
@@ -1991,10 +1895,10 @@ Bool_t AliMUONTrackK::Smooth(void)
     // Smoother gain matrix
     weight = *((TMatrixD*)(fCovExtrap->UncheckedAt(i)));
     if (weight.Determinant() != 0) {
-      Int_t ifailCov;
-      mnvertLocalK(&(weight(0,0)), fgkSize,fgkSize,fgkSize,ifailCov);
+      Int_t ifail;
+      mnvertLocal(&(weight(0,0)), fgkSize,fgkSize,fgkSize,ifail);
     } else {
-      AliWarning("Determinant weight=0:");
+      AliWarning(" Determinant weight=0:");
     }
     // Fk'Wkk+1
     tmp = TMatrixD(*((TMatrixD*)(fJacob->UncheckedAt(i))),TMatrixD::kTransposeMult,weight);
@@ -2045,10 +1949,10 @@ L33:
 
     // Calculate Chi2 of smoothed residuals
     if (tmp.Determinant() != 0) {
-      Int_t ifailCov;
-      mnvertLocalK(&(tmp(0,0)), fgkSize,fgkSize,fgkSize,ifailCov);
+      Int_t ifail;
+      mnvertLocal(&(tmp(0,0)), fgkSize,fgkSize,fgkSize,ifail);
     } else {
-      AliWarning("Determinant tmp=0:");
+      AliWarning(" Determinant tmp=0:");
     }
     TMatrixD vector(tmp,TMatrixD::kMult,tmpPar);
     TMatrixD chi2(tmpPar,TMatrixD::kTransposeMult,vector);
@@ -2057,12 +1961,12 @@ L33:
     if (chi2(0,0) > chi2_max) chi2_max = chi2(0,0); 
     fChi2 += chi2(0,0);
     if (chi2(0,0) < 0) { 
-      chi2.Print(); cout << i << " " << iLast << endl;
-      AliFatal("chi2 < 0.");
+      chi2.Print(); cout << " chi2 < 0 " << i << " " << iLast << endl;
+      //AliFatal("chi2 < 0.");
     }
     // Save smoothed parameters
     TMatrixD *par = new TMatrixD(parSmooth);
-    fParSmooth->AddAt(par, ihit);
+    fParSmooth->AddAtAndExpand(par, ihit);
 
   } // for (Int_t i=iLast+1;
 
@@ -2165,10 +2069,10 @@ void AliMUONTrackK::Outlier()
   *((TMatrixD*)trackK->fCovFilter->Last()) = *((TMatrixD*)fCovExtrap->Last());
   *(trackK->fWeight) = *((TMatrixD*)trackK->fCovFilter->Last());
   if (trackK->fWeight->Determinant() != 0) {
-    Int_t ifailCov;
-    mnvertLocalK(&((*(trackK->fWeight))(0,0)), fgkSize,fgkSize,fgkSize,ifailCov);
+    Int_t ifail;
+    mnvertLocal(&((*(trackK->fWeight))(0,0)), fgkSize,fgkSize,fgkSize,ifail);
   } else {
-    AliWarning("Determinant fWeight=0:");
+    AliWarning(" Determinant fWeight=0:");
   }
   trackK->fPosition = trackK->fPositionNew = (*fSteps)[fNSteps-1];
   trackK->fChi2 = 0;
