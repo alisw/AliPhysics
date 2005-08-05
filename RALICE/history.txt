@@ -628,6 +628,10 @@
 24-jun-2005 NvE Selection/overruling of specific job folder creation introduced in AliJob::ExecuteJob
                 and the AliJob (derived) instance explicitly removed from the ListOfTasks to prevent
                 ROOT crashing when closing after execution.
+02-aug-2005 NvE Support for explicit (de)calibration functions introduced in AliAttrib.
+03-aug-2005 NvE AliSignal::GetSignal has been extended to support various (de)calibration facilities.
+                Printout is now also provided in AliSignal::List when only calibration data exist
+                for AliDevice (or derived) objects.
                
                 
  

@@ -57,6 +57,8 @@ AliAttrib::AliAttrib()
  fOffsets=0;
  fCalflags=0;
  fNames=0;
+ fCalfuncs=0;
+ fDecalfuncs=0;
 }
 ///////////////////////////////////////////////////////////////////////////
 AliAttrib::~AliAttrib()
@@ -82,6 +84,16 @@ AliAttrib::~AliAttrib()
   delete fNames;
   fNames=0;
  }
+ if (fCalfuncs)
+ {
+  delete fCalfuncs;
+  fCalfuncs=0;
+ }
+ if (fDecalfuncs)
+ {
+  delete fDecalfuncs;
+  fDecalfuncs=0;
+ }
 }
 ///////////////////////////////////////////////////////////////////////////
 AliAttrib::AliAttrib(const AliAttrib& a)
@@ -91,6 +103,8 @@ AliAttrib::AliAttrib(const AliAttrib& a)
  fOffsets=0;
  fCalflags=0;
  fNames=0;
+ fCalfuncs=0;
+ fDecalfuncs=0;
 
  Int_t n=0;
  Double_t val=0;
@@ -122,6 +136,20 @@ AliAttrib::AliAttrib(const AliAttrib& a)
  {
   s=a.GetSlotName(in);
   if (s!="") SetSlotName(s,in);
+ }
+
+ n=a.GetNcalfuncs();
+ for (Int_t icalf=1; icalf<=n; icalf++)
+ {
+  TF1* f=a.GetCalFunction(icalf);
+  if (f) SetCalFunction(f,icalf);
+ }
+
+ n=a.GetNdecalfuncs();
+ for (Int_t idecalf=1; idecalf<=n; idecalf++)
+ {
+  TF1* f=a.GetDecalFunction(idecalf);
+  if (f) SetDecalFunction(f,idecalf);
  }
 }
 ///////////////////////////////////////////////////////////////////////////
@@ -563,14 +591,17 @@ void AliAttrib::ResetOffset(TString name)
 void AliAttrib::DeleteCalibrations(Int_t mode)
 {
 // User selected delete of all gains and/or offsets.
-// mode = 0 : All attributes (names, gains, offsets, edge and dead values) are deleted.
+// mode = 0 : All attributes (names,gains,offsets,(de)calfuncs, edge and dead values) are deleted.
 //        1 : Only the gains are deleted.
 //        2 : Only the offsets are deleted.
-//        3 : Both gains and offsets are deleted, but names, edge and dead values are kept.
+//        3 : Gains, offsets and (de)calfuncs are deleted, but names, edge and dead values are kept.
+//        4 : Only the calib. functions are deleted.
+//        5 : Only the de-calib. functions are deleted.
+//        6 : Only the calib. and de-calib. functions are deleted.
 //
 // The default when invoking DeleteCalibrations() corresponds to mode=0.
 
- if (mode<0 || mode>3)
+ if (mode<0 || mode>6)
  {
   cout << " *AliAttrib::DeleteCalibrations* Unknown mode : " << mode << endl;
   cout << " Default mode=0 will be used." << endl;
@@ -601,6 +632,16 @@ void AliAttrib::DeleteCalibrations(Int_t mode)
    delete fNames;
    fNames=0;
   }
+  if (fCalfuncs)
+  {
+   delete fCalfuncs;
+   fCalfuncs=0;
+  }
+  if (fDecalfuncs)
+  {
+   delete fDecalfuncs;
+   fDecalfuncs=0;
+  }
   return;
  }
 
@@ -613,13 +654,32 @@ void AliAttrib::DeleteCalibrations(Int_t mode)
    fGains=0;
   }
  }
- else
+
+ if (mode==2)
  {
   ResetOffset(0);
   if (fOffsets)
   {
    delete fOffsets;
    fOffsets=0;
+  }
+ }
+
+ if (mode==4 || mode==6)
+ {
+  if (fCalfuncs)
+  {
+   delete fCalfuncs;
+   fCalfuncs=0;
+  }
+ }
+
+ if (mode==5 || mode==6)
+ {
+  if (fDecalfuncs)
+  {
+   delete fDecalfuncs;
+   fDecalfuncs=0;
   }
  }
 }
@@ -1076,6 +1136,8 @@ void AliAttrib::List(Int_t j) const
   if (GetOffsetFlag(j)) cout << " offset : " << GetOffset(j);
   if (GetEdgeValue(j)) cout << " edge : " << GetEdgeValue(j);
   if (GetDeadValue(j)) cout << " dead : " << GetDeadValue(j);
+  if (GetCalFunction(j)) cout << " *Fcalib*";
+  if (GetDecalFunction(j)) cout << " *Fdecalib*";
   TString s=GetSlotName(j);
   if (s!="") cout << " name : " << s.Data();
  }
@@ -1095,10 +1157,12 @@ void AliAttrib::List(Int_t j) const
   for (Int_t i=1; i<=n; i++)
   {
    printf=0;
-   if (GetGainFlag(i))   {cout << " gain : " << GetGain(i); printf=1;}
-   if (GetOffsetFlag(i)) {cout << " offset : " << GetOffset(i); printf=1;}
-   if (GetEdgeValue(i))  {cout << " edge : " << GetEdgeValue(i); printf=1;}
-   if (GetDeadValue(i))  {cout << " dead : " << GetDeadValue(i); printf=1;}
+   if (GetGainFlag(i))      {cout << " gain : " << GetGain(i); printf=1;}
+   if (GetOffsetFlag(i))    {cout << " offset : " << GetOffset(i); printf=1;}
+   if (GetEdgeValue(i))     {cout << " edge : " << GetEdgeValue(i); printf=1;}
+   if (GetDeadValue(i))     {cout << " dead : " << GetDeadValue(i); printf=1;}
+   if (GetCalFunction(i))   {cout << " *Fcalib*"; printf=1;}
+   if (GetDecalFunction(i)) {cout << " *Fdecalib*"; printf=1;}
    s=GetSlotName(i);
    if (s!="") {cout << " name : " << s.Data(); printf=1;}
    if (printf) cout << endl;
@@ -1176,13 +1240,23 @@ void AliAttrib::Load(AliAttrib& a,Int_t j)
    }
   }
   n=a.GetNnames();
+  TString s;
+  for (Int_t in=1; in<=n; in++)
   {
-   TString s;
-   for (Int_t in=1; in<=n; in++)
-   {
-    s=a.GetSlotName(in);
-    if (s!="") SetSlotName(s,in);
-   }
+   s=a.GetSlotName(in);
+   SetSlotName(s,in);
+  }
+  n=a.GetNcalfuncs();
+  for (Int_t icalf=1; icalf<=n; icalf++)
+  {
+   TF1* f=a.GetCalFunction(icalf);
+   SetCalFunction(f,icalf);
+  }
+  n=a.GetNdecalfuncs();
+  for (Int_t idecalf=1; idecalf<=n; idecalf++)
+  {
+   TF1* f=a.GetDecalFunction(idecalf);
+   SetDecalFunction(f,idecalf);
   }
  }
  else // load attributes for specified j-th slot only
@@ -1225,13 +1299,23 @@ void AliAttrib::Load(AliAttrib& a,Int_t j)
    }
   }
   n=a.GetNnames();
+  TString s;
+  if (j<=n)
   {
-   TString s;
-   if (j<=n)
-   {
-    s=a.GetSlotName(j);
-    if (s!="") SetSlotName(s,j);
-   }
+   s=a.GetSlotName(j);
+   SetSlotName(s,j);
+  }
+  n=a.GetNcalfuncs();
+  if (j<=n)
+  {
+   TF1* f=a.GetCalFunction(j);
+   SetCalFunction(f,j);
+  }
+  n=a.GetNdecalfuncs();
+  if (j<=n)
+  {
+   TF1* f=a.GetDecalFunction(j);
+   SetDecalFunction(f,j);
   }
  }
 }
@@ -1249,5 +1333,193 @@ void AliAttrib::Load(AliAttrib& a,TString name)
 
  Int_t j=GetSlotIndex(name);
  if (j>0) Load(a,j);
+}
+///////////////////////////////////////////////////////////////////////////
+Int_t AliAttrib::GetNcalfuncs() const
+{
+// Provide the number of specified calib. functions for this attribute.
+
+ Int_t n=0;
+ if (fCalfuncs) n=fCalfuncs->GetSize();
+ return n;
+}
+///////////////////////////////////////////////////////////////////////////
+Int_t AliAttrib::GetNdecalfuncs() const
+{
+// Provide the number of specified de-calib. functions for this attribute.
+
+ Int_t n=0;
+ if (fDecalfuncs) n=fDecalfuncs->GetSize();
+ return n;
+}
+///////////////////////////////////////////////////////////////////////////
+TF1* AliAttrib::GetCalFunction(Int_t j) const
+{
+// Provide pointer to the calib. function of the j-th (default j=1) slot.
+// Note : The first attribute slot is at j=1.
+
+ TF1* f=0;
+ if (j>0 && j<=GetNcalfuncs()) f=(TF1*)fCalfuncs->At(j-1);
+ return f;
+}
+///////////////////////////////////////////////////////////////////////////
+TF1* AliAttrib::GetCalFunction(TString name) const
+{
+// Provide pointer to the calib. function of the name-specified slot.
+// In case no match is found, zero is returned.
+
+ TF1* f=0;
+ Int_t j=GetSlotIndex(name);
+ if (j>0) GetCalFunction(j);
+ return f;
+}
+///////////////////////////////////////////////////////////////////////////
+void AliAttrib::SetCalFunction(TF1* f,Int_t j)
+{
+// Set the calib. function of the j-th (default j=1) slot.
+// Note : The first attribute slot is at j=1.
+//
+// In case the value of the index j exceeds the maximum number of reserved
+// positions for the functions, the number of reserved positions for the functions
+// is increased automatically.
+//
+// In case the function pointer argument has the same value as the current function
+// pointer value, no action is taken since the user has already modified the actual
+// function.
+//
+// In case the function pointer argument is zero, the current function
+// is deleted and the pointer set to zero.
+//
+// In all other cases the current function is deleted and a new
+// copy of the input function is created which becomes the current function.
+
+ if (j<1) return;
+
+ if (!fCalfuncs)
+ {
+  fCalfuncs=new TObjArray(j);
+  fCalfuncs->SetOwner();
+ }
+
+ if (j > fCalfuncs->GetSize()) fCalfuncs->Expand(j);
+
+ TF1* fcur=(TF1*)fCalfuncs->At(j-1);
+ if (f != fcur)
+ {
+  if (fcur)
+  {
+   fCalfuncs->Remove(fcur);
+   delete fcur;
+   fcur=0;
+  }
+  if (f)
+  {
+   fcur=new TF1(*f);
+   fCalfuncs->AddAt(fcur,j-1);
+  }
+ } 
+}
+///////////////////////////////////////////////////////////////////////////
+void AliAttrib::SetCalFunction(TF1* f,TString name)
+{
+// Set the calib. function of the name-specified slot.
+//
+// In case the function pointer argument has the same value as the current function
+// pointer value, no action is taken since the user has already modified the actual
+// function.
+//
+// In case the function pointer argument is zero, the current function
+// is deleted and the pointer set to zero.
+//
+// In all other cases the current function is deleted and a new
+// copy of the input function is created which becomes the current function.
+
+ Int_t j=GetSlotIndex(name);
+ if (j>0) SetCalFunction(f,j);
+}
+///////////////////////////////////////////////////////////////////////////
+TF1* AliAttrib::GetDecalFunction(Int_t j) const
+{
+// Provide pointer to the de-calib. function of the j-th (default j=1) slot.
+// Note : The first attribute slot is at j=1.
+
+ TF1* f=0;
+ if (j>0 && j<=GetNdecalfuncs()) f=(TF1*)fDecalfuncs->At(j-1);
+ return f;
+}
+///////////////////////////////////////////////////////////////////////////
+TF1* AliAttrib::GetDecalFunction(TString name) const
+{
+// Provide pointer to the de-calib. function of the name-specified slot.
+// In case no match is found, zero is returned.
+
+ TF1* f=0;
+ Int_t j=GetSlotIndex(name);
+ if (j>0) GetDecalFunction(j);
+ return f;
+}
+///////////////////////////////////////////////////////////////////////////
+void AliAttrib::SetDecalFunction(TF1* f,Int_t j)
+{
+// Set the de-calib. function of the j-th (default j=1) slot.
+// Note : The first attribute slot is at j=1.
+//
+// In case the value of the index j exceeds the maximum number of reserved
+// positions for the functions, the number of reserved positions for the functions
+// is increased automatically.
+//
+// In case the function pointer argument has the same value as the current function
+// pointer value, no action is taken since the user has already modified the actual
+// function.
+//
+// In case the function pointer argument is zero, the current function
+// is deleted and the pointer set to zero.
+//
+// In all other cases the current function is deleted and a new
+// copy of the input function is created which becomes the current function.
+
+ if (j<1) return;
+
+ if (!fDecalfuncs)
+ {
+  fDecalfuncs=new TObjArray(j);
+  fDecalfuncs->SetOwner();
+ }
+
+ if (j > fDecalfuncs->GetSize()) fDecalfuncs->Expand(j);
+
+ TF1* fcur=(TF1*)fDecalfuncs->At(j-1);
+ if (f != fcur)
+ {
+  if (fcur)
+  {
+   fDecalfuncs->Remove(fcur);
+   delete fcur;
+   fcur=0;
+  }
+  if (f)
+  {
+   fcur=new TF1(*f);
+   fDecalfuncs->AddAt(fcur,j-1);
+  }
+ } 
+}
+///////////////////////////////////////////////////////////////////////////
+void AliAttrib::SetDecalFunction(TF1* f,TString name)
+{
+// Set the de-calib. function of the name-specified slot.
+//
+// In case the function pointer argument has the same value as the current function
+// pointer value, no action is taken since the user has already modified the actual
+// function.
+//
+// In case the function pointer argument is zero, the current function
+// is deleted and the pointer set to zero.
+//
+// In all other cases the current function is deleted and a new
+// copy of the input function is created which becomes the current function.
+
+ Int_t j=GetSlotIndex(name);
+ if (j>0) SetDecalFunction(f,j);
 }
 ///////////////////////////////////////////////////////////////////////////

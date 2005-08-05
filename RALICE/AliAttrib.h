@@ -10,6 +10,7 @@
 #include "TObjArray.h"
 #include "TObjString.h"
 #include "TString.h"
+#include "TF1.h"
 
 class AliAttrib
 {
@@ -63,6 +64,16 @@ class AliAttrib
   void SetSlotName(TString s,Int_t j=1);       // Set user defined name for the j-th slot
   TString GetSlotName(Int_t j=1) const;        // Provide user defined name for the j-th slot
   Int_t GetSlotIndex(TString name) const;      // Provide the slot index of the matching name
+  void SetCalFunction(TF1* f,Int_t j=1);       // Set calibration function of the j-th attribute slot
+  void SetCalFunction(TF1* f,TString name);    // Set calibration function of the name-specified attribute slot
+  void SetDecalFunction(TF1* f,Int_t j=1);     // Set de-calibration function of the j-th attribute slot
+  void SetDecalFunction(TF1* f,TString name);  // Set de-calibration function of the name-specified attribute slot
+  TF1* GetCalFunction(Int_t j=1) const;        // Get calibration function of the j-th attribute slot
+  TF1* GetCalFunction(TString name) const;     // Get calibration function of the name-specified attribute slot
+  TF1* GetDecalFunction(Int_t j=1) const;      // Get de-calibration function of the j-th attribute slot
+  TF1* GetDecalFunction(TString name) const;   // Get de-calibration function of the name-specified attribute slot
+  Int_t GetNcalfuncs() const;                  // Provide the number of calibration functions
+  Int_t GetNdecalfuncs() const;                // Provide the number of de-calibration functions
 
  protected:
   void SetCalFlags(Int_t gf,Int_t of,Int_t j); // Set flags for gain and/or offset settings
@@ -70,7 +81,9 @@ class AliAttrib
   TArrayF* fOffsets;                           // Offset values
   TArrayI* fCalflags;                          // Flags to mark dead, edge, and gain/offset calibrated signals
   TObjArray* fNames;                           // User defined names for the various slots
+  TObjArray* fCalfuncs;                        // Explicit signal calibration functions
+  TObjArray* fDecalfuncs;                      // Explicit signal de-calibration functions
 
- ClassDef(AliAttrib,3) // Generic handling of detector signal (calibration) attributes.
+ ClassDef(AliAttrib,4) // Generic handling of detector signal (calibration) attributes.
 };
 #endif

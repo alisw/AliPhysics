@@ -19,6 +19,19 @@
 // Class AliSignal
 // Generic handling of (extrapolated) detector signals.
 //
+// The user can decide to store either calibrated or uncalibrated signals.
+// Via the specification of a gain and offset or/and an explicit
+// (de)calibration function both calibrated and uncalibrated signals
+// can always be obtained. For details see the documentation of the
+// memberfunction GetSignal() and the class AliAttrib.
+// The explicit specification of a (de)calibration function offers the
+// maximum flexibility and also allows automatic indication whether
+// calibrated or uncalibrated data has been stored.
+// The latter can be achieved by only specifying a calibration function
+// (and no de-calibration function) in case uncalibrated data is stored,
+// whereas in case of stored calibrated data the user should only
+// provide a de-calibration function (and no calibration function).
+//
 // Note :
 // ------
 // Signal positions (r) and reference frames (f) are specified via
@@ -63,29 +76,34 @@
 // signal=82.5; // e.g. signal time in ns
 // error=2.01;
 // offset=0.003;
-// q.SetSlotName("TOF");
+// q.SetSlotName("TOF",1);
 // q.SetSignal(signal,1);
 // q.SetSignalError(error,1);
 // q.SetOffset(offset,1);
 // signal=268.1; // e.g. ADC value of signal
 // error=3.75;
 // gain=120.78;
+// offset=1.5732;
 // // Addressing via name specification instead of index 
-// q.SetSlotName("ADC");
+// q.SetSlotName("ADC",2);
 // q.SetSignal(signal,"ADC");
 // q.SetSignalError(error,"ADC");
 // q.SetGain(gain,"ADC");
+// q.SetOffset(offset,"ADC");
 // signal=23.7; // e.g. corresponding dE/dx value
 // error=0.48;
-// offset=0.2;
-// gain=150;
-// q.SetSlotName("dE/dx");
-// q.SetSignal(signal,3);
-// q.SetSignalError(error,3);
-// q.SetOffset(offset,3);
-// q.SetGain(gain,3);
+// TF1 f=("calib","[0]*pow(x,2)+[1]"); // dE/dx calib. function
+// f.SetParameter(0,3.285);
+// f.SetParameter(1,-18.67);
+// q.SetSlotName("dE/dx",3);
+// q.SetCalFunction(&f,"dE/dx");
+// q.SetSignal(signal,"dE/dx");
+// q.SetSignalError(error,"dE/dx");
 //
-// Float_t dedx=q.GetSignal("dE/dx");
+// // Signal retrieval with various (de)calibration modes
+// Float_t tof=q.GetSignal("TOF");
+// Float_t adc=q.GetSignal("ADC",1);
+// Float_t dedx=q.GetSignal("dE/dx",3);
 //
 //--- Author: Nick van Eijndhoven 23-jan-1999 UU-SAP Utrecht
 //- Modified: NvE $Date$ UU-SAP Utrecht
@@ -398,46 +416,95 @@ Float_t AliSignal::GetSignal(Int_t j,Int_t mode) const
 {
 // Provide signal value of the j-th (default j=1) slot.
 // Note : The first signal slot is at j=1.
-// In case no signal is present or the argument j is invalid, 0 is returned.
-// The parameter "mode" allows for automatic gain etc... correction of the signal.
+// In case no signal is present or the input argument "j" or "mode" is invalid,
+// the value 0 is returned.
+// The parameter "mode" allows for automatic (de)calibration of the signal
+// (e.g. gain etc... correction or via explicit (de)calibration functions).
 //
 // mode = 0 : Just the j-th signal is returned.
 //        1 : The j-th signal is corrected for the gain, offset, dead flag etc...
+//            In case the j-th slot was marked dead, 0 is returned.
 //            In case the gain value was not set, gain=1 will be assumed.
 //            In case the gain value was 0, a signal value of 0 is returned.
 //            In case the offset value was not set, offset=0 will be assumed.
+//        2 : Same as mode=1 but gain, offset dead flag etc... are taken from
+//            the AliDevice which owns this AliSignal object.
+//            In case this AliSignal object has no parent AliDevice, just
+//            the j-th signal is returned (like with mode=0).
+//        3 : The j-th signal is corrected using the corresponding calibration
+//            function.
 //            In case the j-th slot was marked dead, 0 is returned.
+//            In case no calibration function is present, just the j-th signal
+//            is returned (like with mode=0).
+//        4 : Same as mode=3 but the calibration function is taken from
+//            the AliDevice which owns this AliSignal object.
+//        5 : Same as mode=2 but in case no parent AliDevice is present
+//            an automatic switch to mode=1 will be made.
+//        6 : Same as mode=4 but in case no parent AliDevice is present
+//            an automatic switch to mode=3 will be made.
+//
+//       <0 : The corresponding de-correction or de-calibration is performed
 //
 // The corrected signal (sigc) is determined as follows :
 //
 //              sigc=(signal/gain)-offset 
 //
+// The de-corrected signal is determined as follows :
+//
+//              signal=(sigc+offset)*gain 
+//
 // The default is mode=0.
+
+ if (abs(mode)>6) return 0;
 
  Float_t sig=0;
  Float_t gain=1;
  Float_t offset=0;
+
+ AliSignal* sx=(AliSignal*)this;
+ if (abs(mode)==2 || abs(mode)>=4) sx=(AliSignal*)GetDevice();
+ if (!sx && abs(mode)>=5) sx=(AliSignal*)this;
+ if (mode==5) mode=2;
+ if (mode==-5) mode=-2;
+ if (mode==6) mode=3;
+ if (mode==-6) mode=-3;
+
  if (fSignals)
  {
   if (j>0 && j<=(fSignals->GetSize()))
   {
    sig=fSignals->At(j-1);
 
-   if (mode==0) return sig;
+   if (mode==0 || !sx) return sig;
 
-   // Correct the signal for the gain, offset, dead flag etc...
-   if (GetDeadValue(j)) return 0;
+   // Check for the dead flag setting
+   if (sx->GetDeadValue(j)) return 0;
 
-   if (GetGainFlag(j)) gain=GetGain(j);
-   if (GetOffsetFlag(j)) offset=GetOffset(j);
-
-   if (fabs(gain)>0.)
+   // (De)correct the signal for the gain and offset
+   if (abs(mode)==1 || abs(mode)==2)
    {
-    sig=(sig/gain)-offset;
+    if (sx->GetGainFlag(j)) gain=sx->GetGain(j);
+    if (sx->GetOffsetFlag(j)) offset=sx->GetOffset(j);
+
+    if (fabs(gain)>0.)
+    {
+     if (mode>0) sig=(sig/gain)-offset; // Gain and offset correction
+     if (mode<0) sig=(sig+offset)*gain; // Gain and offset de-correction
+    }
+    else
+    {
+     sig=0;
+    }
+    return sig;
    }
-   else
+
+   // (De)calibrate the signal with the corresponding (de)calibration function
+   if (abs(mode)==3 || abs(mode)==4)
    {
-    sig=0;
+    TF1* f=sx->GetCalFunction(j);
+    if (mode<0) f=sx->GetDecalFunction(j);
+    if (f) sig=f->Eval(sig);
+    return sig;
    }
   }
   else
@@ -622,10 +689,20 @@ void AliSignal::List(Int_t j) const
  Int_t nerrors=GetNerrors();
  Int_t nlinkslots=0;
  if (fLinks) nlinkslots=fLinks->GetMaxColumn();
+ Int_t ncalibs=GetNcalflags();
+ Int_t ncalfuncs=GetNcalfuncs();
+ Int_t ndecalfuncs=GetNdecalfuncs();
+
  Int_t n=nvalues;
  if (nerrors>n) n=nerrors;
  if (nlinkslots>n) n=nlinkslots;
-
+ if (InheritsFrom("AliDevice"))
+ {
+  if (ncalibs>n) n=ncalibs;
+  if (ncalfuncs>n) n=ncalfuncs;
+  if (ndecalfuncs>n) n=ndecalfuncs;
+ }
+ 
  TObject* obj=0;
  Int_t nrefs=0;
  TArrayI posarr;
