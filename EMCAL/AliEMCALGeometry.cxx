@@ -579,13 +579,13 @@ Int_t AliEMCALGeometry::GetAbsCellId(const int nSupMod, const int nTower, const 
   id += fNPHIdiv *(nIphi-1);
   id += nIeta;
   if(id<=0 || id > fNCells) {
-    printf(" wrong numerations !!\n");
-    printf("    id      %6i(will be force to -1)\n", id);
-    printf("    fNCells %6i\n", fNCells);
-    printf("    nSupMod %6i\n", nSupMod);
-    printf("    nTower  %6i\n", nTower);
-    printf("    nIphi   %6i\n", nIphi);
-    printf("    nIeta   %6i\n", nIeta);
+//     printf(" wrong numerations !!\n");
+//     printf("    id      %6i(will be force to -1)\n", id);
+//     printf("    fNCells %6i\n", fNCells);
+//     printf("    nSupMod %6i\n", nSupMod);
+//     printf("    nTower  %6i\n", nTower);
+//     printf("    nIphi   %6i\n", nIphi);
+//     printf("    nIeta   %6i\n", nIeta);
     id = -1;
   }
   return id;
@@ -603,7 +603,7 @@ Bool_t AliEMCALGeometry::GetCellIndex(const Int_t absId,Int_t &nSupMod,Int_t &nT
 { // 21-sep-04
   static Int_t tmp=0;
   if(absId<=0 || absId>fNCells) {
-    Info("GetCellIndex"," wrong abs Id %i !! \n", absId); 
+//     Info("GetCellIndex"," wrong abs Id %i !! \n", absId); 
     return kFALSE;
   }
   nSupMod = (absId-1) / fNCellsInSupMod + 1;

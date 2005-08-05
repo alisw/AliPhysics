@@ -308,20 +308,20 @@ void AliEMCALRecPoint::EvalAll(Float_t logWeight,TClonesArray * digits)
   // Evaluates all shower parameters
 
   EvalLocalPosition(logWeight, digits) ;
-  printf("eval position done\n");
+  //  printf("eval position done\n");
   EvalElipsAxis(logWeight, digits) ;
-  printf("eval axis done\n");
+  //  printf("eval axis done\n");
   EvalDispersion(logWeight, digits) ;
-  printf("eval dispersion done\n");
+  //  printf("eval dispersion done\n");
  // EvalCoreEnergy(logWeight, digits);
  // printf("eval energy done\n");
   EvalTime(digits) ;
-  printf("eval time done\n");
+  //  printf("eval time done\n");
 
   EvalPrimaries(digits) ;
-  printf("eval pri done\n");
+  //  printf("eval pri done\n");
   EvalParents(digits);
-  printf("eval parent done\n");
+  //  printf("eval parent done\n");
 }
 
 //____________________________________________________________________________
@@ -365,14 +365,14 @@ void  AliEMCALRecPoint::EvalDispersion(Float_t logWeight, TClonesArray * digits)
        geom->GetCellPhiEtaIndexInSModule(nTower,nIphi,nIeta, iphi,ieta);
 	etai=(Float_t)ieta;
 	phii=(Float_t)iphi;
-        printf("%f,%d,%d \n", fAmp, ieta, iphi) ;
+	//        printf("%f,%d,%d \n", fAmp, ieta, iphi) ;
 
 /* Sub
   geom->EtaPhiFromIndex(digit->GetId(), etai, phii);
     phii = phii * kDeg2Rad;
 */
 ///////////////////////////
-  if(fAmp>0)printf("%f %d %f", fAmp,iDigit,fEnergyList[iDigit]) ;
+//  if(fAmp>0)printf("%f %d %f", fAmp,iDigit,fEnergyList[iDigit]) ;
 /////////////////////////
 
     if (gDebug == 2) 
@@ -389,7 +389,7 @@ void  AliEMCALRecPoint::EvalDispersion(Float_t logWeight, TClonesArray * digits)
     d = 0. ; 
 
   fDispersion = TMath::Sqrt(d) ;
-      printf("Dispersion: = %f", fDispersion) ;
+  //      printf("Dispersion: = %f", fDispersion) ;
 }
 
 //____________________________________________________________________________
@@ -441,7 +441,7 @@ void AliEMCALRecPoint::EvalLocalPosition(Float_t logWeight, TClonesArray * digit
   fLocPos.SetZ(geom->GetIP2ECASection());
     
 //  if (gDebug==2)
-    printf("EvalLocalPosition: eta,phi,r = %f,%f,%f", fLocPos.X(), fLocPos.Y(), fLocPos.Z()) ; 
+//    printf("EvalLocalPosition: eta,phi,r = %f,%f,%f", fLocPos.X(), fLocPos.Y(), fLocPos.Z()) ; 
   fLocPosM = 0 ;
 }
 
