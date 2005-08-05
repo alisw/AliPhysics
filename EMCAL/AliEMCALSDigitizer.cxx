@@ -73,7 +73,6 @@ ClassImp(AliEMCALSDigitizer)
   AliEMCALSDigitizer::AliEMCALSDigitizer():TTask("","") 
 {
   // ctor
-  Info("AliEMCALSDigitizer()", " CTOR # 1 #");  
   fFirstEvent = fLastEvent  = fControlHists = 0;  
   fDefaultInit = kTRUE ; 
   fHists = 0;
@@ -86,7 +85,6 @@ AliEMCALSDigitizer::AliEMCALSDigitizer(const char * alirunFileName,
   fEventFolderName(eventFolderName)
 {
   // ctor
-  Info("AliEMCALSDigitizer()", " CTOR # 2 #");  
   fFirstEvent = fLastEvent  = fControlHists = 0 ; // runs one event by defaut  
   Init();
   InitParameters() ; 
@@ -98,7 +96,6 @@ AliEMCALSDigitizer::AliEMCALSDigitizer(const char * alirunFileName,
 //____________________________________________________________________________ 
 AliEMCALSDigitizer::AliEMCALSDigitizer(const AliEMCALSDigitizer & sd) : TTask(sd) {
   //cpy ctor 
-  Info("AliEMCALSDigitizer()", " CPY CTOR # 3 #");  
 
   fFirstEvent    = sd.fFirstEvent ; 
   fLastEvent     = sd.fLastEvent ;
@@ -191,17 +188,13 @@ void AliEMCALSDigitizer::Exec(Option_t *option)
   if (fLastEvent == -1) 
     fLastEvent = gime->MaxEvent() - 1 ;
   else {
-    if(o != "EXACT") fLastEvent = TMath::Min(fFirstEvent, gime->MaxEvent());
-    fLastEvent = TMath::Min(fLastEvent, gime->MaxEvent());
-    printf("AliEMCALSDigitizer::Exec : option: %s | %i -> %i events : Max events %i \n \n", 
-    option, fFirstEvent, fLastEvent, gime->MaxEvent());
+    fLastEvent = TMath::Min(fLastEvent, gime->MaxEvent()-1);
   }
   Int_t nEvents   = fLastEvent - fFirstEvent + 1;
 
   Int_t ievent;
   Float_t energy=0.; // de * fSampling - 23-nov-04
-  for (ievent = fFirstEvent; ievent < fLastEvent; ievent++) {
-    if(ievent%100==0 || ievent==fLastEvent-1) printf(" processed event %i \n", ievent);  
+  for (ievent = fFirstEvent; ievent <= fLastEvent; ievent++) {
     gime->Event(ievent,"XH"); // read primaries and hits onl  
     TTree * treeS = gime->TreeS(); 
     TClonesArray * hits = gime->Hits() ; 
@@ -298,7 +291,7 @@ void AliEMCALSDigitizer::Exec(Option_t *option)
     gime->WriteSDigits("OVERWRITE");
     
     //NEXT - SDigitizer
-    if(ievent == fFirstEvent) gime->WriteSDigitizer("OVERWRITE");  // why in event cycle ?
+    gime->WriteSDigitizer("OVERWRITE");  // why in event cycle ?
     
     if(strstr(option,"deb"))
       PrintSDigits(option) ;  

@@ -168,18 +168,13 @@ void AliEMCALDigitizer::Digitize(Int_t event)
   static int isTrd1Geom = -1; // -1 - mean undefined 
   static int nEMC=0; //max number of digits possible
 
-  //<<<<<<< AliEMCALDigitizer.cxx
-  int deb=0;
-  AliEMCALGetter * gime = AliEMCALGetter::Instance(GetTitle(), fEventFolderName) ; 
-  /* =======
   AliEMCALGetter * gime = AliEMCALGetter::Instance(GetTitle()) ; 
-  >>>>>>> 1.59 */
   Int_t ReadEvent = event ; 
   // fManager is data member from AliDigitizer
   if (fManager) 
     ReadEvent = dynamic_cast<AliStream*>(fManager->GetInputStream(0))->GetCurrentEventNumber() ; 
-  if(deb>0) Info("Digitize", "Adding event %d from input stream 0 %s %s", 
-  ReadEvent, GetTitle(), fEventFolderName.Data()) ; 
+  AliDebug(1,Form("Adding event %d from input stream 0 %s %s", 
+		  ReadEvent, GetTitle(), fEventFolderName.Data())) ; 
   gime->Event(ReadEvent, "S") ;
   TClonesArray * digits = gime->Digits() ; 
   digits->Clear() ;
@@ -231,9 +226,10 @@ void AliEMCALDigitizer::Digitize(Int_t event)
     Int_t curNext = dynamic_cast<AliEMCALDigit *>(sdigits->At(0))->GetId() ;
      if(curNext < nextSig) 
        nextSig = curNext ;
-     if(deb>0) printf("input %i : #sdigits %i \n", i, sdigits->GetEntriesFast());
+     AliDebug(1,Form("input %i : #sdigits %i \n",
+		     i, sdigits->GetEntriesFast()));
   }
-  if(deb>0) printf("FIRST tower with signal %i \n", nextSig);
+  AliDebug(1,Form("FIRST tower with signal %i \n", nextSig));
 
   TArrayI index(fInput) ;
   index.Reset() ;  //Set all indexes to zero
@@ -314,7 +310,8 @@ void AliEMCALDigitizer::Digitize(Int_t event)
     // add the noise now
     amp += TMath::Abs(gRandom->Gaus(0., fPinNoise)) ;
     digit->SetAmp(sDigitizer->Digitize(amp)) ;  
-    if(deb>=10) printf(" absID %5i amp %f nextSig %5i\n", absID, amp, nextSig);
+    AliDebug(10,Form(" absID %5i amp %f nextSig %5i\n",
+		     absID, amp, nextSig));
   } // for(absID = 1; absID <= nEMC; absID++)
   
   ticks->Delete() ;
@@ -397,14 +394,9 @@ void AliEMCALDigitizer::Exec(Option_t *option)
     fLastEvent = fFirstEvent ; // what is this ??
 
   Int_t nEvents   = fLastEvent - fFirstEvent + 1;
-  Int_t ievent, nfr=50;
+  Int_t ievent;
 
-  fLastEvent = TMath::Min(fLastEvent, gime->MaxEvent());
-  printf("AliEMCALDigitizer::Exec : option: %s | %i -> %i events : Max events %i \n", 
-  option, fFirstEvent, fLastEvent,  gime->MaxEvent());
-  for (ievent = fFirstEvent; ievent < fLastEvent; ievent++) {
-    if(ievent%nfr==0 || ievent==fLastEvent-1);
-    printf(" processed event %i\n", ievent);
+  for (ievent = fFirstEvent; ievent <= fLastEvent; ievent++) {
     gime->Event(ievent,"S") ; 
 
     Digitize(ievent) ; //Add prepared SDigits to digits and add the noise
@@ -674,12 +666,8 @@ void AliEMCALDigitizer::WriteDigits()
   //      and branch "AliEMCALDigitizer", with the same title to keep all the parameters
   //      and names of files, from which digits are made.
 
-  //<<<<<<< AliEMCALDigitizer.cxx
-  static Int_t writeSdigitizer=0;
-  AliEMCALGetter * gime = AliEMCALGetter::Instance(GetTitle(), fEventFolderName) ; 
-  /* =======
   AliEMCALGetter * gime = AliEMCALGetter::Instance(GetTitle()) ; 
-  >>>>>>> 1.59*/
+
   const TClonesArray * digits = gime->Digits() ; 
   TTree * treeD = gime->TreeD(); 
 
@@ -690,10 +678,7 @@ void AliEMCALDigitizer::WriteDigits()
   digitsBranch->Fill() ;
   
   gime->WriteDigits("OVERWRITE");
-  if(writeSdigitizer==0) {
-    gime->WriteDigitizer("OVERWRITE");
-    writeSdigitizer = 1;
-  }
+  gime->WriteDigitizer("OVERWRITE");
 
   Unload() ; 
 
