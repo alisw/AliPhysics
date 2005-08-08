@@ -156,7 +156,7 @@ void IceF2k::SetPrintFreq(Int_t f)
 {
 // Set the printfrequency to produce info every f events.
 // f=1 is the default initialisation in the constructor.
- if (f>0) fPrintfreq=f;
+ if (f>=0) fPrintfreq=f;
 }
 ///////////////////////////////////////////////////////////////////////////
 void IceF2k::SetSplitLevel(Int_t split)
@@ -322,7 +322,10 @@ void IceF2k::Exec(Option_t* opt)
   // Invoke all available sub-tasks (if any)
   ExecuteTasks(opt);
 
-  if (!(nevt%fPrintfreq)) evt->HeaderData();
+  if (fPrintfreq)
+  {
+   if (!(nevt%fPrintfreq)) evt->HeaderData();
+  }
 
   // Write the complete structure to the output Tree
   if (otree) otree->Fill();
@@ -347,6 +350,19 @@ void IceF2k::FillOMdbase()
 
  if (fHeader.nch<=0) return;
 
+ Int_t geocal=fHeader.is_calib.geo;
+ Int_t adccal=fHeader.is_calib.adc;
+ Int_t tdccal=fHeader.is_calib.tdc;
+ Int_t totcal=fHeader.is_calib.tot;
+ Int_t utccal=fHeader.is_calib.utc;
+
+ TF1 fadccal("fadccal","(x-[1])*[0]");
+ TF1 fadcdecal("fadcdecal","(x/[0])+[1]");
+ TF1 ftdccal("ftdccal","(x*[0])-[1]-([0]-1.)*32767.-[2]/sqrt([3])");
+ TF1 ftdcdecal("ftdcdecal","(x+([0]-1.)*32767.+[1]+[2]/sqrt([3]))/[0]");
+ TF1 ftotcal("ftotcal","x*[0]");
+ TF1 ftotdecal("ftotdecal","x/[0]");
+
  if (fOmdb)
  {
   fOmdb->Reset();
@@ -364,25 +380,91 @@ void IceF2k::FillOMdbase()
  {
   dev=new IceAOM();
   dev->SetUniqueID(i+1);
-  dev->SetSlotName("TYPE",1);
-  dev->SetSlotName("ORIENT",2);
-  dev->SetSlotName("T0",3);
-  dev->SetSlotName("ALPHA",4);
-  dev->SetSlotName("KADC",5);
-  dev->SetSlotName("KTOT",6);
-  dev->SetSlotName("KTDC",7);
+
+  dev->SetSlotName("ADC",1);
+  dev->SetSlotName("LE",2);
+  dev->SetSlotName("TOT",3);
+
+  dev->SetSlotName("TYPE",4);
+  dev->SetSlotName("ORIENT",5);
+  dev->SetSlotName("THRESH",6);
+  dev->SetSlotName("SENSIT",7);
+  dev->SetSlotName("BETA-TDC",8);
+  dev->SetSlotName("T0",9);
+  dev->SetSlotName("ALPHA-TDC",10);
+  dev->SetSlotName("PED-ADC",11);
+  dev->SetSlotName("BETA-ADC",12);
+  dev->SetSlotName("KAPPA-ADC",13);
+  dev->SetSlotName("PED-TOT",14);
+  dev->SetSlotName("BETA-TOT",15);
+  dev->SetSlotName("KAPPA-TOT",16);
 
   pos[0]=fHeader.x[i];
   pos[1]=fHeader.y[i];
   pos[2]=fHeader.z[i];
   dev->SetPosition(pos,"car");
-  dev->SetSignal(fHeader.type[i],1);
-  dev->SetSignal((Float_t)fHeader.costh[i],2);
-  dev->SetSignal(fHeader.cal[i].t_0,3);
-  dev->SetSignal(fHeader.cal[i].alpha_t,4);
-  dev->SetSignal(fHeader.cal[i].beta_a,5);
-  dev->SetSignal(fHeader.cal[i].beta_tot,6);
-  dev->SetSignal(fHeader.cal[i].beta_t,7);
+
+  fadccal.SetParameter(0,fHeader.cal[i].beta_a);
+  fadccal.SetParameter(1,fHeader.cal[i].ped);
+  fadcdecal.SetParameter(0,fHeader.cal[i].beta_a);
+  if (!fHeader.cal[i].beta_a) fadcdecal.SetParameter(0,1);
+  fadcdecal.SetParameter(1,fHeader.cal[i].ped);
+
+  ftdccal.SetParameter(0,fHeader.cal[i].beta_t);
+  ftdccal.SetParameter(1,fHeader.cal[i].t_0);
+  ftdccal.SetParameter(2,fHeader.cal[i].alpha_t);
+  ftdccal.SetParameter(3,1.e20);
+  ftdcdecal.SetParameter(0,fHeader.cal[i].beta_t);
+  if (!fHeader.cal[i].beta_t) ftdcdecal.SetParameter(0,1);
+  ftdcdecal.SetParameter(1,fHeader.cal[i].t_0);
+  ftdcdecal.SetParameter(2,fHeader.cal[i].alpha_t);
+  ftdcdecal.SetParameter(3,1.e20);
+
+  ftotcal.SetParameter(0,fHeader.cal[i].beta_tot);
+  ftotdecal.SetParameter(0,fHeader.cal[i].beta_tot);
+  if (!fHeader.cal[i].beta_tot) ftotdecal.SetParameter(0,1);
+
+  if (adccal)
+  {
+   dev->SetDecalFunction(&fadcdecal,1);
+  }
+  else
+  {
+   dev->SetCalFunction(&fadccal,1);
+  }
+
+  if (tdccal)
+  {
+   dev->SetDecalFunction(&ftdcdecal,2);
+  }
+  else
+  {
+   dev->SetCalFunction(&ftdccal,2);
+  }
+
+  if (totcal)
+  {
+   dev->SetDecalFunction(&ftotdecal,3);
+  }
+  else
+  {
+   dev->SetCalFunction(&ftotcal,3);
+  }
+
+  dev->SetSignal(fHeader.type[i],4);
+  dev->SetSignal((Float_t)fHeader.costh[i],5);
+  dev->SetSignal(fHeader.thresh[i],6);
+  dev->SetSignal(fHeader.sensit[i],7);
+  dev->SetSignal(fHeader.cal[i].beta_t,8);
+  dev->SetSignal(fHeader.cal[i].t_0,9);
+  dev->SetSignal(fHeader.cal[i].alpha_t,10);
+  dev->SetSignal(fHeader.cal[i].ped,11);
+  dev->SetSignal(fHeader.cal[i].beta_a,12);
+  dev->SetSignal(fHeader.cal[i].kappa,13);
+  dev->SetSignal(fHeader.cal[i].ped_tot,14);
+  dev->SetSignal(fHeader.cal[i].beta_tot,15);
+  dev->SetSignal(fHeader.cal[i].kappa_tot,16);
+
   fOmdb->EnterObject(i+1,1,dev);
  }
 }
@@ -688,6 +770,7 @@ void IceF2k::PutHits()
  AliSignal* sx=0;
  Int_t tid=0;
  AliTrack* tx=0;
+ Float_t adc=0;
  for (Int_t i=0; i<fEvent.nhits; i++)
  {
   chan=fEvent.h[i].ch+1;
@@ -723,6 +806,25 @@ void IceF2k::PutHits()
 
   sx=omx->GetHit(omx->GetNhits());
   if (!sx) continue;
+
+  // ADC dependent TDC (de)calibration function for this hit
+  TF1* fcal=omx->GetCalFunction("LE");
+  TF1* fdecal=omx->GetDecalFunction("LE");
+  if (fcal) sx->SetCalFunction(fcal,2);
+  if (fdecal) sx->SetDecalFunction(fdecal,2);
+  fcal=sx->GetCalFunction(2);
+  fdecal=sx->GetDecalFunction(2);
+  adc=sx->GetSignal(1,-4);
+  if (adc>0)
+  {
+   if (fcal) fcal->SetParameter(3,adc);
+   if (fdecal) fdecal->SetParameter(3,adc);
+  }
+  else
+  {
+   if (fcal) fcal->SetParameter(3,0);
+   if (fdecal) fdecal->SetParameter(3,0);
+  }
 
   // Bi-directional link between this hit and the track that caused the ADC value.
   // This F2K info is probably only present for MC tracks.

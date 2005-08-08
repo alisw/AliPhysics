@@ -429,6 +429,9 @@ Float_t AliSignal::GetSignal(Int_t j,Int_t mode) const
 //            In case the offset value was not set, offset=0 will be assumed.
 //        2 : Same as mode=1 but gain, offset dead flag etc... are taken from
 //            the AliDevice which owns this AliSignal object.
+//            The corresponding AliDevice slot is obtained via matching of
+//            the slotnames. In case this fails, the slotindex "j" of the
+//            input argument will be used. 
 //            In case this AliSignal object has no parent AliDevice, just
 //            the j-th signal is returned (like with mode=0).
 //        3 : The j-th signal is corrected using the corresponding calibration
@@ -438,10 +441,15 @@ Float_t AliSignal::GetSignal(Int_t j,Int_t mode) const
 //            is returned (like with mode=0).
 //        4 : Same as mode=3 but the calibration function is taken from
 //            the AliDevice which owns this AliSignal object.
+//            The corresponding AliDevice slot is obtained via matching of
+//            the slotnames. In case this fails, the slotindex "j" of the
+//            input argument will be used. 
 //        5 : Same as mode=2 but in case no parent AliDevice is present
 //            an automatic switch to mode=1 will be made.
 //        6 : Same as mode=4 but in case no parent AliDevice is present
 //            an automatic switch to mode=3 will be made.
+//        7 : Same as mode=3 but in case no calibration function is present
+//            an automatic switch to mode=4 will be made.
 //
 //       <0 : The corresponding de-correction or de-calibration is performed
 //
@@ -455,14 +463,51 @@ Float_t AliSignal::GetSignal(Int_t j,Int_t mode) const
 //
 // The default is mode=0.
 
- if (abs(mode)>6) return 0;
+ if (abs(mode)>7) return 0;
 
+ Int_t jcal=j;
  Float_t sig=0;
  Float_t gain=1;
  Float_t offset=0;
 
  AliSignal* sx=(AliSignal*)this;
- if (abs(mode)==2 || abs(mode)>=4) sx=(AliSignal*)GetDevice();
+
+ TF1* f=0;
+ if (mode==7)
+ {
+  f=sx->GetCalFunction(jcal);
+  if (f)
+  {
+   mode=3;
+  }
+  else
+  {
+   mode=4;
+  } 
+ }
+ if (mode==-7)
+ {
+  f=sx->GetDecalFunction(jcal);
+  if (f)
+  {
+   mode=-3;
+  }
+  else
+  {
+   mode=-4;
+  } 
+ }
+
+ if (abs(mode)==2 || abs(mode)>=4)
+ {
+  sx=(AliSignal*)GetDevice();
+  if (sx)
+  {
+   TString name=GetSlotName(j);
+   if (strlen(name.Data())) jcal=sx->GetSlotIndex(name);
+   if (!jcal) jcal=j;
+  }
+ }
  if (!sx && abs(mode)>=5) sx=(AliSignal*)this;
  if (mode==5) mode=2;
  if (mode==-5) mode=-2;
@@ -478,13 +523,13 @@ Float_t AliSignal::GetSignal(Int_t j,Int_t mode) const
    if (mode==0 || !sx) return sig;
 
    // Check for the dead flag setting
-   if (sx->GetDeadValue(j)) return 0;
+   if (sx->GetDeadValue(jcal)) return 0;
 
    // (De)correct the signal for the gain and offset
    if (abs(mode)==1 || abs(mode)==2)
    {
-    if (sx->GetGainFlag(j)) gain=sx->GetGain(j);
-    if (sx->GetOffsetFlag(j)) offset=sx->GetOffset(j);
+    if (sx->GetGainFlag(jcal)) gain=sx->GetGain(jcal);
+    if (sx->GetOffsetFlag(jcal)) offset=sx->GetOffset(jcal);
 
     if (fabs(gain)>0.)
     {
@@ -501,8 +546,8 @@ Float_t AliSignal::GetSignal(Int_t j,Int_t mode) const
    // (De)calibrate the signal with the corresponding (de)calibration function
    if (abs(mode)==3 || abs(mode)==4)
    {
-    TF1* f=sx->GetCalFunction(j);
-    if (mode<0) f=sx->GetDecalFunction(j);
+    f=sx->GetCalFunction(jcal);
+    if (mode<0) f=sx->GetDecalFunction(jcal);
     if (f) sig=f->Eval(sig);
     return sig;
    }
@@ -519,18 +564,10 @@ Float_t AliSignal::GetSignal(TString name,Int_t mode) const
 {
 // Provide signal value of the name-specified slot.
 // In case no signal is present, 0 is returned.
-// The parameter "mode" allows for automatic gain etc... correction of the signal.
-//
-// mode = 0 : Just the j-th signal is returned.
-//        1 : The j-th signal is corrected for the gain, offset, dead flag etc...
-//            In case the gain value was not set, gain=1 will be assumed.
-//            In case the gain value was 0, a signal value of 0 is returned.
-//            In case the offset value was not set, offset=0 will be assumed.
-//            In case the j-th slot was marked dead, 0 is returned.
-//
-// The corrected signal (sigc) is determined as follows :
-//
-//              sigc=(signal/gain)-offset 
+// The parameter "mode" allows for automatic (de)calibration of the signal
+// (e.g. gain etc... correction or via explicit (de)calibration functions).
+// For further details about the (de)calibration modes, please refer to the
+// corresponding slot-index based memberfunction. 
 //
 // The default is mode=0.
 //

@@ -21,4 +21,8 @@
                 data tree when the macro is run in an interactive ROOT/CINT session.
 20-jul-2005 NvE RDMC index "off by one" problem fixed in IceF2k.cxx when setting the
                 bin contents for a waveform histogram.
+05-aug-2005 NvE Support for printfreq=0 introduced in IceF2k to allow suppression of
+                the event summary printout.
+08-aug-2005 NvE (De)calibration functions introduced in IceF2k::FillOMdbase and IceF2k::PutHits
+                to enable access to either automatically calibrated or de-calibrated data.
  

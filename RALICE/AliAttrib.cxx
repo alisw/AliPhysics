@@ -1370,7 +1370,7 @@ TF1* AliAttrib::GetCalFunction(TString name) const
 
  TF1* f=0;
  Int_t j=GetSlotIndex(name);
- if (j>0) GetCalFunction(j);
+ if (j>0) f=GetCalFunction(j);
  return f;
 }
 ///////////////////////////////////////////////////////////////////////////
@@ -1455,7 +1455,7 @@ TF1* AliAttrib::GetDecalFunction(TString name) const
 
  TF1* f=0;
  Int_t j=GetSlotIndex(name);
- if (j>0) GetDecalFunction(j);
+ if (j>0) f=GetDecalFunction(j);
  return f;
 }
 ///////////////////////////////////////////////////////////////////////////

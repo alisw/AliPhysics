@@ -632,6 +632,8 @@
 03-aug-2005 NvE AliSignal::GetSignal has been extended to support various (de)calibration facilities.
                 Printout is now also provided in AliSignal::List when only calibration data exist
                 for AliDevice (or derived) objects.
+05-aug-2005 NvE Typos fixed in AliAttrib::GetCalFunction and AliAttrib::GetDecalFunction which
+                erroneously always returned a null pointer.
                
                 
  
