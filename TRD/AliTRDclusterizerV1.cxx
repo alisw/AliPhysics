@@ -29,6 +29,7 @@
 #include "AliRun.h"
 #include "AliRunLoader.h"
 #include "AliLoader.h"
+#include "AliRawReader.h"
 
 #include "AliTRDclusterizerV1.h"
 #include "AliTRDmatrix.h"
@@ -38,6 +39,7 @@
 #include "AliTRDdigitsManager.h"
 #include "AliTRDparameter.h"
 #include "AliTRDpadPlane.h"
+#include "AliTRDrawData.h"
 
 ClassImp(AliTRDclusterizerV1)
 
@@ -133,6 +135,22 @@ Bool_t AliTRDclusterizerV1::ReadDigits()
 
   // Read in the digit arrays
   return (fDigitsManager->ReadDigits(loader->TreeD()));
+
+}
+
+//_____________________________________________________________________________
+Bool_t AliTRDclusterizerV1::ReadDigits(AliRawReader* rawReader)
+{
+  //
+  // Reads the digits arrays from the ddl file
+  //
+
+  AliTRDrawData *raw = new AliTRDrawData();
+  raw->SetDebug(1);
+
+  fDigitsManager = raw->Raw2Digits(rawReader);
+
+  return kTRUE;
 
 }
 

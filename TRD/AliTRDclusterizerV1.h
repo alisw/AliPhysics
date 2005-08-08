@@ -13,6 +13,7 @@
 
 class AliTRDdigitsManager;
 class AliTRDparameter;
+class AliRawReader;
 
 class AliTRDclusterizerV1 : public AliTRDclusterizer {
 
@@ -27,6 +28,7 @@ class AliTRDclusterizerV1 : public AliTRDclusterizer {
   virtual void     Copy(TObject &c) const;
   virtual Bool_t   MakeClusters();
   virtual Bool_t   ReadDigits();
+  virtual Bool_t   ReadDigits(AliRawReader* rawReader);
 
  protected:
 

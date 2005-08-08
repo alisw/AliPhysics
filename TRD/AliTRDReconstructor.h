@@ -20,7 +20,7 @@ public:
   AliTRDReconstructor(): AliReconstructor() {};
   virtual ~AliTRDReconstructor() {};
 
-  virtual void         Reconstruct(AliRunLoader*, AliRawReader*) const { };
+  virtual void         Reconstruct(AliRunLoader* runLoader, AliRawReader* rawReader) const;
   virtual void         Reconstruct(AliRawReader*, TTree*) const { };
   virtual void         Reconstruct(TTree*, TTree*) const { };
   virtual void         Reconstruct(AliRunLoader* runLoader) const;

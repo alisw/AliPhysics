@@ -14,11 +14,11 @@
 #include <TObject.h>
 
 class AliRawReader;
-
+class AliTRDparameter;
 
 class AliTRDRawStream: public TObject {
   public :
-    AliTRDRawStream(AliRawReader* rawReader);
+    AliTRDRawStream(AliRawReader* rawReader, AliTRDparameter* parameter);
     virtual ~AliTRDRawStream();
 
     virtual Bool_t   Next();
@@ -44,7 +44,7 @@ class AliTRDRawStream: public TObject {
 
     AliRawReader*    fRawReader;    // object for reading the raw data
 
-    Int_t            fTimeMax;      // maximal time bin
+    Int_t            fTimeTotal;    // total time bins
     Int_t            fCount;        // counter of bytes to be read for current detector
 
     Int_t            fDetector;     // index of current detector

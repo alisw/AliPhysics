@@ -15,8 +15,9 @@ void AliTRDRaw2Digits(Int_t iEvent = 0, Int_t iDet = 0)
 {
 
   AliTRDrawData *raw = new AliTRDrawData();
-  raw->SetDebug(1);
+  raw->SetDebug(2);
   AliRawReaderFile rawReader(iEvent);
+
   AliTRDdigitsManager *digitsManagerRaw = raw->Raw2Digits(&rawReader);
 
   // The geometry object
@@ -37,10 +38,12 @@ void AliTRDRaw2Digits(Int_t iEvent = 0, Int_t iDet = 0)
   Int_t  rowMax = par->GetRowMax(iPla,iCha,iSec);
   Int_t  colMax = par->GetColMax(iPla);
   Int_t timeMax = par->GetTimeMax();
+  Int_t timeTotal = par->GetTimeTotal();
   cout << "Geometry: rowMax = "  <<  rowMax
                 << " colMax = "  <<  colMax
-                << " timeMax = " << timeMax << endl;
-  AliTRDmatrix *matrix = new AliTRDmatrix(rowMax,colMax,timeMax,iSec,iCha,iPla);
+                << " timeMax = " << timeMax
+                << " timeTotal = " << timeTotal << endl;
+  AliTRDmatrix *matrix = new AliTRDmatrix(rowMax,colMax,timeTotal,iSec,iCha,iPla);
 
   AliRunLoader* rl = AliRunLoader::Open("galice.root");
   AliLoader* loader = rl->GetLoader("TRDLoader");
@@ -58,7 +61,7 @@ void AliTRDRaw2Digits(Int_t iEvent = 0, Int_t iDet = 0)
   Int_t DigAmpRaw, DigAmp;
 
   // Loop through the detector pixel
-  for (Int_t time = 0; time < timeMax; time++) {
+  for (Int_t time = 0; time < timeTotal; time++) {
     for (Int_t  col = 0;  col <  colMax;  col++) {
       for (Int_t  row = 0;  row <  rowMax;  row++) {
 
@@ -88,6 +91,8 @@ void AliTRDRaw2Digits(Int_t iEvent = 0, Int_t iDet = 0)
 
   TCanvas *c1 = new TCanvas("c1","Canvas 1",10,10,600,500);
   DigDiff->Draw();
+
+  printf("Number of digits expected = %d \n",timeTotal*rowMax*colMax);
 
 }
 

@@ -29,7 +29,8 @@
 #include "AliTRDtracker.h"
 #include "AliTRDpidESD.h"
 #include <TFile.h>
-
+#include "AliRawReaderFile.h"
+#include "AliLog.h"
 
 ClassImp(AliTRDReconstructor)
 
@@ -56,6 +57,39 @@ void AliTRDReconstructor::Reconstruct(AliRunLoader* runLoader) const
   for (Int_t iEvent = 0; iEvent < nEvents; iEvent++) {
     clusterer.Open(runLoader->GetFileName(), iEvent);
     clusterer.ReadDigits();
+    clusterer.MakeClusters();
+    clusterer.WriteClusters(-1);
+  }
+
+  loader->UnloadRecPoints();
+}
+
+//_____________________________________________________________________________
+void AliTRDReconstructor::Reconstruct(AliRunLoader* runLoader,
+                                      AliRawReader* rawReader) const
+{
+// reconstruct clusters
+
+  AliInfo("Reconstruct TRD clusters from RAW data");
+
+  AliLoader *loader=runLoader->GetLoader("TRDLoader");
+  loader->LoadRecPoints("recreate");
+
+  AliTRDclusterizerV1 clusterer("clusterer", "TRD clusterizer");
+  runLoader->CdGAFile();
+  AliTRDparameter* trdParam = GetTRDparameter(runLoader); 
+  if (!trdParam) {
+    Error("Reconstruct", "no TRD parameters found");
+    return;
+  }
+  trdParam->ReInit();
+  clusterer.SetParameter(trdParam);
+  Int_t nEvents = runLoader->GetNumberOfEvents();
+
+  for (Int_t iEvent = 0; iEvent < nEvents; iEvent++) {
+    if (!rawReader->NextEvent()) break;
+    clusterer.Open(runLoader->GetFileName(), iEvent);
+    clusterer.ReadDigits(rawReader);
     clusterer.MakeClusters();
     clusterer.WriteClusters(-1);
   }

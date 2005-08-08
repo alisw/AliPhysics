@@ -28,13 +28,14 @@
 
 #include "AliTRDRawStream.h"
 #include "AliRawReader.h"
+#include "AliTRDparameter.h"
 
 ClassImp(AliTRDRawStream)
 
 
-AliTRDRawStream::AliTRDRawStream(AliRawReader* rawReader) :
+AliTRDRawStream::AliTRDRawStream(AliRawReader* rawReader, AliTRDparameter* parameter) :
   fRawReader(rawReader),
-  fTimeMax(15),
+  fTimeTotal(parameter->GetTimeTotal()),
   fCount(0),
   fDetector(-1),
   fPrevDetector(-1),
@@ -54,7 +55,7 @@ AliTRDRawStream::AliTRDRawStream(AliRawReader* rawReader) :
 AliTRDRawStream::AliTRDRawStream(const AliTRDRawStream& stream) :
   TObject(stream),
   fRawReader(NULL),
-  fTimeMax(15),
+  fTimeTotal(0),
   fCount(0),
   fDetector(-1),
   fPrevDetector(-1),
@@ -131,6 +132,12 @@ Bool_t AliTRDRawStream::Next()
 	return kFALSE;
       }
       fCount += (UInt_t(data) << 8);
+      if (!fRawReader->ReadNextChar(data)) {
+        Error("Next", "could not read number of bytes");
+        fCount = -1;
+        return kFALSE;
+      }
+      fCount += (UInt_t(data) << 16);
 
       // read the number of active pads
       if (!fRawReader->ReadNextChar(data)) {
@@ -146,18 +153,12 @@ Bool_t AliTRDRawStream::Next()
       }
       fNPads += (UInt_t(data) << 8);
 
-      // read the empty byte
-      if (!fRawReader->ReadNextChar(data)) {
-	Error("Next", "could not read fill byte");
-	fCount = -1;
-	return kFALSE;
-      }
+      fTime = fTimeTotal;
 
-      fTime = fTimeMax;
     }
 
     // read the pad row and column number
-    if ((fTime >= fTimeMax) && (fCount > 2)) {
+    if ((fTime >= fTimeTotal) && (fCount > 2)) {
       if (!fRawReader->ReadNextChar(data)) {
 	Error("Next", "could not read row number");
 	fCount = -1;

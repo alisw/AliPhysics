@@ -30,6 +30,7 @@
 #include "AliTRDdataArrayI.h"
 #include "AliTRDRawStream.h"
 #include "AliRawDataHeader.h"
+#include "AliRawReader.h"
 
 ClassImp(AliTRDrawData)
 
@@ -111,7 +112,7 @@ Bool_t AliTRDrawData::Digits2Raw(TTree *digitsTree)
   const Int_t kNumberOfDDLs         = 18;
   const Int_t kSubeventHeaderLength = 8;
   const Int_t kSubeventDummyFlag    = 0xBB;
-  int headerSubevent[2];
+  int headerSubevent[3];
 
   ofstream      *outputFile[kNumberOfDDLs];
   UInt_t         bHPosition[kNumberOfDDLs];
@@ -162,8 +163,8 @@ Bool_t AliTRDrawData::Digits2Raw(TTree *digitsTree)
     Int_t sect      = geo->GetSector(det);
     Int_t rowMax    = par->GetRowMax(plan,cham,sect);
     Int_t colMax    = par->GetColMax(plan);
-    Int_t timeMax   = par->GetTimeMax();
-    Int_t bufferMax = rowMax*colMax*timeMax;
+    Int_t timeTotal = par->GetTimeTotal();
+    Int_t bufferMax = rowMax*colMax*timeTotal;
     int  *buffer    = new int[bufferMax];
 
     npads   = 0;
@@ -182,7 +183,7 @@ Bool_t AliTRDrawData::Digits2Raw(TTree *digitsTree)
 
 	// Check whether data exists for this pad
         Bool_t dataflag = kFALSE;
-        for (Int_t time = 0; time < timeMax; time++) {
+        for (Int_t time = 0; time < timeTotal; time++) {
           Int_t data = digits->GetDataUnchecked(row,col,time);
           if (data) {
             dataflag = kTRUE;
@@ -201,14 +202,14 @@ Bool_t AliTRDrawData::Digits2Raw(TTree *digitsTree)
           nbyte += 2;
 
           Int_t nzero = 0;
-          for (Int_t time = 0; time < timeMax; time++) {
+          for (Int_t time = 0; time < timeTotal; time++) {
 
             Int_t data = digits->GetDataUnchecked(row,col,time);
 
             if (!data) {
               nzero++;
               if ((nzero ==       256) || 
-                  (time  == timeMax-1)) {
+                  (time  == timeTotal-1)) {
                 *bytePtr++ = 0;
                 *bytePtr++ = nzero-1;
                 nbyte += 2;
@@ -255,9 +256,9 @@ Bool_t AliTRDrawData::Digits2Raw(TTree *digitsTree)
     *bytePtr++ = (det   >> 8);
     *bytePtr++ = (nbyte & 0xff);
     *bytePtr++ = (nbyte >> 8);
+    *bytePtr++ = (nbyte >> 16);
     *bytePtr++ = (npads & 0xff);
     *bytePtr++ = (npads >> 8);
-    *bytePtr++ = 0;
     outputFile[iDDL]->write((char*)headerPtr,kSubeventHeaderLength);
 
     // Write the buffer to the file
@@ -303,6 +304,9 @@ AliTRDdigitsManager* AliTRDrawData::Raw2Digits(AliRawReader* rawReader)
   //
 
   AliTRDdataArrayI *digits    = 0;
+  AliTRDdataArrayI *track0    = 0;
+  AliTRDdataArrayI *track1    = 0;
+  AliTRDdataArrayI *track2    = 0; 
 
   AliTRDgeometryFull *geo = new AliTRDgeometryFull();
   AliTRDparameter    *par = new AliTRDparameter("TRDparameter"
@@ -313,7 +317,7 @@ AliTRDdigitsManager* AliTRDrawData::Raw2Digits(AliRawReader* rawReader)
   digitsManager->SetDebug(fDebug);
   digitsManager->CreateArrays();
 
-  AliTRDRawStream input(rawReader);
+  AliTRDRawStream input(rawReader,par);
 
   // Loop through the digits
   while (input.Next()) {
@@ -324,6 +328,9 @@ AliTRDdigitsManager* AliTRDrawData::Raw2Digits(AliRawReader* rawReader)
     if (input.IsNewDetector()) {
 
       if (digits) digits->Compress(1,0);
+      if (track0) track0->Compress(1,0);
+      if (track1) track1->Compress(1,0);
+      if (track2) track2->Compress(1,0);
 
       if (fDebug > 2) {
 	Info("Raw2Digits","Subevent header:");
@@ -337,21 +344,37 @@ AliTRDdigitsManager* AliTRDrawData::Raw2Digits(AliRawReader* rawReader)
       Int_t sect      = geo->GetSector(det);
       Int_t rowMax    = par->GetRowMax(plan,cham,sect);
       Int_t colMax    = par->GetColMax(plan);
-      Int_t timeMax   = par->GetTimeMax();
+      Int_t timeTotal = par->GetTimeTotal();
 
       // Add a container for the digits of this detector
       digits = digitsManager->GetDigits(det);
+      track0 = digitsManager->GetDictionary(det,0);
+      track1 = digitsManager->GetDictionary(det,1);
+      track2 = digitsManager->GetDictionary(det,2);
       // Allocate memory space for the digits buffer
       if (digits->GetNtime() == 0) {
-        digits->Allocate(rowMax,colMax,timeMax);
+        digits->Allocate(rowMax,colMax,timeTotal);
+        track0->Allocate(rowMax,colMax,timeTotal);
+        track1->Allocate(rowMax,colMax,timeTotal);
+        track2->Allocate(rowMax,colMax,timeTotal);
       }
 
     } 
+
     digits->SetDataUnchecked(input.GetRow(),input.GetColumn(),
 			     input.GetTime(),input.GetSignal());
+    track0->SetDataUnchecked(input.GetRow(),input.GetColumn(),
+                             input.GetTime(),               -1);
+    track1->SetDataUnchecked(input.GetRow(),input.GetColumn(),
+                             input.GetTime(),               -1);
+    track2->SetDataUnchecked(input.GetRow(),input.GetColumn(),
+                             input.GetTime(),               -1);
   }
 
   if (digits) digits->Compress(1,0);
+  if (track0) track0->Compress(1,0);
+  if (track1) track1->Compress(1,0);
+  if (track2) track2->Compress(1,0);
 
   delete geo;
   delete par;
