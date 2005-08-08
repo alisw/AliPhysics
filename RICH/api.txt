@@ -63,14 +63,6 @@ What are the meanings of different VMC flags:
 	gMC->IsTrackAlive()
 	gMC->IsTrackStop()
 	gMC->IsTrackDisappeared()
-How is sdigit produced from hit:
-	Responsible method is AliRICH::Hits2SDigits
-	One hit may affect one or more pads.
-        Hit position is taken on the anode wires plane as the most of avalanche is developed there.
-        This position is not directly available, track intersections with entrance and exit of amplification gap are only stored.
-        So the position in the middle of the gap is calculated as average out of pHit->In() and pHit->Out() positions.
-        Then, total charge collected for this hit is calculated by AliRICHParam::Hit2Qdc.    
-        Area of disintegration is a list of pads affected by current hit. This is a parameter of Mathienson    
 How to get pad number for a local position:
 	use static TVector AliRICHParam::Loc2Pad(TVector2 position);
 Why list of chambers belongs to AliRICHParam:
@@ -87,3 +79,70 @@ How to loop over all possible object:
       }//hits loop
     }//TreeH loop
   }//events loop
+
+
+RICH full simulation-reconstruction sequence
+
+hits->sdigit:
+	Responsible method is AliRICH::Hits2SDigits
+	One hit may affect one or more pads.
+        Hit position is taken on the anode wires plane as the most of avalanche is developed there.
+        This position is not directly available, track intersections with entrance and exit of amplification gap are only stored.
+        So the position in the middle of the gap is calculated as average out of pHit->In() and pHit->Out() positions.
+        Then, total charge collected for this hit is calculated by AliRICHParam::Hit2Qdc.    
+        Area of disintegration is a list of pads affected by current hit. This is a parameter of Mathienson    
+sdigits->digits:
+	The necessety of sdigits is dictated by the fact that trasport engine transports track by track. It means that it may happen that the same
+        pad is affected by few tracks. But this might be known after the trasport of full event only. 
+
+Generalized structure of AliReconstruction:
+
+Run()
+{
+  if(there is galice.root)                                          |
+    AliRunLoader::Open(....)                                        | this is done in InitRunLoader()
+  else                                                              |
+    if(raw data process requested)                                  |
+      create galice.root on the base of AliRawReader::NextEvent     |   
+  
+  for(all detectors){                                               |
+   if(detector not selected to run) skip this detector              |
+   reconstructor=get detector's reconstructor                       | this is done in RunLocalReconstruction()
+   if(detector HasLocalReconstruction) skip this detector           | IMPORTANT! if HasLocalReconstruction() returns YES use RunLocalEventReconstruction instead
+   if(run upon raw data)                                            |  
+     reconstructor->Reconstruct(fRunLoader, fRawReader);            |   
+   else                                                             |
+     reconstructor->Reconstruct(fRunLoader);                        |
+  }
+
+  for(all events){                                                      
+  
+    for(all detectors){                                                 |            
+      if(detector not selected to run) skip this detector               |
+      reconstructor=get detector's reconstructor                        | 
+      loader=get detector's loader                                      | this is done in RunLocalEventReconstruction()
+      if(raw data process requested and detector HasDigitConversion){   | 
+        loader->LoadDigits("update");                                   | open file and invoke  detector->SetTreeAddress();
+        loader->CleanDigits();                                          |   
+        loader->MakeDigitsContainer();                                  | create tree
+        reconstructor->Reconstruct(fRawReader,loader->TreeD());         | expected to fill TreeD out of raw reader
+        loader->WriteDigits("overwrite");                               | 
+        loader->UnloadDigits();                                         |  
+      }                                                                 |
+      if(detector do not HasLocalReconstruction) skip this detector     | IMPORTANT! assumed that this detector is already processed in RunLocalReconstruction()
+      loader->LoadRecPoints("update");                                  |
+      loader->CleanRecPoints();                                         |
+      loader->MakeRecPointsContainer();                                 | 
+      if(fRawReader && reconstructor do not HasDigitConversion()){      | 
+        reconstructor->Reconstruct(fRawReader, loader->TreeR());        | expected to fill TreeR out of raw reader
+      }else{                                                            |
+        loader->LoadDigits("read");                                     |
+        reconstructor->Reconstruct(loader->TreeD(),loader->TreeR());    | the only operations inside are pDigTree->GetEntry(0) and pCluTree->Fill();
+        loader->UnloadDigits();                                         | 
+      }                                                                 |
+      loader->WriteRecPoints("OVERWRITE");                              |
+      loader->UnloadRecPoints();                                        |
+    }//detectors loop                                                   |
+    
+  }//events loop 
+}

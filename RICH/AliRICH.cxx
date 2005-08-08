@@ -42,12 +42,11 @@
 #include <AliLog.h>
 #include <TNtupleD.h>
 #include <AliTracker.h>
-#include <AliRawDataHeader.h>
-#include <TLatex.h> //Display()
-#include <TCanvas.h> //Display()
-#include <TGraph.h> //Display()
-#include <TStyle.h> //Display()
-#include <TMarker.h> //Display()
+#include <TLatex.h>   //Display()
+#include <TCanvas.h>  //Display()
+#include <TGraph.h>   //Display()
+#include <TStyle.h>   //Display()
+#include <TMarker.h>  //Display()
  
 ClassImp(AliRICH)    
 //__________________________________________________________________________________________________
@@ -92,98 +91,6 @@ AliRICH::~AliRICH()
   if(fClus)      {fClus->Delete();   delete fClus;}
   AliDebug(1,"Stop.");    
 }//AliRICH::~AliRICH()
-//__________________________________________________________________________________________________
-void AliRICH::Hits2SDigits()
-{
-// Create a list of sdigits corresponding to list of hits. Every hit generates one or more sdigits.
-  AliDebug(1,"Start.");
-  for(Int_t iEventN=0;iEventN<GetLoader()->GetRunLoader()->GetAliRun()->GetEventsPerRun();iEventN++){//events loop
-    GetLoader()->GetRunLoader()->GetEvent(iEventN);//get next event
-  
-    if(!GetLoader()->TreeH()) GetLoader()->LoadHits();    GetLoader()->GetRunLoader()->LoadHeader(); 
-    if(!GetLoader()->GetRunLoader()->TreeK())             GetLoader()->GetRunLoader()->LoadKinematics();//from
-    if(!GetLoader()->TreeS()) GetLoader()->MakeTree("S"); MakeBranch("S");//to
-          
-    for(Int_t iPrimN=0;iPrimN<GetLoader()->TreeH()->GetEntries();iPrimN++){//prims loop
-      GetLoader()->TreeH()->GetEntry(iPrimN);
-      for(Int_t iHitN=0;iHitN<Hits()->GetEntries();iHitN++){//hits loop 
-        AliRICHHit *pHit=(AliRICHHit*)Hits()->At(iHitN);//get current hit                
-        TVector2 x2 = C(pHit->C())->Mrs2Anod(0.5*(pHit->InX3()+pHit->OutX3()));//hit position in the anod plane
-        Int_t iTotQdc=P()->TotQdc(x2,pHit->Eloss());//total charge produced by hit, 0 if hit in dead zone
-        if(iTotQdc==0) continue;
-        //
-        //need to quantize the anod....
-        TVector padHit=AliRICHParam::Loc2Pad(x2);
-        TVector2 padHitXY=AliRICHParam::Pad2Loc(padHit);
-        TVector2 anod;
-        if((x2.Y()-padHitXY.Y())>0) anod.Set(x2.X(),padHitXY.Y()+AliRICHParam::PitchAnod()/2);
-        else anod.Set(x2.X(),padHitXY.Y()-AliRICHParam::PitchAnod()/2);
-        //end to quantize anod
-        //
-        TVector area=P()->Loc2Area(anod);//determine affected pads, dead zones analysed inside
-        AliDebug(1,Form("hitanod(%6.2f,%6.2f)->area(%3.0f,%3.0f)-(%3.0f,%3.0f) QDC=%4i",anod.X(),anod.Y(),area[0],area[1],area[2],area[3],iTotQdc));
-        TVector pad(2);
-        for(pad[1]=area[1];pad[1]<=area[3];pad[1]++)//affected pads loop
-          for(pad[0]=area[0];pad[0]<=area[2];pad[0]++){                    
-            Double_t padQdc=iTotQdc*P()->FracQdc(anod,pad);
-            AliDebug(1,Form("current pad(%3.0f,%3.0f) with QDC  =%6.2f",pad[0],pad[1],padQdc));
-            if(padQdc>0.1) SDigitAdd(pHit->C(),pad,padQdc,GetLoader()->GetRunLoader()->Stack()->Particle(pHit->GetTrack())->GetPdgCode(),pHit->GetTrack());
-          }//affected pads loop 
-      }//hits loop
-    }//prims loop
-    GetLoader()->TreeS()->Fill();
-    GetLoader()->WriteSDigits("OVERWRITE");
-    SDigitsReset();
-  }//events loop  
-  GetLoader()->UnloadHits(); GetLoader()->GetRunLoader()->UnloadHeader(); GetLoader()->GetRunLoader()->UnloadKinematics();
-  GetLoader()->UnloadSDigits();  
-  AliDebug(1,"Stop.");
-}//Hits2SDigits()
-//__________________________________________________________________________________________________
-void AliRICH::Digits2Raw()
-{
-//Loops over all digits and creates raw data files in DDL format. GetEvent() is done outside (AliSimulation)
-//RICH has 2 DDL per chamber, even number for right part(2-4-6) odd number for left part(1-3-5) 
-//RICH has no any propriate header just uses the common one
-//Each PC is divided by 8 rows counted from 1 to 8 from top to bottom for left PCs(1-3-5) and from bottom to top for right PCc(2-4-6)     (denoted  rrrrr 5 bits 32 values)
-//Each raw is composed from 10 DILOGIC chips counted from left to right from 1 to 10                                                      (denoted   dddd 4 bits 16 values)
-//Each DILOGIC chip serves 48 channels counted from 0 to 47                                                                               (denoted aaaaaa 6 bits 64 values)
-//So RICH info word is  32 bits word with structure:   0000 0rrr rrdd ddaa aaaa qqqq qqqq qqqq (five 0 five r six a twelve q) with QDC    (denoted q...q 12 bits 4096 values)
-  AliDebug(1,"Start.");
-  GetLoader()->LoadDigits();
-  GetLoader()->TreeD()->GetEntry(0);
-  
-  Int_t kRichOffset=0x700; //currently one DDL per 3 sectors
-  
-  ofstream file135,file246;//output streams 2 DDL per chamber
-  AliRawDataHeader header;//empty DDL miniheader
-  UInt_t word32=1;        //32 bits data word 
-  
-  for(Int_t iChN=1;iChN<=kNchambers;iChN++){ //2 DDL per chamber open both in parallel   
-    file135.open(Form("RICH_%4i.ddl",kRichOffset+2*iChN-1));   //left part of chamber; sectors 1-3-5 odd DDL number
-    file246.open(Form("RICH_%4i.ddl",kRichOffset+2*iChN));     //right part of chamber; sectors 2-4-6 even DDL number
-//common DDL header defined by standart, now dummy as the total number of bytes is not yet known    
-    file135.write((char*)&header,sizeof(header)); //dummy header just place holder
-    file246.write((char*)&header,sizeof(header)); //actual will be written later
-    
-    Int_t counter135=0,counter246=0;//counts total number of records per DDL 
-    
-    for(Int_t iDigN=0;iDigN<Digits(iChN)->GetEntriesFast();iDigN++){//digits loop for a given chamber
-      AliRICHDigit *pDig=(AliRICHDigit*)Digits(iChN)->At(iDigN);
-      word32=UInt_t (pDig->Q()+0x400*pDig->X()+0x4000*pDig->Y());  //arbitrary structure
-      switch(pDig->S()){//readout by vertical sectors: 1,3,5-left DDL 2,4,6-right DDL
-        case 1: case 3: case 5: file135.write((char*)&word32,sizeof(word32)); counter135++; break;
-        case 2: case 4: case 6: file246.write((char*)&word32,sizeof(word32)); counter246++; break;
-      }//switch sector  
-    }//digits loop for a given chamber
-//now count total byte number for each DDL file and rewrite actual header    
-    header.fSize=sizeof(header)+counter135*sizeof(word32);   header.SetAttribute(0); file135.seekp(0); file135.write((char*)&header,sizeof(header));
-    header.fSize=sizeof(header)+counter246*sizeof(word32);   header.SetAttribute(0); file246.seekp(0); file246.write((char*)&header,sizeof(header));
-    file135.close(); file246.close();
-  }//chambers loop  
-  GetLoader()->UnloadDigits();
-  AliDebug(1,"Stop.");      
-}//Digits2Raw()
 //__________________________________________________________________________________________________
 void AliRICH::BuildGeometry() 
 {
@@ -1007,7 +914,7 @@ void AliRICH::DisplayEvent(Int_t iEvtNmin,Int_t iEvtNmax)const
       for(Int_t j=0;j<Digits(iChamber)->GetEntries();j++) {//digits loop
         AliRICHDigit *pDig = (AliRICHDigit*)Digits(iChamber)->At(j);
         TVector2 x2=AliRICHParam::Pad2Loc(pDig->Pad());
-        pDigitsH2[iChamber]->Fill(x2.X(),x2.Y(),pDig->Q());
+        pDigitsH2[iChamber]->Fill(x2.X(),x2.Y(),pDig->Qdc());
       }//digits loop
       if(iChamber==1) canvas->cd(7);
       if(iChamber==2) canvas->cd(8);

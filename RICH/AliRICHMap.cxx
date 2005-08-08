@@ -34,7 +34,7 @@ void  AliRICHMap::FillHits()
   if(!fNdigits) return;    
   for(Int_t iDigN=0;iDigN<fNdigits;iDigN++){
     AliRICHDigit *pDig= (AliRICHDigit*)fDigits->At(iDigN);
-    SetHit(pDig->X(),pDig->Y(),iDigN);
+    SetHit(pDig->PadX(),pDig->PadY(),iDigN);
   }
 }
 //__________________________________________________________________________________________________

@@ -85,7 +85,7 @@ void AliRICHClusterFinder::FindClusters(Int_t iChamber)
 
   for(Int_t iDigN=0;iDigN<iNdigits;iDigN++){//digits loop for a given chamber    
     AliRICHDigit *dig=(AliRICHDigit*)R()->Digits(iChamber)->At(iDigN);
-    Int_t i=dig->X();   Int_t j=dig->Y();
+    Int_t i=dig->PadX();   Int_t j=dig->PadY();
     if(fDigitMap->TestHit(i,j)==kUsed) continue;//this digit is already taken, go after next digit
 	
     FormRawCluster(i,j);//form raw cluster starting from (i,j) pad 
@@ -178,7 +178,7 @@ void AliRICHClusterFinder::FindClusterContribs(AliRICHCluster *pCluster)
 void  AliRICHClusterFinder::FormRawCluster(Int_t i, Int_t j)
 {
 //Builds the raw cluster (before deconvolution). Starts from the first pad (i,j) then calls itself recursevly  for all neighbours.
-  AliDebug(1,Form("Start with digit(%i,%i) Q=%f",i,j,((AliRICHDigit*)fDigitMap->GetHit(i,j))->Q()));
+  AliDebug(1,Form("Start with digit(%i,%i) Q=%f",i,j,((AliRICHDigit*)fDigitMap->GetHit(i,j))->Qdc()));
   
   fRawCluster.AddDigit((AliRICHDigit*) fDigitMap->GetHit(i,j));//take this pad in cluster
   fDigitMap->FlagHit(i,j);//flag this pad as taken  
@@ -198,13 +198,13 @@ void AliRICHClusterFinder::FindLocalMaxima()
     AliRICHDigit *pDig1 = (AliRICHDigit *)fRawCluster.Digits()->At(iDig1);
     if(!pDig1) {fNlocals=0;return;}
     TVector pad1 = pDig1->Pad();
-    Int_t padQ1 = (Int_t)(pDig1->Q()+0.1);
-    Int_t padC1 = pDig1->ChFbMi();
+    Int_t padQ1 = (Int_t)(pDig1->Qdc()+0.1);
+    Int_t padC1 = pDig1->Cfm();
     for(Int_t iDig2=0;iDig2<fRawCluster.Size();iDig2++) {
       AliRICHDigit *pDig2 = (AliRICHDigit *)fRawCluster.Digits()->At(iDig2);
       if(!pDig2) {fNlocals=0;return;}
       TVector pad2 = pDig2->Pad();
-      Int_t padQ2 = (Int_t)(pDig2->Q()+0.1);
+      Int_t padQ2 = (Int_t)(pDig2->Qdc()+0.1);
       if(iDig1==iDig2) continue;
       Int_t diffx = TMath::Sign(Int_t(pad1[0]-pad2[0]),1);
       Int_t diffy = TMath::Sign(Int_t(pad1[1]-pad2[1]),1);
@@ -299,12 +299,9 @@ void AliRICHClusterFinder::FitCoG()
     AliDebug(1,Form("qfrac %i vstart %f lower %f upper %f ",i,vstart,lower,upper));
   }
   
-  arglist = -1;
-  pMinuit->mnexcm("SET NOGR",&arglist, 1, ierflag);
-  arglist = 1;
-  pMinuit->mnexcm("SET ERR", &arglist, 1,ierflg);
-  arglist = -1;
-  pMinuit->mnexcm("SIMPLEX",&arglist, 0, ierflag);
+  arglist = -1;  pMinuit->mnexcm("SET NOGR",&arglist, 1,ierflag);
+  arglist =  1;  pMinuit->mnexcm("SET ERR" ,&arglist, 1,ierflg);
+  arglist = -1;  pMinuit->mnexcm("SIMPLEX" ,&arglist, 0,ierflag);
   pMinuit->mnexcm("MIGRAD",&arglist, 0, ierflag);
 //  pMinuit->mnexcm("EXIT" ,&arglist, 0, ierflag);
   
@@ -355,7 +352,7 @@ void RICHMinMathieson(Int_t &npar, Double_t *, Double_t &chi2, Double_t *par, In
   Int_t qtot = pRawCluster->Q();
   for(Int_t i=0;i<pRawCluster->Size();i++) {
     TVector  pad=((AliRICHDigit *)pRawCluster->Digits()->At(i))->Pad();
-    Double_t padQ = ((AliRICHDigit *)pRawCluster->Digits()->At(i))->Q();
+    Double_t padQ = ((AliRICHDigit *)pRawCluster->Digits()->At(i))->Qdc();
     Double_t qfracpar=0;
     for(Int_t j=0;j<nFunctions;j++) {
       qfracpar += q[j]*AliRICHParam::FracQdc(centroid[j],pad);

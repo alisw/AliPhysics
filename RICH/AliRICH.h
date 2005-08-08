@@ -3,13 +3,12 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-#include <AliDetector.h>
-#include <TClonesArray.h>
+#include <AliDetector.h>  //inheritance
+#include <TClonesArray.h> 
 #include <TObjArray.h>
 #include <TVector.h>
 #include <TVector3.h>
 
-#include "AliRICHDigitizer.h"
 #include "AliRICHParam.h"
 #include "AliRICHCluster.h"
 #include "AliRICHHit.h"
@@ -30,9 +29,6 @@ public:
 //framework part  
   virtual Int_t         IsVersion()                           const =0;                                  //interface from         
   virtual void          StepManager()                               =0;                                  //interface from AliMC
-  virtual void          Hits2SDigits();                                                                  //interface from AliSimulation
-  virtual void          Digits2Raw();                                                                    //interface from AliSimulation
-  virtual AliDigitizer* CreateDigitizer(AliRunDigitizer* man) const {return new AliRICHDigitizer(man);}  //interface from AliSimulation
   virtual void          SetTreeAddress();                                                                //interface from AliLoader
   virtual void          MakeBranch(Option_t *opt=" ");                                                   //interface from AliLoader
   virtual void          CreateMaterials();                                                               //interface from AliMC
@@ -63,6 +59,7 @@ public:
     using AliDetector::Digits;  
          TClonesArray* Digits        (Int_t iC                                               )const{return fDigs ? (TClonesArray *)fDigs->At(iC-1):0;}
   inline void          DigitAdd      (Int_t c,TVector pad,int q,int cfm,int *tid             )     ;                                                 //add new digit
+  inline void          DigitAdd      (AliRICHDigit &dif                                      )     ;                                                 //add new digit
   inline void          DigitsCreate  (                                                       )     ;                                                 //create digits
          void          DigitsReset   (                                                       )     {if(fDigs)for(int i=0;i<kNchambers;i++){fDigs->At(i)->Clear();fNdigs[i]=0;}} //virtual
          void          DigitsPrint   (Int_t iEvent=0                                         )const;                                                 //prints digits
@@ -148,6 +145,13 @@ void AliRICH::DigitsCreate()
   fDigs = new TObjArray(kNchambers);  
   for(Int_t i=0;i<kNchambers;i++) {fDigs->AddAt(new TClonesArray("AliRICHDigit",10000), i); fNdigs[i]=0;}
 }
+//__________________________________________________________________________________________________
+void AliRICH::DigitAdd(AliRICHDigit &dig)
+{
+//special for digit formed from raw  
+  TClonesArray &tmp=*((TClonesArray*)fDigs->At(dig.Chamber()-1));
+  new(tmp[fNdigs[dig.Chamber()-1]++])AliRICHDigit(dig);
+}    
 //__________________________________________________________________________________________________
 void AliRICH::DigitAdd(int c,TVector pad,int q,int cfm,int *tid)
 {

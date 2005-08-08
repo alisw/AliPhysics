@@ -1,3 +1,5 @@
+#include <TPDGCode.h>
+
 class RichConfig : public TGMainFrame
 {
 RQ_OBJECT()
@@ -22,8 +24,9 @@ public:
   void    VerSlot(Int_t ver)             {if(ver==kTestBeam){ fMagCB->SetState(kButtonUp); fGenTypeCO->Select(kGunAlongZ);}}        
   
   Float_t Eta2Theta(Float_t arg)    const{return (180./TMath::Pi())*2.*TMath::ATan(TMath::Exp(-arg));}
-  void    CreateConfig();
-  void    CreateRichBatch();
+  void    CreateConfig();      //create Config.C
+  void    Generator(FILE *pF); //write generatro part of Config.C
+  void    CreateRichBatch();   //create RichBatch.C
   void    Exit();
      
   TGComboBox   *fRichCO;  TGButtonGroup *fRichBG;                                                                              //RICH
@@ -87,7 +90,6 @@ RichConfig::RichConfig(const char *sFileName):TGMainFrame(gClient->GetRoot(),700
   fGenTypeCO->AddEntry("HIJING"                       ,kHijing);
   fGenTypeCO->AddEntry("HIJING para"                  ,kHijingPara);
   fGenTypeCO->AddEntry("2 p+HIJING"                   ,kHijingPara2Proton);
-  fGenTypeCO->AddEntry("Sr90 source"                  ,kSr90);
   fGenTypeCO->AddEntry("RICH lib"                     ,kRichLib);
   fGenTypeCO->AddEntry("RICH lib+HIJING"              ,kSignalHijing);
   fGenTypeCO->Select(kHijing);
@@ -236,7 +238,66 @@ void RichConfig::CreateConfig()
   fprintf(fp,"  pDecayer->SetForceDecay(kAll);\n"); 
   fprintf(fp,"  pDecayer->Init();\n"); 
   fprintf(fp,"  gMC->SetExternalDecayer(pDecayer);\n\n");
-//Physics
+  Physics(fp);
+//Field
+  if(fMagCB->GetState()==kButtonDown) fprintf(fp,"  gAlice->SetField();\n\n");else fprintf(fp,"  gAlice->SetField(0);\n\n");
+  fprintf(fp,"  pAL->CdGAFile();\n\n");                                 //????       
+//BODY-ALIC 
+  fprintf(fp,"  new AliBODY(\"BODY\",\"Alice envelop\");\n\n");
+//RICH
+  if(!fRichBG->GetButton(kDeclust)->GetState()) fprintf(fp,"  AliRICHParam::SetDeclustering(kFALSE);\n");
+  if(!fRichBG->GetButton(kSagita)->GetState())  fprintf(fp,"  AliRICHParam::SetWireSag(kFALSE);\n")     ;
+  switch(fRichCO->GetSelected()){
+    case kNo:                                                                                                  break;
+    case kVer0:  fprintf(fp,"  AliRICH *pRICH=new AliRICHv0(\"RICH\",\"Rich with debug StepManager\");\n\n"); break;      
+    case kVer1:  fprintf(fp,"  AliRICH *pRICH=new AliRICHv1(\"RICH\",\"Normal\");\n\n");                 break;      
+  }//switch RICH
+//Generator
+  Generator(fp);
+//central before RICH detectors                  
+  if(fDetBG->GetButton(kPIPE )->GetState()) fprintf(fp,"\n  new AliPIPEv0(\"PIPE\",\"Beam Pipe\");\n");
+  if(fDetBG->GetButton(kSHILD)->GetState()) fprintf(fp,"\n  new AliSHILv2(\"SHIL\",\"Shielding Version 2\");\n");  
+  if(fDetBG->GetButton(kITS  )->GetState()){
+    fprintf(fp,"\n  AliITSvPPRasymmFMD *pIts =new AliITSvPPRasymmFMD(\"ITS\",\"ITS PPR detailed version\");\n");
+    fprintf(fp,"  pIts->SetMinorVersion(2); pIts->SetReadDet(kTRUE);\n");
+    fprintf(fp,"  pIts->SetThicknessDet1(200.); pIts->SetThicknessDet2(200.);\n");
+    fprintf(fp,"  pIts->SetThicknessChip1(200.); pIts->SetThicknessChip2(200.);\n");
+    fprintf(fp,"  pIts->SetRails(0); pIts->SetCoolingFluid(1);\n");
+    fprintf(fp,"  pIts->SetEUCLID(0);\n");
+  }  
+  if(fDetBG->GetButton(kTPC  )->GetState()) {fprintf(fp,"\n  AliTPC *pTpc=new AliTPCv2(\"TPC\",\"Default\"); pTpc->SetSecAU(-1);pTpc->SetSecAL(-1);\n");}  
+  if(fDetBG->GetButton(kFRAME)->GetState())  fprintf(fp,"\n  AliFRAMEv2 *pFrame=new AliFRAMEv2(\"FRAME\",\"Space Frame\"); pFrame->SetHoles(1);\n");
+  if(fDetBG->GetButton(kTRD  )->GetState()) {
+    fprintf(fp,"\n  AliTRD *pTrd=new AliTRDv1(\"TRD\",\"TRD slow simulator\");\n");
+    fprintf(fp,"  pTrd->SetGasMix(1); pTrd->SetPHOShole();pTrd->CreateTR();\n");
+  }  
+  if(fDetBG->GetButton(kTOF  )->GetState()) fprintf(fp,"\n  new AliTOFv4T0(\"TOF\", \"normal TOF\");\n");
+//central after RICH detectors  
+  if(fDetBG->GetButton(kMAG  )->GetState()) fprintf(fp,"\n  new AliMAG(\"MAG\",\"Magnet\");\n");  
+  if(fDetBG->GetButton(kHALL )->GetState()) fprintf(fp,"\n  new AliHALL(\"HALL\",\"Alice Hall\");\n");
+//forward detectors  
+  if(fDetBG->GetButton(kFMD  )->GetState()) fprintf(fp,"\n  new AliFMDv1(\"FMD\",\"normal FMD\");\n");
+  if(fDetBG->GetButton(kABSO )->GetState()) fprintf(fp,"\n  new AliABSOv0(\"ABSO\",\"Muon absorber\");\n");
+  if(fDetBG->GetButton(kDIPO )->GetState()) fprintf(fp,"\n  new AliDIPOv2(\"DIPO\",\"Dipole version 2\");\n");
+  if(fDetBG->GetButton(kMUON )->GetState()) fprintf(fp,"\n  new AliMUONv1(\"MUON\",\"default\");\n");
+  if(fDetBG->GetButton(kPMD  )->GetState()) fprintf(fp,"\n  new AliPMDv1(\"PMD\",\"normal PMD\");\n");
+  if(fDetBG->GetButton(kSTART)->GetState()) fprintf(fp,"\n  new AliSTARTv1(\"START\",\"START Detector\");\n");
+  if(fDetBG->GetButton(kVZERO)->GetState()) fprintf(fp,"\n  new AliVZEROv2(\"VZERO\",\"normal VZERO\");\n");
+  if(fDetBG->GetButton(kZDC  )->GetState()) fprintf(fp,"\n  new AliZDCv2(\"ZDC\",\"normal ZDC\");\n");
+//different phase space detectors  
+  if(fDetBG->GetButton(kPHOS )->GetState()) fprintf(fp,"\n  new AliPHOSv1(\"PHOS\",\"IHEP\");\n");
+  if(fDetBG->GetButton(kEMCAL)->GetState()) fprintf(fp,"\n  new AliEMCALv1(\"EMCAL\",\"G56_2_55_19_104_14\");\n");
+  if(fDetBG->GetButton(kCRT  )->GetState()) fprintf(fp,"\n  new AliCRTv0(\"CRT\",\"normal ACORDE\");\n");
+
+  fprintf(fp,"\n  ::Info(\"RICH private config\",\"Stop\");\n"); 
+  fprintf(fp,"}\n");
+out:  
+  fclose(fp);  
+//  CloseWindow();
+}//CreateConfig
+//__________________________________________________________________________________________________
+void RichConfig::Physics(FILE *fp)
+{
   if(fProcBG->GetButton(kDCAY)->GetState()) fprintf(fp,"  gMC->SetProcess(\"DCAY\",1);");  else fprintf(fp,"  gMC->SetProcess(\"DCAY\",0);");
   if(fProcBG->GetButton(kPAIR)->GetState()) fprintf(fp,"  gMC->SetProcess(\"PAIR\",1);\n");else fprintf(fp,"  gMC->SetProcess(\"PAIR\",0);\n");
   if(fProcBG->GetButton(kCOMP)->GetState()) fprintf(fp,"  gMC->SetProcess(\"COMP\",1);");  else fprintf(fp,"  gMC->SetProcess(\"COMP\",0);");
@@ -259,20 +320,10 @@ void RichConfig::CreateConfig()
   fprintf(fp,"  gMC->SetCut(\"BCUTM\" ,0.001); ");  fprintf(fp,"  gMC->SetCut(\"DCUTE\" ,0.001); ");
   fprintf(fp,"  gMC->SetCut(\"DCUTM\" ,0.001);\n"); fprintf(fp,"  gMC->SetCut(\"PPCUTM\",0.001); ");
   fprintf(fp,"  gMC->SetCut(\"TOFMAX\",1e10);\n\n"); 
-//Field
-  if(fMagCB->GetState()==kButtonDown) fprintf(fp,"  gAlice->SetField();\n\n");else fprintf(fp,"  gAlice->SetField(0);\n\n");
-  fprintf(fp,"  pAL->CdGAFile();\n\n");                                 //????       
-//BODY-ALIC 
-  fprintf(fp,"  new AliBODY(\"BODY\",\"Alice envelop\");\n\n");
-//RICH
-  if(!fRichBG->GetButton(kDeclust)->GetState()) fprintf(fp,"  AliRICHParam::SetDeclustering(kFALSE);\n");
-  if(!fRichBG->GetButton(kSagita)->GetState())  fprintf(fp,"  AliRICHParam::SetWireSag(kFALSE);\n")     ;
-  switch(fRichCO->GetSelected()){
-    case kNo:                                                                                                  break;
-    case kVer0:  fprintf(fp,"  AliRICH *pRICH=new AliRICHv0(\"RICH\",\"Rich with debug StepManager\");\n\n"); break;      
-    case kVer1:  fprintf(fp,"  AliRICH *pRICH=new AliRICHv1(\"RICH\",\"Normal\");\n\n");                 break;      
-  }//switch RICH
-//Generator
+}//Physics()
+//__________________________________________________________________________________________________
+void RichConfig::Generator(FILE *fp)
+{
   switch(fGenTypeCO->GetSelected()){
     case kHijingPara: 
       fprintf(fp,"  AliGenHIJINGpara *pGen=new AliGenHIJINGpara(%i);\n",(int)fGenPrimNE->GetNumber());
@@ -326,11 +377,6 @@ void RichConfig::CreateConfig()
       fprintf(fp,"  pPythia->SetProcess(kPyMb);  pPythia->SetEnergyCMS(14000);\n");      
       fprintf(fp,"  pCocktail->AddGenerator(pPythia,\"Pythia\",1);\n");  
       fprintf(fp,"  pCocktail->Init();\n");
-    case kSr90:  
-      fprintf(fp,"  AliGenRadioactive *pGen=new AliGenRadioactive(kSr90,%i);\n",(int)fGenNprimEntry->GetNumber());
-      fprintf(fp,"  pGen->SetOrigin(0,0,0);  pGen->SetSigma(0.1,0.1,0.05);\n");      
-      fprintf(fp,"  pGen->Init();\n");
-    break;  
     case kHijing:  
       fprintf(fp,"  AliGenHijing *pGen=new AliGenHijing(-1); pGen->SetEnergyCMS(5500); pGen->SetReferenceFrame(\"CMS\");\n");
       fprintf(fp,"  pGen->SetProjectile(\"A\", 208, 82); pGen->SetTarget(\"A\", 208, 82);\n");      
@@ -384,47 +430,9 @@ void RichConfig::CreateConfig()
       fprintf(fp,"  pCocktail->Init();\n");
     break;
   }
-//central before RICH detectors                  
-  if(fDetBG->GetButton(kPIPE )->GetState()) fprintf(fp,"\n  new AliPIPEv0(\"PIPE\",\"Beam Pipe\");\n");
-  if(fDetBG->GetButton(kSHILD)->GetState()) fprintf(fp,"\n  new AliSHILv2(\"SHIL\",\"Shielding Version 2\");\n");  
-  if(fDetBG->GetButton(kITS  )->GetState()){
-    fprintf(fp,"\n  AliITSvPPRasymmFMD *pIts =new AliITSvPPRasymmFMD(\"ITS\",\"ITS PPR detailed version\");\n");
-    fprintf(fp,"  pIts->SetMinorVersion(2); pIts->SetReadDet(kTRUE);\n");
-    fprintf(fp,"  pIts->SetThicknessDet1(200.); pIts->SetThicknessDet2(200.);\n");
-    fprintf(fp,"  pIts->SetThicknessChip1(200.); pIts->SetThicknessChip2(200.);\n");
-    fprintf(fp,"  pIts->SetRails(0); pIts->SetCoolingFluid(1);\n");
-    fprintf(fp,"  pIts->SetEUCLID(0);\n");
-  }  
-  if(fDetBG->GetButton(kTPC  )->GetState()) {fprintf(fp,"\n  AliTPC *pTpc=new AliTPCv2(\"TPC\",\"Default\"); pTpc->SetSecAU(-1);pTpc->SetSecAL(-1);\n");}  
-  if(fDetBG->GetButton(kFRAME)->GetState())  fprintf(fp,"\n  AliFRAMEv2 *pFrame=new AliFRAMEv2(\"FRAME\",\"Space Frame\"); pFrame->SetHoles(1);\n");
-  if(fDetBG->GetButton(kTRD  )->GetState()) {
-    fprintf(fp,"\n  AliTRD *pTrd=new AliTRDv1(\"TRD\",\"TRD slow simulator\");\n");
-    fprintf(fp,"  pTrd->SetGasMix(1); pTrd->SetPHOShole();pTrd->CreateTR();\n");
-  }  
-  if(fDetBG->GetButton(kTOF  )->GetState()) fprintf(fp,"\n  new AliTOFv4T0(\"TOF\", \"normal TOF\");\n");
-//central after RICH detectors  
-  if(fDetBG->GetButton(kMAG  )->GetState()) fprintf(fp,"\n  new AliMAG(\"MAG\",\"Magnet\");\n");  
-  if(fDetBG->GetButton(kHALL )->GetState()) fprintf(fp,"\n  new AliHALL(\"HALL\",\"Alice Hall\");\n");
-//forward detectors  
-  if(fDetBG->GetButton(kFMD  )->GetState()) fprintf(fp,"\n  new AliFMDv1(\"FMD\",\"normal FMD\");\n");
-  if(fDetBG->GetButton(kABSO )->GetState()) fprintf(fp,"\n  new AliABSOv0(\"ABSO\",\"Muon absorber\");\n");
-  if(fDetBG->GetButton(kDIPO )->GetState()) fprintf(fp,"\n  new AliDIPOv2(\"DIPO\",\"Dipole version 2\");\n");
-  if(fDetBG->GetButton(kMUON )->GetState()) fprintf(fp,"\n  new AliMUONv1(\"MUON\",\"default\");\n");
-  if(fDetBG->GetButton(kPMD  )->GetState()) fprintf(fp,"\n  new AliPMDv1(\"PMD\",\"normal PMD\");\n");
-  if(fDetBG->GetButton(kSTART)->GetState()) fprintf(fp,"\n  new AliSTARTv1(\"START\",\"START Detector\");\n");
-  if(fDetBG->GetButton(kVZERO)->GetState()) fprintf(fp,"\n  new AliVZEROv2(\"VZERO\",\"normal VZERO\");\n");
-  if(fDetBG->GetButton(kZDC  )->GetState()) fprintf(fp,"\n  new AliZDCv2(\"ZDC\",\"normal ZDC\");\n");
-//different phase space detectors  
-  if(fDetBG->GetButton(kPHOS )->GetState()) fprintf(fp,"\n  new AliPHOSv1(\"PHOS\",\"IHEP\");\n");
-  if(fDetBG->GetButton(kEMCAL)->GetState()) fprintf(fp,"\n  new AliEMCALv1(\"EMCAL\",\"G56_2_55_19_104_14\");\n");
-  if(fDetBG->GetButton(kCRT  )->GetState()) fprintf(fp,"\n  new AliCRTv0(\"CRT\",\"normal ACORDE\");\n");
+}//Generator()
 
-  fprintf(fp,"\n  ::Info(\"RICH private config\",\"Stop\");\n"); 
-  fprintf(fp,"}\n");
-out:  
-  fclose(fp);  
-//  CloseWindow();
-}//CreateConfig
+
 //__________________________________________________________________________________________________
 void RichConfig::CreateRichBatch()
 {//creates RichBatch.C file

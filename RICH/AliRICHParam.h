@@ -16,7 +16,6 @@
 #include <AliLog.h>
 #include <TClass.h>
 
-
 static const int kNchambers=7;     //number of RICH chambers 
 static const int kNpadsX = 160;    //number of pads along X in single chamber
 static const int kNpadsY = 144;    //number of pads along Y in single chamber
@@ -62,29 +61,55 @@ public:
   AliRICHChamber* C(Int_t i)                 {return (AliRICHChamber*)fpChambers->UncheckedAt(i-1);}      //returns pointer to chamber i
   Int_t           Nchambers()                {return fpChambers->GetEntriesFast();}      //returns number of chambers 
 //Geometrical properties  
-  static Int_t    NpadsX()                   {return kNpadsX;}                           //pads along X in chamber
-  static Int_t    NpadsY()                   {return kNpadsY;}                           //pads along Y in chamber
-  static Int_t    NpadsXsec()                {return NpadsX()/2;}                        //pads along X in sector
-  static Int_t    NpadsYsec()                {return NpadsY()/3;}                        //pads along Y in sector
-  static Double_t DeadZone()                 {return 2.6;}                               //dead zone size in cm  
-  static Double_t PadSizeX()                 {return 0.8;}                               //pad size x, cm 
-  static Double_t PadSizeY()                 {return 0.84;}                              //pad size y, cm   
-  
-  static Double_t SectorSizeX()              {return NpadsX()*PadSizeX()/2;}             //sector size x, cm
-  static Double_t SectorSizeY()              {return NpadsY()*PadSizeY()/3;}             //sector size y, cm 
-  static Double_t PcSizeX()                  {return NpadsX()*PadSizeX()+DeadZone();}    //PC size x, cm
-  static Double_t PcSizeY()                  {return NpadsY()*PadSizeY()+2*DeadZone();}  //PC size y, cm
-//   
-  static Double_t Zfreon()                   {return 1.5;}                               //freon thinkness, cm
-  static Double_t Zwin()                     {return 0.5;}                               //radiator quartz window, cm   
-  static Double_t Pc2Win()                   {return 8.0;}                               //cm between CsI PC and radiator quartz window
-  static Double_t Pc2Coll()                  {return 7.0;}                               //cm between CsI PC and third wire grid (collection wires)     
-  static Double_t Pc2Anod()                  {return 0.204;}                             //cm between CsI PC and first wire grid (anod wires)     
-  static Double_t Pc2Cath()                  {return 0.445;}                             //cm between CsI PC and second wire grid (cathode wires)
-  static Double_t Freon2Pc()                 {return Zfreon()+Zwin()+Pc2Win();}          //cm between CsI PC and entrance to freon
-  static Double_t PitchAnod()                {return PadSizeY()/2;}                      //cm between anode wires
-  static Double_t PitchCath()                {return PadSizeY()/4;}                      //cm between cathode wires
-  static Double_t PitchColl()                {return 0.5;}                               //cm between collection wires
+  static        Int_t      NpadsX()                   {return kNpadsX;}                           //pads along X in chamber
+  static        Int_t      NpadsY()                   {return kNpadsY;}                           //pads along Y in chamber
+  static        Int_t      NpadsXsec()                {return NpadsX()/2;}                        //pads along X in sector
+  static        Int_t      NpadsYsec()                {return NpadsY()/3;}                        //pads along Y in sector
+  static        Double_t   DeadZone()                 {return 2.6;}                               //dead zone size in cm  
+  static        Double_t   SectorSizeX()              {return NpadsX()*PadSizeX()/2;}             //sector size x, cm
+  static        Double_t   SectorSizeY()              {return NpadsY()*PadSizeY()/3;}             //sector size y, cm 
+  static        Double_t   PcSizeX()                  {return NpadsX()*PadSizeX()+DeadZone();}    //PC size x, cm
+  static        Double_t   PcSizeY()                  {return NpadsY()*PadSizeY()+2*DeadZone();}  //PC size y, cm
+  static        Double_t   Zfreon()                   {return 1.5;}                               //freon thinkness, cm
+  static        Double_t   Zwin()                     {return 0.5;}                               //radiator quartz window, cm   
+  static        Double_t   Pc2Win()                   {return 8.0;}                               //cm between CsI PC and radiator quartz window
+  static        Double_t   Pc2Coll()                  {return 7.0;}                               //cm between CsI PC and third wire grid (collection wires)     
+  static        Double_t   Pc2Anod()                  {return 0.204;}                             //cm between CsI PC and first wire grid (anod wires)     
+  static        Double_t   Pc2Cath()                  {return 0.445;}                             //cm between CsI PC and second wire grid (cathode wires)
+  static        Double_t   Freon2Pc()                 {return Zfreon()+Zwin()+Pc2Win();}          //cm between CsI PC and entrance to freon
+  static        Double_t   PitchAnod()                {return PadSizeY()/2;}                      //cm between anode wires
+  static        Double_t   PitchCath()                {return PadSizeY()/4;}                      //cm between cathode wires
+  static        Double_t   PitchColl()                {return 0.5;}                               //cm between collection wires
+  static        Double_t   PadSizeX()                 {return 0.8;}                               //pad size x, cm 
+  static        Double_t   PadSizeY      (                               ){return 0.84;}                              //pad size y, cm   
+//trasformation methodes
+  static        Int_t      Pad2Cha       (Int_t pad                      ){return pad/100000000;                     }//abs pad -> chamber
+  static        Int_t      Pad2Sec       (Int_t pad                      ){return pad%100000000/1000000;             }//abs pad -> sector
+  static        Int_t      Pad2PadX      (Int_t pad                      ){return pad%1000000/1000;                  }//abs pad -> pad x 
+  static        Int_t      Pad2PadY      (Int_t pad                      ){return pad%1000000%100;                   }//abs pad -> pad y
+  static        Int_t      PadAbs        (Int_t c,Int_t s,Int_t x,Int_t y){return 100000000*c+1000000*s+1000*x+y;    }//(c,s,x,y) -> abs pad
+  static inline TVector2   Pad2Loc       (Int_t pad                      );                                           //abs pad ->LORS
+  static inline TVector2   Pad2Loc       (TVector pad                    );                                           //pad  -> LORS returns center of the pad
+  static        TVector2   Pad2Loc       (Int_t x,Int_t y                ){TVector pad(2);pad[0]=x;pad[1]=y;return Pad2Loc(pad);}//return center of the pad (x,y)
+  static inline TVector    Loc2Area      (const TVector2 &x2             );                                           //pads area affected by hit x2. area is LeftDown-RightUp pad numbers
+  static inline Int_t      Loc2Sec       (const TVector2 &x2             );                                           //LORS -> sector
+  static        Int_t      Loc2Sec       (Double_t x,Double_t y          ){return Loc2Sec(TVector2(x,y));}            //LORS -> sector
+  static inline TVector    Loc2Pad       (const TVector2 &x2             );                                           //LORS -> pad
+  static        TVector    Loc2Pad       (Double_t x,Double_t y          ){return Loc2Pad(TVector2(x,y));}            //LORS -> pad
+  static inline Int_t      Pad2Sec       (const TVector &pad             );                                           //pad  -> sector
+  static inline Int_t      PadNeighbours (Int_t iPadX,Int_t iPadY,Int_t aListX[4],Int_t aListY[4]);                   //pad -> list of it neighbours
+  static        Bool_t     IsAccepted    (const TVector2 &x2             ){return ( x2.X()>=0 && x2.X()<=PcSizeX() && x2.Y()>=0 && x2.Y()<=PcSizeY() ) ? kTRUE:kFALSE;}
+//optical properties methodes  
+  static        Double_t   MeanCkovEnergy(                               ){return 6.766;}                 //mean Ckov energy according to the total trasmission curve
+  static        Float_t    PhotonEnergy  (Int_t i                        ){return 0.1*i+5.5;}                         //photon energy (eV) for i-th point
+  static        Float_t    AbsCH4        (Float_t ev                     );                                           //CH4 abs len (cm) 
+  static        Float_t    AbsGel        (Float_t                        ){return 500;}                               //Aerogel abs len (cm)
+  static        Float_t    RefIdxC6F14   (Float_t eV                     ){return eV*0.0172+1.177;}                   //Freon ref idx
+  static        Float_t    RefIdxCH4     (Float_t                        ){return 1.000444;}                          //Methane ref idx 
+  static        Float_t    RefIdxSiO2    (Float_t eV                     ){Float_t e1=10.666,e2=18.125,f1=46.411,f2= 228.71; return TMath::Sqrt(1.+f1/(e1*e1-eV*eV)+f2/(e2*e2-eV*eV));}//Quartz window ref index from TDR p.35
+  static        Float_t    RefIdxGel     (Float_t                        ){return 1.05;}                              //aerogel ref index 
+  static        Float_t    DenGel        (                               ){return (RefIdxGel(0)-1)/0.21;}             //aerogel density gr/cm^3 parametrization by E.Nappi
+
   
   static Double_t IonisationPotential()      {return 26.0e-9;}                            //for CH4 in GeV taken from ????
   static TVector2 MathiesonDelta()           {return TVector2(5*0.18,5*0.18);}            //area of 5 sigmas of Mathieson distribution (cm)
@@ -92,28 +117,6 @@ public:
   
   static Int_t    HV(Int_t sector)           {if (sector>=1 && sector <=6) return fgHV[sector-1];  else return -1;} //high voltage for this sector
   static void     SetHV(Int_t sector,Int_t hv){fgHV[sector-1]=hv;}  
-//optical properties methodes  
-  static Double_t MeanCkovEnergy()         {return 6.766;}                 //mean Ckov energy according to the total trasmission curve
-  static Float_t  PhotonEnergy(Int_t i)    {return 0.1*i+5.5;}             //photon energy (eV) for i-th point
-  static Float_t  AbsCH4(Float_t ev);                                      //CH4 absorption length (cm) for photon with given energy (eV)
-  static Float_t  AbsGel(Float_t)          {return 500;}                   //Aerogel absorption length (cm) for photon with given energy (eV)
-  static Float_t  RefIdxC6F14(Float_t eV)  {return eV*0.0172+1.177;}       //Freon ref index for photon with given energy (eV)
-  static Float_t  RefIdxCH4(Float_t)       {return 1.000444;}              //Methane ref index for photon with given energy (eV)
-  static Float_t  RefIdxSiO2(Float_t eV)   {Float_t e1=10.666,e2=18.125,f1=46.411,f2= 228.71;
-                                     return TMath::Sqrt(1.+f1/(e1*e1-eV*eV)+f2/(e2*e2-eV*eV));}//Quartz window ref index from TDR p.35
-  static Float_t  RefIdxGel(Float_t)       {return 1.05;}                  //aerogel ref index 
-  static Float_t  DenGel()                 {return (RefIdxGel(0)-1)/0.21;} //aerogel density gr/cm^3 parametrization by E.Nappi
-//trasformation methodes
-  inline static TVector  Loc2Area(const TVector2 &x2);                                             //return area affected by hit x2
-  inline static Int_t    Loc2Sec(const TVector2 &x2);                                              //return sector containing given position
-         static Int_t    Loc2Sec(Double_t x,Double_t y) {return Loc2Sec(TVector2(x,y));}           //return sector containing given position
-  inline static TVector  Loc2Pad(const TVector2 &x2);                                              //return pad containing given position
-         static TVector  Loc2Pad(Double_t x,Double_t y) {return Loc2Pad(TVector2(x,y));}           //return pad containing given position
-  inline static TVector2 Pad2Loc(TVector pad);                                                     //return center of the pad
-         static TVector2 Pad2Loc(Int_t x,Int_t y) {TVector pad(2);pad[0]=x;pad[1]=y;return Pad2Loc(pad);}//return center of the pad (x,y)
-  inline static Int_t    Pad2Sec(const TVector &pad);                                              //return sector of given pad
-  inline static Int_t    PadNeighbours(Int_t iPadX,Int_t iPadY,Int_t aListX[4],Int_t aListY[4]);   //number of neighbours for this pad
-         static Bool_t   IsAccepted(const TVector2 &x2) {return ( x2.X()>=0 && x2.X()<=PcSizeX() && x2.Y()>=0 && x2.Y()<=PcSizeY() ) ? kTRUE:kFALSE;}
 //charge response methodes  
   inline static Double_t Mathieson(Double_t x1,Double_t x2,Double_t y1,Double_t y2);               //Mathienson integral over given limits
   inline static Double_t GainSag(Double_t x,Int_t sector);                                         //gain variations in %
@@ -122,7 +125,7 @@ public:
                           if(fgIsWireSag) return QdcSlope(Loc2Sec(x2))*(1+GainSag(x2.X(),Loc2Sec(x2))/100);
                           else            return QdcSlope(Loc2Sec(x2));}
   inline static Double_t FracQdc(const TVector2 &x2,const TVector &pad);                           //charge fraction to pad from hit
-  inline static Int_t    TotQdc(TVector2 x2,Double_t eloss);                                       //total charge for hit eloss=0 for photons
+  inline static Int_t    TotQdc(TVector2 x2,Double_t eloss);                                       //total charge for Eloss (GeV) 0 for photons
   inline static Bool_t   IsOverTh(Int_t c,TVector pad,Double_t q);                                 //is QDC of the pad registered by FEE  
          static Int_t    NsigmaTh()                    {return fgNsigmaTh;}                        //
          static Float_t  SigmaThMean()                 {return fgSigmaThMean;}                     //QDC electronic noise mean
@@ -140,7 +143,7 @@ public:
          static Double_t SnellAngle(Float_t n1, Float_t n2, Float_t theta1);                              // Snell law
          static void     AnglesInDRS(Double_t trackTheta,Double_t trackPhi,Double_t thetaCerenkov,Double_t phiCerenkov,Double_t &tout,Double_t &pout);//It finds photon angles in 
                                                                                                                                                       //Detector Reference System
-  
+
   static Bool_t     fgIsAerogel;                            //aerogel geometry instead of normal RICH flag
 protected:
   static Bool_t     fgIsRadioSrc;                           //radioactive source instead of radiators flag
@@ -266,6 +269,17 @@ TVector2 AliRICHParam::Pad2Loc(TVector pad)
   return TVector2(x,y);
 }
 //__________________________________________________________________________________________________
+TVector2 AliRICHParam::Pad2Loc(Int_t pad)
+{
+//Converts absolute pad number to local position in LORS
+//LORS is a chamber  reference system with origin in left-down coner looking from IP
+//Arguments: pad- absolute pad number
+//  Returns: pad center position as TVector2 in PCRS  
+  TVector2 pos;
+  pos.Set((Pad2PadX(pad)-0.5)*PadSizeX() , (Pad2PadY(pad)-0.5)*PadSizeY());//set to sector LORS
+  return pos;
+}
+//__________________________________________________________________________________________________
 Double_t AliRICHParam::GainSag(Double_t x,Int_t sector)
 {
 //Returns % of gain variation due to wire sagita.
@@ -308,19 +322,21 @@ Double_t AliRICHParam::FracQdc(const TVector2 &x2,const TVector &pad)
   return (Loc2Sec(x2)!=Pad2Sec(pad)) ? 0:Mathieson(normXmin, normYmin, normXmax, normYmax);
 }
 //__________________________________________________________________________________________________
-Double_t AliRICHParam::Mathieson(Double_t xMin,Double_t yMin,Double_t xMax,Double_t yMax)
+Double_t AliRICHParam::Mathieson(Double_t x1,Double_t y1,Double_t x2,Double_t y2)
 {
-//All arguments are parametrised according to NIM A370(1988)602-603
-//Returns a charge fraction.   
+//This is the answer to electrostatic problem of charge distrubution in MWPC described elsewhere. (NIM A370(1988)602-603)
+//Arguments: x1- diff between center of distribution and left margin of interested pad divided by anod-cathode distance
+//           x2,y1,y2- analogically  
+//  Returns: a charge fraction [0-1].
   const Double_t kSqrtKx3=0.77459667;const Double_t kX2=0.962;const Double_t kX4=0.379;
   const Double_t kSqrtKy3=0.77459667;const Double_t kY2=0.962;const Double_t kY4=0.379;
 
-  Double_t ux1=kSqrtKx3*TMath::TanH(kX2*xMin);
-  Double_t ux2=kSqrtKx3*TMath::TanH(kX2*xMax);    
-  Double_t uy1=kSqrtKy3*TMath::TanH(kY2*yMin);
-  Double_t uy2=kSqrtKy3*TMath::TanH(kY2*yMax);
+  Double_t ux1=kSqrtKx3*TMath::TanH(kX2*x1);
+  Double_t ux2=kSqrtKx3*TMath::TanH(kX2*x2);
+  Double_t uy1=kSqrtKy3*TMath::TanH(kY2*y1);
+  Double_t uy2=kSqrtKy3*TMath::TanH(kY2*y2);
   return 4*kX4*(TMath::ATan(ux2)-TMath::ATan(ux1))*kY4*(TMath::ATan(uy2)-TMath::ATan(uy1));
-}  
+}
 //__________________________________________________________________________________________________
 TVector AliRICHParam::Loc2Area(const TVector2 &x2)
 {
@@ -341,6 +357,5 @@ Bool_t AliRICHParam::IsOverTh(Int_t ,TVector ,Double_t q)
 //Checks if the current q is over threshold and FEE will save this value to data concentrator.
   return (q>NsigmaTh()*(SigmaThMean()+(1.-2*gRandom->Rndm())*SigmaThSpread()));
 }
+//__________________________________________________________________________________________________
 #endif //AliRICHParam_h
-
-

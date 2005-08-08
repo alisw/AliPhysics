@@ -13,8 +13,7 @@
 //  * provided "as is" without express or implied warranty.                  *
 //  **************************************************************************
 
-#include "AliRICHDigit.h"
-#include <AliLog.h>
+#include "AliRICHDigit.h"//class header
 
 ClassImp(AliRICHDigit)
 
@@ -22,7 +21,12 @@ ClassImp(AliRICHDigit)
 void AliRICHDigit::Print(Option_t*)const
 {
 //Print current digit  
-  AliInfo(Form("cfm=%9i, cs=%2i, x=%3i, y=%3i, q=%8.3f, TID1=%5i, TID2=%5i, TID3=%5i",
-                  fCFM,fChamber,fPadX,fPadY,fQdc,fTracks[0],fTracks[1],fTracks[2]));
+//Arguments: option string not used
+//  Returns: none    
+  Printf("pad=(%2i,%2i,%3i,%3i), q=%8.3f, cfm=%9i, TID=(%5i,%5i,%5i)",
+               Chamber(),Sector(),PadX(),PadY() ,  Qdc(),    Cfm()  , fTracks[0],fTracks[1],fTracks[2]);
 }
 //__________________________________________________________________________________________________
+void AliRICHDigit::Test()
+{
+}

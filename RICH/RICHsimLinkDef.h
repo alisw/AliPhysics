@@ -4,6 +4,5 @@
 #pragma link off all functions;
 #pragma link C++ class  AliRICHv0+;
 #pragma link C++ class  AliRICHv1+;
-#pragma link C++ class  AliGenRadioactive+;
-#pragma link C++ enum   RadioNuclei_t;
+#pragma link C++ class  AliRICHDigitizer+;
 #endif

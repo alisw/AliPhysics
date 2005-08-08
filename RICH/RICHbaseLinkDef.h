@@ -8,7 +8,6 @@
 #pragma link C++ class  AliRICHHit+;
 #pragma link C++ class  AliRICHDigit+;
 #pragma link C++ class  AliRICHCluster+;
-#pragma link C++ class  AliRICHDigitizer+;
 #pragma link C++ class  AliRICHTracker+;
 #pragma link C++ class  AliRICHRecon+;
 #pragma link C++ class  AliRICHHelix+;
