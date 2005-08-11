@@ -14,5 +14,6 @@
  #pragma link off all functions;
  
  #pragma link C++ class IceF2k+;
+ #pragma link C++ class IceCal2Root;
 #endif
  

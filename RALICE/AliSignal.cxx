@@ -439,8 +439,8 @@ Float_t AliSignal::GetSignal(Int_t j,Int_t mode) const
 //            In case the j-th slot was marked dead, 0 is returned.
 //            In case no calibration function is present, just the j-th signal
 //            is returned (like with mode=0).
-//        4 : Same as mode=3 but the calibration function is taken from
-//            the AliDevice which owns this AliSignal object.
+//        4 : Same as mode=3 but the calibration function and dead flag are
+//            taken from the AliDevice which owns this AliSignal object.
 //            The corresponding AliDevice slot is obtained via matching of
 //            the slotnames. In case this fails, the slotindex "j" of the
 //            input argument will be used. 
@@ -450,6 +450,11 @@ Float_t AliSignal::GetSignal(Int_t j,Int_t mode) const
 //            an automatic switch to mode=3 will be made.
 //        7 : Same as mode=3 but in case no calibration function is present
 //            an automatic switch to mode=4 will be made.
+//        8 : Same as mode=7 but also the corresponding dead flag of the
+//            parent device (if any) will be checked.
+//            If either the dead flag of the requested signal slot of this
+//            AliSignal object or the corresponding parent device slot is
+//            set, 0 is returned.
 //
 //       <0 : The corresponding de-correction or de-calibration is performed
 //
@@ -463,12 +468,25 @@ Float_t AliSignal::GetSignal(Int_t j,Int_t mode) const
 //
 // The default is mode=0.
 
- if (abs(mode)>7) return 0;
+ if (abs(mode)>8) return 0;
 
  Int_t jcal=j;
  Float_t sig=0;
  Float_t gain=1;
  Float_t offset=0;
+
+ // Get the corresponding slot index (and dead flag) of the parent device
+ Int_t pj=0;
+ Int_t pdead=0;
+ AliSignal* parent=(AliSignal*)GetDevice();
+ if ((abs(mode)==2 || abs(mode)>=4) && parent)
+ {
+   TString name=GetSlotName(j);
+   if (strlen(name.Data())) pj=parent->GetSlotIndex(name);
+   if (abs(mode)==8 && pj) pdead=parent->GetDeadValue(pj);
+ }
+ if (mode==8) mode=7;
+ if (mode==-8) mode=-7;
 
  AliSignal* sx=(AliSignal*)this;
 
@@ -501,12 +519,7 @@ Float_t AliSignal::GetSignal(Int_t j,Int_t mode) const
  if (abs(mode)==2 || abs(mode)>=4)
  {
   sx=(AliSignal*)GetDevice();
-  if (sx)
-  {
-   TString name=GetSlotName(j);
-   if (strlen(name.Data())) jcal=sx->GetSlotIndex(name);
-   if (!jcal) jcal=j;
-  }
+  if (pj) jcal=pj;
  }
  if (!sx && abs(mode)>=5) sx=(AliSignal*)this;
  if (mode==5) mode=2;
@@ -523,7 +536,7 @@ Float_t AliSignal::GetSignal(Int_t j,Int_t mode) const
    if (mode==0 || !sx) return sig;
 
    // Check for the dead flag setting
-   if (sx->GetDeadValue(jcal)) return 0;
+   if (sx->GetDeadValue(jcal) || pdead) return 0;
 
    // (De)correct the signal for the gain and offset
    if (abs(mode)==1 || abs(mode)==2)

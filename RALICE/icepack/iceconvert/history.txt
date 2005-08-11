@@ -25,4 +25,6 @@
                 the event summary printout.
 08-aug-2005 NvE (De)calibration functions introduced in IceF2k::FillOMdbase and IceF2k::PutHits
                 to enable access to either automatically calibrated or de-calibrated data.
+11-aug-2005 NvE New class IceCal2Root introduced to convert Amacalib ascii data into
+                Ralice/IcePack structures.
  

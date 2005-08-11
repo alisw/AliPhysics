@@ -358,10 +358,26 @@ void IceF2k::FillOMdbase()
 
  TF1 fadccal("fadccal","(x-[1])*[0]");
  TF1 fadcdecal("fadcdecal","(x/[0])+[1]");
+ fadccal.SetParName(0,"BETA-ADC");
+ fadccal.SetParName(1,"PED-ADC");
+ fadcdecal.SetParName(0,"BETA-ADC");
+ fadcdecal.SetParName(1,"PED-ADC");
+
  TF1 ftdccal("ftdccal","(x*[0])-[1]-([0]-1.)*32767.-[2]/sqrt([3])");
  TF1 ftdcdecal("ftdcdecal","(x+([0]-1.)*32767.+[1]+[2]/sqrt([3]))/[0]");
+ ftdccal.SetParName(0,"BETA-TDC");
+ ftdccal.SetParName(1,"T0");
+ ftdccal.SetParName(2,"ALPHA-TDC");
+ ftdccal.SetParName(3,"ADC-SLEW");
+ ftdcdecal.SetParName(0,"BETA-TDC");
+ ftdcdecal.SetParName(1,"T0");
+ ftdcdecal.SetParName(2,"ALPHA-TDC");
+ ftdcdecal.SetParName(3,"ADC-SLEW");
+
  TF1 ftotcal("ftotcal","x*[0]");
  TF1 ftotdecal("ftotdecal","x/[0]");
+ ftotcal.SetParName(0,"BETA-TOT");
+ ftotdecal.SetParName(0,"BETA-TOT");
 
  if (fOmdb)
  {

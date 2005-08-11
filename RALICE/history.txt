@@ -634,6 +634,8 @@
                 for AliDevice (or derived) objects.
 05-aug-2005 NvE Typos fixed in AliAttrib::GetCalFunction and AliAttrib::GetDecalFunction which
                 erroneously always returned a null pointer.
+10-aug-2005 NvE AliSignal::GetSignal extended with mode=8 to support dead flag of parent device
+                in conjunction with the dead flag of the signal itself.
                
                 
  
