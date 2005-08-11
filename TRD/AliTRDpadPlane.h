@@ -55,8 +55,8 @@ class AliTRDpadPlane : public TObject {
   Double_t GetRow0() const                   { return fPadRow[0];    };
   Double_t GetCol0() const                   { return fPadCol[0];    };
 
-  Double_t GetRowEnd() const                 { return fPadRow[fNrows-1]  - fLengthOPad; };
-  Double_t GetColEnd() const                 { return fPadCol[fNcols-11] - fWidthOPad;  };
+  Double_t GetRowEnd() const                 { return fPadRow[fNrows-1] - fLengthOPad; };
+  Double_t GetColEnd() const                 { return fPadCol[fNcols-1] - fWidthOPad;  };
 
   Double_t GetRowPos(Int_t row) const  { return fPadRow[row];  };
   Double_t GetColPos(Int_t col) const  { return fPadCol[col];  };
