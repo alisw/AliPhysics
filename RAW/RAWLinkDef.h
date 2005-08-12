@@ -16,6 +16,7 @@
 #pragma link C++ class AliRawReaderRoot+;
 #pragma link C++ class AliRawReaderDate+;
 #pragma link C++ class AliRawReaderDateV3+;
+#pragma link C++ class AliRawReaderMemory+;
 #pragma link C++ class AliBitPacking+;
 #pragma link C++ class AliAltroBuffer+;
 #pragma link C++ class AliTPCCompression+;
