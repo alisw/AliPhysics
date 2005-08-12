@@ -18,11 +18,11 @@ class AliHLTProcessor : public AliHLTComponent {
 
   int Init( AliHLTComponentEnvironment* environ, void* environ_param, int argc, const char** argv );
   int Deinit();
-  int ProcessEvent( AliHLTComponent_EventData evtData, AliHLTComponent_BlockData* blocks, 
-		    AliHLTComponent_TriggerData trigData, AliHLTUInt8_t* outputPtr, 
-		    AliHLTUInt32_t* size, AliHLTUInt32_t* outputBlockCnt, 
-		    AliHLTComponent_BlockData** outputBlocks,
-		    AliHLTComponent_EventDoneData** edd );
+  int ProcessEvent( const AliHLTComponent_EventData& evtData, const AliHLTComponent_BlockData* blocks, 
+		    AliHLTComponent_TriggerData& trigData, AliHLTUInt8_t* outputPtr, 
+		    AliHLTUInt32_t& size, AliHLTUInt32_t& outputBlockCnt, 
+		    AliHLTComponent_BlockData*& outputBlocks,
+		    AliHLTComponent_EventDoneData*& edd );
 
   // Information member functions for registration.
   TComponentType GetComponentType() { return AliHLTComponent::kProcessor;}
@@ -35,9 +35,9 @@ class AliHLTProcessor : public AliHLTComponent {
   virtual int DoDeinit(){
     return 0;
   }
-  virtual int DoEvent( AliHLTComponent_EventData evtData, AliHLTComponent_BlockData* blocks, 
-		       AliHLTComponent_TriggerData trigData, AliHLTUInt8_t* outputPtr, 
-		       AliHLTUInt32_t* size, vector<AliHLTComponent_BlockData>& outputBlocks ) = 0;
+  virtual int DoEvent( const AliHLTComponent_EventData& evtData, const AliHLTComponent_BlockData* blocks, 
+		       AliHLTComponent_TriggerData& trigData, AliHLTUInt8_t* outputPtr, 
+		       AliHLTUInt32_t& size, vector<AliHLTComponent_BlockData>& outputBlocks ) = 0;
 
 
   ClassDef(AliHLTProcessor, 0)

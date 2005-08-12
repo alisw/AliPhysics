@@ -8,6 +8,7 @@
 
 #pragma link C++ class AliHLTSampleComponent1;
 #pragma link C++ class AliHLTSampleComponent2;
+#pragma link C++ class AliHLTDummyComponent;
 
 #endif
 

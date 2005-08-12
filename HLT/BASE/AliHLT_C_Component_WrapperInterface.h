@@ -12,7 +12,9 @@
 
 #include <AliHLTDataTypes.h>
 
+#ifdef __cplusplus
 extern "C" {
+#endif
 typedef void* AliHLTComponentHandle;
 
   const AliHLTComponentHandle kEmptyHLTComponentHandle = 0;
@@ -23,12 +25,16 @@ int AliHLT_C_Component_LoadLibrary( const char* libraryPath );
 int AliHLT_C_Component_UnloadLibrary( const char* libraryPath );
 int AliHLT_C_CreateComponent( const char* componentType, void* environ_param, int argc, const char** argv, AliHLTComponentHandle* handle );
 void AliHLT_C_DestroyComponent( AliHLTComponentHandle );
-int AliHLT_C_ProcessEvent( AliHLTComponentHandle, AliHLTComponent_EventData evtData, AliHLTComponent_BlockData* blocks, 
-                           AliHLTComponent_TriggerData trigData, AliHLTUInt8_t* outputPtr,
+int AliHLT_C_ProcessEvent( AliHLTComponentHandle, const AliHLTComponent_EventData* evtData, const AliHLTComponent_BlockData* blocks, 
+                           AliHLTComponent_TriggerData* trigData, AliHLTUInt8_t* outputPtr,
                            AliHLTUInt32_t* size, AliHLTUInt32_t* outputBlockCnt, 
                            AliHLTComponent_BlockData** outputBlocks,
                            AliHLTComponent_EventDoneData** edd );
+int AliHLT_C_GetOutputDataType( AliHLTComponentHandle, AliHLTComponent_DataType* dataType );
+int AliHLT_C_GetOutputSize( AliHLTComponentHandle, unsigned long* constBase, double* inputMultiplier );
 
+#ifdef __cplusplus
 }
+#endif
 
 #endif //ALIHLT_C_COMPONENT_WARAPPERINTERFACE_H 

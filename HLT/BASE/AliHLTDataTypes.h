@@ -12,6 +12,8 @@ extern "C" {
 
   typedef unsigned char AliHLTUInt8_t;
 
+  typedef unsigned short AliHLTUInt16_t;
+
   typedef unsigned int AliHLTUInt32_t;
 
   typedef unsigned long long AliHLTUInt64_t;
@@ -35,7 +37,9 @@ extern "C" {
     AliHLTUInt32_t fShmType;
     AliHLTUInt64_t fShmID;
   };
-  
+    const AliHLTUInt32_t gkAliHLTComponent_InvalidShmType = 0;
+    const AliHLTUInt64_t gkAliHLTComponent_InvalidShmID = ~(AliHLTUInt64_t)0;
+
   struct AliHLTComponent_DataType
   {
     AliHLTUInt32_t fStructSize;
@@ -81,5 +85,27 @@ extern "C" {
     int (*fLoggingFunc)( void* param, AliHLTComponent_LogSeverity severity, const char* origin, const char* keyword, const char* message );
   };
 }
+
+inline bool operator==( const AliHLTComponent_DataType& dt1, const AliHLTComponent_DataType& dt2 )
+    {
+    for ( unsigned i = 0; i < 8; i++ )
+	if ( dt1.fID[i] != dt2.fID[i] )
+	    return false;
+    for ( unsigned i = 0; i < 4; i++ )
+	if ( dt1.fOrigin[i] != dt2.fOrigin[i] )
+	    return false;
+    return true;
+    }
+
+inline bool operator!=( const AliHLTComponent_DataType& dt1, const AliHLTComponent_DataType& dt2 )
+    {
+    for ( unsigned i = 0; i < 8; i++ )
+	if ( dt1.fID[i] != dt2.fID[i] )
+	    return true;
+    for ( unsigned i = 0; i < 4; i++ )
+	if ( dt1.fOrigin[i] != dt2.fOrigin[i] )
+	    return true;
+    return false;
+    }
 
 #endif 

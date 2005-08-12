@@ -89,8 +89,8 @@ void AliHLT_C_DestroyComponent( AliHLTComponentHandle handle )
   delete reinterpret_cast<AliHLTComponent*>( handle );
 }
 
-int AliHLT_C_ProcessEvent( AliHLTComponentHandle handle, AliHLTComponent_EventData evtData, AliHLTComponent_BlockData* blocks, 
-                           AliHLTComponent_TriggerData trigData, AliHLTUInt8_t* outputPtr,
+int AliHLT_C_ProcessEvent( AliHLTComponentHandle handle, const AliHLTComponent_EventData* evtData, const AliHLTComponent_BlockData* blocks, 
+                           AliHLTComponent_TriggerData* trigData, AliHLTUInt8_t* outputPtr,
                            AliHLTUInt32_t* size, AliHLTUInt32_t* outputBlockCnt, 
                            AliHLTComponent_BlockData** outputBlocks,
                            AliHLTComponent_EventDoneData** edd )
@@ -98,5 +98,23 @@ int AliHLT_C_ProcessEvent( AliHLTComponentHandle handle, AliHLTComponent_EventDa
   if ( !handle )
     return ENXIO;
   AliHLTComponent* comp = reinterpret_cast<AliHLTComponent*>( handle );
-  return comp->ProcessEvent( evtData, blocks, trigData, outputPtr, size, outputBlockCnt, outputBlocks, edd );
+  return comp->ProcessEvent( *evtData, blocks, *trigData, outputPtr, *size, *outputBlockCnt, *outputBlocks, *edd );
+}
+
+int AliHLT_C_GetOutputDataType( AliHLTComponentHandle handle, AliHLTComponent_DataType* dataType )
+{
+  if ( !handle )
+    return ENXIO;
+  AliHLTComponent* comp = reinterpret_cast<AliHLTComponent*>( handle );
+  *dataType = comp->GetOutputDataType();
+  return 0;
+}
+
+int AliHLT_C_GetOutputSize( AliHLTComponentHandle handle, unsigned long* constBase, double* inputMultiplier )
+{
+  if ( !handle )
+    return ENXIO;
+  AliHLTComponent* comp = reinterpret_cast<AliHLTComponent*>( handle );
+  comp->GetOutputDataSize( *constBase, *inputMultiplier );
+  return 0;
 }

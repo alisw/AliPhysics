@@ -5,7 +5,6 @@
  *                                                                        *
  * Authors: Matthias Richter <Matthias.Richter@ift.uib.no>                *
  *          Timm Steinbeck <timm@kip.uni-heidelberg.de>                   *
- *          Artur Szostak <artursz@iafrica.com>                           *
  *          for The ALICE Off-line Project.                               *
  *                                                                        *
  * Permission to use, copy, modify and distribute this software and its   *
@@ -19,54 +18,20 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
-// base class for HLT analysis components                                             //
+// Definitions for the HLT TPC components                                    //
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
-#if __GNUC__== 3
-using namespace std;
-#endif
+#include "AliHLTTPCDefinitions.h"
 
-#include "AliHLTProcessor.h"
-#include <string.h>
 
-ClassImp(AliHLTProcessor)
+ClassImp(AliHLTTPCDefinitions)
 
-AliHLTProcessor::AliHLTProcessor()
-{ 
-}
+const AliHLTComponent_DataType AliHLTTPCDefinitions::gkDDLPackedRawDataType = { sizeof(AliHLTComponent_DataType), {'D','D','L','_','R','W','P','K'},{'T','P','C',' '}};;
+const AliHLTComponent_DataType AliHLTTPCDefinitions::gkPackedRawDataType = { sizeof(AliHLTComponent_DataType), {'R','A','W','P','A','K','E','D'},{'T','P','C',' '}};;
+const AliHLTComponent_DataType AliHLTTPCDefinitions::gkUnpackedRawDataType = { sizeof(AliHLTComponent_DataType), {'R','A','W','U','N','P','A','K'},{'T','P','C',' '}};;
+const AliHLTComponent_DataType AliHLTTPCDefinitions::gkClustersDataType = { sizeof(AliHLTComponent_DataType), {'C','L','U','S','T','E','R','S'},{'T','P','C',' '}};;
+const AliHLTComponent_DataType AliHLTTPCDefinitions::gkVertexDataType = { sizeof(AliHLTComponent_DataType), {'V','E','R','T','E','X',' ',' '},{'T','P','C',' '}};;
+const AliHLTComponent_DataType AliHLTTPCDefinitions::gkTrackSegmentsDataType = { sizeof(AliHLTComponent_DataType), {'T','R','A','K','S','E','G','S'},{'T','P','C',' '}};;
 
-AliHLTProcessor::~AliHLTProcessor()
-{ 
-}
-
-int AliHLTProcessor::Init( AliHLTComponentEnvironment* environ, void* environ_param, int argc, const char** argv )
-{
-  int iResult=0;
-  iResult=AliHLTComponent::Init(environ, environ_param, argc, argv);
-  return iResult;
-}
-
-int AliHLTProcessor::Deinit()
-{
-  int iResult=0;
-  iResult=AliHLTComponent::Deinit();
-  return iResult;
-}
-
-int AliHLTProcessor::ProcessEvent( const AliHLTComponent_EventData& evtData, const AliHLTComponent_BlockData* blocks, 
-			    AliHLTComponent_TriggerData& trigData, AliHLTUInt8_t* outputPtr, 
-			    AliHLTUInt32_t& size, AliHLTUInt32_t& outputBlockCnt, 
-			    AliHLTComponent_BlockData*& outputBlocks,
-			    AliHLTComponent_EventDoneData*& edd )
-{
-  int iResult=0;
-  vector<AliHLTComponent_BlockData> blockData;
-  iResult=DoEvent(evtData, blocks, trigData, outputPtr, size, blockData);
-  if (iResult>=0) {
-    iResult=MakeOutputDataBlockList(blockData, &outputBlockCnt, &outputBlocks);
-  }
-  edd = NULL;
-  return iResult;
-}
-
+    

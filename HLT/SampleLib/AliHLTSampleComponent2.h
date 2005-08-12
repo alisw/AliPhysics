@@ -24,6 +24,7 @@ public:
     }
   }
   AliHLTComponent_DataType GetOutputDataType() {return outputDataType;}
+  virtual void GetOutputDataSize( unsigned long& constBase, double& inputMultiplier ) {constBase = 0;inputMultiplier = 0;};
 
   // Spawn function, return new class instance
   AliHLTComponent* Spawn() {return new AliHLTSampleComponent2;};
@@ -32,9 +33,9 @@ public:
   
   int DoInit( int argc, const char** argv );
   int DoDeinit();
-  int DoEvent( AliHLTComponent_EventData evtData, AliHLTComponent_BlockData* blocks, 
-		       AliHLTComponent_TriggerData trigData, AliHLTUInt8_t* outputPtr, 
-		       AliHLTUInt32_t* size, vector<AliHLTComponent_BlockData>& outputBlocks );
+  int DoEvent( const AliHLTComponent_EventData& evtData, const AliHLTComponent_BlockData* blocks, 
+		       AliHLTComponent_TriggerData& trigData, AliHLTUInt8_t* outputPtr, 
+		       AliHLTUInt32_t& size, vector<AliHLTComponent_BlockData>& outputBlocks );
 
 private:
   static const AliHLTComponent_DataType inputDataTypes[];
