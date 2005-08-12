@@ -35,7 +35,7 @@ ClassImp(AliFMD1)
 AliFMD1::AliFMD1(AliFMDRing* inner) 
   : AliFMDDetector(1, inner, 0)
 {
-  SetInnerZ(340);
+  SetInnerZ(320);
 }
 
 
