@@ -19,5 +19,6 @@
  #pragma link C++ class IceDOM+;
  #pragma link C++ class IceIDOM+;
  #pragma link C++ class IceTDOM+;
+ #pragma link C++ class IceXtalk+;
 #endif
  

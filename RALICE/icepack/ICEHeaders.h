@@ -14,4 +14,5 @@
 #include "IceDOM.h"
 #include "IceIDOM.h"
 #include "IceTDOM.h"
+#include "IceXtalk.h"
 
