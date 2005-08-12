@@ -91,27 +91,27 @@ int AliHLTTPCRawDataUnpackerComponent::DoInit( int argc, const char** argv )
     const char* tableFileBaseDir = NULL;
     while ( i < argc )
 	{
-	if ( !strcmp( argv[i], "-table-dir" ) )
-	    {
-	    if ( i+1>=argc )
-		{
-		Logging(kHLTLogError, "HLT::TPCRawDataUnpacker::DoInit", "Missing Argument", "Missing -table-dir parameter");
-		return ENOTSUP;
-		}
-	    tableFileBaseDir = argv[i+1];
-	    i += 2;
-	    continue;
-	    }
+// 	if ( !strcmp( argv[i], "-table-dir" ) )
+// 	    {
+// 	    if ( i+1>=argc )
+// 		{
+// 		Logging(kHLTLogError, "HLT::TPCRawDataUnpacker::DoInit", "Missing Argument", "Missing -table-dir parameter");
+// 		return ENOTSUP;
+// 		}
+// 	    tableFileBaseDir = argv[i+1];
+// 	    i += 2;
+// 	    continue;
+// 	    }
 	Logging(kHLTLogError, "HLT::TPCRawDataUnpacker::DoInit", "Unknown Option", "Unknown option '%s'", argv[i] );
 	return EINVAL;
 	}
 
-    if ( !tableFileBaseDir )
-	{
-	Logging(kHLTLogError, "HLT::TPCRawDataUnpacker::DoInit", "Table file directory missing ", 
-		"Table file base directory has to be set using the -table-dir component parameter." );
-	return EINVAL;
-	}
+//     if ( !tableFileBaseDir )
+// 	{
+// 	Logging(kHLTLogError, "HLT::TPCRawDataUnpacker::DoInit", "Table file directory missing ", 
+// 		"Table file base directory has to be set using the -table-dir component parameter." );
+// 	return EINVAL;
+// 	}
 
     fRawMemoryReader = new AliRawReaderMemory;
     //fTPCRawStream = new AliTPCRawStream( fRawMemoryReader, tableFileBaseDir );
