@@ -39,6 +39,7 @@
 #include "AliExternalTrackParam.h"
 #include "AliKalmanTrack.h"
 #include "AliTrackReference.h"
+#include "AliLog.h"
 
 ClassImp(AliExternalTrackParam)
 
@@ -48,6 +49,7 @@ Double_t AliExternalTrackParam::fgConvConst=0.;
 
 //_____________________________________________________________________________
 AliExternalTrackParam::AliExternalTrackParam() :
+  fMass(-1),
   fX(0),
   fAlpha(0),
   fLocalConvConst(0)
@@ -63,6 +65,7 @@ AliExternalTrackParam::AliExternalTrackParam() :
 AliExternalTrackParam::AliExternalTrackParam(Double_t x, Double_t alpha, 
 					     const Double_t param[5], 
 					     const Double_t covar[15]) :
+  fMass(-1),
   fX(x),
   fAlpha(alpha),
   fLocalConvConst(0)
@@ -76,8 +79,10 @@ AliExternalTrackParam::AliExternalTrackParam(Double_t x, Double_t alpha,
 
 //_____________________________________________________________________________
 AliExternalTrackParam::AliExternalTrackParam(const AliKalmanTrack& track) :
+  fMass(track.GetMass()),
   fX(0),
-  fAlpha(track.GetAlpha())
+  fAlpha(track.GetAlpha()),
+  fLocalConvConst(0)
 {
   //
   //
@@ -330,6 +335,10 @@ Bool_t AliExternalTrackParam::CorrectForMaterial(Double_t d, Double_t x0, Double
   //
   // multiple scattering
   //
+  if (fMass<=0) {
+    AliError("Non-positive mass");
+    return kFALSE;
+  }
   Double_t p2=(1.+ fParam[3]*fParam[3])/(fParam[4]*fParam[4]);
   Double_t beta2=p2/(p2 + fMass*fMass);
   Double_t theta2=14.1*14.1/(beta2*p2*1e6)*d/x0*rho;
