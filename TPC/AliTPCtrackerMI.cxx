@@ -6303,10 +6303,16 @@ AliTPCclusterMI * AliTPCtrackerMI::AliTPCRow::FindNearest2(Double_t y, Double_t 
   // Return the index of the nearest cluster in z y 
   //-----------------------------------------------------------------------
   Float_t maxdistance = roady*roady + roadz*roadz;
-  Int_t iz1 = TMath::Max(fFastCluster[Int_t(z-roadz+254.5)]-1,0);
-  Int_t iz2 = TMath::Min(fFastCluster[Int_t(z+roadz+255.5)]+1,fN);
-
   AliTPCclusterMI *cl =0;
+
+  //PH Check boundaries. 510 is the size of fFastCluster
+  Int_t iz1 = Int_t(z-roadz+254.5);
+  if (iz1<0 || iz1>=510) return cl;
+  iz1 = TMath::Max(fFastCluster[iz1]-1,0);
+  Int_t iz2 = Int_t(z+roadz+255.5);
+  if (iz2<0 || iz2>=510) return cl;
+  iz2 = TMath::Min(fFastCluster[iz2]+1,fN);
+
   //FindNearest3(y,z,roady,roadz,index);
   //  for (Int_t i=Find(z-roadz); i<fN; i++) {
   for (Int_t i=iz1; i<iz2; i++) {
