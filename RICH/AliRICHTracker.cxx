@@ -95,11 +95,13 @@ void AliRICHTracker::RecWithESD(AliESD *pESD)
       Double_t richPID[AliPID::kSPECIES];
       for (Int_t iPart=0;iPart<AliPID::kSPECIES;iPart++) {
         sigmaPID[iPart] = 0;
+	richPID[iPart] = 0;
         for(Int_t iphot=0;iphot<pRich->Clusters(iChamber)->GetEntries();iphot++) {
           recon.SetPhotonIndex(iphot);
           if(recon.GetPhotonFlag() == 2) {
-            Double_t sigma = AliRICHParam::SigmaSinglePhoton(iPart,pTrack->GetP(),recon.GetTrackTheta(),recon.GetPhiPoint()-recon.GetTrackPhi()).Mag();
-            sigmaPID[iPart] += 1/(sigma*sigma);
+            Double_t sigma2 = AliRICHParam::SigmaSinglePhoton(iPart,pTrack->GetP(),recon.GetTrackTheta(),recon.GetPhiPoint()-recon.GetTrackPhi()).Mag2();
+	    if (sigma2 >0)
+	      sigmaPID[iPart] += 1/sigma2;
           }
         }
 	if (sigmaPID[iPart]>0)
