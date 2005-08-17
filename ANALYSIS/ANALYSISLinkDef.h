@@ -93,4 +93,8 @@
     
 #pragma link C++ class AliAODv0+;
 
+#pragma link C++ class AliAnalysisEventCuts+;
+#pragma link C++ class AliAnalysisTrackCuts+;
+#pragma link C++ class AliBalance+;
+
 #endif
