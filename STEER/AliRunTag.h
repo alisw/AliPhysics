@@ -88,7 +88,8 @@ class AliRunTag : public TObject
 
   Int_t         GetNEvents() const {return fNumEvents;}
   
-  AliLHCTag    *GetLHCTag() { return &fLHCTag; }
+  AliLHCTag    *GetLHCTag() { return &fLHCTag; } 
+  TClonesArray *GetEventTags() const {return fEventTag;}
 
   ClassDef(AliRunTag,1)  //(ClassName, ClassVersion)
 };

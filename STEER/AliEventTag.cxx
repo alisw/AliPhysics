@@ -68,9 +68,17 @@ AliEventTag::AliEventTag()
 
   fMaxJetEnergy = -100.0;
   fMaxNeutralEnergy = -100.0; 
-  fNumberOfChargedAbovePtRange = -10;
-  fNumberOfMuonsAbovePtRange = -10;
-  fNumberOfElectronsAbovePtRange = -10;
+  
+  fNumberOfChargedAbove1GeV = -10;
+  fNumberOfChargedAbove3GeV = -10;
+  fNumberOfChargedAbove10GeV = -10;
+  fNumberOfMuonsAbove1GeV = -10;
+  fNumberOfMuonsAbove3GeV = -10;
+  fNumberOfMuonsAbove10GeV = -10;
+  fNumberOfElectronsAbove1GeV = -10;
+  fNumberOfElectronsAbove3GeV = -10;
+  fNumberOfElectronsAbove10GeV = -10;
+
 
   fNumberOfElectrons = -10;
   fNumberOfMuons = -10;
@@ -84,14 +92,7 @@ AliEventTag::AliEventTag()
   fNumberOfNeutrons = -10;
   fNumberOfKaon0s = -10;
 
-  fNumberOfJPsiCandidates = -10;
-  fNumberOfPsiPrimeCandidates = -10;
-  fNumberOfUpsilonCandidates = -10;
-  fNumberOfUpsilonPrimeCandidates = -10;
-  fNumberOfUpsilonDoublePrimeCandidates = -10;
-  fNumberOfCharmParticleCandidates = -10;
-  fNumberOfBeautyParticleCandidates = -10;
-  
+   
   fTotalP = -10.0;
   fMeanPt = -10.0;
   fMaxPt = -10.0;
@@ -150,20 +151,17 @@ AliEventTag::AliEventTag(AliEventTag *EvTag)
 
   SetMaxJetEnergy(EvTag->GetMaxJetEnergy());
   SetMaxNeutralEnergy(EvTag->GetMaxNeutralEnergy());
-  SetNumOfChargedAbovePtRange(EvTag->GetNumOfChargedAbovePtRange());
-  SetNumOfMuonsAbovePtRange(EvTag->GetNumOfMuonsAbovePtRange());
-  SetNumOfElectronsAbovePtRange(EvTag->GetNumOfElectronsAbovePtRange());
-
-
-
-  SetNumOfJPsiCandidates(EvTag->GetNumOfJPsiCandidates());
-  SetNumOfPsiPrimeCandidates(EvTag->GetNumOfPsiPrimeCandidates());
-  SetNumOfUpsilonCandidates(EvTag->GetNumOfUpsilonCandidates());
-  SetNumOfUpsilonPrimeCandidates(EvTag->GetNumOfUpsilonPrimeCandidates());
-  SetNumOfUpsilonDoublePrimeCandidates(EvTag->GetNumOfUpsilonDoublePrimeCandidates());
-  SetNumOfCharmCandidates(EvTag->GetNumOfCharmCandidates());
-  SetNumOfBeautyCandidates(EvTag->GetNumOfBeautyCandidates());
   
+  SetNumOfChargedAbove1GeV(EvTag->GetNumOfChargedAbove1GeV());
+  SetNumOfChargedAbove3GeV(EvTag->GetNumOfChargedAbove3GeV());
+  SetNumOfChargedAbove10GeV(EvTag->GetNumOfChargedAbove10GeV());
+  SetNumOfMuonsAbove1GeV(EvTag->GetNumOfMuonsAbove1GeV());
+  SetNumOfMuonsAbove3GeV(EvTag->GetNumOfMuonsAbove3GeV());
+  SetNumOfMuonsAbove10GeV(EvTag->GetNumOfMuonsAbove10GeV());
+  SetNumOfElectronsAbove1GeV(EvTag->GetNumOfElectronsAbove1GeV());
+  SetNumOfElectronsAbove3GeV(EvTag->GetNumOfElectronsAbove3GeV());
+  SetNumOfElectronsAbove10GeV(EvTag->GetNumOfElectronsAbove10GeV());
+
   SetNumOfElectrons(EvTag->GetNumOfElectrons());
   SetNumOfMuons(EvTag->GetNumOfMuons());
   SetNumOfPions(EvTag->GetNumOfPions());

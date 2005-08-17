@@ -1175,6 +1175,15 @@ void AliReconstruction::WriteESD(AliESD* esd, const char* recStep) const
 //_____________________________________________________________________________
 void AliReconstruction::CreateTag(TFile* file)
 {
+  Int_t ntrack;
+  Int_t NProtons, NKaons, NPions, NMuons, NElectrons;
+  Int_t Npos, Nneg, Nneutr;
+  Int_t NK0s, Nneutrons, Npi0s, Ngamas;
+  Int_t Nch1GeV, Nch3GeV, Nch10GeV;
+  Int_t Nmu1GeV, Nmu3GeV, Nmu10GeV;
+  Int_t Nel1GeV, Nel3GeV, Nel10GeV;
+  Float_t MaxPt = .0, MeanPt = .0, TotalP = .0;
+
   AliRunTag *tag = new AliRunTag();
   AliDetectorTag *detTag = new AliDetectorTag();
   AliEventTag *evTag = new AliEventTag();
@@ -1201,24 +1210,187 @@ void AliReconstruction::CreateTag(TFile* file)
   Int_t i_NumberOfEvents = b->GetEntries();
   for (Int_t i_EventNumber = 0; i_EventNumber < i_NumberOfEvents; i_EventNumber++)
     {
+      ntrack = 0;
+      Npos = 0;
+      Nneg = 0;
+      Nneutr =0;
+      NK0s = 0;
+      Nneutrons = 0;
+      Npi0s = 0;
+      Ngamas = 0;
+      NProtons = 0;
+      NKaons = 0;
+      NPions = 0;
+      NMuons = 0;
+      NElectrons = 0;	  
+      Nch1GeV = 0;
+      Nch3GeV = 0;
+      Nch10GeV = 0;
+      Nmu1GeV = 0;
+      Nmu3GeV = 0;
+      Nmu10GeV = 0;
+      Nel1GeV = 0;
+      Nel3GeV = 0;
+      Nel10GeV = 0;
+      MaxPt = .0;
+      MeanPt = .0;
+      TotalP = .0;
+
       b->GetEntry(i_EventNumber);
-      //      Int_t i_NumberOfTracks = esd->GetNumberOfTracks();
       const AliESDVertex * VertexIn = esd->GetVertex();
+
+      for (Int_t i_TrackNumber = 0; i_TrackNumber < esd->GetNumberOfTracks(); i_TrackNumber++)
+	{
+	  AliESDtrack * ESDTrack = esd->GetTrack(i_TrackNumber);
+	  UInt_t status = ESDTrack->GetStatus();
+	  
+	  //select only tracks with ITS refit
+	  if ((status&AliESDtrack::kITSrefit)==0) continue;
+	  
+	  //select only tracks with TPC refit-->remove extremely high Pt tracks
+	  if ((status&AliESDtrack::kTPCrefit)==0) continue;
+	  
+	  //select only tracks with the "combined PID"
+	  if ((status&AliESDtrack::kESDpid)==0) continue;
+	  	  Double_t p[3];
+	  ESDTrack->GetPxPyPz(p);
+	  Double_t P = sqrt(pow(p[0],2) + pow(p[1],2) + pow(p[2],2));
+	  Double_t fPt = sqrt(pow(p[0],2) + pow(p[1],2));
+	  TotalP += P;
+	  MeanPt += fPt;
+	  if(fPt > MaxPt)
+	    MaxPt = fPt;
+	  
+	  if(ESDTrack->GetSign() > 0)
+	    {
+	      Npos++;
+	      if(fPt > 1.0)
+		Nch1GeV++;
+	      if(fPt > 3.0)
+		Nch3GeV++;
+	      if(fPt > 10.0)
+		Nch10GeV++;
+	    }
+	  if(ESDTrack->GetSign() < 0)
+	    {
+	      Nneg++;
+	      if(fPt > 1.0)
+		Nch1GeV++;
+	      if(fPt > 3.0)
+		Nch3GeV++;
+	      if(fPt > 10.0)
+		Nch10GeV++;
+	    }
+	  if(ESDTrack->GetSign() == 0)
+	    Nneutr++;
+	  
+	  //PID
+	  Double_t prob[10];
+	  ESDTrack->GetESDpid(prob);
+		    
+	  //K0s
+	  if ((prob[8]>prob[7])&&(prob[8]>prob[6])&&(prob[8]>prob[5])&&(prob[8]>prob[4])&&(prob[8]>prob[3])&&(prob[8]>prob[2])&&(prob[8]>prob[1])&&(prob[8]>prob[0]))
+	    NK0s++;
+	  //neutrons
+	  if ((prob[7]>prob[8])&&(prob[7]>prob[6])&&(prob[7]>prob[5])&&(prob[7]>prob[4])&&(prob[7]>prob[3])&&(prob[7]>prob[2])&&(prob[7]>prob[1])&&(prob[7]>prob[0]))
+	    Nneutrons++; 
+	  //pi0s
+	  if ((prob[6]>prob[8])&&(prob[6]>prob[7])&&(prob[6]>prob[5])&&(prob[6]>prob[4])&&(prob[6]>prob[3])&&(prob[6]>prob[2])&&(prob[6]>prob[1])&&(prob[6]>prob[0]))
+	    Npi0s++;
+	  //gamas
+	  if ((prob[5]>prob[8])&&(prob[5]>prob[7])&&(prob[5]>prob[6])&&(prob[5]>prob[4])&&(prob[5]>prob[3])&&(prob[5]>prob[2])&&(prob[5]>prob[1])&&(prob[5]>prob[0]))
+	    Ngamas++;
+	  //protons
+	  if ((prob[4]>prob[8])&&(prob[4]>prob[7])&&(prob[4]>prob[6])&&(prob[4]>prob[5])&&(prob[4]>prob[3])&&(prob[4]>prob[2])&&(prob[4]>prob[1])&&(prob[4]>prob[0]))
+	    NProtons++;
+	  //kaons
+	  if ((prob[3]>prob[8])&&(prob[3]>prob[7])&&(prob[3]>prob[6])&&(prob[3]>prob[5])&&(prob[3]>prob[4])&&(prob[3]>prob[2])&&(prob[3]>prob[1])&&(prob[3]>prob[0]))
+	    NKaons++;
+	  //kaons
+	  if ((prob[2]>prob[8])&&(prob[2]>prob[7])&&(prob[2]>prob[6])&&(prob[2]>prob[5])&&(prob[2]>prob[4])&&(prob[2]>prob[3])&&(prob[2]>prob[1])&&(prob[2]>prob[0]))
+	    NPions++; 
+	  //muons
+	  if ((prob[1]>prob[8])&&(prob[1]>prob[7])&&(prob[1]>prob[6])&&(prob[1]>prob[5])&&(prob[1]>prob[4])&&(prob[1]>prob[3])&&(prob[1]>prob[2])&&(prob[1]>prob[0]))
+	    {
+	      NMuons++;
+	      if(fPt > 1.0)
+		Nmu1GeV++;
+	      if(fPt > 3.0)
+		Nmu3GeV++;
+	      if(fPt > 10.0)
+		Nmu10GeV++;
+	    }
+	  //electrons
+	  if ((prob[0]>prob[8])&&(prob[0]>prob[7])&&(prob[0]>prob[6])&&(prob[0]>prob[5])&&(prob[0]>prob[4])&&(prob[0]>prob[3])&&(prob[0]>prob[2])&&(prob[0]>prob[1]))
+	    {
+	      NElectrons++;
+	      if(fPt > 1.0)
+		Nel1GeV++;
+	      if(fPt > 3.0)
+		Nel3GeV++;
+	      if(fPt > 10.0)
+		Nel10GeV++;
+	    }
+	  
+	  
+	  
+	  ntrack++;
+	}//track loop
+      // Fill the event tags 
+      MeanPt = MeanPt/ntrack;
       
       evTag->SetEventId(i_EventNumber+1);
-
       evTag->SetVertexX(VertexIn->GetXv());
       evTag->SetVertexY(VertexIn->GetYv());
       evTag->SetVertexZ(VertexIn->GetZv());
-
+      
+      evTag->SetT0VertexZ(esd->GetT0zVertex());
+      
+      evTag->SetTrigger(esd->GetTrigger());
+      
+      evTag->SetZDCNeutronEnergy(esd->GetZDCNEnergy());
+      evTag->SetZDCProtonEnergy(esd->GetZDCPEnergy());
+      evTag->SetZDCEMEnergy(esd->GetZDCEMEnergy());
+      evTag->SetNumOfParticipants(esd->GetZDCParticipants());
+      
+      
       evTag->SetNumOfTracks(esd->GetNumberOfTracks());
+      evTag->SetNumOfPosTracks(Npos);
+      evTag->SetNumOfNegTracks(Nneg);
+      evTag->SetNumOfNeutrTracks(Nneutr);
+      
       evTag->SetNumOfV0s(esd->GetNumberOfV0s());
       evTag->SetNumOfCascades(esd->GetNumberOfCascades());
+      evTag->SetNumOfKinks(esd->GetNumberOfKinks());
+      evTag->SetNumOfPMDTracks(esd->GetNumberOfPmdTracks());
+      
+      evTag->SetNumOfProtons(NProtons);
+      evTag->SetNumOfKaons(NKaons);
+      evTag->SetNumOfPions(NPions);
+      evTag->SetNumOfMuons(NMuons);
+      evTag->SetNumOfElectrons(NElectrons);
+      evTag->SetNumOfPhotons(Ngamas);
+      evTag->SetNumOfPi0s(Npi0s);
+      evTag->SetNumOfNeutrons(Nneutrons);
+      evTag->SetNumOfKaon0s(NK0s);
+      
+      evTag->SetNumOfChargedAbove1GeV(Nch1GeV);
+      evTag->SetNumOfChargedAbove3GeV(Nch3GeV);
+      evTag->SetNumOfChargedAbove10GeV(Nch10GeV);
+      evTag->SetNumOfMuonsAbove1GeV(Nmu1GeV);
+      evTag->SetNumOfMuonsAbove3GeV(Nmu3GeV);
+      evTag->SetNumOfMuonsAbove10GeV(Nmu10GeV);
+      evTag->SetNumOfElectronsAbove1GeV(Nel1GeV);
+      evTag->SetNumOfElectronsAbove3GeV(Nel3GeV);
+      evTag->SetNumOfElectronsAbove10GeV(Nel10GeV);
       
       evTag->SetNumOfPHOSTracks(esd->GetNumberOfPHOSParticles());
       evTag->SetNumOfEMCALTracks(esd->GetNumberOfEMCALParticles());
-      evTag->SetNumOfMuons(esd->GetNumberOfMuonTracks());
-    
+      
+      evTag->SetTotalMomentum(TotalP);
+      evTag->SetMeanPt(MeanPt);
+      evTag->SetMaxPt(MaxPt);
+  
       tag->AddEventTag(evTag);
     }
   lastEvent = i_NumberOfEvents;

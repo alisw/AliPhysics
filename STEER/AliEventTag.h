@@ -56,9 +56,17 @@ class AliEventTag : public TObject
   Int_t    fNumberOfHardPhotonsCandidates;     //Hard photons candidates
 
   Float_t  fMaxNeutralEnergy;                   //neutral energy info
-  Int_t    fNumberOfChargedAbovePtRange;
-  Int_t    fNumberOfMuonsAbovePtRange;
-  Int_t    fNumberOfElectronsAbovePtRange;
+  
+
+  Int_t    fNumberOfChargedAbove1GeV;
+  Int_t    fNumberOfChargedAbove3GeV;
+  Int_t    fNumberOfChargedAbove10GeV;
+  Int_t    fNumberOfMuonsAbove1GeV;
+  Int_t    fNumberOfMuonsAbove3GeV;
+  Int_t    fNumberOfMuonsAbove10GeV; 
+  Int_t    fNumberOfElectronsAbove1GeV;
+  Int_t    fNumberOfElectronsAbove3GeV;
+  Int_t    fNumberOfElectronsAbove10GeV;
 
 
 
@@ -75,13 +83,6 @@ class AliEventTag : public TObject
   Int_t    fNumberOfKaon0s;
 
 
-  Int_t    fNumberOfJPsiCandidates;	       //JPsi candidates
-  Int_t    fNumberOfPsiPrimeCandidates;	       //Psi prime candidates
-  Int_t    fNumberOfUpsilonCandidates;	       //Upsilon candidates
-  Int_t    fNumberOfUpsilonPrimeCandidates;    //Upsilon prime candidates
-  Int_t    fNumberOfUpsilonDoublePrimeCandidates;
-  Int_t    fNumberOfCharmParticleCandidates;
-  Int_t    fNumberOfBeautyParticleCandidates;
  
   Float_t  fTotalP;			       //Sum of the momentum per event
   Float_t  fMeanPt;			       //Mean Pt per event
@@ -140,17 +141,16 @@ class AliEventTag : public TObject
 
   void   SetMaxJetEnergy(Float_t f) {fMaxJetEnergy = f;}
   void   SetMaxNeutralEnergy(Float_t f) {fMaxNeutralEnergy = f;}
-  void   SetNumOfChargedAbovePtRange(Int_t i) {fNumberOfChargedAbovePtRange = i;}
-  void   SetNumOfMuonsAbovePtRange(Int_t i) {fNumberOfMuonsAbovePtRange = i;}
-  void   SetNumOfElectronsAbovePtRange(Int_t i) {fNumberOfElectronsAbovePtRange = i;}
-
-  void   SetNumOfJPsiCandidates(Int_t Ptr) {fNumberOfJPsiCandidates = Ptr;}
-  void   SetNumOfPsiPrimeCandidates(Int_t Ptr) {fNumberOfPsiPrimeCandidates = Ptr;}
-  void   SetNumOfUpsilonCandidates(Int_t Ptr) {fNumberOfUpsilonCandidates = Ptr;}
-  void   SetNumOfUpsilonPrimeCandidates(Int_t Ptr) {fNumberOfUpsilonPrimeCandidates = Ptr;}
-  void   SetNumOfUpsilonDoublePrimeCandidates(Int_t Ptr) {fNumberOfUpsilonDoublePrimeCandidates = Ptr;}
-  void   SetNumOfCharmCandidates(Int_t Ptr) {fNumberOfCharmParticleCandidates = Ptr;}
-  void   SetNumOfBeautyCandidates(Int_t Ptr) {fNumberOfBeautyParticleCandidates = Ptr;}
+  
+  void   SetNumOfChargedAbove1GeV(Int_t i) {fNumberOfChargedAbove1GeV = i;}
+  void   SetNumOfChargedAbove3GeV(Int_t i) {fNumberOfChargedAbove3GeV = i;}
+  void   SetNumOfChargedAbove10GeV(Int_t i) {fNumberOfChargedAbove10GeV = i;}
+  void   SetNumOfMuonsAbove1GeV(Int_t i) {fNumberOfMuonsAbove1GeV = i;}
+  void   SetNumOfMuonsAbove3GeV(Int_t i) {fNumberOfMuonsAbove3GeV = i;}
+  void   SetNumOfMuonsAbove10GeV(Int_t i) {fNumberOfMuonsAbove10GeV = i;}
+  void   SetNumOfElectronsAbove1GeV(Int_t i) {fNumberOfElectronsAbove1GeV = i;}
+  void   SetNumOfElectronsAbove3GeV(Int_t i) {fNumberOfElectronsAbove3GeV = i;}
+  void   SetNumOfElectronsAbove10GeV(Int_t i) {fNumberOfElectronsAbove10GeV = i;}
 
   void   SetNumOfElectrons(Int_t Ptr) {fNumberOfElectrons = Ptr;}
   void   SetNumOfMuons(Int_t Ptr) {fNumberOfMuons = Ptr;}
@@ -220,19 +220,17 @@ class AliEventTag : public TObject
 
   Float_t GetMaxJetEnergy() {return fMaxJetEnergy;}
   Float_t GetMaxNeutralEnergy() {return fMaxNeutralEnergy;}
-  Int_t   GetNumOfChargedAbovePtRange() {return fNumberOfChargedAbovePtRange;}
-  Int_t   GetNumOfMuonsAbovePtRange() {return fNumberOfMuonsAbovePtRange;}
-  Int_t   GetNumOfElectronsAbovePtRange() {return fNumberOfElectronsAbovePtRange;}
-
-
-  Int_t   GetNumOfJPsiCandidates() {return fNumberOfJPsiCandidates;}
-  Int_t   GetNumOfPsiPrimeCandidates() {return fNumberOfPsiPrimeCandidates;}
-  Int_t   GetNumOfUpsilonCandidates() {return fNumberOfUpsilonCandidates;}
-  Int_t   GetNumOfUpsilonPrimeCandidates() {return fNumberOfUpsilonPrimeCandidates;}
-  Int_t   GetNumOfUpsilonDoublePrimeCandidates() {return fNumberOfUpsilonDoublePrimeCandidates;}
-  Int_t   GetNumOfCharmCandidates() {return fNumberOfCharmParticleCandidates;}
-  Int_t   GetNumOfBeautyCandidates() {return fNumberOfBeautyParticleCandidates;}
-
+  
+  Int_t   GetNumOfChargedAbove1GeV() {return fNumberOfChargedAbove1GeV;}
+  Int_t   GetNumOfChargedAbove3GeV() {return fNumberOfChargedAbove3GeV;}
+  Int_t   GetNumOfChargedAbove10GeV() {return fNumberOfChargedAbove10GeV;}
+  Int_t   GetNumOfMuonsAbove1GeV() {return fNumberOfMuonsAbove1GeV;}
+  Int_t   GetNumOfMuonsAbove3GeV() {return fNumberOfMuonsAbove3GeV;}
+  Int_t   GetNumOfMuonsAbove10GeV() {return fNumberOfMuonsAbove10GeV;}
+  Int_t   GetNumOfElectronsAbove1GeV() {return fNumberOfElectronsAbove1GeV;}
+  Int_t   GetNumOfElectronsAbove3GeV() {return fNumberOfElectronsAbove3GeV;}
+  Int_t   GetNumOfElectronsAbove10GeV() {return fNumberOfElectronsAbove10GeV;}
+ 
   Int_t   GetNumOfElectrons() {return fNumberOfElectrons;}
   Int_t   GetNumOfMuons() {return fNumberOfMuons;}
   Int_t   GetNumOfPions() {return fNumberOfPions;}
@@ -258,7 +256,7 @@ class AliEventTag : public TObject
   Float_t GetEventPlaneAngle() {return fEventPlaneAngle;}
   Float_t GetHBTRadii() {return fHBTRadii;}
 
-  ClassDef(AliEventTag,1)  //(ClassName, ClassVersion)
+  ClassDef(AliEventTag,2)  //(ClassName, ClassVersion)
     };
 //______________________________________________________________________________
 
