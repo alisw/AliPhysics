@@ -22,11 +22,13 @@ TChain * AliReadESDfromdisk(const UInt_t eventsToRead,
     rv = 0 ;
   }
   else{ // reading file names from directory
-    const char * file ; 
+    const char * subdir ; 
     // search all subdirectories witch matching pattern
-    while( (file = gSystem->GetDirEntry(from))  && 
-	   (cESDTree->GetEntries() < eventsToRead)) { 
-      if ( strstr(file, pattern) != 0 ) { 
+    while( (subdir = gSystem->GetDirEntry(from))  && 
+	   (cESDTree->GetEntries() < eventsToRead)) {
+      if ( strstr(subdir, pattern) != 0 ) { 
+	char file[200] ; 
+        sprintf(file, "%s%s/AliESDs.root", dirName.Data(), subdir); 	
 	AliInfo( Form("Adding %s\n", file) );
 	cESDTree->Add(file) ;
       }
