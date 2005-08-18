@@ -88,6 +88,7 @@ AliExternalTrackParam::AliExternalTrackParam(const AliKalmanTrack& track) :
   //
   track.GetExternalParameters(fX,fParam);
   track.GetExternalCovariance(fCovar);
+  SaveLocalConvConst();
 }
 
 
