@@ -907,6 +907,11 @@ Bool_t AliReconstruction::InitRunLoader()
       if (fRunLoader->LoadgAlice() == 0) {
 	gAlice = fRunLoader->GetAliRun();
 	AliTracker::SetFieldMap(gAlice->Field(),fUniformField);
+	AliExternalTrackParam::SetFieldMap(gAlice->Field());
+	if(fUniformField)
+	  AliExternalTrackParam::SetUniformFieldTracking();
+	else
+	  AliExternalTrackParam::SetNonuniformFieldTracking();
       }
     }
     if (!gAlice && !fRawReader) {
