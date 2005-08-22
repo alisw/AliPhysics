@@ -11,6 +11,7 @@
 
 #include "TObject.h"
 #include "AliHLTDataTypes.h"
+#include "AliHLTLogging.h"
 
 class AliHLTComponent;
 struct AliHLTComponentEnvironment;
@@ -18,7 +19,7 @@ struct AliHLTComponent_DataType;
 
 typedef void* AliHLTLibHandle;
 
-class AliHLTComponentHandler {
+class AliHLTComponentHandler : public AliHLTLogging {
  public:
   AliHLTComponentHandler();
   virtual ~AliHLTComponentHandler();
@@ -55,7 +56,6 @@ class AliHLTComponentHandler {
    */
   void List();
  protected:
-  int Logging( AliHLTComponent_LogSeverity severity, const char* origin, const char* keyword, const char* message, ... );
 
  private:
   /* find a component

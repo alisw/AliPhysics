@@ -64,12 +64,3 @@ int AliHLTComponent::Deinit()
   iResult=DoDeinit();
   return iResult;
 }
-
-int AliHLTComponent::Logging( AliHLTComponent_LogSeverity severity, const char* origin, const char* keyword, const char* format, ... ) {
-  if (fEnvironment.fLoggingFunc) {
-    va_list args;
-    va_start(args, format);
-    return (*fEnvironment.fLoggingFunc)(fEnvironment.fParam, severity, origin, keyword, AliHLTSystem::BuildLogString(format, args ));
-  }
-  return -ENOSYS;
-}

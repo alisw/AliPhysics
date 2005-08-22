@@ -33,10 +33,9 @@ using namespace std;
 #include "AliHLTSystem.h"
 #include "AliHLTComponentHandler.h"
 #include "AliHLTComponent.h"
+#include "AliHLTConfiguration.h"
 
 ClassImp(AliHLTSystem)
-
-char AliHLTSystem::fLogBuffer[LOG_BUFFER_SIZE]="";
 
 AliHLTSystem::AliHLTSystem()
 {
@@ -44,9 +43,14 @@ AliHLTSystem::AliHLTSystem()
   if (fpComponentHandler) {
     AliHLTComponentEnvironment env;
     memset(&env, 0, sizeof(AliHLTComponentEnvironment));
-    env.fLoggingFunc=AliHLTSystem::Logging;
+    env.fLoggingFunc=AliHLTLogging::Message;
     fpComponentHandler->SetEnvironment(&env);
+
+    // init logging function in AliHLTLogging
+    Init(AliHLTLogging::Message);
   }
+  DebugMsg("create hlt object %s %p", "AliHLTSystem", this);
+  DebugMsg("done");
 }
 
 
@@ -54,54 +58,150 @@ AliHLTSystem::~AliHLTSystem()
 {
 }
 
-int AliHLTSystem::Logging(void *param, AliHLTComponent_LogSeverity severity, const char* origin, const char* keyword, const char* message) {
+int AliHLTSystem::AddConfiguration(AliHLTConfiguration* pConf)
+{
   int iResult=0;
-  const char* strSeverity="";
-  switch (severity) {
-  case kHLTLogBenchmark: 
-    strSeverity="benchmark";
-    break;
-  case kHLTLogDebug:
-    strSeverity="debug";
-    break;
-  case kHLTLogInfo:
-    strSeverity="info";
-    break;
-  case kHLTLogWarning:
-    strSeverity="warning";
-    break;
-  case kHLTLogError:
-    strSeverity="error";
-    break;
-  case kHLTLogFatal:
-    strSeverity="fatal";
-    break;
-  default:
-    break;
-  }
-  cout << "HLT Log " << strSeverity << ": " << origin << " (" << keyword << ") " << message << endl;
   return iResult;
 }
 
-const char* AliHLTSystem::BuildLogString(const char *format, va_list ap) {
-  int tgtLen=0;
-  int iBufferSize=LOG_BUFFER_SIZE;
-  char* tgtBuffer=fLogBuffer;
-  tgtBuffer[tgtLen]=0;
+// int AliHLTSystem::InsertConfiguration(AliHLTConfiguration* pConf, AliHLTConfiguration* pPrec)
+// {
+//   int iResult=0;
+//   return iResult;
+// }
 
-  tgtLen = snprintf(tgtBuffer, iBufferSize, LOG_PREFIX); // add logging prefix
-  if (tgtLen>=0) {
-    tgtBuffer+=tgtLen; iBufferSize-=tgtLen;
-    tgtLen = vsnprintf(tgtBuffer, iBufferSize, format, ap);
-    if (tgtLen>0) {
-      tgtBuffer+=tgtLen;
-//       if (tgtLen<LOG_BUFFER_SIZE-1) {
-// 	*tgtBuffer++='\n'; // add newline if space in buffer
-//      }
-      *tgtBuffer=0; // terminate the buffer
-    }
-  }
-  return fLogBuffer;
+int AliHLTSystem::DeleteConfiguration(AliHLTConfiguration* pConf)
+{
+  int iResult=0;
+  return iResult;
 }
 
+int AliHLTSystem::BuildTaskList(AliHLTConfiguration* pConf)
+{
+  int iResult=0;
+  if (pConf) {
+    AliHLTTask* pTask=NULL;
+    if ((pTask=FindTask(pConf->GetName()))!=NULL) {
+      if (pTask->GetConf()!=pConf) {
+	Logging(kHLTLogError, "BASE", "AliHLTSystem", "configuration missmatch, there is already a task with configuration name \"%s\", but it is different. Most likely configuration %p is not registered properly", pConf->GetName(), pConf);
+	iResult=-EEXIST;
+	pTask=NULL;
+      }
+    } else if (pConf->SourcesResolved(1)!=1) {
+	Logging(kHLTLogError, "BASE", "AliHLTSystem", "configuration \"%s\" has unresolved sources, aborting ...", pConf->GetName());
+	iResult=-ENOLINK;
+    } else {
+      pTask=new AliHLTTask(pConf, NULL);
+      if (pTask==NULL) {
+	iResult=-ENOMEM;
+      }
+    }
+    if (pTask) {
+      // check for ring dependencies
+      if ((iResult=pConf->FollowDependency(pConf->GetName()))>0) {
+	Logging(kHLTLogError, "BASE", "AliHLTSystem", "detected ring dependency for configuration \"%s\"", pTask->GetName());
+	pTask->PrintDependencyTree(pTask->GetName(), 1/*use the configuration list*/);
+	Logging(kHLTLogError, "BASE", "AliHLTSystem", "aborted ...");
+	iResult=-ELOOP;
+      }
+      if (iResult>=0) {
+	// check whether all dependencies are already in the task list
+	// create the missing ones
+	fTaskList.Add(pTask);
+	AliHLTConfiguration* pDep=pConf->GetFirstSource();
+	while (pDep!=NULL && iResult>=0) {
+	  if (FindTask(pDep->GetName())==NULL) {
+	    iResult=BuildTaskList(pDep);
+	  }
+	  pDep=pConf->GetNextSource();
+	}
+	fTaskList.Remove(pTask);
 
+	// insert the task and set the cross-links
+	if (iResult>=0) {
+	  iResult=InsertTask(pTask);
+	}
+      } else {
+	delete pTask;
+	pTask=NULL;
+      }
+    }
+  } else {
+    iResult=-EINVAL;
+  }
+  return iResult;
+}
+
+int AliHLTSystem::CleanTaskList()
+{
+  int iResult=0;
+  TObjLink* lnk=NULL;
+  while ((lnk=fTaskList.FirstLink())!=NULL) {
+    fTaskList.Remove(lnk);
+    delete (lnk->GetObject());
+  }
+  return iResult;
+}
+
+int AliHLTSystem::InsertTask(AliHLTTask* pTask)
+{
+  int iResult=0;
+  TObjLink *lnk = NULL;
+  if ((iResult=pTask->CheckDependencies())>0)
+    lnk=fTaskList.FirstLink();
+  while (lnk && iResult>0) {
+    AliHLTTask* pCurr = (AliHLTTask*)lnk->GetObject();
+    //Logging(kHLTLogDebug, "BASE", "AliHLTSystem", "checking  \"%s\"", pCurr->GetName());
+    iResult=pTask->Depends(pCurr);
+    if (iResult>0) {
+      iResult=pTask->SetDependency(pCurr);
+      pCurr->SetTarget(pTask);
+      Logging(kHLTLogDebug, "BASE", "AliHLTSystem", "set dependency  \"%s\" for configuration \"%s\"", pCurr->GetName(), pTask->GetName());
+    }
+    if (pCurr->Depends(pTask)) {
+      // ring dependency
+      Logging(kHLTLogError, "BASE", "AliHLTSystem", "ring dependency: can not resolve dependencies for configuration \"%s\"", pTask->GetName());
+      iResult=-ELOOP;
+    } else if ((iResult=pTask->CheckDependencies())>0) {
+      lnk = lnk->Next();
+    }
+  }
+  if (iResult==0) {
+      if (lnk) {
+	fTaskList.AddAfter(lnk, pTask);
+      } else {
+	fTaskList.AddFirst(pTask);
+      }
+      Logging(kHLTLogDebug, "BASE", "AliHLTSystem", "task \"%s\" inserted", pTask->GetName());
+  } else if (iResult>0) {
+    Logging(kHLTLogError, "BASE", "AliHLTSystem", "can not resolve dependencies for configuration \"%s\" (%d unresolved)", pTask->GetName(), iResult);
+    iResult=-ENOLINK;
+  }
+  return iResult;
+}
+
+AliHLTTask* AliHLTSystem::FindTask(const char* id)
+{
+  AliHLTTask* pTask=NULL;
+  if (id) {
+    pTask=(AliHLTTask*)fTaskList.FindObject(id); 
+  }
+  return pTask;
+}
+
+void AliHLTSystem::PrintTaskList()
+{
+  TObjLink *lnk = NULL;
+  Logging(kHLTLogInfo, "BASE", "AliHLTSystem", "Task List");
+  lnk=fTaskList.FirstLink();
+  while (lnk) {
+    TObject* obj=lnk->GetObject();
+    if (obj) {
+      Logging(kHLTLogInfo, "BASE", "AliHLTSystem", "  %s - status:", obj->GetName());
+      AliHLTTask* pTask=(AliHLTTask*)obj;
+      pTask->PrintStatus();
+    } else {
+    }
+    lnk = lnk->Next();
+  }
+}

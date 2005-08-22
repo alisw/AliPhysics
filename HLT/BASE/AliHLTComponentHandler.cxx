@@ -92,8 +92,15 @@ int AliHLTComponentHandler::CreateComponent(const Char_t* componentID, void* env
     if (pSample!=NULL) {
       component=pSample->Spawn();
       if (component) {
+	Logging(kHLTLogDebug, "BASE", "Component Handler", "component \"%s\" created (%p)", componentID, component);
 	component->Init(&fEnvironment, environ_param, argc, argv);
+      } else {
+	Logging(kHLTLogError, "BASE", "Component Handler", "can not spawn component \"%s\"", componentID);
+	iResult=-ENOENT;
       }
+    } else {
+      Logging(kHLTLogWarning, "BASE", "Component Handler", "can not find component \"%s\"", componentID);
+      iResult=-ENOENT;
     }
   } else {
     iResult=-EINVAL;
@@ -200,13 +207,4 @@ int AliHLTComponentHandler::UnloadLibraries()
     element++;
   }
   return iResult;
-}
-
-int AliHLTComponentHandler::Logging(AliHLTComponent_LogSeverity severity, const char* origin, const char* keyword, const char* format, ... ) {
-  if (fEnvironment.fLoggingFunc) {
-    va_list args;
-    va_start(args, format);
-    return (*fEnvironment.fLoggingFunc)( fEnvironment.fParam, severity, origin, keyword, AliHLTSystem::BuildLogString(format, args));
-  }
-  return -ENOSYS;
 }

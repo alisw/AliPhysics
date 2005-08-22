@@ -17,7 +17,8 @@ include $(ALIHLT_TOPDIR)/Makefile.conf
 
 SRCS	= AliHLTComponent.cxx AliHLTComponentHandler.cxx \
           AliHLTSystem.cxx AliHLT_C_Component_WrapperInterface.cxx \
-	  AliHLTProcessor.cxx
+	  AliHLTProcessor.cxx AliHLTConfiguration.cxx \
+	  AliHLTLogging.cxx
 
 SRCS += $(EXTRA_SRCS)
 

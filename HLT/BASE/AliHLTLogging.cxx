@@ -40,7 +40,7 @@ char AliHLTLogging::fLogBuffer[LOG_BUFFER_SIZE]="";
 char AliHLTLogging::fOriginBuffer[LOG_BUFFER_SIZE]="";
 
 AliHLTComponent_LogSeverity AliHLTLogging::fGlobalLogFilter=(AliHLTComponent_LogSeverity)0;
-fctLogging AliHLTLogging::fLoggingFunc=NULL;
+AliHLTfctLogging AliHLTLogging::fLoggingFunc=NULL;
 
 AliHLTLogging::AliHLTLogging()
 {

@@ -10,6 +10,10 @@
 #pragma link C++ class AliHLTComponentHandler; 
 #pragma link C++ class AliHLTProcessor;
 #pragma link C++ class AliHLTSystem;
+#pragma link C++ class AliHLTConfiguration;
+#pragma link C++ class AliHLTConfigurationHandler;
+#pragma link C++ class AliHLTTask;
+#pragma link C++ class AliHLTLogging;
 
 #endif
 

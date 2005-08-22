@@ -72,6 +72,8 @@ extern "C" {
     void* fData;
   };
 
+  typedef int (*AliHLTfctLogging)( void* param, AliHLTComponent_LogSeverity severity, const char* origin, const char* keyword, const char* message );
+
   struct AliHLTComponentEnvironment
   {
     AliHLTUInt32_t fStructSize;
@@ -82,7 +84,7 @@ extern "C" {
 #endif
     int (*fMakeOutputDataBlockListFunc)( void* param, const vector<AliHLTComponent_BlockData>& blocks, AliHLTUInt32_t* blockCount, AliHLTComponent_BlockData** outputBlocks );
     int (*fGetEventDoneDataFunc)( void* param, AliHLTEventID_t eventID, unsigned long size, AliHLTComponent_EventDoneData** edd );
-    int (*fLoggingFunc)( void* param, AliHLTComponent_LogSeverity severity, const char* origin, const char* keyword, const char* message );
+    AliHLTfctLogging fLoggingFunc;
   };
 }
 

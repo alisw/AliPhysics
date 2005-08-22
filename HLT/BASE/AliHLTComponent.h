@@ -10,13 +10,14 @@
  */
 
 #include <errno.h>
+#include "AliHLTLogging.h"
 #include "AliHLTDataTypes.h"
 #include "AliHLTDefinitions.h"
 #include "TObject.h"
 
 class AliHLTComponentHandler;
 
-class AliHLTComponent {
+class AliHLTComponent : public AliHLTLogging {
  public:
   AliHLTComponent();
   virtual ~AliHLTComponent();
@@ -101,7 +102,6 @@ class AliHLTComponent {
     return -ENOSYS;
   }
 
-  int Logging( AliHLTComponent_LogSeverity severity, const char* origin, const char* keyword, const char* message, ... );
 
  private:
   static AliHLTComponentHandler* fpComponentHandler;

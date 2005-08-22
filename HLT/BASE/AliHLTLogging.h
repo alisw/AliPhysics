@@ -32,7 +32,7 @@ public:
    */
   AliHLTComponent_LogSeverity SetLocalLogLevel(AliHLTComponent_LogSeverity iLogFilter) {fLocalLogFilter=iLogFilter; return fLocalLogFilter;}
   
-  static int Init(fctLogging pFun) { fLoggingFunc=pFun; return 0;}
+  static int Init(AliHLTfctLogging pFun) { fLoggingFunc=pFun; return 0;}
 
   // genaral logging function
   //
@@ -58,7 +58,7 @@ private:
   AliHLTComponent_LogSeverity fLocalLogFilter;
   static char fLogBuffer[LOG_BUFFER_SIZE];
   static char fOriginBuffer[LOG_BUFFER_SIZE];
-  static fctLogging fLoggingFunc;
+  static AliHLTfctLogging fLoggingFunc;
 
   ClassDef(AliHLTLogging, 0)
 };

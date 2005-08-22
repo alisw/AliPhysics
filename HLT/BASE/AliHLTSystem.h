@@ -11,29 +11,62 @@
 
 
 #include "AliL3RootTypes.h"
-#include "AliHLTDataTypes.h"
-#include <stdarg.h>
+#include "AliHLTLogging.h"
+#include <TList.h>
+
 class AliHLTComponentHandler;
+class AliHLTConfiguration;
+class AliHLTTask;
 
-#define LOG_BUFFER_SIZE 100 // global logging buffer
-#define LOG_PREFIX " "       // logging prefix, for later extensions
-
-class AliHLTSystem {
-public:
+class AliHLTSystem : public AliHLTLogging {
+ public:
   AliHLTSystem();
   virtual ~AliHLTSystem();
 
-  Int_t SetLogLevel(Int_t iLogLevel) {return fLogLevel;}
-  static int Logging(void * param, AliHLTComponent_LogSeverity severity, const char* origin, const char* keyword, const char* message);
-  static const char* BuildLogString(const char *format, va_list ap);
   AliHLTComponentHandler* fpComponentHandler;
-protected:
 
-private:
-  Int_t fLogLevel;
-  static char fLogBuffer[LOG_BUFFER_SIZE];
+  /* add a configuration to the end of the list
+   */
+  int AddConfiguration(AliHLTConfiguration* pConf);
 
-  ClassDef(AliHLTSystem, 0)
+  /* add a configuration to the list after the specified configuration
+   */
+  int InsertConfiguration(AliHLTConfiguration* pConf, AliHLTConfiguration* pPrec);
+
+  /* remove a configuration from the list
+   */
+  int DeleteConfiguration(AliHLTConfiguration* pConf);
+
+  /* build a task list from the configuration list
+   */
+  int BuildTaskList(AliHLTConfiguration* pConf);
+
+  int CleanTaskList();
+
+  int InsertTask(AliHLTTask* pTask);
+
+  AliHLTTask* FindTask(const char* id);
+
+  void PrintTaskList();
+
+  /* run the task list
+   */
+  int Run();
+
+ protected:
+  int ProcessTask();
+  int StartEvent();
+  int ProcessEvent();
+  int StopEvent();
+ 
+ private:
+  TList fConfList;
+  int fbListChanged;
+
+  TList fTaskList;
+
+ private:
+  ClassDef(AliHLTSystem, 0);
 };
 #endif
 
