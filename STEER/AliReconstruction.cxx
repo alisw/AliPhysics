@@ -1342,7 +1342,8 @@ void AliReconstruction::CreateTag(TFile* file)
 	  ntrack++;
 	}//track loop
       // Fill the event tags 
-      MeanPt = MeanPt/ntrack;
+      if(ntrack != 0)
+	MeanPt = MeanPt/ntrack;
       
       evTag->SetEventId(i_EventNumber+1);
       evTag->SetVertexX(VertexIn->GetXv());
