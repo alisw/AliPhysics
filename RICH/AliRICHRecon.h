@@ -160,6 +160,7 @@ protected:
   Int_t fCandidatePhotonsNumber;              // number of candidate photons
   Int_t fHoughPhotons;                        // n. photons after Hough
   Int_t   fFittedHoughPhotons;                // n. photons after Hough and after minimization
+  Int_t fMinNumPhots;                         // minimum number of photons for a given ring
 
   Float_t fTrackTheta;                        // Theta of track at RICH
   Float_t fTrackPhi;                          // Phi of track at RICH

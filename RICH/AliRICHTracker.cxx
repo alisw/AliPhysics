@@ -19,36 +19,35 @@ Int_t AliRICHTracker::PropagateBack(AliESD *pESD)
 // 1. AliESD  - reconstructed tracks are used     
 // 2. RICH private ntuple for debug- stack particles used instead of reconstructed tracks     
   AliDebug(1,"Start pattern recognition");
-  if(pESD->GetNumberOfTracks())
-    RecWithESD(pESD);
-  else
-    RecWithStack(0);
+  if(pESD->GetNumberOfTracks()) {
+    Int_t iNtracks=pESD->GetNumberOfTracks();
+    AliDebug(1,Form("Start with %i tracks",iNtracks));
+    AliRICH *pRich=((AliRICH*)gAlice->GetDetector("RICH"));  
+    for(Int_t iTrackN=0;iTrackN<iNtracks;iTrackN++){//ESD tracks loop
+      RecWithESD(pESD,pRich,iTrackN);
+    }
+  }
+  else RecWithStack(0);
   AliDebug(1,"Stop pattern recognition");
   return 0; // error code: 0=no error;
 }//PropagateBack()
 //__________________________________________________________________________________________________
-void AliRICHTracker::RecWithESD(AliESD *pESD)
+void AliRICHTracker::RecWithESD(AliESD *pESD,AliRICH *pRich,Int_t iTrackN)
 {
 //recontruction from ESD- primary way to reconstruct particle ID signal from tracks provided by core detectors
 
-  Int_t iNtracks=pESD->GetNumberOfTracks();
-  Double_t b=GetFieldMap()->SolenoidField()/10;// magnetic field in Tesla
-  AliDebug(1,Form("Start with %i tracks in %f Tesla field",iNtracks,b));
-  
-  AliRICH *pRich=((AliRICH*)gAlice->GetDetector("RICH"));
-  
-  for(Int_t iTrackN=0;iTrackN<iNtracks;iTrackN++){//ESD tracks loop
+    Double_t fField=GetFieldMap()->SolenoidField()/10;// magnetic field in Tesla
     AliESDtrack *pTrack = pESD->GetTrack(iTrackN);// get next reconstructed track
 //  if((pTrack->GetStatus()&AliESDtrack::kTOFout)==0) continue; //ignore tracks not recontructed by TOF
 //    pTrack->GetXYZ(xb); 
 //    pTrack->GetPxPyPz(pb); 
     Int_t status=pTrack->GetStatus()&AliESDtrack::kTOFout;//get running track parameters
-    Int_t charge = (Int_t)(-TMath::Sign(1.,pTrack->GetSign()*b));
+    Int_t charge = (Int_t)(-TMath::Sign(1.,pTrack->GetSign()*fField));
     AliDebug(1,Form("Track %i pmod=%f charge=%i stat=%i",iTrackN,pTrack->GetP(),charge,status));
-    AliRICHHelix helix(pTrack->X3(),pTrack->P3(),charge,b);   
+    AliRICHHelix helix(pTrack->X3(),pTrack->P3(),charge,fField);   
     Int_t iChamber=helix.RichIntersect(pRich->P());        
     AliDebug(1,Form("intersection with %i chamber found",iChamber));
-    if(!iChamber) continue;//intersection with no chamber found
+    if(!iChamber) return;//intersection with no chamber found
 //find MIP cluster candidate (cluster which is closest to track intersection point)    
     Double_t distMip=9999,distX=0,distY=0; //min distance between clusters and track position on PC 
     Int_t iMipId=0; //index of that min distance cluster
@@ -74,14 +73,14 @@ void AliRICHTracker::RecWithESD(AliESD *pESD)
     if(distMip>1||chargeMip<100) {
       //track not accepted for pattern recognition
       pTrack->SetRICHsignal(-999.); //to be improved by flags...
-      continue;
+      return;
     }
 //
     AliRICHRecon recon(&helix,pRich->Clusters(iChamber),iMipId); //actual job is done there
 
     Double_t thetaCerenkov=recon.ThetaCerenkov(); //search for mean Cerenkov angle for this track
     
-    pTrack->SetRICHcluster(iMipId+100000*iChamber);
+    pTrack->SetRICHcluster(((Int_t)chargeMip)+1000000*iChamber);
     pTrack->SetRICHdxdy(distX,distY);
     pTrack->SetRICHthetaPhi(helix.Ploc().Theta(),helix.Ploc().Phi());
     pTrack->SetRICHsignal(thetaCerenkov);
@@ -95,13 +94,11 @@ void AliRICHTracker::RecWithESD(AliESD *pESD)
       Double_t richPID[AliPID::kSPECIES];
       for (Int_t iPart=0;iPart<AliPID::kSPECIES;iPart++) {
         sigmaPID[iPart] = 0;
-	richPID[iPart] = 0;
         for(Int_t iphot=0;iphot<pRich->Clusters(iChamber)->GetEntries();iphot++) {
           recon.SetPhotonIndex(iphot);
           if(recon.GetPhotonFlag() == 2) {
-            Double_t sigma2 = AliRICHParam::SigmaSinglePhoton(iPart,pTrack->GetP(),recon.GetTrackTheta(),recon.GetPhiPoint()-recon.GetTrackPhi()).Mag2();
-	    if (sigma2 >0)
-	      sigmaPID[iPart] += 1/sigma2;
+            Double_t sigma = AliRICHParam::SigmaSinglePhoton(iPart,pTrack->GetP(),recon.GetTrackTheta(),recon.GetPhiPoint()-recon.GetTrackPhi()).Mag();
+            sigmaPID[iPart] += 1/(sigma*sigma);
           }
         }
 	if (sigmaPID[iPart]>0)
@@ -111,10 +108,7 @@ void AliRICHTracker::RecWithESD(AliESD *pESD)
       CalcProb(thetaCerenkov,pTrack->GetP(),sigmaPID,richPID);
       pTrack->SetRICHpid(richPID);         
       AliDebug(1,Form("PROBABILITIES ---> %f - %f - %f - %f - %f",richPID[0],richPID[1],richPID[2],richPID[3],richPID[4]));
-    }
-    
-    
-  }//ESD tracks loop
+    }    
   AliDebug(1,"Stop.");  
 } //RecWithESD
 //__________________________________________________________________________________________________

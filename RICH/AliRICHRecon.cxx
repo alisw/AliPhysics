@@ -25,6 +25,7 @@
 #include <TMath.h>
 #include <TRotation.h>
 #include <TVector3.h>
+#include <TH1F.h>
 
 #include "AliRICH.h"
 #include "AliRICHParam.h"
@@ -40,16 +41,18 @@ AliRICHRecon::AliRICHRecon(AliRICHHelix *pHelix,TClonesArray *pClusters,Int_t iM
 {
 // main ctor
   SetFreonScaleFactor(1);
-  fIsWEIGHT = kFALSE;
+//  fIsWEIGHT = kFALSE;
+  fIsWEIGHT = kTRUE;
   fThetaBin=750; fThetaMin = 0.0; fThetaMax = 0.75; 
   fDTheta       = 0.001;   fWindowWidth  = 0.045;
+  fMinNumPhots = 3;
   fRadiatorWidth = AliRICHParam::Zfreon();
   fQuartzWidth   = AliRICHParam::Zwin();
   fGapWidth      = AliRICHParam::Freon2Pc() - fRadiatorWidth - fQuartzWidth;
-  fXmin         = -AliRICHParam::PcSizeX()/2.;
-  fXmax         =  AliRICHParam::PcSizeX()/2.;
-  fYmin         = -AliRICHParam::PcSizeY()/2.;
-  fYmax         =  AliRICHParam::PcSizeY()/2.; 
+  fXmin         = 0.;
+  fXmax         =  AliRICHParam::PcSizeX();
+  fYmin         = 0.;
+  fYmax         =  AliRICHParam::PcSizeY(); 
   SetTrackTheta(pHelix->Ploc().Theta());
   SetTrackPhi(pHelix->Ploc().Phi());
   SetMipIndex(iMipId);
@@ -476,6 +479,7 @@ void AliRICHRecon::FindAreaAndPortionOfRing()
       
       Int_t zone = CheckDetectorAcceptance();
 
+       AliDebug(1,Form("acceptance to detector zone -> %d",zone));	    
 
       if (zone != 0) 
 	{
@@ -792,176 +796,54 @@ Float_t AliRICHRecon::SnellAngle(Float_t n1, Float_t n2, Float_t theta1)
 //__________________________________________________________________________________________________
 void AliRICHRecon::HoughResponse()
 {
-  //Hough response
-
-// Implement Hough response pat. rec. method
-
-  Float_t *hCSspace;
-
-  int 		bin=0;
-  int           bin1=0;
-  int           bin2=0;
-  int           i, j, k, nCorrBand;
-  float         hcs[750],hcsw[750];
-  float         angle, weight;
-  float         lowerlimit,upperlimit;
-
-  float         etaPeak[100];
-
-  int           nBin;
-
-  float etaPeakPos  = -1;
-
-  Int_t   etaPeakCount = -1;
-  
-  Float_t thetaCerenkov = 0.;
-    
-  nBin = (int)(0.5+fThetaMax/(fDTheta));
-  nCorrBand = (int)(0.5+ fWindowWidth/(2 * fDTheta)); 
-
-  memset ((void *)hcs, 0, fThetaBin*sizeof(float));
-  memset ((void *)hcsw, 0, fThetaBin*sizeof(float));
-
+  TH1F *phots = new TH1F("phots","phots",750,0.,0.75);
+  TH1F *photsw = new TH1F("photsw","photsw",750,0.,0.75);
+  TH1F *resultw = new TH1F("resultw","resultw",750,0.,0.75);
   Int_t nPhotons = GetPhotonsNumber();
-
-  Int_t weightFlag = 0;
-
-  for (k=0; k< nPhotons; k++) {
-
-    SetPhotonIndex(k);
-
-    angle = GetPhotonEta();
-
+  Int_t nBin = (Int_t)(fThetaMax/fDTheta);
+  Int_t nCorrBand = (Int_t)(fWindowWidth/(2*fDTheta));
+  AliDebug(1,Form("Ring reconstruction for track with theta %f",GetTrackTheta()*TMath::RadToDeg()));	      
+  for (Int_t kPhot=0; kPhot< nPhotons; kPhot++){
+    SetPhotonIndex(kPhot);
+    Double_t angle = GetPhotonEta();
     if(angle == -999.) continue;
-
-    if (angle>=fThetaMin && angle<= fThetaMax) 
-
-      {
-
-	bin = (int)(0.5+angle/(fDTheta));
-
-	bin1= bin-nCorrBand;
-	bin2= bin+nCorrBand;
-
-	// calculate weights
-
-	if(fIsWEIGHT)
-	  {
-	    lowerlimit = ((Float_t)bin1)*fDTheta + 0.5*fDTheta;
-	    SetThetaOfRing(lowerlimit);
-	    FindAreaAndPortionOfRing();
-	    Float_t area1 = GetAreaOfRing();
-	    
-	    upperlimit = ((Float_t)bin2)*fDTheta + 0.5*fDTheta;
-	    SetThetaOfRing(upperlimit);
-	    FindAreaAndPortionOfRing();
-	    Float_t area2 = GetAreaOfRing();
-	    
-	    //	    cout << "lowerlimit" << lowerlimit << "upperlimit " << upperlimit << endl;
-            Float_t diffarea = area2 - area1;
-
-            if(diffarea>0)
-              {
-	        weight = 1./(area2-area1);
-              }
-            else
-              {
-                weightFlag = 1;
-		weight = 1.;
-              }
-
-	    //	    cout <<" low "<< lowerlimit << " up " << upperlimit << 
-	    //	      " area1 " << area1 << " area2 " << area2 << " weight " << weight << endl;
-	    
-	  }
-	else
-	  {
-	    weight = 1.;
-	  }
-
-	SetPhotonWeight(weight);
-	
-	//	cout << "weight..." << weight << endl;
-
-
-	if (bin1<0)    bin1=0;
-	if (bin2>nBin) bin2=nBin;
-      
-	for (j=bin1; j<bin2; j++) 
-	  {
-	    hcs[j] += 1; 
-	    hcsw[j] += weight;
-	  }
-      }
-  }
-  
-
-  if(weightFlag == 0) 
-    {
-      hCSspace = hcsw;
+    phots->Fill(angle);
+    Int_t bin = (Int_t)(0.5+angle/(fDTheta));
+    Double_t weight=1.;
+    if(fIsWEIGHT){
+      Double_t lowerlimit = ((Float_t)bin)*fDTheta - 0.5*fDTheta;
+      SetThetaOfRing(lowerlimit);
+      FindAreaAndPortionOfRing();
+      Float_t area1 = GetAreaOfRing();
+      Double_t upperlimit = ((Float_t)bin)*fDTheta + 0.5*fDTheta;
+      SetThetaOfRing(upperlimit);
+      FindAreaAndPortionOfRing();
+      Float_t area2 = GetAreaOfRing();
+      AliDebug(1,Form("lowerlimit %f  area %f ; upperlimit %f area %f",lowerlimit,area1,upperlimit,area2));	    
+      Float_t diffarea = area2 - area1;
+      if(diffarea>0){weight = 1./(area2-area1);}else{weight = 1.;}
     }
-  else
-    {
-      hCSspace = hcs;
-      //      cout << " probems with weight...normal procedure adopted " << endl;
-    }
-
-  HoughFiltering(hCSspace);
-
-  for (bin=0; bin <nBin; bin++) {
-    angle = (bin+0.5) * (fDTheta);
-    if (hCSspace[bin] && hCSspace[bin] > etaPeakPos) {
-      etaPeakCount = 0;
-      etaPeakPos = hCSspace[bin];
-      etaPeak[0]=angle;
-    }
-    else { 
-      if (hCSspace[bin] == etaPeakPos) {
-	etaPeak[++etaPeakCount] = angle;
-      }
-    }
-  } 
-
-  for (i=0; i<etaPeakCount+1; i++) {
-    thetaCerenkov += etaPeak[i];
-  }
-  if (etaPeakCount>=0) {
-    thetaCerenkov /= etaPeakCount+1;
-    fThetaPeakPos = etaPeakPos;
-  }
-
-  SetThetaCerenkov(thetaCerenkov);
-}
-//__________________________________________________________________________________________________
-void AliRICHRecon::HoughFiltering(float hcs[])
-{
-  // filter for Hough
-
-// hough filtering
-
-   float hcsFilt[750];
-   float k[5] = {0.05, 0.25, 0.4, 0.25, 0.05};
-   int nx, i, nxDx;
-   int sizeHCS;
-   int nBin;
-
-   nBin =  (int)(1+fThetaMax/fDTheta); 
-   sizeHCS = fThetaBin*sizeof(float);
-
-   memset ((void *)hcsFilt, 0, sizeHCS); 
-
-   for (nx = 0; nx < nBin; nx++) {
-      for (i = 0; i < 5; i++)	{
-        nxDx = nx + (i-2);
-	if (nxDx> -1 && nxDx<nBin)
-             hcsFilt[nx] +=  hcs[nxDx] * k[i];
-      }      
-   }
-     
-   for (nx = 0; nx < nBin; nx++) {
-     hcs[nx] = hcsFilt[nx];
-   }
-}
+    photsw->Fill(angle,weight);
+    SetPhotonWeight(weight);
+  }  
+  for (Int_t i=1; i<=nBin;i++){
+    Int_t bin1= i-nCorrBand;
+    Int_t bin2= i+nCorrBand;
+    if(bin1<1) bin1=1;
+    if(bin2>nBin)bin2=nBin;
+    Double_t sumPhots=phots->Integral(bin1,bin2);
+    if(sumPhots<fMinNumPhots) continue; // cut on minimum n. of photons per ring
+    Double_t sumPhotsw=photsw->Integral(bin1,bin2);
+    resultw->Fill((Float_t)(i*fDTheta),sumPhotsw);
+} 
+// evaluate the "BEST" thetacerenkov....
+  Float_t *pVec = resultw->GetArray();
+  Int_t locMax = TMath::LocMax(nBin,pVec);
+  SetThetaCerenkov((Double_t)(locMax*fDTheta+0.5*fDTheta));
+   
+// Reset and delete objects
+  phots->Delete();photsw->Delete();resultw->Delete(); 
+}//HoughResponse
 //__________________________________________________________________________________________________
 void AliRICHRecon::FindThetaCerenkov()
 {
@@ -1039,4 +921,3 @@ void AliRICHRecon::FlagPhotons()
     }
   SetHoughPhotons(nPhotonHough);
 }
-

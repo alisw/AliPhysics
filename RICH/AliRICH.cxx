@@ -618,13 +618,13 @@ void AliRICH::OccupancyPrint(Int_t iEvtNreq)const
 
   Int_t totPadsPerChamber = AliRICHParam::NpadsX()*AliRICHParam::NpadsY();  
 
-  Int_t nDigCh[kNchambers]={0,0,0,0,0,0,0};  
-  Int_t iChHits[kNchambers]={0,0,0,0,0,0,0};
-  Int_t nPrim[kNchambers]={0,0,0,0,0,0,0};
-  Int_t nSec[kNchambers]={0,0,0,0,0,0,0};
   
-  for(Int_t iEvtN=iEvtNmin;iEvtN<iEvtNmax;iEvtN++){
-    if(iEvtN%10==0) AliInfo(Form("events processed %i",iEvtN));
+  for(Int_t iEvtN=iEvtNmin;iEvtN<iEvtNmax;iEvtN++){    
+    Int_t nDigCh[kNchambers]={0,0,0,0,0,0,0};  
+    Int_t iChHits[kNchambers]={0,0,0,0,0,0,0};
+    Int_t nPrim[kNchambers]={0,0,0,0,0,0,0};
+    Int_t nSec[kNchambers]={0,0,0,0,0,0,0};
+    AliInfo(Form("events processed %i",iEvtN));
     if(GetLoader()->GetRunLoader()->GetEvent(iEvtN)) return;    
     AliStack *pStack = GetLoader()->GetRunLoader()->Stack();
     for(Int_t iPrimN=0;iPrimN<GetLoader()->TreeH()->GetEntries();iPrimN++){//prims loop
@@ -638,13 +638,13 @@ void AliRICH::OccupancyPrint(Int_t iEvtNreq)const
       }
     }
     GetLoader()->TreeD()->GetEntry(0);
-    for(Int_t iChamber=1;iChamber<=kNchambers;iChamber++) nDigCh[iChamber-1]= Digits(iChamber)->GetEntries();
-  }  
-  for(Int_t iChamber=1;iChamber<=kNchambers;iChamber++){
-    Double_t occupancy = (Double_t)nDigCh[iChamber-1]/(Double_t)totPadsPerChamber;
-    Info("Occupancy","for chamber %i = %4.2f %% and charged prim tracks %i and sec. tracks %i with total %i",
+    for(Int_t iChamber=1;iChamber<=kNchambers;iChamber++) {
+      nDigCh[iChamber-1]= Digits(iChamber)->GetEntries();
+      Double_t occupancy = (Double_t)nDigCh[iChamber-1]/(Double_t)totPadsPerChamber;
+      Info("Occupancy","for chamber %i = %4.2f %% and charged prim tracks %i and sec. tracks %i with total %i",
         iChamber,occupancy*100.,nPrim[iChamber-1],nSec[iChamber-1],iChHits[iChamber-1]);
-  }    
+    }
+  }
   GetLoader()->UnloadHits();
   GetLoader()->UnloadDigits();
   GetLoader()->GetRunLoader()->UnloadHeader();    
@@ -879,6 +879,67 @@ void AliRICH::CheckPR()const
   pFile->Write();pFile->Close();
 }
 //__________________________________________________________________________________________________
+void AliRICH::RichAna()
+{
+  TFile *pFile=TFile::Open("AliESDs.root","read");
+  if(!pFile || !pFile->IsOpen()) {AliInfo("ESD file not open.");return;}      //open AliESDs.root                                                                    
+  TTree *pTree = (TTree*) pFile->Get("esdTree");
+  if(!pTree){AliInfo("ESD not found.");return;}                               //get ESD tree  
+  AliInfo("ESD found. Go ahead!");
+
+  AliMagF * magf = gAlice->Field();
+  AliTracker::SetFieldMap(magf,kTRUE);
+//  AliTracker::SetFieldMap(magf);
+
+  TFile *pFileRA = new TFile("$(HOME)/RichAna.root","RECREATE","RICH Pattern Recognition");
+  TNtupleD *hn = new TNtupleD("hn","ntuple","Pmod:Charge:TrackTheta:TrackPhi:MinX:MinY:ThetaCerenkov:NPhotons:ChargeMIP:Chamber:TOF:LengthTOF:prob1:prob2:prob3");
+   
+  AliESD *pESD=new AliESD;  pTree->SetBranchAddress("ESD", &pESD);
+//  for(Int_t iEvtN=0;iEvtN<GetLoader()->GetRunLoader()->GetNumberOfEvents();iEvtN++) {
+  for(Int_t iEvtN=0;iEvtN<2;iEvtN++) {
+    pTree->GetEvent(iEvtN);
+    AliRICH *pRich=((AliRICH*)gAlice->GetDetector("RICH"));
+    pRich->GetLoader()->GetRunLoader()->GetEvent(iEvtN);
+    pRich->GetLoader()->LoadRecPoints();
+    pRich->GetLoader()->TreeR()->GetEntry(0);
+//Pattern recognition started
+    if(pESD->GetNumberOfTracks()) {
+      Int_t iNtracks=pESD->GetNumberOfTracks();
+      Info("RichAna",Form("Start with %i tracks",iNtracks));
+      for(Int_t iTrackN=0;iTrackN<iNtracks;iTrackN++){//ESD tracks loop
+        if(iTrackN%100==0)Info("RichAna",Form("Track %i to be processed",iTrackN));
+        AliRICHTracker *pTrRich = new AliRICHTracker();
+        pTrRich->RecWithESD(pESD,pRich,iTrackN);
+        AliESDtrack *pTrack = pESD->GetTrack(iTrackN);// get next reconstructed track
+        Double_t dx,dy;
+        Double_t hnvec[20];
+        pTrack->GetRICHdxdy(dx,dy);
+        hnvec[0]=pTrack->GetP();
+        hnvec[1]=pTrack->GetSign();
+//  cout << " Track momentum " << pTrack->GetP() << " charge " << pTrack->GetSign() << endl;
+  
+        pTrack->GetRICHthetaPhi(hnvec[2],hnvec[3]);
+        pTrack->GetRICHdxdy(hnvec[4],hnvec[5]);
+        hnvec[6]=pTrack->GetRICHsignal();
+        hnvec[7]=pTrack->GetRICHnclusters();
+        hnvec[9]=pTrack->GetRICHcluster()/1000000;
+        hnvec[8]=pTrack->GetRICHcluster()-hnvec[9]*1000000;
+        hnvec[10]=pTrack->GetTOFsignal();
+        hnvec[11]=pTrack->GetIntegratedLength();
+        Double_t prob[5];
+        pTrack->GetRICHpid(prob);
+        hnvec[12]=prob[0]+prob[1]+prob[2];
+        hnvec[13]=prob[3];
+        hnvec[14]=prob[4];
+        hn->Fill(hnvec);
+      }
+    }
+    Info("RichAna","Pattern Recognition done for event %i",iEvtN);
+  }
+  pFileRA->Write();pFileRA->Close();// close RichAna.root
+  delete pESD;  pFile->Close();//close AliESDs.root
+}
+//__________________________________________________________________________________________________
 void AliRICH::DisplayEvent(Int_t iEvtNmin,Int_t iEvtNmax)const
 {
   TH2F *pDigitsH2[8];
@@ -980,7 +1041,7 @@ void AliRICH::Display()const
       pHitsH2->SetMarkerColor(kRed); pHitsH2->SetMarkerStyle(29); pHitsH2->SetMarkerSize(0.4);
       ReadESD(iEventN,iChamber);
       pHitsH2->Draw();
-      ReadESD(iEventN,iChamber);
+//      ReadESD(iEventN,iChamber);
       AliRICHParam::DrawSectors();
       TLatex l; l.SetNDC(); l.SetTextSize(0.02);
       if(!isHits)     {l.SetTextColor(kRed)  ;l.DrawLatex(0.1,0.01,"No Hits"    );}

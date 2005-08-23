@@ -106,7 +106,8 @@ void MenuRich()
   pMenu->AddButton("Print occupancy"  ,"r->OccupancyPrint(-1);" ,"????");  
   pMenu->AddButton("Event Summary  "  ,"r->SummaryOfEvent();" ,"????");  
   pMenu->AddButton("Hits plots"       ,"r->ControlPlots()"    ,"????");
-  pMenu->AddButton("Recon with stack" ,"r->CheckPR()"                                           , "Create RSR.root with ntuple hn");    
+  pMenu->AddButton("Recon with stack" ,"r->CheckPR()", "Create RSR.root with ntuple hn");    
+  pMenu->AddButton("RichAna"          ,"r->RichAna()", "Create RichAna.root with ntuple hn");    
   pMenu->Show();  
 }//TestMenu()
 //__________________________________________________________________________________________________
