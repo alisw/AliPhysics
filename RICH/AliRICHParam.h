@@ -145,6 +145,7 @@ public:
                                                                                                                                                       //Detector Reference System
 
   static Bool_t     fgIsAerogel;                            //aerogel geometry instead of normal RICH flag
+  static Double_t fgMass[5];                                // mass array
 protected:
   static Bool_t     fgIsRadioSrc;                           //radioactive source instead of radiators flag
   static Bool_t     fgIsTestBeam;                           //test beam geometry instead of normal RICH flag
@@ -161,7 +162,6 @@ protected:
   static Double_t fgErrChrom[4][330];                       //
   static Double_t fgErrGeom[4][330];                        //
   static Double_t fgErrLoc[4][330];                         //Chromatic, Geometric and Localization array to parametrize SigmaCerenkov
-  static Double_t fgMass[5];                                // mass array
   
   ClassDef(AliRICHParam,6)                                  //RICH main parameters class
 };

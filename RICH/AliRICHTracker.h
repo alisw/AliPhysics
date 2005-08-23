@@ -13,7 +13,7 @@ class TTree;
 class AliRICHTracker : public AliTracker
 {
 public:
-           AliRICHTracker() :AliTracker()      {AliDebug(1,"Start.");}
+           AliRICHTracker() :AliTracker()      {for(Int_t i=0;i<5;i++)fErrPar[i]=0;AliDebug(1,"Start.");}
   virtual ~AliRICHTracker()                    {AliDebug(1,"Stop.");}
   Int_t Clusters2Tracks(AliESD *)              {AliDebug(1,"Start.");return 0;} //pure virtual from AliTracker 
   Int_t RefitInward(AliESD *)                  {AliDebug(1,"Start.");return 0;} //pure virtual from AliTracker 
@@ -24,7 +24,7 @@ public:
   void RecWithStack(TNtupleD *hn);                                              //recon from Stack in case ESD empty
   void CalcProb(Double_t thetaCer,Double_t pmod,Double_t *sigmaPID, Double_t *richPID);             // calculate pid for RICH
   Int_t LoadClusters(TTree *);                                                  //pure virtual from AliTracker 
-
+  Double_t fErrPar[5];                                                          //Temporary stored for debug purpose
 protected:
 
   Double_t fField; // magnetic field stored

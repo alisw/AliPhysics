@@ -892,7 +892,7 @@ void AliRICH::RichAna()
 //  AliTracker::SetFieldMap(magf);
 
   TFile *pFileRA = new TFile("$(HOME)/RichAna.root","RECREATE","RICH Pattern Recognition");
-  TNtupleD *hn = new TNtupleD("hn","ntuple","Pmod:Charge:TrackTheta:TrackPhi:MinX:MinY:ThetaCerenkov:NPhotons:ChargeMIP:Chamber:TOF:LengthTOF:prob1:prob2:prob3");
+  TNtupleD *hn = new TNtupleD("hn","ntuple","Pmod:Charge:TrackTheta:TrackPhi:MinX:MinY:ThetaCerenkov:NPhotons:ChargeMIP:Chamber:TOF:LengthTOF:prob1:prob2:prob3:ErrPar1:ErrPar2:ErrPar3:Th1:Th2:Th3");
    
   AliESD *pESD=new AliESD;  pTree->SetBranchAddress("ESD", &pESD);
   for(Int_t iEvtN=0;iEvtN<GetLoader()->GetRunLoader()->GetNumberOfEvents();iEvtN++) {
@@ -911,7 +911,7 @@ void AliRICH::RichAna()
         pTrRich->RecWithESD(pESD,pRich,iTrackN);
         AliESDtrack *pTrack = pESD->GetTrack(iTrackN);// get next reconstructed track
         Double_t dx,dy;
-        Double_t hnvec[20];
+        Double_t hnvec[30];
         pTrack->GetRICHdxdy(dx,dy);
         hnvec[0]=pTrack->GetP();
         hnvec[1]=pTrack->GetSign();
@@ -930,6 +930,17 @@ void AliRICH::RichAna()
         hnvec[12]=prob[0]+prob[1]+prob[2];
         hnvec[13]=prob[3];
         hnvec[14]=prob[4];
+        hnvec[15]=pTrRich->fErrPar[2];
+        hnvec[16]=pTrRich->fErrPar[3];
+        hnvec[17]=pTrRich->fErrPar[4];
+        for(Int_t i=0;i<3;i++) {
+          Double_t mass = AliRICHParam::fgMass[i+2];
+          Double_t refIndex=AliRICHParam::RefIdxC6F14(AliRICHParam::MeanCkovEnergy());
+          Double_t cosThetaTh = TMath::Sqrt(mass*mass+pTrack->GetP()*pTrack->GetP())/(refIndex*pTrack->GetP());
+          hnvec[18+i]=0;
+          if(cosThetaTh>=1) continue;
+          hnvec[18+i]= TMath::ACos(cosThetaTh);
+        }
         hn->Fill(hnvec);
       }
     }

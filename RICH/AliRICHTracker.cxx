@@ -94,6 +94,7 @@ void AliRICHTracker::RecWithESD(AliESD *pESD,AliRICH *pRich,Int_t iTrackN)
       Double_t richPID[AliPID::kSPECIES];
       for (Int_t iPart=0;iPart<AliPID::kSPECIES;iPart++) {
         sigmaPID[iPart] = 0;
+        fErrPar[iPart] = 0;
         for(Int_t iphot=0;iphot<pRich->Clusters(iChamber)->GetEntries();iphot++) {
           recon.SetPhotonIndex(iphot);
           if(recon.GetPhotonFlag() == 2) {
@@ -103,6 +104,7 @@ void AliRICHTracker::RecWithESD(AliESD *pESD,AliRICH *pRich,Int_t iTrackN)
         }
 	if (sigmaPID[iPart]>0)
 	  sigmaPID[iPart] = 1/TMath::Sqrt(sigmaPID[iPart])*0.001;
+          fErrPar[iPart]=sigmaPID[iPart];
         AliDebug(1,Form("sigma for %s is %f rad",AliPID::ParticleName(iPart),sigmaPID[iPart]));
       }
       CalcProb(thetaCerenkov,pTrack->GetP(),sigmaPID,richPID);
@@ -220,7 +222,7 @@ void AliRICHTracker::CalcProb(Double_t thetaCer,Double_t pmod, Double_t *sigmaPI
   Double_t thetaTh[AliPID::kSPECIES];
   for(Int_t iPart=0;iPart<AliPID::kSPECIES;iPart++){
     height[iPart]=0;
-    Double_t mass = AliPID::ParticleMass(iPart);
+    Double_t mass = AliRICHParam::fgMass[iPart];
     Double_t refIndex=AliRICHParam::RefIdxC6F14(AliRICHParam::MeanCkovEnergy());
     Double_t cosThetaTh = TMath::Sqrt(mass*mass+pmod*pmod)/(refIndex*pmod);
     thetaTh[iPart]=0;

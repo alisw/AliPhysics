@@ -307,6 +307,7 @@ TVector3 AliRICHParam::SigmaSinglePhoton(Int_t partID, Double_t mom, Double_t th
   v.SetX(Interpolate(fgErrChrom,pmom,theta,phi));
   v.SetY(Interpolate(fgErrGeom,pmom,theta,phi));
   v.SetZ(Interpolate(fgErrLoc,pmom,theta,phi));
+  v*=1.5; // take into account bigger errors due to multiplicity...to change in future
 
   return v;
 }//SigmaSinglePhoton
