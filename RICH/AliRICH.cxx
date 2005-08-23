@@ -895,8 +895,7 @@ void AliRICH::RichAna()
   TNtupleD *hn = new TNtupleD("hn","ntuple","Pmod:Charge:TrackTheta:TrackPhi:MinX:MinY:ThetaCerenkov:NPhotons:ChargeMIP:Chamber:TOF:LengthTOF:prob1:prob2:prob3");
    
   AliESD *pESD=new AliESD;  pTree->SetBranchAddress("ESD", &pESD);
-//  for(Int_t iEvtN=0;iEvtN<GetLoader()->GetRunLoader()->GetNumberOfEvents();iEvtN++) {
-  for(Int_t iEvtN=0;iEvtN<2;iEvtN++) {
+  for(Int_t iEvtN=0;iEvtN<GetLoader()->GetRunLoader()->GetNumberOfEvents();iEvtN++) {
     pTree->GetEvent(iEvtN);
     AliRICH *pRich=((AliRICH*)gAlice->GetDetector("RICH"));
     pRich->GetLoader()->GetRunLoader()->GetEvent(iEvtN);

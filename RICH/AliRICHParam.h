@@ -161,6 +161,7 @@ protected:
   static Double_t fgErrChrom[4][330];                       //
   static Double_t fgErrGeom[4][330];                        //
   static Double_t fgErrLoc[4][330];                         //Chromatic, Geometric and Localization array to parametrize SigmaCerenkov
+  static Double_t fgMass[5];                                // mass array
   
   ClassDef(AliRICHParam,6)                                  //RICH main parameters class
 };

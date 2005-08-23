@@ -44,7 +44,7 @@ Float_t  AliRICHParam::fgSigmaThSpread        =0.035; //
 Double_t AliRICHParam::fgErrChrom[4][330];                       //
 Double_t AliRICHParam::fgErrGeom[4][330];                        //
 Double_t AliRICHParam::fgErrLoc[4][330];                         //Chromatic, Geometric and Localization array to parametrize SigmaCerenkov
-  
+Double_t AliRICHParam::fgMass[5]              ={0.00051,0.10566,0.13957,0.49360,0.93828};  
 
 //__________________________________________________________________________________________________
 void AliRICHParam::Print(Option_t*) const
@@ -292,13 +292,13 @@ TVector3 AliRICHParam::SigmaSinglePhoton(Int_t partID, Double_t mom, Double_t th
 {
 // Find sigma for single photon. It returns the thrree different errors. If you want
 // to have the error---> TVector3.Mag()
-  
+// partID = 0,1,2,3,4 ---> e,mu,pi,k,p in agreement with AliPID
   TVector3 v(-999,-999,-999);
   Double_t pmom;
 
   ReadErrFiles();
-  Double_t mass = AliPID::ParticleMass(partID);
-  Double_t massRef = AliPID::ParticleMass(AliPID::kProton); // all the files are calculated for protons...so mass ref is proton mass
+  Double_t mass = fgMass[partID];
+  Double_t massRef = fgMass[4]; // all the files are calculated for protons...so mass ref is proton mass
   pmom = mom*massRef/mass; // normalized momentum respect to proton...
   if(pmom>6.5) pmom = 6.5;
   Double_t oneOverRefIndex = 1/RefIdxC6F14(6.755);
