@@ -42,7 +42,7 @@ AliRICHRecon::AliRICHRecon(AliRICHHelix *pHelix,TClonesArray *pClusters,Int_t iM
 // main ctor
   SetFreonScaleFactor(1);
   fIsWEIGHT = kFALSE;
-//  fIsWEIGHT = kTRUE;
+  if(pClusters->GetEntries()>200) fIsWEIGHT = kTRUE; // offset to take into account bkg in reconstruction
   fThetaBin=750; fThetaMin = 0.0; fThetaMax = 0.75; 
   fDTheta       = 0.001;   fWindowWidth  = 0.045;
   fMinNumPhots = 3;
