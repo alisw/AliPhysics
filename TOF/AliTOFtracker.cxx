@@ -30,7 +30,7 @@
 #include "AliRun.h"
 #include "AliModule.h"
 
-#include "AliTOFdigit.h"
+//#include "AliTOFdigit.h"
 #include "AliTOFcluster.h"
 #include "AliTOFtrack.h"
 #include "AliTOFGeometry.h"
@@ -119,7 +119,7 @@ Int_t AliTOFtracker::PropagateBack(AliESD* event) {
 
   Int_t ntrk=event->GetNumberOfTracks();
   fNseeds = ntrk;
-  fSeeds= new TClonesArray("AliESDtrack");
+  fSeeds= new TClonesArray("AliESDtrack",ntrk);
   TClonesArray &aESDTrack = *fSeeds;
 
 
@@ -135,6 +135,11 @@ Int_t AliTOFtracker::PropagateBack(AliESD* event) {
 
   //First Step with Strict Matching Criterion
   MatchTracks(kFALSE);
+  /*
+  for (Int_t ijk=0; ijk<fN; ijk++) {
+    AliInfo(Form("%4i %4i  %f %f %f  %f %f   %2i %1i %2i %1i %2i",ijk, fClusters[ijk]->GetIndex(),fClusters[ijk]->GetZ(),fClusters[ijk]->GetR(),fClusters[ijk]->GetPhi(), fClusters[ijk]->GetTDC(),fClusters[ijk]->GetADC(),fClusters[ijk]->GetDetInd(0),fClusters[ijk]->GetDetInd(1),fClusters[ijk]->GetDetInd(2),fClusters[ijk]->GetDetInd(3),fClusters[ijk]->GetDetInd(4)));
+  }
+  */
 
   //Second Step with Looser Matching Criterion
   MatchTracks(kTRUE);
@@ -213,6 +218,8 @@ void AliTOFtracker::CollectESD() {
     }
   }
 
+  AliInfo(Form("Number of TOF seedds %i",fNseedsTOF));
+
   // Sort according uncertainties on track position 
   fTracks->Sort();
 
@@ -264,14 +271,17 @@ void AliTOFtracker::MatchTracks( Bool_t mLastStep){
     Double_t z=par[1];   
 
     Int_t nc=0;
-    
+
     // find the clusters in the window of the track
 
     for (Int_t k=FindClusterIndex(z-dz); k<fN; k++) {
+
       AliTOFcluster *c=fClusters[k];
       if (c->GetZ() > z+dz) break;
       if (c->IsUsed()) continue;
       
+      //AliInfo(Form(" fClusters[k]->GetZ() (%f) z-dz (%f)   %4i ", fClusters[k]->GetZ(), z-dz, k));
+
       Double_t dph=TMath::Abs(c->GetPhi()-phi);
       if (dph>TMath::Pi()) dph-=2.*TMath::Pi();
       if (TMath::Abs(dph)>dphi) continue;
@@ -284,6 +294,8 @@ void AliTOFtracker::MatchTracks( Bool_t mLastStep){
       clind[5][nc] = k;      
       nc++;
     }
+
+    //if (nc) AliInfo(Form("seed for TOF %4i and number of clusters in the track window %4i (cluster index %4i)     %4i",i,nc, clind[5][0], fN));
 
     //start fine propagation 
 
@@ -386,7 +398,7 @@ void AliTOFtracker::MatchTracks( Bool_t mLastStep){
     }
 
     AliTOFcluster *c=fClusters[idclus];
-    c->Use();
+    c->Use(); //AliInfo(Form("I am usig the cluster"));
 
     // Track length correction for matching Step 2 
 
@@ -437,43 +449,50 @@ void AliTOFtracker::MatchTracks( Bool_t mLastStep){
   for (Int_t ii=0;ii<6;ii++) delete [] clind[ii];
 }
 //_________________________________________________________________________
-Int_t AliTOFtracker::LoadClusters(TTree *dTree) {
+Int_t AliTOFtracker::LoadClusters(TTree *cTree) {
   //--------------------------------------------------------------------
   //This function loads the TOF clusters
   //--------------------------------------------------------------------
 
-  TBranch *branch=dTree->GetBranch("TOF");
+  TBranch *branch=cTree->GetBranch("TOF");
   if (!branch) { 
-    AliError("can't get the branch with the TOF digits !");
+    AliError("can't get the branch with the TOF clusters !");
     return 1;
   }
 
-  TClonesArray dummy("AliTOFdigit",10000), *digits=&dummy;
-  branch->SetAddress(&digits);
+  TClonesArray dummy("AliTOFcluster",10000), *clusters=&dummy;
+  branch->SetAddress(&clusters);
 
-  dTree->GetEvent(0);
-  Int_t nd=digits->GetEntriesFast();
-  AliInfo(Form("number of digits: %d",nd));
+  cTree->GetEvent(0);
+  Int_t nc=clusters->GetEntriesFast();
+  AliInfo(Form("Number of clusters: %d",nc));
 
-  for (Int_t i=0; i<nd; i++) {
-    AliTOFdigit *d=(AliTOFdigit*)digits->UncheckedAt(i);
-    Int_t dig[5]; Float_t g[3];
-    dig[0]=d->GetSector();
-    dig[1]=d->GetPlate();
-    dig[2]=d->GetStrip();
-    dig[3]=d->GetPadz();
-    dig[4]=d->GetPadx();
-
-    fGeom->GetPos(dig,g);
+  for (Int_t i=0; i<nc; i++) {
+    AliTOFcluster *c=(AliTOFcluster*)clusters->UncheckedAt(i);
+    /*
+    for (Int_t jj=0; jj<5; jj++) dig[jj]=c->GetDetInd(jj);
 
     Double_t h[5];
-    h[0]=TMath::Sqrt(g[0]*g[0]+g[1]*g[1]);
-    h[1]=TMath::ATan2(g[1],g[0]); h[2]=g[2]; 
-    h[3]=d->GetTdc(); h[4]=d->GetAdc();
+    h[0]=c->GetR();
+    h[1]=c->GetPhi();
+    h[2]=c->GetZ();
+    h[3]=c->GetTDC();
+    h[4]=c->GetADC();
 
-    AliTOFcluster *cl=new AliTOFcluster(h,d->GetTracks(),dig,i);
-    InsertCluster(cl);
-  }  
+    Int_t indexDig[3];
+    for (Int_t jj=0; jj<3; jj++) indexDig[jj] = c->GetLabel(jj);
+
+    AliTOFcluster *cl=new AliTOFcluster(h,c->GetTracks(),dig,i);
+    */
+
+    //    fClusters[i]=c; fN++;
+    fClusters[i]=new AliTOFcluster(*c); fN++;
+
+    //AliInfo(Form("%4i %4i  %f %f %f  %f %f   %2i %1i %2i %1i %2i",i, fClusters[i]->GetIndex(),fClusters[i]->GetZ(),fClusters[i]->GetR(),fClusters[i]->GetPhi(), fClusters[i]->GetTDC(),fClusters[i]->GetADC(),fClusters[i]->GetDetInd(0),fClusters[i]->GetDetInd(1),fClusters[i]->GetDetInd(2),fClusters[i]->GetDetInd(3),fClusters[i]->GetDetInd(4)));
+    //AliInfo(Form("%i %f",i, fClusters[i]->GetZ()));
+  }
+
+  //AliInfo(Form("Number of clusters: %d",fN));
 
   return 0;
 }
@@ -482,26 +501,11 @@ void AliTOFtracker::UnloadClusters() {
   //--------------------------------------------------------------------
   //This function unloads TOF clusters
   //--------------------------------------------------------------------
-  for (Int_t i=0; i<fN; i++) delete fClusters[i];
-  fN=0;
-}
-
-//_________________________________________________________________________
-Int_t AliTOFtracker::InsertCluster(AliTOFcluster *c) {
-  //--------------------------------------------------------------------
-  //This function adds a cluster to the array of clusters sorted in Z
-  //--------------------------------------------------------------------
-  if (fN==kMaxCluster) {
-    AliError("Too many clusters !");
-    return 1;
+  for (Int_t i=0; i<fN; i++) {
+    delete fClusters[i];
+    fClusters[i] = 0x0;
   }
-
-  if (fN==0) {fClusters[fN++]=c; return 0;}
-  Int_t i=FindClusterIndex(c->GetZ());
-  memmove(fClusters+i+1 ,fClusters+i,(fN-i)*sizeof(AliTOFcluster*));
-  fClusters[i]=c; fN++;
-
-  return 0;
+  fN=0;
 }
 
 //_________________________________________________________________________

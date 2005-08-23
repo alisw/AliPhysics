@@ -37,10 +37,10 @@ ClassImp(AliTOFReconstructor)
 
 
 //_____________________________________________________________________________
-  void AliTOFReconstructor::Reconstruct(AliRunLoader* /*runLoader*/) const
+  void AliTOFReconstructor::Reconstruct(AliRunLoader* runLoader) const
 {
 // reconstruct clusters from digits
-/*
+
   AliTOFClusterFinder *tofClus = new AliTOFClusterFinder(runLoader);
   tofClus->Load();
   for (Int_t iEvent = 0; iEvent < runLoader->GetNumberOfEvents(); iEvent++)
@@ -48,7 +48,7 @@ ClassImp(AliTOFReconstructor)
       tofClus->Digits2RecPoints(iEvent);
     }
   tofClus->UnLoad();
-*/
+
 }
 
 //_____________________________________________________________________________
@@ -61,8 +61,8 @@ void AliTOFReconstructor::Reconstruct(AliRunLoader* runLoader,
   tofClus.LoadClusters();
   Int_t iEvent = 0;
   while (rawReader->NextEvent()) {
-    //tofClus.Digits2RecPoints(iEvent,rawReader);
-    tofClus.Raw2Digits(iEvent,rawReader); // temporary solution
+    tofClus.Digits2RecPoints(iEvent,rawReader);
+    //tofClus.Raw2Digits(iEvent,rawReader); // temporary solution
     iEvent++;
   }
   tofClus.UnLoadClusters();

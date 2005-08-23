@@ -36,13 +36,13 @@ public:
   virtual Int_t Clusters2Tracks(AliESD* /*event*/) {return -1;};
   virtual Int_t PropagateBack(AliESD* event);
   virtual Int_t RefitInward(AliESD* /*event*/) {return -1;};
-  virtual Int_t LoadClusters(TTree *dTree); // Loading Clusters from Digits
+  virtual Int_t LoadClusters(TTree * /*cTree*/); // Load Clusters
   virtual void  UnloadClusters();// UnLoad Clusters
   virtual AliCluster *GetCluster(Int_t /*index*/) const {return NULL;};
 
 private:
 
-  Int_t InsertCluster(AliTOFcluster *c); // Fills TofClusters Array
+  //Int_t InsertCluster(AliTOFcluster *c); // Fills TofClusters Array
   Int_t FindClusterIndex(Double_t z) const; // Returns cluster index 
   void  MatchTracks(Bool_t mLastStep); // Matching Algorithm 
   void  CollectESD(); // Select starting Set for Matching 

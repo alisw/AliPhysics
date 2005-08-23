@@ -718,13 +718,8 @@ Bool_t AliReconstruction::RunTracking(AliESD*& esd)
     // load clusters
     if (iDet > 1) {     // all except ITS, TPC
       TTree* tree = NULL;
-      if (iDet == 3) {   // TOF
-	fLoader[iDet]->LoadDigits("read");
-	tree = fLoader[iDet]->TreeD();
-      } else {
-	fLoader[iDet]->LoadRecPoints("read");
-	tree = fLoader[iDet]->TreeR();
-      }
+      fLoader[iDet]->LoadRecPoints("read");
+      tree = fLoader[iDet]->TreeR();
       if (!tree) {
 	AliError(Form("Can't get the %s cluster tree", fgkDetectorName[iDet]));
 	return kFALSE;
@@ -744,11 +739,7 @@ Bool_t AliReconstruction::RunTracking(AliESD*& esd)
     // unload clusters
     if (iDet > 2) {     // all except ITS, TPC, TRD
       fTracker[iDet]->UnloadClusters();
-      if (iDet == 3) {   // TOF
-	fLoader[iDet]->UnloadDigits();
-      } else {
-	fLoader[iDet]->UnloadRecPoints();
-      }
+      fLoader[iDet]->UnloadRecPoints();
     }
   }
 
