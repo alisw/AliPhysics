@@ -36,6 +36,8 @@ class TF1 ;
 #include "AliPHOSRecParticle.h" 
 #include "AliPHOSDigitizer.h"
 #include "AliPHOSSDigitizer.h"
+#include "AliPHOSCalibData.h"
+
 class AliPHOS ;  
 class AliPHOSGeometry ;
 class AliPHOSClusterizer ;
@@ -107,6 +109,9 @@ public:
   void ReadCalibrationDB(const char * /*name*/, const char * /*filename*/){ ;}
   void SetCalibrationDB(AliPHOSCalibrationDB * cdb) {fcdb = cdb ;}
   
+  void SetCalibData(AliPHOSCalibData* calibda) { fCalibData = calibda; }
+  AliPHOSCalibData * CalibData();
+
   //=========== Primaries ============
   virtual TClonesArray *    Primaries(void) ;
   virtual TParticle * Primary(Int_t index) const ;
@@ -241,7 +246,8 @@ private:
   Bool_t            fRawDigits ;         //!
 
   AliPHOSCalibrationDB * fcdb ;       //!
-  
+  static AliPHOSCalibData * fCalibData;
+
   static AliPHOSLoader * fgPhosLoader ; // the loader for the NewIO
   
   enum EDataTypes{kHits,kSDigits,kDigits,kRecPoints,kTracks,kNDataTypes};

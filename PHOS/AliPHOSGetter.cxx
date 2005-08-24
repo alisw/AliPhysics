@@ -64,12 +64,15 @@
 #include "AliPHOSRawStream.h"
 #include "AliRawReaderFile.h"
 #include "AliLog.h"
+#include "AliCDBLocal.h"
+#include "AliCDBStorage.h"
 
 ClassImp(AliPHOSGetter)
   
 AliPHOSGetter * AliPHOSGetter::fgObjGetter = 0 ; 
 AliPHOSLoader * AliPHOSGetter::fgPhosLoader = 0;
 Int_t AliPHOSGetter::fgDebug = 0;
+AliPHOSCalibData* AliPHOSGetter::fCalibData = 0;
 
 //  TFile * AliPHOSGetter::fgFile = 0 ; 
 
@@ -109,6 +112,7 @@ AliPHOSGetter::AliPHOSGetter(const char* headerFile, const char* version, Option
   fESD = 0 ; 
   fESDTree = 0 ; 
   fRawDigits = kFALSE ;
+
 }
 
 //____________________________________________________________________________ 
@@ -1041,4 +1045,19 @@ Float_t AliPHOSGetter::BeamEnergy(void) const
     return fBTE->GetBeamEnergy() ;
   else
     return 0 ;
+}
+//____________________________________________________________________________ 
+
+AliPHOSCalibData* AliPHOSGetter::CalibData()
+{ 
+
+  if(!AliCDBStorage::Instance()) {
+    fCalibData=0x0;
+    Warning("CalibData","Calibration DB is not initiated!");
+    return fCalibData;
+  }
+
+  return fCalibData;
+
+  
 }
