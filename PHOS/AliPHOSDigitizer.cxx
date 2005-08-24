@@ -18,6 +18,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.86  2005/07/12 20:07:35  hristov
+ * Changes needed to run simulation and reconstrruction in the same AliRoot session
+ *
  * Revision 1.85  2005/05/28 14:19:04  schutz
  * Compilation warnings fixed by T.P.
  *
@@ -388,8 +391,29 @@ Int_t AliPHOSDigitizer::DigitizeEnergy(Float_t energy, Int_t absId)
 {
   // Returns digitized value of the energy in a cell absId
 
+  AliPHOSGetter* gime = AliPHOSGetter::Instance();
+
+  //Determine rel.position of the cell absId
+  Int_t relId[4];
+  gime->PHOSGeometry()->AbsToRelNumbering(absId,relId);
+  Int_t module=relId[0];
+  Int_t raw=relId[2];
+  Int_t column=relId[3];
+  
   Int_t chanel ;
+  
   if(absId <= fEmcCrystals){ //digitize as EMC 
+
+    //reading calibration data for cell absId.
+    //If no calibration DB found, accept default values.
+
+    if(gime->CalibData()) {
+      fADCpedestalEmc = gime->CalibData()->GetADCpedestalEmc(module,column,raw);
+      fADCchanelEmc = gime->CalibData()->GetADCchannelEmc(module,column,raw);
+    }
+//         printf("\t\tabsId %d ==>>module=%d column=%d raw=%d ped=%.4f gain=%.4f\n",
+//     	   absId,module,column,raw,fADCpedestalEmc,fADCchanelEmc);
+
     chanel = (Int_t) TMath::Ceil((energy - fADCpedestalEmc)/fADCchanelEmc) ;       
     if(chanel > fNADCemc ) chanel =  fNADCemc ;
   }
