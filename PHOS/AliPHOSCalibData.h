@@ -24,15 +24,15 @@ class AliPHOSCalibData: public TNamed {
   void Reset();
   virtual void Print(Option_t *option = "") const; 
   //
-  Float_t GetADCchannelEmc(Int_t module, Int_t column, Int_t row) const {return fADCchannelEmc[module][column][row];}
-  Float_t GetADCpedestalEmc(Int_t module, Int_t column, Int_t row) const {return fADCpedestalEmc[module][column][row];}
+  Float_t GetADCchannelEmc(Int_t module, Int_t column, Int_t row) const;
+  Float_t GetADCpedestalEmc(Int_t module, Int_t column, Int_t row) const;
   //
-  void SetADCchannelEmc(Int_t module, Int_t column, Int_t row, Float_t value)  {fADCchannelEmc[module][column][row] = value;}
-  void SetADCpedestalEmc(Int_t module, Int_t column, Int_t row, Float_t value) {fADCpedestalEmc[module][column][row] = value;}
+  void SetADCchannelEmc(Int_t module, Int_t column, Int_t row, Float_t value);
+  void SetADCpedestalEmc(Int_t module, Int_t column, Int_t row, Float_t value);
 
  protected:
-  Float_t  fADCchannelEmc[5][64][56] ;           // width of one ADC channel in GeV
-  Float_t  fADCpedestalEmc[5][64][56] ;          // value of the EMC ADC pedestal
+  Float_t  fADCchannelEmc[5][56][64] ;  // width of one ADC channel in GeV ([mod][col][row])
+  Float_t  fADCpedestalEmc[5][56][64] ; // value of the EMC ADC pedestal ([mod][col][row])
   //
   ClassDef(AliPHOSCalibData,1)    // PHOS Calibration data
 };

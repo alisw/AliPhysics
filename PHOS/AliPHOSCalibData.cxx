@@ -52,7 +52,7 @@ AliPHOSCalibData::AliPHOSCalibData(const AliPHOSCalibData& calibda) :
   SetTitle(calibda.GetName());
   Reset();
   for(Int_t module=0; module<5; module++) {
-    for(Int_t column=0; column<64; column++) {
+    for(Int_t column=0; column<56; column++) {
       for(Int_t row=0; row<64; row++) {
 	fADCchannelEmc[module][column][row] = calibda.GetADCchannelEmc(module,column,row);
 	fADCpedestalEmc[module][column][row] = calibda.GetADCpedestalEmc(module,column,row);
@@ -69,7 +69,7 @@ AliPHOSCalibData &AliPHOSCalibData::operator =(const AliPHOSCalibData& calibda)
   SetTitle(calibda.GetName());
   Reset();
   for(Int_t module=0; module<5; module++) {
-    for(Int_t column=0; column<64; column++) {
+    for(Int_t column=0; column<56; column++) {
       for(Int_t row=0; row<64; row++) {
 	fADCchannelEmc[module][column][row] = calibda.GetADCchannelEmc(module,column,row);
 	fADCpedestalEmc[module][column][row] = calibda.GetADCpedestalEmc(module,column,row);
@@ -89,8 +89,8 @@ AliPHOSCalibData::~AliPHOSCalibData()
 void AliPHOSCalibData::Reset()
 {
   // Set all pedestals to 0 and all ADC channels to 1
-  memset(fADCchannelEmc ,0,5*64*56*sizeof(Float_t));
-  memset(fADCpedestalEmc,1,5*64*56*sizeof(Float_t));
+  memset(fADCchannelEmc ,1,5*64*56*sizeof(Float_t));
+  memset(fADCpedestalEmc,0,5*64*56*sizeof(Float_t));
 }
 
 //________________________________________________________________
@@ -102,7 +102,7 @@ void  AliPHOSCalibData::Print(Option_t *option) const
     printf("\n	----	Pedestal values	----\n\n");
     for (Int_t module=0; module<5; module++){
       printf("============== Module %d\n",module+1);
-      for (Int_t column=0; column<64; column++){
+      for (Int_t column=0; column<56; column++){
 	for (Int_t row=0; row<64; row++){
 	  printf("%4.1f",fADCpedestalEmc[module][column][row]);
 	}
@@ -115,7 +115,7 @@ void  AliPHOSCalibData::Print(Option_t *option) const
     printf("\n	----	ADC channel values	----\n\n");
     for (Int_t module=0; module<5; module++){
       printf("============== Module %d\n",module+1);
-      for (Int_t column=0; column<64; column++){
+      for (Int_t column=0; column<56; column++){
 	for (Int_t row=0; row<64; row++){
 	  printf("%4.1f",fADCchannelEmc[module][column][row]);
 	}
@@ -123,4 +123,27 @@ void  AliPHOSCalibData::Print(Option_t *option) const
       }
     }
   }
+}
+
+Float_t AliPHOSCalibData::GetADCchannelEmc(Int_t module, Int_t column, Int_t row) const
+{
+  //module, column,raw should follow the internal PHOS convention:
+  //module 1:5, column 1:56, row 1:64
+
+  return fADCchannelEmc[module-1][column-1][row-1];
+}
+
+Float_t AliPHOSCalibData::GetADCpedestalEmc(Int_t module, Int_t column, Int_t row) const
+{
+  return fADCpedestalEmc[module-1][column-1][row-1];
+}
+
+void AliPHOSCalibData::SetADCchannelEmc(Int_t module, Int_t column, Int_t row, Float_t value)
+{
+  fADCchannelEmc[module-1][column-1][row-1] = value;
+}
+
+void AliPHOSCalibData::SetADCpedestalEmc(Int_t module, Int_t column, Int_t row, Float_t value)
+{
+  fADCpedestalEmc[module-1][column-1][row-1] = value;
 }
