@@ -31,7 +31,6 @@ public :
   void FindPhiPoint();                        //
   void FindThetaAtQuartz(Float_t ThetaCer);   //
   void HoughResponse();                       //
-  void HoughFiltering(float HCS[]);           //
   void FlagPhotons();                         //
   void FindThetaCerenkov();                   //
   void FindIntersectionWithDetector();        //
