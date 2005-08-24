@@ -18,6 +18,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.79  2005/07/25 15:53:53  kharlov
+ * Read raw data
+ *
  * Revision 1.78  2005/05/28 14:19:04  schutz
  * Compilation warnings fixed by T.P.
  *
@@ -137,6 +140,10 @@ void AliPHOSClusterizerv1::Exec(Option_t *option)
   }
 
   AliPHOSGetter * gime = AliPHOSGetter::Instance() ; 
+  if (fRawReader == 0)
+    gime->SetRawDigits(kFALSE);
+  else
+    gime->SetRawDigits(kTRUE);
   GetCalibrationParameters() ;
   
   if (fLastEvent == -1) 
