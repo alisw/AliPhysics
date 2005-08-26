@@ -39,11 +39,15 @@ ClassImp(AliHLTLogging)
 char AliHLTLogging::fLogBuffer[LOG_BUFFER_SIZE]="";
 char AliHLTLogging::fOriginBuffer[LOG_BUFFER_SIZE]="";
 
-AliHLTComponent_LogSeverity AliHLTLogging::fGlobalLogFilter=(AliHLTComponent_LogSeverity)0;
+AliHLTComponent_LogSeverity AliHLTLogging::fGlobalLogFilter=kHLTLogAll;
 AliHLTfctLogging AliHLTLogging::fLoggingFunc=NULL;
 
 AliHLTLogging::AliHLTLogging()
 {
+  fpDefaultKeyword=NULL;
+  fpCurrentKeyword=NULL;
+  //fLocalLogFilter=kHLTLogDefault;
+  fLocalLogFilter=kHLTLogAll;
 }
 
 
@@ -76,7 +80,10 @@ int AliHLTLogging::Message(void *param, AliHLTComponent_LogSeverity severity, co
   default:
     break;
   }
-  cout << "HLT Log " << strSeverity << ": " << origin << " (" << keyword << ") " << message << endl;
+  cout << "HLT Log " << strSeverity << ": " << origin << " " << message;
+  if (strcmp(keyword, HLT_DEFAULT_LOG_KEYWORD)!=0)
+    cout << " (" << keyword << ")";
+  cout << endl;
   return iResult;
 }
 
@@ -86,7 +93,9 @@ const char* AliHLTLogging::BuildLogString(const char *format, va_list ap) {
   char* tgtBuffer=fLogBuffer;
   tgtBuffer[tgtLen]=0;
 
+#if (defined LOG_PREFIX)
   tgtLen = snprintf(tgtBuffer, iBufferSize, LOG_PREFIX); // add logging prefix
+#endif
   if (tgtLen>=0) {
     tgtBuffer+=tgtLen; iBufferSize-=tgtLen;
     tgtLen = vsnprintf(tgtBuffer, iBufferSize, format, ap);
@@ -102,59 +111,63 @@ const char* AliHLTLogging::BuildLogString(const char *format, va_list ap) {
 }
 
 int AliHLTLogging::Logging(AliHLTComponent_LogSeverity severity, const char* origin, const char* keyword, const char* format, ... ) {
-  va_list args;
-  va_start(args, format);
-  if (fLoggingFunc) {
-    return (*fLoggingFunc)(NULL/*fParam*/, severity, origin, keyword, AliHLTLogging::BuildLogString(format, args ));
-  } else {
-    return Message(NULL/*fParam*/, severity, origin, keyword, AliHLTLogging::BuildLogString(format, args ));
+  int iResult=CheckFilter(severity);
+  if (iResult>0) {
+    va_list args;
+    va_start(args, format);
+    if (fLoggingFunc) {
+      iResult = (*fLoggingFunc)(NULL/*fParam*/, severity, origin, keyword, AliHLTLogging::BuildLogString(format, args ));
+    } else {
+      iResult = Message(NULL/*fParam*/, severity, origin, keyword, AliHLTLogging::BuildLogString(format, args ));
+    }
   }
-  return -ENOSYS;
+  return iResult;
 }
 
 int AliHLTLogging::LoggingVarargs( AliHLTComponent_LogSeverity severity, const char* origin_class, const char* origin_func,  ... )
 {
-  int iResult=0;
-  int iMaxSize=LOG_BUFFER_SIZE-1;
-  int iPos=0;
-  const char* separator="";
-  fOriginBuffer[iPos]=0;
-  if (origin_class) {
-    if ((int)strlen(origin_class)<iMaxSize-iPos) {
-      strcpy(&fOriginBuffer[iPos], origin_class);
-      iPos+=strlen(origin_class);
-      separator="::";
+  int iResult=CheckFilter(severity);
+  if (iResult>0) {
+    int iMaxSize=LOG_BUFFER_SIZE-1;
+    int iPos=0;
+    const char* separator="";
+    fOriginBuffer[iPos]=0;
+    if (origin_class) {
+      if ((int)strlen(origin_class)<iMaxSize-iPos) {
+	strcpy(&fOriginBuffer[iPos], origin_class);
+	iPos+=strlen(origin_class);
+	separator="::";
+      }
     }
-  }
-  if (origin_func) {
-    if ((int)strlen(origin_func)+(int)strlen(separator)<iMaxSize-iPos) {
-      strcpy(&fOriginBuffer[iPos], separator);
-      iPos+=strlen(separator);
-      strcpy(&fOriginBuffer[iPos], origin_func);
-      iPos+=strlen(origin_func);
+    if (origin_func) {
+      if ((int)strlen(origin_func)+(int)strlen(separator)<iMaxSize-iPos) {
+	strcpy(&fOriginBuffer[iPos], separator);
+	iPos+=strlen(separator);
+	strcpy(&fOriginBuffer[iPos], origin_func);
+	iPos+=strlen(origin_func);
+      }
     }
-  }
-  va_list args;
-  va_start(args, origin_func);
-  const char* format = va_arg(args, const char*);
+    va_list args;
+    va_start(args, origin_func);
+    const char* format = va_arg(args, const char*);
 
-  const char* message=format;
-  char* qualifier=NULL;
-  const char* keyword="no key";
-  if ((qualifier=strchr(format, '%'))!=NULL) {
-    message=AliHLTLogging::BuildLogString(format, args);
+    const char* message=format;
+    char* qualifier=NULL;
+    if ((qualifier=strchr(format, '%'))!=NULL) {
+      message=AliHLTLogging::BuildLogString(format, args);
+    }
+    if (fLoggingFunc) {
+      iResult=(*fLoggingFunc)(NULL/*fParam*/, severity, fOriginBuffer, GetKeyword(), message);
+    } else {
+      iResult=Message(NULL/*fParam*/, severity, fOriginBuffer, GetKeyword(), message);
+    }
+    va_end(args);
   }
-  if (fLoggingFunc) {
-    iResult=(*fLoggingFunc)(NULL/*fParam*/, severity, fOriginBuffer, keyword, message);
-  } else {
-    iResult=Message(NULL/*fParam*/, severity, fOriginBuffer, keyword, message);
-  }
-  va_end(args);
   return iResult;
 }
 
 int AliHLTLogging::CheckFilter(AliHLTComponent_LogSeverity severity)
 {
-  int iResult=1;
+  int iResult=severity==kHLTLogNone || (severity&fGlobalLogFilter)>0 && (severity&fLocalLogFilter)>0;
   return iResult;
 }

@@ -55,11 +55,11 @@ Int_t AliHLTComponentHandler::RegisterComponent(AliHLTComponent* pSample)
     if (FindComponent(pSample->GetComponentID())==NULL) {
       iResult=InsertComponent(pSample);
       if (iResult>=0) {
-	Logging(kHLTLogInfo, "BASE", "Component Handler", "component %s registered", pSample->GetComponentID());
+	HLTInfo("component %s registered", pSample->GetComponentID());
       }
     } else {
       // component already registered
-      Logging(kHLTLogInfo, "BASE", "Component Handler", "component %s already registered, skipped", pSample->GetComponentID());
+      HLTInfo("component %s already registered, skipped", pSample->GetComponentID());
       iResult=-EEXIST;
     }
   } else {
@@ -92,14 +92,14 @@ int AliHLTComponentHandler::CreateComponent(const Char_t* componentID, void* env
     if (pSample!=NULL) {
       component=pSample->Spawn();
       if (component) {
-	Logging(kHLTLogDebug, "BASE", "Component Handler", "component \"%s\" created (%p)", componentID, component);
+	HLTDebug("component \"%s\" created (%p)", componentID, component);
 	component->Init(&fEnvironment, environ_param, argc, argv);
       } else {
-	Logging(kHLTLogError, "BASE", "Component Handler", "can not spawn component \"%s\"", componentID);
+	HLTError("can not spawn component \"%s\"", componentID);
 	iResult=-ENOENT;
       }
     } else {
-      Logging(kHLTLogWarning, "BASE", "Component Handler", "can not find component \"%s\"", componentID);
+      HLTWarning("can not find component \"%s\"", componentID);
       iResult=-ENOENT;
     }
   } else {
@@ -152,7 +152,7 @@ void AliHLTComponentHandler::List() {
   vector<AliHLTComponent*>::iterator element=fComponentList.begin();
   int index=0;
   while (element!=fComponentList.end()) {
-    Logging(kHLTLogInfo, "BASE", "Component Handler", "%d. %s", index++, (*element++)->GetComponentID());
+    HLTInfo("%d. %s", index++, (*element++)->GetComponentID());
   }
 }
 
@@ -170,7 +170,7 @@ int AliHLTComponentHandler::LoadLibrary( const char* libraryPath )
     AliHLTLibHandle hLib=dlopen(libraryPath, RTLD_NOW);
     if (hLib) {
       AliHLTComponent::UnsetGlobalComponentHandler();
-      Logging(kHLTLogDebug, "BASE", "Component Handler", "library %s loaded", libraryPath);
+      HLTDebug("library %s loaded", libraryPath);
       fLibraryList.push_back(hLib);
       vector<AliHLTComponent*>::iterator element=fScheduleList.begin();
       int iSize=fScheduleList.size();
@@ -182,8 +182,8 @@ int AliHLTComponentHandler::LoadLibrary( const char* libraryPath )
 	fScheduleList.erase(element);
       }
     } else {
-      Logging(kHLTLogError, "BASE", "Component Handler", "can not load library %s", libraryPath);
-      Logging(kHLTLogError, "BASE", "Component Handler", "dlopen error: %s", dlerror());
+      HLTError("can not load library %s", libraryPath);
+      HLTError("dlopen error: %s", dlerror());
       iResult=-ELIBACC;
     }
   } else {

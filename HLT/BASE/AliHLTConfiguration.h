@@ -15,7 +15,7 @@
 #include "AliHLTDataTypes.h"
 #include "AliHLTLogging.h"
 
-
+class AliHLTConfigurationHandler;
 /*****************************************************************************************************
  *
  * AliHLTConfiguration
@@ -38,6 +38,13 @@ class AliHLTConfiguration : public TObject, public AliHLTLogging {
   AliHLTConfiguration();
   AliHLTConfiguration(const char* id, const char* component, const char* sources, const char* arguments);
   virtual ~AliHLTConfiguration();
+
+  /****************************************************************************************************
+   * global initialization
+   */
+  static int GlobalInit(AliHLTConfigurationHandler* pHandler);
+
+  static int GlobalDeinit();
 
   /****************************************************************************************************
    * properties
@@ -91,7 +98,6 @@ class AliHLTConfiguration : public TObject, public AliHLTLogging {
 
  protected:
   
-  //int Logging( AliHLTComponent_LogSeverity severity, const char* origin, const char* keyword, const char* message, ... );
 
  private:
   /* extract the source configurations from the sources string
@@ -117,6 +123,8 @@ class AliHLTConfiguration : public TObject, public AliHLTLogging {
   const char* fArguments;           // the arguments string as passed to the constructor
   int fArgc;                        // number of arguments
   char** fArgv;                     // argument array
+
+  static AliHLTConfigurationHandler* fConfigurationHandler;
 
   ClassDef(AliHLTConfiguration, 0);
 };
@@ -247,20 +255,20 @@ class AliHLTConfigurationHandler : public AliHLTLogging {
    */
 
   // register a configuration to the global list of configurations
-  static int RegisterConfiguration(AliHLTConfiguration* pConf);
+  int RegisterConfiguration(AliHLTConfiguration* pConf);
 
   // create a configuration and register it
-  static int CreateConfiguration(const char* id, const char* component, const char* sources, const char* arguments);
+  int CreateConfiguration(const char* id, const char* component, const char* sources, const char* arguments);
 
   // remove a configuration from the global list
-  static int RemoveConfiguration(AliHLTConfiguration* pConf);
-  static int RemoveConfiguration(const char* id);
+  int RemoveConfiguration(AliHLTConfiguration* pConf);
+  int RemoveConfiguration(const char* id);
 
   // find a configuration from the global list
-  static AliHLTConfiguration* FindConfiguration(const char* id);
+  AliHLTConfiguration* FindConfiguration(const char* id);
 
   // print the registered configurations to the logging function
-  static void PrintConfigurations();
+  void PrintConfigurations();
 
 
  private:

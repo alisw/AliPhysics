@@ -16,6 +16,7 @@
 
 class AliHLTComponentHandler;
 class AliHLTConfiguration;
+class AliHLTConfigurationHandler;
 class AliHLTTask;
 
 class AliHLTSystem : public AliHLTLogging {
@@ -24,6 +25,7 @@ class AliHLTSystem : public AliHLTLogging {
   virtual ~AliHLTSystem();
 
   AliHLTComponentHandler* fpComponentHandler;
+  AliHLTConfigurationHandler* fpConfigurationHandler;
 
   /* add a configuration to the end of the list
    */

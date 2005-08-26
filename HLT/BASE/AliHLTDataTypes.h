@@ -20,7 +20,7 @@ extern "C" {
 
   typedef AliHLTUInt64_t AliHLTEventID_t;
 
-  enum AliHLTComponent_LogSeverity { kHLTLogNone=0, kHLTLogBenchmark=1, kHLTLogDebug=2, kHLTLogInfo=4, kHLTLogWarning=8, kHLTLogError=16, kHLTLogFatal=32 };
+  enum AliHLTComponent_LogSeverity { kHLTLogNone=0, kHLTLogBenchmark=1, kHLTLogDebug=2, kHLTLogInfo=4, kHLTLogWarning=8, kHLTLogError=16, kHLTLogFatal=32, kHLTLogAll=0x3f, kHLTLogDefault=0x39 };
 
   struct AliHLTComponent_EventData
   {

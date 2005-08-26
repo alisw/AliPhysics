@@ -34,6 +34,10 @@ using namespace std;
 
 ClassImp(AliHLTConfiguration)
 
+/* the global configuration handler which is used to automatically register the configuration
+ */
+AliHLTConfigurationHandler* AliHLTConfiguration::fConfigurationHandler=NULL;
+
 AliHLTConfiguration::AliHLTConfiguration()
 { 
   fID=NULL;
@@ -58,14 +62,20 @@ AliHLTConfiguration::AliHLTConfiguration(const char* id, const char* component, 
     fNofSources=-1;
     fArguments=arguments;
     fListSrcElement=fListSources.begin();
-    AliHLTConfigurationHandler::RegisterConfiguration(this);
+    if (fConfigurationHandler) {
+      fConfigurationHandler->RegisterConfiguration(this);
+    } else {
+      HLTError("no configuration handler set, abort registration");
+    }
   }
 }
 
 AliHLTConfiguration::~AliHLTConfiguration()
 {
-  if (AliHLTConfigurationHandler::FindConfiguration(fID)!=NULL) {
-    AliHLTConfigurationHandler::RemoveConfiguration(this);
+  if (fConfigurationHandler) {
+    if (fConfigurationHandler->FindConfiguration(fID)!=NULL) {
+      fConfigurationHandler->RemoveConfiguration(this);
+    }
   }
   if (fArgv != NULL) {
     if (fArgc>0) {
@@ -76,6 +86,23 @@ AliHLTConfiguration::~AliHLTConfiguration()
     delete[] fArgv;
     fArgv=NULL;
   }
+}
+
+int AliHLTConfiguration::GlobalInit(AliHLTConfigurationHandler* pHandler)
+{
+  int iResult=0;
+  if (fConfigurationHandler!=NULL) {
+    fConfigurationHandler->Logging(kHLTLogWarning, "AliHLTConfiguration::GlobalInit", HLT_DEFAULT_LOG_KEYWORD, "configuration handler already initialized, overriding object %p", fConfigurationHandler);
+  }
+  fConfigurationHandler=pHandler;
+  return iResult;
+}
+
+int AliHLTConfiguration::GlobalDeinit()
+{
+  int iResult=0;
+  fConfigurationHandler=NULL;
+  return iResult;
 }
 
 const char* AliHLTConfiguration::GetName() const {
@@ -129,8 +156,8 @@ int AliHLTConfiguration::SourcesResolved(int bAuto)
 {
   int iResult=0;
   if (fNofSources>=0 || bAuto && (iResult=ExtractSources())>=0) {
-    //Logging(kHLTLogDebug, "BASE", "Configuration", "fNofSources=%d", fNofSources);
-    //Logging(kHLTLogDebug, "BASE", "Configuration", "list size = %d", fListSources.size());
+    //HLTDebug("fNofSources=%d", fNofSources);
+    //HLTDebug("list size = %d", fListSources.size());
     iResult=fNofSources==(int)fListSources.size();
   }
   return iResult;
@@ -160,16 +187,17 @@ int AliHLTConfiguration::InvalidateSource(AliHLTConfiguration* pConf)
 
 void AliHLTConfiguration::PrintStatus()
 {
-  Logging(kHLTLogInfo, "BASE", "AliHLTConfiguration", "status of configuration \"%s\" (%p)", GetName(), this);
-  if (fComponent) Logging(kHLTLogInfo, "BASE", "AliHLTConfiguration", "  - component: \"%s\"", fComponent);
-  else Logging(kHLTLogInfo, "BASE", "AliHLTConfiguration", "  - component string invalid");
-  if (fStringSources) Logging(kHLTLogInfo, "BASE", "AliHLTConfiguration", "  - sources: \"%s\"", fStringSources);
-  else Logging(kHLTLogInfo, "BASE", "AliHLTConfiguration", "  - no sources");
+  HLTLogKeyword("configuration status");
+  HLTMessage("status of configuration \"%s\" (%p)", GetName(), this);
+  if (fComponent) HLTMessage("  - component: \"%s\"", fComponent);
+  else HLTMessage("  - component string invalid");
+  if (fStringSources) HLTMessage("  - sources: \"%s\"", fStringSources);
+  else HLTMessage("  - no sources");
   if (SourcesResolved(1)<=0)
-    Logging(kHLTLogInfo, "BASE", "AliHLTConfiguration", "    there are unresolved sources");
+    HLTMessage("    there are unresolved sources");
   AliHLTConfiguration* pSrc=GetFirstSource();
   while (pSrc) {
-    Logging(kHLTLogInfo, "BASE", "AliHLTConfiguration", "    source \"%s\" (%p) resolved", pSrc->GetName(), pSrc);
+    HLTMessage("    source \"%s\" (%p) resolved", pSrc->GetName(), pSrc);
     pSrc=GetNextSource();
   }
 }
@@ -197,14 +225,19 @@ int AliHLTConfiguration::ExtractSources()
     if ((iResult=InterpreteString(fStringSources, tgtList))>=0) {
       fNofSources=tgtList.size();
       vector<char*>::iterator element=tgtList.begin();
-      while ((element=tgtList.begin())!=tgtList.end() && iResult>=0) {
-	AliHLTConfiguration* pConf=AliHLTConfigurationHandler::FindConfiguration(*element);
-	if (pConf) {
-	  Logging(kHLTLogDebug, "BASE", "Configuration", "source \"%s\" inserted", pConf->GetName());
-	  fListSources.push_back(pConf);
-	} else {
-	  Logging(kHLTLogError, "BASE", "Configuration", "can not find source \"%s\"", (*element));
-	  iResult=-ENOENT;
+      while ((element=tgtList.begin())!=tgtList.end()) {
+	if (fConfigurationHandler) {
+	  AliHLTConfiguration* pConf=fConfigurationHandler->FindConfiguration(*element);
+	  if (pConf) {
+	    HLTDebug("source \"%s\" inserted", pConf->GetName());
+	    fListSources.push_back(pConf);
+	  } else {
+	    HLTError("can not find source \"%s\"", (*element));
+	    iResult=-ENOENT;
+	  }
+	} else if (iResult>=0) {
+	  iResult=-EFAULT;
+	  HLTFatal("global configuration handler not initialized, can not resolve sources");
 	}
 	delete[] (*element);
 	tgtList.erase(element);
@@ -222,14 +255,14 @@ int AliHLTConfiguration::ExtractArguments()
     vector<char*> tgtList;
     if ((iResult=InterpreteString(fArguments, tgtList))>=0) {
       fArgc=tgtList.size();
-      //Logging(kHLTLogDebug, "BASE", "Configuration", "found %d arguments", fArgc);
+      //HLTDebug("found %d arguments", fArgc);
       if (fArgc>0) {
 	fArgv = new char*[fArgc];
 	if (fArgv) {
 	  vector<char*>::iterator element=tgtList.begin();
 	  int i=0;
 	  while (element!=tgtList.end()) {
-	    //Logging(kHLTLogDebug, "BASE", "Configuration Handler", "assign arguments %d (%s)", i, *element);
+	    //HLTDebug("assign arguments %d (%s)", i, *element);
 	    fArgv[i++]=(*element);
 	    element++;
 	  }
@@ -246,7 +279,7 @@ int AliHLTConfiguration::InterpreteString(const char* arg, vector<char*>& argLis
 {
   int iResult=0;
   if (arg) {
-    //Logging(kHLTLogDebug, "BASE", "Configuration Handler", "interprete \"%s\"", arg);
+    //HLTDebug("interprete \"%s\"", arg);
     int i=0;
     int prec=-1;
     do {
@@ -256,7 +289,7 @@ int AliHLTConfiguration::InterpreteString(const char* arg, vector<char*>& argLis
 	  if (pEntry) {
 	    strncpy(pEntry, &arg[prec], i-prec);
 	    pEntry[i-prec]=0; // terminate string
-	    //Logging(kHLTLogDebug, "BASE", "Configuration Handler", "create string \"%s\", insert at %d", pEntry, argList.size());
+	    //HLTDebug("create string \"%s\", insert at %d", pEntry, argList.size());
 	    argList.push_back(pEntry);
 	  } else 
 	    iResult=-ENOMEM;
@@ -333,7 +366,7 @@ int AliHLTTask::Init(AliHLTConfiguration* fConf, AliHLTComponentHandler* pCH)
 	iResult=pCH->CreateComponent(fConf->GetComponentID(), NULL, argc, argv, fpComponent);
 	if (fpComponent) {
 	} else {
-	  Logging(kHLTLogError, "BASE", "AliHLTTask", "can not find component \"%s\"", fConf->GetComponentID());
+	  HLTError("can not find component \"%s\"", fConf->GetComponentID());
 	}
       }
     }
@@ -400,6 +433,7 @@ int AliHLTTask::FollowDependency(const char* id, TList* pTgtList)
 
 void AliHLTTask::PrintDependencyTree(const char* id, int bFromConfiguration)
 {
+  HLTLogKeyword("task dependencies");
   int iResult=0;
   TList tgtList;
   if (bFromConfiguration) {
@@ -410,7 +444,7 @@ void AliHLTTask::PrintDependencyTree(const char* id, int bFromConfiguration)
   } else
     iResult=FollowDependency(id, &tgtList);
   if (iResult>0) {
-    Logging(kHLTLogInfo, "BASE", "AliHLTTask", "     task \"%s\": dependency level %d ", GetName(), iResult);
+    HLTMessage("     task \"%s\": dependency level %d ", GetName(), iResult);
     TObjLink* lnk=tgtList.FirstLink();
     int i=iResult;
     char* pSpace = new char[iResult+1];
@@ -419,7 +453,7 @@ void AliHLTTask::PrintDependencyTree(const char* id, int bFromConfiguration)
       pSpace[i]=0;
       while (lnk) {
 	TObject* obj=lnk->GetObject();
-	Logging(kHLTLogInfo, "BASE", "AliHLTTask", "     %s^-- %s ", &pSpace[i--], obj->GetName());
+	HLTMessage("     %s^-- %s ", &pSpace[i--], obj->GetName());
 	lnk=lnk->Next();
       }
       delete [] pSpace;
@@ -456,7 +490,7 @@ int AliHLTTask::CheckDependencies()
   AliHLTConfiguration* pSrc=fpConfiguration->GetFirstSource();
   while (pSrc) {
     if (FindDependency(pSrc->GetName())==NULL) {
-      //Logging(kHLTLogDebug, "BASE", "AliHLTTask", "dependency \"%s\" unresolved", pSrc->GetName());
+      //HLTDebug("dependency \"%s\" unresolved", pSrc->GetName());
       iResult++;
     }
     pSrc=fpConfiguration->GetNextSource();
@@ -472,9 +506,9 @@ int AliHLTTask::Depends(AliHLTTask* pTask)
     if (fpConfiguration) {
       iResult=fpConfiguration->GetSource(pTask->GetName())!=NULL;
       if (iResult>0) {
-	//Logging(kHLTLogDebug, "BASE", "AliHLTTask", "task  \"%s\" depends on \"%s\"", GetName(), pTask->GetName());
+	//HLTDebug("task  \"%s\" depends on \"%s\"", GetName(), pTask->GetName());
       } else {
-	//Logging(kHLTLogDebug, "BASE", "AliHLTTask", "task  \"%s\" independend of \"%s\"", GetName(), pTask->GetName());
+	//HLTDebug("task  \"%s\" independend of \"%s\"", GetName(), pTask->GetName());
       }
     } else {
       iResult=-EFAULT;
@@ -531,10 +565,11 @@ int AliHLTTask::ClearSourceBlocks()
 
 void AliHLTTask::PrintStatus()
 {
+  HLTLogKeyword("task properties");
   if (fpComponent) {
-    Logging(kHLTLogInfo, "BASE", "AliHLTTask", "     component: %s (%p)", fpComponent->GetComponentID(), fpComponent);
+    HLTMessage("     component: %s (%p)", fpComponent->GetComponentID(), fpComponent);
   } else {
-    Logging(kHLTLogInfo, "BASE", "AliHLTTask", "     no component set!");
+    HLTMessage("     no component set!");
   }
   if (fpConfiguration) {
     AliHLTConfiguration* pSrc=fpConfiguration->GetFirstSource();
@@ -542,17 +577,17 @@ void AliHLTTask::PrintStatus()
       const char* pQualifier="unresolved";
       if (FindDependency(pSrc->GetName()))
 	pQualifier="resolved";
-      Logging(kHLTLogInfo, "BASE", "AliHLTTask", "     source: %s (%s)", pSrc->GetName(), pQualifier);
+      HLTMessage("     source: %s (%s)", pSrc->GetName(), pQualifier);
       pSrc=fpConfiguration->GetNextSource();
     }
     TObjLink* lnk = fListTargets.FirstLink();
     while (lnk) {
       TObject *obj = lnk->GetObject();
-      Logging(kHLTLogInfo, "BASE", "AliHLTTask", "     target: %s", obj->GetName());
+      HLTMessage("     target: %s", obj->GetName());
       lnk = lnk->Next();
     }
   } else {
-    Logging(kHLTLogInfo, "BASE", "AliHLTTask", "     task \"%s\" not initialized", GetName());
+    HLTMessage("     task \"%s\" not initialized", GetName());
   }
 }
 
@@ -573,7 +608,7 @@ AliHLTConfigurationHandler::~AliHLTConfigurationHandler()
   while (lnk) {
     TObject* obj=lnk->GetObject();
     if (fListConfigurations.FindObject(obj->GetName())==NULL) {
-      Logging(kHLTLogDebug, "BASE", "Configuration Handler", "delete dynamic configuration \"%s\"", obj->GetName());
+      HLTDebug("delete dynamic configuration \"%s\"", obj->GetName());
       delete obj;
     }
     lnk=lnk->Next();
@@ -586,7 +621,7 @@ int AliHLTConfigurationHandler::RegisterConfiguration(AliHLTConfiguration* pConf
   if (pConf) {
     if (FindConfiguration(pConf->GetName()) == NULL) {
       fListConfigurations.Add(pConf);
-      //Logging(kHLTLogDebug, "BASE", "Configuration Handler", "configuration \"%s\" registered", pConf->GetName());
+      //HLTDebug("configuration \"%s\" registered", pConf->GetName());
 
       // mark all configurations with unresolved dependencies for re-evaluation
       TObjLink* lnk=fListConfigurations.FirstLink();
@@ -599,7 +634,7 @@ int AliHLTConfigurationHandler::RegisterConfiguration(AliHLTConfiguration* pConf
       }
     } else {
       iResult=-EEXIST;
-      Logging(kHLTLogWarning, "BASE", "Configuration Handler", "configuration \"%s\" already registered", pConf->GetName());
+      HLTWarning("configuration \"%s\" already registered", pConf->GetName());
     }
   } else {
     iResult=-EINVAL;
@@ -622,7 +657,7 @@ int AliHLTConfigurationHandler::CreateConfiguration(const char* id, const char* 
       fListDynamicConfigurations.Add(pConf);
     }
   } else {
-    Logging(kHLTLogError, "BASE", "Configuration Handler", "system error: object allocation failed");
+    HLTError("system error: object allocation failed");
     iResult=-ENOMEM;
   }
   return iResult;
@@ -630,11 +665,12 @@ int AliHLTConfigurationHandler::CreateConfiguration(const char* id, const char* 
 
 void AliHLTConfigurationHandler::PrintConfigurations()
 {
-  Logging(kHLTLogInfo, "BASE", "Configuration Handler", "registered configurations:");
+  HLTLogKeyword("configuration listing");
+  HLTMessage("registered configurations:");
   TObjLink *lnk = fListConfigurations.FirstLink();
   while (lnk) {
     TObject *obj = lnk->GetObject();
-    Logging(kHLTLogInfo, "BASE", "Configuration Handler", "  %s", obj->GetName());
+    HLTMessage("  %s", obj->GetName());
     lnk = lnk->Next();
   }
 }
@@ -647,7 +683,7 @@ int AliHLTConfigurationHandler::RemoveConfiguration(const char* id)
     if ((pConf=FindConfiguration(id))!=NULL) {
       iResult=RemoveConfiguration(pConf);
     } else {
-      Logging(kHLTLogWarning, "BASE", "Configuration Handler", "can not find configuration \"%s\"", id);
+      HLTWarning("can not find configuration \"%s\"", id);
       iResult=-ENOENT;
     }
   } else {

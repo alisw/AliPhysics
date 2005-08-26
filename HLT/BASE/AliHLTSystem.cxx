@@ -48,14 +48,30 @@ AliHLTSystem::AliHLTSystem()
 
     // init logging function in AliHLTLogging
     Init(AliHLTLogging::Message);
+  } else {
+    HLTFatal("can not create Component Handler");
   }
-  DebugMsg("create hlt object %s %p", "AliHLTSystem", this);
-  DebugMsg("done");
+  fpConfigurationHandler=new AliHLTConfigurationHandler();
+  if (fpConfigurationHandler) {
+    AliHLTConfiguration::GlobalInit(fpConfigurationHandler);
+  } else {
+    HLTFatal("can not create Configuration Handler");
+  }
 }
 
 
 AliHLTSystem::~AliHLTSystem()
 {
+    AliHLTConfiguration::GlobalDeinit();
+    if (fpConfigurationHandler) {
+      delete fpConfigurationHandler;
+    }
+    fpConfigurationHandler=NULL;
+
+    if (fpComponentHandler) {
+      delete fpComponentHandler;
+    }
+    fpComponentHandler=NULL;
 }
 
 int AliHLTSystem::AddConfiguration(AliHLTConfiguration* pConf)
@@ -83,12 +99,12 @@ int AliHLTSystem::BuildTaskList(AliHLTConfiguration* pConf)
     AliHLTTask* pTask=NULL;
     if ((pTask=FindTask(pConf->GetName()))!=NULL) {
       if (pTask->GetConf()!=pConf) {
-	Logging(kHLTLogError, "BASE", "AliHLTSystem", "configuration missmatch, there is already a task with configuration name \"%s\", but it is different. Most likely configuration %p is not registered properly", pConf->GetName(), pConf);
+	HLTError("configuration missmatch, there is already a task with configuration name \"%s\", but it is different. Most likely configuration %p is not registered properly", pConf->GetName(), pConf);
 	iResult=-EEXIST;
 	pTask=NULL;
       }
     } else if (pConf->SourcesResolved(1)!=1) {
-	Logging(kHLTLogError, "BASE", "AliHLTSystem", "configuration \"%s\" has unresolved sources, aborting ...", pConf->GetName());
+	HLTError("configuration \"%s\" has unresolved sources, aborting ...", pConf->GetName());
 	iResult=-ENOLINK;
     } else {
       pTask=new AliHLTTask(pConf, NULL);
@@ -99,9 +115,9 @@ int AliHLTSystem::BuildTaskList(AliHLTConfiguration* pConf)
     if (pTask) {
       // check for ring dependencies
       if ((iResult=pConf->FollowDependency(pConf->GetName()))>0) {
-	Logging(kHLTLogError, "BASE", "AliHLTSystem", "detected ring dependency for configuration \"%s\"", pTask->GetName());
+	HLTError("detected ring dependency for configuration \"%s\"", pTask->GetName());
 	pTask->PrintDependencyTree(pTask->GetName(), 1/*use the configuration list*/);
-	Logging(kHLTLogError, "BASE", "AliHLTSystem", "aborted ...");
+	HLTError("aborted ...");
 	iResult=-ELOOP;
       }
       if (iResult>=0) {
@@ -151,16 +167,16 @@ int AliHLTSystem::InsertTask(AliHLTTask* pTask)
     lnk=fTaskList.FirstLink();
   while (lnk && iResult>0) {
     AliHLTTask* pCurr = (AliHLTTask*)lnk->GetObject();
-    //Logging(kHLTLogDebug, "BASE", "AliHLTSystem", "checking  \"%s\"", pCurr->GetName());
+    //HLTDebug("checking  \"%s\"", pCurr->GetName());
     iResult=pTask->Depends(pCurr);
     if (iResult>0) {
       iResult=pTask->SetDependency(pCurr);
       pCurr->SetTarget(pTask);
-      Logging(kHLTLogDebug, "BASE", "AliHLTSystem", "set dependency  \"%s\" for configuration \"%s\"", pCurr->GetName(), pTask->GetName());
+      HLTDebug("set dependency  \"%s\" for configuration \"%s\"", pCurr->GetName(), pTask->GetName());
     }
     if (pCurr->Depends(pTask)) {
       // ring dependency
-      Logging(kHLTLogError, "BASE", "AliHLTSystem", "ring dependency: can not resolve dependencies for configuration \"%s\"", pTask->GetName());
+      HLTError("ring dependency: can not resolve dependencies for configuration \"%s\"", pTask->GetName());
       iResult=-ELOOP;
     } else if ((iResult=pTask->CheckDependencies())>0) {
       lnk = lnk->Next();
@@ -172,9 +188,9 @@ int AliHLTSystem::InsertTask(AliHLTTask* pTask)
       } else {
 	fTaskList.AddFirst(pTask);
       }
-      Logging(kHLTLogDebug, "BASE", "AliHLTSystem", "task \"%s\" inserted", pTask->GetName());
+      HLTDebug("task \"%s\" inserted", pTask->GetName());
   } else if (iResult>0) {
-    Logging(kHLTLogError, "BASE", "AliHLTSystem", "can not resolve dependencies for configuration \"%s\" (%d unresolved)", pTask->GetName(), iResult);
+    HLTError("can not resolve dependencies for configuration \"%s\" (%d unresolved)", pTask->GetName(), iResult);
     iResult=-ENOLINK;
   }
   return iResult;
@@ -191,13 +207,14 @@ AliHLTTask* AliHLTSystem::FindTask(const char* id)
 
 void AliHLTSystem::PrintTaskList()
 {
+  HLTLogKeyword("task list");
   TObjLink *lnk = NULL;
-  Logging(kHLTLogInfo, "BASE", "AliHLTSystem", "Task List");
+  HLTMessage("Task List");
   lnk=fTaskList.FirstLink();
   while (lnk) {
     TObject* obj=lnk->GetObject();
     if (obj) {
-      Logging(kHLTLogInfo, "BASE", "AliHLTSystem", "  %s - status:", obj->GetName());
+      HLTMessage("  %s - status:", obj->GetName());
       AliHLTTask* pTask=(AliHLTTask*)obj;
       pTask->PrintStatus();
     } else {
