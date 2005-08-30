@@ -69,7 +69,7 @@ const GReal_t AliMUONSt1GeometryBuilderV2::fgkHzKapton = 0.0122/2.;     //Kapton
 const GReal_t AliMUONSt1GeometryBuilderV2::fgkHzBergPlastic = 0.3062/2.;//Berg connector
 const GReal_t AliMUONSt1GeometryBuilderV2::fgkHzBergCopper = 0.1882/2.; //Berg connector
 const GReal_t AliMUONSt1GeometryBuilderV2::fgkHzDaughter = 0.0156/2.;   //Daughter board
-const GReal_t AliMUONSt1GeometryBuilderV2::fgkHzGas = 0.2/2.;           //Gas thickness
+const GReal_t AliMUONSt1GeometryBuilderV2::fgkHzGas = 0.42/2.;          //Gas thickness
 
 // Quadrant Mother volume - TUBS1 - Middle layer of model
 const GReal_t AliMUONSt1GeometryBuilderV2::fgkMotherIR1 = 18.3;
@@ -102,11 +102,17 @@ const GReal_t AliMUONSt1GeometryBuilderV2::fgkDeltaFilleEtamX=1.46;
 const GReal_t AliMUONSt1GeometryBuilderV2::fgkDeltaFilleEtamY=0.051;
 
 const GReal_t AliMUONSt1GeometryBuilderV2::fgkDeltaQuadLHC=2.6;  // LHC Origin wrt Quadrant Origin
-const GReal_t AliMUONSt1GeometryBuilderV2::fgkFrameOffset=5.0;  
+const GReal_t AliMUONSt1GeometryBuilderV2::fgkFrameOffset=5.2;
+              // Fix (1) of overlap SQN* layers with SQM* ones (was 5.0)
+	      
+// Pad planes offsets
+const GReal_t AliMUONSt1GeometryBuilderV2::fgkPadXOffsetBP =  0.50 - 0.63/2; // = 0.185
+const GReal_t AliMUONSt1GeometryBuilderV2::fgkPadYOffsetBP = -0.31 - 0.42/2; // =-0.52
 
 const char* AliMUONSt1GeometryBuilderV2::fgkHoleName="MCHL";      
 const char* AliMUONSt1GeometryBuilderV2::fgkDaughterName="MCDB";  
 const char  AliMUONSt1GeometryBuilderV2::fgkFoamLayerSuffix='F';  // prefix for automatic volume naming
+const char* AliMUONSt1GeometryBuilderV2::fgkQuadrantEnvelopeName="SE";
 const char* AliMUONSt1GeometryBuilderV2::fgkQuadrantMLayerName="SQM";
 const char* AliMUONSt1GeometryBuilderV2::fgkQuadrantNLayerName="SQN";
 const char* AliMUONSt1GeometryBuilderV2::fgkQuadrantFLayerName="SQF";
@@ -171,6 +177,16 @@ AliMUONSt1GeometryBuilderV2::operator = (const AliMUONSt1GeometryBuilderV2& rhs)
 //
 //  Private methods
 //
+
+//______________________________________________________________________________
+TString 
+AliMUONSt1GeometryBuilderV2::QuadrantEnvelopeName(Int_t chamber, Int_t quadrant) const
+{ 
+// Generate unique envelope name from chamber Id and quadrant number
+// ---
+
+  return Form("%s%d", Form("%s%d",fgkQuadrantEnvelopeName,chamber), quadrant); 
+}
 
 //______________________________________________________________________________
 void AliMUONSt1GeometryBuilderV2::CreateHole()
@@ -501,35 +517,49 @@ void AliMUONSt1GeometryBuilderV2::CreateQuadrant(Int_t chamber)
   AliMpReader reader1(kStation1, kBendingPlane);
   AliMpSector* sector1 = reader1.BuildSector();
 
-  Bool_t reflectZ = true;
-  TVector3 where = TVector3(2.5+0.1+0.56+0.001, 2.5+0.1+0.001, 0.);
+  //Bool_t reflectZ = true;
+  Bool_t reflectZ = false;
+  //TVector3 where = TVector3(2.5+0.1+0.56+0.001, 2.5+0.1+0.001, 0.);
+  TVector3 where = TVector3(fgkDeltaQuadLHC + fgkPadXOffsetBP, 
+                            fgkDeltaQuadLHC + fgkPadYOffsetBP, 0.);
   PlaceSector(sector1, specialMap, where, reflectZ, chamber);
   
 #ifdef ST1_WITH_STL
   specialMap.clear();
   specialMap[76] = AliMUONSt1SpecialMotif(TVector2(1.01,0.59),90.);
   specialMap[75] = AliMUONSt1SpecialMotif(TVector2(1.96, 0.17));
-  specialMap[47] = AliMUONSt1SpecialMotif(TVector2(1.61,-1.18));
+  specialMap[47] = AliMUONSt1SpecialMotif(TVector2(2.18,-0.98));
   specialMap[20] = AliMUONSt1SpecialMotif(TVector2(0.2 ,-0.08));
   specialMap[46] = AliMUONSt1SpecialMotif(TVector2(0.2 , 0.25));
   specialMap[74] = AliMUONSt1SpecialMotif(TVector2(0.28, 0.21));
+      // Fix (7) - overlap of SQ42 with MCHL (after moving the whole sector
+      // in the true position)   
+      // Was: specialMap[47] = AliMUONSt1SpecialMotif(TVector2(1.61,-1.18));
 #endif
 
 #ifdef ST1_WITH_ROOT
   specialMap.Delete();
   specialMap.Add(76,(Long_t) new AliMUONSt1SpecialMotif(TVector2(1.01,0.59),90.));
   specialMap.Add(75,(Long_t) new AliMUONSt1SpecialMotif(TVector2(1.96, 0.17)));
-  specialMap.Add(47,(Long_t) new AliMUONSt1SpecialMotif(TVector2(1.61,-1.18)));
+  specialMap.Add(47,(Long_t) new AliMUONSt1SpecialMotif(TVector2(2.18,-0.98)));
   specialMap.Add(20,(Long_t) new AliMUONSt1SpecialMotif(TVector2(0.2 ,-0.08)));
   specialMap.Add(46,(Long_t) new AliMUONSt1SpecialMotif(TVector2(0.2 , 0.25)));
-  specialMap.Add(74,(Long_t) new AliMUONSt1SpecialMotif(TVector2(0.28, 0.21)));
+  specialMap.Add(74,(Long_t) new AliMUONSt1SpecialMotif(TVector2(0.28, 0.21)));  
+      // Fix (7) - overlap of SQ42 with MCHL (after moving the whole sector
+      // in the true position)   
+      // Was: specialMap.Add(47,(Long_t) new AliMUONSt1SpecialMotif(TVector2(1.61,-1.18)));
 #endif
 
   AliMpReader reader2(kStation1, kNonBendingPlane);
   AliMpSector* sector2 = reader2.BuildSector();
-
-  reflectZ = false;
-  where = TVector3(where.X()+0.63/2.,where.Y()+0.42/2., 0.); //add a half pad shift
+  
+  //reflectZ = false;
+  reflectZ = true;
+  TVector2 offset = sector2->Offset();
+  where = TVector3(where.X()+offset.X()/10., where.Y()+offset.Y()/10., 0.); 
+      // Add the half-pad shift of the non-bending plane wrt bending plane
+      // (The shift is defined in the mapping as sector offset)
+      // Fix (4) - was TVector3(where.X()+0.63/2, ... - now it is -0.63/2
   PlaceSector(sector2, specialMap, where, reflectZ, chamber);
 
 #ifdef ST1_WITH_ROOT
@@ -879,13 +909,19 @@ void AliMUONSt1GeometryBuilderV2::CreateFrame(Int_t chamber)
   const Float_t kAlp2OETF2 = 2.94; 
  
 // Trapezoid 3
-  const Float_t kBl1OETF3 = 1.767/2.;
-  const Float_t kTl1OETF3 = 3.01/2.;
+  //const Float_t kBl1OETF3 = 1.767/2.;
+  //const Float_t kTl1OETF3 = 3.01/2.;
+  const Float_t kBl1OETF3 = 1.117/2.;
+  const Float_t kTl1OETF3 = 2.36/2.;
   const Float_t kAlp1OETF3 = 4.94;
+        // Fix (5) - overlap of SQ21 with 041M and 125M
       
-  const Float_t kBl2OETF3 = 1.767/2.;
-  const Float_t kTl2OETF3 = 3.01/2.; 
+  //const Float_t kBl2OETF3 = 1.767/2.;
+  //const Float_t kTl2OETF3 = 3.01/2.; 
+  const Float_t kBl2OETF3 = 1.117/2.;
+  const Float_t kTl2OETF3 = 2.36/2.;
   const Float_t kAlp2OETF3 = 4.94; 
+        // Fix (5) - overlap of SQ21 with 041M and 125M
   
 // Trapezoid 4
   const Float_t kBl1OETF4 = 0.;
@@ -1637,13 +1673,17 @@ void AliMUONSt1GeometryBuilderV2::CreateFrame(Int_t chamber)
     
     xCenter[0] = 73.201 + fgkDeltaQuadLHC;
     xCenter[1] = 78.124 + fgkDeltaQuadLHC; 
-    xCenter[2] = 82.862 + fgkDeltaQuadLHC;
+    //xCenter[2] = 82.862 + fgkDeltaQuadLHC;
+    xCenter[2] = 83.102 + fgkDeltaQuadLHC;
     xCenter[3] = 87.418 + fgkDeltaQuadLHC; 
+        // Fix (5) - overlap of SQ21 with 041M and 125M
     
     yCenter[0] = 68.122 + fgkDeltaQuadLHC;
     yCenter[1] = 62.860 + fgkDeltaQuadLHC;   
-    yCenter[2] = 57.420 + fgkDeltaQuadLHC;
+    //yCenter[2] = 57.420 + fgkDeltaQuadLHC;
+    yCenter[2] = 57.660 + fgkDeltaQuadLHC;
     yCenter[3] = 51.800 + fgkDeltaQuadLHC; 
+        // Fix (5) - overlap of SQ21 with 041M and 125M
       
     xCenter[4] = 68.122 + fgkDeltaQuadLHC;
     xCenter[5] = 62.860 + fgkDeltaQuadLHC; 
@@ -1789,10 +1829,11 @@ void AliMUONSt1GeometryBuilderV2::CreateFrame(Int_t chamber)
     posZ = 0.;              
     gMC->Gspos("SQ36",2,QuadrantMLayerName(chamber),posX, posY, posZ, 0, "ONLY");
 
-    posX = 98.31-kNearFarLHC;
+    posX = 98.05-kNearFarLHC;
     posY = 12.77-kNearFarLHC;        
-
     posZ = 2.0*kHzLateralSightAl+kHzVerticalCradleAl-fgkMotherThick2;         
+           // Fix (2) of extrusion SQ36 from SQN1, SQN2, SQF1, SQF2 
+	   // (was posX = 98.31 ...)
     gMC->Gspos("SQ36",1,QuadrantNLayerName(chamber),posX, posY, posZ, 0, "ONLY");       
     posZ = -1.0*posZ;
     gMC->Gspos("SQ36",3,QuadrantFLayerName(chamber),posX, posY, posZ, 0, "ONLY");  
@@ -1809,9 +1850,11 @@ void AliMUONSt1GeometryBuilderV2::CreateFrame(Int_t chamber)
     gMC->Gspos("SQ37",3,QuadrantMLayerName(chamber),posX, posY, posZ, 0, "ONLY");          
              
 // LateralSightSupport - 2 copies
-    posX = 98.53-kNearFarLHC;
+    posX = 98.33-kNearFarLHC;
     posY = 10.00-kNearFarLHC;    
     posZ = kHzLateralSightAl-fgkMotherThick2;
+           // Fix (3) of extrusion SQ38 from SQN1, SQN2, SQF1, SQF2 
+           // (was posX = 98.53 ...)
     gMC->Gspos("SQ38",1,QuadrantNLayerName(chamber),posX, posY, posZ, 0, "ONLY"); 
     posZ = -1.0*posZ;             
     gMC->Gspos("SQ38",2,QuadrantFLayerName(chamber),posX, posY, posZ, 0, "ONLY"); 
@@ -2471,10 +2514,12 @@ void AliMUONSt1GeometryBuilderV2::CreateGeometry()
   detElemId[3] =  2;  // quadrant IV
   
   // Shift in Z of the middle layer
-  Double_t deltaZ = 6.5/2.;         
+  // Double_t deltaZ = 7.5/2.;         
+  Double_t deltaZ = fgkMotherThick1; 
+      // Fix (6) - shift  of the middle layer = half of its thickness      
 
   // Position of quadrant I wrt to the chamber position
-  TVector3 pos0(-fgkDeltaQuadLHC, -fgkDeltaQuadLHC, deltaZ);
+  // TVector3 pos0(-fgkDeltaQuadLHC, -fgkDeltaQuadLHC, deltaZ);
 
   // Shift for near/far layers
   GReal_t  shiftXY = fgkFrameOffset;
@@ -2493,29 +2538,38 @@ void AliMUONSt1GeometryBuilderV2::CreateGeometry()
     // Place the quadrant
     for (Int_t i=0; i<4; i++) {
 
+      // DE envelope
+      GReal_t posx0, posy0, posz0;
+      posx0 = fgkPadXOffsetBP * scale[i].X();
+      posy0 = fgkPadYOffsetBP * scale[i].Y();;
+      posz0 = deltaZ * scale[i].Z();
+      GetEnvelopes(ich-1)
+        ->AddEnvelope(QuadrantEnvelopeName(ich,i), detElemId[i] + ich*100, true,
+	              TGeoTranslation(posx0, posy0, posz0), rotm[i]);
+
       // Middle layer
       GReal_t posx, posy, posz;
-      posx = pos0.X() * scale[i].X();
-      posy = pos0.Y() * scale[i].Y();
-      //posz = pos0.Z() * scale[i].Z() + AliMUONConstants::DefaultChamberZ(ich-1);
-      //gMC->Gspos(QuadrantMLayerName(ich), i+1, "ALIC", posx, posy, posz, rotm[i], "ONLY");
-      posz = pos0.Z() * scale[i].Z();
+      posx = -fgkDeltaQuadLHC - fgkPadXOffsetBP;
+      posy = -fgkDeltaQuadLHC - fgkPadYOffsetBP;
+      posz = 0.;
       GetEnvelopes(ich-1)
-        ->AddEnvelope(QuadrantMLayerName(ich), detElemId[i] + ich*100, i+1,
-	              TGeoTranslation(posx, posy, posz), rotm[i]);
+        ->AddEnvelopeConstituent(QuadrantMLayerName(ich), QuadrantEnvelopeName(ich,i),
+	             i+1, TGeoTranslation(posx, posy, posz));
 
       // Near/far layers
-      Real_t  posx2 = posx + shiftXY * scale[i].X();
-      Real_t  posy2 = posy + shiftXY * scale[i].Y();
-      Real_t  posz2 = posz - scale[i].Z()*shiftZ;
+      GReal_t  posx2 = posx + shiftXY;;
+      GReal_t  posy2 = posy + shiftXY;;
+      GReal_t  posz2 = posz - shiftZ;;
       //gMC->Gspos(QuadrantNLayerName(ich), i+1, "ALIC", posx2, posy2, posz2, rotm[i],"ONLY");
       GetEnvelopes(ich-1)
-        ->AddEnvelope(QuadrantNLayerName(ich), 0, i+1, TGeoTranslation(posx2, posy2, posz2), rotm[i]); 
+        ->AddEnvelopeConstituent(QuadrantNLayerName(ich), QuadrantEnvelopeName(ich,i),
+	             i+1, TGeoTranslation(posx2, posy2, posz2)); 
     
-      posz2 = posz + scale[i].Z()*shiftZ;      
+      posz2 = posz + shiftZ;      
       //gMC->Gspos(QuadrantFLayerName(ich), i+1, "ALIC", posx2, posy2, posz2, rotm[i],"ONLY");
       GetEnvelopes(ich-1)
-        ->AddEnvelope(QuadrantFLayerName(ich), 0, i+1, TGeoTranslation(posx2, posy2, posz2), rotm[i]); 
+        ->AddEnvelopeConstituent(QuadrantFLayerName(ich), QuadrantEnvelopeName(ich,i), 
+	             i+1, TGeoTranslation(posx2, posy2, posz2)); 
    }
  }     
 }

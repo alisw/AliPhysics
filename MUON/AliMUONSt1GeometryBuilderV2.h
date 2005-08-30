@@ -74,6 +74,10 @@ class AliMUONSt1GeometryBuilderV2 : public AliMUONVGeometryBuilder
     static const GReal_t fgkDeltaQuadLHC; // LHC Origin wrt Quadrant Origin
     static const GReal_t fgkFrameOffset;  // Frame offset
 
+    // Pad planes offsets
+    static const GReal_t fgkPadXOffsetBP; // Horizontal offset in bending plane  
+    static const GReal_t fgkPadYOffsetBP; // Vertical offset in bending plane 
+
     // Quadrant Mother volume - TUBS1   
     static const GReal_t fgkMotherIR1;    // Middle Layer Rin
     static const GReal_t fgkMotherOR1;    // Middle Layer Rout
@@ -89,6 +93,7 @@ class AliMUONSt1GeometryBuilderV2 : public AliMUONVGeometryBuilder
     static const GReal_t fgkMotherPhiU2;  // Near and Far Layer Endphi  
 
     static const char* fgkHoleName;          // prefix for automatic volume naming
+    static const char* fgkQuadrantEnvelopeName; // prefix for automatic volume naming
     static const char* fgkQuadrantMLayerName;// prefix for automatic volume naming
     static const char* fgkQuadrantNLayerName;// prefix for automatic volume naming
     static const char* fgkQuadrantFLayerName;// prefix for automatic volume naming
@@ -112,6 +117,7 @@ class AliMUONSt1GeometryBuilderV2 : public AliMUONVGeometryBuilder
     void PlaceSector(AliMpSector* sector, SpecialMap specialMap,
                      const TVector3& where, Bool_t reflectZ, Int_t chamber);
 		     
+    TString QuadrantEnvelopeName(Int_t chamber, Int_t quadrant) const;
     TString QuadrantMLayerName(Int_t chamber) const;
     TString QuadrantNLayerName(Int_t chamber) const;
     TString QuadrantFLayerName(Int_t chamber) const;
