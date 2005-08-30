@@ -183,16 +183,20 @@ void  AliMpReader::ReadSectorData(ifstream& in)
     
   Int_t nofZones, nofRows;
   TString directionStr;
+  Double_t offsetX, offsetY;
   in >> nofZones;
   in >> nofRows;
   in >> directionStr;
+  in >> offsetX;
+  in >> offsetY;
   
   AliMpDirection direction;
   direction = (directionStr == "Y") ? kY  :  kX;
   if (fVerboseLevel>0) 
      cout << nofZones << " " <<  nofRows << endl;
 
-  fSector = new AliMpSector("Not defined", nofZones, nofRows,direction);
+  fSector = new AliMpSector("Not defined", nofZones, nofRows,direction,
+                            TVector2(offsetX, offsetY));
   
   TString nextKeyword;
   in >> nextKeyword;

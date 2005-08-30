@@ -24,10 +24,10 @@ ClassImp(AliMpSector)
 
 //_____________________________________________________________________________
 AliMpSector::AliMpSector(const TString& id, Int_t nofZones, Int_t nofRows, 
-                         AliMpDirection direction) 
+                         AliMpDirection direction, const TVector2& offset) 
   : TObject(),
     fID(id),
-    fOffset(TVector2(0., 0.)),
+    fOffset(offset),
     fZones(),
     fRows(),
     fDirection(direction),
@@ -51,7 +51,6 @@ AliMpSector::AliMpSector(const TString& id, Int_t nofZones, Int_t nofRows,
   for (Int_t irow = 0; irow<nofRows; irow++) 
     fRows.Add(new AliMpRow(irow, fMotifMap));
 #endif
-    
 }
 
 //_____________________________________________________________________________

@@ -53,6 +53,8 @@
     number of zones  
     number of rows  
     direction of constant pad size (X or Y)
+    offset in X direction
+    offset in Y direction
   
   ZONE     
     number of zone  

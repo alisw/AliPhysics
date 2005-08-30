@@ -28,7 +28,7 @@ class AliMpSector : public TObject
 {
   public:
     AliMpSector(const TString& id, Int_t nofZones, Int_t nofRows,
-                AliMpDirection direction);
+                AliMpDirection direction, const TVector2& offset);
     AliMpSector();
     virtual ~AliMpSector();
   
@@ -52,6 +52,7 @@ class AliMpSector : public TObject
     // geometry 
     TVector2  Position() const;
     TVector2  Dimensions() const;
+    TVector2  Offset() const;
    
     // get methods
     Int_t       GetNofZones() const;
@@ -87,6 +88,9 @@ class AliMpSector : public TObject
 };
 
 // inline functions
+
+inline TVector2  AliMpSector::Offset() const
+{ return fOffset; }
 
 inline AliMpDirection AliMpSector::GetDirection() const 
 { return fDirection; }    

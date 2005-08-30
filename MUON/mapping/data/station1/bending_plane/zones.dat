@@ -1,5 +1,5 @@
 SECTOR_DATA
-       4  13 Y
+       4  13 Y  0.0  0.0
 
 ZONE 1  6.3   4.2
 	SUBZONE 1    A  
