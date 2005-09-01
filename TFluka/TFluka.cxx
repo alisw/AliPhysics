@@ -34,8 +34,8 @@
 #include "TFluka.h"
 #include "TCallf77.h"      //For the fortran calls
 #include "Fdblprc.h"       //(DBLPRC) fluka common
-#include "Fepisor.h"       //(EPISOR) fluka common
-#include "Ffinuc.h"        //(FINUC)  fluka common
+#include "Fsourcm.h"       //(SOURCM) fluka common
+#include "Fgenstk.h"       //(GENSTK)  fluka common
 #include "Fiounit.h"       //(IOUNIT) fluka common
 #include "Fpaprop.h"       //(PAPROP) fluka common
 #include "Fpart.h"         //(PART)   fluka common
@@ -43,7 +43,7 @@
 #include "Fpaprop.h"       //(PAPROP) fluka common
 #include "Ffheavy.h"       //(FHEAVY) fluka common
 #include "Fopphst.h"       //(OPPHST) fluka common
-#include "Fstack.h"        //(STACK)  fluka common
+#include "Fflkstk.h"       //(FLKSTK) fluka common
 #include "Fstepsz.h"       //(STEPSZ) fluka common
 #include "Fopphst.h"       //(OPPHST) fluka common
 
@@ -307,7 +307,7 @@ void TFluka::ProcessEvent() {
     if (fVerbosityLevel >=3)
 	cout << "==> TFluka::ProcessEvent() called." << endl;
     fApplication->GeneratePrimaries();
-    EPISOR.lsouit = true;
+    SOURCM.lsouit = true;
     flukam(1);
     if (fVerbosityLevel >=3)
 	cout << "<== TFluka::ProcessEvent() called." << endl;
@@ -598,16 +598,6 @@ void TFluka::Matrix(Int_t& krot, Double_t thetaX, Double_t phiX,
 void TFluka::Gstpar(Int_t itmed, const char* param, Double_t parval) {
 //
 //
-// Check if material is used    
-   if (fVerbosityLevel >= 3) 
-       printf("Gstpar called with %6d %5s %12.4e %6d\n", itmed, param, parval, fGeom->GetFlukaMaterial(itmed));
-   Int_t* reglist;
-   Int_t nreg;
-   reglist = fGeom->GetMaterialList(fGeom->GetFlukaMaterial(itmed), nreg);
-   if (nreg == 0) {
-       return;
-   }
-   
 //
    Bool_t process = kFALSE;
    if (strncmp(param, "DCAY",  4) == 0 ||
@@ -627,10 +617,11 @@ void TFluka::Gstpar(Int_t itmed, const char* param, Double_t parval) {
    {
        process = kTRUE;
    } 
+   
    if (process) {
-       SetProcess(param, Int_t (parval), fGeom->GetFlukaMaterial(itmed));
+       SetProcess(param, Int_t (parval), itmed);
    } else {
-       SetCut(param, parval, fGeom->GetFlukaMaterial(itmed));
+       SetCut(param, parval, itmed);
    }
 }    
 
@@ -1550,11 +1541,11 @@ Int_t TFluka::NSecondaries() const
 
 {
 // Number of secondary particles generated in the current step
-// FINUC.np = number of secondaries except light and heavy ions
+// GENSTK.np = number of secondaries except light and heavy ions
 // FHEAVY.npheav = number of secondaries for light and heavy secondary ions
     Int_t caller = GetCaller();
     if (caller == 6)  // valid only after usdraw
-	return FINUC.np + FHEAVY.npheav;
+	return GENSTK.np + FHEAVY.npheav;
     else if (caller == 50) {
 	// Cerenkov Photon production
 	return fNCerenkov;
@@ -1571,21 +1562,21 @@ void TFluka::GetSecondary(Int_t isec, Int_t& particleId,
 
     Int_t caller = GetCaller();
     if (caller == 6) {  // valid only after usdraw
-	if (FINUC.np > 0) {
+	if (GENSTK.np > 0) {
 	    // Hadronic interaction
-	    if (isec >= 0 && isec < FINUC.np) {
-		particleId = PDGFromId(FINUC.kpart[isec]);
+	    if (isec >= 0 && isec < GENSTK.np) {
+		particleId = PDGFromId(GENSTK.kpart[isec]);
 		position.SetX(fXsco);
 		position.SetY(fYsco);
 		position.SetZ(fZsco);
 		position.SetT(TRACKR.atrack);
-		momentum.SetPx(FINUC.plr[isec]*FINUC.cxr[isec]);
-		momentum.SetPy(FINUC.plr[isec]*FINUC.cyr[isec]);
-		momentum.SetPz(FINUC.plr[isec]*FINUC.czr[isec]);
-		momentum.SetE(FINUC.tki[isec] + PAPROP.am[FINUC.kpart[isec]+6]);
+		momentum.SetPx(GENSTK.plr[isec]*GENSTK.cxr[isec]);
+		momentum.SetPy(GENSTK.plr[isec]*GENSTK.cyr[isec]);
+		momentum.SetPz(GENSTK.plr[isec]*GENSTK.czr[isec]);
+		momentum.SetE(GENSTK.tki[isec] + PAPROP.am[GENSTK.kpart[isec]+6]);
 	    }
-	    else if (isec >= FINUC.np && isec < FINUC.np + FHEAVY.npheav) {
-		Int_t jsec = isec - FINUC.np;
+	    else if (isec >= GENSTK.np && isec < GENSTK.np + FHEAVY.npheav) {
+		Int_t jsec = isec - GENSTK.np;
 		particleId = FHEAVY.kheavy[jsec]; // this is Fluka id !!!
 		position.SetX(fXsco);
 		position.SetY(fYsco);
@@ -1912,7 +1903,7 @@ Double_t TFluka::ParticleLifeTime(Int_t pdg) const
 {
     // Return particle lifetime for particle with pdg code pdg.
     Int_t ifluka = IdFromPDG(pdg);
-    return (PAPROP.thalf[ifluka+6]);
+    return (PAPROP.tmnlf[ifluka+6]);
 }
 
 void TFluka::Gfpart(Int_t pdg, char* name, Int_t& type, Float_t& mass, Float_t& charge, Float_t& tlife)
@@ -1942,30 +1933,30 @@ void TFluka::PrintHeader()
 
 
 
-#define pushcerenkovphoton pushcerenkovphoton_
-#define usersteppingckv    usersteppingckv_
+#define pshckp pshckp_
+#define ustckv ustckv_
 
 
 extern "C" {
-    void pushcerenkovphoton(Double_t & px, Double_t & py, Double_t & pz, Double_t & e,
-			    Double_t & vx, Double_t & vy, Double_t & vz, Double_t & tof,
-			    Double_t & polx, Double_t & poly, Double_t & polz, Double_t & wgt, Int_t& ntr)
-    {
-	//
-	// Pushes one cerenkov photon to the stack
-	//
-	
-	TFluka* fluka =  (TFluka*) gMC;
-	TVirtualMCStack* cppstack = fluka->GetStack();
-	Int_t parent =  TRACKR.ispusr[mkbmx2-1];
-	cppstack->PushTrack(0, parent, 50000050,
-			    px, py, pz, e,
-                            vx, vy, vz, tof,
-			    polx, poly, polz,
-			    kPCerenkov, ntr, wgt, 0); 
-    }
-
-    void usersteppingckv(Int_t & nphot, Int_t & mreg, Double_t & x, Double_t & y, Double_t & z)
+  void pshckp(Double_t & px, Double_t & py, Double_t & pz, Double_t & e,
+	      Double_t & vx, Double_t & vy, Double_t & vz, Double_t & tof,
+	      Double_t & polx, Double_t & poly, Double_t & polz, Double_t & wgt, Int_t& ntr)
+  {
+    //
+    // Pushes one cerenkov photon to the stack
+    //
+    
+    TFluka* fluka =  (TFluka*) gMC;
+    TVirtualMCStack* cppstack = fluka->GetStack();
+    Int_t parent =  TRACKR.ispusr[mkbmx2-1];
+    cppstack->PushTrack(0, parent, 50000050,
+			px, py, pz, e,
+			vx, vy, vz, tof,
+			polx, poly, polz,
+			kPCerenkov, ntr, wgt, 0);
+  }
+    
+    void ustckv(Int_t & nphot, Int_t & mreg, Double_t & x, Double_t & y, Double_t & z)
     {
 	//
 	// Calls stepping in order to signal cerenkov production
@@ -1978,8 +1969,7 @@ extern "C" {
 	fluka->SetNCerenkov(nphot);
 	fluka->SetCaller(50);
 	if (fluka->GetVerbosityLevel() >= 3) 
-	printf("userstepping ckv: %10d %10d %13.3f %13.3f %13.2f %s\n", nphot, mreg, x, y, z, fluka->CurrentVolName());
 	(TVirtualMCApplication::Instance())->Stepping();
+	
     }
 }
-

@@ -77,8 +77,6 @@ void TFlukaConfigOption::SetCut(const char* flagname, Double_t val)
 
 void TFlukaConfigOption::SetProcess(const char* flagname, Int_t flag)
 {
-    printf("SetProcess %s %5d %5d \n", flagname, flag, fMedium);
-    
     // Set a process flag
     const TString process[15] = 
 	{"DCAY", "PAIR", "COMP", "PHOT", "PFIS", "DRAY", "ANNI", "BREM", "MUNU", "CKOV", 
@@ -87,8 +85,6 @@ void TFlukaConfigOption::SetProcess(const char* flagname, Int_t flag)
     Int_t i;
     for (i = 0; i < 15; i++) {
 	if (process[i].CompareTo(flagname) == 0) {
-	    printf("flag %5d\n", i);
-	    
 	    fProcessFlag[i] = flag;
 	    if (fMedium == -1) fgDProcessFlag[i] = flag;
 	    break;
@@ -101,8 +97,19 @@ void TFlukaConfigOption::WriteFlukaInputCards()
     // Write the FLUKA input cards for the set of process flags and cuts
     //
     //
-    if (fMedium > -1) {
+    if (fMedium != -1) {
 	TFluka* fluka = (TFluka*) gMC;
+	fMedium = fgGeom->GetFlukaMaterial(fMedium);
+	//
+	// Check if material is actually used
+	Int_t* reglist;
+	Int_t nreg;	
+	reglist = fgGeom->GetMaterialList(fMedium, nreg);
+	if (nreg == 0) {
+	    printf("Material not used !\n");
+	    return;
+	}
+
 	TObjArray *matList = fluka->GetFlukaMaterials();
 	Int_t nmaterial =  matList->GetEntriesFast();
 	TGeoMaterial* material = 0;
@@ -171,13 +178,13 @@ void TFlukaConfigOption::ProcessDCAY()
 void TFlukaConfigOption::ProcessPAIR()
 {
     // Process PAIR option
-    fprintf(fgFile,"*\n* --- PAIR --- Pair production by gammas, muons and hadrons. Flag = %5d, PPCUTM = %13.4g \n", 
-	    fProcessFlag[kPAIR], fCutValue[kPPCUTM]);
+    fprintf(fgFile,"*\n* --- PAIR --- Pair production by gammas, muons and hadrons. Flag = %5d, PPCUTM = %13.4g, PPCUTE = %13.4g\n", 
+	    fProcessFlag[kPAIR], fCutValue[kCUTELE], fCutValue[kPPCUTM]);
     //
     // gamma -> e+ e-
     //
     if (fProcessFlag[kPAIR] > 0) {
-	fprintf(fgFile,"EMFCUT    %10.1f%10.1f%10.1f%10.1f%10.1f%10.1fPHOT-THR\n",0., 0., 0.,    fCMatMin, fCMatMax, 1.);
+	fprintf(fgFile,"EMFCUT    %10.1f%10.1f%10.4g%10.1f%10.1f%10.1fPHOT-THR\n",0., 0., 0.0, fCMatMin, fCMatMax, 1.);
     } else {
 	fprintf(fgFile,"EMFCUT    %10.1f%10.1f%10.4g%10.1f%10.1f%10.1fPHOT-THR\n",0., 0., 1e10,  fCMatMin, fCMatMax, 1.);
     }
@@ -286,7 +293,7 @@ void TFlukaConfigOption::ProcessPHOT()
     //
 
     if (fProcessFlag[kPHOT] > 0) {
-	fprintf(fgFile,"EMFCUT    %10.1f%10.1f%10.1f%10.1f%10.1f%10.1fPHOT-THR\n",0.   , 0., 0.,  fCMatMin, fCMatMax, 1.);
+	fprintf(fgFile,"EMFCUT    %10.4g%10.4g%10.4g%10.1f%10.1f%10.1fPHOT-THR\n",0., 0., 0.,  fCMatMin, fCMatMax, 1.);
     } else {
 	fprintf(fgFile,"EMFCUT    %10.1f%10.4g%10.1f%10.1f%10.1f%10.1fPHOT-THR\n",0., 1.e10, 0.,  fCMatMin, fCMatMax, 1.);
     }

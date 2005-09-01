@@ -77,13 +77,13 @@ void stupre()
     
 // Ckeck transport cut first
     Int_t ireg = EMFSTK.iremf[kp];
-    Double_t cut = (TMath::Abs(EMFSTK.ichemf[kp]) == 1) ? EFMRGN.ecut[ireg-1] :  EFMRGN.pcut[ireg-1];
+    Double_t cut = (TMath::Abs(EMFSTK.ichemf[kp]) == 1) ? EFMRGN.elethr[ireg-1] :  EFMRGN.phothr[ireg-1];
     Double_t e      = EMFSTK.etemf[kp];
     if ((e < cut) 
 	&& ( 
 	    (EMFSTK.ichemf[kp] ==  0) ||
 	    (EMFSTK.ichemf[kp] == -1) ||
-	    (EMFSTK.ichemf[kp] ==  1 &&  EFMRGN.pcut[ireg-1] > emassmev)
+	    (EMFSTK.ichemf[kp] ==  1 &&  EFMRGN.phothr[ireg-1] > emassmev)
 	    )
 	)
     {
@@ -106,16 +106,16 @@ void stupre()
     e      *= emvgev;
     Int_t    pdg    = fluka->PDGFromId(flukaid);
     Double_t p      = sqrt(e * e - PAPROP.am[flukaid+6] * PAPROP.am[flukaid+6]);
-    Double_t px     = p * EMFSTK.u[kp];
-    Double_t pz     = p * EMFSTK.v[kp];
-    Double_t py     = p * EMFSTK.w[kp];
+    Double_t px     = p * EMFSTK.uemf[kp];
+    Double_t pz     = p * EMFSTK.vemf[kp];
+    Double_t py     = p * EMFSTK.wemf[kp];
     Double_t tof    = EMFSTK.agemf[kp];
     Double_t polx   = EMFSTK.upol[kp];
     Double_t poly   = EMFSTK.vpol[kp];
     Double_t polz   = EMFSTK.wpol[kp];
-    Double_t vx     = EMFSTK.x[kp];
-    Double_t vy     = EMFSTK.y[kp];
-    Double_t vz     = EMFSTK.z[kp];
+    Double_t vx     = EMFSTK.xemf[kp];
+    Double_t vy     = EMFSTK.yemf[kp];
+    Double_t vz     = EMFSTK.zemf[kp];
     Double_t weight = EMFSTK.wtemf[kp];
 
     Int_t ntr;

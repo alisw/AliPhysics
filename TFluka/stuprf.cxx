@@ -11,9 +11,9 @@
 #include "Fdblprc.h"  //(DBLPRC) fluka common
 #include "Fevtflg.h"  //(EVTFLG) fluka common
 #include "Fpaprop.h"  //(PAPROP) fluka common
-#include "Fstack.h"   //(STACK)  fluka common
+#include "Fflkstk.h"  //(FLKSTK)  fluka common
 #include "Ftrackr.h"  //(TRACKR) fluka common
-#include "Ffinuc.h"   //(FINUC)  fluka common
+#include "Fgenstk.h"  //(GENSTK)  fluka common
 
 //Virtual MC
 #include "TFluka.h"
@@ -34,23 +34,23 @@ extern "C" {
 //*                                                                      *
 //*----------------------------------------------------------------------*
 
-// STACK.lstack  = stack pointer
-// STACK.louse   = user flag
+// FLKSTK.npflka  = stack pointer
+// FLKSTK.louse   = user flag
 // TRACKR.llouse = user defined flag for the current particle
-  STACK.louse[STACK.lstack] = TRACKR.llouse;
+  FLKSTK.louse[FLKSTK.npflka] = TRACKR.llouse;
 
 // mkbmx1 = dimension for kwb real spare array in fluka stack in DIMPAR
 // mkbmx2 = dimension for kwb int. spare array in fluka stack in DIMPAR
-// STACK.sparek  = spare real variables available for k.w.burn
-// STACK.ispark  = spare integer variables available for k.w.burn
+// FLKSTK.sparek  = spare real variables available for k.w.burn
+// FLKSTK.ispark  = spare integer variables available for k.w.burn
 // TRACKR.spausr = user defined spare variables for the current particle
 // TRACKR.ispusr = user defined spare flags for the current particle
   Int_t ispr;
   for (ispr = 0; ispr <= mkbmx1 - 1; ispr++) {
-    STACK.sparek[STACK.lstack][ispr] = TRACKR.spausr[ispr];
+    FLKSTK.sparek[FLKSTK.npflka][ispr] = TRACKR.spausr[ispr];
   }  
   for (ispr = 0; ispr <= mkbmx2 - 1; ispr++) {
-    STACK.ispark[STACK.lstack][ispr] = TRACKR.ispusr[ispr];
+    FLKSTK.ispark[FLKSTK.npflka][ispr] = TRACKR.ispusr[ispr];
   }  
  
 // Get the pointer to the VMC
@@ -71,25 +71,25 @@ extern "C" {
     Int_t done = 0;
 
     Int_t parent =  TRACKR.ispusr[mkbmx2-1];
-    Int_t kpart  = FINUC.kpart[numsec-1];
+    Int_t kpart  = GENSTK.kpart[numsec-1];
     if (kpart < -6) return;
 
     Int_t pdg = fluka->PDGFromId(kpart);
 
     
-    Double_t px = FINUC.plr[numsec-1] * FINUC.cxr[numsec-1];
-    Double_t py = FINUC.plr[numsec-1] * FINUC.cyr[numsec-1];
-    Double_t pz = FINUC.plr[numsec-1] * FINUC.czr[numsec-1];
-    Double_t e  = FINUC.tki[numsec-1] + PAPROP.am[FINUC.kpart[numsec-1]+6];
+    Double_t px = GENSTK.plr[numsec-1] * GENSTK.cxr[numsec-1];
+    Double_t py = GENSTK.plr[numsec-1] * GENSTK.cyr[numsec-1];
+    Double_t pz = GENSTK.plr[numsec-1] * GENSTK.czr[numsec-1];
+    Double_t e  = GENSTK.tki[numsec-1] + PAPROP.am[GENSTK.kpart[numsec-1]+6];
 
     Double_t vx = xx;
     Double_t vy = yy;
     Double_t vz = zz;
     
     Double_t tof  = TRACKR.atrack;
-    Double_t polx = FINUC.cxrpol[numsec-1];
-    Double_t poly = FINUC.cyrpol[numsec-1];
-    Double_t polz = FINUC.czrpol[numsec-1];
+    Double_t polx = GENSTK.cxrpol[numsec-1];
+    Double_t poly = GENSTK.cyrpol[numsec-1];
+    Double_t polz = GENSTK.czrpol[numsec-1];
     
 
     TMCProcess mech = kPHadronic;
@@ -113,7 +113,7 @@ extern "C" {
     }
     
 
-    Double_t weight = FINUC.wei[numsec-1];
+    Double_t weight = GENSTK.wei[numsec-1];
     Int_t is = 0;
     Int_t ntr;  
     // 
@@ -127,8 +127,8 @@ extern "C" {
 	 << numsec << "npprmr " << npprmr << endl;
 //
 //  Save current track number
-    STACK.ispark[STACK.lstack][mkbmx2-1] = ntr;
-    STACK.ispark[STACK.lstack][mkbmx2-2] = 0;
+    FLKSTK.ispark[FLKSTK.npflka][mkbmx2-1] = ntr;
+    FLKSTK.ispark[FLKSTK.npflka][mkbmx2-2] = 0;
   } // end of if (numsec-1 > npprmr)
 } // end of stuprf
 } // end of extern "C"

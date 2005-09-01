@@ -31,7 +31,7 @@
 #include "TGeoManager.h" 
 #include "TGeoVolume.h" 
 #include "TObjString.h"
-#include "Fepisor.h"
+#include "Fsourcm.h"
 
 #ifndef WIN32 
 # define idnrwr idnrwr_
@@ -117,7 +117,7 @@ Int_t gNstep = 0;
 
 ClassImp(TFlukaMCGeometry)
 
-TFlukaMCGeometry* TFlukaMCGeometry::fgInstance=0;
+TFlukaMCGeometry* TFlukaMCGeometry::fgInstance= NULL;
 
 //_____________________________________________________________________________
 TFlukaMCGeometry::TFlukaMCGeometry(const char *name, const char *title) 
@@ -128,9 +128,12 @@ TFlukaMCGeometry::TFlukaMCGeometry(const char *name, const char *title)
   //
   fDebug        = kFALSE;
   fLastMaterial = 0;
+  fCurrentRegion   = 0;
+  fCurrentLattice  = 0;
   fNextRegion   = 0;
   fNextLattice  = 0;
   fRegionList   = 0;
+  fIndmat = 0;
   gFluka = (TFluka*)gMC;
   gMCGeom = this;
   gNstep = 0;
@@ -146,9 +149,12 @@ TFlukaMCGeometry::TFlukaMCGeometry()
   //
   fDebug        = kFALSE;
   fLastMaterial = 0;
+  fCurrentRegion   = 0;
+  fCurrentLattice  = 0;
   fNextRegion   = 0;
   fNextLattice  = 0;
   fRegionList   = 0;
+  fIndmat = 0;
   gFluka = (TFluka*)gMC;
   gMCGeom = this;
   gNstep = 0;
@@ -219,11 +225,13 @@ Int_t TFlukaMCGeometry::GetMedium() const
 Int_t TFlukaMCGeometry::GetFlukaMaterial(Int_t imed) const
 {
 // Returns FLUKA material index for medium IMED
-   TGeoMedium *med = (TGeoMedium*)gGeoManager->GetListOfMedia()->At(imed-1);
+     TGeoMedium *med = (TGeoMedium*)gGeoManager->GetListOfMedia()->At(imed-1);
    if (!med) {
       Error("GetFlukaMaterial", "MEDIUM %i nor found", imed);
       return -1;
    }
+   TGeoMaterial* mat = med->GetMaterial();
+   if (!mat->IsUsed()) return -1;
    Int_t imatfl = med->GetMaterial()->GetIndex();
    return imatfl;   
 }
@@ -296,10 +304,10 @@ TGeoMaterial * TFlukaMCGeometry::GetMakeWrongMaterial(Double_t z)
    }
    TGeoMixture *mix = 0;
    TGeoElement *element;
-   TGeoElementTable *table = TGeoElementTable::Instance();
+   TGeoElementTable *table = gGeoManager->GetElementTable();
    switch (ind) {
       case 0: // AIR
-         mix = new TGeoMixture("AIR", 4, 0.001205);
+         mix = new TGeoMixture("TPC_AIR", 4, 0.001205);
          element = table->GetElement(6); // C
          mix->DefineElement(0, element, 0.000124);
          element = table->GetElement(7); // N
@@ -310,7 +318,7 @@ TGeoMaterial * TFlukaMCGeometry::GetMakeWrongMaterial(Double_t z)
          mix->DefineElement(3, element, 0.012827);
          break;
       case 1: //SDD SI CHIP
-         mix = new TGeoMixture("SDD_SI", 6, 2.4485);
+         mix = new TGeoMixture("ITS_SDD_SI", 6, 2.4485);
          element = table->GetElement(1);
          mix->DefineElement(0, element, 0.004367771);
          element = table->GetElement(6);
@@ -325,14 +333,14 @@ TGeoMaterial * TFlukaMCGeometry::GetMakeWrongMaterial(Double_t z)
          mix->DefineElement(5, element, 0.09814344903);
          break;
       case 2:  // WATER
-         mix = new TGeoMixture("WATER", 2, 1.0);
+         mix = new TGeoMixture("ITS_WATER", 2, 1.0);
          element = table->GetElement(1);
          mix->DefineElement(0, element, 0.111898344);
          element = table->GetElement(8);
          mix->DefineElement(1, element, 0.888101656);
          break;
       case 3: // CERAMICS
-         mix = new TGeoMixture("CERAMICS", 5, 3.6);
+         mix = new TGeoMixture("ITS_CERAMICS", 5, 3.6);
          element = table->GetElement(8);
          mix->DefineElement(0, element, 0.59956);
          element = table->GetElement(13);
@@ -345,7 +353,7 @@ TGeoMaterial * TFlukaMCGeometry::GetMakeWrongMaterial(Double_t z)
          mix->DefineElement(4, element, 0.0115);
          break;
       case 4: // EPOXY
-         mix = new TGeoMixture("G10FR4", 4, 1.8);
+         mix = new TGeoMixture("MUON_G10FR4", 4, 1.8);
          element = table->GetElement(1);
          mix->DefineElement(0, element, 0.19);
          element = table->GetElement(6);
@@ -367,7 +375,7 @@ TGeoMaterial * TFlukaMCGeometry::GetMakeWrongMaterial(Double_t z)
          mix->DefineElement(3, element, 0.28);
          break;
       case 6: // KAPTON
-         mix = new TGeoMixture("KAPTON", 4, 1.3);
+         mix = new TGeoMixture("ITS_KAPTON", 4, 1.3);
          element = table->GetElement(1);
          mix->DefineElement(0, element, 0.026363415);
          element = table->GetElement(6);
@@ -378,7 +386,7 @@ TGeoMaterial * TFlukaMCGeometry::GetMakeWrongMaterial(Double_t z)
          mix->DefineElement(3, element, 0.209238060);
          break;
       case 7: // INOX
-         mix = new TGeoMixture("INOX", 9, 7.9);
+         mix = new TGeoMixture("ITS_INOX", 9, 7.9);
          element = table->GetElement(6);
          mix->DefineElement(0, element, 0.0003);
          element = table->GetElement(14);
@@ -410,7 +418,7 @@ TGeoMaterial * TFlukaMCGeometry::GetMakeWrongMaterial(Double_t z)
          mix->DefineElement(3, element, 0.19137459);
          break;
       case 9: // SDD-C-AL
-         mix = new TGeoMixture("SDD-C-AL", 5, 1.9837);
+         mix = new TGeoMixture("ITS_SDD-C-AL", 5, 1.9837);
          element = table->GetElement(1);
          mix->DefineElement(0, element, 0.022632);
          element = table->GetElement(6);
@@ -423,7 +431,7 @@ TGeoMaterial * TFlukaMCGeometry::GetMakeWrongMaterial(Double_t z)
          mix->DefineElement(4, element, 0.1);
          break;
       case 10: // X7R-CAP
-         mix = new TGeoMixture("X7R-CAP", 7, 6.72);
+         mix = new TGeoMixture("ITS_X7R-CAP", 7, 6.72);
          element = table->GetElement(8);
          mix->DefineElement(0, element, 0.085975822);
          element = table->GetElement(22);
@@ -440,14 +448,14 @@ TGeoMaterial * TFlukaMCGeometry::GetMakeWrongMaterial(Double_t z)
          mix->DefineElement(6, element, 0.2081768);
          break;
       case 11: // SDD ruby sph. Al2O3
-         mix = new TGeoMixture("AL2O3", 2, 3.97);
+         mix = new TGeoMixture("ITS_AL2O3", 2, 3.97);
          element = table->GetElement(8);
          mix->DefineElement(0, element, 0.5293);
          element = table->GetElement(13);
          mix->DefineElement(1, element, 0.4707);
          break;
       case 12: // SDD HV microcable
-         mix = new TGeoMixture("HV-CABLE", 5, 1.6087);
+         mix = new TGeoMixture("ITS_HV-CABLE", 5, 1.6087);
          element = table->GetElement(1);
          mix->DefineElement(0, element, 0.01983871336);
          element = table->GetElement(6);
@@ -460,7 +468,7 @@ TGeoMaterial * TFlukaMCGeometry::GetMakeWrongMaterial(Double_t z)
          mix->DefineElement(4, element, 0.247536);
          break;
       case 13: //SDD LV+signal cable
-         mix = new TGeoMixture("LV-CABLE", 5, 2.1035);
+         mix = new TGeoMixture("ITS_LV-CABLE", 5, 2.1035);
          element = table->GetElement(1);
          mix->DefineElement(0, element, 0.0082859922);
          element = table->GetElement(6);
@@ -473,7 +481,7 @@ TGeoMaterial * TFlukaMCGeometry::GetMakeWrongMaterial(Double_t z)
          mix->DefineElement(4, element, 0.68572);
          break;
       case 14: //SDD hybrid microcab
-         mix = new TGeoMixture("HYB-CAB", 5, 2.0502);
+         mix = new TGeoMixture("ITS_HYB-CAB", 5, 2.0502);
          element = table->GetElement(1);
          mix->DefineElement(0, element, 0.00926228815);
          element = table->GetElement(6);
@@ -486,7 +494,7 @@ TGeoMaterial * TFlukaMCGeometry::GetMakeWrongMaterial(Double_t z)
          mix->DefineElement(4, element, 0.64869);
          break;
       case 15: //SDD anode microcab
-         mix = new TGeoMixture("ANOD-CAB", 5, 1.7854);
+         mix = new TGeoMixture("ITS_ANOD-CAB", 5, 1.7854);
          element = table->GetElement(1);
          mix->DefineElement(0, element, 0.0128595919215);
          element = table->GetElement(6);
@@ -499,7 +507,7 @@ TGeoMaterial * TFlukaMCGeometry::GetMakeWrongMaterial(Double_t z)
          mix->DefineElement(4, element, 0.431909);
          break;
       case 16: // inox/alum
-         mix = new TGeoMixture("INOX-AL", 5, 3.0705);
+         mix = new TGeoMixture("ITS_INOX-AL", 5, 3.0705);
          element = table->GetElement(13);
          mix->DefineElement(0, element, 0.816164);
          element = table->GetElement(14);
@@ -511,7 +519,7 @@ TGeoMaterial * TFlukaMCGeometry::GetMakeWrongMaterial(Double_t z)
          element = table->GetElement(28);
          mix->DefineElement(4, element, 0.0183836);
       case 17: // MYLAR
-         mix = new TGeoMixture("MYLAR", 3, 1.39);
+         mix = new TGeoMixture("TPC_MYLAR", 3, 1.39);
          element = table->GetElement(1);
          mix->DefineElement(0, element, 0.0416667);
          element = table->GetElement(6);
@@ -520,31 +528,31 @@ TGeoMaterial * TFlukaMCGeometry::GetMakeWrongMaterial(Double_t z)
          mix->DefineElement(2, element, 0.333333);
          break;
       case 18: // SPDBUS(AL+KPT+EPOX)   - unknown composition
-         mix = new TGeoMixture("SPDBUS", 1, 1.906);
+         mix = new TGeoMixture("ITS_SPDBUS", 1, 1.906);
          element = table->GetElement(9);
          mix->DefineElement(0, element, 1.);
          z = element->Z();
          break;
       case 19: // SDD/SSD rings   - unknown composition
-         mix = new TGeoMixture("SDDRINGS", 1, 1.8097);
+         mix = new TGeoMixture("ITS_SDDRINGS", 1, 1.8097);
          element = table->GetElement(6);
          mix->DefineElement(0, element, 1.);
          z = element->Z();
          break;
       case 20: // SPD end ladder   - unknown composition
-         mix = new TGeoMixture("SPDEL", 1, 3.6374);
+         mix = new TGeoMixture("ITS_SPDEL", 1, 3.6374);
          element = table->GetElement(22);
          mix->DefineElement(0, element, 1.);
          z = element->Z();
          break;
       case 21: // SDD end ladder   - unknown composition
-         mix = new TGeoMixture("SDDEL", 1, 0.3824);
+         mix = new TGeoMixture("ITS_SDDEL", 1, 0.3824);
          element = table->GetElement(30);
          mix->DefineElement(0, element, 1.);
          z = element->Z();
          break;
       case 22: // SSD end ladder   - unknown composition
-         mix = new TGeoMixture("SSDEL", 1, 0.68);
+         mix = new TGeoMixture("ITS_SSDEL", 1, 0.68);
          element = table->GetElement(16);
          mix->DefineElement(0, element, 1.);
          z = element->Z();
@@ -582,7 +590,7 @@ void TFlukaMCGeometry::CreateFlukaMatFile(const char *fname)
    Int_t i,j,idmat;
    Int_t counttothree, nelem;
    Double_t a,z,rho, w;
-   TGeoElementTable *table = TGeoElementTable::Instance();
+   TGeoElementTable *table = gGeoManager->GetElementTable();
    TGeoElement *element;
    element = table->GetElement(13);
    element->SetTitle("ALUMINUM"); // this is how FLUKA likes it ...
@@ -624,7 +632,7 @@ void TFlukaMCGeometry::CreateFlukaMatFile(const char *fname)
    // Adjust material names and add them to FLUKA list
    for (i=0; i<nmater; i++) {
       mat = (TGeoMaterial*)matlist->At(i);
-      if (!mat->IsUsed()) continue;      
+      if (!mat->IsUsed()) continue;
       z = mat->GetZ();
       a = mat->GetA();
       rho = mat->GetDensity();
@@ -634,27 +642,7 @@ void TFlukaMCGeometry::CreateFlukaMatFile(const char *fname)
       } 
       matname = mat->GetName();
       FlukaMatName(matname);
-/*
-      // material with one element: create it as mixture since it can be duplicated    
-      if (!mat->IsMixture()) {
-         // normal materials
-         mix = new TGeoMixture(matname.Data(), 1, rho);
-         mix->DefineElement(0, mat->GetElement(), 1.);
-         mat->SetIndex(nfmater+3);
-         for (j=0; j<nmed; j++) {
-            med = (TGeoMedium*)medlist->At(j);
-            if (med->GetMaterial() == mat) {
-               med->SetMaterial(mix);
-               if (mat->GetCerenkovProperties()) {
-                  mix->SetCerenkovProperties(mat->GetCerenkovProperties());
-                  mat->SetCerenkovProperties(0);
-               }
-               break;
-            }
-         }                              
-         mat = (TGeoMaterial*)mix;
-      }
-*/    
+
       mat->SetIndex(nfmater+3);
       objstr = new TObjString(matname.Data());
       fMatList->Add(mat);
@@ -800,11 +788,6 @@ void TFlukaMCGeometry::CreateFlukaMatFile(const char *fname)
    }
    out.close();
    fLastMaterial = nfmater+2;
-   
-   if (!gFluka->IsGeneratePemf()) {
-       if (gSystem->AccessPathName("FlukaVmc.pemf")) Fatal("CreateFlukaMatFile", "No pemf file in working directory");
-       return;
-   }
 }
 
 void TFlukaMCGeometry::CreatePemfFile()
@@ -1278,6 +1261,18 @@ void TFlukaMCGeometry::ToFlukaString(TString &str) const
 //_____________________________________________________________________________
 void TFlukaMCGeometry::FlukaMatName(TString &str) const
 {
+// Strip the detector name
+     
+    TObjArray * tokens = str.Tokenize("_");
+    Int_t ntok = tokens->GetEntries();
+    if (ntok > 0) {
+	TString head = ((TObjString*) tokens->At(0))->GetString();
+	Int_t nhead = head.Length();
+	str = str.Remove(0, nhead + 1);
+    }
+    tokens->Clear();
+    delete tokens;
+
 // Convert a name to upper case 8 chars.
    ToFlukaString(str);
    Int_t ilast;
@@ -1322,6 +1317,7 @@ void TFlukaMCGeometry::Vname(const char *name, char *vname) const
 }
 
 
+
 // FLUKA GEOMETRY WRAPPERS - to replace FLUGG wrappers
 
 //_____________________________________________________________________________
@@ -1361,10 +1357,16 @@ void g1wr(Double_t &pSx, Double_t &pSy, Double_t &pSz,
       printf("   oldReg=%i  oldLttc=%i  pstep=%f\n",oldReg, oldLttc, propStep);
    }
    Int_t olttc = oldLttc;
-   if (oldLttc<0) {
+   if (oldLttc<=0) {
       gGeoManager->FindNode(pSx,pSy,pSz);
       olttc = gGeoManager->GetCurrentNodeId()+1;
+      if (gMCGeom->IsDebugging()) {
+         printf("WOOPS: old reg/latt = %i/%i\n",oldReg,oldLttc);
+         printf("point: (%16.12f, %16.12f, %16.12f) in lttc=%i\n", pSx,pSy,pSz,olttc);
+      }   
    }   
+   Int_t ccreg,cclat;
+   gMCGeom->GetCurrentRegion(ccreg,cclat);
    gMCGeom->SetCurrentRegion(oldReg, olttc);
    // Initialize default return values
    lttcFlag = 0;
@@ -1417,31 +1419,46 @@ void g1wr(Double_t &pSx, Double_t &pSy, Double_t &pSz,
    Double_t extra = 1.E-10;
 
      
-//      printf("ERROR: (%f, %f, %f)\n",pSx,pSy,pSz);
    if (gMCGeom->IsDebugging()) printf("   current path: %s\n", gGeoManager->GetPath());
    gGeoManager->SetCurrentPoint(pSx+extra*pV[0], pSy+extra*pV[1], pSz+extra*pV[2]);
    gGeoManager->SetCurrentDirection(pV);
-   gGeoManager->FindNextBoundary(-propStep);
+//   gGeoManager->FindNextBoundary(-propStep);
+   gGeoManager->FindNextBoundary(-100000.);
    Double_t snext = gGeoManager->GetStep();
 
    if (snext<=0.0) {
-      saf = 0.0;
-      newReg = -3;
-      sLt[lttcFlag] = 0.0;
-      if (gMCGeom->IsDebugging()) printf("BACK SCATTERING\n");
-      return;
+      snext = 0.0;
+      /*
+      if (!crossed) {
+         // artefact due to MS
+         saf = 0.0;
+         newReg = -3;
+         sLt[lttcFlag] = 0.0;
+         if (gMCGeom->IsDebugging()) {
+            printf("BACK SCATTERING (reg/lttc = %i/%i)\n", oldReg,oldLttc);
+            printf("point: (%16.11f, %16.11f, %16.11f)\n", pSx,pSy,pSz);
+            printf("dir :  (%16.11f, %16.11f, %16.11f)\n", pV[0],pV[1],pV[2]);
+         }   
+         return;
+      }
+      */
+      // else ... 
+      // FLUKA native detects some extra errors even when a boundary was crossed, returning a -3
+      // If the particle turns back to the original region before crossing at the first step,
+      // we just return the distance to the boundary, not issuing an error (not due to MS)
    }  
-
    snext += extra;
    saf = gGeoManager->GetSafeDistance();
    saf -= extra;
+   if (saf>snext) printf("ERROR: saf=%f .GT. snext=%f\n", saf,snext); 
    if (saf<0) saf=0.0;
    else       saf -= saf*3.0e-09;
+//   saf *= 0.3;
+   PAREM.dist = snext;
    NORLAT.distn = snext;
    NORLAT.xn[0] += snext*pV[0];
    NORLAT.xn[1] += snext*pV[1];
    NORLAT.xn[2] += snext*pV[2];
-//   saf = 0.0; // !!! TEMPORARY FOR TESTING MAGSPHF - TO BE REMOVED 
    if (snext>propStep) {
    // Next boundary further than proposed step, which is approved
       retStep = propStep;
@@ -1449,6 +1466,8 @@ void g1wr(Double_t &pSx, Double_t &pSy, Double_t &pSz,
       return;
    }
    // The next boundary is closer. We try to cross it.
+   if (saf>propStep) saf = propStep; // Safety should be less than the proposed step if a boundary will be crossed
+//   saf = 0.0; // !!! SAFETY SHOULD BE 0 IF THE BOUNDARY WILL BE CROSSED ???
    gGeoManager->SetCurrentPoint(pSx,pSy,pSz);
    Double_t *point = gGeoManager->GetCurrentPoint();
    Double_t *dir = gGeoManager->GetCurrentDirection();
@@ -1456,13 +1475,22 @@ void g1wr(Double_t &pSx, Double_t &pSy, Double_t &pSz,
    memcpy(pt, point, 3*sizeof(Double_t));
    
    Int_t i;
-   for (i=0;i<3;i++) point[i] += (snext+1E-6)*dir[i];
+   extra = 1.E-13;
+   for (i=0;i<3;i++) point[i] += (snext+extra)*dir[i];
    // locate next region
    gGeoManager->FindNode();
    newLttc = (gGeoManager->IsOutside())?(TFlukaMCGeometry::kLttcOutside):gGeoManager->GetCurrentNodeId()+1;
+   while (newLttc==olttc) {
+      extra *= 10.;
+      if (extra>1.E-5) break;
+      for (i=0;i<3;i++) point[i] += extra*dir[i];
+      gGeoManager->FindNode();
+      newLttc = (gGeoManager->IsOutside())?(TFlukaMCGeometry::kLttcOutside):gGeoManager->GetCurrentNodeId()+1;
+   }           
    gGeoManager->SetCurrentPoint(pt);
    newReg = (gGeoManager->IsOutside())?(gMCGeom->NofVolumes()+1):gGeoManager->GetCurrentVolume()->GetNumber();
    if (gMCGeom->IsDebugging()) printf("   newReg=%i newLttc=%i\n", newReg, newLttc);
+
 
    // We really crossed the boundary, but is it the same region ?
    gMCGeom->SetNextRegion(newReg, newLttc);
@@ -1583,12 +1611,14 @@ void lkwr(Double_t &pSx, Double_t &pSy, Double_t &pSz,
       printf("   in: pV=(%f, %f, %f)\n", pV[0], pV[1], pV[2]);
       printf("   in: oldReg=%i oldLttc=%i\n", oldReg, oldLttc);
    }   
+/*
    NORLAT.xn[0] = pSx;
    NORLAT.xn[1] = pSy;
    NORLAT.xn[2] = pSz;
    NORLAT.wn[0] = pV[0];
    NORLAT.wn[1] = pV[1];
    NORLAT.wn[2] = pV[2];
+*/
    TGeoNode *node = gGeoManager->FindNode(pSx, pSy, pSz);
    if (gGeoManager->IsOutside()) {
       newReg = gMCGeom->NofVolumes()+1;

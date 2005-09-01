@@ -9,7 +9,7 @@
 #include "Fdblprc.h"  //(DBLPRC) fluka common
 #include "Ftrackr.h"  //(TRACKR) fluka common
 #include "Fopphst.h"  //(OPPHST) fluka common
-#include "Fstack.h"   //(STACK)  fluka common
+#include "Fflkstk.h"  //(FLKSTK) fluka common
 
 #ifndef WIN32
 # define mgdraw mgdraw_
@@ -31,7 +31,7 @@ void mgdraw(Int_t& icode, Int_t& mreg)
     if (TRACKR.jtrack == -1) {
 	trackId = OPPHST.louopp[OPPHST.lstopp];
 	if (trackId == 0) {
-	    trackId = STACK.ispark[STACK.lstack][mkbmx2-1];
+	    trackId = FLKSTK.ispark[FLKSTK.npflka][mkbmx2-1];
 	}
     } else {
 	trackId = TRACKR.ispusr[mkbmx2-1];
@@ -48,10 +48,14 @@ void mgdraw(Int_t& icode, Int_t& mreg)
     if (!TRACKR.ispusr[mkbmx2 - 2]) {
 	//
 	// Single step
-	if (verbosityLevel >= 3) {
+	if (TRACKR.jtrack == -1 && trackId == 109340) {
 	    cout << endl << " !!! I am in mgdraw - calling Stepping(): " << icode << endl;
 	    cout << endl << " Track Id = " << trackId << " region = " << mreg << endl;
+	    printf("Stepsize %13.5e \n", fluka->TrackStep());
 	}
+
+
+
       
 	(TVirtualMCApplication::Instance())->Stepping();
 	fluka->SetTrackIsNew(kFALSE);
