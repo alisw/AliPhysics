@@ -21,13 +21,11 @@ extern "C" {
   //*D     DIMENSION MED (MXXRGN)
   //*D     EQUIVALENCE ( MED (1), MEDEMF (1) )
 typedef struct {
-  Double_t rhor[mxxrgn];
-  Double_t ecut[mxxrgn];
-  Double_t pcut[mxxrgn];
+  Double_t elethr[mxxrgn];
+  Double_t phothr[mxxrgn];
   Double_t emreje;
   Double_t emsamp;
   Double_t emsngl;
-  Double_t vacdst;
   Int_t    medemf[mxxrgn];
   Int_t    iraylr[mxxrgn];
   Int_t    nrgemf;

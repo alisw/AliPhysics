@@ -92,7 +92,7 @@ const Double_t onemns = 0.999999999999999e+00;
 const Double_t onepls = 1.000000000000001e+00;
 const Double_t csnnrm = 2.0e-15;
 const Double_t dmxtrn = 1.0e+08;
-const Double_t rhflmn = 1.0e-06;
+const Double_t rhflmn = 1.0e-10;
 //*
 //*======================================================================*
 //*======================================================================*
@@ -333,6 +333,7 @@ const Double_t amdeut = 1.87561339e+00;
 const Double_t amalph = 3.72738025692891e+00;
 const Double_t cougfm = elccgs*elccgs/elcmks*(1.e-7)*(1.e+13)*(1.e-9);
 const Double_t rclsel = 2.8179409183694872e-13;
+const Double_t alamb0 = twotwo * pipipi * rclsel / alpfsc;
 const Double_t bltzmn = 8.617385e-14;
 const Double_t a0bohr = plabrc/alpfsc/amelct;
 const Double_t gfohb3 = 1.16639e-5;
@@ -347,6 +348,10 @@ const Double_t ev2gev = 1.0e-9;
 const Double_t gev2ev = 1.0e+9;
 const Double_t emvgev = 1.0e-3;
 const Double_t cmq2mb = 1.0e+27;
+const Double_t fmb2ba = 1.0e-3;
+const Double_t bar2mb = 1.0e+3;
+const Double_t fmb2fs = 1.0e-1;
+const Double_t fms2mb = 1.0e+1;
 const Double_t algvmv = 6.90775527898214e+00;
 const Double_t raddeg = (180.e+00)/pipipi;
 const Double_t degrad = pipipi/(180.e+00);

@@ -1,3 +1,8 @@
+#include "cfortran.h"
+#include "Rtypes.h"
+
+#include "Fdimpar.h"
+
 extern "C" {
 //*$ create trackr.add
 //*copy trackr

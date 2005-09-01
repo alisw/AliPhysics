@@ -23,12 +23,12 @@ extern "C" {
 typedef struct {
    Double_t etemf[mestck]; // total energy in MeV
    Double_t pmemf[mestck];
-   Double_t x[mestck]; // particle x-coordinate
-   Double_t y[mestck]; // particle y-coordinate
-   Double_t z[mestck]; // particle z-coordinate
-   Double_t u[mestck]; // x direction cosine
-   Double_t v[mestck]; // y direction cosine
-   Double_t w[mestck]; // z direction cosine
+   Double_t xemf[mestck]; // particle x-coordinate
+   Double_t yemf[mestck]; // particle y-coordinate
+   Double_t zemf[mestck]; // particle z-coordinate
+   Double_t uemf[mestck]; // x direction cosine
+   Double_t vemf[mestck]; // y direction cosine
+   Double_t wemf[mestck]; // z direction cosine
    Double_t dnear[mestck]; // equivalent to GEANT "safety"
    Double_t upol[mestck]; // polarisation in x direction
    Double_t vpol[mestck]; // polarisation in y direction
@@ -40,6 +40,7 @@ typedef struct {
    Double_t agemf[mestck]; // age
    Double_t cmpemf[mestck];
    Double_t espark[mestck][mkbmx1];
+   Double_t rdlyem[mestck];
    Int_t    iespak[mestck][mkbmx2];
    Int_t    ichemf[mestck]; // charge
    Int_t    iremf[mestck];  // region
@@ -47,6 +48,7 @@ typedef struct {
    Int_t    nhpemf[mestck];
    Int_t    lloemf[mestck]; // generation number
    Int_t    louemf[mestck];
+   Int_t    lrdemf[mestck];
    Int_t    npemf;  // number of particles in stack
    Int_t    npstrt; // EMF stack index before the interaction (since
                     // the projectile disappears it is also the starting
