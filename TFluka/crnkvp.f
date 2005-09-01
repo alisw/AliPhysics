@@ -35,12 +35,12 @@
 *----------------------------------------------------------------------*
 *
       INCLUDE '(FHEAVY)'
-      INCLUDE '(MAPA)'
+      INCLUDE '(FLKMAT)'
       INCLUDE '(MULBOU)'
       INCLUDE '(OPPHCM)'
       INCLUDE '(OPPHST)'
       INCLUDE '(PAPROP)'
-      INCLUDE '(STARS)'
+      INCLUDE '(SUMCOU)'
       INCLUDE '(TRACKR)'
 *
       PARAMETER ( CSNPRN = 100.D+00 * CSNNRM )
@@ -429,7 +429,7 @@ D    &              SCADOT
 *
 *
 *  |  !!!!!! Here Stuprf should be used !!!!!!
-         LOUOPP (LSTOPP) = ITFL
+         LOUOPP (LSTOPP) = LLOUSE
          DO 2100 ISPR = 1, MKBMX1
             SPAROK (ISPR,LSTOPP) = SPAUSR (ISPR)
  2100    CONTINUE
