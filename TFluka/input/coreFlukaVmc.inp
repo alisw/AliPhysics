@@ -5,8 +5,6 @@ ran_abs.new
 OPEN              8.                                                  SCRATCH  
 OPEN             -9.                                                  OLD
 neuxsc.bin
-OPEN             12.                                                  OLD
-FlukaVmc.pemf
 OPEN            -13.                                                  OLD
 fluodt.dat
 OPEN            -14.                                                  OLD
@@ -25,13 +23,10 @@ GEOEND
 *...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+ 
 *
 EVENTYPE                             1.0
-PART-THR     -0.15          8.
-PART-THR     -0.15          9.
-BEAM          7000.0                                                  MUON-
+BEAM         70000.0                                                  MUON-
 SOURCE
 *...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+ 
 USERDUMP        200.      37.0      -2.0       1.0                    TRAKFILE
-*OPT-PROD                                                              CERE-OFF
 START         42000.99999999.0       2.0               
 STOP                                                                           
 
