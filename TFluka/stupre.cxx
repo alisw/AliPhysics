@@ -77,13 +77,13 @@ void stupre()
     
 // Ckeck transport cut first
     Int_t ireg = EMFSTK.iremf[kp];
-    Double_t cut = (TMath::Abs(EMFSTK.ichemf[kp]) == 1) ? EFMRGN.elethr[ireg-1] :  EFMRGN.phothr[ireg-1];
+    Double_t cut = (TMath::Abs(EMFSTK.ichemf[kp]) == 1) ? EMFRGN.elethr[ireg-1] :  EMFRGN.phothr[ireg-1];
     Double_t e      = EMFSTK.etemf[kp];
     if ((e < cut) 
 	&& ( 
 	    (EMFSTK.ichemf[kp] ==  0) ||
 	    (EMFSTK.ichemf[kp] == -1) ||
-	    (EMFSTK.ichemf[kp] ==  1 &&  EFMRGN.phothr[ireg-1] > emassmev)
+	    (EMFSTK.ichemf[kp] ==  1 &&  EMFRGN.phothr[ireg-1] > emassmev)
 	    )
 	)
     {

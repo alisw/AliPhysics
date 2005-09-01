@@ -33,8 +33,8 @@ typedef struct {
   Int_t    nollda;
 } emfrgnCommon;
 
-#define EFMRGN COMMON_BLOCK(EFMRGN,efmrgn)
-COMMON_BLOCK_DEF(emfrgnCommon,EFMRGN);
+#define EMFRGN COMMON_BLOCK(EMFRGN,emfrgn)
+COMMON_BLOCK_DEF(emfrgnCommon,EMFRGN);
 }
 
 #endif

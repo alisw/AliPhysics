@@ -421,10 +421,10 @@ D    &              SCADOT
          POX  = TXPOPP(LSTOPP)
          POY  = TYPOPP(LSTOPP)
          POZ  = TZPOPP(LSTOPP)
-         CALL PushCerenkovPhoton(PXCR, PYCR, PZCR, EPHSMP, XTRKCR, 
+         CALL pshckp(PXCR, PYCR, PZCR, EPHSMP, XTRKCR, 
      &        YTRKCR , ZTRKCR, ATRKCR, POX, POY, POZ, WTRACK, ITFL)
          NPROD = NPROD + 1
-         CALL UserSteppingCKV(NPROD, MREG, XTRKCR, YTRKCR, ZTRKCR)
+         CALL ustckv(NPROD, MREG, XTRKCR, YTRKCR, ZTRKCR)
 *
 *
 *
