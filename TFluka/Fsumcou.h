@@ -77,26 +77,21 @@ extern "C" {
 //*
 
 typedef struct {
-   Double_t westar[nallwp+7];
-   Double_t wstop[nallwp+7];
-   Double_t wdau[nallwp+7];
-   Double_t wtkll[nallwp+7];
-   Double_t wdec[nallwp+7];
-   Double_t weifis[nallwp+7];
-   Double_t deccts[nallwp+7];
-   Double_t wdecct[nallwp+7];
-   Double_t weisec[nallwp+19];
-   Double_t wlwnsc[4];
-   Double_t wophsc[4];
-   Double_t edi[11];
+   Double_t westar[2][nallwp+7];
+   Double_t westop[2][nallwp+7];
+   Double_t wedaug[2][nallwp+7];
+   Double_t wekill[2][nallwp+7];
+   Double_t wedecy[2][nallwp+7];
+   Double_t weifis[2][nallwp+7];
+   Double_t deccts[2][nallwp+7];
+   Double_t wdecct[2][nallwp+7];
+   Double_t weprdc[2][nallwp+7];
+   Double_t wlwnsc[2][4];
+   Double_t wophsc[2][4];
+   Double_t edpsco[2][11];
    Double_t woptph;
    Double_t wneulw;
-   Double_t westop;
-   Double_t wstars;
-   Double_t weipri;
-   Double_t wtdec;
-   Double_t wtdau;
-   Double_t wttkll;
+    Double_t weipri;
    Int_t    numdec;
    Int_t    ntstar;
    Int_t    neulow;
@@ -105,9 +100,9 @@ typedef struct {
    Int_t    mtstar;
    Int_t    meulow;
    Int_t    mumoph;
-} starsCommon;
-#define STARS COMMON_BLOCK(STARS,stars)
-COMMON_BLOCK_DEF(starsCommon,STARS);
+} sumcouCommon;
+#define SUMCOU COMMON_BLOCK(SUMCOU,sumcou)
+COMMON_BLOCK_DEF(sumcouCommon,SUMCOU);
 }
 
 #endif
