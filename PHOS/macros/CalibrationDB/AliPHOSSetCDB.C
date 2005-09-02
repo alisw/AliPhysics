@@ -13,7 +13,11 @@ void AliPHOSSetCDB()
    menu->AddButton("Equal CC","SetCC(0)",
 		   "Set equal calibration coefficients");
    menu->AddButton("Decalibrate","SetCC(1)",
-		   "Set random calibration coefficients");
+		   "Set random decalibration calibration coefficients");
+   menu->AddButton("Real equal CC","GetCC(0)",
+		   "Read initial equal calibration coefficients");
+   menu->AddButton("Real random CC","GetCC(1)",
+		   "Read random decalibration calibration coefficients");
    menu->Show();
 }
 
@@ -26,6 +30,7 @@ Press button \"Equal CC\" to create equal pedestals and gain factors.
 Press button \"Decalibrate\" to create random pedestals and gain factors to imitate decalibrated detector\n";
   printf(string);
 }
+
 //------------------------------------------------------------------------
 SetCC(Int_t flag=0)
 {
@@ -33,7 +38,7 @@ SetCC(Int_t flag=0)
   // Arguments:
   //   flag=0: all calibration coefficients are equal
   //   flag=1: all calibration coefficients random (decalibration)
-  // Author: Boris Polishchuk (Boris.Polichtchouk@cern.ch)
+  // Author: Boris Polishchuk (Boris.Polichtchouk at cern.ch)
 
   TString DBFolder;
   Int_t firstRun   =  0;
@@ -72,7 +77,7 @@ SetCC(Int_t flag=0)
   for(Int_t module=1; module<6; module++) {
     for(Int_t column=1; column<57; column++) {
       for(Int_t row=1; row<65; row++) {
-	if (flag == 0) {
+	if (flag == 1) {
 	  // Decalibration:
 	  // Spread calibration coefficients uniformly with
 	  // Cmax/Cmin = 5, (Cmax-Cmin)/2 = 0.0015
@@ -97,4 +102,71 @@ SetCC(Int_t flag=0)
   AliCDBLocal *loc = new AliCDBLocal(DBFolder.Data());
   AliCDBStorage::Instance()->Put(calibda, md);
   AliCDBStorage::Instance()->Delete();
+}
+
+//------------------------------------------------------------------------
+GetCC(Int_t flag=0)
+{
+  // Read calibration coefficients into the Calibration DB
+  // Arguments:
+  //   flag=0: all calibration coefficients are equal
+  //   flag=1: all calibration coefficients random (decalibration)
+  // Author: Yuri.Kharlov at cern.ch
+
+  TString DBFolder;
+  Int_t firstRun   =  0;
+  Int_t lastRun    = 10;
+  Int_t beamPeriod =  1;
+  char* objFormat;
+
+  if      (flag == 0) {
+    DBFolder  ="InitCalibDB";
+  }
+  else if (flag == 1) {
+    DBFolder  ="DeCalibDB";
+  }
+  AliCDBLocal *loc = new AliCDBLocal(DBFolder.Data());
+  AliPHOSCalibData* clb = (AliPHOSCalibData*)AliCDBStorage::Instance()
+    ->Get("PHOS/Calib/GainFactors_and_Pedestals",gAlice->GetRunNumber());
+
+  static const Int_t nMod =  5;
+  static const Int_t nCol = 56;
+  static const Int_t nRow = 64;
+
+  TH2F *hPed[nMod], *hGain[nMod];
+  TCanvas *cPed  = new TCanvas("cPed" ,"Pedestals"   , 10,10,400,800);
+  TCanvas *cGain = new TCanvas("cGain","Gain factors",410,10,400,800);
+  cPed ->Divide(1,5);
+  cGain->Divide(1,5);
+
+  for (Int_t module=1; module<=nMod; module++) {
+    TString namePed="hPed";
+    namePed+=module;
+    TString titlePed="Pedestals in module ";
+    titlePed+=module;
+    hPed[module-1] = new TH2F(namePed.Data(),titlePed.Data(),
+			    nCol,1.,1.*nCol,nRow,1.,1.*nRow);
+
+    TString nameGain="hGain";
+    nameGain+=module;
+    TString titleGain="Gain factors in module ";
+    titleGain+=module;
+    hGain[module-1] = new TH2F(nameGain.Data(),titleGain.Data(),
+			    nCol,1.,1.*nCol,nRow,1.,1.*nRow);
+
+    for (Int_t column=1; column<=nCol; column++) {
+      for (Int_t row=1; row<=nRow; row++) {
+	Float_t ped  = clb->GetADCpedestalEmc(module,column,row);
+	Float_t gain = clb->GetADCchannelEmc (module,column,row);
+	hPed[module-1] ->SetBinContent(column,row,ped);
+	hGain[module-1]->SetBinContent(column,row,gain);
+      }
+    }
+    cPed ->cd(module);
+    hPed[module-1] ->Draw("lego2");
+    cGain->cd(module);
+    hGain[module-1]->Draw("lego2");
+  }
+  cPed ->Print("pedestals.eps");
+  cGain->Print("gains.eps");
 }
