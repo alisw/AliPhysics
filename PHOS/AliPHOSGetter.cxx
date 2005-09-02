@@ -555,14 +555,15 @@ Bool_t AliPHOSGetter::OpenESDFile()
 }
 
 //____________________________________________________________________________ 
-void AliPHOSGetter::FitRaw(Bool_t lowGainFlag, TGraph * gLowGain, TGraph * gHighGain, TF1* signalF, Int_t & amp, Double_t & time)
+void AliPHOSGetter::FitRaw(Bool_t lowGainFlag, TGraph * gLowGain, TGraph * gHighGain, TF1* signalF, Double_t & energy, Double_t & time)
 {
   // Fits the raw signal time distribution 
 
   const Int_t kNoiseThreshold = 0 ;
   Double_t timezero1 = 0., timezero2 = 0., timemax = 0. ;
   Double_t signal = 0., signalmax = 0. ;       
-  Double_t energy = time = 0. ; 
+  time   = 0. ; 
+  energy = 0. ; 
 
   if (lowGainFlag) {
     timezero1 = timezero2 = signalmax = timemax = 0. ;
@@ -615,15 +616,33 @@ void AliPHOSGetter::FitRaw(Bool_t lowGainFlag, TGraph * gLowGain, TGraph * gHigh
       time   = signalF->GetMaximumX() - PHOS()->GetRawFormatTimePeak() - PHOS()->GetRawFormatTimeTrigger() ;
     }
   }
-  
-  if (time == 0. && energy == 0.) 
-    amp = 0 ; 
-  else {
-  AliPHOSDigitizer * digitizer = Digitizer() ; 
-  amp = static_cast<Int_t>( (energy - digitizer->GetEMCpedestal()) / digitizer->GetEMCchannel() + 0.5 ) ; 
-  }
+  if (time == 0) energy = 0 ; 
 }
 
+//____________________________________________________________________________ 
+Int_t AliPHOSGetter::CalibrateRaw(Double_t energy, Int_t *relId)
+{
+  // Convert energy into digitized amplitude for a cell relId
+  // It is a user responsilibity to open CDB and set
+  // AliPHOSCalibData object by the following operators:
+  // 
+  // AliCDBLocal *loc = new AliCDBLocal("deCalibDB");
+  // AliPHOSCalibData* clb = (AliPHOSCalibData*)AliCDBStorage::Instance()
+  //    ->Get(path_to_calibdata,run_number);
+  // AliPHOSGetter* gime = AliPHOSGetter::Instance("galice.root");
+  // gime->SetCalibData(clb);
+
+  if (CalibData() == 0)
+    Fatal("CalibrateRaw","Failure to calibrate raw data");
+
+  Int_t   module = relId[0];
+  Int_t   column = relId[2];
+  Int_t   row    = relId[3];
+  Float_t gainFactor = CalibData()->GetADCchannelEmc (module,column,row);
+  Float_t pedestal   = CalibData()->GetADCpedestalEmc(module,column,row);
+  Int_t   amp = static_cast<Int_t>( (energy - pedestal) / gainFactor + 0.5 ) ; 
+  return amp;
+}
 //____________________________________________________________________________ 
 Int_t AliPHOSGetter::ReadRaw(AliRawReader *rawReader)
 {
@@ -637,22 +656,35 @@ Int_t AliPHOSGetter::ReadRaw(AliRawReader *rawReader)
   TF1 * signalF = new TF1("signal", AliPHOS::RawResponseFunction, 0, PHOS()->GetRawFormatTimeMax(), 4);
   signalF->SetParNames("Charge", "Gain", "Amplitude", "TimeZero") ; 
 
-  Int_t relId[4], id ;
+  Int_t relId[4], id =0;
   Bool_t lowGainFlag = kFALSE ; 
  
   TClonesArray * digits = Digits() ;
   digits->Clear() ; 
   Int_t idigit = 0 ; 
-  Int_t amp = 0 ; 
-  Double_t time = 0. ; 
+  Int_t amp    = 0 ; 
+  Double_t energy = 0. ; 
+  Double_t time   = 0. ; 
 
   TGraph * gLowGain = new TGraph(PHOS()->GetRawFormatTimeBins()) ; 
   TGraph * gHighGain= new TGraph(PHOS()->GetRawFormatTimeBins()) ;  
 
   while ( in.Next() ) { // PHOS entries loop 
     if ( (in.IsNewRow() || in.IsNewColumn() || in.IsNewModule()) ) {
+      relId[0] = in.GetModule() ;
+      if ( relId[0] >= PHOS()->GetRawFormatLowGainOffset() ) { 
+	relId[0] -=  PHOS()->GetRawFormatLowGainOffset() ;
+	lowGainFlag = kTRUE ;
+      } else
+	lowGainFlag = kFALSE ;
+      relId[1] = 0 ;
+      relId[2] = in.GetRow() ;
+      relId[3] = in.GetColumn() ;
+      PHOSGeometry()->RelToAbsNumbering(relId, id) ;
+
       if (!first) {
-	FitRaw(lowGainFlag, gLowGain, gHighGain, signalF, amp, time) ; 
+	FitRaw(lowGainFlag, gLowGain, gHighGain, signalF, energy, time) ; 
+	amp = CalibrateRaw(energy,relId);
 	if (amp > 0) {
 	  new((*digits)[idigit]) AliPHOSDigit( -1, id, amp, time) ;	
 	  idigit++ ; 
@@ -664,16 +696,6 @@ Int_t AliPHOSGetter::ReadRaw(AliRawReader *rawReader)
 	} 
       }
       first = kFALSE ; 
-      relId[0] = in.GetModule() ;
-      if ( relId[0] >= PHOS()->GetRawFormatLowGainOffset() ) { 
-	relId[0] -=  PHOS()->GetRawFormatLowGainOffset() ; 
-	lowGainFlag = kTRUE ; 
-      } else 
-	lowGainFlag = kFALSE ; 
-      relId[1] = 0 ; 
-      relId[2] = in.GetRow() ; 
-      relId[3] = in.GetColumn() ; 
-      PHOSGeometry()->RelToAbsNumbering(relId, id) ;	
     }
     if (lowGainFlag)
       gLowGain->SetPoint(in.GetTime(), 
@@ -686,11 +708,12 @@ Int_t AliPHOSGetter::ReadRaw(AliRawReader *rawReader)
 
   } // PHOS entries loop
 
-//   FitRaw(lowGainFlag, gLowGain, gHighGain, signalF, amp, time) ; 
-//   if (amp > 0 ) {
-//     new((*digits)[idigit]) AliPHOSDigit( -1, id, amp, time) ;
-//     idigit++ ; 
-//   }
+  FitRaw(lowGainFlag, gLowGain, gHighGain, signalF, energy, time) ; 
+  amp = CalibrateRaw(energy,relId);
+  if (amp > 0 ) {
+    new((*digits)[idigit]) AliPHOSDigit( -1, id, amp, time) ;
+    idigit++ ; 
+  }
   digits->Sort() ; 
 
   delete signalF ; 

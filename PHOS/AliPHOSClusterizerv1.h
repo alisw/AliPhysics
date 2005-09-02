@@ -8,6 +8,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.43  2005/05/28 14:19:04  schutz
+ * Compilation warnings fixed by T.P.
+ *
  */
 
 //_________________________________________________________________________
@@ -30,7 +33,7 @@ class AliPHOSEmcRecPoint ;
 class AliPHOSDigit ;
 class AliPHOSDigitizer ;
 class AliPHOSGeometry ;
-class AliPHOSCalibrationDB ;
+class AliPHOSCalibData ;
 
 class AliPHOSClusterizerv1 : public AliPHOSClusterizer {
   
@@ -48,7 +51,7 @@ public:
   virtual Int_t   AreNeighbours(AliPHOSDigit * d1, AliPHOSDigit * d2)const ; 
                                // Checks if digits are in neighbour cells 
 
-  virtual Float_t Calibrate(Int_t amp, Int_t absId)const ;  // Tranforms Amp to energy 
+  virtual Float_t Calibrate(Int_t amp, Int_t absId) ;  // Tranforms Amp to energy 
 
   virtual void    GetNumberOfClustersFound(int * numb )const{  numb[0] = fNumberOfEmcClusters ; 
                                                                numb[1] = fNumberOfCpvClusters ; }
@@ -122,7 +125,7 @@ private:
   Int_t   fNumberOfCpvClusters ;     // number of CPV clusters found
  
   //Calibration parameters
-  AliPHOSCalibrationDB * fCalibrationDB ; //! Calibration database if aval
+  AliPHOSCalibData * fCalibData ;   //! Calibration database if aval
   Float_t fADCchanelEmc ;           // width of one ADC channel in GeV
   Float_t fADCpedestalEmc ;         //
   Float_t fADCchanelCpv ;           // width of one ADC channel in CPV 'popugais'

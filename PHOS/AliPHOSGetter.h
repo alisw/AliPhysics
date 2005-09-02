@@ -228,7 +228,9 @@ private:
   Bool_t OpenESDFile() ;
   void ReadPrimaries(void) ;
 
-  void FitRaw(Bool_t lowGainFlag, TGraph * gLowGain, TGraph * gHighGain, TF1* signalF, Int_t & amp, Double_t & time) ; 
+  void FitRaw(Bool_t lowGainFlag, TGraph * gLowGain, TGraph * gHighGain, TF1* signalF, Double_t & energy, Double_t & time) ; 
+
+  Int_t CalibrateRaw (Double_t energy, Int_t *relId);
 
 private:
   
@@ -243,7 +245,7 @@ private:
   AliESD *          fESD ;               //! ESD object
   TTree *           fESDTree ;           //! ESD Tree
   
-  Bool_t            fRawDigits ;         //!
+  Bool_t            fRawDigits ;         //! true is raw data
 
   AliPHOSCalibrationDB * fcdb ;       //!
   static AliPHOSCalibData * fCalibData;

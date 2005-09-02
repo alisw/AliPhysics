@@ -18,6 +18,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.80  2005/08/24 15:31:36  kharlov
+ * Setting raw digits flag
+ *
  * Revision 1.79  2005/07/25 15:53:53  kharlov
  * Read raw data
  *
@@ -109,11 +112,23 @@ const TString AliPHOSClusterizerv1::BranchName() const
 }
  
 //____________________________________________________________________________
-Float_t  AliPHOSClusterizerv1::Calibrate(Int_t amp, Int_t absId) const
+Float_t  AliPHOSClusterizerv1::Calibrate(Int_t amp, Int_t absId)
 {  
   //To be replaced later by the method, reading individual parameters from the database
-  if(fCalibrationDB){
-    return fCalibrationDB->Calibrate(amp,absId) ;
+  if(fCalibData){
+    Int_t relId[4];
+    AliPHOSGetter *gime = AliPHOSGetter::Instance();
+    gime->PHOSGeometry()->AbsToRelNumbering(absId,relId) ;
+    Int_t   module = relId[0];
+    Int_t   column = relId[2];
+    Int_t   row    = relId[3];
+    if(absId <= fEmcCrystals) { //calibrate as EMC 
+      fADCchanelEmc   = fCalibData->GetADCchannelEmc (module,column,row);
+      fADCpedestalEmc = fCalibData->GetADCpedestalEmc(module,column,row);
+      return fADCpedestalEmc + amp*fADCchanelEmc ;        
+    }
+    else //calibrate as CPV, not implemented yet
+      return 0;
   }
   else{ //simulation
     if(absId <= fEmcCrystals) //calibrate as EMC 
@@ -287,7 +302,7 @@ void AliPHOSClusterizerv1::GetCalibrationParameters()
 
   AliPHOSGetter * gime = AliPHOSGetter::Instance();
   if(gime->IsRawDigits()){
-    fCalibrationDB = gime->CalibrationDB();    
+    fCalibData = gime->CalibData();    
   }
   else{
     if ( !gime->Digitizer() ) 
@@ -350,7 +365,7 @@ void AliPHOSClusterizerv1::InitParameters()
 
   fWrite                   = kTRUE ;
 
-  fCalibrationDB           = 0 ;
+  fCalibData               = 0 ;
 
   SetEventRange(0,-1) ;
 }
