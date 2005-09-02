@@ -18,6 +18,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.81  2005/09/02 14:32:07  kharlov
+ * Calibration of raw data
+ *
  * Revision 1.80  2005/08/24 15:31:36  kharlov
  * Setting raw digits flag
  *
@@ -114,7 +117,10 @@ const TString AliPHOSClusterizerv1::BranchName() const
 //____________________________________________________________________________
 Float_t  AliPHOSClusterizerv1::Calibrate(Int_t amp, Int_t absId)
 {  
-  //To be replaced later by the method, reading individual parameters from the database
+  // Convert digitized amplitude into energy.
+  // Calibration parameters are taken from calibration data base for raw data,
+  // or from digitizer parameters for simulated data.
+
   if(fCalibData){
     Int_t relId[4];
     AliPHOSGetter *gime = AliPHOSGetter::Instance();
@@ -299,6 +305,18 @@ Bool_t AliPHOSClusterizerv1::FindFit(AliPHOSEmcRecPoint * emcRP, AliPHOSDigit **
 //____________________________________________________________________________
 void AliPHOSClusterizerv1::GetCalibrationParameters() 
 {
+  // Set calibration parameters:
+  // For raw data they are read from the calibration database,
+  // for simulated data they are taken from digitizer.
+  //
+  // It is a user responsilibity to open CDB and set
+  // AliPHOSCalibData object by the following operators:
+  // 
+  // AliCDBLocal *loc = new AliCDBLocal("deCalibDB");
+  // AliPHOSCalibData* clb = (AliPHOSCalibData*)AliCDBStorage::Instance()
+  //    ->Get(path_to_calibdata,run_number);
+  // AliPHOSGetter* gime = AliPHOSGetter::Instance("galice.root");
+  // gime->SetCalibData(clb);
 
   AliPHOSGetter * gime = AliPHOSGetter::Instance();
   if(gime->IsRawDigits()){
