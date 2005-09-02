@@ -686,15 +686,16 @@ Int_t AliPHOSGetter::ReadRaw(AliRawReader *rawReader)
 
   } // PHOS entries loop
 
-  FitRaw(lowGainFlag, gLowGain, gHighGain, signalF, amp, time) ; 
-  if (amp > 0 ) {
-    new((*digits)[idigit]) AliPHOSDigit( -1, id, amp, time) ;
-    idigit++ ; 
-  }
+//   FitRaw(lowGainFlag, gLowGain, gHighGain, signalF, amp, time) ; 
+//   if (amp > 0 ) {
+//     new((*digits)[idigit]) AliPHOSDigit( -1, id, amp, time) ;
+//     idigit++ ; 
+//   }
   digits->Sort() ; 
 
   delete signalF ; 
-  delete gLowGain, gHighGain ; 
+  delete gLowGain;
+  delete gHighGain ; 
   
   return digits->GetEntriesFast() ; 
 }
