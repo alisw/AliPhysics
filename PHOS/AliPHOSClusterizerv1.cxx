@@ -18,6 +18,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.82  2005/09/02 15:43:13  kharlov
+ * Add comments in GetCalibrationParameters and Calibrate
+ *
  * Revision 1.81  2005/09/02 14:32:07  kharlov
  * Calibration of raw data
  *
@@ -126,8 +129,8 @@ Float_t  AliPHOSClusterizerv1::Calibrate(Int_t amp, Int_t absId)
     AliPHOSGetter *gime = AliPHOSGetter::Instance();
     gime->PHOSGeometry()->AbsToRelNumbering(absId,relId) ;
     Int_t   module = relId[0];
-    Int_t   column = relId[2];
-    Int_t   row    = relId[3];
+    Int_t   row    = relId[2];
+    Int_t   column = relId[3];
     if(absId <= fEmcCrystals) { //calibrate as EMC 
       fADCchanelEmc   = fCalibData->GetADCchannelEmc (module,column,row);
       fADCpedestalEmc = fCalibData->GetADCpedestalEmc(module,column,row);
