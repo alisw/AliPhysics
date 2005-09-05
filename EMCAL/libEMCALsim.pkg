@@ -1,0 +1,14 @@
+# 19-Aug-05 - split from libEMCAL.pkg
+
+SRCS =\
+AliEMCALDigit.cxx \
+AliEMCALSDigitizer.cxx \
+AliEMCALDigitizer.cxx \
+AliEMCALTick.cxx
+
+
+HDRS= $(SRCS:.cxx=.h) 
+
+DHDR:=EMCALLinkDefsim.h
+# have to tune
+EINCLUDE:=PYTHIA6 RAW EVGEN THijing

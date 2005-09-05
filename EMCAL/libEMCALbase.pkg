@@ -1,0 +1,25 @@
+FSRCS = jet_finder_ua1.F sgpdge.F
+
+SRCS = \
+AliEMCAL.cxx \
+AliEMCALGeometry.cxx \
+AliEMCALv0.cxx \
+AliEMCALv1.cxx \
+AliEMCALv2.cxx \
+AliEMCALHit.cxx \
+AliEMCALLoader.cxx \
+AliEMCALGetter.cxx \
+AliEMCALFast.cxx \
+AliEMCALGeneratorFactory.cxx \
+AliEMCALShishKebabModule.cxx \
+AliEMCALShishKebabTrd1Module.cxx \
+AliEMCALGeometryOfflineTrd1.cxx \
+AliEMCALWsuCosmicRaySetUp.cxx \
+AliEMCALJet.cxx \
+AliEMCALParton.cxx 
+
+HDRS= $(SRCS:.cxx=.h) 
+
+DHDR:=EMCALLinkDefbase.h
+# have to tune
+EINCLUDE:=PYTHIA6 RAW EVGEN THijing

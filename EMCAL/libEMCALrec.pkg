@@ -1,0 +1,36 @@
+# 19-Aug-05 - split from libEMCAL.pkg
+
+SRCS =\
+AliEMCALReconstructor.cxx \
+AliEMCALJetFinder.cxx \
+AliEMCALJetFinderInput.cxx \
+AliEMCALJetFinderInputSimPrep.cxx \
+AliEMCALJetFinderInputPrep.cxx \
+AliEMCALJetFinderOutput.cxx \
+AliEMCALJetFinderAlgo.cxx \
+AliEMCALJetFinderAlgoOmni.cxx \
+AliEMCALJetFinderAlgoUA1Unit.cxx \
+AliEMCALJetFinderPlots.cxx \
+AliEMCALRecPoint.cxx \
+AliEMCALClusterizer.cxx \
+AliEMCALClusterizerv1.cxx \
+AliEMCALLink.cxx \
+AliEMCALTracker.cxx \
+AliEMCALTrackSegment.cxx \
+AliEMCALTrackSegmentMaker.cxx \
+AliEMCALTrackSegmentMakerv1.cxx \
+AliEMCALRecParticle.cxx \
+AliEMCALFastRecParticle.cxx \
+AliEMCALPID.cxx \
+AliEMCALPIDv1.cxx \
+AliEMCALRawStream.cxx \
+AliEMCALJetMicroDst.cxx \
+AliEMCALHadronCorrection.cxx \
+AliEMCALHadronCorrectionv0.cxx \
+AliEMCALHadronCorrectionv1.cxx 
+
+HDRS= $(SRCS:.cxx=.h) 
+
+DHDR:=EMCALLinkDefrec.h
+# have to tune
+EINCLUDE:=PYTHIA6 RAW EVGEN THijing
