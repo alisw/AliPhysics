@@ -1,4 +1,4 @@
-FSRCS = jet_finder_ua1.F sgpdge.F
+FSRCS = sgpdge.F
 
 SRCS = \
 AliEMCAL.cxx \
@@ -9,14 +9,21 @@ AliEMCALv2.cxx \
 AliEMCALHit.cxx \
 AliEMCALLoader.cxx \
 AliEMCALGetter.cxx \
-AliEMCALFast.cxx \
 AliEMCALGeneratorFactory.cxx \
 AliEMCALShishKebabModule.cxx \
 AliEMCALShishKebabTrd1Module.cxx \
 AliEMCALGeometryOfflineTrd1.cxx \
 AliEMCALWsuCosmicRaySetUp.cxx \
 AliEMCALJet.cxx \
-AliEMCALParton.cxx 
+AliEMCALParton.cxx \
+AliEMCALRecPoint.cxx \
+AliEMCALRawStream.cxx \
+AliEMCALClusterizer.cxx \
+AliEMCALPID.cxx \
+AliEMCALTrackSegmentMaker.cxx \
+AliEMCALSDigitizer.cxx \
+AliEMCALDigitizer.cxx \
+AliEMCALDigit.cxx
 
 HDRS= $(SRCS:.cxx=.h) 
 

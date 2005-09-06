@@ -1,4 +1,5 @@
 # 19-Aug-05 - split from libEMCAL.pkg
+FSRCS = jet_finder_ua1.F
 
 SRCS =\
 AliEMCALReconstructor.cxx \
@@ -11,19 +12,14 @@ AliEMCALJetFinderAlgo.cxx \
 AliEMCALJetFinderAlgoOmni.cxx \
 AliEMCALJetFinderAlgoUA1Unit.cxx \
 AliEMCALJetFinderPlots.cxx \
-AliEMCALRecPoint.cxx \
-AliEMCALClusterizer.cxx \
 AliEMCALClusterizerv1.cxx \
 AliEMCALLink.cxx \
 AliEMCALTracker.cxx \
 AliEMCALTrackSegment.cxx \
-AliEMCALTrackSegmentMaker.cxx \
 AliEMCALTrackSegmentMakerv1.cxx \
 AliEMCALRecParticle.cxx \
 AliEMCALFastRecParticle.cxx \
-AliEMCALPID.cxx \
 AliEMCALPIDv1.cxx \
-AliEMCALRawStream.cxx \
 AliEMCALJetMicroDst.cxx \
 AliEMCALHadronCorrection.cxx \
 AliEMCALHadronCorrectionv0.cxx \
