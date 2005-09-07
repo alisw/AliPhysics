@@ -54,5 +54,7 @@
 #pragma link C++ class AliMUONHLT::ClusterFinderInterface+;
 #pragma link C++ class AliMUONHLT::ClusterFinderCallback+;
 
+#pragma link C++ class AliHLTMUONTracker+;
+
 #endif // __CINT__
 
