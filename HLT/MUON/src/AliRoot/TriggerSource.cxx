@@ -61,7 +61,7 @@ TriggerSource::TriggerSource(AliMUONDataInterface* data)
 
 TriggerSource::~TriggerSource()
 {
-	fEventList.Clear("C");
+	fEventList.Delete();
 }
 
 
@@ -143,7 +143,7 @@ void TriggerSource::FillFrom(
 }
 
 
-void TriggerSource::Clear()
+void TriggerSource::Clear(Option_t* /*option*/)
 {
 	fFilename = "";
 	fFoldername = "";
@@ -909,7 +909,7 @@ TriggerSource::EventData::EventData(Int_t eventnumber)
 
 TriggerSource::EventData::~EventData()
 {
-	fBlocks.Clear("C");
+	//fBlocks.Clear("C");  // Done in fBlocks destructor 
 }
 
 

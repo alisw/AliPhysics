@@ -13,7 +13,7 @@
 #include "RegionOfInterest.hpp"
 
 
-#ifdef DEBUG
+#if defined(DEBUG) || (defined(USE_ALILOG) && ! defined(LOG_NO_DEBUG))
 #include <ostream>
 #include "Debug/print.hpp"
 namespace

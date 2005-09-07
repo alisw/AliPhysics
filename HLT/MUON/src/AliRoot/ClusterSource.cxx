@@ -147,12 +147,12 @@ void ClusterSource::FillFrom(
 }
 
 
-void ClusterSource::Clear()
+void ClusterSource::Clear(Option_t* /*option*/)
 {
 	fFilename = "";
 	fFoldername = "";
 	ResetAllPointers();
-	fEventList.Clear("C");
+	fEventList.Delete();
 }
 
 
@@ -715,7 +715,7 @@ void ClusterSource::AddClusterFrom(
 };
 
 
-Bool_t ClusterSource::InFillRegion(Float_t x, Float_t y)
+Bool_t ClusterSource::InFillRegion(Float_t x, Float_t /*y*/)
 {
 	switch (fAreaToUse)
 	{

@@ -44,7 +44,7 @@ public:
 	
 	/* Clears all the internal arrays.
 	 */
-	void Clear();
+	virtual void Clear(Option_t* option = "");
 	
 	// Get methods.
 	Int_t CurrentStream()  const { return fCurrentStream; };

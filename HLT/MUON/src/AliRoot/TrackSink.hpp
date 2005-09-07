@@ -65,7 +65,7 @@ public:
 	
 	/* Clears all the internal arrays.
 	 */
-	void Clear();
+	virtual void Clear(Option_t* option = "");
 	
 	// Get methods for file and folder names.
 	TString FileName()   const { return fFilename; }

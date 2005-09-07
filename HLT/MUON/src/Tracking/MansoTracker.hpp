@@ -43,7 +43,7 @@ public:
 	   of interests. Refer to MansoFilter() for details about a and b parameters.
 	 */
 	static Float GetA7()                  { return a7; };
-	static void SetA7(Float value)  { a7 = a7; };
+	static void SetA7(Float value)  { a7 = value; };
 	static Float GetA8()                  { return a8; };
 	static void SetA8(Float value)  { a8 = value; };
 	static Float GetA9()                  { return a9; };

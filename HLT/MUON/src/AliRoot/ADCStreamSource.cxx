@@ -8,7 +8,7 @@
 #include "AliRoot/ADCStreamSource.hpp"
 #include "AliRoot/Base.hpp"
 #include "TSystem.h"
-#include "stdio.h"
+#include <stdio.h>
 
 // TODO: Change all the Error message statements to AliError at some stage.
 
@@ -110,7 +110,7 @@ void ADCStreamSource::FillFrom(const TString& dirprefix, UInt_t firstevent, UInt
 }
 
 
-void ADCStreamSource::Clear()
+void ADCStreamSource::Clear(Option_t* /*option*/)
 {
 	fCurrentStream = -1;
 	fList.erase( fList.begin(), fList.end() );

@@ -70,7 +70,7 @@ public:
 	};
 	
 	
-	virtual void NoTrackFound(Tracking::Tracker* tracker)
+	virtual void NoTrackFound(Tracking::Tracker* /*tracker*/)
 	{
 		DebugMsg(2, "NoTrackFound");
 		// Again nothing special to do here. The allocated memory is released
@@ -361,10 +361,14 @@ void MicrodHLT::Run()
 };
 
 
+#ifdef DEBUG
 void MicrodHLT::DebugLevel(Int_t value)
 {
-	DebugCode( dHLT::DebugLevel = value );
+	dHLT::DebugLevel = value;
 };
+#else // DEBUG
+void MicrodHLT::DebugLevel(Int_t /*value*/) {}
+#endif // DEBUG
 
 
 Int_t MicrodHLT::DebugLevel()

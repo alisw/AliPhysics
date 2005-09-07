@@ -112,7 +112,7 @@ namespace dHLT
 #	define DebugMsg(level, message) \
 		{ \
 			__DebugMsg_PREECODE__(message) \
-			AliDebug(level, os.str()); \
+			AliDebugGeneral("dHLT", level, os.str().c_str()); \
 		}
 
 #else // USE_ALILOG

@@ -162,7 +162,7 @@ void TrackSink::SetNames(const TriggerSource* triggersource)
 }
 
 
-void TrackSink::Clear()
+void TrackSink::Clear(Option_t* /*option*/)
 {
 	fFilename = "";
 	fFoldername = "";
