@@ -37,6 +37,7 @@
 #include "AliITSgeom.h"
 #include "AliL3ITStracker.h"
 #include "AliL3TPCtracker.h"
+#include "MUON/src/AliRoot/AliHLTMUONTracker.h"
 
 #if __GNUC__== 3
 using namespace std;
@@ -328,6 +329,9 @@ AliTracker* AliHLTReconstructor::CreateTracker(AliRunLoader* runLoader) const
     AliITSgeom* geom = GetITSgeom(runLoader);
     if (!geom) return NULL;
     return new AliL3ITStracker(geom);
+  }
+  if(!opt.CompareTo("MUON")) {
+    return new AliHLTMUONTracker(runLoader);
   }
 
   return NULL;
