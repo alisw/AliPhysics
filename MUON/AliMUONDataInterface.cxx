@@ -15,6 +15,10 @@
 #include "AliMUONRawCluster.h"
 #include "AliLog.h"
 
+#include <iostream>
+using std::endl;
+using std::cout;
+
 
 ClassImp(AliMUONDataInterface)
 
@@ -37,11 +41,11 @@ AliMUONDataInterface::AliMUONDataInterface(const AliMUONDataInterface& rhs)
 
 AliMUONDataInterface::~AliMUONDataInterface()
 {
-// Delete the runloader when done.
+// Delete the runloader if we created it.
 // If the runloader is not to be deleted then call Reset just before 
 // the destructor is called.
 
-	if (fRunloader != NULL)
+	if (fRunloader != NULL && fCreatedRunLoader)
 		delete fRunloader;
 }
 
@@ -64,6 +68,7 @@ void AliMUONDataInterface::Reset()
 // Note: No resources are released!
 // Specificaly AliRunLoader is not deleted.
 
+	fCreatedRunLoader = kFALSE;
 	fRunloader = NULL;
 	fMuonloader = NULL;
 	fEventnumber = -1;
@@ -75,6 +80,46 @@ void AliMUONDataInterface::Reset()
 	fDigitAddressSet = kFALSE;
 	fClusterAddressSet = kFALSE;
 	fTriggerAddressSet = kFALSE;
+}
+
+
+Bool_t AliMUONDataInterface::UseCurrentRunLoader()
+{
+// Tries to fetch the current runloader with AliRunLoader::GetRunLoader. If nothing is
+// currently loaded then kFALSE is returned and AliMUONDataInterface is reset.
+
+	Reset();
+	fRunloader = AliRunLoader::GetRunLoader();
+	if (fRunloader == NULL) return kFALSE;
+	// Fetch the current file name, folder name and event number.
+	fFilename = fRunloader->GetFileName();
+	fFoldername = fRunloader->GetEventFolder()->GetName();
+	fEventnumber = fRunloader->GetEventNumber();
+
+	if ( ! FetchMuonLoader(fFilename.Data(), fFoldername.Data()) )
+	{
+		Reset();
+		return kFALSE;
+	}		
+
+	return kTRUE;
+}
+
+
+Bool_t AliMUONDataInterface::FetchMuonLoader(TString filename, TString foldername)
+{
+	fMuonloader = fRunloader->GetLoader("MUONLoader");
+	if (fMuonloader == NULL)
+	{
+		AliError(Form("Could not find the MUON loader in file: %s and folder: %s", 
+			(const char*)filename, (const char*)foldername));
+		return kFALSE;
+	}
+	
+	// Need to connect the muon loader to the AliMUONData object,
+	// else class to fData will return NULL.
+	fData.SetLoader(fMuonloader);
+	return kTRUE;
 }
 
 
@@ -90,18 +135,12 @@ Bool_t AliMUONDataInterface::LoadLoaders(TString filename, TString foldername)
 			(const char*)filename, (const char*)foldername));
 		return kFALSE;
 	}
-	fMuonloader = fRunloader->GetLoader("MUONLoader");
-	if (fMuonloader == NULL)
+	fCreatedRunLoader = kTRUE;
+	if ( ! FetchMuonLoader(filename, foldername) )
 	{
-		AliError(Form("Could not find the MUON loader in file: %s and folder: %s", 
-			(const char*)filename, (const char*)foldername));
 		fRunloader = NULL;
 		return kFALSE;
 	}
-	
-	// Need to connect the muon loader to the AliMUONData object,
-	// else class to fData will return NULL.
-	fData.SetLoader(fMuonloader);
 	
 	fFilename = filename;
 	fFoldername = foldername;
@@ -123,6 +162,17 @@ Bool_t AliMUONDataInterface::FetchLoaders(TString filename, TString foldername)
 		fRunloader = AliRunLoader::GetRunLoader();
 		if (fRunloader == NULL)
 			return LoadLoaders(filename, foldername);
+		else
+		{
+			if (fMuonloader == NULL)
+			{
+				if ( ! FetchMuonLoader(filename, foldername) )
+				{
+					fRunloader = NULL;
+					return kFALSE;
+				}
+			}
+		}
 		
 		// Fetch the current file and folder names.
 		fFilename = fRunloader->GetFileName();
@@ -144,6 +194,8 @@ Bool_t AliMUONDataInterface::FetchEvent(Int_t event)
 {
 // Fetch the specified event from the runloader and reset all the track, cathode
 // and address flags to force them to be reloaded.
+// If a negative event number is specified then the current runloader event
+// number is used.
 
 	if (fEventnumber < 0)
 	{
@@ -536,13 +588,13 @@ Int_t AliMUONDataInterface::NumberOfLocalTriggers(TString filename, TString fold
 
 	if ( ! FetchLoaders(filename, foldername) ) return -1;
 	if ( ! FetchEvent(event) ) return -1;
-	if ( ! FetchTreeR() ) return -1;
+	if ( ! FetchTreeD() ) return -1;
 	if ( ! fTriggerAddressSet )
 	{
 		// If the local trigger address in TreeR is not set yet then set it now.
 		fData.SetTreeAddress("GLT");
 		fData.ResetTrigger();
-		fData.GetTrigger();
+		fData.GetTriggerD();
 		fTriggerAddressSet = kTRUE;
 	}
 	return fData.LocalTrigger()->GetEntriesFast();
@@ -558,13 +610,13 @@ AliMUONLocalTrigger* AliMUONDataInterface::LocalTrigger(
 
 	if ( ! FetchLoaders(filename, foldername) ) return NULL;
 	if ( ! FetchEvent(event) ) return NULL;
-	if ( ! FetchTreeR() ) return NULL;
+	if ( ! FetchTreeD() ) return NULL;
 	if ( ! fTriggerAddressSet )
 	{
 		// If the local trigger address in TreeR is not set yet then set it now.
 		fData.SetTreeAddress("GLT");
 		fData.ResetTrigger();
-		fData.GetTrigger();
+		fData.GetTriggerD();
 		fTriggerAddressSet = kTRUE;
 	}
 	return static_cast<AliMUONLocalTrigger*>( fData.LocalTrigger()->At(trigger) );
@@ -916,12 +968,12 @@ Int_t AliMUONDataInterface::NumberOfLocalTriggers()
 		return -1;
 	}
 
-	if ( ! FetchTreeR() ) return -1;
+	if ( ! FetchTreeD() ) return -1;
 	if ( ! fTriggerAddressSet )
 	{
 		fData.SetTreeAddress("GLT");
 		fData.ResetTrigger();
-		fData.GetTrigger();
+		fData.GetTriggerD();
 		fTriggerAddressSet = kTRUE;
 	}
 	return fData.LocalTrigger()->GetEntriesFast();
@@ -944,12 +996,12 @@ AliMUONLocalTrigger* AliMUONDataInterface::LocalTrigger(Int_t trigger)
 		return NULL;
 	}
 
-	if ( ! FetchTreeR() ) return NULL;
+	if ( ! FetchTreeD() ) return NULL;
 	if ( ! fTriggerAddressSet )
 	{
 		fData.SetTreeAddress("GLT");
 		fData.ResetTrigger();
-		fData.GetTrigger();
+		fData.GetTriggerD();
 		fTriggerAddressSet = kTRUE;
 	}
 	return static_cast<AliMUONLocalTrigger*>( fData.LocalTrigger()->At(trigger) );

@@ -44,6 +44,8 @@ public:
 	
 	// Sets all internal pointers to NULL without releasing the current runloader.
 	void Reset();
+
+	Bool_t UseCurrentRunLoader();
 	
 	Int_t NumberOfEvents(TString filename, TString foldername);
 
@@ -112,8 +114,10 @@ public:
 protected:
         AliMUONDataInterface(const AliMUONDataInterface& rhs);
         AliMUONDataInterface& operator=(const AliMUONDataInterface& rhs);
+
 private:
 
+	Bool_t FetchMuonLoader(TString filename, TString foldername);
 	Bool_t LoadLoaders(TString filename, TString foldername);
 	Bool_t FetchLoaders(TString filename, TString foldername);
 	Bool_t FetchEvent(Int_t event);
@@ -122,7 +126,8 @@ private:
 	Bool_t FetchTreeS();
 	Bool_t FetchTreeD();
 	Bool_t FetchTreeR();
-	
+
+	Bool_t fCreatedRunLoader;  //! If this object created the fRunloader then this flag is set.	
 	
 	Bool_t fHitAddressSet;     //! Flag specifying if the TTree address for the hit tree was set.
 	Bool_t fSDigitAddressSet;  //! Flag specifying if the TTree address for the s-digit tree was set.
