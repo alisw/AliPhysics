@@ -55,6 +55,15 @@ AliHLTLogging::~AliHLTLogging()
 {
 }
 
+int AliHLTLogging::Init(AliHLTfctLogging pFun) 
+{ 
+  if (fLoggingFunc!=NULL && fLoggingFunc!=pFun) {
+    (*fLoggingFunc)(NULL/*fParam*/, kHLTLogWarning, "AliHLTLogging::Init", "no key", "overriding previously initialized logging function");    
+  }
+  fLoggingFunc=pFun; 
+  return 0;
+}
+
 int AliHLTLogging::Message(void *param, AliHLTComponent_LogSeverity severity, const char* origin, const char* keyword, const char* message) {
   int iResult=0;
   const char* strSeverity="";

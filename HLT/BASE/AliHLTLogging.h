@@ -73,7 +73,7 @@ public:
       return HLT_DEFAULT_LOG_KEYWORD;
     }
   
-  static int Init(AliHLTfctLogging pFun) { fLoggingFunc=pFun; return 0;}
+  static int Init(AliHLTfctLogging pFun);
 
   // genaral logging function
   //

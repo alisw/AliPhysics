@@ -159,6 +159,7 @@ void AliHLTComponentHandler::List() {
 void AliHLTComponentHandler::SetEnvironment(AliHLTComponentEnvironment* pEnv) {
   if (pEnv) {
     memcpy(&fEnvironment, pEnv, sizeof(AliHLTComponentEnvironment));
+    AliHLTLogging::Init(fEnvironment.fLoggingFunc);
   }
 }
 
