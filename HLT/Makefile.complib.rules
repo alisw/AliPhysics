@@ -1,0 +1,162 @@
+# -*- Mode: Makefile -*-
+#$Id$
+################################
+# Makefile.rules for HLT code. #
+#                              #
+# Author: Anders Vestbo,       #
+#         Constantin Loizides  #                    
+################################
+
+#----------------------------------------------------
+# !!! Dont change anything here                 !!!
+# !!! and if you have to send a mail to authors !!!
+#----------------------------------------------------
+
+DEFSTR = -Dno_root
+OBJDIR = lib_alone
+### INCLUDES = -I$(ALIHLT_TOPDIR)/src -I$(ALIHLT_TOPDIR)/hough -I$(ALIHLT_TOPDIR)/comp -I$(ALIHLT_TOPDIR)/misc -I$(ALIHLT_TOPDIR)/trigger -I$(ALIHLT_TOPDIR)/kalman -I$(ALIHLT_TOPDIR)/BASE
+INCLUDES = -I$(ALIHLT_TOPDIR)/BASE
+
+### ifeq ($(ALIHLT_USEPACKAGE),ROOT) 
+### INCLUDES += -I$(ROOTSYS)/include 
+### DEFSTR = -Duse_root
+### OBJDIR = lib_ROOT
+### ROOTSTR := $(shell $(ROOTSYS)/bin/root -n -b -q  | grep Version | cut -b 17-25 | cut -d" " -f1)
+### DEFSTR += -DROOTVERSION=\"$(ROOTSTR)\" 
+### endif
+
+ifeq ($(ALIHLT_USEPACKAGE),ALIROOT)
+INCLUDES += -I$(ROOTSYS)/include -I$(ALICE_ROOT)/include/ -I$(ALICE_ROOT)/TPC -I$(ALICE_ROOT)/CONTAINERS -I$(ALICE_ROOT)/STEER
+DEFSTR = -Duse_aliroot -Duse_root
+ifeq ($(USENEWIO),1)
+DEFSTR += -Duse_newio
+INCLUDES += -I$(ALICE_ROOT)/RAW
+endif
+OBJDIR = lib
+ROOTSTR := $(shell $(ROOTSYS)/bin/root -n -b -q  | grep Version | cut -b 17-25 | cut -d" " -f1)
+DEFSTR += -DROOTVERSION=\"$(ROOTSTR)\" 
+ifeq ($(USECVS),1)
+ALIROOTSTR := $(shell if test -n "`cd $(ALICE_ROOT)/STEER/ && cvs stat AliRun.cxx | grep "Sticky Tag" | grep none`"; then echo HEAD; else cd $(ALICE_ROOT)/STEER/ && cvs stat AliRun.cxx | grep "Sticky Tag" | cut -b 18- | cut -d" " -f1; fi)
+DEFSTR += -Duse_cvs
+else
+ALIROOTSTR = "Unknown"
+endif
+DEFSTR += -DALIROOTVERSION=\"$(ALIROOTSTR)\"
+ifeq ($(ALIROOTST),HEAD)
+DEFSTR += -Duse_reconstruction
+endif
+endif
+
+### ifeq ($(DOMC),1)
+### DEFSTR += -Ddo_mc
+### endif
+
+### ifeq ($(USEROWHOUGH),1)
+### DEFSTR += -DROWHOUGHPARAMS
+### endif
+
+### ifneq ($(NOLOGGING),1)
+### DEFSTR += -Duse_logging
+### ifdef ALIHLT_MLUCDIR
+### INCLUDES += -I$(ALIHLT_MLUCDIR)/include
+### else
+### INCLUDES += -I/prog/alice/level3/kip/MLUC/include
+### endif
+### endif
+
+DEFSTR += -D$(ARCH) $(EXTRADEF)
+
+DICT  = $(MODNAME)Cint-$(ALIHLT_USEPACKAGE).cxx
+DICTH = $(MODNAME)Cint-$(ALIHLT_USEPACKAGE).h
+DICTO = $(OBJDIR)/$(MODNAME)Cint-$(ALIHLT_USEPACKAGE).o
+
+ifndef OBJS
+ifeq ($(OBJDIR),lib_alone)
+HDRS = $(SRCS:.cxx=.h) 
+OBJS = $(patsubst %.cxx,$(OBJDIR)/%.o,$(SRCS))
+else
+HDRS = $(SRCS:.cxx=.h) $(MODNAME)LinkDef.h
+OBJS = $(patsubst %.cxx,$(OBJDIR)/%.o,$(SRCS)) $(DICTO)
+endif
+endif
+
+STATICOBJS = $(patsubst %.o,%.sto,$(OBJS))
+
+ALIHLT_LIBSO  = $(ALIHLT_LIBDIR)/lib$(MODNAME).so
+ALIHLT_DYLIB  = $(ALIHLT_LIBDIR)/lib$(MODNAME).dylib
+ALIHLT_STATIC = $(ALIHLT_LIBDIR)/lib$(MODNAME).a
+
+#Default Target
+default: so
+
+libs: so static
+
+so: $(OBJDIR) $(ALIHLT_LIBDIR) $(ALIHLT_LIBSO) 
+
+static: $(OBJDIR) $(ALIHLT_LIBDIR) $(ALIHLT_STATIC)
+
+$(ALIHLT_LIBSO): $(OBJS)
+ifeq ($(ARCH),macosx)
+	$(LD) $(DYFLAGS) $^ $(LDFLAGS) -o $(ALIHLT_DYLIB)
+endif
+	$(LD) $(SOFLAGS) $^ $(LDFLAGS) -o $@
+
+$(ALIHLT_STATIC): $(STATICOBJS)
+	$(LDSTATIC) $(STATICFLAGS) $@ $^ 
+
+$(DICT): $(HDRS)
+	@echo "Generating dictionary..."
+	rootcint -f $(DICT) -c $(CINTCXXFLAGS) $(INCLUDES) \
+                    $(DEFSTR) -include $(EXTRA_INCLUDES) $(HDRS)
+
+$(OBJDIR)/%.o: %.cxx 
+	$(CXX) $(CXXFLAGS) $(DEFSTR) -c $(INCLUDES) -o $@ $<
+
+$(OBJDIR)/%.sto: %.cxx 
+	$(CXX) $(PROFILEFLAGS) $(CXXFLAGS) $(DEFSTR) -c $(INCLUDES) -o $@ $<
+
+$(OBJDIR): 
+	test ! -e $(OBJDIR) && mkdir -p $(OBJDIR)
+
+$(ALIHLT_LIBDIR):
+	test ! -e $(ALIHLT_LIBDIR) && mkdir -p $(ALIHLT_LIBDIR)
+
+help:
+	cat $(ALIHLT_TOPDIR)/doc/README
+
+print:
+	@echo "MODNAME           = $(MODNAME)" 
+	@echo "ALIHLT_BASEDIR    = $(ALIHLT_BASEDIR)"
+	@echo "ALIHLT_TOPDIR     = $(ALIHLT_TOPDIR)"
+	@echo "ALIHLT_MLUCDIR    = $(ALIHLT_MLUCDIR)"
+	@echo "ALIHLT_USEPACKAGE = $(ALIHLT_USEPACKAGE)"
+	@echo "ALIHLT_USENEWIO   = $(ALIHLT_USENEWIO)"
+	@echo "ALIHLT_NOLOGGING  = $(ALIHLT_NOLOGGING)"
+	@echo "ALIHLT_DOMC       = $(ALIHLT_DOMC)"
+	@echo "ALIHLT_ALIDETECT  = $(ALIHLT_ALIDETECT)"
+	@echo "ALIHLT_ROWHOUGH   = $(ALIHLT_ROWHOUGH)"
+	@echo "ROOTSTR           = $(ROOTSTR)"
+	@echo "ALIROOTSTR        = $(ALIROOTSTR)"
+
+printall: print
+	@echo "ALIHLT_LIBSO      = $(ALIHLT_LIBSO)"
+	@echo "DEFSTR            = $(DEFSTR)"
+	@echo "OBJDIR            = $(OBJDIR)"
+	@echo "INCLUDES          = $(INCLUDES)"
+	@echo "SRCS              = $(SRCS)"
+	@echo "HRDS              = $(HDRS)"
+	@echo "OBJS              = $(OBJS)"
+
+clean:
+	rm -f $(OBJDIR)/*.o $(OBJDIR)/*.sto
+	rm -f $(DICT) $(DICTH) 
+	rm -rf $(OBJDIR)
+
+cleanlib:
+	rm -f $(ALIHLT_LIBSO) $(ALIHLT_DYLIB) $(ALIHLT_STATIC)
+
+realclean: clean cleanlib
+
+
+.phony: help print printall clean so realclean
+
