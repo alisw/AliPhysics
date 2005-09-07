@@ -12,7 +12,7 @@
 #include "AliHLTProcessor.h"
 #include "AliHLTTPCDefinitions.h"
 
-class AliL3VertexFinder;
+class AliHLTTPCVertexFinder;
 
 class AliHLTTPCVertexFinderComponent : public AliHLTProcessor
     {
@@ -43,7 +43,7 @@ class AliHLTTPCVertexFinderComponent : public AliHLTProcessor
 	
     private:
 
-	AliL3VertexFinder* fVertexFinder;
+	AliHLTTPCVertexFinder* fVertexFinder;
 
 	ClassDef(AliHLTTPCVertexFinderComponent, 0)
 

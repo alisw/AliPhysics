@@ -12,7 +12,7 @@
 #include "AliHLTProcessor.h"
 #include "AliHLTTPCDefinitions.h"
 
-class AliL3ClustFinderNew;
+class AliHLTTPCClustFinderNew;
 
 class AliHLTTPCClusterFinderComponent : public AliHLTProcessor
     {
@@ -43,7 +43,7 @@ class AliHLTTPCClusterFinderComponent : public AliHLTProcessor
 	
     private:
 
-	AliL3ClustFinderNew* fClusterFinder;
+	AliHLTTPCClustFinderNew* fClusterFinder;
 
 	bool fClusterDeconv;
 	float fXYClusterError;

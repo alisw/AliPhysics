@@ -8,13 +8,13 @@
  */
 
 #include "AliHLTDataTypes.h"
-#include "AliL3TrackSegmentData.h"
+#include "AliHLTTPCTrackSegmentData.h"
 
 struct AliHLTTPCTrackletData
     {
 	AliHLTUInt32_t fTrackletCnt;
-	AliL3TrackSegmentData fTracklets[];
-	//AliL3SpacePointData fSpacePoints[];
+	AliHLTTPCTrackSegmentData fTracklets[];
+	//AliHLTTPCSpacePointData fSpacePoints[];
     };
 
 

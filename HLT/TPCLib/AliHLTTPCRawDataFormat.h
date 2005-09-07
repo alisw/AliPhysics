@@ -2,7 +2,7 @@
 #define _ALIHLTTPCRAWDATAFORMAT_HPP_
 
 #include "Rtypes.h"
-#include "AliL3DigitData.h"
+#include "AliHLTTPCDigitData.h"
 
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
@@ -17,7 +17,7 @@ struct AliHLTTPCPackedRawData
 
 struct AliHLTTPCUnpackedRawData
     {
-	AliL3DigitRowData fDigits[];
+	AliHLTTPCDigitRowData fDigits[];
     };
 
 #endif // _ALIHLTTPCRAWDATAFORMAT_HPP_

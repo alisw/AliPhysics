@@ -12,8 +12,8 @@
 #include "AliHLTProcessor.h"
 #include "AliHLTTPCDefinitions.h"
 
-class AliL3GlobalMerger;
-class AliL3Vertex;
+class AliHLTTPCGlobalMerger;
+class AliHLTTPCVertex;
 
 class AliHLTTPCGlobalMergerComponent : public AliHLTProcessor
     {
@@ -47,8 +47,8 @@ class AliHLTTPCGlobalMergerComponent : public AliHLTProcessor
 	
     private:
 
-	AliL3GlobalMerger* fGlobalMerger;
-	AliL3Vertex* fVertex;
+	AliHLTTPCGlobalMerger* fGlobalMerger;
+	AliHLTTPCVertex* fVertex;
 
 	struct SliceData
 	    {

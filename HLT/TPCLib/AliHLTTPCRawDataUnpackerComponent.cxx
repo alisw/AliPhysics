@@ -31,8 +31,8 @@ using namespace std;
 #include "AliRawDataHeader.h"
 #include "AliRawReaderMemory.h"
 #include "AliHLTTPCRawDataFormat.h"
-#include "AliL3DigitData.h"
-#include "AliL3Transform.h"
+#include "AliHLTTPCDigitData.h"
+#include "AliHLTTPCTransform.h"
 #include <stdlib.h>
 #include <errno.h>
 
@@ -62,7 +62,7 @@ const char* AliHLTTPCRawDataUnpackerComponent::GetComponentID()
 void AliHLTTPCRawDataUnpackerComponent::GetInputDataTypes( vector<AliHLTComponent_DataType>& list)
     {
     list.clear();
-    list.push_back( AliHLTTPCDefinitions::gkPackedRawDataType );
+    list.push_back( AliHLTTPCDefinitions::gkDDLPackedRawDataType );
     }
 
 AliHLTComponent_DataType AliHLTTPCRawDataUnpackerComponent::GetOutputDataType()
@@ -74,7 +74,7 @@ void AliHLTTPCRawDataUnpackerComponent::GetOutputDataSize( unsigned long& constB
     {
     // XXX TODO: Find more realistic values.
     constBase = 0;
-    inputMultiplier = 3.0;
+    inputMultiplier = 6.0;
     }
 
 AliHLTComponent* AliHLTTPCRawDataUnpackerComponent::Spawn()
@@ -88,10 +88,10 @@ int AliHLTTPCRawDataUnpackerComponent::DoInit( int argc, const char** argv )
 	return EINPROGRESS;
 
     int i = 0;
-    const char* tableFileBaseDir = NULL;
+//     const char* tableFileBaseDir = NULL;
     while ( i < argc )
 	{
-// 	if ( !strcmp( argv[i], "-table-dir" ) )
+// 	if ( !strcmp( argv[i], "table-dir" ) )
 // 	    {
 // 	    if ( i+1>=argc )
 // 		{
@@ -140,29 +140,42 @@ int AliHLTTPCRawDataUnpackerComponent::DoEvent( const AliHLTComponent_EventData&
 
     AliHLTUInt8_t* outBPtr;
     AliHLTTPCUnpackedRawData* outPtr;
-    AliL3DigitRowData* currentRow;
-    AliL3DigitData* currentDigit;
+    AliHLTTPCDigitRowData* currentRow;
+    AliHLTTPCDigitData* currentDigit;
     unsigned long long outputSize = 0;
     unsigned long blockOutputSize = 0;
     unsigned long rowSize = 0;
-    Int_t slice, patch, row[2];
+    Int_t slice, patch, rows[2];
     outBPtr = outputPtr;
     outPtr = (AliHLTTPCUnpackedRawData*)outputPtr;
     currentRow = outPtr->fDigits;
     currentDigit = currentRow->fDigitData;
-
+    
+    Logging( kHLTLogDebug, "HLT::TPCRawDataUnpackerSubscriber::DoEvent", "Event received", 
+	     "Event 0x%08LX (%Lu) received with %lu blocks. Output data size: %lu",
+	     evtData.fEventID, evtData.fEventID, evtData.fBlockCnt, size);
     for ( ndx = 0; ndx < evtData.fBlockCnt; ndx++ )
 	{
 	iter = blocks+ndx;
+	char tmp1[14], tmp2[14];
+	DataType2Text( iter->fDataType, tmp1 );
+	DataType2Text( AliHLTTPCDefinitions::gkDDLPackedRawDataType, tmp2 );
+	Logging( kHLTLogDebug, "HLT::TPCRawDataUnpackerSubscriber::DoEvent", "Event received", 
+		 "Event 0x%08LX (%Lu) received datatype: %s - required datatype: %s",
+		 evtData.fEventID, evtData.fEventID, tmp1, tmp2 );
 	if ( iter->fDataType != AliHLTTPCDefinitions::gkDDLPackedRawDataType )
 	    {
 	    continue;
 	    }
 	slice = AliHLTTPCDefinitions::GetMinSliceNr( *iter );
 	patch = AliHLTTPCDefinitions::GetMinPatchNr( *iter );
-	row[0] = AliL3Transform::GetFirstRow( patch );
-	row[1] = AliL3Transform::GetLastRow( patch );
+	rows[0] = AliHLTTPCTransform::GetFirstRow( patch );
+	rows[1] = AliHLTTPCTransform::GetLastRow( patch );
 	blockOutputSize = 0;
+
+	Logging( kHLTLogDebug, "HLT::TPCRawDataUnpackerSubscriber::DoEvent", "Input Raw Packed Data", 
+		 "Input: Slice/Patch/RowMin/RowMax: %d/%d/%d/%d.",
+		 slice, patch, rows[0], rows[1] );
 
 	fRawMemoryReader->SetMemory( reinterpret_cast<UChar_t*>( iter->fPtr ), iter->fSize );
 	bool readValue = true;
@@ -170,39 +183,39 @@ int AliHLTTPCRawDataUnpackerComponent::DoEvent( const AliHLTComponent_EventData&
 	int row = -1, oldRow = -1;
 	Int_t rowOffset = 0;
 	if ( patch >= 2 ) // Outer sector, patches 2, 3, 4, 5
-	    rowOffset = AliL3Transform::GetFirstRow( 2 );
+	    rowOffset = AliHLTTPCTransform::GetFirstRow( 2 );
 
 	while ( readValue )
 	    {
 	    row = fTPCRawStream->GetRow();
 	    if ( row != oldRow )
 		{
-		if ( oldRow!=-1 && rowSize != sizeof(AliL3DigitRowData)+currentRow->fNDigit*sizeof(AliL3DigitData) )
+		if ( oldRow!=-1 && rowSize != sizeof(AliHLTTPCDigitRowData)+currentRow->fNDigit*sizeof(AliHLTTPCDigitData) )
 		    {
-		    Logging( kHLTLogFatal, "TPCRawDataUnpackerSubscriber::ProcessEvent", "Size inconsistency", 
+		    Logging( kHLTLogFatal, "HLT::TPCRawDataUnpackerSubscriber::DoEvent", "Size inconsistency", 
 			     "Size inconsistency for row %d data: %lu != %lu (%lu digits).", oldRow, rowSize, 
-			     sizeof(AliL3DigitRowData)+currentRow->fNDigit*sizeof(AliL3DigitData), currentRow->fNDigit );
+			     sizeof(AliHLTTPCDigitRowData)+currentRow->fNDigit*sizeof(AliHLTTPCDigitData), currentRow->fNDigit );
 		    }
 		rowSize = 0;
-		if ( size < outputSize+sizeof(AliL3DigitRowData) )
+		if ( size < outputSize+sizeof(AliHLTTPCDigitRowData) )
 		    {
-		    Logging( kHLTLogFatal, "TPCRawDataUnpackerSubscriber::ProcessEvent", "Too much data", 
+		    Logging( kHLTLogFatal, "HLT::TPCRawDataUnpackerSubscriber::DoEvent", "Too much data", 
 			     "Output data too big, output memory full. Aborting event 0x%08lX (%lu)" , 
 			     evtData.fEventID, evtData.fEventID );
 		    return 0;
 		    }
-		currentRow = (AliL3DigitRowData*)(outBPtr+outputSize);
+		currentRow = (AliHLTTPCDigitRowData*)(outBPtr+outputSize);
 		currentDigit = currentRow->fDigitData;
 		currentRow->fRow = row+rowOffset;
 		currentRow->fNDigit = 0;
 		oldRow = row;
-		outputSize += sizeof(AliL3DigitRowData);
-		blockOutputSize += sizeof(AliL3DigitRowData);
-		rowSize += sizeof(AliL3DigitRowData);
+		outputSize += sizeof(AliHLTTPCDigitRowData);
+		blockOutputSize += sizeof(AliHLTTPCDigitRowData);
+		rowSize += sizeof(AliHLTTPCDigitRowData);
 		}
-	    if ( size < outputSize+sizeof(AliL3DigitData) )
+	    if ( size < outputSize+sizeof(AliHLTTPCDigitData) )
 		{
-		Logging( kHLTLogFatal, "TPCRawDataUnpackerSubscriber::ProcessEvent", "Too much data", 
+		Logging( kHLTLogFatal, "HLT::TPCRawDataUnpackerSubscriber::DoEvent", "Too much data", 
 			 "Output data too big, output memory full. Aborting event 0x%08lX (%lu)" , 
 			 evtData.fEventID, evtData.fEventID );
 		return 0;
@@ -212,16 +225,16 @@ int AliHLTTPCRawDataUnpackerComponent::DoEvent( const AliHLTComponent_EventData&
 	    currentDigit->fTime = fTPCRawStream->GetTime();
 	    currentRow->fNDigit++;
 	    currentDigit++;
-	    outputSize += sizeof(AliL3DigitData);
-	    blockOutputSize += sizeof(AliL3DigitData);
-	    rowSize += sizeof(AliL3DigitData);
+	    outputSize += sizeof(AliHLTTPCDigitData);
+	    blockOutputSize += sizeof(AliHLTTPCDigitData);
+	    rowSize += sizeof(AliHLTTPCDigitData);
 	    readValue = fTPCRawStream->Next();
 	    }
-	if ( oldRow!=-1 && rowSize != sizeof(AliL3DigitRowData)+currentRow->fNDigit*sizeof(AliL3DigitData) )
+	if ( oldRow!=-1 && rowSize != sizeof(AliHLTTPCDigitRowData)+currentRow->fNDigit*sizeof(AliHLTTPCDigitData) )
 	    {
-	    Logging( kHLTLogFatal, "TPCRawDataUnpackerSubscriber::ProcessEvent", "Size inconsistency", 
+	    Logging( kHLTLogFatal, "HLT::TPCRawDataUnpackerSubscriber::DoEvent", "Size inconsistency", 
 		     "Size inconsistency for row %d data: %lu != %lu (%lu digits).", oldRow, rowSize, 
-		     sizeof(AliL3DigitRowData)+currentRow->fNDigit*sizeof(AliL3DigitData), currentRow->fNDigit );
+		     sizeof(AliHLTTPCDigitRowData)+currentRow->fNDigit*sizeof(AliHLTTPCDigitData), currentRow->fNDigit );
 	    }
 
 	AliHLTComponent_BlockData bd;
@@ -229,6 +242,9 @@ int AliHLTTPCRawDataUnpackerComponent::DoEvent( const AliHLTComponent_EventData&
 	bd.fOffset = outputSize-blockOutputSize;
 	bd.fSize = blockOutputSize;
 	bd.fSpecification = iter->fSpecification;
+	Logging( kHLTLogDebug, "HLT::TPCRawDataUnpackerSubscriber::DoEvent", "Event received", 
+		 "Event 0x%08LX (%Lu) output data block %lu of %lu bytes at offset %lu",
+		 evtData.fEventID, evtData.fEventID, ndx, blockOutputSize, outputSize-blockOutputSize );
 	//AliHLTSubEventDescriptor::FillBlockAttributes( bd.fAttributes );
 	outputBlocks.push_back( bd );
 	}

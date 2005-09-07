@@ -27,11 +27,11 @@ using namespace std;
 #endif
 
 #include "AliHLTTPCClusterFinderComponent.h"
-#include "AliL3ClustFinderNew.h"
-#include "AliL3SpacePointData.h"
+#include "AliHLTTPCClustFinderNew.h"
+#include "AliHLTTPCSpacePointData.h"
 #include "AliHLTTPCRawDataFormat.h"
 #include "AliHLTTPCClusterDataFormat.h"
-#include "AliL3Transform.h"
+#include "AliHLTTPCTransform.h"
 #include <stdlib.h>
 #include <errno.h>
 
@@ -87,14 +87,14 @@ int AliHLTTPCClusterFinderComponent::DoInit( int argc, const char** argv )
     {
     if ( fClusterFinder )
 	return EINPROGRESS;
-    fClusterFinder = new AliL3ClustFinderNew();
+    fClusterFinder = new AliHLTTPCClustFinderNew();
     fClusterDeconv = true;
     fXYClusterError = -1;
     fZClusterError = -1;
     int i = 0;
     while ( i < argc )
 	{
-	if ( !strcmp( argv[i], "-pp-run" ) )
+	if ( !strcmp( argv[i], "pp-run" ) )
 	    {
 	    fClusterDeconv = false;
 	    i++;
@@ -135,13 +135,19 @@ int AliHLTTPCClusterFinderComponent::DoEvent( const AliHLTComponent_EventData& e
 	iter = blocks+ndx;
 	mysize = 0;
 	offset = tSize;
+	char tmp1[14], tmp2[14];
+	DataType2Text( iter->fDataType, tmp1 );
+	DataType2Text( AliHLTTPCDefinitions::gkUnpackedRawDataType, tmp2 );
+	Logging( kHLTLogDebug, "HLT::TPCClusterFinder::DoEvent", "Event received", 
+		 "Event 0x%08LX (%Lu) received datatype: %s - required datatype: %s",
+		 evtData.fEventID, evtData.fEventID, tmp1, tmp2 );
 	if ( iter->fDataType != AliHLTTPCDefinitions::gkUnpackedRawDataType )
 	    continue;
 	
 	slice = AliHLTTPCDefinitions::GetMinSliceNr( *iter );
 	patch = AliHLTTPCDefinitions::GetMinPatchNr( *iter );
-	row[0] = AliL3Transform::GetFirstRow( patch );
-	row[1] = AliL3Transform::GetLastRow( patch );
+	row[0] = AliHLTTPCTransform::GetFirstRow( patch );
+	row[1] = AliHLTTPCTransform::GetLastRow( patch );
 	
 	Logging( kHLTLogDebug, "HLT::TPCClusterFinder::DoEvent", "Input Spacepoints", 
 		 "Input: Number of spacepoints: %lu Slice/Patch/RowMin/RowMax: %d/%d/%d/%d.",
@@ -150,7 +156,7 @@ int AliHLTTPCClusterFinderComponent::DoEvent( const AliHLTComponent_EventData& e
 	outPtr = (AliHLTTPCClusterData*)outBPtr;
 	
 	inPtr = (AliHLTTPCUnpackedRawData*)iter->fPtr;
-	maxPoints = (size-tSize-sizeof(AliHLTTPCClusterData))/sizeof(AliL3SpacePointData);
+	maxPoints = (size-tSize-sizeof(AliHLTTPCClusterData))/sizeof(AliHLTTPCSpacePointData);
 	
 	fClusterFinder->InitSlice( slice, patch, row[0], row[1], maxPoints );
 	fClusterFinder->SetDeconv( fClusterDeconv );
@@ -167,7 +173,7 @@ int AliHLTTPCClusterFinderComponent::DoEvent( const AliHLTComponent_EventData& e
 		 "Number of spacepoints found: %lu.", realPoints );
 	
 	outPtr->fSpacePointCnt = realPoints;
-	nSize = sizeof(AliL3SpacePointData)*realPoints;
+	nSize = sizeof(AliHLTTPCSpacePointData)*realPoints;
 	mysize += nSize+sizeof(AliHLTTPCClusterData);
 	
 	Logging( kHLTLogDebug, "HLT::TPCClusterFinder::DoEvent", "Input Spacepoints", 

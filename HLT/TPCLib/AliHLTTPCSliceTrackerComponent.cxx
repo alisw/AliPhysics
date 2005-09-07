@@ -27,16 +27,17 @@ using namespace std;
 #endif
 
 #include "AliHLTTPCSliceTrackerComponent.h"
-#include "AliL3Transform.h"
-#include "AliL3ConfMapper.h"
-#include "AliL3Vertex.h"
-#include "AliL3SpacePointData.h"
-#include "AliL3VertexData.h"
+#include "AliHLTTPCTransform.h"
+#include "AliHLTTPCConfMapper.h"
+#include "AliHLTTPCVertex.h"
+#include "AliHLTTPCSpacePointData.h"
+#include "AliHLTTPCVertexData.h"
 #include "AliHLTTPCClusterDataFormat.h"
-#include "AliL3Transform.h"
-#include "AliL3TrackSegmentData.h"
-#include "AliL3TrackArray.h"
+#include "AliHLTTPCTransform.h"
+#include "AliHLTTPCTrackSegmentData.h"
+#include "AliHLTTPCTrackArray.h"
 #include "AliHLTTPCTrackletDataFormat.h"
+#include "AliHLTTPC.h"
 #include <stdlib.h>
 #include <errno.h>
 
@@ -52,6 +53,9 @@ AliHLTTPCSliceTrackerComponent::AliHLTTPCSliceTrackerComponent()
     fEta[0] = 0.;
     fEta[1] = 1.1;
     fDoNonVertex = false;
+    fMultiplicity = 4000;
+    fBField = 0.4;
+    fDoPP = false;
     }
 
 AliHLTTPCSliceTrackerComponent::~AliHLTTPCSliceTrackerComponent()
@@ -113,6 +117,8 @@ void AliHLTTPCSliceTrackerComponent::SetTrackerParam(Int_t phi_segments, Int_t e
     else
 	fTracker->NonVertexSettings( trackletlength, tracklength, rowscopetracklet, rowscopetrack);
     //fTracker->SetParamDone(true);
+
+    //AliHLTTPC::SetVertexFit( kFALSE );
     
     fTracker->InitVolumes();
     }
@@ -243,6 +249,8 @@ void AliHLTTPCSliceTrackerComponent::SetTrackerParam( bool doPP, int multiplicit
 		    }
 		break;
 	    }
+	Logging( kHLTLogDebug, "HLT::TPCSliceTracker::DoInit", "BField", "Setting b field to %f\n", bfs[closestBf] );
+	AliHLTTPCTransform::SetBField( bfs[closestBf] );
 
 	}
     }
@@ -251,25 +259,31 @@ void AliHLTTPCSliceTrackerComponent::SetTrackerParam( bool doPP, int multiplicit
 	
 int AliHLTTPCSliceTrackerComponent::DoInit( int argc, const char** argv )
     {
+    Logging( kHLTLogDebug, "HLT::TPCSliceTracker::DoInit", "DoInit", "DoInit()" );
+    fprintf( stderr, "sizeof(AliHLTTPCTrackSegmentData): %d\n", sizeof(AliHLTTPCTrackSegmentData) );
+
     if ( fTracker || fVertex )
 	return EINPROGRESS;
-    fTracker = new AliL3ConfMapper();
-    fVertex = new AliL3Vertex();
+    fTracker = new AliHLTTPCConfMapper();
+    fVertex = new AliHLTTPCVertex();
     fEta[0] = 0.;
     fEta[1] = 1.1;
     fDoNonVertex = false;
+    fMultiplicity = 4000;
+    fBField = 0.4;
+    fDoPP = false;
 
     int i = 0;
     char* cpErr;
     while ( i < argc )
 	{
-	if ( !strcmp( argv[i], "-pp-run" ) )
+	if ( !strcmp( argv[i], "pp-run" ) )
 	    {
 	    fDoPP = true;
 	    i++;
 	    continue;
 	    }
-	if ( !strcmp( argv[i], "-multiplicity" ) )
+	if ( !strcmp( argv[i], "multiplicity" ) )
 	    {
 	    if ( argc <= i+1 )
 		{
@@ -285,7 +299,7 @@ int AliHLTTPCSliceTrackerComponent::DoInit( int argc, const char** argv )
 	    i += 2;
 	    continue;
 	    }
-	if ( !strcmp( argv[i], "-bfield" ) )
+	if ( !strcmp( argv[i], "bfield" ) )
 	    {
 	    if ( argc <= i+1 )
 		{
@@ -323,10 +337,11 @@ int AliHLTTPCSliceTrackerComponent::DoEvent( const AliHLTComponent_EventData& ev
 					      AliHLTComponent_TriggerData& trigData, AliHLTUInt8_t* outputPtr, 
 					      AliHLTUInt32_t& size, vector<AliHLTComponent_BlockData>& outputBlocks )
     {
+    Logging( kHLTLogDebug, "HLT::TPCSliceTracker::DoEvent", "DoEvent", "DoEvent()" );
     const AliHLTComponent_BlockData* iter = NULL;
     unsigned long ndx;
     AliHLTTPCClusterData* inPtrSP;
-    AliL3VertexData* inPtrV = NULL;
+    AliHLTTPCVertexData* inPtrV = NULL;
     const AliHLTComponent_BlockData* vertexIter=NULL;
     AliHLTTPCTrackletData* outPtr;
     AliHLTUInt8_t* outBPtr;
@@ -377,7 +392,7 @@ int AliHLTTPCSliceTrackerComponent::DoEvent( const AliHLTComponent_EventData& ev
 
 	if ( iter->fDataType == AliHLTTPCDefinitions::gkVertexDataType )
 	    {
-	    inPtrV = (AliL3VertexData*)(iter->fPtr);
+	    inPtrV = (AliHLTTPCVertexData*)(iter->fPtr);
 	    vertexIter = iter;
 	    vSize = iter->fSize;
 	    fVertex->Read( inPtrV );
@@ -389,12 +404,12 @@ int AliHLTTPCSliceTrackerComponent::DoEvent( const AliHLTComponent_EventData& ev
 	    if ( minPatch>patch )
 		{
 		minPatch = patch;
-		row[0] = AliL3Transform::GetFirstRow( patch );
+		row[0] = AliHLTTPCTransform::GetFirstRow( patch );
 		}
 	    if ( maxPatch<patch )
 		{
 		maxPatch = patch;
-		row[1] = AliL3Transform::GetLastRow( patch );
+		row[1] = AliHLTTPCTransform::GetLastRow( patch );
 		}
 	    }
 	}
@@ -436,7 +451,7 @@ int AliHLTTPCSliceTrackerComponent::DoEvent( const AliHLTComponent_EventData& ev
 	    iter = blocks+ndx;
 	    if ( iter->fDataType == AliHLTTPCDefinitions::gkVertexDataType && slice==AliHLTTPCDefinitions::GetMinSliceNr( *iter ) )
 		{
-		inPtrV = (AliL3VertexData*)(iter->fPtr);
+		inPtrV = (AliHLTTPCVertexData*)(iter->fPtr);
 		vertexIter = iter;
 		vSize = iter->fSize;
 		fVertex->Read( inPtrV );
@@ -449,6 +464,8 @@ int AliHLTTPCSliceTrackerComponent::DoEvent( const AliHLTComponent_EventData& ev
     fTracker->SetVertex(fVertex);
     mysize = 0;
     // read in all hits
+    std::vector<unsigned long> patchIndices;
+    std::vector<unsigned long>::iterator pIter, pEnd;
     for ( ndx = 0; ndx < evtData.fBlockCnt; ndx++ )
 	{
 	iter = blocks+ndx;
@@ -456,10 +473,27 @@ int AliHLTTPCSliceTrackerComponent::DoEvent( const AliHLTComponent_EventData& ev
 	if ( iter->fDataType == AliHLTTPCDefinitions::gkClustersDataType && slice==AliHLTTPCDefinitions::GetMinSliceNr( *iter ) )
 	    {
 	    patch = AliHLTTPCDefinitions::GetMinPatchNr( *iter );
-	    inPtrSP = (AliHLTTPCClusterData*)(iter->fPtr);
-	    
-	    fTracker->ReadHits( inPtrSP->fSpacePointCnt, inPtrSP->fSpacePoints );
+	    pIter = patchIndices.begin();
+	    pEnd = patchIndices.end();
+	    while ( pIter!=pEnd && AliHLTTPCDefinitions::GetMinSliceNr( blocks[*pIter] ) < patch )
+		pIter++;
+	    patchIndices.insert( pIter, ndx );
 	    }
+	}
+    pIter = patchIndices.begin();
+    pEnd = patchIndices.end();
+    while ( pIter!=pEnd )
+	{
+	ndx = *pIter;
+	iter = blocks+ndx;
+
+	patch = AliHLTTPCDefinitions::GetMinPatchNr( *iter );
+	inPtrSP = (AliHLTTPCClusterData*)(iter->fPtr);
+	    
+	Logging( kHLTLogDebug, "HLT::TPCSliceTracker::DoEvent", "Reading hits",
+		 "Reading hits for slice %d - patch %d", slice, patch );
+	fTracker->ReadHits( inPtrSP->fSpacePointCnt, inPtrSP->fSpacePoints );
+	pIter++;
 	}
 
     outPtr = (AliHLTTPCTrackletData*)(outBPtr);

@@ -27,11 +27,11 @@ using namespace std;
 #endif
 
 #include "AliHLTTPCVertexFinderComponent.h"
-#include "AliL3VertexFinder.h"
-#include "AliL3SpacePointData.h"
-#include "AliL3VertexData.h"
+#include "AliHLTTPCVertexFinder.h"
+#include "AliHLTTPCSpacePointData.h"
+#include "AliHLTTPCVertexData.h"
 #include "AliHLTTPCClusterDataFormat.h"
-#include "AliL3Transform.h"
+#include "AliHLTTPCTransform.h"
 #include <stdlib.h>
 #include <errno.h>
 
@@ -71,7 +71,7 @@ AliHLTComponent_DataType AliHLTTPCVertexFinderComponent::GetOutputDataType()
 void AliHLTTPCVertexFinderComponent::GetOutputDataSize( unsigned long& constBase, double& inputMultiplier )
     {
     // XXX TODO: Find more realistic values.
-    constBase = sizeof(AliL3VertexData);
+    constBase = sizeof(AliHLTTPCVertexData);
     inputMultiplier = 0;
     }
 
@@ -84,7 +84,7 @@ int AliHLTTPCVertexFinderComponent::DoInit( int argc, const char** argv )
     {
     if ( fVertexFinder )
 	return EINPROGRESS;
-    fVertexFinder = new AliL3VertexFinder();
+    fVertexFinder = new AliHLTTPCVertexFinder();
     return 0;
     }
 
@@ -106,7 +106,7 @@ int AliHLTTPCVertexFinderComponent::DoEvent( const AliHLTComponent_EventData& ev
     unsigned long ndx;
 
     AliHLTTPCClusterData* inPtr;
-    AliL3VertexData* outPtr;
+    AliHLTTPCVertexData* outPtr;
     AliHLTUInt8_t* outBPtr;
     UInt_t offset, mysize, tSize = 0;
     outBPtr = outputPtr;
@@ -126,14 +126,14 @@ int AliHLTTPCVertexFinderComponent::DoEvent( const AliHLTComponent_EventData& ev
 	inPtr = (AliHLTTPCClusterData*)(iter->fPtr);
 	slice = AliHLTTPCDefinitions::GetMinSliceNr( *iter );
 	patch = AliHLTTPCDefinitions::GetMinPatchNr( *iter );
-	row[0] = AliL3Transform::GetFirstRow( patch );
-	row[1] = AliL3Transform::GetLastRow( patch );
+	row[0] = AliHLTTPCTransform::GetFirstRow( patch );
+	row[1] = AliHLTTPCTransform::GetLastRow( patch );
 	realPoints = inPtr->fSpacePointCnt;
 
 	Logging( kHLTLogDebug, "HLT::TPCVertexFinder::DoEvent", "Spacepoint count",
 		 "realpoints: %lu.", realPoints );
 	
-	outPtr = (AliL3VertexData*)outBPtr;
+	outPtr = (AliHLTTPCVertexData*)outBPtr;
 
 	fVertexFinder->Reset();
 	
@@ -144,7 +144,7 @@ int AliHLTTPCVertexFinderComponent::DoEvent( const AliHLTComponent_EventData& ev
         fVertexFinder->Write( outPtr );
 
 
-	mysize += sizeof(AliL3VertexData);
+	mysize += sizeof(AliHLTTPCVertexData);
 	
 	AliHLTComponent_BlockData bd;
 	FillBlockData( bd );

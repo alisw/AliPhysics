@@ -10,7 +10,7 @@
 struct AliHLTTPCClusterData
     {
 	AliHLTUInt32_t fSpacePointCnt;
-	AliL3SpacePointData fSpacePoints[];
+	AliHLTTPCSpacePointData fSpacePoints[];
     };
 
 #endif // _ALIHLTTPCCLUSTERFORMAT_H_

@@ -12,8 +12,8 @@
 #include "AliHLTProcessor.h"
 #include "AliHLTTPCDefinitions.h"
 
-class AliL3ConfMapper;
-class AliL3Vertex;
+class AliHLTTPCConfMapper;
+class AliHLTTPCVertex;
 
 class AliHLTTPCSliceTrackerComponent : public AliHLTProcessor
     {
@@ -61,8 +61,8 @@ class AliHLTTPCSliceTrackerComponent : public AliHLTProcessor
 	
     private:
 
-	AliL3ConfMapper* fTracker;
-	AliL3Vertex* fVertex;
+	AliHLTTPCConfMapper* fTracker;
+	AliHLTTPCVertex* fVertex;
 	float fEta[2];
 	bool fDoNonVertex;
 	bool fDoPP;

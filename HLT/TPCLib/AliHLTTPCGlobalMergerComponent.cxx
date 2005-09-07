@@ -27,14 +27,14 @@ using namespace std;
 #endif
 
 #include "AliHLTTPCGlobalMergerComponent.h"
-#include "AliL3Transform.h"
-#include "AliL3GlobalMerger.h"
-#include "AliL3Vertex.h"
-#include "AliL3VertexData.h"
-#include "AliL3TrackSegmentData.h"
-#include "AliL3TrackArray.h"
+#include "AliHLTTPCTransform.h"
+#include "AliHLTTPCGlobalMerger.h"
+#include "AliHLTTPCVertex.h"
+#include "AliHLTTPCVertexData.h"
+#include "AliHLTTPCTrackSegmentData.h"
+#include "AliHLTTPCTrackArray.h"
 #include "AliHLTTPCTrackletDataFormat.h"
-#include "AliL3SpacePointData.h"
+#include "AliHLTTPCSpacePointData.h"
 #include "AliHLTTPCClusterDataFormat.h"
 #include <stdlib.h>
 #include <errno.h>
@@ -95,8 +95,8 @@ int AliHLTTPCGlobalMergerComponent::DoInit( int argc, const char** argv )
     {
     if ( fGlobalMerger || fVertex )
 	return EINPROGRESS;
-    fGlobalMerger = new AliL3GlobalMerger();
-    fVertex = new AliL3Vertex();
+    fGlobalMerger = new AliHLTTPCGlobalMerger();
+    fVertex = new AliHLTTPCVertex();
     SetMergerParameters();
     return 0;
     }
@@ -201,7 +201,7 @@ int AliHLTTPCGlobalMergerComponent::DoEvent( const AliHLTComponent_EventData& ev
 	fVertex->SetZero();
 	}
     else
-	fVertex->Read( (AliL3VertexData*)( lastVertexBlock->fPtr ) );
+	fVertex->Read( (AliHLTTPCVertexData*)( lastVertexBlock->fPtr ) );
 
     // Add all tracks into the merger
     sdIter = slices.begin();
@@ -210,7 +210,7 @@ int AliHLTTPCGlobalMergerComponent::DoEvent( const AliHLTComponent_EventData& ev
 	{
 	if ( sdIter->fVertexBlock )
 	    {
-	    fVertex->Read( (AliL3VertexData*)( sdIter->fVertexBlock->fPtr ) );
+	    fVertex->Read( (AliHLTTPCVertexData*)( sdIter->fVertexBlock->fPtr ) );
 	    fGlobalMerger->SetVertex( fVertex );
 	    }
 	inPtr = (AliHLTTPCTrackletData*)( sdIter->fTrackletBlock->fPtr );

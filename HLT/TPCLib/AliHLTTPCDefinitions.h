@@ -20,17 +20,33 @@ class AliHLTTPCDefinitions
 		{
 		return (AliHLTUInt8_t)( (block.fSpecification & 0x00FF0000) >> 16 );
 		}
+	static AliHLTUInt8_t GetMinSliceNr( ULong_t spec )
+		{
+		return (AliHLTUInt8_t)( (spec & 0x00FF0000) >> 16 );
+		}
 	static AliHLTUInt8_t GetMaxSliceNr( const AliHLTComponent_BlockData& block )
 		{
 		return (AliHLTUInt8_t)( (block.fSpecification & 0xFF000000) >> 24 );
+		}
+	static AliHLTUInt8_t GetMaxSliceNr( ULong_t spec )
+		{
+		return (AliHLTUInt8_t)( (spec & 0xFF000000) >> 24 );
 		}
 	static AliHLTUInt8_t GetMinPatchNr( const AliHLTComponent_BlockData& block )
 		{
 		return (AliHLTUInt8_t)( (block.fSpecification & 0x000000FF) );
 		}
+	static AliHLTUInt8_t GetMinPatchNr( ULong_t spec )
+		{
+		return (AliHLTUInt8_t)( (spec & 0x000000FF) );
+		}
 	static AliHLTUInt8_t GetMaxPatchNr( const AliHLTComponent_BlockData& block )
 		{
 		return (AliHLTUInt8_t)( (block.fSpecification & 0x0000FF00) >> 8 );
+		}
+	static AliHLTUInt8_t GetMaxPatchNr( ULong_t spec )
+		{
+		return (AliHLTUInt8_t)( (spec & 0x0000FF00) >> 8 );
 		}
 	
 	static AliHLTUInt32_t EncodeDataSpecification( AliHLTUInt8_t minSliceNr, 
