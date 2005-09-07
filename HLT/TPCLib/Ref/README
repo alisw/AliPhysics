@@ -1,0 +1,8 @@
+This directory contains HLT TPC analysis code components based on
+a version of the code from Anders Vestbo before the HLT code was
+checked in to AliRoot. The reason the code exists is because the
+tracker from this module finds significantly (approx. factor of 
+two) more tracks than the one from the module one directory up.
+This code is not intended to be developed any further, but exists
+just as a reference for the new version.
+
