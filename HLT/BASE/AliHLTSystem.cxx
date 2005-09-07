@@ -80,11 +80,11 @@ int AliHLTSystem::AddConfiguration(AliHLTConfiguration* pConf)
   return iResult;
 }
 
-// int AliHLTSystem::InsertConfiguration(AliHLTConfiguration* pConf, AliHLTConfiguration* pPrec)
-// {
-//   int iResult=0;
-//   return iResult;
-// }
+int AliHLTSystem::InsertConfiguration(AliHLTConfiguration* pConf, AliHLTConfiguration* pPrec)
+{
+  int iResult=0;
+  return iResult;
+}
 
 int AliHLTSystem::DeleteConfiguration(AliHLTConfiguration* pConf)
 {
@@ -221,4 +221,12 @@ void AliHLTSystem::PrintTaskList()
     }
     lnk = lnk->Next();
   }
+}
+
+int AliHLTSystem::Run() 
+{
+  int iResult=0;
+  HLTError("function not yet implemented");
+  iResult=-ENOSYS;
+  return iResult;
 }

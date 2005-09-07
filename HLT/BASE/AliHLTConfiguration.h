@@ -56,7 +56,7 @@ class AliHLTConfiguration : public TObject, public AliHLTLogging {
   const char *GetName() const;
 
   // id of the component
-  const char* GetComponentID();
+  const char* GetComponentID() {return fComponent;}
 
   // print status info
   void PrintStatus();
@@ -247,7 +247,7 @@ class AliHLTTask : public TObject, public AliHLTLogging {
 class AliHLTConfigurationHandler : public AliHLTLogging {
  public:
   AliHLTConfigurationHandler();
-  AliHLTConfigurationHandler(AliHLTConfiguration* pConf);
+  //AliHLTConfigurationHandler(AliHLTConfiguration* pConf);
   virtual ~AliHLTConfigurationHandler();
 
   /****************************************************************************************************
