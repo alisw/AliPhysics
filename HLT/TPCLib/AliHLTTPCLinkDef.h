@@ -102,7 +102,7 @@
 #pragma link C++ class AliHLTTPCVertexFinderComponent;
 #pragma link C++ class AliHLTTPCSliceTrackerComponent;
 #pragma link C++ class AliHLTTPCGlobalMergerComponent;
-#pragma link C++ class AliRawReaderMemory;
+/* #pragma link C++ class AliRawReaderMemory; */
 
 #endif
 
