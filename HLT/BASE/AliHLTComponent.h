@@ -90,11 +90,12 @@ class AliHLTComponent : public AliHLTLogging {
   }
 
   int MakeOutputDataBlockList( const vector<AliHLTComponent_BlockData>& blocks, AliHLTUInt32_t* blockCount,
-			       AliHLTComponent_BlockData** outputBlocks ) {
-    if (fEnvironment.fMakeOutputDataBlockListFunc)
-      return (*fEnvironment.fMakeOutputDataBlockListFunc)(fEnvironment.fParam, blocks, blockCount, outputBlocks );
-    return -ENOSYS;
-  }
+			       AliHLTComponent_BlockData** outputBlocks );
+/*  { */
+/*     if (fEnvironment.fMakeOutputDataBlockListFunc) */
+/*       return (*fEnvironment.fMakeOutputDataBlockListFunc)(fEnvironment.fParam, blocks, blockCount, outputBlocks ); */
+/*     return -ENOSYS; */
+/*   } */
 
   int GetEventDoneData( unsigned long size, AliHLTComponent_EventDoneData** edd ) {
     if (fEnvironment.fGetEventDoneDataFunc)
@@ -102,6 +103,8 @@ class AliHLTComponent : public AliHLTLogging {
     return -ENOSYS;
   }
 
+
+  void DataType2Text( const AliHLTComponent_DataType& type, char output[14] );
 
  private:
   static AliHLTComponentHandler* fpComponentHandler;

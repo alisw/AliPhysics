@@ -64,3 +64,31 @@ int AliHLTComponent::Deinit()
   iResult=DoDeinit();
   return iResult;
 }
+
+void AliHLTComponent::DataType2Text( const AliHLTComponent_DataType& type, char output[14] ) {
+memset( output, 0, 14 );
+strncat( output, type.fOrigin, 4 );
+strcat( output, ":" );
+strncat( output, type.fID, 8 );
+}
+
+int AliHLTComponent::MakeOutputDataBlockList( const vector<AliHLTComponent_BlockData>& blocks, AliHLTUInt32_t* blockCount,
+					      AliHLTComponent_BlockData** outputBlocks ) {
+    if ( !blockCount || !outputBlocks )
+	return EFAULT;
+    AliHLTUInt32_t count = blocks.size();
+    if ( !count )
+	{
+	*blockCount = 0;
+	*outputBlocks = NULL;
+	return 0;
+	}
+    *outputBlocks = reinterpret_cast<AliHLTComponent_BlockData*>( AllocMemory( sizeof(AliHLTComponent_BlockData)*count ) );
+    if ( !*outputBlocks )
+	return ENOMEM;
+    for ( unsigned long i = 0; i < count; i++ )
+	(*outputBlocks)[i] = blocks[i];
+    *blockCount = count;
+    return 0;
+
+}

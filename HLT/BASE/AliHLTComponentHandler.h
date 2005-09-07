@@ -88,6 +88,7 @@ class AliHLTComponentHandler : public AliHLTLogging {
   AliHLTComponentEnvironment fEnvironment;
 
   ClassDef(AliHLTComponentHandler, 0)
+
     };
 #endif
 

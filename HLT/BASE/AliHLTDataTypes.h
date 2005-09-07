@@ -5,8 +5,8 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-#include <vector>
-using namespace std;
+/* #include <vector> */
+/* using namespace std; */
 
 extern "C" {
 
@@ -82,7 +82,7 @@ extern "C" {
 #if 0
     int (*fAllocShmMemoryFunc)( void* param, unsigned long size, AliHLTComponent_BlockData* blockLocation ); // future addition already foreseen/envisioned
 #endif
-    int (*fMakeOutputDataBlockListFunc)( void* param, const vector<AliHLTComponent_BlockData>& blocks, AliHLTUInt32_t* blockCount, AliHLTComponent_BlockData** outputBlocks );
+/*     int (*fMakeOutputDataBlockListFunc)( void* param, const vector<AliHLTComponent_BlockData>& blocks, AliHLTUInt32_t* blockCount, AliHLTComponent_BlockData** outputBlocks ); */
     int (*fGetEventDoneDataFunc)( void* param, AliHLTEventID_t eventID, unsigned long size, AliHLTComponent_EventDoneData** edd );
     AliHLTfctLogging fLoggingFunc;
   };
