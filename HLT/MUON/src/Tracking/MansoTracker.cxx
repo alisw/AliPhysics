@@ -50,7 +50,7 @@ std::ostream& operator << (std::ostream& os, MansoTracker::StatesSM5 state)
 	return os;
 };
 
-}; // end of namespace
+} // end of namespace
 #endif // DEBUG
 
 
@@ -73,10 +73,10 @@ Float MansoTracker::a9  = 0.020f;
 Float MansoTracker::b9  = 3.0f;
 Float MansoTracker::a10 = 0.020f;
 Float MansoTracker::b10 = 3.0f;
-Float MansoTracker::z7  = 1251.5f;
-Float MansoTracker::z8  = 1278.5f;
-Float MansoTracker::z9  = 1416.5f;
-Float MansoTracker::z10 = 1443.5f;
+Float MansoTracker::z7  = 1274.5f;
+Float MansoTracker::z8  = 1305.5f;
+Float MansoTracker::z9  = 1408.6f;
+Float MansoTracker::z10 = 1439.6f;
 Float MansoTracker::z11 = 1603.5f;
 Float MansoTracker::z13 = 1703.5f;
 
@@ -256,10 +256,10 @@ void MansoTracker::EndOfClusters(void* tag)
 
 void MansoTracker::FillTrackData(Track& track)
 {
-	DebugMsg(4, "FillTrack: st5 = " << st5rec->clusterpoint << ", st4 = " << *foundpoint);
+	DebugMsg(4, "FillTrack: st5 = " << st5rec->clusterpoint << ", st4 = " << foundpoint->clusterpoint);
 	
-	Float x1 = foundpoint->x;
-	Float y1 = foundpoint->y;
+	Float x1 = foundpoint->clusterpoint.x;
+	Float y1 = foundpoint->clusterpoint.y;
 	Float y2 = st5rec->clusterpoint.y;
 	Float momentum;
 	Float pt = CalculateSignedPt(x1, y1, y2, st4z, st5z, momentum);
@@ -297,12 +297,12 @@ void MansoTracker::FillTrackData(Track& track)
 	{
 		track.point[6] = Point(0.0, 0.0);
 		track.region[6] = INVALID_ROI;
-		track.point[7] = *foundpoint;
+		track.point[7] = foundpoint->clusterpoint;
 		track.region[7] = region4;
 	}
 	else
 	{
-		track.point[6] = *foundpoint;
+		track.point[6] = foundpoint->clusterpoint;
 		track.region[6] = region4;
 		track.point[7] = Point(0.0, 0.0);
 		track.region[7] = INVALID_ROI;
@@ -338,7 +338,7 @@ void MansoTracker::Reset()
 // Note: In the following ReceiveClustersXXX and EndOfClustersXXX methods we make
 // the state machine transitions before calls to RequestClusters, FoundTrack, 
 // NoTrackFound or EndOfClusterRequests. This is important since the callback
-// object will make recursive calls the trackers methods so we need to maintain
+// object will make recursive calls to the tracker's methods so we need to maintain
 // a consistant internal state.
 // The same would go for updating internal variables.
 // In general one should only call the callback methods at the end of any of the
@@ -359,7 +359,9 @@ void MansoTracker::ReceiveClustersChamber7(const ClusterPoint* clusters, UInt co
 			if ( data->roi.Contains(cluster) )
 			{
 				DebugMsg(4, "Adding cluster [" << cluster.x << ", " << cluster.y << "] from chamber 7.");
-				st4points.Add(cluster);
+				Station4Data* newdata = st4points.New();
+				newdata->clusterpoint = cluster;
+				newdata->st5tag = data;
 			};
 		};
 		break;
@@ -387,7 +389,9 @@ void MansoTracker::ReceiveClustersChamber8(const ClusterPoint* clusters, UInt co
 			if ( data->roi.Contains(cluster) )
 			{
 				DebugMsg(4, "Adding cluster [" << cluster.x << ", " << cluster.y << "] from chamber 8.");
-				st4points.Add(cluster);
+				Station4Data* newdata = st4points.New();
+				newdata->clusterpoint = cluster;
+				newdata->st5tag = data;
 			};
 		};
 		break;
@@ -674,7 +678,10 @@ void MansoTracker::ProcessClusters()
 			);
 
 			for (foundpoint = st4points.First(); foundpoint != st4points.End(); foundpoint++)
-				FoundTrack();
+			{
+				if (foundpoint->st5tag == &st5rec->tag)
+					FoundTrack();
+			}
 
 			st5rec++;  // Get next station 5 cluster point.
 		} while (st5rec != st5data.End() and st5rec->tag.chamber == st4chamber);

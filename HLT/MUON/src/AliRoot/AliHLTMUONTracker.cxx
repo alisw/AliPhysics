@@ -57,8 +57,7 @@ Int_t AliHLTMUONTracker::LoadClusters(TTree* data)
 	AliDebug(2, Form("Loading for event %d", di.CurrentEvent()));
 
 	// Load the trigger records.
-	// TODO: Using MUON hits for now while the MUON digitiser is broken.
-	fTriggers->DataToUse(AliMUONHLT::TriggerSource::FromHits);
+	fTriggers->DataToUse(AliMUONHLT::TriggerSource::FromLocalTriggers);
 	fTriggers->FillFrom(&di, di.CurrentEvent());
 
 #ifndef LOG_NO_DEBUG
@@ -87,8 +86,7 @@ Int_t AliHLTMUONTracker::LoadClusters(TTree* data)
 #endif // LOG_NO_DEBUG
 
 	// Load cluster points (reconstructed hits)
-	// TODO: Using MUON hits for now while the MUON digitiser is broken.
-	fClusters->DataToUse(AliMUONHLT::ClusterSource::FromHits);
+	fClusters->DataToUse(AliMUONHLT::ClusterSource::FromRawClusters);
 	fClusters->FillFrom(&di, di.CurrentEvent());
 
 #ifndef LOG_NO_DEBUG

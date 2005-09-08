@@ -42,40 +42,39 @@ public:
 	/* Get and set methods for the a and b parameters used to build the region
 	   of interests. Refer to MansoFilter() for details about a and b parameters.
 	 */
-	static Float GetA7()                  { return a7; };
+	static Float GetA7()            { return a7; };
 	static void SetA7(Float value)  { a7 = value; };
-	static Float GetA8()                  { return a8; };
+	static Float GetA8()            { return a8; };
 	static void SetA8(Float value)  { a8 = value; };
-	static Float GetA9()                  { return a9; };
+	static Float GetA9()            { return a9; };
 	static void SetA9(Float value)  { a9 = value; };
-	static Float GetA10()                 { return a10; };
+	static Float GetA10()           { return a10; };
 	static void SetA10(Float value) { a10 = value; };
 
-	static Float GetB7()                  { return b7; };
+	static Float GetB7()            { return b7; };
 	static void SetB7(Float value)  { b7 = value; };
-	static Float GetB8()                  { return b8; };
+	static Float GetB8()            { return b8; };
 	static void SetB8(Float value)  { b8 = value; };
-	static Float GetB9()                  { return b9; };
+	static Float GetB9()            { return b9; };
 	static void SetB9(Float value)  { b9 = value; };
-	static Float GetB10()                 { return b10; };
+	static Float GetB10()           { return b10; };
 	static void SetB10(Float value) { b10 = value; };
 	
-	static Float GetZ7()                  { return z7; };
+	static Float GetZ7()            { return z7; };
 	static void SetZ7(Float value)  { z7 = value; };
-	static Float GetZ8()                  { return z8; };
+	static Float GetZ8()            { return z8; };
 	static void SetZ8(Float value)  { z8 = value; };
-	static Float GetZ9()                  { return z9; };
+	static Float GetZ9()            { return z9; };
 	static void SetZ9(Float value)  { z9 = value; };
-	static Float GetZ10()                 { return z10; };
+	static Float GetZ10()           { return z10; };
 	static void SetZ10(Float value) { z10 = value; };
-	static Float GetZ11()                 { return z11; };
+	static Float GetZ11()           { return z11; };
 	static void SetZ11(Float value) { z11 = value; };
-	static Float GetZ13()                 { return z13; };
+	static Float GetZ13()           { return z13; };
 	static void SetZ13(Float value) { z13 = value; };
 
 
-  //protected:
-
+//protected:
 
 	class RegionOfInterest
 	{
@@ -174,7 +173,14 @@ public:
 	};
 	
 	typedef Buffers::CountedList<Station5Data> Station5List;
-	typedef Buffers::List<ClusterPoint> Station4List;
+
+	struct Station4Data
+	{
+		ClusterPoint clusterpoint;  // Cluster point found on station 4.
+		const TagData* st5tag;      // Corresponding station 5 tag.
+	};
+
+	typedef Buffers::List<Station4Data> Station4List;
 	
 	
 	void ReceiveClustersChamber7(const ClusterPoint* clusters, UInt count, const TagData* data);
@@ -247,3 +253,4 @@ private:
 } // dHLT
 
 #endif // dHLT_TRACKING_MANSO_TRACKER_HPP
+
