@@ -74,7 +74,7 @@ public:
 	static void SetZ13(Float value) { z13 = value; };
 
 
-//protected:
+protected:
 
 	class RegionOfInterest
 	{
@@ -195,9 +195,9 @@ public:
 	void ProjectToStation4(Station5Data* data, register Float station5z);
 	void ProcessClusters();
 
-DebugCode(
+#if defined(DEBUG) || (defined(USE_ALILOG) && ! defined(LOG_NO_DEBUG))
 public:
-)
+#endif
 	// States for state machine 4 (SM4).
 	enum StatesSM4
 	{
