@@ -33,10 +33,10 @@ public:
 		return fClusterFinder;
 	};
 	
-	void FindClusters(const ADCStream* stream);
-	UInt_t FillClusterData(Point* clusters, UInt_t arraysize);
-	void Reset();
-	void SetCallback(ClusterFinderCallback* callback);
+        void FindClusters(const ADCStream* stream);
+ 	UInt_t FillClusterData(Point* clusters, UInt_t arraysize);
+ 	void Reset();
+        void SetCallback(ClusterFinderCallback* callback);
 
 private:
 

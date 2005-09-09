@@ -1,5 +1,7 @@
 #-*- Mode: Makefile -*-
 
+include HLT/hlt.conf
+
 SRCS += MUON/src/AliRoot/Region.cxx \
 MUON/src/AliRoot/Point.cxx \
 MUON/src/AliRoot/TriggerRecord.cxx \
@@ -16,7 +18,9 @@ MUON/src/AliRoot/MicrodHLT.cxx
 HDRS:= $(SRCS:.cxx=.hpp) \
 MUON/src/AliRoot/TrackerInterface.hpp \
 MUON/src/AliRoot/ClusterFinderInterface.hpp \
-MUON/src/AliRoot/AliHLTMUONTracker.h
+MUON/src/AliRoot/AliHLTMUONTracker.h \
+MUON/src/AliRoot/Tracker.hpp \
+MUON/src/AliRoot/ClusterFinder.hpp \
 
 SRCS += MUON/src/Utils.cxx \
 MUON/src/Error.cxx \
@@ -39,6 +43,6 @@ PACKCXXFLAGS := ${HLTCXXFLAGS}
 PACKCFLAGS   := ${HLTCLFAGS}
 PACKDCXXFLAGS:= ${HLTDCXXFLAGS}
 
-EINCLUDE += HLT/MUON/src
+EINCLUDE += HLT/src HLT/hough HLT/comp HLT/misc HLT/ITS HLT/MUON/src TPC ITS MUON STEER RAW
 
 SUBDIR:=MUON/src

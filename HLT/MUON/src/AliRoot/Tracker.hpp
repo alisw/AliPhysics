@@ -50,7 +50,7 @@ public:
 	/* Returns the TrackerInterface object to this tracker.
 	   This is required by the MicrodHLT object.
 	 */
-	TrackerInterface* Interface() const
+	TrackerInterface* Interface()
 	{
 		return &fInterface;
 	};
