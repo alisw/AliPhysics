@@ -47,6 +47,9 @@ extern "C" {
 //*          Ihypmx = maximum number of hyperons in a hypernucleus       *
 //*          Mkbmx1 = dimension for KWB real spare array in Fluka Stack  *
 //*          Mkbmx2 = dimension for KWB int. spare array in Fluka Stack  *
+//*          Mxirrd = maximum number of irradiation sub-intervals        *
+//*          Mxtrdc = maximum number of decay (cooling) times            *
+//*          Nktl   = overall dimension parameter for EMF bremsstrahlung *
 //*                                                                      *
 //*----------------------------------------------------------------------*   
 
@@ -67,8 +70,8 @@ const Int_t mxhttr = 260;
 const Int_t icomax = 1000;
 const Int_t ichmax = icomax+mxxmdf;
 const Int_t nstbis = 304;
-    const Int_t nqstis = 46;
-    const Int_t ntstis = nstbis + nqstis;
+const Int_t nqstis = 46;
+const Int_t ntstis = nstbis + nqstis;
     
 //* till 3-aug-99:
 //*     const Int_t mxpabl =  110;
@@ -82,9 +85,9 @@ const Int_t ihypmx = 4;
 //*     const Int_t mkbmx2 =    3;
 const Int_t mkbmx1 = 11;
 const Int_t mkbmx2 = 11;
-    const Int_t mxirrd = 20;
-    const Int_t mxtrdc = 50;
-    const Int_t nktl   = 17;
+const Int_t mxirrd = 20;
+const Int_t mxtrdc = 50;
+const Int_t nktl   = 17;
 }
 
 #endif

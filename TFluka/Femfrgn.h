@@ -13,6 +13,11 @@ extern "C" {
   //*                                                                      *
   //*----------------------------------------------------------------------*
   //*
+  //    COMMON / EMFRGN / ELETHR (MXXRGN), PHOTHR (MXXRGN),
+  //   &                  EMREJE, EMSAMP, EMSNGL,
+  //   &                  MEDEMF (MXXRGN), IRAYLR (MXXRGN), NRGEMF,
+  //   &                  NOSCAT, NOLLDA
+  // OLD EFMRGN:
   //    COMMON / EFMRGN / RHOR   (MXXRGN), ECUT   (MXXRGN), PCUT (MXXRGN),
   //   &                  EMREJE, EMSAMP, EMSNGL, VACDST,
   //   &                  MEDEMF (MXXRGN), IRAYLR (MXXRGN), NRGEMF,

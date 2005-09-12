@@ -181,6 +181,7 @@ const Double_t oneeig = oneone/eigeig;
 const Double_t twothi = twotwo/thrthr;
 const Double_t thrfou = thrthr/foufou;
 const Double_t thrtwo = thrthr/twotwo;
+const Double_t fouthr = foufou/thrthr;    
 const Double_t pipipi = 3.141592653589793238462643383279e+00;
 const Double_t twopip = 6.283185307179586476925286766559e+00;
 const Double_t pip5o2 = 7.853981633974483096156608458199e+00;
@@ -202,6 +203,7 @@ const Double_t sqrsix = 2.449489742783178098197284074706e+00;
 const Double_t sqrsev = 2.645751311064590590501615753639e+00;
 const Double_t sqrt12 = 3.464101615137754587054892683012e+00;
 const Double_t s2fwhm = 2.354820045030949e+00;
+const Double_t twolog = 0.693147180559945309417232121458e+00;
 //*
 //*======================================================================*
 //*======================================================================*

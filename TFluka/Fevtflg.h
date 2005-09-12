@@ -33,7 +33,7 @@ typedef struct {
    Int_t    llensc;
    Int_t    loppsc;
    Int_t    leldis;
-    Int_t    lrdcay;
+   Int_t    lrdcay;
    Int_t    ntrcks;
 } evtflgCommon;
 #define EVTFLG COMMON_BLOCK(EVTFLG,evtflg)

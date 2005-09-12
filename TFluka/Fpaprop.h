@@ -34,7 +34,7 @@ extern "C" {
   //*        iscore(j) = id for the j_th scored distribution               *
   //*        genpar(k) = name of the k_th generalized particle type        *
   //*        ijdisc(i) = flag for discarding the i_th particle type        *
-  //*        thalf (i) = mean (not half!) life of the i_th particle (s)    *
+  //*        tmnlf (i) = mean (not half!) life of the i_th particle (s)    *
   //*        biasdc(i) = decay biasing factor for the i_th particle        *
   //*        biasin(i) = inelastic interaction biasing factor for the i_th *
   //*                    particle                                          *

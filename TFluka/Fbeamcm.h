@@ -72,6 +72,7 @@ extern "C" {
 //*        Lvlcar = logical flag for using a cartesian   volume source   *
 //*        Lvlcyl = logical flag for using a cylindrical volume source   *
 //*        Lvlsph = logical flag for using a spherical   volume source   *
+//*        Lsourc = logical flag for a user written source routine       *    
 //*                                                                      *
 //*----------------------------------------------------------------------*
 
@@ -116,8 +117,7 @@ typedef struct {
    Int_t    lvlcar;
    Int_t    lvlcyl;
    Int_t    lvlsph;
-    Int_t   lsourc;
-    
+   Int_t    lsourc;
 } beamcmCommon;
 #define BEAMCM COMMON_BLOCK(BEAMCM,beamcm)
 COMMON_BLOCK_DEF(beamcmCommon,BEAMCM);

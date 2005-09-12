@@ -74,7 +74,7 @@ typedef struct {
    Double_t tvrecl;
    Double_t tvheav;
    Double_t tvbind;
-    Int_t    kpart[mxp];
+   Int_t    kpart[mxp];
    Int_t    np0;
    Int_t    np;
 } genstkCommon;

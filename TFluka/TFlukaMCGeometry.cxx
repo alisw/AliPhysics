@@ -1450,7 +1450,6 @@ void g1wr(Double_t &pSx, Double_t &pSy, Double_t &pSz,
    snext += extra;
    saf = gGeoManager->GetSafeDistance();
    saf -= extra;
-   if (saf>snext) printf("ERROR: saf=%f .GT. snext=%f\n", saf,snext); 
    if (saf<0) saf=0.0;
    else       saf -= saf*3.0e-09;
 //   saf *= 0.3;
