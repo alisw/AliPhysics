@@ -19,6 +19,8 @@
 
 #include "AliRun.h"
 #include "AliTrackReference.h"
+#include "AliExternalTrackParam.h"
+#include "AliKalmanTrack.h"
 
 // 
 // Track Reference object is created every time particle is 
@@ -108,3 +110,39 @@ AliTrackReference::AliTrackReference(Int_t label) :
   SetBit(BIT(7), gMC->IsTrackStop()); 
 }
 //_______________________________________________________________________
+AliExternalTrackParam * AliTrackReference::MakeTrack(const AliTrackReference *ref, Double_t mass)
+{
+  //
+  // Make dummy track from the track reference 
+  // negative mass means opposite charge 
+  //
+  Double_t xx[5];
+  Double_t cc[15];
+  for (Int_t i=0;i<15;i++) cc[i]=0;
+  Double_t x = ref->X(), y = ref->Y(), z = ref->Z();
+  Double_t alpha = TMath::ATan2(y,x);
+  Double_t xr = TMath::Sqrt(x*x+y*y);
+  xx[0] = 0;
+  xx[1] = z;
+  xx[3] = ref->Pz()/ref->Pt();
+  Float_t b[3];
+  Float_t xyz[3]={x,y,z};
+  Float_t convConst = 0;
+  (AliKalmanTrack::GetFieldMap())->Field(xyz,b);
+  convConst=1000/0.299792458/(1e-13 - b[2]);
+  xx[4] = 1./(convConst*ref->Pt()); // curvature rpresentation
+  if (mass<0) xx[4]*=-1.;  // negative mass - negative direction
+  Double_t alphap = TMath::ATan2(ref->Py(),ref->Px())-alpha;
+  if (alphap> TMath::Pi()) alphap-=TMath::Pi();
+  if (alphap<-TMath::Pi()) alphap+=TMath::Pi();
+  xx[2] = TMath::Sin(alphap);
+  xx[4]*=convConst;   // 1/pt representation 
+  //  AliExternalTrackParam * track = new  AliExternalTrackParam(xx,cc,xr,alpha);
+  AliExternalTrackParam * track = new  AliExternalTrackParam(xr,alpha,xx,cc);
+  track->SetMass(TMath::Abs(mass));
+  //track->StartTimeIntegral();  
+  track->SaveLocalConvConst(); 
+  return track;
+}
+
+

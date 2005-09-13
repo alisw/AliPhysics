@@ -11,7 +11,6 @@
 #include "TVector3.h"
 
 class AliKalmanTrack;
-class AliTrackReference;
 
 class AliExternalTrackParam: public TObject {
  public:
@@ -19,7 +18,9 @@ class AliExternalTrackParam: public TObject {
   AliExternalTrackParam(Double_t x, Double_t alpha, 
 			const Double_t param[5], const Double_t covar[15]);
   AliExternalTrackParam(const AliKalmanTrack& track);
-  static AliExternalTrackParam * MakeTrack(const AliTrackReference *ref, Double_t mass);
+
+  virtual void SetMass(Double_t mass) {fMass=mass;}
+  virtual Double_t GetMass() const {return fMass;}
 
   virtual const Double_t* GetParameter() const;
   virtual const Double_t* GetCovariance() const;

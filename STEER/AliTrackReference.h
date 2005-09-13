@@ -14,6 +14,8 @@
 #include "TObject.h"
 #include "TMath.h"
 
+class AliExternalTrackParam;
+
 class AliTrackReference : public TObject {
 
 public:
@@ -22,6 +24,7 @@ public:
   AliTrackReference(Int_t label);
   virtual ~AliTrackReference() {}
 
+  static AliExternalTrackParam * MakeTrack(const AliTrackReference *ref, Double_t mass);
   virtual Int_t GetTrack() const {return fTrack;}
   virtual void SetTrack(Int_t track) {fTrack=track;}
   virtual void SetLength(Float_t length){fLength=length;}
