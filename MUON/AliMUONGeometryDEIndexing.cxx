@@ -35,6 +35,8 @@
 
 ClassImp(AliMUONGeometryDEIndexing)
 
+const Int_t AliMUONGeometryDEIndexing::fgkHemisphere = 50; 
+
 //______________________________________________________________________________
 AliMUONGeometryDEIndexing::AliMUONGeometryDEIndexing(
                               Int_t moduleId, Int_t nofDetElements)
@@ -87,7 +89,11 @@ Int_t AliMUONGeometryDEIndexing::GetDetElementIndex(Int_t detElemId) const
     return 0;
   }  
 
-  return detElemId - GetFirstDetElemId();
+  Int_t index = detElemId - GetFirstDetElemId();
+  if (index >= fgkHemisphere) 
+    index += - fgkHemisphere + fNofDetElements/2;
+
+  return index;
 }  
 
 //______________________________________________________________________________
@@ -101,5 +107,12 @@ Int_t AliMUONGeometryDEIndexing::GetDetElementId(Int_t detElemIndex) const
     return 0;
   }  
 
-  return GetFirstDetElemId() + detElemIndex;
+  Int_t detElemId = detElemIndex;
+  
+  if ( detElemIndex >=  fNofDetElements/2 ) 
+    detElemId += fgkHemisphere - fNofDetElements/2; 
+
+  detElemId += GetFirstDetElemId();
+
+  return detElemId;
 }  
