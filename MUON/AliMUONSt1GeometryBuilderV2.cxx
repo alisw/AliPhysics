@@ -2515,8 +2515,6 @@ void AliMUONSt1GeometryBuilderV2::CreateGeometry()
   
   // Shift in Z of the middle layer
   Double_t deltaZ = 7.5/2.;         
-  // Double_t deltaZ = fgkMotherThick1; 
-      // Fix (6) - shift  of the middle layer = half of its thickness      
 
   // Position of quadrant I wrt to the chamber position
   // TVector3 pos0(-fgkDeltaQuadLHC, -fgkDeltaQuadLHC, deltaZ);
