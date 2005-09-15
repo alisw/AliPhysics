@@ -1,6 +1,6 @@
 aliroot -b << EOF  
 AliSimulation MuonSim("$ALICE_ROOT/MUON/Config.C")
-MuonSim.Run(10)
+MuonSim.Run(10000)
 .q
 EOF
 

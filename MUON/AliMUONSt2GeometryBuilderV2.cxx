@@ -137,7 +137,7 @@ void AliMUONSt2GeometryBuilderV2::CreateGeometry()
      Float_t tpar1[5];
      tpar1[0] = 20.6;
      tpar1[1] = 122.0;
-     tpar1[2] = 6.55555/2;
+     tpar1[2] = 6.6/2;
      tpar1[3] = -10.0;
      tpar1[4] = 100.0;
 
@@ -1422,10 +1422,8 @@ void AliMUONSt2GeometryBuilderV2::CreateGeometry()
  Int_t detElemId3 =  3;  // quadrant III
  Int_t detElemId4 =  2;  // quadrant IV
 
-Float_t half_chamber = zcbb + zcu + zRoha + zmeb + zcu2 + zsenv/2;
-//   cout<<  "\n half_chamber \t" << half_chamber << endl;
-//   Float_t half_chamber =2.894;
-//     Float_t half_chamber =3.5;
+ Float_t half_chamber =6.6/2;
+ //Float_t half_chamber = zcbb + zcu + zRoha + zmeb + zcu2 + zsenv/2;
 
 // ------------------------------St2 Chamber3------------------------------------------------
 

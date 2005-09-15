@@ -863,8 +863,8 @@ void AliMUONTest::ForWhole(AliMUONTests testCase)
   // for (Int_t iChamber=0; iChamber<3; iChamber=iChamber+2) {
 
     // Loop over cathods
-    //for (Int_t cath=0; cath<2; cath++) {
-    for (Int_t cath=0; cath<1; cath++) {
+    for (Int_t cath=0; cath<2; cath++) {
+    //for (Int_t cath=0; cath<1; cath++) {
 
       AliMUONGeometrySegmentation* segmentation 
         = CreateSegmentation(iChamber, cath);

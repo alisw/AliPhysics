@@ -155,9 +155,9 @@ void Config(char directory[100]="", char option[6]="param")
   //MUON->SetAlign(true);
   ((AliMUONv1*)MUON)->SetStepManagerVersionDE(true);
   MUON->AddGeometryBuilder(new AliMUONSt1GeometryBuilderV2(MUON));
-  MUON->AddGeometryBuilder(new AliMUONSt2GeometryBuilderV2(MUON));
-  MUON->AddGeometryBuilder(new AliMUONSlatGeometryBuilder(MUON));
-  MUON->AddGeometryBuilder(new AliMUONTriggerGeometryBuilder(MUON));
+  //MUON->AddGeometryBuilder(new AliMUONSt2GeometryBuilderV2(MUON));
+  //MUON->AddGeometryBuilder(new AliMUONSlatGeometryBuilder(MUON));
+  //MUON->AddGeometryBuilder(new AliMUONTriggerGeometryBuilder(MUON));
 }
 
 Float_t EtaToTheta(Float_t arg){

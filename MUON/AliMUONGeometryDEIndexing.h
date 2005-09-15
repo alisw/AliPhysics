@@ -9,11 +9,9 @@
 // and the index in the array.
 // Used in storing DE transformations and segmentations.
 // The detection elements numbering:
-//    DetElemId = chamberId*100 + [50] + detElemNum
+//    DetElemId = chamberId*100 + detElemNum
 //                where  chamberId  = 1, 2, ..., 14
 //                       detElemNum = 0, 1, ...
-// The number 50 is added to distinguish detector elements 
-// in the left and the right hemispheres.
 //
 // Author: Ivana Hrivnacova, IPN Orsay
 
@@ -40,10 +38,6 @@ class AliMUONGeometryDEIndexing : public AliMUONVGeometryDEIndexing
   private:
     Int_t GetFirstDetElemId() const;
 
-    // static data members
-    static const Int_t  fgkHemisphere;   // The constant to distinguish 
-                                         // the left/right hemispere  
-					 
     // data members
     Int_t  fModuleId;       // module Id					           
     Int_t  fNofDetElements; // number of detection elements in the module					           

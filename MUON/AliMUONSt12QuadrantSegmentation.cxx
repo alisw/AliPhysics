@@ -45,7 +45,7 @@
 
 ClassImp(AliMUONSt12QuadrantSegmentation)
 
-const Float_t  AliMUONSt12QuadrantSegmentation::fgkWireD = 0.20; 
+const Float_t  AliMUONSt12QuadrantSegmentation::fgkWireD = 0.21; 
 const Float_t  AliMUONSt12QuadrantSegmentation::fgkLengthUnit = 0.1; 
 
 //______________________________________________________________________________
