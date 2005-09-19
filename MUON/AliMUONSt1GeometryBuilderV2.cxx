@@ -40,7 +40,7 @@
 #include <TVirtualMC.h>
 
 #include "AliMpFiles.h"
-#include "AliMpReader.h"
+#include "AliMpSectorReader.h"
 #include "AliMpSector.h"
 #include "AliMpRow.h"
 #include "AliMpVRowSegment.h"
@@ -514,7 +514,7 @@ void AliMUONSt1GeometryBuilderV2::CreateQuadrant(Int_t chamber)
   specialMap.Add(47, (Long_t) new AliMUONSt1SpecialMotif(TVector2(1.01, 0.36)));
 #endif
 
-  AliMpReader reader1(kStation1, kBendingPlane);
+  AliMpSectorReader reader1(kStation1, kBendingPlane);
   AliMpSector* sector1 = reader1.BuildSector();
 
   //Bool_t reflectZ = true;
@@ -550,12 +550,12 @@ void AliMUONSt1GeometryBuilderV2::CreateQuadrant(Int_t chamber)
       // Was: specialMap.Add(47,(Long_t) new AliMUONSt1SpecialMotif(TVector2(1.61,-1.18)));
 #endif
 
-  AliMpReader reader2(kStation1, kNonBendingPlane);
+  AliMpSectorReader reader2(kStation1, kNonBendingPlane);
   AliMpSector* sector2 = reader2.BuildSector();
   
   //reflectZ = false;
   reflectZ = true;
-  TVector2 offset = sector2->Offset();
+  TVector2 offset = sector2->Position();
   where = TVector3(where.X()+offset.X()/10., where.Y()+offset.Y()/10., 0.); 
       // Add the half-pad shift of the non-bending plane wrt bending plane
       // (The shift is defined in the mapping as sector offset)

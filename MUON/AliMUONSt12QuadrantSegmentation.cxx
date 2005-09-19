@@ -29,7 +29,7 @@
 
 #include "AliMpPad.h"
 #include "AliMpArea.h"
-#include "AliMpReader.h"
+#include "AliMpSectorReader.h"
 #include "AliMpSector.h"
 #include "AliMpVPadIterator.h"
 #include "AliMpSectorSegmentation.h"
@@ -186,7 +186,7 @@ void AliMUONSt12QuadrantSegmentation::ReadMappingData()
      //cout << "AliMpFiles top path set to " << dirPath << endl;	  
    }
   
-  AliMpReader r(fStationType, fPlaneType);
+  AliMpSectorReader r(fStationType, fPlaneType);
   fSector = r.BuildSector();
   fSectorSegmentation = new AliMpSectorSegmentation(fSector);
 }
