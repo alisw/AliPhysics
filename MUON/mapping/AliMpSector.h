@@ -1,11 +1,14 @@
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
+
 // $Id$
-// Category: sector
-//
-// Class AliMpSector
-// -----------------
-// Class describing the sector of the MUON chamber of station 1.
-//
-// Authors: David Guez, Ivana Hrivnacova; IPN Orsay
+// $MpId: AliMpSector.h,v 1.8 2005/09/02 10:00:49 ivana Exp $
+
+/// \ingroup sector
+/// \class AliMpSector
+/// \brief A sector (quadrant) of the MUON chamber of stations 1 and 2.
+///
+/// Authors: David Guez, Ivana Hrivnacova; IPN Orsay
 
 #ifndef ALI_MP_SECTOR_H
 #define ALI_MP_SECTOR_H
@@ -52,7 +55,6 @@ class AliMpSector : public TObject
     // geometry 
     TVector2  Position() const;
     TVector2  Dimensions() const;
-    TVector2  Offset() const;
    
     // get methods
     Int_t       GetNofZones() const;
@@ -88,9 +90,6 @@ class AliMpSector : public TObject
 };
 
 // inline functions
-
-inline TVector2  AliMpSector::Offset() const
-{ return fOffset; }
 
 inline AliMpDirection AliMpSector::GetDirection() const 
 { return fDirection; }    

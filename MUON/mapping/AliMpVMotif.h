@@ -1,12 +1,14 @@
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
+
 // $Id$
-// Category: motif
-//
-// Class AliMpVMotif
-// -----------------
-// Class that defines a motif with its unique ID
-// and the motif type.
-//
-// Authors: David Guez, Ivana Hrivnacova; IPN Orsay
+// $MpId: AliMpVMotif.h,v 1.6 2005/08/26 15:43:36 ivana Exp $
+
+/// \ingroup motif
+/// \class AliMpVMotif
+/// \brief Abstract base class for a motif with its unique ID and the motif type.
+///
+/// Authors: David Guez, Ivana Hrivnacova; IPN Orsay
 
 #ifndef ALI_MP_V_MOTIF_H
 #define ALI_MP_V_MOTIF_H

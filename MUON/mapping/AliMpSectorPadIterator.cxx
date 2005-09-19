@@ -1,4 +1,20 @@
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+
 // $Id$
+// $MpId: AliMpSectorPadIterator.cxx,v 1.5 2005/08/26 15:43:36 ivana Exp $
 // Category: sector
 //
 // Class AliMpSectorPadIterator
@@ -29,11 +45,11 @@ AliMpSectorPadIterator::AliMpSectorPadIterator()
     fMotifPos(0),
     fIterator()
 {
-// default constructor, set the current position to "invalid"
+/// Default constructor, set the current position to "invalid"
 }
 
 //______________________________________________________________________________
-AliMpSectorPadIterator::AliMpSectorPadIterator(const AliMpSector* sector)
+AliMpSectorPadIterator::AliMpSectorPadIterator(const AliMpSector* const sector)
   : AliMpVPadIterator(),
     fkSector(sector),
     fCurrentRow(0),
@@ -42,14 +58,14 @@ AliMpSectorPadIterator::AliMpSectorPadIterator(const AliMpSector* sector)
     fMotifPos(0),
     fIterator()
 {
-// normal constructor, set *this to invalid position  
+/// Standard constructor, set *this to invalid position  
 }
 
 //______________________________________________________________________________
 AliMpSectorPadIterator::AliMpSectorPadIterator(const AliMpSectorPadIterator& right)
   : AliMpVPadIterator(right)
 {
-// copy constructor
+/// Copy constructor
  
   *this = right;
 }
@@ -57,21 +73,23 @@ AliMpSectorPadIterator::AliMpSectorPadIterator(const AliMpSectorPadIterator& rig
 //______________________________________________________________________________
 AliMpSectorPadIterator::~AliMpSectorPadIterator()
 {
-// destructor
+/// Destructor
 }
 
+//
 // operators
+//
 
 //______________________________________________________________________________
 AliMpSectorPadIterator& 
 AliMpSectorPadIterator::operator = (const AliMpSectorPadIterator& right)
 {
-// assignement operator
+/// Assignment operator
 
-  // check assignement to self
+  // check assignment to self
   if (this == &right) return *this;
 
-  // base class assignement
+  // base class assignment
   AliMpVPadIterator::operator=(right);
 
   fkSector      = right.fkSector;
@@ -88,9 +106,9 @@ AliMpSectorPadIterator::operator = (const AliMpSectorPadIterator& right)
 //______________________________________________________________________________
 AliMpMotifPosition* AliMpSectorPadIterator::ResetToCurrentMotifPosition()
 {
-  // Find the AliMpMotifType object associated with the triplet
-  // (fCurrentRow, fCurrentSeg, fCurrentMotif)
-  // place it in the private fMotifType member and returns it.
+/// Find the AliMpMotifType object associated with the triplet
+/// (fCurrentRow, fCurrentSeg, fCurrentMotif),
+/// place it in the private fMotifType member and return it.
   
   fMotifPos =0;
   
@@ -125,17 +143,20 @@ AliMpMotifPosition* AliMpSectorPadIterator::ResetToCurrentMotifPosition()
 //______________________________________________________________________________
 Bool_t AliMpSectorPadIterator::IsValid() const
 {
-// Is the iterator in a valid position?
+/// Is the iterator in a valid position?
+
     return (fkSector!=0) && (fMotifPos!=0);
 } 
 
+//
 //public methods
+//
 
 //______________________________________________________________________________
 void AliMpSectorPadIterator::First()
 {
-// Reset the iterator, so that it points to the first available
-// pad in the sector
+/// Reset the iterator, so that it points to the first available
+/// pad in the sector
 
     if (!fkSector) {
         Invalidate();
@@ -153,8 +174,7 @@ void AliMpSectorPadIterator::First()
 //______________________________________________________________________________
 void AliMpSectorPadIterator::Next()
 {
-// Move the iterator to the next valid pad.
-
+/// Move the iterator to the next valid pad.
 
   //if (!IsValid()) return *this;
   if (!IsValid()) return;
@@ -189,14 +209,15 @@ void AliMpSectorPadIterator::Next()
 //______________________________________________________________________________
 Bool_t AliMpSectorPadIterator::IsDone() const
 {
-// 
+/// Is the iterator in the end? 
+
   return !IsValid();
 }
 
 //______________________________________________________________________________
 AliMpPad AliMpSectorPadIterator::CurrentItem () const 
 {
-// Returns current pad.
+/// Return current pad.
 
   if (!IsValid())
     return AliMpPad::Invalid();
@@ -210,7 +231,7 @@ AliMpPad AliMpSectorPadIterator::CurrentItem () const
 //______________________________________________________________________________
 void AliMpSectorPadIterator::Invalidate()
 {
-// Let the iterator points to the invalid position
+/// Let the iterator point to the invalid position
     fMotifPos = 0;
     fIterator.Invalidate();
 } 

@@ -1,4 +1,20 @@
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+
 // $Id$
+// $MpId: AliMpIntPair.cxx,v 1.5 2005/08/26 15:43:36 ivana Exp $
 // Category: basic
 //
 // Class AliMpIntPair
@@ -32,8 +48,9 @@ AliMpIntPair::AliMpIntPair(Int_t ix,Int_t iy)
   : TObject(),
     fFirst(ix),
     fSecond(iy),
-    fValidity(true) {
-//
+    fValidity(true) 
+{
+/// Standard constructor
 }
 
 //_____________________________________________________________________________
@@ -41,8 +58,9 @@ AliMpIntPair::AliMpIntPair(Int_t ix,Int_t iy, Bool_t validity)
   : TObject(),
     fFirst(ix),
     fSecond(iy),
-    fValidity(validity) {
-//
+    fValidity(validity) 
+{
+/// Standard constructor with validity argument
 }
 
 //_____________________________________________________________________________
@@ -52,9 +70,11 @@ AliMpIntPair::AliMpIntPair()
     //fSecond(9999),
     fFirst(0),
     fSecond(0),
-    fValidity(false) {
-//
+    fValidity(false) 
+{
+/// Default constructor
 }
+
 //_____________________________________________________________________________
 AliMpIntPair::AliMpIntPair(const AliMpIntPair& src):
   TObject(src),
@@ -62,17 +82,20 @@ AliMpIntPair::AliMpIntPair(const AliMpIntPair& src):
   fSecond(src.fSecond),
   fValidity(src.fValidity)
 {
-
+/// Copy constructor
 }
 
 //_____________________________________________________________________________
-AliMpIntPair::~AliMpIntPair() {
-//
+AliMpIntPair::~AliMpIntPair() 
+{
+/// Destructor
 }
 
 //_____________________________________________________________________________
 Bool_t AliMpIntPair::operator< (const AliMpIntPair& pos2) const
 {
+/// Less operator
+
   // fFirst prior to fSecond
   if (fFirst<pos2.fFirst) return kTRUE;
   if (fFirst>pos2.fFirst) return kFALSE;
@@ -83,6 +106,8 @@ Bool_t AliMpIntPair::operator< (const AliMpIntPair& pos2) const
 //_____________________________________________________________________________
 Bool_t AliMpIntPair::operator== (const AliMpIntPair& pos2) const
 {
+/// Equality operator
+
   // are this and pos2 equals?
   
   // one valid, one invalid
@@ -98,6 +123,8 @@ Bool_t AliMpIntPair::operator== (const AliMpIntPair& pos2) const
 //_____________________________________________________________________________
 Bool_t AliMpIntPair::operator!= (const AliMpIntPair& pos2) const
 {
+/// Non-equality operator
+
   // are this and pos2 equals?
   return !(*this == pos2);
 }
@@ -105,13 +132,15 @@ Bool_t AliMpIntPair::operator!= (const AliMpIntPair& pos2) const
 //_____________________________________________________________________________
 AliMpIntPair& AliMpIntPair::operator=(const AliMpIntPair& src) 
 {
-  // check assignement to self
+/// Assignment operator
+
+  // check assignment to self
   if (this == &src) return *this;
 
-  // base class assignement
+  // base class assignment
   TObject::operator=(src);
 
-  // assignement operator
+  // assignment operator
   fFirst = src.fFirst;
   fSecond = src.fSecond;
   fValidity = src.fValidity;
@@ -122,7 +151,8 @@ AliMpIntPair& AliMpIntPair::operator=(const AliMpIntPair& src)
 //_____________________________________________________________________________
 void AliMpIntPair::operator += (const AliMpIntPair& op)
 {
-  // incrementation operator
+/// Incrementation operator
+
   fFirst += op.fFirst;
   fSecond += op.fSecond;
   
@@ -132,7 +162,8 @@ void AliMpIntPair::operator += (const AliMpIntPair& op)
 //_____________________________________________________________________________
 void AliMpIntPair::operator -= (const AliMpIntPair& op)
 {
-  // decrementation operator
+/// Decrementation operator
+
   fFirst -= op.fFirst;
   fSecond -= op.fSecond;
 
@@ -143,6 +174,8 @@ void AliMpIntPair::operator -= (const AliMpIntPair& op)
 //_____________________________________________________________________________
 AliMpIntPair operator-(const AliMpIntPair& op1,const AliMpIntPair& op2)
 {
+/// Substraction operator
+
   return AliMpIntPair(op1.GetFirst()-op2.GetFirst(),
                   op1.GetSecond()-op2.GetSecond(),
 		  op1.IsValid() && op2.IsValid());
@@ -150,6 +183,8 @@ AliMpIntPair operator-(const AliMpIntPair& op1,const AliMpIntPair& op2)
 //_____________________________________________________________________________
 AliMpIntPair operator+(const AliMpIntPair& op1,const AliMpIntPair& op2)
 {
+/// Addition operator
+
   return AliMpIntPair(op1.GetFirst()+op2.GetFirst(),
                   op1.GetSecond()+op2.GetSecond(),
 		  op1.IsValid() && op2.IsValid());
@@ -157,6 +192,8 @@ AliMpIntPair operator+(const AliMpIntPair& op1,const AliMpIntPair& op2)
 //_____________________________________________________________________________
 AliMpIntPair operator*(const AliMpIntPair& op1,const AliMpIntPair& op2)
 {
+/// Multiplication operator
+
   return AliMpIntPair(op1.GetFirst()*op2.GetFirst(),
                   op1.GetSecond()*op2.GetSecond(),
 		  op1.IsValid() && op2.IsValid());
@@ -164,6 +201,8 @@ AliMpIntPair operator*(const AliMpIntPair& op1,const AliMpIntPair& op2)
 //_____________________________________________________________________________
 ostream& operator<< (ostream &stream,const AliMpIntPair& op)
 {
+/// Output streaming
+
   if (op.IsValid()) {
     stream << '(';
     stream << op.GetFirst()<<','<<op.GetSecond()<<')';

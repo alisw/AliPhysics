@@ -1,4 +1,20 @@
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+
 // $Id$
+// $MpId: AliMpPadIteratorPtr.cxx,v 1.6 2005/08/26 15:43:36 ivana Exp $
 // Category: basic
 //
 // Class AliMpPadIteratorPtr
@@ -20,18 +36,24 @@ ClassImp(AliMpPadIteratorPtr)
 //_____________________________________________________________________________
 AliMpPadIteratorPtr::AliMpPadIteratorPtr(AliMpVPadIterator* it)
   : fIterator(it)
-{}
+{
+/// Standard constructor
+}
 
 //_____________________________________________________________________________
 AliMpPadIteratorPtr::AliMpPadIteratorPtr(const AliMpPadIteratorPtr& right) 
-  : TObject(right) {
-// 
+  : TObject(right) 
+{
+/// Protected copy constructor (not provided) 
+
   Fatal("AliMpPadIteratorPtr", "Copy constructor not provided.");
 }
 
 //_____________________________________________________________________________
-AliMpPadIteratorPtr::~AliMpPadIteratorPtr() {
-//
+AliMpPadIteratorPtr::~AliMpPadIteratorPtr() 
+{
+/// Destructor
+
   delete fIterator;
 }
 
@@ -41,10 +63,12 @@ AliMpPadIteratorPtr::~AliMpPadIteratorPtr() {
 AliMpPadIteratorPtr& 
 AliMpPadIteratorPtr::operator=(const AliMpPadIteratorPtr& right)
 {
-  // check assignement to self
+/// Protected assignment operator (not provided) 
+
+  // check assignment to self
   if (this == &right) return *this;
 
-  Fatal("operator =", "Assignement operator not provided.");
+  Fatal("operator =", "Assignment operator not provided.");
     
   return *this;  
 }    

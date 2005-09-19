@@ -1,12 +1,15 @@
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
+
 // $Id$
-// Category: basic
-//
-// Class AliMpPadPair
-// ------------------
-// Wrap up for std::pair<AliMpPad, AliMpPad>
-// to avoid problems with CINT.
-//
-// Authors: David Guez, Ivana Hrivnacova; IPN Orsay
+// $MpId: AliMpPadPair.h,v 1.7 2005/08/26 15:43:36 ivana Exp $
+
+/// \ingroup basic
+/// \class AliMpPadPair
+/// \brief Wrap up for std::pair<AliMpPad, AliMpPad>
+/// to avoid problems with CINT.
+///
+/// Authors: David Guez, Ivana Hrivnacova; IPN Orsay
 
 #ifndef ALI_MP_PAD_PAIR_H
 #define ALI_MP_PAD_PAIR_H

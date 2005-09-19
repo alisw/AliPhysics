@@ -1,4 +1,20 @@
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+
 // $Id$
+// $MpId: AliMpSectorPainter.cxx,v 1.6 2005/08/26 15:43:36 ivana Exp $
 //
 // Class AliMpSectorPainter
 // ------------------------
@@ -25,14 +41,14 @@ AliMpSectorPainter::AliMpSectorPainter()
   :AliMpVPainter(),
    fSector(0)
 {
-  // default dummy constructor
+  /// Default constructor
 }
 //_______________________________________________________________________
 AliMpSectorPainter::AliMpSectorPainter(AliMpSector *sector)
   :AliMpVPainter(),
    fSector(sector)
 {
-  // normal constructor 
+  /// Standard constructor 
 
 }
 
@@ -40,7 +56,7 @@ AliMpSectorPainter::AliMpSectorPainter(AliMpSector *sector)
 AliMpSectorPainter::AliMpSectorPainter(const AliMpSectorPainter& right) 
   : AliMpVPainter(right) 
 {  
-  // copy constructor (not implemented)
+  /// Protected copy constructor (not provided)
 
   Fatal("AliMpSectorPainter", "Copy constructor not provided.");
 }
@@ -48,19 +64,19 @@ AliMpSectorPainter::AliMpSectorPainter(const AliMpSectorPainter& right)
 //_______________________________________________________________________
 AliMpSectorPainter::~AliMpSectorPainter()
 {
-  // destructor
+  /// Destructor
 }
 
 //_____________________________________________________________________________
 AliMpSectorPainter& 
 AliMpSectorPainter::operator=(const AliMpSectorPainter& right)
 {
-  // assignement operator (not implemented)
+  /// Assignment operator (not provided)
 
-  // check assignement to self
+  // check assignment to self
   if (this == &right) return *this;
 
-  Fatal("operator =", "Assignement operator not provided.");
+  Fatal("operator =", "Assignment operator not provided.");
     
   return *this;  
 }    
@@ -68,14 +84,15 @@ AliMpSectorPainter::operator=(const AliMpSectorPainter& right)
 //_______________________________________________________________________
 void AliMpSectorPainter::DumpObject()
 {
-// Draw the owned object
-  fSector->Dump();
+//// Draw the owned object
 
+  fSector->Dump();
 }
+
 //_______________________________________________________________________
 TVector2 AliMpSectorPainter::GetPosition() const
 {
-// Get the owned object's position
+//// Get the owned object's position
 
   if (fSector->GetNofRows()<1) return TVector2(0.,0.);
   AliMpRow* row = fSector->GetRow(0);
@@ -100,10 +117,12 @@ TVector2 AliMpSectorPainter::GetPosition() const
   }
   return (ur+bl)/2.;
 }
+
 //_______________________________________________________________________
 TVector2 AliMpSectorPainter::GetDimensions() const
 {
-// Get the owned object's dimensions
+//// Get the owned object's dimensions
+
   if (fSector->GetNofRows()<1) return TVector2(0.,0.);
   AliMpRow* row = fSector->GetRow(0);
 
@@ -132,15 +151,14 @@ TVector2 AliMpSectorPainter::GetDimensions() const
 //_______________________________________________________________________
 void AliMpSectorPainter::Draw(Option_t *option)
 {
-// Draw the sector on the current pad
-// The first letter of <option> is treated as follows:
-// case "Z" : each zones are drawn separately
-// case "R" : each rows are drawn separately
-// case ""  : the whole sector is drawn at once
-// in both cases, the rest of the option is passed
-// as argument to the Draw function of respectively
-// zone or row objects.
-// ---
+/// Draw the sector on the current pad
+/// The first letter of <option> is treated as follows:
+/// - case "Z" : each zones are drawn separately
+/// - case "R" : each rows are drawn separately
+/// - case ""  : the whole sector is drawn at once
+/// in both cases, the rest of the option is passed
+/// as argument to the Draw function of respectively
+/// zone or row objects.
 
   AliMpGraphContext *gr = AliMpGraphContext::Instance();
   if (!fSector) return;
@@ -198,12 +216,11 @@ void AliMpSectorPainter::Draw(Option_t *option)
   gr->Pop();
 }
 
-
-
 //_______________________________________________________________________
 void AliMpSectorPainter::Paint(Option_t* /*option*/)
 {
-// Paint the object
+//// Paint the object
+
   AliMpGraphContext *gr = AliMpGraphContext::Instance();
   if (!fSector) return;
   if (fSector->GetNofRows()<1) return;

@@ -1,12 +1,20 @@
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
+
 // $Id$
-// Category: motif
-//
-// Class AliMpMotifMap
-// -------------------
-// Class describing the motif map container, where motifs are
-// mapped to their string IDs.
-//
-// Authors: David Guez, Ivana Hrivnacova; IPN Orsay
+// $MpId: AliMpMotifMap.h,v 1.7 2005/08/26 15:43:36 ivana Exp $
+
+/// \ingroup motif
+/// \class AliMpMotifMap
+/// \brief Motif map containers
+
+/// The class defines:
+/// - map of motif objects to their string IDs
+/// - map of motif type objects to their string IDs
+/// - map of motif position objects to their string IDs
+/// - map of motif position objects to their global indices
+///
+/// Authors: David Guez, Ivana Hrivnacova; IPN Orsay
 
 #ifndef ALI_MP_MOTIF_MAP_H
 #define ALI_MP_MOTIF_MAP_H

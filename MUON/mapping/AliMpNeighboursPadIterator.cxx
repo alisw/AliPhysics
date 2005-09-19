@@ -1,4 +1,20 @@
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+
 // $Id$
+// $MpId: AliMpNeighboursPadIterator.cxx,v 1.8 2005/08/26 15:43:36 ivana Exp $
 // Category: sector
 //
 // Class AliMpNeighboursPadIterator
@@ -28,7 +44,7 @@ AliMpNeighboursPadIterator::AliMpNeighboursPadIterator()
     fPads(),
     fIndex(fgkInvalidIndex)
 {
-// default constructor, set the current position to "invalid"
+/// Default constructor, set the current position to "invalid"
 }
 
 //______________________________________________________________________________
@@ -41,7 +57,7 @@ AliMpNeighboursPadIterator::AliMpNeighboursPadIterator(
     fCenterPad(centerPad),
     fIndex(fgkInvalidIndex)
 {
-// normal constructor, set *this to invalid position
+/// Standard constructor, set *this to invalid position
 
     FillPadsVector(includeCenter);
 }
@@ -51,7 +67,7 @@ AliMpNeighboursPadIterator::AliMpNeighboursPadIterator(
                                  const AliMpNeighboursPadIterator& right)
   : AliMpVPadIterator(right)
 {
-// copy constructor
+/// Copy constructor
 
   *this = right;
 }
@@ -59,7 +75,7 @@ AliMpNeighboursPadIterator::AliMpNeighboursPadIterator(
 //______________________________________________________________________________
 AliMpNeighboursPadIterator::~AliMpNeighboursPadIterator()
 {
-// destructor
+/// Destructor
 
 #ifdef WITH_ROOT
   fPads.Delete();
@@ -72,14 +88,15 @@ AliMpNeighboursPadIterator::~AliMpNeighboursPadIterator()
 AliMpNeighboursPadIterator& 
 AliMpNeighboursPadIterator::operator = (const AliMpNeighboursPadIterator& right)
 {
-// assignement operator
-// if the right hand iterator isn't of good type
-// the current operator is invalidated
+/// Assignment operator.                                                     \n
+/// If the right hand iterator isn't of a good type
+/// the current operator is invalidated                                      \n
+/// Not provided for WITH_ROOT option.
 
-  // check assignement to self
+  // check assignment to self
   if (this == &right) return *this;
 
-  // base class assignement
+  // base class assignment
   AliMpVPadIterator::operator=(right);
 
 #ifdef WITH_STL
@@ -95,13 +112,15 @@ AliMpNeighboursPadIterator::operator = (const AliMpNeighboursPadIterator& right)
   return *this;
 } 
 
-//private methods
+//
+// private methods
+//
 
 //______________________________________________________________________________
 Bool_t AliMpNeighboursPadIterator::IsNeighbours(const AliMpPad& pad) const
 {
-// true if the pad located by <padIndice> is a neighbours of those
-// located at <fCenterPad>
+/// Return true if the pad located by <padIndice> is a neighbour of those
+/// located at <fCenterPad>
 
     
     TVector2 relPos  = pad.Position()   - fCenterPad.Position();
@@ -116,9 +135,9 @@ Bool_t AliMpNeighboursPadIterator::IsNeighbours(const AliMpPad& pad) const
 PadVector AliMpNeighboursPadIterator::PadVectorLine(const AliMpPad& from,
                                            const AliMpIntPair& direction) const
 {
-// Fill  a new vector with all pads which have common
-// parts with the pad located at <fCenterPad>, in a given line
-// starting from <from> and moving by <direction>
+/// Fill  a new vector with all pads which have common
+/// parts with the pad located at <fCenterPad>, in a given line
+/// starting from <from> and moving by <direction>
 
     AliMpPad current = from;
     PadVector ans;
@@ -140,8 +159,8 @@ PadVector AliMpNeighboursPadIterator::PadVectorLine(const AliMpPad& from,
 void  AliMpNeighboursPadIterator::UpdateTotalSet(PadSet& setTotal, 
                                                  const PadVector& from) const
 {
-// Add pads from pad vector to the total set 
-// only if they are not yet included
+/// Add pads from pad vector to the total set 
+/// only if they are not yet included
 
     setTotal.insert(from.begin(),from.end());
 }    
@@ -152,9 +171,9 @@ void  AliMpNeighboursPadIterator::UpdateTotalSet(PadSet& setTotal,
 PadVector* AliMpNeighboursPadIterator::PadVectorLine(const AliMpPad& from,
                                            const AliMpIntPair& direction) const
 {
-// Fill  a new vector with all pads which have common
-// parts with the pad located at <fCenterPad>, in a given line
-// starting from <from> and moving by <direction>
+/// Fill  a new vector with all pads which have common
+/// parts with the pad located at <fCenterPad>, in a given line
+/// starting from <from> and moving by <direction>
 
     AliMpPad current = from;
     PadVector* ans = new PadVector();
@@ -176,8 +195,8 @@ PadVector* AliMpNeighboursPadIterator::PadVectorLine(const AliMpPad& from,
 void  AliMpNeighboursPadIterator::UpdateTotalSet(PadSet& setTotal, 
                                                  PadVector* from) const
 {
-// Add pads from pad vector to the total set 
-// only if they are not yet included and deletes the pad vector
+/// Add pads from pad vector to the total set 
+/// only if they are not yet included and deletes the pad vector
 
     for (Int_t i=0; i<from->GetEntriesFast(); i++) {
       AliMpPad* candidate = (AliMpPad*)from->At(i);
@@ -204,8 +223,8 @@ void  AliMpNeighboursPadIterator::UpdateTotalSet(PadSet& setTotal,
 //______________________________________________________________________________
 void AliMpNeighboursPadIterator::FillPadsVector(Bool_t includeCenter)
 {
-// Fill the indices vector with all indices of pads which have common
-// parts with the pad located at <fCenterPad>
+/// Fill the indices vector with all indices of pads which have common
+/// parts with the pad located at <fCenterPad>
 
     if (!fkSegmentation || !fCenterPad.IsValid()) return;
     
@@ -314,7 +333,8 @@ void AliMpNeighboursPadIterator::FillPadsVector(Bool_t includeCenter)
 //______________________________________________________________________________
 Bool_t AliMpNeighboursPadIterator::IsValid() const
 {
-// Is the iterator in a valid position?
+/// Is the iterator in a valid position?
+
     return (fkSegmentation!=0 && fIndex!=fgkInvalidIndex);
 } 
 
@@ -323,8 +343,8 @@ Bool_t AliMpNeighboursPadIterator::IsValid() const
 //______________________________________________________________________________
 void AliMpNeighboursPadIterator::First()
 {
-// Reset the iterator, so that it points to the first available
-// pad in the sector
+/// Reset the iterator, so that it points to the first available
+/// pad in the sector
 
 #ifdef WITH_STL
     if ((fkSegmentation != 0) && (fPads.size() != 0)) 
@@ -341,8 +361,8 @@ void AliMpNeighboursPadIterator::First()
 //______________________________________________________________________________
 void AliMpNeighboursPadIterator::Next()
 {
-// pre-increment operator. Should be used by default for iterating over
-// pads
+/// Pre-increment operator. Should be used by default for iterating over
+/// pads
 
 
   if (!IsValid()) return;
@@ -361,14 +381,16 @@ void AliMpNeighboursPadIterator::Next()
 //______________________________________________________________________________
 Bool_t AliMpNeighboursPadIterator::IsDone() const
 {
-// 
+/// Is the iterator in the end?
+ 
   return !IsValid();
 }
 
 //______________________________________________________________________________
 AliMpPad AliMpNeighboursPadIterator::CurrentItem() const 
 {
-// dereferencement operator
+/// Dereferencement function
+
   if (!IsValid())
     return AliMpPad::Invalid();
   else
@@ -383,7 +405,8 @@ AliMpPad AliMpNeighboursPadIterator::CurrentItem() const
 //______________________________________________________________________________
 void AliMpNeighboursPadIterator::Invalidate()
 {
-// Let the iterator points to the invalid position
+/// Let the iterator point to the invalid position
+
     fIndex=fgkInvalidIndex;
 }
 

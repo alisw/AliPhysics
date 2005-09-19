@@ -1,13 +1,17 @@
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
+
 // $Id$
-// Category: basic
-//
-// Class AliMpIntPair
-// ------------------
-// Class that defines the pair of integers.
-// The pair created by the default constructor is in invalide state,
-// setting one of values changes the state to valid.
-//
-// Authors: David Guez, Ivana Hrivnacova; IPN Orsay
+// $MpId: AliMpIntPair.h,v 1.4 2005/08/26 15:43:36 ivana Exp $
+
+/// \ingroup basic
+/// \class AliMpIntPair
+/// \brief A pair of integers.
+///
+/// The pair created by the default constructor is in invalide state,
+/// setting one of values changes the state to valid.
+///
+/// Authors: David Guez, Ivana Hrivnacova; IPN Orsay
 
 #ifndef ALI_MP_INT_PAIR_H
 #define ALI_MP_INT_PAIR_H

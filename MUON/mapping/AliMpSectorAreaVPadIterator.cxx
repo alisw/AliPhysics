@@ -1,4 +1,20 @@
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+
 // $Id$
+// $MpId: AliMpSectorAreaVPadIterator.cxx,v 1.5 2005/08/26 15:43:36 ivana Exp $
 // Category: sector
 //
 // Class AliMpSectorAreaVPadIterator
@@ -26,7 +42,7 @@ AliMpSectorAreaVPadIterator::AliMpSectorAreaVPadIterator(
    fCurrentPad(AliMpPad::Invalid()),
    fCurrentColumnPosition(0.)
 {
-// normal constructor, start in invalid position
+/// Standard constructor, start in invalid position
 }
 
 //______________________________________________________________________________
@@ -34,7 +50,7 @@ AliMpSectorAreaVPadIterator::AliMpSectorAreaVPadIterator(
                                 const AliMpSectorAreaVPadIterator& right)
   : AliMpVPadIterator(right)
 {
-// copy constructor
+/// Protected copy constructor (not provided)
  
   Fatal("Copy constructor", "Not implemented");
 }
@@ -47,13 +63,13 @@ AliMpSectorAreaVPadIterator::AliMpSectorAreaVPadIterator()
    fCurrentPad(AliMpPad::Invalid()),
    fCurrentColumnPosition(0.)
 {
-// Dummy default constructor.
+/// Default constructor.
 }
 
 //______________________________________________________________________________
 AliMpSectorAreaVPadIterator::~AliMpSectorAreaVPadIterator()
 {
-// destructor
+/// Destructor
 }
 
 //
@@ -64,12 +80,12 @@ AliMpSectorAreaVPadIterator::~AliMpSectorAreaVPadIterator()
 AliMpSectorAreaVPadIterator& 
 AliMpSectorAreaVPadIterator::operator = (const AliMpSectorAreaVPadIterator& right)
 {
-// Assignement operator
+/// Assignment operator
 
-  // check assignement to self
+  // check assignment to self
   if (this == &right) return *this;
 
-  // base class assignement
+  // base class assignment
   AliMpVPadIterator::operator=(right);
 
   fkSegmentation = right.fkSegmentation;
@@ -87,8 +103,7 @@ AliMpSectorAreaVPadIterator::operator = (const AliMpSectorAreaVPadIterator& righ
 //______________________________________________________________________________
 Bool_t AliMpSectorAreaVPadIterator::IsValid() const
 {
-// Is the iterator in a valid position?
-// ---
+/// Is the iterator in a valid position?
 
   return fCurrentPad.IsValid() ;
 }
@@ -96,8 +111,7 @@ Bool_t AliMpSectorAreaVPadIterator::IsValid() const
 //______________________________________________________________________________
 void AliMpSectorAreaVPadIterator::MoveRight()
 {
-// Increase the current row position and searches the first valid pad.
-// ---
+/// Increase the current row position and searches the first valid pad.
 
   Double_t step = 2.* fkSegmentation->GetMinPadDimensions().X();
 
@@ -120,9 +134,8 @@ void AliMpSectorAreaVPadIterator::MoveRight()
 //______________________________________________________________________________
 void AliMpSectorAreaVPadIterator::First()
 {
-// Reset the iterator, so that it points to the first available
-// pad in the area
-// ---
+/// Reset the iterator, so that it points to the first available
+/// pad in the area
 
   if (!fkSegmentation) {
     Fatal("First", "Segmentation is not defined");
@@ -146,8 +159,7 @@ void AliMpSectorAreaVPadIterator::First()
 //______________________________________________________________________________
 void AliMpSectorAreaVPadIterator::Next()
 {
-// Move the iterator to the next valid pad.
-// ---
+/// Move the iterator to the next valid pad.
 
   if (!IsValid()) return;
   
@@ -167,22 +179,23 @@ void AliMpSectorAreaVPadIterator::Next()
 //______________________________________________________________________________
 Bool_t AliMpSectorAreaVPadIterator::IsDone() const
 {
-// 
+/// Is the iterator in the end ?
+ 
   return !IsValid();
 }
 
 //______________________________________________________________________________
 AliMpPad AliMpSectorAreaVPadIterator::CurrentItem () const 
 {
-// Returns current pad.
-// ---
+/// Return current pad.
 
   return fCurrentPad;
 }
 //______________________________________________________________________________
 void AliMpSectorAreaVPadIterator::Invalidate()
 {
-// 
+/// Let the iterator point to the invalid position
+ 
   fCurrentPad = AliMpPad::Invalid();
   fCurrentColumnPosition = 0;
 }

@@ -1,4 +1,20 @@
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+
 // $Id$
+// $MpId: AliMpVPainter.cxx,v 1.8 2005/08/26 15:43:36 ivana Exp $
 // Category: graphics
 //
 // Class AliMpVPainter
@@ -27,6 +43,10 @@
 #include "AliMpSubZonePainter.h"
 #include "AliMpRowSegmentPainter.h"
 #include "AliMpMotifPainter.h"
+#include "AliMpPCB.h"
+#include "AliMpPCBPainter.h"
+#include "AliMpSlat.h"
+#include "AliMpSlatPainter.h"
 
 ClassImp(AliMpVPainter)
 
@@ -35,7 +55,8 @@ AliMpVPainter::AliMpVPainter()
   : TObject(),
     fColor(2)
 {
-  // Default constructor
+  /// Default constructor
+
   AliMpGraphContext *gr = AliMpGraphContext::Instance();
   fPadPosition  =  gr->GetPadPosition();
   fPadDimensions =  gr->GetPadDimensions();
@@ -47,7 +68,7 @@ AliMpVPainter::AliMpVPainter()
 AliMpVPainter::AliMpVPainter(const AliMpVPainter& right) 
   : TObject(right) 
 {  
-  // copy constructor (not implemented)
+  /// Protected copy constructor (not provided)
 
   Fatal("AliMpVPainter", "Copy constructor not provided.");
 }
@@ -55,7 +76,8 @@ AliMpVPainter::AliMpVPainter(const AliMpVPainter& right)
 //_______________________________________________________________________
 AliMpVPainter::~AliMpVPainter()
 {
-  // Default destructor
+  /// Destructor
+
   if (fTrashList){
     fTrashList->Delete();
     delete fTrashList;
@@ -65,12 +87,12 @@ AliMpVPainter::~AliMpVPainter()
 //_____________________________________________________________________________
 AliMpVPainter& AliMpVPainter::operator=(const AliMpVPainter& right)
 {
-  // assignement operator (not implemented)
+  /// Assignment operator (not provided)
 
-  // check assignement to self
+  // check assignment to self
   if (this == &right) return *this;
 
-  Fatal("operator =", "Assignement operator not provided.");
+  Fatal("operator =", "Assignment operator not provided.");
     
   return *this;  
 }    
@@ -78,32 +100,36 @@ AliMpVPainter& AliMpVPainter::operator=(const AliMpVPainter& right)
 //_______________________________________________________________________
 Bool_t AliMpVPainter::IsInside(const TVector2 &point,const TVector2& pos,const TVector2& dim)
 {
-  // does the point <point> inside the area (pos,dim)
+  /// Is the point <point> inside the area (pos,dim)?
+
   return ( (TMath::Abs(point.X()-pos.X())<dim.X() ) && (TMath::Abs(point.Y()-pos.Y())<dim.Y() ) );
 }
 
 //_______________________________________________________________________
 Int_t AliMpVPainter::DistancetoPrimitive(Int_t x, Int_t y)
 {
-  // dist to the center if (x,y) is inside the box defined by (fPadPosition,fPadDimensions)
-  // 9999 otherwise
-   TVector2 point = TVector2(gPad->AbsPixeltoX(x), gPad->AbsPixeltoY(y));
-   if ( IsInside(point,fPadPosition,fPadDimensions))
-     return (Int_t)(point-fPadPosition).Mod();
-   else
-     return 9999;
+  /// Distance to the center if (x,y) is inside the box defined by (fPadPosition,fPadDimensions)
+  /// 9999 otherwise
+
+  TVector2 point = TVector2(gPad->AbsPixeltoX(x), gPad->AbsPixeltoY(y));
+  if ( IsInside(point,fPadPosition,fPadDimensions) )
+    {
+      return (Int_t)(point-fPadPosition).Mod();
+    }
+  return 9999;
 }
 
 //_______________________________________________________________________
 void AliMpVPainter::DumpObject() const
 {
-  // Dump the painted object
+  /// Dump the painted object
 }
 
 //_______________________________________________________________________
 TObject* AliMpVPainter::Clone(const char* newname) const
 {
-  // create a clone of this object
+  /// Create a clone of this object
+
   AliMpVPainter *newobj = (AliMpVPainter *)TObject::Clone(newname);
   if (!newobj) return 0;
   AliMpGraphContext *gr = AliMpGraphContext::Instance();
@@ -115,7 +141,8 @@ TObject* AliMpVPainter::Clone(const char* newname) const
 //_______________________________________________________________________
 TObject* AliMpVPainter::DrawClone(Option_t* option) const
 {
-  // draw the clone object
+  /// Draw the clone object
+
   TVirtualPad *pad = gROOT->GetSelectedPad();
   TVirtualPad *padsav = gPad;
 
@@ -132,8 +159,9 @@ TObject* AliMpVPainter::DrawClone(Option_t* option) const
 //_______________________________________________________________________
 AliMpVPainter *AliMpVPainter::CreatePainter(TObject *object)
 {
-  // create a new painter, which correspond to the
-  // class of object
+  /// Create a new painter, which correspond to the
+  /// class of object
+
   AliMpVPainter *painter=0;
   if (object->InheritsFrom(AliMpSector::Class()))
     painter = new AliMpSectorPainter((AliMpSector *)object);
@@ -147,14 +175,18 @@ AliMpVPainter *AliMpVPainter::CreatePainter(TObject *object)
     painter = new AliMpRowSegmentPainter((AliMpVRowSegment *)object);
   else if (object->InheritsFrom(AliMpMotifPosition::Class()))
     painter = new AliMpMotifPainter((AliMpMotifPosition *)object);
-
+  else if (object->InheritsFrom(AliMpPCB::Class()))
+    painter = new AliMpPCBPainter((AliMpPCB *)object);
+  else if (object->InheritsFrom(AliMpSlat::Class()))
+    painter = new AliMpSlatPainter((AliMpSlat*)object);
   return painter;
 }
 
 //_______________________________________________________________________
 void AliMpVPainter::AddPainter(AliMpVPainter *painter)
 {
-  // add a painter to the list of painters (private)
+  /// Add a painter to the list of painters (private)
+
   fTrashList->Add(painter);
 }
 
@@ -162,8 +194,9 @@ void AliMpVPainter::AddPainter(AliMpVPainter *painter)
 //_______________________________________________________________________
 AliMpVPainter *AliMpVPainter::DrawObject(TObject *object,Option_t *option)
 {
-  // Draw the object
-  // return the AliMpVPainter object created for the drawing
+  /// Draw the object                                                  \n
+  /// Return the AliMpVPainter object created for the drawing
+
   AliMpVPainter *painter=CreatePainter(object);
 
   if (painter){
@@ -176,8 +209,8 @@ AliMpVPainter *AliMpVPainter::DrawObject(TObject *object,Option_t *option)
 //_______________________________________________________________________
 void AliMpVPainter::InitGraphContext()
 {
-  // Set the pad and real area of the graphic context to
-  // the one stored in this painter
+  /// Set the pad and real area of the graphic context to
+  /// the one stored in this painter
 
   AliMpGraphContext *gr = AliMpGraphContext::Instance();
   gr->SetPadPosition(fPadPosition);
@@ -192,8 +225,8 @@ void AliMpVPainter::InitGraphContext()
 //_______________________________________________________________________
 void AliMpVPainter::PaintWholeBox(Bool_t fill)
 {
-  // Paint the box around the total pad area given in this painter
-  // fill it or bnot following the parameter value
+  /// Paint the box around the total pad area given in this painter
+  /// fill it or bnot following the parameter value
 
   Double_t x1,y1,x2,y2;
   x1 = fPadPosition.X()-fPadDimensions.X();
@@ -212,7 +245,7 @@ void AliMpVPainter::PaintWholeBox(Bool_t fill)
 //_______________________________________________________________________
 TVector2 AliMpVPainter::RealToPad(const TVector2& realPos)
 {
-// transform a real position into its equivalent position in a canvas
+  /// Transform a real position into its equivalent position in a canvas
 
   AliMpGraphContext *gr = AliMpGraphContext::Instance();
   gr->Push();

@@ -1,11 +1,14 @@
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
+
 // $Id$
-// Category: basic
-//
-// Class AliMpVIndexed
-// -------------------
-// Class that defines the limits of global pad indices.
-//
-// Authors: David Guez, Ivana Hrivnacova; IPN Orsay
+// $MpId: AliMpVIndexed.h,v 1.5 2005/08/26 15:43:36 ivana Exp $
+
+/// \ingroup basic
+/// \class AliMpVIndexed
+/// \brief Base class that defines the limits of global pad indices.
+///
+/// Authors: David Guez, Ivana Hrivnacova; IPN Orsay
 
 #ifndef ALI_MP_V_INDEXED_H
 #define ALI_MP_V_INDEXED_H

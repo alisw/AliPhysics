@@ -1,11 +1,14 @@
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
+
 // $Id$
-// Category: basic
-//
-// Class AliMpPad
-// ---------------
-// Class which encapsuate all informations about a pad
-//
-// Authors: David Guez, Ivana Hrivnacova; IPN Orsay
+// $MpId: AliMpPad.h,v 1.6 2005/08/26 15:43:36 ivana Exp $
+
+/// \ingroup basic
+/// \class AliMpPad
+/// \brief Class which encapsuate all information about a pad
+///
+/// Authors: David Guez, Ivana Hrivnacova; IPN Orsay
 
 #ifndef ALI_MP_PAD_H
 #define ALI_MP_PAD_H

@@ -1,4 +1,20 @@
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+
 // $Id$
+// $MpId: AliMpVRowSegmentSpecial.cxx,v 1.6 2005/08/26 15:43:36 ivana Exp $
 // Category: sector
 //
 // Class AliMpVRowSegmentSpecial
@@ -39,7 +55,7 @@ AliMpVRowSegmentSpecial::AliMpVRowSegmentSpecial(AliMpRow* row, Double_t offsetX
     ,fNofMotifPositionIds(0)
 #endif    
 {
-// 
+/// Standard constructor  
 }
 
 //______________________________________________________________________________
@@ -54,7 +70,8 @@ AliMpVRowSegmentSpecial::AliMpVRowSegmentSpecial()
     ,fNofMotifPositionIds(0)
 #endif    
 {
-//
+/// Default constructor  
+
 #ifdef WITH_ROOT
    fMotifPositionIds.Set(fgkMaxNofMotifPositionIds);
 #endif    
@@ -63,15 +80,18 @@ AliMpVRowSegmentSpecial::AliMpVRowSegmentSpecial()
 //_____________________________________________________________________________
 AliMpVRowSegmentSpecial::AliMpVRowSegmentSpecial(
                                   const AliMpVRowSegmentSpecial& right) 
-  : AliMpVRowSegment(right) {
-// 
+  : AliMpVRowSegment(right) 
+{
+/// Protected copy constructor (not provided)
+ 
   Fatal("AliMpVRowSegmentSpecial", "Copy constructor not provided.");
 }
 
 //______________________________________________________________________________
 AliMpVRowSegmentSpecial::~AliMpVRowSegmentSpecial() 
 {
-//  
+/// Destructor
+  
   for (Int_t i=0; i<GetNofPadRows(); i++)
     delete fPadRows[i];
 }
@@ -84,10 +104,12 @@ AliMpVRowSegmentSpecial::~AliMpVRowSegmentSpecial()
 AliMpVRowSegmentSpecial& 
 AliMpVRowSegmentSpecial::operator=(const AliMpVRowSegmentSpecial& right)
 {
-  // check assignement to self
+/// Protected assignment operator (not provided)
+
+  // check assignment to self
   if (this == &right) return *this;
 
-  Fatal("operator =", "Assignement operator not provided.");
+  Fatal("operator =", "Assignment operator not provided.");
     
   return *this;  
 }    
@@ -99,8 +121,7 @@ AliMpVRowSegmentSpecial::operator=(const AliMpVRowSegmentSpecial& right)
 //______________________________________________________________________________
 AliMpPadRow*  AliMpVRowSegmentSpecial::FindPadRow(Double_t y) const
 {
-// Finds the pad row in the given y coordinate.
-// ---
+/// Find the pad row in the given y coordinate.
 
   Double_t lowBorder =  fRow->LowBorderY();
   Double_t highBorder = fRow->LowBorderY();
@@ -123,8 +144,7 @@ AliMpPadRow*  AliMpVRowSegmentSpecial::FindPadRow(Double_t y) const
 AliMpVPadRowSegment*  
 AliMpVRowSegmentSpecial::FindPadRowSegment(Int_t motifPositionId) const
 {
-// Find the most down pad row segment with this motifPositionId.
-// ---
+/// Find the most down pad row segment with this motifPositionId.
 
   for (Int_t i=0; i<GetNofPadRows(); i++) {
     AliMpPadRow* padRow = GetPadRow(i);    
@@ -143,9 +163,8 @@ AliMpVRowSegmentSpecial::FindPadRowSegment(Int_t motifPositionId) const
 AliMpIntPair 
 AliMpVRowSegmentSpecial::FindRelativeLowIndicesOf(Int_t motifPositionId) const 
 { 
-// Returns the lowest pad indices where the motif of the given position ID
-// exists in this segment.
-// ---
+/// Return the lowest pad indices where the motif of the given position ID
+/// exist in this segment.
 
   AliMpIntPair ans(0,1000);
   AliMpIntPair ans0 = ans;
@@ -175,8 +194,7 @@ AliMpVRowSegmentSpecial::FindRelativeLowIndicesOf(Int_t motifPositionId) const
 //______________________________________________________________________________
 Int_t  AliMpVRowSegmentSpecial::MaxNofPadsInRow() const 
 { 
-// Returns the maximum number of pads in this row segment along the X direction
-// ---
+/// Return the maximum number of pads in this row segment along the X direction
 
   Int_t maxNofPads = 0;    
 
@@ -193,9 +211,8 @@ Int_t  AliMpVRowSegmentSpecial::MaxNofPadsInRow() const
 //______________________________________________________________________________
 Bool_t AliMpVRowSegmentSpecial::HasMotif(const AliMpVMotif* motif) const
 {
-// Returns true if the specified motif is already in fMotifs vector,
-// returns false otherwise.
-// ---
+/// Return true if the specified motif is already in fMotifs vector,
+/// returns false otherwise.
 
 #ifdef WITH_STL
   for (UInt_t i=0; i<fMotifs.size(); i++)
@@ -213,8 +230,7 @@ Bool_t AliMpVRowSegmentSpecial::HasMotif(const AliMpVMotif* motif) const
 //______________________________________________________________________________
 Int_t AliMpVRowSegmentSpecial::GetNofPadRows() const
 {
-// Returns number of pad rows.
-// ---
+/// Return number of pad rows.
 
 #ifdef WITH_STL
   return fPadRows.size();
@@ -228,8 +244,7 @@ Int_t AliMpVRowSegmentSpecial::GetNofPadRows() const
 //______________________________________________________________________________
 AliMpPadRow* AliMpVRowSegmentSpecial::GetPadRow(Int_t i) const
 {
-// Returns number of pad rows.
-// ---
+/// Return number of pad rows.
 
 #ifdef WITH_STL
   return fPadRows[i];
@@ -247,8 +262,7 @@ AliMpPadRow* AliMpVRowSegmentSpecial::GetPadRow(Int_t i) const
 //______________________________________________________________________________
 void  AliMpVRowSegmentSpecial::AddPadRow(AliMpPadRow* padRow)
 {
-// Adds a pad row.
-// ---
+/// Add a pad row.
 
   padRow->SetOffsetX(fOffsetX);
   padRow->SetID(GetNofPadRows());
@@ -265,9 +279,8 @@ void  AliMpVRowSegmentSpecial::AddPadRow(AliMpPadRow* padRow)
 //______________________________________________________________________________
 void AliMpVRowSegmentSpecial::UpdateMotifVector()
 {
-// Add motifs associated with the pad row segments in the specified
-// pad row in the fMotifs vector.
-// ---
+/// Add motifs associated with the pad row segments in the specified
+/// pad row in the fMotifs vector.
 
   for (Int_t i=0; i<GetNofPadRows(); i++) {
     AliMpPadRow* padRow = GetPadRow(i);
@@ -300,8 +313,7 @@ void AliMpVRowSegmentSpecial::UpdateMotifVector()
 //______________________________________________________________________________
 Double_t  AliMpVRowSegmentSpecial::HalfSizeY() const
 {
-// Returns the size in y of this row segment.
-// ---
+/// Return the size in y of this row segment.
 
   Double_t halfSizeY = 0.;
   for (Int_t i=0; i<GetNofPadRows(); i++) {
@@ -314,8 +326,7 @@ Double_t  AliMpVRowSegmentSpecial::HalfSizeY() const
 //______________________________________________________________________________
 AliMpVMotif*  AliMpVRowSegmentSpecial::FindMotif(const TVector2& position) const
 {
-// Returns the motif of this row; 
-// ---
+/// Return the motif of this row; 
 
   AliMpPadRow* padRow 
     = FindPadRow(position.Y());
@@ -333,9 +344,8 @@ AliMpVMotif*  AliMpVRowSegmentSpecial::FindMotif(const TVector2& position) const
 //______________________________________________________________________________
 Int_t AliMpVRowSegmentSpecial::FindMotifPositionId(const TVector2& position) const
 {
-// Returns the motif position identified for the given
-// geometric position.
-// ---
+/// Return the motif position identified for the given
+/// geometric position.
 
   AliMpPadRow* padRow 
     = FindPadRow(position.Y());
@@ -353,9 +363,8 @@ Int_t AliMpVRowSegmentSpecial::FindMotifPositionId(const TVector2& position) con
 //______________________________________________________________________________
 Bool_t AliMpVRowSegmentSpecial::HasMotifPosition(Int_t motifPositionId) const
 {
-// Returns true if the motif specified with the given position identifier
-// is in this segment.
-// ---
+/// Return true if the motif specified with the given position identifier
+/// is in this segment.
 
   if (FindPadRowSegment(motifPositionId))
     return true;
@@ -366,9 +375,8 @@ Bool_t AliMpVRowSegmentSpecial::HasMotifPosition(Int_t motifPositionId) const
 //______________________________________________________________________________
 TVector2 AliMpVRowSegmentSpecial::MotifCenter(Int_t motifPositionId) const
 {
-// Returns the coordinates of the motif specified with
-// the given position identifier.
-// ---
+/// Return the coordinates of the motif specified with
+/// the given position identifier.
 
   // Try to get the motif position from the motif map first
   AliMpMotifPosition* motifPosition
@@ -382,8 +390,7 @@ TVector2 AliMpVRowSegmentSpecial::MotifCenter(Int_t motifPositionId) const
 //______________________________________________________________________________
 TVector2 AliMpVRowSegmentSpecial::Dimensions() const
 {
-// Returns the halflengths in x, y of the row segment rectangular envelope.
-// ---
+/// Return the halflengths in x, y of the row segment rectangular envelope.
 
   Double_t x = 0.;		    
   Double_t y = 0.;  
@@ -406,8 +413,7 @@ TVector2 AliMpVRowSegmentSpecial::Dimensions() const
 //______________________________________________________________________________
 AliMpRow*  AliMpVRowSegmentSpecial::GetRow() const
 {
-// Returns the row.which this row segment belongs to.
-// ---
+/// Return the row.which this row segment belongs to.
 
   return fRow;
 }  
@@ -415,8 +421,7 @@ AliMpRow*  AliMpVRowSegmentSpecial::GetRow() const
 //______________________________________________________________________________
 Int_t  AliMpVRowSegmentSpecial::GetNofMotifs() const 
 { 
-// Returns the number of different motifs present in this row segment.
-// ---
+/// Return the number of different motifs present in this row segment.
 
 #ifdef WITH_STL
   return fMotifs.size();
@@ -429,8 +434,7 @@ Int_t  AliMpVRowSegmentSpecial::GetNofMotifs() const
 //______________________________________________________________________________
 AliMpVMotif* AliMpVRowSegmentSpecial::GetMotif(Int_t i) const  
 {
-// Returns the i-th motif present in this row segment.
-// ---
+/// Return the i-th motif present in this row segment.
 
 #ifdef WITH_STL
    return fMotifs[i]; 
@@ -443,8 +447,7 @@ AliMpVMotif* AliMpVRowSegmentSpecial::GetMotif(Int_t i) const
 //______________________________________________________________________________
 Int_t  AliMpVRowSegmentSpecial::GetMotifPositionId(Int_t i) const 
 { 
-// Returns the i-th motif position Id present in this row segment.
-// ---
+/// Return the i-th motif position Id present in this row segment.
 
    return fMotifPositionIds[i]; 
 } 

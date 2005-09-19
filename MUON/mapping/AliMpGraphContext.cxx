@@ -1,4 +1,20 @@
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+
 // $Id$
+// $MpId: AliMpGraphContext.cxx,v 1.7 2005/08/26 15:43:36 ivana Exp $
 // Category: graphics
 //
 // Class AliMpGraphContext
@@ -28,7 +44,7 @@ AliMpGraphContext::AliMpGraphContext():
   fRealPosition(TVector2(0.,0.)),
   fRealDimensions(TVector2(1,1))
 {
-// private constructor
+/// Private constructor
 
   fColor = 20;
   // default constructor (private)
@@ -43,16 +59,16 @@ AliMpGraphContext::AliMpGraphContext(const AliMpGraphContext& right)
     fRealPosition(right.fRealPosition),
     fRealDimensions(right.fRealDimensions)     
 {
-// Copy constructor
+/// Copy constructor
 }
 
 //_____________________________________________________________________________
 AliMpGraphContext& 
 AliMpGraphContext::operator=(const AliMpGraphContext& right)
 {
-// protected assignement operator
+/// Protected assignment operator
 
-  // check assignement to self
+  // check assignment to self
   if (this == &right) return *this;
 
   fColor = right.fColor;
@@ -67,7 +83,8 @@ AliMpGraphContext::operator=(const AliMpGraphContext& right)
 //_____________________________________________________________________________
 AliMpGraphContext *AliMpGraphContext::Instance()
 {
-  // return or create a unique instance of this class
+  /// Return or create a unique instance of this class
+  
   if (fgInstance) return fgInstance;
   fgInstance = new AliMpGraphContext;
   return fgInstance;
@@ -76,7 +93,8 @@ AliMpGraphContext *AliMpGraphContext::Instance()
 //_____________________________________________________________________________
 TVector2 AliMpGraphContext::RealToPad(const TVector2 &position) const
 {
-  // transform a real position into its equivalent position in the pad
+  /// Transform a real position into its equivalent position in the pad
+  
   Double_t x=position.X();
   Double_t y=position.Y();
   x-= (fRealPosition.X()-fRealDimensions.X());
@@ -98,8 +116,9 @@ void AliMpGraphContext::RealToPad(const TVector2 &position,
 			      TVector2 &padPosition,
 			      TVector2 &padDimensions) const
 {
-  // transform the real area (position,dimensions) to
+  // Transform the real area (position,dimensions) to
   // its equivalent pad area
+
   padPosition = RealToPad(position);
   padDimensions = 
     TVector2(dimensions.X()*fPadDimensions.X()/fRealDimensions.X(),
@@ -111,15 +130,17 @@ void AliMpGraphContext::RealToPad(const TVector2 &position,
 void AliMpGraphContext::SetPadPosForReal(const TVector2 &position,
 				     const TVector2 &dimensions)
 {
-  // Set the pad area from the actual one
-  // corresponding to the given real area.
+  /// Set the pad area from the actual one
+  /// corresponding to the given real area.
+
   RealToPad(position,dimensions,fPadPosition,fPadDimensions);
 }
 
 //_____________________________________________________________________________
 void AliMpGraphContext::Push() const
 {
-  // Store the current configuration
+  /// Store the current configuration
+
   AliMpGraphContext *save = new AliMpGraphContext(*this);
 
 #ifdef WITH_STL
@@ -134,7 +155,8 @@ void AliMpGraphContext::Push() const
 //_____________________________________________________________________________
 void AliMpGraphContext::Pop()
 {
-// Pops object from the stack.
+/// Pop an object from the stack.
+
 #ifdef WITH_STL
   // restore the last saved configuration
   if (!fgStack.empty()){

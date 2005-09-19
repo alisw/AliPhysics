@@ -1,4 +1,20 @@
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+
 // $Id$
+// $MpId: AliMpRow.cxx,v 1.7 2005/08/26 15:43:36 ivana Exp $
 // Category: sector
 //
 // Class AliMpRow
@@ -31,7 +47,7 @@ AliMpRow::AliMpRow(Int_t id, AliMpMotifMap* motifMap)
     fSegments(),
     fMotifMap(motifMap)
 {
-//
+/// Standard constructor
 }
 
 //_____________________________________________________________________________
@@ -42,19 +58,22 @@ AliMpRow::AliMpRow()
     fSegments(),
     fMotifMap(0)
 {
-//
+/// Default constructor
 }
 
 //_____________________________________________________________________________
 AliMpRow::AliMpRow(const AliMpRow& right) 
-  : AliMpVIndexed(right) {
-// 
+  : AliMpVIndexed(right) 
+{
+/// Protected copy constructor (not provided) 
+
   Fatal("AliMpRow", "Copy constructor not provided.");
 }
 
 //_____________________________________________________________________________
-AliMpRow::~AliMpRow() {
-// 
+AliMpRow::~AliMpRow() 
+{
+/// Destructor 
 
 #ifdef WITH_STL
   for (Int_t i=0; i<GetNofRowSegments(); i++)
@@ -73,10 +92,12 @@ AliMpRow::~AliMpRow() {
 //_____________________________________________________________________________
 AliMpRow&  AliMpRow::operator=(const AliMpRow& right)
 {
-  // check assignement to self
+/// Protected assignment operator (not provided)
+
+  // check assignment to self
   if (this == &right) return *this;
 
-  Fatal("operator =", "Assignement operator not provided.");
+  Fatal("operator =", "Assignment operator not provided.");
     
   return *this;  
 }    
@@ -88,8 +109,7 @@ AliMpRow&  AliMpRow::operator=(const AliMpRow& right)
 //_____________________________________________________________________________
 AliMpVRowSegment*  AliMpRow::FindRowSegment(Int_t ix) const
 {    
-// Finds first normal row segment with low indices limit >= ix.
-// --- 
+/// Find first normal row segment with low indices limit >= ix.
 
   for (Int_t i=0; i<GetNofRowSegments(); i++) {
     AliMpVRowSegment* segment = GetRowSegment(i);
@@ -107,9 +127,8 @@ AliMpVRowSegment*  AliMpRow::FindRowSegment(Int_t ix) const
 AliMpMotifPosition*  
 AliMpRow::FindMotifPosition(AliMpVRowSegment* segment, Int_t ix) const
 {
-// Finds first motif position in the specified row segment 
-// with high indices limit >= ix.
-// --- 
+/// Find first motif position in the specified row segment 
+/// with high indices limit >= ix.
 
   if (!segment) return 0;
 
@@ -133,10 +152,9 @@ AliMpRow::FindMotifPosition(AliMpVRowSegment* segment, Int_t ix) const
 //_____________________________________________________________________________
 void AliMpRow::SetHighIndicesLimits(Int_t iy)
 {
-// Sets the global indices high limit to its row segments,
-// motif positions with a given value.
-// Keeps ix unmodified.
-// --- 
+/// Set the global indices high limit to its row segments,
+/// motif positions with a given value.
+/// Keep ix unmodified.
 
   for (Int_t j=0; j<GetNofRowSegments(); j++) {
      AliMpVRowSegment* rowSegment = GetRowSegment(j);       
@@ -161,8 +179,7 @@ void AliMpRow::SetHighIndicesLimits(Int_t iy)
 //_____________________________________________________________________________
 void  AliMpRow::CheckEmpty() const
 {
-// Give a fatal if row is empty.
-// ---
+/// Give a fatal if the row is empty.
 
   if (GetNofRowSegments() == 0) 
     Fatal("CheckEmpty", "Empty row");
@@ -175,8 +192,7 @@ void  AliMpRow::CheckEmpty() const
 //_____________________________________________________________________________
 void AliMpRow::AddRowSegment(AliMpVRowSegment* rowSegment)
 {
-// Adds row segment at the end.
-// ---
+/// Add row segment at the end.
 
 #ifdef WITH_STL
   fSegments.push_back(rowSegment);
@@ -190,8 +206,7 @@ void AliMpRow::AddRowSegment(AliMpVRowSegment* rowSegment)
 //_____________________________________________________________________________
 void AliMpRow::AddRowSegmentInFront(AliMpVRowSegment* rowSegment)
 {
-// Inserts row segment in the first vector position.
-// ---
+/// Insert row segment in the first vector position.
 
 #ifdef WITH_STL
   fSegments.insert(fSegments.begin(), rowSegment);
@@ -205,9 +220,8 @@ void AliMpRow::AddRowSegmentInFront(AliMpVRowSegment* rowSegment)
 //_____________________________________________________________________________
 AliMpVRowSegment* AliMpRow::FindRowSegment(Double_t x) const
 {
-// Finds the row segment for the specified x position;
-// returns 0 if no row segment is found.
-// ---
+/// Find the row segment for the specified x position;
+/// return 0 if no row segment is found.
 
   for (Int_t i=0; i<GetNofRowSegments(); i++) {
 
@@ -228,9 +242,8 @@ AliMpVRowSegment* AliMpRow::FindRowSegment(Double_t x) const
 //_____________________________________________________________________________
 Double_t AliMpRow::LowBorderY() const
 {
-// Returns the lowest row offset (the Y coordinate of the position of the
-// low border of motif).
-// ---
+/// Return the lowest row offset (the Y coordinate of the position of the
+/// low border of motif).
 
   CheckEmpty();
 
@@ -240,10 +253,9 @@ Double_t AliMpRow::LowBorderY() const
 //_____________________________________________________________________________
 Double_t AliMpRow::UpperBorderY() const
 {
-// Returns the uppermost row offset (the Y coordinate of the position of the
-// upper border of motif).
-// ---
-
+/// Return the uppermost row offset (the Y coordinate of the position of the
+/// upper border of motif).
+\
   CheckEmpty();
 
   return fOffsetY + GetRowSegment(0)->HalfSizeY();
@@ -252,10 +264,9 @@ Double_t AliMpRow::UpperBorderY() const
 //_____________________________________________________________________________
 AliMpVPadIterator* AliMpRow::CreateIterator() const
 {
-// Iterator is not yet implemented.
-// ---
+/// Iterator is not implemented.
 
-  Fatal("CreateIterator", "Iterator is not yet implemented.");
+  Fatal("CreateIterator", "Iterator is not implemented.");
   
   return 0;
 }  
@@ -263,8 +274,7 @@ AliMpVPadIterator* AliMpRow::CreateIterator() const
 //_____________________________________________________________________________
 void AliMpRow::SetMotifPositions()
 {
-// Creates motif positions objects and fills them in the motif map.
-// ---
+/// Create motif positions objects and fills them in the motif map.
 
   CheckEmpty();
 
@@ -301,9 +311,8 @@ void AliMpRow::SetMotifPositions()
 void AliMpRow::SetGlobalIndices(AliMpDirection constPadSizeDirection, 
                                 AliMpRow* rowBefore)
 {
-// Sets the global indices limits to its row segments, motif positions
-// and itself.
-// ---
+/// Set the global indices limits to its row segments, motif positions
+/// and itself.
 
   Int_t ix = AliMpConstants::StartPadIndex();
   Int_t iy = AliMpConstants::StartPadIndex();
@@ -369,8 +378,7 @@ void AliMpRow::SetGlobalIndices(AliMpDirection constPadSizeDirection,
 //_____________________________________________________________________________
 TVector2  AliMpRow::Position() const
 {
-// Returns the position of the row centre.
-// ---
+/// Return the position of the row centre.
 
   Double_t x = (GetRowSegment(0)->LeftBorderX() +
                 GetRowSegment(GetNofRowSegments()-1)->RightBorderX())/2.;
@@ -383,8 +391,7 @@ TVector2  AliMpRow::Position() const
 //_____________________________________________________________________________
 TVector2  AliMpRow::Dimensions() const
 {
-// Returns the maximum halflengths of the row in x, y.
-// ---
+/// Return the maximum halflengths of the row in x, y.
 
   Double_t x = (GetRowSegment(GetNofRowSegments()-1)->RightBorderX() -
                 GetRowSegment(0)->LeftBorderX())/2.;
@@ -397,8 +404,7 @@ TVector2  AliMpRow::Dimensions() const
 //_____________________________________________________________________________
 void AliMpRow::SetRowSegmentOffsets(const TVector2& offset)
 {
-// Sets the row segments offsets in X .
-// ---
+/// Set the row segments offsets in X .
 
   CheckEmpty();
   
@@ -422,9 +428,8 @@ void AliMpRow::SetRowSegmentOffsets(const TVector2& offset)
 //_____________________________________________________________________________
 Double_t AliMpRow::SetOffsetY(Double_t offsetY)
 {
-// Sets the row offset (the Y coordinate of the position of the
-// center of motif) and returns the offset of the top border.
-// ---
+/// Set the row offset (the Y coordinate of the position of the
+/// center of motif) and returns the offset of the top border.
 
   CheckEmpty();
 
@@ -454,8 +459,7 @@ Double_t AliMpRow::SetOffsetY(Double_t offsetY)
 //_____________________________________________________________________________
 Int_t AliMpRow::GetNofRowSegments() const 
 {
-// Returns number of row segments.
-// ---
+/// Return number of row segments.
 
 #ifdef WITH_STL
   return fSegments.size();
@@ -469,8 +473,7 @@ Int_t AliMpRow::GetNofRowSegments() const
 //_____________________________________________________________________________
 AliMpVRowSegment* AliMpRow::GetRowSegment(Int_t i) const 
 {
-// Returns i-th row segment.
-// ---
+/// Return i-th row segment.
 
   if (i<0 || i>=GetNofRowSegments()) {
     Warning("GetRowSegment", "Index outside range");

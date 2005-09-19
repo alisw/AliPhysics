@@ -1,4 +1,20 @@
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+
 // $Id$
+// $MpId: AliMpRowSegmentRSpecial.cxx,v 1.5 2005/08/26 15:43:36 ivana Exp $
 // Category: sector
 //
 // Class AliMpRowSegmentRSpecial
@@ -27,20 +43,20 @@ ClassImp(AliMpRowSegmentRSpecial)
 AliMpRowSegmentRSpecial::AliMpRowSegmentRSpecial(AliMpRow* row, Double_t offsetX)
   : AliMpVRowSegmentSpecial(row, offsetX)
 {
-// 
+/// Standard constructor 
 }
 
 //______________________________________________________________________________
 AliMpRowSegmentRSpecial::AliMpRowSegmentRSpecial() 
   : AliMpVRowSegmentSpecial()
 {
-//
+/// Default constructor 
 }
 
 //______________________________________________________________________________
 AliMpRowSegmentRSpecial::~AliMpRowSegmentRSpecial() 
 {
-//  
+/// Destructor  
 }
 
 //
@@ -51,8 +67,7 @@ AliMpRowSegmentRSpecial::~AliMpRowSegmentRSpecial()
 AliMpVPadRowSegment*  
 AliMpRowSegmentRSpecial::FindMostLeftPadRowSegment(Int_t motifPositionId) const
 {
-// Find the most left pad row segment with this motifPositionId.
-// ---
+/// Find the most left pad row segment with this motifPositionId.
 
   AliMpVPadRowSegment* found = 0;
 
@@ -75,7 +90,7 @@ AliMpRowSegmentRSpecial::FindMostLeftPadRowSegment(Int_t motifPositionId) const
 //______________________________________________________________________________
 void AliMpRowSegmentRSpecial::SetGlobalIndicesLow()
 {
-// ...
+/// Set global low indices
    
   // Last normal row segment in the row
   // (preceding this special row segment)
@@ -97,11 +112,10 @@ void AliMpRowSegmentRSpecial::SetGlobalIndicesLow()
 //______________________________________________________________________________
 TVector2 AliMpRowSegmentRSpecial::MotifCenterSlow(Int_t motifPositionId) const
 {
-// Returns the coordinates of the motif specified with
-// the given position identifier.
-// !! Applicable only for motifs that have their most down pad in
-// this row segment.
-// ---
+/// Return the coordinates of the motif specified with
+/// the given position identifier.                                           \n
+/// !! Applicable only for motifs that have their most down pad in
+/// this row segment.
 
   // Find the first (left, down) pad row segment with this motifPositionId.
   AliMpVPadRowSegment* downPadRowSegment 
@@ -142,9 +156,8 @@ TVector2 AliMpRowSegmentRSpecial::MotifCenterSlow(Int_t motifPositionId) const
 //______________________________________________________________________________
 Double_t  AliMpRowSegmentRSpecial::LeftBorderX() const
 {
-// Returns the x coordinate of the left row segment border
-// in global coordinate system.
-// ---
+/// Return the x coordinate of the left row segment border
+/// in the global coordinate system.
 
   // The right edge of the last normal segment
   Double_t sameBorder = GetOffsetX();
@@ -169,9 +182,8 @@ Double_t  AliMpRowSegmentRSpecial::LeftBorderX() const
 //______________________________________________________________________________
 Double_t  AliMpRowSegmentRSpecial::RightBorderX() const
 {
-// Returns the x coordinate of the right row segment border
-// in global coordinate system.
-// ---
+/// Return the x coordinate of the right row segment border
+/// in the global coordinate system.
 
   Double_t rightBorder = -DBL_MAX;
   for (Int_t i=0; i<GetNofPadRows(); i++) {
@@ -189,10 +201,9 @@ Double_t  AliMpRowSegmentRSpecial::RightBorderX() const
 //______________________________________________________________________________
 TVector2 AliMpRowSegmentRSpecial::Position() const
 {
-// Returns the position of the row segment centre.
-// The centre is defined as the centre of the rectangular
-// row segment envelope.
-// ---
+/// Return the position of the row segment centre.
+/// The centre is defined as the centre of the rectangular
+/// row segment envelope.
 
   // The right edge of the last normal segment
   Double_t x = GetOffsetX()  + Dimensions().X();
@@ -205,8 +216,7 @@ TVector2 AliMpRowSegmentRSpecial::Position() const
 Int_t AliMpRowSegmentRSpecial::SetIndicesToMotifPosition(Int_t i, 
                                          const AliMpIntPair& indices)
 {
-// Sets global indices to i-th motif position and returns next index in x.
-// ---
+/// Set global indices to i-th motif position and returns next index in x.
 
   // Update low indices limit for this row segment
   SetGlobalIndicesLow();
@@ -256,10 +266,9 @@ Int_t AliMpRowSegmentRSpecial::SetIndicesToMotifPosition(Int_t i,
 //______________________________________________________________________________
 void AliMpRowSegmentRSpecial::SetGlobalIndices(AliMpRow* rowBefore)
 {
-// Sets indices limits.
-// The limits are defined as the limits of the smallest rectangle which
-// includes all pads of this special row segment.
-// ---
+/// Set indices limits.
+/// The limits are defined as the limits of the smallest rectangle which
+/// includes all pads of this special row segment.
 
   // Get first motif position
   AliMpMotifPosition* firstMotifPosition

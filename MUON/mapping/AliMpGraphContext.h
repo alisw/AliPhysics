@@ -1,12 +1,15 @@
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
+
 // $Id$
-// Category: graphics
-//
-// Class AliMpGraphContext
-// -----------------------
-// Class describing the correspondance between a given area
-// in pad, and a zone of real (cm) position
-//
-// Author: David GUEZ, IPN Orsay
+// $MpId: AliMpGraphContext.h,v 1.7 2005/08/26 15:43:36 ivana Exp $
+
+/// \ingroup graphics
+/// \class AliMpGraphContext
+/// \brief Class describing the correspondance between a given area
+/// in pad, and a zone of real (cm) position
+///
+/// Author: David GUEZ, IPN Orsay
 
 #ifndef ALI_MP_GRAPH_CONTEXT_H
 #define ALI_MP_GRAPH_CONTEXT_H

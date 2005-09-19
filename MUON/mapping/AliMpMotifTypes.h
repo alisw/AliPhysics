@@ -1,11 +1,14 @@
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
+
 // $Id$
-// Category: motif
-//
-// AliMpMotifTypes
-// ---------------
-// Sytem dependent types definitions for motif category.
-//
-// Authors: David Guez, Ivana Hrivnacova; IPN Orsay
+// $MpId: AliMpMotifTypes.h,v 1.7 2005/08/26 15:43:36 ivana Exp $
+
+/// \ingroup motif
+/// AliMpMotifTypes
+/// Sytem dependent types definitions for motif category.
+///
+/// Authors: David Guez, Ivana Hrivnacova; IPN Orsay
 
 #ifndef ALI_MP_MOTIF_TYPES_H
 #define ALI_MP_MOTIF_TYPES_H
@@ -44,6 +47,8 @@ class AliMpMotifPosition;
   typedef MotiPositionMap::const_iterator  MotifPositionMapIterator;
   typedef map<AliMpIntPair, AliMpMotifPosition*> MotifPositionMap2;
   typedef MotifPositionMap2::const_iterator      MotifPositionMap2Iterator;
+  typedef map<string,pair<Int_t,Int_t> > PadMapType;
+  typedef PadMapType::iterator PadMapTypeIterator;
   typedef vector<TVector2> DimensionsMap;
 #else
   typedef std::map< AliMpIntPair, AliMpConnection* > ConnectionMap_t;
@@ -56,6 +61,8 @@ class AliMpMotifPosition;
   typedef MotiPositionMap::const_iterator       MotifPositionMapIterator;
   typedef std::map<AliMpIntPair, AliMpMotifPosition*> MotifPositionMap2;
   typedef MotifPositionMap2::const_iterator           MotifPositionMap2Iterator;
+  typedef std::map<std::string, std::pair<Int_t,Int_t> > PadMapType;
+  typedef PadMapType::iterator PadMapTypeIterator;
   typedef std::vector< TVector2 > DimensionsMap;
 #endif
 #endif
@@ -71,6 +78,8 @@ class AliMpMotifPosition;
   typedef TExMapIter MotifPositionMapIterator;
   typedef TExMap     MotifPositionMap2;
   typedef TExMapIter MotifPositionMap2Iterator;
+  typedef TExMap     PadMapType;
+  typedef TExMapIter PadMapTypeIterator;
   typedef TObjArray  DimensionsMap;
 #endif
 

@@ -1,4 +1,20 @@
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+
 // $Id$
+// $MpId: AliMpArea.cxx,v 1.6 2005/08/26 15:43:36 ivana Exp $
 // Category: basic
 //
 // Class AliMpArea
@@ -19,10 +35,13 @@ AliMpArea::AliMpArea(const TVector2& position, const TVector2& dimensions)
   : TObject(),
     fPosition(position),
     fDimensions(dimensions),
-    fValidity(true) {
-//
+    fValidity(true) 
+{
+/// Standard constructor
+
   // Check dimensions
-  if (fDimensions.X() <= 0. || fDimensions.Y() <=0.) {
+  if (  fDimensions.X() < 0. || fDimensions.Y() < 0. ||
+      ( fDimensions.X() == 0 && fDimensions.Y() == 0.0 ) ) {
     fDimensions = TVector2();
     fValidity = false;
   }  
@@ -33,21 +52,24 @@ AliMpArea::AliMpArea()
   : TObject(),
     fPosition(TVector2()),
     fDimensions(TVector2()), 
-    fValidity(false) {
-//
+    fValidity(false) 
+{
+/// Default constructor
 }
 
 //_____________________________________________________________________________
 AliMpArea::AliMpArea(const AliMpArea& rhs):
   TObject(rhs),
   fPosition(rhs.fPosition),
-  fDimensions(rhs.fDimensions) {
-//
+  fDimensions(rhs.fDimensions) 
+{
+/// Copy constructor
 }
 
 //_____________________________________________________________________________
-AliMpArea::~AliMpArea() {
-//
+AliMpArea::~AliMpArea() 
+{
+/// Destructor
 }
 
 //
@@ -57,12 +79,12 @@ AliMpArea::~AliMpArea() {
 //______________________________________________________________________________
 AliMpArea& AliMpArea::operator = (const AliMpArea& right)
 {
-// Assignement operator
+/// Assignment operator
 
-  // check assignement to self
+  // check assignment to self
   if (this == &right) return *this;
 
-  // base class assignement
+  // base class assignment
   TObject::operator=(right);
 
   fPosition = right.fPosition;
@@ -79,8 +101,7 @@ AliMpArea& AliMpArea::operator = (const AliMpArea& right)
 //_____________________________________________________________________________
 Double_t AliMpArea::LeftBorder() const
 {
-// Returns the position of the left edge.
-// --
+/// Return the position of the left edge.
 
   return fPosition.X() - fDimensions.X();
 }
@@ -88,8 +109,7 @@ Double_t AliMpArea::LeftBorder() const
 //_____________________________________________________________________________
 Double_t AliMpArea::RightBorder() const
 {
-// Returns the position of right edge.
-// --
+/// Return the position of right edge.
 
   return fPosition.X() + fDimensions.X();
 }
@@ -97,8 +117,7 @@ Double_t AliMpArea::RightBorder() const
 //_____________________________________________________________________________
 Double_t AliMpArea::UpBorder() const
 {
-// Returns the position of the up edge.
-// --
+/// Return the position of the up edge.
 
   return fPosition.Y() + fDimensions.Y();
 }
@@ -106,8 +125,7 @@ Double_t AliMpArea::UpBorder() const
 //_____________________________________________________________________________
 Double_t AliMpArea::DownBorder() const
 {
-// Returns the position of the down edge.
-// --
+/// Return the position of the down edge.
 
   return fPosition.Y() - fDimensions.Y();
 }
@@ -115,8 +133,7 @@ Double_t AliMpArea::DownBorder() const
 //_____________________________________________________________________________
 TVector2 AliMpArea::LeftDownCorner() const
 {
-// Returns position of the left down corner.
-// --
+/// Return position of the left down corner.
 
   return TVector2(LeftBorder(), DownBorder());
 }  
@@ -124,8 +141,7 @@ TVector2 AliMpArea::LeftDownCorner() const
 //_____________________________________________________________________________
 TVector2 AliMpArea::LeftUpCorner() const
 {
-// Returns position of the left up corner.
-// --
+/// Return position of the left up corner.
 
   return TVector2(LeftBorder(), UpBorder());
 }  
@@ -133,8 +149,7 @@ TVector2 AliMpArea::LeftUpCorner() const
 //_____________________________________________________________________________
 TVector2 AliMpArea::RightDownCorner() const
 {
-// Returns position of the right down corner.
-// --
+/// Return position of the right down corner.
 
   return TVector2(RightBorder(), DownBorder());
 }  
@@ -143,8 +158,7 @@ TVector2 AliMpArea::RightDownCorner() const
 //_____________________________________________________________________________
 TVector2 AliMpArea::RightUpCorner() const
 {
-// Returns position of the right up corner.
-// --
+/// Return position of the right up corner.
 
   return TVector2(RightBorder(), UpBorder());
 }  
@@ -152,6 +166,8 @@ TVector2 AliMpArea::RightUpCorner() const
 //_____________________________________________________________________________
 ostream& operator<< (ostream &stream,const AliMpArea& area)
 {
+/// Output streaming
+
   stream << "Area: position: (" 
          << area.Position().X() << ", " << area.Position().Y() << ") " 
 	 << " dimensions: (" 

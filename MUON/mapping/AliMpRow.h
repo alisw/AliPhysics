@@ -1,11 +1,14 @@
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
+
 // $Id$
-// Category: sector
-//
-// Class AliMpRow
-// --------------
-// Class describing a row composed of the row segments.
-//
-// Authors: David Guez, Ivana Hrivnacova; IPN Orsay
+// $MpId: AliMpRow.h,v 1.7 2005/08/26 15:43:36 ivana Exp $
+
+/// \ingroup sector
+/// \class AliMpRow
+/// \brief A row composed of the row segments.
+///
+/// Authors: David Guez, Ivana Hrivnacova; IPN Orsay
 
 #ifndef ALI_MP_ROW_H
 #define ALI_MP_ROW_H

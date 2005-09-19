@@ -1,4 +1,20 @@
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+
 // $Id$
+// $MpId: AliMpVPadRowSegment.cxx,v 1.5 2005/08/26 15:43:36 ivana Exp $
 // Category: sector
 //
 // Class AliMpVPadRowSegment
@@ -27,7 +43,7 @@ AliMpVPadRowSegment::AliMpVPadRowSegment(AliMpPadRow* padRow, AliMpMotif* motif,
     fMotif(motif),
     fMotifPositionId(motifPositionId)
 {
-// 
+/// Standard contructor 
 }
 
 //_____________________________________________________________________________
@@ -39,19 +55,22 @@ AliMpVPadRowSegment::AliMpVPadRowSegment()
     fMotif(0),
     fMotifPositionId(0)
 {
-//
+/// Default contructor 
 }
 
 //_____________________________________________________________________________
 AliMpVPadRowSegment::AliMpVPadRowSegment(const AliMpVPadRowSegment& right) 
-  : TObject(right) {
-// 
+  : TObject(right) 
+{
+/// Protected copy constructor (not provided) 
+
   Fatal("AliMpVPadRowSegment", "Copy constructor not provided.");
 }
 
 //_____________________________________________________________________________
-AliMpVPadRowSegment::~AliMpVPadRowSegment() {
-//  
+AliMpVPadRowSegment::~AliMpVPadRowSegment() 
+{
+/// Destructor   
 }
 
 //
@@ -62,10 +81,12 @@ AliMpVPadRowSegment::~AliMpVPadRowSegment() {
 AliMpVPadRowSegment& 
 AliMpVPadRowSegment::operator=(const AliMpVPadRowSegment& right)
 {
-  // check assignement to self
+/// Protected assignment operator (not provided)
+
+  // check assignment to self
   if (this == &right) return *this;
 
-  Fatal("operator =", "Assignement operator not provided.");
+  Fatal("operator =", "Assignment operator not provided.");
     
   return *this;  
 }    
@@ -77,8 +98,7 @@ AliMpVPadRowSegment::operator=(const AliMpVPadRowSegment& right)
 //_____________________________________________________________________________
 Double_t  AliMpVPadRowSegment::HalfSizeY() const
 {
-// Returns the size in y of this row segment.
-// ---
+/// Return the size in y of this row segment.
 
   return fMotif->GetPadDimensions().Y();
 }
@@ -86,8 +106,7 @@ Double_t  AliMpVPadRowSegment::HalfSizeY() const
 //_____________________________________________________________________________
 AliMpPadRow*  AliMpVPadRowSegment::GetPadRow() const
 {
-// Returns the pad row.which this pad row segment belongs to.
-// ---
+/// Return the pad row.which this pad row segment belongs to.
 
   return fPadRow;
 }  
@@ -95,8 +114,7 @@ AliMpPadRow*  AliMpVPadRowSegment::GetPadRow() const
 //_____________________________________________________________________________
 AliMpMotif*  AliMpVPadRowSegment::GetMotif() const
 {
-// Returns the motif of this pad row segment. 
-// ---
+/// Return the motif of this pad row segment. 
 
   return fMotif;
 }  
@@ -104,8 +122,7 @@ AliMpMotif*  AliMpVPadRowSegment::GetMotif() const
 //_____________________________________________________________________________
 Int_t  AliMpVPadRowSegment::GetMotifPositionId() const
 {
-// Returns the motif of this pad row segment. 
-// ---
+/// Return the motif of this pad row segment. 
 
   return fMotifPositionId;
 }  
@@ -113,8 +130,7 @@ Int_t  AliMpVPadRowSegment::GetMotifPositionId() const
 //_____________________________________________________________________________
 void  AliMpVPadRowSegment::SetOffsetX(Double_t offsetX)
 {
-// Sets the x offset.
-// ---
+/// Set the x offset.
 
   fOffsetX = offsetX;
 }    

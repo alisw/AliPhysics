@@ -1,13 +1,15 @@
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
+
 // $Id$
-// ---------------------------------------------------------------
-// Category: sector
-//
-// Class AliMpVPadRowSegment
-// -------------------------
-// The abstract base class for a pad row segment composed of the 
-// the identic pads.
-//
-// Authors: David Guez, Ivana Hrivnacova; IPN Orsay
+// $MpId: AliMpVPadRowSegment.h,v 1.5 2005/08/26 15:43:36 ivana Exp $
+
+/// \ingroup sector
+/// \class AliMpVPadRowSegment
+/// \brief The abstract base class for a pad row segment composed of the 
+/// the identic pads.
+///
+/// Authors: David Guez, Ivana Hrivnacova; IPN Orsay
 
 #ifndef ALI_MP_V_PAD_ROW_SEGMENT_H
 #define ALI_MP_V_PAD_ROW_SEGMENT_H

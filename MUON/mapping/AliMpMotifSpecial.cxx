@@ -1,4 +1,20 @@
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+
 // $Id$
+// $MpId: AliMpMotifSpecial.cxx,v 1.8 2005/08/26 15:43:36 ivana Exp $
 // Category: motif
 //
 // Class AliMpMotifSpecial
@@ -18,24 +34,13 @@
 ClassImp(AliMpMotifSpecial)
 
 
-// private methods
-//______________________________________________________________________________
-Int_t AliMpMotifSpecial::VectorIndex(const AliMpIntPair& indices) const
-{
-// transform indices to linear vector index
-  return indices.GetFirst()*GetMotifType()->GetNofPadsY() + indices.GetSecond();
-}
-
-
-//public methods
-
 //______________________________________________________________________________
 AliMpMotifSpecial::AliMpMotifSpecial():
   AliMpVMotif(),
   fPadDimensionsVector(),
   fPadDimensionsVector2()
 {
-  //default dummy constructor
+  /// Default constructor
 }
 
 
@@ -47,7 +52,7 @@ AliMpMotifSpecial::AliMpMotifSpecial(const TString &id,
     fPadDimensionsVector2()
   
 {
-  // Normal constructor.
+  /// Standard constructor.
 
 #ifdef WITH_STL
   fPadDimensionsVector.resize(motifType->GetNofPadsX()*motifType->GetNofPadsY());
@@ -61,7 +66,7 @@ AliMpMotifSpecial::AliMpMotifSpecial(const TString &id,
 //______________________________________________________________________________
 AliMpMotifSpecial::~AliMpMotifSpecial()
 {
-  //destructor
+  /// Destructor
 
 #ifdef WITH_ROOT
   fPadDimensionsVector.Delete();
@@ -69,11 +74,29 @@ AliMpMotifSpecial::~AliMpMotifSpecial()
 }
 
 
+//
+// private methods
+//
+
+//______________________________________________________________________________
+Int_t AliMpMotifSpecial::VectorIndex(const AliMpIntPair& indices) const
+{
+/// Transform indices to linear vector index
+
+  return indices.GetFirst()*GetMotifType()->GetNofPadsY() + indices.GetSecond();
+}
+
+
+//
+// public methods
+//
+
 //______________________________________________________________________________
 TVector2 
 AliMpMotifSpecial::GetPadDimensions(const AliMpIntPair& localIndices) const
 {
-// returns the dimensions of pad located at the given indices
+/// Return the dimensions of pad located at the given indices
+
   if (GetMotifType()->HasPad(localIndices))
 #ifdef WITH_STL
     return fPadDimensionsVector[VectorIndex(localIndices)];
@@ -90,7 +113,7 @@ AliMpMotifSpecial::GetPadDimensions(const AliMpIntPair& localIndices) const
 //______________________________________________________________________________
 Int_t AliMpMotifSpecial::GetNofPadDimensions() const
 {
-// returns number of different pad dimensions in this motif
+/// Return number of different pad dimensions in this motif
 
 #ifdef WITH_STL
   return fPadDimensionsVector2.size();
@@ -104,7 +127,7 @@ Int_t AliMpMotifSpecial::GetNofPadDimensions() const
 //______________________________________________________________________________
 TVector2 AliMpMotifSpecial::GetPadDimensions(Int_t i) const
 {
-// returns the i-th different pad dimensions 
+/// Returns the i-th different pad dimensions 
 
   if (i<0 || i>GetNofPadDimensions()) {
     Fatal("GetPadDimensions(i)", "Index outside limits.");
@@ -123,7 +146,7 @@ TVector2 AliMpMotifSpecial::GetPadDimensions(Int_t i) const
 //______________________________________________________________________________
 TVector2 AliMpMotifSpecial::Dimensions() const
 {
-  // gives the dimension of the motif
+  /// Give the dimension of the motif
 
 
   Int_t i,j;
@@ -155,8 +178,8 @@ TVector2 AliMpMotifSpecial::Dimensions() const
 TVector2 
 AliMpMotifSpecial::PadPositionLocal(const AliMpIntPair& localIndices) const 
 {
-  // gives the local position of the pad number (ix,iy)
-  // (0,0 is the center of the motif)
+  /// Give the local position of the pad number (ix,iy)
+  /// (0,0 is the center of the motif)
 
   TVector2 dim = GetPadDimensions(localIndices);
   
@@ -176,13 +199,13 @@ AliMpMotifSpecial::PadPositionLocal(const AliMpIntPair& localIndices) const
 //______________________________________________________________________________
 AliMpIntPair AliMpMotifSpecial::PadIndicesLocal(const TVector2& localPos) const
 {
-  // return the pad indices from a given local position
-  // or AliMpIntPair::Invalid() if this position doesn't correspond to any valid
-  // connection
-
-  // *SOLEIL* : This code suppose that
-  // 1) all cells have the same size along the Y direction
-  // 2) the column 0 is entierly filled
+  /// Return the pad indices from a given local position
+  /// or AliMpIntPair::Invalid() if this position doesn't correspond to any valid
+  /// connection
+  ///
+  /// *SOLEIL* : This code suppose that
+  /// - 1) all cells have the same size along the Y direction
+  /// - 2) the column 0 is entierly filled
     
 
   // First : find the j index
@@ -230,8 +253,8 @@ AliMpIntPair AliMpMotifSpecial::PadIndicesLocal(const TVector2& localPos) const
 void AliMpMotifSpecial::SetPadDimensions(const AliMpIntPair& localIndices,
                                          const TVector2& dimensions)
 {
-  // set the dimensions of the pad located at <localIndices> to the given
-  // <dimensions>
+  /// Set the dimensions of the pad located at <localIndices> to the given
+  /// <dimensions>
   
   if ( !GetMotifType()->HasPad(localIndices)){
     Warning("SetPadDimensions","Pad indices outside limits");

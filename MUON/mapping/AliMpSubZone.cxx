@@ -1,4 +1,20 @@
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+
 // $Id$
+// $MpId: AliMpSubZone.cxx,v 1.6 2005/08/26 15:43:36 ivana Exp $
 // Category: sector
 //
 // Class AliMpSubZone
@@ -22,7 +38,7 @@ AliMpSubZone::AliMpSubZone(AliMpVMotif* motif)
   : TObject(),
     fMotif(motif)
 {
-//
+/// Standard constructor
 }
 
 //_____________________________________________________________________________
@@ -30,19 +46,22 @@ AliMpSubZone::AliMpSubZone()
   : TObject(),
     fMotif(0)
 {
-//
+/// Default constructor
 }
 
 //_____________________________________________________________________________
 AliMpSubZone::AliMpSubZone(const AliMpSubZone& right) 
-  : TObject(right) {
-// 
+  : TObject(right) 
+{
+/// Protected copy constructor (not provided) 
+
   Fatal("AliMpSubZone", "Copy constructor not provided.");
 }
 
 //_____________________________________________________________________________
-AliMpSubZone::~AliMpSubZone() {
-//  
+AliMpSubZone::~AliMpSubZone() 
+{
+// Destructor 
 }
 
 //
@@ -52,10 +71,12 @@ AliMpSubZone::~AliMpSubZone() {
 //_____________________________________________________________________________
 AliMpSubZone& AliMpSubZone::operator=(const AliMpSubZone& right)
 {
-  // check assignement to self
+/// Protected assignment operator (not provided)
+
+  // check assignment to self
   if (this == &right) return *this;
 
-  Fatal("operator =", "Assignement operator not provided.");
+  Fatal("operator =", "Assignment operator not provided.");
     
   return *this;  
 }    
@@ -67,8 +88,7 @@ AliMpSubZone& AliMpSubZone::operator=(const AliMpSubZone& right)
 //_____________________________________________________________________________
 void AliMpSubZone::AddRowSegment(AliMpVRowSegment* rowSegment)
 {
-// Adds row segment.
-// ---
+/// Add row segment.
 
 #ifdef WITH_STL
   fSegments.push_back(rowSegment);
@@ -83,8 +103,7 @@ void AliMpSubZone::AddRowSegment(AliMpVRowSegment* rowSegment)
 //_____________________________________________________________________________
 void AliMpSubZone::Print(const char* /*option*/) const
 {
-// Prints motif position Ids for all row segments.
-// --
+/// Print motif position Ids for all row segments.
  
   for (Int_t i=0; i<GetNofRowSegments(); i++) {
     AliMpVRowSegment* rowSegment = GetRowSegment(i);
@@ -101,8 +120,7 @@ void AliMpSubZone::Print(const char* /*option*/) const
 //_____________________________________________________________________________
 Int_t AliMpSubZone::GetNofRowSegments() const 
 {
-// Returns number of row segments.
-// ---
+/// Return number of row segments.
 
 #ifdef WITH_STL
   return fSegments.size();
@@ -116,8 +134,7 @@ Int_t AliMpSubZone::GetNofRowSegments() const
 //_____________________________________________________________________________
 AliMpVRowSegment* AliMpSubZone::GetRowSegment(Int_t i) const 
 {
-// Returns i-th row segment.
-// ---
+/// Return i-th row segment.
 
   if (i<0 || i>=GetNofRowSegments()) {
     Warning("GetRowSegment", "Index outside range");
@@ -136,8 +153,7 @@ AliMpVRowSegment* AliMpSubZone::GetRowSegment(Int_t i) const
 //_____________________________________________________________________________
 AliMpVMotif*  AliMpSubZone:: GetMotif() const
 {
-// Returns the motif.
-// ---
+/// Return the motif.
 
   return fMotif;
 }  

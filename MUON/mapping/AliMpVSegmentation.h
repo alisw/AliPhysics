@@ -1,14 +1,18 @@
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
+
 // $Id$
-// Category: basic
-//
-// Class AliMpVSegmentation
-// ------------------------
-// The abstract base class for the segmentation.
-// Provides methods related to pads:
-// conversion between pad indices, pad location, pad position;
-// finding pad neighbour.
-//
-// Authors: David Guez, Ivana Hrivnacova; IPN Orsay
+// $MpId: AliMpVSegmentation.h,v 1.6 2005/08/26 15:43:36 ivana Exp $
+
+/// \ingroup basic
+/// \class AliMpVSegmentation
+/// \brief The abstract base class for the segmentation.
+///
+/// Provides methods related to pads:
+/// conversion between pad indices, pad location, pad position;
+/// finding pad neighbour.
+///
+/// Authors: David Guez, Ivana Hrivnacova; IPN Orsay
 
 #ifndef ALI_MP_V_SEGMENTATION_H
 #define ALI_MP_V_SEGMENTATION_H

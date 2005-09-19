@@ -1,4 +1,20 @@
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+
 // $Id$
+// $MpId: AliMpSubZonePainter.cxx,v 1.6 2005/08/26 15:43:36 ivana Exp $
 // Category: graphics
 //
 // Class AliMpSubZonePainter
@@ -24,7 +40,7 @@ AliMpSubZonePainter::AliMpSubZonePainter()
   : AliMpVPainter(),
     fSubZone(0)
 {
-  // default dummy constructor
+  /// Default constructor
 }
 
 //_______________________________________________________________________
@@ -32,7 +48,7 @@ AliMpSubZonePainter::AliMpSubZonePainter(AliMpSubZone *subZone)
   : AliMpVPainter(),
     fSubZone(subZone)
 {
-  // normal constructor 
+  /// Standard constructor 
 
 }
 
@@ -40,7 +56,7 @@ AliMpSubZonePainter::AliMpSubZonePainter(AliMpSubZone *subZone)
 AliMpSubZonePainter::AliMpSubZonePainter(const AliMpSubZonePainter& right) 
   : AliMpVPainter(right) 
 {  
-  // copy constructor (not implemented)
+  /// Protected copy constructor (not provided)
 
   Fatal("AliMpSubZonePainter", "Copy constructor not provided.");
 }
@@ -48,19 +64,19 @@ AliMpSubZonePainter::AliMpSubZonePainter(const AliMpSubZonePainter& right)
 //_______________________________________________________________________
 AliMpSubZonePainter::~AliMpSubZonePainter()
 {
-  // destructor
+  /// Destructor
 }
 
 //_____________________________________________________________________________
 AliMpSubZonePainter& 
 AliMpSubZonePainter::operator=(const AliMpSubZonePainter& right)
 {
-  // assignement operator (not implemented)
+  /// Assignment operator (not provided)
 
-  // check assignement to self
+  // check assignment to self
   if (this == &right) return *this;
 
-  Fatal("operator =", "Assignement operator not provided.");
+  Fatal("operator =", "Assignment operator not provided.");
     
   return *this;  
 }    
@@ -68,8 +84,9 @@ AliMpSubZonePainter::operator=(const AliMpSubZonePainter& right)
 //_______________________________________________________________________
 Int_t AliMpSubZonePainter::DistancetoPrimitive(Int_t x, Int_t y)
 {
-  // dist to the nearest segment center if (x,y) is inside the sub-zone
-  // 9999 otherwise
+  /// Dist to the nearest segment center if (x,y) is inside the sub-zone
+  /// 9999 otherwise
+  
   if (fSubZone->GetNofRowSegments()<1) return 9999;
   AliMpGraphContext *gr = AliMpGraphContext::Instance();
 
@@ -99,14 +116,15 @@ Int_t AliMpSubZonePainter::DistancetoPrimitive(Int_t x, Int_t y)
 //_______________________________________________________________________
 void AliMpSubZonePainter::DumpObject()
 {
-// Draw the owned object
+  //// Draw the owned object
+  
   fSubZone->Dump();
-
 }
+
 //_______________________________________________________________________
 TVector2 AliMpSubZonePainter::GetPosition() const
 {
-// Get the owned object's position
+  //// Get the owned object's position
 
   if (fSubZone->GetNofRowSegments()<1) return TVector2(0.,0.);
   AliMpVRowSegment* seg = fSubZone->GetRowSegment(0);
@@ -131,10 +149,11 @@ TVector2 AliMpSubZonePainter::GetPosition() const
   }
   return (ur+bl)/2.;
 }
+
 //_______________________________________________________________________
 TVector2 AliMpSubZonePainter::GetDimensions() const
 {
-  // Get the owned object's dimensions
+  //// Get the owned object's dimensions
 
   if (fSubZone->GetNofRowSegments()<1) return TVector2(0.,0.);
   AliMpVRowSegment* seg = fSubZone->GetRowSegment(0);
@@ -159,17 +178,17 @@ TVector2 AliMpSubZonePainter::GetDimensions() const
   }
   return (ur-bl)/2.;
 }
+
 //_______________________________________________________________________
 void AliMpSubZonePainter::Draw(Option_t *option)
 {
-// Draw the sector on the current pad
-// The first letter of <option> is treated as follows:
-// case "S" : each row segments are drawn separately
-// case ""  : the whole subzone is drawn at once
-// in both cases, the rest of the option is passed
-// as argument to the Draw function of respectively
-// zone or row objects.
-// ---
+/// Draw the sector on the current pad
+/// The first letter of <option> is treated as follows:
+/// - case "S" : each row segments are drawn separately
+/// - case ""  : the whole subzone is drawn at once
+/// in both cases, the rest of the option is passed
+/// as argument to the Draw function of respectively
+/// zone or row objects.
 
   if (!fSubZone) return;
   AliMpGraphContext *gr = AliMpGraphContext::Instance();
@@ -202,7 +221,8 @@ void AliMpSubZonePainter::Draw(Option_t *option)
 //_______________________________________________________________________
 void AliMpSubZonePainter::Paint(Option_t *option)
 {
-// Paint the object
+//// Paint the object
+
   AliMpGraphContext *gr = AliMpGraphContext::Instance();
   if (!fSubZone) return;
   if (fSubZone->GetNofRowSegments()<1) return;

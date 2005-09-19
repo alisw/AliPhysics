@@ -1,5 +1,20 @@
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+
 // $Id$
-// --------------------------------------------------------
+// $MpId: AliMpPadRow.cxx,v 1.6 2005/08/26 15:43:36 ivana Exp $
 // Category: sector
 //
 // Class AliMpPadRow
@@ -20,9 +35,9 @@ ClassImp(AliMpPadRow)
 AliMpPadRow::AliMpPadRow(AliMpXDirection direction) 
   : TObject(),
     fDirection(direction), 
-    fID(0)
+    fID(0) 
 {
-//
+/// Standard constructor
 }
 
 //_____________________________________________________________________________
@@ -31,12 +46,13 @@ AliMpPadRow::AliMpPadRow()
     fDirection(kLeft), 
     fID(0)
 {
-//
+/// Default constructor
 }
 
 //_____________________________________________________________________________
-AliMpPadRow::~AliMpPadRow() {
-//  
+AliMpPadRow::~AliMpPadRow() 
+{
+/// Destructor  
 
   for (Int_t i=0; i<GetNofPadRowSegments() ; i++)
     delete fSegments[i];
@@ -49,9 +65,8 @@ AliMpPadRow::~AliMpPadRow() {
 //_____________________________________________________________________________
 Double_t AliMpPadRow::CurrentBorderX() const
 {
-// Returns the left/right x border 
-// (depending on the direction which the row segments are filled in).
-// ---
+/// Return the left/right x border 
+/// (depending on the direction which the row segments are filled in).
 
   if (GetNofPadRowSegments() == 0)
       return fOffsetX;
@@ -71,8 +86,7 @@ AliMpVPadRowSegment*
 AliMpPadRow::AddPadRowSegment(AliMpMotif* motif, Int_t motifPositionId,
                               Int_t nofPads)
 {
-// Adds pad row segment.
-// ---
+/// Add a pad row segment.
 
   AliMpVPadRowSegment* padRowSegment = 0;
 
@@ -103,9 +117,8 @@ AliMpPadRow::AddPadRowSegment(AliMpMotif* motif, Int_t motifPositionId,
 //_____________________________________________________________________________
 AliMpVPadRowSegment* AliMpPadRow::FindPadRowSegment(Double_t x) const
 {
-// Finds the row segment for the specified x position;
-// returns 0 if no row segment is found.
-// ---
+/// Find the row segment for the specified x position;
+/// return 0 if no row segment is found.
 
   for (Int_t i=0; i<GetNofPadRowSegments(); i++) {
     AliMpVPadRowSegment* rs = GetPadRowSegment(i);
@@ -119,14 +132,15 @@ AliMpVPadRowSegment* AliMpPadRow::FindPadRowSegment(Double_t x) const
 //_____________________________________________________________________________
 Double_t  AliMpPadRow::HalfSizeY() const
 {
+/// Return the half size in y
+
   return GetPadRowSegment(0)->HalfSizeY();
 }
 
 //_____________________________________________________________________________
 void  AliMpPadRow::SetID(Int_t id)
 {
-// Sets the ID.
-// ---
+/// Set the ID.
 
   fID = id;
 }    
@@ -134,8 +148,7 @@ void  AliMpPadRow::SetID(Int_t id)
 //_____________________________________________________________________________
 void  AliMpPadRow::SetOffsetX(Double_t offsetX)
 {
-// Sets the x offset.
-// ---
+/// Set the x offset.
 
   fOffsetX = offsetX;
 }    
@@ -143,8 +156,7 @@ void  AliMpPadRow::SetOffsetX(Double_t offsetX)
 //_____________________________________________________________________________
 Int_t AliMpPadRow::GetID() const 
 {
-// Returns the row ID.
-// ---
+/// Return the pad row ID.
 
   return fID;
 }  
@@ -152,8 +164,7 @@ Int_t AliMpPadRow::GetID() const
 //_____________________________________________________________________________
 Int_t AliMpPadRow::GetNofPadRowSegments() const 
 {
-// Returns number of row segments.
-// ---
+/// Return the number of pad row segments.
 
 #ifdef WITH_STL
   return fSegments.size();
@@ -167,8 +178,7 @@ Int_t AliMpPadRow::GetNofPadRowSegments() const
 //_____________________________________________________________________________
 AliMpVPadRowSegment* AliMpPadRow::GetPadRowSegment(Int_t i) const 
 {
-// Returns pad row segment with specified number.
-// ---
+/// Return the pad row segment with the specified number.
 
   if (i<0 || i>=GetNofPadRowSegments()) {
     Warning("GetRowSegment", "Index outside range");
@@ -187,8 +197,7 @@ AliMpVPadRowSegment* AliMpPadRow::GetPadRowSegment(Int_t i) const
 //_____________________________________________________________________________
 Int_t AliMpPadRow::GetNofPads() const 
 {
-// Returns number of pads in this pad row.
-// ---
+/// Return the number of pads in this pad row.
 
   Int_t nofPads=0;
   for (Int_t i=0; i<GetNofPadRowSegments(); i++)

@@ -1,4 +1,20 @@
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+
 // $Id$
+// $MpId: AliMpPad.cxx,v 1.6 2005/08/26 15:43:36 ivana Exp $
 // Category: basic
 //
 // Class AliMpPad
@@ -48,10 +64,11 @@ AliMpPad::AliMpPad(const AliMpIntPair& location,const AliMpIntPair& indices,
    fDimensions(dimensions),
    fValidity(validity)
 {
-// Be carefull : this constructor doesn't check the validity of
-// the correspondance between location and indices.
-// By default, validity is set true.
-// It is aimed to be used by MSegmentation methods, and never from outside....
+/// Standard constructor                                                   \n
+/// Be carefull : this constructor doesn't check the validity of
+/// the correspondance between location and indices.
+/// By default, validity is set true.
+/// It is aimed to be used by MSegmentation methods, and never from outside....
 }
 
 
@@ -64,7 +81,7 @@ AliMpPad::AliMpPad()
     fDimensions(0.,0.),
     fValidity(false) 
 {
-// Default constructor - creates pad in invalid state
+/// Default constructor - creates pad in invalid state
 }
 
 
@@ -72,24 +89,29 @@ AliMpPad::AliMpPad()
 AliMpPad::AliMpPad(const AliMpPad& src)
   : TObject(src)
 {
+/// Copy constructor
+
  *this = src;
 }
 
 //_____________________________________________________________________________
-AliMpPad::~AliMpPad() {
-//
+AliMpPad::~AliMpPad() 
+{
+/// Destructor
 }
 
 //_____________________________________________________________________________
 AliMpPad& AliMpPad::operator = (const AliMpPad& src) 
 {
-  // check assignement to self
+/// Assignment operator
+ 
+  // check assignment to self
   if (this == &src) return *this;
 
-  // base class assignement
+  // base class assignment
   TObject::operator=(src);
 
-  // assignement operator
+  // assignment operator
   fLocation   = src.fLocation;
   fIndices    = src.fIndices;
   fPosition.Set(src.fPosition);
@@ -102,6 +124,8 @@ AliMpPad& AliMpPad::operator = (const AliMpPad& src)
 //_____________________________________________________________________________
 Bool_t AliMpPad::operator == (const AliMpPad& pos2) const
 {
+/// Equality operator
+
   // are this and pos2 equals?
 
   // one valid, one invalid
@@ -117,6 +141,8 @@ Bool_t AliMpPad::operator == (const AliMpPad& pos2) const
 //_____________________________________________________________________________
 Bool_t AliMpPad::operator!= (const AliMpPad& pos2) const
 {
+/// Non-equality operator
+
   // are this and pos2 equals?
   return !(*this==pos2);
 }
@@ -124,6 +150,8 @@ Bool_t AliMpPad::operator!= (const AliMpPad& pos2) const
 //_____________________________________________________________________________
 ostream& operator<< (ostream &out, const AliMpPad& op)
 {
+/// Output streaming
+
   if (op.IsValid()) {
     out << "Pad: Location " << op.GetLocation() 
         << "  Indices "     << op.GetIndices() 
@@ -140,14 +168,15 @@ ostream& operator<< (ostream &out, const AliMpPad& op)
 //_____________________________________________________________________________
 Bool_t operator < (const AliMpPad& left, const AliMpPad& right)
 {
-return left.GetIndices()<right.GetIndices();
+/// Less operator
+
+  return left.GetIndices()<right.GetIndices();
 }
 
 //_____________________________________________________________________________
 void AliMpPad::Print(const char* /*option*/) const
 {
-// Prints all pad data.
-// ---
+/// Prints all pad data.
 
   if (fValidity) {
     cout << "Indices: " << fIndices << "; "

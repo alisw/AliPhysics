@@ -1,4 +1,20 @@
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+
 // $Id$
+// $MpId: AliMpVSegmentation.cxx,v 1.4 2005/08/26 15:43:36 ivana Exp $
 // Category: basic
 //
 // Class AliMpVSegmentation
@@ -20,12 +36,13 @@ ClassImp(AliMpVSegmentation)
 AliMpVSegmentation::AliMpVSegmentation() 
   : TObject()
 {
-//
+/// Default constructor
 }
 
 //_____________________________________________________________________________
-AliMpVSegmentation::~AliMpVSegmentation() {
-// 
+AliMpVSegmentation::~AliMpVSegmentation() 
+{
+/// Destructor 
 }
 
 //
@@ -36,9 +53,8 @@ AliMpVSegmentation::~AliMpVSegmentation() {
 AliMpPadPair AliMpVSegmentation::FindPads(const TVector2& position1, 
                                           const TVector2& position2) const
 {
-// Returns a pair of pads with specified position.
-// If both pads are identical, the second pad in pair is set to invalid.
-// ---
+/// Return a pair of pads with specified position.
+/// If both pads are identical, the second pad in pair is set to invalid.
 
   AliMpPad pad1 = PadByPosition(position1, false);
   AliMpPad pad2 = PadByPosition(position2, false);
@@ -55,10 +71,9 @@ AliMpPadPair AliMpVSegmentation::FindPads(const TVector2& position1,
 //_____________________________________________________________________________
 AliMpPadPair AliMpVSegmentation::PadsUp(const AliMpPad& pad) const
 {
-// Returns a pair of pads neighbouring up to the specified pad.
-// If there is only one neighbouring pad,
-// the second pad in pair is invalid.
-// ---
+/// Return a pair of pads neighbouring up to the specified pad.
+/// If there is only one neighbouring pad,
+/// the second pad in pair is invalid.
 
   TVector2 position1 
     = pad.Position()+ TVector2((-1.)*AliMpConstants::LengthStep(), 
@@ -73,10 +88,9 @@ AliMpPadPair AliMpVSegmentation::PadsUp(const AliMpPad& pad) const
 //_____________________________________________________________________________
 AliMpPadPair AliMpVSegmentation::PadsDown(const AliMpPad& pad) const
 {
-// Returns a pair of pads neighbouring down to the specified pad.
-// If there is only one neighbouring pad,
-// the second pad in pair is invalid.
-// ---
+/// Return a pair of pads neighbouring down to the specified pad.
+/// If there is only one neighbouring pad,
+/// the second pad in pair is invalid.
 
   TVector2 position1 
     = pad.Position()- TVector2(AliMpConstants::LengthStep(), 
@@ -92,10 +106,9 @@ AliMpPadPair AliMpVSegmentation::PadsDown(const AliMpPad& pad) const
 //_____________________________________________________________________________
 AliMpPadPair AliMpVSegmentation::PadsLeft(const AliMpPad& pad) const
 {
-// Returns a pair of pads neighbouring left to the specified pad.
-// If there is only one neighbouring pad,
-// the second in pair is invalid.
-// ---
+/// Return a pair of pads neighbouring left to the specified pad.
+/// If there is only one neighbouring pad,
+/// the second in pair is invalid.
 
   TVector2 position1 
     = pad.Position() - TVector2(pad.Dimensions().X() + AliMpConstants::LengthStep(),
@@ -110,10 +123,9 @@ AliMpPadPair AliMpVSegmentation::PadsLeft(const AliMpPad& pad) const
 //_____________________________________________________________________________
 AliMpPadPair AliMpVSegmentation::PadsRight(const AliMpPad& pad) const
 {
-// Returns a pair of pads neighbouring right to the specified pad.
-// If there is only one neighbouring pad,
-// the second in pair is invalid.
-// ---
+/// Return a pair of pads neighbouring right to the specified pad.
+/// If there is only one neighbouring pad,
+/// the second in pair is invalid.
 
   TVector2 position1 
     = pad.Position() + TVector2(pad.Dimensions().X() + AliMpConstants::LengthStep(),

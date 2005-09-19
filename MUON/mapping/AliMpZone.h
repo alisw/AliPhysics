@@ -1,12 +1,17 @@
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
+
 // $Id$
-// Category: sector
-//
-// Class AliMpZone
-// ---------------
-// Class describing a zone composed of the zone segments.
-// The zone contains pads of the same dimensions.
-//
-// Authors: David Guez, Ivana Hrivnacova; IPN Orsay
+// $MpId: AliMpZone.h,v 1.6 2005/08/26 15:43:36 ivana Exp $
+
+/// \ingroup sector
+/// \class AliMpZone
+/// \brief A region of pads of the same dimensions composed of subzones.
+///
+/// The zone contains pads of the same dimensions,
+/// it is composed of the subzones.
+///
+/// Authors: David Guez, Ivana Hrivnacova; IPN Orsay
 
 #ifndef ALI_MP_ZONE_H
 #define ALI_MP_ZONE_H

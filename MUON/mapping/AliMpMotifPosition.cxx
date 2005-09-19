@@ -1,4 +1,20 @@
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+
 // $Id$
+// $MpId: AliMpMotifPosition.cxx,v 1.7 2005/08/26 15:43:36 ivana Exp $
 //
 // Class AliMpMotifPosition
 // ------------------------
@@ -11,6 +27,7 @@
 #include "AliMpMotifPosition.h"
 #include "AliMpMotifPositionPadIterator.h"
 #include "AliMpMotifType.h"
+#include <iostream>
 
 ClassImp(AliMpMotifPosition)
 
@@ -20,8 +37,9 @@ AliMpMotifPosition::AliMpMotifPosition(Int_t id, AliMpVMotif* motif,
   : AliMpVIndexed(),
     fID(id),
     fMotif(motif),
-    fPosition(position) {
-//
+    fPosition(position) 
+{
+/// Standard constructor
 }
 
 //______________________________________________________________________________
@@ -29,20 +47,24 @@ AliMpMotifPosition::AliMpMotifPosition()
   : AliMpVIndexed(), 
     fID(0),
     fMotif(0),
-    fPosition(TVector2(0.,0.)) {
-//
+    fPosition(TVector2(0.,0.)) 
+{
+/// Default constructor
 }
 
 //_____________________________________________________________________________
 AliMpMotifPosition::AliMpMotifPosition(const AliMpMotifPosition& right) 
-  : AliMpVIndexed(right) {
-// 
+  : AliMpVIndexed(right) 
+{
+/// Protected copy constructor (not provided)
+
   Fatal("AliMpMotifPosition", "Copy constructor not provided.");
 }
 
 //______________________________________________________________________________
-AliMpMotifPosition::~AliMpMotifPosition(){
-// 
+AliMpMotifPosition::~AliMpMotifPosition()\
+{
+/// Destructor 
 }
 
 // operators
@@ -51,10 +73,12 @@ AliMpMotifPosition::~AliMpMotifPosition(){
 AliMpMotifPosition& 
 AliMpMotifPosition::operator=(const AliMpMotifPosition& right)
 {
-  // check assignement to self
+/// Protected assignment operator (not provided)
+
+  // check assignment to self
   if (this == &right) return *this;
 
-  Fatal("operator =", "Assignement operator not provided.");
+  Fatal("operator =", "Assignment operator not provided.");
     
   return *this;  
 }    
@@ -62,8 +86,7 @@ AliMpMotifPosition::operator=(const AliMpMotifPosition& right)
 //______________________________________________________________________________
 AliMpVPadIterator* AliMpMotifPosition::CreateIterator() const
 {
-// Iterator is not yet implemented.
-//
+/// Return motif position iterator
 
   return new AliMpMotifPositionPadIterator(this);
 }  
@@ -71,9 +94,8 @@ AliMpVPadIterator* AliMpMotifPosition::CreateIterator() const
 //______________________________________________________________________________
 Bool_t AliMpMotifPosition::HasPad(const AliMpIntPair& indices) const
 {
-// Returns true if pad with the specified indices exists in 
-// this motif position.
-// ---
+/// Return true if pad with the specified indices exists in 
+/// this motif position.
 
   if (!HasIndices(indices)) return kFALSE;
   
@@ -82,3 +104,42 @@ Bool_t AliMpMotifPosition::HasPad(const AliMpIntPair& indices) const
   return fMotif->GetMotifType()->HasPad(indices-GetLowIndicesLimit());
 }
 
+//_____________________________________________________________________________
+void
+AliMpMotifPosition::SetID(Int_t id)
+{
+/// Set ID
+
+  fID = id;
+}
+
+//_____________________________________________________________________________
+void
+AliMpMotifPosition::SetPosition(const TVector2& pos)
+{
+/// Set position
+
+  fPosition = pos;
+}
+
+//_____________________________________________________________________________
+void
+AliMpMotifPosition::Print(Option_t* option) const
+{
+/// Printing
+
+  std::cout << "MOTIFPOSITION " << GetID() << " MOTIF " 
+	    << GetMotif()->GetID()
+	    << " at (" << Position().X() << "," 
+	    << Position().Y() << ") "
+	    << " iMin=(" << GetLowIndicesLimit().GetFirst()
+	    << "," << GetLowIndicesLimit().GetSecond()
+	    << ") iMax=(" << GetHighIndicesLimit().GetFirst()
+	    << "," << GetHighIndicesLimit().GetSecond()
+	    << ")" << std::endl;
+
+  if ( option && option[0] == 'M' )
+    {
+      GetMotif()->Print(option+1);
+    }
+}

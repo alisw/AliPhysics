@@ -1,11 +1,14 @@
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
+
 // $Id$
-// Category: basic
-//
-// Class AliMpArea
-// ----------------
-// Class that defines a rectangle area positioned in plane..
-//
-// Authors: David Guez, Ivana Hrivnacova; IPN Orsay
+// $MpId: AliMpArea.h,v 1.7 2005/08/26 15:43:36 ivana Exp $
+
+/// \ingroup basic
+/// \class AliMpArea
+/// \brief A rectangle area positioned in plane..
+///
+/// Authors: David Guez, Ivana Hrivnacova; IPN Orsay
 
 #ifndef ALI_MP_AREA_H
 #define ALI_MP_AREA_H

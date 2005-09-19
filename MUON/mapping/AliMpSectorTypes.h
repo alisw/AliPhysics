@@ -1,11 +1,14 @@
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
+
 // $Id$
-// Category: sector
-//
-// AliMpSectorTypes
-// ----------------
-// Sytem dependent types definitions for sector category.
-//
-// Authors: David Guez, Ivana Hrivnacova; IPN Orsay
+// $MpId: AliMpSectorTypes.h,v 1.7 2005/08/26 15:43:36 ivana Exp $
+
+/// \ingroup sector
+/// AliMpSectorTypes
+/// System dependent types definitions for sector category.
+///
+/// Authors: David Guez, Ivana Hrivnacova; IPN Orsay
 
 #ifndef ALI_MP_SECTOR_TYPES_H
 #define ALI_MP_SECTOR_TYPES_H
@@ -52,8 +55,6 @@ class AliMpRow;
   typedef vector<AliMpZone*> ZoneVector;
   typedef map<Int_t, TVector2>  PadDimensionsMap;
   typedef PadDimensionsMap::const_iterator  PadDimensionsMapCIterator;
-  typedef map<string,pair<Int_t,Int_t> > PadMapType;
-  typedef PadMapType::iterator PadMapTypeIterator;
   typedef set<AliMpPad> PadSet;
   typedef PadSet::const_iterator PadSetIterator;
 #else
@@ -68,8 +69,6 @@ class AliMpRow;
   typedef std::vector<AliMpZone*> ZoneVector;
   typedef std::map<Int_t, TVector2>  PadDimensionsMap;
   typedef PadDimensionsMap::const_iterator  PadDimensionsMapCIterator;
-  typedef std::map<std::string, std::pair<Int_t,Int_t> > PadMapType;
-  typedef PadMapType::iterator PadMapTypeIterator;
   typedef std::set<AliMpPad> PadSet;
   typedef PadSet::const_iterator PadSetIterator;
 #endif
@@ -90,8 +89,6 @@ class AliMpRow;
   typedef TObjArray  ZoneVector;
   typedef TExMap     PadDimensionsMap;
   typedef TExMapIter PadDimensionsMapCIterator;
-  typedef TExMap     PadMapType;
-  typedef TExMapIter PadMapTypeIterator;
   typedef TObjArray  PadSet;
 #endif
 

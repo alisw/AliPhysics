@@ -1,4 +1,20 @@
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+
 // $Id$
+// $MpId: AliMpMotif.cxx,v 1.7 2005/08/26 15:43:36 ivana Exp $
 // Category: motif
 //
 // Class AliMpMotif
@@ -19,7 +35,7 @@ AliMpMotif::AliMpMotif()
   : AliMpVMotif(),
     fPadDimensions(TVector2(0.,0.))
 {
-  //default dummy constructor
+  /// Default constructor
 }
 
 //_____________________________________________________________________________
@@ -28,22 +44,22 @@ AliMpMotif::AliMpMotif(const TString &id, AliMpMotifType *motifType,
   : AliMpVMotif(id,motifType),
     fPadDimensions(padDimension)
 {
-  // Normal constructor.
-  // The dimension in a given direction is calculated by
-  // multiplying the total dimension by the number of pads
+  /// Standard constructor.                                                \n
+  /// The dimension in a given direction is calculated by
+  /// multiplying the total dimension by the number of pads
 
 }
 //_____________________________________________________________________________
 AliMpMotif::~AliMpMotif()
 {
-  // destructor
+  /// Destructor
 }
 
 
 //_____________________________________________________________________________
 TVector2 AliMpMotif::GetPadDimensions(const AliMpIntPair& localIndices) const
 {
-  // gives the dimension of the specified pad in the motif
+  /// Give the dimension of the specified pad in the motif
 
   if (GetMotifType()->HasPad(localIndices))
     return fPadDimensions;
@@ -56,7 +72,7 @@ TVector2 AliMpMotif::GetPadDimensions(const AliMpIntPair& localIndices) const
 //_____________________________________________________________________________
 TVector2 AliMpMotif::Dimensions() const
 {
-  // gives the dimension of the motif
+  /// Give the dimension of the motif
 
   return TVector2(GetMotifType()->GetNofPadsX()*fPadDimensions.X(),
 		GetMotifType()->GetNofPadsY()*fPadDimensions.Y());
@@ -65,8 +81,8 @@ TVector2 AliMpMotif::Dimensions() const
 //_____________________________________________________________________________
 TVector2 AliMpMotif::PadPositionLocal(const AliMpIntPair& localIndices) const 
 {
-  // gives the local position of the pad number (ix,iy)
-  // (0,0 is the center of the motif)
+  /// Give the local position of the pad number (ix,iy)
+  /// (0,0 is the center of the motif)
 
   TVector2 dim=Dimensions();
   return TVector2((2.*localIndices.GetFirst()+1.)*fPadDimensions.X()-dim.X(),
@@ -76,11 +92,17 @@ TVector2 AliMpMotif::PadPositionLocal(const AliMpIntPair& localIndices) const
 //_____________________________________________________________________________
 AliMpIntPair AliMpMotif::PadIndicesLocal(const TVector2& localPos) const
 {
-  // return the pad indices from a given local position
-  // or (-1,-1) if this position doesn't correspond to any valid
-  // connection
+  /// Return the pad indices from a given local position
+  /// or (-1,-1) if this position doesn't correspond to any valid
+  /// connection
 
   TVector2 lowerLeft = localPos+Dimensions();
+
+ if ( lowerLeft.X() < 0 || lowerLeft.Y() < 0 ) 
+    {
+      return AliMpIntPair::Invalid();
+    }
+
   Int_t ix = (Int_t)(lowerLeft.X()/(2.*fPadDimensions.X()));
   Int_t iy = (Int_t)(lowerLeft.Y()/(2.*fPadDimensions.Y()));
   

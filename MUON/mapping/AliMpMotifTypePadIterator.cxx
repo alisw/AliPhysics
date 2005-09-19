@@ -1,4 +1,20 @@
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+
 // $Id$
+// $MpId: AliMpMotifTypePadIterator.cxx,v 1.5 2005/08/26 15:43:36 ivana Exp $
 // Category: motif
 //
 // Class AliMpMotifTypePadIterator
@@ -18,7 +34,7 @@ AliMpMotifTypePadIterator::AliMpMotifTypePadIterator():
     fMotifType(0),
     fCurrentPosition(AliMpIntPair::Invalid())
 {
-// default constructor, set the current position to "invalid"
+/// Default constructor, set the current position to "invalid"
 }
 
 //______________________________________________________________________________
@@ -28,7 +44,7 @@ AliMpMotifTypePadIterator::AliMpMotifTypePadIterator(
     fMotifType(motifType),
     fCurrentPosition(AliMpIntPair::Invalid())
 {
-// normal constructor, let *this to invalid position
+/// Standard constructor, let *this to invalid position
 }
 
 //______________________________________________________________________________
@@ -39,13 +55,13 @@ AliMpMotifTypePadIterator::AliMpMotifTypePadIterator(
     fCurrentPosition(right.fCurrentPosition)
     
 {
-// copy constructor
+/// Copy constructor
 }
 
 //______________________________________________________________________________
 AliMpMotifTypePadIterator::~AliMpMotifTypePadIterator()
 {
-// destructor
+/// Destructor
 }
 
 // operators
@@ -54,14 +70,14 @@ AliMpMotifTypePadIterator::~AliMpMotifTypePadIterator()
 AliMpMotifTypePadIterator& 
 AliMpMotifTypePadIterator::operator = (const AliMpMotifTypePadIterator& right)
 {
-// assignement operator
-// if the right hand iterator isn't of good type
-// the current operator is invalidated
+/// Assignment operator.                                                      \n
+/// If the right hand iterator isn't of good type
+/// the current operator is invalidated
 
-  // check assignement to self
+  // check assignment to self
   if (this == &right) return *this;
 
-  // base class assignement
+  // base class assignment
   AliMpVPadIterator::operator=(right);
 
   fMotifType = right.fMotifType;
@@ -78,9 +94,9 @@ AliMpMotifTypePadIterator::operator = (const AliMpMotifTypePadIterator& right)
 AliMpIntPair 
 AliMpMotifTypePadIterator::FindFirstPadInLine(AliMpIntPair indices) const
 {
-// Find the indices of the first pad in the same line
-// as the <indices>, and in column, at least equal, to the
-// one of <indices>
+/// Find the indices of the first pad in the same line
+/// as the <indices>, and in column, at least equal, to the
+/// one of <indices>
 
     if (!fMotifType) return AliMpIntPair::Invalid();
 
@@ -94,7 +110,7 @@ AliMpMotifTypePadIterator::FindFirstPadInLine(AliMpIntPair indices) const
 //______________________________________________________________________________
 Bool_t AliMpMotifTypePadIterator::IsValid() const
 {
-// Is the iterator in a valid position?
+/// Is the iterator in a valid position?
 
     return fMotifType!=0 && fCurrentPosition.IsValid();
 } 
@@ -106,8 +122,8 @@ Bool_t AliMpMotifTypePadIterator::IsValid() const
 //______________________________________________________________________________
 void AliMpMotifTypePadIterator::First()
 {
-// Reset the iterator, so that it points to the first available
-// pad in the motif type
+/// Reset the iterator, so that it points to the first available
+/// pad in the motif type
 
     if (!fMotifType) {
         Invalidate();
@@ -128,7 +144,7 @@ void AliMpMotifTypePadIterator::First()
 //______________________________________________________________________________
 void AliMpMotifTypePadIterator::Next()
 {
-// Move the iterator to the next valid pad.
+/// Move the iterator to the next valid pad.
 
     //if (!IsValid()) return *this;
     if (!IsValid()) return;
@@ -152,14 +168,15 @@ void AliMpMotifTypePadIterator::Next()
 //______________________________________________________________________________
 Bool_t AliMpMotifTypePadIterator::IsDone() const
 {
-// 
+/// Is the iterator in the end ?
+ 
   return !IsValid();
 }
 
 //______________________________________________________________________________
 AliMpPad AliMpMotifTypePadIterator::CurrentItem() const 
 {
-// Returns current pad.
+/// Return current pad.
 
     if (!fMotifType)
         return AliMpPad::Invalid();
@@ -171,7 +188,8 @@ AliMpPad AliMpMotifTypePadIterator::CurrentItem() const
 //______________________________________________________________________________
 void AliMpMotifTypePadIterator::Invalidate()
 {
-// Let the iterator points to the invalid position
+/// Let the iterator point to the invalid position
+
     fCurrentPosition = AliMpIntPair::Invalid();
 
 } 

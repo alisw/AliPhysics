@@ -1,4 +1,20 @@
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+
 // $Id$
+// $MpId: AliMpZone.cxx,v 1.6 2005/08/26 15:43:36 ivana Exp $
 // Category: sector
 //
 // Class AliMpZone
@@ -19,7 +35,7 @@ AliMpZone::AliMpZone(Int_t id)
     fID(id),
     fPadDimensions(TVector2())
 {
-//
+/// Standard constructor
 }
 
 //_____________________________________________________________________________
@@ -28,12 +44,13 @@ AliMpZone::AliMpZone()
     fID(0),
     fPadDimensions(TVector2())
 {
-//
+/// Default constructor
 }
 
 //_____________________________________________________________________________
-AliMpZone::~AliMpZone() {
-//
+AliMpZone::~AliMpZone() 
+{
+/// Destructor
 
   for (Int_t i=0; i<GetNofSubZones(); i++)
     delete fSubZones[i];  
@@ -46,8 +63,7 @@ AliMpZone::~AliMpZone() {
 //_____________________________________________________________________________
 void AliMpZone::AddSubZone(AliMpSubZone* subZone)
 {
-// Adds row segment.
-// ---
+/// Add row segment.
 
 #ifdef WITH_STL
   fSubZones.push_back(subZone);
@@ -61,9 +77,8 @@ void AliMpZone::AddSubZone(AliMpSubZone* subZone)
 //_____________________________________________________________________________
 AliMpSubZone* AliMpZone::FindSubZone(AliMpVMotif* motif) const
 {
-// Finds a subzone with a specified motif;
-// returns 0 if not found.
-// ---
+/// Find a subzone with a specified motif;
+/// return 0 if not found.
 
   for (Int_t i=0; i<GetNofSubZones(); i++) {
     AliMpSubZone* subZone = GetSubZone(i);
@@ -76,8 +91,7 @@ AliMpSubZone* AliMpZone::FindSubZone(AliMpVMotif* motif) const
 //_____________________________________________________________________________
 Int_t AliMpZone::GetNofSubZones() const 
 {
-// Returns number of row segments.
-// ---
+/// Return number of row segments.
 
 #ifdef WITH_STL
   return fSubZones.size();
@@ -91,8 +105,7 @@ Int_t AliMpZone::GetNofSubZones() const
 //_____________________________________________________________________________
 AliMpSubZone* AliMpZone::GetSubZone(Int_t i) const 
 {
-// Returns i-th sub zone.
-// ---
+/// Return i-th sub zone.
 
   if (i<0 || i>=GetNofSubZones()) {
     Warning("GetSubZone", "Index outside range");

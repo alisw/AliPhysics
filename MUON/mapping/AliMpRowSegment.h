@@ -1,12 +1,14 @@
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
+
 // $Id$
-// Category: sector
-//
-// Class AliMpRowSegment
-// ---------------------
-// Class describing a row segment composed of the 
-// the identic motifs.
-//
-// Authors: David Guez, Ivana Hrivnacova; IPN Orsay
+// $MpId: AliMpRowSegment.h,v 1.7 2005/08/26 15:43:36 ivana Exp $
+
+/// \ingroup sector
+/// \class AliMpRowSegment
+/// \brief A row segment composed of the the identic motifs.
+///
+/// Authors: David Guez, Ivana Hrivnacova; IPN Orsay
 
 #ifndef ALI_MP_ROW_SEGMENT_H
 #define ALI_MP_ROW_SEGMENT_H

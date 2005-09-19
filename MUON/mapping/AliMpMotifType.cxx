@@ -1,4 +1,20 @@
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+
 // $Id$
+// $MpId: AliMpMotifType.cxx,v 1.6 2005/08/26 15:43:36 ivana Exp $
 // Category: motif
 //
 // Class AliMpMotifType
@@ -31,7 +47,7 @@ AliMpMotifType::AliMpMotifType(const TString &id)
     fVerboseLevel(0),
     fConnections()
 {
-  // Constructor
+  /// Standard constructor
 }
 
 //______________________________________________________________________________
@@ -43,12 +59,13 @@ AliMpMotifType::AliMpMotifType()
     fVerboseLevel(0),
     fConnections()
 {
-  // Default constructor (dummy)
+  /// Default constructor
 }
 
 //______________________________________________________________________________
-AliMpMotifType::~AliMpMotifType() {
-// Destructor
+AliMpMotifType::~AliMpMotifType() 
+{
+/// Destructor
 
 #ifdef WITH_STL
  for(ConnectionMapCIterator i = fConnections.begin();
@@ -66,11 +83,11 @@ AliMpMotifType::~AliMpMotifType() {
 }
 
 #ifdef WITH_ROOT
+
 //______________________________________________________________________________
 Int_t  AliMpMotifType::GetIndex(const AliMpIntPair& pair) const
 {
-// Converts the pair of integers to integer.
-// ---
+/// Convert the pair of integers to integer.
 
   if (pair.GetFirst() >= fgkSeparator || pair.GetSecond() >= fgkSeparator)
     Fatal("GetIndex", "Index out of limit.");
@@ -81,8 +98,7 @@ Int_t  AliMpMotifType::GetIndex(const AliMpIntPair& pair) const
 //______________________________________________________________________________
 AliMpIntPair  AliMpMotifType::GetPair(Int_t index) const
 {
-// Converts the integer index to the pair of integers.
-// ---
+/// Convert the integer index to the pair of integers.
 
   return AliMpIntPair((index-1)/fgkSeparator,(index-1)%fgkSeparator);
 }  
@@ -91,13 +107,15 @@ AliMpIntPair  AliMpMotifType::GetPair(Int_t index) const
 //______________________________________________________________________________
 AliMpVPadIterator* AliMpMotifType::CreateIterator() const
 {
+/// Create new motif type iterator
+
   return new AliMpMotifTypePadIterator(this);
 }
 
 //______________________________________________________________________________
 void AliMpMotifType::SetNofPads(Int_t nofPadsX, Int_t nofPadsY)
 {
-  // Change the number of pads in this motif
+  /// Change the number of pads in this motif
 
   fNofPadsX = nofPadsX;
   fNofPadsY = nofPadsY;
@@ -107,7 +125,8 @@ void AliMpMotifType::SetNofPads(Int_t nofPadsX, Int_t nofPadsY)
 //______________________________________________________________________________
 Int_t AliMpMotifType::PadNum(const TString &padName) const
 {
-  // Transform a pad name into the equivalent pad number
+  /// Transform a pad name into the equivalent pad number
+
   if ( (padName[0]>='A') && (padName[0]<='Z') )
     return fgkPadNumForA+padName[0]-'A';
   else
@@ -117,7 +136,8 @@ Int_t AliMpMotifType::PadNum(const TString &padName) const
 //______________________________________________________________________________
 TString AliMpMotifType::PadName(Int_t padNum) const
 {
-  // Transform a pad number into its equivalent pad name
+  /// Transform a pad number into its equivalent pad name
+
   if (padNum<fgkPadNumForA)
     return Form("%d",padNum);
   else
@@ -128,7 +148,7 @@ TString AliMpMotifType::PadName(Int_t padNum) const
 void AliMpMotifType::AddConnection(const AliMpIntPair &localIndices, 
                                AliMpConnection* connection)
 {
-  // Add the connection to the map
+  /// Add the connection to the map
   
 #ifdef WITH_STL
   fConnections[localIndices]=connection;
@@ -144,7 +164,8 @@ void AliMpMotifType::AddConnection(const AliMpIntPair &localIndices,
 //______________________________________________________________________________
 AliMpConnection *AliMpMotifType::FindConnectionByPadNum(Int_t padNum) const
 {
-  // Retrieve the AliMpConnection pointer from its pad num
+  /// Retrieve the AliMpConnection pointer from its pad num
+  
 #ifdef WITH_STL
  for(ConnectionMapCIterator i = fConnections.begin();
   i!=fConnections.end();++i)
@@ -167,7 +188,8 @@ AliMpConnection *AliMpMotifType::FindConnectionByPadNum(Int_t padNum) const
 AliMpConnection *AliMpMotifType::FindConnectionByLocalIndices(
                                        const AliMpIntPair& localIndices) const
 {
-  // Retrieve the AliMpConnection pointer from its position (in pad unit)
+  /// Retrieve the AliMpConnection pointer from its position (in pad unit)
+  
   if (!localIndices.IsValid()) return 0;
 
 #ifdef WITH_STL
@@ -189,7 +211,8 @@ AliMpConnection *AliMpMotifType::FindConnectionByLocalIndices(
 //______________________________________________________________________________
 AliMpConnection *AliMpMotifType::FindConnectionByGassiNum(Int_t gassiNum) const
 {
-  // Return the connection for the given gassiplex number
+  /// Return the connection for the given gassiplex number
+  
 #ifdef WITH_STL
  for(ConnectionMapCIterator i = fConnections.begin();
   i!=fConnections.end();++i)
@@ -211,7 +234,8 @@ AliMpConnection *AliMpMotifType::FindConnectionByGassiNum(Int_t gassiNum) const
 //______________________________________________________________________________
 AliMpConnection *AliMpMotifType::FindConnectionByKaptonNum(Int_t kaptonNum) const
 {
-  // Gives the connection related to the given kapton number
+  /// Give the connection related to the given kapton number
+  
 #ifdef WITH_STL
  for(ConnectionMapCIterator i = fConnections.begin();
   i!=fConnections.end();++i)
@@ -232,7 +256,8 @@ AliMpConnection *AliMpMotifType::FindConnectionByKaptonNum(Int_t kaptonNum) cons
 //______________________________________________________________________________
 AliMpConnection *AliMpMotifType::FindConnectionByBergNum(Int_t bergNum) const
 {
-  // Retrieve the connection from a Berg connector number
+  /// Retrieve the connection from a Berg connector number
+  
 #ifdef WITH_STL
  for(ConnectionMapCIterator i = fConnections.begin();
   i!=fConnections.end();++i)
@@ -256,9 +281,9 @@ AliMpConnection *AliMpMotifType::FindConnectionByBergNum(Int_t bergNum) const
 AliMpIntPair AliMpMotifType::FindLocalIndicesByConnection(
                                  const AliMpConnection* connection) const
 {
-  // Retrieve the pad position from the connection pointer.
-  // Not to be used widely, since it use a search in the
-  // connection list...
+  /// Retrieve the pad position from the connection pointer.
+  /// Not to be used widely, since it use a search in the
+  /// connection list...
 
 #ifdef WITH_STL
  for(ConnectionMapCIterator i = fConnections.begin();
@@ -281,7 +306,8 @@ AliMpIntPair AliMpMotifType::FindLocalIndicesByConnection(
 //______________________________________________________________________________
 AliMpIntPair AliMpMotifType::FindLocalIndicesByPadNum(Int_t padNum) const
 {
-  // Retrieve the AliMpConnection pointer from its pad num
+  /// Retrieve the AliMpConnection pointer from its pad num
+  
 #ifdef WITH_STL
  for(ConnectionMapCIterator i = fConnections.begin();
   i!=fConnections.end();++i)
@@ -302,7 +328,8 @@ AliMpIntPair AliMpMotifType::FindLocalIndicesByPadNum(Int_t padNum) const
 //______________________________________________________________________________
 AliMpIntPair AliMpMotifType::FindLocalIndicesByGassiNum(Int_t gassiNum) const
 {
-  // return the connection for the given gassiplex number
+  /// Return the connection for the given gassiplex number
+  
 #ifdef WITH_STL
  for(ConnectionMapCIterator i = fConnections.begin();
   i!=fConnections.end();++i)
@@ -324,7 +351,8 @@ AliMpIntPair AliMpMotifType::FindLocalIndicesByGassiNum(Int_t gassiNum) const
 //______________________________________________________________________________
 AliMpIntPair AliMpMotifType::FindLocalIndicesByKaptonNum(Int_t kaptonNum) const
 {
-  // Gives the connection related to the given kapton number
+  /// Give the connection related to the given kapton number
+  
 #ifdef WITH_STL
  for(ConnectionMapCIterator i = fConnections.begin();
   i!=fConnections.end();++i)
@@ -346,7 +374,8 @@ AliMpIntPair AliMpMotifType::FindLocalIndicesByKaptonNum(Int_t kaptonNum) const
 //______________________________________________________________________________
 AliMpIntPair AliMpMotifType::FindLocalIndicesByBergNum(Int_t bergNum) const
 {
-  // Retrieve the connection from a Berg connector number
+  /// Retrieve the connection from a Berg connector number
+  
 #ifdef WITH_STL
  for(ConnectionMapCIterator i = fConnections.begin();
   i!=fConnections.end();++i)
@@ -368,7 +397,7 @@ AliMpIntPair AliMpMotifType::FindLocalIndicesByBergNum(Int_t bergNum) const
 //______________________________________________________________________________
 Int_t  AliMpMotifType::GetNofPads() const   
 {
-// Returns the number of pads
+/// Return the number of pads
 
 #ifdef WITH_STL
   return fConnections.size();
@@ -382,7 +411,8 @@ Int_t  AliMpMotifType::GetNofPads() const
 //______________________________________________________________________________
 Bool_t AliMpMotifType::HasPad(const AliMpIntPair& localIndices) const
 {
-  // Return true if the pad indexed by <localIndices> has a connection
+  /// Return true if the pad indexed by <localIndices> has a connection
+  
   if (!localIndices.IsValid()) return false;
 
 #ifdef WITH_STL
@@ -398,16 +428,16 @@ Bool_t AliMpMotifType::HasPad(const AliMpIntPair& localIndices) const
 //______________________________________________________________________________
 void AliMpMotifType::Print(Option_t *option) const
 {
-  // Print the map of the motif. In each cel, the value
-  // printed depends of option, as the following:
-  // option="N" the "name" of the pad is written
-  // option="K" the Kapton connect. number attached to the pad is written
-  // option="B" the Berg connect. number attached to the pad is written
-  // option="G" the Gassiplex channel number attached to the pad is written
-  // otherwise the number of the pad is written
-
-  // NOTE : this method is really not optimized, in case 'N' or '',
-  // but the Print() this should not be very important in a Print() method
+  /// Print the map of the motif. In each cell, the value
+  /// printed depends of option, as the following:
+  /// - option="N" the "name" of the pad is written
+  /// - option="K" the Kapton connect. number attached to the pad is written
+  /// - option="B" the Berg connect. number attached to the pad is written
+  /// - option="G" the Gassiplex channel number attached to the pad is written
+  /// otherwise the number of the pad is written
+  ///
+  /// NOTE : this method is really not optimized, in case 'N' or '',
+  /// but the Print() this should not be very important in a Print() method
 
   switch (option[0]){
   case 'N':cout<<"Name mapping";

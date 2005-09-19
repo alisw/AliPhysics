@@ -1,11 +1,14 @@
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
+
 // $Id$
-// Category: motif
-//
-// Class AliMpMotifPosition
-// ------------------------
-// Class that represents a placed motif.
-//
-// Authors: David Guez, Ivana Hrivnacova; IPN Orsay
+// $MpId: AliMpMotifPosition.h,v 1.6 2005/08/26 15:43:36 ivana Exp $
+
+/// \ingroup motif
+/// \class AliMpMotifPosition
+/// \brief A placed motif.
+///
+/// Authors: David Guez, Ivana Hrivnacova; IPN Orsay
 
 #ifndef ALI_MP_MOTIF_POSITION_H
 #define ALI_MP_MOTIF_POSITION_H
@@ -35,6 +38,13 @@ class AliMpMotifPosition : public AliMpVIndexed
   // Geometry
   TVector2 Position() const;
   TVector2 Dimensions() const;
+  
+  // Sets the ID (which is the MANU ID)
+  void SetID(Int_t id); 
+  // Sets the position.
+  void SetPosition(const TVector2& pos);
+
+  void Print(Option_t* option="") const;
 
  protected:
   AliMpMotifPosition(const AliMpMotifPosition& right);
@@ -43,7 +53,7 @@ class AliMpMotifPosition : public AliMpVIndexed
  private:
   // methods
   // data members 
-  Int_t         fID;       //identifier
+  Int_t         fID;       //identifier=manu id
   AliMpVMotif*  fMotif;    //motif
   TVector2      fPosition; //position
 

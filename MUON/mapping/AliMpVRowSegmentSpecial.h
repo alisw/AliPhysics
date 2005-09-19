@@ -1,12 +1,15 @@
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
+
 // $Id$
-// Category: sector
-//
-// Class AliMpVRowSegmentSpecial
-// -----------------------------
-// Abstract base class for a special row segment composed of the 
-// pad rows.
-//
-// Authors: David Guez, Ivana Hrivnacova; IPN Orsay
+// $MpId: AliMpVRowSegmentSpecial.h,v 1.6 2005/08/26 15:43:36 ivana Exp $
+
+/// \ingroup sector
+/// \class AliMpVRowSegmentSpecial
+/// \brief Abstract base class for a special row segment composed of the 
+/// pad rows.
+///
+/// Authors: David Guez, Ivana Hrivnacova; IPN Orsay
 
 #ifndef ALI_MP_V_ROW_SEGMENT_SPECIAL_H
 #define ALI_MP_V_ROW_SEGMENT_SPECIAL_H

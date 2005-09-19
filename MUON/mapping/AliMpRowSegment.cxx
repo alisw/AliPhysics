@@ -1,4 +1,20 @@
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+
 // $Id$
+// $MpId: AliMpRowSegment.cxx,v 1.8 2005/08/26 15:43:36 ivana Exp $
 // Category: sector
 //
 // Class AliMpRowSegment
@@ -36,7 +52,8 @@ AliMpRowSegment::AliMpRowSegment(AliMpRow* row, AliMpVMotif* motif,
     fMotifPositionId(motifPositionId),
     fMotifPositionDId(motifPositionDId)
 {
-// 
+/// Standard constructor
+ 
   // Keep pad offset in the low indices limits
   SetLowIndicesLimit(padOffset);
 }
@@ -52,19 +69,22 @@ AliMpRowSegment::AliMpRowSegment()
     fMotifPositionId(0),
     fMotifPositionDId(0)
 {
-//
+/// Default constructor
 }
 
 //_____________________________________________________________________________
 AliMpRowSegment::AliMpRowSegment(const AliMpRowSegment& right) 
-  : AliMpVRowSegment(right) {
-// 
+  : AliMpVRowSegment(right) 
+{
+/// Protected copy constructor (not provided) 
+
   Fatal("AliMpRowSegment", "Copy constructor not provided.");
 }
 
 //_____________________________________________________________________________
-AliMpRowSegment::~AliMpRowSegment() {
-//  
+AliMpRowSegment::~AliMpRowSegment() 
+{
+/// Destructor  
 }
 
 //
@@ -74,10 +94,12 @@ AliMpRowSegment::~AliMpRowSegment() {
 //_____________________________________________________________________________
 AliMpRowSegment& AliMpRowSegment::operator=(const AliMpRowSegment& right)
 {
-  // check assignement to self
+/// Protected assignment operator (not provided)
+
+  // check assignment to self
   if (this == &right) return *this;
 
-  Fatal("operator =", "Assignement operator not provided.");
+  Fatal("operator =", "Assignment operator not provided.");
     
   return *this;  
 }    
@@ -89,9 +111,8 @@ AliMpRowSegment& AliMpRowSegment::operator=(const AliMpRowSegment& right)
 //_____________________________________________________________________________
 Double_t AliMpRowSegment::FirstMotifCenterX() const
 {
-// Returns the x coordinate of the first motif center
-// in global coordinate system.
-// ---
+/// Return the x coordinate of the first motif center
+/// in the global coordinate system.
 
   return fOffset.X();
 }  
@@ -99,9 +120,8 @@ Double_t AliMpRowSegment::FirstMotifCenterX() const
 //_____________________________________________________________________________
 Double_t AliMpRowSegment::LastMotifCenterX() const
 {
-// Returns the x coordinate of the last motif center
-// in global coordinate system.
-// ---
+/// Return the x coordinate of the last motif center
+/// in the global coordinate system.
 
   return fOffset.X() + 2.*(fNofMotifs-1)*fMotif->Dimensions().X();
 }
@@ -109,9 +129,8 @@ Double_t AliMpRowSegment::LastMotifCenterX() const
 //_____________________________________________________________________________
 Double_t AliMpRowSegment::MotifCenterX(Int_t motifPositionId) const
 {
-// Returns the x coordinate of the motif specified with
-// the given position identifier.
-// ---
+/// Return the x coordinate of the motif specified with
+/// the given position identifier.
 
   // Check if x is in the row segment range
   if (! HasMotifPosition(motifPositionId)) {
@@ -128,9 +147,8 @@ Double_t AliMpRowSegment::MotifCenterX(Int_t motifPositionId) const
 //_____________________________________________________________________________
 Double_t AliMpRowSegment::MotifCenterY(Int_t motifPositionId) const
 {
-// Returns the y coordinate of the motif specified with
-// the given position identifier.
-// ---
+/// Return the y coordinate of the motif specified with
+/// the given position identifier.
 
   // Check if x is in the row segment range
   if (! HasMotifPosition(motifPositionId)) {
@@ -144,8 +162,7 @@ Double_t AliMpRowSegment::MotifCenterY(Int_t motifPositionId) const
 //_____________________________________________________________________________
 Bool_t AliMpRowSegment::IsInside(const TVector2& position, Bool_t warn) const
 {
-// Checks if the position is inside some motif of this row segment.
-// ---
+/// Check if the position is inside some motif of this row segment.
 
   Double_t minY = GetRow()->Position().Y() + fOffset.Y() - fMotif->Dimensions().Y();
   Double_t maxY = GetRow()->Position().Y() + fOffset.Y() + fMotif->Dimensions().Y();
@@ -167,9 +184,8 @@ Bool_t AliMpRowSegment::IsInside(const TVector2& position, Bool_t warn) const
 //_____________________________________________________________________________
 Double_t  AliMpRowSegment::LeftBorderX() const
 {
-// Returns the x coordinate of the left row segment border
-// in global coordinate system.
-// ---
+/// Return the x coordinate of the left row segment border
+/// in the global coordinate system.
 
   return FirstMotifCenterX() - fMotif->Dimensions().X();
 }
@@ -177,9 +193,8 @@ Double_t  AliMpRowSegment::LeftBorderX() const
 //_____________________________________________________________________________
 Double_t  AliMpRowSegment::RightBorderX() const
 {
-// Returns the x coordinate of the right row segment border
-// in global coordinate system.
-// ---
+/// Return the x coordinate of the right row segment border
+/// in the global coordinate system.
 
   return LastMotifCenterX() + fMotif->Dimensions().X();
 }
@@ -187,8 +202,7 @@ Double_t  AliMpRowSegment::RightBorderX() const
 //_____________________________________________________________________________
 Double_t  AliMpRowSegment::HalfSizeY() const
 {
-// Returns the size in y of this row segment.
-// ---
+/// Return the size in y of this row segment.
 
   return fMotif->Dimensions().Y() + fOffset.Y();
 }
@@ -196,8 +210,7 @@ Double_t  AliMpRowSegment::HalfSizeY() const
 //_____________________________________________________________________________
 AliMpVMotif*  AliMpRowSegment::FindMotif(const TVector2& position) const
 {
-// Returns the motif of this row; 
-// ---
+/// Return the motif of this row; 
 
   if (IsInside(position, false))
     return fMotif;
@@ -208,9 +221,8 @@ AliMpVMotif*  AliMpRowSegment::FindMotif(const TVector2& position) const
 //_____________________________________________________________________________
 Int_t AliMpRowSegment::FindMotifPositionId(const TVector2& position) const
 {
-// Returns the motif position identified for the given
-// geometric position.
-// ---
+/// Return the motif position identified for the given
+/// geometric position.
 
   if (!IsInside(position, false)) return 0;
 
@@ -225,9 +237,8 @@ Int_t AliMpRowSegment::FindMotifPositionId(const TVector2& position) const
 //_____________________________________________________________________________
 Bool_t AliMpRowSegment::HasMotifPosition(Int_t motifPositionId) const
 {
-// Returns true if the motif specified with the given position identifier
-// is in this segment.
-// ---
+/// Return true if the motif specified with the given position identifier
+/// is in this segment.
 
   Int_t minId = TMath::Min(fMotifPositionId, 
                     fMotifPositionId + (fNofMotifs-1)*fMotifPositionDId);
@@ -244,9 +255,8 @@ Bool_t AliMpRowSegment::HasMotifPosition(Int_t motifPositionId) const
 //_____________________________________________________________________________
 TVector2 AliMpRowSegment::MotifCenter(Int_t motifPositionId) const
 {
-// Returns the coordinates of the motif specified with
-// the given position identifier.
-// ---
+/// Return the coordinates of the motif specified with
+/// the given position identifier.
 
   return TVector2(MotifCenterX(motifPositionId), MotifCenterY(motifPositionId));
 }
@@ -254,8 +264,7 @@ TVector2 AliMpRowSegment::MotifCenter(Int_t motifPositionId) const
 //_____________________________________________________________________________
 TVector2 AliMpRowSegment::Position() const
 {
-// Returns the position of the row segment centre.
-// ---
+/// Return the position of the row segment centre.
 
   Double_t x = (LeftBorderX() + RightBorderX())/2.;		    
   Double_t y = GetRow()->Position().Y();  
@@ -267,7 +276,7 @@ TVector2 AliMpRowSegment::Position() const
 //_____________________________________________________________________________
 TVector2 AliMpRowSegment::Dimensions() const
 {
-// Returns the halflengths of the row segment in x, y.
+/// Return the halflengths of the row segment in x, y.
 // ---
 
   Double_t x = (RightBorderX() - LeftBorderX())/2.;		    
@@ -279,9 +288,8 @@ TVector2 AliMpRowSegment::Dimensions() const
 //_____________________________________________________________________________
 void   AliMpRowSegment::SetOffset(const TVector2& offset)
 {
-// Calculates offset from given offset and 
-// stored offset in pads.
-// ---
+/// Calculate offset from given offset and 
+/// stored offset in pads.
 
   AliMpMotifTypePadIterator iter(fMotif->GetMotifType());
   iter.First();
@@ -303,8 +311,7 @@ void   AliMpRowSegment::SetOffset(const TVector2& offset)
 //_____________________________________________________________________________
 void AliMpRowSegment::SetGlobalIndices(AliMpRow* /*rowBefore*/)
 {
-// Sets indices limits.
-// ---
+/// Set global indices limits.
 
   // The low/high indices limits has to be taken as the highest/lowest from all 
   // motif positions
@@ -344,9 +351,8 @@ void AliMpRowSegment::SetGlobalIndices(AliMpRow* /*rowBefore*/)
 Int_t AliMpRowSegment::SetIndicesToMotifPosition(Int_t i, 
                                  const AliMpIntPair& indices)
 {
-// Sets global indices to i-th motif position and returns next index
-// in x.
-// ---
+/// Set global indices to i-th motif position and returns next index
+/// in x.
 
   // Get motif position
   AliMpMotifPosition* motifPosition
@@ -372,8 +378,7 @@ Int_t AliMpRowSegment::SetIndicesToMotifPosition(Int_t i,
 //_____________________________________________________________________________
 AliMpRow*  AliMpRowSegment::GetRow() const
 {
-// Returns the row.which this row segment belongs to.
-// ---
+/// Return the row.which this row segment belongs to.
 
   return fRow;
 }  
@@ -381,8 +386,7 @@ AliMpRow*  AliMpRowSegment::GetRow() const
 //_____________________________________________________________________________
 Int_t  AliMpRowSegment::GetNofMotifs() const
 {
-// Returns number of motifs in this this row segment.
-// ---
+/// Return number of motifs in this this row segment.
 
   return fNofMotifs;
 }  
@@ -390,8 +394,7 @@ Int_t  AliMpRowSegment::GetNofMotifs() const
 //_____________________________________________________________________________
 Int_t  AliMpRowSegment::GetMotifPositionId(Int_t i) const
 {
-// Returns number of motifs in this this row segment.
-// ---
+/// Return number of motifs in this this row segment.
 
   return fMotifPositionId + i*fMotifPositionDId;
 }  
@@ -399,8 +402,7 @@ Int_t  AliMpRowSegment::GetMotifPositionId(Int_t i) const
 //_____________________________________________________________________________
 AliMpVMotif*  AliMpRowSegment::GetMotif(Int_t /*i*/) const
 {
-// Returns the motif of this row segment.
-// ---
+/// Return the motif of this row segment.
 
   return fMotif;
 }  

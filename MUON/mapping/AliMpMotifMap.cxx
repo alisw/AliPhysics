@@ -1,4 +1,20 @@
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+
 // $Id$
+// $MpId: AliMpMotifMap.cxx,v 1.7 2005/08/26 15:43:36 ivana Exp $
 // Category: motif
 //
 // Class AliMpMotifMap
@@ -28,12 +44,13 @@ const Int_t AliMpMotifMap::fgkSeparator = 100;
 AliMpMotifMap::AliMpMotifMap() 
   : TObject()
 {
-//
+/// Default constructor
 }
 
 //_____________________________________________________________________________
-AliMpMotifMap::~AliMpMotifMap() {
-//  
+AliMpMotifMap::~AliMpMotifMap() 
+{
+/// Destructor  
 
   // Delete all registered motifs, motif types, motif positions
   
@@ -76,8 +93,7 @@ AliMpMotifMap::~AliMpMotifMap() {
 //_____________________________________________________________________________
 Int_t  AliMpMotifMap::GetIndex(const TString& s) const 
 {
-// Converts the TString to integer.
-// ---
+/// Convert the TString to integer.
 
   if (s.Length() > 5) {
     Fatal("GetIndex", "String too long.");
@@ -92,8 +108,7 @@ Int_t  AliMpMotifMap::GetIndex(const TString& s) const
 //______________________________________________________________________________
 Int_t  AliMpMotifMap::GetIndex(const AliMpIntPair& pair) const
 {
-// Converts the pair of integers to integer.
-// ---
+/// Convert the pair of integers to integer.
 
   if (pair.GetFirst() >= fgkSeparator || pair.GetSecond() >= fgkSeparator)
     Fatal("GetIndex", "Index out of limit.");
@@ -104,8 +119,7 @@ Int_t  AliMpMotifMap::GetIndex(const AliMpIntPair& pair) const
 //_____________________________________________________________________________
 TString  AliMpMotifMap::GetString(Int_t index) const
 {
-// Converts the integer index to the string.
-// ---
+/// Convert the integer index to the string.
 
   TString s;
   while (index >0) {
@@ -119,8 +133,7 @@ TString  AliMpMotifMap::GetString(Int_t index) const
 //______________________________________________________________________________
 AliMpIntPair  AliMpMotifMap::GetPair(Int_t index) const
 {
-// Converts the integer index to the pair of integers.
-// ---
+/// Convert the integer index to the pair of integers.
 
   return AliMpIntPair((index-1)/fgkSeparator, (index-1)%fgkSeparator);
 }  
@@ -129,7 +142,7 @@ AliMpIntPair  AliMpMotifMap::GetPair(Int_t index) const
 //_____________________________________________________________________________
 void  AliMpMotifMap::PrintMotif(const AliMpVMotif* motif) const
 {
-// Prints the motif.
+/// Print the motif.
 // ---
 
   cout << motif->GetID().Data() << "  "
@@ -141,8 +154,7 @@ void  AliMpMotifMap::PrintMotif(const AliMpVMotif* motif) const
 //_____________________________________________________________________________
 void  AliMpMotifMap::PrintMotifType(const AliMpMotifType* motifType) const
 {
-// Prints the motif type.
-// ---
+/// Print the motif type.
 
   cout << motifType->GetID().Data() << "  "
        << motifType->GetNofPadsX() << "  " 
@@ -153,8 +165,7 @@ void  AliMpMotifMap::PrintMotifType(const AliMpMotifType* motifType) const
 void  AliMpMotifMap::PrintMotifPosition(
                           const AliMpMotifPosition* motifPosition) const
 {
-// Prints the motif position.
-// ---
+/// Print the motif position.
 
   cout << motifPosition->GetID() << "  "
        << motifPosition->GetMotif()->GetID() << "  " 
@@ -166,8 +177,7 @@ void  AliMpMotifMap::PrintMotifPosition(
 void  AliMpMotifMap::PrintMotifPosition2(
                           const AliMpMotifPosition* motifPosition) const
 {
-// Prints the motif position.
-// ---
+/// Print the motif position.
 
   cout << setw(3) << motifPosition->GetLowIndicesLimit().GetFirst() << "  "
        << setw(3) << motifPosition->GetLowIndicesLimit().GetSecond() << "  "
@@ -179,9 +189,8 @@ void  AliMpMotifMap::PrintMotifPosition2(
 //_____________________________________________________________________________
 void  AliMpMotifMap::PrintMotifs() const
 {
-// Prints all the motifs and their motif types 
-// for all motifs in the motifs map.
-// ---
+/// Print all the motifs and their motif types 
+/// for all motifs in the motifs map.
 
 #ifdef WITH_STL
   if (fMotifs.size()) {
@@ -222,9 +231,8 @@ void  AliMpMotifMap::PrintMotifs() const
 //_____________________________________________________________________________
 void  AliMpMotifMap::PrintMotifTypes() const
 {
-// Prints all the the motifs types and their motif dimensions
-// for all motif types in the motif types map.
-// ---
+/// Print all the the motifs types and their motif dimensions
+/// for all motif types in the motif types map.
 
 #ifdef WITH_STL
   if (fMotifTypes.size()) {
@@ -265,8 +273,7 @@ void  AliMpMotifMap::PrintMotifTypes() const
 //_____________________________________________________________________________
 void  AliMpMotifMap::PrintMotifPositions() const
 {
-// Prints all the the motifs positions.
-// ---
+/// Print all the the motifs positions.
 
 #ifdef WITH_STL
   if (fMotifPositions.size()) {
@@ -286,7 +293,7 @@ void  AliMpMotifMap::PrintMotifPositions() const
 
 #ifdef WITH_ROOT
   if (fMotifPositions.GetSize()) {
-    cout << "Dump of Motif Type Map - " << fMotifPositions.GetSize() << " entries:" << endl;
+    cout << "Dump of Motif Position Map - " << fMotifPositions.GetSize() << " entries:" << endl;
     Int_t counter = 0;        
     MotifPositionMapIterator i(&fMotifPositions);
     Long_t key, value;
@@ -305,9 +312,8 @@ void  AliMpMotifMap::PrintMotifPositions() const
 //_____________________________________________________________________________
 void  AliMpMotifMap::PrintMotifPositions2() const
 {
-// Prints all the the motifs positions from the second map
-// (by global indices)
-// ---
+/// Print all the the motifs positions from the second map
+/// (by global indices)
 
 #ifdef WITH_STL
   if (fMotifPositions2.size()) {
@@ -350,9 +356,8 @@ void  AliMpMotifMap::PrintMotifPositions2() const
 //_____________________________________________________________________________
 Bool_t AliMpMotifMap::AddMotif(AliMpVMotif* motif, Bool_t warn)
 {
-// Adds the specified motif 
-// if the motif with this ID is not yet present.
-// ---
+/// Add the specified motif 
+/// if the motif with this ID is not yet present.
 
   AliMpVMotif* found = FindMotif(motif->GetID());
   if (found) {    
@@ -377,9 +382,8 @@ Bool_t AliMpMotifMap::AddMotif(AliMpVMotif* motif, Bool_t warn)
 //_____________________________________________________________________________
 Bool_t AliMpMotifMap::AddMotifType(AliMpMotifType* motifType, Bool_t warn)
 {
-// Adds the specified motif type
-// if the motif with this ID is not yet present.
-// ---
+/// Add the specified motif type
+/// if the motif with this ID is not yet present.
 
   AliMpMotifType* found = FindMotifType(motifType->GetID());
   if (found) {    
@@ -405,9 +409,8 @@ Bool_t AliMpMotifMap::AddMotifType(AliMpMotifType* motifType, Bool_t warn)
 //_____________________________________________________________________________
 Bool_t AliMpMotifMap::AddMotifPosition(AliMpMotifPosition* motifPosition, Bool_t warn)
 {
-// Adds the specified motif position
-// if this position is not yet present.
-// ---
+/// Add the specified motif position
+/// if this position is not yet present.
 
   AliMpMotifPosition* found = FindMotifPosition(motifPosition->GetID());
   if (found) { 
@@ -441,8 +444,7 @@ Bool_t AliMpMotifMap::AddMotifPosition(AliMpMotifPosition* motifPosition, Bool_t
 //_____________________________________________________________________________
 void AliMpMotifMap::FillMotifPositionMap2()
 {
-// Fills the second map (by global indices) of motif positions.
-// ---
+/// Fill the second map (by global indices) of motif positions.
 
 #ifdef WITH_STL
   if (fMotifPositions2.size() > 0 ) {
@@ -477,8 +479,7 @@ void AliMpMotifMap::FillMotifPositionMap2()
 //_____________________________________________________________________________
 void  AliMpMotifMap::Print(const char* /*option*/) const
 {
-// Prints the motifs and motif types maps.
-// ---
+/// Print the motifs and motif types maps.
 
   PrintMotifs();
   PrintMotifTypes();
@@ -489,8 +490,7 @@ void  AliMpMotifMap::Print(const char* /*option*/) const
 //_____________________________________________________________________________
 void  AliMpMotifMap::PrintGlobalIndices(const char* fileName) const
 {
-// Prints all the motifs positions and their global indices.
-// ---
+/// Print all the motifs positions and their global indices.
 
   ofstream out(fileName, ios::out);
 
@@ -528,9 +528,8 @@ void  AliMpMotifMap::PrintGlobalIndices(const char* fileName) const
 //_____________________________________________________________________________
 void  AliMpMotifMap::UpdateGlobalIndices(const char* fileName)
 {
-// Updates the motifs positions global indices
-// from the file.
-// ---
+/// Updates the motifs positions global indices
+/// from the file.
 
   ifstream in(fileName, ios::in);
 
@@ -572,8 +571,7 @@ void  AliMpMotifMap::UpdateGlobalIndices(const char* fileName)
 //_____________________________________________________________________________
 AliMpVMotif* AliMpMotifMap::FindMotif(const TString& motifID) const
 {
-// Finds the motif with the specified ID.
-// ---
+/// Finds the motif with the specified ID.
   
 #ifdef WITH_STL
   MotifMapIterator i = fMotifs.find(motifID);
@@ -597,12 +595,11 @@ AliMpVMotif* AliMpMotifMap::FindMotif(const TString& motifID,
                                       const TString& motifTypeID,
 			              const TVector2& padDimensions ) const
 {
-// Finds the motif with the specified ID and returns it
-// only if its motif type and motif dimensions agree
-// with the given motifTypeID and motifDimensions.
-// Disagreement causes fatal error.
-// ---
-  
+/// Finds the motif with the specified ID and returns it
+/// only if its motif type and motif dimensions agree
+/// with the given motifTypeID and motifDimensions.
+/// Disagreement causes fatal error.
+ 
   AliMpVMotif* motif = FindMotif(motifID);
 
   if (motif && motif->GetMotifType()->GetID() != motifTypeID) {
@@ -640,8 +637,7 @@ AliMpVMotif* AliMpMotifMap::FindMotif(const TString& motifID,
 //_____________________________________________________________________________
 AliMpMotifType* AliMpMotifMap::FindMotifType(const TString& motifTypeID) const
 {
-// Finds the motif type with the specified motif type ID.
-// ---
+/// Find the motif type with the specified motif type ID.
   
 #ifdef WITH_STL
   MotifTypeMapIterator i = fMotifTypes.find(motifTypeID);
@@ -664,8 +660,7 @@ AliMpMotifType* AliMpMotifMap::FindMotifType(const TString& motifTypeID) const
 AliMpMotifPosition* 
 AliMpMotifMap::FindMotifPosition(Int_t motifPositionID) const
 {
-// Finds the motif position with the specified motif position ID.
-// ---
+/// Find the motif position with the specified motif position ID.
   
 #ifdef WITH_STL
   MotifPositionMapIterator i = fMotifPositions.find(motifPositionID);
@@ -689,9 +684,8 @@ AliMpMotifMap::FindMotifPosition(Int_t motifPositionID) const
 AliMpMotifPosition* 
 AliMpMotifMap::FindMotifPosition(const AliMpIntPair& indices) const
 {
-// Finds the last motif position which has the global indices (low limit)
-// less then the indices specified.
-// ---
+/// Find the last motif position which has the global indices (low limit)
+/// less then the indices specified.
 
 #ifdef WITH_STL
   MotifPositionMap2Iterator found 

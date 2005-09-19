@@ -1,4 +1,20 @@
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+
 // $Id$
+// $MpId: AliMpMotifPainter.cxx,v 1.7 2005/08/26 15:43:36 ivana Exp $
 // Category: graphics
 //
 // Class AliMpMotifPainter
@@ -25,7 +41,7 @@ AliMpMotifPainter::AliMpMotifPainter()
   : AliMpVPainter(),
     fMotifPos(0)
 {
-  // default dummy constructor
+  /// Default constructor
 }
 
 //_______________________________________________________________________
@@ -33,31 +49,35 @@ AliMpMotifPainter::AliMpMotifPainter(AliMpMotifPosition *motifPos)
   : AliMpVPainter(),
     fMotifPos(motifPos)
 {
-  // normal constructor 
+  /// Standard constructor 
 
 }
 
 //_____________________________________________________________________________
 AliMpMotifPainter::AliMpMotifPainter(const AliMpMotifPainter& right) 
-  : AliMpVPainter(right) {
-// 
+  : AliMpVPainter(right) 
+{
+  /// Protected copy constructor (not provided) 
+
   Fatal("AliMpMotifPainter", "Copy constructor not provided.");
 }
 
 //_______________________________________________________________________
 AliMpMotifPainter::~AliMpMotifPainter()
 {
-  // default dummy constructor
+  /// Default constructor
 }
 
 //_____________________________________________________________________________
 AliMpMotifPainter& 
 AliMpMotifPainter::operator=(const AliMpMotifPainter& right)
 {
-  // check assignement to self
+  /// Assignment operator (not provided)
+
+  // check assignment to self
   if (this == &right) return *this;
 
-  Fatal("operator =", "Assignement operator not provided.");
+  Fatal("operator =", "Assignment operator not provided.");
     
   return *this;  
 }    
@@ -65,30 +85,32 @@ AliMpMotifPainter::operator=(const AliMpMotifPainter& right)
 //_______________________________________________________________________
 void AliMpMotifPainter::DumpObject()
 {
-// Draw the owned object
-  fMotifPos->Dump();
+/// Dump the owned object
 
+  fMotifPos->Dump();
 }
 
 //_______________________________________________________________________
 TVector2 AliMpMotifPainter::GetPosition() const
 {
-// Get the owned object's position
-  return fMotifPos->Position();
+/// Get the owned object's position
 
+  return fMotifPos->Position();
 }
+
 //_______________________________________________________________________
 TVector2 AliMpMotifPainter::GetDimensions() const
 {
-// Get the owned object's dimensions
-  return fMotifPos->Dimensions();
+/// Get the owned object's dimensions
 
+  return fMotifPos->Dimensions();
 }
 
 //_______________________________________________________________________
 void AliMpMotifPainter::Paint(Option_t *option)
 {
-// Paint the object
+/// Paint the object
+
   AliMpGraphContext *gr = AliMpGraphContext::Instance();
   if (!fMotifPos) return;
   Int_t col=gVirtualX->GetFillColor();
@@ -160,7 +182,9 @@ void AliMpMotifPainter::Paint(Option_t *option)
 	       if (option[1]=='T'){
 	         Float_t textSize =   gVirtualX->GetTextSize();
 	         gVirtualX->SetTextSize(10);
-	         gPad->PaintText(padPadPos.X()-0.01,padPadPos.Y()-0.01,
+		 gVirtualX->SetTextAlign(22);
+		 //	         gPad->PaintText(padPadPos.X()-0.01,padPadPos.Y()-0.01,
+	         gPad->PaintText((bl.X()+ur.X())/2.0,(bl.Y()+ur.Y())/2.0,
 			      Form("%d",connect->GetGassiNum()));
 	      
 	         gVirtualX->SetTextSize(textSize);

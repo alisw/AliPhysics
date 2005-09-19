@@ -1,15 +1,19 @@
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
+
 // $Id$
-// Category: sector
-//
-// Class AliMpFiles
-// ----------------
-// Class for generating file names and paths.
-// The input files:
-// zones.dat, zones_special.dat - sector description
-// motif*.dat   - motif description (generated from Exceed)
-// padPos*.dat  - pad positions in motif
-//
-// Authors: David Guez, Ivana Hrivnacova; IPN Orsay
+// $MpId: AliMpFiles.h,v 1.4 2005/08/26 15:43:36 ivana Exp $
+
+/// \ingroup basic
+/// \class AliMpFiles
+/// \brief Class for generating file names and paths.
+///
+/// The input files:
+/// - zones.dat, zones_special.dat - sector description
+/// - motif*.dat   - motif description (generated from Exceed)
+/// - padPos*.dat  - pad positions in motif
+///
+/// Authors: David Guez, Ivana Hrivnacova; IPN Orsay
 
 #ifndef ALI_MP_FILES_H
 #define ALI_MP_FILES_H
@@ -32,6 +36,12 @@ class AliMpFiles : public TObject
     static AliMpFiles* Instance();
 
     // methods
+    TString SlatFilePath(const char* slatType,
+			 AliMpPlaneType plane) const;
+    TString SlatPCBFilePath(const char* pcbType) const;
+
+    TString DetElemIdToSlatTypeFilePath() const;
+
     TString SectorFilePath(AliMpStationType station, 
                            AliMpPlaneType plane) const;
     TString SectorSpecialFilePath(AliMpStationType station, 

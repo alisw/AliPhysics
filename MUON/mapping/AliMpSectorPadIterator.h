@@ -1,11 +1,14 @@
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
+
 // $Id$
-// Category: sector
-//
-// Class AliMpSectorPadIterator
-// ----------------------------
-// Class, which defines an iterator over the pads of a sector
-//
-// Authors: David Guez, Ivana Hrivnacova; IPN Orsay
+// $MpId: AliMpSectorPadIterator.h,v 1.5 2005/08/26 15:43:36 ivana Exp $
+
+/// \ingroup sector
+/// \class AliMpSectorPadIterator
+/// \brief An iterator over the pads of a sector
+///
+/// Authors: David Guez, Ivana Hrivnacova; IPN Orsay
 
 #ifndef ALI_MP_SECTOR_PAD_ITERATOR_H
 #define ALI_MP_SECTOR_PAD_ITERATOR_H

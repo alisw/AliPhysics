@@ -1,11 +1,14 @@
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
+
 // $Id$
-// Category: graphics
-//
-// Class AliMpRowPainter
-// ---------------------
-// Class for drawing a row into canvas
-//
-// Authors: David Guez, IPN Orsay
+// $MpId: AliMpRowPainter.h,v 1.6 2005/08/26 15:43:36 ivana Exp $
+
+/// \ingroup graphics
+/// \class AliMpRowPainter
+/// \brief Class for drawing a row into canvas
+///
+/// Authors: David Guez, IPN Orsay
 
 #ifndef ALI_MP_ROW_PAINTER_H
 #define ALI_MP_ROW_PAINTER_H

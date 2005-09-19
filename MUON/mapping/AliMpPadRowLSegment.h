@@ -1,14 +1,18 @@
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
+
 // $Id$
-// Category: sector
-//
-// Class AliMpPadRowLSegment
-// -------------------------
-// Class describing a pad row segment composed of the 
-// the identic pads;
-// the pads are placed from the offset (defined in the base class)
-// to the left.
-//
-// Authors: David Guez, Ivana Hrivnacova; IPN Orsay
+// $MpId: AliMpPadRowLSegment.h,v 1.4 2005/08/26 15:43:36 ivana Exp $
+
+/// \ingroup sector
+/// \class AliMpPadRowLSegment
+/// \brief A left pad row segment composed of the identic pads
+///
+/// A pad row segment composed of the identic pads;
+/// the pads are placed from the offset (defined in the base class)
+/// to the left.
+///
+/// Authors: David Guez, Ivana Hrivnacova; IPN Orsay
 
 #ifndef ALI_MP_PAD_ROW_L_SEGMENT_H
 #define ALI_MP_PAD_ROW_L_SEGMENT_H
