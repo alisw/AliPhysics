@@ -43,7 +43,7 @@
    
 
   Data files format
-  ============
+  =================
 
   zones.dat:
   -------------
@@ -125,6 +125,58 @@
     Pad number
     pad index i (in x)
     pad index j (in y)
+  
+
+  *.pcb files
+  ============
+
+  Lines starting with # are comments.
+
+  SIZES PadSizeX PadSizeY SizeX SizeY (mm)
+
+  MOTIF motifType ix iy
+  MOTIF motifType ix iy
+  ...
+
+  where ix, iy are the local coordinates (in pad unit) of the
+  lower-left corner of the motif (0,0 is the lower-left corner
+  of the PCB).
+
+  PCB *MUST* be described in a rotating way, starting lower-left and 
+  then counter-clockwise, otherwise the manu-to-motif association 
+  (fixed in the slat definition files) will be wrong.
+
+  Note that for "full" PCBs, the SizeX and SizeY are redundant as they could be 
+  computed from the motif alone (but that serves as a cross-check that the motif 
+  pattern given is ok). That's not the case for short or rounded PCB though.
+
+  *.slat files
+  =============
+
+  A slat is defined by the list of its PCB, described starting 
+  from the beam and going outward.
+
+  One PCB per line, preceded by the keyword PCB
+  Other lines not matching this syntax are ignored.
+  After the PCB is the list of manu ids for this PCB.
+ 
+  Example :
+
+  PCB X 1-3;24-20;42;44;53
+  PCB X 1-14
+  PCB Y 100-90
+  PCB Z 1;2;3;4;5;6;7;12;120
+
+  defines a slat with 4 PCBs : XXYZ
+
+  The manu to motif relationship is attached to the fact that we're counting 
+  counter-clockwise, starting on the lower-left of the PCB. (and the pcb files 
+  have to follow this convention to defined their motifs, otherwise all 
+  this won't work).
+
+  Note that the definition of the PCBs have to be in files with extension
+  .pcb (X.pcb, Y.pcb, Z.pcb)
+
   
   
   
