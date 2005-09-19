@@ -103,11 +103,11 @@ AliMUON::AliMUON()
     fMaxDestepGas(0.),
     fMaxDestepAlu(0.),
     fMaxIterPad(0),
-    fCurIterPad(0),
-    fFactory(0)
+    fCurIterPad(0)
 {
 // Default Constructor
 //
+	AliDebug(1,Form("default (empty) ctor this=%p",this));
     fIshunt          = 0;
 }
 
@@ -130,10 +130,9 @@ AliMUON::AliMUON(const char *name, const char *title)
     fMaxDestepGas(-1), // Negatives values are ignored by geant3 CONS200 
     fMaxDestepAlu(-1), // in the calculation of the tracking parameters
     fMaxIterPad(0),
-    fCurIterPad(0),
-    fFactory(0)
+    fCurIterPad(0)
 {
-
+	AliDebug(1,Form("ctor this=%p",this));
   fIshunt =  0;
 
   SetMarkerColor(kRed);//
@@ -207,7 +206,7 @@ AliMUON::AliMUON(const AliMUON& rMUON)
 AliMUON::~AliMUON()
 {
 // Destructor
-  AliDebug(1,"Calling AliMUON destructor");
+  AliDebug(1,Form("dtor this=%p",this));
   fIshunt  = 0;
 
   if (fChambers){
@@ -221,7 +220,6 @@ AliMUON::~AliMUON()
   delete fMUONData;
   delete fGeometryBuilder;
   delete fDEIndexing;
-  delete fFactory; 
 }
 
 //________________________________________________________________________

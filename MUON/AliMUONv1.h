@@ -64,7 +64,9 @@ class AliMUONv1 : public AliMUON
    TF1 *          fAngleEffect10; // Angle effect in tracking chambers at theta =10 degres as a function of ElossRatio (Khalil BOUDJEMLINE sep 2003 Ph.D Thesis) (in micrometers)  
    TF1 *          fAngleEffectNorma;// Angle effect: Normalisation form theta=10 degres to theta between 0 and 10 (Khalil BOUDJEMLINE sep 2003 Ph.D Thesis)
 
-   ClassDef(AliMUONv1,3)  // MUON Detector class Version 1
+   TObject* fFactory; //! to build segmentation (temporary, should not be needed with new segmentation scheme and its manager)
+	 
+   ClassDef(AliMUONv1,4)  // MUON Detector class Version 1
 };
 #endif
 

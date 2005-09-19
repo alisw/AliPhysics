@@ -30,7 +30,6 @@ class AliMUONRawCluster;
 class AliMUONGeometryBuilder;
 class AliMUONVGeometryBuilder;
 class AliMUONGeometryDEIndexing;
-class AliMUONFactoryV2;
 class AliESD;
 
 class AliMUON : public  AliDetector 
@@ -138,7 +137,6 @@ class AliMUON : public  AliDetector
     Int_t fMaxIterPad;        // Maximum pad index
     Int_t fCurIterPad;        // Current pad index
     // Background eent for event mixing
-    AliMUONFactoryV2* fFactory; // ! MUON factory
     
     ClassDef(AliMUON,9)  // MUON Detector base class
 };

@@ -30,6 +30,7 @@
 #include "AliConst.h" 
 #include "AliMUONChamber.h"
 #include "AliMUONConstants.h"
+#include "AliMUONFactoryV3.h"
 #include "AliMUONFactoryV2.h"
 #include "AliMUONHit.h"
 #include "AliMUONTriggerCircuit.h"
@@ -41,6 +42,8 @@
 #include "AliRun.h"
 #include "AliMC.h"
 #include "AliLog.h"
+
+#include <string>
 
 ClassImp(AliMUONv1)
  
@@ -57,9 +60,11 @@ AliMUONv1::AliMUONv1()
     fTrackPosition(),
     fElossRatio(0x0),
     fAngleEffect10(0x0),
-    fAngleEffectNorma(0x0)
+    fAngleEffectNorma(0x0),
+    fFactory(0x0)
 {
 // Default constructor
+	AliDebug(1,Form("default (empty) ctor this=%p",this));
 } 
 
 //___________________________________________
@@ -75,10 +80,13 @@ AliMUONv1::AliMUONv1(const char *name, const char *title)
     fTrackPosition(),
     fElossRatio(0x0),
     fAngleEffect10(0x0),
-    fAngleEffectNorma(0x0)
+    fAngleEffectNorma(0x0),
+    fFactory(0x0)
 {
 // Standard onstructor
 
+	AliDebug(1,Form("ctor this=%p",this));	
+	
     // By default include all stations
 
     fStepSum   = new Float_t [AliMUONConstants::NCh()];
@@ -122,12 +130,13 @@ AliMUONv1::AliMUONv1(const AliMUONv1& right)
 AliMUONv1::~AliMUONv1()
 {
 // Destructor
-
+	AliDebug(1,Form("dtor this=%p",this));
   delete [] fStepSum;
   delete [] fDestepSum;
   delete fElossRatio;
   delete fAngleEffect10;
   delete fAngleEffectNorma; 
+  delete fFactory;
 }
 
 //_____________________________________________________________________________
@@ -166,39 +175,45 @@ void AliMUONv1::CreateMaterials()
 //___________________________________________
 void AliMUONv1::Init()
 { 
-   AliDebug(1,"Start Init for version 1 - CPC chamber type");
-   Int_t i;
-
- 
-   //
-   // Initialize geometry
-   //
-   fGeometryBuilder->InitGeometry();
-   AliDebug(1,"Finished Init for version 1 - CPC chamber type");   
-
-   fFactory = new AliMUONFactoryV2("New MUON Factory");
-   AliInfo("New Segmentation");
-
-
-   fFactory->Build(this, "default");
-
-   //
-   // Initialize segmentation
-   //
-
-   for (i=0; i<AliMUONConstants::NCh(); i++) 
-     ( (AliMUONChamber*) (*fChambers)[i])->Init(2);// new segmentation
+  AliDebug(1,"Start Init for version 1 - CPC chamber type");
+  Int_t i;
    
- 
-   // trigger circuit
-   // cp 
-   for (i=0; i<AliMUONConstants::NTriggerCircuit(); i++) 
-     ( (AliMUONTriggerCircuit*) (*fTriggerCircuits)[i])->Init(i);
-   
-
-
-
-
+  //
+  // Initialize geometry
+  //
+  fGeometryBuilder->InitGeometry();
+  AliDebug(1,"Finished Init for version 1 - CPC chamber type");   
+  
+  std::string ftype(GetTitle());
+  
+  if ( ftype == "default" || ftype == "AliMUONFactoryV2") 
+    {
+      fFactory = new AliMUONFactoryV2("New MUON Factory");
+      (static_cast<AliMUONFactoryV2*>(fFactory))->Build(this,"default");
+    }
+  else if ( ftype == "AliMUONFactoryV3" )
+    {
+      fFactory = new AliMUONFactoryV3("New MUON Factory");
+      (static_cast<AliMUONFactoryV3*>(fFactory))->Build(this,"default");
+    }
+  else
+    {
+      AliFatal(Form("Wrong factory type : %s",ftype.c_str()));      
+    }
+      
+  //
+  // Initialize segmentation
+  //
+  
+  for (i=0; i<AliMUONConstants::NCh(); i++) 
+    ( (AliMUONChamber*) (*fChambers)[i])->Init(2);// new segmentation
+  
+  
+  // trigger circuit
+  // cp 
+  for (i=0; i<AliMUONConstants::NTriggerCircuit(); i++) 
+    ( (AliMUONTriggerCircuit*) (*fTriggerCircuits)[i])->Init(i);
+  
 }
 
 //__________________________________________________________________
