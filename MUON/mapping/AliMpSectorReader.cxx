@@ -1,8 +1,24 @@
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+
 // $Id$
+// $MpId: AliMpSectorReader.cxx,v 1.4 2005/09/02 10:01:09 ivana Exp $
 // Category: sector
 //
-// Class AliMpReader
-// -------------------
+// Class AliMpSectorReader
+// -----------------------
 // Class that takes care of reading the sector data.
 // Included in AliRoot: 2003/05/02
 // Authors: David Guez, Ivana Hrivnacova; IPN Orsay
@@ -17,7 +33,7 @@
 #include <TError.h>
 #include <TMath.h>
 
-#include "AliMpReader.h"
+#include "AliMpSectorReader.h"
 #include "AliMpSector.h"
 #include "AliMpFiles.h"
 #include "AliMpZone.h"
@@ -28,6 +44,7 @@
 #include "AliMpRowSegmentLSpecial.h"
 #include "AliMpRowSegmentRSpecial.h"
 #include "AliMpPadRow.h"
+#include "AliMpMotifReader.h"
 #include "AliMpMotifMap.h"
 #include "AliMpMotif.h"
 #include "AliMpMotifSpecial.h"
@@ -36,55 +53,59 @@
 #include "AliMpIntPair.h"
 #include "AliMpDirection.h"
 
-ClassImp(AliMpReader)
+ClassImp(AliMpSectorReader)
 
-#ifdef WITH_ROOT
-const Int_t    AliMpReader::fgkSeparator = 100;
-#endif
-
-const TString  AliMpReader::fgkSectorKeyword  = "SECTOR_DATA";
-const TString  AliMpReader::fgkZoneKeyword    = "ZONE";
-const TString  AliMpReader::fgkSubZoneKeyword = "SUBZONE";
-const TString  AliMpReader::fgkRowKeyword     = "ROW_SEGMENT";
-const TString  AliMpReader::fgkEofKeyword     = "EOF";
-const TString  AliMpReader::fgkSectorSpecialKeyword  = "SECTOR_SPECIAL_DATA";
-const TString  AliMpReader::fgkMotifKeyword          = "MOTIF";
-const TString  AliMpReader::fgkRowSpecialKeyword     = "ROW";
-const TString  AliMpReader::fgkPadRowsKeyword        = "PAD_ROWS";
-const TString  AliMpReader::fgkPadRowSegmentKeyword  = "PAD_ROW_SEGMENT";
+const TString  AliMpSectorReader::fgkSectorKeyword  = "SECTOR_DATA";
+const TString  AliMpSectorReader::fgkZoneKeyword    = "ZONE";
+const TString  AliMpSectorReader::fgkSubZoneKeyword = "SUBZONE";
+const TString  AliMpSectorReader::fgkRowKeyword     = "ROW_SEGMENT";
+const TString  AliMpSectorReader::fgkEofKeyword     = "EOF";
+const TString  AliMpSectorReader::fgkSectorSpecialKeyword  = "SECTOR_SPECIAL_DATA";
+const TString  AliMpSectorReader::fgkMotifKeyword          = "MOTIF";
+const TString  AliMpSectorReader::fgkRowSpecialKeyword     = "ROW";
+const TString  AliMpSectorReader::fgkPadRowsKeyword        = "PAD_ROWS";
+const TString  AliMpSectorReader::fgkPadRowSegmentKeyword  = "PAD_ROW_SEGMENT";
 
 //_____________________________________________________________________________
-AliMpReader::AliMpReader(AliMpStationType station, AliMpPlaneType plane) 
+AliMpSectorReader::AliMpSectorReader(AliMpStationType station, 
+                                     AliMpPlaneType plane) 
   : TObject(),
     fStationType(station),
     fPlaneType(plane),
     fSector(0),
+    fMotifReader(new AliMpMotifReader(station, plane)),
     fVerboseLevel(0)
 {
-//
+// Standard constructor
 }
 
 //_____________________________________________________________________________
-AliMpReader::AliMpReader() 
+AliMpSectorReader::AliMpSectorReader() 
   : TObject(),
     fStationType(kStation1),
     fPlaneType(kBendingPlane),
     fSector(0),
+    fMotifReader(0),
     fVerboseLevel(0)
 {
-//
+// Default constructor
 }
 
 //_____________________________________________________________________________
-AliMpReader::AliMpReader(const AliMpReader& right) 
-  : TObject(right) {
-// 
-  Fatal("AliMpReader", "Copy constructor not provided.");
+AliMpSectorReader::AliMpSectorReader(const AliMpSectorReader& right) 
+  : TObject(right) 
+{
+/// Protected copy constructor (not provided) 
+
+  Fatal("AliMpSectorReader", "Copy constructor not provided.");
 }
 
 //_____________________________________________________________________________
-AliMpReader::~AliMpReader() {
-//  
+AliMpSectorReader::~AliMpSectorReader() 
+{
+/// Destructor  
+
+  delete fMotifReader;
 }
 
 //
@@ -92,12 +113,14 @@ AliMpReader::~AliMpReader() {
 //
 
 //_____________________________________________________________________________
-AliMpReader& AliMpReader::operator=(const AliMpReader& right)
+AliMpSectorReader& AliMpSectorReader::operator=(const AliMpSectorReader& right)
 {
-  // check assignement to self
+/// Protected assignment operator (not provided) 
+
+  // check assignment to self
   if (this == &right) return *this;
 
-  Fatal("operator =", "Assignement operator not provided.");
+  Fatal("operator =", "Assignment operator not provided.");
     
   return *this;  
 }    
@@ -106,69 +129,11 @@ AliMpReader& AliMpReader::operator=(const AliMpReader& right)
 // private methods
 //
 
-#ifdef WITH_ROOT
 //_____________________________________________________________________________
-Int_t  AliMpReader::GetIndex(const string& s) const 
+void  AliMpSectorReader::ReadSectorData(ifstream& in)
 {
-// Converts the TString to integer.
-// ---
-
-  if (s.length() > 5) {
-    Fatal("GetIndex", "String too long.");
-    return 0;
-  }  
-
-  Int_t index = 0;
-  for (Int_t i=s.length(); i>=0; --i)  index = index*100 + int(s[i]);
-  
-  return index;
-}
-
-//______________________________________________________________________________
-Int_t  AliMpReader::GetIndex(const AliMpIntPair& pair) const
-{
-// Converts the pair of integers to integer.
-// ---
-
-  if (pair.GetFirst() >= fgkSeparator || pair.GetSecond() >= fgkSeparator)
-    Fatal("GetIndex", "Index out of limit.");
-      
-  return pair.GetFirst()*fgkSeparator + pair.GetSecond() + 1;
-}  
-
-//_____________________________________________________________________________
-string  AliMpReader::GetString(Int_t index) const
-{
-// Converts the integer index to the string.
-// ---
-
-  string s;
-  while (index >0) {
-    Char_t c = index%100;
-    s += c;
-    index = index/100;
-  }
-  
-  return s;
-  
-}
-
-//______________________________________________________________________________
-AliMpIntPair  AliMpReader::GetPair(Int_t index) const
-{
-// Converts the integer index to the pair of integers.
-// ---
-
-  return AliMpIntPair((index-1)/fgkSeparator, (index-1)%fgkSeparator);
-}  
-#endif
-
-//_____________________________________________________________________________
-void  AliMpReader::ReadSectorData(ifstream& in)
-{
-// Reads sector input data;
-// prepares zones and rows vectors to be filled in.
-// ---
+/// Read sector input data;
+/// prepare zones and rows vectors to be filled in.
 
   TString keyword;
   in >> keyword;
@@ -210,11 +175,10 @@ void  AliMpReader::ReadSectorData(ifstream& in)
 }  
 
 //_____________________________________________________________________________
-void AliMpReader::ReadZoneData(ifstream& in)
+void AliMpSectorReader::ReadZoneData(ifstream& in)
 {
-// Reads zone input data;
-// creates zone and adds it to zones vector.
-// ---
+/// Read zone input data;
+/// create zone and adds it to zones vector.
 
   Int_t zoneID;
   Double_t  sizex, sizey; 
@@ -240,11 +204,10 @@ void AliMpReader::ReadZoneData(ifstream& in)
 }
 
 //_____________________________________________________________________________
-void AliMpReader::ReadSubZoneData(ifstream& in, AliMpZone* zone)
+void AliMpSectorReader::ReadSubZoneData(ifstream& in, AliMpZone* zone)
 {
-// Reads subzone input data;
-// creates subzone and its to the specified zone.
-// ---
+/// Read subzone input data;
+/// create subzone and its to the specified zone.
 
   if (fVerboseLevel>0) 
     cout << fgkSubZoneKeyword << " ";
@@ -265,10 +228,9 @@ void AliMpReader::ReadSubZoneData(ifstream& in, AliMpZone* zone)
 }   
 
 //_____________________________________________________________________________
-AliMpVMotif*  AliMpReader::ReadMotifData(ifstream& in, AliMpZone* zone)
+AliMpVMotif*  AliMpSectorReader::ReadMotifData(ifstream& in, AliMpZone* zone)
 {
-// Reads the motif input data.
-// ---
+/// Read the motif input data.
 
   TString  motifID;
   TString  motifTypeID;
@@ -287,14 +249,14 @@ AliMpVMotif*  AliMpReader::ReadMotifData(ifstream& in, AliMpZone* zone)
   if (!motif) {    
     motifType = motifMap->FindMotifType(motifTypeID);
     if (!motifType) {
-      motifType = BuildMotifType(motifTypeID);     
+      motifType = fMotifReader->BuildMotifType(motifTypeID);     
       motifMap->AddMotifType(motifType);
     }
     
     if (zone->GetPadDimensions().X() != 0. && zone->GetPadDimensions().Y() != 0.) 
       motif = new AliMpMotif(motifID, motifType, zone->GetPadDimensions());
     else 
-      motif = BuildMotifSpecial(motifID, motifType);
+      motif = fMotifReader->BuildMotifSpecial(motifID, motifType);
       
     if (motif) 
       motifMap->AddMotif(motif);
@@ -305,13 +267,12 @@ AliMpVMotif*  AliMpReader::ReadMotifData(ifstream& in, AliMpZone* zone)
 }  
 
 //_____________________________________________________________________________
-void AliMpReader::ReadRowSegmentsData(ifstream& in, 
+void AliMpSectorReader::ReadRowSegmentsData(ifstream& in, 
                                       AliMpZone* zone, AliMpSubZone* subZone)
 {
-// Reads row segments input data of a specified zone and subzone;
-// creates row segment and adds it to the specified subzone
-// and a corresponding row in the rows vector.
-// ---
+/// Read row segments input data of a specified zone and subzone;
+/// creates row segment and add it to the specified subzone
+/// and a corresponding row in the rows vector.
 
   TString nextKeyword;
   do {
@@ -363,11 +324,10 @@ void AliMpReader::ReadRowSegmentsData(ifstream& in,
 }   
 
 //_____________________________________________________________________________
-void AliMpReader::ReadSectorSpecialData(ifstream& in, AliMpXDirection direction)
+void AliMpSectorReader::ReadSectorSpecialData(ifstream& in, AliMpXDirection direction)
 {
-// Reads sector input data
-// with a special (irregular) motifs.
-// ---
+/// Read sector input data
+/// with a special (irregular) motifs.
 
   TString keyword;
   in >> keyword;
@@ -394,10 +354,9 @@ void AliMpReader::ReadSectorSpecialData(ifstream& in, AliMpXDirection direction)
 }  
 
 //_____________________________________________________________________________
-void AliMpReader::ReadMotifsSpecialData(ifstream& in)
+void AliMpSectorReader::ReadMotifsSpecialData(ifstream& in)
 {
-// Reads the special (irregular) motifs input data.
-// ---
+/// Read the special (irregular) motifs input data.
 
   if (fVerboseLevel>0) 
     cout << fgkMotifKeyword << " ";
@@ -423,11 +382,10 @@ void AliMpReader::ReadMotifsSpecialData(ifstream& in)
 }  
 
 //_____________________________________________________________________________
-void AliMpReader::ReadRowSpecialData(ifstream& in, AliMpXDirection direction)
+void AliMpSectorReader::ReadRowSpecialData(ifstream& in, AliMpXDirection direction)
 {
-// Reads row input data
-// with a special (irregular) motifs.
-// ---
+/// Read row input data
+/// with a special (irregular) motifs.
 
   Int_t id;
   in >> id;
@@ -485,13 +443,12 @@ void AliMpReader::ReadRowSpecialData(ifstream& in, AliMpXDirection direction)
 }  
 
 //_____________________________________________________________________________
-void AliMpReader::ReadRowSegmentSpecialData(ifstream& in, 
+void AliMpSectorReader::ReadRowSegmentSpecialData(ifstream& in, 
                                             AliMpVRowSegmentSpecial* segment,
 					    AliMpXDirection direction)
 {
-// Reads row segment input data
-// with a special (irregular) motifs.
-// ---
+/// Read row segment input data
+/// with a special (irregular) motifs.
 
   Int_t nofPadRows;
   in >> nofPadRows;
@@ -593,12 +550,11 @@ void AliMpReader::ReadRowSegmentSpecialData(ifstream& in,
 //
 
 //_____________________________________________________________________________
-AliMpSector* AliMpReader::BuildSector()
+AliMpSector* AliMpSectorReader::BuildSector()
 {
-// Reads the mapping data from ascii file
-// $MINSTALL/data/fileName and creates the basic objects:
-// zones, subzones, rows, row segments, motifs.
-// ---
+/// Read the mapping data from ascii data file
+/// and create the basic objects:                                            \n
+/// zones, subzones, rows, row segments, motifs.
 
   // Open input file
   ifstream in(AliMpFiles::Instance()
@@ -649,215 +605,11 @@ AliMpSector* AliMpReader::BuildSector()
 }  
 
 //_____________________________________________________________________________
-AliMpMotifType* AliMpReader::BuildMotifType(const TString& motifTypeId)
+void AliMpSectorReader::SetVerboseLevel(Int_t verboseLevel)
 {
-
-  // Read the files describing a motif in the "$MINSTALL/data" directory
-  // and fill the AliMpMotifType structure with.
-  // The files mentioned are are named padPos<maskName>.dat
-  // and connect<maskName>.dat
-
-  AliMpMotifType*  motifType = new AliMpMotifType(motifTypeId);	
-
-  TString strPadPos 
-    = AliMpFiles::Instance()
-      ->PadPosFilePath(fStationType, fPlaneType, motifTypeId);
-  ifstream padPos(strPadPos.Data());
-  if (fVerboseLevel>0) cout<<"Opening file "<<strPadPos<<endl;
-
-  PadMapType positions;
-
-  char line[256];
-  do {
-    padPos.getline(line,255);
-    if (!padPos) break;
-
-#if defined (__HP_aCC) || (__alpha)
-    strstream strline;
-    strline << line;
-#else
-    istringstream strline(line);
-#endif    
-    string key;
-
-    strline>>key;
-    if ((key=="#") || (key=="") ) continue;
-
-    int i,j;
-    strline>>i>>j;
-#ifdef WITH_STL
-    positions[key].first=i;
-    positions[key].second=j;
-#endif
-#ifdef WITH_ROOT
-    positions.Add(GetIndex(key), GetIndex(AliMpIntPair(i,j))); 
-#endif
-  } while (!padPos.eof());
-
-  padPos.close();
-
-  if (fVerboseLevel>0) 
-    cout << "Opening file "
-         << AliMpFiles::Instance()->BergToGCFilePath(fStationType)
-         << endl;
-
-  ifstream bergToGCFile(AliMpFiles::Instance()->BergToGCFilePath(fStationType));
-  Int_t gassiChannel[80];
-  while(1) {
-    Int_t bergNum;
-    TString gcStr;
-    bergToGCFile>>bergNum>>gcStr;
-    if (!bergToGCFile.good()) break;
-    if (gcStr=="GND") continue;
-    if (bergNum>80) {
-        Fatal("BuildMotifType","Berg number > 80 ...");
-        continue;
-    }
-    gassiChannel[bergNum-1]= atoi(gcStr);
-  }
-  bergToGCFile.close();
-  
-  TString strMotif 
-    = AliMpFiles::Instance()
-      ->MotifFilePath(fStationType, fPlaneType, motifTypeId);
-  ifstream motif(strMotif);
-  if (fVerboseLevel>0) cout<<"Opening file "<<strMotif<<endl;
-
-
-  Int_t nofPadsX=0;
-  Int_t nofPadsY=0;
-
-  do {
-  
-    Int_t ix,iy,numBerg,numKapton,padNum,gassiNum;
-
-    TString lineStr,token;
-    lineStr.ReadLine(motif);
-    if (!motif.good()) break;
-#if defined (__HP_aCC) || (__alpha)
-    strstream tokenList;
-    tokenList << lineStr.Data();
-#else
-    istringstream tokenList(lineStr.Data());
-#endif    
-    
-    token.ReadToken(tokenList);
-    if (!tokenList.good()) continue; // column is missing...
-    if ( (token.Length()>0) && (token[0]=='#') ) continue; // this is a comment line
-    
-    numBerg = atoi(token.Data());
-    if (numBerg==0) {
-      Warning("BuildMotifType","Berg number invalid");
-      continue;
-    }
-    
-    token.ReadToken(tokenList);
-    if (!tokenList.good()) continue; // column is missing...
-    numKapton = atoi(token.Data());
-    if (numKapton==0) continue;
-
-    
-    token.ReadToken(tokenList);
-    if (!tokenList.good()) continue; // column is missing...
-    if (token=="GND") continue;
-    string padName = token.Data();
-    padNum = motifType->PadNum(token);
-    
-     token.ReadToken(tokenList);
-     if (token.IsNull() ) continue; // column is missing...
-//     if (token[0]!='E') {
-//       cerr<<"Problem : gassinumber isn't begining with E:"<<token<<endl;
-//       continue;
-//     }  else {
-//        gassiNum = atoi(token.Data() +1 )-1;
-//     }
-    if ( (numBerg<1) || (numBerg>80) ) {
-        Warning("BuildMotifType","Berg number outside range");
-        continue;
-    }
-    
-    gassiNum  = gassiChannel[numBerg-1];
-
-#ifdef WITH_STL
-    PadMapTypeIterator iter = positions.find(padName);
-    if (iter==positions.end()) {
-      cerr<<"Problem: Pad number "<<padNum<<" found in the file "<<strMotif
-	  <<" but not in the file"<<strPadPos<<endl;
-      continue;
-    }
-
-    ix= iter->second.first;
-    iy= iter->second.second;
-#endif
-
-#ifdef WITH_ROOT
-    Long_t value = positions.GetValue(GetIndex(padName));
-    if (!value) {
-      cerr<<"Problem: Pad number "<<padNum<<" found in the file "<<strMotif
-	  <<" but not in the file"<<strPadPos<<endl;
-      continue;
-    }
-
-    ix = GetPair(value).GetFirst();
-    iy = GetPair(value).GetSecond();
-#endif
-
-    motifType->AddConnection(AliMpIntPair(ix,iy),
-                  new AliMpConnection(padNum,numBerg,numKapton,gassiNum));
-
-    if (ix>=nofPadsX) nofPadsX=ix+1;
-    if (iy>=nofPadsY) nofPadsY=iy+1;
-
-  } while (!motif.eof());    
-
-
-  motifType->SetNofPads(nofPadsX, nofPadsY);
-
-  motif.close();
-
-  return motifType;
-}
-
-
-//_____________________________________________________________________________
-AliMpMotifSpecial*  
-AliMpReader::BuildMotifSpecial(const TString& motifID,
-                               AliMpMotifType* motifType)
-{
-// Build a special motif by reading the file motifSpecial<motifId>.dat
-// in the data directory
-// ---
-
-  // Open the input file
-  ifstream in(AliMpFiles::Instance()
-              ->MotifSpecialFilePath(fStationType, fPlaneType, motifID).Data(), 
-	      ios::in);
-  if (!in) {	
-     Error("BuildMotifSpecial", "File not found.");
-     return 0;
-  }
-
-  AliMpMotifSpecial* res = new AliMpMotifSpecial(motifID,motifType);
-  Int_t i,j;
-  Double_t x,y;
-  in >> i;
-  while (!in.eof()){
-    in >>j >>x >> y;
-    res->SetPadDimensions(AliMpIntPair(i,j),TVector2(x/2.,y/2.));
-    in >> i;
-  }
-  
-  in.close();
-  return res;
-}
-
-
-//_____________________________________________________________________________
-void AliMpReader::SetVerboseLevel(Int_t verboseLevel)
-{
-// Sets verbose level.
-// ---
+/// Set verbose level.
 
   fVerboseLevel = verboseLevel;
+  if (fMotifReader) fMotifReader->SetVerboseLevel(verboseLevel);
 }
 

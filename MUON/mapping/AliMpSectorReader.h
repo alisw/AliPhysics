@@ -1,14 +1,17 @@
-// $Id$
-// Category: sector
-//
-// Class AliMpReader
-// -------------------
-// Class that takes care of reading the sector data.
-//
-// Authors: David Guez, Ivana Hrivnacova; IPN Orsay
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
 
-#ifndef ALI_MP_READER_H
-#define ALI_MP_READER_H
+// $Id$
+// $MpId: AliMpSectorReader.h,v 1.3 2005/08/26 15:43:36 ivana Exp $
+
+/// \ingroup sector
+/// \class AliMpSectorReader
+/// \brief Class that takes care of reading the sector data.
+///
+/// Authors: David Guez, Ivana Hrivnacova; IPN Orsay
+
+#ifndef ALI_MP_SECTOR_READER_H
+#define ALI_MP_SECTOR_READER_H
 
 #include <fstream>
 
@@ -26,42 +29,29 @@ class AliMpZone;
 class AliMpSubZone;
 class AliMpRow;
 class AliMpVRowSegmentSpecial;
+class AliMpMotifReader;
 class AliMpVMotif;
 class AliMpMotifSpecial;
 class AliMpMotifType;
 
-class AliMpReader : public TObject
+class AliMpSectorReader : public TObject
 {
   public:
-    AliMpReader(AliMpStationType station, AliMpPlaneType plane);
-    AliMpReader();
-    virtual ~AliMpReader();
+    AliMpSectorReader(AliMpStationType station, AliMpPlaneType plane);
+    AliMpSectorReader();
+    virtual ~AliMpSectorReader();
   
     // methods   
-    AliMpSector*        BuildSector();
-    AliMpMotifType*     BuildMotifType(const TString& motifTypeId);
-    AliMpMotifSpecial*  BuildMotifSpecial(const TString& motifID, 
-                                          AliMpMotifType* motifType);
+    AliMpSector*  BuildSector();
 
     // set methods
     void SetVerboseLevel(Int_t verboseLevel); 
     
   protected:
-    AliMpReader(const AliMpReader& right);
-    AliMpReader&  operator = (const AliMpReader& right);
+    AliMpSectorReader(const AliMpSectorReader& right);
+    AliMpSectorReader&  operator = (const AliMpSectorReader& right);
 
-  private:
-#ifdef WITH_ROOT
-    static const Int_t   fgkSeparator;  // the separator used for conversion
-                                        // of string to Int_t
-    
-    // methods
-    Int_t  GetIndex(const string& s) const;
-    Int_t  GetIndex(const AliMpIntPair& pair) const;
-    string  GetString(Int_t index) const;
-    AliMpIntPair  GetPair(Int_t index) const;
-#endif
-  
+  private:  
     // methods
     void  ReadSectorData(ifstream& in);
     void  ReadZoneData(ifstream& in);
@@ -92,9 +82,10 @@ class AliMpReader : public TObject
     AliMpStationType  fStationType; // station type 
     AliMpPlaneType    fPlaneType;   // plane type 
     AliMpSector*      fSector;      // sector
+    AliMpMotifReader* fMotifReader; // motif reader
     Int_t             fVerboseLevel;// verbose level
 
-  ClassDef(AliMpReader,1)  // Data reader
+  ClassDef(AliMpSectorReader,1)  // Data reader
 };
 
 #endif //ALI_MP_READER_H
