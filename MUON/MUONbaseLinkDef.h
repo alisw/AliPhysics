@@ -13,6 +13,7 @@
 #pragma link C++ class AliMUONSegmentPosition+;
 #pragma link C++ class AliMUONSt12QuadrantSegmentation-; 
 #pragma link C++ class AliMUONSt345SlatSegmentation+;
+#pragma link C++ class AliMUONSt345SlatSegmentationV2-;
 #pragma link C++ class AliMUONTriggerSegmentation+;
 
 // geometry 
@@ -50,6 +51,8 @@
 // display
 #pragma link C++ class AliMUONDisplay+; 
 #pragma link C++ class AliMUONRecoCheck+; 
+
+#pragma link C++ class AliMUONSegmentationManager+;
 #endif
 
 

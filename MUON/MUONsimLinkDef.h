@@ -5,6 +5,7 @@
 
 // builder
 #pragma link C++ class AliMUONFactoryV2+;  
+#pragma link C++ class AliMUONFactoryV3+;  
 
 // digitizer
 #pragma link C++ class AliMUONDigitizer+; 
@@ -27,6 +28,7 @@
 #pragma link C++ class AliMUONResponseV0+;
 #pragma link C++ class AliMUONResponseTrigger+; 
 #pragma link C++ class AliMUONResponseTriggerV1+;
+
 #endif
 
 

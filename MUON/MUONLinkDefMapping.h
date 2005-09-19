@@ -1,4 +1,9 @@
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
+
 // $Id$ 
+
+// $MpId: basicLinkDefIn.h,v 1.6 2005/08/24 09:33:45 ivana Exp $ 
 
 #pragma link C++ class  AliMpArea+;
 #pragma link C++ class  AliMpConstants+;
@@ -9,10 +14,12 @@
 #pragma link C++ class  AliMpVSegmentation+;
 #pragma link C++ class  AliMpVPadIterator+;
 #pragma link C++ class  AliMpPadIteratorPtr+;
+#pragma link C++ class  AliMpFiles+;
 
 #pragma link C++ enum   AliMpDirection;
 #pragma link C++ enum   AliMpXDirection;
-
+#pragma link C++ enum   AliMpPlaneType;
+#pragma link C++ enum   AliMpStationType;
 
 #pragma link C++ function operator-(const AliMpIntPair& ,const AliMpIntPair& );
 #pragma link C++ function operator+(const AliMpIntPair& ,const AliMpIntPair& );
@@ -21,8 +28,12 @@
 #pragma link C++ function operator<<(ostream& ,const AliMpArea& );
 #pragma link C++ function operator<(const AliMpPad& ,const AliMpPad& );
 
-// $Id$ 
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
 
+// $MpId: motifLinkDefIn.h,v 1.3 2005/08/24 09:53:33 ivana Exp $ 
+
+#pragma link C++ class  AliMpMotifReader+;
 #pragma link C++ class  AliMpMotifMap+;
 #pragma link C++ class  AliMpVMotif+;
 #pragma link C++ class  AliMpMotif+;
@@ -33,10 +44,12 @@
 #pragma link C++ class  AliMpMotifPositionPadIterator+;
 #pragma link C++ class  AliMpConnection+;
 
-// $Id$ 
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
 
-#pragma link C++ class  AliMpReader+;
-#pragma link C++ class  AliMpFiles+;
+// $MpId: sectorLinkDefIn.h,v 1.4 2005/08/24 10:07:31 ivana Exp $ 
+
+#pragma link C++ class  AliMpSectorReader+;
 #pragma link C++ class  AliMpSector+;
 #pragma link C++ class  AliMpSectorPadIterator+;
 #pragma link C++ class  AliMpSectorAreaHPadIterator+;
@@ -56,10 +69,23 @@
 #pragma link C++ class  AliMpPadRowLSegment+;
 #pragma link C++ class  AliMpPadRowRSegment+;
 
-#pragma link C++ enum   AliMpPlaneType;
-#pragma link C++ enum   AliMpStationType;
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
 
-// $Id$ 
+// $MpId: slatLinkDefIn.h,v 1.4 2005/09/19 19:01:09 ivana Exp $ 
+
+#pragma link C++ class  AliMpHelper+;
+#pragma link C++ class  AliMpSt345Reader+;
+#pragma link C++ class  AliMpSlat+;
+#pragma link C++ class  AliMpSlatSegmentation+;
+#pragma link C++ class  AliMpPCB+;
+#pragma link C++ class  AliMpSlatPadIterator+;
+#pragma link C++ class  AliMpSlatZonePadIterator+;
+
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
+
+// $MpId: graphicsLinkDefIn.h,v 1.4 2005/08/24 09:42:12 ivana Exp $ 
 
 #pragma link C++ class  AliMpGraphContext+;
 #pragma link C++ class  AliMpVPainter+;
@@ -69,4 +95,6 @@
 #pragma link C++ class  AliMpSectorPainter+;
 #pragma link C++ class  AliMpSubZonePainter+;
 #pragma link C++ class  AliMpZonePainter+;
+#pragma link C++ class  AliMpSlatPainter+;
+#pragma link C++ class  AliMpPCBPainter+;
 

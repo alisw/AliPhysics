@@ -1,6 +1,7 @@
 # $Id$
 
 SRCS:= AliMUONFactoryV2.cxx \
+       AliMUONFactoryV3.cxx \
        AliMUONSt1Response.cxx \
        AliMUONSt1ElectronicElement.cxx \
        AliMUONSt1SpecialMotif.cxx \
@@ -16,7 +17,7 @@ SRCS:= AliMUONFactoryV2.cxx \
        AliMUONResponse.cxx \
        AliMUONResponseV0.cxx \
        AliMUONResponseTrigger.cxx \
-       AliMUONResponseTriggerV1.cxx\
+       AliMUONResponseTriggerV1.cxx
 
 HDRS:= $(SRCS:.cxx=.h)
 
@@ -24,3 +25,4 @@ DHDR:= MUONsimLinkDef.h
 
 EINCLUDE:= RAW MUON/mapping
 
+#PACKCXXFLAGS:= $(CXXFLAGS) -Wall
