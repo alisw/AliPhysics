@@ -66,7 +66,7 @@ AliMUONSt345SlatSegmentation::AliMUONSt345SlatSegmentation()
 	fSegmentationDetectionElement(0x0)
 {
   // default constructor
-
+	AliDebug(1,Form("this=%p default (empty) ctor",this));
 }
 
 //___________________________________________
@@ -106,7 +106,7 @@ AliMUONSt345SlatSegmentation::AliMUONSt345SlatSegmentation(Bool_t bending)
   (*fNDiv)[0]=(*fNDiv)[1]=(*fNDiv)[2]=(*fNDiv)[3]=0;     
   (*fDpxD)[0]=(*fDpxD)[1]=(*fDpxD)[2]=(*fDpxD)[3]=0;       
   (*fDpyD)[0]=(*fDpyD)[1]=(*fDpyD)[2]=(*fDpyD)[3]=0;   
-
+  AliDebug(1,Form("this=%p ctor for bending=%d",this,fBending)); 
 
 }
 //----------------------------------------------------------------------
@@ -131,16 +131,15 @@ AliMUONSt345SlatSegmentation::AliMUONSt345SlatSegmentation(const AliMUONSt345Sla
 	fIymax(0),
 	fSegmentationDetectionElement(0x0)
 {
-  // default constructor
+		AliFatal("Not implemented");
 }
 //----------------------------------------------------------------------
 AliMUONSt345SlatSegmentation::~AliMUONSt345SlatSegmentation() 
 {
   // Destructor
-  if (fNDiv) delete fNDiv;
-  if (fDpxD) delete fDpxD;
-  if (fDpyD) delete fDpyD;
-  // if (fSegmentationDetectionElement) fSegmentationDetectionElement->Delete();
+  delete fNDiv;
+  delete fDpxD;
+  delete fDpyD;
 }
 //----------------------------------------------------------------------
 AliMUONSt345SlatSegmentation& AliMUONSt345SlatSegmentation::operator=(const AliMUONSt345SlatSegmentation& rhs)
@@ -182,7 +181,24 @@ Float_t AliMUONSt345SlatSegmentation::GetAnod(Float_t xhit) const
   return fWireD*wire;
 }
 
-
+//_____________________________________________________________________________
+Bool_t AliMUONSt345SlatSegmentation::HasPad(Int_t ix, Int_t iy)
+{
+	if ( ix < 1 || ix > Npx() || iy < 1 || iy > Npy() )
+	{
+		return kFALSE;
+	}
+	Int_t isec = Sector(ix,iy);
+	if ( isec == -1 )
+	{
+		return kFALSE;
+	}
+	if ( iy > fNpyS[isec] )
+	{
+		return kFALSE;
+	}
+	return kTRUE;
+}
 
 //--------------------------------------------------------------------------------
 void AliMUONSt345SlatSegmentation::GetPadC(Int_t ix, Int_t iy, Float_t &x, Float_t &y) 
@@ -405,10 +421,10 @@ void AliMUONSt345SlatSegmentation::FirstPad(Float_t xhit, Float_t yhit, Float_t 
     
     GetPadC(fIx,fIy,fX,fY);
     fSector = Sector(fIx,fIy);
-
+ 
+    AliDebug(4,Form("xhit,yhit,dx,dy=%e,%e,%e,%e ix,iy=%3d,%3d",
+		    xhit,yhit,dx,dy,fIx,fIy));
 }
-
-
 
 //----------------------------------------------------------------------
 void AliMUONSt345SlatSegmentation::FirstPad(Float_t xhit, Float_t yhit, Float_t /*zhit*/, Float_t dx, Float_t dy)
@@ -475,7 +491,8 @@ IntegrationLimits(Float_t& x1,Float_t& x2,Float_t& y1, Float_t& y2)
   x2=x1+Dpx(fSector);
   y1=fYhit-fY-Dpy(fSector)/2.;
   y2=y1+Dpy(fSector);    
-  //  printf("\n Integration Limits %f %f %f %f %d %f", x1, x2, y1, y2, fSector, Dpx(fSector));
+
+  AliDebug(4,Form("xhit,yhit=%e,%e x,y=%e,%e, x1,x2,y1,y2=%e,%e,%e,%e",fXhit,fYhit,fX,fY,x1,x2,y1,y2));
 
 }
 //-----------------------------------------------------------------------------

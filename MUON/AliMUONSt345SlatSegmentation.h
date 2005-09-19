@@ -3,7 +3,7 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-/* $Id: */
+/* $Id$ */
 
 //*********************************************************
 //  Segmentation classes for slat modules          
@@ -37,7 +37,7 @@ class AliMUONSt345SlatSegmentation : public AliMUONVGeometryDESegmentation
     virtual void     FirstPad(Float_t xhit, Float_t yhit, Float_t zhit, Float_t dx, Float_t dy);
 
     virtual Bool_t   HasPad(Float_t /*x*/, Float_t /*y*/, Float_t /*z*/) { return true; }
-    virtual Bool_t   HasPad(Int_t /*ix*/, Int_t /*iy*/) { return true; }
+    virtual Bool_t   HasPad(Int_t ix, Int_t iy);
     virtual AliMUONGeometryDirection  GetDirection() { return kDirUndefined; } 
 
     virtual Float_t  GetAnod(Float_t xhit) const;  // Anod wire coordinate closest to xhit
