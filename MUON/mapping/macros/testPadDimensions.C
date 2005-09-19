@@ -1,4 +1,5 @@
 // $Id$
+// $MpId: testPadDimensions.C,v 1.4 2005/08/24 08:53:27 ivana Exp $
 //
 // Test macro for testing retrieving of pad dimensions from
 // the map in AliMpSectorSegmentation.
@@ -6,7 +7,7 @@
 void testPadDimensions(AliMpStationType station = kStation1,
                        AliMpPlaneType plane = kBendingPlane) 
 {
-  AliMpReader r(station, plane);
+  AliMpSectorReader r(station, plane);
   AliMpSector* sector=r.BuildSector();
   AliMpSectorSegmentation segmentation(sector);  
   segmentation.PrintZones(); 

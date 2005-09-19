@@ -1,4 +1,5 @@
 // $Id$
+// $MpId: testPrintLimits.C,v 1.7 2005/08/24 08:53:27 ivana Exp $
 //
 // Test macro for making an output file, where all mapping elements
 // indices & positions are written.
@@ -6,7 +7,7 @@
 void testPrintLimits(AliMpStationType station = kStation1,
                     AliMpPlaneType plane = kBendingPlane, ostream& out=cout)
 {
-  AliMpReader r(station, plane);
+  AliMpSectorReader r(station, plane);
 
   AliMpSector *sector=r.BuildSector();
 

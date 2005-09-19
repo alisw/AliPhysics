@@ -1,10 +1,11 @@
 // $Id$
+// $MpId: testUpdateGlobalIndices.C,v 1.7 2005/08/24 08:53:27 ivana Exp $
 //
 // Tests updating global indices of motif positions from file.
 
 void testUpdateGlobalIndices()
 {
-  AliMpReader reader(kStation1, kNonBendingPlane);  
+  AliMpSectorReader reader(kStation1, kNonBendingPlane);  
   //reader.SetVerboseLevel(1);
   
   // Read data 

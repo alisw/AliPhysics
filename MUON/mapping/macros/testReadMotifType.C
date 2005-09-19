@@ -1,11 +1,12 @@
 // $Id$
+// $MpId: testReadMotifType.C,v 1.11 2005/08/24 08:53:27 ivana Exp $
 //
 // Test macro for reading motif type data.
 
 void testReadMotifType(AliMpStationType station = kStation1,
                        AliMpPlaneType plane = kBendingPlane)
 {
-  AliMpReader r(station, plane);
+  AliMpMotifReader r(station, plane);
   //r.SetVerboseLevel(2);
 
   TString names;

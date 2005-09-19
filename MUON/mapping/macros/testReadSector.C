@@ -1,4 +1,5 @@
 // $Id$
+// $MpId: testReadSector.C,v 1.13 2005/09/02 10:57:47 ivana Exp $
 //
 // Test macro for reading sector data.
 
@@ -7,7 +8,7 @@
 void testReadSector(AliMpStationType station = kStation1,
                     AliMpPlaneType plane = kBendingPlane) 
 {
-  AliMpReader reader(station, plane);  
+  AliMpSectorReader reader(station, plane);  
   //reader.SetVerboseLevel(1);
   
   // Read data 
@@ -21,7 +22,10 @@ void testReadSector(AliMpStationType station = kStation1,
   cout << endl;
 
   // Find row test
-  cout << "0th row low border " << sector->FindRow(TVector2(0., 0.))->GetID() << endl;
+  if (plane == kBendingPlane)
+    cout << "0th row low border " << sector->FindRow(TVector2(0., 0.))->GetID() << endl;
+  if (plane == kNonBendingPlane)
+    cout << "0th row low border " << sector->FindRow(TVector2(0., 0.215))->GetID() << endl;
   cout << "in 0th row         " << sector->FindRow(TVector2(0., 25.))->GetID() << endl;
   cout << "0th row up border  " << sector->FindRow(TVector2(0., 67.2))->GetID() << endl;
   cout << "in 4th row         " << sector->FindRow(TVector2(0., 300.))->GetID() << endl;

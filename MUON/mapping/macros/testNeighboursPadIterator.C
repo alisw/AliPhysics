@@ -1,4 +1,5 @@
 // $Id$
+// $MpId: testNeighboursPadIterator.C,v 1.8 2005/08/24 08:53:27 ivana Exp $
 //
 // Test macro for reading  sector, and iterate over it
 
@@ -11,7 +12,7 @@ void testNeighboursPadIterator(AliMpStationType station = kStation1,
     gInterpreter->ProcessLine("mlibs()");
   }  
 
-  AliMpReader r(station, plane);
+  AliMpSectorReader r(station, plane);
   AliMpSector* sect = r.BuildSector();
   AliMpSectorSegmentation segm(sect);  
   

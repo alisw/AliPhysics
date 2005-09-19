@@ -1,4 +1,5 @@
 // $Id$
+// $MpId: testMotifTypeIterators.C,v 1.10 2005/08/24 08:53:27 ivana Exp $
 //
 // Test macro for reading motif type data and iterate over them.
 
@@ -40,7 +41,7 @@ void testMotifTypeIterators(AliMpStationType station = kStation1,
     canv[i]->Divide(2,2); 
   }
     
-  AliMpReader r(station, plane);
+  AliMpMotifReader r(station, plane);
   //r.SetVerboseLevel(2);
 
   for (i=0;i<nofMotifs;++i){

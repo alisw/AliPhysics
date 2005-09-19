@@ -1,11 +1,12 @@
 // $Id$
+// $MpId: testIndicesLimits.C,v 1.3 2005/08/24 08:53:27 ivana Exp $
 //
 // Test macro for indices limits.
 
 void testIndicesLimits(AliMpStationType station = kStation1,
                        AliMpPlaneType plane = kBendingPlane) 
 {
-  AliMpReader reader(station, plane);  
+  AliMpSectorReader reader(station, plane);  
   //reader.SetVerboseLevel(1);
   
   // Read data 

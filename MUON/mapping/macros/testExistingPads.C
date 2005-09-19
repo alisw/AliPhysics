@@ -1,11 +1,12 @@
 // $Id$
+// $MpId: testExistingPads.C,v 1.10 2005/08/24 08:53:27 ivana Exp $
 //
 // Test macro for testing which pad is seen as "existing" by AliMpSector.
 
 void testExistingPads(AliMpStationType station = kStation1,
                       AliMpPlaneType plane = kBendingPlane) 
 {
-  AliMpReader r(station, plane);
+  AliMpSectorReader r(station, plane);
   AliMpSector *sector=r.BuildSector();
   AliMpSectorSegmentation segmentation(sector);
   AliMpVPainter* painter = AliMpVPainter::CreatePainter(sector);

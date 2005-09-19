@@ -1,4 +1,5 @@
 // $Id$
+// $MpId: testAnyPadIterators.C,v 1.12 2005/08/24 08:53:27 ivana Exp $
 //
 // Test macro for reading  sector, and iterate over it
 
@@ -26,7 +27,7 @@ void testAnyPadIterators(AliMpStationType station = kStation1,
                          AliMpPlaneType plane = kBendingPlane, 
                          Int_t i=50, Int_t j=50)
 {
-  AliMpReader r(station, plane);
+  AliMpSectorReader r(station, plane);
   AliMpSector* sect = r.BuildSector();
     
   TCanvas *canv = new TCanvas("canv");

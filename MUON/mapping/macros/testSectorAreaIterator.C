@@ -1,6 +1,7 @@
 // $Id$
+// $MpId: testSectorAreaIterator.C,v 1.3 2005/08/24 08:53:27 ivana Exp $
 //
-// Test macro for iterating over the whole plane
+// Test macro for iterating over the whole sector
 
 #include <iomanip>
 
@@ -49,7 +50,7 @@ void MarkPads(AliMpVPadIterator& it, Double_t xmax, Double_t ymax,
 void testSectorAreaIterator(AliMpStationType station = kStation1,
                             AliMpPlaneType planeType = kBendingPlane)
 {
-  AliMpReader reader(station, planeType);  
+  AliMpSectorReader reader(station, planeType);  
   AliMpSector* sector = reader.BuildSector();
   AliMpSectorSegmentation segmentation(sector);
 

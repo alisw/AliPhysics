@@ -1,11 +1,12 @@
 // $Id$
+// $MpId: testAllIndices.C,v 1.7 2005/08/24 08:53:27 ivana Exp $
 //
 // Test macro for testing which pad is seen as "existing" by AliMpSector.
 
 void testAllIndices(AliMpStationType station = kStation1,
                     AliMpPlaneType plane = kBendingPlane) 
 {
-  AliMpReader r(station, plane);
+  AliMpSectorReader r(station, plane);
 
   AliMpSector *sector=r.BuildSector();
   AliMpSectorSegmentation segmentation(sector);

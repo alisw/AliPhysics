@@ -1,4 +1,5 @@
 // $Id$
+// $MpId: testPadsUpEtc.C,v 1.6 2005/08/24 08:53:27 ivana Exp $
 //
 // Test macro that starts from a given pad and prints 
 // all pads up, down, right, left from this pad
@@ -7,7 +8,7 @@
 void testPadsUpEtc(AliMpStationType station = kStation1,
                    AliMpPlaneType  planeType = kBendingPlane)
 {
-  AliMpReader reader(station, planeType);  
+  AliMpSectorReader reader(station, planeType);  
   AliMpSector* sector = reader.BuildSector();
   AliMpSectorSegmentation segmentation(sector);
   

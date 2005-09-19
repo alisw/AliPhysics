@@ -1,4 +1,5 @@
 // $Id$
+// $MpId: testExistingPads2.C,v 1.3 2005/08/24 08:53:27 ivana Exp $
 //
 // Extended testExistingPads macro for testing which pad is seen as 
 // "existing" by AliMpSector.
@@ -11,7 +12,7 @@
 void testExistingPads2(AliMpStationType station = kStation1,
                        AliMpPlaneType plane = kBendingPlane) 
 {
-  AliMpReader r(station, plane);
+  AliMpSectorReader r(station, plane);
   AliMpSector* sector = r.BuildSector();
   AliMpSectorSegmentation segmentation(sector);
   
