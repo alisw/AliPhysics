@@ -70,10 +70,14 @@ class AliMUONGeometrySegmentation : public TObject
                           Int_t ix, Int_t iy,
                           Float_t& x, Float_t& y, Float_t& z);
                        // Transform from real to pad coordinates
+
+    virtual Bool_t HasPad(Int_t detElemId, Int_t ix, Int_t iy);
+	
                        // get pad for a given connection
     virtual Bool_t     GetPadE(Int_t detElemId, Int_t &ix, Int_t &iy,  AliMUONSegmentManuIndex* connect);
     virtual AliMUONSegmentManuIndex*     GetMpConnection(Int_t detElemId, Int_t ix, Int_t iy); 
                        // get electronics connection for given pad
+
     // Initialisation
     //
     virtual void Init(Int_t chamber);
@@ -163,7 +167,8 @@ class AliMUONGeometrySegmentation : public TObject
                    // Set the correction function
     virtual TF1* CorrFunc(Int_t detElemId, Int_t isec) const;
                    // Get the correction Function
- 
+    virtual void Print(Option_t* ="") const;
+	
   protected:
     AliMUONGeometrySegmentation(const AliMUONGeometrySegmentation& rhs);
   

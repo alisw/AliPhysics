@@ -25,6 +25,7 @@
 /* $Id$ */
 
 #include <Riostream.h>
+#include "TClass.h"
 
 #include "AliLog.h"
 
@@ -177,6 +178,18 @@ AliMUONGeometrySegmentation::GetDirection(Int_t detElemId) const
 }
 
 //______________________________________________________________________________
+void AliMUONGeometrySegmentation::Print(Option_t* opt) const
+{
+// Print DE segmentations
+
+  std::cout << "fDESegmentations (class " 
+	    << fDESegmentations->Class()->GetName() << ") entries=" 
+	    << fDESegmentations->GetNofEntries() 
+	    << std::endl;
+  fDESegmentations->Print(opt);	
+}
+
+//______________________________________________________________________________
 void AliMUONGeometrySegmentation::SetPadSize(Float_t p1, Float_t p2)
 {
 // Set pad size Dx*Dy to all detection element segmentations 
@@ -234,7 +247,18 @@ Bool_t  AliMUONGeometrySegmentation::GetPadI(Int_t detElemId,
   fCurrentSegmentation->GetPadI(xl, yl, zl, ix, iy);
   return true;
 }
-	       
+
+//______________________________________________________________________________
+Bool_t
+AliMUONGeometrySegmentation::HasPad(Int_t detElemId, Int_t ix, Int_t iy)
+{
+// Tells if a given pad exists in a given detector element
+
+	if (!OwnNotify(detElemId)	) return false;
+	
+	return fCurrentSegmentation->HasPad(ix,iy);
+}
+                                    
 //______________________________________________________________________________
 Bool_t  AliMUONGeometrySegmentation::GetPadC(Int_t detElemId,
                                         Int_t ix, Int_t iy, 
