@@ -50,8 +50,8 @@ ClassImp(AliMUONv1)
 //___________________________________________
 AliMUONv1::AliMUONv1() 
   : AliMUON(),
-    fStepManagerVersionOld(kFALSE),
-    fStepManagerVersionDE(kFALSE),
+    fStepManagerVersionOld(kTRUE),
+    fStepManagerVersionDE(kTRUE),
     fAngleEffect(kTRUE),
     fStepMaxInActiveGas(0.6),
     fStepSum(0x0),
@@ -70,8 +70,8 @@ AliMUONv1::AliMUONv1()
 //___________________________________________
 AliMUONv1::AliMUONv1(const char *name, const char *title)
   : AliMUON(name,title), 
-    fStepManagerVersionOld(kFALSE),
-    fStepManagerVersionDE(kFALSE),
+    fStepManagerVersionOld(kTRUE),
+    fStepManagerVersionDE(kTRUE),
     fAngleEffect(kTRUE),
     fStepMaxInActiveGas(0.6),
     fStepSum(0x0),

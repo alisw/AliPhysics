@@ -153,7 +153,6 @@ void Config(char directory[100]="", char option[6]="param")
   // If align = true, the detection elements transformations
   // are taken from the input files and not from the code
   //MUON->SetAlign(true);
-  ((AliMUONv1*)MUON)->SetStepManagerVersionDE(true);
   MUON->AddGeometryBuilder(new AliMUONSt1GeometryBuilderV2(MUON));
   MUON->AddGeometryBuilder(new AliMUONSt2GeometryBuilderV2(MUON));
   MUON->AddGeometryBuilder(new AliMUONSlatGeometryBuilder(MUON));
