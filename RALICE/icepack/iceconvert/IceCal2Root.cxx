@@ -432,6 +432,7 @@ void IceCal2Root::GetCalibData()
    omx->SetSignal(ped,9);
    omx->SetSignal(alpha,10);
    omx->SetSignal(beta,15);
+   omx->SetSignal(0,16);
 
    fcal=omx->GetCalFunction(2);
    fdecal=omx->GetDecalFunction(2);
@@ -492,6 +493,7 @@ void IceCal2Root::GetCalibData()
 
    omx->SetSignal(ped,11);
    omx->SetSignal(beta,12);
+   omx->SetSignal(0,13);
    omx->SetSignal(totped,14);
 
    fcal=omx->GetCalFunction(1);

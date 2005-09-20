@@ -8,3 +8,6 @@
 21-apr-2005 NvE Directory iceconvert introduced to hold the various readers to
                 convert Amanda/IceCube data into the Ralice/IcePack event structures.
 12-aug-2005 NvE TTask derived class IceXtalk introduced for cross talk correction.
+20-sep-2005 NvE TTask derived class IceCalibrate introduced for (de)calibration of data.
+                Also example macros icextalk.cc and icecalib.cc introduced in the /macros
+                directory to illustrate the usage of these TTask based proceures.

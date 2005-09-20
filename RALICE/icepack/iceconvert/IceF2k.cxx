@@ -838,8 +838,8 @@ void IceF2k::PutHits()
   }
   else
   {
-   if (fcal) fcal->SetParameter(3,0);
-   if (fdecal) fdecal->SetParameter(3,0);
+   if (fcal) fcal->SetParameter(3,1.e20);
+   if (fdecal) fdecal->SetParameter(3,1.e20);
   }
 
   // Bi-directional link between this hit and the track that caused the ADC value.
