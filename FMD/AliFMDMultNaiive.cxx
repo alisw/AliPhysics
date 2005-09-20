@@ -141,7 +141,7 @@ AliFMDMultNaiive::Adc2Energy(AliFMDDigit* /* digit */,
   // 
   // is constant and the same for all strips. 
   Double_t theta = 2 * TMath::Tan(TMath::Exp(-eta));
-  Double_t edep  = TMath::Cos(theta) * fGain * count;
+  Double_t edep  = TMath::Abs(TMath::Cos(theta)) * fGain * count;
   return edep;
 }
 

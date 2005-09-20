@@ -144,8 +144,8 @@ AliFMDMultPoisson::PostEvent()
 	UShort_t minSector = UShort_t(minPhi / 360) * r->GetNSectors();
 	UShort_t maxSector = UShort_t(maxPhi / 360) * r->GetNSectors();
 	
-	AliDebug(10, Form(" Now in phi range %f, %f (sectors %d,%d)",
-			  minPhi, maxPhi, minSector, maxSector));
+	//	AliDebug(10, Form(" Now in phi range %f, %f (sectors %d,%d)",
+	//		  minPhi, maxPhi, minSector, maxSector));
 	// Loop over relevant eta values 
 	for (Int_t e = nEta; e >= 0; --e) {
 	  Float_t  maxEta   = etaIn  - sign * e * fDeltaEta;
@@ -156,14 +156,17 @@ AliFMDMultPoisson::PostEvent()
 	  Float_t  theta2   = 2 * TMath::ATan(TMath::Exp(-maxEta));
 	  Float_t  minR     = TMath::Abs(realZ * TMath::Tan(theta2));
 	  Float_t  maxR     = TMath::Abs(realZ * TMath::Tan(theta1));
-	  UShort_t minStrip = UShort_t((etaIn - maxEta) * stripEta + 0.5);
-	  UShort_t maxStrip = UShort_t((etaIn - minEta) * stripEta + 0.5);
+	  //UShort_t minStrip = UShort_t((etaIn - maxEta) * stripEta + 0.5);
+	  // UShort_t maxStrip = UShort_t((etaIn - minEta) * stripEta + 0.5);
+
+	  UShort_t minStrip = UShort_t(r->GetNStrips() -(etaIn - minEta) * stripEta + 0.5);
+	  UShort_t maxStrip = UShort_t(r->GetNStrips() -(etaIn - maxEta) * stripEta + 0.5);
 
 	  AliDebug(10, Form("  Now in eta range %f, %f (strips %d, %d)\n"
-			    "    [radii %f, %f, thetas %f, %f, sign %d]", 
-			    minEta, maxEta, minStrip, maxStrip, 
+	  		    "    [radii %f, %f, thetas %f, %f, sign %d]", 
+	    		    minEta, maxEta, minStrip, maxStrip,
 			    minR, maxR, theta1, theta2, sign));
-
+	  
 	  // Count number of empty strips
 	  Int_t   emptyStrips = 0;
 	  for (Int_t sector = minSector; sector < maxSector; sector++) 
@@ -173,11 +176,7 @@ AliFMDMultPoisson::PostEvent()
 	  
 	  // The total number of strips 
 	  Float_t nTotal = (maxSector - minSector) * (maxStrip - minStrip);
-	  
 	  // Log ratio of empty to total number of strips 
-	  AliDebug(10, Form("Lambda= %d / %d = %f", 
-			    emptyStrips, nTotal, 
-			    Float_t(emptyStrips) / nTotal));
 	  
 	  Double_t lambda = (emptyStrips > 0 ? 
 			     - TMath::Log(Double_t(emptyStrips) / nTotal) :
@@ -185,6 +184,9 @@ AliFMDMultPoisson::PostEvent()
 
 	  // The reconstructed number of particles is then given by 
 	  Int_t reconstructed = Int_t(lambda * nTotal + 0.5);
+	  AliDebug(10, Form("Lambda= %d / %f = %f particles %d", 
+			    emptyStrips, nTotal, 
+			    Float_t(emptyStrips) / nTotal , reconstructed));
 	    
 	  // Add a AliFMDMultRegion to the reconstruction tree. 
 	  AliFMDMultRegion* m = new((*fMult)[fNMult])   

@@ -19,7 +19,7 @@ public:
   enum { 
     kMaxDetectors = 3, 
     kMaxRings     = 2, 
-    kMaxSectors   = 20, 
+    kMaxSectors   = 40, 
     kMaxStrips    = 512
   };
   AliFMDMap(size_t maxDet = kMaxDetectors, 
