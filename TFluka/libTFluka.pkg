@@ -19,5 +19,31 @@ EINCLUDE:= $(FLUPRO)/flukapro $(FLUPRO)/emfadd $(FLUPRO)/flukaadd
 ELIBSDIR:= $(FLUPRO)
 ELIBS   := flukahp
 
-PACKCXXFLAGS:= $(CXXFLAGS)
+ifeq (g95,$(findstring g95,$(ROOTBUILD)))
+ELIBS	      += f95
+ELIBSDIR      += $(shell find /sw/lib -name libf95.a | xargs dirname)
+PACKDYFLAGS   := $(DYFLAGS) 	 \
+	 -Wl,-u,_bdandi \
+	 -Wl,-u,_bdevap \
+	 -Wl,-u,_bdhdr1 \
+	 -Wl,-u,_bdhdr2 \
+	 -Wl,-u,_bdhdr3 \
+	 -Wl,-u,_bdinpt \
+	 -Wl,-u,_bdmuls \
+	 -Wl,-u,_bdnopt \
+	 -Wl,-u,_bdpart \
+	 -Wl,-u,_bdphfl \
+	 -Wl,-u,_bdprdc \
+	 -Wl,-u,_bdpwxs \
+	 -Wl,-u,_bdrndm \
+	 -Wl,-u,_bdsqzi \
+	 -Wl,-u,_bdtrns \
+	 -Wl,-u,_countr \
+	 -Wl,-u,_elproi \
+	 -Wl,-u,_hadini \
+	 -Wl,-u,_bdgtfr \
+	 -Wl,-u,_bdpree 
+
+endif
+
 

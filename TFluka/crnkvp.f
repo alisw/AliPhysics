@@ -108,8 +108,8 @@
 *  Take a three sigma clearance:
       NEMPHO = NEMPHO + 10 + 3 * NINT ( SQRT ( CTRACK * SIGMCK ) )
       NEMPHO = MIN ( NEMPHO, MOSTCK )
-D     IF ( LSTOPP .GT. MOSTCK - NEMPHO ) WRITE (77,*)
-D    &   ' ###CRNKVP:LSTOPP:',LSTOPP,NEMPHO
+*D     IF ( LSTOPP .GT. MOSTCK - NEMPHO ) WRITE (77,*)
+*D    &   ' ###CRNKVP:LSTOPP:',LSTOPP,NEMPHO
 *  +-------------------------------------------------------------------*
 *  |  Empty the stack if too full: compute and save the normal in case
 *  |  it is required
@@ -150,14 +150,14 @@ D    &   ' ###CRNKVP:LSTOPP:',LSTOPP,NEMPHO
 *  |  Stacking loop for Cerenkov photons:
       NPROD = 0
  1000 CONTINUE
-D        IF ( SIGMCK .LT. ZERZER ) WRITE (77,*)
-D    &      ' ^^^CRNKVP:SIGMCK,BTNFCR',SIGMCK,BTNFCR
+*D        IF ( SIGMCK .LT. ZERZER ) WRITE (77,*)
+*D    &      ' ^^^CRNKVP:SIGMCK,BTNFCR',SIGMCK,BTNFCR
 *D        IF ( DEDXCR .LT. AZRZRZ ) WRITE (77,*)' ###CRNKVP:',
 *D    &  'MMAT,JTRACK,DEDXCR,NTRKCR,DTRACK(NTRKCR),CTRACK,TRNRSD,DTRCKT',
 *D    &   MMAT,JTRACK,DEDXCR,NTRKCR,DTRACK(NTRKCR),CTRACK,TRNRSD,DTRCKT
 *  |  Empty the stack if too full:
-D        IF ( LSTOPP .EQ. MOSTCK ) WRITE (77,*)
-D    &      ' ###CRNKVP:LSTOPP:',LSTOPP
+*D        IF ( LSTOPP .EQ. MOSTCK ) WRITE (77,*)
+*D    &      ' ###CRNKVP:LSTOPP:',LSTOPP
 *  |  +----------------------------------------------------------------*
 *  |  |  Empty the stack if too full: compute and save the normal in
 *  |  |  case it is required
@@ -175,8 +175,8 @@ D    &      ' ###CRNKVP:LSTOPP:',LSTOPP
 *  |  +----------------------------------------------------------------*
 *  |  |  Sub-step loop:
  1500    CONTINUE
-D           IF ( NTRKCR .GT. NTRACK ) WRITE (77,*)
-D    &         ' ^^^CRNKVP:NTRKCR,NTRACK',NTRKCR,NTRACK
+*D           IF ( NTRKCR .GT. NTRACK ) WRITE (77,*)
+*D    &         ' ^^^CRNKVP:NTRKCR,NTRACK',NTRKCR,NTRACK
 *  |  |  +-------------------------------------------------------------*
 *  |  |  |  The production point is inside the current sub-step:
             IF ( DSTPRD .LE. TRNRSD ) THEN
@@ -241,9 +241,9 @@ D    &         ' ^^^CRNKVP:NTRKCR,NTRACK',NTRKCR,NTRACK
          BTNFLD = BTNFCR
          BTNFCR = ( BETNCR - ONEONE ) * ( BETNCR + ONEONE ) / BETNCR**2
          FREJE  = BTNFCR / BTNFLD
-D        IF ( FREJE .GT. ONEPLS ) WRITE (77,*) ' ^^^CRNKVP:',
-D    &       'FREJE,BETNCR,BETNLD,DEDXCR,PTRKCR,ETRKCR,PTRACK,ETRACK',
-D    &        FREJE,BETNCR,BETNLD,DEDXCR,PTRKCR,ETRKCR,PTRACK,ETRACK
+*D        IF ( FREJE .GT. ONEPLS ) WRITE (77,*) ' ^^^CRNKVP:',
+*D    &       'FREJE,BETNCR,BETNLD,DEDXCR,PTRKCR,ETRKCR,PTRACK,ETRACK',
+*D    &        FREJE,BETNCR,BETNLD,DEDXCR,PTRKCR,ETRKCR,PTRACK,ETRACK
 *  |  Update the macroscopic sigma: beta can only decrease
          SIGMCK = SIGMCK * FREJE
          RNDREJ = FLRNDM (RNDREJ)
@@ -268,9 +268,9 @@ D    &        FREJE,BETNCR,BETNLD,DEDXCR,PTRKCR,ETRKCR,PTRACK,ETRACK
 *  |  Compute the quantum efficiency for this emitted energy:
          OPSENS = FOPTSN ( WVLSMP, OMGSMP )
          FREJE  = BTNFSM / BTNFCR * OPSENS / OPSNMX
-D        IF ( FREJE .GT. ONEPLS ) WRITE (77,*)
-D    &      ' ^^^CRNKVP:FREJE,RFISMP,RMXCER(MMAT),OPSENS,MMAT',
-D    &                  FREJE,RFISMP,RMXCER(MMAT),OPSENS,MMAT
+*D        IF ( FREJE .GT. ONEPLS ) WRITE (77,*)
+*D    &      ' ^^^CRNKVP:FREJE,RFISMP,RMXCER(MMAT),OPSENS,MMAT',
+*D    &                  FREJE,RFISMP,RMXCER(MMAT),OPSENS,MMAT
          RNDREJ = FLRNDM (RNDREJ)
 *dbgD        WRITE (77,*) ' CRNKVP:BTNFSM,BTNFCR,RNDREJ',
 *dbgD    &                         BTNFSM,BTNFCR,RNDREJ
@@ -300,9 +300,9 @@ D    &                  FREJE,RFISMP,RMXCER(MMAT),OPSENS,MMAT
 *  |  |
 *  |  +----------------------------------------------------------------*
          SRNRSD = TUVWCR * TRNRSD / CRVCRR / TTRACK (NTRKCR)
-D        IF ( SRNRSD .LT. ZERZER .OR. SRNRSD .GT. TUVWCR )
-D    &      WRITE (77,*)' ^^^CRNKVP:SRNRSD,TUVWCR,NTRKCR',
-D    &                              SRNRSD,TUVWCR,NTRKCR
+*D        IF ( SRNRSD .LT. ZERZER .OR. SRNRSD .GT. TUVWCR )
+*D    &      WRITE (77,*)' ^^^CRNKVP:SRNRSD,TUVWCR,NTRKCR',
+*D    &                              SRNRSD,TUVWCR,NTRKCR
          XTRKCR = XTRACK (NTRKCR) - UTRKCR * SRNRSD
          YTRKCR = YTRACK (NTRKCR) - VTRKCR * SRNRSD
          ZTRKCR = ZTRACK (NTRKCR) - WTRKCR * SRNRSD
@@ -321,7 +321,7 @@ D    &                              SRNRSD,TUVWCR,NTRKCR
                      GO TO 2010
                   END IF
  2000          CONTINUE
-D              CALL FLABRT ( 'CRNKVP', 'STOP:CRNKVP-NO-VALID-LATTICE' )
+*D              CALL FLABRT ( 'CRNKVP', 'STOP:CRNKVP-NO-VALID-LATTICE' )
  2010          CONTINUE
             END IF
          END IF
@@ -403,9 +403,9 @@ D              CALL FLABRT ( 'CRNKVP', 'STOP:CRNKVP-NO-VALID-LATTICE' )
             WRITE (LUNERR,'(A,1PG23.15,A)')
      &           ' *** Crnkvp: bad polarization',
      &              SCADOT, ' ***'
-D           WRITE (77,'(A,1PG23.15)')
-D    &            ' ^^^Crnkvp: bad polarization',
-D    &              SCADOT
+*D           WRITE (77,'(A,1PG23.15)')
+*D    &            ' ^^^Crnkvp: bad polarization',
+*D    &              SCADOT
          END IF
          WTOPPH (LSTOPP) = WTRACK
          AGOPPH (LSTOPP) = ATRKCR
