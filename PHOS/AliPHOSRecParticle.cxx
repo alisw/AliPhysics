@@ -177,40 +177,67 @@ const Int_t AliPHOSRecParticle::GetPrimaryIndex() const
     }
   }
   digit = gime->Digit(digitList[bestDigitIndex]);
-
+  
   // Get the list of primary tracks producing this digit
   // and find which track has more track energy.
-  Int_t nPrimary = digit->GetNprimary();
-  TParticle *track = 0;
-  Double_t energyEM     = 0;
-  Double_t energyHadron = 0;
-  Int_t    trackEM      = -1;
-  Int_t    trackHadron  = -1;
-  for (Int_t iPrim=0; iPrim<nPrimary; iPrim++) {
-    Int_t iPrimary = digit->GetPrimary(iPrim+1);
-    if (iPrimary == -1 || TMath::Abs(iPrimary)>10000000)
-      continue ;  //PH 10000000 is the shift of the track 
-                  //PH indexes in the underlying event
-    track = gime->Primary(iPrimary);
-    Int_t pdgCode   = track->GetPdgCode();
-    Double_t energy = track->Energy();
-    if (pdgCode==22 || TMath::Abs(pdgCode)==11) {
-      if (energy > energyEM) {
-	energyEM = energy;
-	trackEM = iPrimary;
-      }
-    }
-    else {
-      if (energy > energyHadron) {
-	energyHadron = energy;
-	trackHadron = iPrimary;
+  //Int_t nPrimary = digit->GetNprimary();
+  //TParticle *track = 0;
+  //Double_t energyEM     = 0;
+  //Double_t energyHadron = 0;
+  //Int_t    trackEM      = -1;
+  //Int_t    trackHadron  = -1;
+  //for (Int_t iPrim=0; iPrim<nPrimary; iPrim++) {
+  //  Int_t iPrimary = digit->GetPrimary(iPrim+1);
+  //  if (iPrimary == -1 || TMath::Abs(iPrimary)>10000000)
+  //    continue ;  //PH 10000000 is the shift of the track 
+  //                //PH indexes in the underlying event
+  //  track = gime->Primary(iPrimary);
+  //  Int_t pdgCode   = track->GetPdgCode();
+  //  Double_t energy = track->Energy();
+  //  if (pdgCode==22 || TMath::Abs(pdgCode)==11) {
+  //    if (energy > energyEM) {
+  //	energyEM = energy;
+  //	trackEM = iPrimary;
+  //      }
+  //   }
+  //  else {
+  //     if (energy > energyHadron) {
+  //	energyHadron = energy;
+  //	trackHadron = iPrimary;
+	//    }
+  //  }
+  //}
+  // Preferences are given to electromagnetic tracks
+  //if (trackEM     != -1) return trackEM;     // track is gamma or e+-
+  //if (trackHadron != -1) return trackHadron; // track is hadron
+  //return -12345;                             // no track found :(
+
+
+  // Get the list of hits producing this digit,
+  // find which hit has deposited more energy 
+  // and find the primary track.
+
+  AliPHOSHit *hit = 0;
+  TClonesArray *hits = gime->Hits();
+  Double_t maxedep  =  0;
+  Int_t    maxtrack = -1;
+  Int_t    nHits    = hits ->GetEntries();
+  Int_t    id       = digit->GetId();
+
+  for (Int_t iHit=0; iHit<nHits; iHit++) {
+    hit = gime->Hit(iHit);
+    if(hit->GetId() == id){
+      Double_t edep  = hit->GetEnergy();
+      Int_t    track = hit->GetPrimary();
+      if(edep > maxedep){
+	maxedep  = edep;
+	maxtrack = track;
       }
     }
   }
-  // Preferences are given to electromagnetic tracks
-  if (trackEM     != -1) return trackEM;     // track is gamma or e+-
-  if (trackHadron != -1) return trackHadron; // track is hadron
-  return -12345;                             // no track found :(
+
+  if (maxtrack != -1) return maxtrack; // track is hadron
+  return -12345;                       // no track found :(
 }
 
 //____________________________________________________________________________
