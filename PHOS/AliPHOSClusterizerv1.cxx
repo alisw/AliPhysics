@@ -82,6 +82,8 @@
 #include "AliPHOSDigit.h"
 #include "AliPHOSDigitizer.h"
 #include "AliPHOSCalibrationDB.h"
+#include "AliCDBStorage.h"
+#include "AliCDBLocal.h"
 
 ClassImp(AliPHOSClusterizerv1)
   
@@ -129,8 +131,8 @@ Float_t  AliPHOSClusterizerv1::Calibrate(Int_t amp, Int_t absId)
     AliPHOSGetter *gime = AliPHOSGetter::Instance();
     gime->PHOSGeometry()->AbsToRelNumbering(absId,relId) ;
     Int_t   module = relId[0];
-    Int_t   row    = relId[2];
     Int_t   column = relId[3];
+    Int_t   row    = relId[2];
     if(absId <= fEmcCrystals) { //calibrate as EMC 
       fADCchanelEmc   = fCalibData->GetADCchannelEmc (module,column,row);
       fADCpedestalEmc = fCalibData->GetADCpedestalEmc(module,column,row);
@@ -163,12 +165,13 @@ void AliPHOSClusterizerv1::Exec(Option_t *option)
     return ;
   }
 
+  GetCalibrationParameters() ;
+
   AliPHOSGetter * gime = AliPHOSGetter::Instance() ; 
   if (fRawReader == 0)
     gime->SetRawDigits(kFALSE);
   else
     gime->SetRawDigits(kTRUE);
-  GetCalibrationParameters() ;
   
   if (fLastEvent == -1) 
     fLastEvent = gime->MaxEvent() - 1 ;
@@ -309,32 +312,29 @@ Bool_t AliPHOSClusterizerv1::FindFit(AliPHOSEmcRecPoint * emcRP, AliPHOSDigit **
 void AliPHOSClusterizerv1::GetCalibrationParameters() 
 {
   // Set calibration parameters:
-  // For raw data they are read from the calibration database,
-  // for simulated data they are taken from digitizer.
+  // if calibration database exists, they are read from database,
+  // otherwise, they are taken from digitizer.
   //
-  // It is a user responsilibity to open CDB and set
-  // AliPHOSCalibData object by the following operators:
-  // 
-  // AliCDBLocal *loc = new AliCDBLocal("deCalibDB");
-  // AliPHOSCalibData* clb = (AliPHOSCalibData*)AliCDBStorage::Instance()
-  //    ->Get(path_to_calibdata,run_number);
-  // AliPHOSGetter* gime = AliPHOSGetter::Instance("galice.root");
-  // gime->SetCalibData(clb);
+  // It is a user responsilibity to open CDB before reconstruction:
+  // AliCDBLocal *loc = new AliCDBLocal("CalibDB");
 
   AliPHOSGetter * gime = AliPHOSGetter::Instance();
-  if(gime->IsRawDigits()){
-    fCalibData = gime->CalibData();    
-  }
-  else{
-    if ( !gime->Digitizer() ) 
-      gime->LoadDigitizer();
-    AliPHOSDigitizer * dig = gime->Digitizer(); 
-    fADCchanelEmc   = dig->GetEMCchannel() ;
-    fADCpedestalEmc = dig->GetEMCpedestal();
+
+  if(AliCDBStorage::Instance())
+    fCalibData = (AliPHOSCalibData*)AliCDBStorage::Instance()
+      ->Get("PHOS/Calib/GainFactors_and_Pedestals",gAlice->GetRunNumber());
+
+  if(!fCalibData)
+    {
+      if ( !gime->Digitizer() ) 
+	gime->LoadDigitizer();
+      AliPHOSDigitizer * dig = gime->Digitizer(); 
+      fADCchanelEmc   = dig->GetEMCchannel() ;
+      fADCpedestalEmc = dig->GetEMCpedestal();
     
-    fADCchanelCpv   = dig->GetCPVchannel() ;
-    fADCpedestalCpv = dig->GetCPVpedestal() ; 
-  }  
+      fADCchanelCpv   = dig->GetCPVchannel() ;
+      fADCpedestalCpv = dig->GetCPVpedestal() ; 
+    }
 }
 
 //____________________________________________________________________________
