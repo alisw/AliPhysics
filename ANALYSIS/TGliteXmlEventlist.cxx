@@ -58,15 +58,27 @@ TMap* TGliteXmlEventlist::Next() {
 void TGliteXmlEventlist::ReadXML() {
 //Andi - please put a comment
   TXMLEngine* xml = new TXMLEngine();
+#if ROOT_VERSION_CODE < 328704
   xmlDocPointer xdoc = xml->ParseFile(fXmlFile);
   xmlNodePointer xglite = xml->DocGetRootElement(xdoc);
   xmlNodePointer xdtext = xml->GetChild(xglite);
   xmlNodePointer xcollection = xml->GetNext(xdtext);
-
+  
   xmlNodePointer xtext = 0;
   xmlNodePointer xevent = 0;
   xmlNodePointer xtextnext  = 0;
   xmlNodePointer xeventnext = 0;
+#else
+  XMLDocPointer_t xdoc = xml->ParseFile(fXmlFile);
+  XMLNodePointer_t xglite = xml->DocGetRootElement(xdoc);
+  XMLNodePointer_t xdtext = xml->GetChild(xglite);
+  XMLNodePointer_t xcollection = xml->GetNext(xdtext);
+
+  XMLNodePointer_t xtext = 0;
+  XMLNodePointer_t xevent = 0;
+  XMLNodePointer_t xtextnext  = 0;
+  XMLNodePointer_t xeventnext = 0;
+#endif
   Bool_t first_event=kTRUE;
   do {
     if (first_event) {
@@ -93,11 +105,19 @@ void TGliteXmlEventlist::ReadXML() {
 	
 	Bool_t first_file = kTRUE;
 	
-	xmlNodePointer xfile = 0;
-	xmlNodePointer xfiletext = 0;
+#if ROOT_VERSION_CODE < 328704
+ 	xmlNodePointer xfile = 0;
+ 	xmlNodePointer xfiletext = 0;
+
+ 	xmlNodePointer xfilenext = 0;
+ 	xmlNodePointer xfiletextnext = 0;
+#else
+	XMLNodePointer_t xfile = 0;
+	XMLNodePointer_t xfiletext = 0;
 	
-	xmlNodePointer xfilenext = 0;
-	xmlNodePointer xfiletextnext = 0;
+	XMLNodePointer_t xfilenext = 0;
+	XMLNodePointer_t xfiletextnext = 0;
+#endif
 	do {
 	  if (first_file) {
 	    xfiletextnext = xml->GetChild(xevent);
@@ -132,11 +152,19 @@ void TGliteXmlEventlist::ReadXML() {
 	    
 	    Bool_t first_mirror = kTRUE;
 	    
-	    xmlNodePointer xmirror = 0;
-	    xmlNodePointer xmirrortext = 0;
+#if ROOT_VERSION_CODE < 328704
+ 	    xmlNodePointer xmirror = 0;
+ 	    xmlNodePointer xmirrortext = 0;
+
+ 	    xmlNodePointer xmirrornext = 0;
+ 	    xmlNodePointer xmirrortextnext = 0;
+#else
+	    XMLNodePointer_t xmirror = 0;
+	    XMLNodePointer_t xmirrortext = 0;
 	    
-	    xmlNodePointer xmirrornext = 0;
-	    xmlNodePointer xmirrortextnext = 0;
+	    XMLNodePointer_t xmirrornext = 0;
+	    XMLNodePointer_t xmirrortextnext = 0;
+#endif
 	    
 	    do {
 	      if (first_mirror) {
