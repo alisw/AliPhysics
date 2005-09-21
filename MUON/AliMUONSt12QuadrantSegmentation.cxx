@@ -442,6 +442,9 @@ void  AliMUONSt12QuadrantSegmentation::FirstPad(Float_t xhit, Float_t yhit, Floa
   if (dx == 0.)  dx = 0.01;
   if (dy == 0.)  dy = 0.01;
   
+  // Delete previous iterator
+  delete  fSectorIterator;
+  
   fSectorIterator 
     = fSectorSegmentation
         ->CreateIterator(AliMpArea(TVector2(fXhit/fgkLengthUnit, fYhit/fgkLengthUnit), 
