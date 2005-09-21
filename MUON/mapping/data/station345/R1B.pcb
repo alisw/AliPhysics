@@ -1,0 +1,14 @@
+# Bending PCB. Density 1. Rounded (type 1).
+# Placing motifs starting bottom left and going counter-clockwise
+# from R41 to R40
+
+SIZES 25 5 400 400
+
+MOTIF R41  9  0
+MOTIF L16 12  0
+MOTIF R42 13  0
+MOTIF L17 14  0
+
+MOTIF O19 14 48
+MOTIF O19 12 48
+MOTIF R40  9 44

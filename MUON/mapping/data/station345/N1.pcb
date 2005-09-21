@@ -1,0 +1,27 @@
+# NonBending PCB. Density 1.
+# Placing motifs starting bottom left and going counter-clockwise
+
+SIZES 7.14285714 25 400 400
+
+MOTIF O2  0  0
+MOTIF O2  8  0
+MOTIF O2 16  0
+MOTIF O2 24  0
+MOTIF O2 32  0
+MOTIF O2 40  0
+MOTIF O2 48  0
+
+MOTIF O1 48  8
+MOTIF O1 40  8
+MOTIF O1 32  8
+MOTIF O1 24  8
+MOTIF O1 16  8
+MOTIF O1  8  8
+MOTIF O1  0  8
+
+
+
+
+
+
+

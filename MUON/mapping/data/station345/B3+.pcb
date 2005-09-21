@@ -1,0 +1,17 @@
+# Bending PCB. Density 3.
+# Placing motifs starting bottom left and going counter-clockwise
+
+SIZES 100 5 400 400
+
+MOTIF L19  0  0
+MOTIF O12  1  0
+MOTIF L20  2  0
+
+MOTIF O11  2 48
+MOTIF O11  0 48
+
+
+
+
+
+

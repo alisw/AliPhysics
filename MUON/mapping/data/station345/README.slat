@@ -1,0 +1,23 @@
+Slat file format :
+
+A slat is defined by the list of its PCB, described starting 
+from the beam and going outward.
+
+One PCB per line, preceded by the keyword PCB
+Other lines not matching this syntax are ignored.
+After the PCB is the list of manu ids for this PCB.
+ 
+Example :
+
+PCB X 1-3;24-20;42;44;53
+PCB X 1-14
+PCB Y 100-90
+PCB Z 1;2;3;4;5;6;7;12;120
+
+defines a slat with 4 PCBs : XXYZ
+
+The manu to motif relationship is attached to the fact that we're counting counter-clockwise, starting on the lower-left of the PCB. (and the pcb files have to follow this convention to defined their motifs, otherwise all this won't work).
+
+Note that the definition of the PCBs have to be in files with extension
+.pcb (X.pcb, Y.pcb, Z.pcb)
+

@@ -1,0 +1,18 @@
+# NonBending PCB. Density 1. Rounded (type 3)
+# Placing motifs starting bottom left and going counter-clockwise
+# Starting O14 (which is indeed close to the bottom right, due to
+# the PCB shape) , ending O13 on top left.
+ 
+SIZES 7.14285714 25 400 400
+
+MOTIF O14 44  0 
+MOTIF O14 48  0 
+MOTIF O14 52  0 
+
+MOTIF R19 39  1
+MOTIF R18 32  2
+MOTIF R17 26  4
+MOTIF R16 20  5
+MOTIF R15 13  6
+MOTIF R14  8  7
+MOTIF O13  0  8

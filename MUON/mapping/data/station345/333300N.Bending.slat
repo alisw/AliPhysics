@@ -1,0 +1,5 @@
+#FIXED : manu ids 1st line to be change missing reverse pcb B3
+PCB B3+ 1-2;303-305
+PCB B3- 111-112;211-213
+PCB B3- 107-108;206-208
+PCB B3- 103-104;201-203
