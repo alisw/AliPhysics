@@ -194,7 +194,7 @@ Double_t AliGenMUONlib::PtJpsiPbPb( Double_t *px, Double_t */*dummy*/)
     };
     
     Double_t y;
-    if (x < 15.) {
+    if (x < 10.) {
 	Int_t j;
 	y = c[j = 7];
 	while (j > 0) y  = y * x +c[--j];
