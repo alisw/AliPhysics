@@ -6,6 +6,10 @@
 /* $Id$ */
 // Revision of includes 07/05/2004
 
+/// \ingroup base
+/// \class AliMUONDigit
+/// \brief MUON digit
+
 #include <TObject.h>
 
 static const Int_t kMAXTRACKS=10;

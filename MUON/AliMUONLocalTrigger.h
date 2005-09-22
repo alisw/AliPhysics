@@ -7,6 +7,10 @@
 /* $Id$ */
 // Revision of includes 07/05/2004
 
+/// \ingroup base
+/// \class AliMUONLocalTrigger
+/// \brief Reconstructed Local Trigger object
+
 #include <TObject.h>
 #include <TArrayI.h>
 

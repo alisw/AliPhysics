@@ -7,6 +7,10 @@
 /* $Id$ */
 // Revision of includes 07/05/2004
 
+/// \ingroup base
+/// \class AliMUONHitMapA1
+/// \brief Implements HitMap as a 1-dim array
+
 #include "AliHitMap.h"
 
 class TObjArray;

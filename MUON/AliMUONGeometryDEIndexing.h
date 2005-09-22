@@ -2,20 +2,22 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$
-//
-// Class AliMUONGeometryDEIndexing
-// -------------------------------
-// The class that provides conversion between the detection element Id
-// and the index in the array.
-// Used in storing DE transformations and segmentations.
-// The detection elements numbering:
-//    DetElemId = chamberId*100 + [50] + detElemNum
-//                where  chamberId  = 1, 2, ..., 14
-//                       detElemNum = 0, 1, ...
-// The number 50 is added to distinguish detector elements 
-// in the left and the right hemispheres.
-//
-// Author: Ivana Hrivnacova, IPN Orsay
+
+/// \ingroup base
+/// \class AliMUONGeometryDEIndexing
+/// \brief Conversion between the detection element Id and the array index
+///
+/// The class that provides conversion between the detection element Id
+/// and the index in the array.
+/// Used in storing DE transformations and segmentations.
+/// The detection elements numbering:
+///    DetElemId = chamberId*100 + [50] + detElemNum
+///                where  chamberId  = 1, 2, ..., 14
+///                       detElemNum = 0, 1, ...
+/// The number 50 is added to distinguish detector elements 
+/// in the left and the right hemispheres.
+///
+/// Author: Ivana Hrivnacova, IPN Orsay
 
 #ifndef ALI_MUON_GEOMETRY_DE_INDEXING_H
 #define ALI_MUON_GEOMETRY_DE_INDEXING_H
@@ -48,7 +50,7 @@ class AliMUONGeometryDEIndexing : public AliMUONVGeometryDEIndexing
     Int_t  fModuleId;       // module Id					           
     Int_t  fNofDetElements; // number of detection elements in the module					           
 
-  ClassDef(AliMUONGeometryDEIndexing,1) // MUON transformations store
+  ClassDef(AliMUONGeometryDEIndexing,1) // Conversion between the DE Id and the array index
 };
 
 // inline functions

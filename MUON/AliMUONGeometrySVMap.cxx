@@ -50,7 +50,7 @@ AliMUONStringIntMap::AliMUONStringIntMap()
    fFirstArray(100),
    fSecondArray(100)
 {
-// Standard constructor
+/// Standard constructor
 
   fFirstArray.SetOwner(true);
 }
@@ -59,13 +59,25 @@ AliMUONStringIntMap::AliMUONStringIntMap()
 AliMUONStringIntMap::AliMUONStringIntMap(const AliMUONStringIntMap& rhs)
   : TObject(rhs)
 {
+/// Protected copy constructor
+
   AliFatal("Copy constructor is not implemented.");
+}
+
+//______________________________________________________________________________
+AliMUONStringIntMap::~AliMUONStringIntMap()
+{
+/// Destructor
+
+  fFirstArray.Delete();
 }
 
 //______________________________________________________________________________
 AliMUONStringIntMap& 
 AliMUONStringIntMap::operator = (const AliMUONStringIntMap& rhs) 
 {
+/// Protected assignement operator
+
   // check assignement to self
   if (this == &rhs) return *this;
 
@@ -74,20 +86,15 @@ AliMUONStringIntMap::operator = (const AliMUONStringIntMap& rhs)
   return *this;  
 }
 
-//______________________________________________________________________________
-AliMUONStringIntMap::~AliMUONStringIntMap()
-{
-// Destructor
 
-  fFirstArray.Delete();
-}
-
+//
+// public methods
+//
 
 //______________________________________________________________________________
 Bool_t  AliMUONStringIntMap::Add(const TString& first, Int_t second)
 {
-// Add map element if first not yet present
-// ---
+/// Add map element if first not yet present
 
   Int_t second2 = Get(first);
   if ( second2 > 0 ) {
@@ -108,8 +115,7 @@ Bool_t  AliMUONStringIntMap::Add(const TString& first, Int_t second)
 //______________________________________________________________________________
 Int_t  AliMUONStringIntMap::Get(const TString& first) const
 {
-// Find the element with specified key (first)
-// ---
+/// Find the element with specified key (first)
   
   for (Int_t i=0; i<fNofItems; i++) {
     if ( ((TObjString*)fFirstArray.At(i))->GetString() == first )
@@ -122,8 +128,7 @@ Int_t  AliMUONStringIntMap::Get(const TString& first) const
 //______________________________________________________________________________
 Int_t  AliMUONStringIntMap::GetNofItems() const
 {
-// Returns the number of elements
-// ---
+/// Return the number of elements
 
   return fNofItems;
 }  
@@ -131,8 +136,7 @@ Int_t  AliMUONStringIntMap::GetNofItems() const
 //______________________________________________________________________________
 void  AliMUONStringIntMap::Clear(Option_t* /*option*/)
 {
-// Deletes the elements
-// ---
+/// Delete the elements
 
   fNofItems = 0;
   fFirstArray.Delete();
@@ -142,7 +146,7 @@ void  AliMUONStringIntMap::Clear(Option_t* /*option*/)
 //______________________________________________________________________________
 void AliMUONStringIntMap::Print(const char* /*option*/) const
 {
-// Prints the map elements
+/// Print the map elements
 
   for (Int_t i=0; i<fNofItems; i++) {
     cout << setw(4)
@@ -181,7 +185,7 @@ AliMUONGeometrySVMap::AliMUONGeometrySVMap(Int_t initSize)
    fSVMap(),
    fSVPositions(initSize)
 { 
-// Standard constructor
+/// Standard constructor
   
   fSVPositions.SetOwner(true);
 }
@@ -192,19 +196,23 @@ AliMUONGeometrySVMap::AliMUONGeometrySVMap()
    fSVMap(),
    fSVPositions()
 {
-// Default constructor
+/// Default constructor
 }
 
 //______________________________________________________________________________
 AliMUONGeometrySVMap::AliMUONGeometrySVMap(const AliMUONGeometrySVMap& rhs)
   : TObject(rhs)
 {
+/// Protected copy constructor
+
   AliFatal("Copy constructor is not implemented.");
 }
 
 //______________________________________________________________________________
-AliMUONGeometrySVMap::~AliMUONGeometrySVMap() {
-//
+AliMUONGeometrySVMap::~AliMUONGeometrySVMap() 
+{
+/// Destructor
+
   fSVPositions.Delete();
 }
 
@@ -212,6 +220,8 @@ AliMUONGeometrySVMap::~AliMUONGeometrySVMap() {
 AliMUONGeometrySVMap& 
 AliMUONGeometrySVMap::operator = (const AliMUONGeometrySVMap& rhs) 
 {
+/// Protected assignement operator
+
   // check assignement to self
   if (this == &rhs) return *this;
 
@@ -228,8 +238,7 @@ AliMUONGeometrySVMap::operator = (const AliMUONGeometrySVMap& rhs)
 const TGeoCombiTrans* 
 AliMUONGeometrySVMap::FindByName(const TString& name) const
 {
-// Finds TGeoCombiTrans in the array of positions by name 
-// ---
+/// Find TGeoCombiTrans in the array of positions by name 
 
   for (Int_t i=0; i<fSVPositions.GetEntriesFast(); i++) { 
      TGeoCombiTrans* transform = (TGeoCombiTrans*) fSVPositions.At(i);
@@ -249,9 +258,8 @@ AliMUONGeometrySVMap::FindByName(const TString& name) const
 void AliMUONGeometrySVMap::Add(const TString& volumePath, 
                                Int_t detElemId)
 {
-// Add the specified sensitive volume path and the detElemId 
-// to the map
-// ---
+/// Add the specified sensitive volume path and the detElemId 
+/// to the map
  
   fSVMap.Add(volumePath, detElemId);
 }		          
@@ -260,9 +268,8 @@ void AliMUONGeometrySVMap::Add(const TString& volumePath,
 void AliMUONGeometrySVMap::AddPosition(const TString& volumePath, 
                               const TGeoTranslation& globalPosition)
 {
-// Add global position for the sensitive volume specified by volumePath  
-// in the array of transformations if this volumePath is not yet present. 
-// ---
+/// Add global position for the sensitive volume specified by volumePath  
+/// in the array of transformations if this volumePath is not yet present. 
  
   TGeoTranslation* newTransform = new TGeoTranslation(globalPosition);
   Int_t detElemId = fSVMap.Get(volumePath);
@@ -296,7 +303,7 @@ void AliMUONGeometrySVMap::Clear(Option_t* /*option*/)
 //______________________________________________________________________________
 void AliMUONGeometrySVMap::ClearPositions()
 {
-// Clears the array of transformations
+/// Clear the array of transformations
 
   fSVPositions.Delete();
 }  
@@ -304,8 +311,7 @@ void AliMUONGeometrySVMap::ClearPositions()
 //______________________________________________________________________________
 void AliMUONGeometrySVMap::SortPositions()
 {
-// Sort the array of positions by names.
-// ---
+/// Sort the array of positions by names.
 
   fSVPositions.Sort(fSVPositions.GetEntriesFast());
 }
@@ -313,8 +319,7 @@ void AliMUONGeometrySVMap::SortPositions()
 //______________________________________________________________________________
 void  AliMUONGeometrySVMap::Print(const char* option) const
 {    
-// Prints the map of sensitive volumes and detector elements 
-// ---
+/// Print the map of sensitive volumes and detector elements 
 
   fSVMap.Print(option);
 }  
@@ -322,8 +327,7 @@ void  AliMUONGeometrySVMap::Print(const char* option) const
 //______________________________________________________________________________
 void  AliMUONGeometrySVMap::PrintPositions() const
 {
-// Prints the sensitive volumes global positions
-// ---
+/// Print the sensitive volumes global positions
 
   for (Int_t i=0; i<fSVPositions.GetEntriesFast(); i++) {
     
@@ -350,9 +354,8 @@ void  AliMUONGeometrySVMap::PrintPositions() const
 //______________________________________________________________________________
 void  AliMUONGeometrySVMap::WriteMap(ofstream& out) const
 {    
-// Prints the map of sensitive volumes and detector elements 
-// into specified stream
-// ---
+/// Print the map of sensitive volumes and detector elements 
+/// into specified stream
 
   fSVMap.Print("SV", out);
 }  
@@ -360,8 +363,7 @@ void  AliMUONGeometrySVMap::WriteMap(ofstream& out) const
 //______________________________________________________________________________
 Int_t  AliMUONGeometrySVMap::GetDetElemId(const TString& volumePath) const
 {
-// Returns detection element Id for the sensitive volume specified by path
-// ---
+/// Return detection element Id for the sensitive volume specified by path
 
   return fSVMap.Get(volumePath);
 }  

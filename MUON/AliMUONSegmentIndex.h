@@ -5,6 +5,10 @@
 
 /* $Id$ */
 
+/// \ingroup base
+/// \class AliMUONSegmentIndex
+/// \brief Segment element indexing in a detection element 
+
 //===================================================================
 //  Segment element indexing in a detection element    
 //        Gines MARTINEZ, SUBATECH July 04                

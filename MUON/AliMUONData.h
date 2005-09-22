@@ -6,11 +6,15 @@
 
 /* $Id$ */
 // Revision of includes 07/05/2004
-
-// AliMUONData
-// Class containing MUON data: hits, digits, rawclusters, globaltrigger, localtrigger, etc ...
-// Gines Martinez, Subatech,  September 2003
 //
+/// \ingroup base
+/// \class AliMUONData
+/// \brief MUON data
+///
+/// Class containing MUON data: hits, digits, rawclusters, globaltrigger, 
+/// localtrigger, etc ...
+///
+/// Author: Gines Martinez, Subatech,  September 2003
 
 #include <TNamed.h>
 #include <TArrayI.h>

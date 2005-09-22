@@ -6,12 +6,15 @@
 /* $Id$ */
 // Revision of includes 07/05/2004
 
-// Authors: David Guez, Ivana Hrivnacova, Marion MacCormick; IPN Orsay
-//
-// Class AliMUONSt1SpecialMotif
-// ----------------------------
-// Encapsulate the distance between the center of a given daughter card
-// and the pad/kapton connector.
+/// \ingroup sim
+/// \class AliMUONSt1SpecialMotif
+/// \brief Helper class to encapsulate the distance between the daughter card
+/// and the pad/kapton connector
+///
+/// Encapsulate the distance between the center of a given daughter card
+/// and the pad/kapton connector.
+///
+/// Authors: David Guez, Ivana Hrivnacova, Marion MacCormick; IPN Orsay
 
 #include <TVector2.h>
 

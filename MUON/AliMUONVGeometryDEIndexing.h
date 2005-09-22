@@ -2,14 +2,16 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$
-//
-// Class AliMUONVGeometryDEIndexing
-// --------------------------------
-// The abstract singleton base class for definition of
-// the conversion between the detection element Ids and 
-// the indexing in a simple array.
-//
-// Author: Ivana Hrivnacova, IPN Orsay
+
+/// \ingroup geometry
+/// \class AliMUONVGeometryDEIndexing
+/// \brief Base class for definition of detection elements indexing 
+/// 
+/// The abstract singleton base class for definition of
+/// the conversion between the detection element Ids and 
+/// the indexing in a simple array.
+///
+/// Author: Ivana Hrivnacova, IPN Orsay
 
 #ifndef ALI_MUON_V_GEOMETRY_DE_INDEXING_H
 #define ALI_MUON_V_GEOMETRY_DE_INDEXING_H

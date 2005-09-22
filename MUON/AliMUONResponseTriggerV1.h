@@ -6,6 +6,10 @@
 /* $Id$ */
 // Revision of includes 07/05/2004
 
+/// \ingroup sim
+/// \class AliMUONResponseTriggerV1
+/// \brief Implementation of RPC response
+
 #include "AliMUONResponseTrigger.h"
 
 class AliMUONResponseTriggerV1 : public AliMUONResponseTrigger 

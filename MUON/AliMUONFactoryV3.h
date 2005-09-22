@@ -5,6 +5,10 @@
 
 /* $Id$ */
 
+/// \ingroup sim
+/// \class AliMUONFactoryV3
+/// \brief Factory for muon chambers, segmentations and response
+///
 ////////////////////////////////////////////////////////////
 //  Factory for muon chambers, segmentations and response 
 ////////////////////////////////////////////////////////////

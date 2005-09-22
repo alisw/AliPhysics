@@ -6,16 +6,18 @@
 /* $Id$ */
 // Revision of includes 07/05/2004
 
-// Authors: David Guez, Ivana Hrivnacova, Marion MacCormick; IPN Orsay
-//
-// Class AliMUONSt1ElectronicElement
-// ---------------------------------
-// Describes a set of pads either by defining
-// a range of indices, or
-// a range of (centimeters) positions or
-// a range of electronic channel numbers or
-// a range of MANU numbers or, finally,
-// a range of gassiplex/MANAS numbers, in a given range of MANU addresses
+/// \ingroup sim
+/// \class AliMUONSt1ElectronicElement
+/// \brief Describes a set of pads defined by different ways 
+///
+/// Describes a set of pads either by defining
+/// - a range of indices, or
+/// - a range of (centimeters) positions or
+/// - a range of electronic channel numbers or
+/// - a range of MANU numbers or, finally,
+/// - a range of gassiplex/MANAS numbers, in a given range of MANU addresses
+///
+/// Authors: David Guez, Ivana Hrivnacova, Marion MacCormick; IPN Orsay
 
 #include <TObject.h>
 

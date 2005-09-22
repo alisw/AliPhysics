@@ -2,21 +2,23 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$
-//
-// Class AliMUONGeometrySVMap
-// --------------------------
-// As the detection element frame is different from the
-// frame of the sensitive volume(s) defined in Geant,
-// the sensitive volumes have to be mapped to the detection 
-// elements. In the map, fSVMap, the sensitive voolumes are specified
-// by the full path in the volume hierarchy, defined as:
-//  /volname.copyNo/volName.copyNo1/...
-//
-// The array of global positions of sensitive volumes fSVPositions
-// is included to make easier the verification of the assignements 
-// in the fSVMap.
-//
-// Author: Ivana Hrivnacova, IPN Orsay
+
+/// \ingroup geometry
+/// \class AliMUONGeometrySVMap
+/// \brief Map between sensitive volumes and detection element Ids
+///
+/// As the detection element frame is different from the
+/// frame of the sensitive volume(s) defined in Geant,
+/// the sensitive volumes have to be mapped to the detection 
+/// elements. In the map, fSVMap, the sensitive voolumes are specified
+/// by the full path in the volume hierarchy, defined as:
+///  /volname.copyNo/volName.copyNo1/...
+///
+/// The array of global positions of sensitive volumes fSVPositions
+/// is included to make easier the verification of the assignements 
+/// in the fSVMap.
+///
+/// Author: Ivana Hrivnacova, IPN Orsay
 
 #ifndef ALI_MUON_GEOMETRY_SV_MAP_H
 #define ALI_MUON_GEOMETRY_SV_MAP_H

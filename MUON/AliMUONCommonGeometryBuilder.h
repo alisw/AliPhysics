@@ -2,12 +2,14 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$
-//
-// Class AliMUONCommonGeometryBuilder
-// ----------------------------------
-// Geometry construction common to all stations
-// (material definition).
-// separated from AliMUONGeometryBuilder
+
+/// \ingroup base
+/// \class AliMUONCommonGeometryBuilder
+/// \brief Class to build common materials
+///
+/// Geometry construction common to all stations
+/// (material definition).
+/// separated from AliMUONGeometryBuilder
 
 #ifndef ALI_MUON_COMMON_GEOMETRY_BUILDER_H
 #define ALI_MUON_COMMON_GEOMETRY_BUILDER_H
@@ -35,7 +37,7 @@ class AliMUONCommonGeometryBuilder : public AliMUONVGeometryBuilder
  
   private:
     // data members
-    AliMUON*  fMUON; // MUON detector
+    AliMUON*  fMUON; // Class to build common materials 
 
   ClassDef(AliMUONCommonGeometryBuilder,1)  // Common MUON geometry definitions
 };

@@ -6,9 +6,13 @@
 /*$Id$*/
 // Revision of includes 07/05/2004
 
-////////////////////////////////////
-// MUON event reconstructor in ALICE
-////////////////////////////////////
+/// \ingroup rec
+/// \class AliMUONClusterReconstructor
+/// \brief MUON cluster reconstructor in ALICE
+///
+/////////////////////////////////////
+/// MUON event reconstructor in ALICE
+/////////////////////////////////////
 
 #include <TObject.h>
 #include "AliMUONClusterFinderVS.h" //AZ

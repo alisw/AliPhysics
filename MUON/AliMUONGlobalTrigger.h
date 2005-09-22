@@ -7,6 +7,10 @@
 /* $Id$ */
 // Revision of includes 07/05/2004
 
+/// \ingroup base
+/// \class AliMUONGlobalTrigger
+/// \brief Reconstructed global trigger object
+
 #include <TObject.h>
 
 class AliMUONGlobalTrigger : public TObject {

@@ -3,11 +3,11 @@
 
 // $Id$
 //
-// Class AliMUONTest
-// -----------------
-// Class with functions for testing
-//
-// Author: Ivana Hrivnacova, IPN Orsay
+/// \ingroup sim
+/// \class AliMUONTest
+/// \brief Class with functions for testing new segmentation
+///
+/// Author: Ivana Hrivnacova, IPN Orsay
 
 #ifndef ALI_MUON_TEST_H
 #define ALI_MUON_TEST_H

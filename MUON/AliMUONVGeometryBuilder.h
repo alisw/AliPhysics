@@ -3,12 +3,12 @@
 
 // $Id$
 // Revision of includes 07/05/2004
-//
-// Class AliMUONVGeometryBuilder
-// -----------------------------
-// Abstract base class for geometry construction per chamber(s).
-//
-// Author: Ivana Hrivnacova, IPN Orsay
+
+/// \ingroup geometry
+/// \class AliMUONVGeometryBuilder
+/// \brief Abstract base class for geometry construction per module(s)
+///
+/// Author: Ivana Hrivnacova, IPN Orsay
 
 #ifndef ALI_MUON_V_GEOMETRY_BUILDER_H
 #define ALI_MUON_V_GEOMETRY_BUILDER_H

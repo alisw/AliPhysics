@@ -6,6 +6,10 @@
 /* $Id$ */
 // Revision of includes 07/05/2004
 
+/// \ingroup sim
+/// \class AliMUONResponseV0
+/// \brief Implementation of Mathieson response
+
 #include "AliMUONResponse.h"
 #include "AliMUONMathieson.h"
 

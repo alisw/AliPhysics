@@ -36,6 +36,8 @@ AliMUONGeometryConstituent::AliMUONGeometryConstituent(const TString& name,
     fNpar(npar),
     fParam(0)				   
 {				    
+/// Standard constructor for a constituent without translation & rotation
+
   // fTransformation = new TGeoCombiTrans(name);
            // would be nice to be so simple 
 
@@ -59,6 +61,8 @@ AliMUONGeometryConstituent::AliMUONGeometryConstituent(const TString& name,
     fParam(0),				   
     fTransformation(0) 
 {
+/// Standard constructor for a constituent with translation
+
   // Create the constituent transformation
   fTransformation = new TGeoCombiTrans(translation, TGeoRotation());
 
@@ -82,6 +86,8 @@ AliMUONGeometryConstituent::AliMUONGeometryConstituent(const TString& name,
     fParam(0),				   
     fTransformation(0) 
 {
+/// Standard constructor for a constituent with translation and rotation
+
   // Create the constituent transformation
   fTransformation = new TGeoCombiTrans(translation, rotation);
 
@@ -104,6 +110,9 @@ AliMUONGeometryConstituent::AliMUONGeometryConstituent(const TString& name,
     fParam(0),				   
     fTransformation(0) 
 {
+/// Standard constructor for a constituent with translation and rotation
+/// defined via TGeoCombiTrans
+
   // Create the constituent transformation
   fTransformation = new TGeoCombiTrans(transform);
 
@@ -122,7 +131,7 @@ AliMUONGeometryConstituent::AliMUONGeometryConstituent()
     fParam(0),				   
     fTransformation(0) 
 {
-// Default constructor
+/// Default constructor
 }
 
 
@@ -131,13 +140,16 @@ AliMUONGeometryConstituent::AliMUONGeometryConstituent(
                                         const AliMUONGeometryConstituent& rhs)
   : TNamed(rhs)
 {
+/// Protected copy constructor
+
   AliFatal("Copy constructor is not implemented.");
 }
 
 //______________________________________________________________________________
 AliMUONGeometryConstituent::~AliMUONGeometryConstituent() 
 {
-//
+/// Destructor
+
   delete fTransformation;
   delete [] fParam;
 }
@@ -146,6 +158,8 @@ AliMUONGeometryConstituent::~AliMUONGeometryConstituent()
 AliMUONGeometryConstituent& 
 AliMUONGeometryConstituent::operator = (const AliMUONGeometryConstituent& rhs) 
 {
+/// Protected assignment operator
+
   // check assignement to self
   if (this == &rhs) return *this;
 

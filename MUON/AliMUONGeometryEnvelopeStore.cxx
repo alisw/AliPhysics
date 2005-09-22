@@ -46,7 +46,7 @@ AliMUONGeometryEnvelopeStore::AliMUONGeometryEnvelopeStore(
    fDebug(false),
    fAlign(false)
 {
-// Standard constructor
+/// Standard constructor
 
   fEnvelopes = new TObjArray(100);
 }
@@ -60,7 +60,7 @@ AliMUONGeometryEnvelopeStore::AliMUONGeometryEnvelopeStore()
    fDebug(false),
    fAlign(false)
 {
-// Default constructor
+/// Default constructor
 }
 
 
@@ -74,7 +74,7 @@ AliMUONGeometryEnvelopeStore::AliMUONGeometryEnvelopeStore(const AliMUONGeometry
 //______________________________________________________________________________
 AliMUONGeometryEnvelopeStore::~AliMUONGeometryEnvelopeStore() 
 {
-//
+/// Destructor
 
   // Add deleting rotation matrices 
   
@@ -88,6 +88,8 @@ AliMUONGeometryEnvelopeStore::~AliMUONGeometryEnvelopeStore()
 AliMUONGeometryEnvelopeStore& 
 AliMUONGeometryEnvelopeStore::operator = (const AliMUONGeometryEnvelopeStore& rhs) 
 {
+/// Protected assignement operator
+
   // check assignement to self
   if (this == &rhs) return *this;
 
@@ -104,8 +106,7 @@ AliMUONGeometryEnvelopeStore::operator = (const AliMUONGeometryEnvelopeStore& rh
 AliMUONGeometryEnvelope* 
 AliMUONGeometryEnvelopeStore::FindEnvelope(const TString& name) const
 {
-// Finds the envelope specified by name.
-// ---
+/// Find the envelope specified by name.
 
   for (Int_t i=0; i<fEnvelopes->GetEntriesFast(); i++) {
     AliMUONGeometryEnvelope* envelope 
@@ -121,10 +122,9 @@ AliMUONGeometryEnvelopeStore::FindEnvelope(const TString& name) const
 Bool_t AliMUONGeometryEnvelopeStore::AlignEnvelope(
                                           AliMUONGeometryEnvelope* envelope) const
 {
-// Find transformation by the detection element	Id (if not 0)
-// (= unique ID of enevelope) and set it to the envelope.
-// Return true if transformation is applied, false otherwise.
-// ---
+/// Find transformation by the detection element	Id (if not 0)
+/// (= unique ID of enevelope) and set it to the envelope.
+/// Return true if transformation is applied, false otherwise.
 
   Int_t detElemId = envelope->GetUniqueID();
   if (detElemId == 0) return false;
@@ -150,9 +150,8 @@ void  AliMUONGeometryEnvelopeStore::AddEnvelope(const TString& name,
                                           Bool_t isVirtual,
                                           const char* only) 
 {
-// Adds the volume with the specified name and transformation
-// to the list of envelopes.
-// ---  					   
+/// Add the volume with the specified name and transformation
+/// to the list of envelopes.
 
   if (!isVirtual) AliDebug(1,Form("Adding non-virtual envelope %s id %d",name.Data(),id));
 //  else AliDebug(1,Form("Adding virtual envelope %s id %d",name.Data(),id));
@@ -172,9 +171,8 @@ void  AliMUONGeometryEnvelopeStore::AddEnvelope(const TString& name,
                                           const TGeoTranslation& translation,
 					  const char* only)
 {
-// Adds the volume with the specified name and transformation
-// to the list of envelopes.
-// ---  					   
+/// Add the volume with the specified name and transformation
+/// to the list of envelopes.
 
   if (fDebug) {
     cout << "... Adding ";
@@ -204,9 +202,8 @@ void  AliMUONGeometryEnvelopeStore::AddEnvelope(const TString& name,
 		                          const TGeoRotation& rotation,
 					  const char* only)
 {
-// Adds the volume with the specified name and transformation
-// to the list of envelopes.
-// ---  					   
+/// Add the volume with the specified name and transformation
+/// to the list of envelopes.
 
   if (fDebug) {
     cout << "... Adding ";
@@ -251,9 +248,8 @@ void  AliMUONGeometryEnvelopeStore::AddEnvelope(const TString& name,
                                           const TGeoCombiTrans& transform,
 					  const char* only)
 {
-// Adds the volume with the specified name and transformation
-// to the list of envelopes.
-// ---  					   
+/// Add the volume with the specified name and transformation
+/// to the list of envelopes.
 
   if (fDebug) {
     cout << "... Adding ";
@@ -284,9 +280,8 @@ void  AliMUONGeometryEnvelopeStore::AddEnvelope(const TString& name,
                                           Int_t copyNo,
                                           const char* only) 
 {
-// Adds the volume with the specified name and transformation
-// to the list of envelopes.
-// ---  					   
+/// Add the volume with the specified name and transformation
+/// to the list of envelopes.
 
   if (fDebug) {
     cout << "... Adding "
@@ -310,9 +305,8 @@ void  AliMUONGeometryEnvelopeStore::AddEnvelope(const TString& name,
                                           const TGeoTranslation& translation,
 					  const char* only)
 {
-// Adds the volume with the specified name and transformation
-// to the list of envelopes.
-// ---  					   
+/// Add the volume with the specified name and transformation
+/// to the list of envelopes.
 
   if (fDebug) {
     cout << "... Adding "
@@ -342,9 +336,8 @@ void  AliMUONGeometryEnvelopeStore::AddEnvelope(const TString& name,
 		                          const TGeoRotation& rotation,
 					  const char* only)
 {
-// Adds the volume with the specified name and transformation
-// to the list of envelopes.
-// ---  					   
+/// Add the volume with the specified name and transformation
+/// to the list of envelopes.
 
   if (fDebug) {
     cout << "... Adding "
@@ -378,9 +371,8 @@ void  AliMUONGeometryEnvelopeStore::AddEnvelope(const TString& name,
                                           const TGeoCombiTrans& transform,
 					  const char* only)
 {
-// Adds the volume with the specified name and transformation
-// to the list of envelopes.
-// ---  					   
+/// Add the volume with the specified name and transformation
+/// to the list of envelopes.
 
   if (fDebug) {
     cout << "... Adding "
@@ -409,9 +401,8 @@ void  AliMUONGeometryEnvelopeStore::AddEnvelope(const TString& name,
 void  AliMUONGeometryEnvelopeStore::AddEnvelopeConstituent(const TString& name, 
                                          const TString& envName, Int_t copyNo) 
 {
-// Adds the volume with the specified name and transformation
-// to the list of envelopes.
-// ---  					   
+/// Add the volume with the specified name and transformation
+/// to the list of envelopes.
 
   if (fDebug) {
     cout << "... Adding constituent " << name
@@ -434,9 +425,8 @@ void  AliMUONGeometryEnvelopeStore::AddEnvelopeConstituent(const TString& name,
                                           const TString& envName, Int_t copyNo,
                                           const TGeoTranslation& translation)
 {
-// Adds the volume with the specified name and transformation
-// to the list of envelopes.
-// ---  					   
+/// Add the volume with the specified name and transformation
+/// to the list of envelopes.
 
   if (fDebug) {
     cout << "... Adding constituent " << name
@@ -461,9 +451,8 @@ void  AliMUONGeometryEnvelopeStore::AddEnvelopeConstituent(const TString& name,
                                           const TGeoTranslation& translation,
 		                          const TGeoRotation& rotation)
 {
-// Adds the volume with the specified name and transformation
-// to the list of envelopes.
-// ---  					   
+/// Add the volume with the specified name and transformation
+/// to the list of envelopes.
 
   if (fDebug) {
     cout << "... Adding constituent " << name
@@ -487,9 +476,8 @@ void  AliMUONGeometryEnvelopeStore::AddEnvelopeConstituent(const TString& name,
                                           const TString& envName, Int_t copyNo, 
                                           const TGeoCombiTrans& transform)
 {
-// Adds the volume with the specified name and transformation
-// to the list of envelopes.
-// ---  					   
+/// Add the volume with the specified name and transformation
+/// to the list of envelopes.
 
   if (fDebug) {
     cout << "... Adding constituent " << name
@@ -513,9 +501,8 @@ void  AliMUONGeometryEnvelopeStore::AddEnvelopeConstituentParam(const TString& n
                                          const TString& envName, Int_t copyNo,
 					 Int_t npar, Double_t* param) 
 {
-// Adds the volume with the specified name and transformation
-// to the list of envelopes.
-// ---  					   
+/// Add the volume with the specified name and transformation
+/// to the list of envelopes.
 
   if (fDebug) {
     cout << "... Adding parameterised constituent " << name
@@ -539,9 +526,8 @@ void  AliMUONGeometryEnvelopeStore::AddEnvelopeConstituentParam(const TString& n
                                           const TGeoTranslation& translation,
 					  Int_t npar, Double_t* param)
 {
-// Adds the volume with the specified name and transformation
-// to the list of envelopes.
-// ---  					   
+/// Add the volume with the specified name and transformation
+/// to the list of envelopes.
 
   if (fDebug) {
     cout << "... Adding parameterised constituent " << name
@@ -567,9 +553,8 @@ void  AliMUONGeometryEnvelopeStore::AddEnvelopeConstituentParam(const TString& n
 		                          const TGeoRotation& rotation,
 					  Int_t npar, Double_t* param)
 {
-// Adds the volume with the specified name and transformation
-// to the list of envelopes.
-// ---  					   
+/// Add the volume with the specified name and transformation
+/// to the list of envelopes.
 
   if (fDebug) {
     cout << "... Adding parameterised constituent " << name
@@ -594,9 +579,8 @@ void  AliMUONGeometryEnvelopeStore::AddEnvelopeConstituentParam(const TString& n
                                           const TGeoCombiTrans& transform,
 					  Int_t npar, Double_t* param)
 {
-// Adds the volume with the specified name and transformation
-// to the list of envelopes.
-// ---  					   
+/// Add the volume with the specified name and transformation
+/// to the list of envelopes.
 
   if (fDebug) {
     cout << "... Adding parameterised constituent " << name
@@ -618,8 +602,7 @@ void  AliMUONGeometryEnvelopeStore::AddEnvelopeConstituentParam(const TString& n
 //______________________________________________________________________________
 Int_t AliMUONGeometryEnvelopeStore::GetNofDetElements() const
 {
-// Returns the number od envelopes with detElemId>0.
-// ---  					   
+/// Return the number od envelopes with detElemId>0.
 
   Int_t nofDetElems = 0;
   

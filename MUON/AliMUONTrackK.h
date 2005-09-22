@@ -6,6 +6,10 @@
 /*$Id$*/
 // Revision of includes 07/05/2004
 
+/// \ingroup rec
+/// \class AliMUONTrack
+/// \brief Kalman track in MUON arm of ALICE
+
 #include <TObject.h>
 #include "AliMUONTrack.h" //AZ
 

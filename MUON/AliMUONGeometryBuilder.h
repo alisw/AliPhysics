@@ -2,12 +2,12 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$
-//
-// Class AliMUONGeometryBuilder
-// ----------------------------
-// Manager class for geometry construction via geometry builders.
-//
-// Author: Ivana Hrivnacova, IPN Orsay
+
+/// \ingroup geometry
+/// \class AliMUONGeometryBuilder
+/// \brief Manager class for geometry construction via geometry builders.
+///
+/// Author: Ivana Hrivnacova, IPN Orsay
 
 #ifndef ALI_MUON_GEOMETRY_BUILDER_H
 #define ALI_MUON_GEOMETRY_BUILDER_H

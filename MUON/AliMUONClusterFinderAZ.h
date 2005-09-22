@@ -6,6 +6,10 @@
 /* $Id$ */
 // Revision of includes 07/05/2004
 
+/// \ingroup rec
+/// \class AliMUONClusterFinderAZ
+/// \brief Cluster finder in MUON arm of ALICE
+
 #include "AliMUONClusterFinderVS.h"
 
 class TH2F;

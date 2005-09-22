@@ -7,9 +7,13 @@
 #ifndef ALIMUONTRIGGERDECISION_H
 #define ALIMUONTRIGGERDECISION_H
 
-////////////////////////////////////////////////
-//  MUON Trigger Decision Class               //
-////////////////////////////////////////////////
+/// \ingroup sim
+/// \class AliMUONTriggerDecision
+/// \brief MUON trigger decision class 
+///
+/////////////////////////////////////////////////
+///  MUON Trigger Decision Class               //
+/////////////////////////////////////////////////
 
 #include <TObject.h>
 #include "AliMUONLocalTrigger.h"

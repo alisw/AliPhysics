@@ -2,12 +2,14 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$
-//
-// Class AliMUONGeometryDetElement
-// --------------------------------
-// The class defines the detection element.
-//
-// Author: Ivana Hrivnacova, IPN Orsay
+
+/// \ingroup geometry
+/// \class AliMUONGeometryDetElement
+/// \brief Detection element
+///
+/// The class defines the detection element.
+///
+/// Author: Ivana Hrivnacova, IPN Orsay
 
 #ifndef ALI_MUON_GEOMETRY_DET_ELEMENT_H
 #define ALI_MUON_GEOMETRY_DET_ELEMENT_H

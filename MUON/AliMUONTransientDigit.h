@@ -7,6 +7,10 @@
 /* $Id$ */
 // Revision of includes 07/05/2004
 
+/// \ingroup base
+/// \class AliMUONTransientDigit
+/// \brief MUON transient digit
+
 #include "AliMUONDigit.h"
 
 class TObjArray;

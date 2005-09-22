@@ -6,6 +6,10 @@
 
 /* $Id$ */
 // Revision of includes 07/05/2004
+//
+/// \ingroup base
+/// \class AliMUONTriggerConstants
+/// \brief MUON Trigger constants
 
 #include <TNamed.h>
 

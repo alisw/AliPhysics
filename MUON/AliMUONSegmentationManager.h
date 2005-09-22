@@ -6,6 +6,10 @@
 
 /* $Id$ */
 
+/// \ingroup base
+/// \class AliMUONSegmentationManager
+/// \brief Segmentation manager
+
 #ifndef ROOT_TObject
 #include "TObject.h"
 #endif

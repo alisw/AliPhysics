@@ -3,9 +3,14 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-/* Raw data class for trigger and tracker chambers */
-#include <map>
-#include <vector>
+/*$Id$*/
+
+/// \ingroup rec
+/// \class AliMUONRawData
+/// \brief Raw data class for trigger and tracker chambers
+///
+/// Raw data class for trigger and tracker chambers
+
 #include <TObject.h>
 #include <TExMap.h>
 #include "AliMUONSubEventTracker.h"

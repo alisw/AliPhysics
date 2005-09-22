@@ -6,18 +6,20 @@
 /* $Id$ */
 // Revision of includes 07/05/2004
 
-// Authors: David Guez, Ivana Hrivnacova, Marion MacCormick; IPN Orsay
-//
-// Class AliMUONSt1Decoder
-// -----------------------
-// A generic set of functions (defined in the <decoder> namespace).
-// Used to decode formatted strings, eg. a list of integer ranges,
-// or a list of sub-strings separated by delimiters such as '(','{','[', ... .
-// Example: 
-//   (string 1) (string 2) [string3] {string4} [ (string5.1) (string5.2) ] 
-//   note :                                      |_____________________|
-//                                                         |
-//                                             this is just ONE substring.
+/// \ingroup sim
+/// \class AliMUONSt1Decoder
+/// \brief Set of functions to decode formatted strings
+///
+/// A generic set of functions (defined in the <decoder> namespace).
+/// Used to decode formatted strings, eg. a list of integer ranges,
+/// or a list of sub-strings separated by delimiters such as '(','{','[', ... .
+/// Example:                                                                \n
+///   (string 1) (string 2) [string3] {string4} [ (string5.1) (string5.2) ] \n
+///   note :                                      |_____________________|   \n
+///                                                         |               \n
+///                                             this is just ONE substring. \n
+///
+/// Authors: David Guez, Ivana Hrivnacova, Marion MacCormick; IPN Orsay
 
 #include <Rtypes.h>
 #include <string>

@@ -6,14 +6,16 @@
 /* $Id$ */
 // Revision of includes 07/05/2004
 
-// Authors: David Guez, Ivana Hrivnacova, Marion MacCormick; IPN Orsay
-//
-// Class AliMUONSt1ResponseRule
-// -----------------------------
-// Describes a response rule.
-// A "rule" is defined as being a set of electronic filters to be applied 
-// (ie. a set of AliMUONSt1ResponseParameter) and a set of cathode pads to 
-// which these filters should be applied (set of AliMUONSt1ElectronicElement)
+/// \ingroup sim
+/// \class AliMUONSt1ResponseRule
+/// \brief Describes a response rule
+///
+/// Describes a response rule.
+/// A "rule" is defined as being a set of electronic filters to be applied 
+/// (ie. a set of AliMUONSt1ResponseParameter) and a set of cathode pads to 
+/// which these filters should be applied (set of AliMUONSt1ElectronicElement)
+///
+/// Authors: David Guez, Ivana Hrivnacova, Marion MacCormick; IPN Orsay
 
 #include <TObject.h>
 #include <TList.h>

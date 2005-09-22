@@ -5,6 +5,10 @@
 
 /* $Id$ */
 // Includes revised 07/05/2004
+//
+/// \ingroup base
+/// \class AliMUONDataInterface
+/// \brief An easy to use interface to data in the MUON module
 
 // Author: Artur Szostak
 //  email: artur@alice.phy.uct.ac.za

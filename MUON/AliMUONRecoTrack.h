@@ -6,8 +6,11 @@
 
 /*$Id$*/
 
-
-// Authors : M.Gheata, A.Gheata 09/10/00
+/// \ingroup rec
+/// \class AliMUONRecoTrack
+/// \brief A reconstructed muon track
+///
+/// Authors : M.Gheata, A.Gheata 09/10/00
 
 #include <TObject.h>
 #include <TMath.h>

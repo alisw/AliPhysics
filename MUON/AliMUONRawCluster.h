@@ -7,9 +7,13 @@
 /* $Id$ */
 // Revision of includes 07/05/2004
 
-// Class for the MUON RecPoint
-// It contains the propeorties of the physics cluters found in the tracking chambers
-// RawCluster contains also the information from the both cathode of the chambers.
+/// \ingroup base
+/// \class AliMUONRawCluster
+/// \brief MUON raw cluster
+///
+/// Class for the MUON RecPoint
+/// It contains the propeorties of the physics cluters found in the tracking chambers
+/// RawCluster contains also the information from the both cathode of the chambers.
 
 
 #include <TObject.h>

@@ -6,10 +6,14 @@
 /* $Id$ */
 // Revision of includes 07/05/2004
 
+/// \ingroup sim
+/// \class AliMUONFactoryV2
+/// \brief Factory for muon chambers, segmentations and response
+///
 ////////////////////////////////////////////////////////////
-//  Factory for muon chambers, segmentations and response 
-//  The number 2 is refering to new segmentation
-//
+///  Factory for muon chambers, segmentations and response 
+///  The number 2 is refering to new segmentation
+///
 ////////////////////////////////////////////////////////////
 
 #include <TObject.h>

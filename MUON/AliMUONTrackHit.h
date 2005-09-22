@@ -6,9 +6,13 @@
 /*$Id$*/
 // Revision of includes 07/05/2004
 
-///////////////////////////////////////////////////////
-// Reconstructed track hit in ALICE dimuon spectrometer
-///////////////////////////////////////////////////////
+/// \ingroup rec
+/// \class AliMUONTrackHit
+/// \brief Reconstructed track hit in ALICE dimuon spectrometer
+///
+////////////////////////////////////////////////////////
+/// Reconstructed track hit in ALICE dimuon spectrometer
+////////////////////////////////////////////////////////
 
 #include <TObject.h>
 #include "AliMUONTrackParam.h" // object belongs to the class

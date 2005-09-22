@@ -5,6 +5,10 @@
 
 /* $Id$*/
 // Revision of includes 07/05/2004
+//
+/// \ingroup base
+/// \class AliMUONConstants
+/// \brief MUON global constants
 
 #include <TObject.h>
 

@@ -6,6 +6,10 @@
 /* $Id$ */
 // Revision of includes 07/05/2004
 
+/// \ingroup base
+/// \class AliMUONTriggerLut
+/// \brief MUON trigger look up table class 
+
 #include <TNamed.h>
 
 class TH3S;

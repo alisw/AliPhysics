@@ -47,7 +47,7 @@ AliMUONGeometryBuilder::AliMUONGeometryBuilder(AliModule* module)
     fGlobalTransformation(), 
     fGeometryBuilders(0)
 {
-// Standard constructor
+/// Standard constructor
 
   fGeometryBuilders = new TObjArray(100);
 }
@@ -60,14 +60,14 @@ AliMUONGeometryBuilder::AliMUONGeometryBuilder()
     fGlobalTransformation(),
     fGeometryBuilders(0)
 {
-// Default constructor
+/// Default constructor
 } 
 
 //______________________________________________________________________________
 AliMUONGeometryBuilder::AliMUONGeometryBuilder(const AliMUONGeometryBuilder& right) 
   : TObject(right) 
 {  
-  // copy constructor (not implemented)
+/// Copy constructor (not implemented)
 
   AliFatal("Copy constructor not provided.");
 }
@@ -75,7 +75,7 @@ AliMUONGeometryBuilder::AliMUONGeometryBuilder(const AliMUONGeometryBuilder& rig
 //______________________________________________________________________________
 AliMUONGeometryBuilder::~AliMUONGeometryBuilder()
 {
-// Destructor
+/// Destructor
   if (fGeometryBuilders){
     fGeometryBuilders->Delete();
     delete fGeometryBuilders;
@@ -86,7 +86,7 @@ AliMUONGeometryBuilder::~AliMUONGeometryBuilder()
 AliMUONGeometryBuilder& 
 AliMUONGeometryBuilder::operator=(const AliMUONGeometryBuilder& right)
 {
-  // assignement operator (not implemented)
+/// Assignement operator (not implemented)
 
   // check assignement to self
   if (this == &right) return *this;
@@ -105,8 +105,7 @@ void AliMUONGeometryBuilder::PlaceVolume(const TString& name, const TString& mNa
                             Int_t copyNo, const TGeoHMatrix& matrix, 
 			    Int_t npar, Double_t* param, const char* only) const
 {
-// Place the volume specified by name with the given transformation matrix
-// ---
+/// Place the volume specified by name with the given transformation matrix
 
   // Do not apply global transformation 
   // if mother volume was already placed in 
@@ -170,9 +169,8 @@ void AliMUONGeometryBuilder::PlaceVolume(const TString& name, const TString& mNa
 void AliMUONGeometryBuilder::FillGlobalTransformations(
                                  AliMUONVGeometryBuilder* builder)
 {
-// Compute and set global transformations to detection elements
-// for each chamber geometry
-// ---
+/// Compute and set global transformations to detection elements
+/// for each chamber geometry
 
   for (Int_t j=0; j<builder->NofGeometries(); j++) {
 
@@ -215,8 +213,7 @@ void AliMUONGeometryBuilder::FillGlobalTransformations(
 //_____________________________________________________________________________
 void AliMUONGeometryBuilder::AddBuilder(AliMUONVGeometryBuilder* geomBuilder)
 {
-// Adds the geometry builder to the list
-// ---
+/// Adds the geometry builder to the list
 
   fGeometryBuilders->Add(geomBuilder);
 }
@@ -224,9 +221,7 @@ void AliMUONGeometryBuilder::AddBuilder(AliMUONVGeometryBuilder* geomBuilder)
 //______________________________________________________________________________
 void AliMUONGeometryBuilder::CreateGeometry()
 {
-//
-// Construct geometry using geometry builders.
-//
+/// Construct geometry using geometry builders.
 
   for (Int_t i=0; i<fGeometryBuilders->GetEntriesFast(); i++) {
 
@@ -350,9 +345,7 @@ void AliMUONGeometryBuilder::CreateGeometry()
 //_____________________________________________________________________________
 void AliMUONGeometryBuilder::CreateMaterials()
 {
-//
-// Construct materials specific to modules via builders
-//
+/// Construct materials specific to modules via builders
   
   for (Int_t i=0; i<fGeometryBuilders->GetEntriesFast(); i++) {
 
@@ -368,8 +361,7 @@ void AliMUONGeometryBuilder::CreateMaterials()
 //______________________________________________________________________________
 void AliMUONGeometryBuilder::InitGeometry()
 {
- // Initialize geometry
- // ---
+/// Initialize geometry
 
   // Set the chamber (sensitive region) GEANT identifier
   //
@@ -401,8 +393,7 @@ void AliMUONGeometryBuilder::InitGeometry()
 //______________________________________________________________________________
 void AliMUONGeometryBuilder::WriteTransformations()
 {
- // Writes transformations into files per builder
- // ---
+/// Writes transformations into files per builder
 
   for (Int_t i=0; i<fGeometryBuilders->GetEntriesFast(); i++) {
 
@@ -418,8 +409,7 @@ void AliMUONGeometryBuilder::WriteTransformations()
 //______________________________________________________________________________
 void AliMUONGeometryBuilder::WriteSVMaps(Bool_t rebuild)
 {
- // Writes sensitive volume maps into files per builder
- // ---
+/// Writes sensitive volume maps into files per builder
 
   for (Int_t i=0; i<fGeometryBuilders->GetEntriesFast(); i++) {
 
@@ -436,8 +426,7 @@ void AliMUONGeometryBuilder::WriteSVMaps(Bool_t rebuild)
 void  AliMUONGeometryBuilder::SetGlobalTransformation(
                                        const TGeoCombiTrans& transform)
 {
-// Sets the global transformation
-// ---
+/// Sets the global transformation
 
   fGlobalTransformation = transform;
 }				       
@@ -445,8 +434,7 @@ void  AliMUONGeometryBuilder::SetGlobalTransformation(
 //_____________________________________________________________________________
 void AliMUONGeometryBuilder::SetAlign(Bool_t align)
 { 
-// Sets the option for alignement
-// ---
+/// Sets the option for alignement
 
   fAlign = align; 
 

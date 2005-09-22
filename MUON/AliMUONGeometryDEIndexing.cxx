@@ -44,7 +44,7 @@ AliMUONGeometryDEIndexing::AliMUONGeometryDEIndexing(
    fModuleId(moduleId),
    fNofDetElements(nofDetElements)
 { 
-// Standard constructor
+/// Standard constructor
 }
 
 //______________________________________________________________________________
@@ -53,12 +53,13 @@ AliMUONGeometryDEIndexing::AliMUONGeometryDEIndexing()
    fModuleId(0),
    fNofDetElements(0)
 { 
-// Ddefault constructor
+/// Default constructor
 }
 
 //______________________________________________________________________________
-AliMUONGeometryDEIndexing::~AliMUONGeometryDEIndexing() {
-//
+AliMUONGeometryDEIndexing::~AliMUONGeometryDEIndexing() 
+{
+/// Destructor
 }
 
 //
@@ -68,8 +69,7 @@ AliMUONGeometryDEIndexing::~AliMUONGeometryDEIndexing() {
 //______________________________________________________________________________
 Int_t AliMUONGeometryDEIndexing::GetFirstDetElemId() const
 {
-// Get first detection element Id for chamber specified by moduleId
-// ---
+/// Get first detection element Id for chamber specified by moduleId
 
   return (fModuleId+1)*100;
 }  
@@ -81,8 +81,7 @@ Int_t AliMUONGeometryDEIndexing::GetFirstDetElemId() const
 //______________________________________________________________________________
 Int_t AliMUONGeometryDEIndexing::GetDetElementIndex(Int_t detElemId) const
 {
-// Returns the index of detector element specified by detElemId
-// ---
+/// Returns the index of detector element specified by detElemId
 
   if ( fNofDetElements == 0 ) {
     AliFatal("The number of detection elements has not been set.");
@@ -99,8 +98,7 @@ Int_t AliMUONGeometryDEIndexing::GetDetElementIndex(Int_t detElemId) const
 //______________________________________________________________________________
 Int_t AliMUONGeometryDEIndexing::GetDetElementId(Int_t detElemIndex) const
 {
-// Returns the ID of detector element specified by index
-// ---
+/// Returns the ID of detector element specified by index
 
   if ( fNofDetElements == 0 ) {
     AliFatal("The number of detection elements has not been set.");

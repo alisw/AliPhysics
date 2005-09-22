@@ -6,6 +6,10 @@
 /* $Id$ */
 // Revision of includes 07/05/2004
 
+/// \ingroup base
+/// \class AliMUONv1
+/// \brief Manager and hits classes for set:MUON version 1
+
 /////////////////////////////////////////////////////////
 //  Manager and hits classes for set:MUON version 1    //
 /////////////////////////////////////////////////////////

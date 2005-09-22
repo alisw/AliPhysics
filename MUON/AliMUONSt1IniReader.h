@@ -6,18 +6,20 @@
 /* $Id$ */
 // Revision of includes 07/05/2004
 
-// Authors: David Guez, Ivana Hrivnacova, Marion MacCormick; IPN Orsay
-//
-// Class AliMUONIniReader
-// ----------------------
-// General class to read data in ASCII file format,
-// similar to the Windows ".ini" files (a set of sections tagged by a 
-//                      [ sectionName ]
-//  and values defined in the way:
-//                    parameterName = value
-//
-// comment lines can be introduced if the first non-blank character
-// is either ';' or '#'
+/// \ingroup sim
+/// \class AliMUONSt1IniReader
+/// \brief General class to read data in a special ASCII file format
+///
+/// General class to read data in ASCII file format,
+/// similar to the Windows ".ini" files (a set of sections tagged by a   \n
+///                      [ sectionName ]                                 \n
+///  and values defined in the way:                                      \n
+///                    parameterName = value                             \n
+///
+/// comment lines can be introduced if the first non-blank character
+/// is either ';' or '#'
+///
+/// Authors: David Guez, Ivana Hrivnacova, Marion MacCormick; IPN Orsay
 
 
 #include <string>

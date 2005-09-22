@@ -3,14 +3,15 @@
 
 /* $Id$ */
 
-//
-// Class AliMUONGeometrySegmentation
-// ----------------------------------
-// New class for the geometry segmentation 
-// composed of the segmentations of detection elements.
-// Applies transformations defined in geometry.
-//
-// Author:Ivana Hrivnacova, IPN Orsay
+/// \ingroup geometry
+/// \class AliMUONGeometrySegmentation
+/// \brief Segmentation for a geometry module 
+/// 
+/// New class for the geometry segmentation 
+/// composed of the segmentations of detection elements.
+/// Applies transformations defined in geometry.
+///
+/// Author:Ivana Hrivnacova, IPN Orsay
 
 #ifndef ALI_MUON_GEOMETRY_SEGMENTATION_H
 #define ALI_MUON_GEOMETRY_SEGMENTATION_H

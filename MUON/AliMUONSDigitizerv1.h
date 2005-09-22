@@ -6,9 +6,11 @@
 /* $Id$ */
 // Revision of includes 07/05/2004
 
-// The AliMUONSDigitizer produces
-// SDigits from Hits 
-// J.P Cussonneau Subatech Feb 2004
+/// \ingroup sim
+/// \class AliMUONSDigitizerv1
+/// \brief Class produces SDigits from Hits
+///
+/// Author: J.P Cussonneau Subatech Feb 2004
 
 #include "AliMUONDigitizer.h"
 
@@ -47,7 +49,7 @@ class AliMUONSDigitizerv1 : public AliMUONDigitizer
                              Int_t /*digitindex*/
 		) {return;}
 
-	ClassDef(AliMUONSDigitizerv1, 0)
+	ClassDef(AliMUONSDigitizerv1, 0) //Class produces SDigits from Hits
 };    
 #endif
 

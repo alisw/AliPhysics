@@ -4,12 +4,12 @@
 // $Id$
 // Revision of includes 07/05/2004
 //
-// Class AliMUONSt2GeometryBuilderV2
-// -----------------------------
-// MUON Station2 geometry construction class.
-//
-// Author: SANJOY PAL ,Prof. SUKALYAN CHATTOPADHAYAY  [SINP, KOLKATA]
-//         &  Dr.SHAKEEL AHMAD (AMU), INDIA
+/// \ingroup base
+/// \class AliMUONSt2GeometryBuilderV2
+/// \brief MUON Station2 detailed geometry construction class
+///
+/// Authors: SANJOY PAL ,Prof. SUKALYAN CHATTOPADHAYAY  [SINP, KOLKATA]
+///         &  Dr.SHAKEEL AHMAD (AMU), INDIA
 
 #ifndef ALI_MUON_ST2_GEOMETRY_BUILDER_V2_H
 #define ALI_MUON_ST2_GEOMETRY_BUILDER_V2_H
@@ -39,7 +39,7 @@ class AliMUONSt2GeometryBuilderV2 : public AliMUONVGeometryBuilder
   private:
      AliMUON*  fMUON; // the MUON detector class 
         
-  ClassDef(AliMUONSt2GeometryBuilderV2,1) // MUON chamber geometry base class
+  ClassDef(AliMUONSt2GeometryBuilderV2,1) //MUON Station2 detailed geometry construction class
 };
 
 #endif //ALI_MUON_ST2_GEOMETRY_BUILDER_V2_H

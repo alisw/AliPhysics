@@ -37,7 +37,7 @@ AliMUONCommonGeometryBuilder::AliMUONCommonGeometryBuilder(AliMUON* muon)
   : AliMUONVGeometryBuilder("", 0),
     fMUON(muon)
 {
-// Standars constructor
+/// Standars constructor
 }
 
 //______________________________________________________________________________//___________________________________________
@@ -45,7 +45,7 @@ AliMUONCommonGeometryBuilder::AliMUONCommonGeometryBuilder()
   : AliMUONVGeometryBuilder(),
     fMUON(0)
 {
-// Default constructor
+/// Default constructor
 } 
 
 //______________________________________________________________________________
@@ -53,7 +53,7 @@ AliMUONCommonGeometryBuilder::AliMUONCommonGeometryBuilder(
                                  const AliMUONCommonGeometryBuilder& right) 
   : AliMUONVGeometryBuilder(right) 
 {  
-  // copy constructor (not implemented)
+  /// copy constructor (not implemented)
 
   AliFatal("Copy constructor not provided.");
 }
@@ -61,14 +61,14 @@ AliMUONCommonGeometryBuilder::AliMUONCommonGeometryBuilder(
 //______________________________________________________________________________
 AliMUONCommonGeometryBuilder::~AliMUONCommonGeometryBuilder()
 {
-// Destructor
+/// Destructor
 }
 
 //______________________________________________________________________________
 AliMUONCommonGeometryBuilder& 
 AliMUONCommonGeometryBuilder::operator=(const AliMUONCommonGeometryBuilder& right)
 {
-  // assignement operator (not implemented)
+  /// assignement operator (not implemented)
 
   // check assignement to self
   if (this == &right) return *this;
@@ -85,8 +85,7 @@ AliMUONCommonGeometryBuilder::operator=(const AliMUONCommonGeometryBuilder& righ
 //_____________________________________________________________________________
 void AliMUONCommonGeometryBuilder::CreateMaterials()
 {
-  // Definition of common materials
-  // --
+/// Definition of common materials
 
   //
   //     Ar-CO2 gas (80%+20%)

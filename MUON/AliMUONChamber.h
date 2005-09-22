@@ -5,6 +5,10 @@
 
 /* $Id$ */
 // Revision of includes 07/05/2004
+//
+/// \ingroup base
+/// \class AliMUONChamber
+/// \brief MUON tracking chamber class
 
 #include <TObject.h>
 #include <TObjArray.h>

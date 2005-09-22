@@ -56,7 +56,7 @@ AliMUONGeometryModule::AliMUONGeometryModule(Int_t moduleId)
    fDetElements(0),
    fSVMap(0)
 {
-// Standard constructor
+/// Standard constructor
 
   // Chamber transformation
   fTransformation = new TGeoCombiTrans("");
@@ -93,7 +93,7 @@ AliMUONGeometryModule::AliMUONGeometryModule()
    fDetElements(0),
    fSVMap(0)
 {
-// Default constructor
+/// Default constructor
 }
 
 
@@ -101,12 +101,15 @@ AliMUONGeometryModule::AliMUONGeometryModule()
 AliMUONGeometryModule::AliMUONGeometryModule(const AliMUONGeometryModule& rhs)
   : TObject(rhs)
 {
+/// Protected copy constructor
+
   AliFatal("Copy constructor is not implemented.");
 }
 
 //______________________________________________________________________________
-AliMUONGeometryModule::~AliMUONGeometryModule() {
-//
+AliMUONGeometryModule::~AliMUONGeometryModule() 
+{
+/// Destructor
 
   delete fTransformation;
   delete fSVVolumeIds;
@@ -120,6 +123,8 @@ AliMUONGeometryModule::~AliMUONGeometryModule() {
 AliMUONGeometryModule& 
 AliMUONGeometryModule::operator = (const AliMUONGeometryModule& rhs) 
 {
+/// Protected assignement operator
+
   // check assignement to self
   if (this == &rhs) return *this;
 
@@ -135,9 +140,9 @@ AliMUONGeometryModule::operator = (const AliMUONGeometryModule& rhs)
 //______________________________________________________________________________
 Int_t AliMUONGeometryModule::GetSVIndex(Int_t svVolId) const
 {
-// Returns the index of the volume specified by volId
-// if it is present in the list of sensitive volumes 
-// (or -1 if not present).
+/// Return the index of the volume specified by volId
+/// if it is present in the list of sensitive volumes 
+/// (or -1 if not present).
  
   for (Int_t i=0; i<fNofSVs; i++) {
       if (fSVVolumeIds->At(i) == svVolId) return i;
@@ -154,10 +159,9 @@ void  AliMUONGeometryModule::Global2Local(Int_t detElemId,
                                   Float_t xg, Float_t yg, Float_t zg, 
                                   Float_t& xl, Float_t& yl, Float_t& zl) const
 {
-// Transforms point from the global reference frame (ALIC)
-// to the local reference frame of the detection element specified
-// by detElemId.
-// ---
+/// Transform point from the global reference frame (ALIC)
+/// to the local reference frame of the detection element specified
+/// by detElemId.
 
   // Get detection element
   AliMUONGeometryDetElement* detElement = GetDetElement(detElemId);
@@ -172,10 +176,9 @@ void  AliMUONGeometryModule::Global2Local(Int_t detElemId,
                                   Double_t xg, Double_t yg, Double_t zg, 
                                   Double_t& xl, Double_t& yl, Double_t& zl) const
 {
-// Transforms point from the global reference frame (ALIC)
-// to the local reference frame of the detection element specified
-// by detElemId.
-// ---
+/// Transform point from the global reference frame (ALIC)
+/// to the local reference frame of the detection element specified
+/// by detElemId.
 
    // Get detection element
    AliMUONGeometryDetElement* detElement = GetDetElement(detElemId);
@@ -190,9 +193,8 @@ void  AliMUONGeometryModule::Local2Global(Int_t detElemId,
                  Float_t xl, Float_t yl, Float_t zl, 
                  Float_t& xg, Float_t& yg, Float_t& zg) const
 {
-// Transforms point from the local reference frame of the detection element 
-// specified by detElemId to the global reference frame (ALIC).
-// ---
+/// Transform point from the local reference frame of the detection element 
+/// specified by detElemId to the global reference frame (ALIC).
 
   // Get detection element
   AliMUONGeometryDetElement* detElement = GetDetElement(detElemId);
@@ -207,9 +209,8 @@ void  AliMUONGeometryModule::Local2Global(Int_t detElemId,
                  Double_t xl, Double_t yl, Double_t zl, 
                  Double_t& xg, Double_t& yg, Double_t& zg) const
 {
-// Transforms point from the local reference frame of the detection element 
-// specified by detElemId to the global reference frame (ALIC).
-// ---
+/// Transform point from the local reference frame of the detection element 
+/// specified by detElemId to the global reference frame (ALIC).
 
    // Get detection element
    AliMUONGeometryDetElement* detElement = GetDetElement(detElemId);
@@ -222,8 +223,8 @@ void  AliMUONGeometryModule::Local2Global(Int_t detElemId,
 //______________________________________________________________________________
 void AliMUONGeometryModule::SetVolume(const TString& volumeName)
 { 
-// Sets the concrete volume associated with this module.
-// The module in not virtual in this case
+/// Set the concrete volume associated with this module.
+/// The module in not virtual in this case
 
   fVolume = volumeName;
   fIsVirtual = false;
@@ -232,8 +233,7 @@ void AliMUONGeometryModule::SetVolume(const TString& volumeName)
 //______________________________________________________________________________
 void  AliMUONGeometryModule::SetTranslation(const TGeoTranslation& translation)
 {
-// Sets the module position wrt world.
-// ---
+/// Set the module position wrt world.
 
   fTransformation
     ->SetTranslation(const_cast<Double_t*>(translation.GetTranslation()));
@@ -242,8 +242,7 @@ void  AliMUONGeometryModule::SetTranslation(const TGeoTranslation& translation)
 //______________________________________________________________________________
 void  AliMUONGeometryModule::SetRotation(const TGeoRotation& rotation)
 {
-// Sets the module rotation wrt ALIC.
-// ---
+/// Set the module rotation wrt ALIC.
 
   TGeoRotation* rot = new TGeoRotation();
   rot->SetMatrix(const_cast<Double_t*>(rotation.GetRotationMatrix()));
@@ -254,9 +253,8 @@ void  AliMUONGeometryModule::SetRotation(const TGeoRotation& rotation)
 //______________________________________________________________________________
 void  AliMUONGeometryModule::SetSensitiveVolume(Int_t svVolId)
 {
-// Adds the volume specified by volId to the list of sensitive
-// volumes
-// ---
+/// Add the volume specified by volId to the list of sensitive
+/// volumes
   
   // Resize TArrayI if needed
   if (fSVVolumeIds->GetSize() == fNofSVs) fSVVolumeIds->Set(2*fNofSVs);
@@ -267,9 +265,8 @@ void  AliMUONGeometryModule::SetSensitiveVolume(Int_t svVolId)
 //______________________________________________________________________________
 void  AliMUONGeometryModule::SetSensitiveVolume(const TString& volName)
 {
-// Adds the volume specified by volName to the list of sensitive
-// volumes
-// ---
+/// Add the volume specified by volName to the list of sensitive
+/// volumes
 
   SetSensitiveVolume(gMC->VolId(volName));
 }      
@@ -277,8 +274,7 @@ void  AliMUONGeometryModule::SetSensitiveVolume(const TString& volName)
 //______________________________________________________________________________
 void  AliMUONGeometryModule::SetAlign(Bool_t align)
 {
-// Sets alignement option to enevelope store.
-// ---
+/// Set alignement option to enevelope store.
   
   fEnvelopes->SetAlign(align);
 }  
@@ -287,8 +283,7 @@ void  AliMUONGeometryModule::SetAlign(Bool_t align)
 AliMUONGeometryDetElement* 
 AliMUONGeometryModule::FindBySensitiveVolume(const TString& sensVolume) const
 {
-// Finds TGeoCombiTrans for the detector element Id specified by aligned volume 
-// ---
+/// Find TGeoCombiTrans for the detector element Id specified by aligned volume 
 
   Int_t detElemId = fSVMap->GetDetElemId(sensVolume);
 
@@ -301,9 +296,8 @@ AliMUONGeometryModule::FindBySensitiveVolume(const TString& sensVolume) const
 //______________________________________________________________________________
 Bool_t AliMUONGeometryModule::IsSensitiveVolume(Int_t volId) const
 {
-// Checks if the volume specified by volId is present in the list
-// of sensitive volumes.
-// ---
+/// Check if the volume specified by volId is present in the list
+/// of sensitive volumes.
 
   for (Int_t i=0; i<fNofSVs; i++) {
       if (fSVVolumeIds->At(i) == volId) return kTRUE;
@@ -314,9 +308,8 @@ Bool_t AliMUONGeometryModule::IsSensitiveVolume(Int_t volId) const
 //______________________________________________________________________________
 Bool_t AliMUONGeometryModule::IsSensitiveVolume(const TString& volName) const
 {
-// Checks if the volume specified by volName  is present in the list
-// of sensitive volumes.
-// ---
+/// Check if the volume specified by volName  is present in the list
+/// of sensitive volumes.
 
   return IsSensitiveVolume(gMC->VolId(volName));
 }
@@ -325,9 +318,8 @@ Bool_t AliMUONGeometryModule::IsSensitiveVolume(const TString& volName) const
 AliMUONGeometryDetElement*
 AliMUONGeometryModule::GetDetElement(Int_t detElemId) const
 {
-// Returns thethe detection element specified by detElemId.
-// Gives error if detection element is not defined.
-// ---
+/// Return the detection element specified by detElemId.
+/// Give error if detection element is not defined.
 
    // Get detection element
    AliMUONGeometryDetElement* detElement
@@ -342,23 +334,3 @@ AliMUONGeometryModule::GetDetElement(Int_t detElemId) const
 
    return detElement;
 }
-
-/*				  
-//______________________________________________________________________________
-Int_t  AliMUONGeometryModule::GetNofDetElements() const
-{
-// Returns the number of detection elements
-// ---
-
-  return fDEIndexing->GetNofDetElements();
-}   
-
-//______________________________________________________________________________
-Int_t  AliMUONGeometryModule::GetDetElemId(Int_t i) const
-{
-// Returns the i-th detection element id
-// ---
-
-  return fDEIndexing->GetDetElementId(i);
-}   
-*/

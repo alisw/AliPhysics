@@ -5,11 +5,13 @@
 
 /* $Id$ */
 // Revision of includes 07/05/2004
+//
+/// \ingroup base
+/// \class AliMUONTriggerCircuit
+/// \brief MUON Trigger circuit
 
 #include <TObject.h>
 #include <TObjArray.h>
-
-class AliMUONGeometrtSegmentation;
 
 class TObjArray;
 

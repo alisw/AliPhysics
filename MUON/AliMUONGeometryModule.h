@@ -4,14 +4,15 @@
 /* $Id$ */
 // Revision of includes 07/05/2004
 
-//
-// Class AliMUONGeometryModule
-// -----------------------------
-// Class for definition of the detector module parameters
-// (the transformations of detection elements, mapping between
-//  sensitive volumes and detection elements).
-//
-// Author: Ivana Hrivnacova, IPN Orsay
+/// \ingroup geometry
+/// \class AliMUONGeometryModule
+/// \brief Geometry parameters for detector module
+///
+/// Class for definition of the detector module parameters
+/// (the transformations of detection elements, mapping between
+///  sensitive volumes and detection elements).
+///
+/// Author: Ivana Hrivnacova, IPN Orsay
 
 #ifndef ALI_MUON_MODULE_GEOMETRY_H
 #define ALI_MUON_MODULE_GEOMETRY_H

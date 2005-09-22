@@ -5,6 +5,10 @@
 
 /* $Id$ */
 
+/// \ingroup base
+/// \class AliMUONSegmentPosition
+/// \brief Local positions of segments
+
 //===================================================================
 //  Segment element position in local coordinates of the detection element   
 //        Gines MARTINEZ, SUBATECH July 04                
@@ -48,7 +52,7 @@ class AliMUONSegmentPosition : public TNamed
 
     static Float_t fUnit;  // Unit for generation of the name 3mm has been choses     
 
-    ClassDef(AliMUONSegmentPosition,1) // Loal positions of segments
+    ClassDef(AliMUONSegmentPosition,1) // Local positions of segments
 	
 };
 #endif

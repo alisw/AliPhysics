@@ -5,6 +5,10 @@
 
 /* $Id$ */
 
+/// \ingroup base
+/// \class AliMUONSegmentationDetectionElement
+/// \brief Segmentation class for detection element
+
 //===========================================================
 //  Segmentation classes for MUON Detection Elements      
 //        Gines MARTINEZ, SUBATECH July 04                

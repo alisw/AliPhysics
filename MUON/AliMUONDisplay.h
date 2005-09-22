@@ -7,6 +7,10 @@
 /* $Id$ */
 // Revision of includes 07/05/2004
 
+/// \ingroup base
+/// \class AliMUONDisplay
+/// \brief Utility class to display MUON events
+
 //////////////////////////////////////////////////////////////////////////
 //                                                                      //
 // AliDisplay                                                           //

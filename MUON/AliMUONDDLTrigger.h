@@ -3,6 +3,11 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
+/*$Id$*/
+
+/// \ingroup rec
+/// \class AliMUONDDLTrigger
+/// \brief MUON DDL Trigger
 
 #include <TObject.h>
 #include "AliRawDataHeader.h"

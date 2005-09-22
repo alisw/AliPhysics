@@ -6,6 +6,10 @@
 /* $Id$ */
 // Revision of includes 07/05/2004
 
+/// \ingroup rec
+/// \class AliMUONPixel
+/// \brief Pixel for MLEM method of cluster finding
+
 #include <TObject.h>
 
 class AliMUONPixel : public TObject {

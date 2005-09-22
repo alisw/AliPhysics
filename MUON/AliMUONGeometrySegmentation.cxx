@@ -49,7 +49,7 @@ AliMUONGeometrySegmentation::AliMUONGeometrySegmentation(
   fDESegmentations(0)
   
 {
-// Normal constructor
+/// Standard constructor
 
   fDESegmentations 
     = new AliMUONGeometryStore(geometry->GetDEIndexing(), false);
@@ -64,7 +64,7 @@ AliMUONGeometrySegmentation::AliMUONGeometrySegmentation()
   fGeometryModule(0),
   fDESegmentations(0)
 {
-// Default Constructor
+/// Default Constructor
 }
 
 //______________________________________________________________________________
@@ -72,13 +72,15 @@ AliMUONGeometrySegmentation::AliMUONGeometrySegmentation(
                                   const AliMUONGeometrySegmentation& rhs) 
   : TObject(rhs)
 {
-// Copy constructor
+/// Protected copy constructor
+
   AliFatal("Copy constructor is not implemented.");
 }
 
 //______________________________________________________________________________
-AliMUONGeometrySegmentation::~AliMUONGeometrySegmentation() {
-// Destructor
+AliMUONGeometrySegmentation::~AliMUONGeometrySegmentation() 
+{
+/// Destructor
 
   delete fDESegmentations;
 } 
@@ -91,7 +93,7 @@ AliMUONGeometrySegmentation::~AliMUONGeometrySegmentation() {
 AliMUONGeometrySegmentation& 
 AliMUONGeometrySegmentation::operator=(const AliMUONGeometrySegmentation& rhs)
 {
-// Copy operator 
+/// Protected assignment operator 
 
   // check assignement to self
   if (this == &rhs) return *this;
@@ -108,10 +110,9 @@ AliMUONGeometrySegmentation::operator=(const AliMUONGeometrySegmentation& rhs)
 //______________________________________________________________________________
 Bool_t AliMUONGeometrySegmentation::OwnNotify(Int_t detElemId) const
 {
-// Updates current detection element and segmentation,
-// and checks if they exist.
-// Returns true if success.
-// ---
+/// Update current detection element and segmentation,
+/// and checks if they exist.
+/// Return true if success.
 
   if (detElemId != fCurrentDetElemId) {
 
@@ -147,8 +148,7 @@ Bool_t AliMUONGeometrySegmentation::OwnNotify(Int_t detElemId) const
 void AliMUONGeometrySegmentation::Add(Int_t detElemId, 
                                       AliMUONVGeometryDESegmentation* segmentation)
 {
-// Add detection element segmentation
-// ---
+/// Add detection element segmentation
 
   fDESegmentations->Add(detElemId, segmentation); 
 }  
@@ -158,7 +158,7 @@ void AliMUONGeometrySegmentation::Add(Int_t detElemId,
 const AliMUONVGeometryDESegmentation* 
 AliMUONGeometrySegmentation::GetDESegmentation(Int_t detElemId) const
 {
-// Return the DE segmentation 
+/// Return the DE segmentation 
 
   if (!OwnNotify(detElemId)) return 0;
 
@@ -169,8 +169,8 @@ AliMUONGeometrySegmentation::GetDESegmentation(Int_t detElemId) const
 AliMUONGeometryDirection 
 AliMUONGeometrySegmentation::GetDirection(Int_t detElemId) const
 {
-// Return direction with a constant pad size 
-// (Direction or coordinate where the resolution is the best)
+/// Return direction with a constant pad size 
+/// (Direction or coordinate where the resolution is the best)
 
   if (!OwnNotify(detElemId)) return kDirUndefined;
 
@@ -192,8 +192,7 @@ void AliMUONGeometrySegmentation::Print(Option_t* opt) const
 //______________________________________________________________________________
 void AliMUONGeometrySegmentation::SetPadSize(Float_t p1, Float_t p2)
 {
-// Set pad size Dx*Dy to all detection element segmentations 
-// ---
+/// Set pad size Dx*Dy to all detection element segmentations 
 
   for (Int_t i=0; i<fDESegmentations->GetNofEntries(); i++) {
      AliMUONVGeometryDESegmentation* segmentation
@@ -205,8 +204,7 @@ void AliMUONGeometrySegmentation::SetPadSize(Float_t p1, Float_t p2)
 //______________________________________________________________________________
 void AliMUONGeometrySegmentation::SetDAnod(Float_t d)
 {
-// Set anod pitch to all detection element segmentations
-// ---
+/// Set anod pitch to all detection element segmentations
 
   for (Int_t i=0; i<fDESegmentations->GetNofEntries(); i++) {
      AliMUONVGeometryDESegmentation* segmentation
@@ -218,11 +216,10 @@ void AliMUONGeometrySegmentation::SetDAnod(Float_t d)
 //______________________________________________________________________________
 Float_t AliMUONGeometrySegmentation::GetAnod(Int_t detElemId, Float_t xhit) const
 {
-// Anod wire coordinate closest to xhit
-// Returns for a hit position xhit the position of the nearest anode wire
-// !!! xhit is understand a a distance, not as a position in the space
-// CHECK
-// ---
+/// Anod wire coordinate closest to xhit
+/// Returns for a hit position xhit the position of the nearest anode wire
+/// !!! xhit is understand a a distance, not as a position in the space
+/// CHECK
 
   if (!OwnNotify(detElemId)) return 0;
 
@@ -234,8 +231,7 @@ Bool_t  AliMUONGeometrySegmentation::GetPadI(Int_t detElemId,
                                         Float_t xg, Float_t yg, Float_t zg, 
                                         Int_t& ix, Int_t& iy)
 {					
-//  Returns pad coordinates (ix,iy) for given real coordinates (x,y)
-// ---
+/// Return pad coordinates (ix,iy) for given real coordinates (x,y)
 
   if (!OwnNotify(detElemId)) return false;
   
@@ -264,8 +260,7 @@ Bool_t  AliMUONGeometrySegmentation::GetPadC(Int_t detElemId,
                                         Int_t ix, Int_t iy, 
                                         Float_t& xg, Float_t& yg, Float_t& zg)
 {					
-// Transform from pad to real coordinates
-// ---
+/// Transform from pad to real coordinates
 
   if (!OwnNotify(detElemId)) return false;
 
@@ -283,8 +278,7 @@ Bool_t  AliMUONGeometrySegmentation::GetPadE(Int_t detElemId,
                                         Int_t &ix, Int_t &iy, 
                                         AliMUONSegmentManuIndex* connect)
 {
-// Get pads for a given electronic connection
-// ---
+/// Get pads for a given electronic connection
 
   if (!OwnNotify(detElemId)) return false;
 
@@ -298,8 +292,7 @@ Bool_t  AliMUONGeometrySegmentation::GetPadE(Int_t detElemId,
 AliMUONSegmentManuIndex* AliMUONGeometrySegmentation:: GetMpConnection(Int_t detElemId,
 							       Int_t ix, Int_t iy)
 {					
-// Get electronic connection for given pads
-// ---
+/// Get electronic connection for given pads
 
   if (!OwnNotify(detElemId)) return 0x0;
 
@@ -331,9 +324,8 @@ AliMUONSegmentManuIndex* AliMUONGeometrySegmentation:: GetMpConnection(Int_t det
 //______________________________________________________________________________
 void AliMUONGeometrySegmentation::Init(Int_t chamber)
 {
-// Initialize segmentation.
-// Check that all detection elements have segmanetation set
-// ---
+/// Initialize segmentation.
+/// Check that all detection elements have segmanetation set
 
   // Loop over detection elements
   AliMUONGeometryStore* detElements = fGeometryModule->GetDetElementStore();
@@ -358,8 +350,7 @@ void AliMUONGeometrySegmentation::Init(Int_t chamber)
 //______________________________________________________________________________
 Float_t AliMUONGeometrySegmentation::Dpx(Int_t detElemId) const
 {
-// Get pad size in x
-// ---
+/// Get pad size in x
 
   if (!OwnNotify(detElemId)) return 0.;
   
@@ -369,8 +360,7 @@ Float_t AliMUONGeometrySegmentation::Dpx(Int_t detElemId) const
 //______________________________________________________________________________
 Float_t AliMUONGeometrySegmentation::Dpy(Int_t detElemId) const
 {
-// Get pad size in y
-// ---
+/// Get pad size in y
 
   if (!OwnNotify(detElemId)) return 0.;
 
@@ -380,8 +370,7 @@ Float_t AliMUONGeometrySegmentation::Dpy(Int_t detElemId) const
 //______________________________________________________________________________
 Float_t AliMUONGeometrySegmentation::Dpx(Int_t detElemId, Int_t isector) const
 {
-// Pad size in x by sector
-// ---
+/// Pad size in x by sector
 
   if (!OwnNotify(detElemId)) return 0.;
 
@@ -391,8 +380,7 @@ Float_t AliMUONGeometrySegmentation::Dpx(Int_t detElemId, Int_t isector) const
 //______________________________________________________________________________
 Float_t AliMUONGeometrySegmentation::Dpy(Int_t detElemId, Int_t isector) const
 {
-// Pad size in x, y by Sector 
-// ---
+/// Pad size in x, y by Sector 
 
   if (!OwnNotify(detElemId)) return 0.;
 
@@ -402,8 +390,7 @@ Float_t AliMUONGeometrySegmentation::Dpy(Int_t detElemId, Int_t isector) const
 //______________________________________________________________________________
 Int_t AliMUONGeometrySegmentation::Npx(Int_t detElemId) const
 {
-// Maximum number of Pads in x
-// ---
+/// Maximum number of Pads in x
 
   if (!OwnNotify(detElemId)) return 0;
 
@@ -413,8 +400,7 @@ Int_t AliMUONGeometrySegmentation::Npx(Int_t detElemId) const
 //______________________________________________________________________________
 Int_t AliMUONGeometrySegmentation::Npy(Int_t detElemId) const
 {
-// Maximum number of Pads in y
-// ---
+/// Maximum number of Pads in y
 
   if (!OwnNotify(detElemId)) return 0;
 
@@ -424,11 +410,10 @@ Int_t AliMUONGeometrySegmentation::Npy(Int_t detElemId) const
 //______________________________________________________________________________
 void  AliMUONGeometrySegmentation::SetPad(Int_t detElemId, Int_t ix, Int_t iy)
 {
-// Set pad position.
-// Sets virtual pad coordinates, needed for evaluating pad response 
-// outside the tracking program.
-// From AliMUONGeometrySegmentationV01.
-// ---
+/// Set pad position.
+/// Sets virtual pad coordinates, needed for evaluating pad response 
+/// outside the tracking program.
+/// From AliMUONGeometrySegmentationV01.
 
   if (!OwnNotify(detElemId)) return;
 
@@ -439,10 +424,10 @@ void  AliMUONGeometrySegmentation::SetPad(Int_t detElemId, Int_t ix, Int_t iy)
 void  AliMUONGeometrySegmentation::SetHit(Int_t detElemId, 
                                         Float_t xghit, Float_t yghit, Float_t zghit)
 {
-// Set hit position
-// Sets virtual hit position, needed for evaluating pad response 
-// outside the tracking program 
-// From AliMUONGeometrySegmentationV01.
+/// Set hit position
+/// Sets virtual hit position, needed for evaluating pad response 
+/// outside the tracking program 
+/// From AliMUONGeometrySegmentationV01.
 
   if (!OwnNotify(detElemId)) return;
 
@@ -457,8 +442,7 @@ void  AliMUONGeometrySegmentation::FirstPad(Int_t detElemId,
                                         Float_t xghit, Float_t yghit, Float_t zghit, 
                                         Float_t dx, Float_t dy) 
 {					 
-// Iterate over pads - initialiser
-// ---
+/// Iterate over pads - initialiser
 
   if (!OwnNotify(detElemId)) return;
 
@@ -471,8 +455,7 @@ void  AliMUONGeometrySegmentation::FirstPad(Int_t detElemId,
 //______________________________________________________________________________
 void  AliMUONGeometrySegmentation::NextPad(Int_t detElemId)
 {
-// Iterate over pads - stepper
-// ---
+/// Iterate over pads - stepper
 
   if (!OwnNotify(detElemId)) return;
   
@@ -482,8 +465,7 @@ void  AliMUONGeometrySegmentation::NextPad(Int_t detElemId)
 //______________________________________________________________________________
 Int_t AliMUONGeometrySegmentation::MorePads(Int_t detElemId)
 {
-// Iterate over pads - condition
-// ---
+/// Iterate over pads - condition
 
   if (!OwnNotify(detElemId)) return 0;
   
@@ -496,9 +478,8 @@ Float_t AliMUONGeometrySegmentation::Distance2AndOffset(Int_t detElemId,
 				           Float_t xg, Float_t yg,  Float_t zg,
 					   Int_t* dummy)
 {					   
-// Returns the square of the distance between 1 pad
-// labelled by its channel numbers and a coordinate
-// ---
+/// Return the square of the distance between 1 pad
+/// labelled by its channel numbers and a coordinate
 
   if (!OwnNotify(detElemId)) return 0.;
 
@@ -513,10 +494,9 @@ void AliMUONGeometrySegmentation::GetNParallelAndOffset(Int_t detElemId,
                                             Int_t ix, Int_t iy,
 				            Int_t* nparallel, Int_t* offset)
 {					   
-// Number of pads read in parallel and offset to add to x 
-// (specific to LYON, but mandatory for display)
-// CHECK
-// ---
+/// Number of pads read in parallel and offset to add to x 
+/// (specific to LYON, but mandatory for display)
+/// CHECK
 
   if (!OwnNotify(detElemId)) return;
 
@@ -530,8 +510,7 @@ void AliMUONGeometrySegmentation::Neighbours(Int_t detElemId,
                                            Int_t* nlist, 
 					   Int_t xlist[10], Int_t ylist[10])
 {					  
-// Get next neighbours 
-// ---
+/// Get next neighbours 
 
   if (!OwnNotify(detElemId)) return;
 
@@ -541,9 +520,8 @@ void AliMUONGeometrySegmentation::Neighbours(Int_t detElemId,
 //______________________________________________________________________________
 Int_t  AliMUONGeometrySegmentation::Ix()
 {
-// Current pad cursor during disintegration
-// x, y-coordinate
-// ---
+/// Current pad cursor during disintegration
+/// x, y-coordinate
 
   return fCurrentSegmentation->Ix();
 }
@@ -551,9 +529,8 @@ Int_t  AliMUONGeometrySegmentation::Ix()
 //______________________________________________________________________________
 Int_t  AliMUONGeometrySegmentation::Iy()
 {
-// Current pad cursor during disintegration
-// x, y-coordinate
-// ---
+/// Current pad cursor during disintegration
+/// x, y-coordinate
 
   return fCurrentSegmentation->Iy();
 }
@@ -561,9 +538,8 @@ Int_t  AliMUONGeometrySegmentation::Iy()
 //______________________________________________________________________________
 Int_t  AliMUONGeometrySegmentation::DetElemId()
 {
-// Current pad cursor during disintegration
-// x, y-coordinate
-// ---
+/// Current pad cursor during disintegration
+/// x, y-coordinate
 
   return fCurrentDetElemId;
 }
@@ -571,8 +547,7 @@ Int_t  AliMUONGeometrySegmentation::DetElemId()
 //______________________________________________________________________________
 Int_t  AliMUONGeometrySegmentation::ISector()
 {
-// Current sector
-// ---
+/// Current sector
 
   return fCurrentSegmentation->ISector();
 }
@@ -580,8 +555,7 @@ Int_t  AliMUONGeometrySegmentation::ISector()
 //______________________________________________________________________________
 Int_t AliMUONGeometrySegmentation::Sector(Int_t detElemId, Int_t ix, Int_t iy)
 {
-// Calculate sector from pad coordinates
-// ---
+/// Calculate sector from pad coordinates
 
   if (!OwnNotify(detElemId)) return 0;
 
@@ -592,8 +566,7 @@ Int_t AliMUONGeometrySegmentation::Sector(Int_t detElemId, Int_t ix, Int_t iy)
 Int_t AliMUONGeometrySegmentation::Sector(Int_t detElemId,
                                         Float_t xg, Float_t yg, Float_t zg)
 {
-// Calculate sector from pad coordinates
-// ---
+/// Calculate sector from pad coordinates
 
   if (!OwnNotify(detElemId)) return 0;
 
@@ -608,8 +581,7 @@ void  AliMUONGeometrySegmentation::IntegrationLimits(Int_t detElemId,
                                         Float_t& x1, Float_t& x2,
                                         Float_t& y1, Float_t& y2)
 {					 	  
-// Current integration limits 
-// ---
+/// Current integration limits 
  
   if (!OwnNotify(detElemId)) return;
 
@@ -620,19 +592,18 @@ void  AliMUONGeometrySegmentation::IntegrationLimits(Int_t detElemId,
 Int_t AliMUONGeometrySegmentation::SigGenCond(Int_t detElemId,
                                         Float_t xg, Float_t yg, Float_t zg)
 {
-// Signal Generation Condition during Stepping
-//  0: don't generate signal
-//  1: generate signal 
-//  Comments: 
-//
-//  Crossing of pad boundary and mid plane between neighbouring wires is checked.
-//  To correctly simulate the dependence of the spatial resolution on the angle 
-//  of incidence signal must be generated for constant steps on 
-//  the projection of the trajectory along the anode wire.
-//
-//  Signal will be generated if particle crosses pad boundary or
-//  boundary between two wires. 
-// ---
+/// Signal Generation Condition during Stepping
+///  0: don't generate signal                                                 \n
+///  1: generate signal                                                       \n
+///  Comments:                                                                \n
+///                                                                           \n
+///  Crossing of pad boundary and mid plane between neighbouring wires is checked.
+///  To correctly simulate the dependence of the spatial resolution on the angle 
+///  of incidence signal must be generated for constant steps on 
+///  the projection of the trajectory along the anode wire.
+///                                                                           \n
+///  Signal will be generated if particle crosses pad boundary or
+///  boundary between two wires. 
 
   if (!OwnNotify(detElemId)) return 0;
 
@@ -646,10 +617,9 @@ Int_t AliMUONGeometrySegmentation::SigGenCond(Int_t detElemId,
 void  AliMUONGeometrySegmentation::SigGenInit(Int_t detElemId,
                                        Float_t xg, Float_t yg, Float_t zg)
 {
-// Initialise signal generation at coord (x,y,z)
-// Initialises pad and wire position during stepping.
-// From AliMUONGeometrySegmentationV01
-// ---
+/// Initialise signal generation at coord (x,y,z)
+/// Initialise pad and wire position during stepping.
+/// From AliMUONGeometrySegmentationV01
 
   if (!OwnNotify(detElemId)) return;
 
@@ -672,11 +642,10 @@ void AliMUONGeometrySegmentation::GiveTestPoints(Int_t /*detElemId*/,
                                        Int_t& /*n*/, 
 				       Float_t* /*xg*/, Float_t* /*yg*/) const
 {					      
-// Test points for auto calibration
-// Returns test point on the pad plane.
-// Used during determination of the segmoid correction of the COG-method
-// From AliMUONGeometrySegmentationV01
-// ---
+/// Test points for auto calibration
+/// Return test point on the pad plane.
+/// Used during determination of the segmoid correction of the COG-method
+/// From AliMUONGeometrySegmentationV01
 
   // Requires change of interface
   // to convert points from local to global we need z coordinate
@@ -686,8 +655,7 @@ void AliMUONGeometrySegmentation::GiveTestPoints(Int_t /*detElemId*/,
 //______________________________________________________________________________
 void AliMUONGeometrySegmentation::Draw(const char* opt)
 {
-// Draws the segmentation zones for all detElemId 
-// ---
+/// Draw the segmentation zones for all detElemId 
 
   for (Int_t i=0; i<fDESegmentations->GetNofEntries(); i++) {
      AliMUONVGeometryDESegmentation* segmentation
@@ -699,8 +667,7 @@ void AliMUONGeometrySegmentation::Draw(const char* opt)
 //______________________________________________________________________________
 void AliMUONGeometrySegmentation::Draw(Int_t detElemId, const char* opt)
 {
-// Draw the segmentation zones for a given detElemId.
-// ---
+/// Draw the segmentation zones for a given detElemId.
 
   if (!OwnNotify(detElemId)) return;
 
@@ -711,9 +678,8 @@ void AliMUONGeometrySegmentation::Draw(Int_t detElemId, const char* opt)
 void AliMUONGeometrySegmentation::SetCorrFunc(Int_t detElemId, 
                                               Int_t isec, TF1* func)
 {
-// Set the correction function.
-// From AliMUONGeometrySegmentationV01
-// ---
+/// Set the correction function.
+/// From AliMUONGeometrySegmentationV01
 
   if (!OwnNotify(detElemId)) return;
 
@@ -723,9 +689,8 @@ void AliMUONGeometrySegmentation::SetCorrFunc(Int_t detElemId,
 //______________________________________________________________________________
 TF1* AliMUONGeometrySegmentation::CorrFunc(Int_t detElemId, Int_t isec) const
 {
-// Get the correction Function.
-// From AliMUONGeometrySegmentationV01
-// ---
+/// Get the correction Function.
+/// From AliMUONGeometrySegmentationV01
 
   if (!OwnNotify(detElemId)) return 0;
 

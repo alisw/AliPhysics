@@ -6,6 +6,13 @@
 /* $Id$ */
 // Revision of includes 07/05/2004
 
+/// \ingroup sim
+/// \class AliMUONDigitizerv2
+/// \brief Class produces Digits from SDigits.
+///
+/// Do the Digitization (Digit) from summable Digits (SDigit)
+/// Allow the merging of signal file with background file(s).
+
 #include "AliMUONDigitizer.h"
 #include "AliMUONDigit.h"
 

@@ -6,6 +6,10 @@
 /*$Id$*/
 // Revision of includes 07/05/2004
 
+/// \ingroup rec
+/// \class AliMUONHitForRec
+/// \brief Hit for reconstruction in ALICE dimuon spectrometer
+
 #include <TObject.h>
 
 class AliTrackReference;

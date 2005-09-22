@@ -4,11 +4,11 @@
 // $Id$
 // Revision of includes 07/05/2004
 //
-// Class AliMUONTriggerGeometryBuilder
-// -----------------------------------
-// MUON Trigger stations geometry construction class.
-//
-// Author: Philippe Crochette, LPC Clermont-Ferrand
+/// \ingroup base
+/// \class AliMUONTriggerGeometryBuilder
+/// \brief MUON Trigger stations geometry construction class
+///
+/// Author: Philippe Crochette, LPC Clermont-Ferrand
 
 #ifndef ALI_MUON_TRIGGER_GEOMETRY_BUILDER_H
 #define ALI_MUON_TRIGGER_GEOMETRY_BUILDER_H
@@ -38,7 +38,7 @@ class AliMUONTriggerGeometryBuilder : public AliMUONVGeometryBuilder
   private:
      AliMUON*  fMUON; // the MUON detector class 
         
-  ClassDef(AliMUONTriggerGeometryBuilder,1) // MUON chamber geometry base class
+  ClassDef(AliMUONTriggerGeometryBuilder,1) // MUON Trigger stations geometry construction class
 };
 
 #endif //ALI_MUON_TRIGGER_GEOMETRY_BUILDER_H

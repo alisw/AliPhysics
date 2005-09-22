@@ -6,6 +6,10 @@
 /* $Id $*/
 // Revision of includes 07/05/2004
 
+/// \ingroup rec
+/// \class AliMUONClusterInput
+/// \brief Global data service for hit reconstruction
+
 #include <TObject.h>
 #include <TClonesArray.h> // needed for inline function Digit
 #include "AliMUONGeometrySegmentation.h"

@@ -6,6 +6,10 @@
 /* $Id$ */
 // Revision of includes 07/05/2004
 
+/// \ingroup rec
+/// \class AliMUONReconstructor
+/// \brief Class for the MUON reconstruction
+
 #include "AliReconstructor.h"
 
 class AliMUONReconstructor: public AliReconstructor 

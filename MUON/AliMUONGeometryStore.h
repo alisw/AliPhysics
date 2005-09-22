@@ -2,14 +2,16 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$
-//
-// Class AliMUONGeometryStore
-// --------------------------
-// The class contains the array of the detection elements,
-// which are sorted using the AliMUONVGeometryDEIndexing class.
-// The class provides fast access to detection element via detElemId.
-//
-// Author: Ivana Hrivnacova, IPN Orsay
+
+/// \ingroup geometry
+/// \class AliMUONGeometryStore
+/// \brief Array of objects sorted using the AliMUONVGeometryDEIndexing class
+///
+/// The class contains the array of objects (derived from TObject),
+/// which are sorted using the AliMUONVGeometryDEIndexing class.
+/// The class provides fast access to detection element via detElemId.
+///
+/// Author: Ivana Hrivnacova, IPN Orsay
 
 #ifndef ALI_MUON_GEOMETRY_STORE_H
 #define ALI_MUON_GEOMETRY_STORE_H

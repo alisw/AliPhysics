@@ -6,6 +6,10 @@
 /* $Id$ */
 // Revision of includes 07/05/2004
 
+/// \ingroup base
+/// \class AliMUON
+/// \brief AliDetector Class for MUON subsystem
+
 ////////////////////////////////////////////////
 //  AliDetector Class for MUON subsystem      //
 ////////////////////////////////////////////////

@@ -7,14 +7,16 @@
 /* $Id$ */
 // Revision of includes 07/05/2004
 
-// Authors: David Guez, Ivana Hrivnacova, Marion MacCormick; IPN Orsay
-//
-// Class AliMUONSt1ResponseParameter
-// ---------------------------------
-// Describes a set of filters to be applied to a digital value
-// in order to simulate electronics characteristics 
-// (pedestal, noise, sticky bits, etc....)
-// Threshold levels for the MANU zero supression algorithm are included.
+/// \ingroup sim
+/// \class AliMUONSt1ResponseParameter
+/// \brief Describes a set of filters to be applied to a digital value
+///
+/// Describes a set of filters to be applied to a digital value
+/// in order to simulate electronics characteristics 
+/// (pedestal, noise, sticky bits, etc....)
+/// Threshold levels for the MANU zero supression algorithm are included.
+///
+/// Authors: David Guez, Ivana Hrivnacova, Marion MacCormick; IPN Orsay
 
 #include <TNamed.h>
 

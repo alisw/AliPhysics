@@ -4,11 +4,11 @@
 // $Id$
 // Revision of includes 07/05/2004
 //
-// Class AliMUONGeometryConstituent
-// --------------------------------
-// Helper class for definititon of an assembly of volumes.
-//
-// Author: Ivana Hrivnacova, IPN Orsay
+/// \ingroup geometry
+/// \class AliMUONGeometryConstituent
+/// \brief Helper class for definititon of an assembly of volumes.
+///
+/// Author: Ivana Hrivnacova, IPN Orsay
 
 #ifndef ALI_MUON_GEOMETRY_CONSTITUENT_H
 #define ALI_MUON_GEOMETRY_CONSTITUENT_H

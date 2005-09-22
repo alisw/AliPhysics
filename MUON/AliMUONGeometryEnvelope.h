@@ -3,12 +3,14 @@
 
 // $Id$
 // Revision of includes 07/05/2004
-//
-// Class AliMUONGeometryEnvelope
-// -----------------------------
-// Helper class for definititon an assembly of volumes.
-//
-// Author: Ivana Hrivnacova, IPN Orsay
+
+/// \ingroup geometry
+/// \class AliMUONGeometryEnvelope
+/// \brief Geometry envelope helper class
+///
+/// Helper class for definititon of an assembly of volumes.
+///
+/// Author: Ivana Hrivnacova, IPN Orsay
 
 #ifndef ALI_MUON_GEOMETRY_ENVELOPE_H
 #define ALI_MUON_GEOMETRY_ENVELOPE_H

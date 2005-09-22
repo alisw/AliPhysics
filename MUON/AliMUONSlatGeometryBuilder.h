@@ -4,11 +4,11 @@
 // $Id$
 // Revision of includes 07/05/2004
 //
-// Class AliMUONSlatGeometryBuilder
-// -----------------------------
-// MUON Station3 geometry construction class.
-//
-// Author: Eric Dumonteil (dumontei@cea.fr)
+/// \ingroup base
+/// \class AliMUONSlatGeometryBuilder
+/// \brief MUON Station3 geometry construction class
+///
+/// Author: Eric Dumonteil (dumontei@cea.fr)
 
 
 #ifndef ALI_MUON_SLAT_GEOMETRY_BUILDER_H
@@ -41,7 +41,7 @@ class AliMUONSlatGeometryBuilder : public AliMUONVGeometryBuilder
 
     AliMUON*  fMUON; // the MUON detector class 
         
-  ClassDef(AliMUONSlatGeometryBuilder,1) // MUON chamber geometry base class
+  ClassDef(AliMUONSlatGeometryBuilder,1) //MUON Station3 geometry construction class 
 };
 
 #endif //ALI_MUON_SLAT_GEOMETRY_BUILDER_H

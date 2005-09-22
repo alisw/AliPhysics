@@ -3,9 +3,15 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
+/*$Id$*/
+
+/// \ingroup rec
+/// \class AliMUONRawStream
+/// \brief Class for reading MUON raw digits
+///
 ///////////////////////////////////////////////////////////////////////////////
 ///
-/// This class provides access to TPC digits in raw data.
+/// This class provides access to MUON digits in raw data.
 ///
 ///////////////////////////////////////////////////////////////////////////////
 

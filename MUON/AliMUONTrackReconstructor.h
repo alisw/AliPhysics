@@ -1,9 +1,17 @@
 #ifndef ALIMUONTRACKTRECONSTRUCTOR_H
 #define ALIMUONTRACKRECONSTRUCTOR_H
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
 
-////////////////////////////////////
-// MUON track reconstructor in ALICE
-////////////////////////////////////
+/* $Id$ */
+
+/// \ingroup rec
+/// \class AliMUONTrackReconstructor
+/// \brief Class for the MUON track reconstruction
+///
+/////////////////////////////////////
+/// MUON track reconstructor in ALICE
+/////////////////////////////////////
 
 #include <TObject.h>
 #include "AliMUONConstants.h"

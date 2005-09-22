@@ -3,15 +3,16 @@
 
 /* $Id$ */
 
-//
-// Class AliVMUONGeometryDESegmentation
-// ----------------------------------
-// Extension for AliSegmentation interface,
-// added functions:
-//  Bool_t  HasPad(Float_t x, Float_t y, Float_t z);
-//  Bool_t  HasPad(Int_t ix, Int_t iy);
-//
-// Author:Ivana Hrivnacova, IPN Orsay
+/// \ingroup geometry
+/// \class AliMUONVGeometryDESegmentation
+/// \brief Extension for AliSegmentation interface for detection elements
+///
+/// Extension for AliSegmentation interface,
+/// added functions:                                                         \n
+/// Bool_t  HasPad(Float_t x, Float_t y, Float_t z);                         \n
+/// Bool_t  HasPad(Int_t ix, Int_t iy);                                      \n
+///
+/// Author:Ivana Hrivnacova, IPN Orsay
 
 #ifndef ALI_MUON_V_GEOMETRY_DE_SEGMENTATION_H
 #define ALI_MUON_V_GEOMETRY_DE_SEGMENTATION_H

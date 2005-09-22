@@ -6,6 +6,10 @@
 /* $Id$ */
 // Revision of includes 07/05/2004
 
+/// \ingroup sim
+/// \class AliMUONDigitizer
+/// \brief Class for MUON merging/digitization
+
 #include "AliDigitizer.h"
 #include "AliMUONDigit.h"
 

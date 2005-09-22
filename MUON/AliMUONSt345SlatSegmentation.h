@@ -5,13 +5,17 @@
 
 /* $Id$ */
 
-//*********************************************************
-//  Segmentation classes for slat modules          
-//  This class works with local coordinates
-//  of the slats via the class AliMUONGeometrySegmentation
-//  This class contains the size of the slats and the
-//  and the differents PCB densities. 
-//*********************************************************
+/// \ingroup base
+/// \class AliMUONSt345SlatSegmentation
+/// \brief Segmentation for slat modules
+///
+///*********************************************************
+///  Segmentation classes for slat modules          
+///  This class works with local coordinates
+///  of the slats via the class AliMUONGeometrySegmentation
+///  This class contains the size of the slats and the
+///  and the differents PCB densities. 
+///*********************************************************
 
 #include  "AliMUONVGeometryDESegmentation.h"
 

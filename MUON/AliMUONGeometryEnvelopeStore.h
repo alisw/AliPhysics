@@ -2,13 +2,15 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$
-//
-// Class AliMUONGeometryEnvelopeStore
-// ----------------------------------
-// Class for definititon of the temporary volume envelopes
-// used in geometry construction
-//
-// Author: Ivana Hrivnacova, IPN Orsay
+
+/// \ingroup geometry
+/// \class AliMUONGeometryEnvelopeStore
+/// \brief Store for temporary volumes envelopes
+///
+/// Class for definititon of the temporary volume envelopes
+/// used in geometry construction
+///
+/// Author: Ivana Hrivnacova, IPN Orsay
 
 #ifndef ALI_MUON_GEOMETRY_ENVELOPE_STORE_H
 #define ALI_MUON_GEOMETRY_ENVELOPE_STORE_H

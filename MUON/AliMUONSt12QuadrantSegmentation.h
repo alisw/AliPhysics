@@ -7,6 +7,10 @@
 /* $Id$ */
 // Revision of includes 07/05/2004
 
+/// \ingroup base
+/// \class AliMUONSt12QuadrantSegmentation
+/// \brief Segmentation for MUON quadrants of stations 1 and 2
+
 // Class AliMUONSt12QuadrantSegmentation
 // -------------------------------------
 // Segmentation for MUON quadrants of stations 1 and 2 using 

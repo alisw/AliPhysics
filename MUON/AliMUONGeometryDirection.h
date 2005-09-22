@@ -3,12 +3,11 @@
 
 /* $Id$ */
 
-//
-// Enum AliMUONGeometryDirection
-// -----------------------------
-// Enumeration for the directions in a plane.
-//
-// Author:Ivana Hrivnacova, IPN Orsay
+/// \ingroup geometry
+/// \enum  AliMUONGeometryDirection
+/// \brief Enumeration for the directions in a plane.
+///
+/// Author:Ivana Hrivnacova, IPN Orsay
 
 #ifndef ALI_MUON_GEOMETRY_DIRECTION_H
 #define ALI_MUON_GEOMETRY_DIRECTION_H

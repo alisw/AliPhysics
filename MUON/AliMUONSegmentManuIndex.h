@@ -5,6 +5,10 @@
 
 /* $Id$ */
 
+/// \ingroup base
+/// \class AliMUONSegmentManuIndex
+/// \brief Segment element indexing in a detection element for electronics 
+
 //===================================================================
 //  Segment element indexing in a detection element for electronics   
 //        Gines MARTINEZ, SUBATECH July 04                

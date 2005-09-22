@@ -7,13 +7,15 @@
 /* $Id$ */
 // Revision of includes 07/05/2004
 
-// Authors: David Guez, Ivana Hrivnacova, Marion MacCormick; IPN Orsay
-//
-// Class AliMUONSt1Response
-// ----------------------------
-// Response class for station 1 including electronics and detector response. 
-// Individual pedestals or noise levels can be controlled separately. 
-// The current pulse height responses do not contain any physics
+/// \ingroup sim
+/// \class AliMUONSt1Response
+/// \brief Detailed response class for station 1
+///
+/// Response class for station 1 including electronics and detector response. 
+/// Individual pedestals or noise levels can be controlled separately. 
+/// The current pulse height responses do not contain any physics
+///
+/// Authors: David Guez, Ivana Hrivnacova, Marion MacCormick; IPN Orsay
 
 #include <map>
 #include <string>

@@ -3,13 +3,13 @@
 
 // $Id$
 // Revision of includes 07/05/2004
-//
-// Class AliMUONSt1GeometryBuilder
-// -----------------------------
-// MUON Station1 coarse geometry construction class.
-//
-// Extracted from AliMUONv1
-// by Ivana Hrivnacova, IPN Orsay
+
+/// \ingroup base
+/// \class AliMUONCommonGeometryBuilder
+/// \brief MUON Station1 coarse geometry construction class
+///
+/// Extracted from AliMUONv1
+/// by Ivana Hrivnacova, IPN Orsay
 
 #ifndef ALI_MUON_ST1_GEOMETRY_BUILDER_H
 #define ALI_MUON_ST1_GEOMETRY_BUILDER_H
@@ -39,7 +39,7 @@ class AliMUONSt1GeometryBuilder : public AliMUONVGeometryBuilder
   private:
      AliMUON*  fMUON; // the MUON detector class 
         
-  ClassDef(AliMUONSt1GeometryBuilder,1) // MUON chamber geometry base class
+  ClassDef(AliMUONSt1GeometryBuilder,1) //MUON Station1 coarse geometry construction class 
 };
 
 #endif //ALI_MUON_ST1_GEOMETRY_BUILDER_H

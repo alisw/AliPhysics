@@ -43,7 +43,7 @@ AliMUONGeometryStore::AliMUONGeometryStore(
    fObjects(fgkInitSize),
    fDEIndexing(indexing)
 { 
-// Standard constructor
+/// Standard constructor
   
   fObjects.SetOwner(isOwner);
   for (Int_t i=0; i<fgkInitSize; i++) fObjects[i] = 0;
@@ -55,20 +55,22 @@ AliMUONGeometryStore::AliMUONGeometryStore()
    fObjects(),
    fDEIndexing(0)
 {
-// Default constructor
+/// Default constructor
 }
 
 //______________________________________________________________________________
-AliMUONGeometryStore::AliMUONGeometryStore(
-                                   const AliMUONGeometryStore& rhs)
+AliMUONGeometryStore::AliMUONGeometryStore(const AliMUONGeometryStore& rhs)
   : TObject(rhs)
 {
+/// Protected copy constructor
+
   AliFatal("Copy constructor is not implemented.");
 }
 
 //______________________________________________________________________________
 AliMUONGeometryStore::~AliMUONGeometryStore() 
 {
+/// Destructor
 
 }
 
@@ -76,7 +78,9 @@ AliMUONGeometryStore::~AliMUONGeometryStore()
 AliMUONGeometryStore& 
 AliMUONGeometryStore::operator = (const AliMUONGeometryStore& rhs) 
 {
-  // check assignement to self
+/// Protected assignment operator 
+
+ // check assignement to self
   if (this == &rhs) return *this;
 
   AliFatal("Assignment operator is not implemented.");
@@ -91,9 +95,8 @@ AliMUONGeometryStore::operator = (const AliMUONGeometryStore& rhs)
 //______________________________________________________________________________
 void AliMUONGeometryStore::Add(Int_t objectId, TObject* object)
 {
-// Add detection element in the array
-// if detection element with the same Id is not yet present. 
-// ---
+/// Add detection element in the array
+/// if detection element with the same Id is not yet present. 
  
   //cout << ".. adding " << objectId 
   //     << " index: " << fDEIndexing->GetDetElementIndex(objectId) << endl;
@@ -117,8 +120,7 @@ void AliMUONGeometryStore::Add(Int_t objectId, TObject* object)
 TObject* 
 AliMUONGeometryStore::Get(Int_t objectId, Bool_t warn) const
 {
-// Returns transformation for the specified detector element Id
-// ---
+/// Returns the object for the specified detector element Id
 
   Int_t index = fDEIndexing->GetDetElementIndex(objectId);
   
@@ -133,7 +135,8 @@ AliMUONGeometryStore::Get(Int_t objectId, Bool_t warn) const
 //______________________________________________________________________________
 Int_t  AliMUONGeometryStore::GetNofEntries() const
 {
-// Add check if the array is already filled
+/// Return number of entries
+/// Add check if the array is already filled
 
   return fObjects.GetEntriesFast();
 }  
@@ -143,8 +146,8 @@ Int_t  AliMUONGeometryStore::GetNofEntries() const
 TObject* 
 AliMUONGeometryStore::GetEntry(Int_t index) const
 {
-//
-// Add check if the array is already filled
+/// Return entry at specified index.
+/// Add check if the array is already filled
   
   return (TObject*) fObjects.At(index);
 }  
