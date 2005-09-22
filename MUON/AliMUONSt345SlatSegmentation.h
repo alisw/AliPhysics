@@ -21,8 +21,7 @@
 
 class TArrayF;
 class TArrayI;
-class AliMUONSegmentManuIndex;
-class AliMUONSegmentationDetectionElement;
+
 
 class AliMUONSt345SlatSegmentation : public AliMUONVGeometryDESegmentation 
 {
@@ -50,10 +49,6 @@ class AliMUONSt345SlatSegmentation : public AliMUONVGeometryDESegmentation
     virtual void     GetPadC(Int_t ix, Int_t iy, Float_t &x, Float_t &y);
     virtual void     GetPadC(Int_t ix, Int_t iy, Float_t &x, Float_t &y, Float_t &z) {z=0; GetPadC(ix, iy, x , y);}
 
-    virtual void     GetPadE(Int_t &ix, Int_t &iy,  AliMUONSegmentManuIndex* connect); // get pad for a given connection
-    virtual AliMUONSegmentManuIndex*     GetMpConnection(Int_t ix, Int_t iy); // get electronics connection for given pad
-
- 
     virtual void     IntegrationLimits(Float_t& x1, Float_t& x2, Float_t& y1, Float_t& y2); //Current integration limits
     virtual Int_t    ISector()  {return fSector;} // Current Pad during Integration (current sector)
     virtual Int_t    Ix() {return fIx;} // x-coordinate
@@ -92,8 +87,6 @@ class AliMUONSt345SlatSegmentation : public AliMUONVGeometryDESegmentation
 
     AliMUONSt345SlatSegmentation(const AliMUONSt345SlatSegmentation& rhs);
     AliMUONSt345SlatSegmentation& operator=(const AliMUONSt345SlatSegmentation& rhs);
-    void GetMpFileName(Char_t* name) const;
-    void Swap(Int_t padX, Int_t &padY);
 
  private:
     //  Internal geometry of the slat 
@@ -145,9 +138,6 @@ class AliMUONSt345SlatSegmentation : public AliMUONVGeometryDESegmentation
     Float_t     fYmax;           // upper right y 
 
     Bool_t      fInitDone;       // flag for initialization
-
-    // electronics mapping
-    AliMUONSegmentationDetectionElement* fSegmentationDetectionElement; //! pointer to the electronics mapping
 
     ClassDef(AliMUONSt345SlatSegmentation,3) 
 };

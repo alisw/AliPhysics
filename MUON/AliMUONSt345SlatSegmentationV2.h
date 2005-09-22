@@ -109,9 +109,6 @@ class AliMUONSt345SlatSegmentationV2 : public AliMUONVGeometryDESegmentation
   // to be deprecated. Use the one above w/o z instead.
   void GetPadI(Float_t x, Float_t y , Float_t z, Int_t &ix, Int_t &iy);
 
-  void GetPadE(Int_t& /*ix*/, Int_t& /*iy*/, AliMUONSegmentManuIndex*);
-
-  AliMUONSegmentManuIndex* GetMpConnection(Int_t /*ix*/, Int_t /*iy*/);
 
   /// Whether a pad exists at a given position.
   Bool_t HasPad(Float_t x, Float_t y, Float_t z);

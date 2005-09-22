@@ -73,12 +73,7 @@ class AliMUONGeometrySegmentation : public TObject
                        // Transform from real to pad coordinates
 
     virtual Bool_t HasPad(Int_t detElemId, Int_t ix, Int_t iy);
-	
-                       // get pad for a given connection
-    virtual Bool_t     GetPadE(Int_t detElemId, Int_t &ix, Int_t &iy,  AliMUONSegmentManuIndex* connect);
-    virtual AliMUONSegmentManuIndex*     GetMpConnection(Int_t detElemId, Int_t ix, Int_t iy); 
-                       // get electronics connection for given pad
-
+  
     // Initialisation
     //
     virtual void Init(Int_t chamber);

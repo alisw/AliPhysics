@@ -29,7 +29,6 @@ class AliMpSector;
 class AliMpSectorSegmentation;
 class AliMpVPadIterator;
 class AliMpPad;
-class AliMUONSegmentManuIndex;
 
 class AliMUONChamber;
 
@@ -77,10 +76,7 @@ class AliMUONSt12QuadrantSegmentation : public AliMUONVGeometryDESegmentation
     virtual void  GetPadC(Int_t ix, Int_t iy, Float_t& x, Float_t& y, Float_t& z);
     virtual void  GetPadC(Int_t ix, Int_t iy, Float_t& x, Float_t& y);
                        // Transform from real to pad coordinates
-                       // get pad for a given connection
-    virtual void  GetPadE(Int_t &/*ix*/, Int_t &/*iy*/,  AliMUONSegmentManuIndex* /*connect*/) {return;}
-    virtual AliMUONSegmentManuIndex*     GetMpConnection(Int_t /*ix*/, Int_t /*iy*/) {return 0x0;}
-                       // get electronics connection for given pad
+  
     // Initialisation
     //
     virtual void Init(Int_t chamber);

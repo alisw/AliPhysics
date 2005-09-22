@@ -10,7 +10,6 @@
 /// \brief Segmentation for trigger modules
 
 #include  "AliMUONVGeometryDESegmentation.h"
-class AliMUONSegmentManuIndex;
 
 class AliMUONTriggerSegmentation : public AliMUONVGeometryDESegmentation 
 {
@@ -37,10 +36,7 @@ class AliMUONTriggerSegmentation : public AliMUONVGeometryDESegmentation
     virtual void     GetPadI(Float_t x, Float_t y , Float_t z, Int_t &ix, Int_t &iy);
     virtual void     GetPadC(Int_t ix, Int_t iy, Float_t &x, Float_t &y);
     virtual void     GetPadC(Int_t ix, Int_t iy, Float_t &x, Float_t &y, Float_t &z) {z=0; GetPadC(ix, iy, x , y);}
-                     
-    virtual void  GetPadE(Int_t &/*ix*/, Int_t &/*iy*/,  AliMUONSegmentManuIndex* /*connect*/) {return;} // get pad for a given connection
-    virtual AliMUONSegmentManuIndex*     GetMpConnection(Int_t /*ix*/, Int_t /*iy*/) {return 0x0;} // get electronics connection for given pad
-                       
+                        
     virtual void GetPadLoc2Glo(Int_t ixLoc, Int_t iyLoc, Int_t &ixGlo, Int_t &iyGlo);
     virtual void GetPadGlo2Loc(Int_t ixLoc, Int_t iyLoc, Int_t &ixGlo, Int_t &iyGlo);
     virtual void     IntegrationLimits(Float_t& x1, Float_t& x2, Float_t& y1, Float_t& y2); //Current integration limits

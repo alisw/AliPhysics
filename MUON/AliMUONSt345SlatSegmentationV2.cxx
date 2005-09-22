@@ -229,14 +229,6 @@ AliMUONSt345SlatSegmentationV2::GetDirection()
 }
 
 //_____________________________________________________________________________
-AliMUONSegmentManuIndex*
-AliMUONSt345SlatSegmentationV2::GetMpConnection(Int_t,Int_t)
-{
-  AliFatal("Not Implemented");
-  return 0x0;
-}
-
-//_____________________________________________________________________________
 void 
 AliMUONSt345SlatSegmentationV2::GetNParallelAndOffset(Int_t,Int_t,Int_t*,Int_t*)
 {
@@ -262,12 +254,6 @@ AliMUONSt345SlatSegmentationV2::GetPadC(Int_t ix, Int_t iy,
   y = pad.Position().Y() * fgkLengthUnit;
 }
 
-//_____________________________________________________________________________
-void
-AliMUONSt345SlatSegmentationV2::GetPadE(Int_t&,Int_t&,AliMUONSegmentManuIndex*)
-{
-  AliFatal("Not Implemented");
-}
 
 //_____________________________________________________________________________
 void

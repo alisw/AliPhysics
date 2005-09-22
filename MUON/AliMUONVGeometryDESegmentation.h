@@ -42,9 +42,6 @@ class AliMUONVGeometryDESegmentation : public AliSegmentation
 		       // for the bending plane and kDirX with cathode segmentation 
 		       // for the non bending plane
 
-    virtual void     GetPadE(Int_t &ix, Int_t &iy,  AliMUONSegmentManuIndex* connect) = 0;
-    virtual AliMUONSegmentManuIndex*     GetMpConnection(Int_t ix, Int_t iy) = 0;
-
   protected:
     AliMUONVGeometryDESegmentation(const AliMUONVGeometryDESegmentation& rhs);
   
