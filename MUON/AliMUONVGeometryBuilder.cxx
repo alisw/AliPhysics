@@ -36,6 +36,7 @@
 #include "AliMUONGeometryEnvelope.h"
 #include "AliMUONGeometryConstituent.h"
 #include "AliMUONVGeometryDEIndexing.h"
+#include "AliMUONGeometryBuilder.h"
 #include "AliLog.h"
 
 ClassImp(AliMUONVGeometryBuilder)
@@ -52,7 +53,8 @@ AliMUONVGeometryBuilder::AliMUONVGeometryBuilder(const TString& fileName,
  : TObject(),
    fTransformFileName(fgkTransformFileNamePrefix+fileName),
    fSVMapFileName(fgkSVMapFileNamePrefix+fileName),
-   fModuleGeometries(0)
+   fModuleGeometries(0),
+   fReferenceFrame()
  {
 // Standard constructor
 
@@ -73,7 +75,8 @@ AliMUONVGeometryBuilder::AliMUONVGeometryBuilder()
  : TObject(),
    fTransformFileName(),
    fSVMapFileName(),
-   fModuleGeometries(0)
+   fModuleGeometries(0),
+   fReferenceFrame()
 {
 // Default constructor
 }
@@ -169,6 +172,29 @@ void AliMUONVGeometryBuilder::MapSV(const TString& path0,
 }     
 
 //______________________________________________________________________________
+TGeoHMatrix AliMUONVGeometryBuilder::GetTransform(
+                  Double_t x, Double_t y, Double_t z,
+		  Double_t a1, Double_t a2, Double_t a3, 
+ 		  Double_t a4, Double_t a5, Double_t a6) const
+{		  
+// Builds the transformation from the given parameters
+// ---
+
+  // Compose transform
+  TGeoCombiTrans transform(TGeoTranslation(x, y, z), 
+                           TGeoRotation("rot", a1, a2, a3, a4, a5, a6));
+
+  // Convert transform to the given reference frame
+  TGeoHMatrix newTransform
+    = AliMUONGeometryBuilder::Multiply( fReferenceFrame.Inverse(),
+                                        transform,
+					fReferenceFrame );  
+
+  return newTransform;   
+}
+
+
+//______________________________________________________________________________
 void AliMUONVGeometryBuilder::FillData(Int_t moduleId, Int_t nofDetElements,
                   Double_t x, Double_t y, Double_t z,
 		  Double_t a1, Double_t a2, Double_t a3,
@@ -180,12 +206,21 @@ void AliMUONVGeometryBuilder::FillData(Int_t moduleId, Int_t nofDetElements,
   moduleId--;
       // Modules numbers in the file are starting from 1
       
+  // Build the transformation from the parameters
+  TGeoHMatrix newTransform 
+    = GetTransform(x, y, z, a1, a2, a3, a4, a5, a6);
+  
+  const Double_t* xyz = newTransform.GetTranslation();
+  const Double_t* rm = newTransform.GetRotationMatrix();
+  TGeoRotation rotation2;
+  rotation2.SetMatrix(const_cast<Double_t*>(rm));
+      
   GetGeometry(moduleId)
     ->GetDEIndexing()->SetNofDetElements(nofDetElements);    
   GetGeometry(moduleId)
-    ->SetTranslation(TGeoTranslation(x, y, z));
+    ->SetTranslation(TGeoTranslation(xyz[0], xyz[1], xyz[2]));
   GetGeometry(moduleId)
-    ->SetRotation(TGeoRotation("rot", a1, a2, a3, a4, a5, a6));
+    ->SetRotation(rotation2);
 }		   
   
 //______________________________________________________________________________
@@ -205,16 +240,19 @@ void AliMUONVGeometryBuilder::FillData(
   // Compose path
   TString path = ComposePath(volName, copyNo);
   
-  // Compose matrix
-  TGeoCombiTrans transform(path, x, y, z, 
-                           new TGeoRotation(path, a1, a2, a3, a4, a5, a6));
+  // Build the transformation from the parameters
+  TGeoHMatrix newTransform 
+    = GetTransform(x, y, z, a1, a2, a3, a4, a5, a6);
+   
+  // Compose TGeoCombiTrans
+  TGeoCombiTrans newCombiTransform(newTransform);
     
   // Get detection element store
   AliMUONGeometryStore* detElements = GetDetElements(moduleId);     
 
   // Add detection element
   detElements->Add(detElemId,
-     new AliMUONGeometryDetElement(detElemId, path, transform)); 
+     new AliMUONGeometryDetElement(detElemId, path, newCombiTransform)); 
 }		   
   
 //______________________________________________________________________________
@@ -362,28 +400,29 @@ TString  AliMUONVGeometryBuilder::ReadData3(ifstream& in) const
 }
 
 //______________________________________________________________________________
-void AliMUONVGeometryBuilder::WriteTransform(ofstream& out, 
+void AliMUONVGeometryBuilder::WriteTransform(ofstream& out,
                                    const TGeoCombiTrans* transform) const
 {
 // Writes the transformations 
+// after converting them into the specified reference frame
 // ---
 
+  // Convert transform to the given reference frame
+  TGeoHMatrix newTransform
+    = fReferenceFrame * (*transform) * (fReferenceFrame.Inverse());  
+
   out << "   pos: ";
-  const Double_t* xyz = transform->GetTranslation();
+  const Double_t* xyz = newTransform.GetTranslation();
   out << setw(10) << setprecision(4) << xyz[0] << "  " 
       << setw(10) << setprecision(4) << xyz[1] << "  " 
       << setw(10) << setprecision(4) << xyz[2];
 
   out << "   rot: ";
+  const Double_t* rm = newTransform.GetRotationMatrix();
+  TGeoRotation rotation;
+  rotation.SetMatrix(const_cast<Double_t*>(rm));
   Double_t a1, a2, a3, a4, a5, a6;
-  TGeoRotation* rotation = transform->GetRotation();
-  if (rotation) { 
-    rotation->GetAngles(a1, a2, a3, a4, a5, a6);
-  }
-  else {
-    TGeoRotation rotation2; 
-    rotation2.GetAngles(a1, a2, a3, a4, a5, a6);
-  }  
+  rotation.GetAngles(a1, a2, a3, a4, a5, a6);
       
   out << setw(8) << setprecision(4) << a1 << "  " 
       << setw(8) << setprecision(4) << a2 << "  " 
@@ -636,7 +675,8 @@ void  AliMUONVGeometryBuilder::RebuildSVMaps() const
 }
 
 //______________________________________________________________________________
-Bool_t  AliMUONVGeometryBuilder::ReadTransformations() const
+Bool_t  
+AliMUONVGeometryBuilder::ReadTransformations() const
 {
 // Reads transformations from a file
 // Returns true, if reading finished correctly.
@@ -714,7 +754,8 @@ Bool_t  AliMUONVGeometryBuilder::ReadSVMap() const
 }
 
 //______________________________________________________________________________
-Bool_t  AliMUONVGeometryBuilder::WriteTransformations() const
+Bool_t  
+AliMUONVGeometryBuilder::WriteTransformations() const
 {
 // Writes transformations into a file
 // Returns true, if writing finished correctly.

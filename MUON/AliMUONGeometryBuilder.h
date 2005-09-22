@@ -26,6 +26,13 @@ class AliMUONGeometryBuilder : public TObject
     AliMUONGeometryBuilder(AliModule* detector);
     AliMUONGeometryBuilder();
     virtual  ~AliMUONGeometryBuilder();
+    
+    // static methods
+    static TGeoHMatrix Multiply(const TGeoMatrix& m1, const TGeoMatrix& m2); 
+    static TGeoHMatrix Multiply(const TGeoMatrix& m1, const TGeoMatrix& m2,
+                                const TGeoMatrix& m3); 
+    static TGeoHMatrix Multiply(const TGeoMatrix& m1, const TGeoMatrix& m2,
+                                const TGeoMatrix& m3, const TGeoMatrix& m4); 
 
     // methods
     void  AddBuilder(AliMUONVGeometryBuilder* geomBuilder);

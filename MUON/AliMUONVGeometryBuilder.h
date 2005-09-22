@@ -17,6 +17,7 @@
 
 #include <TObject.h>
 #include <TObjArray.h>
+#include <TGeoMatrix.h>
 
 class TGeoTranslation;
 class TGeoRotation;
@@ -41,13 +42,14 @@ class AliMUONVGeometryBuilder : public TObject
     virtual ~AliMUONVGeometryBuilder();
   
     // methods
+            void  SetReferenceFrame(const TGeoCombiTrans& referenceFrame);
     virtual void  FillTransformations() const;
     virtual void  RebuildSVMaps() const;
     virtual Bool_t  ReadTransformations() const;
     virtual Bool_t  ReadSVMap() const;
     virtual Bool_t  WriteTransformations() const;
     virtual Bool_t  WriteSVMap(Bool_t rebuild) const;
-    
+
     virtual void CreateMaterials() {}  // make = 0; ?
                   // Function to be overriden in a concrete chamber/station
 		  // geometry builder class.
@@ -72,6 +74,11 @@ class AliMUONVGeometryBuilder : public TObject
 		  // geometry class.
 		  // The sensitive volumes Ids for each chamber
 		  // should be defined and set to its geometry class. 
+    virtual bool ApplyGlobalTransformation() { return true; }
+                  // Function to be overriden (and return false) 
+		  // in the concrete geometry builder classes 
+		  // which are already defined in the new ALICE
+		  // coordinate frame
 
     // access to module geometries
     Int_t  NofGeometries() const;
@@ -99,6 +106,10 @@ class AliMUONVGeometryBuilder : public TObject
     void     MapSV(const TString&path, const TString& volName, 
                   Int_t detElemId) const;
 
+    TGeoHMatrix GetTransform(
+                  Double_t x, Double_t y, Double_t z,
+		  Double_t a1, Double_t a2, Double_t a3, 
+ 		  Double_t a4, Double_t a5, Double_t a6) const;
     void FillData(Int_t moduleId, Int_t nofDetElements, 
                   Double_t x, Double_t y, Double_t z,
 		  Double_t a1, Double_t a2, Double_t a3, 
@@ -130,9 +141,12 @@ class AliMUONVGeometryBuilder : public TObject
     TString     fTransformFileName; // the name file with transformations 
     TString     fSVMapFileName;     // the name file with sensitive volume map 
     TObjArray*  fModuleGeometries;  // the modules geometries that will be built
-                                    // by this builder
-    
-  ClassDef(AliMUONVGeometryBuilder,3) // MUON chamber geometry base class
+                                    // by this builder				    
+    TGeoCombiTrans fReferenceFrame; // the transformation from the builder 
+                                    // reference frame to that of the transform 
+				    // data files
+				        
+  ClassDef(AliMUONVGeometryBuilder,4) // MUON chamber geometry base class
 };
 
 // inline functions
@@ -142,5 +156,11 @@ inline Int_t  AliMUONVGeometryBuilder::NofGeometries() const
 
 inline AliMUONGeometryModule* AliMUONVGeometryBuilder::Geometry(Int_t i) const
 { return (AliMUONGeometryModule*)fModuleGeometries->At(i); }
+
+inline void 
+AliMUONVGeometryBuilder::SetReferenceFrame(const TGeoCombiTrans& referenceFrame)
+{ fReferenceFrame = referenceFrame; 
+  //fReferenceFrame = new TGeoCombiTrans(referenceFrame);
+}
 
 #endif //ALI_MUON_V_GEOMETRY_BUILDER_H

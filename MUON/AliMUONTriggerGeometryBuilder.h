@@ -28,6 +28,7 @@ class AliMUONTriggerGeometryBuilder : public AliMUONVGeometryBuilder
     virtual void CreateGeometry();
     virtual void SetTransformations();
     virtual void SetSensitiveVolumes();
+    virtual bool ApplyGlobalTransformation() { return false; }
     
   protected:  
     AliMUONTriggerGeometryBuilder(const AliMUONTriggerGeometryBuilder& rhs);
