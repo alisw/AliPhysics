@@ -13,19 +13,26 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id$ */
+/*
+The trigger parametrization is computed for background levels 0., 0.5 and 1.
+In order to set a background level different from 0 it is necessary to 
+explicitly force it with:
+ForceBkgLevel(BkgLevel).
+
+For intermediate background levels, the trigger response is linearly 
+interpolated between these values.
+
+There is increased granularity in the pT region below 3 GeV. Although
+it does not seem to be necessary it is also possible to interpolate
+between pT bins using SetInt().
+
+$Log$
+*/
 
 #include "AliFastMuonTriggerEff.h"
-#include <TFile.h>
-#include <TTree.h>
-#include <TROOT.h>
-#include <stdlib.h>
-#include <Rtypes.h>
+#define PLIN printf("%s: %d: ",__FILE__,__LINE__)
 
-// Debugging flag
-//#define MYTRIGDEBUG
-
-ClassImp(AliFastMuonTriggerEff)
+ClassImp(AliFastMuonTriggerEff);
 
 AliFastMuonTriggerEff::AliFastMuonTriggerEff():
     AliFastResponse("Efficiency", "Muon Trigger Efficiency")
@@ -35,243 +42,240 @@ AliFastMuonTriggerEff::AliFastMuonTriggerEff():
 //
     SetCut(kLow);
     fZones=0;
+    SetBkgLevel(0.);
+    UnsetInt();
 }
 
+void AliFastMuonTriggerEff::SetCut(Int_t cut) 
+{  
+  if(cut==kLow){
+    printf("Selecting Low Pt cut\n");
+  }else if(cut==kHigh){
+    printf("Selecting High Pt cut\n");
+  }else if(cut==kAny){
+    printf("Selecting Lowest Pt cut\n");
+  }else{
+    printf("Don't know cut %d! Selecting Low Pt cut\n",cut);
+    cut=kLow;
+  }
+  fCut = cut;
+  
+}
+
+Int_t AliFastMuonTriggerEff::SetBkgLevel(Float_t Bkg)
+{
+    if((Bkg!=0.)) {
+       printf("%s: Warning: requested Bkg: %f\n",
+       __FILE__,Bkg);
+       fBkg=0.;
+       printf("A consistent treatement of the trigger probability\n");
+       printf("within the framework of the fast simulation requires\n");
+       printf("requires background 0\n");
+       printf("%s: fBkg: set to %f\n",
+       __FILE__,fBkg);
+    } else {
+      fBkg=Bkg;
+    }
+    if(fZones!=0.) {
+	Init();
+    }
+    return 0;
+}
+
+Int_t AliFastMuonTriggerEff::ForceBkgLevel(Float_t Bkg)
+{
+    if((Bkg!=0.)) {
+       printf("%s: Warning: requested Bkg: %f\n",
+       __FILE__,Bkg);
+       printf("A consistent treatement of the trigger probability\n");
+       printf("within the framework of the fast simulation\n");
+       printf("requires background 0");
+       printf("%s: Continue with fBkg: %f\n",
+       __FILE__,Bkg);
+    }
+    fBkg=Bkg;
+    if(fZones!=0.) {
+	Init();
+    }
+    return 0;
+}
+
+Int_t AliFastMuonTriggerEff::LoadTables(Char_t *namet=""){
+    Char_t hNameA[100],hNameL[100],hNameH[100];
+    sprintf(hNameA,"hEffAPt%s",namet);
+    sprintf(hNameL,"hEffLPt%s",namet);
+    sprintf(hNameH,"hEffHPt%s",namet);
+    fhEffAPt = (TH3F*)gDirectory->Get(hNameA);
+    fhEffLPt = (TH3F*)gDirectory->Get(hNameL);
+    fhEffHPt = (TH3F*)gDirectory->Get(hNameH);
+    if(!fhEffAPt){
+      PLIN; printf("%s: histogram %s not found\n",__FILE__,hNameA);
+      return -1;
+    }
+    if(!fhEffLPt){
+      PLIN; printf("%s: histogram %s not found\n",__FILE__,hNameL);
+      return -2;
+    }
+    if(!fhEffHPt){
+      PLIN; printf("%s: histogram %s not found\n",__FILE__,hNameH);
+      return -3;
+    }
+    return 0;
+}
 
 void AliFastMuonTriggerEff::Init()
 {
 //
 //  Initialization
 //
-    printf("Initializing %s / %s", fName.Data(), fTitle.Data());
-//
-
-    fPhiMin   = -90. ;
-    fPhiMax   =  90. ;
-    fDphi     =   9. ;
-    fThetaMin =   2. ;
-    fThetaMax =   9. ;
-    fDtheta   =   0.7;
-    fDpt      =   0.1;
-
-    InitTree();
-}
-
-void AliFastMuonTriggerEff::InitTree()
-{
-//
-//  Initialize tables from tree
-//
-    TTree          *chain;   // pointer to the analyzed TTree or TChain
-    Int_t           nSim, nZona;
-    Double_t        pmin, pmax, tmin, tmax, phimin, phimax, bkg;
-    Double_t        len50, hen50, leff, heff;
-    Double_t        vLPt[50];
-    Double_t        vHPt[50];
-    Char_t file[100]="$(ALICE_ROOT)/FASTSIM/data/vettorpara.root";
-//
-//  Avoid memory leak in case of reinitialization
-    if(fZones!=0) {
-        printf("\nWarning: reinitialization of an object of class: AliFastMuonTriggerEff\n");
-        for (Int_t i=0; i<fZones; i++) {
-            if(fEffLow [i])delete[] fEffLow[i];
-	    if(fEffHigh[i])delete[] fEffHigh[i];
-        }
-	if(fEffLow) {
-	    delete[] fEffLow;
-	    fEffLow=0;
-        }
-	if(fEffHigh) {
-	    delete[] fEffHigh;
-	    fEffHigh=0;
-        }
-    }
-    printf("AliFastMuonTriggerEff: Initialization\n");
+    fZones=0;
+    Char_t file[100]="$(ALICE_ROOT)/FASTSIM/data/MUONtriggerLUT_V2.4nvdn.root";
+    printf("Initializing %s / %s\n", fName.Data(), fTitle.Data());
+    printf("using data from file: %s\n",file);
+    printf("AliFastMuonTriggerEff: Initialization with background level: %f\n",fBkg);
     TFile *f = new TFile(file);
     if(f->IsZombie()) {
-        printf("Cannot open file: %s\n",file);
+        PLIN; printf("Cannot open file: %s\n",file);
         return;
     }
     f->ls();
-    
-    TTree* tree = (TTree*)gDirectory->Get("fitPar");
-
+    Int_t intb=0;
+    Char_t namet[10];
+    if(TMath::Abs(fBkg)<0.00001){
+      sprintf(namet,"00");
+    }else if(TMath::Abs(fBkg-0.5)<0.00001){
+      sprintf(namet,"05");
+    }else if(TMath::Abs(fBkg-1.0)<0.00001){
+      sprintf(namet,"10");
+    }else{
+      PLIN; printf("A table for Bkg level: %f does not exists\n",fBkg);
+      intb=1;
+    }
+    if(intb){ // Interpolation between background levels
+      PLIN; printf("Interpolating Bkg level: %f\n",fBkg);
+      TH3F* ha1,*hl1,*hh1,*ha2,*hl2,*hh2,*ha0,*hl0,*hh0;
+      Char_t name1[10],name2[10]; Float_t b1,b2;
+      if(fBkg>0&&fBkg<0.5){
+        sprintf(name1,"00");
+        sprintf(name2,"05");
+	b1=0.;
+	b2=0.5;
+      }else if(fBkg>0.5){
+        sprintf(name1,"05");
+        sprintf(name2,"10");
+	b1=0.5;
+	b2=1.0;
+	if(fBkg>1.0){
+	  for(Int_t i=0; i<10;i++){
+	    PLIN; printf("WARNING!!!! You are extrapolating above background 1.0\n");
+	  }
+	}
+      }else{
+        PLIN; printf("Bkg level: %f is not supported\n",fBkg);
+        return;
+      }
+      if(LoadTables(name1)){
+        PLIN; printf("Error in loading trigger tables\n");
+	return;
+      }
+      PLIN; printf("We use tables for %f and %f to interpolate %f Bkg level\n",b1,b2,fBkg);
+      ha0=(TH3F*)fhEffAPt->Clone("hEffAPtXX"); ha0->Reset();
+      hl0=(TH3F*)fhEffLPt->Clone("hEffLPtXX"); hl0->Reset();
+      hh0=(TH3F*)fhEffHPt->Clone("hEffHPtXX"); hh0->Reset();
+      ha1=fhEffAPt;
+      hl1=fhEffLPt;
+      hh1=fhEffHPt;
+      if(LoadTables(name2)){
+        PLIN; printf("Error in loading trigger tables\n");
+	return;
+      }
+      ha2=fhEffAPt;
+      hl2=fhEffLPt;
+      hh2=fhEffHPt;
+      fhEffAPt=ha0;
+      fhEffLPt=hl0;
+      fhEffHPt=hh0;
+      Int_t nnx=ha0->GetNbinsX()+1;
+      Int_t nny=ha0->GetNbinsY()+1;
+      Int_t nnz=ha0->GetNbinsZ()+1;
+      for(Int_t ix=0; ix<=nnx; ix++){
+	for(Int_t iy=0; iy<=nny; iy++){
+	  for(Int_t iz=0; iz<=nnz; iz++){
+	    Double_t y1,y2; Float_t cont;
+	    y1=ha1->GetBinContent(ix,iy,iz); y2=ha2->GetBinContent(ix,iy,iz);
+	    cont=Float_t(y1+(y2-y1)/(b2-b1)*(fBkg-b1)); if(cont>1)cont=1; if(cont<0)cont=0;
+	    fhEffAPt->SetBinContent(ix,iy,iz,cont);
+	    y1=hl1->GetBinContent(ix,iy,iz); y2=hl2->GetBinContent(ix,iy,iz);
+	    cont=Float_t(y1+(y2-y1)/(b2-b1)*(fBkg-b1)); if(cont>1)cont=1; if(cont<0)cont=0;
+	    fhEffLPt->SetBinContent(ix,iy,iz,cont);
+	    y1=hh1->GetBinContent(ix,iy,iz); y2=hh2->GetBinContent(ix,iy,iz);
+	    cont=Float_t(y1+(y2-y1)/(b2-b1)*(fBkg-b1)); if(cont>1)cont=1; if(cont<0)cont=0;
+	    fhEffHPt->SetBinContent(ix,iy,iz,cont);
+	  }
+	}
+      }
+    }else{ // Use tables computed for selected backgound levels
+      printf("Loading tables for background level: %f\n",fBkg);
+      if(LoadTables(namet)){
+        PLIN; printf("Error in loading trigger tables\n");
+	return;
+      }
+    }
+    fhEffAPt->SetDirectory(0);
+    fhEffLPt->SetDirectory(0);
+    fhEffHPt->SetDirectory(0);
+    fhLX=fhEffLPt->GetXaxis();
+    fhLY=fhEffLPt->GetYaxis();
+    fhLZ=fhEffLPt->GetZaxis();
 //
 //
-    chain = tree;
-    chain->SetMakeClass(1);
-    
-    chain->SetBranchAddress("nSim",&nSim);
-    chain->SetBranchAddress("nZona",&nZona);
-    chain->SetBranchAddress("ptmin",&pmin);
-    chain->SetBranchAddress("ptmax",&pmax);
-    chain->SetBranchAddress("Thetamin",&tmin);
-    chain->SetBranchAddress("Thetamax",&tmax);
-    chain->SetBranchAddress("Phimin",&phimin);
-    chain->SetBranchAddress("Phimax",&phimax);
-    chain->SetBranchAddress("Bkg",&bkg);
-    chain->SetBranchAddress("EffLPt",vLPt);
-    chain->SetBranchAddress("EffHPt",vHPt);
-    chain->SetBranchAddress("Pt0.5Low",&len50);
-    chain->SetBranchAddress("Pt0.5High",&hen50);
-    chain->SetBranchAddress("EffLowMax",&leff);
-    chain->SetBranchAddress("EffHighMax",&heff);
-// 
-//
-    Int_t nentries = Int_t(chain->GetEntries());
-    Int_t nbytes = 0, nb = 0;
-
-// Count the number of zones of the parametrization
-    Int_t nzone0=0, nzone1=0;
-    for (Int_t jentry=0; jentry<nentries; jentry++) {
-	nb = chain->GetEntry(jentry);
-	if(bkg==0.) {
-	     if(nSim==0)nzone0++;
-	     if(nSim==1)nzone1++;
-	}
-    }
-    
-    printf("Trigger parametrisation for %d zones for Pt: 0. 5. GeV/c\n",nzone0);
-    printf("and %d zones extended to 10. GeV/c\n",nzone1);
-    fZones=nzone0+nzone1;
-//    printf("Ciao\n");
-    if(fZones<=0){
-        printf("Number of zones must be greater than 0\n");
-	exit(6);
-    }
-    
-    fEffLow =new Float_t*[fZones];
-    fEffHigh=new Float_t*[fZones];
-    for (Int_t i=0; i<fZones; i++) {
-        fEffLow [i]=new Float_t[50];
-	fEffHigh[i]=new Float_t[50];
-    }
-    
-//  Initialize look-up table to standard values
-    Int_t isim, itheta, iphi;
-    for (isim=0; isim<2; isim++) {
-        for (itheta=0; itheta<10; itheta++) {
-	    for (iphi=0; iphi<20; iphi++) {
-	        fLook[isim][itheta][iphi]=0;
-            }
-	}
+    if(f->Get("Description"))
+    {
+      fDescription=((TObjString*)f->Get("Description"))->GetString();
+      printf("%s\n",fDescription.Data());
     }
 
-//  Loading Trigger efficiencies
-    Int_t myzone=0;
-#ifdef MYTRIGDEBUG
-            printf("Filling nSim nZona pmin pmax tmin tmax phimin phimax: ....\n");
-#endif
-    for (Int_t jentry=0; jentry<nentries; jentry++) {
-//	Int_t ientry = LoadTree(jentry); 
-	nb = chain->GetEntry(jentry);   
-	nbytes += nb;
-#ifdef MYTRIGDEBUG
-       printf("Getting entry %d... ",jentry);
-#endif
-// For the time being it works with background 0
-	if ((nSim == 0 || nSim == 1)&&bkg==0.) {
-#ifdef MYTRIGDEBUG
-            printf("Filling %d %d %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f: ",
-	    nSim,nZona,pmin,pmax,tmin,tmax,phimin,phimax);
-#endif
-	    for (Int_t k = 0; k < 50; k++) {
-		fEffLow [myzone][k] = vLPt[k];
-		fEffHigh[myzone][k] = vHPt[k];
-#ifdef MYTRIGDEBUG
-		if(k<15)printf(" %5.3f",vLPt[k]);
-#endif
-	    }
-#ifdef MYTRIGDEBUG
-            printf("\n");
-#endif
-	    myzone++;
-	    iphi=Int_t(nZona/10)-10;
-	    itheta=nZona%10;
-	    if(iphi<0||iphi>19||itheta<0||itheta>9) {
-	        printf("The format of data file is not consistent\nwith this version of the code\n");
-	        printf("This should never happen: iphi %d, itheta: %d\n",iphi,itheta);
-		exit(7);
-	    }
-	    fLook[nSim][itheta][iphi]=myzone;
-	} else {
-	    printf("Skipping entry with nSim=%d, bkg=%f\n",nSim,bkg);
-	}
-    }
-#ifdef MYTRIGDEBUG
-    printf("This is the content of the LUT after first step of initialization\n");
-    for(isim=0; isim<2; isim++) {
-        printf("isim=%d\n",isim);
-        for(iphi=0; iphi<20; iphi++) {
-	    printf("iphi: %2d:",iphi);
-	    for(itheta=0; itheta<10; itheta++) {
-	        printf(" %4d",fLook[isim][itheta][iphi]);
-            }
-	    printf("\n");
-	}
-    }
-#endif
-// Filling look=up table for the zones where the extended simulation does
-// not exists
-    for(iphi=0; iphi<20; iphi++) {
-    	for(itheta=0; itheta<10; itheta++) {
-	    if(fLook[0][itheta][iphi]==0) {
-	        printf("Missing entry isim=%d itheta=%d iphi=%d\n",isim,itheta,iphi);
-		exit(8);
-	    }
-	    if(fLook[0][itheta][iphi]<0||fLook[0][itheta][iphi]>fZones) {
-	        printf("Problem with entry isim=%d itheta=%d iphi=%d\n",isim,itheta,iphi);
-		exit(9);
-	    }
-	    if(fLook[1][itheta][iphi]==0) {
-                 fLook[1][itheta][iphi]=-fLook[0][itheta][iphi];
-	    }
-	}
-    }
-#ifdef MYTRIGDEBUG
-    for(isim=0; isim<2; isim++) {
-        printf("isim=%d\n",isim);
-        for(iphi=0; iphi<20; iphi++) {
-	    printf("iphi: %2d:",iphi);
-	    for(itheta=0; itheta<10; itheta++) {
-	        printf(" %4d",fLook[isim][itheta][iphi]);
-            }
-	    printf("\n");
-	}
-    }
-        for(iphi=0; iphi<20; iphi++) {
-	    for(itheta=0; itheta<10; itheta++) {
-    for(isim=0; isim<2; isim++) {
-	        printf("%d %2d %2d %4d:",isim,iphi,itheta,fLook[isim][itheta][iphi]);
-		if(fLook[isim][itheta][iphi]>0) {
-		    myzone=fLook[isim][itheta][iphi]-1;
-		    for(Int_t ipt=0; ipt<20; ipt++) {
-		        //printf(" %5.3f",fEffLow[myzone][ipt]);
-			printf(" %5.3f",fEffHigh[myzone][ipt]);
-		    }
-		    printf(" ...");
-		    for(Int_t ipt=40; ipt<50; ipt++) {
-		        //printf(" %5.3f",fEffLow[myzone][ipt]);
-			printf(" %5.3f",fEffHigh[myzone][ipt]);
-		    }		    
-		}
-		printf("\n");
-            }
-	}
-    }    
-#endif
+    fThetaMin = fhEffLPt->GetXaxis()->GetXmin();
+    fThetaMax = fhEffLPt->GetXaxis()->GetXmax();
+    fnthetab=fhEffLPt->GetNbinsX();
+    fDtheta   = (fThetaMax-fThetaMin)/fnthetab;
+
+    fPhiMin   = fhEffLPt->GetYaxis()->GetXmin();
+    fPhiMax   = fhEffLPt->GetYaxis()->GetXmax();
+    fnphib=fhEffLPt->GetNbinsY();
+    fDphi     = (fPhiMax-fPhiMin)/fnphib;
+
+    fPtMin=fhEffLPt->GetZaxis()->GetXmin();
+    fPtMax=fhEffLPt->GetZaxis()->GetXmax();
+    fnptb=fhEffLPt->GetNbinsZ();
+    fDpt      = (fPtMax-fPtMin)/fnptb;
+
+    printf("%4d bins in theta [%f:%f]\n",fnthetab,fThetaMin,fThetaMax);
+    printf("%4d bins in phi [%f:%f]\n",fnphib,fPhiMin,fPhiMax);
+    printf("%4d bins in pt [%f:%f]\n",fnptb,fPtMin,fPtMax);
+
+    fZones=fnthetab*fnphib;
+
     f->Close();
+    if(fInt==0) {
+      printf("Interpolation of trigger efficiencies is off!\n");
+    } else {
+      printf("Interpolation of trigger efficiencies is on!\n");
+    }
 }
 
-void AliFastMuonTriggerEff::Evaluate(Float_t charge, Float_t pt,
-                Float_t theta, Float_t phi,Float_t& effLow, Float_t& effHigh,
-		Float_t& /*eff*/)
+void AliFastMuonTriggerEff::Evaluate(Float_t charge, Float_t pt,Float_t theta,
+              Float_t phi, Float_t& effLow, Float_t& effHigh, Float_t& effAny)
 {
-//
-//  Trigger efficiency for pt, theta, phi (low and high cut)
-//
+    //
+    //  Trigger efficiency for pt, theta, phi (low, high and "any" cut)
+    //
+#ifdef MYTRIGDEBUG
+    printf("Evaluate(ch=%2.0f, pt=%10.6f, theta=%7.2f, phi=%8.2f ...)\n",charge,pt,theta,phi);
+#endif
     effLow=0.;
     effHigh=0.;
+    effAny=0;
     if(fZones==0) {
         printf("Call to uninitialized object of class: AliFastMuonTriggerEff\n");
 	return;
@@ -280,34 +284,36 @@ void AliFastMuonTriggerEff::Evaluate(Float_t charge, Float_t pt,
         printf("Warning: pt: %f < 0. GeV/c\n",pt);
 	return;	
     }
-    Int_t iPt   = Int_t(pt/fDpt)%50;
-    Int_t iSim  = Int_t(pt/fDpt)/50;
+
+    Int_t iPt   = fhLZ->FindBin((Double_t)pt);
+    if(iPt>fnptb)iPt=fnptb;
     Int_t iPhi  = Int_t((phi-fPhiMin)/fDphi);
     if(phi<fPhiMin)iPhi=iPhi-1;
-    Int_t iTheta = Int_t((theta-fThetaMin)/fDtheta);
+    Int_t iTheta = fhLX->FindBin((Double_t)theta);
 #ifdef MYTRIGDEBUG
-    printf("iSim iPt iTheta iPhi: %d %d %d %d\n",iSim,iPt,iTheta,iPhi);
+    printf("Evaluate(ch=%2.0f, pt=%10.6f, theta=%7.2f, phi=%8.2f ...)\n",charge,pt,theta,phi);
+    printf(" 0:%1d iPt iTheta iPhi: %d %d %d\n",fInt,iPt,iTheta,iPhi);
 #endif
-    iPhi=iPhi-40*(iPhi/40);
+    iPhi=iPhi-2*fnphib*(iPhi/(2*fnphib));
 #ifdef MYTRIGDEBUG
-    printf("1: iPhi converted to: %d for angle equivalence\n",iPhi);
+    printf(" 1:%1d iPhi converted to: %d for angle equivalence\n",fInt,iPhi);
 #endif
     if(iPhi<0)iPhi=-iPhi-1;
-    if(iPhi>19)iPhi=39-iPhi;
+    if(iPhi>(fnphib-1))iPhi=2*fnphib-1-iPhi;
 #ifdef MYTRIGDEBUG
-    printf("2: iPhi converted to: %d for the symmetry of the spectrometer\n",iPhi);
+    printf(" 2:%1d iPhi converted to: %d for the symmetry of the spectrometer\n",fInt,iPhi);
 #endif
     if(charge==1.){
     } else if(charge==-1.) {
-    iPhi=19-iPhi;
+    iPhi=fnphib-1-iPhi;
 #ifdef MYTRIGDEBUG
-    printf("3: iPhi converted to: %d for charge symmetry\n",iPhi);
+    printf(" 3:%1d iPhi converted to: %d for the charge symmetry\n",fInt,iPhi);
 #endif
     } else {
         printf("Warning: not understand charge: %f\n",charge);
         return;
     }
-    if(iTheta<0||iTheta>9) {
+    if(iTheta<=0||iTheta>fnthetab) {
         printf("Warning: theta: %f outside acceptance\n",theta);
         return;
     }
@@ -315,35 +321,98 @@ void AliFastMuonTriggerEff::Evaluate(Float_t charge, Float_t pt,
         printf("Warning: what do you mean with pt: %f <0?\n",pt);
 	return;
     }
-    if(iSim>=fSim) {
-        iSim=fSim-1;
-	iPt=49;
+    iPhi++;
 #ifdef MYTRIGDEBUG
-    printf("4: iSim iPt converted to: %d %d (last zone)\n",iSim,iPt);
+    printf(" 4:%1d Getting: iTheta, iPhi, iPt: %d %d %d\n",
+              fInt,iTheta,iPhi,iPt);
 #endif
-    }
-    Int_t iLook=fLook[iSim][iTheta][iPhi];
-    if(iLook<0) {
+    effLow =fhEffLPt->GetBinContent(iTheta,iPhi,iPt);
+    effHigh=fhEffHPt->GetBinContent(iTheta,iPhi,iPt);
+    effAny =fhEffAPt->GetBinContent(iTheta,iPhi,iPt);
 #ifdef MYTRIGDEBUG
-    printf("5: iLook iPt: %d %d converted to: ",iLook,iPt);
+    printf(" 4:%1d Result: charge, iTheta, iPhi, iPt: %f %d %d %d effLow: %f, effHigh: %f, effAny: %f\n",
+              fInt,charge,iTheta,iPhi,iPt,effLow,effHigh,effAny);
 #endif
-        iLook=-iLook-1;
-	iPt=49;
-#ifdef MYTRIGDEBUG
-    printf("%d %d from look up table contents\n",iLook,iPt);
-#endif
-    } else {
-        iLook=iLook-1;
-    }
-    effLow=fEffLow[iLook][iPt];
-    effHigh=fEffHigh[iLook][iPt];
-#ifdef MYTRIGDEBUG
-    printf("6: charge, iSim, iTheta, iPhi, iPt: %f %d %d %d %d effLow: %f, effHigh: %f\n",
-               charge,iSim,iTheta,iPhi,iPt,effLow,effHigh);
-#endif
-    
-    //fEffLow [iPhi][iTheta][iPt];
-    //fEffHigh[iPhi][iTheta][iPt];    
+        
+    if(fInt==1) {
+      Float_t angl,angh,anga;
+      Float_t effLowp,effHighp,effAnyp;
+      Float_t ptc=(iPt+0.5)*fDpt;  // The center of current bin
+      #ifdef MYTRIGDEBUG
+        printf(" 5:1 The center of current bin iPt: %d is: %f\n",iPt,ptc);
+      #endif
+      if(iPt==fnptb) {
+        #ifdef MYTRIGDEBUG
+	printf(" 6:1 No more points above! No interpolation is needed!\n");
+        #endif
+	return;        
+      }else if(ptc==pt){
+        #ifdef MYTRIGDEBUG
+	  printf(" 6:1 No interpolation is needed!\n");
+        #endif
+	return;
+      }else if(ptc>pt){
+	// Looking for previous point
+        if(iPt>1) {
+          effLowp =fhEffLPt->GetBinContent(iTheta,iPhi,iPt-1);
+          effHighp=fhEffHPt->GetBinContent(iTheta,iPhi,iPt-1);
+          effAnyp =fhEffAPt->GetBinContent(iTheta,iPhi,iPt-1);
+          #ifdef MYTRIGDEBUG
+	  printf(" 7:1 A simple look to previous point: %d: %f %f\n",iPt-1,effLowp,effHighp);
+          #endif
+	} else {
+	  effLowp=0.;
+	  effHighp=0.;
+          effAnyp=0;
+          #ifdef MYTRIGDEBUG
+          printf(" 8:1 result is: %f %f %f\n",effLowp,effHighp,effAnyp);
+	  #endif	  
+	}
+        angl=(effLow-effLowp)/fDpt;
+        angh=(effHigh-effHighp)/fDpt;
+        anga=(effAny-effAnyp)/fDpt;
+      }else{
+	// Looking for next point
+	if(iPt<fnptb) {
+          effLowp =fhEffLPt->GetBinContent(iTheta,iPhi,iPt+1);
+          effHighp=fhEffHPt->GetBinContent(iTheta,iPhi,iPt+1);
+          effAnyp =fhEffAPt->GetBinContent(iTheta,iPhi,iPt+1);
+          #ifdef MYTRIGDEBUG
+	  printf(" 7:1 A simple look to next point: %d: %f %f %f\n",iPt-1,effLowp,effHighp,effAnyp);
+          #endif
+	} else {
+	  effLowp=effLow;
+	  effHighp=effHigh;
+	  effAnyp=effAny;
+          #ifdef MYTRIGDEBUG
+          printf(" 8:1 result is: pt: %f %f %f\n",effLowp,effHighp,effAnyp);
+	  #endif	  
+        }
+        angl=(effLowp-effLow)/fDpt;
+        angh=(effHighp-effHigh)/fDpt;
+        anga=(effAnyp-effAny)/fDpt;
+      }
+      effLow=effLow+angl*(pt-ptc);
+      effHigh=effHigh+angh*(pt-ptc);
+      effAny=effAny+anga*(pt-ptc);
+      #ifdef MYTRIGDEBUG
+      printf(" 9:1 the interpolation coefficients are: %f %f %f\n",angl,angh,anga);
+      #endif
+  }
+  #ifdef MYTRIGDEBUG
+  printf("10:%1d effLow, effHigh=%f %f %f\n",fInt,effLow,effHigh,effAny);
+  #endif
+  return;
+}
+
+void AliFastMuonTriggerEff::Evaluate(Float_t charge, Float_t pt, Float_t theta,
+                                Float_t phi, Float_t& effLow, Float_t& effHigh)
+{
+    //
+    //  Trigger efficiency for pt, theta, phi (low and high cut)
+    //
+    Float_t effAny;
+    Evaluate(charge,pt,theta,phi,effLow,effHigh,effAny);
 }
 
 Float_t AliFastMuonTriggerEff::Evaluate(Float_t charge, Float_t pt,
@@ -357,13 +426,17 @@ Float_t AliFastMuonTriggerEff::Evaluate(Float_t charge, Float_t pt,
 	return 0.;
     }
     Float_t eff;
-    Float_t effLow, effHigh;
+    Float_t effLow, effHigh, effAny;
     
-    Evaluate(charge,pt,theta,phi,effLow,effHigh);
+    Evaluate(charge,pt,theta,phi,effLow,effHigh,effAny);
     if (fCut == kLow) 
 	eff  = effLow;
-    else
+    else if (fCut == kHigh)
 	eff  = effHigh;
+    else if (fCut == kAny)
+        eff  = effAny;
+    else
+        eff  = 0;
 
     return eff;
 }
