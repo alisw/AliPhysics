@@ -610,6 +610,8 @@ AliMUONTest::CreateTriggerSegmentation(Int_t chamberId, Int_t cathod)
     return 0;
   }  
 
+//    AliMUONGeometrySegmentation *chamberSeg[2] new AliMUONGeometrySegmentation(muon->Chamber(chamberId).GetGeometry());
+
   AliMUONGeometrySegmentation *chamberSeg = new AliMUONGeometrySegmentation(muon->Chamber(chamberId).GetGeometry());
 
 //Trigger Segmentation
@@ -625,8 +627,8 @@ AliMUONTest::CreateTriggerSegmentation(Int_t chamberId, Int_t cathod)
   AliMUONChamber *iChamber, *iChamber1;
   iChamber1 = &muon->Chamber(10);
   iChamber  = &muon->Chamber(chamberId);
-  Float_t zpos1= - iChamber1->Z();  
-  Float_t zpos = - iChamber->Z();	     
+  Float_t zpos1= iChamber1->Z();  
+  Float_t zpos = iChamber->Z();	     
   Float_t zRatio = zpos / zpos1;
 
 // init
@@ -735,15 +737,46 @@ AliMUONTest::CreateTriggerSegmentation(Int_t chamberId, Int_t cathod)
   Int_t icount=chamberId-10;  // chamber counter (0 1 2 3)
   Int_t id0=(10+icount+1)*100;
 
-  for (Int_t i=0; i<9; i++) {      
-      if (cathod==0) {	  
-	  chamberSeg->Add(id0+i,     trigSegX[i]);
-	  chamberSeg->Add(id0+50+i,  trigSegX[i]);
-      } else if (cathod==1) {       
-	  chamberSeg->Add(id0+i,     trigSegY[i]);
-	  chamberSeg->Add(id0+50+i,  trigSegY[i]);
-      }
+  if (cathod==0) {      
+      chamberSeg->Add(id0+0,      trigSegX[4]);
+      chamberSeg->Add(id0+1,      trigSegX[5]);
+      chamberSeg->Add(id0+2,      trigSegX[6]);
+      chamberSeg->Add(id0+3,      trigSegX[7]);
+      chamberSeg->Add(id0+4,      trigSegX[8]);
+      chamberSeg->Add(id0+5,      trigSegX[8]);
+      chamberSeg->Add(id0+6,      trigSegX[7]);
+      chamberSeg->Add(id0+7,      trigSegX[6]);
+      chamberSeg->Add(id0+8,      trigSegX[5]);
+      chamberSeg->Add(id0+9,      trigSegX[4]);
+      chamberSeg->Add(id0+10,     trigSegX[3]);
+      chamberSeg->Add(id0+11,     trigSegX[2]);
+      chamberSeg->Add(id0+12,     trigSegX[1]);
+      chamberSeg->Add(id0+13,     trigSegX[0]);
+      chamberSeg->Add(id0+14,     trigSegX[0]);
+      chamberSeg->Add(id0+15,     trigSegX[1]);
+      chamberSeg->Add(id0+16,     trigSegX[2]);
+      chamberSeg->Add(id0+17,     trigSegX[3]);
+  } else if (cathod==1) {
+      chamberSeg->Add(id0+0,      trigSegY[4]);
+      chamberSeg->Add(id0+1,      trigSegY[5]);
+      chamberSeg->Add(id0+2,      trigSegY[6]);
+      chamberSeg->Add(id0+3,      trigSegY[7]);
+      chamberSeg->Add(id0+4,      trigSegY[8]);
+      chamberSeg->Add(id0+5,      trigSegY[8]);
+      chamberSeg->Add(id0+6,      trigSegY[7]);
+      chamberSeg->Add(id0+7,      trigSegY[6]);
+      chamberSeg->Add(id0+8,      trigSegY[5]);
+      chamberSeg->Add(id0+9,      trigSegY[4]);
+      chamberSeg->Add(id0+10,     trigSegY[3]);
+      chamberSeg->Add(id0+11,     trigSegY[2]);
+      chamberSeg->Add(id0+12,     trigSegY[1]);
+      chamberSeg->Add(id0+13,     trigSegY[0]);
+      chamberSeg->Add(id0+14,     trigSegY[0]);
+      chamberSeg->Add(id0+15,     trigSegY[1]);
+      chamberSeg->Add(id0+16,     trigSegY[2]);
+      chamberSeg->Add(id0+17,     trigSegY[3]);
   }
+  
 
   if (!id0) {
       AliWarning(Form("Segmentation for chamber %d , cathod %d is not yet defined",chamberId, cathod));
@@ -1054,7 +1087,7 @@ void AliMUONTest::DrawSegmentation(AliMUONGeometrySegmentation *seg)
   Float_t dpx, dpy;
 //   TH2F * frame = new TH2F(" "," ",10,-10.,245.,10, -5., 45.);
 //   TH2F * frame = new TH2F(" "," ",10,-300.,300.,10, -300., 300.);
-  TH2F * frame = new TH2F(" "," ",10,-200.,200.,10, -200., 200.);
+  TH2F * frame = new TH2F(" "," ",10,-350.,350.,10, -350., 350.);
   frame->Draw();
 //   (new TPave(  0.,  0., 40., 40.,2))->Draw();
 //   (new TPave( 40.,  0., 80., 40.,2))->Draw();
@@ -1071,6 +1104,7 @@ void AliMUONTest::DrawSegmentation(AliMUONGeometrySegmentation *seg)
   for (Int_t iDE=0; iDE<detElements->GetNofEntries(); iDE++) {
     
     deId = detElements->GetEntry(iDE)->GetUniqueID();       
+	
     cout << "Detection element id: " << deId << endl;
     
     

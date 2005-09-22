@@ -523,16 +523,71 @@ Float_t AliMUONTriggerCircuit::GetX11Pos(Int_t istrip) const {
 
 Int_t AliMUONTriggerCircuit::DetElemId(Int_t ichamber, Int_t idModule)
 {
-// 07/22/05 bug found by Christophe. 
-// due to the inversion right-left of detElemId somewhere in the code
-// (AliMUONTriggerGeometrybuilder is correct!!!)
-// fixed temporary here. to be changed with official numbering of DeElemId.
-//
+// adpated to official numbering (09/20/05)
 // returns the detection element Id for given chamber and module
-// ichamber (from 11 to 14), idModule (from 11 to 97)
-//    Int_t itmp = (idModule > 0) ? 0 : 50; // right=0, left=50   
-    Int_t itmp = (idModule > 0) ? 50 : 0; // right=50, left=0   
-    return (ichamber*100)+itmp+(9-Int_t(TMath::Abs(idModule)/10));
+// ichamber (from 11 to 14), idModule (from -97 to 97)
+//    
+    Int_t itmp=0;    
+    Int_t linenumber=Int_t(idModule/10);    
+    switch (linenumber) // (from 1 to 9, from top to bottom)
+    {
+    case 1:
+	itmp = 4;
+	break;	
+    case 2:
+	itmp = 3;
+	break;		
+    case 3:
+	itmp = 2;
+	break;
+    case 4:
+	itmp = 1;
+	break;	    
+    case 5:
+	itmp = 0;
+	break;		
+    case 6:
+	itmp = 17;
+	break;		
+    case 7:
+	itmp = 16;
+	break;		
+    case 8:
+	itmp = 15;
+	break;		
+    case 9:
+	itmp = 14;
+	break;		
+// left
+    case -1:
+	itmp = 5;
+	break;		
+    case -2:
+	itmp = 6;
+	break;		
+    case -3:
+	itmp = 7;
+	break;		
+    case -4:
+	itmp = 8;
+	break;		
+    case -5:
+	itmp = 9;
+	break;		
+    case -6:
+	itmp = 10;
+	break;		
+    case -7:
+	itmp = 11;
+	break;		
+    case -8:
+	itmp = 12;
+	break;
+    case -9:
+	itmp = 13;
+	break;		
+    }
+    return (ichamber*100)+itmp;    
 }
 
 

@@ -126,14 +126,18 @@ void AliMUONTriggerGeometryBuilder::CreateGeometry()
 //    const Float_t kRMAX[2]={64.,68.};
 // z position of the middle of the gas gap in mother vol 
     const Float_t kZm=-3.6;
-    const Float_t kZp=+3.6;     
-
+    const Float_t kZp=+3.6;
+    
     AliMUONChamber *iChamber, *iChamber1, *iChamber2;
     iChamber1 = &fMUON->Chamber(10);
-    Float_t zpos1=-iChamber1->Z(); 
+//cp    Float_t zpos1=-iChamber1->Z(); 
+    Float_t zpos1= iChamber1->Z(); 
+    printf("AliMUONTriggerGeometryBuilder %d \n",zpos1);
+
     iChamber2 = &fMUON->Chamber(11);
 
-    Double_t dstation =  ( (-iChamber2->Z()) - (-iChamber1->Z()) ) /2.1;
+//cp    Double_t dstation =  ( (-iChamber2->Z()) - (-iChamber1->Z()) ) /2.1;
+    Double_t dstation =  ( ( iChamber2->Z()) - ( iChamber1->Z()) ) /2.1;
     Float_t par[3];
     par[2] = dstation;
 
@@ -158,7 +162,8 @@ void AliMUONTriggerGeometryBuilder::CreateGeometry()
  	    gMC->Gsvolu(volName,"TUBE", idAir, par, 3);
  	    iChamber->GetGeometry()->SetVolume(volName);
 
-	    Float_t zpos = - iChamber->Z();	     
+//	    Float_t zpos = - iChamber->Z();	     
+	    Float_t zpos =  iChamber->Z();	     
 	    
 /* removed 03/18/05
 // Flange between beam shielding and RPC 
@@ -226,9 +231,9 @@ void AliMUONTriggerGeometryBuilder::CreateGeometry()
 	    dpar[0] = ((kXMAX-kXMED)/2.)*zRatio;
 	    dpar[1] = kYMIN * zRatio;
 
-	    detElemId = (10+icount+1)*100+4;
+	    detElemId = (10+icount+1)*100;
 	    GetEnvelopes(10+icount)->AddEnvelope(volEnv[4], detElemId, true, TGeoTranslation(xEnv,yEnvP,kZp));
-	    detElemId = (10+icount+1)*100+50+4;
+	    detElemId = (10+icount+1)*100+9;
 	    GetEnvelopes(10+icount)->AddEnvelope(volEnv[13], detElemId, true, TGeoTranslation(-xEnv,yEnvM,kZm),TGeoRotation("rot1",90.,180.,90.,90.,180.,0.));
 
 	    GetEnvelopes(10+icount)->AddEnvelopeConstituentParam(volAlu,volEnv[4],iVolNum++,3, dpar);
@@ -245,13 +250,13 @@ void AliMUONTriggerGeometryBuilder::CreateGeometry()
 	    xpos = kXMIN/2. * zRatio;
 	    ypos = (kYMIN - kYMIN/4.) * zRatio;
 
-	    detElemId = (10+icount+1)*100+3;
-	    GetEnvelopes(10+icount)->AddEnvelope(volEnv[3], detElemId, true, TGeoTranslation( xEnv,-yEnvM,kZm));
-	    detElemId = (10+icount+1)*100+5;
+	    detElemId = (10+icount+1)*100+17;
+	    GetEnvelopes(10+icount)->AddEnvelope(volEnv[3], detElemId, true, TGeoTranslation( xEnv,-yEnvM,kZm));	    
+	    detElemId = (10+icount+1)*100+1;
 	    GetEnvelopes(10+icount)->AddEnvelope(volEnv[5], detElemId, true, TGeoTranslation( xEnv, yEnvM,kZm));
-	    detElemId = (10+icount+1)*100+50+3;
+	    detElemId = (10+icount+1)*100+10;
 	    GetEnvelopes(10+icount)->AddEnvelope(volEnv[12], detElemId, true, TGeoTranslation(-xEnv,-yEnvP,kZp),TGeoRotation("rot1",90.,180.,90.,90.,180.,0.));
-	    detElemId = (10+icount+1)*100+50+5;
+	    detElemId = (10+icount+1)*100+8;
 	    GetEnvelopes(10+icount)->AddEnvelope(volEnv[14], detElemId, true, TGeoTranslation(-xEnv, yEnvP,kZp),TGeoRotation("rot1",90.,180.,90.,90.,180.,0.));
 
 	    GetEnvelopes(10+icount)->AddEnvelopeConstituentParam(volAlu,volEnv[3],iVolNum++,TGeoTranslation(xpos, ypos,0.),3,dpar);
@@ -279,13 +284,13 @@ void AliMUONTriggerGeometryBuilder::CreateGeometry()
 	    dpar[0] = (kXMAX/2.)*zRatio;
 	    dpar[1] =  kYMIN*zRatio;
 
-	    detElemId = (10+icount+1)*100+2;
+	    detElemId = (10+icount+1)*100+16;
 	    GetEnvelopes(10+icount)->AddEnvelope(volEnv[2], detElemId, true, TGeoTranslation(xEnv,-yEnvP,kZp));
-	    detElemId = (10+icount+1)*100+6;
+	    detElemId = (10+icount+1)*100+2;
 	    GetEnvelopes(10+icount)->AddEnvelope(volEnv[6], detElemId, true, TGeoTranslation(xEnv, yEnvP,kZp));
-	    detElemId = (10+icount+1)*100+50+2;
+	    detElemId = (10+icount+1)*100+11;
             GetEnvelopes(10+icount)->AddEnvelope(volEnv[11], detElemId, true, TGeoTranslation(-xEnv,-yEnvM,kZm),TGeoRotation("rot1",90.,180.,90.,90.,180.,0.));
-	    detElemId = (10+icount+1)*100+50+6;
+	    detElemId = (10+icount+1)*100+7;
             GetEnvelopes(10+icount)->AddEnvelope(volEnv[15], detElemId, true, TGeoTranslation(-xEnv, yEnvM,kZm),TGeoRotation("rot1",90.,180.,90.,90.,180.,0.));
 
 	    GetEnvelopes(10+icount)->AddEnvelopeConstituentParam(volAlu,volEnv[2],iVolNum++,3, dpar);
@@ -299,13 +304,13 @@ void AliMUONTriggerGeometryBuilder::CreateGeometry()
 	    yEnvP = (yEnvMsave + kYMIN * zRatio ) * zpm + kYMIN * zRatio;
 	    yEnvM = (yEnvPsave + kYMIN * zRatio ) * zmp + kYMIN * zRatio;
 
-	    detElemId = (10+icount+1)*100+1;
+	    detElemId = (10+icount+1)*100+15;
 	    GetEnvelopes(10+icount)->AddEnvelope(volEnv[1], detElemId, true, TGeoTranslation(xEnv,-yEnvM,kZm));
-	    detElemId = (10+icount+1)*100+7;
+	    detElemId = (10+icount+1)*100+3;
 	    GetEnvelopes(10+icount)->AddEnvelope(volEnv[7], detElemId, true, TGeoTranslation(xEnv, yEnvM,kZm));
-	    detElemId = (10+icount+1)*100+50+1;
+	    detElemId = (10+icount+1)*100+12;
 	    GetEnvelopes(10+icount)->AddEnvelope(volEnv[10], detElemId, true, TGeoTranslation(-xEnv,-yEnvP,kZp),TGeoRotation("rot1",90.,180.,90.,90.,180.,0.));
-	    detElemId = (10+icount+1)*100+50+7;
+	    detElemId = (10+icount+1)*100+6;
 	    GetEnvelopes(10+icount)->AddEnvelope(volEnv[16], detElemId, true, TGeoTranslation(-xEnv, yEnvP,kZp),TGeoRotation("rot1",90.,180.,90.,90.,180.,0.));
 
 	    GetEnvelopes(10+icount)->AddEnvelopeConstituentParam(volAlu,volEnv[1],iVolNum++,3,dpar);
@@ -320,13 +325,13 @@ void AliMUONTriggerGeometryBuilder::CreateGeometry()
 	    yEnvP = (yEnvMsave + kYMIN * zRatio ) * zpm + kYMIN * zRatio;
 	    yEnvM = (yEnvPsave + kYMIN * zRatio ) * zmp + kYMIN * zRatio;
 
-	    detElemId = (10+icount+1)*100;
+	    detElemId = (10+icount+1)*100+14;
 	    GetEnvelopes(10+icount)->AddEnvelope(volEnv[0], detElemId, true, TGeoTranslation(xEnv,-yEnvP,kZp));
-	    detElemId = (10+icount+1)*100+8;
+	    detElemId = (10+icount+1)*100+4;
 	    GetEnvelopes(10+icount)->AddEnvelope(volEnv[8], detElemId, true, TGeoTranslation(xEnv, yEnvP,kZp));
-	    detElemId = (10+icount+1)*100+50;
+	    detElemId = (10+icount+1)*100+13;
 	    GetEnvelopes(10+icount)->AddEnvelope(volEnv[9], detElemId, true, TGeoTranslation(-xEnv,-yEnvM,kZm),TGeoRotation("rot1",90.,180.,90.,90.,180.,0.));
-	    detElemId = (10+icount+1)*100+50+8;
+	    detElemId = (10+icount+1)*100+5;
 	    GetEnvelopes(10+icount)->AddEnvelope(volEnv[17], detElemId, true, TGeoTranslation(-xEnv, yEnvM,kZm),TGeoRotation("rot1",90.,180.,90.,90.,180.,0.));
 	    
 	    GetEnvelopes(10+icount)->AddEnvelopeConstituentParam(volAlu,volEnv[0],iVolNum++,3,dpar);
@@ -347,22 +352,26 @@ void AliMUONTriggerGeometryBuilder::SetTransformations()
     AliMUONChamber *iChamber1, *iChamber2;
 
     iChamber1 = &fMUON->Chamber(10);
-    zpos1= - iChamber1->Z(); 
+//cp    zpos1= - iChamber1->Z(); 
+    zpos1= iChamber1->Z(); 
     iChamber1->GetGeometry()
 	->SetTranslation(TGeoTranslation(0., 0., zpos1));
     
     iChamber2 = &fMUON->Chamber(11);
-    zpos2 = - iChamber2->Z(); 
+//cp    zpos2 = - iChamber2->Z(); 
+    zpos2 = iChamber2->Z(); 
     iChamber2->GetGeometry()
 	->SetTranslation(TGeoTranslation(0., 0., zpos2));
 
     iChamber1 = &fMUON->Chamber(12);
-    zpos1 = - iChamber1->Z(); 
+//cp    zpos1 = - iChamber1->Z(); 
+    zpos1 = iChamber1->Z(); 
     iChamber1->GetGeometry()
 	->SetTranslation(TGeoTranslation(0., 0., zpos1));
     
     iChamber2 = &fMUON->Chamber(13);
-    zpos2 = - iChamber2->Z(); 
+//cp    zpos2 = - iChamber2->Z(); 
+    zpos2 = iChamber2->Z(); 
     iChamber2->GetGeometry()
 	->SetTranslation(TGeoTranslation(0., 0., zpos2));
 }
