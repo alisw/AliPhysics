@@ -1,10 +1,6 @@
 # $Id$
 
 SRCS:=  AliMUON.cxx AliMUONv1.cxx \
-        AliMUONSegmentationDetectionElement.cxx \
-        AliMUONSegmentIndex.cxx \
-        AliMUONSegmentManuIndex.cxx \
-        AliMUONSegmentPosition.cxx\
         AliMUONGeometryDEIndexing.cxx \
         AliMUONCommonGeometryBuilder.cxx \
         AliMUONSt1GeometryBuilder.cxx \

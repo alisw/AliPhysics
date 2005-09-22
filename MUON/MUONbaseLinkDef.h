@@ -7,10 +7,6 @@
 #pragma link C++ class AliMUONv1+; 
 
 // mapping & segmentation (change in progress)
-#pragma link C++ class AliMUONSegmentationDetectionElement+;
-#pragma link C++ class AliMUONSegmentIndex+;
-#pragma link C++ class AliMUONSegmentManuIndex+;
-#pragma link C++ class AliMUONSegmentPosition+;
 #pragma link C++ class AliMUONSt12QuadrantSegmentation-; 
 #pragma link C++ class AliMUONSt345SlatSegmentation+;
 #pragma link C++ class AliMUONSt345SlatSegmentationV2-;

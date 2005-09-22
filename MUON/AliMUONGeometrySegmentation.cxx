@@ -34,7 +34,6 @@
 #include "AliMUONGeometryModule.h"
 #include "AliMUONGeometryDetElement.h"
 #include "AliMUONGeometryStore.h"
-#include "AliMUONSegmentManuIndex.h"
 
 ClassImp(AliMUONGeometrySegmentation)
 
