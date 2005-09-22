@@ -4,11 +4,14 @@
  * See cxx source for full Copyright notice                               */
 
 /* Raw data class for trigger and tracker chambers */
-
+#include <map>
+#include <vector>
 #include <TObject.h>
+#include <TExMap.h>
 #include "AliMUONSubEventTracker.h"
 
 class TClonesArray;
+class TArrayI;
 class AliLoader;
 class AliMUONData;
 class AliMUONDigit;
@@ -29,27 +32,30 @@ class AliMUONRawData : public TObject
   Int_t   Digits2Raw();
   Int_t   Raw2Digits(AliRawReader* rawReader);
 
+  Int_t ReadTrackerDDL(AliRawReader* rawReader);
+  Int_t ReadTriggerDDL(AliRawReader* rawReader);
+
   AliMUONData*   GetMUONData() {return fMUONData;}
 
-  void AddData1(const AliMUONSubEventTracker* event) {
-    TClonesArray &temp = *fSubEventArray[0];
+  void AddData(const AliMUONSubEventTracker* event) {
+    TClonesArray &temp = *fSubEventArray;
     new(temp[temp.GetEntriesFast()])AliMUONSubEventTracker(*event); 
   }
 
-  void AddData2(const AliMUONSubEventTracker* event) {
-    TClonesArray &temp = *fSubEventArray[1];
-    new(temp[temp.GetEntriesFast()])AliMUONSubEventTracker(*event); 
-  }
 
-  void GetDummyMapping(Int_t iCh, Int_t iCath, const AliMUONDigit* digit, Int_t &busPatchId,
+  // could be private function (public for debugging)
+  Int_t GetInvMapping(const AliMUONDigit* digit, Int_t &busPatchId,
 		       UShort_t &manuId, UChar_t &channelId);
 
-  void GetInvDummyMapping(Int_t iCh, Int_t buspatchId, UShort_t manuId, 
+  Int_t GetMapping(Int_t buspatchId, UShort_t manuId, 
 			  UChar_t channelId, AliMUONDigit* digit );
 
 
   Int_t GetGlobalTriggerPattern(const AliMUONGlobalTrigger* gloTrg);
   AliMUONGlobalTrigger* GetGlobalTriggerPattern(Int_t gloTrg);
+
+  Int_t GetDEfromBus(Int_t busPatchId);
+  TArrayI* GetBusfromDE(Int_t idDE);
 
  protected:
   AliMUONRawData();                  // Default constructor
@@ -62,20 +68,21 @@ class AliMUONRawData : public TObject
  
   AliLoader*    fLoader;             //! alice loader
  
-  FILE*         fFile1;              //! DDL binary file pointer one per 1/2 chamber
-  FILE*         fFile2;              //! DDL binary file pointer one per 1/2 chamber
+  FILE*         fFile[2];            //! DDL binary file pointer one per 1/2 chamber
 
-  TClonesArray* fSubEventArray[2];   //! array to sub event tracker
+  TClonesArray* fSubEventArray;   //! array to sub event tracker
    
   AliMUONDDLTracker* fDDLTracker;      //! DDL tracker class pointers
   AliMUONDDLTrigger* fDDLTrigger;      //! DDL trigger class pointers
+
+  TExMap fDetElemIdToBusPatch;
+  TExMap fBusPatchToDetElem;
 
   // writing raw data
   Int_t WriteTrackerDDL(Int_t iCh);
   Int_t WriteTriggerDDL();
 
-  Int_t ReadTrackerDDL(AliRawReader* rawReader);
-  Int_t ReadTriggerDDL(AliRawReader* rawReader);
+  void  ReadBusPatchFile();
 
   ClassDef(AliMUONRawData,1) // MUON cluster reconstructor in ALICE
 };

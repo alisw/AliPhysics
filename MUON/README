@@ -79,7 +79,6 @@ MUONTestTrigger() or MUONTestTrigger("galice.root",##) for the event number ##
 
 ....
 
-
 ============================================================
  How to check the Geometry 
 ============================================================
@@ -168,11 +167,34 @@ gener->SetOrigin(0,0,0);        // Vertex position
 gener->SetSigma(0,0,0.0);       // Sigma in (X,Y,Z) (cm) on IP position
 gener->Init();
  
-===========================================================
+================================================================
  csh Script for the full reconstruction with raw data generator
-===========================================================
-See file AlirootRun_MUONtest.script
-in $ALICE_ROOT/MUON
+================================================================
+The rawdata generation and analysis is working with the new segmentation.
+So the config file must use the version "AliMUONFactoryV3"
+
+Generation
+The method AliSimulation::SetWriteRawData("MUON") enables on 
+the muon rawdata generation
+aliroot -b << EOF  
+AliSimulation MuonSim("$ALICE_ROOT/MUON/Config.C")
+MuonSim.SetWriteRawData("MUON")
+MuonSim.Run(10)
+.q
+EOF
+
+Reconstruction
+aliroot -b << EOF 
+AliReconstruction MuonRec("galice.root");
+MuonRec.SetInput("$YOUR_WORKING_DIRECTORY/");  Do not forget the slash at the end!
+MuonRec.SetRunVertexFinder(kFALSE);
+MuonRec.SetRunLocalReconstruction("MUON");
+MuonRec.SetRunTracking("");
+MuonRec.SetFillESD("MUON");
+MuonRec.Run();
+.q
+EOF
+
 
 
 ============================================================

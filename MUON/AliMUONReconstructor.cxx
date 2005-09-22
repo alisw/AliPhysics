@@ -163,10 +163,17 @@ void AliMUONReconstructor::Reconstruct(AliRunLoader* runLoader, AliRawReader* ra
     //----------------------- raw2digits & raw2trigger-------------------
     if (!loader->TreeD()) loader->MakeDigitsContainer();
 
-    dataCluster->MakeBranch("D,GLT");
-    dataCluster->SetTreeAddress("D,GLT");
-    rawData->Raw2Digits(rawReader);
-    dataCluster->Fill("D,GLT"); 
+    // tracking branch
+    dataCluster->MakeBranch("D");
+    dataCluster->SetTreeAddress("D");
+    rawData->ReadTrackerDDL(rawReader);
+    dataCluster->Fill("D"); 
+
+    // trigger branch
+    dataCluster->MakeBranch("GLT");
+    dataCluster->SetTreeAddress("GLT");
+    rawData->ReadTriggerDDL(rawReader);
+    dataCluster->Fill("GLT"); 
 
     loader->WriteDigits("OVERWRITE");
 
@@ -175,7 +182,7 @@ void AliMUONReconstructor::Reconstruct(AliRunLoader* runLoader, AliRawReader* ra
      
     // tracking branch
     dataCluster->MakeBranch("RC");
-    dataCluster->SetTreeAddress("D,RC");
+    dataCluster->SetTreeAddress("RC");
     recoCluster->Digits2Clusters(); 
     dataCluster->Fill("RC"); 
 
@@ -234,8 +241,8 @@ void AliMUONReconstructor::FillESD(AliRunLoader* runLoader, AliESD* esd) const
   AliMUONData* muonData = new AliMUONData(loader,"MUON","MUON");
 
    // declaration  
-  Int_t iEvent, nPart;
-  Int_t nTrackHits, nPrimary;
+  Int_t iEvent;// nPart;
+  Int_t nTrackHits;// nPrimary;
   Double_t fitFmin;
   TArrayF vertex(3);
 
@@ -247,35 +254,35 @@ void AliMUONReconstructor::FillESD(AliRunLoader* runLoader, AliESD* esd) const
   AliMUONTrack* recTrack = 0;
   AliMUONTrackParam* trackParam = 0;
   AliMUONTriggerTrack* recTriggerTrack = 0;
-  TParticle* particle = new TParticle();
-  AliGenEventHeader* header = 0;
+//   TParticle* particle = new TParticle();
+//   AliGenEventHeader* header = 0;
   iEvent = runLoader->GetEventNumber(); 
   runLoader->GetEvent(iEvent);
 
   // vertex calculation (maybe it exists already somewhere else)
   vertex[0] = vertex[1] = vertex[2] = 0.;
-  nPrimary = 0;
-  if ( (header = runLoader->GetHeader()->GenEventHeader()) ) {
-    header->PrimaryVertex(vertex);
-  } else {
-    runLoader->LoadKinematics("READ");
-    runLoader->TreeK()->GetBranch("Particles")->SetAddress(&particle);
-    nPart = (Int_t)runLoader->TreeK()->GetEntries();
-    for(Int_t iPart = 0; iPart < nPart; iPart++) {
-      runLoader->TreeK()->GetEvent(iPart);
-      if (particle->GetFirstMother() == -1) {
-	vertex[0] += particle->Vx();
-	vertex[1] += particle->Vy();
-	vertex[2] += particle->Vz();
-	nPrimary++;
-      }
-      if (nPrimary) {
-	vertex[0] /= (double)nPrimary;
-	vertex[1] /= (double)nPrimary;
-	vertex[2] /= (double)nPrimary;
-      }
-    }
-  }
+ //  nPrimary = 0;
+//   if ( (header = runLoader->GetHeader()->GenEventHeader()) ) {
+//     header->PrimaryVertex(vertex);
+//   } else {
+//     runLoader->LoadKinematics("READ");
+//     runLoader->TreeK()->GetBranch("Particles")->SetAddress(&particle);
+//     nPart = (Int_t)runLoader->TreeK()->GetEntries();
+//     for(Int_t iPart = 0; iPart < nPart; iPart++) {
+//       runLoader->TreeK()->GetEvent(iPart);
+//       if (particle->GetFirstMother() == -1) {
+// 	vertex[0] += particle->Vx();
+// 	vertex[1] += particle->Vy();
+// 	vertex[2] += particle->Vz();
+// 	nPrimary++;
+//       }
+//       if (nPrimary) {
+// 	vertex[0] /= (double)nPrimary;
+// 	vertex[1] /= (double)nPrimary;
+// 	vertex[2] /= (double)nPrimary;
+//       }
+//     }
+//   }
   // setting ESD MUON class
   AliESDMuonTrack* theESDTrack = new  AliESDMuonTrack() ;
 
@@ -349,10 +356,14 @@ void AliMUONReconstructor::FillESD(AliRunLoader* runLoader, AliESD* esd) const
 
   //} // end loop on event  
   loader->UnloadTracks(); 
-  if (!header)
-    runLoader->UnloadKinematics();
+ //  if (!header)
+//     runLoader->UnloadKinematics();
   delete theESDTrack;
   delete muonData;
-  delete particle;
   // delete particle;
+}//_____________________________________________________________________________
+void AliMUONReconstructor::FillESD(AliRunLoader* runLoader, AliRawReader* /*rawReader*/, AliESD* esd) const
+{
+  // don't need rawReader ???
+  FillESD(runLoader, esd);
 }

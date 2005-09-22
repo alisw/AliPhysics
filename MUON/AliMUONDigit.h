@@ -37,6 +37,7 @@ class AliMUONDigit : public TObject {
     virtual void     SetDetElemId(Int_t id)    {fDetElemId = id;}
     virtual void     SetPadX(Int_t pad)        {fPadX = pad;}
     virtual void     SetPadY(Int_t pad)        {fPadY = pad;}
+    virtual void     SetSignal(Int_t q)        {fSignal = q;}
     virtual void     AddSignal(Int_t q)        {fSignal += q;}
     virtual void     AddPhysicsSignal(Int_t q) {fPhysics += q;}
     virtual void     SetHit(Int_t n)           {fHit = n;}    

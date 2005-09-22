@@ -27,8 +27,8 @@ class AliMUONReconstructor: public AliReconstructor
     virtual void         FillESD(AliRawReader* /*rawReader*/, TTree* /*clustersTree*/, 
 				 AliESD* /*esd*/) const {return;}
     virtual void         FillESD(AliRunLoader* runLoader, AliESD* esd) const;
-    virtual void         FillESD(AliRunLoader* /*runLoader*/, 
-				 AliRawReader* /*rawReader*/, AliESD* /*esd*/) const {return;}
+    virtual void         FillESD(AliRunLoader* runLoader, 
+				 AliRawReader* /*rawReader*/, AliESD* esd) const;
 
  
   ClassDef(AliMUONReconstructor, 0)   // class for the MUON reconstruction
