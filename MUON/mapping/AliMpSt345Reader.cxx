@@ -36,6 +36,7 @@
 #include "TString.h"
 
 #include <sstream>
+#include <assert.h>
 
 ClassImp(AliMpSt345Reader)
 
