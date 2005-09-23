@@ -2208,7 +2208,7 @@ Int_t AliMUONClusterFinderAZ::Fit(Int_t nfit, Int_t *clustFit, TObjArray **clust
   AliMUONPixel *pixPtr;
   Int_t npxclu;
   Double_t cont, cmax = 0, xseed = 0, yseed = 0, errOk[8], qq = 0;
-  Double_t xyseed[3][2], qseed[3], xy_Cand[3][2] = {{0},{0}}, sig_Cand[3][2] = {{0},{0}};
+  Double_t xyseed[3][2], qseed[3], xyCand[3][2] = {{0},{0}}, sigCand[3][2] = {{0},{0}};
 
   for (Int_t ifit=1; ifit<=nfit; ifit++) {
     cmax = 0;
@@ -2226,37 +2226,37 @@ Int_t AliMUONClusterFinderAZ::Fit(Int_t nfit, Int_t *clustFit, TObjArray **clust
       }
       qq += cont;
       /*
-      xy_Cand[ifit-1][0] += pixPtr->Coord(0) * cont;
-      xy_Cand[ifit-1][1] += pixPtr->Coord(1) * cont;
-      sig_Cand[ifit-1][0] += pixPtr->Coord(0) * pixPtr->Coord(0) * cont;
-      sig_Cand[ifit-1][1] += pixPtr->Coord(1) * pixPtr->Coord(1) * cont;
+      xyCand[ifit-1][0] += pixPtr->Coord(0) * cont;
+      xyCand[ifit-1][1] += pixPtr->Coord(1) * cont;
+      sigCand[ifit-1][0] += pixPtr->Coord(0) * pixPtr->Coord(0) * cont;
+      sigCand[ifit-1][1] += pixPtr->Coord(1) * pixPtr->Coord(1) * cont;
       */
-      xy_Cand[0][0] += pixPtr->Coord(0) * cont;
-      xy_Cand[0][1] += pixPtr->Coord(1) * cont;
-      sig_Cand[0][0] += pixPtr->Coord(0) * pixPtr->Coord(0) * cont;
-      sig_Cand[0][1] += pixPtr->Coord(1) * pixPtr->Coord(1) * cont;
+      xyCand[0][0] += pixPtr->Coord(0) * cont;
+      xyCand[0][1] += pixPtr->Coord(1) * cont;
+      sigCand[0][0] += pixPtr->Coord(0) * pixPtr->Coord(0) * cont;
+      sigCand[0][1] += pixPtr->Coord(1) * pixPtr->Coord(1) * cont;
     }
     xyseed[ifit-1][0] = xseed;
     xyseed[ifit-1][1] = yseed;
     qseed[ifit-1] = cmax;
     /*
-    xy_Cand[ifit-1][0] /= qq; // <x>
-    xy_Cand[ifit-1][1] /= qq; // <y>
-    sig_Cand[ifit-1][0] = sig_Cand[ifit-1][0]/qq - xy_Cand[ifit-1][0]*xy_Cand[ifit-1][0]; // <x^2> - <x>^2
-    sig_Cand[ifit-1][0] = sig_Cand[ifit-1][0] > 0 ? TMath::Sqrt (sig_Cand[ifit-1][0]) : 0;
-    sig_Cand[ifit-1][1] = sig_Cand[ifit-1][1]/qq - xy_Cand[ifit-1][1]*xy_Cand[ifit-1][1]; // <y^2> - <y>^2
-    sig_Cand[ifit-1][1] = sig_Cand[ifit-1][1] > 0 ? TMath::Sqrt (sig_Cand[ifit-1][1]) : 0;
-    cout << xy_Cand[ifit-1][0] << " " << xy_Cand[ifit-1][1] << " " << sig_Cand[ifit-1][0] << " " << sig_Cand[ifit-1][1] << endl;
+    xyCand[ifit-1][0] /= qq; // <x>
+    xyCand[ifit-1][1] /= qq; // <y>
+    sigCand[ifit-1][0] = sigCand[ifit-1][0]/qq - xyCand[ifit-1][0]*xyCand[ifit-1][0]; // <x^2> - <x>^2
+    sigCand[ifit-1][0] = sigCand[ifit-1][0] > 0 ? TMath::Sqrt (sigCand[ifit-1][0]) : 0;
+    sigCand[ifit-1][1] = sigCand[ifit-1][1]/qq - xyCand[ifit-1][1]*xyCand[ifit-1][1]; // <y^2> - <y>^2
+    sigCand[ifit-1][1] = sigCand[ifit-1][1] > 0 ? TMath::Sqrt (sigCand[ifit-1][1]) : 0;
+    cout << xyCand[ifit-1][0] << " " << xyCand[ifit-1][1] << " " << sigCand[ifit-1][0] << " " << sigCand[ifit-1][1] << endl;
     */
   } // for (Int_t ifit=1;
 
-  xy_Cand[0][0] /= qq; // <x>
-  xy_Cand[0][1] /= qq; // <y>
-  sig_Cand[0][0] = sig_Cand[0][0]/qq - xy_Cand[0][0]*xy_Cand[0][0]; // <x^2> - <x>^2
-  sig_Cand[0][0] = sig_Cand[0][0] > 0 ? TMath::Sqrt (sig_Cand[0][0]) : 0;
-  sig_Cand[0][1] = sig_Cand[0][1]/qq - xy_Cand[0][1]*xy_Cand[0][1]; // <y^2> - <y>^2
-  sig_Cand[0][1] = sig_Cand[0][1] > 0 ? TMath::Sqrt (sig_Cand[0][1]) : 0;
-  if (fDebug) cout << xy_Cand[0][0] << " " << xy_Cand[0][1] << " " << sig_Cand[0][0] << " " << sig_Cand[0][1] << endl;
+  xyCand[0][0] /= qq; // <x>
+  xyCand[0][1] /= qq; // <y>
+  sigCand[0][0] = sigCand[0][0]/qq - xyCand[0][0]*xyCand[0][0]; // <x^2> - <x>^2
+  sigCand[0][0] = sigCand[0][0] > 0 ? TMath::Sqrt (sigCand[0][0]) : 0;
+  sigCand[0][1] = sigCand[0][1]/qq - xyCand[0][1]*xyCand[0][1]; // <y^2> - <y>^2
+  sigCand[0][1] = sigCand[0][1] > 0 ? TMath::Sqrt (sigCand[0][1]) : 0;
+  if (fDebug) cout << xyCand[0][0] << " " << xyCand[0][1] << " " << sigCand[0][0] << " " << sigCand[0][1] << endl;
 
   Int_t nDof, maxSeed[3];
   Double_t fmin, chi2o = 9999, chi2n;
@@ -2513,9 +2513,9 @@ Int_t AliMUONClusterFinderAZ::Fit(Int_t nfit, Int_t *clustFit, TObjArray **clust
       if (nfit == 3 && j < 2) coef = j==1 ? coef*parOk[indx+2] : coef - parOk[7];
       coef = TMath::Max (coef, 0.);
       AddRawCluster (parOk[indx], parOk[indx+1], coef*fQtot, errOk[indx], nfit0+10*nfit, tracks,
-		     //sig_Cand[maxSeed[j]][0], sig_Cand[maxSeed[j]][1]);
-		     //sig_Cand[0][0], sig_Cand[0][1], dist[j]);
-		     sig_Cand[0][0], sig_Cand[0][1], dist[TMath::LocMin(nfit,dist)]);
+		     //sigCand[maxSeed[j]][0], sigCand[maxSeed[j]][1]);
+		     //sigCand[0][0], sigCand[0][1], dist[j]);
+		     sigCand[0][0], sigCand[0][1], dist[TMath::LocMin(nfit,dist)]);
     }
     return nfit;
   } 
@@ -2901,8 +2901,8 @@ void AliMUONClusterFinderAZ::AddVirtualPad()
     if (maxpad[0][0] < 0) iPad = 1;
 
     // This part of code to take care of edge effect (problems in MC)
-    Float_t spr_x = fResponse->SigmaIntegration()*fResponse->ChargeSpreadX();
-    Float_t spr_y = fResponse->SigmaIntegration()*fResponse->ChargeSpreadY();
+    Float_t sprX = fResponse->SigmaIntegration()*fResponse->ChargeSpreadX();
+    Float_t sprY = fResponse->SigmaIntegration()*fResponse->ChargeSpreadY();
     Double_t rmin = 9999, rad2;
     Int_t border = 0, iYlow = 0;
 
@@ -2912,7 +2912,7 @@ void AliMUONClusterFinderAZ::AddVirtualPad()
 	rad2 += (fXyq[1][maxpad[iPad][0]]-fxyMu[i][1]) * (fXyq[1][maxpad[iPad][0]]-fxyMu[i][1]);
 	if (rad2 < rmin) { iMuon = i; rmin = rad2; }
       }
-      fSegmentation[cath]->FirstPad(fInput->DetElemId(),(Float_t)fxyMu[iMuon][0], (Float_t)fxyMu[iMuon][1], fZpad, spr_x, spr_y);  
+      fSegmentation[cath]->FirstPad(fInput->DetElemId(),(Float_t)fxyMu[iMuon][0], (Float_t)fxyMu[iMuon][1], fZpad, sprX, sprY);  
       if (fSegmentation[cath]->Sector(fInput->DetElemId(),fSegmentation[cath]->Ix(),fSegmentation[cath]->Iy()) <= 0) {
 	fSegmentation[cath]->NextPad(fInput->DetElemId());
 	border = 1; 
@@ -3173,10 +3173,10 @@ void AliMUONClusterFinderAZ::Errors(AliMUONRawCluster *clus)
     fSegmentation[cath]->Neighbours(fInput->DetElemId(),mdig->PadX(),mdig->PadY(),&nn,xList,yList); 
     isec = fSegmentation[cath]->Sector(fInput->DetElemId(),mdig->PadX(), mdig->PadY());
     //*??
-    Float_t spr_x = fResponse->SigmaIntegration() * fResponse->ChargeSpreadX();
-    Float_t spr_y = fResponse->SigmaIntegration() * fResponse->ChargeSpreadY();
-    //fSegmentation[cath]->FirstPad(fInput->DetElemId(),muons[ihit][1], muons[ihit][2], muons[ihit][3], spr_x, spr_y);  
-    fSegmentation[cath]->FirstPad(fInput->DetElemId(),xreco, yreco, zreco, spr_x, spr_y);  
+    Float_t sprX = fResponse->SigmaIntegration() * fResponse->ChargeSpreadX();
+    Float_t sprY = fResponse->SigmaIntegration() * fResponse->ChargeSpreadY();
+    //fSegmentation[cath]->FirstPad(fInput->DetElemId(),muons[ihit][1], muons[ihit][2], muons[ihit][3], sprX, sprY);  
+    fSegmentation[cath]->FirstPad(fInput->DetElemId(),xreco, yreco, zreco, sprX, sprY);  
     Int_t border = 0;
     if (fSegmentation[cath]->Sector(fInput->DetElemId(),fSegmentation[cath]->Ix(),fSegmentation[cath]->Iy()) <= 0) {
       fSegmentation[cath]->NextPad(fInput->DetElemId());

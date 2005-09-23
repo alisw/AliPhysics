@@ -11,8 +11,6 @@
 
 #include <TObject.h>
 
- const Int_t bufSize = 1024;
-
 class AliMUONSubEventTracker : public TObject {
 
 public:

@@ -1639,17 +1639,17 @@ Bool_t AliMUONTrackK::Recover(void)
     }
     printf("\n");
   }
-  Double_t chi2_max = 0;
+  Double_t chi2max = 0;
   Int_t imax = 0;
   for (Int_t i=0; i<fNTrackHits; i++) {
     chi2 = fChi2Smooth ? (*fChi2Smooth)[i] : (*fChi2Array)[i];
-    if (chi2 < chi2_max) continue;
-    chi2_max = chi2;
+    if (chi2 < chi2max) continue;
+    chi2max = chi2;
     imax = i;
   }
-  //if (chi2_max < 10) return kFALSE; // !!!
-  //if (chi2_max < 25) imax = fNTrackHits - 1;
-  if (chi2_max < 15) imax = fNTrackHits - 1; // discard the last point
+  //if (chi2max < 10) return kFALSE; // !!!
+  //if (chi2max < 25) imax = fNTrackHits - 1;
+  if (chi2max < 15) imax = fNTrackHits - 1; // discard the last point
   // Check if the outlier is not from the seed segment
   AliMUONHitForRec *skipHit = (AliMUONHitForRec*) fTrackHitsPtr->UncheckedAt(imax);
   if (skipHit == fStartSegment->GetHitForRec1() || skipHit == fStartSegment->GetHitForRec2()) {
@@ -1888,7 +1888,7 @@ Bool_t AliMUONTrackK::Smooth(void)
   //parSmooth.Print(); ((TMatrixD*)(fParExtrap->Last()))->Print(); 
 
   Bool_t found;
-  Double_t chi2_max = 0;
+  Double_t chi2max = 0;
   for (Int_t i=iLast+1; i>0; i--) {
     if (i == iLast + 1) goto L33; // temporary fix
 
@@ -1958,7 +1958,7 @@ L33:
     TMatrixD chi2(tmpPar,TMatrixD::kTransposeMult,vector);
     if (fgDebug > 1) chi2.Print();
     (*fChi2Smooth)[ihit] = chi2(0,0);
-    if (chi2(0,0) > chi2_max) chi2_max = chi2(0,0); 
+    if (chi2(0,0) > chi2max) chi2max = chi2(0,0); 
     fChi2 += chi2(0,0);
     if (chi2(0,0) < 0) { 
       chi2.Print(); cout << " chi2 < 0 " << i << " " << iLast << endl;
@@ -1970,11 +1970,11 @@ L33:
 
   } // for (Int_t i=iLast+1;
 
-  //if (chi2_max > 16) { 
-  //if (chi2_max > 25) { 
-  //if (chi2_max > 50) { 
-  //if (chi2_max > 100) { 
-  if (chi2_max > fgkChi2max) { 
+  //if (chi2max > 16) { 
+  //if (chi2max > 25) { 
+  //if (chi2max > 50) { 
+  //if (chi2max > 100) { 
+  if (chi2max > fgkChi2max) { 
     //if (Recover()) DropBranches(); 
     //Recover();
     Outlier();
@@ -1998,11 +1998,11 @@ void AliMUONTrackK::Outlier()
     printf("\n");
   }
 
-  Double_t chi2_max = 0;
+  Double_t chi2max = 0;
   Int_t imax = 0;
   for (Int_t i=0; i<fNTrackHits; i++) {
-    if ((*fChi2Smooth)[i] < chi2_max) continue;
-    chi2_max = (*fChi2Smooth)[i];
+    if ((*fChi2Smooth)[i] < chi2max) continue;
+    chi2max = (*fChi2Smooth)[i];
     imax = i;
   }
   // Check if the outlier is not from the seed segment

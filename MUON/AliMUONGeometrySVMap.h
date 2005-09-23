@@ -23,46 +23,12 @@
 #ifndef ALI_MUON_GEOMETRY_SV_MAP_H
 #define ALI_MUON_GEOMETRY_SV_MAP_H
 
-#include <Riostream.h>
 #include <TObject.h>
-#include <TObjArray.h>
-#include <TArrayI.h>
+
+#include "AliMUONStringIntMap.h"
 
 class TGeoCombiTrans;
 class TGeoTranslation;
-
-// Substitutes map <string, int>
-// which ALICE does not allow to use 
-
-class AliMUONStringIntMap : public TObject
-{
-  public:
-    AliMUONStringIntMap();
-    virtual ~AliMUONStringIntMap();
-    
-    // methods
-    Bool_t  Add(const TString& first, Int_t second);
-    Int_t   Get(const TString& first) const;
-    Int_t   GetNofItems() const;
-    virtual void Clear(Option_t* /*option*/ ="");
-    virtual void Print(const char* /*option*/ = "") const;
-    void Print(const TString& key, ofstream& out) const;
-    
-  protected:
-    AliMUONStringIntMap(const AliMUONStringIntMap& rhs);
-
-    // operators  
-    AliMUONStringIntMap& operator = (const AliMUONStringIntMap& rhs);
- 
-  private:
-    // data members
-    Int_t      fNofItems;    // number of items
-    TObjArray  fFirstArray;  // first item array
-    TArrayI    fSecondArray; // second item array
- 
-  ClassDef(AliMUONStringIntMap,1)  // motif map
-};    
-
 
 class AliMUONGeometrySVMap : public TObject
 {

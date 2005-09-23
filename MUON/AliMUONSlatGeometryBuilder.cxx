@@ -261,12 +261,12 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
 	// Mother volume for each chamber in st3 are only defined if Dipole volue is there.
 	// Outer excess and inner recess for mother volume radius
 	// with respect to ROuter and RInner
-	Float_t dframep_in = kRframeHeight; 
-	Float_t dframep_out= kVframeLength + 37.0; // Additional 37 cm gap is needed to wrap the corners of the slats 
+	Float_t dframepIn = kRframeHeight; 
+	Float_t dframepOut= kVframeLength + 37.0; // Additional 37 cm gap is needed to wrap the corners of the slats 
 	Float_t tpar[3];
 	Double_t dstation =  ( (-iChamber2->Z()) - (-iChamber1->Z()) ) /2.1;
-	tpar[0] = iChamber1->RInner()-dframep_in; 
-	tpar[1] = (iChamber1->ROuter()+dframep_out);
+	tpar[0] = iChamber1->RInner()-dframepIn; 
+	tpar[1] = (iChamber1->ROuter()+dframepOut);
 	tpar[2] = dstation;
 	gMC->Gsvolu("CH05", "TUBE", idAir, tpar, 3);
 	gMC->Gsvolu("CH06", "TUBE", idAir, tpar, 3);
@@ -660,12 +660,12 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
     // Mother volume for each chamber
     // Outer excess and inner recess for mother volume radius
     // with respect to ROuter and RInner
-    Float_t dframep_in = kRframeHeight; 
-    Float_t dframep_out= kVframeLength + 40.0; // Additional 30 cm gap is needed to wrap the corners of the slats 
+    Float_t dframepIn = kRframeHeight; 
+    Float_t dframepOut= kVframeLength + 40.0; // Additional 30 cm gap is needed to wrap the corners of the slats 
     Float_t tpar[3];
     Double_t dstation =  ( (-iChamber2->Z()) - (-iChamber1->Z()) ) /2.1;
-    tpar[0] = iChamber1->RInner()-dframep_in; 
-    tpar[1] = (iChamber1->ROuter()+dframep_out);
+    tpar[0] = iChamber1->RInner()-dframepIn; 
+    tpar[1] = (iChamber1->ROuter()+dframepOut);
     tpar[2] = dstation;
     gMC->Gsvolu("CH07", "TUBE", idAir, tpar, 3);
     gMC->Gsvolu("CH08", "TUBE", idAir, tpar, 3);
@@ -934,12 +934,12 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
     // Mother volume for each chamber
     // Outer excess and inner recess for mother volume radius
     // with respect to ROuter and RInner
-    Float_t dframep_in = kRframeHeight; 
-    Float_t dframep_out= kVframeLength + 40.0; // Additional 40 cm gap is needed to wrap the corners of the slats 
+    Float_t dframepIn = kRframeHeight; 
+    Float_t dframepOut= kVframeLength + 40.0; // Additional 40 cm gap is needed to wrap the corners of the slats 
     Float_t tpar[3];
     Double_t dstation =  ( (-iChamber2->Z()) - (-iChamber1->Z()) ) /2.3;
-    tpar[0] = iChamber1->RInner()-dframep_in; 
-    tpar[1] = (iChamber1->ROuter()+dframep_out);
+    tpar[0] = iChamber1->RInner()-dframepIn; 
+    tpar[1] = (iChamber1->ROuter()+dframepOut);
     tpar[2] = dstation;
     gMC->Gsvolu("CH09", "TUBE", idAir, tpar, 3);
     gMC->Gsvolu("CH10", "TUBE", idAir, tpar, 3);

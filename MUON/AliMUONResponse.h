@@ -20,7 +20,7 @@ class AliMUONResponse : public TObject
 {
  public:
     AliMUONResponse();
-    ~AliMUONResponse();
+    virtual ~AliMUONResponse();
  
     //
     // Configuration methods

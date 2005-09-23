@@ -269,12 +269,12 @@ AliMUONFactoryV3::BuildChamber345(Int_t firstDetElemId, Int_t lastDetElemId)
 									firstDetElemId,lastDetElemId));
 	}
 	
-  const Int_t NPLANES = 2;
-  const AliMpPlaneType ptypes[NPLANES] = { kBendingPlane, kNonBendingPlane };
+  const Int_t kNPLANES = 2;
+  const AliMpPlaneType kptypes[kNPLANES] = { kBendingPlane, kNonBendingPlane };
   
   AliMUONChamber& chamber = fMUON->Chamber(ichamber);
 	
-  for ( Int_t iplane = 0; iplane < NPLANES; ++iplane )
+  for ( Int_t iplane = 0; iplane < kNPLANES; ++iplane )
 	{
 		AliMUONGeometrySegmentation* segmentation = 
 		new AliMUONGeometrySegmentation(chamber.GetGeometry());
@@ -288,7 +288,7 @@ AliMUONFactoryV3::BuildChamber345(Int_t firstDetElemId, Int_t lastDetElemId)
 	    }
 			
 			AliMUONVGeometryDESegmentation* slatSeg = 
-	    new AliMUONSt345SlatSegmentationV2(d,ptypes[iplane]);
+	    new AliMUONSt345SlatSegmentationV2(d,kptypes[iplane]);
 			
 			fDESegmentations->Add(slatSeg);
 			

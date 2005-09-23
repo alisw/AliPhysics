@@ -107,7 +107,7 @@ void AliMUONClusterReconstructor::Digits2Clusters()
 {
 
     TClonesArray *dig1, *dig2, *digAll;
-    Int_t ndig, k, idDE, idDE_prev;
+    Int_t ndig, k, idDE, idDEprev;
     dig1 = new TClonesArray("AliMUONDigit",1000);
     dig2 = new TClonesArray("AliMUONDigit",1000);
     digAll = new TClonesArray("AliMUONDigit",2000);
@@ -134,17 +134,17 @@ void AliMUONClusterReconstructor::Digits2Clusters()
       ndig = muonDigits->GetEntriesFast();
       TClonesArray &lDigit = *digAll;
 
-      idDE_prev = 0;
+      idDEprev = 0;
       muonDigits->Sort();
       for (k = 0; k < ndig; k++) {
 
 	digit = (AliMUONDigit*) muonDigits->UncheckedAt(k);
 	new(lDigit[n1++]) AliMUONDigit(*digit);
 	idDE = digit->DetElemId();
-	if (idDE != idDE_prev) {
+	if (idDE != idDEprev) {
 	  id.AddAt(idDE,n2++);
 	}
-	idDE_prev = idDE;
+	idDEprev = idDE;
       }
 
       Int_t idSize = n2;

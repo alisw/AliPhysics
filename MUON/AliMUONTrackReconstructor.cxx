@@ -1735,13 +1735,13 @@ void AliMUONTrackReconstructor::FollowTracksK(void)
     // Majority 3 of 4 in first 2 stations
     if (!ok) continue;
     chamBits = 0;
-    Double_t chi2_max = 0;
+    Double_t chi2max = 0;
     for (Int_t i=0; i<trackK->GetNTrackHits(); i++) {
       hit = (AliMUONHitForRec*) (*trackK->GetHitOnTrack())[i];
       chamBits |= BIT(hit->GetChamberNumber());
-      if (trackK->GetChi2PerPoint(i) > chi2_max) chi2_max = trackK->GetChi2PerPoint(i);
+      if (trackK->GetChi2PerPoint(i) > chi2max) chi2max = trackK->GetChi2PerPoint(i);
     }
-    if (!((chamBits&3)==3 || (chamBits>>2&3)==3) && chi2_max > 25) {
+    if (!((chamBits&3)==3 || (chamBits>>2&3)==3) && chi2max > 25) {
       //trackK->Recover();
       trackK->SetRecover(-1); //mark candidate to be removed
       continue;

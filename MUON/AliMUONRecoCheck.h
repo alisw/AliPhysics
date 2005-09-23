@@ -43,6 +43,10 @@ public:
   TClonesArray *GetTrackReco();
   TClonesArray *GetMuonTrackRef() {return fMuonTrackRef;}
 
+protected:
+  AliMUONRecoCheck(const AliMUONRecoCheck& rhs);
+  AliMUONRecoCheck& operator = (const AliMUONRecoCheck& rhs);
+
 private:
   
   AliRunLoader* fRunLoader;     // alice run loader 

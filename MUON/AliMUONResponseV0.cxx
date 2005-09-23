@@ -20,6 +20,7 @@
 
 #include "AliMUONResponseV0.h"
 #include "AliMUONGeometrySegmentation.h"
+#include "AliLog.h"
 
 ClassImp(AliMUONResponseV0)
 	
@@ -32,11 +33,34 @@ AliMUONResponseV0::AliMUONResponseV0()
   fMathieson = new AliMUONMathieson();
   fChargeCorrel = 0;
 }
+
+   //_________________________________________________________________________
+AliMUONResponseV0::AliMUONResponseV0(const AliMUONResponseV0& rhs)
+ : AliMUONResponse(rhs)
+{
+// Protected copy constructor
+
+  AliFatal("Not implemented.");
+}
+
    //__________________________________________________________________________
 AliMUONResponseV0::~AliMUONResponseV0()
 {
   delete fMathieson;
 }
+
+   //________________________________________________________________________
+AliMUONResponseV0& AliMUONResponseV0::operator = (const AliMUONResponseV0& rhs)
+{
+// Protected assignement operator
+
+  if (this == &rhs) return *this;
+
+  AliFatal("Not implemented.");
+    
+  return *this;  
+}
+
   //__________________________________________________________________________
 void AliMUONResponseV0::SetSqrtKx3AndDeriveKx2Kx4(Float_t SqrtKx3)
 {

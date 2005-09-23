@@ -89,6 +89,9 @@ class AliMUONResponseV0 : public AliMUONResponse
 
     ClassDef(AliMUONResponseV0,1) // Implementation of Mathieson response
  protected:
+    AliMUONResponseV0(const AliMUONResponseV0& rhs);
+    AliMUONResponseV0& operator = (const AliMUONResponseV0& rhs);
+
     Float_t fChargeSlope;              // Slope of the charge distribution
     Float_t fChargeSpreadX;            // Width of the charge distribution in x
     Float_t fChargeSpreadY;            // Width of the charge distribution in y

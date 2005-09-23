@@ -70,6 +70,15 @@ AliMUONRecoCheck::AliMUONRecoCheck(Char_t *chLoader)
   fRecoTracks = 0;
 }
 
+//____________________________________________________________________
+AliMUONRecoCheck::AliMUONRecoCheck(const AliMUONRecoCheck& rhs)
+ : TObject(rhs)
+{
+// Protected copy constructor
+
+  AliFatal("Not implemented.");
+}
+
 //_____________________________________________________________________________
 AliMUONRecoCheck::~AliMUONRecoCheck()
 {
@@ -79,6 +88,18 @@ AliMUONRecoCheck::~AliMUONRecoCheck()
   fMuonTrackRef->Delete();
   delete fMuonTrackRef;
   delete fMUONData;
+}
+
+//________________________________________________________________________
+AliMUONRecoCheck& AliMUONRecoCheck::operator = (const AliMUONRecoCheck& rhs)
+{
+// Protected assignement operator
+
+  if (this == &rhs) return *this;
+
+  AliFatal("Not implemented.");
+    
+  return *this;  
 }
 
 //_____________________________________________________________________________

@@ -217,7 +217,7 @@ AliMpMotifType* AliMpMotifReader::BuildMotifType(const TString& motifTypeId)
     cout << "Opening file " << bergToGCFileName << endl;
 
   ifstream bergToGCFile(bergToGCFileName);
-  const Int_t nbergpins = 
+  const Int_t knbergpins = 
     (fStationType == kStation1 || fStationType == kStation2 ) ? 80 : 100;
   // Station1 & 2 Bergstak connectors have 80 pins, while for stations
   // 3, 4 and 5 they have 100 pins.
@@ -228,7 +228,7 @@ AliMpMotifType* AliMpMotifReader::BuildMotifType(const TString& motifTypeId)
     bergToGCFile>>bergNum>>gcStr;
     if (!bergToGCFile.good()) break;
     if (gcStr=="GND") continue;
-    if (bergNum>nbergpins) {
+    if (bergNum>knbergpins) {
         Fatal("BuildMotifType","Berg number > 80 ...");
         continue;
     }
@@ -289,8 +289,8 @@ AliMpMotifType* AliMpMotifReader::BuildMotifType(const TString& motifTypeId)
 //     }  else {
 //        gassiNum = atoi(token.Data() +1 )-1;
 //     }
-    if ( (numBerg<1) || (numBerg>nbergpins) ) {
-      AliWarning(Form("Berg number %d outside range (1..%d)",numBerg,nbergpins));
+    if ( (numBerg<1) || (numBerg>knbergpins) ) {
+      AliWarning(Form("Berg number %d outside range (1..%d)",numBerg,knbergpins));
       continue;
     }
     

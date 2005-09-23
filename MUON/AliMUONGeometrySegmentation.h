@@ -163,7 +163,9 @@ class AliMUONGeometrySegmentation : public TObject
                    // Set the correction function
     virtual TF1* CorrFunc(Int_t detElemId, Int_t isec) const;
                    // Get the correction Function
-    virtual void Print(Option_t* ="") const;
+    // Printing
+    //
+    virtual void Print(Option_t* opt = "") const;
 	
   protected:
     AliMUONGeometrySegmentation(const AliMUONGeometrySegmentation& rhs);
