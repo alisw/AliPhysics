@@ -133,7 +133,7 @@ void AliMUONTriggerGeometryBuilder::CreateGeometry()
     Float_t zpos1= iChamber1->Z(); 
     iChamber2 = &fMUON->Chamber(11);
 
-    Double_t dstation =  ( ( iChamber2->Z()) - ( iChamber1->Z()) ) /2.1;
+    Double_t dstation =  ( ( - iChamber2->Z()) - ( - iChamber1->Z()) ) /2.1;
     Float_t par[3];
     par[2] = dstation;
 
@@ -157,7 +157,6 @@ void AliMUONTriggerGeometryBuilder::CreateGeometry()
 	    sprintf(volName,"%s%d", "CH",11+icount);
  	    gMC->Gsvolu(volName,"TUBE", idAir, par, 3);
  	    iChamber->GetGeometry()->SetVolume(volName);
-
 	    Float_t zpos =  iChamber->Z();	     
 	    
 /* removed 03/18/05
@@ -360,11 +359,12 @@ void AliMUONTriggerGeometryBuilder::SetTransformations()
     zpos1 = iChamber1->Z(); 
     iChamber1->GetGeometry()
 	->SetTranslation(TGeoTranslation(0., 0., zpos1));
-    
+
     iChamber2 = &fMUON->Chamber(13);
     zpos2 = iChamber2->Z(); 
     iChamber2->GetGeometry()
 	->SetTranslation(TGeoTranslation(0., 0., zpos2));
+
 }
 
 //______________________________________________________________________________
