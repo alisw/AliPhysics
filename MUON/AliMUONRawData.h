@@ -56,8 +56,8 @@ class AliMUONRawData : public TObject
 			  UChar_t channelId, AliMUONDigit* digit );
 
 
-  Int_t GetGlobalTriggerPattern(const AliMUONGlobalTrigger* gloTrg);
-  AliMUONGlobalTrigger* GetGlobalTriggerPattern(Int_t gloTrg);
+  Int_t GetGlobalTriggerPattern(const AliMUONGlobalTrigger* gloTrg) const;
+  AliMUONGlobalTrigger* GetGlobalTriggerPattern(Int_t gloTrg) const;
 
   Int_t GetDEfromBus(Int_t busPatchId);
   TArrayI* GetBusfromDE(Int_t idDE);
@@ -75,13 +75,13 @@ class AliMUONRawData : public TObject
  
   FILE*         fFile[2];            //! DDL binary file pointer one per 1/2 chamber
 
-  TClonesArray* fSubEventArray;   //! array to sub event tracker
+  TClonesArray* fSubEventArray;      //! array to sub event tracker
    
-  AliMUONDDLTracker* fDDLTracker;      //! DDL tracker class pointers
-  AliMUONDDLTrigger* fDDLTrigger;      //! DDL trigger class pointers
+  AliMUONDDLTracker* fDDLTracker;    //! DDL tracker class pointers
+  AliMUONDDLTrigger* fDDLTrigger;    //! DDL trigger class pointers
 
-  TExMap fDetElemIdToBusPatch;
-  TExMap fBusPatchToDetElem;
+  TExMap fDetElemIdToBusPatch;       //! Map from idDE to BusPatch   
+  TExMap fBusPatchToDetElem;         //! Map from BusPatch to idDE
 
   // writing raw data
   Int_t WriteTrackerDDL(Int_t iCh);

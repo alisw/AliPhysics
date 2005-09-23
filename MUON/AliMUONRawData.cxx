@@ -33,16 +33,20 @@
 #include <string>
 
 #include <TClonesArray.h>
-#include "AliMUONRawData.h"
-#include "AliMUONDigit.h"
 
-#include "AliMUON.h"
-#include "AliMUONChamber.h"
-#include "AliMUONConstants.h"
-#include "AliMUONData.h"
 #include "AliLoader.h"
 #include "AliBitPacking.h" 
 #include "AliRawReader.h"
+#include "AliLog.h"
+#include "AliRun.h"
+
+#include "AliMUON.h"
+#include "AliMUONRawData.h"
+#include "AliMUONDigit.h"
+
+#include "AliMUONChamber.h"
+#include "AliMUONConstants.h"
+#include "AliMUONData.h"
 
 #include "AliMUONSubEventTrigger.h"
 #include "AliMUONDDLTracker.h"
@@ -59,9 +63,6 @@
 #include "AliMpVSegmentation.h"
 #include "AliMpHelper.h"
 #include "AliMpPad.h"
-#include "AliLog.h"
-#include "AliRun.h"
-
 
 
 ClassImp(AliMUONRawData) // Class implementation in ROOT context
@@ -668,7 +669,7 @@ Int_t AliMUONRawData::GetInvMapping(const AliMUONDigit* digit,
 }
 
 //____________________________________________________________________
-Int_t AliMUONRawData::GetGlobalTriggerPattern(const AliMUONGlobalTrigger* gloTrg)
+Int_t AliMUONRawData::GetGlobalTriggerPattern(const AliMUONGlobalTrigger* gloTrg) const
 {
   // global trigger pattern calculation
 
@@ -732,9 +733,9 @@ Int_t AliMUONRawData::ReadTrackerDDL(AliRawReader* rawReader)
 //   Each DDL is made with 2 Blocks each of which consists of 5 DSP and each of DSP has at most 5 buspatches.
 //   This information is used to calculate the size of headers (DDL,Block and DSP) which has no interesting data. 
 
-  const Int_t blankDDLSize   = ddlHeaderSize + 2*blockHeaderSize + 2*5*dspHeaderSize + 2*5*5*buspatchHeaderSize;
-  const Int_t blankBlockSize = blockHeaderSize + 5*dspHeaderSize + 5*5*buspatchHeaderSize;
-  const Int_t blankDspSize   = dspHeaderSize + 5*buspatchHeaderSize;
+  const Int_t kBlankDDLSize   = ddlHeaderSize + 2*blockHeaderSize + 2*5*dspHeaderSize + 2*5*5*buspatchHeaderSize;
+  const Int_t kBlankBlockSize = blockHeaderSize + 5*dspHeaderSize + 5*5*buspatchHeaderSize;
+  const Int_t kBlankDspSize   = dspHeaderSize + 5*buspatchHeaderSize;
 
   Int_t totalDDLSize, totalBlockSize, totalDspSize , totalBusPatchSize, dataSize; 
 
@@ -750,7 +751,7 @@ Int_t AliMUONRawData::ReadTrackerDDL(AliRawReader* rawReader)
 
     totalDDLSize = (rawReader->GetDataSize()+sizeof(AliRawDataHeader))/4; // 4 is multiplied to convert byte 2 word
 
-    if(totalDDLSize>blankDDLSize){      // Compare the DDL header with an empty DDL header size to read the file
+    if(totalDDLSize>kBlankDDLSize){      // Compare the DDL header with an empty DDL header size to read the file
 
       Int_t totalDataWord = rawReader->GetDataSize()/4 ;
       UInt_t *buffer = new UInt_t[totalDataWord];
@@ -770,14 +771,14 @@ Int_t AliMUONRawData::ReadTrackerDDL(AliRawReader* rawReader)
       for(Int_t iBlock = 0; iBlock < 2 ;iBlock++){  // loop over 2 blocks
 	totalBlockSize = buffer[index];
 	  
-	if(totalBlockSize > blankBlockSize){        // compare block header
+	if(totalBlockSize > kBlankBlockSize){        // compare block header
 	  index += blockHeaderSize;
 
 	  for(Int_t iDsp = 0; iDsp < 5 ;iDsp++){   //DSP loop
 	    totalDspSize = buffer[index];
 	    indexDsp = index;
 
-	    if(totalDspSize > blankDspSize){       // Compare DSP Header
+	    if(totalDspSize > kBlankDspSize){       // Compare DSP Header
 	      index += dspHeaderSize;
 		
 	      for(Int_t iBusPatch = 0; iBusPatch < 5 ; iBusPatch++){  
@@ -937,8 +938,8 @@ Int_t AliMUONRawData::ReadTriggerDDL(AliRawReader* rawReader)
   Int_t loCircuit, loStripX, loDev, loStripY, loLpt, loHpt;
   Char_t loDecision; 
 
-  UShort_t X1Pattern, X2Pattern, X3Pattern, X4Pattern;
-  UShort_t Y1Pattern, Y2Pattern, Y3Pattern, Y4Pattern;
+  UShort_t x1Pattern, x2Pattern, x3Pattern, x4Pattern;
+  UShort_t y1Pattern, y2Pattern, y3Pattern, y4Pattern;
 
 
   // loop over the two ddl's
@@ -1008,26 +1009,26 @@ Int_t AliMUONRawData::ReadTriggerDDL(AliRawReader* rawReader)
 	  localTrigger->SetLoHpt(loHpt);
 
 	  //getting pattern from subvent
-	  X1Pattern = subEventTrigger->GetX1(iLoc);
-	  X2Pattern = subEventTrigger->GetX2(iLoc);
-	  X3Pattern = subEventTrigger->GetX3(iLoc);
-	  X4Pattern = subEventTrigger->GetX4(iLoc);
+	  x1Pattern = subEventTrigger->GetX1(iLoc);
+	  x2Pattern = subEventTrigger->GetX2(iLoc);
+	  x3Pattern = subEventTrigger->GetX3(iLoc);
+	  x4Pattern = subEventTrigger->GetX4(iLoc);
 	    
-	  Y1Pattern = subEventTrigger->GetY1(iLoc);
-	  Y2Pattern = subEventTrigger->GetY2(iLoc);
-	  Y3Pattern = subEventTrigger->GetY3(iLoc);
-	  Y4Pattern = subEventTrigger->GetY4(iLoc);
+	  y1Pattern = subEventTrigger->GetY1(iLoc);
+	  y2Pattern = subEventTrigger->GetY2(iLoc);
+	  y3Pattern = subEventTrigger->GetY3(iLoc);
+	  y4Pattern = subEventTrigger->GetY4(iLoc);
 
 	  // fill local trigger
-	  localTrigger->SetX1Pattern(X1Pattern);
-	  localTrigger->SetX2Pattern(X2Pattern);
-	  localTrigger->SetX3Pattern(X3Pattern);
-	  localTrigger->SetX4Pattern(X4Pattern);
+	  localTrigger->SetX1Pattern(x1Pattern);
+	  localTrigger->SetX2Pattern(x2Pattern);
+	  localTrigger->SetX3Pattern(x3Pattern);
+	  localTrigger->SetX4Pattern(x4Pattern);
 
-	  localTrigger->SetY1Pattern(Y1Pattern);
-	  localTrigger->SetY2Pattern(Y2Pattern);
-	  localTrigger->SetY3Pattern(Y3Pattern);
-	  localTrigger->SetY4Pattern(Y4Pattern);
+	  localTrigger->SetY1Pattern(y1Pattern);
+	  localTrigger->SetY2Pattern(y2Pattern);
+	  localTrigger->SetY3Pattern(y3Pattern);
+	  localTrigger->SetY4Pattern(y4Pattern);
 	  fMUONData->AddLocalTrigger(*localTrigger);
 
 	}
@@ -1047,7 +1048,7 @@ Int_t AliMUONRawData::ReadTriggerDDL(AliRawReader* rawReader)
 
 }
 //____________________________________________________________________
-AliMUONGlobalTrigger* AliMUONRawData::GetGlobalTriggerPattern(Int_t gloTrigPat)
+AliMUONGlobalTrigger* AliMUONRawData::GetGlobalTriggerPattern(Int_t gloTrigPat) const
 {
   // global trigger pattern calculation
 
