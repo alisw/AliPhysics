@@ -353,8 +353,8 @@ void AliMUONFactoryV3::BuildStation6()
       AliMUONChamber *iChamber, *iChamber1;
       iChamber1 = &fMUON->Chamber(10);
       iChamber  = &fMUON->Chamber(chamber);
-      Float_t zpos1= - iChamber1->Z();  
-      Float_t zpos = - iChamber->Z();        
+      Float_t zpos1= iChamber1->Z();  
+      Float_t zpos = iChamber->Z();        
       Float_t zRatio = zpos / zpos1;
 
       // init
@@ -468,24 +468,49 @@ void AliMUONFactoryV3::BuildStation6()
 
 
       //  printf("in CreateTriggerSegmentation here 0 id0=%i \n",id0);  
+      chamberSeg[0]->Add(id0+0,      trigSegX[4]);
+      chamberSeg[0]->Add(id0+1,      trigSegX[5]);
+      chamberSeg[0]->Add(id0+2,      trigSegX[6]);
+      chamberSeg[0]->Add(id0+3,      trigSegX[7]);
+      chamberSeg[0]->Add(id0+4,      trigSegX[8]);
+      chamberSeg[0]->Add(id0+5,      trigSegX[8]);
+      chamberSeg[0]->Add(id0+6,      trigSegX[7]);
+      chamberSeg[0]->Add(id0+7,      trigSegX[6]);
+      chamberSeg[0]->Add(id0+8,      trigSegX[5]);
+      chamberSeg[0]->Add(id0+9,      trigSegX[4]);
+      chamberSeg[0]->Add(id0+10,     trigSegX[3]);
+      chamberSeg[0]->Add(id0+11,     trigSegX[2]);
+      chamberSeg[0]->Add(id0+12,     trigSegX[1]);
+      chamberSeg[0]->Add(id0+13,     trigSegX[0]);
+      chamberSeg[0]->Add(id0+14,     trigSegX[0]);
+      chamberSeg[0]->Add(id0+15,     trigSegX[1]);
+      chamberSeg[0]->Add(id0+16,     trigSegX[2]);
+      chamberSeg[0]->Add(id0+17,     trigSegX[3]);
 
-      for (Int_t i = 0; i < 9; i++) {       
+      chamberSeg[1]->Add(id0+0,      trigSegY[4]);
+      chamberSeg[1]->Add(id0+1,      trigSegY[5]);
+      chamberSeg[1]->Add(id0+2,      trigSegY[6]);
+      chamberSeg[1]->Add(id0+3,      trigSegY[7]);
+      chamberSeg[1]->Add(id0+4,      trigSegY[8]);
+      chamberSeg[1]->Add(id0+5,      trigSegY[8]);
+      chamberSeg[1]->Add(id0+6,      trigSegY[7]);
+      chamberSeg[1]->Add(id0+7,      trigSegY[6]);
+      chamberSeg[1]->Add(id0+8,      trigSegY[5]);
+      chamberSeg[1]->Add(id0+9,      trigSegY[4]);
+      chamberSeg[1]->Add(id0+10,     trigSegY[3]);
+      chamberSeg[1]->Add(id0+11,     trigSegY[2]);
+      chamberSeg[1]->Add(id0+12,     trigSegY[1]);
+      chamberSeg[1]->Add(id0+13,     trigSegY[0]);
+      chamberSeg[1]->Add(id0+14,     trigSegY[0]);
+      chamberSeg[1]->Add(id0+15,     trigSegY[1]);
+      chamberSeg[1]->Add(id0+16,     trigSegY[2]);
+      chamberSeg[1]->Add(id0+17,     trigSegY[3]);
 
-        // cathode 0
-        chamberSeg[0]->Add(id0+i,     trigSegX[i]);
-        chamberSeg[0]->Add(id0+50+i,  trigSegX[i]);
-        fMUON->SetSegmentationModel(chamber, 1, chamberSeg[0]);
-
-        // cathode 1
-        chamberSeg[1]->Add(id0+i,     trigSegY[i]);
-        chamberSeg[1]->Add(id0+50+i,  trigSegY[i]);
-        fMUON->SetSegmentationModel(chamber, 2, chamberSeg[1]);
-
-      }
+      fMUON->SetSegmentationModel(chamber, 1, chamberSeg[0]);
+      fMUON->SetSegmentationModel(chamber, 2, chamberSeg[1]);
 
       fMUON->SetResponseModel(chamber, responseTrigger0);      
       fMUON->Chamber(chamber).SetChargeCorrel(0); // same charge on cathodes
-
   
       //  printf("in CreateTriggerSegmentation here 1\n");  
 
