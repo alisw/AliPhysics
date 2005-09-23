@@ -257,8 +257,8 @@ The generated files do not replace the existing ones
 but have different names (with extension ".out").
 To compare/replace the existing files with generated ones
 run the scripts in MUON/data:
-compare_data [transform] [svmaps ]
-reset_data [transform] [svmaps]
+compare_data.sh [transform] [svmap ]
+reset_data.sh [transform] [svmap ]
 Author: I. Hrivnacova, IPN Orsay
 
 
