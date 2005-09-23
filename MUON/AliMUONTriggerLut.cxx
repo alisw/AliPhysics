@@ -86,7 +86,7 @@ void AliMUONTriggerLut::GetLutOutput(Int_t circuit, Int_t xstrip, Int_t idev,
   static Bool_t first=kTRUE;  
   if(first) {
     //    printf(" opening MUONTriggerLut.root \n");
-    fileLut = new TFile("$(ALICE_ROOT)/MUON/MUONTriggerLut.root","READ");
+    fileLut = new TFile("$(ALICE_ROOT)/MUON/data/MUONTriggerLut.root","READ");
     first=kFALSE;
   }
   fileLut->cd();
@@ -176,7 +176,7 @@ void AliMUONTriggerLut::LoadLut(){
 // 4) store histos in a file
 
   char fileName[60];
-  sprintf(fileName,"$(ALICE_ROOT)/MUON/MUONTriggerLut.root");
+  sprintf(fileName,"$(ALICE_ROOT)/MUON/data/MUONTriggerLut.root");
   printf(" file name is %s\n",fileName);
 
 // open output file containing histos  
