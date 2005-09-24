@@ -27,12 +27,15 @@ it does not seem to be necessary it is also possible to interpolate
 between pT bins using SetInt().
 
 $Log$
+Revision 1.8  2005/09/22 11:31:42  morsch
+Completely revised version. (P. Cortese)
+
 */
 
 #include "AliFastMuonTriggerEff.h"
 #define PLIN printf("%s: %d: ",__FILE__,__LINE__)
 
-ClassImp(AliFastMuonTriggerEff);
+ClassImp(AliFastMuonTriggerEff)
 
 AliFastMuonTriggerEff::AliFastMuonTriggerEff():
     AliFastResponse("Efficiency", "Muon Trigger Efficiency")
