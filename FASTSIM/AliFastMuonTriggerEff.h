@@ -22,7 +22,7 @@ class AliFastMuonTriggerEff : public AliFastResponse {
     
  public:
     AliFastMuonTriggerEff();
-    AliFastMuonTriggerEff(char* Name, char* Title) {;}
+    AliFastMuonTriggerEff(const char* /*Name*/, const char* /*Title*/) {;}
     virtual ~AliFastMuonTriggerEff(){;}
     virtual void    Init();
     virtual void    Evaluate(Float_t charge, Float_t pt, Float_t theta, Float_t phi,
