@@ -1,13 +1,12 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-// $Id$ 
-
-// $MpId: basicLinkDefIn.h,v 1.6 2005/08/24 09:33:45 ivana Exp $ 
+// $MpId: basicLinkDefIn.h,v 1.7 2005/09/26 16:05:45 ivana Exp $ 
 
 #pragma link C++ class  AliMpArea+;
 #pragma link C++ class  AliMpConstants+;
 #pragma link C++ class  AliMpIntPair+;
+#pragma link C++ class  AliMpExMap-;
 #pragma link C++ class  AliMpPad+;
 #pragma link C++ class  AliMpPadPair+;
 #pragma link C++ class  AliMpVIndexed+;
