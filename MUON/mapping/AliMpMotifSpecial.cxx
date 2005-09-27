@@ -14,7 +14,7 @@
  **************************************************************************/
 
 // $Id$
-// $MpId: AliMpMotifSpecial.cxx,v 1.8 2005/08/26 15:43:36 ivana Exp $
+// $MpId: AliMpMotifSpecial.cxx,v 1.9 2005/09/26 16:11:20 ivana Exp $
 // Category: motif
 //
 // Class AliMpMotifSpecial
@@ -48,7 +48,12 @@ AliMpMotifSpecial::AliMpMotifSpecial():
 AliMpMotifSpecial::AliMpMotifSpecial(const TString &id, 
                                      AliMpMotifType *motifType)
   : AliMpVMotif(id,motifType),
+#ifdef WITH_STL
     fPadDimensionsVector(),
+#endif    
+#ifdef WITH_ROOT
+    fPadDimensionsVector(true),
+#endif    
     fPadDimensionsVector2()
   
 {
@@ -57,20 +62,12 @@ AliMpMotifSpecial::AliMpMotifSpecial(const TString &id,
 #ifdef WITH_STL
   fPadDimensionsVector.resize(motifType->GetNofPadsX()*motifType->GetNofPadsY());
 #endif  
-
-#ifdef WITH_ROOT
-  fPadDimensionsVector.Expand(motifType->GetNofPadsX()*motifType->GetNofPadsY());
-#endif  
 }
 
 //______________________________________________________________________________
 AliMpMotifSpecial::~AliMpMotifSpecial()
 {
   /// Destructor
-
-#ifdef WITH_ROOT
-  fPadDimensionsVector.Delete();
-#endif  
 }
 
 
@@ -91,19 +88,26 @@ Int_t AliMpMotifSpecial::VectorIndex(const AliMpIntPair& indices) const
 // public methods
 //
 
+#include <Riostream.h>
 //______________________________________________________________________________
 TVector2 
 AliMpMotifSpecial::GetPadDimensions(const AliMpIntPair& localIndices) const
 {
 /// Return the dimensions of pad located at the given indices
 
-  if (GetMotifType()->HasPad(localIndices))
+  if (GetMotifType()->HasPad(localIndices)) {
 #ifdef WITH_STL
     return fPadDimensionsVector[VectorIndex(localIndices)];
 #endif  
 #ifdef WITH_ROOT
-    return  *((TVector2*)fPadDimensionsVector[VectorIndex(localIndices)]);
-#endif  
+    if (!fPadDimensionsVector.GetValue(localIndices)) {
+      Warning("GetPadDimensions","Indices outside limits");
+      return TVector2(0.,0.);
+    }
+    else      
+      return  *((TVector2*)fPadDimensionsVector.GetValue(localIndices));
+#endif 
+  } 
   else {
     Warning("GetPadDimensions","Indices outside limits");
     return TVector2(0.,0.);
@@ -278,7 +282,7 @@ void AliMpMotifSpecial::SetPadDimensions(const AliMpIntPair& localIndices,
 
 #ifdef WITH_ROOT
   TVector2* dimensionsObj = new TVector2(dimensions);
-  fPadDimensionsVector[VectorIndex(localIndices)]= dimensionsObj;
+  fPadDimensionsVector.Add(localIndices, dimensionsObj);
 
   // fill the vector of different pad dimensions
   // only if these dimensions are not yet present

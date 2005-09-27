@@ -15,7 +15,6 @@
 
 #include <TVector2.h>
 
-#include "AliMpSectorTypes.h"
 #include "AliMpVRowSegmentSpecial.h"
 
 class AliMpRow;

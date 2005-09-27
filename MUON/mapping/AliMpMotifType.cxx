@@ -14,7 +14,7 @@
  **************************************************************************/
 
 // $Id$
-// $MpId: AliMpMotifType.cxx,v 1.6 2005/08/26 15:43:36 ivana Exp $
+// $MpId: AliMpMotifType.cxx,v 1.7 2005/09/26 16:11:20 ivana Exp $
 // Category: motif
 //
 // Class AliMpMotifType
@@ -33,10 +33,6 @@
 ClassImp(AliMpMotifType)
 
 const Int_t AliMpMotifType::fgkPadNumForA = 65;
-#ifdef WITH_ROOT
-const Int_t AliMpMotifType::fgkSeparator = 10000;
-#endif
-
 
 //______________________________________________________________________________
 AliMpMotifType::AliMpMotifType(const TString &id) 
@@ -45,7 +41,12 @@ AliMpMotifType::AliMpMotifType(const TString &id)
     fNofPadsX(0),   
     fNofPadsY(0),
     fVerboseLevel(0),
+#ifdef WITH_STL
     fConnections()
+#endif
+#ifdef WITH_ROOT
+    fConnections(true)
+#endif
 {
   /// Standard constructor
 }
@@ -74,35 +75,7 @@ AliMpMotifType::~AliMpMotifType()
 
   fConnections.erase(fConnections.begin(),fConnections.end());
 #endif  
-
-#ifdef WITH_ROOT
-  ConnectionMapCIterator i(&fConnections);
-  Long_t key, value;
-  while ( i.Next(key, value) ) delete (AliMpConnection*)value;
-#endif  
 }
-
-#ifdef WITH_ROOT
-
-//______________________________________________________________________________
-Int_t  AliMpMotifType::GetIndex(const AliMpIntPair& pair) const
-{
-/// Convert the pair of integers to integer.
-
-  if (pair.GetFirst() >= fgkSeparator || pair.GetSecond() >= fgkSeparator)
-    Fatal("GetIndex", "Index out of limit.");
-      
-  return pair.GetFirst()*fgkSeparator + pair.GetSecond() + 1;
-}  
-
-//______________________________________________________________________________
-AliMpIntPair  AliMpMotifType::GetPair(Int_t index) const
-{
-/// Convert the integer index to the pair of integers.
-
-  return AliMpIntPair((index-1)/fgkSeparator,(index-1)%fgkSeparator);
-}  
-#endif
 
 //______________________________________________________________________________
 AliMpVPadIterator* AliMpMotifType::CreateIterator() const
@@ -155,7 +128,7 @@ void AliMpMotifType::AddConnection(const AliMpIntPair &localIndices,
 #endif
 
 #ifdef WITH_ROOT
-  fConnections.Add(GetIndex(localIndices), (Long_t)connection);
+  fConnections.Add(localIndices, connection);
 #endif   
 
   connection->SetOwner(this);
@@ -174,7 +147,7 @@ AliMpConnection *AliMpMotifType::FindConnectionByPadNum(Int_t padNum) const
 #endif
 
 #ifdef WITH_ROOT
-  ConnectionMapCIterator i(&fConnections);
+  TExMapIter i = fConnections.GetIterator();
   Long_t key, value;
   while ( i.Next(key, value) ) {
     AliMpConnection* connection = (AliMpConnection*)value;
@@ -200,11 +173,7 @@ AliMpConnection *AliMpMotifType::FindConnectionByLocalIndices(
 #endif
 
 #ifdef WITH_ROOT
-  Long_t value = fConnections.GetValue(GetIndex(localIndices));
-  if (value) 
-    return (AliMpConnection*)value;
-  else
-    return 0;  
+  return (AliMpConnection*)fConnections.GetValue(localIndices);
 #endif
 }
 
@@ -221,7 +190,7 @@ AliMpConnection *AliMpMotifType::FindConnectionByGassiNum(Int_t gassiNum) const
 #endif
 
 #ifdef WITH_ROOT
-  ConnectionMapCIterator i(&fConnections);
+  TExMapIter i = fConnections.GetIterator();
   Long_t key, value;
   while ( i.Next(key, value) ) {
     AliMpConnection* connection = (AliMpConnection*)value;
@@ -244,7 +213,7 @@ AliMpConnection *AliMpMotifType::FindConnectionByKaptonNum(Int_t kaptonNum) cons
 #endif
 
 #ifdef WITH_ROOT
-  ConnectionMapCIterator i(&fConnections);
+  TExMapIter i = fConnections.GetIterator();
   Long_t key, value;
   while ( i.Next(key, value) ) {
     AliMpConnection* connection = (AliMpConnection*)value;
@@ -266,7 +235,7 @@ AliMpConnection *AliMpMotifType::FindConnectionByBergNum(Int_t bergNum) const
 #endif
 
 #ifdef WITH_ROOT
-  ConnectionMapCIterator i(&fConnections);
+  TExMapIter i = fConnections.GetIterator();
   Long_t key, value;
   while ( i.Next(key, value) ) {
     AliMpConnection* connection = (AliMpConnection*)value;
@@ -292,11 +261,11 @@ AliMpIntPair AliMpMotifType::FindLocalIndicesByConnection(
 #endif
 
 #ifdef WITH_ROOT
-  ConnectionMapCIterator i(&fConnections);
+  TExMapIter i = fConnections.GetIterator();
   Long_t key, value;
   while ( i.Next(key, value) ) {
     AliMpConnection* aConnection = (AliMpConnection*)value;
-    if (aConnection == connection) return GetPair(key);
+    if (aConnection == connection) return AliMpExMap::GetPair(key);
   }  
 #endif
 
@@ -315,11 +284,11 @@ AliMpIntPair AliMpMotifType::FindLocalIndicesByPadNum(Int_t padNum) const
 #endif
    
 #ifdef WITH_ROOT
-  ConnectionMapCIterator i(&fConnections);
+  TExMapIter i = fConnections.GetIterator();
   Long_t key, value;
   while ( i.Next(key, value) ) {
     AliMpConnection* connection = (AliMpConnection*)value;
-    if (connection->GetPadNum() == padNum) return GetPair(key);
+    if (connection->GetPadNum() == padNum) return AliMpExMap::GetPair(key);
   }  
 #endif
  return AliMpIntPair::Invalid();
@@ -337,11 +306,11 @@ AliMpIntPair AliMpMotifType::FindLocalIndicesByGassiNum(Int_t gassiNum) const
 #endif
    
 #ifdef WITH_ROOT
-  ConnectionMapCIterator i(&fConnections);
+  TExMapIter i = fConnections.GetIterator();
   Long_t key, value;
   while ( i.Next(key, value) ) {
     AliMpConnection* connection = (AliMpConnection*)value;
-    if (connection->GetGassiNum()==gassiNum) return GetPair(key);
+    if (connection->GetGassiNum()==gassiNum) return AliMpExMap::GetPair(key);
   }  
 #endif
    
@@ -360,11 +329,11 @@ AliMpIntPair AliMpMotifType::FindLocalIndicesByKaptonNum(Int_t kaptonNum) const
 #endif
    
 #ifdef WITH_ROOT
-  ConnectionMapCIterator i(&fConnections);
+  TExMapIter i = fConnections.GetIterator();
   Long_t key, value;
   while ( i.Next(key, value) ) {
     AliMpConnection* connection = (AliMpConnection*)value;
-    if (connection->GetKaptonNum()==kaptonNum) return GetPair(key);
+    if (connection->GetKaptonNum()==kaptonNum) return AliMpExMap::GetPair(key);
   }  
 #endif
    
@@ -383,11 +352,11 @@ AliMpIntPair AliMpMotifType::FindLocalIndicesByBergNum(Int_t bergNum) const
 #endif
    
 #ifdef WITH_ROOT
-  ConnectionMapCIterator i(&fConnections);
+  TExMapIter i = fConnections.GetIterator();
   Long_t key, value;
   while ( i.Next(key, value) ) {
     AliMpConnection* connection = (AliMpConnection*)value;
-    if (connection->GetBergNum()==bergNum) return GetPair(key);
+    if (connection->GetBergNum()==bergNum) return AliMpExMap::GetPair(key);
   }  
 #endif
    
@@ -413,6 +382,9 @@ Bool_t AliMpMotifType::HasPad(const AliMpIntPair& localIndices) const
 {
   /// Return true if the pad indexed by <localIndices> has a connection
   
+  //cout << "AliMpMotifType::HasPad: " << localIndices
+  //     << "Connections size: " << fConnections.size() << endl;
+
   if (!localIndices.IsValid()) return false;
 
 #ifdef WITH_STL
@@ -420,7 +392,7 @@ Bool_t AliMpMotifType::HasPad(const AliMpIntPair& localIndices) const
 #endif
 
 #ifdef WITH_ROOT
-  Long_t value = fConnections.GetValue(GetIndex(localIndices));
+  TObject* value = fConnections.GetValue(localIndices);
   return value!=0;
 #endif
 }

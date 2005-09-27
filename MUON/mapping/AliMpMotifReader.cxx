@@ -14,7 +14,7 @@
  **************************************************************************/
 
 // $Id$
-// $MpId: AliMpMotifReader.cxx,v 1.4 2005/08/26 15:43:36 ivana Exp $
+// $MpId: AliMpMotifReader.cxx,v 1.6 2005/09/26 16:11:20 ivana Exp $
 // Category: sector
 //
 // Class AliMpMotifReader
@@ -45,10 +45,6 @@
 #include "AliMpDirection.h"
 
 ClassImp(AliMpMotifReader)
-
-#ifdef WITH_ROOT
-const Int_t    AliMpMotifReader::fgkSeparator = 100;
-#endif
 
 //_____________________________________________________________________________
 AliMpMotifReader::AliMpMotifReader(AliMpStationType station, 
@@ -107,58 +103,6 @@ AliMpMotifReader& AliMpMotifReader::operator=(const AliMpMotifReader& right)
 // private methods
 //
 
-#ifdef WITH_ROOT
-//_____________________________________________________________________________
-Int_t  AliMpMotifReader::GetIndex(const string& s) const 
-{
-/// Converts the TString to integer.
-
-  if (s.length() > 5) {
-    Fatal("GetIndex", "String too long.");
-    return 0;
-  }  
-
-  Int_t index = 0;
-  for (Int_t i=s.length(); i>=0; --i)  index = index*100 + int(s[i]);
-  
-  return index;
-}
-
-//______________________________________________________________________________
-Int_t  AliMpMotifReader::GetIndex(const AliMpIntPair& pair) const
-{
-/// Convert the pair of integers to integer.
-
-  if (pair.GetFirst() >= fgkSeparator || pair.GetSecond() >= fgkSeparator)
-    Fatal("GetIndex", "Index out of limit.");
-      
-  return pair.GetFirst()*fgkSeparator + pair.GetSecond() + 1;
-}  
-
-//_____________________________________________________________________________
-string  AliMpMotifReader::GetString(Int_t index) const
-{
-/// Convert the integer index to the string.
-
-  string s;
-  while (index >0) {
-    Char_t c = index%100;
-    s += c;
-    index = index/100;
-  }
-  
-  return s;
-  
-}
-
-//______________________________________________________________________________
-AliMpIntPair  AliMpMotifReader::GetPair(Int_t index) const
-{
-/// Convert the integer index to the pair of integers.
-
-  return AliMpIntPair((index-1)/fgkSeparator, (index-1)%fgkSeparator);
-}  
-#endif
 
 //
 // public methods
@@ -205,7 +149,8 @@ AliMpMotifType* AliMpMotifReader::BuildMotifType(const TString& motifTypeId)
     positions[key].second=j;
 #endif
 #ifdef WITH_ROOT
-    positions.Add(GetIndex(key), GetIndex(AliMpIntPair(i,j))); 
+    positions.Add( AliMpExMap::GetIndex(key), 
+                   AliMpExMap::GetIndex(AliMpIntPair(i,j)) ); 
 #endif
   } while (!padPos.eof());
 
@@ -309,15 +254,15 @@ AliMpMotifType* AliMpMotifReader::BuildMotifType(const TString& motifTypeId)
 #endif
 
 #ifdef WITH_ROOT
-    Long_t value = positions.GetValue(GetIndex(padName));
+    Long_t value = positions.GetValue(AliMpExMap::GetIndex(padName));
     if (!value) {
       cerr<<"Problem: Pad number "<<padNum<<" found in the file "<<motifTypeFileName
 	  <<" but not in the file"<<padPosFileName<<endl;
       continue;
     }
 
-    ix = GetPair(value).GetFirst();
-    iy = GetPair(value).GetSecond();
+    ix = AliMpExMap::GetPair(value).GetFirst();
+    iy = AliMpExMap::GetPair(value).GetSecond();
 #endif
 
     motifType->AddConnection(AliMpIntPair(ix,iy),

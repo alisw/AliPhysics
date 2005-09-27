@@ -2,7 +2,7 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$
-// $MpId: AliMpNeighboursPadIterator.h,v 1.7 2005/08/26 15:43:36 ivana Exp $
+// $MpId: AliMpNeighboursPadIterator.h,v 1.8 2005/09/26 16:12:11 ivana Exp $
 
 /// \ingroup sector
 /// \class AliMpNeighboursPadIterator
@@ -13,7 +13,17 @@
 #ifndef ALI_MP_NEIGHBOURS_PAD_ITERATOR_H
 #define ALI_MP_NEIGHBOURS_PAD_ITERATOR_H
 
-#include "AliMpSectorTypes.h"
+#include "AliMpContainers.h"
+
+#ifdef WITH_STL
+#include <vector>
+#include <set>
+#endif
+
+#ifdef WITH_ROOT
+#include <TObjArray.h>
+#endif
+
 #include "AliMpVPadIterator.h"
 #include "AliMpPad.h"
 
@@ -22,6 +32,17 @@ class AliMpIntPair;
 
 class AliMpNeighboursPadIterator : public AliMpVPadIterator
 {
+  public:
+#ifdef WITH_STL
+    typedef std::vector<AliMpPad>  PadVector;
+    typedef std::set<AliMpPad>     PadSet;
+    typedef PadSet::const_iterator PadSetCIterator;
+#endif
+#ifdef WITH_ROOT
+    typedef TObjArray  PadVector;
+    typedef TObjArray  PadSet;
+#endif
+
   public:
     AliMpNeighboursPadIterator();
     AliMpNeighboursPadIterator(const AliMpSectorSegmentation* segmentation,
@@ -54,7 +75,7 @@ class AliMpNeighboursPadIterator : public AliMpVPadIterator
 #endif
 #ifdef WITH_ROOT
     PadVector* PadVectorLine(const AliMpPad& from,
-                            const AliMpIntPair& direction) const;
+                             const AliMpIntPair& direction) const;
     void      UpdateTotalSet(PadSet& setTotal, PadVector* from) const;
 #endif
     void      FillPadsVector(Bool_t includeCenter);

@@ -2,7 +2,7 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$
-// $MpId: AliMpMotifMap.h,v 1.7 2005/08/26 15:43:36 ivana Exp $
+// $MpId: AliMpMotifMap.h,v 1.9 2005/09/26 16:10:46 ivana Exp $
 
 /// \ingroup motif
 /// \class AliMpMotifMap
@@ -19,13 +19,18 @@
 #ifndef ALI_MP_MOTIF_MAP_H
 #define ALI_MP_MOTIF_MAP_H
 
+#include "AliMpContainers.h"
+
 #ifdef WITH_STL
-  #include <map>
+#include <map>
+#include "AliMpIntPair.h"
+#endif
+
+#ifdef WITH_ROOT
+#include "AliMpExMap.h"
 #endif
 
 #include <TObject.h>
-
-#include "AliMpMotifTypes.h"
 
 class TString;
 class TVector2;
@@ -38,6 +43,25 @@ class AliMpMotifMap;
 class AliMpMotifMap : public TObject
 {
   public:
+#ifdef WITH_STL
+    typedef std::map<TString, AliMpVMotif*> MotifMap;
+    typedef MotifMap::const_iterator        MotifMapIterator;
+    typedef std::map<TString, AliMpMotifType*> MotifTypeMap;
+    typedef MotifTypeMap::const_iterator       MotifTypeMapIterator;
+    typedef std::map<Int_t, AliMpMotifPosition*>  MotiPositionMap;
+    typedef MotiPositionMap::const_iterator       MotifPositionMapIterator;
+    typedef std::map<AliMpIntPair, AliMpMotifPosition*> MotifPositionMap2;
+    typedef MotifPositionMap2::const_iterator           MotifPositionMap2Iterator;
+#endif    
+#ifdef WITH_ROOT
+    typedef AliMpExMap MotifMap;
+    typedef AliMpExMap MotifTypeMap;
+    typedef AliMpExMap MotifPositionMap;
+    typedef AliMpExMap MotifPositionMap2;
+#endif    
+
+  public:
+    AliMpMotifMap(Bool_t /*standardConstructor*/);
     AliMpMotifMap();
     virtual ~AliMpMotifMap();
     
@@ -59,17 +83,6 @@ class AliMpMotifMap : public TObject
     // AliMpMotifPosition*  FindMotifPosition(const AliMpIntPair& indices) const;
 
   private:
-#ifdef WITH_ROOT
-    static const Int_t   fgkSeparator;  // the separator used for conversion
-                                        // of TString to Int_t
-    
-    // methods
-    Int_t  GetIndex(const TString& s) const;
-    Int_t  GetIndex(const AliMpIntPair& pair) const;
-    TString  GetString(Int_t index) const;
-    AliMpIntPair  GetPair(Int_t index) const;
-#endif
-  
     // methods
     void  PrintMotif(const AliMpVMotif* motif) const;
     void  PrintMotifType(const AliMpMotifType* motifType) const;
@@ -80,34 +93,16 @@ class AliMpMotifMap : public TObject
     void  PrintMotifPositions() const;
     void  PrintMotifPositions2() const;
  
+    // data members
+    MotifMap           fMotifs;         //  motifs map
+    MotifTypeMap       fMotifTypes;     //  motifs types map
 #ifdef WITH_STL
-#ifdef __HP_aCC
-    // data members
-            // EXCLUDED FOR CINT (does not compile on HP)
-    MotifMap          fMotifs; //! motifs map
-    MotifTypeMap      fMotifTypes; //!motif types map 
-    //MotifPositionMap  fMotifPositions;  //! motif positions map 
-                                          // not taken by cint
-    map<Int_t, AliMpMotifPosition*>  fMotifPositions; //! motif positions map by Id
-    MotifPositionMap2 fMotifPositions2; //! motif positions map
-#else
-    // data members
-    MotifMap          fMotifs; // motifs map
-    MotifTypeMap      fMotifTypes; // motif types map 
-    //MotifPositionMap  fMotifPositions;  // motif positions map 
-                                          // not taken by cint
     std::map<Int_t, AliMpMotifPosition*> fMotifPositions; // motif positions map by Id
-    MotifPositionMap2 fMotifPositions2; // motif positions map
 #endif
-#endif
-
 #ifdef WITH_ROOT
-    // data members
-    mutable MotifMap           fMotifs;     //  motifs map
-    mutable MotifTypeMap       fMotifTypes; //  motifs types map
-    mutable MotifPositionMap   fMotifPositions; //  motifs positions map
-    mutable MotifPositionMap2  fMotifPositions2;//  motifs positions map
+    MotifPositionMap   fMotifPositions; //  motifs positions map
 #endif
+    MotifPositionMap2  fMotifPositions2;//  motifs positions map
 
   ClassDef(AliMpMotifMap,1)  // motif map
 };

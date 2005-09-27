@@ -2,7 +2,7 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$
-// $MpId: AliMpSectorSegmentation.h,v 1.9 2005/08/26 15:43:36 ivana Exp $
+// $MpId: AliMpSectorSegmentation.h,v 1.10 2005/09/26 16:12:11 ivana Exp $
 
 /// \ingroup sector
 /// \class AliMpSectorSegmentation
@@ -17,9 +17,19 @@
 #ifndef ALI_MP_SECTOR_SEGMENTATION_H
 #define ALI_MP_SECTOR_SEGMENTATION_H
 
+
+#include "AliMpContainers.h"
+
+#ifdef WITH_STL
+#include <map>
+#endif
+
+#ifdef WITH_ROOT
+#include <TExMap.h>
+#endif
+
 #include <TVector2.h>
 
-#include "AliMpSectorTypes.h"
 #include "AliMpVSegmentation.h"
 #include "AliMpPad.h"
 
@@ -31,6 +41,16 @@ class AliMpArea;
 
 class AliMpSectorSegmentation : public AliMpVSegmentation
 {
+  public:
+#ifdef WITH_STL
+    typedef std::map<Int_t, TVector2>         PadDimensionsMap;
+    typedef PadDimensionsMap::const_iterator  PadDimensionsMapCIterator;
+#endif
+#ifdef WITH_ROOT
+    typedef  TExMap      PadDimensionsMap;
+    typedef  TExMapIter  PadDimensionsMapCIterator;
+#endif
+
   public:
     AliMpSectorSegmentation(const AliMpSector* sector);
     AliMpSectorSegmentation();
@@ -91,7 +111,7 @@ class AliMpSectorSegmentation : public AliMpVSegmentation
     const AliMpSector*  fkSector;   // Sector
     AliMpPad*           fPadBuffer; // The pad buffer
 #ifdef WITH_STL
-    PadDimensionsMap    fPadDimensionsMap; //! Map between zone IDs and pad dimensions
+    PadDimensionsMap    fPadDimensionsMap; // Map between zone IDs and pad dimensions
                               // EXCLUDED FOR CINT (does not compile on HP)    
 #endif    
 #ifdef WITH_ROOT

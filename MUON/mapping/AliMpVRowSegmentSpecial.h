@@ -2,7 +2,7 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$
-// $MpId: AliMpVRowSegmentSpecial.h,v 1.6 2005/08/26 15:43:36 ivana Exp $
+// $MpId: AliMpVRowSegmentSpecial.h,v 1.7 2005/09/26 16:12:11 ivana Exp $
 
 /// \ingroup sector
 /// \class AliMpVRowSegmentSpecial
@@ -14,9 +14,19 @@
 #ifndef ALI_MP_V_ROW_SEGMENT_SPECIAL_H
 #define ALI_MP_V_ROW_SEGMENT_SPECIAL_H
 
+#include "AliMpContainers.h"
+
+#ifdef WITH_STL
+#include <vector>
+#endif
+
+#ifdef WITH_ROOT
+#include <TArrayI.h>
+#include <TObjArray.h>
+#endif
+
 #include <TVector2.h>
 
-#include "AliMpSectorTypes.h"
 #include "AliMpVRowSegment.h"
 #include "AliMpVMotif.h"
 
@@ -27,6 +37,18 @@ class AliMpIntPair;
 
 class AliMpVRowSegmentSpecial : public AliMpVRowSegment
 {
+  public:
+#ifdef WITH_STL
+    typedef std::vector<AliMpPadRow*>  PadRowVector;
+    typedef std::vector<AliMpVMotif*>  MotifVector;
+    typedef std::vector<Int_t>         MotifPositionIdVector;
+#endif
+#ifdef WITH_ROOT
+    typedef  TObjArray  PadRowVector;
+    typedef  TObjArray  MotifVector;
+    typedef  TArrayI    MotifPositionIdVector;
+#endif
+
   public:
     AliMpVRowSegmentSpecial(AliMpRow* row, Double_t offsetX);
     AliMpVRowSegmentSpecial();
@@ -92,8 +114,9 @@ class AliMpVRowSegmentSpecial : public AliMpVRowSegment
     PadRowVector  fPadRows; //pad rows vector
     MotifVector   fMotifs;  //motifs vector
     MotifPositionIdVector  fMotifPositionIds; //motifs position Ids vector
+
 #ifdef WITH_ROOT
-    Int_t                  fNofMotifPositionIds; // number of motif positions Ids
+    Int_t  fNofMotifPositionIds; // number of motif positions Ids
 #endif    
     
   ClassDef(AliMpVRowSegmentSpecial,1)  //Row segment

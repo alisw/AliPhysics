@@ -18,7 +18,6 @@
 #include <TObject.h>
 #include <TString.h>
 
-#include "AliMpSectorTypes.h"
 #include "AliMpStationType.h"
 #include "AliMpPlaneType.h"
 #include "AliMpXDirection.h"

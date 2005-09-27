@@ -2,7 +2,7 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$
-// $MpId: AliMpGraphContext.h,v 1.7 2005/08/26 15:43:36 ivana Exp $
+// $MpId: AliMpGraphContext.h,v 1.8 2005/09/26 16:06:11 ivana Exp $
 
 /// \ingroup graphics
 /// \class AliMpGraphContext
@@ -14,15 +14,31 @@
 #ifndef ALI_MP_GRAPH_CONTEXT_H
 #define ALI_MP_GRAPH_CONTEXT_H
 
+#include "AliMpContainers.h"
+
+#ifdef WITH_STL
+#include <vector>
+#endif
+
+#ifdef WITH_ROOT
+#include "AliMpExMap.h"
+#endif
+
 #include <TObject.h>
 #include <TVector2.h>
-
-#include "AliMpGraphicsTypes.h"
 
 class MPainter;
 
 class AliMpGraphContext : public TObject
 {
+ public:
+#ifdef WITH_STL
+  typedef std::vector<AliMpGraphContext*> GraphContextVector;
+#endif
+#ifdef WITH_ROOT
+  typedef TObjArray GraphContextVector;
+#endif
+
  public:
   void Push() const;
   void Pop();

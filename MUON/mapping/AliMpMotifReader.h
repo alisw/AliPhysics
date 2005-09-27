@@ -2,7 +2,7 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$
-// $Id$
+// $MpId: AliMpMotifReader.h,v 1.5 2005/09/26 16:10:46 ivana Exp $
 
 /// \ingroup motif
 /// \class AliMpMotifReader
@@ -12,6 +12,16 @@
 
 #ifndef ALI_MP_MOTIF_READER_H
 #define ALI_MP_MOTIF_READER_H
+
+#include "AliMpContainers.h"
+
+#ifdef WITH_STL
+#include <map>
+#endif    
+
+#ifdef WITH_ROOT
+#include <TExMap.h>
+#endif    
 
 #include <fstream>
 
@@ -33,6 +43,15 @@ class AliMpMotifType;
 class AliMpMotifReader : public TObject
 {
   public:
+#ifdef WITH_STL
+    typedef std::map<std::string, std::pair<Int_t,Int_t> > PadMapType;
+    typedef PadMapType::iterator PadMapTypeIterator;
+#endif    
+#ifdef WITH_ROOT
+    typedef TExMap PadMapType;
+#endif    
+
+  public:
     AliMpMotifReader(AliMpStationType station, AliMpPlaneType plane);
     AliMpMotifReader();
     virtual ~AliMpMotifReader();
@@ -50,17 +69,6 @@ class AliMpMotifReader : public TObject
     AliMpMotifReader&  operator = (const AliMpMotifReader& right);
 
   private:
-#ifdef WITH_ROOT
-    static const Int_t   fgkSeparator;  // the separator used for conversion
-                                        // of string to Int_t
-    
-    // methods
-    Int_t   GetIndex(const string& s) const;
-    Int_t   GetIndex(const AliMpIntPair& pair) const;
-    string  GetString(Int_t index) const;
-    AliMpIntPair  GetPair(Int_t index) const;
-#endif
-
     // data members  
     AliMpStationType  fStationType; // station type 
     AliMpPlaneType    fPlaneType;   // plane type 

@@ -14,7 +14,7 @@
  **************************************************************************/
 
 // $Id$
-// $MpId: AliMpNeighboursPadIterator.cxx,v 1.8 2005/08/26 15:43:36 ivana Exp $
+// $MpId: AliMpNeighboursPadIterator.cxx,v 1.9 2005/09/26 16:12:23 ivana Exp $
 // Category: sector
 //
 // Class AliMpNeighboursPadIterator
@@ -132,8 +132,9 @@ Bool_t AliMpNeighboursPadIterator::IsNeighbours(const AliMpPad& pad) const
 
 #ifdef WITH_STL
 //______________________________________________________________________________
-PadVector AliMpNeighboursPadIterator::PadVectorLine(const AliMpPad& from,
-                                           const AliMpIntPair& direction) const
+AliMpNeighboursPadIterator::PadVector 
+AliMpNeighboursPadIterator::PadVectorLine(const AliMpPad& from,
+                                          const AliMpIntPair& direction) const
 {
 /// Fill  a new vector with all pads which have common
 /// parts with the pad located at <fCenterPad>, in a given line
@@ -168,8 +169,9 @@ void  AliMpNeighboursPadIterator::UpdateTotalSet(PadSet& setTotal,
 #endif
 #ifdef WITH_ROOT
 //______________________________________________________________________________
-PadVector* AliMpNeighboursPadIterator::PadVectorLine(const AliMpPad& from,
-                                           const AliMpIntPair& direction) const
+AliMpNeighboursPadIterator::PadVector* 
+AliMpNeighboursPadIterator::PadVectorLine(const AliMpPad& from,
+                                          const AliMpIntPair& direction) const
 {
 /// Fill  a new vector with all pads which have common
 /// parts with the pad located at <fCenterPad>, in a given line
@@ -315,7 +317,7 @@ void AliMpNeighboursPadIterator::FillPadsVector(Bool_t includeCenter)
     if (includeCenter) fPads.push_back(fCenterPad);
     //fPads.insert(fPads.end(),setTotal.begin(),setTotal.end());
     
-    PadSetIterator it;
+    PadSetCIterator it;
     for (it = setTotal.begin(); it != setTotal.end(); it++)
       fPads.push_back((*it));
 #endif

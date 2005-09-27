@@ -14,7 +14,7 @@
 **************************************************************************/
 
 // $Id$
-// $MpId: AliMpSt345Reader.cxx,v 1.4 2005/09/19 19:01:31 ivana Exp $
+// $MpId: AliMpSt345Reader.cxx,v 1.5 2005/09/23 12:57:32 ivana Exp $
 
 #include "AliMpSt345Reader.h"
 

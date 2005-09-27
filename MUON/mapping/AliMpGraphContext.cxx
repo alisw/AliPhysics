@@ -14,7 +14,7 @@
  **************************************************************************/
 
 // $Id$
-// $MpId: AliMpGraphContext.cxx,v 1.7 2005/08/26 15:43:36 ivana Exp $
+// $MpId: AliMpGraphContext.cxx,v 1.8 2005/09/26 16:06:36 ivana Exp $
 // Category: graphics
 //
 // Class AliMpGraphContext
@@ -31,7 +31,7 @@
 ClassImp(AliMpGraphContext)
 
 AliMpGraphContext *AliMpGraphContext::fgInstance = 0;
-GraphContextVector AliMpGraphContext::fgStack;
+AliMpGraphContext::GraphContextVector AliMpGraphContext::fgStack;
 #ifdef WITH_ROOT
 Int_t              AliMpGraphContext::fgStackSize = 0;
 #endif

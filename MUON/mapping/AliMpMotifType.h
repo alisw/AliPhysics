@@ -2,7 +2,7 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$
-// $MpId: AliMpMotifType.h,v 1.7 2005/08/26 15:43:36 ivana Exp $
+// $MpId: AliMpMotifType.h,v 1.8 2005/09/26 16:10:46 ivana Exp $
 
 /// \ingroup motif
 /// \class AliMpMotifType
@@ -13,10 +13,19 @@
 #ifndef ALI_MP_MOTIF_TYPE_H
 #define ALI_MP_MOTIF_TYPE_H
 
+#include "AliMpContainers.h"
+
+#ifdef WITH_STL
+#include <map>
+#endif
+
+#ifdef WITH_ROOT
+#include "AliMpExMap.h"
+#endif
+
 #include <TObject.h>
 #include <TString.h>
 
-#include "AliMpMotifTypes.h"
 #include "AliMpIntPair.h"
 
 class AliMpConnection;
@@ -24,6 +33,15 @@ class AliMpVPadIterator;
 
 class AliMpMotifType : public TObject
 {
+  public:
+#ifdef WITH_STL
+    typedef std::map< AliMpIntPair, AliMpConnection* > ConnectionMap;
+    typedef ConnectionMap::const_iterator     ConnectionMapCIterator;
+#endif    
+#ifdef WITH_ROOT
+    typedef AliMpExMap ConnectionMap;
+#endif    
+
   public:
     AliMpMotifType(const TString &id);
     AliMpMotifType();
@@ -68,28 +86,13 @@ class AliMpMotifType : public TObject
   private:
     // static data members
     static const Int_t   fgkPadNumForA; // the pad number for the pad "A"
-
-#ifdef WITH_ROOT
-    static const Int_t   fgkSeparator;  // the separator used for conversion
-                                        // of AliMpIntPair to Int_t
-    
-    // methods
-    Int_t  GetIndex(const AliMpIntPair& pair) const;
-    AliMpIntPair  GetPair(Int_t index) const;
-#endif
   
     // data members
-    TString   fID;        // unique motif ID
-    Int_t     fNofPadsX;  // number of pads in x direction
-    Int_t     fNofPadsY;  // number of pads in y direction
-    Int_t     fVerboseLevel;  // verbose level
-
-#ifdef WITH_STL
-    ConnectionMap_t fConnections; //! Map (ix,iy) of connections
-#endif    
-#ifdef WITH_ROOT
-    mutable ConnectionMap_t fConnections; // Map (ix,iy) of connections
-#endif    
+    TString   fID;              // unique motif ID
+    Int_t     fNofPadsX;        // number of pads in x direction
+    Int_t     fNofPadsY;        // number of pads in y direction
+    Int_t     fVerboseLevel;    // verbose level
+    ConnectionMap fConnections; // Map (ix,iy) of connections
     
   ClassDef(AliMpMotifType,1)  //Motif type
 };

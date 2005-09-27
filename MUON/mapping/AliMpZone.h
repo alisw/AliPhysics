@@ -2,7 +2,7 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$
-// $MpId: AliMpZone.h,v 1.6 2005/08/26 15:43:36 ivana Exp $
+// $MpId: AliMpZone.h,v 1.7 2005/09/26 16:12:11 ivana Exp $
 
 /// \ingroup sector
 /// \class AliMpZone
@@ -16,15 +16,32 @@
 #ifndef ALI_MP_ZONE_H
 #define ALI_MP_ZONE_H
 
+#include "AliMpContainers.h"
+
+#ifdef WITH_STL
+#include <vector>
+#endif
+
+#ifdef WITH_ROOT
+#include <TObjArray.h>
+#endif
+
 #include <TObject.h>
 #include <TVector2.h>
 
-#include "AliMpSectorTypes.h"
-
 class AliMpSubZone;
+class AliMpVMotif;
 
 class AliMpZone : public TObject
 {
+  public:
+#ifdef WITH_STL
+    typedef std::vector<AliMpSubZone*>  SubZoneVector;
+#endif
+#ifdef WITH_ROOT
+    typedef TObjArray  SubZoneVector;
+#endif
+
   public:
     AliMpZone(Int_t id);
     AliMpZone();

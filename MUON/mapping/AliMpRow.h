@@ -2,7 +2,7 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$
-// $MpId: AliMpRow.h,v 1.7 2005/08/26 15:43:36 ivana Exp $
+// $MpId: AliMpRow.h,v 1.8 2005/09/26 16:12:11 ivana Exp $
 
 /// \ingroup sector
 /// \class AliMpRow
@@ -13,9 +13,18 @@
 #ifndef ALI_MP_ROW_H
 #define ALI_MP_ROW_H
 
+#include "AliMpContainers.h"
+
+#ifdef WITH_STL
+#include <vector>
+#endif
+
+#ifdef WITH_ROOT
+#include <TList.h>
+#endif
+
 #include <TVector2.h>
 
-#include "AliMpSectorTypes.h"
 #include "AliMpVIndexed.h"
 #include "AliMpDirection.h"
 
@@ -26,6 +35,14 @@ class AliMpMotifMap;
 
 class AliMpRow : public AliMpVIndexed
 {
+  public:
+#ifdef WITH_STL
+    typedef std::vector<AliMpVRowSegment*>  RowSegmentVector;
+#endif
+#ifdef WITH_ROOT
+    typedef TList  RowSegmentVector;
+#endif
+
   public:
     AliMpRow(Int_t id, AliMpMotifMap* motifMap);
     AliMpRow();

@@ -14,7 +14,7 @@
  **************************************************************************/
 
 // $Id$
-// $MpId: AliMpSector.cxx,v 1.9 2005/09/02 10:01:09 ivana Exp $
+// $MpId: AliMpSector.cxx,v 1.10 2005/09/26 16:12:23 ivana Exp $
 // Category: sector
 //
 // Class AliMpSector
@@ -41,7 +41,7 @@ ClassImp(AliMpSector)
 //_____________________________________________________________________________
 AliMpSector::AliMpSector(const TString& id, Int_t nofZones, Int_t nofRows, 
                          AliMpDirection direction, const TVector2& offset) 
-  : TObject(),
+  : TNamed("Sector", ""),
     fID(id),
     fOffset(offset),
     fZones(),
@@ -51,7 +51,8 @@ AliMpSector::AliMpSector(const TString& id, Int_t nofZones, Int_t nofRows,
 {
 /// Standard constructor
 
-  fMotifMap = new AliMpMotifMap();
+  fMotifMap = new AliMpMotifMap(true);
+  //fMotifMap = new AliMpMotifMap();
 
 #ifdef WITH_STL
   for (Int_t izone = 0; izone<nofZones; izone++) 
@@ -72,7 +73,7 @@ AliMpSector::AliMpSector(const TString& id, Int_t nofZones, Int_t nofRows,
 
 //_____________________________________________________________________________
 AliMpSector::AliMpSector(const AliMpSector& right) 
-  : TObject(right) 
+  : TNamed(right) 
 {
 /// Protected copy constructor (not provided) 
 
@@ -81,7 +82,7 @@ AliMpSector::AliMpSector(const AliMpSector& right)
 
 //_____________________________________________________________________________
 AliMpSector::AliMpSector() 
-  : TObject(),
+  : TNamed(),
     fID(""),    
     fOffset(TVector2(0., 0.)),
     fZones(),

@@ -14,7 +14,7 @@
  **************************************************************************/
 
 // $Id$
-// $MpId: AliMpSectorReader.cxx,v 1.4 2005/09/02 10:01:09 ivana Exp $
+// $MpId: AliMpSectorReader.cxx,v 1.5 2005/09/26 16:12:23 ivana Exp $
 // Category: sector
 //
 // Class AliMpSectorReader
@@ -469,7 +469,7 @@ void AliMpSectorReader::ReadRowSegmentSpecialData(ifstream& in,
   // Process data
   //
     
-  PadRowVector  newPadRows;
+  AliMpVRowSegmentSpecial::PadRowVector  newPadRows;
   for (Int_t i=0; i<nofPadRows; i++) {
     
      // Create pad row

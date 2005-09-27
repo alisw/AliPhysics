@@ -2,7 +2,7 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$
-// $MpId: AliMpSector.h,v 1.8 2005/09/02 10:00:49 ivana Exp $
+// $MpId: AliMpSector.h,v 1.9 2005/09/26 16:12:11 ivana Exp $
 
 /// \ingroup sector
 /// \class AliMpSector
@@ -13,11 +13,20 @@
 #ifndef ALI_MP_SECTOR_H
 #define ALI_MP_SECTOR_H
 
-#include <TObject.h>
+#include "AliMpContainers.h"
+
+#ifdef WITH_STL
+#include <vector>
+#endif
+
+#ifdef WITH_ROOT
+#include <TObjArray.h>
+#endif
+
+#include <TNamed.h>
 #include <TString.h>
 #include <TVector2.h>
 
-#include "AliMpSectorTypes.h"
 #include "AliMpDirection.h"
 
 class AliMpZone;
@@ -27,8 +36,18 @@ class AliMpVMotif;
 class AliMpVPadIterator;
 class AliMpMotifMap;
 
-class AliMpSector : public TObject
+class AliMpSector : public TNamed
 {
+  public:
+#ifdef WITH_STL
+    typedef std::vector<AliMpRow*> RowVector;
+    typedef std::vector<AliMpZone*> ZoneVector;
+#endif
+#ifdef WITH_ROOT
+    typedef TObjArray  RowVector;
+    typedef TObjArray  ZoneVector;
+#endif
+
   public:
     AliMpSector(const TString& id, Int_t nofZones, Int_t nofRows,
                 AliMpDirection direction, const TVector2& offset);
