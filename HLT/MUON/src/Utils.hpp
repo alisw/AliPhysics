@@ -102,7 +102,11 @@ namespace dHLT
 	// We are defining this DebugMsg_PREECODE macro to use in DebugMsg in such a way
 	// so that the code is removed when the LOG_NO_DEBUG macro is specified but 
 	// compiled otherwise.
+#ifdef __sun
+#       include <sstream>
+#else
 #	include <Rstrstream.h>
+#endif
 #	ifndef LOG_NO_DEBUG
 #		define __DebugMsg_PREECODE__(message) std::ostringstream os; os << message;
 #	else // LOG_NO_DEBUG

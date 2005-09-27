@@ -693,7 +693,7 @@ Bool_t TriggerSource::FillTriggerFromHits(AliMUONDataInterface* data, Int_t trac
 	
 	Float_t x1, y1, z1, x2, y2, z2, x3, y3, z3, x4, y4, z4;
 #ifndef __alpha
-#ifndef __sparc
+#ifndef __sun
 	x1 = y1 = z1 = x2 = y2 = z2 = x3 = y3 = z3 = x4 = y4 = z4 = NAN;
 #else
 	x1 = y1 = z1 = x2 = y2 = z2 = x3 = y3 = z3 = x4 = y4 = z4 = 0;

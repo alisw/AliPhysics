@@ -570,7 +570,7 @@ void ClusterSource::AddChamberFrom(AliMUONDataInterface* data, Int_t chamber)
 	AddBlock(chamber);
 	UInt_t currentblocksize = 0;
 #ifndef __alpha
-#ifndef __sparc
+#ifndef __sun
 	Float_t x = NAN, y = NAN;
 #else
 	Float_t x = 0, y = 0;
@@ -657,7 +657,7 @@ void ClusterSource::AddClusterFrom(
 {
 	DebugMsg(1, "Entering AddClusterFrom");
 #ifndef __alpha
-#ifndef __sparc	
+#ifndef __sun	
 	Float_t x = NAN, y = NAN;
 #else
 	Float_t x = 0, y = 0;
