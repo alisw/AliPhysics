@@ -1,13 +1,24 @@
 // $Id$
-// $MpId: testSectorPadIterators.C,v 1.7 2005/08/24 08:53:27 ivana Exp $
+// $MpId: testSectorPadIterators.C,v 1.8 2005/09/26 16:05:25 ivana Exp $
 //
 // Test macro for reading  sector, and iterate over it
 
 void testSectorPadIterators(AliMpStationType station = kStation1,
-                            AliMpPlaneType plane = kBendingPlane)
+                            AliMpPlaneType plane = kBendingPlane,
+	 	            Bool_t rootInput = false)
 {
-  AliMpSectorReader r(station, plane);
-  AliMpSector* sect = r.BuildSector();
+  AliMpSector *sector = 0;
+  if (!rootInput) {
+    AliMpSectorReader r(station, plane);
+    sector=r.BuildSector();
+  }
+  else  {
+    TString filePath = AliMpFiles::Instance()->SectorFilePath(station,plane);
+    filePath.ReplaceAll("zones.dat", "sector.root"); 
+
+    TFile f(filePath.Data(), "READ");
+    sector = (AliMpSector*)f.Get("Sector");
+  }  
   
   Int_t num=0;
   
@@ -16,7 +27,7 @@ void testSectorPadIterators(AliMpStationType station = kStation1,
   const Double_t xmax=150;
   const Double_t ymax=250;
 
-  AliMpSectorPadIterator it = AliMpSectorPadIterator(sect);
+  AliMpSectorPadIterator it = AliMpSectorPadIterator(sector);
 
   for (it.First(); ! it.IsDone(); it.Next()) {
     AliMpIntPair indices = it.CurrentItem().GetIndices();
@@ -27,5 +38,5 @@ void testSectorPadIterators(AliMpStationType station = kStation1,
     marker->Draw();
   }
   
-  delete sect;
+  delete sector;
 }

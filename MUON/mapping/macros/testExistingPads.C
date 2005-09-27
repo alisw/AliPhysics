@@ -1,13 +1,25 @@
 // $Id$
-// $MpId: testExistingPads.C,v 1.10 2005/08/24 08:53:27 ivana Exp $
+// $MpId: testExistingPads.C,v 1.11 2005/09/26 16:05:25 ivana Exp $
 //
 // Test macro for testing which pad is seen as "existing" by AliMpSector.
 
 void testExistingPads(AliMpStationType station = kStation1,
-                      AliMpPlaneType plane = kBendingPlane) 
+                      AliMpPlaneType plane = kBendingPlane, 
+		      Bool_t rootInput = false)
 {
-  AliMpSectorReader r(station, plane);
-  AliMpSector *sector=r.BuildSector();
+  AliMpSector *sector = 0;
+  if (!rootInput) {
+    AliMpSectorReader r(station, plane);
+    sector=r.BuildSector();
+  }
+  else  {
+    TString filePath = AliMpFiles::Instance()->SectorFilePath(station,plane);
+    filePath.ReplaceAll("zones.dat", "sector.root"); 
+
+    TFile f(filePath.Data(), "READ");
+    sector = (AliMpSector*)f.Get("Sector");
+  }  
+
   AliMpSectorSegmentation segmentation(sector);
   AliMpVPainter* painter = AliMpVPainter::CreatePainter(sector);
 

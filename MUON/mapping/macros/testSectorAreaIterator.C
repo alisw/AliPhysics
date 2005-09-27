@@ -1,5 +1,5 @@
 // $Id$
-// $MpId: testSectorAreaIterator.C,v 1.3 2005/08/24 08:53:27 ivana Exp $
+// $MpId: testSectorAreaIterator.C,v 1.4 2005/09/26 16:05:25 ivana Exp $
 //
 // Test macro for iterating over the whole sector
 
@@ -48,10 +48,22 @@ void MarkPads(AliMpVPadIterator& it, Double_t xmax, Double_t ymax,
 }
 
 void testSectorAreaIterator(AliMpStationType station = kStation1,
-                            AliMpPlaneType planeType = kBendingPlane)
+                            AliMpPlaneType plane = kBendingPlane,
+	     	            Bool_t rootInput = false)
 {
-  AliMpSectorReader reader(station, planeType);  
-  AliMpSector* sector = reader.BuildSector();
+  AliMpSector *sector = 0;
+  if (!rootInput) {
+    AliMpSectorReader r(station, plane);
+    sector=r.BuildSector();
+  }
+  else  {
+    TString filePath = AliMpFiles::Instance()->SectorFilePath(station,plane);
+    filePath.ReplaceAll("zones.dat", "sector.root"); 
+
+    TFile f(filePath.Data(), "READ");
+    sector = (AliMpSector*)f.Get("Sector");
+  }  
+
   AliMpSectorSegmentation segmentation(sector);
 
   AliMpArea area;

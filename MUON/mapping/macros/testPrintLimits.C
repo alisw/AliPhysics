@@ -1,15 +1,26 @@
 // $Id$
-// $MpId: testPrintLimits.C,v 1.7 2005/08/24 08:53:27 ivana Exp $
+// $MpId: testPrintLimits.C,v 1.8 2005/09/26 16:05:25 ivana Exp $
 //
 // Test macro for making an output file, where all mapping elements
 // indices & positions are written.
 
 void testPrintLimits(AliMpStationType station = kStation1,
-                    AliMpPlaneType plane = kBendingPlane, ostream& out=cout)
+                    AliMpPlaneType plane = kBendingPlane, 
+		    Bool_t rootInput = false,
+		    ostream& out=cout)
 {
-  AliMpSectorReader r(station, plane);
+  AliMpSector *sector = 0;
+  if (!rootInput) {
+    AliMpSectorReader r(station, plane);
+    sector=r.BuildSector();
+  }
+  else  {
+    TString filePath = AliMpFiles::Instance()->SectorFilePath(station,plane);
+    filePath.ReplaceAll("zones.dat", "sector.root"); 
 
-  AliMpSector *sector=r.BuildSector();
+    TFile f(filePath.Data(), "READ");
+    sector = (AliMpSector*)f.Get("Sector");
+  }  
 
   AliMpVPainter* painter = AliMpVPainter::CreatePainter(sector);
   painter->Draw("ZSSMP");

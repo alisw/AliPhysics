@@ -1,10 +1,11 @@
 // $Id$
-// $MpId: testMotifTypeIterators.C,v 1.10 2005/08/24 08:53:27 ivana Exp $
+// $MpId: testMotifTypeIterators.C,v 1.11 2005/09/26 16:05:25 ivana Exp $
 //
 // Test macro for reading motif type data and iterate over them.
 
 void testMotifTypeIterators(AliMpStationType station = kStation1,
-                            AliMpPlaneType plane = kBendingPlane)
+                            AliMpPlaneType plane = kBendingPlane,
+	        	    Bool_t rootInput = false)
 {
   TString names;
   TString names2;

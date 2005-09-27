@@ -1,10 +1,11 @@
 // $Id$
-// $MpId: testReadMotifType.C,v 1.11 2005/08/24 08:53:27 ivana Exp $
+// $MpId: testReadMotifType.C,v 1.12 2005/09/26 16:05:25 ivana Exp $
 //
 // Test macro for reading motif type data.
 
 void testReadMotifType(AliMpStationType station = kStation1,
-                       AliMpPlaneType plane = kBendingPlane)
+                       AliMpPlaneType plane = kBendingPlane,
+	     	       Bool_t rootInput = false)
 {
   AliMpMotifReader r(station, plane);
   //r.SetVerboseLevel(2);

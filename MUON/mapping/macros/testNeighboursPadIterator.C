@@ -1,19 +1,26 @@
 // $Id$
-// $MpId: testNeighboursPadIterator.C,v 1.8 2005/08/24 08:53:27 ivana Exp $
+// $MpId: testNeighboursPadIterator.C,v 1.9 2005/09/26 16:05:25 ivana Exp $
 //
 // Test macro for reading  sector, and iterate over it
 
 void testNeighboursPadIterator(AliMpStationType station = kStation1,
                                AliMpPlaneType plane = kBendingPlane, 
+		               Bool_t rootInput = false,
                                Int_t i=50, Int_t j=50)
 {
-  if (!gInterpreter->IsLoaded("mlibs.C")){ 
-    gROOT->LoadMacro("mlibs.C");
-    gInterpreter->ProcessLine("mlibs()");
+  AliMpSector *sector = 0;
+  if (!rootInput) {
+    AliMpSectorReader r(station, plane);
+    sector=r.BuildSector();
+  }
+  else  {
+    TString filePath = AliMpFiles::Instance()->SectorFilePath(station,plane);
+    filePath.ReplaceAll("zones.dat", "sector.root"); 
+
+    TFile f(filePath.Data(), "READ");
+    sector = (AliMpSector*)f.Get("Sector");
   }  
 
-  AliMpSectorReader r(station, plane);
-  AliMpSector* sect = r.BuildSector();
   AliMpSectorSegmentation segm(sect);  
   
   TCanvas *can = new TCanvas("canv");

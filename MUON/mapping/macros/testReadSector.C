@@ -1,19 +1,36 @@
 // $Id$
-// $MpId: testReadSector.C,v 1.13 2005/09/02 10:57:47 ivana Exp $
+// $MpId: testReadSector.C,v 1.14 2005/09/26 16:04:07 ivana Exp $
 //
 // Test macro for reading sector data.
 
 #include <iomanip>
 
 void testReadSector(AliMpStationType station = kStation1,
-                    AliMpPlaneType plane = kBendingPlane) 
+                    AliMpPlaneType plane = kBendingPlane, 
+	 	    Bool_t rootInput = false)
 {
-  AliMpSectorReader reader(station, plane);  
-  //reader.SetVerboseLevel(1);
+  AliMpSector *sector = 0;
+  if (!rootInput) {
+    AliMpSectorReader r(station, plane);
+    //reader.SetVerboseLevel(1);
+    sector=r.BuildSector();
+
+    // Write sector on Root file
+    TString filePath = AliMpFiles::Instance()->SectorFilePath(station,plane);
+    filePath.ReplaceAll("zones.dat", "sector.root"); 
   
-  // Read data 
-  AliMpSector* sector = reader.BuildSector();
-  
+    TFile f(filePath.Data(), "RECREATE");
+    sector->Write();
+    f.Close();
+  }
+  else  {
+    TString filePath = AliMpFiles::Instance()->SectorFilePath(station,plane);
+    filePath.ReplaceAll("zones.dat", "sector.root"); 
+
+    TFile f(filePath.Data(), "READ");
+    sector = (AliMpSector*)f.Get("Sector");
+  }  
+
   cout << endl;
 
   // Sector geometry

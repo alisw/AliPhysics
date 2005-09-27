@@ -1,16 +1,24 @@
 // $Id$
-// $MpId: testIndicesLimits.C,v 1.3 2005/08/24 08:53:27 ivana Exp $
+// $MpId: testIndicesLimits.C,v 1.4 2005/09/26 16:05:25 ivana Exp $
 //
 // Test macro for indices limits.
 
 void testIndicesLimits(AliMpStationType station = kStation1,
-                       AliMpPlaneType plane = kBendingPlane) 
+                       AliMpPlaneType plane = kBendingPlane, 
+		       Bool_t rootInput = false)
 {
-  AliMpSectorReader reader(station, plane);  
-  //reader.SetVerboseLevel(1);
-  
-  // Read data 
-  AliMpSector* sector = reader.BuildSector();
+  AliMpSector *sector = 0;
+  if (!rootInput) {
+    AliMpSectorReader r(station, plane);
+    sector=r.BuildSector();
+  }
+  else  {
+    TString filePath = AliMpFiles::Instance()->SectorFilePath(station,plane);
+    filePath.ReplaceAll("zones.dat", "sector.root"); 
+
+    TFile f(filePath.Data(), "READ");
+    sector = (AliMpSector*)f.Get("Sector");
+  }  
 
   // Loop over rows
   for (Int_t i=0; i<sector->GetNofRows(); i++) {
