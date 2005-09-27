@@ -40,6 +40,7 @@
 #include <TMarker3DBox.h>
 #include <TParticle.h>
 #include <TPolyLine3D.h>
+#include <TBox.h>
 
 #include "AliMUONDisplay.h"
 #include "AliRun.h"
@@ -53,6 +54,12 @@
 #include "AliMUONRawCluster.h"
 #include "AliMUONTrack.h"
 #include "AliMUONTrackParam.h"
+
+#include "AliMUONSegmentationManager.h"
+#include "AliMUONGeometryModule.h"
+#include "AliMpSlatSegmentation.h"
+#include "AliMpSlat.h"
+ 
 
 #include "AliMUONGeometrySegmentation.h"
 #include "AliMUONChamber.h"
@@ -631,7 +638,7 @@ void AliMUONDisplay::DrawClusters()
 		marker->Draw();
 	}
 	pm->Draw();
-	fClustersCuts +=pm->GetN();
+	fClustersCuts += pm->GetN();
     }
 }
 
@@ -773,13 +780,90 @@ void AliMUONDisplay::DrawView(Float_t theta, Float_t phi, Float_t psi)
 	fZoomY1[0] =  1;
 	fZooms = 0;
     }
+    // Recovering the chamber 
+    AliMUON *pMUON  = (AliMUON*)gAlice->GetModule("MUON");
+    AliMUONChamber*  iChamber;
+    iChamber = &(pMUON->Chamber(fChamber-1));
 
 // Display MUON Chamber Geometry
     char nodeName[7];
     sprintf(nodeName,"MUON%d",100+fChamber);
-    
-    TNode *node1=gAlice->GetGeometry()->GetNode(nodeName);
-    if (node1) node1->Draw("same");  
+    printf(">>>> chamber is %d\n",fChamber);
+
+    if(fChamber < 5) {
+      // drawing inner circle
+      TPolyLine3D* poly1 = new  TPolyLine3D();
+      Int_t nPoint = 0;
+      for (Float_t d = 0; d < 6.3; d+= 0.1) {
+	Double_t x = AliMUONConstants::Dmin((fChamber-1)/2) * TMath::Cos(d)/2.;
+	Double_t y = AliMUONConstants::Dmin((fChamber-1)/2) * TMath::Sin(d)/2.;
+	poly1->SetPoint(nPoint++, x, y, 0.);
+      }
+      poly1->SetLineColor(2);
+      poly1->Draw("s");
+
+      // drawing outer circle
+      TPolyLine3D* poly2 = new  TPolyLine3D();
+      nPoint = 0;
+      for (Float_t d = 0; d < 6.3; d+= 0.1) {
+	Double_t x = AliMUONConstants::Dmax((fChamber-1)/2) * TMath::Cos(d)/2.;
+	Double_t y = AliMUONConstants::Dmax((fChamber-1)/2) * TMath::Sin(d)/2.;
+	poly2->SetPoint(nPoint++, x, y, 0.);
+      }
+      poly2->SetLineColor(2);
+      poly2->Draw("s");
+    }
+
+
+    if(fChamber >4 && fChamber <11) {
+      Int_t id=0;
+      for(id=0; id<26; id++) {
+	Int_t detElemId = fChamber*100+id;
+	if (  AliMUONSegmentationManager::IsValidDetElemId(detElemId) ) {
+	  AliMpSlatSegmentation * seg =   
+	    (AliMpSlatSegmentation *) AliMUONSegmentationManager::Segmentation(detElemId, kBendingPlane);
+	  const AliMpSlat * slat = seg->Slat();
+	  Float_t deltax = slat->DX()/10.;
+	  Float_t deltay = slat->DY()/10.;
+	  Float_t xlocal1 =  -deltax;
+	  Float_t ylocal1 =  -deltay;
+	  Float_t xlocal2 =  +deltax;
+	  Float_t ylocal2 =  +deltay;
+	  Float_t xg1, xg2, yg1, yg2, zg1, zg2;
+	  iChamber->GetGeometry()->Local2Global(detElemId, xlocal1, ylocal1, 0, xg1, yg1, zg1);
+	  iChamber->GetGeometry()->Local2Global(detElemId, xlocal2, ylocal2, 0, xg2, yg2, zg2);
+
+	  // drawing slat active volumes
+	  Float_t xCenter = (xg1 + xg2)/2.;
+	  Float_t yCenter = (yg1 + yg2)/2.;
+
+	  TMarker3DBox* box = new TMarker3DBox(xCenter,yCenter,0,xlocal1,ylocal2,0,0,0);
+
+	  box->SetFillStyle(0);
+	  box->SetLineColor(2);
+	  box->Draw("s");
+
+	  // drawing inner circle + disc
+	  TPolyLine3D* poly  = new  TPolyLine3D();
+	  TPolyLine3D* poly1 = new  TPolyLine3D();
+
+	  Int_t nPoint = 0;
+	  Int_t nPoint1 = 0;
+	  for (Float_t d = 0; d < 6.24; d+= 0.005) {
+	    Double_t x = AliMUONConstants::Dmin((fChamber-1)/2) * TMath::Cos(d)/2.;
+	    Double_t y = AliMUONConstants::Dmin((fChamber-1)/2) * TMath::Sin(d)/2.;
+	    if (nPoint % 2 == 0) poly->SetPoint(nPoint++, 0., 0., 0.);
+	    poly->SetPoint(nPoint++, x, y, 0.);
+	    poly1->SetPoint(nPoint1++, x, y, 0.);
+
+	  }
+	  poly->SetLineColor(1);
+	  poly->Draw("s");
+	  poly1->SetLineColor(2);
+	  poly1->Draw("s");
+	}
+      }
+    }  
 //add clusters to the pad
     DrawClusters();
     DrawHits();
@@ -995,7 +1079,6 @@ void AliMUONDisplay::LoadDigits(Int_t chamber, Int_t cathode)
 	isec = segmentation2->Sector(detElemId, mdig->PadX(), mdig->PadY());
 	dpx = segmentation2->Dpx(detElemId, isec)/2;
 	dpy = segmentation2->Dpy(detElemId, isec)/2;
-	
 //
 //	segmentation->Dump();
 	

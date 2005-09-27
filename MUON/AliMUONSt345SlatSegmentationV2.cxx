@@ -139,7 +139,7 @@ AliMUONSt345SlatSegmentationV2::Dpx(int ipcb) const
 {
 	AliMpPCB* pcb = fSlat->GetPCB(ipcb);
 	if (!pcb) AliFatal("pcb is null!");
-	return pcb->PadSizeX();
+	return pcb->PadSizeX() * fgkLengthUnit;
 }
 
 //_____________________________________________________________________________
@@ -148,7 +148,7 @@ AliMUONSt345SlatSegmentationV2::Dpy(int ipcb) const
 {
 	AliMpPCB* pcb = fSlat->GetPCB(ipcb);
 	if (!pcb) AliFatal("pcb is null!");
-	return pcb->PadSizeY();
+	return pcb->PadSizeY() * fgkLengthUnit;
 }
 
 //_____________________________________________________________________________
