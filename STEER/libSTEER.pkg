@@ -20,10 +20,10 @@ AliMemoryWatcher.cxx \
 AliVertexer.cxx \
 AliMC.cxx AliSimulation.cxx AliReconstruction.cxx AliVertexGenFile.cxx \
 AliRunTag.cxx AliLHCTag.cxx AliDetectorTag.cxx AliEventTag.cxx \
-AliCDBMetaData.cxx AliCDBEntry.cxx AliCDBStorage.cxx AliCDBDump.cxx \
-AliCDBLocal.cxx\
-AliReconstructor.cxx AliCDBMetaDataSelect.cxx \
-AliDetectorEventHeader.cxx TTreeStream.cxx
+AliCDBEntry.cxx AliCDBId.cxx AliCDBMetaData.cxx \
+AliCDBPath.cxx AliCDBRunRange.cxx AliCDBManager.cxx\
+AliCDBStorage.cxx AliCDBLocal.cxx AliCDBDump.cxx AliCDBGrid.cxx\
+AliReconstructor.cxx AliDetectorEventHeader.cxx TTreeStream.cxx
 
 HDRS:= $(SRCS:.cxx=.h) 
 

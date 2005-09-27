@@ -18,6 +18,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.84  2005/09/21 10:02:47  kharlov
+ * Reading calibration from CDB (Boris Polichtchouk)
+ *
  * Revision 1.82  2005/09/02 15:43:13  kharlov
  * Add comments in GetCalibrationParameters and Calibrate
  *
@@ -82,8 +85,8 @@
 #include "AliPHOSDigit.h"
 #include "AliPHOSDigitizer.h"
 #include "AliPHOSCalibrationDB.h"
+#include "AliCDBManager.h"
 #include "AliCDBStorage.h"
-#include "AliCDBLocal.h"
 
 ClassImp(AliPHOSClusterizerv1)
   
@@ -320,10 +323,13 @@ void AliPHOSClusterizerv1::GetCalibrationParameters()
 
   AliPHOSGetter * gime = AliPHOSGetter::Instance();
 
-  if(AliCDBStorage::Instance())
-    fCalibData = (AliPHOSCalibData*)AliCDBStorage::Instance()
+  if(AliCDBManager::Instance()->IsDefaultStorageSet()){
+    AliCDBEntry *entry = (AliCDBEntry*) AliCDBManager::Instance()->GetDefaultStorage()
       ->Get("PHOS/Calib/GainFactors_and_Pedestals",gAlice->GetRunNumber());
-
+    fCalibData = (AliPHOSCalibData*) entry->GetObject();
+  }
+  
+  
   if(!fCalibData)
     {
       if ( !gime->Digitizer() ) 

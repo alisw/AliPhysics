@@ -43,6 +43,7 @@ class AliDetector;
 class AliHeader;
 class AliStack;
 class AliRunDigitizer;
+class AliCDBEntry;
 
 
 class AliRunLoader: public TNamed
@@ -71,7 +72,7 @@ class AliRunLoader: public TNamed
     
     Int_t       GetNumberOfEvents();
     
-    const TObject* GetRunObject(const char* name) const;
+    AliCDBEntry* GetCDBEntry(const char* name) const;
 
     void        MakeTree(Option_t *option);
     void        MakeHeader();

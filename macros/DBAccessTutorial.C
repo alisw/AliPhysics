@@ -1,152 +1,232 @@
+AliCDBStorage *storLoc, *storGrid;
+
+AliCDBEntry *entry=0;
+TObjString *objstr=0;
+
 void DBAccessTutorial(){
 
-
-/***************************************************************************************************************
- Prelude(0): 	if it doesn't exist, create DB directory: $ALICE_ROOT/DB
- ***************************************************************************************************************/
-TString DBFolder="$ALICE_ROOT/DBTutorial";
-gSystem->ExpandPathName(DBFolder);
-
-if(!gSystem->OpenDirectory(DBFolder)){
-	printf("Warning: folder DBTutorial does not exist, I will create it!");
-        TString command = "mkdir "+ DBFolder;
-	gSystem->Exec(command.Data());
-}
-
-/***************************************************************************************************************
- Prelude(1): 	create a DB object. We'll take AliZDCCalibData 
-		(container class for ZDC Calibration data) as an example
- ***************************************************************************************************************/
- 
-AliZDCCalibData *calibda=new AliZDCCalibData("ZDC");
-
-// Fill array of ZDC energy calibration factors (4 float's) with some numbers
-Float_t EnFactorsArray[4]={20.,25.,200.,10.};
-calibda->SetEnCalib(EnFactorsArray);
-
-printf("\nI am in Prelude(1). ZDC Energy calibration factors: \n");  
-printf("PM0=%f; PM1=%f; PM2=%f; PM3=%f \n",
-   calibda->GetEnCalib(0),  calibda->GetEnCalib(1),  calibda->GetEnCalib(2),  calibda->GetEnCalib(3) );  
-
-/***************************************************************************************************************
- Part 1: 	Store the calibration object in the database, using 
-		the "Organized" storage system
-		(i.e. a well defined directory structure, defined by the 
-		object's metadata and set in the DBFodler above specified)
- ***************************************************************************************************************/
-
-// a. Define the object's metadata (set of information which describes the object)
-// AliCDBMetaData(char* name, int firstRun, int lastRun,int Period,char* ObjectFormat, char* ResponsibleName, char* extraInfo)
-//
-// name: Object's name ("Detector/DBType/DetSpecType")
-// firstRun: first run for which the object is valid
-// lastRun:  last run for which the object is valid
-// period: beam period (to be better specified in future)
-// objectFormat: a string which describes the object's format
-// ResponsibleName: name of the person who created and stored the object
-// extraInfo: anything else you may want to know
-
-AliCDBMetaData md("ZDC/Calib/GainFactors",1,10,1,"AliZDCCalibData: Pedestals (47 floats), En. calib factors (4 floats)","A. Colla", "Tutorial");
-
-// b. Create the specific AliCDBStorage instance (AliCDBLocal in this case)
-
-AliCDBLocal *loc = new AliCDBLocal(DBFolder.Data());
-
-// c. Put the object in the database. Use Put method: AliCDBStorage::Put(TObject object, AliCDBMetaData& metaData)
-// 
-// the object will be stored in the file DBFolder/ZDC/Calib/GainFactors/Run1-10_v0.root
-// Note that the version is automatically determined.
-
-AliCDBStorage::Instance()->Put(calibda, md); // we could also type: loc->Put(calibda, md)
-
-// delete the AliCDBStorage instance and the object (optional)
-AliCDBStorage::Instance()->Delete();
+AliCDBManager *man = AliCDBManager::Instance();
+// pointer man points to the single instance of AliCDBManager. 
+// This will let us avoid typing AliCDBManager::Instance every time... 
 
 
-/***************************************************************************************************************
- Part 2: 	Now we want to retrieve the object valid, say, for run 5 from the database folder. 
-		We will dump it in a dump file called "dummyDBTutorail.root", for later usage. 
- ***************************************************************************************************************/
+printf("\n<< TUTORIAL >> Activating Grid storage...\n");
+storGrid = man->GetStorage("alien://aliendb4.cern.ch:9000;colla;DBGrid;ALICE::CERN::se01"); // replace "colla" with your username! 
+// The default storage is automatically set to this. 
+// One can access default storage with:
+// (AliCDBStorage*) AliCDBManager::Instance()->GetDefaultStorage()
+// To check the activation of the default storage:
+// (Bool_t) AliCDBManager::Instance()->IsDefaultStorageSet()
 
-// a. Create the specific AliCDBStorage instance (AliCDBLocal in this case)
-AliCDBLocal *loc = new AliCDBLocal(DBFolder.Data());
+printf("\n<< TUTORIAL >> Activating Local storage...\n");
+storLoc = man->GetStorage("local://DBLocal");
+// To set the default storage to this one:
+// AliCDBMAnager::Instance()->SetDefaultStorage("local://DBLocal") or
+// AliCDBMAnager::Instance()->SetDefaultStorage(storLoc) 
 
-// b. Prepare AliCDBStorage to save the object in the dump file
-AliCDBStorage::Instance()->DumpToFile("dummyDBTutorial.root");
-
-// c. Get the object! 
-// TObject *AliCDBStorage::Get(char* name, int runNumber)
-// if no selection criteria are specified, the highest version found is retrieved.
-
-AliZDCCalibData *calibda2 = (AliZDCCalibData*) AliCDBStorage::Instance()->Get("ZDC/Calib/GainFactors",5);
-
-printf("\nI am in Part2. ZDC Energy calibration factors: \n");  
-printf("PM0=%f; PM1=%f; PM2=%f; PM3=%f \n",
-   calibda2->GetEnCalib(0),  calibda2->GetEnCalib(1),  calibda2->GetEnCalib(2),  calibda2->GetEnCalib(3) );  
-
-AliCDBStorage::Instance()->Delete();
+/////////////////////////////////////////////
+// Step 0: Write/read in Local storage     //
+/////////////////////////////////////////////
+printf("\n<< TUTORIAL >> ********************************************\n");
+printf(  "<< TUTORIAL >> **** Step 0: write/read in local storage ***\n");
+printf(  "<< TUTORIAL >> ********************************************\n");
 
 
-/***************************************************************************************************************
- Part 3: 	Now we will retrieve the object from the dump file. 
-		We will tune the energy calibration factors and we suppose that the new object is valid from run 1 to run 15.
-		Finally we will store the object in DBFolder again with the new run range specified in the object's metadata.  
- ***************************************************************************************************************/
+//create the new object
 
-// a. Create the specific AliCDBStorage instance (AliCDBDump in this case)
-AliCDBDump *df = new AliCDBDump("dummyDBTutorial.root");
+TObjString str1("This is step zero"); // object that will be stored
 
-// b. Get the object.
-AliZDCCalibData *calibda3 = (AliZDCCalibData*) AliCDBStorage::Instance()->Get("ZDC/Calib/GainFactors",5);
+AliCDBId id1("ZDC/Calib/Gain",0,10); // Id of the object: AliCDBId("name", firstRun, lastRun)
 
-//AliZDCCalibData calibda3copy=*calibda3;
+AliCDBMetaData *md1= new AliCDBMetaData(); // metaData describing the object
+md1->SetObjectClassName("TObjString");
+md1->SetResponsible("Alberto Colla");
+md1->SetBeamPeriod(1);
+md1->SetAliRootVersion("05-04-00"); //root version
+md1->SetComment("This is a test");
+TObjString str("test");
+md1->SetProperty("key1",&str);
 
-// c. Tune the energy calibration factors.
-calibda3->SetEnCalib(21.5, 0); calibda3->SetEnCalib(26.3, 1); 
-calibda3->SetEnCalib(201., 2); calibda3->SetEnCalib(9.45, 3);
 
-printf("\nI am in Part3. New ZDC Energy calibration factors: \n");  
-printf("PM0=%f; PM1=%f; PM2=%f; PM3=%f \n",
-   calibda3->GetEnCalib(0),  calibda3->GetEnCalib(1),  calibda3->GetEnCalib(2),  calibda3->GetEnCalib(3) );  
+// Store the object into local storage
+printf("\n<< TUTORIAL >> Storing object into local storage...\n");
+storLoc->Put(&str1,id1, md1); // filename: DBLocal/ZDC/Calib/Gain/Run0_10_v0_s0.root
 
-// d. Get the object's metadata, set the new run range
-AliCDBMetaData md2 = AliCDBStorage::Instance()->GetCDBMetaData("ZDC/Calib/GainFactors");
-md2.SetRunRange(1,15);
 
-// e. Store the object in the "organized" database.
-// the object will be stored in the file DBFolder/ZDC/Calib/GainFactors/Run1-15_v1.root
-// Note that, since there is an "overlap" of the new run range with the one specified
-// in the previous version, the version is automatically increased.
+// read, update, store again
+printf("\n<< TUTORIAL >> Retrieve object from local storage...\n");
+entry = storLoc->Get("ZDC/Calib/Gain", 5);
 
-AliCDBLocal *loc = new AliCDBLocal(DBFolder.Data());
-AliCDBStorage::Instance()->Put(calibda3, md2);
+objstr = (TObjString*) entry->GetObject();
+printf("\n<< TUTORIAL >> Object string: %s\n", objstr->GetName());
 
-/***************************************************************************************************************
- Part 3: 	Last act. 
-		We want to retrieve the object from the "organized" database folder again.
-		This time, anyway, we don't want the highest version but version 0 instead.
-		Therefore we have to specify the version wanted using the "Select" method of AliCDBStorage
-		and the aliCDBMetaDataSelect object.  
- ***************************************************************************************************************/
+objstr->SetString("This is step 0.1: slightly better!"); // update object
 
-// a. Create the specific AliCDBStorage instance (AliCDBLocal in this case)
-loc = new AliCDBLocal(DBFolder.Data());
+printf("\n<< TUTORIAL >> Storing object into local storage...\n");
+storLoc->Put(entry); // store into local: filename = Run0_10_v0_s1.root
 
-// b. Specify the selection criterion. We want version 0 for the object valid for run range (1,100)
-// NOTE(1): TRegexp expression are valid! E.g. we could type "ZDC/Calib/*" if we want to specify version
-// for all the "ZDC/Calib" subsamples...
-// Note(2): we could also not specify the run range, if we want version 0 for any retrieved object
-AliCDBMetaDataSelect smd("ZDC/Calib/GainFactors",1,100,0);
-AliCDBStorage::Instance()->Select(smd);
+// read, update, store again
+printf("\n<< TUTORIAL >> Retrieve object from local storage...\n");
+entry = storLoc->Get("ZDC/Calib/Gain", 5);
 
-// c. Get the object
-AliZDCCalibData *calibda4 = (AliZDCCalibData*) AliCDBStorage::Instance()->Get("ZDC/Calib/GainFactors",5);
-printf("\nI am in Part4. I've just got \"ZDC/Calib/GainFactors\" object valid for run 5, version 0.\n");
-printf("ZDC Energy calibration factors: \n");  
-printf("PM0=%f; PM1=%f; PM2=%f; PM3=%f \n",
-   calibda4->GetEnCalib(0),  calibda4->GetEnCalib(1),  calibda4->GetEnCalib(2),  calibda4->GetEnCalib(3) );  
-   
-printf("\nEnd of tutorial. Bye bye!! \n");
+objstr = (TObjString*) entry->GetObject();
+printf("\n<< TUTORIAL >> Object string: %s\n", objstr->GetName());
 
+objstr -> SetString("This is step 0.2: much better!");
+
+printf("\n<< TUTORIAL >> Storing object into local storage...\n");
+storLoc->Put(entry); // store into local: filename = Run0_10_v0_s2.root
+
+///////////////////////////////////////////////////////////////////////
+// Step 1: read from Local, update, store locally and into Grid      //
+///////////////////////////////////////////////////////////////////////
+printf("\n<< TUTORIAL >> ********************************************\n");
+printf(  "<< TUTORIAL >> **** Step 1: write/read in Grid storage  ***\n");
+printf(  "<< TUTORIAL >> ********************************************\n");
+
+// read from local
+printf("\n<< TUTORIAL >> Retrieve object from local storage...\n");
+entry = storLoc->Get("ZDC/Calib/Gain", 5);
+objstr = (TObjString*) entry->GetObject();
+printf("\n<< TUTORIAL >> Object string: %s\n", objstr->GetName());
+
+
+objstr -> SetString("This is step 1: stored into Local and into Grid!");
+
+printf("\n<< TUTORIAL >> Storing object into local storage...\n");
+storLoc->Put(entry); // store into local: filename =  Run0_10_v0_s3.root
+
+printf("\n<< TUTORIAL >> Storing object into Grid storage...\n");
+storGrid->Put(entry); // store into grid: filename =  DBGrid/ZDC/Calib/Gain/Run0_10_v1.root
+
+
+
+// step 2: read from Grid, update, store again (into Grid)
+
+printf("\n<< TUTORIAL >> Retrieve object from Grid storage...\n");
+entry = storGrid->Get("ZDC/Calib/Gain", 5);
+
+objstr = (TObjString*) entry->GetObject();
+printf("\n<< TUTORIAL >> Object string: %s\n", objstr->GetName());
+
+objstr -> SetString("This is step 2: update and store into Grid!");
+
+printf("\n<< TUTORIAL >> Storing object into Grid storage...\n");
+storGrid->Put(entry); // store into grid: filename =   Run0_10_v2.root
+
+// step 3: read, update, store again (into Grid)
+printf("\n<< TUTORIAL >> Retrieve object from Grid storage...\n");
+entry = storGrid->Get("ZDC/Calib/Gain", 5);
+objstr = (TObjString*) entry->GetObject();
+printf("\n<< TUTORIAL >> Object string: %s\n", objstr->GetName());
+
+objstr = (TObjString*) entry->GetObject();
+objstr -> SetString("This is step 3: update and store into Grid!");
+
+printf("\n<< TUTORIAL >> Storing object into Grid storage...\n");
+storGrid->Put(entry); // store into grid: filename =   Run0_10_v3.root
+
+  ////////////////////////////////////////////////
+ // Step 3.0: read from Grid, store locally!   //
+////////////////////////////////////////////////
+printf("\n<< TUTORIAL >> **********************************************\n");
+printf(  "<< TUTORIAL >> **** Step 3: read from Grid, store locally ***\n");
+printf(  "<< TUTORIAL >> **********************************************\n");
+
+printf("\n<< TUTORIAL >> Retrieve object from Grid storage...\n");
+entry = storGrid->Get("ZDC/Calib/Gain", 5);
+objstr = (TObjString*) entry->GetObject();
+printf("\n<< TUTORIAL >> Object string: %s\n", objstr->GetName());
+
+printf("\n<< TUTORIAL >> Storing object into local storage...\n");
+storLoc->Put(entry); // local: Run0_10_v3_s0.root
+
+// Step 3.1: read from Local, update, store again into Local
+printf("\n<< TUTORIAL >> Retrieve object from local storage...\n");
+entry = storLoc->Get("ZDC/Calib/Gain", 5);
+objstr = (TObjString*) entry->GetObject();
+printf("\n<< TUTORIAL >> Object string: %s\n", objstr->GetName());
+
+objstr->SetString("This is step 3.1: updated locally!");
+
+printf("\n<< TUTORIAL >> Storing object into local storage...\n");
+storLoc->Put(entry); // local: Run0_10_v3_s1.root
+
+/////////////////////////////////////////////////////////////
+// Step 3.2: read again from Grid version 3, store locally //
+//         -> ERROR, local update already present!!        //
+/////////////////////////////////////////////////////////////
+printf("\n<< TUTORIAL >> **********************************************\n");
+printf(  "<< TUTORIAL >> **** Step 3.2: error test                  ***\n");
+printf(  "<< TUTORIAL >> **********************************************\n");
+
+printf("\n<< TUTORIAL >> Retrieve object from Grid storage...\n");
+entry = (AliCDBEntry*) storGrid->Get("ZDC/Calib/Gain",5);
+objstr = (TObjString*) entry->GetObject();
+printf("\n<< TUTORIAL >> Object string: %s\n", objstr->GetName());
+
+printf("\n<< TUTORIAL >> Trying to store object into local storage...\n");
+storLoc->Put(entry); // ERROR message!
+
+/////////////////////////////////////////////////////////////
+// Step 4: read from local, DRAIN to a dump storage: DBDrain.root! //
+/////////////////////////////////////////////////////////////
+printf("\n<< TUTORIAL >> ************************************************************\n");
+printf(  "<< TUTORIAL >> **** Step 4: Read from local and DRAIN to a dump storage ***\n");
+printf(  "<< TUTORIAL >> ************************************************************\n");
+
+printf("\n<< TUTORIAL >> Setting Drain storage ...\n");
+AliCDBManager::Instance()->SetDrain("dump://DBDrain.root"); //setting Drain storage
+
+// Testing default storage behavior: let's set default storage to Local storage
+AliCDBManager::Instance()->SetDefaultStorage(storLoc);
+
+// read from local (default) storage. The object is automatically drained into the drain storage!
+printf("\n<< TUTORIAL >> Retrieve object from local storage...\n");
+entry = man->GetDefaultStorage()->Get("ZDC/Calib/Gain",5); 
+objstr = (TObjString*) entry->GetObject();
+printf("\n<< TUTORIAL >> Object string: %s\n", objstr->GetName());
+
+/////////////////////////////////////////////////////////////
+// Step 5: READ AND DRAIN multiple objects (with GetAll)   //
+/////////////////////////////////////////////////////////////
+printf("\n<< TUTORIAL >> *******************************************************\n");
+printf(  "<< TUTORIAL >> **** Step 5: Read and Drain multiple objects        ***\n");
+printf(  "<< TUTORIAL >> *******************************************************\n");
+
+
+// Step 5.1: Store an object into four different Grid databases 
+
+TObjString str2("This is the TPC/Calib/Gain object valid for runs 0 to 10.");
+AliCDBId id2("TPC/Calib/Gain",0,10);
+
+TObjString str3("This is the TPC/Calib/Drift object valid for runs 0 to 20.");
+AliCDBId id3("TPC/Calib/Drift",0,20);
+
+TObjString str4("This is the TPC/Align/Angles object valid for runs 0 to 15.");
+AliCDBId id4("TPC/Align/Angles",0,15);
+
+TObjString str5("This is the TPC/Align/Position object valid for runs 0 to 8.");
+AliCDBId id5("TPC/Align/Positions",0,8);
+
+printf("\n<< TUTORIAL >> Storing more objects into Grid storage...\n");
+storGrid->Put(&str2,id2,md1);
+storGrid->Put(&str3,id3,md1);
+storGrid->Put(&str4,id4,md1);
+storGrid->Put(&str5,id5,md1);
+
+// Step 5.2: Read all the TPC objects with GetAll and drain into DBDrain.root
+
+printf("\n<< TUTORIAL >> Retrieve more objects from Grid storage and drain them into Dump ...\n");
+TList *list = (TList*)storGrid->GetAll("TPC/*",5);
+
+// That's all folks! Delete AliCDBManager instance and metaData object
+
+printf(  "<< TUTORIAL >> **** That's all folks!!        ***\n");
+
+
+AliCDBManager::Instance()->Destroy();
+delete entry;
+delete md1;
 
 }

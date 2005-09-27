@@ -13,237 +13,285 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id$ */
-
-///////////////////////////////////////////////////////////////////////////////
-//                                                                           //
-// base class for data base access classes                                   //
-//                                                                           //
-///////////////////////////////////////////////////////////////////////////////
-
-
-#include <TFile.h>
-#include <TKey.h>
-#include <TROOT.h>
-
-#include "AliLog.h"
-#include "AliCDBEntry.h"
+#include "AliCDBManager.h"
 #include "AliCDBStorage.h"
 
+#include "AliCDBEntry.h"
+#include "AliLog.h"
 
 ClassImp(AliCDBStorage)
 
-
-AliCDBStorage* AliCDBStorage::fgInstance = NULL;
-
-
 //_____________________________________________________________________________
-AliCDBStorage::AliCDBStorage() :
-  TObject(),
-  fSelection(),
-  fEntries(),
-  fDumpFile(NULL)
-{
-// default constructor
-  if (fgInstance) delete fgInstance;
-  fgInstance = this;
-  fStorageMode=kDevelopment;
+AliCDBStorage::AliCDBStorage() {
+// constructor
+
+	fSelections.SetOwner(1);
 }
 
 //_____________________________________________________________________________
-AliCDBStorage::~AliCDBStorage()
-{
+AliCDBStorage::~AliCDBStorage() {
 // destructor
-  fSelection.Delete();
-  fEntries.Delete();
-  if (fDumpFile) {
-    fDumpFile->Close();
-    delete fDumpFile;
-  }
-  fgInstance = NULL;
-}
-
-//_____________________________________________________________________________
-AliCDBStorage::AliCDBStorage(const AliCDBStorage& db) :
-  TObject(db),
-  fSelection(),
-  fEntries(),
-  fDumpFile(NULL)
-{
-// copy constructor
-
-  AliFatal("not implemented");
-}
-
-//_____________________________________________________________________________
-AliCDBStorage& AliCDBStorage::operator = (const AliCDBStorage& /*db*/)
-{
-// assignment operator
-
-  AliFatal("not implemented");
-  return *this;
-}
-
-
-//_____________________________________________________________________________
-const TObject* AliCDBStorage::Get(const char* name, Int_t runNumber)
-{
-// get an object from the data base
-// (AliCDBStorage is NOT the owner of the returned object)
-// name must be in the form "Detector/DBType/DetSpecType"
-// es: "ZDC/Calib/Pedestals"
-
-  AliCDBMetaDataSelect defaultMetaData;
-  AliCDBMetaDataSelect* selectedMetaData = &defaultMetaData;
-
-  // look for a meta data selection
-  for (Int_t i = 0; i < fSelection.GetEntriesFast(); i++) {
-    AliCDBMetaDataSelect* selection = (AliCDBMetaDataSelect*) fSelection[i];
-    if (!selection) continue;
-    if (selection->Matches(name, runNumber)) {
-      selectedMetaData = selection;
-    }
-  }
-
-  // get the entry
-  AliCDBMetaDataSelect selMetaData(*selectedMetaData);
-  selMetaData.SetName(name);
-  AliCDBEntry* entry = GetEntry(selMetaData, runNumber);
-  if (entry) {
-    AliDebug(2, "got the entry:");
-    ToAliDebug(2, entry->Dump());
-  } else {
-    AliDebug(2, Form("got no entry for %s", name));
-  }
-
-  // update array of current entries
-  if (!entry) return NULL;  
-  TObject* oldEntry = fEntries.FindObject(entry->GetName());
-  if (oldEntry) {
-    delete fEntries.Remove(oldEntry);
-  }
-  fEntries.Add(entry);
-
-  // Dump entry to a file (in the same way as AliCDBDump::PutEntry, 
-  // so that the file can be opened as a AliCDBDump!)
-
-  if (fDumpFile) {
-    fDumpFile->cd();
-    TDirectory* saveDir = gDirectory;
-
-    // go to or create the directory
-    TString strname(name);
-    while (strname.BeginsWith("/")) strname.Remove(0);
-    TDirectory* dir = fDumpFile;
-    Int_t index = -1;
-    while ((index = strname.Index("/")) >= 0) {
-      TString dirName(strname(0, index));
-      if ((index > 0) && !dir->Get(dirName)) dir->mkdir(dirName);
-      dir->cd(dirName);
-      dir = gDirectory;
-      strname.Remove(0, index+1);
-    } 
-
-    entry->Write(strname);
-    if (saveDir) saveDir->cd(); else gROOT->cd();
-  
-  }
-  
-  return (entry->GetObject())->Clone();
 
 }
 
 //_____________________________________________________________________________
-Bool_t AliCDBStorage::Put(const TObject* object, 
-			      const AliCDBMetaData& metaData)
-{
-// put an object into the data base
-// (AliCDBStorage does not adopt the object)
-// location of where the object is stored is defined by 
-// the AliCDBMetaData's name ("Detector/DBType/DetSpecType")
-// and run Range. Storage is handled by the PutEntry method
-// of the current AliCDBStorage instance. 
-
-  if (!object) return kFALSE;
-
-  AliCDBEntry *entry= new AliCDBEntry(object, metaData);
-
-  Bool_t result = PutEntry(entry);
-    
-  delete entry;
-
-  return result;
+AliCDBId AliCDBStorage::GetSelection(const AliCDBId& id) {
+// return required version and subversion from the list of selection criteria 
+	
+	TIter iter(&fSelections);
+	AliCDBId* aSelection;
+        
+	// loop on the list of selection criteria
+	while ((aSelection = (AliCDBId*) iter.Next())) {
+		// check if selection element contains id's path and run (range) 
+		if (aSelection->Comprises(id)) {
+			AliInfo(Form("Using selection criterion: %s ", aSelection->ToString().Data()));
+			// return required version and subversion
+			return AliCDBId(id.GetAliCDBPath(), 
+				id.GetAliCDBRunRange(),
+				aSelection->GetVersion(), 
+				aSelection->GetSubVersion());  
+		}
+	}
+	
+	// no valid element is found in the list of selection criteria -> return
+	AliInfo("No matching selection criteria: highest version will be seeked!");
+	return AliCDBId(id.GetAliCDBPath(), id.GetAliCDBRunRange());
 }
 
 //_____________________________________________________________________________
-Bool_t AliCDBStorage::PutEntry(AliCDBEntry* entry)
-{
-// put an object into the data base
-// Refer to the specific method of the current AliCDBStorage instance
-// (AliCDBDump, AliCDBLocalFile, AliCDBGrid)
+void AliCDBStorage::AddSelection(const AliCDBId& selection) {
+// add a selection criterion
 
-  if (!entry) return kFALSE;
-  AliError(Form("This is a read only data base. "
-		"The object %s was not inserted", entry->GetName()));
-  return kFALSE;
+	AliCDBPath path = selection.GetPath();
+	if(!path.IsValid()) return;
+	
+	TIter iter(&fSelections);
+	const AliCDBId *anId;
+	while((anId = (AliCDBId*) iter.Next())){
+		if(selection.Comprises(*anId)){
+			AliWarning("This selection is more general than a previous one and will hide it!");
+			AliWarning(Form("%s", (anId->ToString()).Data()));
+			fSelections.AddBefore(anId, new AliCDBId(selection));
+			return;
+		}
+	
+	}
+	fSelections.AddFirst(new AliCDBId(selection));
+}
+
+//_____________________________________________________________________________
+void AliCDBStorage::AddSelection(const AliCDBPath& path, 
+	const AliCDBRunRange& runRange, Int_t version, Int_t subVersion){
+// add a selection criterion
+
+	AddSelection(AliCDBId(path, runRange, version, subVersion));
+}
+
+//_____________________________________________________________________________
+void AliCDBStorage::AddSelection(const AliCDBPath& path,
+	Int_t firstRun, Int_t lastRun, Int_t version, Int_t subVersion){
+// add a selection criterion
+	
+	AddSelection(AliCDBId(path, firstRun, lastRun, version, subVersion));
+}
+
+//_____________________________________________________________________________
+void AliCDBStorage::RemoveSelection(const AliCDBId& selection) {
+// remove a selection criterion
+
+	TIter iter(&fSelections);
+	AliCDBId* aSelection;
+
+	while ((aSelection = (AliCDBId*) iter.Next())) {
+		if (selection.Comprises(*aSelection)) {
+			fSelections.Remove(aSelection);
+		}
+	}
+}
+
+//_____________________________________________________________________________
+void AliCDBStorage::RemoveSelection(const AliCDBPath& path, 
+	const AliCDBRunRange& runRange){
+// remove a selection criterion
+
+	RemoveSelection(AliCDBId(path, runRange, -1, -1));
+}
+
+//_____________________________________________________________________________
+void AliCDBStorage::RemoveSelection(const AliCDBPath& path,
+	Int_t firstRun, Int_t lastRun){
+// remove a selection criterion
+
+	RemoveSelection(AliCDBId(path, firstRun, lastRun, -1, -1));
+}
+
+//_____________________________________________________________________________
+void AliCDBStorage::RemoveSelection(const int position){
+// remove a selection criterion from its position in the list
+
+	fSelections.RemoveAt(position);
+}
+
+//_____________________________________________________________________________
+void AliCDBStorage::RemoveAllSelections(){
+// remove all selection criteria
+
+	fSelections.RemoveAll();
+}
+
+//_____________________________________________________________________________
+void AliCDBStorage::PrintSelectionList(){
+// prints the list of selection criteria
+
+	TIter iter(&fSelections);
+	AliCDBId* aSelection;
+        
+	// loop on the list of selection criteria
+	int index=0;
+	while ((aSelection = (AliCDBId*) iter.Next())) {
+		AliInfo(Form("index %d -> selection: %s",index++, aSelection->ToString().Data()));
+	}
+
+}
+
+//_____________________________________________________________________________
+AliCDBEntry* AliCDBStorage::Get(const AliCDBId& query) {	
+// get an AliCDBEntry object from the database
+	
+	// check if query's path and runRange are valid
+	// query is invalid also if version is not specified and subversion is!
+	if (!query.IsValid()) {
+		AliError(Form("Invalid query: %s", query.ToString().Data()));
+		return NULL;
+	}
+
+	// query is not specified if path contains wildcard or runrange = [-1,-1] 
+	if (!query.IsSpecified()) {
+		AliError(Form("Unspecified query: %s", 
+				query.ToString().Data()));
+                return NULL;
+	}
+
+	AliCDBEntry* entry = GetEntry(query);
+		
+  	if (entry) {
+    		AliInfo(Form("Valid AliCDBEntry object found! %s", entry->GetId().ToString().Data()));
+  	} else {
+    		AliInfo(Form("Sorry, found no object valid for: name = <%s>, run = %d", 
+		        (query.GetPath()).Data(), query.GetFirstRun()));
+  	}
+	
+	// if drain storage is set, drain entry into drain storage
+	if(entry && (AliCDBManager::Instance())->IsDrainSet())
+		AliCDBManager::Instance()->Drain(entry);
+	
+	return entry;
+}
+
+//_____________________________________________________________________________
+AliCDBEntry* AliCDBStorage::Get(const AliCDBPath& path, Int_t runNumber, 
+	Int_t version, Int_t subVersion) {
+// get an AliCDBEntry object from the database
+
+	return Get(AliCDBId(path, runNumber, runNumber, version, subVersion));
+}
+
+//_____________________________________________________________________________
+AliCDBEntry* AliCDBStorage::Get(const AliCDBPath& path, 
+	const AliCDBRunRange& runRange, Int_t version,
+	Int_t subVersion) {
+// get an AliCDBEntry object from the database
+
+	return Get(AliCDBId(path, runRange, version, subVersion));
+}
+
+//_____________________________________________________________________________
+TList* AliCDBStorage::GetAll(const AliCDBId& query) {
+// get multiple AliCDBEntry objects from the database
+
+
+	if (!query.IsValid()) {
+                AliError(Form("Invalid query: %s", query.ToString().Data()));
+                return NULL;
+        }
+
+	if (query.IsAnyRange()) {
+		AliError(Form("Unspecified run or runrange: %s",
+				query.ToString().Data())); 	
+		return NULL;
+	}	
+        
+	TList *result = GetEntries(query);
+
+ 	Int_t nEntries = result->GetEntries();
+ 	if (nEntries) {
+ 		 AliInfo(Form("%d AliCDBEntry objects found!",nEntries));
+		 for(int i=0; i<nEntries;i++){
+		 	AliCDBEntry *entry = (AliCDBEntry*) result->At(i);
+			AliInfo(Form("%s",entry->GetId().ToString().Data()));
+		 
+		 }
+ 	} else {
+     		 AliInfo(Form("Sorry, found no object valid for: name = <%s>, run = %d", 
+		        (query.GetPath()).Data(), query.GetFirstRun()));
+	}
+
+	// if drain storage is set, drain entries into drain storage
+	if((AliCDBManager::Instance())->IsDrainSet()){
+		for(int i = 0; i<result->GetEntries(); i++){
+			AliCDBEntry* entry = (AliCDBEntry*) result->At(i);
+			AliCDBManager::Instance()->Drain(entry);
+		}
+	}
+	
+
+        return result;
+}
+
+//_____________________________________________________________________________
+TList* AliCDBStorage::GetAll(const AliCDBPath& path, Int_t runNumber, 
+	Int_t version, Int_t subVersion) {
+// get multiple AliCDBEntry objects from the database
+
+	return GetAll(AliCDBId(path, runNumber, runNumber, version, 	
+			subVersion));
+}
+
+//_____________________________________________________________________________
+TList* AliCDBStorage::GetAll(const AliCDBPath& path, 
+	const AliCDBRunRange& runRange, Int_t version, Int_t subVersion) {
+// get multiple AliCDBEntry objects from the database
+
+	return GetAll(AliCDBId(path, runRange, version, subVersion));
 }
 
 
 //_____________________________________________________________________________
-void AliCDBStorage::Select(const AliCDBMetaDataSelect& selMetaData)
-{
-// add some meta data selection criteria
+Bool_t AliCDBStorage::Put(TObject* object, AliCDBId& id, AliCDBMetaData* metaData) {
+// put an AliCDBEntry object from the database
+	
+	AliCDBEntry anEntry(object, id, metaData);
 
-  fSelection.Add(new AliCDBMetaDataSelect(selMetaData));
-}
-
-
-//_____________________________________________________________________________
-Bool_t AliCDBStorage::DumpToFile(const char* fileName)
-{
-// Dump entries retrieved from the data base to a file with the given name
-
-  if (fDumpFile) {
-    fDumpFile->Close();
-    delete fDumpFile;
-  }
-
-  TDirectory* dir = gDirectory;
-  fDumpFile = TFile::Open(fileName, "UPDATE");
-  if (dir) dir->cd(); else gROOT->cd();
-  if (!fDumpFile || !fDumpFile->IsOpen()) {
-    AliError(Form("could not open file %s", fileName));
-    delete fDumpFile;
-    fDumpFile = NULL;
-    return kFALSE;
-  }
-  return kTRUE;
-}
-
+	return Put(&anEntry);
+} 
 
 //_____________________________________________________________________________
-AliCDBStorage* AliCDBStorage::Instance()
-{
-// return the current instance of the DB (AliCDBDump, AliCDBLocalFile...)
-// Example of usage: after creating an istance of AliCDBStorage:
-// AliCDBStorage::Instance()->Get(...)
+Bool_t AliCDBStorage::Put(AliCDBEntry* entry) {
+// put an AliCDBEntry object from the database
 
-  return fgInstance;
-}
+	if (!entry->GetId().IsValid()) {
+		AliWarning(Form("Invalid entry ID: %s", 
+			entry->GetId().ToString().Data()));
+		return kFALSE;
+	}	
 
+	if (!entry->GetId().IsSpecified()) {
+		AliError(Form("Unspecified entry ID: %s", 
+			entry->GetId().ToString().Data()));
+		return kFALSE;
+	}
 
-//_____________________________________________________________________________
-const AliCDBMetaData& AliCDBStorage::GetCDBMetaData(const char* name)
-{
-// Returns the object's metadata of the already retrieved object
-// (useful, for example, if you want to know the format of the object you have 
-// retrieved)
-
-AliCDBEntry *entry = (AliCDBEntry*) fEntries.FindObject(name);
- if(!entry){
-    AliError(Form("Entry %s not found! You make me crash!",name));
- }
- return entry->GetCDBMetaData(); 
-
+	return PutEntry(entry);
 }
 

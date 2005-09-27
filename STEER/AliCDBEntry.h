@@ -1,45 +1,83 @@
-#ifndef ALICDBENTRY_H
-#define ALICDBENTRY_H
+#ifndef ALI_CDB_ENTRY_H
+#define ALI_CDB_ENTRY_H
+
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-/* $Id$ */
+/////////////////////////////////////////////////////////////////////
+//                                                                 //
+//  class AliCDBEntry						   //
+//  container for an object, it identity (AliCDBId)  		   //
+//  and its metaData (AliCDBMetaData) 				   //
+//                                                                 //
+/////////////////////////////////////////////////////////////////////
 
-///
-/// class that contains an object from the data base and knows about its
-/// validity range (meta data)
-///
-
-#include <TObject.h>
+#include "AliCDBId.h"
 #include "AliCDBMetaData.h"
 
-
 class AliCDBEntry: public TObject {
+
 public:
-  AliCDBEntry();
-  AliCDBEntry(const TObject* object, const AliCDBMetaData& metaData);
-  virtual ~AliCDBEntry();
+	AliCDBEntry();
 
-  AliCDBEntry(const AliCDBEntry& entry);
-  AliCDBEntry& operator = (const AliCDBEntry& entry);
+	AliCDBEntry(TObject* object, const AliCDBId& id,  
+			AliCDBMetaData* metaData, Bool_t owner = kFALSE);
 
-  void                 SetVersion(Int_t version = -1)
-    {fMetaData.SetVersion(version);}
+	AliCDBEntry(TObject* object, const AliCDBPath& path, const AliCDBRunRange& runRange,
+			AliCDBMetaData* metaData, Bool_t owner = kFALSE);
 
-  void                 SetRunRange(Int_t firstRun = -1, Int_t lastRun=-1)
-    {fMetaData.SetRunRange(firstRun, lastRun);}
+	AliCDBEntry(TObject* object, const AliCDBPath& path, const AliCDBRunRange& runRange,
+			Int_t version, AliCDBMetaData* metaData, Bool_t owner = kFALSE);
 
-  virtual const char*  GetName() const;
-  const TObject*       GetObject() const {return fObject;}
-  const AliCDBMetaData&   GetCDBMetaData() const {return fMetaData;}
+	AliCDBEntry(TObject* object, const AliCDBPath& path, const AliCDBRunRange& runRange,
+			Int_t version, Int_t subVersion, 
+			AliCDBMetaData* metaData, Bool_t owner = kFALSE);
 
-  virtual Int_t        Compare(const TObject* object) const;
+	AliCDBEntry(TObject* object, const AliCDBPath& path, Int_t firstRun, Int_t lastRun,
+			AliCDBMetaData* metaData, Bool_t owner = kFALSE);
+
+	AliCDBEntry(TObject* object, const AliCDBPath& path, Int_t firstRun, Int_t lastRun,
+			Int_t version, AliCDBMetaData* metaData, Bool_t owner = kFALSE);
+
+	AliCDBEntry(TObject* object, const AliCDBPath& path, Int_t firstRun, Int_t lastRun,
+			Int_t version, Int_t subVersion, 
+			AliCDBMetaData* metaData, Bool_t owner = kFALSE);
+
+	virtual ~AliCDBEntry();
+
+
+	void 		SetId(const AliCDBId& id) {fId = id;};
+	AliCDBId& 	GetId() {return fId;};
+	const AliCDBId& GetId() const {return fId;};
+	
+	void 		SetObject(TObject* object) {fObject = object;};
+	TObject* 	GetObject() {return fObject;};
+	const TObject* 	GetObject() const {return fObject;};	
+
+	void 			SetMetaData(AliCDBMetaData* metaData) {fMetaData = metaData;};
+	AliCDBMetaData* 	GetMetaData() {return fMetaData;};
+	const AliCDBMetaData* 	GetMetaData() const {return fMetaData;};
+
+	void 	SetOwner(Bool_t owner) {fIsOwner = owner;};
+	Bool_t 	IsOwner() const {return fIsOwner;};
+	
+  	void 	SetVersion(Int_t version) {fId.SetVersion(version);}
+  	void 	SetSubVersion(Int_t subVersion) {fId.SetSubVersion(subVersion);}
+	
+	const TString 	GetLastStorage() const {return fId.GetLastStorage();};
+	void  		SetLastStorage(TString lastStorage) {fId.SetLastStorage(lastStorage);};
 
 private:
-  TObject*             fObject;         // pointer to the data base entry obj.
-  AliCDBMetaData    fMetaData;    // object's meta data
+	
+	AliCDBEntry(const AliCDBEntry& other); // no copy ctor
+	void operator= (const AliCDBEntry& other); // no assignment op
 
-  ClassDef(AliCDBEntry, 2)   // container for a data base entry object
+	TObject* fObject;		// object
+	AliCDBId fId;			// entry ID
+	AliCDBMetaData* fMetaData; 	// metaData
+	Bool_t fIsOwner; 		// ownership flag
+	
+	ClassDef(AliCDBEntry, 1);
 };
 
 #endif

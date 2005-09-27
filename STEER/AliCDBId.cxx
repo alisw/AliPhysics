@@ -15,77 +15,102 @@
 
 /////////////////////////////////////////////////////////////////////
 //                                                                 //
-//  class AliCDBMetaData					   //
-//  Set of data describing the object  				   //
-//  but not used to identify the object 			   //
+//  class AliCDBId						   //
+//  Identity of an object stored into a database:  		   //
+//  path, run validity range, version, subVersion 		   //
 //                                                                 //
 /////////////////////////////////////////////////////////////////////
 
-#include "AliCDBMetaData.h"
-#include "AliLog.h"
+#include "AliCDBId.h"
 
-#include <TObjString.h>
-
-ClassImp(AliCDBMetaData)
+ClassImp(AliCDBId)
 
 //_____________________________________________________________________________
-AliCDBMetaData::AliCDBMetaData() {
-// default constructor
-
-	fProperties.SetOwner(1);
-}
-
-//_____________________________________________________________________________
-AliCDBMetaData::~AliCDBMetaData() {
-// destructor
+AliCDBId::AliCDBId():
+fPath(), 
+fRunRange(-1,-1), 
+fVersion(-1), 
+fSubVersion(-1),
+fLastStorage("new")
+{
+// constructor
 
 }
 
 //_____________________________________________________________________________
-void AliCDBMetaData::SetProperty(const char* property, TObject* object) {
-// add something to the list of properties
+AliCDBId::AliCDBId(const AliCDBId& other):
+TObject(),
+fPath(other.fPath), 
+fRunRange(other.fRunRange),
+fVersion(other.fVersion), 
+fSubVersion(other.fSubVersion),
+fLastStorage(other.fLastStorage)
+{
+// constructor
 
-	fProperties.Add(new TObjString(property), object);
 }
 
 //_____________________________________________________________________________
-TObject* AliCDBMetaData::GetProperty(const char* property) const {
-// get a property specified by its name (property)
+AliCDBId::AliCDBId(const AliCDBPath& path, Int_t firstRun, Int_t lastRun, 
+	Int_t version, Int_t subVersion):
+fPath(path), 
+fRunRange(firstRun, lastRun), 
+fVersion(version), 
+fSubVersion(subVersion),
+fLastStorage("new")
+{
+// constructor
 
-	return fProperties.GetValue(property);
+} 
+
+//_____________________________________________________________________________
+AliCDBId::AliCDBId(const AliCDBPath& path, const AliCDBRunRange& runRange, 
+	Int_t version, Int_t subVersion):
+fPath(path), 
+fRunRange(runRange), 
+fVersion(version),
+fSubVersion(subVersion),
+fLastStorage("new")
+{
+// constructor
+
 }
 
 //_____________________________________________________________________________
-Bool_t AliCDBMetaData::RemoveProperty(const char* property) {
-// removes a property
+AliCDBId::~AliCDBId() {
+//destructor
 
-	TObjString objStrProperty(property);
-	TObjString* aKey = (TObjString*) fProperties.Remove(&objStrProperty);	
+}
 
-	if (aKey) {
-		delete aKey;
-		return kTRUE;
-	} else {
+//_____________________________________________________________________________
+Bool_t AliCDBId::IsValid() const {
+// validity check
+	
+	if (!(fPath.IsValid() && fRunRange.IsValid())) {
 		return kFALSE;
 	}
+	
+	// FALSE if doesn't have version but has subVersion
+	return !(!HasVersion() && HasSubVersion());
 }
 
 //_____________________________________________________________________________
-void AliCDBMetaData::PrintMetaData() {
-// print the object's metaData
+TString AliCDBId::ToString() const {
+// returns a string of Id data
 
-	AliInfo("**** Object's MetaData set ****");
-	AliInfo(Form("  Object's class name:	%s", fObjectClassName.Data()));
-	AliInfo(Form("  Responsible:		%s", fResponsible.Data()));
-	AliInfo(Form("  Beam period:		%d", fBeamPeriod));
-	AliInfo(Form("  AliRoot version:	%s", fAliRootVersion.Data()));
-	AliInfo(Form("  Comment:		%s", fComment.Data()));
-	AliInfo("  Properties key names:");
-
-	TIter iter(fProperties.GetTable());	
-	TPair* aPair;
-	while ((aPair = (TPair*) iter.Next())) {
-		AliInfo(Form(" 			%s",((TObjString* )aPair->Key())->String().Data()));
-	}
+	TString result;
+	result += "Path \"";
+	result += GetPath();
+	result += "\"; RunRange [";
+	result += GetFirstRun();
+	result += ",";
+	result += GetLastRun();
+	result += "]; Version v";
+	result += GetVersion();
+	result += "_s";
+	result += GetSubVersion();
+	result += "; Previous storage ";
+	result += fLastStorage;
 	
+	return result;	
 }

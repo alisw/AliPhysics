@@ -13,87 +13,125 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id$ */
-
-///////////////////////////////////////////////////////////////////////////////
-//                                                                           //
-// class that contains an object from the data base and knows about its      //
-// validity range (meta data)                                                //
-//                                                                           //
-///////////////////////////////////////////////////////////////////////////////
-
+/////////////////////////////////////////////////////////////////////
+//                                                                 //
+//  class AliCDBEntry						   //
+//  container for an object, it identity (AliCDBId)  		   //
+//  and its metaData (AliCDBMetaData) 				   //
+//                                                                 //
+/////////////////////////////////////////////////////////////////////
 
 #include "AliCDBEntry.h"
 
 ClassImp(AliCDBEntry)
 
-
 //_____________________________________________________________________________
-AliCDBEntry::AliCDBEntry() :
-  TObject(),
-  fObject(NULL),
-  fMetaData()
-{
+AliCDBEntry::AliCDBEntry():
+fObject(NULL),
+fMetaData(NULL), 
+fIsOwner(kFALSE){
 // default constructor
 
 }
 
 //_____________________________________________________________________________
-AliCDBEntry::AliCDBEntry(const TObject* object, const AliCDBMetaData& metaData) :
-  TObject(),
-  fObject(object->Clone()),
-  fMetaData(metaData)
-{
+AliCDBEntry::AliCDBEntry(TObject* object, const AliCDBId& id, 
+			AliCDBMetaData* metaData, Bool_t owner):
+fObject(object), 
+fId(id), 
+fMetaData(metaData), 
+fIsOwner(owner){
 // constructor
 
 }
 
 //_____________________________________________________________________________
-AliCDBEntry::~AliCDBEntry()
-{
+AliCDBEntry::AliCDBEntry(TObject* object, const AliCDBPath& path, 
+			const AliCDBRunRange& runRange,
+                        AliCDBMetaData* metaData,Bool_t owner):
+fObject(object), 
+fId(path, runRange, -1, -1), 
+fMetaData(metaData),
+fIsOwner(owner){
+// constructor
+
+}
+
+//_____________________________________________________________________________
+AliCDBEntry::AliCDBEntry(TObject* object, const AliCDBPath& path, 
+			const AliCDBRunRange& runRange,
+			Int_t version, AliCDBMetaData* metaData, Bool_t owner):
+fObject(object), 
+fId(path, runRange, version, -1), 
+fMetaData(metaData),
+fIsOwner(owner){
+// constructor
+
+}
+
+//_____________________________________________________________________________
+AliCDBEntry::AliCDBEntry(TObject* object, const AliCDBPath& path, 
+			const AliCDBRunRange& runRange,
+			Int_t version, Int_t subVersion, 
+			AliCDBMetaData* metaData, Bool_t owner):
+fObject(object),
+fId(path, runRange, version, subVersion), 
+fMetaData(metaData), 
+fIsOwner(owner){
+// constructor
+
+}
+
+
+//_____________________________________________________________________________
+AliCDBEntry::AliCDBEntry(TObject* object, const AliCDBPath& path, 
+			Int_t firstRun, Int_t lastRun, 
+			AliCDBMetaData* metaData, Bool_t owner):
+fObject(object),
+fId(path, firstRun, lastRun, -1, -1), 
+fMetaData(metaData), 
+fIsOwner(owner){
+// constructor
+
+}
+
+//_____________________________________________________________________________
+AliCDBEntry::AliCDBEntry(TObject* object, const AliCDBPath& path, 
+			Int_t firstRun, Int_t lastRun,
+			Int_t version, AliCDBMetaData* metaData,
+			Bool_t owner):
+fObject(object),
+fId(path, firstRun, lastRun, version, -1),
+fMetaData(metaData), 
+fIsOwner(owner){
+// constructor
+
+}
+
+//_____________________________________________________________________________
+AliCDBEntry::AliCDBEntry( TObject* object, const AliCDBPath& path, 
+			Int_t firstRun, Int_t lastRun,
+			Int_t version, Int_t subVersion,
+			AliCDBMetaData* metaData, Bool_t owner):
+fObject(object),
+fId(path, firstRun, lastRun, version, subVersion),
+fMetaData(metaData), fIsOwner(owner){
+// constructor
+
+}
+
+//_____________________________________________________________________________
+AliCDBEntry::~AliCDBEntry() {
 // destructor
 
-  delete fObject;
-}
+	if (fIsOwner) {
+		if (fObject) {
+			delete fObject;
+		}
 
-
-//_____________________________________________________________________________
-AliCDBEntry::AliCDBEntry(const AliCDBEntry& entry) :
-  TObject(entry),
-  fMetaData(entry.fMetaData)
-{
-// copy constructor
-
-}
-
-//_____________________________________________________________________________
-AliCDBEntry& AliCDBEntry::operator = (const AliCDBEntry& entry)
-{
-// assignment operator
-
-  delete fObject;
-  fObject = entry.fObject->Clone();
-  fMetaData = entry.fMetaData;
-  return *this;
-}
-
-
-
-//_____________________________________________________________________________
-const char* AliCDBEntry::GetName() const
-{
-// get the name
-
-  return fMetaData.GetName();
-}
-
-
-//_____________________________________________________________________________
-Int_t AliCDBEntry::Compare(const TObject* object) const
-{
-// check whether this is preferred to object
-
-  if (!object || !object->InheritsFrom(AliCDBEntry::Class())) return 1;
-  return fMetaData.Compare(&((AliCDBEntry*)object)->GetCDBMetaData());
+		if (fMetaData) {
+			delete fMetaData;
+		}
+	}
 }
 

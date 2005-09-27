@@ -1,45 +1,100 @@
-#ifndef ALICDBLOCAL_H
-#define ALICDBLOCAL_H
+#ifndef ALI_CDB_LOCAL_H
+#define ALI_CDB_LOCAL_H
 
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-/* $Id$ */
-
-///
-///  access class to a DB file inside an organized directory structure 
-///  file name = "DBFolder/detector/dbType/detSpecType/Run#firstRun-#lastRun _v#version.root"
-///
+/////////////////////////////////////////////////////////////////////
+//                                                                 //
+//  class AliCDBLocal						   //
+//  access class to a DataBase in a local storage                  //
+//                                                                 //
+/////////////////////////////////////////////////////////////////////
 
 #include "AliCDBStorage.h"
-#include "AliCDBMetaDataSelect.h"
-#include "AliCDBMetaData.h"
-#include "AliCDBEntry.h"
+#include "AliCDBManager.h"
 
 class AliCDBLocal: public AliCDBStorage {
+	friend class AliCDBLocalFactory;
 
 public:
-//  AliCDBLocal();
-  AliCDBLocal(const char* DBFolder = "$(ALICE_ROOT)/DB");
-  virtual ~AliCDBLocal();
 
-  TObjArray*   FindDBFiles(const char *name, Int_t runNumber); // return list of files valid for run number
-  void	       TagForProduction(const AliCDBMetaDataSelect& selMetaData, UInt_t prodVers); // tag a DB file for production mode
-  
+	virtual Bool_t IsReadOnly() {return kFALSE;};
+	virtual Bool_t HasSubVersion() {return kTRUE;};
+
 protected:
-  virtual AliCDBEntry*	GetEntry(AliCDBMetaDataSelect& selMetaData, Int_t runNumber);
-  virtual Bool_t        PutEntry(AliCDBEntry* entry);
+
+	virtual AliCDBEntry* GetEntry(const AliCDBId& queryId);
+        virtual TList* GetEntries(const AliCDBId& queryId);
+        virtual Bool_t PutEntry(AliCDBEntry* entry);
 
 private:
-  AliCDBLocal(const AliCDBLocal& db);
-  AliCDBLocal& operator = (const AliCDBLocal& db);
-  
-  Bool_t     DecodeFileName(const TString strName, int *numArray, TString prefix="_v");	// Gets firstRun, lastRun, version from file name "strName"
-  TString    EncodeFileName(int firstRun, int lastRun, int version, TString prefix="_v"); // returns file name from firstRun, lastRun, version	
 
-  TString    fDBFolder;   // the DB folder
+	AliCDBLocal(const char* baseDir);
+	virtual ~AliCDBLocal();
+	
+	Bool_t FilenameToId(const char* filename, AliCDBRunRange& runRange, 
+			Int_t& version, Int_t& subVersion);
+	Bool_t IdToFilename(const AliCDBRunRange& runRange, Int_t version, 
+			Int_t subVersion, TString& filename);
 
-ClassDef(AliCDBLocal, 0)      // access class to a DB file in an organized directory structure (DBFolder/detector/dbType/detSpecType)
+	Bool_t PrepareId(AliCDBId& id);
+	AliCDBId GetId(const AliCDBId& query);
+
+	void GetEntriesForLevel0(const char* level0, const AliCDBId& query, TList* result);
+	void GetEntriesForLevel1(const char* level0, const char* Level1,
+			const AliCDBId& query, TList* result);
+
+	TString fBaseDirectory; // path of the DB folder
+
+	ClassDef(AliCDBLocal, 0); // access class to a DataBase in a local storage
+};
+
+/////////////////////////////////////////////////////////////////////
+//                                                                 //
+//  class AliCDBLocalFactory					   //
+//                                                                 //
+/////////////////////////////////////////////////////////////////////
+
+class AliCDBLocalFactory: public AliCDBStorageFactory {
+
+public:
+
+	virtual Bool_t Validate(const char* dbString);
+        virtual AliCDBParam* CreateParameter(const char* dbString);
+
+protected:
+        virtual AliCDBStorage* Create(const AliCDBParam* param);
+
+        ClassDef(AliCDBLocalFactory, 0);
+};
+
+/////////////////////////////////////////////////////////////////////
+//                                                                 //
+//  class AliCDBLocalParam					   //
+//                                                                 //
+/////////////////////////////////////////////////////////////////////
+
+class AliCDBLocalParam: public AliCDBParam {
+	
+public:
+	AliCDBLocalParam();
+	AliCDBLocalParam(const char* dbPath);
+	
+	virtual ~AliCDBLocalParam();
+
+	const TString& GetPath() const {return fDBPath;};
+
+	virtual AliCDBParam* CloneParam() const;
+
+        virtual ULong_t Hash() const;
+        virtual Bool_t IsEqual(const TObject* obj) const;
+
+private:
+
+	TString fDBPath; // path of the DB folder
+
+	ClassDef(AliCDBLocalParam, 0);
 };
 
 #endif

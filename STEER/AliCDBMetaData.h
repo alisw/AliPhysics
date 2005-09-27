@@ -1,86 +1,69 @@
-#ifndef ALICDBMETADATA_H
-#define ALICDBMETADATA_H
+#ifndef ALI_META_DATA_H
+#define ALI_META_DATA_H
+
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-/* $Id$ */
-
-///
-///  CDB meta data: it fully describes a run dependent database object. 
-///  It is attached to the object to build an AliCDBEntry object
-/// 
-///
+/////////////////////////////////////////////////////////////////////
+//                                                                 //
+//  class AliCDBMetaData					   //
+//  Set of data describing the object  				   //
+//  but not used to identify the object 			   //
+//                                                                 //
+/////////////////////////////////////////////////////////////////////
 
 #include <TObject.h>
-#include <TString.h>
+#include <TMap.h>
 
 class AliCDBMetaData: public TObject {
+	
 public:
-  AliCDBMetaData();	// default constructor
-  AliCDBMetaData
-         (const char* name, Int_t firstRun = -1, Int_t lastRun = -1, Int_t period=-1, 
-	  const char* objFormat="", const char* responsible="Duck, Donald", 
-	  const char* extraInfo="");	// constructor
+	AliCDBMetaData();
+	virtual ~AliCDBMetaData();
 
-  virtual ~AliCDBMetaData() {};	// destructor
+	void 		SetObjectClassName(const char* name) 
+				{fObjectClassName = name;};
+	const char* 	GetObjectClassName() const 
+				{return fObjectClassName.Data();};
+	
+        void 		SetResponsible(const char* yourName) 
+				{fResponsible = yourName;};
+	const char* 	GetResponsible() const 
+				{return fResponsible.Data();};
 
-  AliCDBMetaData(const AliCDBMetaData& entry);	// copy contructor	
-  AliCDBMetaData& operator = (const AliCDBMetaData& entry);	// assignment  operator
+	void 		SetBeamPeriod(UInt_t period) 
+				{fBeamPeriod = period;};
+	UInt_t 		GetBeamPeriod() const 
+				{return fBeamPeriod;};
 
+	void 		SetAliRootVersion(const char* version)
+				{fAliRootVersion = version;};
+	const char* 	GetAliRootVersion() const 
+				{return fAliRootVersion.Data();};
 
-  void  	SetName(const char* name) {fName = name; DecodeName();} // object's name ("Detector/DBType/DetSpecType")
-  void 		SetDetector(const char* Detector) {fDetector = Detector; EncodeName();} // set the detector's name (ZDC,ITS ...)
-  void 		SetDBType(const char* DBType) {fDBType = DBType; EncodeName();} // set the database type (Calib, Align ...)
-  void 		SetDetSpecType(const char* DetSpecType) {fDetSpecType = DetSpecType; EncodeName();} // set the detector's specific type name (Pedestals, GainConst, DeadChannelMaps...)
-  void 		SetRunRange(Int_t firstRun = -1, Int_t lastRun = 1) 
-    			{fFirstRun = firstRun; fLastRun = lastRun;} // set the run validity range
-  void 		SetVersion(Int_t version = -1) {fVersion = version;} // object's version (automatically set during storage!)
-  void 		SetPeriod(Int_t period) {fPeriod = period;}	// set number of beam period
-  void 		SetFormat(const char* objFormat) {fFormat = objFormat;} // set infos about object's format (array o floats, histos...)
-  void 		SetResponsible(const char* responsible) {fResponsible = responsible;}	// who made the object?
-  void 		SetExtraInfo(const char* extraInfo) {fExtraInfo = extraInfo;}	// something else you would like to know
-  
+	void 		SetComment(const char* comment) 
+				{fComment = comment;};
+	const char* 	GetComment() const 
+				{return fComment.Data();};
 
-  const char* 	GetName() const {return fName.Data();} // get the name 
-  const char* 	GetDetector() const {return fDetector.Data();} // get the detector's name 
-  const char* 	GetDBType() const {return fDBType.Data();} // get the database type 
-  const char* 	GetDetSpecType() const {return fDetSpecType.Data();} // get the detector's specific type name 
-  
-  const Int_t 	GetFirstRun() const {return fFirstRun;} // get the first valid run
-  const Int_t 	GetLastRun() const {return fLastRun;} // get the last valid run
-  const Int_t 	GetVersion() const {return fVersion;} // get the version
-  const Int_t 	GetPeriod() const {return fPeriod;} // get the beam period
-  const char* 	GetFormat() const {return fFormat.Data();} // get the object's format
-  const char* 	GetResponsible() const  {return fResponsible.Data();} // get the responsible's name
-  const char* 	GetExtraInfo() const {return fExtraInfo.Data();} // get the object's extra info
-  
-  Bool_t 	IsValid(Int_t runNumber,     
-     	           	AliCDBMetaData* metaData = NULL) const; 
-  Bool_t 	IsStrictlyValid(Int_t runNumber, 
-     	           	AliCDBMetaData* metaData = NULL) const;
-  Int_t		Compare(const TObject* object) const;
-  Bool_t	Matches(const char* name, Int_t runNumber) const;
+	void 		SetProperty(const char* property, TObject* object);
+	TObject* 	GetProperty(const char* property) const;
+	Bool_t 		RemoveProperty(const char* property);
+	
+	void PrintMetaData();
+	
+private:
 
-protected:
-  TString 	fName;           // name of the entry
-  TString 	fDetector;       // name of the detector (ZDC, TPC, etc...)
-  TString 	fDBType;         // name of the database type (Calib, Align)
-  TString 	fDetSpecType;    // name of the detector's specific data type (pedestals, gain coeffs...)
-  Int_t  	fFirstRun;       // index of first valid run
-  Int_t 	fLastRun;        // index of last valid run
-  Int_t 	fVersion;        // version of the entry
-  Int_t 	fPeriod;         // beam period 
-  TString 	fFormat;         // object's format
-  TString 	fResponsible;    // name of the person responsible for the object
-  TString 	fExtraInfo;      // extra info about the object
-  
-  void 		EncodeName();
-  void 		DecodeName();
+	TString fObjectClassName; 	// object's class name
+	TString fResponsible; 		// object's responsible person
+	UInt_t fBeamPeriod;		// beam period
+	TString fAliRootVersion;	// AliRoot version
+	TString fComment;		// extra comments
+	//TList fCalibRuns;		
+	
+	TMap fProperties;		// list of object specific properties
 
-ClassDef(AliCDBMetaData, 1)   // CDB meta data: full description of a run dependent database object
+	ClassDef(AliCDBMetaData, 1);
 };
-
-extern Bool_t operator == (const AliCDBMetaData& entry1, 
-			   const AliCDBMetaData& entry2);
 
 #endif

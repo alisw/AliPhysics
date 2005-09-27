@@ -66,6 +66,7 @@
 #include "AliLog.h"
 #include "AliCDBLocal.h"
 #include "AliCDBStorage.h"
+#include "AliCDBManager.h"
 
 ClassImp(AliPHOSGetter)
   
@@ -1075,7 +1076,7 @@ Float_t AliPHOSGetter::BeamEnergy(void) const
 AliPHOSCalibData* AliPHOSGetter::CalibData()
 { 
 
-  if(!AliCDBStorage::Instance()) {
+  if( !(AliCDBManager::Instance()->IsDefaultStorageSet()) ) {
     fCalibData=0x0;
     Warning("CalibData","Calibration DB is not initiated!");
     return fCalibData;
