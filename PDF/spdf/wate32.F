@@ -2,6 +2,9 @@
 * $Id$
 *
 * $Log$
+* Revision 1.4  2000/09/18 10:02:37  hristov
+* Makefile added to PDF8
+*
 * Revision 1.1.1.2  1996/10/30 08:31:58  cernlib
 * Version 7.04
 *
@@ -12,9 +15,19 @@
 #include "pdf/pilot.h"
       SUBROUTINE WATE32
 C  32 POINT GAUSSIAN QUADRATURE ROUTINE
-#include "pdf/expdp.inc"
+#if defined(CERNLIB_DOUBLE)
+      DOUBLE PRECISION
+#endif
+#if defined(CERNLIB_SINGLE)
+      REAL
+#endif
      +       X(16),W(16)
-#include "pdf/expdp.inc"
+#if defined(CERNLIB_DOUBLE)
+      DOUBLE PRECISION
+#endif
+#if defined(CERNLIB_SINGLE)
+      REAL
+#endif
      +               XI(32),WI(32),XX(33)
       COMMON/W5051I9/XI,WI,XX,NTERMS
       NTERMS=32

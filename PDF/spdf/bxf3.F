@@ -2,6 +2,9 @@
 * $Id$
 *
 * $Log$
+* Revision 1.4  2000/09/18 10:02:35  hristov
+* Makefile added to PDF8
+*
 * Revision 1.1.1.2  1996/10/30 08:27:39  cernlib
 * Version 7.04
 *
@@ -17,7 +20,12 @@ C.    F3   (GIVES VALENCE FOR U AND D)
 C.
 C.......................................................................
 #include "pdf/impdp.inc"
-#include "pdf/expdp.inc"
+#if defined(CERNLIB_DOUBLE)
+      DOUBLE PRECISION
+#endif
+#if defined(CERNLIB_SINGLE)
+      REAL
+#endif
      +       BBETA
       DATA XLAM /0.47D00/, Q02/5.D0/
       DATA ONED/1.D0/, FIVED2/5.2D0/

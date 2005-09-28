@@ -2,6 +2,9 @@
 * $Id$
 *
 * $Log$
+* Revision 1.4  2000/09/18 10:02:35  hristov
+* Makefile added to PDF8
+*
 * Revision 1.1.1.3  1996/11/07 11:52:35  cernlib
 * Import version 7.05
 *
@@ -42,7 +45,12 @@ C
 C                    F2 = PHOTON STRUCTURE FUNCTION WITHOUT CHARM
 C                    F2C=  "        "         "     WITH MASSIVE CHARM
 C
-#include "pdf/expdp.inc"
+#if defined(CERNLIB_DOUBLE)
+      DOUBLE PRECISION
+#endif
+#if defined(CERNLIB_SINGLE)
+      REAL
+#endif
      +       DX,DQ,DUV,DDV,DUB,DDB,DSB,DCB,DBB,DGL
       REAL    X, Q, UV, DV, UB, DB, SB, CB, BB, GL
       REAL       Q2

@@ -2,6 +2,9 @@
 * $Id$
 *
 * $Log$
+* Revision 1.4  2000/09/18 10:02:36  hristov
+* Makefile added to PDF8
+*
 * Revision 1.1.1.2  1996/10/30 08:29:58  cernlib
 * Version 7.04
 *
@@ -40,7 +43,12 @@ C...    10**-4 < X  < 1
 C...     4(1)  < Q2 < 10**5 GeV**2
 C
 #include "pdf/impdp.inc"
-#include "pdf/expdp.inc"
+#if defined(CERNLIB_DOUBLE)
+      DOUBLE PRECISION
+#endif
+#if defined(CERNLIB_SINGLE)
+      REAL
+#endif
      +        DX,DQ,DUV,DDV,DUB,DDB,DSB,DCB,DBB,DTB,DGL,
      +        XPDF(-6:6), X, Q, Q2
 C

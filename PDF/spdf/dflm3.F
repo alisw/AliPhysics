@@ -2,6 +2,9 @@
 * $Id$
 *
 * $Log$
+* Revision 1.4  2000/09/18 10:02:35  hristov
+* Makefile added to PDF8
+*
 * Revision 1.1.1.2  1996/10/30 08:27:54  cernlib
 * Version 7.04
 *
@@ -23,7 +26,12 @@ C   ********************************************************************
 C
 C :::::::::::: Diemoz, Ferroni, Longo, and Martinelli Lambda = 360 MeV :
 C
-#include "pdf/expdp.inc"
+#if defined(CERNLIB_DOUBLE)
+      DOUBLE PRECISION
+#endif
+#if defined(CERNLIB_SINGLE)
+      REAL
+#endif
      +       DX,DSCALE,DUPV,DDNV,DSEA,DSTR,DCHM,DBOT,DTOP,DGL
       REAL   X, Q2
 #include "pdf/w50511.inc"

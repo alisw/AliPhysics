@@ -2,6 +2,9 @@
 * $Id$
 *
 * $Log$
+* Revision 1.4  2000/09/18 10:02:34  hristov
+* Makefile added to PDF8
+*
 * Revision 1.3  1996/10/30 11:05:06  cernlib
 * Conflicts resolved
 *
@@ -22,7 +25,12 @@
      +               NPTYPP,NGROPP,NSETP,NFLP,LOP,TMASP,
      +               QCDL4P,QCDL5P,
      +               XMINP,XMAXP,Q2MINP,Q2MAXP
-#include "expdp.inc"
+#if defined(CERNLIB_DOUBLE)
+      DOUBLE PRECISION
+#endif
+#if defined(CERNLIB_SINGLE)
+      REAL
+#endif
      +       TMASP,
      +       QCDL4P,QCDL5P,
      +       XMINP,XMAXP,Q2MINP,Q2MAXP

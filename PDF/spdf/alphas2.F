@@ -2,6 +2,9 @@
 * $Id$
 *
 * $Log$
+* Revision 1.4  2000/09/18 10:02:35  hristov
+* Makefile added to PDF8
+*
 * Revision 1.3  1996/10/30 11:05:22  cernlib
 * Conflicts resolved
 *
@@ -66,10 +69,20 @@ C
 #include "pdf/w505120.inc"
 #include "pdf/w505121.inc"
 C
-#include "pdf/expdp.inc"
+#if defined(CERNLIB_DOUBLE)
+      DOUBLE PRECISION
+#endif
+#if defined(CERNLIB_SINGLE)
+      REAL
+#endif
      +    NF,KNF
       CHARACTER*20 PARM(NCHDIM)
-#include "pdf/expdp.inc"
+#if defined(CERNLIB_DOUBLE)
+      DOUBLE PRECISION
+#endif
+#if defined(CERNLIB_SINGLE)
+      REAL
+#endif
      +       VAL(NCHDIM)
       DATA XMC/1.5D0/,XMB/4.75D0/,XMT/100.D0/
       DATA ZEROD/0.D0/,PONED/0.001D0/,ONED/1.D0/,TWOD/2.D0/

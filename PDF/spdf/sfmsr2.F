@@ -4,7 +4,12 @@ C
 #include "pdf/impdp.inc"
 C
       PARAMETER(NX=49,NQ=37,NTENTH=23,NP=8)
-#include "pdf/expdp.inc"
+#if defined(CERNLIB_DOUBLE)
+      DOUBLE PRECISION
+#endif
+#if defined(CERNLIB_SINGLE)
+      REAL
+#endif
      +       F(NP,NX,NQ+1),QQ(NQ),XX(NX),G(NP),N0(NP)
         DATA ((F(I,1,K),I=1,5),F(7,1,K),F(6,1,K),F(8,1,K),K=1,8)/
      +     .00125,    .00705,    .95079,    .46974,    .00369,

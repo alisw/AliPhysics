@@ -2,6 +2,9 @@
 * $Id$
 *
 * $Log$
+* Revision 1.4  2000/09/18 10:02:35  hristov
+* Makefile added to PDF8
+*
 * Revision 1.1.1.2  1996/10/30 08:28:02  cernlib
 * Version 7.04
 *
@@ -30,7 +33,12 @@ C*                                                                  *
 C********************************************************************
 C
 #include "pdf/impdp.inc"
-#include "pdf/expdp.inc"
+#if defined(CERNLIB_DOUBLE)
+      DOUBLE PRECISION
+#endif
+#if defined(CERNLIB_SINGLE)
+      REAL
+#endif
      +        A(3,4,3),AT(3),
      +        B(5,4,2,3),BT(5,2),XQPOM(2),E(2),
      +        DX,DQ,DUV,DDV,DUB,DDB,DSB,DCB,DBB,DGL

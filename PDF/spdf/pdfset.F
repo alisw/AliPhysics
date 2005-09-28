@@ -2,6 +2,9 @@
 * $Id$
 *
 * $Log$
+* Revision 1.4  2000/09/18 10:02:36  hristov
+* Makefile added to PDF8
+*
 * Revision 1.1.1.4  2000/04/19 13:28:34  mclareni
 * Import version 8.04
 *
@@ -69,7 +72,12 @@ C
 #include "pdf/w505120.inc"
 #include "pdf/w505121.inc"
 #include "pdf/w505122.inc"
-#include "pdf/expdp.inc"
+#if defined(CERNLIB_DOUBLE)
+      DOUBLE PRECISION
+#endif
+#if defined(CERNLIB_SINGLE)
+      REAL
+#endif
      +       PQCDL4(NPTYMX,NGRMAX,NSETMX), PQCDL5(NPTYMX,NGRMAX,NSETMX),
      +       PXMIN(NPTYMX,NGRMAX,NSETMX),  PXMAX(NPTYMX,NGRMAX,NSETMX),
      +       PQ2MIN(NPTYMX,NGRMAX,NSETMX), PQ2MAX(NPTYMX,NGRMAX,NSETMX)
@@ -77,7 +85,12 @@ C.
       PARAMETER (NSDIM = 16)
       CHARACTER*2 AV(NSDIM)
       CHARACTER*20 PARM(NCHDIM),STRING
-#include "pdf/expdp.inc"
+#if defined(CERNLIB_DOUBLE)
+      DOUBLE PRECISION
+#endif
+#if defined(CERNLIB_SINGLE)
+      REAL
+#endif
      +       VAL(NCHDIM)
 C.
       EQUIVALENCE (VALUE,IVALUE)

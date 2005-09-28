@@ -94,7 +94,12 @@ C
 #include "pdf/w505120.inc"
 #include "pdf/w505121.inc"
       CHARACTER*20 PARM(NCHDIM)
-#include "pdf/expdp.inc"
+#if defined(CERNLIB_DOUBLE)
+      DOUBLE PRECISION
+#endif
+#if defined(CERNLIB_SINGLE)
+      REAL
+#endif
      +       VAL(NCHDIM)
       DATA ZEROD/0.D0/,ONED/1.D0/,TWOD/2.D0/
       SAVE /W50514/, /W50514W/, /W50516/

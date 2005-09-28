@@ -5,7 +5,12 @@ C
 C
       parameter(nx=49,nq=37,ntenth=23,np=8)
 C
-#include "pdf/expdp.inc"
+#if defined(CERNLIB_DOUBLE)
+      DOUBLE PRECISION
+#endif
+#if defined(CERNLIB_SINGLE)
+      REAL
+#endif
      +       f(np,nx,nq+1),qq(nq),xx(nx),g(np),n0(np)
         DATA ((F(I,1,K),I=1,5),F(7,1,K),F(6,1,K),F(8,1,K),K=1,8)/
      +     .01652,    .00676,   3.98484,    .93109,    .00000,

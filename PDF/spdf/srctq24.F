@@ -2,6 +2,9 @@
 * $Id$
 *
 * $Log$
+* Revision 1.4  2000/09/18 10:02:37  hristov
+* Makefile added to PDF8
+*
 * Revision 1.1.1.2  1996/10/30 08:30:56  cernlib
 * Version 7.04
 *
@@ -25,7 +28,12 @@ C
 C :::::::::::: Structure functions from Morfin and Wu-Ki Tung
 C :::::::::::: Lambda = 0.208 GeV (MSb) (flat small-x) (CTEQ2MF)
 C
-#include "pdf/expdp.inc"
+#if defined(CERNLIB_DOUBLE)
+      DOUBLE PRECISION
+#endif
+#if defined(CERNLIB_SINGLE)
+      REAL
+#endif
      +       DX,DSCAL,DUPV,DDNV,DSEA,DSEAD,DSTR,DCHM,DBOT,DTOP,DGL
       REAL   X, Q
       PARAMETER (ISET=3)

@@ -2,6 +2,9 @@
 * $Id$
 *
 * $Log$
+* Revision 1.4  2000/09/18 10:02:35  hristov
+* Makefile added to PDF8
+*
 * Revision 1.1.1.2  1996/10/30 08:28:27  cernlib
 * Version 7.04
 *
@@ -20,7 +23,12 @@ C
       DOUBLE PRECISION FUNCTION GAMFUN(Y)
 #endif
 #include "pdf/impdp.inc"
-#include "pdf/expdp.inc"
+#if defined(CERNLIB_DOUBLE)
+      DOUBLE PRECISION
+#endif
+#if defined(CERNLIB_SINGLE)
+      REAL
+#endif
      +     Y,R,S,T,AFSPL,X,
      +     COEF(10),PI,ZEROD,HALFD,ONED,TWOD,TEND
 C

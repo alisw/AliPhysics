@@ -2,6 +2,9 @@
 * $Id$
 *
 * $Log$
+* Revision 1.4  2000/09/18 10:02:36  hristov
+* Makefile added to PDF8
+*
 * Revision 1.1.1.2  1996/10/30 08:29:15  cernlib
 * Version 7.04
 *
@@ -17,7 +20,12 @@ C.    DV
 C.
 C.......................................................................
 #include "pdf/impdp.inc"
-#include "pdf/expdp.inc"
+#if defined(CERNLIB_DOUBLE)
+      DOUBLE PRECISION
+#endif
+#if defined(CERNLIB_SINGLE)
+      REAL
+#endif
      +       BBETA
       DATA XLAM /0.50D00/, Q0/2.1D0/, Q00/1.8D0/
       DATA ONED/1.D0/, THRED/3.D0/

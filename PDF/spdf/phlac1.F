@@ -2,6 +2,9 @@
 * $Id$
 *
 * $Log$
+* Revision 1.4  2000/09/18 10:02:36  hristov
+* Makefile added to PDF8
+*
 * Revision 1.1.1.2  1996/10/30 08:29:07  cernlib
 * Version 7.04
 *
@@ -14,7 +17,12 @@ C-----------------------------------------------
       SUBROUTINE PHLAC1(X,Q2,XPDF)
 #include "pdf/impdp.inc"
       PARAMETER(IX=100,IQ=7,NARG=2,NFUN=4)
-#include "pdf/expdp.inc"
+#if defined(CERNLIB_DOUBLE)
+      DOUBLE PRECISION
+#endif
+#if defined(CERNLIB_SINGLE)
+      REAL
+#endif
      +       DBFINT,
      +       XT(IX),Q2T(IQ),ARG(NARG),ENT(IX+IQ),
      +       XPV(IX,IQ,0:NFUN),XPDF(-6:6)

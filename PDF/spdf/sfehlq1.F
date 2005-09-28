@@ -2,6 +2,9 @@
 * $Id$
 *
 * $Log$
+* Revision 1.4  2000/09/18 10:02:36  hristov
+* Makefile added to PDF8
+*
 * Revision 1.1.1.2  1996/10/30 08:29:46  cernlib
 * Version 7.04
 *
@@ -14,7 +17,12 @@ C-----------------------------------------------------------------------
       SUBROUTINE SFEHLQ1(DX,DSCALE,DUP,DDN,DSEA,DSTR,DCHM,DBOT,DTOP,DGL)
 C   ::::::: EHLQ SET 1  SUPERFAST DOUBLE PRECISION :::::::
 C
-#include "pdf/expdp.inc"
+#if defined(CERNLIB_DOUBLE)
+      DOUBLE PRECISION
+#endif
+#if defined(CERNLIB_SINGLE)
+      REAL
+#endif
      +       DX,DSCALE,DUP,DDN,DSEA,DSTR,DCHM,DBOT,DTOP,DGL
       PARAMETER (ALAM=0.2, Q02=5.0)
 #include "pdf/w50511.inc"

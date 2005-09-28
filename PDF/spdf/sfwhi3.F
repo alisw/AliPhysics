@@ -2,6 +2,9 @@
 * $Id$
 *
 * $Log$
+* Revision 1.4  2000/09/18 10:02:36  hristov
+* Makefile added to PDF8
+*
 * Revision 1.1.1.2  1996/10/30 08:30:44  cernlib
 * Version 7.04
 *
@@ -32,7 +35,12 @@ c     Modified by I.Watanabe on July 22, 1994.
 c-------------------------------------------------------
       implicit none
       external whit3g
-#include "pdf/expdp.inc"
+#if defined(CERNLIB_DOUBLE)
+      DOUBLE PRECISION
+#endif
+#if defined(CERNLIB_SINGLE)
+      REAL
+#endif
      +       ZX,ZQ,ZUV,ZDV,ZUB,ZDB,ZSB,ZCB,ZGL
 c arg
       integer ic

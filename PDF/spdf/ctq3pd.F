@@ -2,6 +2,9 @@
 * $Id$
 *
 * $Log$
+* Revision 1.4  2000/09/18 10:02:35  hristov
+* Makefile added to PDF8
+*
 * Revision 1.1.1.2  1996/10/30 08:27:50  cernlib
 * Version 7.04
 *
@@ -38,7 +41,12 @@ C+SEQ, IMPDP.
       PARAMETER (D0=0D0, D1=1D0, D2=2D0, D3=3D0, D4=4D0, D10=1D1)
       Parameter (Nst = 3)
 
-#include "pdf/expdp.inc"
+#if defined(CERNLIB_DOUBLE)
+      DOUBLE PRECISION
+#endif
+#if defined(CERNLIB_SINGLE)
+      REAL
+#endif
      +       P012, P34, P5, PDFD
 
       DIMENSION

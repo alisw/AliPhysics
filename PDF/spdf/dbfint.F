@@ -2,6 +2,9 @@
 * $Id$
 *
 * $Log$
+* Revision 1.4  2000/09/18 10:02:35  hristov
+* Makefile added to PDF8
+*
 * Revision 1.1.1.2  1996/10/30 08:27:52  cernlib
 * Version 7.04
 *
@@ -18,7 +21,12 @@
 #endif
 #include "pdf/impdp.inc"
              INTEGER NA(NARG), INDEX(32)
-#include "pdf/expdp.inc"
+#if defined(CERNLIB_DOUBLE)
+      DOUBLE PRECISION
+#endif
+#if defined(CERNLIB_SINGLE)
+      REAL
+#endif
      +       ARG(NARG),ENT(10),TABLE(10),WEIGHT(32)
       DATA ZEROD/0.D0/ONED/1.D0/
 C

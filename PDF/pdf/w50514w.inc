@@ -2,6 +2,9 @@
 * $Id$
 *
 * $Log$
+* Revision 1.4  2000/09/18 10:02:34  hristov
+* Makefile added to PDF8
+*
 * Revision 1.1.1.2  1996/10/30 08:27:17  cernlib
 * Version 7.04
 *
@@ -13,5 +16,10 @@
 * w50514w.inc
 *
       COMMON/W50514W/ PDFWGT
-#include "expdp.inc"
+#if defined(CERNLIB_DOUBLE)
+      DOUBLE PRECISION
+#endif
+#if defined(CERNLIB_SINGLE)
+      REAL
+#endif
      +       PDFWGT

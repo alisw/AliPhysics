@@ -2,6 +2,9 @@
 * $Id$
 *
 * $Log$
+* Revision 1.4  2000/09/18 10:02:35  hristov
+* Makefile added to PDF8
+*
 * Revision 1.1.1.2  1996/10/30 08:28:34  cernlib
 * Version 7.04
 *
@@ -16,7 +19,12 @@
        SUBROUTINE GRV94DI (ZX,ZQ,ZUV,ZDV,ZUB,ZDB,ZSB,ZCB,ZBB,ZTB,ZGL)
        IMPLICIT REAL (A - Y)
 C+SEQ, IMPDP.
-#include "pdf/expdp.inc"
+#if defined(CERNLIB_DOUBLE)
+      DOUBLE PRECISION
+#endif
+#if defined(CERNLIB_SINGLE)
+      REAL
+#endif
      +      ZX,ZQ,ZUV,ZDV,ZDEL,ZUDB,ZUB,ZDB,ZSB,ZCB,ZBB,ZTB,ZGL
        REAL X, Q
        X = ZX

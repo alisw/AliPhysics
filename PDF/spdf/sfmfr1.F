@@ -10,7 +10,12 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 C
 #include "pdf/impdp.inc"
 C
-#include "pdf/expdp.inc"
+#if defined(CERNLIB_DOUBLE)
+      DOUBLE PRECISION
+#endif
+#if defined(CERNLIB_SINGLE)
+      REAL
+#endif
      +       F(8)
       REAL   Z(18,8)
       DATA Z/

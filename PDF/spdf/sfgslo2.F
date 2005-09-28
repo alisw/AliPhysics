@@ -2,6 +2,9 @@
 * $Id$
 *
 * $Log$
+* Revision 1.4  2000/09/18 10:02:36  hristov
+* Makefile added to PDF8
+*
 * Revision 1.1.1.2  1996/10/30 08:29:53  cernlib
 * Version 7.04
 *
@@ -25,7 +28,12 @@
 C
 #include "pdf/impdp.inc"
       PARAMETER(NP=78,NQ=11,NARG=2)
-#include "pdf/expdp.inc"
+#if defined(CERNLIB_DOUBLE)
+      DOUBLE PRECISION
+#endif
+#if defined(CERNLIB_SINGLE)
+      REAL
+#endif
      +       DBFINT,
      +       SIG(NP,NQ),QNS(NP,NQ),GL(NP,NQ),Y(NP),
      +       XT(NARG),A(NP+NQ),QT(NQ)

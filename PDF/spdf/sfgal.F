@@ -25,7 +25,12 @@ C...    10**-4 < X  < 1
 C...     4(1)  < Q2 < 10**5 GeV**2
 C
 #include "pdf/impdp.inc"
-#include "pdf/expdp.inc"
+#if defined(CERNLIB_DOUBLE)
+      DOUBLE PRECISION
+#endif
+#if defined(CERNLIB_SINGLE)
+      REAL
+#endif
      +        DX,DQ,DUV,DDV,DUB,DDB,DSB,DCB,DBB,DTB,DGL,
      +        XPDF(-6:6), X, Q, Q2
 C

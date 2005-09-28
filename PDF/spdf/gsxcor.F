@@ -2,7 +2,12 @@
       SUBROUTINE GSXCOR(Y,NP)
 C
 #include "pdf/impdp.inc"
-#include "pdf/expdp.inc"
+#if defined(CERNLIB_DOUBLE)
+      DOUBLE PRECISION
+#endif
+#if defined(CERNLIB_SINGLE)
+      REAL
+#endif
      +       Y(NP)
       N=1
       DO 10 IX=1,20,2

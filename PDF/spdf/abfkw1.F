@@ -2,6 +2,9 @@
 * $Id$
 *
 * $Log$
+* Revision 1.4  2000/09/18 10:02:35  hristov
+* Makefile added to PDF8
+*
 * Revision 1.1.1.2  1996/10/30 08:27:26  cernlib
 * Version 7.04
 *
@@ -11,7 +14,12 @@
 *
 #include "pdf/pilot.h"
       SUBROUTINE ABFKW1(DX,DQ,DUPV,DDNV,DUSEA,DDSEA,DSTR,DCHM,DGL)
-#include "pdf/expdp.inc"
+#if defined(CERNLIB_DOUBLE)
+      DOUBLE PRECISION
+#endif
+#if defined(CERNLIB_SINGLE)
+      REAL
+#endif
      +       PARPI(40),CALCPI(8,20,25),CALCPIO(8,20,25),ZEROD,
      +       DX,DQ,DUPV,DDNV,DUSEA,DDSEA,DSTR,DCHM,DGL
       REAL    X, Q, UPV, DNV, USEA, DSEA, STR, CHM, GL

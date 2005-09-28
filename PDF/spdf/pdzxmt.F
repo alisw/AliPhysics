@@ -2,6 +2,9 @@
 * $Id$
 *
 * $Log$
+* Revision 1.4  2000/09/18 10:02:36  hristov
+* Makefile added to PDF8
+*
 * Revision 1.1.1.2  1996/10/30 08:29:05  cernlib
 * Version 7.04
 *
@@ -16,7 +19,12 @@
       FUNCTION PDZXMT (IST, LP, XX, QQ, IRT)
 C
 #include "pdf/w50511.inc"
-#include "pdf/expdp.inc"
+#if defined(CERNLIB_DOUBLE)
+      DOUBLE PRECISION
+#endif
+#if defined(CERNLIB_SINGLE)
+      REAL
+#endif
      +       AIEX, FXIEX, PDFD, ONED
       REAL PDF
 C

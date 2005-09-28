@@ -2,6 +2,9 @@
 * $Id$
 *
 * $Log$
+* Revision 1.4  2000/09/18 10:02:37  hristov
+* Makefile added to PDF8
+*
 * Revision 1.1.1.2  1996/10/30 08:32:16  cernlib
 * Version 7.04
 *
@@ -29,7 +32,12 @@ C     SUBROUTINE STRBEBC(DX,DQ,DUDV,DUDS,DSEA,DSTR,DGL)
 *                                                                   *
 *********************************************************************
 C.
-#include "pdf/expdp.inc"
+#if defined(CERNLIB_DOUBLE)
+      DOUBLE PRECISION
+#endif
+#if defined(CERNLIB_SINGLE)
+      REAL
+#endif
      +       DX,DQ,DUPV,DDNV,DSEA,DSTR,DGL
       REAL    X, Q, UPV, DNV, SEA, STR, GL, UDVAL, UDSEA
       PARAMETER (BVQ02=0.77, BSQ02=5.3, BGQ02=4., Q02=0.5)

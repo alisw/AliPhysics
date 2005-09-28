@@ -2,6 +2,9 @@
 * $Id$
 *
 * $Log$
+* Revision 1.4  2000/09/18 10:02:37  hristov
+* Makefile added to PDF8
+*
 * Revision 1.1.1.2  1996/10/30 08:31:47  cernlib
 * Version 7.04
 *
@@ -18,7 +21,12 @@ C ::::::::::::::  OWENS SET 1 PION STRUCTURE FUNCTION  :::::::::::::::
 #if defined(CERNLIB_DOUBLE)
       DOUBLE PRECISION DGAMMA
 #endif
-#include "pdf/expdp.inc"
+#if defined(CERNLIB_DOUBLE)
+      DOUBLE PRECISION
+#endif
+#if defined(CERNLIB_SINGLE)
+      REAL
+#endif
      +       COW(3,5,4),TS(6),XQ(9)
 
 C...Expansion coefficients for up and down valence quark distributions.

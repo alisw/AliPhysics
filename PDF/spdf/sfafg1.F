@@ -2,6 +2,9 @@
 * $Id$
 *
 * $Log$
+* Revision 1.4  2000/09/18 10:02:36  hristov
+* Makefile added to PDF8
+*
 * Revision 1.1.1.2  1996/10/30 08:32:30  cernlib
 * Version 7.04
 *
@@ -59,7 +62,12 @@ C
 C
 C**************************************************************************
 C
-#include "pdf/expdp.inc"
+#if defined(CERNLIB_DOUBLE)
+      DOUBLE PRECISION
+#endif
+#if defined(CERNLIB_SINGLE)
+      REAL
+#endif
      +       DX,DQ,DUV,DDV,DUB,DDB,DSB,DCB,DBB,DGL
       REAL    X, Q, UV, DV, UB, DB, SB, CB, BB, GL
       REAL       Q2

@@ -14,7 +14,12 @@ C
 C :::::::::::: Structure functions from the SAS group version 2
 C :::::::::::: Lambda = 0.200 GeV, Q**2 = 4 GeV**2 (MS_bar)
 C
-#include "pdf/expdp.inc"
+#if defined(CERNLIB_DOUBLE)
+      DOUBLE PRECISION
+#endif
+#if defined(CERNLIB_SINGLE)
+      REAL
+#endif
      +          DX,DQ2,DP2,
      +          DUPV,DDNV,DSEA,DSEAD,DSTR,DCHM,DBOT,DTOP,DGL
       DIMENSION XPDFGM(-6:6)

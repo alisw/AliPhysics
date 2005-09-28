@@ -2,6 +2,9 @@
 * $Id$
 *
 * $Log$
+* Revision 1.4  2000/09/18 10:02:35  hristov
+* Makefile added to PDF8
+*
 * Revision 1.1.1.2  1996/10/30 08:28:06  cernlib
 * Version 7.04
 *
@@ -33,7 +36,12 @@ C*                                                                  *
 C********************************************************************
 C
 #include "pdf/impdp.inc"
-#include "pdf/expdp.inc"
+#if defined(CERNLIB_DOUBLE)
+      DOUBLE PRECISION
+#endif
+#if defined(CERNLIB_SINGLE)
+      REAL
+#endif
      +        CQ(5),
      +        DX,DQ,DUV,DDV,DUB,DDB,DSB,DCB,DBB,DGL
       PARAMETER (ALPEM=7.29927D-3, PI=3.141592D0)

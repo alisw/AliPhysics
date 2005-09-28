@@ -2,6 +2,9 @@
 * $Id$
 *
 * $Log$
+* Revision 1.4  2000/09/18 10:02:35  hristov
+* Makefile added to PDF8
+*
 * Revision 1.1.1.2  1996/10/30 08:27:36  cernlib
 * Version 7.04
 *
@@ -12,7 +15,12 @@
 #include "pdf/pilot.h"
 C
       SUBROUTINE AURPI1(I,NDRV,X,S,ANS)
-#include "pdf/expdp.inc"
+#if defined(CERNLIB_DOUBLE)
+      DOUBLE PRECISION
+#endif
+#if defined(CERNLIB_SINGLE)
+      REAL
+#endif
      +       CALCPIO(8,20,25)
       COMMON/W5051I4/CALCPIO
       REAL   F1(25),F2(25)

@@ -2,6 +2,9 @@
 * $Id$
 *
 * $Log$
+* Revision 1.4  2000/09/18 10:02:37  hristov
+* Makefile added to PDF8
+*
 * Revision 1.1.1.2  1996/10/30 08:31:01  cernlib
 * Version 7.04
 *
@@ -14,7 +17,12 @@ C
       SUBROUTINE STRDO1(X,SCALE,UPV,DNV,SEA,STR,CHM,GL)
 C :::::::::::: DUKE OWENS SET 1 ::::::::::::::::::::::::::::
 #include "pdf/impdp.inc"
-#include "pdf/expdp.inc"
+#if defined(CERNLIB_DOUBLE)
+      DOUBLE PRECISION
+#endif
+#if defined(CERNLIB_SINGLE)
+      REAL
+#endif
      +       F(5),A(6,5),B1(3,6,5)
       DATA Q0,QL1/2.D0,.2D0/
       DATA B1/3.D0,0.D0,0.D0,.419D0,.004383D0,-.007412D0,

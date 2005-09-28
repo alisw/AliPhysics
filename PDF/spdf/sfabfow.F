@@ -2,6 +2,9 @@
 * $Id$
 *
 * $Log$
+* Revision 1.4  2000/09/18 10:02:36  hristov
+* Makefile added to PDF8
+*
 * Revision 1.1.1.2  1996/10/30 08:29:21  cernlib
 * Version 7.04
 *
@@ -11,7 +14,12 @@
 *
 #include "pdf/pilot.h"
       SUBROUTINE SFABFOW(DX,DQ,DUPV,DDNV,DUSEA,DDSEA,DSTR,DCHM,DGL)
-#include "pdf/expdp.inc"
+#if defined(CERNLIB_DOUBLE)
+      DOUBLE PRECISION
+#endif
+#if defined(CERNLIB_SINGLE)
+      REAL
+#endif
      +       PAR(40),CALC(8,20,25),CALCO(8,20,25),ZEROD,
      +       DX,DQ,DUPV,DDNV,DUSEA,DDSEA,DSTR,DCHM,DGL
       REAL    X, Q, UPV, DNV, USEA, DSEA, STR, CHM, GL

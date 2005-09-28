@@ -2,6 +2,9 @@
 * $Id$
 *
 * $Log$
+* Revision 1.4  2000/09/18 10:02:35  hristov
+* Makefile added to PDF8
+*
 * Revision 1.1.1.2  1996/10/30 08:27:31  cernlib
 * Version 7.04
 *
@@ -13,7 +16,12 @@
        FUNCTION AFGETFV(X,FVL)
 C  NOUVEAU PROGRAMME D'INTERPOLATION UTILISANT UNE ROUTINE DE MATH. RECIPES
        DIMENSION FVL(32)
-#include "pdf/expdp.inc"
+#if defined(CERNLIB_DOUBLE)
+      DOUBLE PRECISION
+#endif
+#if defined(CERNLIB_SINGLE)
+      REAL
+#endif
      +                XI(32),WI(32),XX(33)
        COMMON/W5051I9/XI,WI,XX,NTERMS
        DIMENSION A(4),B(4)

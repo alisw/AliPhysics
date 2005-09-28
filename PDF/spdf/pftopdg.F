@@ -2,6 +2,9 @@
 * $Id$
 *
 * $Log$
+* Revision 1.4  2000/09/18 10:02:36  hristov
+* Makefile added to PDF8
+*
 * Revision 1.1.1.2  1996/10/30 08:29:06  cernlib
 * Version 7.04
 *
@@ -12,7 +15,12 @@
 #include "pdf/pilot.h"
       SUBROUTINE PFTOPDG(DX,DSCALE,DXPDF)
 C
-#include "pdf/expdp.inc"
+#if defined(CERNLIB_DOUBLE)
+      DOUBLE PRECISION
+#endif
+#if defined(CERNLIB_SINGLE)
+      REAL
+#endif
      +       DX,DSCALE,DUPV,DDNV,DUSEA,DDSEA,DSTR,DCHM,DBOT,DTOP,DGL,
      +       DXPDF(-6:6)
 C... call STRUCTM in PDFLIB to get flavour content

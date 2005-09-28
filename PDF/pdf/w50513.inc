@@ -2,6 +2,9 @@
 * $Id$
 *
 * $Log$
+* Revision 1.4  2000/09/18 10:02:34  hristov
+* Makefile added to PDF8
+*
 * Revision 1.1.1.2  1996/10/30 08:27:16  cernlib
 * Version 7.04
 *
@@ -13,5 +16,10 @@
 * w50513.inc
 *
       COMMON/W50513/ XMIN,XMAX,Q2MIN,Q2MAX
-#include "expdp.inc"
+#if defined(CERNLIB_DOUBLE)
+      DOUBLE PRECISION
+#endif
+#if defined(CERNLIB_SINGLE)
+      REAL
+#endif
      +       XMIN,XMAX,Q2MIN,Q2MAX

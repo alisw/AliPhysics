@@ -2,6 +2,9 @@
 * $Id$
 *
 * $Log$
+* Revision 1.4  2000/09/18 10:02:36  hristov
+* Makefile added to PDF8
+*
 * Revision 1.1.1.2  1996/10/30 08:29:48  cernlib
 * Version 7.04
 *
@@ -17,7 +20,12 @@ C :::::::::::: Structure functions from Glueck, Reya and Vogt  (HO)
 C :::::::::::: Lambda(NF=3) = 0.200 GeV
 C
       DIMENSION XQ(7)
-#include "pdf/expdp.inc"
+#if defined(CERNLIB_DOUBLE)
+      DOUBLE PRECISION
+#endif
+#if defined(CERNLIB_SINGLE)
+      REAL
+#endif
      +       DX,DSCAL,DUPV,DDNV,DSEA,DSTR,DCHM,DBOT,DTOP,DGL
       PARAMETER (ALAM=0.200)
 C

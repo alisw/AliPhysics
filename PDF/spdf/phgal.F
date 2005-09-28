@@ -2,7 +2,12 @@
       SUBROUTINE PHGAL(X,Q2,XPDF)
 #include "pdf/impdp.inc"
       PARAMETER(IX=100,IQ=7,NARG=2,NFUN=4)
-#include "pdf/expdp.inc"
+#if defined(CERNLIB_DOUBLE)
+      DOUBLE PRECISION
+#endif
+#if defined(CERNLIB_SINGLE)
+      REAL
+#endif
      +       DBFINT,
      +       XT(IX),Q2T(IQ),ARG(NARG),ENT(IX+IQ),
      +       XPV(IX,IQ,0:NFUN),XPDF(-6:6)

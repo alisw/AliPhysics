@@ -2,6 +2,9 @@
 * $Id$
 *
 * $Log$
+* Revision 1.4  2000/09/18 10:02:37  hristov
+* Makefile added to PDF8
+*
 * Revision 1.1.1.3  2000/04/19 13:29:30  mclareni
 * Import version 8.04
 *
@@ -119,7 +122,12 @@ C
 #include "pdf/w505120.inc"
 #include "pdf/w505121.inc"
       CHARACTER*20 PARM(NCHDIM)
-#include "pdf/expdp.inc"
+#if defined(CERNLIB_DOUBLE)
+      DOUBLE PRECISION
+#endif
+#if defined(CERNLIB_SINGLE)
+      REAL
+#endif
      +       VAL(NCHDIM)
       DATA ZEROD/0.D0/,ONED/1.D0/,TWOD/2.D0/
       SAVE /W50514/, /W50514W/, /W50516/

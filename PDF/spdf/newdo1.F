@@ -2,6 +2,9 @@
 * $Id$
 *
 * $Log$
+* Revision 1.4  2000/09/18 10:02:36  hristov
+* Makefile added to PDF8
+*
 * Revision 1.1.1.2  1996/10/30 08:32:48  cernlib
 * Version 7.04
 *
@@ -21,7 +24,12 @@ C       adapted and corrected by---H.Plothow-Besch (Aug 14, 1991)
 C       BASED ON FSU-HEP-910606 PREPRINT
 C--------------------------------------------------------------
 C
-#include "pdf/expdp.inc"
+#if defined(CERNLIB_DOUBLE)
+      DOUBLE PRECISION
+#endif
+#if defined(CERNLIB_SINGLE)
+      REAL
+#endif
      +       R8X,R8QSQ,R8U,R8D,R8SS,R8STR,R8C,R8G
         REAL ND,NUD,X,QSQ
         DATA Q0/2./, ALAM/0.177/

@@ -2,6 +2,9 @@
 * $Id$
 *
 * $Log$
+* Revision 1.4  2000/09/18 10:02:37  hristov
+* Makefile added to PDF8
+*
 * Revision 1.1.1.2  1996/10/30 08:31:02  cernlib
 * Version 7.04
 *
@@ -14,7 +17,12 @@ C-----------------------------------------------------------------------
       SUBROUTINE STRGHR(DX,DSCALE,DUPV,DDNV,DSEA,DSTR,DCHM,DGL)
 C ::::::::::::   GHR   ::::::::::::::::::::::::::::
 C
-#include "pdf/expdp.inc"
+#if defined(CERNLIB_DOUBLE)
+      DOUBLE PRECISION
+#endif
+#if defined(CERNLIB_SINGLE)
+      REAL
+#endif
      +       DX,DSCALE,DUPV,DDNV,DSEA,DSTR,DCHM,DGL
       DATA ALAM2/0.160/, Q02/4.0/
       Q = DSCALE

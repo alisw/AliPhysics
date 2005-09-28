@@ -42,7 +42,12 @@ C-----------------------------------------------------------------------
      +                     DUPV,DDNV,DUSEA,DDSEA,DSTR,DCHM,DBOT,DGL)
 C      subroutine grsgalo(x,q2,p2,ugam,dgam,sgam,ggam)
 #include "pdf/impdp.inc"
-#include "pdf/expdp.inc"
+#if defined(CERNLIB_DOUBLE)
+      DOUBLE PRECISION
+#endif
+#if defined(CERNLIB_SINGLE)
+      REAL
+#endif
      +          x, q2, p2, mu2, lam2,
      +          ugam, dgam, sgam, ggam,
      +          DUPV,DDNV,DUSEA,DDSEA,DSTR,DCHM,DBOT,DGL

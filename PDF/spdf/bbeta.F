@@ -2,6 +2,9 @@
 * $Id$
 *
 * $Log$
+* Revision 1.4  2000/09/18 10:02:35  hristov
+* Makefile added to PDF8
+*
 * Revision 1.1.1.2  1996/10/30 08:27:38  cernlib
 * Version 7.04
 *
@@ -16,7 +19,12 @@
 #if defined(CERNLIB_DOUBLE)
       DOUBLE PRECISION FUNCTION BBETA(X,Y)
 #endif
-#include "pdf/expdp.inc"
+#if defined(CERNLIB_DOUBLE)
+      DOUBLE PRECISION
+#endif
+#if defined(CERNLIB_SINGLE)
+      REAL
+#endif
      +       DGAMMA,
      +       X,Y
 #if defined(CERNLIB_SINGLE)

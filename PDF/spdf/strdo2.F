@@ -2,6 +2,9 @@
 * $Id$
 *
 * $Log$
+* Revision 1.4  2000/09/18 10:02:37  hristov
+* Makefile added to PDF8
+*
 * Revision 1.1.1.2  1996/10/30 08:31:02  cernlib
 * Version 7.04
 *
@@ -15,7 +18,12 @@ C-----------------------------------------------------------------------
 C :::::::::::: DUKE OWENS SET 2 ::::::::::::::::::::::::::::
 C
 #include "pdf/impdp.inc"
-#include "pdf/expdp.inc"
+#if defined(CERNLIB_DOUBLE)
+      DOUBLE PRECISION
+#endif
+#if defined(CERNLIB_SINGLE)
+      REAL
+#endif
      +       F(5),A(6,5),B2(3,6,5)
       DATA Q0,QL2/2.D0,.4D0/
       DATA B2/3.D0,0.D0,0.D0,.3743D0,.013946D0,-.00031695D0,
