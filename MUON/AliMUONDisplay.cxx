@@ -59,7 +59,8 @@
 #include "AliMUONGeometryModule.h"
 #include "AliMpSlatSegmentation.h"
 #include "AliMpSlat.h"
- 
+#include "AliMpSectorSegmentation.h"
+#include "AliMpSector.h" 
 
 #include "AliMUONGeometrySegmentation.h"
 #include "AliMUONChamber.h"
@@ -780,6 +781,9 @@ void AliMUONDisplay::DrawView(Float_t theta, Float_t phi, Float_t psi)
 	fZoomY1[0] =  1;
 	fZooms = 0;
     }
+
+    Float_t xg1, xg2, yg1, yg2, zg1, zg2;
+
     // Recovering the chamber 
     AliMUON *pMUON  = (AliMUON*)gAlice->GetModule("MUON");
     AliMUONChamber*  iChamber;
@@ -791,29 +795,45 @@ void AliMUONDisplay::DrawView(Float_t theta, Float_t phi, Float_t psi)
     printf(">>>> chamber is %d\n",fChamber);
 
     if(fChamber < 5) {
-      // drawing inner circle
-      TPolyLine3D* poly1 = new  TPolyLine3D();
-      Int_t nPoint = 0;
-      for (Float_t d = 0; d < 6.3; d+= 0.1) {
-	Double_t x = AliMUONConstants::Dmin((fChamber-1)/2) * TMath::Cos(d)/2.;
-	Double_t y = AliMUONConstants::Dmin((fChamber-1)/2) * TMath::Sin(d)/2.;
-	poly1->SetPoint(nPoint++, x, y, 0.);
-      }
-      poly1->SetLineColor(2);
-      poly1->Draw("s");
+      for(Int_t id = 0; id < 4; id++) {
 
-      // drawing outer circle
-      TPolyLine3D* poly2 = new  TPolyLine3D();
-      nPoint = 0;
-      for (Float_t d = 0; d < 6.3; d+= 0.1) {
-	Double_t x = AliMUONConstants::Dmax((fChamber-1)/2) * TMath::Cos(d)/2.;
-	Double_t y = AliMUONConstants::Dmax((fChamber-1)/2) * TMath::Sin(d)/2.;
-	poly2->SetPoint(nPoint++, x, y, 0.);
+	Int_t detElemId = fChamber*100+id;
+	//	if (  AliMUONSegmentationManager::IsValidDetElemId(detElemId) ) {
+	AliMpSectorSegmentation * seg =   
+	  (AliMpSectorSegmentation *) AliMUONSegmentationManager::Segmentation(detElemId, kBendingPlane);
+	const AliMpSector * sector = seg->GetSector();
+
+	// get sector measurements
+	TVector2 position  = sector->Position(); 
+	TVector2 dimension = sector->Dimensions(); // half length
+	
+	Float_t xlocal1 =  position.Px()/10.; // mm to cm
+	Float_t ylocal1 =  position.Py()/10.;
+	Float_t xlocal2 =  dimension.Px()/10. * 2.;
+	Float_t ylocal2 =  dimension.Px()/10. * 2.;
+
+	iChamber->GetGeometry()->Local2Global(detElemId, xlocal1, ylocal1, 0, xg1, yg1, zg1);
+	iChamber->GetGeometry()->Local2Global(detElemId, xlocal2, ylocal2, 0, xg2, yg2, zg2);
+
+	// drawing 
+	TPolyLine3D* poly = new  TPolyLine3D();
+	Int_t nPoint = 0;
+
+	poly->SetPoint(nPoint++, xg1, yg1, 0.);
+	for (Float_t d = 0; d < TMath::Pi()/2.; d+= 0.01) {
+	  Float_t x = xg1 + xg2 * TMath::Cos(d);
+	  Float_t y = yg1 + yg2 * TMath::Sin(d);
+	  poly->SetPoint(nPoint++, x, y, 0.);
+	}
+	poly->SetPoint(nPoint++, xg1, yg1, 0.);
+
+	poly->SetLineColor(2);
+	poly->Draw("s");
       }
-      poly2->SetLineColor(2);
-      poly2->Draw("s");
+   
+      //     }
+
     }
-
 
     if(fChamber >4 && fChamber <11) {
       Int_t id=0;
@@ -829,7 +849,6 @@ void AliMUONDisplay::DrawView(Float_t theta, Float_t phi, Float_t psi)
 	  Float_t ylocal1 =  -deltay;
 	  Float_t xlocal2 =  +deltax;
 	  Float_t ylocal2 =  +deltay;
-	  Float_t xg1, xg2, yg1, yg2, zg1, zg2;
 	  iChamber->GetGeometry()->Local2Global(detElemId, xlocal1, ylocal1, 0, xg1, yg1, zg1);
 	  iChamber->GetGeometry()->Local2Global(detElemId, xlocal2, ylocal2, 0, xg2, yg2, zg2);
 
