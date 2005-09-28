@@ -56,7 +56,8 @@ class AliMUONGeometryBuilder : public TObject
     void PlaceVolume(const TString& name, const TString& mName, Int_t copyNo, 
              const TGeoHMatrix& matrix, Int_t npar, Double_t* param,
 	     const char* only) const;
-    void FillGlobalTransformations(AliMUONVGeometryBuilder* builder);	     
+    void FillGlobalTransformations(AliMUONVGeometryBuilder* builder);
+    void SetAlign(AliMUONVGeometryBuilder* builder);	     
 
     // data members
     AliModule*      fModule;              // the AliRoot module

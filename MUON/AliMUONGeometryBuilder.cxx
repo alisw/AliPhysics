@@ -268,6 +268,19 @@ void AliMUONGeometryBuilder::FillGlobalTransformations(
   }  			    
 }	     
 
+//_____________________________________________________________________________
+void AliMUONGeometryBuilder::SetAlign(AliMUONVGeometryBuilder* builder)
+{
+/// Set align option to all geometry modules associated with the builder
+
+  for (Int_t j=0; j<builder->NofGeometries(); j++) {
+
+    AliMUONGeometryModule* geometry = builder->Geometry(j);
+  
+    geometry->SetAlign(fAlign);
+  }  	  
+}  	     
+
 //
 // public functions
 //
@@ -278,6 +291,8 @@ void AliMUONGeometryBuilder::AddBuilder(AliMUONVGeometryBuilder* geomBuilder)
 /// Add the geometry builder to the list
 
   fGeometryBuilders->Add(geomBuilder);
+  
+  SetAlign(geomBuilder);
 }
 
 //______________________________________________________________________________
@@ -513,15 +528,9 @@ void AliMUONGeometryBuilder::SetAlign(Bool_t align)
 
   for (Int_t i=0; i<fGeometryBuilders->GetEntriesFast(); i++) {
 
-    // Get the builder
     AliMUONVGeometryBuilder* builder
       = (AliMUONVGeometryBuilder*)fGeometryBuilders->At(i);
-
-    for (Int_t j=0; j<builder->NofGeometries(); j++) {
-
-      AliMUONGeometryModule* geometry = builder->Geometry(j);
-  
-      geometry->SetAlign(align);
-    }  	  
-  }	  
+    
+    SetAlign(builder); 
+  }   
 }
