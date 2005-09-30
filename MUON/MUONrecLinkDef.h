@@ -7,6 +7,7 @@
 #pragma link C++ class AliMUONClusterReconstructor+; 
 #pragma link C++ class AliMUONClusterFinderVS+; 
 #pragma link C++ class AliMUONClusterFinderAZ+; 
+#pragma link C++ class AliMUONDigitMapA1+; 
 #pragma link C++ class AliMUONPixel+; 
 #pragma link C++ class AliMUONClusterInput+; 
 #pragma link C++ class AliMUONReconstructor+;

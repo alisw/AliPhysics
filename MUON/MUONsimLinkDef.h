@@ -8,6 +8,7 @@
 #pragma link C++ class AliMUONFactoryV3+;  
 
 // digitizer
+#pragma link C++ class AliMUONHitMapA1+; 
 #pragma link C++ class AliMUONDigitizer+; 
 #pragma link C++ class AliMUONDigitizerv2+; 
 #pragma link C++ class AliMUONSDigitizerv1+;  

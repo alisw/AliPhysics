@@ -9,6 +9,7 @@ SRCS:= AliMUONFactoryV2.cxx \
        AliMUONSt1ResponseRule.cxx \
        AliMUONSt1IniReader.cxx \
        AliMUONSt1Decoder.cxx \
+       AliMUONHitMapA1.cxx \
        AliMUONDigitizer.cxx \
        AliMUONDigitizerv2.cxx \
        AliMUONSDigitizerv1.cxx \

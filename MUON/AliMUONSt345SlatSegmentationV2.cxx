@@ -224,7 +224,7 @@ AliMUONSt345SlatSegmentationV2::GetAnod(Float_t xhit) const
 AliMUONGeometryDirection
 AliMUONSt345SlatSegmentationV2::GetDirection()
 {
-  AliFatal("Not Implemented");
+  //AliWarning("Not Implemented");
   return kDirUndefined;
 }
 

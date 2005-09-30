@@ -19,7 +19,7 @@
 class TClonesArray;
 
 class AliMUONClusterInput;
-class AliMUONHitMapA1;
+class AliMUONDigitMapA1;
 class AliMUONGeometrySegmentation;
 class AliMUONRawCluster;
 class AliMUONDigit;
@@ -71,7 +71,7 @@ class AliMUONClusterFinderVS : public TObject
     AliMUONClusterFinderVS & operator = (const AliMUONClusterFinderVS& rhs);
 
     AliMUONClusterInput*          fInput;              // ! AliMUONClusterInput instance
-    AliMUONHitMapA1*              fHitMap[2];          // Hit Maps for cathode 1 and 2
+    AliMUONDigitMapA1*            fDigitMap[2];          // Hit Maps for cathode 1 and 2
     AliMUONGeometrySegmentation*  fSeg2[2];            // New Segmentations for cathode 1 and 2
 
     

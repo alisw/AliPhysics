@@ -21,12 +21,14 @@
 #include <Riostream.h>
 
 #include "AliMUONClusterFinderVS.h"
+#include "AliMpPlaneType.h"
+#include "AliMpVSegmentation.h"
 #include "AliMUONDigit.h"
 #include "AliMUONRawCluster.h"
 #include "AliMUONGeometrySegmentation.h"
 #include "AliMUONMathieson.h"
 #include "AliMUONClusterInput.h"
-#include "AliMUONHitMapA1.h"
+#include "AliMUONDigitMapA1.h"
 #include "AliLog.h"
 
 //_____________________________________________________________________
@@ -43,8 +45,8 @@ AliMUONClusterFinderVS::AliMUONClusterFinderVS()
 {
 // Default constructor
     fInput=AliMUONClusterInput::Instance();
-    fHitMap[0] = 0;
-    fHitMap[1] = 0;
+    fDigitMap[0] = 0;
+    fDigitMap[1] = 0;
     fTrack[0]=fTrack[1]=-1;
     fGhostChi2Cut = 1e6; // nothing done by default
     fSeg2[0]    = 0;
@@ -984,8 +986,8 @@ void AliMUONClusterFinderVS::FindLocalMaxima(AliMUONRawCluster* /*c*/)
 	// loop over next neighbours, if at least one neighbour has higher charger assumption
 	// digit is not local maximum 
 	for (j=0; j<nn; j++) {
-	  if (fHitMap[cath]->TestHit(x[j], y[j])==kEmpty) continue;
-	  digt=(AliMUONDigit*) fHitMap[cath]->GetHit(x[j], y[j]);
+	  if (fDigitMap[cath]->TestHit(x[j], y[j])==kEmpty) continue;
+	  digt=(AliMUONDigit*) fDigitMap[cath]->GetHit(x[j], y[j]);
 	  Float_t a1;
 	  isec=fSeg2[cath]->Sector(fInput->DetElemId(), x[j], y[j]);
 	  a1 = fSeg2[cath]->Dpx(fInput->DetElemId(),isec)*fSeg2[cath]->Dpy(fInput->DetElemId(), isec);
@@ -1059,9 +1061,9 @@ void AliMUONClusterFinderVS::FindLocalMaxima(AliMUONRawCluster* /*c*/)
 		  // skip the current pad
 		  if (iy == fIy[i][cath]) continue;
 		
-		  if (fHitMap[cath]->TestHit(ix, iy)!=kEmpty) {
+		  if (fDigitMap[cath]->TestHit(ix, iy)!=kEmpty) {
 		    iNN++;
-		    digt=(AliMUONDigit*) fHitMap[cath]->GetHit(ix,iy);
+		    digt=(AliMUONDigit*) fDigitMap[cath]->GetHit(ix,iy);
 		    if (digt->Signal() > fQ[i][cath]) isLocal[i][cath]=kFALSE;
 		  }
 		} // Loop over pad neighbours in y
@@ -1124,9 +1126,9 @@ void AliMUONClusterFinderVS::FindLocalMaxima(AliMUONRawCluster* /*c*/)
 		  // skip the current pad
 		  if (ix == fIx[i][cath]) continue;
 		
-		  if (fHitMap[cath]->TestHit(ix, iy)!=kEmpty) {
+		  if (fDigitMap[cath]->TestHit(ix, iy)!=kEmpty) {
 		    iNN++;
-		    digt=(AliMUONDigit*) fHitMap[cath]->GetHit(ix,iy);
+		    digt=(AliMUONDigit*) fDigitMap[cath]->GetHit(ix,iy);
 		    if (digt->Signal() > fQ[i][cath]) isLocal[i][cath]=kFALSE;
 		  }
 		} // Loop over pad neighbours in x
@@ -1297,8 +1299,8 @@ void  AliMUONClusterFinderVS::FindCluster(Int_t i, Int_t j, Int_t cath, AliMUONR
 //  Add i,j as element of the cluster
 //
     
-    Int_t idx = fHitMap[cath]->GetHitIndex(i,j);
-    AliMUONDigit* dig = (AliMUONDigit*) fHitMap[cath]->GetHit(i,j);
+    Int_t idx = fDigitMap[cath]->GetHitIndex(i,j);
+    AliMUONDigit* dig = (AliMUONDigit*) fDigitMap[cath]->GetHit(i,j);
     Int_t q=dig->Signal();
     Int_t theX=dig->PadX();
     Int_t theY=dig->PadY(); 
@@ -1354,7 +1356,7 @@ void  AliMUONClusterFinderVS::FindCluster(Int_t i, Int_t j, Int_t cath, AliMUONR
     c.AddCharge(cath,q);
 //
 // Flag hit as "taken"  
-    fHitMap[cath]->FlagHit(i,j);
+    fDigitMap[cath]->FlagHit(i,j);
 //
 //  Now look recursively for all neighbours and pad hit on opposite cathode
 //
@@ -1368,7 +1370,7 @@ void  AliMUONClusterFinderVS::FindCluster(Int_t i, Int_t j, Int_t cath, AliMUONR
 	ix=xList[in];
 	iy=yList[in];
 	
-	if (fHitMap[cath]->TestHit(ix,iy)==kUnused) {
+	if (fDigitMap[cath]->TestHit(ix,iy)==kUnused) {
 	    AliDebug(2,Form("\n Neighbours %d %d %d", cath, ix, iy));
 	    FindCluster(ix, iy, cath, c);
 	}
@@ -1405,7 +1407,7 @@ void  AliMUONClusterFinderVS::FindCluster(Int_t i, Int_t j, Int_t cath, AliMUONR
 	
 	ix = fSeg2[iop]->Ix(); iy = fSeg2[iop]->Iy();
 	AliDebug(2,Form("\n ix, iy: %f %f %f %d %d %d", x,y,z,ix, iy, fSector));
-	if (fHitMap[iop]->TestHit(ix,iy)==kUnused){
+	if (fDigitMap[iop]->TestHit(ix,iy)==kUnused){
 	  iXopp[nOpp]=ix;
 	  iYopp[nOpp++]=iy;
 	  AliDebug(2,Form("\n Opposite %d %d %d", iop, ix, iy));
@@ -1416,7 +1418,7 @@ void  AliMUONClusterFinderVS::FindCluster(Int_t i, Int_t j, Int_t cath, AliMUONR
     //
     Int_t jopp;
     for (jopp=0; jopp<nOpp; jopp++) {
-      if (fHitMap[iop]->TestHit(iXopp[jopp],iYopp[jopp]) == kUnused) 
+      if (fDigitMap[iop]->TestHit(iXopp[jopp],iYopp[jopp]) == kUnused) 
 	FindCluster(iXopp[jopp], iYopp[jopp], iop, c);
     }
 
@@ -1435,28 +1437,40 @@ void AliMUONClusterFinderVS::FindRawClusters()
 //  Return if no input datad available
     if (!fInput->NDigits(0) && !fInput->NDigits(1)) return;
 
+    AliMpPlaneType plane1, plane2;
+
     fSeg2[0] = fInput->Segmentation2(0);
     fSeg2[1] = fInput->Segmentation2(1);
     
-    fHitMap[0]  = new AliMUONHitMapA1(fInput->DetElemId(), fSeg2[0], fInput->Digits(0));
-    fHitMap[1]  = new AliMUONHitMapA1(fInput->DetElemId(), fSeg2[1], fInput->Digits(1));
+    if ( fSeg2[0]->GetDirection(fInput->DetElemId()) ==  kDirY || 
+	 fSeg2[0]->GetDirection(fInput->DetElemId()) ==  kDirUndefined ) {
+      plane1 = kBendingPlane;
+      plane2 = kNonBendingPlane;
+    } else {
+      plane2 = kBendingPlane;
+      plane1 = kNonBendingPlane;
+    }
+    
+    fDigitMap[0]  = new AliMUONDigitMapA1(fInput->DetElemId(), plane1);
+    fDigitMap[1]  = new AliMUONDigitMapA1(fInput->DetElemId(), plane2);
     
     AliMUONDigit *dig;
 
     Int_t ndig, cath;
     Int_t nskip=0;
     Int_t ncls=0;
-    fHitMap[0]->FillHits();
-    fHitMap[1]->FillHits();
+
+    fDigitMap[0]->FillHits(fInput->Digits(0));
+    fDigitMap[1]->FillHits(fInput->Digits(1));
 //
 //  Outer Loop over Cathodes
-    for (cath=0; cath<2; cath++) {
+    for (cath = 0; cath < 2; cath++) {
       
 	for (ndig=0; ndig<fInput->NDigits(cath); ndig++) {
 	  dig = fInput->Digit(cath, ndig);
 	  Int_t padx = dig->PadX();
 	  Int_t pady = dig->PadY();
-	  if (fHitMap[cath]->TestHit(padx,pady)==kUsed ||fHitMap[0]->TestHit(padx,pady)==kEmpty) {
+	  if (fDigitMap[cath]->TestHit(padx,pady)==kUsed ||fDigitMap[0]->TestHit(padx,pady)==kEmpty) {
 	    nskip++;
 	    continue;
 	  }
@@ -1528,8 +1542,8 @@ void AliMUONClusterFinderVS::FindRawClusters()
 	
 	} // end loop ndig
     } // end loop cathodes
-    delete fHitMap[0];
-    delete fHitMap[1];
+    delete fDigitMap[0];
+    delete fDigitMap[1];
 }
 
 Float_t AliMUONClusterFinderVS::SingleMathiesonFit(AliMUONRawCluster *c, Int_t cath)
@@ -1818,7 +1832,7 @@ Float_t AliMUONClusterFinderVS::CombiDoubleMathiesonFit(AliMUONRawCluster * /*c*
 	 fSeg2[1]->NextPad(fInput->DetElemId()))
       {
 	ix=fSeg2[1]->Ix(); iy=fSeg2[1]->Iy();
-	//	if (fHitMap[1]->TestHit(ix, iy) == kEmpty) continue;
+	//	if (fDigitMap[1]->TestHit(ix, iy) == kEmpty) continue;
 	fSeg2[1]->GetPadC(fInput->DetElemId(),ix,iy,upper[0],ydum,zdum);	
 	if (icount ==0) lower[0]=upper[0];
 	icount++;
@@ -1834,7 +1848,7 @@ Float_t AliMUONClusterFinderVS::CombiDoubleMathiesonFit(AliMUONRawCluster * /*c*
 	 fSeg2[0]->NextPad(fInput->DetElemId()))
       {
 	ix=fSeg2[0]->Ix(); iy=fSeg2[0]->Iy();
-	//	if (fHitMap[0]->TestHit(ix, iy) == kEmpty) continue;
+	//	if (fDigitMap[0]->TestHit(ix, iy) == kEmpty) continue;
 	fSeg2[0]->GetPadC(fInput->DetElemId(),ix,iy,xdum,upper[1],zdum);	
 	if (icount ==0) lower[1]=upper[1];
 	icount++;
@@ -1861,7 +1875,7 @@ Float_t AliMUONClusterFinderVS::CombiDoubleMathiesonFit(AliMUONRawCluster * /*c*
 	 fSeg2[1]->NextPad(fInput->DetElemId()))
       {
 	ix=fSeg2[1]->Ix(); iy=fSeg2[1]->Iy();
-	//	if (fHitMap[1]->TestHit(ix, iy) == kEmpty) continue;
+	//	if (fDigitMap[1]->TestHit(ix, iy) == kEmpty) continue;
 	fSeg2[1]->GetPadC(fInput->DetElemId(),ix,iy,upper[2],ydum,zdum);	
 	if (icount ==0) lower[2]=upper[2];
 	icount++;
@@ -1876,7 +1890,7 @@ Float_t AliMUONClusterFinderVS::CombiDoubleMathiesonFit(AliMUONRawCluster * /*c*
 	 fSeg2[0]->NextPad(fInput->DetElemId()))
       {
 	ix=fSeg2[0]->Ix(); iy=fSeg2[0]->Iy();
-	//	if (fHitMap[0]->TestHit(ix, iy) != kEmpty) continue;
+	//	if (fDigitMap[0]->TestHit(ix, iy) != kEmpty) continue;
 	
 	fSeg2[0]->GetPadC(fInput->DetElemId(),ix,iy,xdum,upper[3],zdum);	
 	if (icount ==0) lower[3]=upper[3];

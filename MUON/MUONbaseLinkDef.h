@@ -36,7 +36,6 @@
 #pragma link C++ class AliMUONData+; 
 #pragma link C++ class AliMUONPoints+; 
 #pragma link C++ class AliMUONHit+; 
-#pragma link C++ class AliMUONHitMapA1+; 
 #pragma link C++ class AliMUONRawCluster+;
 #pragma link C++ class AliMUONDigit+; 
 #pragma link C++ class AliMUONTransientDigit+;

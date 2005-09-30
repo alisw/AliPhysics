@@ -20,7 +20,6 @@ SRCS:=  AliMUON.cxx AliMUONv1.cxx \
         AliMUONData.cxx \
         AliMUONPoints.cxx \
         AliMUONHit.cxx \
-        AliMUONHitMapA1.cxx \
         AliMUONDigit.cxx \
         AliMUONTransientDigit.cxx \
         AliMUONRawCluster.cxx \

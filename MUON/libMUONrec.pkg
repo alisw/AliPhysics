@@ -1,6 +1,7 @@
 # $Id$
 
 SRCS:= AliMUONClusterReconstructor.cxx \
+       AliMUONDigitMapA1.cxx \
        AliMUONClusterFinderVS.cxx \
        AliMUONClusterFinderAZ.cxx \
        AliMUONPixel.cxx \
