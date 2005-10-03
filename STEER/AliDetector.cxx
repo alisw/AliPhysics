@@ -307,7 +307,10 @@ void AliDetector::LoadPoints(Int_t)
   for (Int_t hit=0;hit<nhits;hit++) {
     ahit = dynamic_cast<AliHit*>(fHits->UncheckedAt(hit));
     trk=ahit->GetTrack();
-    if(trk>tracks) AliFatal(Form("Found track number %d, max track %d",trk, tracks));
+    if(trk>tracks) {
+      AliError(Form("Found track number %d, max track %d",trk, tracks));
+      continue;
+    }
     if(ntrk[trk]==limi[trk])
      {
       //
