@@ -571,24 +571,51 @@ void TFlukaConfigOption::ProcessCUTELE()
 
 void TFlukaConfigOption::ProcessCUTNEU()
 {
-    // Cut on neutral hadrons
-    fprintf(fgFile,"*\n*Cut for neutral hadrons. CUTNEU = %13.4g\n", fCutValue[kCUTNEU]);
-    if (fMedium == -1) {
-	Float_t cut = fCutValue[kCUTNEU];
-	//
-	// 8.0 = Neutron
-	// 9.0 = Antineutron
-	//
-	// If the cut is > 19.6 MeV it is assumed the low energy neutron transport is requested.
-	// In this case the cut has to coincide with the upper  limit of the first energy group.
-	//
-	Float_t neutronCut = cut;
-	if (neutronCut < 0.0196) {
-	    neutronCut = 0.0196;
-	    printf("Cut on neutron lower than upper limit of first energy group.\n");
-	    printf("Cut reset to 19.6 MeV !\n");
-	}
-	fprintf(fgFile,"PART-THR  %10.4g%10.1f%10.1f\n", -neutronCut,  8.0,  9.0);
+  // Cut on neutral hadrons
+  fprintf(fgFile,"*\n*Cut for neutral hadrons. CUTNEU = %13.4g\n", fCutValue[kCUTNEU]);
+  
+  // Cut on neutral hadrons
+  fprintf(fgFile,"*\n*Cut for neutral hadrons. CUTNEU = %13.4g\n", fCutValue[kCUTNEU]);
+  
+  // Energy group structure of the 72-neutron ENEA data set:
+  const Float_t neutronGroupUpLimit[72] = {
+    1.9600E-02, 1.7500E-02, 1.4918E-02, 1.3499E-02, 1.2214E-02, 1.1052E-02, 1.0000E-02, 9.0484E-03,
+    8.1873E-03, 7.4082E-03, 6.7032E-03, 6.0653E-03, 5.4881E-03, 4.9659E-03, 4.4933E-03, 4.0657E-03,
+    3.6788E-03, 3.3287E-03, 3.0119E-03, 2.7253E-03, 2.4660E-03, 2.2313E-03, 2.0190E-03, 1.8268E-03,
+    1.6530E-03, 1.4957E-03, 1.3534E-03, 1.2246E-03, 1.1080E-03, 1.0026E-03, 9.0718E-04, 8.2085E-04,
+    7.4274E-04, 6.0810E-04, 4.9787E-04, 4.0762E-04, 3.3373E-04, 2.7324E-04, 2.2371E-04, 1.8316E-04,
+    1.4996E-04, 1.2277E-04, 8.6517E-05, 5.2475E-05, 3.1828E-05, 2.1852E-05, 1.5034E-05, 1.0332E-05,
+    7.1018E-06, 4.8809E-06, 3.3546E-06, 2.3054E-06, 1.5846E-06, 1.0446E-06, 6.8871E-07, 4.5400E-07,
+    2.7537E-07, 1.6702E-07, 1.0130E-07, 6.1442E-08, 3.7267E-08, 2.2603E-08, 1.5535E-08, 1.0677E-08,
+    7.3375E-09, 5.0435E-09, 3.4662E-09, 2.3824E-09, 1.6374E-09, 1.1254E-09, 6.8257E-10, 4.1400E-10
+  };
+
+  Float_t cut = fCutValue[kCUTNEU];
+  //
+  // 8.0 = Neutron
+  // 9.0 = Antineutron
+  // Find the FLUKA neutron group corresponding to the cut
+  //
+  Float_t neutronCut = cut;
+  Int_t groupCut = 1; // if cut is > 19.6 MeV not low energy neutron transport is done
+  if (neutronCut < 0.0196) {
+    neutronCut = 0.0196;
+    // Search the group cutoff for the energy cut
+    Int_t i;
+    for( i=0; i<72; i++ ) {
+      if (cut > neutronGroupUpLimit[i]) break;
+    }
+    groupCut = i+1;
+  } 
+  
+  if (fMedium == -1) {
+        Float_t cut = fCutValue[kCUTNEU];
+        // 8.0 = Neutron
+        // 9.0 = Antineutron
+        fprintf(fgFile,"PART-THR  %10.4g%10.1f%10.1f\n", -neutronCut,  8.0,  9.0);
+        fprintf(fgFile,"LOW-BIAS  %10.4g%10.4g%10.1f%10.1f%10.1f%10.1f\n",
+		Float_t(groupCut), 73.0, 0.95, 2., Float_t(fgGeom->NofVolumes()), 1.);
+        //
 	//
 	// 12.0 = Kaon zero long
 	fprintf(fgFile,"PART-THR  %10.4g%10.1f%10.1f\n", -cut, 12.0, 12.0);
@@ -617,7 +644,17 @@ void TFlukaConfigOption::ProcessCUTNEU()
 	// 62.0 = AntiOmega_c zero
 	fprintf(fgFile,"PART-THR  %10.4g%10.1f%10.1f\n", -cut, 61.0, 62.0);
     } else {
-	printf("Cuts on neutral hadrons material by material not yet implemented !\n");
+        Int_t nreg, *reglist;
+        Float_t ireg;
+        reglist = fgGeom->GetMaterialList(fMedium, nreg);
+        // Loop over regions of a given material
+        for (Int_t k = 0; k < nreg; k++) {
+	  ireg = reglist[k];
+	  fprintf(fgFile,"LOW-BIAS  %10.4g%10.4g%10.1f%10.1f%10.1f%10.1f\n",
+		  Float_t(groupCut), 73.0, 0.95, ireg, ireg, 1.);
+	}
+
+	printf("Cuts on neutral hadrons material by material only implemented for low-energy neutrons !\n");
     }
 }
 
@@ -657,7 +694,7 @@ void TFlukaConfigOption::ProcessCUTHAD()
 	// 58.0 = AntiXi_c minus
 	fprintf(fgFile,"PART-THR  %10.4g%10.1f%10.1f\n", -cut, 57.0, 58.0);
     } else {
-	printf("Cuts on charged hadrons material by material not yet implemented !\n");
+      printf("Cuts on charged hadrons material by material not yet implemented !\n"); 
     }
 }
 
