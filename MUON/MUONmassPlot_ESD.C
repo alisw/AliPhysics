@@ -101,6 +101,9 @@ TH1F *hInvMassRes;
 
   // settings
   Int_t EventInMass = 0;
+  Int_t EventInMassMatch = 0;
+  Int_t NbTrigger = 0;
+
   Float_t muonMass = 0.105658389;
 //   Float_t UpsilonMass = 9.46037;
 //   Float_t JPsiMass = 3.097;
@@ -259,8 +262,18 @@ TH1F *hInvMassRes;
 	      hInvMassAll->Fill(invMass);
 	      hInvMassRes->Fill(invMass);
 	      hInvMassAll_vs_Pt->Fill(invMass,fVtot.Pt());
+	      Int_t ptTrig;
+	      if (ResType == 553) 
+		ptTrig =  0x400;// mask for Hpt unlike sign pair
+	      else 
+		ptTrig =  0x200;// mask for Lpt unlike sign pair
+
+	      if (esd->GetTrigger() &  ptTrig) NbTrigger++; 
 	      if (invMass > massMin && invMass < massMax) {
 		EventInMass++;
+		if (muonTrack->GetMatchTrigger() && (esd->GetTrigger() & ptTrig))// match with trigger
+		  EventInMassMatch++;
+
   		hRapResonance->Fill(fVtot.Rapidity());
   		hPtResonance->Fill(fVtot.Pt());
 	      }
@@ -313,16 +326,10 @@ TH1F *hInvMassRes;
   histoFile->Write();
   histoFile->Close();
 
-  cout << "MUONmassPlot " << endl;
-  cout << "FirstEvent " << FirstEvent << endl;
-  cout << "LastEvent " << LastEvent << endl;
-  cout << "ResType " << ResType << endl;
-  cout << "Chi2Cut " << Chi2Cut << endl;
-  cout << "PtCutMin " << PtCutMin << endl;
-  cout << "PtCutMax " << PtCutMax << endl;
-  cout << "massMin " << massMin << endl;
-  cout << "massMax " << massMax << endl;
+  cout << endl;
   cout << "EventInMass " << EventInMass << endl;
+  cout << "NbTrigger " << NbTrigger << endl;
+  cout << "EventInMass match with trigger " << EventInMassMatch << endl;
 
   return kTRUE;
 }
