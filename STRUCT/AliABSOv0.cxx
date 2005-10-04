@@ -116,7 +116,7 @@ void AliABSOv0::CreateGeometry()
     fMLayers[1][2] = fMLayers[0][1];      fZLayers[1][2] = fZLayers[0][1];
     fMLayers[1][3] = fMLayers[0][2];      fZLayers[1][3] = fZLayers[0][2];
     fMLayers[1][4] = fMLayers[0][3];      fZLayers[1][4] = fZLayers[0][3];
-    fMLayers[1][5] = kNiCuW;              fZLayers[1][5] = fZLayers[0][4];
+    fMLayers[1][5] = kNiCuW+40;           fZLayers[1][5] = fZLayers[0][4];
 //    
 
     Float_t dTube = 0.1;                     // tube thickness
@@ -156,7 +156,7 @@ void AliABSOv0::CreateGeometry()
   par[3] =  - par[21];
   par[4] = kZRear  * TMath::Tan(kAccMin);
   par[5] = par[8] - (par[3] - par[6]) * TMath::Tan(kAccMax);
-  gMC->Gsvolu("ABSS", "PCON", idtmed[kPb], par, 24);
+  gMC->Gsvolu("ABSS", "PCON", idtmed[kPb+40], par, 24);
 
   for (Int_t i = 22; i > 7; i -= 3) par[i]  = 0;
 
@@ -430,15 +430,15 @@ void AliABSOv0::CreateGeometry()
   par[2]  =   8.0;
   par[3]  =   4.0;
     
-  par[13]  = - kZRear;
+  par[13]  = - kZRear + 20.;
   par[14]  = 100.;
   par[15]  = 180.;
   
-  par[10]  = - kZRear - 20.;
+  par[10]  = - kZRear;
   par[11]  = 100.;
   par[12]  = 180.;
 
-  par[7] = - kZRear - 20.;
+  par[7] = - kZRear;
   par[8] = 178.;
   par[9] = 180.;
 
