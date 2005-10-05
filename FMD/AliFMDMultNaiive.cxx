@@ -140,7 +140,7 @@ AliFMDMultNaiive::Adc2Energy(AliFMDDigit* /* digit */,
   //           ADC_channel_size    
   // 
   // is constant and the same for all strips. 
-  Double_t theta = 2 * TMath::Tan(TMath::Exp(-eta));
+  Double_t theta = 2 * TMath::ATan(TMath::Exp(-eta));
   Double_t edep  = TMath::Abs(TMath::Cos(theta)) * fGain * count;
   return edep;
 }
