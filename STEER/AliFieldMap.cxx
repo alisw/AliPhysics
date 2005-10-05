@@ -225,15 +225,15 @@ void AliFieldMap::Field(Float_t *x, Float_t *b) const
     xl[1] = x[1] - fYbeg;
     xl[2] = x[2] - fZbeg;
     
-    hix=xl[0]*fXdeli;
+    hix=TMath::Max(0.,TMath::Min(xl[0]*fXdeli,fXn-1.0001));
     ratx=hix-int(hix);
     ix=int(hix);
     
-    hiy=xl[1]*fYdeli;
+    hiy=TMath::Max(0.,TMath::Min(xl[1]*fYdeli,fYn-1.0001));
     raty=hiy-int(hiy);
     iy=int(hiy);
     
-    hiz=xl[2]*fZdeli;
+    hiz=TMath::Max(0.,TMath::Min(xl[2]*fZdeli,fZn-1.0001));
     ratz=hiz-int(hiz);
     iz=int(hiz);
 
