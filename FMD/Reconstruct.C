@@ -24,7 +24,7 @@ Reconstruct()
   rec.SetRunLocalReconstruction("FMD");
   rec.SetRunVertexFinder(kFALSE);
   // rec.SetRunTracking(kFALSE); 
-  rec.SetFillESD(""); 
+  rec.SetFillESD("FMD"); 
   rec.SetInput("./");
   rec.Run(); 
 }

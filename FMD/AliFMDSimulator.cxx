@@ -367,6 +367,7 @@ AliFMDSimulator::Exec(Option_t* /* option */)
   //   - ENDIF
   //     
   TVirtualMC* mc = TVirtualMC::GetMC();
+  static int nCall = 0;
   
   if (!mc->IsTrackAlive()) return;
   if (TMath::Abs(mc->TrackCharge()) <= 0) return;
@@ -374,11 +375,12 @@ AliFMDSimulator::Exec(Option_t* /* option */)
   Int_t copy;
   Int_t vol = mc->CurrentVolID(copy);
   if (vol != fInnerId && vol != fOuterId) {
-    AliDebug(15, Form("Not an FMD volume %d '%s' (%d or %d)", 
+    AliDebug(25, Form("Not an FMD volume %d '%s' (%d or %d)", 
 		      vol, mc->CurrentVolName(), fInnerId, fOuterId));
     return;
   }
 
+  nCall++;
   // Check that the track is actually within the active area 
   Bool_t entering = mc->IsTrackEntering();
   Bool_t inside   = mc->IsTrackInside();
@@ -388,7 +390,10 @@ AliFMDSimulator::Exec(Option_t* /* option */)
   // Reset the energy deposition for this track, and update some of
   // our parameters.
   if (entering) {
-    AliDebug(15, "Entering active FMD volume");
+    AliDebug(15, Form("Track # %8d entering active FMD volume %s: "
+		      "Edep=%f (call # %d)", 
+		      gAlice->GetMCApp()->GetCurrentTrackNumber(),
+		      mc->CurrentVolPath(), 1000 * mc->Edep(), nCall));
     fCurrentDeltaE = 0;
 
     // Get production vertex and momentum of the track 
@@ -398,15 +403,19 @@ AliFMDSimulator::Exec(Option_t* /* option */)
   }
   
   // If the track is inside, then update the energy deposition
-  if (inside && fCurrentDeltaE >= 0) 
-    AliDebug(15, "Inside active FMD volume");
+  if (inside && fCurrentDeltaE >= 0) {
     fCurrentDeltaE += 1000 * mc->Edep();
-
+    AliDebug(15, Form("Track # %8d inside active FMD volume %s: Edep=%f, "
+		      "Accumulated Edep=%f (call # %d)", 
+		      gAlice->GetMCApp()->GetCurrentTrackNumber(),
+		      mc->CurrentVolPath(), 1000 * mc->Edep(), 
+		      fCurrentDeltaE, nCall));
+  }
+  
   // The track exits the volume, or it disappeared in the volume, or
   // the track is stopped because it no longer fulfills the cuts
   // defined, then we create a hit. 
   if (out && fCurrentDeltaE >= 0) {
-    AliDebug(15, Form("Leaving active FMD volume %s", mc->CurrentVolPath()));
 
     Int_t strip = copy - 1;
     Int_t sectordiv;
@@ -436,6 +445,11 @@ AliFMDSimulator::Exec(Option_t* /* option */)
     }
     sector--;
     fCurrentDeltaE += 1000 * mc->Edep();
+    AliDebug(15, Form("Track # %8d leaving active FMD volume %s: Edep=%f, "
+		      "Accumulated Edep=%f (call # %d nCall)", 
+		      gAlice->GetMCApp()->GetCurrentTrackNumber(),
+		      mc->CurrentVolPath(), 
+		      1000 * mc->Edep(), fCurrentDeltaE, nCall));
 
     AliDebug(20, Form("Processing hit in FMD%d%c[%2d,%3d]: %f", 
 		      detector, ring, sector, strip, fCurrentDeltaE));

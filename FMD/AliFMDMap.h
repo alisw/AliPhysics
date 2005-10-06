@@ -27,6 +27,7 @@ public:
 	    size_t maxSec = kMaxSectors, 
 	    size_t maxStr = kMaxStrips);
   virtual ~AliFMDMap() {}
+  Int_t CheckIndex(size_t det, Char_t ring, size_t sec, size_t str) const;
 protected:
   size_t CalcIndex(size_t det, Char_t ring, size_t sec, size_t str) const;
   size_t fMaxDetectors;             // Maximum # of detectors

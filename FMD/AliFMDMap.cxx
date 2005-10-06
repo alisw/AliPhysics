@@ -46,7 +46,21 @@ AliFMDMap::AliFMDMap(size_t maxDet,
   //     maxStr       Maximum # of strips
 }
 
+//____________________________________________________________________
+Int_t 
+AliFMDMap::CheckIndex(size_t det, Char_t ring, size_t sec, size_t str) const
+{
+  // Check that the index supplied is OK.   Returns true index, or -1
+  // on error. 
+  size_t ringi = (ring == 'I' ||  ring == 'i' ? 0 : 1);
+  size_t idx = 
+    (det + fMaxDetectors * (ringi + fMaxRings * (sec + fMaxSectors * str)));
+  if (idx >= fMaxDetectors * fMaxRings * fMaxSectors * fMaxStrips) 
+    return -1;
+  return idx;
+}
 
+    
 //____________________________________________________________________
 size_t 
 AliFMDMap::CalcIndex(size_t det, Char_t ring, size_t sec, size_t str) const
@@ -61,19 +75,18 @@ AliFMDMap::CalcIndex(size_t det, Char_t ring, size_t sec, size_t str) const
   //
   // Returns appropriate index into storage 
   //
-  size_t ringi = (ring == 'I' ||  ring == 'i' ? 0 : 1);
-  size_t idx = 
-    (det + fMaxDetectors * (ringi + fMaxRings * (sec + fMaxSectors * str)));
-  if (idx >= fMaxDetectors * fMaxRings * fMaxSectors * fMaxStrips) {
+  Int_t idx = CheckIndex(det, ring, sec, str);
+  if (idx < 0) {
+    size_t ringi = (ring == 'I' ||  ring == 'i' ? 0 : 1);
     Fatal("CalcIndex", "Index (%d,'%c',%d,%d) out of bounds, "
-	  "in particular the %s index", 
+	  "in particular the %s index ", 
 	  det, ring, sec, str, 
 	  (det >= fMaxDetectors ? "Detector" : 
 	   (ringi >= fMaxRings ? "Ring" : 
 	    (sec >= fMaxSectors ? "Sector" : "Strip"))));
     return 0;
   }
-  return idx;
+  return size_t(idx);
 }
 
 

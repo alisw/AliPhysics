@@ -1,9 +1,15 @@
 void DrawFMD()
 {
+  gSystem->Load("/usr/lib/libshift");
+  gSystem->Load("/usr/lib/libgfortran");
+  gSystem->Load("libgeant321");
+  gMC = new TGeant3TGeo;
    gMC->Gsatt("*", "seen", -1);
    gMC->Gsatt("alic", "seen", 0);
    gROOT->LoadMacro("FMD/ViewFMD.C");
    gInterpreter->ProcessLine("ViewFMD()");
+   gROOT->LoadMacro("ITS/ViewITS.C");
+   gInterpreter->ProcessLine("ViewITS()");
    gMC->Gdopt("hide", "on");
    gMC->Gdopt("shad", "on");
    gMC->Gsatt("*", "fill", 7);

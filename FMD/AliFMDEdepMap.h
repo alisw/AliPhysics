@@ -16,7 +16,7 @@
 //____________________________________________________________________
 class AliFMDEdepHitPair 
 {
- public:
+public:
   Float_t  fEdep;
   UShort_t fN;
   AliFMDEdepHitPair() : fEdep(0), fN(0) {}

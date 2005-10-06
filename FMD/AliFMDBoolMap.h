@@ -20,9 +20,9 @@ class AliFMDBoolMap : public AliFMDMap
 public:
   AliFMDBoolMap(const AliFMDBoolMap& other);
   AliFMDBoolMap(size_t maxDet  = kMaxDetectors,
-                 size_t maxRing = kMaxRings,
-                 size_t maxSec  = kMaxSectors,
-                 size_t maxStr  = kMaxStrips);
+		size_t maxRing = kMaxRings,
+		size_t maxSec  = kMaxSectors,
+		size_t maxStr  = kMaxStrips);
   virtual ~AliFMDBoolMap() { delete [] fData; }
   AliFMDBoolMap& operator=(const AliFMDBoolMap& other);
   virtual void Reset(const Bool_t& v=Bool_t());
