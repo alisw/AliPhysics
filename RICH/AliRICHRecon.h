@@ -88,6 +88,7 @@ public :
   Float_t GetPhotonEta()                            const{ return fPhotonEta[fPhotonIndex];}        //
   Float_t GetPhotonWeight()                         const{ return fPhotonWeight[fPhotonIndex];}     //
   Float_t GetHoughRMS()                             const{ return fHoughRMS;}                       //
+  Double_t GetPhotBKG()                             const{ return fnPhotBKG;}                       //
   Float_t GetFittedTrackTheta()                     const{ return fFittedTrackTheta;}               //
   Float_t GetFittedTrackPhi()                       const{ return fFittedTrackPhi;}                 //
   Float_t GetFittedThetaCerenkov()                  const{ return fFittedThetaCerenkov;}            //
@@ -135,6 +136,7 @@ public :
   void SetPhotonEta(Float_t PhotonEta) { fPhotonEta[fPhotonIndex] = PhotonEta;}                     //
   void SetPhotonFlag(Int_t PhotonFlag) { fPhotonFlag[fPhotonIndex] = PhotonFlag;}                   //
   void SetPhotonWeight(Float_t PhotonWeight) { fPhotonWeight[fPhotonIndex] = PhotonWeight;}         //
+  void SetPhotBKG(Double_t nPhotBKG) {fnPhotBKG=nPhotBKG;}                                          //
   void SetHoughRMS(Float_t HoughRMS) { fHoughRMS = HoughRMS;}                                       //
   void SetMipIndex(Int_t MipIndex) { fMipIndex = MipIndex;}                                         //
   void SetTrackIndex(Int_t TrackIndex) { fTrackIndex = TrackIndex;}                                 //
@@ -212,7 +214,6 @@ protected:
   Float_t fFittedTrackTheta;                  // theta track after minim.
   Float_t fFittedTrackPhi;                    // phi track after minim.
   Float_t fFittedThetaCerenkov;               // thetacerenkov after minim.
-  Int_t   fThetaBin;                          // bin in theta
   Float_t fThetaMin,fThetaMax;                // min max
   Float_t fXmin,fXmax,fYmin,fYmax;            // xy min max
   Int_t   fNrings;                            //current number of reconstructed rings
@@ -228,6 +229,7 @@ protected:
   Int_t   fEtaFlag[3000];                     // flag for good photons
   Float_t fEtaPhotons[3000];                  // Cerenkov angle each photon
   Float_t fWeightPhotons[3000];               // weight for each photon
+  Double_t fnPhotBKG;                         // # estimated BKG photons in the ring
   Float_t fThetaCerenkov;                     // Theta angle for Hough
   Float_t fWeightThetaCerenkov;               // Theta Cerenkov angle weighted
   Float_t fThetaPeakPos;                      // Peak position

@@ -114,7 +114,10 @@ public:
   static Double_t IonisationPotential()      {return 26.0e-9;}                            //for CH4 in GeV taken from ????
   static TVector2 MathiesonDelta()           {return TVector2(5*0.18,5*0.18);}            //area of 5 sigmas of Mathieson distribution (cm)
   static Int_t    MaxQdc()                   {return 4095;}                               //QDC number of channels          
-  
+
+  static Int_t    QthMIP()                   {return 100;}
+  static Double_t DmatchMIP()                {return 1.;}
+  static Double_t PmodMax()                  {return 6.5;}
   static Int_t    HV(Int_t sector)           {if (sector>=1 && sector <=6) return fgHV[sector-1];  else return -1;} //high voltage for this sector
   static void     SetHV(Int_t sector,Int_t hv){fgHV[sector-1]=hv;}  
 //charge response methodes  
@@ -135,7 +138,8 @@ public:
                                                     -2.66575e-3*TMath::Sin(4*TMath::Pi()/PadSizeX()*x)
                                                     +2.80553e-3*TMath::Sin(6*TMath::Pi()/PadSizeX()*x)+0.0070;}
          static void     ReadErrFiles();                                                                  //Read Err file parameters
-         static TVector3 SigmaSinglePhoton(Int_t Npart, Double_t mom, Double_t theta, Double_t phi);      //Find Sigma for single photon
+         static TVector3 SigmaSinglePhoton(Int_t Npart, Double_t mom, Double_t theta, Double_t phi);      //Find Sigma for single photon from momentum and particle id
+         static TVector3 SigmaSinglePhoton(Double_t thetaCer, Double_t theta, Double_t phi);              //Fing sigma for single photon from thetacer
          static Double_t Interpolate(Double_t par[4][330],Double_t x, Double_t y, Double_t phi);          //Find the error value from interpolation
          
          static TVector3 ForwardTracing(TVector3 entranceTrackPoint,TVector3 vectorTrack, Double_t thetaC, Double_t phiC); //it traces foward a photon from Emission Point to PC

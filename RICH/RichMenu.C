@@ -107,7 +107,8 @@ void MenuRich()
   pMenu->AddButton("Event Summary  "  ,"r->SummaryOfEvent();" ,"????");  
   pMenu->AddButton("Hits plots"       ,"r->ControlPlots()"    ,"????");
   pMenu->AddButton("Recon with stack" ,"r->CheckPR()", "Create RSR.root with ntuple hn");    
-  pMenu->AddButton("RichAna"          ,"r->RichAna()", "Create RichAna.root with ntuple hn");    
+  pMenu->AddButton("RichAna no Recon" ,"r->RichAna(0,kFALSE)", "Create RichAna.root with ntuple hn without PatRec");    
+  pMenu->AddButton("RichAna with Recon","r->RichAna(0,kTRUE)", "Create RichAna.root with ntuple hn with PatRec");    
   pMenu->Show();  
 }//TestMenu()
 //__________________________________________________________________________________________________

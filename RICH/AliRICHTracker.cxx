@@ -35,6 +35,7 @@ Int_t AliRICHTracker::PropagateBack(AliESD *pESD)
 void AliRICHTracker::RecWithESD(AliESD *pESD,AliRICH *pRich,Int_t iTrackN)
 {
 //recontruction from ESD- primary way to reconstruct particle ID signal from tracks provided by core detectors
+    fnPhotBKG = 0;
 
     Double_t fField=GetFieldMap()->SolenoidField()/10;// magnetic field in Tesla
     AliESDtrack *pTrack = pESD->GetTrack(iTrackN);// get next reconstructed track
@@ -70,7 +71,7 @@ void AliRICHTracker::RecWithESD(AliESD *pESD,AliRICH *pRich,Int_t iTrackN)
 //
 // HERE CUTS ON GOLD RINGS....
 //
-    if(distMip>1||chargeMip<100) {
+    if(distMip>AliRICHParam::DmatchMIP()||chargeMip<AliRICHParam::QthMIP()) {
       //track not accepted for pattern recognition
       pTrack->SetRICHsignal(-999.); //to be improved by flags...
       return;
@@ -85,7 +86,9 @@ void AliRICHTracker::RecWithESD(AliESD *pESD,AliRICH *pRich,Int_t iTrackN)
     pTrack->SetRICHthetaPhi(helix.Ploc().Theta(),helix.Ploc().Phi());
     pTrack->SetRICHsignal(thetaCerenkov);
     pTrack->SetRICHnclusters(recon.GetHoughPhotons());
-    
+
+    fnPhotBKG = recon.GetPhotBKG();
+        
     AliDebug(1,Form("FINAL Theta Cerenkov=%f",pTrack->GetRICHsignal()));
 //
     if(pTrack->GetRICHsignal()>0) {
@@ -98,12 +101,15 @@ void AliRICHTracker::RecWithESD(AliESD *pESD,AliRICH *pRich,Int_t iTrackN)
         for(Int_t iphot=0;iphot<pRich->Clusters(iChamber)->GetEntries();iphot++) {
           recon.SetPhotonIndex(iphot);
           if(recon.GetPhotonFlag() == 2) {
-            Double_t sigma = AliRICHParam::SigmaSinglePhoton(iPart,pTrack->GetP(),recon.GetTrackTheta(),recon.GetPhiPoint()-recon.GetTrackPhi()).Mag();
+            Double_t theta_g=recon.GetTrackTheta();
+            Double_t phi_g=(recon.GetPhiPoint()-recon.GetTrackPhi());
+            Double_t sigma = AliRICHParam::SigmaSinglePhoton(iPart,pTrack->GetP(),theta_g,phi_g).Mag(); 
             sigmaPID[iPart] += 1/(sigma*sigma);
           }
         }
 	if (sigmaPID[iPart]>0)
-	  sigmaPID[iPart] = 1/TMath::Sqrt(sigmaPID[iPart])*0.001;
+          sigmaPID[iPart] *= (Double_t)(recon.GetHoughPhotons()-fnPhotBKG)/(Double_t)(recon.GetHoughPhotons()); // n total phots, m are background...the sigma are scaled..
+	  sigmaPID[iPart] = 1/TMath::Sqrt(sigmaPID[iPart])*0.001; // sigma from parametrization are in mrad...
           fErrPar[iPart]=sigmaPID[iPart];
         AliDebug(1,Form("sigma for %s is %f rad",AliPID::ParticleName(iPart),sigmaPID[iPart]));
       }

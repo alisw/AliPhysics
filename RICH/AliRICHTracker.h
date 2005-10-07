@@ -24,6 +24,7 @@ public:
   void RecWithStack(TNtupleD *hn);                                              //recon from Stack in case ESD empty
   void CalcProb(Double_t thetaCer,Double_t pmod,Double_t *sigmaPID, Double_t *richPID);             // calculate pid for RICH
   Int_t LoadClusters(TTree *);                                                  //pure virtual from AliTracker 
+  Double_t fnPhotBKG;                                                           //Temporary stored for debug purpose
   Double_t fErrPar[5];                                                          //Temporary stored for debug purpose
 protected:
 

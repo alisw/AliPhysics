@@ -879,7 +879,7 @@ void AliRICH::CheckPR()const
   pFile->Write();pFile->Close();
 }
 //__________________________________________________________________________________________________
-void AliRICH::RichAna()
+void AliRICH::RichAna(Int_t nNevMax,Bool_t askPatRec)
 {
   TFile *pFile=TFile::Open("AliESDs.root","read");
   if(!pFile || !pFile->IsOpen()) {AliInfo("ESD file not open.");return;}      //open AliESDs.root                                                                    
@@ -892,10 +892,11 @@ void AliRICH::RichAna()
 //  AliTracker::SetFieldMap(magf);
 
   TFile *pFileRA = new TFile("$(HOME)/RichAna.root","RECREATE","RICH Pattern Recognition");
-  TNtupleD *hn = new TNtupleD("hn","ntuple","Pmod:Charge:TrackTheta:TrackPhi:MinX:MinY:ThetaCerenkov:NPhotons:ChargeMIP:Chamber:TOF:LengthTOF:prob1:prob2:prob3:ErrPar1:ErrPar2:ErrPar3:Th1:Th2:Th3");
-   
+  TNtupleD *hn = new TNtupleD("hn","ntuple","Pmod:Charge:TrackTheta:TrackPhi:MinX:MinY:ThetaCerenkov:NPhotons:ChargeMIP:Chamber:TOF:LengthTOF:prob1:prob2:prob3:ErrPar1:ErrPar2:ErrPar3:Th1:Th2:Th3:nPhotBKG");
+  if(nNevMax==0) nNevMax=999999;
+  if(GetLoader()->GetRunLoader()->GetNumberOfEvents()<nNevMax) nNevMax = GetLoader()->GetRunLoader()->GetNumberOfEvents();
   AliESD *pESD=new AliESD;  pTree->SetBranchAddress("ESD", &pESD);
-  for(Int_t iEvtN=0;iEvtN<GetLoader()->GetRunLoader()->GetNumberOfEvents();iEvtN++) {
+  for(Int_t iEvtN=0;iEvtN<nNevMax;iEvtN++) {
     pTree->GetEvent(iEvtN);
     AliRICH *pRich=((AliRICH*)gAlice->GetDetector("RICH"));
     pRich->GetLoader()->GetRunLoader()->GetEvent(iEvtN);
@@ -908,7 +909,7 @@ void AliRICH::RichAna()
       for(Int_t iTrackN=0;iTrackN<iNtracks;iTrackN++){//ESD tracks loop
         if(iTrackN%100==0)Info("RichAna",Form("Track %i to be processed",iTrackN));
         AliRICHTracker *pTrRich = new AliRICHTracker();
-        pTrRich->RecWithESD(pESD,pRich,iTrackN);
+        if(askPatRec==kTRUE) pTrRich->RecWithESD(pESD,pRich,iTrackN);
         AliESDtrack *pTrack = pESD->GetTrack(iTrackN);// get next reconstructed track
         Double_t dx,dy;
         Double_t hnvec[30];
@@ -941,6 +942,7 @@ void AliRICH::RichAna()
           if(cosThetaTh>=1) continue;
           hnvec[18+i]= TMath::ACos(cosThetaTh);
         }
+        hnvec[21]=pTrRich->fnPhotBKG;
         hn->Fill(hnvec);
       }
     }

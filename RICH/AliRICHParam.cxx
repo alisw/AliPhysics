@@ -300,14 +300,50 @@ TVector3 AliRICHParam::SigmaSinglePhoton(Int_t partID, Double_t mom, Double_t th
   Double_t mass = fgMass[partID];
   Double_t massRef = fgMass[4]; // all the files are calculated for protons...so mass ref is proton mass
   pmom = mom*massRef/mass; // normalized momentum respect to proton...
-  if(pmom>6.5) pmom = 6.5;
-  Double_t oneOverRefIndex = 1/RefIdxC6F14(6.755);
+  if(pmom>PmodMax()) pmom = PmodMax();
+  Double_t oneOverRefIndex = 1/RefIdxC6F14(MeanCkovEnergy());
   Double_t pmin = mass*oneOverRefIndex/TMath::Sqrt(1-oneOverRefIndex*oneOverRefIndex);
   if(pmom<pmin) return v;
-  v.SetX(Interpolate(fgErrChrom,pmom,theta,phi));
-  v.SetY(Interpolate(fgErrGeom,pmom,theta,phi));
-  v.SetZ(Interpolate(fgErrLoc,pmom,theta,phi));
-  v*=1.5; // take into account bigger errors due to multiplicity...to change in future
+  Double_t Theta = theta*TMath::RadToDeg();
+  if(phi<0) phi+=TMath::TwoPi();
+  Double_t Phi = phi*TMath::RadToDeg();
+  v.SetX(Interpolate(fgErrChrom,pmom,Theta,Phi));
+  v.SetY(Interpolate(fgErrGeom,pmom,Theta,Phi));
+  v.SetZ(Interpolate(fgErrLoc,pmom,Theta,Phi));
+//  v*=1.5; // take into account bigger errors due to multiplicity...to change in future
+
+  return v;
+}//SigmaSinglePhoton
+//__________________________________________________________________________________________________
+TVector3 AliRICHParam::SigmaSinglePhoton(Double_t thetaCer, Double_t theta, Double_t phi)
+
+{
+// Find sigma for single photon. It returns the thrree different errors. If you want
+// to have the error---> TVector3.Mag()
+// partID = 0,1,2,3,4 ---> e,mu,pi,k,p in agreement with AliPID
+  TVector3 v(-999,-999,-999);
+  Double_t pmom;
+
+  ReadErrFiles();
+  Double_t massRef = fgMass[4]; // all the files are calculated for protons...so mass ref is proton mass
+  Double_t beta=1./(RefIdxC6F14(MeanCkovEnergy())*TMath::Cos(thetaCer));
+  if(beta>=1) {
+    pmom=6.5; // above physical limi the error is calculated at the saturation...
+  } else {
+    Double_t gamma=1./TMath::Sqrt(1-beta*beta);
+    pmom = beta*gamma*massRef; // normalized momentum respect to proton...
+  }
+  if(pmom>PmodMax()) pmom = PmodMax();
+  Double_t oneOverRefIndex = 1/RefIdxC6F14(MeanCkovEnergy());
+  Double_t pmin = massRef*oneOverRefIndex/TMath::Sqrt(1-oneOverRefIndex*oneOverRefIndex);
+  if(pmom<pmin) return v;
+  Double_t Theta = theta*TMath::RadToDeg();
+  if(phi<0) phi+=TMath::TwoPi();
+  Double_t Phi = phi*TMath::RadToDeg();
+  v.SetX(Interpolate(fgErrChrom,pmom,Theta,Phi));
+  v.SetY(Interpolate(fgErrGeom,pmom,Theta,Phi));
+  v.SetZ(Interpolate(fgErrLoc,pmom,Theta,Phi));
+//  v*=1.5; // take into account bigger errors due to multiplicity...to change in future
 
   return v;
 }//SigmaSinglePhoton

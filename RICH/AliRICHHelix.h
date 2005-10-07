@@ -22,6 +22,7 @@ public:
          TVector2 PosAnod()               const{return fPosAnod;}         //returns position of intersection with anod wires plane (local system)
          TVector2 PosPc()                 const{return fPosPc;}           //returns position of intersection with PC (local system)
          TVector3 Ploc()                  const{return fPloc;}            //returns momentum at the position of intersection with radiator   
+         Double_t Length()                const{return fLen;}             //returns length of the track from initial point to RICH
          void     Print(Option_t *sOption)const; //virtual interface from TObject
 protected:
   TVector3 fX0;            //helix position in parametrised point, cm    in MRS

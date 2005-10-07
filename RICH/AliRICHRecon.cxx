@@ -26,6 +26,7 @@
 #include <TRotation.h>
 #include <TVector3.h>
 #include <TH1F.h>
+#include <TROOT.h>
 
 #include "AliRICH.h"
 #include "AliRICHParam.h"
@@ -43,7 +44,8 @@ AliRICHRecon::AliRICHRecon(AliRICHHelix *pHelix,TClonesArray *pClusters,Int_t iM
   SetFreonScaleFactor(1);
   fIsWEIGHT = kFALSE;
   if(pClusters->GetEntries()>200) fIsWEIGHT = kTRUE; // offset to take into account bkg in reconstruction
-  fThetaBin=750; fThetaMin = 0.0; fThetaMax = 0.75; 
+//  fIsWEIGHT = kTRUE;
+  fThetaMin = 0.0; fThetaMax = 0.75; 
   fDTheta       = 0.001;   fWindowWidth  = 0.045;
   fMinNumPhots = 3;
   fRadiatorWidth = AliRICHParam::Zfreon();
@@ -83,6 +85,7 @@ Double_t AliRICHRecon::ThetaCerenkov()
     SetPhotonEta(-999.);
     SetPhotonWeight(0.);
     if (j == GetMipIndex()) continue; // do not consider MIP cluster as a candidate photon
+//    if(((AliRICHCluster*)fpClusters->UncheckedAt(j))->Q()>AliRICHParam::QthMIP()) continue; // avoid MIP clusters from bkg
     Float_t xtoentr = ((AliRICHCluster*)fpClusters->UncheckedAt(j))->X() - GetShiftX();
     Float_t ytoentr = ((AliRICHCluster*)fpClusters->UncheckedAt(j))->Y() - GetShiftY();
     SetEntranceX(xtoentr);
@@ -796,9 +799,10 @@ Float_t AliRICHRecon::SnellAngle(Float_t n1, Float_t n2, Float_t theta1)
 //__________________________________________________________________________________________________
 void AliRICHRecon::HoughResponse()
 {
-  TH1F *phots = new TH1F("phots","phots",750,0.,0.75);
-  TH1F *photsw = new TH1F("photsw","photsw",750,0.,0.75);
-  TH1F *resultw = new TH1F("resultw","resultw",750,0.,0.75);
+  Int_t nChannels = (Int_t)(fThetaMax/fDTheta+0.5);
+  TH1F *phots = new TH1F("phots","phots",nChannels,0.,fThetaMax);
+  TH1F *photsw = new TH1F("photsw","photsw",nChannels,0.,fThetaMax);
+  TH1F *resultw = new TH1F("resultw","resultw",nChannels,0.,fThetaMax);
   Int_t nPhotons = GetPhotonsNumber();
   Int_t nBin = (Int_t)(fThetaMax/fDTheta);
   Int_t nCorrBand = (Int_t)(fWindowWidth/(2*fDTheta));
@@ -806,7 +810,7 @@ void AliRICHRecon::HoughResponse()
   for (Int_t kPhot=0; kPhot< nPhotons; kPhot++){
     SetPhotonIndex(kPhot);
     Double_t angle = GetPhotonEta();
-    if(angle == -999.) continue;
+    if(angle<0||angle>fThetaMax) continue;
     phots->Fill(angle);
     Int_t bin = (Int_t)(0.5+angle/(fDTheta));
     Double_t weight=1.;
@@ -823,6 +827,7 @@ void AliRICHRecon::HoughResponse()
       Float_t diffarea = area2 - area1;
       if(diffarea>0){weight = 1./(area2-area1);}else{weight = 1.;}
     }
+    AliDebug(1,Form("Calculated weight %f",weight));	    
     photsw->Fill(angle,weight);
     SetPhotonWeight(weight);
   }  
@@ -834,7 +839,7 @@ void AliRICHRecon::HoughResponse()
     Double_t sumPhots=phots->Integral(bin1,bin2);
     if(sumPhots<fMinNumPhots) continue; // cut on minimum n. of photons per ring
     Double_t sumPhotsw=photsw->Integral(bin1,bin2);
-    resultw->Fill((Float_t)(i*fDTheta),sumPhotsw);
+    resultw->Fill((Float_t)((i+0.5)*fDTheta),sumPhotsw);
 } 
 // evaluate the "BEST" thetacerenkov....
   Float_t *pVec = resultw->GetArray();
@@ -853,6 +858,7 @@ void AliRICHRecon::FindThetaCerenkov()
   Float_t weightThetaCerenkov = 0.;
 
   Int_t nPhotons = GetPhotonsNumber();
+  Double_t etaMin=9999.,etaMax=0.;
   for(Int_t i=0;i<nPhotons;i++)
     {
       SetPhotonIndex(i);
@@ -860,23 +866,27 @@ void AliRICHRecon::FindThetaCerenkov()
       if(GetPhotonFlag() == 2)
 	{
 	  Float_t photonEta = GetPhotonEta();
+          if(photonEta<etaMin) etaMin=photonEta;
+          if(photonEta>etaMax) etaMax=photonEta;
 	  Float_t photonWeight = GetPhotonWeight();
 	  weightThetaCerenkov += photonEta*photonWeight;
 	  wei += photonWeight;
 	}
     }
 
-  if(wei != 0.) 
-    {
-      weightThetaCerenkov /= wei;
-    }
-  else
-    {
-      weightThetaCerenkov = 0.;
-    }
-  
+  if(wei != 0.) weightThetaCerenkov /= wei; else weightThetaCerenkov = 0.;  
   SetThetaCerenkov(weightThetaCerenkov);
 
+  // estimate of the n. of bkg photons
+  SetThetaOfRing(etaMin); FindAreaAndPortionOfRing(); Double_t internalArea = GetAreaOfRing();
+  SetThetaOfRing(etaMax); FindAreaAndPortionOfRing(); Double_t externalArea = GetAreaOfRing();
+
+  Double_t effArea = (AliRICHParam::PcSizeX()-AliRICHParam::DeadZone())*(AliRICHParam::PcSizeY()-2*AliRICHParam::DeadZone());
+  Double_t nPhotBKG = (externalArea-internalArea)/effArea*fpClusters->GetEntries();
+  if(nPhotBKG<0) nPhotBKG=0; //just protection from funny angles...
+  SetPhotBKG(nPhotBKG);
+  //
+  
   AliDebug(1,Form(" thetac weighted -> %f",weightThetaCerenkov));
 }
 //__________________________________________________________________________________________________
@@ -905,6 +915,10 @@ void AliRICHRecon::FlagPhotons()
 
   //  for(Int_t i=0;i<candidatePhotonsNumber;i++)
 
+//  TH1F* h1_phots = (TH1F*)gROOT->FindObjectAny("h1_phots");
+  
+//  cout << "h1_phots " << h1_phots << endl;
+  
   for(Int_t i=0;i<nPhotons;i++)
     {
       SetPhotonIndex(i);
@@ -917,6 +931,7 @@ void AliRICHRecon::FlagPhotons()
 	{
 	  SetPhotonFlag(2);
 	  nPhotonHough++;
+//          if(h1_phots)h1_phots->Fill(photonEta);
 	}
     }
   SetHoughPhotons(nPhotonHough);

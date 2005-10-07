@@ -84,7 +84,7 @@ public:
   void            PrintTracks  (Int_t iEvent=0);                        //prints a list of tracks for a given event
   void            CheckPR      ()const;                                 //utility-> run staff for stack ??????     
   void            ReadESD(Int_t iEventN, Int_t iChamber)const;
-  void            RichAna      ();                                      //utility-> reconstruct ESD rings outside ESD
+  void            RichAna      (Int_t nNevMax=99999,Bool_t askPatRec=kFALSE); //utility-> create ntuples for analysis
   void            DrawRing(TVector3 entrance,TVector3 vectorTrack,Double_t thetaCer)const;
 
 protected:  
