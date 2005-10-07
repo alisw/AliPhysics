@@ -57,7 +57,7 @@ void AliRICHDigitizer::Exec(Option_t*)
   AliRICH      *pOutRich       = (AliRICH*)pOutRunLoader->GetAliRun()->GetDetector("RICH");      //take output RICH
   pOutRichLoader->MakeTree("D");   pOutRich->MakeBranch("D");                                    //create TreeD in output stream
   
-  TVector pad(2); pad[0]=0; pad[1]=0; Int_t iChamber=0,iCfm=0,aTids[3]={0,0,0},iId=0; Double_t dQdc=0;//current pad info   
+  TVector pad(2); pad[0]=0; pad[1]=0; Int_t iChamber=0,iCfm=0,aTids[3]={0,0,0},iId=-1; Double_t dQdc=0;//current pad info   
   Int_t iNdigsPerPad=0;                   //how many sdigits for a given pad
   for(Int_t i=0;i<tmpCA.GetEntries();i++){//sdigits loop (sorted)
     AliRICHDigit *pSdig=(AliRICHDigit*)tmpCA.At(i);//get new sdigit
@@ -65,7 +65,7 @@ void AliRICHDigitizer::Exec(Option_t*)
       iNdigsPerPad++;         dQdc+=pSdig->Qdc();      iCfm+=pSdig->Cfm();//sum up charge and cfm
       if(pSdig->Cfm()==1) aTids[0] = pSdig->GetTrack(0); // force the first tid to be mip's tid if it exists in the current pad
       if(iNdigsPerPad<=3)        aTids[iNdigsPerPad-1]=pSdig->GetTrack(0);
-      else                         AliDebug(1,Form("More then 3 sdigits for the given pad X:%3.0f Y:%3.0f",pSdig->Pad()(0),pSdig->Pad()(1)));
+      else                         AliDebug(1,Form("More then 3 sdigits in (%d,%d,%f,%f) with Q= %f",pSdig->Chamber(),pSdig->Sector(),pSdig->Pad()(0),pSdig->Pad()(1),pSdig->Qdc()));
     }else{//new pad, add the pevious one
         if(iId!=-1 && AliRICHParam::IsOverTh(iChamber,pad,dQdc)) pOutRich->DigitAdd(iChamber,pad,(Int_t)dQdc,iCfm,aTids); //add newly created dig
         iChamber=pSdig->Chamber(); pad=pSdig->Pad(); iCfm=pSdig->Cfm(); dQdc=pSdig->Qdc();  iId=pSdig->PadAbs();                    //init all values by current sdig
