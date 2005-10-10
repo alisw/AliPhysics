@@ -81,6 +81,7 @@ void AliEMCALGeometry::Init(void){
   fArm1EtaMin     = -0.7;	// pseudorapidity, Starting EMCAL Eta position
   fArm1EtaMax     = +0.7;	// pseudorapidity, Ending EMCAL Eta position
   fIPDistance     = 454.0;      // cm, Radial distance to inner surface of EMCAL
+  fPhiGapForSM    = 0.;         // cm, only for final TRD1 geometry
 
   // geometry
   if (name == "EMCAL_55_25") {
@@ -97,7 +98,11 @@ void AliEMCALGeometry::Init(void){
     Fatal("Init", "%s is an old geometry! Please update your Config file", name.Data()) ;
   }
   else if(name.Contains("SHISH")){
-    fNumberOfSuperModules = 12; // 12 = 6 * 2 (6 in phi, 2 in Z);
+    // 7-sep-05; integration issue
+    fArm1PhiMin     = 80.0;	// 60  -> 80
+    fArm1PhiMax     = 180.0;	// 180 -> 200
+
+    fNumberOfSuperModules = 10; // 12 = 6 * 2 (6 in phi, 2 in Z);
     fSteelFrontThick = 2.54;    //  9-sep-04
     fIPDistance      = 460.0;
     fFrontSteelStrip = fPassiveScintThick = 0.0; // 13-may-05
@@ -126,7 +131,8 @@ void AliEMCALGeometry::Init(void){
 // http://pdsfweb01.nersc.gov/~pavlinov/ALICE/SHISHKEBAB/RES/linearityAndResolutionForTRD1.html
       if(name.Contains("TRD1")) {       // 30-jan-05
 	// for final design
-        if(name.Contains("MAY05") || name.Contains("WSUC")){
+        fPhiGapForSM    = 2.;         // cm, only for final TRD1 geometry
+        if(name.Contains("MAY05") || name.Contains("WSUC") || name.Contains("FINAL")){
           fNumberOfSuperModules = 12; // 20-may-05
           if(name.Contains("WSUC")) fNumberOfSuperModules = 1; // 27-may-05
           fNECLayers     = 77;       // (13-may-05 from V.Petrov)
@@ -138,6 +144,12 @@ void AliEMCALGeometry::Init(void){
           fPassiveScintThick = 0.8;  // 0.8cm   = 8mm     (13-may-05 from V.Petrov)
           fNZ                = 24;
           fTrd1Angle         = 1.5;  // 1.3 or 1.5
+
+          if(name.Contains("FINAL")) { // 9-sep-05
+            fNumberOfSuperModules = 10;
+            fPhiModuleSize = 12.26 - fPhiGapForSM / Float_t(fNPhi); // first assumption
+            fEtaModuleSize = fPhiModuleSize;
+          }
 	}
       } else if(name.Contains("TRD2")) {       // 30-jan-05
         fSteelFrontThick = 0.0;         // 11-mar-05
@@ -214,7 +226,7 @@ void AliEMCALGeometry::Init(void){
   
   if (kTRUE) {
     printf("Init: geometry of EMCAL named %s is as follows:\n", name.Data());
-    printf( "               ECAL      : %d x (%f mm Pb, %f mm Sc) \n", GetNECLayers(), GetECPbRadThick(), GetECScintThick() ) ; 
+    printf( "               ECAL      : %d x (%f cm Pb, %f cm Sc) \n", GetNECLayers(), GetECPbRadThick(), GetECScintThick() ) ; 
     if(name.Contains("SHISH")){
       printf(" fIPDistance       %6.3f cm \n", fIPDistance);
       if(fSteelFrontThick>0.) 
@@ -239,9 +251,11 @@ void AliEMCALGeometry::Init(void){
       if(name.Contains("TRD2")) {
         printf(" fTrd2AngleY     %7.4f\n", fTrd2AngleY);
         printf(" f2Trd2Dy2       %7.4f\n", f2Trd2Dy2);
-        printf(" fTubsR          %7.2f\n", fTubsR);
+        printf(" fTubsR          %7.2f cm\n", fTubsR);
         printf(" fTubsTurnAngle  %7.4f\n", fTubsTurnAngle);
-        printf(" fEmptySpace     %7.4f\n", fEmptySpace);
+        printf(" fEmptySpace     %7.4f cm\n", fEmptySpace);
+      } else if(name.Contains("TRD1") && name.Contains("FINAL")){
+        printf(" fPhiGapForSM  %7.4f cm \n",  fPhiGapForSM);
       }
     }
     printf("Granularity: %d in eta and %d in phi\n", GetNZ(), GetNPhi()) ;

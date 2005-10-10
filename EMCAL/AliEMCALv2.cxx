@@ -73,12 +73,14 @@ AliEMCALv2::AliEMCALv2(const char *name, const char *title): AliEMCALv1(name,tit
     fTimeCut  = 30e-09;
 
     fGeometry = GetGeometry(); 
-    fHDe = 0;
+    fHDe = fHNhits = 0;
     //    if (gDebug>0){
     if (1){
       TH1::AddDirectory(0);
       fHDe = new TH1F("fHDe","De in EMCAL", 1000, 0., 1.);
+      fHNhits = new TH1F("fHNhits","#hits in EMCAL", 1001, -0.5, 1000.5);
       fHistograms->Add(fHDe);
+      fHistograms->Add(fHNhits);
       TH1::AddDirectory(1);
     }
 }
@@ -262,6 +264,7 @@ void AliEMCALv2::StepManager(void){
 void AliEMCALv2::FinishEvent()
 { // 26-may-05
   static double de=0.;
+  fHNhits->Fill(double(fHits->GetEntries()));
   de = GetDepositEnergy(0);
   if(fHDe) fHDe->Fill(de);
 }
@@ -302,7 +305,8 @@ void AliEMCALv2::DrawCalorimeterCut(const char *name, int axis, double dcut)
   if(sn.Contains("SCM")) colo=5;
   SetVolumeAttributes(name, 1, colo, fill);
 
-  TString st("Shish-Kebab, Compact, zcut , ");
+  TString st(GetTitle());
+  st += ", zcut, ";
   st += name;
 
   char *optShad = "on", *optHide="on";

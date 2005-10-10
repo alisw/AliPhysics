@@ -135,20 +135,20 @@ void AliEMCAL::CreateMaterials()
   Float_t sxmgmx = gAlice->Field()->Max() ;
 
   // Air                                                                         -> idtmed[1599]
- AliMedium(0, "Air          $", 0, 0,
+ AliMedium(0, "Air$", 0, 0,
 	     isxfld, sxmgmx, 10.0, 1.0, 0.1, 0.1, 10.0, 0, 0) ;
 
   // The Lead                                                                      -> idtmed[1600]
  
-  AliMedium(1, "Lead      $", 1, 0,
+  AliMedium(1, "Lead$", 1, 0,
 	     isxfld, sxmgmx, 10.0, 0.1, 0.1, 0.1, 0.1, 0, 0) ;
 
  // The scintillator of the CPV made of Polystyrene scintillator                   -> idtmed[1601]
-  AliMedium(2, "CPV scint.   $", 2, 1,
+  AliMedium(2, "Scintillator$", 2, 1,
             isxfld, sxmgmx, 10.0, 0.001, 0.1, 0.001, 0.001, 0, 0) ;
 
   // Various Aluminium parts made of Al                                            -> idtmed[1602]
-  AliMedium(3, "Al parts     $", 3, 0,
+  AliMedium(3, "Al$", 3, 0,
              isxfld, sxmgmx, 10.0, 0.1, 0.1, 0.001, 0.001, 0, 0) ;
 
   // 25-aug-04 by PAI : see  PMD/AliPMDv0.cxx for STEEL definition                 -> idtmed[1603]
@@ -158,36 +158,62 @@ void AliEMCAL::CreateMaterials()
 // --- Set decent energy thresholds for gamma and electron tracking
 
   // Tracking threshold for photons and electrons in Lead 
-  gMC->Gstpar(idtmed[1600],"CUTGAM",0.00008) ;
-  gMC->Gstpar(idtmed[1600],"CUTELE",0.001) ;
-  gMC->Gstpar(idtmed[1600],"BCUTE",0.0001) ;
+  Float_t cutgam=10.e-5; // 100 kev;
+  Float_t cutele=10.e-5; // 100 kev;
+  TString ntmp(GetTitle()); 
+  ntmp.ToUpper();
+  if(ntmp.Contains("10KEV")) {
+    cutele = cutgam = 1.e-5;
+  } else if(ntmp.Contains("50KEV")) {
+    cutele = cutgam = 5.e-5;
+  } else if(ntmp.Contains("100KEV")) {
+    cutele = cutgam = 1.e-4;
+  } else if(ntmp.Contains("200KEV")) {
+    cutele = cutgam = 2.e-4;
+  } else if(ntmp.Contains("500KEV")) {
+    cutele = cutgam = 5.e-4;
+  }
 
+  gMC->Gstpar(idtmed[1600],"CUTGAM", cutgam);
+  gMC->Gstpar(idtmed[1600],"CUTELE", cutele); // 1MEV -> 0.1MEV; 15-aug-05
+  gMC->Gstpar(idtmed[1600],"BCUTE",  cutgam);  // BCUTE and BCUTM start from GUTGUM
+  gMC->Gstpar(idtmed[1600],"BCUTM",  cutgam);  // BCUTE and BCUTM start from GUTGUM
   // --- Generate explicitly delta rays in Lead ---
   gMC->Gstpar(idtmed[1600], "LOSS",3.) ;
   gMC->Gstpar(idtmed[1600], "DRAY",1.) ;
-  gMC->Gstpar(idtmed[1600], "DCUTE",0.00001) ;
-  gMC->Gstpar(idtmed[1600], "DCUTM",0.00001) ;
+  gMC->Gstpar(idtmed[1600], "DCUTE", cutele) ;
+  gMC->Gstpar(idtmed[1600], "DCUTM", cutele) ;
 
 // --- in aluminium parts ---
+  gMC->Gstpar(idtmed[1602],"CUTGAM", cutgam) ;
+  gMC->Gstpar(idtmed[1602],"CUTELE", cutele) ;
+  gMC->Gstpar(idtmed[1602],"BCUTE",  cutgam);  // BCUTE and BCUTM start from GUTGUM
+  gMC->Gstpar(idtmed[1602],"BCUTM",  cutgam);  // BCUTE and BCUTM start from GUTGUM
   gMC->Gstpar(idtmed[1602], "LOSS",3.) ;
   gMC->Gstpar(idtmed[1602], "DRAY",1.) ;
-  gMC->Gstpar(idtmed[1602], "DCUTE",0.00001) ;
-  gMC->Gstpar(idtmed[1602], "DCUTM",0.00001) ;
+  gMC->Gstpar(idtmed[1602], "DCUTE", cutele) ;
+  gMC->Gstpar(idtmed[1602], "DCUTM", cutele) ;
 
 // --- and finally thresholds for photons and electrons in the scintillator ---
-  gMC->Gstpar(idtmed[1601],"CUTGAM",0.00008) ;
-  gMC->Gstpar(idtmed[1601],"CUTELE",0.001) ;
-  gMC->Gstpar(idtmed[1601],"BCUTE",0.0001) ;
+  gMC->Gstpar(idtmed[1601],"CUTGAM", cutgam) ;
+  gMC->Gstpar(idtmed[1601],"CUTELE", cutele) ;// 1MEV -> 0.1MEV; 15-aug-05
+  gMC->Gstpar(idtmed[1601],"BCUTE",  cutgam);  // BCUTE and BCUTM start from GUTGUM
+  gMC->Gstpar(idtmed[1601],"BCUTM",  cutgam);  // BCUTE and BCUTM start from GUTGUM
+  gMC->Gstpar(idtmed[1601], "LOSS",3.) ; // generate delta rays 
+  gMC->Gstpar(idtmed[1601], "DRAY",1.) ;
+  gMC->Gstpar(idtmed[1601], "DCUTE", cutele) ;
+  gMC->Gstpar(idtmed[1601], "DCUTM", cutele) ;
 
-  // the same parameters as for Pb - 10-sep-04
-  gMC->Gstpar(idtmed[1603],"CUTGAM",0.00008) ;
-  gMC->Gstpar(idtmed[1603],"CUTELE",0.001) ;
-  gMC->Gstpar(idtmed[1603],"BCUTE", 0.0001); 
-  // --- Generate explicitly delta rays in Lead ---
+  // S steel - 
+  gMC->Gstpar(idtmed[1603],"CUTGAM", cutgam);
+  gMC->Gstpar(idtmed[1603],"CUTELE", cutele);
+  gMC->Gstpar(idtmed[1603],"BCUTE",  cutgam);  // BCUTE and BCUTM start from GUTGUM
+  gMC->Gstpar(idtmed[1603],"BCUTM",  cutgam);  // BCUTE and BCUTM start from GUTGUM
+  // --- Generate explicitly delta rays 
   gMC->Gstpar(idtmed[1603], "LOSS",3.);
   gMC->Gstpar(idtmed[1603], "DRAY",1.);
-  gMC->Gstpar(idtmed[1603], "DCUTE",0.00001);
-  gMC->Gstpar(idtmed[1603], "DCUTM",0.00001);
+  gMC->Gstpar(idtmed[1603], "DCUTE", cutele) ;
+  gMC->Gstpar(idtmed[1603], "DCUTM", cutele) ;
 
   //set constants for Birk's Law implentation
   fBirkC0 =  1;

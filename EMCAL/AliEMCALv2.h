@@ -67,6 +67,7 @@ public:
 
   AliEMCALGeometry* fGeometry; //!
   TH1F*             fHDe;      //!
+  TH1F*             fHNhits;      //!
 
   ClassDef(AliEMCALv2,1)    //Implementation of EMCAL manager class to produce hits in a Shish-Kebab
     

@@ -39,6 +39,7 @@ class AliEMCAL : public AliDetector {
   virtual void  Copy(AliEMCAL & emcal) ; 
   virtual AliDigitizer* CreateDigitizer(AliRunDigitizer* manager) const;
   virtual void  CreateMaterials() ;   
+  //  virtual void  
   virtual void  Digits2Raw();
   virtual void  FinishRun() {}                  
   virtual AliEMCALGeometry * GetGeometry() const 

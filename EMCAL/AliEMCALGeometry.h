@@ -80,6 +80,7 @@ public:
   Bool_t IsInECA(Int_t index) const { if ( (index > 0 && (index <= GetNZ() * GetNPhi()))) return kTRUE; else return kFALSE ;}
 
   Int_t   GetNumberOfSuperModules() {return fNumberOfSuperModules;}
+  Float_t GetfPhiGapForSuperModules() {return fPhiGapForSM;}
   Float_t GetPhiModuleSize() const  {return fPhiModuleSize;}
   Float_t GetEtaModuleSize() const  {return fEtaModuleSize;}
   Float_t GetFrontSteelStrip() const {return fFrontSteelStrip;}
@@ -183,6 +184,7 @@ private:
   // TRD1 options - 30-sep-04
   Float_t fTrd1Angle;                    // angle in x-z plane (in degree) 
   Float_t f2Trd1Dx2;                     // 2*dx2 for TRD1
+  Float_t fPhiGapForSM;                  // Gap betweeen supermodules in phi direction
   // TRD2 options - 27-jan-07
   Float_t fTrd2AngleY;                   // angle in y-z plane (in degree) 
   Float_t f2Trd2Dy2;                     // 2*dy2 for TRD2
