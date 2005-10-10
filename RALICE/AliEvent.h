@@ -50,22 +50,23 @@ class AliEvent : public AliVertex,public AliTimestamp
   void AddDevice(TObject* d) { if (d) AddDevice(*d); }
   Int_t GetNdevices() const;              // Provide the number of devices
   void ShowDevices(Int_t mode=1) const;   // Provide on overview of the available devices
+  TObjArray* GetDevices(const char* classname); // Provide references to the devices derived from the specified class
   TObject* GetDevice(Int_t i) const;      // Provide i-th device of the event
   TObject* GetDevice(TString name) const; // Provide the device with name "name"
   TObject* GetIdDevice(Int_t id) const;   // Provide the device with unique identifier "id"
   Int_t GetNhits(const char* classname);  // Provide number of hits for the specified device class
   TObjArray* GetHits(const char* classname); // Provide refs to all hits of the specified device class 
   AliSignal* GetIdHit(Int_t id,const char* classname); // Provide hit with unique "id" for the specified device class
-  TObjArray* SortHits(const char* classname,TString name,Int_t mode=-1); // Sort hits by named signal value
-  TObjArray* SortHits(const char* classname,Int_t idx=1,Int_t mode=-1);  // Sort hits by indexed signal value
-  void GetExtremes(const char* classname,Float_t& vmin,Float_t& vmax,Int_t idx=1); // Get min. and max. signal value
-  void GetExtremes(const char* classname,Float_t& vmin,Float_t& vmax,TString name);// Get min. and max. signal value
-  void DisplayHits(const char* classname,TString name,Float_t scale=-1,Int_t dp=0,Int_t mstyle=8,Int_t mcol=4);
-  void DisplayHits(const char* classname,Int_t idx=1,Float_t scale=-1,Int_t dp=0,Int_t mstyle=8,Int_t mcol=4);
-  TObjArray* SortDevices(const char* classname,TString name,Int_t mode=-1); // Sort devices by signal value
-  TObjArray* SortDevices(const char* classname,Int_t idx=1,Int_t mode=-1);  // Sort devices by signal value
-  TObjArray* SortDevices(TObjArray* hits,TString name,Int_t mode=-1);       // Sort devices by signal value
-  TObjArray* SortDevices(TObjArray* hits,Int_t idx=1,Int_t mode=-1);        // Sort devices by signal value
+  TObjArray* SortHits(const char* classname,TString name,Int_t mode=-1,Int_t mcal=1); // Sort hits by named signal
+  TObjArray* SortHits(const char* classname,Int_t idx=1,Int_t mode=-1,Int_t mcal=1);  // Sort hits by indexed signal
+  void GetExtremes(const char* classname,Float_t& vmin,Float_t& vmax,Int_t idx=1,Int_t mode=1); // min and max signal
+  void GetExtremes(const char* classname,Float_t& vmin,Float_t& vmax,TString name,Int_t mode=1);// min and max signal
+  void DisplayHits(const char* classname,TString name,Float_t scale=-1,Int_t dp=0,Int_t mode=1,Int_t mcol=4);
+  void DisplayHits(const char* classname,Int_t idx=1,Float_t scale=-1,Int_t dp=0,Int_t mode=1,Int_t mcol=4);
+  TObjArray* SortDevices(const char* classname,TString name,Int_t mode=-1,Int_t mcal=1); // Sort devices by signal
+  TObjArray* SortDevices(const char* classname,Int_t idx=1,Int_t mode=-1,Int_t mcal=1);  // Sort devices by signal
+  TObjArray* SortDevices(TObjArray* hits,TString name,Int_t mode=-1,Int_t mcal=1);       // Sort devices by signal
+  TObjArray* SortDevices(TObjArray* hits,Int_t idx=1,Int_t mode=-1,Int_t mcal=1);        // Sort devices by signal
 
  protected:
   Int_t fRun;                           // The run number
@@ -84,7 +85,8 @@ class AliEvent : public AliVertex,public AliTimestamp
   TObjArray* fHits;                     //! Temp. array to hold references to the registered AliDevice hits
   TObjArray* fOrdered;                  //! Temp. array to hold references to various ordered objects
   TObject* fDisplay;                    //! Temp. pointer to hold objects which serve event displays
+  TObjArray* fDevs;                     //! Temp. array to hold references to user selected devices
 
- ClassDef(AliEvent,19) // Creation and investigation of an Alice physics event.
+ ClassDef(AliEvent,20) // Creation and investigation of an Alice physics event.
 };
 #endif

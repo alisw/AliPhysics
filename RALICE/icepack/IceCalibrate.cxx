@@ -83,7 +83,7 @@ void IceCalibrate::SetCalibFile(TString name)
  fCalfile=new TFile(name.Data());
  if (fCalfile)
  {
-  AliObjMatrix* fOmdb=(AliObjMatrix*)fCalfile->Get("Cal-OMDBASE");
+  fOmdb=(AliObjMatrix*)fCalfile->Get("Cal-OMDBASE");
  }
 }
 ///////////////////////////////////////////////////////////////////////////

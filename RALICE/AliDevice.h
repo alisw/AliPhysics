@@ -32,12 +32,12 @@ class AliDevice : public AliSignal
   virtual void Reset(Int_t mode=0);                  // Reset registered hits and AliSignal attributes
   void ShowHit(Int_t j=0) const;                     // Show data of the j-th hit (j=0 means all hits)
   virtual void Data(TString f="car") const;          // Print device and all signal info for coord. frame f
-  void GetExtremes(Float_t& vmin,Float_t& vmax,Int_t idx=1,TObjArray* hits=0) const; // Get min. and max. signal value
-  void GetExtremes(Float_t& vmin,Float_t& vmax,TString name,TObjArray* hits=0) const;// Get min. and max. signal value
-  TObjArray* SortHits(TString name,Int_t mode=-1,TObjArray* hits=0); // Sort hits by named signal value
-  TObjArray* SortHits(Int_t idx=1,Int_t mode=-1,TObjArray* hits=0);  // Sort hits by indexed signal value
-  void DisplayHits(TString name,Float_t scale=-1,TObjArray* hits=0,Int_t dp=0,Int_t mstyle=8,Int_t mcol=4);// Hit disp.
-  void DisplayHits(Int_t idx=1,Float_t scale=-1,TObjArray* hits=0,Int_t dp=0,Int_t mstyle=8,Int_t mcol=4); // Hit disp.
+  void GetExtremes(Float_t& vmin,Float_t& vmax,Int_t idx=1,TObjArray* hits=0,Int_t mode=1) const;// min and max signal
+  void GetExtremes(Float_t& vmin,Float_t& vmax,TString name,TObjArray* hits=0,Int_t mode=1) const;// min and max signal
+  TObjArray* SortHits(TString name,Int_t mode=-1,TObjArray* hits=0,Int_t mcal=1);// Sort hits by named signal value
+  TObjArray* SortHits(Int_t idx=1,Int_t mode=-1,TObjArray* hits=0,Int_t mcal=1); // Sort hits by indexed signal value
+  void DisplayHits(TString name,Float_t scale=-1,TObjArray* hits=0,Int_t dp=0,Int_t mode=1,Int_t mcol=4);// Hit disp.
+  void DisplayHits(Int_t idx=1,Float_t scale=-1,TObjArray* hits=0,Int_t dp=0,Int_t mode=1,Int_t mcol=4); // Hit disp.
 
  protected:
   Int_t fStatus;       // User definable status word
@@ -46,6 +46,6 @@ class AliDevice : public AliSignal
   TObjArray* fOrdered; //! Temp. array to hold the ordered hits
   TObjArray* fMarkers; //! Temp. array to hold the 3D markers for the hit display
 
- ClassDef(AliDevice,6) // Signal (Hit) handling of a generic device.
+ ClassDef(AliDevice,7) // Signal (Hit) handling of a generic device.
 };
 #endif

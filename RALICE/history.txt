@@ -636,6 +636,9 @@
                 erroneously always returned a null pointer.
 10-aug-2005 NvE AliSignal::GetSignal extended with mode=8 to support dead flag of parent device
                 in conjunction with the dead flag of the signal itself.
-               
-                
- 
+07-oct-2005 NvE Support for the extended AliSignal::GetSignal (de)calibration facilities
+                introduced in memberfunctions SortHits, GetExtremes, Displayhits and SortDevices
+                of classes AliDevice and AliEvent.
+                Note : For DisplayHits this new signal correction mode replaces the marker style
+                       specification parameter. 
+                Also new memberfunction GetDevices introduced in AliEvent.

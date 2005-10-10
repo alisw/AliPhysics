@@ -394,14 +394,17 @@ void AliDevice::Data(TString f) const
  }
 }
 ///////////////////////////////////////////////////////////////////////////
-void AliDevice::GetExtremes(Float_t& vmin,Float_t& vmax,Int_t idx,TObjArray* hits) const
+void AliDevice::GetExtremes(Float_t& vmin,Float_t& vmax,Int_t idx,TObjArray* hits,Int_t mode) const
 {
 // Provide the min. and max. signal values of an array of hits.
 // The input argument "idx" denotes the index of the signal slots to be investigated.
 // The default is idx=1;
 // In case hits=0 (default), the registered hits of the current device are used. 
 // Signals which were declared as "Dead" will be rejected.
-// The gain etc... corrected signals will be used in the process.
+// The gain etc... corrected signals will be used in the process as specified
+// by the  "mode" argument. The definition of this "mode" parameter corresponds to
+// the description provided in the GetSignal memberfunction of class AliSignal.
+// The default is mode=1 (for backward compatibility reasons).
 
  vmin=0;
  vmax=0;
@@ -421,7 +424,7 @@ void AliDevice::GetExtremes(Float_t& vmin,Float_t& vmax,Int_t idx,TObjArray* hit
   if (idx > sx->GetNvalues()) continue; // User specified slotindex out of range for this signal
   if (sx->GetDeadValue(idx)) continue;  // Only take alive signals
 
-  sig=sx->GetSignal(idx,1);
+  sig=sx->GetSignal(idx,mode);
   if (i==0)
   {
    vmin=sig;
@@ -435,13 +438,16 @@ void AliDevice::GetExtremes(Float_t& vmin,Float_t& vmax,Int_t idx,TObjArray* hit
  }
 }
 ///////////////////////////////////////////////////////////////////////////
-void AliDevice::GetExtremes(Float_t& vmin,Float_t& vmax,TString name,TObjArray* hits) const
+void AliDevice::GetExtremes(Float_t& vmin,Float_t& vmax,TString name,TObjArray* hits,Int_t mode) const
 {
 // Provide the min. and max. signal values of an array of hits.
 // The input argument "name" denotes the name of the signal slots to be investigated.
 // In case hits=0 (default), the registered hits of the current device are used. 
 // Signals which were declared as "Dead" will be rejected.
-// The gain etc... corrected signals will be used in the process.
+// The gain etc... corrected signals will be used in the process as specified
+// by the  "mode" argument. The definition of this "mode" parameter corresponds to
+// the description provided in the GetSignal memberfunction of class AliSignal.
+// The default is mode=1 (for backward compatibility reasons).
 
  vmin=0;
  vmax=0;
@@ -467,7 +473,7 @@ void AliDevice::GetExtremes(Float_t& vmin,Float_t& vmax,TString name,TObjArray* 
 
   if (sx->GetDeadValue(idx)) continue; // Only take alive signals
 
-  sig=sx->GetSignal(idx,1);
+  sig=sx->GetSignal(idx,mode);
   if (i==0)
   {
    vmin=sig;
@@ -481,7 +487,7 @@ void AliDevice::GetExtremes(Float_t& vmin,Float_t& vmax,TString name,TObjArray* 
  }
 }
 ///////////////////////////////////////////////////////////////////////////
-TObjArray* AliDevice::SortHits(Int_t idx,Int_t mode,TObjArray* hits)
+TObjArray* AliDevice::SortHits(Int_t idx,Int_t mode,TObjArray* hits,Int_t mcal)
 {
 // Order the references to an array of hits by looping over the input array "hits"
 // and checking the signal value. The ordered array is returned as a TObjArray.
@@ -494,7 +500,11 @@ TObjArray* AliDevice::SortHits(Int_t idx,Int_t mode,TObjArray* hits)
 // order (mode=-1) or ordering in increasing order (mode=1).
 // The default is mode=-1.
 // Signals which were declared as "Dead" will be rejected.
-// The gain etc... corrected signals will be used in the ordering process.
+// The gain etc... corrected signals will be used in the ordering process as
+// specified by the "mcal" argument. The definition of this "mcal" parameter
+// corresponds to the signal correction mode described in the GetSignal
+// memberfunction of class AliSignal.
+// The default is mcal=1 (for backward compatibility reasons).
 
  if (fOrdered)
  {
@@ -542,8 +552,8 @@ TObjArray* AliDevice::SortHits(Int_t idx,Int_t mode,TObjArray* hits)
     break; // go for next hit
    }
  
-   if (mode==-1 && s->GetSignal(idx,1) < ((AliSignal*)fOrdered->At(j))->GetSignal(idx,1)) continue;
-   if (mode==1 && s->GetSignal(idx,1) > ((AliSignal*)fOrdered->At(j))->GetSignal(idx,1)) continue;
+   if (mode==-1 && s->GetSignal(idx,mcal) < ((AliSignal*)fOrdered->At(j))->GetSignal(idx,mcal)) continue;
+   if (mode==1 && s->GetSignal(idx,mcal) > ((AliSignal*)fOrdered->At(j))->GetSignal(idx,mcal)) continue;
  
    nord++;
    for (Int_t k=nord-1; k>j; k--) // create empty position
@@ -557,7 +567,7 @@ TObjArray* AliDevice::SortHits(Int_t idx,Int_t mode,TObjArray* hits)
  return fOrdered;
 }
 ///////////////////////////////////////////////////////////////////////////
-TObjArray* AliDevice::SortHits(TString name,Int_t mode,TObjArray* hits)
+TObjArray* AliDevice::SortHits(TString name,Int_t mode,TObjArray* hits,Int_t mcal)
 {
 // Order the references to an array of hits by looping over the input array "hits"
 // and checking the signal value. The ordered array is returned as a TObjArray.
@@ -570,7 +580,11 @@ TObjArray* AliDevice::SortHits(TString name,Int_t mode,TObjArray* hits)
 // order (mode=-1) or ordering in increasing order (mode=1).
 // The default is mode=-1.
 // Signals which were declared as "Dead" will be rejected.
-// The gain etc... corrected signals will be used in the ordering process.
+// The gain etc... corrected signals will be used in the ordering process as
+// specified by the "mcal" argument. The definition of this "mcal" parameter
+// corresponds to the signal correction mode described in the GetSignal
+// memberfunction of class AliSignal.
+// The default is mcal=1 (for backward compatibility reasons).
 
  if (fOrdered)
  {
@@ -623,8 +637,8 @@ TObjArray* AliDevice::SortHits(TString name,Int_t mode,TObjArray* hits)
     break; // go for next hit
    }
  
-   if (mode==-1 && s->GetSignal(idx,1) < ((AliSignal*)fOrdered->At(j))->GetSignal(idx,1)) continue;
-   if (mode==1 && s->GetSignal(idx,1) > ((AliSignal*)fOrdered->At(j))->GetSignal(idx,1)) continue;
+   if (mode==-1 && s->GetSignal(idx,mcal) < ((AliSignal*)fOrdered->At(j))->GetSignal(idx,mcal)) continue;
+   if (mode==1 && s->GetSignal(idx,mcal) > ((AliSignal*)fOrdered->At(j))->GetSignal(idx,mcal)) continue;
  
    nord++;
    for (Int_t k=nord-1; k>j; k--) // create empty position
@@ -638,7 +652,7 @@ TObjArray* AliDevice::SortHits(TString name,Int_t mode,TObjArray* hits)
  return fOrdered;
 }
 ///////////////////////////////////////////////////////////////////////////
-void AliDevice::DisplayHits(Int_t idx,Float_t scale,TObjArray* hits,Int_t dp,Int_t mstyle,Int_t mcol)
+void AliDevice::DisplayHits(Int_t idx,Float_t scale,TObjArray* hits,Int_t dp,Int_t mode,Int_t mcol)
 {
 // 3D color display of an array hits.
 // The user can specify the index (default=1) of the signal slot to perform the display for.
@@ -650,11 +664,14 @@ void AliDevice::DisplayHits(Int_t idx,Float_t scale,TObjArray* hits,Int_t dp,Int
 // Note that the input array is not modified.
 // In case dp=1 the device position will be used, otherwise the hit position will
 // be used in the display. The default is dp=0.
-// Via the "mstyle" and "mcol" arguments the user can specify the marker style
-// and color (see TPolyMarker3D) respectively.
-// The defaults are mstyle="large scalable dot" and mcol=blue.
+// Via the "mcol" argument the user can specify the marker color (see TPolyMarker3D).
+// The default is mcol=blue.
 // Signals which were declared as "Dead" will not be displayed.
 // The gain etc... corrected signals will be used to determine the marker size.
+// The gain correction is performed according to "mode" argument. The definition of this
+// "mode" parameter corresponds to the description provided in the GetSignal
+// memberfunction of class AliSignal.
+// The default is mode=1 (for backward compatibility reasons).
 //
 // Note :
 // ------
@@ -717,9 +734,9 @@ void AliDevice::DisplayHits(Int_t idx,Float_t scale,TObjArray* hits,Int_t dp,Int
     if (dev) dev->GetPosition(pos,"car");
    }
   }
-  sig=sx->GetSignal(idx,1);
+  sig=sx->GetSignal(idx,mode);
   TPolyMarker3D* m=new TPolyMarker3D();
-  m->SetMarkerStyle(mstyle);
+  m->SetMarkerStyle(8);
   m->SetMarkerColor(mcol);
   m->SetMarkerSize(100.*fabs(sig)/sigmax);
   m->SetPoint(0,pos[0],pos[1],pos[2]);
@@ -728,7 +745,7 @@ void AliDevice::DisplayHits(Int_t idx,Float_t scale,TObjArray* hits,Int_t dp,Int
  }
 }
 ///////////////////////////////////////////////////////////////////////////
-void AliDevice::DisplayHits(TString name,Float_t scale,TObjArray* hits,Int_t dp,Int_t mstyle,Int_t mcol)
+void AliDevice::DisplayHits(TString name,Float_t scale,TObjArray* hits,Int_t dp,Int_t mode,Int_t mcol)
 {
 // 3D color display of an array hits.
 // The user can specify the name of the signal slot to perform the display for.
@@ -742,11 +759,14 @@ void AliDevice::DisplayHits(TString name,Float_t scale,TObjArray* hits,Int_t dp,
 // be used in the display. The default is dp=0.
 // The marker size will indicate the percentage of the maximum encountered value
 // of the absolute value of the name-specified input signal slots.
-// Via the "mstyle" and "mcol" arguments the user can specify the marker style
-// and color (see TPolyMarker3D) respectively.
-// The defaults are mstyle="large scalable dot" and mcol=blue.
+// Via the "mcol" argument the user can specify the marker color (see TPolyMarker3D).
+// The default is mcol=blue.
 // Signals which were declared as "Dead" will not be displayed.
 // The gain etc... corrected signals will be used to determine the marker size.
+// The gain correction is performed according to "mode" argument. The definition of this
+// "mode" parameter corresponds to the description provided in the GetSignal
+// memberfunction of class AliSignal.
+// The default is mode=1 (for backward compatibility reasons).
 //
 // Note :
 // ------
@@ -813,9 +833,9 @@ void AliDevice::DisplayHits(TString name,Float_t scale,TObjArray* hits,Int_t dp,
     if (dev) dev->GetPosition(pos,"car");
    }
   }
-  sig=sx->GetSignal(idx,1);
+  sig=sx->GetSignal(idx,mode);
   TPolyMarker3D* m=new TPolyMarker3D();
-  m->SetMarkerStyle(mstyle);
+  m->SetMarkerStyle(8);
   m->SetMarkerColor(mcol);
   m->SetMarkerSize(100.*fabs(sig)/sigmax);
   m->SetPoint(0,pos[0],pos[1],pos[2]);
