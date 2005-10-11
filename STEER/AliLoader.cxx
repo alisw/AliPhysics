@@ -831,7 +831,7 @@ Bool_t  AliLoader::TestFileOption(Option_t* opt)
 /*****************************************************************************/ 
 void  AliLoader::SetDirName(TString& dirname)
 {
-//adds "dirname/" to each file 
+//adds "dirname" to each file. Dirname should end with "#","/", or ":" 
   TIter next(fDataLoaders);
   AliDataLoader* dl;
   while((dl = (AliDataLoader*)next()))

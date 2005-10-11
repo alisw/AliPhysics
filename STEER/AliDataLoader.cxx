@@ -671,7 +671,7 @@ void  AliDataLoader::SetDirName(TString& dirname)
   AliDebug(10, Form("Slash found on pos %d",n));
   if (n > 0) fFileName = fFileName.Remove(0,n+1);
   AliDebug(10, Form("Core FileName %s",fFileName.Data()));
-  fFileName = dirname + "/" + fFileName;
+  fFileName = dirname + fFileName;
   AliDebug(10, Form("FileName after %s",fFileName.Data()));
 }
 

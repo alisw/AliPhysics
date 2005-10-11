@@ -480,15 +480,16 @@ AliRunLoader* AliRunLoader::Open
  
 //procedure for extracting dir name from the file name 
  TString fname(filename);
- Int_t  nsl = fname.Last('/');//look for slash in file name
+ Int_t  nsl = fname.Last('#');//look for hash in file name
  TString dirname;
- if (nsl < 0) 
-  {//slash not found
-    Int_t  nsl = fname.Last(':');//look for colon e.g. rfio:galice.root
-    if (nsl < 0) dirname = ".";//not found
-    else dirname = fname.Remove(nsl);//found
-  }
- else dirname = fname.Remove(nsl);//slash found
+ if (nsl < 0) {//hash not found
+   nsl = fname.Last('/');// look for slash
+   if (nsl < 0) 
+     nsl = fname.Last(':');// look for colon e.g. rfio:galice.root
+ }
+
+ if (nsl < 0) dirname = "./";      // no directory path, use "."
+ else dirname = fname.Remove(nsl+1);// directory path
  
  AliDebugClass(1, Form("Dir name is : %s",dirname.Data()));
  
