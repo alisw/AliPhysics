@@ -30,7 +30,7 @@
 
 //ROOT-AliEn
 #include <TGrid.h>
-#include <TAlienCollection.h>
+//#include <TAlienCollection.h>
 #include <TGridResult.h>
 #include <TFileMerger.h>
 #include <TMap.h>
@@ -62,15 +62,16 @@ AliTagCreator::AliTagCreator() //local mode
   fUser = "";
   fPasswd = "";  
   fSE = "";   
-  fCollectionFile = "";
   fHost = "";
   fPort = 0; 
+  fresult = 0;
 }
 
 //______________________________________________________________________________
 AliTagCreator::AliTagCreator(const char *host, Int_t port, const char *username)
 {
   //==============Default constructor for a AliTagCreator==================
+  fresult = 0;
   fHost = host;
   fUser = username;
   fPort = port;
@@ -94,6 +95,7 @@ AliTagCreator::AliTagCreator(const char *host, Int_t port, const char *username)
 AliTagCreator::AliTagCreator(const char *host, Int_t port, const char *username, const char *passwd)
 {
   //==============Default constructor for a AliTagCreator==================
+  fresult = 0;
   fHost = host;
   fUser = username;
   fPasswd = passwd;
@@ -150,53 +152,27 @@ Bool_t AliTagCreator::ConnectToGrid(const char *host, Int_t port, const char *us
 }
 
 //______________________________________________________________________________
-Bool_t AliTagCreator::ReadESDCollection(const char *CollectionFile)
+Bool_t AliTagCreator::ReadESDCollection(TGridResult *res)
 {
-  fCollectionFile = CollectionFile;
+  fresult = res;
+  Int_t NEntries = fresult->GetEntries();
 
-  gSystem->Load("libXMLIO.so");
-  gSystem->Load("libXMLParser.so");
-  //define the tag collection
-  TAlienCollection *collection = new TAlienCollection(fCollectionFile.Data());
-  collection->Reset();
-
-  TMap *map;
-  TPair *pair;
-   
   TString gridname = "alien://";
-  Int_t gridnameSize = gridname.Sizeof();
-  TString Esd = "AliEsds.root";
-  
-  TString EsdFilePath;
   TString AlienUrl;
-  TString lfn;
   const char *guid;
-  TString EsdPattern = "/alien";
  
   Int_t counter = 0;
-  while((map = collection->Next()))
-    { 
-      TIter next(map->GetTable());
+  for(Int_t i = 0; i < NEntries; i++)
+    {
+      AlienUrl = gridname;
+      AlienUrl += fresult->GetKey(i,"lfn");
+      guid = fresult->GetKey(i,"guid");
+      TFile *f = TFile::Open(AlienUrl,"READ");
+      CreateTag(f,guid,counter);
+      f->Close();
+      delete f;	 
       counter += 1;
-      while ((pair = (TPair*) next()))
-	{
-	  EsdFilePath = pair->Key()->GetName();
-	  AlienUrl = collection->GetTURL(EsdFilePath);
-	  EsdFilePath = pair->Value()->GetName();
-	  
-	  lfn = EsdFilePath.Replace(0,gridnameSize-1,EsdFilePath,0);
-	  //TAlienFile *f = new TAlienFile(AlienUrl,"READ");
-	  //TFile *f = new TFile(AlienUrl,"READ");
-	  TFile *f = TFile::Open(AlienUrl,"READ");
-	 
-	  TGridResult* result = gGrid->Ls(lfn,"-b");
-	  guid = result->GetKey(0,"guid");
-	  
-	  CreateTag(f,guid,counter);
-	  f->Close();
-	  delete f;
-	}//key loop
-    }//collection loop
+    }//grid result loop
 
   return kTRUE;
 }

@@ -27,6 +27,7 @@
 #include <TObject.h>
 #include <TFile.h>
 #include <TSystem.h>
+#include <TGridResult.h>
 
 
 
@@ -36,11 +37,10 @@ class AliTagCreator : public TObject {
   TString fUser; //the username in AliEn
   TString fPasswd;   //the username's password
   TString fSE;   //the defined storage element
-  TString fCollectionFile; //the xml collection file
   TString fHost; //the defined AliEn host
   Int_t fPort;  //the defined port for the host login
-  
-  //void CreateTag(TAlienFile* file, const char *guid, Int_t Counter);
+  TGridResult *fresult; //the results from the grid query
+
   void CreateTag(TFile* file, const char *guid, Int_t Counter);
 
  public:
@@ -51,7 +51,7 @@ class AliTagCreator : public TObject {
 
   void SetSE(const char *se);
   Bool_t ConnectToGrid(const char *host, Int_t port, const char *username);
-  Bool_t ReadESDCollection(const char *CollectionFile);
+  Bool_t ReadESDCollection(TGridResult *result);
   Bool_t StoreGridTagFile(const char *localpath, const char *gridpath);
 
   ClassDef(AliTagCreator,0)  
