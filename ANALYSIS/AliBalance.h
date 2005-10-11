@@ -52,7 +52,7 @@ class AliBalance : public TObject
   void SetAnalysisType(Int_t iType);
   void SetInterval(Double_t P2_Start, Double_t P2_Stop);
 
-  void CalculateBalance() ;
+  void CalculateBalance();
   
   Double_t GetNp() { return 1.0*fNp; }
   Double_t GetNn() { return 1.0*fNn; }

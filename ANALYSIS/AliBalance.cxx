@@ -46,6 +46,14 @@ AliBalance::AliBalance()
       fB[i] = 0.0;
       ferror[i] = 0.0;
     } 
+  fNp = 0.0;
+  fNn = 0.0;
+  fP2_Start = 0.0;
+  fP2_Stop = 0.0;
+  fP2_Step = 0.0; 
+  fAnalysisType = 0;
+  fNumberOfBins = 0;
+  fNtrack = 0;
   fAnalyzedEvents = 0;
 }
 
@@ -358,8 +366,8 @@ void AliBalance::PrintResults()
   cout<<"=================================================="<<endl;
   for(Int_t i = 0; i < fNumberOfBins; i++)
     { 
-      Double_t x = fP2_Start + fP2_Step*i + fP2_Step/2 ;
-      cout<<"B: "<<fB[i]<<"\t Error: "<<ferror[i]<<"\t bin: "<<x<<endl;
+      x[i] = fP2_Start + fP2_Step*i + fP2_Step/2 ;
+      cout<<"B: "<<fB[i]<<"\t Error: "<<ferror[i]<<"\t bin: "<<x[i]<<endl;
     } 
   cout<<"=================================================="<<endl;
   for(Int_t i = 1; i < fNumberOfBins; i++)
