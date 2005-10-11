@@ -26,18 +26,10 @@
 #include <TChain.h>
 #include <TFile.h>
 #include <TString.h>
-#include <THashTable.h>
 
 //ROOT-AliEn
 #include <TGrid.h>
-//#include <TAlienCollection.h>
 #include <TGridResult.h>
-#include <TFileMerger.h>
-#include <TMap.h>
-#include <TXMLParser.h>
-#include <TThread.h>
-#include <TTreePlayer.h>
-#include <TProof.h>
 
 //AliRoot
 #include "AliRunTag.h"
@@ -59,11 +51,13 @@ ClassImp(AliTagCreator)
 AliTagCreator::AliTagCreator() //local mode
 {
   //==============Default constructor for a AliTagCreator==================
+  fgridpath = "";
   fUser = "";
   fPasswd = "";  
   fSE = "";   
   fHost = "";
   fPort = 0; 
+  fStorage = 0; 
   fresult = 0;
 }
 
@@ -71,7 +65,9 @@ AliTagCreator::AliTagCreator() //local mode
 AliTagCreator::AliTagCreator(const char *host, Int_t port, const char *username)
 {
   //==============Default constructor for a AliTagCreator==================
+  fStorage = 0; 
   fresult = 0;
+  fgridpath = "";
   fHost = host;
   fUser = username;
   fPort = port;
@@ -95,7 +91,9 @@ AliTagCreator::AliTagCreator(const char *host, Int_t port, const char *username)
 AliTagCreator::AliTagCreator(const char *host, Int_t port, const char *username, const char *passwd)
 {
   //==============Default constructor for a AliTagCreator==================
+  fStorage = 0; 
   fresult = 0;
+  fgridpath = "";
   fHost = host;
   fUser = username;
   fPasswd = passwd;
@@ -126,6 +124,27 @@ AliTagCreator::~AliTagCreator()
 void AliTagCreator::SetSE(const char *se)
 {
   fSE = se;
+}
+
+//______________________________________________________________________________
+void AliTagCreator::SetGridPath(const char *gridpath)
+{
+  fgridpath = gridpath;
+}
+
+//______________________________________________________________________________
+void AliTagCreator::SetStorage(Int_t storage)
+{
+  fStorage = storage;
+  if(fStorage == 0)
+    AliInfo(Form("Tags will be stored locally...."));
+  if(fStorage == 1)
+    AliInfo(Form("Tags will be stored in the grid...."));
+  if((fStorage != 0)&&(fStorage != 1))
+    {
+      AliInfo(Form("Storage was not properly set!!!"));
+      abort();
+    }  
 }
 
 //______________________________________________________________________________
@@ -406,9 +425,28 @@ void AliTagCreator::CreateTag(TFile* file, const char *guid, Int_t Counter)
   LocalfileName += ".Event"; LocalfileName += firstEvent; LocalfileName += "_"; LocalfileName += lastEvent; LocalfileName += "."; LocalfileName += Counter;
   LocalfileName += ".ESD.tag.root";
 
-  cout<<"Writing tags to local file: "<<LocalfileName<<endl;
+  TString AlienLocation = "/alien";
+  AlienLocation += gGrid->Pwd();
+  AlienLocation += fgridpath.Data();
+  AlienLocation += "/";
+  AlienLocation +=  LocalfileName;
+  AlienLocation += "?se=";
+  AlienLocation += fSE.Data();
 
-  TFile* ftag = TFile::Open(LocalfileName, "recreate");
+  TString FileName;
+  
+  if(fStorage == 0)
+    {
+      FileName = LocalfileName.Data();      
+      cout<<"Writing tags to local file: "<<FileName.Data()<<endl;
+    }
+  if(fStorage == 1)
+    {
+      FileName = AlienLocation.Data();
+      cout<<"Writing tags to grid file: "<<FileName.Data()<<endl;
+    }
+
+  TFile* ftag = TFile::Open(FileName, "recreate");
   ftag->cd();
   ttag.Write();
   ftag->Close();
@@ -421,39 +459,3 @@ void AliTagCreator::CreateTag(TFile* file, const char *guid, Int_t Counter)
   delete evTag;
 }
 
-//_____________________________________________________________________________
-Bool_t AliTagCreator::StoreGridTagFile(const char *localpath, const char *gridpath)
-{
-  gSystem->Load("libThread.so");
-  gSystem->Load("libTreePlayer.so");
-  gSystem->Load("libProof.so");
-  cout<<"Storing tag file to alien's file catalog..."<<endl;
-  TFileMerger merger;
-  const char * pattern = "tag.root";
-  // Open the working directory
-  void * dirp = gSystem->OpenDirectory(localpath);
-  const char * name = 0x0;
-  TString AlienLocation;
-  Char_t LocalLocation[256];
- 
-  // Add all files matching *pattern* to the chain
-  while((name = gSystem->GetDirEntry(dirp)))
-    {
-      if (strstr(name,pattern))
-	{
-	  sprintf(LocalLocation,"file:%s/%s",localpath,name);
-	  AlienLocation = "/alien";
-	  AlienLocation += gGrid->Pwd();
-	  AlienLocation += gridpath;
-	  AlienLocation += "/";
-	  AlienLocation += name;
-	  AlienLocation += "?se=";
-	  AlienLocation += fSE.Data();
-	  merger.Cp(LocalLocation,AlienLocation);
-	    
-	}
-    }	
-  gSystem->FreeDirectory(dirp);
-   
-  return kTRUE;
-}
