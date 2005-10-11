@@ -21,7 +21,7 @@ class AliEventTag : public TObject
 {
  private:
   Int_t    fAliceEventId;                      //The event id
-  Int_t    fGUID;			       //The unique identifier of the file
+  const char     *fGUID;			       //The unique identifier of the file
   Int_t    fNumberOfParticipants;    	       //Number of participants
   Float_t  fImpactParameter;		       //The impact parameter
  
@@ -101,7 +101,7 @@ class AliEventTag : public TObject
   virtual ~AliEventTag();
   
   void   SetEventId(Int_t Pid) {fAliceEventId = Pid;}
-  void   SetGUID(Int_t Pid) {fGUID = Pid;}
+  void   SetGUID(const char *Pid) {fGUID = Pid;}
 
   void   SetNumOfParticipants(Int_t P) {fNumberOfParticipants = P;}
   void   SetImpactParameter(Float_t Pimpact) {fImpactParameter = Pimpact;}
@@ -110,8 +110,8 @@ class AliEventTag : public TObject
   void   SetVertexY(Float_t Pvy) {fPrimaryVertexY = Pvy;}
   void   SetVertexZ(Float_t Pvz) {fPrimaryVertexZ = Pvz;}
 
-  void SetVertexFlag(Int_t i) {fPrimaryVertexFlag = i;}
-  void SetVertexZError(Float_t f) { fPrimaryVertexZError = f;}
+  void   SetVertexFlag(Int_t i) {fPrimaryVertexFlag = i;}
+  void   SetVertexZError(Float_t f) { fPrimaryVertexZError = f;}
 
   void   SetTrigger(Int_t Ptr) {fTriggerInfo = Ptr;}
 
@@ -169,17 +169,17 @@ class AliEventTag : public TObject
   void   SetMeanPt(Float_t Pt) {fMeanPt = Pt;}
   void   SetMaxPt(Float_t Pt) {fMaxPt = Pt;}
 
-  void SetNeutralTotalMomentum(Float_t f) {fTotalNeutralP = f;}
-  void SetNeutralMeanPt(Float_t f) {fMeanNeutralPt = f;}
-  void SetNeutralMaxPt(Float_t f) {fMaxNeutralPt = f;}
+  void   SetNeutralTotalMomentum(Float_t f) {fTotalNeutralP = f;}
+  void   SetNeutralMeanPt(Float_t f) {fMeanNeutralPt = f;}
+  void   SetNeutralMaxPt(Float_t f) {fMaxNeutralPt = f;}
 
-  void SetEventPlaneAngle(Float_t f) {fEventPlaneAngle = f;}
-  void SetHBTRadii(Float_t f) {fHBTRadii = f;}
+  void   SetEventPlaneAngle(Float_t f) {fEventPlaneAngle = f;}
+  void   SetHBTRadii(Float_t f) {fHBTRadii = f;}
 
 
 
-  Int_t   GetEventId() {return fAliceEventId;}
-  Int_t   GetGUID() {return fGUID;}
+  Int_t  GetEventId() {return fAliceEventId;}
+  const char   *GetGUID() {return fGUID;}
 
   Int_t   GetNumOfParticipants() {return fNumberOfParticipants;}
   Float_t GetImpactParameter() {return fImpactParameter;}
@@ -256,7 +256,7 @@ class AliEventTag : public TObject
   Float_t GetEventPlaneAngle() {return fEventPlaneAngle;}
   Float_t GetHBTRadii() {return fHBTRadii;}
 
-  ClassDef(AliEventTag,2)  //(ClassName, ClassVersion)
+  ClassDef(AliEventTag,3)  //(ClassName, ClassVersion)
     };
 //______________________________________________________________________________
 

@@ -100,7 +100,10 @@
 #pragma link C++ class AliDetectorTag+;
 #pragma link C++ class AliEventTag+;
 
-
+#pragma link C++ class AliTagCreator+;
+//#pragma link C++ class AliGuidEventList+;
+//#pragma link C++ class AliTagAnalysis+;
+//#pragma link C++ class AliEventTagCuts+;
 
 #pragma link C++ class  TTreeDataElement+;
 #pragma link C++ class  TTreeStream+;
