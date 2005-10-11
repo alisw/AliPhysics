@@ -108,7 +108,7 @@ extern "C"
    void  type_of_call rgrpwr(const Int_t & /*flukaReg*/, const Int_t & /*ptrLttc*/, Int_t & /*g4Reg*/,
                              Int_t * /*indMother*/, Int_t * /*repMother*/, Int_t & /*depthFluka*/);
    Int_t type_of_call isvhwr(const Int_t & /*fCheck*/, const Int_t & /*intHist*/);
-};
+}
    
 // TFluka global pointer
 TFluka *gFluka = 0;

@@ -31,7 +31,7 @@
 
 Double_t TFlukaCerenkov::fgGlobalMaximumEfficiency = 0.;
    
-ClassImp(TFlukaCerenkov);
+ClassImp(TFlukaCerenkov)
 
 
 TFlukaCerenkov::TFlukaCerenkov()

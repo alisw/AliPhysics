@@ -20,7 +20,7 @@
 #include <TGeoManager.h>
 #include <TGeoVolume.h>
 
-ClassImp(TFlukaScoringOption);
+ClassImp(TFlukaScoringOption)
 
 FILE*              TFlukaScoringOption::fgFile(0x0);
 TFlukaMCGeometry*  TFlukaScoringOption::fgGeom(0x0);
