@@ -68,6 +68,11 @@
 #pragma link C++ class AliITSRawStreamSSD+;
 #pragma link C++ class AliITSRawStreamSSDv1+;
 #pragma link C++ class AliITSEventHeader+;
+// SPD preprocessing
+#pragma link C++ class AliITSBadChannelsAuxSPD+;
+#pragma link C++ class AliITSBadChannelsSPD+;
+#pragma link C++ class AliITSChannelSPD+;
+#pragma link C++ class AliITSPreprocessorSPD+;
 
 
 #endif

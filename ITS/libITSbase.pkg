@@ -33,7 +33,11 @@ SRCS = 	AliITSgeom.cxx \
 		AliITSRawStreamSPD.cxx \
 		AliITSEventHeader.cxx \
 		AliITSRawStreamSSDv1.cxx \
-		AliITSRawData.cxx 
+		AliITSRawData.cxx  \
+		AliITSBadChannelsAuxSPD.cxx \
+		AliITSBadChannelsSPD.cxx  \
+		AliITSChannelSPD.cxx  \
+		AliITSPreprocessorSPD.cxx  \
 
 HDRS:=  $(SRCS:.cxx=.h)
 
