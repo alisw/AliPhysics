@@ -642,3 +642,6 @@
                 Note : For DisplayHits this new signal correction mode replaces the marker style
                        specification parameter. 
                 Also new memberfunction GetDevices introduced in AliEvent.
+11-oct-2005 NvE SetMJD invoked at the end of AliTimestamp::Add instead of just updating the
+                various datamembers. In this way the TTimeStamp parameters are brought in sync
+                with the (modified) AliTimestamp values. 

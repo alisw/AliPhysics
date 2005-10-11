@@ -873,11 +873,6 @@ void AliTimestamp::Add(Int_t d,Int_t s,Int_t ns,Int_t ps)
 //
 // Note : ps=0 is the default value.
 
-// Int_t days=fMJD;
-// Int_t secs=fJsec;
-// Int_t nsec=fJns;
-// Int_t psec=fJps;
-
  Int_t days=0;
  Int_t secs=0;
  Int_t nsec=0;
@@ -923,10 +918,7 @@ void AliTimestamp::Add(Int_t d,Int_t s,Int_t ns,Int_t ps)
 
  days+=d;
 
- fMJD=days;
- fJsec=secs;
- fJns=nsec;
- fJps=psec;
+ SetMJD(days,secs,nsec,psec);
 }
 ///////////////////////////////////////////////////////////////////////////
 Int_t AliTimestamp::GetDifference(AliTimestamp* t,Int_t& d,Int_t& s,Int_t& ns,Int_t& ps)
