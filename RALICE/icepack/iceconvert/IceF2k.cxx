@@ -320,6 +320,7 @@ void IceF2k::Exec(Option_t* opt)
   PutHits();
 
   // Invoke all available sub-tasks (if any)
+  CleanTasks();
   ExecuteTasks(opt);
 
   if (fPrintfreq)

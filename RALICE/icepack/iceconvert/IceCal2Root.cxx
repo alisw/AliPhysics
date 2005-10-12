@@ -291,6 +291,7 @@ void IceCal2Root::Exec(Option_t* opt)
  GetCalibData();
 
  // Invoke all available sub-tasks (if any)
+ CleanTasks();
  ExecuteTasks(opt);
 
  // Write the datastructures to the output file

@@ -31,4 +31,6 @@
                 to stay in line with the F2K data structures.
                 Also ADC dependent LE (de)calibration parameter set to 1e20 in IceF2k
                 for adc<=0 values. This setting eliminates the ADC dependent TDC correction.
+12-oct-2005 NvE CleanTasks() invoked before execution of sub-tasks in IceConvert and IceCalibrate
+                to ensure proper execution of all the sub-tasks for each new event.
  
