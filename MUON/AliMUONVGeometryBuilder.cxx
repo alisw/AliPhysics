@@ -185,10 +185,15 @@ TGeoHMatrix AliMUONVGeometryBuilder::GetTransform(
                            TGeoRotation("rot", a1, a2, a3, a4, a5, a6));
 
   // Convert transform to the given reference frame
-  TGeoHMatrix newTransform
-    = AliMUONGeometryBuilder::Multiply( fReferenceFrame.Inverse(),
-                                        transform,
-					fReferenceFrame );  
+  TGeoHMatrix newTransform;
+  if ( fReferenceFrame.IsIdentity() )
+     newTransform = transform;
+  else  {
+     newTransform
+       = AliMUONGeometryBuilder::Multiply( fReferenceFrame.Inverse(),
+                                           transform,
+					   fReferenceFrame );  
+  }			        
 
   return newTransform;   
 }
@@ -408,8 +413,14 @@ void AliMUONVGeometryBuilder::WriteTransform(ofstream& out,
 // ---
 
   // Convert transform to the given reference frame
-  TGeoHMatrix newTransform
-    = fReferenceFrame * (*transform) * (fReferenceFrame.Inverse());  
+  TGeoHMatrix newTransform;
+  if ( fReferenceFrame.IsIdentity() )
+     newTransform = *transform;
+  else  {
+     newTransform = AliMUONGeometryBuilder::Multiply( fReferenceFrame,
+                                                      *transform,
+		                                      fReferenceFrame.Inverse() ); 
+  }			        
 
   out << "   pos: ";
   const Double_t* xyz = newTransform.GetTranslation();
