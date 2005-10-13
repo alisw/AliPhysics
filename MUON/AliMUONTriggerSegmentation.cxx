@@ -226,6 +226,9 @@ void AliMUONTriggerSegmentation::GetPadC(Int_t ix, Int_t iy, Float_t &x, Float_t
 void AliMUONTriggerSegmentation::GetPadI(Float_t x, Float_t y, Int_t &ix, Int_t &iy) 
 {
 //  Returns global pad coordinates (ix,iy) for local real coordinates (x,y)
+    ix = 100;
+    iy = 100;
+
     x = x + fRpcHalfXsize;
     y = y + fRpcHalfYsize;
 // find module number    
