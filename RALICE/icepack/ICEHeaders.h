@@ -16,4 +16,5 @@
 #include "IceTDOM.h"
 #include "IceXtalk.h"
 #include "IceCalibrate.h"
+#include "IceCleanHits.h"
 

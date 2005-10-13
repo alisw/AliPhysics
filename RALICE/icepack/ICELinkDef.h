@@ -21,5 +21,6 @@
  #pragma link C++ class IceTDOM+;
  #pragma link C++ class IceXtalk+;
  #pragma link C++ class IceCalibrate+;
+ #pragma link C++ class IceCleanHits+;
 #endif
  

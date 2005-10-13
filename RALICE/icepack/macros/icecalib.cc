@@ -40,6 +40,9 @@
  xtalk.SetMinProb(0.5);
  xtalk.SetXtalkPE(1);
 
+ // The hit cleaning processor task
+ IceCleanHits clean("IceCleanHits","Hit cleaning");
+
  // The event analysis task
  EvtAna evtana("evtana","Event analysis");
 
@@ -51,6 +54,7 @@
 
  q.Add(&calib);
  q.Add(&xtalk);
+ q.Add(&clean);
  q.Add(&evtana);
 
  // Perform the conversion

@@ -10,5 +10,8 @@
 12-aug-2005 NvE TTask derived class IceXtalk introduced for cross talk correction.
 20-sep-2005 NvE TTask derived class IceCalibrate introduced for (de)calibration of data.
                 Also example macros icextalk.cc and icecalib.cc introduced in the /macros
-                directory to illustrate the usage of these TTask based proceures.
+                directory to illustrate the usage of these TTask based procedures.
 07-oct-2005 NvE Typo fixed in memberfunction SetCalibFile of IceXtalk and IceCalibrate.
+13-oct-2005 NvE TTask derived class IceCleanHits introduced to perform hit cleaning.
+                Also example macro icecalib.cc in the /macros directory updated to
+                illustrate the use of the hit cleaning processor. 
