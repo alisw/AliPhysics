@@ -1159,7 +1159,7 @@ void AliMUONTriggerDecision::LocalTrigger(Int_t icirc,
   Int_t signDev=minDev[4];   
   Int_t deviation=0;
   for (i=0; i<4; i++) {          // extract deviation
-    deviation = deviation+Int_t(minDev[i]<<j);   
+    deviation = deviation+Int_t(minDev[i]<<i);   
   }
   
   Int_t istripX1Circ=0;
