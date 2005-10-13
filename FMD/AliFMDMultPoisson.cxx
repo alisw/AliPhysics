@@ -156,11 +156,20 @@ AliFMDMultPoisson::PostEvent()
 	  Float_t  theta2   = 2 * TMath::ATan(TMath::Exp(-maxEta));
 	  Float_t  minR     = TMath::Abs(realZ * TMath::Tan(theta2));
 	  Float_t  maxR     = TMath::Abs(realZ * TMath::Tan(theta1));
+	  // Calculate the weighted mean eta of the region
+	  Float_t  minW2    = TMath::Power(minR * 2 * TMath::Pi() * 
+					   ((maxPhi - minPhi)/360),2);
+	  Float_t  maxW2    = TMath::Power(minR * 2 * TMath::Pi() * 
+					   ((maxPhi - minPhi)/360), 2);
+	  Float_t  meanEta  = ((minEta / minW2 + maxEta / maxW2) / 
+			       (1 / (minW2 + maxW2)));
 	  //UShort_t minStrip = UShort_t((etaIn - maxEta) * stripEta + 0.5);
 	  // UShort_t maxStrip = UShort_t((etaIn - minEta) * stripEta + 0.5);
 
-	  UShort_t minStrip = UShort_t(r->GetNStrips() -(etaIn - minEta) * stripEta + 0.5);
-	  UShort_t maxStrip = UShort_t(r->GetNStrips() -(etaIn - maxEta) * stripEta + 0.5);
+	  UShort_t minStrip = UShort_t(r->GetNStrips() - 
+				       (etaIn - minEta) * stripEta + 0.5);
+	  UShort_t maxStrip = UShort_t(r->GetNStrips() - 
+				       (etaIn - maxEta) * stripEta + 0.5);
 
 	  AliDebug(10, Form("  Now in eta range %f, %f (strips %d, %d)\n"
 	  		    "    [radii %f, %f, thetas %f, %f, sign %d]", 
@@ -192,7 +201,7 @@ AliFMDMultPoisson::PostEvent()
 	  AliFMDMultRegion* m = new((*fMult)[fNMult])   
 	    AliFMDMultRegion(sub->GetId(), r->GetId(),
 			     minSector, maxSector, minStrip, maxStrip,
-			     minEta, maxEta, minPhi, maxPhi,
+			     minEta, maxEta, meanEta, minPhi, maxPhi,
 			     reconstructed, AliFMDMultRegion::kPoission);
 	  (void)m;
 	  fNMult++;

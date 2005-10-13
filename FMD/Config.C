@@ -619,7 +619,7 @@ Config()
   if (useFMD) {
     //=================== FMD parameters ============================
     AliFMD *FMD = new AliFMDv1("FMD", "normal FMD");
-    AliLog::SetModuleDebugLevel("FMD", 10);
+    AliLog::SetModuleDebugLevel("FMD", 16);
   }
 
   if (useMUON) {

@@ -59,6 +59,7 @@ AliFMDMultRegion::AliFMDMultRegion(UShort_t detector,  Char_t ring,
 				   UShort_t minSector, UShort_t maxSector, 
 				   UShort_t minStrip,  UShort_t maxStrip, 
 				   Float_t  minEta,    Float_t  maxEta, 
+				   Float_t  meanEta, 
 				   Float_t  minPhi,    Float_t  maxPhi,
 				   Float_t  particles, UShort_t method)
   : AliFMDMult(particles, method),
@@ -70,10 +71,12 @@ AliFMDMultRegion::AliFMDMultRegion(UShort_t detector,  Char_t ring,
     fMaxStrip(maxStrip),
     fMinEta(minEta),
     fMaxEta(maxEta),
+    fMeanEta(meanEta),
     fMinPhi(minPhi),
     fMaxPhi(maxPhi)
 {}
 
+#if 0
 //____________________________________________________________________
 Float_t
 AliFMDMultRegion::Eta() const 
@@ -137,7 +140,7 @@ AliFMDMultRegion::Eta() const
     / (fMaxStrip * fMaxStrip + fMinStrip * fMinStrip);
   return eta;
 }
-
+#endif
   
 //____________________________________________________________________
 void

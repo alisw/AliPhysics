@@ -106,6 +106,7 @@
 #include "AliFMDMultAlgorithm.h" 	   // ALIFMDMULTALGORITHM_H
 #include "AliFMDMultPoisson.h"		   // ALIFMDMULTPOISSON_H
 #include "AliFMDMultNaiive.h"		   // ALIFMDMULTNAIIVE_H
+#include "AliESD.h"			   // ALIESD_H
 
 //____________________________________________________________________
 ClassImp(AliFMDReconstructor)
@@ -201,15 +202,20 @@ AliFMDReconstructor::Init(AliRunLoader* runLoader)
     return;
   }
   AliGenEventHeader* eventHeader = header->GenEventHeader();
-  if (!eventHeader) {
-    Warning("Init", "no event header");
-    return;
+  if (eventHeader) {
+    TArrayF vtx;
+    eventHeader->PrimaryVertex(vtx);
+    fCurrentVertex = vtx[2];
+    AliDebug(1, Form("Primary vertex Z coordinate for event # %d/%d is %f", 
+		     header->GetRun(), header->GetEvent(), fCurrentVertex));
+    Warning("Init", "no generator event header");
   }
-  TArrayF vtx;
-  eventHeader->PrimaryVertex(vtx);
-  fCurrentVertex = vtx[2];
-  AliDebug(1, Form("Primary vertex Z coordinate for event # %d/%d is %f", 
-		   header->GetRun(), header->GetEvent(), fCurrentVertex));
+  else {
+    Warning("Init", "No generator event header - "
+	    "perhaps we get the vertex from ESD?");
+  }
+  // Get the ESD tree 
+  SetESD(new AliESD);
 }
 
 //____________________________________________________________________
@@ -233,6 +239,14 @@ AliFMDReconstructor::Reconstruct(TTree* digitsTree,
   // FIXME: The vertex may not be known yet, so we may have to move
   // some of this to FillESD. 
   AliDebug(1, "Reconstructing from digits in a tree");
+
+  if (fESD) {
+    const AliESDVertex* vertex = fESD->GetVertex();
+    // if (vertex) {
+    //   AliDebug(1, Form("Got vertex from ESD: %f", vertex->GetZv()));
+    //   fCurrentVertex = vertex->GetZv();
+    // }
+  }
   
   TBranch *digitBranch = digitsTree->GetBranch("FMD");
   if (!digitBranch) {
@@ -329,7 +343,35 @@ AliFMDReconstructor::FillESD(TTree*  /* digitsTree */,
   // nothing to be done
   // FIXME: The vertex may not be known when Reconstruct is executed,
   // so we may have to move some of that member function here. 
-
+#if 0
+  TClonesArray* multStrips  = 0;
+  TClonesArray* multRegions = 0;
+  TTree*        treeR  = fmdLoader->TreeR();
+  TBranch*      branchRegions = treeR->GetBranch("FMDPoisson");
+  TBranch*      branchStrips  = treeR->GetBranch("FMDNaiive");
+  branchRegions->SetAddress(&multRegions);
+  branchStrips->SetAddress(&multStrips);
+  
+  Int_t total = 0;
+  Int_t nEntries  = clusterTree->GetEntries();
+  for (Int_t entry = 0; entry < nEntries; entry++) {
+    AliDebug(5, Form("Entry # %d in cluster tree", entry));
+    treeR->GetEntry(entry);
+    
+    
+    Int_t nMults = multRegions->GetLast();
+    for (Int_t i = 0; i <= nMults; i++) {
+      AliFMDMultRegion* multR =
+	static_cast<AliFMDMultRegion*>(multRegions->UncheckedAt(i));
+      Int_t nParticles=multR->Particles();
+      if (i>=0 && i<=13)   hEtaPoissonI1->AddBinContent(i+1,nParticles);
+      if (i>=14 && i<=27 ) hEtaPoissonI2->AddBinContent(i-13,nParticles);
+      if (i>=28 && i<=33 );
+      if (i>=34 && i<=47 ) hEtaPoissonI3->AddBinContent(48-i,nParticles);
+      if (i>=48 && i<=53)  hEtaPoissonO3->AddBinContent(54-i,nParticles);
+    }
+  }
+#endif   
 }
 
 //____________________________________________________________________

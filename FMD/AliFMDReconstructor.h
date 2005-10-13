@@ -42,6 +42,7 @@ class TClonesArray;
 class AliFMDDigit;
 class AliRawReader;
 class AliRunLoader;
+class AliESD;
 
 //____________________________________________________________________
 class AliFMDReconstructor: public AliReconstructor 
@@ -59,6 +60,7 @@ public:
   virtual void   Reconstruct(TTree* digitsTree, TTree* clusterTree) const;
   virtual void   FillESD(TTree* digitsTree, TTree* clusterTree, 
 			 AliESD* esd) const;
+  virtual void   SetESD(AliESD* esd) { fESD = esd; }
      
 protected:
   virtual void     ProcessDigits(TClonesArray* digits) const;
@@ -69,6 +71,7 @@ protected:
   Float_t               fPedestalWidth; // Width of pedestal
   Float_t               fPedestalFactor;// Number of pedestal widths 
   mutable Float_t       fCurrentVertex; // Z-coordinate of primary vertex
+  AliESD*               fESD;
   
   ClassDef(AliFMDReconstructor, 0)  // class for the FMD reconstruction
 }; 

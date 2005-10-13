@@ -4,6 +4,11 @@
 
 SRCS	=  AliFMDDigit.cxx		\
 	   AliFMDMap.cxx		\
+	   AliFMDFloatMap.cxx		\
+	   AliFMDBoolMap.cxx		\
+	   AliFMDUShortMap.cxx 		\
+	   AliFMDCalibPedestal.cxx	\
+	   AliFMDCalibGain.cxx		\
 	   AliFMDParameters.cxx		\
 	   AliFMDGeometry.cxx		\
 	   AliFMDRing.cxx		\

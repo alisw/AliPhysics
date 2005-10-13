@@ -13,6 +13,9 @@
 #pragma link C++ class  AliFMDDigit+;
 #pragma link C++ class  AliFMDSDigit+;
 #pragma link C++ class  AliFMDMap+;
+#pragma link C++ class  AliFMDFloatMap+;
+#pragma link C++ class  AliFMDBoolMap+;
+#pragma link C++ class  AliFMDUShortMap+;
 #pragma link C++ class  AliFMD1+;
 #pragma link C++ class  AliFMD2+;
 #pragma link C++ class  AliFMD3+;
@@ -20,6 +23,8 @@
 #pragma link C++ class  AliFMDDetector+;
 #pragma link C++ class  AliFMDGeometry+;
 #pragma link C++ class  AliFMDParameters+;
+#pragma link C++ class  AliFMDCalibPedestal+;
+#pragma link C++ class  AliFMDCalibGain+;
 
 #else
 # error Not for compilation 

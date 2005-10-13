@@ -808,6 +808,8 @@ AliFMD::Hits2Digits()
   // Create AliFMDDigit's from AliFMDHit's.  This is done by making a
   // AliFMDDigitizer, and executing that code.
   // 
+  Warning("Hits2Digits", "Try not to use this method.\n"
+	  "Instead, use AliSimulator");
   AliRunDigitizer* manager = new AliRunDigitizer(1, 1);
   manager->SetInputStream(0, "galice.root");
   manager->SetOutputFile("H2Dfile");

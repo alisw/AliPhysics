@@ -22,7 +22,7 @@ Simulate()
  AliSimulation sim;
  sim.SetConfigFile("$(ALICE)/FMD/Config.C");
  // sim.SetMakeSDigits("FMD");
- // sim.SetMakeDigits("FMD");
+ sim.SetMakeDigits("FMD");
  sim.SetWriteRawData("FMD");
  // sim.SetMakeDigitsFromHits("FMD");
  sim.Run(1); 

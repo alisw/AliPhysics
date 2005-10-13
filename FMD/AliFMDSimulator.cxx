@@ -386,7 +386,11 @@ AliFMDSimulator::Exec(Option_t* /* option */)
   Bool_t inside   = mc->IsTrackInside();
   Bool_t out      = (mc->IsTrackExiting()|| mc->IsTrackDisappeared()||
 		     mc->IsTrackStop());
-
+  static Int_t lastPdg = 0;
+  static Double_t lastEtot = 0;
+  static Int_t    lastTrack = 0;
+  static Int_t    nBad       = 0;
+  
   // Reset the energy deposition for this track, and update some of
   // our parameters.
   if (entering) {
@@ -400,6 +404,64 @@ AliFMDSimulator::Exec(Option_t* /* option */)
     mc->TrackMomentum(fCurrentP);
     mc->TrackPosition(fCurrentV);
     fCurrentPdg = mc->IdFromPDG(mc->TrackPid());
+  }
+  
+  if (mc->Edep() > mc->Etot()/*fCurrentP.E()*/) {
+    // The track deposited an obscene amount of energy in this step 
+    Int_t trackno = gAlice->GetMCApp()->GetCurrentTrackNumber();
+    // TMCProcess process = mc->ProdProcess(trackno);
+    // TString process_name(TMCProcessName[process]);
+    TArrayI procs;
+    mc->StepProcesses(procs);
+    Int_t currentPdg = mc->TrackPid();
+    TString processes;
+    for (Int_t ip = 0; ip < procs.fN; ip++) {
+      if (ip != 0) processes.Append(",");
+      processes.Append(TMCProcessName[procs.fArray[ip]]);
+    }
+    // Int_t currentPdg = mc->IdFromPDG(mc->TrackPid());
+    TParticlePDG* particleType = TDatabasePDG::Instance()->GetParticle(currentPdg);
+    TParticlePDG* lastType = TDatabasePDG::Instance()->GetParticle(lastPdg);
+    TLorentzVector currentV;      //! Current hit postition 
+    TLorentzVector currentP;      //! Current hit momentum
+    mc->TrackMomentum(currentP);
+    mc->TrackPosition(currentV);
+    TString origin("???");
+    if (mc->IsRootGeometrySupported()) {
+      TGeoNode* node = gGeoManager->FindNode(fCurrentV.X(), fCurrentV.Y(), fCurrentV.Z());
+      if (node) origin = node->GetName();
+    }
+    TString what;
+    if (mc->IsTrackEntering())    what.Append("entering ");
+    if (mc->IsTrackExiting())     what.Append("exiting ");
+    if (mc->IsTrackInside())      what.Append("inside ");
+    if (mc->IsTrackDisappeared()) what.Append("disappeared ");
+    if (mc->IsTrackStop())        what.Append("stopped ");
+    if (mc->IsNewTrack())         what.Append("new ");
+    if (mc->IsTrackAlive())       what.Append("alive ");
+    if (mc->IsTrackOut())         what.Append("out ");
+    
+    Int_t mother = gAlice->GetMCApp()->GetPrimary(trackno);
+    AliDebug(0, Form("Track # %5d deposited an obsence amout of energy (call # %d)\n" 
+		     "  Volume:    %s\n" 
+		     "  Momentum:  (%8.4f,%8.4f,%8.4f)\n"
+		     "  Vertex:    (%8.4f,%8.4f,%8.4f) [%s]\n"
+		     "  PDG:       %d (%s) [last %d (%s)]\n" 
+		     "  Edep:      %-16.8f (mother %d)\n"
+		     "  Energy:    %-16.8f (last %16.8f from track %d)\n"
+		     "  Processes: %s\n"
+		     "  What:      %s\n",
+		     trackno, nCall, mc->CurrentVolPath(), 
+		     currentP.X(), currentP.Y(), currentP.Z(),
+		     currentV.X(), currentV.Y(), currentV.Z(), origin.Data(),
+		     currentPdg, (particleType ? particleType->GetName() : "???"), 
+		     lastPdg, (lastType ? lastType->GetName() : "???"),
+		     mc->Edep(), mother, mc->Etot() /*currentP.E()*/, 
+		     lastEtot, lastTrack, processes.Data(), what.Data()));
+    // gAlice->GetMCApp()->DumpPStack();
+    // mother->Print();
+    nBad++;
+    if (nBad > 10) exit (1);
   }
   
   // If the track is inside, then update the energy deposition
@@ -462,6 +524,10 @@ AliFMDSimulator::Exec(Option_t* /* option */)
 			 fCurrentDeltaE, fCurrentPdg, fCurrentV.T());
     fCurrentDeltaE = -1;
   }
+  lastPdg   = fCurrentPdg;
+  lastEtot  = mc->Etot();
+  lastTrack = gAlice->GetMCApp()->GetCurrentTrackNumber();
+  
 }
 
 

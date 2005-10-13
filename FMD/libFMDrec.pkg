@@ -10,9 +10,7 @@ SRCS		=  AliFMDReconstructor.cxx 	\
 		   AliFMDMultPoisson.cxx 	\
 		   AliFMDMultRegion.cxx		\
 		   AliFMDMult.cxx		\
-		   AliFMDMultStrip.cxx		\
-		   AliFMDUShortMap.cxx 		\
-		   AliFMDBoolMap.cxx
+		   AliFMDMultStrip.cxx		
 HDRS		=  $(SRCS:.cxx=.h)
 DHDR		:= FMDrecLinkDef.h
 EINCLUDE 	:= $(ALICE)/RAW

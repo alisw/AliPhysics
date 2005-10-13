@@ -494,7 +494,7 @@ AliFMDDigitizer::Exec(Option_t*)
   // Get the input loader 
   TString inFolder(fManager->GetInputFolderName(0));
   fRunLoader = 
-    AliRunLoader::GetRunLoader(fManager->GetInputFolderName(0));
+    AliRunLoader::GetRunLoader(inFolder.Data());
   if (!fRunLoader) {
     AliError("Can not find Run Loader for input stream 0");
     return;

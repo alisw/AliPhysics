@@ -16,14 +16,15 @@ public:
   AliFMDMultRegion (UShort_t detector,  Char_t ring, 
 		    UShort_t minSector, UShort_t maxSector, 
 		    UShort_t minStrip,  UShort_t maxStrip, 
-		    Float_t  minEta,    Float_t  maxEta, 
+		    Float_t  minEta,    Float_t  maxEta,
+		    Float_t  meanEta,
 		    Float_t  minPhi,    Float_t  maxPhi,
 		    Float_t  particles, UShort_t method);
   virtual ~AliFMDMultRegion(){};
 
   UShort_t     Detector() const        { return fDetector; }
   Char_t       Ring() const            { return fRing; }
-  Float_t      Eta() const;
+  Float_t      Eta() const             { return fMeanEta; }
   Float_t      Phi() const             { return (fMaxPhi + fMinPhi) / 2; }  
   UShort_t     MinSector() const       { return fMinSector; }
   UShort_t     MaxSector() const       { return fMaxSector; }
@@ -37,16 +38,17 @@ public:
 protected:
   UShort_t fDetector;        // Detector #
   Char_t   fRing;            // Ring ID
-  UShort_t fMinSector;       // First sector of this region
-  UShort_t fMaxSector;       // Last sector of this region
-  UShort_t fMinStrip;        // First strip of this region
-  UShort_t fMaxStrip;        // Second strip of this region  
+  UShort_t fMinSector;       // !First sector of this region
+  UShort_t fMaxSector;       // !Last sector of this region
+  UShort_t fMinStrip;        // !First strip of this region
+  UShort_t fMaxStrip;        // !Second strip of this region  
   Float_t  fMinEta;          // Least eta covered
   Float_t  fMaxEta;          // Largest eta covered
+  Float_t  fMeanEta;         // Scaled average Eta in the region
   Float_t  fMinPhi;          // Least phi covered
   Float_t  fMaxPhi;          // Largest phi covered
 
-  ClassDef(AliFMDMultRegion,1) // Rec. Multiplicity in a eta,phi region
+  ClassDef(AliFMDMultRegion,2) // Rec. Multiplicity in a eta,phi region
 };
 #endif
 //____________________________________________________________________
