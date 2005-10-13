@@ -324,6 +324,7 @@ void AliMUONTriggerDecision::SetBit(){
 	for (Int_t icharge=0; icharge<10; icharge++) {
 	  sumCharge=sumCharge+mdig->TrackCharge(icharge);
 	}
+
 // apply condition on soft background	
 	Int_t testCharge=sumCharge-(Int_t(sumCharge/10))*10;	
 	if(sumCharge<=10||testCharge>0) {	  
@@ -779,8 +780,8 @@ void AliMUONTriggerDecision::TrigX(Int_t ch1q[16], Int_t ch2q[16],
  // compare Left & Right deviations
  Int_t tmpLeftDev=0, tmpRightDev=0;
  for (j=0; j<5; j++){
-   tmpLeftDev  = tmpLeftDev + Int_t(leftDev[j]*TMath::Power(2,j)); 
-   tmpRightDev = tmpRightDev + Int_t(rightDev[j]*TMath::Power(2,j)); 
+   tmpLeftDev  = tmpLeftDev + Int_t(leftDev[j]<<j); 
+   tmpRightDev = tmpRightDev + Int_t(rightDev[j]<<j); 
  }
 
  // assign mimimum deviation do dev[][]
@@ -910,8 +911,8 @@ void AliMUONTriggerDecision::Sort2x5(Int_t dev1[6], Int_t dev2[6],
 // returns minimun between dev1 and dev2
  Int_t tmpDev1=0, tmpDev2=0;
  for (Int_t j=0; j<5; j++){
-   tmpDev1 = tmpDev1 + Int_t(dev1[j]*TMath::Power(2,j)); 
-   tmpDev2 = tmpDev2 + Int_t(dev2[j]*TMath::Power(2,j)); 
+   tmpDev1 = tmpDev1 + Int_t(dev1[j]<<j); 
+   tmpDev2 = tmpDev2 + Int_t(dev2[j]<<j); 
  }
  if (tmpDev1 <= tmpDev2 ){
    for (Int_t j=0; j<=5; j++) { minDev[j]=dev1[j];}
@@ -1158,17 +1159,17 @@ void AliMUONTriggerDecision::LocalTrigger(Int_t icirc,
   Int_t signDev=minDev[4];   
   Int_t deviation=0;
   for (i=0; i<4; i++) {          // extract deviation
-    deviation = deviation+Int_t(minDev[i]*TMath::Power(2,i));   
+    deviation = deviation+Int_t(minDev[i]<<j);   
   }
   
   Int_t istripX1Circ=0;
   for (i=0; i<5; i++) {          // extract X1 strip fired 
-    istripX1Circ = istripX1Circ+Int_t(minDevStrip[i]*TMath::Power(2,i));   
+    istripX1Circ = istripX1Circ+Int_t(minDevStrip[i]<<i);   
   }
   
   Int_t iStripY=0;
   for (i=0; i<4; i++) {          // extract Y strip fired 
-    iStripY = iStripY+Int_t(coordY[i]*TMath::Power(2,i));   
+      iStripY = iStripY+Int_t(coordY[i]<<i);   
   }
 
 // trigger or not 
@@ -1453,9 +1454,9 @@ void AliMUONTriggerDecision::Digits2Trigger(){
       localtr[2] = GetDev(icirc);
       localtr[3] = GetStripY11(icirc);
       for (Int_t i = 0; i < 2; i++) {    // convert the Lut output in 1 digit 
-	localtr[4] += Int_t(loLpt[i]*TMath::Power(2,i));
-	localtr[5] += Int_t(loHpt[i]*TMath::Power(2,i));
-	localtr[6] += Int_t(loApt[i]*TMath::Power(2,i));
+	localtr[4] += Int_t(loLpt[i]<<i);
+	localtr[5] += Int_t(loHpt[i]<<i);
+	localtr[6] += Int_t(loApt[i]<<i);
       }
 
       for (Int_t i = 0; i < 16; i++) {    // convert X/Y bit in bit pattern

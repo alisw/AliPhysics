@@ -161,7 +161,7 @@ Int_t AliMUONTriggerLut::GetMask(Int_t ystrip){
   Int_t mask=0;
   tabMask[ystrip]=1;
   for (Int_t i=0; i<16; i++) {          
-    mask=mask+Int_t(tabMask[i]*TMath::Power(2,i));   
+    mask=mask+Int_t(tabMask[i]<<i); 
   }
   return mask;
 }

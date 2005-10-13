@@ -147,8 +147,7 @@ void AliMUONTriggerGeometryBuilder::CreateGeometry()
 	for (Int_t iplane=0; iplane<2; iplane++) { // loop on detection planes
 	    
 	    Int_t iVolNum=1; // counter Volume Number
-	    icount = Int_t(iplane*TMath::Power(2,0))+
-		Int_t(istation*TMath::Power(2,1));
+	    icount = Int_t(iplane<<0)+Int_t(istation<<1);
 	    
 	    iChamber = &fMUON->Chamber(10+icount);
 	    par[0] = iChamber->RInner(); 
