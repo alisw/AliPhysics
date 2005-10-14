@@ -10,9 +10,11 @@
 
 #include "AliMUONDataInterface.h"
 #include "AliMUONLocalTrigger.h"
+#include "AliMUONGlobalTrigger.h"
 #include "AliMUONHit.h"
 #include "AliMUONDigit.h"
 #include "AliMUONRawCluster.h"
+#include "AliMUONTrack.h"
 #include "AliLog.h"
 
 #include <iostream>
@@ -80,6 +82,7 @@ void AliMUONDataInterface::Reset()
 	fDigitAddressSet = kFALSE;
 	fClusterAddressSet = kFALSE;
 	fTriggerAddressSet = kFALSE;
+	fRecTracksAddressSet = kFALSE;
 }
 
 
@@ -208,6 +211,7 @@ Bool_t AliMUONDataInterface::FetchEvent(Int_t event)
 		fDigitAddressSet = kFALSE;
 		fClusterAddressSet = kFALSE;
 		fTriggerAddressSet = kFALSE;
+		fRecTracksAddressSet = kFALSE;
 	}
 	if ( event != fEventnumber )
 	{
@@ -221,6 +225,7 @@ Bool_t AliMUONDataInterface::FetchEvent(Int_t event)
 		fDigitAddressSet = kFALSE;
 		fClusterAddressSet = kFALSE;
 		fTriggerAddressSet = kFALSE;
+		fRecTracksAddressSet = kFALSE;
 	}
 	return kTRUE;
 }
@@ -320,27 +325,46 @@ Bool_t AliMUONDataInterface::FetchTreeD()
 
 Bool_t AliMUONDataInterface::FetchTreeR()
 {
-// Fetch the reconstructed objects tree from the current muon loader.
-// Note: The addresses must still be set. 
-
-	if (fMuonloader->TreeR() == NULL)
+  // Fetch the reconstructed objects tree from the current muon loader.
+  // Note: The addresses must still be set. 
+  
+  if (fMuonloader->TreeR() == NULL)
+    {
+      fMuonloader->LoadRecPoints("READ");
+      if (fMuonloader->TreeR() == NULL)
 	{
-		fMuonloader->LoadRecPoints("READ");
-		if (fMuonloader->TreeR() == NULL)
-		{
-			AliError("Could not load TreeR.");
-			return kFALSE;
-		}
-		
-		// Need to reset these flags so that the cluster and trigger address
-		// gets reset after this method. 
-		fClusterAddressSet = kFALSE;
-		fTriggerAddressSet = kFALSE;
+	  AliError("Could not load TreeR.");
+	  return kFALSE;
 	}
-	return kTRUE;
+      
+      // Need to reset these flags so that the cluster and trigger address
+      // gets reset after this method. 
+      fClusterAddressSet = kFALSE;
+      fTriggerAddressSet = kFALSE;
+    }
+  return kTRUE;
 }
 
-
+Bool_t AliMUONDataInterface::FetchTreeT()
+{
+  // fetch the reconstructed tracks tree from the current muon loader
+  // note : the addresses must still be set.
+  if (fMuonloader->TreeT() == NULL)
+    {
+      fMuonloader->LoadTracks("READ");
+      if (fMuonloader->TreeT() == NULL)
+	{
+	  AliError("Could not load TreeT.");
+	  return kFALSE;
+	}
+      
+      // Need to reset these flags so that the rec tracks address
+      // gets reset after this method. 
+      fRecTracksAddressSet = kFALSE;
+    }
+  return kTRUE;
+}
+  
 Int_t AliMUONDataInterface::NumberOfEvents(TString filename, TString foldername)
 {
 // Returns the number of events in the specified file/folder, and -1 on error.
@@ -621,7 +645,6 @@ AliMUONLocalTrigger* AliMUONDataInterface::LocalTrigger(
 	}
 	return static_cast<AliMUONLocalTrigger*>( fData.LocalTrigger()->At(trigger) );
 }
-
 
 Bool_t AliMUONDataInterface::SetFile(TString filename, TString foldername)
 {
@@ -1005,4 +1028,114 @@ AliMUONLocalTrigger* AliMUONDataInterface::LocalTrigger(Int_t trigger)
 		fTriggerAddressSet = kTRUE;
 	}
 	return static_cast<AliMUONLocalTrigger*>( fData.LocalTrigger()->At(trigger) );
+}
+
+Int_t AliMUONDataInterface::NumberOfGlobalTriggers()
+{
+  
+  // Get the number of local trigger objects in the current event.
+  // -1 is returned on error.
+  
+  if (fRunloader == NULL)
+    {
+      AliError("File not set.");
+      return -1;
+    }
+  if (fEventnumber < 0)
+    {
+      AliError("Event not chosen.");
+      return -1;
+    }
+  
+  if ( ! FetchTreeD() ) return -1;
+  if ( ! fTriggerAddressSet )
+    {
+      fData.SetTreeAddress("GLT");
+      fData.ResetTrigger();
+      fData.GetTriggerD();
+      fTriggerAddressSet = kTRUE;
+    }
+  return fData.GlobalTrigger()->GetEntriesFast();
+}
+
+AliMUONGlobalTrigger* AliMUONDataInterface::GlobalTrigger(Int_t trigger)
+{
+  // Fetch the specified local trigger object from the current event.
+  // NULL is returned on error.
+  
+  if (fRunloader == NULL)
+    {
+      AliError("File not set.");
+      return NULL;
+    }
+  if (fEventnumber < 0)
+    {
+      AliError( "Event not chosen.");
+      return NULL;
+    }
+  
+  if ( ! FetchTreeD() ) return NULL;
+  if ( ! fTriggerAddressSet )
+    {
+      fData.SetTreeAddress("GLT");
+      fData.ResetTrigger();
+      fData.GetTriggerD();
+      fTriggerAddressSet = kTRUE;
+    }
+  return static_cast<AliMUONGlobalTrigger*>( fData.GlobalTrigger()->At(trigger) );
+}
+
+Int_t AliMUONDataInterface::NumberOfRecTracks()
+{
+  // Fetch the number of reconstructed tracks from the current event.
+  // NULL is returned on error.
+  
+  if (fRunloader == NULL)
+    {
+      AliError("File not set.");
+      return -1;
+    }
+  if (fEventnumber < 0)
+    {
+      AliError( "Event not chosen.");
+      return -1;
+    }
+  
+  if ( ! FetchTreeT() ) return -1;
+  if ( ! fRecTracksAddressSet )
+    {
+      fData.SetTreeAddress("RT");
+      fData.ResetRecTracks();
+      fData.GetRecTracks();
+      fRecTracksAddressSet = kTRUE;
+    }
+  return fData.RecTracks()->GetEntriesFast();
+}
+
+AliMUONTrack* AliMUONDataInterface::RecTrack(Int_t rectrack)
+{
+  // Fetch the specified reconstructed track object from the current event.
+  // NULL is returned on error.
+  
+  if (fRunloader == NULL)
+    {
+      AliError("File not set.");
+      return NULL;
+    }
+  if (fEventnumber < 0)
+    {
+      AliError( "Event not chosen.");
+      return NULL;
+    }
+  
+  if ( ! FetchTreeT() ) return NULL;
+  if ( ! fRecTracksAddressSet )
+    {
+      fData.SetTreeAddress("RT");
+      fData.ResetRecTracks();
+      fData.GetRecTracks();
+      fRecTracksAddressSet = kTRUE;
+    }
+  return static_cast<AliMUONTrack*>( fData.RecTracks()->At(rectrack) );
+  // return (AliMUONTrack*)(fData.RecTracks()->At(rectrack));
 }
