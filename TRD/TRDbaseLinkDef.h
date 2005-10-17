@@ -31,4 +31,8 @@
 #pragma link C++ class  AliTRDrawData+;
 #pragma link C++ class  AliTRDRawStream+;
 
+#pragma link C++ class  AliTRDCalROC+;
+#pragma link C++ class  AliTRDCalROCVdrift+;
+#pragma link C++ class  AliTRDCalVdrift+;
+
 #endif

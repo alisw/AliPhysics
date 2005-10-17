@@ -436,9 +436,9 @@ Bool_t AliTRDclusterizerV1::MakeClusters()
 		    padSignal[4] = TMath::Abs(digits->GetDataUnchecked(row,col+2,time));
 		  }		  
 		  clusterPads[1] =  GetCOG(padSignal);
-		  Double_t check = fPar->LUTposition(iplan,clusterSignal[0]
-                                                          ,clusterSignal[1]
-					                  ,clusterSignal[2]);
+		  //Double_t check = fPar->LUTposition(iplan,clusterSignal[0]
+                  //                                        ,clusterSignal[1]
+		  //	  		                    ,clusterSignal[2]);
 		  //		  Float_t diff = clusterPads[1] -  check;
 
 		}
