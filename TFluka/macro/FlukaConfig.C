@@ -84,11 +84,6 @@ void Config()
   gMC->SetExternalDecayer(decayer);
 
   //
-  // Use kTRUE as argument to generate alice.pemf first
-  //
-  ((TFluka*) gMC)->SetGeneratePemf(kTRUE);
-
-  //
   //
   //
   // Physics process control
@@ -153,7 +148,7 @@ void Config()
   //
 
 
-  gAlice->SetDebug(10);
+//  gAlice->SetDebug(10);
      if (smag == k2kG) {
         comment = comment.Append(" | L3 field 0.2 T");
     } else if (smag == k4kG) {
