@@ -6,6 +6,7 @@
 // builder
 #pragma link C++ class AliMUONFactoryV2+;  
 #pragma link C++ class AliMUONFactoryV3+;  
+#pragma link C++ class AliMUONFactoryV4+;  
 
 // digitizer
 #pragma link C++ class AliMUONHitMapA1+; 
