@@ -63,7 +63,13 @@ SRCS +=  \
 	 mapping/AliMpSlatPadIterator.cxx  \
 	 mapping/AliMpSlatSegmentation.cxx  \
 	 mapping/AliMpSlatZonePadIterator.cxx  \
-	 mapping/AliMpSt345Reader.cxx  \
+	 mapping/AliMpSt345Reader.cxx
+   
+# Category trigger
+SRCS += \
+    mapping/AliMpTrigger.cxx \
+    mapping/AliMpTriggerReader.cxx \
+    mapping/AliMpTriggerSegmentation.cxx
 
 # Category graphics
 #
