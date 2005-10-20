@@ -22,10 +22,14 @@
 // Class which encapsuate all informations about a pad
 // Included in AliRoot: 2003/05/02
 // Authors: David Guez, Ivana Hrivnacova; IPN Orsay
+// root [0] .x testSectorAreaIterator.C
+// Real time 0:00:56, CP time 36.270
 
 #include <Riostream.h>
+#include <TClonesArray.h>
 
 #include "AliMpPad.h"
+#include "AliLog.h"
 
 ClassImp(AliMpPad)
 
@@ -34,6 +38,8 @@ ClassImp(AliMpPad)
 // This class encapsulate all the information about a pad
 //
 //////////////////////////////////////////////////////////
+
+const Int_t  AliMpPad::fgkMaxNofLocations = 6;
 
 //
 // foreign operators
@@ -53,11 +59,13 @@ ostream& operator<<(ostream& out,const TVector2& v)
   return out; 
 }
 
+
 //_____________________________________________________________________________
 AliMpPad::AliMpPad(const AliMpIntPair& location,const AliMpIntPair& indices,
                    const TVector2& position,const TVector2& dimensions,
                    Bool_t validity)
  : TObject(),
+   fLocations(0),
    fLocation(location),
    fIndices(indices),
    fPosition(position),
@@ -75,6 +83,7 @@ AliMpPad::AliMpPad(const AliMpIntPair& location,const AliMpIntPair& indices,
 //_____________________________________________________________________________
 AliMpPad::AliMpPad()
   : TObject(),
+    fLocations(0),
     fLocation(AliMpIntPair::Invalid()),
     fIndices(AliMpIntPair::Invalid()),
     fPosition(-1.,-1.),
@@ -86,83 +95,102 @@ AliMpPad::AliMpPad()
 
 
 //_____________________________________________________________________________
-AliMpPad::AliMpPad(const AliMpPad& src)
-  : TObject(src)
+AliMpPad::AliMpPad(const AliMpPad& rhs)
+  : TObject(rhs)
 {
 /// Copy constructor
 
- *this = src;
+ *this = rhs;
 }
 
 //_____________________________________________________________________________
 AliMpPad::~AliMpPad() 
 {
 /// Destructor
+
+#ifdef WITH_ROOT
+  if (fLocations) fLocations->Delete();
+#endif
+
+  delete fLocations;
 }
 
 //_____________________________________________________________________________
-AliMpPad& AliMpPad::operator = (const AliMpPad& src) 
+AliMpPad& AliMpPad::operator = (const AliMpPad& rhs) 
 {
 /// Assignment operator
  
   // check assignment to self
-  if (this == &src) return *this;
+  if (this == &rhs) return *this;
 
   // base class assignment
-  TObject::operator=(src);
+  TObject::operator=(rhs);
 
   // assignment operator
-  fLocation   = src.fLocation;
-  fIndices    = src.fIndices;
-  fPosition.Set(src.fPosition);
-  fDimensions.Set(src.fDimensions);
-  fValidity = src.fValidity;
+  fLocation   = rhs.fLocation;
+  fIndices    = rhs.fIndices;
+  fPosition.Set(rhs.fPosition);
+  fDimensions.Set(rhs.fDimensions);
+  fValidity = rhs.fValidity;
+  
+  fLocations = 0;
+
+#ifdef WITH_STL
+  if ( rhs.GetNofLocations() ) {
+    fLocations = new IntPairVector(rhs.GetNofLocations());
+    
+    for (Int_t i=0; i<rhs.GetNofLocations(); i++)
+      (*fLocations)[i] = rhs.GetLocation(i);
+  }  			
+#endif
+
+#ifdef WITH_ROOT
+  if ( rhs.GetNofLocations() ) {
+    fLocations = new TClonesArray("AliMpIntPair", rhs.GetNofLocations());
+    
+    for (Int_t i=0; i<rhs.GetNofLocations(); i++)
+      new((*fLocations)[i]) AliMpIntPair(rhs.GetLocation(i));
+  }  			
+#endif
 
   return *this;
 }
 
 //_____________________________________________________________________________
-Bool_t AliMpPad::operator == (const AliMpPad& pos2) const
+Bool_t AliMpPad::operator == (const AliMpPad& rhs) const
 {
 /// Equality operator
 
-  // are this and pos2 equals?
+  // are this and rhs equals?
 
   // one valid, one invalid
-  if (fValidity != pos2.fValidity) return false;
+  if (fValidity != rhs.fValidity) return false;
   
   // both invalid
   if (!fValidity) return true;
   
   // both valid
-  return    (fLocation==pos2.fLocation) && (fIndices   ==pos2.fIndices   )
-         && (fPosition==pos2.fPosition) && (fDimensions==pos2.fDimensions);
+  Bool_t sameLocations = true;
+  
+  if (rhs.GetNofLocations()) {
+    for (Int_t i=0; i<rhs.GetNofLocations(); i++) 
+      if ( GetLocation(i) != rhs.GetLocation(i) )
+        sameLocations = false;
+  }
+  
+  return    (fLocation   == rhs.fLocation) 
+         && (fIndices    == rhs.fIndices)
+         && (fPosition   == rhs.fPosition) 
+	 && (fDimensions == rhs.fDimensions)
+	 && sameLocations;
 }
 //_____________________________________________________________________________
-Bool_t AliMpPad::operator!= (const AliMpPad& pos2) const
+Bool_t AliMpPad::operator != (const AliMpPad& rhs) const
 {
 /// Non-equality operator
 
-  // are this and pos2 equals?
-  return !(*this==pos2);
-}
-
-//_____________________________________________________________________________
-ostream& operator<< (ostream &out, const AliMpPad& op)
-{
-/// Output streaming
-
-  if (op.IsValid()) {
-    out << "Pad: Location " << op.GetLocation() 
-        << "  Indices "     << op.GetIndices() 
-	<< "  Position "    << op.Position()
-        << "  Dimensions "  << op.Dimensions();
-    return out;
-  }
-  else {
-    out << "Pad::Invalid";
-    return out;
-  }  
+  // are this and rhs equals?
+  return !(*this==rhs);
 }
 
 //_____________________________________________________________________________
@@ -174,19 +202,140 @@ Bool_t operator < (const AliMpPad& left, const AliMpPad& right)
 }
 
 //_____________________________________________________________________________
+Bool_t AliMpPad::AddLocation(const AliMpIntPair& location, Bool_t warn)
+{
+/// Add location to the collection if not yet present and
+/// if collection is not yet full                                           \n
+/// Return false and optionally give a warning if location is not 
+/// added. 
+
+  // Check maximum number limit
+  if ( GetNofLocations() == fgkMaxNofLocations ) {
+    if (warn) {
+      AliWarningStream() << "Cannot add location: "
+                         << location
+			 << "  Maximum number has been reached." << endl;
+    }
+    return false;
+  }  			 
+
+  // Check if location is present
+  if ( HasLocation(location) ) {
+    if (warn) {
+      AliWarningStream() << "Cannot add location: "
+                         << location
+			 << "  Location is already present." << endl;
+    }
+    return false;
+  } 
+  
+  // Add location
+#ifdef WITH_STL
+  if (! fLocations )  
+    fLocations = new IntPairVector();
+
+  fLocations->push_back(location);
+  return true;
+#endif
+
+#ifdef WITH_ROOT
+  if (! fLocations)
+    fLocations = new TClonesArray("AliMpIntPair", fgkMaxNofLocations);
+    
+  new ((*fLocations)[GetNofLocations()]) AliMpIntPair(location);
+  return true;
+#endif
+}
+
+//_____________________________________________________________________________
+void AliMpPad::PrintOn(ostream& out) const
+{
+/// Prints all pad data.
+
+  if ( !fValidity ) {
+    out << "Pad::Invalid";
+    return;
+  }  
+
+  out << "Pad: Location " << fLocation 
+      << "  Indices "     << fIndices
+      << "  Position "    << fPosition
+      << "  Dimensions "  << fDimensions;
+
+  if ( GetNofLocations() ) {
+    out << endl;
+    out << "     Other locations: ";
+
+    for (Int_t i=0; i<GetNofLocations(); i++) 
+        out << GetLocation(i) << "  ";
+  }
+}
+
+//_____________________________________________________________________________
 void AliMpPad::Print(const char* /*option*/) const
 {
 /// Prints all pad data.
 
-  if (fValidity) {
-    cout << "Indices: " << fIndices << "; "
-         << " Location: " << fLocation << "; "
-         << " Position: " << fPosition.X() << " " << fPosition.Y() << "; "
-         << " Dimensions: " << fDimensions.X() << " " << fDimensions.Y() 
-         << endl;
+  PrintOn(cout);
+  cout << endl;
+}
+
+//_____________________________________________________________________________
+Int_t  AliMpPad::GetNofLocations() const
+{
+/// Return number of other locations associated with this pad
+
+  if (!fLocations) return 0;
+  
+#ifdef WITH_STL
+  return fLocations->size();
+#endif
+
+#ifdef WITH_ROOT
+  return fLocations->GetEntriesFast();
+#endif
+}  
+  
+
+//_____________________________________________________________________________
+AliMpIntPair AliMpPad::GetLocation(Int_t i) const
+{
+/// Return i-th other location associated with this pad
+
+  if ( !fLocations || i<0 || i>=GetNofLocations() ) 
+    return AliMpIntPair::Invalid();
+
+#ifdef WITH_STL
+  return (*fLocations)[i];
+#endif
+  
+#ifdef WITH_ROOT
+  return *(AliMpIntPair*)fLocations->At(i);
+#endif
+}  
+
+//_____________________________________________________________________________
+Bool_t AliMpPad::HasLocation(const AliMpIntPair& location) const
+{
+/// Return true if given location is present either as fLocation
+/// or in the collectio
+
+  if (fLocation == location) return true;
+
+  for (Int_t i=0; i<GetNofLocations(); i++) {
+    if ( GetLocation(i) == location ) return true;
   }
-  else {	 
-    cout << "Pad::Invalid " << endl;
-  }  
+    
+  return false;
+}      
+
+//_____________________________________________________________________________
+ostream& operator<< (ostream &out, const AliMpPad& pad)
+{
+/// Output streaming
+
+  pad.PrintOn(out);
+
+  return out;
 }
 
