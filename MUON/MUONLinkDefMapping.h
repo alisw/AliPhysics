@@ -13,7 +13,7 @@
 #pragma link C++ class  AliMpVSegmentation+;
 #pragma link C++ class  AliMpVPadIterator+;
 #pragma link C++ class  AliMpPadIteratorPtr+;
-#pragma link C++ class  AliMpFiles+;
+#pragma link C++ class  AliMpFiles!;
 
 #pragma link C++ enum   AliMpDirection;
 #pragma link C++ enum   AliMpXDirection;
@@ -81,6 +81,10 @@
 #pragma link C++ class  AliMpSlatPadIterator+;
 #pragma link C++ class  AliMpSlatZonePadIterator+;
 
+#pragma link C++ class  AliMpTriggerReader+;
+#pragma link C++ class  AliMpTrigger+;
+#pragma link C++ class  AliMpTriggerSegmentation+;
+ 
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
