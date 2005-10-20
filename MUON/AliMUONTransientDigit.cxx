@@ -25,6 +25,7 @@ ClassImp(AliMUONTransientDigit)
 
 //____________________________________________________________________________
 AliMUONTransientDigit::AliMUONTransientDigit() :
+  AliMUONDigit(),
   fChamber(0),
   fTrackList(0)
 {
