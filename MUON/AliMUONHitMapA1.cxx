@@ -85,9 +85,9 @@ Int_t AliMUONHitMapA1::CheckedIndex(Int_t ix, Int_t iy) const
 {
 // Return checked indices ix, iy
     Int_t index=2*fNpy*(ix+fNpx)+(iy+fNpy);
-    if (index >= fMaxIndex) {
-// 	printf("\n \n \n Try to read/write outside array !!!! \n \n %d %d %d %d %d %d",
-// 	       ix,iy, fMaxIndex, index, fNpx, fNpy);
+    if ( index < 0 || index >= fMaxIndex ) {
+        AliWarning(Form("index outside array ix %d iy %d MaxIndex %d index %d Npx %d Npy %d",
+		      ix, iy, fMaxIndex, index, fNpx, fNpy));
 	return  fMaxIndex-1;
     } else {
 	return index;
