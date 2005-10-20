@@ -32,6 +32,7 @@ SRCS:=  AliMUON.cxx AliMUONv1.cxx \
         AliMUONSt345SlatSegmentation.cxx \
         AliMUONSt345SlatSegmentationV2.cxx \
         AliMUONTriggerSegmentation.cxx \
+        AliMUONTriggerSegmentationV2.cxx \
         AliMUONSegmentationManager.cxx
 
 HDRS:= $(SRCS:.cxx=.h)
