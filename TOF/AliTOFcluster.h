@@ -28,7 +28,8 @@ class AliTOFcluster : public TObject {
   Int_t    GetDetInd(Int_t n) const {return fdetIndex[n];} // Cluster Detector Indeces
   Int_t    GetIndex() const         {return fIdx;}         // Cluster Index
   void     Use() {fADC=-fADC;}
-
+  Double_t GetQuality() const {return fQuality;}
+  void     SetQuality(Double_t quality) {fQuality = quality;}
  private:
 
   Int_t fLab[3];      // track labels
@@ -39,7 +40,7 @@ class AliTOFcluster : public TObject {
   Double_t fZ;        // z-coordinate
   Double_t fTDC;      // TDC count
   Double_t fADC;      // ADC count
-
+  Double_t fQuality;  // quality of the best track 
   ClassDef(AliTOFcluster, 1) // TOF cluster
 };
 

@@ -73,7 +73,7 @@ class AliTOFGeometry: public TObject{
   virtual void    SetHoles(Bool_t holes) {fHoles = holes;};
   virtual Bool_t  GetHoles() const {return fHoles;};
   virtual Bool_t  IsInsideThePad(Int_t *det, Float_t *pos); 
-  virtual Float_t DistanceToPad(Int_t *det, Float_t *pos); 
+  virtual Float_t DistanceToPad(Int_t *det, Float_t *pos, Float_t *dist3d=0); 
   virtual void    GetPos(Int_t *det,Float_t *pos);
   virtual void    GetDetID(Float_t *pos,Int_t *det);
   virtual Int_t   GetPlate(Float_t *pos);

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.8  2004/11/29 08:28:01  decaro
+Introduction of a new TOF constant (i.e. TDC bin width)
+
 Revision 1.7  2004/11/05 07:20:08  decaro
 TOF library splitting and conversion of some printout messages in AliLog schema (T.Kuhr)
 
@@ -177,8 +180,11 @@ void AliTOFGeometry::Init()
   fPhiSec   = 360./kNSectors;
 }
 
+
+
+
 //_____________________________________________________________________________
-Float_t AliTOFGeometry::DistanceToPad(Int_t *det, Float_t *pos) 
+Float_t AliTOFGeometry::DistanceToPad(Int_t *det, Float_t *pos, Float_t *dist3d) 
 {
 //
 // Returns distance of  space point with coor pos (x,y,z) (cm) wrt 
@@ -227,6 +233,11 @@ Float_t AliTOFGeometry::DistanceToPad(Int_t *det, Float_t *pos)
   Float_t zr = -xt*TMath::Sin(alpha/kRaddeg)+zt*TMath::Cos(alpha/kRaddeg);
 
   Float_t dist = TMath::Sqrt(xr*xr+yr*yr+zr*zr);
+  if (dist3d){
+    dist3d[0] = xr;
+    dist3d[1] = yr;
+    dist3d[2] = zr;
+  }
   return dist;
 
 }

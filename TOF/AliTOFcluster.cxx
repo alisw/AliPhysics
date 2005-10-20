@@ -44,7 +44,7 @@ AliTOFcluster::AliTOFcluster() {
   for (ii=0; ii<3; ii++) fLab[ii]      = -1;
   fIdx = -1;
   for (ii=0; ii<5; ii++) fdetIndex[ii] = -1;
-
+  fQuality    = -100; 
 }
 //-------------------------------------------------------------------------
 
@@ -63,7 +63,7 @@ AliTOFcluster::AliTOFcluster(Double_t *h, Int_t *l, Int_t *ind, Int_t idx)
   for (ii=0; ii<3; ii++) fLab[ii]      = l[ii];
   fIdx = idx;
   for (ii=0; ii<5; ii++) fdetIndex[ii] = ind[ii];
-
+  fQuality    = -100; 
 }
 //-------------------------------------------------------------------------
 
@@ -82,7 +82,7 @@ AliTOFcluster::AliTOFcluster(Double_t *h, Int_t *ind)
   for (ii=0; ii<3; ii++) fLab[ii]      = -1;
   fIdx = -1;
   for (ii=0; ii<5; ii++) fdetIndex[ii] = ind[ii];
-
+  fQuality    = -100; 
 }
 //-------------------------------------------------------------------------
 
@@ -101,7 +101,7 @@ AliTOFcluster::AliTOFcluster(const AliTOFcluster & cluster)
   for (ii=0; ii<3; ii++) fLab[ii]      = cluster.fLab[ii];
   fIdx      = cluster.fIdx;
   for (ii=0; ii<5; ii++) fdetIndex[ii] = cluster.fdetIndex[ii];
-
+  fQuality    = cluster.fQuality; 
 }
 //-------------------------------------------------------------------------
 

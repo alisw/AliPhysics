@@ -29,6 +29,7 @@
 #include "AliRunLoader.h"
 
 #include "AliTOFtracker.h"
+#include "AliTOFtrackerMI.h"
 #include "AliTOFClusterFinder.h"
 #include "AliTOFReconstructor.h"
 
@@ -88,6 +89,10 @@ AliTracker* AliTOFReconstructor::CreateTracker(AliRunLoader* runLoader) const
   AliTOFGeometry* geom = GetTOFGeometry(runLoader);
   if (!geom) return NULL;
   Double_t parPID[] = {130., 5.};
+  TString selectedTracker = GetOption();
+  // use MI tracker if selected
+  if (selectedTracker.Contains("MI")) return new AliTOFtrackerMI(geom,parPID);
+
   return new AliTOFtracker(geom, parPID);
 }
 

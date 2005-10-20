@@ -12,6 +12,7 @@
 #pragma link C++ class  AliTOFClusterFinder+;
 #pragma link C++ class  AliTOFtrack+;
 #pragma link C++ class  AliTOFtracker+;
+#pragma link C++ class  AliTOFtrackerMI+;
 #pragma link C++ class  AliTOFpidESD+;
 #pragma link C++ class  AliTOFReconstructor+;
 
