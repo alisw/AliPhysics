@@ -386,7 +386,7 @@ void TTreeStream::BuildTree(){
     }
     if (element->fClass){
       if (element->fClass->GetBaseClass("TClonesArray")){
-	TBranch * br = fTree->Branch(bname1,&(element->fPointer));
+	TBranch * br = fTree->Branch(bname1,element->fClass->GetName(),&(element->fPointer));
 	fBranches->AddAt(br,i);
       }else
 	{
