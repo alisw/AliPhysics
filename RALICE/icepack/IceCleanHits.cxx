@@ -33,6 +33,20 @@
 // The defaults of the various parameters can be changed by the corresponding
 // Set memberfunctions.
 //
+// Concerning the trigger time :
+// -----------------------------
+// We adopt an overall trigger time setting for each year of data taking.
+// The mean values obtained from Dipo's uncalibrated LE distributions
+// are currently used here.
+// No data were yet available for year<2002, so as default the 2002
+// value is used for those early runs.
+// It seems that in 2005 the trigger time was changed within the year
+// from 24170 ns to 12138 ns. The latter however shows a 2-bump structure,
+// which may point at the fact that people have been trying things out
+// with the DAQ system.
+// So, currently the 24170 ns will be used for all the 2005 data until
+// the issue is settled.
+//
 // The hits which do not fullfill the criteria are flagged "dead" for the
 // corresponding signal slot. This means they are still present in the
 // IceEvent structure and are as such still accessible.
@@ -130,6 +144,20 @@ void IceCleanHits::Amanda()
 {
 // Hit cleaning for Amanda modules.
 
+ // Trigger time setting according to year of data taking
+ // The mean values obtained from Dipo's uncalibrated LE distributions
+ // are currently used here.
+ // No data were yet available for year<2002, so as default the 2002
+ // value is used for those early runs.
+ // It seems that in 2005 the trigger time was changed within the year
+ // from 24170 ns to 12138 ns. The latter however shows a 2-bump structure,
+ // so currently the 24170 ns will be used for the 2005 data.
+ Int_t year=fEvt->GetJE();
+ Float_t ttrig=23958;
+ if (year==2003) ttrig=23994;
+ if (year==2004) ttrig=24059.5;
+ if (year==2005) ttrig=24170;
+
  // All Amanda OMs with a signal
  TObjArray* aoms=fEvt->GetDevices("IceAOM");
 
@@ -150,7 +178,6 @@ void IceCleanHits::Amanda()
  Int_t clean=1;
  AliSignal* sx=0;
  Float_t adc,le,tot;
- Float_t ttrig;
  for (Int_t iom=0; iom<oms.GetEntries(); iom++)
  {
   omx=(IceAOM*)oms.At(iom);
@@ -188,16 +215,16 @@ void IceCleanHits::Amanda()
      clean=0;
     }
    }
-   // Remove hits that are outside the trigger time window
-   /////////////// Dipo's job to determine the correct trigger time ///////////////
-   ttrig=0;
-/*******
+   // Remove hits that are outside the trigger time window.
+   // Since the trigger time was determined from uncalibrated LE's
+   // (to include cable length effects) the uncalibrated LE of each
+   // hit should be used here as well. 
+   le=sx->GetSignal("LE",-7);
    if (fabs(le-ttrig)>fTwinA)
    {
      sx->SetDead("LE");
      clean=0;
    }
-********/
    // Store only the current clean hits in our local hit array
    // This will save CPU time for the isolation criterion 
    if (clean) hits.Add(sx);

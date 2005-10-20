@@ -15,3 +15,7 @@
 13-oct-2005 NvE TTask derived class IceCleanHits introduced to perform hit cleaning.
                 Also example macro icecalib.cc in the /macros directory updated to
                 illustrate the use of the hit cleaning processor. 
+20-oct-2005 NvE Trigger time window selection introduced in IceCleanHits based
+                on Dipo's trigger time distributions. For further details see the
+                docs of IceCleanHits.
+
