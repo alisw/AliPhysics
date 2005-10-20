@@ -19,4 +19,17 @@ enum AliMpPlaneType
   kNonBendingPlane  ///< non-bending plane
 };
 
+inline 
+const char* PlaneTypeName(AliMpPlaneType planeType)
+{
+  switch ( planeType ) {
+    case kBendingPlane:
+      return "BendingPlane";
+      break;
+    case kNonBendingPlane:
+      return "NonBendingPlane";
+      break;
+  }    
+}       
+
 #endif //ALI_MP_PLANE_TYPE_H
