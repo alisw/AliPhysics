@@ -645,3 +645,8 @@
 11-oct-2005 NvE SetMJD invoked at the end of AliTimestamp::Add instead of just updating the
                 various datamembers. In this way the TTimeStamp parameters are brought in sync
                 with the (modified) AliTimestamp values. 
+20-oct-2005 NvE Directory /macros introduced and ROOT macro makedocs.cc added in /macros
+                to provide a generic method to auto-create the html class documentation
+                on all supported platforms.
+                For further details see /macros/makedocs.cc.
+
