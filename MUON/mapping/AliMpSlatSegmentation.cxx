@@ -57,6 +57,7 @@ AliMpSlatSegmentation::~AliMpSlatSegmentation()
   //
   // Dtor (empty).
   //
+  // Int_t i(0);//just to be able to put a breakpoint in gdb
   AliDebug(1,Form("this=%p",this));			
 }
 
@@ -69,6 +70,19 @@ AliMpSlatSegmentation::CreateIterator(const AliMpArea& area) const
   //
   
   return new AliMpSlatPadIterator(fkSlat,area);
+}
+
+//_____________________________________________________________________________
+const char*
+AliMpSlatSegmentation::GetName() const
+{
+  TString name("SlatSegmentation");
+  if ( fkSlat) 
+  {
+    name += ".";
+    name += fkSlat->GetName();
+  }
+  return name.Data();
 }
 
 //_____________________________________________________________________________
@@ -128,8 +142,8 @@ AliMpSlatSegmentation::PadByLocation(const AliMpIntPair& location,
 		{
 			AliWarning(Form("Manu ID %d not found in slat %s",
 			                 manuID, fkSlat->GetID()));
-			return AliMpPad::Invalid();
-		}
+    }
+    return AliMpPad::Invalid();
 	}
   AliMpVMotif* motif = motifPos->GetMotif();
   AliMpIntPair localIndices = 
@@ -147,10 +161,10 @@ AliMpSlatSegmentation::PadByLocation(const AliMpIntPair& location,
 	
   return AliMpPad(location,
                   motifPos->GlobalIndices(localIndices),
-		  motifPos->Position() 
-		    + motif->PadPositionLocal(localIndices) 
-		    - TVector2(fkSlat->DX(),fkSlat->DY()),
-		  motif->GetPadDimensions(localIndices));  
+                  motifPos->Position() 
+                  + motif->PadPositionLocal(localIndices) 
+                  - fkSlat->Position(),
+                  motif->GetPadDimensions(localIndices));  
 }
 
 //_____________________________________________________________________________
@@ -185,8 +199,7 @@ AliMpSlatSegmentation::PadByIndices(const AliMpIntPair& indices,
   AliMpVMotif* motif = motifPos->GetMotif();
   AliMpMotifType* motifType = motif->GetMotifType();
   AliMpIntPair localIndices(indices-motifPos->GetLowIndicesLimit());
-  AliMpConnection* connection = 
-    motifType->FindConnectionByLocalIndices(localIndices);
+  AliMpConnection* connection = motifType->FindConnectionByLocalIndices(localIndices);
   
   if (!connection)
 	{
@@ -194,16 +207,16 @@ AliMpSlatSegmentation::PadByIndices(const AliMpIntPair& indices,
 		{
 			AliWarning(Form("No connection for pad location (%d,%d)",
 			                indices.GetFirst(),indices.GetSecond()));
-			return AliMpPad::Invalid();
-		}      
+    }
+    return AliMpPad::Invalid();
 	}
 	
   return AliMpPad(AliMpIntPair(motifPos->GetID(),connection->GetGassiNum()),
                   indices,
-		  motifPos->Position()
-		    + motif->PadPositionLocal(localIndices)
-		    - TVector2(fkSlat->DX(), fkSlat->DY()),
-		  motif->GetPadDimensions(0));
+                  motifPos->Position()
+                  + motif->PadPositionLocal(localIndices)
+                  - fkSlat->Position(),
+                  motif->GetPadDimensions(localIndices));
 }
 
 //_____________________________________________________________________________
@@ -225,8 +238,8 @@ AliMpSlatSegmentation::PadByPosition(const TVector2& position,
 	{
 		if (warning) 
 		{
-			AliWarning(Form("Position (%e,%e) mm outside limits",
-			           position.X(),position.Y()));
+			AliWarning(Form("Slat %s Position (%e,%e) mm outside limits",
+                      fkSlat->GetID(),position.X(),position.Y()));
 		}
 		return AliMpPad::Invalid();
 	}
@@ -242,17 +255,19 @@ AliMpSlatSegmentation::PadByPosition(const TVector2& position,
 	{
 		if (warning) 
 		{
-			AliWarning("Position outside motif limits");
+			AliWarning(Form("Slat %s localIndices (%d,%d) outside motif %s limits",
+                      fkSlat->GetID(),localIndices.GetFirst(),
+                      localIndices.GetSecond(),motif->GetID().Data()));
 		}
 		return AliMpPad::Invalid();
 	}
   
   return AliMpPad(AliMpIntPair(motifPos->GetID(),connect->GetGassiNum()),
                   motifPos->GlobalIndices(localIndices),
-		  motifPos->Position()
-		    + motif->PadPositionLocal(localIndices)
-		    - TVector2(fkSlat->DX(),fkSlat->DY()),
-		  motif->GetPadDimensions(localIndices));  
+                  motifPos->Position()
+                  + motif->PadPositionLocal(localIndices)
+                  - fkSlat->Position(),
+                  motif->GetPadDimensions(localIndices));  
 }
 
 //_____________________________________________________________________________

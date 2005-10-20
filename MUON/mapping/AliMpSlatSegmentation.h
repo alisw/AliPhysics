@@ -38,6 +38,13 @@ class AliMpSlatSegmentation : public AliMpVSegmentation
 
   virtual AliMpVPadIterator* CreateIterator(const AliMpArea& area) const;
 
+  const char* GetName() const;
+  
+  Bool_t HasPad(const AliMpIntPair& indices) const;
+
+  Int_t MaxPadIndexX();
+  Int_t MaxPadIndexY();
+  
   virtual AliMpPad PadByLocation(const AliMpIntPair& location, 
 			 Bool_t warning) const;
 
@@ -47,11 +54,6 @@ class AliMpSlatSegmentation : public AliMpVSegmentation
   virtual AliMpPad PadByPosition(const TVector2& position,
 			 Bool_t warning) const;
 
-  Int_t MaxPadIndexX();
-  Int_t MaxPadIndexY();
-
-  Bool_t HasPad(const AliMpIntPair& indices) const;
-   
   const AliMpSlat* Slat() const;
   
  private:
