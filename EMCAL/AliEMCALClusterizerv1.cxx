@@ -355,7 +355,7 @@ Int_t AliEMCALClusterizerv1::AreNeighbours(AliEMCALDigit * d1, AliEMCALDigit * d
     Int_t iphi=0;
     Int_t ieta=0;
    geom->GetCellIndex(d1->GetId(), nSupMod,nTower,nIphi,nIeta);
-   geom->GetCellPhiEtaIndexInSModule(nTower,nIphi,nIeta, iphi,ieta);
+   geom->GetCellPhiEtaIndexInSModule(nSupMod,nTower,nIphi,nIeta, iphi,ieta);
    relid1[0]=ieta;
    relid1[1]=iphi;
 
@@ -367,7 +367,7 @@ Int_t AliEMCALClusterizerv1::AreNeighbours(AliEMCALDigit * d1, AliEMCALDigit * d
     Int_t iphi1=0;
     Int_t ieta1=0;
    geom->GetCellIndex(d2->GetId(), nSupMod1,nTower1,nIphi1,nIeta1);
-   geom->GetCellPhiEtaIndexInSModule(nTower1,nIphi1,nIeta1, iphi1,ieta1);
+   geom->GetCellPhiEtaIndexInSModule(nSupMod1, nTower1,nIphi1,nIeta1, iphi1,ieta1);
    Int_t relid2[2] ; 
    relid2[0]=ieta1;
    relid2[1]=iphi1;
@@ -485,7 +485,7 @@ void AliEMCALClusterizerv1::MakeClusters()
    int nSupMod=0, nTower=0, nIphi=0, nIeta=0;
    int iphi=0, ieta=0;
           geom->GetCellIndex(digit->GetId(), nSupMod,nTower,nIphi,nIeta);
-          geom->GetCellPhiEtaIndexInSModule(nTower,nIphi,nIeta, iphi,ieta);
+          geom->GetCellPhiEtaIndexInSModule(nSupMod,nTower,nIphi,nIeta, iphi,ieta);
 
          /////////////////////////////////// 
 
@@ -524,7 +524,7 @@ void AliEMCALClusterizerv1::MakeClusters()
           // check that the digit is above the min E Cut
          ////////////////////
           geom->GetCellIndex(digitN->GetId(), nSupMod,nTower,nIphi,nIeta);
-          geom->GetCellPhiEtaIndexInSModule(nTower,nIphi,nIeta, iphi,ieta);
+          geom->GetCellPhiEtaIndexInSModule(nSupMod,nTower,nIphi,nIeta, iphi,ieta);
 	  ////////////////
           if(Calibrate(digitN->GetAmp()+addOn[nSupMod-1][ieta-1][iphi-1]) < fMinECut  )  digitsC->Remove(digitN);
 //	cout<<" new digit above ECut "<<endl;

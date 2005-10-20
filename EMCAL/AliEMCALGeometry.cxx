@@ -19,7 +19,7 @@
 // Geometry class  for EMCAL : singleton  
 // EMCAL consists of layers of scintillator and lead
 // Places the the Barrel Geometry of The EMCAL at Midrapidity
-// between 0 and 120 degrees of Phi and
+// between 80 and 180(or 190) degrees of Phi and
 // -0.7 to 0.7 in eta 
 // Number of Modules and Layers may be controlled by 
 // the name of the instance defined               
@@ -70,9 +70,12 @@ void AliEMCALGeometry::Init(void){
   // New geometry: EMCAL_55_25
   // 24-aug-04 for shish-kebab
   // SHISH_25 or SHISH_62
+  // 11-oct-05 - correction for final design
   fgInit = kFALSE; // Assume failed until proven otherwise.
   name   = GetName();
-  name.ToUpper(); 
+  name.ToUpper();
+  fKey110DEG = 0;
+  if(name.Contains("110DEG")) fKey110DEG = 1; // for GetAbsCellId
 
   fNZ             = 114;	// granularity along Z (eta) 
   fNPhi           = 168;	// granularity in phi (azimuth)
@@ -147,6 +150,10 @@ void AliEMCALGeometry::Init(void){
 
           if(name.Contains("FINAL")) { // 9-sep-05
             fNumberOfSuperModules = 10;
+            if(name.Contains("110DEG")) {
+              fNumberOfSuperModules = 12;// last two modules have size 10 degree in phi (180<phi<190)
+              fArm1PhiMax = 200.0; // for XEN1 and turn angle of super modules
+	    }
             fPhiModuleSize = 12.26 - fPhiGapForSM / Float_t(fNPhi); // first assumption
             fEtaModuleSize = fPhiModuleSize;
           }
@@ -186,6 +193,7 @@ void AliEMCALGeometry::Init(void){
     fNCellsInTower  = fNPHIdiv*fNETAdiv;
     fNCellsInSupMod = fNCellsInTower*fNPhi*fNZ;
     fNCells         = fNCellsInSupMod*fNumberOfSuperModules;
+    if(name.Contains("110DEG")) fNCells -= fNCellsInSupMod;
 
     fLongModuleSize = fNECLayers*(fECScintThick + fECPbRadThickness);
     if(name.Contains("MAY05")) fLongModuleSize += (fFrontSteelStrip + fPassiveScintThick);
@@ -232,6 +240,7 @@ void AliEMCALGeometry::Init(void){
       if(fSteelFrontThick>0.) 
       printf(" fSteelFrontThick  %6.3f cm \n", fSteelFrontThick);
       printf(" fNPhi %i   |  fNZ %i \n", fNPhi, fNZ);
+      printf(" fNCellsInTower %i : fNCellsInSupMod %i : fNCells %i\n",fNCellsInTower, fNCellsInSupMod, fNCells);
       if(name.Contains("MAY05")){
 	printf(" fFrontSteelStrip         %6.4f cm (thickness of front steel strip)\n", 
         fFrontSteelStrip);
@@ -256,6 +265,7 @@ void AliEMCALGeometry::Init(void){
         printf(" fEmptySpace     %7.4f cm\n", fEmptySpace);
       } else if(name.Contains("TRD1") && name.Contains("FINAL")){
         printf(" fPhiGapForSM  %7.4f cm \n",  fPhiGapForSM);
+        if(name.Contains("110DEG"))printf(" Last two modules have size 10 degree in  phi (180<phi<190)\n");
       }
     }
     printf("Granularity: %d in eta and %d in phi\n", GetNZ(), GetNPhi()) ;
@@ -586,9 +596,20 @@ Bool_t AliEMCALGeometry::IsInEMCAL(Double_t x, Double_t y, Double_t z) const {
 // == Shish-kebab cases ==
 //
 Int_t AliEMCALGeometry::GetAbsCellId(const int nSupMod, const int nTower, const int nIphi, const int nIeta)
-{ // 27-aug-04; corr. 21-sep-04
-  static Int_t id; // have to change from 1 to fNCells
-  id  = fNCellsInSupMod*(nSupMod-1);
+{ // 27-aug-04; 
+  // corr. 21-sep-04; 
+  //       13-oct-05; 110 degree case
+  // 1 <= nSupMod <= fNumberOfSuperModules
+  // 1 <= nTower  <= fNPHI * fNZ ( fNPHI * fNZ/2 for fKey110DEG=1)
+  // 1 <= nIphi   <= fNPHIdiv
+  // 1 <= nIeta   <= fNETAdiv
+  // 1 <= absid   <= fNCells
+  static Int_t id=0; // have to change from 1 to fNCells
+  if(fKey110DEG == 1 && nSupMod > 10) { // 110 degree case; last two supermodules
+    id  = fNCellsInSupMod*10 + (fNCellsInSupMod/2)*(nSupMod-11);
+  } else {
+    id  = fNCellsInSupMod*(nSupMod-1);
+  }
   id += fNCellsInTower *(nTower-1);
   id += fNPHIdiv *(nIphi-1);
   id += nIeta;
@@ -600,7 +621,7 @@ Int_t AliEMCALGeometry::GetAbsCellId(const int nSupMod, const int nTower, const 
 //     printf("    nTower  %6i\n", nTower);
 //     printf("    nIphi   %6i\n", nIphi);
 //     printf("    nIeta   %6i\n", nIeta);
-    id = -1;
+    id = -TMath::Abs(id);
   }
   return id;
 }
@@ -615,32 +636,52 @@ Bool_t  AliEMCALGeometry::CheckAbsCellId(Int_t ind)
 
 Bool_t AliEMCALGeometry::GetCellIndex(const Int_t absId,Int_t &nSupMod,Int_t &nTower,Int_t &nIphi,Int_t &nIeta)
 { // 21-sep-04
-  static Int_t tmp=0;
+  // 19-oct-05;
+  static Int_t tmp=0, sm10=0;
   if(absId<=0 || absId>fNCells) {
 //     Info("GetCellIndex"," wrong abs Id %i !! \n", absId); 
     return kFALSE;
   }
-  nSupMod = (absId-1) / fNCellsInSupMod + 1;
-  tmp     = (absId-1) % fNCellsInSupMod;
+  sm10 = fNCellsInSupMod*10;
+  if(fKey110DEG == 1 && absId > sm10) { // 110 degree case; last two supermodules  
+    nSupMod = (absId-1-sm10) / (fNCellsInSupMod/2) + 11;
+    tmp     = (absId-1-sm10) % (fNCellsInSupMod/2);
+  } else {
+    nSupMod = (absId-1) / fNCellsInSupMod + 1;
+    tmp     = (absId-1) % fNCellsInSupMod;
+  }
 
   nTower  = tmp / fNCellsInTower + 1;
   tmp     = tmp % fNCellsInTower;
-
-  nIphi     = tmp / fNPHIdiv + 1;
-  nIeta     = tmp % fNPHIdiv + 1;
+  nIphi   = tmp / fNPHIdiv + 1;
+  nIeta   = tmp % fNPHIdiv + 1;
 
   return kTRUE;
 }
 
-void AliEMCALGeometry::GetCellPhiEtaIndexInSModule(const int nTower, const int nIphi, const int nIeta, 
+void AliEMCALGeometry::GetTowerPhiEtaIndexInSModule(const Int_t nSupMod, const int nTower,  int &iphit, int &ietat)
+{ // added nSupMod; have to check  - 19-oct-05 ! 
+  static Int_t nphi;
+
+  if(fKey110DEG == 1 && nSupMod>=11) nphi = fNPhi/2;
+  else                               nphi = fNPhi;
+
+  ietat = (nTower-1)/nphi + 1; // have to change from 1 to fNZ
+
+  iphit = (nTower-1)%nphi + 1; // have to change from 1 to fNPhi
+}
+
+void AliEMCALGeometry::GetCellPhiEtaIndexInSModule(const Int_t nSupMod, const int nTower, const int nIphi, const int nIeta, 
 int &iphi, int &ieta)
-{ // don't check validity of nTower, nIphi and nIeta index
-  // have to change  - 1-nov-04 ?? 
-  static Int_t iphit, ietat;
+{ // added nSupMod; have to check  - 19-oct-05 ! 
+  static Int_t iphit, ietat, nphi;
 
-  ietat = (nTower-1)/fNPhi;
-  ieta  = ietat*fNETAdiv + nIeta; // change from 1 to fNZ*fNETAdiv
+  if(fKey110DEG == 1 && nSupMod>=11) nphi = fNPhi/2;
+  else                               nphi = fNPhi;
 
-  iphit = (nTower-1)%fNPhi;
-  iphi  = iphit*fNPHIdiv + nIphi;  // change from 1 to fNPhi*fNPHIdiv
+  ietat = (nTower-1)/nphi;
+  ieta  = ietat*fNETAdiv + nIeta; // have to change from 1 to fNZ*fNETAdiv
+
+  iphit = (nTower-1)%nphi;
+  iphi  = iphit*fNPHIdiv + nIphi;  // have to change from 1 to fNPhi*fNPHIdiv
 }

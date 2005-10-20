@@ -10,6 +10,7 @@
 //*--                  
 //*-- Author: Yves Schutz (SUBATECH)
 //*-- and   : Sahal Yacoob (LBL / UCT) 
+//          : Aleksei Pavlinov (WSU)     SHASHLYK
 //#include <assert.h>
 
 // --- ROOT system ---

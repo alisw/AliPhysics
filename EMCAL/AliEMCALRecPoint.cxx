@@ -139,7 +139,7 @@ Bool_t AliEMCALRecPoint::AreNeighbours(AliEMCALDigit * digit1, AliEMCALDigit * d
     int nSupMod=0, nTower=0, nIphi=0, nIeta=0;
     int iphi=0, ieta=0;
        geom->GetCellIndex(digit1->GetId(), nSupMod,nTower,nIphi,nIeta);
-       geom->GetCellPhiEtaIndexInSModule(nTower,nIphi,nIeta, iphi,ieta);
+       geom->GetCellPhiEtaIndexInSModule(nSupMod,nTower,nIphi,nIeta, iphi,ieta);
        relid1[0]=ieta;
        relid1[1]=iphi;
 //  geom->AbsToRelNumbering(digit1->GetId(), relid1) ; 
@@ -150,7 +150,7 @@ Bool_t AliEMCALRecPoint::AreNeighbours(AliEMCALDigit * digit1, AliEMCALDigit * d
     int nSupMod1=0, nTower1=0, nIphi1=0, nIeta1=0;
     int iphi1=0, ieta1=0;
        geom->GetCellIndex(digit2->GetId(), nSupMod1,nTower1,nIphi1,nIeta1);
-       geom->GetCellPhiEtaIndexInSModule(nTower1,nIphi1,nIeta1, iphi1,ieta1);
+       geom->GetCellPhiEtaIndexInSModule(nSupMod1,nTower1,nIphi1,nIeta1, iphi1,ieta1);
        relid2[0]=ieta1;
        relid2[1]=iphi1;
 //  geom->AbsToRelNumbering(digit2->GetId(), relid2) ; 
@@ -362,7 +362,7 @@ void  AliEMCALRecPoint::EvalDispersion(Float_t logWeight, TClonesArray * digits)
     int nSupMod=0, nTower=0, nIphi=0, nIeta=0;
     int iphi=0, ieta=0;
        geom->GetCellIndex(digit->GetId(), nSupMod,nTower,nIphi,nIeta);
-       geom->GetCellPhiEtaIndexInSModule(nTower,nIphi,nIeta, iphi,ieta);
+       geom->GetCellPhiEtaIndexInSModule(nSupMod,nTower,nIphi,nIeta, iphi,ieta);
 	etai=(Float_t)ieta;
 	phii=(Float_t)iphi;
 	//        printf("%f,%d,%d \n", fAmp, ieta, iphi) ;
@@ -417,7 +417,7 @@ void AliEMCALRecPoint::EvalLocalPosition(Float_t logWeight, TClonesArray * digit
     int nSupMod=0, nTower=0, nIphi=0, nIeta=0;
     int iphi=0, ieta=0;
        geom->GetCellIndex(digit->GetId(), nSupMod,nTower,nIphi,nIeta);
-       geom->GetCellPhiEtaIndexInSModule(nTower,nIphi,nIeta, iphi,ieta);
+       geom->GetCellPhiEtaIndexInSModule(nSupMod, nTower,nIphi,nIeta, iphi,ieta); //19-oct-05
 	etai=(Float_t)ieta;
 	phii=(Float_t)iphi;
 //Sub    geom->EtaPhiFromIndex(digit->GetId(), etai, phii);
@@ -505,7 +505,7 @@ void  AliEMCALRecPoint::EvalElipsAxis(Float_t logWeight,TClonesArray * digits)
       int nSupMod=0, nTower=0, nIphi=0, nIeta=0;
       int iphi=0, ieta=0;
       geom->GetCellIndex(digit->GetId(), nSupMod,nTower,nIphi,nIeta);
-      geom->GetCellPhiEtaIndexInSModule(nTower,nIphi,nIeta, iphi,ieta);
+      geom->GetCellPhiEtaIndexInSModule(nSupMod,nTower,nIphi,nIeta, iphi,ieta);
       etai=(Float_t)ieta;
       phii=(Float_t)iphi;
     } else {

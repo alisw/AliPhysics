@@ -104,7 +104,9 @@ public:
   // Dabs id <-> indexes; Shish-kebab case 
   Int_t   GetAbsCellId(const Int_t nSupMod, const Int_t nTower, const Int_t nIphi, const Int_t nIeta);
   Bool_t  GetCellIndex(const Int_t absId, Int_t &nSupMod, Int_t &nTower, Int_t &nIphi, Int_t &nIeta);
-  void    GetCellPhiEtaIndexInSModule(const Int_t nTower, const Int_t nIphi, const Int_t nIeta, Int_t &iphi, Int_t &ieta);
+  void    GetTowerPhiEtaIndexInSModule(const Int_t nSupMod, const Int_t nTower, Int_t &iphit, Int_t &ietat);
+  void    GetCellPhiEtaIndexInSModule(const Int_t nSupMod, const Int_t nTower, const Int_t nIphi, const Int_t nIeta,
+                                      Int_t &iphi, Int_t &ieta);
   Bool_t  CheckAbsCellId(Int_t ind); // replace the IsInECA
   // ---
   Float_t AngleFromEta(Float_t eta){ // returns theta in radians for a given pseudorapidity
@@ -175,8 +177,8 @@ private:
   Float_t fEtaTileSize;                  // 
   Float_t fLongModuleSize;               // 
   Int_t   fNPhiSuperModule;              // 6 - number supermodule in phi direction
-  Int_t   fNPHIdiv;                      // number phi dvizion
-  Int_t   fNETAdiv;                      // number eta divizion
+  Int_t   fNPHIdiv;                      // number phi divizion of module
+  Int_t   fNETAdiv;                      // number eta divizion of module
   //
   Int_t   fNCells;                       // number of cells in calo
   Int_t   fNCellsInSupMod;               // number cell in super module
@@ -185,11 +187,12 @@ private:
   Float_t fTrd1Angle;                    // angle in x-z plane (in degree) 
   Float_t f2Trd1Dx2;                     // 2*dx2 for TRD1
   Float_t fPhiGapForSM;                  // Gap betweeen supermodules in phi direction
+  Int_t   fKey110DEG;                    // for calculation abs cell id; 19-oct-05 
   // TRD2 options - 27-jan-07
   Float_t fTrd2AngleY;                   // angle in y-z plane (in degree) 
   Float_t f2Trd2Dy2;                     // 2*dy2 for TRD2
   Float_t fEmptySpace;                   // 2mm om fred drawing
-  // Sumper module as TUBS
+  // Super module as TUBS
   Float_t fTubsR;                        // radius of tubs 
   Float_t fTubsTurnAngle;                // turn angle of tubs in degree
 

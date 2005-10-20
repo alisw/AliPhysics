@@ -92,7 +92,7 @@ void AliEMCALGeometryOfflineTrd1::Init()
   Int_t nSupMod, nTower, nIphi, nIeta, iphi, ieta;
   for(Int_t absId=1; absId<=fGeometry->GetNCells(); absId++){
     if(fGeometry->GetCellIndex(absId, nSupMod,nTower,nIphi,nIeta)){
-      fGeometry->GetCellPhiEtaIndexInSModule(nTower,nIphi,nIeta, iphi,ieta);
+      fGeometry->GetCellPhiEtaIndexInSModule(nSupMod,nTower,nIphi,nIeta, iphi,ieta);
       TVector3 *v = new TVector3;
       v->SetX(fSMPositionEta[ieta-1].Y()); 
       v->SetZ(fSMPositionEta[ieta-1].X()); 
@@ -103,11 +103,11 @@ void AliEMCALGeometryOfflineTrd1::Init()
   }
 }
 
-TVector3& AliEMCALGeometryOfflineTrd1::PosInSuperModule(const Int_t nTower,const Int_t nIphi,const Int_t nIeta)
+TVector3& AliEMCALGeometryOfflineTrd1::PosInSuperModule(const int nSupMod, const Int_t nTower,const Int_t nIphi,const Int_t nIeta)
 { // 10-nov-04
   static Int_t iphi, ieta;
   static TVector3 v;
-  fGeometry->GetCellPhiEtaIndexInSModule(nTower,nIphi,nIeta, iphi,ieta);
+  fGeometry->GetCellPhiEtaIndexInSModule(nSupMod, nTower,nIphi,nIeta, iphi,ieta);
 
   // x-radius; y-phi; eta-z;
   v.SetXYZ(fSMPositionEta[ieta].Y(), fSMPositionPhi[iphi], fSMPositionEta[ieta].X());
@@ -125,11 +125,11 @@ double &lphi, double &leta)
   leta = fSMPositionEta[ie].X();
 }
 
-void AliEMCALGeometryOfflineTrd1::PositionInSuperModule(const Int_t nTower, const Int_t nIphi, const Int_t nIeta,
+void AliEMCALGeometryOfflineTrd1::PositionInSuperModule(const int nSupMod, const Int_t nTower, const Int_t nIphi, const Int_t nIeta,
 double &lphi, double &leta)
 {
   static Int_t iphi,ieta;
-  fGeometry->GetCellPhiEtaIndexInSModule(nTower,nIphi,nIeta,iphi,ieta);
+  fGeometry->GetCellPhiEtaIndexInSModule(nSupMod, nTower,nIphi,nIeta,iphi,ieta);
   PositionInSuperModule(iphi,ieta, lphi,leta);
 }
 
@@ -163,7 +163,7 @@ void AliEMCALGeometryOfflineTrd1::PrintCell(Int_t absId)
 {
   Int_t nSupMod, nTower, nIphi, nIeta, iphi, ieta;
   if(fGeometry->GetCellIndex(absId, nSupMod,nTower,nIphi,nIeta)){
-     fGeometry->GetCellPhiEtaIndexInSModule(nTower,nIphi,nIeta, iphi,ieta);
+     fGeometry->GetCellPhiEtaIndexInSModule(nSupMod,nTower,nIphi,nIeta, iphi,ieta);
      TVector3 *v = CellPosition(absId);
      printf("(%5i) X %8.3f Y %8.3f Z %8.3f | #sup.Mod %2i #tower %3i nIphi %1i nIeta %1i | iphi %2i ieta %2i\n",
 	    absId, v->X(),v->Y(),v->Z(), nSupMod,nTower,nIphi,nIeta, iphi,ieta);

@@ -16,18 +16,14 @@
 /* $Id$ */
 
 //_________________________________________________________________________
-//*-- Implementation version v2 of EMCAL Manager class 
+//*-- Implementation version v2 of EMCAL Manager class; SHASHLYK version
 //*-- An object of this class does not produce digits
 //*-- It is the one to use if you do want to produce outputs in TREEH 
 //*--                  
-//*-- Author: Sahal Yacoob (LBL /UCT)
-//*--       : Jennifer Klay (LBL)
+//*-- Author : Aleksei Pavlinov (WSU)
+
 // This Class not stores information on all particles prior to EMCAL entry - in order to facilitate analysis.
 // This is done by setting fIShunt =2, and flagging all parents of particles entering the EMCAL.
-
-// 15/02/2002 .... Yves Schutz
-//  1. fSamplingFraction and fLayerToPreshowerRatio have been removed
-//  2. Timing signal is collected and added to hit
 
 // --- ROOT system ---
 #include "TParticle.h"
@@ -219,12 +215,13 @@ void AliEMCALv2::StepManager(void){
         gMC->CurrentVolOffID(3, moduleNumber);
         gMC->CurrentVolOffID(1, yNumber);
         gMC->CurrentVolOffID(0, xNumber); // really x number now
+        if(strcmp(gMC->CurrentVolOffName(4),"SM10")==0) supModuleNumber += 10; // 13-oct-05
       } else {
         gMC->CurrentVolOffID(5, supModuleNumber);
         gMC->CurrentVolOffID(4, moduleNumber);
         gMC->CurrentVolOffID(1, yNumber);
-        gMC->CurrentVolOffID(0, xNumber); // really x number now
-        if    (strcmp(gMC->CurrentVolOffName(5),"SMOP")==0) supModuleNumber = nSMOP[supModuleNumber-1];
+        gMC->CurrentVolOffID(0, xNumber);
+        if     (strcmp(gMC->CurrentVolOffName(5),"SMOP")==0) supModuleNumber = nSMOP[supModuleNumber-1];
         else if(strcmp(gMC->CurrentVolOffName(5),"SMON")==0) supModuleNumber = nSMON[supModuleNumber-1];
         else   assert(0); // something wrong
       }
@@ -294,6 +291,8 @@ void AliEMCALv2::Browse(TBrowser* b)
 
 void AliEMCALv2::DrawCalorimeterCut(const char *name, int axis, double dcut)
 { // Size of tower is 5.6x5.6x24.8 (25.0); cut on Z axiz
+  TString g(fGeometry->GetName());
+  g.ToUpper();
   gMC->Gsatt("*", "seen", 0);
 
   int fill = 1;
@@ -304,6 +303,7 @@ void AliEMCALv2::DrawCalorimeterCut(const char *name, int axis, double dcut)
   TString sn(name);
   if(sn.Contains("SCM")) colo=5;
   SetVolumeAttributes(name, 1, colo, fill);
+  if(g.Contains("110DEG") && sn=="SMOD") SetVolumeAttributes("SM10", 1, colo, fill);
 
   TString st(GetTitle());
   st += ", zcut, ";
@@ -487,7 +487,7 @@ void AliEMCALv2::DrawAlicWithHits(int mode)
       //      printf(" de %f abs id %i smod %i tower %i | cell iphi %i : ieta %i\n",
       // de, absId, nSupMod, nTower, nIphi, nIeta); 
       if(nSupMod==3) {
-        fGeometry->GetCellPhiEtaIndexInSModule(nTower,nIphi,nIeta, iphi,ieta);
+        fGeometry->GetCellPhiEtaIndexInSModule(nSupMod,nTower,nIphi,nIeta, iphi,ieta);
         // printf(" iphi %i : ieta %i\n", iphi,ieta);
         h2->Fill(double(ieta),double(iphi), de);
       }
