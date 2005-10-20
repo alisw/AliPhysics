@@ -59,7 +59,7 @@
 
 //************* Defaults parameters for reconstruction
 const Double_t AliMUONTrackReconstructor::fgkDefaultMinBendingMomentum = 3.0;
-const Double_t AliMUONTrackReconstructor::fgkDefaultMaxBendingMomentum = 2000.0;
+const Double_t AliMUONTrackReconstructor::fgkDefaultMaxBendingMomentum = 3000.0;
 const Double_t AliMUONTrackReconstructor::fgkDefaultMaxChi2 = 100.0;
 const Double_t AliMUONTrackReconstructor::fgkDefaultMaxSigma2Distance = 16.0;
 const Double_t AliMUONTrackReconstructor::fgkDefaultBendingResolution = 0.01;
