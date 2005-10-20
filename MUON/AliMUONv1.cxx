@@ -30,6 +30,7 @@
 #include "AliConst.h" 
 #include "AliMUONChamber.h"
 #include "AliMUONConstants.h"
+#include "AliMUONFactoryV4.h"
 #include "AliMUONFactoryV3.h"
 #include "AliMUONFactoryV2.h"
 #include "AliMUONHit.h"
@@ -196,6 +197,11 @@ void AliMUONv1::Init()
       fFactory = new AliMUONFactoryV3("New MUON Factory");
       (static_cast<AliMUONFactoryV3*>(fFactory))->Build(this,"default");
     }
+  else if ( ftype == "AliMUONFactoryV4" )
+  {
+    fFactory = new AliMUONFactoryV4("New MUON Factory (w/ Trigger)");
+    (static_cast<AliMUONFactoryV4*>(fFactory))->Build(this,"default");
+  }
   else
     {
       AliFatal(Form("Wrong factory type : %s",ftype.c_str()));      
@@ -212,7 +218,11 @@ void AliMUONv1::Init()
   // trigger circuit
   // cp 
   for (i=0; i<AliMUONConstants::NTriggerCircuit(); i++) 
-    ( (AliMUONTriggerCircuit*) (*fTriggerCircuits)[i])->Init(i);
+  {
+    AliMUONTriggerCircuit* c = (AliMUONTriggerCircuit*)(fTriggerCircuits->At(i));
+    c->Init(i);
+//    c->Print();
+  }
   
 }
 
