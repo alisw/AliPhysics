@@ -59,7 +59,8 @@ class AliMpMotifReader : public TObject
     // methods   
     AliMpMotifType*     BuildMotifType(const TString& motifTypeId);
     AliMpMotifSpecial*  BuildMotifSpecial(const TString& motifID,
-                                          AliMpMotifType* motifType);
+                                          AliMpMotifType* motifType,
+                                          Double_t scale=1.0);
 
     // set methods
     void SetVerboseLevel(Int_t verboseLevel); 

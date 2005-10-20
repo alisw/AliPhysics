@@ -118,9 +118,8 @@ AliMpMotifType* AliMpMotifReader::BuildMotifType(const TString& motifTypeId)
 
   AliMpMotifType*  motifType = new AliMpMotifType(motifTypeId);	
 
-  TString padPosFileName 
-    = AliMpFiles::Instance()
-      ->PadPosFilePath(fStationType, fPlaneType, motifTypeId);
+  TString padPosFileName(AliMpFiles::PadPosFilePath(fStationType, 
+                                                    fPlaneType, motifTypeId));
   ifstream padPos(padPosFileName);
   if (fVerboseLevel>0) cout<<"Opening file "<<padPosFileName<<endl;
 
@@ -157,7 +156,7 @@ AliMpMotifType* AliMpMotifReader::BuildMotifType(const TString& motifTypeId)
   padPos.close();
 
   TString bergToGCFileName
-    = AliMpFiles::Instance()->BergToGCFilePath(fStationType);
+    = AliMpFiles::BergToGCFilePath(fStationType);
   if (fVerboseLevel>0) 
     cout << "Opening file " << bergToGCFileName << endl;
 
@@ -181,9 +180,8 @@ AliMpMotifType* AliMpMotifReader::BuildMotifType(const TString& motifTypeId)
   }
   bergToGCFile.close();
   
-  TString motifTypeFileName 
-    = AliMpFiles::Instance()
-      ->MotifFilePath(fStationType, fPlaneType, motifTypeId);
+  TString motifTypeFileName(AliMpFiles::MotifFilePath(fStationType, 
+                                                      fPlaneType, motifTypeId));
   ifstream motif(motifTypeFileName);
   if (fVerboseLevel>0) cout<<"Opening file "<<motifTypeFileName<<endl;
 
@@ -285,18 +283,18 @@ AliMpMotifType* AliMpMotifReader::BuildMotifType(const TString& motifTypeId)
 //_____________________________________________________________________________
 AliMpMotifSpecial*  
 AliMpMotifReader::BuildMotifSpecial(const TString& motifID,
-                                    AliMpMotifType* motifType)
+                                    AliMpMotifType* motifType,
+                                    Double_t scale)
 {
 /// Build a special motif by reading the file motifSpecial<motifId>.dat
 /// in the data directory
 
   // Open the input file
-  TString motifSpecialFileName
-    = AliMpFiles::Instance()
-      ->MotifSpecialFilePath(fStationType, fPlaneType, motifID);
+  TString motifSpecialFileName(AliMpFiles::MotifSpecialFilePath(fStationType, 
+                                                                fPlaneType, motifID));
   ifstream in(motifSpecialFileName);
   if (!in) {	
-     Error("BuildMotifSpecial", "File not found.");
+     AliError(Form("File %s not found.\n",motifSpecialFileName.Data()));
      return 0;
   }
 
@@ -306,7 +304,7 @@ AliMpMotifReader::BuildMotifSpecial(const TString& motifID,
   in >> i;
   while (!in.eof()){
     in >>j >>x >> y;
-    res->SetPadDimensions(AliMpIntPair(i,j),TVector2(x/2.,y/2.));
+    res->SetPadDimensions(AliMpIntPair(i,j),TVector2(x*scale/2.,y*scale/2.));
     in >> i;
   }
   
