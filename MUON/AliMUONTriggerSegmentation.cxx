@@ -24,6 +24,7 @@
 
 #include "AliMUONTriggerSegmentation.h"
 #include "AliLog.h"
+#include "Riostream.h"
 
 //___________________________________________
 ClassImp(AliMUONTriggerSegmentation)
@@ -180,8 +181,8 @@ void AliMUONTriggerSegmentation::GetPadGlo2Loc(Int_t ixGlo, Int_t iyGlo,
 	for (Int_t iModule=0; iModule<fNsec; iModule++) {		
 	    for (Int_t iStrip=0; iStrip<fNstrip[iModule]; iStrip++) {
 		if ((iModule==ModuleColNum(ixGlo))&&(iStrip==iyGlo)) {
-		    ixLoc = 1;		    
-		    iyLoc = iCountStrip;
+		    iyLoc = 1;		    
+		    ixLoc = iCountStrip;
 		}		
 		iCountStrip++;
 	    }
@@ -226,8 +227,8 @@ void AliMUONTriggerSegmentation::GetPadC(Int_t ix, Int_t iy, Float_t &x, Float_t
 void AliMUONTriggerSegmentation::GetPadI(Float_t x, Float_t y, Int_t &ix, Int_t &iy) 
 {
 //  Returns global pad coordinates (ix,iy) for local real coordinates (x,y)
-    ix = 100;
-    iy = 100;
+    ix = -1;
+    iy = -1;
 
     x = x + fRpcHalfXsize;
     y = y + fRpcHalfYsize;
@@ -309,8 +310,8 @@ Int_t AliMUONTriggerSegmentation::Sector(Int_t ix, Int_t iy)
 }
 
 //-----------------------------------------------------------------------------
-void AliMUONTriggerSegmentation::
-IntegrationLimits(Float_t& x1,Float_t& x2,Float_t& x3, Float_t& x4) 
+void AliMUONTriggerSegmentation::IntegrationLimits(Float_t& x1,Float_t& x2,
+                                                   Float_t& x3, Float_t& x4) 
 {
 // need to return (only) x4 = dist. betwwen the hit and the closest border of
 // the current strip
@@ -319,6 +320,8 @@ IntegrationLimits(Float_t& x1,Float_t& x2,Float_t& x3, Float_t& x4)
     Float_t xstrip,ystrip;
     GetPadI(fXhit,fYhit,ix,iy);
     GetPadC(ix,iy,xstrip,ystrip);
+    AliDebug(1,Form("fXhit,Yhit=%e,%e xstrip,ystrip=%e,%e\n",
+                    fXhit,fYhit,xstrip,ystrip));
     x1= (fBending) ? fYhit : fXhit;  // hit y (bending) / x (!bending) position
     x2= (fBending) ? ystrip : xstrip; // y or x coord. of the main strip
     x3= (fBending) ? fY : fX;          // current strip real y or x coord.
@@ -340,8 +343,10 @@ IntegrationLimits(Float_t& x1,Float_t& x2,Float_t& x3, Float_t& x4)
     }    
     // dist. between the hit and the closest border of the current strip
     x4 = (TMath::Abs(max-x1) > TMath::Abs(min-x1)) ? 
-	TMath::Abs(min-x1):TMath::Abs(max-x1);
-//    printf("fBending x1 x3 min max x4 %i %f %f %f %f %f\n",fBending,x1,x3,min,max,x4);
+      TMath::Abs(min-x1):TMath::Abs(max-x1);
+  
+    AliDebug(1,Form("Bending %d x1=%e x2=%e x3=%e x4=%e xmin,max=%e,%e\n",
+                    fBending,x1,x2,x3,x4,min,max));
 }
 
 
@@ -540,7 +545,27 @@ void AliMUONTriggerSegmentation::Init(Int_t detectionElementId,
   fId = detectionElementId;
 }
 
-
+//_____________________________________________________________________________
+void
+AliMUONTriggerSegmentation::Print(Option_t*) const
+{
+  cout << "fId=" << fId << " fBending=" << fBending << " fNsec=" 
+  << fNsec << " Nx,Ny=" << fNpx << "," << fNpy 
+  << " LineNumber=" << fLineNumber 
+  << " fRpcHalfSize(X,Y)=" << fRpcHalfXsize << "," << fRpcHalfYsize
+  << endl;
+  
+  for (Int_t iModule=0; iModule<fNsec; iModule++) 
+  { 
+    cout << "Module " << iModule 
+    << " xmin,xmax=" << fModuleXmin[iModule] 
+    << "," << fModuleXmax[iModule] 
+    << " ymin=" << fModuleYmin[iModule]
+    << " StripSize(X,Y)=(" << fStripXsize[iModule] << ","
+    << fStripYsize[iModule] << ")"
+    << endl;
+  }                    
+}
 
 
 

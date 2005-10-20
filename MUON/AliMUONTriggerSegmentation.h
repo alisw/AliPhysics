@@ -83,6 +83,8 @@ class AliMUONTriggerSegmentation : public AliMUONVGeometryDESegmentation
 			  Float_t stripXsize[7],
 			  Float_t offset); // Initialisation
 
+    void Print(Option_t* opt="") const;
+    
  protected:
 
     AliMUONTriggerSegmentation(const AliMUONTriggerSegmentation& rhs);
