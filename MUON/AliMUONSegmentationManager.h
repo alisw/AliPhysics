@@ -11,17 +11,25 @@
 /// \brief Segmentation manager
 
 #ifndef ROOT_TObject
-#include "TObject.h"
+#  include "TObject.h"
 #endif
 
-#ifndef ROOT_TExMap
-#include "TExMap.h"
+#ifndef ALI_MP_EX_MAP_H
+#  include "AliMpExMap.h"
 #endif
 
-#include "AliMpPlaneType.h"
+#ifndef ALI_MP_PLANE_TYPE
+#  include "AliMpPlaneType.h"
+#endif
+
+#ifndef ALI_MP_STATION_TYPE
+#  include "AliMpStationType.h"
+#endif
 
 class AliMpSlat;
+class AliMpTriggerSegmentation;
 class AliMpVSegmentation;
+class TList;
 
 class AliMUONSegmentationManager : public TObject
 {
@@ -33,21 +41,29 @@ public:
 
   static AliMpVSegmentation* Segmentation(Int_t detElemId,
                                           AliMpPlaneType planeType);
+  
+  static TList* SegmentationList(Int_t localBoardNumber);
 
+  static const char* DetElemName(Int_t detElemId);
+  
+  static AliMpStationType StationType(Int_t detElemId);
+  
 private:
 
+    static void FillLocalBoardMap(AliMpTriggerSegmentation* seg);
+  
   static const char* SlatType(Int_t detElemId);
   
-  static AliMpSlat* ReadSlat(Int_t detElemId, AliMpPlaneType planeType);
-  
-  static bool ReadDetElemIdToSlatType();
+  static bool ReadDetElemIdToName(AliMpStationType stationType);
     
   static AliMpVSegmentation* ReadSegmentation(Int_t detElemId,
                                               AliMpPlaneType planeType);
   
-  static TExMap fgDetElemIdToSlatTypeMap; // map of int to TObjString
+  static AliMpExMap fgDetElemIdToNameMap; // map of int to TObjString
   
-  static TExMap fgMap; // map of int to TPair<AliMpVSegmentation*, AliMpVSegmentation*>
+  static AliMpExMap fgMap; // map of int to TPair<AliMpVSegmentation*, AliMpVSegmentation*>
+  
+  static AliMpExMap fgLocalBoardMap; // map of int to TList* of AliMpVSegmentation*
   
   ClassDef(AliMUONSegmentationManager,1) // Holder for various segmentations
 };

@@ -17,21 +17,48 @@
 
 #include "AliMUONSegmentationManager.h"
 
-#include "AliMpFiles.h"
 #include "AliLog.h"
 #include "AliMpSectorReader.h"
 #include "AliMpSector.h"
 #include "AliMpSectorSegmentation.h"
+#include "AliMpSlat.h"
 #include "AliMpSlatSegmentation.h"
 #include "AliMpSt345Reader.h"
+#include "AliMpTriggerReader.h"
+#include "AliMpTriggerSegmentation.h"
+#include "AliMpTrigger.h"
 
-#include "TObjString.h"
+#include "Riostream.h"
+
+#include "TArrayI.h"
 #include "TClass.h"
+#include "TList.h"
+#include "TObjString.h"
+#include "TSystem.h"
 
 ClassImp(AliMUONSegmentationManager)
 
-TExMap AliMUONSegmentationManager::fgMap;
-TExMap AliMUONSegmentationManager::fgDetElemIdToSlatTypeMap;
+AliMpExMap AliMUONSegmentationManager::fgMap(kTRUE);
+AliMpExMap AliMUONSegmentationManager::fgDetElemIdToNameMap(kTRUE);
+AliMpExMap AliMUONSegmentationManager::fgLocalBoardMap(kTRUE);
+
+namespace
+{
+  //__________________________________________________________________________
+  TString DetElemIdToNamePath(AliMpStationType stationType)
+  {
+    /// Get the full path of the file containing the mapping detElemId <->
+    /// SlatType.
+    /// The bending parameter below is of no use in this case, but
+    /// we use it to re-use the PlaneDataDir() method untouched.
+    
+    TString filename(gSystem->ExpandPathName("${ALICE_ROOT}/MUON/data/"));
+    filename += "denames_";
+    filename += StationTypeName(stationType);
+    filename += ".dat";
+    return filename;
+  }
+}
 
 //_____________________________________________________________________________
 AliMUONSegmentationManager::AliMUONSegmentationManager() : TObject()
@@ -44,47 +71,73 @@ AliMUONSegmentationManager::~AliMUONSegmentationManager()
 }
 
 //_____________________________________________________________________________
+void
+AliMUONSegmentationManager::FillLocalBoardMap(AliMpTriggerSegmentation* seg)
+{
+  const AliMpTrigger* slat = seg->Slat();
+  for ( Int_t i = 0; i < slat->GetSize(); ++i )
+  {
+    TArrayI lbn;
+    slat->GetAllLocalBoardNumbers(lbn);
+    for ( Int_t j = 0; j < lbn.GetSize(); ++j )
+    {
+      TList* list = (TList*)fgLocalBoardMap.GetValue(lbn[j]);
+      if (!list)
+      {
+        list = new TList;
+        fgLocalBoardMap.Add(lbn[j],list);
+      }
+      if ( list->FindObject(seg) == 0 )
+      {
+        list->Add(seg);
+      }
+    }
+  }
+}
+
+//_____________________________________________________________________________
 Bool_t 
 AliMUONSegmentationManager::IsValidDetElemId(Int_t detElemId)
 {
-  return (SlatType(detElemId) != 0);
+  return (DetElemName(detElemId) != 0);
 }
 
 //_____________________________________________________________________________
 AliMpVSegmentation* 
 AliMUONSegmentationManager::ReadSegmentation(Int_t detElemId, AliMpPlaneType planeType)
 {
-  if ( detElemId >= 500 && detElemId <= 1025 )
+  AliMpStationType station = StationType(detElemId);
+  
+  if (station==kStation345)
   {
-    AliMpSlat* slat = ReadSlat(detElemId,planeType);
+    AliMpSlat* slat = AliMpSt345Reader::ReadSlat(DetElemName(detElemId),planeType);
     return new AliMpSlatSegmentation(slat);
-  }	
-  else if ( detElemId < 500 )
+  }
+  else if ( station==kStation1 || station==kStation2 )
   {
-    AliMpStationType station(kStation2);
-    if ( detElemId < 200 )
-    { 
-      station = kStation1;
-    }	
     AliMpSectorReader reader(station,planeType);
     AliMpSector* sector = reader.BuildSector();
     //FIXME: get this to be able to delete the sectors:		 fStore.push_back(sector);
     return new AliMpSectorSegmentation(sector);
   }
-  else
+  else if ( station == kStationTrigger )
   {
-    return 0x0;
+    AliMpTrigger* slat = AliMpTriggerReader::ReadSlat(DetElemName(detElemId),planeType);
+    return new AliMpTriggerSegmentation(slat);
   }
+  return 0x0;
 }
 
 //_____________________________________________________________________________
 Bool_t
-AliMUONSegmentationManager::ReadDetElemIdToSlatType()
+AliMUONSegmentationManager::ReadDetElemIdToName(AliMpStationType stationType)
 { 
-  std::ifstream in(AliMpFiles::Instance()->DetElemIdToSlatTypeFilePath().Data());
-  if (!in.good()) return false;
-  
-  fgDetElemIdToSlatTypeMap.Delete();
+  std::ifstream in(DetElemIdToNamePath(stationType).Data());
+  if (!in.good()) 
+  {
+    AliErrorClass(Form("Cannot read file %s",DetElemIdToNamePath(stationType).Data()));
+    return false;
+  }
   
   char line[80];
   
@@ -95,8 +148,12 @@ AliMUONSegmentationManager::ReadDetElemIdToSlatType()
     
     Ssiz_t pos = sline.First(' ');
     int detelemid = TString(sline(0,pos)).Atoi();
-    fgDetElemIdToSlatTypeMap.Add((Long_t)detelemid,
-                                 (Long_t)(new TObjString(sline(pos+1,sline.Length()-pos).Data())));
+    TObject* o = fgDetElemIdToNameMap.GetValue(detelemid);
+    if (!o)
+    {
+      fgDetElemIdToNameMap.Add(detelemid,
+                               new TObjString(sline(pos+1,sline.Length()-pos).Data()));
+    }
   }
   
   in.close();
@@ -105,18 +162,10 @@ AliMUONSegmentationManager::ReadDetElemIdToSlatType()
 }
 
 //_____________________________________________________________________________
-AliMpSlat*
-AliMUONSegmentationManager::ReadSlat(Int_t detElemId, AliMpPlaneType planeType)
-{
-	return AliMpSt345Reader::ReadSlat(SlatType(detElemId),planeType);
-}
-
-
-//_____________________________________________________________________________
 AliMpVSegmentation* 
 AliMUONSegmentationManager::Segmentation(Int_t detElemId, AliMpPlaneType planeType)
 {
-	Long_t it = fgMap.GetValue((Long_t)detElemId);
+	TObject* it = fgMap.GetValue(detElemId);
 	
   if ( it )
   {
@@ -145,18 +194,61 @@ AliMUONSegmentationManager::Segmentation(Int_t detElemId, AliMpPlaneType planeTy
       AliErrorClass(Form("Could not get segmentations for detElemId=%d",detElemId));
       return 0x0;
     } 
-    fgMap.Add((Long_t)(detElemId),(Long_t)(new TPair(b,nb)));
+    fgMap.Add(detElemId,new TPair(b,nb));
     return Segmentation(detElemId,planeType);
   }
 }
 
 //_____________________________________________________________________________
-const char* 
-AliMUONSegmentationManager::SlatType(int detelemid)
+TList* 
+AliMUONSegmentationManager::SegmentationList(Int_t localBoardNumber)
 {
-  if ( ! fgDetElemIdToSlatTypeMap.GetSize() ) ReadDetElemIdToSlatType();
+  //
+  // Method specific to trigger chamber where a single local trigger board
+  // spans several detelemid.
+  // This method returns a list of AliMpVSegmentation that contains
+  // the given local board.
+  //
+  // Note that the returned TList is not the owner of its AliMpVSegmentation
+  // pointers.
   
-  Long_t rv = fgDetElemIdToSlatTypeMap.GetValue(detelemid);
+  // This method can only work if ALL trigger segmentation have been read in,
+  // that's for sure.
+  // FIXME: now I'm not so sure the following is the best way to achieve that.
+  // Maybe a global way to get the list of detelemid of a stationType would be
+  // best, and would avoid to hard-code detelemid range here.
+  
+  if ( fgLocalBoardMap.GetSize() == 0 )
+  {
+    for ( Int_t detElemId = 1100; detElemId < 1500; ++detElemId )
+    {
+      if ( StationType(detElemId) == kStationTrigger )
+      {
+        AliMpTriggerSegmentation* seg = 
+        (AliMpTriggerSegmentation*)Segmentation(detElemId,kNonBendingPlane);
+        FillLocalBoardMap(seg);
+        seg = (AliMpTriggerSegmentation*)Segmentation(detElemId,kBendingPlane);
+        FillLocalBoardMap(seg);
+      }
+    }
+  }
+  
+  return (TList*)fgLocalBoardMap.GetValue(localBoardNumber);
+}
+
+//_____________________________________________________________________________
+const char* 
+AliMUONSegmentationManager::DetElemName(int detelemid)
+{
+  if ( ! fgDetElemIdToNameMap.GetSize() ) 
+  {
+    ReadDetElemIdToName(kStation345);
+    ReadDetElemIdToName(kStationTrigger);
+    ReadDetElemIdToName(kStation1);
+    ReadDetElemIdToName(kStation2);    
+  }
+  
+  TObject* rv = fgDetElemIdToNameMap.GetValue(detelemid);
   
   if ( rv )
   {
@@ -168,3 +260,41 @@ AliMUONSegmentationManager::SlatType(int detelemid)
   }
 }
 
+//_____________________________________________________________________________
+AliMpStationType
+AliMUONSegmentationManager::StationType(Int_t detelemid)
+{
+  if (!IsValidDetElemId(detelemid)) return kStationInvalid;
+  
+  Int_t i = detelemid/100;
+
+  switch (i)
+  {
+    case 1:
+    case 2:  
+      return kStation1;
+      break;
+    case 3:
+    case 4:  
+      return kStation2;
+      break;
+    case 5:
+    case 6:
+    case 7:
+    case 8:
+    case 9:
+    case 10:  
+      return kStation345;
+      break;
+    case 11:
+    case 12:
+    case 13:
+    case 14:  
+      return kStationTrigger;
+      break;
+    default:
+      AliErrorClass(Form("%d is not a valid detelemeid\n",detelemid));
+      return kStationInvalid;
+      break;
+  };
+}
