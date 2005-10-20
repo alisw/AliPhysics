@@ -19,6 +19,7 @@
 #include "AliMUONResponseTrigger.h"
 #include "AliMUONHit.h"
 #include "AliMUONGeometrySegmentation.h"
+#include "AliMUONGeometryModule.h"
 #include "AliLog.h"
 
 ClassImp(AliMUONChamberTrigger)
@@ -68,30 +69,36 @@ void AliMUONChamberTrigger::DisIntegration(AliMUONHit* hit,
       (AliMUONGeometrySegmentation*) (*fSegmentation2)[i-1];
     
 // Find the module & strip Id. which has fired
-    Int_t ix,iy;
+    Int_t ix(-1);
+    Int_t iy(-1);
     segmentation->GetPadI(id,xhit,yhit,0,ix,iy);
 // treatment of GEANT hits w/o corresponding strip (due to the fact that
 // geometry & segmentation are computed in a very slightly different way) 
-    if (ix==100||iy==100) {
-	AliInfo(Form("AliMUONChamberTrigger hit w/o strip %i %f %f \n",id,xhit,yhit));
-    } else {          
-	segmentation->SetPad(id,ix,iy);
-	if (xhit<0) ix = -ix;
-//    printf(" fId id fnsec xhit yhit zhit ix iy %i %i %i %f %f %f %i %i \n",fId,i,id,xhit,yhit,zhit,ix,iy);
-//     if (ix < 0 || ix > 10000) return;
-//     if (iy < 0 || iy > 10000) return;
-
+    if ( ix<0 || iy<0 ) 
+    {
+      Float_t lx,ly,lz;
+      GetGeometry()->Global2Local(id,xhit,yhit,0,lx,ly,lz);
+      AliWarning(Form("AliMUONChamberTrigger hit w/o strip %i-%d %e %e "
+                      "local %e %e %e ix,iy=%d,%d\n",id,i-1,xhit,yhit,lx,ly,lz,ix,iy));
+    } else 
+    {          
+      segmentation->SetPad(id,ix,iy);
+      if (xhit<0) ix = -ix;
+      //    printf(" fId id fnsec xhit yhit zhit ix iy %i %i %i %f %f %f %i %i \n",fId,i,id,xhit,yhit,zhit,ix,iy);
+      //     if (ix < 0 || ix > 10000) return;
+      //     if (iy < 0 || iy > 10000) return;
+      
       // --- store signal information for this strip
-	newclust[0][nnew]=1.;                       // total charge
-	newclust[1][nnew]=ix;                       // ix-position of pad
-	newclust[2][nnew]=iy;                       // iy-position of pad
-	newclust[3][nnew]=twentyNano;               // time of flight
-	newclust[4][nnew]=segmentation->ISector();  // sector id
-	newclust[5][nnew]=(Float_t) i;              // counter
-	nnew++;
-	
-// cluster-size if AliMUONResponseTriggerV1, nothing if AliMUONResponseTrigger
-	if (((AliMUONResponseTrigger*) fResponse)->SetGenerCluster()) {
+      newclust[0][nnew]=1.;                       // total charge
+      newclust[1][nnew]=ix;                       // ix-position of pad
+      newclust[2][nnew]=iy;                       // iy-position of pad
+      newclust[3][nnew]=twentyNano;               // time of flight
+      newclust[4][nnew]=segmentation->ISector();  // sector id
+      newclust[5][nnew]=(Float_t) i;              // counter
+      nnew++;
+      
+      // cluster-size if AliMUONResponseTriggerV1, nothing if AliMUONResponseTrigger
+      if (((AliMUONResponseTrigger*) fResponse)->SetGenerCluster()) {
 	    
 	    // set hits
 	    segmentation->SetHit(id,xhit,yhit,zhit);
