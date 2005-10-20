@@ -74,10 +74,9 @@ fPadIterator(0),
 fXhit(FMAX),
 fYhit(FMAX)
 { 
-  // slatType is the description of the PCBs of that slat,
-  // e.g. 122200N, 112200SR2, 112233NR3, etc...
-  // The actual filename used is dealt with by the AliMpSt345Reader class.
-  // Same thing for the path if that file, by the way.
+  //
+  // Normal ctor.
+  //
 	
 	ReadMappingData();
 		
@@ -138,7 +137,10 @@ Float_t
 AliMUONSt345SlatSegmentationV2::Dpx(int ipcb) const
 {
 	AliMpPCB* pcb = fSlat->GetPCB(ipcb);
-	if (!pcb) AliFatal("pcb is null!");
+	if (!pcb) 
+  {
+    AliFatal("pcb is null!");
+  }
 	return pcb->PadSizeX() * fgkLengthUnit;
 }
 
@@ -147,7 +149,10 @@ Float_t
 AliMUONSt345SlatSegmentationV2::Dpy(int ipcb) const
 {
 	AliMpPCB* pcb = fSlat->GetPCB(ipcb);
-	if (!pcb) AliFatal("pcb is null!");
+	if (!pcb) 
+  {
+    AliFatal("pcb is null!");
+  }
 	return pcb->PadSizeY() * fgkLengthUnit;
 }
 
@@ -249,7 +254,9 @@ void
 AliMUONSt345SlatSegmentationV2::GetPadC(Int_t ix, Int_t iy, 
 																				Float_t& x, Float_t& y)
 {
-  AliMpPad pad = fSlatSegmentation->PadByIndices(AliMpIntPair(ix-fgIntOffset,iy-fgIntOffset),true);
+  AliMpPad pad = 
+  fSlatSegmentation->PadByIndices(AliMpIntPair(ix-fgIntOffset,iy-fgIntOffset),
+                                  kTRUE);
   x = pad.Position().X() * fgkLengthUnit;
   y = pad.Position().Y() * fgkLengthUnit;
 }
@@ -272,7 +279,7 @@ AliMUONSt345SlatSegmentationV2::GetPadI(Float_t x, Float_t y,
   Double_t slaty = fSlat->DY();
   AliMpPad pad = 
     fSlatSegmentation->PadByPosition(TVector2(x/fgkLengthUnit+slatx, 
-																	y/fgkLengthUnit+slaty), true);
+																	y/fgkLengthUnit+slaty), kTRUE);
 	
   if ( pad != AliMpPad::Invalid() )
 	{
@@ -451,7 +458,7 @@ void
 AliMUONSt345SlatSegmentationV2::Print(Option_t*) const
 {
   cout << "DetElemId=" << fDetElemId << " PlaneType=" 
-  << fPlaneType << " fSlat=" << fSlat 
+  << fPlaneType << " Npx,Npy=" << Npx() << "," << Npy() << " fSlat=" << fSlat 
   << " fSlatSegmentation=" << fSlatSegmentation
   << " fSlatSegmentation->Slat()=" << fSlatSegmentation->Slat() << endl;
 }
@@ -460,8 +467,10 @@ AliMUONSt345SlatSegmentationV2::Print(Option_t*) const
 void
 AliMUONSt345SlatSegmentationV2::ReadMappingData()
 {
-	fSlatSegmentation = dynamic_cast<AliMpSlatSegmentation*>(AliMUONSegmentationManager::Segmentation(fDetElemId,fPlaneType));
-	if (!fSlatSegmentation)
+	fSlatSegmentation = dynamic_cast<AliMpSlatSegmentation*>
+  (AliMUONSegmentationManager::Segmentation(fDetElemId,fPlaneType));
+	
+  if (!fSlatSegmentation)
 	{
 		AliFatal("Wrong segmentation type encountered");
 	}
@@ -470,9 +479,9 @@ AliMUONSt345SlatSegmentationV2::ReadMappingData()
 
 //_____________________________________________________________________________
 Int_t
-AliMUONSt345SlatSegmentationV2::Sector(Int_t ix, Int_t iy)
+AliMUONSt345SlatSegmentationV2::Sector(Int_t ix, Int_t)
 {
-  return fSlat->FindPCBIndex(ix,iy);
+  return fSlat->FindPCBIndex(ix - fgIntOffset);
 }
 
 //_____________________________________________________________________________
