@@ -2,6 +2,7 @@
 
 SRCS:= AliMUONFactoryV2.cxx \
        AliMUONFactoryV3.cxx \
+       AliMUONFactoryV4.cxx \
        AliMUONSt1Response.cxx \
        AliMUONSt1ElectronicElement.cxx \
        AliMUONSt1SpecialMotif.cxx \
