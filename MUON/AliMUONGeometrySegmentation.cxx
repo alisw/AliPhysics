@@ -37,6 +37,8 @@
 
 ClassImp(AliMUONGeometrySegmentation)
 
+const Float_t  AliMUONGeometrySegmentation::fgkMaxDistance = 1.0e11;
+
 //______________________________________________________________________________
 AliMUONGeometrySegmentation::AliMUONGeometrySegmentation(
                                   AliMUONGeometryModule* geometry) 
@@ -249,22 +251,26 @@ AliMUONGeometrySegmentation::HasPad(Int_t detElemId, Int_t ix, Int_t iy)
 {
 // Tells if a given pad exists in a given detector element
 
-	if (!OwnNotify(detElemId)	) return false;
+  if (!OwnNotify(detElemId)) return false;
 	
-	return fCurrentSegmentation->HasPad(ix,iy);
+  return fCurrentSegmentation->HasPad(ix,iy);
 }
                                     
 //______________________________________________________________________________
-Bool_t  AliMUONGeometrySegmentation::GetPadC(Int_t detElemId,
-                                        Int_t ix, Int_t iy, 
-                                        Float_t& xg, Float_t& yg, Float_t& zg)
+Bool_t  
+AliMUONGeometrySegmentation::GetPadC(Int_t detElemId,
+                                     Int_t ix, Int_t iy, 
+                                     Float_t& xg, Float_t& yg, Float_t& zg)
 {					
 /// Transform from pad to real coordinates
 
   if (!OwnNotify(detElemId)) return false;
-
-  if (!fCurrentSegmentation->HasPad(ix, iy)) return false;
-
+ 
+  if (!fCurrentSegmentation->HasPad(ix, iy)) {
+    xg = yg = zg = fgkMaxDistance;
+    return false;
+  }
+  
   Float_t xl, yl, zl;
   fCurrentSegmentation->GetPadC(ix, iy, xl , yl, zl);
 
