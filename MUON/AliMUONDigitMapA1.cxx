@@ -78,7 +78,7 @@ Int_t AliMUONDigitMapA1::CheckedIndex(Int_t ix, Int_t iy) const
 {
 // Return checked indices ix, iy
   Int_t index =  iy * fNpx + ix;
-    if (index > fMaxIndex) {
+    if ( index < 0 || index >= fMaxIndex ) {
       AliWarning(Form("index outside array idDE %d ix %d iy %d MaxIndex %d index %d Npx %d Npy %d",
 		      fIdDE, ix,iy, fMaxIndex, index, fNpx, fNpy));
 	return  fMaxIndex-1;
