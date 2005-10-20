@@ -85,42 +85,27 @@ AliMpPCBPainter::Draw(Option_t* option)
   gr->Push();
   InitGraphContext();
 
-  std::cout << "PCB Position and Dimensions:" << std::endl;
-  GetPosition().Print();
-  GetDimensions().Print();
-
   switch (option[0])
-    {
+  {
     case 'M':
       for ( AliMpPCB::Size_t i = 0; i < fPCB->GetSize(); ++i )
-	{
-	  AliMpMotifPosition* pos = fPCB->GetMotifPosition(i);
-	  
-	  gr->Push();
-	  gr->SetPadPosForReal(pos->Position(),
-			       pos->Dimensions());
-	  //	  
-	  std::cout << "Motif Position " << pos->GetID()
-		    << std::endl;
-	  pos->GetMotif()->Print("");
-	  std::cout << "Motif dimension:" << std::endl;
-	  pos->GetMotif()->Dimensions().Print();
-	  std::cout << "MotifPosition position:" << std::endl;
-	  pos->Position().Print();
-	  std::cout << "MotifPosition dimensions:" << std::endl;
-	  pos->Dimensions().Print();
-	  //	  int id = atoi(pos->GetMotif()->GetID().Data());
-	  gr->SetColor(2+i%7);
-	  
-	  DrawObject(pos,option+1);
-	  
-	  gr->Pop();
-	}
+      {
+        AliMpMotifPosition* pos = fPCB->GetMotifPosition(i);
+        
+        gr->Push();
+        gr->SetPadPosForReal(pos->Position(),
+                             pos->Dimensions());
+        gr->SetColor(gr->GetColor()+i);
+        
+        DrawObject(pos,option+1);
+        
+        gr->Pop();
+      }
       break;
     default:
       AppendPad(option);
-    }
-
+  }
+  
   gr->Pop();
 }
 

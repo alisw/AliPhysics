@@ -95,7 +95,6 @@ AliMpSlatPainter::Draw(Option_t* option)
   gr->Push();
   InitGraphContext();
 
-  std::cout << "Slat Position and Dimensions:" << std::endl;
   GetPosition().Print();
   GetDimensions().Print();
 
@@ -108,7 +107,6 @@ AliMpSlatPainter::Draw(Option_t* option)
 	  
 	  gr->Push();
 
-	  AliInfo(Form("PCB Pos : %7.2f %7.2f",pcb->X(),pcb->Y()));
 	  gr->SetPadPosForReal(TVector2(pcb->X(),pcb->Y()),
 			       TVector2(pcb->DX(),pcb->DY()));
 	  gr->SetColor(i+2);
