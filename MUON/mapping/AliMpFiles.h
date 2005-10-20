@@ -27,51 +27,61 @@
 class AliMpFiles : public TObject
 {
   public:
-    AliMpFiles();
     // --> protected
+    //AliMpFiles();
     //AliMpFiles(const AliMpFiles& right);
     virtual ~AliMpFiles();
-    
-    // static access method
-    static AliMpFiles* Instance();
-
+  
+    //
     // methods
-    TString SlatFilePath(const char* slatType,
-			 AliMpPlaneType plane) const;
-    TString SlatPCBFilePath(const char* pcbType) const;
-
-    TString DetElemIdToSlatTypeFilePath() const;
-
-    TString SectorFilePath(AliMpStationType station, 
-                           AliMpPlaneType plane) const;
-    TString SectorSpecialFilePath(AliMpStationType station, 
-                           AliMpPlaneType plane) const;
-    TString SectorSpecialFilePath2(AliMpStationType station, 
-                           AliMpPlaneType plane) const;
-    TString MotifFilePath(AliMpStationType station, AliMpPlaneType plane, 
-                          const TString& motifTypeID) const;
-    TString MotifSpecialFilePath(AliMpStationType station, 
-                          AliMpPlaneType plane, const TString& motifID) const;
-    TString PadPosFilePath(AliMpStationType station, 
-                          AliMpPlaneType plane, const TString& motifTypeID) const;
-    TString BergToGCFilePath(AliMpStationType station) const;
-
-    // set methods
-    void SetTopPath(const TString& topPath);
-			      
-  protected:
-    AliMpFiles(const AliMpFiles& right);
+    //
     
+    // trigger
+    //
+    static TString LocalTriggerBoardMapping();
+  
+    // slats
+    //
+    static TString SlatFilePath(AliMpStationType stationType, 
+                                const char* slatType, AliMpPlaneType plane);
+    static TString SlatPCBFilePath(AliMpStationType stationType, 
+                                const char* pcbType);
+    // sectors
+    //
+    static TString SectorFilePath(AliMpStationType station, 
+                                  AliMpPlaneType plane);
+    static TString SectorSpecialFilePath(AliMpStationType station, 
+                                  AliMpPlaneType plane);
+    static TString SectorSpecialFilePath2(AliMpStationType station, 
+                                  AliMpPlaneType plane);
+    // motifs
+    //
+    static TString MotifFilePath(AliMpStationType station, 
+                                 AliMpPlaneType plane, 
+                                 const TString& motifTypeID);
+    static TString MotifSpecialFilePath(AliMpStationType station,
+                                 AliMpPlaneType plane, const TString& motifID);
+    static TString PadPosFilePath(AliMpStationType station, 
+                                 AliMpPlaneType plane, const TString& motifTypeID);
+    static TString BergToGCFilePath(AliMpStationType station);
+  
+    // set methods
+    static void SetTopPath(const TString& topPath);
+  
+  protected:
+    AliMpFiles();
+    AliMpFiles(const AliMpFiles& right);
+  
     // operators
     AliMpFiles& operator=(const AliMpFiles& right);    
-    
+  
   private: 
     // methods
-    TString PlaneDataDir(AliMpStationType station, AliMpPlaneType plane) const; 
-    TString StationDataDir(AliMpStationType station) const; 
+    static const char* GetDefaultTop();
+    static TString PlaneDataDir(AliMpStationType station, AliMpPlaneType plane); 
+    static TString StationDataDir(AliMpStationType station); 
   
     // static data members  
-    static AliMpFiles*   fgInstance;       //this instance
     static const TString fgkDefaultTop;    //top directory path (default)
     static const TString fgkDataDir;       //data directory
     static const TString fgkStationDir;    //station directory
@@ -85,17 +95,12 @@ class AliMpFiles : public TObject
     static const TString fgkPadPosPrefix;  //pad position data file name
     static const TString fgkDataExt;       //file extension
     static const TString fgkBergToGCFileName; //name of the file with BergToGC mapping
-    
-    // data members
-    TString  fTop; // top directory path
+    static const TString fgkTriggerLocalBoards; // local board name to id mapping
+  
+    static TString  fgTop; // top directory path
     
 
-  ClassDef(AliMpFiles, 1) //File names and paths 
+  ClassDef(AliMpFiles, 0) //File names and paths 
 };  
-
-// inline functions
-
-inline void AliMpFiles::SetTopPath(const TString& topPath)
-{ fTop = topPath; }
 
 #endif //ALI_MP_FILES_H
