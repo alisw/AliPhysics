@@ -47,6 +47,8 @@ class AliMUONTriggerCircuit : public TObject
   Float_t GetX11Pos(Int_t istrip) const;
   Int_t   DetElemId(Int_t ichamber, Int_t idModule);
 
+  void Print(Option_t* opt="") const;
+  
  protected:
   // copy constructor
   AliMUONTriggerCircuit(const AliMUONTriggerCircuit& AliMUONTriggerCircuit); 

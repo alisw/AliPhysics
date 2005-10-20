@@ -385,7 +385,7 @@ void AliMUONTriggerCircuit::LoadXPos2(){
   AliMUONGeometrySegmentation*  segmentation; 
   iChamber = &(pMUON->Chamber(chamber-1));
   segmentation=iChamber->SegmentationModel2(cathode);
-  
+
   if (!segmentation) {
     AliWarning("Segmentation not defined.");
     return;
@@ -403,6 +403,8 @@ void AliMUONTriggerCircuit::LoadXPos2(){
   if ((nStrY==16)||(nStrY==8&&fX2m==0&&fX2ud==0)) { 
     for (istrip=0; istrip<nStrY; istrip++) {
       segmentation->GetPadC(idDE, idModule,istrip,x,y,z); 
+      AliDebug(1,Form("idDE %d idModule %d istrip %d x,y,z=%e,%e,%e\n",
+                      idDE,idModule,istrip,x,y,z));
       fXpos11[istrip]=x;
     }
 // second case : mixing 8 and 16 strips within same circuit      
@@ -520,6 +522,59 @@ Float_t AliMUONTriggerCircuit::GetX11Pos(Int_t istrip) const {
 //--- end of methods which return member data related info
 //----------------------------------------------------------------------
 
+void dump(const char* what, const Float_t* array, Int_t size)
+{
+  cout << what << " " << endl;
+  for ( Int_t i = 0; i < size; ++i )
+  {
+    cout << array[i] << " , ";
+  }
+  cout << endl;
+}
+
+void dump(const char* what, const Int_t* array, Int_t size)
+{
+  cout << what << " " << endl;
+  for ( Int_t i = 0; i < size; ++i )
+  {
+    cout << array[i] << " , ";
+  }
+  cout << endl;
+}
+
+//_____________________________________________________________________________
+void
+AliMUONTriggerCircuit::Print(Option_t* ) const
+{
+  cout << "IdCircuit " << fIdCircuit << " X2m,X2ud=" << fX2m << ","
+  << fX2ud;
+  for ( Int_t i = 0; i < 2; ++i )
+  {
+    cout << " OrMud[" << i << "]=" << fOrMud[i];
+  }
+  cout << endl;
+  dump("Xpos11",fXpos11,16);
+  dump("Ypos11",fYpos11,31);
+  dump("Ypos21",fYpos21,63);
+  for ( Int_t i = 0; i < 4; ++i )
+  {
+    char s[80];
+    sprintf(s,"Xcode[%d]",i);
+    dump(s,fXcode[i],32);
+    sprintf(s,"Ycode[%d]",i);
+    dump(s,fYcode[i],32);
+  }
+ // Int_t fIdCircuit;            // circuit Id number
+//  Int_t fX2m;                  // internal info needed by TriggerDecision
+//  Int_t fX2ud;                 // internal info needed by TriggerDecision
+//  Int_t fOrMud[2];             // internal info needed by TriggerDecision
+//  Int_t fXcode[4][32];         // code of X strips
+//  Int_t fYcode[4][32];         // code of Y strips 
+//  Float_t fXpos11[16];         // X position of Y strips in MC11
+//  Float_t fYpos11[31];         // Y position of X strips in MC11
+//  Float_t fYpos21[63];         // Y position of X strips in MC21
+  
+}
 
 Int_t AliMUONTriggerCircuit::DetElemId(Int_t ichamber, Int_t idModule)
 {
