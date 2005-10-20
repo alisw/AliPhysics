@@ -31,6 +31,7 @@ class AliTRDtracklet :public TObject{
   void SetSigma2(Float_t sigma2){fExpectedSigma2=sigma2;}
   void SetChi2(Float_t chi2){fChi2=chi2;}
   void SetTilt(Float_t tilt){fTilt=tilt;}
+  void SetMaxPos(Short_t pos, Short_t pos4, Short_t pos5){fMaxPos = pos; fMaxPos4 = pos4; fMaxPos5 = pos5;}
   Float_t GetX() const { return fX;}
   Float_t GetY() const { return fY;}
   Float_t GetZ() const {return fZ;}
@@ -59,6 +60,9 @@ class AliTRDtracklet :public TObject{
   Float_t fExpectedSigma2;    // expected sigma of residual distribution of clusters
   Float_t fChi2;              // chi2 of the tracklet
   Float_t fTilt;              // tilt factor 
+  Short_t fMaxPos;            // time bin with max charge
+  Short_t fMaxPos4;            // time bin with max charge
+  Short_t fMaxPos5;            // time bin with max charge
   ClassDef(AliTRDtracklet,2)
 };
 
@@ -192,6 +196,7 @@ protected:
 
    Int_t    fSeedLab;     // track label taken from seeding  
    Float_t  fdEdx;        // dE/dx 
+   Float_t  fdEdxT;        // dE/dx  - truncated mean
    Float_t  fDE;          // integrated delta energy
    Float_t  fdEdxPlane[kNPlane];  // dE/dx from all 6 planes
    Int_t  fTimBinPlane[kNPlane];  // time bin of Max cluster from all 6 planes
@@ -227,8 +232,9 @@ protected:
    Int_t      fNdedx;      //number of clusters for dEdx measurment
    Float_t fChi2Last;      //chi2 in the  last 2 layers
    AliTRDtracklet fTracklets[6]; //tracklets
+   Float_t     fBudget[3];       // integrated material budget
    AliTRDtrack * fBackupTrack; //! backup track
-   ClassDef(AliTRDtrack,2) // TRD reconstructed tracks
+   ClassDef(AliTRDtrack,3) // TRD reconstructed tracks
 };                     
 
 inline void AliTRDtrack::GetXYZ(Float_t r[3]) const {

@@ -28,7 +28,7 @@ ClassImp(AliTRDtracklet)
 ClassImp(AliTRDtrack)
 
 
-  AliTRDtracklet::AliTRDtracklet():fY(0),fX(0),fAlpha(0),fSigma2(0),fP0(0),fP1(0),fNFound(0),fNCross(0),fPlane(0),fExpectedSigma2(0),fChi2(0){
+  AliTRDtracklet::AliTRDtracklet():fY(0),fX(0),fAlpha(0),fSigma2(0),fP0(0),fP1(0),fNFound(0),fNCross(0),fPlane(0),fExpectedSigma2(0),fChi2(0),fMaxPos(0),fMaxPos4(0),fMaxPos5(0){
 }
 
 //_____________________________________________________________________________
@@ -62,6 +62,7 @@ AliTRDtrack::AliTRDtrack(const AliTRDcluster *c, UInt_t index,
   SetNumberOfClusters(1);
 
   fdEdx=0.;
+  fdEdxT=0.;
   fDE=0.;
   for (Int_t i=0;i<kNPlane;i++){
       fdEdxPlane[i] = 0.;
@@ -90,6 +91,7 @@ AliTRDtrack::AliTRDtrack(const AliTRDcluster *c, UInt_t index,
     fIndex[i] = 0;
     fIndexBackup[i] = 0;  //bacup indexes MI    
   }
+  for (Int_t i=0;i<3;i++) { fBudget[i]=0;};
   fBackupTrack =0;  
 }                              
            
@@ -104,6 +106,7 @@ AliTRDtrack::AliTRDtrack(const AliTRDtrack& t) : AliKalmanTrack(t) {
 
   SetChi2(t.GetChi2());
   fdEdx=t.fdEdx;
+  fdEdxT=t.fdEdxT;
   fDE=t.fDE;
   for (Int_t i=0;i<kNPlane;i++){
       fdEdxPlane[i] = t.fdEdxPlane[i];
@@ -147,6 +150,10 @@ AliTRDtrack::AliTRDtrack(const AliTRDtrack& t) : AliKalmanTrack(t) {
     fIndex[i] = 0;
     fIndexBackup[i] = 0;  //MI backup indexes
   }
+  for (Int_t i=0;i<6;i++){
+    fTracklets[i] = t.fTracklets[i];
+  }
+  for (Int_t i=0;i<3;i++) { fBudget[i]=t.fBudget[i];};
 }                                
 
 //_____________________________________________________________________________
@@ -215,6 +222,7 @@ AliTRDtrack::AliTRDtrack(const AliKalmanTrack& t, Double_t alpha)
     fIndexBackup[i] = 0;  // MI backup indexes    
   }
   
+  for (Int_t i=0;i<3;i++) { fBudget[i]=0;};
 }              
 //_____________________________________________________________________________
 AliTRDtrack::AliTRDtrack(const AliESDtrack& t) 
@@ -222,7 +230,7 @@ AliTRDtrack::AliTRDtrack(const AliESDtrack& t)
   //
   // Constructor from AliESDtrack
   //
-
+  fDE =0;     
   SetLabel(t.GetLabel());
   SetChi2(0.);
   SetMass(t.GetMass());
@@ -290,6 +298,7 @@ AliTRDtrack::AliTRDtrack(const AliESDtrack& t)
     //    fIndex[i] = 0; //MI store indexes
   }
 
+  for (Int_t i=0;i<3;i++) { fBudget[i]=0;};
   if ((t.GetStatus()&AliESDtrack::kTIME) == 0) return;
   StartTimeIntegral();
   Double_t times[10]; t.GetIntegratedTimes(times); SetIntegratedTimes(times);
@@ -345,6 +354,11 @@ AliTRDtrack::~AliTRDtrack()
 
 Float_t    AliTRDtrack::StatusForTOF()
 {
+
+  Float_t res = (0.2 + 0.8*(fN/(fNExpected+5.)))*(0.4+0.6*fTracklets[5].GetN()/20.);
+  res *= (0.25+0.8*40./(40.+fBudget[2]));
+  return res;
+
   Int_t status=0;
   if (GetNumberOfClusters()<20) return 0;   //
   if (fN>110&&fChi2/(Float_t(fN))<3) return 3;            //gold
@@ -437,19 +451,6 @@ void AliTRDtrack::CookdEdx(Double_t low, Double_t up) {
   for (i=0; i < nc; i++) {
     sorted[i]=fdQdl[i];
   }
-  /*
-  Int_t swap; 
-
-  do {
-    swap=0;
-    for (i=0; i<nc-1; i++) {
-      if (sorted[i]<=sorted[i+1]) continue;
-      Float_t tmp=sorted[i];
-      sorted[i]=sorted[i+1]; sorted[i+1]=tmp;
-      swap++;
-    }
-  } while (swap);
-  */
   Int_t nl=Int_t(low*nc), nu=Int_t(up*nc);
   Float_t dedx=0;
   //for (i=nl; i<=nu; i++) dedx += sorted[i];
@@ -458,6 +459,18 @@ void AliTRDtrack::CookdEdx(Double_t low, Double_t up) {
   if((nu-nl)) dedx /= (nu-nl);                  // ADDED by PS
 
   SetdEdx(dedx);
+  //
+  // now real truncated mean
+  for (i=0; i < nc; i++) {
+    sorted[i]=TMath::Abs(fdQdl[i]);
+  }
+  Int_t * index = new Int_t[nc];
+  TMath::Sort(nc, sorted, index,kFALSE);
+  dedx=0;
+  for (i=nl; i<=nu; i++) dedx += sorted[index[i]];
+  dedx /= (nu-nl+1);
+  fdEdxT = dedx;
+  delete [] index;
 }                     
 
 
@@ -568,7 +581,7 @@ Int_t AliTRDtrack::PropagateTo(Double_t xk,Double_t x0,Double_t rho)
   fC*=(1.- sqrt(p2+GetMass()*GetMass())/p2*dE);
   fE+=fX*(fC-cc);    
   //  Double_t sigmade = 0.1*dE*TMath::Sqrt(TMath::Sqrt(1+fT*fT)*90./(d+0.0001));   // 20 percent fluctuation - normalized to some length 
-  Double_t sigmade = 0.02*TMath::Sqrt(TMath::Abs(dE));   // energy loss fluctuation 
+  Double_t sigmade = 0.07*TMath::Sqrt(TMath::Abs(dE));   // energy loss fluctuation 
   Double_t sigmac2 = sigmade*sigmade*fC*fC*(p2+GetMass()*GetMass())/(p2*p2);
   fCcc += sigmac2;
   fCee += fX*fX*sigmac2;  
@@ -576,8 +589,14 @@ Int_t AliTRDtrack::PropagateTo(Double_t xk,Double_t x0,Double_t rho)
   // track time measurement [SR, GSI 17.02.2002]
   if (x1 < x2)
   if (IsStartedTimeIntegral()) {
-    Double_t l2 = (fX-oldX)*(fX-oldX) + (fY-oldY)*(fY-oldY) + (fZ-oldZ)*(fZ-oldZ);
-    AddTimeStep(TMath::Sqrt(l2));
+    Double_t l2 = TMath::Sqrt((fX-oldX)*(fX-oldX) + (fY-oldY)*(fY-oldY) + (fZ-oldZ)*(fZ-oldZ));
+    if (TMath::Abs(l2*fC)>0.0001){
+      // make correction for curvature if neccesary
+      l2 = 0.5*TMath::Sqrt((fX-oldX)*(fX-oldX) + (fY-oldY)*(fY-oldY));
+      l2 = 2*TMath::ASin(l2*fC)/fC;
+      l2 = TMath::Sqrt(l2*l2+(fZ-oldZ)*(fZ-oldZ));
+    }
+    AddTimeStep(l2);
   }
 
   return 1;            
