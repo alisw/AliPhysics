@@ -557,11 +557,9 @@ AliMpSector* AliMpSectorReader::BuildSector()
 /// zones, subzones, rows, row segments, motifs.
 
   // Open input file
-  ifstream in(AliMpFiles::Instance()
-              ->SectorFilePath(fStationType, fPlaneType).Data(), ios::in);
+  ifstream in(AliMpFiles::SectorFilePath(fStationType, fPlaneType).Data(), ios::in);
   if (!in) {
-     cerr << AliMpFiles::Instance()
-              ->SectorFilePath(fStationType, fPlaneType) << endl;	
+     cerr << AliMpFiles::SectorFilePath(fStationType, fPlaneType) << endl;	
      Error("BuildSector", "File not found.");
      return 0;
   }
@@ -571,12 +569,11 @@ AliMpSector* AliMpSectorReader::BuildSector()
 
   // Open input file for special inner zone
   TString sectorSpecialFileName 
-    = AliMpFiles::Instance()->SectorSpecialFilePath(fStationType, fPlaneType);
+    = AliMpFiles::SectorSpecialFilePath(fStationType, fPlaneType);
   if (!gSystem->AccessPathName(sectorSpecialFileName.Data())) {
     ifstream in2(sectorSpecialFileName.Data(), ios::in);
     if (!in2) {	
-       cerr << AliMpFiles::Instance()
-              ->SectorSpecialFilePath(fStationType, fPlaneType) << endl;	
+       cerr << AliMpFiles::SectorSpecialFilePath(fStationType, fPlaneType) << endl;	
        Error("BuildSector", "File not found.");
        return 0;
     }
@@ -586,12 +583,11 @@ AliMpSector* AliMpSectorReader::BuildSector()
 
   // Open input file for special outer zone
   TString sectorSpecialFileName2 
-    = AliMpFiles::Instance()->SectorSpecialFilePath2(fStationType, fPlaneType);
+    = AliMpFiles::SectorSpecialFilePath2(fStationType, fPlaneType);
   if (!gSystem->AccessPathName(sectorSpecialFileName2.Data())) {
     ifstream in3(sectorSpecialFileName2.Data(), ios::in);
     if (!in3) {	
-       cerr << AliMpFiles::Instance()
-              ->SectorSpecialFilePath2(fStationType, fPlaneType) << endl;	
+       cerr << AliMpFiles::SectorSpecialFilePath2(fStationType, fPlaneType) << endl;	
        Error("Build", "File not found.");
        return 0;
     }

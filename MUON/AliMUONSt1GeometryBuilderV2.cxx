@@ -129,7 +129,7 @@ AliMUONSt1GeometryBuilderV2::AliMUONSt1GeometryBuilderV2(AliMUON* muon)
    if (! gSystem->Getenv("MINSTALL")) {    
      TString dirPath = gSystem->Getenv("ALICE_ROOT");
      dirPath += "/MUON/mapping"; 
-     AliMpFiles::Instance()->SetTopPath(dirPath);
+     AliMpFiles::SetTopPath(dirPath);
      gSystem->Setenv("MINSTALL", dirPath.Data());
      //cout << "AliMpFiles top path set to " << dirPath << endl;	  
    }
