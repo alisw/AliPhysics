@@ -36,10 +36,12 @@ ClassImp(AliMpSlat)
 AliMpSlat::AliMpSlat() 
 : TObject(), 
   fId(""), 
+  fPlaneType(kNonBendingPlane),
   fDX(0), 
   fDY(0),
   fNofPadsX(0), 
-  fMaxNofPadsY(0)
+  fMaxNofPadsY(0),
+  fManuMap()
 {
     //
     // Empty ctor.
@@ -48,13 +50,15 @@ AliMpSlat::AliMpSlat()
 }
 
 //_____________________________________________________________________________
-AliMpSlat::AliMpSlat(const char* id)
+AliMpSlat::AliMpSlat(const char* id, AliMpPlaneType bendingOrNonBending)
 : TObject(), 
   fId(id), 
+  fPlaneType(bendingOrNonBending),
   fDX(0), 
   fDY(0),
   fNofPadsX(0), 
-  fMaxNofPadsY(0)
+  fMaxNofPadsY(0),
+  fManuMap(kTRUE)
 {
     //
     // Normal ctor
@@ -86,6 +90,10 @@ AliMpSlat::Add(AliMpPCB* pcbType, const TArrayI& manuList)
 	{
 		ixOffset = GetPCB(GetSize()-1)->Ixmax()+1;
 	}
+  else
+  {
+    ixOffset = pcbType->Ixmin();
+  }
   Double_t xOffset = DX()*2;
   AliMpPCB* pcb = pcbType->Clone(manuList,ixOffset,xOffset);
 #ifdef WITH_ROOT
@@ -93,7 +101,7 @@ AliMpSlat::Add(AliMpPCB* pcbType, const TArrayI& manuList)
 #else
   fPCBs.push_back(pcb);
 #endif  
-  fDY = pcb->DY();
+  fDY = TMath::Max(pcb->DY(),fDY);
   fDX += pcb->DX();
   fNofPadsX += pcb->GetNofPadsX();
   fMaxNofPadsY = std::max(fMaxNofPadsY,pcb->GetNofPadsY());
@@ -103,10 +111,10 @@ AliMpSlat::Add(AliMpPCB* pcbType, const TArrayI& manuList)
 		Int_t manuID = mp->GetID();
     // Before inserting a new key, check if it's already there
 #ifdef WITH_ROOT
-    Long_t there = fManuMap.GetValue((Long_t)manuID);
+    TObject* there = fManuMap.GetValue(manuID);
     if ( there == 0 )
     {
-      fManuMap.Add((Long_t)manuID,(Long_t)mp);
+      fManuMap.Add(manuID,(TObject*)mp);
     }
     else
     {
@@ -116,6 +124,7 @@ AliMpSlat::Add(AliMpPCB* pcbType, const TArrayI& manuList)
   fManuMap[manuID] = mp;
 #endif  
 	}
+  fPosition.Set(DX(),DY());
 }
 
 //_____________________________________________________________________________
@@ -156,7 +165,7 @@ AliMpSlat::FindMotifPosition(Int_t manuID) const
   // Returns the motifPosition referenced by it manuID
   //
 #ifdef WITH_ROOT
-  Long_t rv = fManuMap.GetValue((Long_t)manuID);
+  TObject* rv = fManuMap.GetValue(manuID);
   if ( rv )
   {
     return (AliMpMotifPosition*)(rv);
@@ -290,6 +299,35 @@ AliMpSlat::FindPCBIndex(Double_t x, Double_t y) const
 }
 
 //_____________________________________________________________________________
+void
+AliMpSlat::ForcePosition(const TVector2& pos)
+{
+  //
+  // Force the position to be different from (DX(),DY()).
+  // Normally only used by triggerSlats (for layers).
+  // Beware that this method must be called once all PCB have been added,
+  // as the Add() method resets the position.
+  //
+  fPosition = pos;
+}
+
+//_____________________________________________________________________________
+void
+AliMpSlat::GetAllElectronicCardNumbers(TArrayI& ecn) const
+{
+  ecn.Set(GetNofElectronicCards());
+  TExMapIter it(fManuMap.GetIterator());
+  Long_t key;
+  Long_t value;
+  Int_t n(0);
+  while ( it.Next(key,value) == kTRUE )
+  {
+    ecn.AddAt((Int_t)(key),n);
+    ++n;
+  }
+}
+
+//_____________________________________________________________________________
 const char*
 AliMpSlat::GetID() const
 {
@@ -307,6 +345,33 @@ AliMpSlat::GetMaxNofPadsY() const
   // Returns the maximum number of pads to be found in this slat y-direction.
   // 
   return fMaxNofPadsY;
+}
+
+//_____________________________________________________________________________
+const char*
+AliMpSlat::GetName() const
+{
+  TString name(GetID());
+  if ( fPlaneType == kBendingPlane )
+  {
+    name += ".Bending";
+  }
+  else if ( fPlaneType == kNonBendingPlane )
+  {
+    name += ".NonBending";
+  }
+  else
+  {
+    name += ".Invalid";
+  }
+  return name.Data();  
+}
+
+//_____________________________________________________________________________
+Int_t
+AliMpSlat::GetNofElectronicCards() const
+{
+  return fManuMap.GetSize();
 }
 
 //_____________________________________________________________________________
@@ -350,6 +415,13 @@ AliMpSlat::GetSize() const
 }
 
 //_____________________________________________________________________________
+TVector2
+AliMpSlat::Position() const
+{
+  return fPosition;
+}
+
+//_____________________________________________________________________________
 void
 AliMpSlat::Print(Option_t* option) const
 {
@@ -357,9 +429,14 @@ AliMpSlat::Print(Option_t* option) const
   // Prints the slat characteristics.
   //
   cout << "SLAT " << GetID() <<  " 1/2 DIM = (" << DX() << "," << DY() << ")"
-	<< " NPADSX = " << GetNofPadsX() << " NPCBs=" << GetSize() << endl;
+  << " POS = " << Position().X() << "," << Position().Y()
+	<< " NPADSX = " << GetNofPadsX() 
+  << " MAXNPADSY = " << GetMaxNofPadsY()
+  << " NPCBs=" << GetSize() << endl;
   
-  if ( option && option[0] == 'P' )
+  TString soption(option);
+  
+  if ( soption.Contains("P") )
 	{
     for ( Size_t i = 0; i < GetSize() ; ++i )
 		{
@@ -374,4 +451,18 @@ AliMpSlat::Print(Option_t* option) const
 	    }
 		}
 	}
+  
+  if ( soption.Contains("M") || soption.Contains("L") )
+  {
+    cout << fManuMap.GetSize() << " ";
+    cout << "Electronic card (manu or local board) Ids : ";
+    
+    TExMapIter iter(fManuMap.GetIterator());
+    Long_t key, value;
+    while ( iter.Next(key,value) )
+    {
+      cout << key << " ";
+    }
+    cout << endl;
+  }
 }

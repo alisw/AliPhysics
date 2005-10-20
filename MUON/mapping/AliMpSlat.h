@@ -16,15 +16,19 @@
 #include <TObject.h>
 
 #ifndef ROOT_TString
-#include "TString.h"
-#endif
-
-#ifndef ALI_MP_V_SEGMENTATION_H
-#include "AliMpVSegmentation.h"
+#  include "TString.h"
 #endif
 
 #ifndef ALI_MP_PAD_H
-#include "AliMpPad.h"
+#  include "AliMpPad.h"
+#endif
+
+#ifndef ALI_MP_V_SEGMENTATION_H
+#  include "AliMpVSegmentation.h"
+#endif
+
+#ifndef ALI_MP_PLANE_TYPE_H
+#  include "AliMpPlaneType.h"
 #endif
 
 #include "AliMpContainers.h"
@@ -32,7 +36,7 @@
 class TArrayI;
 
 #ifdef WITH_ROOT
-#  include "TExMap.h"
+#  include "AliMpExMap.h"
 #  include "TObjArray.h"
 #else
 #  include <vector>
@@ -41,6 +45,7 @@ class TArrayI;
 
 class AliMpMotifPosition;
 class AliMpPCB;
+class TArrayI;
 
 class AliMpSlat : public TObject
 {
@@ -53,11 +58,14 @@ class AliMpSlat : public TObject
 #endif  
   
   AliMpSlat();
-  AliMpSlat(const char* id);
+  AliMpSlat(const char* id, AliMpPlaneType bendingOrNonBending);
   virtual ~AliMpSlat();
 
   TVector2 Dimensions() const;
-
+  TVector2 Position() const;
+  
+  const char* GetName() const;
+  
   const char* GetID() const;
 
   void Add(AliMpPCB* pcbType, const TArrayI& manuList);
@@ -97,33 +105,46 @@ class AliMpSlat : public TObject
   /// Returns the MotifPosition containing the pad located at (ix,iy).
   AliMpMotifPosition* FindMotifPosition(Int_t ix, Int_t iy) const;
 
-  /// Returns the number of PCBs of this slat.
-  Size_t GetSize() const;
-
+  /// Return the ids of the electronic cards (either manu or local board).
+  void GetAllElectronicCardNumbers(TArrayI& ecn) const;
+  
+  /** Returns the max. number of pads in the x-direction contained in this slat.
+    This is a max only as for e.g. non-bending slats, the y-dimension depends
+    on the x-position.
+    */
+  Int_t GetMaxNofPadsY() const;
+  
+  /// Return the number of electronic cards (either manu or local board).
+  Int_t GetNofElectronicCards() const;
+  
   /// Returns the number of pads in the x-direction contained in this slat.
   Int_t GetNofPadsX() const;
  
-  /** Returns the max. number of pads in the x-direction contained in this slat.
-      This is a max only as for e.g. non-bending slats, the y-dimension depends
-      on the x-position.
-  */
-  Int_t GetMaxNofPadsY() const;
-
+  /// Returns the number of PCBs of this slat.
+  Size_t GetSize() const;
+    
   void Print(Option_t* option="") const;
 
+  /** This is normally only used by triggerSlats, as for ST345 slats,
+    the position is DX(),DY() simply.
+    */
+  void ForcePosition(const TVector2& pos);
+  
  private:
   TString fId;
+  AliMpPlaneType fPlaneType;
   Double_t fDX;
   Double_t fDY;
   Int_t fNofPadsX;
   Int_t fMaxNofPadsY;
 #ifdef WITH_ROOT
   TObjArray fPCBs; // array of AliMpPCB*
-  mutable TExMap fManuMap; // map of int to AliMpMotifPosition*
+  mutable AliMpExMap fManuMap; // map of int to AliMpMotifPosition*
 #else  
   std::vector<AliMpPCB*> fPCBs;
   std::map<int,AliMpMotifPosition*> fManuMap;
 #endif
+  TVector2 fPosition;
   
   ClassDef(AliMpSlat,1) // A slat for stations 3,4,5
 };
