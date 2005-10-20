@@ -2,16 +2,8 @@ GLOBAL        10000.
 DEFAULTS                                                              NEW-DEFA
 OPEN             97.                                                  UNKNOWN
 ran_abs.new
-OPEN              8.                                                  SCRATCH  
-OPEN             -9.                                                  OLD
-neuxsc.bin
-OPEN            -13.                                                  OLD
-fluodt.dat
-OPEN            -14.                                                  OLD
-nuclear.bin
 OPEN             15.                                                  UNKNOWN
 FlukaVmc.err
-OPEN             16.                                                  SCRATCH
 OPEN              2.                                                  UNKNOWN
 ran.new                                                      
 *OPEN              3.                                                  OLD
