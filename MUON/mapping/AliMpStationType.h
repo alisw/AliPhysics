@@ -15,9 +15,36 @@
  
 enum AliMpStationType
 {
-  kStation1,  ///< station 1 (quadrants)
-  kStation2,  ///< station 2 (quadrants)
-  kStation345 ///< station 3,4,5 (slats)
+  kStationInvalid = -1,
+  kStation1 = 0,   ///< station 1 (quadrants)
+  kStation2,   ///< station 2 (quadrants)
+  kStation345, ///< station 3,4,5 (slats)
+  kStationTrigger     ///< trigger stations (slats)
+
 };
+
+inline 
+const char* StationTypeName(AliMpStationType stationType)
+{
+  switch ( stationType )
+  {
+    case kStation1:
+      return "st1";
+      break;
+    case kStation2:
+      return "st2";
+      break;
+    case kStation345:
+      return "slat";
+      break;
+    case kStationTrigger:
+      return "trigger";
+      break;
+    case kStationInvalid:
+    default:
+      return "unknown";
+      break;
+  }
+}
 
 #endif //ALI_MP_STATION_TYPE_H
