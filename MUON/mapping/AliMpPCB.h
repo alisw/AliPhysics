@@ -37,6 +37,7 @@
 
 class AliMpMotifPosition;
 class AliMpMotifType;
+class AliMpMotifSpecial;
 
 class AliMpPCB : public TObject
 {
@@ -60,6 +61,9 @@ class AliMpPCB : public TObject
   */
   AliMpPCB(const char* id, Double_t padSizeX, Double_t padSizeY,
 	   Double_t enveloppeSizeX, Double_t enveloppeSizeY);
+  
+  AliMpPCB(const char* id, AliMpMotifSpecial* ms);
+  
   AliMpPCB(const AliMpPCB&);
   AliMpPCB& operator=(const AliMpPCB&);
 
@@ -76,9 +80,13 @@ class AliMpPCB : public TObject
 
   void Copy(TObject&) const;
 
-  /** Add a motif to this PCB. (ix,iy) are the coordinates of the lower-left 
-      of the motif, in pad-units, starting at 0,0 on the lower-left of the PCB.
-  */
+  /** Add a motif to this PCB. (ix,iy) are the coordinates of one corner 
+    of the motif, in pad-units. Which corner depends on the sign(s) of (ix,iy):
+    (ix>0,iy>0) : bottom-left corner
+    (ix<0,iy>0) : bottom-right corner
+    (ix<0,iy<0) : top-right corner
+    (ix>0,iy<0) : top-left corner.
+    */
   void Add(AliMpMotifType* motifType, Int_t ix, Int_t iy);
 
   void Print(Option_t* option = "") const;
@@ -123,7 +131,10 @@ class AliMpPCB : public TObject
 
   Int_t Ixmin() const;
   Int_t Ixmax() const;
-
+  
+  Int_t Iymin() const;
+  Int_t Iymax() const;
+  
   const char* GetID() const;
   
  private:

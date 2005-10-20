@@ -20,10 +20,12 @@
 
 #include "AliMpMotif.h"
 #include "AliMpMotifPosition.h"
+#include "AliMpMotifSpecial.h"
 #include "AliMpMotifType.h"
 #include "AliLog.h"
 
 #include "Riostream.h"
+#include "TMath.h"
 #include <sstream>
 
 ClassImp(AliMpPCB)
@@ -65,9 +67,41 @@ AliMpPCB::AliMpPCB(const AliMpPCB& o)
     fEnveloppeSizeX(0), fEnveloppeSizeY(0),
     fXoffset(0),
     fActiveXmin(0), fActiveXmax(0),
-    fIxmin(0), fIxmax(0), fIymin(0), fIymax(0)
+    fIxmin(99999), fIxmax(0), fIymin(99999), fIymax(0)
 {
   o.Copy(*this);
+}
+
+//_____________________________________________________________________________
+AliMpPCB::AliMpPCB(const char* id, AliMpMotifSpecial* ms)
+: TObject(), fId(id), fPadSizeX(-1.0), fPadSizeY(-1.0),
+  fXoffset(0)
+{
+  //
+  // Very special ctor to be used by trigger stations only (and for a very
+  // specific case).
+  //
+  // Note that in this very case, we only allow one (special) motif per PCB.
+  // This limitation might not be justified, except that it's all we need
+  // so far ;-)
+  //
+  fXoffset = 0.0;
+  fEnveloppeSizeX = ms->Dimensions().X()*2.0;
+  fEnveloppeSizeY = ms->Dimensions().Y()*2.0;
+  fActiveXmin = 0.0;
+  fActiveXmax = fEnveloppeSizeX;
+  fIxmin = fIymin = 0;
+  fIxmax = ms->GetMotifType()->GetNofPadsX()-1;
+  fIymax = ms->GetMotifType()->GetNofPadsY()-1;
+  TVector2 position(ms->Dimensions());
+  AliMpMotifPosition* mp = new AliMpMotifPosition(-1,ms,position);
+  mp->SetLowIndicesLimit(AliMpIntPair(fIxmin,fIymin));
+  mp->SetHighIndicesLimit(AliMpIntPair(fIxmax,fIymax));
+#ifdef WITH_ROOT
+  fMotifs.AddLast(mp);
+#else
+  fMotifs.push_back(mp);
+#endif
 }
 
 //_____________________________________________________________________________
@@ -115,19 +149,54 @@ void
 AliMpPCB::Add(AliMpMotifType* mt, Int_t ix, Int_t iy)
 {
   //
-  // Add a motif to this PCB. (ix,iy) is the lower-left position of the motif.
+  // Add a motif to this PCB. (ix,iy) indicates one corner position of the motif
+  // where the sign of ix and iy is used to indicate which corner is the 
+  // reference (then for values, abs(ix) and abs(iy) are used indeed) :
   //
+  // (ix>0,iy>0) : bottom-left corner
+  // (ix<0,iy>0) : bottom-right corner
+  // (ix<0,iy<0) : top-right corner
+  // (ix>0,iy<0) : top-left corner.
   
   AliMpVMotif* motif = 
     new AliMpMotif(mt->GetID(),mt,TVector2(PadSizeX()/2.0,PadSizeY()/2.0));
-  TVector2 position(ix*PadSizeX(),iy*PadSizeY());
+  TVector2 position;
+  Int_t ixmin(-1);
+  Int_t iymin(-1);
+  
+  if ( ix >= 0 && iy >= 0 )
+  {
+    position.Set(ix*PadSizeX(),iy*PadSizeY());
+    ixmin = ix;
+    iymin = iy;
+  }
+  else
+  if ( ix >= 0 && iy < 0 )
+  {
+    position.Set(ix*PadSizeX(),Ymax()+iy*PadSizeY());
+    ixmin = ix;
+    iymin = TMath::Nint(Ymax()/PadSizeY()) + iy;
+  }
+  else
+  if ( ix < 0 && iy < 0 )
+  {
+    position.Set(Xmax()+ix*PadSizeX(),Ymax()+iy*PadSizeY());
+    ixmin = TMath::Nint(Xmax()/PadSizeX()) + ix;
+    iymin = TMath::Nint(Ymax()/PadSizeY()) + iy;
+  }
+  else
+  if ( ix < 0 && iy >=0 )
+  {
+    position.Set(Xmax()+ix*PadSizeX(),iy*PadSizeY());
+    ixmin = TMath::Nint(Xmax()/PadSizeX()) + ix;
+    iymin = iy;
+  }
+
   position += motif->Dimensions();
 
   AliMpMotifPosition* mp = new AliMpMotifPosition(-1,motif,position);
-  Int_t ixmin = ix;
-  Int_t iymin = iy;
-  Int_t ixmax = ix + mt->GetNofPadsX() - 1;
-  Int_t iymax = iy + mt->GetNofPadsY() - 1;
+  Int_t ixmax = ixmin + mt->GetNofPadsX() - 1;
+  Int_t iymax = iymin + mt->GetNofPadsY() - 1;
 
   mp->SetLowIndicesLimit(AliMpIntPair(ixmin,iymin));
   mp->SetHighIndicesLimit(AliMpIntPair(ixmax,iymax));
@@ -175,8 +244,8 @@ AliMpPCB::Clone(const TArrayI& manuids, Int_t ixOffset, Double_t xOffset) const
 
   if ( pcb->GetSize() != manuids.GetSize() )
   {
-      AliError(Form("Cannot Clone because I do not get the correct number of "
-                    "manu ids (got %d, wanted %d)",
+      AliError(Form("Cannot Clone PCB %s because I do not get the correct number of "
+                    "manu ids (got %d, wanted %d)",pcb->GetID(),
                     manuids.GetSize(),pcb->GetSize()));
       return 0;
   }
@@ -321,9 +390,9 @@ AliMpPCB::FindMotifPosition(Int_t ix, Int_t iy) const
     {
       AliMpMotifPosition* mp = (AliMpMotifPosition*)fMotifs[i];
       if ( mp->HasPad(AliMpIntPair(ix,iy)) )
-	{
-	  return mp;
-	}
+      {
+        return mp;
+      }
     }
   return 0;
 }
@@ -348,7 +417,7 @@ AliMpPCB::FindMotifPosition(Double_t x, Double_t y) const
     
     AliMpIntPair localIndices(mp->GetMotif()->PadIndicesLocal(localPos));
     
-    if ( mp->GetMotif()->GetMotifType()->HasPad(localIndices) )
+    if ( localIndices.IsValid() && mp->GetMotif()->GetMotifType()->HasPad(localIndices) )
     {
       return mp;
     }
@@ -441,6 +510,28 @@ AliMpPCB::Ixmax() const
   //
   
   return Ixmin() + GetNofPadsX() - 1;
+}
+
+//_____________________________________________________________________________
+Int_t
+AliMpPCB::Iymin() const
+{
+  //
+  // Returns the index value of the bottom pad.
+  //
+  
+  return fIymin;
+}
+
+//_____________________________________________________________________________
+Int_t
+AliMpPCB::Iymax() const
+{
+  //
+  // Returns the index value of the top pad.
+  //
+  
+  return Iymin() + GetNofPadsY() - 1;
 }
 
 //_____________________________________________________________________________
