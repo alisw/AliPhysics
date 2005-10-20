@@ -11,6 +11,7 @@
 #pragma link C++ class AliMUONSt345SlatSegmentation+;
 #pragma link C++ class AliMUONSt345SlatSegmentationV2-;
 #pragma link C++ class AliMUONTriggerSegmentation+;
+#pragma link C++ class AliMUONTriggerSegmentationV2-;
 
 // geometry 
 #pragma link C++ class AliMUONMathieson+; 
