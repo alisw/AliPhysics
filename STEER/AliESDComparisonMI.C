@@ -23,17 +23,17 @@
 //
 //
 
-/*
+/* 
 marian.ivanov@cern.ch
 Usage:
-
+ 
 
 .L $ALICE_ROOT/STEER/AliGenInfo.C+
 //be sure you created genTracks file before
 .L $ALICE_ROOT/STEER/AliESDComparisonMI.C+
 
 //
-ESDCmpTr *t2 = new ESDCmpTr("genTracks.root","cmpESDTracks.root","galice.root",-1,1,0);
+ESDCmpTr *t2 = new ESDCmpTr("genTracks.root","cmpESDTracks.root","galice.root",-1,0,0);
 t2->Exec();
 
 //
@@ -43,9 +43,6 @@ TCut cprim("cprim","TMath::Sqrt(MC.fVDist[0]**2+MC.fVDist[1]**2)<0.01&&abs(MC.fV
 //TCut citsin("citsin","TMath::Sqrt(MC.fVDist[0]**2+MC.fVDist[1]**2)<3.9");
 TCut citsin("citsin","TMath::Sqrt(MC.fVDist[0]**2+MC.fVDist[1]**2)<5");
 TCut csec("csec","TMath::Sqrt(MC.fVDist[0]**2+MC.fVDist[1]**2)>0.5");
-
-
-
 
 
 TCut crec("crec","fReconstructed==1");
@@ -115,12 +112,13 @@ comp.fTree->Draw("fESDTrack.fTRDsignal:MC.fParticle.P()>>dEdx1","fTRDOn&&abs(fPd
 comp.fTree->Draw("fESDTrack.fTRDsignal:MC.fParticle.P()>>dEdx2","fTRDOn&&abs(fPdg)==321&&fTRDtrack.fN>40&&fStatus[2]>1") 
 comp.fTree->Draw("fESDTrack.fTRDsignal:MC.fParticle.P()>>dEdx3","fTRDOn&&abs(fPdg)==11&&fTRDtrack.fN>40&&fStatus[2]>1") 
 
-comp.fTree->Draw("fESDTrack.fTPCsignal:MC.fParticle.P()>>dEdx0","fTRDOn&&abs(fPdg)==211&&fTRDtrack.fN>40&&abs(fESDTrack.fTRDLabel)==abs(fESDTrack.fTPCLabel)") 
-comp.fTree->Draw("fESDTrack.fTPCsignal:MC.fParticle.P()>>dEdx1","fTRDOn&&abs(fPdg)==2212&&fTRDtrack.fN>40&&abs(fESDTrack.fTRDLabel)==abs(fESDTrack.fTPCLabel)") 
-comp.fTree->Draw("fESDTrack.fTPCsignal:MC.fParticle.P()>>dEdx2","fTRDOn&&abs(fPdg)==321&&fTRDtrack.fN>40&&abs(fESDTrack.fTRDLabel)==abs(fESDTrack.fTPCLabel)") 
-comp.fTree->Draw("fESDTrack.fTPCsignal:MC.fParticle.P()>>dEdx3","fTRDOn&&abs(fPdg)==11&&fTRDtrack.fN>40&&abs(fESDTrack.fTRDLabel)==abs(fESDTrack.fTPCLabel)") 
+comp.fTree->Draw("fESDTrack.fTPCsignal:fTPCinP0[4]>>dEdx0","fTPCOn&&abs(fPdg)==211&&fESDTrack.fTPCncls>180&&fESDTrack.fTPCsignal>10"+cteta1); 
+comp.fTree->Draw("fESDTrack.fTPCsignal:fTPCinP0[4]>>dEdx1","fTPCOn&&abs(fPdg)==2212&&fESDTrack.fTPCncls>180&&fESDTrack.fTPCsignal>10"+cteta1); 
+comp.fTree->Draw("fESDTrack.fTPCsignal:fTPCinP0[4]>>dEdx2","fTPCOn&&abs(fPdg)==321&&fESDTrack.fTPCncls>180&&fESDTrack.fTPCsignal>10"+cteta1); 
+comp.fTree->Draw("fESDTrack.fTPCsignal:fTPCinP0[4]>>dEdx3","fTPCOn&&abs(fPdg)==11&&fESDTrack.fTPCncls>180&&fESDTrack.fTPCsignal>10"+cteta1); 
 
-
+hdedx3->SetXTitle("P(GeV/c)");
+hdedx3->SetYTitle("dEdx(unit)");
 hdedx3->Draw(); hdedx1->Draw("same"); hdedx2->Draw("same"); hdedx0->Draw("same");
 
 comp.DrawXY("fITSinP0[3]","fITSPools[4]","fReconstructed==1&&fPdg==-211&&fITSOn"+cprim,"1",4,0.2,1.0,-8,8)
@@ -189,18 +187,6 @@ TProfile prof("prof","prof",10,0.5,5);
 
 
 
-TCut cprim("cprim","TMath::Sqrt(MC.fVDist[0]**2+MC.fVDist[1]**2)<0.01&&abs(MC.fVDist[2])<0.01");
-TCut citsin("citsin","TMath::Sqrt(MC.fVDist[0]**2+MC.fVDist[1]**2)<5");
-TCut csec("csec","TMath::Sqrt(MC.fVDist[0]**2+MC.fVDist[1]**2)>0.5");
-TCut crec("crec","fReconstructed==1");
-TCut cteta1("cteta1","abs(MC.fParticle.Theta()/3.1415-0.5)<0.25");
-TCut cteta05("cteta05","abs(MC.fParticle.Theta()/3.1415-0.5)<0.1");
-
-TCut cpos1("cpos1","abs(MC.fParticle.fVz/sqrt(MC.fParticle.fVx*MC.fParticle.fVx+MC.fParticle.fVy*MC.fParticle.fVy))<1");
-TCut csens("csens","abs(sqrt(fVDist[0]**2+fVDist[1]**2)-170)<50");
-TCut cmuon("cmuon","abs(MC.fParticle.fPdgCode==-13)");
-TCut cchi2("cchi2","fESDTrack.fITSchi2MIP[0]<7.&&fESDTrack.fITSchi2MIP[1]<5.&&fESDTrack.fITSchi2MIP[2]<7.&&fESDTrack.fITSchi2MIP[3]<7.5&&fESDTrack.fITSchi2MIP[4]<6.");
-  
 
 
 void MakeAliases(AliESDComparisonDraw&comp)
@@ -483,7 +469,7 @@ void AliESDRecInfo::Update(AliMCInfo* info,AliTPCParam * /*par*/, Bool_t reconst
     fTPCDelta[4] = (fTPCinP0[3]-fTPCinP1[3]);
     Double_t sign = (param[4]>0)? 1.:-1; 
     fSign =sign;
-    fTPCPools[4] = sign*(1./fTPCinP0[3]-1./fTPCinP1[3])/TMath::Sqrt(cov[14]);    
+    fTPCPools[4] = sign*(1./fTPCinP0[3]-1./fTPCinP1[3])/TMath::Sqrt(TMath::Abs(cov[14]));    
   }
   if (fITSOn){
     // ITS 
@@ -857,7 +843,7 @@ ESDCmpTr::ESDCmpTr(const char* fnGenTracks,
     cerr<<"restricted number of events availaible"<<endl;
   }
   AliMagF * magf = gAlice->Field();
-  AliTracker::SetFieldMap(magf);
+  AliTracker::SetFieldMap(magf,0);
 
 }
 
@@ -1099,8 +1085,8 @@ void ESDCmpTr::CreateTreeCmp()
   fRecInfo = new AliESDRecInfo;
   AliESDtrack * esdTrack = new AliESDtrack;
   //  AliITStrackMI * itsTrack = new AliITStrackMI;  
-  fTreeCmp->Branch("MC","AliMCInfo",&fMCInfo);
-  fTreeCmp->Branch("RC","AliESDRecInfo",&fRecInfo);
+  fTreeCmp->Branch("MC","AliMCInfo",&fMCInfo,256000);
+  fTreeCmp->Branch("RC","AliESDRecInfo",&fRecInfo,256000);
   //  fTreeCmp->Branch("fESDTrack","AliESDtrack",&esdTrack);
   //  fTreeCmp->Branch("ITS","AliITStrackMI",&itsTrack);
   delete esdTrack;
@@ -1109,15 +1095,15 @@ void ESDCmpTr::CreateTreeCmp()
   fTreeCmpKinks    = new TTree("ESDcmpKinks","ESDcmpKinks"); 
   fGenKinkInfo     = new AliGenKinkInfo;
   fRecKinkInfo     = new AliESDRecKinkInfo;
-  fTreeCmpKinks->Branch("MC.","AliGenKinkInfo",&fGenKinkInfo);
-  fTreeCmpKinks->Branch("RC.","AliESDRecKinkInfo",&fRecKinkInfo);
+  fTreeCmpKinks->Branch("MC.","AliGenKinkInfo",&fGenKinkInfo,256000);
+  fTreeCmpKinks->Branch("RC.","AliESDRecKinkInfo",&fRecKinkInfo,256000);
   //
   //
   fTreeCmpV0       = new TTree("ESDcmpV0","ESDcmpV0"); 
   fGenV0Info     = new AliGenV0Info;
   fRecV0Info     = new AliESDRecV0Info;
-  fTreeCmpV0->Branch("MC.","AliGenV0Info",   &fGenV0Info);
-  fTreeCmpV0->Branch("RC.","AliESDRecV0Info",&fRecV0Info);
+  fTreeCmpV0->Branch("MC.","AliGenV0Info",   &fGenV0Info,256000);
+  fTreeCmpV0->Branch("RC.","AliESDRecV0Info",&fRecV0Info,256000);
   //
   fTreeCmp->AutoSave(); 
   fTreeCmpKinks->AutoSave(); 
@@ -1645,6 +1631,7 @@ Int_t ESDCmpTr::BuildV0Info(Int_t eventNr)
       //      for (Int_t j=0;j<TMath::Min(fMultiRecV0s[label],100);j++){
       for (Int_t j=TMath::Min(fMultiRecV0[label],Short_t(20))-1;j>=0;j--){
 	Int_t index = fIndexRecV0[label*20+j];
+	if (index<0) continue;
 	AliESDV0MI *v0MI2  = fEvent->GetV0MI(index);
 	if (TMath::Abs(v0MI2->fLab[0])==label &&TMath::Abs(v0MI2->fLab[1])==label2) {
 	  v0MI =v0MI2;

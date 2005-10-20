@@ -23,7 +23,7 @@ Macro to generate comples MC information - used for Comparison later on
 How to use it?
 
 .L $ALICE_ROOT/STEER/AliGenInfo.C+
-AliGenInfoMaker *t = new AliGenInfoMaker("galice.root","genTracks.root",1,0)
+AliGenInfoMaker *t = new AliGenInfoMaker("galice.root","genTracks.root",0,0)
 t->Exec();
 
 */
