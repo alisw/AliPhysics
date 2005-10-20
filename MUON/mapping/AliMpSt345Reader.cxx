@@ -91,7 +91,7 @@ AliMpSt345Reader::ReadPCB(const char* pcbType)
   // Create a new AliMpPCB object, by reading it from file.
   //
   
-  std::ifstream in(AliMpFiles::Instance()->SlatPCBFilePath(pcbType).Data());
+  std::ifstream in(AliMpFiles::SlatPCBFilePath(kStation345,pcbType).Data());
   if (!in.good()) 
   {
     AliErrorClass(Form("Cannot open file for PCB %s",pcbType));
@@ -161,13 +161,12 @@ AliMpSt345Reader::ReadSlat(const char* slatType, AliMpPlaneType planeType)
   // Create a new AliMpSlat object, by reading it from file.
   //
   
-  std::ifstream in(AliMpFiles::Instance()->SlatFilePath(slatType,
-                                                        planeType).Data());
+  std::ifstream in(AliMpFiles::SlatFilePath(kStation345,slatType,
+                                            planeType).Data());
   if (!in.good()) 
   {
     AliErrorClass(Form("Cannot read slat from %s",
-                       AliMpFiles::Instance()->
-                       SlatFilePath(slatType,planeType).Data()));
+                       AliMpFiles::SlatFilePath(kStation345,slatType,planeType).Data()));
     return 0;
   }
   
@@ -175,7 +174,7 @@ AliMpSt345Reader::ReadSlat(const char* slatType, AliMpPlaneType planeType)
   
   const TString pcbKeyword("PCB");
   
-  AliMpSlat* slat = new AliMpSlat(slatType);
+  AliMpSlat* slat = new AliMpSlat(slatType, planeType);
   
   while ( in.getline(line,80) )
   {
