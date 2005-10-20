@@ -38,6 +38,7 @@
 #include "TTreeStream.h"
 #include "TGraph.h"
 #include "AliTRDtracker.h"
+
 //
 
 ClassImp(AliTRDtracker) 
@@ -46,7 +47,7 @@ ClassImp(AliTRDtracker)
   const  Float_t     AliTRDtracker::fgkSeedStep           = 0.10;   
   const  Float_t     AliTRDtracker::fgkSeedGap            = 0.25;  
 
-  const  Float_t     AliTRDtracker::fgkMaxSeedDeltaZ12    = 40.;  
+ const  Float_t     AliTRDtracker::fgkMaxSeedDeltaZ12    = 40.;  
   const  Float_t     AliTRDtracker::fgkMaxSeedDeltaZ      = 25.;  
   const  Float_t     AliTRDtracker::fgkMaxSeedC           = 0.0052; 
   const  Float_t     AliTRDtracker::fgkMaxSeedTan         = 1.2;  
@@ -204,10 +205,10 @@ AliTRDtracker::AliTRDtracker(const TFile *geomfile):AliTracker()
   Int_t maxAmp = (Int_t) ((dxAmp+0.000001)/dx);
   if(kTRUE) maxAmp = 0;  // intentional until we change the parameter class 
   Int_t tbDrift = fPar->GetTimeMax();
-  Int_t maxDrift = (Int_t) ((dxDrift+0.000001)/dx);
+  Int_t maxDrift = (Int_t) ((dxDrift+0.000001)/dx)+4; // MI change  - take also last time bins
 
-  tbDrift = TMath::Min(tbDrift,maxDrift);
-  tbAmp = TMath::Min(tbAmp,maxAmp);
+  tbDrift = TMath::Min(tbDrift,maxDrift);  
+  tbAmp = TMath::Min(tbAmp,maxAmp);          
 
   fTimeBinsPerPlane = tbAmp + tbDrift;
   fMaxGap = (Int_t) (fTimeBinsPerPlane * fGeom->Nplan() * fgkSkipDepth);
@@ -513,7 +514,7 @@ Int_t AliTRDtracker::PropagateBack(AliESD* event) {
     fNseeds++;
     Float_t p4     = track->GetC();
     //
-    Int_t expectedClr = FollowBackProlongation(*track);
+    Int_t expectedClr = FollowBackProlongationG(*track);
     /*
       // only debug purpose
     if (track->GetNumberOfClusters()<expectedClr/3){
@@ -534,6 +535,7 @@ Int_t AliTRDtracker::PropagateBack(AliESD* event) {
       Int_t foundClr = track->GetNumberOfClusters();
       if (foundClr >= foundMin) {
 	track->CookdEdx(); 
+	CookdEdxTimBin(*track);
 	CookLabel(track, 1-fgkLabelFraction);
 	if(track->GetChi2()/track->GetNumberOfClusters()<4) {   // sign only gold tracks
 	  if (seed->GetKinkIndex(0)==0&&TMath::Abs(track->GetPt())<1.5 ) UseClusters(track);
@@ -562,9 +564,28 @@ Int_t AliTRDtracker::PropagateBack(AliESD* event) {
 	}
       }
     }
+  
     //
-    //Propagation to the TOF (I.Belikov)
-    
+    // Debug part of tracking
+    TTreeSRedirector& cstream = *fDebugStreamer;
+    Int_t eventNr = event->GetEventNumber();
+    if (track->GetBackupTrack()){
+      cstream<<"Tracks"<<
+	"EventNr="<<eventNr<<
+	"ESD.="<<seed<<
+	"trd.="<<track<<
+	"trdback.="<<track->GetBackupTrack()<<	
+	"\n";
+    }else{
+      cstream<<"Tracks"<<
+	"EventNr="<<eventNr<<
+	"ESD.="<<seed<<
+	"trd.="<<track<<
+	"trdback.="<<track<<
+	"\n";
+    }
+    //
+    //Propagation to the TOF (I.Belikov)    
     if (track->GetStop()==kFALSE){
       
       Double_t xtof=371.;
@@ -620,25 +641,8 @@ Int_t AliTRDtracker::PropagateBack(AliESD* event) {
       }
     }
     seed->SetTRDQuality(track->StatusForTOF());    
-    //
-    // Debug part of tracking
-    TTreeSRedirector& cstream = *fDebugStreamer;
-    Int_t eventNr = event->GetEventNumber();
-    if (track->GetBackupTrack()){
-      cstream<<"Tracks"<<
-	"EventNr="<<eventNr<<
-	"ESD.="<<seed<<
-	"trd.="<<track<<
-	"trdback.="<<track->GetBackupTrack()<<	
-	"\n";
-    }else{
-      cstream<<"Tracks"<<
-	"EventNr="<<eventNr<<
-	"ESD.="<<seed<<
-	"trd.="<<track<<
-	"trdback.="<<track<<
-	"\n";
-    }
+    seed->SetTRDBudget(track->fBudget[0]);    
+  
     delete track;
     //
     //End of propagation to the TOF
@@ -721,7 +725,7 @@ Int_t AliTRDtracker::RefitInward(AliESD* event)
     }          
     //AliTRDtrack *pt = seed2;
     AliTRDtrack &t=*pt; 
-    FollowProlongation(t, innerTB); 
+    FollowProlongationG(t, innerTB); 
     if (t.GetNumberOfClusters() >= foundMin) {
       //      UseClusters(&t);
       //CookLabel(pt, 1-fgkLabelFraction);
@@ -780,7 +784,8 @@ Int_t AliTRDtracker::FollowProlongation(AliTRDtrack& t, Int_t rf)
   Double_t px, py, pz;
   Float_t  wSigmaC2, wSigmaTgl2, wSigmaY2, wSigmaZ2;
   Int_t lastplane = GetLastPlane(&t);
-
+  Double_t dxsample = fgkDriftCorrection*(Double_t) fPar->GetDriftVelocity()
+                         / fPar->GetSamplingFrequency();
   Int_t trackIndex = t.GetLabel();  
 
   Int_t ns=Int_t(2*TMath::Pi()/AliTRDgeometry::GetAlpha()+0.5);     
@@ -930,8 +935,8 @@ Int_t AliTRDtracker::FollowProlongation(AliTRDtrack& t, Int_t rf)
           wZclosest = cl->GetZ();
           Double_t h01 = GetTiltFactor(cl);
 
-          if (cl->GetNPads()<5) 
-	    t.SetSampledEdx(TMath::Abs(cl->GetQ()/dx)); 
+          //if (cl->GetNPads()<5) 
+	    t.SetSampledEdx(TMath::Abs(cl->GetQ()/dxsample)); 
 	  Int_t det = cl->GetDetector();    
 	  Int_t plane = fGeom->GetPlane(det);
 
@@ -945,6 +950,183 @@ Int_t AliTRDtracker::FollowProlongation(AliTRDtrack& t, Int_t rf)
           //if (tryAgain==0) break; 
           tryAgain--;
         }
+      }
+    }  
+  }
+  return expectedNumberOfClusters;
+  
+  
+}                
+
+
+
+
+//---------------------------------------------------------------------------
+Int_t AliTRDtracker::FollowProlongationG(AliTRDtrack& t, Int_t rf)
+{
+  // Starting from current position on track=t this function tries
+  // to extrapolate the track up to timeBin=0 and to confirm prolongation
+  // if a close cluster is found. Returns the number of clusters
+  // expected to be found in sensitive layers
+  // GeoManager used to estimate mean density
+  Int_t sector;
+  Int_t lastplane = GetLastPlane(&t);
+  Int_t tryAgain=fMaxGap;
+  Double_t alpha=t.GetAlpha();
+  alpha = TVector2::Phi_0_2pi(alpha);
+  Double_t radLength, rho, x, dx;
+  //, y, ymax, z;
+  Int_t expectedNumberOfClusters = 0;
+  Double_t dxsample = fgkDriftCorrection*(Double_t) fPar->GetDriftVelocity()
+                         / fPar->GetSamplingFrequency();
+  //
+  //
+  alpha=AliTRDgeometry::GetAlpha();  // note: change in meaning
+  Double_t tanmax = TMath::Tan(0.5*alpha);  
+ 
+  for (Int_t nr=fTrSec[0]->GetLayerNumber(t.GetX()); nr>rf; nr--) { 
+    //
+    // propagate track in  non active layers
+    //
+    if (!(fTrSec[0]->GetLayer(nr)->IsSensitive())){      
+      Double_t xyz0[3],xyz1[3],param[7],x,y,z;
+      t.GetGlobalXYZ(xyz0[0],xyz0[1],xyz0[2]);   //starting global position
+      while (nr >rf && (!(fTrSec[0]->GetLayer(nr)->IsSensitive()))){
+	x = fTrSec[0]->GetLayer(nr)->GetX();
+	nr--;
+	if (!t.GetProlongation(x,y,z)) break;
+	if (TMath::Abs(y)>x*tanmax){
+	  nr--;
+	  break;	  
+	}
+      }
+      nr++;
+      x = fTrSec[0]->GetLayer(nr)->GetX();
+      if (!t.GetProlongation(x,y,z)) break;      
+      //
+      // minimal mean and maximal budget scan
+      Float_t minbudget  =10000;
+      Float_t meanbudget =0;
+      Float_t maxbudget  =-1;
+//      Float_t normbudget =0;
+//       for (Int_t idy=-1;idy<=1;idy++)
+// 	for (Int_t idz=-1;idz<=1;idz++){
+      for (Int_t idy=0;idy<1;idy++)
+	for (Int_t idz=0;idz<1;idz++){
+	  Double_t y2 = y+idy*TMath::Min(TMath::Sqrt(t.GetSigmaY2()),1.);
+	  Double_t z2 = z+idz*TMath::Min(TMath::Sqrt(t.GetSigmaY2()),1.);
+	  xyz1[0] = x*TMath::Cos(t.GetAlpha())-y2*TMath::Sin(t.GetAlpha()); 
+	  xyz1[1] = +x*TMath::Sin(t.GetAlpha())+y2*TMath::Cos(t.GetAlpha());
+	  xyz1[2] = z2;
+	  AliKalmanTrack::MeanMaterialBudget(xyz0,xyz1,param);
+	  Float_t budget = param[0]*param[4];
+	  meanbudget+=budget;
+	  if (budget<minbudget) minbudget=budget;
+	  if (budget>maxbudget) maxbudget=budget;
+	}
+      t.fBudget[0]+=minbudget;
+      t.fBudget[1]+=meanbudget/9.;
+      t.fBudget[2]+=minbudget;
+      //
+      //
+      xyz1[0] = x*TMath::Cos(t.GetAlpha())-y*TMath::Sin(t.GetAlpha()); 
+      xyz1[1] = +x*TMath::Sin(t.GetAlpha())+y*TMath::Cos(t.GetAlpha());
+      xyz1[2] = z;
+      AliKalmanTrack::MeanMaterialBudget(xyz0,xyz1,param);	      
+
+      t.PropagateTo(x,param[1],param[0]);	
+      t.GetGlobalXYZ(xyz0[0],xyz0[1],xyz0[2]);   //end  global position	
+      AdjustSector(&t);
+      continue;
+    }
+     //
+    //
+    // stop tracking for highly inclined tracks 
+    if (!AdjustSector(&t)) break;
+    if (TMath::Abs(t.GetSnp())>0.95) break;
+    //
+    // propagate and update track in active layers
+    //
+    Int_t nr0 = nr;  //first active layer
+    if (nr >rf  && (fTrSec[0]->GetLayer(nr)->IsSensitive())){      
+      Double_t xyz0[3],xyz1[3],param[7],x,y,z;
+      t.GetGlobalXYZ(xyz0[0],xyz0[1],xyz0[2]);   //starting global position
+      while (nr >rf && ((fTrSec[0]->GetLayer(nr)->IsSensitive()))){
+	x = fTrSec[0]->GetLayer(nr)->GetX();
+	nr--;
+	if (!t.GetProlongation(x,y,z)) break;
+	if (TMath::Abs(y)>x*tanmax){
+	  nr--;
+	  break;	  
+	}
+      }
+      //      nr++;
+      x = fTrSec[0]->GetLayer(nr)->GetX();
+      if (!t.GetProlongation(x,y,z)) break;
+      xyz1[0] = x*TMath::Cos(t.GetAlpha())-y*TMath::Sin(t.GetAlpha()); 
+      xyz1[1] = +x*TMath::Sin(t.GetAlpha())+y*TMath::Cos(t.GetAlpha());
+      xyz1[2] = z;
+      // end global position
+      AliKalmanTrack::MeanMaterialBudget(xyz0,xyz1,param);	
+      rho = param[0];
+      radLength = param[1];   // get mean propagation parameters
+    }
+    //
+    // propagate and update
+    if (nr0-nr<5){
+      // short tracklet - do not update - edge effect
+      x = fTrSec[0]->GetLayer(nr)->GetX();
+      t.PropagateTo(x,radLength,rho);
+      AdjustSector(&t);
+      continue; 
+    }
+    sector = t.GetSector();
+    //
+    //    
+    for (Int_t ilayer=nr0;ilayer>=nr;ilayer--) {
+      expectedNumberOfClusters++;       
+      t.fNExpected++;
+      if (t.fX>345) t.fNExpectedLast++;
+      AliTRDpropagationLayer& timeBin=*(fTrSec[sector]->GetLayer(ilayer));
+      AliTRDcluster *cl=0;
+      UInt_t index=0;
+      Double_t maxChi2=fgkMaxChi2;
+      dx = (fTrSec[sector]->GetLayer(ilayer+1))->GetX()-timeBin.GetX();
+      x = timeBin.GetX();
+      t.PropagateTo(x,radLength,rho);
+      // Now go for the real cluster search
+      if (timeBin) {
+	AliTRDcluster * cl0 = timeBin[0];
+	if (!cl0) continue;         // no clusters in given time bin
+	Int_t plane = fGeom->GetPlane(cl0->GetDetector());
+	if (plane>lastplane) continue;
+	Int_t timebin = cl0->GetLocalTimeBin();
+	AliTRDcluster * cl2= GetCluster(&t,plane, timebin,index);
+	//
+	if (cl2) {
+	  cl =cl2;	
+	  Double_t h01 = GetTiltFactor(cl);
+	  maxChi2=t.GetPredictedChi2(cl,h01);
+	}
+	
+        if (cl) {
+	  //	  if (cl->GetNPads()<5) 
+	    t.SetSampledEdx(TMath::Abs(cl->GetQ()/dxsample)); 
+          Double_t h01 = GetTiltFactor(cl);
+	  Int_t det = cl->GetDetector();    
+	  Int_t plane = fGeom->GetPlane(det);
+	  if (t.fX>345){
+	    t.fNLast++;
+	    t.fChi2Last+=maxChi2;
+	  }
+	  if(!t.UpdateMI(cl,maxChi2,index,h01,plane)) {
+	    if(!t.Update(cl,maxChi2,index,h01)) {
+	      //if(!tryAgain--) return 0;
+	    }
+          }  
+          else tryAgain=fMaxGap;
+	  //	  	 	  
+	}			
       }
     }  
   }
@@ -976,19 +1158,20 @@ Int_t AliTRDtracker::FollowBackProlongation(AliTRDtrack& t)
   //Double_t radLength, rho, x, dx, y, ymax = 0, z;
   Double_t radLength, rho, x, dx, y, z;
   Bool_t lookForCluster;
+  Double_t dxsample = fgkDriftCorrection*(Double_t) fPar->GetDriftVelocity()
+                         / fPar->GetSamplingFrequency();
 
   Int_t expectedNumberOfClusters = 0;
   x = t.GetX();
 
   alpha=AliTRDgeometry::GetAlpha();  // note: change in meaning
-
+  
   //  Int_t zone =0;
   Int_t nr;
   Float_t ratio0=0;
   AliTRDtracklet tracklet;
   //
   for (nr=fTrSec[0]->GetLayerNumber(t.GetX()); nr<outerTB+1; nr++) { 
-   
     y = t.GetY(); 
     z = t.GetZ();
     // first propagate to the outer surface of the current time bin 
@@ -1075,8 +1258,8 @@ Int_t AliTRDtracker::FollowBackProlongation(AliTRDtrack& t)
 	}
 	
         if (cl) {
-	  if (cl->GetNPads()<5) 
-	    t.SetSampledEdx(TMath::Abs(cl->GetQ()/dx)); 
+	  //	  if (cl->GetNPads()<5) 
+	    t.SetSampledEdx(TMath::Abs(cl->GetQ()/dxsample)); 
           Double_t h01 = GetTiltFactor(cl);
 	  Int_t det = cl->GetDetector();    
 	  Int_t plane = fGeom->GetPlane(det);
@@ -1103,9 +1286,7 @@ Int_t AliTRDtracker::FollowBackProlongation(AliTRDtrack& t)
         else {
 	  // if (tryAgain==0) break; 
           //tryAgain--;                                                                               
-        }
-	
-	
+        }		
       }
     }  
   }
@@ -1113,9 +1294,231 @@ Int_t AliTRDtracker::FollowBackProlongation(AliTRDtrack& t)
     t.SetStop(kTRUE);
   else
     t.SetStop(kFALSE);
-  return expectedNumberOfClusters;
+  return expectedNumberOfClusters;  
+}         
+
+
+//___________________________________________________________________
+Int_t AliTRDtracker::FollowBackProlongationG(AliTRDtrack& t)
+{
   
-  
+  // Starting from current radial position of track <t> this function
+  // extrapolates the track up to outer timebin and in the sensitive
+  // layers confirms prolongation if a close cluster is found. 
+  // Returns the number of clusters expected to be found in sensitive layers
+  // Use GEO manager for material Description
+  Int_t tryAgain=fMaxGap;
+
+  Double_t alpha=t.GetAlpha();
+  TVector2::Phi_0_2pi(alpha);
+  Int_t sector;
+  Int_t clusters[1000];
+  for (Int_t i=0;i<1000;i++) clusters[i]=-1;
+  Double_t dxsample = fgkDriftCorrection*(Double_t) fPar->GetDriftVelocity()
+    / fPar->GetSamplingFrequency();
+  Int_t outerTB = fTrSec[0]->GetOuterTimeBin();
+  Double_t radLength, rho, x, dx; //y, z;
+
+  Int_t expectedNumberOfClusters = 0;
+  x = t.GetX();
+
+  alpha=AliTRDgeometry::GetAlpha();  // note: change in meaning
+  Double_t tanmax = TMath::Tan(0.5*alpha);  
+  Int_t nr;
+  Float_t ratio0=0;
+  AliTRDtracklet tracklet;
+  //
+  //
+  //
+  for (nr=fTrSec[0]->GetLayerNumber(t.GetX()); nr<outerTB+1; nr++) { 
+    //
+    // propagate track in  non active layers
+    //
+    if (!(fTrSec[0]->GetLayer(nr)->IsSensitive())){      
+      Double_t xyz0[3],xyz1[3],param[7],x,y,z;
+      t.GetGlobalXYZ(xyz0[0],xyz0[1],xyz0[2]);   //starting global position
+      while (nr <outerTB && (!(fTrSec[0]->GetLayer(nr)->IsSensitive()))){
+	x = fTrSec[0]->GetLayer(nr)->GetX();
+	nr++;
+	if (!t.GetProlongation(x,y,z)) break;
+	if (TMath::Abs(y)>x*tanmax){
+	  nr++;
+	  break;	  
+	}
+      }
+      nr--;
+      x = fTrSec[0]->GetLayer(nr)->GetX();
+      if (!t.GetProlongation(x,y,z)) break;
+      // minimal mean and maximal budget scan
+      Float_t minbudget  =10000;
+      Float_t meanbudget =0;
+      Float_t maxbudget  =-1;
+//      Float_t normbudget =0;
+//       for (Int_t idy=-1;idy<=1;idy++)
+// 	for (Int_t idz=-1;idz<=1;idz++){
+      for (Int_t idy=0;idy<1;idy++)
+	for (Int_t idz=0;idz<1;idz++){
+	  Double_t y2 = y+idy*TMath::Min(TMath::Sqrt(t.GetSigmaY2()),1.);
+	  Double_t z2 = z+idz*TMath::Min(TMath::Sqrt(t.GetSigmaY2()),1.);
+
+	  xyz1[0] = x*TMath::Cos(t.GetAlpha())-y2*TMath::Sin(t.GetAlpha()); 
+	  xyz1[1] = +x*TMath::Sin(t.GetAlpha())+y2*TMath::Cos(t.GetAlpha());
+	  xyz1[2] = z2;
+	  AliKalmanTrack::MeanMaterialBudget(xyz0,xyz1,param);
+	  Float_t budget = param[0]*param[4];
+	  meanbudget+=budget;
+	  if (budget<minbudget) minbudget=budget;
+	  if (budget>maxbudget) maxbudget=budget;
+	}
+      t.fBudget[0]+=minbudget;
+      t.fBudget[1]+=meanbudget/9.;
+      t.fBudget[2]+=minbudget;
+      
+      xyz1[0] = x*TMath::Cos(t.GetAlpha())-y*TMath::Sin(t.GetAlpha()); 
+      xyz1[1] = +x*TMath::Sin(t.GetAlpha())+y*TMath::Cos(t.GetAlpha());
+      xyz1[2] = z;
+      AliKalmanTrack::MeanMaterialBudget(xyz0,xyz1,param);	
+      t.PropagateTo(x,param[1],param[0]);	
+      t.GetGlobalXYZ(xyz0[0],xyz0[1],xyz0[2]);   //end  global position	
+      AdjustSector(&t);
+      continue;
+    }
+    //
+    //
+    // stop tracking for highly inclined tracks 
+    if (!AdjustSector(&t)) break;
+    if (TMath::Abs(t.GetSnp())>0.95) break;
+    //
+    // propagate and update track in active layers
+    //
+    Int_t nr0 = nr;  //first active layer
+    if (nr <outerTB && (fTrSec[0]->GetLayer(nr)->IsSensitive())){      
+      Double_t xyz0[3],xyz1[3],param[7],x,y,z;
+      t.GetGlobalXYZ(xyz0[0],xyz0[1],xyz0[2]);   //starting global position
+      while (nr <outerTB && ((fTrSec[0]->GetLayer(nr)->IsSensitive()))){
+	x = fTrSec[0]->GetLayer(nr)->GetX();
+	nr++;
+	if (!t.GetProlongation(x,y,z)) break;
+	if (TMath::Abs(y)>(x*tanmax)){ 
+	  nr++;
+	  break;	  
+	}
+      }
+      x = fTrSec[0]->GetLayer(nr)->GetX();
+      if (!t.GetProlongation(x,y,z)) break;
+       // minimal mean and maximal budget scan
+      Float_t minbudget  =10000;
+      Float_t meanbudget =0;
+      Float_t maxbudget  =-1;
+      //      Float_t normbudget =0;
+      //     for (Int_t idy=-1;idy<=1;idy++)
+      // 	for (Int_t idz=-1;idz<=1;idz++){
+      for (Int_t idy=0;idy<1;idy++)
+	for (Int_t idz=0;idz<1;idz++){
+	  Double_t y2 = y+idy*TMath::Min(TMath::Sqrt(t.GetSigmaY2()),1.);
+	  Double_t z2 = z+idz*TMath::Min(TMath::Sqrt(t.GetSigmaY2()),1.);
+
+	  xyz1[0] = x*TMath::Cos(t.GetAlpha())-y2*TMath::Sin(t.GetAlpha()); 
+	  xyz1[1] = +x*TMath::Sin(t.GetAlpha())+y2*TMath::Cos(t.GetAlpha());
+	  xyz1[2] = z2;
+	  AliKalmanTrack::MeanMaterialBudget(xyz0,xyz1,param);
+	  Float_t budget = param[0]*param[4];
+	  meanbudget+=budget;
+	  if (budget<minbudget) minbudget=budget;
+	  if (budget>maxbudget) maxbudget=budget;
+	}
+      t.fBudget[0]+=minbudget;
+      t.fBudget[1]+=meanbudget/9.;
+      t.fBudget[2]+=minbudget;
+      //
+      xyz1[0] = x*TMath::Cos(t.GetAlpha())-y*TMath::Sin(t.GetAlpha()); 
+      xyz1[1] = +x*TMath::Sin(t.GetAlpha())+y*TMath::Cos(t.GetAlpha());
+      xyz1[2] = z;
+      // end global position
+      AliKalmanTrack::MeanMaterialBudget(xyz0,xyz1,param);	
+      rho = param[0];
+      radLength = param[1];   // get mean propagation parameters
+    }
+    //
+    //
+    if (nr-nr0<5){
+      // short tracklet - do not update - edge effect
+      x = fTrSec[0]->GetLayer(nr+1)->GetX();
+      t.PropagateTo(x,radLength,rho);
+      AdjustSector(&t);
+      continue; 
+    }
+    //
+    //
+    sector = t.GetSector();
+    Float_t  ncl   = FindClusters(sector,nr0,nr,&t,clusters,tracklet);
+    if (tracklet.GetN()-2*tracklet.GetNCross()<10) continue;
+    ratio0 = ncl/Float_t(fTimeBinsPerPlane);
+    Float_t  ratio1 = Float_t(t.fN+1)/Float_t(t.fNExpected+1.);	
+    if (tracklet.GetChi2()<18.&&ratio0>0.8 && ratio1>0.6 && ratio0+ratio1>1.5 && t.GetNCross()==0 && TMath::Abs(t.GetSnp())<0.85&&t.fN>20){
+      t.MakeBackupTrack();                            // make backup of the track until is gold
+    }
+    //
+    //
+    for (Int_t ilayer=nr0;ilayer<=nr;ilayer++) {
+      expectedNumberOfClusters++;       
+      t.fNExpected++;
+      if (t.fX>345) t.fNExpectedLast++;
+      AliTRDpropagationLayer& timeBin=*(fTrSec[sector]->GetLayer(ilayer));
+      AliTRDcluster *cl=0;
+      UInt_t index=0;
+      Double_t maxChi2=fgkMaxChi2;
+      dx = (fTrSec[sector]->GetLayer(ilayer-1))->GetX()-timeBin.GetX();
+      x = timeBin.GetX();
+      t.PropagateTo(x,radLength,rho);
+      // Now go for the real cluster search
+      if (timeBin) {	
+	if (clusters[ilayer]>0) {
+	  index = clusters[ilayer];
+	  cl    = (AliTRDcluster*)GetCluster(index);
+	  Double_t h01 = GetTiltFactor(cl);
+          maxChi2=t.GetPredictedChi2(cl,h01);          
+	}
+	
+        if (cl) {
+	  //	  if (cl->GetNPads()<5) 
+	    t.SetSampledEdx(TMath::Abs(cl->GetQ()/dxsample)); 
+          Double_t h01 = GetTiltFactor(cl);
+	  Int_t det = cl->GetDetector();    
+	  Int_t plane = fGeom->GetPlane(det);
+	  if (t.fX>345){
+	    t.fNLast++;
+	    t.fChi2Last+=maxChi2;
+	  }
+	  if(!t.UpdateMI(cl,maxChi2,index,h01,plane)) {
+	    if(!t.Update(cl,maxChi2,index,h01)) {
+	      //if(!tryAgain--) return 0;
+	    }
+          }  
+          else tryAgain=fMaxGap;
+	  //
+	  
+	  if (cl->GetLocalTimeBin()==1&&t.fN>20 && float(t.fChi2)/float(t.fN)<5){
+	    Float_t  ratio1 = Float_t(t.fN)/Float_t(t.fNExpected);	
+	    if (tracklet.GetChi2()<18&&ratio0>0.8&&ratio1>0.6 &&ratio0+ratio1>1.5 && t.GetNCross()==0 && TMath::Abs(t.GetSnp())<0.85){
+	      t.MakeBackupTrack();                            // make backup of the track until is gold
+	    }
+	  }
+	  // reset material budget if 2 consecutive gold
+	  if (plane>0) 
+	    if (t.fTracklets[plane].GetN()+t.fTracklets[plane-1].GetN()>20){
+	      t.fBudget[2] = 0;
+	    }	  
+	}			
+      }
+    }  
+  }
+  //
+  if (nr<outerTB) 
+    t.SetStop(kTRUE);
+  else
+    t.SetStop(kFALSE);
+  return expectedNumberOfClusters;  
 }         
 
 //---------------------------------------------------------------------------
@@ -1127,7 +1530,8 @@ Int_t AliTRDtracker::Refit(AliTRDtrack& t, Int_t rf)
   // expected to be found in sensitive layers
   // get indices of assigned clusters for each layer
   // Origin: Thomas KUHR (Thomas.Kuhr@cern.ch)
-
+  Double_t dxsample = fgkDriftCorrection*(Double_t) fPar->GetDriftVelocity()
+    / fPar->GetSamplingFrequency();
   Int_t iCluster[90];
   for (Int_t i = 0; i < 90; i++) iCluster[i] = 0;
   for (Int_t i = 0; i < t.GetNumberOfClusters(); i++) {
@@ -1207,7 +1611,8 @@ Int_t AliTRDtracker::Refit(AliTRDtrack& t, Int_t rf)
     AliTRDcluster *cl=(AliTRDcluster*)GetCluster(iCluster[nr-1]);
     Double_t h01 = GetTiltFactor(cl);
     Double_t chi2=t.GetPredictedChi2(cl, h01);
-    if (cl->GetNPads()<5) t.SetSampledEdx(TMath::Abs(cl->GetQ()/dx)); 
+    //if (cl->GetNPads()<5) 
+      t.SetSampledEdx(TMath::Abs(cl->GetQ()/dxsample)); 
 
       //t.SetSampledEdx(cl->GetQ()/dx,t.GetNumberOfClusters()); 
     t.Update(cl,chi2,iCluster[nr-1],h01);
@@ -2207,7 +2612,7 @@ AliTRDtracker::AliTRDtrackingSector::AliTRDtrackingSector(AliTRDgeometry* geo, I
 
     dx = fgkDriftCorrection*fPar->GetDriftVelocity()
        / fPar->GetSamplingFrequency();
-    steps = (Int_t) (dxDrift/dx);
+    steps = (Int_t) (dxDrift/dx)+3;
 
     for(tb = 0; tb < steps; tb++) {
       x = x0 - tb * dx - dx/2 + fgkOffsetX;                      //temporary fix - fix it the parameters
@@ -2294,7 +2699,7 @@ Int_t  AliTRDtracker::AliTRDtrackingSector::CookTimeBinIndex(Int_t plane, Int_t 
   Int_t maxAmp = (Int_t) ((dxAmp+0.000001)/dx);
   if(kTRUE) maxAmp = 0;   // intentional until we change parameter class 
   Int_t tbDrift = fPar->GetTimeMax();
-  Int_t maxDrift = (Int_t) ((dxDrift+0.000001)/dx);
+  Int_t maxDrift = (Int_t) ((dxDrift+0.000001)/dx)+4; // MI change  - take also last time bins
 
   Int_t tbPerPlane = TMath::Min(tbAmp,maxAmp) + TMath::Min(tbDrift,maxDrift);
 
@@ -2737,7 +3142,7 @@ Int_t AliTRDtracker::FindClusters(Int_t sector, Int_t t0, Int_t t1, AliTRDtrack 
   //
   TClonesArray array0("AliTRDcluster",1);
   TClonesArray array1("AliTRDcluster",1);
-  for (Int_t it=0;it<t1-t0; it++){
+  for (Int_t it=0;it<=t1-t0; it++){
     x[it]=0;
     yt[it]=0;
     zt[it]=0;
@@ -2882,7 +3287,7 @@ Int_t AliTRDtracker::FindClusters(Int_t sector, Int_t t0, Int_t t1, AliTRDtrack 
     if (!cl[0][it]) continue;
     for (Int_t dt=-3;dt<=3;dt++){
       if (it+dt<0) continue;
-      if (it+dt>t1) continue;
+      if (it+dt>t1-t0) continue;
       if (!cl[0][it+dt]) continue;
       zmean[it]+=cl[0][it+dt]->GetZ();
       nmean[it]+=1.;
@@ -3035,6 +3440,13 @@ Int_t AliTRDtracker::FindClusters(Int_t sector, Int_t t0, Int_t t1, AliTRDtrack 
   //set clusters 
   //
   Double_t sigma2 = sigmas[0];   // choose as sigma  from 0 iteration
+  Short_t maxpos    = -1;
+  Float_t maxcharge =  0;
+  Short_t maxpos4    = -1;
+  Float_t maxcharge4 =  0;
+  Short_t maxpos5    = -1;
+  Float_t maxcharge5 =  0;
+
   //if (tchi2s[bestiter]>25.) sigma2*=tchi2s[bestiter]/25.;
   //if (tchi2s[bestiter]>25.) sigma2=1000.;  // dont'accept
 
@@ -3051,6 +3463,25 @@ Int_t AliTRDtracker::FindClusters(Int_t sector, Int_t t0, Int_t t1, AliTRDtrack 
     if (!cl[best[bestiter][it]][it]->IsUsed()){
       cl[best[bestiter][it]][it]->SetY( cl[best[bestiter][it]][it]->GetY()-poscor);  // ExB corrction correction    
       cl[best[bestiter][it]][it]->Use();
+    }
+    //
+    //  time bins with maximal charge
+    if (TMath::Abs(cl[best[bestiter][it]][it]->GetQ())> maxcharge){
+      maxcharge = TMath::Abs(cl[best[bestiter][it]][it]->GetQ());
+      maxpos = cl[best[bestiter][it]][it]->GetLocalTimeBin();
+    }
+    
+    if (TMath::Abs(cl[best[bestiter][it]][it]->GetQ())> maxcharge4){
+      if (cl[best[bestiter][it]][it]->GetLocalTimeBin()>=4){
+	maxcharge4 = TMath::Abs(cl[best[bestiter][it]][it]->GetQ());
+	maxpos4 = cl[best[bestiter][it]][it]->GetLocalTimeBin();
+      }
+    }
+    if (TMath::Abs(cl[best[bestiter][it]][it]->GetQ())> maxcharge5){
+      if (cl[best[bestiter][it]][it]->GetLocalTimeBin()>=5){
+	maxcharge5 = TMath::Abs(cl[best[bestiter][it]][it]->GetQ());
+	maxpos5 = cl[best[bestiter][it]][it]->GetLocalTimeBin();
+      }
     }
     clusters[it+t0] = indexes[best[bestiter][it]][it];    
   } 
@@ -3072,6 +3503,7 @@ Int_t AliTRDtracker::FindClusters(Int_t sector, Int_t t0, Int_t t1, AliTRDtrack 
   tracklet.SetPlane(plane);
   tracklet.SetSigma2(expectederr);
   tracklet.SetChi2(tchi2s[bestiter]);
+  tracklet.SetMaxPos(maxpos,maxpos4,maxpos5);
   track->fTracklets[plane] = tracklet;
   track->fNWrong+=nbad[0];
   //
@@ -3080,7 +3512,8 @@ Int_t AliTRDtracker::FindClusters(Int_t sector, Int_t t0, Int_t t1, AliTRDtrack 
   TTreeSRedirector& cstream = *fDebugStreamer;
   AliTRDcluster dummy;
   Double_t dy0[100];
-  Double_t dyb[100];  
+  Double_t dyb[100]; 
+
   for (Int_t it=0;it<t1-t0;it++){
     dy0[it] = dy[0][it];
     dyb[it] = dy[best[bestiter][it]][it];
@@ -3120,6 +3553,12 @@ Int_t AliTRDtracker::FindClusters(Int_t sector, Int_t t0, Int_t t1, AliTRDtrack 
     "graphz.="<<&graphz<<                                    // z position of the track
     "fCl.="<<&array0<<                                       // closest cluster
     "fCl2.="<<&array1<<                                      // second closest cluster
+    "maxpos="<<maxpos<<                                      // maximal charge postion
+    "maxcharge="<<maxcharge<<                                // maximal charge 
+    "maxpos4="<<maxpos4<<                                    // maximal charge postion - after bin 4
+    "maxcharge4="<<maxcharge4<<                              // maximal charge         - after bin 4
+    "maxpos5="<<maxpos5<<                                    // maximal charge postion - after bin 5
+    "maxcharge5="<<maxcharge5<<                              // maximal charge         - after bin 5
     //
     "bestiter="<<bestiter<<                                  // best iteration number 
     "tracklet.="<<&tracklet<<                                // corrspond to the best iteration

@@ -268,7 +268,9 @@ class AliTRDtracker : public AliTracker {
   void  MakeSeedsMI(Int_t inner, Int_t outer);
 
   Int_t         FollowProlongation(AliTRDtrack& t, Int_t rf);
+  Int_t         FollowProlongationG(AliTRDtrack& t, Int_t rf);
   Int_t         FollowBackProlongation(AliTRDtrack& t);
+  Int_t         FollowBackProlongationG(AliTRDtrack& t);
   Int_t         Refit(AliTRDtrack& t, Int_t rf);
   void          CookdEdxTimBin(AliTRDtrack& t);  
 
