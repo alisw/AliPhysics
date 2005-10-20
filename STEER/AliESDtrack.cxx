@@ -64,6 +64,7 @@ AliESDtrack::AliESDtrack() :
   fTRDsignal(0),
   fTRDLabel(0),
   fTRDQuality(0),
+  fTRDBudget(0),
   fTRDtrack(0),
   fTOFchi2(0),
   fTOFindex(0),
@@ -119,6 +120,7 @@ AliESDtrack::AliESDtrack() :
   fTPCLabel = 0;
   fTRDLabel = 0;
   fTRDQuality =0;
+  fTRDBudget =0;
   fITSLabel = 0;
   fITStrack = 0;
   fTRDtrack = 0;  
@@ -160,6 +162,7 @@ AliESDtrack::AliESDtrack(const AliESDtrack& track):
   fTRDsignal(track.fTRDsignal),
   fTRDLabel(track.fTRDLabel),
   fTRDQuality(track.fTRDQuality),
+  fTRDBudget(track.fTRDBudget),
   fTRDtrack(0),
   fTOFchi2(track.fTOFchi2),
   fTOFindex(track.fTOFindex),
@@ -307,6 +310,7 @@ void AliESDtrack::MakeMiniESDtrack(){
   fTRDLabel = 0;       
   fTRDtrack = 0; 
   fTRDQuality  = 0;
+  fTRDBudget  = 0;
 
   // Reset TOF related track information
   fTOFchi2 = 0;        
