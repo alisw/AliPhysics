@@ -51,6 +51,8 @@ AliMUONRawCluster::AliMUONRawCluster()
     fNcluster[0]=fNcluster[1]=-1;
     fGhost=0;
     fDetElemId = 0;
+    fErrXY[0] = 0.144;
+    fErrXY[1] = 0.01;
 }
 //____________________________________________________
 Int_t AliMUONRawCluster::Compare(const TObject *obj) const

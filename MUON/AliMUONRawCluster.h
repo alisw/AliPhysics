@@ -53,6 +53,9 @@ public:
    Float_t      GetContrib(Int_t i, Int_t j) const;
    Int_t        GetPhysics(Int_t i) const;
    Int_t        GetDetElemId() const ; 
+   Float_t      GetError(Int_t iXY) const;
+   Float_t      GetErrX() const;
+   Float_t      GetErrY() const;
 
    Int_t        SetCharge(Int_t i,Int_t Q);
    Int_t        SetX(Int_t i, Float_t X);
@@ -70,6 +73,9 @@ public:
    void         SetOffset(Int_t i, Int_t j, Int_t offset);
    void         SetContrib(Int_t i, Int_t j, Float_t contrib);
    void         SetPhysics(Int_t i, Int_t physics);
+   void         SetError(Int_t iXY, Float_t err);
+   void         SetErrX(Float_t err);
+   void         SetErrY(Float_t err);
 
 private:
    Int_t       fIndexMap[50][2];  // indeces of digits
@@ -93,6 +99,7 @@ private:
    Int_t       fNcluster[2];      // Number of clusters
    Float_t     fChi2[2];          // Chi**2 of fit
    Int_t       fDetElemId;        // ID number of the detection element (slat) on which the cluster is found. 
+   Float_t     fErrXY[2];         // coordinate errors
    ClassDef(AliMUONRawCluster,1)  //Cluster class for MUON
 };
 
@@ -127,6 +134,25 @@ inline void AliMUONRawCluster::SetDetElemId(Int_t Id)
 
 inline Int_t AliMUONRawCluster::GetDetElemId() const
 { return fDetElemId;}
+
+inline void AliMUONRawCluster::SetError(Int_t iXY, Float_t err)
+{ fErrXY[iXY] = err; }
+
+inline void AliMUONRawCluster::SetErrX(Float_t err)
+{ SetError(0, err); }
+
+inline void AliMUONRawCluster::SetErrY(Float_t err)
+{ SetError(1, err); }
+
+inline Float_t AliMUONRawCluster::GetError(Int_t iXY) const
+{ return fErrXY[iXY]; }
+
+inline Float_t AliMUONRawCluster::GetErrX() const
+{ return GetError(0); }
+
+inline Float_t AliMUONRawCluster::GetErrY() const
+{ return GetError(1); }
+
 #endif
 
 
