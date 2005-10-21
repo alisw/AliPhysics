@@ -153,7 +153,7 @@ void AliMUONTriggerGeometryBuilder::CreateGeometry()
 	    par[0] = iChamber->RInner(); 
 	    par[1] = iChamber->ROuter();
 	    Char_t volName[6];
-	    sprintf(volName,"%s%d", "CH",11+icount);
+	    sprintf(volName,"%s%d", "SCH",11+icount);
  	    gMC->Gsvolu(volName,"TUBE", idAir, par, 3);
  	    iChamber->GetGeometry()->SetVolume(volName);
 	    Float_t zpos =  iChamber->Z();	     
