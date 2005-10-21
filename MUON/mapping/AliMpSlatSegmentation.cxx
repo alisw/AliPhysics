@@ -57,7 +57,7 @@ AliMpSlatSegmentation::~AliMpSlatSegmentation()
   //
   // Dtor (empty).
   //
-  // Int_t i(0);//just to be able to put a breakpoint in gdb
+  Int_t i(0);//just to be able to put a breakpoint in gdb
   AliDebug(1,Form("this=%p",this));			
 }
 
@@ -105,7 +105,7 @@ AliMpSlatSegmentation::MaxPadIndexX()
   // Returns the value of the largest pad index in x-direction.
   //
   
-  return fkSlat->GetNofPadsX()-1;
+  return fkSlat->GetMaxPadIndexX();
 }
 
 //_____________________________________________________________________________

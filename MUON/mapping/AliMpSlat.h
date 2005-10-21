@@ -114,6 +114,11 @@ class AliMpSlat : public TObject
     */
   Int_t GetMaxNofPadsY() const;
   
+  /** Returns the max index useable in x-direction. 
+    Note that this can be different from GetNofPadsX()-1 for rounded slats.
+    */
+  Int_t GetMaxPadIndexX() const;
+  
   /// Return the number of electronic cards (either manu or local board).
   Int_t GetNofElectronicCards() const;
   

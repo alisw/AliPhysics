@@ -348,6 +348,18 @@ AliMpSlat::GetMaxNofPadsY() const
 }
 
 //_____________________________________________________________________________
+Int_t 
+AliMpSlat::GetMaxPadIndexX() const
+{
+  AliMpPCB* last = GetPCB(GetSize()-1);
+  if (last)
+  {
+    return last->Ixmax();
+  }
+  return 0;
+}
+
+//_____________________________________________________________________________
 const char*
 AliMpSlat::GetName() const
 {
