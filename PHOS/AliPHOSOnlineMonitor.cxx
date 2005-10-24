@@ -56,7 +56,7 @@
 #include "AliPHOSConTableDB.h"
 #include "AliPHOSGeometry.h"
 #include "AliRawReaderDateV3.h"
-#include "AliRawEventHeader.h"
+#include "AliRawEventHeaderBase.h"
 #include "AliPHOSRawStream.h"
 #include "AliPHOSDigit.h"
 #include "AliPHOSGetterLight.h"  
@@ -621,7 +621,7 @@ void  AliPHOSOnlineMonitor::Go(){
   printf("      ") ;
   while(rawReader->NextEvent()){
     //Is it PHYSICAL event
-    if(rawReader->GetType() == AliRawEventHeader::kPhysicsEvent){
+    if(rawReader->GetType() == AliRawEventHeaderBase::kPhysicsEvent){
       fNevents++ ;
       if(fNevents%100 ==0){
 	printf("\b\b\b\b\b\b%6d",fNevents) ;
