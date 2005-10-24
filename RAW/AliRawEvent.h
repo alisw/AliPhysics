@@ -41,7 +41,7 @@
 
 
 // Forward class declarations
-class AliRawEventHeader;
+class AliRawEventHeaderBase;
 class AliRawEquipment;
 
 
@@ -51,7 +51,8 @@ public:
    AliRawEvent();
    virtual ~AliRawEvent();
 
-   AliRawEventHeader     *GetHeader();
+   AliRawEventHeaderBase *GetHeader(char*& data);
+   AliRawEventHeaderBase *GetHeader();
    Int_t                  GetNEquipments() const { return fNEquipments; }
    AliRawEquipment       *NextEquipment();
    AliRawEquipment       *GetEquipment(Int_t index) const;
@@ -63,7 +64,7 @@ public:
 private:
    Int_t                  fNEquipments; // number of valid equipments
    Int_t                  fNSubEvents;  // number of valid sub-events
-   AliRawEventHeader     *fEvtHdr;      // event header object
+   AliRawEventHeaderBase *fEvtHdr;      // event header object
    TObjArray             *fEquipments;  // AliRawEquipment's
    TObjArray             *fSubEvents;   // sub AliRawEvent's
 

@@ -5,7 +5,8 @@
 #pragma link off all functions;
 
 #pragma link C++ class AliRawEvent;
-#pragma link C++ class AliRawEventHeader;
+#pragma link C++ class AliRawEventHeaderBase;
+#pragma link C++ defined_in RAW/AliRawEventHeaderVersions.h;
 #pragma link C++ class AliRawEquipmentHeader;
 #pragma link C++ class AliRawEquipment;
 #pragma link C++ class AliRawData;

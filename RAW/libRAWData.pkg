@@ -7,7 +7,7 @@ PACKCXXFLAGS := ${HLTCXXFLAGS}
 PACKCFLAGS   := ${HLTCLFAGS}
 PACKDCXXFLAGS:= ${HLTDCXXFLAGS}
 
-SRCS:=  AliRawEventHeader.cxx AliRawEquipmentHeader.cxx \
+SRCS:=  AliRawEventHeaderBase.cxx AliRawEquipmentHeader.cxx \
 	AliRawData.cxx AliRawEquipment.cxx AliRawEvent.cxx \
 	AliStats.cxx AliFilter.cxx \
 	AliRawReader.cxx AliRawReaderFile.cxx AliRawReaderRoot.cxx \
@@ -19,6 +19,8 @@ SRCS:=  AliRawEventHeader.cxx AliRawEquipmentHeader.cxx \
 	AliVMERawStream.cxx
 
 HDRS:= $(SRCS:.cxx=.h)
+
+HDRS += AliRawEventHeaderVersions.h
 
 EHDRS:=$(shell root-config --incdir)/TH1F.h
 

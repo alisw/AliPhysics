@@ -29,7 +29,7 @@
 #include "AliESD.h"
 
 #include "AliRawDB.h"
-#include "AliRawEventHeader.h"
+#include "AliRawEventHeaderBase.h"
 #include "AliTagDB.h"
 
 
@@ -37,7 +37,7 @@ ClassImp(AliTagDB)
 
 
 //______________________________________________________________________________
-AliTagDB::AliTagDB(AliRawEventHeader *header, const char* fileName) :
+AliTagDB::AliTagDB(AliRawEventHeaderBase *header, const char* fileName) :
   fTagDB(NULL),
   fTree(NULL),
   fHeader(header),
@@ -97,7 +97,8 @@ Bool_t AliTagDB::Create(const char* fileName)
 
    Int_t bufsize = 32000;
    Int_t split   = 1;
-   fTree->Branch("header", "AliRawEventHeader", &fHeader, bufsize, split);
+   const char *headername = fHeader->GetName();
+   fTree->Branch("header", headername, &fHeader, bufsize, split);
 
    return kTRUE;
 }

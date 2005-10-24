@@ -27,13 +27,9 @@
 #include <TSystem.h>
 #include <TKey.h>
 
-#ifdef ALI_DATE
-#include "event.h"
-#endif
-
 #include "AliESD.h"
 #include "AliRawEvent.h"
-#include "AliRawEventHeader.h"
+#include "AliRawEventHeaderBase.h"
 #include "AliStats.h"
 
 #include "AliRawDB.h"
@@ -60,15 +56,6 @@ AliRawDB::AliRawDB(AliRawEvent *event,
   fStop(kFALSE)
 {
    // Create a new raw DB
-
-   // Consistency check with DATE header file
-#ifdef ALI_DATE
-   if (fEvent->GetHeader()->HeaderSize() != EVENT_HEAD_BASE_SIZE) {
-      Error("AliRawDB", "inconsistency between DATE and AliRawEvent headers");
-      MakeZombie();
-      return;
-   }
-#endif
 
    if (fileName) {
       if (!Create(fileName))
@@ -380,13 +367,13 @@ void AliRawDB::WriteStats(AliStats* stats)
 {
    // Write stats to raw DB, local run DB and global MySQL DB.
 
-   AliRawEventHeader &header = *GetEvent()->GetHeader();
+   AliRawEventHeaderBase &header = *GetEvent()->GetHeader();
 
    // Write stats into RawDB
    TDirectory *ds = gDirectory;
    GetDB()->cd();
    stats->SetEvents(GetEvents());
-   stats->SetLastId(header.GetRunNumber(), header.GetEventInRun());
+   stats->SetLastId(header.Get("RunNb"), header.GetP("Id")[0]);
    stats->SetFileSize(GetBytesWritten());
    stats->SetCompressionFactor(GetCompressionFactor());
    stats->SetEndTime();

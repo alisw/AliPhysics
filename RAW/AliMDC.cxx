@@ -61,7 +61,7 @@
 #include <AliESD.h>
 
 #include "AliRawEvent.h"
-#include "AliRawEventHeader.h"
+#include "AliRawEventHeaderBase.h"
 #include "AliRawEquipment.h"
 #include "AliRawEquipmentHeader.h"
 #include "AliRawData.h"
@@ -98,7 +98,10 @@ AliMDC::AliMDC(Int_t compress, Bool_t deleteFiles, EFilterMode filterMode,
   fDeleteFiles(deleteFiles),
   fFilterMode(filterMode),
   fFilters(),
-  fStop(kFALSE)
+  fStop(kFALSE),
+  fIsTagDBCreated(kFALSE),
+  fMaxSizeTagDB(maxSizeTagDB),
+  fFileNameTagDB(fileNameTagDB)
 {
   // Create MDC processor object.
   // compress is the file compression mode.
@@ -123,16 +126,18 @@ AliMDC::AliMDC(Int_t compress, Bool_t deleteFiles, EFilterMode filterMode,
     fESD = new AliESD;
   }
 
-  if (fileNameTagDB) {
-    if (maxSizeTagDB > 0) {
-      fTagDB = new AliTagDB(fEvent->GetHeader(), NULL);
-      fTagDB->SetMaxSize(maxSizeTagDB);
-      fTagDB->SetFS(fileNameTagDB);
-      fTagDB->Create();
-    } else {
-      fTagDB = new AliTagDB(fEvent->GetHeader(), fileNameTagDB);
-    }
-  }
+// Tag DB is now created at the point where the header version is
+// already known
+//   if (fileNameTagDB) {
+//     if (maxSizeTagDB > 0) {
+//       fTagDB = new AliTagDB(fEvent->GetHeader(), NULL);
+//       fTagDB->SetMaxSize(maxSizeTagDB);
+//       fTagDB->SetFS(fileNameTagDB);
+//       fTagDB->Create();
+//     } else {
+//       fTagDB = new AliTagDB(fEvent->GetHeader(), fileNameTagDB);
+//     }
+//   }
 
   // install SIGUSR1 handler to allow clean interrupts
   gSystem->AddSignalHandler(new AliMDCInterruptHandler(this));
@@ -161,7 +166,7 @@ AliMDC::~AliMDC()
 // destructor
 
   fFilters.Delete();
-  delete fTagDB;
+  if(fTagDB) delete fTagDB;
   delete fRunDB;
   delete fRawDB;
   delete fStats;
@@ -240,30 +245,30 @@ Int_t AliMDC::ProcessEvent(void* event, Bool_t isIovecArray)
   if (isIovecArray) data = (char*) ((iovec*) event)[0].iov_base;
 
   // Shortcut for easy header access
-  AliRawEventHeader &header = *fEvent->GetHeader();
+  AliRawEventHeaderBase *header = fEvent->GetHeader(data);
 
   // Read event header
-  if ((status = ReadHeader(header, data)) != header.HeaderSize()) {
+  if ((status = header->ReadHeader(data)) != (Int_t)header->GetHeadSize()) {
     return kErrHeader;
   }
 
-  if (AliDebugLevel() > 2) ToAliDebug(3, header.Dump(););
+  if (AliDebugLevel() > 2) ToAliDebug(3, header->Dump(););
 
   // Check event type and skip "Start of Run", "End of Run",
   // "Start of Run Files" and "End of Run Files"
-  Int_t size = header.GetEventSize() - header.HeaderSize();
-  switch (header.GetType()) {
-  case AliRawEventHeader::kStartOfRun:
-  case AliRawEventHeader::kEndOfRun:
-  case AliRawEventHeader::kStartOfRunFiles:
-  case AliRawEventHeader::kEndOfRunFiles:
+  Int_t size = header->GetEventSize() - header->GetHeadSize();
+  switch (header->Get("Type")) {
+  case AliRawEventHeaderBase::kStartOfRun:
+  case AliRawEventHeaderBase::kEndOfRun:
+  case AliRawEventHeaderBase::kStartOfRunFiles:
+  case AliRawEventHeaderBase::kEndOfRunFiles:
     {
-      AliDebug(1, Form("Skipping %s (%d bytes)", header.GetTypeName(), size));
+      AliDebug(1, Form("Skipping %s (%d bytes)", header->GetTypeName(), size));
       return kErrStartEndRun;
     }
   default:
     {
-      AliDebug(1, Form("Processing %s (%d bytes)", header.GetTypeName(), size));
+      AliDebug(1, Form("Processing %s (%d bytes)", header->GetTypeName(), size));
     }
   }
 
@@ -272,10 +277,10 @@ Int_t AliMDC::ProcessEvent(void* event, Bool_t isIovecArray)
 
   // If there is less data for this event than the next sub-event
   // header, something is wrong. Skip to next event...
-  if (toRead < header.HeaderSize()) {
+  if (toRead < (Int_t)header->GetHeadSize()) {
     Error("ProcessEvent", "header size (%d) exceeds number of bytes "
-	  "to read (%d)", header.HeaderSize(), toRead);
-    if (AliDebugLevel() > 0) ToAliDebug(1, header.Dump(););
+	  "to read (%d)", header->GetHeadSize(), toRead);
+    if (AliDebugLevel() > 0) ToAliDebug(1, header->Dump(););
     return kErrHeaderSize;
   }
   
@@ -289,34 +294,34 @@ Int_t AliMDC::ProcessEvent(void* event, Bool_t isIovecArray)
     AliRawEvent *subEvent = fEvent->NextSubEvent();
 
     // Read sub-event header
-    AliRawEventHeader &subHeader = *subEvent->GetHeader();
-    if ((status = ReadHeader(subHeader, data)) != subHeader.HeaderSize()) {
+    AliRawEventHeaderBase *subHeader = subEvent->GetHeader(data);
+    if ((status = subHeader->ReadHeader(data)) != (Int_t)subHeader->GetHeadSize()) {
       return kErrSubHeader;
     }
 
-    if (AliDebugLevel() > 2) ToAliDebug(3, subHeader.Dump(););
+    if (AliDebugLevel() > 2) ToAliDebug(3, subHeader->Dump(););
 
-    toRead -= subHeader.HeaderSize();
+    toRead -= subHeader->GetHeadSize();
 
-    Int_t rawSize = subHeader.GetEventSize() - subHeader.HeaderSize();
+    Int_t rawSize = subHeader->GetEventSize() - subHeader->GetHeadSize();
 
     // Make sure raw data less than left over bytes for current event
     if (rawSize > toRead) {
       Warning("ProcessEvent", "raw data size (%d) exceeds number of "
 	      "bytes to read (%d)\n", rawSize, toRead);
-      if (AliDebugLevel() > 0) ToAliDebug(1, subHeader.Dump(););
+      if (AliDebugLevel() > 0) ToAliDebug(1, subHeader->Dump(););
       return kErrDataSize;
     }
 
     // Read Equipment Headers (in case of physics or calibration event)
-    if (header.GetType() == AliRawEventHeader::kPhysicsEvent ||
-	header.GetType() == AliRawEventHeader::kCalibrationEvent) {
+    if (header->Get("Type") == AliRawEventHeaderBase::kPhysicsEvent ||
+	header->Get("Type") == AliRawEventHeaderBase::kCalibrationEvent) {
       while (rawSize > 0) {
 	AliRawEquipment &equipment = *subEvent->NextEquipment();
 	AliRawEquipmentHeader &equipmentHeader = 
 	  *equipment.GetEquipmentHeader();
 	Int_t equipHeaderSize = equipmentHeader.HeaderSize();
-	if ((status = ReadEquipmentHeader(equipmentHeader, header.DataIsSwapped(),
+	if ((status = ReadEquipmentHeader(equipmentHeader, header->DataIsSwapped(),
 					  data)) != equipHeaderSize) {
 	  return kErrEquipmentHeader;
 	}
@@ -350,8 +355,8 @@ Int_t AliMDC::ProcessEvent(void* event, Bool_t isIovecArray)
 
   // High Level Event Filter
   if (fFilterMode != kFilterOff) {
-    if (header.GetType() == AliRawEventHeader::kPhysicsEvent ||
-	header.GetType() == AliRawEventHeader::kCalibrationEvent) {
+    if (header->Get("Type") == AliRawEventHeaderBase::kPhysicsEvent ||
+	header->Get("Type") == AliRawEventHeaderBase::kCalibrationEvent) {
       Bool_t result = kFALSE;
       for (Int_t iFilter = 0; iFilter < fFilters.GetEntriesFast(); iFilter++) {
 	AliFilter* filter = (AliFilter*) fFilters[iFilter];
@@ -364,10 +369,26 @@ Int_t AliMDC::ProcessEvent(void* event, Bool_t isIovecArray)
 
   // Set stat info for first event of this file
   if (fRawDB->GetEvents() == 0)
-    fStats->SetFirstId(header.GetRunNumber(), header.GetEventInRun());
+    fStats->SetFirstId(header->Get("RunNb"), header->GetP("Id")[0]);
 
   // Store raw event in tree
   Int_t nBytes = fRawDB->Fill();
+
+  // Create Tag DB here only after the raw data header
+  // version was already identified
+  if (!fIsTagDBCreated) {
+    if (fFileNameTagDB) {
+      if (fMaxSizeTagDB > 0) {
+	fTagDB = new AliTagDB(fEvent->GetHeader(), NULL);
+	fTagDB->SetMaxSize(fMaxSizeTagDB);
+	fTagDB->SetFS(fFileNameTagDB);
+	fTagDB->Create();
+      } else {
+	fTagDB = new AliTagDB(fEvent->GetHeader(), fFileNameTagDB);
+      }
+    }
+    fIsTagDBCreated = kTRUE;
+  }
 
   // Store header in tree
   if (fTagDB) fTagDB->Fill();
@@ -484,6 +505,8 @@ Int_t AliMDC::Run(const char* inputFile, Bool_t loop,
   UInt_t eventSize = 0;
   Int_t numEvents = 0;
 
+  AliRawEventHeaderBase header;
+
   while (kTRUE) {
 
     // If we were in looping mode stop directly after a SIGUSR1 signal
@@ -514,37 +537,66 @@ Int_t AliMDC::Run(const char* inputFile, Bool_t loop,
 #endif
 
     } else {  // get data from a file
-      AliRawEventHeader header;
+      {
+	Int_t nrecv;
+	if ((nrecv = Read(fd, header.HeaderBaseBegin(), header.HeaderBaseSize())) !=
+	    header.HeaderBaseSize()) {
+	  if (nrecv == 0) {  // eof
+	    if (loop) {
+	      ::lseek(fd, 0, SEEK_SET);
+	      continue;
+	    } else {
+	      break;
+	    }
+	  } else {
+	    Error("Run", "error reading base header");
+	    Close();
+	    delete[] event;
+	    return 1;
+	  }
+	}
+      }
+      char *data = (char *)header.HeaderBaseBegin();
+      AliRawEventHeaderBase *hdr = AliRawEventHeaderBase::Create(data);
       Int_t nrecv;
-      if ((nrecv = Read(fd, header.HeaderBegin(), header.HeaderSize())) !=
-	  header.HeaderSize()) {
+      if ((nrecv = Read(fd, hdr->HeaderBegin(), hdr->HeaderSize())) !=
+	  hdr->HeaderSize()) {
 	if (nrecv == 0) {  // eof
 	  if (loop) {
 	    ::lseek(fd, 0, SEEK_SET);
+	    delete hdr;
 	    continue;
 	  } else {
+	    delete hdr;
 	    break;
 	  }
 	} else {
 	  Error("Run", "error reading header");
 	  Close();
 	  delete[] event;
+	  delete hdr;
 	  return 1;
 	}
       }
-      if (eventSize < header.GetEventSize()) {
+      if (eventSize < hdr->GetEventSize()) {
 	delete[] event;
-	eventSize = 2 * header.GetEventSize();
+	eventSize = 2 * hdr->GetEventSize();
 	event = new char[eventSize];
       }
-      memcpy(event, header.HeaderBegin(), header.HeaderSize());
-      Int_t size = header.GetEventSize() - header.HeaderSize();
-      if (Read(fd, event + header.HeaderSize(), size) != size) {
+      memcpy(event, hdr->HeaderBaseBegin(), hdr->HeaderBaseSize());
+      memcpy(event+hdr->HeaderBaseSize(), hdr->HeaderBegin(), hdr->HeaderSize());
+      if (hdr->GetExtendedDataSize() != 0)
+	memcpy(event+hdr->HeaderBaseSize()+hdr->HeaderSize(),
+	       hdr->GetExtendedData(), hdr->GetExtendedDataSize());
+      Int_t size = hdr->GetEventSize() - hdr->GetHeadSize();
+      if (Read(fd, event + hdr->GetHeadSize(), size) != size) {
 	Error("Run", "error reading data");
 	Close();
 	delete[] event;
+	delete hdr;
 	return 1;
       }
+      delete hdr;
     }
 
     Int_t result = ProcessEvent(event, !inputFile);
@@ -639,6 +691,7 @@ Int_t AliMDC::Run(const char* inputFile, Bool_t loop,
   } else {
     // Close input source
     close(fd);
+    delete [] event;
   }
 
   return 0;
@@ -667,34 +720,6 @@ Int_t AliMDC::Read(Int_t fd, void *buffer, Int_t length)
       }
    }
    return n;
-}
-
-//______________________________________________________________________________
-Int_t AliMDC::ReadHeader(AliRawEventHeader &header, char*& data)
-{
-  // Read header info from DATE data stream. Returns bytes read (i.e.
-  // AliRawEventHeader::HeaderSize()), -1 in case of error and 0 for EOF.
-
-  memcpy(header.HeaderBegin(), data, header.HeaderSize());
-  data += header.HeaderSize();
-
-  // Swap header data if needed
-  if (header.IsSwapped())
-    header.Swap();
-
-  // Is header valid...
-  if (!header.IsValid()) {
-    Error("ReadHeader", "invalid header format");
-    // try recovery... how?
-    return -1;
-  }
-  if (header.GetEventSize() < (UInt_t)header.HeaderSize()) {
-    Error("ReadHeader", "invalid header size");
-    // try recovery... how?
-    return -1;
-  }
-
-  return header.HeaderSize();
 }
 
 //______________________________________________________________________________

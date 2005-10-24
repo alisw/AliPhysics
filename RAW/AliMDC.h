@@ -26,7 +26,7 @@
 
 // Forward class declarations
 class AliRawEvent;
-class AliRawEventHeader;
+class AliRawEventHeaderBase;
 class AliRawEquipmentHeader;
 class AliRawData;
 class AliRawDB;
@@ -95,6 +95,9 @@ private:
    EFilterMode  fFilterMode;  // high level filter mode
    TObjArray    fFilters;     // filter algorithms
    Bool_t       fStop;        // stop execution (triggered by SIGUSR1)
+   Bool_t       fIsTagDBCreated; // is tag db already created
+   Double_t     fMaxSizeTagDB;// max size of the tag DB
+   const char*  fFileNameTagDB;// tag DB file name
 
    // Filter names
    enum {kNFilters = 1};
@@ -105,7 +108,6 @@ private:
 
    Int_t     Read(const char *name) { return TObject::Read(name); }
    Int_t     Read(Int_t fd, void *buffer, Int_t length);
-   Int_t     ReadHeader(AliRawEventHeader &header, char*& data);
    Int_t     ReadEquipmentHeader(AliRawEquipmentHeader &header,
                                  Bool_t isSwapped, char*& data);
    Int_t     ReadRawData(AliRawData &raw, Int_t size, char*& data);

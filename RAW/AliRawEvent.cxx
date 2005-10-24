@@ -42,7 +42,9 @@
 
 #include <TObjArray.h>
 
-#include "AliRawEventHeader.h"
+#include "AliLog.h"
+
+#include "AliRawEventHeaderBase.h"
 #include "AliRawEquipment.h"
 
 #include "AliRawEvent.h"
@@ -82,14 +84,28 @@ AliRawEvent& AliRawEvent::operator = (const AliRawEvent& /*rawEvent*/)
 }
 
 //______________________________________________________________________________
-AliRawEventHeader *AliRawEvent::GetHeader()
+AliRawEventHeaderBase *AliRawEvent::GetHeader(char*& data)
 {
-   // Get event header part of AliRawEvent.
+  // Get event header part of AliRawEvent.
+  // First the DATE version is identified and then the
+  // corresponding event header version object is created
+  
+  if (!fEvtHdr) {
+    fEvtHdr = AliRawEventHeaderBase::Create(data);
+  }
 
-   if (!fEvtHdr)
-      fEvtHdr = new AliRawEventHeader;
+  return fEvtHdr;
+}
 
-   return fEvtHdr;
+//______________________________________________________________________________
+AliRawEventHeaderBase *AliRawEvent::GetHeader()
+{
+  if (!fEvtHdr) {
+      AliFatal("Header version not yet initialized!");
+      return 0x0;
+    }
+
+  return fEvtHdr;
 }
 
 //______________________________________________________________________________

@@ -32,7 +32,7 @@
 #include <TTree.h>
 #include "AliRawReaderRoot.h"
 #include "AliRawEvent.h"
-#include "AliRawEventHeader.h"
+#include "AliRawEventHeaderBase.h"
 #include "AliRawEquipment.h"
 #include "AliRawEquipmentHeader.h"
 #include "AliRawData.h"
@@ -192,7 +192,7 @@ UInt_t AliRawReaderRoot::GetType() const
 // get the type from the event header
 
   if (!fEvent) return 0;
-  return fEvent->GetHeader()->GetType();
+  return fEvent->GetHeader()->Get("Type");
 }
 
 UInt_t AliRawReaderRoot::GetRunNumber() const
@@ -200,7 +200,7 @@ UInt_t AliRawReaderRoot::GetRunNumber() const
 // get the run number from the event header
 
   if (!fEvent) return 0;
-  return fEvent->GetHeader()->GetRunNumber();
+  return fEvent->GetHeader()->Get("RunNb");
 }
 
 const UInt_t* AliRawReaderRoot::GetEventId() const
@@ -208,7 +208,7 @@ const UInt_t* AliRawReaderRoot::GetEventId() const
 // get the event id from the event header
 
   if (!fEvent) return NULL;
-  return fEvent->GetHeader()->GetId();
+  return fEvent->GetHeader()->GetP("Id");
 }
 
 const UInt_t* AliRawReaderRoot::GetTriggerPattern() const
@@ -216,7 +216,7 @@ const UInt_t* AliRawReaderRoot::GetTriggerPattern() const
 // get the trigger pattern from the event header
 
   if (!fEvent) return NULL;
-  return fEvent->GetHeader()->GetTriggerPattern();
+  return fEvent->GetHeader()->GetP("TriggerPattern");
 }
 
 const UInt_t* AliRawReaderRoot::GetDetectorPattern() const
@@ -224,7 +224,7 @@ const UInt_t* AliRawReaderRoot::GetDetectorPattern() const
 // get the detector pattern from the event header
 
   if (!fEvent) return NULL;
-  return fEvent->GetHeader()->GetDetectorPattern();
+  return fEvent->GetHeader()->GetP("DetectorPattern");
 }
 
 const UInt_t* AliRawReaderRoot::GetAttributes() const
@@ -232,7 +232,7 @@ const UInt_t* AliRawReaderRoot::GetAttributes() const
 // get the type attributes from the event header
 
   if (!fEvent) return NULL;
-  return fEvent->GetHeader()->GetTypeAttribute();
+  return fEvent->GetHeader()->GetP("TypeAttribute");
 }
 
 const UInt_t* AliRawReaderRoot::GetSubEventAttributes() const
@@ -240,7 +240,7 @@ const UInt_t* AliRawReaderRoot::GetSubEventAttributes() const
 // get the type attributes from the sub event header
 
   if (!fSubEvent) return NULL;
-  return fSubEvent->GetHeader()->GetTypeAttribute();
+  return fSubEvent->GetHeader()->GetP("TypeAttribute");
 }
 
 UInt_t AliRawReaderRoot::GetLDCId() const
@@ -248,7 +248,7 @@ UInt_t AliRawReaderRoot::GetLDCId() const
 // get the LDC Id from the event header
 
   if (!fEvent || !fSubEvent) return 0;
-  return fSubEvent->GetHeader()->GetLDCId();
+  return fSubEvent->GetHeader()->Get("LdcId");
 }
 
 UInt_t AliRawReaderRoot::GetGDCId() const
@@ -256,7 +256,7 @@ UInt_t AliRawReaderRoot::GetGDCId() const
 // get the GDC Id from the event header
 
   if (!fEvent) return 0;
-  return fEvent->GetHeader()->GetGDCId();
+  return fEvent->GetHeader()->Get("GdcId");
 }
 
 

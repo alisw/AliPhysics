@@ -25,9 +25,6 @@
 #include <TH1.h>
 #include <TFile.h>
 
-#include "AliRawEvent.h"
-#include "AliRawEventHeader.h"
-
 #include "AliStats.h"
 
 

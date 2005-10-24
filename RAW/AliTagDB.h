@@ -31,13 +31,13 @@
 
 
 // Forward class declarations
-class AliRawEventHeader;
+class AliRawEventHeaderBase;
 
 
 class AliTagDB : public TObject {
 
 public:
-   AliTagDB(AliRawEventHeader *header, const char* fileName = NULL);
+   AliTagDB(AliRawEventHeaderBase *header, const char* fileName = NULL);
    virtual ~AliTagDB() { Close(); }
 
    Bool_t          Create(const char* fileName = NULL);
@@ -54,14 +54,14 @@ public:
    Double_t           GetBytesWritten() const { return fTagDB->GetBytesWritten(); }
    TFile             *GetDB() const { return fTagDB; }
    const char        *GetDBName() const { return fTagDB->GetName(); }
-   AliRawEventHeader *GetHeader() const { return fHeader; }
+   AliRawEventHeaderBase *GetHeader() const { return fHeader; }
    Int_t              GetEvents() const { return (Int_t) fTree->GetEntries(); }
    Float_t            GetCompressionFactor() const;
 
 protected:
    TFile             *fTagDB;     // DB to store header information only (tag)
    TTree             *fTree;      // tree use to store header
-   AliRawEventHeader *fHeader;    // header via which data is stored
+   AliRawEventHeaderBase *fHeader;    // header via which data is stored
    Double_t           fMaxSize;   // maximum size in bytes of tag DB
    TString            fFS;        // tag DB file system location
    Bool_t             fDeleteFiles; // flag for deletion of files
