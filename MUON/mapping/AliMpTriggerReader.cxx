@@ -16,6 +16,7 @@
 // $Id$
 // $MpId$
 
+#include <assert.h>
 #include "AliMpTriggerReader.h"
 
 #include "AliLog.h"
