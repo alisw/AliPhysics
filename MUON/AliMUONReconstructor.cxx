@@ -32,6 +32,7 @@
 #include "AliMUONTrackReconstructor.h"
 #include "AliMUONClusterReconstructor.h"
 #include "AliMUONClusterFinderVS.h"
+#include "AliMUONClusterFinderAZ.h"
 #include "AliMUONTrack.h"
 #include "AliMUONTrackParam.h"
 #include "AliMUONTriggerTrack.h"
@@ -62,10 +63,15 @@ void AliMUONReconstructor::Reconstruct(AliRunLoader* runLoader) const
 // passing fLoader as argument, could be avoided ???
   AliMUONTrackReconstructor* recoEvent = new AliMUONTrackReconstructor(loader);
   AliMUONData* dataEvent = recoEvent->GetMUONData();
+  recoEvent->SetTrackMethod(1); // 1 - original,  2 - Kalman
 
   AliMUONClusterReconstructor* recoCluster = new AliMUONClusterReconstructor(loader);
   AliMUONData* dataCluster = recoCluster->GetMUONData();
   AliMUONClusterFinderVS *recModel = recoCluster->GetRecoModel();
+  //AZ If "AZ" clustering method is to be used the following 2 lines
+  // should be uncommented
+  //recModel = (AliMUONClusterFinderVS*) new AliMUONClusterFinderAZ(0,1);
+  //recoCluster->SetRecoModel(recModel);
   recModel->SetGhostChi2Cut(10);
 
   loader->LoadDigits("READ");
