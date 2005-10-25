@@ -80,16 +80,18 @@ private:
    ClassDef(AliRawEventHeaderBase,1)  // Alice raw event header base class
 };
 
+#define EVENT_HEADER_VERSION(AA,BB) AliRawEventHeaderV##AA##_##BB
+
 #define START_EVENT_HEADER(AA,BB) \
-class AliRawEventHeaderV##AA##_##BB##:public AliRawEventHeaderBase { \
+class AliRawEventHeaderV##AA##_##BB:public AliRawEventHeaderBase { \
 public: \
-   AliRawEventHeaderV##AA##_##BB##():AliRawEventHeaderBase() {}; \
-   virtual ~AliRawEventHeaderV##AA##_##BB##() {}; \
+   AliRawEventHeaderV##AA##_##BB():AliRawEventHeaderBase() {}; \
+   virtual ~AliRawEventHeaderV##AA##_##BB() {}; \
 private:
 
 #define END_EVENT_HEADER(AA,BB) \
-ClassDef(AliRawEventHeaderV##AA##_##BB##,1) \
+ClassDef(AliRawEventHeaderV##AA##_##BB,1) \
 }; \
-ClassImp(AliRawEventHeaderV##AA##_##BB##)
+ClassImp(AliRawEventHeaderV##AA##_##BB)
 
 #endif
