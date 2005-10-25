@@ -68,6 +68,7 @@ AliMUONClusterFinderAZ::AliMUONClusterFinderAZ(Bool_t draw, Int_t iReco)
   fPixArray = new TObjArray(20); 
   fDebug = 0; //0;
   if (draw) fDebug = 1;
+  AliWarning("*** Running AZ cluster finder ***");
 }
 
 //_____________________________________________________________________________
@@ -152,10 +153,18 @@ next:
       if (first) {
 	// Find first unused pad
 	if (fUsed[cath][digit]) continue;
-	fSegmentation[cath]->GetPadC(fInput->DetElemId(),mdig->PadX(),mdig->PadY(),xpad,ypad,zpad0);
+	if (!fSegmentation[cath]->GetPadC(fInput->DetElemId(),mdig->PadX(),mdig->PadY(),xpad,ypad,zpad0)) { 
+	  // Handle "non-existing" pads
+	  fUsed[cath][digit] = kTRUE; 
+	  continue; 
+	} 
       } else {
 	if (fUsed[cath][digit]) continue;
-	fSegmentation[cath]->GetPadC(fInput->DetElemId(),mdig->PadX(),mdig->PadY(),xpad,ypad,zpad);
+	if (!fSegmentation[cath]->GetPadC(fInput->DetElemId(),mdig->PadX(),mdig->PadY(),xpad,ypad,zpad)) {
+	  // Handle "non-existing" pads
+	  fUsed[cath][digit] = kTRUE; 
+	  continue; 
+	} 
 	if (TMath::Abs(zpad-zpad0) > 0.1) continue; // different slats
 	// Find a pad overlapping with the cluster
 	if (!Overlap(cath,mdig)) continue;
@@ -198,7 +207,7 @@ next:
     Int_t iSimple = 0, nInX = -1, nInY;
     PadsInXandY(nInX, nInY);
     if (fDebug) cout << "Pads in X and Y: " << nInX << " " << nInY << endl;
-    if (nMax == 1 && nInX < 4 && nInY < 4) iSimple = 0; //1; // simple cluster
+    if (nMax == 1 && nInX < 4 && nInY < 4) iSimple = 1; //1; // simple cluster
     for (Int_t i=0; i<nMax; i++) {
       if (nMax > 1) FindCluster(localMax, maxPos[i]);
       if (!MainLoop(iSimple)) cout << " MainLoop failed " << endl;
@@ -656,9 +665,12 @@ void AliMUONClusterFinderAZ::AddPad(Int_t cath, Int_t digit)
   Int_t charge = mdig->Signal();
   // get the center of the pad
   Float_t xpad, ypad, zpad0; //, zpad;
-  fSegmentation[cath]->GetPadC(fInput->DetElemId(),mdig->PadX(),mdig->PadY(),xpad,ypad,zpad0);
+  if (!fSegmentation[cath]->GetPadC(fInput->DetElemId(),mdig->PadX(),mdig->PadY(),xpad,ypad,zpad0)) {	  // Handle "non-existing" pads
+    fUsed[cath][digit] = kTRUE; 
+    return; 
+  } 
   
-  Int_t   isec = fSegmentation[cath]->Sector(fInput->DetElemId(),mdig->PadX(), mdig->PadY());
+  Int_t isec = fSegmentation[cath]->Sector(fInput->DetElemId(),mdig->PadX(), mdig->PadY());
   Int_t nPads = fnPads[0] + fnPads[1];
   fXyq[0][nPads] = xpad;
   fXyq[1][nPads] = ypad;
@@ -784,6 +796,18 @@ Bool_t AliMUONClusterFinderAZ::CheckPrecluster(Int_t *nShown)
     }
   } // if (sameSize)
   if (sameSize && fnPads[0] == 1 && fnPads[1] == 1) sameSize = 0; //AZ
+  // Handle shift by half a pad in Station 1
+  if (sameSize) {
+    Int_t cath0 = fPadIJ[0][0];
+    for (Int_t i = 1; i < npad; i++) {
+      if (fPadIJ[0][i] == cath0) continue;
+      Double_t dx = TMath::Abs ((fXyq[0][i] - fXyq[0][0]) / fXyq[3][i] / 2);
+      Int_t idx = (Int_t) TMath::Abs ((fXyq[0][i] - fXyq[0][0]) / fXyq[3][i] / 2);
+      if (TMath::Abs (dx - idx) > 0.001) sameSize = 0;
+      break;
+    }
+  } // if (sameSize)
+   
   if (sameSize && (fnPads[0] >= 2 || fnPads[1] >= 2)) {
     nShown[0] += fnPads[0];
     nShown[1] += fnPads[1];
@@ -1012,13 +1036,15 @@ void AliMUONClusterFinderAZ::BuildPixArray()
       nPix++;
     }
   } else { // two-cathode precluster    
-    for (Int_t i=0; i<npad; i++) {
+    i1 = fPadIJ[0][0];
+    i2 = TMath::Even (i1);
+    for (Int_t i = 0; i < npad; i++) {
       if (fPadIJ[0][i] != i1) continue;
       xy1[0] = fXyq[0][i] - fXyq[3][i];
       xy1[1] = fXyq[0][i] + fXyq[3][i];
       xy1[2] = fXyq[1][i] - fXyq[4][i];
       xy1[3] = fXyq[1][i] + fXyq[4][i];
-      for (Int_t j=0; j<npad; j++) {
+      for (Int_t j = 1; j < npad; j++) {
 	if (fPadIJ[0][j] != i2) continue;
 	if (!Overlap(xy1, j, xy12, 1)) continue;
 	pixPtr = new AliMUONPixel();
@@ -1034,14 +1060,23 @@ void AliMUONClusterFinderAZ::BuildPixArray()
     } // for (Int_t i=0;
   } // else
 
-  Float_t wxmin=999, wymin=999;
-  for (Int_t i=0; i<npad; i++) {
-    //if (fPadIJ[0][i] == i1) wymin = TMath::Min (wymin,fXyq[4][i]);
-    //if (fPadIJ[0][i] == i2) wxmin = TMath::Min (wxmin,fXyq[3][i]);
-    wymin = TMath::Min (wymin,fXyq[4][i]);
-    wxmin = TMath::Min (wxmin,fXyq[3][i]);
+  Float_t xPadMin = 999, yPadMin = 999;
+  for (Int_t i = 0; i < npad; i++) {
+    xPadMin = TMath::Min (xPadMin, fXyq[3][i]);
+    yPadMin = TMath::Min (yPadMin, fXyq[4][i]);
+  }
+  if (fDebug) cout << xPadMin << " " << yPadMin << endl;
+
+  Float_t wxmin = 999, wymin = 999;
+  for (Int_t i = 0; i < nPix; i++) {
+    pixPtr = (AliMUONPixel*) fPixArray->UncheckedAt(i);
+    wxmin = TMath::Min ((Double_t)wxmin, pixPtr->Size(0));
+    wymin = TMath::Min ((Double_t)wymin, pixPtr->Size(1));
   }
   if (fDebug) cout << wxmin << " " << wymin << endl;
+  wxmin = TMath::Abs (wxmin - xPadMin/2) > 0.001 ? xPadMin : xPadMin / 2;
+  wymin = TMath::Abs (wymin - yPadMin/2) > 0.001 ? yPadMin : yPadMin / 2;
+  //wxmin = xPadMin; wymin = yPadMin;
 
   // Check if small pixel X-size
   AdjustPixel(wxmin, 0);
@@ -1120,7 +1155,7 @@ void AliMUONClusterFinderAZ::AdjustPixel(Float_t width, Int_t ixy)
 	if (fDebug) cout << " Edge ..." << endl; 
 	for (Int_t j=0; j<fnPads[0]+fnPads[1]; j++) {
           //if (fPadIJ[0][j] != ixy1) continue;
-	  if (TMath::Abs(pixPtr->Coord(ixy1)-fXyq[ixy1][j]) > 1.e-4) continue;
+	  //???-check if (TMath::Abs(pixPtr->Coord(ixy1)-fXyq[ixy1][j]) > 1.e-4) continue;
 	  if (pixPtr->Coord(ixy) < fXyq[ixy][j]) 
 	    //pixPtr->Shift(ixy, -pixPtr->Size(ixy));
 	    pixPtr->Shift(ixy, pixPtr->Size(ixy)-width);
@@ -2295,6 +2330,7 @@ Int_t AliMUONClusterFinderAZ::Fit(Int_t nfit, Int_t *clustFit, TObjArray **clust
       parmin[fNpar] = 0; 
       parmax[fNpar++] = 1; 
     }
+    if (iseed) { for (Int_t j=0; j<fNpar; j++) param0[1][j] = 0; }
 
     // Try new algorithm
     min = nLoop = 1; stepMax = func2[1] = derMax = 999999; nFail = 0;
@@ -2649,7 +2685,8 @@ void AliMUONClusterFinderAZ::AddRawCluster(Double_t x, Double_t y, Double_t qTot
     if (fXyq[2][j] > cnew.GetPeakSignal(cath)) cnew.SetPeakSignal(cath,TMath::Nint (fXyq[2][j]));
     //cnew.SetCharge(cath,cnew.GetCharge(cath) + TMath::Nint (fXyq[2][j]));
     cnew.SetContrib(npads[cath],cath,fXyq[2][j]);
-    cnew.SetIndex(npads[cath],cath,TMath::Nint (fXyq[5][j])+10000*fInput->DetElemId());
+    cnew.SetIndex(npads[cath],cath,TMath::Nint (fXyq[5][j]));
+    cnew.SetDetElemId(fInput->DetElemId());
     npads[cath]++;
   }
 
@@ -3077,32 +3114,54 @@ void AliMUONClusterFinderAZ::PadsInXandY(Int_t &nInX, Int_t &nInY)
   static Int_t nXsaved = 0, nYsaved = 0;
   nXsaved = nYsaved = 0;
   //if (nInX >= 0) {nInX = nXsaved; nInY = nYsaved; return; }
-  Double_t xlow[2] = {9999,9999}, xhig[2] = {-9999,-9999};
-  Double_t ylow[2] = {9999,9999}, yhig[2] = {-9999,-9999};
-  Int_t nx, ny, cath, npadx[2] = {0}, npady[2] = {0};
-  for (Int_t j=0; j<fnPads[0]+fnPads[1]; j++) {
+  Float_t *xPad0 = NULL, *yPad0 = NULL, *xPad1 = NULL, *yPad1 = NULL;
+  Int_t *nPad0 = NULL, *nPad1 = NULL;
+  Int_t nPads = fnPads[0] + fnPads[1];
+  if (fnPads[0]) {
+    xPad0 = new Float_t[nPads];
+    yPad0 = new Float_t[nPads];
+    nPad0 = new Int_t[nPads];
+  }
+  if (fnPads[1]) {
+    xPad1 = new Float_t[nPads];
+    yPad1 = new Float_t[nPads];
+    nPad1 = new Int_t[nPads];
+  }
+  Int_t n0 = 0, n1 = 0, cath, npadx[2] = {1, 1}, npady[2] = {1, 1};
+  for (Int_t j = 0; j < nPads; j++) {
     //if (fPadIJ[1][j] != 0) continue;
     //if (fXyq[3][j] < 0) continue; // virtual pad
     if (nInX < 0 && fPadIJ[1][j] != 0) continue; // before fit
     else if (nInX == 0 && fPadIJ[1][j] != 1) continue; // fit - exclude overflows
     else if (nInX > 0 && fPadIJ[1][j] != 1 && fPadIJ[1][j] != -9) continue; // exclude non-marked
-    //AZif (fXyq[2][j] > fResponse->MaxAdc()-1) continue;
     if (nInX <= 0 && fXyq[2][j] > fResponse->Saturation()-1) continue; // skip overflows
     cath = fPadIJ[0][j];
-    nx = ny = 0;
-    if (fXyq[0][j] < xlow[cath]-0.001) { xlow[cath] = fXyq[0][j]; nx++; }
-    if (fXyq[1][j] < ylow[cath]-0.001) { ylow[cath] = fXyq[1][j]; ny++; }
-    if (fXyq[0][j] > xhig[cath]+0.001) { xhig[cath] = fXyq[0][j]; nx++; }
-    if (fXyq[1][j] > yhig[cath]+0.001) { yhig[cath] = fXyq[1][j]; ny++; }
-    if (nx % 2 || !npadx[cath]) npadx[cath]++; 
-    if (ny % 2 || !npady[cath]) npady[cath]++;
+    if (cath) { xPad1[n1] = fXyq[0][j]; yPad1[n1++] = fXyq[1][j]; }
+    else { xPad0[n0] = fXyq[0][j]; yPad0[n0++] = fXyq[1][j]; }
   }
-  //nInY = nYsaved == npady[0] ? npady[0] : npady[1];
-  //nInX = nXsaved == npadx[1] ? npadx[1] : npadx[0];
+
+  // Sort
+  if (n0) { 
+    TMath::Sort (n0, xPad0, nPad0); // in X
+    for (Int_t i = 1; i < n0; i++) 
+      if (xPad0[nPad0[i]] - xPad0[nPad0[i-1]] < -0.01) npadx[0]++;
+    TMath::Sort (n0, yPad0, nPad0); // in Y
+    for (Int_t i = 1; i < n0; i++) 
+      if (yPad0[nPad0[i]] - yPad0[nPad0[i-1]] < -0.01) npady[0]++;
+  }
+  
+  if (n1) { 
+    TMath::Sort (n1, xPad1, nPad1); // in X
+    for (Int_t i = 1; i < n1; i++) 
+      if (xPad1[nPad1[i]] - xPad1[nPad1[i-1]] < -0.01) npadx[1]++;
+    TMath::Sort (n1, yPad1, nPad1); // in Y
+    for (Int_t i = 1; i < n1; i++) 
+      if (yPad1[nPad1[i]] - yPad1[nPad1[i-1]] < -0.01) npady[1]++;
+  }
+  if (fnPads[0]) { delete [] xPad0; delete [] yPad0; delete [] nPad0; }
+  if (fnPads[1]) { delete [] xPad1; delete [] yPad1; delete [] nPad1; }
   nInY = TMath::Max (npady[0], npady[1]);
   nInX = TMath::Max (npadx[0], npadx[1]);
-  //nInY = npady[0] > 0 ? npady[0] : npady[1];
-  //nInX = npadx[1] > 0 ? npadx[1] : npadx[0];
 }
 
 //_____________________________________________________________________________
@@ -3114,8 +3173,10 @@ void AliMUONClusterFinderAZ::Simple()
   Double_t parOk[3] = {0.}; 
   TObjArray *clusters[1]; 
   clusters[1] = fPixArray;
-  for (Int_t i=0; i<fnPads[0]+fnPads[1]; i++) fPadIJ[1][i] = 1;
-  
+  for (Int_t i = 0; i < fnPads[0]+fnPads[1]; i++) {
+    if (fXyq[2][i] > fResponse->Saturation()-1) fPadIJ[1][i] = -9;
+    else fPadIJ[1][i] = 1;
+  }
   nfit = Fit(nForFit, clustFit, clusters, parOk);
 }
 
