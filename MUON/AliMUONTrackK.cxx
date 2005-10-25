@@ -405,7 +405,8 @@ Bool_t AliMUONTrackK::KalmanFilter(Int_t ichamBeg, Int_t ichamEnd, Bool_t Back, 
 
   miss = success = kTRUE;
   Int_t endOfProp = 0;
-  iFB = (ichamEnd == ichamBeg) ? fTrackDir : TMath::Sign(1,ichamEnd-ichamBeg);
+  //iFB = (ichamEnd == ichamBeg) ? fTrackDir : TMath::Sign(1,ichamEnd-ichamBeg);
+  iFB = (ichamEnd == ichamBeg) ? -fTrackDir : TMath::Sign(1,ichamEnd-ichamBeg);
   iMin = TMath::Min(ichamEnd,ichamBeg);
   iMax = TMath::Max(ichamEnd,ichamBeg);
   ichamb = ichamBeg;
