@@ -25,9 +25,9 @@ class AliJet : public TNamed,public Ali4Vector
   virtual void Reset();                    // Reset all values
   void AddTrack(AliTrack& t);              // Add a track to the jet
   void AddTrack(AliTrack* t) { AddTrack(*t); }
-  virtual void Data(TString f="car");      // Print jet information in coordinate frame f 
-  virtual void List(TString f="car");      // Print jet prim. track information for coord. frame f
-  virtual void ListAll(TString f="car");   // Print jet prim. and decay track information for coord. frame f
+  virtual void Data(TString f="car",TString u="rad"); // Print jet information in frame f and ang units u 
+  virtual void List(TString f="car",TString u="rad"); // Jet prim. track info for frame f and ang units u
+  virtual void ListAll(TString f="car",TString u="rad");// Jet prim. and decay track info for frame f and ang units u
   Double_t GetEnergy();                    // Provide the total jet energy
   Double_t GetMomentum();                  // Provide the value of the total jet 3-momentum
   Ali3Vector Get3Momentum() const;         // Provide the total jet 3-momentum
@@ -63,6 +63,6 @@ class AliJet : public TNamed,public Ali4Vector
   Int_t fUserId;                         // The user defined identifier
   TObjArray* fSelected;                  //! Temp. array to hold user selected objects
  
- ClassDef(AliJet,11) // Creation and investigation of a jet of particle tracks.
+ ClassDef(AliJet,12) // Creation and investigation of a jet of particle tracks.
 };
 #endif

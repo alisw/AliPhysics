@@ -19,30 +19,30 @@ class AliPosition : public Ali3Vector
   AliPosition();                                         // Default constructor
   virtual ~AliPosition();                                // Destructor
   AliPosition(const AliPosition& p);                     // Copy constructor
-  void SetPosition(Double_t* r,TString f);               // Store position r in frame f
-  void GetPosition(Double_t* r,TString f) const;         // Provide position r in frame f
-  void SetPosition(Float_t*  r,TString f);               // Store position r in frame f
-  void GetPosition(Float_t*  r,TString f) const;         // Provide position r in frame f
+  void SetPosition(Double_t* r,TString f,TString u="rad");       // Store position r in frame f with ang units u
+  void GetPosition(Double_t* r,TString f,TString u="rad") const; // Provide position r in frame f in ang units u
+  void SetPosition(Float_t*  r,TString f,TString u="rad");       // Store position r in frame f with ang units u
+  void GetPosition(Float_t*  r,TString f,TString u="rad") const; // Provide position r in frame f in ang units u
   AliPosition& GetPosition();                            // Provide position
   void SetPosition(Ali3Vector& r);                       // Store position r
   Double_t GetDistance(AliPosition& p);                  // Provide distance to position p
   Double_t GetDistance(AliPosition* p) { return GetDistance(*p); }
-  void SetPositionErrors(Double_t* r,TString f);         // Store position r in frame f
-  void GetPositionErrors(Double_t* r,TString f) const;   // Provide position r in frame f
-  void SetPositionErrors(Float_t*  r,TString f);         // Store position r in frame f
-  void GetPositionErrors(Float_t*  r,TString f) const;   // Provide position r in frame f
+  void SetPositionErrors(Double_t* r,TString f,TString u="rad");       // Store position r in frame f with ang units u
+  void GetPositionErrors(Double_t* r,TString f,TString u="rad") const; // Provide position r in frame f in ang units u
+  void SetPositionErrors(Float_t*  r,TString f,TString u="rad");       // Store position r in frame f with ang units u
+  void GetPositionErrors(Float_t*  r,TString f,TString u="rad") const; // Provide position r in frame f in ang units u
   void ResetPosition();                                  // Reset position and errors to 0
-  void SetUnitScale(Float_t s);                          // Set unit scale for the position coordinates
-  Float_t GetUnitScale() const;                          // Provide unit scale for the position coordinates
+  void SetUnitScale(Float_t s);                          // Set metric unit scale for the position coordinates
+  Float_t GetUnitScale() const;                          // Provide metric unit scale for the position coordinates
   void SetTimestamp(AliTimestamp& t);                    // Set the timestamp for this position
   AliTimestamp* GetTimestamp();                          // Provide the timestamp for this position
   void RemoveTimestamp();                                // Remove the timestamp from this position
-  virtual void Data(TString f="car") const;              // Print all position/time info for coord. frame f
+  virtual void Data(TString f="car",TString u="rad") const; // Print position/time info for frame f and ang units u
 
  protected:
   Float_t fScale;        // The unit scale used for the position coordinates
   AliTimestamp* fTstamp; // The timestamp for this position
 
- ClassDef(AliPosition,7) // Handling of positions (with timestamps) in various reference frames.
+ ClassDef(AliPosition,8) // Handling of positions (with timestamps) in various reference frames.
 };
 #endif

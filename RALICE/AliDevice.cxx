@@ -377,11 +377,19 @@ void AliDevice::ShowHit(Int_t j) const
  }
 }
 ///////////////////////////////////////////////////////////////////////////
-void AliDevice::Data(TString f) const
+void AliDevice::Data(TString f,TString u) const
 {
 // Print the device and all registered hit info according to the specified
-// coordinate frame.
- AliSignal::Data(f);
+// coordinate frame f.
+//
+// The string argument "u" allows to choose between different angular units
+// in case e.g. a spherical frame is selected.
+// u = "rad" : angles provided in radians
+//     "deg" : angles provided in degrees
+//
+// The defaults are f="car" and u="rad".
+
+ AliSignal::Data(f,u);
  Int_t nhits=GetNhits();
  if (nhits)
  {

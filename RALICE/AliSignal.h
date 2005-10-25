@@ -37,7 +37,7 @@ class AliSignal : public TNamed,public AliPosition,public AliAttrib
   virtual void ResetSignals(Int_t mode=0);                      // Selective reset of signal values and/or errors
   virtual void DeleteSignals(Int_t mode=0);                     // Selectie delete of signal values and/or errors
   virtual void Reset(Int_t mode=0);                             // Reset signal and position values and errors
-  virtual void Data(TString f="car") const;                     // Print all signal info for coord. frame f
+  virtual void Data(TString f="car",TString u="rad") const;     // Print all signal info for frame f and ang units u
   virtual void List(Int_t j=0) const;                           // Print signal info for the j-th (all) slot(s)
   virtual void List(TString name) const;                        // Print signal info for the name-specified slot
   void ListWaveform(Int_t j=0) const;                           // Print info for the j-th (all) waveform(s)

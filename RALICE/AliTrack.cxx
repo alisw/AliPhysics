@@ -362,9 +362,17 @@ void AliTrack::SetCharge(Float_t q)
  fQ=q;
 }
 ///////////////////////////////////////////////////////////////////////////
-void AliTrack::Data(TString f)
+void AliTrack::Data(TString f,TString u)
 {
 // Provide track information within the coordinate frame f
+//
+// The string argument "u" allows to choose between different angular units
+// in case e.g. a spherical frame is selected.
+// u = "rad" : angles provided in radians
+//     "deg" : angles provided in degrees
+//
+// The defaults are f="car" and u="rad".
+
  Double_t m=GetMass();
  Double_t dm=GetResultError();
  const char* name=GetName();
@@ -396,14 +404,21 @@ void AliTrack::Data(TString f)
   cout << " Fit details present in object of class " << fFit->ClassName() << endl; 
   if (fFit->InheritsFrom("AliSignal")) ((AliSignal*)fFit)->List(-1);
  }
- Ali4Vector::Data(f); 
+ Ali4Vector::Data(f,u); 
 } 
 ///////////////////////////////////////////////////////////////////////////
-void AliTrack::List(TString f)
+void AliTrack::List(TString f,TString u)
 {
 // Provide current track and decay level 1 information within coordinate frame f
+//
+// The string argument "u" allows to choose between different angular units
+// in case e.g. a spherical frame is selected.
+// u = "rad" : angles provided in radians
+//     "deg" : angles provided in degrees
+//
+// The defaults are f="car" and u="rad".
 
- Data(f); // Information of the current track
+ Data(f,u); // Information of the current track
 
  // Decay products of this track
  AliTrack* td; 
@@ -413,7 +428,7 @@ void AliTrack::List(TString f)
   if (td)
   {
    cout << "  ---Level 1 sec. track no. " << id << endl;
-   td->Data(f); 
+   td->Data(f,u); 
   }
   else
   {
@@ -422,11 +437,18 @@ void AliTrack::List(TString f)
  }
 } 
 ///////////////////////////////////////////////////////////////////////////
-void AliTrack::ListAll(TString f)
+void AliTrack::ListAll(TString f,TString u)
 {
 // Provide complete track and decay information within the coordinate frame f
+//
+// The string argument "u" allows to choose between different angular units
+// in case e.g. a spherical frame is selected.
+// u = "rad" : angles provided in radians
+//     "deg" : angles provided in degrees
+//
+// The defaults are f="car" and u="rad".
 
- Data(f); // Information of the current track
+ Data(f,u); // Information of the current track
  if (fBegin) { cout << " Begin-point :"; fBegin->Data(f); }
  if (fEnd)   { cout << " End-point   :"; fEnd->Data(f); }
  if (fRef)   { cout << " Ref-point   :"; fRef->Data(f); }
@@ -438,7 +460,7 @@ void AliTrack::ListAll(TString f)
   for (Int_t ih=1; ih<=nhyp; ih++)
   {
    AliTrack* tx=GetTrackHypothesis(ih);
-   if (tx) tx->Data(f);
+   if (tx) tx->Data(f,u);
   }
  }
 
@@ -463,16 +485,16 @@ void AliTrack::ListAll(TString f)
     }
     r=sx->GetPosition();
     cout << "   Position";
-    r.Data(f);
+    r.Data(f,u);
    }
   }
  }
 
  AliTrack* t=this;
- Dumps(t,1,f); // Information of all decay products
+ Dumps(t,1,f,u); // Information of all decay products
 }
 //////////////////////////////////////////////////////////////////////////
-void AliTrack::Dumps(AliTrack* t,Int_t n,TString f)
+void AliTrack::Dumps(AliTrack* t,Int_t n,TString f,TString u)
 {
 // Recursively provide the info of all decay levels of this track
  AliTrack* td; 
@@ -482,7 +504,7 @@ void AliTrack::Dumps(AliTrack* t,Int_t n,TString f)
   if (td)
   {
    cout << "  ---Level " << n << " sec. track no. " << id << endl;
-   td->Data(f); 
+   td->Data(f,u); 
 
    Int_t nhyp=td->GetNhypotheses();
    if (nhyp)
@@ -491,7 +513,7 @@ void AliTrack::Dumps(AliTrack* t,Int_t n,TString f)
     for (Int_t ih=1; ih<=nhyp; ih++)
     {
      AliTrack* tx=td->GetTrackHypothesis(ih);
-     if (tx) tx->Data(f);
+     if (tx) tx->Data(f,u);
     }
    }
 
@@ -502,12 +524,12 @@ void AliTrack::Dumps(AliTrack* t,Int_t n,TString f)
     for (Int_t is=1; is<=nsig; is++)
     {
      AliSignal* sx=td->GetSignal(is);
-     if (sx) sx->Data(f);
+     if (sx) sx->Data(f,u);
     }
    }
 
    // Go for next decay level of this decay track recursively
-   Dumps(td,n+1,f);
+   Dumps(td,n+1,f,u);
   }
   else
   {

@@ -85,16 +85,23 @@
 //
 // Note :
 // ------
-// Vectors (v), Errors (e) and reference frames (f) are specified via
-// SetVector(Float_t* v,TString f)
-// SetErrors(Float_t* e,TString f)
+// Vectors (v), Errors (e), reference frames (f) and angular units (u)
+// are specified via
+// SetVector(Float_t* v,TString f,TString u)
+// SetErrors(Float_t* e,TString f,TString u)
 // under the following conventions :
 //
-// f="car" ==> 3-vector part of v in Cartesian coordinates   (x,y,z)
-// f="sph" ==> 3-vector part of v in Spherical coordinates   (r,theta,phi)
-// f="cyl" ==> 3-vector part of v in Cylindrical coordinates (rho,phi,z)
+// f="car" ==> v in Cartesian coordinates   (x,y,z)
+// f="sph" ==> v in Spherical coordinates   (r,theta,phi)
+// f="cyl" ==> v in Cylindrical coordinates (rho,phi,z)
 //
-// All angles are in radians.
+// u="rad" ==> angles in radians
+// u="deg" ==> angles in degrees
+//
+// The "f" and "u" facilities only serve as a convenient user interface.
+// Internally the actual storage of the various components is performed
+// in a unique way. This allows setting/retrieval of vector components in a
+// user selected frame/unit convention at any time. 
 //
 // Example :
 // ---------
@@ -105,7 +112,7 @@
 // a.SetVector(v,"car");
 //
 // Float_t vec[4];
-// a.GetVector(vec,"sph");
+// a.GetVector(vec,"sph","deg");
 //
 // Ali4Vector b;
 // Float_t v2[4]={33,6,-18,2};
@@ -201,12 +208,22 @@ void Ali4Vector::SetVector(Double_t v0,Ali3Vector& v)
  SetScalarError(0);
 }
 ///////////////////////////////////////////////////////////////////////////
-void Ali4Vector::SetVector(Double_t* v,TString f)
+void Ali4Vector::SetVector(Double_t* v,TString f,TString u)
 {
 // Store vector according to reference frame f.
+//
+// The string argument "u" allows to choose between different angular units
+// in case e.g. a spherical frame is selected.
+// u = "rad" : angles provided in radians
+//     "deg" : angles provided in degrees
+//
+// The default is u="rad".
+//
 // All errors are initialised to 0.
+//
 // Scalar mode is automatically selected. 
 // The error on scalar result operations is reset to 0.
+
  fScalar=1;
  Double_t a[3];
  for (Int_t i=0; i<3; i++)
@@ -214,20 +231,28 @@ void Ali4Vector::SetVector(Double_t* v,TString f)
   a[i]=v[i+1];
  }
  fV0=v[0];
- fV.SetVector(a,f);
+ fV.SetVector(a,f,u);
  fV2=pow(fV0,2)-fV.Dot(fV);
  fDv2=0;
  fDv0=0;
  fDresult=0;
 }
 ///////////////////////////////////////////////////////////////////////////
-void Ali4Vector::GetVector(Double_t* v,TString f)
+void Ali4Vector::GetVector(Double_t* v,TString f,TString u)
 {
 // Provide 4-vector components according to reference frame f
 // and according to the current mode.
 // Scalar mode    : The scalar part is directly returned via v[0].
 // Invariant mode : The scalar part is re-calculated via the value
 //                  of the Lorentz invariant and then returned via v[0].
+//
+// The string argument "u" allows to choose between different angular units
+// in case e.g. a spherical frame is selected.
+// u = "rad" : angles provided in radians
+//     "deg" : angles provided in degrees
+//
+// The default is u="rad".
+
  if (fScalar)
  {
   v[0]=fV0;
@@ -237,36 +262,54 @@ void Ali4Vector::GetVector(Double_t* v,TString f)
   v[0]=sqrt(fV.Dot(fV)+fV2);
  } 
  Double_t a[3];
- fV.GetVector(a,f);
+ fV.GetVector(a,f,u);
  for (Int_t i=0; i<3; i++)
  {
   v[i+1]=a[i];
  }
 }
 ///////////////////////////////////////////////////////////////////////////
-void Ali4Vector::SetVector(Float_t* v,TString f)
+void Ali4Vector::SetVector(Float_t* v,TString f,TString u)
 {
 // Store vector according to reference frame f.
+//
+// The string argument "u" allows to choose between different angular units
+// in case e.g. a spherical frame is selected.
+// u = "rad" : angles provided in radians
+//     "deg" : angles provided in degrees
+//
+// The default is u="rad".
+//
 // All errors are initialised to 0.
+//
 // Scalar mode is automatically selected. 
 // The error on scalar result operations is reset to 0.
+
  Double_t vec[4];
  for (Int_t i=0; i<4; i++)
  {
   vec[i]=v[i];
  }
- SetVector(vec,f);
+ SetVector(vec,f,u);
 }
 ///////////////////////////////////////////////////////////////////////////
-void Ali4Vector::GetVector(Float_t* v,TString f)
+void Ali4Vector::GetVector(Float_t* v,TString f,TString u)
 {
 // Provide 4-vector components according to reference frame f
 // and according to the current mode.
 // Scalar mode    : The scalar part is directly returned via v[0].
 // Invariant mode : The scalar part is re-calculated via the value
 //                  of the Lorentz invariant and then returned via v[0].
+//
+// The string argument "u" allows to choose between different angular units
+// in case e.g. a spherical frame is selected.
+// u = "rad" : angles provided in radians
+//     "deg" : angles provided in degrees
+//
+// The default is u="rad".
+
  Double_t vec[4];
- GetVector(vec,f);
+ GetVector(vec,f,u);
  for (Int_t i=0; i<4; i++)
  {
   v[i]=vec[i];
@@ -352,21 +395,31 @@ void Ali4Vector::Set3Vector(Ali3Vector& v)
  }
 }
 ///////////////////////////////////////////////////////////////////////////
-void Ali4Vector::Set3Vector(Double_t* v,TString f)
+void Ali4Vector::Set3Vector(Double_t* v,TString f,TString u)
 {
 // Set the 3-vector part according to reference frame f
+//
+// The string argument "u" allows to choose between different angular units
+// in case e.g. a spherical frame is selected.
+// u = "rad" : angles provided in radians
+//     "deg" : angles provided in degrees
+//
+// The default is u="rad".
+//
 // The errors on the vector part are initialised to 0
+//
 // Scalar mode    : The scalar part and its error are not modified,
 //                  the Lorentz invariantand its error are re-calculated.
 // Invariant mode : The Lorentz invariant and its error are not modified,
 //                  the scalar part and its error are re-calculated.
 // The error on scalar result operations is reset to 0.
+
  Double_t a[3];
  for (Int_t i=0; i<3; i++)
  {
   a[i]=v[i];
  }
- fV.SetVector(a,f);
+ fV.SetVector(a,f,u);
 
  if (fScalar)
  {
@@ -378,18 +431,27 @@ void Ali4Vector::Set3Vector(Double_t* v,TString f)
  }
 }
 ///////////////////////////////////////////////////////////////////////////
-void Ali4Vector::Set3Vector(Float_t* v,TString f)
+void Ali4Vector::Set3Vector(Float_t* v,TString f,TString u)
 {
 // Set the 3-vector part according to reference frame f
+//
+// The string argument "u" allows to choose between different angular units
+// in case e.g. a spherical frame is selected.
+// u = "rad" : angles provided in radians
+//     "deg" : angles provided in degrees
+//
+// The default is u="rad".
+//
 // The errors on the vector part are initialised to 0
 // The Lorentz invariant is not modified
 // The error on scalar result operations is reset to 0.
+
  Double_t vec[3];
  for (Int_t i=0; i<3; i++)
  {
   vec[i]=v[i];
  }
- Set3Vector(vec,f);
+ Set3Vector(vec,f,u);
 }
 ///////////////////////////////////////////////////////////////////////////
 void Ali4Vector::SetInvariant(Double_t v2,Double_t dv2)
@@ -445,42 +507,68 @@ Ali3Vector Ali4Vector::Get3Vector() const
  return fV;
 }
 ///////////////////////////////////////////////////////////////////////////
-void Ali4Vector::SetErrors(Double_t* e,TString f)
+void Ali4Vector::SetErrors(Double_t* e,TString f,TString u)
 {
 // Store errors for vector v^i according to reference frame f
+//
+// The string argument "u" allows to choose between different angular units
+// in case e.g. a spherical frame is selected.
+// u = "rad" : angles provided in radians
+//     "deg" : angles provided in degrees
+//
+// The default is u="rad".
+//
 // If in scalar mode, update error on the invariant accordingly.
 // The error on scalar result operations is reset to 0.
+
  Double_t a[3];
  for (Int_t i=0; i<3; i++)
  {
   a[i]=e[i+1];
  }
  SetScalarError(e[0]);
- fV.SetErrors(a,f);
+ fV.SetErrors(a,f,u);
 }
 ///////////////////////////////////////////////////////////////////////////
-void Ali4Vector::SetErrors(Float_t* e,TString f)
+void Ali4Vector::SetErrors(Float_t* e,TString f,TString u)
 {
 // Store errors for vector v^i according to reference frame f
+//
+// The string argument "u" allows to choose between different angular units
+// in case e.g. a spherical frame is selected.
+// u = "rad" : angles provided in radians
+//     "deg" : angles provided in degrees
+//
+// The default is u="rad".
+//
 // If in scalar mode, update error on the invariant accordingly.
 // The error on scalar result operations is reset to 0.
+
  Double_t a[4];
  for (Int_t i=0; i<4; i++)
  {
   a[i]=e[i];
  }
- SetErrors(a,f);
+ SetErrors(a,f,u);
 }
 ///////////////////////////////////////////////////////////////////////////
-void Ali4Vector::GetErrors(Double_t* e,TString f)
+void Ali4Vector::GetErrors(Double_t* e,TString f,TString u)
 {
 // Provide errors for vector v^i according to reference frame f
 // and according to the current mode.
 // Scalar mode    : The error on the scalar part is directly returned via e[0].
 // Invariant mode : The error on the scalar part is re-calculated via the error
 //                  value on the Lorentz invariant and then returned via e[0].
+//
+// The string argument "u" allows to choose between different angular units
+// in case e.g. a spherical frame is selected.
+// u = "rad" : angles provided in radians
+//     "deg" : angles provided in degrees
+//
+// The default is u="rad".
+
  Double_t a[3];
- fV.GetErrors(a,f);
+ fV.GetErrors(a,f,u);
 
  // Dummy invokation of GetScalar to obtain automatic proper error determination 
  e[0]=GetScalar();
@@ -493,39 +581,54 @@ void Ali4Vector::GetErrors(Double_t* e,TString f)
  }
 }
 ///////////////////////////////////////////////////////////////////////////
-void Ali4Vector::GetErrors(Float_t* e,TString f)
+void Ali4Vector::GetErrors(Float_t* e,TString f,TString u)
 {
 // Provide errors for vector v^i according to reference frame f
 // and according to the current mode.
 // Scalar mode    : The error on the scalar part is directly returned via e[0].
 // Invariant mode : The error on the scalar part is re-calculated via the error
 //                  value on the Lorentz invariant and then returned via e[0].
+//
+// The string argument "u" allows to choose between different angular units
+// in case e.g. a spherical frame is selected.
+// u = "rad" : angles provided in radians
+//     "deg" : angles provided in degrees
+//
+// The default is u="rad".
+
  Double_t a[4];
- GetErrors(a,f);
+ GetErrors(a,f,u);
  for (Int_t i=0; i<4; i++)
  {
   e[i]=a[i];
  }
 }
 ///////////////////////////////////////////////////////////////////////////
-void Ali4Vector::Data(TString f)
+void Ali4Vector::Data(TString f,TString u)
 {
 // Print contravariant vector components and errors according to
 // reference frame f and according to the current mode.
 // Scalar mode    : The scalar part and its error are directly returned.
 // Invariant mode : The scalar part and its error are re-calculated via the
 //                  value (and error) of the Lorentz invariant.
+//
+// The string argument "u" allows to choose between different angular units
+// in case e.g. a spherical frame is selected.
+// u = "rad" : angles provided in radians
+//     "deg" : angles provided in degrees
+//
+// The defaults are f="car" and u="rad".
 
  if (f=="car" || f=="sph" || f=="cyl")
  {
   Double_t vec[4],err[4];
-  GetVector(vec,f);
-  GetErrors(err,f);
+  GetVector(vec,f,u);
+  GetErrors(err,f,u);
   Double_t inv=GetInvariant();
   Double_t dinv=GetResultError();
-  cout << " Contravariant vector in " << f.Data() << " coordinates : "
+  cout << " Contravariant vector in " << f.Data() << " (" << u.Data() << ") coordinates : "
        << vec[0] << " " << vec[1] << " " << vec[2] << " " << vec[3] << endl; 
-  cout << " ------------- Errors in " << f.Data() << " coordinates : "
+  cout << " ------------- Errors in " << f.Data() << " (" << u.Data() << ") coordinates : "
        << err[0] << " " << err[1] << " " << err[2] << " " << err[3] << endl; 
   cout << " --- Lorentz invariant (v^i*v_i) : " << inv << " error : " << dinv << endl;
  }
@@ -865,5 +968,23 @@ Double_t Ali4Vector::GetGamma()
   fDresult=sqrt(sqerr);
  }
  return gamma;
+}
+///////////////////////////////////////////////////////////////////////////
+Double_t Ali4Vector::GetOpeningAngle(Ali4Vector& q,TString u)
+{
+// Provide the opening angle between 3-vector parts with 4-vector q.
+// The string argument "u" allows to choose between different output units.
+// u = "rad" : opening angle provided in radians
+//     "deg" : opening angle provided in degrees
+//
+// The default is u="rad".
+
+ Ali3Vector v1=fV;
+ Ali3Vector v2=q.Get3Vector();
+
+ Double_t ang=v1.GetOpeningAngle(v2,u);
+ fDresult=v1.GetResultError();
+
+ return ang;
 }
 ///////////////////////////////////////////////////////////////////////////

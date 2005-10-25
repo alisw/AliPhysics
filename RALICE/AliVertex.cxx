@@ -556,9 +556,17 @@ void AliVertex::AddVertex(AliVertex& v,Int_t connect)
  }
 }
 ///////////////////////////////////////////////////////////////////////////
-void AliVertex::Data(TString f)
+void AliVertex::Data(TString f,TString u)
 {
 // Provide vertex information within the coordinate frame f
+//
+// The string argument "u" allows to choose between different angular units
+// in case e.g. a spherical frame is selected.
+// u = "rad" : angles provided in radians
+//     "deg" : angles provided in degrees
+//
+// The defaults are f="car" and u="rad".
+
  const char* name=GetName();
  const char* title=GetTitle();
  cout << " *AliVertex::Data*";
@@ -570,16 +578,23 @@ void AliVertex::Data(TString f)
       << " Ntracks : " << GetNtracks() << " Nvertices : " << fNvtx 
       << " Njets : " << fNjets << endl;
  cout << " ";
- Ali4Vector::Data(f);
+ Ali4Vector::Data(f,u);
  cout << "  Position";
- AliPosition::Data(f); 
+ AliPosition::Data(f,u); 
 } 
 ///////////////////////////////////////////////////////////////////////////
-void AliVertex::List(TString f)
+void AliVertex::List(TString f,TString u)
 {
 // Provide primary track and sec. vertex information within the coordinate frame f
+//
+// The string argument "u" allows to choose between different angular units
+// in case e.g. a spherical frame is selected.
+// u = "rad" : angles provided in radians
+//     "deg" : angles provided in degrees
+//
+// The defaults are f="car" and u="rad".
 
- Data(f); // Information of the current vertex
+ Data(f,u); // Information of the current vertex
 
  // The tracks of this vertex
  AliTrack* t; 
@@ -590,7 +605,7 @@ void AliVertex::List(TString f)
   {
    cout << "  ---Track no. " << it << endl;
    cout << " ";
-   t->Data(f); 
+   t->Data(f,u); 
   }
   else
   {
@@ -607,7 +622,7 @@ void AliVertex::List(TString f)
   {
    cout << "  ---Level 1 sec. vertex no. " << iv << endl;
    cout << " ";
-   v->Data(f); 
+   v->Data(f,u); 
   }
   else
   {
@@ -616,11 +631,18 @@ void AliVertex::List(TString f)
  }
 } 
 ///////////////////////////////////////////////////////////////////////////
-void AliVertex::ListAll(TString f)
+void AliVertex::ListAll(TString f,TString u)
 {
 // Provide complete (sec) vertex and (decay) track info within the coordinate frame f
+//
+// The string argument "u" allows to choose between different angular units
+// in case e.g. a spherical frame is selected.
+// u = "rad" : angles provided in radians
+//     "deg" : angles provided in degrees
+//
+// The defaults are f="car" and u="rad".
 
- Data(f); // Information of the current vertex
+ Data(f,u); // Information of the current vertex
 
  // The tracks of this vertex
  AliTrack* t; 
@@ -631,7 +653,7 @@ void AliVertex::ListAll(TString f)
   {
    cout << "  ---Track no. " << it << endl;
    cout << " ";
-   t->ListAll(f); 
+   t->ListAll(f,u); 
   }
   else
   {
@@ -640,10 +662,10 @@ void AliVertex::ListAll(TString f)
  }
 
  AliVertex* v=this;
- Dumps(v,1,f); // Information of all sec. vertices
+ Dumps(v,1,f,u); // Information of all sec. vertices
 }
 //////////////////////////////////////////////////////////////////////////
-void AliVertex::Dumps(AliVertex* v,Int_t n,TString f)
+void AliVertex::Dumps(AliVertex* v,Int_t n,TString f,TString u)
 {
 // Recursively provide the info of all secondary vertices of this vertex
  AliVertex* vs; 
@@ -654,7 +676,7 @@ void AliVertex::Dumps(AliVertex* v,Int_t n,TString f)
   {
    cout << "  ---Level " << n << " sec. vertex no. " << iv << endl;
    cout << " ";
-   vs->Data(f); 
+   vs->Data(f,u); 
 
    // The tracks of this vertex
    AliTrack* t; 
@@ -665,7 +687,7 @@ void AliVertex::Dumps(AliVertex* v,Int_t n,TString f)
     {
      cout << "  ---Track no. " << it << endl;
      cout << " ";
-     t->ListAll(f); 
+     t->ListAll(f,u); 
     }
     else
     {
@@ -674,7 +696,7 @@ void AliVertex::Dumps(AliVertex* v,Int_t n,TString f)
    }
 
    // Go for next sec. vertex level of this sec. vertex recursively
-   Dumps(vs,n+1,f);
+   Dumps(vs,n+1,f,u);
   }
   else
   {

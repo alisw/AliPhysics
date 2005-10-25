@@ -602,11 +602,19 @@ void AliEvent::HeaderData()
  ShowTracks(0);
 }
 ///////////////////////////////////////////////////////////////////////////
-void AliEvent::Data(TString f)
+void AliEvent::Data(TString f,TString u)
 {
 // Provide event information within the coordinate frame f
+//
+// The string argument "u" allows to choose between different angular units
+// in case e.g. a spherical frame is selected.
+// u = "rad" : angles provided in radians
+//     "deg" : angles provided in degrees
+//
+// The defaults are f="car" and u="rad".
+
  HeaderData();
- AliVertex::Data(f);
+ AliVertex::Data(f,u);
 } 
 ///////////////////////////////////////////////////////////////////////////
 Int_t AliEvent::GetNdevices() const

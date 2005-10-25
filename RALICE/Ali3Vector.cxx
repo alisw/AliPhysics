@@ -25,16 +25,23 @@
 //
 // Note :
 // ------
-// Vectors (v), Errors (e) and reference frames (f) are specified via
-// SetVector(Float_t* v,TString f)
-// SetErrors(Float_t* e,TString f)
+// Vectors (v), Errors (e), reference frames (f) and angular units (u)
+// are specified via
+// SetVector(Float_t* v,TString f,TString u)
+// SetErrors(Float_t* e,TString f,TString u)
 // under the following conventions :
 //
 // f="car" ==> v in Cartesian coordinates   (x,y,z)
 // f="sph" ==> v in Spherical coordinates   (r,theta,phi)
 // f="cyl" ==> v in Cylindrical coordinates (rho,phi,z)
 //
-// All angles are in radians.
+// u="rad" ==> angles in radians
+// u="deg" ==> angles in degrees
+//
+// The "f" and "u" facilities only serve as a convenient user interface.
+// Internally the actual storage of the various components is performed
+// in a unique way. This allows setting/retrieval of vector components in a
+// user selected frame/unit convention at any time. 
 //
 // Example :
 // ---------
@@ -48,8 +55,8 @@
 //
 // Float_t vec[3];
 // Float_t err[3];
-// a.GetVector(vec,"sph");
-// a.GetErrors(vec,"sph");
+// a.GetVector(vec,"sph","deg");
+// a.GetErrors(vec,"sph","deg");
 //
 // Ali3Vector b;
 // Float_t v2[3]={6,-18,33};
@@ -129,16 +136,28 @@ void Ali3Vector::SetZero()
  fDresult=0;
 }
 ///////////////////////////////////////////////////////////////////////////
-void Ali3Vector::SetVector(Double_t* v,TString f)
+void Ali3Vector::SetVector(Double_t* v,TString f,TString u)
 {
 // Store vector according to reference frame f
+//
+// The string argument "u" allows to choose between different angular units
+// in case e.g. a spherical frame is selected.
+// u = "rad" : angles provided in radians
+//     "deg" : angles provided in degrees
+//
+// The default is u="rad".
+//
 // All errors will be reset to 0
+
  fDx=0;
  fDy=0;
  fDz=0;
  fDresult=0;
 
  Double_t pi=acos(-1.);
+
+ Double_t fu=1.;
+ if (u == "deg") fu=pi/180.;
 
  Int_t frame=0;
  if (f == "car") frame=1;
@@ -171,13 +190,13 @@ void Ali3Vector::SetVector(Double_t* v,TString f)
 
   case 2: // Spherical coordinates
    fV=v[0];
-   fTheta=v[1];
-   fPhi=v[2];
+   fTheta=v[1]*fu;
+   fPhi=v[2]*fu;
    break;
 
   case 3: // Cylindrical coordinates
    rho=v[0];
-   phi=v[1];
+   phi=v[1]*fu;
    z=v[2];
    fV=sqrt(rho*rho+z*z);
    fPhi=phi;
@@ -204,9 +223,22 @@ void Ali3Vector::SetVector(Double_t* v,TString f)
  }
 }
 ///////////////////////////////////////////////////////////////////////////
-void Ali3Vector::GetVector(Double_t* v,TString f) const
+void Ali3Vector::GetVector(Double_t* v,TString f,TString u) const
 {
 // Provide vector according to reference frame f
+//
+// The string argument "u" allows to choose between different angular units
+// in case e.g. a spherical frame is selected.
+// u = "rad" : angles provided in radians
+//     "deg" : angles provided in degrees
+//
+// The default is u="rad".
+
+ Double_t pi=acos(-1.);
+
+ Double_t fu=1.;
+ if (u == "deg") fu=180./pi;
+
  Int_t frame=0;
  if (f == "car") frame=1;
  if (f == "sph") frame=2;
@@ -222,13 +254,13 @@ void Ali3Vector::GetVector(Double_t* v,TString f) const
 
   case 2: // Spherical coordinates
    v[0]=fV;
-   v[1]=fTheta;
-   v[2]=fPhi;
+   v[1]=fTheta*fu;
+   v[2]=fPhi*fu;
    break;
 
   case 3: // Cylindrical coordinates
    v[0]=fV*sin(fTheta);
-   v[1]=fPhi;
+   v[1]=fPhi*fu;
    v[2]=fV*cos(fTheta);
    break;
 
@@ -243,33 +275,64 @@ void Ali3Vector::GetVector(Double_t* v,TString f) const
  }
 }
 ///////////////////////////////////////////////////////////////////////////
-void Ali3Vector::SetVector(Float_t* v,TString f)
+void Ali3Vector::SetVector(Float_t* v,TString f,TString u)
 {
 // Store vector according to reference frame f
+//
+// The string argument "u" allows to choose between different angular units
+// in case e.g. a spherical frame is selected.
+// u = "rad" : angles provided in radians
+//     "deg" : angles provided in degrees
+//
+// The default is u="rad".
+//
 // All errors will be reset to 0
+
  Double_t vec[3];
  for (Int_t i=0; i<3; i++)
  {
   vec[i]=v[i];
  }
- SetVector(vec,f);
+ SetVector(vec,f,u);
 }
 ///////////////////////////////////////////////////////////////////////////
-void Ali3Vector::GetVector(Float_t* v,TString f) const
+void Ali3Vector::GetVector(Float_t* v,TString f,TString u) const
 {
 // Provide vector according to reference frame f
+//
+// The string argument "u" allows to choose between different angular units
+// in case e.g. a spherical frame is selected.
+// u = "rad" : angles provided in radians
+//     "deg" : angles provided in degrees
+//
+// The default is u="rad".
+
  Double_t vec[3];
- GetVector(vec,f);
+ GetVector(vec,f,u);
  for (Int_t i=0; i<3; i++)
  {
   v[i]=vec[i];
  }
 }
 ///////////////////////////////////////////////////////////////////////////
-void Ali3Vector::SetErrors(Double_t* e,TString f)
+void Ali3Vector::SetErrors(Double_t* e,TString f,TString u)
 {
 // Store errors according to reference frame f
+//
+// The string argument "u" allows to choose between different angular units
+// in case e.g. a spherical frame is selected.
+// u = "rad" : angles provided in radians
+//     "deg" : angles provided in degrees
+//
+// The default is u="rad".
+//
 // The error on scalar results is reset to 0
+
+ Double_t pi=acos(-1.);
+
+ Double_t fu=1.;
+ if (u == "deg") fu=pi/180.;
+
  fDresult=0;
 
  Int_t frame=0;
@@ -288,11 +351,11 @@ void Ali3Vector::SetErrors(Double_t* e,TString f)
    break;
 
   case 2: // Spherical coordinates
-   dx2=pow((cos(fPhi)*sin(fTheta)*e[0]),2)+pow((fV*cos(fTheta)*cos(fPhi)*e[1]),2)
-       +pow((fV*sin(fTheta)*sin(fPhi)*e[2]),2);
-   dy2=pow((sin(fPhi)*sin(fTheta)*e[0]),2)+pow((fV*cos(fTheta)*sin(fPhi)*e[1]),2)
-       +pow((fV*sin(fTheta)*cos(fPhi)*e[2]),2);
-   dz2=pow((cos(fTheta)*e[0]),2)+pow((fV*sin(fTheta)*e[1]),2);
+   dx2=pow((cos(fPhi)*sin(fTheta)*e[0]),2)+pow((fV*cos(fTheta)*cos(fPhi)*e[1]*fu),2)
+       +pow((fV*sin(fTheta)*sin(fPhi)*e[2]*fu),2);
+   dy2=pow((sin(fPhi)*sin(fTheta)*e[0]),2)+pow((fV*cos(fTheta)*sin(fPhi)*e[1]*fu),2)
+       +pow((fV*sin(fTheta)*cos(fPhi)*e[2]*fu),2);
+   dz2=pow((cos(fTheta)*e[0]),2)+pow((fV*sin(fTheta)*e[1]*fu),2);
    fDx=sqrt(dx2);
    fDy=sqrt(dy2);
    fDz=sqrt(dz2);
@@ -300,8 +363,8 @@ void Ali3Vector::SetErrors(Double_t* e,TString f)
 
   case 3: // Cylindrical coordinates
    rho=fV*sin(fTheta);
-   dx2=pow((cos(fPhi)*e[0]),2)+pow((rho*sin(fPhi)*e[1]),2);
-   dy2=pow((sin(fPhi)*e[0]),2)+pow((rho*cos(fPhi)*e[1]),2);
+   dx2=pow((cos(fPhi)*e[0]),2)+pow((rho*sin(fPhi)*e[1]*fu),2);
+   dy2=pow((sin(fPhi)*e[0]),2)+pow((rho*cos(fPhi)*e[1]*fu),2);
    fDx=sqrt(dx2);
    fDy=sqrt(dy2);
    fDz=fabs(e[2]);
@@ -317,15 +380,26 @@ void Ali3Vector::SetErrors(Double_t* e,TString f)
  }
 }
 ///////////////////////////////////////////////////////////////////////////
-void Ali3Vector::GetErrors(Double_t* e,TString f) const
+void Ali3Vector::GetErrors(Double_t* e,TString f,TString u) const
 {
 // Provide errors according to reference frame f
+//
+// The string argument "u" allows to choose between different angular units
+// in case e.g. a spherical frame is selected.
+// u = "rad" : angles provided in radians
+//     "deg" : angles provided in degrees
+//
+// The default is u="rad".
+
+ Double_t pi=acos(-1.);
+
+ Double_t fu=1.;
+ if (u == "deg") fu=180./pi;
+
  Int_t frame=0;
  if (f == "car") frame=1;
  if (f == "sph") frame=2;
  if (f == "cyl") frame=3;
-
- Double_t pi=acos(-1.);
 
  Double_t dr2,dtheta2,dphi2,rho,drho2;
  Double_t v[3]; 
@@ -377,6 +451,8 @@ void Ali3Vector::GetErrors(Double_t* e,TString f) const
    if (e[1]>pi) e[1]=pi;
    e[2]=sqrt(dphi2);
    if (e[2]>(2.*pi)) e[2]=2.*pi;
+   e[1]*=fu;
+   e[2]*=fu;
    break;
 
   case 3: // Cylindrical coordinates
@@ -403,6 +479,7 @@ void Ali3Vector::GetErrors(Double_t* e,TString f) const
    e[1]=sqrt(dphi2);
    if (e[1]>(2.*pi)) e[1]=2.*pi;
    e[2]=fDz;
+   e[1]*=fu;
    break;
 
   default: // Unsupported reference frame
@@ -416,40 +493,65 @@ void Ali3Vector::GetErrors(Double_t* e,TString f) const
  }
 }
 ///////////////////////////////////////////////////////////////////////////
-void Ali3Vector::SetErrors(Float_t* e,TString f)
+void Ali3Vector::SetErrors(Float_t* e,TString f,TString u)
 {
 // Store errors according to reference frame f
+//
+// The string argument "u" allows to choose between different angular units
+// in case e.g. a spherical frame is selected.
+// u = "rad" : angles provided in radians
+//     "deg" : angles provided in degrees
+//
+// The default is u="rad".
+//
 // The error on scalar results is reset to 0
+
  Double_t vec[3];
  for (Int_t i=0; i<3; i++)
  {
   vec[i]=e[i];
  }
- SetErrors(vec,f);
+ SetErrors(vec,f,u);
 }
 ///////////////////////////////////////////////////////////////////////////
-void Ali3Vector::GetErrors(Float_t* e,TString f) const
+void Ali3Vector::GetErrors(Float_t* e,TString f,TString u) const
 {
 // Provide errors according to reference frame f
+//
+// The string argument "u" allows to choose between different angular units
+// in case e.g. a spherical frame is selected.
+// u = "rad" : angles provided in radians
+//     "deg" : angles provided in degrees
+//
+// The default is u="rad".
+
  Double_t vec[3];
- GetErrors(vec,f);
+ GetErrors(vec,f,u);
  for (Int_t i=0; i<3; i++)
  {
   e[i]=vec[i];
  }
 }
 ///////////////////////////////////////////////////////////////////////////
-void Ali3Vector::Data(TString f) const
+void Ali3Vector::Data(TString f,TString u) const
 {
 // Print vector components according to reference frame f
+//
+// The string argument "u" allows to choose between different angular units
+// in case e.g. a spherical frame is selected.
+// u = "rad" : angles provided in radians
+//     "deg" : angles provided in degrees
+//
+// The defaults are f="car" and  u="rad".
+
  if (f=="car" || f=="sph" || f=="cyl")
  {
   Double_t vec[3],err[3];
-  GetVector(vec,f);
-  GetErrors(err,f);
-  cout << " Vector in " << f.Data() << " coordinates : "
+  GetVector(vec,f,u);
+  GetErrors(err,f,u);
+  cout << " Vector in " << f.Data() << " (" << u.Data() << ") coordinates : "
        << vec[0] << " " << vec[1] << " " << vec[2] << endl; 
-  cout << "   Err. in " << f.Data() << " coordinates : "
+  cout << "   Err. in " << f.Data() << " (" << u.Data() << ") coordinates : "
        << err[0] << " " << err[1] << " " << err[2] << endl; 
  }
  else
@@ -879,9 +981,17 @@ Ali3Vector Ali3Vector::GetUnprimed(TRotMatrix* m) const
  return v;
 }
 ///////////////////////////////////////////////////////////////////////////
-Double_t Ali3Vector::GetX(Int_t i,TString f)
+Double_t Ali3Vector::GetX(Int_t i,TString f,TString u)
 {
 // Provide i-th vector component according to reference frame f.
+//
+// The string argument "u" allows to choose between different angular units
+// in case e.g. a spherical frame is selected.
+// u = "rad" : angles provided in radians
+//     "deg" : angles provided in degrees
+//
+// The default is u="rad".
+//
 // The vector components are addressed via the generic x1,x2,x3 notation.
 // So, i=1 denotes the first vector component.
 // The error on the selected component can be obtained via the
@@ -893,11 +1003,59 @@ Double_t Ali3Vector::GetX(Int_t i,TString f)
 
  Double_t vec[3];
  Double_t err[3];
- GetVector(vec,f);
- GetErrors(err,f);
+ GetVector(vec,f,u);
+ GetErrors(err,f,u);
 
  fDresult=err[i-1];
 
  return vec[i-1];
+}
+///////////////////////////////////////////////////////////////////////////
+Double_t Ali3Vector::GetOpeningAngle(Ali3Vector& q,TString u)
+{
+// Provide the opening angle with vector q.
+// The string argument "u" allows to choose between different output units.
+// u = "rad" : opening angle provided in radians
+//     "deg" : opening angle provided in degrees
+//
+// The default is u="rad".
+
+ Double_t ang=0;
+
+ if (GetNorm()<=0. || q.GetNorm()<=0.) return ang;
+
+ Double_t vec[3];
+ Double_t err[3];
+
+ Ali3Vector v1;
+ GetVector(vec,"sph");
+ GetErrors(err,"sph");
+ vec[0]=1.;
+ err[0]=0.;
+ v1.SetVector(vec,"sph");
+ v1.SetErrors(err,"sph");
+
+ Ali3Vector v2;
+ q.GetVector(vec,"sph");
+ q.GetErrors(err,"sph");
+ vec[0]=1.;
+ err[0]=0.;
+ v2.SetVector(vec,"sph");
+ v2.SetErrors(err,"sph");
+
+ Double_t x=v1.Dot(v2);
+ Double_t dx=fDresult;
+ ang=acos(x);
+ fDresult=0;
+ if (fabs(x)<1.-dx) fDresult=dx/sqrt(1.-x*x);
+
+ if (u == "deg")
+ {
+  Double_t pi=acos(-1.);
+  ang*=180./pi;
+  fDresult*=180./pi;
+ }
+
+ return ang;
 }
 ///////////////////////////////////////////////////////////////////////////

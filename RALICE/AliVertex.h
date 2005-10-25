@@ -29,9 +29,9 @@ class AliVertex : public AliJet,public AliPosition
   void AddVertex(AliVertex& v,Int_t connect=1); // Add (and connect) a (sec.) vertex to the current vertex
   void AddJet(AliJet* j,Int_t tracks=1)    { AddJet(*j,tracks); }
   void AddVertex(AliVertex* v,Int_t connect=1) { AddVertex(*v,connect); }
-  virtual void Data(TString f="car");      // Print the vertex info within coordinate frame f
-  virtual void List(TString f="car");      // Print vertex prim. track information for coord. frame f
-  virtual void ListAll(TString f="car");   // Print prim. + sec. vertex full track info for coord. frame f
+  virtual void Data(TString f="car",TString u="rad"); // Print the vertex info within frame f and ang units u
+  virtual void List(TString f="car",TString u="rad"); // Vertex prim. track info for frame f and ang units u
+  virtual void ListAll(TString f="car",TString u="rad");// Prim.+sec. vtx full track info for frame f and ang units u
   Int_t GetNvertices() const;              // Return the number of (secondary) vertices
   AliVertex* GetVertex(Int_t i) const;     // Provide i-th (secondary) vertex
   AliVertex* GetIdVertex(Int_t id) const;  // Provide the vertex with user identifier "id"
@@ -64,8 +64,8 @@ class AliVertex : public AliJet,public AliPosition
   TObjArray* fLines;    //! Array to (temporarily) store the 3D lines for the event display 
 
  private:
-  void Dumps(AliVertex* v,Int_t n,TString f); // Recursively print all sec. vertices
+  void Dumps(AliVertex* v,Int_t n,TString f,TString u); // Recursively print all sec. vertices
  
- ClassDef(AliVertex,9) // Creation and investigation of an AliVertex.
+ ClassDef(AliVertex,10) // Creation and investigation of an AliVertex.
 };
 #endif

@@ -43,7 +43,7 @@ class AliEvent : public AliVertex,public AliTimestamp
   Int_t GetRunNumber() const;             // Provide the run number
   Int_t GetEventNumber() const;           // Provide the event number
   virtual void HeaderData();              // Print the event header information
-  virtual void Data(TString f="car");     // Print the event info within coordinate frame f
+  virtual void Data(TString f="car",TString u="rad"); // Print the event info within frame f and ang units u
   void SetDevCopy(Int_t j);               // (De)activate creation of private copies of the devices
   Int_t GetDevCopy() const;               // Provide DevCopy flag value      
   void AddDevice(TObject& d);             // Add a device to the event
@@ -87,6 +87,6 @@ class AliEvent : public AliVertex,public AliTimestamp
   TObject* fDisplay;                    //! Temp. pointer to hold objects which serve event displays
   TObjArray* fDevs;                     //! Temp. array to hold references to user selected devices
 
- ClassDef(AliEvent,20) // Creation and investigation of an Alice physics event.
+ ClassDef(AliEvent,21) // Creation and investigation of an Alice physics event.
 };
 #endif

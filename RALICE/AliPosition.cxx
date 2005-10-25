@@ -24,10 +24,11 @@
 //
 // Note :
 // ------
-// Positions (r), errors (e) and reference frames (f) are specified via
+// Positions (r), errors (e), reference frames (f) and angular units (u)
+// are specified via
 //
-//    SetPosition(Float_t* r,TString f)
-//    SetPositionErrors(Float_t* e,TString f)
+//    SetPosition(Float_t* r,TString f,TString u)
+//    SetPositionErrors(Float_t* e,TString f,TString u)
 //
 // under the following conventions :
 //
@@ -35,9 +36,15 @@
 // f="sph" ==> r in Spherical coordinates   (r,theta,phi)
 // f="cyl" ==> r in Cylindrical coordinates (rho,phi,z)
 //
-// All angles are in radians.
+// u="rad" ==> angles in radians
+// u="deg" ==> angles in degrees
 //
-// The unit scale for the coordinates can be defined by the user
+// The "f" and "u" facilities only serve as a convenient user interface.
+// Internally the actual storage of the various components is performed
+// in a unique way. This allows setting/retrieval of vector components in a
+// user selected frame/unit convention at any time. 
+//
+// The metric unit scale for the coordinates can be defined by the user
 // via the SetUnitScale() memberfunction.
 // This enables standardised expressions using numerical values of
 // physical constants by means of the GetUnitScale() memberfunction.
@@ -54,8 +61,8 @@
 // q.SetPosition(pos,"car");
 // q.SetPositionErrors(pos,"car");
 // Float_t loc[3],dloc[3];
-// q.GetPosition(loc,"sph");
-// q.GetPositionErrors(dloc,"sph");
+// q.GetPosition(loc,"sph","deg");
+// q.GetPositionErrors(dloc,"sph","deg");
 //
 //--- Author: Nick van Eijndhoven 06-feb-1999 UU-SAP Utrecht
 //- Modified: NvE $Date$ UU-SAP Utrecht
@@ -92,28 +99,60 @@ AliPosition::AliPosition(const AliPosition& p) : Ali3Vector(p)
  if (p.fTstamp) fTstamp=new AliTimestamp(*(p.fTstamp));
 }
 ///////////////////////////////////////////////////////////////////////////
-void AliPosition::SetPosition(Double_t* r,TString f)
+void AliPosition::SetPosition(Double_t* r,TString f,TString u)
 {
 // Store position according to reference frame f
- SetVector(r,f);
+//
+// The string argument "u" allows to choose between different angular units
+// in case e.g. a spherical frame is selected.
+// u = "rad" : angles provided in radians
+//     "deg" : angles provided in degrees
+//
+// The default is u="rad".
+
+ SetVector(r,f,u);
 }
 ///////////////////////////////////////////////////////////////////////////
-void AliPosition::GetPosition(Double_t* r,TString f) const
+void AliPosition::GetPosition(Double_t* r,TString f,TString u) const
 {
 // Provide position according to reference frame f
- GetVector(r,f);
+//
+// The string argument "u" allows to choose between different angular units
+// in case e.g. a spherical frame is selected.
+// u = "rad" : angles provided in radians
+//     "deg" : angles provided in degrees
+//
+// The default is u="rad".
+
+ GetVector(r,f,u);
 }
 ///////////////////////////////////////////////////////////////////////////
-void AliPosition::SetPosition(Float_t* r,TString f)
+void AliPosition::SetPosition(Float_t* r,TString f,TString u)
 {
 // Store position according to reference frame f
- SetVector(r,f);
+//
+// The string argument "u" allows to choose between different angular units
+// in case e.g. a spherical frame is selected.
+// u = "rad" : angles provided in radians
+//     "deg" : angles provided in degrees
+//
+// The default is u="rad".
+
+ SetVector(r,f,u);
 }
 ///////////////////////////////////////////////////////////////////////////
-void AliPosition::GetPosition(Float_t* r,TString f) const
+void AliPosition::GetPosition(Float_t* r,TString f,TString u) const
 {
 // Provide position according to reference frame f
- GetVector(r,f);
+//
+// The string argument "u" allows to choose between different angular units
+// in case e.g. a spherical frame is selected.
+// u = "rad" : angles provided in radians
+//     "deg" : angles provided in degrees
+//
+// The default is u="rad".
+
+ GetVector(r,f,u);
 }
 ///////////////////////////////////////////////////////////////////////////
 AliPosition& AliPosition::GetPosition()
@@ -132,28 +171,60 @@ void AliPosition::SetPosition(Ali3Vector& r)
  SetErrors(a,"car");
 }
 ///////////////////////////////////////////////////////////////////////////
-void AliPosition::SetPositionErrors(Double_t* r,TString f)
+void AliPosition::SetPositionErrors(Double_t* r,TString f,TString u)
 {
 // Store position errors according to reference frame f
- SetErrors(r,f);
+//
+// The string argument "u" allows to choose between different angular units
+// in case e.g. a spherical frame is selected.
+// u = "rad" : angles provided in radians
+//     "deg" : angles provided in degrees
+//
+// The default is u="rad".
+
+ SetErrors(r,f,u);
 }
 ///////////////////////////////////////////////////////////////////////////
-void AliPosition::GetPositionErrors(Double_t* r,TString f) const
+void AliPosition::GetPositionErrors(Double_t* r,TString f,TString u) const
 {
 // Provide position errors according to reference frame f
- GetErrors(r,f);
+//
+// The string argument "u" allows to choose between different angular units
+// in case e.g. a spherical frame is selected.
+// u = "rad" : angles provided in radians
+//     "deg" : angles provided in degrees
+//
+// The default is u="rad".
+
+ GetErrors(r,f,u);
 }
 ///////////////////////////////////////////////////////////////////////////
-void AliPosition::SetPositionErrors(Float_t* r,TString f)
+void AliPosition::SetPositionErrors(Float_t* r,TString f,TString u)
 {
 // Store position errors according to reference frame f
- SetErrors(r,f);
+//
+// The string argument "u" allows to choose between different angular units
+// in case e.g. a spherical frame is selected.
+// u = "rad" : angles provided in radians
+//     "deg" : angles provided in degrees
+//
+// The default is u="rad".
+
+ SetErrors(r,f,u);
 }
 ///////////////////////////////////////////////////////////////////////////
-void AliPosition::GetPositionErrors(Float_t* r,TString f) const
+void AliPosition::GetPositionErrors(Float_t* r,TString f,TString u) const
 {
 // Provide position errors according to reference frame f
- GetErrors(r,f);
+//
+// The string argument "u" allows to choose between different angular units
+// in case e.g. a spherical frame is selected.
+// u = "rad" : angles provided in radians
+//     "deg" : angles provided in degrees
+//
+// The default is u="rad".
+
+ GetErrors(r,f,u);
 }
 ///////////////////////////////////////////////////////////////////////////
 void AliPosition::ResetPosition()
@@ -242,10 +313,18 @@ void AliPosition::RemoveTimestamp()
  }
 }
 ///////////////////////////////////////////////////////////////////////////
-void AliPosition::Data(TString f) const
+void AliPosition::Data(TString f,TString u) const
 {
 // Provide all position/time information within the coordinate frame f.
- Ali3Vector::Data(f);
+//
+// The string argument "u" allows to choose between different angular units
+// in case e.g. a spherical frame is selected.
+// u = "rad" : angles provided in radians
+//     "deg" : angles provided in degrees
+//
+// The defaults are f="car" and u="rad".
+
+ Ali3Vector::Data(f,u);
  if (fTstamp) fTstamp->Date(1);
 } 
 ///////////////////////////////////////////////////////////////////////////

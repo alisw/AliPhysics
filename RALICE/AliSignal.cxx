@@ -670,9 +670,16 @@ Float_t AliSignal::GetSignalError(TString name) const
  return val;
 }
 ///////////////////////////////////////////////////////////////////////////
-void AliSignal::Data(TString f) const
+void AliSignal::Data(TString f,TString u) const
 {
 // Provide all signal information within the coordinate frame f.
+//
+// The string argument "u" allows to choose between different angular units
+// in case e.g. a spherical frame is selected.
+// u = "rad" : angles provided in radians
+//     "deg" : angles provided in degrees
+//
+// The defaults are f="car" and u="rad".
 
  const char* name=GetName();
  const char* title=GetTitle();
@@ -682,7 +689,7 @@ void AliSignal::Data(TString f) const
  if (strlen(title)) cout << " Title : " << title;
  cout << endl;
  cout << "   Position";
- AliPosition::Data(f);
+ AliPosition::Data(f,u);
  if (fDevice)
  {
   const char* devname=fDevice->GetName();

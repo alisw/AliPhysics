@@ -649,4 +649,8 @@
                 to provide a generic method to auto-create the html class documentation
                 on all supported platforms.
                 For further details see /macros/makedocs.cc.
-
+24-oct-2005 NvE Protection introduced in AliJet::AddTrack to prevent multiple storage of
+                the same track in case no private copy of the track is made.
+                Memberfunction GetOpeningAngle introduced in Ali3Vector and Ali4Vector.
+25-oct-2005 NvE Support introduced for user selectable angular units (rad or deg) in Ali3Vector,
+                Ali4Vector and all derived classes.

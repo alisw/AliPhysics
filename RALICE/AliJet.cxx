@@ -242,7 +242,8 @@ void AliJet::AddTrack(AliTrack& t)
 // was initially reserved.
 // See SetTrackCopy() to tailor the functionality of the stored structures.
 //
-// Note :
+// Notes :
+// -------
 // In case a private copy is made, this is performed via the Clone() memberfunction.
 // All AliTrack and derived classes have the default TObject::Clone() memberfunction.
 // However, derived classes generally contain an internal data structure which may
@@ -250,6 +251,12 @@ void AliJet::AddTrack(AliTrack& t)
 // for all derived classes a specific copy constructor and override the default Clone()
 // memberfunction using this copy constructor.
 // An example for this may be seen from AliTrack.   
+//
+// In case NO private copy is made, a check will be performed if this
+// specific track is already present in the jet.
+// If this is the case, no action is performed to prevent multiple
+// additions of the same track.
+
 
  AddTrack(t,1);
 }
@@ -266,6 +273,11 @@ void AliJet::AddTrack(AliTrack& t,Int_t copy)
 // This allows a proper treatment of automatically generated connecting
 // tracks between vertices.
 //
+// In case NO copy of the track is made, a check will be performed if this
+// specific track is already present in the jet.
+// If this is the case, no action is performed to prevent multiple
+// additions of the same track.
+//
 // Note :
 // In case a private copy is made, this is performed via the Clone() memberfunction.
 
@@ -274,6 +286,15 @@ void AliJet::AddTrack(AliTrack& t,Int_t copy)
   fTracks=new TObjArray(fNtmax);
   if (fTrackCopy) fTracks->SetOwner();
  }
+ else if (!fTrackCopy || !copy) // Check if this track is already present
+ {
+  for (Int_t i=0; i<fNtrk; i++)
+  {
+   AliTrack* tx=(AliTrack*)fTracks->At(i);
+   if (tx == &t) return;
+  }
+ }
+
  if (fNtrk == fNtmax) // Check if maximum track number is reached
  {
   fNtmax+=fNtinit;
@@ -296,9 +317,17 @@ void AliJet::AddTrack(AliTrack& t,Int_t copy)
 
 }
 ///////////////////////////////////////////////////////////////////////////
-void AliJet::Data(TString f)
+void AliJet::Data(TString f,TString u)
 {
 // Provide jet information within the coordinate frame f
+//
+// The string argument "u" allows to choose between different angular units
+// in case e.g. a spherical frame is selected.
+// u = "rad" : angles provided in radians
+//     "deg" : angles provided in degrees
+//
+// The defaults are f="car" and u="rad".
+
  const char* name=GetName();
  const char* title=GetTitle();
 
@@ -311,14 +340,21 @@ void AliJet::Data(TString f)
 
  ShowTracks(0);
 
- Ali4Vector::Data(f); 
+ Ali4Vector::Data(f,u); 
 } 
 ///////////////////////////////////////////////////////////////////////////
-void AliJet::List(TString f)
+void AliJet::List(TString f,TString u)
 {
 // Provide jet and primary track information within the coordinate frame f
+//
+// The string argument "u" allows to choose between different angular units
+// in case e.g. a spherical frame is selected.
+// u = "rad" : angles provided in radians
+//     "deg" : angles provided in degrees
+//
+// The defaults are f="car" and u="rad".
 
- Data(f); // Information of the current jet
+ Data(f,u); // Information of the current jet
 
  // The tracks of this jet
  AliTrack* t; 
@@ -329,7 +365,7 @@ void AliJet::List(TString f)
   {
    cout << "  ---Track no. " << it << endl;
    cout << " ";
-   t->Data(f); 
+   t->Data(f,u); 
   }
   else
   {
@@ -338,11 +374,18 @@ void AliJet::List(TString f)
  }
 } 
 ///////////////////////////////////////////////////////////////////////////
-void AliJet::ListAll(TString f)
+void AliJet::ListAll(TString f,TString u)
 {
 // Provide jet and prim.+sec. track information within the coordinate frame f
+//
+// The string argument "u" allows to choose between different angular units
+// in case e.g. a spherical frame is selected.
+// u = "rad" : angles provided in radians
+//     "deg" : angles provided in degrees
+//
+// The defaults are f="car" and u="rad".
 
- Data(f); // Information of the current jet
+ Data(f,u); // Information of the current jet
 
  // The tracks of this jet
  AliTrack* t; 
@@ -353,7 +396,7 @@ void AliJet::ListAll(TString f)
   {
    cout << "  ---Track no. " << it << endl;
    cout << " ";
-   t->ListAll(f); 
+   t->ListAll(f,u); 
   }
   else
   {
