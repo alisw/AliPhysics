@@ -196,6 +196,7 @@ MuonRec.SetRunVertexFinder(kFALSE);
 MuonRec.SetRunLocalReconstruction("MUON");
 MuonRec.SetRunTracking("");
 MuonRec.SetFillESD("MUON");
+MuonRec.SetOption("MUON", "AZ Kalman"); // to use AZ clustering and Kalman filter
 MuonRec.Run();
 .q
 EOF
