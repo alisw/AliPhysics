@@ -100,6 +100,11 @@ gGeoManager->GetMasterVolume()->Draw();
 ============================================================
 First you need to perform a full simulation: 
 generation, digitalisation and clusterisation
+To run MUONdisplay with Root 5.04/00 you need to get a fix in
+the gpad/src/TPad.cxx from Root CVS:
+ cvs update -r 1.200 gpad/src/TPad.cxx
+and recompile root. 
+
 .L $ALICE_ROOT/MUON/MUONdisplay.C
 MUONdisplay(0,"galice.root")
 
