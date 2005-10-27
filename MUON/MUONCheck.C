@@ -25,6 +25,7 @@
 #include "TClonesArray.h"
 #include "TFile.h"
 #include "TH1.h"
+#include "TMath.h"
 #include "TParticle.h"
 #include "TTree.h"
 
@@ -44,11 +45,16 @@
 #include "AliMUONRawCluster.h"
 #include "AliMUONGlobalTrigger.h"
 #include "AliMUONLocalTrigger.h"
+#include "AliMUONSegmentationManager.h"
 #include "AliMUONTrack.h"
+#include "AliMUONTrackParam.h"
+
+#include "AliMpVSegmentation.h"
+#include "AliMpIntPair.h"
 #endif
 
 
-void MUONkine(char * filename="galice.root",Int_t event2Check=0)
+void MUONkine(Int_t event2Check=0, char * filename="galice.root")
 {
   // Stack of particle for each event
   AliStack* stack;
@@ -80,7 +86,7 @@ void MUONkine(char * filename="galice.root",Int_t event2Check=0)
 }
 
 
-void MUONhits(char * filename="galice.root", Int_t event2Check=0)
+void MUONhits(Int_t event2Check=0, char * filename="galice.root")
 {
   // Creating Run Loader and openning file containing Hits
   AliRunLoader * RunLoader = AliRunLoader::Open(filename,"MUONFolder","READ");
@@ -104,29 +110,23 @@ void MUONhits(char * filename="galice.root", Int_t event2Check=0)
     Int_t itrack, ntracks;
     ntracks = (Int_t) muondata.GetNtracks();
     for (itrack=0; itrack<ntracks; itrack++) { // Track loop
-      printf(">>> Track %d \n",itrack);
-
       //Getting List of Hits of Track itrack
-      muondata.GetTrack(itrack); 
-
+      muondata.GetTrack(itrack);
       Int_t ihit, nhits;
       nhits = (Int_t) muondata.Hits()->GetEntriesFast();
-      printf(">>> Number of hits  %d \n",nhits);
+      printf(">>> Track %d, Number of hits %d \n",itrack,nhits);
       AliMUONHit* mHit;
       for(ihit=0; ihit<nhits; ihit++) {
 	mHit = static_cast<AliMUONHit*>(muondata.Hits()->At(ihit));
-  	Int_t Nch      = mHit->Chamber();  // chamber number
 	Int_t detele   = mHit-> DetElemId(); // Detection element if defined
 	Int_t hittrack = mHit->Track();
 	Float_t x      = mHit->X();
   	Float_t y      = mHit->Y();
   	Float_t z      = mHit->Z();
   	Float_t elos   = mHit->Eloss();
-  	Float_t theta  = mHit->Theta();
-  	Float_t phi    = mHit->Phi();
   	Float_t momentum = mHit->Momentum();
-  	printf(">>> Hit %2d Chamber %2d DetEle %4d Track %4d x %6.3f y %6.3f z %7.3f elos %g  momentum %5.3f\n",
-	       ihit, Nch, detele, hittrack,x,y,z,elos,momentum);
+  	printf(">>> >>>  Hit%4d DetEle %4d Track%4d (X,Y,Z)=(%7.2f,%7.2f,%8.2f)cm Elost=%7.2gGeV  P=%6.1fGeV/c\n",
+	       ihit, detele, hittrack,x,y,z,elos,momentum);
       }
       muondata.ResetHits();
     } // end track loop
@@ -136,7 +136,7 @@ void MUONhits(char * filename="galice.root", Int_t event2Check=0)
 }
 
 
-void MUONdigits(char * filename="galice.root", Int_t event2Check=0)
+void MUONdigits(Int_t event2Check=0, char * filename="galice.root")
 {
   // Creating Run Loader and openning file containing Hits
   AliRunLoader * RunLoader = AliRunLoader::Open(filename,"MUONFolder","READ");
@@ -165,48 +165,186 @@ void MUONdigits(char * filename="galice.root", Int_t event2Check=0)
     muondata.SetTreeAddress("D"); 
     //    char branchname[30];    
  
-    Int_t icathode, ncathodes;
-    ncathodes=2;
-    //Loop on cathodes 
-    //    for(icathode=0; icathode<ncathodes; icathode++) {
-      muondata.GetDigits();
-      // Loop on chambers
-      for( ichamber=0; ichamber<nchambers; ichamber++) {
-	printf(">>> Chamber %d\n",ichamber+1);
+    muondata.GetDigits();
+    // Loop on chambers
+    for( ichamber=0; ichamber<nchambers; ichamber++) {
+      Int_t idigit, ndigits;
+      ndigits = (Int_t) muondata.Digits(ichamber)->GetEntriesFast();
+      for(idigit=0; idigit<ndigits; idigit++) {
+	mDigit = static_cast<AliMUONDigit*>(muondata.Digits(ichamber)->At(idigit));
+	Int_t PadX   = mDigit->PadX();     // Pad X number
+	Int_t PadY   = mDigit->PadY();     // Pad Y number
+	Int_t Signal = mDigit->Signal();   // Physics Signal
+	Int_t Physics= mDigit->Physics();  // Physics contribution to signal
+	//	  Int_t Hit    = mDigit->Hit();      // iHit
+	Int_t Cathode= mDigit->Cathode();  // Cathode
+	Int_t Track0 = mDigit->Track(0);
+	Int_t Track1 = mDigit->Track(1); 
+	//Int_t Track2 = mDigit->Track(2);
+	Int_t TCharges0 = mDigit->TrackCharge(0);  //charge per track making this digit (up to 10)
+	Int_t TCharges1 = mDigit->TrackCharge(1);
+	//Int_t TCharges2 = mDigit->TrackCharge(2);
+	Int_t idDE = mDigit->DetElemId();
+	//	  printf(">>> Cathode %d\n",Cathode);
 	
-	Int_t idigit, ndigits;
-	ndigits = (Int_t) muondata.Digits(ichamber)->GetEntriesFast();
-	
-	for(idigit=0; idigit<ndigits; idigit++) {
-	  mDigit = static_cast<AliMUONDigit*>(muondata.Digits(ichamber)->At(idigit));
-	  Int_t PadX   = mDigit->PadX();     // Pad X number
-	  Int_t PadY   = mDigit->PadY();     // Pad Y number
-	  Int_t Signal = mDigit->Signal();   // Physics Signal
-	  Int_t Physics= mDigit->Physics();  // Physics contribution to signal
-	  Int_t Hit    = mDigit->Hit();      // iHit
-	  Int_t Cathode= mDigit->Cathode();  // Cathode
-	  Int_t Track0 = mDigit->Track(0);
-	  Int_t Track1 = mDigit->Track(1); 
-	  Int_t Track2 = mDigit->Track(2);
-	  Int_t TCharges0 = mDigit->TrackCharge(0);  //charge per track making this digit (up to 10)
-	  Int_t TCharges1 = mDigit->TrackCharge(1);
-	  Int_t TCharges2 = mDigit->TrackCharge(2);
-	  Int_t idDE = mDigit->DetElemId();
-	  //	  printf(">>> Cathode %d\n",Cathode);
-	  
-	  printf(">>>IdDE %d Digit %4d cathode %1d hit %4d PadX %3d PadY %3d Signal %4d Physics %4d Track0 %4d TrackCharge0 %4d Track1 %4d TrackCharge1 %4d Track2 %4d TrackCharge2 %4d \n",
-		 idDE, idigit, Cathode,Hit, PadX, PadY, Signal, Physics, Track0, 
-		 TCharges0, Track1, TCharges1, Track2, TCharges2);
-	} // end digit loop
-      } // end chamber loop
-      muondata.ResetDigits();
-      //    } // end cathode loop
+	printf(">>> DetEle %4d Digit%4d Cath %1d (Ix,Iy)=(%3d,%3d) Signal=%4d Physics=%4d Track0=%4d Charge0=%4d Track1=%4d Charge1=%4d \n",
+	       idDE, idigit, Cathode, PadX, PadY, Signal, Physics, Track0, 
+	       TCharges0, Track1, TCharges1);
+      } // end digit loop
+    } // end chamber loop
+    muondata.ResetDigits();
+    //    } // end cathode loop
     if (event2Check!=0) ievent=nevents;
   }  // end event loop
   MUONLoader->UnloadDigits();
 }
 
-void MUONrecpoints(char * filename="galice.root", Int_t event2Check=0) {
+void MUONoccupancy(Int_t event2Check=0,  Bool_t perDetEle =kFALSE, char * filename="galice.root") {
+  // Creating Run Loader and openning file containing Hits
+  AliRunLoader * RunLoader = AliRunLoader::Open(filename,"MUONFolder","READ");
+  if (RunLoader ==0x0) {
+    printf(">>> Error : Error Opening %s file \n",filename);
+    return;
+  }
+  // Loading MUON subsystem
+  AliLoader * MUONLoader = RunLoader->GetLoader("MUONLoader");
+  MUONLoader->LoadDigits("READ");
+  // Creating MUON data container
+  AliMUONData muondata(MUONLoader,"MUON","MUON");
+  
+  Int_t ievent, nevents;
+  nevents = RunLoader->GetNumberOfEvents();
+  AliMUONDigit * mDigit =0x0;
+  AliMpVSegmentation * segbend = 0x0;
+  AliMpVSegmentation * segnonbend = 0x0;
+  AliMpIntPair pad(0,0);
+
+  Int_t dEoccupancy_bending[14][26];
+  Int_t dEoccupancy_nonbending[14][26];
+  Int_t cHoccupancy_bending[14];
+  Int_t cHoccupancy_nonbending[14];
+  Int_t totaloccupancy_bending =0;
+  Int_t totaloccupancy_nonbending =0;
+
+  Int_t dEchannels_bending[14][26];
+  Int_t dEchannels_nonbending[14][26];
+  Int_t cHchannels_bending[14];
+  Int_t cHchannels_nonbending[14];
+  Int_t totalchannels_bending =0;
+  Int_t totalchannels_nonbending =0;
+
+  Int_t ichamber, nchambers,idetele, detele, ix, iy;
+  nchambers = AliMUONConstants::NCh(); ;
+
+  for (ichamber=0; ichamber<nchambers; ichamber++) {
+    cHchannels_bending[ichamber]=0;
+    cHchannels_nonbending[ichamber]=0;
+    for (idetele=0; idetele<26; idetele++) {
+      detele= 100*(ichamber +1)+idetele;
+      dEchannels_bending[ichamber][idetele]=0;
+      dEchannels_nonbending[ichamber][idetele]=0;
+      dEoccupancy_bending[ichamber][idetele]=0;
+      dEoccupancy_nonbending[ichamber][idetele]=0;
+      if ( AliMUONSegmentationManager::IsValidDetElemId(detele) ) {
+	segbend    =  AliMUONSegmentationManager::Segmentation(detele, kBendingPlane);
+	segnonbend =  AliMUONSegmentationManager::Segmentation(detele, kNonBendingPlane);
+	for(ix=0; ix<=segbend->MaxPadIndexX(); ix++) {
+	  for(iy=0; iy<=segbend->MaxPadIndexY(); iy++) {
+	    pad.SetFirst(ix);
+	    pad.SetSecond(iy);
+	    if( segbend->HasPad(pad) )   {  
+	      dEchannels_bending[ichamber][idetele]++;
+	      cHchannels_bending[ichamber]++;
+	      totalchannels_bending++;
+	    }
+	  }
+	}
+	for(ix=0; ix<=segnonbend->MaxPadIndexX(); ix++) {
+	  for(iy=0; iy<=segnonbend->MaxPadIndexY(); iy++) {
+	    pad.SetFirst(ix);
+	    pad.SetSecond(iy);
+	    if(segnonbend->HasPad(pad))  {
+	      dEchannels_nonbending[ichamber][idetele]++;  
+	      cHchannels_nonbending[ichamber]++;
+	      totalchannels_nonbending++;
+	    }
+	  }
+	}
+	if (perDetEle) printf(">>> Detection element %4d has %5d channels in bending and %5d channels in nonbending \n",
+	     detele, dEchannels_bending[ichamber][idetele], dEchannels_nonbending[ichamber][idetele] ); 
+      }
+    }
+    printf(">>> Chamber %2d has %6d channels in bending and %6d channels in nonbending \n",
+	   ichamber+1,  cHchannels_bending[ichamber], cHchannels_nonbending[ichamber]);
+  }
+  printf(">>Spectrometer has  %7d channels in bending and %7d channels in nonbending \n",
+	 totalchannels_bending, totalchannels_nonbending);
+
+  ievent=event2Check;
+  printf(">>> Event %d \n",ievent);
+  RunLoader->GetEvent(ievent);
+    
+  // Addressing
+  muondata.SetTreeAddress("D"); 
+  muondata.GetDigits();
+  // Loop on chambers
+  for( ichamber=0; ichamber<nchambers; ichamber++) {
+    cHoccupancy_bending[ichamber]   = 0;
+    cHoccupancy_nonbending[ichamber]= 0;
+    Int_t idigit, ndigits;
+    ndigits = (Int_t) muondata.Digits(ichamber)->GetEntriesFast();
+    for(idigit=0; idigit<ndigits; idigit++) {
+      mDigit = static_cast<AliMUONDigit*>(muondata.Digits(ichamber)->At(idigit));
+      Int_t detele = mDigit->DetElemId();
+      Int_t idetele = detele-(ichamber+1)*100;
+      if ( mDigit->Cathode() == 0 ) {
+
+	cHoccupancy_bending[ichamber]++;
+	dEoccupancy_bending[ichamber][idetele]++;
+	totaloccupancy_bending++;
+      }
+      else {
+	cHoccupancy_nonbending[ichamber]++;
+	dEoccupancy_nonbending[ichamber][idetele]++;
+	totaloccupancy_nonbending++;
+      }
+    } // end digit loop    
+
+    printf(">>> Chamber %2d  nChannels Bending %5d  nChannels NonBending %5d \n", 
+	   ichamber+1, 
+	   cHoccupancy_bending[ichamber],
+	   cHoccupancy_nonbending[ichamber]);           
+    printf(">>> Chamber %2d  Occupancy Bending %5.2f \%  Occupancy NonBending %5.2f \% \n", 
+	   ichamber+1, 
+	   100.*((Float_t) cHoccupancy_bending[ichamber])/((Float_t) cHchannels_bending[ichamber]),
+	   100.*((Float_t) cHoccupancy_nonbending[ichamber])/((Float_t) cHchannels_bending[ichamber])            );
+
+
+    for(Int_t idetele=0; idetele<26; idetele++) {
+      Int_t detele = idetele + 100*(ichamber+1);
+      if ( AliMUONSegmentationManager::IsValidDetElemId(detele) ) {
+	if (perDetEle) {
+	  printf(">>> DetEle %4d nChannels Bending %5d  nChannels NonBending %5d \n", 
+		 idetele+100*(ichamber+1), 
+		 dEoccupancy_bending[ichamber][idetele],
+		 dEoccupancy_nonbending[ichamber][idetele]);  
+	  printf(">>> DetEle %4d Occupancy Bending %5.2f \%  Occupancy NonBending %5.2f \% \n", 
+		 idetele+100*(ichamber+1), 
+		 100.*((Float_t) dEoccupancy_bending[ichamber][idetele])/((Float_t) dEchannels_bending[ichamber][idetele]),
+		 100.*((Float_t) dEoccupancy_nonbending[ichamber][idetele])/((Float_t) dEchannels_bending[ichamber][idetele]));  
+	}
+      }
+    }
+  } // end chamber loop
+  printf(">>> Muon Spectrometer  Occupancy Bending %5.2f\%  Occupancy NonBending %5.2f\% \n",  
+	   100.*((Float_t) totaloccupancy_bending)/((Float_t) totalchannels_bending),
+	 100.*((Float_t) totaloccupancy_nonbending)/((Float_t) totalchannels_nonbending)            );
+  muondata.ResetDigits();
+  //    } // end cathode loop
+  MUONLoader->UnloadDigits();
+}
+
+void MUONrecpoints(Int_t event2Check=0, char * filename="galice.root") {
 
   // Creating Run Loader and openning file containing Hits
   AliRunLoader * RunLoader = AliRunLoader::Open(filename,"MUONFolder","READ");
@@ -236,34 +374,13 @@ void MUONrecpoints(char * filename="galice.root", Int_t event2Check=0) {
     muondata.GetRawClusters();
     // Loop on chambers
     for( ichamber=0; ichamber<nchambers; ichamber++) {
-      printf(">>> Chamber %d\n",ichamber);
       sprintf(branchname,"MUONRawClusters%d",ichamber+1);
       //printf(">>>  branchname %s\n",branchname);
       Int_t irecpoint, nrecpoints;
       nrecpoints = (Int_t) muondata.RawClusters(ichamber)->GetEntriesFast();
-      printf("number of recpoints = %6d \n",nrecpoints);
+      // printf(">>> Chamber %2d, Number of recpoints = %6d \n",ichamber+1, nrecpoints);
       for(irecpoint=0; irecpoint<nrecpoints; irecpoint++) {
 	mRecPoint = static_cast<AliMUONRawCluster*>(muondata.RawClusters(ichamber)->At(irecpoint));
-//     Int_t       fTracks[3];        //labels of overlapped tracks
-//     Int_t       fQ[2]  ;           // Q of cluster (in ADC counts)     
-//     Float_t     fX[2]  ;           // X of cluster
-//     Float_t     fY[2]  ;           // Y of cluster
-//     Float_t     fZ[2]  ;           // Z of cluster
-//     Int_t       fPeakSignal[2];    // Peak signal 
-//     Int_t       fIndexMap[50][2];  // indeces of digits
-//     Int_t       fOffsetMap[50][2]; // Emmanuel special
-//     Float_t     fContMap[50][2];   // Contribution from digit
-//     Int_t       fPhysicsMap[50];   // Distinguish signal and background contr.
-//     Int_t       fMultiplicity[2];  // Cluster multiplicity
-//     Int_t       fNcluster[2];      // Number of clusters
-//     Int_t       fClusterType;      // Cluster type
-//     Float_t     fChi2[2];          // Chi**2 of fit
-//     Int_t       fGhost;            // 0 if not a ghost or ghost problem solved
-//                                    // >0 if ghost problem remains because
-//                                    // 1 both (true and ghost) satify 
-//                                    //   charge chi2 compatibility
-//                                    // 2 none give satisfactory chi2
-
 	Int_t Track0 = mRecPoint->GetTrack(0);
 	Int_t Track1 = mRecPoint->GetTrack(1); 
 	Int_t Track2 = mRecPoint->GetTrack(2);
@@ -276,10 +393,12 @@ void MUONrecpoints(char * filename="galice.root", Int_t event2Check=0) {
 	Float_t z0 = mRecPoint->GetZ(0);
 	Float_t z1 = mRecPoint->GetZ(1);
 	Float_t chi2_0 =  mRecPoint->GetChi2(0);
-	Float_t chi2_1 =  mRecPoint->GetChi2(1);
+	//Float_t chi2_1 =  mRecPoint->GetChi2(1);
 	Int_t de = mRecPoint->GetDetElemId();
-	printf(">>> RecPoint %4d  DetElem %2d x %6.3f %6.3f y %6.3f %6.3f z %6.3f %6.3f Q0 %4d  Q1 %4d Hit %4d Track1 %4d Track2 %4d Chi2 %6.3f %6.3f \n",
-	       irecpoint,de,x0,x1,y0,y1,z0,z1,Q0,Q1,Track0, Track1, Track2, chi2_0, chi2_1);
+	printf(">>> >>> RecPoint %4d  DetEle %4d (X,Y,Z)=(%7.2f,%7.2f,%8.2f)cm  Q0=%4d  Q1=%4d Hit=%4d Track1=%4d Track2=%4d Chi2=%6.3f \n",
+	       irecpoint,de,x0,y0,z0,Q0,Q1,Track0, Track1, Track2, chi2_0);
+	if( (x0!=x1) || (y0!=y1) || (z0!=z1) )
+	  printf(">>> >>> Warning (X0,Y0,Z0)=(%7.2f, %7.2f, %8.2f)cm != (X1,Y1,Z1)=(%7.2f,%7.2f,%8.2f)cm \n",x0,y0,z0,x1,y1,z1); 
       } // end recpoint loop
     } // end chamber loop
     muondata.ResetRawClusters();
@@ -288,7 +407,7 @@ void MUONrecpoints(char * filename="galice.root", Int_t event2Check=0) {
   MUONLoader->UnloadRecPoints();
 }
 
-void MUONTestTrigger (char * filename="galice.root", Int_t event2Check=0){
+void MUONrectrigger (Int_t event2Check=0, char * filename="galice.root"){
 // reads and dumps trigger objects from MUON.RecPoints.root
   TClonesArray * globalTrigger;
   TClonesArray * localTrigger;
@@ -382,7 +501,7 @@ void MUONTestTrigger (char * filename="galice.root", Int_t event2Check=0){
 
 
 
-void MUONRecTracks (char * filename="galice.root", Int_t event2Check=0 ){
+void MUONrectracks (Int_t event2Check=0, char * filename="galice.root"){
 // reads and dumps trigger objects from MUON.RecPoints.root
   TClonesArray * RecTracks;
   
@@ -414,8 +533,40 @@ void MUONRecTracks (char * filename="galice.root", Int_t event2Check=0 ){
     
     Int_t nrectracks = (Int_t) RecTracks->GetEntriesFast(); //
 
-    printf(">>> Event %d Number of Recconstructed tracks %d \n",ievent, nrectracks);
-   
+    printf(">>> Event %d, Number of Recconstructed tracks %d \n",ievent, nrectracks);
+    // loop over tracks
+ 
+ 
+    Int_t nTrackHits;// nPrimary;
+    Double_t fitFmin;
+    Double_t bendingSlope, nonBendingSlope, inverseBendingMomentum;
+    Double_t xRec, yRec, zRec, chi2MatchTrigger;
+    Bool_t matchTrigger;
+
+  // setting pointer for tracks, triggertracks & trackparam at vertex
+    AliMUONTrack* recTrack = 0;
+    AliMUONTrackParam* trackParam = 0;
+
+    for (Int_t iRecTracks = 0; iRecTracks <  nrectracks;  iRecTracks++) {
+    // reading info from tracks
+      recTrack = (AliMUONTrack*) RecTracks->At(iRecTracks);
+      trackParam = (AliMUONTrackParam*) (recTrack->GetTrackParamAtHit())->First();
+      trackParam->ExtrapToZ(0.0);
+      bendingSlope            = trackParam->GetBendingSlope();
+      nonBendingSlope         = trackParam->GetNonBendingSlope();
+      inverseBendingMomentum = trackParam->GetInverseBendingMomentum();
+      xRec  = trackParam->GetNonBendingCoor();
+      yRec  = trackParam->GetBendingCoor();
+      zRec  = trackParam->GetZ();
+
+      nTrackHits       = recTrack->GetNTrackHits();
+      fitFmin          = recTrack->GetFitFMin();
+      matchTrigger     = recTrack->GetMatchTrigger();
+      chi2MatchTrigger = recTrack->GetChi2MatchTrigger();
+      
+      printf(">>> RecTrack %4d  NofClusters=%2d BendMomentum=%7.2f NonBendSlope=%5.2f  BendSlope=%5.2f Match2Trig=%1d (vertex@z=0)=(%5.2f,%5.2f,%5.1f)cm \n", iRecTracks, nTrackHits, 1/inverseBendingMomentum , nonBendingSlope*180./TMath::Pi(), bendingSlope*180./TMath::Pi(),  matchTrigger, xRec,yRec,zRec);
+    } // end loop tracks
+
     muondata.ResetRecTracks();
     if (event2Check!=0) ievent=nevents;
   } // end loop on event  

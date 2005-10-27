@@ -58,6 +58,7 @@ provides a ascii output on screen.
 To compile MUONCheck.C
 .includepath $ALICE_ROOT/STEER
 .includepath $ALICE_ROOT/MUON
+.includepath $ALICE_ROOT/MUON/mapping
 .L $ALICE_ROOT/MUON/MUONCheck.C++
 To Load
 gSystem->Load("$ALICE_ROOT/MUON/MUONCheck_C.so")
