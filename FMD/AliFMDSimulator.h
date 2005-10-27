@@ -13,6 +13,9 @@
 #ifndef TLorentzVector
 # include <TLorentzVector.h>
 #endif
+#ifndef TArrayI
+# include <TArrayI.h>
+#endif
 class TVector3;
 class AliFMD;
 class AliFMDRing;
@@ -36,7 +39,8 @@ public:
   virtual void DefineGeometry() = 0;
   /** Deal with a hit in the FMD */
   virtual void Exec(Option_t* option="");
-
+  virtual void UseDivided(Bool_t use=kTRUE)  { fUseDivided = use; }
+  virtual void UseAssembly(Bool_t use=kTRUE) { fUseAssembly = use; }
 protected:  
   AliFMD*        fFMD;           //! Pointer to module 
   Bool_t         fDetailed;      // Whether to make a detailed simulation 
@@ -44,8 +48,18 @@ protected:
   Int_t 	 fOuterId;	 //! ID of outer ring strips
   TLorentzVector fCurrentV;      //! Current hit postition 
   TLorentzVector fCurrentP;      //! Current hit momentum
+  TArrayI        fActiveId;      //! Active volume ID's
   Int_t          fCurrentPdg;    //! Current hit particle code 
   Double_t       fCurrentDeltaE; //! Current hit energy loss
+  Bool_t         fUseDivided;    // Divided volumes
+  Bool_t         fUseAssembly;   // Assembly volumes
+  
+  Bool_t         IsActive(Int_t volId) const;
+  Bool_t         VMC2FMD(Int_t copy, TLorentzVector& v,
+                         UShort_t& detector, Char_t& ring,
+                         UShort_t& sector, UShort_t& stripe);
+  Bool_t         VMC2FMD(TLorentzVector& v, UShort_t& detector,
+                         Char_t& ring, UShort_t& sector, UShort_t& strip);
 
   static const Char_t* fgkActiveName;	// Name of Active volumes
   static const Char_t* fgkSectorName;	// Name of Sector volumes
@@ -73,7 +87,9 @@ protected:
     kPcbId,                // ID index of PCB medium
     kSiChipId,             // ID index of Si Chip medium
     kAlId,                 // ID index of Al medium
-    kCarbonId              // ID index of Carbon medium
+    kCarbonId,             // ID index of Carbon medium
+    kCopperId,             // ID index of Copper Medium
+    kKaptonId              // ID index of Kapton Medium
   };  
 
   Int_t fSectorOff;        // Sector offset in volume tree 

@@ -37,9 +37,13 @@
 //                 |                           |	      
 //        +--------------------+   +-------------------+
 //        | AliFMDGeoSimulator |   | AliFMDG3Simulator | 
-//        +--------------------+   +---------+---------+
+//        +--------------------+   +-------------------+
+//                                           ^
+//                                           |
+//                                 +----------------------+
+//				   | AliFMDG3OldSimulator |
+//				   +----------------------+
 //      
-//
 // *  AliFMD 
 //    This defines the interface for the various parts of AliROOT that
 //    uses the FMD, like AliFMDSimulator, AliFMDDigitizer, 
@@ -64,6 +68,10 @@
 //    in the corners should be cut away at run time (but currently
 //    isn't). 
 //
+// *  AliFMDG3OldSimulator
+//    This is a concrete implementation of AliFMDSimulator.   It
+//    approximates the of the rings as segmented disks. 
+// 
 #include "AliFMDSimulator.h"	// ALIFMDSIMULATOR_H
 #include "AliFMDGeometry.h"	// ALIFMDGEOMETRY_H
 #include "AliFMDDetector.h"	// ALIFMDDETECTOR_H
@@ -124,18 +132,24 @@ AliFMDSimulator::AliFMDSimulator()
   : fFMD(0), 
     fDetailed(kFALSE),
     fInnerId(-1),
-    fOuterId(-1)
+    fOuterId(-1), 
+    fActiveId(4), 
+    fUseDivided(kFALSE),
+    fUseAssembly(kTRUE)
 {
   // Default constructor
 }
 
 //____________________________________________________________________
 AliFMDSimulator::AliFMDSimulator(AliFMD* fmd, Bool_t detailed) 
-  : TTask("FMDsimulator", "Forward Multiplicity Detector Simulator"), 
+  : TTask("FMDSimulator", "Forward Multiplicity Detector Simulator"), 
     fFMD(fmd), 
     fDetailed(detailed),
     fInnerId(-1),
-    fOuterId(-1)
+    fOuterId(-1),
+    fActiveId(4),
+    fUseDivided(kFALSE),
+    fUseAssembly(kTRUE)
 {
   // Normal constructor
   // 
@@ -232,27 +246,39 @@ AliFMDSimulator::DefineMaterials()
 		    maxStepSize, maxEnergyLoss, precision, minStepSize);
   
   
+  // Copper 
+  a                = 63.546;
+  z                = 29;
+  density          =  8.96;
+  radiationLength  =  1.43;
+  id               = kCopperId;
+  fFMD->AliMaterial(id, "Copper$", 
+		      a, z, density, radiationLength, absorbtionLength);
+  fFMD->AliMedium(kCopperId, "Copper$", 
+		    id, 0, fieldType, maxField, maxBending,
+		    maxStepSize, maxEnergyLoss, precision, minStepSize);
+  
+
   // Silicon chip 
   {
     Float_t as[] = { 12.0107,      14.0067,      15.9994,
-		     1.00794,      28.0855,     107.8682 };
+		      1.00794,     28.0855,     107.8682 };
     Float_t zs[] = {  6.,           7.,           8.,
 		      1.,          14.,          47. };
     Float_t ws[] = {  0.039730642,  0.001396798,  0.01169634,
 		      0.004367771,  0.844665,     0.09814344903 };
-    density = 2.36436;
+    density          = 2.36436;
     maxBending       = 10;
     maxStepSize      = .01;
     precision        = .003;
     minStepSize      = .003;
-    id = kSiChipId;
+    id               = kSiChipId;
     fFMD->AliMixture(id, "Si Chip$", as, zs, density, 6, ws);
     fFMD->AliMedium(kSiChipId, "Si Chip$", 
 		      id, 0, fieldType, maxField, maxBending, 
 		      maxStepSize, maxEnergyLoss, precision, minStepSize);
   }
   
-#if 0
   // Kaption
   {
     Float_t as[] = { 1.00794,  12.0107,  14.010,   15.9994};
@@ -263,13 +289,12 @@ AliFMDSimulator::DefineMaterials()
     maxStepSize      = .001;
     precision        = .001;
     minStepSize      = .001;
-    id               = KaptionId;
+    id               = kKaptonId;
     fFMD->AliMixture(id, "Kaption$", as, zs, density, 4, ws);
-    fFMD->AliMedium(kAlId, "Kaption$",
+    fFMD->AliMedium(kKaptonId, "Kaption$",
 		      id,0,fieldType,maxField,maxBending,
 		      maxStepSize,maxEnergyLoss,precision,minStepSize);
   }
-#endif
 
   // Air
   {
@@ -333,6 +358,100 @@ AliFMDSimulator::DefineMaterials()
 }
 
 //____________________________________________________________________
+Bool_t
+AliFMDSimulator::IsActive(Int_t volId) const
+{
+  for (Int_t i = 0; i < fActiveId.fN; i++) 
+    if  (volId == fActiveId[i]) return kTRUE;
+  return kFALSE;
+}
+
+//____________________________________________________________________
+Bool_t
+AliFMDSimulator::VMC2FMD(TLorentzVector& v, UShort_t& detector,
+                         Char_t& ring, UShort_t& sector, UShort_t& strip)
+{
+  TVirtualMC* mc = TVirtualMC::GetMC();
+
+  // Get track position
+  mc->TrackPosition(v);
+  Int_t moduleno; mc->CurrentVolOffID(fModuleOff, moduleno);
+  Int_t iring;    mc->CurrentVolOffID(fRingOff, iring);   ring = Char_t(iring);
+  Int_t det;      mc->CurrentVolOffID(fDetectorOff, det); detector = det;
+  
+
+  // Get the ring geometry
+  AliFMDGeometry*  fmd = AliFMDGeometry::Instance();
+  //Int_t     nsec = fmd->GetDetector(detector)->GetRing(ring)->GetNSectors();
+  Int_t     nstr = fmd->GetDetector(detector)->GetRing(ring)->GetNStrips();
+  Double_t  lowr = fmd->GetDetector(detector)->GetRing(ring)->GetLowR();
+  Double_t  highr= fmd->GetDetector(detector)->GetRing(ring)->GetHighR();
+  Double_t  theta= fmd->GetDetector(detector)->GetRing(ring)->GetTheta();
+
+  // Figure out the strip number
+  Double_t r     = TMath::Sqrt(v.X() * v.X() + v.Y() * v.Y());
+  Double_t pitch = (highr - lowr) / nstr;
+  Int_t    str   = Int_t((r - lowr) / pitch);
+  if (str < 0 || str >= nstr) return kFALSE;
+  strip          = str;
+
+  // Figure out the sector number
+  Double_t phi    = TMath::ATan2(v.Y(), v.X()) * 180. / TMath::Pi();
+  if (phi < 0) phi = 360. + phi;
+  Double_t t      = phi - 2 * moduleno * theta;
+  sector          = 2 * moduleno;
+  if (t < 0 || t > 2 * theta) return kFALSE;
+  else if (t > theta)         sector += 1;
+
+  AliDebug(40, Form("<1> Inside an active FMD volume FMD%d%c[%2d,%3d] %s",
+		    detector, ring, sector, strip, mc->CurrentVolPath()));
+  return kTRUE;
+}
+
+//____________________________________________________________________
+Bool_t
+AliFMDSimulator::VMC2FMD(Int_t copy, TLorentzVector& v,
+                         UShort_t& detector, Char_t& ring,
+                         UShort_t& sector, UShort_t& strip)
+{
+  TVirtualMC* mc = TVirtualMC::GetMC();
+
+  strip = copy - 1;
+  Int_t sectordiv; mc->CurrentVolOffID(fSectorOff, sectordiv);
+  if (fModuleOff >= 0) {
+    Int_t module;    mc->CurrentVolOffID(fModuleOff, module);
+    sector = 2 * module + sectordiv;
+  }
+  else 
+    sector = sectordiv;
+  Int_t iring;     mc->CurrentVolOffID(fRingOff, iring); ring = Char_t(iring);
+  Int_t det;       mc->CurrentVolOffID(fDetectorOff, det); detector = det;
+
+  AliFMDGeometry* fmd = AliFMDGeometry::Instance();
+  Double_t  rz  = fmd->GetDetector(detector)->GetRingZ(ring);
+  Int_t     n   = fmd->GetDetector(detector)->GetRing(ring)->GetNSectors();
+#if 0
+  if (rz < 0) {
+    Int_t s = ((n - sector + n / 2) % n) + 1;
+    AliDebug(1, Form("Recalculating sector to %d (=%d-%d+%d/2%%%d+1 z=%f)",
+		     s, n, sector, n, n, rz));
+    sector = s;
+  }
+#endif
+  if (sector < 1 || sector > n) {
+    Warning("Step", "sector # %d out of range (0-%d)", sector-1, n-1);
+    return kFALSE;
+  }
+  sector--;
+  // Get track position
+  mc->TrackPosition(v);
+  AliDebug(40, Form("<2> Inside an active FMD volume FMD%d%c[%2d,%3d] %s",
+		    detector, ring, sector, strip, mc->CurrentVolPath()));
+
+  return kTRUE;
+}
+
+//____________________________________________________________________
 void
 AliFMDSimulator::Exec(Option_t* /* option */) 
 {
@@ -367,70 +486,50 @@ AliFMDSimulator::Exec(Option_t* /* option */)
   //   - ENDIF
   //     
   TVirtualMC* mc = TVirtualMC::GetMC();
-  static int nCall = 0;
-  
   if (!mc->IsTrackAlive()) return;
-  if (TMath::Abs(mc->TrackCharge()) <= 0) return;
+  Double_t absQ = TMath::Abs(mc->TrackCharge());
+  if (absQ <= 0) return;
   
   Int_t copy;
   Int_t vol = mc->CurrentVolID(copy);
-  if (vol != fInnerId && vol != fOuterId) {
-    AliDebug(25, Form("Not an FMD volume %d '%s' (%d or %d)", 
+  if (!IsActive(vol)) {
+    AliDebug(50, Form("Not an FMD volume %d '%s' (%d or %d)", 
 		      vol, mc->CurrentVolName(), fInnerId, fOuterId));
     return;
   }
-
-  nCall++;
-  // Check that the track is actually within the active area 
-  Bool_t entering = mc->IsTrackEntering();
-  Bool_t inside   = mc->IsTrackInside();
-  Bool_t out      = (mc->IsTrackExiting()|| mc->IsTrackDisappeared()||
-		     mc->IsTrackStop());
-  static Int_t lastPdg = 0;
-  static Double_t lastEtot = 0;
-  static Int_t    lastTrack = 0;
-  static Int_t    nBad       = 0;
+  TLorentzVector v;
+  UShort_t       detector;
+  Char_t         ring;
+  UShort_t       sector;
+  UShort_t       strip;
   
-  // Reset the energy deposition for this track, and update some of
-  // our parameters.
-  if (entering) {
-    AliDebug(15, Form("Track # %8d entering active FMD volume %s: "
-		      "Edep=%f (call # %d)", 
-		      gAlice->GetMCApp()->GetCurrentTrackNumber(),
-		      mc->CurrentVolPath(), 1000 * mc->Edep(), nCall));
-    fCurrentDeltaE = 0;
-
-    // Get production vertex and momentum of the track 
-    mc->TrackMomentum(fCurrentP);
-    mc->TrackPosition(fCurrentV);
-    fCurrentPdg = mc->IdFromPDG(mc->TrackPid());
+  if (fUseDivided) {
+    if (!VMC2FMD(copy, v, detector, ring, sector, strip)) return;
+  } else {
+    if (!VMC2FMD(v, detector, ring, sector, strip)) return;
   }
-  
-  if (mc->Edep() > mc->Etot()/*fCurrentP.E()*/) {
-    // The track deposited an obscene amount of energy in this step 
-    Int_t trackno = gAlice->GetMCApp()->GetCurrentTrackNumber();
-    // TMCProcess process = mc->ProdProcess(trackno);
-    // TString process_name(TMCProcessName[process]);
+  TLorentzVector p;
+  mc->TrackMomentum(p);
+  Int_t    trackno = gAlice->GetMCApp()->GetCurrentTrackNumber();
+  Int_t    pdg     = mc->TrackPid();
+  Double_t mass    = mc->TrackMass();
+  Double_t edep    = mc->Edep() * 1000; // keV
+  Double_t poverm  = (mass == 0 ? 0 : p.P() / mass);
+
+  // This `if' is to debug abnormal energy depositions.  We trigger on
+  // p/m approx larger than or equal to a MIP, and a large edep - more 
+  // than 1 keV - a MIP is 100 eV. 
+  if (mc->Edep() * 1000 > absQ * absQ && poverm > 1) {
     TArrayI procs;
     mc->StepProcesses(procs);
-    Int_t currentPdg = mc->TrackPid();
     TString processes;
     for (Int_t ip = 0; ip < procs.fN; ip++) {
       if (ip != 0) processes.Append(",");
       processes.Append(TMCProcessName[procs.fArray[ip]]);
     }
-    // Int_t currentPdg = mc->IdFromPDG(mc->TrackPid());
-    TParticlePDG* particleType = TDatabasePDG::Instance()->GetParticle(currentPdg);
-    TParticlePDG* lastType = TDatabasePDG::Instance()->GetParticle(lastPdg);
-    TLorentzVector currentV;      //! Current hit postition 
-    TLorentzVector currentP;      //! Current hit momentum
-    mc->TrackMomentum(currentP);
-    mc->TrackPosition(currentV);
-    TString origin("???");
-    if (mc->IsRootGeometrySupported()) {
-      TGeoNode* node = gGeoManager->FindNode(fCurrentV.X(), fCurrentV.Y(), fCurrentV.Z());
-      if (node) origin = node->GetName();
-    }
+    TDatabasePDG* pdgDB        = TDatabasePDG::Instance();
+    TParticlePDG* particleType = pdgDB->GetParticle(pdg);
+    TString pname(particleType ? particleType->GetName() : "???");
     TString what;
     if (mc->IsTrackEntering())    what.Append("entering ");
     if (mc->IsTrackExiting())     what.Append("exiting ");
@@ -442,92 +541,55 @@ AliFMDSimulator::Exec(Option_t* /* option */)
     if (mc->IsTrackOut())         what.Append("out ");
     
     Int_t mother = gAlice->GetMCApp()->GetPrimary(trackno);
-    AliDebug(0, Form("Track # %5d deposited an obsence amout of energy (call # %d)\n" 
-		     "  Volume:    %s\n" 
-		     "  Momentum:  (%8.4f,%8.4f,%8.4f)\n"
-		     "  Vertex:    (%8.4f,%8.4f,%8.4f) [%s]\n"
-		     "  PDG:       %d (%s) [last %d (%s)]\n" 
-		     "  Edep:      %-16.8f (mother %d)\n"
-		     "  Energy:    %-16.8f (last %16.8f from track %d)\n"
-		     "  Processes: %s\n"
-		     "  What:      %s\n",
-		     trackno, nCall, mc->CurrentVolPath(), 
-		     currentP.X(), currentP.Y(), currentP.Z(),
-		     currentV.X(), currentV.Y(), currentV.Z(), origin.Data(),
-		     currentPdg, (particleType ? particleType->GetName() : "???"), 
-		     lastPdg, (lastType ? lastType->GetName() : "???"),
-		     mc->Edep(), mother, mc->Etot() /*currentP.E()*/, 
-		     lastEtot, lastTrack, processes.Data(), what.Data()));
-    // gAlice->GetMCApp()->DumpPStack();
-    // mother->Print();
-    nBad++;
-    if (nBad > 10) exit (1);
+    Warning("Step", "Track # %5d deposits a lot of energy\n" 
+	    "  Volume:    %s\n" 
+	    "  Momentum:  (%8.4f,%8.4f,%8.4f)\n"
+	    "  PDG:       %d (%s)\n" 
+	    "  Edep:      %-16.8f keV (mother %d)\n"
+	    "  p/m:       %-16.8f\n"
+	    "  Processes: %s\n"
+	    "  What:      %s\n",
+	    trackno, mc->CurrentVolPath(), p.X(), p.Y(), p.Z(),
+	    pdg, pname.Data(), edep, mother, poverm, processes.Data(), 
+	    what.Data());
   }
   
+  // Check that the track is actually within the active area 
+  Bool_t entering = mc->IsTrackEntering();
+  Bool_t inside   = mc->IsTrackInside();
+  Bool_t out      = (mc->IsTrackExiting()|| mc->IsTrackDisappeared()||
+		     mc->IsTrackStop());
+  // Reset the energy deposition for this track, and update some of
+  // our parameters.
+  if (entering) {
+    AliDebug(15, Form("Track # %8d entering active FMD volume %s: "
+		      "Edep=%f", 
+		      gAlice->GetMCApp()->GetCurrentTrackNumber(),
+		      mc->CurrentVolPath(), 1000 * mc->Edep()));
+    fCurrentP      = p;
+    fCurrentV      = v;    
+    fCurrentDeltaE = edep;
+    fCurrentPdg    = mc->IdFromPDG(pdg);
+  }
   // If the track is inside, then update the energy deposition
   if (inside && fCurrentDeltaE >= 0) {
-    fCurrentDeltaE += 1000 * mc->Edep();
+    fCurrentDeltaE += edep;
     AliDebug(15, Form("Track # %8d inside active FMD volume %s: Edep=%f, "
-		      "Accumulated Edep=%f (call # %d)", 
-		      gAlice->GetMCApp()->GetCurrentTrackNumber(),
-		      mc->CurrentVolPath(), 1000 * mc->Edep(), 
-		      fCurrentDeltaE, nCall));
+		      "Accumulated Edep=%f", 
+		      trackno, mc->CurrentVolPath(), edep, 
+		      fCurrentDeltaE));
   }
-  
   // The track exits the volume, or it disappeared in the volume, or
   // the track is stopped because it no longer fulfills the cuts
   // defined, then we create a hit. 
   if (out && fCurrentDeltaE >= 0) {
-
-    Int_t strip = copy - 1;
-    Int_t sectordiv;
-    mc->CurrentVolOffID(fSectorOff, sectordiv);
-    Int_t module;
-    mc->CurrentVolOffID(fModuleOff, module);
-    Int_t sector = 2 * module + sectordiv;
-    Int_t iring;
-    mc->CurrentVolOffID(fRingOff, iring);
-    Char_t ring = Char_t(iring);
-    Int_t detector;
-    mc->CurrentVolOffID(fDetectorOff, detector);
-
-
-    AliFMDGeometry* fmd = AliFMDGeometry::Instance();
-    Double_t rz = fmd->GetDetector(detector)->GetRingZ(ring);
-    Int_t    n  = fmd->GetDetector(detector)->GetRing(ring)->GetNSectors();
-    if (rz < 0) {
-      Int_t s = ((n - sector + n / 2) % n) + 1;
-      AliDebug(40, Form("Recalculating sector to %d (=%d-%d+%d/2%%%d+1 z=%f)", 
-			s, n, sector, n, n, rz));
-      sector = s;
-    }
-    if (sector < 1 || sector > n) {
-      Warning("Step", "sector # %d out of range (0-%d)", sector-1, n-1);
-      return;
-    }
-    sector--;
-    fCurrentDeltaE += 1000 * mc->Edep();
-    AliDebug(15, Form("Track # %8d leaving active FMD volume %s: Edep=%f, "
-		      "Accumulated Edep=%f (call # %d nCall)", 
-		      gAlice->GetMCApp()->GetCurrentTrackNumber(),
-		      mc->CurrentVolPath(), 
-		      1000 * mc->Edep(), fCurrentDeltaE, nCall));
-
-    AliDebug(20, Form("Processing hit in FMD%d%c[%2d,%3d]: %f", 
-		      detector, ring, sector, strip, fCurrentDeltaE));
-    
-    fFMD->AddHitByFields(gAlice->GetMCApp()->GetCurrentTrackNumber(),
-			 UShort_t(detector), ring, UShort_t(sector), 
-			 UShort_t(strip),
-			 fCurrentV.X(), fCurrentV.Y(), fCurrentV.Z(),
-			 fCurrentP.X(), fCurrentP.Y(), fCurrentP.Z(), 
-			 fCurrentDeltaE, fCurrentPdg, fCurrentV.T());
+    fCurrentDeltaE += edep;
+    fFMD->AddHitByFields(trackno, detector, ring, sector, strip,
+			 fCurrentV.X(),  fCurrentV.Y(), fCurrentV.Z(),
+			 fCurrentP.X(),  fCurrentP.Y(), fCurrentP.Z(), 
+			 fCurrentDeltaE, fCurrentPdg,   fCurrentV.T());
     fCurrentDeltaE = -1;
   }
-  lastPdg   = fCurrentPdg;
-  lastEtot  = mc->Etot();
-  lastTrack = gAlice->GetMCApp()->GetCurrentTrackNumber();
-  
 }
 
 

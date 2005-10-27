@@ -37,8 +37,12 @@
 //                 |                           |	      
 //        +--------------------+   +-------------------+
 //        | AliFMDGeoSimulator |   | AliFMDG3Simulator | 
-//        +--------------------+   +---------+---------+
-//      
+//        +--------------------+   +-------------------+
+//                                           ^
+//                                           |
+//                                +--------------------+
+//				  | AliFMDOldSimulator |
+//				  +--------------------+
 //
 // *  AliFMD 
 //    This defines the interface for the various parts of AliROOT that
@@ -64,6 +68,10 @@
 //    in the corners should be cut away at run time (but currently
 //    isn't). 
 //
+// *  AliFMDOldSimulator
+//    This is a concrete implementation of AliFMDSimulator.   It
+//    approximates the of the rings as segmented disks. 
+// 
 #include <math.h>
 #include "AliFMDG3Simulator.h"	// ALIFMDG3SIMULATOR_H
 #include "AliFMDGeometry.h"	// ALIFMDGEOMETRY_H
@@ -147,6 +155,7 @@ AliFMDG3Simulator::RingGeometry(AliFMDRing* r)
   Double_t    legl     = r->GetLegLength();
   Double_t    legoff   = r->GetLegOffset();
   Int_t       ns       = r->GetNStrips();
+  Double_t    space    = r->GetSpacing();
   Double_t    stripoff = a->Mod();
   Double_t    dstrip   = (rmax - stripoff) / ns;
   Double_t    par[10];
@@ -154,178 +163,188 @@ AliFMDG3Simulator::RingGeometry(AliFMDRing* r)
   TString     name2;
   TVirtualMC* mc       = TVirtualMC::GetMC();
   
-  Int_t siId = fFMD->GetIdtmed()->At(kSiId);
+  Int_t siId  = fFMD->GetIdtmed()->At(kSiId);
   Int_t airId = fFMD->GetIdtmed()->At(kAirId);
   Int_t pcbId = fFMD->GetIdtmed()->At(kPcbId);
   Int_t plaId = fFMD->GetIdtmed()->At(kPlasticId);
+  Int_t copId = fFMD->GetIdtmed()->At(kCopperId);
+  Int_t chiId = fFMD->GetIdtmed()->At(kSiChipId);
 
-  // Virtual volume shape to divide - This volume is only defined if
-  // the geometry is set to be detailed. 
+  Double_t ringWidth  = r->GetRingDepth();
+  Double_t x          = 0;
+  Double_t y          = 0;
+  Double_t z          = 0;
+  Double_t backWidth  = siThick + pcbThick + legl + space;
+  Double_t frontWidth = backWidth + modSpace;
+
   // Ring mother volume 
   par[0]     =  rmin;
   par[1]     =  rmax;
-  par[2]     =  (siThick + pcbThick + legl + modSpace) / 2;
+  par[2]     =  ringWidth / 2;
   name       =  Form(fgkRingName, id);
   mc->Gsvolu(name.Data(), "TUBE", airId, par, 3);
 
+  // Back container volume 
   par[0] = rmin;
   par[1] = rmax;
-  par[2] = siThick / 2;
+  par[2] = backWidth / 2;
   par[3] = -theta;
-  par[4] = theta;
-  name   = Form(fgkActiveName, id);
-  mc->Gsvolu(name.Data(), "TUBS", (fDetailed ? airId : siId), par, 5);
+  par[4] = +theta;
+  TString backName(Form(fgkBackVName, id));
+  mc->Gsvolu(backName.Data(), "TUBS", airId, par, 5);
+  
+  // Front container volume 
+  par[2]     =  frontWidth / 2;
+  TString frontName(Form(fgkFrontVName, id));
+  mc->Gsvolu(frontName.Data(), "TUBS", airId, par, 5);
+  
+  Double_t topL = (b->X() - c->X());
+  Double_t botL = (c->X() - a->X());
+  Int_t    rot;
+  mc->Matrix(rot, 90, 90, 0, 90, 90, 0);  
 
-  Int_t sid = -1;
-  if (fDetailed) {
-    name2 = name;
-    name  = Form(fgkSectorName, id);
-    mc->Gsdvn2(name.Data(), name2.Data(), 2, 2, -theta, airId);
+  Double_t zFront = - frontWidth / 2 + siThick / 2;
+  Double_t zBack  = - backWidth / 2 + siThick / 2;
+  if (fUseDivided) {
+    fSectorOff   = 1;
+    fModuleOff   = 3;
+    fRingOff     = 4;
+    fDetectorOff = 5;
+
+    // Virtual volume shape to divide - This volume is only defined if
+    // the geometry is set to be detailed. 
+    par[0]     = rmin;
+    par[1]     = rmax;
+    par[2]     = siThick / 2;
+    par[3]     = -theta;
+    par[4]     = theta;
+    name       = Form(fgkActiveName, id);
+    mc->Gsvolu(name.Data(), "TUBS", (fDetailed ? airId : siId), par, 5);
+
+    mc->Gspos(name.Data(), 0, backName.Data(), x, y, zBack, 0, "ONLY");
+    mc->Gspos(name.Data(), 0, frontName.Data(), x, y, zFront, 0, "ONLY");
     
-    name2 = name;
-    name  = Form(fgkStripName, id);
-    mc->Gsdvt2(name.Data(), name2.Data(), dstrip, 1, stripoff, siId, ns);
-    sid = mc->VolId(name.Data());
-    AliDebug(10, Form("Got volume id %d for volume %s", sid, name.Data()));
+    Int_t sid = -1;
+    if (fDetailed) {
+      // Divide the volume into sectors
+      name2 = name;
+      name  = Form(fgkSectorName, id);
+      mc->Gsdvn2(name.Data(), name2.Data(), 2, 2, -theta, siId);
+      
+      // Divide the volume into strips
+      name2 = name;
+      name  = Form(fgkStripName, id);
+      mc->Gsdvt2(name.Data(), name2.Data(), dstrip, 1, stripoff, siId, ns);
+      sid = mc->VolId(name.Data());
+      AliDebug(10, Form("Got volume id %d for volume %s", sid, name.Data()));
+    }
+  
+    switch (id) {
+    case 'i': case 'I': fActiveId[0] = sid; break;
+    case 'o': case 'O': fActiveId[2] = sid; break;
+    }
+  }
+  else {
+    fSectorOff   = -1;
+    fModuleOff   = 1;
+    fRingOff     = 2;
+    fDetectorOff = 3;
+
+    // Create top of module shape 
+    par[0]    = c->Y();
+    par[1]    = b->Y();
+    par[2]    = siThick / 2;
+    par[3]    = topL / 2;
+    name      = Form(fgkModuleName, id);
+    name[3]   = 'T';
+    mc->Gsvolu(name.Data(), "TRD1", siId, par, 4);
+    Int_t tid = mc->VolId(name.Data());
+    x         =  rmin + botL + topL / 2;
+    mc->Gspos(name.Data(), 0, backName.Data(), x, y, zBack, rot, "ONLY");
+    mc->Gspos(name.Data(), 0, frontName.Data(), x, y, zFront, rot, "ONLY");
+
+
+    // Create bottom of module shape 
+    par[0]    = a->Y();
+    par[1]    = c->Y();
+    par[3]    = botL / 2;
+    name      = Form(fgkModuleName, id);
+    name[3]   = 'B';
+    mc->Gsvolu(name.Data(), "TRD1", siId, par, 4);
+    Int_t bid = mc->VolId(name.Data());
+    x         =  rmin + botL / 2;
+    z         =  - backWidth / 2 + siThick / 2;
+    mc->Gspos(name.Data(), 0, backName.Data(), x, y, zBack, rot, "ONLY");
+    mc->Gspos(name.Data(), 0, frontName.Data(), x, y, zFront, rot, "ONLY");
+  
+    switch (id) {
+    case 'i': case 'I': fActiveId[0] = tid; fActiveId[1] = bid; break;
+    case 'o': case 'O': fActiveId[2] = tid; fActiveId[3] = bid; break;
+    }
   }
   
-  switch (id) {
-  case 'i':
-  case 'I':
-    fInnerId = sid;
-    // fInnerV  = moduleVolume->GetNumber();
-    break;
-  case 'o':
-  case 'O':
-    fOuterId = sid;
-    // fOuterV  = moduleVolume->GetNumber();
-    break;
-  }
-
+    
   // Shape of Printed circuit Board 
   // Top
-  par[0] = c->Y() - off;
-  par[1] = b->Y() - off;
-  par[2] = pcbThick / 2;
-  par[3] = (b->X() - c->X()) / 2;
-  par[4] = off;
+  par[0] =  c->Y() - off;
+  par[1] =  b->Y() - off;
+  par[2] =  pcbThick / 2;
+  par[3] =  topL / 2;
+  x      =  rmin + botL + topL / 2;
+  zBack  += siThick / 2 + space + pcbThick / 2;
+  zFront += siThick / 2 + space + pcbThick / 2;
   name   = Form(fgkPCBName, id, 'T');
   mc->Gsvolu(name.Data(), "TRD1", pcbId, par, 4);
+  mc->Gspos(name.Data(), 0, backName.Data(), x, y, zBack, rot, "ONLY");
+  mc->Gspos(name.Data(), 0, frontName.Data(), x, y, zFront, rot, "ONLY");
+  
   // Bottom
   par[0] = a->Y() - off;
   par[1] = c->Y() - off;
-  par[3] = (c->X() - a->X()) / 2;
+  par[3] = botL / 2;
   name   = Form(fgkPCBName, id, 'B');
+  x      =  rmin + botL / 2;
   mc->Gsvolu(name.Data(), "TRD1", pcbId, par, 4);
+  mc->Gspos(name.Data(), 0, backName.Data(), x, y, zBack, rot, "ONLY");
+  mc->Gspos(name.Data(), 0, frontName.Data(), x, y, zFront, rot, "ONLY");
 
+  Double_t x1, y1;
   // Short leg volume 
-  par[0] = legr - .1;
-  par[1] = legr;
-  par[2] = legl / 2;
+  par[0] =  legr - .1;
+  par[1] =  legr;
+  par[2] =  legl / 2;
+  x      =  a->X() + legoff + legr;
+  x1     =  c->X();
+  y1     =  c->Y() - legoff - legr - off;
+  zBack  += pcbThick / 2 + legl / 2;
+  zFront += pcbThick / 2 + legl / 2 + modSpace / 2;
   name   = Form(fgkShortLegName, id);
   mc->Gsvolu(name.Data(),  "TUBE",  plaId, par, 3);
+  mc->Gspos(name.Data(), 0, backName.Data(), x,    y, zBack, 0, "ONLY");
+  mc->Gspos(name.Data(), 1, backName.Data(), x1,  y1, zBack, 0, "ONLY");
+  mc->Gspos(name.Data(), 2, backName.Data(), x1, -y1, zBack, 0, "ONLY");
   
   // Long leg volume 
   par[2] += modSpace / 2;
   name   = Form(fgkLongLegName, id);
   mc->Gsvolu(name.Data(),  "TUBE",  plaId, par, 3);
+  mc->Gspos(name.Data(), 0, frontName.Data(), x,    y, zFront, 0, "ONLY");
+  mc->Gspos(name.Data(), 1, frontName.Data(), x1,  y1, zFront, 0, "ONLY");
+  mc->Gspos(name.Data(), 2, frontName.Data(), x1, -y1, zFront, 0, "ONLY");
   
-  // Back container volume 
-  par[0] = rmin;
-  par[1] = rmax;
-  par[2] = (siThick + pcbThick + legl) / 2;
-  par[3] = -theta;
-  par[4] = +theta;
-  name   = Form(fgkBackVName, id);
-  mc->Gsvolu(name.Data(), "TUBS", airId, par, 5);
-  
-  Double_t x = 0;
-  Double_t y = 0;
-  Double_t z = - par[2] + siThick / 2;
-  name2      = name;
-  name       = Form(fgkActiveName, id);
-  mc->Gspos(name.Data(), 0, name2.Data(), x, y, z, 0, "ONLY");
-  
-  Double_t pbTopL = (b->X() - c->X());
-  Double_t pbBotL = (c->X() - a->X());
-  Int_t    pbRot;
-  mc->Matrix(pbRot, 90, 90, 0, 90, 90, 0);  
-
-  x          =  rmin + pbBotL + pbTopL / 2;
-  z          += siThick / 2 + pcbThick / 2;
-  name       =  Form(fgkPCBName, id, 'T');
-  mc->Gspos(name.Data(), 0, name2.Data(), x, y, z, pbRot, "ONLY");
-  
-  x          =  rmin + pbBotL / 2;
-  name       =  Form(fgkPCBName, id, 'B');
-  mc->Gspos(name.Data(), 0, name2.Data(), x, y, z, pbRot, "ONLY");
-
-  x          =  a->X() + legoff + legr;
-  y          =  0;
-  z          += pcbThick / 2 + legl / 2;
-  name       =  Form(fgkShortLegName, id);
-  mc->Gspos(name.Data(), 0, name2.Data(), x, y, z, 0, "ONLY");
-
-  x          =  c->X();
-  y          =  c->Y() - legoff - legr - off;
-  mc->Gspos(name.Data(), 1, name2.Data(), x, y, z, 0, "ONLY");
-
-  y          =  -y;
-  mc->Gspos(name.Data(), 2, name2.Data(), x, y, z, 0, "ONLY");
-
-
-  // Front container volume 
-  par[2]     += modSpace / 2;
-  name       =  Form(fgkFrontVName, id);
-  mc->Gsvolu(name.Data(), "TUBS", airId, par, 5);
-  
-  x          =  0;
-  y          =  0;
-  z          =  - par[2] + siThick / 2;
-  name2      =  name;
-  name       =  Form(fgkActiveName, id);
-  mc->Gspos(name.Data(), 1, name2.Data(), x, y, z, 0, "ONLY");
-  
-  pbTopL     =  (b->X() - c->X());
-  pbBotL     =  (c->X() - a->X());
-  x          =  rmin + pbBotL + pbTopL / 2;
-  z          += siThick / 2 + pcbThick / 2;
-  name       =  Form(fgkPCBName, id, 'T');
-  mc->Gspos(name.Data(), 1, name2.Data(), x, y, z, pbRot, "ONLY");
-  
-  x          =  rmin + pbBotL / 2;
-  name       =  Form(fgkPCBName, id, 'B');
-  mc->Gspos(name.Data(), 1, name2.Data(), x, y, z, pbRot, "ONLY");
-
-  x          =  a->X() + legoff + legr;
-  y          =  0;
-  z          += pcbThick / 2 + legl / 2 + modSpace / 2;
-  name       =  Form(fgkLongLegName, id);
-  mc->Gspos(name.Data(), 0, name2.Data(), x, y, z, 0, "ONLY");
-
-  x          =  c->X();
-  y          =  c->Y() - legoff - legr - off;
-  mc->Gspos(name.Data(), 1, name2.Data(), x, y, z, 0, "ONLY");
-
-  y          =  -y;
-  mc->Gspos(name.Data(), 2, name2.Data(), x, y, z, 0, "ONLY");
-
-
-
+  // Place modules+pcb+legs in ring volume 
   Int_t nmod = r->GetNModules();
   name2      =  Form(fgkRingName, id);
   AliDebug(10, Form("making %d modules in ring %c", nmod, id));
   for (Int_t i = 0; i < nmod; i++) {
     Double_t th      = (i + .5) * 2 * theta;
     Bool_t   isFront = (i % 2 == 0);
-    name             = (isFront ? Form(fgkFrontVName,id) : 
-			Form(fgkBackVName,id));
-    Double_t z       = (isFront ? 0 : modSpace) / 2;
-    Int_t    rot;
+    name             = (isFront ? frontName : backName);
+    z                = (isFront ? 0 : modSpace) / 2;
     mc->Matrix(rot, 90, th, 90, fmod(90 + th, 360), 0, 0);
     mc->Gspos(name.Data(), i, name2.Data(), 0, 0, z, rot, "ONLY");
   }
-
+  
   return kTRUE;
 }
 

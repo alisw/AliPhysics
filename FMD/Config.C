@@ -216,12 +216,13 @@ Config()
   //____________________________________________________________________
   // This part for configuration    
   //static EG_t eg = test50;
-  EG_t  eg   = kParam_fmd;
+  //EG_t  eg   = kParam_fmd;
+  EG_t  eg   = kParam_2000; // kPythia;
   Geo_t geo  = kNoHoles;
   Rad_t rad  = kGluonRadiation;
   Mag_t mag  = k5kG;
   Int_t seed = 12345; //Set 0 to use the current time
-  MC_t  mc   = kGEANT3TGEO;
+  MC_t  mc   = kGEANT3;
   
   //____________________________________________________________________
   // Comment line 
@@ -254,27 +255,33 @@ Config()
     new TFluka("C++ Interface to Fluka", 0/*verbosity*/);
     break;
   case kGEANT3: 
-    //
-    // Libraries needed by GEANT 3.21 
-    //
-    gSystem->Load("libgeant321");
-    
-    // 
-    // GEANT 3.21 MC 
-    // 
-    new TGeant3("C++ Interface to Geant3");
+    {
+      //
+      // Libraries needed by GEANT 3.21 
+      //
+      gSystem->Load("libgeant321");
+      
+      // 
+      // GEANT 3.21 MC 
+      // 
+      TGeant3* gmc = new TGeant3("C++ Interface to Geant3");
+      gmc->SetSWIT(4, 1000);
+    }
     break;
   case kGEANT3TGEO:
-    //
-    // Libraries needed by GEANT 3.21 
-    //
-    gSystem->Load("libgeant321");
+    {
+      //
+      // Libraries needed by GEANT 3.21 
+      //
+      gSystem->Load("libgeant321");
     
-    // 
-    // GEANT 3.21 MC 
-    // 
-    new TGeant3TGeo("C++ Interface to Geant3");
-    Printf("Making a TGeant3TGeo objet");
+      // 
+      // GEANT 3.21 MC 
+      // 
+      TGeant3TGeo* gmc  = new TGeant3TGeo("C++ Interface to Geant3");
+      gmc->SetSWIT(4, 1000);
+      Printf("Making a TGeant3TGeo objet");
+    }
     break;
   default:
     gAlice->Fatal("Config.C", "No MC type chosen");
@@ -316,6 +323,7 @@ Config()
   //__________________________________________________________________
   //
   // Set External decayer
+#if 0
   AliDecayer *decayer = new AliDecayerPythia();
   switch (eg) {
   case kD0PbPb5500:           decayer->SetForceDecay(kHadronicD);      break;
@@ -325,6 +333,7 @@ Config()
   }
   decayer->Init();
   gMC->SetExternalDecayer(decayer);
+#endif
 
   //__________________________________________________________________
   // ************* STEERING parameters FOR ALICE SIMULATION **************
@@ -360,7 +369,7 @@ Config()
   gMC->SetCut("PPCUTM", cut);
   gMC->SetCut("TOFMAX", tofmax); 
 
-
+  
   //__________________________________________________________________
   // Generator Configuration
   AliGenerator* gener = GeneratorFactory(eg, rad, comment);
@@ -406,27 +415,27 @@ Config()
   // 
   // Used detectors 
   // 
-  Bool_t useABSO  = kTRUE; 
-  Bool_t useCRT   = kTRUE; 
-  Bool_t useDIPO  = kTRUE; 
+  Bool_t useABSO  = kFALSE; 
+  Bool_t useCRT   = kFALSE; 
+  Bool_t useDIPO  = kFALSE; 
   Bool_t useFMD   = kTRUE; 
-  Bool_t useFRAME = kTRUE; 
+  Bool_t useFRAME = kFALSE; 
   Bool_t useHALL  = kFALSE; 
-  Bool_t useITS   = kTRUE; 
-  Bool_t useMAG   = kTRUE; 
-  Bool_t useMUON  = kTRUE; 
-  Bool_t usePHOS  = kTRUE; 
-  Bool_t usePIPE  = kTRUE; 
-  Bool_t usePMD   = kTRUE; 
-  Bool_t useRICH  = kTRUE; 
-  Bool_t useSHIL  = kTRUE; 
-  Bool_t useSTART = kTRUE; 
-  Bool_t useTOF   = kTRUE; 
-  Bool_t useTPC   = kTRUE;
-  Bool_t useTRD   = kTRUE; 
+  Bool_t useITS   = kFALSE;
+  Bool_t useMAG   = kFALSE; 
+  Bool_t useMUON  = kFALSE; 
+  Bool_t usePHOS  = kFALSE; 
+  Bool_t usePIPE  = kFALSE; 
+  Bool_t usePMD   = kFALSE; 
+  Bool_t useRICH  = kFALSE; 
+  Bool_t useSHIL  = kFALSE; 
+  Bool_t useSTART = kFALSE; 
+  Bool_t useTOF   = kFALSE; 
+  Bool_t useTPC   = kFALSE;
+  Bool_t useTRD   = kFALSE; 
   Bool_t useZDC   = kFALSE; 
-  Bool_t useEMCAL = kTRUE; 
-  Bool_t useVZERO = kTRUE;
+  Bool_t useEMCAL = kFALSE; 
+  Bool_t useVZERO = kFALSE;
 
   cout << "\t* Creating the detectors ..." << endl;
   //=================== Alice BODY parameters =============================
@@ -619,7 +628,10 @@ Config()
   if (useFMD) {
     //=================== FMD parameters ============================
     AliFMD *FMD = new AliFMDv1("FMD", "normal FMD");
-    AliLog::SetModuleDebugLevel("FMD", 16);
+    AliLog::SetModuleDebugLevel("FMD", 1);
+    // FMD->UseDivided();
+    FMD->UseOld();
+    // FMD->UseGeo(kFALSE);
   }
 
   if (useMUON) {

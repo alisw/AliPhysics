@@ -68,7 +68,13 @@ public:
   void SetModuleSpacing(Double_t x=1) { fModuleSpacing = x; }
   /** @param x Value of Thickness of print board */
   void SetPrintboardThickness(Double_t x=.1) { fPrintboardThickness = x; }
-  
+  /** @param x Value of Thickness of copper on print board */
+  void SetCopperThickness(Double_t x=.01) { fCopperThickness = x; }
+  /** @param x Value of Thickness of chip on print board */
+  void SetChipThickness(Double_t x=.01) { fChipThickness = x; }
+  /** @param x Value of spacing between si and PCB */
+  void SetSpacing(Double_t x=.05) { fSpacing = x; }
+
   /** @return The Id of this ring type */
   Char_t GetId() const { return fId; }
   /** @return With of bonding pad on sensor */
@@ -101,6 +107,13 @@ public:
   Double_t GetModuleSpacing() const { return fModuleSpacing; }
   /** @return Thickness of print board */
   Double_t GetPrintboardThickness() const { return fPrintboardThickness; }
+  /** @return Thickness copper of print board */
+  Double_t GetCopperThickness() const { return fCopperThickness; }
+  /** @return Thickness chip of print board */
+  Double_t GetChipThickness() const { return fChipThickness; }
+  /** @return Value of spacing between si and PCB */
+  Double_t GetSpacing() const { return fSpacing; }
+
   /** @return List of verticies */
   const TObjArray& GetVerticies() const { return fVerticies; }
   /** @return Number of verticies */
@@ -127,6 +140,10 @@ private:
   Double_t	fLegOffset;		// Radius of support legs
   Double_t	fModuleSpacing;		// Staggering offset
   Double_t	fPrintboardThickness;	// Thickness of print board
+  Double_t	fCopperThickness;	// Thickness of Cu on print board
+  Double_t	fChipThickness;		// Thickness of chip on print board
+  Double_t      fSpacing;               // Spacing between si and PCB
+  
   TObjArray	fVerticies;		// List of verticies
 
   ClassDef(AliFMDRing, 0);

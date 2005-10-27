@@ -33,7 +33,13 @@ public:
   AliFMD(const AliFMD& other);
   virtual ~AliFMD(); 
   AliFMD& operator=(const AliFMD& other);
-
+  // Use old implementation
+  void UseOld(Bool_t use=kTRUE) { fUseOld = use;  }
+  void UseDivided(Bool_t use=kTRUE) { fUseDivided = use; }
+  void UseAssembly(Bool_t use=kTRUE) { fUseAssembly = use; }
+  void UseGeo(Bool_t use=kTRUE) { fUseGeo = use; }
+  
+  
   // GEometry ANd Tracking (GEANT :-)
   virtual void   CreateGeometry();
   virtual void   CreateMaterials(); 
@@ -102,6 +108,10 @@ protected:
   TClonesArray*      fSDigits;              // Summable digits
   Int_t              fNsdigits;             // Number of digits  
   Bool_t             fDetailed;             // Use detailed geometry
+  Bool_t             fUseOld;               // Use old approx geometry
+  Bool_t             fUseDivided;           // Use divided volumes
+  Bool_t             fUseAssembly;          // Use divided volumes
+  Bool_t             fUseGeo;               // Allow use of TGeo impl.
   
   AliFMDSimulator*   fSimulator;            // Simulator task
   

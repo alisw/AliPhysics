@@ -7,7 +7,9 @@ SRCS		=  AliFMD.cxx 			\
 		   AliFMDv1.cxx			\
 		   AliFMDSimulator.cxx		\
 		   AliFMDGeoSimulator.cxx	\
+		   AliFMDGeoOldSimulator.cxx	\
 		   AliFMDG3Simulator.cxx	\
+		   AliFMDG3OldSimulator.cxx	\
 		   AliFMDHit.cxx 		\
 		   AliFMDDigitizer.cxx		\
 		   AliFMDEdepMap.cxx		\

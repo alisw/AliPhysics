@@ -52,6 +52,8 @@ AliFMDRing::AliFMDRing(Char_t id)
   SetLegOffset();
   SetModuleSpacing();
   SetPrintboardThickness();
+  SetCopperThickness();
+  SetChipThickness();
   
   if (fId == 'I' || fId == 'i') {
     SetLowR(4.3);
@@ -94,7 +96,8 @@ AliFMDRing::Init()
   fVerticies.AddAt(new TVector2(fLowR,   yA), 5);  
 
   fRingDepth = (fSiThickness + fPrintboardThickness 
-		+ fLegLength + fModuleSpacing);
+		+ fCopperThickness + fChipThickness 
+		+ fLegLength + fModuleSpacing + fSpacing);
 }
 
 //____________________________________________________________________

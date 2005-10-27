@@ -31,7 +31,7 @@ protected:
   /** Make a ring volume 
       @param r Ring geometry 
       @return  Ring volume */
-  Bool_t RingGeometry(AliFMDRing* r);
+  virtual Bool_t RingGeometry(AliFMDRing* r);
   /** Make a detector volume 
       @param d Detector geometry 
       @param mother Mother volume (detector volume)
@@ -39,24 +39,24 @@ protected:
       @param inner Inner ring volume 
       @param outer Outer ring volume 
       @return  Detector volume */
-  Bool_t DetectorGeometry(AliFMDDetector* d, Double_t zmother);
+  virtual Bool_t DetectorGeometry(AliFMDDetector* d, Double_t zmother);
   /** Make FMD1 volume 
       @param d Detector geometry 
       @param inner Inner ring volume 
       @return FMD1 volume  */
-  Bool_t FMD1Geometry(AliFMD1* d);
+  virtual Bool_t FMD1Geometry(AliFMD1* d);
   /** Make FMD2 volume 
       @param d Detector geometry 
       @param inner Inner ring volume 
       @param outer Outer ring volume 
       @return FMD2 volume  */
-  Bool_t FMD2Geometry(AliFMD2* d);
+  virtual Bool_t FMD2Geometry(AliFMD2* d);
   /** Make FMD3 volume 
       @param d Detector geometry 
       @param inner Inner ring volume 
       @param outer Outer ring volume 
       @return FMD3 volume  */
-  Bool_t FMD3Geometry(AliFMD3* d);
+  virtual Bool_t FMD3Geometry(AliFMD3* d);
 
   ClassDef(AliFMDG3Simulator,1);
 };

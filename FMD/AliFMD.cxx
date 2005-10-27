@@ -36,21 +36,26 @@
 //       +----+--------------+                 +--| AliFMDDigitizer |
 //       |                                     |  +-----------------+
 //       |           +---------------------+   |
-//       |        +- | AliFMDBaseDigitizer |<--+
+//       |        +--| AliFMDBaseDigitizer |<--+
 //       V     1  |  +---------------------+   |
 //  +--------+<>--+                            |  +------------------+
 //  | AliFMD |                                 +--| AliFMDSDigitizer |    
 //  +--------+<>--+                               +------------------+       
-//	       1  | +-----------------+ 
-//	          +-| AliFMDSimulator |
-//	  	    +-----------------+
-//                           ^              
-//                           |
-//             +-------------+-------------+
-//             |                           |	      
-//    +--------------------+   +-------------------+
-//    | AliFMDGeoSimulator |   | AliFMDG3Simulator | 
-//    +--------------------+   +---------+---------+
+//	       1  |  +-----------------+ 
+//	          +--| AliFMDSimulator |
+//	  	     +-----------------+
+//                            ^              
+//                            |
+//              +-------------+-------------+
+//              |                           |	      
+//     +--------------------+   +-------------------+
+//     | AliFMDGeoSimulator |   | AliFMDG3Simulator | 
+//     +--------------------+   +-------------------+
+//               ^	                   ^
+//               |	                   |
+//  +-----------------------+   +----------------------+
+//  | AliFMDGeoOldSimulator |   | AliFMDG3OldSimulator |
+//  +-----------------------+   +----------------------+
 //      
 //
 // *  AliFMD 
@@ -113,6 +118,8 @@
 #include "AliFMDSimulator.h"	// ALIFMDSIMULATOR_H
 #include "AliFMDG3Simulator.h"	// ALIFMDG3SIMULATOR_H
 #include "AliFMDGeoSimulator.h"	// ALIFMDGEOSIMULATOR_H
+#include "AliFMDG3OldSimulator.h"	// ALIFMDG3OLDSIMULATOR_H
+#include "AliFMDGeoOldSimulator.h"	// ALIFMDGEOOLDSIMULATOR_H
 #include "AliFMDRawWriter.h"	// ALIFMDRAWWRITER_H
 
 //____________________________________________________________________
@@ -133,9 +140,13 @@ AliFMD::AliFMD()
   // Default constructor for class AliFMD
   //
   AliDebug(10, "\tDefault CTOR");
-  fHits     = 0;
-  fDigits   = 0;
-  fIshunt   = 0;
+  fHits        = 0;
+  fDigits      = 0;
+  fIshunt      = 0;
+  fUseOld      = kFALSE;
+  fUseDivided  = kFALSE;
+  fUseAssembly = kFALSE;
+  fUseGeo      = kTRUE;
 }
 
 //____________________________________________________________________
@@ -147,6 +158,10 @@ AliFMD::AliFMD(const AliFMD& other)
     fSimulator(other.fSimulator)
 {
   // Copy constructor 
+  fUseOld      = other.fUseOld;
+  fUseDivided  = other.fUseDivided;
+  fUseAssembly = other.fUseAssembly;
+  fUseGeo      = other.fUseGeo;
 }
 
 //____________________________________________________________________
@@ -161,6 +176,10 @@ AliFMD::AliFMD(const char *name, const char *title)
   // Standard constructor for Forward Multiplicity Detector
   //
   AliDebug(10, "\tStandard CTOR");
+  fUseOld      = kFALSE;
+  fUseDivided  = kFALSE;
+  fUseAssembly = kFALSE;
+  fUseGeo      = kTRUE;
 
   // Initialise Hit array
   HitsArray();
@@ -264,13 +283,24 @@ void AliFMD::CreateMaterials()
   }
   AliFMDGeometry* geometry = AliFMDGeometry::Instance();
   geometry->Init();
-//   TVirtualMC* mc = TVirtualMC::GetMC();
-//   Bool_t geo = mc->IsRootGeometrySupported();
-//   if (geo)
-//     fSimulator = new AliFMDGeoSimulator(this, fDetailed);
-//   else 
-    fSimulator = new AliFMDG3Simulator(this, fDetailed);
-  
+  TVirtualMC* mc = TVirtualMC::GetMC();
+  Bool_t geo = mc->IsRootGeometrySupported();
+  if (geo && fUseGeo) {
+    if (fUseOld) 
+      fSimulator = new AliFMDGeoOldSimulator(this, fDetailed);
+    else 
+      fSimulator = new AliFMDGeoSimulator(this, fDetailed);
+  }
+  else {
+    if (fUseOld) 
+      fSimulator = new AliFMDG3OldSimulator(this, fDetailed);
+    else    
+      fSimulator = new AliFMDG3Simulator(this, fDetailed);
+  }
+  AliDebug(1, Form("using a %s as simulation backend", 
+		   fSimulator->IsA()->GetName()));
+  fSimulator->UseDivided(fUseDivided);
+  fSimulator->UseAssembly(fUseAssembly);
   fSimulator->DefineMaterials();
 }
 
