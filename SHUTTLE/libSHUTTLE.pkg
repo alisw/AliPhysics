@@ -1,0 +1,12 @@
+SRCS = AliSimpleValue.cxx AliDCSValue.cxx AliDCSMessage.cxx\
+	AliDCSClient.cxx AliShuttle.cxx AliShuttleConfig.cxx\
+	AliCDBPreProcessor.cxx
+
+HDRS:= $(SRCS:.cxx=.h) 
+
+DHDR= SHUTTLELinkDef.h
+
+
+EXPORT:= AliSimpleValue.h AliDCSValue.h AliDCSClient.h\
+	AliShuttle.h AliShuttleConfig.h AliCDBPreProcessor.h
+

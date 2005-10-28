@@ -1,0 +1,30 @@
+This directory contians LDAP schema for Shuttle configuration.
+
+shuttle.schema - schmea definition. All detectors entries have the
+objectClass defined in shuttle.schema (shuttleConfig).
+
+TPC.ldif, ITS.ldif PHOS.ldif - contains examples for detector configuration.
+
+AliShuttleConfig uses ROOT ldap package to access the ldap server.
+Following manual interventions are needed for ROOT LDAP package:
+
+1) ROOT LDAP package uses deprecated functions as: ldap_simple_bind_s etc.
+To compile ROOT with LDAP support properly, LDAP_DEPRECATED has to be defined.
+
+
+2) As all contemporary LDAP servers use LDAP V3 protocol and the dafault
+protocol is LDAP V2 some lines have to be added to file TLDAPServer.cxx
+
+in method: Int_t TLDAPServer::Bind()
+
+add before ldap_simple_bind_s
+
+ Int_t protVersion = 3;
+ if((result = ldap_set_option(fLd, LDAP_OPT_PROTOCOL_VERSION, &protVersion)
+                        != LDAP_OPT_SUCCESS )) {
+                Error("Bind", "Could not set protocol version 3!");
+                return result;
+ }
+
+
+

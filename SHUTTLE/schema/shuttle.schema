@@ -1,0 +1,25 @@
+attributetype ( 1.3.6.1.1.1.1.19 NAME 'ipHost'
+        DESC 'IP host'
+        EQUALITY caseIgnoreMatch
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.15{40} SINGLE-VALUE)
+
+attributetype ( 1.3.6.1.1.1.1.15 NAME 'ipServicePort'
+        EQUALITY integerMatch
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.27 SINGLE-VALUE )
+
+attributetype ( 1.1.1.2 NAME 'dt'
+	DESC 'Detector name'
+	EQUALITY caseIgnoreMatch
+	SYNTAX 1.3.6.1.4.1.1466.115.121.1.15{40} SINGLE-VALUE )
+
+attributetype ( 1.1.1.3 NAME 'alias'
+        DESC 'DCS alias'
+        EQUALITY caseIgnoreMatch
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.15{40})
+		
+objectclass ( 1.1.1
+        NAME 'shuttleConfig'
+        DESC 'ALICE: Shuttle configuration object.'
+        SUP top
+        MUST (dt $ ipHost $ ipServicePort $ alias) )
+	
