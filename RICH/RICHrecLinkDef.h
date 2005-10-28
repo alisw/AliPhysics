@@ -5,4 +5,6 @@
 #pragma link C++ class  AliRICHMap+;
 #pragma link C++ class  AliRICHReconstructor+;
 #pragma link C++ class  AliRICHClusterFinder+;
+#pragma link C++ class  AliRICHTracker+;
+#pragma link C++ class  AliRICHRecon+;
 #endif

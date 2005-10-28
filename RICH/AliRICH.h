@@ -82,9 +82,7 @@ public:
   void            DisplayEvent(Int_t,Int_t)const; //Display event
   static Int_t     Nparticles(Int_t iPid,Int_t iEventN,AliRunLoader *pRunLoader); //counts total number of particle with iPid
   void            PrintTracks  (Int_t iEvent=0);                        //prints a list of tracks for a given event
-  void            CheckPR      ()const;                                 //utility-> run staff for stack ??????     
   void            ReadESD(Int_t iEventN, Int_t iChamber)const;
-  void            RichAna      (Int_t nNevMax=99999,Bool_t askPatRec=kFALSE); //utility-> create ntuples for analysis
   void            DrawRing(TVector3 entrance,TVector3 vectorTrack,Double_t thetaCer)const;
 
 protected:  

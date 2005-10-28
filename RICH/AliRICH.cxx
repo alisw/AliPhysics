@@ -16,7 +16,6 @@
 #include "AliRICH.h"
 #include "AliRICHParam.h"
 #include "AliRICHChamber.h"
-#include "AliRICHTracker.h"
 #include "AliRICHHelix.h"
 //#include <TArrayF.h>
 #include <TGeometry.h>
@@ -858,99 +857,6 @@ void AliRICH::CreateGeometry()
   }
   AliDebug(1,"Stop main.");  
 }//CreateGeometry()
-//__________________________________________________________________________________________________
-void AliRICH::CheckPR()const
-{
-//Pattern recognition with stack particles
-  TFile *pFile = new TFile("$(HOME)/RPR.root","RECREATE","RICH Pattern Recognition");
-  TNtupleD *hn = new TNtupleD("hn","ntuple","Pmod:Charge:TrackTheta:TrackPhi:TrackX:TrackY:MinX:MinY:ChargeMIP:ThetaCerenkov:NPhotons:MipIndex:Chamber:Particle");
-//  printf("\n\n");
-//  printf("Pattern Recognition done for event %5i",0);
-  AliMagF * magf = gAlice->Field();
-  AliTracker::SetFieldMap(magf,kTRUE);
-  for(Int_t iEvtN=0;iEvtN<GetLoader()->GetRunLoader()->GetNumberOfEvents();iEvtN++) {
-    GetLoader()->GetRunLoader()->GetEvent(iEvtN);
-    AliRICHTracker *tr = new AliRICHTracker();
-    tr->RecWithStack(hn);
-    Info("CheckPR","Pattern Recognition done for event %i \b",iEvtN);
-//    printf("\b\b\b\b\b%5i",iEvtN+1);
-  }
-  printf("\n\n");
-  pFile->Write();pFile->Close();
-}
-//__________________________________________________________________________________________________
-void AliRICH::RichAna(Int_t nNevMax,Bool_t askPatRec)
-{
-  TFile *pFile=TFile::Open("AliESDs.root","read");
-  if(!pFile || !pFile->IsOpen()) {AliInfo("ESD file not open.");return;}      //open AliESDs.root                                                                    
-  TTree *pTree = (TTree*) pFile->Get("esdTree");
-  if(!pTree){AliInfo("ESD not found.");return;}                               //get ESD tree  
-  AliInfo("ESD found. Go ahead!");
-
-  AliMagF * magf = gAlice->Field();
-  AliTracker::SetFieldMap(magf,kTRUE);
-//  AliTracker::SetFieldMap(magf);
-
-  TFile *pFileRA = new TFile("$(HOME)/RichAna.root","RECREATE","RICH Pattern Recognition");
-  TNtupleD *hn = new TNtupleD("hn","ntuple","Pmod:Charge:TrackTheta:TrackPhi:MinX:MinY:ThetaCerenkov:NPhotons:ChargeMIP:Chamber:TOF:LengthTOF:prob1:prob2:prob3:ErrPar1:ErrPar2:ErrPar3:Th1:Th2:Th3:nPhotBKG");
-  if(nNevMax==0) nNevMax=999999;
-  if(GetLoader()->GetRunLoader()->GetNumberOfEvents()<nNevMax) nNevMax = GetLoader()->GetRunLoader()->GetNumberOfEvents();
-  AliESD *pESD=new AliESD;  pTree->SetBranchAddress("ESD", &pESD);
-  for(Int_t iEvtN=0;iEvtN<nNevMax;iEvtN++) {
-    pTree->GetEvent(iEvtN);
-    AliRICH *pRich=((AliRICH*)gAlice->GetDetector("RICH"));
-    pRich->GetLoader()->GetRunLoader()->GetEvent(iEvtN);
-    pRich->GetLoader()->LoadRecPoints();
-    pRich->GetLoader()->TreeR()->GetEntry(0);
-//Pattern recognition started
-    if(pESD->GetNumberOfTracks()) {
-      Int_t iNtracks=pESD->GetNumberOfTracks();
-      Info("RichAna",Form("Start with %i tracks",iNtracks));
-      for(Int_t iTrackN=0;iTrackN<iNtracks;iTrackN++){//ESD tracks loop
-        if(iTrackN%100==0)Info("RichAna",Form("Track %i to be processed",iTrackN));
-        AliRICHTracker *pTrRich = new AliRICHTracker();
-        if(askPatRec==kTRUE) pTrRich->RecWithESD(pESD,pRich,iTrackN);
-        AliESDtrack *pTrack = pESD->GetTrack(iTrackN);// get next reconstructed track
-        Double_t dx,dy;
-        Double_t hnvec[30];
-        pTrack->GetRICHdxdy(dx,dy);
-        hnvec[0]=pTrack->GetP();
-        hnvec[1]=pTrack->GetSign();
-//  cout << " Track momentum " << pTrack->GetP() << " charge " << pTrack->GetSign() << endl;
-  
-        pTrack->GetRICHthetaPhi(hnvec[2],hnvec[3]);
-        pTrack->GetRICHdxdy(hnvec[4],hnvec[5]);
-        hnvec[6]=pTrack->GetRICHsignal();
-        hnvec[7]=pTrack->GetRICHnclusters();
-        hnvec[9]=pTrack->GetRICHcluster()/1000000;
-        hnvec[8]=pTrack->GetRICHcluster()-hnvec[9]*1000000;
-        hnvec[10]=pTrack->GetTOFsignal();
-        hnvec[11]=pTrack->GetIntegratedLength();
-        Double_t prob[5];
-        pTrack->GetRICHpid(prob);
-        hnvec[12]=prob[0]+prob[1]+prob[2];
-        hnvec[13]=prob[3];
-        hnvec[14]=prob[4];
-        hnvec[15]=pTrRich->fErrPar[2];
-        hnvec[16]=pTrRich->fErrPar[3];
-        hnvec[17]=pTrRich->fErrPar[4];
-        for(Int_t i=0;i<3;i++) {
-          Double_t mass = AliRICHParam::fgMass[i+2];
-          Double_t refIndex=AliRICHParam::RefIdxC6F14(AliRICHParam::MeanCkovEnergy());
-          Double_t cosThetaTh = TMath::Sqrt(mass*mass+pTrack->GetP()*pTrack->GetP())/(refIndex*pTrack->GetP());
-          hnvec[18+i]=0;
-          if(cosThetaTh>=1) continue;
-          hnvec[18+i]= TMath::ACos(cosThetaTh);
-        }
-        hnvec[21]=pTrRich->fnPhotBKG;
-        hn->Fill(hnvec);
-      }
-    }
-    Info("RichAna","Pattern Recognition done for event %i",iEvtN);
-  }
-  pFileRA->Write();pFileRA->Close();// close RichAna.root
-  delete pESD;  pFile->Close();//close AliESDs.root
-}
 //__________________________________________________________________________________________________
 void AliRICH::DisplayEvent(Int_t iEvtNmin,Int_t iEvtNmax)const
 {

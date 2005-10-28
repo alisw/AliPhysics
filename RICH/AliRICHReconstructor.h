@@ -21,9 +21,12 @@ public:
   void         Reconstruct           (AliRunLoader* pAL,AliRawReader *pRR)const;                                            //from AliReconstruction for raw->clusters
   using AliReconstructor::Reconstruct;                                                                            //to get rid of virtual hidden warning 
 //private part  
-         void          Dig2Clu   (TClonesArray*pDigList,TClonesArray *pCluList                                     )const;//form clusters out of provided digits list
+         void          Dig2Clu    (TClonesArray*pDigList,TClonesArray *pCluList                                    )const;//form clusters out of provided digits list
          void          FormCluster(AliRICHCluster *pClu,AliRICHDigit *pDig,TClonesArray *pDigList,TMatrixF *pDigMap)const;//form cluster recursive algorithm
-  inline AliRICHDigit *UseDig    (Int_t padX,Int_t padY,TClonesArray *pDigList,TMatrixF *pDigMap                   )const;//use this pad's digit to form a cluster
+  inline AliRICHDigit *UseDig     (Int_t padX,Int_t padY,TClonesArray *pDigList,TMatrixF *pDigMap                  )const;//use this pad's digit to form a cluster
+  static void          CheckPR    (                                                                                );     //utility-> run staff for stack
+  static void          RichAna    (Int_t iNevMax=99999,Bool_t isPatRec=kFALSE                                      );     //utility-> create ntuples for analysis
+  
 protected:
   ClassDef(AliRICHReconstructor, 0)   //class for the RICH reconstruction
 };

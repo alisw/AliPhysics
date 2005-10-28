@@ -10,7 +10,7 @@
 
 //globals for easy manual manipulations
 AliRun *a;    AliStack *s;  AliRunLoader *al; 
-AliRICH   *r; AliLoader    *rl,*vl;
+AliRICH   *r; AliLoader    *rl;
 
 
 //__________________________________________________________________________________________________
@@ -97,18 +97,6 @@ void RichGet()
 void MenuRich()
 {
   TControlBar *pMenu = new TControlBar("vertical","RICH");
-  pMenu->AddButton("Display single chambers"          ,"r->Display();"  , "Display Fast");
-  pMenu->AddButton("Display ALL chambers"          ,"r->DisplayEvent(0,0);"  , "Display Fast");
-  pMenu->AddButton("Print hits"       ,"r->HitsPrint();"      ,"????");
-  pMenu->AddButton("Print sdigits"    ,"r->SDigitsPrint();"   ,"????");
-  pMenu->AddButton("Print digits"     ,"r->DigitsPrint();"    ,"????");
-  pMenu->AddButton("Print clusters"   ,"r->ClustersPrint();"  ,"????");  
-  pMenu->AddButton("Print occupancy"  ,"r->OccupancyPrint(-1);" ,"????");  
-  pMenu->AddButton("Event Summary  "  ,"r->SummaryOfEvent();" ,"????");  
-  pMenu->AddButton("Hits plots"       ,"r->ControlPlots()"    ,"????");
-  pMenu->AddButton("Recon with stack" ,"r->CheckPR()", "Create RSR.root with ntuple hn");    
-  pMenu->AddButton("RichAna no Recon" ,"r->RichAna(0,kFALSE)", "Create RichAna.root with ntuple hn without PatRec");    
-  pMenu->AddButton("RichAna with Recon","r->RichAna(0,kTRUE)", "Create RichAna.root with ntuple hn with PatRec");    
   pMenu->Show();  
 }//TestMenu()
 //__________________________________________________________________________________________________
@@ -117,7 +105,18 @@ void RichMenu()
   TControlBar *pMenu = new TControlBar("vertical","MAIN");
        
   if(AliceRead()){//it's from file, show some info
-    if(r) pMenu->AddButton("RICH submenu"    , "MenuRich()"               , "Show RICH submenu"       );
+    pMenu->AddButton("Display single chambers"         ,"r->Display();"  , "Display Fast");
+    pMenu->AddButton("Display ALL chambers"            ,"r->DisplayEvent(0,0);"  , "Display Fast");
+    pMenu->AddButton("Hits QA"                         ,"hqa()"    ,"????");
+    pMenu->AddButton("Recon with stack"                ,"AliRICHReconstructor::CheckPR(        )","Create RSR.root with ntuple hn");    
+    pMenu->AddButton("RichAna no Recon"                ,"AliRICHReconstructor::RichAna(0,kFALSE)","Create RichAna.root with ntuple hn without PatRec");    
+    pMenu->AddButton("RichAna with Recon"              ,"AliRICHReconstructor::RichAna(0,kTRUE )","Create RichAna.root with ntuple hn with PatRec");    
+    pMenu->AddButton("Print hits"                      ,"h();"      ,"????");
+    pMenu->AddButton("Print sdigits"                   ,"s();"   ,"????");
+    pMenu->AddButton("Print digits"                    ,"d();"    ,"????");
+    pMenu->AddButton("Print clusters"                  ,"c();"  ,"????");  
+    pMenu->AddButton("Print occupancy"                 ,"r->OccupancyPrint(-1);" ,"????");  
+    pMenu->AddButton("Print event summary  "           ,"r->SummaryOfEvent();"   ,"????");  
   }else{//it's aliroot, simulate
     pMenu->AddButton("Debug ON",     "DebugON();",   "Switch debug on-off");   
     pMenu->AddButton("Debug OFF",    "DebugOFF();",  "Switch debug on-off");   
@@ -126,10 +125,12 @@ void RichMenu()
   pMenu->AddButton("Test segmentation"  ,"rp->TestSeg()"  ,"Test AliRICHParam segmentation methods"     );
   pMenu->AddButton("Test response"      ,"rp->TestResp()" ,"Test AliRICHParam response methods"         );
   pMenu->AddButton("Test transformation","rp->TestTrans()","Test AliRICHParam transformation methods"   );
-  pMenu->AddButton("Test opticals"      ,".x Opticals.h"  ,"Test optical properties"                    );
-  pMenu->AddButton("Geo GUI"            ,"GeomGui()"      ,"Shows geometry"                             ); 
-  pMenu->AddButton("Browser"            ,"new TBrowser;"  ,"Start ROOT TBrowser"                        );
-  pMenu->AddButton("Quit"               ,".q"             ,"Close session"                              );
+  pMenu->AddButton("Optics"             ,"opt()"                                                           ,"Shows optical properties");
+  pMenu->AddButton("Geo GUI"            ,"geo();"                                                          ,"Shows geometry"                             ); 
+  pMenu->AddButton("Debug ON"           ,"AliLog::SetGlobalDebugLevel(AliLog::kDebug);"                    ,"Switch debug on"                            );   
+  pMenu->AddButton("Debug OFF"          ,"AliLog::SetGlobalDebugLevel(0);"                                 ,"Switch debug off"                           );   
+  pMenu->AddButton("Browser"            ,"new TBrowser;"                                                   ,"Start ROOT TBrowser"                        );
+  pMenu->AddButton("Quit"               ,".q"                                                              ,"Close session"                              );
   pMenu->Show();
 }//menu()
 //__________________________________________________________________________________________________
@@ -148,6 +149,24 @@ void GeomGui()
 AliRun    *a() {return al->GetAliRun();}                         //provides pointer to main AliRun object (aka gAlice)
 AliRICH   *r() {return (AliRICH*)  a()->GetDetector("RICH");}    //provides pointer to RICH detector
 AliLoader *rl(){return             al->GetLoader("RICHLoader");}
+
+
+void geo (            )   { gGeoManager->SetVisOption(0);gGeoManager->GetTopVolume()->Draw(); AliRICHParam::DrawAxis();}
+void opt (            )   { AliRICHParam::Materials();        }   //draw optical properties  
+void dis (Int_t evt=-1)   {r->Display      (evt);}                //utility display 
+void dum (            )   {r->Dump         (   );}                //utility display 
+
+void h   (Int_t evt=0 )   {r->HitsPrint    (evt);}   //print hits for requested event
+void s   (Int_t evt=0 )   {r->SDigitsPrint (evt);}   //print sdigits for requested event
+void d   (Int_t evt=0 )   {r->DigitsPrint  (evt);}   //print digits for requested event
+void c   (Int_t evt=0 )   {r->ClustersPrint(evt);}   //print clusters for requested event
+
+void hqa (            )   {r->HitsQA       (   );}   //hits QA plots for all events 
+void dqa (            )   {r->DigitsQA     (   );}   //digits QA plots for all events
+void cqa (            )   {r->ClustersQA   (   );}   //clusters QA plots for all events
+
+
+Int_t t   (Int_t pid,Int_t evt=0)   {return (AliRICH*)v())->TrackPrint(pid,evt);}   //print track
 
 void rt(Int_t event=0)    {r->PrintTracks  (event);}                                                       //utility print tracks
 Int_t nem(Int_t event=0)  {AliRICH::Nparticles(kElectron  ,event,al);} //utility number of electrons
