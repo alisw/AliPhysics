@@ -2,7 +2,7 @@
 # Placing motifs starting bottom left and going counter-clockwise
 # from  O17 to R30
 
-SIZES 25 5 400 400
+SIZES 2.5 0.5 40 40
 
 MOTIF O17 10  0
 MOTIF O18 12  0
