@@ -29,6 +29,7 @@ PYTHIA6/module.mk:	 PYTHIA6/libpythia6.pkg
 RALICE/module.mk:	 RALICE/libRALICE.pkg
 RAW/module.mk:           RAW/libRAWData.pkg RAW/binalimdc.pkg
 RICH/module.mk:		 RICH/libRICHbase.pkg RICH/libRICHrec.pkg RICH/libRICHsim.pkg
+SHUTTLE/module.mk:	 SHUTTLE/libSHUTTLE.pkg
 START/module.mk:	 START/libSTARTbase.pkg START/libSTARTsim.pkg START/libSTARTrec.pkg
 STEER/module.mk:	 STEER/libESD.pkg STEER/libSTEER.pkg
 STRUCT/module.mk:	 STRUCT/libSTRUCT.pkg
