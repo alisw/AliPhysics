@@ -138,7 +138,7 @@ AliFMDGeoOldSimulator::RingGeometry(AliFMDRing* r)
   //
   if (!r) { 
     AliError("Didn't get a ring object");
-    return kFALSE;
+    return 0x0;
   }
   Char_t      id          = r->GetId();
   Double_t    siThick     = r->GetSiThickness();
