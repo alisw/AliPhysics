@@ -1,5 +1,9 @@
 # Makefile to build AliRoot for Linux
 
+# System dependent commands
+
+XARGS = xargs -r
+
 # The compilers
 CXX           = g++ 
 F77	      = g77

@@ -1,5 +1,9 @@
 # Makefile for AliRoot for Itanium/Linux with Intel icc compiler
 
+# System dependent commands
+
+XARGS = xargs -r
+
 # The compilers
 CXX           = icc 
 F77	      = ifort

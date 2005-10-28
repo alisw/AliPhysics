@@ -1,5 +1,9 @@
 # Makefile for AliRoot for Itanium/Linux with gcc
 
+# System dependent commands
+
+XARGS = xargs -r
+
 # The compilers
 CXX           = g++ 
 F77	      = g77

@@ -1,5 +1,9 @@
 # Makefile to build AliRoot for Alpha OSF1
 
+# System dependent commands
+
+XARGS = xargs
+
 # The compilers
 CXX           = cxx 
 F77	      = f77

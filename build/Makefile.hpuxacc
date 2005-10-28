@@ -1,5 +1,9 @@
 # Makefile to build AliRoot on HP-UX
 
+# System dependent commands
+
+XARGS = xargs
+
 # The compilers
 CXX           = aCC
 F77	      = f77
