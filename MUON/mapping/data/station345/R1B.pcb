@@ -2,7 +2,7 @@
 # Placing motifs starting bottom left and going counter-clockwise
 # from R41 to R40
 
-SIZES 2.5 0.5 40 40
+SIZES 25 5 400 400
 
 MOTIF R41  9  0
 MOTIF L16 12  0

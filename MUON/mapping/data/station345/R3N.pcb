@@ -3,7 +3,7 @@
 # Starting O14 (which is indeed close to the bottom right, due to
 # the PCB shape) , ending O13 on top left.
  
-SIZES 0.714285714 2.5 40 40
+SIZES 7.14285714 25 400 400
 
 MOTIF O14 44  0 
 MOTIF O14 48  0 

@@ -1,7 +1,7 @@
 # NonBending PCB. Density 2. Left to right (labelled "plus")
 # Placing motifs starting bottom left and going counter-clockwise
 
-SIZES 0.714285714 5 40 40
+SIZES 7.14285714 50 400 400
 
 MOTIF P3  0  0
 MOTIF Q3 12  0
