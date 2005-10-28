@@ -4,9 +4,8 @@ Int_t copy; //volume copy number
 Double_t dx,dy,dz,r1,r2;//tmp vars for volume dimentions
 Double_t cm=1,m=100*cm,mm=0.1*cm,mkm=0.001*cm;//length units  
 
-void Geom()
+void RichGeom()
 {
-  AliRICHParam::SetRadioSrc(kTRUE);
   p=new AliRICHParam;
   
   //gSystem->Load("libGeom.so");  
@@ -76,8 +75,6 @@ void Rich(TGeoVolume *pTop)
                  Gap(pRich);           //anod wires
                  Frame3(pRich);        //cathode wires
                  Frame4(pRich);        //collection wires  
-  if(!p->IsRadioSrc())    Radiators(pRich);
-  else                    Sr90(pRich);
                  Sandbox(pRich);
 }//Rich()
 //__________________________________________________________________________________________________
