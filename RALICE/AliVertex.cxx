@@ -1014,6 +1014,148 @@ void AliVertex::Draw(Int_t secs,Int_t cons,Int_t jets)
  }
 }
 ///////////////////////////////////////////////////////////////////////////
+TObjArray* AliVertex::SortJets(Int_t mode,TObjArray* jets)
+{
+// Order the references to an array of jets by looping over the input array "jets"
+// and checking the value of a certain observable.
+// The ordered array is returned as a TObjArray.
+// In case jets=0 (default), the registered jets of the current vertex are used. 
+// Note that the original jet array is not modified.
+// Via the "mode" argument the user can specify the observable to be checked upon
+// and specify whether sorting should be performed in decreasing order (mode<0)
+// or in increasing order (mode>0).
+//
+// The convention for the observable selection is the following :
+// mode : 1 ==> Number of tracks in the jet
+//        2 ==> Jet energy
+//        3 ==> Jet momentum
+//        4 ==> Invariant mass of the jet
+//        5 ==> Transverse momentum of the jet
+//        6 ==> Longitudinal momentum of the jet
+//        7 ==> Transverse energy of the jet
+//        8 ==> Longitudinal energy of the jet
+//        9 ==> Transverse mass of the jet
+//       10 ==> Jet rapidity
+//       11 ==> Pseudo-rapidity of the jet
+//
+// The default is mode=-1.
+//
+// Note : This sorting routine uses a common area in memory, which is used
+//        by various other sorting facilities as well.
+//        This means that the resulting sorted TObjArray may be overwritten
+//        when another sorting is invoked.
+//        To retain the sorted list of pointers, the user is advised to copy
+//        the pointers contained in the returned TObjArray into a private
+//        TObjArray instance.
+
+ if (fSelected)
+ {
+  delete fSelected;
+  fSelected=0;
+ }
+
+ if (!jets) jets=fJets;
+ 
+ if (abs(mode)>11 || !jets) return fSelected;
+
+ Int_t njets=jets->GetEntries();
+ if (!njets)
+ {
+  return fSelected;
+ }
+ else
+ {
+  fSelected=new TObjArray(njets);
+ }
+
+ Double_t val1,val2; // Values of the observable to be tested upon
+ 
+ Int_t nord=0;
+ for (Int_t i=0; i<njets; i++) // Loop over all jets of the array
+ {
+  AliJet* jx=(AliJet*)jets->At(i);
+
+  if (!jx) continue;
+ 
+  if (nord == 0) // store the first jet at the first ordered position
+  {
+   nord++;
+   fSelected->AddAt(jx,nord-1);
+   continue;
+  }
+ 
+  for (Int_t j=0; j<=nord; j++) // put jet in the right ordered position
+  {
+   if (j == nord) // jet has smallest (mode<0) or largest (mode>0) observable value seen so far
+   {
+    nord++;
+    fSelected->AddAt(jx,j); // add jet at the end
+    break; // go for next jet
+   }
+   
+   switch (abs(mode))
+   {
+    case 1:
+     val1=jx->GetNtracks();
+     val2=((AliJet*)fSelected->At(j))->GetNtracks();
+     break;
+    case 2:
+     val1=jx->GetEnergy();
+     val2=((AliJet*)fSelected->At(j))->GetEnergy();
+     break;
+    case 3:
+     val1=jx->GetMomentum();
+     val2=((AliJet*)fSelected->At(j))->GetMomentum();
+     break;
+    case 4:
+     val1=jx->GetInvmass();
+     val2=((AliJet*)fSelected->At(j))->GetInvmass();
+     break;
+    case 5:
+     val1=jx->GetPt();
+     val2=((AliJet*)fSelected->At(j))->GetPt();
+     break;
+    case 6:
+     val1=jx->GetPl();
+     val2=((AliJet*)fSelected->At(j))->GetPl();
+     break;
+    case 7:
+     val1=jx->GetEt();
+     val2=((AliJet*)fSelected->At(j))->GetEt();
+     break;
+    case 8:
+     val1=jx->GetEl();
+     val2=((AliJet*)fSelected->At(j))->GetEl();
+     break;
+    case 9:
+     val1=jx->GetMt();
+     val2=((AliJet*)fSelected->At(j))->GetMt();
+     break;
+    case 10:
+     val1=jx->GetRapidity();
+     val2=((AliJet*)fSelected->At(j))->GetRapidity();
+     break;
+    case 11:
+     val1=jx->GetPseudoRapidity();
+     val2=((AliJet*)fSelected->At(j))->GetPseudoRapidity();
+     break;
+   }
+
+   if (mode<0 && val1 < val2) continue;
+   if (mode>0 && val1 > val2) continue;
+ 
+   nord++;
+   for (Int_t k=nord-1; k>j; k--) // create empty position
+   {
+    fSelected->AddAt(fSelected->At(k-1),k);
+   }
+   fSelected->AddAt(jx,j); // put jet at empty position
+   break; // go for next jet
+  }
+ }
+ return fSelected;
+}
+///////////////////////////////////////////////////////////////////////////
 TObject* AliVertex::Clone(const char* name) const
 {
 // Make a deep copy of the current object and provide the pointer to the copy.

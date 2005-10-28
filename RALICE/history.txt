@@ -654,3 +654,7 @@
                 Memberfunction GetOpeningAngle introduced in Ali3Vector and Ali4Vector.
 25-oct-2005 NvE Support introduced for user selectable angular units (rad or deg) in Ali3Vector,
                 Ali4Vector and all derived classes.
+27-oct-2005 NvE Memberfunction GetX to access individual vector components also introduced
+                for Ali4Vector.
+                Also memberfunction SortJets introduced in AliVertex.
+                Misleading comment modified in AliDevice.cxx.

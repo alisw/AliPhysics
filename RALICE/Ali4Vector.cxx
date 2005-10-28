@@ -970,6 +970,41 @@ Double_t Ali4Vector::GetGamma()
  return gamma;
 }
 ///////////////////////////////////////////////////////////////////////////
+Double_t Ali4Vector::GetX(Int_t i,TString f,TString u)
+{
+// Provide i-th vector component according to reference frame f.
+//
+// The string argument "u" allows to choose between different angular units
+// in case e.g. a spherical frame is selected.
+// u = "rad" : angles provided in radians
+//     "deg" : angles provided in degrees
+//
+// The default is u="rad".
+//
+// The vector components are addressed via the generic x0,x1,x2,x3 notation.
+// So, i=0 denotes the scalar component and i=1 denotes the first 3-vector component.
+// The error on the selected component can be obtained via the
+// usual GetResultError() facility.
+ 
+ fDresult=0;
+
+ if (i<0 || i>3) return 0;
+
+ Double_t x=0;
+
+ if (i==0)
+ {
+  x=GetScalar();
+ }
+ else
+ {
+  x=fV.GetX(i,f,u);
+  fDresult=fV.GetResultError();
+ }
+
+ return x;
+}
+///////////////////////////////////////////////////////////////////////////
 Double_t Ali4Vector::GetOpeningAngle(Ali4Vector& q,TString u)
 {
 // Provide the opening angle between 3-vector parts with 4-vector q.

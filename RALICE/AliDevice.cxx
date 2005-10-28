@@ -569,7 +569,7 @@ TObjArray* AliDevice::SortHits(Int_t idx,Int_t mode,TObjArray* hits,Int_t mcal)
     fOrdered->AddAt(fOrdered->At(k-1),k);
    }
    fOrdered->AddAt(s,j); // put hit at empty position
-   break; // go for next matrix module
+   break; // go for next hit
   }
  }
  return fOrdered;
@@ -654,7 +654,7 @@ TObjArray* AliDevice::SortHits(TString name,Int_t mode,TObjArray* hits,Int_t mca
     fOrdered->AddAt(fOrdered->At(k-1),k);
    }
    fOrdered->AddAt(s,j); // put hit at empty position
-   break; // go for next matrix module
+   break; // go for next hit
   }
  }
  return fOrdered;

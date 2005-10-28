@@ -61,7 +61,7 @@ class AliJet : public TNamed,public Ali4Vector
   TObjArray* fTracks;                    // Array to hold the pointers to the tracks of the jet
   Int_t fTrackCopy;                      // Flag to denote creation of private copies in fTracks
   Int_t fUserId;                         // The user defined identifier
-  TObjArray* fSelected;                  //! Temp. array to hold user selected objects
+  TObjArray* fSelected;                  //! Temp. array to hold user selected or ordered objects
  
  ClassDef(AliJet,12) // Creation and investigation of a jet of particle tracks.
 };
