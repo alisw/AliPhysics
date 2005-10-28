@@ -27,7 +27,8 @@ class AliHLTTPCGlobalMerger;
 #ifndef no_root
 class TDirectory;
 #endif
-class AliHLTTPCClustFinderNew;
+class AliHLTTPCClusterFinder;
+class AliHLTTPCDigitReaderUnpacked;
 class AliHLTTPCMerger;
 class AliHLTTPCInterMerger;
 class AliHLTTPCFileHandler;
@@ -49,7 +50,8 @@ class AliHLTTPC : public TObject {
   AliHLTTPCTrackMerger *fTrackMerger; //!
   AliHLTTPCGlobalMerger *fGlobalMerger; //!
   AliHLTTPCInterMerger *fInterMerger; //!
-  AliHLTTPCClustFinderNew *fClusterFinder; //! 
+  AliHLTTPCClusterFinder *fClusterFinder; //! 
+  AliHLTTPCDigitReaderUnpacked* fDigitReader; //!
   AliHLTTPCMemHandler *fFileHandler; //!
   AliHLTTPCBenchmark *fBenchmark;//!
 

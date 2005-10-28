@@ -26,6 +26,10 @@ SRCS	= AliHLTTPCLog.cxx \
           AliHLTTPCBenchmark.cxx \
           AliHLTTPCDDLDataFileHandler.cxx \
           AliHLTTPCClustFinderNew.cxx \
+          AliHLTTPCClusterFinder.cxx \
+          AliHLTTPCDigitReader.cxx \
+          AliHLTTPCDigitReaderPacked.cxx \
+          AliHLTTPCDigitReaderUnpacked.cxx \
           AliHLTTPCVertex.cxx \
           AliHLTTPCVertexArray.cxx \
           AliHLTTPCVertexFinder.cxx \

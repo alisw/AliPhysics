@@ -27,7 +27,8 @@
 #include "AliHLTTPCConfMapPoint.h"
 #include "AliHLTTPCConfMapTrack.h"
 #include "AliHLTTPCTransform.h"
-#include "AliHLTTPCClustFinderNew.h"
+#include "AliHLTTPCClusterFinder.h"
+#include "AliHLTTPCDigitReaderUnpacked.h"
 #include "AliHLTTPCDigitData.h"
 #include "AliHLTTPCTrackArray.h"
 #include "AliHLTTPCMemHandler.h"
@@ -357,9 +358,10 @@ void AliHLTTPC::ProcessSlice(Int_t slice)
     AliHLTTPCSpacePointData *points =0;
     UInt_t ndigits=0;
     AliHLTTPCDigitRowData *digits =0;
+    UInt_t digitSize = 0;
     if(UseCF){
-      if(fUseBinary){
-        if(!fDoRoi){ 
+      if(fUseBinary) {
+        if(!fDoRoi) { 
           if(1){     //Binary to Memory
 	    fFileHandler->Free();
             if(fNPatch == 1)
@@ -370,10 +372,13 @@ void AliHLTTPC::ProcessSlice(Int_t slice)
 	    if(fPileUp)
 	      { //Read binary files which are not RLE
 		digits = (AliHLTTPCDigitRowData*)fFileHandler->Allocate();
-		fFileHandler->Binary2Memory(ndigits,digits); 
+		fFileHandler->Binary2Memory(ndigits,digits, digitSize ); 
+		digitSize = fFileHandler->GetFileSize();
 	      }
 	    else //Read RLE binary files
-	      digits= (AliHLTTPCDigitRowData *)fFileHandler->CompBinary2Memory(ndigits);
+		{
+		digits= (AliHLTTPCDigitRowData *)fFileHandler->CompBinary2Memory(ndigits, digitSize);
+		}
 
 	    fFileHandler->CloseBinaryInput(); 
           }
@@ -392,7 +397,7 @@ void AliHLTTPC::ProcessSlice(Int_t slice)
             UInt_t datasize=memory->GetMemorySize(ndigits,comp);
             digits=(AliHLTTPCDigitRowData *)fFileHandler->Allocate(datasize);
             fBenchmark->Start("Unpacker"); 
-            fFileHandler->CompMemory2Memory(ndigits,digits,comp); 
+            fFileHandler->CompMemory2Memory(ndigits,digits,comp,digitSize); 
             fBenchmark->Stop("Unpacker");
             memory->Free();
           }
@@ -415,7 +420,7 @@ void AliHLTTPC::ProcessSlice(Int_t slice)
             UInt_t rsize=fFileHandler->GetRandomSize();       
             digits=(AliHLTTPCDigitRowData*)fFileHandler->Allocate(dsize+rsize);
             fBenchmark->Start("Unpacker");
-            fFileHandler->CompMemory2Memory(ndigits,digits,comp); 
+            fFileHandler->CompMemory2Memory(ndigits,digits,comp,digitSize); 
             fBenchmark->Stop("Unpacker");
             memory->Free();
           }
@@ -437,7 +442,7 @@ void AliHLTTPC::ProcessSlice(Int_t slice)
           UInt_t datasize=memory->GetMemorySize(ndigits,comp);
           digits=(AliHLTTPCDigitRowData *)fFileHandler->Allocate(datasize);
           fBenchmark->Start("Unpacker"); 
-          datasize = fFileHandler->CompMemory2Memory(ndigits,digits,comp); 
+          datasize = fFileHandler->CompMemory2Memory(ndigits,digits,comp,digitSize); 
           fBenchmark->Stop("Unpacker"); 
           memory->Free();
         }
@@ -469,7 +474,8 @@ void AliHLTTPC::ProcessSlice(Int_t slice)
       }//end else UseBinary
 
       points = (AliHLTTPCSpacePointData *) memory->Allocate(kpointsize);
-      fClusterFinder = new AliHLTTPCClustFinderNew();
+      fClusterFinder = new AliHLTTPCClusterFinder();
+      fDigitReader = new AliHLTTPCDigitReaderUnpacked();
       fClusterFinder->InitSlice(slice,patch,fRow[patch][0],fRow[patch][1],kmaxpoints);
       fClusterFinder->SetDeconv(fClusterDeconv);
       fClusterFinder->SetXYError(fXYClusterError);
@@ -477,8 +483,10 @@ void AliHLTTPC::ProcessSlice(Int_t slice)
       if((fXYClusterError>0)&&(fZClusterError>0))
 	fClusterFinder->SetCalcErr(kFALSE);
       fClusterFinder->SetOutputArray(points);
+      fClusterFinder->SetReader( fDigitReader );
       fBenchmark->Start("Cluster finder");
-      fClusterFinder->Read(ndigits,digits);
+      //fClusterFinder->Read(ndigits,digits);
+      fClusterFinder->Read( (void*)digits, (unsigned long) digitSize );
       fClusterFinder->ProcessDigits();
       fBenchmark->Stop("Cluster finder");
       npoints = fClusterFinder->GetNumberOfClusters();

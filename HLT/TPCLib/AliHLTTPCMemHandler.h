@@ -63,21 +63,25 @@ class AliHLTTPCMemHandler {
 
   //Digit IO
   Bool_t Memory2Binary(UInt_t nrow,AliHLTTPCDigitRowData *data);
-  Bool_t Binary2Memory(UInt_t & nrow,AliHLTTPCDigitRowData *data);
+  Bool_t Binary2Memory(UInt_t & nrow,AliHLTTPCDigitRowData *data, UInt_t& sz);
+  Bool_t Binary2Memory(UInt_t & nrow,AliHLTTPCDigitRowData *data){UInt_t tmp;return Binary2Memory(nrow,data,tmp);};
 
   Int_t Memory2CompMemory(UInt_t nrow,AliHLTTPCDigitRowData *data,UInt_t *comp);
-  Int_t CompMemory2Memory(UInt_t nrow,AliHLTTPCDigitRowData *data,UInt_t *comp);
+  Int_t CompMemory2Memory(UInt_t nrow,AliHLTTPCDigitRowData *data,UInt_t *comp,UInt_t& sz);
+  Int_t CompMemory2Memory(UInt_t nrow,AliHLTTPCDigitRowData *data,UInt_t *comp) {UInt_t tmp;return CompMemory2Memory(nrow,data,comp,tmp);};
   Bool_t CompMemory2CompBinary(UInt_t nrow,UInt_t *comp, UInt_t size=0);
   Bool_t CompBinary2CompMemory(UInt_t & nrow,UInt_t *comp);
 
-  virtual AliHLTTPCDigitRowData *CompBinary2Memory(UInt_t & nrow);
+  virtual AliHLTTPCDigitRowData *CompBinary2Memory(UInt_t & nrow, UInt_t& sz);
+  virtual AliHLTTPCDigitRowData *CompBinary2Memory(UInt_t & nrow){UInt_t tmp;return CompBinary2Memory(nrow,tmp);};
   virtual Bool_t Memory2CompBinary(UInt_t nrow,AliHLTTPCDigitRowData *data);
   
   UInt_t GetNRow(UInt_t *comp,UInt_t size);
 
   //Point IO
   Bool_t Memory2Binary(UInt_t npoint,AliHLTTPCSpacePointData *data);
-  Bool_t Binary2Memory(UInt_t & npoint,AliHLTTPCSpacePointData *data);
+  Bool_t Binary2Memory(UInt_t & npoint,AliHLTTPCSpacePointData *data, UInt_t& sz);
+  Bool_t Binary2Memory(UInt_t & npoint,AliHLTTPCSpacePointData *data) {UInt_t tmp; return Binary2Memory(npoint,data,tmp);};
   Bool_t Transform(UInt_t npoint,AliHLTTPCSpacePointData *data,Int_t slice);
   static void UpdateRowPointer(AliHLTTPCDigitRowData *&tempPt);
   

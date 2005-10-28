@@ -3,6 +3,7 @@
 
 #ifndef ALIHLTTPCCLUSTERFINDERCOMPONENT_H
 #define ALIHLTTPCCLUSTERFINDERCOMPONENT_H
+
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
@@ -11,13 +12,15 @@
 
 #include "AliHLTProcessor.h"
 #include "AliHLTTPCDefinitions.h"
+#include "AliHLTTPCDigitReaderPacked.h"
+#include "AliHLTTPCDigitReaderUnpacked.h"
 
-class AliHLTTPCClustFinderNew;
+class AliHLTTPCClusterFinder;
 
 class AliHLTTPCClusterFinderComponent : public AliHLTProcessor
     {
     public:
-	AliHLTTPCClusterFinderComponent();
+	AliHLTTPCClusterFinderComponent(bool packed);
 	virtual ~AliHLTTPCClusterFinderComponent();
 
 	// Public functions to implement AliHLTComponent's interface.
@@ -43,13 +46,15 @@ class AliHLTTPCClusterFinderComponent : public AliHLTProcessor
 	
     private:
 
-	AliHLTTPCClustFinderNew* fClusterFinder;
-
-	bool fClusterDeconv;
-	float fXYClusterError;
-	float fZClusterError;
-	
-	ClassDef(AliHLTTPCClusterFinderComponent, 0)
+      AliHLTTPCClusterFinder* fClusterFinder;
+      AliHLTTPCDigitReaderPacked* fReaderPacked;
+      AliHLTTPCDigitReaderUnpacked* fReaderUnpacked;
+      bool fClusterDeconv;
+      float fXYClusterError;
+      float fZClusterError;
+      Int_t fPackedSwitch;
+      
+      ClassDef(AliHLTTPCClusterFinderComponent, 0)
 
     };
 #endif

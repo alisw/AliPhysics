@@ -5,6 +5,7 @@
  *                                                                        *
  * Authors: Matthias Richter <Matthias.Richter@ift.uib.no>                *
  *          Timm Steinbeck <timm@kip.uni-heidelberg.de>                   *
+ *          Jochen Thaeder <thaeder@kip.uni-heidelberg.de>                *
  *          for The ALICE Off-line Project.                               *
  *                                                                        *
  * Permission to use, copy, modify and distribute this software and its   *
@@ -19,15 +20,19 @@
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
 // a TPC cluster finder processing component for the HLT                     //
+// useable for packed data or unpacked data                                  //
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
+
 
 #if __GNUC__== 3
 using namespace std;
 #endif
 
 #include "AliHLTTPCClusterFinderComponent.h"
-#include "AliHLTTPCClustFinderNew.h"
+#include "AliHLTTPCDigitReaderPacked.h"
+#include "AliHLTTPCDigitReaderUnpacked.h"
+#include "AliHLTTPCClusterFinder.h"
 #include "AliHLTTPCSpacePointData.h"
 #include "AliHLTTPCRawDataFormat.h"
 #include "AliHLTTPCClusterDataFormat.h"
@@ -36,13 +41,20 @@ using namespace std;
 #include <errno.h>
 
 // this is a global object used for automatic component registration, do not use this
-AliHLTTPCClusterFinderComponent gAliHLTTPCClusterFinderComponent;
+AliHLTTPCClusterFinderComponent gAliHLTTPCClusterFinderComponentPacked(true);
+AliHLTTPCClusterFinderComponent gAliHLTTPCClusterFinderComponentUnpacked(false);
 
 ClassImp(AliHLTTPCClusterFinderComponent)
 
-AliHLTTPCClusterFinderComponent::AliHLTTPCClusterFinderComponent()
+AliHLTTPCClusterFinderComponent::AliHLTTPCClusterFinderComponent(bool packed)
     {
+    // use fPackedSwitch = true for packed inputtype "gkDDLPackedRawDataType"
+    // use fPackedSwitch = false for unpacked inputtype "gkUnpackedRawDataType"
+    fPackedSwitch = packed;
+
     fClusterFinder = NULL;
+    fReaderPacked = NULL;
+    fReaderUnpacked = NULL;
     fClusterDeconv = true;
     fXYClusterError = -1;
     fZClusterError = -1;
@@ -57,13 +69,16 @@ AliHLTTPCClusterFinderComponent::~AliHLTTPCClusterFinderComponent()
 
 const char* AliHLTTPCClusterFinderComponent::GetComponentID()
     {
-    return "TPCClusterFinder";
+      if (fPackedSwitch) return "TPCClusterFinderPacked";
+      else return "TPCClusterFinderUnpacked";
     }
 
 void AliHLTTPCClusterFinderComponent::GetInputDataTypes( vector<AliHLTComponent_DataType>& list)
     {
-    list.clear();
-    list.push_back( AliHLTTPCDefinitions::gkUnpackedRawDataType );
+    list.clear(); 
+    if (fPackedSwitch) list.push_back( AliHLTTPCDefinitions::gkDDLPackedRawDataType );
+    else list.push_back( AliHLTTPCDefinitions::gkUnpackedRawDataType );
+   
     }
 
 AliHLTComponent_DataType AliHLTTPCClusterFinderComponent::GetOutputDataType()
@@ -73,77 +88,131 @@ AliHLTComponent_DataType AliHLTTPCClusterFinderComponent::GetOutputDataType()
 
 void AliHLTTPCClusterFinderComponent::GetOutputDataSize( unsigned long& constBase, double& inputMultiplier )
     {
-    // XXX TODO: Find more realistic values.
+    // XXX TODO: Find more realistic values.  
     constBase = 0;
-    inputMultiplier = 0.4;
+    if (fPackedSwitch)  inputMultiplier = (6 * 0.4);
+    else  inputMultiplier = 0.4;
     }
 
 AliHLTComponent* AliHLTTPCClusterFinderComponent::Spawn()
     {
-    return new AliHLTTPCClusterFinderComponent;
+    return new AliHLTTPCClusterFinderComponent(fPackedSwitch);
     }
 	
 int AliHLTTPCClusterFinderComponent::DoInit( int argc, const char** argv )
     {
     if ( fClusterFinder )
 	return EINPROGRESS;
-    fClusterFinder = new AliHLTTPCClustFinderNew();
+
+    fClusterFinder = new AliHLTTPCClusterFinder();
+
+    if (fPackedSwitch) {
+      fReaderPacked = new AliHLTTPCDigitReaderPacked();
+      fClusterFinder->SetReader(fReaderPacked);
+    }
+    else {
+      fReaderUnpacked = new AliHLTTPCDigitReaderUnpacked();
+      fClusterFinder->SetReader(fReaderUnpacked);
+    }
+    
+    // Variables to setup the Clusterfinder
     fClusterDeconv = true;
     fXYClusterError = -1;
     fZClusterError = -1;
+
     int i = 0;
     while ( i < argc )
 	{
-	if ( !strcmp( argv[i], "pp-run" ) )
-	    {
+	  if ( !strcmp( argv[i], "pp-run" ) ){
 	    fClusterDeconv = false;
 	    i++;
 	    continue;
-	    }
+	  }
+
 	Logging(kHLTLogError, "HLT::TPCClusterFinder::DoInit", "Unknown Option", "Unknown option '%s'", argv[i] );
 	return EINVAL;
 	}
+
+
+    fClusterFinder->SetDeconv( fClusterDeconv );
+    fClusterFinder->SetXYError( fXYClusterError );
+    fClusterFinder->SetZError( fZClusterError );
+    if ( (fXYClusterError>0) && (fZClusterError>0) )
+      fClusterFinder->SetCalcErr( false );
+    
     return 0;
     }
 
 int AliHLTTPCClusterFinderComponent::DoDeinit()
     {
-    if ( !fClusterFinder )
-	return ECANCELED;
+
     if ( fClusterFinder )
 	delete fClusterFinder;
     fClusterFinder = NULL;
+ 
+    if ( fReaderUnpacked )
+	delete fReaderUnpacked;
+    fReaderUnpacked = NULL;
+    
+    if ( fReaderPacked )
+	delete fReaderPacked;
+    fReaderPacked = NULL;
+
     return 0;
     }
 
-int AliHLTTPCClusterFinderComponent::DoEvent( const AliHLTComponent_EventData& evtData, const AliHLTComponent_BlockData* blocks, 
+int AliHLTTPCClusterFinderComponent::DoEvent( const AliHLTComponent_EventData& evtData, 
+					      const AliHLTComponent_BlockData* blocks, 
 					      AliHLTComponent_TriggerData& trigData, AliHLTUInt8_t* outputPtr, 
-					      AliHLTUInt32_t& size, vector<AliHLTComponent_BlockData>& outputBlocks )
+					      AliHLTUInt32_t& size, 
+					      vector<AliHLTComponent_BlockData>& outputBlocks )
     {
+    //  == init iter (pointer to datablock)
     const AliHLTComponent_BlockData* iter = NULL;
     unsigned long ndx;
-    AliHLTTPCUnpackedRawData* inPtr;
+
+    //  == OUTdatatype pointer
     AliHLTTPCClusterData* outPtr;
+
     AliHLTUInt8_t* outBPtr;
     UInt_t offset, mysize, nSize, tSize = 0;
+
     outBPtr = outputPtr;
     outPtr = (AliHLTTPCClusterData*)outBPtr;
+
     Int_t slice, patch, row[2];
     unsigned long maxPoints, realPoints = 0;
+
     for ( ndx = 0; ndx < evtData.fBlockCnt; ndx++ )
 	{
 	iter = blocks+ndx;
 	mysize = 0;
 	offset = tSize;
-	char tmp1[14], tmp2[14];
-	DataType2Text( iter->fDataType, tmp1 );
-	DataType2Text( AliHLTTPCDefinitions::gkUnpackedRawDataType, tmp2 );
-	Logging( kHLTLogDebug, "HLT::TPCClusterFinder::DoEvent", "Event received", 
-		 "Event 0x%08LX (%Lu) received datatype: %s - required datatype: %s",
-		 evtData.fEventID, evtData.fEventID, tmp1, tmp2 );
-	if ( iter->fDataType != AliHLTTPCDefinitions::gkUnpackedRawDataType )
-	    continue;
-	
+
+
+	if (fPackedSwitch) {	
+	  char tmp1[14], tmp2[14];
+	  DataType2Text( iter->fDataType, tmp1 );
+	  DataType2Text( AliHLTTPCDefinitions::gkDDLPackedRawDataType, tmp2 );
+	  Logging( kHLTLogDebug, "HLT::TPCClusterFinder::DoEvent", "Event received", 
+		   "Event 0x%08LX (%Lu) received datatype: %s - required datatype: %s",
+		   evtData.fEventID, evtData.fEventID, tmp1, tmp2 );
+
+	  if ( iter->fDataType != AliHLTTPCDefinitions::gkDDLPackedRawDataType ) continue;
+
+	}
+	else {
+	  char tmp1[14], tmp2[14];
+	  DataType2Text( iter->fDataType, tmp1 );
+	  DataType2Text( AliHLTTPCDefinitions::gkUnpackedRawDataType, tmp2 );
+	  Logging( kHLTLogDebug, "HLT::TPCClusterFinder::DoEvent", "Event received", 
+		   "Event 0x%08LX (%Lu) received datatype: %s - required datatype: %s",
+		   evtData.fEventID, evtData.fEventID, tmp1, tmp2 );
+
+	  if ( iter->fDataType != AliHLTTPCDefinitions::gkUnpackedRawDataType ) continue;
+
+	}
+    	
 	slice = AliHLTTPCDefinitions::GetMinSliceNr( *iter );
 	patch = AliHLTTPCDefinitions::GetMinPatchNr( *iter );
 	row[0] = AliHLTTPCTransform::GetFirstRow( patch );
@@ -154,18 +223,12 @@ int AliHLTTPCClusterFinderComponent::DoEvent( const AliHLTComponent_EventData& e
 		 realPoints, slice, patch, row[0], row[1] );
 	
 	outPtr = (AliHLTTPCClusterData*)outBPtr;
-	
-	inPtr = (AliHLTTPCUnpackedRawData*)iter->fPtr;
+
 	maxPoints = (size-tSize-sizeof(AliHLTTPCClusterData))/sizeof(AliHLTTPCSpacePointData);
 	
 	fClusterFinder->InitSlice( slice, patch, row[0], row[1], maxPoints );
-	fClusterFinder->SetDeconv( fClusterDeconv );
-	fClusterFinder->SetXYError( fXYClusterError );
-	fClusterFinder->SetZError( fZClusterError );
-	if ( (fXYClusterError>0) && (fZClusterError>0) )
-	    fClusterFinder->SetCalcErr( false );
 	fClusterFinder->SetOutputArray( outPtr->fSpacePoints );
-	fClusterFinder->Read( maxPoints, inPtr->fDigits );
+	fClusterFinder->Read(iter->fPtr, iter->fSize );
 	fClusterFinder->ProcessDigits();
 	realPoints = fClusterFinder->GetNumberOfClusters();
 	
@@ -206,4 +269,4 @@ int AliHLTTPCClusterFinderComponent::DoEvent( const AliHLTComponent_EventData& e
     return 0;
     }
 
-	
+   

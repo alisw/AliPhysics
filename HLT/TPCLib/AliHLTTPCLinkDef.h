@@ -30,6 +30,10 @@
 #pragma link C++ class AliHLTTPCDataCompressorHelper;
 #pragma link C++ class AliHLTTPCDisplay;
 #pragma link C++ class AliHLTTPCClustFinderNew;
+#pragma link C++ class AliHLTTPCClusterFinder;
+#pragma link C++ class AliHLTTPCDigitReader;
+#pragma link C++ class AliHLTTPCDigitReaderPacked;
+#pragma link C++ class AliHLTTPCDigitReaderUnpacked;
 #pragma link C++ class AliHLTTPCFitter;
 /* #pragma link C++ class AliHLTTPCRawDataFileHandler; */
 /* #pragma link C++ class AliHLTTPCTPCBeamTestMemHandler; */

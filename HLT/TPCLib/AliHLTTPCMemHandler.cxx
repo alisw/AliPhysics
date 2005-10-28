@@ -473,7 +473,7 @@ Bool_t AliHLTTPCMemHandler::Memory2Binary(UInt_t nrow,AliHLTTPCDigitRowData *dat
   return kTRUE;
 }
 
-Bool_t AliHLTTPCMemHandler::Binary2Memory(UInt_t & nrow,AliHLTTPCDigitRowData *data)
+Bool_t AliHLTTPCMemHandler::Binary2Memory(UInt_t & nrow,AliHLTTPCDigitRowData *data,UInt_t& sz)
 {
   //Read inputfile into memory as is, and store it in data. 
   // No run-length encoding is assumed.
@@ -513,6 +513,7 @@ Bool_t AliHLTTPCMemHandler::Binary2Memory(UInt_t & nrow,AliHLTTPCDigitRowData *d
     LOG(AliHLTTPCLog::kDebug,"AliHLTTPCMemHandler::Binary2Memory","Memory")
     <<AliHLTTPCLog::kDec<<"Wrote "<<outsize<<" Bytes to Memory ("
     <<rowcount<<" Rows)"<<ENDLOG;
+  sz = outsize;
   return kTRUE;
 }
 
@@ -687,7 +688,7 @@ Int_t AliHLTTPCMemHandler::Memory2CompMemory(UInt_t nrow,
 }
 
 Int_t AliHLTTPCMemHandler::CompMemory2Memory(UInt_t  nrow,
-					 AliHLTTPCDigitRowData *data,UInt_t *comp)
+					     AliHLTTPCDigitRowData *data,UInt_t *comp, UInt_t& sz)
 {
   //Uncompress the run-length encoded data in memory pointed to by comp, and
   //  store it in data.
@@ -745,6 +746,7 @@ Int_t AliHLTTPCMemHandler::CompMemory2Memory(UInt_t  nrow,
     outsize += size;
     rowPt = (AliHLTTPCDigitRowData *) bytePt;
   }
+  sz = outsize;
   return outsize;
 }
 
@@ -941,7 +943,7 @@ Bool_t AliHLTTPCMemHandler::CompBinary2CompMemory(UInt_t & nrow,UInt_t *comp)
   return kTRUE;
 }
 
-AliHLTTPCDigitRowData *AliHLTTPCMemHandler::CompBinary2Memory(UInt_t & nrow)
+AliHLTTPCDigitRowData *AliHLTTPCMemHandler::CompBinary2Memory(UInt_t & nrow, UInt_t& sz )
 {
   // Read the RLE inputfile, unpack it and return the pointer to it.
   AliHLTTPCMemHandler * handler = new AliHLTTPCMemHandler();
@@ -949,6 +951,7 @@ AliHLTTPCDigitRowData *AliHLTTPCMemHandler::CompBinary2Memory(UInt_t & nrow)
   UInt_t *comp =(UInt_t *)handler->Allocate();
   handler->CompBinary2CompMemory(nrow,comp);
   UInt_t size = GetMemorySize(nrow,comp);
+  sz = size;
   AliHLTTPCDigitRowData *data = (AliHLTTPCDigitRowData *)Allocate(size);
   CompMemory2Memory(nrow,data,comp);
   handler->Free();
@@ -1013,7 +1016,7 @@ Bool_t AliHLTTPCMemHandler::Transform(UInt_t npoint,AliHLTTPCSpacePointData *dat
   return kTRUE;
 }
 
-Bool_t AliHLTTPCMemHandler::Binary2Memory(UInt_t & npoint,AliHLTTPCSpacePointData *data)
+Bool_t AliHLTTPCMemHandler::Binary2Memory(UInt_t & npoint,AliHLTTPCSpacePointData *data, UInt_t& sz)
 {
   //Read the space points in inputfile, and store it in data.
   if(!fInBinary){
@@ -1028,6 +1031,7 @@ Bool_t AliHLTTPCMemHandler::Binary2Memory(UInt_t & npoint,AliHLTTPCSpacePointDat
   }
 
   Int_t size = GetFileSize(); 
+  sz = size;
   npoint = size/sizeof(AliHLTTPCSpacePointData);
   if(size==0) {
     LOG(AliHLTTPCLog::kWarning,"AliHLTTPCMemHandler::Binary2Memory","File")
