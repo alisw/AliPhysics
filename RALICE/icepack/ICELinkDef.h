@@ -22,5 +22,6 @@
  #pragma link C++ class IceXtalk+;
  #pragma link C++ class IceCalibrate+;
  #pragma link C++ class IceCleanHits+;
+ #pragma link C++ class IceDwalk+;
 #endif
  

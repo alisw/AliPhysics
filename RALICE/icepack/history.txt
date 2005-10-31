@@ -20,4 +20,7 @@
                 docs of IceCleanHits.
 31-oct-2005 NvE Slight correction in IceCalibrate.cxx and IceCleanhits.cxx to satisfy
                 the gcc compiler (thanks Dipo).
+                Also first (prototype) version of class IceDwalk introduced to perform
+                direct walk reconstruction. In the /macros directory an example job
+                icedwalk.cc has been introduced.
 

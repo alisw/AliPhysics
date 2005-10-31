@@ -17,4 +17,5 @@
 #include "IceXtalk.h"
 #include "IceCalibrate.h"
 #include "IceCleanHits.h"
+#include "IceDwalk.h"
 
