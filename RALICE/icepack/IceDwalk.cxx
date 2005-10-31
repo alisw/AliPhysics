@@ -221,6 +221,7 @@ void IceDwalk::Exec(Option_t* opt)
  AliPosition r1;
  AliPosition r2;
  Ali3Vector r12;
+ Ali3Vector rsum;
  AliPosition r0;
  TObjArray hits1;
  TObjArray hits2;
@@ -305,11 +306,12 @@ void IceDwalk::Exec(Option_t* opt)
       tes.Add(te);
       ite++;
       if (dt<0) r12*=-1.;
-      r0.SetPosition((r1+r2)/2.);
+      rsum=(r1+r2)/2.;
+      r0.SetPosition((Ali3Vector&)rsum);
       te->SetReferencePoint(r0);
-      te->SetTimestamp((AliTimestamp)*evt);
+      te->SetTimestamp((AliTimestamp&)*evt);
       AliTimestamp* tsx=te->GetTimestamp();
-      tsx->Add(0,0,t0);
+      tsx->Add(0,0,(int)t0);
       r12/=r12.GetNorm();
       te->Set3Momentum(r12);
       dttest=dtmax;
@@ -484,7 +486,7 @@ void IceDwalk::Exec(Option_t* opt)
  AliPosition* ref=0;
  AliTrack t; 
  t.SetNameTitle("IceDwalk","Direct walk track");
- t.SetTimestamp((AliTimestamp)*evt);
+ t.SetTimestamp((AliTimestamp&)*evt);
  Float_t vec[3],err[3];
  for (Int_t jet=0; jet<njets; jet++)
  {
@@ -527,7 +529,7 @@ void IceDwalk::Exec(Option_t* opt)
   r0.SetPositionErrors(err,"car");
   t0=time.GetMean(1);
   AliTimestamp* tt0=trk->GetTimestamp();
-  tt0->Add(0,0,t0);
+  tt0->Add(0,0,(int)t0);
   trk->SetReferencePoint(r0);
 
   // Only take the jet with the maximum number of tracks
