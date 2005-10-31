@@ -648,9 +648,10 @@ AliFMD::AddHitByFields(Int_t    track,
   // a new hit, but rather update the energy deposited in the hit.
   // This is done, so that a FLUKA based simulation will get the
   // number of hits right, not just the enerrgy deposition. 
+  AliFMDHit* hit = 0;
   for (Int_t i = 0; i < fNhits; i++) {
     if (!a.At(i)) continue;
-    AliFMDHit* hit = static_cast<AliFMDHit*>(a.At(i));
+    hit = static_cast<AliFMDHit*>(a.At(i));
     if (hit->Detector() == detector 
 	&& hit->Ring() == ring
 	&& hit->Sector() == sector 
@@ -665,8 +666,8 @@ AliFMD::AddHitByFields(Int_t    track,
     }
   }
   // If hit wasn't already registered, do so know. 
-  new (a[fNhits]) AliFMDHit(fIshunt, track, detector, ring, sector, strip, 
-			    x, y, z, px, py, pz, edep, pdg, t);
+  hit = new (a[fNhits]) AliFMDHit(fIshunt, track, detector, ring, sector, 
+				  strip, x, y, z, px, py, pz, edep, pdg, t);
   fNhits++;
 }
 

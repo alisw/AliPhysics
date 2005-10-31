@@ -173,7 +173,7 @@ AliFMDSimulator::DefineMaterials()
   //	FMD Si$		Silicon (active medium in sensors)
   //	FMD C$		Carbon fibre (support cone for FMD3 and vacuum pipe)
   //	FMD Al$		Aluminium (honeycomb support plates)
-  //	FMD PCB$	Printed Circuit Board (FEE board with VA1_ALICE)
+  //	FMD PCB$	Printed Circuit Board (FEE board with VA1_3)
   //	FMD Chip$	Electronics chips (currently not used)
   //	FMD Air$	Air (Air in the FMD)
   //	FMD Plastic$	Plastic (Support legs for the hybrid cards)
@@ -515,11 +515,13 @@ AliFMDSimulator::Exec(Option_t* /* option */)
   Double_t mass    = mc->TrackMass();
   Double_t edep    = mc->Edep() * 1000; // keV
   Double_t poverm  = (mass == 0 ? 0 : p.P() / mass);
-
+  Bool_t   isBad   = kFALSE;
+  
   // This `if' is to debug abnormal energy depositions.  We trigger on
   // p/m approx larger than or equal to a MIP, and a large edep - more 
   // than 1 keV - a MIP is 100 eV. 
-  if (mc->Edep() * 1000 > absQ * absQ && poverm > 1) {
+  if (edep > absQ * absQ && poverm > 1) {
+    isBad = kTRUE;
     TArrayI procs;
     mc->StepProcesses(procs);
     TString processes;
@@ -543,15 +545,15 @@ AliFMDSimulator::Exec(Option_t* /* option */)
     Int_t mother = gAlice->GetMCApp()->GetPrimary(trackno);
     Warning("Step", "Track # %5d deposits a lot of energy\n" 
 	    "  Volume:    %s\n" 
-	    "  Momentum:  (%8.4f,%8.4f,%8.4f)\n"
+	    "  Momentum:  (%7.4f,%7.4f,%7.4f)\n"
 	    "  PDG:       %d (%s)\n" 
-	    "  Edep:      %-16.8f keV (mother %d)\n"
-	    "  p/m:       %-16.8f\n"
+	    "  Edep:      %-14.7f keV (mother %d)\n"
+	    "  p/m:       %-7.4f/%-7.4f = %-14.7f\n"
 	    "  Processes: %s\n"
 	    "  What:      %s\n",
 	    trackno, mc->CurrentVolPath(), p.X(), p.Y(), p.Z(),
-	    pdg, pname.Data(), edep, mother, poverm, processes.Data(), 
-	    what.Data());
+	    pdg, pname.Data(), edep, mother, p.P(), mass, 
+	    poverm, processes.Data(), what.Data());
   }
   
   // Check that the track is actually within the active area 
@@ -563,9 +565,7 @@ AliFMDSimulator::Exec(Option_t* /* option */)
   // our parameters.
   if (entering) {
     AliDebug(15, Form("Track # %8d entering active FMD volume %s: "
-		      "Edep=%f", 
-		      gAlice->GetMCApp()->GetCurrentTrackNumber(),
-		      mc->CurrentVolPath(), 1000 * mc->Edep()));
+		      "Edep=%f", trackno, mc->CurrentVolPath(), edep));
     fCurrentP      = p;
     fCurrentV      = v;    
     fCurrentDeltaE = edep;
@@ -575,15 +575,17 @@ AliFMDSimulator::Exec(Option_t* /* option */)
   if (inside && fCurrentDeltaE >= 0) {
     fCurrentDeltaE += edep;
     AliDebug(15, Form("Track # %8d inside active FMD volume %s: Edep=%f, "
-		      "Accumulated Edep=%f", 
-		      trackno, mc->CurrentVolPath(), edep, 
-		      fCurrentDeltaE));
+		      "Accumulated Edep=%f", trackno, mc->CurrentVolPath(), 
+		      edep, fCurrentDeltaE));
   }
   // The track exits the volume, or it disappeared in the volume, or
   // the track is stopped because it no longer fulfills the cuts
   // defined, then we create a hit. 
   if (out && fCurrentDeltaE >= 0) {
     fCurrentDeltaE += edep;
+    AliDebug(15, Form("Track # %8d exiting active FMD volume %s: Edep=%f, "
+		      "Accumulated Edep=%f", trackno, mc->CurrentVolPath(), 
+		      edep, fCurrentDeltaE));
     fFMD->AddHitByFields(trackno, detector, ring, sector, strip,
 			 fCurrentV.X(),  fCurrentV.Y(), fCurrentV.Z(),
 			 fCurrentP.X(),  fCurrentP.Y(), fCurrentP.Z(), 
