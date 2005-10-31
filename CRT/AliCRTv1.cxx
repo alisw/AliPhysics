@@ -170,7 +170,7 @@ void AliCRTv1::CreateGeometry()
   box[0] = crtConstants->MagMinRadius()*TMath::Sin(kDegrad*22.5);
   box[1] = crtConstants->MagMaxRadius() - crtConstants->MagMinRadius();
   box[2] = crtConstants->MagnetLenght()/2;
-  gMC->Gsvolu("CRT1", "BOX", idtmed[1112], box, 3);
+  gMC->Gsvolu("CRT1", "BOX", idtmed[1134], box, 3);
 
   // Check if the AliCRTModule instance have been set, otherwise
   // use the default values
@@ -238,7 +238,7 @@ void AliCRTv1::CreateGeometry()
   // In the left side side of the magnet
   AliMatrix(idrotm[232], 90, 315, 90, 45, 0, 0);
 
-  Float_t x = crtConstants->MagMinRadius()+10;
+  Float_t x = crtConstants->MagMaxRadius();
   gMC->Gspos("CRT1", 1, "ALIC", 0, x, 0, 0, "MANY");
   gMC->Gspos("CRT1", 2, "ALIC", -x*TMath::Sin(kDegrad*45), x*TMath::Cos(kDegrad*45), 0, idrotm[231], "MANY");
   gMC->Gspos("CRT1", 3, "ALIC",  x*TMath::Sin(kDegrad*45), x*TMath::Cos(kDegrad*45), 0, idrotm[232], "MANY");
