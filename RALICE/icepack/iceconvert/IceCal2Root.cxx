@@ -371,7 +371,7 @@ void IceCal2Root::GetCalibData()
  Float_t thresh=0;
  Float_t sensit=1;
  Double_t pos[3]={0,0,0};
- Float_t ped,beta,alpha,kappa;
+ Float_t ped,beta,alpha;
  Int_t pol;
  Float_t totped;
  Int_t jtrans,jrec;

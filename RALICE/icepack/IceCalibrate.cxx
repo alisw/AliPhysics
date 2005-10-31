@@ -121,7 +121,7 @@ void IceCalibrate::Exec(Option_t* opt)
   // Set global OM constants
   if (omd)
   {
-   ome->SetPosition((Ali3Vector)omd->GetPosition());
+   ome->SetPosition((Ali3Vector&)omd->GetPosition());
    for (Int_t isd=4; isd<17; isd++)
    {
     ome->SetSignal(omd->GetSignal(isd),isd);

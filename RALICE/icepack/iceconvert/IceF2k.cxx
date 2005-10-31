@@ -351,11 +351,9 @@ void IceF2k::FillOMdbase()
 
  if (fHeader.nch<=0) return;
 
- Int_t geocal=fHeader.is_calib.geo;
  Int_t adccal=fHeader.is_calib.adc;
  Int_t tdccal=fHeader.is_calib.tdc;
  Int_t totcal=fHeader.is_calib.tot;
- Int_t utccal=fHeader.is_calib.utc;
 
  TF1 fadccal("fadccal","(x-[1])*[0]");
  TF1 fadcdecal("fadcdecal","(x/[0])+[1]");

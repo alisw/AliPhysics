@@ -419,6 +419,9 @@ void AliTrack::List(TString f,TString u)
 // The defaults are f="car" and u="rad".
 
  Data(f,u); // Information of the current track
+ if (fBegin) { cout << " Begin-point :"; fBegin->Data(f,u); }
+ if (fEnd)   { cout << " End-point   :"; fEnd->Data(f,u); }
+ if (fRef)   { cout << " Ref-point   :"; fRef->Data(f,u); }
 
  // Decay products of this track
  AliTrack* td; 
@@ -449,9 +452,9 @@ void AliTrack::ListAll(TString f,TString u)
 // The defaults are f="car" and u="rad".
 
  Data(f,u); // Information of the current track
- if (fBegin) { cout << " Begin-point :"; fBegin->Data(f); }
- if (fEnd)   { cout << " End-point   :"; fEnd->Data(f); }
- if (fRef)   { cout << " Ref-point   :"; fRef->Data(f); }
+ if (fBegin) { cout << " Begin-point :"; fBegin->Data(f,u); }
+ if (fEnd)   { cout << " End-point   :"; fEnd->Data(f,u); }
+ if (fRef)   { cout << " Ref-point   :"; fRef->Data(f,u); }
 
  Int_t nhyp=GetNhypotheses();
  if (nhyp)

@@ -18,4 +18,6 @@
 20-oct-2005 NvE Trigger time window selection introduced in IceCleanHits based
                 on Dipo's trigger time distributions. For further details see the
                 docs of IceCleanHits.
+31-oct-2005 NvE Slight correction in IceCalibrate.cxx and IceCleanhits.cxx to satisfy
+                the gcc compiler (thanks Dipo).
 

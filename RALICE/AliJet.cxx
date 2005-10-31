@@ -774,6 +774,148 @@ Int_t AliJet::GetId() const
  return fUserId;
 }
 ///////////////////////////////////////////////////////////////////////////
+TObjArray* AliJet::SortTracks(Int_t mode,TObjArray* tracks)
+{
+// Order the references to an array of tracks by looping over the input array "tracks"
+// and checking the value of a certain observable.
+// The ordered array is returned as a TObjArray.
+// In case tracks=0 (default), the registered tracks of the current jet are used. 
+// Note that the original track array is not modified.
+// Via the "mode" argument the user can specify the observable to be checked upon
+// and specify whether sorting should be performed in decreasing order (mode<0)
+// or in increasing order (mode>0).
+//
+// The convention for the observable selection is the following :
+// mode : 1 ==> Number of signals associated to the track
+//        2 ==> Track energy
+//        3 ==> Track momentum
+//        4 ==> Mass of the track
+//        5 ==> Transverse momentum of the track
+//        6 ==> Longitudinal momentum of the track
+//        7 ==> Transverse energy of the track
+//        8 ==> Longitudinal energy of the track
+//        9 ==> Transverse mass of the track
+//       10 ==> Track rapidity
+//       11 ==> Pseudo-rapidity of the track
+//
+// The default is mode=-1.
+//
+// Note : This sorting routine uses a common area in memory, which is used
+//        by various other sorting facilities as well.
+//        This means that the resulting sorted TObjArray may be overwritten
+//        when another sorting is invoked.
+//        To retain the sorted list of pointers, the user is advised to copy
+//        the pointers contained in the returned TObjArray into a private
+//        TObjArray instance.
+
+ if (fSelected)
+ {
+  delete fSelected;
+  fSelected=0;
+ }
+
+ if (!tracks) tracks=fTracks;
+ 
+ if (abs(mode)>11 || !tracks) return fSelected;
+
+ Int_t ntracks=tracks->GetEntries();
+ if (!ntracks)
+ {
+  return fSelected;
+ }
+ else
+ {
+  fSelected=new TObjArray(ntracks);
+ }
+
+ Double_t val1,val2; // Values of the observable to be tested upon
+ 
+ Int_t nord=0;
+ for (Int_t i=0; i<ntracks; i++) // Loop over all tracks of the array
+ {
+  AliTrack* tx=(AliTrack*)tracks->At(i);
+
+  if (!tx) continue;
+ 
+  if (nord == 0) // store the first track at the first ordered position
+  {
+   nord++;
+   fSelected->AddAt(tx,nord-1);
+   continue;
+  }
+ 
+  for (Int_t j=0; j<=nord; j++) // put track in the right ordered position
+  {
+   if (j == nord) // track has smallest (mode<0) or largest (mode>0) observable value seen so far
+   {
+    nord++;
+    fSelected->AddAt(tx,j); // add track at the end
+    break; // go for next track
+   }
+   
+   switch (abs(mode))
+   {
+    case 1:
+     val1=tx->GetNsignals();
+     val2=((AliTrack*)fSelected->At(j))->GetNsignals();
+     break;
+    case 2:
+     val1=tx->GetEnergy();
+     val2=((AliTrack*)fSelected->At(j))->GetEnergy();
+     break;
+    case 3:
+     val1=tx->GetMomentum();
+     val2=((AliTrack*)fSelected->At(j))->GetMomentum();
+     break;
+    case 4:
+     val1=tx->GetMass();
+     val2=((AliTrack*)fSelected->At(j))->GetMass();
+     break;
+    case 5:
+     val1=tx->GetPt();
+     val2=((AliTrack*)fSelected->At(j))->GetPt();
+     break;
+    case 6:
+     val1=tx->GetPl();
+     val2=((AliTrack*)fSelected->At(j))->GetPl();
+     break;
+    case 7:
+     val1=tx->GetEt();
+     val2=((AliTrack*)fSelected->At(j))->GetEt();
+     break;
+    case 8:
+     val1=tx->GetEl();
+     val2=((AliTrack*)fSelected->At(j))->GetEl();
+     break;
+    case 9:
+     val1=tx->GetMt();
+     val2=((AliTrack*)fSelected->At(j))->GetMt();
+     break;
+    case 10:
+     val1=tx->GetRapidity();
+     val2=((AliTrack*)fSelected->At(j))->GetRapidity();
+     break;
+    case 11:
+     val1=tx->GetPseudoRapidity();
+     val2=((AliTrack*)fSelected->At(j))->GetPseudoRapidity();
+     break;
+   }
+
+   if (mode<0 && val1 < val2) continue;
+   if (mode>0 && val1 > val2) continue;
+ 
+   nord++;
+   for (Int_t k=nord-1; k>j; k--) // create empty position
+   {
+    fSelected->AddAt(fSelected->At(k-1),k);
+   }
+   fSelected->AddAt(tx,j); // put track at empty position
+   break; // go for next track
+  }
+ }
+ return fSelected;
+}
+///////////////////////////////////////////////////////////////////////////
 TObject* AliJet::Clone(const char* name) const
 {
 // Make a deep copy of the current object and provide the pointer to the copy.

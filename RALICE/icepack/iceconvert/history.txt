@@ -33,4 +33,6 @@
                 for adc<=0 values. This setting eliminates the ADC dependent TDC correction.
 12-oct-2005 NvE CleanTasks() invoked before execution of sub-tasks in IceConvert and IceCal2Root
                 to ensure proper execution of all the sub-tasks for each new event.
+31-oct-2005 NvE Some unused variables removed in IceCal2Root and IceF2k to prevent warnings
+                from the gcc compiler.
  

@@ -48,6 +48,7 @@ class AliJet : public TNamed,public Ali4Vector
   Int_t GetTrackCopy() const;              // Provide TrackCopy flag value      
   void SetId(Int_t id);                    // Set the user defined identifier
   Int_t GetId() const;                     // Provide the user defined identifier
+  TObjArray* SortTracks(Int_t mode=-1,TObjArray* tracks=0); // Sort tracks by a certain observable
 
  protected:
   void Init();                           // Initialisation of pointers etc...
@@ -63,6 +64,6 @@ class AliJet : public TNamed,public Ali4Vector
   Int_t fUserId;                         // The user defined identifier
   TObjArray* fSelected;                  //! Temp. array to hold user selected or ordered objects
  
- ClassDef(AliJet,12) // Creation and investigation of a jet of particle tracks.
+ ClassDef(AliJet,13) // Creation and investigation of a jet of particle tracks.
 };
 #endif

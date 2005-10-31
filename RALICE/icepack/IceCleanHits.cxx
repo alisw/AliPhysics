@@ -152,7 +152,7 @@ void IceCleanHits::Amanda()
  // It seems that in 2005 the trigger time was changed within the year
  // from 24170 ns to 12138 ns. The latter however shows a 2-bump structure,
  // so currently the 24170 ns will be used for the 2005 data.
- Int_t year=fEvt->GetJE();
+ Int_t year=(int)fEvt->GetJE();
  Float_t ttrig=23958;
  if (year==2003) ttrig=23994;
  if (year==2004) ttrig=24059.5;

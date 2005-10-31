@@ -48,7 +48,7 @@ class AliVertex : public AliJet,public AliPosition
   Int_t IsJetTrack(AliTrack* t) const;     // Indicate if track is resulting from jet addition
   virtual void Draw(Option_t*) { Draw(1,1,0); } // Override TObject::Draw for default event display
   virtual void Draw(Int_t secs,Int_t cons=1,Int_t jets=0); // Draw the vertex in an event display
-  TObjArray* SortJets(Int_t mode=-1,TObjArray* jets=0); // Sort jets by the number of tracks
+  TObjArray* SortJets(Int_t mode=-1,TObjArray* jets=0); // Sort jets by a certain observable
 
  protected:
   void Init();          // Initialisation of pointers etc... 
