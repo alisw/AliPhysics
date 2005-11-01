@@ -1359,7 +1359,7 @@ Int_t AliTRDtracker::FollowBackProlongationG(AliTRDtrack& t)
       for (Int_t idy=0;idy<1;idy++)
 	for (Int_t idz=0;idz<1;idz++){
 	  Double_t y2 = y+idy*TMath::Min(TMath::Sqrt(t.GetSigmaY2()),1.);
-	  Double_t z2 = z+idz*TMath::Min(TMath::Sqrt(t.GetSigmaY2()),1.);
+	  Double_t z2 = z+idz*TMath::Min(TMath::Sqrt(t.GetSigmaZ2()),1.);
 
 	  xyz1[0] = x*TMath::Cos(t.GetAlpha())-y2*TMath::Sin(t.GetAlpha()); 
 	  xyz1[1] = +x*TMath::Sin(t.GetAlpha())+y2*TMath::Cos(t.GetAlpha());
@@ -1416,7 +1416,7 @@ Int_t AliTRDtracker::FollowBackProlongationG(AliTRDtrack& t)
       for (Int_t idy=0;idy<1;idy++)
 	for (Int_t idz=0;idz<1;idz++){
 	  Double_t y2 = y+idy*TMath::Min(TMath::Sqrt(t.GetSigmaY2()),1.);
-	  Double_t z2 = z+idz*TMath::Min(TMath::Sqrt(t.GetSigmaY2()),1.);
+	  Double_t z2 = z+idz*TMath::Min(TMath::Sqrt(t.GetSigmaZ2()),1.);
 
 	  xyz1[0] = x*TMath::Cos(t.GetAlpha())-y2*TMath::Sin(t.GetAlpha()); 
 	  xyz1[1] = +x*TMath::Sin(t.GetAlpha())+y2*TMath::Cos(t.GetAlpha());
