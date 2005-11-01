@@ -103,14 +103,17 @@ void AliRICHTracker::RecWithESD(AliESD *pESD,AliRICH *pRich,Int_t iTrackN)
           if(recon.GetPhotonFlag() == 2) {
             Double_t theta_g=recon.GetTrackTheta();
             Double_t phi_g=(recon.GetPhiPoint()-recon.GetTrackPhi());
-            Double_t sigma = AliRICHParam::SigmaSinglePhoton(iPart,pTrack->GetP(),theta_g,phi_g).Mag(); 
-            sigmaPID[iPart] += 1/(sigma*sigma);
+            Double_t sigma2 = AliRICHParam::SigmaSinglePhoton(iPart,pTrack->GetP(),theta_g,phi_g).Mag2();
+	    if (sigma2>0)
+	      sigmaPID[iPart] += 1/sigma2;
           }
         }
+	sigmaPID[iPart] *= (Double_t)(recon.GetHoughPhotons()-fnPhotBKG)/(Double_t)(recon.GetHoughPhotons()); // n total phots, m are background...the sigma are scaled..
 	if (sigmaPID[iPart]>0)
-          sigmaPID[iPart] *= (Double_t)(recon.GetHoughPhotons()-fnPhotBKG)/(Double_t)(recon.GetHoughPhotons()); // n total phots, m are background...the sigma are scaled..
 	  sigmaPID[iPart] = 1/TMath::Sqrt(sigmaPID[iPart])*0.001; // sigma from parametrization are in mrad...
-          fErrPar[iPart]=sigmaPID[iPart];
+	else
+	  sigmaPID[iPart] = 0;
+	fErrPar[iPart]=sigmaPID[iPart];
         AliDebug(1,Form("sigma for %s is %f rad",AliPID::ParticleName(iPart),sigmaPID[iPart]));
       }
       CalcProb(thetaCerenkov,pTrack->GetP(),sigmaPID,richPID);
@@ -245,7 +248,7 @@ void AliRICHTracker::CalcProb(Double_t thetaCer,Double_t pmod, Double_t *sigmaPI
   if(totalHeight<1e-5) {for(Int_t iPart=0;iPart<AliPID::kSPECIES;iPart++)richPID[iPart]=1.0/AliPID::kSPECIES;return;}
   for(Int_t iPart=0;iPart<AliPID::kSPECIES;iPart++) richPID[iPart] = height[iPart]/totalHeight;
   Int_t iPartNear = TMath::LocMax(AliPID::kSPECIES,richPID);
-  if(TMath::Abs(thetaCer-thetaTh[iPartNear])/sigmaPID[iPartNear]>5) for(Int_t iPart=0;iPart<AliPID::kSPECIES;iPart++)richPID[iPart]=1.0/AliPID::kSPECIES;
+  if(TMath::Abs(thetaCer-thetaTh[iPartNear]) > 5*sigmaPID[iPartNear]) for(Int_t iPart=0;iPart<AliPID::kSPECIES;iPart++)richPID[iPart]=1.0/AliPID::kSPECIES;
   //last line is to check if the nearest thetacerenkov to the teorethical one is within 5 sigma, otherwise no response (equal prob to every particle
 
 }//CalcProb
