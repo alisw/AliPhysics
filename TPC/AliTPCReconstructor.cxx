@@ -33,7 +33,7 @@
 
 ClassImp(AliTPCReconstructor)
 
-Double_t AliTPCReconstructor::fgCtgRange = 4.05;
+Double_t AliTPCReconstructor::fgCtgRange = 1.05;
 
 //_____________________________________________________________________________
 void AliTPCReconstructor::Reconstruct(AliRunLoader* runLoader) const
