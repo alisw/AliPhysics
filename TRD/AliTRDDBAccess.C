@@ -5,7 +5,7 @@ AliCDBEntry        *entry     = 0;
 AliTRDCalVdrift    *calobj    = 0;
 AliTRDCalROCVdrift *calobjROC = 0;
 
-void AliTRDDBAccessTRD()
+void AliTRDDBAccess()
 {
 
   // Single instance of AliCDBManager. 
@@ -30,8 +30,9 @@ void AliTRDDBAccessTRD()
   md1->SetResponsible("Christoph Blume");
   md1->SetBeamPeriod(1);
   md1->SetAliRootVersion("05-04-00"); //root version
-  md1->SetComment("This ist a Vdrift test");
-  md1->SetProperty("key1",calVdrift);
+  md1->SetComment("This is a Vdrift test");
+  TObjString *strVdrift = new TObjString("Drift velocities for 540 chambers");
+  md1->SetProperty("key1",strVdrift);
 
   // Store the object into local storage
   // Filename: DBLocal/TRD/Calib/Vdrift/Run0_10_v0_s0.root
