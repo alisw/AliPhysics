@@ -151,7 +151,8 @@ const Int_t AliPHOSRecParticle::GetPrimaryIndex() const
   AliPHOSGetter * gime = AliPHOSGetter::Instance() ; 
   if (!gime) 
     AliError(Form("Getter not yet instantiated")) ; 
-  gime->Event(gime->EventNumber(), "DRTX") ; 
+  //  gime->Event(gime->EventNumber(), "DRTX") ; 
+  gime->Event(gime->EventNumber(), "DRT") ; 
   
   // Get TrackSegment corresponding to this RecParticle
   AliPHOSTrackSegment *ts          = gime->TrackSegment(fPHOSTrackSegment);
