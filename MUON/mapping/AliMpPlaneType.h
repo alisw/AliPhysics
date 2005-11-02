@@ -2,7 +2,7 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$
-// $MpId: AliMpPlaneType.h,v 1.3 2005/08/26 15:43:36 ivana Exp $
+// $MpId: AliMpPlaneType.h,v 1.4 2005/10/28 15:03:46 ivana Exp $
 
 /// \ingroup basic
 /// \enum AliMpPlaneType
@@ -29,7 +29,8 @@ const char* PlaneTypeName(AliMpPlaneType planeType)
     case kNonBendingPlane:
       return "NonBendingPlane";
       break;
-  }    
+  }
+  return "invalidPlane";
 }       
 
 #endif //ALI_MP_PLANE_TYPE_H
