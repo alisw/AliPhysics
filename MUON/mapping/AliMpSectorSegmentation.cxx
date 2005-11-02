@@ -14,7 +14,7 @@
  **************************************************************************/
 
 // $Id$
-// $MpId: AliMpSectorSegmentation.cxx,v 1.9 2005/08/26 15:43:36 ivana Exp $
+// $MpId: AliMpSectorSegmentation.cxx,v 1.10 2005/10/28 15:22:02 ivana Exp $
 // Category: sector
 //
 // Class AliMpSectorSegmentation
@@ -29,6 +29,8 @@
 #include <Riostream.h>
 #include <TMath.h>
 #include <TError.h>
+
+#include "AliLog.h"
 
 #include "AliMpSectorSegmentation.h"
 #include "AliMpSector.h"
@@ -50,8 +52,8 @@
 ClassImp(AliMpSectorSegmentation)
 
 #ifdef WITH_ROOT
-const Double_t AliMpSectorSegmentation::fgkS1 = 10000.;
-const Double_t AliMpSectorSegmentation::fgkS2 = 100.;
+const Double_t AliMpSectorSegmentation::fgkS1 = 100000.;
+const Double_t AliMpSectorSegmentation::fgkS2 = 1000.;
 #endif
 
 //______________________________________________________________________________
@@ -155,6 +157,9 @@ void AliMpSectorSegmentation::FillPadDimensionsMap()
       fPadDimensionsMap[zoneID*10] = zone->GetPadDimensions();
 #endif
 #ifdef WITH_ROOT
+     AliDebug(1,Form("Filling fPadDimensions[%d]=(%e,%e)",
+                     zoneID*10,zone->GetPadDimensions().X(),
+                     zone->GetPadDimensions().Y()));
      fPadDimensionsMap.Add((Long_t)(zoneID*10), 
                             GetIndex(zone->GetPadDimensions()));
 #endif
@@ -172,6 +177,12 @@ void AliMpSectorSegmentation::FillPadDimensionsMap()
           fPadDimensionsMap[index] = motif->GetPadDimensions(k);
 #endif
 #ifdef WITH_ROOT
+          AliDebug(1,Form("Filling fPadDimensions[%d]=(%e,%e) motif %s-%d",
+                          index,
+                          motif->GetPadDimensions(k).X(),
+                          motif->GetPadDimensions(k).Y(),
+                          motif->GetID().Data(),k));
+          
           fPadDimensionsMap.Add((Long_t)(index), 
                             GetIndex(motif->GetPadDimensions(k)));
 #endif
@@ -557,11 +568,14 @@ Int_t AliMpSectorSegmentation::Zone(const AliMpPad& pad, Bool_t warning) const
     if (AliMpConstants::IsEqual(dimensions, pad.Dimensions()))
       return (Int_t)key;
   } 
+  
+  AliError(Form("fPadDimensionsMap size is %d",fPadDimensionsMap.GetSize()));
+  
 #endif
 
   // Should never happen
-  Error("Zone(AliMpPad)", "not found");
-  cerr << pad << endl;
+  AliError("Zone(AliMpPad pad) not found, where pad is :");
+  StderrToAliError(cerr << pad << endl;);
   return 0;
 }  
 
