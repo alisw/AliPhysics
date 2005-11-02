@@ -46,7 +46,6 @@
 ClassImp(AliMUONSt12QuadrantSegmentation)
 
 const Float_t  AliMUONSt12QuadrantSegmentation::fgkWireD = 0.21; 
-const Float_t  AliMUONSt12QuadrantSegmentation::fgkLengthUnit = 0.1; 
 
 //______________________________________________________________________________
 AliMUONSt12QuadrantSegmentation::AliMUONSt12QuadrantSegmentation(
@@ -165,8 +164,8 @@ void AliMUONSt12QuadrantSegmentation::UpdateCurrentPadValues(const AliMpPad& pad
 
   fIx = pad.GetIndices().GetFirst();
   fIy = pad.GetIndices().GetSecond();
-  fX = pad.Position().X() * fgkLengthUnit;
-  fY = pad.Position().Y() * fgkLengthUnit;
+  fX = pad.Position().X();
+  fY = pad.Position().Y();
   fZone = fSectorSegmentation->Zone(pad);
 }  
 
@@ -222,7 +221,7 @@ Bool_t  AliMUONSt12QuadrantSegmentation::HasPad(Float_t x, Float_t y, Float_t /*
   // fSector->GetMotifMap()->Print();
 
   AliMpPad pad = fSectorSegmentation
-               ->PadByPosition(TVector2(x/fgkLengthUnit, y/fgkLengthUnit), false);
+               ->PadByPosition(TVector2(x,y), false);
 
   return pad.IsValid();
 }  
@@ -294,8 +293,7 @@ void  AliMUONSt12QuadrantSegmentation::GetPadI(Float_t x, Float_t y,
 // If there is no pad, ix = 0, iy = 0 are returned.
 // ---
 
-  AliMpPad pad = fSectorSegmentation
-               ->PadByPosition(TVector2(x/fgkLengthUnit, y/fgkLengthUnit), true);
+  AliMpPad pad = fSectorSegmentation->PadByPosition(TVector2(x,y), true);
 
   ix = pad.GetIndices().GetFirst();
   iy = pad.GetIndices().GetSecond();
@@ -322,8 +320,8 @@ void  AliMUONSt12QuadrantSegmentation::GetPadC(Int_t ix, Int_t iy,
 
   AliMpPad pad = fSectorSegmentation->PadByIndices(AliMpIntPair(ix,iy), true);
 
-  x = pad.Position().X() * fgkLengthUnit;
-  y = pad.Position().Y() * fgkLengthUnit;
+  x = pad.Position().X();
+  y = pad.Position().Y();
 }
 
 
@@ -370,7 +368,7 @@ Float_t AliMUONSt12QuadrantSegmentation::Dpx(Int_t isector) const
 // Pad size in x by sector
 // ---
 
-  return fSectorSegmentation->PadDimensions(isector).X()*2.*fgkLengthUnit;
+  return fSectorSegmentation->PadDimensions(isector).X()*2.0;
 } 
 
 //______________________________________________________________________________
@@ -379,7 +377,7 @@ Float_t AliMUONSt12QuadrantSegmentation::Dpy(Int_t isector) const
 // Pad size in x, y by Sector 
 // ---
 
-  return fSectorSegmentation->PadDimensions(isector).Y()*2.*fgkLengthUnit;
+  return fSectorSegmentation->PadDimensions(isector).Y()*2.0;
 }
 
 //______________________________________________________________________________
@@ -447,9 +445,11 @@ void  AliMUONSt12QuadrantSegmentation::FirstPad(Float_t xhit, Float_t yhit, Floa
   
   fSectorIterator 
     = fSectorSegmentation
-        ->CreateIterator(AliMpArea(TVector2(fXhit/fgkLengthUnit, fYhit/fgkLengthUnit), 
-	                           TVector2(dx/fgkLengthUnit, dy/fgkLengthUnit)));
+        ->CreateIterator(AliMpArea(TVector2(fXhit,fYhit),TVector2(dx,dy)));
 
+  AliDebug(1,Form("CreateIterator area=%e,%e +- %e,%e %s",
+                  fXhit,fYhit,dx,dy,PlaneTypeName(fPlaneType)));
+  
   fSectorIterator->First();		
 
   if (! fSectorIterator->IsDone())
@@ -493,7 +493,7 @@ Float_t AliMUONSt12QuadrantSegmentation::Distance2AndOffset(Int_t iX, Int_t iY,
   if (!pad.IsValid())
     AliFatal("Cannot locate pad.");
 
-  return (pad.Position()*fgkLengthUnit - TVector2(x, y)).Mod2();
+  return (pad.Position() - TVector2(x, y)).Mod2();
 }
 
 //______________________________________________________________________________
@@ -576,7 +576,7 @@ Int_t AliMUONSt12QuadrantSegmentation::Sector(Float_t x, Float_t y)
 
   return fSectorSegmentation
            ->Zone(fSectorSegmentation
-	            ->PadByPosition(TVector2(x/fgkLengthUnit, y/fgkLengthUnit)));
+	            ->PadByPosition(TVector2(x,y)));
 }
 
 //______________________________________________________________________________

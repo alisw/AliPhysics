@@ -43,8 +43,6 @@ ClassImp(AliMUONSt345SlatSegmentationV2)
 
 namespace
 {
-  Double_t fgkLengthUnit = 0.1; // This class expects centimeters, while
-																// AliMpSlat works with milimeters.
   Int_t fgIntOffset = 1;
   Float_t FMAX(1E9);
 }
@@ -141,7 +139,7 @@ AliMUONSt345SlatSegmentationV2::Dpx(int ipcb) const
   {
     AliFatal("pcb is null!");
   }
-	return pcb->PadSizeX() * fgkLengthUnit;
+	return pcb->PadSizeX();
 }
 
 //_____________________________________________________________________________
@@ -153,7 +151,7 @@ AliMUONSt345SlatSegmentationV2::Dpy(int ipcb) const
   {
     AliFatal("pcb is null!");
   }
-	return pcb->PadSizeY() * fgkLengthUnit;
+	return pcb->PadSizeY();
 }
 
 //_____________________________________________________________________________
@@ -191,9 +189,11 @@ AliMUONSt345SlatSegmentationV2::FirstPad(Float_t xhit, Float_t yhit,
   // Note that we convert the area position to a reference frame
   // located in the lower-left corner of the slat, instead of its
   // center.
-  AliMpArea area(TVector2((x01+x02)/2.0/fgkLengthUnit+fSlat->DX(),
-													(y01+y02)/2.0/fgkLengthUnit+fSlat->DY()),
-								 TVector2(xext/2.0/fgkLengthUnit,yext/2.0/fgkLengthUnit));
+//  AliMpArea area(TVector2((x01+x02)/2.0+fSlat->DX(),
+//													(y01+y02)/2.0+fSlat->DY()),
+//								 TVector2(xext/2.0,yext/2.0));
+  AliMpArea area(TVector2((x01+x02)/2.0,(y01+y02)/2.0),
+								 TVector2(xext/2.0,yext/2.0));
 	
   delete fPadIterator;
 	
@@ -257,8 +257,8 @@ AliMUONSt345SlatSegmentationV2::GetPadC(Int_t ix, Int_t iy,
   AliMpPad pad = 
   fSlatSegmentation->PadByIndices(AliMpIntPair(ix-fgIntOffset,iy-fgIntOffset),
                                   kTRUE);
-  x = pad.Position().X() * fgkLengthUnit;
-  y = pad.Position().Y() * fgkLengthUnit;
+  x = pad.Position().X();
+  y = pad.Position().Y();
 }
 
 
@@ -275,11 +275,11 @@ void
 AliMUONSt345SlatSegmentationV2::GetPadI(Float_t x, Float_t y,
 																				Int_t& ix, Int_t& iy)
 {
-  Double_t slatx = fSlat->DX();
-  Double_t slaty = fSlat->DY();
+//  Double_t slatx = fSlat->DX();
+//  Double_t slaty = fSlat->DY();
   AliMpPad pad = 
-    fSlatSegmentation->PadByPosition(TVector2(x/fgkLengthUnit+slatx, 
-																	y/fgkLengthUnit+slaty), kTRUE);
+    fSlatSegmentation->PadByPosition(TVector2(x,y), kTRUE);
+//  fSlatSegmentation->PadByPosition(TVector2(x+slatx,y+slaty), kTRUE);
 	
   if ( pad != AliMpPad::Invalid() )
 	{
@@ -336,11 +336,11 @@ AliMUONSt345SlatSegmentationV2::IntegrationLimits(Float_t& x1, Float_t& x2,
 	//   y1 = fYhit - fY - Dpy(fSector)/2.;
 	//   y2 = y1 + Dpy(fSector);    
 	
-  Float_t x = fCurrentPad.Position().X() * fgkLengthUnit;
-  Float_t y = fCurrentPad.Position().Y() * fgkLengthUnit;
+  Float_t x = fCurrentPad.Position().X();
+  Float_t y = fCurrentPad.Position().Y();
 	
-  Float_t padsizex = fCurrentPad.Dimensions().X() * 2.0 * fgkLengthUnit;
-  Float_t padsizey = fCurrentPad.Dimensions().Y() * 2.0 * fgkLengthUnit;
+  Float_t padsizex = fCurrentPad.Dimensions().X() * 2.0;
+  Float_t padsizey = fCurrentPad.Dimensions().Y() * 2.0;
 	
   x1 = fXhit - x - padsizex/2.0;
   x2 = x1 + padsizex;
@@ -404,7 +404,8 @@ AliMUONSt345SlatSegmentationV2::Neighbours(Int_t iX, Int_t iY, Int_t* Nlist,
 	
   // Define the region to look into : a region slightly bigger
   // than the pad itself (10% bigger), in order to catch first neighbours.
-  AliMpArea area(pad.Position()+fSlat->Dimensions(),pad.Dimensions()*2.1); 
+//  AliMpArea area(pad.Position()+fSlat->Dimensions(),pad.Dimensions()*2.1); 
+  AliMpArea area(pad.Position(),pad.Dimensions()*2.1); 
 		
   AliMpVPadIterator* it = fSlatSegmentation->CreateIterator(area);
   it->First();

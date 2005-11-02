@@ -166,8 +166,7 @@ class AliMUONSt12QuadrantSegmentation : public AliMUONVGeometryDESegmentation
   
     // constants
     static const Float_t  fgkWireD;     // default wire pitch
-    static const Float_t  fgkLengthUnit;// conversion between length units
-                                        // from mapping (mm) to AliRoot (cm)
+
     // data members
 
     // From mapping
