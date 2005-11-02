@@ -1662,9 +1662,11 @@ void nrmlwr(Double_t &pSx, Double_t &pSy, Double_t &pSz,
       norml[1] = -pVy;   
       norml[2] = -pVz; 
    }
-   norml[0] = -dnorm[0];   
-   norml[1] = -dnorm[1];   
-   norml[2] = -dnorm[2]; 
+   else {
+     norml[0] = -dnorm[0];   
+     norml[1] = -dnorm[1];   
+     norml[2] = -dnorm[2];
+   } 
    if (gMCGeom->IsDebugging()) {
       printf("   normal to boundary: (%g, %g, %g)\n", norml[0], norml[1], norml[2]);  
       printf("<= NRMLWR\n");
