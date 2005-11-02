@@ -556,7 +556,7 @@ void AliMUONSt1GeometryBuilderV2::CreateQuadrant(Int_t chamber)
   //reflectZ = false;
   reflectZ = true;
   TVector2 offset = sector2->Position();
-  where = TVector3(where.X()+offset.X()/10., where.Y()+offset.Y()/10., 0.); 
+  where = TVector3(where.X()+offset.X(), where.Y()+offset.Y(), 0.); 
       // Add the half-pad shift of the non-bending plane wrt bending plane
       // (The shift is defined in the mapping as sector offset)
       // Fix (4) - was TVector3(where.X()+0.63/2, ... - now it is -0.63/2
@@ -2171,10 +2171,10 @@ void AliMUONSt1GeometryBuilderV2::PlaceSector(AliMpSector* sector,SpecialMap spe
       
         // create the cathode part
         sprintf(segName,"%.3dM", segNum);
-        CreatePlaneSegment(segName, seg->Dimensions()/10., seg->GetNofMotifs());
+        CreatePlaneSegment(segName, seg->Dimensions(), seg->GetNofMotifs());
   
-        posX = where.X() + seg->Position().X()/10.;
-        posY = where.Y() + seg->Position().Y()/10.;
+        posX = where.X() + seg->Position().X();
+        posY = where.Y() + seg->Position().Y();
         posZ = where.Z() + sgn * (TotalHzPlane() + fgkHzGas + 2.*fgkHzPadPlane);
         gMC->Gspos(segName, 1, QuadrantMLayerName(chamber), posX, posY, posZ, reflZ, "ONLY");
 
@@ -2189,8 +2189,8 @@ void AliMUONSt1GeometryBuilderV2::PlaceSector(AliMpSector* sector,SpecialMap spe
 	  if ( sector->GetDirection() == kX) copyNo += fgkDaughterCopyNoOffset;
   
           // Position
-          posX = where.X() + motifPos->Position().X()/10.+fgkOffsetX;
-          posY = where.Y() + motifPos->Position().Y()/10.+fgkOffsetY;
+          posX = where.X() + motifPos->Position().X() + fgkOffsetX;
+          posY = where.Y() + motifPos->Position().Y() + fgkOffsetY;
 	  posZ = where.Z() + sgn * (fgkMotherThick1 - TotalHzDaughter()); 
 
           gMC->Gspos(fgkDaughterName, copyNo, QuadrantMLayerName(chamber), posX, posY, posZ, reflZ, "ONLY");
@@ -2233,8 +2233,8 @@ void AliMUONSt1GeometryBuilderV2::PlaceSector(AliMpSector* sector,SpecialMap spe
           // place the hole for the motif, wrt the requested rotation angle
           Int_t rot = ( spMot.GetRotAngle()<0.1 ) ? reflZ:rotMat;
 
-          posX = where.X() + motifPos->Position().X()/10.+spMot.GetDelta().X();
-          posY = where.Y() + motifPos->Position().Y()/10.+spMot.GetDelta().Y();
+          posX = where.X() + motifPos->Position().X() + spMot.GetDelta().X();
+          posY = where.Y() + motifPos->Position().Y() + spMot.GetDelta().Y();
           posZ = where.Z() + sgn * (TotalHzPlane() + fgkHzGas + 2.*fgkHzPadPlane);
           gMC->Gspos(fgkHoleName, copyNo, QuadrantMLayerName(chamber), posX, posY, posZ, rot, "ONLY");
 
