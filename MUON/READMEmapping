@@ -6,6 +6,11 @@
  
  See detailed description in ALICE-INT-2003-025.
 
+ Units used
+ ============
+ 
+ Lengths are in centimeters.
+ 
  Test macros
  ============
    cd ../mapping/macro
@@ -132,7 +137,7 @@
 
   Lines starting with # are comments.
 
-  SIZES PadSizeX PadSizeY SizeX SizeY (mm)
+  SIZES PadSizeX PadSizeY SizeX SizeY (cm)
 
   MOTIF motifType ix iy
   MOTIF motifType ix iy

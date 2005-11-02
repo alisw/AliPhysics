@@ -1,7 +1,7 @@
 # Bending PCB. Density 1. 
 # Placing motifs starting bottom left and going counter-clockwise
 
-SIZES 25 5 400 400
+SIZES 2.5 0.5 40 40
 
 MOTIF L7   0  0
 MOTIF Z3   1  0

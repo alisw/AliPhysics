@@ -1,7 +1,7 @@
 SECTOR_DATA
        3 12 X  0.0  0.0
 
-ZONE 1  7.5   5.0
+ZONE 1  0.75   0.50
 	SUBZONE 7        A  
 		ROW_SEGMENT 36  0  0  9    18  -1
 	SUBZONE 8        B  
@@ -11,7 +11,7 @@ ZONE 1  7.5   5.0
 		ROW_SEGMENT  0  0  4  14  127  -1
 		ROW_SEGMENT  0  0  5  12  152  -1
 		ROW_SEGMENT  0  0  6  8   176  -1
-ZONE 2  7.5   10.0
+ZONE 2  0.75   1.00
         SUBZONE 10       E
                 ROW_SEGMENT  0  0  0  7     9  -1
         SUBZONE 11       F
@@ -26,7 +26,7 @@ ZONE 2  7.5   10.0
                 ROW_SEGMENT  0  0  9  10  226  -1
         SUBZONE 12       C
                 ROW_SEGMENT  0  0 10  10  244  -1
-ZONE 3  7.5   20.0
+ZONE 3  0.75   2.00
         SUBZONE 13       K
                 ROW_SEGMENT  0  0  0  1     2   1
                 ROW_SEGMENT  0  0  1  1    28   1
