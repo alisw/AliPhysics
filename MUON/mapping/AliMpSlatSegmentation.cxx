@@ -14,7 +14,7 @@
 **************************************************************************/
 
 // $Id$
-// $MpId: AliMpSlatSegmentation.cxx,v 1.4 2005/09/19 19:01:31 ivana Exp $
+// $MpId: AliMpSlatSegmentation.cxx,v 1.5 2005/10/28 15:26:01 ivana Exp $
 
 #include "AliMpSlatSegmentation.h"
 
@@ -57,7 +57,7 @@ AliMpSlatSegmentation::~AliMpSlatSegmentation()
   //
   // Dtor (empty).
   //
-  Int_t i(0);//just to be able to put a breakpoint in gdb
+  // Int_t i(0);//just to be able to put a breakpoint in gdb
   AliDebug(1,Form("this=%p",this));			
 }
 
