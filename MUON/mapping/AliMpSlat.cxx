@@ -14,7 +14,7 @@
 **************************************************************************/
 
 // $Id$
-// $MpId: AliMpSlat.cxx,v 1.2 2005/09/19 19:01:31 ivana Exp $
+// $MpId: AliMpSlat.cxx,v 1.3 2005/10/28 15:25:09 ivana Exp $
 
 #include "AliMpSlat.h"
 
@@ -58,7 +58,11 @@ AliMpSlat::AliMpSlat(const char* id, AliMpPlaneType bendingOrNonBending)
   fDY(0),
   fNofPadsX(0), 
   fMaxNofPadsY(0),
+//#ifdef WITH_ROOT
   fManuMap(kTRUE)
+//#else  
+//  fManuMap()
+//#endif  
 {
     //
     // Normal ctor
@@ -110,7 +114,7 @@ AliMpSlat::Add(AliMpPCB* pcbType, const TArrayI& manuList)
 		AliMpMotifPosition* mp = pcb->GetMotifPosition(i);
 		Int_t manuID = mp->GetID();
     // Before inserting a new key, check if it's already there
-#ifdef WITH_ROOT
+//#ifdef WITH_ROOT
     TObject* there = fManuMap.GetValue(manuID);
     if ( there == 0 )
     {
@@ -120,9 +124,9 @@ AliMpSlat::Add(AliMpPCB* pcbType, const TArrayI& manuList)
     {
       AliError(Form("ManuID %d is duplicated for PCB %s",manuID,pcbType->GetID()));      
     }
-#else
-  fManuMap[manuID] = mp;
-#endif  
+//#else
+//  fManuMap[manuID] = mp;
+//#endif  
 	}
   fPosition.Set(DX(),DY());
 }
@@ -164,7 +168,7 @@ AliMpSlat::FindMotifPosition(Int_t manuID) const
   //
   // Returns the motifPosition referenced by it manuID
   //
-#ifdef WITH_ROOT
+//#ifdef WITH_ROOT
   TObject* rv = fManuMap.GetValue(manuID);
   if ( rv )
   {
@@ -174,17 +178,17 @@ AliMpSlat::FindMotifPosition(Int_t manuID) const
   {
     return 0;
   }
-#else
-  std::map<int,AliMpMotifPosition*>::const_iterator it = fManuMap.find(manuID);
-  if ( it != fManuMap.end() )
-      {
-	      return it->second;
-      }
-  else
-  {
-    return 0;
-  }
-#endif      
+//#else
+//  std::map<int,AliMpMotifPosition*>::const_iterator it = fManuMap.find(manuID);
+//  if ( it != fManuMap.end() )
+//      {
+//	      return it->second;
+//      }
+//  else
+//  {
+//    return 0;
+//  }
+//#endif      
 }
 
 //_____________________________________________________________________________
@@ -316,6 +320,7 @@ void
 AliMpSlat::GetAllElectronicCardNumbers(TArrayI& ecn) const
 {
   ecn.Set(GetNofElectronicCards());
+//#ifdef WITH_ROOT
   TExMapIter it(fManuMap.GetIterator());
   Long_t key;
   Long_t value;
@@ -325,6 +330,9 @@ AliMpSlat::GetAllElectronicCardNumbers(TArrayI& ecn) const
     ecn.AddAt((Int_t)(key),n);
     ++n;
   }
+//#else
+  // missing here
+//#endif      
 }
 
 //_____________________________________________________________________________

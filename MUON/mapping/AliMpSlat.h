@@ -2,7 +2,7 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$
-// $MpId: AliMpSlat.h,v 1.2 2005/09/19 19:01:09 ivana Exp $
+// $MpId: AliMpSlat.h,v 1.3 2005/10/28 15:25:06 ivana Exp $
 
 /// \ingroup slat
 /// \class AliMpSlat
@@ -32,15 +32,15 @@
 #endif
 
 #include "AliMpContainers.h"
+#include "AliMpExMap.h"
 
 class TArrayI;
 
 #ifdef WITH_ROOT
-#  include "AliMpExMap.h"
 #  include "TObjArray.h"
 #else
 #  include <vector>
-#  include <map>
+//#  include <map>
 #endif
 
 class AliMpMotifPosition;
@@ -142,12 +142,13 @@ class AliMpSlat : public TObject
   Double_t fDY;
   Int_t fNofPadsX;
   Int_t fMaxNofPadsY;
+  mutable AliMpExMap fManuMap; // map of int to AliMpMotifPosition*
 #ifdef WITH_ROOT
   TObjArray fPCBs; // array of AliMpPCB*
-  mutable AliMpExMap fManuMap; // map of int to AliMpMotifPosition*
+  //mutable AliMpExMap fManuMap; // map of int to AliMpMotifPosition*
 #else  
   std::vector<AliMpPCB*> fPCBs;
-  std::map<int,AliMpMotifPosition*> fManuMap;
+  //std::map<int,AliMpMotifPosition*> fManuMap;
 #endif
   TVector2 fPosition;
   
