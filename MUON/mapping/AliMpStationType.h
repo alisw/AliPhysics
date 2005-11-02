@@ -2,7 +2,7 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$
-// $MpId: AliMpStationType.h,v 1.4 2005/08/26 15:43:36 ivana Exp $
+// $MpId: AliMpStationType.h,v 1.5 2005/10/28 15:05:04 ivana Exp $
 
 /// \ingroup basic
 /// \enum AliMpStationType
@@ -15,11 +15,11 @@
  
 enum AliMpStationType
 {
-  kStationInvalid = -1,
-  kStation1 = 0,   ///< station 1 (quadrants)
-  kStation2,   ///< station 2 (quadrants)
-  kStation345, ///< station 3,4,5 (slats)
-  kStationTrigger     ///< trigger stations (slats)
+  kStationInvalid = -1,///< invalid station
+  kStation1 = 0,       ///< station 1 (quadrants)
+  kStation2,           ///< station 2 (quadrants)
+  kStation345,         ///< station 3,4,5 (slats)
+  kStationTrigger      ///< trigger stations (slats)
 
 };
 
