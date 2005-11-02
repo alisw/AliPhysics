@@ -143,37 +143,29 @@ AliFMDGeoOldSimulator::RingGeometry(AliFMDRing* r)
   Char_t      id          = r->GetId();
   Double_t    siThick     = r->GetSiThickness();
   // const Int_t nv       = r->GetNVerticies();
-  TVector2*   a           = r->GetVertex(5);
+  //TVector2*   a           = r->GetVertex(5);
   TVector2*   b           = r->GetVertex(3);
-  TVector2*   c           = r->GetVertex(4);
+  //TVector2*   c           = r->GetVertex(4);
   Double_t    theta       = r->GetTheta();
-  Double_t    off         = (TMath::Tan(TMath::Pi() * theta / 180) 
-			     * r->GetBondingWidth());
+  //Double_t    off         = (TMath::Tan(TMath::Pi() * theta / 180) 
+  //			     * r->GetBondingWidth());
   Double_t    rmax        = b->Mod();
   Double_t    rmin        = r->GetLowR();
   Double_t    pcbThick    = r->GetPrintboardThickness();
   Double_t    copperThick = r->GetCopperThickness(); // .01;
   Double_t    chipThick   = r->GetChipThickness(); // .01;
-  Double_t    modSpace    = r->GetModuleSpacing();
-  Double_t    legr        = r->GetLegRadius();
-  Double_t    legl        = r->GetLegLength();
-  Double_t    legoff      = r->GetLegOffset();
+  //Double_t    modSpace    = r->GetModuleSpacing();
+  //Double_t    legr        = r->GetLegRadius();
+  //Double_t    legl        = r->GetLegLength();
+  //Double_t    legoff      = r->GetLegOffset();
   Int_t       ns          = r->GetNStrips();
   Int_t       nsec        = Int_t(360 / theta);
-  Double_t    stripoff    = a->Mod();
-  Double_t    dstrip      = (rmax - stripoff) / ns;
-  Double_t    par[10];
+  Double_t    space       = r->GetSpacing();
+  //Double_t    stripoff    = a->Mod();
+  //Double_t    dstrip      = (rmax - stripoff) / ns;
   TString     name;
   TString     name2;
-  TVirtualMC* mc       = TVirtualMC::GetMC();
   
-  Int_t siId  = fFMD->GetIdtmed()->At(kSiId);
-  Int_t airId = fFMD->GetIdtmed()->At(kAirId);
-  Int_t pcbId = fFMD->GetIdtmed()->At(kPcbId);
-  Int_t plaId = fFMD->GetIdtmed()->At(kPlasticId);
-  Int_t copId = fFMD->GetIdtmed()->At(kCopperId);
-  Int_t chiId = fFMD->GetIdtmed()->At(kSiChipId);
-
   Double_t ringWidth = (siThick + 2 * (pcbThick + copperThick + chipThick));
   // Virtual volume shape to divide - This volume is only defined if
   // the geometry is set to be detailed. 
@@ -209,15 +201,15 @@ AliFMDGeoOldSimulator::RingGeometry(AliFMDRing* r)
 
   // Shape of Printed circuit Board 
   Double_t boardThick = (pcbThick + copperThick + chipThick);
-  TGeoShape*  boardShape  =  new TGeoTube(rmin + .1, rmax - .1, boardThick/ 2);
+  TGeoShape*  boardShape  =  new TGeoTube(rmin+.1, rmax-.1, boardThick/ 2);
   name                    =  Form(fgkPCBName, id, 'B');
   TGeoVolume* boardVolume =  new TGeoVolume(name.Data(), boardShape, fAir);
-  z                       += siThick / 2 + boardThick / 2;
+  z                       += siThick / 2 + space + boardThick / 2;
   ringVolume->AddNode(boardVolume,  0, new TGeoTranslation(0, 0, z));
   ringVolume->AddNode(boardVolume,  1, new TGeoTranslation(0,0,z+boardThick));
 
   // PCB
-  TGeoShape*  pcbShape    = new TGeoTube(rmin+.1, rmax-.1, pcbThick / 2);
+  TGeoShape*  pcbShape    = new TGeoTube(rmin+.1,rmax-.1, pcbThick / 2);
   name                    =  Form("F%cPC", id);
   z                       =  -boardThick / 2 + pcbThick / 2;
   TGeoVolume* pcbVolume   = new TGeoVolume(name.Data(), pcbShape, fPCB);
@@ -226,14 +218,14 @@ AliFMDGeoOldSimulator::RingGeometry(AliFMDRing* r)
   // Copper
   TGeoShape*  cuShape     =  new TGeoTube(rmin+.1, rmax-.1, copperThick / 2);
   name                    =  Form("F%cCO", id);
-  z                       += -pcbThick / 2 + copperThick / 2;
+  z                       += pcbThick / 2 + copperThick / 2;
   TGeoVolume* cuVolume    =  new TGeoVolume(name.Data(), cuShape, fCopper);
   boardVolume->AddNode(cuVolume, 0, new TGeoTranslation(0, 0, z));
 
   // Chip
   TGeoShape*  chipShape   = new TGeoTube(rmin+.1, rmax-.1, chipThick / 2);
   name                    =  Form("F%cCH", id);
-  z                       =  -copperThick / 2 + chipThick / 2;
+  z                       += copperThick / 2 + chipThick / 2;
   TGeoVolume* chipVolume  = new TGeoVolume(name.Data(), chipShape, fChip);
   boardVolume->AddNode(chipVolume, 0, new TGeoTranslation(0, 0, z));
 

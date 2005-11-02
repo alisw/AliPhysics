@@ -167,8 +167,8 @@ AliFMDG3Simulator::RingGeometry(AliFMDRing* r)
   Int_t airId = fFMD->GetIdtmed()->At(kAirId);
   Int_t pcbId = fFMD->GetIdtmed()->At(kPcbId);
   Int_t plaId = fFMD->GetIdtmed()->At(kPlasticId);
-  Int_t copId = fFMD->GetIdtmed()->At(kCopperId);
-  Int_t chiId = fFMD->GetIdtmed()->At(kSiChipId);
+  // Int_t copId = fFMD->GetIdtmed()->At(kCopperId);
+  // Int_t chiId = fFMD->GetIdtmed()->At(kSiChipId);
 
   Double_t ringWidth  = r->GetRingDepth();
   Double_t x          = 0;

@@ -46,6 +46,9 @@ public:
   Float_t  Px()         const { return fPx;       }
   Float_t  Py()         const { return fPy;       }
   Float_t  Pz()         const { return fPz;       } 
+  Float_t  P()          const;
+  Float_t  M()          const;
+  Float_t  Q()          const;
   Int_t    Pdg()        const { return fPdg;      }
   Float_t  Time()       const { return fTime;     }
   void     Print(Option_t* opt="") const;

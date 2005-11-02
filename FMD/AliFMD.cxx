@@ -180,7 +180,7 @@ AliFMD::AliFMD(const char *name, const char *title)
   fUseDivided  = kFALSE;
   fUseAssembly = kFALSE;
   fUseGeo      = kTRUE;
-
+  
   // Initialise Hit array
   HitsArray();
   gAlice->GetMCApp()->AddHitList(fHits);
@@ -326,6 +326,14 @@ AliFMD::Init()
   //
   //
 }
+
+//____________________________________________________________________
+void
+AliFMD::FinishEvent()
+{
+  if (fSimulator) fSimulator->EndEvent();
+}
+
 
 //====================================================================
 //
@@ -606,7 +614,7 @@ AliFMD::AddHit(Int_t track, Int_t *vol, Float_t *hits)
 }
 
 //____________________________________________________________________
-void 
+AliFMDHit*
 AliFMD::AddHitByFields(Int_t    track, 
 		       UShort_t detector, 
 		       Char_t   ring, 
@@ -662,13 +670,14 @@ AliFMD::AddHitByFields(Int_t    track,
 	      detector, ring, sector, strip, track, edep, hit->Edep(),
 	      hit->Edep() + edep);
       hit->SetEdep(hit->Edep() + edep);
-      return;
+      return hit;
     }
   }
   // If hit wasn't already registered, do so know. 
   hit = new (a[fNhits]) AliFMDHit(fIshunt, track, detector, ring, sector, 
 				  strip, x, y, z, px, py, pz, edep, pdg, t);
   fNhits++;
+  return hit;
 }
 
 //____________________________________________________________________

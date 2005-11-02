@@ -80,6 +80,7 @@
 #include "AliFMD2.h"		// ALIFMD2_H
 #include "AliFMD3.h"		// ALIFMD3_H
 #include "AliFMD.h"		// ALIFMD_H
+#include "AliFMDHit.h"		// ALIFMDHIT_H
 #include <AliRun.h>		// ALIRUN_H
 #include <AliMC.h>		// ALIMC_H
 #include <AliMagF.h>		// ALIMAGF_H
@@ -100,6 +101,7 @@
 #include <TVector3.h>		// ROOT_TVector3
 #include <TVirtualMC.h>		// ROOT_TVirtualMC
 #include <TArrayD.h>		// ROOT_TArrayD
+
 
 //====================================================================
 ClassImp(AliFMDSimulator)
@@ -135,7 +137,8 @@ AliFMDSimulator::AliFMDSimulator()
     fOuterId(-1), 
     fActiveId(4), 
     fUseDivided(kFALSE),
-    fUseAssembly(kTRUE)
+    fUseAssembly(kTRUE), 
+    fBad(0)
 {
   // Default constructor
 }
@@ -149,7 +152,8 @@ AliFMDSimulator::AliFMDSimulator(AliFMD* fmd, Bool_t detailed)
     fOuterId(-1),
     fActiveId(4),
     fUseDivided(kFALSE),
-    fUseAssembly(kTRUE)
+    fUseAssembly(kTRUE),
+    fBad(0)
 {
   // Normal constructor
   // 
@@ -158,6 +162,7 @@ AliFMDSimulator::AliFMDSimulator(AliFMD* fmd, Bool_t detailed)
   //      fmd		Pointer to AliFMD object 
   //      detailed      Whether to make a detailed simulation or not 
   // 
+  fBad = new TClonesArray("AliFMDHit");
 }
 
 
@@ -428,7 +433,7 @@ AliFMDSimulator::VMC2FMD(Int_t copy, TLorentzVector& v,
   Int_t det;       mc->CurrentVolOffID(fDetectorOff, det); detector = det;
 
   AliFMDGeometry* fmd = AliFMDGeometry::Instance();
-  Double_t  rz  = fmd->GetDetector(detector)->GetRingZ(ring);
+  //Double_t  rz  = fmd->GetDetector(detector)->GetRingZ(ring);
   Int_t     n   = fmd->GetDetector(detector)->GetRing(ring)->GetNSectors();
 #if 0
   if (rz < 0) {
@@ -445,7 +450,7 @@ AliFMDSimulator::VMC2FMD(Int_t copy, TLorentzVector& v,
   sector--;
   // Get track position
   mc->TrackPosition(v);
-  AliDebug(40, Form("<2> Inside an active FMD volume FMD%d%c[%2d,%3d] %s",
+  AliDebug(15, Form("<2> Inside an active FMD volume FMD%d%c[%2d,%3d] %s",
 		    detector, ring, sector, strip, mc->CurrentVolPath()));
 
   return kTRUE;
@@ -493,8 +498,7 @@ AliFMDSimulator::Exec(Option_t* /* option */)
   Int_t copy;
   Int_t vol = mc->CurrentVolID(copy);
   if (!IsActive(vol)) {
-    AliDebug(50, Form("Not an FMD volume %d '%s' (%d or %d)", 
-		      vol, mc->CurrentVolName(), fInnerId, fOuterId));
+    AliDebug(50, Form("Not an FMD volume %d '%s'",vol,mc->CurrentVolName()));
     return;
   }
   TLorentzVector v;
@@ -565,35 +569,58 @@ AliFMDSimulator::Exec(Option_t* /* option */)
   // our parameters.
   if (entering) {
     AliDebug(15, Form("Track # %8d entering active FMD volume %s: "
-		      "Edep=%f", trackno, mc->CurrentVolPath(), edep));
+		      "Edep=%f (%f,%f,%f)", trackno, mc->CurrentVolPath(),
+		      edep, v.X(), v.Y(), v.Z()));
     fCurrentP      = p;
     fCurrentV      = v;    
     fCurrentDeltaE = edep;
-    fCurrentPdg    = mc->IdFromPDG(pdg);
+    fCurrentPdg    = pdg; // mc->IdFromPDG(pdg);
   }
   // If the track is inside, then update the energy deposition
   if (inside && fCurrentDeltaE >= 0) {
     fCurrentDeltaE += edep;
     AliDebug(15, Form("Track # %8d inside active FMD volume %s: Edep=%f, "
-		      "Accumulated Edep=%f", trackno, mc->CurrentVolPath(), 
-		      edep, fCurrentDeltaE));
+		      "Accumulated Edep=%f  (%f,%f,%f)", trackno, 
+		      mc->CurrentVolPath(), edep, fCurrentDeltaE, 
+		      v.X(), v.Y(), v.Z()));
   }
   // The track exits the volume, or it disappeared in the volume, or
   // the track is stopped because it no longer fulfills the cuts
   // defined, then we create a hit. 
-  if (out && fCurrentDeltaE >= 0) {
-    fCurrentDeltaE += edep;
-    AliDebug(15, Form("Track # %8d exiting active FMD volume %s: Edep=%f, "
-		      "Accumulated Edep=%f", trackno, mc->CurrentVolPath(), 
-		      edep, fCurrentDeltaE));
-    fFMD->AddHitByFields(trackno, detector, ring, sector, strip,
-			 fCurrentV.X(),  fCurrentV.Y(), fCurrentV.Z(),
-			 fCurrentP.X(),  fCurrentP.Y(), fCurrentP.Z(), 
-			 fCurrentDeltaE, fCurrentPdg,   fCurrentV.T());
+  if (out) {
+    if (fCurrentDeltaE >= 0) {
+      fCurrentDeltaE += edep;
+      AliDebug(15, Form("Track # %8d exiting active FMD volume %s: Edep=%g, "
+			"Accumulated Edep=%g (%f,%f,%f)", trackno, 
+			mc->CurrentVolPath(), edep, fCurrentDeltaE, 
+			v.X(), v.Y(), v.Z()));
+      AliFMDHit* h = 
+	fFMD->AddHitByFields(trackno, detector, ring, sector, strip,
+			     fCurrentV.X(),  fCurrentV.Y(), fCurrentV.Z(),
+			     fCurrentP.X(),  fCurrentP.Y(), fCurrentP.Z(), 
+			     fCurrentDeltaE, fCurrentPdg,   fCurrentV.T());
+      // Add a copy 
+      if (isBad && fBad) { 
+	new ((*fBad)[fBad->GetEntries()]) AliFMDHit(*h);
+      }
+    }
     fCurrentDeltaE = -1;
   }
 }
 
+//____________________________________________________________________
+void
+AliFMDSimulator::EndEvent() 
+{
+  if (fBad && fBad->GetEntries() > 0) {
+    Warning("EndEvent", "got %d 'bad' hits", fBad->GetEntries());
+    TIter next(fBad);
+    AliFMDHit* hit;
+    while ((hit = static_cast<AliFMDHit*>(next()))) 
+      hit->Print("D");
+    fBad->Clear();
+  }
+}
 
 
 //____________________________________________________________________

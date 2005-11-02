@@ -23,6 +23,7 @@ class AliFMDDetector;
 class AliFMD1;
 class AliFMD2;
 class AliFMD3;
+class TObjArray;
 
 /** Simulation of the FMD. 
     This class builds the geometry, and processes hits in the FMD */ 
@@ -39,6 +40,7 @@ public:
   virtual void DefineGeometry() = 0;
   /** Deal with a hit in the FMD */
   virtual void Exec(Option_t* option="");
+  virtual void EndEvent();
   virtual void UseDivided(Bool_t use=kTRUE)  { fUseDivided = use; }
   virtual void UseAssembly(Bool_t use=kTRUE) { fUseAssembly = use; }
 protected:  
@@ -96,6 +98,7 @@ protected:
   Int_t fModuleOff;        // Module offset in volume tree
   Int_t fRingOff;          // Ring offset in the volume tree 
   Int_t fDetectorOff;      // Detector offfset in the volume tree 
+  TObjArray* fBad;         //! List of bad hits
   
   ClassDef(AliFMDSimulator,0) // Simulation class for the FMD
 };

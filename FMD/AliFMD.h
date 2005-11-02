@@ -23,6 +23,7 @@ class TClonesArray;
 class TBrowser;
 class AliDigitizer;
 class AliFMDSimulator;
+class AliFMDHit;
 
 //____________________________________________________________________
 class AliFMD : public AliDetector 
@@ -38,14 +39,15 @@ public:
   void UseDivided(Bool_t use=kTRUE) { fUseDivided = use; }
   void UseAssembly(Bool_t use=kTRUE) { fUseAssembly = use; }
   void UseGeo(Bool_t use=kTRUE) { fUseGeo = use; }
-  
+  void UseDetailed(Bool_t use=kTRUE) { fDetailed = use; }
   
   // GEometry ANd Tracking (GEANT :-)
   virtual void   CreateGeometry();
   virtual void   CreateMaterials(); 
   virtual void   Init();
   virtual void   StepManager() = 0;
-
+  virtual void   FinishEvent();
+  
   // Graphics and event display 
   virtual        void   BuildGeometry();
   virtual        void   DrawDetector();
@@ -58,7 +60,7 @@ public:
   virtual TClonesArray* SDigits() { return fSDigits; }        
   virtual void          ResetSDigits();
   virtual void          AddHit(Int_t track, Int_t *vol, Float_t *hits);
-  virtual void          AddHitByFields(Int_t    track, 
+  virtual AliFMDHit*    AddHitByFields(Int_t    track, 
 				       UShort_t detector, 
 				       Char_t   ring, 
 				       UShort_t sector, 

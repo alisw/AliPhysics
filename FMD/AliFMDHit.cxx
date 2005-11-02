@@ -24,6 +24,9 @@
 #include "AliFMDHit.h"		// ALIFMDHIT_H
 #include "AliLog.h"		// ALILOG_H
 #include "Riostream.h"		// ROOT_Riostream
+#include <TDatabasePDG.h>
+#include <TMath.h>
+#include <TString.h>
 
 //____________________________________________________________________
 ClassImp(AliFMDHit)
@@ -103,8 +106,38 @@ AliFMDHit::AliFMDHit(Int_t    shunt,
 }
 
 //____________________________________________________________________
+Float_t
+AliFMDHit::P() const 
+{
+  // Get the momentum of the particle of the particle that made this
+  // hit. 
+  return TMath::Sqrt(fPx * fPx + fPy * fPy + fPz * fPz);
+}
+
+//____________________________________________________________________
+Float_t
+AliFMDHit::M() const 
+{
+  // Get the mass of the particle that made this hit. 
+  TDatabasePDG* pdgDB = TDatabasePDG::Instance();
+  TParticlePDG* pdg   = pdgDB->GetParticle(fPdg);
+  return (pdg ? pdg->Mass() : -1);
+}
+
+//____________________________________________________________________
+Float_t
+AliFMDHit::Q() const
+{
+  // Get the charge of the particle that made this hit. 
+  TDatabasePDG* pdgDB = TDatabasePDG::Instance();
+  TParticlePDG* pdg   = pdgDB->GetParticle(fPdg);
+  return (pdg ? pdg->Charge() : 0);
+}
+
+
+//____________________________________________________________________
 void
-AliFMDHit::Print(Option_t* /* option */) const 
+AliFMDHit::Print(Option_t* option) const 
 {
   // Print Hit to standard out 
   cout << "AliFMDHit: FMD" 
@@ -112,6 +145,15 @@ AliFMDHit::Print(Option_t* /* option */) const
        << setw(3) << fSector << ","
        << setw(3) << fStrip << "] = " 
        << fEdep << endl;
+  TString opt(option);
+  if (opt.Contains("D", TString::kIgnoreCase)) {
+    TDatabasePDG* pdgDB = TDatabasePDG::Instance();
+    TParticlePDG* pdg   = pdgDB->GetParticle(fPdg);
+    cout << "\tPDG:\t" << fPdg << " " << (pdg ? pdg->GetName() : "?") << "\n"
+	 << "\tP:\t(" << fPx << "," << fPy << "," << fPz << ") "<<P() << "\n" 
+	 << "\tX:\t" << fX << "," << fY << "," << fZ << "\n" 
+	 << "\tTrack #:\t" << fTrack << std::endl;
+  }
 }
 
 //____________________________________________________________________

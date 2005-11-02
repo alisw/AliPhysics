@@ -140,25 +140,26 @@ AliFMDG3OldSimulator::RingGeometry(AliFMDRing* r)
   Char_t      id          = r->GetId();
   Double_t    siThick     = r->GetSiThickness();
   // const Int_t nv       = r->GetNVerticies();
-  TVector2*   a           = r->GetVertex(5);
+  //TVector2*   a           = r->GetVertex(5);
   TVector2*   b           = r->GetVertex(3);
-  TVector2*   c           = r->GetVertex(4);
+  //TVector2*   c           = r->GetVertex(4);
   Double_t    theta       = r->GetTheta();
-  Double_t    off         = (TMath::Tan(TMath::Pi() * theta / 180) 
-			     * r->GetBondingWidth());
+  //Double_t    off         = (TMath::Tan(TMath::Pi() * theta / 180) 
+  //			     * r->GetBondingWidth());
   Double_t    rmax        = b->Mod();
   Double_t    rmin        = r->GetLowR();
   Double_t    pcbThick    = r->GetPrintboardThickness();
   Double_t    copperThick = r->GetCopperThickness(); // .01;
   Double_t    chipThick   = r->GetChipThickness(); // .01;
-  Double_t    modSpace    = r->GetModuleSpacing();
-  Double_t    legr        = r->GetLegRadius();
-  Double_t    legl        = r->GetLegLength();
-  Double_t    legoff      = r->GetLegOffset();
+  //Double_t    modSpace    = r->GetModuleSpacing();
+  //Double_t    legr        = r->GetLegRadius();
+  //Double_t    legl        = r->GetLegLength();
+  //Double_t    legoff      = r->GetLegOffset();
   Int_t       ns          = r->GetNStrips();
+  Double_t    space       = r->GetSpacing();
   Int_t       nsec        = Int_t(360 / theta);
-  Double_t    stripoff    = a->Mod();
-  Double_t    dstrip      = (rmax - stripoff) / ns;
+  //Double_t    stripoff    = a->Mod();
+  //Double_t    dstrip      = (rmax - stripoff) / ns;
   Double_t    par[10];
   TString     name;
   TString     name2;
@@ -167,7 +168,7 @@ AliFMDG3OldSimulator::RingGeometry(AliFMDRing* r)
   Int_t siId  = fFMD->GetIdtmed()->At(kSiId);
   Int_t airId = fFMD->GetIdtmed()->At(kAirId);
   Int_t pcbId = fFMD->GetIdtmed()->At(kPcbId);
-  Int_t plaId = fFMD->GetIdtmed()->At(kPlasticId);
+  //Int_t plaId = fFMD->GetIdtmed()->At(kPlasticId);
   Int_t copId = fFMD->GetIdtmed()->At(kCopperId);
   Int_t chiId = fFMD->GetIdtmed()->At(kSiChipId);
 
@@ -185,7 +186,7 @@ AliFMDG3OldSimulator::RingGeometry(AliFMDRing* r)
   name2      = name;
   name       = Form(fgkActiveName, id);
   Double_t z = - ringWidth / 2 + siThick / 2;
-  mc->Gsvolu(name.Data(), "TUBE", (fDetailed ? airId : siId), par, 3);
+  mc->Gsvolu(name.Data(), "TUBE", siId, par, 3);
   mc->Gspos(name.Data(), 1, name2.Data(), 0, 0, z, 0);
   
   Int_t sid = mc->VolId(name.Data());
@@ -210,12 +211,12 @@ AliFMDG3OldSimulator::RingGeometry(AliFMDRing* r)
 
   // Shape of Printed circuit Board 
   Double_t boardThick = (pcbThick + copperThick + chipThick);
-  par[0]     =  rmin - .1;
+  par[0]     =  rmin + .1;
   par[1]     =  rmax - .1;
   par[2]     =  boardThick / 2;
   name2      =  Form(fgkRingName, id);
   name       =  Form(fgkPCBName, id, 'B');
-  z          += siThick / 2 + boardThick / 2;
+  z          += siThick / 2 + space + boardThick / 2;
   mc->Gsvolu(name.Data(), "TUBE", pcbId, par, 3);
   mc->Gspos(name.Data(), 1, name2.Data(), 0, 0, z, 0);
   mc->Gspos(name.Data(), 2, name2.Data(), 0, 0, z + boardThick, 0);
@@ -229,16 +230,14 @@ AliFMDG3OldSimulator::RingGeometry(AliFMDRing* r)
   mc->Gspos(name.Data(), 1, name2.Data(), 0, 0, z, 0);
   // Copper
   par[2] =  copperThick / 2;
-  name2  =  name;
   name   =  Form("F%cCO", id);
   z      += pcbThick / 2 + copperThick / 2;
   mc->Gsvolu(name.Data(), "TUBE", copId, par, 3);
   mc->Gspos(name.Data(), 1, name2.Data(), 0, 0, z, 0);
   // Chip
   par[2] =  chipThick / 2;
-  name2  =  name;
   name   =  Form("F%cCH", id);
-  z      =  boardThick / 2 - chipThick / 2;
+  z      += copperThick / 2 + chipThick / 2;
   mc->Gsvolu(name.Data(), "TUBE", chiId, par, 3);
   mc->Gspos(name.Data(), 1, name2.Data(), 0, 0, z, 0);
 

@@ -251,9 +251,9 @@ AliFMDGeoSimulator::RingGeometry(AliFMDRing* r)
     if (fDetailed) {
       TGeoTubeSeg* activeShape = 
 	new TGeoTubeSeg(rmin, rmax, siThick/2, - theta, theta);
-      activeVolume = new TGeoVolume(Form(fgkActiveName, id), activeShape, fSi);
-      TGeoVolume* sectorVolume = activeVolume->Divide(Form(fgkSectorName, id), 
-						      2, 2, -theta, 0, 0, "N");
+      activeVolume = new TGeoVolume(Form(fgkActiveName, id),activeShape,fSi);
+      TGeoVolume* sectorVolume = activeVolume->Divide(Form(fgkSectorName,id), 
+						      2, 2, -theta,0,0,"N");
       TGeoVolume* stripVolume = sectorVolume->Divide(Form(fgkStripName, id), 
 						     1, ns, stripoff, dstrip, 
 						     0, "SX");
@@ -293,7 +293,7 @@ AliFMDGeoSimulator::RingGeometry(AliFMDRing* r)
   
   TGeoMatrix* matrix = 0;
   // Back container volume 
-  Double_t contThick     = siThick + pcbThick + legl;
+  Double_t contThick     = siThick + pcbThick + legl + space;
   TGeoTubeSeg* backShape = new TGeoTubeSeg(rmin, rmax, contThick/2, 
 					   - theta, theta);
   TGeoVolume* backVolume = new TGeoVolume(Form(fgkBackVName, id), 
@@ -361,16 +361,16 @@ AliFMDGeoSimulator::RingGeometry(AliFMDRing* r)
   // frontVolume->VisibleDaughters(kTRUE);
   
   // Ring mother volume 
-  TGeoTube* ringShape    = new TGeoTube(rmin, rmax, contThick / 2);
-  TGeoVolume* ringVolume = new TGeoVolume(Form(fgkRingName, id), ringShape, 
-					  fAir);
+  TGeoTube*   ringShape  = new TGeoTube(rmin, rmax, contThick / 2);
+  TGeoVolume* ringVolume = new TGeoVolume(Form(fgkRingName,id),
+					  ringShape,fAir);
 
   Int_t nmod = r->GetNModules();
   AliDebug(10, Form("making %d modules in ring %c", nmod, id));
   for (Int_t i = 0; i < nmod; i++) {
     Bool_t isFront    = (i % 2 == 0);
     TGeoVolume* vol   = (isFront ? frontVolume : backVolume);
-    TGeoRotation* rot = new TGeoRotation(Form("FMD Ring %c rotation %d",id,i));
+    TGeoRotation* rot =new TGeoRotation(Form("FMD Ring %c rotation %d",id,i));
     rot->RotateZ((i + .5) * 2 * theta);
     Double_t z = (isFront ? 0 : modSpace) / 2;
     matrix     = new TGeoCombiTrans(Form("FMD Ring %c transform %d", id, i), 
