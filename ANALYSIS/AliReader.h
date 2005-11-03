@@ -37,8 +37,8 @@
 // that read next event in queue.
 //
 // The others are:
-// Bool_t  ReadsRec() const; specifies if reader is able to read simulated particles
-// Bool_t  ReadsSim() const; specifies if reader is able to read reconstructed tracks
+// Bool_t  ReadsSim() const; specifies if reader is able to read simulated particles
+// Bool_t  ReadsRec() const; specifies if reader is able to read reconstructed tracks
 // void    Rewind(); rewind reading to the beginning
 //
 // This class provides full functionality for reading from many sources
