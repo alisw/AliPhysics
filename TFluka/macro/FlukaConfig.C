@@ -1,16 +1,4 @@
 static Int_t    eventsPerRun = 100;
-enum PprRun_t
-{
-    test50,
-    kParam_8000,   kParam_4000,  kParam_2000,
-    kHijing_cent1, kHijing_cent2,
-    kHijing_per1,  kHijing_per2, kHijing_per3, kHijing_per4,  kHijing_per5,
-    kHijing_jj25,  kHijing_jj50, kHijing_jj75, kHijing_jj100, kHijing_jj200,
-    kHijing_gj25,  kHijing_gj50, kHijing_gj75, kHijing_gj100, kHijing_gj200,
-    kHijing_pA, kPythia6, kPythia6Jets, kD0PbPb5500, kD_TRD, kB_TRD, kJpsi_TRD,
-    kU_TRD, kPyJJ, kPyGJ
-};
-                                                                                
 enum PprGeo_t
 {
     kHoles, kNoHoles
@@ -28,8 +16,6 @@ enum PprMag_t
                                                                                 
                                                                                 
 // This part for configuration
-//static PprRun_t srun = test50;
-static PprRun_t srun = kPythia6;
 static PprGeo_t sgeo = kHoles;
 static PprRad_t srad = kGluonRadiation;
 static PprMag_t smag = k5kG;
@@ -53,12 +39,22 @@ void Config()
   
   // libraries required by fluka21
 
-  gSystem->Load("libGeom");
-  cout << "\t* Loading TFluka..." << endl;  
-  gSystem->Load("libTFluka");    
+  Bool_t isFluka = kTRUE;
+  if (isFluka) {
+    gSystem->Load("libGeom");
+    cout << "\t* Loading TFluka..." << endl;  
+    gSystem->Load("libTFluka");    
     
-  cout << "\t* Instantiating TFluka..." << endl;
-  new  TFluka("C++ Interface to Fluka", 0/*verbositylevel*/);
+    cout << "\t* Instantiating TFluka..." << endl;
+    new  TFluka("C++ Interface to Fluka", 0/*verbositylevel*/);
+  }
+  else {
+    cout << "\t* Loading Geant3..." << endl;  
+    gSystem->Load("libgeant321");
+    
+    cout << "\t* Instantiating Geant3TGeo..." << endl;
+    new     TGeant3TGeo("C++ Interface to Geant3");
+  }
   
   AliRunLoader* rl=0x0;
                                                                                 
@@ -148,7 +144,6 @@ void Config()
   //
 
 
-//  gAlice->SetDebug(10);
      if (smag == k2kG) {
         comment = comment.Append(" | L3 field 0.2 T");
     } else if (smag == k4kG) {
@@ -183,27 +178,27 @@ void Config()
     rl->CdGAFile();
     gAlice->SetField(field);
  
-  Int_t   iABSO  = 0; 
-  Int_t   iCRT   = 0; 
-  Int_t   iDIPO  = 0; 
-  Int_t   iFMD   = 0; 
-  Int_t   iFRAME = 0; 
-  Int_t   iHALL  = 0; 
-  Int_t   iITS   = 0; 
-  Int_t   iMAG   = 0; 
-  Int_t   iMUON  = 0; 
-  Int_t   iPHOS  = 0; 
-  Int_t   iPIPE  = 0; 
-  Int_t   iPMD   = 0; 
+  Int_t   iABSO  = 1; 
+  Int_t   iCRT   = 1; 
+  Int_t   iDIPO  = 1; 
+  Int_t   iFMD   = 1; 
+  Int_t   iFRAME = 1; 
+  Int_t   iHALL  = 1; 
+  Int_t   iITS   = 1; 
+  Int_t   iMAG   = 1; 
+  Int_t   iMUON  = 1; 
+  Int_t   iPHOS  = 1; 
+  Int_t   iPIPE  = 1; 
+  Int_t   iPMD   = 1; 
   Int_t   iRICH  = 1; 
-  Int_t   iSHIL  = 0; 
-  Int_t   iSTART = 0; 
-  Int_t   iTOF   = 0; 
+  Int_t   iSHIL  = 1; 
+  Int_t   iSTART = 1; 
+  Int_t   iTOF   = 1; 
   Int_t   iTPC   = 1;
-  Int_t   iTRD   = 0; 
-  Int_t   iZDC   = 0; 
+  Int_t   iTRD   = 1; 
+  Int_t   iZDC   = 1; 
   Int_t   iEMCAL = 0; 
-  Int_t   iVZERO = 0;
+  Int_t   iVZERO = 1;
  
   cout << "\t* Creating the detectors ..." << endl;
   //=================== Alice BODY parameters =============================
@@ -431,7 +426,7 @@ void Config()
     if (iEMCAL)
     {
         //=================== EMCAL parameters ============================
-        AliEMCAL *EMCAL = new AliEMCALv1("EMCAL", "EMCAL_55_25");
+        AliEMCAL *EMCAL = new AliEMCALv2("EMCAL", "SHISH");
     }
                                                                                 
      if (iCRT)
