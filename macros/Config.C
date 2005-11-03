@@ -40,7 +40,7 @@
 #include "PHOS/AliPHOSv1.h"
 #include "PMD/AliPMDv1.h"
 #include "START/AliSTARTv1.h"
-#include "EMCAL/AliEMCALv1.h"
+#include "EMCAL/AliEMCALv2.h"
 #include "CRT/AliCRTv0.h"
 #include "VZERO/AliVZEROv5.h"
 #endif
@@ -409,7 +409,7 @@ void Config()
     if (iEMCAL)
     {
         //=================== EMCAL parameters ============================
-        AliEMCAL *EMCAL = new AliEMCALv1("EMCAL", "EMCAL_55_25");
+        AliEMCAL *EMCAL = new AliEMCALv2("EMCAL", "SHISH");
     }
 
      if (iCRT)

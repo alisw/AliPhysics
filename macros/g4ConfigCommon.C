@@ -375,7 +375,7 @@ void ConfigCommon(Bool_t interactiveSetup)
     if (iEMCAL)
     {
         //=================== EMCAL parameters ============================
-        AliEMCAL *EMCAL = new AliEMCALv1("EMCAL", "EMCAL_55_25");
+        AliEMCAL *EMCAL = new AliEMCALv2("EMCAL", "SHISH");
     }
 
     if (iCRT)
