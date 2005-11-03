@@ -48,7 +48,7 @@ public:
 			Int_t firstRun = -1,
 			Int_t lastRun = -1);
 
-	void RemoveSelection(const int position);
+	void RemoveSelection(int position);
 	void RemoveAllSelections();
 		
 	AliCDBEntry* Get(const AliCDBId& query);

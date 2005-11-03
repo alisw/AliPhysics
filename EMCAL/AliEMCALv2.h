@@ -62,7 +62,7 @@ public:
   void DrawSuperModuleCut(const char *name="EMOD", int axis=2, double dcut=0.03, int fill = 6);//  *MENU*
   void DrawTowerCut(const char *name="SCMY", int axis=2, double dcut=0., int fill=1, char *optShad="on");   //  *MENU*
   void DrawAlicWithHits(int mode=1);                            // *MENU*
-  void SetVolumeAttributes(const char *name="SCM0",const int seen=1, const int color=1, const int fill=1); // *MENU*
+  void SetVolumeAttributes(const char *name="SCM0",const int seen=1, int color=1, int fill=1); // *MENU*
   void TestIndexTransition(int pri=0, int idmax=0); // *MENU*
 
   AliEMCALGeometry* fGeometry; //!

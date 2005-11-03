@@ -30,7 +30,7 @@ ClassImp(AliEMCALShishKebabModule)
   Double_t AliEMCALShishKebabModule::fgb=0.; 
   Double_t AliEMCALShishKebabModule::fgr=0.; 
 
-AliEMCALShishKebabModule::AliEMCALShishKebabModule(const double theta) : TNamed()
+AliEMCALShishKebabModule::AliEMCALShishKebabModule(double theta) : TNamed()
 { // theta in radians ; first object shold be with theta=pi/2.
   fTheta = theta;
   if(fgGeometry==0) {
@@ -47,7 +47,7 @@ AliEMCALShishKebabModule::AliEMCALShishKebabModule(AliEMCALShishKebabModule &lef
   Init(leftNeighbor.GetA(),leftNeighbor.GetB());
 }
 
-void AliEMCALShishKebabModule::Init(const double A,const double B)
+void AliEMCALShishKebabModule::Init(double A, double B)
 { 
   Double_t thetaMin, thetaMax, par[4];
   Int_t npar=0;
@@ -142,7 +142,7 @@ Double_t AliEMCALShishKebabModule::YALL(double *x, double *par)
   return y;
 }
 
-void AliEMCALShishKebabModule::DefineName(const double theta)
+void AliEMCALShishKebabModule::DefineName(double theta)
 {
   char name[100];
   // sprintf(name,"theta_%5.2f",theta*180./TMath::Pi());
@@ -167,7 +167,7 @@ Bool_t AliEMCALShishKebabModule::GetParameters()
 }
 
 // service methods
-void AliEMCALShishKebabModule::Print(const int pri) const
+void AliEMCALShishKebabModule::Print(int pri) const
 {
   if(pri>=0) {
     Info("Print()", " a %7.2f | b %7.2f | r %7.2f ", fga, fgb, fgr);

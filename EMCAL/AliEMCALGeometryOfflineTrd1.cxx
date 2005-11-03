@@ -103,7 +103,7 @@ void AliEMCALGeometryOfflineTrd1::Init()
   }
 }
 
-TVector3& AliEMCALGeometryOfflineTrd1::PosInSuperModule(const int nSupMod, const Int_t nTower,const Int_t nIphi,const Int_t nIeta)
+TVector3& AliEMCALGeometryOfflineTrd1::PosInSuperModule(int nSupMod, Int_t nTower, Int_t nIphi, Int_t nIeta)
 { // 10-nov-04
   static Int_t iphi, ieta;
   static TVector3 v;
@@ -114,7 +114,7 @@ TVector3& AliEMCALGeometryOfflineTrd1::PosInSuperModule(const int nSupMod, const
   return v;
 } 
 
-void AliEMCALGeometryOfflineTrd1::PositionInSuperModule(const Int_t iphi, const Int_t ieta, 
+void AliEMCALGeometryOfflineTrd1::PositionInSuperModule(Int_t iphi, Int_t ieta, 
 double &lphi, double &leta)
 { 
   static Int_t ie=0;
@@ -125,7 +125,7 @@ double &lphi, double &leta)
   leta = fSMPositionEta[ie].X();
 }
 
-void AliEMCALGeometryOfflineTrd1::PositionInSuperModule(const int nSupMod, const Int_t nTower, const Int_t nIphi, const Int_t nIeta,
+void AliEMCALGeometryOfflineTrd1::PositionInSuperModule(int nSupMod, Int_t nTower, Int_t nIphi, Int_t nIeta,
 double &lphi, double &leta)
 {
   static Int_t iphi,ieta;

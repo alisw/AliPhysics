@@ -39,12 +39,12 @@ class AliITSBadChannelsSPD: public TObject {
   Int_t GetBadChannelsArraySize(void) const             // Return the size of the bad channels array
     { return fBadChannelsArraySize; };
 
-  Int_t* CreateModuleArray(const Int_t module) const;   // Create an array with sequential data for a given module
-  Int_t GetModuleArraySize(const Int_t module) const    // Return array size for a given module
+  Int_t* CreateModuleArray(Int_t module) const;   // Create an array with sequential data for a given module
+  Int_t GetModuleArraySize(Int_t module) const    // Return array size for a given module
     { return (2*fBadChannelsArray[fIndexArray[module]] + 1); };
 
-  TObjArray* CreateModuleObjArray(const Int_t module) const; // Create a TObjArray with data for a given module
-  Int_t GetModuleObjArraySize(const Int_t module) const      // Return TObjArray size for a given module
+  TObjArray* CreateModuleObjArray(Int_t module) const; // Create a TObjArray with data for a given module
+  Int_t GetModuleObjArraySize(Int_t module) const      // Return TObjArray size for a given module
     { return (fBadChannelsArray[fIndexArray[module]]); };
 
  protected:

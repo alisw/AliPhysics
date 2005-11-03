@@ -22,7 +22,7 @@ class AliITSChannelSPD: public TObject {
  public:
 
   AliITSChannelSPD(void);    			            // Default constructor
-  AliITSChannelSPD(const Int_t column, const Int_t row);    // Constructor for already existing "bad" channel
+  AliITSChannelSPD(Int_t column, Int_t row);    // Constructor for already existing "bad" channel
   AliITSChannelSPD(const AliITSChannelSPD &ch);             // Copy constructor
   virtual ~AliITSChannelSPD(void) { };                      // Default destructor
   AliITSChannelSPD& operator=(const AliITSChannelSPD &ch);  // Assignment operator

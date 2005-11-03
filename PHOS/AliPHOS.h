@@ -7,6 +7,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.63  2005/07/26 13:32:39  kharlov
+ * Restoring raw data fit from version of 29-Aug-2004
+ *
  * Revision 1.62  2005/07/06 10:10:32  hristov
  * Moving the functions used to initialize TF1 and TF2 to the pivate part of the class
  *
@@ -76,7 +79,7 @@ public:
   Double_t GetRawFormatTimeTrigger() const { return fgTimeTrigger ; }   
   static Double_t RawResponseFunctionMax(Double_t charge, Double_t gain) ;
   static Double_t RawResponseFunction(Double_t *x, Double_t *par) ; 
-  Bool_t   RawSampledResponse(const Double_t dtime, const Double_t damp, Int_t * adcH, Int_t * adcL) const ; 
+  Bool_t   RawSampledResponse(Double_t dtime, Double_t damp, Int_t * adcH, Int_t * adcL) const ; 
   //
   virtual AliLoader* MakeLoader(const char* topfoldername);
   virtual void    SetTreeAddress();   

@@ -498,7 +498,7 @@ void AliEMCALv2::DrawAlicWithHits(int mode)
   if(mode>0 && h2->Integral()>0.) h2->Draw();
 }
 
-void AliEMCALv2::SetVolumeAttributes(const char *name,const int seen, const int color, const int fill)
+void AliEMCALv2::SetVolumeAttributes(const char *name, int seen, int color, int fill)
 {
  /* seen=-2:volume is visible but none of its descendants;
          -1:volume is not visible together with all its descendants;

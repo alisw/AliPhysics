@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.1  2005/10/11 12:31:50  masera
+Preprocessor classes for SPD (Paul Nilsson)
+
 */
 
 ///////////////////////////////////////////////////////////////////////////
@@ -162,7 +165,7 @@ Bool_t AliITSBadChannelsSPD::Get(Int_t* &badChannelsArray, Int_t* &indexArray) c
 }
 
 //__________________________________________________________________________
-Int_t* AliITSBadChannelsSPD::CreateModuleArray(const Int_t module) const
+Int_t* AliITSBadChannelsSPD::CreateModuleArray(Int_t module) const
 {
   // Create an Int_t array for a given module
 
@@ -186,7 +189,7 @@ Int_t* AliITSBadChannelsSPD::CreateModuleArray(const Int_t module) const
 }
 
 //__________________________________________________________________________
-TObjArray* AliITSBadChannelsSPD::CreateModuleObjArray(const Int_t module) const
+TObjArray* AliITSBadChannelsSPD::CreateModuleObjArray(Int_t module) const
 {
   // Create a TObjArray for a given module
 

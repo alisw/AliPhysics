@@ -26,10 +26,6 @@ class TParticle ;
 
 class AliEMCALGeometry : public AliGeometry {
 public:
-  AliEMCALGeometry() {
-    // default ctor,  must be kept public for root persistency purposes,
-    // but should never be called by the outside world
-  };
   AliEMCALGeometry(const AliEMCALGeometry& geom):AliGeometry(geom) {
     // cpy ctor requested by Coding Convention but not yet needed
     Fatal("Cpy ctor", "Not implemented");
@@ -102,10 +98,10 @@ public:
   Float_t GetTubsR()     const {return fTubsR;}
   Float_t GetTubsTurnAngle() const {return fTubsTurnAngle;}
   // Dabs id <-> indexes; Shish-kebab case 
-  Int_t   GetAbsCellId(const Int_t nSupMod, const Int_t nTower, const Int_t nIphi, const Int_t nIeta);
-  Bool_t  GetCellIndex(const Int_t absId, Int_t &nSupMod, Int_t &nTower, Int_t &nIphi, Int_t &nIeta);
-  void    GetTowerPhiEtaIndexInSModule(const Int_t nSupMod, const Int_t nTower, Int_t &iphit, Int_t &ietat);
-  void    GetCellPhiEtaIndexInSModule(const Int_t nSupMod, const Int_t nTower, const Int_t nIphi, const Int_t nIeta,
+  Int_t   GetAbsCellId(Int_t nSupMod, Int_t nTower, Int_t nIphi, Int_t nIeta);
+  Bool_t  GetCellIndex(Int_t absId, Int_t &nSupMod, Int_t &nTower, Int_t &nIphi, Int_t &nIeta);
+  void    GetTowerPhiEtaIndexInSModule(Int_t nSupMod, Int_t nTower, Int_t &iphit, Int_t &ietat);
+  void    GetCellPhiEtaIndexInSModule(Int_t nSupMod, Int_t nTower, Int_t nIphi, Int_t nIeta,
                                       Int_t &iphi, Int_t &ieta);
   Bool_t  CheckAbsCellId(Int_t ind); // replace the IsInECA
   // ---
@@ -137,6 +133,10 @@ public:
 protected:
   AliEMCALGeometry(const Text_t* name, const Text_t* title="") :
     AliGeometry(name, title) {// ctor only for internal usage (singleton)
+    Init();
+  };
+  AliEMCALGeometry() :
+    AliGeometry() {// ctor only for internal usage (singleton)
     Init();
   };
   void Init(void);     			// initializes the parameters of EMCAL

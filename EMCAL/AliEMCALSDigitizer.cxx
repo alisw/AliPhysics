@@ -401,7 +401,7 @@ void AliEMCALSDigitizer::Browse(TBrowser* b)
   TTask::Browse(b);
 }
 
-TList *AliEMCALSDigitizer::BookControlHists(const int var)
+TList *AliEMCALSDigitizer::BookControlHists(int var)
 { // 22-nov-04
   gROOT->cd();
   AliEMCALGetter * gime = AliEMCALGetter::Instance(GetTitle(), fEventFolderName);

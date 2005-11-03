@@ -595,7 +595,7 @@ Bool_t AliEMCALGeometry::IsInEMCAL(Double_t x, Double_t y, Double_t z) const {
 //
 // == Shish-kebab cases ==
 //
-Int_t AliEMCALGeometry::GetAbsCellId(const int nSupMod, const int nTower, const int nIphi, const int nIeta)
+Int_t AliEMCALGeometry::GetAbsCellId(Int_t nSupMod, Int_t nTower, Int_t nIphi, Int_t nIeta)
 { // 27-aug-04; 
   // corr. 21-sep-04; 
   //       13-oct-05; 110 degree case
@@ -634,7 +634,7 @@ Bool_t  AliEMCALGeometry::CheckAbsCellId(Int_t ind)
    } else return IsInECA(ind);
 }
 
-Bool_t AliEMCALGeometry::GetCellIndex(const Int_t absId,Int_t &nSupMod,Int_t &nTower,Int_t &nIphi,Int_t &nIeta)
+Bool_t AliEMCALGeometry::GetCellIndex(Int_t absId,Int_t &nSupMod,Int_t &nTower,Int_t &nIphi,Int_t &nIeta)
 { // 21-sep-04
   // 19-oct-05;
   static Int_t tmp=0, sm10=0;
@@ -659,7 +659,7 @@ Bool_t AliEMCALGeometry::GetCellIndex(const Int_t absId,Int_t &nSupMod,Int_t &nT
   return kTRUE;
 }
 
-void AliEMCALGeometry::GetTowerPhiEtaIndexInSModule(const Int_t nSupMod, const int nTower,  int &iphit, int &ietat)
+void AliEMCALGeometry::GetTowerPhiEtaIndexInSModule(Int_t nSupMod, Int_t nTower,  int &iphit, int &ietat)
 { // added nSupMod; have to check  - 19-oct-05 ! 
   static Int_t nphi;
 
@@ -671,7 +671,7 @@ void AliEMCALGeometry::GetTowerPhiEtaIndexInSModule(const Int_t nSupMod, const i
   iphit = (nTower-1)%nphi + 1; // have to change from 1 to fNPhi
 }
 
-void AliEMCALGeometry::GetCellPhiEtaIndexInSModule(const Int_t nSupMod, const int nTower, const int nIphi, const int nIeta, 
+void AliEMCALGeometry::GetCellPhiEtaIndexInSModule(Int_t nSupMod, Int_t nTower, Int_t nIphi, Int_t nIeta, 
 int &iphi, int &ieta)
 { // added nSupMod; have to check  - 19-oct-05 ! 
   static Int_t iphit, ietat, nphi;

@@ -16,13 +16,13 @@ class AliEMCALGeometry;
 
 class AliEMCALShishKebabTrd1Module : public TNamed {
  public:
-  AliEMCALShishKebabTrd1Module(const double theta=TMath::Pi()/2.);
+  AliEMCALShishKebabTrd1Module(double theta=TMath::Pi()/2.);
   AliEMCALShishKebabTrd1Module(AliEMCALShishKebabTrd1Module &leftNeighbor);
-  void Init(const double A,const double B);
+  void Init(double A, double B);
 
   virtual ~AliEMCALShishKebabTrd1Module(void) {}
   Bool_t GetParameters();
-  void DefineName(const double theta);
+  void DefineName(double theta);
   void DefineFirstModule();
 
   Double_t GetTheta() const{return fTheta;}
@@ -36,14 +36,14 @@ class AliEMCALShishKebabTrd1Module : public TNamed {
   Double_t  GetA() {return fA;}
   Double_t  GetB() {return fB;}
   //  Additional offline staff 
-  TVector2& GetCenterOfCell(const Int_t ieta)
+  TVector2& GetCenterOfCell(Int_t ieta)
   { if(ieta<=1) return fOK1;
     else        return fOK2;}
   // 
   Double_t GetTanBetta() {return fgtanBetta;}
   Double_t Getb()        {return fgb;}
   // service methods
-  void Print(const int pri=1) const;  // *MENU*
+  void Print(int pri=1) const;  // *MENU*
 
   // geometry info
   static AliEMCALGeometry *fgGeometry; //!

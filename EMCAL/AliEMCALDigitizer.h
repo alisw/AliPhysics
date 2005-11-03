@@ -57,7 +57,7 @@ public:
   Int_t   GetDigitsInRun()  const { return fDigitsInRun; } 
   void  MixWith(TString alirunFileName, 
 		TString eventFolderName = AliConfig::GetDefaultEventFolderName()) ; // Add another one file to mix
-  void  Print() const ;
+  void  Print(Option_t* option="") const ;
   void  Print1(Option_t * option); // *MENU*
  
   AliEMCALDigitizer & operator = (const AliEMCALDigitizer & /*rvalue*/)  {
@@ -68,10 +68,10 @@ public:
 
   virtual void Browse(TBrowser* b);
   // hists
-  void   SetControlHists(const Int_t var=0) {fControlHists=var;}
+  void   SetControlHists(Int_t var=0) {fControlHists=var;}
   Int_t  GetControlHist() const {return fControlHists;}
   TList *GetListOfHists() {return fHists;}
-  TList* BookControlHists(const int var=0);
+  TList* BookControlHists(int var=0);
   void   SaveHists(const char* name="RF/TRD1/Digitizations/DigiVar?",
   Bool_t kSingleKey=kTRUE, const char* opt="RECREATE"); // *MENU*
 

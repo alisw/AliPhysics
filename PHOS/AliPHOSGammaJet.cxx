@@ -17,6 +17,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.6  2005/05/28 14:19:04  schutz
+ * Compilation warnings fixed by T.P.
+ *
  */
 
 //_________________________________________________________________________
@@ -527,7 +530,7 @@ void AliPHOSGammaJet::AddHIJINGToList(Int_t iEvent, TClonesArray * particleList,
 }  
 
 //____________________________________________________________________________
-Double_t AliPHOSGammaJet::CalculateJetRatioLimit(const Double_t ptg, 
+Double_t AliPHOSGammaJet::CalculateJetRatioLimit(Double_t ptg, 
 						 const Double_t *par, 
 						 const Double_t *x) {
 
@@ -1420,7 +1423,7 @@ void AliPHOSGammaJet::InitParameters()
 }
 
 //__________________________________________________________________________-
-Bool_t AliPHOSGammaJet::IsAngleInWindow(const Float_t angle,const Float_t e) {
+Bool_t AliPHOSGammaJet::IsAngleInWindow(Float_t angle, Float_t e) {
   //Check if the opening angle of the candidate pairs is inside 
   //our selection windowd
   Bool_t result = kFALSE;
@@ -1439,7 +1442,7 @@ Bool_t AliPHOSGammaJet::IsAngleInWindow(const Float_t angle,const Float_t e) {
 }
 
 //__________________________________________________________________________-
-Bool_t AliPHOSGammaJet::IsJetSelected(const Double_t ptg, const Double_t ptj, 
+Bool_t AliPHOSGammaJet::IsJetSelected(Double_t ptg, Double_t ptj, 
 				      const TString type ){
   //Check if the energy of the reconstructed jet is within an energy window
 
@@ -1536,7 +1539,7 @@ void AliPHOSGammaJet::List() const
 }
 
 //____________________________________________________________________________
-Double_t AliPHOSGammaJet::MakeEnergy(const Double_t energy)
+Double_t AliPHOSGammaJet::MakeEnergy(Double_t energy)
 {  
   // Smears the energy according to the energy dependent energy resolution.
   // A gaussian distribution is assumed
@@ -2432,7 +2435,7 @@ void  AliPHOSGammaJet::MakePhoton(TLorentzVector & particle)
 }
 
 //____________________________________________________________________________
-TVector3 AliPHOSGammaJet::MakePosition(const Double_t energy, const TVector3 pos)
+TVector3 AliPHOSGammaJet::MakePosition(Double_t energy, const TVector3 pos)
 {
   // Smears the impact position according to the energy dependent position resolution
   // A gaussian position distribution is assumed

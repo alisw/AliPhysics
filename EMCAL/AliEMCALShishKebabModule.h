@@ -13,13 +13,13 @@ class AliEMCALGeometry;
 
 class AliEMCALShishKebabModule : public TNamed {
  public:
-  AliEMCALShishKebabModule(const double theta=TMath::Pi()/2.);
+  AliEMCALShishKebabModule(double theta=TMath::Pi()/2.);
   AliEMCALShishKebabModule(AliEMCALShishKebabModule &leftNeighbor);
-  void Init(const double A,const double B);
+  void Init(double A, double B);
 
   virtual ~AliEMCALShishKebabModule(void) {}
   Bool_t GetParameters();
-  void DefineName(const double theta);
+  void DefineName(double theta);
   void DefineFirstModule();
   void DefineSecondModuleFirstAssumption(); // need for testing
 
@@ -49,7 +49,7 @@ class AliEMCALShishKebabModule : public TNamed {
   Double_t fA;  // parameters of line = y = A*z + B
   Double_t fB;  // 
   // service methods
-  void Print(const int pri=1) const;  // *MENU*
+  void Print(int pri=1) const;  // *MENU*
  protected:
   // size of SK module
   Double_t fTheta; // theta for SK module

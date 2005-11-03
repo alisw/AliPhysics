@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.1  2005/10/11 12:31:50  masera
+Preprocessor classes for SPD (Paul Nilsson)
+
 */
 
 ///////////////////////////////////////////////////////////////////////////
@@ -86,7 +89,7 @@ Bool_t AliITSChannelSPD::operator==(const AliITSChannelSPD &channel) const
 }
 
 //__________________________________________________________________________
-AliITSChannelSPD::AliITSChannelSPD(const Int_t column, const Int_t row)
+AliITSChannelSPD::AliITSChannelSPD(Int_t column, Int_t row)
 {
   // Constructor for already existing channel
 

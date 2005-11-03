@@ -7,6 +7,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.7  2005/05/28 14:19:04  schutz
+ * Compilation warnings fixed by T.P.
+ *
  */
 
 //_________________________________________________________________________
@@ -129,7 +132,7 @@ public:
 		       TClonesArray * plNePHOS, const AliPHOSGeometry * geom); 
 
 
-  Double_t CalculateJetRatioLimit(const Double_t ptg, const Double_t *param, 
+  Double_t CalculateJetRatioLimit(Double_t ptg, const Double_t *param, 
 				  const Double_t *x);
 
   void CreateParticleList(Int_t iEvent, TClonesArray * particleList, 
@@ -141,8 +144,8 @@ public:
 
   void FillJetHistosAnyConeOrPt( TClonesArray * pl, Double_t ptg, TString conf, 
 				 TString type, TString cone, TString ptcut);
-  Bool_t IsAngleInWindow(const Float_t angle, const Float_t e);
-  Bool_t IsJetSelected(const Double_t ptg, const Double_t ptjet, 
+  Bool_t IsAngleInWindow(Float_t angle, Float_t e);
+  Bool_t IsJetSelected(Double_t ptg, Double_t ptjet, 
 		       const TString type);
 
   void MakeJet(TClonesArray * particleList, 
@@ -163,10 +166,10 @@ public:
 			Double_t &pt, Double_t &eta, Double_t &phi)  ;
 
   void InitParameters();
-  Double_t MakeEnergy(const Double_t energy) ;
+  Double_t MakeEnergy(Double_t energy) ;
   void MakeHistos() ;
   void MakePhoton(TLorentzVector & particle) ; 
-  TVector3 MakePosition(const Double_t energy, const TVector3 pos) ;
+  TVector3 MakePosition(Double_t energy, const TVector3 pos) ;
  
   void Pi0Decay(Double_t mPi0, TLorentzVector &p0, 
 		TLorentzVector &p1, TLorentzVector &p2, Double_t &angle) ;

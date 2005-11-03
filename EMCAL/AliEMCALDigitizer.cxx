@@ -565,7 +565,7 @@ void AliEMCALDigitizer::Print1(Option_t * option)
 }
 
 //__________________________________________________________________
-void AliEMCALDigitizer::Print()const 
+void AliEMCALDigitizer::Print(Option_t*)const 
 {
   // Print Digitizer's parameters
   printf("Print: \n------------------- %s -------------", GetName() ) ; 
@@ -690,7 +690,7 @@ void AliEMCALDigitizer::Browse(TBrowser* b)
   TTask::Browse(b);
 }
 
-TList *AliEMCALDigitizer::BookControlHists(const int var)
+TList *AliEMCALDigitizer::BookControlHists(int var)
 { // 22-nov-04
   Info("BookControlHists"," started ");
   gROOT->cd();

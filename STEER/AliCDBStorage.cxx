@@ -127,7 +127,7 @@ void AliCDBStorage::RemoveSelection(const AliCDBPath& path,
 }
 
 //_____________________________________________________________________________
-void AliCDBStorage::RemoveSelection(const int position){
+void AliCDBStorage::RemoveSelection(int position){
 // remove a selection criterion from its position in the list
 
 	fSelections.RemoveAt(position);

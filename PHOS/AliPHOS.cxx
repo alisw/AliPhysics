@@ -16,6 +16,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.91  2005/07/27 15:08:53  kharlov
+ * Mixture ArCO2 is corrected
+ *
  * Revision 1.90  2005/06/17 07:39:07  hristov
  * Removing GetDebug and SetDebug from AliRun and AliModule. Using AliLog for the messages
  *
@@ -550,7 +553,7 @@ Double_t AliPHOS::RawResponseFunctionMax(Double_t charge, Double_t gain)
 }
 
 //__________________________________________________________________
-Bool_t AliPHOS::RawSampledResponse(const Double_t dtime, const Double_t damp, Int_t * adcH, Int_t * adcL) const 
+Bool_t AliPHOS::RawSampledResponse(Double_t dtime, Double_t damp, Int_t * adcH, Int_t * adcL) const 
 {
   // for a start time dtime and an amplitude damp given by digit, 
   // calculates the raw sampled response AliPHOS::RawResponseFunction

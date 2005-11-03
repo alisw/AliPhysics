@@ -141,7 +141,7 @@ const TParticle * AliPHOSRecParticle::GetPrimary() const
 } 
   
 //____________________________________________________________________________
-const Int_t AliPHOSRecParticle::GetPrimaryIndex() const  
+Int_t AliPHOSRecParticle::GetPrimaryIndex() const  
 {
   // Get the primary track index in TreeK which deposits the most energy
   // in Digits which forms EmcRecPoint, which produces TrackSegment,
@@ -151,7 +151,7 @@ const Int_t AliPHOSRecParticle::GetPrimaryIndex() const
   AliPHOSGetter * gime = AliPHOSGetter::Instance() ; 
   if (!gime) 
     AliError(Form("Getter not yet instantiated")) ; 
-  //  gime->Event(gime->EventNumber(), "DRTX") ; 
+  //PH  gime->Event(gime->EventNumber(), "DRTX") ; 
   gime->Event(gime->EventNumber(), "DRT") ; 
   
   // Get TrackSegment corresponding to this RecParticle

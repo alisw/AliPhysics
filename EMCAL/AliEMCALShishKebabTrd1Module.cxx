@@ -32,7 +32,7 @@ ClassImp(AliEMCALShishKebabTrd1Module)
   Double_t AliEMCALShishKebabTrd1Module::fgangle=0.;   // one degrre 
   Double_t AliEMCALShishKebabTrd1Module::fgtanBetta=0; //
 
-AliEMCALShishKebabTrd1Module::AliEMCALShishKebabTrd1Module(const double theta) : TNamed()
+AliEMCALShishKebabTrd1Module::AliEMCALShishKebabTrd1Module(double theta) : TNamed()
 { // theta in radians ; first object shold be with theta=pi/2.
   fTheta = theta;
   if(fgGeometry==0) {
@@ -51,7 +51,7 @@ AliEMCALShishKebabTrd1Module::AliEMCALShishKebabTrd1Module(AliEMCALShishKebabTrd
   Init(leftNeighbor.GetA(),leftNeighbor.GetB());
 }
 
-void AliEMCALShishKebabTrd1Module::Init(const double A,const double B)
+void AliEMCALShishKebabTrd1Module::Init(double A, double B)
 { // Define parameter module from parameters A,B from previos.
   Double_t yl = (fgb/2)*TMath::Sin(fTheta) + (fga/2)*TMath::Cos(fTheta) + fgr, y = yl;
   Double_t xl = (yl - B) / A;     // y=A*x+B
@@ -105,7 +105,7 @@ void AliEMCALShishKebabTrd1Module::DefineFirstModule()
   TObject::SetUniqueID(1); //
 }
 
-void AliEMCALShishKebabTrd1Module::DefineName(const double theta)
+void AliEMCALShishKebabTrd1Module::DefineName(double theta)
 {
   char name[100];
   // sprintf(name,"theta_%5.2f",theta*180./TMath::Pi());
@@ -135,7 +135,7 @@ Bool_t AliEMCALShishKebabTrd1Module::GetParameters()
 }
 
 // service methods
-void AliEMCALShishKebabTrd1Module::Print(const int pri) const
+void AliEMCALShishKebabTrd1Module::Print(int pri) const
 {
   if(pri>=0) {
     Info("Print()", "\n a %7.3f:%7.3f | b %7.2f | r %7.2f \n TRD1 angle %7.6f(%5.2f) | tanBetta %7.6f", 
