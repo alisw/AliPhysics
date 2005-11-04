@@ -81,7 +81,7 @@ void AliTRDrecPoint::AddDigit(Int_t digit)
   // Increase the size of the list if necessary
   if (fMulDigit >= fMaxDigit) { 
     fMaxDigit *= 2;
-    int *tempo = new int[fMaxDigit]; 
+    Int_t *tempo = new Int_t[fMaxDigit]; 
     Int_t index; 
     for (index = 0; index < fMulDigit; index++)
       tempo[index] = fDigitsList[index]; 

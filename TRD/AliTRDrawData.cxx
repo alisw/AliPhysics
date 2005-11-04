@@ -112,7 +112,7 @@ Bool_t AliTRDrawData::Digits2Raw(TTree *digitsTree)
   const Int_t kNumberOfDDLs         = 18;
   const Int_t kSubeventHeaderLength = 8;
   const Int_t kSubeventDummyFlag    = 0xBB;
-  int headerSubevent[3];
+  Int_t       headerSubevent[3];
 
   ofstream      *outputFile[kNumberOfDDLs];
   UInt_t         bHPosition[kNumberOfDDLs];
@@ -165,7 +165,7 @@ Bool_t AliTRDrawData::Digits2Raw(TTree *digitsTree)
     Int_t colMax    = par->GetColMax(plan);
     Int_t timeTotal = par->GetTimeTotal();
     Int_t bufferMax = rowMax*colMax*timeTotal;
-    int  *buffer    = new int[bufferMax];
+    Int_t *buffer   = new Int_t[bufferMax];
 
     npads   = 0;
     nbyte   = 0;
