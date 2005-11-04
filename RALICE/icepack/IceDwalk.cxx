@@ -416,6 +416,13 @@ void IceDwalk::Exec(Option_t* opt)
  tes.Compress();
  nte=tes.GetEntries();
 
+ // Exit in case no track candidates are left
+ if (!nte)
+ {
+  if (ntes) delete [] ntes;
+  return;
+ }
+
  // Cluster track candidates within a certain opening angle into jets. 
  TObjArray jets;
  jets.SetOwner();
@@ -538,6 +545,6 @@ void IceDwalk::Exec(Option_t* opt)
   if (fJangsep<0) break;
  }
 
- delete [] ntes;
+ if (ntes) delete [] ntes;
 }
 ///////////////////////////////////////////////////////////////////////////

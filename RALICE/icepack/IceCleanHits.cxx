@@ -46,6 +46,11 @@
 // with the DAQ system.
 // So, currently the 24170 ns will be used for all the 2005 data until
 // the issue is settled.
+// However, the user can impose a specific trigger time to be used
+// by invokation of the memberfunction SetTtimeA.
+// Specification of a negative trigger time will result in the automatic
+// trigger time setting based on the event timestamp as outlined above.
+// The latter is the default.
 //
 // The hits which do not fullfill the criteria are flagged "dead" for the
 // corresponding signal slot. This means they are still present in the
@@ -77,6 +82,7 @@ IceCleanHits::IceCleanHits(const char* name,const char* title) : TTask(name,titl
  fRmaxA=70;
  fDtmaxA=500;
  fTwinA=2250;
+ fTtimA=-1;
 }
 ///////////////////////////////////////////////////////////////////////////
 IceCleanHits::~IceCleanHits()
@@ -123,6 +129,14 @@ void IceCleanHits::SetTwindowA(Float_t dtmax)
  fTwinA=dtmax;
 }
 ///////////////////////////////////////////////////////////////////////////
+void IceCleanHits::SetTtimeA(Float_t t)
+{
+// Set Amanda trigger time (in ns).
+// A negative value will induce automatic trigger time setting based
+// on the event timestamp.
+ fTtimA=t;
+}
+///////////////////////////////////////////////////////////////////////////
 void IceCleanHits::Exec(Option_t* opt)
 {
 // Implementation of the hit cleaning procedures.
@@ -152,11 +166,14 @@ void IceCleanHits::Amanda()
  // It seems that in 2005 the trigger time was changed within the year
  // from 24170 ns to 12138 ns. The latter however shows a 2-bump structure,
  // so currently the 24170 ns will be used for the 2005 data.
- Int_t year=(int)fEvt->GetJE();
- Float_t ttrig=23958;
- if (year==2003) ttrig=23994;
- if (year==2004) ttrig=24059.5;
- if (year==2005) ttrig=24170;
+ if (fTtimA<0)
+ {
+  Int_t year=(int)fEvt->GetJE();
+  fTtimA=23958;
+  if (year==2003) fTtimA=23994;
+  if (year==2004) fTtimA=24059.5;
+  if (year==2005) fTtimA=24170;
+ }
 
  // All Amanda OMs with a signal
  TObjArray* aoms=fEvt->GetDevices("IceAOM");
@@ -220,7 +237,7 @@ void IceCleanHits::Amanda()
    // (to include cable length effects) the uncalibrated LE of each
    // hit should be used here as well. 
    le=sx->GetSignal("LE",-7);
-   if (fabs(le-ttrig)>fTwinA)
+   if (fabs(le-fTtimA)>fTwinA)
    {
      sx->SetDead("LE");
      clean=0;

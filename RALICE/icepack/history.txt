@@ -23,4 +23,10 @@
                 Also first (prototype) version of class IceDwalk introduced to perform
                 direct walk reconstruction. In the /macros directory an example job
                 icedwalk.cc has been introduced.
+03-nov-2005 NvE User selectable trigger time setting introduced in IceCleanhits to allow
+                investigation of various trigger time settings.
+                Protection introduced in IceDwalk for the case that no track candidates
+                are left.
+                Also protection introduced in IceXtalk for the case that no OM database
+                was specified. 
 

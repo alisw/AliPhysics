@@ -56,6 +56,8 @@
 // signals and can as such easily be skipped/removed afterwards. 
 //
 // Note : This processor only works properly on Time and ADC calibrated data.
+//        In case no OM database has been specified for this processor,
+//        no cross talk hit correction will be performed.
 //
 //--- Author: Nick van Eijndhoven 11-aug-2005 Utrecht University
 //- Modified: NvE $Date$ Utrecht University
@@ -118,6 +120,8 @@ void IceXtalk::SetXtalkPE(Float_t pe)
 void IceXtalk::Exec(Option_t* opt)
 {
 // Implementation of cross talk hit correction.
+
+ if (!fOmdb) return;
 
  TString name=opt;
  AliJob* parent=(AliJob*)(gROOT->GetListOfTasks()->FindObject(name.Data()));
