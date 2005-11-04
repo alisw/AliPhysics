@@ -105,6 +105,10 @@
 //#pragma link C++ class AliTagAnalysis+;
 //#pragma link C++ class AliEventTagCuts+;
 
+#pragma link C++ class AliAlignObj+;
+#pragma link C++ class AliAlignObjAngles+;
+#pragma link C++ class AliAlignObjMatrix+;
+
 #pragma link C++ class  TTreeDataElement+;
 #pragma link C++ class  TTreeStream+;
 #pragma link C++ class  TTreeSRedirector+;

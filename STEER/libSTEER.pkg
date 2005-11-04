@@ -23,7 +23,8 @@ AliRunTag.cxx AliLHCTag.cxx AliDetectorTag.cxx AliEventTag.cxx AliTagCreator.cxx
 AliCDBEntry.cxx AliCDBId.cxx AliCDBMetaData.cxx \
 AliCDBPath.cxx AliCDBRunRange.cxx AliCDBManager.cxx\
 AliCDBStorage.cxx AliCDBLocal.cxx AliCDBDump.cxx AliCDBGrid.cxx\
-AliReconstructor.cxx AliDetectorEventHeader.cxx TTreeStream.cxx
+AliReconstructor.cxx AliDetectorEventHeader.cxx TTreeStream.cxx\
+AliAlignObj.cxx
 
 HDRS:= $(SRCS:.cxx=.h) 
 
