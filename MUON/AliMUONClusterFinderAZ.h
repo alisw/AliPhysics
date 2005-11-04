@@ -12,7 +12,6 @@
 
 #include "AliMUONClusterFinderVS.h"
 
-class TH2F;
 class TH2D;
 class TClonesArray;
 class TMinuit;
@@ -21,16 +20,21 @@ class TMatrixD;
 class AliSegmentation;
 class AliMUONResponse;
 class AliMUONPixel;
+class AliMUONClusterDrawAZ;
 
 class AliMUONClusterFinderAZ : public AliMUONClusterFinderVS 
 {
 public:
-  AliMUONClusterFinderAZ(Bool_t draw = 0, Int_t iReco = 1);// Constructor
+  AliMUONClusterFinderAZ(Bool_t draw = 0); // Constructor
   virtual ~AliMUONClusterFinderAZ(); // Destructor
 
   void     FindRawClusters(); // the same interface as for old cluster finder
-  void     EventLoop(Int_t nev, Int_t ch); // first event 
+  void     EventLoop(Int_t nev = 0, Int_t ch = 0); // first event 
   Bool_t   TestTrack(Int_t t) const; // test if track was selected
+  Int_t    GetNPads(Int_t cath) const { return fnPads[cath]; }
+  Int_t    GetIJ(Int_t indx, Int_t iPad) const { return fPadIJ[indx][iPad]; }
+  Float_t  GetXyq(Int_t indx, Int_t iPad) const { return fXyq[indx][iPad]; }
+  Float_t  GetZpad() { return fZpad; }
  
 protected:
   AliMUONClusterFinderAZ(const AliMUONClusterFinderAZ& rhs);
@@ -46,7 +50,6 @@ protected:
   Int_t      fnPads[2];        // ! number of pads in the cluster on 2 cathodes
   Float_t    fXyq[7][fgkDim];    // ! pad information
   Int_t      fPadIJ[2][fgkDim];  // ! pad information
-  //AZ AliSegmentation *fSegmentation[2]; // ! old segmentation
   AliMUONGeometrySegmentation *fSegmentation[2]; // ! new segmentation
   AliMUONResponse *fResponse;// ! response
   Float_t    fZpad;            // ! z-coordinate of the hit
@@ -56,20 +59,14 @@ protected:
 
   static     TMinuit* fgMinuit; // ! Fitter
   Bool_t     fUsed[2][fgkDim]; // ! flags for used pads
-  TH2F*      fHist[4]; // ! histograms
-  TClonesArray *fMuonDigits; // ! pointer to digits
-  Bool_t     fDraw; // ! draw flag
-  Int_t      fnMu; // ! number of muons passing thru the selected area
-  Double_t   fxyMu[2][7]; // ! muon information
+  AliMUONClusterDrawAZ *fDraw; // ! drawing object 
   TObjArray* fPixArray; // ! collection of pixels
   Int_t fnCoupled; // ! number of coupled clusters in precluster
   Int_t fDebug; // ! debug level
 
   // Functions
 
-  void   ModifyHistos(void); // modify histograms
   void   AddPad(Int_t cath, Int_t digit); // add a pad to the cluster
-  //AZ Bool_t Overlap(Int_t cath, TObject *dig); // check if the pad from one cathode overlaps with a pad in the cluster on the other cathode
   Bool_t Overlap(Int_t cath, AliMUONDigit *dig); // check if the pad from one cathode overlaps with a pad in the cluster on the other cathode
   Bool_t Overlap(Float_t *xy1, Int_t iPad, Float_t *xy12, Int_t iSkip); // check if pads xy1 and iPad overlap and return overlap area
   Bool_t CheckPrecluster(Int_t *nShown); // check precluster to simplify it (if possible)
@@ -104,8 +101,6 @@ protected:
 	      Double_t wy, Double_t wx, Int_t iover, 
 	      Double_t dyc, Double_t dxc, Double_t qtot, 
 	      Double_t &yrec, Double_t &xrec, Double_t &erry, Double_t &errx);
-  void DrawCluster(Int_t nev0, Int_t ch0); // draw precluster
-  Int_t Next(Int_t &nev0, Int_t &ch0); // commands for drawing
 
   // Dummy methods for overloading warnings
   void FindCluster(int, int, int, AliMUONRawCluster&) {return;}

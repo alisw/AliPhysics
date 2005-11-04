@@ -22,7 +22,8 @@ SRCS:= AliMUONClusterReconstructor.cxx \
        AliMUONDDLTracker.cxx \
        AliMUONSubEventTracker.cxx \
        AliMUONRawData.cxx \
-       AliMUONRawStream.cxx 
+       AliMUONRawStream.cxx \
+       AliMUONClusterDrawAZ.cxx
  
 
 HDRS:= $(SRCS:.cxx=.h)

@@ -20,6 +20,7 @@
 #pragma link C++ class AliMUONHitForRec+; 
 #pragma link C++ class AliMUONTrackHit+; 
 #pragma link C++ class AliMUONSegment+;
+#pragma link C++ class AliMUONClusterDrawAZ+;
 
 // raw data
 #pragma link C++ class AliMUONDDLTrigger+;
