@@ -16,9 +16,16 @@
 // $Id$
 // $MpId: AliMpSlatSegmentation.cxx,v 1.5 2005/10/28 15:26:01 ivana Exp $
 
+// Caution !!
+// Implementation note.
+// The position(s) used in the interface are supposed to be relative
+// to the slat center (AliMpSlat::Position()), whereas internally
+// the x,y are relative to bottom-left corner.
+
 #include "AliMpSlatSegmentation.h"
 
 #include "AliLog.h"
+#include "AliMpArea.h"
 #include "AliMpConnection.h"
 #include "AliMpMotif.h"
 #include "AliMpMotifPosition.h"
@@ -68,8 +75,8 @@ AliMpSlatSegmentation::CreateIterator(const AliMpArea& area) const
   //
   // Returns an iterator to loop over the pad contained within given area.
   //
-  
-  return new AliMpSlatPadIterator(fkSlat,area);
+  AliMpArea a(area.Position()+fkSlat->Position(),area.Dimensions());
+  return new AliMpSlatPadIterator(fkSlat,a);
 }
 
 //_____________________________________________________________________________
@@ -232,21 +239,26 @@ AliMpSlatSegmentation::PadByPosition(const TVector2& position,
   // AliMpPad::Invalid() is returned if there's no pad at the given location.
   //
   
-  AliMpMotifPosition* motifPos = fkSlat->FindMotifPosition(position.X(),position.Y());
+  TVector2 blPos(position+fkSlat->Position()); // position relative to 
+  // bottom-left of the slat.
+  
+  AliMpMotifPosition* motifPos = fkSlat->FindMotifPosition(blPos.X(),blPos.Y());
 	
   if (!motifPos)
 	{
 		if (warning) 
 		{
-			AliWarning(Form("Slat %s Position (%e,%e) mm outside limits",
-                      fkSlat->GetID(),position.X(),position.Y()));
+			AliWarning(Form("Slat %s Position (%e,%e)/center (%e,%e)/bottom-left cm "
+                      " outside limits",fkSlat->GetID(),
+                      position.X(),position.Y(),
+                      blPos.X(),blPos.Y()));
 		}
 		return AliMpPad::Invalid();
 	}
 	
   AliMpVMotif* motif =  motifPos->GetMotif();  
   AliMpIntPair localIndices 
-    = motif->PadIndicesLocal(position-motifPos->Position());
+    = motif->PadIndicesLocal(blPos-motifPos->Position());
 	
   AliMpConnection* connect = 
     motif->GetMotifType()->FindConnectionByLocalIndices(localIndices);

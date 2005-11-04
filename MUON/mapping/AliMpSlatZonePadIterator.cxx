@@ -113,7 +113,8 @@ AliMpSlatZonePadIterator::CropArea()
   // and (xmax,ymax).
 
   AliMpPad bottomLeft 
-    = fSlatSegmentation->PadByPosition(TVector2(xmin,ymin),kFALSE);
+    = fSlatSegmentation->PadByPosition(TVector2(xmin,ymin)-fkSlat->Position(),
+                                       kFALSE);
   if ( bottomLeft.IsValid() )
     {
       xmin = std::min(xmin,fkSlat->DX() + 
@@ -123,7 +124,8 @@ AliMpSlatZonePadIterator::CropArea()
     }
 
   AliMpPad topRight 
-    = fSlatSegmentation->PadByPosition(TVector2(xmax,ymax),kFALSE);
+    = fSlatSegmentation->PadByPosition(TVector2(xmax,ymax)-fkSlat->Position(),
+                                       kFALSE);
   if ( topRight.IsValid() )
     {
       xmax = std::max(xmax,fkSlat->DX() + 
@@ -172,7 +174,7 @@ AliMpSlatZonePadIterator::GetNextPosition(Double_t& x, Double_t& y)
 
   if ( x > fArea.Dimensions().X() ) 
     {
-      AliDebug(3,"Going back left");
+      AliDebug(3,"Going back left and one step upper");
       // Go back leftmost position...
       x = -1.0*fArea.Dimensions().X();
       // ... and up
@@ -180,9 +182,9 @@ AliMpSlatZonePadIterator::GetNextPosition(Double_t& x, Double_t& y)
       // Update y offset
       fOffset.Set(fOffset.X(),y);
       if ( y > fArea.Dimensions().Y() )
-	{
-	  return false;
-	}
+      {
+        return false;
+      }
     }
   AliDebug(3,Form("output (x,y)=(%7.2f,%7.2f",x,y));
   return true;
@@ -205,7 +207,13 @@ AliMpSlatZonePadIterator::First()
     {
       // did not find any valid pad in there, bailing out.
       fIsDone = kTRUE;
-      AliError("Could not initiate iterator. Please check the area you gave.");
+      AliError(Form("Could not initiate iterator for slat %s. "
+                    " Please check the area you gave : %e,%e +- %e,%e",
+                    fkSlat->GetName(),
+                    fArea.Position().X(),
+                    fArea.Position().Y(),
+                    fArea.Dimensions().X(),
+                    fArea.Dimensions().Y()));
       return;
     }
   else
@@ -270,15 +278,15 @@ AliMpSlatZonePadIterator::Next()
   Double_t y(fOffset.Y());
 
   while ( ( pad == fCurrentPad || !pad.IsValid() ) && n<100 )
+  {
+    ++n;
+    if (GetNextPosition(x,y)==kFALSE) 
     {
-      ++n;
-      if (GetNextPosition(x,y)==kFALSE) 
-	{
-	  Invalidate();
-	  return;
-	} 
-      SetPad(pad,fArea.Position()+TVector2(x,y));
-    }
+      Invalidate();
+      return;
+    } 
+    SetPad(pad,fArea.Position()+TVector2(x,y));
+  }
   fCurrentPad = pad;
 }
 
@@ -289,11 +297,15 @@ AliMpSlatZonePadIterator::SetPad(AliMpPad& pad, const TVector2& pos)
   //
   // Sets the current pad.
   //
-  pad = fSlatSegmentation->PadByPosition(pos,kFALSE);
+  pad = fSlatSegmentation->PadByPosition(pos-fkSlat->Position(),kFALSE);
   if ( pad.IsValid() )
     {
       // Reposition fOffset to pad center (only in x-direction).
       fOffset.Set(pad.Position().X()+fkSlat->DX()-fArea.Position().X(),
-		  fOffset.Y());
+                  fOffset.Y());
     }
+  else
+  {
+    AliDebug(3,Form("No pad at pos=%e,%e",pos.X(),pos.Y()));
+  }
 }

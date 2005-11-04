@@ -23,6 +23,7 @@ class AliMpSlatPadIterator : public AliMpVPadIterator
 {
  public:
   AliMpSlatPadIterator(); 
+  // Area position must be relative to bottom-left of slat.
   AliMpSlatPadIterator(const AliMpSlat* slat, const AliMpArea& area);
   virtual ~AliMpSlatPadIterator();
 

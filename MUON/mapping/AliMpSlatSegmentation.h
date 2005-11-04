@@ -8,6 +8,11 @@
 /// \class AliMpSlatSegmentation
 /// \brief Implementation of AliMpVSegmentation for St345 slats.
 /// 
+/// Note that integer indices start at (0,0) on the bottom-left of the slat,
+/// while floating point positions are relative to the center of the slat
+/// (where the slat is to be understood as N PCBs of fixed size = 40cm
+/// even if not all pads of a given PCBs are actually physically there).
+///
 /// Author: Laurent Aphecetche
 
 #ifndef ALI_MP_SLAT_SEGMENTATION_H
