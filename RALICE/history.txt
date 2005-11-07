@@ -661,3 +661,5 @@
 29-oct-2005 NvE Forgotten angular unit setting fixed w.r.t. begin point etc... in AliTrack::ListAll
                 ad begin point etc... info also added in AliTrack::List.
                 Memberfunction SortTracks introduced in AliJet and comment corrected in AliVertex.h.
+07-nov-2005 NvE Macro makedocs.cc in directory /macros modified (i.e. ";" changed by ":") to make
+                it generic so that it works correctly on all platforms (thanks Axel Naumann). 

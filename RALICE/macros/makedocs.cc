@@ -31,7 +31,7 @@
  gEnv->SetValue("Root.Html.OutputDir","../htmldoc/");
 
  THtml q;
- q.SetSourceDir("..;../icepack;../icepack/iceconvert;../wa98");
+ q.SetSourceDir("..:../icepack:../icepack/iceconvert:../wa98");
 
  q.MakeAll();
 }
