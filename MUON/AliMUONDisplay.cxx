@@ -799,18 +799,18 @@ void AliMUONDisplay::DrawView(Float_t theta, Float_t phi, Float_t psi)
 
 	Int_t detElemId = fChamber*100+id;
 	//	if (  AliMUONSegmentationManager::IsValidDetElemId(detElemId) ) {
-	AliMpSectorSegmentation * seg =   
+	AliMpSectorSegmentation* seg =   
 	  (AliMpSectorSegmentation *) AliMUONSegmentationManager::Segmentation(detElemId, kBendingPlane);
-	const AliMpSector * sector = seg->GetSector();
+	const AliMpSector* sector = seg->GetSector();
 
 	// get sector measurements
 	TVector2 position  = sector->Position(); 
 	TVector2 dimension = sector->Dimensions(); // half length
 	
-	Float_t xlocal1 =  position.Px()/10.; // mm to cm
-	Float_t ylocal1 =  position.Py()/10.;
-	Float_t xlocal2 =  dimension.Px()/10. * 2.;
-	Float_t ylocal2 =  dimension.Px()/10. * 2.;
+	Float_t xlocal1 =  position.Px(); // mm to cm
+	Float_t ylocal1 =  position.Py();
+	Float_t xlocal2 =  dimension.Px() * 2.;
+	Float_t ylocal2 =  dimension.Px() * 2.;
 
 	iChamber->GetGeometry()->Local2Global(detElemId, xlocal1, ylocal1, 0, xg1, yg1, zg1);
 	iChamber->GetGeometry()->Local2Global(detElemId, xlocal2, ylocal2, 0, xg2, yg2, zg2);
@@ -842,9 +842,9 @@ void AliMUONDisplay::DrawView(Float_t theta, Float_t phi, Float_t psi)
 	if (  AliMUONSegmentationManager::IsValidDetElemId(detElemId) ) {
 	  AliMpSlatSegmentation * seg =   
 	    (AliMpSlatSegmentation *) AliMUONSegmentationManager::Segmentation(detElemId, kBendingPlane);
-	  const AliMpSlat * slat = seg->Slat();
-	  Float_t deltax = slat->DX()/10.;
-	  Float_t deltay = slat->DY()/10.;
+	  const AliMpSlat* slat = seg->Slat();
+	  Float_t deltax = slat->DX();
+	  Float_t deltay = slat->DY();
 	  Float_t xlocal1 =  -deltax;
 	  Float_t ylocal1 =  -deltay;
 	  Float_t xlocal2 =  +deltax;
