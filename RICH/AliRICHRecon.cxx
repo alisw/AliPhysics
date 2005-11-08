@@ -68,14 +68,14 @@ Double_t AliRICHRecon::ThetaCerenkov()
 // Pattern recognition method based on Hough transform
 // Return theta Cerenkov for a given track and list of clusters which are set in ctor  
 
-  if(fpClusters->GetEntries()==0) return -1;//no clusters at all for a given track
+  if(fpClusters->GetEntries()==0) return -10;//no clusters at all for a given track
   Bool_t kPatRec = kFALSE;  
     
   AliDebug(1,Form("---Track Parameters--- Theta: %f , Phi: %f ",GetTrackTheta()*TMath::RadToDeg(),GetTrackPhi()*TMath::RadToDeg()));
 
   Int_t candidatePhotons = 0;
 
-  SetThetaCerenkov(999.);
+  SetThetaCerenkov(-1);
   SetHoughPhotons(0);
   SetHoughPhotonsNorm(0);
 
@@ -116,8 +116,8 @@ Double_t AliRICHRecon::ThetaCerenkov()
  
   if(nPhotonHough < 1) 
     {
-      SetThetaCerenkov(999.);
-      SetHoughPhotonsNorm(0.);
+      SetThetaCerenkov(-1);
+      SetHoughPhotonsNorm(0);
       return -1;
     }
 

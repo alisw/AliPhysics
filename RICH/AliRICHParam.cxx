@@ -257,7 +257,7 @@ void AliRICHParam::ReadErrFiles()
   FILE *pChromErr, *pGeomErr, *pLocErr;  
 
   if(!count) {
-     AliInfoClass("reading RICH error parameters...");
+     AliInfoGeneral("ReadErrFiles","reading RICH error parameters...");
      pChromErr = fopen(Form("%s/RICH/RICHConfig/SigmaChromErr.txt",gSystem->Getenv("ALICE_ROOT")),"r");
      pGeomErr  = fopen(Form("%s/RICH/RICHConfig/SigmaGeomErr.txt",gSystem->Getenv("ALICE_ROOT")),"r");
      pLocErr   = fopen(Form("%s/RICH/RICHConfig/SigmaLocErr.txt",gSystem->Getenv("ALICE_ROOT")),"r");
@@ -279,7 +279,7 @@ void AliRICHParam::ReadErrFiles()
        fgErrLoc[2][i] = l2;
        fgErrLoc[3][i] = l3;	
      }
-     AliInfoClass("DONE successfully!");
+     AliInfoGeneral("ReadErrFiles","DONE successfully!");
      fclose(pChromErr);
      fclose(pGeomErr);
      fclose(pLocErr);

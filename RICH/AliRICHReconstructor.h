@@ -25,7 +25,7 @@ public:
          void          FormCluster(AliRICHCluster *pClu,AliRICHDigit *pDig,TClonesArray *pDigList,TMatrixF *pDigMap)const;//form cluster recursive algorithm
   inline AliRICHDigit *UseDig     (Int_t padX,Int_t padY,TClonesArray *pDigList,TMatrixF *pDigMap                  )const;//use this pad's digit to form a cluster
   static void          CheckPR    (                                                                                );     //utility-> run staff for stack
-  static void          RichAna    (Int_t iNevMax=99999,Bool_t isPatRec=kFALSE                                      );     //utility-> create ntuples for analysis
+  static void          RichAna    (Int_t iNevMin=0, Int_t iNevMax=99999,Bool_t isPatRec=kFALSE                                      );     //utility-> create ntuples for analysis
   
 protected:
   ClassDef(AliRICHReconstructor, 0)   //class for the RICH reconstruction

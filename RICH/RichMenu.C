@@ -107,16 +107,16 @@ void RichMenu()
   if(AliceRead()){//it's from file, show some info
     pMenu->AddButton("Display single chambers"         ,"r->Display();"  , "Display Fast");
     pMenu->AddButton("Display ALL chambers"            ,"r->DisplayEvent(0,0);"  , "Display Fast");
-    pMenu->AddButton("Hits QA"                         ,"hqa()"    ,"????");
+    pMenu->AddButton("Hits QA"                         ,"hqa()"    ,"QA plots for hits: hqa()");
     pMenu->AddButton("Recon with stack"                ,"AliRICHReconstructor::CheckPR(        )","Create RSR.root with ntuple hn");    
-    pMenu->AddButton("RichAna no Recon"                ,"AliRICHReconstructor::RichAna(0,kFALSE)","Create RichAna.root with ntuple hn without PatRec");    
-    pMenu->AddButton("RichAna with Recon"              ,"AliRICHReconstructor::RichAna(0,kTRUE )","Create RichAna.root with ntuple hn with PatRec");    
-    pMenu->AddButton("Print hits"                      ,"h();"      ,"????");
-    pMenu->AddButton("Print sdigits"                   ,"s();"   ,"????");
-    pMenu->AddButton("Print digits"                    ,"d();"    ,"????");
-    pMenu->AddButton("Print clusters"                  ,"c();"  ,"????");  
-    pMenu->AddButton("Print occupancy"                 ,"r->OccupancyPrint(-1);" ,"????");  
-    pMenu->AddButton("Print event summary  "           ,"r->SummaryOfEvent();"   ,"????");  
+    pMenu->AddButton("RichAna no Recon"                ,"AliRICHReconstructor::RichAna(0,0,kFALSE)","Create RichAna.root with ntuple hn without PatRec");    
+    pMenu->AddButton("RichAna with Recon"              ,"AliRICHReconstructor::RichAna(0,0,kTRUE )","Create RichAna.root with ntuple hn with PatRec");    
+    pMenu->AddButton("Print hits"                      ,"h();"      ,"To print hits: h()");
+    pMenu->AddButton("Print sdigits"                   ,"s();"      ,"To print sdigits: s()");
+    pMenu->AddButton("Print digits"                    ,"d();"      ,"To print digits: d()");
+    pMenu->AddButton("Print clusters"                  ,"c();"      ,"To print clusters: c()");  
+    pMenu->AddButton("Print occupancy"                 ,"r->OccupancyPrint(-1);" ,"To print occupancy");  
+    pMenu->AddButton("Print event summary  "           ,"r->SummaryOfEvent();"   ,"To print a summary of the event");  
   }else{//it's aliroot, simulate
     pMenu->AddButton("Debug ON",     "DebugON();",   "Switch debug on-off");   
     pMenu->AddButton("Debug OFF",    "DebugOFF();",  "Switch debug on-off");   

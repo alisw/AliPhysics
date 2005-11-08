@@ -48,15 +48,21 @@ void AliRICHTracker::RecWithESD(AliESD *pESD,AliRICH *pRich,Int_t iTrackN)
     AliRICHHelix helix(pTrack->X3(),pTrack->P3(),charge,fField);   
     Int_t iChamber=helix.RichIntersect(pRich->P());        
     AliDebug(1,Form("intersection with %i chamber found",iChamber));
-    if(!iChamber) return;//intersection with no chamber found
-//find MIP cluster candidate (cluster which is closest to track intersection point)    
+    if(!iChamber) {
+      pTrack->SetRICHsignal(-999); //to be improved by flags...
+      return;//intersection with no chamber found
+    }
+//find MIP cluster candidate (cluster which is closest to track intersection point)
     Double_t distMip=9999,distX=0,distY=0; //min distance between clusters and track position on PC 
     Int_t iMipId=0; //index of that min distance cluster
     Double_t chargeMip=0; //charge of the MIP
+    Bool_t kFound = kFALSE;
     for(Int_t iClusN=0;iClusN<pRich->Clusters(iChamber)->GetEntries();iClusN++){//clusters loop for intersected chamber
       AliRICHCluster *pClus=(AliRICHCluster*)pRich->Clusters(iChamber)->UncheckedAt(iClusN);//get pointer to current cluster
+      if(pClus->Q()<AliRICHParam::QthMIP()) continue;
       Double_t distCurrent=pClus->DistTo(helix.PosPc());//distance between current cluster and helix intersection with PC
       if(distCurrent<distMip){
+        kFound = kTRUE;
         distMip=distCurrent;
         iMipId=iClusN;
         distX=pClus->DistX(helix.PosPc());
@@ -66,14 +72,21 @@ void AliRICHTracker::RecWithESD(AliESD *pESD,AliRICH *pRich,Int_t iTrackN)
       AliDebug(1,Form("Ploc (%f,%f,%f) dist= %f",helix.Ploc().Mag(),helix.Ploc().Theta()*TMath::RadToDeg(),
                                        helix.Ploc().Phi()*TMath::RadToDeg(),pClus->DistTo(helix.PosPc())));
     }//clusters loop for intersected chamber
-    
+
+    if(!kFound) {
+      pTrack->SetRICHsignal(-999);
+      return;
+    }
     AliDebug(1,Form("Min distance cluster: %i dist is %f",iMipId,distMip));
+    pTrack->SetRICHcluster(((Int_t)chargeMip)+1000000*iChamber);
+    pTrack->SetRICHdxdy(distX,distY);
+    pTrack->SetRICHthetaPhi(helix.Ploc().Theta(),helix.Ploc().Phi());
 //
 // HERE CUTS ON GOLD RINGS....
 //
-    if(distMip>AliRICHParam::DmatchMIP()||chargeMip<AliRICHParam::QthMIP()) {
+    if(distMip>AliRICHParam::DmatchMIP()) {
       //track not accepted for pattern recognition
-      pTrack->SetRICHsignal(-999.); //to be improved by flags...
+      pTrack->SetRICHsignal(-990); //to be improved by flags...
       return;
     }
 //
@@ -81,9 +94,6 @@ void AliRICHTracker::RecWithESD(AliESD *pESD,AliRICH *pRich,Int_t iTrackN)
 
     Double_t thetaCerenkov=recon.ThetaCerenkov(); //search for mean Cerenkov angle for this track
     
-    pTrack->SetRICHcluster(((Int_t)chargeMip)+1000000*iChamber);
-    pTrack->SetRICHdxdy(distX,distY);
-    pTrack->SetRICHthetaPhi(helix.Ploc().Theta(),helix.Ploc().Phi());
     pTrack->SetRICHsignal(thetaCerenkov);
     pTrack->SetRICHnclusters(recon.GetHoughPhotons());
 
@@ -103,17 +113,15 @@ void AliRICHTracker::RecWithESD(AliESD *pESD,AliRICH *pRich,Int_t iTrackN)
           if(recon.GetPhotonFlag() == 2) {
             Double_t theta_g=recon.GetTrackTheta();
             Double_t phi_g=(recon.GetPhiPoint()-recon.GetTrackPhi());
-            Double_t sigma2 = AliRICHParam::SigmaSinglePhoton(iPart,pTrack->GetP(),theta_g,phi_g).Mag2();
-	    if (sigma2>0)
-	      sigmaPID[iPart] += 1/sigma2;
+            Double_t sigma2 = AliRICHParam::SigmaSinglePhoton(iPart,pTrack->GetP(),theta_g,phi_g).Mag2(); 
+            if(sigma2>0) sigmaPID[iPart] += 1/sigma2;
           }
         }
-	sigmaPID[iPart] *= (Double_t)(recon.GetHoughPhotons()-fnPhotBKG)/(Double_t)(recon.GetHoughPhotons()); // n total phots, m are background...the sigma are scaled..
 	if (sigmaPID[iPart]>0)
-	  sigmaPID[iPart] = 1/TMath::Sqrt(sigmaPID[iPart])*0.001; // sigma from parametrization are in mrad...
-	else
-	  sigmaPID[iPart] = 0;
-	fErrPar[iPart]=sigmaPID[iPart];
+          sigmaPID[iPart] *= (Double_t)(recon.GetHoughPhotons()-fnPhotBKG)/(Double_t)(recon.GetHoughPhotons()); // n total phots, m are background...the sigma are scaled..
+	  if(sigmaPID[iPart]>0) sigmaPID[iPart] = 1/TMath::Sqrt(sigmaPID[iPart])*0.001; // sigma from parametrization are in mrad...
+          else                  sigmaPID[iPart] = 0;
+          fErrPar[iPart]=sigmaPID[iPart];
         AliDebug(1,Form("sigma for %s is %f rad",AliPID::ParticleName(iPart),sigmaPID[iPart]));
       }
       CalcProb(thetaCerenkov,pTrack->GetP(),sigmaPID,richPID);
@@ -240,7 +248,8 @@ void AliRICHTracker::CalcProb(Double_t thetaCer,Double_t pmod, Double_t *sigmaPI
 //    Double_t sinThetaThNorm = TMath::Sin(thetaTh)/TMath::Sqrt(1-1/(refIndex*refIndex));
 //    Double_t sigmaThetaTh = (0.014*(1/sinThetaThNorm-1) + 0.0043)*1.25;
 //    height[iPart] = TMath::Gaus(thetaCer,thetaTh,sigmaThetaTh);
-    height[iPart] = TMath::Gaus(thetaCer,thetaTh[iPart],sigmaPID[iPart],kTRUE);
+    if(sigmaPID[iPart]>0) height[iPart] = TMath::Gaus(thetaCer,thetaTh[iPart],sigmaPID[iPart],kTRUE);
+    else                  height[iPart] = 0;
     totalHeight +=height[iPart];
     AliDebug(1,Form(" Particle %s with mass %f with height %f and thetaTH %f",AliPID::ParticleName(iPart),mass,height[iPart],thetaTh[iPart]));
     AliDebug(1,Form(" partial height %15.14f total height %15.14f",height[iPart],totalHeight));
@@ -248,7 +257,7 @@ void AliRICHTracker::CalcProb(Double_t thetaCer,Double_t pmod, Double_t *sigmaPI
   if(totalHeight<1e-5) {for(Int_t iPart=0;iPart<AliPID::kSPECIES;iPart++)richPID[iPart]=1.0/AliPID::kSPECIES;return;}
   for(Int_t iPart=0;iPart<AliPID::kSPECIES;iPart++) richPID[iPart] = height[iPart]/totalHeight;
   Int_t iPartNear = TMath::LocMax(AliPID::kSPECIES,richPID);
-  if(TMath::Abs(thetaCer-thetaTh[iPartNear]) > 5*sigmaPID[iPartNear]) for(Int_t iPart=0;iPart<AliPID::kSPECIES;iPart++)richPID[iPart]=1.0/AliPID::kSPECIES;
+  if(TMath::Abs(thetaCer-thetaTh[iPartNear])>5.*sigmaPID[iPartNear]) for(Int_t iPart=0;iPart<AliPID::kSPECIES;iPart++)richPID[iPart]=1.0/AliPID::kSPECIES;
   //last line is to check if the nearest thetacerenkov to the teorethical one is within 5 sigma, otherwise no response (equal prob to every particle
 
 }//CalcProb
