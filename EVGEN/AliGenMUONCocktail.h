@@ -52,6 +52,10 @@ class AliGenMUONCocktail : public AliGenCocktail
       { fMuonThetaMinCut=ThetaMin; 
         fMuonThetaMaxCut=ThetaMax; }
     void    SetHadronicMuons(Bool_t HadronicMuons) { fHadronicMuons = HadronicMuons;}
+    void    SetInvMassRange(Float_t MassMin, Float_t MassMax) 
+      { fInvMassMinCut=MassMin; 
+        fInvMassMaxCut=MassMax;
+        fInvMassCut = kTRUE; }
 
  protected:
  
@@ -70,7 +74,10 @@ class AliGenMUONCocktail : public AliGenCocktail
     Float_t fAverageImpactParameter;// AVergae Impact parameter in the impact parameter range
     Float_t fNumberOfCollisions;    // Average number of collisions in the impact parameter range
     Float_t fNumberOfParticipants;  // Average number of participants in the impact parameter range
-    Bool_t  fHadronicMuons;         // If kTrue hadronic muons are included in the cocktail. Default is true.
+    Bool_t  fHadronicMuons;         // If kTRUE hadronic muons are included in the cocktail. Default is true.
+    Bool_t  fInvMassCut;            // If kTRUE cut on the Invariant mass is required. Default is false
+    Float_t fInvMassMinCut;	    // Minimum invariant mass cut
+    Float_t fInvMassMaxCut;	    // Maximum invariant mass cut
    
     ClassDef(AliGenMUONCocktail,1)  //  MUON cocktail for physics in the Alice muon spectrometer
 };

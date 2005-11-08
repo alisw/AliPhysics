@@ -64,6 +64,9 @@ AliGenMUONCocktail::AliGenMUONCocktail()
   fNumberOfCollisions   = 0.; 
   fNumberOfParticipants = 0.;
   fHadronicMuons = kTRUE;
+  fInvMassCut = kFALSE;
+  fInvMassMinCut = 0.;
+  fInvMassMaxCut = 100.;
 }
 //_________________________________________________________________________
 AliGenMUONCocktail::AliGenMUONCocktail(const AliGenMUONCocktail & cocktail):
@@ -84,6 +87,9 @@ AliGenMUONCocktail::AliGenMUONCocktail(const AliGenMUONCocktail & cocktail):
   fNumberOfCollisions = 0.; 
   fNumberOfParticipants = 0.;
   fHadronicMuons = kTRUE;
+  fInvMassCut = kFALSE;
+  fInvMassMinCut = 0.;
+  fInvMassMaxCut = 100.;
 }
 //_________________________________________________________________________
 AliGenMUONCocktail::~AliGenMUONCocktail()
@@ -390,51 +396,81 @@ void AliGenMUONCocktail::Generate()
     // Loop on primordialTrigger
     Bool_t primordialTrigger = kFALSE;
     while(!primordialTrigger) {
-      //Reseting stack
-      AliRunLoader * runloader = gAlice->GetRunLoader();
-      if (runloader)
-	if (runloader->Stack())
-	  runloader->Stack()->Reset();
-      // Loop over generators and generate events
-      Int_t igen=0;
-      Int_t npart =0;
-      while((entry = (AliGenCocktailEntry*)next())) {
-	gen = entry->Generator();
-	gen->SetVertex(fVertex.At(0), fVertex.At(1), fVertex.At(2));
-	if ( (npart = gRandom->Poisson(entry->Rate())) >0 ) {
-	  igen++;	
-	  if (igen ==1) entry->SetFirst(0);
-	  else  entry->SetFirst((partArray->GetEntriesFast())+1);
-	  // if ( (fHadronicMuons == kFALSE) && ( (gen->GetName() == "Pions") || (gen->GetName() == "Kaons") ) )
-	  //  { AliInfo(Form("This generator %s is finally not generated. This is option for hadronic muons.",gen->GetName() ) ); }
-	  // else {
-	  gen->SetNumberParticles(npart);
-	  gen->Generate();
-	  entry->SetLast(partArray->GetEntriesFast());
-	  preventry = entry;
-	    // }
+		//Reseting stack
+		AliRunLoader * runloader = gAlice->GetRunLoader();
+		if (runloader)
+			if (runloader->Stack())
+				runloader->Stack()->Reset();
+		// Loop over generators and generate events
+		Int_t igen=0;
+		Int_t npart =0;
+		while((entry = (AliGenCocktailEntry*)next())) {
+			gen = entry->Generator();
+			gen->SetVertex(fVertex.At(0), fVertex.At(1), fVertex.At(2));
+			if ( (npart = gRandom->Poisson(entry->Rate())) >0 ) {
+				igen++;	
+				if (igen == 1) entry->SetFirst(0);
+				else  entry->SetFirst((partArray->GetEntriesFast())+1);
+				// if ( (fHadronicMuons == kFALSE) && ( (gen->GetName() == "Pions") || (gen->GetName() == "Kaons") ) )
+				//  { AliInfo(Form("This generator %s is finally not generated. This is option for hadronic muons.",gen->GetName() ) ); }
+				// else {
+				gen->SetNumberParticles(npart);
+				gen->Generate();
+				entry->SetLast(partArray->GetEntriesFast());
+				preventry = entry;
+	    		  // }
+			}
+		}  
+		next.Reset();
+		// Testing primordial trigger : Muon  pair in the MUON spectrometer acceptance and pTCut
+		Int_t iPart;
+		fNGenerated++;
+		Int_t numberOfMuons=0;
+		//      printf(">>>fNGenerated is %d\n",fNGenerated);
+		
+		TObjArray GoodMuons; // Used in the Invariant Mass selection cut
+		
+		for(iPart=0; iPart<partArray->GetEntriesFast(); iPart++){      
+			
+			if ( (TMath::Abs(gAlice->GetMCApp()->Particle(iPart)->GetPdgCode())==13)  &&
+	     		(gAlice->GetMCApp()->Particle(iPart)->Theta()*180./TMath::Pi()>fMuonThetaMinCut) &&
+	     		(gAlice->GetMCApp()->Particle(iPart)->Theta()*180./TMath::Pi()<fMuonThetaMaxCut) &&
+	     		(gAlice->GetMCApp()->Particle(iPart)->Pt()>fMuonPtCut)                             ) { 
+	  				gAlice->GetMCApp()->Particle(iPart)->SetProductionVertex(fVertex.At(0), fVertex.At(1), fVertex.At(2), 0.);   
+	  				GoodMuons.AddLast(gAlice->GetMCApp()->Particle(iPart));
+					numberOfMuons++;
+			}			
+		}
+		
+		// Test the invariant mass of each pair (if cut on Invariant mass is required)
+		Bool_t InvMassRangeOK = kTRUE;
+		if(fInvMassCut && (numberOfMuons>=2) ){
+  			TLorentzVector fV1, fV2, fVtot;
+			InvMassRangeOK = kFALSE;
+			for(iPart=0; iPart<GoodMuons.GetEntriesFast(); iPart++){      
+    			TParticle * mu1 = ((TParticle *)GoodMuons.At(iPart));
+
+				for(int iPart2=iPart+1; iPart2<GoodMuons.GetEntriesFast(); iPart2++){      
+    					TParticle * mu2 = ((TParticle *)GoodMuons.At(iPart2));
+						
+						fV1.SetPxPyPzE(mu1->Px() ,mu1->Py() ,mu1->Pz() ,mu1->Energy() );
+						fV2.SetPxPyPzE(mu2->Px() ,mu2->Py() ,mu2->Pz() ,mu2->Energy() );
+						fVtot = fV1 + fV2;
+						
+						if(fVtot.M()>fInvMassMinCut && fVtot.M()<fInvMassMaxCut) {
+							InvMassRangeOK = kTRUE;
+							break;
+						}
+				}
+				if(InvMassRangeOK) break; // Invariant Mass Cut pass as soon as one pair satisfy the criterion
+			}	
+		}
+		
+		
+		if ((numberOfMuons >= fMuonMultiplicity) &&  InvMassRangeOK ) primordialTrigger = kTRUE;
 	}
-      }  
-      next.Reset();
-      // Tesitng primordial trigger : Muon  pair in the MUON spectrometer acceptance and pTCut
-      Int_t iPart;
-      fNGenerated++;
-      Int_t numberOfMuons=0;
-      //      printf(">>>fNGenerated is %d\n",fNGenerated);
-      for(iPart=0; iPart<partArray->GetEntriesFast(); iPart++){      
-	if ( (TMath::Abs(gAlice->GetMCApp()->Particle(iPart)->GetPdgCode())==13)  &&
-	     (gAlice->GetMCApp()->Particle(iPart)->Theta()*180./TMath::Pi()>fMuonThetaMinCut) &&
-	     (gAlice->GetMCApp()->Particle(iPart)->Theta()*180./TMath::Pi()<fMuonThetaMaxCut) &&
-	     (gAlice->GetMCApp()->Particle(iPart)->Pt()>fMuonPtCut)                             ) { 
-	  gAlice->GetMCApp()->Particle(iPart)->SetProductionVertex(fVertex.At(0), fVertex.At(1), fVertex.At(2), 0.);   
-	  numberOfMuons++;
-	}
-      }
-      //  printf(">>> Number of Muons is %d \n", numberOfMuons);
-      if (numberOfMuons >= fMuonMultiplicity ) primordialTrigger = kTRUE;
-    }
     fNSucceded++;
- 
+
     AliDebug(5,Form("Generated Events are %d and Succeeded Events are %d",fNGenerated,fNSucceded));
 }
 
