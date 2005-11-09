@@ -663,3 +663,8 @@
                 Memberfunction SortTracks introduced in AliJet and comment corrected in AliVertex.h.
 07-nov-2005 NvE Macro makedocs.cc in directory /macros modified (i.e. ";" changed by ":") to make
                 it generic so that it works correctly on all platforms (thanks Axel Naumann). 
+08-nov-2005 NvE Sorting memberfunctions in AliDevice, AliVertex and AliJet optimised to save
+                CPU time. In case two values are identical no swap is performed.
+                Basically the test "val1 < val2" was replaced by "val1 <= val2".
+09-nov-2005 NvE DisplayHits memberfunctions in AliDevice updated to fully support all 
+                (de)calibration modes of GetSignal for displaying (and skipping dead) hits.

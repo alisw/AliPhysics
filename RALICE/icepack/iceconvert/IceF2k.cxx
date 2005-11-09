@@ -32,6 +32,12 @@
 // Usage example :
 // ---------------
 //
+// Note : This example creates automatically the ROOT output file, which
+//        is the most user friendly way of running the conversion job. 
+//        In the subdirectory /macros the example macro icef2k.cc provides
+//        an example of how to create a ROOT output file yourself and passing
+//        this file via a pointer to IceF2k. 
+//
 // gSystem->Load("ralice");
 // gSystem->Load("icepack");
 // gSystem->Load("iceconvert");
@@ -54,8 +60,7 @@
 // q.SetInputFile("run7825.f2k");
 //
 // // Output file for the event structures
-// TFile* ofile=new TFile("events.root","RECREATE","F2K data in IceEvent structure");
-// q.SetOutputFile(ofile);
+// q.SetOutputFile("events.root");
 //
 // ///////////////////////////////////////////////////////////////////
 // // Here the user can specify his/her sub-tasks to be executed
@@ -78,22 +83,27 @@
 //
 // // Select various objects to be added to the output file
 //
-// ofile->cd(); // Switch to the output file directory
+// TFile* ofile=q.GetOutputFile();
+// 
+// if (ofile)
+// {
+//  ofile->cd(); // Switch to the output file directory
 //
-// AliObjMatrix* omdb=q.GetOMdbase();
-// if (omdb) omdb->Write();
+//  AliObjMatrix* omdb=q.GetOMdbase();
+//  if (omdb) omdb->Write();
 //
-// AliDevice* fitdefs=q.GetFitdefs();
-// if (fitdefs) fitdefs->Write();
+//  AliDevice* fitdefs=q.GetFitdefs();
+//  if (fitdefs) fitdefs->Write();
 //
-// TDatabasePDG* pdg=q.GetPDG();
-// if (pdg) pdg->Write();
+//  TDatabasePDG* pdg=q.GetPDG();
+//  if (pdg) pdg->Write();
 //
-// // Flush the output file.
-// // The output file is not explicitly closed here
-// // to allow ineractive investigation of the data tree
-// // when this macro is run in an interactive ROOT/CINT session.
-// ofile->Write();
+//  // Flush additional objects to the output file.
+//  // The output file is not explicitly closed here
+//  // to allow interactive investigation of the data tree
+//  // when this macro is run in an interactive ROOT/CINT session.
+//  ofile->Write();
+// }
 //
 //--- Author: Nick van Eijndhoven 11-mar-2005 Utrecht University
 //- Modified: NvE $Date$ Utrecht University
@@ -182,7 +192,21 @@ void IceF2k::SetInputFile(TString name)
 void IceF2k::SetOutputFile(TFile* ofile)
 {
 // Set the output file for the ROOT data.
+ if (fOutfile) delete fOutfile;
  fOutfile=ofile;
+}
+///////////////////////////////////////////////////////////////////////////
+void IceF2k::SetOutputFile(TString name)
+{
+// Create the output file for the ROOT data.
+ if (fOutfile) delete fOutfile;
+ fOutfile=new TFile(name.Data(),"RECREATE","F2K data in IceEvent structure");
+}
+///////////////////////////////////////////////////////////////////////////
+TFile* IceF2k::GetOutputFile()
+{
+// Provide pointer to the ROOT output file.
+ return fOutfile;
 }
 ///////////////////////////////////////////////////////////////////////////
 TDatabasePDG* IceF2k::GetPDG()
@@ -334,6 +358,9 @@ void IceF2k::Exec(Option_t* opt)
   // Update event counter
   nevt++;
  }
+
+ // Flush possible memory resident data to the output file
+ if (fOutfile) fOutfile->Write();
 
  // Remove the IceEvent object from the environment
  // and delete it as well

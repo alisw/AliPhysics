@@ -1141,8 +1141,8 @@ TObjArray* AliVertex::SortJets(Int_t mode,TObjArray* jets)
      break;
    }
 
-   if (mode<0 && val1 < val2) continue;
-   if (mode>0 && val1 > val2) continue;
+   if (mode<0 && val1 <= val2) continue;
+   if (mode>0 && val1 >= val2) continue;
  
    nord++;
    for (Int_t k=nord-1; k>j; k--) // create empty position

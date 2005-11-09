@@ -560,8 +560,8 @@ TObjArray* AliDevice::SortHits(Int_t idx,Int_t mode,TObjArray* hits,Int_t mcal)
     break; // go for next hit
    }
  
-   if (mode==-1 && s->GetSignal(idx,mcal) < ((AliSignal*)fOrdered->At(j))->GetSignal(idx,mcal)) continue;
-   if (mode==1 && s->GetSignal(idx,mcal) > ((AliSignal*)fOrdered->At(j))->GetSignal(idx,mcal)) continue;
+   if (mode==-1 && s->GetSignal(idx,mcal) <= ((AliSignal*)fOrdered->At(j))->GetSignal(idx,mcal)) continue;
+   if (mode==1 && s->GetSignal(idx,mcal) >= ((AliSignal*)fOrdered->At(j))->GetSignal(idx,mcal)) continue;
  
    nord++;
    for (Int_t k=nord-1; k>j; k--) // create empty position
@@ -645,8 +645,8 @@ TObjArray* AliDevice::SortHits(TString name,Int_t mode,TObjArray* hits,Int_t mca
     break; // go for next hit
    }
  
-   if (mode==-1 && s->GetSignal(idx,mcal) < ((AliSignal*)fOrdered->At(j))->GetSignal(idx,mcal)) continue;
-   if (mode==1 && s->GetSignal(idx,mcal) > ((AliSignal*)fOrdered->At(j))->GetSignal(idx,mcal)) continue;
+   if (mode==-1 && s->GetSignal(idx,mcal) <= ((AliSignal*)fOrdered->At(j))->GetSignal(idx,mcal)) continue;
+   if (mode==1 && s->GetSignal(idx,mcal) >= ((AliSignal*)fOrdered->At(j))->GetSignal(idx,mcal)) continue;
  
    nord++;
    for (Int_t k=nord-1; k>j; k--) // create empty position
@@ -707,7 +707,7 @@ void AliDevice::DisplayHits(Int_t idx,Float_t scale,TObjArray* hits,Int_t dp,Int
  if (scale<0)
  {
   Float_t vmin,vmax;
-  GetExtremes(vmin,vmax,idx,hits);
+  GetExtremes(vmin,vmax,idx,hits,mode);
   sigmax=fabs(vmax);
   if (fabs(vmin)>sigmax) sigmax=fabs(vmin);
  }
@@ -743,6 +743,10 @@ void AliDevice::DisplayHits(Int_t idx,Float_t scale,TObjArray* hits,Int_t dp,Int
    }
   }
   sig=sx->GetSignal(idx,mode);
+
+  // Skip dead signals
+  if (fabs(sig) <= 0.) continue;
+
   TPolyMarker3D* m=new TPolyMarker3D();
   m->SetMarkerStyle(8);
   m->SetMarkerColor(mcol);
@@ -803,7 +807,7 @@ void AliDevice::DisplayHits(TString name,Float_t scale,TObjArray* hits,Int_t dp,
  if (scale<0)
  {
   Float_t vmin,vmax;
-  GetExtremes(vmin,vmax,name,hits);
+  GetExtremes(vmin,vmax,name,hits,mode);
   sigmax=fabs(vmax);
   if (fabs(vmin)>sigmax) sigmax=fabs(vmin);
  }
@@ -842,6 +846,10 @@ void AliDevice::DisplayHits(TString name,Float_t scale,TObjArray* hits,Int_t dp,
    }
   }
   sig=sx->GetSignal(idx,mode);
+
+  // Skip dead signals
+  if (fabs(sig) <= 0.) continue;
+
   TPolyMarker3D* m=new TPolyMarker3D();
   m->SetMarkerStyle(8);
   m->SetMarkerColor(mcol);

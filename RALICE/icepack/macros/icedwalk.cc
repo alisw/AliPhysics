@@ -53,6 +53,7 @@
  q.SetMaxEvents(2);
  q.SetPrintFreq(0);
  q.SetInputFile("real-reco.f2k");
+ q.SetOutputFile("real-reco.root");
 
  // Add the Xtalk and EvtAna processors as subtasks to the F2K job
  q.Add(&calib);

@@ -35,4 +35,7 @@
                 to ensure proper execution of all the sub-tasks for each new event.
 31-oct-2005 NvE Some unused variables removed in IceCal2Root and IceF2k to prevent warnings
                 from the gcc compiler.
+09-nov-2005 NvE Additional memberfunctions SetOutputFile(TString name) and GetOutputFile added
+                to IceF2k to provide a more user friendly running environment.
+                The example in the IceF2k docs has been updated accordingly.
  

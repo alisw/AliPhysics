@@ -29,7 +29,9 @@ class IceF2k : public AliJob
   void SetSplitLevel(Int_t split);                        // Set split level for the produced ROOT data file
   void SetBufferSize(Int_t bsize);                        // Set buffersize for the produced ROO data file
   void SetInputFile(TString name);                        // Set name of F2K input file
-  void SetOutputFile(TFile* ofile);                       // Set output file for the ROOT data structures           
+  void SetOutputFile(TFile* ofile);                       // Set output file for the ROOT data structures       
+  void SetOutputFile(TString name);                       // Create output file for the ROOT data structures
+  TFile* GetOutputFile();                                 // Provide pointer to the ROOT output file
   TDatabasePDG* GetPDG();           // Provide pointer to the PDG database
   AliObjMatrix* GetOMdbase();       // Provide pointer to the OM geometry, calib. etc... database
   AliDevice* GetFitdefs();          // Provide pointer to the Fit definition parameters
@@ -57,6 +59,6 @@ class IceF2k : public AliJob
   array   fHeader; //! Structure holding the file header info
   mevt    fEvent;  //! Structure holding the actual event data (hits, tracks, etc...)
 
- ClassDef(IceF2k,2) // Job for conversion of F2K data into IceEvent physics event structures.
+ ClassDef(IceF2k,3) // Job for conversion of F2K data into IceEvent physics event structures.
 };
 #endif

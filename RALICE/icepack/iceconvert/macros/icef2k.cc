@@ -5,7 +5,8 @@
 //
 // root -b -q icef2k.cc
 //
-// For more details see the docs of class IceF2k
+// For more details and a more user friendly
+// output file setting, see the docs of class IceF2k
 //
 // NvE 11-mar-2005 Utrecht University
 /////////////////////////////////////////////////
@@ -60,9 +61,9 @@
  TDatabasePDG* pdg=q.GetPDG();
  if (pdg) pdg->Write();
 
- // Flush the output file.
+ // Flush additional objects to the output file.
  // The output file is not explicitly closed here
- // to allow ineractive investigation of the data tree
+ // to allow interactive investigation of the data tree
  // when this macro is run in an interactive ROOT/CINT session.
  ofile->Write();
 }
