@@ -14,91 +14,17 @@
 //-------------------------------------------------------------------------
 
 #include "TObject.h"
-#include "TClonesArray.h"
 
 //______________________________________________________________________________
 class AliEventTag : public TObject
 {
- private:
-  Int_t    fAliceEventId;                      //The event id
-  const char     *fGUID;			       //The unique identifier of the file
-  Int_t    fNumberOfParticipants;    	       //Number of participants
-  Float_t  fImpactParameter;		       //The impact parameter
- 
-  Int_t    fPrimaryVertexFlag;		       //Primary vertex flag: 0->not found, 1->found
-
-  Float_t  fPrimaryVertexX;		       //Primary vertex - X coordinate
-  Float_t  fPrimaryVertexY;		       //Primary vertex - Y coordinate
-  Float_t  fPrimaryVertexZ;		       //Primary vertex - Z coordinate
-
-  Float_t  fPrimaryVertexZError;	       //Primary vertex - Z coordinate - error
-
-  Int_t    fTriggerInfo;		       //Information from trigger
-  Float_t  fZDCNeutronEnergy;		       //ZDC info - neutron
-  Float_t  fZDCProtonEnergy;		       //ZDC info - proton
-  Float_t  fZDCEMEnergy;		       //ZDC info - em
-  Float_t  fT0VertexZ;			       //T0 info
-  Int_t    fNumberOfTracks;		       //Multiplicity
-  Int_t    fNumberOfPositiveTracks;	       //Multiplicity of positive tracks
-  Int_t    fNumberOfNegativeTracks;	       //Multiplicity of negative tracks
-  Int_t    fNumberOfNeutralTracks;	       //Multiplicity of neutral tracks
-  Int_t    fNumberOfV0s;		       //Number of V0s
-  Int_t    fNumberOfCascades;		       //Number of cascades
-  Int_t    fNumberOfKinks;		       //Number of kinks
-  Int_t    fNumberOfPMDTracks;		       //PMD tracks
-  Int_t    fNumberOfPHOSTracks;		       //PHOS tracks
-  Int_t    fNumberOfEMCALTracks;	       //EMCAL tracks
-  Int_t    fNumberOfFMDTracks;		       //FMD tracks
-  Int_t    fNumberOfJetCandidates;	       //Jet candidates
-
-  Float_t  fMaxJetEnergy;                      //jet energy info
-
-  Int_t    fNumberOfHardPhotonsCandidates;     //Hard photons candidates
-
-  Float_t  fMaxNeutralEnergy;                   //neutral energy info
-  
-
-  Int_t    fNumberOfChargedAbove1GeV;
-  Int_t    fNumberOfChargedAbove3GeV;
-  Int_t    fNumberOfChargedAbove10GeV;
-  Int_t    fNumberOfMuonsAbove1GeV;
-  Int_t    fNumberOfMuonsAbove3GeV;
-  Int_t    fNumberOfMuonsAbove10GeV; 
-  Int_t    fNumberOfElectronsAbove1GeV;
-  Int_t    fNumberOfElectronsAbove3GeV;
-  Int_t    fNumberOfElectronsAbove10GeV;
-
-
-
-  Int_t    fNumberOfElectrons;		       //Number of electrons
-  Int_t    fNumberOfMuons;		       //Number of muons
-  Int_t    fNumberOfPions;		       //Number of pions
-  Int_t    fNumberOfKaons;		       //Number of kaons
-  Int_t    fNumberOfProtons;		       //Number of protons
-  Int_t    fNumberOfLambdas;		       //Number of lambdas
-
-  Int_t    fNumberOfPhotons;
-  Int_t    fNumberOfPi0s;
-  Int_t    fNumberOfNeutrons;
-  Int_t    fNumberOfKaon0s;
-
-
- 
-  Float_t  fTotalP;			       //Sum of the momentum per event
-  Float_t  fMeanPt;			       //Mean Pt per event
-  Float_t  fMaxPt;			       //Max Pt for each event
-
-  Float_t  fTotalNeutralP;		       //Sum of the momentum per event for neutral
-  Float_t  fMeanNeutralPt;		       //Mean Pt per event for neutral
-  Float_t  fMaxNeutralPt;		       //Max Pt for each event for neutral
-
-  Float_t  fEventPlaneAngle;		       //event plane info
-  Float_t  fHBTRadii;                          //HBT info
-
  public:
   AliEventTag();
-  AliEventTag(AliEventTag *t);
+  AliEventTag(const AliEventTag & t);
   virtual ~AliEventTag();
+
+  AliEventTag &operator=(const AliEventTag &rhs);
+  
   
   void   SetEventId(Int_t Pid) {fAliceEventId = Pid;}
   void   SetGUID(const char *Pid) {fGUID = Pid;}
@@ -178,83 +104,156 @@ class AliEventTag : public TObject
 
 
 
-  Int_t  GetEventId() {return fAliceEventId;}
-  const char   *GetGUID() {return fGUID;}
+  Int_t  GetEventId() const {return fAliceEventId;}
+  const char   *GetGUID() const {return fGUID;}
 
-  Int_t   GetNumOfParticipants() {return fNumberOfParticipants;}
-  Float_t GetImpactParameter() {return fImpactParameter;}
+  Int_t   GetNumOfParticipants() const {return fNumberOfParticipants;}
+  Float_t GetImpactParameter() const {return fImpactParameter;}
 
-  Float_t GetVertexX() {return fPrimaryVertexX;}
-  Float_t GetVertexY() {return fPrimaryVertexY;}
-  Float_t GetVertexZ() {return fPrimaryVertexZ;}
+  Float_t GetVertexX() const {return fPrimaryVertexX;}
+  Float_t GetVertexY() const {return fPrimaryVertexY;}
+  Float_t GetVertexZ() const {return fPrimaryVertexZ;}
 
-  Int_t GetVertexFlag() {return fPrimaryVertexFlag;}
-  Float_t GetVertexZError() {return fPrimaryVertexZError;}
+  Int_t GetVertexFlag() const {return fPrimaryVertexFlag;}
+  Float_t GetVertexZError() const {return fPrimaryVertexZError;}
 
+  Int_t   GetTrigger() const {return fTriggerInfo;}
 
+  Float_t GetZDCNeutronEnergy() const {return fZDCNeutronEnergy;}
+  Float_t GetZDCProtonEnergy() const {return fZDCProtonEnergy;}
+  Float_t GetZDCEMEnergy() const {return fZDCEMEnergy;}
 
-  Int_t   GetTrigger() {return fTriggerInfo;}
+  Float_t GetT0VertexZ() const {return fT0VertexZ;}
 
-  Float_t GetZDCNeutronEnergy() {return fZDCNeutronEnergy;}
-  Float_t GetZDCProtonEnergy() {return fZDCProtonEnergy;}
-  Float_t GetZDCEMEnergy() {return fZDCEMEnergy;}
+  Int_t   GetNumOfTracks() const {return fNumberOfTracks;}
+  Int_t   GetNumOfPosTracks() const {return fNumberOfPositiveTracks;}
+  Int_t   GetNumOfNegTracks() const {return fNumberOfNegativeTracks;}
+  Int_t   GetNumOfNeutrTracks() const {return fNumberOfNeutralTracks;}
 
-  Float_t GetT0VertexZ() {return fT0VertexZ;}
+  Int_t   GetNumOfV0s() const {return fNumberOfV0s;}
+  Int_t   GetNumOfCascades() const {return fNumberOfCascades;}
+  Int_t   GetNumOfKinks() const {return fNumberOfKinks;}
 
-  Int_t   GetNumOfTracks() {return fNumberOfTracks;}
-  Int_t   GetNumOfPosTracks() {return fNumberOfPositiveTracks;}
-  Int_t   GetNumOfNegTracks() {return fNumberOfNegativeTracks;}
-  Int_t   GetNumOfNeutrTracks() {return fNumberOfNeutralTracks;}
+  Int_t   GetNumOfPMDTracks() const {return fNumberOfPMDTracks;}
+  Int_t   GetNumOfPHOSTracks() const {return fNumberOfPHOSTracks;}
+  Int_t   GetNumOfEMCALTracks() const {return fNumberOfEMCALTracks;}
+  Int_t   GetNumOfFMDTracks() const {return fNumberOfFMDTracks;}
 
-  Int_t   GetNumOfV0s() {return fNumberOfV0s;}
-  Int_t   GetNumOfCascades() {return fNumberOfCascades;}
-  Int_t   GetNumOfKinks() {return fNumberOfKinks;}
+  Int_t   GetNumOfJetCandidates() const {return fNumberOfJetCandidates;}
+  Int_t   GetNumOfHardPhotonsCandidates() const {return fNumberOfHardPhotonsCandidates;}
 
-  Int_t   GetNumOfPMDTracks() {return fNumberOfPMDTracks;}
-  Int_t   GetNumOfPHOSTracks() {return fNumberOfPHOSTracks;}
-  Int_t   GetNumOfEMCALTracks() {return fNumberOfEMCALTracks;}
-  Int_t   GetNumOfFMDTracks() {return fNumberOfFMDTracks;}
-
-  Int_t   GetNumOfJetCandidates() {return fNumberOfJetCandidates;}
-  Int_t   GetNumOfHardPhotonsCandidates() {return fNumberOfHardPhotonsCandidates;}
-
-  Float_t GetMaxJetEnergy() {return fMaxJetEnergy;}
-  Float_t GetMaxNeutralEnergy() {return fMaxNeutralEnergy;}
+  Float_t GetMaxJetEnergy() const {return fMaxJetEnergy;}
+  Float_t GetMaxNeutralEnergy() const {return fMaxNeutralEnergy;}
   
-  Int_t   GetNumOfChargedAbove1GeV() {return fNumberOfChargedAbove1GeV;}
-  Int_t   GetNumOfChargedAbove3GeV() {return fNumberOfChargedAbove3GeV;}
-  Int_t   GetNumOfChargedAbove10GeV() {return fNumberOfChargedAbove10GeV;}
-  Int_t   GetNumOfMuonsAbove1GeV() {return fNumberOfMuonsAbove1GeV;}
-  Int_t   GetNumOfMuonsAbove3GeV() {return fNumberOfMuonsAbove3GeV;}
-  Int_t   GetNumOfMuonsAbove10GeV() {return fNumberOfMuonsAbove10GeV;}
-  Int_t   GetNumOfElectronsAbove1GeV() {return fNumberOfElectronsAbove1GeV;}
-  Int_t   GetNumOfElectronsAbove3GeV() {return fNumberOfElectronsAbove3GeV;}
-  Int_t   GetNumOfElectronsAbove10GeV() {return fNumberOfElectronsAbove10GeV;}
+  Int_t   GetNumOfChargedAbove1GeV() const {return fNumberOfChargedAbove1GeV;}
+  Int_t   GetNumOfChargedAbove3GeV() const {return fNumberOfChargedAbove3GeV;}
+  Int_t   GetNumOfChargedAbove10GeV() const {return fNumberOfChargedAbove10GeV;}
+  Int_t   GetNumOfMuonsAbove1GeV() const {return fNumberOfMuonsAbove1GeV;}
+  Int_t   GetNumOfMuonsAbove3GeV() const {return fNumberOfMuonsAbove3GeV;}
+  Int_t   GetNumOfMuonsAbove10GeV() const {return fNumberOfMuonsAbove10GeV;}
+  Int_t   GetNumOfElectronsAbove1GeV() const {return fNumberOfElectronsAbove1GeV;}
+  Int_t   GetNumOfElectronsAbove3GeV() const {return fNumberOfElectronsAbove3GeV;}
+  Int_t   GetNumOfElectronsAbove10GeV() const {return fNumberOfElectronsAbove10GeV;}
  
-  Int_t   GetNumOfElectrons() {return fNumberOfElectrons;}
-  Int_t   GetNumOfMuons() {return fNumberOfMuons;}
-  Int_t   GetNumOfPions() {return fNumberOfPions;}
-  Int_t   GetNumOfKaons() {return fNumberOfKaons;}
-  Int_t   GetNumOfProtons() {return fNumberOfProtons;}
-  Int_t   GetNumOfLambdas() {return fNumberOfLambdas;}
+  Int_t   GetNumOfElectrons() const {return fNumberOfElectrons;}
+  Int_t   GetNumOfMuons() const {return fNumberOfMuons;}
+  Int_t   GetNumOfPions() const {return fNumberOfPions;}
+  Int_t   GetNumOfKaons() const {return fNumberOfKaons;}
+  Int_t   GetNumOfProtons() const {return fNumberOfProtons;}
+  Int_t   GetNumOfLambdas() const {return fNumberOfLambdas;}
+
+  Int_t   GetNumOfPhotons() const {return fNumberOfPhotons;}
+  Int_t   GetNumOfPi0s() const {return fNumberOfPi0s;}
+  Int_t   GetNumOfNeutrons() const {return fNumberOfNeutrons;}
+  Int_t   GetNumOfKaon0s() const {return fNumberOfKaon0s;}
 
 
-  Int_t   GetNumOfPhotons() {return fNumberOfPhotons;}
-  Int_t   GetNumOfPi0s() {return fNumberOfPi0s;}
-  Int_t   GetNumOfNeutrons() {return fNumberOfNeutrons;}
-  Int_t   GetNumOfKaon0s() {return fNumberOfKaon0s;}
+  Float_t GetTotalMomentum() const {return fTotalP;}
+  Float_t GetMeanPt() const {return fMeanPt;}
+  Float_t GetMaxPt() const {return fMaxPt;}
+
+  Float_t GetNeutralTotalMomentum() const {return fTotalNeutralP;}
+  Float_t GetNeutralMeanPt() const {return fMeanNeutralPt;}
+  Float_t GetNeutralMaxPt() const {return fMaxNeutralPt;}
+
+  Float_t GetEventPlaneAngle() const {return fEventPlaneAngle;}
+  Float_t GetHBTRadii() const {return fHBTRadii;}
+
+ private:
+  Int_t    fAliceEventId;                      //The event id
+  const char     *fGUID;		       //The unique identifier of the file
+  Int_t    fNumberOfParticipants;    	       //Number of participants
+  Float_t  fImpactParameter;		       //The impact parameter
+ 
+  Int_t    fPrimaryVertexFlag;		       //Primary vertex flag: 0->not found, 1->found
+
+  Float_t  fPrimaryVertexX;		       //Primary vertex - X coordinate
+  Float_t  fPrimaryVertexY;		       //Primary vertex - Y coordinate
+  Float_t  fPrimaryVertexZ;		       //Primary vertex - Z coordinate
+
+  Float_t  fPrimaryVertexZError;	       //Primary vertex - Z coordinate - error
+
+  Int_t    fTriggerInfo;		       //Information from trigger
+  Float_t  fZDCNeutronEnergy;		       //ZDC info - neutron
+  Float_t  fZDCProtonEnergy;		       //ZDC info - proton
+  Float_t  fZDCEMEnergy;		       //ZDC info - em
+  Float_t  fT0VertexZ;			       //T0 info
+  Int_t    fNumberOfTracks;		       //Multiplicity
+  Int_t    fNumberOfPositiveTracks;	       //Multiplicity of positive tracks
+  Int_t    fNumberOfNegativeTracks;	       //Multiplicity of negative tracks
+  Int_t    fNumberOfNeutralTracks;	       //Multiplicity of neutral tracks
+  Int_t    fNumberOfV0s;		       //Number of V0s
+  Int_t    fNumberOfCascades;		       //Number of cascades
+  Int_t    fNumberOfKinks;		       //Number of kinks
+  Int_t    fNumberOfPMDTracks;		       //PMD tracks
+  Int_t    fNumberOfPHOSTracks;		       //PHOS tracks
+  Int_t    fNumberOfEMCALTracks;	       //EMCAL tracks
+  Int_t    fNumberOfFMDTracks;		       //FMD tracks
+  Int_t    fNumberOfJetCandidates;	       //Jet candidates
+
+  Float_t  fMaxJetEnergy;                      //jet energy info
+
+  Int_t    fNumberOfHardPhotonsCandidates;     //Hard photons candidates
+
+  Float_t  fMaxNeutralEnergy;                   //neutral energy info
+  
+
+  Int_t    fNumberOfChargedAbove1GeV;      //Number of charged above 1 GeV/c
+  Int_t    fNumberOfChargedAbove3GeV;      //Number of charged above 3 GeV/c
+  Int_t    fNumberOfChargedAbove10GeV;     //Number of charged above 10 GeV/c
+  Int_t    fNumberOfMuonsAbove1GeV;        //Number of muons above 1 GeV/c
+  Int_t    fNumberOfMuonsAbove3GeV;        //Number of muons above 3 GeV/c
+  Int_t    fNumberOfMuonsAbove10GeV;       //Number of muons above 10 GeV/c
+  Int_t    fNumberOfElectronsAbove1GeV;    //Number of electrons above 1 GeV/c
+  Int_t    fNumberOfElectronsAbove3GeV;    //Number of electrons above 3 GeV/c
+  Int_t    fNumberOfElectronsAbove10GeV;   //Number of electrons above 10 GeV/c
 
 
-  Float_t GetTotalMomentum() {return fTotalP;}
-  Float_t GetMeanPt() {return fMeanPt;}
-  Float_t GetMaxPt() {return fMaxPt;}
 
-  Float_t GetNeutralTotalMomentum() {return fTotalNeutralP;}
-  Float_t GetNeutralMeanPt() {return fMeanNeutralPt;}
-  Float_t GetNeutralMaxPt() {return fMaxNeutralPt;}
+  Int_t    fNumberOfElectrons;		       //Number of electrons
+  Int_t    fNumberOfMuons;		       //Number of muons
+  Int_t    fNumberOfPions;		       //Number of pions
+  Int_t    fNumberOfKaons;		       //Number of kaons
+  Int_t    fNumberOfProtons;		       //Number of protons
+  Int_t    fNumberOfLambdas;		       //Number of lambdas
 
-  Float_t GetEventPlaneAngle() {return fEventPlaneAngle;}
-  Float_t GetHBTRadii() {return fHBTRadii;}
+  Int_t    fNumberOfPhotons;               //Number of photons
+  Int_t    fNumberOfPi0s;                  //Number of pi0
+  Int_t    fNumberOfNeutrons;              //Number of neutrons
+  Int_t    fNumberOfKaon0s;                //Number of Ks
+
+
+ 
+  Float_t  fTotalP;			       //Sum of the momentum per event
+  Float_t  fMeanPt;			       //Mean Pt per event
+  Float_t  fMaxPt;			       //Max Pt for each event
+
+  Float_t  fTotalNeutralP;		       //Sum of the momentum per event for neutral
+  Float_t  fMeanNeutralPt;		       //Mean Pt per event for neutral
+  Float_t  fMaxNeutralPt;		       //Max Pt for each event for neutral
+
+  Float_t  fEventPlaneAngle;		       //event plane info
+  Float_t  fHBTRadii;                          //HBT info
 
   ClassDef(AliEventTag,3)  //(ClassName, ClassVersion)
     };

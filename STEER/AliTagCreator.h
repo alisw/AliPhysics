@@ -25,13 +25,24 @@
 
 //ROOT
 #include <TObject.h>
-#include <TFile.h>
-#include <TSystem.h>
-#include <TGridResult.h>
 
+class TFile;
+class TGridResult;
 
 
 class AliTagCreator : public TObject {
+
+ public:
+  AliTagCreator();
+  AliTagCreator(const char *host, Int_t port, const char *username);
+  AliTagCreator(const char *host, Int_t port, const char *username, const char *passwd);
+  ~AliTagCreator(); 
+
+  void SetSE(const char *se){fSE = se;}
+  void SetStorage(Int_t storage);
+  void SetGridPath(const char *gridpath){fgridpath = gridpath;}
+  Bool_t ConnectToGrid(const char *host, Int_t port, const char *username);
+  Bool_t ReadESDCollection(TGridResult *result);
 
  protected:
   TString fUser; //the username in AliEn
@@ -41,21 +52,9 @@ class AliTagCreator : public TObject {
   TString fgridpath;   //the alien location of the tag files
   Int_t fPort;  //the defined port for the host login
   Int_t fStorage;  //0:local - 1:grid
-  TGridResult *fresult; //the results from the grid query
+  //  TGridResult *fresult; //the results from the grid query
 
   void CreateTag(TFile* file, const char *guid, Int_t Counter);
-
- public:
-  AliTagCreator();
-  AliTagCreator(const char *host, Int_t port, const char *username);
-  AliTagCreator(const char *host, Int_t port, const char *username, const char *passwd);
-  ~AliTagCreator(); 
-
-  void SetSE(const char *se);
-  void SetStorage(Int_t storage);
-  void SetGridPath(const char *gridpath);
-  Bool_t ConnectToGrid(const char *host, Int_t port, const char *username);
-  Bool_t ReadESDCollection(TGridResult *result);
 
   ClassDef(AliTagCreator,0)  
 };

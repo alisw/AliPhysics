@@ -70,7 +70,7 @@ class AliRunTag : public TObject
   
   void          SetLHCTag(Float_t Plumin, char *type);
   void          SetDetectorTag(AliDetectorTag *t);
-  void          AddEventTag(AliEventTag *t);
+  void          AddEventTag(const AliEventTag &t);
   void          Clear(const char * opt = "");
   
   

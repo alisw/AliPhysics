@@ -74,7 +74,7 @@ void AliRunTag::SetDetectorTag(AliDetectorTag *DetTag)
 }
 
 //______________________________________________________________________________
-void AliRunTag::AddEventTag(AliEventTag *EvTag)
+void AliRunTag::AddEventTag(const AliEventTag & EvTag)
 {
   TClonesArray &events = *fEventTag;
   new(events[fNumEvents++]) AliEventTag(EvTag);

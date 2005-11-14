@@ -1388,7 +1388,7 @@ void AliReconstruction::CreateTag(TFile* file)
       evTag->SetMeanPt(MeanPt);
       evTag->SetMaxPt(MaxPt);
   
-      tag->AddEventTag(evTag);
+      tag->AddEventTag(*evTag);
     }
   lastEvent = i_NumberOfEvents;
 	
