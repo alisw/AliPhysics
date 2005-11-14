@@ -668,3 +668,4 @@
                 Basically the test "val1 < val2" was replaced by "val1 <= val2".
 09-nov-2005 NvE DisplayHits memberfunctions in AliDevice updated to fully support all 
                 (de)calibration modes of GetSignal for displaying (and skipping dead) hits.
+14-nov-2005 NvE Hit access by name introduced in AliDevice.

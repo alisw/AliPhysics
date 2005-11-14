@@ -99,6 +99,12 @@ void IceCalibrate::Exec(Option_t* opt)
  IceEvent* evt=(IceEvent*)parent->GetObject("IceEvent");
  if (!evt) return;
 
+ // All OMs with a signal
+ TObjArray* mods=evt->GetDevices("IceGOM");
+
+ Int_t nmods=mods->GetEntries();
+ if (!nmods) return;
+
  IceGOM* ome=0; // The event OM pointer
  IceGOM* omd=0; // The database OM pointer
  Int_t id=0;
@@ -107,10 +113,9 @@ void IceCalibrate::Exec(Option_t* opt)
  TF1* fcal=0;
  TF1* fdecal=0;
 
- Int_t ndev=evt->GetNdevices();
- for (Int_t idev=1; idev<=ndev; idev++)
+ for (Int_t imod=0; imod<nmods; imod++)
  {
-  ome=(IceGOM*)evt->GetDevice(idev);
+  ome=(IceGOM*)mods->At(imod);
   if (!ome) continue;
 
   id=ome->GetUniqueID();

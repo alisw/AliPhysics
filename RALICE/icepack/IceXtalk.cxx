@@ -131,6 +131,12 @@ void IceXtalk::Exec(Option_t* opt)
  IceEvent* evt=(IceEvent*)parent->GetObject("IceEvent");
  if (!evt) return;
 
+ // All Amanda OMs with a signal
+ TObjArray* mods=evt->GetDevices("IceAOM");
+
+ Int_t nmods=mods->GetEntries();
+ if (!nmods) return;
+
  TObjArray xhits; // Array with pointers to Xtalk hits to be corrected
 
  IceAOM* omt=0; // Transmitter OM
@@ -145,10 +151,9 @@ void IceXtalk::Exec(Option_t* opt)
  Float_t cpar=0,bpar=0,dlemin=0,dlemax=0,test=0;
  Float_t dle=0;
  Float_t sigcor=0;
- Int_t ndev=evt->GetNdevices();
- for (Int_t idev=1; idev<=ndev; idev++)
+ for (Int_t imod=0; imod<nmods; imod++)
  {
-  omt=(IceAOM*)evt->GetDevice(idev);
+  omt=(IceAOM*)mods->At(imod);
   if (!omt) continue;
   idtrans=omt->GetUniqueID();
 
@@ -157,12 +162,12 @@ void IceXtalk::Exec(Option_t* opt)
   if (ibad) omt->SetAlive("ADC");
 
   // Check for corresponding receiver modules  
-  for (Int_t jdev=1; jdev<=ndev; jdev++)
+  for (Int_t jmod=0; jmod<nmods; jmod++)
   {
    // No Xtalk from a module to itself 
-   if (jdev==idev) continue;
+   if (jmod==imod) continue;
 
-   omr=(IceAOM*)evt->GetDevice(jdev);
+   omr=(IceAOM*)mods->At(jmod);
    if (!omr) continue;
    idrec=omr->GetUniqueID();
 

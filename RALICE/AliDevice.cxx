@@ -331,6 +331,28 @@ AliSignal* AliDevice::GetHit(Int_t j) const
  }
 }
 ///////////////////////////////////////////////////////////////////////////
+AliSignal* AliDevice::GetHit(TString name) const
+{
+// Provide the AliSignal object registered as hit with the specified name.
+// Note : The first hit encountered with the specified name will be provided.
+
+ if (!fHits) return 0;
+
+ TString hitname;
+ Int_t nhits=GetNhits();
+ for (Int_t i=0; i<nhits; i++)
+ {
+  AliSignal* sx=(AliSignal*)fHits->At(i);
+  if (sx)
+  {
+   hitname=sx->GetName();
+   if (hitname == name) return sx;
+  }
+ }
+
+ return 0; // No matching name found
+}
+///////////////////////////////////////////////////////////////////////////
 AliSignal* AliDevice::GetIdHit(Int_t id) const
 {
 // Return the hit with unique identifier "id".

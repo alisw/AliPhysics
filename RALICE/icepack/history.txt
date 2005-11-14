@@ -29,4 +29,9 @@
                 are left.
                 Also protection introduced in IceXtalk for the case that no OM database
                 was specified. 
+14-nov-2005 NvE Only devices derived from IceGOM taken into account in IceCalibrate
+                and only devices derived from IceAOM taken into account in IceXtalk 
+                to comply with the presence of the newly introduced Trigger device.
+                IceCleanHits updated to support automatic trigger time setting from
+                the IceEvent trigger information.
 

@@ -38,4 +38,8 @@
 09-nov-2005 NvE Additional memberfunctions SetOutputFile(TString name) and GetOutputFile added
                 to IceF2k to provide a more user friendly running environment.
                 The example in the IceF2k docs has been updated accordingly.
+13-nov-2005 NvE IceF2k updated to store also the event trigger information in the Ralice/Icepack
+                event structures. The information is stored in the IceEvent structure in the
+                form of a device named "Trigger". The various event triggers encountered in the
+                F2K input data are stored as "hits" into this trigger device.
  

@@ -26,8 +26,9 @@ class IceCleanHits : public TTask
   void SetTotRangeAE(Float_t min,Float_t max=2000);       // Set Amanda electrical TOT range (in ns)
   void SetTotRangeAO(Float_t min,Float_t max=2000);       // Set Amanda optical TOT range (in ns)
   void SetIsolationA(Float_t rmax,Float_t dtmax);         // Set Amanda isolation radius (in m) and dt (in ns)
-  void SetTwindowA(Float_t dtmax);                        // Set Amanda maximal trigger window (in ns)
-  void SetTtimeA(Float_t t);                              // Set Amanda trigger time (in ns)
+  void SetTwindowA(Float_t dtmax);                        // Set Amanda maximal trigger window (in TDC counts)
+  void SetTtimeA(Float_t t);                              // Set Amanda trigger time (in TDC counts)
+  void SetTnameA(TString name);                           // Set Amanda trigger name
 
  protected :
   IceEvent* fEvt;    // Pointer to the current event structure
@@ -39,12 +40,13 @@ class IceCleanHits : public TTask
   Float_t fTotmaxAO; // Maximum Amanda optical TOT value in ns
   Float_t fRmaxA;    // Maximum Amanda isolation radius in m
   Float_t fDtmaxA;   // Maximum Amanda isolation dt in ns
-  Float_t fTwinA;    // Maximum Amanda hit time difference from the trigger time
-  Float_t fTtimA;    // The Amanda trigger time in ns
+  Float_t fTwinA;    // Maximum Amanda hit time difference from the trigger time in TDC counts
+  Float_t fTtimA;    // The Amanda trigger time in TDC counts
+  TString fTnamA;    // The Amanda trigger name
   void Amanda();     // Cleaning of Amanda modules
   void InIce();      // Cleaning of IceCube InIce DOMs
   void IceTop();     // Cleaning of IceTop DOMs
 
- ClassDef(IceCleanHits,2) // TTask derived class to perform hit cleaning
+ ClassDef(IceCleanHits,3) // TTask derived class to perform hit cleaning
 };
 #endif

@@ -129,6 +129,7 @@ IceF2k::IceF2k(const char* name,const char* title) : AliJob(name,title)
  fPdg=0;
  fOmdb=0;
  fFitdefs=0;
+ fTrigdefs=0;
 }
 ///////////////////////////////////////////////////////////////////////////
 IceF2k::~IceF2k()
@@ -151,6 +152,12 @@ IceF2k::~IceF2k()
  {
   delete fFitdefs;
   fFitdefs=0;
+ }
+
+ if (fTrigdefs)
+ {
+  delete fTrigdefs;
+  fTrigdefs=0;
  }
 }
 ///////////////////////////////////////////////////////////////////////////
@@ -225,6 +232,12 @@ AliDevice* IceF2k::GetFitdefs()
 {
 // Provide pointer to the fit definitions
  return fFitdefs;
+}
+///////////////////////////////////////////////////////////////////////////
+AliDevice* IceF2k::GetTrigdefs()
+{
+// Provide pointer to the trigger definitions
+ return fTrigdefs;
 }
 ///////////////////////////////////////////////////////////////////////////
 void IceF2k::Exec(Option_t* opt)
@@ -303,6 +316,9 @@ void IceF2k::Exec(Option_t* opt)
  // Set the fit definitions according to the F2000 header info
  SetFitdefs();
 
+ // Set the trigger definitions according to the F2000 header info
+ SetTrigdefs();
+
  // Initialise the job working environment
  SetMainObject(evt);
  if (fOutfile)
@@ -336,6 +352,8 @@ void IceF2k::Exec(Option_t* opt)
   evt->SetRunNumber(fEvent.nrun);
   evt->SetEventNumber(fEvent.enr);
   evt->SetMJD(fEvent.mjd,fEvent.secs,fEvent.nsecs);
+
+  PutTrigger();
 
   PutMcTracks();
 
@@ -515,8 +533,8 @@ void IceF2k::SetFitdefs()
 {
 // Obtain the names of the variables for each fit procedure from the
 // f2000 header. Each different fit procedure is then stored as a separate
-// hit of an AliDevice object and the various fit variables are stored
-// as separate signal slots of the corresponding hit.
+// "hit" of an AliDevice object and the various fit variables are stored
+// as separate signal slots of the corresponding "hit".
 // Via the GetFitdefs() memberfunction this AliDevice object can be
 // retrieved and stored in the ROOT output file if wanted.
 // The name of the object is FitDefinitions and the stored data can be
@@ -530,21 +548,21 @@ void IceF2k::SetFitdefs()
 //    Position Vector in car coordinates : 0 0 0
 //    Err. in car coordinates : 0 0 0
 //    Owned by device : AliDevice Name : FitDefinitions
-//    Slot : 1 Signal value : 1 name : id
-//    Slot : 2 Signal value : 2 name : rchi2
-//    Slot : 3 Signal value : 3 name : prob
-//    Slot : 4 Signal value : 4 name : sigth
-//    Slot : 5 Signal value : 5 name : covmin
-//    Slot : 6 Signal value : 6 name : covmax
-//    Slot : 7 Signal value : 7 name : cutflag
-//    Slot : 8 Signal value : 8 name : chi2
+//    Slot : 1 Signal value : 0 name : id
+//    Slot : 2 Signal value : 0 name : rchi2
+//    Slot : 3 Signal value : 0 name : prob
+//    Slot : 4 Signal value : 0 name : sigth
+//    Slot : 5 Signal value : 0 name : covmin
+//    Slot : 6 Signal value : 0 name : covmax
+//    Slot : 7 Signal value : 0 name : cutflag
+//    Slot : 8 Signal value : 0 name : chi2
 //  *AliSignal::Data* Id :1
 //    Position Vector in car coordinates : 0 0 0
 //    Err. in car coordinates : 0 0 0
 //    Owned by device : AliDevice Name : FitDefinitions
-//    Slot : 1 Signal value : 1 name : id
-//    Slot : 2 Signal value : 2 name : rchi2
-//    Slot : 3 Signal value : 3 name : prob
+//    Slot : 1 Signal value : 0 name : id
+//    Slot : 2 Signal value : 0 name : rchi2
+//    Slot : 3 Signal value : 0 name : prob
 // etc....  
 //
 // This memberfunction is based on the original idea/code by Adam Bouchta.
@@ -569,14 +587,86 @@ void IceF2k::SetFitdefs()
  for (Int_t i=0; i<fHeader.n_fit; i++)
  {
   s.SetUniqueID(fHeader.def_fit[i].id);
+  s.SetName(TString(fHeader.def_fit[i].tag));
 
   for (Int_t j=0; j<fHeader.def_fit[i].nwords; j++)
   {
    s.SetSlotName(TString(fHeader.def_fit[i].words[j]),j+1);
-   s.SetSignal(j+1,j+1);
+   s.SetSignal(0,j+1);
   }
 
   fFitdefs->AddHit(s);
+  s.Reset(1);
+ }
+}
+///////////////////////////////////////////////////////////////////////////
+void IceF2k::SetTrigdefs()
+{
+// Obtain the names of the variables for each trigger procedure from the
+// f2000 header. Each different trigger procedure is then stored as a separate
+// "hit" of an AliDevice object and the various trigger variables are stored
+// as separate signal slots of the corresponding "hit".
+// Via the GetFitdefs() memberfunction this AliDevice object can be
+// retrieved and stored in the ROOT output file if wanted.
+// The name of the object is TrigDefinitions and the stored data can be
+// inspected via the AliDevice::Data() memberfunction and looks as follows :
+//
+//  *AliDevice::Data* Id : 0 Name : TrigDefinitions
+//    Position Vector in car (rad) coordinates : 0 0 0
+//    Err. in car (rad) coordinates : 0 0 0
+//  The following 9 hits are registered : 
+//  *AliSignal::Data* Id : 1 Name : main
+//    Position Vector in car (rad) coordinates : 0 0 0
+//    Err. in car (rad) coordinates : 0 0 0
+//    Owned by device : AliDevice Id : 0 Name : TrigDefinitions
+//     Slot : 1 Signal value : 0 name : trig_pulse_le
+//     Slot : 2 Signal value : 0 name : trig_pulse_tot
+//     Slot : 3 Signal value : 0 name : regi_flag
+//   *AliSignal::Data* Id : 2 Name : amaa
+//     Position Vector in car (rad) coordinates : 0 0 0
+//     Err. in car (rad) coordinates : 0 0 0
+//     Owned by device : AliDevice Id : 0 Name : TrigDefinitions
+//     Slot : 1 Signal value : 0 name : trig_pulse_le
+//     Slot : 2 Signal value : 0 name : trig_pulse_tot
+//     Slot : 3 Signal value : 0 name : regi_flag
+//   *AliSignal::Data* Id : 3 Name : amab10
+//     Position Vector in car (rad) coordinates : 0 0 0
+//     Err. in car (rad) coordinates : 0 0 0
+//     Owned by device : AliDevice Id : 0 Name : TrigDefinitions
+//     Slot : 1 Signal value : 0 name : trig_pulse_le
+//     Slot : 2 Signal value : 0 name : trig_pulse_tot
+//     Slot : 3 Signal value : 0 name : regi_flag
+// etc....  
+
+ if (fHeader.n_trigger<=0) return;
+
+ if (fTrigdefs)
+ {
+  fTrigdefs->Reset(1);
+ }
+ else
+ {
+  fTrigdefs=new AliDevice();
+ }
+
+ fTrigdefs->SetName("TrigDefinitions");
+ fTrigdefs->SetHitCopy (1);
+
+ AliSignal s;
+ s.Reset();
+
+ for (Int_t i=0; i<fHeader.n_trigger; i++)
+ {
+  s.SetUniqueID(fHeader.def_trig[i].id);
+  s.SetName(TString(fHeader.def_trig[i].tag));
+
+  for (Int_t j=0; j<fHeader.def_trig[i].nwords; j++)
+  {
+   s.SetSlotName(TString(fHeader.def_trig[i].words[j]),j+1);
+   s.SetSignal(0,j+1);
+  }
+
+  fTrigdefs->AddHit(s);
   s.Reset(1);
  }
 }
@@ -963,5 +1053,45 @@ void IceF2k::PutHits()
    }
   }
  }
+}
+///////////////////////////////////////////////////////////////////////////
+void IceF2k::PutTrigger()
+{
+// Get the trigger info from the F2000 file into the IcePack structure.
+
+ if (!fTrigdefs) return;
+
+ IceEvent* evt=(IceEvent*)GetMainObject();
+ if (!evt || fEvent.ntrig<=0) return;
+
+ AliDevice trig;
+ trig.SetNameTitle("Trigger","Amanda/IceCube event triggers");
+ AliSignal s;
+ TString trigname;
+ TString slotname;
+ Int_t id=0;
+ Int_t nval=0;
+ for (Int_t i=0; i<fEvent.ntrig; i++)
+ {
+  id=fEvent.ptrig[i].id;
+  nval=fEvent.ptrig[i].nval;
+  if (!nval) continue;
+  AliSignal* tdef=fTrigdefs->GetIdHit(id+1);
+  if (!tdef) continue;
+  trigname=tdef->GetName();
+  s.Reset(1);
+  s.SetName(trigname);
+  s.SetUniqueID(id+1);
+  for (Int_t jval=0; jval<fEvent.ptrig[i].nval; jval++)
+  {
+   slotname=tdef->GetSlotName(jval+1);
+   s.SetSlotName(slotname,jval+1);
+   s.SetSignal(fEvent.ptrig[i].val[jval],jval+1);
+  }
+  trig.AddHit(s);
+ }
+
+ // Store the trigger data into the IceEvent structure
+ evt->AddDevice(trig);
 }
 ///////////////////////////////////////////////////////////////////////////

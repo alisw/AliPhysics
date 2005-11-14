@@ -26,7 +26,8 @@
 // -------------------------------------
 // 1) ADC within [min,max]  Default : [0.3,999999] PE
 // 2) TOT within [min,max]  Default : electrical [125,2000] optical [20,2000] ns
-// 3) abs(LE-Ttrig)<=win    Default : win=2250 ns (Ttrig represents the trigger time)
+// 3) abs(LE-Ttrig)<=win    Default : win=2250 TDC counts
+//    where : LE=uncalibrated hit LE (i.e. TDC counts)   Ttrig=trigger pulse LE in TDC counts
 // 4) At least one other hit within radius R and time difference dt
 //    to remove isolated hits. Defaults : R=70 m  dt=500 ns
 //
@@ -35,22 +36,14 @@
 //
 // Concerning the trigger time :
 // -----------------------------
-// We adopt an overall trigger time setting for each year of data taking.
-// The mean values obtained from Dipo's uncalibrated LE distributions
-// are currently used here.
-// No data were yet available for year<2002, so as default the 2002
-// value is used for those early runs.
-// It seems that in 2005 the trigger time was changed within the year
-// from 24170 ns to 12138 ns. The latter however shows a 2-bump structure,
-// which may point at the fact that people have been trying things out
-// with the DAQ system.
-// So, currently the 24170 ns will be used for all the 2005 data until
-// the issue is settled.
-// However, the user can impose a specific trigger time to be used
-// by invokation of the memberfunction SetTtimeA.
+// By default the trigger time is obtained automatically from the IceEvent structure
+// via the device called "Trigger".
+// The uncalibrated LE (i.e. TDC counts) of a specified trigger pulse is used.
+// The user can impose a specific trigger name or time to be used
+// by invokation of the memberfunctions SetTnameA or SetTtimeA, respectively.
 // Specification of a negative trigger time will result in the automatic
-// trigger time setting based on the event timestamp as outlined above.
-// The latter is the default.
+// trigger time setting corresponding to the "main" trigger.
+// By default the trigger time of the "main" trigger will be used.
 //
 // The hits which do not fullfill the criteria are flagged "dead" for the
 // corresponding signal slot. This means they are still present in the
@@ -83,6 +76,7 @@ IceCleanHits::IceCleanHits(const char* name,const char* title) : TTask(name,titl
  fDtmaxA=500;
  fTwinA=2250;
  fTtimA=-1;
+ fTnamA="main";
 }
 ///////////////////////////////////////////////////////////////////////////
 IceCleanHits::~IceCleanHits()
@@ -123,18 +117,30 @@ void IceCleanHits::SetIsolationA(Float_t rmax,Float_t dtmax)
 ///////////////////////////////////////////////////////////////////////////
 void IceCleanHits::SetTwindowA(Float_t dtmax)
 {
-// Set Amanda maximal trigger window (in ns).
+// Set Amanda maximal trigger window (in TDC counts).
 // Only hits which occur in [T-dtmax,T+dtmax] will be kept,
-// where T indicates the trigger time.
+// where T indicates the trigger time in TDC counts.
+// For the Amanda DAQ hardware, 1 TDC corresponds to about 1.04 ns. 
  fTwinA=dtmax;
 }
 ///////////////////////////////////////////////////////////////////////////
 void IceCleanHits::SetTtimeA(Float_t t)
 {
-// Set Amanda trigger time (in ns).
+// Set Amanda trigger time (in TDC counts).
 // A negative value will induce automatic trigger time setting based
-// on the event timestamp.
+// on "main" trigger as recorded in the IceEvent structure.
  fTtimA=t;
+ fTnamA="user";
+ if (t<0) fTnamA="main";
+}
+///////////////////////////////////////////////////////////////////////////
+void IceCleanHits::SetTnameA(TString name)
+{
+// Set Amanda trigger name.
+// Specification of a non-existing trigger name will result in a trigger time
+// value of -1.
+ fTtimA=-1;
+ fTnamA="name";
 }
 ///////////////////////////////////////////////////////////////////////////
 void IceCleanHits::Exec(Option_t* opt)
@@ -158,21 +164,16 @@ void IceCleanHits::Amanda()
 {
 // Hit cleaning for Amanda modules.
 
- // Trigger time setting according to year of data taking
- // The mean values obtained from Dipo's uncalibrated LE distributions
- // are currently used here.
- // No data were yet available for year<2002, so as default the 2002
- // value is used for those early runs.
- // It seems that in 2005 the trigger time was changed within the year
- // from 24170 ns to 12138 ns. The latter however shows a 2-bump structure,
- // so currently the 24170 ns will be used for the 2005 data.
- if (fTtimA<0)
+ // Trigger time setting according to the user selection.
+ // By default the "main" trigger of the event will be used.
+ if (fTnamA != "user")
  {
-  Int_t year=(int)fEvt->GetJE();
-  fTtimA=23958;
-  if (year==2003) fTtimA=23994;
-  if (year==2004) fTtimA=24059.5;
-  if (year==2005) fTtimA=24170;
+  AliDevice* tdev=(AliDevice*)fEvt->GetDevice("Trigger");
+  if (tdev)
+  {
+   AliSignal* trig=tdev->GetHit(fTnamA);
+   if (trig) fTtimA=trig->GetSignal("trig_pulse_le");
+  }
  }
 
  // All Amanda OMs with a signal
