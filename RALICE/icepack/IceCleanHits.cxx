@@ -138,9 +138,9 @@ void IceCleanHits::SetTnameA(TString name)
 {
 // Set Amanda trigger name.
 // Specification of a non-existing trigger name will result in a trigger time
-// value of -1.
- fTtimA=-1;
- fTnamA="name";
+// value of 0.
+ fTtimA=0;
+ fTnamA=name;
 }
 ///////////////////////////////////////////////////////////////////////////
 void IceCleanHits::Exec(Option_t* opt)

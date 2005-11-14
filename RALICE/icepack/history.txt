@@ -34,4 +34,5 @@
                 to comply with the presence of the newly introduced Trigger device.
                 IceCleanHits updated to support automatic trigger time setting from
                 the IceEvent trigger information.
+14-nov-2005 NvE Typo corrected in IceCleanHits::SetTnameA.
 
