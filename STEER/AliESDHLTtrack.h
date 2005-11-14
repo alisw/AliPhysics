@@ -100,22 +100,22 @@ protected:
   Int_t fRowRange[2]; //Subsector where this track was build
   UShort_t fSector;      //Sector # where  this track was build
 
-  Float_t fFirstPoint[3]; //First and last track point in TPC
-  Float_t fLastPoint[3];
+  Float_t fFirstPoint[3]; //First track point in TPC
+  Float_t fLastPoint[3];  //Last track point in TPC
 
   Int_t    fQ;    //track charge
   Float_t fTanl; //tan of dipangle
   Float_t fPsi;  //azimuthal angle of the momentum 
   Float_t fPt;   //transverse momentum
 
-  Float_t fPterr;
-  Float_t fPsierr;
-  Float_t fTanlerr;
+  Float_t fPterr;   //Pt error
+  Float_t fPsierr;  //Psi error
+  Float_t fTanlerr; //Error of Tangent lambda
 
-  Float_t fBinX;
-  Float_t fBinY;
-  Float_t fSizeX;
-  Float_t fSizeY;
+  Float_t fBinX;  //X bin?
+  Float_t fBinY;  //Y bin?
+  Float_t fSizeX; //X size?
+  Float_t fSizeY; //Y size?
   
   Float_t fPID; //so far filled only for conformal mapper tracks
 

@@ -14,8 +14,7 @@
 #include <TList.h>
 #include <TMap.h>
 
-#include "AliCDBEntry.h"
-
+class AliCDBEntry;
 class AliCDBStorage;
 class AliCDBStorageFactory;
 class AliCDBParam;
@@ -26,9 +25,9 @@ class AliCDBManager: public TObject {
 
 	void RegisterFactory(AliCDBStorageFactory* factory);
 
-	Bool_t HasStorage(const char* dbString);
+	Bool_t HasStorage(const char* dbString) const;
 
-	AliCDBParam* CreateParameter(const char* dbString);
+	AliCDBParam* CreateParameter(const char* dbString) const;
 
 	AliCDBStorage* GetStorage(const char* dbString);
 	AliCDBStorage* GetStorage(const AliCDBParam* param);
@@ -39,9 +38,9 @@ class AliCDBManager: public TObject {
 	void SetDefaultStorage(const AliCDBParam* param);
 	void SetDefaultStorage(AliCDBStorage *storage);
 
-	Bool_t IsDefaultStorageSet() {return fDefaultStorage != 0;}
+	Bool_t IsDefaultStorageSet() const {return fDefaultStorage != 0;}
 	
-	AliCDBStorage* GetDefaultStorage() {return fDefaultStorage;}
+	AliCDBStorage* GetDefaultStorage() const {return fDefaultStorage;}
 
 	void RemoveDefaultStorage();
 
@@ -49,7 +48,7 @@ class AliCDBManager: public TObject {
 	void SetDrain(const AliCDBParam* param);
 	void SetDrain(AliCDBStorage *storage);
 
-	Bool_t IsDrainSet() {return fDrainStorage != 0;}
+	Bool_t IsDrainSet() const {return fDrainStorage != 0;}
 
 	Bool_t Drain(AliCDBEntry* entry);
 
@@ -66,7 +65,7 @@ class AliCDBManager: public TObject {
  private:
 		
 	AliCDBManager();
-	static AliCDBManager* fgInstance;
+	static AliCDBManager* fgInstance; // AliCDBManager instance
 	
 	AliCDBStorage* GetActiveStorage(const AliCDBParam* param);
 	void PutActiveStorage(AliCDBParam* param, AliCDBStorage* storage);
@@ -94,7 +93,8 @@ class AliCDBStorageFactory: public TObject {
 	
 public:
 	virtual Bool_t Validate(const char* dbString) = 0;
-	virtual AliCDBParam* CreateParameter(const char* dbString) = 0;	
+	virtual AliCDBParam* CreateParameter(const char* dbString) = 0;
+	virtual ~AliCDBStorageFactory(){}
 
 protected:
 	virtual AliCDBStorage* Create(const AliCDBParam* param) = 0;
@@ -127,8 +127,8 @@ protected:
 
 private:
 
-	TString fType;
-	TString fURI;
+	TString fType; // CDB type?
+	TString fURI;  // CDB URI?
 
 	ClassDef(AliCDBParam, 0);
 };

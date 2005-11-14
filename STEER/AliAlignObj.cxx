@@ -20,6 +20,15 @@
 //      - AliAlignObjAngles
 //      - AliAlignObjMatrix
 //-----------------------------------------------------------------
+/*****************************************************************************
+ * AliAlignObjAngles: derived alignment class storing alignment information  *
+ *   for a single volume in form of three doubles for the translation        *
+ *   and three doubles for the rotation expressed with the euler angles      *
+ *   in the xyz-convention (http://mathworld.wolfram.com/EulerAngles.html),  *
+ *   also known as roll, pitch, yaw. PLEASE NOTE THE ANGLES SIGNS ARE        *
+ *   INVERSE WITH RESPECT TO THIS REFERENCE!!! In this way the representation*
+ *   is fully consistent with the TGeo Rotation methods.                     *
+ *****************************************************************************/
 
 #include "AliAlignObj.h"
 //#include "AliLog.h"
@@ -61,6 +70,8 @@ AliAlignObj::~AliAlignObj()
 //_____________________________________________________________________________
 void AliAlignObj::AnglesToMatrix(const Double_t *angles, Double_t *rot) const
 {
+  // Calculates the rotation matrix using the 
+  // Euler angles in "x y z" notation
   Double_t degrad = TMath::DegToRad();
   Double_t sinpsi = TMath::Sin(degrad*angles[0]);
   Double_t cospsi = TMath::Cos(degrad*angles[0]);
@@ -83,6 +94,8 @@ void AliAlignObj::AnglesToMatrix(const Double_t *angles, Double_t *rot) const
 //_____________________________________________________________________________
 Bool_t AliAlignObj::MatrixToAngles(const Double_t *rot, Double_t *angles) const
 {
+  // Calculates the Euler angles in "x y z" notation
+  // using the rotation matrix
   if(rot[0]<1e-7 || rot[8]<1e-7) return kFALSE;
   Double_t raddeg = TMath::RadToDeg();
   angles[0]=raddeg*TMath::ATan2(-rot[5],rot[8]);
@@ -162,6 +175,7 @@ AliAlignObjAngles::~AliAlignObjAngles()
 //_____________________________________________________________________________
 void AliAlignObjAngles::SetTranslation(const TGeoMatrix& m)
 {
+  // Sets the translation parameters from an existing TGeoMatrix
   if(m.IsTranslation()){
     const Double_t* tr = m.GetTranslation();
     fTranslation[0]=tr[0];  fTranslation[1]=tr[1]; fTranslation[2]=tr[2];
@@ -174,6 +188,7 @@ void AliAlignObjAngles::SetTranslation(const TGeoMatrix& m)
 //_____________________________________________________________________________
 Bool_t AliAlignObjAngles::SetRotation(const TGeoMatrix& m)
 {
+  // Sets the rotation components from an existing TGeoMatrix
   if(m.IsRotation()){
     const Double_t* rot = m.GetRotationMatrix();
     return MatrixToAngles(rot,fRotation);
@@ -187,6 +202,8 @@ Bool_t AliAlignObjAngles::SetRotation(const TGeoMatrix& m)
 //_____________________________________________________________________________
 void AliAlignObjAngles::SetMatrix(const TGeoMatrix& m)
 {
+  // Sets both the rotation and translation components from an
+  // existing TGeoMatrix
   SetTranslation(m);
   SetRotation(m);
 }
@@ -194,6 +211,7 @@ void AliAlignObjAngles::SetMatrix(const TGeoMatrix& m)
 //_____________________________________________________________________________
 void AliAlignObjAngles::GetPars(Double_t tr[], Double_t angles[]) const
 {
+  // Returns the translations and the rotation angles
   GetTranslation(tr);
   GetAngles(angles);
 }
@@ -201,6 +219,8 @@ void AliAlignObjAngles::GetPars(Double_t tr[], Double_t angles[]) const
 //_____________________________________________________________________________
 void AliAlignObjAngles::GetMatrix(TGeoHMatrix& m) const
 {
+  // Extracts the information in an existing TGeoHMatrix using the translations
+  // and the rotation parameters
   m.SetTranslation(&fTranslation[0]);
   Double_t rot[9];
   AnglesToMatrix(fRotation,rot);
@@ -254,6 +274,7 @@ AliAlignObjMatrix::~AliAlignObjMatrix()
 //_____________________________________________________________________________
 void AliAlignObjMatrix::SetTranslation(Double_t x, Double_t y, Double_t z)
 {
+  // Sets the translation parameters
   Double_t tr[3];
   tr[0]=x; tr[1]=y; tr[2]=z;
   fMatrix.SetTranslation(tr);
@@ -262,6 +283,7 @@ void AliAlignObjMatrix::SetTranslation(Double_t x, Double_t y, Double_t z)
 //_____________________________________________________________________________
 void AliAlignObjMatrix::SetTranslation(const TGeoMatrix& m)
 {
+  // Sets the translation parameters from an existing TGeoMatrix
   const Double_t *tr = m.GetTranslation();
   fMatrix.SetTranslation(tr);
 }
@@ -269,6 +291,7 @@ void AliAlignObjMatrix::SetTranslation(const TGeoMatrix& m)
 //_____________________________________________________________________________
 void AliAlignObjMatrix::SetRotation(Double_t psi, Double_t theta, Double_t phi)
 {
+  // Sets the rotation parameters
   Double_t angles[3] = {psi, theta, phi};
   Double_t rot[9];
   AnglesToMatrix(angles,rot);
@@ -278,6 +301,7 @@ void AliAlignObjMatrix::SetRotation(Double_t psi, Double_t theta, Double_t phi)
 //_____________________________________________________________________________
 Bool_t AliAlignObjMatrix::SetRotation(const TGeoMatrix& m)
 {
+  // Sets the rotation parameters from an existing TGeoMatrix
   const Double_t* rot = m.GetRotationMatrix();
   fMatrix.SetRotation(rot);
   return kTRUE;
@@ -323,6 +347,7 @@ Bool_t AliAlignObjMatrix::GetAngles(Double_t *angles) const
 //_____________________________________________________________________________
 void AliAlignObjMatrix::GetPars(Double_t tr[], Double_t angles[]) const
 {
+  // Gets the translations and the rotation angles
   GetTranslation(tr);
   GetAngles(angles);
 }
@@ -330,8 +355,8 @@ void AliAlignObjMatrix::GetPars(Double_t tr[], Double_t angles[]) const
 //_____________________________________________________________________________
 void AliAlignObjMatrix::GetMatrix(TGeoHMatrix& m) const
 {
-  // Get TGeoHMatrix
-  //
+  // Extracts the translations and the rotation parameters
+  // in an existing TGeoHMatrix
   const Double_t *tr = fMatrix.GetTranslation();
   m.SetTranslation(tr);
   const Double_t *rot = fMatrix.GetRotationMatrix();

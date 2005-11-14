@@ -61,9 +61,8 @@ AliCDBDump::~AliCDBDump() {
 
 //_____________________________________________________________________________
 Bool_t AliCDBDump::KeyNameToId(const char* keyname, AliCDBRunRange& runRange,
-// build AliCDBId from keyname numbers
-
 	Int_t& version, Int_t& subVersion) {
+// build AliCDBId from keyname numbers
 
         Ssiz_t mSize;
 

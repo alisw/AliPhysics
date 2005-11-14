@@ -22,8 +22,8 @@ class AliCDBDump: public AliCDBStorage {
 
 public:
 
-	virtual Bool_t IsReadOnly() {return fReadOnly;};
-	virtual Bool_t HasSubVersion() {return kFALSE;};
+	virtual Bool_t IsReadOnly() const {return fReadOnly;};
+	virtual Bool_t HasSubVersion() const {return kFALSE;};
 
 protected:
 
@@ -69,6 +69,7 @@ public:
 
         virtual Bool_t Validate(const char* dbString);
         virtual AliCDBParam* CreateParameter(const char* dbString);
+	virtual ~AliCDBDumpFactory() {}
 
 protected:
         virtual AliCDBStorage* Create(const AliCDBParam* param);

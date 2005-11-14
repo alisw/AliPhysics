@@ -19,8 +19,8 @@ class AliCDBLocal: public AliCDBStorage {
 
 public:
 
-	virtual Bool_t IsReadOnly() {return kFALSE;};
-	virtual Bool_t HasSubVersion() {return kTRUE;};
+	virtual Bool_t IsReadOnly() const {return kFALSE;};
+	virtual Bool_t HasSubVersion() const {return kTRUE;};
 
 protected:
 

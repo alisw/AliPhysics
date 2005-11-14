@@ -1,12 +1,12 @@
 #ifndef ALIALIGNOBJ_H
 #define ALIALIGNOBJ_H
 
-/*************************************************************************
- * AliAlignObj: alignment base class for the storage of alignment        *
- *   information for a single volume, that is a translation, a rotation  *
- *   and a the identity of the volume itself in form of a TGeo path and  *
- *   as a unique integer identifier                                      *
- *************************************************************************/
+//************************************************************************
+// AliAlignObj: alignment base class for the storage of alignment        *
+//   information for a single volume, that is a translation, a rotation  *
+//   and a the identity of the volume itself in form of a TGeo path and  *
+//   as a unique integer identifier                                      *
+// ***********************************************************************
 #include "TObject.h"
 #include "TString.h"
 #include "TGeoMatrix.h"
@@ -53,15 +53,15 @@ class AliAlignObj : public TObject {
   ClassDef(AliAlignObj, 1)
 };
 
-/*****************************************************************************
- * AliAlignObjAngles: derived alignment class storing alignment information  *
- *   for a single volume in form of three doubles for the translation        *
- *   and three doubles for the rotation expressed with the euler angles      *
- *   in the xyz-convention (http://mathworld.wolfram.com/EulerAngles.html),  *
- *   also known as roll, pitch, yaw. PLEASE NOTE THE ANGLES SIGNS ARE        *
- *   INVERSE WITH RESPECT TO THIS REFERENCE!!! In this way the representation*
- *   is fully consistent with the TGeo Rotation methods.                     *
- *****************************************************************************/
+//****************************************************************************
+// AliAlignObjAngles: derived alignment class storing alignment information  *
+//   for a single volume in form of three doubles for the translation        *
+//   and three doubles for the rotation expressed with the euler angles      *
+//   in the xyz-convention (http://mathworld.wolfram.com/EulerAngles.html),  *
+//   also known as roll, pitch, yaw. PLEASE NOTE THE ANGLES SIGNS ARE        *
+//   INVERSE WITH RESPECT TO THIS REFERENCE!!! In this way the representation*
+//   is fully consistent with the TGeo Rotation methods.                     *
+//****************************************************************************
 class AliAlignObjAngles : public AliAlignObj{
  public:
   AliAlignObjAngles();

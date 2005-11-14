@@ -24,12 +24,11 @@ class TTreeDataElement: public TNamed {
   TTreeDataElement(const TTreeDataElement & tde);
   TTreeDataElement & operator=(const TTreeDataElement & tde);
 
-  TString fName;    // name of the data element
   Char_t  fType;     // type of data element
   TDataType *fDType; //data type pointer 
   TClass    *fClass; //data type pointer
   void * fPointer;  // pointer to element
-  ClassDef(TTreeDataElement,1)
+  ClassDef(TTreeDataElement,2)
 };
 
 class TTreeStream: public TNamed {

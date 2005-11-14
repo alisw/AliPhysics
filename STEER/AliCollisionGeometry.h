@@ -4,6 +4,11 @@
  * See cxx source for full Copyright notice                               */
 
 /* $Id$ */
+//-------------------------------------------------------------------------
+//                          Class AliCollisionGeometry
+//   This is a class to handle the collison geometry defined by
+//   the generator
+//-------------------------------------------------------------------------
 
 #include <Rtypes.h>
 
@@ -13,19 +18,19 @@ public:
     AliCollisionGeometry();
     virtual ~AliCollisionGeometry(){;}
     // Getters
-    Float_t ImpactParameter()   {return fImpactParameter;}
-    Float_t ReactionPlaneAngle() {return fReactionPlaneAngle;}
-    Int_t   HardScatters() {return fNHardScatters;}
-    Int_t   ProjectileParticipants()  {return fNProjectileParticipants;}
-    Int_t   TargetParticipants()      {return fNTargetParticipants;}
-    Int_t   ProjSpectatorsn()	{return fProjectileSpecn;}
-    Int_t   ProjSpectatorsp()	{return fProjectileSpecp;}
-    Int_t   TargSpectatorsn()	{return fTargetSpecn;	 }
-    Int_t   TargSpectatorsp()	{return fTargetSpecp;	 }
-    Int_t   NN()    {return fNNColl;}
-    Int_t   NNw()   {return fNNwColl;}
-    Int_t   NwN()   {return fNwNColl;}
-    Int_t   NwNw()  {return fNwNwColl;}
+    Float_t ImpactParameter() const  {return fImpactParameter;}
+    Float_t ReactionPlaneAngle() const {return fReactionPlaneAngle;}
+    Int_t   HardScatters() const {return fNHardScatters;}
+    Int_t   ProjectileParticipants() const {return fNProjectileParticipants;}
+    Int_t   TargetParticipants() const {return fNTargetParticipants;}
+    Int_t   ProjSpectatorsn() const {return fProjectileSpecn;}
+    Int_t   ProjSpectatorsp() const {return fProjectileSpecp;}
+    Int_t   TargSpectatorsn() const {return fTargetSpecn;	 }
+    Int_t   TargSpectatorsp() const {return fTargetSpecp;	 }
+    Int_t   NN() const  {return fNNColl;}
+    Int_t   NNw() const {return fNNwColl;}
+    Int_t   NwN() const {return fNwNColl;}
+    Int_t   NwNw() const {return fNwNwColl;}
     // Setters
     void SetImpactParameter(Float_t b)     {fImpactParameter=b;}
     void SetReactionPlaneAngle(Float_t phi)     {fReactionPlaneAngle = phi;}

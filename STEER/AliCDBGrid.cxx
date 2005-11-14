@@ -32,6 +32,7 @@
 #include <TRegexp.h>
 
 #include "AliLog.h"
+#include "AliCDBEntry.h"
 #include "AliCDBGrid.h"
 
 

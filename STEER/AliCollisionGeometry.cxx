@@ -14,6 +14,12 @@
  **************************************************************************/
 
 /* $Id$ */
+//-------------------------------------------------------------------------
+//                          Class AliCollisionGeometry
+//   This is a class to handle the collison geometry defined by
+//   the generator
+//   Author: A.Morsch Andreas.Morsch@cern.ch
+//-------------------------------------------------------------------------
 
 
 #include "AliCollisionGeometry.h"

@@ -18,6 +18,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.85  2005/09/27 16:08:08  hristov
+ * New version of CDB storage framework (A.Colla)
+ *
  * Revision 1.84  2005/09/21 10:02:47  kharlov
  * Reading calibration from CDB (Boris Polichtchouk)
  *
@@ -87,6 +90,7 @@
 #include "AliPHOSCalibrationDB.h"
 #include "AliCDBManager.h"
 #include "AliCDBStorage.h"
+#include "AliCDBEntry.h"
 
 ClassImp(AliPHOSClusterizerv1)
   

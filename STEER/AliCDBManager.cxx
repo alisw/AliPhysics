@@ -12,6 +12,11 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
+//-------------------------------------------------------------------------
+//   Implementation of AliCDBManager and AliCDBParam classe
+//   Author: Alberto Colla 
+//   e-mail: Alberto.Colla@cern.ch
+//-------------------------------------------------------------------------
 
 #include "AliCDBManager.h"
 #include "AliCDBStorage.h"
@@ -19,8 +24,9 @@
 #include "AliCDBDump.h"
 #include "AliCDBLocal.h"
 #include "AliCDBGrid.h"
+//#include "AliCDBEntry.h"
 
-#include <TObjString.h>
+//#include <TObjString.h>
 #include <TSystem.h>
 
 ClassImp(AliCDBParam)
@@ -103,7 +109,7 @@ void AliCDBManager::RegisterFactory(AliCDBStorageFactory* factory) {
 }
 
 //_____________________________________________________________________________
-Bool_t AliCDBManager::HasStorage(const char* dbString) {
+Bool_t AliCDBManager::HasStorage(const char* dbString) const {
 // check if dbString is a URI valid for one of the registered factories 
 
 	TIter iter(&fFactories);
@@ -120,7 +126,7 @@ Bool_t AliCDBManager::HasStorage(const char* dbString) {
 }
 
 //_____________________________________________________________________________
-AliCDBParam* AliCDBManager::CreateParameter(const char* dbString) {
+AliCDBParam* AliCDBManager::CreateParameter(const char* dbString) const {
 // create AliCDBParam object from URI string
 
 	TIter iter(&fFactories);

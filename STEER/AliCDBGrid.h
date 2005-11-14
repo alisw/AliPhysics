@@ -19,8 +19,8 @@ class AliCDBGrid: public AliCDBStorage {
 
 public:
 		  
-	virtual Bool_t IsReadOnly() {return kFALSE;};
-	virtual Bool_t HasSubVersion() {return kFALSE;};
+	virtual Bool_t IsReadOnly() const {return kFALSE;};
+	virtual Bool_t HasSubVersion() const {return kFALSE;};
   
 protected:
 

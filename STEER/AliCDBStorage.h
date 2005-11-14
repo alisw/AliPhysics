@@ -70,8 +70,8 @@ public:
 	Bool_t Put(AliCDBEntry* entry);
 
 
-	virtual Bool_t IsReadOnly() = 0;
-	virtual Bool_t HasSubVersion() = 0;
+	virtual Bool_t IsReadOnly() const = 0;
+	virtual Bool_t HasSubVersion() const = 0;
 
 protected:
 		

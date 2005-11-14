@@ -15,7 +15,6 @@
 
 /* $Id$ */
 
-#include "TBrowser.h"
 #include "TFile.h"
 #include "TObjArray.h"
 #include "TTree.h"
@@ -219,7 +218,7 @@ void TTreeSRedirector::Close(){
 
 //-------------------------------------------------------------
 TTreeDataElement:: TTreeDataElement(Char_t type) :
-  fName(),
+  TNamed(),
   fType(type),
   fDType(0),
   fClass(0),
@@ -231,7 +230,7 @@ TTreeDataElement:: TTreeDataElement(Char_t type) :
 }
 
 TTreeDataElement:: TTreeDataElement(TDataType* type) :
-  fName(),
+  TNamed(),
   fType(0),
   fDType(type),
   fClass(0),
@@ -243,7 +242,7 @@ TTreeDataElement:: TTreeDataElement(TDataType* type) :
 }
 
 TTreeDataElement:: TTreeDataElement(TClass* cl) :
-  fName(),
+  TNamed(),
   fType(0),
   fDType(0),
   fClass(cl),

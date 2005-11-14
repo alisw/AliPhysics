@@ -46,6 +46,7 @@ AliESDHLTtrack::AliESDHLTtrack() :
   fSizeY(0),
   fPID(0)
 {
+  // Default constructor
   fRowRange[0] = fRowRange[1] = 0;
   fFirstPoint[0] = fFirstPoint[1] = fFirstPoint[2] = 0;
   fLastPoint[0] = fLastPoint[1] = fLastPoint[2] = 0;
@@ -59,6 +60,7 @@ Double_t AliESDHLTtrack::GetP() const
 
 Double_t AliESDHLTtrack::GetPseudoRapidity() const
 {
+  // Calculates the pseudorapidity
   return 0.5 * TMath::Log((GetP() + GetPz()) / (GetP() - GetPz()));
 }
 
