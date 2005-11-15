@@ -20,14 +20,8 @@
 //-----------------------------------------------------------------
 
 
-#include <stdlib.h>
-
 //ROOT
 #include <Riostream.h>
-#include <TROOT.h>
-#include <TObject.h>
-#include <TSystem.h>
-#include <TObject.h>
 #include <TMath.h>
 #include <TLorentzVector.h>
 
@@ -38,6 +32,7 @@ ClassImp(AliBalance)
 //----------------------------------------//
 AliBalance::AliBalance()
 {
+  // Default constructor
   for(Int_t i = 0; i < MAXIMUM_NUMBER_OF_STEPS; i++)
     {
       fNpp[i] = .0;
@@ -48,9 +43,9 @@ AliBalance::AliBalance()
     } 
   fNp = 0.0;
   fNn = 0.0;
-  fP2_Start = 0.0;
-  fP2_Stop = 0.0;
-  fP2_Step = 0.0; 
+  fP2Start = 0.0;
+  fP2Stop = 0.0;
+  fP2Step = 0.0; 
   fAnalysisType = 0;
   fNumberOfBins = 0;
   fNtrack = 0;
@@ -58,31 +53,50 @@ AliBalance::AliBalance()
 }
 
 //----------------------------------------//
-AliBalance::AliBalance(Double_t P2_Start, Double_t P2_Stop, Int_t P2_bins)
+AliBalance::AliBalance(Double_t p2Start, Double_t p2Stop, Int_t p2Bins)
 {
-  this->fP2_Start = P2_Start;
-  this->fP2_Stop = P2_Stop;
-  this->fNumberOfBins = P2_bins;
-  this->fP2_Step = fabs(fP2_Start - fP2_Stop) / (Double_t)fNumberOfBins;
+  // Constructor
+  for(Int_t i = 0; i < MAXIMUM_NUMBER_OF_STEPS; i++)
+    {
+      fNpp[i] = .0;
+      fNnn[i] = .0;
+      fNpn[i] = .0;
+      fB[i] = 0.0;
+      ferror[i] = 0.0;
+    } 
+  fNp = 0.0;
+  fNn = 0.0;
+  fAnalysisType = 0;
+  fNtrack = 0;
+  fAnalyzedEvents = 0;
+
+  fP2Start = p2Start;
+  fP2Stop = p2Stop;
+  fNumberOfBins = p2Bins;
+  fP2Step = TMath::Abs(fP2Start - fP2Stop) / (Double_t)fNumberOfBins;
 }
 
 //----------------------------------------//
 AliBalance::~AliBalance()
 {
+  // Destructor
 }
 
 //----------------------------------------//
 void AliBalance::SetNumberOfBins(Int_t ibins)
 {
-  this->fNumberOfBins = ibins ;
+  // Sets the number of bins for the analyzed interval
+  fNumberOfBins = ibins ;
 }
 
 //----------------------------------------//
-void AliBalance::SetInterval(Double_t P2_Start, Double_t P2_Stop)
+void AliBalance::SetInterval(Double_t p2Start, Double_t p2Stop)
 {
-  this->fP2_Start = P2_Start;
-  this->fP2_Stop = P2_Stop;
-  this->fP2_Step = fabs(P2_Start - P2_Stop) / (Double_t)fNumberOfBins;
+  // Sets the analyzed interval. 
+  // The analysis variable is set by SetAnalysisType
+  fP2Start = p2Start;
+  fP2Stop = p2Stop;
+  fP2Step = TMath::Abs(p2Start - p2Stop) / (Double_t)fNumberOfBins;
 }
 
 //----------------------------------------//
@@ -143,6 +157,9 @@ void AliBalance::SetAnalysisType(Int_t iType)
 //----------------------------------------//
 void AliBalance::SetParticles(TLorentzVector *P, Double_t *charge, Int_t dim)
 {
+  // Sets a new particle with given 4-momentum and charge.
+  // dim is the size of the array of charges and corresponds
+  // to the number of selected tracks.
   this->fV = P;
   this->fCharge = charge;
   fNtrack = dim;
@@ -152,6 +169,7 @@ void AliBalance::SetParticles(TLorentzVector *P, Double_t *charge, Int_t dim)
 //----------------------------------------//
 void AliBalance::CalculateBalance()
 {
+  // Calculates the balance function
   fAnalyzedEvents++;
   Int_t i = 0 , j = 0;
   Int_t ibin = 0;
@@ -174,7 +192,7 @@ void AliBalance::CalculateBalance()
 	      Double_t rap1 = 0.5*log((fV[i].E() - fV[i].Pz())/(fV[i].E() + fV[i].Pz())); 
 	      Double_t rap2 = 0.5*log((fV[j].E() - fV[j].Pz())/(fV[j].E() + fV[j].Pz())); 
 	      Double_t dy = TMath::Abs(rap1 - rap2);
-	      ibin = Int_t(dy/fP2_Step);
+	      ibin = Int_t(dy/fP2Step);
 	      if((fCharge[i] > 0)&&(fCharge[j] > 0))
 		fNpp[ibin] += 1.;
 	      if((fCharge[i] < 0)&&(fCharge[j] < 0))
@@ -192,12 +210,12 @@ void AliBalance::CalculateBalance()
 	{
 	  for(j = 0; j < i; j++)
 	    {
-	      Double_t P1 = sqrt(pow(fV[i].Px(),2) + pow(fV[i].Py(),2) + pow(fV[i].Pz(),2)); 
-	      Double_t P2 = sqrt(pow(fV[j].Px(),2) + pow(fV[j].Py(),2) + pow(fV[j].Pz(),2));
-	      Double_t eta1 = 0.5*log((P1 - fV[i].Pz())/(P1 + fV[i].Pz())); 
-	      Double_t eta2 = 0.5*log((P2 - fV[j].Pz())/(P2 + fV[j].Pz())); 
+	      Double_t p1 = sqrt(pow(fV[i].Px(),2) + pow(fV[i].Py(),2) + pow(fV[i].Pz(),2)); 
+	      Double_t p2 = sqrt(pow(fV[j].Px(),2) + pow(fV[j].Py(),2) + pow(fV[j].Pz(),2));
+	      Double_t eta1 = 0.5*log((p1 - fV[i].Pz())/(p1 + fV[i].Pz())); 
+	      Double_t eta2 = 0.5*log((p2 - fV[j].Pz())/(p2 + fV[j].Pz())); 
 	      Double_t deta = TMath::Abs(eta1 - eta2);
-	      ibin = Int_t(deta/fP2_Step);
+	      ibin = Int_t(deta/fP2Step);
 	      if((fCharge[i] > 0)&&(fCharge[j] > 0))
 		fNpp[ibin] += 1.;
 	      if((fCharge[i] < 0)&&(fCharge[j] < 0))
@@ -215,16 +233,16 @@ void AliBalance::CalculateBalance()
 	{
 	  for(j = 0; j < i; j++)
 	    {
-	      Double_t ETot = fV[i].E() + fV[j].E();
-	      Double_t PxTot = fV[i].Px() + fV[j].Px();
-	      Double_t PyTot = fV[i].Py() + fV[j].Py();
-	      Double_t PzTot = fV[i].Pz() + fV[j].Pz();
-	      Double_t Q0Tot = fV[i].E() - fV[j].E();
-	      Double_t QzTot = fV[i].Pz() - fV[j].Pz();
-	      Double_t Snn = pow(ETot,2) - pow(PxTot,2) - pow(PyTot,2) - pow(PzTot,2);
-	      Double_t PtTot = sqrt( pow(PxTot,2) + pow(PyTot,2));
-	      Double_t Qlong = TMath::Abs(ETot*QzTot - PzTot*Q0Tot)/sqrt(Snn + pow(PtTot,2));
-	      ibin = Int_t(Qlong/fP2_Step);
+	      Double_t eTot = fV[i].E() + fV[j].E();
+	      Double_t pxTot = fV[i].Px() + fV[j].Px();
+	      Double_t pyTot = fV[i].Py() + fV[j].Py();
+	      Double_t pzTot = fV[i].Pz() + fV[j].Pz();
+	      Double_t q0Tot = fV[i].E() - fV[j].E();
+	      Double_t qzTot = fV[i].Pz() - fV[j].Pz();
+	      Double_t snn = pow(eTot,2) - pow(pxTot,2) - pow(pyTot,2) - pow(pzTot,2);
+	      Double_t ptTot = sqrt( pow(pxTot,2) + pow(pyTot,2));
+	      Double_t qLong = TMath::Abs(eTot*qzTot - pzTot*q0Tot)/sqrt(snn + pow(ptTot,2));
+	      ibin = Int_t(qLong/fP2Step);
 	      //cout<<ibin<<endl;
 	      if((fCharge[i] > 0)&&(fCharge[j] > 0))
 		fNpp[ibin] += 1.;
@@ -243,16 +261,16 @@ void AliBalance::CalculateBalance()
 	{
 	  for(j = 0; j < i; j++)
 	    {
-	      Double_t ETot = fV[i].E() + fV[j].E();
-	      Double_t PxTot = fV[i].Px() + fV[j].Px();
-	      Double_t PyTot = fV[i].Py() + fV[j].Py();
-	      Double_t PzTot = fV[i].Pz() + fV[j].Pz();
-	      Double_t QxTot = fV[i].Px() - fV[j].Px();
-	      Double_t QyTot = fV[i].Py() - fV[j].Py();
-	      Double_t Snn = pow(ETot,2) - pow(PxTot,2) - pow(PyTot,2) - pow(PzTot,2);
-	      Double_t PtTot = sqrt( pow(PxTot,2) + pow(PyTot,2));
-	      Double_t Qout = sqrt(Snn/(Snn + pow(PtTot,2))) * TMath::Abs(PxTot*QxTot + PyTot*QyTot)/PtTot;
-	      ibin = Int_t(Qout/fP2_Step);
+	      Double_t eTot = fV[i].E() + fV[j].E();
+	      Double_t pxTot = fV[i].Px() + fV[j].Px();
+	      Double_t pyTot = fV[i].Py() + fV[j].Py();
+	      Double_t pzTot = fV[i].Pz() + fV[j].Pz();
+	      Double_t qxTot = fV[i].Px() - fV[j].Px();
+	      Double_t qyTot = fV[i].Py() - fV[j].Py();
+	      Double_t snn = pow(eTot,2) - pow(pxTot,2) - pow(pyTot,2) - pow(pzTot,2);
+	      Double_t ptTot = sqrt( pow(pxTot,2) + pow(pyTot,2));
+	      Double_t qOut = sqrt(snn/(snn + pow(ptTot,2))) * TMath::Abs(pxTot*qxTot + pyTot*qyTot)/ptTot;
+	      ibin = Int_t(qOut/fP2Step);
 	      //cout<<ibin<<endl;
 	      if((fCharge[i] > 0)&&(fCharge[j] > 0))
 		fNpp[ibin] += 1.;
@@ -271,13 +289,13 @@ void AliBalance::CalculateBalance()
 	{
 	  for(j = 0; j < i; j++)
 	    {
-	      Double_t PxTot = fV[i].Px() + fV[j].Px();
-	      Double_t PyTot = fV[i].Py() + fV[j].Py();
-	      Double_t QxTot = fV[i].Px() - fV[j].Px();
-	      Double_t QyTot = fV[i].Py() - fV[j].Py();
-	      Double_t PtTot = sqrt( pow(PxTot,2) + pow(PyTot,2));
-	      Double_t Qside = TMath::Abs(PxTot*QyTot - PyTot*QxTot)/PtTot;
-	      ibin = Int_t(Qside/fP2_Step);
+	      Double_t pxTot = fV[i].Px() + fV[j].Px();
+	      Double_t pyTot = fV[i].Py() + fV[j].Py();
+	      Double_t qxTot = fV[i].Px() - fV[j].Px();
+	      Double_t qyTot = fV[i].Py() - fV[j].Py();
+	      Double_t ptTot = sqrt( pow(pxTot,2) + pow(pyTot,2));
+	      Double_t qSide = TMath::Abs(pxTot*qyTot - pyTot*qxTot)/ptTot;
+	      ibin = Int_t(qSide/fP2Step);
 	      //cout<<ibin<<endl;
 	      if((fCharge[i] > 0)&&(fCharge[j] > 0))
 		fNpp[ibin] += 1.;
@@ -296,12 +314,12 @@ void AliBalance::CalculateBalance()
 	{
 	  for(j = 0; j < i; j++)
 	    {
-	      Double_t Q0Tot = fV[i].E() - fV[j].E();
-	      Double_t QxTot = fV[i].Px() - fV[j].Px();
-	      Double_t QyTot = fV[i].Py() - fV[j].Py();
-	      Double_t QzTot = fV[i].Pz() - fV[j].Pz();
-	      Double_t Qinv = sqrt(TMath::Abs(-pow(Q0Tot,2) +pow(QxTot,2) +pow(QyTot,2) +pow(QzTot,2)));
-	      ibin = Int_t(Qinv/fP2_Step);
+	      Double_t q0Tot = fV[i].E() - fV[j].E();
+	      Double_t qxTot = fV[i].Px() - fV[j].Px();
+	      Double_t qyTot = fV[i].Py() - fV[j].Py();
+	      Double_t qzTot = fV[i].Pz() - fV[j].Pz();
+	      Double_t qInv = sqrt(TMath::Abs(-pow(q0Tot,2) +pow(qxTot,2) +pow(qyTot,2) +pow(qzTot,2)));
+	      ibin = Int_t(qInv/fP2Step);
 	      //cout<<ibin<<endl;
 	      if((fCharge[i] > 0)&&(fCharge[j] > 0))
 		fNpp[ibin] += 1.;
@@ -323,7 +341,7 @@ void AliBalance::CalculateBalance()
 	      Double_t phi1 = TMath::ATan(fV[i].Py()/fV[i].Px())*180.0/TMath::Pi();
 	      Double_t phi2 = TMath::ATan(fV[j].Py()/fV[j].Px())*180.0/TMath::Pi();
 	      Double_t dphi = TMath::Abs(phi1 - phi2);
-	      ibin = Int_t(dphi/fP2_Step);
+	      ibin = Int_t(dphi/fP2Step);
 	      if((fCharge[i] > 0)&&(fCharge[j] > 0))
 		fNpp[ibin] += 1.;
 	      if((fCharge[i] < 0)&&(fCharge[j] < 0))
@@ -340,7 +358,8 @@ void AliBalance::CalculateBalance()
 //----------------------------------------//
 Double_t AliBalance::GetBalance(Int_t p2)
 {
-  fB[p2] = 0.5*(((fNpn[p2] - 2.0*fNnn[p2])/fNn) + ((fNpn[p2] - 2.0*fNpp[p2])/fNp))/fP2_Step;
+  // Returns the value of the balance function in bin p2
+  fB[p2] = 0.5*(((fNpn[p2] - 2.0*fNnn[p2])/fNn) + ((fNpn[p2] - 2.0*fNpp[p2])/fNp))/fP2Step;
 
   return fB[p2];
 }
@@ -348,7 +367,8 @@ Double_t AliBalance::GetBalance(Int_t p2)
 //----------------------------------------//
 Double_t AliBalance::GetError(Int_t p2)
 {
-  ferror[p2] = sqrt( Double_t(fNpp[p2])/(Double_t(fNp)*Double_t(fNp)) + Double_t(fNnn[p2])/(Double_t(fNn)*Double_t(fNn)) + Double_t(fNpn[p2])*pow((0.5/Double_t(fNp) + 0.5/Double_t(fNn)),2))/fP2_Step;
+  // Returns the error on the BF value for bin p2
+  ferror[p2] = sqrt( Double_t(fNpp[p2])/(Double_t(fNp)*Double_t(fNp)) + Double_t(fNnn[p2])/(Double_t(fNn)*Double_t(fNn)) + Double_t(fNpn[p2])*pow((0.5/Double_t(fNp) + 0.5/Double_t(fNn)),2))/fP2Step;
 
   return ferror[p2];
 }
@@ -356,17 +376,18 @@ Double_t AliBalance::GetError(Int_t p2)
 //----------------------------------------//
 void AliBalance::PrintResults()
 {
+  // Prints the results
   Double_t x[MAXIMUM_NUMBER_OF_STEPS];
   Double_t fSumXi = 0.0, fSumBi = 0.0, fSumBiXi = 0.0;
   Double_t fSumBiXi2 = 0.0, fSumBi2Xi2 = 0.0;
   Double_t fSumDeltaBi2 = 0.0, fSumXi2DeltaBi2 = 0.0;
-  Double_t delta_bal_P2 = 0.0, Integral = 0.0;
-  Double_t DeltaErrorNew = 0.0;
+  Double_t deltaBalP2 = 0.0, integral = 0.0;
+  Double_t deltaErrorNew = 0.0;
 
   cout<<"=================================================="<<endl;
   for(Int_t i = 0; i < fNumberOfBins; i++)
     { 
-      x[i] = fP2_Start + fP2_Step*i + fP2_Step/2 ;
+      x[i] = fP2Start + fP2Step*i + fP2Step/2 ;
       cout<<"B: "<<fB[i]<<"\t Error: "<<ferror[i]<<"\t bin: "<<x[i]<<endl;
     } 
   cout<<"=================================================="<<endl;
@@ -380,22 +401,22 @@ void AliBalance::PrintResults()
       fSumDeltaBi2 +=  pow(ferror[i],2) ;
       fSumXi2DeltaBi2 += pow(x[i],2) * pow(ferror[i],2) ;
       
-      delta_bal_P2 += fP2_Step*pow(ferror[i],2) ;
-      Integral += fP2_Step*fB[i] ;
+      deltaBalP2 += fP2Step*pow(ferror[i],2) ;
+      integral += fP2Step*fB[i] ;
     }
   for(Int_t i = 1; i < fNumberOfBins; i++)
     {
-      DeltaErrorNew += ferror[i]*(x[i]*fSumBi - fSumBiXi)/pow(fSumBi,2);
+      deltaErrorNew += ferror[i]*(x[i]*fSumBi - fSumBiXi)/pow(fSumBi,2);
     }
-  Double_t IntegralError = sqrt(delta_bal_P2) ;
+  Double_t integralError = sqrt(deltaBalP2) ;
   
-  Double_t Delta = fSumBiXi / fSumBi ;
-  Double_t DeltaError = (fSumBiXi / fSumBi) * sqrt(pow((sqrt(fSumXi2DeltaBi2)/fSumBiXi),2) + pow((fSumDeltaBi2/fSumBi),2) ) ;
+  Double_t delta = fSumBiXi / fSumBi ;
+  Double_t deltaError = (fSumBiXi / fSumBi) * sqrt(pow((sqrt(fSumXi2DeltaBi2)/fSumBiXi),2) + pow((fSumDeltaBi2/fSumBi),2) ) ;
  
   cout<<"Analyzed events: "<<fAnalyzedEvents<<endl;
-  cout<<"Width: "<<Delta<<"\t Error: "<<DeltaError<<endl;
-  cout<<"New error: "<<DeltaErrorNew<<endl;
-  cout<<"Interval: "<<Integral<<"\t Error: "<<IntegralError<<endl;
+  cout<<"Width: "<<delta<<"\t Error: "<<deltaError<<endl;
+  cout<<"New error: "<<deltaErrorNew<<endl;
+  cout<<"Interval: "<<integral<<"\t Error: "<<integralError<<endl;
   cout<<"=================================================="<<endl;
 }
   
