@@ -14,11 +14,10 @@
  **************************************************************************/
 
 //-----------------------------------------------------------------
-//   Implementation of the alignment object class through
-//   1) the abstract class AliAlignObj
-//   2) two derived concrete representation of alignment object class:
-//      - AliAlignObjAngles
-//      - AliAlignObjMatrix
+//   Implementation of the alignment object class through the abstract
+//  class AliAlignObj. From it two derived concrete representation of
+//  alignment object class (AliAlignObjAngles, AliAlignObjMatrix) are
+//  derived in separate files.
 //-----------------------------------------------------------------
 /*****************************************************************************
  * AliAlignObjAngles: derived alignment class storing alignment information  *
@@ -65,6 +64,28 @@ AliAlignObj &AliAlignObj::operator =(const AliAlignObj& theAlignObj)
 AliAlignObj::~AliAlignObj()
 {
   // dummy destructor
+}
+
+//_____________________________________________________________________________
+void AliAlignObj::SetVolUID(ELayerID detId, Int_t modId)
+{
+  // From detector name and module number (according to detector numbering)
+  // build fVolUID, unique numerical identity of that volume inside ALICE
+  // fVolUID is 16 bits, first 5 reserved for detID (32 possible values),
+  // remaining 11 for module ID inside det (2048 possible values).
+  //
+  fVolUID = LayerToVolUID(detId,modId);
+}
+
+//_____________________________________________________________________________
+void AliAlignObj::GetVolUID(ELayerID &layerId, Int_t &modId) const
+{
+  // From detector name and module number (according to detector numbering)
+  // build fVolUID, unique numerical identity of that volume inside ALICE
+  // fVolUID is 16 bits, first 5 reserved for detID (32 possible values),
+  // remaining 11 for module ID inside det (2048 possible values).
+  //
+  layerId = VolUIDToLayer(fVolUID,modId);
 }
 
 //_____________________________________________________________________________
@@ -117,249 +138,47 @@ void AliAlignObj::Print(Option_t *) const
   TGeoHMatrix m;
   GetMatrix(m);
   const Double_t *rot = m.GetRotationMatrix();
-  printf("Volume=%s ID=%u\n", GetVolPath(),GetVolUID());
+//   printf("Volume=%s ID=%u\n", GetVolPath(),GetVolUID());
+  Int_t IDs[2];
+  //  GetVolUID(IDs);
+  printf("Volume=%s LayerID=%d ModuleID=%d\n", GetVolPath(),IDs[0],IDs[1]);
   printf("%12.6f%12.6f%12.6f    Tx = %12.6f    Psi   = %12.6f\n", rot[0], rot[1], rot[2], tr[0], angles[0]);
   printf("%12.6f%12.6f%12.6f    Ty = %12.6f    Theta = %12.6f\n", rot[3], rot[4], rot[5], tr[1], angles[1]);
   printf("%12.6f%12.6f%12.6f    Tz = %12.6f    Phi   = %12.6f\n", rot[6], rot[7], rot[8], tr[2], angles[2]);
 
 }
 
-
-//=============================================================================
-
-ClassImp(AliAlignObjAngles)
-
 //_____________________________________________________________________________
-AliAlignObjAngles::AliAlignObjAngles() //: AliAlignObj()
+UShort_t AliAlignObj::LayerToVolUID(ELayerID layerId, Int_t modId)
 {
-  // default constructor
-  fTranslation[0]=fTranslation[1]=fTranslation[2]=0.;
-  fRotation[0]=fRotation[1]=fRotation[2]=0.;
-}
-
-//_____________________________________________________________________________
-AliAlignObjAngles::AliAlignObjAngles(const AliAlignObjAngles& theAlignObj) :
-  AliAlignObj(theAlignObj)
-{
-  // copy constructor
-  Double_t tr[3];
-  theAlignObj.GetTranslation(tr);
-  SetTranslation(tr[0],tr[1],tr[2]);
-  Double_t rot[3];
-  theAlignObj.GetAngles(rot);
-  SetRotation(rot[0],rot[1],rot[2]);
-}
-
-//_____________________________________________________________________________
-AliAlignObjAngles &AliAlignObjAngles::operator =(const AliAlignObjAngles& theAlignObj)
-{
-  // assignment operator
-  if(this==&theAlignObj) return *this;
-  ((AliAlignObj *)this)->operator=(theAlignObj);
-
-  Double_t tr[3];
-  theAlignObj.GetTranslation(tr);
-  SetTranslation(tr[0],tr[1],tr[2]);
-  Double_t rot[3];
-  theAlignObj.GetAngles(rot);
-  SetRotation(rot[0],rot[1],rot[2]);
-  return *this;
-}
-
-//_____________________________________________________________________________
-AliAlignObjAngles::~AliAlignObjAngles()
-{
-  // default destructor
-}
-
-//_____________________________________________________________________________
-void AliAlignObjAngles::SetTranslation(const TGeoMatrix& m)
-{
-  // Sets the translation parameters from an existing TGeoMatrix
-  if(m.IsTranslation()){
-    const Double_t* tr = m.GetTranslation();
-    fTranslation[0]=tr[0];  fTranslation[1]=tr[1]; fTranslation[2]=tr[2];
-  }else{
-//     AliWarning("Argument matrix is not a translation! Setting zero-translation.");
-    fTranslation[0] = fTranslation[1] = fTranslation[2] = 0.;
-  }
-}
-
-//_____________________________________________________________________________
-Bool_t AliAlignObjAngles::SetRotation(const TGeoMatrix& m)
-{
-  // Sets the rotation components from an existing TGeoMatrix
-  if(m.IsRotation()){
-    const Double_t* rot = m.GetRotationMatrix();
-    return MatrixToAngles(rot,fRotation);
-  }else{
-//     AliWarning("Argument matrix is not a rotation! Setting yaw-pitch-roll to zero.");
-    fRotation[0] = fRotation[1] = fRotation[2] = 0.;
-    return kTRUE;
-  }
-}
-
-//_____________________________________________________________________________
-void AliAlignObjAngles::SetMatrix(const TGeoMatrix& m)
-{
-  // Sets both the rotation and translation components from an
-  // existing TGeoMatrix
-  SetTranslation(m);
-  SetRotation(m);
-}
-
-//_____________________________________________________________________________
-void AliAlignObjAngles::GetPars(Double_t tr[], Double_t angles[]) const
-{
-  // Returns the translations and the rotation angles
-  GetTranslation(tr);
-  GetAngles(angles);
-}
-
-//_____________________________________________________________________________
-void AliAlignObjAngles::GetMatrix(TGeoHMatrix& m) const
-{
-  // Extracts the information in an existing TGeoHMatrix using the translations
-  // and the rotation parameters
-  m.SetTranslation(&fTranslation[0]);
-  Double_t rot[9];
-  AnglesToMatrix(fRotation,rot);
-  m.SetRotation(rot);
-}
-
-//=============================================================================
-
-ClassImp(AliAlignObjMatrix)
-
-//_____________________________________________________________________________
-AliAlignObjMatrix::AliAlignObjMatrix() : AliAlignObj()
-{
-  // Default constructor
-}
-
-AliAlignObjMatrix::AliAlignObjMatrix(const AliAlignObjMatrix& theAlignObj) :
-  AliAlignObj(theAlignObj)
-{
-  //copy constructor
+  // From detector (layer) name and module number (according to detector numbering)
+  // build fVolUID, unique numerical identity of that volume inside ALICE
+  // fVolUID is 16 bits, first 5 reserved for layerID (32 possible values),
+  // remaining 11 for module ID inside det (2048 possible values).
   //
-  Double_t tr[3];
-  theAlignObj.GetTranslation(tr);
-  SetTranslation(tr[0],tr[1],tr[2]);
-  Double_t rot[3];
-  theAlignObj.GetAngles(rot);
-  SetRotation(rot[0],rot[1],rot[2]);
+  return ((UShort_t(layerId) << 11) | UShort_t(modId));
 }
 
-AliAlignObjMatrix &AliAlignObjMatrix::operator =(const AliAlignObjMatrix& theAlignObj)
-{  
-  // assignment operator
+//_____________________________________________________________________________
+AliAlignObj::ELayerID AliAlignObj::VolUIDToLayer(UShort_t voluid, Int_t &modId)
+{
+  // From detector (layer) name and module number (according to detector numbering)
+  // build fVolUID, unique numerical identity of that volume inside ALICE
+  // fVolUID is 16 bits, first 5 reserved for layerID (32 possible values),
+  // remaining 11 for module ID inside det (2048 possible values).
   //
-  if(this==&theAlignObj) return *this;
-  ((AliAlignObj *)this)->operator=(theAlignObj);
-  Double_t tr[3];
-  theAlignObj.GetTranslation(tr);
-  SetTranslation(tr[0],tr[1],tr[2]);
-  Double_t rot[3];
-  theAlignObj.GetAngles(rot);
-  SetRotation(rot[0],rot[1],rot[2]);
-  return *this;
+  modId = voluid & 0x7ff;
+
+  return VolUIDToLayer(voluid);
 }
 
-AliAlignObjMatrix::~AliAlignObjMatrix()
+//_____________________________________________________________________________
+AliAlignObj::ELayerID AliAlignObj::VolUIDToLayer(UShort_t voluid)
 {
-  // Destructor
+  // From detector (layer) name and module number (according to detector numbering)
+  // build fVolUID, unique numerical identity of that volume inside ALICE
+  // fVolUID is 16 bits, first 5 reserved for layerID (32 possible values),
+  // remaining 11 for module ID inside det (2048 possible values).
   //
+  return ELayerID((voluid >> 11) & 0x1f);
 }
-
-//_____________________________________________________________________________
-void AliAlignObjMatrix::SetTranslation(Double_t x, Double_t y, Double_t z)
-{
-  // Sets the translation parameters
-  Double_t tr[3];
-  tr[0]=x; tr[1]=y; tr[2]=z;
-  fMatrix.SetTranslation(tr);
-}
-
-//_____________________________________________________________________________
-void AliAlignObjMatrix::SetTranslation(const TGeoMatrix& m)
-{
-  // Sets the translation parameters from an existing TGeoMatrix
-  const Double_t *tr = m.GetTranslation();
-  fMatrix.SetTranslation(tr);
-}
-
-//_____________________________________________________________________________
-void AliAlignObjMatrix::SetRotation(Double_t psi, Double_t theta, Double_t phi)
-{
-  // Sets the rotation parameters
-  Double_t angles[3] = {psi, theta, phi};
-  Double_t rot[9];
-  AnglesToMatrix(angles,rot);
-  fMatrix.SetRotation(rot);
-}
-
-//_____________________________________________________________________________
-Bool_t AliAlignObjMatrix::SetRotation(const TGeoMatrix& m)
-{
-  // Sets the rotation parameters from an existing TGeoMatrix
-  const Double_t* rot = m.GetRotationMatrix();
-  fMatrix.SetRotation(rot);
-  return kTRUE;
-}
-
-//_____________________________________________________________________________
-void AliAlignObjMatrix::SetMatrix(const TGeoMatrix& m)
-{
-  // Set rotation matrix and translation
-  // using TGeoMatrix
-  SetTranslation(m);
-  SetRotation(m);
-}
-
-//_____________________________________________________________________________
-void AliAlignObjMatrix::SetPars(Double_t x, Double_t y, Double_t z,
-		       Double_t psi, Double_t theta, Double_t phi)
-{
-  // Set rotation matrix and translation
-  // using 3 angles and 3 translations
-  SetTranslation(x,y,z);
-  SetRotation(psi,theta,phi);
-}
-
-//_____________________________________________________________________________
-void AliAlignObjMatrix::GetTranslation(Double_t *tr) const
-{
-  // Get Translation from TGeoMatrix
-  const Double_t* translation = fMatrix.GetTranslation();
-  tr[0] = translation[0];
-  tr[1] = translation[1];
-  tr[2] = translation[2];
-}
-
-//_____________________________________________________________________________
-Bool_t AliAlignObjMatrix::GetAngles(Double_t *angles) const
-{
-  // Get rotation angles from the TGeoHMatrix
-  const Double_t* rot = fMatrix.GetRotationMatrix();
-  return MatrixToAngles(rot,angles);
-}
-
-//_____________________________________________________________________________
-void AliAlignObjMatrix::GetPars(Double_t tr[], Double_t angles[]) const
-{
-  // Gets the translations and the rotation angles
-  GetTranslation(tr);
-  GetAngles(angles);
-}
-
-//_____________________________________________________________________________
-void AliAlignObjMatrix::GetMatrix(TGeoHMatrix& m) const
-{
-  // Extracts the translations and the rotation parameters
-  // in an existing TGeoHMatrix
-  const Double_t *tr = fMatrix.GetTranslation();
-  m.SetTranslation(tr);
-  const Double_t *rot = fMatrix.GetRotationMatrix();
-  m.SetRotation(rot);
-}
-
