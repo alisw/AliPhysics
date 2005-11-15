@@ -22,20 +22,10 @@
 
 
 //ROOT
-#include <TROOT.h>
-#include <TObject.h>
-#include <TSystem.h>
-#include <TObject.h>
-
 #include <TPaveText.h>
 #include <TText.h>
 #include <TLine.h>
 #include <TCanvas.h>
-
-#include <TControlBar.h>
-#include <TRootControlBar.h>
-
-
 
 #include "AliLog.h"
 #include "AliESD.h"
@@ -47,17 +37,20 @@ ClassImp(AliAnalysisEventCuts)
 //----------------------------------------//
 AliAnalysisEventCuts::AliAnalysisEventCuts()
 {
+  //Default constructor which calls the Reset method.
   Reset();
 }
 
 //----------------------------------------//
 AliAnalysisEventCuts::~AliAnalysisEventCuts()
 {
+  //Defaut destructor.
 }
 
 //----------------------------------------//
 void AliAnalysisEventCuts::Reset()
 {
+  //Sets dummy values to every private member.
   fVxMin = -1000.0;
   fVxMax = 1000.0; 
   fVyMin = -1000.0;
@@ -83,6 +76,7 @@ void AliAnalysisEventCuts::Reset()
 //----------------------------------------//
 void AliAnalysisEventCuts::SetPrimaryVertexXRange(Float_t r1, Float_t r2)
 {
+  //Sets the primary vertex x range.
   fVxMin = r1;
   fVxMax = r2; 
   fFlagVx = 1;  
@@ -91,6 +85,7 @@ void AliAnalysisEventCuts::SetPrimaryVertexXRange(Float_t r1, Float_t r2)
 //----------------------------------------//
 void AliAnalysisEventCuts::SetPrimaryVertexYRange(Float_t r1, Float_t r2)
 {
+  //Sets the primary vertex y range.
   fVyMin = r1;
   fVyMax = r2; 
   fFlagVy = 1;
@@ -99,6 +94,7 @@ void AliAnalysisEventCuts::SetPrimaryVertexYRange(Float_t r1, Float_t r2)
 //----------------------------------------//
 void AliAnalysisEventCuts::SetPrimaryVertexZRange(Float_t r1, Float_t r2)
 {
+  //Sets the primary vertex z range.
   fVzMin = r1;
   fVzMax = r2; 
   fFlagVz = 1;
@@ -107,6 +103,7 @@ void AliAnalysisEventCuts::SetPrimaryVertexZRange(Float_t r1, Float_t r2)
 //----------------------------------------//
 void AliAnalysisEventCuts::SetMultiplicityRange(Int_t n1, Int_t n2)
 {
+  //Sets the multiplicity range.
   fMultMin = n1;
   fMultMax = n2; 
   fFlagMult = 1;
@@ -116,6 +113,7 @@ void AliAnalysisEventCuts::SetMultiplicityRange(Int_t n1, Int_t n2)
 //----------------------------------------//
 Bool_t AliAnalysisEventCuts::IsAccepted(AliESD *esd)
 {
+  //Returns true if the events is accepted otherwise false.
   fTotalEvents++;
   if((esd->GetNumberOfTracks() < fMultMin) || (esd->GetNumberOfTracks() > fMultMax))
     {
@@ -151,13 +149,14 @@ Bool_t AliAnalysisEventCuts::IsAccepted(AliESD *esd)
 //----------------------------------------//
 TPaveText *AliAnalysisEventCuts::GetEventCuts()
 {
+  //Shows a TPaveText with all the event cut stats.
   TCanvas *ccuts = new TCanvas("ccuts","Event cuts",10,10,400,400);
   ccuts->SetFillColor(10);
   ccuts->SetHighLightColor(10);
 
   TPaveText *pave = new TPaveText(0.01,0.01,0.98,0.98);
   pave->SetFillColor(5);
-  Char_t CutName[256];
+  Char_t cutName[256];
  
   TLine *l1 = pave->AddLine(0,0.78,1,0.78);
   l1->SetLineWidth(2);
@@ -168,58 +167,58 @@ TPaveText *AliAnalysisEventCuts::GetEventCuts()
   TLine *l4 = pave->AddLine(0,0.18,1,0.18);
   l4->SetLineWidth(2);
  
-  sprintf(CutName,"Total number of events: %d",fTotalEvents);
-  TText *t1 = pave->AddText(CutName);
+  sprintf(cutName,"Total number of events: %d",fTotalEvents);
+  TText *t1 = pave->AddText(cutName);
   t1->SetTextColor(4);
   t1->SetTextSize(0.04);
   t1->SetTextAlign(11);
  
-  sprintf(CutName,"Total number of accepted events: %d",fAcceptedEvents);
-  t1 = pave->AddText(CutName);
+  sprintf(cutName,"Total number of accepted events: %d",fAcceptedEvents);
+  t1 = pave->AddText(cutName);
   t1->SetTextColor(4);
   t1->SetTextSize(0.04);
   t1->SetTextAlign(11);
  
-  sprintf(CutName,"Multiplicity range: [%d,%d]",fMultMin,fMultMax);
-  t1 = pave->AddText(CutName);
+  sprintf(cutName,"Multiplicity range: [%d,%d]",fMultMin,fMultMax);
+  t1 = pave->AddText(cutName);
   t1->SetTextColor(4);
   t1->SetTextSize(0.04);
   t1->SetTextAlign(11);
-  sprintf(CutName,"Events rejected: %d",fMult);
-  t1 = pave->AddText(CutName);
-  t1->SetTextColor(4);
-  t1->SetTextSize(0.04);
-  t1->SetTextAlign(11);
- 
-  sprintf(CutName,"Vx range: [%f,%f]",fVxMin,fVxMax);
-  t1 = pave->AddText(CutName);
-  t1->SetTextColor(4);
-  t1->SetTextSize(0.04);
-  t1->SetTextAlign(11);
-  sprintf(CutName,"Events rejected: %d",fVx);
-  t1 = pave->AddText(CutName);
+  sprintf(cutName,"Events rejected: %d",fMult);
+  t1 = pave->AddText(cutName);
   t1->SetTextColor(4);
   t1->SetTextSize(0.04);
   t1->SetTextAlign(11);
  
-  sprintf(CutName,"Vy range: [%f,%f]",fVyMin,fVyMax);
-  t1 = pave->AddText(CutName);
+  sprintf(cutName,"Vx range: [%f,%f]",fVxMin,fVxMax);
+  t1 = pave->AddText(cutName);
   t1->SetTextColor(4);
   t1->SetTextSize(0.04);
   t1->SetTextAlign(11);
-  sprintf(CutName,"Events rejected: %d",fVy);
-  t1 = pave->AddText(CutName);
+  sprintf(cutName,"Events rejected: %d",fVx);
+  t1 = pave->AddText(cutName);
   t1->SetTextColor(4);
   t1->SetTextSize(0.04);
   t1->SetTextAlign(11);
  
-  sprintf(CutName,"Vz range: [%f,%f]",fVzMin,fVzMax);
-  t1 = pave->AddText(CutName);
+  sprintf(cutName,"Vy range: [%f,%f]",fVyMin,fVyMax);
+  t1 = pave->AddText(cutName);
   t1->SetTextColor(4);
   t1->SetTextSize(0.04);
   t1->SetTextAlign(11);
-  sprintf(CutName,"Events rejected: %d",fVz);
-  t1 = pave->AddText(CutName);
+  sprintf(cutName,"Events rejected: %d",fVy);
+  t1 = pave->AddText(cutName);
+  t1->SetTextColor(4);
+  t1->SetTextSize(0.04);
+  t1->SetTextAlign(11);
+ 
+  sprintf(cutName,"Vz range: [%f,%f]",fVzMin,fVzMax);
+  t1 = pave->AddText(cutName);
+  t1->SetTextColor(4);
+  t1->SetTextSize(0.04);
+  t1->SetTextAlign(11);
+  sprintf(cutName,"Events rejected: %d",fVz);
+  t1 = pave->AddText(cutName);
   t1->SetTextColor(4);
   t1->SetTextSize(0.04);
   t1->SetTextAlign(11);
@@ -230,6 +229,9 @@ TPaveText *AliAnalysisEventCuts::GetEventCuts()
 //----------------------------------------//
 void AliAnalysisEventCuts::GetEventStats()
 {
+  //Returns the total event stats.
+  //fTotalEvents is the total number of events.
+  //fAcceptedEvents is the total number of accepted events.  
   AliInfo(Form("Total number of events: %d",fTotalEvents));
   AliInfo(Form("Total number of accepted events: %d",fAcceptedEvents)); 
 }
@@ -237,6 +239,8 @@ void AliAnalysisEventCuts::GetEventStats()
 //----------------------------------------//
 void AliAnalysisEventCuts::GetMultStats()
 {
+  //Gets the multiplicity statistics.
+  //Prints the percentage of events rejected due to this cut. 
   AliInfo(Form("Multiplicity range: [%d,%d]",fMultMin,fMultMax));
   AliInfo(Form("Events rejected: %d",fMult));
 }
@@ -244,6 +248,8 @@ void AliAnalysisEventCuts::GetMultStats()
 //----------------------------------------//
 void AliAnalysisEventCuts::GetVxStats()
 {
+  //Gets the Vx statistics.
+  //Prints the percentage of events rejected due to this cut. 
   AliInfo(Form("Vx range: [%f,%f]",fVxMin,fVxMax));
   AliInfo(Form("Events rejected: %d",fVx));
 }
@@ -251,6 +257,8 @@ void AliAnalysisEventCuts::GetVxStats()
 //----------------------------------------//
 void AliAnalysisEventCuts::GetVyStats()
 {
+  //Gets the Vy statistics.
+  //Prints the percentage of events rejected due to this cut. 
   AliInfo(Form("Vy range: [%f,%f]",fVyMin,fVyMax));
   AliInfo(Form("Events rejected: %d",fVy));
 }
@@ -258,6 +266,8 @@ void AliAnalysisEventCuts::GetVyStats()
 //----------------------------------------//
 void AliAnalysisEventCuts::GetVzStats()
 {
+  //Gets the Vz statistics.
+  //Prints the percentage of events rejected due to this cut. 
   AliInfo(Form("Vz range: [%f,%f]",fVzMin,fVzMax));
   AliInfo(Form("Events rejected: %d",fVz));
 }
@@ -265,17 +275,7 @@ void AliAnalysisEventCuts::GetVzStats()
 //----------------------------------------//
 void AliAnalysisEventCuts::PrintEventCuts()
 {
-  /*gROOT->Reset();
-  TControlBar *menu1 = new TControlBar("vertical","Event Cuts",10,10);
-  menu1->AddButton("Event statistics","GetEventStats()","Displays the event statistics");
-  menu1->AddButton("Multipicity cut","gAlice->Run()","Events rejected due to multiplicity cut");
-  menu1->AddButton("Vx cut","gAlice->RunLego()","Events rejected due to Vx cut");
-  menu1->AddButton("Vy cut","DrawTopView()","Events rejected due to Vy cut");
-  menu1->AddButton("Vz cut","DrawSideView()","Events rejected due to Vz cut");
-  menu1->Show();
- 
-  gROOT->SaveContext(); */
-
+  //Prints the event stats.
   //GetEventCuts()->Draw();  
 
   AliInfo(Form("**************EVENT CUTS**************"));

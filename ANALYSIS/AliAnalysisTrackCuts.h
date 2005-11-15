@@ -12,15 +12,47 @@
 //    Origin: Panos Christakoglou, UOA-CERN, Panos.Christakoglou@cern.ch
 //-------------------------------------------------------------------------
 
-#include <TPaveText.h>
-#include <TROOT.h>
 #include <TObject.h>
 
-#include "AliESD.h"
-#include "AliESDtrack.h"
+class AliESD;
+class AliESDtrack;
+
+class TPaveText;
 
 class AliAnalysisTrackCuts : public TObject
 {
+ public:
+  AliAnalysisTrackCuts();
+  
+  ~AliAnalysisTrackCuts();
+
+  void Reset();
+  
+  void SetPRange(Float_t r1, Float_t r2);
+  void SetPtRange(Float_t r1, Float_t r2);
+  void SetPxRange(Float_t r1, Float_t r2);
+  void SetPyRange(Float_t r1, Float_t r2);
+  void SetPzRange(Float_t r1, Float_t r2);
+  void SetBrRange(Float_t r1, Float_t r2);
+  void SetBzRange(Float_t r1, Float_t r2);
+  void SetEtaRange(Float_t r1, Float_t r2);
+  void SetRapRange(Float_t r1, Float_t r2);
+  
+  Bool_t IsAccepted(AliESD *esd,AliESDtrack *esdtrack);
+
+  TPaveText *GetTrackCuts();
+  void PrintTrackCuts();
+  void GetTrackStats();
+  void GetPStats();
+  void GetPxStats();
+  void GetPyStats();
+  void GetPzStats();
+  void GetPtStats();
+  void GetEtaStats();
+  void GetRapStats();
+  void GetBrStats();
+  void GetBzStats();
+
  private:
   Float_t fPMin, fPMax;  //Definition of the range of the P
   Float_t fPtMin, fPtMax;  //Definition of the range of the Pt
@@ -54,37 +86,6 @@ class AliAnalysisTrackCuts : public TObject
   Int_t fFlagbr;  //Flag that shows if the br cut was imposed
   Int_t fFlagbz;  //Flag that shows if the bz cut was imposed
  
- public:
-  AliAnalysisTrackCuts();
-  
-  ~AliAnalysisTrackCuts();
-
-  void Reset();
-  
-  void SetPRange(Float_t r1, Float_t r2);
-  void SetPtRange(Float_t r1, Float_t r2);
-  void SetPxRange(Float_t r1, Float_t r2);
-  void SetPyRange(Float_t r1, Float_t r2);
-  void SetPzRange(Float_t r1, Float_t r2);
-  void SetBrRange(Float_t r1, Float_t r2);
-  void SetBzRange(Float_t r1, Float_t r2);
-  void SetEtaRange(Float_t r1, Float_t r2);
-  void SetRapRange(Float_t r1, Float_t r2);
-  
-  Bool_t IsAccepted(AliESD *esd,AliESDtrack *esdtrack);
-
-  TPaveText *GetTrackCuts();
-  void PrintTrackCuts();
-  void GetTrackStats();
-  void GetPStats();
-  void GetPxStats();
-  void GetPyStats();
-  void GetPzStats();
-  void GetPtStats();
-  void GetEtaStats();
-  void GetRapStats();
-  void GetBrStats();
-  void GetBzStats();
   
   ClassDef(AliAnalysisTrackCuts, 1)
 } ;

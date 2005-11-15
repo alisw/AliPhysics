@@ -22,16 +22,13 @@
 
 
 //ROOT
-#include <TROOT.h>
-#include <TObject.h>
-#include <TSystem.h>
-#include <TObject.h>
 #include <TPaveText.h>
 #include <TText.h>
 #include <TLine.h>
 #include <TCanvas.h>
 
 #include "AliLog.h"
+
 #include "AliESDtrack.h"
 #include "AliESD.h"
 
@@ -42,17 +39,21 @@ ClassImp(AliAnalysisTrackCuts)
 //----------------------------------------//
 AliAnalysisTrackCuts::AliAnalysisTrackCuts()
 {
+  //Default constructor.
+  //Calls the Reset method.
   Reset();
 }
 
 //----------------------------------------//
 AliAnalysisTrackCuts::~AliAnalysisTrackCuts()
 {
+  //Destructor.
 }
 
 //----------------------------------------//
 void AliAnalysisTrackCuts::Reset()
 {
+  //Assigns dummy values to every private member.
   fPxMin = -1000.0;
   fPxMax = 1000.0; 
   fPyMin = -1000.0;
@@ -98,6 +99,7 @@ void AliAnalysisTrackCuts::Reset()
 //----------------------------------------//
 void AliAnalysisTrackCuts::SetPxRange(Float_t r1, Float_t r2)
 {
+  //Sets the range for the momentum x component. 
   fPxMin = r1;
   fPxMax = r2;
   fFlagPx = 1;
@@ -106,6 +108,7 @@ void AliAnalysisTrackCuts::SetPxRange(Float_t r1, Float_t r2)
 //----------------------------------------//
 void AliAnalysisTrackCuts::SetPyRange(Float_t r1, Float_t r2)
 {
+  //Sets the range for the momentum y component. 
   fPyMin = r1;
   fPyMax = r2; 
   fFlagPy = 1;
@@ -114,6 +117,7 @@ void AliAnalysisTrackCuts::SetPyRange(Float_t r1, Float_t r2)
 //----------------------------------------//
 void AliAnalysisTrackCuts::SetPzRange(Float_t r1, Float_t r2)
 {
+  //Sets the range for the momentum z component. 
   fPzMin = r1;
   fPzMax = r2; 
   fFlagPy = 1;
@@ -122,6 +126,7 @@ void AliAnalysisTrackCuts::SetPzRange(Float_t r1, Float_t r2)
 //----------------------------------------//
 void AliAnalysisTrackCuts::SetPRange(Float_t r1, Float_t r2)
 {
+  //Sets the range for the momentum. 
   fPMin = r1;
   fPMax = r2; 
   fFlagPz = 1;
@@ -130,6 +135,7 @@ void AliAnalysisTrackCuts::SetPRange(Float_t r1, Float_t r2)
 //----------------------------------------//
 void AliAnalysisTrackCuts::SetPtRange(Float_t r1, Float_t r2)
 {
+  //Sets the range for the teransverse momentum. 
   fPtMin = r1;
   fPtMax = r2; 
   fFlagPt = 1;
@@ -138,6 +144,8 @@ void AliAnalysisTrackCuts::SetPtRange(Float_t r1, Float_t r2)
 //----------------------------------------//
 void AliAnalysisTrackCuts::SetBrRange(Float_t r1, Float_t r2)
 {
+  //Sets the range of the closest approach of the track 
+  //to the primary vertex in the r-phi plane. 
   fBrMin = r1;
   fBrMax = r2; 
   fFlagbr = 1;
@@ -146,6 +154,8 @@ void AliAnalysisTrackCuts::SetBrRange(Float_t r1, Float_t r2)
 //----------------------------------------//
 void AliAnalysisTrackCuts::SetBzRange(Float_t r1, Float_t r2)
 {
+  //Sets the range of the closest approach of the track 
+  //to the primary vertex in the beam axis. 
   fBzMin = r1;
   fBzMax = r2; 
   fFlagbz = 1;
@@ -154,6 +164,7 @@ void AliAnalysisTrackCuts::SetBzRange(Float_t r1, Float_t r2)
 //----------------------------------------//
 void AliAnalysisTrackCuts::SetEtaRange(Float_t r1, Float_t r2)
 {
+  //Sets the range of the pseudo-rapidity. 
   fEtaMin = r1;
   fEtaMax = r2; 
   fFlagEta = 1;
@@ -162,6 +173,7 @@ void AliAnalysisTrackCuts::SetEtaRange(Float_t r1, Float_t r2)
 //----------------------------------------//
 void AliAnalysisTrackCuts::SetRapRange(Float_t r1, Float_t r2)
 {
+  //Sets the range of the rapidity. 
   fRapMin = r1;
   fRapMax = r2; 
   fFlagRap = 1;
@@ -170,6 +182,9 @@ void AliAnalysisTrackCuts::SetRapRange(Float_t r1, Float_t r2)
 //----------------------------------------//
 void AliAnalysisTrackCuts::GetTrackStats()
 {
+  //Gets the statistics.
+  //fTotalTracks is the total number of tracks.
+  //fAcceptedTracks is the number of accepted tracks after the cuts. 
   AliInfo(Form("Total number of tracks: %d",fTotalTracks));
   AliInfo(Form("Total number of accepted tracks: %d",fAcceptedTracks)); 
 }
@@ -177,7 +192,9 @@ void AliAnalysisTrackCuts::GetTrackStats()
 //----------------------------------------//
 void AliAnalysisTrackCuts::GetPStats()
 {
-  AliInfo(Form("P range: [%f,%f]",fPMin,fPMax));
+  //Gets the momentum statistics.
+  //Prints the percentage of tracks rejected due to this cut. 
+   AliInfo(Form("P range: [%f,%f]",fPMin,fPMax));
   if(fTotalTracks != 0)
     AliInfo(Form("Tracks rejected: %f",100.0*fP/fTotalTracks)); 
 }
@@ -185,6 +202,8 @@ void AliAnalysisTrackCuts::GetPStats()
 //----------------------------------------//
 void AliAnalysisTrackCuts::GetPtStats()
 {
+  //Gets the transverse momentum statistics.
+  //Prints the percentage of tracks rejected due to this cut. 
   AliInfo(Form("Pt range: [%f,%f]",fPtMin,fPtMax));
   if(fTotalTracks != 0) 
     AliInfo(Form("Tracks rejected: %f",100.0*fPt/fTotalTracks)); 
@@ -193,6 +212,8 @@ void AliAnalysisTrackCuts::GetPtStats()
 //----------------------------------------//
 void AliAnalysisTrackCuts::GetPxStats()
 {
+  //Gets the x momentum statistics.
+  //Prints the percentage of tracks rejected due to this cut. 
   AliInfo(Form("Px range: [%f,%f]",fPxMin,fPxMax));
   if(fTotalTracks != 0) 
     AliInfo(Form("Tracks rejected: %f",100.0*fPx/fTotalTracks)); 
@@ -201,6 +222,8 @@ void AliAnalysisTrackCuts::GetPxStats()
 //----------------------------------------//
 void AliAnalysisTrackCuts::GetPyStats()
 {
+  //Gets the y momentum statistics.
+  //Prints the percentage of tracks rejected due to this cut. 
   AliInfo(Form("Py range: [%f,%f]",fPyMin,fPyMax));
   if(fTotalTracks != 0) 
     AliInfo(Form("Tracks rejected: %f",100.0*fPy/fTotalTracks)); 
@@ -209,6 +232,8 @@ void AliAnalysisTrackCuts::GetPyStats()
 //----------------------------------------//
 void AliAnalysisTrackCuts::GetPzStats()
 {
+  //Gets the z momentum statistics.
+  //Prints the percentage of tracks rejected due to this cut. 
   AliInfo(Form("Pz range: [%f,%f]",fPzMin,fPzMax));
   if(fTotalTracks != 0) 
     AliInfo(Form("Tracks rejected: %f",100.0*fPz/fTotalTracks)); 
@@ -217,6 +242,8 @@ void AliAnalysisTrackCuts::GetPzStats()
 //----------------------------------------//
 void AliAnalysisTrackCuts::GetEtaStats()
 {
+  //Gets the pseudo-rapidity statistics.
+  //Prints the percentage of tracks rejected due to this cut. 
   AliInfo(Form("eta range: [%f,%f]",fEtaMin,fEtaMax));
   if(fTotalTracks != 0)
     AliInfo(Form("Tracks rejected: %f",100.0*fEta/fTotalTracks)); 
@@ -225,6 +252,8 @@ void AliAnalysisTrackCuts::GetEtaStats()
 //----------------------------------------//
 void AliAnalysisTrackCuts::GetRapStats()
 {
+  //Gets the rapidity statistics.
+  //Prints the percentage of tracks rejected due to this cut. 
   AliInfo(Form("y range: [%f,%f]",fRapMin,fRapMax));
   if(fTotalTracks != 0)
     AliInfo(Form("Tracks rejected: %f",100.0*fRap/fTotalTracks)); 
@@ -233,6 +262,9 @@ void AliAnalysisTrackCuts::GetRapStats()
 //----------------------------------------//
 void AliAnalysisTrackCuts::GetBrStats()
 {
+  //Gets the statistics fro the closest distance of 
+  //the track to the primary vertex in the r-phi plane.
+  //Prints the percentage of tracks rejected due to this cut. 
   AliInfo(Form("br range: [%f,%f]",fBrMin,fBrMax));
   if(fTotalTracks != 0) 
     AliInfo(Form("Tracks rejected: %f",100.0*fbr/fTotalTracks)); 
@@ -241,6 +273,9 @@ void AliAnalysisTrackCuts::GetBrStats()
 //----------------------------------------//
 void AliAnalysisTrackCuts::GetBzStats()
 {
+  //Gets the statistics fro the closest distance of 
+  //the track to the primary vertex in the beam axis.
+  //Prints the percentage of tracks rejected due to this cut. 
   AliInfo(Form("bz range: [%f,%f]",fBzMin,fBzMax));
   if(fTotalTracks != 0)
     AliInfo(Form("Tracks rejected: %f",100.0*fbz/fTotalTracks)); 
@@ -250,36 +285,37 @@ void AliAnalysisTrackCuts::GetBzStats()
 //----------------------------------------//
 Bool_t AliAnalysisTrackCuts::IsAccepted(AliESD *esd ,AliESDtrack *esdtrack)
 {
+  //Returns true if the tracks is accepted otherwise false.
   fTotalTracks++;
   
   //momentum related calculations
   Double_t p[3];
   esdtrack->GetPxPyPz(p);
-  Float_t P = sqrt(pow(p[0],2) + pow(p[1],2) + pow(p[2],2));
-  Float_t Pt = sqrt(pow(p[0],2) + pow(p[1],2));
-  Float_t E = sqrt(pow(esdtrack->GetMass(),2) + pow(P,2));
+  Float_t momentum = sqrt(pow(p[0],2) + pow(p[1],2) + pow(p[2],2));
+  Float_t pt = sqrt(pow(p[0],2) + pow(p[1],2));
+  Float_t energy = sqrt(pow(esdtrack->GetMass(),2) + pow(momentum,2));
 
   //y-eta related calculations
-  Float_t eta = 0.5*log((P - p[2])/(P + p[2]));
-  Float_t y = 0.5*log((E - p[2])/(E + p[2]));
+  Float_t eta = 0.5*log((momentum - p[2])/(momentum + p[2]));
+  Float_t y = 0.5*log((energy - p[2])/(energy + p[2]));
  
   //impact parameter related calculations
-  Double_t TrackPosition[3];
-  esdtrack->GetXYZ(TrackPosition);
-  const AliESDVertex * VertexIn = esd->GetVertex();
-  Double_t VertexPosition[3];
-  VertexIn->GetXYZ(VertexPosition);		    
-  for (Int_t ii=0; ii<3; ii++) TrackPosition[ii] -= VertexPosition[ii];
+  Double_t trackPosition[3];
+  esdtrack->GetXYZ(trackPosition);
+  const AliESDVertex * vertexIn = esd->GetVertex();
+  Double_t vertexPosition[3];
+  vertexIn->GetXYZ(vertexPosition);		    
+  for (Int_t ii=0; ii<3; ii++) trackPosition[ii] -= vertexPosition[ii];
 		    
-  Float_t br = Float_t(TMath::Sqrt(pow(TrackPosition[0],2) + pow(TrackPosition[1],2)));
-  Float_t bz = Float_t(TMath::Abs(TrackPosition[2]));
+  Float_t br = Float_t(TMath::Sqrt(pow(trackPosition[0],2) + pow(trackPosition[1],2)));
+  Float_t bz = Float_t(TMath::Abs(trackPosition[2]));
  
-  if((P < fPMin) || (P > fPMax))
+  if((momentum < fPMin) || (momentum > fPMax))
     {
       fP++;
       return kFALSE;
     }
-  if((Pt < fPtMin) || (Pt > fPtMax))
+  if((pt < fPtMin) || (pt > fPtMax))
     {
       fPt++;
       return kFALSE;
@@ -329,13 +365,14 @@ Bool_t AliAnalysisTrackCuts::IsAccepted(AliESD *esd ,AliESDtrack *esdtrack)
 //----------------------------------------//
 TPaveText *AliAnalysisTrackCuts::GetTrackCuts()
 {
+  //Shows a TPaveText with all the track cuts stats.
   TCanvas *ccuts2 = new TCanvas("ccuts2","Track cuts",410,10,400,400);
   ccuts2->SetFillColor(10);
   ccuts2->SetHighLightColor(10);
 
   TPaveText *pave = new TPaveText(0.01,0.01,0.98,0.98);
   pave->SetFillColor(3);
-  Char_t CutName[256];
+  Char_t cutName[256];
  
   TLine *l1 = pave->AddLine(0,0.89,1,0.89);
   l1->SetLineWidth(2);
@@ -356,113 +393,113 @@ TPaveText *AliAnalysisTrackCuts::GetTrackCuts()
   TLine *l9 = pave->AddLine(0,0.09,1,0.09);
   l9->SetLineWidth(2);
 
-  sprintf(CutName,"Total number of tracks: %d",fTotalTracks);
-  TText *t1 = pave->AddText(CutName);
+  sprintf(cutName,"Total number of tracks: %d",fTotalTracks);
+  TText *t1 = pave->AddText(cutName);
   t1->SetTextColor(1);
   t1->SetTextSize(0.04);
   t1->SetTextAlign(11);
  
-  sprintf(CutName,"Total number of accepted tracks: %d",fAcceptedTracks);
-  t1 = pave->AddText(CutName);
+  sprintf(cutName,"Total number of accepted tracks: %d",fAcceptedTracks);
+  t1 = pave->AddText(cutName);
   t1->SetTextColor(1);
   t1->SetTextSize(0.04);
   t1->SetTextAlign(11);
  
-  sprintf(CutName,"P range: [%f,%f]",fPMin,fPMax);
-  t1 = pave->AddText(CutName);
+  sprintf(cutName,"P range: [%f,%f]",fPMin,fPMax);
+  t1 = pave->AddText(cutName);
   t1->SetTextColor(1);
   t1->SetTextSize(0.04);
   t1->SetTextAlign(11);
-  sprintf(CutName,"Tracks rejected: %f",100.0*fP/fTotalTracks);
-  t1 = pave->AddText(CutName);
+  sprintf(cutName,"Tracks rejected: %f",100.0*fP/fTotalTracks);
+  t1 = pave->AddText(cutName);
   t1->SetTextColor(1);
   t1->SetTextSize(0.04);
   t1->SetTextAlign(11);
  
-  sprintf(CutName,"Pt range: [%f,%f]",fPtMin,fPtMax);
-  t1 = pave->AddText(CutName);
+  sprintf(cutName,"Pt range: [%f,%f]",fPtMin,fPtMax);
+  t1 = pave->AddText(cutName);
   t1->SetTextColor(1);
   t1->SetTextSize(0.04);
   t1->SetTextAlign(11);
-  sprintf(CutName,"Tracks rejected: %f",100.0*fPt/fTotalTracks);
-  t1 = pave->AddText(CutName);
+  sprintf(cutName,"Tracks rejected: %f",100.0*fPt/fTotalTracks);
+  t1 = pave->AddText(cutName);
   t1->SetTextColor(1);
   t1->SetTextSize(0.04);
   t1->SetTextAlign(11);
 
-  sprintf(CutName,"Px range: [%f,%f]",fPxMin,fPxMax);
-  t1 = pave->AddText(CutName);
+  sprintf(cutName,"Px range: [%f,%f]",fPxMin,fPxMax);
+  t1 = pave->AddText(cutName);
   t1->SetTextColor(1);
   t1->SetTextSize(0.04);
   t1->SetTextAlign(11);
-  sprintf(CutName,"Tracks rejected: %f",100.0*fPx/fTotalTracks);
-  t1 = pave->AddText(CutName);
-  t1->SetTextColor(1);
-  t1->SetTextSize(0.04);
-  t1->SetTextAlign(11);
- 
-  sprintf(CutName,"Py range: [%f,%f]",fPyMin,fPyMax);
-  t1 = pave->AddText(CutName);
-  t1->SetTextColor(1);
-  t1->SetTextSize(0.04);
-  t1->SetTextAlign(11);
-  sprintf(CutName,"Tracks rejected: %f",100.0*fPy/fTotalTracks);
-  t1 = pave->AddText(CutName);
+  sprintf(cutName,"Tracks rejected: %f",100.0*fPx/fTotalTracks);
+  t1 = pave->AddText(cutName);
   t1->SetTextColor(1);
   t1->SetTextSize(0.04);
   t1->SetTextAlign(11);
  
-  sprintf(CutName,"Pz range: [%f,%f]",fPzMin,fPzMax);
-  t1 = pave->AddText(CutName);
+  sprintf(cutName,"Py range: [%f,%f]",fPyMin,fPyMax);
+  t1 = pave->AddText(cutName);
   t1->SetTextColor(1);
   t1->SetTextSize(0.04);
   t1->SetTextAlign(11);
-  sprintf(CutName,"Tracks rejected: %f",100.0*fPz/fTotalTracks);
-  t1 = pave->AddText(CutName);
+  sprintf(cutName,"Tracks rejected: %f",100.0*fPy/fTotalTracks);
+  t1 = pave->AddText(cutName);
+  t1->SetTextColor(1);
+  t1->SetTextSize(0.04);
+  t1->SetTextAlign(11);
+ 
+  sprintf(cutName,"Pz range: [%f,%f]",fPzMin,fPzMax);
+  t1 = pave->AddText(cutName);
+  t1->SetTextColor(1);
+  t1->SetTextSize(0.04);
+  t1->SetTextAlign(11);
+  sprintf(cutName,"Tracks rejected: %f",100.0*fPz/fTotalTracks);
+  t1 = pave->AddText(cutName);
   t1->SetTextColor(1);
   t1->SetTextSize(0.04);
   t1->SetTextAlign(11);
   
-  sprintf(CutName,"br range: [%f,%f]",fBrMin,fBrMax);
-  t1 = pave->AddText(CutName);
+  sprintf(cutName,"br range: [%f,%f]",fBrMin,fBrMax);
+  t1 = pave->AddText(cutName);
   t1->SetTextColor(1);
   t1->SetTextSize(0.04);
   t1->SetTextAlign(11);
-  sprintf(CutName,"Tracks rejected: %f",100.0*fbr/fTotalTracks);
-  t1 = pave->AddText(CutName);
+  sprintf(cutName,"Tracks rejected: %f",100.0*fbr/fTotalTracks);
+  t1 = pave->AddText(cutName);
   t1->SetTextColor(1);
   t1->SetTextSize(0.04);
   t1->SetTextAlign(11);
  
-  sprintf(CutName,"bz range: [%f,%f]",fBzMin,fBzMax);
-  t1 = pave->AddText(CutName);
+  sprintf(cutName,"bz range: [%f,%f]",fBzMin,fBzMax);
+  t1 = pave->AddText(cutName);
   t1->SetTextColor(1);
   t1->SetTextSize(0.04);
   t1->SetTextAlign(11);
-  sprintf(CutName,"Tracks rejected: %f",100.0*fbz/fTotalTracks);
-  t1 = pave->AddText(CutName);
-  t1->SetTextColor(1);
-  t1->SetTextSize(0.04);
-  t1->SetTextAlign(11);
-
-  sprintf(CutName,"eta range: [%f,%f]",fEtaMin,fEtaMax);
-  t1 = pave->AddText(CutName);
-  t1->SetTextColor(1);
-  t1->SetTextSize(0.04);
-  t1->SetTextAlign(11);
-  sprintf(CutName,"Tracks rejected: %f",100.0*fEta/fTotalTracks);
-  t1 = pave->AddText(CutName);
+  sprintf(cutName,"Tracks rejected: %f",100.0*fbz/fTotalTracks);
+  t1 = pave->AddText(cutName);
   t1->SetTextColor(1);
   t1->SetTextSize(0.04);
   t1->SetTextAlign(11);
 
-  sprintf(CutName,"y range: [%f,%f]",fRapMin,fRapMax);
-  t1 = pave->AddText(CutName);
+  sprintf(cutName,"eta range: [%f,%f]",fEtaMin,fEtaMax);
+  t1 = pave->AddText(cutName);
   t1->SetTextColor(1);
   t1->SetTextSize(0.04);
   t1->SetTextAlign(11);
-  sprintf(CutName,"Tracks rejected: %f",100.0*fRap/fTotalTracks);
-  t1 = pave->AddText(CutName);
+  sprintf(cutName,"Tracks rejected: %f",100.0*fEta/fTotalTracks);
+  t1 = pave->AddText(cutName);
+  t1->SetTextColor(1);
+  t1->SetTextSize(0.04);
+  t1->SetTextAlign(11);
+
+  sprintf(cutName,"y range: [%f,%f]",fRapMin,fRapMax);
+  t1 = pave->AddText(cutName);
+  t1->SetTextColor(1);
+  t1->SetTextSize(0.04);
+  t1->SetTextAlign(11);
+  sprintf(cutName,"Tracks rejected: %f",100.0*fRap/fTotalTracks);
+  t1 = pave->AddText(cutName);
   t1->SetTextColor(1);
   t1->SetTextSize(0.04);
   t1->SetTextAlign(11);
@@ -473,6 +510,7 @@ TPaveText *AliAnalysisTrackCuts::GetTrackCuts()
 //----------------------------------------//
 void AliAnalysisTrackCuts::PrintTrackCuts()
 {
+  //Prints the track cut stats.
   //GetTrackCuts()->Draw();
 
   AliInfo(Form("**************TRACK CUTS**************"));
