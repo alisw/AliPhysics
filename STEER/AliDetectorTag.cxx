@@ -28,6 +28,7 @@ ClassImp(AliDetectorTag)
 //______________________________________________________________________________
 AliDetectorTag::AliDetectorTag()
 {
+  // Default constructor
   fITS = 0;
   fTPC = 0;
   fTRD = 0;
@@ -45,26 +46,28 @@ AliDetectorTag::AliDetectorTag()
 }
 
 //______________________________________________________________________________
-AliDetectorTag::AliDetectorTag(AliDetectorTag *DetTag)
+AliDetectorTag::AliDetectorTag(const AliDetectorTag & detTag) :
+  TObject(detTag)
 {
   // DetectorTag copy constructor
-  SetITS(DetTag->GetITS());
-  SetTPC(DetTag->GetTPC());
-  SetTRD(DetTag->GetTRD());
-  SetTOF(DetTag->GetTOF());
-  SetHMPID(DetTag->GetHMPID());
-  SetPHOS(DetTag->GetPHOS());
-  SetZDC(DetTag->GetZDC());
-  SetMUON(DetTag->GetMUON());
-  SetABSORBER(DetTag->GetABSORBER());
-  SetPMD(DetTag->GetPMD());
-  SetRICH(DetTag->GetRICH());
-  SetEMCAL(DetTag->GetEMCAL());
-  SetVZERO(DetTag->GetVZERO());
-  SetTZERO(DetTag->GetTZERO());
+  SetITS(detTag.GetITS());
+  SetTPC(detTag.GetTPC());
+  SetTRD(detTag.GetTRD());
+  SetTOF(detTag.GetTOF());
+  SetHMPID(detTag.GetHMPID());
+  SetPHOS(detTag.GetPHOS());
+  SetZDC(detTag.GetZDC());
+  SetMUON(detTag.GetMUON());
+  SetABSORBER(detTag.GetABSORBER());
+  SetPMD(detTag.GetPMD());
+  SetRICH(detTag.GetRICH());
+  SetEMCAL(detTag.GetEMCAL());
+  SetVZERO(detTag.GetVZERO());
+  SetTZERO(detTag.GetTZERO());
 }
 
 //______________________________________________________________________________
 AliDetectorTag::~AliDetectorTag()
 {
+  // Destructor
 }

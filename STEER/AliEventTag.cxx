@@ -30,6 +30,9 @@ ClassImp(AliEventTag)
     TObject(),
     fAliceEventId(0),
     fGUID(0),
+    fsize(0),
+    fmd5(0),
+    fturl(0),
     fNumberOfParticipants(-10),
     fImpactParameter(-10.0),
     fPrimaryVertexFlag(-1),
@@ -96,6 +99,10 @@ AliEventTag::AliEventTag(const AliEventTag & EvTag) : TObject(EvTag)
   SetEventId(EvTag.GetEventId());
   SetGUID(EvTag.GetGUID());
   
+  SetMD5(EvTag.GetMD5());
+  SetTURL(EvTag.GetTURL());
+  SetSize(EvTag.GetSize());
+ 
   SetNumOfParticipants(EvTag.GetNumOfParticipants());
   SetImpactParameter(EvTag.GetImpactParameter());
   
@@ -179,6 +186,10 @@ AliEventTag & AliEventTag::operator=(const AliEventTag &EvTag)
     SetEventId(EvTag.GetEventId());
     SetGUID(EvTag.GetGUID());
     
+    SetMD5(EvTag.GetMD5());
+    SetTURL(EvTag.GetTURL());
+    SetSize(EvTag.GetSize());
+
     SetNumOfParticipants(EvTag.GetNumOfParticipants());
     SetImpactParameter(EvTag.GetImpactParameter());
     

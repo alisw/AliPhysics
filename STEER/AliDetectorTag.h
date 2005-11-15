@@ -14,29 +14,12 @@
 //-------------------------------------------------------------------------
 
 #include "TObject.h"
-#include "TClonesArray.h"
 //______________________________________________________________________________
 class AliDetectorTag : public TObject
 {
- private:
-  Bool_t   fITS;		//ITS active = 1
-  Bool_t   fTPC;		//TPC active = 1
-  Bool_t   fTRD;		//TRD active = 1
-  Bool_t   fTOF;		//TOF active = 1
-  Bool_t   fHMPID;		//HMPID active = 1
-  Bool_t   fPHOS;		//PHOS active = 1
-  Bool_t   fZDC;		//ZDC active = 1
-  Bool_t   fMUON;		//MUON active = 1
-  Bool_t   fABSORBER;		//ABSORBER active = 1
-  Bool_t   fPMD;		//PMD active = 1
-  Bool_t   fRICH;		//RICH active = 1
-  Bool_t   fEMCAL;		//EMCAL active = 1
-  Bool_t   fVZERO;		//VZERO active = 1
-  Bool_t   fTZERO;		//TZERO active = 1
-
  public:
   AliDetectorTag();
-  AliDetectorTag(AliDetectorTag *t);
+  AliDetectorTag(const AliDetectorTag & t);
   virtual ~AliDetectorTag();
   
   void          SetITS(Int_t n) {fITS = n;}
@@ -54,21 +37,37 @@ class AliDetectorTag : public TObject
   void          SetVZERO(Int_t n) {fVZERO = n;}
   void          SetTZERO(Int_t n) {fTZERO = n;}
   
-  Bool_t        GetITS() {return fITS;}
-  Bool_t        GetTPC() {return fTPC;}
-  Bool_t        GetTRD() {return fTRD;}
-  Bool_t        GetTOF() {return fTOF;}
-  Bool_t        GetHMPID() {return fHMPID;}
-  Bool_t        GetPHOS() {return fPHOS;}
-  Bool_t        GetZDC() {return fZDC;}
-  Bool_t        GetMUON() {return fMUON;}
-  Bool_t        GetABSORBER() {return fABSORBER;}
-  Bool_t        GetPMD() {return fPMD;}
-  Bool_t        GetRICH() {return fRICH;}
-  Bool_t        GetEMCAL() {return fEMCAL;}
-  Bool_t        GetVZERO() {return fVZERO;}
-  Bool_t        GetTZERO() {return fTZERO;}
+  Bool_t        GetITS() const {return fITS;}
+  Bool_t        GetTPC() const {return fTPC;}
+  Bool_t        GetTRD() const {return fTRD;}
+  Bool_t        GetTOF() const {return fTOF;}
+  Bool_t        GetHMPID() const {return fHMPID;}
+  Bool_t        GetPHOS() const {return fPHOS;}
+  Bool_t        GetZDC() const {return fZDC;}
+  Bool_t        GetMUON() const {return fMUON;}
+  Bool_t        GetABSORBER() const {return fABSORBER;}
+  Bool_t        GetPMD() const {return fPMD;}
+  Bool_t        GetRICH() const {return fRICH;}
+  Bool_t        GetEMCAL() const {return fEMCAL;}
+  Bool_t        GetVZERO() const {return fVZERO;}
+  Bool_t        GetTZERO() const {return fTZERO;}
   
+ private:
+  Bool_t   fITS;		//ITS active = 1
+  Bool_t   fTPC;		//TPC active = 1
+  Bool_t   fTRD;		//TRD active = 1
+  Bool_t   fTOF;		//TOF active = 1
+  Bool_t   fHMPID;		//HMPID active = 1
+  Bool_t   fPHOS;		//PHOS active = 1
+  Bool_t   fZDC;		//ZDC active = 1
+  Bool_t   fMUON;		//MUON active = 1
+  Bool_t   fABSORBER;		//ABSORBER active = 1
+  Bool_t   fPMD;		//PMD active = 1
+  Bool_t   fRICH;		//RICH active = 1
+  Bool_t   fEMCAL;		//EMCAL active = 1
+  Bool_t   fVZERO;		//VZERO active = 1
+  Bool_t   fTZERO;		//TZERO active = 1
+
   ClassDef(AliDetectorTag,1)  //(ClassName, ClassVersion)
 };
 //______________________________________________________________________________

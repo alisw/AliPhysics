@@ -53,7 +53,6 @@ AliTagCreator::AliTagCreator() //local mode
   fHost = "";
   fPort = 0; 
   fStorage = 0; 
-  //  fresult = 0;
 }
 
 //______________________________________________________________________________
@@ -61,7 +60,6 @@ AliTagCreator::AliTagCreator(const char *host, Int_t port, const char *username)
 {
   //==============Default constructor for a AliTagCreator==================
   fStorage = 0; 
-  //  fresult = 0;
   fgridpath = "";
   fHost = host;
   fUser = username;
@@ -87,7 +85,6 @@ AliTagCreator::AliTagCreator(const char *host, Int_t port, const char *username,
 {
   //==============Default constructor for a AliTagCreator==================
   fStorage = 0; 
-  //  fresult = 0;
   fgridpath = "";
   fHost = host;
   fUser = username;
@@ -163,14 +160,27 @@ Bool_t AliTagCreator::ReadESDCollection(TGridResult *fresult)
 
   TString alienUrl;
   const char *guid;
- 
+  const char *md5;
+  const char *turl;
+  Long64_t size = -1;
+
   Int_t counter = 0;
   for(Int_t i = 0; i < nEntries; i++)
     {
       alienUrl = fresult->GetKey(i,"turl");
       guid = fresult->GetKey(i,"guid");
+      if(fresult->GetKey(i,"size"))
+	size = atol (fresult->GetKey(i,"size"));
+      md5 = fresult->GetKey(i,"md5");
+      turl = fresult->GetKey(i,"turl");
+      if(md5 && !strlen(guid))
+	md5 = 0;
+      if(guid && !strlen(guid))
+	guid = 0;
+
       TFile *f = TFile::Open(alienUrl,"READ");
-      CreateTag(f,guid,counter);
+      //CreateTag(f,guid,counter);
+      CreateTag(f,guid,md5,turl,size,counter);
       f->Close();
       delete f;	 
       counter += 1;
@@ -181,7 +191,8 @@ Bool_t AliTagCreator::ReadESDCollection(TGridResult *fresult)
 
 
 //_____________________________________________________________________________
-void AliTagCreator::CreateTag(TFile* file, const char *guid, Int_t Counter)
+//void AliTagCreator::CreateTag(TFile* file, const char *guid, Int_t Counter)
+void AliTagCreator::CreateTag(TFile* file, const char *guid, const char *md5, const char *turl, Long64_t size, Int_t Counter)
 {
   // Creates the tags for all the events in a given ESD file
   Int_t ntrack;
@@ -194,7 +205,6 @@ void AliTagCreator::CreateTag(TFile* file, const char *guid, Int_t Counter)
   Float_t maxPt = .0, meanPt = .0, totalP = .0;
 
   AliRunTag *tag = new AliRunTag();
-  AliDetectorTag *detTag = new AliDetectorTag();
   AliEventTag *evTag = new AliEventTag();
   TTree ttag("T","A Tree with event tags");
   TBranch * btag = ttag.Branch("AliTAG", "AliRunTag", &tag);
@@ -345,6 +355,9 @@ void AliTagCreator::CreateTag(TFile* file, const char *guid, Int_t Counter)
       
       evTag->SetEventId(iEventNumber+1);
       evTag->SetGUID(guid);
+      evTag->SetMD5(md5);
+      evTag->SetTURL(turl);
+      evTag->SetSize(size);
       evTag->SetVertexX(vertexIn->GetXv());
       evTag->SetVertexY(vertexIn->GetYv());
       evTag->SetVertexZ(vertexIn->GetZv());
@@ -439,7 +452,6 @@ void AliTagCreator::CreateTag(TFile* file, const char *guid, Int_t Counter)
   delete esd;
 
   delete tag;
-  delete detTag;
   delete evTag;
 }
 

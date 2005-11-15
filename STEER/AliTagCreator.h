@@ -52,10 +52,10 @@ class AliTagCreator : public TObject {
   TString fgridpath;   //the alien location of the tag files
   Int_t fPort;  //the defined port for the host login
   Int_t fStorage;  //0:local - 1:grid
-  //  TGridResult *fresult; //the results from the grid query
-
-  void CreateTag(TFile* file, const char *guid, Int_t Counter);
-
+  
+  //void CreateTag(TFile* file, const char *guid, Int_t Counter);
+  void CreateTag(TFile* file, const char *guid, const char *md5, const char *turl, Long64_t size, Int_t Counter);
+ 
   ClassDef(AliTagCreator,0)  
 };
 

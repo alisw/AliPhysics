@@ -21,13 +21,11 @@
 //   Origin: Panos Christakoglou, UOA-CERN, Panos.Christakoglou@cern.ch
 //-----------------------------------------------------------------
 
-#include <stdlib.h>
-#include <Riostream.h>
-
 #include "AliRunTag.h"
-#include "AliLHCTag.h"
 #include "AliDetectorTag.h"
 #include "AliEventTag.h"
+
+class AliLHCTag;
 
 ClassImp(AliRunTag)
 
@@ -37,6 +35,7 @@ TClonesArray *AliRunTag::fgDetectors = 0;
 //______________________________________________________________________________
 AliRunTag::AliRunTag()
 {
+  //Default constructor
   if (!fgEvents) fgEvents = new TClonesArray("AliEventTag", 1000);
   fEventTag = fgEvents;
   fNumEvents = 0;
@@ -58,17 +57,22 @@ AliRunTag::AliRunTag()
 //______________________________________________________________________________
 AliRunTag::~AliRunTag()
 {
+  //Default destructor
+  delete fEventTag;
+  delete fDetectorTag;
 }
 
 //______________________________________________________________________________
 void AliRunTag::SetLHCTag(Float_t lumin, char *type)
 {
+  //Setter for the LHC tags
   fLHCTag.SetLHCTag(lumin,type);
 }
 
 //______________________________________________________________________________
-void AliRunTag::SetDetectorTag(AliDetectorTag *DetTag)
+void AliRunTag::SetDetectorTag(const AliDetectorTag &DetTag)
 {
+  //Setter for the detector tags
   TClonesArray &detectors = *fDetectorTag;
   new(detectors[fNumDetectors++]) AliDetectorTag(DetTag);
 }
@@ -76,6 +80,7 @@ void AliRunTag::SetDetectorTag(AliDetectorTag *DetTag)
 //______________________________________________________________________________
 void AliRunTag::AddEventTag(const AliEventTag & EvTag)
 {
+  //Adds an entry to the event tag TClonesArray
   TClonesArray &events = *fEventTag;
   new(events[fNumEvents++]) AliEventTag(EvTag);
 }
@@ -83,6 +88,7 @@ void AliRunTag::AddEventTag(const AliEventTag & EvTag)
 //______________________________________________________________________________
 void AliRunTag::Clear(const char *)
 {
+  //Resets the number of events and detectors
   fNumEvents = 0;
   fNumDetectors = 0;
 }

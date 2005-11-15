@@ -29,6 +29,10 @@ class AliEventTag : public TObject
   void   SetEventId(Int_t Pid) {fAliceEventId = Pid;}
   void   SetGUID(const char *Pid) {fGUID = Pid;}
 
+  void   SetMD5(const char *Pid) {fmd5 = Pid;}
+  void   SetTURL(const char *Pid) {fturl = Pid;}
+  void   SetSize(Long64_t i) {fsize = i;}
+
   void   SetNumOfParticipants(Int_t P) {fNumberOfParticipants = P;}
   void   SetImpactParameter(Float_t Pimpact) {fImpactParameter = Pimpact;}
 
@@ -106,6 +110,10 @@ class AliEventTag : public TObject
 
   Int_t  GetEventId() const {return fAliceEventId;}
   const char   *GetGUID() const {return fGUID;}
+ 
+  const char   *GetMD5() const {return fmd5;}
+  const char   *GetTURL() const {return fturl;}
+  Long64_t   GetSize() const {return fsize;}
 
   Int_t   GetNumOfParticipants() const {return fNumberOfParticipants;}
   Float_t GetImpactParameter() const {return fImpactParameter;}
@@ -182,6 +190,11 @@ class AliEventTag : public TObject
  private:
   Int_t    fAliceEventId;                      //The event id
   const char     *fGUID;		       //The unique identifier of the file
+  
+  Long64_t fsize;                             //the size of the file
+  const char* fmd5;                           //another file identifier
+  const char* fturl;                           //the file's url
+  
   Int_t    fNumberOfParticipants;    	       //Number of participants
   Float_t  fImpactParameter;		       //The impact parameter
  
@@ -255,7 +268,7 @@ class AliEventTag : public TObject
   Float_t  fEventPlaneAngle;		       //event plane info
   Float_t  fHBTRadii;                          //HBT info
 
-  ClassDef(AliEventTag,3)  //(ClassName, ClassVersion)
+  ClassDef(AliEventTag,4)  //(ClassName, ClassVersion)
     };
 //______________________________________________________________________________
 
