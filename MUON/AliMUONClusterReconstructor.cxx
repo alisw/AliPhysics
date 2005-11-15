@@ -193,7 +193,5 @@ void AliMUONClusterReconstructor::Digits2Clusters()
 void AliMUONClusterReconstructor::Trigger2Trigger() 
 {
 // copy trigger from TreeD to TreeR
-
-  fMUONData->SetTreeAddress("GLT");
   fMUONData->GetTriggerD();
 }
