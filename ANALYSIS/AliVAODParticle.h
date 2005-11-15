@@ -5,14 +5,14 @@
 
 /* $Id$ */
 
-/////////////////////////////////////////////////////////////
-//
+//***********************************************************
+// Class AliVAODParticle
 // base class for AOD particles
-//
-/////////////////////////////////////////////////////////////
+// Author: Piotr.Skowronski@cern.ch
+//***********************************************************
 
 #include <TObject.h>
-#include <TLorentzVector.h>
+//#include <TLorentzVector.h>
 #include <TVector3.h>
 
 class AliTrackPoints;
@@ -74,9 +74,9 @@ public:
                                                       //twise, f.g. as a pion and as a kaon than both have the same UID)
   virtual void             SetUID(Int_t /*id*/){/* *this */}
   // type information
-  virtual Bool_t           IsSimulated() {return kFALSE;};
-  virtual Bool_t           IsTrack() {return kFALSE;};
-  virtual Bool_t           IsCluster() {return kFALSE;};
+  virtual Bool_t           IsSimulated() const {return kFALSE;};
+  virtual Bool_t           IsTrack() const {return kFALSE;};
+  virtual Bool_t           IsCluster() const {return kFALSE;};
 
   //HBT specific 
   virtual AliTrackPoints*  GetTPCTrackPoints() const {return 0x0;}

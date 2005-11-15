@@ -15,10 +15,6 @@
 
 /* $Id$ */
 
-#include "AliTrackPoints.h"
-#include "AliLog.h"
-
-//_________________________________
 ////////////////////////////////////////////////////////////
 //                                                        //
 // class AliTrackPoints                                //
@@ -32,6 +28,9 @@
 //                                                        //
 ////////////////////////////////////////////////////////////
 
+#include "AliTrackPoints.h"
+#include "AliLog.h"
+
 #include <TClonesArray.h>
 #include <TFile.h>
 #include <TMath.h>
@@ -40,6 +39,14 @@
 #include "AliTPCtrack.h"
 #include "AliTrackReference.h"
 #include "AliITStrackV2.h"
+
+#include "AliRun.h"
+#include "AliESD.h"
+#include "AliRunLoader.h"
+#include "AliTPCtrack.h"
+#include "TTree.h"
+#include "TBranch.h"
+#include "TH2D.h"
 
 ClassImp(AliTrackPoints)
 
@@ -53,6 +60,7 @@ AliTrackPoints::AliTrackPoints():
 {
   //constructor
 }
+
 /***************************************************************/
 
 AliTrackPoints::AliTrackPoints(AliTrackPoints::ETypes type, AliESDtrack* track, Float_t mf):
@@ -87,6 +95,7 @@ AliTrackPoints::AliTrackPoints(AliTrackPoints::ETypes type, AliESDtrack* track, 
    }
    
 }
+
 /***************************************************************/
 
 AliTrackPoints::AliTrackPoints(Int_t n, AliESDtrack* track, Float_t mf, Float_t dr, Float_t r0):
@@ -147,6 +156,7 @@ AliTrackPoints::AliTrackPoints(Int_t n, AliESDtrack* track, Float_t mf, Float_t 
   MakePoints(dr,r0,x,par,c,alpha);
   
 }
+
 /***************************************************************/
 
 AliTrackPoints::AliTrackPoints(Int_t n, AliTPCtrack* track, Float_t dr, Float_t r0):
@@ -184,7 +194,8 @@ AliTrackPoints::AliTrackPoints(Int_t n, AliTPCtrack* track, Float_t dr, Float_t 
   Double_t alpha = track->GetAlpha();
   Double_t c=track->GetC();
   MakePoints(dr,r0,x,par,c,alpha);
-}  
+}
+
 /***************************************************************/
 
 AliTrackPoints::~AliTrackPoints()
@@ -194,6 +205,7 @@ AliTrackPoints::~AliTrackPoints()
   delete [] fY;
   delete [] fZ;
 }
+
 /***************************************************************/
 
 void AliTrackPoints::MakePoints( Float_t dr, Float_t r0, Double_t x, Double_t* par, Double_t c, Double_t alpha)
@@ -287,6 +299,7 @@ void AliTrackPoints::MakePoints( Float_t dr, Float_t r0, Double_t x, Double_t* p
              fX[i],fY[i],fZ[i],rc,TMath::Hypot(fX[i],fY[i])));
    }
 }
+
 /***************************************************************/
 
 void AliTrackPoints::MakeITSPoints(AliESDtrack* track)
@@ -295,10 +308,10 @@ void AliTrackPoints::MakeITSPoints(AliESDtrack* track)
 // z=R*Pz/Pt
  AliITStrackV2 itstrack(*track,kTRUE);
  Double_t x,y,z;
- static const Double_t r[6] = {4.0, 7.0, 14.9, 23.8, 39.1, 43.6};
+ static const Double_t kR[6] = {4.0, 7.0, 14.9, 23.8, 39.1, 43.6};
  for (Int_t i = 0; i < 6; i++)
   {
-    itstrack.GetGlobalXYZat(r[i],x,y,z);
+    itstrack.GetGlobalXYZat(kR[i],x,y,z);
     fX[i] = x;
     fY[i] = y;
     fZ[i] = z;
@@ -309,40 +322,40 @@ void AliTrackPoints::MakeITSPoints(AliESDtrack* track)
 }
 
 /***************************************************************/
+
 void AliTrackPoints::MakeITSPointsInnerFromVertexOuterFromTPC(AliESDtrack* track, Float_t mf)
 {
 //makes trackpoints for ITS  
 //for 3 inner layers calculates out of the vector at vertex
 //for 3 outer ---------------//------------------ at inner TPC  
 
- static const Double_t r[6] = {4.0, 7.0, 14.9, 23.8, 39.1, 43.6};
+ static const Double_t kR[6] = {4.0, 7.0, 14.9, 23.8, 39.1, 43.6};
  AliITStrackV2 itstrack(*track,kTRUE);
  Double_t x,y,z;
  for (Int_t i = 0; i < 3; i++)
   {
-    itstrack.GetGlobalXYZat(r[i],x,y,z);
+    itstrack.GetGlobalXYZat(kR[i],x,y,z);
     fX[i] = x;
     fY[i] = y;
     fZ[i] = z;
     AliDebug(3,Form("X %f Y %f Z %f R asked %f R obtained %f",
-                fX[i],fY[i],fZ[i],r[i],TMath::Hypot(fX[i],fY[i])));
+                fX[i],fY[i],fZ[i],kR[i],TMath::Hypot(fX[i],fY[i])));
   }   
  
  for (Int_t i = 3; i < 6; i++)
   {
     Float_t ax,ay,az;
-    AliTrackPoints tmptp(1,track,mf,0,r[i]);
+    AliTrackPoints tmptp(1,track,mf,0,kR[i]);
     tmptp.PositionAt(0,ax,ay,az);
     fX[i] = ax;
     fY[i] = ay;
     fZ[i] = az;
     AliDebug(3,Form("X %f Y %f Z %f R asked %f R obtained %f",
-                fX[i],fY[i],fZ[i],r[i],TMath::Hypot(fX[i],fY[i])));
+                fX[i],fY[i],fZ[i],kR[i],TMath::Hypot(fX[i],fY[i])));
   }
  
 }
     
-
 /***************************************************************/
 
 void AliTrackPoints::PositionAt(Int_t n, Float_t &x,Float_t &y,Float_t &z)
@@ -360,6 +373,7 @@ void AliTrackPoints::PositionAt(Int_t n, Float_t &x,Float_t &y,Float_t &z)
   AliDebug(2,Form("n %d; X %f; Y %f; Z %f",n,x,y,z));
 
 }
+
 /***************************************************************/
 
 void AliTrackPoints::Move(Float_t x, Float_t y, Float_t z)
@@ -372,6 +386,7 @@ void AliTrackPoints::Move(Float_t x, Float_t y, Float_t z)
      fZ[i]+=z;
    }   
 }
+
 /***************************************************************/
 
 Double_t AliTrackPoints::AvarageDistance(const AliTrackPoints& tr)
@@ -413,11 +428,12 @@ Double_t AliTrackPoints::AvarageDistance(const AliTrackPoints& tr)
 
   return retval;
 }
+
 /***************************************************************/
 
 void AliTrackPoints::Print(Option_t* /*option*/) const
 {
-
+  // Prints the coordinates of the track points
   Info("Print","There is %d points",fN);
   for(Int_t i = 0; i < fN; i++)
    {
@@ -427,27 +443,11 @@ void AliTrackPoints::Print(Option_t* /*option*/) const
 }
 
 /***************************************************************/
-/***************************************************************/
-/***************************************************************/
-/***************************************************************/
-/***************************************************************/
-/***************************************************************/
-
-#include "AliRun.h"
-#include "AliESD.h"
-#include "AliRunLoader.h"
-#include "AliTPCtrack.h"
-#include "TTree.h"
-#include "TBranch.h"
-#include "TH2D.h"
-#include "TCanvas.h"
-#include "AliMagF.h"
-
-
-
 
 void AliTrackPoints::Testesd(Int_t entr,const char* fname )
 {
+  // This is a former macro converted to member function.
+  // It is used to test the functionality of the class using ESD tracks
   delete gAlice;
   gAlice = 0x0;
   AliRunLoader* rl = AliRunLoader::Open();
@@ -472,8 +472,8 @@ void AliTrackPoints::Testesd(Int_t entr,const char* fname )
    }
 
   
-  Int_t N = 170;
-  AliTrackPoints* tp = new AliTrackPoints(N,t,mf,1.);
+  Int_t nTrackPoints = 170;
+  AliTrackPoints* tp = new AliTrackPoints(nTrackPoints,t,mf,1.);
   
   Float_t xmin = -250;
   Float_t xmax =  250;
@@ -502,7 +502,7 @@ void AliTrackPoints::Testesd(Int_t entr,const char* fname )
 
   Float_t x,y,z;
    
-  for (Int_t i = 0;i<N;i++)
+  for (Int_t i = 0;i<nTrackPoints;i++)
    {  
       Double_t r = 84.1+i;
       tp->PositionAt(i,x,y,z);
@@ -569,11 +569,11 @@ void AliTrackPoints::Testesd(Int_t entr,const char* fname )
 }
 
 /***************************************************************/
-/***************************************************************/
-/***************************************************************/
 
 void AliTrackPoints::Testtpc(Int_t entr)
 {
+  // This is a former macro converted to member function.
+  // It is used to test the functionality of the class using TPC tracks
   delete gAlice;
   gAlice = 0x0;
   AliRunLoader* rl = AliRunLoader::Open();
@@ -585,8 +585,8 @@ void AliTrackPoints::Testtpc(Int_t entr)
   TBranch* b=l->TreeT()->GetBranch("tracks");
   b->SetAddress(&t);
   l->TreeT()->GetEntry(entr);  
-  Int_t N = 160;
-  AliTrackPoints* tp = new AliTrackPoints(N,t,1.);
+  Int_t nTrackPoints = 160;
+  AliTrackPoints* tp = new AliTrackPoints(nTrackPoints,t,1.);
   
   Float_t xmin = -250;
   Float_t xmax =  250;
@@ -615,7 +615,7 @@ void AliTrackPoints::Testtpc(Int_t entr)
 
   Float_t x,y,z;
    
-  for (Int_t i = 0;i<N;i++)
+  for (Int_t i = 0;i<nTrackPoints;i++)
    {  
       Double_t r = 84.1+i;
       tp->PositionAt(i,x,y,z);

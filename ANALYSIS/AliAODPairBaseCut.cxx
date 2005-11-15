@@ -1,3 +1,31 @@
+// Base class AliAODPairBaseCut:
+// This class defines the range of some property - pure virtual
+// Property is coded by AliAODCutTypes type
+// Derived classes:
+//       AliAODQInvCut
+//       AliAODKtCut
+//       AliAODKStarCut
+//       AliAODKStarOutCut
+//       AliAODKStarSideCut
+//       AliAODKStarLongCut
+//       AliAODQSideLCMSCut
+//       AliAODQOutLCMSCut
+//       AliAODQLongLCMSCut
+//       AliAODDeltaECut
+//       AliAODDeltaPCut
+//       AliAODDeltaPvectorCut
+//       AliAODDeltaPhiCut
+//       AliAODDeltaThetaCut
+//       AliAODCluterOverlapCut
+//       AliAODAvSeparationCut
+//       AliAODSeparationCut
+//       AliAODITSSeparationCut
+//       AliAODOutSideSameSignCut
+//       AliAODOutSideDiffSignCut
+//       AliAODLogicalOperPairCut
+//       AliAODOrPairCut
+//       AliAODAndPairCut
+// Author: Piotr.Skowronski@cern.ch
 #include "AliAODPairBaseCut.h"
 
 #include "AliTrackPoints.h"

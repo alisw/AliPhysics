@@ -15,13 +15,11 @@
 
 //-------------------------------------------------------------------------
 //     Implementation of the Analysis Oriented Data (AOD) V0 vertex class
-//
 //     Origin: B.Hippolyte, IReS, hippolyt@in2p3.fr 
 //             G.Van Buren, BNL,  gene@bnl.gov      (original STAR MuDsts)
-//
 //     Purpose: Having observables for physics available for V0s
 //-------------------------------------------------------------------------
-#include <Riostream.h>
+
 #include <TMath.h>
 
 #include "AliESD.h"
@@ -58,10 +56,8 @@ AliAODv0::AliAODv0(AliESDv0* rV0Vertex ,AliESD* rEvent){
   this->Fill(rV0Vertex,rEvent);
 }
 
-// AliAODv0::~AliAODv0(){
-// }
-
-void AliAODv0::Fill(AliESDv0* rV0Vertex ,AliESD* rEvent){// Filling method
+void AliAODv0::Fill(AliESDv0* rV0Vertex ,AliESD* rEvent){
+  // Fills the data memebers of the AOD
   fEvent=rEvent;
   Double_t tDecayVertexV0[3]; rV0Vertex->GetXYZ(tDecayVertexV0[0],tDecayVertexV0[1],tDecayVertexV0[2]); 
   fDecayVertexV0X = tDecayVertexV0[0];
@@ -102,7 +98,8 @@ void AliAODv0::Fill(AliESDv0* rV0Vertex ,AliESD* rEvent){// Filling method
   fDcaNegToPrimVertex = TMath::Sqrt(tDcaNegToPrimVertex[0]*tDcaNegToPrimVertex[0]+tDcaNegToPrimVertex[1]*tDcaPosToPrimVertex[1]);
 }
 
-void AliAODv0::ResetV0(){// Reset method
+void AliAODv0::ResetV0(){
+  // Sets the default values of the AOD data members
   fDecayVertexV0X     = 999;
   fDecayVertexV0Y     = 999;
   fDecayVertexV0Z     = 999;

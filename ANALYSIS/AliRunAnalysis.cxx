@@ -15,39 +15,17 @@
 
 /* $Id$ */
 
+//********************************************************
+// class AliRunAnalysis                                  *
+// Analysis manager                                      *
+// Author: Piotr.Skowronski@cern.ch                      *
+//********************************************************
+
 #include "AliRunAnalysis.h"
 #include "AliLog.h"
-
-//________________________________
-///////////////////////////////////////////////////////////
-//
-// class AliRunAnalysis
-//
-//
-//
-// Piotr.Skowronski@cern.ch
-//
-///////////////////////////////////////////////////////////
-
-#include <stdlib.h>
-
-#include <TString.h>
-#include <TObjString.h>
-#include <TClass.h>
-#include <TFile.h>
-#include <TKey.h>
-#include <TObjArray.h>
-
-#include <AliRun.h>
-#include <AliRunLoader.h>
-#include <AliStack.h>
-#include <AliESDtrack.h>
-#include <AliESD.h>
-
-
+#include "AliAnalysis.h"
 #include "AliEventCut.h"
 #include "AliReader.h"
-#include "AliVAODParticle.h"
 
 
 ClassImp(AliRunAnalysis)

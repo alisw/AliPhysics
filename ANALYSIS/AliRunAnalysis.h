@@ -1,24 +1,21 @@
 #ifndef ALIRUNANALYSIS_H
 #define ALIRUNANALYSIS_H
-//________________________________
+
 ///////////////////////////////////////////////////////////
 //
 // class AliRunAnalysis
-//
 // Analysis manager
-//
-//
-// Piotr.Skowronski@cern.ch
+// Author: Piotr.Skowronski@cern.ch
 //
 ///////////////////////////////////////////////////////////
 
 #include <TTask.h>
 #include <TObjArray.h>
-#include "AliAnalysis.h"
 
 class AliEventCut;
-class TFile;
 class AliReader;
+class AliAnalysis;
+class AliAOD;
 
 class AliRunAnalysis: public TTask
 {

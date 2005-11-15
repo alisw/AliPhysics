@@ -1,14 +1,11 @@
 #ifndef ALICLUSTERMAP_H
 #define ALICLUSTERMAP_H
-//_________________________________________________
-///////////////////////////////////////////////////
+
+///////////////////////////////////////////////////////////////////////////
 //
 // class AliClusterMap
-//
 // class that describes cluster occupation at TPC
 // Each padraw has a corresponding bit in fPadRawMap
-// 
-//
 // more info: http://aliweb.cern.ch/people/skowron/analyzer/index.html
 // Piotr.Skowronski@cern.ch
 //
@@ -36,7 +33,7 @@ class AliClusterMap: public TObject
   protected:
   private:
    TBits    fPadRawMap;//bit vector of length 150 correspondind to total number of padraws in TPC
-   static const Int_t fNPadRows;
+   static const Int_t fgkNPadRows; // Number of pad rows
    ClassDef(AliClusterMap,1)
 };
 

@@ -15,16 +15,11 @@
 
 /* $Id$ */
 
-//_______________________________________________________________________
-/////////////////////////////////////////////////////////////////////////
-//
+//***********************************************************************
 // class AliReaderESDTree
-//
 // Reader for MUON ESD Tree (only for rec)
-//
 // finck@subatech.in2p3.fr
-//
-/////////////////////////////////////////////////////////////////////////
+//***********************************************************************
 
 #include <TString.h>
 #include <TTree.h>
@@ -34,8 +29,8 @@
 #include "AliESD.h"
 #include "AliLog.h"
 #include "AliReaderESDTree.h"
-#include "AliRun.h"
 #include "AliRunLoader.h"
+
 
 ClassImp(AliReaderESDTree)
 

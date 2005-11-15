@@ -1,6 +1,6 @@
 #ifndef ALIEVENTCUT_H
 #define ALIEVENTCUT_H
-//________________________________
+
 ///////////////////////////////////////////////////////////
 //
 // class AliEventCut
@@ -9,7 +9,7 @@
 // Each of base event cut checks only one property.
 // Logical base cuts also exists that point to other base cuts.
 // Using them one can build complicated cut with binary tree structure
-//
+// Author: Piotr.Skowronski@cern.ch
 ///////////////////////////////////////////////////////////
 
 #include <TObject.h>
@@ -36,7 +36,7 @@ class AliEventCut: public TObject
   protected:
     AliEventBaseCut* FindCut(AliEventBaseCut::EEventCutProperty prop);
     
-    TObjArray fBaseCuts;
+    TObjArray fBaseCuts; // Array of cuts
   private:
     ClassDef(AliEventCut,1)
 };

@@ -29,28 +29,17 @@
 #include <TFile.h>
 #include <TGliteXmlEventlist.h>
 #include <TH1.h>
-#include <TKey.h>
-#include <TObjString.h>
 #include <TPDGCode.h>
 #include <TParticle.h>
 #include <TString.h>
-#include <TTree.h>
-
-#include "AliAnalysis.h"
-#include "AliAODRun.h"
 
 #include "AliAOD.h"
 #include "AliAODParticle.h"
-#include "AliAODParticleCut.h"
-#include "AliAODRun.h"
-#include "AliAnalysis.h"
 #include "AliClusterMap.h"
 #include "AliESD.h"
 #include "AliESDtrack.h"
-#include "AliKalmanTrack.h"
 #include "AliLog.h"
 #include "AliReaderESD.h"
-#include "AliRun.h"
 #include "AliRunLoader.h"
 #include "AliStack.h"
 
@@ -243,7 +232,7 @@ Int_t AliReaderESD::ReadESD(AliESD* esd)
 Int_t AliReaderESD::ReadESDCentral(AliESD* esd)
 {
   //****** Tentative particle type "concentrations"
-  static const Double_t concentr[5]={0.05, 0., 0.85, 0.10, 0.05};
+  static const Double_t kConcentr[5]={0.05, 0., 0.85, 0.10, 0.05};
   
   Double_t pidtable[kNSpecies];//array used for reading pid probabilities from ESD track
   Double_t w[kNSpecies];
@@ -378,14 +367,14 @@ Int_t AliReaderESD::ReadESDCentral(AliESD* esd)
       
      //Here we apply Bayes' formula
      Double_t rc=0.;
-     for (Int_t s=0; s<AliPID::kSPECIES; s++) rc+=concentr[s]*pidtable[s];
+     for (Int_t s=0; s<AliPID::kSPECIES; s++) rc+=kConcentr[s]*pidtable[s];
      if (rc==0.0) 
       {
         AliDebug(3,"Particle rejected since total bayessian PID probab. is zero.");
         continue;
       }
 
-     for (Int_t s=0; s<AliPID::kSPECIES; s++) w[s]=concentr[s]*pidtable[s]/rc;
+     for (Int_t s=0; s<AliPID::kSPECIES; s++) w[s]=kConcentr[s]*pidtable[s]/rc;
 
      if (AliDebugLevel() > 4)
       { 
@@ -566,7 +555,7 @@ Int_t AliReaderESD::ReadESDCentral(AliESD* esd)
 /**********************************************************/
 Int_t AliReaderESD::ReadESDMuon(AliESD* esd)
 {
-
+  // Reads the muon tracks from the ESD
   Double_t vertexpos[3];//vertex position, assuming no secondary decay
 
   const AliESDVertex* vertex = esd->GetVertex();
@@ -585,13 +574,13 @@ Int_t AliReaderESD::ReadESDMuon(AliESD* esd)
  AliDebug(1,Form("Reading Event %d \nFound %d tracks.",fCurrentEvent,nTracks));
 
  // settings
-  Float_t Chi2Cut = 100.;
-  Float_t PtCutMin = 1.;
-  Float_t PtCutMax = 10000.;
+  Float_t chi2Cut = 100.;
+  Float_t ptCutMin = 1.;
+  Float_t ptCutMax = 10000.;
   Float_t muonMass = 0.105658389;
   Int_t pdgcode = -13;
   Double_t thetaX, thetaY, pYZ;
-  Double_t pxRec1, pyRec1, pzRec1, E1;
+  Double_t pxRec1, pyRec1, pzRec1, e1;
   Int_t charge;
 
   Int_t ntrackhits;
@@ -611,8 +600,8 @@ Int_t AliReaderESD::ReadESDMuon(AliESD* esd)
       pxRec1  = pzRec1 * TMath::Tan(thetaX);
       pyRec1  = pzRec1 * TMath::Tan(thetaY);
       charge = Int_t(TMath::Sign(1.,muonTrack->GetInverseBendingMomentum()));
-      E1 = TMath::Sqrt(muonMass * muonMass + pxRec1 * pxRec1 + pyRec1 * pyRec1 + pzRec1 * pzRec1);
-      fV1.SetPxPyPzE(pxRec1, pyRec1, pzRec1, E1);
+      e1 = TMath::Sqrt(muonMass * muonMass + pxRec1 * pxRec1 + pyRec1 * pyRec1 + pzRec1 * pzRec1);
+      fV1.SetPxPyPzE(pxRec1, pyRec1, pzRec1, e1);
 
       ntrackhits = muonTrack->GetNHit();
       fitfmin    = muonTrack->GetChi2();
@@ -623,9 +612,9 @@ Int_t AliReaderESD::ReadESDMuon(AliESD* esd)
       // chi2 per d.o.f.
       Float_t ch1 =  fitfmin / (2.0 * ntrackhits - 5);
 
-      if ((ch1 < Chi2Cut) && (pt1 > PtCutMin) && (pt1 < PtCutMax)) {
+      if ((ch1 < chi2Cut) && (pt1 > ptCutMin) && (pt1 < ptCutMax)) {
 	AliAODParticle* track = new AliAODParticle(pdgcode*charge,1,iTrack, 
-                                                   pxRec1, pyRec1,pzRec1, E1,
+                                                   pxRec1, pyRec1,pzRec1, e1,
                                                    vertexpos[0], vertexpos[1], vertexpos[2], 0.);
         fEventRec->AddParticle(track);
       }

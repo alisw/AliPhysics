@@ -1,15 +1,15 @@
 #include "AliEventCut.h"
-//________________________________
-///////////////////////////////////////////////////////////
-//
-// class AliRunAnalysis
-//
-//
-//
-//
-///////////////////////////////////////////////////////////
 
-#include <TObjArray.h>
+///////////////////////////////////////////////////////////
+//
+// class AliEventCut
+//
+// Event cut. It has list of base event cuts. 
+// Each of base event cut checks only one property.
+// Logical base cuts also exists that point to other base cuts.
+// Using them one can build complicated cut with binary tree structure
+// Author: Piotr.Skowronski@cern.ch
+///////////////////////////////////////////////////////////
 
 #include "AliEventBaseCut.h"
 

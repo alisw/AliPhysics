@@ -15,15 +15,11 @@
 
 /* $Id$ */
 
-//_________________________________________________
-///////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////
 //
 // class AliClusterMap
-//
 // class that describes cluster occupation at TPC
 // Each padraw has a corresponding bit in fPadRawMap
-// 
-//
 // more info: http://aliweb.cern.ch/people/skowron/analyzer/index.html
 // Piotr.Skowronski@cern.ch
 //
@@ -35,21 +31,20 @@
 #include "AliESDtrack.h"
 #include "AliLog.h"
 #include "AliTPCtrack.h"
-#include "AliVAODParticle.h"
 
-const Int_t AliClusterMap::fNPadRows = 159;
+const Int_t AliClusterMap::fgkNPadRows = 159;
 
 ClassImp(AliClusterMap)
 
 AliClusterMap::AliClusterMap():
- fPadRawMap(fNPadRows)
+ fPadRawMap(fgkNPadRows)
 {
 //ctor
 
 }
 /***********************************************************************/
 AliClusterMap::AliClusterMap(AliESDtrack* track):
- fPadRawMap( (track)?track->GetTPCClusterMap():fNPadRows )
+ fPadRawMap( (track)?track->GetTPCClusterMap():fgkNPadRows )
 {
  //ctor
  
@@ -59,7 +54,7 @@ AliClusterMap::AliClusterMap(AliESDtrack* track):
 /***********************************************************************/
 
 AliClusterMap::AliClusterMap(AliTPCtrack* track):
- fPadRawMap(fNPadRows)
+ fPadRawMap(fgkNPadRows)
 {
  //ctor
  
@@ -117,7 +112,7 @@ void AliClusterMap::Print() const
 {
 //Prints the bit map 
   TString msg;
-  for ( Int_t i = 0; i < fNPadRows; i++)
+  for ( Int_t i = 0; i < fgkNPadRows; i++)
    {
      if ( fPadRawMap.TestBitNumber(i) )
       {
@@ -147,7 +142,7 @@ Float_t AliClusterMap::GetOverlapFactor(const AliClusterMap& clmap) const
   
   Int_t nh = 0;
   Int_t an = 0;
-  for ( Int_t i = 0; i < fNPadRows; i++)
+  for ( Int_t i = 0; i < fgkNPadRows; i++)
    {
      Bool_t x = HasClAtPadRow(i);
      Bool_t y = clmap.HasClAtPadRow(i);

@@ -6,10 +6,8 @@
 
 //-------------------------------------------------------------------------
 //     Implementation of the Analysis Oriented Data (AOD) V0 vertex class
-//
 //     Origin: B.Hippolyte, IReS, hippolyt@in2p3.fr 
 //             G.Van Buren, BNL,  gene@bnl.gov      (original STAR MuDsts)
-//
 //     Purpose: Having observables for physics available for V0s
 //-------------------------------------------------------------------------
 

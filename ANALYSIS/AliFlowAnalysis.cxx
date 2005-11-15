@@ -1,22 +1,12 @@
 #include "AliFlowAnalysis.h"
-//________________________________
-///////////////////////////////////////////////////////////
-//
+
+//*********************************************************
 // class AliFlowAnalysis
-//
 // Flow Analysis
-//
-//
 // S.Radomski@gsi.de
 // Piotr.Skowronski@cern.ch
-//
-///////////////////////////////////////////////////////////
-/*********************************************************/
+//*********************************************************
 
-#include <TString.h>
-#include <TParticle.h>
-
-#include <AliStack.h>
 #include <AliAOD.h>
 #include <AliVAODParticle.h>
 #include <AliAODParticleCut.h>
@@ -50,7 +40,7 @@ Int_t AliFlowAnalysis::Init()
 
 Int_t AliFlowAnalysis::ProcessEvent(AliAOD* aodrec, AliAOD* aodsim)
 {
- 
+  // Process AOD events containing the reconstructed and simulated information
   Info("ProcessEvent","Sim AOD address %#x",aodsim);
   Double_t psi = 0, v2 = 0;
   if (aodrec)
