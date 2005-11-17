@@ -13,8 +13,9 @@
 //    Origin: Panos Christakoglou, UOA-CERN, Panos.Christakoglou@cern.ch
 //-------------------------------------------------------------------------
 
-#include "TObject.h"
-
+#include <TObject.h>
+#include <TString.h>
+#include <TClonesArray.h>
 #include "AliLHCTag.h"
 
 class AliEventTag;
@@ -55,7 +56,7 @@ class AliRunTag : public TObject
   Int_t         GetRecoVersion() const {return fAliceReconstructionVersion;}
   Int_t         GetRunQuality() const {return fAliceRunQuality;}
   Float_t       GetBeamEnergy() const {return fAliceBeamEnergy;}
-  const char   *GetBeamType() const {return fAliceBeamType;}
+  const char   *GetBeamType() const {return fAliceBeamType.Data();}
   Int_t         GetCalibVersion() const {return fAliceCalibrationVersion;}
   
   Int_t GetDataType() const {return fAliceDataType;}
@@ -63,7 +64,8 @@ class AliRunTag : public TObject
   Int_t         GetNEvents() const {return fNumEvents;}
   
   AliLHCTag    *GetLHCTag() {return &fLHCTag; } 
-  TClonesArray *GetEventTags() const {return fEventTag;}
+  const TClonesArray *GetEventTags() const {return &fEventTag;}
+  const TClonesArray *GetDetectorTags() const {return &fDetectorTag;}
 
  private:
   Int_t    fAliceRunId;                   //the run id
@@ -73,22 +75,18 @@ class AliRunTag : public TObject
   Int_t    fAliceReconstructionVersion;   //reco version
   Bool_t   fAliceRunQuality;              //validation script
   Float_t  fAliceBeamEnergy;              //beam energy cm
-  const char *fAliceBeamType;             //run type (pp, AA, pA)
+  TString  fAliceBeamType;                //run type (pp, AA, pA)
   Int_t    fAliceCalibrationVersion;      //calibration version
   
   Int_t  fAliceDataType;                  //0: simulation -- 1: data
   
   Int_t    fNumEvents;                    //number of events per file
   Int_t    fNumDetectors;                 //number of detector configs per file
-  TClonesArray  *fEventTag;               //array with all event tags
-  TClonesArray  *fDetectorTag;            //array with all the detector tags
+  TClonesArray  fEventTag;                //array with all event tags
+  TClonesArray  fDetectorTag;             //array with all the detector tags
   
   AliLHCTag   fLHCTag;                    //LHC tag object
   
-  static TClonesArray *fgEvents;          //static Event tag TClonesArray
-  static TClonesArray *fgDetectors;       //static Detector tag TClonesArray
-  
-
   ClassDef(AliRunTag,1)  //(ClassName, ClassVersion)
 };
 //______________________________________________________________________________

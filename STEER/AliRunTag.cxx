@@ -25,41 +25,36 @@
 #include "AliDetectorTag.h"
 #include "AliEventTag.h"
 
-class AliLHCTag;
-
 ClassImp(AliRunTag)
 
-TClonesArray *AliRunTag::fgEvents = 0;
-TClonesArray *AliRunTag::fgDetectors = 0;
-
 //______________________________________________________________________________
-AliRunTag::AliRunTag()
+  AliRunTag::AliRunTag() :
+    TObject(),
+    fAliceRunId(-1),
+    fAliceMagneticField(0.0),
+    fAliceRunStartTime(0),
+    fAliceRunStopTime(0),
+    fAliceReconstructionVersion(0),
+    fAliceRunQuality(0),
+    fAliceBeamEnergy(0.0),
+    fAliceBeamType(""),
+    fAliceCalibrationVersion(0),
+    fAliceDataType(0),
+    fNumEvents(0),
+    fNumDetectors(0),
+    fEventTag("AliEventTag", 1000),
+    fDetectorTag("AliDetectorTag", 1000),
+    fLHCTag()
 {
   //Default constructor
-  if (!fgEvents) fgEvents = new TClonesArray("AliEventTag", 1000);
-  fEventTag = fgEvents;
-  fNumEvents = 0;
-  
-  if (!fgDetectors) fgDetectors = new TClonesArray("AliDetectorTag", 1000);
-  fDetectorTag = fgDetectors;
-  fNumDetectors = 0;
-  
-  fAliceMagneticField = 0.0;
-  fAliceRunStartTime = 0;
-  fAliceRunStopTime = 0;
-  fAliceReconstructionVersion = 0;
-  fAliceRunQuality = 0;
-  fAliceBeamEnergy = 0.0;
-  fAliceCalibrationVersion = 0;	
-  fAliceDataType = 0;
 }
 
 //______________________________________________________________________________
 AliRunTag::~AliRunTag()
 {
-  //Default destructor
-  delete fEventTag;
-  delete fDetectorTag;
+  //Destructor
+  fEventTag.Delete();
+  fDetectorTag.Delete();
 }
 
 //______________________________________________________________________________
@@ -73,16 +68,14 @@ void AliRunTag::SetLHCTag(Float_t lumin, char *type)
 void AliRunTag::SetDetectorTag(const AliDetectorTag &DetTag)
 {
   //Setter for the detector tags
-  TClonesArray &detectors = *fDetectorTag;
-  new(detectors[fNumDetectors++]) AliDetectorTag(DetTag);
+  new(fDetectorTag[fNumDetectors++]) AliDetectorTag(DetTag);
 }
 
 //______________________________________________________________________________
 void AliRunTag::AddEventTag(const AliEventTag & EvTag)
 {
   //Adds an entry to the event tag TClonesArray
-  TClonesArray &events = *fEventTag;
-  new(events[fNumEvents++]) AliEventTag(EvTag);
+  new(fEventTag[fNumEvents++]) AliEventTag(EvTag);
 }
 
 //______________________________________________________________________________
