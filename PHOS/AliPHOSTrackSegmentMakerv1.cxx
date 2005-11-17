@@ -17,6 +17,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.75  2005/11/17 12:35:27  hristov
+ * Use references instead of objects. Avoid to create objects when they are not really needed
+ *
  * Revision 1.74  2005/07/08 14:01:36  hristov
  * Tracking in non-uniform nmagnetic field (Yu.Belikov)
  *
@@ -163,22 +166,58 @@ Float_t  AliPHOSTrackSegmentMakerv1::GetDistanceInPHOSPlane(AliPHOSEmcRecPoint *
     distance2Cpv = (vecCpv - vecEmc).Mag() ;
     
     if (fESD != 0x0) {
+      AliPHOSGetter * gime = AliPHOSGetter::Instance() ; 
+      const AliPHOSGeometry * geom = gime->PHOSGeometry() ; 
+
+      Double_t rPHOS = geom->GetIPtoCrystalSurface();
+
+      //PH Acceptance boundaries for each PHOS module
+      Int_t nModules = geom->GetNModules();
+      Double_t * thmin = new Double_t[nModules];// theta min
+      Double_t * thmax = new Double_t[nModules];// theta max
+      Double_t * phmin = new Double_t[nModules];// phi min
+      Double_t * phmax = new Double_t[nModules];// phi max
+      
+      for (Int_t imod=0; imod<nModules; imod++) {
+	geom->EmcModuleCoverage(imod,
+				thmin[imod],thmax[imod],
+				phmin[imod],phmax[imod]);
+      }
+
       // Extrapolate the global track direction if any to CPV and find the closest track
       Int_t nTracks = fESD->GetNumberOfTracks();
       Int_t iClosestTrack = -1;
       Double_t minDistance = 1e6;
       Double_t pxyz[3], xyz[3];
-      Double_t rPHOS = 
-	AliPHOSGetter::Instance()->PHOSGeometry()->GetIPtoCrystalSurface();
+      TVector3 inPHOS; //PH Used to calculate theta and phi
+
+      //PH Loop on tracks
       AliESDtrack *track;
       for (Int_t iTrack=0; iTrack<nTracks; iTrack++) {
 	track = fESD->GetTrack(iTrack);
 	if (track->IsPHOS()) 
-	  continue ; 
+	  continue ; //Skip the PHOS tracks
 	if (!track->GetXYZAt(rPHOS, fESD->GetMagneticField(), xyz))
            continue; //track coord on the cylinder of PHOS radius
 	if ((TMath::Abs(xyz[0])+TMath::Abs(xyz[1])+TMath::Abs(xyz[2]))<=0)
 	   continue;
+	//PH Here one has to cut out the tracks which are not inside the PHOS
+	//PH acceptance
+	inPHOS.SetXYZ(xyz[0],xyz[1],xyz[2]);
+	Double_t inPhi = inPHOS.Phi();
+	Double_t inTheta = inPHOS.Theta();
+
+	Bool_t skip = kFALSE;
+	for (Int_t imod=0; nModules; imod++) {
+	  //PH Loop on modules to check if the track enters in the acceptance 
+	  if (thmin[imod] > inTheta || thmax[imod] < inTheta || 
+	      phmin[imod] > inPhi   || phmax[imod] < inPhi) {
+	    skip = kTRUE;
+	    break;
+	  }
+	}
+	if (skip) continue; //PH Skip, if not in the PHOS acceptance
+
 	if (!track->GetPxPyPzAt(rPHOS, fESD->GetMagneticField(), pxyz))
            continue; // track momentum ibid.
 	PropagateToPlane(vecDist,xyz,pxyz,"CPV",cpvClu->GetPHOSMod());
@@ -193,12 +232,15 @@ Float_t  AliPHOSTrackSegmentMakerv1::GetDistanceInPHOSPlane(AliPHOSEmcRecPoint *
 	}
       }
 
+      delete [] thmin;
+      delete [] thmax;
+      delete [] phmin;
+      delete [] phmax;
+
       if (iClosestTrack != -1) {
 	track = fESD->GetTrack(iClosestTrack);
 	if (track->GetPxPyPzAt(rPHOS, fESD->GetMagneticField(), pxyz)) { // track momentum ibid.
 	TVector3 vecCpvGlobal; // Global position of the CPV recpoint
-	AliPHOSGetter * gime = AliPHOSGetter::Instance() ; 
-	const AliPHOSGeometry * geom = gime->PHOSGeometry() ; 
 	geom->GetGlobal((AliRecPoint*)cpvClu,vecCpvGlobal);
 	for (Int_t ixyz=0; ixyz<3; ixyz++)
 	  xyz[ixyz] = vecCpvGlobal[ixyz];
