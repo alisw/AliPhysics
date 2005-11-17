@@ -17,6 +17,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.76  2005/11/17 22:29:12  hristov
+ * Faster version, no attempt to match tracks outside the PHOS acceptance
+ *
  * Revision 1.75  2005/11/17 12:35:27  hristov
  * Use references instead of objects. Avoid to create objects when they are not really needed
  *
@@ -207,12 +210,12 @@ Float_t  AliPHOSTrackSegmentMakerv1::GetDistanceInPHOSPlane(AliPHOSEmcRecPoint *
 	Double_t inPhi = inPHOS.Phi();
 	Double_t inTheta = inPHOS.Theta();
 
-	Bool_t skip = kFALSE;
+	Bool_t skip = kTRUE;
 	for (Int_t imod=0; nModules; imod++) {
 	  //PH Loop on modules to check if the track enters in the acceptance 
-	  if (thmin[imod] > inTheta || thmax[imod] < inTheta || 
-	      phmin[imod] > inPhi   || phmax[imod] < inPhi) {
-	    skip = kTRUE;
+	  if (thmin[imod] < inTheta && thmax[imod] > inTheta && 
+	      phmin[imod] < inPhi   && phmax[imod] > inPhi) {
+	    skip = kFALSE;
 	    break;
 	  }
 	}
