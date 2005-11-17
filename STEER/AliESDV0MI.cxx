@@ -66,9 +66,16 @@ AliESDV0MI::AliESDV0MI() :
   //
   //Dafault constructor
   //
-  for (Int_t i=0;i<4;i++){fCausality[i]=0;}
+  for (Int_t i=0;i<5;i++){
+    fRP[i]=fRM[i]=0;
+  }
+  fLab[0]=fLab[1]=-1;
+  fIndex[0]=fIndex[1]=-1;
   for (Int_t i=0;i<6;i++){fClusters[0][i]=0; fClusters[1][i]=0;}
-  for (Int_t i=0;i<2;i++){fNormDCAPrim[0]=0;fNormDCAPrim[1]=0;}
+  fNormDCAPrim[0]=fNormDCAPrim[1]=0;
+  for (Int_t i=0;i<3;i++){fPP[i]=fPM[i]=fXr[i]=fAngle[i]=0;}
+  for (Int_t i=0;i<3;i++){fOrder[i]=0;}
+  for (Int_t i=0;i<4;i++){fCausality[i]=0;}
 }
 
 Double_t AliESDV0MI::GetSigmaY(){
