@@ -56,6 +56,7 @@ class Ali4Vector
   Double_t GetGamma();                              // Provide the Lorentz gamma factor
   Double_t GetX(Int_t i,TString f,TString u="rad"); // Provide i-th vector component in frame f in units u
   virtual Double_t GetOpeningAngle(Ali4Vector& q,TString u="rad"); // Opening angle between 3-vector parts in units u
+  virtual Double_t GetOpeningAngle(Ali3Vector& q,TString u="rad"); // Opening angle with 3-vector q in units u
 
  protected:
   Double_t fV2;      // The Lorentz invariant (v^i*v_i)
@@ -68,6 +69,6 @@ class Ali4Vector
   Double_t GetScaTrans(); // Provide "transverse value" of scalar part w.r.t. z-axis
   Double_t GetScaLong();  // Provide "longitudinal value" of scalar part w.r.t. z-axis
 
- ClassDef(Ali4Vector,9) // Handling of Lorentz 4-vectors in various reference frames.
+ ClassDef(Ali4Vector,10) // Handling of Lorentz 4-vectors in various reference frames.
 };
 #endif

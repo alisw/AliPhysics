@@ -9,6 +9,7 @@
 #include "TROOT.h"
 #include "TTask.h"
 #include "TString.h"
+#include "TArrayI.h"
 
 #include "AliJob.h"
 #include "AliSample.h"
@@ -21,17 +22,25 @@ class IceDwalk : public TTask
   IceDwalk(const char* name="",const char* title=""); // Constructor
   virtual ~IceDwalk();                                // Destructor
   virtual void Exec(Option_t* opt);                   // Direct walk reconstruction
-  void SetDmin(Float_t d);      // Set minimum hit distance to form a track element
-  void SetDtmarg(Int_t dt);     // Set maximum hit time difference margin for track elements
-  void SetTangsep(Float_t ang); // Set angular separation within which track candidates are clustered in a jet
-  void SetJangsep(Float_t ang); // Set angular separation within which jets are merged into 1 single track
+  void SetDmin(Float_t d);       // Set minimum hit distance to form a track element
+  void SetDtmarg(Int_t dt);      // Set maximum hit time difference margin for track elements
+  void SetTangmax(Float_t ang);  // Set max. angular separation for track candidate clustering into jets
+  void SetRtangmax(Float_t ang); // Set max. ang. separation for relative r0 direction for track candidate clustering
+  void SetRtdmax(Float_t d);     // Set maximum r0 distance for track candidate clustering
+  void SetJangmax(Float_t ang);  // Set max. angular separation for jet merging into 1 single track
+  void SetRjangmax(Float_t ang); // Set max. angular separation for relative r0 direction for jet merging
+  void SetRjdmax(Float_t d);     // Set maximum r0 distance for jet merging
 
  protected :
-  Float_t fDmin;    // Minimum hit distance (in m) to form a track element 
-  Int_t fDtmarg;    // Maximum hit time difference margin (in ns) for track elements
-  Float_t fTangsep; // Angular separation (in deg) within which track candidates are clustered in a jet
-  Float_t fJangsep; // Angular separation (in deg) within which jets are merged into 1 single track
+  Float_t fDmin;     // Minimum hit distance (in m) to form a track element 
+  Int_t fDtmarg;     // Maximum hit time difference margin (in ns) for track elements
+  Float_t fTangmax;  // Angular separation (in deg) within which track candidates are clustered in a jet
+  Float_t fRtangmax; // Relative r0 angular separation (in deg) for track candidate clustering
+  Float_t fRtdmax;   // Maximum r0 distance (in m) for track candidate clustering
+  Float_t fJangmax;  // Angular separation (in deg) within which jets are merged into 1 single track
+  Float_t fRjangmax; // Relative r0 angular separation (in deg) for jet clustering
+  Float_t fRjdmax;   // Maximum r0 distance (in m) for jet merging
 
- ClassDef(IceDwalk,1) // TTask derived class to perform direct walk reconstruction
+ ClassDef(IceDwalk,2) // TTask derived class to perform direct walk reconstruction
 };
 #endif

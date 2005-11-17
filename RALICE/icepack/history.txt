@@ -35,4 +35,5 @@
                 IceCleanHits updated to support automatic trigger time setting from
                 the IceEvent trigger information.
 14-nov-2005 NvE Typo corrected in IceCleanHits::SetTnameA.
+17-nov-2005 NvE Prototype version of IceDwalk tuned/improved for multi-track reconstruction. 
 

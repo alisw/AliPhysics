@@ -111,6 +111,7 @@ void AliJet::Init()
  fTracks=0;
  fNtinit=0;
  fTrackCopy=0;
+ fRef=0;
  fSelected=0;
 }
 ///////////////////////////////////////////////////////////////////////////
@@ -141,6 +142,11 @@ AliJet::~AliJet()
  {
   delete fTracks;
   fTracks=0;
+ }
+ if (fRef)
+ {
+  delete fRef;
+  fRef=0;
  }
  if (fSelected)
  {
@@ -185,6 +191,7 @@ AliJet::AliJet(const AliJet& j) : TNamed(j),Ali4Vector(j)
  fNtrk=j.fNtrk;
  fTrackCopy=j.fTrackCopy;
  fUserId=j.fUserId;
+ if (j.fRef) fRef=new AliPositionObj(*(j.fRef));
 
  fSelected=0;
 
@@ -219,6 +226,11 @@ void AliJet::SetNtinit(Int_t n)
  {
   delete fTracks;
   fTracks=0;
+ }
+ if (fRef)
+ {
+  delete fRef;
+  fRef=0;
  }
 }
 ///////////////////////////////////////////////////////////////////////////
@@ -355,6 +367,7 @@ void AliJet::List(TString f,TString u)
 // The defaults are f="car" and u="rad".
 
  Data(f,u); // Information of the current jet
+ if (fRef)   { cout << " Ref-point   :"; fRef->Data(f,u); }
 
  // The tracks of this jet
  AliTrack* t; 
@@ -386,6 +399,7 @@ void AliJet::ListAll(TString f,TString u)
 // The defaults are f="car" and u="rad".
 
  Data(f,u); // Information of the current jet
+ if (fRef)   { cout << " Ref-point   :"; fRef->Data(f,u); }
 
  // The tracks of this jet
  AliTrack* t; 
@@ -772,6 +786,35 @@ Int_t AliJet::GetId() const
 {
 // Provide the user defined identifier of this jet.
  return fUserId;
+}
+///////////////////////////////////////////////////////////////////////////
+void AliJet::SetReferencePoint(AliPosition& p)
+{
+// Store the position of the jet reference-point.
+// The reference-point of a jet provides a means to define a generic
+// space-time location for the jet as a whole.
+// This doesn't have to be necessarily the location where all the constituent
+// tracks originate (e.g. a bundle of parallel tracks doesn't have such
+// a location). As such the meaning of this reference-point is different from
+// a normal vertex position and allows to provide complimentary information. 
+// This reference point is the preferable point to start e.g. extrapolations
+// and investigate coincidences in space and/or time.
+ if (fRef) delete fRef;
+ fRef=new AliPositionObj(p);
+}
+///////////////////////////////////////////////////////////////////////////
+AliPosition* AliJet::GetReferencePoint()
+{
+// Provide the position of the jet reference-point.
+// The reference-point of a jet provides a means to define a generic
+// space-time location for the jet as a whole.
+// This doesn't have to be necessarily the location where all the constituent
+// tracks originate (e.g. a bundle of parallel tracks doesn't have such
+// a location). As such the meaning of this reference-point is different from
+// a normal vertex position and allows to provide complimentary information. 
+// This reference point is the preferable point to start e.g. extrapolations
+// and investigate coincidences in space and/or time.
+ return fRef;
 }
 ///////////////////////////////////////////////////////////////////////////
 TObjArray* AliJet::SortTracks(Int_t mode,TObjArray* tracks)

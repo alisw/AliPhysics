@@ -1023,3 +1023,20 @@ Double_t Ali4Vector::GetOpeningAngle(Ali4Vector& q,TString u)
  return ang;
 }
 ///////////////////////////////////////////////////////////////////////////
+Double_t Ali4Vector::GetOpeningAngle(Ali3Vector& q,TString u)
+{
+// Provide the opening angle between the 3-vector part and 3-vector q.
+// The string argument "u" allows to choose between different output units.
+// u = "rad" : opening angle provided in radians
+//     "deg" : opening angle provided in degrees
+//
+// The default is u="rad".
+
+ Ali3Vector v1=fV;
+
+ Double_t ang=v1.GetOpeningAngle(q,u);
+ fDresult=v1.GetResultError();
+
+ return ang;
+}
+///////////////////////////////////////////////////////////////////////////

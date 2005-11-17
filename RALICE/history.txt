@@ -669,3 +669,6 @@
 09-nov-2005 NvE DisplayHits memberfunctions in AliDevice updated to fully support all 
                 (de)calibration modes of GetSignal for displaying (and skipping dead) hits.
 14-nov-2005 NvE Hit access by name introduced in AliDevice.
+15-nov-2005 NvE Support for opening angle calculation between a 3-vector and the 3-vector part
+                of a 4-vector introduced in Ali4Vector.
+16-nov-2005 NvE Support for a reference point introduced in AliJet.
