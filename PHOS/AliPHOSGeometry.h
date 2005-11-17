@@ -63,9 +63,9 @@ public:
                                          // single crystal in a EMC module
   void ImpactOnEmc(Double_t theta, Double_t phi, Int_t & ModuleNumber, 
 		         Double_t & z, Double_t & x) const ; 
-  void ImpactOnEmc(TVector3 vec, Int_t & ModuleNumber, 
+  void ImpactOnEmc(const TVector3& vec, Int_t & ModuleNumber, 
 		         Double_t & z, Double_t & x) const ; 
-  void ImpactOnEmc(TParticle p, Int_t & ModuleNumber, 
+  void ImpactOnEmc(const TParticle& p, Int_t & ModuleNumber, 
 		         Double_t & z, Double_t & x) const ; 
                                         // calculates the impact coordinates of a neutral particle  
                                          // emitted in direction theta and phi in ALICE
@@ -119,8 +119,10 @@ public:
   Float_t GetCPVBoxSize(Int_t index)           const { return fGeometryCPV ->GetCPVBoxSize(index);        } 
   Float_t GetIPtoCPVDistance(void)             const { return  GetIPtoOuterCoverDistance() - 
 							       GetCPVBoxSize(1) - 1.0; }
-  TVector3 GetModuleCenter(const char *det, Int_t module) const;
-  TVector3 Global2Local(TVector3 globalPosition, Int_t module) const;
+  void GetModuleCenter(TVector3& center, const char *det, Int_t module) const;
+  void Global2Local(TVector3& localPosition,
+		    const TVector3& globalPosition,
+		    Int_t module) const;
 
   // Return PHOS' support geometry parameters
 

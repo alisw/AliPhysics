@@ -7,6 +7,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.46  2005/05/28 14:19:05  schutz
+ * Compilation warnings fixed by T.P.
+ *
  */
 
 //_________________________________________________________________________
@@ -71,7 +74,9 @@ private:
 
   const TString BranchName() const ; 
   Float_t GetDistanceInPHOSPlane(AliPHOSEmcRecPoint * EmcClu , AliPHOSCpvRecPoint * Cpv , Int_t & track ) const ; // see R0
-  TVector3 PropagateToPlane(Double_t *x, Double_t *p, const char *det, Int_t module) const;
+  void PropagateToPlane(TVector3& globalIntersection,
+			Double_t *x, Double_t *p,
+			const char *det, Int_t module) const;
   void    Init() ;
   void    InitParameters() ;
   void    PrintTrackSegments(Option_t *option) ;

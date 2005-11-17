@@ -17,6 +17,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.74  2005/07/08 14:01:36  hristov
+ * Tracking in non-uniform nmagnetic field (Yu.Belikov)
+ *
  * Revision 1.73  2005/05/28 14:19:05  schutz
  * Compilation warnings fixed by T.P.
  *
@@ -178,7 +181,7 @@ Float_t  AliPHOSTrackSegmentMakerv1::GetDistanceInPHOSPlane(AliPHOSEmcRecPoint *
 	   continue;
 	if (!track->GetPxPyPzAt(rPHOS, fESD->GetMagneticField(), pxyz))
            continue; // track momentum ibid.
-	vecDist = PropagateToPlane(xyz,pxyz,"CPV",cpvClu->GetPHOSMod());
+	PropagateToPlane(vecDist,xyz,pxyz,"CPV",cpvClu->GetPHOSMod());
 	// 	Info("GetDistanceInPHOSPlane","Track %d propagation to CPV = (%f,%f,%f)",
  	//     iTrack,vecDist.X(),vecDist.Y(),vecDist.Z());
 	vecDist -= vecCpv;
@@ -199,7 +202,7 @@ Float_t  AliPHOSTrackSegmentMakerv1::GetDistanceInPHOSPlane(AliPHOSEmcRecPoint *
 	geom->GetGlobal((AliRecPoint*)cpvClu,vecCpvGlobal);
 	for (Int_t ixyz=0; ixyz<3; ixyz++)
 	  xyz[ixyz] = vecCpvGlobal[ixyz];
-	vecDist = PropagateToPlane(xyz,pxyz,"EMC",cpvClu->GetPHOSMod());
+	PropagateToPlane(vecDist,xyz,pxyz,"EMC",cpvClu->GetPHOSMod());
 // 	Info("GetDistanceInPHOSPlane","Track %d propagation to EMC = (%f,%f,%f)",
 // 	     iClosestTrack,vecDist.X(),vecDist.Y(),vecDist.Z());
 	vecDist -= vecEmc;
@@ -223,8 +226,11 @@ Float_t  AliPHOSTrackSegmentMakerv1::GetDistanceInPHOSPlane(AliPHOSEmcRecPoint *
 }
 
 //____________________________________________________________________________
-TVector3  AliPHOSTrackSegmentMakerv1::PropagateToPlane(Double_t *x, Double_t *p,
-						       const char *det, Int_t moduleNumber) const
+void AliPHOSTrackSegmentMakerv1::PropagateToPlane(TVector3& globalIntersection,
+						  Double_t *x,
+						  Double_t *p,
+						  const char *det,
+						  Int_t moduleNumber) const
 {
   // Propagate a straight-line track from the origin point x
   // along the direction p to the CPV or EMC module moduleNumber
@@ -232,17 +238,18 @@ TVector3  AliPHOSTrackSegmentMakerv1::PropagateToPlane(Double_t *x, Double_t *p,
 
   AliPHOSGetter * gime = AliPHOSGetter::Instance() ; 
   const AliPHOSGeometry * geom = gime->PHOSGeometry() ; 
-  TVector3 moduleCenter = geom->GetModuleCenter(det,moduleNumber);
-  TVector3 vertex(x);
-  TVector3 direction(p);
+  TVector3 moduleCenter;
+  geom->GetModuleCenter(moduleCenter,det,moduleNumber);
+  TVector3 vertex; vertex.SetXYZ(x[0],x[1],x[2]);
+  TVector3 direction; direction.SetXYZ(p[0],p[1],p[2]);
 
 //   Info("PropagateToCPV","Center of the %s module %d is (%f,%f,%f)",
 //        det,moduleNumber,moduleCenter[0],moduleCenter[1],moduleCenter[2]);
 
   Double_t time = (moduleCenter.Mag2() - vertex.Dot(moduleCenter)) /
     (direction.Dot(moduleCenter));
-  TVector3 globalIntersection = vertex + direction*time;
-  return geom->Global2Local(globalIntersection,moduleNumber);
+  vertex += direction*time;
+  geom->Global2Local(globalIntersection,vertex,moduleNumber);
 }
 
 //____________________________________________________________________________

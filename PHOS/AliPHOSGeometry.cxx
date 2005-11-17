@@ -354,20 +354,20 @@ void AliPHOSGeometry::ImpactOnEmc(Double_t theta, Double_t phi, Int_t & moduleNu
 }
 
 //____________________________________________________________________________
-void AliPHOSGeometry::ImpactOnEmc(TVector3 vec, Int_t & moduleNumber, Double_t & z, Double_t & x) const
+void AliPHOSGeometry::ImpactOnEmc(const TVector3& vec, Int_t & moduleNumber, Double_t & z, Double_t & x) const
 {
   // calculates the impact coordinates on PHOS of a neutral particle  
   // emitted in the direction theta and phi in the ALICE global coordinate system
   // searches for the PHOS EMC module
 
-  TParticle p ; 
-  p.SetMomentum(vec.X(), vec.Y(), vec.Z(), 0.) ; 
-  
-  ImpactOnEmc(p, moduleNumber, z, x) ;
+  Double_t theta = vec.Theta() ; 
+  Double_t phi   = vec.Phi() ; 
+
+  ImpactOnEmc(theta, phi, moduleNumber, z, x) ;
 }
 
 //____________________________________________________________________________
-void AliPHOSGeometry::ImpactOnEmc(TParticle p, Int_t & moduleNumber, Double_t & z, Double_t & x) const
+void AliPHOSGeometry::ImpactOnEmc(const TParticle& p, Int_t & moduleNumber, Double_t & z, Double_t & x) const
 {
   // calculates the impact coordinates on PHOS of a neutral particle  
   // emitted in the direction theta and phi in the ALICE global coordinate system
@@ -496,7 +496,9 @@ void AliPHOSGeometry::RelPosInModule(const Int_t * relid, Float_t & x, Float_t &
 
 //____________________________________________________________________________
 
-TVector3 AliPHOSGeometry::GetModuleCenter(const char *det, Int_t module) const
+void AliPHOSGeometry::GetModuleCenter(TVector3& center, 
+				      const char *det,
+				      Int_t module) const
 {
   // Returns a position of the center of the CPV or EMC module
   Float_t rDet = 0.;
@@ -508,17 +510,19 @@ TVector3 AliPHOSGeometry::GetModuleCenter(const char *det, Int_t module) const
   Float_t angle = GetPHOSAngle(module); // (40,20,0,-20,-40) degrees
   angle *= TMath::Pi()/180;
   angle += 3*TMath::Pi()/2.;
-  return TVector3(rDet*TMath::Cos(angle), rDet*TMath::Sin(angle), 0.);
+  center.SetXYZ(rDet*TMath::Cos(angle), rDet*TMath::Sin(angle), 0.);
 }
 
 //____________________________________________________________________________
 
-TVector3 AliPHOSGeometry::Global2Local(TVector3 globalPosition, Int_t module) const
+void AliPHOSGeometry::Global2Local(TVector3& localPosition,
+				   const TVector3& globalPosition,
+				   Int_t module) const
 {
   // Transforms a global position of the rec.point to the local coordinate system
   Float_t angle = GetPHOSAngle(module); // (40,20,0,-20,-40) degrees
   angle *= TMath::Pi()/180;
   angle += 3*TMath::Pi()/2.;
-  globalPosition.RotateZ(-angle);
-  return TVector3(globalPosition.Y(),globalPosition.X(),globalPosition.Z());
+  localPosition = globalPosition;
+  localPosition.RotateZ(-angle);
 }
