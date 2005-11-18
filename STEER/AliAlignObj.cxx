@@ -139,9 +139,10 @@ void AliAlignObj::Print(Option_t *) const
   GetMatrix(m);
   const Double_t *rot = m.GetRotationMatrix();
 //   printf("Volume=%s ID=%u\n", GetVolPath(),GetVolUID());
-  Int_t IDs[2];
-  //  GetVolUID(IDs);
-  printf("Volume=%s LayerID=%d ModuleID=%d\n", GetVolPath(),IDs[0],IDs[1]);
+  ELayerID layerId;
+  Int_t modId;
+  GetVolUID(layerId,modId);
+  printf("Volume=%s LayerID=%d ModuleID=%d\n", GetVolPath(),layerId,modId);
   printf("%12.6f%12.6f%12.6f    Tx = %12.6f    Psi   = %12.6f\n", rot[0], rot[1], rot[2], tr[0], angles[0]);
   printf("%12.6f%12.6f%12.6f    Ty = %12.6f    Theta = %12.6f\n", rot[3], rot[4], rot[5], tr[1], angles[1]);
   printf("%12.6f%12.6f%12.6f    Tz = %12.6f    Phi   = %12.6f\n", rot[6], rot[7], rot[8], tr[2], angles[2]);
