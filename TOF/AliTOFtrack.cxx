@@ -366,7 +366,7 @@ Int_t AliTOFtrack::Rotate(Double_t alpha)
 }                         
 
 //_________________________________________________________________________
-Double_t AliTOFtrack::GetYat(Double_t xk, Bool_t skip) const {     
+Double_t AliTOFtrack::GetYat(Double_t xk, Bool_t & skip) const {     
 //-----------------------------------------------------------------
 // This function calculates the Y-coordinate of a track at the plane x=xk.
 // Needed for matching with the TOF (I.Belikov)

@@ -54,7 +54,7 @@ public:
    Int_t Compare(const TObject *o) const;
 
 
-   Double_t GetYat(Double_t xk, Bool_t skip) const;      
+   Double_t GetYat(Double_t xk, Bool_t & skip) const;      
    Int_t    PropagateTo(Double_t xr, Double_t x0=8.72, Double_t rho=5.86e-3);
    Int_t    PropagateToInnerTOF(Bool_t holes);
    void     ResetCovariance();   
