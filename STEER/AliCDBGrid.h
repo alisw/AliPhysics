@@ -90,7 +90,7 @@ class AliCDBGridParam: public AliCDBParam {
 	
 public:
 	AliCDBGridParam();
-	AliCDBGridParam(const char* host, const Int_t port, const char* user, 
+	AliCDBGridParam(const char* host, Int_t port, const char* user, 
 			const char* dbPath, const char* se);
 	
 	virtual ~AliCDBGridParam();

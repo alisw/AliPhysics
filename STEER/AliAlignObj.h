@@ -38,7 +38,7 @@ class AliAlignObj : public TObject {
                Double_t theta, Double_t phi) = 0;
   virtual void SetMatrix(const TGeoMatrix& m) = 0;
   void  SetVolPath(const TString& volpath) {fVolPath=volpath;}
-  void  SetVolUID(const UShort_t voluid) {fVolUID=voluid;}
+  void  SetVolUID(UShort_t voluid) {fVolUID=voluid;}
   void  SetVolUID(ELayerID layerId, Int_t modId);
 
   //Getters
