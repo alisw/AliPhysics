@@ -17,6 +17,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.77  2005/11/17 23:34:36  hristov
+ * Corrected logics
+ *
  * Revision 1.76  2005/11/17 22:29:12  hristov
  * Faster version, no attempt to match tracks outside the PHOS acceptance
  *
@@ -211,7 +214,7 @@ Float_t  AliPHOSTrackSegmentMakerv1::GetDistanceInPHOSPlane(AliPHOSEmcRecPoint *
 	Double_t inTheta = inPHOS.Theta();
 
 	Bool_t skip = kTRUE;
-	for (Int_t imod=0; nModules; imod++) {
+	for (Int_t imod=0; imod<nModules; imod++) {
 	  //PH Loop on modules to check if the track enters in the acceptance 
 	  if (thmin[imod] < inTheta && thmax[imod] > inTheta && 
 	      phmin[imod] < inPhi   && phmax[imod] > inPhi) {
