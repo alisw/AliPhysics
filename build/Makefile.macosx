@@ -40,7 +40,7 @@ CLIBCOPT      =
 CLIBFOPT      = $(CLIBDEFS)
 
 # Compiler flags
-CXXFLAGS      = $(CXXOPT)   -Wall -W -Wno-long-double -pipe -fbounds-check -fsigned-char -fno-common -fmessage-length=0 -I$(FINK_ROOT)/include #-Weffc++ -Woverloaded-virtual 
+CXXFLAGS      = $(CXXOPT)   -Wall -W -Wno-long-double -pipe -fbounds-check -fsigned-char -fno-common -fmessage-length=0 -I$(FINK_ROOT)/include -Woverloaded-virtual #-Weffc++ 
 
 ifeq (g95,$(findstring g95,$(ROOTBUILD)))
 CXXFLAGS+=-DFORTRAN_G95
@@ -85,7 +85,7 @@ EXEFLAGS     := -bind_at_load
 #System libraries
 
 ifeq (g95,$(findstring g95,$(ROOTBUILD)))
-SYSLIBS += -L$(dir $(shell find $(FINK_ROOT) -name libf95.a)) -lf95
+SYSLIBS += -L$(shell g95 --print-search-dirs | sed -n -e 's/install: //p') -lf95
 else
-SYSLIBS += -ldl -L$(dir $(shell find $(FINK_ROOT) -name libgfortran.dylib)) -lgfortranbegin -lgfortran
+SYSLIBS += -ldl -L$(shell gfortran --print-search-dirs | sed -n -e 's/install: //p') -lgfortranbegin -lgfortran
 endif
