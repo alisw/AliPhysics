@@ -210,7 +210,7 @@ Float_t AliZDC::ZMax(void) const
   
 
 //_____________________________________________________________________________
-void AliZDC::MakeBranch(Option_t *opt, const char * /*file*/)
+void AliZDC::MakeBranch(Option_t *opt)
 {
   //
   // Create Tree branches for the ZDC

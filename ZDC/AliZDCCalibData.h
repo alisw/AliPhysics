@@ -21,7 +21,7 @@ class AliZDCCalibData: public TNamed {
   AliZDCCalibData& operator= (const AliZDCCalibData &calibda);
   virtual ~AliZDCCalibData();
   void Reset();
-  virtual void  Print() const; 
+  virtual void  Print(Option_t *) const; 
   //
   Float_t  GetMeanPed(Int_t channel)   	const {return fMeanPedestal[channel];}
   Float_t* GetMeanPed()   const {return (float*)fMeanPedestal;}

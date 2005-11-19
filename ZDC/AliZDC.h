@@ -29,7 +29,7 @@ public:
   virtual Float_t ZMin() const;	// Minimum overall dimension of the ZDC
   virtual Float_t ZMax() const;	// Maximum overall dimension of the ZDC
   virtual void  SetTreeAddress();
-  virtual void  MakeBranch(Option_t* opt, const char *file=0);
+  virtual void  MakeBranch(Option_t* opt);
   virtual void  Hits2SDigits();
   virtual AliDigitizer* CreateDigitizer(AliRunDigitizer* manager) const;
   virtual void  Digits2Raw();

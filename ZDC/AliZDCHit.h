@@ -51,7 +51,7 @@ public:
   }
 
   // Print method
-  virtual void Print(Option_t *) {
+  virtual void Print(Option_t *) const {
      printf(" -> HIT: vol[0] =  %d vol[1] =  %d Track: %d \n" 
             "  Primary E = %f, Ximpact = %f, Yimpact = %f, SFlag = %f\n"
 	    "  PMQLight = %f, PMCLight = %f,  Deposited E = %f\n ", 

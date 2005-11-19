@@ -48,7 +48,7 @@ class AliZDCDigit : public TObject {
   Int_t  fADCValue[2];       // ADC channel value (0 = high gain, 1 = low gain)
 
   // Print method
-  virtual void Print(Option_t *) {
+  virtual void Print(Option_t *) const {
      printf(" -> DIGIT: Detector =  %d Quadrant =  %d ADCCh high gain=  %d ADCCh low gain=  %d\n ",
      fSector[0], fSector[1], fADCValue[0], fADCValue[1]);
   }

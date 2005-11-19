@@ -102,7 +102,7 @@ void AliZDCCalibData::PrepHistos()
 }
 
 //________________________________________________________________
-void  AliZDCCalibData::Print() const
+void  AliZDCCalibData::Print(Option_t *) const
 {
    printf("\n	----	Mean pedestal values	----\n\n");
    for(int t=0; t<47; t++){
