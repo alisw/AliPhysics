@@ -25,7 +25,6 @@ public:
   virtual void  BuildGeometry();
   virtual void  CreateGeometry() {}
   virtual void  CreateMaterials() {}
-  Int_t         DistancetoPrimitive(Int_t px, Int_t py) const;
   virtual Int_t IsVersion() const =0;
   virtual Float_t ZMin() const;	// Minimum overall dimension of the ZDC
   virtual Float_t ZMax() const;	// Maximum overall dimension of the ZDC

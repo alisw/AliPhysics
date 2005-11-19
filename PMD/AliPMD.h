@@ -31,7 +31,6 @@ public:
   virtual void  BuildGeometry();
   virtual void  CreateGeometry() {}
   virtual void  CreateMaterials() {}
-  Int_t         DistancetoPrimitive(Int_t, Int_t) const;
   virtual Int_t IsVersion() const =0;
   virtual void  SetPAR(Float_t p1, Float_t p2, Float_t p3, Float_t p4);
   virtual void  SetIN(Float_t p1, Float_t p2, Float_t p3, Float_t p4, Float_t p5);

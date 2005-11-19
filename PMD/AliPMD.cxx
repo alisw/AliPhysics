@@ -178,16 +178,6 @@ void AliPMD::BuildGeometry()
 }
 
 //_____________________________________________________________________________
-Int_t AliPMD::DistancetoPrimitive(Int_t , Int_t ) const
-{
-  //
-  // Distance from mouse to detector on the screen
-  // dummy routine
-  //
-   return 9999;
-}
- 
-//_____________________________________________________________________________
 void AliPMD::SetPAR(Float_t p1, Float_t p2, Float_t p3,Float_t p4)
 {
   //

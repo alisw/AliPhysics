@@ -282,17 +282,6 @@ void AliTPC::BuildGeometry()
 }    
 
 //_____________________________________________________________________________
-Int_t AliTPC::DistancetoPrimitive(Int_t , Int_t ) const
-{
-  //
-  // Calculate distance from TPC to mouse on the display
-  // Dummy procedure
-  //
-  return 9999;
-}
-
-
-//_____________________________________________________________________________
 void AliTPC::CreateMaterials()
 {
   //-----------------------------------------------

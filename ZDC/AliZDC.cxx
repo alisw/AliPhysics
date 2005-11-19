@@ -194,16 +194,6 @@ void AliZDC::BuildGeometry()
     fNodes->Add(node);
 }
 
-//_____________________________________________________________________________
-Int_t AliZDC::DistancetoPrimitive(Int_t , Int_t ) const
-{
-  //
-  // Distance from the mouse to the Zero Degree Calorimeter
-  // Dummy routine
-  //
-  return 9999;
-}
-
 //____________________________________________________________________________
 Float_t AliZDC::ZMin(void) const
 {

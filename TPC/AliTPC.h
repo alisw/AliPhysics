@@ -38,7 +38,6 @@ public:
   
   virtual      ~AliTPC();
   virtual void  AddHit(Int_t a1, Int_t *a2, Float_t *a3);
-  Int_t         DistancetoPrimitive(Int_t px, Int_t py) const;
   virtual void  BuildGeometry();
   virtual void  CreateGeometry() {}
   virtual void  CreateMaterials();
