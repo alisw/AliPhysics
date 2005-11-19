@@ -66,7 +66,7 @@ public:
     {hit.Copy(*this);}
   AliTPCTrackHitsV2& operator = (const AliTPCTrackHitsV2 &hit)
      {hit.Copy(*this); return (*this);}
-  void Clear();
+  void Clear(Option_t * /*option*/ ="");
   void AddHitKartez(Int_t volumeID, Int_t trackID, Double_t x, 
 		    Double_t y, Double_t z,Int_t q,Float_t time);
   void AddHit(Int_t volumeID, Int_t trackID, Double_t r, 

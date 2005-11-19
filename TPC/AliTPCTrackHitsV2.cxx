@@ -366,7 +366,7 @@ AliTPCTrackHitsV2::~AliTPCTrackHitsV2()
   fgCounter1--;
 }
 
-void AliTPCTrackHitsV2::Clear()
+void AliTPCTrackHitsV2::Clear(Option_t * /*option*/)
 {
   //
   // clear object  
