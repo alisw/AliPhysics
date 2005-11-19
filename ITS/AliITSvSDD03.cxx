@@ -718,7 +718,7 @@ void AliITSvSDD03::InitAliITSgeom(){
   Info("InitAliITSgeom","Reading geometry transformation directly from Geant 3");
   const Int_t knp=384;
   const Float_t kpitch=50.E-4;/*cm*/
-  Float_t box[3]={0.5*kpitch*(Float_t)knp,150.E-4,1.0},p[knp+1],n[knp+1];
+  Float_t box[3]={0.5*kpitch*(Float_t)knp,150.E-4,1.0},p[knp+2],n[knp+2];
   const Int_t kltypess = 2;
   const Int_t knlayers = 12;
   const Int_t kndeep = 6;
