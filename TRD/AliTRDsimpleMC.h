@@ -173,6 +173,14 @@ class AliTRDsimpleMC : public TVirtualMC {
   virtual Int_t         GetNStep() const                                                  { return fNStep;   };
   virtual Int_t         GetMaxNStep() const                                               { return 0;  };
   virtual Int_t         GetMedium() const                                                 { return 0;  };
+  virtual Bool_t GetMedium(const TString& /*volumeName*/,
+			   TString& /*name*/, Int_t& /*imed*/,
+			   Int_t& /*nmat*/, Int_t& /*isvol*/, Int_t& /*ifield*/,
+			   Double_t& /*fieldm*/, Double_t& /*tmaxfd*/, Double_t& /*stemax*/,
+			   Double_t& /*deemax*/, Double_t& /*epsil*/, Double_t& /*stmin*/,
+			   TArrayD& /*par*/) {
+   return kFALSE;
+}   
 
   // Dynamic properties
   virtual void          TrackPosition(TLorentzVector& position) const;
