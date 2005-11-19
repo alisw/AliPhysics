@@ -38,7 +38,7 @@ class AliITSBadChannelsAuxSPD {
 
   // Miscellanious
   Bool_t CreateHTMLReport(char *name, Int_t* &array, Int_t* &indexArray,    // Create an HTML report
-			  const Int_t indexSize, TString *buffer, Bool_t tags);
+			  Int_t indexSize, TString *buffer, Bool_t tags);
 
  protected:
 

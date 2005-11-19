@@ -47,7 +47,7 @@ class AliITSPreprocessorSPD : public TTask {
 
   AliITSPreprocessorSPD(void);                                         // Default constructor
   AliITSPreprocessorSPD(const char *fileName, const char *mode,        // Standard constructor
-			const char *fileNameg, const Int_t maxNumberOfEvents);
+			const char *fileNameg, Int_t maxNumberOfEvents);
   AliITSPreprocessorSPD(const AliITSPreprocessorSPD &prep);            // Default copy constructor
   AliITSPreprocessorSPD& operator=(const AliITSPreprocessorSPD &prep); // Assignment operator
   virtual ~AliITSPreprocessorSPD(void);                                // Virtual destructor
