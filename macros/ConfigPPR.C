@@ -160,7 +160,8 @@ void Config()
 
     AliRunLoader* rl=0x0;
 
-    cout<<"Config.C: Creating Run Loader ..."<<endl;
+    AliLog::Message(AliLog::kInfo, "Creating Run Loader", "", "", "Config()"," ConfigPPR.C", __LINE__);}
+
     rl = AliRunLoader::Open("galice.root",
 			    AliConfig::GetDefaultEventFolderName(),
 			    "recreate");

@@ -13,7 +13,7 @@ void loadlibs ()
 
   // Uncomment the following line for macosx
   // Waiting for a better solution
-  // gSystem->Load("libg2c_sh");
+  gSystem->Load("libg2c_sh");
   gSystem->Load("libmicrocern");
   gSystem->Load("libpdf");
   gSystem->Load("libpythia6");
