@@ -22,7 +22,7 @@ class AliTRDcluster : public AliCluster {
 
 
   Int_t   IsUsed() const      { return (fQ < 0) ? 1 : 0; }
-  void    Use()               { fQ = -fQ; }
+  void    Use(Int_t = 0)               { fQ = -fQ; }
   
   Bool_t  From2pad() const    { return TestBit(k2pad); }
   Bool_t  From3pad() const    { return TestBit(k3pad); }

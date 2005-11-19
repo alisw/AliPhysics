@@ -19,7 +19,7 @@ class AliTPCcluster : public AliCluster {
 public:
   AliTPCcluster():AliCluster(){fQ=0;}
   AliTPCcluster(Int_t *lab, Float_t *hit) : AliCluster(lab,hit) {fQ = hit[4];}
-  void Use() {fQ=-fQ;}
+  void Use(Int_t = 0) {fQ=-fQ;}
   void SetQ(Float_t q) {fQ=q;}
 
   Int_t IsUsed() const {return (fQ<0) ? 1 : 0;}

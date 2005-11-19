@@ -36,7 +36,7 @@ public:
   //PH virtual function with empty body. This correction somehow helps
   //PH to write/read TClonesArray with AliITSclusterV2 objects, but obviously
   //PH hides some more tricky problems (to be investigated)
-  virtual void Use() {;}
+  virtual void Use(Int_t = 0) {;}
 
 protected:
   Int_t     fTracks[3];//labels of overlapped tracks

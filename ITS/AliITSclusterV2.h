@@ -30,7 +30,7 @@ public:
     fDeltaProb=0.;
   }
 
-  void Use() {fQ=-fQ;}
+  void Use(Int_t = 0) {fQ=-fQ;}
   void UnUse() {fQ=TMath::Abs(fQ);}
   void SetQ(Float_t q) {fQ=q;}
   void SetDetectorIndex(Int_t i) { fIndex=i; }
