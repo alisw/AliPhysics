@@ -456,7 +456,8 @@ Int_t AliMUONRawData::WriteTriggerDDL()
   Int_t index;
   Int_t iEntries = 0;
   Int_t iLocCard, locCard;
-  Char_t locDec, trigY, posY, devX, posX,regOut;
+  Char_t locDec, trigY, posY, posX,regOut;
+  Int_t devX;
   Int_t version = 1; // software version
   Int_t eventType = 1; // trigger type: 1 for physics ?
   Int_t serialNb = 0xF; // serial nb of card: all bits on for the moment

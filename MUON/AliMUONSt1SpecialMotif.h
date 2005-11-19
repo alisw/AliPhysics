@@ -31,7 +31,7 @@ class AliMUONSt1SpecialMotif
 
   private:
     TVector2  fDelta;   // offset of this motif
-    Double_t  fRotAngle;// rotation angle in degrees (0° = vertical) 
+    Double_t  fRotAngle;// rotation angle in degrees (0 = vertical) 
 };
 
 #endif //ALI_MUON_ST1_SPECIAL_MOTIF_H
