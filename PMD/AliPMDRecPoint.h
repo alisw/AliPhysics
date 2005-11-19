@@ -19,8 +19,8 @@ class AliPMDRecPoint : public AliRecPoint {
 public:
   virtual void  AddDigit(AliDigitNew & digit) ;  // add a digit to the digit's indexes list  
   //  virtual void  AddTrack(AliTrack & track) ;  // add a track to the tracks list  
-  void  Copy(AliPMDRecPoint &recp) const;
-  virtual void  GetCovarianceMatrix(TMatrix & mat) ;
+  void  Copy(TObject &recp) const;
+  virtual void  GetCovarianceMatrix(TMatrix & mat) const;
   virtual AliGeometry * GetGeom() const { return fGeom; } 
   virtual void  GetGlobalPosition(TVector3 & gpos, TMatrix & gmat) const ; // return global position in ALICE
   virtual int * GetDigitsList(void) const { return fDigitsList ; }
@@ -32,7 +32,7 @@ public:
   virtual Int_t GetMaximumDigitMultiplicity() const { return  fMaxDigit; } 
   virtual Int_t GetMaximumTrackMultiplicity() const { return  fMaxTrack; } 
   virtual Int_t GetTracksMultiplicity(void) const { return fMulTrack ; }
-  virtual void  Print(Option_t * /*opt = "void"*/) {;}
+  virtual void  Print(Option_t * /*opt = "void"*/) const {;}
   
   AliPMDRecPoint & operator= (const AliPMDRecPoint &recp);
   void          SetIndexInList(Int_t val) { fIndexInList = val ; } 

@@ -63,34 +63,35 @@ void AliPMDRecPoint::AddDigit(AliDigitNew & digit)
 }
 
 //____________________________________________________________________________
-void AliPMDRecPoint::Copy(AliPMDRecPoint& recp) const
+void AliPMDRecPoint::Copy(TObject & recp) const
 {
   //
   // Copy *this onto pts
   //
   // Copy all first
+
   if(this != &recp) {
     ((TObject*) this)->Copy((TObject&)recp);
-    recp.fAmp = fAmp;
-    recp.fGeom = fGeom;
-    recp.fIndexInList = fIndexInList;
-    recp.fLocPos = fLocPos;
-    recp.fLocPosM = new TMatrix(*fLocPosM);
-    recp.fMaxDigit = fMaxDigit;
-    recp.fMulDigit = fMulDigit;
-    recp.fMaxTrack = fMaxTrack;
-    recp.fMulTrack = fMulTrack;
+    ((AliPMDRecPoint&)recp).fAmp = fAmp;
+    ((AliPMDRecPoint&)recp).fGeom = fGeom;
+    ((AliPMDRecPoint&)recp).fIndexInList = fIndexInList;
+    ((AliPMDRecPoint&)recp).fLocPos = fLocPos;
+    ((AliPMDRecPoint&)recp).fLocPosM = new TMatrix(*fLocPosM);
+    ((AliPMDRecPoint&)recp).fMaxDigit = fMaxDigit;
+    ((AliPMDRecPoint&)recp).fMulDigit = fMulDigit;
+    ((AliPMDRecPoint&)recp).fMaxTrack = fMaxTrack;
+    ((AliPMDRecPoint&)recp).fMulTrack = fMulTrack;
     
     // Duplicate pointed objects
-    recp.fDigitsList = new Int_t[fMulDigit];
-    memcpy(recp.fDigitsList,fDigitsList,fMulDigit*sizeof(Int_t));
-    recp.fTracksList = new Int_t[fMulTrack];
-    memcpy(recp.fTracksList,fTracksList,fMulTrack*sizeof(Int_t));
+    ((AliPMDRecPoint&)recp).fDigitsList = new Int_t[fMulDigit];
+    memcpy(((AliPMDRecPoint&)recp).fDigitsList,fDigitsList,fMulDigit*sizeof(Int_t));
+    ((AliPMDRecPoint&)recp).fTracksList = new Int_t[fMulTrack];
+    memcpy(((AliPMDRecPoint&)recp).fTracksList,fTracksList,fMulTrack*sizeof(Int_t));
   }
 }
 
 //____________________________________________________________________________
-void AliPMDRecPoint::GetCovarianceMatrix(TMatrix & mat)
+void AliPMDRecPoint::GetCovarianceMatrix(TMatrix & mat) const
 {
   // returns the covariant matrix for the local position
   

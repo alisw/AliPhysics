@@ -26,7 +26,7 @@ class AliPMDhit : public AliHit {
     fEnergy+=cell.GetEnergy();
     return *this;
   }
-  virtual void Print(Option_t *) {
+  virtual void Print(Option_t *) const {
     printf("PMD Cell %d %d %d %d\n   Primary %d -   Energy %f\n",
 	   fVolume[0],fVolume[1],fVolume[2],fVolume[3],fTrack,fEnergy);
   }

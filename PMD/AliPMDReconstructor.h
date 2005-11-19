@@ -13,11 +13,25 @@ public:
 			     AliRawReader *rawReader) const;
   virtual void   Reconstruct(AliRawReader* rawReader,
 			     TTree* clustersTree) const;
+  virtual void   Reconstruct(TTree* digitsTree, TTree* clustersTree) const {
+    AliReconstructor::Reconstruct(digitsTree,clustersTree);
+  }
   virtual Bool_t HasLocalReconstruction() const { return kTRUE; }
 
   //virtual void   FillESD(AliRunLoader* runLoader, AliESD* esd) const;
   virtual void   FillESD(AliRawReader* /*rawReader*/, TTree* clustersTree, 
 			 AliESD* esd) const;
+  virtual void   FillESD(TTree* digitsTree, TTree* clustersTree, 
+			 AliESD* esd) const {
+    AliReconstructor::FillESD(digitsTree,clustersTree,esd);
+  }
+  virtual void   FillESD(AliRunLoader* runLoader, AliESD* esd) const {
+    AliReconstructor::FillESD(runLoader,esd);
+  }
+  virtual void   FillESD(AliRunLoader* runLoader, 
+			 AliRawReader* rawReader, AliESD* esd) const {
+    AliReconstructor::FillESD(runLoader,rawReader,esd);
+  }
  
 private:
 
