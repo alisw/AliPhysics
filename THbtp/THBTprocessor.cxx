@@ -445,6 +445,33 @@ Int_t THBTprocessor::ImportParticles(TClonesArray *particles, Option_t */*option
  }
 
 /*****************************************************************************************/
+TObjArray * THBTprocessor::ImportParticles(Option_t */*option*/)
+ {
+  //Copy particle data into TObjArray
+  fParticles->Clear();
+ 
+  Int_t nrpart = 0;
+  for (Int_t i=0; i < TRK_MAXLEN; i++) 
+   {
+   
+    
+      if (TRACK1.trk_E[i] == 0.) continue;
+    
+      Float_t px   = TRACK1.trk_px[i];
+      Float_t py   = TRACK1.trk_py[i];
+      Float_t pz   = TRACK1.trk_pz[i];
+//    Float_t pE   = TRACK.trk_E[i];
+      Float_t mass = PARTICLE.part_mass[TRACK1.trk_ge_pid[i]];
+    
+      TParticle * p =new TParticle(0,0,0,0,0,0,px,py,pz,
+				   TMath::Sqrt(mass*mass+px*px+py*py+pz*pz),
+				   0,0,0,0);
+      fParticles->Add(p);
+   }
+  return fParticles;        
+ }
+
+/*****************************************************************************************/
 
 void THBTprocessor::PrintEvent() const
  {

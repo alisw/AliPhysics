@@ -41,6 +41,7 @@ class THBTprocessor: public TGenerator
       virtual void  GenerateEvent() const;
       virtual void  PrintEvent() const;
       virtual Int_t ImportParticles(TClonesArray *particles, Option_t *option="");
+      virtual TObjArray      *ImportParticles(Option_t *option="");
 
       //Set/Gets
       //comprehensive description off all these methods 
