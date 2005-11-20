@@ -18,6 +18,7 @@
 
 class AliTRDv1;
 class AliTRDparameter;
+class TArrayD;
 
 class AliTRDsimpleMC : public TVirtualMC {
 
