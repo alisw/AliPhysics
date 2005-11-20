@@ -450,7 +450,6 @@ TObjArray * THBTprocessor::ImportParticles(Option_t */*option*/)
   //Copy particle data into TObjArray
   fParticles->Clear();
  
-  Int_t nrpart = 0;
   for (Int_t i=0; i < TRK_MAXLEN; i++) 
    {
    
