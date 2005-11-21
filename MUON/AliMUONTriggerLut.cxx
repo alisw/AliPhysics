@@ -84,23 +84,42 @@ void AliMUONTriggerLut::GetLutOutput(Int_t circuit, Int_t xstrip, Int_t idev,
 
   static TFile *fileLut;
   static Bool_t first=kTRUE;  
+  static TH3S *lptPlus;
+  static TH3S *lptMinu;
+  static TH3S *lptUnde;
+  static TH3S *hptPlus;
+  static TH3S *hptMinu;
+  static TH3S *hptUnde;
+  static TH3S *aptPlus;
+  static TH3S *aptMinu;
+  static TH3S *aptUnde;
+
   if(first) {
+    first=kFALSE;
     //    printf(" opening MUONTriggerLut.root \n");
     fileLut = new TFile("$(ALICE_ROOT)/MUON/data/MUONTriggerLut.root","READ");
-    first=kFALSE;
-  }
-  fileLut->cd();
-
 // get the pointers to the TH3S objects of the file
-  TH3S *lptPlus = (TH3S*)gROOT->FindObject("LptPlus");  
-  TH3S *lptMinu = (TH3S*)gROOT->FindObject("LptMinu");
-  TH3S *lptUnde = (TH3S*)gROOT->FindObject("LptUnde");
-  TH3S *hptPlus = (TH3S*)gROOT->FindObject("HptPlus");  
-  TH3S *hptMinu = (TH3S*)gROOT->FindObject("HptMinu");
-  TH3S *hptUnde = (TH3S*)gROOT->FindObject("HptUnde");
-  TH3S *aptPlus = (TH3S*)gROOT->FindObject("AptPlus");  
-  TH3S *aptMinu = (TH3S*)gROOT->FindObject("AptMinu");
-  TH3S *aptUnde = (TH3S*)gROOT->FindObject("AptUnde");
+    lptPlus = (TH3S*)gROOT->FindObject("LptPlus");  
+    lptMinu = (TH3S*)gROOT->FindObject("LptMinu");
+    lptUnde = (TH3S*)gROOT->FindObject("LptUnde");
+    hptPlus = (TH3S*)gROOT->FindObject("HptPlus");  
+    hptMinu = (TH3S*)gROOT->FindObject("HptMinu");
+    hptUnde = (TH3S*)gROOT->FindObject("HptUnde");
+    aptPlus = (TH3S*)gROOT->FindObject("AptPlus");  
+    aptMinu = (TH3S*)gROOT->FindObject("AptMinu");
+    aptUnde = (TH3S*)gROOT->FindObject("AptUnde");
+
+    lptPlus->SetDirectory(0);
+    lptMinu->SetDirectory(0);
+    lptUnde->SetDirectory(0);
+    hptPlus->SetDirectory(0);
+    hptMinu->SetDirectory(0);
+    hptUnde->SetDirectory(0);
+    aptPlus->SetDirectory(0);
+    aptMinu->SetDirectory(0);
+    aptUnde->SetDirectory(0);
+    delete fileLut;    
+  }
 
   Int_t bin;
   Short_t binc; 
@@ -145,13 +164,6 @@ void AliMUONTriggerLut::GetLutOutput(Int_t circuit, Int_t xstrip, Int_t idev,
   binc   = (Short_t)aptUnde->GetBinContent(bin);
   if ((binc & mask)!=0) lutApt[0]=lutApt[1]=1;
 
-// get back to the first file
-/* no need for this with NewIO
-  TTree *tK = gAlice->TreeK();
-  TFile *file1 = 0;
-  if (tK) file1 = tK->GetCurrentFile();
-  file1->cd();
-*/
 }
 
 //----------------------------------------------------------------------
