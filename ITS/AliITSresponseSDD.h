@@ -11,7 +11,9 @@
 #include "TArrayF.h"
 #include "AliITSresponse.h"
 
-// response for SDD
+///////////////////////////////////////////////////////
+//  Response for SDD                                 //
+///////////////////////////////////////////////////////
 
 class AliITSresponseSDD : public AliITSresponse {
   public:
@@ -56,11 +58,11 @@ class AliITSresponseSDD : public AliITSresponse {
     virtual void   ParamOptions(char *opt1,char *opt2) const {// options
 	strcpy(opt1,fParam1.Data()); strcpy(opt2,fParam2.Data());}
     virtual void  SetNoiseParam(Double_t n, Double_t b){
-	// Noise and baseline  // 10 for ALICE with beam test measurements 2001
-	fNoise=n; fBaseline=b;}
-        // get noise param
-    virtual void  GetNoiseParam(Double_t &n, Double_t &b) const
-        {n=fNoise; b=fBaseline;}
+      fNoise=n; fBaseline=b;}
+ 
+    virtual void  GetNoiseParam(Double_t &n, Double_t &b) const {
+      n=fNoise; b=fBaseline;}
+
     virtual Bool_t Do10to8() const {// get 10 to 8 compression option
 	return fBitComp;}
     void    SetZeroSupp (const char *opt) {
@@ -106,23 +108,23 @@ class AliITSresponseSDD : public AliITSresponse {
 	fBitComp = bitcomp;}
     // Compression parameters
     void  SetCompressParam(Int_t cp[8]); 
-    void SetDeadChannels(Int_t nmodules=0, Int_t nchips=0, Int_t nchannels=0);
-    Int_t GetDeadModules() const { return fDeadModules; }
+    void SetDeadChannels(Int_t nchips=0, Int_t nchannels=0);
+    // Int_t GetDeadModules() const { return fDeadModules; }
     Int_t GetDeadChips() const { return fDeadChips; }
     Int_t GetDeadChannels() const { return fDeadChannels; }
-    Double_t Gain(Int_t mod,Int_t chip,Int_t ch)const 
-        {return fGain[mod][chip][ch]; }
+    Double_t Gain(Int_t wing,Int_t chip,Int_t ch)const 
+        {return fGain[wing][chip][ch]; }
     // these functions should be move to AliITSsegmentationSDD
-    Int_t Modules()const{return fgkModules;}//Total number of SDD modules
+    Int_t Wings()const{return fgkWings;}//Total number of SDD modules
     Int_t Chips() const{return fgkChips;} // Number of chips/module
     Int_t Channels() const{ return fgkChannels;}//Number of channels/chip
     //********
-    void    PrintGains();
+    void    PrintGains() const;
     void    Print();
     virtual void Print(ostream *os) const {AliITSresponseSDD::Print(os);}
     virtual void Print(Option_t *option="") const {AliITSresponseSDD::Print(option);}
     // not implemented virtual methods (devlared in the mother class
-    virtual  void   SetDetParam(Double_t *)
+    virtual  void   SetDetParam(Double_t *) 
       {NotImplemented("SetDetParam");}
     virtual void   GetDetParam(Double_t *) const 
       {NotImplemented("GetDetParam");}
@@ -135,9 +137,12 @@ class AliITSresponseSDD : public AliITSresponse {
     virtual void    SigmaSpread(Double_t & /* p1 */,Double_t & /* p2 */) const 
       {NotImplemented("SigmaSpread");}
 
+    void   SetDead() { fIsDead = kTRUE; };
+    Bool_t IsDead() const { return fIsDead; };
+
  protected:
     // these statis const should be move to AliITSsegmentationSDD
-    static const Int_t fgkModules = 520;     // Total number of SDD modules
+    static const Int_t fgkWings = 2;     // Number of wings per module
     static const Int_t fgkChips = 4;        // Number of chips/module
     static const Int_t fgkChannels = 64;    // Number of channels/chip
     //*******
@@ -158,18 +163,18 @@ class AliITSresponseSDD : public AliITSresponse {
     static const Int_t fgkNcompsDefault; //default for fNcomps
     //
 
-    Int_t fDeadModules;                   // Total number of dead SDD modules
+    //Int_t fDeadModules;                   // Total number of dead SDD modules
     Int_t fDeadChips;                     // Number of dead chips
     Int_t fDeadChannels;                  // Number of dead channels
-    Double_t fGain[fgkModules][fgkChips][fgkChannels];//Array for channel gains
+    Double_t fGain[fgkWings][fgkChips][fgkChannels];//Array for channel gains
     Int_t     fCPar[8];        // Hardware compression parameters
-    Double_t   fNoise;          // Noise
-    Double_t   fBaseline;       // Baseline
-    Double_t   fNoiseAfterEl;   // Noise after electronics
-    Double_t   fJitterError;    // jitter error
-    Double_t   fDynamicRange;   // Set Dynamic Range 
-    Double_t   fChargeLoss;     // Set Linear Coefficient for Charge Loss 
-    Double_t   fDriftSpeed;     // Drift velocity
+    Double_t  fNoise;          // Noise
+    Double_t  fBaseline;       // Baseline
+    Double_t  fNoiseAfterEl;   // Noise after electronics
+    Double_t  fJitterError;    // jitter error
+    Double_t  fDynamicRange;   // Set Dynamic Range 
+    Double_t  fChargeLoss;     // Set Linear Coefficient for Charge Loss 
+    Double_t  fDriftSpeed;     // Drift velocity
     Int_t     fElectronics;    // Electronics
     Double_t   fMaxAdc;         // Adc saturation value
     Double_t   fDiffCoeff;      // Diffusion Coefficient (scaling the time)
@@ -184,12 +189,14 @@ class AliITSresponseSDD : public AliITSresponse {
     TString    fParam1;        // Read baselines from file option
     TString    fParam2;        // Read compression algo thresholds from file
 
+    Bool_t     fIsDead;  // module is dead or alive ?
+  
  private:
     AliITSresponseSDD(const AliITSresponseSDD &ob); // copy constructor
     AliITSresponseSDD& operator=(const AliITSresponseSDD & /* source */); // ass. op.
 
 
-    ClassDef(AliITSresponseSDD,4) // SDD response 
+    ClassDef(AliITSresponseSDD,5) // SDD response 
     
     };
 #endif

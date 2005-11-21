@@ -19,7 +19,6 @@
 #include <TRandom.h>
 
 #include "AliITSresponseSDD.h"
-
 //////////////////////////////////////////////////
 //  Response class for set:ITS                      //
 //  Specific subdetector implementation             //
@@ -28,7 +27,7 @@
 //                                                  //
 //////////////////////////////////////////////////////
 
-const Int_t AliITSresponseSDD::fgkModules;   
+const Int_t AliITSresponseSDD::fgkWings;   
 const Int_t AliITSresponseSDD::fgkChips;  
 const Int_t AliITSresponseSDD::fgkChannels; 
 const Int_t AliITSresponseSDD::fgkMaxAdcDefault = 1024;
@@ -59,6 +58,12 @@ ClassImp(AliITSresponseSDD)
   SetNSigmaIntegration(fgkNsigmasDefault);
   SetNLookUp(fgkNcompsDefault);
   // SetClock();
+  for(Int_t i=0;i<fgkWings;i++){
+    for(Int_t j=0;j<fgkChips;j++){
+      fBaseline=0;
+      fNoise=0;
+    }
+  }
   SetNoiseParam(fgkNoiseDefault,fgkBaselineDefault);
   SetNoiseAfterElectronics();
   SetJitterError();
@@ -94,6 +99,12 @@ AliITSresponseSDD::AliITSresponseSDD(const char *dataType){
   SetNSigmaIntegration(fgkNsigmasDefault);
   SetNLookUp(fgkNcompsDefault);
   // SetClock();
+  for(Int_t i=0;i<fgkWings;i++){
+    for(Int_t j=0;j<fgkChips*fgkChannels;j++){
+      fBaseline=0;
+      fNoise=0;
+    }
+  }
   SetNoiseParam(fgkNoiseDefault,fgkBaselineDefault);
   SetNoiseAfterElectronics();
   SetJitterError();
@@ -197,34 +208,36 @@ void AliITSresponseSDD::SetNLookUp(Int_t p1){
   }
 }
 //______________________________________________________________________
-void AliITSresponseSDD::SetDeadChannels(Int_t nmod, Int_t nchip, Int_t nchan){
+void AliITSresponseSDD::SetDeadChannels(Int_t nchip, Int_t nchan){
   // Set fGain to zero to simulate a random distribution of 
   // dead modules, dead chips and single dead channels
 
-  for( Int_t m=0; m<fgkModules; m++ ) 
+  for( Int_t m=0; m<fgkWings; m++ ) 
     for( Int_t n=0; n<fgkChips; n++ ) 
       for( Int_t p=0; p<fgkChannels; p++ ) 
 	fGain[m][n][p] = 1.;
                  
-  fDeadModules  = nmod;  
+  //fDeadModules  = nmod;  
   fDeadChips    = nchip;  
   fDeadChannels = nchan; 
     
   // nothing to do
-  if( nmod == 0 && nchip == 0 && nchan == 0 ) return;
+  //if( nmod == 0 && nchip == 0 && nchan == 0 ) return;
 
-  if( nmod < 0 || nmod > fgkModules ) 
-    { 
-      cout << "Wrong number of dead modules: " << nmod << endl; 
-      return; 
-    }
-  Int_t nmax = (fgkModules-nmod)*fgkChips; 
+  if( nchip == 0 && nchan == 0 ) return;
+  // if( nmod < 0 || nmod > fgkModules ) 
+  //  { 
+  //    cout << "Wrong number of dead modules: " << nmod << endl; 
+  //    return; 
+  //  }
+  
+  Int_t nmax = fgkWings*fgkChips; 
   if( nchip < 0 || nchip > nmax ) 
     { 
       cout << "Wrong number of dead chips: " << nchip << endl; 
       return; 
     }
-  nmax = ((fgkModules - nmod)*fgkChips - nchip)*fgkChannels; 
+  nmax = (fgkWings*fgkChips - nchip)*fgkChannels; 
   if( nchan < 0 || nchan > nmax ) 
     { 
       cout << "Wrong number of dead channels: " << nchan << endl; 
@@ -232,7 +245,7 @@ void AliITSresponseSDD::SetDeadChannels(Int_t nmod, Int_t nchip, Int_t nchan){
     }
   
   TRandom *gran = new TRandom();
-  
+  /*
   //  cout << "modules" << endl;
   Int_t * mod = new Int_t [nmod];
   Int_t i; //loop variable
@@ -244,79 +257,55 @@ void AliITSresponseSDD::SetDeadChannels(Int_t nmod, Int_t nchip, Int_t nchan){
 	for(Int_t p=0; p<fgkChannels; p++)
 	  fGain[mod[i]-1][n][p] = 0.;
     }
-
+  */
   //  cout << "chips" << endl;
   Int_t * chip     = new Int_t[nchip];
-  Int_t * chipMod = new Int_t[nchip];
-  i = 0;
+  Int_t i = 0;
   while( i < nchip ) 
     {
-      Int_t module = (Int_t) (fgkModules*gran->Uniform() + 1.);
-      if( module <=0 || module > fgkModules ) 
-	cout << "Wrong module: " << module << endl;
-      Int_t flagMod = 0;
-      for( Int_t k=0; k<nmod; k++ ) 
-	if( module == mod[k] ) { flagMod = 1; break; }
-      if( flagMod == 1 ) continue;
+      Int_t wing = (Int_t) (fgkWings*gran->Uniform() + 1.);
+      if( wing <=0 || wing > fgkWings ) Error("SetDeadChannels","Wrong wing");
         
       Int_t chi = (Int_t) (fgkChips*gran->Uniform() + 1.);
-      if( chi <=0 || chi > fgkChips ) cout << "Wrong chip: " << chi << endl;
+      if( chi <=0 || chi > fgkChips ) Error("SetDeadChannels","Wrong chip:%d\n",chi);
       i++;
       chip[i-1] = chi; 
-      chipMod[i-1] = module;
       for( Int_t m=0; m<fgkChannels; m++ ) 
-	fGain[module-1][chi-1][m] = 0.;
-      cout << i << ": Dead chip nr. " << chip[i-1] << " in module nr: " 
-	   << chipMod[i-1] << endl;
+	fGain[wing-1][chi-1][m] = 0.;
     }
 
-  //  cout << "channels" << endl;
   Int_t * channel      = new Int_t[nchan];
   Int_t * channelChip = new Int_t[nchan];
-  Int_t * channelMod  = new Int_t[nchan];
   i = 0;
   while( i < nchan ) 
     {
       Int_t k; //loop variable
-      Int_t module = (Int_t) (fgkModules*gran->Uniform() + 1.);
-      if( module <=0 || module > fgkModules ) 
-	cout << "Wrong module: " << module << endl;
-      Int_t flagMod = 0;
-      for( k=0; k<nmod; k++ ) 
-	if( module == mod[k] ) { flagMod = 1; break; }
-      if( flagMod == 1 ) continue;
+      Int_t wing = (Int_t) (fgkWings*gran->Uniform() + 1.);
+      if( wing <=0 || wing > fgkWings ) Error("SetDeadChannels","Wrong wing:%d\n",wing);
       Int_t chipp = (Int_t) (fgkChips*gran->Uniform() + 1.);
-      if( chipp <=0 || chipp > fgkChips ) cout << "Wrong chip: "<< chipp<<endl;
+      if( chipp <=0 || chipp > fgkChips ) Error("SetDeadChannels","Wrong chip:%d",chipp);
       Int_t flagChip = 0;
       for( k=0; k<nchip; k++) 
-	if( chipp == chip[k] && module == chipMod[k] ) { 
+	if( chipp == chip[k] ) { 
 	  flagChip = 1; break; }
       if( flagChip == 1 ) continue;
       i++;
       channel[i-1] = (Int_t) (fgkChannels*gran->Uniform() + 1.); 
       if( channel[i-1] <=0 || channel[i-1] > fgkChannels ) 
-	cout << "Wrong channel: " << channel[i-1] << endl;
+	Error("SetDeadChannels","Wrong channel:%d\n",channel[i-1]);
       channelChip[i-1] = chipp;
-      channelMod[i-1] = module;
-      fGain[module-1][chipp-1][channel[i-1]-1] = 0.;
-      cout << i << ": Dead channel nr. " << channel[i-1] << " in chip nr. " 
-	   << channelChip[i-1] << " in module nr: " << channelMod[i-1] 
-	   << endl;
+      fGain[wing-1][chipp-1][channel[i-1]-1] = 0.;
     }
     
-  delete [] mod;
   delete [] chip;
-  delete [] chipMod;
   delete [] channel;
-  delete [] channelMod;
   delete [] channelChip;
 }
 //______________________________________________________________________
-void AliITSresponseSDD::PrintGains(){
+void AliITSresponseSDD::PrintGains() const{
   //
 
-  if( GetDeadModules() == 0 && 
-      GetDeadChips() == 0 && 
+  if( GetDeadChips() == 0 && 
       GetDeadChannels() == 0 )
     return;  
 
@@ -326,12 +315,12 @@ void AliITSresponseSDD::PrintGains(){
   cout << "**************************************************" << endl;
 
   // Print SDD electronic gains
-  for(Int_t t=0; t<fgkModules;t++)
+  for(Int_t t=0; t<fgkWings;t++)
     for(Int_t u=0; u<fgkChips;u++)
       for(Int_t v=0; v<fgkChannels;v++)
 	{
 	  if( fGain[t][u][v] != 1.0 )
-	    cout << "Gain for Module: " << t+1 << ", Chip " << u+1 << 
+	    cout << "Gain for wing: " << t+1 << ", Chip " << u+1 << 
 	      ", Channel " << v+1 << " = " << fGain[t][u][v] << endl;
 	}
 }

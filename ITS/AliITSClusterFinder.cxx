@@ -24,7 +24,6 @@
 #include "AliITSRecPoint.h"
 #include "AliITSdigit.h"
 #include "AliITSDetTypeRec.h"
-#include "AliITSgeom.h"
 #include "AliITSMap.h"
 
 ClassImp(AliITSClusterFinder)
@@ -36,8 +35,7 @@ fDebug(0),
 fModule(0),
 fDigits(0),
 fNdigits(0),
-fResponse(0),
-fSegmentation(0),
+fDetTypeRec(0),
 fClusters(0),
 fNRawClusters(0),
 fMap(0),
@@ -54,15 +52,12 @@ fNPeaks(-1){
     //   A default constructed AliITSCulsterFinder
 }
 //----------------------------------------------------------------------
-AliITSClusterFinder::AliITSClusterFinder(AliITSsegmentation *seg, 
-                                         AliITSresponse *res):
+AliITSClusterFinder::AliITSClusterFinder(AliITSDetTypeRec* dettyp):
 TObject(),
 fDebug(0),
 fModule(0),
 fDigits(0),
 fNdigits(0),
-fResponse(res),
-fSegmentation(seg),
 fClusters(0),
 fNRawClusters(0),
 fMap(0),
@@ -82,18 +77,17 @@ fNPeaks(-1){
     SetNperMax();
     SetClusterSize();
     SetDeclusterFlag();
+    fDetTypeRec = dettyp;
 }
 //----------------------------------------------------------------------
-AliITSClusterFinder::AliITSClusterFinder(AliITSsegmentation *seg, 
-                                         AliITSresponse *response, 
-                                         TClonesArray *digits):
+AliITSClusterFinder::AliITSClusterFinder(AliITSDetTypeRec* dettyp,
+					 TClonesArray *digits):
 TObject(),
 fDebug(0),
 fModule(0),
 fDigits(digits),
 fNdigits(0),
-fResponse(response),
-fSegmentation(seg),
+fDetTypeRec(dettyp),
 fClusters(0),
 fNRawClusters(0),
 fMap(0),
@@ -143,8 +137,6 @@ AliITSClusterFinder::~AliITSClusterFinder(){
 
     if(fMap) {delete fMap;}
     // Zero local pointers. Other classes own these pointers.
-    fSegmentation = 0;
-    fResponse     = 0;
     fMap          = 0;
     fDigits       = 0;
     fNdigits      = 0;
@@ -153,9 +145,7 @@ AliITSClusterFinder::~AliITSClusterFinder(){
     fDeclusterFlag= 0;
     fClusterSize  = 0;
     fNPeaks       = 0;
-    // fITS          = 0;
     fDetTypeRec   = 0;
-    fITSgeom      = 0;
 
 }
 //__________________________________________________________________________
@@ -163,24 +153,24 @@ void AliITSClusterFinder::InitGeometry(){
 
 
  //Initialisation of ITS geometry
-  if(!fITSgeom) {
+  if(!fDetTypeRec->GetITSgeom()) {
     Error("InitGeometry","ITS geom is null!");
     return;
   }
-  Int_t mmax=fITSgeom->GetIndexMax();
+  Int_t mmax=fDetTypeRec->GetITSgeom()->GetIndexMax();
   if (mmax>2200) {
     Fatal("AliITSClusterFinder","Too many ITS subdetectors !"); 
   }
   Int_t m;
   for (m=0; m<mmax; m++) {
-    Int_t lay,lad,det; fITSgeom->GetModuleId(m,lay,lad,det);
-    Float_t x,y,z;     fITSgeom->GetTrans(lay,lad,det,x,y,z); 
-    Double_t rot[9];   fITSgeom->GetRotMatrix(lay,lad,det,rot);
+    Int_t lay,lad,det; fDetTypeRec->GetITSgeom()->GetModuleId(m,lay,lad,det);
+    Float_t x,y,z;     fDetTypeRec->GetITSgeom()->GetTrans(lay,lad,det,x,y,z); 
+    Double_t rot[9];   fDetTypeRec->GetITSgeom()->GetRotMatrix(lay,lad,det,rot);
     Double_t alpha=TMath::ATan2(rot[1],rot[0])+TMath::Pi();
     Double_t ca=TMath::Cos(alpha), sa=TMath::Sin(alpha);
     fYshift[m] = x*ca + y*sa;
     fZshift[m] = (Double_t)z;
-    fNdet[m] = (lad-1)*fITSgeom->GetNdetectors(lay) + (det-1);
+    fNdet[m] = (lad-1)*fDetTypeRec->GetITSgeom()->GetNdetectors(lay) + (det-1);
     fNlayer[m] = lay-1;
   }
 }
@@ -426,11 +416,11 @@ void AliITSClusterFinder::RecPoints2Clusters
   // Conversion AliITSRecPoint -> AliITSclusterV2 for the ITS 
   // subdetector indexed by idx 
   //------------------------------------------------------------
-  if(!fITSgeom) {
+  if(!fDetTypeRec->GetITSgeom()) {
     Error("RecPoints2Clusters","ITS geom is null!");
     return;
   }
-  Int_t lastSPD1=fITSgeom->GetModuleIndex(2,1,1)-1;
+  Int_t lastSPD1=fDetTypeRec->GetITSgeom()->GetModuleIndex(2,1,1)-1;
   TClonesArray &cl=*clusters;
   Int_t ncl=points->GetEntriesFast();
   for (Int_t i=0; i<ncl; i++) {

@@ -23,7 +23,8 @@
 #include "AliRun.h"
 #include "AliITSClusterFinderV2.h"
 #include "AliITSclusterV2.h"
-#include "AliITSgeom.h"
+#include "AliITSDetTypeRec.h"
+//#include "AliITSgeom.h"
 #include <TParticle.h>
 #include "AliMC.h"
 
@@ -31,13 +32,12 @@ ClassImp(AliITSClusterFinderV2)
 
 extern AliRun *gAlice;
 
-AliITSClusterFinderV2::AliITSClusterFinderV2(AliITSgeom* geom):AliITSClusterFinder(){
+AliITSClusterFinderV2::AliITSClusterFinderV2(AliITSDetTypeRec* dettyp):AliITSClusterFinder(dettyp){
 
   //Default constructor
   fEvent = 0;
   fModule = 0;
-  fITSgeom = geom;
-  fNModules = fITSgeom->GetIndexMax();
+  fNModules = dettyp->GetITSgeom()->GetIndexMax();
 }
 
 //______________________________________________________________________

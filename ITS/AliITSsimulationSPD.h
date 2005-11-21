@@ -30,16 +30,20 @@ class AliITSsimulationSPD : public AliITSsimulation {
  public:        
     AliITSsimulationSPD(); // Default constructor
     // Standard constructor
-    AliITSsimulationSPD(AliITSsegmentation *seg, AliITSresponse *res);
+    AliITSsimulationSPD(AliITSDetTypeSim *dettyp);
     virtual ~AliITSsimulationSPD();// destructor
     AliITSsimulationSPD(const AliITSsimulationSPD &source); // copy constructo
     // assignment operator
     AliITSsimulationSPD& operator=(const AliITSsimulationSPD &source);
     virtual AliITSsimulation& operator=(const AliITSsimulation &source);
+    // Get a pointer to the segmentation object
+    virtual AliITSsegmentation* GetSegmentationModel(Int_t /*dt*/){return fDetType->GetSegmentationModel(0);}
+    // set pointer to segmentation objec
+    virtual void SetSegmentationModel(Int_t /*dt*/, AliITSsegmentation *seg){fDetType->SetSegmentationModel(0,seg);}
     // Initilizes the variables
     void Init();
     // Initilizes the variables with replacement segmentation/response class
-    void Init(AliITSsegmentationSPD *seg, AliITSresponseSPD *resp);
+    //    void Init(AliITSsegmentationSPD *seg, AliITSresponseSPD *resp);
 
     // Sum digitize module
     // Create maps to build the lists of tracks for each summable digit
@@ -102,7 +106,7 @@ class AliITSsimulationSPD : public AliITSsimulation {
     //  Apply a mask to the SPD module. 1% of the pixel channels are
     //  masked. When the database will be ready, the masked pixels
     //  should be read from it.
-    void SetMask();
+    void SetMask(Int_t mod);
     // Create Histograms
     void CreateHistograms();
     // Reset histograms for this detector
@@ -118,17 +122,20 @@ class AliITSsimulationSPD : public AliITSsimulation {
     // Getters for data kept in fSegmentation and fResponse.
     // Returns the Threshold in electrons
     Double_t GetThreshold(){Double_t a=0.0,b=0.0;
-    ((AliITSresponseSPD*)fResponse)->Thresholds(a,b); return a;}
+    AliITSresponseSPD* res = (AliITSresponseSPD*)GetResponseModel(0);
+    res->Thresholds(a,b); return a;}
     // Returns the threshold and rms noise.
     void GetThresholds(Double_t &t,Double_t &s){
-    ((AliITSresponseSPD*)fResponse)->Thresholds(t,s);}
+      AliITSresponseSPD* res = (AliITSresponseSPD*)GetResponseModel(0);
+      res->Thresholds(t,s);}
     // Returns the couplings Columb and Row.
     void GetCouplings(Double_t &cc,Double_t &cr){
-	((AliITSresponseSPD*)fResponse)->GetCouplingParam(cc,cr);}
+      AliITSresponseSPD* res = (AliITSresponseSPD*)GetResponseModel(0);
+      res->GetCouplingParam(cc,cr);}
     // Returns the number of pixels in x
-    Int_t GetNPixelsX(){return ((AliITSsegmentationSPD*)fSegmentation)->Npx();}
+    Int_t GetNPixelsX(){AliITSsegmentationSPD* seg= (AliITSsegmentationSPD*)GetSegmentationModel(0);return seg->Npx();}
     // Returns the number of pixels in z
-    Int_t GetNPixelsZ(){return ((AliITSsegmentationSPD*)fSegmentation)->Npz();}
+    Int_t GetNPixelsZ(){AliITSsegmentationSPD* seg= (AliITSsegmentationSPD*)GetSegmentationModel(0);return seg->Npz();}
 
  private:
     AliITSMapA2  *fMapA2;   //! MapA2 for Local internal use only

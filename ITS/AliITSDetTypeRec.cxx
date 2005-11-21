@@ -25,6 +25,10 @@
 #include "TObjArray.h"
 #include "TTree.h"
 
+#include "AliCDBManager.h"
+#include "AliCDBStorage.h"
+#include "AliCDBEntry.h"
+
 #include "AliITSClusterFinder.h"
 #include "AliITSClusterFinderV2.h"
 #include "AliITSClusterFinderV2SPD.h"
@@ -41,15 +45,17 @@
 #include "AliITSRawClusterSDD.h"
 #include "AliITSRawClusterSSD.h"
 #include "AliITSRecPoint.h"
-#include "AliITSresponseSPD.h"
 #include "AliITSresponseSDD.h"
-#include "AliITSresponseSSD.h"
 #include "AliITSsegmentationSPD.h"
 #include "AliITSsegmentationSDD.h"
 #include "AliITSsegmentationSSD.h"
 
 
 const Int_t AliITSDetTypeRec::fgkNdettypes = 3;
+const Int_t AliITSDetTypeRec::fgkDefaultNModulesSPD =  240;
+const Int_t AliITSDetTypeRec::fgkDefaultNModulesSDD =  260;
+const Int_t AliITSDetTypeRec::fgkDefaultNModulesSSD = 1698;
+
 ClassImp(AliITSDetTypeRec)
 
 //________________________________________________________________
@@ -94,6 +100,12 @@ fRecPointClassName(){// String with RecPoint class name
   
   SelectVertexer(" ");
   fLoader = 0;
+
+  fNMod[0] = fgkDefaultNModulesSPD;
+  fNMod[1] = fgkDefaultNModulesSDD;
+  fNMod[2] = fgkDefaultNModulesSSD;
+  
+  SetRunNumber();
 }
 //______________________________________________________________________
 AliITSDetTypeRec::AliITSDetTypeRec(const AliITSDetTypeRec &/*rec*/):TObject(/*rec*/){
@@ -142,6 +154,7 @@ AliITSDetTypeRec::~AliITSDetTypeRec(){
     fCtype = 0;
   }
   delete [] fNctype;
+  delete [] fNdtype;
   if(fLoader) delete fLoader;
   
 }
@@ -188,25 +201,31 @@ AliITSsegmentation* AliITSDetTypeRec::GetSegmentationModel(Int_t dettype){
 
 }
 //_______________________________________________________________________
-void AliITSDetTypeRec::SetCalibrationModel(Int_t dettype,AliITSresponse *resp){
+void AliITSDetTypeRec::SetCalibrationModel(Int_t iMod, AliITSresponse *cal){
 
-  
-  //Set segmentation model for module number
-  if(fCalibration==0) fCalibration = new TObjArray(fgkNdettypes);
-  if(fCalibration->At(dettype)!=0) delete fCalibration->At(dettype);
-  fCalibration->AddAt(resp,dettype);
- 
+  //Set calibration (response) for the module iMod of type dettype
+  if (fCalibration==0) {
+    fCalibration = new TObjArray(fGeom->GetIndexMax());
+    fCalibration->SetOwner(kTRUE);
+    fCalibration->Clear();
+  }
+
+  if (fCalibration->At(iMod) != 0)
+    delete (AliITSresponse*) fCalibration->At(iMod);
+  fCalibration->AddAt(cal,iMod);
+
 }
 //_______________________________________________________________________
-AliITSresponse* AliITSDetTypeRec::GetCalibrationModel(Int_t dettype){
+AliITSresponse* AliITSDetTypeRec::GetCalibrationModel(Int_t iMod){
   
-  //Get segmentation model for module number
+  //Get calibration model for module type
   
   if(fCalibration==0) {
-    Warning("GetalibrationModel","fResponse is 0!");
+    Warning("GetalibrationModel","fCalibration is 0!");
     return 0; 
   }  
-  return (AliITSresponse*)fCalibration->At(dettype);
+
+  return (AliITSresponse*)fCalibration->At(iMod);
 }
 
 //______________________________________________________________________
@@ -282,30 +301,27 @@ void AliITSDetTypeRec::SetDefaults(){
   
   //Set defaults for segmentation and response
 
-
   if(fGeom==0){
     Warning("SetDefaults","fGeom is 0!");
     return;
   }
 
   AliITSsegmentation* seg;
-  AliITSresponse* res;
+  if(!GetCalibration()) {AliFatal("Exit");exit(0);}  
 
   for(Int_t dettype=0;dettype<fgkNdettypes;dettype++){
     if(dettype==0){
       seg = new AliITSsegmentationSPD(fGeom);
       SetSegmentationModel(dettype,seg);
-      SetCalibrationModel(dettype,new AliITSresponseSPD());
       SetDigitClassName(dettype,"AliITSdigitSPD");
       SetClusterClassName(dettype,"AliITSRawClusterSPD");
 
     }
     if(dettype==1){
-      res = new AliITSresponseSDD("simulated");
+      AliITSresponseSDD* res=(AliITSresponseSDD*) GetCalibrationModel(fGeom->GetStartSDD()); 
       seg = new AliITSsegmentationSDD(fGeom,res);
       SetSegmentationModel(dettype,seg);
-      SetCalibrationModel(dettype,new AliITSresponseSDD("simulated"));
-      const char *kopt = GetCalibrationModel(dettype)->ZeroSuppOption();
+      const char *kopt = res->ZeroSuppOption();
       if((!strstr(kopt,"2D"))&&(!strstr(kopt,"1D"))) SetDigitClassName(dettype,"AliITSdigit");
       else SetDigitClassName(dettype,"AliITSdigitSDD");
       SetClusterClassName(dettype,"AliITSRawClusterSDD");
@@ -316,19 +332,74 @@ void AliITSDetTypeRec::SetDefaults(){
       seg2->SetAngles(0.0075,0.0275); // strip angels rad P and N side.
       seg2->SetAnglesLay5(0.0075,0.0275); // strip angels rad P and N side.
       seg2->SetAnglesLay6(0.0275,0.0075); // strip angels rad P and N side.
-
       SetSegmentationModel(dettype,seg2);
-      SetCalibrationModel(dettype,new AliITSresponseSSD("simulated"));
       SetDigitClassName(dettype,"AliITSdigitSSD");
       SetClusterClassName(dettype,"AliITSRawClusterSSD");
-
-     
     }
-
   }
- 
   
 }
+//______________________________________________________________________
+Bool_t AliITSDetTypeRec::GetCalibration() {
+  // Get Default calibration if a storage is not defined.
+
+  Bool_t deleteManager = kFALSE;
+  if(!AliCDBManager::Instance()->IsDefaultStorageSet()) {
+    AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT");
+    deleteManager = kTRUE;
+  }
+  AliCDBStorage *storage = AliCDBManager::Instance()->GetDefaultStorage();
+
+  AliCDBEntry *entrySPD = storage->Get("ITS/Calib/RespSPD", fRunNumber);
+  TObjArray *respSPD = (TObjArray *)entrySPD->GetObject();
+  entrySPD->SetObject(NULL);
+  entrySPD->SetOwner(kTRUE);
+  AliCDBEntry *entrySDD = storage->Get("ITS/Calib/RespSDD", fRunNumber);
+  TObjArray *respSDD = (TObjArray *)entrySDD->GetObject();
+  entrySDD->SetObject(NULL);
+  entrySDD->SetOwner(kTRUE);
+  AliCDBEntry *entrySSD = storage->Get("ITS/Calib/RespSSD", fRunNumber);
+  TObjArray *respSSD = (TObjArray *)entrySSD->GetObject();
+  entrySSD->SetObject(NULL);
+  entrySSD->SetOwner(kTRUE);
+  // DB entries are dleted. In this waymetadeta objects are deleted as well
+  delete entrySPD;
+  delete entrySDD;
+  delete entrySSD;
+  if(deleteManager){
+    AliCDBManager::Instance()->Destroy();
+    AliCDBManager::Instance()->RemoveDefaultStorage();
+    storage = 0;   // the storage is killed by AliCDBManager::Instance()->Destroy()
+  }
+  if ((! respSPD)||(! respSDD)||(! respSSD)) {
+    AliWarning("Can not get calibration from calibration database !");
+    return kFALSE;
+  }
+  
+  fNMod[0] = respSPD->GetEntries();
+  fNMod[1] = respSDD->GetEntries();
+  fNMod[2] = respSSD->GetEntries();
+  AliInfo(Form("%i SPD, %i SDD and %i SSD in calibration database",
+	       fNMod[0], fNMod[1], fNMod[2]));
+  AliITSresponse* res;
+  for (Int_t i=0; i<fNMod[0]; i++) {
+    res = (AliITSresponse*) respSPD->At(i);
+    SetCalibrationModel(i, res);
+ }
+  for (Int_t i=0; i<fNMod[1]; i++) {
+    res = (AliITSresponse*) respSDD->At(i);
+    Int_t iMod = i + fNMod[0];
+    SetCalibrationModel(iMod, res);
+ }
+  for (Int_t i=0; i<fNMod[2]; i++) {
+    res = (AliITSresponse*) respSSD->At(i);
+    Int_t iMod = i + fNMod[0] + fNMod[1];
+    SetCalibrationModel(iMod, res);
+ }
+
+  return kTRUE;
+}
+
 
 //________________________________________________________________
 void AliITSDetTypeRec::SetDefaultClusterFinders(){
@@ -340,8 +411,6 @@ void AliITSDetTypeRec::SetDefaultClusterFinders(){
     return;
   }
 
-  AliITSsegmentation* seg;
-  AliITSresponse* res;
   AliITSClusterFinder *clf; 
 
   MakeTreeC();
@@ -350,21 +419,20 @@ void AliITSDetTypeRec::SetDefaultClusterFinders(){
     //SPD
     if(dettype==0){
       if(!GetReconstructionModel(dettype)){
-	seg = (AliITSsegmentation*)GetSegmentationModel(dettype);
 	TClonesArray *dig0 = DigitsAddress(0);
 	TClonesArray *rec0 = ClustersAddress(0);
-	clf = new AliITSClusterFinderSPD(seg,dig0,rec0);
+	clf = new AliITSClusterFinderSPD(this,dig0,rec0);
 	SetReconstructionModel(dettype,clf);
+
       }
     }
+   
     //SDD
     if(dettype==1){
       if(!GetReconstructionModel(dettype)){
-	seg = (AliITSsegmentation*)GetSegmentationModel(dettype);
-        res = (AliITSresponse*)GetCalibrationModel(dettype);
 	TClonesArray *dig1 = DigitsAddress(1);
 	TClonesArray *rec1 = ClustersAddress(1);
-	clf = new AliITSClusterFinderSDD(seg,res,dig1,rec1);
+	clf = new AliITSClusterFinderSDD(this,dig1,rec1);
 	SetReconstructionModel(dettype,clf);
       }
 
@@ -372,10 +440,8 @@ void AliITSDetTypeRec::SetDefaultClusterFinders(){
     //SSD
     if(dettype==2){
       if(!GetReconstructionModel(dettype)){
-	seg = (AliITSsegmentation*)GetSegmentationModel(dettype);
 	TClonesArray* dig2 = DigitsAddress(2);
-	clf = new AliITSClusterFinderSSD(seg,dig2);
-	clf->SetITSgeom(fGeom);
+	clf = new AliITSClusterFinderSSD(this,dig2);
 	SetReconstructionModel(dettype,clf);
       }
     }
@@ -395,7 +461,6 @@ void AliITSDetTypeRec::SetDefaultClusterFindersV2(Bool_t rawdata){
     return;
   }
 
-  AliITSsegmentation* seg;
   AliITSClusterFinder *clf; 
 
   MakeTreeC();
@@ -403,10 +468,8 @@ void AliITSDetTypeRec::SetDefaultClusterFindersV2(Bool_t rawdata){
     //SPD
     if(dettype==0){
       if(!GetReconstructionModel(dettype)){
-	seg = (AliITSsegmentation*)GetSegmentationModel(dettype);
-	clf = new AliITSClusterFinderV2SPD(fGeom);
+	clf = new AliITSClusterFinderV2SPD(this);
 	clf->InitGeometry();
-	clf->SetSegmentation(seg);
 	if(!rawdata) clf->SetDigits(DigitsAddress(0));
 	SetReconstructionModel(dettype,clf);
 
@@ -415,10 +478,8 @@ void AliITSDetTypeRec::SetDefaultClusterFindersV2(Bool_t rawdata){
     //SDD
     if(dettype==1){
       if(!GetReconstructionModel(dettype)){
-	seg = (AliITSsegmentation*)GetSegmentationModel(dettype);
-	clf = new AliITSClusterFinderV2SDD(fGeom);
-	clf->InitGeometry();	
-	clf->SetSegmentation(seg);
+	clf = new AliITSClusterFinderV2SDD(this);
+	clf->InitGeometry();
 	if(!rawdata) clf->SetDigits(DigitsAddress(1));
 	SetReconstructionModel(dettype,clf);
       }
@@ -428,10 +489,8 @@ void AliITSDetTypeRec::SetDefaultClusterFindersV2(Bool_t rawdata){
     //SSD
     if(dettype==2){
       if(!GetReconstructionModel(dettype)){
-	seg = (AliITSsegmentation*)GetSegmentationModel(dettype);
-	clf = new AliITSClusterFinderV2SSD(fGeom);
+	clf = new AliITSClusterFinderV2SSD(this);
 	clf->InitGeometry();
-	clf->SetSegmentation(seg);
 	if(!rawdata) clf->SetDigits(DigitsAddress(2));
 	SetReconstructionModel(dettype,clf);
       }
@@ -774,7 +833,6 @@ void AliITSDetTypeRec::DigitsToRecPoints(Int_t evNumber,Int_t lastentry,Option_t
       Int_t ndigits = itsDigits->GetEntriesFast();
       if(ndigits>0){
 	rec->SetDetTypeRec(this);
-	rec->SetITSgeom(fGeom);
 	rec->SetDigits(DigitsAddress(id));
 	rec->SetClusters(ClustersAddress(id));
 	rec->FindRawClusters(module);
@@ -831,7 +889,7 @@ void AliITSDetTypeRec::DigitsToRecPoints(AliRawReader* rawReader){
   }
   for(id=0;id<3;id++){
     rec = (AliITSClusterFinderV2*)GetReconstructionModel(id);
-    rec->SetITSgeom(fGeom);
+    rec->SetDetTypeRec(this);
     if (!rec) {
       Error("DigitsToRecPoints",
 	    "The reconstruction class was not instanciated");
@@ -858,4 +916,5 @@ void AliITSDetTypeRec::DigitsToRecPoints(AliRawReader* rawReader){
        nClusters);
   
 }
+
 

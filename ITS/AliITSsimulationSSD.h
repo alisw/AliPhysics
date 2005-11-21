@@ -5,6 +5,10 @@
 
 /* $Id$ */
 
+/////////////////////////////////////////////////////////////
+// Simulation class for SSD                                //
+/////////////////////////////////////////////////////////////
+
 #include "AliITSsimulation.h"
 #include "AliITSsegmentationSSD.h" // function used in inline functions
 
@@ -24,9 +28,13 @@ class AliITSsimulationSSD: public AliITSsimulation {
     AliITSsimulationSSD& operator=(const AliITSsimulationSSD &source);
     virtual AliITSsimulation& operator=(const AliITSsimulation &source);
     //Standard Constructor
-    AliITSsimulationSSD(AliITSsegmentation *seg,AliITSresponse *resp);
+    AliITSsimulationSSD(AliITSDetTypeSim* dettyp);
     //Destructor
     virtual ~AliITSsimulationSSD();
+    // Get a pointer to the segmentation object
+    virtual AliITSsegmentation* GetSegmentationModel(Int_t /*dt*/){return fDetType->GetSegmentationModel(2);}
+    // set pointer to segmentation objec
+    virtual void SetSegmentationModel(Int_t /*dt*/, AliITSsegmentation *seg){fDetType->SetSegmentationModel(2,seg);}
     // Initilize variables for this simulation
     void Init();
     // Initilize variables for this simulation
@@ -46,8 +54,9 @@ class AliITSsimulationSSD: public AliITSsimulation {
 		    Double_t x,Double_t y,Double_t z,Double_t de,
 		    AliITSTableSSD *tav);
     //returns a pointer to the SSD segmentation.
-    AliITSsegmentationSSD *GetSegmentation() {
+    /*AliITSsegmentationSSD *GetSegmentation() {
 	return (AliITSsegmentationSSD*) fSegmentation;}
+    */
     //Returns the ionization energy for Si in GeV.
     Double_t GetIonizeE() const {return fIonE;}
     //Sets the ionization energy for Si in GeV.
@@ -68,13 +77,17 @@ class AliITSsimulationSSD: public AliITSsimulation {
     void Read(istream *is);
     virtual void Print(Option_t *option="") const {TObject::Print(option);}
     virtual Int_t Read(const char *name) {return TObject::Read(name);}
+    // Data members
+ protected:
+
+    AliITSdcsSSD *fDCS;   // Class containing detector controle paramters
 
  private:
     // Return the Response class
-    AliITSresponseSSD* GetResp(){return (AliITSresponseSSD*)fResponse;}
+    //    AliITSresponseSSD* GetResp(){return (AliITSresponseSSD*)fResponse;}
     // Return the Segmentation class
-    AliITSsegmentationSSD* GetSeg(){
-        return (AliITSsegmentationSSD*)fSegmentation;}
+    //AliITSsegmentationSSD* GetSeg(){
+    //  return (AliITSsegmentationSSD*)fSegmentation;}
     // returns the number of steps needed to proplerly distribute the charge
     // in a step
     Int_t NumOfSteps(Double_t x,Double_t y,Double_t z,
@@ -83,7 +96,7 @@ class AliITSsimulationSSD: public AliITSsimulation {
     void GetList(Int_t trk,Int_t ht,Int_t mod,AliITSpList *pLt,
 		 AliITSTableSSD *tav);
     // sets thresholds and fills digits
-    void ChargeToSignal(AliITSpList *pList);
+    void ChargeToSignal(Int_t module,AliITSpList *pList);
     // Writes Summable Digits to a root file for later use.
     void WriteSDigits(AliITSpList *pList);
     // ReadSDigits and create Digits
@@ -101,15 +114,10 @@ class AliITSsimulationSSD: public AliITSsimulation {
     // Computes the integral of a gaussian using Error Function
     Float_t F(Float_t av, Float_t x, Float_t s);
     // returns, from the segmentation, the number of stips
-    Int_t GetNStrips() {return GetSegmentation()->Npx();}
+    Int_t GetNStrips() {AliITSsegmentationSSD* seg = (AliITSsegmentationSSD*)GetSegmentationModel(2);return seg->Npx();}
     // returns, from the segmentation, the strip pitch
-    Float_t GetStripPitch() {return GetSegmentation()->Dpx(0);}
+    Float_t GetStripPitch() {AliITSsegmentationSSD* seg = (AliITSsegmentationSSD*)GetSegmentationModel(2);return seg->Dpx(0);}
 
-    // Data members
- protected:
-    AliITSdcsSSD *fDCS;   // Class containing detector controle paramters
-
- private:
     AliITSMapA2 *fMapA2;      //! Map of ionization, used localy only
     Double_t    fIonE;        // ionization energy of Si in GeV
     Double_t    fDifConst[2]; // Diffusion constants [h,e] in cm**2/sec

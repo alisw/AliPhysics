@@ -10,6 +10,8 @@
 #include "AliITSClusterFinder.h"
 //#include "AliITSsegmentationSSD.h"
 
+#include "AliITSDetTypeRec.h"
+
 class TArrayI;
 class AliITSclusterSSD;
 class AliITSpackageSSD;
@@ -21,8 +23,8 @@ class AliITSresponseSSD;
 class AliITSClusterFinderSSD: public AliITSClusterFinder{
   public:
     AliITSClusterFinderSSD();
-    AliITSClusterFinderSSD(AliITSsegmentation *seg,AliITSresponse *resp);
-    AliITSClusterFinderSSD(AliITSsegmentation *seg, TClonesArray *digits);
+    AliITSClusterFinderSSD(AliITSDetTypeRec* dettyp);
+    AliITSClusterFinderSSD(AliITSDetTypeRec* dettyp, TClonesArray *digits);
     virtual ~AliITSClusterFinderSSD();
     void FindRawClusters(Int_t module);
 
@@ -31,11 +33,9 @@ class AliITSClusterFinderSSD: public AliITSClusterFinder{
     AliITSClusterFinderSSD(const AliITSClusterFinderSSD &source);
     // assignment operator
     AliITSClusterFinderSSD& operator=(const AliITSClusterFinderSSD &source);
-    virtual AliITSresponseSSD* GetResp()const{
-        return (AliITSresponseSSD*) GetResponse();}//Return Response
     //Returns fSegmentation
     virtual AliITSsegmentationSSD* GetSeg()const{
-        return (AliITSsegmentationSSD*)GetSegmentation();} 
+        return (AliITSsegmentationSSD*)fDetTypeRec->GetSegmentationModel(2);} 
     void      InitReconstruction();
     Bool_t    CreateNewRecPoint(Double_t P,Double_t dP,Double_t N,Double_t dN,
                                 Double_t Sig,Double_t dSig,

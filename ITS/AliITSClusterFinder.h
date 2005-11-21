@@ -29,9 +29,8 @@ class AliITSClusterFinder :public TObject{
   public:
     AliITSClusterFinder(); // Default constructor
     // Standard Constructor
-    AliITSClusterFinder(AliITSsegmentation *seg, AliITSresponse *resp);
-    AliITSClusterFinder(AliITSsegmentation *seg, AliITSresponse *resp,
-                        TClonesArray *digits);// Standard+ Constructor
+    AliITSClusterFinder(AliITSDetTypeRec* dettyp);
+    AliITSClusterFinder(AliITSDetTypeRec* dettyp,TClonesArray *digits);// Standard+ Constructor
     virtual ~AliITSClusterFinder(); // Destructor
     //
     // Do the Reconstruction.
@@ -43,16 +42,6 @@ class AliITSClusterFinder :public TObject{
     void SetNoDebug(){fDebug=0;}
     // Returns the debug flag value
     Bool_t GetDebug(Int_t level=1)const {return fDebug>=level;}
-
-    void SetITSgeom(AliITSgeom* geom) {fITSgeom=geom;}
-    AliITSgeom* GetITSgeom() const {return fITSgeom;}
-    //
-    // Setters and Getters
-    // segmentation
-    virtual void SetSegmentation(AliITSsegmentation *segmentation) {
-        fSegmentation=segmentation;}
-    //Returns fSegmentation
-    virtual AliITSsegmentation* GetSegmentation()const{return fSegmentation;}
     // Digit
     virtual void SetDigits(TClonesArray *itsDigits) {// set digits
         fDigits=itsDigits;fNdigits = fDigits->GetEntriesFast();}
@@ -60,11 +49,6 @@ class AliITSClusterFinder :public TObject{
         return (AliITSdigit*) fDigits->UncheckedAt(i);}
     virtual TClonesArray* Digits(){return fDigits;}// Gets fDigits
     virtual Int_t   NDigits() const {return fNdigits;}// Get Number of Digits
-    // Response
-    //Return Response
-    virtual AliITSresponse* GetResponse()const{return fResponse;}
-    virtual void SetResponse(AliITSresponse *response) {// set response
-        fResponse=response;}
     // clulsters
     // Set fClusters up
     virtual void SetClusters(TClonesArray *itsClusters){// set clusters
@@ -86,7 +70,6 @@ class AliITSClusterFinder :public TObject{
     virtual void   FillCluster(AliITSRawCluster *cluster) {// fill cluster
         FillCluster(cluster,1);}
 
-    //
     virtual void SetModule(Int_t module){fModule = module;}// Set module number
     virtual Int_t GetModule()const{return fModule;}// Returns module number
     //
@@ -134,17 +117,17 @@ class AliITSClusterFinder :public TObject{
     // assignment operator
     AliITSClusterFinder& operator=(const AliITSClusterFinder &source);
    // data members       
-    Int_t              fDebug;         //! Debug flag/level
-    Int_t              fModule;        //! Module number to be reconstuctted
-    TClonesArray       *fDigits;       //! digits
-    Int_t              fNdigits;       //! num of digits
 
-    AliITSresponse     *fResponse;     //! response
-    AliITSsegmentation *fSegmentation; //! segmentation
-    TClonesArray       *fClusters;     //! Array of clusters
-    Int_t              fNRawClusters;  //! in case we split the cluster
-                                       // and want to keep track of 
-                                       // the cluster which was splitted
+   Int_t              fDebug;         //! Debug flag/level
+   Int_t              fModule;        //! Module number to be reconstuctted
+   TClonesArray       *fDigits;       //! digits 
+   Int_t              fNdigits;       //! num of digits 
+ 
+   AliITSDetTypeRec* fDetTypeRec; //ITS object for reconstruction
+   TClonesArray       *fClusters;     //! Array of clusters
+   Int_t              fNRawClusters;  //! in case we split the cluster
+   // and want to keep track of 
+   // the cluster which was splitted
     AliITSMap          *fMap;          //! map
     Int_t              fNperMax;       //! NperMax
     Int_t              fDeclusterFlag; //! DeclusterFlag
@@ -155,10 +138,9 @@ class AliITSClusterFinder :public TObject{
     Float_t fZshift[2200];       // z-shifts of detector local coor. systems 
     Int_t fNdet[2200];           // detector index  
     Int_t fNlayer[2200];         // detector layer
-    AliITSDetTypeRec* fDetTypeRec; //ITS object for reconstruction
-    AliITSgeom*       fITSgeom;    //!ITS geometry
 
-    ClassDef(AliITSClusterFinder,5) //Class for clustering and reconstruction of space points
+
+    ClassDef(AliITSClusterFinder,6) //Class for clustering and reconstruction of space points
 };
 // Input and output functions for standard C++ input/output.
 ostream &operator<<(ostream &os,AliITSClusterFinder &source);

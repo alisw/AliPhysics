@@ -26,8 +26,6 @@
 #include "AliITSMapA2.h"
 #include "AliITSpList.h"
 #include "AliITSsimulationSPD.h"
-#include "AliITSsegmentation.h"
-#include "AliITSresponse.h"
 #include "AliLog.h"
 
 //#define DEBUG
@@ -54,9 +52,8 @@ fHis(0){
     //    A default constructed AliITSsimulationSPD class.
 }
 //______________________________________________________________________
-AliITSsimulationSPD::AliITSsimulationSPD(AliITSsegmentation *seg,
-                                         AliITSresponse *res):
-AliITSsimulation(seg,res),
+AliITSsimulationSPD::AliITSsimulationSPD(AliITSDetTypeSim *dettyp):
+AliITSsimulation(dettyp),
 fMapA2(0),
 fHis(0){
     // Standard constructor
@@ -82,10 +79,12 @@ void AliITSsimulationSPD::Init() {
 
     fHis = 0;
     if(fMapA2) delete fMapA2;
-    fMapA2  = new AliITSMapA2(fSegmentation);
+    AliITSsegmentationSPD* seg = (AliITSsegmentationSPD*)GetSegmentationModel(0);
+    fMapA2  = new AliITSMapA2(seg);
     if(fpList) delete fpList;
     fpList  = new AliITSpList(GetNPixelsZ()+1,GetNPixelsX()+1);
 }
+/*
 //______________________________________________________________________
 void AliITSsimulationSPD::Init(AliITSsegmentationSPD *seg,
                                AliITSresponseSPD *resp) {
@@ -105,13 +104,14 @@ void AliITSsimulationSPD::Init(AliITSsegmentationSPD *seg,
     fHis = 0;
     if(fResponse) delete fResponse;
     fResponse     = resp;
-    if(fSegmentation) delete fSegmentation;
-    fSegmentation = seg;
+    if(GetSegmentationModel(0)) delete GetSegmentationModel(0);
+    GetSegmentationModel(0) = seg;
     if(fMapA2) delete fMapA2;
-    fMapA2  = new AliITSMapA2(fSegmentation);
+    fMapA2  = new AliITSMapA2(GetSegmentationModel(0));
     if(fpList) delete fpList;
     fpList  = new AliITSpList(GetNPixelsZ()+1,GetNPixelsX()+1);
 }
+*/
 //______________________________________________________________________
 AliITSsimulationSPD::~AliITSsimulationSPD() { 
     // destructor
@@ -268,7 +268,7 @@ void AliITSsimulationSPD::DigitiseModule(AliITSmodule *mod, Int_t,Int_t) {
     HitsToAnalogDigits(mod,frowpixel,fcolpixel,fenepixel,fpList);
 
     // apply mask to SPD module
-    SetMask();
+    SetMask(fModule);
 
     CreateDigit(fModule,fpList);
 
@@ -303,7 +303,7 @@ void AliITSsimulationSPD::SDigitsToDigits(Int_t module,AliITSpList *pList) {
     FillMapFrompList(pList);
 
     // apply mask to SPD module
-    SetMask();
+    SetMask(fModule);
 
     CreateDigit(module,pList);
 
@@ -405,25 +405,25 @@ void AliITSsimulationSPD::HitToDigit(AliITSmodule *mod,Int_t hitpos,
 
     x2l += x1l; y2l += y1l; z2l += z1l; // Convert to ending coordinate.
     // positions shifted and converted in microns
-    x1l   = x1l*kconv + fSegmentation->Dx()/2.;
-    z1l   = z1l*kconv + fSegmentation->Dz()/2.;
+    x1l   = x1l*kconv + GetSegmentationModel(0)->Dx()/2.;
+    z1l   = z1l*kconv + GetSegmentationModel(0)->Dz()/2.;
     // positions  shifted and converted in microns
-    x2l   = x2l*kconv + fSegmentation->Dx()/2.;
-    z2l   = z2l*kconv + fSegmentation->Dz()/2.;
+    x2l   = x2l*kconv + GetSegmentationModel(0)->Dx()/2.;
+    z2l   = z2l*kconv + GetSegmentationModel(0)->Dz()/2.;
     etot *= kconv1; // convert from GeV to electrons equivalent.
     Int_t module = mod->GetIndex();
 
     // to account for the effective sensitive area
     // introduced in geometry 
-    if (z1l<0 || z1l>fSegmentation->Dz()) return;
-    if (z2l<0 || z2l>fSegmentation->Dz()) return;
-    if (x1l<0 || x1l>fSegmentation->Dx()) return;
-    if (x2l<0 || x2l>fSegmentation->Dx()) return;
+    if (z1l<0 || z1l>GetSegmentationModel(0)->Dz()) return;
+    if (z2l<0 || z2l>GetSegmentationModel(0)->Dz()) return;
+    if (x1l<0 || x1l>GetSegmentationModel(0)->Dx()) return;
+    if (x2l<0 || x2l>GetSegmentationModel(0)->Dx()) return;
 
     //Get the col and row number starting from 1
     // the x direction is not inverted for the second layer!!!
-    fSegmentation->GetPadIxz(x1l, z1l, c1, r1); 
-    fSegmentation->GetPadIxz(x2l, z2l, c2, r2);
+    GetSegmentationModel(0)->GetPadIxz(x1l, z1l, c1, r1); 
+    GetSegmentationModel(0)->GetPadIxz(x2l, z2l, c2, r2);
 
     // to account for unexpected equal entrance and 
     // exit coordinates
@@ -513,10 +513,10 @@ void AliITSsimulationSPD::ChargeSharing(Float_t x1l,Float_t z1l,Float_t x2l,
     // and the z coordinate of  the pixel in the next row
     Float_t xpos, zpos;
 
-    fSegmentation->GetPadCxz(c1, r1-1, xpos, zpos); 
+    GetSegmentationModel(0)->GetPadCxz(c1, r1-1, xpos, zpos); 
 
-    Float_t xsize = fSegmentation->Dpx(0);
-    Float_t zsize = fSegmentation->Dpz(r1-1);
+    Float_t xsize = GetSegmentationModel(0)->Dpx(0);
+    Float_t zsize = GetSegmentationModel(0)->Dpz(r1-1);
     
     if (dirx == 1) refr = xpos+xsize/2.;
     else refr = xpos-xsize/2.;
@@ -561,7 +561,7 @@ void AliITSsimulationSPD::ChargeSharing(Float_t x1l,Float_t z1l,Float_t x2l,
                 xb = x2l;
             } // end if
             // shift to the pixel in the next cell in row direction
-            Float_t zsizeNext = fSegmentation->Dpz(rb-1);
+            Float_t zsizeNext = GetSegmentationModel(0)->Dpz(rb-1);
             //to account for cell at the borders of the detector
             if(zsizeNext==0) zsizeNext = zsize;
             refn += zsizeNext*dirz;
@@ -580,7 +580,7 @@ void AliITSsimulationSPD::ChargeSharing(Float_t x1l,Float_t z1l,Float_t x2l,
             } // end ifaxb > ax2l
             
             // shift to the pixel in the next cell in column direction
-            Float_t xsizeNext = fSegmentation->Dpx(cb-1);
+            Float_t xsizeNext = GetSegmentationModel(0)->Dpx(cb-1);
             //to account for cell at the borders of the detector
             if(xsizeNext==0) xsizeNext = xsize;
             refr += xsizeNext*dirx;
@@ -848,8 +848,11 @@ void AliITSsimulationSPD::SetFluctuations(AliITSpList *pList,Int_t module) {
         } // end of loop on pixels
     } // end of loop on pixels
 }
+
+
+
 //______________________________________________________________________
-void AliITSsimulationSPD::SetMask() {
+void AliITSsimulationSPD::SetMask(Int_t mod) {
     //  Apply a mask to the SPD module. 1% of the pixel channels are
     //  masked. When the database will be ready, the masked pixels
     //  should be read from it.
@@ -862,7 +865,7 @@ void AliITSsimulationSPD::SetMask() {
     Double_t signal;
     Int_t iz,ix,im;
     Float_t totMask;
-    Float_t perc = ((AliITSresponseSPD*)fResponse)->GetFractionDead();
+    Float_t perc = ((AliITSresponseSPD*)GetResponseModel(mod))->GetFractionDead();
     // in this way we get the same set of random numbers for all runs.
     // This is a cluge for now.
     static TRandom *rnd = new TRandom();

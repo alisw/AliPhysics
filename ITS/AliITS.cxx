@@ -291,7 +291,6 @@ void AliITS::SetDefaultSimulation(){
     //      none.
     // Return:
     //      none.
-
     if(!fDetTypeSim) { 
      Error("SetDefaultSimulation()","fDetTypeSim is 0!"); 
      return;
@@ -447,7 +446,6 @@ void AliITS::AddHit(Int_t track, Int_t *vol, Float_t *hits){
     //      none.
   TClonesArray &lhits = *fHits;
   new(lhits[fNhits++]) AliITShit(fIshunt,track,vol,hits);
-
 }
 
 //______________________________________________________________________

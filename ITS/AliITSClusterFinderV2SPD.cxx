@@ -25,21 +25,18 @@
 #include "AliITSDetTypeRec.h"
 #include "AliRawReader.h"
 #include "AliITSRawStreamSPD.h"
-
 #include <TClonesArray.h>
-#include "AliITSgeom.h"
 #include "AliITSdigitSPD.h"
 
 ClassImp(AliITSClusterFinderV2SPD)
 
 extern AliRun *gAlice;
 
-AliITSClusterFinderV2SPD::AliITSClusterFinderV2SPD(AliITSgeom* geom):AliITSClusterFinderV2(geom){
+AliITSClusterFinderV2SPD::AliITSClusterFinderV2SPD(AliITSDetTypeRec* dettyp):AliITSClusterFinderV2(dettyp){
 
   //Default constructor
 
-  fITSgeom = geom;
-  fLastSPD1=fITSgeom->GetModuleIndex(2,1,1)-1;
+  fLastSPD1=fDetTypeRec->GetITSgeom()->GetModuleIndex(2,1,1)-1;
 
   fNySPD=256; fNzSPD=160;
   fYpitchSPD=0.0050;

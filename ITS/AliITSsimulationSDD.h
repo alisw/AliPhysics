@@ -5,6 +5,10 @@
 
 /* $Id$ */
 
+////////////////////////////////////////////////////////////
+// Simulation class for SDD                               //
+////////////////////////////////////////////////////////////
+
 #include <TNtuple.h>
 #include <TArrayF.h>
 
@@ -30,7 +34,7 @@ class AliITSsimulationSDD : public AliITSsimulation {
   public:
     AliITSsimulationSDD(); // default constructor
     //Standard Constructor
-    AliITSsimulationSDD(AliITSsegmentation *seg, AliITSresponse *res);
+    AliITSsimulationSDD(AliITSDetTypeSim* dettyp);
     // Copy opporator
     AliITSsimulationSDD(AliITSsimulationSDD &source);
     virtual ~AliITSsimulationSDD(); // Destructor
@@ -40,14 +44,11 @@ class AliITSsimulationSDD : public AliITSsimulation {
     // Initilize variables for this simulation
     void Init();
 
-    // get the address of the array mapping the signal or pointers to arrays
-    //virtual AliITSMap*  HitMap(Int_t i);
+    // Get a pointer to the segmentation object
+    virtual AliITSsegmentation* GetSegmentationModel(Int_t /*dt*/){return fDetType->GetSegmentationModel(1);}
+    // set pointer to segmentation object
+    virtual void SetSegmentationModel(Int_t /*dt*/, AliITSsegmentation *seg){fDetType->SetSegmentationModel(1,seg);}
 
-    // Return The Responce class
-    AliITSresponseSDD* GetResp(){return (AliITSresponseSDD*)fResponse;}
-    // Return The Segmentation class
-    AliITSsegmentationSDD* GetSeg(){
-        return (AliITSsegmentationSDD*)fSegmentation;}
     // set the scale size factor for the smples in FFT
     virtual void SetScaleFourier(Int_t scale=4) {fScaleSize=scale;}
     Int_t ScaleFourier() const {return fScaleSize;} // returns the scale factor
@@ -75,7 +76,7 @@ class AliITSsimulationSDD : public AliITSsimulation {
     virtual void StoreAllDigits(); // if No compresion run this.
     virtual void ReadBaseline();  // read baseline values from a file
     // returns baseline and noise for a given anode i.
-    virtual void GetAnodeBaseline(Int_t i,Double_t &baseline,Double_t &noise);
+    virtual void GetAnodeBaseline(Int_t i,Double_t &baseline,Double_t &noise) const;
     // local implementation of ITS->AddDigit. Specific for SDD
     virtual void AddDigit(Int_t i, Int_t j, Int_t signal);
     // Finds clulsters of signals. Use with regards to Compresion algorithms
@@ -84,17 +85,17 @@ class AliITSsimulationSDD : public AliITSsimulation {
 
     // get parameters for 1D - this could be changed when we get more
     // input from Torino after they have a look at the code 
-    virtual Int_t Tolerance(Int_t i) {return fTol[i];}//returns tolerance
-    virtual Int_t Disable(Int_t i)  {return fT2[i];}//high threshold  2D
+    virtual Int_t Tolerance(Int_t i) const {return fTol[i];}//returns tolerance
+    virtual Int_t Disable(Int_t i)  const {return fT2[i];}//high threshold  2D
     // Set the output file name - for 1D encoding 
     virtual void SetFileName(const char *filnam) {fFileName=filnam;}
 
     // add baseline, noise, electronics and ADC saturation effects
-    void ChargeToSignal(Bool_t bAddNoise=kFALSE);
+    void ChargeToSignal(Int_t mod,Bool_t bAddNoise=kFALSE);
     // add dead channels
-    void ApplyDeadChannels();
+    void ApplyDeadChannels(Int_t mod);
     // add crosstalk effect
-    void ApplyCrosstalk();
+    void ApplyCrosstalk(Int_t mod);
     
     // create maps to build the lists of tracks for each summable digit
     void InitSimulationModule( Int_t module, Int_t event );

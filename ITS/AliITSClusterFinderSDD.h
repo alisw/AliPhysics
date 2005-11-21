@@ -9,6 +9,7 @@
 */
 
 #include "AliITSClusterFinder.h"
+#include "AliITSDetTypeRec.h"
 
 class AliITSMapA2;
 class AliITSresponse;
@@ -20,12 +21,12 @@ class TFile;
 class AliITSClusterFinderSDD : public AliITSClusterFinder{
   public:
     AliITSClusterFinderSDD
-        (AliITSsegmentation *seg,AliITSresponse *response,
+        (AliITSDetTypeRec* dettyp,
          TClonesArray *digits,TClonesArray *recpoints);
     AliITSClusterFinderSDD();
     virtual ~AliITSClusterFinderSDD(){};
     
-    virtual void  SetCutAmplitude(Double_t nsigma=4);
+    virtual void  SetCutAmplitude(Int_t mod,Double_t nsigma=4);
     virtual Int_t CutAmplitude() const {// get cut amplitude
         return fCutAmplitude;}
     virtual void SetDAnode(Double_t danode=4.2) {// setDAnode
@@ -77,11 +78,11 @@ class AliITSClusterFinderSDD : public AliITSClusterFinder{
     void  PrintStatus() const;
 
   private:
-    virtual AliITSresponseSDD* GetResp()const{
-        return (AliITSresponseSDD*) GetResponse();}//Return Response
+    virtual AliITSresponseSDD* GetResp(Int_t mod)const{
+        return (AliITSresponseSDD*) fDetTypeRec->GetCalibrationModel(mod);}//Return Response
     //Returns fSegmentation
     virtual AliITSsegmentationSDD* GetSeg()const{
-        return (AliITSsegmentationSDD*)GetSegmentation();} 
+        return (AliITSsegmentationSDD*)fDetTypeRec->GetSegmentationModel(1);} 
     AliITSClusterFinderSDD(const AliITSClusterFinderSDD &source); // copy ctor
     AliITSClusterFinderSDD& operator=(const AliITSClusterFinderSDD &source);
   private:

@@ -25,20 +25,17 @@
 #include "AliITSDetTypeRec.h"
 #include "AliRawReader.h"
 #include "AliITSRawStreamSSD.h"
-
 #include <TClonesArray.h>
-#include "AliITSgeom.h"
 #include "AliITSdigitSSD.h"
 
 ClassImp(AliITSClusterFinderV2SSD)
 
 
-AliITSClusterFinderV2SSD::AliITSClusterFinderV2SSD(AliITSgeom* geom):AliITSClusterFinderV2(geom){
+AliITSClusterFinderV2SSD::AliITSClusterFinderV2SSD(AliITSDetTypeRec* dettyp):AliITSClusterFinderV2(dettyp){
 
   //Default constructor
 
-  fITSgeom = geom;
-  fLastSSD1=fITSgeom->GetModuleIndex(6,1,1)-1;
+  fLastSSD1=fDetTypeRec->GetITSgeom()->GetModuleIndex(6,1,1)-1;
   fYpitchSSD=0.0095;
   fHwSSD=3.65;
   fHlSSD=2.00;

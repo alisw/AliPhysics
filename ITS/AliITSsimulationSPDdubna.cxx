@@ -22,10 +22,10 @@ $Id$
 #include <TParticle.h>
 #include <TRandom.h>
 #include <TString.h>
-
 #include "AliITS.h"
 #include "AliITSMapA2.h" 
 #include "AliITSdigitSPD.h"
+#include "AliITSgeom.h"
 #include "AliITShit.h"
 #include "AliITSmodule.h"
 #include "AliITSpList.h"
@@ -63,9 +63,8 @@ fCoupling(0){
     AliDebug(1,Form("Calling degault constructor"));
 }
 //______________________________________________________________________
-AliITSsimulationSPDdubna::AliITSsimulationSPDdubna(AliITSsegmentation *seg,
-						                 AliITSresponse *resp,Int_t cup):
-AliITSsimulation(seg,resp),
+AliITSsimulationSPDdubna::AliITSsimulationSPDdubna(AliITSDetTypeSim *dettyp, Int_t cup):
+AliITSsimulation(dettyp),
 fHis(0),
 fSPDname(),
 fCoupling(cup){
@@ -86,11 +85,12 @@ fCoupling(cup){
     //    A default constructed AliITSsimulationSPDdubna class.
 
     AliDebug(1,
-	     Form("Calling degault constructor seg=%p resp=%p cup=%d",seg,resp,cup));
+	     Form("Calling degault constructor cup=%d",cup));
     if(cup==1||cup==2){ // For the moment, remove defusion if Coupling is
         // set.
-        resp->SetTemperature(0.0);
-        resp->SetDistanceOverVoltage(0.0);
+      AliITSresponseSPD* res = (AliITSresponseSPD*)GetResponseModel(fDetType->GetITSgeom()->GetStartSPD());
+      res->SetTemperature(0.0);
+      res->SetDistanceOverVoltage(0.0);
     } // end if
     Init();
 }
@@ -108,7 +108,9 @@ void AliITSsimulationSPDdubna::Init(){
     SetModuleNumber(0);
     SetEventNumber(0);
     SetMap(new AliITSpList(GetNPixelsZ(),GetNPixelsX()));
-    GetResp(0,0)->SetDistanceOverVoltage(kmictocm*GetSeg()->Dy(),50.0);
+    AliITSresponseSPD* res = (AliITSresponseSPD*)GetResponseModel(fDetType->GetITSgeom()->GetStartSPD());
+    AliITSsegmentationSPD* seg = (AliITSsegmentationSPD*)GetSegmentationModel(0);
+    res->SetDistanceOverVoltage(kmictocm*seg->Dy(),50.0);
 }
 //______________________________________________________________________
 AliITSsimulationSPDdubna::~AliITSsimulationSPDdubna(){
@@ -294,7 +296,9 @@ void AliITSsimulationSPDdubna::HitToSDigit(AliITSmodule *mod){
     Int_t idtrack;
     Double_t x0=0.0,x1=0.0,y0=0.0,y1=0.0,z0=0.0,z1=0.0,de=0.0;
     Double_t x,y,z,t,tp,st,dt=0.2,el,sig;
-    Double_t thick = kmictocm*GetSeg()->Dy();
+    AliITSsegmentationSPD* seg = (AliITSsegmentationSPD*)GetSegmentationModel(0);
+    AliITSresponseSPD* res = (AliITSresponseSPD*)GetResponseModel(fDetType->GetITSgeom()->GetStartSPD());
+    Double_t thick = kmictocm*seg->Dy();
 
     AliDebug(1,Form("(mod=%p) fCoupling=%d",mod,fCoupling));
     if(nhits<=0) return;
@@ -314,22 +318,22 @@ void AliITSsimulationSPDdubna::HitToSDigit(AliITSmodule *mod){
                 x   = x0+x1*tp;
                 y   = y0+y1*tp;
                 z   = z0+z1*tp;
-                if(!(GetSeg()->LocalToDet(x,z,ix,iz))) continue; // outside
-                el  = GetResp(ix,iz)->GeVToCharge((Double_t)(dt*de));
+                if(!(seg->LocalToDet(x,z,ix,iz))) continue; // outside
+                el  = res->GeVToCharge((Double_t)(dt*de));
                 if(GetDebug(1)){
                     if(el<=0.0) cout<<"el="<<el<<" dt="<<dt
                                     <<" de="<<de<<endl;
                 } // end if GetDebug
-                sig = GetResp(ix,iz)->SigmaDiffusion1D(thick + y);
+                sig = res->SigmaDiffusion1D(thick + y);
                 SpreadCharge(x,z,ix,iz,el,sig,idtrack,h);
             } // end for t
         } else { // st == 0.0 deposit it at this point
             x   = x0;
             y   = y0;
             z   = z0;
-            if(!(GetSeg()->LocalToDet(x,z,ix,iz))) continue; // outside
-            el  = GetResp(ix,iz)->GeVToCharge((Double_t)de);
-            sig = GetResp(ix,iz)->SigmaDiffusion1D(thick + y);
+            if(!(seg->LocalToDet(x,z,ix,iz))) continue; // outside
+            el  = res->GeVToCharge((Double_t)de);
+            sig = res->SigmaDiffusion1D(thick + y);
             SpreadCharge(x,z,ix,iz,el,sig,idtrack,h);
         } // end if st>0.0
         // Coupling
@@ -390,6 +394,8 @@ void AliITSsimulationSPDdubna::SpreadCharge(Double_t x0,Double_t z0,
     Int_t ix,iz,ixs,ixe,izs,ize;
     Float_t x,z;
     Double_t x1,x2,z1,z2,s,sp;
+    AliITSsegmentationSPD* seg = (AliITSsegmentationSPD*)GetSegmentationModel(0);
+
 
     if(GetDebug(4)) Info("SpreadCharge","(x0=%e,z0=%e,ix0=%d,iz0=%d,el=%e,"
                          "sig=%e,t=%d,i=%d)",x0,z0,ix0,iz0,el,sig,t,hi);
@@ -405,17 +411,17 @@ void AliITSsimulationSPDdubna::SpreadCharge(Double_t x0,Double_t z0,
         cout << "sig=" << sig << " sp=" << sp << endl;
     } // end if GetDebug
     ixs = TMath::Max(-knx+ix0,0);
-    ixe = TMath::Min(knx+ix0,GetSeg()->Npx()-1);
+    ixe = TMath::Min(knx+ix0,seg->Npx()-1);
     izs = TMath::Max(-knz+iz0,0);
-    ize = TMath::Min(knz+iz0,GetSeg()->Npz()-1);
+    ize = TMath::Min(knz+iz0,seg->Npz()-1);
     for(ix=ixs;ix<=ixe;ix++) for(iz=izs;iz<=ize;iz++){
-        GetSeg()->DetToLocal(ix,iz,x,z); // pixel center
+        seg->DetToLocal(ix,iz,x,z); // pixel center
         x1  = x;
         z1  = z;
-        x2  = x1 + 0.5*kmictocm*GetSeg()->Dpx(ix); // Upper
-        x1 -= 0.5*kmictocm*GetSeg()->Dpx(ix);  // Lower
-        z2  = z1 + 0.5*kmictocm*GetSeg()->Dpz(iz); // Upper
-        z1 -= 0.5*kmictocm*GetSeg()->Dpz(iz);  // Lower
+        x2  = x1 + 0.5*kmictocm*seg->Dpx(ix); // Upper
+        x1 -= 0.5*kmictocm*seg->Dpx(ix);  // Lower
+        z2  = z1 + 0.5*kmictocm*seg->Dpz(iz); // Upper
+        z1 -= 0.5*kmictocm*seg->Dpz(iz);  // Lower
         x1 -= x0; // Distance from where track traveled
         x2 -= x0; // Distance from where track traveled
         z1 -= z0; // Distance from where track traveled
@@ -450,12 +456,12 @@ void AliITSsimulationSPDdubna::pListToDigits(){
     Double_t sig;
     const Int_t    nmaxtrk=AliITSdigitSPD::GetNTracks();
     static AliITSdigitSPD dig;
-
+    AliITSresponseSPD* res = (AliITSresponseSPD*)GetResponseModel(fDetType->GetITSgeom()->GetStartSPD());
     if(GetDebug(1)) Info("pListToDigits","()");
     for(iz=0; iz<GetNPixelsZ(); iz++) for(ix=0; ix<GetNPixelsX(); ix++){
         // Apply Noise/Dead channals and the like
-        if(GetResp(ix,iz)->IsPixelDead(GetModuleNumber(),ix,iz)) continue;
-        electronics = GetResp(ix,iz)->ApplyBaselineAndNoise();
+        if(res->IsPixelDead(GetModuleNumber(),ix,iz)) continue;
+        electronics = res->ApplyBaselineAndNoise();
         UpdateMapNoise(ix,iz,electronics);
         //
         // Apply Threshold and write Digits.

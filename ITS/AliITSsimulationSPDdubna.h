@@ -6,7 +6,6 @@
 
 #include "TH1F.h"
 #include "TObjArray.h"
-
 #include "AliITSsimulation.h"
 #include "AliITSresponseSPD.h"
 #include "AliITSsegmentationSPD.h"
@@ -18,8 +17,9 @@ class AliITSmodule;
 class AliITSsimulationSPDdubna : public AliITSsimulation {
  public:
     AliITSsimulationSPDdubna();
-    AliITSsimulationSPDdubna(AliITSsegmentation *seg,AliITSresponse *res,
-                             Int_t cup=1);
+    //    AliITSsimulationSPDdubna(AliITSsegmentation *seg,AliITSresponse *res,
+    //                         Int_t cup=1);
+    AliITSsimulationSPDdubna(AliITSDetTypeSim *dettyp,Int_t cup=1);
     virtual ~AliITSsimulationSPDdubna();
     // copy constructor
     AliITSsimulationSPDdubna(const AliITSsimulationSPDdubna &source); 
@@ -93,12 +93,11 @@ class AliITSsimulationSPDdubna : public AliITSsimulation {
         //    none.
         //  Return:
         //    none
-        GetMap()->AddNoise(iz,ix,GetModuleNumber(),noise);};
-    AliITSsegmentationSPD* GetSeg(){ // Return pointer to Segmentation class
-        return (AliITSsegmentationSPD*)fSegmentation;};
-    // Return pointer to Responce class
-    AliITSresponseSPD* GetResp(Int_t ix,Int_t iz){ // ix iz dummy for now
-        ix=iz; return (AliITSresponseSPD*)GetResponseModel();};
+        GetMap()->AddNoise(iz,ix,GetModuleNumber(),noise);}
+    // Get a pointer to the segmentation object
+    virtual AliITSsegmentation* GetSegmentationModel(Int_t /*dt*/){return fDetType->GetSegmentationModel(0);}
+    // set pointer to segmentation objec
+    virtual void SetSegmentationModel(Int_t /*dt*/, AliITSsegmentation *seg){fDetType->SetSegmentationModel(0,seg);}
     // Bari-Salerno Coupling parameters
     // "New" coupling routine  Tiziano Virgili
     void SetCoupling(Int_t row,Int_t col,Int_t ntrack,Int_t idhit);
@@ -107,14 +106,16 @@ class AliITSsimulationSPDdubna : public AliITSsimulation {
     // Getters for data kept in fSegmentation and fResponse.
     // Returns the Threshold in electrons
     Double_t GetThreshold(Int_t ix,Int_t iz){
-        Double_t th,sig;GetResp(ix,iz)->Thresholds(th,sig);return th;};
+      Double_t th,sig;AliITSresponseSPD* res=(AliITSresponseSPD*)GetResponseModel(0); 
+	res->Thresholds(th,sig);return th;};
     // Returns the couplings Columb and Row.
     void GetCouplings(Double_t &cc,Double_t &cr){
-        ((AliITSresponseSPD*)GetResp(0,0))->GetCouplingParam(cc,cr);};
+      AliITSresponseSPD* res = (AliITSresponseSPD*)GetResponseModel(0);
+      res->GetCouplingParam(cc,cr);};
     // Returns the number of pixels in x
-    Int_t GetNPixelsX(){return GetSeg()->Npx();};
+    Int_t GetNPixelsX(){return GetSegmentationModel(0)->Npx();};
     // Returns the number of pixels in z
-    Int_t GetNPixelsZ(){return GetSeg()->Npz();};
+    Int_t GetNPixelsZ(){return GetSegmentationModel(0)->Npz();};
 
     TObjArray    *fHis;          //! just in case for histogramming
     TString       fSPDname;      //! Histogram name

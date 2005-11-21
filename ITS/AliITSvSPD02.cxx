@@ -712,7 +712,7 @@ void AliITSvSPD02::SetDefaults(){
     AliITSresponse *resp0=new AliITSresponseSPD();
     resp0->SetTemperature();
     resp0->SetDistanceOverVoltage();
-    SetResponseModel(kSPD,resp0);
+    SetResponseModel(0,resp0); 
 	
     AliITSsegmentationSPD *seg0=new AliITSsegmentationSPD(GetITSgeom());
     seg0->SetDetSize(s0->GetDx()*2.*kconv, // base this on AliITSgeomSPD
@@ -730,7 +730,7 @@ void AliITSvSPD02::SetDefaults(){
     seg0->SetBinSize(bx,bz); // Based on AliITSgeomSPD for now.
     SetSegmentationModel(kSPD,seg0);
     // set digit and raw cluster classes to be used
-    const char *kData0=(fDetTypeSim->GetResponseModel(kSPD))->DataType();
+    const char *kData0=(fDetTypeSim->GetResponseModel(0))->DataType();
     if (strstr(kData0,"real")) fDetTypeSim->SetDigitClassName(kSPD,"AliITSdigit");
     else fDetTypeSim->SetDigitClassName(kSPD,"AliITSdigitSPD");
 //    SetSimulationModel(kSPD,new AliITSsimulationSPDdubna(seg0,resp0));
@@ -768,18 +768,18 @@ void AliITSvSPD02::SetDefaultSimulation(){
 
   if(!fDetTypeSim) fDetTypeSim = new AliITSDetTypeSim();
   AliITSsimulation *sim;
-  AliITSsegmentation *seg;
-  AliITSresponse *res;
+  //AliITSsegmentation *seg;
+  //AliITSresponse *res;
   if(fDetTypeSim){
     sim = fDetTypeSim->GetSimulationModel(kSPD);
     if (!sim) {
-      seg = (AliITSsegmentation*)fDetTypeSim->GetSegmentationModel(kSPD);
-      res = (AliITSresponse*)fDetTypeSim->GetResponseModel(kSPD);
-      sim = new AliITSsimulationSPDdubna(seg,res,0);
+      //seg = (AliITSsegmentation*)fDetTypeSim->GetSegmentationModel(kSPD);
+      //res = (AliITSresponse*)fDetTypeSim->GetResponseModel(GetITSgeom()->GetStartSPD());
+      sim = new AliITSsimulationSPDdubna(fDetTypeSim);
       SetSimulationModel(kSPD,sim);
     }else{ // simulation exists, make sure it is set up properly.
-      sim->SetResponseModel((AliITSresponse*)fDetTypeSim->GetResponseModel(kSPD));
-      sim->SetSegmentationModel((AliITSsegmentation*)fDetTypeSim->GetSegmentationModel(kSPD));
+      sim->SetResponseModel(GetITSgeom()->GetStartSPD(),(AliITSresponse*)fDetTypeSim->GetResponseModel(GetITSgeom()->GetStartSPD()));
+      sim->SetSegmentationModel(kSPD,(AliITSsegmentation*)fDetTypeSim->GetSegmentationModel(kSPD));
       sim->Init();
     } // end if
   } // end if iDetType

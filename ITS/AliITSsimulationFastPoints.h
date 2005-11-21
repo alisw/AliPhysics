@@ -19,6 +19,10 @@ public:
   void CreateFastRecPoints(AliITSmodule *mod,Int_t module,TRandom *rndm, 
 			   TClonesArray* recp);
   void CreateFastRecPoints(Int_t module,TClonesArray* recp);
+
+  virtual void SetSegmentationModel(Int_t dt, AliITSsegmentation *seg){fDetType->SetSegmentationModel(dt,seg);}
+  virtual AliITSsegmentation* GetSegmentationModel(Int_t dt){return fDetType->GetSegmentationModel(dt);}
+
   
 private:
 

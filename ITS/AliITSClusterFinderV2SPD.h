@@ -18,7 +18,7 @@ class AliITSgeom;
 
 class AliITSClusterFinderV2SPD : public AliITSClusterFinderV2 {
 public:
-  AliITSClusterFinderV2SPD(AliITSgeom* geom);
+  AliITSClusterFinderV2SPD(AliITSDetTypeRec* dettyp);
   virtual ~AliITSClusterFinderV2SPD(){;}
   virtual void FindRawClusters(Int_t mod);
   virtual void RawdataToClusters(AliRawReader* rawReader,TClonesArray** clusters);

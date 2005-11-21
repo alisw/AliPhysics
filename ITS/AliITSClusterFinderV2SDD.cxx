@@ -34,7 +34,7 @@ ClassImp(AliITSClusterFinderV2SDD)
 
 extern AliRun *gAlice;
 
-AliITSClusterFinderV2SDD::AliITSClusterFinderV2SDD(AliITSgeom* geom):AliITSClusterFinderV2(geom){
+AliITSClusterFinderV2SDD::AliITSClusterFinderV2SDD(AliITSDetTypeRec* dettyp):AliITSClusterFinderV2(dettyp){
 
   //Default constructor
 

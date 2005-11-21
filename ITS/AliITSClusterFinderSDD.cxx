@@ -49,11 +49,10 @@ fMaxNCells(0){
     // default constructor
 }
 //______________________________________________________________________
-AliITSClusterFinderSDD::AliITSClusterFinderSDD(AliITSsegmentation *seg,
-                                               AliITSresponse *response,
+AliITSClusterFinderSDD::AliITSClusterFinderSDD(AliITSDetTypeRec* dettyp,
                                                TClonesArray *digits,
                                                TClonesArray *recp):
-AliITSClusterFinder(seg,response),
+AliITSClusterFinder(dettyp),
 fNclusters(0),
 fDAnode(0.0),
 fDTime(0.0),
@@ -67,10 +66,10 @@ fMaxNCells(0){
 
     SetDigits(digits);
     SetClusters(recp);
-    SetCutAmplitude();
+    SetCutAmplitude(fDetTypeRec->GetITSgeom()->GetStartSDD());
     SetDAnode();
     SetDTime();
-    SetMinPeak((Int_t)(((AliITSresponseSDD*)GetResp())->
+    SetMinPeak((Int_t)(((AliITSresponseSDD*)GetResp(fDetTypeRec->GetITSgeom()->GetStartSDD()))->
                        GetNoiseAfterElectronics()*5));
     //    SetMinPeak();
     SetMinNCells();
@@ -80,12 +79,12 @@ fMaxNCells(0){
     SetMap(new AliITSMapA1(GetSeg(),Digits(),fCutAmplitude));
 }
 //______________________________________________________________________
-void AliITSClusterFinderSDD::SetCutAmplitude(Double_t nsigma){
+void AliITSClusterFinderSDD::SetCutAmplitude(Int_t mod,Double_t nsigma){
     // set the signal threshold for cluster finder
     Double_t baseline,noise,noiseAfterEl;
 
-    GetResp()->GetNoiseParam(noise,baseline);
-    noiseAfterEl = ((AliITSresponseSDD*)GetResp())->GetNoiseAfterElectronics();
+    GetResp(mod)->GetNoiseParam(noise,baseline);
+    noiseAfterEl = ((AliITSresponseSDD*)GetResp(mod))->GetNoiseAfterElectronics();
     fCutAmplitude = (Int_t)((baseline + nsigma*noiseAfterEl));
 }
 //______________________________________________________________________
@@ -99,7 +98,7 @@ void AliITSClusterFinderSDD::Find1DClusters(){
     Int_t dummy          = 0;
     Double_t fTimeStep    = GetSeg()->Dpx(dummy);
     Double_t fSddLength   = GetSeg()->Dx();
-    Double_t fDriftSpeed  = GetResp()->DriftSpeed();  
+    Double_t fDriftSpeed  = GetResp(fModule)->DriftSpeed();  
     Double_t anodePitch   = GetSeg()->Dpz(dummy);
 
     // map the signal
@@ -109,7 +108,7 @@ void AliITSClusterFinderSDD::Find1DClusters(){
   
     Double_t noise;
     Double_t baseline;
-    GetResp()->GetNoiseParam(noise,baseline);
+    GetResp(fModule)->GetNoiseParam(noise,baseline);
   
     Int_t nofFoundClusters = 0;
     Int_t i;
@@ -188,7 +187,7 @@ void AliITSClusterFinderSDD::Find1DClusters(){
                     Double_t clusterPeakAmplitude = 0.;
                     Int_t its,peakpos     = -1;
                     Double_t n, baseline;
-                    GetResp()->GetNoiseParam(n,baseline);
+                    GetResp(fModule)->GetNoiseParam(n,baseline);
                     for(its=tstart; its<=tstop; its++) {
                         fadc=(float)Map()->GetSignal(idx,its);
                         if(fadc>baseline) fadc -= baseline;
@@ -252,10 +251,10 @@ void AliITSClusterFinderSDD::Find1DClustersE(){
     Int_t dummy=0;
     Double_t fTimeStep = GetSeg()->Dpx( dummy );
     Double_t fSddLength = GetSeg()->Dx();
-    Double_t fDriftSpeed = GetResp()->DriftSpeed();
+    Double_t fDriftSpeed = GetResp(fModule)->DriftSpeed();
     Double_t anodePitch = GetSeg()->Dpz( dummy );
     Double_t n, baseline;
-    GetResp()->GetNoiseParam( n, baseline );
+    GetResp(fModule)->GetNoiseParam( n, baseline );
     // map the signal
     Map()->ClearMap();
     Map()->SetThreshold( fCutAmplitude );
@@ -416,7 +415,7 @@ void AliITSClusterFinderSDD::PeakFunc( Int_t xdim, Int_t zdim, Double_t *par,
     //                 par[i+2] = zpos
     //                 par[i+3] = tau
     //                 par[i+4] = sigma.
-    Int_t electronics = GetResp()->Electronics(); // 1 = PASCAL, 2 = OLA
+    Int_t electronics = GetResp(fModule)->Electronics(); // 1 = PASCAL, 2 = OLA
     const Int_t knParam = 5;
     Int_t npeak = (Int_t)par[0];
 
@@ -695,11 +694,11 @@ void AliITSClusterFinderSDD::ResolveClusters(){
     Int_t dummy=0;
     Double_t fTimeStep = GetSeg()->Dpx( dummy );
     Double_t fSddLength = GetSeg()->Dx();
-    Double_t fDriftSpeed = GetResp()->DriftSpeed();
+    Double_t fDriftSpeed = GetResp(fModule)->DriftSpeed();
     Double_t anodePitch = GetSeg()->Dpz( dummy );
     Double_t n, baseline;
-    GetResp()->GetNoiseParam( n, baseline );
-    Int_t electronics = GetResp()->Electronics(); // 1 = PASCAL, 2 = OLA
+    GetResp(fModule)->GetNoiseParam( n, baseline );
+    Int_t electronics = GetResp(fModule)->Electronics(); // 1 = PASCAL, 2 = OLA
 
     for( Int_t j=0; j<nofClusters; j++ ){ 
         // get cluster information

@@ -38,9 +38,8 @@ fMinNCells(0){
     // constructor
 }
 //----------------------------------------------------------
-AliITSClusterFinderSPD::AliITSClusterFinderSPD(AliITSsegmentation *seg,
-                                               AliITSresponse *res):
-AliITSClusterFinder(seg,res),
+AliITSClusterFinderSPD::AliITSClusterFinderSPD(AliITSDetTypeRec* dettyp):
+AliITSClusterFinder(dettyp),
 fDz(0.0),
 fDx(0.0),
 fMinNCells(0){
@@ -50,10 +49,10 @@ fMinNCells(0){
     SetDz();
 }
 //----------------------------------------------------------
-AliITSClusterFinderSPD::AliITSClusterFinderSPD(AliITSsegmentation *seg,
+AliITSClusterFinderSPD::AliITSClusterFinderSPD(AliITSDetTypeRec* dettyp,
                                                TClonesArray *digits,
                                                TClonesArray *recp):
-AliITSClusterFinder(seg,0),
+AliITSClusterFinder(dettyp,digits),
 fDz(0.0),
 fDx(0.0),
 fMinNCells(0){

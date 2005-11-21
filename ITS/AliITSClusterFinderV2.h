@@ -15,7 +15,7 @@ class AliITSgeom;
 
 class AliITSClusterFinderV2 : public AliITSClusterFinder {
 public:
-  AliITSClusterFinderV2(AliITSgeom* geom);
+  AliITSClusterFinderV2(AliITSDetTypeRec* dettyp);
   virtual ~AliITSClusterFinderV2() {;}
 
   void SetEvent(Int_t event) { fEvent=event; }

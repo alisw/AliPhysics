@@ -14,7 +14,8 @@
  **************************************************************************/
 //////////////////////////////////////////////////////////////////////////////
 // This is the base class for ITS detector signal simulations. Data members //
-// include are a pointer to the detectors specific response and segmentation//
+// include are a pointer to the AliITSDetTypeSim clas in order to access    //
+// segmentation and response objects                                        // 
 // classes. See the detector specific implementations for the propper code. //
 //////////////////////////////////////////////////////////////////////////////
 #include "TClonesArray.h"
@@ -26,8 +27,6 @@ ClassImp(AliITSsimulation)
 
 //______________________________________________________________________
 AliITSsimulation::AliITSsimulation(): TObject(),
-fResponse(0),
-fSegmentation(0),
 fpList(0),
 fModule(0),
 fEvent(0),
@@ -39,24 +38,22 @@ fDebug(0){
     //    none.
     // Return:
     //    a default constructed AliITSsimulation class
+  fDetType = 0;
 }
 //______________________________________________________________________
-AliITSsimulation::AliITSsimulation(AliITSsegmentation *seg,
-                                   AliITSresponse *res): TObject(),
-fResponse(res),
-fSegmentation(seg),
+AliITSsimulation::AliITSsimulation(AliITSDetTypeSim *dettyp): TObject(),
 fpList(0),
 fModule(0),
 fEvent(0),
 fDebug(0){
     // Default constructor
     // Inputs:
-    //    AliITSsegmentation *seg  Segmentation class to be used
-    //    AliITSresponse     *res  Response class to be used.
+    //    AliITSDetTypeSim * : object used to access segmentation and response
     // Outputs:
     //    none.
     // Return:
     //    a default constructed AliITSsimulation class
+  fDetType = dettyp;
 }
 //__________________________________________________________________________
 AliITSsimulation::~AliITSsimulation(){
@@ -68,9 +65,10 @@ AliITSsimulation::~AliITSsimulation(){
     // Return:
     //    none.
 
-    fSegmentation = 0; // local copies of pointer, do not delete
-    fResponse     = 0; // local copies of pointer, do not delete
-    delete fpList;
+    if(fpList){
+      delete fpList;
+      fpList = 0;
+    }
 }
 //__________________________________________________________________________
 AliITSsimulation::AliITSsimulation(const AliITSsimulation &s) : TObject(s){
@@ -99,8 +97,6 @@ AliITSsimulation&  AliITSsimulation::operator=(const AliITSsimulation &s){
     //    as that of s.
 
     if(&s == this) return *this;
-    this->fResponse     = s.fResponse; 
-    this->fSegmentation = s.fSegmentation;
     this->fModule       = s.fModule;
     this->fEvent        = s.fEvent;
     this->fpList        = s.fpList;

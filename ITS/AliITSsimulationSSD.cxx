@@ -19,11 +19,6 @@
 #include <stdlib.h>
 #include <Riostream.h>
 #include <TObjArray.h>
-#include <TParticle.h>
-#include <TRandom.h>
-#include <TMath.h>
-#include <TH1.h>
-
 #include "AliITSmodule.h"
 #include "AliITSMapA2.h"
 #include "AliITSpList.h"
@@ -40,11 +35,12 @@
 
 ClassImp(AliITSsimulationSSD)
 ////////////////////////////////////////////////////////////////////////
-// Version: 0
-// Written by Enrico Fragiacomo
-// July 2000
-//
-// AliITSsimulationSSD is the simulation of SSDs.
+// Version: 0                                                         //
+// Written by Enrico Fragiacomo                                       //
+// July 2000                                                          // 
+//                                                                    //
+// AliITSsimulationSSD is the simulation of SSDs.                     //
+////////////////////////////////////////////////////////////////////////
 
 //----------------------------------------------------------------------
 AliITSsimulationSSD::AliITSsimulationSSD():AliITSsimulation(),
@@ -62,9 +58,8 @@ fDriftVel(){
     //  A default construction AliITSsimulationSSD class
 }
 //----------------------------------------------------------------------
-AliITSsimulationSSD::AliITSsimulationSSD(AliITSsegmentation *seg,
-                                         AliITSresponse *res):
-AliITSsimulation(seg,res),
+AliITSsimulationSSD::AliITSsimulationSSD(AliITSDetTypeSim* dettyp):
+AliITSsimulation(dettyp),
 fDCS(0),
 fMapA2(0),
 fIonE(0.0),
@@ -91,17 +86,17 @@ void AliITSsimulationSSD::Init(){
     //   none.
     // Return
     //   none.
-
+  AliITSresponseSSD* res =(AliITSresponseSSD*)GetResponseModel(fDetType->GetITSgeom()->GetStartSSD());
+  AliITSsegmentationSSD* seg = (AliITSsegmentationSSD*)GetSegmentationModel(2);
     Double_t noise[2] = {0.,0.};
-    GetResp()->GetNoiseParam(noise[0],noise[1]); // retrieves noise parameters
-    fDCS = new AliITSdcsSSD((AliITSsegmentationSSD*)GetSegmentationModel(),
-                            (AliITSresponseSSD*)GetResponseModel()); 
+    res->GetNoiseParam(noise[0],noise[1]); // retrieves noise parameters
+    fDCS = new AliITSdcsSSD(seg,res); 
 
     SetDriftVelocity(); // use default values in .h file
     SetIonizeE();       // use default values in .h file
     SetDiffConst();     // use default values in .h file
     fpList           = new AliITSpList(2,GetNStrips());
-    fMapA2           = new AliITSMapA2(GetSegmentationModel());
+    fMapA2           = new AliITSMapA2(seg);
 }
 //______________________________________________________________________
 AliITSsimulationSSD& AliITSsimulationSSD::operator=(
@@ -203,7 +198,7 @@ void AliITSsimulationSSD::SDigitToDigit(Int_t module,AliITSpList *pList){
   ApplyNoise(pList,module);
   ApplyCoupling(pList,module);
 
-  ChargeToSignal(pList);
+  ChargeToSignal(module,pList);
 }
 //______________________________________________________________________
 void AliITSsimulationSSD::HitsToAnalogDigits(AliITSmodule *mod,
@@ -217,13 +212,15 @@ void AliITSsimulationSSD::HitsToAnalogDigits(AliITSmodule *mod,
     Double_t de=0.0;
     Int_t module = mod->GetIndex();
 
+    AliITSsegmentationSSD* seg = (AliITSsegmentationSSD*)GetSegmentationModel(2);
+
     TObjArray *hits = mod->GetHits();
     Int_t nhits     = hits->GetEntriesFast();
     if (nhits<=0) return;
     AliITSTableSSD * tav = new AliITSTableSSD(GetNStrips());
     module = mod->GetIndex();
-    if ( mod->GetLayer() == 6 ) GetSegmentation()->SetLayer(6);
-    if ( mod->GetLayer() == 5 ) GetSegmentation()->SetLayer(5);
+    if ( mod->GetLayer() == 6 ) seg->SetLayer(6);
+    if ( mod->GetLayer() == 5 ) seg->SetLayer(5);
     for(Int_t i=0; i<nhits; i++) {    
         // LineSegmentL returns 0 if the hit is entering
         // If hits is exiting returns positions of entering and exiting hits
@@ -250,9 +247,13 @@ void AliITSsimulationSSD::HitToDigit(Int_t module, Double_t x0, Double_t y0,
                                      Double_t z0, Double_t x1, Double_t y1, 
                                      Double_t z1, Double_t de,
                                      AliITSTableSSD *tav) {
+
+  // hit to digit conversion
+
+  AliITSsegmentationSSD* seg = (AliITSsegmentationSSD*)GetSegmentationModel(2);
     // Turns hits in SSD module into one or more digits.
     Float_t tang[2] = {0.0,0.0};
-    GetSegmentation()->Angles(tang[0], tang[1]);//stereo<<->tan(stereo)~=stereo
+    seg->Angles(tang[0], tang[1]);//stereo<<->tan(stereo)~=stereo
     Double_t x, y, z;
     Double_t dex=0.0, dey=0.0, dez=0.0; 
     Double_t pairs; // pair generation energy per step.
@@ -270,7 +271,7 @@ void AliITSsimulationSSD::HitToDigit(Int_t module, Double_t x0, Double_t y0,
     for(Int_t j=0; j<numOfSteps; j++) {     // stepping
         x = x0 + (j+0.5)*dex;
         y = y0 + (j+0.5)*dey;
-        if ( y > (GetSegmentation()->Dy()/2+10)*1.0E-4 ) {
+        if ( y > (seg->Dy()/2+10)*1.0E-4 ) {
             // check if particle is within the detector
             Warning("HitToDigit",
                     "hit out of detector y0=%e,y=%e,dey=%e,j =%e module=%d",
@@ -282,8 +283,8 @@ void AliITSsimulationSSD::HitToDigit(Int_t module, Double_t x0, Double_t y0,
                             <<dex<<" "<<dey<<" "<<dez<<endl;
         // calculate drift time
         // y is the minimum path
-        tdrift[0] = (y+(GetSegmentation()->Dy()*1.0E-4)/2)/GetDriftVelocity(0);
-        tdrift[1] = ((GetSegmentation()->Dy()*1.0E-4)/2-y)/GetDriftVelocity(1);
+        tdrift[0] = (y+(seg->Dy()*1.0E-4)/2)/GetDriftVelocity(0);
+        tdrift[1] = ((seg->Dy()*1.0E-4)/2-y)/GetDriftVelocity(1);
 
         for(Int_t k=0; k<2; k++) {   // both sides    remember: 0=Pside 1=Nside
 
@@ -302,7 +303,7 @@ void AliITSsimulationSSD::HitToDigit(Int_t module, Double_t x0, Double_t y0,
             */
             { // replacement block for the above.
                 Float_t xp=x*1.e+4,zp=z*1.e+4; // microns
-                GetSegmentation()->GetPadTxz(xp,zp);
+                seg->GetPadTxz(xp,zp);
                 if(k==0) w = xp; // P side strip number
                 else w = zp; // N side strip number
             } // end test block
@@ -341,8 +342,8 @@ void AliITSsimulationSSD::ApplyNoise(AliITSpList *pList,Int_t module){
     Double_t signal,noise;
     Double_t noiseP[2] = {0.,0.};
     Double_t a,b;
-
-    GetResp()->GetNoiseParam(a,b); // retrieves noise parameters
+    AliITSresponseSSD* res =(AliITSresponseSSD*)GetResponseModel(module);
+    res->GetNoiseParam(a,b); // retrieves noise parameters
     noiseP[0] = a; noiseP[1] = b;
     for(k=0;k<2;k++){                    // both sides (0=Pside, 1=Nside)
         for(ix=0;ix<GetNStrips();ix++){      // loop over strips
@@ -519,7 +520,7 @@ void AliITSsimulationSSD::GetList(Int_t label,Int_t hit,Int_t mod,
     tav->Clear();
 }
 //----------------------------------------------------------------------
-void AliITSsimulationSSD::ChargeToSignal(AliITSpList *pList) {
+void AliITSsimulationSSD::ChargeToSignal(Int_t module,AliITSpList *pList) {
     // charge to signal
     static AliITS *aliITS = (AliITS*)gAlice->GetModule("ITS");
     Float_t threshold = 0.;
@@ -531,8 +532,8 @@ void AliITSsimulationSSD::ChargeToSignal(AliITSpList *pList) {
     Float_t charges[3] = {0.0,0.0,0.0};
     Float_t signal;
     Double_t noise[2] = {0.,0.};
-
-    GetResp()->GetNoiseParam(noise[0],noise[1]);
+    AliITSresponseSSD* res =(AliITSresponseSSD*)GetResponseModel(module);
+    res->GetNoiseParam(noise[0],noise[1]);
 
     for(Int_t k=0;k<2;k++){         // both sides (0=Pside, 1=Nside)
         // Threshold for zero-suppression
@@ -544,7 +545,7 @@ void AliITSsimulationSSD::ChargeToSignal(AliITSpList *pList) {
         for(Int_t ix=0;ix<GetNStrips();ix++){     // loop over strips
             if(fMapA2->GetSignal(k,ix) <= threshold)continue;
             // convert to ADC signal
-            signal = GetResp()->DEvToADC(
+            signal = res->DEvToADC(
                 fMapA2->GetSignal(k,ix));
             if(signal>1024.) signal = 1024.;//if exceeding, accumulate last one
             digits[0] = k;

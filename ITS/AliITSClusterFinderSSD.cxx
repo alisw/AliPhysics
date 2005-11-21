@@ -63,9 +63,9 @@ fSFB(0){
     //Default constructor
 }
 //______________________________________________________________________
-AliITSClusterFinderSSD::AliITSClusterFinderSSD(AliITSsegmentation *seg,
+AliITSClusterFinderSSD::AliITSClusterFinderSSD(AliITSDetTypeRec* dettyp,
                                                TClonesArray *digits):
-AliITSClusterFinder(seg,0),
+AliITSClusterFinder(dettyp,digits),
 fClusterP(0),
 fNClusterP(0),
 fClusterN(0),
@@ -100,9 +100,8 @@ fSFB(0){
     fPNsignalRatio= 7./8.;    // warning: hard-wired number
 }
 //______________________________________________________________________}
-AliITSClusterFinderSSD::AliITSClusterFinderSSD(AliITSsegmentation *seg,
-                                               AliITSresponse *res):
-AliITSClusterFinder(seg,res),
+AliITSClusterFinderSSD::AliITSClusterFinderSSD(AliITSDetTypeRec* dettyp):
+AliITSClusterFinder(dettyp),
 fClusterP(0),
 fNClusterP(0),
 fClusterN(0),
@@ -189,13 +188,13 @@ void AliITSClusterFinderSSD::FindRawClusters(Int_t module){
     // 4. Colculate the x and z coordinate  
 
 
-  if(!fITSgeom) {
+  if(!fDetTypeRec->GetITSgeom()) {
     Error("FindRawClusters","ITS geom is null!");
     return;
   }
   Int_t lay, lad, detect;
   SetModule(module);
-  fITSgeom->GetModuleId(GetModule(),lay, lad, detect);
+  fDetTypeRec->GetITSgeom()->GetModuleId(GetModule(),lay, lad, detect);
   if ( lay == 6 ) ((AliITSsegmentationSSD*)GetSeg())->SetLayer(6);
   if ( lay == 5 ) ((AliITSsegmentationSSD*)GetSeg())->SetLayer(5);
 

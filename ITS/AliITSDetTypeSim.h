@@ -16,6 +16,8 @@ $Id$
 #include <TObjArray.h>
 #include <TClonesArray.h>
 
+class TTree;
+class AliCDBMetaData;
 class AliITSdigit;
 class AliITSmodule;
 class AliITSpListItem;
@@ -43,8 +45,9 @@ class AliITSDetTypeSim : public TObject {
     virtual AliITSsegmentation* GetSegmentationModel(Int_t dettype);
     virtual AliITSsegmentation* GetSegmentationModelByModule(Int_t module);
 
-    virtual void SetResponseModel(Int_t dettype,AliITSresponse *resp);
-    virtual AliITSresponse* GetResponseModel(Int_t dettype);
+    virtual void SetResponseModel(Int_t iMod,AliITSresponse *resp);
+    //   virtual void SetResponse(Int_t dettype, Int_t iMod, AliITSresponse *resp);
+    virtual AliITSresponse* GetResponseModel(Int_t iMod);
 
     TObjArray* GetResponse() const {return fResponse;}
     TObjArray* GetSegmentation() const {return fSegmentation;}
@@ -56,6 +59,8 @@ class AliITSDetTypeSim : public TObject {
 
     virtual void SetDefaults();
     virtual void SetDefaultSimulation();
+    virtual void SetRunNumber(Int_t rn=0){fRunNumber = rn;}
+    virtual Int_t GetRunNumber() const {return fRunNumber;}
     virtual void SetTreeAddressS(TTree* treeS, Char_t* name);
     virtual void SetTreeAddressD(TTree* treeD, Char_t* name);
 
@@ -73,15 +78,28 @@ class AliITSDetTypeSim : public TObject {
 
     virtual void AddSumDigit(AliITSpListItem &sdig);
     virtual void AddRealDigit(Int_t branch, Int_t *digits);
-    virtual void AddSimDigit(Int_t branch, AliITSdigit *d);			    virtual void AddSimDigit(Int_t branch,Float_t phys,Int_t* digits,
-		     Int_t* tracks,Int_t *hits,Float_t* trkcharges);
+    virtual void AddSimDigit(Int_t branch, AliITSdigit *d);
+    virtual void AddSimDigit(Int_t branch,Float_t phys,Int_t* digits,
+			     Int_t* tracks,Int_t *hits,Float_t* trkcharges);
 
     virtual void SetDigitClassName(Int_t i, Char_t* name) {fDigClassName[i]=name;}
     Char_t* GetDigitClassName(Int_t i) const {return fDigClassName[i];}
+
+    void StoreCalibration(Int_t firstRun, Int_t lastRun, AliCDBMetaData &md);
+
+ protected:
+
+    virtual void CreateResponses(); 
+    virtual Bool_t GetCalibration();
     
  private:
-    
-    static const Int_t fgkNdettypes;   // number of different det. types
+
+    static const Int_t fgkNdettypes;          // number of different det. types
+    static const Int_t fgkDefaultNModulesSPD; // Total numbers of SPD modules by default
+    static const Int_t fgkDefaultNModulesSDD; // Total numbers of SDD modules by default
+    static const Int_t fgkDefaultNModulesSSD; // Total numbers of SSD modules by default
+    Int_t fNMod[3];                           // numbers of modules from different types
+
     AliITSgeom   *fGeom;         // pointer to ITS geom
     TObjArray    *fSimulation;   //! [NDet]
     TObjArray    *fSegmentation; //! [NDet]
@@ -91,13 +109,14 @@ class AliITSDetTypeSim : public TObject {
     Int_t         fNSDigits;     //! number of SDigits
     TClonesArray *fSDigits;      //! [NMod][NSDigits]
     Int_t*        fNDigits;      //! [NDet] number of Digits for det.
+    Int_t         fRunNumber;    //! run number (to access DB)
     TObjArray     *fDigits;       //! [NMod][NDigits]
     TString       fHitClassName; //! String with Hit class name
     TString       fSDigClassName;//! String with SDigit class name.
     Char_t*       fDigClassName[3]; //! String with digit class name.
     AliLoader* fLoader;        // loader  
     
-  ClassDef(AliITSDetTypeSim,1) // ITS Simulation structure
+  ClassDef(AliITSDetTypeSim,2) // ITS Simulation structure
  
 };
 

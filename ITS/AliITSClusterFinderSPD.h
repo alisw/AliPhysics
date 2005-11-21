@@ -6,6 +6,7 @@
 ////////////////////////////////////////////////
 
 #include "AliITSClusterFinder.h"
+#include "AliITSDetTypeRec.h"
 
 class AliITSMapA1;
 class AliITSsegmentation;
@@ -14,20 +15,17 @@ class AliITSresponse;
 class AliITSresponseSPD;
 class TClonesArray;
 
+
 class AliITSClusterFinderSPD : public AliITSClusterFinder{
  public:
     AliITSClusterFinderSPD();
-    AliITSClusterFinderSPD(AliITSsegmentation *segmentation,
-                           AliITSresponse *res);
-    AliITSClusterFinderSPD(AliITSsegmentation *segmentation,
+    AliITSClusterFinderSPD(AliITSDetTypeRec* dettyp);
+    AliITSClusterFinderSPD(AliITSDetTypeRec* dettyp,
 			   TClonesArray *digits,TClonesArray *recpoints);
     virtual ~AliITSClusterFinderSPD(){}// destructor
-
-    virtual AliITSresponseSPD* GetResp()const{
-        return (AliITSresponseSPD*) GetResponse();}//Return Response
     //Returns fSegmentation
     virtual AliITSsegmentationSPD* GetSeg()const{
-        return (AliITSsegmentationSPD*)GetSegmentation();}  
+        return (AliITSsegmentationSPD*)fDetTypeRec->GetSegmentationModel(0);}  
     virtual void SetDx(Double_t dx=1.) {fDx=dx;}// set dx
     virtual void SetDz(Double_t dz=0.) {fDz=dz;}// set dz
     // Search for clusters
