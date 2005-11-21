@@ -269,6 +269,57 @@ reset_data.sh [transform] [svmap ]
 Author: I. Hrivnacova, IPN Orsay
 
 
+==========================================================
+ How to Merge events
+==========================================================
+
+You can merge 2 types of simulated events. For example, 
+you can simulate Hijing events, and then simulate muons
+merging both.
+
+Merging is done at the sdigits level, so Kinematics files 
+of the merged events will just correspond to the 
+Config.C simulated file (not to Config_HIJING.C).
+
+You must, first, do the Hijing simulation and store it 
+in directory $HIJING_SIM. Note that for merging you 
+won't need Kinematics files of the Hijing simulation...
+
+Hijing simulation
+
+aliroot -b << EOF
+AliSimulation HijingSim("$HIJING_SIM/Config_HIJING.C")
+HijingSim.Run(5)
+.q
+EOF
+
+
+Then you can do muon simulation and reconstruction
+merging both simulated events. In next example, we are
+merging 20 times each Hijing event in order to simulate 
+100 muons merged with 5 Hijing events.
+
+
+aliroot -b << EOF
+AliSimulation MuonSim("$ALICE_ROOT/MUON/Config.C")
+MuonSim.MergeWith("$HIJING_SIM/galice.root",20) //parameters are the Hijing simulation file and the number of times we use each Hijing event
+MuonSim.Run(100) // number of muon (Config.C) events
+.q
+EOF
+
+
+aliroot -b << EOF
+TPluginManager * pluginmanager = gROOT->GetPluginManager()
+pluginmanager->AddHandler("AliReconstructor","MUON","AliMUONReconstructor","MUON","AliMUONReconstructor()")
+AliReconstruction  MuonRec("galice.root")
+MuonRec.SetRunTracking("")
+MuonRec.SetRunVertexFinder(kFALSE)
+MuonRec.SetRunLocalReconstruction("MUON")
+MuonRec.SetFillESD("MUON")
+MuonRec.Run()
+.q
+EOF
+
 ===========================================================
  Still working ..............
 ===========================================================
