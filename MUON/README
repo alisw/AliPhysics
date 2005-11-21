@@ -76,7 +76,7 @@ To print rawcluster : (default file is galice.root)
 MUONrecpoints() or MUONrecpoints("galice.root",##) for the event number ##
 
 To print trigger : (default file is galice.root)
-MUONTestTrigger() or MUONTestTrigger("galice.root",##) for the event number ##
+MUONrectrigger() or MUONrectrigger("galice.root",##) for the event number ##
 
 ....
 
