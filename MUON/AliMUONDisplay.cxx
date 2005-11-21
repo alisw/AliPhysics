@@ -60,7 +60,10 @@
 #include "AliMpSlatSegmentation.h"
 #include "AliMpSlat.h"
 #include "AliMpSectorSegmentation.h"
-#include "AliMpSector.h" 
+#include "AliMpSector.h"
+ 
+#include "AliMpTriggerSegmentation.h"
+#include "AliMpTrigger.h"
 
 #include "AliMUONGeometrySegmentation.h"
 #include "AliMUONChamber.h"
@@ -882,7 +885,41 @@ void AliMUONDisplay::DrawView(Float_t theta, Float_t phi, Float_t psi)
 	  poly1->Draw("s");
 	}
       }
-    }  
+    }
+    
+/*-- Trigger Chambers ---------------------------------------*/
+    if(fChamber >10 && fChamber <15) {
+      Int_t id=0;
+      for(id=0; id<18; id++) {
+	Int_t detElemId = fChamber*100+id;
+	if (  AliMUONSegmentationManager::IsValidDetElemId(detElemId) ) {
+//	  AliMpSlatSegmentation * seg =   
+//	    (AliMpSlatSegmentation *) AliMUONSegmentationManager::Segmentation(detElemId, kBendingPlane);
+	  AliMpTriggerSegmentation * seg =   
+	    (AliMpTriggerSegmentation *) AliMUONSegmentationManager::Segmentation(detElemId, kBendingPlane);
+	  const AliMpTrigger* slat = seg->Slat();
+	  Float_t deltax = slat->DX();
+	  Float_t deltay = slat->DY();
+	  Float_t xlocal1 =  -deltax;
+	  Float_t ylocal1 =  -deltay;
+	  Float_t xlocal2 =  +deltax;
+	  Float_t ylocal2 =  +deltay;
+	  iChamber->GetGeometry()->Local2Global(detElemId, xlocal1, ylocal1, 0, xg1, yg1, zg1);
+	  iChamber->GetGeometry()->Local2Global(detElemId, xlocal2, ylocal2, 0, xg2, yg2, zg2);
+
+	  // drawing slat active volumes
+	  Float_t xCenter = (xg1 + xg2)/2.;
+	  Float_t yCenter = (yg1 + yg2)/2.;
+
+	  TMarker3DBox* box = new TMarker3DBox(xCenter,yCenter,0,xlocal1,ylocal2,0,0,0);
+
+	  box->SetFillStyle(0);
+	  box->SetLineColor(4);
+	  box->Draw("s");
+
+	}
+      }
+    }
 //add clusters to the pad
     DrawClusters();
     DrawHits();
