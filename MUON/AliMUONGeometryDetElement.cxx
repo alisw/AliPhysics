@@ -262,5 +262,5 @@ void AliMUONGeometryDetElement::PrintGlobalTransform() const
 /// Prints detection element global transformation
 /// (the transformation wrt global frame)
 
-  PrintTransform(fLocalTransformation);
+  PrintTransform(fGlobalTransformation);
 }  
