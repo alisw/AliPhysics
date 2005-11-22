@@ -1,8 +1,9 @@
 # $Id$
 
-SRCS:= AliMUONFactoryV2.cxx \
-       AliMUONFactoryV3.cxx \
-       AliMUONFactoryV4.cxx \
+SRCS:= AliMUONSegFactoryV2.cxx \
+       AliMUONSegFactoryV3.cxx \
+       AliMUONSegFactoryV4.cxx \
+       AliMUONResponseFactory.cxx \
        AliMUONSt1Response.cxx \
        AliMUONSt1ElectronicElement.cxx \
        AliMUONSt1SpecialMotif.cxx \
