@@ -29,19 +29,16 @@
 #include "AliLog.h"
 
 #include "AliMUONGeometryStore.h"
-#include "AliMUONVGeometryDEIndexing.h"
+#include "AliMUONGeometryDEIndexing.h"
 
 ClassImp(AliMUONGeometryStore)
 
 const Int_t AliMUONGeometryStore::fgkInitSize = 100;
 
 //______________________________________________________________________________
-AliMUONGeometryStore::AliMUONGeometryStore(
-                                   AliMUONVGeometryDEIndexing* indexing,
-				   Bool_t isOwner)
+AliMUONGeometryStore::AliMUONGeometryStore(Bool_t isOwner)
  : TObject(),
-   fObjects(fgkInitSize),
-   fDEIndexing(indexing)
+   fObjects(fgkInitSize)
 { 
 /// Standard constructor
   
@@ -52,8 +49,7 @@ AliMUONGeometryStore::AliMUONGeometryStore(
 //______________________________________________________________________________
 AliMUONGeometryStore::AliMUONGeometryStore()
  : TObject(),
-   fObjects(),
-   fDEIndexing(0)
+   fObjects()
 {
 /// Default constructor
 }
@@ -98,11 +94,8 @@ void AliMUONGeometryStore::Add(Int_t objectId, TObject* object)
 /// Add detection element in the array
 /// if detection element with the same Id is not yet present. 
  
-  //cout << ".. adding " << objectId 
-  //     << " index: " << fDEIndexing->GetDetElementIndex(objectId) << endl;
-
   // Expand array if the init size has been reached
-  Int_t index = fDEIndexing->GetDetElementIndex(objectId);
+  Int_t index = AliMUONGeometryDEIndexing::GetDEIndex(objectId);
   while ( index >= fObjects.GetSize() ) {
     Int_t size = fObjects.GetSize();
     fObjects.Expand(size + fgkInitSize);
@@ -122,7 +115,7 @@ AliMUONGeometryStore::Get(Int_t objectId, Bool_t warn) const
 {
 /// Returns the object for the specified detector element Id
 
-  Int_t index = fDEIndexing->GetDetElementIndex(objectId);
+  Int_t index = AliMUONGeometryDEIndexing::GetDEIndex(objectId);
   
   if ( index >= 0 && index < fObjects.GetEntriesFast() )
     return (TObject*) fObjects.At(index);

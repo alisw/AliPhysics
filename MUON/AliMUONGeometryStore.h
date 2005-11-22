@@ -19,13 +19,10 @@
 #include <TObject.h>
 #include <TObjArray.h>
 
-class AliMUONVGeometryDEIndexing;
-
 class AliMUONGeometryStore : public TObject
 {
   public:
-    AliMUONGeometryStore(AliMUONVGeometryDEIndexing* indexing,
-                         Bool_t isOwner = true);
+    AliMUONGeometryStore(Bool_t isOwner);
     AliMUONGeometryStore();
     virtual ~AliMUONGeometryStore();
 
@@ -50,8 +47,7 @@ class AliMUONGeometryStore : public TObject
     static const Int_t fgkInitSize; // Initial size of array of objects
 
     // data members
-    TObjArray                   fObjects;// The array of detection elements
-    AliMUONVGeometryDEIndexing* fDEIndexing; // The DE indexing definitions
+    TObjArray  fObjects; // The array of detection elements
 
   ClassDef(AliMUONGeometryStore,1) // MUON geometry store
 };

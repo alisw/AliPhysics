@@ -27,7 +27,7 @@
 #include <TMath.h>
 
 #include "AliMUONHit.h"
-#include "AliMUONVGeometryDEIndexing.h"
+#include "AliMUONGeometryDEIndexing.h"
 #include "AliLog.h"
 
 ClassImp(AliMUONHit)
@@ -242,6 +242,6 @@ Int_t  AliMUONHit::Chamber()  const
   if (!fIsDetElemId) 
     return fDetElemId;
   else  
-    return AliMUONVGeometryDEIndexing::GetModuleId(fDetElemId)+1;  
+    return AliMUONGeometryDEIndexing::GetModuleId(fDetElemId)+1;  
 }
 
