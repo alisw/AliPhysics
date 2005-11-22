@@ -20,7 +20,7 @@
 
 #include "AliRun.h"
 #include "AliMUON.h"
-#include "AliMUONChamber.h"
+#include "AliMUONSegmentation.h"
 #include "AliMUONConstants.h"
 #include "AliMUONClusterInput.h"
 #include "AliMUONMathieson.h"
@@ -82,16 +82,15 @@ void AliMUONClusterInput::SetDigits(Int_t chamber, Int_t idDE, TClonesArray* dig
     fNDigits[0] = dig1->GetEntriesFast();
     fNDigits[1] = dig2->GetEntriesFast();
     
-    AliMUON *pMUON;
-    AliMUONChamber* iChamber;
-
-    pMUON = (AliMUON*) gAlice->GetModule("MUON");
-    iChamber =  &(pMUON->Chamber(chamber));
-
     fgMathieson = new AliMUONMathieson();
 
-    fSegmentation2[0]=iChamber->SegmentationModel2(1);
-    fSegmentation2[1]=iChamber->SegmentationModel2(2);
+    AliMUON *pMUON;
+    AliMUONSegmentation* pSegmentation;
+
+    pMUON = (AliMUON*) gAlice->GetModule("MUON");
+    pSegmentation = pMUON->GetSegmentation();
+    fSegmentation2[0]= pSegmentation->GetModuleSegmentation(chamber, 0);
+    fSegmentation2[1]= pSegmentation->GetModuleSegmentation(chamber, 1);
 
     fNseg = 2;
     if (chamber < AliMUONConstants::NTrackingCh()) {
@@ -118,12 +117,11 @@ void AliMUONClusterInput::SetDigits(Int_t chamber, Int_t idDE, TClonesArray* dig
     fDigits[0] = dig;
 
     AliMUON *pMUON;
-    AliMUONChamber* iChamber;
+    AliMUONSegmentation* pSegmentation;
 
     pMUON = (AliMUON*) gAlice->GetModule("MUON");
-    iChamber =  &(pMUON->Chamber(chamber));
-    
-    fSegmentation2[0]=iChamber->SegmentationModel2(1);
+    pSegmentation = pMUON->GetSegmentation();
+    fSegmentation2[0]= pSegmentation->GetModuleSegmentation(chamber, 0);
 
     fNseg=1;
 }

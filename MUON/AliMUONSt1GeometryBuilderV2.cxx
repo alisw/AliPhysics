@@ -54,7 +54,7 @@
 #include "AliMUONSt1GeometryBuilderV2.h"
 #include "AliMUONSt1SpecialMotif.h"
 #include "AliMUON.h"
-#include "AliMUONChamber.h"
+#include "AliMUONConstants.h"
 #include "AliMUONGeometryModule.h"
 #include "AliMUONGeometryEnvelopeStore.h"
 
@@ -120,9 +120,7 @@ const Int_t AliMUONSt1GeometryBuilderV2::fgkDaughterCopyNoOffset=1000;
 
 //______________________________________________________________________________
 AliMUONSt1GeometryBuilderV2::AliMUONSt1GeometryBuilderV2(AliMUON* muon)
-  : AliMUONVGeometryBuilder("st1V2.dat",
-                            muon->Chamber(0).GetGeometry(), 
-			    muon->Chamber(1).GetGeometry()),
+  : AliMUONVGeometryBuilder(0, 1),
     fMUON(muon)
 {
    // set path to mapping data files
@@ -2578,15 +2576,11 @@ void AliMUONSt1GeometryBuilderV2::SetTransformations()
 // Defines the transformations for the station2 chambers.
 // ---
 
-  AliMUONChamber* iChamber1 = &fMUON->Chamber(0);
-  Double_t zpos1 = - iChamber1->Z(); 
-  iChamber1->GetGeometry()
-    ->SetTranslation(TGeoTranslation(0., 0., zpos1));
+  Double_t zpos1 = - AliMUONConstants::DefaultChamberZ(0); 
+  SetTranslation(0, TGeoTranslation(0., 0., zpos1));
 
-  AliMUONChamber* iChamber2 = &fMUON->Chamber(1);
-  Double_t zpos2 = - iChamber2->Z(); 
-  iChamber2->GetGeometry()
-    ->SetTranslation(TGeoTranslation(0., 0., zpos2));
+  Double_t zpos2 = - AliMUONConstants::DefaultChamberZ(1); 
+  SetTranslation(1, TGeoTranslation(0., 0., zpos2));
 }
 
 //______________________________________________________________________________

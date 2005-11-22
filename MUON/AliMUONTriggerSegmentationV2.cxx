@@ -199,6 +199,16 @@ AliMUONTriggerSegmentationV2::GetDirection()
   return kDirUndefined;
 }
 
+//______________________________________________________________________________
+const AliMpVSegmentation*  
+AliMUONTriggerSegmentationV2::GetMpSegmentation() const
+{
+// Returns the mapping segmentation
+// (provides access to electronics info)
+
+  return fSlatSegmentation;
+}  
+
 //_____________________________________________________________________________
 void 
 AliMUONTriggerSegmentationV2::GetNParallelAndOffset(Int_t,Int_t,Int_t*,Int_t*)

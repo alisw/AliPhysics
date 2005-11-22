@@ -64,7 +64,7 @@ class AliMUONSt12QuadrantSegmentation : public AliMUONVGeometryDESegmentation
     virtual AliMUONGeometryDirection  GetDirection();
                        // Returns the direction with a constant pad size
     // Access to mapping
-    virtual const AliMpSectorSegmentation* GetMpSegmentation() const; 		       
+    virtual const AliMpVSegmentation* GetMpSegmentation() const; 		       
 
     // Transform from pad (wire) to real coordinates and vice versa
     //

@@ -54,6 +54,7 @@ class AliMUONTriggerSegmentationV2 : public AliMUONVGeometryDESegmentation
   virtual Bool_t HasPad(Int_t ix, Int_t iy);
   
   virtual AliMUONGeometryDirection GetDirection();
+  virtual const AliMpVSegmentation* GetMpSegmentation() const;
 
   virtual Float_t GetAnod(Float_t /*xhit*/) const;
 

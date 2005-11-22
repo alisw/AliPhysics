@@ -26,6 +26,9 @@
 #include <TF1.h>
 #include <TObjArray.h>
 #include <TVector2.h>
+#include <TSystem.h>
+
+#include "AliLog.h"
 
 #include "AliMpPad.h"
 #include "AliMpArea.h"
@@ -33,15 +36,11 @@
 #include "AliMpSector.h"
 #include "AliMpVPadIterator.h"
 #include "AliMpSectorSegmentation.h"
-
-#include "AliMUONSt12QuadrantSegmentation.h"
-#include "AliRun.h"
-#include "AliMUON.h"
-#include "AliMUONChamber.h"
-#include "AliLog.h"
 #include "AliMpFiles.h"
 #include "AliMpNeighboursPadIterator.h"
-#include <TSystem.h>
+
+#include "AliMUONSt12QuadrantSegmentation.h"
+#include "AliMUONConstants.h"
 
 ClassImp(AliMUONSt12QuadrantSegmentation)
 
@@ -85,6 +84,8 @@ AliMUONSt12QuadrantSegmentation::AliMUONSt12QuadrantSegmentation(
   fCorrA->AddAt(0,0);
   fCorrA->AddAt(0,1);
   fCorrA->AddAt(0,2);
+
+  AliDebug(1, Form("ctor this = %p", this) ); 
 }
 
 //______________________________________________________________________________
@@ -115,6 +116,8 @@ AliMUONSt12QuadrantSegmentation::AliMUONSt12QuadrantSegmentation()
   fYt(0.),
   fCorrA(0) {
 // Default Constructor
+
+  AliDebug(1, Form("default (empty) ctor this = %p", this));
 }
 
 //______________________________________________________________________________
@@ -128,6 +131,8 @@ AliMUONSt12QuadrantSegmentation::AliMUONSt12QuadrantSegmentation(const AliMUONSt
 //______________________________________________________________________________
 AliMUONSt12QuadrantSegmentation::~AliMUONSt12QuadrantSegmentation() {
 // Destructor
+
+  AliDebug(1, Form("dtor this = %p", this));
 
   delete fSector;
   delete fSectorSegmentation;  
@@ -252,7 +257,7 @@ AliMUONGeometryDirection  AliMUONSt12QuadrantSegmentation::GetDirection()
 }  
 
 //______________________________________________________________________________
-const AliMpSectorSegmentation*  
+const AliMpVSegmentation*  
 AliMUONSt12QuadrantSegmentation::GetMpSegmentation() const
 {
 // Returns the mapping segmentation
@@ -334,10 +339,8 @@ void AliMUONSt12QuadrantSegmentation::Init(Int_t chamber)
  // find Npx, Npy and save this info
   
   // reference to chamber
- AliMUON *pMUON  = (AliMUON *) gAlice->GetModule("MUON");
- fChamber = &(pMUON->Chamber(chamber));
- fRmin=fChamber->RInner();
- fRmax=fChamber->ROuter();  
+ fRmin=AliMUONConstants::Rmin(0);
+ fRmax=AliMUONConstants::Rmax(0);  
  fZ = 0;
  fId=chamber;
 }

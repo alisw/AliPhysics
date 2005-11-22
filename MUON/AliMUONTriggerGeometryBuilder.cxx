@@ -28,7 +28,7 @@
 
 #include "AliMUONTriggerGeometryBuilder.h"
 #include "AliMUON.h"
-#include "AliMUONChamber.h"
+#include "AliMUONConstants.h"
 #include "AliMUONGeometryModule.h"
 #include "AliMUONGeometryEnvelopeStore.h"
 
@@ -36,11 +36,7 @@ ClassImp(AliMUONTriggerGeometryBuilder)
 
 //______________________________________________________________________________
 AliMUONTriggerGeometryBuilder::AliMUONTriggerGeometryBuilder(AliMUON* muon)
- : AliMUONVGeometryBuilder("trigger.dat",
-                           muon->Chamber(10).GetGeometry(), 
-			   muon->Chamber(11).GetGeometry(),
-                           muon->Chamber(12).GetGeometry(),
-			   muon->Chamber(13).GetGeometry()),
+ : AliMUONVGeometryBuilder(10, 11, 12, 13),
    fMUON(muon)
 {
 // Standard constructor
@@ -128,12 +124,9 @@ void AliMUONTriggerGeometryBuilder::CreateGeometry()
     const Float_t kZm=-3.6;
     const Float_t kZp=+3.6;
     
-    AliMUONChamber *iChamber, *iChamber1, *iChamber2;
-    iChamber1 = &fMUON->Chamber(10);
-    Float_t zpos1= iChamber1->Z(); 
-    iChamber2 = &fMUON->Chamber(11);
-
-    Double_t dstation =  ( ( - iChamber2->Z()) - ( - iChamber1->Z()) ) /2.1;
+    Float_t zpos1= AliMUONConstants::DefaultChamberZ(10); 
+    Double_t dstation =  ( ( - AliMUONConstants::DefaultChamberZ(11)) - 
+                           ( - AliMUONConstants::DefaultChamberZ(10)) ) /2.1;
     Float_t par[3];
     par[2] = dstation;
 
@@ -149,14 +142,13 @@ void AliMUONTriggerGeometryBuilder::CreateGeometry()
 	    Int_t iVolNum=1; // counter Volume Number
 	    icount = Int_t(iplane<<0)+Int_t(istation<<1);
 	    
-	    iChamber = &fMUON->Chamber(10+icount);
-	    par[0] = iChamber->RInner(); 
-	    par[1] = iChamber->ROuter();
+	    par[0] = AliMUONConstants::Rmin(5+istation); 
+	    par[1] = AliMUONConstants::Rmax(5+istation);
 	    Char_t volName[6];
 	    sprintf(volName,"%s%d", "SC",11+icount);
  	    gMC->Gsvolu(volName,"TUBE", idAir, par, 3);
- 	    iChamber->GetGeometry()->SetVolume(volName);
-	    Float_t zpos =  iChamber->Z();	     
+ 	    GetGeometry(10+icount)->SetVolume(volName);
+	    Float_t zpos =  AliMUONConstants::DefaultChamberZ(10+icount);	     
 	    
 /* removed 03/18/05
 // Flange between beam shielding and RPC 
@@ -341,28 +333,18 @@ void AliMUONTriggerGeometryBuilder::SetTransformations()
 {
 // Defines the transformations for the trigger chambers.
 // ---
-    Double_t zpos1, zpos2;    
-    AliMUONChamber *iChamber1, *iChamber2;
 
-    iChamber1 = &fMUON->Chamber(10);
-    zpos1= iChamber1->Z(); 
-    iChamber1->GetGeometry()
-	->SetTranslation(TGeoTranslation(0., 0., zpos1));
+    Double_t zpos1= AliMUONConstants::DefaultChamberZ(10); 
+    SetTranslation(10, TGeoTranslation(0., 0., zpos1));
     
-    iChamber2 = &fMUON->Chamber(11);
-    zpos2 = iChamber2->Z(); 
-    iChamber2->GetGeometry()
-	->SetTranslation(TGeoTranslation(0., 0., zpos2));
+    zpos1= AliMUONConstants::DefaultChamberZ(11); 
+    SetTranslation(11, TGeoTranslation(0., 0., zpos1));
 
-    iChamber1 = &fMUON->Chamber(12);
-    zpos1 = iChamber1->Z(); 
-    iChamber1->GetGeometry()
-	->SetTranslation(TGeoTranslation(0., 0., zpos1));
+    zpos1= AliMUONConstants::DefaultChamberZ(12); 
+    SetTranslation(12, TGeoTranslation(0., 0., zpos1));
 
-    iChamber2 = &fMUON->Chamber(13);
-    zpos2 = iChamber2->Z(); 
-    iChamber2->GetGeometry()
-	->SetTranslation(TGeoTranslation(0., 0., zpos2));
+    zpos1= AliMUONConstants::DefaultChamberZ(13); 
+    SetTranslation(13, TGeoTranslation(0., 0., zpos1));
 
 }
 

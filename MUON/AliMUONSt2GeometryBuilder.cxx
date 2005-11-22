@@ -28,7 +28,7 @@
 
 #include "AliMUONSt2GeometryBuilder.h"
 #include "AliMUON.h"
-#include "AliMUONChamber.h"
+#include "AliMUONConstants.h"
 #include "AliMUONGeometryModule.h"
 #include "AliMUONGeometryEnvelopeStore.h"
 
@@ -36,9 +36,7 @@ ClassImp(AliMUONSt2GeometryBuilder)
 
 //______________________________________________________________________________
 AliMUONSt2GeometryBuilder::AliMUONSt2GeometryBuilder(AliMUON* muon)
- : AliMUONVGeometryBuilder("st2.dat",
-                           muon->Chamber(2).GetGeometry(), 
-			   muon->Chamber(3).GetGeometry()),
+ : AliMUONVGeometryBuilder(2, 3), 
    fMUON(muon)
 {
 // Standard constructor
@@ -117,10 +115,6 @@ void AliMUONSt2GeometryBuilder::CreateGeometry()
      Int_t irot2;
      fMUON->AliMatrix(irot2,  90.,  90., 90., 180., 0., 0.);
 
-     AliMUONChamber* iChamber = &fMUON->Chamber(2);
-     //     AliMUONChamber* iChamber1 = iChamber;
-     //     AliMUONChamber* iChamber2 = &fMUON->Chamber(3);
-     
      // Half of the total thickness of frame crosses (including DAlu)
      // for each chamber in stations 1 and 2:
      // 3% of X0 of composite material,
@@ -129,6 +123,12 @@ void AliMUONSt2GeometryBuilder::CreateGeometry()
      // DGas and DAlu not changed from standard values
      //     Double_t zfpos=-(iChamber->DGas()+dframez+iChamber->DAlu())/2;
              // The same parameters are defined in builder for station 1 
+
+     //    sensitive gas gap
+     const Float_t kDGas = 0.5;
+
+     //    3% radiation length of aluminum (X0=8.9 cm)      
+     // const Float_t kDAlu = 3.5 * 8.9 / 100.;
      
      // Mother volume
      // Outer excess and inner recess for mother volume radius
@@ -145,9 +145,9 @@ void AliMUONSt2GeometryBuilder::CreateGeometry()
 
      Float_t posx, posy, posz;
 //   Chamber Material represented by Alu sheet
-     tpar[0]= iChamber->RInner();
-     tpar[1]= iChamber->ROuter();
-     tpar[2] = (iChamber->DGas())/2;
+     tpar[0]= AliMUONConstants::Rmin(1);
+     tpar[1]= AliMUONConstants::Rmax(1);
+     tpar[2] = kDGas/2;
      tpar[3] = 0.;
      tpar[4] = 90.;
   
@@ -214,15 +214,11 @@ void AliMUONSt2GeometryBuilder::SetTransformations()
 // Defines the transformations for the station2 chambers.
 // ---
 
-  AliMUONChamber* iChamber1 = &fMUON->Chamber(2);
-  Double_t zpos1 = - iChamber1->Z(); 
-  iChamber1->GetGeometry()
-    ->SetTranslation(TGeoTranslation(0., 0., zpos1));
+  Double_t zpos1 = - AliMUONConstants::DefaultChamberZ(2); 
+  SetTranslation(2, TGeoTranslation(0., 0., zpos1));
 
-  AliMUONChamber* iChamber2 = &fMUON->Chamber(3);
-  Double_t zpos2 = - iChamber2->Z(); 
-  iChamber2->GetGeometry()
-    ->SetTranslation(TGeoTranslation(0., 0., zpos2));
+  Double_t zpos2 = - AliMUONConstants::DefaultChamberZ(3); 
+  SetTranslation(3, TGeoTranslation(0., 0., zpos2));
 }
 
 //______________________________________________________________________________

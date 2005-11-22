@@ -29,7 +29,7 @@
 
 #include "AliMUONSt1GeometryBuilder.h"
 #include "AliMUON.h"
-#include "AliMUONChamber.h"
+#include "AliMUONConstants.h"
 #include "AliMUONGeometryModule.h"
 #include "AliMUONGeometryEnvelopeStore.h"
 
@@ -37,9 +37,7 @@ ClassImp(AliMUONSt1GeometryBuilder)
 
 //______________________________________________________________________________
 AliMUONSt1GeometryBuilder::AliMUONSt1GeometryBuilder(AliMUON* muon)
- : AliMUONVGeometryBuilder("st1.dat",
-                           muon->Chamber(0).GetGeometry(), 
-			   muon->Chamber(1).GetGeometry()),
+ : AliMUONVGeometryBuilder(0, 1),
    fMUON(muon)
 {
 // Standard constructor
@@ -117,25 +115,19 @@ void AliMUONSt1GeometryBuilder::CreateGeometry()
      Int_t irot2;
      fMUON->AliMatrix(irot2,  90.,  90., 90., 180., 0., 0.);
 
-     AliMUONChamber* iChamber1 = &fMUON->Chamber(0);
-     AliMUONChamber* iChamber2 = &fMUON->Chamber(1);
-     AliMUONChamber* iChamber = iChamber1;
-
      // DGas decreased from standard one (0.5)
-     iChamber->SetDGas(0.4); 
-     iChamber2->SetDGas(0.4);
+     const Float_t kDGas = 0.4;
 
      // DAlu increased from standard one (3% of X0),
      // because more electronics with smaller pads
-     iChamber->SetDAlu(3.5 * 8.9 / 100.); 
-     iChamber2->SetDAlu(3.5 * 8.9 / 100.);
+     const Float_t kDAlu = 3.5 * 8.9 / 100.;
 
      // Half of the total thickness of frame crosses (including DAlu)
      // for each chamber in stations 1 and 2:
      // 3% of X0 of composite material,
      // but taken as Aluminium here, with same thickness in number of X0
      Float_t dframez = 3. * 8.9 / 100;
-     Float_t zfpos=-(iChamber->DGas()+dframez+iChamber->DAlu())/2;
+     Float_t zfpos=-(kDGas+dframez+kDAlu)/2;
              // The same parameters are defined in builder for station 2 
 
      // Mother volume
@@ -149,9 +141,10 @@ void AliMUONSt1GeometryBuilder::CreateGeometry()
              // The same parameters are defined in builder for station 2 
 
      Float_t tpar[3];
-     Float_t dstation = (-iChamber2->Z()) - (-iChamber1->Z());
-     tpar[0] = iChamber->RInner()-dframep; 
-     tpar[1] = (iChamber->ROuter()+dframep)/TMath::Cos(phi);
+     Float_t dstation = (-AliMUONConstants::DefaultChamberZ(1)) - 
+                        (-AliMUONConstants::DefaultChamberZ(0));
+     tpar[0] = AliMUONConstants::Rmin(0)-dframep; 
+     tpar[1] = (AliMUONConstants::Rmax(0)+dframep)/TMath::Cos(phi);
      tpar[2] = dstation/5;
 
      gMC->Gsvolu("S01M", "TUBE", idAir, tpar, 3);
@@ -172,7 +165,7 @@ void AliMUONSt1GeometryBuilder::CreateGeometry()
 //      pgpar[2] = 12.;
 //      pgpar[3] =   2;
 //      pgpar[4] = -dframez/2;
-//      pgpar[5] = iChamber->ROuter();
+//      pgpar[5] = AliMUONConstants::Rmax(0);
 //      pgpar[6] = pgpar[5]+dframep1;
 //      pgpar[7] = +dframez/2;
 //      pgpar[8] = pgpar[5];
@@ -185,8 +178,8 @@ void AliMUONSt1GeometryBuilder::CreateGeometry()
 //      gMC->Gspos("S02O",2,"S02M", 0.,0.,+zfpos,  0,"ONLY");
 // //
 // // Inner frame
-//      tpar[0]= iChamber->RInner()-dframep1;
-//      tpar[1]= iChamber->RInner();
+//      tpar[0]= AliMUONConstants::Rmin(0)-dframep1;
+//      tpar[1]= AliMUONConstants::Rmin(0);
 //      tpar[2]= dframez/2;
 //      gMC->Gsvolu("S01I", "TUBE", idAlu1, tpar, 3);
 //      gMC->Gsvolu("S02I", "TUBE", idAlu1, tpar, 3);
@@ -201,64 +194,64 @@ void AliMUONSt1GeometryBuilder::CreateGeometry()
          // outside gas
          // security for inside mother volume
          Float_t bpar[3];
-	 bpar[0] = (iChamber->ROuter() - iChamber->RInner())
+	 bpar[0] = (AliMUONConstants::Rmax(0) - AliMUONConstants::Rmin(0))
 	   * TMath::Cos(TMath::ASin(dframep1 /
-				   (iChamber->ROuter() - iChamber->RInner())))
+		   (AliMUONConstants::Rmax(0) - AliMUONConstants::Rmin(0))))
 	   / 2.0;
 	 bpar[1] = dframep1/2;
 	 // total thickness will be (4 * bpar[2]) for each chamber,
 	 // which has to be equal to (2 * dframez) - DAlu
-	 bpar[2] = (2.0 * dframez - iChamber->DAlu()) / 4.0;
+	 bpar[2] = (2.0 * dframez - kDAlu) / 4.0;
 	 gMC->Gsvolu("S01B", "BOX", idAlu1, bpar, 3);
 	 gMC->Gsvolu("S02B", "BOX", idAlu1, bpar, 3);
 	 
-	 gMC->Gspos("S01B",1,"S01M", +iChamber->RInner()+bpar[0] , 0,-zfpos, 
+	 gMC->Gspos("S01B",1,"S01M", +AliMUONConstants::Rmin(0)+bpar[0] , 0,-zfpos, 
 		    irot1,"ONLY");
-	 gMC->Gspos("S01B",2,"S01M", -iChamber->RInner()-bpar[0] , 0,-zfpos, 
+	 gMC->Gspos("S01B",2,"S01M", -AliMUONConstants::Rmin(0)-bpar[0] , 0,-zfpos, 
 		    irot1,"ONLY");
-	 gMC->Gspos("S01B",3,"S01M", 0, +iChamber->RInner()+bpar[0] ,-zfpos, 
+	 gMC->Gspos("S01B",3,"S01M", 0, +AliMUONConstants::Rmin(0)+bpar[0] ,-zfpos, 
 		    irot2,"ONLY");
-	 gMC->Gspos("S01B",4,"S01M", 0, -iChamber->RInner()-bpar[0] ,-zfpos, 
+	 gMC->Gspos("S01B",4,"S01M", 0, -AliMUONConstants::Rmin(0)-bpar[0] ,-zfpos, 
 		    irot2,"ONLY");
-	 gMC->Gspos("S01B",5,"S01M", +iChamber->RInner()+bpar[0] , 0,+zfpos, 
+	 gMC->Gspos("S01B",5,"S01M", +AliMUONConstants::Rmin(0)+bpar[0] , 0,+zfpos, 
 		    irot1,"ONLY");
-	 gMC->Gspos("S01B",6,"S01M", -iChamber->RInner()-bpar[0] , 0,+zfpos, 
+	 gMC->Gspos("S01B",6,"S01M", -AliMUONConstants::Rmin(0)-bpar[0] , 0,+zfpos, 
 		    irot1,"ONLY");
-	 gMC->Gspos("S01B",7,"S01M", 0, +iChamber->RInner()+bpar[0] ,+zfpos, 
+	 gMC->Gspos("S01B",7,"S01M", 0, +AliMUONConstants::Rmin(0)+bpar[0] ,+zfpos, 
 		    irot2,"ONLY");
-	 gMC->Gspos("S01B",8,"S01M", 0, -iChamber->RInner()-bpar[0] ,+zfpos, 
+	 gMC->Gspos("S01B",8,"S01M", 0, -AliMUONConstants::Rmin(0)-bpar[0] ,+zfpos, 
 		    irot2,"ONLY");
 	 
-	 gMC->Gspos("S02B",1,"S02M", +iChamber->RInner()+bpar[0] , 0,-zfpos, 
+	 gMC->Gspos("S02B",1,"S02M", +AliMUONConstants::Rmin(0)+bpar[0] , 0,-zfpos, 
 		    irot1,"ONLY");
-	 gMC->Gspos("S02B",2,"S02M", -iChamber->RInner()-bpar[0] , 0,-zfpos, 
+	 gMC->Gspos("S02B",2,"S02M", -AliMUONConstants::Rmin(0)-bpar[0] , 0,-zfpos, 
 		    irot1,"ONLY");
-	 gMC->Gspos("S02B",3,"S02M", 0, +iChamber->RInner()+bpar[0] ,-zfpos, 
+	 gMC->Gspos("S02B",3,"S02M", 0, +AliMUONConstants::Rmin(0)+bpar[0] ,-zfpos, 
 		    irot2,"ONLY");
-	 gMC->Gspos("S02B",4,"S02M", 0, -iChamber->RInner()-bpar[0] ,-zfpos, 
+	 gMC->Gspos("S02B",4,"S02M", 0, -AliMUONConstants::Rmin(0)-bpar[0] ,-zfpos, 
 		    irot2,"ONLY");
-	 gMC->Gspos("S02B",5,"S02M", +iChamber->RInner()+bpar[0] , 0,+zfpos, 
+	 gMC->Gspos("S02B",5,"S02M", +AliMUONConstants::Rmin(0)+bpar[0] , 0,+zfpos, 
 		    irot1,"ONLY");
-	 gMC->Gspos("S02B",6,"S02M", -iChamber->RInner()-bpar[0] , 0,+zfpos, 
+	 gMC->Gspos("S02B",6,"S02M", -AliMUONConstants::Rmin(0)-bpar[0] , 0,+zfpos, 
 		    irot1,"ONLY");
-	 gMC->Gspos("S02B",7,"S02M", 0, +iChamber->RInner()+bpar[0] ,+zfpos, 
+	 gMC->Gspos("S02B",7,"S02M", 0, +AliMUONConstants::Rmin(0)+bpar[0] ,+zfpos, 
 		    irot2,"ONLY");
-	 gMC->Gspos("S02B",8,"S02M", 0, -iChamber->RInner()-bpar[0] ,+zfpos, 
+	 gMC->Gspos("S02B",8,"S02M", 0, -AliMUONConstants::Rmin(0)-bpar[0] ,+zfpos, 
 		    irot2,"ONLY");
      }
 //
 //   Chamber Material represented by Alu sheet
-     tpar[0]= iChamber->RInner();
-     tpar[1]= iChamber->ROuter();
-     tpar[2] = (iChamber->DGas()+iChamber->DAlu())/2;
+     tpar[0]= AliMUONConstants::Rmin(0);
+     tpar[1]= AliMUONConstants::Rmax(0);
+     tpar[2] = (kDGas+kDAlu)/2;
      gMC->Gsvolu("S01A", "TUBE",  idAlu2, tpar, 3);
      gMC->Gsvolu("S02A", "TUBE",idAlu2, tpar, 3);
      gMC->Gspos("S01A", 1, "S01M", 0., 0., 0.,  0, "ONLY");
      gMC->Gspos("S02A", 1, "S02M", 0., 0., 0.,  0, "ONLY");
 //     
 //   Sensitive volumes
-     // tpar[2] = iChamber->DGas();
-     tpar[2] = iChamber->DGas()/2;
+     // tpar[2] = kDGas;
+     tpar[2] = kDGas/2;
      gMC->Gsvolu("S01G", "TUBE", idGas, tpar, 3);
      gMC->Gsvolu("S02G", "TUBE", idGas, tpar, 3);
      gMC->Gspos("S01G", 1, "S01A", 0., 0., 0.,  0, "ONLY");
@@ -268,29 +261,29 @@ void AliMUONSt1GeometryBuilder::CreateGeometry()
      // NONE: chambers are sensitive everywhere
 //      if (frameCrosses) {
 
-// 	 dr = (iChamber->ROuter() - iChamber->RInner());
+// 	 dr = (AliMUONConstants::Rmax(0) - AliMUONConstants::Rmin(0));
 // 	 bpar[0] = TMath::Sqrt(dr*dr-dframep1*dframep1/4)/2;
 // 	 bpar[1] = dframep1/2;
-// 	 bpar[2] = iChamber->DGas()/2;
+// 	 bpar[2] = kDGas/2;
 // 	 gMC->Gsvolu("S01F", "BOX", idAlu1, bpar, 3);
 // 	 gMC->Gsvolu("S02F", "BOX", idAlu1, bpar, 3);
 	 
-// 	 gMC->Gspos("S01F",1,"S01G", +iChamber->RInner()+bpar[0] , 0, 0, 
+// 	 gMC->Gspos("S01F",1,"S01G", +AliMUONConstants::Rmin(0)+bpar[0] , 0, 0, 
 // 		    irot1,"ONLY");
-// 	 gMC->Gspos("S01F",2,"S01G", -iChamber->RInner()-bpar[0] , 0, 0, 
+// 	 gMC->Gspos("S01F",2,"S01G", -AliMUONConstants::Rmin(0)-bpar[0] , 0, 0, 
 // 		    irot1,"ONLY");
-// 	 gMC->Gspos("S01F",3,"S01G", 0, +iChamber->RInner()+bpar[0] , 0, 
+// 	 gMC->Gspos("S01F",3,"S01G", 0, +AliMUONConstants::Rmin(0)+bpar[0] , 0, 
 // 		    irot2,"ONLY");
-// 	 gMC->Gspos("S01F",4,"S01G", 0, -iChamber->RInner()-bpar[0] , 0, 
+// 	 gMC->Gspos("S01F",4,"S01G", 0, -AliMUONConstants::Rmin(0)-bpar[0] , 0, 
 // 		    irot2,"ONLY");
 	 
-// 	 gMC->Gspos("S02F",1,"S02G", +iChamber->RInner()+bpar[0] , 0, 0, 
+// 	 gMC->Gspos("S02F",1,"S02G", +AliMUONConstants::Rmin(0)+bpar[0] , 0, 0, 
 // 		    irot1,"ONLY");
-// 	 gMC->Gspos("S02F",2,"S02G", -iChamber->RInner()-bpar[0] , 0, 0, 
+// 	 gMC->Gspos("S02F",2,"S02G", -AliMUONConstants::Rmin(0)-bpar[0] , 0, 0, 
 // 		    irot1,"ONLY");
-// 	 gMC->Gspos("S02F",3,"S02G", 0, +iChamber->RInner()+bpar[0] , 0, 
+// 	 gMC->Gspos("S02F",3,"S02G", 0, +AliMUONConstants::Rmin(0)+bpar[0] , 0, 
 // 		    irot2,"ONLY");
-// 	 gMC->Gspos("S02F",4,"S02G", 0, -iChamber->RInner()-bpar[0] , 0, 
+// 	 gMC->Gspos("S02F",4,"S02G", 0, -AliMUONConstants::Rmin(0)-bpar[0] , 0, 
 // 		    irot2,"ONLY");
 //      }
 }
@@ -301,15 +294,11 @@ void AliMUONSt1GeometryBuilder::SetTransformations()
 // Defines the transformations for the station2 chambers.
 // ---
 
-  AliMUONChamber* iChamber1 = &fMUON->Chamber(0);
-  Double_t zpos1= - iChamber1->Z(); 
-  iChamber1->GetGeometry()
-    ->SetTranslation(TGeoTranslation(0., 0., zpos1));
+  Double_t zpos1= - AliMUONConstants::DefaultChamberZ(0); 
+  SetTranslation(0, TGeoTranslation(0., 0., zpos1));
 
-  AliMUONChamber* iChamber2 = &fMUON->Chamber(1);
-  Double_t zpos2 = - iChamber2->Z(); 
-  iChamber2->GetGeometry()
-    ->SetTranslation(TGeoTranslation(0., 0., zpos2));
+  Double_t zpos2 = - AliMUONConstants::DefaultChamberZ(1); 
+  SetTranslation(0, TGeoTranslation(0., 0., zpos2));
 }
 
 //______________________________________________________________________________

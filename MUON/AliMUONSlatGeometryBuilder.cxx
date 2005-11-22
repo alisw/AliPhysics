@@ -41,7 +41,7 @@
 
 #include "AliMUONSlatGeometryBuilder.h"
 #include "AliMUON.h"
-#include "AliMUONChamber.h"
+#include "AliMUONConstants.h"
 #include "AliMUONGeometryModule.h"
 #include "AliMUONGeometryEnvelopeStore.h"
 #include "AliMUONConstants.h"
@@ -51,13 +51,7 @@ ClassImp(AliMUONSlatGeometryBuilder)
 
 //______________________________________________________________________________
 AliMUONSlatGeometryBuilder::AliMUONSlatGeometryBuilder(AliMUON* muon)
- : AliMUONVGeometryBuilder("slat.dat",
-                           muon->Chamber(4).GetGeometry(), 
-			   muon->Chamber(5).GetGeometry(), 
-                           muon->Chamber(6).GetGeometry(), 
-			   muon->Chamber(7).GetGeometry(), 
-			   muon->Chamber(8).GetGeometry(), 
-			   muon->Chamber(9).GetGeometry()),
+ : AliMUONVGeometryBuilder(4, 5, 6, 7, 8, 9),
    fMUON(muon)
 {
 // Standard constructor
@@ -248,13 +242,13 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
       iChamber1 = iChamber;
       iChamber2 = &fMUON->Chamber(5);
      
-      //iChamber1->GetGeometry()->SetDebug(kTRUE);
-      //iChamber2->GetGeometry()->SetDebug(kTRUE);
+      //GetGeometry(4)->SetDebug(kTRUE);
+      //GetGeometry(5)->SetDebug(kTRUE);
  
       if (gAlice->GetModule("DIPO")) {
 	// if DIPO is preset, the whole station will be placed in DDIP volume
-	iChamber1->GetGeometry()->SetMotherVolume("DDIP");
-	iChamber2->GetGeometry()->SetMotherVolume("DDIP");
+	GetGeometry(4)->SetMotherVolume("DDIP");
+	GetGeometry(5)->SetMotherVolume("DDIP");
       }
 
       if (!gAlice->GetModule("DIPO")) {
@@ -264,14 +258,15 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
 	Float_t dframepIn = kRframeHeight; 
 	Float_t dframepOut= kVframeLength + 37.0; // Additional 37 cm gap is needed to wrap the corners of the slats 
 	Float_t tpar[3];
-	Double_t dstation =  ( (-iChamber2->Z()) - (-iChamber1->Z()) ) /2.1;
-	tpar[0] = iChamber1->RInner()-dframepIn; 
-	tpar[1] = (iChamber1->ROuter()+dframepOut);
+	Double_t dstation =  ( (-AliMUONConstants::DefaultChamberZ(5)) -
+	                       (-AliMUONConstants::DefaultChamberZ(4)) ) /2.1;
+	tpar[0] = AliMUONConstants::Rmin(2)-dframepIn; 
+	tpar[1] = AliMUONConstants::Rmax(2)+dframepOut;
 	tpar[2] = dstation;
 	gMC->Gsvolu("CH05", "TUBE", idAir, tpar, 3);
 	gMC->Gsvolu("CH06", "TUBE", idAir, tpar, 3);
-	iChamber1->GetGeometry()->SetVolume("CH05");
-	iChamber2->GetGeometry()->SetVolume("CH06");
+	GetGeometry(4)->SetVolume("CH05");
+	GetGeometry(5)->SetVolume("CH06");
       }
       // volumes for slat geometry (xx=5,..,10 chamber id): 
       // Sxx0 Sxx1 Sxx2 Sxx3  -->   Slat Mother volumes 
@@ -568,7 +563,7 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
       Double_t divpar[3];
       Double_t dydiv = kSensHeight/ndiv;
       Double_t ydiv  = (kSensHeight - dydiv)/2.;
-      Double_t rmin  = iChamber1->RInner();// Same radius for both chamber in St3
+      Double_t rmin  = AliMUONConstants::Rmin(2);// Same radius for both chamber in St3
       Double_t xdiv  = 0.;
       Float_t xvol;
       Float_t yvol;
@@ -601,7 +596,7 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
       // 9 box volumes are used to define the PCB closed to the beam pipe of the slat 122000SR1 of chamber 5 and 6 of St3
       // Accordingly to plan PQ-LAT-SR1 of CEA-DSM-DAPNIA-SIS/BE ph HARDY 8-Oct-2002
       // Rmin = 31.5 cm
-      rmin = iChamber1->RInner(); // Same radius for both chamber in St3
+      rmin = AliMUONConstants::Rmin(2); // Same radius for both chamber in St3
       ndiv  = 9; 
       dydiv = kSensHeight/ndiv;           // Vertical size of the box volume approximating the rounded PCB
       ydiv  = -kSensHeight/2 + dydiv/2.;   // Initializing vertical position of the volume from bottom
@@ -663,14 +658,15 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
     Float_t dframepIn = kRframeHeight; 
     Float_t dframepOut= kVframeLength + 40.0; // Additional 30 cm gap is needed to wrap the corners of the slats 
     Float_t tpar[3];
-    Double_t dstation =  ( (-iChamber2->Z()) - (-iChamber1->Z()) ) /2.1;
-    tpar[0] = iChamber1->RInner()-dframepIn; 
-    tpar[1] = (iChamber1->ROuter()+dframepOut);
+    Double_t dstation =  ( (-AliMUONConstants::DefaultChamberZ(7)) - 
+                           (-AliMUONConstants::DefaultChamberZ(6)) ) /2.1;
+    tpar[0] = AliMUONConstants::Rmin(3)-dframepIn; 
+    tpar[1] = AliMUONConstants::Rmax(3)+dframepOut;
     tpar[2] = dstation;
     gMC->Gsvolu("CH07", "TUBE", idAir, tpar, 3);
     gMC->Gsvolu("CH08", "TUBE", idAir, tpar, 3);
-    iChamber1->GetGeometry()->SetVolume("CH07");
-    iChamber2->GetGeometry()->SetVolume("CH08");
+    GetGeometry(6)->SetVolume("CH07");
+    GetGeometry(7)->SetVolume("CH08");
     
     // create and position the slat (mother) volumes 
 
@@ -880,7 +876,7 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
     Double_t divpar[3];
     Double_t dydiv = kSensHeight/ndiv;
     Double_t ydiv  = (kSensHeight - dydiv)/2.;
-    Float_t rmin   = iChamber1->RInner(); // Same radius for both chamber of St4
+    Float_t rmin   = AliMUONConstants::Rmin(3); // Same radius for both chamber of St4
     Float_t xdiv   = 0.; 
     Float_t xvol;
     Float_t yvol;
@@ -937,14 +933,15 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
     Float_t dframepIn = kRframeHeight; 
     Float_t dframepOut= kVframeLength + 40.0; // Additional 40 cm gap is needed to wrap the corners of the slats 
     Float_t tpar[3];
-    Double_t dstation =  ( (-iChamber2->Z()) - (-iChamber1->Z()) ) /2.3;
-    tpar[0] = iChamber1->RInner()-dframepIn; 
-    tpar[1] = (iChamber1->ROuter()+dframepOut);
+    Double_t dstation =  ( (-AliMUONConstants::DefaultChamberZ(9)) - 
+                           (-AliMUONConstants::DefaultChamberZ(8)) ) /2.3;
+    tpar[0] = AliMUONConstants::Rmin(4)-dframepIn; 
+    tpar[1] = AliMUONConstants::Rmax(4)+dframepOut;
     tpar[2] = dstation;
     gMC->Gsvolu("CH09", "TUBE", idAir, tpar, 3);
     gMC->Gsvolu("CH10", "TUBE", idAir, tpar, 3);
-    iChamber1->GetGeometry()->SetVolume("CH09");
-    iChamber2->GetGeometry()->SetVolume("CH10");
+    GetGeometry(8)->SetVolume("CH09");
+    GetGeometry(9)->SetVolume("CH10");
 
     // create and position the slat (mother) volumes 
 
@@ -1155,7 +1152,7 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
     Double_t divpar[3];
     Double_t dydiv = kSensHeight/ndiv;
     Double_t ydiv  = (kSensHeight - dydiv)/2.;
-    Float_t rmin   = iChamber1->RInner();
+    Float_t rmin   = AliMUONConstants::Rmin(4);
     Float_t xdiv   = 0.; 
     Float_t xvol;
     Float_t yvol; 
@@ -1192,35 +1189,23 @@ void AliMUONSlatGeometryBuilder::SetTransformations()
 // Defines the transformations for the station2 chambers.
 // ---
 
-  AliMUONChamber* iChamber1 = &fMUON->Chamber(4);
-  Double_t zpos1 = - iChamber1->Z(); 
-  iChamber1->GetGeometry()
-    ->SetTranslation(TGeoTranslation(0., 0., zpos1));
+  Double_t zpos1= - AliMUONConstants::DefaultChamberZ(4); 
+  SetTranslation(4, TGeoTranslation(0., 0., zpos1));
 
-  AliMUONChamber* iChamber2 = &fMUON->Chamber(5);
-  Double_t zpos2 = - iChamber2->Z(); 
-  iChamber2->GetGeometry()
-    ->SetTranslation(TGeoTranslation(0., 0., zpos2));
+  zpos1= - AliMUONConstants::DefaultChamberZ(5); 
+  SetTranslation(5, TGeoTranslation(0., 0., zpos1));
 
- iChamber1 = &fMUON->Chamber(6);
-  zpos1 = - iChamber1->Z(); 
-  iChamber1->GetGeometry()
-    ->SetTranslation(TGeoTranslation(0., 0., zpos1));
+  zpos1 = - AliMUONConstants::DefaultChamberZ(6); 
+  SetTranslation(6, TGeoTranslation(0., 0., zpos1));
 
-  iChamber2 = &fMUON->Chamber(7);
-  zpos2 = - iChamber2->Z(); 
-  iChamber2->GetGeometry()
-    ->SetTranslation(TGeoTranslation(0., 0., zpos2));
+  zpos1 = - AliMUONConstants::DefaultChamberZ(7); 
+  SetTranslation(7, TGeoTranslation(0., 0., zpos1));
 
- iChamber1 = &fMUON->Chamber(8);
-  zpos1 = - iChamber1->Z(); 
-  iChamber1->GetGeometry()
-    ->SetTranslation(TGeoTranslation(0., 0., zpos1));
+  zpos1 = - AliMUONConstants::DefaultChamberZ(8); 
+  SetTranslation(8, TGeoTranslation(0., 0., zpos1));
 
-  iChamber2 = &fMUON->Chamber(9);
-  zpos2 = - iChamber2->Z(); 
-  iChamber2->GetGeometry()
-    ->SetTranslation(TGeoTranslation(0., 0., zpos2));
+  zpos1 = - AliMUONConstants::DefaultChamberZ(9); 
+  SetTranslation(9, TGeoTranslation(0., 0., zpos1));
 
 }
 

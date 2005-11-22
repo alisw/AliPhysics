@@ -55,7 +55,7 @@
 #include "AliMUONTrack.h"
 #include "AliMUONTrackParam.h"
 
-#include "AliMUONSegmentationManager.h"
+#include "AliMUONGeometryTransformer.h"
 #include "AliMUONGeometryModule.h"
 #include "AliMpSlatSegmentation.h"
 #include "AliMpSlat.h"
@@ -65,8 +65,8 @@
 #include "AliMpTriggerSegmentation.h"
 #include "AliMpTrigger.h"
 
+#include "AliMUONSegmentation.h"
 #include "AliMUONGeometrySegmentation.h"
-#include "AliMUONChamber.h"
 #include "AliMUONConstants.h"
 #include "AliMC.h"
 #include "AliLog.h"
@@ -789,8 +789,11 @@ void AliMUONDisplay::DrawView(Float_t theta, Float_t phi, Float_t psi)
 
     // Recovering the chamber 
     AliMUON *pMUON  = (AliMUON*)gAlice->GetModule("MUON");
-    AliMUONChamber*  iChamber;
-    iChamber = &(pMUON->Chamber(fChamber-1));
+
+    const AliMUONGeometryTransformer* kGeomTransformer 
+      = pMUON->GetGeometryTransformer();
+
+    AliMUONSegmentation* segmentation = pMUON->GetSegmentation();
 
 // Display MUON Chamber Geometry
     char nodeName[7];
@@ -801,10 +804,9 @@ void AliMUONDisplay::DrawView(Float_t theta, Float_t phi, Float_t psi)
       for(Int_t id = 0; id < 4; id++) {
 
 	Int_t detElemId = fChamber*100+id;
-	//	if (  AliMUONSegmentationManager::IsValidDetElemId(detElemId) ) {
-	AliMpSectorSegmentation* seg =   
-	  (AliMpSectorSegmentation *) AliMUONSegmentationManager::Segmentation(detElemId, kBendingPlane);
-	const AliMpSector* sector = seg->GetSector();
+	AliMpSectorSegmentation * seg =   
+	  (AliMpSectorSegmentation *) segmentation->GetMpSegmentation(detElemId, 0);
+	const AliMpSector * sector = seg->GetSector();
 
 	// get sector measurements
 	TVector2 position  = sector->Position(); 
@@ -815,8 +817,8 @@ void AliMUONDisplay::DrawView(Float_t theta, Float_t phi, Float_t psi)
 	Float_t xlocal2 =  dimension.Px() * 2.;
 	Float_t ylocal2 =  dimension.Px() * 2.;
 
-	iChamber->GetGeometry()->Local2Global(detElemId, xlocal1, ylocal1, 0, xg1, yg1, zg1);
-	iChamber->GetGeometry()->Local2Global(detElemId, xlocal2, ylocal2, 0, xg2, yg2, zg2);
+	kGeomTransformer->Local2Global(detElemId, xlocal1, ylocal1, 0, xg1, yg1, zg1);
+	kGeomTransformer->Local2Global(detElemId, xlocal2, ylocal2, 0, xg2, yg2, zg2);
 
 	// drawing 
 	TPolyLine3D* poly = new  TPolyLine3D();
@@ -842,47 +844,49 @@ void AliMUONDisplay::DrawView(Float_t theta, Float_t phi, Float_t psi)
       Int_t id=0;
       for(id=0; id<26; id++) {
 	Int_t detElemId = fChamber*100+id;
-	if (  AliMUONSegmentationManager::IsValidDetElemId(detElemId) ) {
+	if (  segmentation->HasDE(detElemId) ) {
 	  AliMpSlatSegmentation * seg =   
-	    (AliMpSlatSegmentation *) AliMUONSegmentationManager::Segmentation(detElemId, kBendingPlane);
-	  const AliMpSlat* slat = seg->Slat();
-	  Float_t deltax = slat->DX();
-	  Float_t deltay = slat->DY();
-	  Float_t xlocal1 =  -deltax;
-	  Float_t ylocal1 =  -deltay;
-	  Float_t xlocal2 =  +deltax;
-	  Float_t ylocal2 =  +deltay;
-	  iChamber->GetGeometry()->Local2Global(detElemId, xlocal1, ylocal1, 0, xg1, yg1, zg1);
-	  iChamber->GetGeometry()->Local2Global(detElemId, xlocal2, ylocal2, 0, xg2, yg2, zg2);
+	    (AliMpSlatSegmentation *) segmentation->GetMpSegmentation(detElemId, 0);
+	  if (seg) {  
+	    const AliMpSlat* slat = seg->Slat();
+	    Float_t deltax = slat->DX();
+	    Float_t deltay = slat->DY();
+	    Float_t xlocal1 =  -deltax;
+	    Float_t ylocal1 =  -deltay;
+	    Float_t xlocal2 =  +deltax;
+	    Float_t ylocal2 =  +deltay;
+	    kGeomTransformer->Local2Global(detElemId, xlocal1, ylocal1, 0, xg1, yg1, zg1);
+	    kGeomTransformer->Local2Global(detElemId, xlocal2, ylocal2, 0, xg2, yg2, zg2);
 
-	  // drawing slat active volumes
-	  Float_t xCenter = (xg1 + xg2)/2.;
-	  Float_t yCenter = (yg1 + yg2)/2.;
+	    // drawing slat active volumes
+	    Float_t xCenter = (xg1 + xg2)/2.;
+	    Float_t yCenter = (yg1 + yg2)/2.;
 
-	  TMarker3DBox* box = new TMarker3DBox(xCenter,yCenter,0,xlocal1,ylocal2,0,0,0);
+	    TMarker3DBox* box = new TMarker3DBox(xCenter,yCenter,0,xlocal1,ylocal2,0,0,0);
 
-	  box->SetFillStyle(0);
-	  box->SetLineColor(2);
-	  box->Draw("s");
+	    box->SetFillStyle(0);
+	    box->SetLineColor(2);
+	    box->Draw("s");
 
-	  // drawing inner circle + disc
-	  TPolyLine3D* poly  = new  TPolyLine3D();
-	  TPolyLine3D* poly1 = new  TPolyLine3D();
+	    // drawing inner circle + disc
+	    TPolyLine3D* poly  = new  TPolyLine3D();
+	    TPolyLine3D* poly1 = new  TPolyLine3D();
 
-	  Int_t nPoint = 0;
-	  Int_t nPoint1 = 0;
-	  for (Float_t d = 0; d < 6.24; d+= 0.005) {
-	    Double_t x = AliMUONConstants::Dmin((fChamber-1)/2) * TMath::Cos(d)/2.;
-	    Double_t y = AliMUONConstants::Dmin((fChamber-1)/2) * TMath::Sin(d)/2.;
-	    if (nPoint % 2 == 0) poly->SetPoint(nPoint++, 0., 0., 0.);
-	    poly->SetPoint(nPoint++, x, y, 0.);
-	    poly1->SetPoint(nPoint1++, x, y, 0.);
+	    Int_t nPoint = 0;
+	    Int_t nPoint1 = 0;
+	    for (Float_t d = 0; d < 6.24; d+= 0.005) {
+	      Double_t x = AliMUONConstants::Dmin((fChamber-1)/2) * TMath::Cos(d)/2.;
+	      Double_t y = AliMUONConstants::Dmin((fChamber-1)/2) * TMath::Sin(d)/2.;
+	      if (nPoint % 2 == 0) poly->SetPoint(nPoint++, 0., 0., 0.);
+	      poly->SetPoint(nPoint++, x, y, 0.);
+	      poly1->SetPoint(nPoint1++, x, y, 0.);
 
-	  }
-	  poly->SetLineColor(1);
-	  poly->Draw("s");
-	  poly1->SetLineColor(2);
-	  poly1->Draw("s");
+	    }
+	    poly->SetLineColor(1);
+	    poly->Draw("s");
+	    poly1->SetLineColor(2);
+	    poly1->Draw("s");
+	  }  
 	}
       }
     }
@@ -892,11 +896,9 @@ void AliMUONDisplay::DrawView(Float_t theta, Float_t phi, Float_t psi)
       Int_t id=0;
       for(id=0; id<18; id++) {
 	Int_t detElemId = fChamber*100+id;
-	if (  AliMUONSegmentationManager::IsValidDetElemId(detElemId) ) {
-//	  AliMpSlatSegmentation * seg =   
-//	    (AliMpSlatSegmentation *) AliMUONSegmentationManager::Segmentation(detElemId, kBendingPlane);
-	  AliMpTriggerSegmentation * seg =   
-	    (AliMpTriggerSegmentation *) AliMUONSegmentationManager::Segmentation(detElemId, kBendingPlane);
+	  AliMpTriggerSegmentation * seg  
+	    = (AliMpTriggerSegmentation *) segmentation->GetMpSegmentation(detElemId, 0);
+	if (seg) {   
 	  const AliMpTrigger* slat = seg->Slat();
 	  Float_t deltax = slat->DX();
 	  Float_t deltay = slat->DY();
@@ -904,8 +906,9 @@ void AliMUONDisplay::DrawView(Float_t theta, Float_t phi, Float_t psi)
 	  Float_t ylocal1 =  -deltay;
 	  Float_t xlocal2 =  +deltax;
 	  Float_t ylocal2 =  +deltay;
-	  iChamber->GetGeometry()->Local2Global(detElemId, xlocal1, ylocal1, 0, xg1, yg1, zg1);
-	  iChamber->GetGeometry()->Local2Global(detElemId, xlocal2, ylocal2, 0, xg2, yg2, zg2);
+	  
+	  kGeomTransformer->Local2Global(detElemId, xlocal1, ylocal1, 0, xg1, yg1, zg1);
+	  kGeomTransformer->Local2Global(detElemId, xlocal2, ylocal2, 0, xg2, yg2, zg2);
 
 	  // drawing slat active volumes
 	  Float_t xCenter = (xg1 + xg2)/2.;
@@ -916,8 +919,7 @@ void AliMUONDisplay::DrawView(Float_t theta, Float_t phi, Float_t psi)
 	  box->SetFillStyle(0);
 	  box->SetLineColor(4);
 	  box->Draw("s");
-
-	}
+	}  
       }
     }
 //add clusters to the pad
@@ -1061,7 +1063,6 @@ void AliMUONDisplay::LoadDigits(Int_t chamber, Int_t cathode)
     ResetPoints();
     
     AliMUON *pMUON  =     (AliMUON*)gAlice->GetModule("MUON");
-    AliMUONChamber*       iChamber;
     AliMUONGeometrySegmentation*  segmentation2 = 0x0;
 
     GetMUONData()->SetTreeAddress("D");
@@ -1082,11 +1083,11 @@ void AliMUONDisplay::LoadDigits(Int_t chamber, Int_t cathode)
     if (ndigits == 0) return;
     if (fPoints == 0) fPoints = new TObjArray(ndigits);
     
-    iChamber = &(pMUON->Chamber(chamber-1));
+    //segmentation2 = iChamber->SegmentationModel2(cathode);
+    segmentation2
+      = pMUON->GetSegmentation()->GetModuleSegmentation(chamber-1, cathode-1);
 
-    segmentation2 = iChamber->SegmentationModel2(cathode);
-
-    Float_t zpos = iChamber->Z();
+    Float_t zpos = AliMUONConstants::DefaultChamberZ(chamber-1);
 
     AliMUONDigit  *mdig;
     AliMUONPoints *points  = 0;
@@ -1177,9 +1178,6 @@ void AliMUONDisplay::LoadCoG(Int_t chamber, Int_t /*cathode*/)
     
     ResetRpoints();
     
-    AliMUON *pMUON  = (AliMUON*)gAlice->GetModule("MUON");
-    AliMUONChamber*  iChamber;
-    
     GetMUONData()->SetTreeAddress("RC");
     TClonesArray *muonRawClusters  = GetMUONData()->RawClusters(chamber-1);
 
@@ -1195,8 +1193,7 @@ void AliMUONDisplay::LoadCoG(Int_t chamber, Int_t /*cathode*/)
     if (nrawcl == 0) return;
     if (fRpoints == 0) fRpoints = new TObjArray(nrawcl);
     
-    iChamber = &(pMUON->Chamber(chamber-1));
-    Float_t zpos=iChamber->Z();  
+    Float_t zpos = AliMUONConstants::DefaultChamberZ(chamber-1);  
     AliMUONRawCluster  *mRaw;
     AliMUONPoints *points = 0;
     //
@@ -1321,12 +1318,7 @@ void AliMUONDisplay::LoadHits(Int_t chamber)
  
     ResetPhits();
     
-    AliMUON *pMUON  = (AliMUON*)gAlice->GetModule("MUON");
-    AliMUONChamber*  iChamber;
-
-    iChamber = &(pMUON->Chamber(chamber-1));
-    Float_t zpos=iChamber->Z();
-
+    Float_t zpos=AliMUONConstants::DefaultChamberZ(chamber-1);
 
     if (GetMUONData()->TreeH()) {
       GetMUONData()->SetTreeAddress("H");

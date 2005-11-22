@@ -37,12 +37,12 @@ class AliMpSector;
 class TArrayF;
 class TObjArray;
 class AliMUONSt1ResponseParameter;
-class AliMUONChamber;
+//class AliMUONChamber;
 
 class AliMUONSt1Response : public AliMUONResponseV0 
 {
   public:
-    AliMUONSt1Response(AliMUONChamber* chamber);
+    AliMUONSt1Response(Int_t chamberId);
     AliMUONSt1Response();
     virtual ~AliMUONSt1Response();
     
@@ -123,7 +123,7 @@ class AliMUONSt1Response : public AliMUONResponseV0
     Int_t fCountUnknownZone; // ntimes the DigitResponse was called in an unknown zone
     Int_t fCountUnknownIndices; // ntimes the DigitResponse was called with unknown indices
 
-    AliMUONChamber* fChamber;   // The MUON chamber
+    Int_t      fChamberId; // The MUON chamber Id
 
     ParamsMap  fParams;    //! internal parameter list
     ListMap    fRegions;   //! internal list of regions

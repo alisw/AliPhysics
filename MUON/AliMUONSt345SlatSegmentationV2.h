@@ -97,6 +97,8 @@ class AliMUONSt345SlatSegmentationV2 : public AliMUONVGeometryDESegmentation
  
   AliMUONGeometryDirection GetDirection();// { return kDirUndefined; }
 
+  const AliMpVSegmentation* GetMpSegmentation() const;
+
   /// to be deprecated. Use the one below w/o z instead.
   void GetPadC(Int_t ix, Int_t iy, Float_t& x, Float_t& y, Float_t& z);
 

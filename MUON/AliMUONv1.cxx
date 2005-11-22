@@ -28,14 +28,17 @@
 
 #include "AliMUONv1.h"
 #include "AliConst.h" 
-#include "AliMUONChamber.h"
 #include "AliMUONConstants.h"
-#include "AliMUONFactoryV4.h"
-#include "AliMUONFactoryV3.h"
-#include "AliMUONFactoryV2.h"
+#include "AliMUONSegFactoryV4.h"
+#include "AliMUONSegFactoryV3.h"
+#include "AliMUONSegFactoryV2.h"
+#include "AliMUONResponseFactory.h"
+#include "AliMUONSegmentation.h"
 #include "AliMUONHit.h"
 #include "AliMUONTriggerCircuit.h"
 #include "AliMUONGeometryBuilder.h"	
+#include "AliMUONGeometry.h"	
+#include "AliMUONGeometryTransformer.h"	
 #include "AliMUONGeometryModule.h"	
 #include "AliMUONGeometrySVMap.h"	
 #include "AliMUONGeometryDetElement.h"	
@@ -61,8 +64,7 @@ AliMUONv1::AliMUONv1()
     fTrackPosition(),
     fElossRatio(0x0),
     fAngleEffect10(0x0),
-    fAngleEffectNorma(0x0),
-    fFactory(0x0)
+    fAngleEffectNorma(0x0)
 {
 // Default constructor
 	AliDebug(1,Form("default (empty) ctor this=%p",this));
@@ -81,8 +83,7 @@ AliMUONv1::AliMUONv1(const char *name, const char *title)
     fTrackPosition(),
     fElossRatio(0x0),
     fAngleEffect10(0x0),
-    fAngleEffectNorma(0x0),
-    fFactory(0x0)
+    fAngleEffectNorma(0x0)
 {
 // Standard onstructor
 
@@ -137,7 +138,6 @@ AliMUONv1::~AliMUONv1()
   delete fElossRatio;
   delete fAngleEffect10;
   delete fAngleEffectNorma; 
-  delete fFactory;
 }
 
 //_____________________________________________________________________________
@@ -177,48 +177,51 @@ void AliMUONv1::CreateMaterials()
 void AliMUONv1::Init()
 { 
   AliDebug(1,"Start Init for version 1 - CPC chamber type");
-  Int_t i;
    
   //
   // Initialize geometry
   //
   fGeometryBuilder->InitGeometry();
   AliDebug(1,"Finished Init for version 1 - CPC chamber type");   
-  
+ 
+
   std::string ftype(GetTitle());
-  
-  if ( ftype == "default" || ftype == "AliMUONFactoryV2") 
-    {
-      fFactory = new AliMUONFactoryV2("New MUON Factory");
-      (static_cast<AliMUONFactoryV2*>(fFactory))->Build(this,"default");
-    }
-  else if ( ftype == "AliMUONFactoryV3" )
-    {
-      fFactory = new AliMUONFactoryV3("New MUON Factory");
-      (static_cast<AliMUONFactoryV3*>(fFactory))->Build(this,"default");
-    }
-  else if ( ftype == "AliMUONFactoryV4" )
-  {
-    fFactory = new AliMUONFactoryV4("New MUON Factory (w/ Trigger)");
-    (static_cast<AliMUONFactoryV4*>(fFactory))->Build(this,"default");
-  }
-  else
-    {
-      AliFatal(Form("Wrong factory type : %s",ftype.c_str()));      
-    }
-      
+
+  // Build segmentation
+  // using geometry parametrisation
   //
+  if ( ftype == "default" || ftype == "FactoryV2") {
+    AliMUONSegFactoryV2 segFactory("default");
+    segFactory.Build(GetGeometryTransformer());
+    fSegmentation = segFactory.GetSegmentation();
+  } 
+  else  if ( ftype == "FactoryV3" ) {
+    AliMUONSegFactoryV3 segFactory("default");
+    segFactory.Build(GetGeometryTransformer());
+    fSegmentation = segFactory.GetSegmentation();
+  }
+  else if ( ftype == "FactoryV4" ) {
+    AliMUONSegFactoryV4 segFactory("default");
+    segFactory.Build(GetGeometryTransformer());
+    fSegmentation = segFactory.GetSegmentation();
+  }
+  else {
+    AliFatal(Form("Wrong factory type : %s",ftype.c_str()));      
+  }
+
+  // Build response
+  //
+  AliMUONResponseFactory respFactory("default");
+  respFactory.Build(this);
+  
+
   // Initialize segmentation
   //
-  
-  for (i=0; i<AliMUONConstants::NCh(); i++) 
-    ( (AliMUONChamber*) (*fChambers)[i])->Init(2);// new segmentation
-  
-  
-  // trigger circuit
-  // cp 
-  for (i=0; i<AliMUONConstants::NTriggerCircuit(); i++) 
-  {
+  fSegmentation->Init();
+
+  // Initialize trigger circuits
+  //
+  for (Int_t i=0; i<AliMUONConstants::NTriggerCircuit(); i++)  {
     AliMUONTriggerCircuit* c = (AliMUONTriggerCircuit*)(fTriggerCircuits->At(i));
     c->Init(i);
 //    c->Print();
@@ -234,12 +237,10 @@ Int_t  AliMUONv1::GetChamberId(Int_t volId) const
 // if not sensitive volume - return 0.
 // ---
 
-/*
-  for (Int_t i = 1; i <= AliMUONConstants::NCh(); i++)
-    if (volId==((AliMUONChamber*)(*fChambers)[i-1])->GetGid()) return i;
-*/
-  for (Int_t i = 1; i <= AliMUONConstants::NCh(); i++)
-    if ( ((AliMUONChamber*)(*fChambers)[i-1])->IsSensId(volId) ) return i;
+  for (Int_t i = 0; i < AliMUONConstants::NCh(); i++) {
+    if ( GetGeometry()->GetModule(i)->IsSensitiveVolume(volId) )
+      return i+1;
+  }    
 
   return 0;
 }
@@ -387,11 +388,11 @@ void AliMUONv1::StepManager()
     }
     
     // Detection elements ids
-    AliMUONGeometryModule* geometry
-      = Chamber(iChamber-1).GetGeometry();
+    const AliMUONGeometryModule* kGeometryModule
+      = GetGeometry()->GetModule(iChamber-1);
 
     AliMUONGeometryDetElement* detElement
-      = geometry->FindBySensitiveVolume(CurrentVolumePath());
+      = kGeometryModule->FindBySensitiveVolume(CurrentVolumePath());
 
     Int_t detElemId = 0;
     if (detElement) detElemId = detElement->GetUniqueID(); 
@@ -547,11 +548,11 @@ void AliMUONv1::StepManager2()
     }
     
     // Detection elements ids
-    AliMUONGeometryModule* geometry
-      = Chamber(iChamber-1).GetGeometry();
+    const AliMUONGeometryModule* kGeometryModule
+      = GetGeometry()->GetModule(iChamber-1);
 
     AliMUONGeometryDetElement* detElement
-      = geometry->FindBySensitiveVolume(CurrentVolumePath());
+      = kGeometryModule->FindBySensitiveVolume(CurrentVolumePath());
 
     Int_t detElemId = 0;
     if (detElement) detElemId = detElement->GetUniqueID(); 

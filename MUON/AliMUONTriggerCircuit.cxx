@@ -22,7 +22,7 @@
 #include "AliMUON.h"
 #include "AliMUONTriggerConstants.h"
 #include "AliMUONGeometrySegmentation.h"
-#include "AliMUONChamber.h"
+#include "AliMUONSegmentation.h"
 #include "AliMUONConstants.h"
 #include "AliLog.h"
 
@@ -316,14 +316,13 @@ void AliMUONTriggerCircuit::LoadYPos2(){
   Int_t istrip, idDE;
 
   AliMUON *pMUON  = (AliMUON*)gAlice->GetModule("MUON");  
-  AliMUONChamber*  iChamber;
   AliMUONGeometrySegmentation* segmentation;    
   
 // first plane (11)
   chamber=11;
   cathode=1;
-  iChamber = &(pMUON->Chamber(chamber-1));
-  segmentation=iChamber->SegmentationModel2(cathode);
+  segmentation
+    = pMUON->GetSegmentation()->GetModuleSegmentation(chamber-1, cathode-1);
   
   if (!segmentation) {
     AliWarning("Segmentation not defined.");
@@ -346,8 +345,8 @@ void AliMUONTriggerCircuit::LoadYPos2(){
 // second plane (21)
   chamber=13;
   cathode=1;
-  iChamber = &(pMUON->Chamber(chamber-1));
-  segmentation=iChamber->SegmentationModel2(cathode);
+  segmentation
+    = pMUON->GetSegmentation()->GetModuleSegmentation(chamber-1, cathode-1);
   
   for (istrip=0; istrip<32; istrip++) {
     code=fXcode[2][istrip];    // decode current strip
@@ -381,10 +380,9 @@ void AliMUONTriggerCircuit::LoadXPos2(){
   Int_t chamber=11;
   Int_t cathode=2;
   AliMUON *pMUON  = (AliMUON*)gAlice->GetModule("MUON");  
-  AliMUONChamber*  iChamber;
   AliMUONGeometrySegmentation*  segmentation; 
-  iChamber = &(pMUON->Chamber(chamber-1));
-  segmentation=iChamber->SegmentationModel2(cathode);
+  segmentation
+    = pMUON->GetSegmentation()->GetModuleSegmentation(chamber-1, cathode-1);
 
   if (!segmentation) {
     AliWarning("Segmentation not defined.");

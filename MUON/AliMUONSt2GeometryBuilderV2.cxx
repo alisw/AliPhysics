@@ -33,7 +33,7 @@
 
 #include "AliMUONSt2GeometryBuilderV2.h"
 #include "AliMUON.h"
-#include "AliMUONChamber.h"
+#include "AliMUONConstants.h"
 #include "AliMUONGeometryModule.h"
 #include "AliMUONGeometryEnvelopeStore.h"
 #include "AliMUONConstants.h"
@@ -43,9 +43,7 @@ ClassImp(AliMUONSt2GeometryBuilderV2)
 
 //______________________________________________________________________________
 AliMUONSt2GeometryBuilderV2::AliMUONSt2GeometryBuilderV2(AliMUON* muon)
- : AliMUONVGeometryBuilder("st2V2.dat",
-                           muon->Chamber(2).GetGeometry(),
-			   muon->Chamber(3).GetGeometry()),
+ : AliMUONVGeometryBuilder(2, 3),
    fMUON(muon)
 {
 // Standard constructor
@@ -1458,15 +1456,11 @@ void AliMUONSt2GeometryBuilderV2::SetTransformations()
 // Defines the transformations for the station2 chambers.
 // ---
 
-  AliMUONChamber* iChamber1 = &fMUON->Chamber(2);
-  Double_t zpos1 = - iChamber1->Z();
-  iChamber1->GetGeometry()
-    ->SetTranslation(TGeoTranslation(0., 0., zpos1));
+  Double_t zpos1 = - AliMUONConstants::DefaultChamberZ(2); 
+  SetTranslation(2, TGeoTranslation(0., 0., zpos1));
 
-  AliMUONChamber* iChamber2 = &fMUON->Chamber(3);
-  Double_t zpos2 = - iChamber2->Z();
-  iChamber2->GetGeometry()
-    ->SetTranslation(TGeoTranslation(0., 0., zpos2));
+  Double_t zpos2 = - AliMUONConstants::DefaultChamberZ(3); 
+  SetTranslation(3, TGeoTranslation(0., 0., zpos2));
 }
 
 //______________________________________________________________________________

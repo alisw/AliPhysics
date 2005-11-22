@@ -23,7 +23,7 @@
 
 #include "AliMUONDigitizer.h"
 #include "AliMUONConstants.h"
-#include "AliMUONChamber.h"
+#include "AliMUONSegmentation.h"
 #include "AliMUONHitMapA1.h"
 #include "AliMUON.h"
 #include "AliMUONLoader.h"
@@ -31,6 +31,7 @@
 #include "AliMUONTransientDigit.h"
 #include "AliMUONTriggerDecision.h"
 #include "AliLog.h"
+#include "AliMUONGeometryTransformer.h"
 #include "AliMUONGeometryModule.h"
 #include "AliMUONGeometryStore.h"
 
@@ -493,13 +494,18 @@ void AliMUONDigitizer::InitArrays()
 
 
       AliDebug(4,Form( "Creating hit map for chamber %d, cathode 1.", i+1));
-      AliMUONChamber* chamber = &(fMUON->Chamber(i));
-      AliMUONGeometrySegmentation* c1Segmentation = chamber->SegmentationModel2(1); // Cathode plane 1
+      AliMUONSegmentation* segmentation = fMUON->GetSegmentation();
+      AliMUONGeometrySegmentation* c1Segmentation 
+        = segmentation->GetModuleSegmentation(i, 0); // Cathode plane 1
       AliDebug(4,Form( "Creating hit map for chamber %d, cathode 2.", i+1));
-      AliMUONGeometrySegmentation* c2Segmentation = chamber->SegmentationModel2(2); // Cathode plane 2
+      AliMUONGeometrySegmentation* c2Segmentation 
+        = segmentation->GetModuleSegmentation(i, 1); // Cathode plane 2
 
-      AliMUONGeometryModule* geometry    = fMUON->Chamber(i).GetGeometry();
-      AliMUONGeometryStore*  detElements = geometry->GetDetElementStore();
+      const AliMUONGeometryTransformer* kGeometryTransformer 
+        = fMUON->GetGeometryTransformer();
+ 
+      AliMUONGeometryStore* detElements 
+        = kGeometryTransformer->GetModuleTransformer(i)->GetDetElementStore();
     
 
     // Loop over detection elements

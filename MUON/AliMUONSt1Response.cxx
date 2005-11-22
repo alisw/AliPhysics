@@ -44,9 +44,11 @@
 #include "AliMUONSt1IniReader.h"
 #include "AliMUONSt1Decoder.h"
 #include "AliMUONTransientDigit.h"
+#include "AliMUONSegmentation.h"
 #include "AliMUONGeometrySegmentation.h"
 #include "AliMUONSt12QuadrantSegmentation.h"
-#include "AliMUONChamber.h"
+#include "AliMUON.h"
+#include "AliRun.h"
 #include "AliLog.h"
 
 ClassImp(AliMUONSt1Response)
@@ -82,13 +84,13 @@ const TString AliMUONSt1Response::fgkNofSigmaName ="nofSigma";
 
 
 //__________________________________________________________________________
-AliMUONSt1Response::AliMUONSt1Response(AliMUONChamber* chamber)
+AliMUONSt1Response::AliMUONSt1Response(Int_t chamberId)
   : AliMUONResponseV0(),
     fReadFiles(kTRUE),
     fCountNofCalls(0),
     fCountUnknownZone(0),
     fCountUnknownIndices(0),
-    fChamber(chamber),
+    fChamberId(chamberId),
     fParams(),
     fRegions(),
     fTrashList()
@@ -120,7 +122,7 @@ AliMUONSt1Response::AliMUONSt1Response()
     fCountNofCalls(0),
     fCountUnknownZone(0),
     fCountUnknownIndices(0),
-    fChamber(0),
+    fChamberId(0),
     fParams(),
     fRegions(),
     fTrashList()
@@ -191,10 +193,14 @@ AliMUONSt1Response::GetGeometrySegmentation(Int_t cathod)
 {
 // Get geometry segmentation for given cathod plane
 
-  if (!fChamber->SegmentationModel2(cathod))
+  AliMUON* muon =  (AliMUON*)gAlice->GetModule("MUON");
+  AliMUONGeometrySegmentation* segmentation
+    = muon->GetSegmentation()->GetModuleSegmentation(fChamberId, cathod-1);
+
+  if (!segmentation)
     AliFatal(Form("Geometry segmentation for cathod %d not defined.", cathod));
 
-  return fChamber->SegmentationModel2(cathod);
+  return segmentation;
 }  
 
 //__________________________________________________________________________
@@ -211,10 +217,8 @@ AliMUONSt1Response::GetMpSegmentation(Int_t detElemId, Int_t cathod)
                   detElemId));
   }
   
-  const AliMUONSt12QuadrantSegmentation* quadrantSegmentation
-    = static_cast<const AliMUONSt12QuadrantSegmentation*>(deSegmentation);
-  
-  return quadrantSegmentation->GetMpSegmentation();
+  return (const AliMpSectorSegmentation*)deSegmentation->GetMpSegmentation();
+     // check if  we need AliMpSectorSegmentation 
 }         
 
 
@@ -512,7 +516,7 @@ void AliMUONSt1Response::ReadFiles()
   Int_t i;
   TString path = fgkTopDir + fgkDataDir ;
 
-  TString configFileName = path + fgkConfigBaseName + Form("%d.ini",fChamber);
+  TString configFileName = path + fgkConfigBaseName + Form("%d.ini",fChamberId);
   if (gSystem->AccessPathName(configFileName,kReadPermission)){
     // no configChamberI.ini file exists
     SetIniFileName(0,fgkStandardIniFileName);

@@ -18,8 +18,10 @@
 #include "AliMUONChamberTrigger.h"
 #include "AliMUONResponseTrigger.h"
 #include "AliMUONHit.h"
+#include "AliMUON.h"
+#include "AliMUONSegmentation.h"
 #include "AliMUONGeometrySegmentation.h"
-#include "AliMUONGeometryModule.h"
+#include "AliMUONGeometryTransformer.h"
 #include "AliLog.h"
 
 ClassImp(AliMUONChamberTrigger)
@@ -27,14 +29,17 @@ ClassImp(AliMUONChamberTrigger)
 //-------------------------------------------
 
 AliMUONChamberTrigger::AliMUONChamberTrigger()
-  : AliMUONChamber()
+  : AliMUONChamber(),
+    fkGeomTransformer(0)
 {
 // Default constructor
 }
 
 
-AliMUONChamberTrigger::AliMUONChamberTrigger(Int_t id) 
-  : AliMUONChamber(id)
+AliMUONChamberTrigger::AliMUONChamberTrigger(Int_t id,
+                              const AliMUONGeometryTransformer* kGeometryTransformer) 
+  : AliMUONChamber(id),
+    fkGeomTransformer(kGeometryTransformer)
 {
 // Constructor using chamber id
 }
@@ -65,8 +70,10 @@ void AliMUONChamberTrigger::DisIntegration(AliMUONHit* hit,
   Float_t qp;
   nnew=0;
   for (Int_t i = 1; i <= 2; i++) {
-    AliMUONGeometrySegmentation * segmentation=
-      (AliMUONGeometrySegmentation*) (*fSegmentation2)[i-1];
+
+    AliMUONGeometrySegmentation* segmentation=
+      fMUON->GetSegmentation()->GetModuleSegmentation(fId, i-1); 
+
     
 // Find the module & strip Id. which has fired
     Int_t ix(-1);
@@ -77,7 +84,7 @@ void AliMUONChamberTrigger::DisIntegration(AliMUONHit* hit,
     if ( ix<0 || iy<0 ) 
     {
       Float_t lx,ly,lz;
-      GetGeometry()->Global2Local(id,xhit,yhit,0,lx,ly,lz);
+      fkGeomTransformer->Global2Local(id,xhit,yhit,0,lx,ly,lz);
       AliWarning(Form("AliMUONChamberTrigger hit w/o strip %i-%d %e %e "
                       "local %e %e %e ix,iy=%d,%d\n",id,i-1,xhit,yhit,lx,ly,lz,ix,iy));
     } else 

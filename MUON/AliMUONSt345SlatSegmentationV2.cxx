@@ -233,6 +233,17 @@ AliMUONSt345SlatSegmentationV2::GetDirection()
   return kDirUndefined;
 }
 
+//______________________________________________________________________________
+const AliMpVSegmentation*  
+AliMUONSt345SlatSegmentationV2::GetMpSegmentation() const
+{
+// Returns the mapping segmentation
+// (provides access to electronics info)
+
+  return fSlatSegmentation;
+}  
+
+
 //_____________________________________________________________________________
 void 
 AliMUONSt345SlatSegmentationV2::GetNParallelAndOffset(Int_t,Int_t,Int_t*,Int_t*)
