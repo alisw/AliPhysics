@@ -57,15 +57,16 @@
 #include "AliMUONRawCluster.h"
 #include "AliMUONTransientDigit.h"
 #include "AliMUONTriggerCircuit.h"
+#include "AliMUONGeometry.h"
+#include "AliMUONGeometryTransformer.h"
 #include "AliMUONGeometryBuilder.h"
 #include "AliMUONCommonGeometryBuilder.h"
 #include "AliMUONVGeometryBuilder.h"	
-#include "AliMUONGeometryDEIndexing.h"	
 #include "AliMUONGeometrySegmentation.h"
 #include "AliMUONDigitizerv2.h"
 #include "AliMUONSDigitizerv1.h"
 #include "AliMUONRawData.h"
-#include "AliMUONFactoryV2.h"
+#include "AliMUONSegmentation.h"
 #include "AliLog.h"
 
 // Defaults parameters for Z positions of chambers
@@ -94,7 +95,7 @@ AliMUON::AliMUON()
     fChambers(0),
     fTriggerCircuits(0),
     fGeometryBuilder(0),
-    fDEIndexing(0),
+    fSegmentation(0),
     fAccCut(kFALSE),
     fAccMin(0.),
     fAccMax(0.),   
@@ -121,7 +122,7 @@ AliMUON::AliMUON(const char *name, const char *title)
     fChambers(0),
     fTriggerCircuits(0),
     fGeometryBuilder(0),
-    fDEIndexing(0),
+    fSegmentation(0),
     fAccCut(kFALSE),
     fAccMin(0.),
     fAccMax(0.),   
@@ -144,17 +145,6 @@ AliMUON::AliMUON(const char *name, const char *title)
   fGeometryBuilder
     ->AddBuilder(new AliMUONCommonGeometryBuilder(this));
 
-  // Define the global transformation:
-  // Transformation from the old ALICE coordinate system to a new one:
-  // x->-x, z->-z 
-  TGeoRotation* rotGlobal 
-    = new TGeoRotation("rotGlobal", 90., 180., 90., 90., 180., 0.);
-  fGeometryBuilder
-    ->SetGlobalTransformation (TGeoCombiTrans(0., 0., 0., rotGlobal));
-
-  // Detection elements indexing
-  fDEIndexing = new AliMUONGeometryDEIndexing();
-
 //
 // Creating List of Chambers
     Int_t ch;
@@ -171,18 +161,8 @@ AliMUON::AliMUON(const char *name, const char *title)
 	if (ch < AliMUONConstants::NTrackingCh()) {
 	  fChambers->AddAt(new AliMUONChamber(ch),ch);
 	} else {
-	  fChambers->AddAt(new AliMUONChamberTrigger(ch),ch);
+	  fChambers->AddAt(new AliMUONChamberTrigger(ch, GetGeometryTransformer()),ch);
 	}
-	AliMUONChamber* chamber = (AliMUONChamber*) fChambers->At(ch);
-	//chamber->SetGid(0);
-	// Default values for Z of chambers
-	chamber->SetZ(AliMUONConstants::DefaultChamberZ(ch));
-	//
-	chamber->InitGeo(AliMUONConstants::DefaultChamberZ(ch));
-	//          Set chamber inner and outer radius to default
-	chamber->SetRInner(AliMUONConstants::Dmin(st)/2.);
-	chamber->SetROuter(AliMUONConstants::Dmax(st)/2.);
-	//
       } // Chamber stCH (0, 1) in 
     }     // Station st (0...)
     
@@ -219,7 +199,7 @@ AliMUON::~AliMUON()
   }
   delete fMUONData;
   delete fGeometryBuilder;
-  delete fDEIndexing;
+  delete fSegmentation;
 }
 
 //________________________________________________________________________
@@ -255,6 +235,31 @@ void AliMUON::BuildGeometry()
   
 }
 
+//____________________________________________________________________
+const AliMUONGeometry*  AliMUON::GetGeometry() const
+{
+// Return geometry parametrisation
+
+  if ( !fGeometryBuilder) {
+    AliWarningStream() << "GeometryBuilder not defined." << std::endl;
+    return 0;
+  }
+  
+  return fGeometryBuilder->GetGeometry();
+}   
+
+//____________________________________________________________________
+const AliMUONGeometryTransformer*  AliMUON::GetGeometryTransformer() const
+{
+// Return geometry parametrisation
+
+  const AliMUONGeometry* kGeometry = GetGeometry();
+  
+  if ( !kGeometry) return 0;
+
+  return kGeometry->GetTransformer();
+}   
+
 //__________________________________________________________________
 void  AliMUON::SetTreeAddress()
 {
@@ -272,23 +277,6 @@ void  AliMUON::SetTreeAddress()
   fHits = GetMUONData()->Hits(); // Added by Ivana to use the methods FisrtHit, NextHit of AliDetector    
 }
 
-//___________________________________________
-void AliMUON::SetChambersZ(const Float_t *Z)
-{
-  // Set Z values for all chambers (tracking and trigger)
-  // from the array pointed to by "Z"
-    for (Int_t ch = 0; ch < AliMUONConstants::NCh(); ch++)
-	((AliMUONChamber*) fChambers->At(ch))->SetZ(Z[ch]);
-    return;
-}
-//_________________________________________________________________
-void AliMUON::SetChambersZToDefault()
-{
-  // Set Z values for all chambers (tracking and trigger)
-  // to default values
-  SetChambersZ(AliMUONConstants::DefaultChamberZ());
-  return;
-}
 //_________________________________________________________________
 void AliMUON::SetChargeSlope(Int_t id, Float_t p1)
 {
@@ -388,14 +376,7 @@ Float_t  AliMUON::GetMaxDestepAlu() const
  
    fGeometryBuilder->SetAlign(align);
 }   
-    
-//____________________________________________________________________
-void   AliMUON::SetSegmentationModel(Int_t id, Int_t isec, AliMUONGeometrySegmentation*  segmentation)
-{
-// Set the segmentation for chamber id cathode isec
-    ((AliMUONChamber*) fChambers->At(id))->SetSegmentationModel(isec, segmentation);
 
-}
 //____________________________________________________________________
 void   AliMUON::SetResponseModel(Int_t id, AliMUONResponse *response)
 {

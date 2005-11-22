@@ -25,15 +25,16 @@ class TFile;
 class TTree;
 
 class AliLoader;
-class AliMUONGeometrySegmentation;
 class AliMUONTriggerCircuit;
 class AliMUONData;
 class AliMUONResponse;
+class AliMUONSegmentation;
 class AliMUONHit;
 class AliMUONRawCluster;
+class AliMUONGeometry;
+class AliMUONGeometryTransformer;
 class AliMUONGeometryBuilder;
 class AliMUONVGeometryBuilder;
-class AliMUONGeometryDEIndexing;
 class AliESD;
 
 class AliMUON : public  AliDetector 
@@ -43,11 +44,17 @@ class AliMUON : public  AliDetector
     AliMUON(const char *name, const char *title);
     virtual       ~AliMUON();
    
+    // Geometry
     void           AddGeometryBuilder(AliMUONVGeometryBuilder* geomBuilder);
     virtual void   BuildGeometry();
-    AliMUONData*   GetMUONData() {return fMUONData;}
-    AliMUONGeometryBuilder*  GetGeometryBuilder() {return fGeometryBuilder;}
     virtual Int_t  IsVersion()   const {return 0;}
+    
+    AliMUONGeometryBuilder*            GetGeometryBuilder() const {return fGeometryBuilder;}
+    const AliMUONGeometryTransformer*  GetGeometryTransformer() const;
+    AliMUONSegmentation*               GetSegmentation() const    { return fSegmentation; }
+
+    // MUONData   
+    AliMUONData*   GetMUONData() {return fMUONData;}
 
     // MUONLoader definition
     virtual AliLoader* MakeLoader(const char* topfoldername); //builds standard getter (AliLoader type)
@@ -69,20 +76,12 @@ class AliMUON : public  AliDetector
 
     // Configuration Methods (per station id)
     //
-    // Set Chamber Segmentation Parameters
-    // id refers to the station and isec to the cathode plane
-    // Set Z values for all chambers
-    virtual void SetChambersZ(const Float_t *Z);
-    virtual void SetChambersZToDefault(void);
     // Set Signal Generation Parameters
     virtual void   SetSigmaIntegration(Int_t id, Float_t p1);
     virtual void   SetChargeSlope(Int_t id, Float_t p1);
     virtual void   SetChargeSpread(Int_t id, Float_t p1, Float_t p2);
     virtual void   SetMaxAdc(Int_t id, Int_t p1);
-    // Set Segmentation and Response Model
-    virtual void   SetSegmentationModel(Int_t id, Int_t isec,
-					AliMUONGeometrySegmentation* segmentation);
-
+    // Set Response Model
     virtual void   SetResponseModel(Int_t id, AliMUONResponse *response);
 
     // Set Stepping Parameters
@@ -116,6 +115,7 @@ class AliMUON : public  AliDetector
     AliMUON(const AliMUON& rMUON);
     AliMUON& operator = (const AliMUON& rhs);
 
+    const AliMUONGeometry* GetGeometry() const;
 
     Int_t                 fNCh;                // Number of chambers   
     Int_t                 fNTrackingCh;        // Number of tracking chambers*
@@ -123,8 +123,8 @@ class AliMUON : public  AliDetector
     Int_t                 fSplitLevel;         // Splitlevel when making branches in outfiles.
     TObjArray*            fChambers;           // List of Tracking Chambers
     TObjArray*            fTriggerCircuits;    // List of Trigger Circuits
-    AliMUONGeometryBuilder*     fGeometryBuilder; // Geometry builder 
-    AliMUONGeometryDEIndexing*  fDEIndexing;   // Geometry DE indexing 
+    AliMUONGeometryBuilder*  fGeometryBuilder; // Geometry builder 
+    AliMUONSegmentation*  fSegmentation;       // New segmentation 
    
     //
     Bool_t   fAccCut;          //Transport acceptance cut
