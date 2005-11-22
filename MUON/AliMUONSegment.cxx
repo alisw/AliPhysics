@@ -28,7 +28,6 @@
 
 #include "AliMUONSegment.h" 
 #include "AliMUON.h"
-#include "AliMUONChamber.h" 
 #include "AliMUONHitForRec.h" 
 #include "AliMUONTrackParam.h" 
 #include "AliRun.h" // for gAlice

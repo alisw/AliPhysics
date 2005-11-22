@@ -36,7 +36,6 @@
 #include "AliMUONRecoCheck.h"
 #include "AliMUONTrack.h"
 #include "AliMUONData.h"
-#include "AliMUONChamber.h"
 #include "AliMUONConstants.h"
 
 ClassImp(AliMUONRecoCheck)

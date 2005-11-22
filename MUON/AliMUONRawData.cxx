@@ -44,7 +44,6 @@
 #include "AliMUONRawData.h"
 #include "AliMUONDigit.h"
 
-#include "AliMUONChamber.h"
 #include "AliMUONConstants.h"
 #include "AliMUONData.h"
 
