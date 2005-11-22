@@ -17,6 +17,7 @@
 
 #include <TObject.h>
 #include <TString.h>
+#include <TGeoMatrix.h>
 
 class TGeoTranslation;
 class TGeoRotation;
@@ -113,6 +114,7 @@ class AliMUONGeometryEnvelopeStore : public TObject
 		      Int_t npar, Double_t* param);
 		      		      
     void  SetDebug(Bool_t debug);
+    void  SetReferenceFrame(const TGeoCombiTrans& referenceFrame);
 
     // Alignement
     virtual Bool_t  GetAlign() const;
@@ -124,6 +126,7 @@ class AliMUONGeometryEnvelopeStore : public TObject
 
   private:
     // methods
+    TGeoHMatrix ConvertTransform(const TGeoHMatrix& transform) const;
     AliMUONGeometryEnvelope* FindEnvelope(const TString& name) const;
     Bool_t AlignEnvelope(AliMUONGeometryEnvelope* envelope) const;
  
@@ -132,6 +135,9 @@ class AliMUONGeometryEnvelopeStore : public TObject
 		            // wrt to the chamber position in mother volume                                 
     AliMUONGeometryStore*  fDetElements; // detection elements
                             // used for alignement of enevelopes
+    TGeoCombiTrans fReferenceFrame; // the transformation from the builder 
+                                    // reference frame to that of the transform 
+				    // data files
     Bool_t      fDebug;     // Switch for debugging  
     Bool_t      fAlign;     // option to read transformations from a file
  
@@ -151,5 +157,9 @@ inline void AliMUONGeometryEnvelopeStore::SetAlign(Bool_t align)
 
 inline const TObjArray* AliMUONGeometryEnvelopeStore::GetEnvelopes() const
 { return fEnvelopes; }
+
+inline void 
+AliMUONGeometryEnvelopeStore::SetReferenceFrame(const TGeoCombiTrans& referenceFrame)
+{ fReferenceFrame = referenceFrame; }
 
 #endif //ALI_MUON_CHAMBER_ENVELOPE_STORE_H

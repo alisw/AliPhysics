@@ -35,47 +35,49 @@
 #include "AliMUONGeometryEnvelopeStore.h"
 #include "AliMUONGeometryEnvelope.h"
 #include "AliMUONGeometryConstituent.h"
-#include "AliMUONVGeometryDEIndexing.h"
+#include "AliMUONGeometryDEIndexing.h"
 #include "AliMUONGeometryBuilder.h"
 #include "AliLog.h"
 
 ClassImp(AliMUONVGeometryBuilder)
 
-const TString AliMUONVGeometryBuilder::fgkTransformFileNamePrefix = "transform_";
-const TString AliMUONVGeometryBuilder::fgkSVMapFileNamePrefix = "svmap_";
-const TString AliMUONVGeometryBuilder::fgkOutFileNameSuffix = ".out";
-
 //______________________________________________________________________________
-AliMUONVGeometryBuilder::AliMUONVGeometryBuilder(const TString& fileName,
-                            AliMUONGeometryModule* mg1, AliMUONGeometryModule* mg2,
-                            AliMUONGeometryModule* mg3, AliMUONGeometryModule* mg4,
-                            AliMUONGeometryModule* mg5, AliMUONGeometryModule* mg6)
+AliMUONVGeometryBuilder::AliMUONVGeometryBuilder(
+                            Int_t moduleId1, Int_t moduleId2,
+                            Int_t moduleId3, Int_t moduleId4,
+                            Int_t moduleId5, Int_t moduleId6)
  : TObject(),
-   fTransformFileName(fgkTransformFileNamePrefix+fileName),
-   fSVMapFileName(fgkSVMapFileNamePrefix+fileName),
-   fModuleGeometries(0),
+   fGeometryModules(0),
    fReferenceFrame()
  {
 // Standard constructor
 
   // Create the module geometries array
-  fModuleGeometries = new TObjArray();
+  fGeometryModules = new TObjArray();
   
-  if (mg1) fModuleGeometries->Add(mg1);
-  if (mg2) fModuleGeometries->Add(mg2);
-  if (mg3) fModuleGeometries->Add(mg3);
-  if (mg4) fModuleGeometries->Add(mg4);
-  if (mg5) fModuleGeometries->Add(mg5);
-  if (mg6) fModuleGeometries->Add(mg6);
-}
+  if ( moduleId1 >= 0 ) 
+    fGeometryModules->Add(new AliMUONGeometryModule(moduleId1));
+ 
+  if ( moduleId2 >= 0 ) 
+    fGeometryModules->Add(new AliMUONGeometryModule(moduleId2));
 
+  if ( moduleId3 >= 0 ) 
+    fGeometryModules->Add(new AliMUONGeometryModule(moduleId3));
+
+  if ( moduleId4 >= 0 ) 
+    fGeometryModules->Add(new AliMUONGeometryModule(moduleId4));
+
+  if ( moduleId5 >= 0 ) 
+    fGeometryModules->Add(new AliMUONGeometryModule(moduleId5));
+
+  if ( moduleId6 >= 0 ) 
+    fGeometryModules->Add(new AliMUONGeometryModule(moduleId6));
+}
 
 //______________________________________________________________________________
 AliMUONVGeometryBuilder::AliMUONVGeometryBuilder()
  : TObject(),
-   fTransformFileName(),
-   fSVMapFileName(),
-   fModuleGeometries(0),
+   fGeometryModules(0),
    fReferenceFrame()
 {
 // Default constructor
@@ -94,9 +96,9 @@ AliMUONVGeometryBuilder::AliMUONVGeometryBuilder(const AliMUONVGeometryBuilder& 
 //______________________________________________________________________________
 AliMUONVGeometryBuilder::~AliMUONVGeometryBuilder() {
 //
-  if (fModuleGeometries) {
-    fModuleGeometries->Clear(); // Sets pointers to 0 since it is not the owner
-    delete fModuleGeometries;
+  if (fGeometryModules) {
+    fGeometryModules->Clear(); // Sets pointers to 0 since it is not the owner
+    delete fGeometryModules;
   }
 }
 
@@ -119,7 +121,22 @@ AliMUONVGeometryBuilder::operator = (const AliMUONVGeometryBuilder& rhs)
 //
 
 //______________________________________________________________________________
- TString  AliMUONVGeometryBuilder::ComposePath(const TString& volName, 
+TGeoHMatrix 
+AliMUONVGeometryBuilder::ConvertTransform(const TGeoHMatrix& transform) const
+{
+// Convert transformation into the reference frame
+
+  if ( fReferenceFrame.IsIdentity() )
+    return transform;
+  else  {
+    return AliMUONGeometryBuilder::Multiply( fReferenceFrame.Inverse(),
+  				  	     transform,
+    					     fReferenceFrame );  
+  }			    
+}
+
+//______________________________________________________________________________
+TString  AliMUONVGeometryBuilder::ComposePath(const TString& volName, 
                                                Int_t copyNo) const
 {
 // Compose path from given volName and copyNo
@@ -140,6 +157,10 @@ void AliMUONVGeometryBuilder::MapSV(const TString& path0,
 // and map it to the detection element Id if it is a sensitive volume
 // ---
 
+  // Get module sensitive volumes map
+  Int_t moduleId = AliMUONGeometryDEIndexing::GetModuleId(detElemId);
+  AliMUONGeometrySVMap* svMap = GetSVMap(moduleId);     
+
   Int_t nofDaughters = gMC->NofVolDaughters(volName);
   if (nofDaughters == 0) {
 
@@ -149,12 +170,14 @@ void AliMUONVGeometryBuilder::MapSV(const TString& path0,
     TString volName(path0(npos1, npos2-npos1));  
     
     // Check if it is sensitive volume
-    Int_t moduleId = AliMUONVGeometryDEIndexing::GetModuleId(detElemId);
+    Int_t moduleId = AliMUONGeometryDEIndexing::GetModuleId(detElemId);
     AliMUONGeometryModule* geometry = GetGeometry(moduleId);
     if (geometry->IsSensitiveVolume(volName)) {
       //cout << ".. adding to the map  " 
       //     <<  path0 << "  "  << detElemId << endl;
-      FillData(path0, detElemId); 
+    
+      // Map the sensitive volume to detection element
+      svMap->Add(path0, detElemId); 
     }  
     return; 
   }  
@@ -171,350 +194,6 @@ void AliMUONVGeometryBuilder::MapSV(const TString& path0,
   }
 }     
 
-//______________________________________________________________________________
-TGeoHMatrix AliMUONVGeometryBuilder::GetTransform(
-                  Double_t x, Double_t y, Double_t z,
-		  Double_t a1, Double_t a2, Double_t a3, 
- 		  Double_t a4, Double_t a5, Double_t a6) const
-{		  
-// Builds the transformation from the given parameters
-// ---
-
-  // Compose transform
-  TGeoCombiTrans transform(TGeoTranslation(x, y, z), 
-                           TGeoRotation("rot", a1, a2, a3, a4, a5, a6));
-
-  // Convert transform to the given reference frame
-  TGeoHMatrix newTransform;
-  if ( fReferenceFrame.IsIdentity() )
-     newTransform = transform;
-  else  {
-     newTransform
-       = AliMUONGeometryBuilder::Multiply( fReferenceFrame.Inverse(),
-                                           transform,
-					   fReferenceFrame );  
-  }			        
-
-  return newTransform;   
-}
-
-
-//______________________________________________________________________________
-void AliMUONVGeometryBuilder::FillData(Int_t moduleId, Int_t nofDetElements,
-                  Double_t x, Double_t y, Double_t z,
-		  Double_t a1, Double_t a2, Double_t a3,
- 		  Double_t a4, Double_t a5, Double_t a6) const 
-{
-// Fill the transformation of the module.
-// ---
-
-  moduleId--;
-      // Modules numbers in the file are starting from 1
-      
-  // Build the transformation from the parameters
-  TGeoHMatrix newTransform 
-    = GetTransform(x, y, z, a1, a2, a3, a4, a5, a6);
-  
-  const Double_t* xyz = newTransform.GetTranslation();
-  const Double_t* rm = newTransform.GetRotationMatrix();
-  TGeoRotation rotation2;
-  rotation2.SetMatrix(const_cast<Double_t*>(rm));
-      
-  GetGeometry(moduleId)
-    ->GetDEIndexing()->SetNofDetElements(nofDetElements);    
-  GetGeometry(moduleId)
-    ->SetTranslation(TGeoTranslation(xyz[0], xyz[1], xyz[2]));
-  GetGeometry(moduleId)
-    ->SetRotation(rotation2);
-}		   
-  
-//______________________________________________________________________________
-void AliMUONVGeometryBuilder::FillData(
-                  Int_t detElemId, const TString& volName, Int_t copyNo,
-                  Double_t x, Double_t y, Double_t z,
-		  Double_t a1, Double_t a2, Double_t a3,
- 		  Double_t a4, Double_t a5, Double_t a6) const 
-{
-// Fill the transformation of the detection element.
-// ---
-
-  // Module Id
-  Int_t moduleId 
-    = AliMUONVGeometryDEIndexing::GetModuleId(detElemId);
-
-  // Compose path
-  TString path = ComposePath(volName, copyNo);
-  
-  // Build the transformation from the parameters
-  TGeoHMatrix newTransform 
-    = GetTransform(x, y, z, a1, a2, a3, a4, a5, a6);
-   
-  // Compose TGeoCombiTrans
-  TGeoCombiTrans newCombiTransform(newTransform);
-    
-  // Get detection element store
-  AliMUONGeometryStore* detElements = GetDetElements(moduleId);     
-
-  // Add detection element
-  detElements->Add(detElemId,
-     new AliMUONGeometryDetElement(detElemId, path, newCombiTransform)); 
-}		   
-  
-//______________________________________________________________________________
-void AliMUONVGeometryBuilder::FillData(
-                   const TString& sensVolumePath, Int_t detElemId) const
-{
-// Fill the mapping of the sensitive volume path to the detection element.
-// ---
-
-  // Module Id
-  Int_t moduleId 
-    = AliMUONVGeometryDEIndexing::GetModuleId(detElemId);
-
-  // Get module sensitive volumes map
-  AliMUONGeometrySVMap* svMap = GetSVMap(moduleId);     
-
-  // Map the sensitive volume to detection element
-  svMap->Add(sensVolumePath, detElemId); 
-}		   
-  
-//______________________________________________________________________________
-TString  AliMUONVGeometryBuilder::ReadData1(ifstream& in) const
-{
-// Reads and fills modules transformations from a file
-// Returns true, if reading finished correctly.
-// ---
-
-  TString key("CH");
-  while ( key == TString("CH") ) {
-    Int_t id, n;
-    Double_t  x, y, z;
-    Double_t  a1, a2, a3, a4, a5, a6;
-    TString dummy;
-  
-    in >> id;
-    in >> n;
-    in >> dummy;
-    in >> x;
-    in >> y;
-    in >> z;
-    in >> dummy;
-    in >> a1; 
-    in >> a2; 
-    in >> a3; 
-    in >> a4; 
-    in >> a5; 
-    in >> a6; 
-
-    //cout << "id="     << id << "  "
-    // 	 << "position= " << x << ", " << y << ", " << z << "  "
-    //	 << "rotation= " << a1 << ", " << a2 << ", " << a3  << ", "
-    //	                 << a4 << ", " << a5 << ", " << a6 
-    //	 << endl;   
-	 
-    // Fill data
-    FillData(id, n, x, y, z, a1, a2, a3, a4, a5, a6);
-    
-    // Go to next line
-    in >> key;
-  }
-  
-  return key;   	 
-}
-
-//______________________________________________________________________________
-TString  AliMUONVGeometryBuilder::ReadData2(ifstream& in) const
-{
-// Reads detection elements transformations from a file
-// Returns true, if reading finished correctly.
-// ---
-
-  TString key("DE");
-  while ( key == TString("DE") ) {
-
-    // Input data
-    Int_t detElemId;
-    TString   volumeName;
-    Int_t     copyNo;
-    Double_t  x, y, z;
-    Double_t  a1, a2, a3, a4, a5, a6;
-    TString dummy;
-  
-    in >> detElemId;
-    in >> volumeName;
-    in >> copyNo;
-    in >> dummy;
-    in >> x;
-    in >> y;
-    in >> z;
-    in >> dummy;
-    in >> a1; 
-    in >> a2; 
-    in >> a3; 
-    in >> a4; 
-    in >> a5; 
-    in >> a6; 
-
-    //cout << "detElemId=" << detElemId << "  "
-    //     << "volume=" << volumeName << "  "
-    //     << "copyNo=" << copyNo << "  "
-    //     << "position= " << x << ", " << y << ", " << z << "  "
-    //     << "rotation= " << a1 << ", " << a2 << ", " << a3  << ", "
-    //	                 << a4 << ", " << a5 << ", " << a6 
-    //     << endl;   
-	 
-    // Fill data
-    FillData(detElemId, volumeName, copyNo, x, y, z, a1, a2, a3, a4, a5, a6); 	 
-    
-    // Go to next line
-    in >> key;
-  } 
-  
-  return key;
-}
-
-//______________________________________________________________________________
-TString  AliMUONVGeometryBuilder::ReadData3(ifstream& in) const
-{
-// Reads detection elements transformations from a file
-// Returns true, if reading finished correctly.
-// ---
-
-  TString key("SV");
-  while ( key == TString("SV") ) {
-
-    // Input data
-    TString   volumePath;
-    Int_t     detElemId;
-  
-    in >> volumePath;
-    in >> detElemId;
-
-    //cout << "volumePath=" << volumePath << "  "
-    //	 << "detElemId=" << detElemId 	 
-    //     << endl;   
-	 
-    // Fill data
-    FillData(volumePath, detElemId); 
-     
-    // Go to next line
-    in >> key;
-  } 
-  
-  return key;
-}
-
-//______________________________________________________________________________
-void AliMUONVGeometryBuilder::WriteTransform(ofstream& out,
-                                   const TGeoCombiTrans* transform) const
-{
-// Writes the transformations 
-// after converting them into the specified reference frame
-// ---
-
-  // Convert transform to the given reference frame
-  TGeoHMatrix newTransform;
-  if ( fReferenceFrame.IsIdentity() )
-     newTransform = *transform;
-  else  {
-     newTransform = AliMUONGeometryBuilder::Multiply( fReferenceFrame,
-                                                      *transform,
-		                                      fReferenceFrame.Inverse() ); 
-  }			        
-
-  out << "   pos: ";
-  const Double_t* xyz = newTransform.GetTranslation();
-  out << setw(10) << setprecision(4) << xyz[0] << "  " 
-      << setw(10) << setprecision(4) << xyz[1] << "  " 
-      << setw(10) << setprecision(4) << xyz[2];
-
-  out << "   rot: ";
-  const Double_t* rm = newTransform.GetRotationMatrix();
-  TGeoRotation rotation;
-  rotation.SetMatrix(const_cast<Double_t*>(rm));
-  Double_t a1, a2, a3, a4, a5, a6;
-  rotation.GetAngles(a1, a2, a3, a4, a5, a6);
-      
-  out << setw(8) << setprecision(4) << a1 << "  " 
-      << setw(8) << setprecision(4) << a2 << "  " 
-      << setw(8) << setprecision(4) << a3 << "  " 
-      << setw(8) << setprecision(4) << a4 << "  " 
-      << setw(8) << setprecision(4) << a5 << "  " 
-      << setw(8) << setprecision(4) << a6 << "  " << endl; 
-}
-
-//______________________________________________________________________________
-void AliMUONVGeometryBuilder::WriteData1(ofstream& out) const
-{
-// Writes modules transformations
-// ---
-
-  for (Int_t i=0; i<fModuleGeometries->GetEntriesFast(); i++) {
-    AliMUONGeometryModule* geometry 
-      = (AliMUONGeometryModule*)fModuleGeometries->At(i);
-    const TGeoCombiTrans* transform 
-      = geometry->GetTransformation();    
-
-    out << "CH " 
-        << setw(4) << geometry->GetModuleId() + 1 << "  "
-        << setw(4) << geometry->GetDetElementStore()->GetNofEntries() << "  ";
-    
-    WriteTransform(out, transform);
-  }
-  out << endl;
-}
-
-//______________________________________________________________________________
-void AliMUONVGeometryBuilder::WriteData2(ofstream& out) const
-{
-// Writes detection elements (envelopes) transformations
-// ---
-
-
-  for (Int_t i=0; i<fModuleGeometries->GetEntriesFast(); i++) {
-    AliMUONGeometryModule* geometry 
-      = (AliMUONGeometryModule*)fModuleGeometries->At(i);
-    const TObjArray* envelopes 
-      = geometry->GetEnvelopeStore()->GetEnvelopes();    
-
-    for (Int_t j=0; j<envelopes->GetEntriesFast(); j++) {
-      AliMUONGeometryEnvelope* envelope
-        = (AliMUONGeometryEnvelope*)envelopes->At(j);
-      const TGeoCombiTrans* transform 
-        = envelope->GetTransformation(); 
-      
-      // skip envelope not corresponding to detection element
-      if(envelope->GetUniqueID() == 0) continue;
-       
-      out << "DE " 
-          << setw(4) << envelope->GetUniqueID() << "    " 
-          << envelope->GetName() << " " 
-	  << setw(4)<< envelope->GetCopyNo();
-     
-      WriteTransform(out, transform);
-    }
-    out << endl;	  	   	
-  }     
-}
-
-//______________________________________________________________________________
-void AliMUONVGeometryBuilder::WriteData3(ofstream& out) const
-{
-// Writes association of sensitive volumes and detection elements
-// from the sensitive volume map
-// ---
-
-  for (Int_t i=0; i<fModuleGeometries->GetEntriesFast(); i++) {
-    AliMUONGeometryModule* geometry 
-      = (AliMUONGeometryModule*)fModuleGeometries->At(i);
-    AliMUONGeometrySVMap* svMap
-      = geometry->GetSVMap();
-
-    svMap->WriteMap(out);
-    out << endl;  
-  }    
-}
-
 //
 // protected methods
 //
@@ -526,10 +205,10 @@ AliMUONVGeometryBuilder::GetGeometry(Int_t moduleId) const
 // Returns the module geometry specified by moduleId
 // ---
 
-  for (Int_t i=0; i<fModuleGeometries->GetEntriesFast(); i++) {
+  for (Int_t i=0; i<fGeometryModules->GetEntriesFast(); i++) {
 
     AliMUONGeometryModule* geometry 
-      = (AliMUONGeometryModule*)fModuleGeometries->At(i);
+      = (AliMUONGeometryModule*)fGeometryModules->At(i);
 
     if ( geometry->GetModuleId() == moduleId) return geometry;
   }   
@@ -555,24 +234,6 @@ AliMUONVGeometryBuilder::GetEnvelopes(Int_t moduleId) const
 }  
 
 //______________________________________________________________________________
-AliMUONGeometryStore*  
-AliMUONVGeometryBuilder::GetDetElements(Int_t moduleId) const
-{
-// Returns the detection elemnts store of the module geometry specified 
-// by moduleId
-// ---
-
-  AliMUONGeometryModule* geometry = GetGeometry(moduleId);
-  
-  if (!geometry) {
-    AliFatal(Form("Module geometry %d is not defined", moduleId)); 
-    return 0;
-  }
-  
-  return geometry->GetDetElementStore();
-}  
-
-//______________________________________________________________________________
 AliMUONGeometrySVMap*  
 AliMUONVGeometryBuilder::GetSVMap(Int_t moduleId) const
 {
@@ -589,9 +250,75 @@ AliMUONVGeometryBuilder::GetSVMap(Int_t moduleId) const
   return geometry->GetSVMap();
 }  
 
+//______________________________________________________________________________
+void AliMUONVGeometryBuilder::SetTranslation(Int_t moduleId, 
+                                  const TGeoTranslation& translation)
+{
+// Sets the translation to the geometry module given by moduleId,
+// applies reference frame transformation 
+// ---
+
+  AliMUONGeometryModule* geometry = GetGeometry(moduleId);
+  
+  if (!geometry) {
+    AliFatal(Form("Geometry %d is not defined", moduleId)); 
+    return;
+  }
+  
+  // Apply frame transform
+  TGeoHMatrix newTransform = ConvertTransform(translation);
+
+  // Set new transformation
+  geometry->SetTransformation(newTransform);
+}  
+
+
+//______________________________________________________________________________
+void AliMUONVGeometryBuilder::SetTransformation(Int_t moduleId, 
+                                  const TGeoTranslation& translation,
+				  const TGeoRotation& rotation)
+{
+// Sets the translation to the geometry module given by moduleId,
+// applies reference frame transformation 
+// ---
+
+  AliMUONGeometryModule* geometry = GetGeometry(moduleId);
+  
+  if (!geometry) {
+    AliFatal(Form("Geometry %d is not defined", moduleId)); 
+    return;
+  }
+  
+  TGeoCombiTrans transformation 
+    = TGeoCombiTrans(translation, rotation);
+
+  // Apply frame transform
+  TGeoHMatrix newTransform = ConvertTransform(translation);
+
+  // Set new transformation
+  geometry->SetTransformation(newTransform);
+}  
+
 //
 // public functions
 //
+
+//______________________________________________________________________________
+void  AliMUONVGeometryBuilder::SetReferenceFrame(
+                                  const TGeoCombiTrans& referenceFrame)
+{ 
+  fReferenceFrame = referenceFrame; 
+
+  for (Int_t i=0; i<fGeometryModules->GetEntriesFast(); i++) {
+    AliMUONGeometryModule* geometry 
+      = (AliMUONGeometryModule*)fGeometryModules->At(i);
+    AliMUONGeometryEnvelopeStore* envelopeStore 
+      = geometry->GetEnvelopeStore();
+      
+    envelopeStore->SetReferenceFrame(referenceFrame);
+  }          
+}
+
 
 //______________________________________________________________________________
 void  AliMUONVGeometryBuilder::FillTransformations() const
@@ -599,18 +326,15 @@ void  AliMUONVGeometryBuilder::FillTransformations() const
 // Fills transformations store from defined geometry.
 // ---
 
-  for (Int_t i=0; i<fModuleGeometries->GetEntriesFast(); i++) {
+  for (Int_t i=0; i<fGeometryModules->GetEntriesFast(); i++) {
     AliMUONGeometryModule* geometry 
-      = (AliMUONGeometryModule*)fModuleGeometries->At(i);
+      = (AliMUONGeometryModule*)fGeometryModules->At(i);
     const TObjArray* envelopes 
       = geometry->GetEnvelopeStore()->GetEnvelopes();    
     
-    AliMUONGeometryStore* detElements = geometry->GetDetElementStore(); 
+    AliMUONGeometryStore* detElements 
+      = geometry->GetTransformer()->GetDetElementStore(); 
       
-    // Set nof detection elements to the indexing
-    geometry->GetDEIndexing()
-      ->SetNofDetElements(geometry->GetEnvelopeStore()->GetNofDetElements()); 
-
     for (Int_t j=0; j<envelopes->GetEntriesFast(); j++) {
       AliMUONGeometryEnvelope* envelope
         = (AliMUONGeometryEnvelope*)envelopes->At(j);
@@ -623,10 +347,13 @@ void  AliMUONVGeometryBuilder::FillTransformations() const
       TString path = ComposePath(envelope->GetName(), 
                                  envelope->GetCopyNo());
       const TGeoCombiTrans* transform = envelope->GetTransformation(); 
+      
+      // Apply frame transform
+      TGeoHMatrix newTransform = ConvertTransform(*transform);
 
       // Add detection element transformation 
       detElements->Add(detElemId,
-        new AliMUONGeometryDetElement(detElemId, path, *transform)); 
+        new AliMUONGeometryDetElement(detElemId, path, newTransform)); 
     }  
   }
 }
@@ -637,9 +364,9 @@ void  AliMUONVGeometryBuilder::RebuildSVMaps() const
 // Clear the SV maps in memory and fill them from defined geometry.
 // ---
 
-  for (Int_t i=0; i<fModuleGeometries->GetEntriesFast(); i++) {
+  for (Int_t i=0; i<fGeometryModules->GetEntriesFast(); i++) {
     AliMUONGeometryModule* geometry 
-      = (AliMUONGeometryModule*)fModuleGeometries->At(i);
+      = (AliMUONGeometryModule*)fGeometryModules->At(i);
     
     // Clear the map   
     geometry->GetSVMap()->Clear();
@@ -684,151 +411,4 @@ void  AliMUONVGeometryBuilder::RebuildSVMaps() const
     }  
   } 	             
 }
-
-//______________________________________________________________________________
-Bool_t  
-AliMUONVGeometryBuilder::ReadTransformations() const
-{
-// Reads transformations from a file
-// Returns true, if reading finished correctly.
-// ---
-
-  // No reading
-  // if builder is not associated with any geometry module
-  if (fModuleGeometries->GetEntriesFast() == 0) return false;
-
-  // File path
-  TString filePath = gSystem->Getenv("ALICE_ROOT");
-  filePath += "/MUON/data/";
-  filePath += fTransformFileName;
-  
-  // Open input file
-  ifstream in(filePath, ios::in);
-  if (!in) {
-    cerr << filePath << endl;	
-    AliFatal("File not found.");
-    return false;
-  }
-
-  TString key;
-  in >> key;
-  while ( !in.eof() ) {
-    if (key == TString("CH")) 
-      key = ReadData1(in);
-    else if (key == TString("DE"))
-      key = ReadData2(in);
-    else {
-      AliFatal(Form("%s key not recognized",  key.Data()));
-      return false;
-    }
-  }     
-
-  return true;
-}
-
-//______________________________________________________________________________
-Bool_t  AliMUONVGeometryBuilder::ReadSVMap() const
-{
-// Reads the sensitive volume from a file
-// Returns true, if reading finished correctly.
-// ---
-
-  // No reading
-  // if builder is not associated with any geometry module
-  if (fModuleGeometries->GetEntriesFast() == 0) return false;
-
-  // File path
-  TString filePath = gSystem->Getenv("ALICE_ROOT");
-  filePath += "/MUON/data/";
-  filePath += fSVMapFileName;
-  
-  // Open input file
-  ifstream in(filePath, ios::in);
-  if (!in) {
-    cerr << filePath << endl;	
-    AliFatal("File not found.");
-    return false;
-  }
-
-  TString key;
-  in >> key;
-  while ( !in.eof() ) {
-    if (key == TString("SV")) 
-      key = ReadData3(in);
-    else {
-      AliFatal(Form("%s key not recognized",  key.Data()));
-      return false;
-    }
-  }     
-
-  return true;
-}
-
-//______________________________________________________________________________
-Bool_t  
-AliMUONVGeometryBuilder::WriteTransformations() const
-{
-// Writes transformations into a file
-// Returns true, if writing finished correctly.
-// ---
-
-  // No writing
-  // if builder is not associated with any geometry module
-  if (fModuleGeometries->GetEntriesFast() == 0) return false;
-
-  // File path
-  TString filePath = gSystem->Getenv("ALICE_ROOT");
-  filePath += "/MUON/data/";
-  filePath += fTransformFileName;
-  filePath += fgkOutFileNameSuffix;
-  
-  // Open input file
-  ofstream out(filePath, ios::out);
-  if (!out) {
-    cerr << filePath << endl;	
-    AliError("File not found.");
-    return false;
-  }
-#if !defined (__DECCXX)
-  out.setf(std::ios::fixed);
-#endif
-  WriteData1(out);
-  WriteData2(out);
-  
-  return true;
-}  
-
-//______________________________________________________________________________
-Bool_t  AliMUONVGeometryBuilder::WriteSVMap(Bool_t rebuild) const
-{
-// Writes sensitive volume map into a file
-// Returns true, if writing finished correctly.
-// ---
-
-  // No writing
-  // if builder is not associated with any geometry module
-  if (fModuleGeometries->GetEntriesFast() == 0) return false;
-
-  // File path
-  TString filePath = gSystem->Getenv("ALICE_ROOT");
-  filePath += "/MUON/data/";
-  filePath += fSVMapFileName;
-  filePath += fgkOutFileNameSuffix;
-  
-  // Open input file
-  ofstream out(filePath, ios::out);
-  if (!out) {
-    cerr << filePath << endl;	
-    AliError("File not found.");
-    return false;
-  }
-#if !defined (__DECCXX)
-  out.setf(std::ios::fixed);
-#endif  
-  if (rebuild)  RebuildSVMaps();
-
-  WriteData3(out);
-  
-  return true;
-}  
 

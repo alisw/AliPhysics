@@ -33,6 +33,7 @@
 #include "AliMUONGeometryDetElement.h"
 #include "AliMUONGeometryStore.h"
 #include "AliMUONConstants.h"
+#include "AliMUONGeometryBuilder.h"
 #include "AliLog.h"
 
 ClassImp(AliMUONGeometryEnvelopeStore)
@@ -43,6 +44,7 @@ AliMUONGeometryEnvelopeStore::AliMUONGeometryEnvelopeStore(
  : TObject(),
    fEnvelopes(0),
    fDetElements(detElements),
+   fReferenceFrame(),
    fDebug(false),
    fAlign(false)
 {
@@ -57,6 +59,7 @@ AliMUONGeometryEnvelopeStore::AliMUONGeometryEnvelopeStore()
  : TObject(),
    fEnvelopes(0),
    fDetElements(0),
+   fReferenceFrame(),
    fDebug(false),
    fAlign(false)
 {
@@ -103,6 +106,21 @@ AliMUONGeometryEnvelopeStore::operator = (const AliMUONGeometryEnvelopeStore& rh
 //
 
 //______________________________________________________________________________
+TGeoHMatrix 
+AliMUONGeometryEnvelopeStore::ConvertTransform(const TGeoHMatrix& transform) const
+{
+// Convert transformation into the reference frame
+
+  if ( fReferenceFrame.IsIdentity() )
+    return transform;
+  else  {
+    return AliMUONGeometryBuilder::Multiply( fReferenceFrame.Inverse(),
+  				  	     transform,
+    					     fReferenceFrame );  
+  }			    
+}
+
+//______________________________________________________________________________
 AliMUONGeometryEnvelope* 
 AliMUONGeometryEnvelopeStore::FindEnvelope(const TString& name) const
 {
@@ -136,7 +154,12 @@ Bool_t AliMUONGeometryEnvelopeStore::AlignEnvelope(
     return false;
   };
 
-  envelope->SetTransform(*(detElement->GetLocalTransformation()));
+  // Apply frame transform
+  TGeoHMatrix newTransform 
+    = ConvertTransform(*(detElement->GetLocalTransformation()));
+
+  envelope->SetTransform(newTransform);
+  
   return true;
 }  
 

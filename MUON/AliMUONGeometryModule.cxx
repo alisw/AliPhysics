@@ -32,12 +32,12 @@
 #include "AliLog.h"	
 
 #include "AliMUONGeometryModule.h"
+#include "AliMUONGeometryModuleTransformer.h"
 #include "AliMUONGeometryEnvelope.h"
 #include "AliMUONGeometryEnvelopeStore.h"
 #include "AliMUONGeometryDetElement.h"	
 #include "AliMUONGeometryStore.h"	
 #include "AliMUONGeometrySVMap.h"	
-#include "AliMUONGeometryDEIndexing.h"
 
 ClassImp(AliMUONGeometryModule)
 
@@ -45,21 +45,15 @@ ClassImp(AliMUONGeometryModule)
 AliMUONGeometryModule::AliMUONGeometryModule(Int_t moduleId)
  : TObject(),
    fIsVirtual(true),
-   fModuleId(moduleId),
    fMotherVolume("ALIC"),
    fVolume("NONE"),
    fNofSVs(0),
    fSVVolumeIds(0),
-   fTransformation(0),
    fEnvelopes(0),
-   fDEIndexing(0),
-   fDetElements(0),
-   fSVMap(0)
+   fSVMap(0),
+   fTransformer(0)
 {
 /// Standard constructor
-
-  // Chamber transformation
-  fTransformation = new TGeoCombiTrans("");
 
   // Arrays of volumes Ids
   fSVVolumeIds = new TArrayI(20);
@@ -67,14 +61,12 @@ AliMUONGeometryModule::AliMUONGeometryModule(Int_t moduleId)
   // Sensitive volumes map
   fSVMap = new AliMUONGeometrySVMap(100);
 
-  // Get indexing
-  fDEIndexing = new AliMUONGeometryDEIndexing(fModuleId, 0);
-
-  // Det elements transformation stores
-  fDetElements = new AliMUONGeometryStore(fDEIndexing);
+  // Geometry parametrisation
+  fTransformer = new AliMUONGeometryModuleTransformer(moduleId);
     
   // Envelope store
-  fEnvelopes = new AliMUONGeometryEnvelopeStore(fDetElements);  
+  fEnvelopes = new AliMUONGeometryEnvelopeStore(
+                             fTransformer->GetDetElementStore());  
 }
 
 
@@ -82,16 +74,13 @@ AliMUONGeometryModule::AliMUONGeometryModule(Int_t moduleId)
 AliMUONGeometryModule::AliMUONGeometryModule()
  : TObject(),
    fIsVirtual(true),
-   fModuleId(0),
    fMotherVolume(),
    fVolume(),
    fNofSVs(0),
    fSVVolumeIds(0),
-   fTransformation(0),
    fEnvelopes(0),
-   fDEIndexing(0),
-   fDetElements(0),
-   fSVMap(0)
+   fSVMap(0),
+   fTransformer(0)
 {
 /// Default constructor
 }
@@ -111,12 +100,10 @@ AliMUONGeometryModule::~AliMUONGeometryModule()
 {
 /// Destructor
 
-  delete fTransformation;
   delete fSVVolumeIds;
   delete fEnvelopes;
-  delete fDEIndexing;
-  delete fDetElements;
   delete fSVMap;
+  delete fTransformer;
 }
 
 //______________________________________________________________________________
@@ -155,72 +142,6 @@ Int_t AliMUONGeometryModule::GetSVIndex(Int_t svVolId) const
 //
 
 //______________________________________________________________________________
-void  AliMUONGeometryModule::Global2Local(Int_t detElemId,
-                                  Float_t xg, Float_t yg, Float_t zg, 
-                                  Float_t& xl, Float_t& yl, Float_t& zl) const
-{
-/// Transform point from the global reference frame (ALIC)
-/// to the local reference frame of the detection element specified
-/// by detElemId.
-
-  // Get detection element
-  AliMUONGeometryDetElement* detElement = GetDetElement(detElemId);
-  if (!detElement) return;
-   
-  // Transform point
-  detElement->Global2Local(xg, yg, zg, xl, yl, zl);
-}
-				  
-//______________________________________________________________________________
-void  AliMUONGeometryModule::Global2Local(Int_t detElemId,
-                                  Double_t xg, Double_t yg, Double_t zg, 
-                                  Double_t& xl, Double_t& yl, Double_t& zl) const
-{
-/// Transform point from the global reference frame (ALIC)
-/// to the local reference frame of the detection element specified
-/// by detElemId.
-
-   // Get detection element
-   AliMUONGeometryDetElement* detElement = GetDetElement(detElemId);
-   if (!detElement) return;
-   
-   // Transform point
-   detElement->Global2Local(xg, yg, zg, xl, yl, zl);
-}
-				  
-//______________________________________________________________________________
-void  AliMUONGeometryModule::Local2Global(Int_t detElemId,
-                 Float_t xl, Float_t yl, Float_t zl, 
-                 Float_t& xg, Float_t& yg, Float_t& zg) const
-{
-/// Transform point from the local reference frame of the detection element 
-/// specified by detElemId to the global reference frame (ALIC).
-
-  // Get detection element
-  AliMUONGeometryDetElement* detElement = GetDetElement(detElemId);
-  if (!detElement) return;
-   
-   // Transform point
-  detElement->Local2Global(xl, yl, zl, xg, yg, zg);  
-}
-
-//______________________________________________________________________________
-void  AliMUONGeometryModule::Local2Global(Int_t detElemId,
-                 Double_t xl, Double_t yl, Double_t zl, 
-                 Double_t& xg, Double_t& yg, Double_t& zg) const
-{
-/// Transform point from the local reference frame of the detection element 
-/// specified by detElemId to the global reference frame (ALIC).
-
-   // Get detection element
-   AliMUONGeometryDetElement* detElement = GetDetElement(detElemId);
-   if (!detElement) return;
-   
-   // Transform point
-   detElement->Local2Global(xl, yl, zl, xg, yg, zg); 
-}
-
-//______________________________________________________________________________
 void AliMUONGeometryModule::SetVolume(const TString& volumeName)
 { 
 /// Set the concrete volume associated with this module.
@@ -231,23 +152,11 @@ void AliMUONGeometryModule::SetVolume(const TString& volumeName)
 }
 
 //______________________________________________________________________________
-void  AliMUONGeometryModule::SetTranslation(const TGeoTranslation& translation)
+void  AliMUONGeometryModule::SetTransformation(const TGeoCombiTrans& transform)
 {
 /// Set the module position wrt world.
 
-  fTransformation
-    ->SetTranslation(const_cast<Double_t*>(translation.GetTranslation()));
-}  
-
-//______________________________________________________________________________
-void  AliMUONGeometryModule::SetRotation(const TGeoRotation& rotation)
-{
-/// Set the module rotation wrt ALIC.
-
-  TGeoRotation* rot = new TGeoRotation();
-  rot->SetMatrix(const_cast<Double_t*>(rotation.GetRotationMatrix()));
-
-  fTransformation->SetRotation(rot);
+  fTransformer->SetTransformation(transform);
 }  
 
 //______________________________________________________________________________
@@ -274,7 +183,7 @@ void  AliMUONGeometryModule::SetSensitiveVolume(const TString& volName)
 //______________________________________________________________________________
 void  AliMUONGeometryModule::SetAlign(Bool_t align)
 {
-/// Set alignement option to enevelope store.
+/// Set alignement option to envelope store.
   
   fEnvelopes->SetAlign(align);
 }  
@@ -290,7 +199,7 @@ AliMUONGeometryModule::FindBySensitiveVolume(const TString& sensVolume) const
   if (!detElemId) return 0; 
         // The specified sensitive volume is not in the map   
   
-  return (AliMUONGeometryDetElement*)fDetElements->Get(detElemId);
+  return fTransformer->GetDetElement(detElemId);
 }  
 
 //______________________________________________________________________________
@@ -312,25 +221,4 @@ Bool_t AliMUONGeometryModule::IsSensitiveVolume(const TString& volName) const
 /// of sensitive volumes.
 
   return IsSensitiveVolume(gMC->VolId(volName));
-}
-
-//______________________________________________________________________________
-AliMUONGeometryDetElement*
-AliMUONGeometryModule::GetDetElement(Int_t detElemId) const
-{
-/// Return the detection element specified by detElemId.
-/// Give error if detection element is not defined.
-
-   // Get detection element
-   AliMUONGeometryDetElement* detElement
-     = (AliMUONGeometryDetElement*) fDetElements->Get(detElemId);
-
-   if (!detElement) {
-     AliErrorStream() 
-       << "Detection element " << detElemId
-       << " not found in module " << fModuleId << endl;
-     return 0;
-   }  
-
-   return detElement;
 }

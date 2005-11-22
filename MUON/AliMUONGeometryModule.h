@@ -20,6 +20,8 @@
 #include <TObject.h>
 #include <TString.h>
 
+#include "AliMUONGeometryModuleTransformer.h"
+
 class TGeoTranslation;
 class TGeoRotation;
 class TGeoCombiTrans;
@@ -31,7 +33,6 @@ class AliMUONGeometryEnvelopeStore;
 class AliMUONGeometryDetElement;
 class AliMUONGeometryStore;
 class AliMUONGeometrySVMap;
-class AliMUONVGeometryDEIndexing;
 
 class AliMUONGeometryModule : public TObject
 {
@@ -40,51 +41,36 @@ class AliMUONGeometryModule : public TObject
     AliMUONGeometryModule();
     virtual ~AliMUONGeometryModule();
 
-    // methods
-    void Global2Local(Int_t detElemId,
-                 Float_t xg, Float_t yg, Float_t zg, 
-                 Float_t& xl, Float_t& yl, Float_t& zl) const;
-    void Global2Local(Int_t detElemId,
-                 Double_t xg, Double_t yg, Double_t zg, 
-                 Double_t& xl, Double_t& yl, Double_t& zl) const;
-
-    void Local2Global(Int_t detElemId,
-                 Float_t xl, Float_t yl, Float_t zl, 
-                 Float_t& xg, Float_t& yg, Float_t& zg) const;
-    void Local2Global(Int_t detElemId,
-                 Double_t xl, Double_t yl, Double_t zl, 
-                 Double_t& xg, Double_t& yg, Double_t& zg) const;
-
     // set methods
+    //
+    void  AddSVPath(const TString& sensVolumePath, Int_t detElemId);		   
     void  SetMotherVolume(const TString& motherVolumeName);
     void  SetVolume(const TString& volumeName);
-    void  SetTranslation(const TGeoTranslation& translation);
-    void  SetRotation(const TGeoRotation& rotation);
+    void  SetTransformation(const TGeoCombiTrans& transform);
     
     void  SetSensitiveVolume(Int_t volId);
     void  SetSensitiveVolume(const TString& name);
     void  SetAlign(Bool_t align);
  
     // get methods
-    Bool_t                 IsVirtual() const;  
-    Int_t                  GetModuleId() const;
-    TString                GetMotherVolume() const;
-    TString                GetVolume() const;
-    const TGeoCombiTrans*  GetTransformation() const;    
+    //
+    Bool_t   IsVirtual() const;  
+    Int_t    GetModuleId() const;
+    TString  GetMotherVolume() const;
+    TString  GetVolume() const;
+    
     AliMUONGeometryDetElement* FindBySensitiveVolume(
                                          const TString& volumePath) const;
-    AliMUONVGeometryDEIndexing*    GetDEIndexing() const;
-    AliMUONGeometryEnvelopeStore*  GetEnvelopeStore() const;
-    AliMUONGeometryStore*          GetDetElementStore() const;
-    AliMUONGeometryDetElement*     GetDetElement(Int_t detElemId) const;    
-    AliMUONGeometrySVMap*          GetSVMap() const;
     Bool_t IsSensitiveVolume(Int_t volId) const; 
     Bool_t IsSensitiveVolume(const TString& volName) const; 
 
+    AliMUONGeometryEnvelopeStore*     GetEnvelopeStore() const;
+    AliMUONGeometrySVMap*             GetSVMap() const;
+    AliMUONGeometryModuleTransformer* GetTransformer() const;
+
   protected:
     AliMUONGeometryModule(const AliMUONGeometryModule& rhs);
-    // operators  
-    AliMUONGeometryModule& operator = (const AliMUONGeometryModule& rhs);
+     AliMUONGeometryModule& operator = (const AliMUONGeometryModule& rhs);
 
   private:
     // methods
@@ -93,32 +79,29 @@ class AliMUONGeometryModule : public TObject
     // data members
     Bool_t           fIsVirtual;     // true if module is not represented
                                      // by a real volume
-    Int_t            fModuleId;      // the module Id
     TString          fMotherVolume;  // mother volume name
     TString          fVolume;        // the volume name if not virtual
     Int_t            fNofSVs;        // number of sensitive volumes   
     TArrayI*         fSVVolumeIds;   // densitive volumes IDs  
-    TGeoCombiTrans*  fTransformation;// the module transformation wrt to mother
-                                     // volume
-    AliMUONGeometryEnvelopeStore* fEnvelopes;  // envelopes                                 
-    AliMUONVGeometryDEIndexing*   fDEIndexing; // DE indexing
-    AliMUONGeometryStore*         fDetElements;// detection elements
-    AliMUONGeometrySVMap*         fSVMap;      // sensitive volumes map
+
+    AliMUONGeometryEnvelopeStore*     fEnvelopes;  // envelopes                                 
+    AliMUONGeometrySVMap*             fSVMap;      // sensitive volumes map
+    AliMUONGeometryModuleTransformer* fTransformer;// geometry transformations
  
-  ClassDef(AliMUONGeometryModule,2) // MUON geometry module class
+  ClassDef(AliMUONGeometryModule,3) // MUON geometry module class
 };
 
 // inline functions
 
-inline void  
-AliMUONGeometryModule::SetMotherVolume(const TString& motherVolumeName)
+inline 
+void  AliMUONGeometryModule::SetMotherVolume(const TString& motherVolumeName)
 { fMotherVolume = motherVolumeName; }
 
 inline Bool_t AliMUONGeometryModule::IsVirtual() const
 { return fIsVirtual; }  
 
 inline Int_t  AliMUONGeometryModule::GetModuleId() const
-{ return fModuleId; }
+{ return fTransformer->GetModuleId(); }
 
 inline TString  AliMUONGeometryModule::GetMotherVolume() const
 { return fMotherVolume; }
@@ -126,21 +109,16 @@ inline TString  AliMUONGeometryModule::GetMotherVolume() const
 inline TString  AliMUONGeometryModule::GetVolume() const
 { return fVolume; }
 
-inline const TGeoCombiTrans* AliMUONGeometryModule::GetTransformation() const 
-{ return fTransformation; }
-
-inline  AliMUONGeometryEnvelopeStore* 
-AliMUONGeometryModule::GetEnvelopeStore() const
+inline  
+AliMUONGeometryEnvelopeStore* AliMUONGeometryModule::GetEnvelopeStore() const
 { return fEnvelopes; }
 
-inline  AliMUONVGeometryDEIndexing* 
-AliMUONGeometryModule::GetDEIndexing() const 
-{ return fDEIndexing; }
-
-inline  AliMUONGeometryStore* AliMUONGeometryModule::GetDetElementStore() const
-{ return fDetElements; }
-
-inline AliMUONGeometrySVMap* AliMUONGeometryModule::GetSVMap() const
+inline 
+AliMUONGeometrySVMap* AliMUONGeometryModule::GetSVMap() const
 { return fSVMap; }
+
+inline 
+AliMUONGeometryModuleTransformer* AliMUONGeometryModule::GetTransformer() const
+{ return fTransformer; }
 
 #endif //ALI_MUON_GEOMETRY_MODULE_H
