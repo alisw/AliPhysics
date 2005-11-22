@@ -10,13 +10,17 @@ SRCS  =  AliMUONGeometryConstituent.cxx \
 	 AliMUONGeometryDetElement.cxx \
 	 AliMUONStringIntMap.cxx \
 	 AliMUONGeometrySVMap.cxx \
+	 AliMUONGeometryModuleTransformer.cxx \
 	 AliMUONGeometryModule.cxx \
-	 AliMUONVGeometryDEIndexing.cxx \
+	 AliMUONGeometryTransformer.cxx \
+	 AliMUONGeometry.cxx \
+	 AliMUONGeometryDEIndexing.cxx \
 	 AliMUONVGeometryBuilder.cxx \
 	 AliMUONGeometryBuilder.cxx \
 	 AliMUONGeometryStore.cxx \
 	 AliMUONVGeometryDESegmentation.cxx \
-	 AliMUONGeometrySegmentation.cxx 
+	 AliMUONGeometrySegmentation.cxx \
+	 AliMUONSegmentation.cxx 
 
 HDRS =  $(SRCS:.cxx=.h) 
 
