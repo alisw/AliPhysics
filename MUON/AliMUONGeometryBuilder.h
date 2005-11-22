@@ -15,6 +15,8 @@
 #include <TObject.h>
 #include <TGeoMatrix.h>
 
+#include "AliMUONGeometry.h"
+
 class TObjArray;
 
 class AliModule;
@@ -38,10 +40,15 @@ class AliMUONGeometryBuilder : public TObject
     void  AddBuilder(AliMUONVGeometryBuilder* geomBuilder);
     void  CreateGeometry();
     void  CreateMaterials();
-    void  InitGeometry();
-    void  WriteTransformations();
-    void  WriteSVMaps(Bool_t rebuild = true);
-    void  SetGlobalTransformation(const TGeoCombiTrans& transform);
+    void  InitGeometry(const TString& svmapFileName = "svmap.dat");
+    void  ReadTransformations(const TString& fileName = "transform.dat");
+    void  WriteTransformations(const TString& fileName = "transform.dat.out");
+    void  WriteSVMaps(Bool_t rebuild = true, 
+                      const TString& fileName = "svmap.dat.out");
+    
+    // Geometry parametrisation
+    const AliMUONGeometry*            GetGeometry() const;
+    const AliMUONGeometryTransformer* GetTransformer() const;
 
     // Alignement
     virtual Bool_t  GetAlign() const;
@@ -60,17 +67,26 @@ class AliMUONGeometryBuilder : public TObject
     void SetAlign(AliMUONVGeometryBuilder* builder);	     
 
     // data members
-    AliModule*      fModule;              // the AliRoot module
-    Bool_t          fAlign;               // option to read transformations 
-                                          // from a file
-    TGeoCombiTrans  fGlobalTransformation;// global transformation 
-                                          // applied to the whole geometry 
-    TObjArray*      fGeometryBuilders;    // list of Geometry Builders
+    AliModule*       fModule;              // the AliRoot module
+    Bool_t           fAlign;               // option to read transformations 
+                                           // from a file
+    TGeoCombiTrans   fGlobalTransformation;// global transformation 
+                                           // applied to the whole geometry 
+    TObjArray*       fGeometryBuilders;    // list of Geometry Builders
+    AliMUONGeometry* fGeometry;            // geometry parametrisation
 
   ClassDef(AliMUONGeometryBuilder,4)  // Geometry builder
 };
 
 // inline functions
+
+inline 
+const AliMUONGeometry* AliMUONGeometryBuilder::GetGeometry() const
+{ return fGeometry; }
+
+inline 
+const AliMUONGeometryTransformer* AliMUONGeometryBuilder::GetTransformer() const
+{ return fGeometry->GetTransformer(); }
 
 inline Bool_t  AliMUONGeometryBuilder::GetAlign() const
 { return fAlign; }

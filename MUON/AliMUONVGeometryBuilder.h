@@ -31,30 +31,26 @@ class AliMUONGeometrySVMap;
 class AliMUONVGeometryBuilder : public TObject
 {
   public:
-    AliMUONVGeometryBuilder(const TString& fileName,
-                            AliMUONGeometryModule* mg1,
-                            AliMUONGeometryModule* mg2 = 0,
-                            AliMUONGeometryModule* mg3 = 0,
-                            AliMUONGeometryModule* mg4 = 0,
-                            AliMUONGeometryModule* mg5 = 0,
-                            AliMUONGeometryModule* mg6 = 0);
+    AliMUONVGeometryBuilder(Int_t geometryModuleId1,
+                            Int_t geometryModuleId2 = -1,
+                            Int_t geometryModuleId3 = -1,
+                            Int_t geometryModuleId4 = -1,
+                            Int_t geometryModuleId5 = -1,
+                            Int_t geometryModuleId6 = -1);
     AliMUONVGeometryBuilder();
     virtual ~AliMUONVGeometryBuilder();
   
     // methods
-            void  SetReferenceFrame(const TGeoCombiTrans& referenceFrame);
-    virtual void  FillTransformations() const;
-    virtual void  RebuildSVMaps() const;
-    virtual Bool_t  ReadTransformations() const;
-    virtual Bool_t  ReadSVMap() const;
-    virtual Bool_t  WriteTransformations() const;
-    virtual Bool_t  WriteSVMap(Bool_t rebuild) const;
+    void  SetReferenceFrame(const TGeoCombiTrans& referenceFrame);
+    void  RebuildSVMaps() const;
+    void  FillTransformations() const;
 
     virtual void CreateMaterials() {}  // make = 0; ?
                   // Function to be overriden in a concrete chamber/station
 		  // geometry builder class.
 		  // Only materials that are not defined in the common
 		  // functions should be defined here.
+
     virtual void CreateGeometry() = 0;
                   // Function to be overriden in a concrete chamber/station
 		  // geometry builder class.
@@ -64,16 +60,19 @@ class AliMUONVGeometryBuilder : public TObject
 		  // geometries
 		  // (They will be then placed automatically 
 		  // usind the provided transformation.
+
     virtual void SetTransformations() = 0;
                   // Function to be overriden in a concrete chamber/station
 		  // geometry class.
 		  // The transformation of each chamber(s) wrt ALICE
 		  // should be defined and set to its geometry class. 
+
     virtual void SetSensitiveVolumes() = 0;
                   // Function to be overriden in a concrete chamber/station
 		  // geometry class.
 		  // The sensitive volumes Ids for each chamber
 		  // should be defined and set to its geometry class. 
+
     virtual bool ApplyGlobalTransformation() { return true; }
                   // Function to be overriden (and return false) 
 		  // in the concrete geometry builder classes 
@@ -87,7 +86,6 @@ class AliMUONVGeometryBuilder : public TObject
 		  // this function access geometry via index and not
 		  // via moduleId
 
-
   protected:
     AliMUONVGeometryBuilder(const AliMUONVGeometryBuilder& rhs);
 
@@ -97,50 +95,24 @@ class AliMUONVGeometryBuilder : public TObject
     // methods
     AliMUONGeometryModule*         GetGeometry(Int_t moduleId) const;
     AliMUONGeometryEnvelopeStore*  GetEnvelopes(Int_t moduleId) const;
-    AliMUONGeometryStore*          GetDetElements(Int_t moduleId) const;
     AliMUONGeometrySVMap*          GetSVMap(Int_t moduleId) const;
+    
+    // set module transformation
+    void SetTranslation(Int_t moduleId, 
+                        const TGeoTranslation& translation);
+    void SetTransformation(Int_t moduleId, 
+                        const TGeoTranslation& translation,
+			const TGeoRotation& rotation);
     
   private:
     //methods
-    TString  ComposePath(const TString& volName, Int_t copyNo) const; 
-    void     MapSV(const TString&path, const TString& volName, 
-                  Int_t detElemId) const;
+    TGeoHMatrix ConvertTransform(const TGeoHMatrix& transform) const;
+    TString     ComposePath(const TString& volName, Int_t copyNo) const; 
+    void        MapSV(const TString& path0, 
+                      const TString& volName, Int_t detElemId) const;
 
-    TGeoHMatrix GetTransform(
-                  Double_t x, Double_t y, Double_t z,
-		  Double_t a1, Double_t a2, Double_t a3, 
- 		  Double_t a4, Double_t a5, Double_t a6) const;
-    void FillData(Int_t moduleId, Int_t nofDetElements, 
-                  Double_t x, Double_t y, Double_t z,
-		  Double_t a1, Double_t a2, Double_t a3, 
- 		  Double_t a4, Double_t a5, Double_t a6) const; 
-    void FillData(Int_t id, const TString& volName, Int_t copyNo,
-                  Double_t x, Double_t y, Double_t z,
-		  Double_t a1, Double_t a2, Double_t a3, 
- 		  Double_t a4, Double_t a5, Double_t a6) const;
-    void FillData(const TString& sensVolumePath, Int_t detElemId) const;		   
-
-    TString ReadData1(ifstream& in) const;
-    TString ReadData2(ifstream& in) const;
-    TString ReadData3(ifstream& in) const;
-
-    void WriteTransform(ofstream& out, const TGeoCombiTrans* transform) const;
-    void WriteData1(ofstream& out) const;
-    void WriteData2(ofstream& out) const;
-    void WriteData3(ofstream& out) const;
-
-    // static data members
-    static const TString fgkTransformFileNamePrefix; // the prefix for the name 
-                                                 // of file with transformations
-    static const TString fgkSVMapFileNamePrefix; // the prefix for the name of file 
-                                                 // with sensitive volume map
-    static const TString fgkOutFileNameSuffix;   // the suffix for the name of 
-                                                 // generated files
-    
     // data members
-    TString     fTransformFileName; // the name file with transformations 
-    TString     fSVMapFileName;     // the name file with sensitive volume map 
-    TObjArray*  fModuleGeometries;  // the modules geometries that will be built
+    TObjArray*  fGeometryModules;   // the modules geometries that will be built
                                     // by this builder				    
     TGeoCombiTrans fReferenceFrame; // the transformation from the builder 
                                     // reference frame to that of the transform 
@@ -152,15 +124,9 @@ class AliMUONVGeometryBuilder : public TObject
 // inline functions
 
 inline Int_t  AliMUONVGeometryBuilder::NofGeometries() const
-{ return fModuleGeometries->GetEntriesFast(); }
+{ return fGeometryModules->GetEntriesFast(); }
 
 inline AliMUONGeometryModule* AliMUONVGeometryBuilder::Geometry(Int_t i) const
-{ return (AliMUONGeometryModule*)fModuleGeometries->At(i); }
-
-inline void 
-AliMUONVGeometryBuilder::SetReferenceFrame(const TGeoCombiTrans& referenceFrame)
-{ fReferenceFrame = referenceFrame; 
-  //fReferenceFrame = new TGeoCombiTrans(referenceFrame);
-}
+{ return (AliMUONGeometryModule*)fGeometryModules->At(i); }
 
 #endif //ALI_MUON_V_GEOMETRY_BUILDER_H
