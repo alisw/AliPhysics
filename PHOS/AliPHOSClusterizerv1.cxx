@@ -18,6 +18,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.86  2005/11/14 21:52:43  hristov
+ * Coding conventions
+ *
  * Revision 1.85  2005/09/27 16:08:08  hristov
  * New version of CDB storage framework (A.Colla)
  *
@@ -322,14 +325,14 @@ void AliPHOSClusterizerv1::GetCalibrationParameters()
   // if calibration database exists, they are read from database,
   // otherwise, they are taken from digitizer.
   //
-  // It is a user responsilibity to open CDB before reconstruction:
-  // AliCDBLocal *loc = new AliCDBLocal("CalibDB");
+  // It is a user responsilibity to open CDB before reconstruction, for example: 
+  // AliCDBStorage* storage = AliCDBManager::Instance()->GetStorage("local://CalibDB");
 
   AliPHOSGetter * gime = AliPHOSGetter::Instance();
 
   if(AliCDBManager::Instance()->IsDefaultStorageSet()){
     AliCDBEntry *entry = (AliCDBEntry*) AliCDBManager::Instance()->GetDefaultStorage()
-      ->Get("PHOS/Calib/GainFactors_and_Pedestals",gAlice->GetRunNumber());
+      ->Get("PHOS/GainFactors_and_Pedestals/Calibration",gAlice->GetRunNumber());
     fCalibData = (AliPHOSCalibData*) entry->GetObject();
   }
   
