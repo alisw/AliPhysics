@@ -24,7 +24,7 @@
 // --- MUON includes ---
 #include "AliMUON.h"
 #include "AliMUONChamber.h"
-#include "AliMUONGeometryModule.h"
+#include "AliMUONSegmentation.h"
 #include "AliMUONHit.h"
 #include "AliLog.h"
 
@@ -33,33 +33,21 @@ ClassImp(AliMUONChamber)
 AliMUONChamber::AliMUONChamber()
   : TObject(), 
     fId(0),
-    fdGas(0.),
-    fdAlu(0.),
-    fZ(0.),
-    frMin(0.),
-    frMax(0.),
     fCurrentCorrel(1), // to avoid mistakes if ChargeCorrelInit is not called
-    fSegmentation2(0),
     fResponse(0),
-    fGeometry(0),
     fMUON(0)
 {
 // Default constructor
+
+  AliDebug(1, Form("default (empty) ctor this = %p", this));
 }
 
 //_______________________________________________________
 AliMUONChamber::AliMUONChamber(Int_t id) 
   : TObject(), 
     fId(id),
-    fdGas(0.),
-    fdAlu(0.),
-    fZ(0.),
-    frMin(0.),
-    frMax(0.),
     fCurrentCorrel(1), // to avoid mistakes if ChargeCorrelInit is not called
-    fSegmentation2(0),
     fResponse(0),
-    fGeometry(0),
     fMUON(0)
 {
 
@@ -70,13 +58,7 @@ AliMUONChamber::AliMUONChamber(Int_t id)
       return;
     }  
 
-    // new segmentation
-    fSegmentation2 = new TObjArray(2);
-    fSegmentation2->AddAt(0,0);
-    fSegmentation2->AddAt(0,1);
- 
-    fGeometry = new AliMUONGeometryModule(fId);
-
+  AliDebug(1, Form("ctor this = %p", this) ); 
 }
 
 //_______________________________________________________
@@ -94,12 +76,7 @@ AliMUONChamber::~AliMUONChamber()
 {
   // Destructor
 
-  if (fSegmentation2) {
-    fSegmentation2->Delete();
-    delete fSegmentation2;
-  }
-  
-  delete fGeometry;
+  AliDebug(1, Form("dtor this = %p", this));
 }
 
 //_______________________________________________________
@@ -114,16 +91,6 @@ AliMUONChamber & AliMUONChamber::operator =(const AliMUONChamber& rhs)
   return *this;  
 }
 
-//_______________________________________________________
-Bool_t  AliMUONChamber::IsSensId(Int_t volId) const 
-{
-  // Returns true if the volume specified by volId is in the list
-  // of sesitive volumes for this chamber
-
-  return fGeometry->IsSensitiveVolume(volId);
-}  
-
-
 //_____________________________________________________
 void AliMUONChamber::ChargeCorrelationInit() {
   // Initialisation of charge correlation for current hit
@@ -133,48 +100,6 @@ void AliMUONChamber::ChargeCorrelationInit() {
   // factor 2 because chargecorrel is q1/q2 and not q1/qtrue
     fCurrentCorrel = TMath::Exp(gRandom->Gaus(0,fResponse->ChargeCorrel()/2));
 }
-
-//_______________________________________________________
-void AliMUONChamber::InitGeo(Float_t /*zpos*/)
-{
-  //    sensitive gas gap
-  fdGas= 0.5;
-  //    3% radiation length of aluminum (X0=8.9 cm)      
-  fdAlu= 3.0/100*8.9;
-}
-//_______________________________________________________
-//
-//                  NEW SEGMENTATION
-//_______________________________________________________
-void AliMUONChamber::Init(Int_t flag)
-{
-  // Initalisation ..
-  //
-  // ... for chamber segmentation
-
-  if (!flag)    AliFatal("wrong segmentation type.");
-
-  if (fSegmentation2->At(0)) 
-    ((AliMUONGeometrySegmentation*) fSegmentation2->At(0))->Init(fId);
-  if (fSegmentation2->At(1))
-    ((AliMUONGeometrySegmentation*) fSegmentation2->At(1))->Init(fId);
- 
-}
-// //_________________________________________________________________
-// void    AliMUONChamber::SigGenInit(AliMUONHit *hit)
-// {
-//   //
-//   // Initialisation of segmentation for hit
-//   //  
-//   Float_t x = hit->X();
-//   Float_t y = hit->Y();
-//   Float_t z = hit->Z();
-//   Int_t  id = hit->DetElemId();
-
-//   ((AliMUONGeometrySegmentation*) fSegmentation2->At(0))->SigGenInit(id, x, y, z) ;
-//   ((AliMUONGeometrySegmentation*) fSegmentation2->At(1))->SigGenInit(id, x, y, z) ;
-
-// }
 
 //_______________________________________________________
 void AliMUONChamber::DisIntegration(AliMUONHit *hit, 
@@ -208,9 +133,9 @@ void AliMUONChamber::DisIntegration(AliMUONHit *hit,
   // Cathode plane loop
   for (Int_t i = 1; i <= 2; i++) {
     Float_t qcath = qtot * (i==1? fCurrentCorrel : 1/fCurrentCorrel);
-
+    
     AliMUONGeometrySegmentation* segmentation=
-      (AliMUONGeometrySegmentation*) fSegmentation2->At(i-1);
+      fMUON->GetSegmentation()->GetModuleSegmentation(fId, i-1); 
 
     for (segmentation->FirstPad(id, xhit, yhit, zhit, dx, dy); 
 	 segmentation->MorePads(id); 
