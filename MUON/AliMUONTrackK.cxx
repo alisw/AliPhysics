@@ -24,7 +24,6 @@
 #include "AliMUONTrackK.h"
 #include "AliCallf77.h"
 #include "AliMUON.h"
-#include "AliMUONChamber.h"
 #include "AliMUONTrackReconstructor.h"
 #include "AliMagF.h"
 #include "AliMUONSegment.h"
@@ -480,7 +479,7 @@ Bool_t AliMUONTrackK::KalmanFilter(Int_t ichamBeg, Int_t ichamEnd, Bool_t Back, 
       if (zEnd>999 || TMath::Abs(hitAdd->GetChamberNumber()-ichamb) > 1) {
 	if (!Back && zEnd<999) currIndx -= iFB;
 	ichamb += iFB;
-	zEnd = (&(fgMUON->Chamber(ichamb)))->Z();
+	zEnd = AliMUONConstants::DefaultChamberZ(ichamb);
 	miss = kTRUE;
       } else {
 	ichamb = hitAdd->GetChamberNumber();

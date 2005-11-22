@@ -1188,7 +1188,6 @@ void AliMUONTrackReconstructor::FollowTracks(void)
   Int_t ch = -1, chInStation, chBestHit = -1, iHit, iSegment, station, trackIndex; 
   Double_t bestChi2, chi2, dZ1, dZ2, dZ3, maxSigma2Distance, mcsFactor;
   Double_t bendingMomentum, chi2Norm = 0.;
-  AliMUON *pMUON = (AliMUON*) gAlice->GetModule("MUON"); // necessary ????
   // local maxSigma2Distance, for easy increase in testing
   maxSigma2Distance = fMaxSigma2Distance;
   AliDebug(2,"Enter FollowTracks");
@@ -1225,14 +1224,14 @@ void AliMUONTrackReconstructor::FollowTracks(void)
       mcsFactor = 0.0136 * trackParam1->GetInverseBendingMomentum();
       mcsFactor	= fChamberThicknessInX0 * mcsFactor * mcsFactor;
       // Z difference from previous station
-      dZ1 = (&(pMUON->Chamber(2 * station)))->Z() -
-	(&(pMUON->Chamber(2 * station + 2)))->Z();
+      dZ1 = AliMUONConstants::DefaultChamberZ(2 * station) -
+	    AliMUONConstants::DefaultChamberZ(2 * station + 2);
       // Z difference between the two previous stations
-      dZ2 = (&(pMUON->Chamber(2 * station + 2)))->Z() -
-	(&(pMUON->Chamber(2 * station + 4)))->Z();
+      dZ2 = AliMUONConstants::DefaultChamberZ(2 * station + 2) -
+	    AliMUONConstants::DefaultChamberZ(2 * station + 4);
       // Z difference between the two chambers in the previous station
-      dZ3 = (&(pMUON->Chamber(2 * station)))->Z() -
-	(&(pMUON->Chamber(2 * station + 1)))->Z();
+      dZ3 = AliMUONConstants::DefaultChamberZ(2 * station) -
+	    AliMUONConstants::DefaultChamberZ(2 * station + 1);
       extrapSegment->SetBendingCoorReso2(fBendingResolution * fBendingResolution);
       extrapSegment->
 	SetNonBendingCoorReso2(fNonBendingResolution * fNonBendingResolution);
