@@ -33,84 +33,33 @@
 #include "AliMUONGeometryDEIndexing.h"
 #include "AliMUONConstants.h"
 
-ClassImp(AliMUONGeometryDEIndexing)
-
-const Int_t AliMUONGeometryDEIndexing::fgkHemisphere = 50; 
-
-//______________________________________________________________________________
-AliMUONGeometryDEIndexing::AliMUONGeometryDEIndexing(
-                              Int_t moduleId, Int_t nofDetElements)
- : AliMUONVGeometryDEIndexing(),
-   fModuleId(moduleId),
-   fNofDetElements(nofDetElements)
-{ 
-/// Standard constructor
-}
-
-//______________________________________________________________________________
-AliMUONGeometryDEIndexing::AliMUONGeometryDEIndexing()
- : AliMUONVGeometryDEIndexing(),
-   fModuleId(0),
-   fNofDetElements(0)
-{ 
-/// Default constructor
-}
-
-//______________________________________________________________________________
-AliMUONGeometryDEIndexing::~AliMUONGeometryDEIndexing() 
-{
-/// Destructor
-}
+Int_t const AliMUONGeometryDEIndexing::fgkSeparator = 100; 
 
 //
-// private methods
+// static methods
 //
 
 //______________________________________________________________________________
-Int_t AliMUONGeometryDEIndexing::GetFirstDetElemId() const
+Int_t AliMUONGeometryDEIndexing::GetModuleId(Int_t detElemId)
 {
-/// Get first detection element Id for chamber specified by moduleId
+// Get module Id from detection element Id
+// ---
 
-  return (fModuleId+1)*100;
+  return detElemId/fgkSeparator - 1;
 }  
 
-//
-// public methods
-//
-
 //______________________________________________________________________________
-Int_t AliMUONGeometryDEIndexing::GetDetElementIndex(Int_t detElemId) const
+Int_t AliMUONGeometryDEIndexing::GetDEIndex(Int_t detElemId)
 {
 /// Returns the index of detector element specified by detElemId
 
-  if ( fNofDetElements == 0 ) {
-    AliFatal("The number of detection elements has not been set.");
-    return 0;
-  }  
-
-  Int_t index = detElemId - GetFirstDetElemId();
-  if (index >= fgkHemisphere) 
-    index += - fgkHemisphere + fNofDetElements/2;
-
-  return index;
-}  
+  return detElemId - detElemId/fgkSeparator*fgkSeparator;
+ }  
 
 //______________________________________________________________________________
-Int_t AliMUONGeometryDEIndexing::GetDetElementId(Int_t detElemIndex) const
+Int_t AliMUONGeometryDEIndexing::GetDEId(Int_t moduleId, Int_t detElemIndex)
 {
 /// Returns the ID of detector element specified by index
 
-  if ( fNofDetElements == 0 ) {
-    AliFatal("The number of detection elements has not been set.");
-    return 0;
-  }  
-
-  Int_t detElemId = detElemIndex;
-  
-  if ( detElemIndex >=  fNofDetElements/2 ) 
-    detElemId += fgkHemisphere - fNofDetElements/2; 
-
-  detElemId += GetFirstDetElemId();
-
-  return detElemId;
+  return ( moduleId + 1 ) * fgkSeparator + detElemIndex;
 }  

@@ -7,58 +7,34 @@
 /// \class AliMUONGeometryDEIndexing
 /// \brief Conversion between the detection element Id and the array index
 ///
-/// The class that provides conversion between the detection element Id
+/// The class that provides static methods for conversions
+/// between the module & detection element Id
 /// and the index in the array.
 /// Used in storing DE transformations and segmentations.
 /// The detection elements numbering:
-///    DetElemId = chamberId*100 + [50] + detElemNum
+///    DetElemId = chamberId*100 + detElemNum
 ///                where  chamberId  = 1, 2, ..., 14
 ///                       detElemNum = 0, 1, ...
-/// The number 50 is added to distinguish detector elements 
-/// in the left and the right hemispheres.
 ///
 /// Author: Ivana Hrivnacova, IPN Orsay
 
 #ifndef ALI_MUON_GEOMETRY_DE_INDEXING_H
 #define ALI_MUON_GEOMETRY_DE_INDEXING_H
 
-#include "AliMUONVGeometryDEIndexing.h"
-
-class AliMUONGeometryDEIndexing : public AliMUONVGeometryDEIndexing
+class AliMUONGeometryDEIndexing 
 {
   public:
-    AliMUONGeometryDEIndexing(Int_t moduleId, Int_t nofDetElements);
-    AliMUONGeometryDEIndexing();
-    virtual ~AliMUONGeometryDEIndexing();
-    
-    // methods for conversion between det element Id and index
-    virtual Int_t GetDetElementIndex(Int_t detElemId) const;
-    virtual Int_t GetDetElementId(Int_t detElemIndex) const;
-
-    // set method
-    virtual Int_t GetNofDetElements() const ;
-    virtual void  SetNofDetElements(Int_t  nofDetElements);  
+    // static methods
+    static  Int_t GetModuleId(Int_t detElemId);
+    static  Int_t GetDEIndex(Int_t detElemId);
+    static  Int_t GetDEId(Int_t moduleId, Int_t detElemIndex);
 
   private:
-    Int_t GetFirstDetElemId() const;
-
-    // static data members
-    static const Int_t  fgkHemisphere;   // The constant to distinguish 
-                                         // the left/right hemispere  
-					 
+    AliMUONGeometryDEIndexing() {}
+    ~AliMUONGeometryDEIndexing() {}
+    
     // data members
-    Int_t  fModuleId;       // module Id					           
-    Int_t  fNofDetElements; // number of detection elements in the module					           
-
-  ClassDef(AliMUONGeometryDEIndexing,1) // Conversion between the DE Id and the array index
+    static  const Int_t fgkSeparator; 
 };
-
-// inline functions
-
-inline Int_t AliMUONGeometryDEIndexing::GetNofDetElements() const
-{ return fNofDetElements; }
-
-inline void AliMUONGeometryDEIndexing::SetNofDetElements(Int_t nofDetElements)
-{ fNofDetElements =  nofDetElements; }
 
 #endif //ALI_MUON_GEOMETRY_DE_INDEXING_H
