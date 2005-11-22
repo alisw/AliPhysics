@@ -105,7 +105,6 @@ class AliITSDetTypeRec : public TObject {
     void DigitsToRecPoints(Int_t evNumber,Int_t lastEntry,Option_t *det,Bool_t v2=kFALSE);
     void DigitsToRecPoints(AliRawReader* rawReader);
 
-    Bool_t GetCalibration(Int_t runNumber);
     virtual void SetRunNumber(Int_t rn=0){fRunNumber = rn;}
     virtual Int_t GetRunNumber() const {return fRunNumber;}
 
