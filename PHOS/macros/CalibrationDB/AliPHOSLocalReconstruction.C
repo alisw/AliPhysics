@@ -1,9 +1,10 @@
 AliPHOSLocalReconstruction()
 {
   //Run PHOS clusterization using information from calibration database.
+  // Author: Boris Polishchuk (Boris.Polichtchouk at cern.ch)
 
   // Open local calibration data base
-  AliCDBLocal *loc = new AliCDBLocal("CalibDB");
+  AliCDBStorage* storage = AliCDBManager::Instance()->GetStorage("local://CalibDB");
  
   // Make clusterization, calibration parameters will be taken from CDB
   AliPHOSClusterizerv1 *clu = new AliPHOSClusterizerv1("galice.root");

@@ -3,19 +3,21 @@
 // Digitize and decalibrate events assuming that SDigits 
 // have been already produced.
 // Decalibration coefficients are located in the local file
-// DeCalibDB/PHOS/Calib/GainFactors_and_Pedestals/Run0-10_v0.root
+// deCalibDB/PHOS/Calib/GainFactors_and_Pedestals/Run_xxx.root
+// Author: Boris Polichtchouk (Boris.Polichtchouk@cern.ch)
 
 void AliPHOSDecalibrate(Int_t nevents=1)
 {
-  //Load calibration database into aliroot session
+
+  //Load (de)calibration database into aliroot session
   //and set it to AliPHOSGetter.
-  AliCDBLocal *loc = new AliCDBLocal("DeCalibDB");
- 
-  AliPHOSCalibData* clb = (AliPHOSCalibData*)AliCDBStorage::Instance()
-    ->Get("PHOS/Calib/GainFactors_and_Pedestals",gAlice->GetRunNumber());
+  
+  AliPHOSCalibData* deCal  = (AliPHOSCalibData*)(AliCDBManager::Instance()
+    ->GetStorage("local://deCalibDB")->Get("PHOS/Calib/GainFactors_and_Pedestals",1)
+    ->GetObject());
   
   AliPHOSGetter* gime = AliPHOSGetter::Instance("galice.root");
-  gime->SetCalibData(clb);
+  gime->SetCalibData(deCal);
 
 
   AliSimulation sim ; 

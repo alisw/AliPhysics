@@ -47,33 +47,25 @@ SetCC(Int_t flag=0)
   char* objFormat;
 
   if      (flag == 0) {
-    DBFolder  ="InitCalibDB";
+    DBFolder  ="local://InitCalibDB";
     firstRun  =  0;
     lastRun   =  0;
     objFormat = "PHOS initial gain factors and pedestals";
   }
   else if (flag == 1) {
-    DBFolder  ="DeCalibDB";
+    DBFolder  ="local://deCalibDB";
     firstRun  =  0;
     lastRun   = 10;
     objFormat = "PHOS random pedestals and ADC gain factors (5x64x56)";
   }
-
-  // create DB directory
-  if(!gSystem->OpenDirectory(DBFolder)){
-    printf("Warning: folder %s does not exist, I will create it!",
-	   DBFolder.Data());
-    TString command = "mkdir "+ DBFolder;
-    gSystem->Exec(command.Data());
-  }
-
+  
   AliPHOSCalibData *calibda=new AliPHOSCalibData("PHOS");
   
   Float_t fADCpedestalEmc = 0.005;
   Float_t fADCchanelEmc   = 0.0015;
-
+  
   TRandom rn;
-
+  
   for(Int_t module=1; module<6; module++) {
     for(Int_t column=1; column<57; column++) {
       for(Int_t row=1; row<65; row++) {
@@ -92,16 +84,18 @@ SetCC(Int_t flag=0)
   }
 
   //Store calibration data into database
+  
+  AliCDBMetaData md;
+  md.SetComment(objFormat);
+  md.SetBeamPeriod(beamPeriod);
+  md.SetResponsible("Boris Polichtchouk");
+  
+  AliCDBId id("PHOS/Calib/GainFactors_and_Pedestals",firstRun,lastRun);
 
-  AliCDBMetaData md("PHOS/Calib/GainFactors_and_Pedestals",
-		    firstRun,lastRun,beamPeriod,
-		    objFormat,
-		    "B. Polishchuk", 
-		    "PHOS calibration");
+  AliCDBManager* man = AliCDBManager::Instance();  
+  AliCDBStorage* loc = man->GetStorage(DBFolder.Data());
+  loc->Put(calibda, id, &md);
 
-  AliCDBLocal *loc = new AliCDBLocal(DBFolder.Data());
-  AliCDBStorage::Instance()->Put(calibda, md);
-  AliCDBStorage::Instance()->Delete();
 }
 
 //------------------------------------------------------------------------
@@ -120,14 +114,15 @@ GetCC(Int_t flag=0)
   char* objFormat;
 
   if      (flag == 0) {
-    DBFolder  ="InitCalibDB";
+    DBFolder  ="local://InitCalibDB";
   }
   else if (flag == 1) {
-    DBFolder  ="DeCalibDB";
+    DBFolder  ="local://deCalibDB";
   }
-  AliCDBLocal *loc = new AliCDBLocal(DBFolder.Data());
-  AliPHOSCalibData* clb = (AliPHOSCalibData*)AliCDBStorage::Instance()
-    ->Get("PHOS/Calib/GainFactors_and_Pedestals",gAlice->GetRunNumber());
+
+  AliPHOSCalibData* clb  = (AliPHOSCalibData*)(AliCDBManager::Instance()
+    ->GetStorage(DBFolder.Data())->Get("PHOS/Calib/GainFactors_and_Pedestals",
+    gAlice->GetRunNumber())->GetObject());
 
   static const Int_t nMod =  5;
   static const Int_t nCol = 56;
