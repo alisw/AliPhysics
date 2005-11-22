@@ -23,7 +23,7 @@
 class TObjArray;
 class TF1;
 
-class AliMUONGeometryModule;
+class AliMUONGeometryModuleTransformer;
 class AliMUONGeometryStore;
 class AliMUONGeometryDetElement;
 class AliMUONVGeometryDESegmentation;
@@ -32,24 +32,33 @@ class AliMUONSegmentManuIndex;
 class AliMUONGeometrySegmentation : public TObject
 {
   public:
-    AliMUONGeometrySegmentation(AliMUONGeometryModule* geometry);
+    AliMUONGeometrySegmentation(
+           const AliMUONGeometryModuleTransformer* geometry);
     AliMUONGeometrySegmentation();
     virtual ~AliMUONGeometrySegmentation();
 
-    // methods
-    void Add(Int_t detElemId, 
+    // Methods
+    //
+    void Add(Int_t detElemId, const TString& detElemName,
              AliMUONVGeometryDESegmentation* segmentation); 
  
-    // get methods
-    AliMUONGeometryModule* GetGeometry() const;	      
-    virtual const AliMUONVGeometryDESegmentation* GetDESegmentation(Int_t detElemId) const;
+    // Get methods
+    //
+    const AliMUONGeometryModuleTransformer* GetTransformer() const;
+                       // Geometry transformer	      
+ 
+    const AliMUONVGeometryDESegmentation* GetDESegmentation(
+                                            Int_t detElemId) const;
                        // DE segmentation
-    virtual AliMUONGeometryDirection GetDirection(Int_t detElemId) const;
+    
+    AliMUONGeometryDirection GetDirection(Int_t detElemId) const;
                        // Direction with a constant pad size  
 		       // (Direction or coordinate where the resolution is the best)
     
-    //    
-    // redefined methods from AliSegmentation interface
+    TString GetDEName(Int_t detElemId) const;		       
+                       // DE name
+
+    // Redefined methods from AliSegmentation interface
     // 
 
     // Set Chamber Segmentation Parameters
@@ -185,16 +194,21 @@ class AliMUONGeometrySegmentation : public TObject
     mutable  Int_t                           fCurrentDetElemId;   // current DE ID 
     mutable  AliMUONGeometryDetElement*      fCurrentDetElement;  // current detection element 
     mutable  AliMUONVGeometryDESegmentation* fCurrentSegmentation;// current DE segmentation
-    AliMUONGeometryModule*    fGeometryModule; // associated geometry module
-    AliMUONGeometryStore*     fDESegmentations;// DE segmentations
+   
+    const AliMUONGeometryModuleTransformer*  fkModuleTransformer; // associated geometry transformer
+    AliMUONGeometryStore*        fDESegmentations;// DE segmentations
+    AliMUONGeometryStore*        fDENames;        // DE names
+    
  
    ClassDef(AliMUONGeometrySegmentation,2) // Geometry segmentation
 };
 
 // inline functions
 
-inline AliMUONGeometryModule* AliMUONGeometrySegmentation::GetGeometry() const
-{ return fGeometryModule; }	      
+inline 
+const AliMUONGeometryModuleTransformer* 
+AliMUONGeometrySegmentation::GetTransformer() const
+{ return fkModuleTransformer; }	      
 
 #endif //ALI_MUON_GEOMETRY_SEGMENTATION_H
 

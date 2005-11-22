@@ -25,13 +25,14 @@
 /* $Id$ */
 
 #include <Riostream.h>
-#include "TClass.h"
+#include <TObjString.h>
+#include <TClass.h>
 
 #include "AliLog.h"
 
 #include "AliMUONGeometrySegmentation.h"
 #include "AliMUONVGeometryDESegmentation.h"
-#include "AliMUONGeometryModule.h"
+#include "AliMUONGeometryModuleTransformer.h"
 #include "AliMUONGeometryDetElement.h"
 #include "AliMUONGeometryStore.h"
 
@@ -41,19 +42,23 @@ const Float_t  AliMUONGeometrySegmentation::fgkMaxDistance = 1.0e11;
 
 //______________________________________________________________________________
 AliMUONGeometrySegmentation::AliMUONGeometrySegmentation(
-                                  AliMUONGeometryModule* geometry) 
+                             const AliMUONGeometryModuleTransformer* transformer) 
 : TObject(),
   fCurrentDetElemId(0),
   fCurrentDetElement(0),
   fCurrentSegmentation(0),
-  fGeometryModule(geometry),
-  fDESegmentations(0)
+  fkModuleTransformer(transformer),
+  fDESegmentations(0),
+  fDENames(0)
   
 {
 /// Standard constructor
 
-  fDESegmentations 
-    = new AliMUONGeometryStore(geometry->GetDEIndexing(), false);
+  fDESegmentations = new AliMUONGeometryStore(false);
+ 
+  fDENames = new AliMUONGeometryStore(true);
+
+  AliDebug(1, Form("ctor this = %p", this) ); 
 }
 
 //______________________________________________________________________________
@@ -62,10 +67,14 @@ AliMUONGeometrySegmentation::AliMUONGeometrySegmentation()
   fCurrentDetElemId(0),
   fCurrentDetElement(0),
   fCurrentSegmentation(0),
-  fGeometryModule(0),
-  fDESegmentations(0)
+  fkModuleTransformer(0),
+  fDESegmentations(0),
+  fDENames(0)
+  
 {
 /// Default Constructor
+
+  AliDebug(1, Form("default (empty) ctor this = %p", this));
 }
 
 //______________________________________________________________________________
@@ -78,12 +87,16 @@ AliMUONGeometrySegmentation::AliMUONGeometrySegmentation(
   AliFatal("Copy constructor is not implemented.");
 }
 
+#include <Riostream.h>
 //______________________________________________________________________________
 AliMUONGeometrySegmentation::~AliMUONGeometrySegmentation() 
 {
 /// Destructor
 
+  AliDebug(1, Form("dtor this = %p", this));
+
   delete fDESegmentations;
+  delete fDENames;
 } 
 
 //
@@ -119,7 +132,7 @@ Bool_t AliMUONGeometrySegmentation::OwnNotify(Int_t detElemId) const
 
     // Find detection element and its segmentation
     AliMUONGeometryDetElement* detElement
-      = fGeometryModule->GetDetElement(detElemId);
+      = fkModuleTransformer->GetDetElement(detElemId);
     if (!detElement) {
       AliError(Form("Detection element %d not defined", detElemId));
       return false;
@@ -146,12 +159,13 @@ Bool_t AliMUONGeometrySegmentation::OwnNotify(Int_t detElemId) const
 //
 
 //______________________________________________________________________________
-void AliMUONGeometrySegmentation::Add(Int_t detElemId, 
+void AliMUONGeometrySegmentation::Add(Int_t detElemId, const TString& detElemName,
                                       AliMUONVGeometryDESegmentation* segmentation)
 {
 /// Add detection element segmentation
 
   fDESegmentations->Add(detElemId, segmentation); 
+  fDENames->Add(detElemId, new TObjString(detElemName)); 
 }  
 
 
@@ -177,6 +191,22 @@ AliMUONGeometrySegmentation::GetDirection(Int_t detElemId) const
 
   return fCurrentSegmentation->GetDirection();
 }
+
+//______________________________________________________________________________
+TString AliMUONGeometrySegmentation::GetDEName(Int_t detElemId) const
+{
+/// Return name of the given detection element
+
+  TObjString* deName = (TObjString*)fDENames->Get(detElemId, false);
+  
+  if (deName)
+    return deName->GetString();
+  else {  
+    AliWarningStream()
+         << "Detection element " << detElemId  << " not defined. " << endl;
+    return "Undefined";
+  }
+}    
 
 //______________________________________________________________________________
 void AliMUONGeometrySegmentation::Print(Option_t* opt) const
@@ -274,7 +304,7 @@ AliMUONGeometrySegmentation::GetPadC(Int_t detElemId,
   Float_t xl, yl, zl;
   fCurrentSegmentation->GetPadC(ix, iy, xl , yl, zl);
 
-  fGeometryModule->Local2Global(detElemId, xl, yl, zl, xg, yg, zg); 
+  fkModuleTransformer->Local2Global(detElemId, xl, yl, zl, xg, yg, zg); 
   return true;
 }
 
@@ -285,7 +315,7 @@ void AliMUONGeometrySegmentation::Init(Int_t chamber)
 /// Check that all detection elements have segmanetation set
 
   // Loop over detection elements
-  AliMUONGeometryStore* detElements = fGeometryModule->GetDetElementStore();
+  AliMUONGeometryStore* detElements = fkModuleTransformer->GetDetElementStore();
 
   for (Int_t i=0; i<detElements->GetNofEntries(); i++) {
 
@@ -403,6 +433,9 @@ void  AliMUONGeometrySegmentation::FirstPad(Int_t detElemId,
 
   if (!OwnNotify(detElemId)) return;
 
+  AliDebug(1,Form("xghit, yghit, zghit, dx, dy = %e,%e,%e,%e, %e",
+                   xghit, yghit, zghit, dx, dy));
+  
   Float_t xl, yl, zl;
   fCurrentDetElement->Global2Local(xghit, yghit, zghit, xl, yl, zl); 
 

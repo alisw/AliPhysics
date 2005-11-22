@@ -20,7 +20,7 @@
 #include "AliSegmentation.h"
 #include "AliMUONGeometryDirection.h"
 
-class AliMUONSegmentManuIndex;
+class AliMpVSegmentation;
 
 class AliMUONVGeometryDESegmentation : public AliSegmentation
 {
@@ -41,6 +41,9 @@ class AliMUONVGeometryDESegmentation : public AliSegmentation
                        // Normally kDirY will correspond with cathode segmentation 
 		       // for the bending plane and kDirX with cathode segmentation 
 		       // for the non bending plane
+		       
+    virtual const AliMpVSegmentation* GetMpSegmentation() const = 0; 		       
+                       // Access to mapping
 
   protected:
     AliMUONVGeometryDESegmentation(const AliMUONVGeometryDESegmentation& rhs);

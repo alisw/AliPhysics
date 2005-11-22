@@ -43,7 +43,6 @@ AliMUONVGeometryDESegmentation::AliMUONVGeometryDESegmentation(
   : AliSegmentation(rhs)
 {
 // Copy constructor
-  AliFatal("Copy constructor is not implemented.");
 }
 
 //______________________________________________________________________________
