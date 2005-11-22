@@ -16,6 +16,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.92  2005/11/03 13:09:19  hristov
+ * Removing meaningless const declarations (linuxicc)
+ *
  * Revision 1.91  2005/07/27 15:08:53  kharlov
  * Mixture ArCO2 is corrected
  *
@@ -59,6 +62,10 @@ class TFile;
 #include "AliPHOSDigit.h"
 #include "AliAltroBuffer.h"
 #include "AliLog.h"
+#include "AliCDBManager.h"
+#include "AliCDBEntry.h"
+#include "AliCDBStorage.h"
+#include "AliPHOSCalibData.h"
 
 ClassImp(AliPHOS)
 
@@ -428,6 +435,15 @@ void AliPHOS::Digits2Raw()
   Int_t adcValuesLow[fkTimeBins];
   Int_t adcValuesHigh[fkTimeBins];
 
+  AliPHOSCalibData* calib=0;
+
+  //retrieve calibration database
+  if(AliCDBManager::Instance()->IsDefaultStorageSet()){
+    AliCDBEntry *entry = (AliCDBEntry*) AliCDBManager::Instance()->GetDefaultStorage()
+      ->Get("PHOS/GainFactors_and_Pedestals/Calibration",gAlice->GetRunNumber());
+    calib = (AliPHOSCalibData*) entry->GetObject();
+  }
+
   // loop over digits (assume ordered digits)
   for (Int_t iDigit = 0; iDigit < digits->GetEntries(); iDigit++) {
     AliPHOSDigit* digit = dynamic_cast<AliPHOSDigit *>(digits->At(iDigit)) ;
@@ -473,11 +489,19 @@ void AliPHOS::Digits2Raw()
       
     // calculate the time response function
     } else {
-      Double_t energy = 0 ;  
-      if ( digit->GetId() <= geom->GetNModules() *  geom->GetNCristalsInModule())
-	energy = digit->GetAmp() * digitizer->GetEMCchannel() + digitizer->GetEMCpedestal() ; 
+      Double_t energy = 0 ;
+      Int_t   module = relId[0];
+      Int_t   column = relId[3];
+      Int_t   row    = relId[2];
+      if ( digit->GetId() <= geom->GetNModules() *  geom->GetNCristalsInModule()) {
+	if(calib)
+	  energy = digit->GetAmp()*calib->GetADCchannelEmc(module,column,row) + 
+	    calib->GetADCpedestalEmc(module,column,row);
+	else
+	  energy=digit->GetAmp()*digitizer->GetEMCchannel()+digitizer->GetEMCpedestal();
+      } 
       else 
-	energy = digit->GetAmp() * digitizer->GetCPVchannel() + digitizer->GetCPVpedestal() ;
+	energy = digit->GetAmp()*digitizer->GetCPVchannel()+digitizer->GetCPVpedestal();
         
       Bool_t lowgain = RawSampledResponse(digit->GetTimeR(), energy, adcValuesHigh, adcValuesLow) ; 
       
