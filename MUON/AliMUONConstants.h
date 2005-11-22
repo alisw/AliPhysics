@@ -30,8 +30,12 @@ class AliMUONConstants : public TObject {
     static Float_t* DefaultChamberZ() {return fgDefaultChamberZ;}
     // return chamber i inner diameter
     static Float_t  Dmin(Int_t i) {return fgDmin[i];}
+    // return chamber i inner radius
+    static Float_t  Rmin(Int_t i) {return Dmin(i)/2.0;}
     // return chamber i outer diameter
     static Float_t  Dmax(Int_t i) {return fgDmax[i];}
+    // return chamber i outer radius
+    static Float_t  Rmax(Int_t i) {return Dmax(i)/2.0;}
     // return maximum zoom for event display
     static Int_t    MaxZoom() {return fgMaxZoom;}
     // return half-distance between two half-chambers
