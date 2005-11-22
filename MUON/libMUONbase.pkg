@@ -1,7 +1,6 @@
 # $Id$
 
 SRCS:=  AliMUON.cxx AliMUONv1.cxx \
-        AliMUONGeometryDEIndexing.cxx \
         AliMUONCommonGeometryBuilder.cxx \
         AliMUONSt1GeometryBuilder.cxx \
         AliMUONSt1GeometryBuilderV2.cxx \

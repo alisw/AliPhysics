@@ -15,7 +15,6 @@
 
 // geometry 
 #pragma link C++ class AliMUONMathieson+; 
-#pragma link C++ class AliMUONGeometryDEIndexing+;
 #pragma link C++ class AliMUONCommonGeometryBuilder+;
 #pragma link C++ class AliMUONSt1GeometryBuilder+; 
 #pragma link C++ class AliMUONSt1GeometryBuilderV2+; 
@@ -48,6 +47,7 @@
 #pragma link C++ class AliMUONDisplay+; 
 #pragma link C++ class AliMUONRecoCheck+; 
 
+// segmentation
 #pragma link C++ class AliMUONSegmentationManager+;
 #endif
 
