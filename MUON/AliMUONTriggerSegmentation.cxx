@@ -56,6 +56,8 @@ AliMUONTriggerSegmentation::AliMUONTriggerSegmentation()
       fModuleXmax[i]=0.;  
       fModuleYmin[i]=0.;  
   }
+
+  AliDebug(1, Form("default (empty) ctor this = %p", this));
 }
 
 
@@ -88,6 +90,8 @@ AliMUONTriggerSegmentation::AliMUONTriggerSegmentation(Bool_t bending)
       fModuleXmax[i]=0.;  
       fModuleYmin[i]=0.;  
   }
+
+  AliDebug(1, Form("ctor this = %p", this) ); 
 }
 
 //----------------------------------------------------------------------
@@ -99,7 +103,8 @@ AliMUONTriggerSegmentation::AliMUONTriggerSegmentation(const AliMUONTriggerSegme
 AliMUONTriggerSegmentation::~AliMUONTriggerSegmentation() 
 {
   // Destructor
-    ;    
+
+  AliDebug(1, Form("dtor this = %p", this) ); 
 }
 //----------------------------------------------------------------------
 AliMUONTriggerSegmentation& AliMUONTriggerSegmentation::operator=(const AliMUONTriggerSegmentation& rhs)
