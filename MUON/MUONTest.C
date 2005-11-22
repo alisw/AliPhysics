@@ -19,24 +19,21 @@
 // and segmentations
 // To be run from aliroot:
 // .L MUONTest.C
-// MUONTest(testNumber); > testN.out
-//     testNumber = 1  ...    
-//     testNumber = 2  ...   
-//     testNumber = 3  ...   
+// MUONTest(option, testNumber); > testN.out
+//     option     = "./Config.C", 
+//                  "default", "FactoryV2", "FactoryV3","FactoryV4"
+//     testNumber = 1, 2, 3
 //
 //  Author: I. Hrivnacova, IPN Orsay
 
-void MUONTest(Int_t testNumber)
+void MUONTest(const TString& option = "./Config.C", 
+              Int_t testNumber = 1)
 {
-  gAlice->Init("./Config.C");
-  cout << "Init done " << endl;
-
-  AliMUONTest test("./Config.C");
+  AliMUONTest test(option);
   switch (testNumber) {
     case 1: test.DetElemTransforms();  break;
     case 2: test.ForWhole(kPrintPads); break; 
     case 3: test.ForWhole(kDrawPads);  break; 
-    case 4: test.PrintPadPositions2(); break;
     default: ;
   }    
 }  

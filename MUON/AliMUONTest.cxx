@@ -26,45 +26,62 @@
 #include <TH2F.h>
 #include <TPave.h>
 #include <TCanvas.h>
+#include <TGeoMatrix.h>
 
 #include "AliRun.h"
-#include "AliSegmentation.h"
 #include "AliLog.h"
 
 #include "AliMUONTest.h"
 #include "AliMUON.h"
 #include "AliMUONConstants.h"
+#include "AliMUONGeometryBuilder.h"
+#include "AliMUONSt1GeometryBuilderV2.h"
+#include "AliMUONSt2GeometryBuilderV2.h"
+#include "AliMUONSlatGeometryBuilder.h"
+#include "AliMUONTriggerGeometryBuilder.h"
+#include "AliMUONSegFactoryV2.h"
+#include "AliMUONSegFactoryV3.h"
+#include "AliMUONSegFactoryV4.h"
+#include "AliMUONGeometryTransformer.h"
 #include "AliMUONGeometryModule.h"
 #include "AliMUONGeometryStore.h"
+#include "AliMUONGeometryTransformer.h"
+#include "AliMUONSegmentation.h"
 #include "AliMUONGeometrySegmentation.h"
-#include "AliMUONSt12QuadrantSegmentation.h"
-#include "AliMUONSt345SlatSegmentation.h"
-#include "AliMUONTriggerSegmentation.h"
-#include "AliMUONTriggerConstants.h"
 
 ClassImp(AliMUONTest)
 
-//__________________________________________________________________
-  AliMUONTest::AliMUONTest(const TString& configMacro)
+//_____________________________________________________________________________
+  AliMUONTest::AliMUONTest(const TString& option)
   : TObject(),
+    fkTransformer(0),
+    fSegmentation(0),
     fCanvas(0)
 {
 // Standard Constructor
 //
-  // Initialize AliRoot
-  gAlice->Init(configMacro.Data());
+
+  if ( option != "default" && 
+       option != "FactoryV2" && option != "FactoryV3" && option != "FactoryV4")  
+  {
+    BuildWithMUON(option);
+  }
+  else     
+    BuildWithoutMUON(option);
 }
 
-//__________________________________________________________________
+//_____________________________________________________________________________
 AliMUONTest::AliMUONTest()
   : TObject(),
+    fkTransformer(0),
+    fSegmentation(0),
     fCanvas(0)
 {
 // Default Constructor
 //
 }
 
-//____________________________________________________________________
+//_____________________________________________________________________________
 AliMUONTest::AliMUONTest(const AliMUONTest& rhs)
  : TObject(rhs)
 {
@@ -73,7 +90,7 @@ AliMUONTest::AliMUONTest(const AliMUONTest& rhs)
   AliFatal("Not implemented.");
 }
 
-//____________________________________________________________________
+//_____________________________________________________________________________
 AliMUONTest::~AliMUONTest()
 {
 // Destructor
@@ -81,7 +98,7 @@ AliMUONTest::~AliMUONTest()
   delete fCanvas;
 }
 
-//________________________________________________________________________
+//_____________________________________________________________________________
 AliMUONTest& AliMUONTest::operator = (const AliMUONTest& rhs)
 {
 // Protected assignement operator
@@ -96,811 +113,128 @@ AliMUONTest& AliMUONTest::operator = (const AliMUONTest& rhs)
 //
 // private methods
 //
-
-//________________________________________________________________________
-AliMUONGeometrySegmentation*     
-AliMUONTest::CreateSt1Segmentation(Int_t chamberId, Int_t cathod)
+//_____________________________________________________________________________
+void AliMUONTest::BuildWithMUON(const TString& configMacro)
 {
-// Create St1 geometry segmentation for given chamber and cathod
+// Build segmentation via AliMUON initialisation
 
+  gAlice->Init(configMacro.Data());
   AliMUON* muon = (AliMUON*)gAlice->GetModule("MUON");
   if (!muon) {
     AliFatal("MUON detector not defined.");
-    return 0;   
+    return;
   }  
-
-  AliMUONGeometrySegmentation* segmentation
-    = new AliMUONGeometrySegmentation(muon->Chamber(chamberId).GetGeometry());
-    
-  // Quadrant segmentations:
-  AliMUONSt12QuadrantSegmentation* bendSt1
-    = new AliMUONSt12QuadrantSegmentation(kStation1, kBendingPlane);
-  AliMUONSt12QuadrantSegmentation* nonbendSt1
-    = new AliMUONSt12QuadrantSegmentation(kStation1, kNonBendingPlane);
-
-  // The same configuration for both chambers of Station 1
-  Int_t id0 = (chamberId+1)*100;
-
-  // Configure  St1 chamber segmentations
-  if (cathod == 0) {
-    segmentation->Add(id0,      bendSt1);
-    segmentation->Add(id0 +  3, nonbendSt1);
-    segmentation->Add(id0 +  2, bendSt1);
-    segmentation->Add(id0 +  1, nonbendSt1);
-  }
-  else if (cathod == 1) {
-    segmentation->Add(id0,      nonbendSt1);
-    segmentation->Add(id0 +  3, bendSt1);
-    segmentation->Add(id0 +  2, nonbendSt1);
-    segmentation->Add(id0 +  1, bendSt1);
-  }
-  else {
-    AliError("Wrong cathod number");
-    return 0;
-  }
-  
-  return segmentation;
-}      
-
-//________________________________________________________________________
-AliMUONGeometrySegmentation*     
-AliMUONTest::CreateSt2Segmentation(Int_t chamberId, Int_t cathod)
-{
-// Create St1 geometry segmentation for given chamber and cathod
-
-  AliMUON* muon = (AliMUON*)gAlice->GetModule("MUON");
-  if (!muon) {
-    AliFatal("MUON detector not defined.");
-    return 0;   
-  }  
-
-  AliMUONGeometrySegmentation* segmentation
-    = new AliMUONGeometrySegmentation(muon->Chamber(chamberId).GetGeometry());
-    
-  // Quadrant segmentations:
-  AliMUONSt12QuadrantSegmentation* bendSt2
-    = new AliMUONSt12QuadrantSegmentation(kStation2, kBendingPlane);
-  AliMUONSt12QuadrantSegmentation* nonbendSt2
-    = new AliMUONSt12QuadrantSegmentation(kStation2, kNonBendingPlane);
-
-  // The same configuration for both chambers of Station 2
-  Int_t id0 = (chamberId+1)*100;
-
-  // Configure  St2 chamber segmentations
-  if (cathod == 0) {
-    segmentation->Add(id0,      bendSt2);
-    segmentation->Add(id0 +  3, nonbendSt2);
-    segmentation->Add(id0 +  2, bendSt2);
-    segmentation->Add(id0 +  1, nonbendSt2);
-  }
-  else if (cathod == 1) {
-    segmentation->Add(id0,      nonbendSt2);
-    segmentation->Add(id0 +  3, bendSt2);
-    segmentation->Add(id0 +  2, nonbendSt2);
-    segmentation->Add(id0 +  1, bendSt2);
-  }
-  else {
-    AliError("Wrong cathod number");
-    return 0;
-  }
-  
-  return segmentation;
-}      
+  fkTransformer = muon->GetGeometryTransformer();
+  fSegmentation   = muon->GetSegmentation();
+}    
 
 //_____________________________________________________________________________
-AliMUONGeometrySegmentation*     
-AliMUONTest::CreateSlatSegmentation(Int_t chamberId, Int_t cathod)
+void AliMUONTest::BuildWithoutMUON(const TString& option)
 {
-// Create St1 geometry segmentation for given chamber and cathod
+// Fill geometry from transform*.dat files and build segmentation via 
+// SegFactory
 
-  AliMUON* muon = (AliMUON*)gAlice->GetModule("MUON");
-  if (!muon) {
-    AliFatal("MUON detector not defined.");
-    return 0;
-  }  
-
-  AliMUONGeometrySegmentation *chamberSeg = new AliMUONGeometrySegmentation(muon->Chamber(chamberId).GetGeometry());
-
-   //Slats Segmentations
-  AliMUONSt345SlatSegmentation *slatsegB[14]; // Types of segmentation for St3 in this framework
-  AliMUONSt345SlatSegmentation *slatsegNB[14]; // Types of segmentation for St3 in this framework
-                                               // Bending
-  Int_t ndiv[4] ={ 4, 4, 2, 1};  // densities zones 
-  for(Int_t i=0; i<14; i++) {
-    slatsegB[i] = new AliMUONSt345SlatSegmentation(1);
-    slatsegB[i]->SetPadSize(10.,0.5);
-    slatsegB[i]->SetPadDivision(ndiv);
-    slatsegB[i]->SetId(1);
-    slatsegB[i]->SetDAnod(0.25);
-    slatsegNB[i] = new AliMUONSt345SlatSegmentation(0);
-    slatsegNB[i]->SetPadSize(1.,10.); // must be 0.713 !!!
-    slatsegNB[i]->SetPadDivision(ndiv);
-    slatsegNB[i]->SetId(1);
-    slatsegNB[i]->SetDAnod(0.25);
+  AliMUONGeometryTransformer* transformer 
+    = new AliMUONGeometryTransformer(true);
+  transformer->ReadTransformations("transform.dat");  
+  fkTransformer = transformer; 
+    
+  // Build segmentation
+  if ( option == "default" || option == "FactoryV2") {
+    AliMUONSegFactoryV2 segFactory("default");
+    segFactory.Build(fkTransformer);
+    fSegmentation = segFactory.GetSegmentation();
+  } 
+  else  if ( option == "FactoryV3" ) {
+    AliMUONSegFactoryV3 segFactory("default");
+    segFactory.Build(fkTransformer);
+    fSegmentation = segFactory.GetSegmentation();
   }
-  
-  
-  //******************************************************************************************
-  // Station 3
-  //******************************************************************************************
-
-  if (chamberId == 4 || chamberId == 5) {
-    // Type 112200 for 500, 501, 508, 509, 510, 517 in Ch5 (similar for Ch6) for the futur official numbering
-    // Type 112200 for 503, 504, 505, 555, 554, 553 in Ch5 (similar for Ch6) actual numbering in the code to be changed in jan05
-    Int_t n0[4] = { 0, 2, 2, 0 };
-    slatsegB[0]->SetPcbBoards(n0);
-    slatsegB[0]->Init(0);
-    slatsegNB[0]->SetPcbBoards(n0);
-    slatsegNB[0]->Init(0);
-    
-    // Type 122200 for 502, 507, 511, 516 (similar in Ch6) for future official numbering of ALICE
-    // Type 122200 for 502, 506, 556, 552 (similiarin Ch6) for actual numbering in muon code to be changed in jan05
-    Int_t n1[4] = { 0, 1, 3, 0 }; 
-    slatsegB[1]->SetPcbBoards(n1);
-    slatsegB[1]->Init(0); 
-    slatsegNB[1]->SetPcbBoards(n1);
-    slatsegNB[1]->Init(0); 
-    
-    // Type 222000 for 503, 506, 512, 515 (similar in Ch6) for future official numbering of ALICE
-    // Type 222000 for 501, 507, 557, 551 (similiarin Ch6) for actual numbering in muon code to be changed in jan05
-    Int_t n2[4] = { 0, 0, 3, 0 };
-    slatsegB[2]->SetPcbBoards(n2);
-    slatsegB[2]->Init(0);
-    slatsegNB[2]->SetPcbBoards(n2);
-    slatsegNB[2]->Init(0);
-    
-    // Type 220000 for 504, 505, 513, 514 (similar in Ch6) for future official numbering of ALICE
-    // Type 220000 for 500, 508, 558, 550 (similiarin Ch6) for actual numbering in muon code to be changed in jan05
-    Int_t n3[4] = { 0, 0, 2, 0 };
-    slatsegB[3]->SetPcbBoards(n3);
-    slatsegB[3]->Init(0); 
-    slatsegNB[3]->SetPcbBoards(n3);
-    slatsegNB[3]->Init(0); 
+  else if ( option == "FactoryV4" ) {
+    AliMUONSegFactoryV4 segFactory("default");
+    segFactory.Build(fkTransformer);
+    fSegmentation = segFactory.GetSegmentation();
   }
-  
-  
-  //***************************************************************************************
-  // Station 4 & 5
-  //****************************************************************************************
-  
-  if (chamberId >= 6 && chamberId <= 9) {
-    // Type 122330 for 700, 713 in Ch7 (similar for Ch8) for the futur official numbering
-    // Type 122330 for 706, 756 in Ch7 (similar for Ch8) actual numbering in the code to be changed in jan05
-    // Type 122330 for 900, 913 in Ch9 (similar for Ch10) for the futur official numbering
-    // Type 122330 for 906, 956 in Ch9 (similar for Ch10) actual numbering in the code to be changed in jan05
-    
-    Int_t n4[4] = { 0, 1, 2, 2 };
-    slatsegB[4]->SetPcbBoards(n4);
-    slatsegB[4]->Init(0); // 0 detection element id
-    slatsegNB[4]->SetPcbBoards(n4);
-    slatsegNB[4]->Init(0); // 0 detection element id
-    
-    // Type 112233 for 701, 712, 714, 725 in Ch7 (similar for Ch8) for the futur official numbering
-    // Type 112233 for 705, 707, 755, 757 in Ch7 (similar for Ch8) actual numbering in the code to be changed in jan05
-    // Type 112233 for 901, 902, 911, 912, 914, 915, 924, 925 in Ch9 (similar for Ch10) for the futur official numbering
-    // Type 112233 for 904, 905, 907, 908, 954, 955, 957, 958 in Ch9 (similar for Ch10) actual numbering in the code to be changed in jan05
-    Int_t n5[4] = { 0, 2, 2, 2 };
-    slatsegB[5]->SetPcbBoards(n5);
-    slatsegB[5]->Init(0); // 0 detection element id
-    slatsegNB[5]->SetPcbBoards(n5);
-    slatsegNB[5]->Init(0); // 0 detection element id
-    
-    // Type 112230 for 702, 711, 715, 724 in Ch7 (similar for Ch8) for the futur official numbering
-    // Type 112230 for 704, 708, 754, 758 in Ch7 (similar for Ch8) actual numbering in the code to be changed in jan05
-    Int_t n6[4] = { 0, 2, 2, 1 };
-    slatsegB[6]->SetPcbBoards(n6);
-    slatsegB[6]->Init(0); // 0 detection element id
-    slatsegNB[6]->SetPcbBoards(n6);
-    slatsegNB[6]->Init(0); // 0 detection element id
-    
-    // Type 222330 for 703, 710, 716, 723 in Ch7 (similar for Ch8) for the futur official numbering
-    // Type 222330 for 703, 709, 753, 759 in Ch7 (similar for Ch8) actual numbering in the code to be changed in jan05
-    Int_t n7[4] = { 0, 0, 3, 2 };
-    slatsegB[7]->SetPcbBoards(n7);
-    slatsegB[7]->Init(0); // 0 detection element id
-    slatsegNB[7]->SetPcbBoards(n7);
-    slatsegNB[7]->Init(0); // 0 detection element id
-    
-    // Type 223300 for 704, 709, 717, 722 in Ch7 (similar for Ch8) for the futur official numbering
-    // Type 223300 for 702, 710, 752, 760 in Ch7 (similar for Ch8) actual numbering in the code to be changed in jan05
-    Int_t n8[4] = { 0, 0, 2, 2 };
-    slatsegB[8]->SetPcbBoards(n8);
-    slatsegB[8]->Init(0); // 0 detection element id
-    slatsegNB[8]->SetPcbBoards(n8);
-    slatsegNB[8]->Init(0); // 0 detection element id
-    
-    // Type 333000 for 705, 708, 718, 721 in Ch7 (similar for Ch8) for the futur official numbering
-    // Type 333000 for 701, 711, 751, 761 in Ch7 (similar for Ch8) actual numbering in the code to be changed in jan05
-    // Type 333000 for 906, 907, 919, 920 in Ch9 (similar for Ch10) for the futur official numbering
-    // Type 333000 for 900, 912, 950, 962 in Ch9 (similar for Ch10) actual numbering in the code to be changed in jan05
-    Int_t n9[4] = { 0, 0, 0, 3 };
-    slatsegB[9]->SetPcbBoards(n9);
-    slatsegB[9]->Init(0); // 0 detection element id
-    slatsegNB[9]->SetPcbBoards(n9);
-    slatsegNB[9]->Init(0); // 0 detection element id
-    
-    // Type 330000 for 706, 707, 719, 720 in Ch7 (similar for Ch8) for the futur official numbering
-    // Type 330000 for 700, 712, 750, 762 in Ch7 (similar for Ch8) actual numbering in the code to be changed in jan05
-    Int_t n10[4] = { 0, 0, 0, 2 };
-    slatsegB[10]->SetPcbBoards(n10);
-    slatsegB[10]->Init(0); // 0 detection element id
-    slatsegNB[10]->SetPcbBoards(n10);
-    slatsegNB[10]->Init(0); // 0 detection element id
-    
-    // Type 222333 for 903, 910, 916, 923 in Ch9 (similar for Ch10) for the futur official numbering
-    // Type 222333 for 903, 909, 953, 959 in Ch9 (similar for Ch10) actual numbering in the code to be changed in jan05
-    Int_t n11[4] = { 0, 0, 3, 3 };
-    slatsegB[11]->SetPcbBoards(n11);
-    slatsegB[11]->Init(0); // 0 detection element id
-    slatsegNB[11]->SetPcbBoards(n11);
-    slatsegNB[11]->Init(0); // 0 detection element id
-  
-    // Type 223330 for 904, 909, 917, 922 in Ch9 (similar for Ch10) for the futur official numbering
-    // Type 223330 for 902, 910, 952, 960 in Ch9 (similar for Ch10) actual numbering in the code to be changed in jan05
-    Int_t n12[4] = { 0, 0, 2, 3 };
-    slatsegB[12]->SetPcbBoards(n12);
-    slatsegB[12]->Init(0); // 0 detection element id
-    slatsegNB[12]->SetPcbBoards(n12);
-    slatsegNB[12]->Init(0); // 0 detection element id
-    
-    // Type 333300 for 905, 908, 918, 921 in Ch9 (similar for Ch10) for the futur official numbering
-    // Type 333300 for 901, 911, 951, 961 in Ch9 (similar for Ch10) actual numbering in the code to be changed in jan05
-    Int_t n13[4] = { 0, 0, 0, 4 };
-    slatsegB[13]->SetPcbBoards(n13);
-    slatsegB[13]->Init(0); // 0 detection element id
-    slatsegNB[13]->SetPcbBoards(n13);
-    slatsegNB[13]->Init(0); // 0 detection element id
-    
+  else {
+    AliFatal(Form("Wrong factory type : %s",option.Data()));      
   }
+}  
 
-  Int_t id0 = 0;
-
-  // For St3 
-  if (chamberId == 4 || chamberId == 5) {
-    // Create chamber segmentations  
-
-    id0=(chamberId+1)*100;
-    // type 220000
-    if (cathod == 0) {
-      chamberSeg->Add(id0+14, slatsegB[3]);
-      chamberSeg->Add(id0+ 4, slatsegB[3]);  
-      chamberSeg->Add(id0+13, slatsegB[3]);  
-      chamberSeg->Add(id0+ 5, slatsegB[3]);
-    } else {
-      chamberSeg->Add(id0+14, slatsegNB[3]);
-      chamberSeg->Add(id0+ 4, slatsegNB[3]);  
-      chamberSeg->Add(id0+13, slatsegNB[3]);  
-      chamberSeg->Add(id0+ 5, slatsegNB[3]);
-    }
-    // type 222000
-    if (cathod == 0) {
-      chamberSeg->Add(id0+15, slatsegB[2]);
-      chamberSeg->Add(id0+ 3, slatsegB[2]);  
-      chamberSeg->Add(id0+12, slatsegB[2]);  
-      chamberSeg->Add(id0+ 6, slatsegB[2]);
-    } else {
-      chamberSeg->Add(id0+15, slatsegNB[2]);
-      chamberSeg->Add(id0+ 3, slatsegNB[2]);  
-      chamberSeg->Add(id0+12, slatsegNB[2]);  
-      chamberSeg->Add(id0+ 6, slatsegNB[2]);
-    }
-    // type 122200
-    if (cathod == 0) {
-      chamberSeg->Add(id0+16, slatsegB[1]);
-      chamberSeg->Add(id0+ 2, slatsegB[1]);  
-      chamberSeg->Add(id0+11, slatsegB[1]);  
-      chamberSeg->Add(id0+ 7, slatsegB[1]);
-    } else {
-      chamberSeg->Add(id0+16, slatsegNB[1]);
-      chamberSeg->Add(id0+ 2, slatsegNB[1]);  
-      chamberSeg->Add(id0+11, slatsegNB[1]);  
-      chamberSeg->Add(id0+ 7, slatsegNB[1]);
-    }
-    // type 112200
-    if (cathod == 0) {
-      chamberSeg->Add(id0+17, slatsegB[0]);
-      chamberSeg->Add(id0, slatsegB[0]);  
-      chamberSeg->Add(id0+ 1, slatsegB[0]);  
-      chamberSeg->Add(id0+10, slatsegB[0]);
-      chamberSeg->Add(id0+ 9, slatsegB[0]);     
-      chamberSeg->Add(id0+ 8, slatsegB[0]);
-    } else {
-      chamberSeg->Add(id0+17, slatsegNB[0]);
-      chamberSeg->Add(id0, slatsegNB[0]);  
-      chamberSeg->Add(id0+ 1, slatsegNB[0]);  
-      chamberSeg->Add(id0+10, slatsegNB[0]);
-      chamberSeg->Add(id0+ 9, slatsegNB[0]);     
-      chamberSeg->Add(id0+ 8, slatsegNB[0]);
-    }
-
-  }
-  
-  // For St4 
-  if (chamberId == 6 || chamberId == 7) {
-    // Create chamber segmentations  
-    id0=(chamberId+1)*100;
-    // type 122330
-    if (cathod == 0) {
-      chamberSeg->Add(id0+13, slatsegB[4]);
-      chamberSeg->Add(id0   , slatsegB[4]);
-    } else {
-      chamberSeg->Add(id0+13, slatsegNB[4]);
-      chamberSeg->Add(id0   , slatsegNB[4]);
-    }
-    // type 112233
-    if (cathod == 0) {
-      chamberSeg->Add(id0+14, slatsegB[5]);
-      chamberSeg->Add(id0+12, slatsegB[5]);  
-      chamberSeg->Add(id0+25, slatsegB[5]);  
-      chamberSeg->Add(id0+ 1, slatsegB[5]);
-    } else {
-      chamberSeg->Add(id0+14, slatsegNB[5]);
-      chamberSeg->Add(id0+12, slatsegNB[5]);  
-      chamberSeg->Add(id0+25, slatsegNB[5]);  
-      chamberSeg->Add(id0+ 1, slatsegNB[5]);
-    }
-    // type 112230
-    if (cathod == 0) {
-      chamberSeg->Add(id0+15, slatsegB[6]);
-      chamberSeg->Add(id0+11, slatsegB[6]);  
-      chamberSeg->Add(id0+24, slatsegB[6]);  
-      chamberSeg->Add(id0+ 2, slatsegB[6]);
-    } else {
-      chamberSeg->Add(id0+15, slatsegNB[6]);
-      chamberSeg->Add(id0+11, slatsegNB[6]);  
-      chamberSeg->Add(id0+24, slatsegNB[6]);  
-      chamberSeg->Add(id0+ 2, slatsegNB[6]);
-    }
-    // type 222330 
-    if (cathod == 0) {
-      chamberSeg->Add(id0+16, slatsegB[7]);
-      chamberSeg->Add(id0+10, slatsegB[7]);  
-      chamberSeg->Add(id0+23, slatsegB[7]);
-      chamberSeg->Add(id0+ 3, slatsegB[7]);
-    } else {
-      chamberSeg->Add(id0+16, slatsegNB[7]);
-      chamberSeg->Add(id0+10, slatsegNB[7]);  
-      chamberSeg->Add(id0+23, slatsegNB[7]);
-      chamberSeg->Add(id0+ 3, slatsegNB[7]);
-    }
-    // type 223300 
-    if (cathod == 0) {
-      chamberSeg->Add(id0+17, slatsegB[8]);
-      chamberSeg->Add(id0+ 9, slatsegB[8]);  
-      chamberSeg->Add(id0+22, slatsegB[8]);
-      chamberSeg->Add(id0+ 4, slatsegB[8]);
-    } else {
-      chamberSeg->Add(id0+17, slatsegNB[8]);
-      chamberSeg->Add(id0+ 9, slatsegNB[8]);  
-      chamberSeg->Add(id0+22, slatsegNB[8]);
-      chamberSeg->Add(id0+ 4, slatsegNB[8]);
-    }
-    // type 333000 
-    if (cathod == 0) {
-      chamberSeg->Add(id0+18, slatsegB[9]);
-      chamberSeg->Add(id0+ 8, slatsegB[9]);  
-      chamberSeg->Add(id0+21, slatsegB[9]);
-      chamberSeg->Add(id0+ 5, slatsegB[9]);
-    } else {
-      chamberSeg->Add(id0+18, slatsegNB[9]);
-      chamberSeg->Add(id0+ 8, slatsegNB[9]);  
-      chamberSeg->Add(id0+21, slatsegNB[9]);
-      chamberSeg->Add(id0+ 5, slatsegNB[9]);
-    }
-    // type 330000 
-    if (cathod == 0) {
-      chamberSeg->Add(id0+19, slatsegB[10]);
-      chamberSeg->Add(id0+ 7, slatsegB[10]);  
-      chamberSeg->Add(id0+20, slatsegB[10]);
-      chamberSeg->Add(id0+ 6, slatsegB[10]);
-    } else {
-      chamberSeg->Add(id0+19, slatsegNB[10]);
-      chamberSeg->Add(id0+ 7, slatsegNB[10]);  
-      chamberSeg->Add(id0+20, slatsegNB[10]);
-      chamberSeg->Add(id0+ 6, slatsegNB[10]);
-    }
-  }
-
-  // For St5 
-  if (chamberId == 8 || chamberId == 9) {
-    // Create chamber segmentations      
-    id0=(chamberId+1)*100;
-    // type 122330
-    if (cathod == 0) {
-      chamberSeg->Add(id0+13, slatsegB[4]);
-      chamberSeg->Add(id0   , slatsegB[4]);
-    } else {
-      chamberSeg->Add(id0+13, slatsegNB[4]);
-      chamberSeg->Add(id0   , slatsegNB[4]);
-    }
-    // type 112233
-    if (cathod == 0) {
-      chamberSeg->Add(id0+15, slatsegB[5]);
-      chamberSeg->Add(id0+14, slatsegB[5]);
-      chamberSeg->Add(id0+12, slatsegB[5]);  
-      chamberSeg->Add(id0+11, slatsegB[5]);  
-      chamberSeg->Add(id0+24, slatsegB[5]);  
-      chamberSeg->Add(id0+25, slatsegB[5]);  
-      chamberSeg->Add(id0+ 1, slatsegB[5]);
-      chamberSeg->Add(id0+ 2, slatsegB[5]);
-    } else {
-      chamberSeg->Add(id0+15, slatsegNB[5]);
-      chamberSeg->Add(id0+14, slatsegNB[5]);
-      chamberSeg->Add(id0+12, slatsegNB[5]);  
-      chamberSeg->Add(id0+11, slatsegNB[5]);  
-      chamberSeg->Add(id0+24, slatsegNB[5]);  
-      chamberSeg->Add(id0+25, slatsegNB[5]);  
-      chamberSeg->Add(id0+ 1, slatsegNB[5]);
-      chamberSeg->Add(id0+ 2, slatsegNB[5]);
-    }
-    // type 222333 
-    if (cathod == 0) {
-      chamberSeg->Add(id0+16, slatsegB[11]);
-      chamberSeg->Add(id0+10, slatsegB[11]);  
-      chamberSeg->Add(id0+23, slatsegB[11]);
-      chamberSeg->Add(id0+ 3, slatsegB[11]);
-    } else {
-      chamberSeg->Add(id0+16, slatsegNB[11]);
-      chamberSeg->Add(id0+10, slatsegNB[11]);  
-      chamberSeg->Add(id0+23, slatsegNB[11]);
-      chamberSeg->Add(id0+ 3, slatsegNB[11]);
-    }
-    // type 223330 
-    if (cathod == 0) {
-      chamberSeg->Add(id0+17, slatsegB[12]);
-      chamberSeg->Add(id0+ 9, slatsegB[12]);  
-      chamberSeg->Add(id0+22, slatsegB[12]);
-      chamberSeg->Add(id0+ 4, slatsegB[12]);
-    } else {
-      chamberSeg->Add(id0+17, slatsegNB[12]);
-      chamberSeg->Add(id0+ 9, slatsegNB[12]);  
-      chamberSeg->Add(id0+22, slatsegNB[12]);
-      chamberSeg->Add(id0+ 4, slatsegNB[12]);
-    }
-    // type 333300 
-    if (cathod == 0) {
-      chamberSeg->Add(id0+18, slatsegB[13]);
-      chamberSeg->Add(id0+ 8, slatsegB[13]);  
-      chamberSeg->Add(id0+21, slatsegB[13]);
-      chamberSeg->Add(id0+ 5, slatsegB[13]);
-    } else {
-      chamberSeg->Add(id0+18, slatsegNB[13]);
-      chamberSeg->Add(id0+ 8, slatsegNB[13]);  
-      chamberSeg->Add(id0+21, slatsegNB[13]);
-      chamberSeg->Add(id0+ 5, slatsegNB[13]);
-    }
-    // type 333000 
-    if (cathod == 0) {
-      chamberSeg->Add(id0+19, slatsegB[9]);
-      chamberSeg->Add(id0+ 7, slatsegB[9]);  
-      chamberSeg->Add(id0+20, slatsegB[9]);
-      chamberSeg->Add(id0+ 6, slatsegB[9]);
-    } else {
-      chamberSeg->Add(id0+19, slatsegNB[9]);
-      chamberSeg->Add(id0+ 7, slatsegNB[9]);  
-      chamberSeg->Add(id0+20, slatsegNB[9]);
-      chamberSeg->Add(id0+ 6, slatsegNB[9]);
-    }
-  }  
-  
- 
-  if (!id0) {
-    AliWarning(Form("Segmentation for chamber %d , cathod %d is not yet defined",
-		    chamberId, cathod));
-    return 0;
-    
-  }
-  
-  DrawSegmentation(chamberSeg);
-  return chamberSeg;
-  
-} 
-//_____________________________________________________________________________
-
-AliMUONGeometrySegmentation*     
-AliMUONTest::CreateTriggerSegmentation(Int_t chamberId, Int_t cathod)
-{
-// Create Trigger geometry segmentation for given chamber and cathod
-
-    printf("in CreateTriggerSegmentation chamber=%d cathode=%d\n",
-	   chamberId,cathod);
-  AliMUON* muon = (AliMUON*)gAlice->GetModule("MUON");
-  if (!muon) {
-    AliFatal("MUON detector not defined.");
-    return 0;
-  }  
-
-//    AliMUONGeometrySegmentation *chamberSeg[2] new AliMUONGeometrySegmentation(muon->Chamber(chamberId).GetGeometry());
-
-  AliMUONGeometrySegmentation *chamberSeg = new AliMUONGeometrySegmentation(muon->Chamber(chamberId).GetGeometry());
-
-//Trigger Segmentation
-  AliMUONTriggerSegmentation *trigSegX[9]; 
-  AliMUONTriggerSegmentation *trigSegY[9]; 
-  for(Int_t i=0; i<9; i++) {
-    trigSegX[i] = new AliMUONTriggerSegmentation(1);
-    trigSegY[i] = new AliMUONTriggerSegmentation(0);
-    trigSegX[i]->SetLineNumber(9-i);    
-    trigSegY[i]->SetLineNumber(9-i);    
-  }
-
-  AliMUONChamber *iChamber, *iChamber1;
-  iChamber1 = &muon->Chamber(10);
-  iChamber  = &muon->Chamber(chamberId);
-  Float_t zpos1= iChamber1->Z();  
-  Float_t zpos = iChamber->Z();	     
-  Float_t zRatio = zpos / zpos1;
-
-// init
-  Float_t stripWidth[3]={0.,0.,0.};     // 1.0625 2.125 4.25
-  Float_t stripLength[4]={0.,0.,0.,0.}; // 17. 34. 51. 68.
-  for (Int_t i=0; i<3; i++) 
-      stripWidth[i]=AliMUONTriggerConstants::StripWidth(i)*zRatio;
-  for (Int_t i=0; i<4; i++) 
-      stripLength[i]=AliMUONTriggerConstants::StripLength(i)*zRatio;
-  Int_t nStrip[7]={0,0,0,0,0,0,0};	  
-  Float_t stripYsize[7]={0.,0.,0.,0.,0.,0.,0.};
-  Float_t stripXsize[7]={0.,0.,0.,0.,0.,0.,0.};
-
-// chamber 8 0 cathode 0
-  for (Int_t i=0; i<7; i++) nStrip[i]=16;
-  for (Int_t i=0; i<7; i++) stripYsize[i]=stripWidth[2];
-  for (Int_t i=0; i<6; i++) stripXsize[i]=stripLength[1];
-  stripXsize[6]=stripLength[2];
-  trigSegX[8]->Init(0,nStrip,stripYsize,stripXsize,0.); 
-  trigSegX[0]->Init(0,nStrip,stripYsize,stripXsize,0.); 
-
-// chamber 8 7 1 0 cathode 1
-  for (Int_t i=0; i<6; i++) nStrip[i]=8;
-  nStrip[6]=16;
-  for (Int_t i=0; i<7; i++) stripYsize[i]=stripLength[3];  
-  for (Int_t i=0; i<7; i++) stripXsize[i]=stripWidth[2];
-  trigSegY[8]->Init(0,nStrip,stripYsize,stripXsize,0.);  
-  trigSegY[7]->Init(0,nStrip,stripYsize,stripXsize,0.);
-  trigSegY[1]->Init(0,nStrip,stripYsize,stripXsize,0.);
-  trigSegY[0]->Init(0,nStrip,stripYsize,stripXsize,0.);
- 
-// chamber 7 6 2 1 cathode 0
-  for (Int_t i=0; i<6; i++) nStrip[i]=32;
-  nStrip[6]=16;  
-  for (Int_t i=0; i<6; i++) stripYsize[i]=stripWidth[1];
-  stripYsize[6]=stripWidth[2];
-  for (Int_t i=0; i<6; i++) stripXsize[i]=stripLength[1];
-  stripXsize[6]=stripLength[2];
-  trigSegX[7]->Init(0,nStrip,stripYsize,stripXsize,0.);  
-  trigSegX[6]->Init(0,nStrip,stripYsize,stripXsize,0.);
-  trigSegX[2]->Init(0,nStrip,stripYsize,stripXsize,0.);  
-  trigSegX[1]->Init(0,nStrip,stripYsize,stripXsize,0.);
-
-// chamber 6 2 cathode 1
-  for (Int_t i=0; i<5; i++) nStrip[i]=16;
-  for (Int_t i=5; i<6; i++) nStrip[i]=8;
-  nStrip[6]=16;
-  for (Int_t i=0; i<7; i++) stripYsize[i]=stripLength[3];
-  for (Int_t i=0; i<5; i++) stripXsize[i]=stripWidth[1];
-  for (Int_t i=5; i<7; i++) stripXsize[i]=stripWidth[2];
-  trigSegY[6]->Init(0,nStrip,stripYsize,stripXsize,0.);  
-  trigSegY[2]->Init(0,nStrip,stripYsize,stripXsize,0.);  
-
-// chamber 5 3 cathode 0
-  nStrip[0]=48;
-  for (Int_t i=1; i<3; i++) nStrip[i]=64;
-  for (Int_t i=3; i<6; i++) nStrip[i]=32;
-  nStrip[6]=16;  
-  for (Int_t i=0; i<3; i++) stripYsize[i]=stripWidth[0];
-  for (Int_t i=3; i<6; i++) stripYsize[i]=stripWidth[1];
-  stripYsize[6]=stripWidth[2];
-  for (Int_t i=0; i<6; i++) stripXsize[i]=stripLength[1];
-  stripXsize[6]=stripLength[2];
-  trigSegX[5]->Init(0,nStrip,stripYsize,stripXsize,stripLength[0]);  
-  trigSegX[3]->Init(0,nStrip,stripYsize,stripXsize,0.);
-
-// chamber 5 3 cathode 1
-  for (Int_t i=0; i<5; i++) nStrip[i]=16;
-  for (Int_t i=5; i<6; i++) nStrip[5]=8;  
-  nStrip[6]=16;  
-  stripYsize[0]=stripLength[2];
-  for (Int_t i=1; i<8; i++) stripYsize[i]=stripLength[3];
-  for (Int_t i=0; i<5; i++) stripXsize[i]=stripWidth[1];
-  for (Int_t i=5; i<7; i++) stripXsize[i]=stripWidth[2];
-  trigSegY[5]->Init(0,nStrip,stripYsize,stripXsize,stripLength[0]);  
-  trigSegY[3]->Init(0,nStrip,stripYsize,stripXsize,0.);
-
-// chamber 4 cathode 0
-  nStrip[0]=0;
-  for (Int_t i=1; i<3; i++) nStrip[i]=64;  
-  for (Int_t i=3; i<6; i++) nStrip[i]=32;  
-  nStrip[6]=16;
-  stripYsize[0]=0.;
-  for (Int_t i=1; i<3; i++) stripYsize[i]=stripWidth[0];
-  for (Int_t i=3; i<6; i++) stripYsize[i]=stripWidth[1];
-  stripYsize[6]=stripWidth[2];
-  stripXsize[0]=0;  
-  stripXsize[1]=stripLength[0];  
-  for (Int_t i=2; i<6; i++) stripXsize[i]=stripLength[1];
-  stripXsize[6]=stripLength[2];
-  trigSegX[4]->Init(0,nStrip,stripYsize,stripXsize,0.);  
-
-// chamber 4 cathode 1
-  nStrip[0]=0;  
-  nStrip[1]=8;  
-  for (Int_t i=2; i<5; i++) nStrip[i]=16;
-  for (Int_t i=5; i<6; i++) nStrip[i]=8;
-  nStrip[6]=16;
-  stripYsize[0]=0.;  
-  for (Int_t i=1; i<7; i++) stripYsize[i]=stripLength[3];
-  stripXsize[0]=0.;
-  for (Int_t i=1; i<5; i++) stripXsize[i]=stripWidth[1];
-  for (Int_t i=5; i<7; i++) stripXsize[i]=stripWidth[2];
-  trigSegY[4]->Init(0,nStrip,stripYsize,stripXsize,0.);
-
-  Int_t icount=chamberId-10;  // chamber counter (0 1 2 3)
-  Int_t id0=(10+icount+1)*100;
-
-  if (cathod==0) {      
-      chamberSeg->Add(id0+0,      trigSegX[4]);
-      chamberSeg->Add(id0+1,      trigSegX[5]);
-      chamberSeg->Add(id0+2,      trigSegX[6]);
-      chamberSeg->Add(id0+3,      trigSegX[7]);
-      chamberSeg->Add(id0+4,      trigSegX[8]);
-      chamberSeg->Add(id0+5,      trigSegX[8]);
-      chamberSeg->Add(id0+6,      trigSegX[7]);
-      chamberSeg->Add(id0+7,      trigSegX[6]);
-      chamberSeg->Add(id0+8,      trigSegX[5]);
-      chamberSeg->Add(id0+9,      trigSegX[4]);
-      chamberSeg->Add(id0+10,     trigSegX[3]);
-      chamberSeg->Add(id0+11,     trigSegX[2]);
-      chamberSeg->Add(id0+12,     trigSegX[1]);
-      chamberSeg->Add(id0+13,     trigSegX[0]);
-      chamberSeg->Add(id0+14,     trigSegX[0]);
-      chamberSeg->Add(id0+15,     trigSegX[1]);
-      chamberSeg->Add(id0+16,     trigSegX[2]);
-      chamberSeg->Add(id0+17,     trigSegX[3]);
-  } else if (cathod==1) {
-      chamberSeg->Add(id0+0,      trigSegY[4]);
-      chamberSeg->Add(id0+1,      trigSegY[5]);
-      chamberSeg->Add(id0+2,      trigSegY[6]);
-      chamberSeg->Add(id0+3,      trigSegY[7]);
-      chamberSeg->Add(id0+4,      trigSegY[8]);
-      chamberSeg->Add(id0+5,      trigSegY[8]);
-      chamberSeg->Add(id0+6,      trigSegY[7]);
-      chamberSeg->Add(id0+7,      trigSegY[6]);
-      chamberSeg->Add(id0+8,      trigSegY[5]);
-      chamberSeg->Add(id0+9,      trigSegY[4]);
-      chamberSeg->Add(id0+10,     trigSegY[3]);
-      chamberSeg->Add(id0+11,     trigSegY[2]);
-      chamberSeg->Add(id0+12,     trigSegY[1]);
-      chamberSeg->Add(id0+13,     trigSegY[0]);
-      chamberSeg->Add(id0+14,     trigSegY[0]);
-      chamberSeg->Add(id0+15,     trigSegY[1]);
-      chamberSeg->Add(id0+16,     trigSegY[2]);
-      chamberSeg->Add(id0+17,     trigSegY[3]);
-  }
-  
-
-  if (!id0) {
-      AliWarning(Form("Segmentation for chamber %d , cathod %d is not yet defined",chamberId, cathod));
-      return 0;      
-  }
-
-  DrawSegmentation(chamberSeg);  
-  return chamberSeg;
-}
 
 //
 // public methods
 //
 
-//______________________________________________________________________________
+//_____________________________________________________________________________
 AliMUONGeometrySegmentation* 
-AliMUONTest::CreateSegmentation(Int_t chamberId, Int_t cath)
+AliMUONTest::GetSegmentation(Int_t chamberId, Int_t cath)
 {
 // Create geometry segmentation for the specified chamber and cathod
 
-  switch (chamberId) {
-
-    // Station1
-    case 0: 
-    case 1:
-        return CreateSt1Segmentation(chamberId, cath);
-	break;
-
-    // Station2
-    case 2: 
-    case 3:
-        return CreateSt2Segmentation(chamberId, cath);
-	break;
-
-    // Slat stations
-    case 4: 
-    case 5: 
-    case 6: 
-    case 7: 
-    case 8: 
-    case 9:
-        return CreateSlatSegmentation(chamberId, cath);
-	break;
-		
-    // Trigger stations
-    case 10: 
-    case 11: 
-    case 12: 
-    case 13:
-        return CreateTriggerSegmentation(chamberId, cath);
-	break;
-
-    default:
-        AliWarning("Wrong chamber Id");
-	return 0;
-	break;
-  }	
+  return fSegmentation->GetModuleSegmentation(chamberId, cath);
 }		
-//______________________________________________________________________________
+
+#include "AliMUONGeometryDetElement.h"
+//_____________________________________________________________________________
 void  AliMUONTest::DetElemTransforms()
 {
 // 
-  AliMUON* muon = (AliMUON*)gAlice->GetModule("MUON");
-  if (!muon) {
-    AliFatal("MUON detector not defined.");
-    return;
-  }  
-  
   // Loop over chambers
   for (Int_t i=0; i<AliMUONConstants::NCh(); i++) {
 
-    AliMUONGeometryModule* geometry = muon->Chamber(i).GetGeometry();
-    AliMUONGeometryStore* detElements = geometry->GetDetElementStore();
+    const AliMUONGeometryModuleTransformer* kModuleTransformer 
+      = fkTransformer->GetModuleTransformer(i);
+      
+    AliMUONGeometryStore* detElements 
+      = kModuleTransformer->GetDetElementStore();
     
     // Loop over detection elements
     for (Int_t j=0; j<detElements->GetNofEntries(); j++) {
        
-      //Int_t detElemId = geometry->GetDetElemId(j);       
+      //Int_t detElemId = kModuleTransformer->GetDetElemId(j);       
       Int_t detElemId = detElements->GetEntry(j)->GetUniqueID();       
       cout << "Detection element Id: " << detElemId << endl;
 	
       Double_t x, y, z;
-      geometry->Local2Global(detElemId, 0., 0., 0., x, y, z);
+      kModuleTransformer->Local2Global(detElemId, 0., 0., 0., x, y, z);
       cout << "  Global DE position:            " 
 	   <<  x << ",  " << y << ",  " << z << endl; 
 
       Double_t x2, y2, z2;
-      geometry->Global2Local(detElemId, 0., 0., 0., x2, y2, z2);
+      kModuleTransformer->Global2Local(detElemId, 0., 0., 0., x2, y2, z2);
       cout << "  ALIC center in the local frame: " 
 	   <<  x2 << ",  " << y2 << ",  " << z2 << endl; 
 	     
       Double_t x3, y3, z3;
-      geometry->Global2Local(detElemId, x, y, z, x3, y3, z3);
+      kModuleTransformer->Global2Local(detElemId, x, y, z, x3, y3, z3);
       cout << "  Back in the local frame: " 
            <<  x3 << ",  " << y3 << ",  " << z3 << endl;        
       cout << endl;	     
+
+      AliMUONGeometryDetElement* detElem =  
+        (AliMUONGeometryDetElement*)detElements->GetEntry(j);
+      detElem->PrintGlobalTransform();	
     }
   }
 }    	 
 
-//______________________________________________________________________________
+//_____________________________________________________________________________
 void AliMUONTest::ForWhole(AliMUONTests testCase)
 {
 // Perform test for all chambers and first cathod
-
-  AliMUON* muon = (AliMUON*)gAlice->GetModule("MUON");
-  if (!muon) {
-    AliFatal("MUON detector not defined.");
-    return;
-  }  
 
   TStopwatch timer;
   timer.Start();  
 
   // Loop over chambers
   for (Int_t iChamber=0; iChamber<AliMUONConstants::NCh(); iChamber++) {
-  // for (Int_t iChamber=0; iChamber<3; iChamber=iChamber+2) {
 
     // Loop over cathods
     //for (Int_t cath=0; cath<2; cath++) {
     for (Int_t cath=0; cath<1; cath++) {
 
       AliMUONGeometrySegmentation* segmentation 
-        = CreateSegmentation(iChamber, cath);
+        = GetSegmentation(iChamber, cath);
 	
       if (!segmentation) continue;
       	
@@ -909,16 +243,13 @@ void AliMUONTest::ForWhole(AliMUONTests testCase)
       cout << "===================================" << endl;  
 
       ForSegmentation(testCase, segmentation);
-           
-      //if (testCase == kDrawPads) {
-      //}	
     }  
   }     
   timer.Stop();
   timer.Print();
 }    
 
-//______________________________________________________________________________
+//_____________________________________________________________________________
 void AliMUONTest::ForSegmentation(AliMUONTests testCase,
                                   AliMUONGeometrySegmentation *segmentation)
 {
@@ -932,7 +263,7 @@ void AliMUONTest::ForSegmentation(AliMUONTests testCase,
   // Loop over detection elements
   //
   AliMUONGeometryStore* detElements 
-    = segmentation->GetGeometry()->GetDetElementStore();
+    = segmentation->GetTransformer()->GetDetElementStore();
     
   for (Int_t j=0; j<detElements->GetNofEntries(); j++) {
        
@@ -948,7 +279,7 @@ void AliMUONTest::ForSegmentation(AliMUONTests testCase,
   timer.Print();
 } 
    
-//______________________________________________________________________________
+//_____________________________________________________________________________
 void AliMUONTest::ForDetElement(AliMUONTests testCase,
                                 Int_t detElemId,
                                 AliMUONGeometrySegmentation *segmentation)
@@ -978,7 +309,7 @@ void AliMUONTest::ForDetElement(AliMUONTests testCase,
     }    
 } 
    
-//______________________________________________________________________________
+//_____________________________________________________________________________
 void AliMUONTest::Before(AliMUONTests testCase)
 {
 // Do some initialization if necessary
@@ -998,7 +329,7 @@ void AliMUONTest::Before(AliMUONTests testCase)
   }        
 }
 
-//______________________________________________________________________________
+//_____________________________________________________________________________
 void AliMUONTest::After(AliMUONTests testCase)
 {
 // Do some cleanup if necessary
@@ -1018,7 +349,7 @@ void AliMUONTest::After(AliMUONTests testCase)
   }        
 }
 
-//______________________________________________________________________________
+//_____________________________________________________________________________
 void AliMUONTest::PrintPad(Int_t& counter,
                            Int_t detElemId, Int_t ix, Int_t iy,
                            AliMUONGeometrySegmentation* segmentation)
@@ -1045,7 +376,7 @@ void AliMUONTest::PrintPad(Int_t& counter,
   }  
 } 
    
-//______________________________________________________________________________
+//_____________________________________________________________________________
 void AliMUONTest::DrawPad(Int_t& counter,
                           Int_t detElemId, Int_t ix, Int_t iy,
                           AliMUONGeometrySegmentation* segmentation)
@@ -1076,7 +407,7 @@ void AliMUONTest::DrawPad(Int_t& counter,
   pave->Draw();
 } 
    
-//______________________________________________________________________________
+//_____________________________________________________________________________
 void AliMUONTest::DrawSegmentation(AliMUONGeometrySegmentation *seg)
 {
 // TBR
@@ -1099,7 +430,7 @@ void AliMUONTest::DrawSegmentation(AliMUONGeometrySegmentation *seg)
   // Loop over detection elements
   //
   AliMUONGeometryStore* detElements 
-    = seg->GetGeometry()->GetDetElementStore();
+    = seg->GetTransformer()->GetDetElementStore();
     
   for (Int_t iDE=0; iDE<detElements->GetNofEntries(); iDE++) {
     

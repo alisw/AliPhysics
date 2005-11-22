@@ -15,6 +15,8 @@
 #include <TObject.h>
 
 class TCanvas;
+class AliMUONGeometryTransformer;
+class AliMUONSegmentation;
 class AliMUONGeometrySegmentation;
 
 enum AliMUONTests {
@@ -25,12 +27,12 @@ enum AliMUONTests {
 class AliMUONTest : public  TObject 
 {
   public:
-    AliMUONTest(const TString& configMacro);
+    AliMUONTest(const TString& option);
     AliMUONTest();
     virtual ~AliMUONTest();
    
-    // create segmentation
-    AliMUONGeometrySegmentation* CreateSegmentation(
+    // Get segmentation
+    AliMUONGeometrySegmentation* GetSegmentation(
                                        Int_t chamberId, Int_t cath);
                                                           
     // other tests
@@ -67,19 +69,16 @@ class AliMUONTest : public  TObject
   protected:
     AliMUONTest(const AliMUONTest& rhs);
     AliMUONTest& operator = (const AliMUONTest& rhs);
+    
+  private:  
+    // methods
+    void BuildWithMUON(const TString& configMacro);
+    void BuildWithoutMUON(const TString& option);
 
-  private:
-    AliMUONGeometrySegmentation* CreateSt1Segmentation(
-                                       Int_t chamberId, Int_t cathod);
-    AliMUONGeometrySegmentation* CreateSt2Segmentation(
-                                       Int_t chamberId, Int_t cathod);
-    AliMUONGeometrySegmentation* CreateSlatSegmentation(
-                                       Int_t chamberId, Int_t cathod);
-        AliMUONGeometrySegmentation* CreateTriggerSegmentation(
-                                       Int_t chamberId, Int_t cathod);
-				       
     // data members
-    TCanvas* fCanvas; // The canvas for drawing				       
+    const AliMUONGeometryTransformer* fkTransformer; // Geometry parametrisation
+    AliMUONSegmentation*  fSegmentation;  // Segmentation
+    TCanvas*              fCanvas;        // The canvas for drawing				       
 
     ClassDef(AliMUONTest,0)  // MUON class for tests
 };
