@@ -129,6 +129,9 @@ AliMUONSt345SlatSegmentation::AliMUONSt345SlatSegmentation(const AliMUONSt345Sla
 AliMUONSt345SlatSegmentation::~AliMUONSt345SlatSegmentation() 
 {
   // Destructor
+
+  AliDebug(1, Form("dtor this = %p", this));
+
   delete fNDiv;
   delete fDpxD;
   delete fDpyD;
