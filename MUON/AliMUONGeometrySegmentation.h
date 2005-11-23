@@ -48,12 +48,13 @@ class AliMUONGeometrySegmentation : public TObject
                        // Geometry transformer	      
  
     const AliMUONVGeometryDESegmentation* GetDESegmentation(
-                                            Int_t detElemId) const;
+                        Int_t detElemId, Bool_t warn = true) const;
                        // DE segmentation
     
     AliMUONGeometryDirection GetDirection(Int_t detElemId) const;
                        // Direction with a constant pad size  
-		       // (Direction or coordinate where the resolution is the best)
+		       // (Direction or coordinate where the resolution 
+		       // is the best)
     
     TString GetDEName(Int_t detElemId) const;		       
                        // DE name
@@ -184,7 +185,7 @@ class AliMUONGeometrySegmentation : public TObject
 
   private:
     // methods
-    Bool_t OwnNotify(Int_t detElemId) const;
+    Bool_t OwnNotify(Int_t detElemId, Bool_t warn = true) const;
 
     // static data members
     static  const Float_t  fgkMaxDistance; // the big value passed to pad coordinates

@@ -122,7 +122,7 @@ AliMUONGeometrySegmentation::operator=(const AliMUONGeometrySegmentation& rhs)
 //
 
 //______________________________________________________________________________
-Bool_t AliMUONGeometrySegmentation::OwnNotify(Int_t detElemId) const
+Bool_t AliMUONGeometrySegmentation::OwnNotify(Int_t detElemId, Bool_t warn) const
 {
 /// Update current detection element and segmentation,
 /// and checks if they exist.
@@ -132,17 +132,19 @@ Bool_t AliMUONGeometrySegmentation::OwnNotify(Int_t detElemId) const
 
     // Find detection element and its segmentation
     AliMUONGeometryDetElement* detElement
-      = fkModuleTransformer->GetDetElement(detElemId);
+      = fkModuleTransformer->GetDetElement(detElemId, warn);
     if (!detElement) {
-      AliError(Form("Detection element %d not defined", detElemId));
+      if (warn)
+        AliError(Form("Detection element %d not defined", detElemId));
       return false;
     }     
 
     AliMUONVGeometryDESegmentation* segmentation 
-      = (AliMUONVGeometryDESegmentation*) fDESegmentations->Get(detElemId);
+      = (AliMUONVGeometryDESegmentation*) fDESegmentations->Get(detElemId, warn);
     if (!segmentation) {
-      AliError(Form("Segmentation for detection element %d not defined",
-                     detElemId));
+      if (warn)
+        AliError(Form("Segmentation for detection element %d not defined",
+                       detElemId));
       return false;		     
     }
   
@@ -171,11 +173,11 @@ void AliMUONGeometrySegmentation::Add(Int_t detElemId, const TString& detElemNam
 
 //______________________________________________________________________________
 const AliMUONVGeometryDESegmentation* 
-AliMUONGeometrySegmentation::GetDESegmentation(Int_t detElemId) const
+AliMUONGeometrySegmentation::GetDESegmentation(Int_t detElemId, Bool_t warn) const
 {
 /// Return the DE segmentation 
 
-  if (!OwnNotify(detElemId)) return 0;
+  if (!OwnNotify(detElemId, warn)) return 0;
 
   return fCurrentSegmentation;
 }
