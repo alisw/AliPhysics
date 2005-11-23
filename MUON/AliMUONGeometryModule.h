@@ -43,7 +43,6 @@ class AliMUONGeometryModule : public TObject
 
     // set methods
     //
-    void  AddSVPath(const TString& sensVolumePath, Int_t detElemId);		   
     void  SetMotherVolume(const TString& motherVolumeName);
     void  SetVolume(const TString& volumeName);
     void  SetTransformation(const TGeoCombiTrans& transform);
