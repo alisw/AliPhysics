@@ -155,7 +155,7 @@ void AliMUONGeometryTransformer::FillData(Int_t moduleId,
       // Modules numbers in the file are starting from 1
 
   AliMUONGeometryModuleTransformer* moduleTransformer
-    = GetModuleTransformerNonConst(moduleId);
+    = GetModuleTransformerNonConst(moduleId, false);
 
   if ( !moduleTransformer) {
     moduleTransformer = new AliMUONGeometryModuleTransformer(moduleId);
@@ -399,10 +399,6 @@ AliMUONGeometryTransformer::ReadTransformations(const TString& fileName)
 // Returns true, if reading finished correctly.
 // ---
 
-  // No reading
-  // if builder is not associated with any geometry module
-  if (fModuleTransformers->GetEntriesFast() == 0) return false;
-
   // File path
   TString filePath = gSystem->Getenv("ALICE_ROOT");
   filePath += "/MUON/data/";
@@ -558,3 +554,18 @@ AliMUONGeometryTransformer::GetModuleTransformerByDEId(Int_t detElemId,
 
   return GetModuleTransformer(index, warn);
 }    
+
+//_____________________________________________________________________________
+Bool_t  AliMUONGeometryTransformer::HasDE(Int_t detElemId) const
+{
+/// Return true if detection element with given detElemId is defined
+
+  const AliMUONGeometryModuleTransformer* kTransformer 
+    = GetModuleTransformerByDEId(detElemId, false);
+    
+  if (!kTransformer) return false;
+    
+  return ( kTransformer->GetDetElement(detElemId, false) != 0 );
+}  
+    
+

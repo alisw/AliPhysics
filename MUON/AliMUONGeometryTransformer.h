@@ -55,6 +55,8 @@ class AliMUONGeometryTransformer : public TObject
     const AliMUONGeometryModuleTransformer* GetModuleTransformerByDEId(
                                Int_t detElemId, Bool_t warn = true) const;
 
+    Bool_t  HasDE(Int_t detElemId) const;
+
   protected:
     AliMUONGeometryTransformer(const AliMUONGeometryTransformer& right);
     AliMUONGeometryTransformer&  operator = (const AliMUONGeometryTransformer& right);
