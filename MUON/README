@@ -64,19 +64,19 @@ To Load
 gSystem->Load("$ALICE_ROOT/MUON/MUONCheck_C.so")
 
 To print Kine : (default file is galice.root )
-MUONkine() or MUONkine("galice.root",##) for the event number ##
+MUONkine() or MUONkine(##,"galice.root") for the event number ##
 
 To print hits : (default file is galice.root if not MUONhits("toto.root""); )
-MUONhits()  or MUONhits("galice.root",##) for the event number ##
+MUONhits()  or MUONhits(##,"galice.root") for the event number ##
 
 To print digits : (default file is galice.root)
-MUONdigits()  or MUONdigits("galice.root",##) for the event number ##
+MUONdigits()  or MUONdigits(##,"galice.root") for the event number ##
 
 To print rawcluster : (default file is galice.root)
-MUONrecpoints() or MUONrecpoints("galice.root",##) for the event number ##
+MUONrecpoints() or MUONrecpoints(##,"galice.root") for the event number ##
 
 To print trigger : (default file is galice.root)
-MUONrectrigger() or MUONrectrigger("galice.root",##) for the event number ##
+MUONrectrigger() or MUONrectrigger(##,"galice.root") for the event number ##
 
 ....
 
