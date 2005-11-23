@@ -679,7 +679,7 @@ void TriggerSource::FillTriggerFromLocalTrigger(
 	record.Station1Point().fX = circuit.GetX11Pos(trigger->LoStripY());
 	record.Station1Point().fY = circuit.GetY11Pos(trigger->LoStripX());
 	record.Station2Point().fY = circuit.GetY21Pos(trigger->LoStripX() + trigger->LoDev() + 1);  // Why + 1?
-	record.Station2Point().fX = module->Chamber(12).Z() * record.Station1Point().fX / module->Chamber(10).Z();
+	record.Station2Point().fX = AliMUONConstants::DefaultChamberZ(12) * record.Station1Point().fX / AliMUONConstants::DefaultChamberZ(10);
 	DebugMsg(2, "fStation1x = " << record.Station1Point().fX);
 	DebugMsg(2, "fStation1y = " << record.Station1Point().fY);
 	DebugMsg(2, "fStation2x = " << record.Station2Point().fX);
