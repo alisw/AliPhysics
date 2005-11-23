@@ -208,7 +208,7 @@ AliMUONSegmentation::GetDESegmentation(
     
   if ( !moduleSegmentation ) return 0; 
   
-  return moduleSegmentation->GetDESegmentation(detElemId);
+  return moduleSegmentation->GetDESegmentation(detElemId, warn);
 }    
 
 //_____________________________________________________________________________
@@ -232,11 +232,11 @@ AliMUONSegmentation::GetMpSegmentation(
 Bool_t 
 AliMUONSegmentation::HasDE(Int_t detElemId, Int_t cathod) const
 {
-  // Get geometry segmentation 
-  AliMUONGeometrySegmentation* moduleSegmentation
-    = GetModuleSegmentationByDEId(detElemId, cathod, false);
+  // Get DE segmentation 
+  const AliMUONVGeometryDESegmentation* kdeSegmentation
+    = GetDESegmentation(detElemId, cathod, false);
     
-  return ( moduleSegmentation != 0 ); 
+  return ( kdeSegmentation != 0 ); 
   
 }
 
