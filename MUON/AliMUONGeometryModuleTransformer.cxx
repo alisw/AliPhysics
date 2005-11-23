@@ -178,19 +178,20 @@ void  AliMUONGeometryModuleTransformer::SetTransformation(
 
 //______________________________________________________________________________
 AliMUONGeometryDetElement*
-AliMUONGeometryModuleTransformer::GetDetElement(Int_t detElemId) const
+AliMUONGeometryModuleTransformer::GetDetElement(Int_t detElemId, Bool_t warn) const
 {
 /// Return the detection element specified by detElemId.
 /// Give error if detection element is not defined.
 
    // Get detection element
    AliMUONGeometryDetElement* detElement
-     = (AliMUONGeometryDetElement*) fDetElements->Get(detElemId);
+     = (AliMUONGeometryDetElement*) fDetElements->Get(detElemId, warn);
 
    if (!detElement) {
-     AliErrorStream() 
-       << "Detection element " << detElemId
-       << " not found in module " << fModuleId << endl;
+     if (warn)
+       AliErrorStream() 
+         << "Detection element " << detElemId
+         << " not found in module " << fModuleId << endl;
      return 0;
    }  
 

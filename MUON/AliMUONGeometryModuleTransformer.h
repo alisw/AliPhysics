@@ -59,7 +59,8 @@ class AliMUONGeometryModuleTransformer : public TObject
     const TGeoCombiTrans*  GetTransformation() const;    
 
     AliMUONGeometryStore*       GetDetElementStore() const;
-    AliMUONGeometryDetElement*  GetDetElement(Int_t detElemId) const;    
+    AliMUONGeometryDetElement*  GetDetElement(
+                                   Int_t detElemId, Bool_t warn = true) const;    
 
   protected:
     AliMUONGeometryModuleTransformer(const AliMUONGeometryModuleTransformer& rhs);
