@@ -299,6 +299,10 @@ Bool_t AliReconstruction::Run(const char* input,
     }      
   }
 
+
+  TStopwatch stopwatch;
+  stopwatch.Start();
+
   // get the possibly already existing ESD file and tree
   AliESD* esd = new AliESD; AliESD* hltesd = new AliESD;
   TFile* fileOld = NULL;
@@ -427,6 +431,9 @@ Bool_t AliReconstruction::Run(const char* input,
     delete esd; delete hltesd;
     esd = NULL; hltesd = NULL;
   }
+
+  AliInfo(Form("Execution time for filling ESD : R:%.2fs C:%.2fs",
+	       stopwatch.RealTime(),stopwatch.CpuTime()));
 
   file->cd();
   tree->Write();
