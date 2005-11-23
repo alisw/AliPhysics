@@ -67,6 +67,7 @@
 
 #include "AliMUONSegmentation.h"
 #include "AliMUONGeometrySegmentation.h"
+#include "AliMUONSegmentationManager.h"
 #include "AliMUONConstants.h"
 #include "AliMC.h"
 #include "AliLog.h"
@@ -847,6 +848,10 @@ void AliMUONDisplay::DrawView(Float_t theta, Float_t phi, Float_t psi)
 	if (  segmentation->HasDE(detElemId) ) {
 	  AliMpSlatSegmentation * seg =   
 	    (AliMpSlatSegmentation *) segmentation->GetMpSegmentation(detElemId, 0);
+	  if (!seg) {  
+	    seg = (AliMpSlatSegmentation *) 
+	          AliMUONSegmentationManager::Segmentation(detElemId, kBendingPlane);
+	  }	  
 	  if (seg) {  
 	    const AliMpSlat* slat = seg->Slat();
 	    Float_t deltax = slat->DX();
@@ -896,8 +901,12 @@ void AliMUONDisplay::DrawView(Float_t theta, Float_t phi, Float_t psi)
       Int_t id=0;
       for(id=0; id<18; id++) {
 	Int_t detElemId = fChamber*100+id;
-	  AliMpTriggerSegmentation * seg  
-	    = (AliMpTriggerSegmentation *) segmentation->GetMpSegmentation(detElemId, 0);
+	AliMpTriggerSegmentation * seg  
+	  = (AliMpTriggerSegmentation *) segmentation->GetMpSegmentation(detElemId, 0);
+	if (!seg) {  
+	  seg = (AliMpTriggerSegmentation *) 
+                 AliMUONSegmentationManager::Segmentation(detElemId, kBendingPlane);
+	}	  
 	if (seg) {   
 	  const AliMpTrigger* slat = seg->Slat();
 	  Float_t deltax = slat->DX();
