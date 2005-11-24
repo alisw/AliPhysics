@@ -28,7 +28,7 @@ ClassImp(AliTRDtracklet)
 ClassImp(AliTRDtrack)
 
 
-  AliTRDtracklet::AliTRDtracklet():fY(0),fX(0),fAlpha(0),fSigma2(0),fP0(0),fP1(0),fNFound(0),fNCross(0),fPlane(0),fExpectedSigma2(0),fChi2(0),fMaxPos(0),fMaxPos4(0),fMaxPos5(0){
+  AliTRDtracklet::AliTRDtracklet():fY(0),fZ(0),fX(0),fAlpha(0),fSigma2(0),fP0(0),fP1(0),fNFound(0),fNCross(0),fPlane(0),fExpectedSigma2(0),fChi2(0),fTilt(0),fMaxPos(0),fMaxPos4(0),fMaxPos5(0){
 }
 
 //_____________________________________________________________________________
