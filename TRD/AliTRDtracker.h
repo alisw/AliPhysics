@@ -26,7 +26,55 @@ const unsigned kMaxClusterPerTimeBin = 7000;
 const unsigned kZones = 5; 
 const Int_t    kTrackingSectors = 18; 
 
-
+class AliTRDseed : public TObject{
+  friend class AliTRDtracker;
+ public:
+  AliTRDseed();                 // default constructor
+  ~AliTRDseed(){};              // default constructor
+  static  void EvaluateUni(Int_t nvectors, Double_t *data, Double_t &mean, Double_t &sigma, Int_t hh);
+  static  Float_t   FitRiemanTilt(AliTRDseed * seed, Bool_t error);
+  void           UseClusters(); // use clusters
+  void           Update();      // update information - without tilt correction
+  void           CookLabels();  // cook label
+  void           UpdateUsed();
+  void           Reset();       // reset seed
+  Bool_t         isOK(){return fN2>8;}
+ private:
+  Float_t        fTilt;         // tilting angle
+  Float_t        fPadLength;    // pad length
+  Float_t        fX0;           // x0 position
+  Float_t        fX[25];        // !x position
+  Float_t        fY[25];        // !y position
+  Float_t        fZ[25];        // !z position
+  Int_t          fIndexes[25];  // !indexes
+  AliTRDcluster *fClusters[25]; // !clusters
+  Bool_t         fUsable[25];   // !indication  - usable cluster
+  Float_t        fYref[2];      // reference y
+  Float_t        fZref[2];      // reference z
+  Float_t        fYfit[2];      // y fit position +derivation
+  Float_t        fYfitR[2];      // y fit position +derivation
+  Float_t        fZfit[2];      // z fit position
+  Float_t        fZfitR[2];      // z fit position
+  Float_t        fSigmaY;        // "robust" sigma in Y - constant fit
+  Float_t        fSigmaY2;       // "robust" sigma in Y - line fit
+  Float_t        fMeanz;         // mean vaue of z
+  Float_t        fZProb;         // max probbable z
+  Int_t          fLabels[2];    // labels
+  Int_t          fN;            // number of associated clusters
+  Int_t          fN2;            // number of not crossed
+  Int_t          fNUsed;        // number of used clusters
+  Int_t          fFreq;         // freq
+  Int_t          fNChange;      // change z counter
+  Float_t        fMPads;        // mean number of pads per cluster
+  // global
+  //
+  Float_t        fC;            // curvature
+  Float_t        fCC;           // curvature with constrain
+  Float_t        fChi2;         // global chi2
+  Float_t        fChi2Z;        // global chi2
+ private:
+  ClassDef(AliTRDseed,1)  
+};
 
 
 class AliTRDtracker : public AliTracker { 
@@ -37,7 +85,7 @@ class AliTRDtracker : public AliTracker {
   AliTRDtracker();
   AliTRDtracker(const TFile *in);
   virtual ~AliTRDtracker(); 
-
+  static        Int_t  Freq(Int_t n, const Int_t *inlist, Int_t *outlist, Bool_t down);    
   Int_t         Clusters2Tracks(AliESD* event);
   Int_t         PropagateBack(AliESD* event);
   Int_t         RefitInward(AliESD* event);
@@ -111,8 +159,8 @@ class AliTRDtracker : public AliTracker {
                                 Double_t &dx, Double_t &rho, Double_t &x0, 
 					     Bool_t &lookForCluster) const;
      Int_t          GetZone( Double_t z) const;
-     Int_t          Find(Double_t y) const; 
-     Int_t          FindNearestCluster(Double_t y, Double_t z, Double_t maxroad) const;
+     Int_t          Find(Float_t y) const; 
+     Int_t          FindNearestCluster(Float_t y, Float_t z, Float_t maxroad, Float_t maxroad) const;
      void           SetZmax(Int_t cham, Double_t center, Double_t w)
                       { fZc[cham] = center;  fZmax[cham] = w; }
      void           SetZ(Double_t* center, Double_t *w, Double_t *wsensitive);
@@ -263,9 +311,9 @@ class AliTRDtracker : public AliTracker {
   static const Int_t fgkLastPlane;    // Id of the last (outermost) reference plane
 
  private:
-
+  AliTRDtrack *   RegisterSeed(AliTRDseed * seeds, Double_t *params);
   virtual void  MakeSeeds(Int_t inner, Int_t outer, Int_t turn);
-  void  MakeSeedsMI(Int_t inner, Int_t outer);
+  void  MakeSeedsMI(Int_t inner, Int_t outer, AliESD *esd=0);
 
   Int_t         FollowProlongation(AliTRDtrack& t, Int_t rf);
   Int_t         FollowProlongationG(AliTRDtrack& t, Int_t rf);
