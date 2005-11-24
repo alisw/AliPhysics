@@ -29,6 +29,7 @@ void Config(char directory[100]="", char option[6]="param")
   rl->SetNumberOfEventsPerFile(100);
   gAlice->SetRunLoader(rl);
 
+  //AliLog::SetModuleDebugLevel("MUON", 1);
   
   //=======================================================================
   // Set External decayer
@@ -151,7 +152,8 @@ void Config(char directory[100]="", char option[6]="param")
 
   // New MUONv1 version (geometry defined via builders)
   AliMUON *MUON = new AliMUONv1("MUON", "default");
-  //AliMUON *MUON = new AliMUONv1("MUON", "AliMUONFactoryV3"); // New segmentation  
+  //AliMUON *MUON = new AliMUONv1("MUON", "FactoryV3"); // New segmentation slats 
+  //AliMUON *MUON = new AliMUONv1("MUON", "FactoryV4"); // New segmentation trigger 
   // If align = true, the detection elements transformations
   // are taken from the input files and not from the code
   //MUON->SetAlign(true);
