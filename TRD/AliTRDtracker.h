@@ -160,7 +160,7 @@ class AliTRDtracker : public AliTracker {
 					     Bool_t &lookForCluster) const;
      Int_t          GetZone( Double_t z) const;
      Int_t          Find(Float_t y) const; 
-     Int_t          FindNearestCluster(Float_t y, Float_t z, Float_t maxroad, Float_t maxroad) const;
+     Int_t          FindNearestCluster(Float_t y, Float_t z, Float_t maxroad, Float_t maxroadz) const;
      void           SetZmax(Int_t cham, Double_t center, Double_t w)
                       { fZc[cham] = center;  fZmax[cham] = w; }
      void           SetZ(Double_t* center, Double_t *w, Double_t *wsensitive);
