@@ -23,6 +23,8 @@
 #include <TFile.h>
 #include <TString.h>
 #include <TTree.h>
+#include <TSystem.h>
+#include <TChain.h>
 
 //ROOT-AliEn
 #include <TGrid.h>
@@ -47,64 +49,9 @@ AliTagCreator::AliTagCreator() //local mode
 {
   //==============Default constructor for a AliTagCreator==================
   fgridpath = "";
-  fUser = "";
-  fPasswd = "";  
   fSE = "";   
-  fHost = "";
-  fPort = 0; 
   fStorage = 0; 
 }
-
-//______________________________________________________________________________
-AliTagCreator::AliTagCreator(const char *host, Int_t port, const char *username)
-{
-  //==============Default constructor for a AliTagCreator==================
-  fStorage = 0; 
-  fgridpath = "";
-  fHost = host;
-  fUser = username;
-  fPort = port;
-
-  TString grid = "alien://";
-  grid += fHost;
-  grid += ":";
-  grid += port;
-  
-  //connect to the grid
-  TGrid::Connect(grid.Data(),fUser.Data());
-  if(!gGrid)
-    {
-      AliError("Connection failed!!!");
-      return;
-    }
-}
-
-
-//______________________________________________________________________________
-AliTagCreator::AliTagCreator(const char *host, Int_t port, const char *username, const char *passwd)
-{
-  //==============Default constructor for a AliTagCreator==================
-  fStorage = 0; 
-  fgridpath = "";
-  fHost = host;
-  fUser = username;
-  fPasswd = passwd;
-  fPort = port;
-
-  TString grid = "alien://";
-  grid += fHost;
-  grid += ":";
-  grid += port;
-  
-  //connect to the grid
-  TGrid::Connect(grid.Data(),fUser.Data(),fPasswd.Data());
-   if(!gGrid)
-    {
-      AliError("Connection failed!!!");
-      return;
-    }
-}
-
 
 //______________________________________________________________________________
 AliTagCreator::~AliTagCreator()
@@ -128,29 +75,6 @@ void AliTagCreator::SetStorage(Int_t storage)
     }  
 }
 
-//______________________________________________________________________________
-Bool_t AliTagCreator::ConnectToGrid(const char *host, Int_t port, const char *username)
-{
-  // Connects to a given AliEn API service
-  fHost = host;
-  fUser = username;
-  fPort = port;
-
-  TString grid = "alien://";
-  grid += fHost;
-  grid += ":";
-  grid += port;
-  
-  //connect to the grid
-  TGrid::Connect(grid.Data(),fUser.Data());
-  if(!gGrid)
-    {
-      AliError("Connection failed!!!");
-      return kFALSE;
-    } //connect to the grid
-
-  return kTRUE;
-}
 
 //______________________________________________________________________________
 Bool_t AliTagCreator::ReadESDCollection(TGridResult *fresult)
@@ -179,7 +103,6 @@ Bool_t AliTagCreator::ReadESDCollection(TGridResult *fresult)
 	guid = 0;
 
       TFile *f = TFile::Open(alienUrl,"READ");
-      //CreateTag(f,guid,counter);
       CreateTag(f,guid,md5,turl,size,counter);
       f->Close();
       delete f;	 
@@ -189,9 +112,97 @@ Bool_t AliTagCreator::ReadESDCollection(TGridResult *fresult)
   return kTRUE;
 }
 
+//__________________________________________________________________________
+Bool_t AliTagCreator::MergeTags()
+{
+  //Merges the tags and stores the merged tag file 
+  //locally if fStorage=0 or in the grid if fStorage=1
+  AliInfo(Form("Merging tags....."));
+  TChain *fgChain = new TChain("T");
+
+  if(fStorage == 0) {
+    const char * tagPattern = "tag";
+    // Open the working directory
+    void * dirp = gSystem->OpenDirectory(gSystem->pwd());
+    const char * name = 0x0;
+    // Add all files matching *pattern* to the chain
+    while((name = gSystem->GetDirEntry(dirp))) {
+      if (strstr(name,tagPattern))       
+	fgChain->Add(name);  
+    }//directory loop
+    AliInfo(Form("Chained tag files: %d",fgChain->GetEntries()));
+  }//local mode
+
+  else if(fStorage == 1) {
+    TString alienLocation = gGrid->Pwd();
+    alienLocation += fgridpath.Data();
+    alienLocation += "/";
+
+    TGridResult *tagresult = gGrid->Query(alienLocation,"*tag.root","","");
+    Int_t nEntries = tagresult->GetEntries();
+    for(Int_t i = 0; i < nEntries; i++) {
+      TString alienUrl = tagresult->GetKey(i,"turl");
+      fgChain->Add(alienUrl);
+    }//grid result loop      
+    AliInfo(Form("Chained tag files: %d",fgChain->GetEntries()));
+  }//grid mode
+ 
+  AliRunTag *tag = new AliRunTag;
+  AliEventTag *evTag = new AliEventTag;
+  fgChain->SetBranchAddress("AliTAG",&tag);
+   
+  //Defining new tag objects
+  AliRunTag *newTag = new AliRunTag();
+  TTree ttag("T","A Tree with event tags");
+  TBranch * btag = ttag.Branch("AliTAG", &newTag);
+  btag->SetCompressionLevel(9);
+  for(Int_t iTagFiles = 0; iTagFiles < fgChain->GetEntries(); iTagFiles++) {
+    fgChain->GetEntry(iTagFiles);
+    newTag->SetRunId(tag->GetRunId());
+    const TClonesArray *tagList = tag->GetEventTags();
+    for(Int_t j = 0; j < tagList->GetEntries(); j++) {
+      evTag = (AliEventTag *) tagList->At(j);
+      newTag->AddEventTag(*evTag);
+    }
+    ttag.Fill();
+    newTag->Clear();
+  }//tag file loop 
+  
+  TString localFileName = "Run"; localFileName += tag->GetRunId(); 
+  localFileName += ".Merged"; localFileName += ".ESD.tag.root";
+     
+  TString alienFileName = "/alien";
+  alienFileName += gGrid->Pwd();
+  alienFileName += fgridpath.Data();
+  alienFileName += "/";
+  alienFileName +=  localFileName;
+  alienFileName += "?se=";
+  alienFileName += fSE.Data();
+
+  TString filename = 0x0;
+  
+  if(fStorage == 0) {
+    filename = localFileName.Data();      
+    AliInfo(Form("Writing merged tags to local file: %s",filename.Data()));
+  } 
+  if(fStorage == 1) {
+    filename = alienFileName.Data();
+    AliInfo(Form("Writing merged tags to grid file: %s",filename.Data()));     
+  }
+  
+  TFile* ftag = TFile::Open(filename, "recreate");
+  ftag->cd();
+  ttag.Write();
+  ftag->Close();
+
+  delete tag;
+  delete evTag;
+  delete newTag;
+
+  return kTRUE;
+}
 
 //_____________________________________________________________________________
-//void AliTagCreator::CreateTag(TFile* file, const char *guid, Int_t Counter)
 void AliTagCreator::CreateTag(TFile* file, const char *guid, const char *md5, const char *turl, Long64_t size, Int_t Counter)
 {
   // Creates the tags for all the events in a given ESD file
@@ -207,7 +218,7 @@ void AliTagCreator::CreateTag(TFile* file, const char *guid, const char *md5, co
   AliRunTag *tag = new AliRunTag();
   AliEventTag *evTag = new AliEventTag();
   TTree ttag("T","A Tree with event tags");
-  TBranch * btag = ttag.Branch("AliTAG", "AliRunTag", &tag);
+  TBranch * btag = ttag.Branch("AliTAG", &tag);
   btag->SetCompressionLevel(9);
   
   AliInfo(Form("Creating the tags......."));	
@@ -343,10 +354,7 @@ void AliTagCreator::CreateTag(TFile* file, const char *guid, const char *md5, co
 		nEl3GeV++;
 	      if(fPt > 10.0)
 		nEl10GeV++;
-	    }
-	  
-	  
-	  
+	    }	  
 	  ntrack++;
 	}//track loop
       // Fill the event tags 

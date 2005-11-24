@@ -34,26 +34,20 @@ class AliTagCreator : public TObject {
 
  public:
   AliTagCreator();
-  AliTagCreator(const char *host, Int_t port, const char *username);
-  AliTagCreator(const char *host, Int_t port, const char *username, const char *passwd);
   ~AliTagCreator(); 
+
+  Bool_t MergeTags();
 
   void SetSE(const char *se){fSE = se;}
   void SetStorage(Int_t storage);
   void SetGridPath(const char *gridpath){fgridpath = gridpath;}
-  Bool_t ConnectToGrid(const char *host, Int_t port, const char *username);
   Bool_t ReadESDCollection(TGridResult *result);
 
  protected:
-  TString fUser; //the username in AliEn
-  TString fPasswd;   //the username's password
   TString fSE;   //the defined storage element
-  TString fHost; //the defined AliEn host
   TString fgridpath;   //the alien location of the tag files
-  Int_t fPort;  //the defined port for the host login
   Int_t fStorage;  //0:local - 1:grid
   
-  //void CreateTag(TFile* file, const char *guid, Int_t Counter);
   void CreateTag(TFile* file, const char *guid, const char *md5, const char *turl, Long64_t size, Int_t Counter);
  
   ClassDef(AliTagCreator,0)  
