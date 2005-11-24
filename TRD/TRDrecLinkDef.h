@@ -24,6 +24,7 @@
 #pragma link C++ class  AliTRDtracklet+;
 #pragma link C++ class  AliTRDtrack+;
 #pragma link C++ class  AliTRDtracker+;
+#pragma link C++ class  AliTRDseed;
 
 #pragma link C++ class  AliTRDpid+;
 #pragma link C++ class  AliTRDpidLQ+;
