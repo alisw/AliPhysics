@@ -73,7 +73,7 @@ AliTPCseed::AliTPCseed(const AliTPCtrack &t):AliTPCtrack(t){
   fRemoval =0;
   fSort =0;
   for (Int_t i=0;i<3;i++)   fKinkIndexes[i]=t.GetKinkIndex(i);
-
+  for (Int_t i=0;i<5;i++)   fTPCr[i]=0.2;
   for (Int_t i=0;i<160;i++) {
     fClusterPointer[i] = 0;
     Int_t index = t.GetClusterIndex(i);
@@ -450,7 +450,7 @@ Int_t AliTPCseed::Update(const AliTPCclusterMI *c, Double_t chisq, UInt_t /*inde
 
 
 //_____________________________________________________________________________
-void AliTPCseed::CookdEdx(Double_t low, Double_t up,Int_t i1, Int_t i2, Bool_t onlyused) {
+Float_t AliTPCseed::CookdEdx(Double_t low, Double_t up,Int_t i1, Int_t i2, Bool_t onlyused) {
   //-----------------------------------------------------------------
   // This funtion calculates dE/dX within the "low" and "up" cuts.
   //-----------------------------------------------------------------
@@ -660,7 +660,7 @@ void AliTPCseed::CookdEdx(Double_t low, Double_t up,Int_t i1, Int_t i2, Bool_t o
   }
   else{
     SetdEdx(0);
-    return;
+    return 0;
   }
   //  Float_t dedx1 =dedx;
   /*
@@ -686,17 +686,17 @@ void AliTPCseed::CookdEdx(Double_t low, Double_t up,Int_t i1, Int_t i2, Bool_t o
   Double_t p=TMath::Sqrt((1.+ GetTgl()*GetTgl())/(Get1Pt()*Get1Pt()));
 
   if (p<0.6) {
-    if (dedx < 39.+ 12./(p+0.25)/(p+0.25)) { SetMass(0.13957); return;}
-    if (dedx < 39.+ 12./p/p) { SetMass(0.49368); return;}
-    SetMass(0.93827); return;
+    if (dedx < 39.+ 12./(p+0.25)/(p+0.25)) { SetMass(0.13957); return dedx;}
+    if (dedx < 39.+ 12./p/p) { SetMass(0.49368); return dedx;}
+    SetMass(0.93827); return dedx;
   }
 
   if (p<1.2) {
-    if (dedx < 39.+ 12./(p+0.25)/(p+0.25)) { SetMass(0.13957); return;}
-    SetMass(0.93827); return;
+    if (dedx < 39.+ 12./(p+0.25)/(p+0.25)) { SetMass(0.13957); return dedx;}
+    SetMass(0.93827); return dedx;
   }
 
-  SetMass(0.13957); return;
+  SetMass(0.13957); return dedx;
 
 }
 Double_t AliTPCseed::Bethe(Double_t bg){

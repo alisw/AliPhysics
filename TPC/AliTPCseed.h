@@ -63,7 +63,7 @@ class AliTPCseed : public AliTPCtrack {
     
      void SetErrorY2(Float_t sy2){fErrorY2=sy2;}
      void SetErrorZ2(Float_t sz2){fErrorZ2=sz2;}
-     void CookdEdx(Double_t low=0.05, Double_t up=0.70, Int_t i1=0, Int_t i2=159, Bool_t onlyused = kFALSE);
+     Float_t  CookdEdx(Double_t low=0.05, Double_t up=0.70, Int_t i1=0, Int_t i2=159, Bool_t onlyused = kFALSE);
      void CookPID();
      Double_t Bethe(Double_t bg);     // return bethe-bloch
      //     void CookdEdx2(Double_t low=0.05, Double_t up=0.70);
@@ -75,9 +75,9 @@ class AliTPCseed : public AliTPCtrack {
      //     AliTPCseed & operator = (const AliTPCseed &)
      //  {::Fatal("= operator","Not Implemented\n");return *this;}
      AliESDtrack * fEsd; //!
-     AliTPCclusterMI*   fClusterPointer[160];  //! array of cluster pointers  - 
-     TClonesArray * fPoints;              // array with points along the track
-     TClonesArray * fEPoints;             // array with exact points - calculated in special macro not used in tracking
+     AliTPCclusterMI*   fClusterPointer[160];  // array of cluster pointers  - 
+     TClonesArray * fPoints;              //!array with points along the track
+     TClonesArray * fEPoints;             //! array with exact points - calculated in special macro not used in tracking
      //---CURRENT VALUES
      Int_t fRow;                 //!current row number  
      Int_t fSector;              //!current sector number
@@ -106,7 +106,7 @@ class AliTPCseed : public AliTPCtrack {
      Int_t   fOverlapLabels[12];  //track labels and the length of the  overlap     
      Float_t fMAngular;           // mean angular factor
      Char_t   fCircular;           // indicates curlin track
-     AliTPCTrackerPoint  fTrackPoints[160];  //!track points - array track points
+     AliTPCTrackerPoint  fTrackPoints[160];  //track points - array track points
    
      ClassDef(AliTPCseed,1)  
 };
