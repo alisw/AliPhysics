@@ -26,7 +26,20 @@
 #include "AliTRDrecPoint.h"
 
 ClassImp(AliTRDcluster)
- 
+
+
+  //___________________________________________________________________________
+
+  AliTRDcluster::AliTRDcluster() : AliCluster() { 
+  //
+  // default constructor
+  //
+  fQ=0; 
+  fTimeBin=0; 
+  fDetector=0; 
+  fNPads=0; 
+  for (Int_t i = 0;i<7; i++) fSignals[i]=0;
+}
 //_____________________________________________________________________________
   AliTRDcluster::AliTRDcluster(const AliTRDrecPoint &p):AliCluster()
 {
@@ -75,6 +88,7 @@ AliTRDcluster::AliTRDcluster(const AliTRDcluster &c):AliCluster()
   fQ          = c.GetQ();
   fNPads      = c.fNPads;
   fCenter     = c.fCenter;
+  for (Int_t i=0;i<7;i++) fSignals[i] = c.fSignals[i];
 }
 
 //_____________________________________________________________________________
@@ -144,3 +158,34 @@ void AliTRDcluster::AddTrackIndex(Int_t *track)
 
 }          
 
+void AliTRDcluster::SetSignals(Short_t*signals){
+  //
+  // write signals in the cluster
+  //
+  for (Int_t i = 0;i<7;i++) fSignals[i]=signals[i];
+}
+
+Float_t AliTRDcluster::GetSumS() const
+{
+  //
+  // return total charge in non unfolded cluster
+  //
+  Float_t sum=0;
+  for (Int_t i = 0;i<7;i++) sum+=fSignals[i];
+  return sum;
+}
+Float_t AliTRDcluster::GetCenterS() const
+{
+  //
+  //
+  //
+  Float_t sum=0;
+  Float_t sum2=0;
+  for (Int_t i = 0;i<7;i++) {    
+    sum+=fSignals[i];
+    sum2+=i*fSignals[i];
+  }
+  if (sum>0) return sum2/sum-2;
+  return 0;
+
+}

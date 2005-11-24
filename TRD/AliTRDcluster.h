@@ -14,7 +14,7 @@ class AliTRDcluster : public AliCluster {
 
  public:
 
-  AliTRDcluster() : AliCluster() { fQ=0; fTimeBin=0; fDetector=0; fNPads=0; }
+  AliTRDcluster();
   AliTRDcluster(const AliTRDcluster &c);
   AliTRDcluster(const AliTRDrecPoint &p);
 
@@ -34,7 +34,7 @@ class AliTRDcluster : public AliCluster {
   void    SetDetector(Int_t d)         { fDetector  = d; }
   void    SetLocalTimeBin(Int_t t)     { fTimeBin   = t; }
   void    SetQ(Float_t q)              { fQ         = q; }
-  
+  void    SetSignals(Short_t *signals);
   Int_t   GetDetector() const          { return fDetector; }
   Int_t   GetLocalTimeBin() const      { return fTimeBin;  }
   Float_t GetQ() const                 { return fQ; }
@@ -47,6 +47,8 @@ class AliTRDcluster : public AliCluster {
   Int_t   GetNPads() const {return fNPads;}
   void    SetCenter(Float_t center){fCenter =center;}
   Float_t GetCenter() const {return fCenter;}
+  Float_t GetSumS() const;
+  Float_t GetCenterS() const;
  protected:
 
   enum {
@@ -57,14 +59,15 @@ class AliTRDcluster : public AliCluster {
     kLarge = 0x00000016    // Large cluster
   };
   
-  Int_t    fDetector;       // TRD detector number
-  Int_t    fTimeBin;        // Time bin number within the detector
-  Float_t  fQ;              // amplitude 
-  Int_t    fNPads;          // number of pads in cluster
-  Float_t  fCenter;         // center of the cluster relative to the pad 
-
+  Int_t   fDetector;       // TRD detector number
+  Char_t    fTimeBin;        // Time bin number within the detector
+  Float_t   fQ;              // amplitude 
+  Char_t    fNPads;          // number of pads in cluster
+  Float_t   fCenter;         // center of the cluster relative to the pad 
+  Short_t   fSignals[7];     // signals in the cluster
   ClassDef(AliTRDcluster,2) // Cluster for the TRD
  
 };
+
 
 #endif
