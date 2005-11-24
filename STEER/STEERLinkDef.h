@@ -101,9 +101,8 @@
 #pragma link C++ class AliEventTag+;
 
 #pragma link C++ class AliTagCreator+;
-//#pragma link C++ class AliGuidEventList+;
-//#pragma link C++ class AliTagAnalysis+;
-//#pragma link C++ class AliEventTagCuts+;
+#pragma link C++ class AliTagAnalysis+;
+#pragma link C++ class AliEventTagCuts+;
 
 #pragma link C++ class AliAlignObj+;
 #pragma link C++ class AliAlignObjAngles+;
