@@ -261,7 +261,7 @@ Bool_t AliTRDclusterizer::WriteClusters(Int_t det)
 
 
 //_____________________________________________________________________________
-void AliTRDclusterizer::AddCluster(Double_t *pos, Int_t det, Double_t amp
+AliTRDcluster *  AliTRDclusterizer::AddCluster(Double_t *pos, Int_t det, Double_t amp
 				   , Int_t *tracks, Double_t *sig, Int_t iType, Float_t center)
 {
   //
@@ -298,5 +298,5 @@ void AliTRDclusterizer::AddCluster(Double_t *pos, Int_t det, Double_t amp
   };
 
   RecPoints()->Add(c);
-
+  return c;
 }

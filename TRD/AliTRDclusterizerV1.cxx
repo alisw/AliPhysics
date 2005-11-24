@@ -40,6 +40,7 @@
 #include "AliTRDparameter.h"
 #include "AliTRDpadPlane.h"
 #include "AliTRDrawData.h"
+#include "AliTRDcluster.h"
 
 ClassImp(AliTRDclusterizerV1)
 
@@ -460,13 +461,20 @@ Bool_t AliTRDclusterizerV1::MakeClusters()
                 clusterSig[0] = (clusterSigmaY2 + 1./12.) * colSize*colSize;
                 clusterSig[1] = rowSize * rowSize / 12.;                                       
                 // Add the cluster to the output array 
-                AddCluster(clusterPos
+                AliTRDcluster * cluster = AddCluster(clusterPos
 			  ,idet
 			  ,clusterCharge
 			  ,clusterTracks
 			  ,clusterSig
 			   ,iType,clusterPads[1]);
-
+		//
+		//
+		Short_t signals[7]={0,0,0,0,0,0,0};
+		for (Int_t jPad = col-3;jPad<=col+3;jPad++){
+		  if (jPad<0 ||jPad>=nColMax-1) continue;
+		  signals[jPad-col+3] =  TMath::Abs(digits->GetDataUnchecked(row,jPad,time));
+		}
+		cluster->SetSignals(signals);
               }
             } 
           }   
