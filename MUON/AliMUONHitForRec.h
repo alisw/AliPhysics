@@ -39,6 +39,8 @@ class AliMUONHitForRec : public TObject {
   void SetNonBendingReso2(Double_t NonBendingReso2) { fNonBendingReso2 = NonBendingReso2;}
   Int_t GetChamberNumber(void) const { return fChamberNumber;}
   void SetChamberNumber(Int_t ChamberNumber) { fChamberNumber = ChamberNumber;}
+  Int_t GetDetElemId(void) const {return fDetElemId;}
+  void SetDetElemId(Int_t id) { fDetElemId = id;}
   Int_t GetHitNumber(void) const { return fHitNumber;}
   void SetHitNumber(Int_t HitNumber) { fHitNumber = HitNumber;}
   Int_t GetTTRTrack(void) const { return fTTRTrack;}
@@ -76,6 +78,7 @@ class AliMUONHitForRec : public TObject {
   // ideal would be real link to "hit" or "reconstructed hit"
   // if everything would be in memory ????
   Int_t fChamberNumber; // chamber number (0...)
+  Int_t fDetElemId; // detection element Id   
   Int_t fHitNumber; // hit number (0...): RawCluster in "chamber" event of TR or track ref. hit in "track" event of TTR
   Int_t fTTRTrack; // track number (0...) in TTR
   Int_t fTrackRefSignal; // Track ref. signal (1) or background (0)
@@ -89,7 +92,7 @@ class AliMUONHitForRec : public TObject {
   AliMUONTrackHit *fLastTrackHitPtr ; //! pointer to last TrackHit made with HitForRec
   Int_t fNTrackHits; //! number of TrackHit's made with HitForRec
   
-  ClassDef(AliMUONHitForRec, 1) // Hit for reconstruction in ALICE dimuon spectrometer
+  ClassDef(AliMUONHitForRec, 2) // Hit for reconstruction in ALICE dimuon spectrometer
     };
 	
 #endif
