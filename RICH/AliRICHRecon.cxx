@@ -515,7 +515,9 @@ void AliRICHRecon::FindAreaAndPortionOfRing()
   
   area *= 0.5;
   
-  Float_t portionOfRing = ((Float_t)nPsiAccepted)/((Float_t)(nPsiTotal));
+  Float_t portionOfRing = 0;
+  if (nPsiTotal>0) 
+    portionOfRing = ((Float_t)nPsiAccepted)/((Float_t)(nPsiTotal));
 
 
   SetAreaOfRing(area);
