@@ -38,7 +38,7 @@
 
 ClassImp(AliMUONGeometrySegmentation)
 
-const Float_t  AliMUONGeometrySegmentation::fgkMaxDistance = 1.0e11;
+const Float_t  AliMUONGeometrySegmentation::fgkMaxDistance = 1.0e6;
 
 //______________________________________________________________________________
 AliMUONGeometrySegmentation::AliMUONGeometrySegmentation(
