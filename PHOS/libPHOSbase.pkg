@@ -1,0 +1,16 @@
+SRCS          =  AliPHOS.cxx \
+                 AliPHOSGeometry.cxx \
+                 AliPHOSEMCAGeometry.cxx \
+                 AliPHOSCPVGeometry.cxx AliPHOSCPVBaseGeometry.cxx \
+                 AliPHOSSupportGeometry.cxx \
+                 AliPHOSLoader.cxx AliPHOSGetter.cxx \
+                 AliPHOSGetterLight.cxx
+
+HDRS:= $(SRCS:.cxx=.h) 
+
+DHDR= PHOSbaseLinkDef.h
+
+EINCLUDE:=RAW
+
+
+

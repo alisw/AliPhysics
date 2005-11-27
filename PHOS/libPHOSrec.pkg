@@ -1,0 +1,26 @@
+SRCS          =  AliPHOSRecPoint.cxx AliPHOSEmcRecPoint.cxx \
+                 AliPHOSCpvRecPoint.cxx \
+                 AliPHOSClusterizer.cxx AliPHOSClusterizerv1.cxx  \
+                 AliPHOSLink.cxx \
+                 AliPHOSReconstructor.cxx  AliPHOSTrackSegment.cxx \
+                 AliPHOSTrackSegmentMaker.cxx AliPHOSTrackSegmentMakerv1.cxx \
+                 AliPHOSRecParticle.cxx AliPHOSPID.cxx AliPHOSPIDv0.cxx \
+                 AliPHOSAnalyze.cxx AliPHOSFastRecParticle.cxx \
+                 AliPHOSIhepAnalyze.cxx AliPHOSEvalRecPoint.cxx \
+                 AliPHOSRecManager.cxx AliPHOSRecCpvManager.cxx \
+		 AliPHOSRecEmcManager.cxx \
+                 AliPHOSClusterizerv2.cxx AliPHOSPIDv1.cxx \
+		 AliPHOSJet.cxx AliPHOSJetFinder.cxx\
+                 AliPHOSFastGlobalReconstruction.cxx \
+	         AliPHOSGammaJet.cxx \
+		 AliPHOSGridFile.cxx \
+		 AliPHOSTracker.cxx \
+
+HDRS:= $(SRCS:.cxx=.h) 
+
+DHDR= PHOSrecLinkDef.h
+
+EINCLUDE:=RAW
+
+
+

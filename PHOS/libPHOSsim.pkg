@@ -1,0 +1,23 @@
+SRCS          =  AliPHOSv0.cxx AliPHOSv1.cxx AliPHOSv2.cxx \
+                 AliPHOSvFast.cxx AliPHOSvImpacts.cxx \
+                 AliPHOSImpact.cxx \
+                 AliPHOSHit.cxx \
+		 AliPHOSSDigitizer.cxx AliPHOSDigitizer.cxx \
+                 AliPHOSCPVDigit.cxx AliPHOSDigit.cxx  \
+                 AliPHOSTick.cxx \
+                 AliPHOSRaw2Digits.cxx AliPHOSBeamTestEvent.cxx \
+		 AliPHOSCalibrationDB.cxx AliPHOSCalibrationData.cxx\
+                 AliPHOSCalibrator.cxx AliPHOSCalibrManager.cxx \
+		 AliPHOSConTableDB.cxx \
+		 AliPHOSRawStream.cxx \
+                 AliPHOSOnlineMonitor.cxx \
+		 AliPHOSCalibData.cxx
+
+HDRS:= $(SRCS:.cxx=.h) 
+
+DHDR= PHOSsimLinkDef.h
+
+EINCLUDE:=RAW
+
+
+
