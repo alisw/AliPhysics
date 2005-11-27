@@ -46,8 +46,6 @@ public:
 protected:  
   AliFMD*        fFMD;           //! Pointer to module 
   Bool_t         fDetailed;      // Whether to make a detailed simulation 
-  Int_t 	 fInnerId;	 //! ID of inner ring strips
-  Int_t 	 fOuterId;	 //! ID of outer ring strips
   TLorentzVector fCurrentV;      //! Current hit postition 
   TLorentzVector fCurrentP;      //! Current hit momentum
   TArrayI        fActiveId;      //! Active volume ID's

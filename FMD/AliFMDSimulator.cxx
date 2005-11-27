@@ -133,8 +133,6 @@ const Char_t* AliFMDSimulator::fgkFlangeName    = "F3SF";
 AliFMDSimulator::AliFMDSimulator() 
   : fFMD(0), 
     fDetailed(kFALSE),
-    fInnerId(-1),
-    fOuterId(-1), 
     fActiveId(4), 
     fUseDivided(kFALSE),
     fUseAssembly(kTRUE), 
@@ -148,8 +146,6 @@ AliFMDSimulator::AliFMDSimulator(AliFMD* fmd, Bool_t detailed)
   : TTask("FMDSimulator", "Forward Multiplicity Detector Simulator"), 
     fFMD(fmd), 
     fDetailed(detailed),
-    fInnerId(-1),
-    fOuterId(-1),
     fActiveId(4),
     fUseDivided(kFALSE),
     fUseAssembly(kTRUE),
@@ -187,6 +183,10 @@ AliFMDSimulator::DefineMaterials()
   // singleton.  These pointers are later used when setting up the
   // geometry 
   AliDebug(10, "\tCreating materials");
+  AliDebug(1,  Form("\tGeometry options: %s, %s, %s",
+		    (fDetailed    ? "detailed" : "coarse"), 
+		    (fUseDivided  ? "divided into strips" : "one volume"), 
+		    (fUseAssembly ? "within assemblies" : "in real volumes")));
   // Get pointer to geometry singleton object. 
   AliFMDGeometry* geometry = AliFMDGeometry::Instance();
   geometry->Init();

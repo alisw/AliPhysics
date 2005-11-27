@@ -1,7 +1,7 @@
 void DrawFMD()
 {
-  gSystem->Load("/usr/lib/libshift");
-  gSystem->Load("/usr/lib/libgfortran");
+  // gSystem->Load("/usr/lib/libshift");
+  // gSystem->Load("/usr/lib/libgfortran");
   gSystem->Load("libgeant321");
   gMC = new TGeant3TGeo;
    gMC->Gsatt("*", "seen", -1);
