@@ -20,7 +20,6 @@
 //  The standard TRD tracker                                                 //
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
-#include <malloc.h>
 
 #include <Riostream.h>
 #include <TFile.h>
@@ -178,9 +177,6 @@ AliTRDtracker::AliTRDtracker(const TFile *geomfile):AliTracker()
   fNtracks   = 0;
   fTracks    = new TObjArray(1000);
 
-  static struct mallinfo memdebug;
-  memdebug = mallinfo();
-  printf("Before: %i in bytes\n",memdebug.uordblks);
   for(Int_t geomS = 0; geomS < kTrackingSectors; geomS++) {
     Int_t trS = CookSectorIndex(geomS);
     fTrSec[trS] = new AliTRDtrackingSector(fGeom, geomS, fPar);
@@ -188,8 +184,6 @@ AliTRDtracker::AliTRDtracker(const TFile *geomfile):AliTracker()
       fHoles[icham][trS]=fGeom->IsHole(0,icham,geomS);
     }
   }
-  memdebug = mallinfo();
-  printf("After: %i in bytes\n",memdebug.uordblks);
   AliTRDpadPlane *padPlane = fPar->GetPadPlane(0,0);
   Float_t tiltAngle = TMath::Abs(padPlane->GetTiltingAngle());
   //  Float_t tiltAngle = TMath::Abs(fPar->GetTiltingAngle()); 
