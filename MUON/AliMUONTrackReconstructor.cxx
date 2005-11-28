@@ -13,6 +13,8 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+/* $Id$ */
+
 ////////////////////////////////////
 //
 // MUON track reconstructor in ALICE (class renamed from AliMUONEventReconstructor)
@@ -34,7 +36,7 @@
 #include <Riostream.h>
 #include <TDirectory.h>
 #include <TFile.h>
-#include <TMatrixD.h> //AZ
+#include <TMatrixD.h>
 
 #include "AliMUONTrackReconstructor.h"
 #include "AliMUON.h"
@@ -52,7 +54,7 @@
 #include "AliRun.h" // for gAlice
 #include "AliRunLoader.h"
 #include "AliLoader.h"
-#include "AliMUONTrackK.h" //AZ
+#include "AliMUONTrackK.h" 
 #include "AliMC.h"
 #include "AliLog.h"
 #include "AliTrackReference.h"
@@ -102,7 +104,6 @@ AliMUONTrackReconstructor::AliMUONTrackReconstructor(AliLoader* loader)
   fNRecTracks = 0; // really needed or GetEntriesFast sufficient ????
   // Memory allocation for the TClonesArray of hits on reconstructed tracks
   // Is 100 the right size ????
-  //AZ fRecTrackHitsPtr = new TClonesArray("AliMUONTrack", 100);
   fRecTrackHitsPtr = new TClonesArray("AliMUONTrackHit", 100);
   fNRecTrackHits = 0; // really needed or GetEntriesFast sufficient ????
 
@@ -477,7 +478,7 @@ void AliMUONTrackReconstructor::MakeEventToBeReconstructed(void)
     // TreeR assumed to be be "prepared" in calling function
     // by "MUON->GetTreeR(nev)" ????
     TTree *treeR = fLoader->TreeR();
-    fMUONData->SetTreeAddress("RC");
+    //AZ? fMUONData->SetTreeAddress("RC");
     AddHitsForRecFromRawClusters(treeR);
     // No sorting: it is done automatically in the previous function
   }
@@ -711,12 +712,15 @@ void AliMUONTrackReconstructor::AddHitsForRecFromRawClusters(TTree* TR)
   TClonesArray *rawclusters;
   AliDebug(1,"Enter AddHitsForRecFromRawClusters");
 
-  nTRentries = Int_t(TR->GetEntries());
-  if (nTRentries != 1) {
-    AliError(Form("nTRentries = %d not equal to 1 ",nTRentries));
-    exit(0);
+  if (fTrackMethod != 3) { //AZ
+    fMUONData->SetTreeAddress("RC"); //AZ
+    nTRentries = Int_t(TR->GetEntries());
+    if (nTRentries != 1) {
+      AliError(Form("nTRentries = %d not equal to 1 ",nTRentries));
+      exit(0);
+    }
+    fLoader->TreeR()->GetEvent(0); // only one entry  
   }
-  fLoader->TreeR()->GetEvent(0); // only one entry  
 
   // Loop over tracking chambers
   for (Int_t ch = 0; ch < AliMUONConstants::NTrackingCh(); ch++) {
@@ -741,6 +745,8 @@ void AliMUONTrackReconstructor::AddHitsForRecFromRawClusters(TTree* TR)
       //  resolution: info should be already in raw cluster and taken from it ????
       hitForRec->SetBendingReso2(fBendingResolution * fBendingResolution);
       hitForRec->SetNonBendingReso2(fNonBendingResolution * fNonBendingResolution);
+      //hitForRec->SetBendingReso2(clus->GetErrY() * clus->GetErrY());
+      //hitForRec->SetNonBendingReso2(clus->GetErrX() * clus->GetErrX());
       //  original raw cluster
       hitForRec->SetChamberNumber(ch);
       hitForRec->SetHitNumber(iclus);
@@ -754,7 +760,7 @@ void AliMUONTrackReconstructor::AddHitsForRecFromRawClusters(TTree* TR)
 	hitForRec->Dump();}
     } // end of cluster loop
   } // end of chamber loop
-  SortHitsForRecWithIncreasingChamber(); //AZ 
+  SortHitsForRecWithIncreasingChamber(); 
   return;
 }
 
@@ -766,9 +772,8 @@ void AliMUONTrackReconstructor::MakeSegments(void)
   AliDebug(1,"Enter MakeSegments");
   ResetSegments();
   // Loop over stations
-  Int_t nb = (fTrackMethod == 2) ? 3 : 0; //AZ
-  //AZ for (Int_t st = 0; st < fgkMaxMuonTrackingStations; st++)
-  for (Int_t st = nb; st < AliMUONConstants::NTrackingCh()/2; st++) //AZ
+  Int_t nb = (fTrackMethod != 1) ? 3 : 0; //AZ
+  for (Int_t st = nb; st < AliMUONConstants::NTrackingCh()/2; st++) 
     MakeSegmentsPerStation(st); 
   if (AliLog::GetGlobalDebugLevel() > 1) {
     cout << "end of MakeSegments" << endl;
@@ -903,7 +908,7 @@ void AliMUONTrackReconstructor::MakeTracks(void)
   // The order may be important for the following Reset's
   ResetTracks();
   ResetTrackHits();
-  if (fTrackMethod == 2) { //AZ - Kalman filter
+  if (fTrackMethod != 1) { //AZ - Kalman filter
     MakeTrackCandidatesK();
     if (fRecTracksPtr->GetEntriesFast() == 0) return;
     // Follow tracks in stations(1..) 3, 2 and 1
@@ -1188,6 +1193,7 @@ void AliMUONTrackReconstructor::FollowTracks(void)
   Int_t ch = -1, chInStation, chBestHit = -1, iHit, iSegment, station, trackIndex; 
   Double_t bestChi2, chi2, dZ1, dZ2, dZ3, maxSigma2Distance, mcsFactor;
   Double_t bendingMomentum, chi2Norm = 0.;
+
   // local maxSigma2Distance, for easy increase in testing
   maxSigma2Distance = fMaxSigma2Distance;
   AliDebug(2,"Enter FollowTracks");
@@ -1611,8 +1617,7 @@ void AliMUONTrackReconstructor::MakeTrackCandidatesK(void)
     for (iseg=0; iseg<fNSegments[istat]; iseg++) {
       // Transform segments to tracks and evaluate covariance matrix
       segment = (AliMUONSegment*) ((*fSegmentsPtr[istat])[iseg]);
-      trackK = new ((*fRecTracksPtr)[fNRecTracks]) AliMUONTrackK(segment);
-      fNRecTracks++;
+      trackK = new ((*fRecTracksPtr)[fNRecTracks++]) AliMUONTrackK(segment);
     } // for (iseg=0;...)
   } // for (istat=4;...)
   return;
@@ -1631,8 +1636,6 @@ void AliMUONTrackReconstructor::FollowTracksK(void)
   TClonesArray *rawclusters;
   clus = 0; rawclusters = 0;
 
-  //AZ(z->-z) zDipole1 = GetSimpleBPosition() - GetSimpleBLength()/2;
-  //AZ(z->-z) zDipole2 = zDipole1 + GetSimpleBLength();
   zDipole1 = GetSimpleBPosition() + GetSimpleBLength()/2;
   zDipole2 = zDipole1 - GetSimpleBLength();
 
@@ -1653,8 +1656,8 @@ void AliMUONTrackReconstructor::FollowTracksK(void)
 	rawclusters = fMUONData->RawClusters(hit->GetChamberNumber());
 	clus = (AliMUONRawCluster*) rawclusters->UncheckedAt(hit->
                                                  GetHitNumber());
-	printf("%3d", clus->GetTrack(1)-1);
-	if (clus->GetTrack(2) != 0) printf("%3d \n", clus->GetTrack(2)-1);
+	printf(" %d", clus->GetTrack(1));
+	if (clus->GetTrack(2) != -1) printf(" %d \n", clus->GetTrack(2));
 	else printf("\n");
       } // if (fRecTrackRefHits)
     }
@@ -1689,8 +1692,7 @@ void AliMUONTrackReconstructor::FollowTracksK(void)
     if (hit) ichamBeg = hit->GetChamberNumber();
     ichamEnd = 0;
     // Check propagation direction
-    if (hit == NULL) ichamBeg = ichamEnd;
-    //AZ(z->-z) else if (trackK->GetTrackDir() > 0) {
+    if (!hit) { ichamBeg = ichamEnd; AliFatal(" ??? "); }
     else if (trackK->GetTrackDir() < 0) {
       ichamEnd = 9; // forward propagation
       ok = trackK->KalmanFilter(ichamBeg,ichamEnd,kFALSE,zDipole1,zDipole2);
@@ -1699,7 +1701,6 @@ void AliMUONTrackReconstructor::FollowTracksK(void)
         ichamEnd = 6; // backward propagation
 	// Change weight matrix and zero fChi2 for backpropagation
         trackK->StartBack();
-	//AZ trackK->SetTrackDir(-1);
 	trackK->SetTrackDir(1);
         ok = trackK->KalmanFilter(ichamBeg,ichamEnd,kTRUE,zDipole1,zDipole2);
         ichamBeg = ichamEnd;
@@ -1718,7 +1719,6 @@ void AliMUONTrackReconstructor::FollowTracksK(void)
     }
 
     if (ok) {
-      //AZ trackK->SetTrackDir(-1);
       trackK->SetTrackDir(1);
       trackK->SetBPFlag(kFALSE);
       ok = trackK->KalmanFilter(ichamBeg,ichamEnd,kFALSE,zDipole1,zDipole2);
@@ -1847,11 +1847,13 @@ void AliMUONTrackReconstructor::SetTrackMethod(Int_t iTrackMethod)
 {
   // Set track method and recreate track container if necessary
   
-  fTrackMethod = iTrackMethod == 2 ? 2 : 1;
-  if (fTrackMethod == 2) {
+  fTrackMethod = TMath::Min (iTrackMethod, 3);
+  fTrackMethod = TMath::Max (fTrackMethod, 1);
+  if (fTrackMethod != 1) {
     if (fRecTracksPtr) delete fRecTracksPtr;
     fRecTracksPtr = new TClonesArray("AliMUONTrackK", 10);
-    cout << " *** Tracking with the Kalman filter *** " << endl;
+    if (fTrackMethod == 2) cout << " *** Tracking with the Kalman filter *** " << endl;
+    else cout << " *** Combined cluster / track finder ***" << endl;
   } else cout << " *** Traditional tracking *** " << endl;
 
 }

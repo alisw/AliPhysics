@@ -983,7 +983,7 @@ void AliMUONData::SetTreeAddress(Option_t* option)
     }
 
   }
-  if ( TreeR()  && fRawClusters && cRC) {
+  if ( TreeR()  && fRawClusters && cRC && !strstr(cRC,"RCC")) {
     for (int i=0; i<AliMUONConstants::NTrackingCh(); i++) {
       sprintf(branchname,"%sRawClusters%d",GetName(),i+1);
       if (fRawClusters) {

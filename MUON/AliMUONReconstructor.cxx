@@ -27,12 +27,13 @@
 #include "AliGenEventHeader.h"
 #include "AliESD.h"
 #include "AliMUONReconstructor.h"
-
+ 
 #include "AliMUONData.h"
 #include "AliMUONTrackReconstructor.h"
 #include "AliMUONClusterReconstructor.h"
 #include "AliMUONClusterFinderVS.h"
 #include "AliMUONClusterFinderAZ.h"
+#include "AliMUONEventRecoCombi.h" 
 #include "AliMUONTrack.h"
 #include "AliMUONTrackParam.h"
 #include "AliMUONTriggerTrack.h"
@@ -64,12 +65,13 @@ void AliMUONReconstructor::Reconstruct(AliRunLoader* runLoader) const
   AliMUONTrackReconstructor* recoEvent = new AliMUONTrackReconstructor(loader);
   AliMUONData* dataEvent = recoEvent->GetMUONData();
   if (strstr(GetOption(),"Kalman")) recoEvent->SetTrackMethod(2); // Kalman
+  else if (strstr(GetOption(),"Combi")) recoEvent->SetTrackMethod(3); // Combined cluster / track
   else recoEvent->SetTrackMethod(1); // original
 
   AliMUONClusterReconstructor* recoCluster = new AliMUONClusterReconstructor(loader);
   AliMUONData* dataCluster = recoCluster->GetMUONData();
   AliMUONClusterFinderVS *recModel = recoCluster->GetRecoModel();
-  if (strstr(GetOption(),"AZ")) {
+  if (strstr(GetOption(),"AZ") || strstr(GetOption(),"Combi")) {
     recModel = (AliMUONClusterFinderVS*) new AliMUONClusterFinderAZ();
     recoCluster->SetRecoModel(recModel);
   }
@@ -78,32 +80,43 @@ void AliMUONReconstructor::Reconstruct(AliRunLoader* runLoader) const
   loader->LoadDigits("READ");
   loader->LoadRecPoints("RECREATE");
   loader->LoadTracks("RECREATE");
- 
-  //   Loop over events             
+  
+  Int_t chBeg = recoEvent->GetTrackMethod() == 3 ? 6 : 0; 
+  //   Loop over events              
   for(Int_t ievent = 0; ievent < nEvents; ievent++) {
     printf("Event %d\n",ievent);
     runLoader->GetEvent(ievent);
 
     //----------------------- digit2cluster & Trigger2Trigger -------------------
     if (!loader->TreeR()) loader->MakeRecPointsContainer();
-    
+     
     // tracking branch
-    dataCluster->MakeBranch("RC");
-     dataCluster->SetTreeAddress("RC");
-    dataCluster->SetTreeAddress("D,");
+    if (recoEvent->GetTrackMethod() != 3) {
+      dataCluster->MakeBranch("RC");
+      dataCluster->SetTreeAddress("D,RC");
+    } else {
+      dataCluster->SetTreeAddress("D");
+      dataCluster->SetTreeAddress("RCC");
+    }
     // Important for avoiding a memory leak when reading digits ( to be investigated more in detail)
-    // In any case the reading of GLT is need for the Trigger2Tigger method below
+    // In any case the reading of GLT is needed for the Trigger2Tigger method below
     dataCluster->SetTreeAddress("GLT");
-    recoCluster->Digits2Clusters();
-    dataCluster->Fill("RC");
+
+    recoCluster->Digits2Clusters(chBeg); 
+    if (recoEvent->GetTrackMethod() == 3) {
+      // Combined cluster / track finder
+      AliMUONEventRecoCombi::Instance()->FillEvent(dataCluster, dataEvent, (AliMUONClusterFinderAZ*)recModel);
+      ((AliMUONClusterFinderAZ*) recModel)->SetReco(2); 
+    }
+    else dataCluster->Fill("RC"); 
 
     // trigger branch
     dataCluster->MakeBranch("TC");
     dataCluster->SetTreeAddress("TC");
-    recoCluster->Trigger2Trigger();
+    recoCluster->Trigger2Trigger(); 
     dataCluster->Fill("TC");
 
-    loader->WriteRecPoints("OVERWRITE");
+    //AZ loader->WriteRecPoints("OVERWRITE");
 
     //---------------------------- Track & TriggerTrack ---------------------
     if (!loader->TreeT()) loader->MakeTracksContainer();
@@ -120,8 +133,18 @@ void AliMUONReconstructor::Reconstruct(AliRunLoader* runLoader) const
     recoEvent->EventReconstruct();
     dataEvent->Fill("RT");
 
-    loader->WriteTracks("OVERWRITE");
- 
+    loader->WriteTracks("OVERWRITE"); 
+  
+    if (recoEvent->GetTrackMethod() == 3) { 
+      // Combined cluster / track
+      ((AliMUONClusterFinderAZ*) recModel)->SetReco(1);
+      dataCluster->MakeBranch("RC");
+      dataCluster->SetTreeAddress("RC");
+      AliMUONEventRecoCombi::Instance()->FillRecP(dataCluster, recoEvent); 
+      dataCluster->Fill("RC"); 
+    }
+    loader->WriteRecPoints("OVERWRITE"); 
+
     //--------------------------- Resetting branches -----------------------
     dataCluster->ResetDigits();
     dataCluster->ResetRawClusters();
@@ -129,7 +152,7 @@ void AliMUONReconstructor::Reconstruct(AliRunLoader* runLoader) const
 
     dataEvent->ResetRawClusters();
     dataEvent->ResetTrigger();
-    dataEvent->ResetRecTracks(); 
+    dataEvent->ResetRecTracks();  
     dataEvent->ResetRecTriggerTracks();
 
   }
@@ -164,9 +187,9 @@ void AliMUONReconstructor::Reconstruct(AliRunLoader* runLoader, AliRawReader* ra
   loader->LoadDigits("RECREATE");
 
 
-  //   Loop over events 
+  //   Loop over events  
   Int_t iEvent = 0;
-           
+            
   while (rawReader->NextEvent()) {
     printf("Event %d\n",iEvent);
     runLoader->GetEvent(iEvent++);
@@ -178,29 +201,29 @@ void AliMUONReconstructor::Reconstruct(AliRunLoader* runLoader, AliRawReader* ra
     dataCluster->MakeBranch("D");
     dataCluster->SetTreeAddress("D");
     rawData->ReadTrackerDDL(rawReader);
-    dataCluster->Fill("D");
+    dataCluster->Fill("D"); 
 
     // trigger branch
     dataCluster->MakeBranch("GLT");
     dataCluster->SetTreeAddress("GLT");
     rawData->ReadTriggerDDL(rawReader);
-    dataCluster->Fill("GLT");
+    dataCluster->Fill("GLT"); 
 
     loader->WriteDigits("OVERWRITE");
 
     //----------------------- digit2cluster & Trigger2Trigger -------------------
     if (!loader->TreeR()) loader->MakeRecPointsContainer();
-    
+     
     // tracking branch
     dataCluster->MakeBranch("RC");
     dataCluster->SetTreeAddress("RC");
-    recoCluster->Digits2Clusters();
-    dataCluster->Fill("RC");
+    recoCluster->Digits2Clusters(); 
+    dataCluster->Fill("RC"); 
 
     // trigger branch
     dataCluster->MakeBranch("TC");
     dataCluster->SetTreeAddress("TC");
-    recoCluster->Trigger2Trigger();
+    recoCluster->Trigger2Trigger(); 
     dataCluster->Fill("TC");
 
     loader->WriteRecPoints("OVERWRITE");
@@ -220,8 +243,8 @@ void AliMUONReconstructor::Reconstruct(AliRunLoader* runLoader, AliRawReader* ra
     recoEvent->EventReconstruct();
     dataEvent->Fill("RT");
 
-    loader->WriteTracks("OVERWRITE"); 
- 
+    loader->WriteTracks("OVERWRITE");  
+  
     //--------------------------- Resetting branches -----------------------
     dataCluster->ResetDigits();
     dataCluster->ResetRawClusters();
@@ -231,7 +254,7 @@ void AliMUONReconstructor::Reconstruct(AliRunLoader* runLoader, AliRawReader* ra
     dataEvent->ResetTrigger();
     dataEvent->ResetRecTracks();
     dataEvent->ResetRecTriggerTracks();
- 
+  
   }
   loader->UnloadRecPoints();
   loader->UnloadTracks();
@@ -246,12 +269,12 @@ void AliMUONReconstructor::FillESD(AliRunLoader* runLoader, AliESD* esd) const
 {
   TClonesArray* recTracksArray = 0;
   TClonesArray* recTrigTracksArray = 0;
- 
+  
   AliLoader* loader = runLoader->GetLoader("MUONLoader");
   loader->LoadTracks("READ");
   AliMUONData* muonData = new AliMUONData(loader,"MUON","MUON");
 
-   // declaration 
+   // declaration  
   Int_t iEvent;// nPart;
   Int_t nTrackHits;// nPrimary;
   Double_t fitFmin;
@@ -267,7 +290,7 @@ void AliMUONReconstructor::FillESD(AliRunLoader* runLoader, AliESD* esd) const
   AliMUONTriggerTrack* recTriggerTrack = 0;
 //   TParticle* particle = new TParticle();
 //   AliGenEventHeader* header = 0;
-  iEvent = runLoader->GetEventNumber();
+  iEvent = runLoader->GetEventNumber(); 
   runLoader->GetEvent(iEvent);
 
   // vertex calculation (maybe it exists already somewhere else)
@@ -304,21 +327,21 @@ void AliMUONReconstructor::FillESD(AliRunLoader* runLoader, AliESD* esd) const
   recTrigTracksArray = muonData->RecTriggerTracks();
 
   // ready global trigger pattern from first track
-  if (recTrigTracksArray)
+  if (recTrigTracksArray) 
     recTriggerTrack = (AliMUONTriggerTrack*) recTrigTracksArray->First();
   if (recTriggerTrack) trigPat = recTriggerTrack->GetGTPattern();
 
   //printf(">>> Event %d Number of Recconstructed tracks %d \n",iEvent, nrectracks);
-
+ 
   // -------------------- tracks-------------
   muonData->SetTreeAddress("RT");
   muonData->GetRecTracks();
   recTracksArray = muonData->RecTracks();
-       
+        
   Int_t nRecTracks = 0;
   if (recTracksArray)
     nRecTracks = (Int_t) recTracksArray->GetEntriesFast(); //
- 
+  
   // loop over tracks
   for (Int_t iRecTracks = 0; iRecTracks <  nRecTracks;  iRecTracks++) {
 
@@ -352,21 +375,21 @@ void AliMUONReconstructor::FillESD(AliRunLoader* runLoader, AliESD* esd) const
     theESDTrack->SetMatchTrigger(matchTrigger);
     theESDTrack->SetChi2MatchTrigger(chi2MatchTrigger);
 
-    // storing ESD MUON Track into ESD Event
-    if (nRecTracks != 0) 
+    // storing ESD MUON Track into ESD Event 
+    if (nRecTracks != 0)  
       esd->AddMuonTrack(theESDTrack);
   } // end loop tracks
 
   // add global trigger pattern
-  if (nRecTracks != 0) 
+  if (nRecTracks != 0)  
     esd->SetTrigger(trigPat);
 
   // reset muondata
   muonData->ResetRecTracks();
   muonData->ResetRecTriggerTracks();
 
-  //} // end loop on event 
-  loader->UnloadTracks();
+  //} // end loop on event  
+  loader->UnloadTracks(); 
  //  if (!header)
 //     runLoader->UnloadKinematics();
   delete theESDTrack;

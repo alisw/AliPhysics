@@ -35,6 +35,11 @@ public:
   Int_t    GetIJ(Int_t indx, Int_t iPad) const { return fPadIJ[indx][iPad]; }
   Float_t  GetXyq(Int_t indx, Int_t iPad) const { return fXyq[indx][iPad]; }
   Float_t  GetZpad() { return fZpad; }
+  Bool_t GetUsed(Int_t cath, Int_t dig) const { return fUsed[cath][dig]; }
+  void SetUsed(Int_t cath, Int_t dig) { fUsed[cath][dig] = kTRUE; } // mark used digits
+  void SetUnused(Int_t cath, Int_t dig) { fUsed[cath][dig] = kFALSE; } // unmark digits
+  void SetReco(Int_t iReco) { fReco = iReco; } // set reco flag
+  void SetStart(Int_t iCath, Int_t iPad) { fCathBeg = iCath; fPadBeg[0] = fPadBeg[1] = 0; fPadBeg[fCathBeg] = iPad; } // start
  
 protected:
   AliMUONClusterFinderAZ(const AliMUONClusterFinderAZ& rhs);
@@ -47,19 +52,24 @@ protected:
 
   static  AliMUONClusterFinderAZ* fgClusterFinder; // the ClusterFinderAZ instance
 
-  Int_t      fnPads[2];        // ! number of pads in the cluster on 2 cathodes
-  Float_t    fXyq[7][fgkDim];    // ! pad information
-  Int_t      fPadIJ[2][fgkDim];  // ! pad information
+  Int_t      fnPads[2];         // ! number of pads in the cluster on 2 cathodes
+  Float_t    fXyq[7][fgkDim];   // ! pad information
+  Int_t      fPadIJ[2][fgkDim]; // ! pad information
   AliMUONGeometrySegmentation *fSegmentation[2]; // ! new segmentation
-  AliMUONResponse *fResponse;// ! response
-  Float_t    fZpad;            // ! z-coordinate of the hit
-  Int_t      fNpar;            // ! number of fit parameters
-  Double_t   fQtot;            // ! total cluster charge
-  Int_t      fReco;            // ! =1 if run reco with writing of reconstructed clusters 
+  AliMUONResponse *fResponse;   // ! response
+  Float_t    fZpad;             // ! z-coordinate of the hit
+  Int_t      fNpar;             // ! number of fit parameters
+  Double_t   fQtot;             // ! total cluster charge
+  Int_t      fReco;             // ! !=0 if run reco with writing of reconstructed clusters 
+  Int_t fCathBeg;               // ! starting cathode (for combined cluster / track reco)
+  Int_t fPadBeg[2];             // ! starting pads (for combined cluster / track reco)
 
   static     TMinuit* fgMinuit; // ! Fitter
   Bool_t     fUsed[2][fgkDim]; // ! flags for used pads
+  //TH2F*      fHist[4]; // ! histograms
   AliMUONClusterDrawAZ *fDraw; // ! drawing object 
+  //Int_t      fnMu; // ! number of muons passing thru the selected area
+  //Double_t   fxyMu[2][7]; // ! muon information
   TObjArray* fPixArray; // ! collection of pixels
   Int_t fnCoupled; // ! number of coupled clusters in precluster
   Int_t fDebug; // ! debug level

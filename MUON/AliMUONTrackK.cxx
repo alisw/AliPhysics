@@ -22,14 +22,16 @@
 #include <TMatrixD.h>
 
 #include "AliMUONTrackK.h"
-#include "AliCallf77.h"
 #include "AliMUON.h"
+
 #include "AliMUONTrackReconstructor.h"
 #include "AliMagF.h"
 #include "AliMUONSegment.h"
 #include "AliMUONHitForRec.h"
 #include "AliMUONRawCluster.h"
 #include "AliMUONTrackParam.h"
+#include "AliMUONEventRecoCombi.h"
+#include "AliMUONDetElement.h"
 #include "AliRun.h"
 #include "AliLog.h"
 
@@ -40,15 +42,14 @@ const Int_t AliMUONTrackK::fgkTriesMax = 10000;
 const Double_t AliMUONTrackK::fgkEpsilon = 0.002; 
 
 void mnvertLocal(Double_t* a, Int_t l, Int_t m, Int_t n, Int_t& ifail); // from AliMUONTrack
-//void mnvertLocalK(Double_t* a, Int_t l, Int_t m, Int_t n, Int_t& ifail);
 
 ClassImp(AliMUONTrackK) // Class implementation in ROOT context
 
-Int_t AliMUONTrackK::fgDebug = -1;
+  Int_t AliMUONTrackK::fgDebug = -1; //-1;
 Int_t AliMUONTrackK::fgNOfPoints = 0; 
-AliMUON* AliMUONTrackK::fgMUON = NULL;
 AliMUONTrackReconstructor* AliMUONTrackK::fgTrackReconstructor = NULL; 
 TClonesArray* AliMUONTrackK::fgHitForRec = NULL; 
+AliMUONEventRecoCombi *AliMUONTrackK::fgCombi = NULL;
 //FILE *lun1 = fopen("window.dat","w");
 
   //__________________________________________________________________________
@@ -59,7 +60,6 @@ AliMUONTrackK::AliMUONTrackK()
   // Default constructor
 
   fgTrackReconstructor = NULL; // pointer to event reconstructor
-  fgMUON = NULL; // pointer to Muon module
   fgHitForRec = NULL; // pointer to points
   fgNOfPoints = 0; // number of points
 
@@ -81,16 +81,16 @@ AliMUONTrackK::AliMUONTrackK()
 
   //__________________________________________________________________________
 AliMUONTrackK::AliMUONTrackK(AliMUONTrackReconstructor *TrackReconstructor, TClonesArray *hitForRec)
-  //AZ: TObject()
   : AliMUONTrack()
 {
   // Constructor
 
   if (!TrackReconstructor) return;
   fgTrackReconstructor = TrackReconstructor; // pointer to event reconstructor
-  fgMUON = (AliMUON*) gAlice->GetModule("MUON"); // pointer to Muon module
   fgHitForRec = hitForRec; // pointer to points
   fgNOfPoints = fgHitForRec->GetEntriesFast(); // number of points
+  fgCombi = NULL;
+  if (fgTrackReconstructor->GetTrackMethod() == 3) fgCombi = AliMUONEventRecoCombi::Instance();
 
   fStartSegment = NULL;
   fTrackHitsPtr = NULL;
@@ -109,7 +109,6 @@ AliMUONTrackK::AliMUONTrackK(AliMUONTrackReconstructor *TrackReconstructor, TClo
 
   //__________________________________________________________________________
 AliMUONTrackK::AliMUONTrackK(AliMUONSegment *segment)
-  //AZ: TObject()
   : AliMUONTrack(segment, segment, fgTrackReconstructor)
 {
   // Constructor from a segment
@@ -186,7 +185,7 @@ AliMUONTrackK::AliMUONTrackK(AliMUONSegment *segment)
   fParSmooth = NULL;
 
   if (fgDebug < 0 ) return;
-  cout << fgTrackReconstructor->GetBendingMomentumFromImpactParam(segment->GetBendingImpact()) << " " << 1/(*fTrackPar)(4,0) << " ";
+  cout << fgTrackReconstructor->GetNRecTracks()-1 << " " << fgTrackReconstructor->GetBendingMomentumFromImpactParam(segment->GetBendingImpact()) << " " << 1/(*fTrackPar)(4,0) << " ";
   if (fgTrackReconstructor->GetRecTrackRefHits()) { 
     // from track ref. hits
     cout << ((AliMUONHitForRec*)((*fTrackHitsPtr)[0]))->GetTTRTrack() << "<-->" << ((AliMUONHitForRec*)((*fTrackHitsPtr)[1]))->GetTTRTrack() << " @ " << fStartSegment->GetHitForRec1()->GetChamberNumber() << endl;
@@ -284,7 +283,6 @@ AliMUONTrackK::~AliMUONTrackK()
 
   //__________________________________________________________________________
 AliMUONTrackK::AliMUONTrackK (const AliMUONTrackK& source)
-  //AZ: TObject(source)
   : AliMUONTrack(source)
 {
 // Protected copy constructor
@@ -373,7 +371,6 @@ void AliMUONTrackK::EvalCovariance(Double_t dZ)
   (*fWeight)(1,3) = dBdX*(*fWeight)(1,1); // <xb>
   (*fWeight)(3,1) = (*fWeight)(1,3);
 
-  //(*fWeight)(4,4) = ((*fTrackPar)(4,0)*0.2)*((*fTrackPar)(4,0)*0.2); // error 20%
   (*fWeight)(4,4) = ((*fTrackPar)(4,0)*0.5)*((*fTrackPar)(4,0)*0.5); // error 50%
 
   // check whether the Invert method returns flag if matrix cannot be inverted,
@@ -381,7 +378,6 @@ void AliMUONTrackK::EvalCovariance(Double_t dZ)
   if (fWeight->Determinant() != 0) {
     // fWeight->Invert();
     Int_t ifail;
-    //mnvertLocalK(&((*fWeight)(0,0)), fgkSize,fgkSize,fgkSize,ifailWeight);
     mnvertLocal(&((*fWeight)(0,0)), fgkSize,fgkSize,fgkSize,ifail);
   } else {
     AliWarning(" Determinant fWeight=0:");
@@ -395,9 +391,9 @@ Bool_t AliMUONTrackK::KalmanFilter(Int_t ichamBeg, Int_t ichamEnd, Bool_t Back, 
   // Follows track through detector stations 
   Bool_t miss, success;
   Int_t ichamb, iFB, iMin, iMax, dChamb, ichambOK;
-  Int_t ihit, firstIndx, lastIndx, currIndx;
+  Int_t ihit, firstIndx = -1, lastIndx = -1, currIndx = -1, iz0 = -1, iz = -1;
   Double_t zEnd, dChi2;
-  AliMUONHitForRec *hitAdd, *firstHit, *lastHit, *hit;
+  AliMUONHitForRec *hitAdd, *firstHit = NULL, *lastHit = NULL, *hit;
   AliMUONRawCluster *clus;
   TClonesArray *rawclusters;
   hit = 0; clus = 0; rawclusters = 0;
@@ -433,7 +429,12 @@ Bool_t AliMUONTrackK::KalmanFilter(Int_t ichamBeg, Int_t ichamEnd, Bool_t Back, 
 	fRecover = 0; 
 	ichambOK = ((AliMUONHitForRec*)((*fTrackHitsPtr)[fNTrackHits-1]))->GetChamberNumber();
 	//if (ichambOK >= 8 && ((AliMUONHitForRec*)((*fTrackHitsPtr)[0]))->GetChamberNumber() == 6) ichambOK = 6;
-	currIndx = fgHitForRec->IndexOf(fSkipHit);
+	if (fgTrackReconstructor->GetTrackMethod() == 3 && 
+	    fSkipHit->GetHitNumber() < 0) {
+	  iz0 = fgCombi->IZfromHit(fSkipHit);
+	  currIndx = -1;
+	}
+	else currIndx = fgHitForRec->IndexOf(fSkipHit);
       } else {
 	// outlier
 	fTrackHitsPtr->Compress();
@@ -445,12 +446,17 @@ Bool_t AliMUONTrackK::KalmanFilter(Int_t ichamBeg, Int_t ichamEnd, Bool_t Back, 
     // Get indices of the 1'st and last hits on the track candidate
     firstHit = (AliMUONHitForRec*) fTrackHitsPtr->First();
     lastHit = (AliMUONHitForRec*) fTrackHitsPtr->Last();
-    firstIndx = fgHitForRec->IndexOf(firstHit);
-    lastIndx = fgHitForRec->IndexOf(lastHit);
-    currIndx = TMath::Abs (TMath::Max(firstIndx*iFB,lastIndx*iFB));
+    if (fgTrackReconstructor->GetTrackMethod() == 3 && 
+	lastHit->GetHitNumber() < 0) iz0 = fgCombi->IZfromHit(lastHit);
+    else {
+      firstIndx = fgHitForRec->IndexOf(firstHit);
+      lastIndx = fgHitForRec->IndexOf(lastHit);
+      currIndx = TMath::Abs (TMath::Max(firstIndx*iFB,lastIndx*iFB));
+    }
   }
 
-  while (ichamb>=iMin && ichamb<=iMax) {
+  if (iz0 < 0) iz0 = iFB;
+  while (ichamb >= iMin && ichamb <= iMax) {
   // Find the closest hit in Z, not belonging to the current plane
     if (Back) {
       // backpropagation
@@ -471,8 +477,25 @@ Bool_t AliMUONTrackK::KalmanFilter(Int_t ichamBeg, Int_t ichamEnd, Bool_t Back, 
 	  break;
 	}
       }
+
+      // Combined cluster / track finder
+      if (zEnd > 999 && iFB < 0 && fgTrackReconstructor->GetTrackMethod() == 3) {
+	currIndx = -2;
+	AliMUONHitForRec hitTmp;
+	for (iz = iz0 - iFB; iz < fgCombi->Nz(); iz++) {
+	  if (TMath::Abs(fgCombi->Z(iz)-fPosition) < 0.5) continue;
+	  Int_t *pDEatZ = fgCombi->DEatZ(iz);
+	  //cout << iz << " " << fgCombi->Z(iz) << endl;
+	  zEnd = fgCombi->Z(iz);
+	  iz0 = iz;
+	  AliMUONDetElement *detElem = fgCombi->DetElem(pDEatZ[0]);
+	  hitAdd = &hitTmp;
+	  hitAdd->SetChamberNumber(detElem->Chamber());
+	  //hitAdd = (AliMUONHitForRec*) detElem->HitsForRec()->First();
+	  if (hitAdd) break;
+	}
+      }
     }
-    //AZ(Z->-Z) if (zEnd<-999 && ichamb==ichamEnd) endOfProp = 1; // end-of-propagation
     if (zEnd>999 && ichamb==ichamEnd) endOfProp = 1; // end-of-propagation
     else {
       // Check if there is a chamber without hits
@@ -579,6 +602,7 @@ Bool_t AliMUONTrackK::KalmanFilter(Int_t ichamBeg, Int_t ichamEnd, Bool_t Back, 
       Back = kFALSE;
       fRecover =0;
       ichambOK = ((AliMUONHitForRec*)((*fTrackHitsPtr)[fNTrackHits-1]))->GetChamberNumber();
+      //? if (fgTrackReconstructor->GetTrackMethod() != 3) currIndx = fgHitForRec->IndexOf(fSkipHit);
       currIndx = fgHitForRec->IndexOf(fSkipHit);
     }
 
@@ -595,7 +619,6 @@ Bool_t AliMUONTrackK::KalmanFilter(Int_t ichamBeg, Int_t ichamEnd, Bool_t Back, 
 	TryPoint(point,pointWeight,trackParTmp,dChi2);
 	*fTrackPar = trackParTmp;
 	*fWeight += pointWeight; 
-	//AZ(z->-z) if (fTrackDir < 0) AddMatrices (this, dChi2, hitAdd);
 	if (fTrackDir > 0) AddMatrices (this, dChi2, hitAdd);
 	fChi2 += dChi2; // Chi2
       } else *fTrackPar = *fTrackParNew; // adjust end point to the last hit
@@ -603,7 +626,7 @@ Bool_t AliMUONTrackK::KalmanFilter(Int_t ichamBeg, Int_t ichamEnd, Bool_t Back, 
       currIndx ++;
     } else {
       // forward propagator
-      if (miss || !FindPoint(ichamb,zEnd,currIndx,iFB,hitAdd)) {
+      if (miss || !FindPoint(ichamb, zEnd, currIndx, iFB, hitAdd, iz)) {
 	// missing point
 	*fTrackPar = *fTrackParNew; 
       } else {
@@ -684,19 +707,7 @@ void AliMUONTrackK::ParPropagation(Double_t zEnd)
   //fTrackParNew->Print();
   return;
 }
-/*
-  //__________________________________________________________________________
-void AliMUONTrackK::WeightPropagation(void)
-{
-  // Propagation of the weight matrix
-  // W = DtWD, where D is Jacobian 
 
-  // !!! not implemented TMatrixD weight1(*fJacob,TMatrixD::kAtBA,*fWeight); // DtWD
-  TMatrixD weight1(*fWeight,TMatrixD::kMult,*fJacob); // WD
-  *fWeight = TMatrixD(*fJacob,TMatrixD::kTransposeMult,weight1); // DtWD
-  return;
-}
-*/
   //__________________________________________________________________________
 void AliMUONTrackK::WeightPropagation(Double_t zEnd, Bool_t smooth)
 {
@@ -717,7 +728,6 @@ void AliMUONTrackK::WeightPropagation(Double_t zEnd, Bool_t smooth)
   // check whether the Invert method returns flag if matrix cannot be inverted,
   // and do not calculate the Determinant in that case !!!!
   if (fCovariance->Determinant() != 0) {
-    //   fCovariance->Invert();
     Int_t ifail;
     mnvertLocal(&((*fCovariance)(0,0)), fgkSize,fgkSize,fgkSize,ifail);
     //fCovariance->Print();
@@ -755,7 +765,6 @@ void AliMUONTrackK::WeightPropagation(Double_t zEnd, Bool_t smooth)
 
   // Save for smoother
   if (!smooth) return; // do not use smoother
-  //AZ(z->-z) if (fTrackDir > 0) return; // only for propagation towards int. point
   if (fTrackDir < 0) return; // only for propagation towards int. point
   TMatrixD *tmp = new TMatrixD(*fTrackParNew); // extrapolated parameters
   fParExtrap->Add(tmp);
@@ -786,7 +795,7 @@ void AliMUONTrackK::WeightPropagation(Double_t zEnd, Bool_t smooth)
 }
 
   //__________________________________________________________________________
-Bool_t AliMUONTrackK::FindPoint(Int_t ichamb, Double_t zEnd, Int_t currIndx, Int_t iFB, AliMUONHitForRec *&hitAdd)
+Bool_t AliMUONTrackK::FindPoint(Int_t ichamb, Double_t zEnd, Int_t currIndx, Int_t iFB, AliMUONHitForRec *&hitAdd, Int_t iz)
 {
   // Picks up point within a window for the chamber No ichamb 
   // Split the track if there are more than 1 hit
@@ -795,15 +804,35 @@ Bool_t AliMUONTrackK::FindPoint(Int_t ichamb, Double_t zEnd, Int_t currIndx, Int
   TClonesArray *trackPtr;
   AliMUONHitForRec *hit, *hitLoop;
   AliMUONTrackK *trackK;
+  AliMUONDetElement *detElem = NULL;
 
   Bool_t ok = kFALSE;
+
+  if (fgTrackReconstructor->GetTrackMethod() == 3 && iz >= 0) {
+    // Combined cluster / track finder
+    // Check if extrapolated track passes thru det. elems. at iz
+    Int_t *pDEatZ = fgCombi->DEatZ(iz);
+    Int_t nDetElem = pDEatZ[-1];
+    //cout << fgCombi->Z(iz) << " " << nDetElem << endl;
+    for (Int_t i = 0; i < nDetElem; i++) {
+      detElem = fgCombi->DetElem(pDEatZ[i]);
+      if (detElem->Inside((*fTrackParNew)(1,0), (*fTrackParNew)(0,0), fPosition)) {
+	detElem->ClusterReco((*fTrackParNew)(1,0), (*fTrackParNew)(0,0));
+	hitAdd = (AliMUONHitForRec*) detElem->HitsForRec()->First();
+	ok = kTRUE;
+	break;
+      }
+    }
+    if (!ok) return ok; // outside det. elem. 
+    ok = kFALSE;
+  }
+
   //sigmaB = fgTrackReconstructor->GetBendingResolution(); // bending resolution
   //sigmaNonB = fgTrackReconstructor->GetNonBendingResolution(); // non-bending resolution
   *fCovariance = *fWeight;
   // check whether the Invert method returns flag if matrix cannot be inverted,
   // and do not calculate the Determinant in that case !!!!
   if (fCovariance->Determinant() != 0) {
-    //  fCovariance->Invert();
       Int_t ifail;
       mnvertLocal(&((*fCovariance)(0,0)), fgkSize,fgkSize,fgkSize,ifail);
   } else {
@@ -818,12 +847,20 @@ Bool_t AliMUONTrackK::FindPoint(Int_t ichamb, Double_t zEnd, Int_t currIndx, Int
   TMatrixD point(fgkSize,1);
   TMatrixD trackPar = point;
   TMatrixD trackParTmp = point;
-  Int_t nHitsOK = 0;
+  Int_t nHitsOK = 0, ihitB = currIndx, ihitE = fgNOfPoints, iDhit = iFB;
   Double_t zLast;
   zLast = ((AliMUONHitForRec*)fTrackHitsPtr->Last())->GetZ();
+  if (fgTrackReconstructor->GetTrackMethod() == 3 && detElem) {
+    ihitB = 0;
+    ihitE = detElem->NHitsForRec();
+    iDhit = 1;
+  }
 
-  for (ihit=currIndx; ihit>=0 && ihit<fgNOfPoints; ihit+=iFB) {
-    hit = (AliMUONHitForRec*) ((*fgHitForRec)[ihit]);
+
+  for (ihit = ihitB; ihit >= 0 && ihit < ihitE; ihit+=iDhit) {
+    if (fgTrackReconstructor->GetTrackMethod() != 3 || !detElem) 
+      hit = (AliMUONHitForRec*) ((*fgHitForRec)[ihit]);
+    else hit = (AliMUONHitForRec*) detElem->HitsForRec()->UncheckedAt(ihit);
     if (hit->GetChamberNumber() == ichamb) {
       //if (TMath::Abs(hit->GetZ()-zEnd) < 0.1) {
       if (TMath::Abs(hit->GetZ()-zEnd) < 0.5) {
@@ -849,6 +886,13 @@ Bool_t AliMUONTrackK::FindPoint(Int_t ichamb, Double_t zEnd, Int_t currIndx, Int
 	}
 	y = hit->GetBendingCoor();
 	x = hit->GetNonBendingCoor();
+	if (hit->GetBendingReso2() < 0) {
+	  // Combined cluster / track finder
+	  hit->SetBendingReso2(fgTrackReconstructor->GetBendingResolution()*
+			       fgTrackReconstructor->GetBendingResolution());
+	  hit->SetNonBendingReso2(fgTrackReconstructor->GetNonBendingResolution()*
+				  fgTrackReconstructor->GetNonBendingResolution());
+	}
 	windowB = fgkNSigma*TMath::Sqrt((*fCovariance)(0,0)+hit->GetBendingReso2());
 	windowNonB = fgkNSigma*TMath::Sqrt((*fCovariance)(1,1)+hit->GetNonBendingReso2());
 
@@ -893,6 +937,7 @@ Bool_t AliMUONTrackK::FindPoint(Int_t ichamb, Double_t zEnd, Int_t currIndx, Int
 	  pointWeight(1,1) = 1/hit->GetNonBendingReso2();
 	  TryPoint(point,pointWeight,trackPar,dChi2);
 	  if (TMath::Abs(1./(trackPar)(4,0)) < fgTrackReconstructor->GetMinBendingMomentum()) continue; // p < p_min - next hit
+	  // if (TMath::Sign(1.,(trackPar)(4,0)*(*fTrackPar)(4,0)) < 0) continue; // change of sign
 	  ok = kTRUE;
 	  nHitsOK++;
 	  //if (nHitsOK > -1) {
@@ -927,7 +972,6 @@ Bool_t AliMUONTrackK::FindPoint(Int_t ichamb, Double_t zEnd, Int_t currIndx, Int
 	    cout << (*(trackK->fCovariance))(0,0) << " " << (*(trackK->fCovariance))(1,1) << " " << (*fCovariance)(0,0) << " " << (*fCovariance)(1,1) << endl;
 	    */
 	    // Add filtered matrices for the smoother
-	    //AZ(z->-z) if (fTrackDir < 0) {
 	    if (fTrackDir > 0) {
 	      if (nHitsOK > 2) { // check for position adjustment
 		for (Int_t i=trackK->fNSteps-1; i>=0; i--) {
@@ -967,7 +1011,6 @@ Bool_t AliMUONTrackK::FindPoint(Int_t ichamb, Double_t zEnd, Int_t currIndx, Int
 	    hit->SetNTrackHits(hit->GetNTrackHits()+1); // mark hit as being on track
 	    if (ichamb == 9) {
 	      // the last chamber
-	      //AZ(z->-z) trackK->fTrackDir = -1;
 	      trackK->fTrackDir = 1;
 	      trackK->fBPFlag = kTRUE; 
 	    }
@@ -984,7 +1027,6 @@ Bool_t AliMUONTrackK::FindPoint(Int_t ichamb, Double_t zEnd, Int_t currIndx, Int
     fChi2 += dChi2Tmp; // Chi2
     fPosition = savePosition;
     // Add filtered matrices for the smoother
-    //AZ(z->-z) if (fTrackDir < 0) {
     if (fTrackDir > 0) {
       for (Int_t i=fNSteps-1; i>=0; i--) {
 	if (TMath::Abs(fPosition-(*fSteps)[i]) > 0.1) {
@@ -1024,9 +1066,8 @@ void AliMUONTrackK::TryPoint(TMatrixD &point, const TMatrixD &pointWeight, TMatr
   // check whether the Invert method returns flag if matrix cannot be inverted,
   // and do not calculate the Determinant in that case !!!!
   if (wu.Determinant() != 0) {
-    //  wu.Invert();
-     Int_t ifail;
-      mnvertLocal(&((wu)(0,0)), fgkSize,fgkSize,fgkSize,ifail);
+    Int_t ifail;
+    mnvertLocal(&((wu)(0,0)), fgkSize,fgkSize,fgkSize,ifail);
   } else {
     AliWarning(" Determinant wu=0:");
   }
@@ -1054,8 +1095,6 @@ void AliMUONTrackK::MSThin(Int_t sign)
   // check whether the Invert method returns flag if matrix cannot be inverted,
   // and do not calculate the Determinant in that case !!!!
   if (fWeight->Determinant() != 0) {
-    //fWeight->Invert(); // covariance
-
     Int_t ifail;
     mnvertLocal(&((*fWeight)(0,0)), fgkSize,fgkSize,fgkSize,ifail);
   } else {
@@ -1072,8 +1111,6 @@ void AliMUONTrackK::MSThin(Int_t sign)
 
   (*fWeight)(2,2) += sign*theta0/cosBeta*theta0/cosBeta; // alpha
   (*fWeight)(3,3) += sign*theta0*theta0; // beta
-  //fWeight->Invert(); // weight
-
   Int_t ifail;
   mnvertLocal(&((*fWeight)(0,0)), fgkSize,fgkSize,fgkSize,ifail);
   return;
@@ -1303,8 +1340,8 @@ void AliMUONTrackK::Branson(void)
   // Get covariance matrix
   *fCovariance = *fWeight;
   if (fCovariance->Determinant() != 0) {
-      Int_t ifail;
-      mnvertLocal(&((*fCovariance)(0,0)), fgkSize,fgkSize,fgkSize,ifail);
+    Int_t ifail;
+    mnvertLocal(&((*fCovariance)(0,0)), fgkSize,fgkSize,fgkSize,ifail);
   } else {
     AliWarning(" Determinant fCovariance=0:");
   }
@@ -1504,15 +1541,27 @@ vertex:
     // from raw clusters
     for (Int_t i1=0; i1<fNTrackHits; i1++) {
       hit =  (AliMUONHitForRec*) ((*fTrackHitsPtr)[i1]);
-      rawclusters = fgTrackReconstructor->GetMUONData()->RawClusters(hit->GetChamberNumber());
-      clus = (AliMUONRawCluster*) rawclusters->UncheckedAt(hit->GetHitNumber());
+      if (hit->GetHitNumber() < 0) { // combined cluster / track finder
+	Int_t index = -hit->GetHitNumber() / 100000;
+	Int_t iPos = -hit->GetHitNumber() - index * 100000;
+	clus = (AliMUONRawCluster*) fgCombi->DetElem(index-1)->RawClusters()->UncheckedAt(iPos);
+      } else {
+	rawclusters = fgTrackReconstructor->GetMUONData()->RawClusters(hit->GetChamberNumber());
+	clus = (AliMUONRawCluster*) rawclusters->UncheckedAt(hit->GetHitNumber());
+      }
       printf ("%4d", clus->GetTrack(1)); 
     }
     cout << endl;
     for (Int_t i1=0; i1<fNTrackHits; i1++) {
       hit =  (AliMUONHitForRec*) ((*fTrackHitsPtr)[i1]);
-      rawclusters = fgTrackReconstructor->GetMUONData()->RawClusters(hit->GetChamberNumber());
-      clus = (AliMUONRawCluster*) rawclusters->UncheckedAt(hit->GetHitNumber());
+      if (hit->GetHitNumber() < 0) { // combined cluster / track finder
+	Int_t index = -hit->GetHitNumber() / 100000;
+	Int_t iPos = -hit->GetHitNumber() - index * 100000;
+	clus = (AliMUONRawCluster*) fgCombi->DetElem(index-1)->RawClusters()->UncheckedAt(iPos);
+      } else {
+	rawclusters = fgTrackReconstructor->GetMUONData()->RawClusters(hit->GetChamberNumber());
+	clus = (AliMUONRawCluster*) rawclusters->UncheckedAt(hit->GetHitNumber());
+      }
       if (clus->GetTrack(2) != -1) printf ("%4d", clus->GetTrack(2));
       else printf ("%4s", "   ");
     }
@@ -1532,7 +1581,6 @@ vertex:
   /* Not needed - covariance matrix is not interesting to anybody
   *fCovariance = *fWeight;
   if (fCovariance->Determinant() != 0) {
-    //   fCovariance->Invert();
     Int_t ifail;
     mnvertLocal(&((*fCovariance)(0,0)), fgkSize,fgkSize,fgkSize,ifail);
   } else {
@@ -1607,7 +1655,6 @@ void AliMUONTrackK::MSLine(Double_t dZ, Double_t x0)
   // Get weight matrix
   *fWeight = *fCovariance;
   if (fWeight->Determinant() != 0) {
-    //  fWeight->Invert();
     Int_t ifail;
     mnvertLocal(&((*fWeight)(0,0)), fgkSize,fgkSize,fgkSize,ifail);
   } else {
@@ -2046,7 +2093,6 @@ void AliMUONTrackK::Outlier()
   trackK = new ((*trackPtr)[nRecTracks]) AliMUONTrackK(NULL, NULL);
   *trackK = *this;
   fgTrackReconstructor->SetNRecTracks(nRecTracks+1);
-  //AZ(z->-z) trackK->fTrackDir = -1;
   trackK->fTrackDir = 1;
   trackK->fRecover = 2;
   trackK->fSkipHit = hit;

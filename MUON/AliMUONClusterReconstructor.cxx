@@ -103,7 +103,7 @@ AliMUONClusterReconstructor::~AliMUONClusterReconstructor(void)
   return;
 }
 //____________________________________________________________________
-void AliMUONClusterReconstructor::Digits2Clusters()
+void AliMUONClusterReconstructor::Digits2Clusters(Int_t chBeg)
 {
 
     TClonesArray *dig1, *dig2, *digAll;
@@ -122,14 +122,18 @@ void AliMUONClusterReconstructor::Digits2Clusters()
     Int_t n2;
     Int_t n1;
   
-    for (Int_t ich = 0; ich < AliMUONConstants::NTrackingCh(); ich++) {
+    fMUONData->ResetDigits(); //AZ
+    fMUONData->GetDigits(); //AZ
+
+    for (Int_t ich = chBeg; ich < AliMUONConstants::NTrackingCh(); ich++) {
  
       id.Reset();
       n1 = 0;
       n2 = 0;
       //cathode 0 & 1
-      fMUONData->ResetDigits();
-      fMUONData->GetDigits();
+      //fMUONData->ResetDigits();
+      //fMUONData->GetDigits();
+
       muonDigits = fMUONData->Digits(ich); 
       ndig = muonDigits->GetEntriesFast();
       TClonesArray &lDigit = *digAll;
@@ -193,5 +197,7 @@ void AliMUONClusterReconstructor::Digits2Clusters()
 void AliMUONClusterReconstructor::Trigger2Trigger() 
 {
 // copy trigger from TreeD to TreeR
+
+  fMUONData->SetTreeAddress("GLT");
   fMUONData->GetTriggerD();
 }
