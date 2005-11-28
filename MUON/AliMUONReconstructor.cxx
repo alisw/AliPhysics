@@ -64,14 +64,14 @@ void AliMUONReconstructor::Reconstruct(AliRunLoader* runLoader) const
 // passing fLoader as argument, could be avoided ???
   AliMUONTrackReconstructor* recoEvent = new AliMUONTrackReconstructor(loader);
   AliMUONData* dataEvent = recoEvent->GetMUONData();
-  if (strstr(GetOption(),"Kalman")) recoEvent->SetTrackMethod(2); // Kalman
+  if (strstr(GetOption(),"Original")) recoEvent->SetTrackMethod(1); // Original tracking
   else if (strstr(GetOption(),"Combi")) recoEvent->SetTrackMethod(3); // Combined cluster / track
-  else recoEvent->SetTrackMethod(1); // original
+  else recoEvent->SetTrackMethod(2); // Kalman
 
   AliMUONClusterReconstructor* recoCluster = new AliMUONClusterReconstructor(loader);
   AliMUONData* dataCluster = recoCluster->GetMUONData();
   AliMUONClusterFinderVS *recModel = recoCluster->GetRecoModel();
-  if (strstr(GetOption(),"AZ") || strstr(GetOption(),"Combi")) {
+  if (!strstr(GetOption(),"VS")) {
     recModel = (AliMUONClusterFinderVS*) new AliMUONClusterFinderAZ();
     recoCluster->SetRecoModel(recModel);
   }
