@@ -3,6 +3,8 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
+/* $Id$ */
+
 /// \ingroup rec
 /// \class AliMUONClusterDrawAZ
 /// \brief Cluster drawing object for AZ cluster finder in MUON arm of ALICE
@@ -28,6 +30,7 @@ public:
   Bool_t   FindEvCh(Int_t nev, Int_t ch); // find requested event and chamber
   void     FillMuon(Int_t nfit, const Double_t *parOk, const Double_t *errOk); // fill muon info
   void     ResetMuon() { fxyMu[0][6] = fxyMu[1][6] = 9999; } // reset muons
+  void     UpdateCluster(Int_t npad); // update cluster after removing non-overlapped pads
 
 protected:
   AliMUONClusterDrawAZ(const AliMUONClusterDrawAZ& rhs);
@@ -42,6 +45,7 @@ private:
   Int_t      fEvent; // ! current event
   Int_t      fChamber; //! current chamber
   Int_t      fDebug; // ! debug level
+  Int_t      fModif; // ! modification flag (modified ROOT)
 
   // Functions
 

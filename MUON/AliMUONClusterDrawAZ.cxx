@@ -13,6 +13,8 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+/* $Id$ */
+
 // Cluster drawing object for AZ cluster finder 
 
 #include <stdlib.h>
@@ -60,6 +62,7 @@ AliMUONClusterDrawAZ::AliMUONClusterDrawAZ(AliMUONClusterFinderAZ *clusFinder)
   for (Int_t i=0; i<4; i++) fHist[i] = NULL;
   fDebug = 1; 
   fEvent = fChamber = 0;
+  fModif = 0; 
   Init();
 }
 
@@ -228,12 +231,42 @@ void AliMUONClusterDrawAZ::DrawCluster()
   } // for (Int_t cath = 0;
 	
   // Draw histograms and coordinates
+  TH2D *hFake = 0x0;
+  if (fModif) {
+    // This part works only after a modification of THistPainter::PaintLego(Option_t *) 
+    // in ROOT
+    Double_t xmin = 9999, ymin = 9999, xmax = -9999, ymax = -9999, aMax = -1;
+    for (Int_t i = 0; i < 4; i++) {
+      if (!fHist[i]) continue;
+      xmin = TMath::Min (xmin, fHist[i]->GetXaxis()->GetXmin());
+      xmax = TMath::Max (xmax, fHist[i]->GetXaxis()->GetXmax());
+      ymin = TMath::Min (ymin, fHist[i]->GetYaxis()->GetXmin());
+      ymax = TMath::Max (ymax, fHist[i]->GetYaxis()->GetXmax());
+      aMax = TMath:: Max (aMax, fHist[i]->GetMaximum());
+    }
+    if (c1->FindObject("hFake")) delete c1->FindObject("hFake");
+    hFake = new TH2D ("hFake", "", 1, xmin, xmax, 1, ymin, ymax);
+    hFake->SetMaximum(aMax);
+    hFake->SetNdivisions(505,"Z");
+    hFake->SetStats(kFALSE);
+  }
+
+  TObject *stats = 0x0;
   for (Int_t cath = 0; cath < 2; cath++) {
     if (cath == 0) ModifyHistos();
     if (fFind->GetNPads(cath) == 0) continue; // cluster on one cathode only
     c1->cd(cath+1);
     gPad->SetTheta(55);
     gPad->SetPhi(30);
+    if (fModif) {
+      if (fHist[cath*2]) { 
+	fHist[cath*2]->Draw();
+	gPad->Update();
+	stats = fHist[cath*2]->GetListOfFunctions()->FindObject("stats");
+      }
+      hFake->Draw("legoFb");
+    }
+
     Double_t x, y, x0, y0, r1 = 999, r2 = 0;
     if (fHist[cath*2+1]) {
       // 
@@ -267,17 +300,16 @@ void AliMUONClusterDrawAZ::DrawCluster()
       cout << r1 << " " << r2 << endl;
     } // if (fHist[cath*2+1])
     if (r1 > r2) {
-      //fHist[cath*2]->Draw("lego1");
-      fHist[cath*2]->Draw("lego1Fb");
-      //if (fHist[cath*2+1]) fHist[cath*2+1]->Draw("lego1SameAxisBb");
+      if (fModif) fHist[cath*2]->Draw("lego1FbSame");
+      else fHist[cath*2]->Draw("lego1Fb");
       if (fHist[cath*2+1]) fHist[cath*2+1]->Draw("lego1SameAxisBbFb");
     } else {
-      //fHist[cath*2+1]->Draw("lego1");
-      fHist[cath*2+1]->Draw("lego1Fb");
-      //fHist[cath*2]->Draw("lego1SameAxisBb");
+      if (fModif) fHist[cath*2+1]->Draw("lego1FbSame");
+      else fHist[cath*2+1]->Draw("lego1Fb");
       fHist[cath*2]->Draw("lego1SameAxisFbBb");
     }
     c1->Update();
+    if (fModif) stats->Draw();
   } // for (Int_t cath = 0;
 
   // Draw simulated and reconstructed hits 
@@ -351,6 +383,7 @@ void AliMUONClusterDrawAZ::DrawHits()
 	                         * TMath::Sin(mHit->Phi()/180*TMath::Pi()) / 2;
 	for (Int_t ipad = 1; ipad < 3; ipad++) {
 	  c1->cd(ipad);
+	  if (!view[ipad-1]) continue;
 	  view[ipad-1]->WCtoNDC(p1, &xNDC[0]);
 	  view[ipad-1]->WCtoNDC(p2, &xNDC[3]);
 	  //c1->DrawLine(xpad[0],xpad[1],xpad[3],xpad[4]);
@@ -362,7 +395,7 @@ void AliMUONClusterDrawAZ::DrawHits()
   } // for (Int_t i = 0; i < ntracks;
 
   // Draw reconstructed coordinates
-  fData->GetRawClusters();
+  if (fData->TreeR()) fData->GetRawClusters();
   TClonesArray *rawclust = fData->RawClusters(fChamber);
   AliMUONRawCluster *mRaw;
   gStyle->SetLineColor(3);
@@ -398,6 +431,7 @@ void AliMUONClusterDrawAZ::DrawHits()
       if (view[0] || view[1]) {
 	for (Int_t ipad = 1; ipad < 3; ipad++) {
 	  c1->cd(ipad);
+	  if (!view[ipad-1]) continue;
 	  view[ipad-1]->WCtoNDC(p1, &xNDC[0]);
 	  view[ipad-1]->WCtoNDC(p2, &xNDC[3]);
 	  line[nLine] = new TLine(xNDC[0],xNDC[1],xNDC[3],xNDC[4]);
@@ -610,3 +644,34 @@ void AliMUONClusterDrawAZ::FillMuon(Int_t nfit, const Double_t *parOk, const Dou
   }
 }
 
+//_____________________________________________________________________________
+void AliMUONClusterDrawAZ::UpdateCluster(Int_t npad)
+{
+  // Update cluster after removing non-overlapped pads
+
+  Int_t cath = 0, ix = 0, iy = 0;
+  cout << " Update cluster " << endl;
+  gets((char*)&ix);
+  for (Int_t i = 0; i < npad; i++) {
+    if (TMath::Nint (fFind->GetXyq(2,i)) != -2) continue;
+    cath = fFind->GetIJ(0,i);
+    for (Int_t j = 0; j < 2; j++) {
+      Int_t ihist = cath * 2 + j;
+      if (!fHist[ihist]) continue;
+      ix = fHist[ihist]->GetXaxis()->FindBin(fFind->GetXyq(0,i));
+      iy = fHist[ihist]->GetYaxis()->FindBin(fFind->GetXyq(1,i));
+      Double_t cont = fHist[ihist]->GetCellContent(ix, iy);
+      if (cont < 0.1) continue;
+      fHist[ihist]->Fill(fFind->GetXyq(0,i), fFind->GetXyq(1,i), -cont);
+    }
+  }
+  TCanvas *c1 = (TCanvas*) gROOT->GetListOfCanvases()->FindObject("c1");
+  if (c1) {
+    c1->cd(1);
+    gPad->Modified();
+    gPad->Update();
+    c1->cd(2);
+    gPad->Modified();
+    gPad->Update();
+  }  
+}
