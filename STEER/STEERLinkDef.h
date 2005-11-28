@@ -107,6 +107,13 @@
 #pragma link C++ class AliAlignObj+;
 #pragma link C++ class AliAlignObjAngles+;
 #pragma link C++ class AliAlignObjMatrix+;
+#pragma link C++ class AliTrackPointArray+;
+#pragma link C++ class AliTrackPoint+;
+#pragma link C++ class AliTrackFitter+;
+#pragma link C++ class AliTrackFitterRieman+;
+#pragma link C++ class AliTrackResiduals+;
+#pragma link C++ class AliTrackResidualsChi2+;
+#pragma link C++ class AliAlignmentTracks+;
 
 #pragma link C++ class  TTreeDataElement+;
 #pragma link C++ class  TTreeStream+;

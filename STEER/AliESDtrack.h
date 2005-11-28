@@ -28,6 +28,7 @@
 #include <TVector3.h>
 
 class AliKalmanTrack;
+class AliTrackPointArray;
 
 const Int_t kNPlane = 6;
 
@@ -87,7 +88,10 @@ public:
   void GetInnerExternalParameters(Double_t &x, Double_t p[5]) const;//skowron
   void GetInnerExternalCovariance(Double_t cov[15]) const;//skowron
   Double_t GetInnerAlpha() const {return fIalpha;}
-  
+ 
+  Int_t GetNcls(Int_t idet) const;
+  Int_t GetClusters(Int_t idet, UInt_t *idx) const;
+ 
   void SetITSpid(const Double_t *p);
   void SetITSChi2MIP(const Float_t *chi2mip);
   void SetITStrack(AliKalmanTrack * track){fITStrack=track;}
@@ -102,6 +106,7 @@ public:
   void SetTPCpid(const Double_t *p);
   void GetTPCpid(Double_t *p) const;
   void SetTPCPoints(Float_t points[4]){for (Int_t i=0;i<4;i++) fTPCPoints[i]=points[i];}
+  Float_t GetTPCPoints(Int_t i){return fTPCPoints[i];}
   void SetKinkIndexes(Int_t points[3]) {for (Int_t i=0;i<3;i++) fKinkIndexes[i] = points[i];}
   void SetV0Indexes(Int_t points[3]) {for (Int_t i=0;i<3;i++) fV0Indexes[i] = points[i];}
   Float_t GetTPCsignal() const {return fTPCsignal;}
@@ -195,6 +200,9 @@ public:
   Bool_t IsRICH()  const {return fFlags&kRICHpid;}
   Bool_t IsPHOS()  const {return fFlags&kPHOSpid;}
   Bool_t IsEMCAL() const {return fFlags&kEMCALpid;}
+
+  void   SetTrackPointArray(AliTrackPointArray *points) { fPoints = points; }
+  AliTrackPointArray *GetTrackPointArray() const { return fPoints; }
 
   virtual void Print(Option_t * opt) const ; 
 
@@ -314,8 +322,10 @@ protected:
   Float_t fRICHphi;        // phi of the track extrapolated to the RICH
   Float_t fRICHdx;         // x of the track impact minus x of the MIP
   Float_t fRICHdy;         // y of the track impact minus y of the MIP
-  	
-  ClassDef(AliESDtrack,17)  //ESDtrack 
+
+  AliTrackPointArray *fPoints; // Array which contains the track space points in the global frame
+
+  ClassDef(AliESDtrack,18)  //ESDtrack 
 };
 
 #endif 

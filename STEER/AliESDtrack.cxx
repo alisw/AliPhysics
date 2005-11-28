@@ -24,6 +24,7 @@
 
 #include "AliESDtrack.h"
 #include "AliKalmanTrack.h"
+#include "AliTrackPointArray.h"
 #include "AliLog.h"
 
 ClassImp(AliESDtrack)
@@ -78,7 +79,8 @@ AliESDtrack::AliESDtrack() :
   fRICHtheta(0),
   fRICHphi(0),
   fRICHdx(0),
-  fRICHdy(0)
+  fRICHdy(0),
+  fPoints(0)
 {
   //
   // The default ESD constructor 
@@ -176,7 +178,8 @@ AliESDtrack::AliESDtrack(const AliESDtrack& track):
   fRICHtheta(track.fRICHtheta),
   fRICHphi(track.fRICHphi),
   fRICHdx(track.fRICHdx),
-  fRICHdy(track.fRICHdy)
+  fRICHdy(track.fRICHdy),
+  fPoints(track.fPoints)
 {
   //
   //copy constructor
@@ -232,7 +235,8 @@ AliESDtrack::~AliESDtrack(){
   //
   //printf("Delete track\n");
   delete fITStrack;
-  delete fTRDtrack;  
+  delete fTRDtrack; 
+  delete fPoints;
 }
 
 //_______________________________________________________________________
@@ -341,6 +345,7 @@ void AliESDtrack::MakeMiniESDtrack(){
   fRICHdx = 0;     
   fRICHdy = 0;      
 
+  fPoints = 0;
 } 
 //_______________________________________________________________________
 Double_t AliESDtrack::GetMass() const {
@@ -774,6 +779,58 @@ void AliESDtrack::GetInnerExternalCovariance(Double_t cov[15]) const
  //---------------------------------------------------------------------
  for (Int_t i=0; i<15; i++) cov[i]=fIc[i];
  
+}
+
+Int_t AliESDtrack::GetNcls(Int_t idet) const
+{
+  // Get number of clusters by subdetector index
+  //
+  Int_t ncls = 0;
+  switch(idet){
+  case 0:
+    ncls = fITSncls;
+    break;
+  case 1:
+    ncls = fTPCncls;
+    break;
+  case 2:
+    ncls = fTRDncls;
+    break;
+  case 3:
+    if (fTOFindex != 0)
+      ncls = 1;
+    break;
+  default:
+    break;
+  }
+  return ncls;
+}
+
+Int_t AliESDtrack::GetClusters(Int_t idet, UInt_t *idx) const
+{
+  // Get cluster index array by subdetector index
+  //
+  Int_t ncls = 0;
+  switch(idet){
+  case 0:
+    ncls = GetITSclusters(idx);
+    break;
+  case 1:
+    ncls = GetTPCclusters((Int_t *)idx);
+    break;
+  case 2:
+    ncls = GetTRDclusters(idx);
+    break;
+  case 3:
+    if (fTOFindex != 0) {
+      idx[0] = GetTOFcluster();
+      ncls = 1;
+    }
+    break;
+  default:
+    break;
+  }
+  return ncls;
 }
 
 void  AliESDtrack::GetTRDExternalParameters(Double_t &x, Double_t&alpha, Double_t p[5], Double_t cov[15]) const

@@ -31,8 +31,33 @@
 
 #include "AliAlignObj.h"
 //#include "AliLog.h"
-
+ 
 ClassImp(AliAlignObj)
+
+Int_t AliAlignObj::fgLayerSize[kLastLayer - kFirstLayer] = {
+  80, 160,  // ITS SPD
+  84, 176,  // ITS SDD
+  748, 950, // ITS SSD
+  36, 36,   // TPC
+  90, 90, 90, 90, 90, 90,  // TRD
+  1,        // TOF ??
+  1, 1,     // PHOS ??
+  1,        // RICH ??
+  1         // MUON ??
+};
+
+const char* AliAlignObj::fgLayerName[kLastLayer - kFirstLayer] = {
+  "ITS inner pixels layer", "ITS outer pixels layer",
+  "ITS inner drifts layer", "ITS outer drifts layer",
+  "ITS inner strips layer", "ITS outer strips layer",
+  "TPC inner chambers layer", "TPC outer chambers layer",
+  "TRD chambers layer 1", "TRD chambers layer 2", "TRD chambers layer 3",
+  "TRD chambers layer 4", "TRD chambers layer 5", "TRD chambers layer 6",
+  "TOF layer",
+  "?","?",
+  "?",
+  "?"
+};
 
 //_____________________________________________________________________________
 AliAlignObj::AliAlignObj():

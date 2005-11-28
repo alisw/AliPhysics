@@ -137,7 +137,7 @@
 #include "AliDetectorTag.h"
 #include "AliEventTag.h"
 
-
+#include "AliTrackPointArray.h"
 
 ClassImp(AliReconstruction)
 
@@ -167,7 +167,9 @@ AliReconstruction::AliReconstruction(const char* gAliceFilename,
   fRunLoader(NULL),
   fRawReader(NULL),
 
-  fVertexer(NULL)
+  fVertexer(NULL),
+
+  fWriteAlignmentData(kFALSE)
 {
 // create reconstruction object with default parameters
   
@@ -200,7 +202,9 @@ AliReconstruction::AliReconstruction(const AliReconstruction& rec) :
   fRunLoader(NULL),
   fRawReader(NULL),
 
-  fVertexer(NULL)
+  fVertexer(NULL),
+
+  fWriteAlignmentData(rec.fWriteAlignmentData)
 {
 // copy constructor
 
@@ -749,6 +753,11 @@ Bool_t AliReconstruction::RunTracking(AliESD*& esd)
       fLoader[iDet]->UnloadRecPoints();
     }
   }
+
+  // write space-points to the ESD in case alignment data output
+  // is switched on
+  if (fWriteAlignmentData)
+    WriteAlignmentData(esd);
 
   // pass 3: TRD + TPC + ITS refit inwards
   for (Int_t iDet = 2; iDet >= 0; iDet--) {
@@ -1419,3 +1428,56 @@ void AliReconstruction::CreateTag(TFile* file)
   delete evTag;
 }
 
+void AliReconstruction::WriteAlignmentData(AliESD* esd)
+{
+  // Write space-points which are then used in the alignment procedures
+  // For the moment only ITS, TRD and TPC
+
+  // Load TOF clusters
+  fLoader[3]->LoadRecPoints("read");
+  TTree* tree = fLoader[3]->TreeR();
+  if (!tree) {
+    AliError(Form("Can't get the %s cluster tree", fgkDetectorName[3]));
+    return;
+  }
+  fTracker[3]->LoadClusters(tree);
+
+  Int_t ntracks = esd->GetNumberOfTracks();
+  for (Int_t itrack = 0; itrack < ntracks; itrack++)
+    {
+      AliESDtrack *track = esd->GetTrack(itrack);
+      Int_t nsp = 0;
+      UInt_t idx[200];
+      for (Int_t iDet = 3; iDet >= 0; iDet--)
+	nsp += track->GetNcls(iDet);
+      if (nsp) {
+	AliTrackPointArray *sp = new AliTrackPointArray(nsp);
+	track->SetTrackPointArray(sp);
+	Int_t isptrack = 0;
+	for (Int_t iDet = 3; iDet >= 0; iDet--) {
+	  AliTracker *tracker = fTracker[iDet];
+	  if (!tracker) continue;
+	  Int_t nspdet = track->GetNcls(iDet);
+	  cout<<iDet<<" "<<nspdet<<endl;
+	  if (nspdet <= 0) continue;
+	  track->GetClusters(iDet,idx);
+	  AliTrackPoint p;
+	  Int_t isp = 0;
+	  Int_t isp2 = 0;
+	  while (isp < nspdet) {
+	    Bool_t isvalid = tracker->GetTrackPoint(idx[isp2],p); isp2++;
+	    if (!isvalid) continue;
+	    sp->AddPoint(isptrack,&p); isptrack++; isp++;
+	  }
+	  //	  for (Int_t isp = 0; isp < nspdet; isp++) {
+	    //	    AliCluster *cl = tracker->GetCluster(idx[isp]);
+	    //	    UShort_t volid = tracker->GetVolumeID(idx[isp]);
+	  //	    tracker->GetTrackPoint(idx[isp],p);
+	  //	    sp->AddPoint(isptrack,&p); isptrack++;
+	  //	  }
+	}	
+      }
+    }
+  fTracker[3]->UnloadClusters();
+  fLoader[3]->UnloadRecPoints();
+}
