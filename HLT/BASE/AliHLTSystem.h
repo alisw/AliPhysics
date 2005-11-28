@@ -24,6 +24,8 @@ class AliHLTSystem : public AliHLTLogging {
   AliHLTSystem();
   virtual ~AliHLTSystem();
 
+  /* this will change later
+   */
   AliHLTComponentHandler* fpComponentHandler;
   AliHLTConfigurationHandler* fpConfigurationHandler;
 
@@ -39,16 +41,36 @@ class AliHLTSystem : public AliHLTLogging {
    */
   int DeleteConfiguration(AliHLTConfiguration* pConf);
 
-  /* build a task list from the configuration list
+  /* build a task list from a configuration object
+   * This method is used to build the tasks from the 'master' configuration
+   * objects which are added to the HLT system handler. This is an iterative
+   * process since the task might depend upon other configurations. For each
+   * configuration object which has not yet been converted into a task, the
+   * method will be called iteratively. Finally, after building all tasks which
+   * the current one depends on have been created, the task is inserted to the
+   * list of tasks with the InsertTask method.
    */
   int BuildTaskList(AliHLTConfiguration* pConf);
 
+  /* clean the list of tasks and delete all the task objects
+   */
   int CleanTaskList();
 
+  /* insert a task to the task list
+   * the method first checks whether all dependencies are resolved (i.e. exist 
+   * already in the task list). During this iteration the cross links between the 
+   * tasks are set as well. If all dependencies are resolved, the task is added
+   * at the end of the list.
+   */
   int InsertTask(AliHLTTask* pTask);
 
+  /* find a task with an id
+   * NOTE: 'id' denotes a CONFIGURATION, not a COMPONENT
+   */
   AliHLTTask* FindTask(const char* id);
 
+  /* print the task list
+   */
   void PrintTaskList();
 
   /* run the task list

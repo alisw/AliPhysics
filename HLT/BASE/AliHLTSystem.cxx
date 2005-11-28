@@ -27,8 +27,8 @@
 using namespace std;
 #endif
 
-#include <errno.h>
-#include <string.h>
+#include <cerrno>
+#include <string>
 #include "AliL3StandardIncludes.h"
 #include "AliHLTSystem.h"
 #include "AliHLTComponentHandler.h"
@@ -113,9 +113,9 @@ int AliHLTSystem::BuildTaskList(AliHLTConfiguration* pConf)
       }
     }
     if (pTask) {
-      // check for ring dependencies
+      // check for circular dependencies
       if ((iResult=pConf->FollowDependency(pConf->GetName()))>0) {
-	HLTError("detected ring dependency for configuration \"%s\"", pTask->GetName());
+	HLTError("detected circular dependency for configuration \"%s\"", pTask->GetName());
 	pTask->PrintDependencyTree(pTask->GetName(), 1/*use the configuration list*/);
 	HLTError("aborted ...");
 	iResult=-ELOOP;
@@ -123,6 +123,11 @@ int AliHLTSystem::BuildTaskList(AliHLTConfiguration* pConf)
       if (iResult>=0) {
 	// check whether all dependencies are already in the task list
 	// create the missing ones
+	// this step is an iterative process which calls this function again for the missing
+	// configurations, in order to avoid the currently processed task to be created
+	// again it is added to the list temporarily and removed afterwards
+	// This is of high importance to preserve the order of the tasks. Furthermore, the
+	// InsertTask method has to be used in order to set all the cross links right 
 	fTaskList.Add(pTask);
 	AliHLTConfiguration* pDep=pConf->GetFirstSource();
 	while (pDep!=NULL && iResult>=0) {
@@ -131,6 +136,7 @@ int AliHLTSystem::BuildTaskList(AliHLTConfiguration* pConf)
 	  }
 	  pDep=pConf->GetNextSource();
 	}
+	// remove the temporarily added task
 	fTaskList.Remove(pTask);
 
 	// insert the task and set the cross-links
@@ -175,8 +181,8 @@ int AliHLTSystem::InsertTask(AliHLTTask* pTask)
       HLTDebug("set dependency  \"%s\" for configuration \"%s\"", pCurr->GetName(), pTask->GetName());
     }
     if (pCurr->Depends(pTask)) {
-      // ring dependency
-      HLTError("ring dependency: can not resolve dependencies for configuration \"%s\"", pTask->GetName());
+      // circular dependency
+      HLTError("circular dependency: can not resolve dependencies for configuration \"%s\"", pTask->GetName());
       iResult=-ELOOP;
     } else if ((iResult=pTask->CheckDependencies())>0) {
       lnk = lnk->Next();
