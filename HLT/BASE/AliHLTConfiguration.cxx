@@ -25,12 +25,12 @@
 using namespace std;
 #endif
 
-#include <errno.h>
+#include <cerrno>
 #include "AliHLTConfiguration.h"
 #include "AliHLTComponent.h"
 #include "AliHLTComponentHandler.h"
 #include <iostream>
-#include <string.h>
+#include <string>
 
 ClassImp(AliHLTConfiguration)
 

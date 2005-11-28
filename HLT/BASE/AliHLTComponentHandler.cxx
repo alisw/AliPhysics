@@ -27,8 +27,8 @@
 using namespace std;
 #endif
 
-#include <errno.h>
-#include <string.h>
+#include <cerrno>
+#include <string>
 #include <dlfcn.h>
 #include "AliL3StandardIncludes.h"
 #include "AliHLTComponentHandler.h"
