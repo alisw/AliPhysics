@@ -237,54 +237,6 @@ void AliMUONGeometryBuilder::PlaceVolume(const TString& name, const TString& mNa
 
 } 
 
-//______________________________________________________________________________
-void AliMUONGeometryBuilder::FillGlobalTransformations(
-                                 AliMUONVGeometryBuilder* builder)
-{
-/// Compute and set global transformations to detection elements
-/// for each chamber geometry
-
-  for (Int_t j=0; j<builder->NofGeometries(); j++) {
-
-    AliMUONGeometryModuleTransformer* transformer
-      = builder->Geometry(j)->GetTransformer();
-      
-    AliMUONGeometryStore* detElements 
-      = transformer->GetDetElementStore();
-
-    for (Int_t k=0; k<detElements->GetNofEntries(); k++) {
-     
-      AliMUONGeometryDetElement* detElement 
-	= (AliMUONGeometryDetElement*)detElements->GetEntry(k);
-	  
-      if (!detElement) AliFatal("Detection element not found.") 
-	  
-      const TGeoCombiTrans* localTransform 
-        = detElement->GetLocalTransformation();
-
-      TGeoCombiTrans appliedGlobalTransform;
-      if (builder->ApplyGlobalTransformation())
-        appliedGlobalTransform = fGlobalTransformation;
-
-      // Compose global transformation
-      TGeoHMatrix total 
-	= Multiply( (*transformer->GetTransformation()),
-	            (*localTransform),
-		    appliedGlobalTransform );
-	  
-      // Convert TGeoHMatrix to TGeoCombiTrans
-      TGeoCombiTrans globalTransform(localTransform->GetName());
-      globalTransform.SetTranslation(total.GetTranslation());  
-      TGeoRotation rotation;
-      rotation.SetMatrix(total.GetRotationMatrix());
-      globalTransform.SetRotation(rotation);  
- 
-      // Set the global transformation to detection element
-      detElement->SetGlobalTransformation(globalTransform);
-    }
-  }  			    
-}	     
-
 //_____________________________________________________________________________
 void AliMUONGeometryBuilder::SetAlign(AliMUONVGeometryBuilder* builder)
 {
@@ -469,7 +421,7 @@ void AliMUONGeometryBuilder::InitGeometry(const TString& svmapFileName)
 /// Initialize geometry
 
   // Read alignement data if geometry is read from Root file
-  if (gAlice->IsRootGeometry()) {
+  if ( gAlice->IsRootGeometry() ) {
     fAlign = true;
     ReadTransformations();
   }
@@ -491,9 +443,6 @@ void AliMUONGeometryBuilder::InitGeometry(const TString& svmapFileName)
     if (!fAlign)  {
       // Fill local transformations from built geometry
       builder->FillTransformations();
-
-      // Compute global transformations of detection elements
-      FillGlobalTransformations(builder);
     }  
   }  
 }
@@ -508,16 +457,6 @@ void AliMUONGeometryBuilder::ReadTransformations(const TString& fileName)
   //
   AliMUONGeometryTransformer* geomTransformer = fGeometry->GetTransformer();
   geomTransformer->ReadTransformations(fileName);
-  
-  // Compute global transformations of detection elements
-  //
-  for (Int_t i=0; i<fGeometryBuilders->GetEntriesFast(); i++) {
-
-    AliMUONVGeometryBuilder* builder
-      = (AliMUONVGeometryBuilder*)fGeometryBuilders->At(i);
-
-    FillGlobalTransformations(builder);
-  }
 }
 
 //______________________________________________________________________________
