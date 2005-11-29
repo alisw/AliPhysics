@@ -118,8 +118,8 @@ public:
    Int_t    GetSeedLabel() const { return fSeedLab; }
    Double_t GetSigmaC2()   const {return fCcc;}
    Double_t GetSigmaTgl2() const {return fCtt;}
-   Double_t GetSigmaY2()   const {return TMath::Abs(fCyy);}
-   Double_t GetSigmaZ2()   const {return TMath::Abs(fCzz);}
+   Double_t GetSigmaY2()   const {return fCyy;}
+   Double_t GetSigmaZ2()   const {return fCzz;}
    Double_t GetSnp()  const {return fX*fC - fE;}
    Double_t GetTgl()  const {return fT;}
    Double_t GetX()    const {return fX;}
