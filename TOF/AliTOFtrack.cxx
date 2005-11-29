@@ -250,6 +250,13 @@ Int_t AliTOFtrack::PropagateTo(Double_t xk,Double_t x0,Double_t rho)
   if((5940*beta2/(1-beta2+1e-10) - beta2) < 0){return 0;}
 
   Double_t dE=0.153e-3/beta2*(log(5940*beta2/(1-beta2+1e-10)) - beta2)*d*rho;
+  //
+  // suspicious part - think about it ?
+  Double_t kinE =  TMath::Sqrt(p2);
+  if (dE>0.8*kinE) dE = 0.8*kinE;  //      
+  if (dE<0)        dE = 0.0;       // not valid region for Bethe bloch 
+  //
+  //
   if (x1 < x2) dE=-dE;
   cc=fC;
   fC*=(1.- sqrt(p2+GetMass()*GetMass())/p2*dE);
