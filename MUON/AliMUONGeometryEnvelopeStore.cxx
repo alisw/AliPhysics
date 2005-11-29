@@ -107,7 +107,7 @@ AliMUONGeometryEnvelopeStore::operator = (const AliMUONGeometryEnvelopeStore& rh
 
 //______________________________________________________________________________
 TGeoHMatrix 
-AliMUONGeometryEnvelopeStore::ConvertTransform(const TGeoHMatrix& transform) const
+AliMUONGeometryEnvelopeStore::ConvertDETransform(const TGeoHMatrix& transform) const
 {
 // Convert transformation into the reference frame
 
@@ -115,8 +115,7 @@ AliMUONGeometryEnvelopeStore::ConvertTransform(const TGeoHMatrix& transform) con
     return transform;
   else  {
     return AliMUONGeometryBuilder::Multiply( fReferenceFrame.Inverse(),
-  				  	     transform,
-    					     fReferenceFrame );  
+  				  	     transform );  
   }			    
 }
 
@@ -156,7 +155,7 @@ Bool_t AliMUONGeometryEnvelopeStore::AlignEnvelope(
 
   // Apply frame transform
   TGeoHMatrix newTransform 
-    = ConvertTransform(*(detElement->GetLocalTransformation()));
+    = ConvertDETransform(*(detElement->GetLocalTransformation()));
 
   envelope->SetTransform(newTransform);
   

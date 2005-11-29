@@ -129,9 +129,23 @@ AliMUONVGeometryBuilder::ConvertTransform(const TGeoHMatrix& transform) const
   if ( fReferenceFrame.IsIdentity() )
     return transform;
   else  {
-    return AliMUONGeometryBuilder::Multiply( fReferenceFrame.Inverse(),
+    return AliMUONGeometryBuilder::Multiply( fReferenceFrame,
   				  	     transform,
-    					     fReferenceFrame );  
+    					     fReferenceFrame.Inverse() );  
+  }			    
+}
+
+//______________________________________________________________________________
+TGeoHMatrix 
+AliMUONVGeometryBuilder::ConvertDETransform(const TGeoHMatrix& transform) const
+{
+// Convert transformation into the reference frame
+
+  if ( fReferenceFrame.IsIdentity() )
+    return transform;
+  else  {
+    return AliMUONGeometryBuilder::Multiply( fReferenceFrame,
+  				  	     transform );  
   }			    
 }
 
@@ -340,7 +354,7 @@ void  AliMUONVGeometryBuilder::FillTransformations() const
         = (AliMUONGeometryEnvelope*)envelopes->At(j);
 
       // skip envelope not corresponding to detection element
-      if(envelope->GetUniqueID() == 0) continue;
+      if ( envelope->GetUniqueID() == 0) continue;
        
       // Get envelope data 
       Int_t detElemId = envelope->GetUniqueID();	
@@ -349,11 +363,21 @@ void  AliMUONVGeometryBuilder::FillTransformations() const
       const TGeoCombiTrans* transform = envelope->GetTransformation(); 
       
       // Apply frame transform
-      TGeoHMatrix newTransform = ConvertTransform(*transform);
+      TGeoHMatrix localTransform = ConvertDETransform(*transform);
 
       // Add detection element transformation 
-      detElements->Add(detElemId,
-        new AliMUONGeometryDetElement(detElemId, path, newTransform)); 
+      AliMUONGeometryDetElement* detElement
+        = new AliMUONGeometryDetElement(detElemId, path, localTransform);
+      detElements->Add(detElemId, detElement);
+
+      // Compose global transformation
+      TGeoHMatrix globalTransform 
+	= AliMUONGeometryBuilder::Multiply( 
+	            (*geometry->GetTransformer()->GetTransformation()),
+	             localTransform );
+		    ;
+      // Set the global transformation to detection element
+      detElement->SetGlobalTransformation(globalTransform);
     }  
   }
 }

@@ -126,7 +126,7 @@ class AliMUONGeometryEnvelopeStore : public TObject
 
   private:
     // methods
-    TGeoHMatrix ConvertTransform(const TGeoHMatrix& transform) const;
+    TGeoHMatrix ConvertDETransform(const TGeoHMatrix& transform) const;
     AliMUONGeometryEnvelope* FindEnvelope(const TString& name) const;
     Bool_t AlignEnvelope(AliMUONGeometryEnvelope* envelope) const;
  
