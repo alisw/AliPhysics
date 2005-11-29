@@ -16,9 +16,6 @@
 #include <TObjArray.h>
 #include <TArrayI.h>
 
-class TGeoCombiTrans;
-class TGeoTranslation;
-
 class AliMUONStringIntMap : public TObject
 {
   public:
