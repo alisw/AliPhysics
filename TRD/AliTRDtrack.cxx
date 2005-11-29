@@ -671,8 +671,9 @@ Int_t AliTRDtrack::Update(const AliTRDcluster *c, Double_t chisq, UInt_t index, 
 
     r00=c->GetSigmaY2()+errang+add, r01=0., r11=c->GetSigmaZ2()*xu_factor; 
     r00+=(fCyy+2.0*h01*fCzy+h01*h01*fCzz);
+    r01+=(fCzy+h01*fCzz);
+    r11+=fCzz;
 
-    r01+=(fCzy+h01*fCzz);  
     det=r00*r11 - r01*r01;
     tmp=r00; r00=r11/det; r11=tmp/det; r01=-r01/det;
 
