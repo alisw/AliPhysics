@@ -42,9 +42,10 @@ const char* StationTypeName(AliMpStationType stationType)
       break;
     case kStationInvalid:
     default:
-      return "unknown";
+      return "invalid";
       break;
   }
+  return "unknown";
 }
 
 #endif //ALI_MP_STATION_TYPE_H
