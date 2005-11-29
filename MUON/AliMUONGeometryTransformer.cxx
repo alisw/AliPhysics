@@ -34,6 +34,7 @@
 #include "AliMUONGeometryDetElement.h"
 #include "AliMUONGeometryDEIndexing.h"
 #include "AliMUONGeometryStore.h"
+#include "AliMUONGeometryBuilder.h"
 
 
 ClassImp(AliMUONGeometryTransformer)
@@ -188,19 +189,31 @@ void AliMUONGeometryTransformer::FillData(
   TString path = ComposePath(volName, copyNo);
   
   // Build the transformation from the parameters
-  TGeoHMatrix transform 
+  TGeoHMatrix localTransform 
     = GetTransform(x, y, z, a1, a2, a3, a4, a5, a6);
    
-  // Compose TGeoCombiTrans
-  TGeoCombiTrans newCombiTransform(transform);
-    
   // Get detection element store
   AliMUONGeometryStore* detElements = 
     GetModuleTransformer(moduleId)->GetDetElementStore();     
 
   // Add detection element
-  detElements->Add(detElemId,
-     new AliMUONGeometryDetElement(detElemId, path, newCombiTransform)); 
+  AliMUONGeometryDetElement* detElement
+    = new AliMUONGeometryDetElement(detElemId, path, localTransform);
+  detElements->Add(detElemId, detElement);
+  
+  // Compute global transformation
+  const AliMUONGeometryModuleTransformer* kModuleTransformer
+    = GetModuleTransformer(moduleId);
+  if ( ! kModuleTransformer ) {
+    AliFatal(Form("Module transformation not defined, detElemId %d",
+                  detElemId));
+  }  
+
+  TGeoHMatrix globalTransform 
+    = AliMUONGeometryBuilder::Multiply( 
+                                  *kModuleTransformer->GetTransformation(),
+				  localTransform );
+  detElement->SetGlobalTransformation(globalTransform);
 }		   
   
 //______________________________________________________________________________
