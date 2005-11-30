@@ -19,7 +19,8 @@ class AliAlignObj : public TObject {
   AliAlignObj(const AliAlignObj& theAlignObj);
   AliAlignObj& operator= (const AliAlignObj& theAlignObj);
   virtual ~AliAlignObj();
-  enum ELayerID{kFirstLayer=1,
+  enum ELayerID{kInvalidLayer=0,
+		kFirstLayer=1,
 		kSPD1=1, kSPD2=2,
 		kSDD1=3, kSDD2=4,
 		kSSD1=5, kSSD2=6,
