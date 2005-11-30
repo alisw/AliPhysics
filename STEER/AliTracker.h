@@ -43,7 +43,7 @@ public:
   virtual void UnloadClusters()=0;
   virtual AliCluster *GetCluster(Int_t index) const=0;
   //  virtual UShort_t GetVolumeID(Int_t index) {return 0;}
-  virtual Bool_t GetTrackPoint(Int_t /* index */ , AliTrackPoint& /* p */) { return kFALSE;}
+  virtual Bool_t GetTrackPoint(Int_t /* index */ , AliTrackPoint& /* p */) const { return kFALSE;}
   virtual void  UseClusters(const AliKalmanTrack *t, Int_t from=0) const;
   virtual void  CookLabel(AliKalmanTrack *t,Float_t wrong) const; 
   Double_t GetX() const {return fX;}
