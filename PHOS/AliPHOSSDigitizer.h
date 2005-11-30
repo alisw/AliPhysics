@@ -9,6 +9,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.24  2005/05/28 14:19:05  schutz
+ * Compilation warnings fixed by T.P.
+ *
  */
 
 //_________________________________________________________________________
@@ -21,7 +24,9 @@
 
 // --- ROOT system ---
 #include "TTask.h"
+#include "AliConfig.h"
 class TFile ;
+
 
 // --- Standard library ---
 
