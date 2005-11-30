@@ -254,10 +254,8 @@ AliMUONTriggerSegmentationV2::GetPadI(Float_t x, Float_t y,
                   fSlatSegmentation->GetName(),
                   x,y,ixGlo,iyGlo));
   
-  Double_t slatx = fSlat->DX();
-  Double_t slaty = fSlat->DY();
   AliMpPad pad = 
-    fSlatSegmentation->PadByPosition(TVector2(x+slatx,y+slaty), kTRUE);
+    fSlatSegmentation->PadByPosition(TVector2(x,y), kTRUE);
 	
   if ( pad != AliMpPad::Invalid() )
 	{
@@ -364,8 +362,7 @@ AliMUONTriggerSegmentationV2::HasPad(Float_t x, Float_t y, Float_t)
 //  Bool_t ok1 = HasPad(ixPC,iyPC);
 
   AliMpPad pad = 
-    fSlatSegmentation->PadByPosition(TVector2(x+fSlat->DX(),y+fSlat->DY()),
-                                     kFALSE);
+  fSlatSegmentation->PadByPosition(TVector2(x,y),kFALSE);
   return pad.IsValid();
 }
 
