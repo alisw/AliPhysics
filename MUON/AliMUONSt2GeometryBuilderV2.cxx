@@ -94,7 +94,6 @@ AliMUONSt2GeometryBuilderV2::operator = (const AliMUONSt2GeometryBuilderV2& rhs)
 //______________________________________________________________________________
 void AliMUONSt2GeometryBuilderV2::CreateGeometry()
 {
-// From AliMUONv1::CreateGeometry()
 
 //
 //********************************************************************
@@ -103,10 +102,6 @@ void AliMUONSt2GeometryBuilderV2::CreateGeometry()
      // indices 1 and 2 for first and second chambers in the station
      // iChamber (first chamber) kept for other quanties than Z,
      // assumed to be the same in both chambers
-
-//     AliMUONChamber* iChamber = &fMUON->Chamber(2);
-//     AliMUONChamber* iChamber1 = iChamber;
-//     AliMUONChamber* iChamber2 = &fMUON->Chamber(3);
 
 
      // Get tracking medias Ids
@@ -117,27 +112,19 @@ void AliMUONSt2GeometryBuilderV2::CreateGeometry()
      Int_t idCU   = idtmed[1110]; // medium copper
      Int_t idRoha = idtmed[1113]; // medium roha cell
      Int_t idPGF30= idtmed[1123]; // medium for Frame Eq.to Bakelite
-     Int_t idScru = idtmed[1128]; // screw material - Stainless Steel(18%Cr,9%Ni,Fe)
+     //Int_t idScru = idtmed[1128]; // screw material - Stainless Steel(18%Cr,9%Ni,Fe)
 
 
-     Int_t irot1, irot2, irot3, irot4, irot5, irot6;
-
-     fMUON->AliMatrix(irot1,  90.,  13., 90., 103.,  0., 0.);  //+13deg in x-y Plane
-     fMUON->AliMatrix(irot2,  90.,  34., 90., 124.,  0., 0.); // +34deg in x-y plane
-     fMUON->AliMatrix(irot3,  90.,  56., 90., 146.,  0., 0.); // +56 deg in x-y plane
-     fMUON->AliMatrix(irot4,  90.,  76., 90., 166.,  0., 0.); // +76 deg in x-y plane
-     fMUON->AliMatrix(irot5,  90.,  90., 90., 180.,  0., 0.); // +90 deg in x-y plane
-     fMUON->AliMatrix(irot6,  90., 22.5, 90., 112.5, 0., 0.); //22.5 deg in x-y Plane
 
 /*########################################################################################
-    Create volume for one Quadrant connsist two plane
+    Create volume for one Quadrant
 ##########################################################################################*/
      Float_t tpar1[5];
-     tpar1[0] = 20.6;
-     tpar1[1] = 122.0;
-     tpar1[2] = 6.55555/2;
-     tpar1[3] = -10.0;
-     tpar1[4] = 100.0;
+     tpar1[0] = 20.55;
+     tpar1[1] = 123.5;
+     tpar1[2] = 6.8/2;
+     tpar1[3] = -12.0;
+     tpar1[4] = 102.0;
 
 
      gMC->Gsvolu("SQM3","TUBS", idAir, tpar1, 5);
@@ -146,1256 +133,600 @@ void AliMUONSt2GeometryBuilderV2::CreateGeometry()
 
 
 //==================================================================================
-//                                 Plane - 1       L is used for one Plane while
-//                                                   R for the other
+//                                 Plane      
 //==================================================================================
 
 //Thickness of variour parts
-       Float_t zcbb  = 0.04;       //cathode pcb
-       Float_t zcu   = 0.004;      // eff. cu in cathode pcb
+       Float_t zCbb  = 0.04;       //cathode pcb
+       Float_t zCu   = 0.004;      // eff. cu in cathode pcb
        Float_t zRoha = 2.5;        // Rhocell
-       Float_t zmeb = 0.08;      //Mech. exit board
-       Float_t zcu2 = 0.02;     //Effective electronic exit board
+       Float_t zMeb = 0.08;      //Mech. exit board
+       Float_t zEeb = 0.02;     //Effective electronic exit board
     //Z-positions of various parts--- in Plane-1
 
-       Float_t zpos_cbb = 0.25;   // 2.5 mm => gap between anode & chatode plane
-       Float_t zpos_cu = zcbb;
-       Float_t zpos_Roha  = zcu;
-       Float_t zpos_meb = zmeb;
-       Float_t zpos_cu2 = zcu2;
+       Float_t zposCbb   = 0.25;   // 2.5 mm => gap between anode & chatode plane
+       Float_t zposCu    =zposCbb + zCbb;
+       Float_t zposRoha  =zposCu + zCu;
+       Float_t zposMeb   =zposRoha + zRoha;
+       Float_t zposEeb   =zposMeb + zMeb;
 
-       Float_t zpos_cbb_bar = zpos_cbb + zcbb/2.;  //for segment 0 & 6
-       Float_t zpos_cubar = zcbb/2. + zcu/2.;
-       Float_t zpos_Roha_bar = zcu/2. + zRoha/2.;
-       Float_t zpos_meb_bar =  zRoha/2. + zmeb/2.;
-       Float_t zpos_eeb_bar = zmeb/2. + zcu2/2.;
+       Float_t zposCbbBar  = zposCbb + zCbb/2.;  //for segment 0 & 6
+       Float_t zposCuBar   = zCbb/2. + zCu/2.;
+       Float_t zposRohaBar = zCu/2. + zRoha/2.;
+       Float_t zposMebBar  =  zRoha/2. + zMeb/2.;
+       Float_t zposEebBar  = zMeb/2. + zEeb/2.;
 
 
  //Cathode PCB + Copper sheet + Rohacell + mech exit board + eff. electronic exit board
 
- //Segment-0 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-       Float_t bpar_h[3];
-       bpar_h[0] = 95.5/2.;
-       bpar_h[1] = 1.6/2.;
-       bpar_h[2] = zcbb/2.;
-       gMC->Gsvolu("CB0L", "BOX", idPCB, bpar_h, 3);
+ //Segment-0 ~~~Horizantal box  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+       Float_t bparH[3];
+       bparH[0] = 94.5/2.; // extension beyond 0 deg in x direction
+       bparH[1] = 1.2/2.;  // extension beyond 0 deg in y direction (3.7[total extn] - 2.5[frame dim])
+       bparH[2] = zCbb/2.; // thickness of cathode sheet in z direction
+       gMC->Gsvolu("CB0L", "BOX", idPCB, bparH, 3);
+       
+       bparH[2] = zCu/2.;     //Thickness of Copper sheet
+       gMC->Gsvolu("CU0L", "BOX", idCU, bparH, 3);
 
-       bpar_h[2] = zcu/2.;     //Thickness of Copper sheet
-       gMC->Gsvolu("CU0L", "BOX", idCU, bpar_h, 3);
+       bparH[2] = zRoha/2.;     //Thickness of Roha cell
+       gMC->Gsvolu("RH0L", "BOX", idRoha, bparH, 3);
 
-       bpar_h[2] = zRoha/2.;     //Thickness of Roha cell
-       gMC->Gsvolu("RH0L", "BOX", idRoha, bpar_h, 3);
+       bparH[2] = zMeb/2;       //Thickness of mechanical exit board
+       gMC->Gsvolu("MB0L", "BOX", idPCB, bparH, 3);
 
-       bpar_h[0] = (100.6/2)-(0.9/2);
-       bpar_h[1] = 2.8/2.;
-       bpar_h[2] = zmeb/2;
-       gMC->Gsvolu("MB0L", "BOX", idPCB, bpar_h, 3);
-
-       bpar_h[2] = zcu2/2;
-       gMC->Gsvolu("EB0L", "BOX", idCU, bpar_h, 3);
+       bparH[2] = zEeb/2;          //Thickness of effective electronic  exit board
+       gMC->Gsvolu("EB0L", "BOX", idCU, bparH, 3);
 
  //Segment-1 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        Float_t pgpar[10];
-        pgpar[0] = 0.;
-        pgpar[1] = 13.;
-        pgpar[2] = 1.;
-        pgpar[3] = 2.;
-        pgpar[4] = 0.;
-        pgpar[5] = 22.5;
-        pgpar[6] = 120.2;
-        pgpar[7] = pgpar[4] + zcbb;
-        pgpar[8] = pgpar[5];
-        pgpar[9] = pgpar[6];
-        gMC->Gsvolu("CB1L", "PGON", idPCB, pgpar, 10);
+       Float_t pgpar[10]; // polygon
+       pgpar[0] = 0.;  // initial angle
+       pgpar[1] = 90.; // increment in angle starting from initial angle 
+       pgpar[2] = 5;   // number of side
+       pgpar[3] = 2.; // number of plane
+       pgpar[4] = 0.; // z-position of the first plane
+       pgpar[5] = 23.1; // innner radius first plane
+       pgpar[6] = 117.6;  // outer radious first plane
+       pgpar[7] = pgpar[4] + zCbb; // z-position of the second plane
+       pgpar[8] = pgpar[5];  // innner radius of second plane
+       pgpar[9] = pgpar[6];  // outer radious of second plane
+       gMC->Gsvolu("CB1L", "PGON", idPCB, pgpar, 10);
 
-        pgpar[7] = pgpar[4] + zcu;  // Thickness of copper-sheet
-        gMC->Gsvolu("CU1L", "PGON", idCU, pgpar, 10);
+       pgpar[7] = pgpar[4] + zCu;  // Thickness of copper-sheet
+       gMC->Gsvolu("CU1L", "PGON", idCU, pgpar, 10);
+       
+       pgpar[7] = pgpar[4] + zRoha;  // Thickness of Roha cell
+       gMC->Gsvolu("RH1L", "PGON", idRoha, pgpar, 10);
+       
+       pgpar[7] = pgpar[4] + zMeb;  // Thickness of mechanical exit board
+       gMC->Gsvolu("MB1L", "PGON", idPCB, pgpar, 10);
+       
+       pgpar[7] = pgpar[4] + zEeb;  // Thickness of electronic exit board
+       gMC->Gsvolu("EB1L", "PGON", idCU, pgpar, 10);
+       
 
-        pgpar[7] = pgpar[4] + zRoha;  // Thickness of Roha cell
-        gMC->Gsvolu("RH1L", "PGON", idRoha, pgpar, 10);
+//Segment-2 - vertical box (simalar to horizontal bar as in Segment 0)~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+       
+       Float_t bparV[3];
+       
+       bparV[0] = 1.0/2.;
+       bparV[1] = 94.5/2.;
+       bparV[2] = zCbb/2.;
+       gMC->Gsvolu("CB2L", "BOX", idPCB, bparV, 3);
+       
+       bparV[2] = zCu/2.;
+       gMC->Gsvolu("CU2L", "BOX", idCU, bparV, 3);
 
-        pgpar[5] = 21.5; // radius of inner rib
-        pgpar[6] = 121.2;
-        pgpar[7] = pgpar[4] + zmeb;
-        pgpar[8] = pgpar[5];
-        pgpar[9] = pgpar[6];
-        gMC->Gsvolu("MB1L", "PGON", idPCB, pgpar, 10);
+       bparV[2] = zRoha/2.;
+       gMC->Gsvolu("RH2L", "BOX", idRoha, bparV, 3);
+       
+       bparV[2] = zMeb/2;
+       gMC->Gsvolu("MB2L", "BOX", idPCB, bparV, 3);
+       
+       bparV[2] = zEeb/2;
+       gMC->Gsvolu("EB2L", "BOX", idCU, bparV, 3);
+       
+//....(Setting posion of Segment 0,1,2)..................................................................
+       
+       Float_t xposHorBox =  bparH[0] + 23.1; // 23.1 = 20.6(inner radius of qrd) + 2.5 (width of frame)
+       Float_t yposHorBox = -bparH[1];  
+       
+       Float_t xposVerBox = -bparV[0];
+       Float_t yposVerBox =  bparV[1] + 23.1;
 
-        pgpar[7] = pgpar[4] + zcu2;
-        gMC->Gsvolu("EB1L", "PGON", idCU, pgpar, 10);
-
-//Segment-2 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        pgpar[0] = 0.;
-        pgpar[1] = 21.;
-        pgpar[2] = 1.;
-        pgpar[3] = 2.;
-        pgpar[4] = 0.;
-        pgpar[5] = 22.5;
-        pgpar[6] = 121.5;
-        pgpar[7] = pgpar[4] +zcbb;
-        pgpar[8] = pgpar[5];
-        pgpar[9] = pgpar[6];
-        gMC->Gsvolu("CB2L", "PGON", idPCB, pgpar, 10);
-
-        pgpar[7] = pgpar[4] + zcu;  // Thickness of copper-sheet
-        gMC->Gsvolu("CU2L", "PGON", idCU, pgpar, 10);
-
-        pgpar[7] = pgpar[4] + zRoha;  // Thickness of Roha cell
-        gMC->Gsvolu("RH2L", "PGON", idRoha, pgpar, 10);
-
-        pgpar[5] = 21.5; // radius of inner rib
-        pgpar[6] = 122.5;
-        pgpar[7] = pgpar[4] + zmeb;
-        pgpar[8] = pgpar[5];
-        pgpar[9] = pgpar[6];
-        gMC->Gsvolu("MB2L", "PGON", idPCB, pgpar, 10);
-
-        pgpar[7] = pgpar[4] + zcu2;
-        gMC->Gsvolu("EB2L", "PGON", idCU, pgpar, 10);
-
-//Segment-3 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        pgpar[0] = 0.;
-        pgpar[1] = 22.;
-        pgpar[2] = 1.;
-        pgpar[3] = 2.;
-        pgpar[4] = 0.;
-        pgpar[5] = 22.5;
-        pgpar[6] = 119.9;
-        pgpar[7] = pgpar[4] + zcbb;
-        pgpar[8] = pgpar[5];
-        pgpar[9] = pgpar[6];
-        gMC->Gsvolu("CB3L", "PGON", idPCB, pgpar, 10);
-
-        pgpar[7] = pgpar[4] + zcu;  // Thickness of copper-sheet
-        gMC->Gsvolu("CU3L", "PGON", idCU, pgpar, 10);
-
-        pgpar[7] = pgpar[4] + zRoha;  // Thickness of Roha cell
-        gMC->Gsvolu("RH3L", "PGON", idRoha, pgpar, 10);
-
-        pgpar[5] = 21.5; // radius of inner rib
-        pgpar[6] = 120.9;
-        pgpar[7] = pgpar[4] + zmeb;
-        pgpar[8] = pgpar[5];
-        pgpar[9] = pgpar[6];
-        gMC->Gsvolu("MB3L", "PGON", idPCB, pgpar, 10);
-
-        pgpar[7] = pgpar[4] + zcu2;
-        gMC->Gsvolu("EB3L", "PGON", idCU, pgpar, 10);
-
-//Segment-4 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        pgpar[0] = 0.;
-        pgpar[1] = 20.;
-        pgpar[2] = 1.;
-        pgpar[3] = 2.;
-        pgpar[4] = 0.;
-        pgpar[5] = 22.5;
-        pgpar[6] = 119.9;
-        pgpar[7] = pgpar[4] + zcbb;
-        pgpar[8] = pgpar[5];
-        pgpar[9] = pgpar[6];
-        gMC->Gsvolu("CB4L", "PGON", idPCB, pgpar, 10);
-
-        pgpar[7] = pgpar[4] + zcu;  // Thickness of copper-sheet
-        gMC->Gsvolu("CU4L", "PGON", idCU, pgpar, 10);
-
-        pgpar[7] = pgpar[4] + zRoha;  // Thickness of Roha cell
-        gMC->Gsvolu("RH4L", "PGON", idRoha, pgpar, 10);
-
-        pgpar[5] = 21.5; // radius of inner rib
-        pgpar[6] = 120.9;
-        pgpar[7] = pgpar[4] + zmeb;
-        pgpar[8] = pgpar[5];
-        pgpar[9] = pgpar[6];
-        gMC->Gsvolu("MB4L", "PGON", idPCB, pgpar, 10);
-
-        pgpar[7] = pgpar[4] + zcu2;
-        gMC->Gsvolu("EB4L", "PGON", idCU, pgpar, 10);
-
-//Segment-5 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        pgpar[0] = 0.;
-        pgpar[1] = 14.;
-        pgpar[2] = 1.;
-        pgpar[3] = 2.;
-        pgpar[4] = 0.;
-        pgpar[5] = 22.5;
-        pgpar[6] = 117.5;
-        pgpar[7] = pgpar[4] + zcbb;
-        pgpar[8] = pgpar[5];
-        pgpar[9] = pgpar[6];
-        gMC->Gsvolu("CB5L", "PGON", idPCB, pgpar, 10);
-
-        pgpar[7] = pgpar[4] + zcu;  // Thickness of copper-sheet
-        gMC->Gsvolu("CU5L", "PGON", idCU, pgpar, 10);
-
-        pgpar[7] = pgpar[4] + zRoha;  // Thickness of Roha cell
-        gMC->Gsvolu("RH5L", "PGON", idRoha, pgpar, 10);
-
-        pgpar[5] = 21.5;// radius of inner rib
-        pgpar[6] = 118.5;
-        pgpar[7] = pgpar[4] + zmeb;
-        pgpar[8] = pgpar[5];
-        pgpar[9] = pgpar[6];
-        gMC->Gsvolu("MB5L", "PGON", idPCB, pgpar, 10);
-
-        pgpar[7] = pgpar[4] + zcu2;
-        gMC->Gsvolu("EB5L", "PGON", idCU, pgpar, 10);
-
-//Segment-6 - vertical box ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-	Float_t bpar_v[3];
-
-        bpar_v[0] = 1.6/2.;
-	bpar_v[1] = 95.5/2.;
-	bpar_v[2] = zcbb/2.;
-        gMC->Gsvolu("CB6L", "BOX", idPCB, bpar_v, 3);
-
-	bpar_v[2] = zcu/2.;
-        gMC->Gsvolu("CU6L", "BOX", idCU, bpar_v, 3);
-
-	bpar_v[2] = zRoha/2.;
-        gMC->Gsvolu("RH6L", "BOX", idRoha, bpar_v, 3);
-
-        bpar_v[0] = 2.8/2.;
-	bpar_v[1] = (97.9/2)-(0.9/2.);
-        bpar_v[2] = zmeb/2;
-        gMC->Gsvolu("MB6L", "BOX", idPCB, bpar_v, 3);
-
-        bpar_v[2] = zcu2/2;
-        gMC->Gsvolu("EB6L", "BOX", idCU, bpar_v, 3);
-
-//...........................................................................................
-//Positioning of Electronic exit board
-     gMC->Gspos("EB0L",1, "MB0L", 0.,0.,zpos_eeb_bar,0, "only");
-     gMC->Gspos("EB1L",1, "MB1L", 0.,0.,zpos_cu2,0, "only");
-     gMC->Gspos("EB2L",1, "MB2L", 0.,0.,zpos_cu2,0, "only");
-     gMC->Gspos("EB3L",1, "MB3L", 0.,0.,zpos_cu2,0, "only");
-     gMC->Gspos("EB4L",1, "MB4L", 0.,0.,zpos_cu2,0, "only");
-     gMC->Gspos("EB5L",1, "MB5L", 0.,0.,zpos_cu2,0, "only");
-     gMC->Gspos("EB6L",1, "MB6L", 0.,0.,zpos_eeb_bar,0, "only");
-
-//Positioning of Mech. exit board
-     Float_t xpos_meb_hor =  1.10;
-     Float_t ypos_meb_hor = -0.60;
-
-     Float_t xpos_meb_ver = -0.60;
-     Float_t ypos_meb_ver = -0.35;
-
-     gMC->Gspos("MB0L",1, "RH0L", xpos_meb_hor,ypos_meb_hor,zpos_meb_bar,0, "only");
-     gMC->Gspos("MB1L",1, "RH1L", 0.,0.,zpos_meb,0, "only");
-     gMC->Gspos("MB2L",1, "RH2L", 0.,0.,zpos_meb,0, "only");
-     gMC->Gspos("MB3L",1, "RH3L", 0.,0.,zpos_meb,0, "only");
-     gMC->Gspos("MB4L",1, "RH4L", 0.,0.,zpos_meb,0, "only");
-     gMC->Gspos("MB5L",1, "RH5L", 0.,0.,zpos_meb,0, "only");
-     gMC->Gspos("MB6L",1, "RH6L", xpos_meb_ver,ypos_meb_ver,zpos_meb_bar,0, "only");
-
-//Positioning Roha cell over copper sheet
-     gMC->Gspos("RH0L",1, "CU0L", 0.,0.,zpos_Roha_bar,0, "only");// box horizontal
-     gMC->Gspos("RH1L",1, "CU1L", 0.,0.,zpos_Roha,0, "only");
-     gMC->Gspos("RH2L",1, "CU2L", 0.,0.,zpos_Roha,0, "only");
-     gMC->Gspos("RH3L",1, "CU3L", 0.,0.,zpos_Roha,0, "only");
-     gMC->Gspos("RH4L",1, "CU4L", 0.,0.,zpos_Roha,0, "only");
-     gMC->Gspos("RH5L",1, "CU5L", 0.,0.,zpos_Roha,0, "only");
-     gMC->Gspos("RH6L",1, "CU6L", 0.,0.,zpos_Roha_bar,0, "only");
-
-//Positioning Copper sheet over PCB
-     gMC->Gspos("CU0L",1, "CB0L", 0.,0.,zpos_cubar,0, "only");// box horizontal
-     gMC->Gspos("CU1L",1, "CB1L", 0.,0.,zpos_cu,0, "only");
-     gMC->Gspos("CU2L",1, "CB2L", 0.,0.,zpos_cu,0, "only");
-     gMC->Gspos("CU3L",1, "CB3L", 0.,0.,zpos_cu,0, "only");
-     gMC->Gspos("CU4L",1, "CB4L", 0.,0.,zpos_cu,0, "only");
-     gMC->Gspos("CU5L",1, "CB5L", 0.,0.,zpos_cu,0, "only");
-     gMC->Gspos("CU6L",1, "CB6L", 0.,0.,zpos_cubar,0, "only");
 
 
 //Positioning the PCB
-      Float_t x_hor_pos = 95.5/2.+ 22.6; // 22.6 is inner radius of PCB
-      Float_t y_hor_pos = -(1.6/2); //
-
-      Float_t x_ver_pos = -(1.6/2); //
-      Float_t y_ver_pos = 95.5/2.+ 22.6; //
+//
 
       // chamber 3
-     gMC->Gspos("CB0L",1, "SQM3", x_hor_pos,y_hor_pos,zpos_cbb_bar,0, "only");// box horizontal
-     gMC->Gspos("CB1L",1, "SQM3", 0.,0.,zpos_cbb,0, "only");
-     gMC->Gspos("CB2L",1, "SQM3", 0.,0.,zpos_cbb,irot1,"only");
-     gMC->Gspos("CB3L",1, "SQM3", 0.,0.,zpos_cbb,irot2, "only");
-     gMC->Gspos("CB4L",1, "SQM3", 0.,0.,zpos_cbb,irot3, "only");
-     gMC->Gspos("CB5L",1, "SQM3", 0.,0.,zpos_cbb,irot4, "only");
-     gMC->Gspos("CB6L",1, "SQM3", x_ver_pos,y_ver_pos,zpos_cbb_bar,0, "only");// box vertical
+     gMC->Gspos("CB0L",1, "SQM3",xposHorBox,yposHorBox,zposCbbBar,0, "ONLY");// box horizontal
+     gMC->Gspos("CB1L",1, "SQM3", 0.0,0.0,zposCbb,0, "ONLY");
+     gMC->Gspos("CB2L",1, "SQM3",xposVerBox,yposVerBox,zposCbbBar,0, "ONLY");// box vertical
+
+     gMC->Gspos("CB0L",2, "SQM3",xposHorBox,yposHorBox,-zposCbbBar,0, "ONLY");// box horizontal
+     gMC->Gspos("CB1L",2, "SQM3", 0.0,0.0,-(zposCbb+ zCbb),0, "ONLY");
+     gMC->Gspos("CB2L",2, "SQM3",xposVerBox,yposVerBox,zposCbbBar,0, "ONLY");// box vertical
 
       // chamber 4
-     gMC->Gspos("CB0L",1, "SQM4", x_hor_pos,y_hor_pos,zpos_cbb_bar,0, "only");// box horizontal
-     gMC->Gspos("CB1L",1, "SQM4", 0.,0.,zpos_cbb,0, "only");
-     gMC->Gspos("CB2L",1, "SQM4", 0.,0.,zpos_cbb,irot1,"only");
-     gMC->Gspos("CB3L",1, "SQM4", 0.,0.,zpos_cbb,irot2, "only");
-     gMC->Gspos("CB4L",1, "SQM4", 0.,0.,zpos_cbb,irot3, "only");
-     gMC->Gspos("CB5L",1, "SQM4", 0.,0.,zpos_cbb,irot4, "only");
-     gMC->Gspos("CB6L",1, "SQM4", x_ver_pos,y_ver_pos,zpos_cbb,0, "only");// box vertical
+     gMC->Gspos("CB0L",3, "SQM4",xposHorBox,yposHorBox,zposCbbBar,0, "ONLY");
+     gMC->Gspos("CB1L",3, "SQM4", 0.0,0.0,zposCbb,0, "ONLY");
+     gMC->Gspos("CB2L",3, "SQM4",xposVerBox,yposVerBox,zposCbbBar,0, "ONLY");
 
+     gMC->Gspos("CB0L",4, "SQM4",xposHorBox,yposHorBox,-zposCbbBar,0, "ONLY");
+     gMC->Gspos("CB1L",4, "SQM4", 0.0,0.0,-(zposCbb+ zCbb),0, "ONLY");
+     gMC->Gspos("CB2L",4, "SQM4",xposVerBox,yposVerBox,zposCbbBar,0, "ONLY");
+
+
+//Positioning Copper sheet
+
+      // chamber 3
+
+     gMC->Gspos("CU0L",1, "SQM3",xposHorBox,yposHorBox,zposCuBar,0, "ONLY");
+     gMC->Gspos("CU1L",1, "SQM3", 0.0,0.0,zposCu,0, "ONLY");
+     gMC->Gspos("CU2L",1, "SQM3",xposVerBox,yposVerBox,zposCuBar,0, "ONLY");
+
+     gMC->Gspos("CU0L",2, "SQM3",xposHorBox,yposHorBox,-zposCuBar,0, "ONLY");
+     gMC->Gspos("CU1L",2, "SQM3", 0.0,0.0,-(zposCu+ zCu),0, "ONLY");
+     gMC->Gspos("CU2L",2, "SQM3",xposVerBox,yposVerBox,zposCuBar,0, "ONLY");
+      // chamber 4
+
+     gMC->Gspos("CU0L",3, "SQM4",xposHorBox,yposHorBox,zposCuBar,0, "ONLY");
+     gMC->Gspos("CU1L",3, "SQM4", 0.0,0.0,zposCu,0, "ONLY");
+     gMC->Gspos("CU2L",3, "SQM4",xposVerBox,yposVerBox,zposCuBar,0, "ONLY");
+
+     gMC->Gspos("CU0L",4, "SQM4",xposHorBox,yposHorBox,-zposCuBar,0, "ONLY");
+     gMC->Gspos("CU1L",4, "SQM4", 0.0,0.0,-(zposCu+ zCu),0, "ONLY");
+     gMC->Gspos("CU2L",4, "SQM4",xposVerBox,yposVerBox,zposCuBar,0, "ONLY");
+
+//Positioning Roha cell 
+
+      // chamber 3
+
+     gMC->Gspos("RH0L",1, "SQM3",xposHorBox,yposHorBox,zposRohaBar,0, "ONLY");
+     gMC->Gspos("RH1L",1, "SQM3", 0.0,0.0,zposRoha,0, "ONLY");
+     gMC->Gspos("RH2L",1, "SQM3",xposVerBox,yposVerBox,zposRohaBar,0, "ONLY");
+
+     gMC->Gspos("RH0L",2, "SQM3",xposHorBox,yposHorBox,-zposRohaBar,0, "ONLY");
+     gMC->Gspos("RH1L",2, "SQM3", 0.0,0.0,-(zposRoha+ zRoha),0, "ONLY");
+     gMC->Gspos("RH2L",2, "SQM3",xposVerBox,yposVerBox,zposRohaBar,0, "ONLY");
+
+      // chamber 4
+
+     gMC->Gspos("RH0L",3, "SQM4",xposHorBox,yposHorBox,zposRohaBar,0, "ONLY");
+     gMC->Gspos("RH1L",3, "SQM4", 0.0,0.0,zposRoha,0, "ONLY");
+     gMC->Gspos("RH2L",3, "SQM4",xposVerBox,yposVerBox,zposRohaBar,0, "ONLY");
+
+     gMC->Gspos("RH0L",4, "SQM4",xposHorBox,yposHorBox,-zposRohaBar,0, "ONLY");
+     gMC->Gspos("RH1L",4, "SQM4", 0.0,0.0,-(zposRoha+ zRoha),0, "ONLY");
+     gMC->Gspos("RH2L",4, "SQM4",xposVerBox,yposVerBox,zposRohaBar,0, "ONLY");
+
+//Positioning of Mech. exit board
+
+      // chamber 3
+
+     gMC->Gspos("MB0L",1, "SQM3",xposHorBox,yposHorBox,zposMebBar,0, "ONLY");
+     gMC->Gspos("MB1L",1, "SQM3", 0.0,0.0,zposMeb,0, "ONLY");
+     gMC->Gspos("MB2L",1, "SQM3",xposVerBox,yposVerBox,zposMebBar,0, "ONLY");
+
+     gMC->Gspos("MB0L",2, "SQM3",xposHorBox,yposHorBox,-zposMebBar,0, "ONLY");
+     gMC->Gspos("MB1L",2, "SQM3", 0.0,0.0,-(zposMeb+ zMeb),0, "ONLY");
+     gMC->Gspos("MB2L",2, "SQM3",xposVerBox,yposVerBox,zposMebBar,0, "ONLY");
+      // chamber 4
+
+     gMC->Gspos("MB0L",3, "SQM4",xposHorBox,yposHorBox,zposMebBar,0, "ONLY");
+     gMC->Gspos("MB1L",3, "SQM4", 0.0,0.0,zposMeb,0, "ONLY");
+     gMC->Gspos("MB2L",3, "SQM4",xposVerBox,yposVerBox,zposMebBar,0, "ONLY");
+
+     gMC->Gspos("MB0L",4, "SQM4",xposHorBox,yposHorBox,-zposMebBar,0, "ONLY");
+     gMC->Gspos("MB1L",4, "SQM4", 0.0,0.0,-(zposMeb+ zMeb),0, "ONLY");
+     gMC->Gspos("MB2L",4, "SQM4",xposVerBox,yposVerBox,zposMebBar,0, "ONLY");
+
+//Positioning of Electronic exit board
+
+
+      // chamber 3
+
+     gMC->Gspos("EB0L",1, "SQM3",xposHorBox,yposHorBox,zposEebBar,0, "ONLY");
+     gMC->Gspos("EB1L",1, "SQM3", 0.0,0.0,zposEeb,0, "ONLY");
+     gMC->Gspos("EB2L",1, "SQM3",xposVerBox,yposVerBox,zposEebBar,0, "ONLY");
+
+     gMC->Gspos("EB0L",2, "SQM3",xposHorBox,yposHorBox,-zposEebBar,0, "ONLY");
+     gMC->Gspos("EB1L",2, "SQM3", 0.0,0.0,-(zposEeb+ zEeb),0, "ONLY");
+     gMC->Gspos("EB2L",2, "SQM3",xposVerBox,yposVerBox,zposEebBar,0, "ONLY");
+      // chamber 4
+
+     gMC->Gspos("EB0L",3, "SQM4",xposHorBox,yposHorBox,zposEebBar,0, "ONLY");
+     gMC->Gspos("EB1L",3, "SQM4", 0.0,0.0,zposEeb,0, "ONLY");
+     gMC->Gspos("EB2L",3, "SQM4",xposVerBox,yposVerBox,zposEebBar,0, "ONLY");
+
+     gMC->Gspos("EB0L",4, "SQM4",xposHorBox,yposHorBox,-zposEebBar,0, "ONLY");
+     gMC->Gspos("EB1L",4, "SQM4", 0.0,0.0,-(zposEeb+ zEeb),0, "ONLY");
+     gMC->Gspos("EB2L",4, "SQM4",xposVerBox,yposVerBox,zposEebBar,0, "ONLY");
+
+ 
 //----------------------------------------------------------------------
 //                          Frames
 //----------------------------------------------------------------------
 //Frame-1
-      Float_t frame1[3] ;                //Index-1 is used for horizontal frame bar
-      frame1[0] = 100.6/2.;              //and 2,3,4..... is used for the next frames
-      frame1[1] = 2.5/2.;                //from hor. to the vertical
-      frame1[2] = .95/2.;
+     Float_t frame1[3] ;                
+     frame1[0] = 101.0/2.;             //100.6 = 94.5 + 2.5 + 3.6 
+     frame1[1] = 2.5/2.;               
+     frame1[2] = 5.0/2.;
 
-      Float_t rib1[3];
-      rib1[0] = frame1[0] - 0.9/2.;
-      rib1[1] = 1./2.;
-      rib1[2] = 1.84/2.;
+     gMC->Gsvolu("FRM1", "BOX", idPGF30, frame1, 3); //Frame - 1 // fill with pkk GF30
+     
+     Float_t arib1[3];
+     arib1[0] = frame1[0];
+     arib1[1] = 0.9/2.;
+     arib1[2] =(frame1[2]-0.95)/2.0;
+     
+     gMC->Gsvolu("FRA1", "BOX", idAir, arib1, 3); // fill with air
+     
+     Float_t xposarib1 = 0;
+     Float_t yposarib1 = -frame1[1] + arib1[1];
+     Float_t zposarib1 = frame1[2] - arib1[2];
+     
+     gMC->Gspos("FRA1",1, "FRM1", xposarib1, yposarib1, zposarib1,0, "ONLY");  //replace pkk GF30 with air(b)
+     gMC->Gspos("FRA1",2, "FRM1", xposarib1, yposarib1, -zposarib1,0, "ONLY"); //replace pkk GF30 with air(nb)
+     
+     Float_t rrib1[3];
+     rrib1[0] = frame1[0];
+     rrib1[1] = 0.6/2.;
+     rrib1[2] =(frame1[2]-0.95)/2.0;
+     
+     gMC->Gsvolu("FRR1", "BOX", idRoha, rrib1, 3); // fill with rohacell
+     
+     Float_t xposrrib1 = 0.0;
+     Float_t yposrrib1 = frame1[1] - rrib1[1];
+     Float_t zposrrib1 = frame1[2] - rrib1[2];
+     
+     gMC->Gspos("FRR1",1, "FRM1", xposrrib1, yposrrib1, zposrrib1,0, "ONLY");//replace pkk GF30 with rohacell
+     gMC->Gspos("FRR1",2, "FRM1", xposrrib1, yposrrib1, -zposrrib1,0, "ONLY");//replace pkk GF30 with rohacell
 
-      Float_t xpos_fr1 = frame1[0] + 20.6;
-      Float_t ypos_fr1 = -3.7 + frame1[1] ;
-      Float_t zpos_fr1 = frame1[2];
-
-      Float_t xpos_rb1 = 0.9/2;
-      Float_t ypos_rb1 = -frame1[1] + rib1[1]+0.9;
-      Float_t zpos_rb1 = frame1[2] + rib1[2];
-
-      gMC->Gsvolu("FRHL", "BOX", idPGF30, frame1, 3); //Frame - 1
-      gMC->Gsvolu("RBHL", "BOX", idPGF30, rib1, 3); //Rib - 1
-
-//Fixing Screws ...........................................
-//---------screw parameters (on frame) M4 ------------------
-   //in this plane screw-length is taken eq. to thickness of frame/frame+rib
-   // the remaining of the actual size is adjusted in the other plane
-
-       Float_t spar[3];
-       spar[0] = 0.0;
-       spar[1] = 0.2;
-       spar[2] = 0.95/2.;
-
-       Float_t s_head[3];
-       s_head[0] = 0.0; // screw-head
-       s_head[1] = 0.4;
-       s_head[2] = 0.4/2.;
-
-       Float_t xpos_h = 0.0;
-       Float_t ypos_h = 0.0;
-       Float_t zpos_h = spar[2] + s_head[2];
-
-       gMC->Gsvolu("SCHL","TUBE",idScru, spar,3);    //screw-vertical part for Frame M4
-       gMC->Gsvolu("HDFL","TUBE",idScru, s_head,3);    //screw-head
-   //positioning head over screws
-       gMC->Gspos("HDFL",1,"SCHL",xpos_h,ypos_h,zpos_h,0,"ONLY");//positioning Screw-head
-
-   //Screws on Frame
-       Float_t xpos_s = frame1[0] - 0.4;
-       Float_t ypos_s = -frame1[1] + 0.4;
-       Float_t zpos_s =  0.0;
-
-       Int_t Tot_Scru1 = 21;   //Total no. of Scru
-       for(Int_t nos1 = 0; nos1 < Tot_Scru1; nos1++)
-          {
-           gMC->Gspos("SCHL",nos1+1,"FRHL",xpos_s,ypos_s,zpos_s,0,"ONLY");
-           xpos_s -= 5.;
-	  } // nos1 is no. of scru
-
-       gMC->Gspos("RBHL",1, "FRHL", xpos_rb1, ypos_rb1, zpos_rb1,0, "only");// Rib-1
-//       gMC->Gspos("FRHL",1, "SQM3", xpos_fr1, ypos_fr1, zpos_fr1,0, "only");// frame -1
-//       gMC->Gspos("FRHL",1, "SQM4", xpos_fr1, ypos_fr1, zpos_fr1,0, "only");// frame -1
+     
+     Float_t xposFr1 = frame1[0] + 20.6;
+     Float_t yposFr1 = -3.7 + frame1[1] ;
+     Float_t zposFr1 = 0.0;
+     
+     gMC->Gspos("FRM1",1, "SQM3", xposFr1, yposFr1, zposFr1,0, "ONLY");// frame -1
+     gMC->Gspos("FRM1",2, "SQM4", xposFr1, yposFr1, zposFr1,0, "ONLY");// frame -1
+     
 
 //......................................................................................
 //Frame-2
 
-       Float_t frame2[3] ;
-       frame2[0] = 4./2.;
-       frame2[1] = 28.9/2.;
-       frame2[2] = frame1[2];
+      Float_t frame2[3]; 
+      frame2[0] = 4.0/2.;
+      frame2[1] = 1.2/2.;
+      frame2[2] = 5.0/2;
 
-       Float_t xpos_fr2 = frame1[0]  -frame2[0];
-       Float_t ypos_fr2 = frame2[1]+frame1[1] ;
-       Float_t zpos_fr2 = 0.;
+      gMC->Gsvolu("FRM2", "BOX", idPGF30, frame2, 3); //Frame - 2
 
-       Float_t rib2[3];
-       rib2[0] = 1./2.;
-       rib2[1] = frame2[1]+0.6;
-       rib2[2] = 1.84/2.;
+      Float_t rrib2[3];
+      rrib2[0] = frame2[0]-1.0/2.0;
+      rrib2[1] = frame2[1];
+      rrib2[2] =(frame2[2]-0.95)/2.0;
 
-       Float_t xpos_rb2 = frame2[0] - rib2[0];
-       Float_t ypos_rb2 = - 0.6/2;
-       Float_t zpos_rb2 = frame2[2] + rib2[2];
+      gMC->Gsvolu("FRR2", "BOX", idRoha, rrib2, 3);
+      
+      Float_t xposrrib2 = -1.0/2.0;
+      Float_t yposrrib2 = 0.0;
+      Float_t zposrrib2 = frame2[2] - rrib2[2];
 
-       gMC->Gsvolu("FR1L", "BOX", idPGF30, frame2, 3); //Frame - 2
-       gMC->Gsvolu("RB1L", "BOX", idPGF30, rib2, 3); //Rib - 2
+      gMC->Gspos("FRR2",1, "FRM2", xposrrib2, yposrrib2, zposrrib2,0, "ONLY");//replace pkk GF30 with rohacell
+      gMC->Gspos("FRR2",2, "FRM2", xposrrib2, yposrrib2, -zposrrib2,0, "ONLY");//replace pkk GF30 with roha
 
-//Fixing Screws ...........................................
-   //screw parameters (on Ribs) M4 x 65
-   //Head size & positions remianing the same-----------
-       Float_t spar2[3];
-       spar2[0] = 0.0;
-       spar2[1] = 0.2;
-       spar2[2] = 2.9/2.;
-       gMC->Gsvolu("SCRL","TUBE",idScru, spar2,3);    //screw-vertical part for Rib m4 x 65
-  //positioning head over screws
-       Float_t xpos2_h = 0.0;
-       Float_t ypos2_h = 0.0;
-       Float_t zpos2_h = spar2[2] + s_head[2];
-       gMC->Gspos("HDFL",2,"SCRL",xpos2_h,ypos2_h,zpos2_h,0,"ONLY");//positioning Screw-head
 
-       Float_t xpos2_s = -rib2[0] + 0.4;
-       Float_t ypos2_s = -rib2[1] + 1.7;
-       Float_t zpos2_s = -frame2[2];
 
-       Int_t Tot_Scru2 = 6;   // 6 screws
-       for(Int_t nos2 = 0; nos2 < Tot_Scru2; nos2++)
-          {
-           gMC->Gspos("SCRL",nos2+1,"RB1L",xpos2_s,ypos2_s,zpos2_s,0,"ONLY");
-           ypos2_s += 5.;
-          }
+      Float_t xposFr2 = frame2[0] + 117.6;
+      Float_t yposFr2 = -frame2[1];
+      Float_t zposFr2 = 0.0;
 
-       gMC->Gspos("RB1L",1, "FR1L", xpos_rb2, ypos_rb2, zpos_rb2,0, "only");
-       gMC->Gspos("FR1L",1, "FRHL", xpos_fr2, ypos_fr2, zpos_fr2,0, "only");
-
+      gMC->Gspos("FRM2",1, "SQM3", xposFr2, yposFr2, zposFr2,0, "ONLY");//global positing of frame in SQM3
+      gMC->Gspos("FRM2",2, "SQM4", xposFr2, yposFr2, zposFr2,0, "ONLY");//global positing of frame in SQM4
+      
+  
 //......................................................................................
 //Frame-3
 
-      Float_t frame3[3] ;
-      frame3[0] = 4./2.;
-      frame3[1] = 40.67/2.;
-      frame3[2] = frame1[2];
-      Float_t bend_ang = (22.5*PI/180.);  //bending angle of frame-3 w.r.t frame-2
+      Float_t pgparFr3[10];
+      pgparFr3[0] = 0.;
+      pgparFr3[1] = 90.;
+      pgparFr3[2] = 5;
+      pgparFr3[3] = 2.;
+      pgparFr3[4] = 0.;
+      pgparFr3[5] = 117.6;
+      pgparFr3[6] = 121.6;
+      pgparFr3[7] = pgparFr3[4] + 5.0;
+      pgparFr3[8] = pgparFr3[5];
+      pgparFr3[9] = pgparFr3[6];
+      
+      gMC->Gsvolu("FRM3", "PGON", idPGF30, pgparFr3, 10);
+      
+      Float_t pgparRrib3[10];
+      pgparRrib3[0] = 0.;
+      pgparRrib3[1] = 90.;
+      pgparRrib3[2] = 5;
+      pgparRrib3[3] = 2.;
+      pgparRrib3[4] = 0.;
+      pgparRrib3[5] = 117.6;
+      pgparRrib3[6] = 120.6;
+      pgparRrib3[7] = pgparRrib3[4] +1.55 ;
+      pgparRrib3[8] = pgparRrib3[5];
+      pgparRrib3[9] = pgparRrib3[6];
+      
+      gMC->Gsvolu("FRR3", "PGON", idRoha, pgparRrib3, 10);
+      
+      Float_t xposrrib3 = 0.0;
+      Float_t yposrrib3 = 0.0;
+      Float_t zposrrib3 = 0.0;
 
-      Float_t xpos_fr3 =-frame3[1]* sin(bend_ang);
-      Float_t ypos_fr3 = frame2[1]+(frame3[1]*cos(bend_ang)-frame3[0]* sin(bend_ang));
-      Float_t zpos_fr3 = 0.;
+      gMC->Gspos("FRR3",1, "FRM3", xposrrib3, yposrrib3, zposrrib3,0, "ONLY");
 
-  //Frame part extended inside
-      Float_t fr_ex[3];
-      fr_ex[0] = 3.53/2.;
-      fr_ex[1] = 56.28/2.;
-      fr_ex[2] = frame1[2];
+      zposrrib3 = 3.45;
+      
+      gMC->Gspos("FRR3",2, "FRM3", xposrrib3, yposrrib3, zposrrib3,0, "ONLY");
+      
+      
+      
+      Float_t xposFr3 = 0.0;
+      Float_t yposFr3 = 0.0;
+      Float_t zposFr3 = -frame1[2];
+      
+      gMC->Gspos("FRM3",1, "SQM3", xposFr3, yposFr3, zposFr3,0, "ONLY");// frame -1
+      gMC->Gspos("FRM3",2, "SQM4", xposFr3, yposFr3, zposFr3,0, "ONLY");// frame -1
+      
 
-      Float_t xpos_ex = -frame3[0] - fr_ex[0];
-      Float_t ypos_ex = 0.0;
-      Float_t zpos_ex = 0.0;
-
-      Float_t rib3[3];
-      rib3[0] = 1./2.;
-      rib3[1] = frame3[1];
-      rib3[2] = 1.84/2.;
-
-      Float_t xpos_rb3 = frame3[0] - rib3[0];
-      Float_t ypos_rb3 = 0.0;
-      Float_t zpos_rb3 = frame3[2] + rib3[2];
-
-      gMC->Gsvolu("FR2L", "BOX", idPGF30, frame3, 3); //Frame - 3
-      gMC->Gsvolu("FEXL", "BOX", idPGF30, fr_ex, 3); //frame- extended part
-      gMC->Gsvolu("RB2L", "BOX", idPGF30, rib3, 3); //Rib - 3
-
-      Float_t xpos3_s = -rib3[0] + 0.4;
-      Float_t ypos3_s = -rib3[1] + 1.1;
-      Float_t zpos3_s = -frame3[2];
-
-      Int_t Tot_Scru3 = Tot_Scru2 + 9;      //Toal screw on this rib is 9--index continues
-      for(Int_t nos3 = Tot_Scru2; nos3 < Tot_Scru3; nos3++)
-         {
-          gMC->Gspos("SCRL",nos3+1,"RB2L",xpos3_s,ypos3_s,zpos3_s,0,"ONLY");
-          ypos3_s += 5.;
-         }
-
-      gMC->Gspos("FEXL",1, "FR2L", xpos_ex, ypos_ex, zpos_ex,0, "only");
-      gMC->Gspos("RB2L",1, "FR2L", xpos_rb3, ypos_rb3, zpos_rb3,0, "only");
-      gMC->Gspos("FR2L",1, "FR1L", xpos_fr3, ypos_fr3, zpos_fr3,irot6, "only");
 //......................................................................................
 //Frame-4
-
-      Float_t frame4[3] ;
-      frame4[0] = 4./2;
-      frame4[1] = 52.54/2.;
+ 
+      Float_t frame4[3]; 
+      frame4[0] = 1.0/2.;
+      frame4[1] = 4.0/2.;
       frame4[2] = frame1[2];
 
-      Float_t xpos_fr4 =-frame4[1]* sin(bend_ang);
-      Float_t ypos_fr4 = frame3[1]+(frame4[1]*cos(bend_ang)-frame4[0]* sin(bend_ang));
-      Float_t zpos_fr4 =0.;
+      gMC->Gsvolu("FRM4", "BOX", idPGF30, frame4, 3); 
 
-      Float_t rib4[3];
-      rib4[0] = 1./2.;
-      rib4[1] = frame4[1];
-      rib4[2] = 1.84/2.;
+      Float_t rrib4[3];
+      rrib4[0] = frame4[0];
+      rrib4[1] = frame4[1]-1.0/2;
+      rrib4[2] =(frame4[2]-0.95)/2.0;
 
-      Float_t xpos_rb4 = frame4[0] - rib4[0];
-      Float_t ypos_rb4 = 0.0;
-      Float_t zpos_rb4 = frame4[2] + rib4[2];
+      gMC->Gsvolu("FRR4", "BOX", idRoha, rrib4, 3);
+      
+      Float_t xposrrib4 = 0.0;
+      Float_t yposrrib4 = -1.0/2;
+      Float_t zposrrib4 = frame4[2] - rrib4[2];
 
-      gMC->Gsvolu("FR3L", "BOX", idPGF30, frame4, 3); //Frame - 4
-      gMC->Gsvolu("RB3L", "BOX", idPGF30, rib4, 3); //Rib - 4
+      gMC->Gspos("FRR4",1, "FRM4", xposrrib4, yposrrib4, zposrrib4,0, "ONLY");
+      gMC->Gspos("FRR4",2, "FRM4", xposrrib4, yposrrib4, -zposrrib4,0, "ONLY");
 
-      Float_t xpos4_s = -rib4[0] + 0.4;
-      Float_t ypos4_s = -rib4[1] + 4.33;
-      Float_t zpos4_s = -frame4[2];
 
-      Int_t Tot_Scru4 = Tot_Scru3 + 10;  //Toal screw on this rib is 10--index continues
-      for(Int_t nos4 = Tot_Scru3; nos4 < Tot_Scru4; nos4++)
-         {
-          gMC->Gspos("SCRL",nos4+1,"RB3L",xpos4_s,ypos4_s,zpos4_s,0,"ONLY");
-          ypos4_s += 5.;
-         }
 
-     gMC->Gspos("RB3L",1, "FR3L", xpos_rb4, ypos_rb4, zpos_rb4,0, "only");
-     gMC->Gspos("FR3L",1, "FR2L", xpos_fr4, ypos_fr4, zpos_fr4,irot6, "only");
+      Float_t xposFr4 = -frame4[0];
+      Float_t yposFr4 = -frame4[1] + 117.6;
+      Float_t zposFr4 = 0.0;
+
+      gMC->Gspos("FRM4",1, "SQM3", xposFr4, yposFr4, zposFr4,0, "ONLY");
+      gMC->Gspos("FRM4",2, "SQM4", xposFr4, yposFr4, zposFr4,0, "ONLY");
+      
+
 //......................................................................................
 //Frame-5
+      Float_t frame5[3] ;               
+      frame5[0] = 2.7/2.;            
+      frame5[1] = 101.0/2.;              
+      frame5[2] = 5.0/2.;
 
-      Float_t frame5[3] ;
-      frame5[0] = 4./2;
-      frame5[1] = 41.83/2;
-      frame5[2] = frame1[2];
+      gMC->Gsvolu("FRM5", "BOX", idPGF30, frame5, 3); //Frame - 1
+      
+      Float_t arib5[3];
+      arib5[0] = 0.9/2.0;
+      arib5[1] = frame5[1];
+      arib5[2] = (frame5[2]-0.95)/2.0;
 
-      Float_t xpos_fr5 =-frame5[1]*sin(bend_ang);
-      Float_t ypos_fr5 = frame4[1]+(frame5[1]*cos(bend_ang)-frame5[0]* sin(bend_ang));
-      Float_t zpos_fr5 = 0.;
+      gMC->Gsvolu("FRA5", "BOX", idAir, arib5, 3);
 
-      Float_t rib5[3];
-      rib5[0] = 1./2.;
-      rib5[1] = frame5[1];
-      rib5[2] = 1.84/2.;
+      Float_t xposarib5 = -frame5[0] + arib5[0];
+      Float_t yposarib5 = 0.0;
+      Float_t zposarib5 = frame5[2] - arib5[2];
 
-      Float_t xpos_rb5 = frame5[0] - rib5[0];
-      Float_t ypos_rb5 = 0.0;
-      Float_t zpos_rb5 = frame5[2] + rib5[2];
+      gMC->Gspos("FRA5",1, "FRM5", xposarib5, yposarib5, zposarib5,0, "ONLY");
+      gMC->Gspos("FRA5",2, "FRM5", xposarib5, yposarib5, -zposarib5,0, "ONLY");
 
-      gMC->Gsvolu("FR4L", "BOX", idPGF30, frame5, 3); //Frame - 5
-      gMC->Gsvolu("RB4L", "BOX", idPGF30, rib5, 3); //Rib - 5
+      Float_t rrib5[3];
+      rrib5[0] = 0.8/2.0;
+      rrib5[1] = frame5[1];
+      rrib5[2] = (frame5[2]-0.95)/2.0;
 
-      Float_t xpos5_s = -rib5[0] + 0.4;
-      Float_t ypos5_s = -rib5[1] + 2.79;
-      Float_t zpos5_s = -frame5[2];
+      gMC->Gsvolu("FRR5", "BOX", idRoha, rrib5, 3);
 
-      Int_t Tot_Scru5 = Tot_Scru4 + 8; //Toal screw on this rib is 8--index continues
-      for(Int_t nos5 = Tot_Scru4; nos5 < Tot_Scru5; nos5++)
-         {
-          gMC->Gspos("SCRL",nos5+1,"RB4L",xpos5_s,ypos5_s,zpos5_s,0,"ONLY");
-          ypos5_s += 5.;
-         }
+      Float_t xposrrib5 = frame5[0] - rrib5[0];
+      Float_t yposrrib5 = 0.0;
+      Float_t zposrrib5 = frame5[2] - rrib5[2];
 
-      gMC->Gspos("RB4L",1, "FR4L", xpos_rb5, ypos_rb5, zpos_rb5,0, "only");
-      gMC->Gspos("FR4L",1, "FR3L", xpos_fr5, ypos_fr5, zpos_fr5,irot6, "only");
+      gMC->Gspos("FRR5",1, "FRM5", xposrrib5, yposrrib5, zposrrib5,0, "ONLY");
+      gMC->Gspos("FRR5",2, "FRM5", xposrrib5, yposrrib5, -zposrrib5,0, "ONLY");
+
+      Float_t xposFr5 = -3.7 + frame5[0];
+      Float_t yposFr5 = frame5[1] + 20.6;
+      Float_t zposFr5 = 0.0;
+
+      gMC->Gspos("FRM5",1, "SQM3", xposFr5, yposFr5, zposFr5,0, "ONLY");
+      gMC->Gspos("FRM5",2, "SQM4", xposFr5, yposFr5, zposFr5,0, "ONLY");
+
 //......................................................................................
-//Frame-6
-
-      Float_t frame6[3] ;
-      frame6[0] = 3./2.;
-      frame6[1] = 30.84/2.;
+//Frame -6 
+ 
+      Float_t frame6[3]; 
+      frame6[0] = 1.0/2.;
+      frame6[1] = 2.5/2.;
       frame6[2] = frame1[2];
 
-      Float_t xpos_fr6 = (-frame6[1]*sin(bend_ang))+0.5;
-      Float_t ypos_fr6 = frame5[1]+(frame6[1]*cos(bend_ang)-frame6[0]* sin(bend_ang));
-      Float_t zpos_fr6 = 0;
+      gMC->Gsvolu("FRM6", "BOX", idPGF30, frame6, 3); 
 
-      Float_t rib6[3];
-      rib6[0] = 1./2.;
-      rib6[1] = frame6[1]+0.8;
-      rib6[2] = 1.84/2.;
+      Float_t rrib6[3];
+      rrib6[0] = frame6[0];
+      rrib6[1] = 1.5/2.;
+      rrib6[2] =(frame2[2]-0.95)/2.0;
 
-      Float_t xpos_rb6 = frame6[0] - rib6[0];
-      Float_t ypos_rb6 = 0.4;
-      Float_t zpos_rb6 = frame6[2] + rib6[2];
+      gMC->Gsvolu("FRR6", "BOX", idRoha, rrib6, 3);
+      
+      Float_t xposrrib6 = 0.0;
+      Float_t yposrrib6 = 1.0/2.0;
+      Float_t zposrrib6 = frame6[2] - rrib6[2];
 
-      gMC->Gsvolu("FR5L", "BOX", idPGF30, frame6, 3); //Frame - 6
-      gMC->Gsvolu("RB5L", "BOX", idPGF30, rib6, 3); //Rib - 6
+      gMC->Gspos("FRR6",1, "FRM6", xposrrib6, yposrrib6, zposrrib6,0, "ONLY");
+      gMC->Gspos("FRR6",2, "FRM6", xposrrib6, yposrrib6, -zposrrib6,0, "ONLY");
 
-      Float_t xpos6_s = -rib6[0] + 0.4;
-      Float_t ypos6_s = -rib6[1] + 1.36;
-      Float_t zpos6_s = -frame6[2];
 
-      Int_t Tot_Scru6 = Tot_Scru5 + 6;      //Toal screw on this rib is 7--index continues
-      for(Int_t nos6 = Tot_Scru5; nos6 < Tot_Scru6; nos6++)
-         {
-          gMC->Gspos("SCRL",nos6+1,"RB5L",xpos6_s,ypos6_s,zpos6_s,0,"ONLY");
-          ypos6_s += 5.;
-         }
 
-      gMC->Gspos("RB5L",1, "FR5L", xpos_rb6, ypos_rb6, zpos_rb6,0, "only");
-      gMC->Gspos("FR5L",1, "FR4L", xpos_fr6, ypos_fr6, zpos_fr6,irot6, "only");
-//......................................................................................
-//Frame-7 Vertical frame
+      Float_t xposFr6 = -frame6[0];
+      Float_t yposFr6 = frame6[1] + 20.6;
+      Float_t zposFr6 = 0.0;
 
-      Float_t frame7[3] ;
-      frame7[0] = 2.7/2.;
-      frame7[1] = 97.9/2.;
-      frame7[2] = .95/2.;
-
-      Float_t rib7[3];
-      rib7[0] = 1./2.;
-      rib7[1] = frame7[1] - .9/2.;
-      rib7[2] = 1.84/2.;
-
-      Float_t xpos_fr7 =  frame7[0] -3.7;
-      Float_t ypos_fr7 =  frame7[1] +20.6;
-      Float_t zpos_fr7 = frame7[2];
-
-      Float_t xpos_rb7 = -frame7[0] + rib7[0]+0.9;
-      Float_t ypos_rb7 = .9/2.;
-      Float_t zpos_rb7 =  frame7[2] + rib7[2];
-
-      gMC->Gsvolu("FRVL", "BOX", idPGF30, frame7, 3); //Frame - vertical
-      gMC->Gsvolu("RBVL", "BOX", idPGF30, rib7, 3); //Rib
-
-  //Fixing Screws-- screw parameter and screw-head are taken from horizontal frame bar
-      gMC->Gsvolu("SCVL","TUBE",idScru, spar,3);    //screw-vertical part for Frame M4 x 25
-  //positioning head over screws
-      gMC->Gspos("HDFL",3,"SCVL",xpos_h,ypos_h,zpos_h,0,"ONLY");//positioning Screw-head
- //Screws on Frame
-      Float_t xposv_s = -frame7[0] + 0.4;
-      Float_t yposv_s = -frame7[1] + 0.4;
-      Float_t zposv_s =  0.0;
-
-      Int_t Tot_Scru_v = 20;   //Total no. of Screws
-      for(Int_t nos_v = 0; nos_v < Tot_Scru_v; nos_v++)
-         {
-          gMC->Gspos("SCVL",nos_v+1,"FRVL",xposv_s,yposv_s,zposv_s,0,"ONLY");
-          yposv_s += 5.;
-	 } // nos2 is no. of scru
-
-      gMC->Gspos("RBVL",1, "FRVL", xpos_rb7, ypos_rb7, zpos_rb7,0, "only");
-//    gMC->Gspos("FRVL",1, "SQM3", xpos_fr7, ypos_fr7, zpos_fr7,0, "only");// frame vertical
-//    gMC->Gspos("FRVL",1, "SQM4", xpos_fr7, ypos_fr7, zpos_fr7,0, "only");// frame vertical
+      gMC->Gspos("FRM6",1, "SQM3", xposFr6, yposFr6, zposFr6,0, "ONLY");
+      gMC->Gspos("FRM6",2, "SQM4", xposFr6, yposFr6, zposFr6,0, "ONLY");
+      
 
 //......................................................................................
-//Frame - inner
-      Float_t fr_c[5];   //semi-circular frame
-      fr_c[0] = 20.6;
-      fr_c[1] = 23.1;
-      fr_c[2] = 0.95/2.;
-      fr_c[3] = -3.5;
-      fr_c[4] = 93.5;
-
-      Float_t xpos_frc = 0.0;
-      Float_t ypos_frc = 0.0;
-      Float_t zpos_frc = fr_c[2];
-
-      Float_t rib_c[5];
-      rib_c[0] = 21.5;
-      rib_c[1] = 22.5;
-      rib_c[2] = 1.84/2.;
-      rib_c[3] = fr_c[3]-2.0;
-      rib_c[4] = fr_c[4]+2.0;
-
-      Float_t xpos_rc = 0.0;
-      Float_t ypos_rc = 0.0;
-      Float_t zpos_rc = fr_c[2] + rib_c[2];
-
-      gMC->Gsvolu("FRCL", "TUBS", idPGF30, fr_c, 5); //Frame - semi circular
-      gMC->Gsvolu("RBCL", "TUBS", idPGF30, rib_c, 5); //Rib
-
-//Screws
-      gMC->Gsvolu("SCYL","TUBE",idScru, spar,3);    //screw-vertical part for extended part in -Y
-      gMC->Gsvolu("SCIL","TUBE",idScru, spar,3);    //screw-vertical part
-      gMC->Gsvolu("SCXL","TUBE",idScru, spar,3);    //screw-vertical part for extended part in -X
-      gMC->Gspos("HDFL",3,"SCIL",xpos_h,ypos_h,zpos_h,0,"ONLY");//positioning Screw-head
-
-    // on circular part
-      Float_t zpos_is2 = 0.0;
-      Float_t theta[7];
-      Float_t radius = fr_c[0] + 0.4 ;   //inner radius + 0.4
-      Float_t arc = 3.667;  // for 10-degree angle
-      for(Int_t i = 0; i<8; i++)
-         {
-	  theta[i] = arc/radius;
-	  Float_t xpos_is2 = radius * cos(theta[i]);
-	  Float_t ypos_is2 = radius * sin(theta[i]);
-          gMC->Gspos("SCIL",i+1,"FRCL",xpos_is2, ypos_is2, zpos_is2,0,"ONLY");
-          arc +=3.667;
-	 }
-
-
-
-      gMC->Gspos("RBCL",1, "FRCL", xpos_rc, ypos_rc, zpos_rc,0, "only");  //Rib
-
-       gMC->Gspos("FRHL",1, "SQM3", xpos_fr1, ypos_fr1, zpos_fr1,0, "only");// frame -1
-       gMC->Gspos("FRHL",1, "SQM4", xpos_fr1, ypos_fr1, zpos_fr1,0, "only");// frame -1
-
-       gMC->Gspos("FRVL",1, "SQM3", xpos_fr7, ypos_fr7, zpos_fr7,0, "only");// frame vertical
-       gMC->Gspos("FRVL",1, "SQM4", xpos_fr7, ypos_fr7, zpos_fr7,0, "only");// frame vertical
-
-       gMC->Gspos("FRCL",1, "SQM3", xpos_frc, ypos_frc, zpos_frc,0, "only");// frame semi circular
-       gMC->Gspos("FRCL",1, "SQM4", xpos_frc, ypos_frc, zpos_frc,0, "only");// frame semi circular
-
-//=============================================================================================
-
-//                                   Plane - 2
-
-//=============================================================================================
-
- //Cathode PCB + Copper sheet over PCB + Roha cell over copper sheet
-
-//Segment - 0
-       bpar_h[0] = 95.5/2.;
-       bpar_h[1] = 1.6/2.;
-       bpar_h[2] = zcbb/2.;
-       gMC->Gsvolu("CB0R", "BOX", idPCB, bpar_h, 3);
-
-       bpar_h[2] = zcu/2.;     //Thickness of Copper sheet
-       gMC->Gsvolu("CU0R", "BOX", idCU, bpar_h, 3);
-
-       bpar_h[2] = zRoha/2.;     //Thickness of Roha cell
-       gMC->Gsvolu("RH0R", "BOX", idRoha, bpar_h, 3);
-
-       bpar_h[0] = (100.6/2)-(0.9/2);
-       bpar_h[1] = 2.8/2.;
-       bpar_h[2] = zmeb/2.;
-       gMC->Gsvolu("MB0R", "BOX", idPCB, bpar_h, 3);
-
-       bpar_h[2] = zcu2/2;
-       gMC->Gsvolu("EB0R", "BOX", idCU, bpar_h, 3);
-
-//Segment-1
-	pgpar[1] = 13.;
-	pgpar[5] = 22.5;
-	pgpar[6] = 120.2;
-        pgpar[7] = pgpar[4] - zcbb;
-	pgpar[8] = pgpar[5];
-	pgpar[9] = pgpar[6];
-        gMC->Gsvolu("CB1R", "PGON", idPCB, pgpar, 10);
-
-	pgpar[7] = pgpar[4] - zcu;  // Thickness of copper-sheet
-        gMC->Gsvolu("CU1R", "PGON", idCU, pgpar, 10);
-
-	pgpar[7] = pgpar[4] - zRoha;  // Thickness of Roha cell
-        gMC->Gsvolu("RH1R", "PGON", idRoha, pgpar, 10);
-
-	pgpar[5] = 21.5; // radius of inner rib
-        pgpar[6] = 121.2;
-        pgpar[7] = pgpar[4] - zmeb;
-        pgpar[8] = pgpar[5];
-        pgpar[9] = pgpar[6];
-        gMC->Gsvolu("MB1R", "PGON", idPCB, pgpar, 10);
-
-        pgpar[7] = pgpar[4] - zcu2;
-        gMC->Gsvolu("EB1R", "PGON", idCU, pgpar, 10);
-
-//Segment-2
-
-	pgpar[1] = 21.;
-	pgpar[5] = 22.5;
-	pgpar[6] = 121.5;
-        pgpar[7] = pgpar[4] - zcbb;
-	pgpar[8] = pgpar[5];
-	pgpar[9] = pgpar[6];
-        gMC->Gsvolu("CB2R", "PGON", idPCB, pgpar, 10);
-
-        pgpar[7] = pgpar[4] - zcu;  // Thickness of copper-sheet
-        gMC->Gsvolu("CU2R", "PGON", idCU, pgpar, 10);
-
-        pgpar[7] = pgpar[4] - zRoha;  // Thickness of Roha cell
-        gMC->Gsvolu("RH2R", "PGON", idRoha, pgpar, 10);
-
-	pgpar[5] = 21.5; // radius of inner rib
-        pgpar[6] = 122.5;
-        pgpar[7] = pgpar[4] - zmeb;
-        pgpar[8] = pgpar[5];
-        pgpar[9] = pgpar[6];
-        gMC->Gsvolu("MB2R", "PGON", idPCB, pgpar, 10);
-
-        pgpar[7] = pgpar[4] - zcu2;
-        gMC->Gsvolu("EB2R", "PGON", idCU, pgpar, 10);
-
-//Segment-3
-
-	pgpar[1] = 22.;
-	pgpar[5] = 22.5;
-	pgpar[6] = 119.9;
-        pgpar[7] = pgpar[4] - zcbb;
-	pgpar[8] = pgpar[5];
-	pgpar[9] = pgpar[6];
-        gMC->Gsvolu("CB3R", "PGON", idPCB, pgpar, 10);
-
-        pgpar[7] = pgpar[4] - zcu;  // Thickness of copper-sheet
-        gMC->Gsvolu("CU3R", "PGON", idCU, pgpar, 10);
-
-        pgpar[7] = pgpar[4] - zRoha;  // Thickness of Roha cell
-        gMC->Gsvolu("RH3R", "PGON", idRoha, pgpar, 10);
-
-        pgpar[5] = 21.5; // radius of inner rib
-        pgpar[6] = 120.9;
-	pgpar[7] = pgpar[4] - zmeb;
-        pgpar[8] = pgpar[5];
-        pgpar[9] = pgpar[6];
-        gMC->Gsvolu("MB3R", "PGON", idPCB, pgpar, 10);
-
-        pgpar[7] = pgpar[4] - zcu2;
-        gMC->Gsvolu("EB3R", "PGON", idCU, pgpar, 10);
-
-//Segment-4
-
-	pgpar[1] = 20.;
-	pgpar[5] = 22.5;
-	pgpar[6] = 119.9;
-        pgpar[7] = pgpar[4] - zcbb;
-	pgpar[8] = pgpar[5];
-	pgpar[9] = pgpar[6];
-        gMC->Gsvolu("CB4R", "PGON", idPCB, pgpar, 10);
-
-	pgpar[7] = pgpar[4] - zcu;  // Thickness of copper-sheet
-        gMC->Gsvolu("CU4R", "PGON", idCU, pgpar, 10);
-
-	pgpar[7] = pgpar[4] - zRoha;  // Thickness of Roha cell
-        gMC->Gsvolu("RH4R", "PGON", idRoha, pgpar, 10);
-
-	pgpar[5] = 21.5; // radius of inner rib
-        pgpar[6] = 120.9;
-	pgpar[7] = pgpar[4] - zmeb;
-        pgpar[8] = pgpar[5];
-        pgpar[9] = pgpar[6];
-        gMC->Gsvolu("MB4R", "PGON", idPCB, pgpar, 10);
-
-        pgpar[7] = pgpar[4] - zcu2;
-        gMC->Gsvolu("EB4R", "PGON", idCU, pgpar, 10);
-
-//Segment-5
-
-	pgpar[1] = 14.;
-	pgpar[5] = 22.5;
-	pgpar[6] = 117.5;
-        pgpar[7] = pgpar[4] - zcbb;
-	pgpar[8] = pgpar[5];
-	pgpar[9] = pgpar[6];
-        gMC->Gsvolu("CB5R", "PGON", idPCB, pgpar, 10);
-
-	pgpar[7] = pgpar[4] - zcu;  // Thickness of copper-sheet
-        gMC->Gsvolu("CU5R", "PGON", idCU, pgpar, 10);
-
-        pgpar[7] = pgpar[4] - zRoha;  // Thickness of Roha cell
-        gMC->Gsvolu("RH5R", "PGON", idRoha, pgpar, 10);
-
-        pgpar[5] = 21.5;// radius of inner rib
-        pgpar[6] = 118.5;
-        pgpar[7] = pgpar[4] - zmeb;
-        pgpar[8] = pgpar[5];
-        pgpar[9] = pgpar[6];
-        gMC->Gsvolu("MB5R", "PGON", idPCB, pgpar, 10);
-
-        pgpar[7] = pgpar[4] - zcu2;
-        gMC->Gsvolu("EB5R", "PGON", idCU, pgpar, 10);
-
-//Segment-6 - vertical box
-
-        bpar_v[0] = 1.6/2.;
-        bpar_v[1] = 95.5/2.;
-        bpar_v[2] = zcbb/2.;
-        gMC->Gsvolu("CB6R", "BOX", idPCB, bpar_v, 3);
-        bpar_v[2] = zcu/2.;
-        gMC->Gsvolu("CU6R", "BOX", idCU, bpar_v, 3);
-
-        bpar_v[2] = zRoha/2.;
-        gMC->Gsvolu("RH6R", "BOX", idRoha, bpar_v, 3);
-
-        bpar_v[0] = 2.8/2.;
-        bpar_v[1] = (97.9/2)-(0.9/2.);
-        bpar_v[2] = zmeb/2;
-        gMC->Gsvolu("MB6R", "BOX", idPCB, bpar_v, 3);
-
-        bpar_v[2] = zcu2/2;
-        gMC->Gsvolu("EB6R", "BOX", idCU, bpar_v, 3);
-
-
-//...........................................................................................
-//Positioning of Electronic exit board
-     gMC->Gspos("EB0R",1, "MB0R", 0.,0.,-zpos_eeb_bar,0, "only");
-     gMC->Gspos("EB1R",1, "MB1R", 0.,0.,-zpos_cu2,0, "only");
-     gMC->Gspos("EB2R",1, "MB2R", 0.,0.,-zpos_cu2,0, "only");
-     gMC->Gspos("EB3R",1, "MB3R", 0.,0.,-zpos_cu2,0, "only");
-     gMC->Gspos("EB4R",1, "MB4R", 0.,0.,-zpos_cu2,0, "only");
-     gMC->Gspos("EB5R",1, "MB5R", 0.,0.,-zpos_cu2,0, "only");
-     gMC->Gspos("EB6R",1, "MB6R", 0.,0.,-zpos_eeb_bar,0, "only");
-
-//Positioning of Mech. exit board
-     xpos_meb_hor =  1.1;
-     ypos_meb_hor = -0.6;
-     xpos_meb_ver = -0.6;
-     ypos_meb_ver = -0.35;
-
-     gMC->Gspos("MB0R",1, "RH0R", xpos_meb_hor,ypos_meb_hor,-zpos_meb_bar,0, "only");
-     gMC->Gspos("MB1R",1, "RH1R", 0.,0.,-zpos_meb,0, "only");
-     gMC->Gspos("MB2R",1, "RH2R", 0.,0.,-zpos_meb,0, "only");
-     gMC->Gspos("MB3R",1, "RH3R", 0.,0.,-zpos_meb,0, "only");
-     gMC->Gspos("MB4R",1, "RH4R", 0.,0.,-zpos_meb,0, "only");
-     gMC->Gspos("MB5R",1, "RH5R", 0.,0.,-zpos_meb,0, "only");
-     gMC->Gspos("MB6R",1, "RH6R", xpos_meb_ver,ypos_meb_ver,-zpos_meb_bar,0, "only");
-
-//Positioning Roha cell over copper sheet
-     gMC->Gspos("RH0R",1, "CU0R", 0.,0.,-zpos_Roha_bar,0, "only");// box horizontal
-     gMC->Gspos("RH1R",1, "CU1R", 0.,0.,-zpos_Roha,0, "only");
-     gMC->Gspos("RH2R",1, "CU2R", 0.,0.,-zpos_Roha,0, "only");
-     gMC->Gspos("RH3R",1, "CU3R", 0.,0.,-zpos_Roha,0, "only");
-     gMC->Gspos("RH4R",1, "CU4R", 0.,0.,-zpos_Roha,0, "only");
-     gMC->Gspos("RH5R",1, "CU5R", 0.,0.,-zpos_Roha,0, "only");
-     gMC->Gspos("RH6R",1, "CU6R", 0.,0.,-zpos_Roha_bar,0, "only");
-
-//Positioning Copper sheet over PCB
-     gMC->Gspos("CU0R",1, "CB0R", 0.,0.,-zpos_cubar,0, "only");// box horizontal
-     gMC->Gspos("CU1R",1, "CB1R", 0.,0.,-zpos_cu,0, "only");
-     gMC->Gspos("CU2R",1, "CB2R", 0.,0.,-zpos_cu,0, "only");
-     gMC->Gspos("CU3R",1, "CB3R", 0.,0.,-zpos_cu,0, "only");
-     gMC->Gspos("CU4R",1, "CB4R", 0.,0.,-zpos_cu,0, "only");
-     gMC->Gspos("CU5R",1, "CB5R", 0.,0.,-zpos_cu,0, "only");
-     gMC->Gspos("CU6R",1, "CB6R", 0.,0.,-zpos_cubar,0, "only");
-
-
-//Positioning the PCB
-     x_hor_pos = 95.5/2.+ 22.6; // 22.6 is inner radius of PCB
-     y_hor_pos = -(1.6/2); //
-
-     x_ver_pos = -(1.6/2); //
-     y_ver_pos = 95.5/2.+ 22.6;
-
-     gMC->Gspos("CB0R",1, "SQM3", x_hor_pos,-bpar_h[1],-zpos_cbb_bar,0, "only");// box horizontal
-     gMC->Gspos("CB1R",1, "SQM3", 0.,0.,-zpos_cbb,0, "only");
-     gMC->Gspos("CB2R",1, "SQM3", 0.,0.,-zpos_cbb,irot1,"only");
-     gMC->Gspos("CB3R",1, "SQM3", 0.,0.,-zpos_cbb,irot2, "only");
-     gMC->Gspos("CB4R",1, "SQM3", 0.,0.,-zpos_cbb,irot3, "only");
-     gMC->Gspos("CB5R",1, "SQM3", 0.,0.,-zpos_cbb,irot4, "only");
-     gMC->Gspos("CB6R",1, "SQM3", x_ver_pos,y_ver_pos,-zpos_cbb_bar,0, "only");// box vertical
-
-     gMC->Gspos("CB0R",1, "SQM4", x_hor_pos,-bpar_h[1],-zpos_cbb_bar,0, "only");// box horizontal
-     gMC->Gspos("CB1R",1, "SQM4", 0.,0.,-zpos_cbb,0, "only");
-     gMC->Gspos("CB2R",1, "SQM4", 0.,0.,-zpos_cbb,irot1,"only");
-     gMC->Gspos("CB3R",1, "SQM4", 0.,0.,-zpos_cbb,irot2, "only");
-     gMC->Gspos("CB4R",1, "SQM4", 0.,0.,-zpos_cbb,irot3, "only");
-     gMC->Gspos("CB5R",1, "SQM4", 0.,0.,-zpos_cbb,irot4, "only");
-     gMC->Gspos("CB6R",1, "SQM4", x_ver_pos,y_ver_pos,-zpos_cbb_bar,0, "only");// box vertical
-
-//----------------------------------------------------------------------
-//                          Frames P2
-//----------------------------------------------------------------------
-//Frame-1 P2
-
-       ypos_s = -frame1[1] + 0.4;
-       zpos_fr1 = -frame1[2];
-
-       zpos_rb1 = -(frame1[2] + rib1[2]);
-
-       gMC->Gsvolu("FRHR", "BOX", idPGF30, frame1, 3); //Frame - 1 P2
-       gMC->Gsvolu("RBHR", "BOX", idPGF30, rib1, 3);   //Rib - 1 P2
-
-   //Fixing Screws ...........................................
-
-       zpos_h = -(spar[2] + s_head[2]);
-
-       gMC->Gsvolu("SCHR","TUBE",idScru, spar,3);    //screw-vertical part for Frame M4 x 25
-       gMC->Gsvolu("HDFR","TUBE",idScru, s_head,3);    //screw-head
-   //positioning head over screws
-       gMC->Gspos("HDFR",1,"SCHR",xpos_h,ypos_h,zpos_h,0,"ONLY");//positioning Screw-head
-
-   //Screws on Frame
-
-       xpos_s = frame1[0] - 0.4;
-
-       Tot_Scru1 = 21;   //Total no. of Scru
-       for(Int_t nos1 = 0; nos1 < Tot_Scru1; nos1++)
-          {
-           gMC->Gspos("SCHR",nos1+1,"FRHR",xpos_s,ypos_s,zpos_s,irot1,"ONLY");
-           xpos_s -= 5.;
-          } // nos1 is no. of scru
-
-       gMC->Gspos("RBHR",1,"FRHR",xpos_rb1,ypos_rb1,zpos_rb1,0, "only");
-       gMC->Gspos("FRHR",1,"SQM3",xpos_fr1,ypos_fr1,zpos_fr1,0, "only");
-       gMC->Gspos("FRHR",1,"SQM4",xpos_fr1,ypos_fr1,zpos_fr1,0, "only");
+//Frame - 7 inner pgon
+
+        Float_t pgparFr7[10];
+        pgparFr7[0] = 0.;
+        pgparFr7[1] = 90.;
+        pgparFr7[2] = 5;
+        pgparFr7[3] = 2.;
+        pgparFr7[4] = 0.;
+        pgparFr7[5] = 20.6;
+        pgparFr7[6] = 23.1;
+        pgparFr7[7] = pgparFr7[4] + 5.0;
+        pgparFr7[8] = pgparFr7[5];
+        pgparFr7[9] = pgparFr7[6];
+
+        gMC->Gsvolu("FRM7", "PGON", idPGF30, pgparFr7, 10);
+
+        Float_t pgparRrib7[10];
+        pgparRrib7[0] = 0.;
+        pgparRrib7[1] = 90.;
+        pgparRrib7[2] = 5;
+        pgparRrib7[3] = 2.;
+        pgparRrib7[4] = 0.;
+        pgparRrib7[5] = 21.6;
+        pgparRrib7[6] = 23.1;
+        pgparRrib7[7] = pgparRrib7[4] + 1.55;
+        pgparRrib7[8] = pgparRrib7[5];
+        pgparRrib7[9] = pgparRrib7[6];
+
+        gMC->Gsvolu("FRR7", "PGON", idRoha, pgparRrib7, 10);
+      
+	Float_t xposrrib7 = 0.0;
+	Float_t yposrrib7 = 0.0;
+	Float_t zposrrib7 = 0.0;
+
+	gMC->Gspos("FRR7",1, "FRM7", xposrrib7, yposrrib7, zposrrib7,0, "ONLY");
+
+	zposrrib7 = 3.45;
+
+	gMC->Gspos("FRR7",2, "FRM7", xposrrib7, yposrrib7, zposrrib7,0, "ONLY");
+
+	Float_t xposFr7 = 0.0;
+	Float_t yposFr7 = 0.0;
+	Float_t zposFr7 = -frame1[2];
+
+	gMC->Gspos("FRM7",1, "SQM3", xposFr7, yposFr7, zposFr7,0, "ONLY");
+	gMC->Gspos("FRM7",2, "SQM4", xposFr7, yposFr7, zposFr7,0, "ONLY");
+      
 
 //......................................................................................
-
-//Frame-2
-
-      zpos_rb2 = -(frame2[2] + rib2[2]);
-
-      gMC->Gsvolu("FR1R", "BOX", idPGF30, frame2, 3); //Frame - 2
-      gMC->Gsvolu("RB1R", "BOX", idPGF30, rib2, 3);   //Rib - 2
-
-//Fixing Screws ...........................................
-//---------screw parameters (on Ribs) M4
-
-       spar2[2] = 2.9/2.;
-       gMC->Gsvolu("SCRR","TUBE",idScru, spar2,3); //screw-vertical part for Rib m4
-   //positioning head over screws
-
-       zpos2_h = -(spar2[2] + s_head[2]);
-       gMC->Gspos("HDFR",2,"SCRR",xpos2_h,ypos2_h,zpos2_h,0,"ONLY");//positioning Screw-head
-
-       ypos2_s = -rib2[1] + 1.7;
-       zpos2_s = frame2[2];
-
-       Tot_Scru2 = 6;   // 6 screws
-       for(Int_t nos2 = 0; nos2 < Tot_Scru2; nos2++)
-          {
-           gMC->Gspos("SCRR",nos2+1,"RB1R",xpos2_s,ypos2_s,zpos2_s,0,"ONLY");
-           ypos2_s += 5.;
-          }
-
-       gMC->Gspos("RB1R",1, "FR1R", xpos_rb2, ypos_rb2, zpos_rb2,0, "only");
-       gMC->Gspos("FR1R",1, "FRHR", xpos_fr2, ypos_fr2, zpos_fr2,0, "only");
-
-//......................................................................................
-
-//Frame-3 P2
-
-       zpos_rb3 = -(frame3[2] + rib3[2]);
-
-       gMC->Gsvolu("FR2R", "BOX", idPGF30, frame3, 3); //Frame - 3
-       gMC->Gsvolu("FEXR", "BOX", idPGF30, fr_ex, 3); //frame- extended part
-       gMC->Gsvolu("RB2R", "BOX", idPGF30, rib3, 3); //Rib - 3
-
-   //Fixing Screws ...........................................
-        ypos3_s = -rib3[1] + 1.1;
-        zpos3_s = frame3[2];
-
-        Tot_Scru3 = Tot_Scru2 + 9;      //Toal screw on this rib is 9--index continues
-        for(Int_t nos3 = Tot_Scru2; nos3 < Tot_Scru3; nos3++)
-           {
-            gMC->Gspos("SCRR",nos3+1,"RB2R",xpos3_s,ypos3_s,zpos3_s,0,"ONLY");
-            ypos3_s += 5.;
-           }
-
-        gMC->Gspos("FEXR",1, "FR2R", xpos_ex, ypos_ex, zpos_ex,0, "only");
-        gMC->Gspos("RB2R",1, "FR2R", xpos_rb3, ypos_rb3, zpos_rb3,0, "only");
-        gMC->Gspos("FR2R",1, "FR1R", xpos_fr3, ypos_fr3, zpos_fr3,irot6, "only");
-//......................................................................................
-
-//Frame-4 P2
-
-        zpos_rb4 = -(frame4[2] + rib4[2]);
-
-        gMC->Gsvolu("FR3R", "BOX", idPGF30, frame4, 3); //Frame - 4
-        gMC->Gsvolu("RB3R", "BOX", idPGF30, rib4, 3); //Rib - 4
-
-   //Fixing Screws ...........................................
-
-        ypos4_s = -rib4[1] + 4.33;
-        zpos4_s = frame4[2];
-
-        Tot_Scru4 = Tot_Scru3 + 10;      //Toal screw on this rib is 10--index continues
-        for(Int_t nos4 = Tot_Scru3; nos4 < Tot_Scru4; nos4++)
-           {
-            gMC->Gspos("SCRR",nos4+1,"RB3R",xpos4_s,ypos4_s,zpos4_s,0,"ONLY");
-            ypos4_s += 5.;
-           }
-
-        gMC->Gspos("RB3R",1, "FR3R", xpos_rb4, ypos_rb4, zpos_rb4,0, "only");
-        gMC->Gspos("FR3R",1, "FR2R", xpos_fr4, ypos_fr4, zpos_fr4,irot6, "only");
-//......................................................................................
-//Frame-5 P2
-
-        zpos_rb5 = -(frame5[2] + rib5[2]);
-
-        gMC->Gsvolu("FR4R", "BOX", idPGF30, frame5, 3); //Frame - 5
-        gMC->Gsvolu("RB4R", "BOX", idPGF30, rib5, 3); //Rib - 5
-
-     //Fixing Screws ...........................................
-
-        ypos5_s = -rib5[1] + 2.79;
-        zpos5_s = frame5[2];
-
-        Tot_Scru5 = Tot_Scru4 + 8;      //Toal screw on this rib is 8--index continues
-        for(Int_t nos5 = Tot_Scru4; nos5 < Tot_Scru5; nos5++)
-           {
-            gMC->Gspos("SCRR",nos5+1,"RB4R",xpos5_s,ypos5_s,zpos5_s,0,"ONLY");
-            ypos5_s += 5.;
-           }
-
-        gMC->Gspos("RB4R",1, "FR4R", xpos_rb5, ypos_rb5, zpos_rb5,0, "only");
-        gMC->Gspos("FR4R",1, "FR3R", xpos_fr5, ypos_fr5, zpos_fr5,irot6, "only");
-//......................................................................................
-//Frame-6 P2
-
-        zpos_rb6 = -(frame6[2] + rib6[2]);
-
-        gMC->Gsvolu("FR5R", "BOX", idPGF30, frame6, 3); //Frame - 6
-        gMC->Gsvolu("RB5R", "BOX", idPGF30, rib6, 3); //Rib - 6
-
-     //Fixing Screws ...........................................
-
-        ypos6_s = -rib6[1] + 1.36;
-        zpos6_s = frame6[2];
-
-        Tot_Scru6 = Tot_Scru5 + 6;      //Toal screw on this rib is 7--index continues
-        for(Int_t nos6 = Tot_Scru5; nos6 < Tot_Scru6; nos6++)
-           {
-            gMC->Gspos("SCRR",nos6+1,"RB5R",xpos6_s,ypos6_s,zpos6_s,0,"ONLY");
-            ypos6_s += 5.;
-           }
-
-        gMC->Gspos("RB5R",1, "FR5R", xpos_rb6, ypos_rb6, zpos_rb6,0, "only");
-        gMC->Gspos("FR5R",1, "FR4R", xpos_fr6, ypos_fr6, zpos_fr6,irot6, "only");
-//......................................................................................
-
-//Frame-7 Vertical frame P2
-
-        zpos_fr7 = -frame7[2];
-        zpos_rb7 =  -(frame7[2] + rib7[2]);
-
-        gMC->Gsvolu("FRVR", "BOX", idPGF30, frame7, 3); //Frame - vertical
-        gMC->Gsvolu("RBVR", "BOX", idPGF30, rib7, 3); //Rib
-
-   //Fixing Screws-- screw parameter and screw-head are taken from horizontal frame bar
-        gMC->Gsvolu("SCVR","TUBE",idScru, spar,3);    //screw-vertical part for Frame M4
-   //positioning head over screws
-        gMC->Gspos("HDFR",3,"SCVR",xpos_h,ypos_h,zpos_h,0,"ONLY");//positioning Screw-head
-
-       //Screws on Frame
-       yposv_s = -frame7[1] + 0.4;
-       zposv_s =  0.0;
-
-       Tot_Scru_v = 20;   //Total no. of Screws
-       for(Int_t nos_v = 0; nos_v < Tot_Scru_v; nos_v++)
-          {
-           gMC->Gspos("SCVR",nos_v+1,"FRVR",xposv_s,yposv_s,zposv_s,0,"ONLY");
-           yposv_s += 5.;
-          }
-
-       gMC->Gspos("RBVR",1, "FRVR", xpos_rb7, ypos_rb7, zpos_rb7,0, "only");
-       gMC->Gspos("FRVR",1, "SQM3", xpos_fr7, ypos_fr7, zpos_fr7,0, "only");// frame vertical
-       gMC->Gspos("FRVR",1, "SQM4", xpos_fr7, ypos_fr7, zpos_fr7,0, "only");// frame vertical
-
-//......................................................................................
-//Frame - inner
-
-       zpos_frc = - fr_c[2];
-       zpos_rc = -(fr_c[2] + rib_c[2]);
-
-       gMC->Gsvolu("FRCR", "TUBS", idPGF30, fr_c, 5); //Frame - semi circular
-       gMC->Gsvolu("RBCR", "TUBS", idPGF30, rib_c, 5); //Rib
-
-   //Screws -------------------------------------------------------
-       gMC->Gsvolu("SCYR","TUBE",idScru, spar,3);    //screw-vertical part for extended part in -Y
-       gMC->Gsvolu("SCIR","TUBE",idScru, spar,3);    //screw-vertical part
-       gMC->Gsvolu("SCXR","TUBE",idScru, spar,3);    //screw-vertical part for extended part in -X
-       gMC->Gspos("HDFR",3,"SCIR",xpos_h,ypos_h,zpos_h,0,"ONLY");//positioning Screw-head
-
-   // on circular part
-      radius = fr_c[0] + 0.4 ;   //inner radius + 0.4
-      zpos_is2 = 0.0;
-      arc = 3.667;  // for 10-degree angle
-      for(Int_t i = 0; i<8; i++)
-         {
-	  theta[i] = arc/radius;
-	  Float_t xpos_is2 = radius * cos(theta[i]);
-	  Float_t ypos_is2 = radius * sin(theta[i]);
-          gMC->Gspos("SCIR",i+1,"FRCR",xpos_is2, ypos_is2, zpos_is2,0,"ONLY");
-          arc +=3.667;
-         }
-
-      gMC->Gspos("RBCR",1, "FRCR", xpos_rc, ypos_rc, zpos_rc,0, "only");  //Rib
-      gMC->Gspos("FRCR",1, "SQM3", xpos_frc, ypos_frc, zpos_frc,0, "only");// frame semi circular
-      gMC->Gspos("FRCR",1, "SQM4", xpos_frc, ypos_frc, zpos_frc,0, "only");// frame semi circular
+//Frame - 8 
 
 
-//Plane 2 -----------------------------------------------------------------------------------
+      Float_t frame8[3] ;
+      frame8[0] = 2.5/2.0;
+      frame8[1] = 1.2/2.0;
+      frame8[2] = frame1[2];
+
+      gMC->Gsvolu("FRM8", "BOX", idPGF30, frame8, 3); //Frame - 2
+
+      Float_t rrib8[3];
+      rrib8[0] = frame8[0]-1.0/2;
+      rrib8[1] = frame8[1];
+      rrib8[2] =(frame8[2]-0.95)/2.0;
+
+      gMC->Gsvolu("FRR8", "BOX", idRoha, rrib8, 3);
+      
+      Float_t xposrrib8 = -1.0/2;
+      Float_t yposrrib8 = 0.0;
+      Float_t zposrrib8 = frame8[2] - rrib8[2];
+
+      gMC->Gspos("FRR8",1, "FRM8", xposrrib8, yposrrib8, zposrrib8,0, "ONLY");
+      gMC->Gspos("FRR8",2, "FRM8", xposrrib8, yposrrib8, -zposrrib8,0, "ONLY");
+
+
+
+      Float_t xposFr8 = frame8[0] + 20.6;
+      Float_t yposFr8 = -frame8[1];
+      Float_t zposFr8 = 0.0;
+
+      gMC->Gspos("FRM8",1, "SQM3", xposFr8, yposFr8, zposFr8,0, "ONLY");
+      gMC->Gspos("FRM8",2, "SQM4", xposFr8, yposFr8, zposFr8,0, "ONLY");
+      
+ 
+
 
 //^^^^^^^^^^^^^^^^^^^^^^^^^ Sensitive volumes ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
        Float_t zsenv = 0.5; // distance between two cathode plane
 
  //Segment-0 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-       bpar_h[0] = 95.5/2.;
-       bpar_h[1] = 1.6/2.;
-       bpar_h[2] = zsenv/2.;
-       gMC->Gsvolu("C3G0", "BOX", idGas, bpar_h, 3);
-       gMC->Gsvolu("C4G0", "BOX", idGas, bpar_h, 3);
+       bparH[0] = 94.5/2.;
+       bparH[1] = 1.2/2.;
+       bparH[2] = zsenv/2.;
+       gMC->Gsvolu("C3G0", "BOX", idGas, bparH, 3);
+       gMC->Gsvolu("C4G0", "BOX", idGas, bparH, 3);
 
  //Segment-1 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         pgpar[0] = 0.;
-        pgpar[1] = 13.;
-        pgpar[2] = 1.;
+        pgpar[1] = 90.;
+        pgpar[2] = 5;
         pgpar[3] = 2.;
         pgpar[4] = -zsenv/2.;
-        pgpar[5] = 22.5;
-        pgpar[6] = 117.2;
+        pgpar[5] = 23.1;
+        pgpar[6] = 117.6;
         pgpar[7] = zsenv/2.;
         pgpar[8] = pgpar[5];
         pgpar[9] = pgpar[6];
         gMC->Gsvolu("C3G1", "PGON", idGas, pgpar, 10);
         gMC->Gsvolu("C4G1", "PGON", idGas, pgpar, 10);
 
-//Segment-2 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        pgpar[0] = 0.;
-        pgpar[1] = 21.;
-        pgpar[2] = 1.;
-        pgpar[3] = 2.;
-        pgpar[4] = -zsenv/2.;
-        pgpar[5] = 22.5;
-        pgpar[6] = 115.0;
-        pgpar[7] = zsenv/2.;
-        pgpar[8] = pgpar[5];
-        pgpar[9] = pgpar[6];
-        gMC->Gsvolu("C3G2", "PGON", idGas, pgpar, 10);
-        gMC->Gsvolu("C4G2", "PGON", idGas, pgpar, 10);
 
-//Segment-3 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        pgpar[0] = 0.;
-        pgpar[1] = 22.;
-        pgpar[2] = 1.;
-        pgpar[3] = 2.;
-        pgpar[4] = -zsenv/2.;
-        pgpar[5] = 22.5;
-        pgpar[6] = 116.9;
-        pgpar[7] = zsenv/2.;
-        pgpar[8] = pgpar[5];
-        pgpar[9] = pgpar[6];
-        gMC->Gsvolu("C3G3", "PGON", idGas, pgpar, 10);
-        gMC->Gsvolu("C4G3", "PGON", idGas, pgpar, 10);
+//Segment-2 - vertical box ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-//Segment-4 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        pgpar[0] = 0.;
-        pgpar[1] = 20.;
-        pgpar[2] = 1.;
-        pgpar[3] = 2.;
-        pgpar[4] = -zsenv/2.;
-        pgpar[5] = 22.5;
-        pgpar[6] = 116.9;
-        pgpar[7] = zsenv/2.;
-        pgpar[8] = pgpar[5];
-        pgpar[9] = pgpar[6];
-        gMC->Gsvolu("C3G4", "PGON", idGas, pgpar, 10);
-        gMC->Gsvolu("C4G4", "PGON", idGas, pgpar, 10);
-
-//Segment-5 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        pgpar[0] = 0.;
-        pgpar[1] = 14.;
-        pgpar[2] = 1.;
-        pgpar[3] = 2.;
-        pgpar[4] = -zsenv/2.;
-        pgpar[5] = 22.5;
-        pgpar[6] = 115.5;
-        pgpar[7] = zsenv/2.;
-        pgpar[8] = pgpar[5];
-        pgpar[9] = pgpar[6];
-        gMC->Gsvolu("C3G5", "PGON", idGas, pgpar, 10);
-        gMC->Gsvolu("C4G5", "PGON", idGas, pgpar, 10);
-
-//Segment-6 - vertical box ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-        bpar_v[0] = 2.16/2.;
-	bpar_v[1] = 95.5/2.;
-	bpar_v[2] = zsenv/2.;
-        gMC->Gsvolu("C3G6", "BOX", idGas, bpar_v, 3);
-        gMC->Gsvolu("C4G6", "BOX", idGas, bpar_v, 3);
+        bparV[0] = 1.0/2.;
+	bparV[1] = 95.5/2.;
+	bparV[2] = zsenv/2.;
+        gMC->Gsvolu("C3G2", "BOX", idGas, bparV, 3);
+        gMC->Gsvolu("C4G2", "BOX", idGas, bparV, 3);
 
 //...........................................................................................
 
-//Positioning the PCB
-      x_hor_pos = 95.5/2.+ 22.6; // 22.6 is inner radius of PCB
-      y_hor_pos = -(1.6/2); //
+     xposHorBox =  bparH[0] + 23.1;
+     yposHorBox = -bparH[1];
 
-      x_ver_pos = -(1.6/2); //
-      y_ver_pos = 95.5/2.+ 22.6;
+     xposVerBox = -bparV[0];
+     yposVerBox = bparV[1] + 23.1;
 
-     gMC->Gspos("C3G0",1, "SQM3", x_hor_pos,y_hor_pos,0.,0, "only");// box horizontal
-     gMC->Gspos("C3G1",1, "SQM3", 0.,0.,0.,0, "only");
-     gMC->Gspos("C3G2",1, "SQM3", 0.,0.,0.,irot1,"only");
-     gMC->Gspos("C3G3",1, "SQM3", 0.,0.,0.,irot2, "only");
-     gMC->Gspos("C3G4",1, "SQM3", 0.,0.,0.,irot3, "only");
-     gMC->Gspos("C3G5",1, "SQM3", 0.,0.,0.,irot4, "only");
-     gMC->Gspos("C3G6",1, "SQM3", x_ver_pos,y_ver_pos,0.,0, "only");// box vertical
+     gMC->Gspos("C3G0",1, "SQM3", xposHorBox,yposHorBox,0.,0, "ONLY");
+     gMC->Gspos("C3G1",1, "SQM3", 0.,0.,0.,0, "ONLY");
+     gMC->Gspos("C3G2",1, "SQM3", xposVerBox,yposVerBox,0.,0, "ONLY");
 
-     gMC->Gspos("C4G0",1, "SQM4", x_hor_pos,y_hor_pos,0.,0, "only");// box horizontal
-     gMC->Gspos("C4G1",1, "SQM4", 0.,0.,0.,0, "only");
-     gMC->Gspos("C4G2",1, "SQM4", 0.,0.,0.,irot1,"only");
-     gMC->Gspos("C4G3",1, "SQM4", 0.,0.,0.,irot2, "only");
-     gMC->Gspos("C4G4",1, "SQM4", 0.,0.,0.,irot3, "only");
-     gMC->Gspos("C4G5",1, "SQM4", 0.,0.,0.,irot4, "only");
-     gMC->Gspos("C4G6",1, "SQM4", x_ver_pos,y_ver_pos,0.,0, "only");// box vertical
+
+     gMC->Gspos("C4G0",1, "SQM4", xposHorBox,yposHorBox,0.,0, "ONLY");
+     gMC->Gspos("C4G1",1, "SQM4", 0.,0.,0.,0, "ONLY");
+     gMC->Gspos("C4G2",1, "SQM4", xposVerBox,yposVerBox,0.,0, "ONLY");
+
 
 //^^^^^^^^^^^^^^^^^^^^^^^^^ Sensitive volumes ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -1420,36 +751,35 @@ void AliMUONSt2GeometryBuilderV2::CreateGeometry()
  Int_t detElemId3 =  3;  // quadrant III
  Int_t detElemId4 =  2;  // quadrant IV
 
-Float_t half_chamber = zcbb + zcu + zRoha + zmeb + zcu2 + zsenv/2;
+ //Float_t halfChamber = zCbb + zCu + zRoha + zMeb + zEeb + zsenv/2;
 //   cout<<  "\n half_chamber \t" << half_chamber << endl;
-//   Float_t half_chamber =2.894;
-//     Float_t half_chamber =3.5;
+
+ Float_t halfChamber = tpar1[2];// tpar1[2] = 6.8/2;
 
 // ------------------------------St2 Chamber3------------------------------------------------
 
  //    GetEnvelopes(2)->AddEnvelope("S3M0", 300, true,TGeoTranslation(0.,0.,0.));
-    GetEnvelopes(2)->AddEnvelope("SQM3", 300+detElemId1, 1, TGeoTranslation( 0., 0., - half_chamber));
-    GetEnvelopes(2)->AddEnvelope("SQM3", 300+detElemId2, 2, TGeoTranslation( 0., 0., + half_chamber),
+    GetEnvelopes(2)->AddEnvelope("SQM3", 300+detElemId1, 1, TGeoTranslation( 0., 0., - halfChamber));
+    GetEnvelopes(2)->AddEnvelope("SQM3", 300+detElemId2, 2, TGeoTranslation( 0., 0., + halfChamber),
                                  TGeoRotation("Qrot3",90.,180.,90.,90.,180.,0.));
-    GetEnvelopes(2)->AddEnvelope("SQM3", 300+detElemId3, 3, TGeoTranslation( 0., 0., - half_chamber),
+    GetEnvelopes(2)->AddEnvelope("SQM3", 300+detElemId3, 3, TGeoTranslation( 0., 0., - halfChamber),
                                   TGeoRotation("Qrot3",90.,180.,90.,270.,0.,0.));
-    GetEnvelopes(2)->AddEnvelope("SQM3", 300+detElemId4, 4, TGeoTranslation( 0., 0., + half_chamber),
+    GetEnvelopes(2)->AddEnvelope("SQM3", 300+detElemId4, 4, TGeoTranslation( 0., 0., + halfChamber),
                                   TGeoRotation("Qrot4",90.,0.,90.,-90.,180.,0.));
 
 //--------------------------------St2 Chamber4-------------------------------------------------
 
-    GetEnvelopes(3)->AddEnvelope("SQM4", 400+detElemId1, 1, TGeoTranslation( 0., 0., - half_chamber));
-    GetEnvelopes(3)->AddEnvelope("SQM4", 400+detElemId2, 2, TGeoTranslation( 0., 0., + half_chamber),
+    GetEnvelopes(3)->AddEnvelope("SQM4", 400+detElemId1, 1, TGeoTranslation( 0., 0., - halfChamber));
+    GetEnvelopes(3)->AddEnvelope("SQM4", 400+detElemId2, 2, TGeoTranslation( 0., 0., + halfChamber),
                                  TGeoRotation("Qrot2",90.,180.,90.,90.,180.,0.));
-    GetEnvelopes(3)->AddEnvelope("SQM4", 400+detElemId3, 3, TGeoTranslation( 0., 0., - half_chamber),
+    GetEnvelopes(3)->AddEnvelope("SQM4", 400+detElemId3, 3, TGeoTranslation( 0., 0., - halfChamber),
                                   TGeoRotation("Qrot3",90.,180.,90.,270.,0.,0.));
-    GetEnvelopes(3)->AddEnvelope("SQM4", 400+detElemId4, 4, TGeoTranslation( 0., 0., + half_chamber),
+    GetEnvelopes(3)->AddEnvelope("SQM4", 400+detElemId4, 4, TGeoTranslation( 0., 0., + halfChamber),
                                   TGeoRotation("Qrot4",90.,0.,90.,-90.,180.,0.));
 
 //**********************************************************************************************
 
-   }
-
+}
 //______________________________________________________________________________
 void AliMUONSt2GeometryBuilderV2::SetTransformations()
 {
@@ -1472,17 +802,9 @@ void AliMUONSt2GeometryBuilderV2::SetSensitiveVolumes()
   GetGeometry(2)->SetSensitiveVolume("C3G0");
   GetGeometry(2)->SetSensitiveVolume("C3G1");
   GetGeometry(2)->SetSensitiveVolume("C3G2");
-  GetGeometry(2)->SetSensitiveVolume("C3G3");
-  GetGeometry(2)->SetSensitiveVolume("C3G4");
-  GetGeometry(2)->SetSensitiveVolume("C3G5");
-  GetGeometry(2)->SetSensitiveVolume("C3G6");
 
   GetGeometry(3)->SetSensitiveVolume("C4G0");
   GetGeometry(3)->SetSensitiveVolume("C4G1");
   GetGeometry(3)->SetSensitiveVolume("C4G2");
-  GetGeometry(3)->SetSensitiveVolume("C4G3");
-  GetGeometry(3)->SetSensitiveVolume("C4G4");
-  GetGeometry(3)->SetSensitiveVolume("C4G5");
-  GetGeometry(3)->SetSensitiveVolume("C4G6");
-
 }
+
