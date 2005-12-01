@@ -120,6 +120,9 @@
 #include "AliVertexGenFile.h"
 
 #include "AliDAQConfig.h"
+#include "AliAlignObj.h"
+#include "AliAlignObjAngles.h"
+#include "AliAlignObjMatrix.h"
 
 ClassImp(AliSimulation)
 
@@ -255,6 +258,115 @@ void AliSimulation::SetEventsPerFile(const char* detector, const char* type,
   TNamed* obj = new TNamed(detector, type);
   obj->SetUniqueID(nEvents);
   fEventsPerFile.Add(obj);
+}
+
+//_____________________________________________________________________________
+Bool_t AliSimulation::ApplyDisplacements(TGeoManager* geoManager, const char* fileName, const char* ClArrayName)
+{
+  // read collection of alignment objects (AliAlignObj derived) saved
+  // in the TClonesArray ClArrayName in the file fileName and apply
+  // them to the TGeo geometry passed as argument
+  //
+
+  TFile* inFile = TFile::Open(fileName,"READ");
+  if (!inFile || !inFile->IsOpen()) {
+    AliErrorClass(Form("Could not open file %s !",fileName));
+    return kFALSE;
+  }
+
+  TClonesArray* AlObjArray = ((TClonesArray*) inFile->Get(ClArrayName));
+  Int_t nvols = AlObjArray->GetEntriesFast();
+
+  AliAlignObj::ELayerID layerId; // unique identity for volume in the alobj
+  Int_t modId; // unique identity for volume in the alobj
+  Bool_t ispathvalid; // false if volume path for alobj is not valid for TGeo
+
+  TGeoHMatrix dm;
+
+  for(Int_t j=0; j<nvols; j++)
+    {
+      AliAlignObj* alobj = (AliAlignObj*) AlObjArray->UncheckedAt(j);
+      const char* volpath = alobj->GetVolPath();
+      TGeoPhysicalNode* node = (TGeoPhysicalNode*) geoManager->MakePhysicalNode(volpath);
+      alobj->GetMatrix(dm);
+      alobj->GetVolUID(layerId, modId);
+      ispathvalid = geoManager->cd(volpath);
+      if(!ispathvalid){
+	AliWarningClass(Form("Volume path %s not valid!",volpath));
+	return kFALSE;
+      }
+      TGeoHMatrix* hm = geoManager->GetCurrentMatrix();
+      hm->MultiplyLeft(&dm);
+      AliInfoClass(Form("Aligning volume %s of detector layer %d with local ID %d",volpath,layerId,modId));
+      node->Align(hm);
+
+    }
+  
+  inFile->Close();
+  return kTRUE;
+
+}
+
+//_____________________________________________________________________________
+Bool_t AliSimulation::ApplyDisplacements(TGeoManager* geoManager, AliCDBParam* param, AliCDBId& Id)
+{
+  // read collection of alignment objects (AliAlignObj derived) saved
+  // in the TClonesArray ClArrayName in the AliCDBEntry identified by
+  // param (to get the AliCDBStorage) and Id; apply the alignment objects
+  // to the TGeo geometry passed as argument
+  //
+
+  AliCDBStorage* storage = AliCDBManager::Instance()->GetStorage(param);
+  AliCDBEntry* entry = storage->Get(Id);
+  TClonesArray* AlObjArray = ((TClonesArray*) entry->GetObject());
+
+  Int_t nvols = AlObjArray->GetEntriesFast();
+  AliAlignObj* alobj;
+
+  AliAlignObj::ELayerID layerId; // unique identity for volume in the alobj
+  Int_t modId; // unique identity for volume in the alobj
+  Bool_t ispathvalid; // false if volume path for alobj is not valid for TGeo
+
+  TGeoHMatrix dm;
+
+  for(Int_t j=0; j<nvols; j++)
+    {
+      alobj = (AliAlignObj*) AlObjArray->UncheckedAt(j);
+      const char* volpath = alobj->GetVolPath();
+      TGeoPhysicalNode* node = (TGeoPhysicalNode*) geoManager->MakePhysicalNode(volpath);
+      alobj->GetMatrix(dm);
+      alobj->GetVolUID(layerId, modId);
+      ispathvalid = geoManager->cd(volpath);
+      if(!ispathvalid){
+	AliWarningClass(Form("Volume path %s not valid!",volpath));
+	return kFALSE;
+      }
+      TGeoHMatrix* hm = geoManager->GetCurrentMatrix();
+      hm->MultiplyLeft(&dm);
+      AliInfoClass(Form("Aligning volume %s of detector layer %d with local ID %d",volpath,layerId,modId));
+      node->Align(hm);
+
+    }
+  
+  return kTRUE;
+
+}
+
+//_____________________________________________________________________________
+Bool_t AliSimulation::ApplyDisplacements(TGeoManager* geoManager, const char* uri, const char* path, Int_t runnum, Int_t version, Int_t sversion)
+{
+  // read collection of alignment objects (AliAlignObj derived) saved
+  // in the TClonesArray ClArrayName in the AliCDBEntry identified by
+  // param (to get the AliCDBStorage) and Id; apply the alignment objects
+  // to the TGeo geometry passed as argument
+  //
+
+  AliCDBParam* param = AliCDBManager::Instance()->CreateParameter(uri);
+  AliCDBId id(path, runnum, runnum, version, sversion);
+  ApplyDisplacements(geoManager, param, id);
+
+  return kTRUE;
+
 }
 
 //_____________________________________________________________________________
