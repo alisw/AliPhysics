@@ -13,5 +13,15 @@
 #pragma link C++ class AliPHOSLoader+;
 #pragma link C++ class AliPHOSGetter+;
 #pragma link C++ class AliPHOSGetterLight+;
+#pragma link C++ class AliPHOSHit+;
+#pragma link C++ class AliPHOSTrackSegmentMaker+;
+#pragma link C++ class AliPHOSPID+;
+#pragma link C++ class AliPHOSRawStream+;
+#pragma link C++ class AliPHOSClusterizer+;
+#pragma link C++ class AliPHOSCalibrationDB+;
+#pragma link C++ class AliPHOSDigitizer+;
+#pragma link C++ class AliPHOSSDigitizer+;
+#pragma link C++ class AliPHOSDigit+;
+#pragma link C++ class AliPHOSFastRecParticle+;
 
 #endif

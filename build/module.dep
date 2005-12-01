@@ -23,7 +23,7 @@ MONITOR/module.mk:       MONITOR/libMONITOR.pkg MONITOR/binmonitorGDC.pkg MONITO
 MUON/module.mk:		 MUON/libMUONrec.pkg MUON/libMUONsim.pkg MUON/libMUONbase.pkg MUON/libMUONmapping.pkg
 LHC/module.mk:		 LHC/libLHC.pkg
 PDF/module.mk:		 PDF/libpdf.pkg
-PHOS/module.mk:		 PHOS/libPHOS.pkg
+PHOS/module.mk:		 PHOS/libPHOSbase.pkg PHOS/libPHOSsim.pkg PHOS/libPHOSrec.pkg
 PMD/module.mk:		 PMD/libPMDbase.pkg PMD/libPMDsim.pkg PMD/libPMDrec.pkg
 PYTHIA6/module.mk:	 PYTHIA6/libpythia6.pkg
 RALICE/module.mk:	 RALICE/libRALICE.pkg

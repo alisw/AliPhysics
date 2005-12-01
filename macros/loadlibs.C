@@ -36,7 +36,9 @@ void loadlibs ()
   gSystem->Load("libTHijing");// AliGenHijingEventHeader needed by libZDCsim.so
 
   gSystem->Load("libSTRUCT");
-  gSystem->Load("libPHOS");
+  gSystem->Load("libPHOSbase");
+  gSystem->Load("libPHOSsim");
+  gSystem->Load("libPHOSrec");
   gSystem->Load("libMUONmapping");
   gSystem->Load("libMUONgeometry");
   gSystem->Load("libMUONbase");
