@@ -32,6 +32,7 @@ public:
   AliITStrackerMI(const AliITSgeom *geom);
   ~AliITStrackerMI();
   AliCluster *GetCluster(Int_t index) const;
+  virtual Bool_t GetTrackPoint(Int_t index, AliTrackPoint& p) const;
   AliITSclusterV2 *GetClusterLayer(Int_t layn, Int_t ncl) const
                         {return fgLayers[layn].GetCluster(ncl);}
   Int_t GetNumberOfClustersLayer(Int_t layn) const 

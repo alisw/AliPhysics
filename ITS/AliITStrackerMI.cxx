@@ -35,6 +35,8 @@
 #include "AliITSclusterV2.h"
 #include "AliITSgeom.h"
 #include "AliITStrackerMI.h"
+#include "AliTrackPointArray.h"
+#include "AliAlignObj.h"
 
 ClassImp(AliITStrackerMI)
 
@@ -535,6 +537,51 @@ AliCluster *AliITStrackerMI::GetCluster(Int_t index) const {
   return fgLayers[l].GetCluster(c);
 }
 
+Bool_t AliITStrackerMI::GetTrackPoint(Int_t index, AliTrackPoint& p) const {
+  //
+  // Get track space point with index i
+  //
+  Int_t l=(index & 0xf0000000) >28;
+  Int_t c=(index & 0x0fffffff) >00;
+  AliITSclusterV2 *cl = fgLayers[l].GetCluster(c);
+  Int_t idet = cl->GetDetectorIndex();
+  const AliITSdetector &det = fgLayers[l].GetDetector(idet);
+  Float_t phi = det.GetPhi();
+  Float_t r = det.GetR();
+  Float_t cp=TMath::Cos(phi), sp=TMath::Sin(phi);
+  Float_t xyz[3];
+  xyz[0] = r*cp - cl->GetY()*sp;
+  xyz[1] = r*sp + cl->GetY()*cp;
+  xyz[2] = cl->GetZ();
+  p.SetXYZ(xyz[0],xyz[1],xyz[2]);
+  AliAlignObj::ELayerID iLayer = AliAlignObj::kInvalidLayer; 
+  switch (l) {
+  case 0:
+    iLayer = AliAlignObj::kSPD1;
+    break;
+  case 1:
+    iLayer = AliAlignObj::kSPD2;
+    break;
+  case 2:
+    iLayer = AliAlignObj::kSDD1;
+    break;
+  case 3:
+    iLayer = AliAlignObj::kSDD2;
+    break;
+  case 4:
+    iLayer = AliAlignObj::kSSD1;
+    break;
+  case 5:
+    iLayer = AliAlignObj::kSSD2;
+    break;
+  default:
+    AliWarning(Form("Wrong layer index in ITS (%d) !",l));
+    break;
+  };
+  UShort_t volid = AliAlignObj::LayerToVolUID(iLayer,idet);
+  p.SetVolumeID((UShort_t)volid);
+  return kTRUE;
+}
 
 void AliITStrackerMI::FollowProlongationTree(AliITStrackMI * otrack, Int_t esdindex, Bool_t constrain) 
 {
