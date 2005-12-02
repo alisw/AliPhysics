@@ -13,9 +13,8 @@
 #define ALI_MUON_GEOMETRY_TRANSFORMER_H
 
 #include <TObject.h>
+#include <TObjArray.h>
 #include <TGeoMatrix.h>
-
-class TObjArray;
 
 class AliMUONGeometryModuleTransformer;
 
@@ -49,6 +48,7 @@ class AliMUONGeometryTransformer : public TObject
                  Double_t& xg, Double_t& yg, Double_t& zg) const;
 
     // get methods
+    Int_t GetNofModuleTransformers() const;
     const AliMUONGeometryModuleTransformer* GetModuleTransformer(
                                Int_t index, Bool_t warn = true) const;
 
@@ -92,6 +92,10 @@ class AliMUONGeometryTransformer : public TObject
 
   ClassDef(AliMUONGeometryTransformer,1)  // Geometry parametrisation
 };
+
+// inline methods
+inline Int_t AliMUONGeometryTransformer::GetNofModuleTransformers() const
+{ return fModuleTransformers->GetEntriesFast(); }
 
 #endif //ALI_MUON_GEOMETRY_TRANSFORMER_H
 

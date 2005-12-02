@@ -24,7 +24,6 @@
 #include <sstream>
 
 #include <Riostream.h>
-#include <TObjArray.h>
 #include <TSystem.h>
 
 #include "AliLog.h"
