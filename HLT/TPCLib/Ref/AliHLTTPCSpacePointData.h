@@ -16,6 +16,7 @@ struct AliHLTTPCSpacePointData{
   Float_t fSigmaY2; //error (former width) of the clusters
   Float_t fSigmaZ2; //error (former width) of the clusters
   UInt_t fCharge;
+  Bool_t fUsed;
 };
 typedef struct AliHLTTPCSpacePointData AliHLTTPCSpacePointData;
 

@@ -487,6 +487,8 @@ void AliHLTTPCClusterFinder::WriteClusters(Int_t nclusters,AliClusterData *list)
       fSpacePointData[counter].fSigmaY2 = fpad2;
       fSpacePointData[counter].fSigmaZ2  = ftime2;
 
+      fSpacePointData[counter].fUsed = kFALSE;         // only used / set in AliHLTTPCDisplay
+
       Int_t patch=fCurrentPatch;
       if(patch==-1) patch=0; //never store negative patch number
       fSpacePointData[counter].fID = counter
