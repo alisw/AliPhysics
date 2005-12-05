@@ -24,7 +24,7 @@ public:
 		  size_t maxStr = kMaxStrips);
   virtual ~AliFMDUShortMap() { delete [] fData; }
   AliFMDUShortMap& operator=(const AliFMDUShortMap& other);
-  virtual void Clear(const UShort_t& val=UShort_t());
+  virtual void Reset(const UShort_t& val=UShort_t());
   virtual UShort_t& operator()(UShort_t detector, 
 			       Char_t   ring, 
 			       UShort_t sector, 

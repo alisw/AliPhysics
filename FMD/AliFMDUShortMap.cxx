@@ -76,7 +76,7 @@ AliFMDUShortMap::operator=(const AliFMDUShortMap& other)
 
 //____________________________________________________________________
 void
-AliFMDUShortMap::Clear(const UShort_t& val) 
+AliFMDUShortMap::Reset(const UShort_t& val) 
 {
   for (size_t i = 0; i < fMaxDetectors * fMaxRings * fMaxSectors * fMaxStrips;
        i++) fData[i] = val;
