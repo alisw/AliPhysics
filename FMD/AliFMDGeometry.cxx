@@ -68,6 +68,15 @@
 #include <TMatrix.h>            // ROOT_TMatrix
 #include <TParticle.h>          // ROOT_TParticle
 #include <Riostream.h>
+#ifndef USE_PRE_MOVE
+#include "AliFMDGeometryBuilder.h"
+#include <TArrayI.h>
+#include <TGeoManager.h>
+#include <TGeoVolume.h>
+#include <TGeoNode.h>
+static Int_t FindNodeDepth(const char* name, const char* volname);
+#endif
+
 
 //====================================================================
 ClassImp(AliFMDGeometry)
@@ -93,15 +102,23 @@ AliFMDGeometry::AliFMDGeometry()
 {
   // PROTECTED
   // Default constructor 
-  fUseFMD1 = kTRUE;
-  fUseFMD2 = kTRUE;
-  fUseFMD3 = kTRUE;  
+  fUseFMD1     = kTRUE;
+  fUseFMD2     = kTRUE;
+  fUseFMD3     = kTRUE;  
+#ifndef USE_PRE_MOVE
+  fDetailed    = kTRUE;
+  fUseAssembly = kTRUE;
+#endif
   fInner = new AliFMDRing('I');
   fOuter = new AliFMDRing('O');
   fFMD1  = new AliFMD1(fInner);
   fFMD2  = new AliFMD2(fInner, fOuter);
   fFMD3  = new AliFMD3(fInner, fOuter);
   fIsInitialized = kFALSE;
+  // fActive.Set(4);
+#ifndef USE_PRE_MOVE
+  fActive.Reset(-1);
+#endif
 }
 
 //____________________________________________________________________
@@ -116,6 +133,11 @@ AliFMDGeometry::AliFMDGeometry(const AliFMDGeometry& other)
     fUseFMD1(other.fUseFMD1), 
     fUseFMD2(other.fUseFMD2), 
     fUseFMD3(other.fUseFMD3)
+#ifndef USE_PRE_MOVE
+    , fActive(other.fActive),
+    fDetailed(other.fDetailed),
+    fUseAssembly(other.fUseAssembly)
+#endif
 {
   // PROTECTED
   // Copy constructor
@@ -154,6 +176,45 @@ AliFMDGeometry::Init()
   fFMD3->Init();
 }
 
+#ifndef USE_PRE_MOVE
+//____________________________________________________________________
+void
+AliFMDGeometry::Build()
+{
+  if (!fBuilder) fBuilder = new AliFMDGeometryBuilder(fDetailed);
+  fBuilder->SetDetailed(fDetailed);
+  fBuilder->UseAssembly(fUseAssembly);
+  fBuilder->Exec();
+}
+
+//____________________________________________________________________
+void
+AliFMDGeometry::SetActive(Int_t* active, Int_t n) 
+{
+  fActive.Set(n);
+  for (Int_t i = 0; i < n; i++) fActive[i] = active[i];
+}
+
+//____________________________________________________________________
+void
+AliFMDGeometry::AddActive(Int_t active)
+{
+  Int_t n = fActive.fN;
+  fActive.Set(n+1);
+  fActive[n] = active;
+}
+
+//____________________________________________________________________
+Bool_t
+AliFMDGeometry::IsActive(Int_t vol) const
+{
+  for (Int_t i = 0; i < fActive.fN; i++) 
+    if (fActive[i] == vol) return kTRUE;
+  return kFALSE;
+}
+
+#endif
+  
 //____________________________________________________________________
 AliFMDDetector*
 AliFMDGeometry::GetDetector(Int_t i) const
@@ -226,6 +287,35 @@ AliFMDGeometry::Detector2XYZ(UShort_t  detector,
   det->Detector2XYZ(ring, sector, strip, x, y, z);
 }
 
+//____________________________________________________________________
+Bool_t
+AliFMDGeometry::XYZ2Detector(Double_t  x, 
+			     Double_t  y, 
+			     Double_t  z,
+			     UShort_t& detector, 
+			     Char_t&   ring, 
+			     UShort_t& sector, 
+			     UShort_t& strip) const
+{
+  // Translate spatial coordinates (x,y,z) in the master reference frame of
+  // ALICE to the detector coordinates (detector, ring, sector,
+  // strip).  Note, that if this method is to be used in
+  // reconstruction or the like, then the input z-coordinate should be
+  // corrected for the events interactions points z-coordinate, like 
+  // geom->XYZ2Detector(x,y,z-ipz,d,r,s,t);
+  AliFMDDetector* det = 0;
+  detector = 0;
+  for (int i = 1; i <= 3; i++) {
+    det = GetDetector(i);
+    if (!det) continue;
+    if (det->XYZ2Detector(x, y, z, ring, sector, strip)) {
+      detector = det->GetId();
+      return kTRUE;
+    }
+  }
+  return kFALSE;
+}
+
 
 //____________________________________________________________________
 void
@@ -271,6 +361,126 @@ AliFMDGeometry::Impact(const TParticle* /* particle */) const
   // FIXME: Implement this function. 
   return kFALSE; 
 }
+
+#ifndef USE_PRE_MOVE
+//____________________________________________________________________	
+void  
+AliFMDGeometry::ExtractGeomInfo()
+{
+  // Check the volume depth of some nodes, get the active volume
+  // numbers, and so forth. 
+  // 
+  // TODO: Here, we should actually also get the parameters of the
+  // shapes, like the verticies of the polygon shape that makes up the
+  // silicon sensor, the strip pitch, the ring radii, the z-positions,
+  // and so on - that is, all the geometric information we need for
+  // futher processing, such as simulation, digitization,
+  // reconstruction, etc. 
+  Int_t detectorDepth = FindNodeDepth("FMD1_1", "ALIC");
+  Int_t ringDepth     = FindNodeDepth(Form("FMDI_%d", Int_t('I')), "ALIC");
+  Int_t moduleDepth   = FindNodeDepth("FIFV_0", "ALIC");
+  Int_t sectorDepth   = FindNodeDepth("FISE_1", "ALIC");
+  fActive.Reset(-1);
+  AliDebug(1, Form("Geometry depths:\n"
+		   "   Sector:     %d\n"
+		   "   Module:     %d\n"
+		   "   Ring:       %d\n"
+		   "   Detector:   %d", 
+		   sectorDepth, moduleDepth, ringDepth, detectorDepth));
+  if (sectorDepth < 0 && moduleDepth < 0) {
+    fDetailed    = kFALSE;
+    fSectorOff   = -1;
+    fModuleOff   = -1;
+    fRingOff     = 0;
+    fDetectorOff = (ringDepth - detectorDepth);
+    TGeoVolume* actiVol = gGeoManager->GetVolume("FIAC");
+    TGeoVolume* actoVol = gGeoManager->GetVolume("FOAC");
+    if (actiVol) AddActive(actiVol->GetNumber());
+    if (actiVol) AddActive(actoVol->GetNumber());
+  }
+  else if (sectorDepth < 0) {
+    fDetailed    = kFALSE;
+    fSectorOff   = -1;
+    fModuleOff   = 1;
+    fRingOff     = (moduleDepth - ringDepth) + 1;
+    fDetectorOff = (moduleDepth - detectorDepth) + 1;
+    TGeoVolume* modiVol = gGeoManager->GetVolume("FIMO");
+    TGeoVolume* modoVol = gGeoManager->GetVolume("FOMO");
+    if (modiVol) AddActive(modiVol->GetNumber());
+    if (modoVol) AddActive(modoVol->GetNumber());
+  }
+  else {
+    Int_t stripDepth    = FindNodeDepth("FIST_1", "ALIC");
+    fDetailed    = kTRUE;
+    fSectorOff   = (stripDepth - sectorDepth);
+    fModuleOff   = (moduleDepth >= 0 ? (stripDepth - moduleDepth) : -1);
+    fRingOff     = (stripDepth - ringDepth);
+    fDetectorOff = (stripDepth - detectorDepth );
+    TGeoVolume* striVol = gGeoManager->GetVolume("FIST");
+    TGeoVolume* stroVol = gGeoManager->GetVolume("FOST");
+    if (striVol) AddActive(striVol->GetNumber());
+    if (stroVol) AddActive(stroVol->GetNumber());
+  }    
+  AliDebug(1, Form("Geometry offsets:\n"
+		   "   Sector:     %d\n"
+		   "   Module:     %d\n"
+		   "   Ring:       %d\n"
+		   "   Detector:   %d", 
+		   fSectorOff, fModuleOff, fRingOff, fDetectorOff));
+}
+
+  
+//____________________________________________________________________	
+static Int_t 
+CheckNodes(TGeoNode* node, const char* name, Int_t& lvl)
+{
+  // If there's no node here. 
+  if (!node) return -1;
+  // Check if it this one 
+  TString sname(name);
+  if (sname == node->GetName()) return lvl;
+
+  // Check if the node is an immediate daugther 
+  TObjArray* nodes = node->GetNodes();
+  if (!nodes) return -1;
+  // Increase the level, and search immediate sub nodes. 
+  lvl++;
+  TGeoNode*  found = static_cast<TGeoNode*>(nodes->FindObject(name));
+  if (found) return lvl;
+
+  // Check the sub node, if any of their sub-nodes match.
+  for (Int_t i = 0; i < nodes->GetEntries(); i++) {
+    TGeoNode* sub = static_cast<TGeoNode*>(nodes->At(i));
+    if (!sub) continue;
+    // Recurive check 
+    if (CheckNodes(sub, name, lvl) >= 0) return lvl;
+  }
+  // If not found, decrease the level 
+  lvl--;
+  return -1;
+}
+//____________________________________________________________________	
+Int_t 
+FindNodeDepth(const char* name, const char* volname) 
+{
+  TGeoVolume* vol  = gGeoManager->GetVolume(volname);
+  if (!vol) {
+    std::cerr << "No top volume defined" << std::endl;
+    return -1;
+  }
+  TObjArray* nodes = vol->GetNodes();
+  if (!nodes) { 
+    std::cerr << "No nodes in top volume" << std::endl;
+    return -1;
+  }
+  TIter next(nodes);
+  TGeoNode* node = 0;
+  Int_t lvl = 0;
+  while ((node = static_cast<TGeoNode*>(next()))) 
+    if (CheckNodes(node, name, lvl) >= 0) return lvl;
+  return -1;
+}
+#endif
 
 //____________________________________________________________________
 //

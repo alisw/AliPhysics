@@ -41,12 +41,20 @@ public:
   virtual Int_t  IsVersion() const {return 1;}
   virtual void   StepManager();
 protected:
-  Double_t   fCurrentDeltaE;        // The current accumelated energy loss
+#ifndef USE_PRE_MOVE
+  Bool_t VMC2FMD(TLorentzVector& v, UShort_t& detector,
+		 Char_t& ring, UShort_t& sector, UShort_t& strip) const;
+  Bool_t VMC2FMD(Int_t copy, TLorentzVector& v,
+		 UShort_t& detector, Char_t& ring,
+		 UShort_t& sector, UShort_t& strip) const;
+#endif  
+
+  Double_t       fCurrentDeltaE;    // The current accumulated energy loss
   TLorentzVector fCurrentV;         // Current production vertex 
   TLorentzVector fCurrentP;         // Current momentum vector 
   Int_t          fCurrentPdg;       // Current PDG code 
   
-  ClassDef(AliFMDv1,4)  // Detailed FMD geometry
+  ClassDef(AliFMDv1,5)  // Detailed FMD geometry
 };
 
 #endif

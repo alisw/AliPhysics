@@ -21,6 +21,13 @@ class AliFMDDetector;
 class AliFMD1;
 class AliFMD2;
 class AliFMD3;
+#ifndef USE_PRE_MOVE
+#ifndef ROOT_TArrayI
+# include <TArrayI.h>
+#endif
+class AliFMDGeometryBuilder;
+class TArrayI;
+#endif
 
 
 //__________________________________________________________________
@@ -41,9 +48,31 @@ public:
   void            Disable(Int_t i);
   void            Enable(Int_t i);
   Double_t        GetSiDensity() const { return 2.33; }
-  void Detector2XYZ(UShort_t detector, 
-		    Char_t ring, UShort_t sector, UShort_t strip, 
-		    Double_t& x, Double_t& y, Double_t& z) const;
+  void            Detector2XYZ(UShort_t detector, Char_t ring, 
+			       UShort_t sector, UShort_t strip, 
+			       Double_t& x, Double_t& y, Double_t& z) const;
+  Bool_t          XYZ2Detector(Double_t x, Double_t y, Double_t z, 
+			       UShort_t& detector, Char_t& ring, 
+			       UShort_t& sector, UShort_t& strip) const;
+#ifndef USE_PRE_MOVE
+  void   Build();
+  Int_t  GetDetectorOff() const    { return fDetectorOff; }
+  Int_t  GetModuleOff() const      { return fModuleOff;   }
+  Int_t  GetRingOff() const        { return fRingOff;     }
+  Int_t  GetSectorOff() const      { return fSectorOff;   }
+  void   SetDetectorOff(Int_t off) { fDetectorOff = off; }
+  void   SetModuleOff(Int_t off)   { fModuleOff   = off; }
+  void   SetRingOff(Int_t off)     { fRingOff     = off; }
+  void   SetSectorOff(Int_t off)   { fSectorOff   = off; }
+  Bool_t IsActive(Int_t vol) const;
+  void   SetActive(Int_t* active, Int_t n);
+  void   AddActive(Int_t id);
+  void   SetBuilder(AliFMDGeometryBuilder* b) { fBuilder = b; }
+  void   ExtractGeomInfo();
+  void   SetDetailed(Bool_t det) { fDetailed = det; }
+  Bool_t IsDetailed() const { return fDetailed; }
+  void   UseAssembly(Bool_t ass)  { fUseAssembly = ass; }
+#endif  
 
   // AliGeometry member functions 
   virtual void GetGlobal(const AliRecPoint* p, TVector3& pos, 
@@ -66,6 +95,17 @@ protected:
   AliFMDGeometry& operator=(const AliFMDGeometry& other);
   virtual ~AliFMDGeometry() {}
   
+#ifndef USE_PRE_MOVE
+  AliFMDGeometryBuilder* fBuilder;
+  Int_t fDetectorOff;
+  Int_t fModuleOff;  
+  Int_t fRingOff;    
+  Int_t fSectorOff;  
+  TArrayI fActive;
+  Bool_t fDetailed;
+  Bool_t fUseAssembly;
+#endif
+
   ClassDef(AliFMDGeometry,1); //
 };
 

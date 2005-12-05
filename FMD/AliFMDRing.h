@@ -83,6 +83,10 @@ public:
   Double_t GetWaferRadius() const { return fWaferRadius; }
   /** @return Thickness of sensor */
   Double_t GetSiThickness() const { return fSiThickness; }
+  /** @return Minimum r for an active strip */
+  Double_t GetMinR() const { return fMinR; }
+  /** @return Maximum r for an active strip */
+  Double_t GetMaxR() const { return fMaxR; }
   /** @return Lower radius of ring */
   Double_t GetLowR() const { return fLowR; }
   /** @return Upper radius of ring */
@@ -113,7 +117,9 @@ public:
   Double_t GetChipThickness() const { return fChipThickness; }
   /** @return Value of spacing between si and PCB */
   Double_t GetSpacing() const { return fSpacing; }
-
+  /** @return The strip pitch */ 
+  Double_t GetPitch() const { return (fMaxR - fMinR) / fNStrips; }
+     
   /** @return List of verticies */
   const TObjArray& GetVerticies() const { return fVerticies; }
   /** @return Number of verticies */
@@ -124,7 +130,8 @@ public:
      
   void Detector2XYZ(UShort_t sector, UShort_t strip, 
 		    Double_t& x, Double_t& y, Double_t& z) const;
-  
+  Bool_t XYZ2Detector(Double_t x, Double_t y, Double_t z, 
+		      UShort_t& sector, UShort_t& strip) const;
 private: 
   Char_t	fId;			// The Id of this ring type
   Double_t	fBondingWidth;		// With of bonding pad on sensor
@@ -132,6 +139,8 @@ private:
   Double_t	fSiThickness;		// Thickness of sensor
   Double_t	fLowR;			// Lower radius of ring
   Double_t	fHighR;			// Upper radius of ring
+  Double_t	fMinR;			// Lower radius of active strips
+  Double_t	fMaxR;			// Upper radius of active strips
   Double_t	fTheta;			// Opening angle of the silicon wafers
   Int_t		fNStrips;		// Number of strips
   Double_t	fRingDepth;		// How far the ring extends beyond z

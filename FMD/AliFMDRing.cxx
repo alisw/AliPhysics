@@ -95,6 +95,13 @@ AliFMDRing::Init()
   fVerticies.AddAt(new TVector2(xC,      yC), 4);
   fVerticies.AddAt(new TVector2(fLowR,   yA), 5);  
 
+  // A's length. Corresponds to distance from nominal beam line to the
+  // cornor of the active silicon element. 
+  fMinR = GetVertex(5)->Mod();
+  // A's length. Corresponds to distance from nominal beam line to the
+  // cornor of the active silicon element. 
+  fMaxR = fHighR;
+
   fRingDepth = (fSiThickness + fPrintboardThickness 
 		+ fCopperThickness + fChipThickness 
 		+ fLegLength + fModuleSpacing + fSpacing);
@@ -132,6 +139,35 @@ AliFMDRing::Detector2XYZ(UShort_t sector,
   if (((sector / 2) % 2) == 1) 
     z += TMath::Sign(fModuleSpacing, z);
 }
+
+//____________________________________________________________________
+Bool_t
+AliFMDRing::XYZ2Detector(Double_t  x, 
+			 Double_t  y, 
+			 Double_t  z,
+			 UShort_t& sector,
+			 UShort_t& strip) const
+{
+  sector = strip = 0;
+  Double_t r = TMath::Sqrt(x * x + y * y);
+  Int_t str = Int_t((r - fMinR) / GetPitch());
+  if (str < 0 || str >= GetNStrips()) return kFALSE;
+
+  Double_t phi = TMath::ATan2(y, x) * 180. / TMath::Pi();
+  if (phi < 0) phi = 360. + phi;
+  Int_t sec = Int_t(phi / fTheta);
+  if (sec < 0 || sec >= GetNSectors()) return kFALSE;
+  if ((sec / 2) % 2 == 1) {
+    if (TMath::Abs(z - TMath::Sign(fModuleSpacing, z)) >= 0.01)
+      return kFALSE;
+  }
+  else if (TMath::Abs(z) >= 0.01) return kFALSE;
+
+  strip  = str;
+  sector = sec;
+  return kTRUE;
+}
+
 
 //
 // EOF

@@ -222,7 +222,7 @@ Config()
   Rad_t rad  = kGluonRadiation;
   Mag_t mag  = k5kG;
   Int_t seed = 12345; //Set 0 to use the current time
-  MC_t  mc   = kGEANT3;
+  MC_t  mc   = kGEANT3TGEO;
   
   //____________________________________________________________________
   // Comment line 
@@ -629,9 +629,9 @@ Config()
     //=================== FMD parameters ============================
     AliFMD *FMD = new AliFMDv1("FMD", "normal FMD");
     AliLog::SetModuleDebugLevel("FMD", 1);
-    // FMD->UseDivided();
-    FMD->UseOld();
-    // FMD->UseGeo(kFALSE);
+    // FMD->UseDetailed(kFALSE);
+    // FMD->UseAssembly();
+    // FMD->UseOld();
   }
 
   if (useMUON) {

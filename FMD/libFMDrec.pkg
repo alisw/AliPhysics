@@ -14,6 +14,8 @@ SRCS		=  AliFMDReconstructor.cxx 	\
 HDRS		=  $(SRCS:.cxx=.h)
 DHDR		:= FMDrecLinkDef.h
 EINCLUDE 	:= $(ALICE)/RAW
+# Un comment to use old code with seperate simulator task
+# PACKCXXFLAGS	:= $(CXXFLAGS) -DUSE_PRE_MOVE
 
 #
 # EOF

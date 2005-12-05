@@ -50,10 +50,13 @@
 #include "AliMC.h"
 
 ClassImp(AliFMDAlla)
+#if 0
+  ;
+#endif
 
-  //--------------------------------------------------------------------
-  AliFMDAlla::AliFMDAlla(const char *name, const char *title)
-    : AliFMD(name,title)
+//--------------------------------------------------------------------
+AliFMDAlla::AliFMDAlla(const char *name, const char *title)
+  : AliFMD(name,title)
 {
   //
   // Standart constructor for Forward Multiplicity Detector version 0
@@ -66,7 +69,8 @@ ClassImp(AliFMDAlla)
   //  setBufferSize(128000);
 }
 //-------------------------------------------------------------------------
-void AliFMDAlla::CreateGeometry()
+void 
+AliFMDAlla::CreateGeometry()
 {
   //
   // Create the geometry of Forward Multiplicity Detector version 0
@@ -137,7 +141,7 @@ void AliFMDAlla::CreateGeometry()
   // Nylon tubes
   gMC->Gsvolu("GNYL","TUBE", idtmed[1], NylonTube, 3);  //support nylon tube
   Float_t wideSupport=zSi+3*zPCB+2*NylonTube[2]+zHoneyComb;
-  cout<<" wideSupport "<<wideSupport<<endl;
+  AliDebug(1, Form("Support width: %f", wideSupport));
 
   for (ifmd=0; ifmd<5; ifmd++)  {
     sprintf(nameFMD,"FMD%d",ifmd+1);
@@ -283,7 +287,8 @@ void AliFMDAlla::CreateGeometry()
 
 
 //------------------------------------------------------------------------
-void AliFMDAlla::CreateMaterials() 
+void 
+AliFMDAlla::CreateMaterials() 
 {
   Int_t isxfld   = gAlice->Field()->Integ();
   Float_t sxmgmx = gAlice->Field()->Max();
@@ -333,7 +338,8 @@ void AliFMDAlla::CreateMaterials()
 
 }
 //---------------------------------------------------------------------
-void AliFMDAlla::DrawDetector()
+void 
+AliFMDAlla::DrawDetector()
 {
   //
   // Draw a shaded view of the Forward multiplicity detector version 0
@@ -360,7 +366,8 @@ void AliFMDAlla::DrawDetector()
   gMC->Gdopt("hide","off");
 }
 //-------------------------------------------------------------------
-void AliFMDAlla::Init()
+void 
+AliFMDAlla::Init()
 {
   // Initialises version 0 of the Forward Multiplicity Detector
   //
@@ -374,8 +381,8 @@ void AliFMDAlla::Init()
 }
 
 //-------------------------------------------------------------------
-
-void AliFMDAlla::StepManager()
+void 
+AliFMDAlla::StepManager()
 {
   //
   // Called for every step in the Forward Multiplicity Detector
@@ -474,12 +481,13 @@ void AliFMDAlla::StepManager()
 		  detector, ring, sector, strip, 
 		  hits[0], hits[1], hits[2], hits[3], hits[4], hits[5], 
 		  hits[6], iPart, hits[8]);
+      if (hits[6] > 1 && p/mass > 1) fBad->Add(h);
     } // IsTrackExiting()
   }
 }
 //--------------------------------------------------------------------------
-
-void AliFMDAlla::Response( Float_t Edep)
+void 
+AliFMDAlla::Response(Float_t Edep)
 {
   Float_t I=1.664*0.04*2.33/22400; // = 0.69e-6;
   Float_t chargeOnly=Edep/I;
@@ -488,7 +496,10 @@ void AliFMDAlla::Response( Float_t Edep)
   if (Edep>0)
     charge=Int_t(gRandom->Gaus(chargeOnly,500));	
 }   
-
+//--------------------------------------------------------------------------
+//
+// EOF
+//
 
 
 

@@ -108,6 +108,36 @@ AliFMDDetector::Detector2XYZ(Char_t ring,
 }
 
 //____________________________________________________________________
+Bool_t
+AliFMDDetector::XYZ2Detector(Double_t  x,
+			     Double_t  y,
+			     Double_t  z,
+			     Char_t&   ring, 
+			     UShort_t& sector,
+			     UShort_t& strip) const
+{
+  AliFMDRing* rng = 0;
+  ring = -1;
+  for (int j = 0; j < 2; j++) {
+    rng = GetRing(j == 0 ? 'I'  : 'O');
+    if (!rng) continue;
+    Double_t ringZ    = GetRingZ(j == 0 ? 'I'  : 'O');
+    Double_t modSpace = TMath::Sign(rng->GetModuleSpacing(), ringZ);
+    if (TMath::Abs(z - ringZ) < 0.01 || 
+	TMath::Abs(z - ringZ + modSpace) < 0.01) break;
+    rng = 0;
+  }
+  if (rng && rng->XYZ2Detector(x, y, z - GetRingZ(rng->GetId()),
+			       sector, strip)) {
+    ring = rng->GetId();
+    return kTRUE;
+  }
+  return kFALSE;
+}
+
+  
+
+//____________________________________________________________________
 // 
 // EOF
 //

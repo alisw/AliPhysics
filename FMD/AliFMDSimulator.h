@@ -41,18 +41,20 @@ public:
   /** Deal with a hit in the FMD */
   virtual void Exec(Option_t* option="");
   virtual void EndEvent();
+  /** @param use Wheher to use a divided geometry */
   virtual void UseDivided(Bool_t use=kTRUE)  { fUseDivided = use; }
+  /** @param use Wheher to assemblies in the geometry definition */
   virtual void UseAssembly(Bool_t use=kTRUE) { fUseAssembly = use; }
+  /** Whether to make a detailed geometry or not. 
+      @param use If true, make a detailed geometry */
+  virtual void SetDetailed(Bool_t use) { fDetailed = use; }
 protected:  
   AliFMD*        fFMD;           //! Pointer to module 
-  Bool_t         fDetailed;      // Whether to make a detailed simulation 
   TLorentzVector fCurrentV;      //! Current hit postition 
   TLorentzVector fCurrentP;      //! Current hit momentum
   TArrayI        fActiveId;      //! Active volume ID's
   Int_t          fCurrentPdg;    //! Current hit particle code 
   Double_t       fCurrentDeltaE; //! Current hit energy loss
-  Bool_t         fUseDivided;    // Divided volumes
-  Bool_t         fUseAssembly;   // Assembly volumes
   
   Bool_t         IsActive(Int_t volId) const;
   Bool_t         VMC2FMD(Int_t copy, TLorentzVector& v,
@@ -92,6 +94,9 @@ protected:
     kKaptonId              // ID index of Kapton Medium
   };  
 
+  Bool_t      fDetailed;      // Whether to make a detailed simulation 
+  Bool_t      fUseDivided;    // Divided volumes
+  Bool_t      fUseAssembly;   // Assembly volumes
   Int_t fSectorOff;        // Sector offset in volume tree 
   Int_t fModuleOff;        // Module offset in volume tree
   Int_t fRingOff;          // Ring offset in the volume tree 

@@ -62,6 +62,14 @@ public:
 			 AliESD* esd) const;
   virtual void   SetESD(AliESD* esd) { fESD = esd; }
      
+private:
+  void Reconstruct(AliRawReader*, TTree*) const;
+  void Reconstruct(AliRunLoader*) const;
+  void Reconstruct(AliRunLoader*, AliRawReader*) const;
+  void FillESD(AliRawReader*, TTree*, AliESD*) const;
+  void FillESD(AliRunLoader*, AliESD*) const;
+  void FillESD(AliRunLoader*, AliRawReader*, AliESD*) const;
+  
 protected:
   virtual void     ProcessDigits(TClonesArray* digits) const;
   virtual UShort_t SubtractPedestal(AliFMDDigit* digit) const;

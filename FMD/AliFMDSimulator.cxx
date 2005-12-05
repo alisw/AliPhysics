@@ -132,8 +132,8 @@ const Char_t* AliFMDSimulator::fgkFlangeName    = "F3SF";
 //____________________________________________________________________
 AliFMDSimulator::AliFMDSimulator() 
   : fFMD(0), 
-    fDetailed(kFALSE),
     fActiveId(4), 
+    fDetailed(kFALSE),
     fUseDivided(kFALSE),
     fUseAssembly(kTRUE), 
     fBad(0)
@@ -145,8 +145,8 @@ AliFMDSimulator::AliFMDSimulator()
 AliFMDSimulator::AliFMDSimulator(AliFMD* fmd, Bool_t detailed) 
   : TTask("FMDSimulator", "Forward Multiplicity Detector Simulator"), 
     fFMD(fmd), 
-    fDetailed(detailed),
     fActiveId(4),
+    fDetailed(detailed),
     fUseDivided(kFALSE),
     fUseAssembly(kTRUE),
     fBad(0)

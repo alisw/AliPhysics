@@ -239,15 +239,15 @@ AliFMDReconstructor::Reconstruct(TTree* digitsTree,
   // FIXME: The vertex may not be known yet, so we may have to move
   // some of this to FillESD. 
   AliDebug(1, "Reconstructing from digits in a tree");
-
+#if 0
   if (fESD) {
-    const AliESDVertex* vertex = fESD->GetVertex();
+    // const AliESDVertex* vertex = fESD->GetVertex();
     // if (vertex) {
     //   AliDebug(1, Form("Got vertex from ESD: %f", vertex->GetZv()));
     //   fCurrentVertex = vertex->GetZv();
     // }
   }
-  
+#endif  
   TBranch *digitBranch = digitsTree->GetBranch("FMD");
   if (!digitBranch) {
     Error("Exec", "No digit branch for the FMD found");
@@ -372,6 +372,56 @@ AliFMDReconstructor::FillESD(TTree*  /* digitsTree */,
     }
   }
 #endif   
+}
+
+
+//____________________________________________________________________
+void 
+AliFMDReconstructor::Reconstruct(AliRawReader*,TTree*) const 
+{
+  // Cannot be used.  See member function with same name but with 2
+  // TTree arguments.   Make sure you do local reconstrucion 
+  AliError("MayNotUse");
+}
+//____________________________________________________________________
+void 
+AliFMDReconstructor::Reconstruct(AliRunLoader*) const 
+{
+  // Cannot be used.  See member function with same name but with 2
+  // TTree arguments.   Make sure you do local reconstrucion 
+  AliError("MayNotUse");
+}
+//____________________________________________________________________
+void 
+AliFMDReconstructor::Reconstruct(AliRunLoader*, AliRawReader*) const 
+{
+  // Cannot be used.  See member function with same name but with 2
+  // TTree arguments.   Make sure you do local reconstrucion 
+  AliError("MayNotUse");
+}
+//____________________________________________________________________
+void 
+AliFMDReconstructor::FillESD(AliRawReader*,TTree*,AliESD*) const 
+{
+  // Cannot be used.  See member function with same name but with 2
+  // TTree arguments.   Make sure you do local reconstrucion 
+  AliError("MayNotUse");
+}
+//____________________________________________________________________
+void 
+AliFMDReconstructor::FillESD(AliRunLoader*,AliESD*) const
+{
+  // Cannot be used.  See member function with same name but with 2
+  // TTree arguments.   Make sure you do local reconstrucion 
+  AliError("MayNotUse");
+}
+//____________________________________________________________________
+void 
+AliFMDReconstructor::FillESD(AliRunLoader*,AliRawReader*,AliESD*) const 
+{
+  // Cannot be used.  See member function with same name but with 2
+  // TTree arguments.   Make sure you do local reconstrucion 
+  AliError("MayNotUse");
 }
 
 //____________________________________________________________________

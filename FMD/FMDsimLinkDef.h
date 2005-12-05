@@ -20,6 +20,8 @@
 #pragma link C++ class  AliFMD+;
 #pragma link C++ class  AliFMDv0+;
 #pragma link C++ class  AliFMDv1+;
+#pragma link C++ class  AliFMDGeometryBuilder+;
+#pragma link C++ class  AliFMDGeometryBuilderSimple+;
 #pragma link C++ class  AliFMDSimulator+;
 #pragma link C++ class  AliFMDGeoSimulator+;
 #pragma link C++ class  AliFMDGeoOldSimulator+;

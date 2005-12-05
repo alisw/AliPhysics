@@ -2,22 +2,24 @@
 #
 # $Id$
 
-SRCS	=  AliFMDDigit.cxx		\
-	   AliFMDMap.cxx		\
-	   AliFMDFloatMap.cxx		\
-	   AliFMDBoolMap.cxx		\
-	   AliFMDUShortMap.cxx 		\
-	   AliFMDCalibPedestal.cxx	\
-	   AliFMDCalibGain.cxx		\
-	   AliFMDParameters.cxx		\
-	   AliFMDGeometry.cxx		\
-	   AliFMDRing.cxx		\
-	   AliFMDDetector.cxx		\
-	   AliFMD1.cxx			\
-	   AliFMD2.cxx			\
-	   AliFMD3.cxx
-HDRS	=  $(SRCS:.cxx=.h)
-DHDR	:= FMDbaseLinkDef.h
+SRCS		=  AliFMDDigit.cxx		\
+		   AliFMDMap.cxx		\
+		   AliFMDFloatMap.cxx		\
+		   AliFMDBoolMap.cxx		\
+		   AliFMDUShortMap.cxx 		\
+		   AliFMDCalibPedestal.cxx	\
+		   AliFMDCalibGain.cxx		\
+		   AliFMDParameters.cxx		\
+		   AliFMDGeometry.cxx		\
+		   AliFMDRing.cxx		\
+		   AliFMDDetector.cxx		\
+		   AliFMD1.cxx			\
+		   AliFMD2.cxx			\
+		   AliFMD3.cxx
+HDRS		=  $(SRCS:.cxx=.h)
+DHDR		:= FMDbaseLinkDef.h
+# Un comment to use old code with seperate simulator task
+# PACKCXXFLAGS	:= $(CXXFLAGS) -DUSE_PRE_MOVE
 
 #
 # EOF
