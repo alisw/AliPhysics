@@ -29,6 +29,7 @@ public:
    AliSTART(const char *name, const char *title);
    virtual       ~AliSTART();
    virtual void   AddHit(Int_t track, Int_t *vol, Float_t *hits);
+   virtual void AddDigit(Int_t *, Int_t *) {};
    virtual void   AddDigit(Int_t besttimeright, Int_t besttimeleft, Int_t meantime, 
 			Int_t timediff, TArrayI *sumMult,
 			   TArrayI *time, TArrayI *adc, TArrayI *timeAmp, TArrayI *adcAmp);
