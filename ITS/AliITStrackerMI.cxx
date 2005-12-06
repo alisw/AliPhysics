@@ -541,8 +541,8 @@ Bool_t AliITStrackerMI::GetTrackPoint(Int_t index, AliTrackPoint& p) const {
   //
   // Get track space point with index i
   //
-  Int_t l=(index & 0xf0000000) >28;
-  Int_t c=(index & 0x0fffffff) >00;
+  Int_t l=(index & 0xf0000000) >> 28;
+  Int_t c=(index & 0x0fffffff) >> 00;
   AliITSclusterV2 *cl = fgLayers[l].GetCluster(c);
   Int_t idet = cl->GetDetectorIndex();
   const AliITSdetector &det = fgLayers[l].GetDetector(idet);
