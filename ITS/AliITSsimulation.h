@@ -88,10 +88,9 @@ class AliITSsimulation : public TObject {
     void SetNoDebug(){fDebug=0;}
     // Returns the debug flag value
     Bool_t GetDebug(Int_t level=1)const {return fDebug>=level;}
+    void SetDetType(AliITSDetTypeSim* dettyp) {fDetType=dettyp;}
 
  protected:
-    //    AliITSresponse      *fResponse;       //! response
-    //    AliITSsegmentation  *fSegmentation;   //! segmentation 
     AliITSDetTypeSim    *fDetType;        //! Access resp and segm via this obj
     AliITSpList         *fpList;          //!
     Int_t                fModule;         //!
