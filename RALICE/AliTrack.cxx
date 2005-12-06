@@ -1280,6 +1280,57 @@ void AliTrack::RemoveTimestamp()
  }
 }
 ///////////////////////////////////////////////////////////////////////////
+Double_t AliTrack::GetDistance(AliPosition* p)
+{
+// Provide distance of the current track to the position p.
+// The error on the result can be obtained as usual by invoking
+// GetResultError() afterwards. 
+//
+// The distance will be provided in the unit scale of the AliPosition p.
+// As such it is possible to obtain a correctly computed distance even in case
+// the track parameters have a different unit scale.
+// However, it is recommended to work always with one single unit scale.
+//
+// Note : In case of incomplete information, a distance value of -1 is
+//        returned.
+ 
+ Double_t dist=-1.;
+ fDresult=0.;
+
+ if (!p) return dist;
+
+ // Obtain a defined position on this track
+ AliPosition* rx=fRef;
+ if (!rx) rx=fBegin;
+ if (!rx) rx=fEnd;
+
+ if (!rx) return dist;
+
+ Ali3Vector r0=(Ali3Vector)(*rx);
+
+ Float_t tscale=rx->GetUnitScale();
+ Float_t pscale=p->GetUnitScale();
+ if ((tscale/pscale > 1.1) || (pscale/tscale > 1.1)) r0=r0*(tscale/pscale);
+ 
+ // Obtain the direction unit vector of this track
+ Double_t vec[3];
+ Double_t err[3];
+ Ali3Vector p1=Get3Momentum();
+ p1.GetVector(vec,"sph");
+ p1.GetErrors(err,"sph");
+ vec[0]=1.;
+ err[0]=0.;
+ p1.SetVector(vec,"sph");
+ p1.SetErrors(err,"sph");
+
+ Ali3Vector q=(Ali3Vector)(*p);
+ Ali3Vector r=q-r0;
+ Ali3Vector d=r.Cross(p1);
+ dist=d.GetNorm();
+ fDresult=d.GetResultError();
+ return dist;
+}
+///////////////////////////////////////////////////////////////////////////
 TObject* AliTrack::Clone(const char* name) const
 {
 // Make a deep copy of the current object and provide the pointer to the copy.

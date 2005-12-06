@@ -672,3 +672,5 @@
 15-nov-2005 NvE Support for opening angle calculation between a 3-vector and the 3-vector part
                 of a 4-vector introduced in Ali4Vector.
 16-nov-2005 NvE Support for a reference point introduced in AliJet.
+06-dec-2005 NvE Memberfunction GetDistance() introduced in AliTrack to determine the
+                distance between a track and a certain position.

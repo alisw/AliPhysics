@@ -87,6 +87,8 @@ class AliTrack : public TNamed,public Ali4Vector
   void SetTimestamp(AliTimestamp& t);     // Set the track timestamp
   AliTimestamp* GetTimestamp();           // Provide the track timestamp
   void RemoveTimestamp();                 // Remove timestamp from this track
+  Double_t GetDistance(AliPosition* p);   // Provide distance to position p
+  Double_t GetDistance(AliPosition& p) { return GetDistance(&p); }
  
  protected:
   void Init();               // Initialisation of pointers etc...
@@ -113,6 +115,6 @@ class AliTrack : public TNamed,public Ali4Vector
  private:
   void Dumps(AliTrack* t,Int_t n,TString f,TString u); // Recursively print all decay levels
  
- ClassDef(AliTrack,15) // Handling of the attributes of a reconstructed particle track.
+ ClassDef(AliTrack,16) // Handling of the attributes of a reconstructed particle track.
 };
 #endif
