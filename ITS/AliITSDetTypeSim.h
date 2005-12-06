@@ -94,6 +94,7 @@ class AliITSDetTypeSim : public TObject {
     
  private:
 
+    void SetDefaultSegmentation(Int_t idet);  // creates def segm.
     static const Int_t fgkNdettypes;          // number of different det. types
     static const Int_t fgkDefaultNModulesSPD; // Total numbers of SPD modules by default
     static const Int_t fgkDefaultNModulesSDD; // Total numbers of SDD modules by default

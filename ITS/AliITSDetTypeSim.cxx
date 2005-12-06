@@ -85,6 +85,7 @@ fDigClassName(){ // String with digit class name.
   fGeom = 0;
   fSimulation = new TObjArray(fgkNdettypes);
   fSegmentation = new TObjArray(fgkNdettypes);
+  fSegmentation->SetOwner(kTRUE);
   fResponse = 0;
   fPreProcess = 0;
   fPostProcess = 0;
@@ -208,11 +209,36 @@ AliITSsimulation* AliITSDetTypeSim::GetSimulationModelByModule(Int_t module){
   
   return GetSimulationModel(fGeom->GetModuleType(module));
 }
+//_____________________________________________________________________
+void AliITSDetTypeSim::SetDefaultSegmentation(Int_t idet){
+  // Set default segmentation model objects
+  AliITSsegmentation *seg;
+  if(fSegmentation==0x0){
+    fSegmentation = new TObjArray(fgkNdettypes);
+    fSegmentation->SetOwner(kTRUE);
+  }
+  if(GetSegmentationModel(idet))delete (AliITSsegmentation*)fSegmentation->At(idet);
+  if(idet==0){
+    seg = new AliITSsegmentationSPD(fGeom);
+  }
+  else if(idet==1){
+    AliITSresponse* res = GetResponseModel(fGeom->GetStartSDD());
+    seg = new AliITSsegmentationSDD(fGeom,res);
+  }
+  else {
+    seg = new AliITSsegmentationSSD(fGeom);
+  }
+  SetSegmentationModel(idet,seg);
+}
+
 //______________________________________________________________________
 void AliITSDetTypeSim::SetSegmentationModel(Int_t dettype,AliITSsegmentation *seg){
    
   //Set segmentation model for detector type
-  if(fSegmentation==0x0) fSegmentation = new TObjArray(fgkNdettypes);
+  if(fSegmentation==0x0) {
+    fSegmentation = new TObjArray(fgkNdettypes);
+    fSegmentation->SetOwner(kTRUE);
+  }
   fSegmentation->AddAt(seg,dettype);
 
 }
@@ -295,12 +321,7 @@ void AliITSDetTypeSim::ResetResponse(){
 void AliITSDetTypeSim::ResetSegmentation(){
  
  //Resets segmentation array
-  if(fSegmentation){
-    for(Int_t i=0;i<fgkNdettypes;i++){
-      if(fSegmentation->At(i))
-	delete (AliITSsegmentation*)fSegmentation->At(i);
-    }
-  }
+  if(fSegmentation)fSegmentation->Clear();
 }
 
 //_______________________________________________________________________
@@ -328,8 +349,6 @@ void AliITSDetTypeSim::SetDefaults(){
 
   if (fResponse==0) CreateResponses();
 
-  AliITSsegmentation* seg;
-  AliITSresponse* res;
   ResetResponse();
   ResetSegmentation();
    
@@ -338,10 +357,7 @@ void AliITSDetTypeSim::SetDefaults(){
   for(Int_t idet=0;idet<fgkNdettypes;idet++){
     //SPD
     if(idet==0){
-      if(!GetSegmentationModel(idet)){
-	seg = new AliITSsegmentationSPD(fGeom);
-	SetSegmentationModel(idet,seg);
-      }
+      if(!GetSegmentationModel(idet))SetDefaultSegmentation(idet);
       const char *kData0=(GetResponseModel(fGeom->GetStartSPD()))->DataType();
       if (strstr(kData0,"real")) {
 	SetDigitClassName(idet,"AliITSdigit");
@@ -352,11 +368,7 @@ void AliITSDetTypeSim::SetDefaults(){
     }
     //SDD
     if(idet==1){
-      if(!GetSegmentationModel(idet)){
-	res = GetResponseModel(fGeom->GetStartSDD());   
-	seg = new AliITSsegmentationSDD(fGeom,res);  
-	SetSegmentationModel(idet,seg);
-      }
+      if(!GetSegmentationModel(idet))SetDefaultSegmentation(idet);
       const char *kopt = GetResponseModel(fGeom->GetStartSDD())->ZeroSuppOption();
       if((!strstr(kopt,"2D"))&&(!strstr(kopt,"1D"))) {
 	SetDigitClassName(idet,"AliITSdigit");
@@ -368,10 +380,7 @@ void AliITSDetTypeSim::SetDefaults(){
     }
     //SSD
     if(idet==2){
-      if(!GetSegmentationModel(idet)){
-	seg = new AliITSsegmentationSSD(fGeom);
-	SetSegmentationModel(idet,seg);
-      }
+      if(!GetSegmentationModel(idet))SetDefaultSegmentation(idet);
       const char *kData2 = (GetResponseModel(fGeom->GetStartSSD())->DataType());
       if (strstr(kData2,"real")) {
 	SetDigitClassName(idet,"AliITSdigit");
@@ -453,14 +462,25 @@ void AliITSDetTypeSim::SetDefaultSimulation(){
   //Set default simulation for detector type
 
   if(fGeom==0){
-    Warning("SetDefaultSimulation","fGeom is 0!");
+    Warning("SetDefaultSimulation","fGeom is 0!\n");
     return;
   }
   if(fResponse==0){
-    Warning("SetDefaultSimulation","fResponse is 0!");
+    Warning("SetDefaultSimulation","fResponse is 0!\n");
     return;
   }
-
+  if(fSegmentation ==0){
+    Warning("SetDefaultSimulation","fSegmentation is 0!\n");
+    for(Int_t i=0;i<fgkNdettypes;i++)SetDefaultSegmentation(i);
+  }
+  else {
+    for(Int_t i=0;i<fgkNdettypes;i++){
+      if(!GetSegmentationModel(i)){
+	Warning("SetDefaultSimulation","Segmentation not defined for det %d - Default taken\n");
+	SetDefaultSegmentation(i);
+      }
+    }
+  }
   AliITSsimulation* sim;
 
   for(Int_t idet=0;idet<fgkNdettypes;idet++){
