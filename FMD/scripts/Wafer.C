@@ -1,4 +1,6 @@
 //
+// $Id$
+//
 // Small script that I used to make some intial testing of the wafer
 // layout and geometry. 
 //
@@ -134,6 +136,10 @@ Wafer()
   can->Print("fmd_module2.gif");
   
 }
+//____________________________________________________________________
+//
+// EOF
+//
 
 
 

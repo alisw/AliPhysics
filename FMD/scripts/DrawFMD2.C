@@ -1,4 +1,6 @@
 //
+// $Id$
+// 
 // Script to draw detail of the FMD
 //
 void DrawFMD2()
@@ -59,3 +61,7 @@ void DrawFMD2()
   gPad->cd();
   gPad->Print("FMD2.png");
 }
+//____________________________________________________________________
+//
+// EOF
+//

@@ -1,5 +1,8 @@
 //____________________________________________________________________
 //
+//
+// $Id$
+//
 // Script I used for rapid prototyping of the FMD3 geometry - in
 // particular the support cone 
 //
@@ -270,3 +273,7 @@ SimpleGeometry()
   geometry->Draw();
   // c->x3d("ogl");
 }
+//____________________________________________________________________
+//
+// EOF
+//

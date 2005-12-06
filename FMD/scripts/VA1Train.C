@@ -1,4 +1,6 @@
 //
+// $Id$
+//
 // Small script that shows a signal train from a VA1 pre-amp. 
 // 
 void 
@@ -51,6 +53,7 @@ VA1Train()
     last = measurements[i]; 
   }
 }
-
-      
-  
+//____________________________________________________________________
+//
+// EOF
+//

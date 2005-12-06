@@ -1,4 +1,6 @@
 //
+// $Id$
+//
 // Script to make ROOT files with LEGO information histograms
 //
 TH1*
@@ -52,3 +54,7 @@ MakeLego(const Char_t* what)
   output->Close();
   galice->Close();  
 }
+//____________________________________________________________________
+//
+// EOF
+//

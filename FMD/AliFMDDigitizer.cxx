@@ -306,10 +306,11 @@ AliFMDBaseDigitizer::SumContributions(AliFMD* fmd)
   // Get number of entries in the tree 
   Int_t ntracks  = Int_t(hitsTree->GetEntries());
   
+  Int_t read = 0;
   // Loop over the tracks in the 
   for (Int_t track = 0; track < ntracks; track++)  {
     // Read in entry number `track' 
-    hitsBranch->GetEntry(track);
+    read += hitsBranch->GetEntry(track);
     
     // Get the number of hits 
     Int_t nhits = fmdHits->GetEntries ();
@@ -325,7 +326,7 @@ AliFMDBaseDigitizer::SumContributions(AliFMD* fmd)
       UShort_t strip    = fmdHit->Strip();
       Float_t  edep     = fmdHit->Edep();
       if (fEdep(detector, ring, sector, strip).fEdep != 0)
-	AliDebug(1, Form("Double hit in %d%c(%d,%d)", 
+	AliDebug(5, Form("Double hit in %d%c(%d,%d)", 
 			 detector, ring, sector, strip));
       
       fEdep(detector, ring, sector, strip).fEdep  += edep;
@@ -333,6 +334,8 @@ AliFMDBaseDigitizer::SumContributions(AliFMD* fmd)
       // Add this to the energy deposited for this strip
     }  // hit loop
   } // track loop
+  AliDebug(1, Form("Size of cache: %d bytes, read %d bytes", 
+		   sizeof(fEdep), read));
 }
 
 //____________________________________________________________________
@@ -537,7 +540,9 @@ AliFMDDigitizer::Exec(Option_t*)
   fmd->MakeBranchInTree(digitTree, fmd->GetName(), &(digits), 4000, 0);
   // TBranch* digitBranch = digitTree->GetBranch(fmd->GetName());
   // Fill the tree 
-  digitTree->Fill();
+  Int_t write = 0;
+  write = digitTree->Fill();
+  AliDebug(1, Form("Wrote %d bytes to digit tree", write));
   
   // Write the digits to disk 
   outFMD->WriteDigits("OVERWRITE");

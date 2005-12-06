@@ -54,6 +54,7 @@ AliFMDRing::AliFMDRing(Char_t id)
   SetPrintboardThickness();
   SetCopperThickness();
   SetChipThickness();
+  SetSpacing();
   
   if (fId == 'I' || fId == 'i') {
     SetLowR(4.3);

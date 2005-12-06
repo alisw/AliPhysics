@@ -1,51 +1,32 @@
 //
 // Script to digit multiplicity information to std::cout. 
 //
-void
-ShowDigits(Int_t det=2)
+#include <TH1F.h>
+#include <AliFMDDigit.h>
+#include <AliFMDInput.h>
+
+class ShowDigits : public AliFMDInputDigits
 {
-  AliRunLoader* runLoader = AliRunLoader::Open("galice.root");
-  runLoader->LoadgAlice();
-  runLoader->LoadHeader();
-  gAlice                   = runLoader->GetAliRun();
-  AliFMD*       fmd        = static_cast<AliFMD*>(gAlice->GetDetector("FMD"));
-  AliLoader*    fmdLoader  = runLoader->GetLoader("FMDLoader");
-  fmdLoader->LoadDigits("READ");
-  
-  TH1* h = new TH1F("digitData", "Digit Data", 128, 0, 1024);
-  Int_t nEvents = runLoader->TreeE()->GetEntries();
-  for (Int_t event = 0; event < nEvents; event++) {
-    cout << "Event # " << event << endl;
-    runLoader->GetEvent(event);
-    TClonesArray* digits   = 0;
-    TTree*        treeD  = fmdLoader->TreeD();
-    TBranch*      branch = treeD->GetBranch("FMD");
-    branch->SetAddress(&digits);
-
-    Int_t total = 0;
-    Int_t nEntries  = treeD->GetEntries();
-    for (Int_t entry = 0; entry < nEntries; entry++) {
-      cout << " Entry # " << entry << endl;
-      treeD->GetEntry(entry);
-
-      Int_t nDigits = digits->GetLast();
-      for (Int_t i = 0; i < nDigits; i++) {
-	// cout << "  Digit # " << i << endl;
-	AliFMDDigit* digit = static_cast<AliFMDDigit*>(digits->UncheckedAt(i));
-	if (digit->Counts() > 12) { 
-	  digit->Print();
-	  total++;
-	}
-	if (digit->Detector() == det) 
-	  h->Fill(digit->Counts());
-      }
-    }
-    cout << "Total number of digits: " << total << endl;
+  TH1F* fHist;
+  Int_t det
+  ShowDigits(Int_t det, const char* file="galice.root") 
+    : AliFMDInputDigits(file), fDet(det)
+  {
+    fHist = new TH1F("digitData", "Digit Data", 128, 0, 1024);
   }
-
-  TCanvas* c = new TCanvas("digit", "Digit Data");
-  c->SetFillColor(0);
-  c->SetLogy();
-  c->SetBorderMode(0);
-  h->Draw();
+  Bool_t ProcessDigit(AliFMDDigit* digit) 
+  {
+    if (digit->Counts() > 12) digit->Print();
+    if (digit->Detector() == det) fHist->Fill(digit->Counts());
+    return kTRUE;
+  }
+  Bool_t Finish() 
+  {
+    fHist->Draw();
+    return kTRUE;
+  }
 }
+//____________________________________________________________________
+//
+// EOF
+//

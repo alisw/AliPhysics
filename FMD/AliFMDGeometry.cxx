@@ -98,7 +98,8 @@ AliFMDGeometry::Instance()
 
 //____________________________________________________________________
 AliFMDGeometry::AliFMDGeometry() 
-  : AliGeometry("FMD", "Forward multiplicity")
+  : AliGeometry("FMD", "Forward multiplicity"), 
+    fBuilder(0)
 {
   // PROTECTED
   // Default constructor 

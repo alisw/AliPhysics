@@ -1,0 +1,11 @@
+#-*- Mode: Makefile -*-
+#
+# $Id$
+
+SRCS		=  AliFMDInput.cxx 				
+HDRS		=  $(SRCS:.cxx=.h) 
+DHDR		:= FMDutilLinkDef.h
+
+#
+# EOF
+#

@@ -19,3 +19,7 @@ cp $ALICE_ROOT/.rootrc .
 aliroot -l -b -q ../runIt.C > run.log 2>&1 
 
 cd $CURDIR
+# ____________________________________________________________________
+#
+# EOF
+#
