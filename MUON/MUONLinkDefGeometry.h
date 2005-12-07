@@ -13,6 +13,7 @@
 #pragma link C++ class  AliMUONGeometryModuleTransformer+;
 #pragma link C++ class  AliMUONGeometryModule+;
 #pragma link C++ class  AliMUONGeometryTransformer+;
+#pragma link C++ class  AliMUONGeometryMisAligner+;
 #pragma link C++ class  AliMUONGeometry+;
 #pragma link C++ class  AliMUONVGeometryBuilder+;
 #pragma link C++ class  AliMUONGeometryBuilder+;

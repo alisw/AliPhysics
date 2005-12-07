@@ -13,6 +13,7 @@ SRCS  =  AliMUONGeometryConstituent.cxx \
 	 AliMUONGeometryModuleTransformer.cxx \
 	 AliMUONGeometryModule.cxx \
 	 AliMUONGeometryTransformer.cxx \
+         AliMUONGeometryMisAligner.cxx \
 	 AliMUONGeometry.cxx \
 	 AliMUONGeometryDEIndexing.cxx \
 	 AliMUONVGeometryBuilder.cxx \
