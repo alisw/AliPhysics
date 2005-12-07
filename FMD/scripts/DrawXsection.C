@@ -1,11 +1,11 @@
 void
-DrawXsection(const char* file="xsec.root", 
+DrawXsection(const char* filename="xsec.root", 
 	     const char* var="LOSS", 
 	     const char* medName="FMD_Si$", 
 	     Double_t thick=.03,
 	     const char* pdgName="pi+")
 {
-  TFile*   file = TFile::Open("xsec.root", "READ");
+  TFile*   file = TFile::Open(filename, "READ");
   TTree*   tree = static_cast<TTree*>(file->Get(Form("%s_%s",medName,
 						     pdgName)));
   TLeaf* tb   = tree->GetLeaf("T");
@@ -25,19 +25,20 @@ DrawXsection(const char* file="xsec.root",
     std::cerr << "Couldn't find particle " << pdgName << std::endl;
     return;
   }
-  Double_t m = pdgP->Mass();
-  Double_t q = pdgP->Charge() / 3;
-  if (m == 0) {
-    std::cerr  << "Mass is 0" << std::endl;
-    return;
-  }
+  // Double_t m = pdgP->Mass();
+  // Double_t q = pdgP->Charge() / 3;
+  // std::cout << q << "\t" << m << std::endl;
+  // if (m == 0) {
+  ///  std::cerr  << "Mass is 0" << std::endl;
+  // return;
+  // }
   
   TGraph* graph = new TGraph(n);
   for (Int_t i = 0; i < n; i++) {
     tree->GetEntry(i);
-    graph->SetPoint(i, tkine/m/q/q, value*thick);
+    graph->SetPoint(i, tkine, value*thick); // /(m*q*q)
   }
-  graph->Draw("ALP");
+  graph->Draw("LP same");
 }
 
 //____________________________________________________________________

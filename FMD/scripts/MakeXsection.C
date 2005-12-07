@@ -12,7 +12,7 @@
 void
 MakeXsection()
 {
-  gROOT->ProcessLine(".x Compile.C(\"$ALICE_ROOT/FMD/scripts/GetSection.C\"");
+  gROOT->ProcessLine(".x Compile.C(\"$(ALICE_ROOT)/FMD/scripts/GetXsection.C\"");
   gAlice->InitMC("$(ALICE_ROOT)/FMD/Config.C");
   TFile* file = TFile::Open("xsec.root", "RECREATE");
   GetXsection("FMD_Si$", "pi+");

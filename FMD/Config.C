@@ -247,7 +247,7 @@ Config()
     gSystem->Load("libGeom");
     cout << "\t* Loading TFluka..." << endl;  
     gSystem->Load("libTFluka");    
-    
+    gSystem->MakeDirectory("peg");
     // 
     // FLUKA MC
     //
@@ -316,6 +316,11 @@ Config()
 	((TFluka*)gMC)->SetGeneratePemf(kFALSE);
       else
 	((TFluka*)gMC)->SetGeneratePemf(kTRUE);
+      TString neuxsc(gSystem->Which(".", "neuxsc.bin"));
+      if (neusxc->IsNull()) {
+	gSystem->Link("$(FLUPRO)/neuxsc.bin", "neuxsc.bin");
+      }
+      gSystem->CopyFile("$(FLUPRO)/random.dat", "old.seed", kTRUE);
     }
     break;
   }

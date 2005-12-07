@@ -23,9 +23,13 @@ Simulate()
  sim.SetConfigFile("$(ALICE_ROOT)/FMD/Config.C");
  // sim.SetMakeSDigits("FMD");
  sim.SetMakeDigits("FMD");
- sim.SetWriteRawData("FMD");
+ // sim.SetWriteRawData("FMD");
  // sim.SetMakeDigitsFromHits("FMD");
- sim.Run(1); 
+ TStopwatch w;
+ w.Start();
+ sim.Run(10); 
+ w.Stop();
+ w.Print();
 }
 
 //
