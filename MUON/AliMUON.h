@@ -97,7 +97,8 @@ class AliMUON : public  AliDetector
     virtual Float_t  GetMaxDestepAlu() const;
     
     // Set alignement option
-    virtual void  SetAlign(Bool_t align);
+    virtual void  SetAlign(Bool_t align = true);
+    virtual void  SetAlign(const TString& fileName, Bool_t align = true);
    
     // Return reference to Chamber #id
     virtual AliMUONChamber& Chamber(Int_t id)

@@ -378,6 +378,14 @@ Float_t  AliMUON::GetMaxDestepAlu() const
 }   
 
 //____________________________________________________________________
+ void  AliMUON::SetAlign(const TString& fileName, Bool_t align)
+{
+ // Sets option for alignement to geometry builder
+ 
+   fGeometryBuilder->SetAlign(fileName, align);
+}   
+
+//____________________________________________________________________
 void   AliMUON::SetResponseModel(Int_t id, AliMUONResponse *response)
 {
 // Set the response for chamber id
