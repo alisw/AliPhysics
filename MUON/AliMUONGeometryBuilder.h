@@ -37,14 +37,22 @@ class AliMUONGeometryBuilder : public TObject
                                 const TGeoMatrix& m3, const TGeoMatrix& m4); 
 
     // methods
+    //
     void  AddBuilder(AliMUONVGeometryBuilder* geomBuilder);
     void  CreateGeometry();
     void  CreateMaterials();
-    void  InitGeometry(const TString& svmapFileName = "svmap.dat");
-    void  ReadTransformations(const TString& fileName = "transform.dat");
-    void  WriteTransformations(const TString& fileName = "transform.dat.out");
-    void  WriteSVMaps(Bool_t rebuild = true, 
-                      const TString& fileName = "svmap.dat.out");
+
+    void  InitGeometry();
+    void  InitGeometry(const TString& svmapFileName);
+
+    void  ReadTransformations();
+    void  ReadTransformations(const TString& fileName);
+
+    void  WriteTransformations();
+    void  WriteTransformations(const TString& fileName);
+
+    void  WriteSVMaps();
+    void  WriteSVMaps(const TString& fileName, Bool_t rebuild = true);
     
     // Geometry parametrisation
     const AliMUONGeometry*            GetGeometry() const;
@@ -52,7 +60,8 @@ class AliMUONGeometryBuilder : public TObject
 
     // Alignement
     virtual Bool_t  GetAlign() const;
-    virtual void    SetAlign(Bool_t align);
+    virtual void    SetAlign(Bool_t align = true);
+    virtual void    SetAlign(const TString& fileName, Bool_t align = true);
  
   protected:
     AliMUONGeometryBuilder(const AliMUONGeometryBuilder& right);
@@ -65,10 +74,17 @@ class AliMUONGeometryBuilder : public TObject
 	     const char* only) const;
     void SetAlign(AliMUONVGeometryBuilder* builder);	     
 
+    // static data members
+    static const TString  fgkDefaultTransformFileName; // default transformations file name					   
+    static const TString  fgkDefaultSVMapFileName;     // default svmaps file name					   
+    static const TString  fgkOutFileNameExtension;     // default output file name extension					   
+
     // data members
     AliModule*       fModule;              // the AliRoot module
     Bool_t           fAlign;               // option to read transformations 
                                            // from a file
+    TString          fTransformFileName;   // transformations file name					   
+    TString          fSVMapFileName;       // svmaps file name					   
     TGeoCombiTrans   fGlobalTransformation;// global transformation 
                                            // applied to the whole geometry 
     TObjArray*       fGeometryBuilders;    // list of Geometry Builders
@@ -78,6 +94,18 @@ class AliMUONGeometryBuilder : public TObject
 };
 
 // inline functions
+
+inline void  AliMUONGeometryBuilder::InitGeometry()
+{ InitGeometry(fSVMapFileName); }
+
+inline void  AliMUONGeometryBuilder::ReadTransformations()
+{ ReadTransformations(fTransformFileName); }
+
+inline void  AliMUONGeometryBuilder::WriteTransformations()
+{ WriteTransformations(fTransformFileName + fgkOutFileNameExtension); }
+
+inline void  AliMUONGeometryBuilder::WriteSVMaps()
+{ WriteSVMaps(fSVMapFileName + fgkOutFileNameExtension); }
 
 inline 
 const AliMUONGeometry* AliMUONGeometryBuilder::GetGeometry() const

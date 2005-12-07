@@ -41,7 +41,13 @@
 
 
 ClassImp(AliMUONGeometryBuilder)
+
+// static data members
  
+const TString  AliMUONGeometryBuilder::fgkDefaultTransformFileName = "transform.dat";   
+const TString  AliMUONGeometryBuilder::fgkDefaultSVMapFileName = "svmap.dat";    
+const TString  AliMUONGeometryBuilder::fgkOutFileNameExtension = ".out";    
+
 // static functions
 
 //______________________________________________________________________________
@@ -105,6 +111,8 @@ AliMUONGeometryBuilder::AliMUONGeometryBuilder(AliModule* module)
   : TObject(),
     fModule(module),
     fAlign(false),
+    fTransformFileName(fgkDefaultTransformFileName),
+    fSVMapFileName(fgkDefaultSVMapFileName),
     fGlobalTransformation(), 
     fGeometryBuilders(0),
     fGeometry(0)
@@ -129,6 +137,8 @@ AliMUONGeometryBuilder::AliMUONGeometryBuilder()
   : TObject(),
     fModule(0),
     fAlign(false),
+    fTransformFileName(),
+    fSVMapFileName(),
     fGlobalTransformation(),
     fGeometryBuilders(0),
     fGeometry(0)
@@ -447,6 +457,8 @@ void AliMUONGeometryBuilder::InitGeometry(const TString& svmapFileName)
   }  
 }
 
+
+
 //______________________________________________________________________________
 void AliMUONGeometryBuilder::ReadTransformations(const TString& fileName)
 {
@@ -469,8 +481,8 @@ void AliMUONGeometryBuilder::WriteTransformations(const TString& fileName)
 }
 
 //______________________________________________________________________________
-void AliMUONGeometryBuilder::WriteSVMaps(Bool_t rebuild, 
-                                         const TString& fileName)
+void AliMUONGeometryBuilder::WriteSVMaps(const TString& fileName, 
+                                         Bool_t rebuild)
 {
 /// Write sensitive volume maps into files per builder
 
@@ -494,6 +506,23 @@ void AliMUONGeometryBuilder::SetAlign(Bool_t align)
 { 
 /// Set the option for alignement
 
+  fAlign = align; 
+
+  for (Int_t i=0; i<fGeometryBuilders->GetEntriesFast(); i++) {
+
+    AliMUONVGeometryBuilder* builder
+      = (AliMUONVGeometryBuilder*)fGeometryBuilders->At(i);
+    
+    SetAlign(builder); 
+  }   
+}
+
+//_____________________________________________________________________________
+void AliMUONGeometryBuilder::SetAlign(const TString& fileName, Bool_t align)
+{ 
+/// Set the option for alignement
+
+  fTransformFileName = fileName;
   fAlign = align; 
 
   for (Int_t i=0; i<fGeometryBuilders->GetEntriesFast(); i++) {
