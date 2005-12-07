@@ -97,6 +97,15 @@ gGeoManager->GetMasterVolume()->Draw();
 
 
 ============================================================
+ How to check the overlap with the new Geometrical modeler
+ ftp://root.cern.ch/root/doc/chapter16.pdf
+ http://agenda.cern.ch/fullAgenda.php?ida=a05212
+============================================================
+gAlice->Init("$ALICE_ROOT/MUON/Config.C");
+gGeoManager->CheckOverlaps();
+gGeoManager->PrintOverlaps();
+
+============================================================
  How to run MUONdisplay
 ============================================================
 First you need to perform a full simulation: 
