@@ -105,8 +105,8 @@ class AliITSsimulationSPDdubna : public AliITSsimulation {
     void SetCouplingOld(Int_t row, Int_t col,Int_t ntrack,Int_t idhit);
     // Getters for data kept in fSegmentation and fResponse.
     // Returns the Threshold in electrons
-    Double_t GetThreshold(Int_t ix,Int_t iz){
-      Double_t th,sig;AliITSresponseSPD* res=(AliITSresponseSPD*)GetResponseModel(0); 
+    Double_t GetThreshold(){
+      Double_t th,sig;AliITSresponseSPD* res=(AliITSresponseSPD*)GetResponseModel(GetModuleNumber()); 
 	res->Thresholds(th,sig);return th;};
     // Returns the couplings Columb and Row.
     void GetCouplings(Double_t &cc,Double_t &cr){

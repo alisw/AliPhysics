@@ -469,9 +469,9 @@ void AliITSsimulationSPDdubna::pListToDigits(){
         FillHistograms(ix,iz,sig+electronics);
         if(GetDebug(3)){
             cout<<sig<<"+"<<electronics<<">threshold("<<ix<<","<<iz
-                <<")="<<GetThreshold(ix,iz) <<endl;
+                <<")="<<GetThreshold() <<endl;
         } // end if GetDebug
-        if (sig+electronics <= GetThreshold(ix,iz)) continue;
+        if (sig+electronics <= GetThreshold()) continue;
         dig.SetCoord1(iz);
         dig.SetCoord2(ix);
         dig.SetSignal(1);
@@ -591,7 +591,7 @@ void AliITSsimulationSPDdubna::SetCoupling(Int_t row, Int_t col, Int_t ntrack,
             j1 += isign;
             //   pulse1 *= couplR; 
             xr = gRandom->Rndm();
-            //if ((j1<0)||(j1>GetNPixelsZ()-1)||(pulse1<GetThreshold(j1,col))){
+            //if ((j1<0)||(j1>GetNPixelsZ()-1)||(pulse1<GetThreshold())){
             if ((j1<0) || (j1>GetNPixelsZ()-1) || (xr>couplR)){
                 j1 = row;
                 flag = 1;
@@ -606,7 +606,7 @@ void AliITSsimulationSPDdubna::SetCoupling(Int_t row, Int_t col, Int_t ntrack,
             j2 += isign;
             // pulse2 *= couplC; 
             xr = gRandom->Rndm();
-            //if((j2<0)||j2>(GetNPixelsX()-1)||pulse2<GetThreshold(row,j2)){
+            //if((j2<0)||j2>(GetNPixelsX()-1)||pulse2<GetThreshold()){
             if ((j2<0) || (j2>GetNPixelsX()-1) || (xr>couplC)){
                 j2 = col;
                 flag = 1;
@@ -662,7 +662,7 @@ void AliITSsimulationSPDdubna::SetCouplingOld(Int_t row, Int_t col,
         do{
             j1 += isign;
             pulse1 *= couplR;
-            if ((j1<0)||(j1>GetNPixelsZ()-1)||(pulse1<GetThreshold(j1,col))){
+            if ((j1<0)||(j1>GetNPixelsZ()-1)||(pulse1<GetThreshold())){
                 pulse1 = GetMap()->GetSignalOnly(row,col);
                 j1 = row;
                 flag = 1;
@@ -675,7 +675,7 @@ void AliITSsimulationSPDdubna::SetCouplingOld(Int_t row, Int_t col,
         do{
             j2 += isign;
             pulse2 *= couplC;
-            if((j2<0)||(j2>(GetNPixelsX()-1))||(pulse2<GetThreshold(row,j2))){
+            if((j2<0)||(j2>(GetNPixelsX()-1))||(pulse2<GetThreshold())){
                 pulse2 = GetMap()->GetSignalOnly(row,col);
                 j2 = col;
                 flag = 1;
