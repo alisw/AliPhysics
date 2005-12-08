@@ -187,7 +187,7 @@ class AliITSresponse : public TObject {
     TString  fFileName3;        // param values or output coded signal
     Bool_t     fWrite;          // Write option for the compression algorithms
 
-    ClassDef(AliITSresponse,2) // Detector type response virtual base class 
+    ClassDef(AliITSresponse,3) // Detector type response virtual base class 
 };
 // Input and output function for standard C++ input/output.
 ostream& operator<<(ostream &os,AliITSresponse &source);
