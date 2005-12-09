@@ -51,9 +51,9 @@ class AliL3Modeller {
   void SetOuterSearchRange(Int_t p,Int_t t) {fOuterPadSearch=p; fOuterTimeSearch=t;}
   void SetMaxClusterRange(Int_t p,Int_t t) {fMaxPads=p; fMaxTimebins=t;}
   void Debug() {fDebug=kTRUE;}
-  virtual void SetFitRange(Int_t /*p*/,Int_t /*t*/) {return;}
+  virtual Bool_t SetFitRange(AliL3ModelTrack *track,Int_t */*p*/,Int_t */*t*/) {return kFALSE;}
   virtual void SetNmaxOverlaps(Int_t /*i*/) {return;}
-  virtual void SetChiSqMax(Float_t /*f*/) {return;}
+  virtual void SetChiSqMax(Float_t /*f*/,Int_t /*p*/) {return;}
   
   AliL3TrackArray *GetTracks() {return fTracks;}
     
