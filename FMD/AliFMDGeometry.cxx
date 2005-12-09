@@ -193,7 +193,10 @@ void
 AliFMDGeometry::SetActive(Int_t* active, Int_t n) 
 {
   fActive.Set(n);
-  for (Int_t i = 0; i < n; i++) fActive[i] = active[i];
+  for (Int_t i = 0; i < n; i++) { 
+    AliDebug(1, Form("Active vol id # %d: %d", i, active[i]));
+    fActive[i] = active[i];
+  }
 }
 
 //____________________________________________________________________

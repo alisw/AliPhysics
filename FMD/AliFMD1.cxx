@@ -20,6 +20,9 @@
 // Concrete implementation of AliFMDDetector 
 //
 // This implements the geometry for FMD1 
+// FMD1 has only one ring, of type `inner'.  
+// It is sitting at z=320.
+// It is the FMD ring with highest eta
 //
 #include "AliFMD1.h"		// ALIFMD1_H 
 #include "AliFMDRing.h"		// ALIFMDRING_H 

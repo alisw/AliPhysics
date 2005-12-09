@@ -18,7 +18,8 @@
 //____________________________________________________________________
 //
 // Base class for reconstructed charged particle multiplicty in the
-// FMD.  The class contains the field fMethod which is a flag set by
+// FMD.  
+// The class contains the field fMethod which is a flag set by
 // the AliFMDMultAlgorithm that created the object. The flag tells us
 // which algorithm was used to create the data stored in the object. 
 //

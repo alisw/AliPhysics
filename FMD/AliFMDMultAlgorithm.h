@@ -8,10 +8,10 @@
  * See cxx source for full Copyright notice                               
  */
 /* $Id$ */
+
 //____________________________________________________________________
 // 
-// Base class for FMD reconstruction algorithms. 
-//
+// Base class for FMD reconstruction algorithms.
 // Derived classes will implement various ways of reconstructing the
 // charge particle multiplicity in the FMD.  
 // 

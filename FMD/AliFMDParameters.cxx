@@ -21,6 +21,8 @@
 //
 // This class is a singleton that handles various parameters of
 // the FMD detectors.  
+// Eventually, this class will use the Conditions DB to get the
+// various parameters, which code can then request from here.
 //                                                       
 #include "AliFMDParameters.h"	// ALIFMDPARAMETERS_H
 #include "AliFMDGeometry.h"	// ALIFMDGEOMETRY_H

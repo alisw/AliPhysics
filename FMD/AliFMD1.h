@@ -9,11 +9,11 @@
 class AliFMDRing;
 
 //__________________________________________________________________
-/** Geometry description and parameters of the FMD1
-    detector. 
-    
-    The FMD1 only has one ring.     
-*/
+// Geometry description and parameters of the FMD1
+// detector. 
+//
+// The FMD1 only has one ring.     
+//
 class AliFMD1 : public AliFMDDetector 
 {
 public:

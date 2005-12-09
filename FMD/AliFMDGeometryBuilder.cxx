@@ -131,7 +131,7 @@ AliFMDGeometryBuilder::AliFMDGeometryBuilder()
     fPlastic(0)
 {
   // Default constructor
-  fActiveId.Set(4);
+  fActiveId.Set(2);
 }
 
 //____________________________________________________________________
@@ -153,7 +153,7 @@ AliFMDGeometryBuilder::AliFMDGeometryBuilder(Bool_t detailed)
   //      fmd		Pointer to AliFMD object 
   //      detailed      Whether to make a detailed simulation or not 
   // 
-  fActiveId.Set(4);
+  fActiveId.Set(2);
 }
 
 
@@ -246,7 +246,7 @@ AliFMDGeometryBuilder::RingGeometry(AliFMDRing* r)
   case 'i':
   case 'I': fActiveId[0] = sid; break;
   case 'o':
-  case 'O': fActiveId[2] = sid; break;
+  case 'O': fActiveId[1] = sid; break;
   }
 
   // Shape of Printed circuit Board 

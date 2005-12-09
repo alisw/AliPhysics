@@ -24,6 +24,7 @@ class AliFMDRawStream : public AliAltroRawStream
 {
 public:
   AliFMDRawStream(AliRawReader* reader, UShort_t sampleRate=0);
+  virtual ~AliFMDRawStream() {}
 
   Short_t Sector()      const { return fRow; }
   Char_t  Ring()        const { return (fSector == 0 ? 'I' : 'O'); }

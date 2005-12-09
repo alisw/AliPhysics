@@ -22,7 +22,8 @@
 // [See also the AliFMDReconstructor class]
 // 
 // This class reconstructs the multiplicity based on the assumption
-// that all particles are minimum ionizing. 
+// that all particles are minimum ionizing.   
+// Hence, the name `naiive'
 // 
 #include "AliFMD.h"			// ALIFMD_H
 #include "AliFMDMultNaiive.h"		// ALIFMDMULTNAIIVE_H

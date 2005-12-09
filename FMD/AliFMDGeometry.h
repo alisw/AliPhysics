@@ -1,9 +1,14 @@
 #ifndef ALIFMDGEOMETRY_H
 #define ALIFMDGEOMETRY_H
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights
+ * reserved. 
+ *
+ * Latest changes by Christian Holm Christensen <cholm@nbi.dk>
+ *
+ * See cxx source for full Copyright notice                               
+ */
 //____________________________________________________________________ 
 //  
-// $Id$ 
-//
 // Forward Multiplicity Detector based on Silicon wafers. 
 //
 // This class is a singleton that handles the geometry parameters of

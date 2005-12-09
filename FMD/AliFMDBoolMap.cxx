@@ -17,8 +17,10 @@
 /* $Id$ */
 //__________________________________________________________
 // 
-// Map of per strip Bool_t information
-// 
+// Map of Bool_t for each FMD strip
+// Used in calibration and the like classes.
+// Used amoung other things for dead-channel map
+// Can also be used for other stuff too
 // Created Mon Nov  8 12:51:51 2004 by Christian Holm Christensen
 // 
 #include "AliFMDBoolMap.h"	//ALIFMDBOOLMAP_H

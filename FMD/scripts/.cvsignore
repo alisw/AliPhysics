@@ -1,1 +1,5 @@
 old
+*.so
+*.root
+peg
+

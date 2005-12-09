@@ -23,6 +23,7 @@
 // 
 // This class reconstructs the muliplicity in regions based on the
 // ratio of empty to full strips. 
+// Hence the name `poisson'
 //
 #include "AliFMD.h"			// ALIFMD_H
 #include "AliFMDGeometry.h"		// ALIFMDGEOMETRY_H
@@ -48,6 +49,7 @@ AliFMDMultPoisson::AliFMDMultPoisson()
     fDeltaPhi(0), 
     fThreshold(0)
 {
+  // CTOR
   SetDeltaEta();
   SetDeltaPhi();
   SetThreshold();

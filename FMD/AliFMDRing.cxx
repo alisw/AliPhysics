@@ -44,6 +44,7 @@ AliFMDRing::AliFMDRing(Char_t id)
     fId(id), 
     fVerticies(0)
 {
+  // CTOR
   SetBondingWidth();
   SetWaferRadius();
   SetSiThickness();
@@ -74,6 +75,7 @@ AliFMDRing::AliFMDRing(Char_t id)
 void
 AliFMDRing::Init()
 {
+  // Initialize 
   Double_t tanTheta  = TMath::Tan(fTheta * TMath::Pi() / 180.);
   Double_t tanTheta2 = TMath::Power(tanTheta,2);
   Double_t r2        = TMath::Power(fWaferRadius,2);
@@ -112,6 +114,7 @@ AliFMDRing::Init()
 TVector2*
 AliFMDRing::GetVertex(Int_t i) const
 {
+  // Get the i'th vertex of polygon shape
   return static_cast<TVector2*>(fVerticies.At(i));
 }
 
@@ -123,6 +126,8 @@ AliFMDRing::Detector2XYZ(UShort_t sector,
 			 Double_t& y, 
 			 Double_t& z) const
 {
+  // Translate detector coordinates (this,sector,strip) to global
+  // coordinates (x,y,z)
   if (sector >= GetNSectors()) {
     Error("Detector2XYZ", "Invalid sector number %d (>=%d) in ring %c", 
 	  sector, GetNSectors(), fId);
@@ -149,6 +154,8 @@ AliFMDRing::XYZ2Detector(Double_t  x,
 			 UShort_t& sector,
 			 UShort_t& strip) const
 {
+  // Translate global coordinates (x,y,z) to detector coordinates
+  // (this,sector,strip)
   sector = strip = 0;
   Double_t r = TMath::Sqrt(x * x + y * y);
   Int_t str = Int_t((r - fMinR) / GetPitch());

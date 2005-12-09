@@ -19,6 +19,9 @@
 //                                                                          
 // A map of per strip UShort_t information (for example ADC values,
 // number of hits and so on). 
+// Used for various calib information, and the like, 
+// as well as in reconstruction. 
+// Can be used elsewhere too.
 //
 #include "AliFMDUShortMap.h"		// ALIFMDUSHORTMAP_H
 
@@ -34,6 +37,7 @@ AliFMDUShortMap::AliFMDUShortMap(const AliFMDUShortMap& other)
 	      other.fMaxStrips), 
     fData(0)
 {
+  // CTOR
   fData = new UShort_t[fMaxDetectors * fMaxRings * fMaxSectors * fMaxStrips];
   for (size_t i = 0; i < fMaxDetectors * fMaxRings * fMaxSectors * fMaxStrips;
        i++) fData[i] = other.fData[i];
@@ -63,6 +67,7 @@ AliFMDUShortMap::AliFMDUShortMap(size_t maxDet,
 AliFMDUShortMap&
 AliFMDUShortMap::operator=(const AliFMDUShortMap& other) 
 {
+  // Assignment operator
   fMaxDetectors = other.fMaxDetectors;
   fMaxRings     = other.fMaxRings;
   fMaxSectors   = other.fMaxSectors;
@@ -78,6 +83,7 @@ AliFMDUShortMap::operator=(const AliFMDUShortMap& other)
 void
 AliFMDUShortMap::Reset(const UShort_t& val) 
 {
+  // Reset to val
   for (size_t i = 0; i < fMaxDetectors * fMaxRings * fMaxSectors * fMaxStrips;
        i++) fData[i] = val;
 }

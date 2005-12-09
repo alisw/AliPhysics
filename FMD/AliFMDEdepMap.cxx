@@ -33,6 +33,7 @@ AliFMDEdepMap::AliFMDEdepMap(const AliFMDEdepMap& other)
 	      other.fMaxStrips), 
     fData(0)
 {
+  // Copy constructor 
   fData = new AliFMDEdepHitPair[fMaxDetectors * fMaxRings * 
 				fMaxSectors * fMaxStrips];
   for (size_t i = 0; i < fMaxDetectors * fMaxRings * fMaxSectors * fMaxStrips;
@@ -64,6 +65,7 @@ AliFMDEdepMap::AliFMDEdepMap(size_t maxDet,
 AliFMDEdepMap&
 AliFMDEdepMap::operator=(const AliFMDEdepMap& other) 
 {
+  // Assignment operator
   fMaxDetectors = other.fMaxDetectors;
   fMaxRings     = other.fMaxRings;
   fMaxSectors   = other.fMaxSectors;
@@ -78,10 +80,20 @@ AliFMDEdepMap::operator=(const AliFMDEdepMap& other)
 
 //____________________________________________________________________
 void
+AliFMDEdepMap::Reset() 
+{
+  // Reset to zero
+  for (size_t i = 0; i < fMaxDetectors * fMaxRings * fMaxSectors * fMaxStrips;
+       i++) { fData[i].fEdep = 0; fData[i].fN = 0; };
+}
+
+//____________________________________________________________________
+void
 AliFMDEdepMap::Reset(const AliFMDEdepHitPair& val) 
 {
+  // Reset to val
   for (size_t i = 0; i < fMaxDetectors * fMaxRings * fMaxSectors * fMaxStrips;
-       i++) fData[i] = val;
+       i++) { fData[i].fEdep = val.fEdep; fData[i].fN = val.fN; };
 }
 
 //____________________________________________________________________

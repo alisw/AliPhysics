@@ -11,8 +11,9 @@
 //____________________________________________________________________
 //
 // Base class for caches of per-strip information.
+// This is used to index a strip. 
+// Data stored depends on derived class. 
 //
-
 class AliFMDMap : public TObject 
 {
 public:

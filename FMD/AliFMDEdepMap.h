@@ -10,16 +10,21 @@
 #endif 
 //____________________________________________________________________
 //
-// Cache of Energy deposited, hit information perr strip
+// Cache of Energy deposited, hit information per strip.
+// Contains a pair of fEdep and fN
+// fEdep is the summed energy deposition, and fN is the number of hits
 //
 
 //____________________________________________________________________
 class AliFMDEdepHitPair 
 {
 public:
-  Float_t  fEdep;
-  UShort_t fN;
+  Float_t  fEdep; // summed energy deposition
+  UShort_t fN;    // Number of hits
   AliFMDEdepHitPair() : fEdep(0), fN(0) {}
+  AliFMDEdepHitPair& operator=(const AliFMDEdepHitPair& o) 
+  { fEdep = o.fEdep; fN    = o.fN; return *this; }
+  AliFMDEdepHitPair(const AliFMDEdepHitPair& o) : fEdep(o.fEdep), fN(o.fN) {}
 };
 
 //____________________________________________________________________
@@ -33,7 +38,8 @@ public:
 		size_t maxStr = kMaxStrips);
   virtual ~AliFMDEdepMap() { delete [] fData; }
   AliFMDEdepMap& operator=(const AliFMDEdepMap& other);
-  virtual void Reset(const AliFMDEdepHitPair& val=AliFMDEdepHitPair());
+  virtual void Reset();
+  virtual void Reset(const AliFMDEdepHitPair& val);
   virtual AliFMDEdepHitPair& operator()(UShort_t detector, 
 				     Char_t   ring, 
 				     UShort_t sector, 

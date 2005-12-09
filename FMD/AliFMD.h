@@ -11,6 +11,9 @@
 //____________________________________________________________________
 //
 //  Manager class for the FMD - Base class.
+//  AliFMDv1, AliFMDv0, and AliFMDAlla 
+//  provides concrete implementations. 
+//  This class is sooooo crowded
 //
 #ifndef ALIDETECTOR_H 
 # include <AliDetector.h>
@@ -73,7 +76,9 @@ public:
 				       Float_t  pz=0,
 				       Float_t  edep=0,
 				       Int_t    pdg=0,
-				       Float_t  t=0);
+				       Float_t  t=0, 
+				       Float_t  len=0, 
+				       Bool_t   stopped=kFALSE);
   virtual        void   AddDigit(Int_t *digits, Int_t* notused=0);
   virtual        void   AddDigitByFields(UShort_t detector=0, 
 					 Char_t   ring='\0', 

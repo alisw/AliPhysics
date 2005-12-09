@@ -11,7 +11,9 @@
 //____________________________________________________________________
 //
 //  Manager class for the FMD - Detailed version. 
-//
+//  Implements the full geometry, 
+//  And does stepping
+// 
 #ifndef ALIFMD_H 
 # include "AliFMD.h"
 #endif

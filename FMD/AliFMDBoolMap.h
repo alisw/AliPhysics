@@ -10,6 +10,8 @@
 //__________________________________________________________
 // 
 // Map of Bool_t for each FMD strip
+// Used in calibration and the like classes.
+// Used amoung other things for dead-channel map
 // 
 #ifndef ALIFMDMAP_H
 # include <AliFMDMap.h>

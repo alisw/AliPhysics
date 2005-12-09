@@ -2,7 +2,10 @@
 #define ALIFMDDIGIT_H
 //___________________________________________________________________
 //
-//  Digits classes for the FMD                
+//  Digits classes for the FMD
+//  AliFMDBaseDigit - base class 
+//  AliFMDDigit     - Normal (smeared) digit             
+//  AliFMDSDigit    - Summable (non-smeared) digit             
 //
 #ifndef ROOT_TObject
 # include <TObject.h>
@@ -35,10 +38,6 @@ protected:
 //____________________________________________________________________
 class AliFMDDigit : public AliFMDBaseDigit
 {
-protected:
-  UShort_t fCount1;     // Digital signal 
-  Short_t  fCount2;     // Digital signal (-1 if not used)
-  Short_t  fCount3;     // Digital signal (-1 if not used)
 public:
   AliFMDDigit();
   AliFMDDigit(UShort_t detector, 
@@ -54,6 +53,10 @@ public:
   Short_t  Count3()                const { return fCount3;   }
   UShort_t Counts()                const;
   void     Print(Option_t* opt="") const;
+protected:
+  UShort_t fCount1;     // Digital signal 
+  Short_t  fCount2;     // Digital signal (-1 if not used)
+  Short_t  fCount3;     // Digital signal (-1 if not used)
   ClassDef(AliFMDDigit,1)     // Normal FMD digit
 };
 
@@ -68,11 +71,6 @@ AliFMDDigit::Counts() const
 //____________________________________________________________________
 class AliFMDSDigit : public AliFMDBaseDigit
 {
-protected:
-  Float_t  fEdep;       // Energy deposited 
-  UShort_t fCount1;     // Digital signal 
-  Short_t  fCount2;     // Digital signal (-1 if not used)
-  Short_t  fCount3;     // Digital signal (-1 if not used)
 public:
   AliFMDSDigit();
   AliFMDSDigit(UShort_t detector, 
@@ -90,6 +88,11 @@ public:
   Float_t  Edep()                  const { return fEdep;     }
   UShort_t Counts()                const;
   void     Print(Option_t* opt="") const;
+protected:
+  Float_t  fEdep;       // Energy deposited 
+  UShort_t fCount1;     // Digital signal 
+  Short_t  fCount2;     // Digital signal (-1 if not used)
+  Short_t  fCount3;     // Digital signal (-1 if not used)
   ClassDef(AliFMDSDigit,1)     // Summable FMD digit
 };
   

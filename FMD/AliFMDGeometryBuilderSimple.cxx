@@ -177,7 +177,7 @@ AliFMDGeometryBuilderSimple::RingGeometry(AliFMDRing* r)
   case 'i':
   case 'I': fActiveId[0] = sid; break;
   case 'o':
-  case 'O': fActiveId[2] = sid; break;
+  case 'O': fActiveId[1] = sid; break;
   }
 
   // Shape of Printed circuit Board 

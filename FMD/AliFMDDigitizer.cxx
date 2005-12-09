@@ -440,25 +440,24 @@ AliFMDBaseDigitizer::ConvertToCount(Float_t   edep,
   // 
   //                  = E + (l - E) * ext(-B * t)
   // 
-  const Float_t mipEnergy = 1.664 * siThickness * siDensity;
-  const Float_t convf     = (1 / mipEnergy * Float_t(fAltroChannelSize) 
-			     / fVA1MipRange);
-  UShort_t ped            = MakePedestal();
+  Float_t  mipEnergy  = 1.664 * siThickness * siDensity;
+  Float_t  convF      = (1/mipEnergy*Float_t(fAltroChannelSize)/fVA1MipRange);
+  UShort_t ped       = MakePedestal();
 
   // In case we don't oversample, just return the end value. 
   if (fSampleRate == 1) {
-    counts[0] = UShort_t(TMath::Min(edep * convf + ped, 
+    counts[0] = UShort_t(TMath::Min(edep * convF + ped, 
 				    Float_t(fAltroChannelSize)));
     return;
   }
-
+  
   // Create a pedestal 
   Int_t   n = fSampleRate;
-  Float_t B = fShapingTime;
+  Float_t b = fShapingTime;
   for (Ssiz_t i = 0; i < n;  i++) {
     Float_t t = Float_t(i) / n;
-    Float_t s = edep + (last - edep) * TMath::Exp(-B * t);
-    counts[i] = UShort_t(TMath::Min(s * convf + ped, 
+    Float_t s = edep + (last - edep) * TMath::Exp(-b * t);
+    counts[i] = UShort_t(TMath::Min(s * convF + ped, 
 				    Float_t(fAltroChannelSize))); 
   }
 }
@@ -558,6 +557,7 @@ AliFMDDigitizer::Exec(Option_t*)
 UShort_t
 AliFMDDigitizer::MakePedestal() const 
 {
+  // Make a pedestal 
   return UShort_t(TMath::Max(gRandom->Gaus(fPedestal, fPedestalWidth), 0.));
 }
 
@@ -573,6 +573,7 @@ AliFMDDigitizer::AddDigit(AliFMD*  fmd,
 			  Short_t  count2, 
 			  Short_t  count3) const
 {
+  // Add a digit
   fmd->AddDigitByFields(detector, ring, sector, strip, count1, count2, count3);
 }
 
@@ -582,14 +583,15 @@ AliFMDDigitizer::CheckDigit(Float_t         /* edep */,
 			    UShort_t        nhits,
 			    const TArrayI&  counts) 
 {
+  // Check that digit is consistent
   Int_t integral = counts[0];
   if (counts[1] >= 0) integral += counts[1];
   if (counts[2] >= 0) integral += counts[2];
   integral -= Int_t(fPedestal + 2 * fPedestalWidth);
   if (integral < 0) integral = 0;
   
-  Float_t convf = Float_t(fVA1MipRange) / fAltroChannelSize;
-  Float_t mips  = integral * convf;
+  Float_t convF = Float_t(fVA1MipRange) / fAltroChannelSize;
+  Float_t mips  = integral * convF;
   if (mips > Float_t(nhits) + .5 || mips < Float_t(nhits) - .5) 
     Warning("CheckDigit", "Digit -> %4.2f MIPS != %d +/- .5 hits", 
 	    mips, nhits);
@@ -628,6 +630,7 @@ AliFMDSDigitizer::AliFMDSDigitizer(const Char_t* headerFile,
 //____________________________________________________________________
 AliFMDSDigitizer::~AliFMDSDigitizer() 
 {
+  // Destructor
   AliLoader* loader = fRunLoader->GetLoader("FMDLoader");
   loader->CleanSDigitizer();
 }
@@ -689,6 +692,7 @@ AliFMDSDigitizer::AddDigit(AliFMD*  fmd,
 			   Short_t  count2, 
 			   Short_t  count3) const
 {
+  // Add a summable digit
   fmd->AddSDigitByFields(detector, ring, sector, strip, edep, 
 			 count1, count2, count3); 
 }

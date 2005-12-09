@@ -1,5 +1,9 @@
+//
+// Script to draw a X-section, LOSS, or range made with MakeXsection
+//
 void
-DrawXsection(const char* filename="xsec.root", 
+DrawXsection(Bool_t scale=kFALSE, 
+	     const char* filename="xsec.root", 
 	     const char* var="LOSS", 
 	     const char* medName="FMD_Si$", 
 	     Double_t thick=.03,
@@ -19,26 +23,38 @@ DrawXsection(const char* filename="xsec.root",
   vb->SetAddress(&value);
   Int_t n = tree->GetEntries();
 
-  TDatabasePDG* pdgDb = TDatabasePDG::Instance();
-  TParticlePDG* pdgP  = pdgDb->GetParticle(pdgName);
-  if (!pdgP) {
-    std::cerr << "Couldn't find particle " << pdgName << std::endl;
-    return;
+  Float_t xscale = 1;
+  Float_t yscale = 1;
+  if (scale) {
+    TDatabasePDG* pdgDb = TDatabasePDG::Instance();
+    TParticlePDG* pdgP  = pdgDb->GetParticle(pdgName);
+    if (!pdgP) {
+      std::cerr << "Couldn't find particle " << pdgName << std::endl;
+      return;
+    }
+    Double_t m = pdgP->Mass();
+    Double_t q = pdgP->Charge() / 3;
+    if (m == 0 || q == 0) {
+      std::cerr  << "Mass is 0" << std::endl;
+      return;
+    }
+    xscale = 1 / m;
+    yscale = 1 / (q * q);
   }
-  // Double_t m = pdgP->Mass();
-  // Double_t q = pdgP->Charge() / 3;
-  // std::cout << q << "\t" << m << std::endl;
-  // if (m == 0) {
-  ///  std::cerr  << "Mass is 0" << std::endl;
-  // return;
-  // }
   
-  TGraph* graph = new TGraph(n);
+  TGraphErrors* graph = new TGraphErrors(n);
   for (Int_t i = 0; i < n; i++) {
     tree->GetEntry(i);
-    graph->SetPoint(i, tkine, value*thick); // /(m*q*q)
+    Double_t x = tkine*xscale;
+    Double_t y = value*yscale;
+    graph->SetPoint(i, x, y); 
+    // 5 sigma
+    graph->SetPointError(i, 0, 5 * .1 * y);
   }
-  graph->Draw("LP same");
+  graph->SetLineWidth(2);
+  graph->SetFillStyle(3001);
+  graph->SetFillColor(6);
+  graph->Draw("L3 same");
 }
 
 //____________________________________________________________________

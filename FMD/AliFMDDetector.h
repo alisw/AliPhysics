@@ -23,6 +23,8 @@ class AliFMDDetector : public TNamed
 {
 public:
   AliFMDDetector(Int_t id, AliFMDRing* inner, AliFMDRing* outer);
+  AliFMDDetector(const AliFMDDetector& other);
+  AliFMDDetector& operator=(const AliFMDDetector& other);
   virtual ~AliFMDDetector() {}
   /** Initialize the geometry */
   virtual void Init();

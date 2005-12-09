@@ -1,10 +1,10 @@
 #ifndef ALIFMDMULT_H
 #define ALIFMDMULT_H
 
-/* Reconstracted Particles Class: has number of reconstructed
- * particles in sectors from NumOfMinSector to NumberOfMaxSector()
- * rings from NumOfMinRing to NumOfMaxRing for each FMDvolume
- */
+// Reconstracted Particles Class: has number of reconstructed
+// particles in sectors from NumOfMinSector to NumberOfMaxSector()
+// rings from NumOfMinRing to NumOfMaxRing for each FMDvolume 
+//
 #ifndef ROOT_TObject
 # include <TObject.h>
 #endif

@@ -77,6 +77,9 @@ protected:
   UShort_t      fSampleRate;       // Times the ALTRO samples pre-amp.
   Float_t       fShapingTime;      // Shaping profile parameter
   
+  AliFMDBaseDigitizer(const AliFMDBaseDigitizer& o) 
+    : AliDigitizer(o) {}
+  AliFMDBaseDigitizer& operator=(const AliFMDBaseDigitizer&) { return *this; }
   ClassDef(AliFMDBaseDigitizer,0) // Base class for FMD digitizers
 };
 

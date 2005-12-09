@@ -86,11 +86,14 @@ AliFMDMultAlgorithm::AliFMDMultAlgorithm(const char* name, const char* title)
     fTreeR(0), 
     fMult(0), 
     fFMD(0)
-{}
+{
+  // Default CTOR
+}
 
 //____________________________________________________________________
 AliFMDMultAlgorithm::~AliFMDMultAlgorithm()
 {
+  // DTOR
   if (fMult) {
     fMult->Delete();
     delete fMult;
@@ -102,6 +105,7 @@ AliFMDMultAlgorithm::~AliFMDMultAlgorithm()
 void
 AliFMDMultAlgorithm::PreEvent(TTree* treeR, Float_t /* ipZ */) 
 {
+  // Executed before each event.
   if (fMult) fMult->Clear();
   fNMult = 0;
   fTreeR = treeR;

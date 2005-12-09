@@ -123,7 +123,11 @@ AliFMDv1::VMC2FMD(Int_t copy, TLorentzVector& v,
   detector = det;
 
   //Double_t  rz  = fmd->GetDetector(detector)->GetRingZ(ring);
-  Int_t     n   = fmd->GetDetector(detector)->GetRing(ring)->GetNSectors();
+  AliFMDDetector* gdet  = fmd->GetDetector(detector);
+  AliFMDRing*     gring = gdet->GetRing(ring);
+  if (!gring)
+    AliFatal(Form("Ring %c not found (%s)", ring, mc->CurrentVolPath()));
+  Int_t           n     = gring->GetNSectors();
 #if 0
   if (rz < 0) {
     Int_t s = ((n - sector + n / 2) % n) + 1;
@@ -133,7 +137,7 @@ AliFMDv1::VMC2FMD(Int_t copy, TLorentzVector& v,
   }
 #endif
   if (sector < 1 || sector > n) {
-    Warning("Step", "sector # %d out of range (0-%d)", sector-1, n-1);
+    AliWarning(Form("Step", "sector # %d out of range (0-%d)", sector-1, n-1));
     return kFALSE;
   }
   sector--;
@@ -239,17 +243,17 @@ AliFMDv1::StepManager()
     if (mc->IsTrackOut())         what.Append("out ");
     
     Int_t mother = gAlice->GetMCApp()->GetPrimary(trackno);
-    Warning("Step", "Track # %5d deposits a lot of energy\n" 
-	    "  Volume:    %s\n" 
-	    "  Momentum:  (%7.4f,%7.4f,%7.4f)\n"
-	    "  PDG:       %d (%s)\n" 
-	    "  Edep:      %-14.7f keV (mother %d)\n"
-	    "  p/m:       %-7.4f/%-7.4f = %-14.7f\n"
-	    "  Processes: %s\n"
-	    "  What:      %s\n",
-	    trackno, mc->CurrentVolPath(), p.X(), p.Y(), p.Z(),
-	    pdg, pname.Data(), edep, mother, p.P(), mass, 
-	    poverm, processes.Data(), what.Data());
+    AliWarning(Form("Step", "Track # %5d deposits a lot of energy\n" 
+		    "  Volume:    %s\n" 
+		    "  Momentum:  (%7.4f,%7.4f,%7.4f)\n"
+		    "  PDG:       %d (%s)\n" 
+		    "  Edep:      %-14.7f keV (mother %d)\n"
+		    "  p/m:       %-7.4f/%-7.4f = %-14.7f\n"
+		    "  Processes: %s\n"
+		    "  What:      %s\n",
+		    trackno, mc->CurrentVolPath(), p.X(), p.Y(), p.Z(),
+		    pdg, pname.Data(), edep, mother, p.P(), mass, 
+		    poverm, processes.Data(), what.Data()));
   }
   
   // Check that the track is actually within the active area 
@@ -286,11 +290,15 @@ AliFMDv1::StepManager()
 			"Accumulated Edep=%g (%f,%f,%f)", trackno, 
 			mc->CurrentVolPath(), edep, fCurrentDeltaE, 
 			v.X(), v.Y(), v.Z()));
+      TVector3 cur(v.Vect());
+      cur -= fCurrentV.Vect();
+      Double_t len = cur.Mag();
       AliFMDHit* h = 
 	AddHitByFields(trackno, detector, ring, sector, strip,
 		       fCurrentV.X(),  fCurrentV.Y(), fCurrentV.Z(),
 		       fCurrentP.X(),  fCurrentP.Y(), fCurrentP.Z(), 
-		       fCurrentDeltaE, fCurrentPdg,   fCurrentV.T());
+		       fCurrentDeltaE, fCurrentPdg,   fCurrentV.T(), 
+		       len, mc->IsTrackDisappeared()||mc->IsTrackStop());
       // Add a copy 
       if (isBad && fBad) { 
 	new ((*fBad)[fBad->GetEntries()]) AliFMDHit(*h);

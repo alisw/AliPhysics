@@ -236,6 +236,7 @@ AliFMD::~AliFMD ()
 AliFMD&
 AliFMD::operator=(const AliFMD& other)
 {
+  // Assignment operator
   AliDetector::operator=(other);
   fSDigits		= other.fSDigits; 
   fNsdigits		= other.fNsdigits;
@@ -830,7 +831,9 @@ AliFMD::AddHitByFields(Int_t    track,
 		       Float_t  pz,
 		       Float_t  edep,
 		       Int_t    pdg,
-		       Float_t  t)
+		       Float_t  t, 
+		       Float_t  l, 
+		       Bool_t   stop)
 {
   //
   // Add a hit to the list
@@ -851,6 +854,8 @@ AliFMD::AddHitByFields(Int_t    track,
   //    edep	  Energy deposited by track
   //    pdg	  Track's particle Id #
   //    t	  Time when the track hit 
+  //    l         Track length through the material. 
+  //    stop      Whether track was stopped or disappeared
   // 
   TClonesArray& a = *(HitsArray());
   // Search through the list of already registered hits, and see if we
@@ -877,7 +882,8 @@ AliFMD::AddHitByFields(Int_t    track,
   }
   // If hit wasn't already registered, do so know. 
   hit = new (a[fNhits]) AliFMDHit(fIshunt, track, detector, ring, sector, 
-				  strip, x, y, z, px, py, pz, edep, pdg, t);
+				  strip, x, y, z, px, py, pz, edep, pdg, t, 
+				  l, stop);
   fNhits++;
   return hit;
 }

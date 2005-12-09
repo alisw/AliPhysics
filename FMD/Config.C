@@ -113,6 +113,9 @@ enum EG_t {
   kMuonCocktailCent1Single,	//
   kMuonCocktailPer1Single,	//
   kMuonCocktailPer4Single,
+  kFlatFMD1, 
+  kFlatFMD2, 
+  kFlatFMD3,
   kEgMax
 };
 
@@ -171,7 +174,10 @@ const char* egName[kEgMax] = {
   "kMuonCocktailPer4HighPt",	//
   "kMuonCocktailCent1Single",	//
   "kMuonCocktailPer1Single",	//
-  "kMuonCocktailPer4Single"
+  "kMuonCocktailPer4Single",
+  "kFMD1Flat",
+  "kFMD2Flat",
+  "kFMD3Flat"
 };
 
 //____________________________________________________________________
@@ -316,10 +322,27 @@ Config()
 	((TFluka*)gMC)->SetGeneratePemf(kFALSE);
       else
 	((TFluka*)gMC)->SetGeneratePemf(kTRUE);
-      TString neuxsc(gSystem->Which(".", "neuxsc.bin"));
-      if (neusxc->IsNull()) {
-	gSystem->Link("$(FLUPRO)/neuxsc.bin", "neuxsc.bin");
+      TString flupro(gSystem->Getenv("FLUPRO"));
+      if (flupro.IsNull()) 
+	Fatal("Config.C", "Environment variable FLUPRO not set");
+#if 0
+      char* files[] = { "brems_fin.bin", "cohff.bin", "elasct.bin", 
+			"gxsect.bin", "nuclear.bin", "sigmapi.bin", 
+			0 };
+      char* file = files[0];
+      while (file) {
+	TString which(gSystem->Which(".", file));
+	if (which.IsNull()) {
+	  if (gSystem->Symlink(Form("%s/%s", flupro.Data(), file), file)!=0) 
+	    Fatal("Config.C", "Couldn't link $(FLUPRO)/%s -> .", file);
+	}
+	file++;
       }
+#endif
+      TString neuxsc(gSystem->Which(".", "neuxsc.bin"));
+      if (neuxsc.IsNull()) 
+	gSystem->Symlink(Form("%s/neuxsc_72.bin", flupro.Data()), 
+			 "neuxsc.bin"); 
       gSystem->CopyFile("$(FLUPRO)/random.dat", "old.seed", kTRUE);
     }
     break;
@@ -1551,6 +1574,40 @@ GeneratorFactory(EG_t eg, Rad_t rad, TString& comment)
       gGener=gener;
     }
     break;
+  case kFlatFMD1: 
+    {
+      comment = comment.Append(" Flat in FMD1 range");
+      AliGenBox* gener = AliGenBox(2000);
+      gener->SetPart(211);
+      gener->SetMomentumRange(3,4);
+      gener->SetPhiRange(0, 360);
+      gener->SetThetaRange(0.77, 3.08);
+      gGener = gener;
+    }
+    break;
+  case kFlatFMD2: 
+    {
+      comment = comment.Append(" Flat in FMD2 range");
+      AliGenBox* gener = AliGenBox(2000);
+      gener->SetPart(211);
+      gener->SetMomentumRange(3,4);
+      gener->SetPhiRange(0, 360);
+      gener->SetThetaRange(2.95, 20.42);
+      gGener = gener;
+    }
+    break;
+  case kFlatFMD3: 
+    {
+      comment = comment.Append(" Flat in FMD3 range");
+      AliGenBox* gener = AliGenBox(2000);
+      gener->SetPart(211);
+      gener->SetMomentumRange(3,4);
+      gener->SetPhiRange(0, 360);
+      gener->SetThetaRange(155.97, 176.73);
+      gGener = gener;
+    }
+    break;
+    
   default: break;
   }
   return gGener;
