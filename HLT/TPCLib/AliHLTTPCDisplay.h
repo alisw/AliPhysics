@@ -19,6 +19,7 @@
 #include <TObject.h>
 #include <TCanvas.h>
 #include <TH2.h>
+#include <TGraph.h>
 
 class AliHLTTPCSpacePointData;
 class AliHLTTPCTrackArray;
@@ -30,13 +31,16 @@ class AliHLTTPCDisplay : public TObject {
   virtual ~AliHLTTPCDisplay();
 
   // SETUP
-  void SetupHistPadRow();
+  void SetupHist();
   void SetupCluster(Int_t slice, Int_t patch, UInt_t nofClusters, AliHLTTPCSpacePointData* data);
   void SetupTracks(AliHLTTPCTrackArray *tracks);
 
-  
+  // HISTOGRAM FILL/RESET FUNCTIONS
+
   void FillPadRow(Int_t patch, ULong_t dataBlock, ULong_t dataLen);
   void ResetHistPadRow();
+  void ResetHistResiduals();
+  void ResetHistCharge();
 
   // DRAWER
   void Draw3D();
@@ -45,7 +49,9 @@ class AliHLTTPCDisplay : public TObject {
   void DrawHistPad1();
   void DrawHistPad2();
   void DrawHistPad3();
- 
+  void DrawHistResiduals();
+  void DrawHistCharge();
+
   // SETTER  
   void SetSliceArray();
   void SetSlices(){fMinSlice = 0; fMaxSlice = 35; fSlicePair = kFALSE; SetSliceArray();}
@@ -73,7 +79,26 @@ class AliHLTTPCDisplay : public TObject {
   Int_t GetNPads(){return fNPads;}
   Int_t GetBackColor() {return fBackColor;}
 
+  struct AliHLTTPCTrackParameter{
+      Int_t nHits;
+      Int_t charge;
+      Double_t kappa;
+      Double_t radius;
+      Double_t xyzF[3];
+      Double_t xyzL[3];
+      Int_t slice;
+      Double_t phi0;
+      Double_t psi;
+      Double_t lambda;
+      Double_t pt;
+      Int_t id;
+      Double_t bfield;
+  };
+
+  AliHLTTPCTrackParameter fTrackParam;
+
   private:
+
   Bool_t LoadGeometrie(Char_t *gfile);
 
   AliHLTTPCDisplay(const AliHLTTPCDisplay &/*d*/):TObject(){;}
@@ -89,6 +114,10 @@ class AliHLTTPCDisplay : public TObject {
   TH1F *fHistpad1;   // histogram for pad in padrow
   TH1F *fHistpad2;   // histogram for pad in padrow
   TH1F *fHistpad3;   // histogram for pad in padrow
+  TH1F *fHistallresiduals;//histogram for all residuals
+  TH1F *fHistcharge; // histogram for clustercharge
+
+  TGraph *fGraphresiduals; // graph of the residuals for one track
 
   TGeometry *fGeom;  // geometry
   Int_t fBackColor;  // Background color
