@@ -79,6 +79,7 @@ void stupre()
     Int_t ireg = EMFSTK.iremf[kp];
     Double_t cut = (TMath::Abs(EMFSTK.ichemf[kp]) == 1) ? EMFRGN.elethr[ireg-1] :  EMFRGN.phothr[ireg-1];
     Double_t e      = EMFSTK.etemf[kp];
+
     if ((e < cut) 
 	&& ( 
 	    (EMFSTK.ichemf[kp] ==  0) ||
@@ -87,7 +88,7 @@ void stupre()
 	    )
 	)
     {
-	EMFSTK.iespak[kp][mkbmx2-1] = -1;
+	EMFSTK.iespak[kp][mkbmx2-1] = TRACKR.ispusr[mkbmx2-1];
 	EMFSTK.iespak[kp][mkbmx2-2] =  0;
 	continue;
     }
@@ -107,8 +108,8 @@ void stupre()
     Int_t    pdg    = fluka->PDGFromId(flukaid);
     Double_t p      = sqrt(e * e - PAPROP.am[flukaid+6] * PAPROP.am[flukaid+6]);
     Double_t px     = p * EMFSTK.uemf[kp];
-    Double_t pz     = p * EMFSTK.vemf[kp];
-    Double_t py     = p * EMFSTK.wemf[kp];
+    Double_t py     = p * EMFSTK.vemf[kp];
+    Double_t pz     = p * EMFSTK.wemf[kp];
     Double_t tof    = EMFSTK.agemf[kp];
     Double_t polx   = EMFSTK.upol[kp];
     Double_t poly   = EMFSTK.vpol[kp];
