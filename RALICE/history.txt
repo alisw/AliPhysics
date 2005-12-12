@@ -674,3 +674,4 @@
 16-nov-2005 NvE Support for a reference point introduced in AliJet.
 06-dec-2005 NvE Memberfunction GetDistance() introduced in AliTrack to determine the
                 distance between a track and a certain position.
+12-dec-2005 NvE Track selection by name introduced in AliJet.

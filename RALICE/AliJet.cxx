@@ -564,6 +564,11 @@ TObjArray* AliJet::GetTracks(Int_t idmode,Int_t chmode,Int_t pcode)
 // 2) Subsequent invokations of this memberfunction with e.g. chmode=-1 and chmode=1
 //    provides a convenient way to investigate particle pairs with opposite charge
 //    (e.g. for invariant mass analysis).
+// 3) The selected track pointers are returned via a multi-purpose array,
+//    which will be overwritten by subsequent selections.
+//    In case the selected track list is to be used amongst other selections,
+//    the user is advised to store the selected track pointers in a local
+//    TObjArray or TRefArray.  
 
  if (fSelected)
  {
@@ -599,6 +604,46 @@ TObjArray* AliJet::GetTracks(Int_t idmode,Int_t chmode,Int_t pcode)
   if (chmode==3 && fabs(q)<1e-10) continue;
 
   fSelected->Add(tx);
+ }
+
+ return fSelected;
+}
+///////////////////////////////////////////////////////////////////////////
+TObjArray* AliJet::GetTracks(TString name)
+{
+// Provide references to all tracks with the specified name.
+//
+// Notes :
+// -------
+// 1) In case the user has labeled reconstructed tracks with the name of
+//    the applied reconstruction algorithm, this memberfunction provides
+//    easy access to all tracks reconstructed by a certain method.
+// 2) The selected track pointers are returned via a multi-purpose array,
+//    which will be overwritten by subsequent selections.
+//    In case the selected track list is to be used amongst other selections,
+//    the user is advised to store the selected track pointers in a local
+//    TObjArray or TRefArray.  
+
+ if (fSelected)
+ {
+  fSelected->Clear();
+ }
+ else
+ {
+  fSelected=new TObjArray();
+ }
+
+ if (!fTracks) return fSelected;
+
+ AliTrack* tx=0;
+ TString s;
+ for (Int_t i=0; i<fNtrk; i++)
+ {
+  tx=(AliTrack*)fTracks->At(i);
+  if (!tx) continue;
+
+  s=tx->GetName();
+  if (s == name) fSelected->Add(tx);
  }
 
  return fSelected;

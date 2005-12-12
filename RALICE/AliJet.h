@@ -37,6 +37,7 @@ class AliJet : public TNamed,public Ali4Vector
   AliTrack* GetTrack(Int_t i) const;       // Provide i-th track of the jet (1=first track)
   AliTrack* GetIdTrack(Int_t id) const;    // Provide the track with user identifier "id"
   TObjArray* GetTracks(Int_t idmode=0,Int_t chmode=2,Int_t pcode=0); // Provide references to selected tracks
+  TObjArray* GetTracks(TString name);      // Provide references to all tracks with a certain name
   void ShowTracks(Int_t mode=1);           // Provide on overview of the available tracks
   Double_t GetPt();                        // Provide trans. momentum w.r.t. z-axis
   Double_t GetPl();                        // Provide long. momentum w.r.t. z-axis
@@ -67,6 +68,6 @@ class AliJet : public TNamed,public Ali4Vector
   AliPositionObj* fRef;                  // The reference-point of the jet
   TObjArray* fSelected;                  //! Temp. array to hold user selected or ordered objects
  
- ClassDef(AliJet,14) // Creation and investigation of a jet of particle tracks.
+ ClassDef(AliJet,15) // Creation and investigation of a jet of particle tracks.
 };
 #endif
