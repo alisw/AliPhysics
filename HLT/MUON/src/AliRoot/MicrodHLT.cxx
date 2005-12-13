@@ -33,6 +33,8 @@ class MicroFramework : public Tracking::TrackerCallback
 {
 public:
 
+	virtual ~MicroFramework() {};
+
 	virtual void RequestClusters(
 			Tracking::Tracker* tracker, 
 			Float /*left*/, Float /*right*/, Float /*bottom*/, Float /*top*/,
