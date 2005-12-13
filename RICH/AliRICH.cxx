@@ -94,7 +94,7 @@ AliRICH::~AliRICH()
 void AliRICH::BuildGeometry() 
 {
 //Builds a TNode geometry for event display
-  AliInfo("Start.");
+  AliDebug(1,"Start.");
   
   TNode *node, *subnode, *top;
   top=gAlice->GetGeometry()->GetNode("alice");
