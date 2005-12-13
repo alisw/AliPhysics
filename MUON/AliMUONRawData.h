@@ -40,6 +40,9 @@ class AliMUONRawData : public TObject
   Int_t ReadTrackerDDL(AliRawReader* rawReader);
   Int_t ReadTriggerDDL(AliRawReader* rawReader);
 
+  void GetDspInfo(Int_t iCh, Int_t& iDspMax, Int_t* iBusPerDSP);
+  Int_t  GetDDLfromBus(Int_t busPatchId);
+
   AliMUONData*   GetMUONData() {return fMUONData;}
 
   void AddData(const AliMUONSubEventTracker* event) {
@@ -82,6 +85,9 @@ class AliMUONRawData : public TObject
 
   TExMap fDetElemIdToBusPatch;       //! Map from idDE to BusPatch   
   TExMap fBusPatchToDetElem;         //! Map from BusPatch to idDE
+  TExMap fBusPatchToDDL;             //! Map from BusPatch to iDDL
+
+  Int_t fMaxBusPerCh[10];            //! max buspatch number per chamber
 
   // writing raw data
   Int_t WriteTrackerDDL(Int_t iCh);

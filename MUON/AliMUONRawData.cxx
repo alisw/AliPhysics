@@ -16,17 +16,22 @@
 ////////////////////////////////////
 //
 // MUON Raw Data generator and reader in ALICE-MUON
-// This class version 1 (further details could be found in Alice-note)
+// This class version 3 (further details could be found in Alice-note)
+//
+// Implemented non-constant buspatch numbers for tracking
+// with correct DDL id (first guess)
+// (Ch. Finck, dec 2005)
+//
 // Digits2Raw:
 // Generates raw data for MUON tracker and finally for trigger
-// * a simple mapping is used (see below)
-// * the bus patch id is calculated with an absolute number 0 - 999
-// * one DDL per 1/2 chamber is created for both cathode.
+// Using real mapping (inverse) for tracker
 // For trigger there is no mapping (mapping could be found in AliMUONTriggerCircuit)
 // Ch. Finck july 04
+//
 // Raw2Digits:
-// Using still dummy mapping (inverse) for tracker
+// Using real mapping  for tracker
 // Indranil Das (Adapted for runloader: Ch. Finck) july 05
+// 
 ////////////////////////////////////
 
 #include <fstream>
@@ -137,8 +142,9 @@ AliMUONRawData::~AliMUONRawData(void)
   if (fDDLTrigger)
     delete fDDLTrigger;
 
- fDetElemIdToBusPatch.Delete();
- fBusPatchToDetElem.Delete();
+  fDetElemIdToBusPatch.Delete();
+  fBusPatchToDetElem.Delete();
+  fBusPatchToDDL.Delete();
 
   return;
 }
@@ -269,7 +275,7 @@ Int_t AliMUONRawData::WriteTrackerDDL(Int_t iCh)
     Int_t error = GetInvMapping(digit, busPatchId, manuId, channelId);
     if (error) continue;
 
-    AliDebug(1,Form("input  IdDE %d busPatchId %d PadX %d PadY %d iCath %d \n", 
+    AliDebug(3,Form("input  IdDE %d busPatchId %d PadX %d PadY %d iCath %d \n", 
 		    detElemId, busPatchId, padX, padY, cathode));
 
     AliDebug(3,Form("busPatchId %d, manuId %d channelId %d\n", busPatchId, manuId, channelId ));
@@ -326,21 +332,36 @@ Int_t AliMUONRawData::WriteTrackerDDL(Int_t iCh)
     printf("\n");
   }
   
+  // getting info for the number of buspatches
   Int_t iBusPatch;
-  Int_t iEntries = 0;
   Int_t length;
+  Int_t iBusPerDSP[5];//number of bus patches per DSP
+  Int_t iDspMax; //number max of DSP per block
+ 
+  Int_t iFile = 0;
+  GetDspInfo(iCh, iDspMax, iBusPerDSP);
+
+  TArrayI* vec = GetBusfromDE((iCh+1)*100);
+
+  Int_t iBus0AtCh = vec->At(0); //get first bus patch id for a given ich
+	
+  AliDebug(3,Form("iBus0AtCh %d", iBus0AtCh));
+
+  iBusPatch = iBus0AtCh - 1; // starting point for each chamber
+
+  // nEntries = fSubEventArray->GetEntriesFast();
+  AliMUONSubEventTracker* temp = 0x0;
 
   // open DDL file, on per 1/2 chamber
   for (Int_t iDDL = 0; iDDL < 2; iDDL++) {
- 
+    
+
     // filling buffer
-    nEntries = fSubEventArray->GetEntriesFast();
     buffer = new Int_t [(2048+24)*50]; // 24 words in average for one buspatch and 2048 manu info at most
 
     indexBlk = 0;
     indexDsp = 0;
     index = 0;
-    iBusPatch = 0;
 
     // two blocks A and B per DDL
     for (Int_t iBlock = 0; iBlock < 2; iBlock++) {
@@ -351,8 +372,8 @@ Int_t AliMUONRawData::WriteTrackerDDL(Int_t iCh)
       indexBlk = index;
       index += length; 
 
-      // 5 DSP's per block
-      for (Int_t iDsp = 0; iDsp < 5; iDsp++) {
+      // 5 DSP's max per block
+      for (Int_t iDsp = 0; iDsp < iDspMax; iDsp++) {
 
 	// DSP header
 	length = fDDLTracker->GetDspHeaderLength();
@@ -360,22 +381,29 @@ Int_t AliMUONRawData::WriteTrackerDDL(Int_t iCh)
 	indexDsp = index;
 	index += length; 
 
-	// 5 buspatches per DSP
-	for (Int_t i = 0; i < 5; i++) {
+	// 5 buspatches max per DSP
+	for (Int_t i = 0; i < iBusPerDSP[iDsp]; i++) {
 
-	  // assuming busPatchId begins at 100 (to be discussed ChF)
-	  iBusPatch = i + iBlock*25 + iDsp*5 + 50*(2*(iCh+1) + iDDL);
-	  AliDebug(3,Form("busPatchId %d", iBusPatch));
+	  iBusPatch ++;
+	  if ((fBusPatchToDDL(iBusPatch) % 2) == 1) // comparing to DDL file
+	    iFile = 0;
+	  else
+	    iFile = 1;
 
-	  AliMUONSubEventTracker* temp = (AliMUONSubEventTracker*)fSubEventArray->At(iEntries);
-	  if (nEntries > 0) {
+	  AliDebug(3,Form("iCh %d iDDL %d iBlock %d iDsp %d busPatchId %d", iCh, iDDL, iBlock, iDsp, iBusPatch));
+
+	  nEntries = fSubEventArray->GetEntriesFast();
+
+	  for (Int_t iEntries = 0; iEntries < nEntries; iEntries++) { // method "bourrique"...
+	    temp = (AliMUONSubEventTracker*)fSubEventArray->At(iEntries);
 	    busPatchId = temp->GetBusPatchId();
+	    if (busPatchId == iBusPatch) break;
+	    busPatchId = -1;
 	    AliDebug(3,Form("busPatchId %d", temp->GetBusPatchId()));
-	  } else
-            busPatchId = -1;
+	  } 
 	 
 	  // check if buspatchid has digit
-	  if (busPatchId == iBusPatch) {
+	  if (busPatchId != -1) {
 	    // add bus patch structure
 	    length = temp->GetHeaderLength();
 	    memcpy(&buffer[index],temp->GetAddress(),length*4);
@@ -385,8 +413,8 @@ Int_t AliMUONRawData::WriteTrackerDDL(Int_t iCh)
 	      AliDebug(3,Form("busPatchId %d, manuId %d channelId %d\n", temp->GetBusPatchId(), 
 			      temp->GetManuId(j), temp->GetChannelId(j) ));
 	    }
-	    if (iEntries < nEntries-1)
-              iEntries++;
+	    //	      fSubEventArray->RemoveAt(iEntries);
+	    //	      fSubEventArray->Compress();
 	  } else {
 	    // writting anyhow buspatch structure (empty ones)
 	    buffer[index++] = 4; // total length
@@ -409,8 +437,8 @@ Int_t AliMUONRawData::WriteTrackerDDL(Int_t iCh)
     //writting onto disk
     // write DDL 1 & 2
     header.fSize = (index + headerSize) * 4;// total length in bytes
-    fwrite((char*)(&header),headerSize*4,1,fFile[iDDL]);
-    fwrite(buffer,sizeof(int),index,fFile[iDDL]);
+    fwrite((char*)(&header),headerSize*4,1,fFile[iFile]);
+    fwrite(buffer,sizeof(int),index,fFile[iFile]);
    
     delete[] buffer;
   }
@@ -528,7 +556,7 @@ Int_t AliMUONRawData::WriteTriggerDDL()
 	if (isFired[iLocCard]) {
 	  locTrg = (AliMUONLocalTrigger*)localTrigger->At(iEntries);
 	  locCard = locTrg->LoCircuit();
-	  locDec = locTrg->GetLoDecision();
+	  locDec  = locTrg->GetLoDecision();
 	  trigY = 0;
 	  posY = locTrg->LoStripY();
 	  posX = locTrg->LoStripX();
@@ -541,7 +569,7 @@ Int_t AliMUONRawData::WriteTriggerDDL()
 	  trigY = 1;
 	  posY = 15;
 	  posX = 0;
-	  devX = 0x8000;
+	  devX = 0x8;
 	}
 
 	//packing word
@@ -551,7 +579,7 @@ Int_t AliMUONRawData::WriteTriggerDDL()
 	AliBitPacking::PackWord((UInt_t)trigY,word,14,14);
 	AliBitPacking::PackWord((UInt_t)posY,word,10,13);
 	AliBitPacking::PackWord((UInt_t)devX,word,5,9);
-	AliBitPacking::PackWord((UInt_t)posX,word,0,4);
+ 	AliBitPacking::PackWord((UInt_t)posX,word,0,4);
 
 	if (locCard == iLocCard) {
 	  // add local cards structure
@@ -730,28 +758,41 @@ Int_t AliMUONRawData::ReadTrackerDDL(AliRawReader* rawReader)
   Int_t dspHeaderSize      = fDDLTracker->GetDspHeaderLength();
   Int_t buspatchHeaderSize = subEventTracker->GetHeaderLength();
 
-//   Each DDL is made with 2 Blocks each of which consists of 5 DSP and each of DSP has at most 5 buspatches.
-//   This information is used to calculate the size of headers (DDL,Block and DSP) which has no interesting data. 
-
-  const Int_t kBlankDDLSize   = ddlHeaderSize + 2*blockHeaderSize + 2*5*dspHeaderSize + 2*5*5*buspatchHeaderSize;
-  const Int_t kBlankBlockSize = blockHeaderSize + 5*dspHeaderSize + 5*5*buspatchHeaderSize;
-  const Int_t kBlankDspSize   = dspHeaderSize + 5*buspatchHeaderSize;
-
   Int_t totalDDLSize, totalBlockSize, totalDspSize , totalBusPatchSize, dataSize; 
 
-  UShort_t  charge; 
-  Int_t padX, padY,iCath;
+
+  Int_t iBusPerDSP[5];//number of bus patches per DSP
+  Int_t iDspMax; //number max of DSP per block
+
+  // minimum data size (only header's)
+  Int_t blankDDLSize;
+  Int_t blankBlockSize;
+  Int_t blankDspSize;  
 
   for(Int_t iDDL = 0; iDDL < 20; iDDL++) { // DDL loop
+
     AliDebug(3, Form("Chamber %d\n", iDDL/2 +1 ));
+
+    // getting DSP info
+    GetDspInfo(iDDL/2, iDspMax, iBusPerDSP);
+
+    //   Each DDL is made with 2 Blocks each of which consists of 5 DSP's at most and each of DSP has at most 5 buspatches.
+    //   This information is used to calculate the size of headers (DDL,Block and DSP) which has no interesting data.
+    blankDDLSize   = ddlHeaderSize + 2*blockHeaderSize + 2*iDspMax*dspHeaderSize;
+    blankBlockSize = blockHeaderSize + iDspMax*dspHeaderSize;
+
+    for (Int_t i = 0; i < iDspMax; i++) {
+      blankDDLSize   += 2*iBusPerDSP[i]*buspatchHeaderSize;
+      blankBlockSize +=   iBusPerDSP[i]*buspatchHeaderSize;
+    }
 
     rawReader->Select(0X9, iDDL, iDDL);  //Select the DDL file to be read  
 
     rawReader->ReadHeader();
 
-    totalDDLSize = (rawReader->GetDataSize()+sizeof(AliRawDataHeader))/4; // 4 is multiplied to convert byte 2 word
+    totalDDLSize = (rawReader->GetDataSize() + sizeof(AliRawDataHeader))/4; // 4 is multiplied to convert byte 2 words
 
-    if(totalDDLSize>kBlankDDLSize){      // Compare the DDL header with an empty DDL header size to read the file
+    if(totalDDLSize > blankDDLSize) {      // Compare the DDL header with an empty DDL header size to read the file
 
       Int_t totalDataWord = rawReader->GetDataSize()/4 ;
       UInt_t *buffer = new UInt_t[totalDataWord];
@@ -760,64 +801,76 @@ Int_t AliMUONRawData::ReadTrackerDDL(AliRawReader* rawReader)
 	rawReader->ReadNextInt(temp);      // takes the whole result into buffer variable for future analysis
       }
 
-      Char_t parity;
-      Int_t buspatchId;
-      UChar_t channelId;
-      UShort_t  manuId;//,charge; 
-      Int_t idDE;//,padX, padY,iCath;
-      Int_t indexDsp, indexBusPatch, index = 0;
+      // elex info
+      Int_t    buspatchId;
+      UChar_t  channelId;
+      UShort_t manuId;
+      Char_t   parity;
+      UShort_t charge; 
 
+      // indexes
+      Int_t indexDsp;
+      Int_t indexBusPatch;
+      Int_t index = 0;
 
       for(Int_t iBlock = 0; iBlock < 2 ;iBlock++){  // loop over 2 blocks
 	totalBlockSize = buffer[index];
 	  
-	if(totalBlockSize > kBlankBlockSize){        // compare block header
+	if(totalBlockSize > blankBlockSize) {        // compare block header
 	  index += blockHeaderSize;
 
-	  for(Int_t iDsp = 0; iDsp < 5 ;iDsp++){   //DSP loop
+	  for(Int_t iDsp = 0; iDsp < iDspMax ;iDsp++){   //DSP loop
+
 	    totalDspSize = buffer[index];
 	    indexDsp = index;
 
-	    if(totalDspSize > kBlankDspSize){       // Compare DSP Header
+	    blankDspSize =  dspHeaderSize + iBusPerDSP[iDsp]*buspatchHeaderSize; // no data just header
+
+	    if(totalDspSize > blankDspSize) {       // Compare DSP Header
 	      index += dspHeaderSize;
 		
-	      for(Int_t iBusPatch = 0; iBusPatch < 5 ; iBusPatch++){  
-		totalBusPatchSize = buffer[index];
-		indexBusPatch = index;
-		buspatchId = buffer[index+2];
+	      for(Int_t iBusPatch = 0; iBusPatch < iBusPerDSP[iDsp]; iBusPatch++) {  
 
-		if(totalBusPatchSize > buspatchHeaderSize){    //Check Buspatch header
-		  index += buspatchHeaderSize;
+		totalBusPatchSize = buffer[index];
+		buspatchId        = buffer[index+2];
+		indexBusPatch     = index;
+
+		if(totalBusPatchSize > buspatchHeaderSize) {    //Check Buspatch header
+
+		  index   += buspatchHeaderSize;
 		  dataSize = totalBusPatchSize - buspatchHeaderSize;
 
-		  if(dataSize>0) {
+		  if(dataSize>0) { // check data present
 
-		    for(Int_t iData = 0; iData < dataSize ;iData++) {
+		    for(Int_t iData = 0; iData < dataSize; iData++) {
 
 		      subEventTracker->SetData(buffer[index++],iData);   //Set to extract data
-		      parity = subEventTracker->GetParity(iData);
-		      manuId = subEventTracker->GetManuId(iData);
+		      // digits info
+		      parity    = subEventTracker->GetParity(iData); // test later for parity
+		      manuId    = subEventTracker->GetManuId(iData);
 		      channelId = subEventTracker->GetChannelId(iData);
-		      charge = subEventTracker->GetCharge(iData);
-		      digit->SetSignal(charge); // set charge
+		      charge    = subEventTracker->GetCharge(iData);
+		      // set charge
+		      digit->SetSignal(charge);
 
 		      Int_t error = GetMapping(buspatchId,manuId,channelId,digit); // Get Back the hits at pads
 		      if (error) continue;
 
-		      padX = digit->PadX();
-		      padY = digit->PadY();
-		      iCath = digit->Cathode();  
-		      idDE = digit->DetElemId();
+		      // debugging 
+		      if (AliLog::GetGlobalDebugLevel() == 3) {
+			Int_t padX  = digit->PadX();
+			Int_t padY  = digit->PadY();
+			Int_t iCath = digit->Cathode();  
+			Int_t idDE  = digit->DetElemId();
 
-		      AliDebug(1,Form("output  IdDE %d busPatchid %d PadX %d PadY %d iCath %d \n", 
+			AliDebug(1,Form("output  IdDE %d busPatchid %d PadX %d PadY %d iCath %d \n", 
 				      idDE, buspatchId, padX, padY, iCath));
 		
+			AliDebug(3,Form("idDE %d Padx %d Pady %d, Cath %d, charge %d",idDE, padX, padY, iCath, charge));
+		      }
 
-		      AliDebug(3,Form("idDE %d Padx %d Pady %d, Cath %d, charge %d",idDE, padX, padY, iCath, charge));
 		      // fill digits
-		      //	fMUONData->AddDigit(iCh, *digit);
 		      fMUONData->AddDigit(iDDL/2, *digit);
-
 
 		    } // data loop
 		  } // dataSize test
@@ -826,7 +879,6 @@ Int_t AliMUONRawData::ReadTrackerDDL(AliRawReader* rawReader)
 		index = indexBusPatch + totalBusPatchSize;
 
 	      }  //buspatch loop
-		
 		
 	    }  // dsp test
 
@@ -1092,6 +1144,37 @@ TArrayI*  AliMUONRawData::GetBusfromDE(Int_t idDE)
   return (TArrayI*)fDetElemIdToBusPatch.GetValue(idDE);
 }
 //____________________________________________________________________
+Int_t AliMUONRawData::GetDDLfromBus(Int_t busPatchId)
+{
+  // getting DE id from bus patch
+  Long_t it = fBusPatchToDDL.GetValue(busPatchId);
+
+ if ( it ) 
+   return (Int_t)it;
+ else 
+   return -1;
+}
+
+//____________________________________________________________________
+void AliMUONRawData::GetDspInfo(Int_t iCh, Int_t& iDspMax, Int_t* iBusPerDSP)
+{
+  // calculates the number of DSP & buspatch per block
+
+  Int_t iBusPerBlk = fMaxBusPerCh[iCh]/4; //per half chamber; per block
+
+  iDspMax =  iBusPerBlk/5; //number max of DSP per block
+  if (iBusPerBlk % 5 != 0)
+    iDspMax += 1;
+  
+  for (Int_t i = 0; i < iDspMax; i++) {
+    if ((iBusPerBlk -= 5) > 0) 
+      iBusPerDSP[i] = 5;
+    else 
+      iBusPerDSP[i] = iBusPerBlk + 5;
+  }
+  
+}
+//____________________________________________________________________
 void AliMUONRawData::ReadBusPatchFile()
 {
 
@@ -1108,33 +1191,51 @@ void AliMUONRawData::ReadBusPatchFile()
        
    char line[80];
 
+   Int_t iChprev = 1;
+   Int_t maxBusPatch = 0;
+
    while ( in.getline(line,80) ) {
 
       if ( line[0] == '#' ) continue;
 
       TString tmp(AliMpHelper::Normalize(line));
 
-      Int_t blankPos = tmp.First(' ');
+      Int_t blankPos  = tmp.First(' ');
+      Int_t blankPos1 = tmp.Last(' ');
 
       TString sDE(tmp(0, blankPos));
 
       Int_t idDE = atoi(sDE.Data());
       
-      TString busPatch(tmp(blankPos + 1, tmp.Length()-blankPos));
+      if (idDE/100 != iChprev) {
+	fMaxBusPerCh[iChprev-1] = maxBusPatch-iChprev*100+1;
+	iChprev = idDE/100;
+      }
+
+      TString sDDL(tmp(blankPos1 + 1, tmp.Length()-blankPos1));
+
+      Int_t iDDL = atoi(sDDL.Data());
+
+      TString busPatch(tmp(blankPos + 1,blankPos1-blankPos-1));
+      AliDebug(3,Form("idDE %d buspatch %s iDDL %d\n", idDE, busPatch.Data(), iDDL));
 
       TArrayI busPatchList;
       // decoding range of buspatch
       AliMpHelper::DecodeName(busPatch,';',busPatchList);
       
       // filling buspatch -> idDE
-      for (Int_t i = 0; i < busPatchList.GetSize(); i++)
+      for (Int_t i = 0; i < busPatchList.GetSize(); i++) {
 	fBusPatchToDetElem.Add((Long_t)busPatchList[i],(Long_t)idDE);
-
-
+	fBusPatchToDDL.Add((Long_t)busPatchList[i],(Long_t)iDDL);
+	maxBusPatch = busPatchList[i];
+      }
+   
       // filling idDE -> buspatch list (vector)
       fDetElemIdToBusPatch.Add((Long_t)idDE, (Long_t)(new TArrayI(busPatchList))); 
 
     }
+   
+   fMaxBusPerCh[iChprev-1] = maxBusPatch-iChprev*100+1;
 
   in.close();
 
