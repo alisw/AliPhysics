@@ -23,17 +23,14 @@ reconstruction and macro analysis
 ==========================================================
  How to check that your aliroot is working well
 ==========================================================
-There is a script file AlirootRun_MUONtest.script which 
+There is a script file AlirootRun_MUONtest.sh which 
 allows for simulating, reconstructing and making the
 invariant analysis of the generated Upsilon (1S).
 The used configuration file is Config.C in MUON 
 directory.
-There you have to type :
-
-source $ALICE_ROOT/MUON/AlirootRun_MUONtest.script
-
-If you do not recover a few Upsilons in their mass region 
-in the file MUONmassPlot.root
+You have to type :
+source $ALICE_ROOT/MUON/AlirootRun_MUONtest.sh 
+The results of this test are saved in test_out/ directory
 
 ==========================================================
  How to run a MUON generation
