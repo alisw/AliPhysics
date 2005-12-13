@@ -234,7 +234,7 @@ void AliMUONClusterFinderAZ::AddPad(Int_t cath, Int_t digit)
   fPadIJ[0][nPads] = cath;
   fPadIJ[1][nPads] = 0;
   fUsed[cath][digit] = kTRUE;
-  if (fDebug) printf(" bbb %d %d %f %f %f %f %f %d\n", nPads, cath, xpad, ypad, zpad0, fXyq[3][nPads]*2, fXyq[4][nPads]*2, charge);
+  if (fDebug) printf(" bbb %d %d %f %f %f %f %f %4d %3d %3d\n", nPads, cath, xpad, ypad, zpad0, fXyq[3][nPads]*2, fXyq[4][nPads]*2, charge, mdig->PadX(), mdig->PadY());
   fnPads[cath]++;
 
   // Check neighbours
@@ -463,7 +463,7 @@ Bool_t AliMUONClusterFinderAZ::CheckPrecluster(Int_t *nShown)
 	  Double_t dy = (fXyq[1][i] - fXyq[1][imax]) / fXyq[4][imax] / 2;
 	  dist[i] = TMath::Sqrt (dx * dx + dy * dy);
 	  if (i == imin) {
-	    cmin = dist[i]; // distance to the pad with minimum charge 
+	    cmin = dist[i] + 0.001; // distance to the pad with minimum charge 
 	    dxMin = dx;
 	    dyMin = dy;
 	  }
@@ -2603,8 +2603,8 @@ void AliMUONClusterFinderAZ::AddVirtualPad()
 	  fXyq[3][npads] = -2; // flag
 	  fnPads[1]++;
 	  iAddX = npads;
-	  if (fDebug) cout << " ***** Add virtual pad in X ***** " << fXyq[2][npads] 
-			   << " " << fXyq[0][npads] << " " << fXyq[1][npads] << endl;
+	  if (fDebug) printf(" ***** Add virtual pad in X ***** %f %f %f %3d %3d \n", fXyq[2][npads],
+			     fXyq[0][npads], fXyq[1][npads], ix, iy);
 	  ix1 = ix0;
 	  continue;
 	} 
@@ -2622,14 +2622,14 @@ void AliMUONClusterFinderAZ::AddVirtualPad()
 	  if (maxpad[0][0] < 0 || mirror && maxpad[1][0] >= 0) {
 	    //if (!iPad) fXyq[2][npads] = TMath::Min (sigmax[1]/20, 5.);
 	    //else fXyq[2][npads] = TMath::Min (aamax[1]/20, 5.);
-	    if (!iPad) fXyq[2][npads] = TMath::Min (sigmax[1]/10, (double)fResponse->ZeroSuppression());
-	    else fXyq[2][npads] = TMath::Min (aamax[1]/10, (double)fResponse->ZeroSuppression());
+	    if (!iPad) fXyq[2][npads] = TMath::Min (sigmax[1]/15, (double)fResponse->ZeroSuppression());
+	    else fXyq[2][npads] = TMath::Min (aamax[1]/15, (double)fResponse->ZeroSuppression());
 	  }
 	  else {
 	    //if (!iPad) fXyq[2][npads] = TMath::Min (sigmax[0]/20, 5.);
 	    //else fXyq[2][npads] = TMath::Min (aamax[0]/20, 5.);
-	    if (!iPad) fXyq[2][npads] = TMath::Min (sigmax[0]/10, (double)fResponse->ZeroSuppression());
-	    else fXyq[2][npads] = TMath::Min (aamax[0]/10, (double)fResponse->ZeroSuppression());
+	    if (!iPad) fXyq[2][npads] = TMath::Min (sigmax[0]/15, (double)fResponse->ZeroSuppression());
+	    else fXyq[2][npads] = TMath::Min (aamax[0]/15, (double)fResponse->ZeroSuppression());
 	  }
 	  fXyq[2][npads] = TMath::Max (fXyq[2][npads], (float)1);
 	  //isec = fSegmentation[cath]->Sector(fInput->DetElemId(),ix, iy);
@@ -2637,8 +2637,8 @@ void AliMUONClusterFinderAZ::AddVirtualPad()
 	  fXyq[3][npads] = -2; // flag
 	  fnPads[1]++;
 	  iAddY = npads;
-	  if (fDebug) cout << " ***** Add virtual pad in Y ***** " << fXyq[2][npads] 
-			   << " " << fXyq[0][npads] << " " << fXyq[1][npads] << endl;
+	  if (fDebug) printf(" ***** Add virtual pad in Y ***** %f %f %f %3d %3d \n", fXyq[2][npads],
+			     fXyq[0][npads], fXyq[1][npads], ix, iy);
 	  iy1 = iy0;
 	}
       } // for (Int_t j=0; j<nn;
