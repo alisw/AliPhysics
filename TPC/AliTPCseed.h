@@ -40,8 +40,8 @@ class AliTPCseed : public AliTPCtrack {
      Int_t Compare(const TObject *o) const;
      void Reset(Bool_t all = kTRUE);
      Int_t GetProlongation(Double_t xr, Double_t &y, Double_t & z) const;
-     virtual Double_t GetPredictedChi2(const AliTPCclusterMI *cluster) const;
-     virtual Int_t Update(const AliTPCclusterMI* c, Double_t chi2, UInt_t i);
+     virtual Double_t GetPredictedChi2(const AliCluster *cluster2) const;
+     virtual Int_t Update(const AliCluster* c2, Double_t chi2, UInt_t i);
      AliTPCTrackerPoint * GetTrackPoint(Int_t i);
      void RebuildSeed(); // rebuild seed to be ready for storing
      Double_t GetDensityFirst(Int_t n);

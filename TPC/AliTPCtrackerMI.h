@@ -67,7 +67,7 @@ public:
    AliCluster * GetCluster (int) const {return 0;}
    AliTPCclusterMI *GetClusterMI(Int_t index) const;
    Int_t Clusters2Tracks();
-   virtual void  CookLabel(AliTPCseed *t,Float_t wrong) const; 
+   virtual void  CookLabel(AliKalmanTrack *tk,Float_t wrong) const; 
    virtual Int_t   CookLabel(AliTPCseed *t,Float_t wrong, Int_t first,Int_t last ) const; 
    
    void RotateToLocal(AliTPCseed *seed);

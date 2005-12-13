@@ -332,7 +332,7 @@ Int_t  AliTPCseed::GetProlongation(Double_t xk, Double_t &y, Double_t & z) const
 
 
 //_____________________________________________________________________________
-Double_t AliTPCseed::GetPredictedChi2(const AliTPCclusterMI *c) const 
+Double_t AliTPCseed::GetPredictedChi2(const AliCluster *c) const 
 {
   //-----------------------------------------------------------------
   // This function calculates a predicted chi2 increment.
@@ -392,7 +392,7 @@ Int_t AliTPCseed::Compare(const TObject *o) const {
 
 
 //_____________________________________________________________________________
-Int_t AliTPCseed::Update(const AliTPCclusterMI *c, Double_t chisq, UInt_t /*index*/) {
+Int_t AliTPCseed::Update(const AliCluster *c, Double_t chisq, UInt_t /*index*/) {
   //-----------------------------------------------------------------
   // This function associates a cluster with this track.
   //-----------------------------------------------------------------

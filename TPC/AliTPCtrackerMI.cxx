@@ -2476,6 +2476,7 @@ Int_t AliTPCtrackerMI::RefitInward(AliESD *event)
   fIteration=2;
   //PrepareForProlongation(fSeeds,1);
   PropagateForward2(fSeeds);
+
   Int_t ntracks=0;
   Int_t nseed = fSeeds->GetEntriesFast();
   for (Int_t i=0;i<nseed;i++){
@@ -2488,6 +2489,14 @@ Int_t AliTPCtrackerMI::RefitInward(AliESD *event)
     AliESDtrack *esd=event->GetTrack(i);
     seed->CookdEdx(0.02,0.6);
     CookLabel(seed,0.1); //For comparison only
+    //
+    if (0 && seed!=0&&esd!=0) {
+      TTreeSRedirector &cstream = *fDebugStreamer;
+      cstream<<"Crefit"<<
+	"Esd.="<<esd<<
+	"Track.="<<seed<<
+	"\n"; 
+    }
     if (seed->GetNumberOfClusters()>15){
       esd->UpdateTrackParams(seed,AliESDtrack::kTPCrefit); 
       esd->SetTPCPoints(seed->GetPoints());
@@ -4044,7 +4053,7 @@ void  AliTPCtrackerMI::FindKinks(TObjArray * array, AliESD *esd)
 	    track0->fCircular += 2;
 	  }
 	}		
-	if (sign){	  
+	if (sign&&0){	  
 	  //debug stream
 	  cstream<<"Curling"<<
 	    "lab0="<<track0->fLab<<
@@ -5976,10 +5985,11 @@ Float_t  AliTPCtrackerMI::GetSigmaZ(AliTPCseed * seed)
 
 
 //__________________________________________________________________________
-void AliTPCtrackerMI::CookLabel(AliTPCseed *t, Float_t wrong) const {
+void AliTPCtrackerMI::CookLabel(AliKalmanTrack *tk, Float_t wrong) const {
   //--------------------------------------------------------------------
   //This function "cooks" a track label. If label<0, this track is fake.
   //--------------------------------------------------------------------
+  AliTPCseed * t = (AliTPCseed*)tk;
   Int_t noc=t->GetNumberOfClusters();
   if (noc<10){
     //printf("\nnot founded prolongation\n\n\n");
