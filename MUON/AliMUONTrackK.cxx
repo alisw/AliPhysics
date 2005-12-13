@@ -950,6 +950,7 @@ Bool_t AliMUONTrackK::FindPoint(Int_t ichamb, Double_t zEnd, Int_t currIndx, Int
 	    trackParTmp = trackPar;
 	    pointWeightTmp = pointWeight;
 	    hitAdd = hit;
+	    if (fgDebug > 0) cout << " Added point: " << x << " " << y << " " << dChi2 << endl;
 	  } else {
 	    // branching: create a new track
 	    trackPtr = fgTrackReconstructor->GetRecTracksPtr();
@@ -1710,7 +1711,7 @@ Bool_t AliMUONTrackK::Recover(void)
   imax0 = imax;
 
   // Hits after the found one will be removed
-  if (GetStation0() == 3 && skipHit->GetChamberNumber() > 7) {
+  if (GetStation0() == 3 && skipHit->GetChamberNumber() >= 7) {
     SortHits(1, fTrackHitsPtr); // unsort hits
     imax = fTrackHitsPtr->IndexOf(skipHit);
   }
