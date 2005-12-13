@@ -79,6 +79,7 @@ extern "C" {
     static Bool_t lastParticleWasPrimary = true;
 
     nomore = 0;
+
     
 //  Get the stack 
     TVirtualMCStack* cppstack = fluka->GetStack();
@@ -89,7 +90,7 @@ extern "C" {
 //  Get the next particle from the stack
     particle  = cppstack->PopNextTrack(itrack);
     fluka->SetTrackIsNew(kTRUE);
-
+    if (itrack == 0) lfirst = true;
 //  Is this a secondary not handled by Fluka, i.e. a particle added by user action ?
     lastParticleWasPrimary = particleIsPrimary;
     
