@@ -129,36 +129,28 @@ void AliVZEROv6::CreateGeometry()
   AliDebug(2,"VZERO ConstructGeometry");
   
   TGeoManager *geoManager = gGeoManager;
-  TGeoMedium  *medAir = gGeoManager->GetMedium("VZERO_Air"); 
+//  TGeoMedium  *medAir = gGeoManager->GetMedium("VZERO_Air"); 
   TGeoMedium  *medAlu = gGeoManager->GetMedium("VZERO_Aluminum");
   TGeoMedium  *medCar = gGeoManager->GetMedium("VZERO_Carbon");
   TGeoMedium  *medSci = gGeoManager->GetMedium("VZERO_Scintillator");
     
   TGeoVolume *top = gGeoManager->GetVolume("ALIC");
   
-  top->SetLineColor(kMagenta);
-
   Float_t  heightRight, r4Right;
   
   Float_t  zdet   =    90.0 - 0.5 - fV0CBoxThickness/2.0;
   heightRight     =    fV0CHeight1 + fV0CHeight2 + fV0CHeight3 + fV0CHeight4;
   r4Right         =    fV0CRMin + heightRight + 3.0*0.2;  // 3 spacings of 2mm between rings
-    
-  Float_t   partube[3];
 
-  partube[0] =  fV0CRMin - 0.3;
-  partube[1] =  fV0CRBox + 0.3;
-  partube[2] =  fV0CBoxThickness/2.0;   
+// Creation of assembly V0RI - right part - :
 
-// Creation of mother volume V0RI - right part - :
-
-  TGeoTube   *sV0RI = new TGeoTube("V0RI",partube[0], partube[1], partube[2]);
-  TGeoVolume *v0RI  = new TGeoVolume("V0RI",sV0RI,medAir);
+  TGeoVolume *v0RI = new TGeoVolumeAssembly("V0RI");  
   TGeoTranslation *tr1 = new TGeoTranslation(0.,0.,-zdet);
   top->AddNode(v0RI,1,tr1);
-  v0RI->SetVisibility(kFALSE);
 
 // Creation of  carbon lids (3.0 mm thick) to keep V0C box shut :
+    
+  Float_t   partube[3];
   
   partube[0] =   fV0CRMin;
   partube[1] =   fV0CRBox;
@@ -192,31 +184,24 @@ void AliVZEROv6::CreateGeometry()
   v0RI->AddNode(v0ER,1,0);
   v0ER->SetLineColor(kYellow);
   
-// Mother volume v0R0 in which will be set the scintillator cells 
-  
-  Float_t   partubs[5];
+// Creation of assembly V0R0 of scintillator cells within one sector
  
-  partubs[0]      =  fV0CRMin;
-  partubs[1]      =   r4Right;
-  partubs[2]      =  fV0CBoxThickness/2.0;
-  partubs[3]      =  90.0-22.5;
-  partubs[4]      = 135.0-22.5;
-
-  TGeoTubeSeg  *sV0R0 = new TGeoTubeSeg("V0R0", partubs[0], partubs[1], partubs[2], 
-                                                partubs[3], partubs[4]);
-  TGeoVolume   *v0R0  = new TGeoVolume("V0R0",sV0R0,medAir);
-  					  
+  TGeoVolume *v0R0 = new TGeoVolumeAssembly("V0R0");  					  
   						 
 // Elementary cell of ring 1  - right part - :
 // (cells of ring 1 will be shifted by 2.0 cm backwards to output fibers)
   						  
   Float_t   r1Right =  fV0CRMin + fV0CHeight1;
-  Float_t   offset  = fV0CBoxThickness/2.0 - fV0CLidThickness - fV0CCellThickness/2.0; 
-    
+  Float_t   offset  = fV0CBoxThickness/2.0 - fV0CLidThickness - fV0CCellThickness/2.0;   
+
+  Float_t   partubs[5];   
+     
   partubs[0]     =  fV0CRMin;
   partubs[1]     =  r1Right;
   partubs[2]     =  fV0CCellThickness/2.0;
-
+  partubs[3]      =  90.0-22.5;
+  partubs[4]      = 135.0-22.5;
+  
   TGeoTubeSeg  *sV0R1 = new TGeoTubeSeg("V0R1", partubs[0], partubs[1], partubs[2], 
                                                 partubs[3], partubs[4]);
   TGeoVolume   *v0R1  =  new TGeoVolume("V0R1",sV0R1,medSci);				       
@@ -244,7 +229,7 @@ void AliVZEROv6::CreateGeometry()
   
   r2Right  =  r2Right + 0.2;
   Float_t   r3Right  =  r2Right + fV0CHeight3;     
-//  printf(" r2 = %f, r3 = %f \n\n", r2Right,r3Right  ); 
+//  printf(" r2 = %f, r3 = %f \n\n", r2Right,r3Right); 
   
   partubs[0]     =  r2Right;  //  must be equal to 11.7
   partubs[1]     =  r3Right;  //  must be equal to 19.1
@@ -311,31 +296,20 @@ void AliVZEROv6::CreateGeometry()
   ncellsR = (nsecR - 1) * 6;    // 6 cells per sector (2 cells in  ring 3 and 4)  
   AliInfo(Form("Number of cells on Right side  - V0C =   %d",  ncellsR)); 
   
-// Creation of mother volume v0LE - left part - :
+// Creation of assembly v0LE - left part - :
 // Entrance face at  +339.0 cm  (new coordinate system) ...
           
   Float_t   heightLeft  = fV0AHeight1 + fV0AHeight2 + fV0AHeight3 + fV0AHeight4;   
   Float_t   r4Left      = fV0ARMin + heightLeft; 
-
-  partube[0] =  fV0ARMin;
-  partube[1] =  r4Left;
-  partube[2] =  fV0ACellThickness/2.0; 
-
-  TGeoTube   *sV0LE = new TGeoTube("V0LE",partube[0], partube[1], partube[2]);
-  TGeoVolume *v0LE  = new TGeoVolume("V0LE",sV0LE,medAir);
+ 
+  TGeoVolume *v0LE = new TGeoVolumeAssembly("V0LE"); 
+   
   TGeoTranslation *tr8 = new TGeoTranslation(0.,0.,339.0 + fV0ACellThickness/2.0);
   top->AddNode(v0LE,1,tr8);
-   
-  partubs[0]      =  fV0ARMin;
-  partubs[1]      =  r4Left;
-  partubs[2]      =  fV0ACellThickness/2.0;
-  partubs[3]      =  90.0-22.5;
-  partubs[4]      = 135.0-22.5;
-
-  TGeoTubeSeg  *sV0L0 = new TGeoTubeSeg("V0L0", partubs[0], partubs[1], partubs[2], 
-                                                partubs[3], partubs[4]);
-  TGeoVolume   *v0L0  = new TGeoVolume("V0L0",sV0L0,medAir);
-  v0L0->SetVisibility(kFALSE);					  
+  
+// Creation of assembly V0L0 of scintillator cells within one sector 
+  
+  TGeoVolume *v0L0 = new TGeoVolumeAssembly("V0L0");  					  
    
   Float_t   offsetLeft;
   offsetLeft    = - fV0ACellThickness/2.0; 
@@ -344,7 +318,10 @@ void AliVZEROv6::CreateGeometry()
       
   partubs[0]     =  fV0ARMin;
   partubs[1]     =  r1Left;
-
+  partubs[2]      =  fV0ACellThickness/2.0;
+  partubs[3]      =  90.0-22.5;
+  partubs[4]      = 135.0-22.5;
+  
   TGeoTubeSeg  *sV0L1 = new TGeoTubeSeg("V0L1", partubs[0], partubs[1], partubs[2], 
                                                 partubs[3], partubs[4]);
   TGeoVolume   *v0L1  =  new TGeoVolume("V0L1",sV0L1,medSci);				       
@@ -416,7 +393,7 @@ void AliVZEROv6::CreateMaterials()
 //   Int_t  *idtmed = fIdtmed->GetArray()-2999;
       
    Int_t     fieldType       = gAlice->Field()->Integ();     // Field type 
-   Double_t  maxField        = gAlice->Field()->Max();     // Field max.
+   Double_t  maxField        = gAlice->Field()->Max();       // Field max.
    Double_t  maxBending      = 0;     // Max Angle
    Double_t  maxStepSize     = 0.001; // Max step size 
    Double_t  maxEnergyLoss   = 1;     // Max Delta E
@@ -427,14 +404,14 @@ void AliVZEROv6::CreateMaterials()
    Float_t   tmaxfd, stemax, deemax, epsil, stmin;
    
    a = 0.0; z = 0.0; 
-   density   = 0.0;
-   radLength = 0.0; 
-   absLength = 999.0;
-   tmaxfd    = 10.;
-   stemax    = 0.1;
-   deemax    = 0.1;     
-   epsil     = 0.001;
-   stmin     = 0.001;
+   density    = 0.0;
+   radLength  = 0.0; 
+   absLength  = 999.0;
+   tmaxfd     = 10.;
+   stemax     = 0.1;
+   deemax     = 0.1;     
+   epsil      = 0.001;
+   stmin      = 0.001;
    
 // Parameters  for Air (=  0.01% C + 75% N + 23% O + 1% Ar )
 
@@ -656,7 +633,7 @@ void AliVZEROv6::StepManager()
 	 hits[18] = tlength;
 	 hits[19] = nPhotons;
 	 hits[20] = GetCellId (vol, hits); 
-	 	 
+	  	 
          AddHit(gAlice->GetMCApp()->GetCurrentTrackNumber(), vol, hits);
 	 	 
 	 tlength         = 0.0;
