@@ -90,7 +90,7 @@ extern "C" {
 //  Get the next particle from the stack
     particle  = cppstack->PopNextTrack(itrack);
     fluka->SetTrackIsNew(kTRUE);
-    if (itrack == 0) lfirst = true;
+    if (itrack == (nprim - 1)) lfirst = true;
 //  Is this a secondary not handled by Fluka, i.e. a particle added by user action ?
     lastParticleWasPrimary = particleIsPrimary;
     
