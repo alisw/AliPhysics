@@ -51,12 +51,36 @@ AliMUONClusterFinderAZ::AliMUONClusterFinderAZ(Bool_t draw)
   : AliMUONClusterFinderVS()
 {
 // Constructor
-  fSegmentation[1] = fSegmentation[0] = 0; 
-  if (!fgClusterFinder) fgClusterFinder = this;
-  if (!fgMinuit) fgMinuit = new TMinuit(8);
-  fPixArray = new TObjArray(20); 
-  fDebug = 0; //0;
+  fnPads[0]=fnPads[1]=0;
+  
+  for (Int_t i=0; i<7; i++)
+    for (Int_t j=0; j<fgkDim; j++)
+      fXyq[i][j]= 9999.;
+
+  for (Int_t i=0; i<2; i++)
+    for (Int_t j=0; j<fgkDim; j++) {
+      fPadIJ[i][j]=-1;
+      fUsed[i][j] = 0;
+    }
+
+  fSegmentation[1] = fSegmentation[0] = 0;
+  fResponse = 0x0;
+
+  fZpad = 100000;
+  fNpar = 0;
+  fQtot = 0;
   fReco = 1;
+
+  fCathBeg = 0;
+  fPadBeg[0] = fPadBeg[1] = 0;
+  if (!fgMinuit) fgMinuit = new TMinuit(8);
+
+  if (!fgClusterFinder) fgClusterFinder = this;
+  fDraw = 0;
+  fPixArray = new TObjArray(20); 
+  fnCoupled = 0;
+  fDebug = 0; //0;
+
   if (draw) {
     fDebug = 1;
     fReco = 0;
