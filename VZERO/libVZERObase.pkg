@@ -2,8 +2,7 @@
 # $Id$
 
 SRCS= \
-AliVZEROLoader.cxx \
-AliVZEROdigit.cxx
+AliVZEROLoader.cxx AliVZEROdigit.cxx AliVZEROCalibData.cxx
 
 HDRS:= $(SRCS:.cxx=.h)
 
