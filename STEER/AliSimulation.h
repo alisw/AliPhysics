@@ -57,14 +57,12 @@ public:
 				 Bool_t deleteIntermediateFiles = kFALSE)
                    {fWriteRawData = detectors; fRawDataFileName = fileName;
 		   fDeleteIntermediateFiles = deleteIntermediateFiles;};
-  static Bool_t  ApplyDisplacements(TGeoManager* geoManager,
-				    const char* fileName,
+  static Bool_t  ApplyDisplacements(const char* fileName,
 				    const char* ClArrayName);
-  static Bool_t  ApplyDisplacements(TGeoManager* geoManager,
-				    AliCDBParam* param,
+  static Bool_t  ApplyDisplacements(TClonesArray* AlObjArray);
+  static Bool_t  ApplyDisplacements(AliCDBParam* param,
 				    AliCDBId& Id);
-  static Bool_t  ApplyDisplacements(TGeoManager* geoManager,
-				    const char* uri, const char* path,
+  static Bool_t  ApplyDisplacements(const char* uri, const char* path,
 				    Int_t runnum, Int_t version,
 				    Int_t sversion);
 
