@@ -84,7 +84,7 @@ private:
   void  MatchTracks(Bool_t mLastStep); // Matching Algorithm 
   void  MatchTracksMI(Bool_t mLastStep); // Matching Algorithm 
   void  CollectESD(); // Select starting Set for Matching 
-  void  Init();
+  //void  Init();
   Float_t GetLinearDistances(AliTOFtrack * track, AliTOFcluster *cluster, Float_t distances[5]);
   AliTOFGeometry*  fGeom;                 // Pointer to TOF geometry
   AliTOFpidESD*    fTOFpid;               // Pointer to TOF PID
@@ -112,5 +112,3 @@ private:
 };
 
 #endif
-
-

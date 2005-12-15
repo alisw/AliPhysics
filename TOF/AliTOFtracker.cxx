@@ -42,7 +42,7 @@ ClassImp(AliTOFtracker)
 AliTOFtracker::AliTOFtracker(AliTOFGeometry * geom, Double_t parPID[2]) { 
   //AliTOFtracker main Ctor
 
-  fHoles=true;
+  //fHoles=true;
   fNseeds=0;
   fNseedsTOF=0;
   fngoodmatch=0;
@@ -60,7 +60,8 @@ AliTOFtracker::AliTOFtracker(AliTOFGeometry * geom, Double_t parPID[2]) {
   fSeeds=0x0;
   fTracks=0x0;
   fN=0;
-  Init(); // temporary solution to know about Holes/no Holes
+  //Init(); // temporary solution to know about Holes/no Holes
+  fHoles = fGeom->GetHoles();
 }
 //_____________________________________________________________________________
 AliTOFtracker::AliTOFtracker(const AliTOFtracker &t):AliTracker() { 
@@ -86,11 +87,11 @@ AliTOFtracker::AliTOFtracker(const AliTOFtracker &t):AliTracker() {
   fN=t.fN;
 }
 //_____________________________________________________________________________
+/*
 void AliTOFtracker::Init() { 
 
 // temporary solution to know about Holes/no Holes, will be implemented as 
 // an AliTOFGeometry getter
-
   AliModule* frame=gAlice->GetModule("FRAME"); 
 
   if(!frame) {
@@ -100,7 +101,9 @@ void AliTOFtracker::Init() {
     if(frame->IsVersion()==1) {fHoles=false;}    
     else {fHoles=true;}      
   }
+
 }
+*/
 //_____________________________________________________________________________
 Int_t AliTOFtracker::PropagateBack(AliESD* event) {
   //
@@ -196,7 +199,7 @@ void AliTOFtracker::CollectESD() {
     Double_t x = track->GetX(); //New
 
     if (((t->GetStatus()&AliESDtrack::kTRDout)!=0 ) && 
-	 ( x >= AliTOFGeometry::RinTOF()) ){
+	 ( x >= fGeom->RinTOF()) ){
       track->SetSeedIndex(i);
       t->UpdateTrackParams(track,AliESDtrack::kTOFout);    
       new(aTOFTrack[fNseedsTOF]) AliTOFtrack(*track);
@@ -244,7 +247,7 @@ void AliTOFtracker::MatchTracks( Bool_t mLastStep){
     if(t->GetTOFsignal()>0. ) continue;
     AliTOFtrack *trackTOFin =new AliTOFtrack(*track);
 
-    // Some init 
+    // Some init
 
     Int_t         index[10000];
     Float_t        dist[10000];
@@ -302,7 +305,7 @@ void AliTOFtracker::MatchTracks( Bool_t mLastStep){
     Int_t nStepsDone = 0;
     for( Int_t istep=0; istep<nSteps; istep++){ 
 
-      Float_t xs=AliTOFGeometry::RinTOF()+istep*0.1;
+      Float_t xs=fGeom->RinTOF()+istep*0.1;
       Double_t ymax=xs*TMath::Tan(0.5*AliTOFGeometry::GetAlpha());
 
       Bool_t skip=kFALSE;
@@ -362,7 +365,7 @@ void AliTOFtracker::MatchTracks( Bool_t mLastStep){
 	  dist[nfound]=fGeom->DistanceToPad(cind,ctrackPos);
 	  crecL[nfound]=trackPos[3][istep];
 	  index[nfound]=clind[5][i]; // store cluster id 	    
-	  cxpos[nfound]=AliTOFGeometry::RinTOF()+istep*0.1; //store prop.radius
+	  cxpos[nfound]=fGeom->RinTOF()+istep*0.1; //store prop.radius
 	  nfound++;
 	  if(isInside)break;
 	}//end if accept
@@ -419,9 +422,15 @@ void AliTOFtracker::MatchTracks( Bool_t mLastStep){
 	(c->GetLabel(2)==TMath::Abs(trackTOFin->GetLabel()))
 	) {
       fngoodmatch++;
+
+      //AliInfo(Form(" track label good %5i",trackTOFin->GetLabel()));
+
     }
     else{
       fnbadmatch++;
+
+      //AliInfo(Form(" track label  bad %5i",trackTOFin->GetLabel()));
+
     }
 
     delete trackTOFin;
@@ -429,8 +438,7 @@ void AliTOFtracker::MatchTracks( Bool_t mLastStep){
     //Double_t tof=50*c->GetTDC()+32; // in ps
     Double_t tof=AliTOFGeometry::TdcBinWidth()*c->GetTDC()+32; // in ps
     t->SetTOFsignal(tof);
-    //t->SetTOFcluster(c->GetIndex()); // pointing to the digits tree
-    t->SetTOFcluster(idclus); // pointing to the recPoints tree
+    t->SetTOFcluster(c->GetIndex());
     Double_t time[10]; t->GetIntegratedTimes(time);
     Double_t mom=t->GetP();
     for(Int_t j=0;j<=AliPID::kSPECIES;j++){
@@ -524,4 +532,3 @@ Int_t AliTOFtracker::FindClusterIndex(Double_t z) const {
   }
   return m;
 }
-

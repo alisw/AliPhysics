@@ -56,7 +56,7 @@ AliTOFHitMap::AliTOFHitMap()
 }
 
 ////////////////////////////////////////////////////////////////////////
-AliTOFHitMap::AliTOFHitMap(TClonesArray *dig)
+AliTOFHitMap::AliTOFHitMap(TClonesArray *dig, AliTOFGeometry *tofGeom)
 {
 //
 // ctor
@@ -65,9 +65,11 @@ AliTOFHitMap::AliTOFHitMap(TClonesArray *dig)
 // of course, these constants must not be hardwired
 // change later
 
+  fTOFGeometry = tofGeom;
+
   fNSector = AliTOFGeometry::NSectors();
   fNplate = AliTOFGeometry::NPlates();
-  fNstrip = AliTOFGeometry::NStripC();
+  fNstrip = fTOFGeometry->NMaxNstrip();
   fNpx  = AliTOFGeometry::NpadX();
   fNpz  = AliTOFGeometry::NpadZ();
   fMaxIndex=fNSector*fNplate*fNstrip*fNpx*fNpz;
@@ -83,7 +85,7 @@ AliTOFHitMap::AliTOFHitMap(const AliTOFHitMap & /*hitMap*/)
 //
 // Dummy copy constructor
 //
-    ;
+  ;
 }
 
  
@@ -93,7 +95,10 @@ AliTOFHitMap::~AliTOFHitMap()
 //
 // Destructor
 //
-    delete[] fHitMap;
+  delete[] fHitMap;
+
+  delete fTOFGeometry;
+
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -112,11 +117,11 @@ Int_t AliTOFHitMap::CheckedIndex(Int_t *vol) const
 // Return checked indices for vol
 //
   Int_t index=
-    (vol[0]/*-1*/)*fNplate*fNstrip*fNpx*fNpz+             // sector
-    (vol[1]/*-1*/)*fNstrip*fNpx*fNpz+                     // plate
-    (vol[2]/*-1*/)*fNpx*fNpz+                             // strip
-    (vol[3]/*-1*/)*fNpz+                                  // padx
-    (vol[4]/*-1*/);                                       // padz
+    vol[0]*fNplate*fNstrip*fNpx*fNpz+             // sector
+    vol[1]*fNstrip*fNpx*fNpz+                     // plate
+    vol[2]*fNpx*fNpz+                             // strip
+    vol[3]*fNpz+                                  // padx
+    vol[4];                                       // padz
 
     if (index >= fMaxIndex) {
       AliError("CheckedIndex - input outside bounds");
@@ -191,8 +196,3 @@ AliTOFHitMap & AliTOFHitMap::operator = (const AliTOFHitMap & /*rhs*/)
 // Dummy assignment operator
     return *this;
 }
-
-
-
-
-

@@ -57,6 +57,8 @@ class AliTOFRawStream: public TObject {
   Int_t            fADC;        // 'charge' measurement
   Int_t            fErrorFlag;  // error flag
   
+  AliTOFGeometry *fTOFGeometry; // pointer to the TOF geometry
+
   //Int_t            fCounter;    // counter for TOF raw data rows in DDL files // v0.01
 
   ClassDef(AliTOFRawStream, 1)  // class for reading TOF raw digits

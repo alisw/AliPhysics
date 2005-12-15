@@ -46,7 +46,7 @@ private:
   Int_t FindClusterIndex(Double_t z) const; // Returns cluster index 
   void  MatchTracks(Bool_t mLastStep); // Matching Algorithm 
   void  CollectESD(); // Select starting Set for Matching 
-  void  Init();
+  //void  Init();
 
   AliTOFGeometry*  fGeom;                 // Pointer to TOF geometry
   AliTOFpidESD*    fTOFpid;               // Pointer to TOF PID
@@ -74,5 +74,3 @@ private:
 };
 
 #endif
-
-

@@ -20,12 +20,13 @@
 #include "TObject.h"
 
 class TClonesArray;
+class AliTOFGeometry;
 
 class AliTOFHitMap : public TObject
 {
  public:
     AliTOFHitMap();
-    AliTOFHitMap(TClonesArray *sdig);
+    AliTOFHitMap(TClonesArray *sdig, AliTOFGeometry *tofGeom);
     AliTOFHitMap(const AliTOFHitMap & hitMap);
     
     virtual ~AliTOFHitMap();
@@ -56,6 +57,8 @@ class AliTOFHitMap : public TObject
     TClonesArray *fSDigits;               // Pointer to sdigits
     Int_t fMaxIndex;                      // maximum index in hit map
     Int_t *fHitMap;                       // ! [fMaxIndex]         
+
+    AliTOFGeometry *fTOFGeometry;
 
     ClassDef(AliTOFHitMap,0) // Implements HitMap as a 1-dim array
 };

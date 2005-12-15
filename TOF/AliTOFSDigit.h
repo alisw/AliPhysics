@@ -17,7 +17,7 @@
 #include "AliDigit.h"
 
 //class TArrayF;
-//class TArrayI;
+class AliTOFGeometry;
 
 // number 3 is a legacy from AliDigit object
 const Int_t kMAXDIGITS = 3;
@@ -25,10 +25,10 @@ const Int_t kMAXDIGITS = 3;
 class AliTOFSDigit : public TObject {
 
   //overloading of the streamer << operator
-//friend ostream& operator << ( ostream& , const AliTOFSDigit&) ;
+  //friend ostream& operator << ( ostream& , const AliTOFSDigit&) ;
 
  public:
- AliTOFSDigit();
+  AliTOFSDigit();
   AliTOFSDigit(Int_t tracknum, Int_t* vol, Float_t* digit);
 // new ctor for sdigits
   AliTOFSDigit(Int_t sector, Int_t plate, Int_t strip, Int_t padx, Int_t padz, Float_t tdc, Float_t adc);
@@ -36,7 +36,7 @@ class AliTOFSDigit : public TObject {
   AliTOFSDigit(const AliTOFSDigit & digit) ;
   virtual ~AliTOFSDigit();
   void            GetLocation(Int_t* Loc) const;
-  Int_t           GetTotPad() const;
+  Int_t           GetTotPad(AliTOFGeometry *tofGeom) const;
 
   void Update(Float_t tdcbin, Int_t tdc, Int_t adc, Int_t track);
   void Update(AliTOFSDigit* sdig);
@@ -68,8 +68,8 @@ protected:
 //  Float_t *fTdc;    //[fNDigits] tdc values for sdigit
 //  Float_t *fAdc;    //[fNDigits] adc values for sdigit
 //  Int_t **fTracks;  //[fNDigits] contributing tracks, pointers to
-                    //  arrays with track indices
- 
+		      //arrays with track indices
+
   ClassDef(AliTOFSDigit,1)  // SDigit for Time Of Flight
 };
 

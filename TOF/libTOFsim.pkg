@@ -1,7 +1,7 @@
 #-*- Mode: Makefile -*-
 # $Id$
 
-SRCS  = AliTOF.cxx  AliTOFv4T0.cxx  \
+SRCS  = AliTOF.cxx  AliTOFv5T0.cxx  AliTOFv4T0.cxx  \
 	AliTOFhit.cxx  AliTOFhitT0.cxx  \
 	AliTOFHitMap.cxx  \
 	AliTOFSDigit.cxx  AliTOFSDigitizer.cxx  \

@@ -31,7 +31,6 @@ class TFolder ;
 #include "AliTOFSDigitizer.h"
 #include "AliTOFGeometry.h"
 
-
 class AliTOF : public AliDetector {
 public:
   AliTOF(); 
@@ -48,7 +47,7 @@ public:
   virtual void    AddDigit(Int_t* tracks, Int_t* vol, Float_t* digits);
   virtual void    AddSDigit(Int_t tracknum, Int_t* vol, Float_t* digits);
   virtual void    CreateGeometry();
-  virtual void    CreateMaterials();
+  virtual void    CreateMaterials(){};
   virtual void    Init();
   //virtual void    MakeBranch(Option_t* option, const char *file=0);
   virtual void    MakeBranch(Option_t *opt=" ");
@@ -58,7 +57,9 @@ public:
   Int_t           DistancetoPrimitive(Int_t px, Int_t py);
   virtual void    StepManager()=0;
   virtual void    TOFpc(Float_t /*xtof*/, Float_t /*ytof*/, Float_t /*zlenC*/,
-                        Float_t /*zlenB*/, Float_t /*zlenA*/, Float_t /*ztof0*/){}
+                        Float_t /*zlenB*/, Float_t /*zlenA*/, Float_t /*ztof0*/){};
+  virtual void    TOFpc(Float_t /*xtof*/,  Float_t /*ytof*/, Float_t /*zlenA*/,
+			Float_t /*zlenB*/){};
   virtual void    DrawModule() const;
   virtual void    DrawDetectorModules()=0;
   virtual void    DrawDetectorStrips()=0;

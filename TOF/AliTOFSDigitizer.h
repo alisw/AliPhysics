@@ -15,6 +15,7 @@
 class AliRunLoader;
 class AliLoader;
 
+class AliTOFGeometry;
 class TF1;
 
 class AliTOFSDigitizer: public TTask {
@@ -118,7 +119,8 @@ private:
   TString fHeadersFile;     // input file
   AliRunLoader* fRunLoader; //! Run Loader
   AliLoader* fTOFLoader;    //! Loader
-  
+
+  AliTOFGeometry* fTOFGeometry;    //  
 
   Int_t fSelectedSector;    // sector number for sdigitization
   Int_t fSelectedPlate ;    // plate  number for sdigitization

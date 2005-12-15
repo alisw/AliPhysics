@@ -22,10 +22,16 @@
 /* $Id$ */
 
 #include <Riostream.h>
+
 #include <TObject.h>   
+
 #include "AliLog.h" 
-#include "AliTOFtrack.h" 
 #include "AliESDtrack.h" 
+
+#include "AliTOFGeometry.h"
+#include "AliTOFGeometryV4.h"
+#include "AliTOFGeometryV5.h"
+#include "AliTOFtrack.h" 
 
 ClassImp(AliTOFtrack)
 
@@ -51,6 +57,7 @@ AliTOFtrack::AliTOFtrack(const AliTOFtrack& t) : AliKalmanTrack(t) {
   fCty=t.fCty;  fCtz=t.fCtz;  fCte=t.fCte;  fCtt=t.fCtt;
   fCcy=t.fCcy;  fCcz=t.fCcz;  fCce=t.fCce;  fCct=t.fCct;  fCcc=t.fCcc;  
 
+  fTOFgeometry = new AliTOFGeometryV4();
 
 }                                
 
@@ -60,6 +67,8 @@ AliTOFtrack::AliTOFtrack(const AliESDtrack& t)
   //
   // Constructor from AliESDtrack
   //
+
+  fTOFgeometry = new AliTOFGeometryV4();
 
   SetSeedIndex(-1);
   SetLabel(t.GetLabel());
@@ -279,9 +288,9 @@ Int_t AliTOFtrack::PropagateToInnerTOF( Bool_t holes)
   // defined by x=xk through media of density=rho and radiationLength=x0
 
 
-  Double_t ymax=AliTOFGeometry::RinTOF()*TMath::Tan(0.5*AliTOFGeometry::GetAlpha());
+  Double_t ymax=fTOFgeometry->RinTOF()*TMath::Tan(0.5*AliTOFGeometry::GetAlpha());
   Bool_t skip = kFALSE;
-  Double_t y=GetYat(AliTOFGeometry::RinTOF(),skip);
+  Double_t y=GetYat(fTOFgeometry->RinTOF(),skip);
   if(skip){
     return 0;
   }
@@ -306,7 +315,7 @@ Int_t AliTOFtrack::PropagateToInnerTOF( Bool_t holes)
     
   }
   
-  if(!PropagateTo(AliTOFGeometry::RinTOF()))return 0;
+  if(!PropagateTo(fTOFgeometry->RinTOF()))return 0;
   
   return 1;
   

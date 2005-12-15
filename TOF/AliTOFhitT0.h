@@ -34,6 +34,7 @@ public:
   Float_t GetPy()     const {return fPy;}
   Float_t GetPz()     const {return fPz;}
   Float_t GetDx()     const {return fDx;}
+  Float_t GetDy()     const {return fDy;}
   Float_t GetDz()     const {return fDz;}
   Float_t GetIncA()   const {return fIncA;}
   Float_t GetEdep()   const {return fEdep;}

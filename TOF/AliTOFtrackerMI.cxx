@@ -37,7 +37,7 @@ ClassImp(AliTOFtrackerMI)
 AliTOFtrackerMI::AliTOFtrackerMI(AliTOFGeometry * geom, Double_t parPID[2]) { 
   //AliTOFtrackerMI main Ctor
 
-  fHoles=true;
+  //fHoles=true;
   fNseeds=0;
   fNseedsTOF=0;
   fngoodmatch=0;
@@ -56,7 +56,8 @@ AliTOFtrackerMI::AliTOFtrackerMI(AliTOFGeometry * geom, Double_t parPID[2]) {
   fTracks=0x0;
   fN=0;
   fDebugStreamer = new TTreeSRedirector("TOFdebug.root");   
-  Init(); // temporary solution to know about Holes/no Holes
+  //Init(); // temporary solution to know about Holes/no Holes
+  fHoles=geom->GetHoles();
 }
 //_____________________________________________________________________________
 AliTOFtrackerMI::AliTOFtrackerMI(const AliTOFtrackerMI &t):AliTracker() { 
@@ -95,6 +96,7 @@ AliTOFtrackerMI::~AliTOFtrackerMI(){
 }
 
 //_____________________________________________________________________________
+/*
 void AliTOFtrackerMI::Init() { 
 
 // temporary solution to know about Holes/no Holes, will be implemented as 
@@ -110,6 +112,7 @@ void AliTOFtrackerMI::Init() {
     else {fHoles=true;}      
   }
 }
+*/
 //_____________________________________________________________________________
 Int_t AliTOFtrackerMI::PropagateBack(AliESD* event) {
   //
@@ -215,7 +218,7 @@ void AliTOFtrackerMI::CollectESD() {
     Double_t x = track->GetX(); //New
 
     if (((t->GetStatus()&AliESDtrack::kTRDout)!=0 ) && 
-	 ( x >= AliTOFGeometry::RinTOF()) ){
+	 ( x >= fGeom->RinTOF()) ){
       track->SetSeedIndex(i);
       t->UpdateTrackParams(track,AliESDtrack::kTOFout);    
       new(aTOFTrack[fNseedsTOF]) AliTOFtrack(*track);
@@ -321,9 +324,9 @@ void AliTOFtrackerMI::MatchTracksMI(Bool_t mLastStep){
     //
     //propagat track to the middle of TOF
     //
-    Float_t xs = 378.2;  // should be defined in the TOF gemotry
+    Float_t xs = 378.2;  // should be defined in the TOF geometry
     Double_t ymax=xs*TMath::Tan(0.5*AliTOFGeometry::GetAlpha());  
-    Bool_t skip;
+    Bool_t skip=kFALSE;
     Double_t ysect=trackTOFin->GetYat(xs,skip);
     if (skip){
       xs = 372.;

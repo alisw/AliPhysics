@@ -21,25 +21,24 @@
 //  This class contains the basic functions for the Time Of Flight           //
 //  detector. Functions specific to one particular geometry are              //
 //  contained in the derived classes                                         //
-//
-//  VERSIONE WITH 5 SYMMETRIC MODULES ALONG Z AXIS
-//  ==============================================
-//  
-//  VERSION WITH HOLES FOR PHOS AND TRD IN SPACEFRAME WITH HOLES
-//
-//  Volume sensibile : FPAD
-//
-//
-//
+//                                                                           //
+//  VERSIONE WITH 5 SYMMETRIC MODULES ALONG Z AXIS                           //
+//  ============================================================             //
+//                                                                           //
+//  VERSION WITH HOLES FOR PHOS AND TRD IN SPACEFRAME WITH HOLES             //
+//                                                                           //
+//  Volume sensibile : FPAD                                                  //
+//                                                                           //
+//                                                                           //
+//                                                                           //
+//                                                                           //
+///////////////////////////////////////////////////////////////////////////////
 // Begin_Html
 /*
 <img src="picts/AliTOFClass.gif">
 */
 //End_Html
-//             
-//
-//                                                                           //
-///////////////////////////////////////////////////////////////////////////////
+
 
 
 #include <Riostream.h>
@@ -56,6 +55,7 @@
 #include <TTask.h>
 #include <TTree.h>
 #include <TVirtualMC.h>
+#include <TDirectory.h>
 
 #include "AliLog.h"
 #include "AliConfig.h"
@@ -66,6 +66,8 @@
 #include "AliRun.h"
 #include "AliTOF.h"
 #include "AliTOFGeometry.h"
+#include "AliTOFGeometryV4.h"
+#include "AliTOFGeometryV5.h"
 #include "AliTOFSDigit.h"
 #include "AliTOFdigit.h"
 #include "AliTOFhit.h"
@@ -112,12 +114,12 @@ AliTOF::AliTOF(const char *name, const char *title, Option_t *option)
   fDTask  = 0x0;
   fReTask = 0x0;
   fReconParticles= 0x0;
-  fTOFGeometry = 0;
+  fTOFGeometry = new AliTOFGeometry();
 
   if (strstr(option,"tzero")){
     fHits   = new TClonesArray("AliTOFhitT0",  1000);
     fTZero = kTRUE;
-    AliWarning("tzero option requires AliTOFv4T0 as TOF version (check Your Config.C)");
+    AliWarning("tzero option requires AliTOFv4T0/AliTOFv5T0 as TOF version (check Your Config.C)");
   }else{
     fHits   = new TClonesArray("AliTOFhit",  1000);
     fTZero = kFALSE;
@@ -275,7 +277,7 @@ void AliTOF::AddDigit(Int_t *tracks, Int_t *vol, Float_t *digits)
   new (ldigits[fNdigits++]) AliTOFdigit(tracks, vol, digits);
 }
 
-//___________________________________________
+//_____________________________________________________________________________
 void AliTOF::AddSDigit(Int_t tracknum, Int_t *vol, Float_t *digits)
 {
      
@@ -347,21 +349,30 @@ void AliTOF::CreateGeometry()
   */
   //End_Html
   //
-  const Double_t kPi=TMath::Pi();
-  const Double_t kDegrad=kPi/180.;
-  //
-  Float_t xTof, yTof, wall;
 
-  // frame inbetween TOF modules
-  wall = 4.;//cm
+  Float_t xTof, yTof;
 
-  // Sizes of TOF module with its support etc..
-  xTof = 2.*(AliTOFGeometry::Rmin()*TMath::Tan(10*kDegrad)-wall/2-.5);
-  yTof = AliTOFGeometry::Rmax()-AliTOFGeometry::Rmin();
+  if (IsVersion()==7) {
 
-//  TOF module internal definitions 
-  //TOFpc(xTof, yTof, fZlenC, fZlenB, fZlenA, AliTOFGeometry::MaxhZtof());
-  TOFpc(xTof, yTof, AliTOFGeometry::ZlenC(), AliTOFGeometry::ZlenB(), AliTOFGeometry::ZlenA(), AliTOFGeometry::MaxhZtof());
+    xTof = fTOFGeometry->StripLength();               // cm,  x-dimension of FTOA volume
+    yTof = fTOFGeometry->Rmax()-fTOFGeometry->Rmin(); // cm,  y-dimension of FTOA volume
+    Float_t zTof = fTOFGeometry->ZlenA();             // cm,  z-dimension of FTOA volume
+    
+    //  TOF module internal definitions
+    TOFpc(xTof, yTof, zTof, fTOFGeometry->ZlenB());
+
+  } else {
+
+    Float_t wall = 4.;//cm // frame inbetween TOF modules
+
+    // Sizes of TOF module with its support etc..
+    xTof = 2.*(fTOFGeometry->Rmin()*TMath::Tan(10.*kDegrad)-wall/2.-0.5);
+    yTof = fTOFGeometry->Rmax()-fTOFGeometry->Rmin();
+
+    //  TOF module internal definitions 
+    TOFpc(xTof, yTof, fTOFGeometry->ZlenC(), fTOFGeometry->ZlenB(), fTOFGeometry->ZlenA(), fTOFGeometry->MaxhZtof());
+  }
+
 }
 
 //_____________________________________________________________________________
@@ -397,156 +408,6 @@ void AliTOF::DrawModule() const
   gMC->Gdhead(1111, "Time Of Flight");
   gMC->Gdman(18, 4, "MAN");
   gMC->Gdopt("hide","off");
-}
-
-//_____________________________________________________________________________
-void AliTOF::CreateMaterials()
-{
-  //
-  // Defines TOF materials for all versions
-  // Revision: F. Pierella 18-VI-2002
-  //
-
-  Int_t   isxfld = gAlice->Field()->Integ();
-  Float_t sxmgmx = gAlice->Field()->Max();
-  //
-  //--- Quartz (SiO2) to simulate float glass
-  //    density tuned to have correct float glass 
-  //    radiation length
-  Float_t   aq[2] = { 28.0855,15.9994 };
-  Float_t   zq[2] = { 14.,8. };
-  Float_t   wq[2] = { 1.,2. };
-  Float_t   dq = 2.55; // std value: 2.2
-  Int_t nq = -2;
-
-  // --- Freon C2F4H2 (TOF-TDR pagg.)
-  // Geant Manual CONS110-1, pag. 43 (Geant, Detector Description and Simulation Tool)
-  Float_t afre[3]  = {12.011,18.998,1.007};
-  Float_t zfre[3]  = { 6., 9., 1.}; 
-  Float_t wfre[3]  = { 2., 4., 2.};
-  Float_t densfre  = 0.00375;   
-// http://www.fi.infn.it/sezione/prevprot/gas/freon.html
-  Int_t nfre = -3; 
-/*
-  //-- Isobutane quencher C4H10 (5% in the sensitive mixture)
-  Float_t aiso[2]  = {12.011,1.007};
-  Float_t ziso[2]  = { 6.,  1.};
-  Float_t wiso[2]  = { 4., 10.};
-  Float_t densiso  = .......;  // (g/cm3) density
-  Int_t nfre = -2; // < 0 i.e. proportion by number of atoms of each kind
-  //-- SF6 (5% in the sensitive mixture)
-  Float_t asf[3]  = {32.066,18.998};
-  Float_t zsf[3]  = { 16., 9.};
-  Float_t wsf[3]  = {  1., 6.}; 
-  Float_t denssf  = .....;   // (g/cm3) density
-  Int_t nfre = -2; // < 0 i.e. proportion by number of atoms of each kind
-*/
-  // --- CO2 
-  Float_t ac[2]   = {12.,16.};
-  Float_t zc[2]   = { 6., 8.};
-  Float_t wc[2]   = { 1., 2.};
-  Float_t dc = .001977;
-  Int_t nc = -2;
-   // For mylar (C5H4O2) 
-  Float_t amy[3] = { 12., 1., 16. };
-  Float_t zmy[3] = {  6., 1.,  8. };
-  Float_t wmy[3] = {  5., 4.,  2. };
-  Float_t dmy    = 1.39;
-  Int_t nmy = -3;
- // For polyethilene (CH2) - honeycomb -
-  Float_t ape[2] = { 12., 1. };
-  Float_t zpe[2] = {  6., 1. };
-  Float_t wpe[2] = {  1., 2. };
-  Float_t dpe    = 0.935*0.479; //To have 1%X0 for 1cm as for honeycomb
-  Int_t npe = -2;
-  // --- G10 
-  Float_t ag10[4] = { 12.,1.,16.,28. };
-  Float_t zg10[4] = {  6.,1., 8.,14. };
-  Float_t wmatg10[4] = { .259,.288,.248,.205 };
-  Float_t densg10  = 1.7;
-  Int_t nlmatg10 = -4;
-
-  // plexiglass CH2=C(CH3)CO2CH3
-  Float_t aplex[3] = { 12.,1.,16.};
-  Float_t zplex[3] = {  6.,1., 8.};
-  Float_t wmatplex[3] = {5.,8.,2.};
-  Float_t densplex  =1.16;
-  Int_t nplex = -3;
-
-  // ---- ALUMINA (AL203) 
-  Float_t aal[2] = { 27.,16.};
-  Float_t zal[2] = { 13., 8.};
-  Float_t wmatal[2] = { 2.,3. };
-  Float_t densal  = 2.3;
-  Int_t nlmatal = -2;
-  // -- Water
-  Float_t awa[2] = {  1., 16. };
-  Float_t zwa[2] = {  1.,  8. };
-  Float_t wwa[2] = {  2.,  1. };
-  Float_t dwa    = 1.0;
-  Int_t nwa = -2;
-
-// stainless steel
-  Float_t asteel[4] = { 55.847,51.9961,58.6934,28.0855 };
-  Float_t zsteel[4] = { 26.,24.,28.,14. };
-  Float_t wsteel[4] = { .715,.18,.1,.005 };
-
-  //AliMaterial(0, "Vacuum$", 1e-16, 1e-16, 1e-16, 1e16, 1e16);
-
-  // AIR
-  Float_t aAir[4]={12.0107,14.0067,15.9994,39.948};
-  Float_t zAir[4]={6.,7.,8.,18.};
-  Float_t wAir[4]={0.000124,0.755267,0.231781,0.012827};
-  Float_t dAir = 1.20479E-3;
-
-  AliMixture( 1, "Air$", aAir, zAir, dAir, 4, wAir);
-
-  AliMaterial( 2, "Cu $",  63.54, 29.0, 8.96, 1.43, 14.8);
-  AliMaterial( 3, "C  $",  12.01,  6.0, 2.265,18.8, 74.4);
-  AliMixture ( 4, "Polyethilene$", ape, zpe, dpe, npe, wpe);
-  AliMixture ( 5, "G10$", ag10, zg10, densg10, nlmatg10, wmatg10);
-  AliMixture ( 6, "PLE$", aplex, zplex, densplex, nplex, wmatplex);
-  AliMixture ( 7, "CO2$", ac, zc, dc, nc, wc);
-  AliMixture ( 8, "ALUMINA$", aal, zal, densal, nlmatal, wmatal);
-  AliMaterial( 9, "Al $", 26.98, 13., 2.7, 8.9, 37.2);
-  AliMaterial(10, "C-TRD$", 12.01, 6., 2.265*18.8/69.282*15./100, 18.8, 74.4); // for 15%
-  AliMixture (11, "Mylar$",  amy, zmy, dmy, nmy, wmy);
-  AliMixture (12, "Freon$",  afre, zfre, densfre, nfre, wfre);
-  AliMixture (13, "Glass$", aq, zq, dq, nq, wq);
-  AliMixture (14, "Water$",  awa, zwa, dwa, nwa, wwa);
-  AliMixture (15, "STAINLESS STEEL$", asteel, zsteel, 7.88, 4, wsteel);
-
-  Float_t epsil, stmin, deemax, stemax;
- 
-  //   Previous data
-  //       EPSIL  =  0.1   ! Tracking precision, 
-  //       STEMAX = 0.1      ! Maximum displacement for multiple scattering
-  //       DEEMAX = 0.1    ! Maximum fractional energy loss, DLS 
-  //       STMIN  = 0.1 
-  //
-  //   New data  
-  epsil  = .001;  // Tracking precision,
-  stemax = -1.;   // Maximum displacement for multiple scattering
-  deemax = -.3;   // Maximum fractional energy loss, DLS
-  stmin  = -.8;
-
-  AliMedium( 1, "Air$"  ,  1, 0, isxfld, sxmgmx, 10., stemax, deemax, epsil, stmin);
-  AliMedium( 2, "Cu $"  ,  2, 0, isxfld, sxmgmx, 10., stemax, deemax, epsil, stmin);
-  AliMedium( 3, "C  $"  ,  3, 0, isxfld, sxmgmx, 10., stemax, deemax, epsil, stmin);
-  AliMedium( 4, "Pol$"  ,  4, 0, isxfld, sxmgmx, 10., stemax, deemax, epsil, stmin);
-  AliMedium( 5, "G10$"  ,  5, 0, isxfld, sxmgmx, 10., stemax, deemax, epsil, stmin);
-  AliMedium( 6, "PLE$"  ,  6, 0, isxfld, sxmgmx, 10., stemax, deemax, epsil, stmin);
-  AliMedium( 7, "CO2$"  ,  7, 0, isxfld, sxmgmx, 10., -.01, -.1, .01, -.01);
-  AliMedium( 8,"ALUMINA$", 8, 0, isxfld, sxmgmx, 10., stemax, deemax, epsil, stmin);
-  AliMedium( 9,"Al Frame$",9, 0, isxfld, sxmgmx, 10., stemax, deemax, epsil, stmin);
-  AliMedium(10, "DME-S$",  6, 1, isxfld, sxmgmx, 10., stemax, deemax, epsil, stmin);
-  AliMedium(11, "C-TRD$", 10, 0, isxfld, sxmgmx, 10., stemax, deemax, epsil, stmin);
-  AliMedium(12, "Myl$"  , 11, 0, isxfld, sxmgmx, 10., stemax, deemax, epsil, stmin);
-  AliMedium(13, "Fre$"  , 12, 0, isxfld, sxmgmx, 10., stemax, deemax, epsil, stmin);
-  AliMedium(14, "Fre-S$", 12, 1, isxfld, sxmgmx, 10., stemax, deemax, epsil, stmin);
-  AliMedium(15, "Glass$", 13, 0, isxfld, sxmgmx, 10., stemax, deemax, epsil, stmin);
-  AliMedium(16, "Water$", 14, 0, isxfld, sxmgmx, 10., stemax, deemax, epsil, stmin);
-  AliMedium(17, "STEEL$", 15, 0, isxfld, sxmgmx, 10., stemax, deemax, epsil, stmin);
 }
 
 //_____________________________________________________________________________
@@ -590,12 +451,14 @@ void AliTOF::Init()
   //
   // Set id of TOF sensitive volume
   if (IsVersion() !=0) fIdSens=gMC->VolId("FPAD");
-  //
+
+  /*
   // Save the geometry
   TDirectory* saveDir = gDirectory;
   gAlice->GetRunLoader()->CdGAFile();
   fTOFGeometry->Write("TOFGeometry");
   saveDir->cd();
+  */
 }
 
 //____________________________________________________________________________
@@ -656,7 +519,7 @@ void AliTOF::Makehits(Bool_t hits)
 // default argument used, see AliTOF.h
 // Enable/Disable the writing of the TOF-hits branch 
 // on TreeH
-// by default : enabled for TOFv1, v2, v3, v4
+// by default :  enabled for TOFv1, v2, v3, v4, v5
 //              disabled for TOFv0
 // 
    if (hits &&  (IsVersion()!=0))
@@ -671,7 +534,7 @@ void AliTOF::FinishEvent()
 // do nothing
 }
 
-//---------------------------------------------------------------------
+//____________________________________________________________________________
 void AliTOF::Hits2SDigits()
 {
 //
@@ -688,7 +551,7 @@ void AliTOF::Hits2SDigits()
 
 }
 
-//---------------------------------------------------------------------
+//____________________________________________________________________________
 void AliTOF::Hits2SDigits(Int_t evNumber1, Int_t evNumber2)
 {
 //
@@ -727,50 +590,48 @@ Bool_t AliTOF::CheckOverlap(Int_t* vol, Float_t* digit,Int_t Track)
 // This procedure has to be optimized in the next TOF release.
 //
 
-        Bool_t overlap = kFALSE;
-        Int_t  vol2[5];
+  Bool_t overlap = kFALSE;
+  Int_t  vol2[5];
 
-        for (Int_t ndig=0; ndig<fSDigits->GetEntries(); ndig++){
-	   AliTOFdigit* currentDigit = (AliTOFdigit*)(fSDigits->UncheckedAt(ndig));
-           currentDigit->GetLocation(vol2);
-           Bool_t idem= kTRUE;
-	   // check on digit volume
-           for (Int_t i=0;i<=4;i++){
-	       if (!idem) break;
-               if (vol[i]!=vol2[i]) idem=kFALSE;}
+  for (Int_t ndig=0; ndig<fSDigits->GetEntries(); ndig++){
+    AliTOFdigit* currentDigit = (AliTOFdigit*)(fSDigits->UncheckedAt(ndig));
+    currentDigit->GetLocation(vol2);
+    Bool_t idem= kTRUE;
+    // check on digit volume
+    for (Int_t i=0;i<=4;i++){
+      if (!idem) break;
+      if (vol[i]!=vol2[i]) idem=kFALSE;}
 
-           if (idem){  // same pad fired
- 	      Float_t tdc2 = digit[0];
-              Float_t tdc1 = currentDigit->GetTdc();
+    if (idem){  // same pad fired
+      Float_t tdc2 = digit[0];
+      Float_t tdc1 = currentDigit->GetTdc();
 
-	      // we separate two digits on the same pad if
-	      // they are separated in time by at least 25 ns
-	      // remember that tdc time is given in ps
+      // we separate two digits on the same pad if
+      // they are separated in time by at least 25 ns
+      // remember that tdc time is given in ps
 
-              if (TMath::Abs(tdc1-tdc2)<25000){
-		  // in case of overlap we take the earliest
-		  if (tdc1>tdc2){
-                   currentDigit->SetTdc(tdc2); 
-                   currentDigit->SetAdc(digit[1]);
-		  }
-		  else {
-		   currentDigit->SetTdc(tdc1);
-		   currentDigit->SetAdc(digit[1]);
-		  }
-                  currentDigit->AddTrack(Track); // add track number in the track array
-                  overlap = kTRUE;
-		  return overlap;
-              } else 
+      if (TMath::Abs(tdc1-tdc2)<25000){
+	// in case of overlap we take the earliest
+	if (tdc1>tdc2){
+	  currentDigit->SetTdc(tdc2); 
+	  currentDigit->SetAdc(digit[1]);
+	}
+	else {
+	  currentDigit->SetTdc(tdc1);
+	  currentDigit->SetAdc(digit[1]);
+	}
+	currentDigit->AddTrack(Track); // add track number in the track array
+	overlap = kTRUE;
+	return overlap;
+      } else 
 		overlap= kFALSE;
 
-           } // close if (idem) -> two digits on the same TOF pad
+    } // close if (idem) -> two digits on the same TOF pad
 
-        } // end loop on existing sdigits
+  } // end loop on existing sdigits
 
-        return overlap;
+  return overlap;
 }
-
-
 //____________________________________________________________________________
 void AliTOF::Digits2Raw()
 {
@@ -786,7 +647,14 @@ void AliTOF::Digits2Raw()
     return;
   }
   
-  AliTOFDDLRawData rawWriter;
+  //AliRunLoader *rl = AliRunLoader::Open("galice.root",AliConfig::GetDefaultEventFolderName(),"read");
+  fRunLoader->CdGAFile();
+  TFile *in=(TFile*)gFile;
+  in->cd();
+  AliTOFGeometry *geometry  = (AliTOFGeometry*)in->Get("TOFgeometry");
+
+  AliTOFDDLRawData rawWriter(geometry);
+  //AliTOFDDLRawData rawWriter;
   rawWriter.SetVerbose(0);
   
   AliInfo("Formatting raw data for TOF");
@@ -796,7 +664,8 @@ void AliTOF::Digits2Raw()
   fLoader->UnloadDigits();
   
 }
-////////////////////////////////////////////////////////////////////////
+
+//____________________________________________________________________________
 void AliTOF::RecreateSDigitsArray() {
 //
 // delete TClonesArray fSDigits and create it again
@@ -805,7 +674,7 @@ void AliTOF::RecreateSDigitsArray() {
   delete fSDigits;
   fSDigits       = new TClonesArray("AliTOFSDigit",  1000);
 }
-////////////////////////////////////////////////////////////////////////
+//____________________________________________________________________________
 void AliTOF::CreateSDigitsArray() {
 //
 // create TClonesArray fSDigits
@@ -813,4 +682,3 @@ void AliTOF::CreateSDigitsArray() {
 //
   fSDigits       = new TClonesArray("AliTOFSDigit",  1000);
 }
-

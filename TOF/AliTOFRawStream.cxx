@@ -41,6 +41,7 @@ Revision 0.01  2005/07/22 A. De Caro
 #include "AliRawReader.h"
 
 #include "AliTOFGeometry.h"
+#include "AliTOFGeometryV5.h"
 #include "AliTOFRawStream.h"
 
 ClassImp(AliTOFRawStream)
@@ -62,6 +63,8 @@ AliTOFRawStream::AliTOFRawStream(AliRawReader* rawReader)
   fADC = -1;
   fErrorFlag = -1;
   //fCounter = -1; // v0.01
+
+  fTOFGeometry = new AliTOFGeometryV5();
 
   fRawReader->Select(5);
 
@@ -85,6 +88,8 @@ AliTOFRawStream::AliTOFRawStream(const AliTOFRawStream& stream) :
   fErrorFlag = -1;
   //fCounter = -1; // v0.01
 
+  fTOFGeometry = new AliTOFGeometryV5();
+
 }
 
 //_____________________________________________________________________________
@@ -104,6 +109,8 @@ AliTOFRawStream& AliTOFRawStream::operator = (const AliTOFRawStream& stream)
   fErrorFlag = stream.fErrorFlag;
   //fCounter = stream.fCounter; // v0.01
 
+  fTOFGeometry = stream.fTOFGeometry;
+
   return *this;
 
 }
@@ -112,6 +119,8 @@ AliTOFRawStream& AliTOFRawStream::operator = (const AliTOFRawStream& stream)
 AliTOFRawStream::~AliTOFRawStream()
 {
 // destructor
+
+  delete fTOFGeometry;
 
 }
 
@@ -187,19 +196,19 @@ Int_t AliTOFRawStream::GetPlate() const
 
   Int_t iStripPerSector = (Int_t)(iPadPerSector/(Float_t)AliTOFGeometry::NpadX()/(Float_t)AliTOFGeometry::NpadZ());
 
-  if (iStripPerSector     < AliTOFGeometry::NStripC())
+  if (iStripPerSector     < fTOFGeometry->NStripC())
     iPlate = 0;
-  else if (iStripPerSector>=AliTOFGeometry::NStripC() &&
-	   iStripPerSector< AliTOFGeometry::NStripC()+AliTOFGeometry::NStripB())
+  else if (iStripPerSector>=fTOFGeometry->NStripC() &&
+	   iStripPerSector< fTOFGeometry->NStripC()+AliTOFGeometry::NStripB())
     iPlate = 1;
-  else if (iStripPerSector>=AliTOFGeometry::NStripC()+AliTOFGeometry::NStripB() &&
-	   iStripPerSector< AliTOFGeometry::NStripC()+AliTOFGeometry::NStripB()+AliTOFGeometry::NStripA())
+  else if (iStripPerSector>=fTOFGeometry->NStripC()+AliTOFGeometry::NStripB() &&
+	   iStripPerSector< fTOFGeometry->NStripC()+AliTOFGeometry::NStripB()+AliTOFGeometry::NStripA())
     iPlate = 2;
-  else if (iStripPerSector>=AliTOFGeometry::NStripC()+AliTOFGeometry::NStripB()+AliTOFGeometry::NStripA() &&
-	   iStripPerSector< AliTOFGeometry::NStripC()+AliTOFGeometry::NStripB()+AliTOFGeometry::NStripA()+AliTOFGeometry::NStripB())
+  else if (iStripPerSector>=fTOFGeometry->NStripC()+AliTOFGeometry::NStripB()+AliTOFGeometry::NStripA() &&
+	   iStripPerSector< fTOFGeometry->NStripC()+AliTOFGeometry::NStripB()+AliTOFGeometry::NStripA()+AliTOFGeometry::NStripB())
     iPlate = 3;
-  else if (iStripPerSector>=AliTOFGeometry::NStripC()+AliTOFGeometry::NStripB()+AliTOFGeometry::NStripA()+AliTOFGeometry::NStripB() &&
-	   iStripPerSector< AliTOFGeometry::NStripC()+AliTOFGeometry::NStripB()+AliTOFGeometry::NStripA()+AliTOFGeometry::NStripB()+AliTOFGeometry::NStripC())
+  else if (iStripPerSector>=fTOFGeometry->NStripC()+AliTOFGeometry::NStripB()+AliTOFGeometry::NStripA()+AliTOFGeometry::NStripB() &&
+	   iStripPerSector< fTOFGeometry->NStripC()+AliTOFGeometry::NStripB()+AliTOFGeometry::NStripA()+AliTOFGeometry::NStripB()+fTOFGeometry->NStripC())
     iPlate = 4;
   else
     iPlate = -1;
@@ -224,20 +233,20 @@ Int_t AliTOFRawStream::GetStrip() const
 
   Int_t iStripPerSector = (Int_t)(iPadPerSector/(Float_t)AliTOFGeometry::NpadX()/(Float_t)AliTOFGeometry::NpadZ());
 
-  if (iStripPerSector      < AliTOFGeometry::NStripC())
+  if (iStripPerSector      < fTOFGeometry->NStripC())
     iStrip = iStripPerSector;
-  else if (iStripPerSector >=AliTOFGeometry::NStripC() &&
-	   iStripPerSector < AliTOFGeometry::NStripC()+AliTOFGeometry::NStripB())
-    iStrip = iStripPerSector-AliTOFGeometry::NStripC();
-  else if (iStripPerSector >=AliTOFGeometry::NStripC()+AliTOFGeometry::NStripB() &&
-	   iStripPerSector < AliTOFGeometry::NStripC()+AliTOFGeometry::NStripB()+AliTOFGeometry::NStripA()) 
-    iStrip = iStripPerSector-AliTOFGeometry::NStripC()-AliTOFGeometry::NStripB();
-  else if (iStripPerSector >=AliTOFGeometry::NStripC()+AliTOFGeometry::NStripB()+AliTOFGeometry::NStripA() &&
-	   iStripPerSector < AliTOFGeometry::NStripC()+AliTOFGeometry::NStripB()+AliTOFGeometry::NStripA()+AliTOFGeometry::NStripB())
-    iStrip = iStripPerSector-AliTOFGeometry::NStripC()-AliTOFGeometry::NStripB()-AliTOFGeometry::NStripA();
-  else if (iStripPerSector >=AliTOFGeometry::NStripC()+AliTOFGeometry::NStripB()+AliTOFGeometry::NStripA()+AliTOFGeometry::NStripB() &&
-	   iStripPerSector < AliTOFGeometry::NStripC()+AliTOFGeometry::NStripB()+AliTOFGeometry::NStripA()+AliTOFGeometry::NStripB()+AliTOFGeometry::NStripC())
-    iStrip = iStripPerSector-AliTOFGeometry::NStripC()-AliTOFGeometry::NStripB()-AliTOFGeometry::NStripA()-AliTOFGeometry::NStripB();
+  else if (iStripPerSector >=fTOFGeometry->NStripC() &&
+	   iStripPerSector < fTOFGeometry->NStripC()+AliTOFGeometry::NStripB())
+    iStrip = iStripPerSector-fTOFGeometry->NStripC();
+  else if (iStripPerSector >=fTOFGeometry->NStripC()+AliTOFGeometry::NStripB() &&
+	   iStripPerSector < fTOFGeometry->NStripC()+AliTOFGeometry::NStripB()+AliTOFGeometry::NStripA()) 
+    iStrip = iStripPerSector-fTOFGeometry->NStripC()-AliTOFGeometry::NStripB();
+  else if (iStripPerSector >=fTOFGeometry->NStripC()+AliTOFGeometry::NStripB()+AliTOFGeometry::NStripA() &&
+	   iStripPerSector < fTOFGeometry->NStripC()+AliTOFGeometry::NStripB()+AliTOFGeometry::NStripA()+AliTOFGeometry::NStripB())
+    iStrip = iStripPerSector-fTOFGeometry->NStripC()-AliTOFGeometry::NStripB()-AliTOFGeometry::NStripA();
+  else if (iStripPerSector >=fTOFGeometry->NStripC()+AliTOFGeometry::NStripB()+AliTOFGeometry::NStripA()+AliTOFGeometry::NStripB() &&
+	   iStripPerSector < fTOFGeometry->NStripC()+AliTOFGeometry::NStripB()+AliTOFGeometry::NStripA()+AliTOFGeometry::NStripB()+fTOFGeometry->NStripC())
+    iStrip = iStripPerSector-fTOFGeometry->NStripC()-AliTOFGeometry::NStripB()-AliTOFGeometry::NStripA()-AliTOFGeometry::NStripB();
   else
     iStrip = -1;
 

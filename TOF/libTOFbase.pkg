@@ -2,7 +2,9 @@
 # $Id$
 
 SRCS  = AliTOFGeometry.cxx  \
-        AliTOFdigit.cxx     \
+	AliTOFGeometryV4.cxx  \
+	AliTOFGeometryV5.cxx  \
+        AliTOFdigit.cxx  \
         AliTOFRawStream.cxx
 
 HDRS:= $(SRCS:.cxx=.h)

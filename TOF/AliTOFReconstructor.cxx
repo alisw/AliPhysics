@@ -28,14 +28,15 @@
 #include "AliRun.h"
 #include "AliRunLoader.h"
 
+#include "AliTOFGeometry.h"
+#include "AliTOFGeometryV4.h"
+#include "AliTOFGeometryV5.h"
 #include "AliTOFtracker.h"
 #include "AliTOFtrackerMI.h"
 #include "AliTOFClusterFinder.h"
 #include "AliTOFReconstructor.h"
 
-
 ClassImp(AliTOFReconstructor)
-
 
 //_____________________________________________________________________________
   void AliTOFReconstructor::Reconstruct(AliRunLoader* runLoader) const
@@ -109,8 +110,22 @@ AliTOFGeometry* AliTOFReconstructor::GetTOFGeometry(AliRunLoader* runLoader) con
 {
 // get the TOF parameters
 
+  AliTOFGeometry *tofGeom;
+
   runLoader->CdGAFile();
-  AliTOFGeometry* tofGeom = (AliTOFGeometry*) gFile->Get("TOFGeometry"); 
+  TDirectory *savedir=gDirectory; 
+  TFile *in=(TFile*)gFile;  
+  if (!in->IsOpen()) {
+    AliWarning("Geometry file is not open default  TOF geometry will be used");
+    tofGeom = new AliTOFGeometry();
+  }
+  else {
+    in->cd();  
+    tofGeom = (AliTOFGeometry*) in->Get("TOFgeometry");
+  }
+
+  savedir->cd();  
+
   if (!tofGeom) {
     AliError("no TOF geometry available");
     return NULL;

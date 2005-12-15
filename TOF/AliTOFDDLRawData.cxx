@@ -44,6 +44,8 @@ Revision 0.01  2004/6/11 A.De Caro, S.B.Sellitto, R.Silvestri
 #include "AliBitPacking.h"
 
 #include "AliTOFGeometry.h"
+#include "AliTOFGeometryV4.h"
+#include "AliTOFGeometryV5.h"
 #include "AliTOFdigit.h"
 #include "AliTOFRawStream.h"
 #include "AliTOFDDLRawData.h"
@@ -56,6 +58,16 @@ AliTOFDDLRawData::AliTOFDDLRawData()
   //Default constructor
   fIndex=-1;
   fVerbose=0;
+  fTOFgeometry = 0;
+}
+
+//----------------------------------------------------------------------------------------
+AliTOFDDLRawData::AliTOFDDLRawData(AliTOFGeometry *tofGeom)
+{
+  //Constructor
+  fIndex=-1;
+  fVerbose=0;
+  fTOFgeometry = tofGeom;
 }
 
 //----------------------------------------------------------------------------------------
@@ -65,6 +77,7 @@ AliTOFDDLRawData::AliTOFDDLRawData(const AliTOFDDLRawData &source) :
   //Copy Constructor
   this->fIndex=source.fIndex;
   this->fVerbose=source.fVerbose;
+  this->fTOFgeometry=source.fTOFgeometry;
   return;
 }
 
@@ -74,6 +87,7 @@ AliTOFDDLRawData& AliTOFDDLRawData::operator=(const AliTOFDDLRawData &source){
   //Assigment operator
   this->fIndex=source.fIndex;
   this->fVerbose=source.fVerbose;
+  this->fTOFgeometry=source.fTOFgeometry;
   return *this;
 }
 
@@ -84,7 +98,7 @@ void AliTOFDDLRawData::GetDigits(TClonesArray *TOFdigits,Int_t nDDL,UInt_t *buf)
 
   //This method packs the TOF digits in a proper 32 bits structure
 
-  Int_t iDDL    = nDDL%AliTOFGeometry::NDDL();//(Int_t)((nDDL/4.-(Int_t)(nDDL/4.))*4);
+  Int_t iDDL    = nDDL%AliTOFGeometry::NDDL();
   Int_t iSector = (Int_t)((Float_t)nDDL/AliTOFGeometry::NDDL());
   Int_t iTRM = 0;
   Int_t iTDC = 0;
@@ -118,7 +132,7 @@ void AliTOFDDLRawData::GetDigits(TClonesArray *TOFdigits,Int_t nDDL,UInt_t *buf)
     strip  = digs->GetStrip();  // Strip Number (0-14/18/19)
     padx   = digs->GetPadx();   // Pad Number in x direction (0-47)
     padz   = digs->GetPadz();   // Pad Number in z direction (0-1)
-    eureka = digs->GetTotPad(); // Global Pad Number inside a Sector
+    eureka = digs->GetTotPad(fTOFgeometry); // Global Pad Number inside a Sector
     totCharge = (Int_t)digs->GetAdc();
     timeOfFlight = (Int_t)digs->GetTdc();
 
@@ -151,7 +165,6 @@ void AliTOFDDLRawData::GetDigits(TClonesArray *TOFdigits,Int_t nDDL,UInt_t *buf)
 
     if (fVerbose==2) ftxt << "DDL: "<<nDDL<<" TRM: "<<iTRM<<" TDC: "<<iTDC<<" Channel: "<<iCH<<" totCharge: "<<totCharge<<" tof: "<<timeOfFlight<<endl;
 
-    //AliInfo(Form("%2i %2i %2i %2i   %2i %2i %2i %2i %2i %7i %8i",nDDL,iTRM,iTDC,iCH,sector,plate,strip,padz,padx,totCharge,timeOfFlight));
     AliDebug(2,Form("%2i %2i %2i %2i   %2i %2i %2i %2i %2i %7i %8i",nDDL,iTRM,iTDC,iCH,sector,plate,strip,padz,padx,totCharge,timeOfFlight));
     
     baseWord=0;

@@ -1,38 +1,42 @@
 //_________________________________________________________________________
-// Implementation version v4 of TOF Manager class
-// FULL COVERAGE VERSION i.e. NO HOLES FOR PHOS AND HMPID (RICH) ARE DEFINED
-//   
-//*-- Authors: Pierella, Seganti, Vicinanza (Bologna and Salerno University)
+// Implementation version v5 of TOF Manager class
+// FULL COVERAGE VERSION + OPTION FOR PHOS HOLES
+//
+//*-- Authors: G. Cara Romeo, A. De Caro
 
-#ifndef ALITOFv4T0_H
-#define ALITOFv4T0_H
+#ifndef ALITOFv5T0_H
+#define ALITOFv5T0_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
 #include "AliTOF.h"
  
  
-class AliTOFv4T0 : public AliTOF {
+class AliTOFv5T0 : public AliTOF {
 
 public:
-  AliTOFv4T0();
-  AliTOFv4T0(const char *name, const char *title);
-  virtual ~AliTOFv4T0() {   if (fTOFGeometry) {delete fTOFGeometry; 
+  AliTOFv5T0();
+  AliTOFv5T0(const char *name, const char *title);
+  virtual ~AliTOFv5T0() {   if (fTOFGeometry) {delete fTOFGeometry; 
     fTOFGeometry  = 0;  }
 }
   virtual void   BuildGeometry();
   virtual void   CreateGeometry();
   virtual void   CreateMaterials();
   virtual void   Init();
-  virtual Int_t  IsVersion() const {return 6;}
-  virtual void   TOFpc(Float_t xtof,Float_t ytof,Float_t zlenC,Float_t zlenB,
-                       Float_t zlenA,Float_t ztof0);
-  virtual void   TOFpc(Float_t, Float_t, Float_t, Float_t) {};
+  virtual Int_t  IsVersion() const {return 7;}
+  virtual void   TOFpc(Float_t xtof,  Float_t ytof, Float_t zlenA,
+		       Float_t zlenB);
+  virtual void   TOFpc(Float_t, Float_t, Float_t, Float_t, Float_t, Float_t) {};
   virtual void   StepManager();
   virtual void   DrawModule() const;
   virtual void   DrawDetectorModules();
   virtual void   DrawDetectorStrips();
  
+ protected:
+
+  void MaterialMixer(Float_t* p,Float_t* a,Float_t* m,Float_t* d,Float_t* s,Int_t n);
+
 private:
   Int_t fIdFTOA; // FTOA volume identifier (outer plate A)
   Int_t fIdFTOB; // FTOB volume identifier (outer plate B)
@@ -42,7 +46,7 @@ private:
   Int_t fIdFLTC; // FLTC volume identifier (inner plate C)
   Bool_t fTOFHoles; // Selecting Geometry with and w/o holes
  
-  ClassDef(AliTOFv4T0,2)  //Time Of Flight version 4
+  ClassDef(AliTOFv5T0,0)  //Time Of Flight version 5
 };
  
-#endif /* ALITOFv4T0_H */
+#endif /* ALITOFv5T0_H */

@@ -62,6 +62,8 @@ Revision 0.01  2005/07/25 A. De Caro
 #include "AliTOFdigit.h"
 #include "AliTOFcluster.h"
 #include "AliTOFGeometry.h"
+#include "AliTOFGeometryV4.h"
+#include "AliTOFGeometryV5.h"
 #include "AliTOFRawStream.h"
 
 #include "AliTOFClusterFinder.h"
@@ -99,7 +101,10 @@ AliTOFClusterFinder::AliTOFClusterFinder(AliRunLoader* runLoader):
 // Constructor
 //
 
-  fTOFGeometry = new AliTOFGeometry();
+  runLoader->CdGAFile();
+  TFile *in=(TFile*)gFile;
+  in->cd();
+  fTOFGeometry = (AliTOFGeometry*)in->Get("TOFgeometry");
 
 }
 //______________________________________________________________________________

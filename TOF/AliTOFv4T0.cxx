@@ -39,8 +39,8 @@
 
 #include <Riostream.h>
 #include <stdlib.h>
-#include "TVirtualMC.h"
 
+#include "TVirtualMC.h"
 #include <TBRIK.h>
 #include <TGeometry.h>
 #include <TLorentzVector.h>
@@ -51,12 +51,15 @@
 #include "AliLog.h"
 #include "AliConst.h"
 #include "AliRun.h"
-#include "AliTOFv4T0.h"
-#include "AliTOFGeometry.h"
 #include "AliMC.h"
- 
+#include "AliMagF.h"
+
+#include "AliTOFGeometry.h"
+#include "AliTOFGeometryV4.h"
+#include "AliTOFv4T0.h"
+
 ClassImp(AliTOFv4T0)
- 
+
 //_____________________________________________________________________________
 AliTOFv4T0::AliTOFv4T0()
 {
@@ -83,7 +86,7 @@ AliTOFv4T0::AliTOFv4T0(const char *name, const char *title)
   } else{
     
     if (fTOFGeometry) delete fTOFGeometry;
-    fTOFGeometry = new AliTOFGeometry();
+    fTOFGeometry = new AliTOFGeometryV4();
 
     if(frame->IsVersion()==1) {
       AliInfo(Form("Frame version %d", frame->IsVersion())); 
@@ -95,6 +98,13 @@ AliTOFv4T0::AliTOFv4T0(const char *name, const char *title)
       fTOFHoles=true;}      
   }
   fTOFGeometry->SetHoles(fTOFHoles);
+
+  // Save the geometry
+  TDirectory* saveDir = gDirectory;
+  gAlice->GetRunLoader()->CdGAFile();
+  fTOFGeometry->Write("TOFgeometry");
+  saveDir->cd();
+
 } 
 
 //____________________________________________________________________________
@@ -110,16 +120,16 @@ void AliTOFv4T0::BuildGeometry()
   top = gAlice->GetGeometry()->GetNode("alice");
   
   // Position the different copies
-  const Float_t krTof  =(AliTOFGeometry::Rmax()+AliTOFGeometry::Rmin())/2;
-  const Float_t khTof  = AliTOFGeometry::Rmax()-AliTOFGeometry::Rmin();
-  const Int_t   kNTof  = AliTOFGeometry::NSectors();
+  const Float_t krTof  =(fTOFGeometry->Rmax()+fTOFGeometry->Rmin())/2.;
+  const Float_t khTof  = fTOFGeometry->Rmax()-fTOFGeometry->Rmin();
+  const Int_t   kNTof  = fTOFGeometry->NSectors();
   const Float_t kPi    = TMath::Pi();
   const Float_t kangle = 2*kPi/kNTof;
   Float_t ang;
   
   // define offset for nodes
-  Float_t zOffsetC = AliTOFGeometry::MaxhZtof() - AliTOFGeometry::ZlenC()*0.5;
-  Float_t zOffsetB = AliTOFGeometry::MaxhZtof() - AliTOFGeometry::ZlenC() - AliTOFGeometry::ZlenB()*0.5;
+  Float_t zOffsetC = fTOFGeometry->MaxhZtof() - fTOFGeometry->ZlenC()*0.5;
+  Float_t zOffsetB = fTOFGeometry->MaxhZtof() - fTOFGeometry->ZlenC() - fTOFGeometry->ZlenB()*0.5;
   Float_t zOffsetA = 0.;
   // Define TOF basic volume
   
@@ -127,11 +137,11 @@ void AliTOFv4T0::BuildGeometry()
   char nodeName3[7], nodeName4[7], rotMatNum[7];
   
   new TBRIK("S_TOF_C","TOF box","void",
-            AliTOFGeometry::StripLength()*0.5,khTof*0.5,AliTOFGeometry::ZlenC()*0.5);
+            fTOFGeometry->StripLength()*0.5, khTof*0.5, fTOFGeometry->ZlenC()*0.5);
   new TBRIK("S_TOF_B","TOF box","void",
-            AliTOFGeometry::StripLength()*0.5,khTof*0.5,AliTOFGeometry::ZlenB()*0.5);
+            fTOFGeometry->StripLength()*0.5, khTof*0.5, fTOFGeometry->ZlenB()*0.5);
   new TBRIK("S_TOF_A","TOF box","void",
-            AliTOFGeometry::StripLength()*0.5,khTof*0.5,AliTOFGeometry::ZlenA()*0.5);
+            fTOFGeometry->StripLength()*0.5, khTof*0.5, fTOFGeometry->ZlenA()*0.5);
   
   for (Int_t nodeNum=1;nodeNum<19;nodeNum++){
     
@@ -156,33 +166,32 @@ void AliTOFv4T0::BuildGeometry()
     ang = (4.5-nodeNum) * kangle;
 
     top->cd();
-    node = new TNode(nodeName0,nodeName0,"S_TOF_C",krTof*TMath::Cos(ang),krTof*TMath::Sin(ang),zOffsetC,rotMatNum);
+    node = new TNode(nodeName0,nodeName0,"S_TOF_C", krTof*TMath::Cos(ang), krTof*TMath::Sin(ang), zOffsetC,rotMatNum);
     node->SetLineColor(kColorTOF);
     fNodes->Add(node);
     
     top->cd();
-    node = new TNode(nodeName1,nodeName1,"S_TOF_C",krTof*TMath::Cos(ang),krTof*TMath::Sin(ang),-zOffsetC,rotMatNum);
+    node = new TNode(nodeName1,nodeName1,"S_TOF_C", krTof*TMath::Cos(ang), krTof*TMath::Sin(ang),-zOffsetC,rotMatNum);
     node->SetLineColor(kColorTOF);
     fNodes->Add(node);
     
     top->cd();
-    node = new TNode(nodeName2,nodeName2,"S_TOF_B",krTof*TMath::Cos(ang),krTof*TMath::Sin(ang),zOffsetB,rotMatNum);
+    node = new TNode(nodeName2,nodeName2,"S_TOF_B", krTof*TMath::Cos(ang), krTof*TMath::Sin(ang), zOffsetB,rotMatNum);
     node->SetLineColor(kColorTOF);
     fNodes->Add(node);
     
     top->cd();
-    node = new TNode(nodeName3,nodeName3,"S_TOF_B",krTof*TMath::Cos(ang),krTof*TMath::Sin(ang),-zOffsetB,rotMatNum);
+    node = new TNode(nodeName3,nodeName3,"S_TOF_B", krTof*TMath::Cos(ang), krTof*TMath::Sin(ang),-zOffsetB,rotMatNum);
     node->SetLineColor(kColorTOF);
     fNodes->Add(node);
     
     top->cd();
-    node = new TNode(nodeName4,nodeName4,"S_TOF_A",krTof*TMath::Cos(ang),krTof*TMath::Sin(ang),zOffsetA,rotMatNum);
+    node = new TNode(nodeName4,nodeName4,"S_TOF_A", krTof*TMath::Cos(ang), krTof*TMath::Sin(ang), zOffsetA,rotMatNum);
     node->SetLineColor(kColorTOF);
     fNodes->Add(node);
   } // end loop on nodeNum
+
 }
-
-
  
 //_____________________________________________________________________________
 void AliTOFv4T0::CreateGeometry()
@@ -209,16 +218,15 @@ void AliTOFv4T0::TOFpc(Float_t xtof, Float_t ytof, Float_t zlenC,
   //
   // Definition of the Time Of Fligh Resistive Plate Chambers
   // xFLT, yFLT, zFLT - sizes of TOF modules (large)
-  
+
   Float_t  ycoor;
   Float_t  par[3];
   Int_t    *idtmed = fIdtmed->GetArray()-499;
   Int_t    idrotm[100];
   Int_t    nrot = 0;
 
-  Float_t radius = AliTOFGeometry::Rmin()+2.;//cm
+  Float_t radius = fTOFGeometry->Rmin()+2.;//cm
 
-  
   par[0] =  xtof * 0.5;
   par[1] =  ytof * 0.5;
   par[2] = zlenC * 0.5;
@@ -260,13 +268,13 @@ void AliTOFv4T0::TOFpc(Float_t xtof, Float_t ytof, Float_t zlenC,
   Float_t db = 0.5; // cm
   Float_t xFLT, xFST, yFLT, zFLTA, zFLTB, zFLTC;
   
-  xFLT = AliTOFGeometry::StripLength();
+  xFLT = fTOFGeometry->StripLength();
   yFLT = ytof;
   zFLTA = zlenA;
   zFLTB = zlenB;
   zFLTC = zlenC;
   
-  xFST = xFLT - AliTOFGeometry::DeadBndX()*2; // cm
+  xFST = xFLT - dynamic_cast<AliTOFGeometryV4*>(fTOFGeometry)->DeadBndX()*2.; // cm
   
   // Sizes of MRPC pads
   
@@ -314,12 +322,12 @@ void AliTOFv4T0::TOFpc(Float_t xtof, Float_t ytof, Float_t zlenC,
   
   ///////////////// Detector itself //////////////////////
   
-  const Float_t  kdeadBound  =  AliTOFGeometry::DeadBndZ(); //cm non-sensitive between the pad edge 
+  const Float_t  kdeadBound  =  dynamic_cast<AliTOFGeometryV4*>(fTOFGeometry)->DeadBndZ(); //cm non-sensitive between the pad edge 
   //and the boundary of the strip
-  const Int_t    knx    = AliTOFGeometry::NpadX();  // number of pads along x
-  const Int_t    knz    = AliTOFGeometry::NpadZ();  // number of pads along z
+  const Int_t    knx    = fTOFGeometry->NpadX();  // number of pads along x
+  const Int_t    knz    = fTOFGeometry->NpadZ();  // number of pads along z
   
-  Float_t zSenStrip  = AliTOFGeometry::ZPad() * AliTOFGeometry::NpadZ(); // cm
+  Float_t zSenStrip  = fTOFGeometry->ZPad() * fTOFGeometry->NpadZ(); // cm
   Float_t stripWidth = zSenStrip + 2*kdeadBound;
   
   par[0] = xFLT*0.5;
@@ -460,7 +468,7 @@ void AliTOFv4T0::TOFpc(Float_t xtof, Float_t ytof, Float_t zlenC,
     ang /= kRaddeg;
     Float_t zpos = tan(ang)*radius;
     Float_t ypos= fTOFGeometry->GetHeights(2,istrip);
-    gMC->Gspos("FSTR",AliTOFGeometry::NStripA()-istrip,"FLTA",0.,ypos, zpos,idrotm[0],  "ONLY");
+    gMC->Gspos("FSTR",fTOFGeometry->NStripA()-istrip,"FLTA",0.,ypos, zpos,idrotm[0],  "ONLY");
     AliDebug(1, Form("y = %f,  z = %f, , z coord = %f, Rot ang = %f, St. %2i",ypos,zpos,tan(ang)*radius ,ang*kRaddeg,istrip));
   }
 
@@ -495,7 +503,7 @@ void AliTOFv4T0::TOFpc(Float_t xtof, Float_t ytof, Float_t zlenC,
   ////////// Layers after strips /////////////////
   // Al Layer thickness (2.3mm) factor 0.7
   
-  Float_t overSpace = AliTOFGeometry::OverSpc();//cm
+  Float_t overSpace = dynamic_cast<AliTOFGeometryV4*>(fTOFGeometry)->OverSpc();//cm
   
   par[0] = xFLT*0.5;
   par[1] = 0.115*0.7; // factor 0.7
@@ -891,7 +899,154 @@ void AliTOFv4T0::CreateMaterials()
   //
   // Define materials for the Time Of Flight
   //
-  AliTOF::CreateMaterials();
+  //AliTOF::CreateMaterials();
+
+  //
+  // Defines TOF materials for all versions
+  // Revision: F. Pierella 18-VI-2002
+  //
+
+  Int_t   isxfld = gAlice->Field()->Integ();
+  Float_t sxmgmx = gAlice->Field()->Max();
+  //
+  //--- Quartz (SiO2) to simulate float glass
+  //    density tuned to have correct float glass 
+  //    radiation length
+  Float_t   aq[2] = { 28.0855,15.9994 };
+  Float_t   zq[2] = { 14.,8. };
+  Float_t   wq[2] = { 1.,2. };
+  Float_t   dq = 2.55; // std value: 2.2
+  Int_t nq = -2;
+
+  // --- Freon C2F4H2 (TOF-TDR pagg.)
+  // Geant Manual CONS110-1, pag. 43 (Geant, Detector Description and Simulation Tool)
+  Float_t afre[3]  = {12.011,18.998,1.007};
+  Float_t zfre[3]  = { 6., 9., 1.}; 
+  Float_t wfre[3]  = { 2., 4., 2.};
+  Float_t densfre  = 0.00375;   
+// http://www.fi.infn.it/sezione/prevprot/gas/freon.html
+  Int_t nfre = -3; 
+/*
+  //-- Isobutane quencher C4H10 (5% in the sensitive mixture)
+  Float_t aiso[2]  = {12.011,1.007};
+  Float_t ziso[2]  = { 6.,  1.};
+  Float_t wiso[2]  = { 4., 10.};
+  Float_t densiso  = .......;  // (g/cm3) density
+  Int_t nfre = -2; // < 0 i.e. proportion by number of atoms of each kind
+  //-- SF6 (5% in the sensitive mixture)
+  Float_t asf[3]  = {32.066,18.998};
+  Float_t zsf[3]  = { 16., 9.};
+  Float_t wsf[3]  = {  1., 6.}; 
+  Float_t denssf  = .....;   // (g/cm3) density
+  Int_t nfre = -2; // < 0 i.e. proportion by number of atoms of each kind
+*/
+  // --- CO2 
+  Float_t ac[2]   = {12.,16.};
+  Float_t zc[2]   = { 6., 8.};
+  Float_t wc[2]   = { 1., 2.};
+  Float_t dc = .001977;
+  Int_t nc = -2;
+   // For mylar (C5H4O2) 
+  Float_t amy[3] = { 12., 1., 16. };
+  Float_t zmy[3] = {  6., 1.,  8. };
+  Float_t wmy[3] = {  5., 4.,  2. };
+  Float_t dmy    = 1.39;
+  Int_t nmy = -3;
+ // For polyethilene (CH2) - honeycomb -
+  Float_t ape[2] = { 12., 1. };
+  Float_t zpe[2] = {  6., 1. };
+  Float_t wpe[2] = {  1., 2. };
+  Float_t dpe    = 0.935*0.479; //To have 1%X0 for 1cm as for honeycomb
+  Int_t npe = -2;
+  // --- G10 
+  Float_t ag10[4] = { 12.,1.,16.,28. };
+  Float_t zg10[4] = {  6.,1., 8.,14. };
+  Float_t wmatg10[4] = { .259,.288,.248,.205 };
+  Float_t densg10  = 1.7;
+  Int_t nlmatg10 = -4;
+
+  // plexiglass CH2=C(CH3)CO2CH3
+  Float_t aplex[3] = { 12.,1.,16.};
+  Float_t zplex[3] = {  6.,1., 8.};
+  Float_t wmatplex[3] = {5.,8.,2.};
+  Float_t densplex  =1.16;
+  Int_t nplex = -3;
+
+  // ---- ALUMINA (AL203) 
+  Float_t aal[2] = { 27.,16.};
+  Float_t zal[2] = { 13., 8.};
+  Float_t wmatal[2] = { 2.,3. };
+  Float_t densal  = 2.3;
+  Int_t nlmatal = -2;
+  // -- Water
+  Float_t awa[2] = {  1., 16. };
+  Float_t zwa[2] = {  1.,  8. };
+  Float_t wwa[2] = {  2.,  1. };
+  Float_t dwa    = 1.0;
+  Int_t nwa = -2;
+
+// stainless steel
+  Float_t asteel[4] = { 55.847,51.9961,58.6934,28.0855 };
+  Float_t zsteel[4] = { 26.,24.,28.,14. };
+  Float_t wsteel[4] = { .715,.18,.1,.005 };
+
+  //AliMaterial(0, "Vacuum$", 1e-16, 1e-16, 1e-16, 1e16, 1e16);
+
+  // AIR
+  Float_t aAir[4]={12.0107,14.0067,15.9994,39.948};
+  Float_t zAir[4]={6.,7.,8.,18.};
+  Float_t wAir[4]={0.000124,0.755267,0.231781,0.012827};
+  Float_t dAir = 1.20479E-3;
+
+  AliMixture( 1, "Air$", aAir, zAir, dAir, 4, wAir);
+
+  AliMaterial( 2, "Cu $",  63.54, 29.0, 8.96, 1.43, 14.8);
+  AliMaterial( 3, "C  $",  12.01,  6.0, 2.265,18.8, 74.4);
+  AliMixture ( 4, "Polyethilene$", ape, zpe, dpe, npe, wpe);
+  AliMixture ( 5, "G10$", ag10, zg10, densg10, nlmatg10, wmatg10);
+  AliMixture ( 6, "PLE$", aplex, zplex, densplex, nplex, wmatplex);
+  AliMixture ( 7, "CO2$", ac, zc, dc, nc, wc);
+  AliMixture ( 8, "ALUMINA$", aal, zal, densal, nlmatal, wmatal);
+  AliMaterial( 9, "Al $", 26.98, 13., 2.7, 8.9, 37.2);
+  AliMaterial(10, "C-TRD$", 12.01, 6., 2.265*18.8/69.282*15./100, 18.8, 74.4); // for 15%
+  AliMixture (11, "Mylar$",  amy, zmy, dmy, nmy, wmy);
+  AliMixture (12, "Freon$",  afre, zfre, densfre, nfre, wfre);
+  AliMixture (13, "Glass$", aq, zq, dq, nq, wq);
+  AliMixture (14, "Water$",  awa, zwa, dwa, nwa, wwa);
+  AliMixture (15, "STAINLESS STEEL$", asteel, zsteel, 7.88, 4, wsteel);
+
+  Float_t epsil, stmin, deemax, stemax;
+ 
+  //   Previous data
+  //       EPSIL  =  0.1   ! Tracking precision, 
+  //       STEMAX = 0.1      ! Maximum displacement for multiple scattering
+  //       DEEMAX = 0.1    ! Maximum fractional energy loss, DLS 
+  //       STMIN  = 0.1 
+  //
+  //   New data  
+  epsil  = .001;  // Tracking precision,
+  stemax = -1.;   // Maximum displacement for multiple scattering
+  deemax = -.3;   // Maximum fractional energy loss, DLS
+  stmin  = -.8;
+
+  AliMedium( 1, "Air$"  ,  1, 0, isxfld, sxmgmx, 10., stemax, deemax, epsil, stmin);
+  AliMedium( 2, "Cu $"  ,  2, 0, isxfld, sxmgmx, 10., stemax, deemax, epsil, stmin);
+  AliMedium( 3, "C  $"  ,  3, 0, isxfld, sxmgmx, 10., stemax, deemax, epsil, stmin);
+  AliMedium( 4, "Pol$"  ,  4, 0, isxfld, sxmgmx, 10., stemax, deemax, epsil, stmin);
+  AliMedium( 5, "G10$"  ,  5, 0, isxfld, sxmgmx, 10., stemax, deemax, epsil, stmin);
+  AliMedium( 6, "PLE$"  ,  6, 0, isxfld, sxmgmx, 10., stemax, deemax, epsil, stmin);
+  AliMedium( 7, "CO2$"  ,  7, 0, isxfld, sxmgmx, 10., -.01, -.1, .01, -.01);
+  AliMedium( 8,"ALUMINA$", 8, 0, isxfld, sxmgmx, 10., stemax, deemax, epsil, stmin);
+  AliMedium( 9,"Al Frame$",9, 0, isxfld, sxmgmx, 10., stemax, deemax, epsil, stmin);
+  AliMedium(10, "DME-S$",  6, 1, isxfld, sxmgmx, 10., stemax, deemax, epsil, stmin);
+  AliMedium(11, "C-TRD$", 10, 0, isxfld, sxmgmx, 10., stemax, deemax, epsil, stmin);
+  AliMedium(12, "Myl$"  , 11, 0, isxfld, sxmgmx, 10., stemax, deemax, epsil, stmin);
+  AliMedium(13, "Fre$"  , 12, 0, isxfld, sxmgmx, 10., stemax, deemax, epsil, stmin);
+  AliMedium(14, "Fre-S$", 12, 1, isxfld, sxmgmx, 10., stemax, deemax, epsil, stmin);
+  AliMedium(15, "Glass$", 13, 0, isxfld, sxmgmx, 10., stemax, deemax, epsil, stmin);
+  AliMedium(16, "Water$", 14, 0, isxfld, sxmgmx, 10., stemax, deemax, epsil, stmin);
+  AliMedium(17, "STEEL$", 15, 0, isxfld, sxmgmx, 10., stemax, deemax, epsil, stmin);
+
 }
 
 //_____________________________________________________________________________
@@ -937,9 +1092,12 @@ void AliTOFv4T0::StepManager()
   Int_t   *idtmed = fIdtmed->GetArray()-499;
   Float_t incidenceAngle;
       
-  if(gMC->GetMedium()==idtmed[513] && 
-     gMC->IsTrackEntering() && gMC->TrackCharge()
-     && gMC->CurrentVolID(copy)==fIdSens) 
+  if(
+     gMC->IsTrackEntering()
+     && gMC->TrackCharge()
+     && gMC->GetMedium()==idtmed[513]
+     && gMC->CurrentVolID(copy)==fIdSens
+     )
   {
 
     AddTrackReference(gAlice->GetMCApp()->GetCurrentTrackNumber());
@@ -989,13 +1147,13 @@ void AliTOFv4T0::StepManager()
 
     plate = -1;  
 
-    if (TMath::Abs(z) <=  AliTOFGeometry::ZlenA()*0.5)  plate = 2;
-    if (z < (AliTOFGeometry::ZlenA()*0.5+AliTOFGeometry::ZlenB()) && 
-        z >  AliTOFGeometry::ZlenA()*0.5)               plate = 1;
-    if (z >-(AliTOFGeometry::ZlenA()*0.5+AliTOFGeometry::ZlenB()) &&
-        z < -AliTOFGeometry::ZlenA()*0.5)               plate = 3;
-    if (z > (AliTOFGeometry::ZlenA()*0.5+AliTOFGeometry::ZlenB()))     plate = 0;
-    if (z <-(AliTOFGeometry::ZlenA()*0.5+AliTOFGeometry::ZlenB()))     plate = 4;
+    if (TMath::Abs(z) <=  fTOFGeometry->ZlenA()*0.5)  plate = 2;
+    if (z < (fTOFGeometry->ZlenA()*0.5+fTOFGeometry->ZlenB()) && 
+        z >  fTOFGeometry->ZlenA()*0.5)               plate = 1;
+    if (z >-(fTOFGeometry->ZlenA()*0.5+fTOFGeometry->ZlenB()) &&
+        z < -fTOFGeometry->ZlenA()*0.5)               plate = 3;
+    if (z > (fTOFGeometry->ZlenA()*0.5+fTOFGeometry->ZlenB()))     plate = 0;
+    if (z <-(fTOFGeometry->ZlenA()*0.5+fTOFGeometry->ZlenB()))     plate = 4;
 
 
     if (plate==0) strip=fTOFGeometry->NStripC()-strip;

@@ -33,7 +33,10 @@
 #include <Riostream.h>
 
 #include "AliRun.h"
+
 #include "AliTOFGeometry.h"
+#include "AliTOFGeometryV4.h"
+#include "AliTOFGeometryV5.h"
 #include "AliTOFdigit.h"
 
 ClassImp(AliTOFdigit)
@@ -107,7 +110,7 @@ void AliTOFdigit::GetLocation(Int_t *Loc) const
 }
 
 //______________________________________________________________________________
-Int_t AliTOFdigit::GetTotPad() const
+Int_t AliTOFdigit::GetTotPad(AliTOFGeometry *tofGeom) const
 {
 //
 // Get the "total" index of the pad inside a Sector
@@ -121,16 +124,16 @@ Int_t AliTOFdigit::GetTotPad() const
     //before = 0;
     break;
   case 1:
-    before = AliTOFGeometry::NStripC();
+    before = tofGeom->NStripC();
     break;
   case 2:
-    before = AliTOFGeometry::NStripC() +   AliTOFGeometry::NStripB();
+    before = tofGeom->NStripC() +   AliTOFGeometry::NStripB();
     break;
   case 3:
-    before = AliTOFGeometry::NStripC() +   AliTOFGeometry::NStripB() + AliTOFGeometry::NStripA();
+    before = tofGeom->NStripC() +   AliTOFGeometry::NStripB() + AliTOFGeometry::NStripA();
     break;
   case 4:
-    before = AliTOFGeometry::NStripC() + 2*AliTOFGeometry::NStripB() + AliTOFGeometry::NStripA();
+    before = tofGeom->NStripC() + 2*AliTOFGeometry::NStripB() + AliTOFGeometry::NStripA();
     break;
   }
   
