@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.10  2005/12/15 08:55:32  decaro
+New TOF geometry description (V5) -G. Cara Romeo and A. De Caro
+
 Revision 1.9.1  2005/07/19 A. De Caro
         Created daughter-classes AliTOFGeometryV4 and AliTOFGeometryV5
 	=> moved global methods IsInsideThePad, DistanceToPad,
@@ -93,17 +96,17 @@ AliTOFGeometry::AliTOFGeometry()
   // AliTOFGeometry default constructor
   //
 
-  kNStripC     = 19;  // number of strips in C type module 
-  kMaxNstrip   = 19;  // Max. number of strips 
+  kNStripC     = 20;  // number of strips in C type module 
+  kMaxNstrip   = 20;  // Max. number of strips 
   kZlenA    = 106.0;  // length (cm) of the A module
   kZlenB    = 141.0;  // length (cm) of the B module
   kZlenC    = 177.5;  // length (cm) of the C module
   kMaxhZtof = 371.5;  // Max half z-size of TOF (cm)
-  kStripLength = 124.;// Strip Length (rho X phi direction) (cm)
+  kStripLength = 122.;// Strip Length (rho X phi direction) (cm)
 
-  fgkxTOF     = 371.-0.01;   // Inner radius of the TOF for Reconstruction (cm)
-  fgkRmin     = 370.-0.01;   // Inner radius of the TOF (cm)
-  fgkRmax     = 399.-0.01;   // Outer radius of the TOF (cm)
+  fgkxTOF     = 371.; // Inner radius of the TOF for Reconstruction (cm)
+  fgkRmin     = 370.; // Inner radius of the TOF (cm)
+  fgkRmax     = 399.; // Outer radius of the TOF (cm)
 
   Init();
 
