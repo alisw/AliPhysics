@@ -24,6 +24,7 @@
 #include <TChain.h>
 #include <TFile.h>
 #include <TEventList.h>
+#include <TFileInfo.h>
 
 //ROOT-AliEn
 #include <TGridResult.h>
