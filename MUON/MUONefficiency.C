@@ -15,36 +15,31 @@
 
 /* $Id$ */
 
-// Macro (upgraded version of MUONmassPlot_ESD.C) to make : 
+// Macro (upgraded version of MUONmassPlot_ESD.C, better handling of Jpsi) to make : 
 // 1) Ntuple (Ktuple) containing Upsilon kinematics variables (from kinematics.root files) 
 // 2) Ntuple (ESDtuple) containing Upsilon kinematics variables from reconstruction and 
-// combinations of 2 muons with opposite charges,
+// combinations of 2 muons with opposite charges (ESDtupleBck will be used later)
 // 3) Some QA histograms
 // Ntuple are stored in the file MUONefficiency.root and  ESD tree and QA histograms in AliESDs.root
 
+// Christophe Suire, IPN Orsay
+
+
+
 // Arguments:
 //   FirstEvent (default 0)
-//   LastEvent (default 0)
+//   LastEvent (default 1.e6)
 //   ResType (default 553)
-//      553 for Upsilon, anything else for J/Psi
+//      553 for Upsilon, 443 for J/Psi
 //   Chi2Cut (default 100)
 //      to keep only tracks with chi2 per d.o.f. < Chi2Cut
-//   PtCutMin (default 1)
-//      to keep only tracks with transverse momentum > PtCutMin
-//   PtCutMax (default 10000)
-//      to keep only tracks with transverse momentum < PtCutMax
-//   massMin (default 9.17 for Upsilon) 
-//      &  massMax (default 9.77 for Upsilon) 
-//         to calculate the reconstruction efficiency for resonances with invariant mass
-//         massMin < mass < massMax.
 
-// Add parameters and histograms for analysis 
 
-// Christophe Suire, IPN Orsay
 
 #if !defined(__CINT__) || defined(__MAKECINT__)
 // ROOT includes
 #include "TTree.h"
+#include "TNtuple.h"
 #include "TBranch.h"
 #include "TClonesArray.h"
 #include "TLorentzVector.h"
@@ -70,22 +65,52 @@
 #endif
 
 
-Bool_t MUONefficiency(char* filename = "galice.root", Int_t FirstEvent = 0, Int_t LastEvent = 11000000,
-		  char* esdFileName = "AliESDs.root", Int_t ResType = 553, 
-                  Float_t Chi2Cut = 100., Float_t PtCutMin = 0., Float_t PtCutMax = 10000.,
-                  Float_t massMin = 9.17,Float_t massMax = 9.77)
+Bool_t MUONefficiency( Int_t ResType = 553, Int_t FirstEvent = 0, Int_t LastEvent = 1000000,
+		       char* esdFileName = "AliESDs.root", char* filename = "galice.root")
 { // MUONefficiency starts
-  cout << "MUONmassPlot " << endl;
-  cout << "FirstEvent " << FirstEvent << endl;
-  cout << "LastEvent " << LastEvent << endl;
-  cout << "ResType " << ResType << endl;
-  cout << "Chi2Cut " << Chi2Cut << endl;
-  cout << "PtCutMin " << PtCutMin << endl;
-  cout << "PtCutMax " << PtCutMax << endl;
-  cout << "massMin " << massMin << endl;
-  cout << "massMax " << massMax << endl;
 
+  Double_t MUON_MASS = 0.105658369;
+  Double_t UPSILON_MASS = 9.4603 ;
+  Double_t JPSI_MASS = 3.097;
+
+  // Upper and lower bound for counting entries in the mass peak
+  // +/- 300 MeV/c^2 in this case.
+  Float_t countingRange = 0.300 ;  
+  
+  Float_t massResonance = 5.;
+  Float_t invMassMinInPeak = 0. ; 
+  Float_t invMassMaxInPeak = 0. ; 
+  
+  Float_t nBinsPerGev = 40 ; 
+  Float_t invMassMin = 0;   Float_t invMassMax = 20; 
+  Float_t ptMinResonance = 0 ; Float_t ptMaxResonance = 20 ; Int_t ptBinsResonance = 100; 
+
+  if (ResType==443) {
+    massResonance = JPSI_MASS ;
+    invMassMinInPeak =  JPSI_MASS - countingRange  ; invMassMaxInPeak = JPSI_MASS + countingRange ; 
+    //limits for histograms
+    invMassMin = 0 ; invMassMax = 6.;
+    ptMinResonance = 0 ; ptMaxResonance = 20 ; ptBinsResonance = 100; 
+  }
+  if (ResType==553) {
+    massResonance = UPSILON_MASS;
+    invMassMinInPeak = UPSILON_MASS - countingRange ; invMassMaxInPeak = UPSILON_MASS + countingRange; 
+    //limits for histograms 
+    invMassMin = 0 ; invMassMax = 12.;
+    ptMinResonance = 0 ; ptMaxResonance = 20 ; ptBinsResonance = 100; 
+  }
+  
+  // Single Tracks muon cuts
+  Float_t Chi2Cut = 100.;
+  Float_t PtCutMin = 0. ;
+  Float_t PtCutMax = 10000. ; 
+
+
+  // Limits for histograms 
+  Float_t ptMinMuon = 0. ; Float_t ptMaxMuon = 20.; Int_t ptBinsMuon = 100 ;
+  Float_t pMinMuon = 0.  ; Float_t pMaxMuon = 200.; Int_t pBinsMuon = 100 ;
  
+
   //Reset ROOT and connect tree file
   gROOT->Reset();
   
@@ -96,46 +121,52 @@ Bool_t MUONefficiency(char* filename = "galice.root", Int_t FirstEvent = 0, Int_
   //for kinematic, i.e. reference tracks
   TNtuple *Ktuple = new TNtuple("Ktuple","Kinematics NTuple","ev:npart:id:idmo:idgdmo:p:pt:y:theta:pseudorap:vx:vy:vz");
 
-  //for reconstruction
-  TH1F *hPtMuon = new TH1F("hPtMuon", "Muon Pt (GeV/c)", 100, 0., 20.);
-  TH1F *hPtMuonPlus = new TH1F("hPtMuonPlus", "Muon+ Pt (GeV/c)", 100, 0., 20.);
-  TH1F *hPtMuonMinus = new TH1F("hPtMuonMinus", "Muon- Pt (GeV/c)", 100, 0., 20.);
-  TH1F *hPMuon = new TH1F("hPMuon", "Muon P (GeV/c)", 100, 0., 200.);
-  TH1F *hChi2PerDof = new TH1F("hChi2PerDof", "Muon track chi2/d.o.f.", 100, 0., 20.);
-  TH1F *hInvMassAll = new TH1F("hInvMassAll", "Mu+Mu- invariant mass (GeV/c2)", 480, 0., 12.);
-  TH1F *hInvMassBg = new TH1F("hInvMassBg", "Mu+Mu- invariant mass BG(GeV/c2)", 480, 0., 12.);
-  TH2F *hInvMassAll_vs_Pt = new TH2F("hInvMassAll_vs_Pt","hInvMassAll_vs_Pt",480,0.,12.,80,0.,20.);
-  TH2F *hInvMassBgk_vs_Pt = new TH2F("hInvMassBgk_vs_Pt","hInvMassBgk_vs_Pt",480,0.,12.,80,0.,20.);
+  //for reconstruction  
+  TH1F *hPtMuon = new TH1F("hPtMuon", "Muon Pt (GeV/c)", ptBinsMuon, ptMinMuon, ptMaxMuon);
+  TH1F *hPtMuonPlus = new TH1F("hPtMuonPlus", "Muon+ Pt (GeV/c)", ptBinsMuon, ptMinMuon, ptMaxMuon);
+  TH1F *hPtMuonMinus = new TH1F("hPtMuonMinus", "Muon- Pt (GeV/c)", ptBinsMuon, ptMinMuon, ptMaxMuon);
+  TH1F *hPMuon = new TH1F("hPMuon", "Muon P (GeV/c)", pBinsMuon, pMinMuon, pMaxMuon);
+  
+  TH1F *hInvMassAll;
+  TH1F *hInvMassBg;
+  TH2F *hInvMassAll_vs_Pt;
+  TH2F *hInvMassBgk_vs_Pt;
   TH1F *hInvMassRes;
-  if (ResType == 553) {
-    hInvMassRes = new TH1F("hInvMassRes", "Mu+Mu- invariant mass (GeV/c2) around Upsilon", 60, 8., 11.);
-  } else {
-    hInvMassRes = new TH1F("hInvMassRes", "Mu+Mu- invariant mass (GeV/c2) around J/Psi", 80, 0., 5.);
-  }
 
+
+  hInvMassAll = new TH1F("hInvMassAll", "Mu+Mu- invariant mass (GeV/c2)", (Int_t) (nBinsPerGev*(invMassMax - invMassMin)), invMassMin, invMassMax);
+  hInvMassBg = new TH1F("hInvMassBg", "Mu+Mu- invariant mass BG(GeV/c2)", (Int_t) (nBinsPerGev*(invMassMax- invMassMin)), invMassMin, invMassMax);
+  hInvMassAll_vs_Pt = new TH2F("hInvMassAll_vs_Pt","hInvMassAll_vs_Pt",(Int_t) (nBinsPerGev*(invMassMax- invMassMin)), invMassMin, invMassMax,ptBinsResonance,ptMinResonance,ptMaxResonance);
+  hInvMassBgk_vs_Pt = new TH2F("hInvMassBgk_vs_Pt","hInvMassBgk_vs_Pt",(Int_t) (nBinsPerGev*(invMassMax- invMassMin)), invMassMin, invMassMax,ptBinsResonance,ptMinResonance,ptMaxResonance);
+  
+  hInvMassRes = new TH1F("hInvMassRes", "Mu+Mu- invariant mass (GeV/c2) around Resonance",(Int_t) (nBinsPerGev*3*countingRange*2),massResonance-3*countingRange,massResonance+3*countingRange);
+
+  
+  TH1F *hChi2PerDof = new TH1F("hChi2PerDof", "Muon track chi2/d.o.f.", 100, 0., 20.);
   TH1F *hNumberOfTrack = new TH1F("hNumberOfTrack","nb of track /evt ",20,-0.5,19.5);
   TH1F *hRapMuon = new TH1F("hRapMuon"," Muon Rapidity",50,-4.5,-2);
   TH1F *hRapResonance = new TH1F("hRapResonance"," Resonance Rapidity",50,-4.5,-2);
   TH1F *hPtResonance = new TH1F("hPtResonance", "Resonance Pt (GeV/c)", 100, 0., 20.);
   TH2F *hThetaPhiPlus = new TH2F("hThetaPhiPlus", "Theta vs Phi +", 760, -190., 190., 400, 160., 180.);
   TH2F *hThetaPhiMinus = new TH2F("hThetaPhiMinus", "Theta vs Phi -", 760, -190., 190., 400, 160., 180.);
-
+  
   TNtuple *ESDtuple = new TNtuple("ESDtuple","Reconstructed Mu+Mu- pairs and Upsilon","ev:tw:pt:y:theta:minv:pt1:y1:theta1:q1:trig1:pt2:y2:theta2:q2:trig2");
   TNtuple *ESDtupleBck = new TNtuple("ESDtupleBck","Reconstructed Mu+Mu- pairs for Background","ev:pt:y:theta:minv:pt1:y1:theta1:pt2:y2:theta2");
 
 
-  // settings
+  // Variables
   Int_t EventInMass = 0;
-  Float_t muonMass = 0.105658389;
-  Float_t UpsilonMass = 9.46037;
-  Float_t JPsiMass = 3.097;
+  Int_t EventInMassMatch = 0;
+  Int_t NbTrigger = 0;
+  Int_t ptTrig = 0;
 
   Double_t thetaX, thetaY, pYZ;
   Double_t fPxRec1, fPyRec1, fPzRec1, fE1;
   Double_t fPxRec2, fPyRec2, fPzRec2, fE2;
   Int_t fCharge1, fCharge2;
 
-  Int_t ntrackhits, nevents;
+  Int_t ntrackhits, nevents; 
+  Int_t nprocessedevents = 0 ;
   Double_t fitfmin;
 
   TLorentzVector fV1, fV2, fVtot;
@@ -178,7 +209,10 @@ Bool_t MUONefficiency(char* filename = "galice.root", Int_t FirstEvent = 0, Int_
   // to access the particle  Stack
   runLoader->LoadKinematics("READ");
 
+  Int_t numberOfGeneratedResonances = 0 ;
+
   TParticle *particle; 
+  
   Int_t track1Id = 0 ;
   Int_t track1PDGId = 0 ;
   Int_t track1MotherId = 0 ;
@@ -201,7 +235,8 @@ Bool_t MUONefficiency(char* filename = "galice.root", Int_t FirstEvent = 0, Int_
 
     // get current event
     runLoader->GetEvent(iEvent);
-   
+    nprocessedevents++;
+
     // get the stack and fill the kine tree
     AliStack *theStack = runLoader->Stack();
     if (PRINTLEVEL > 0) theStack->DumpPStack ();    
@@ -209,11 +244,10 @@ Bool_t MUONefficiency(char* filename = "galice.root", Int_t FirstEvent = 0, Int_
     Int_t nparticles = (Int_t)runLoader->TreeK()->GetEntries();
     Int_t nprimarypart = theStack->GetNprimary();
     Int_t ntracks = theStack->GetNtrack();
-    
+  
     if (PRINTLEVEL || (iEvent%100==0)) printf("\n  >>> Event %d \n",iEvent);
     if (PRINTLEVEL) cout << nprimarypart << " Particles generated (total is " << ntracks << ")"<< endl ;
     
-
     
     for(Int_t iparticle=0; iparticle<nparticles; iparticle++) { // Start loop over particles
       particle = theStack->Particle(iparticle);
@@ -225,11 +259,8 @@ Bool_t MUONefficiency(char* filename = "galice.root", Int_t FirstEvent = 0, Int_
       Float_t muPt = TMath::Sqrt(particle->Px()*particle->Px()+particle->Py()*particle->Py());
       Float_t muY  = 0.5*TMath::Log((particle->Energy()+particle->Pz()+1.e-13)/(particle->Energy()-particle->Pz()+1.e-13));
       if (muM >= 0) {
-	//cout << "in stack " << partM <<  endl ;
 	TParticle *theMum = theStack->Particle(muM);
 	muM  =  theMum->GetPdgCode();
-	//cout << "the Mum " << partM << endl ;
-	
 	muGM  = theMum->GetFirstMother() ;
 	if (muGM >= 0){
 	  TParticle *grandMa = theStack->Particle(muGM);
@@ -238,7 +269,10 @@ Bool_t MUONefficiency(char* filename = "galice.root", Int_t FirstEvent = 0, Int_
 	else muGM=0;
       }
       else muM=0;
-      
+    
+      if (muId==ResType) numberOfGeneratedResonances++;
+
+  
       Float_t muT  = particle->Theta()*180/TMath::Pi();
       Float_t muE  = particle->Eta();
       
@@ -304,7 +338,7 @@ Bool_t MUONefficiency(char* filename = "galice.root", Int_t FirstEvent = 0, Int_
       fPyRec1  = fPzRec1 * TMath::Tan(thetaY);
       fCharge1 = Int_t(TMath::Sign(1.,muonTrack->GetInverseBendingMomentum()));
       
-      fE1 = TMath::Sqrt(muonMass * muonMass + fPxRec1 * fPxRec1 + fPyRec1 * fPyRec1 + fPzRec1 * fPzRec1);
+      fE1 = TMath::Sqrt(MUON_MASS * MUON_MASS + fPxRec1 * fPxRec1 + fPyRec1 * fPyRec1 + fPzRec1 * fPzRec1);
       fV1.SetPxPyPzE(fPxRec1, fPyRec1, fPzRec1, fE1);
 
       ntrackhits = muonTrack->GetNHit();
@@ -372,7 +406,7 @@ Bool_t MUONefficiency(char* filename = "galice.root", Int_t FirstEvent = 0, Int_
 	  fPyRec2  = fPzRec2 * TMath::Tan(thetaY);
 	  fCharge2 = Int_t(TMath::Sign(1.,muonTrack->GetInverseBendingMomentum()));
 
-	  fE2 = TMath::Sqrt(muonMass * muonMass + fPxRec2 * fPxRec2 + fPyRec2 * fPyRec2 + fPzRec2 * fPzRec2);
+	  fE2 = TMath::Sqrt(MUON_MASS * MUON_MASS + fPxRec2 * fPxRec2 + fPyRec2 * fPyRec2 + fPzRec2 * fPzRec2);
 	  fV2.SetPxPyPzE(fPxRec2, fPyRec2, fPzRec2, fE2);
 
 	  ntrackhits = muonTrack->GetNHit();
@@ -415,10 +449,26 @@ Bool_t MUONefficiency(char* filename = "galice.root", Int_t FirstEvent = 0, Int_
 		hInvMassAll->Fill(invMass);
 		hInvMassRes->Fill(invMass);
 		hInvMassAll_vs_Pt->Fill(invMass,fVtot.Pt());
-		if (invMass > massMin && invMass < massMax) {
+
+		//trigger info 
+		if (ResType == 553)
+		  ptTrig = 0x400;// mask for Hpt unlike sign pair
+		else if (ResType == 443)
+		  ptTrig = 0x800;// mask for Apt unlike sign pair
+		else 
+		  ptTrig = 0x200;// mask for Lpt unlike sign pair
+		
+
+		if (esd->GetTrigger() &  ptTrig) NbTrigger++;
+		
+		if (invMass > invMassMinInPeak && invMass < invMassMaxInPeak) {
 		  EventInMass++;
 		  hRapResonance->Fill(fVtot.Rapidity());
 		  hPtResonance->Fill(fVtot.Pt());
+
+		  // match with trigger
+		  if (muonTrack->GetMatchTrigger() && (esd->GetTrigger() & ptTrig))  EventInMassMatch++;
+
 		}
 		
 	      } // if (fCharge1 * fCharge2) == -1)
@@ -441,7 +491,7 @@ Bool_t MUONefficiency(char* filename = "galice.root", Int_t FirstEvent = 0, Int_
   Float_t PtMinus, PtPlus;
   
   for (Int_t iEvent = 0; iEvent < hInvMassAll->Integral(); iEvent++) {  // Loop over events for bg event
-    // according to Christian a 3d histo phi-theta-pt would take better care 
+    // according to Christian a 3d phi-theta-pt random pick  would take better care 
     // of all correlations 
 
     hThetaPhiPlus->GetRandom2(phiPlus, thetaPlus);
@@ -453,14 +503,14 @@ Bool_t MUONefficiency(char* filename = "galice.root", Int_t FirstEvent = 0, Int_
     fPyRec1  = PtPlus * TMath::Sin(TMath::Pi()/180.*phiPlus);
     fPzRec1  = PtPlus / TMath::Tan(TMath::Pi()/180.*thetaPlus);
 
-    fE1 = TMath::Sqrt(muonMass * muonMass + fPxRec1 * fPxRec1 + fPyRec1 * fPyRec1 + fPzRec1 * fPzRec1);
+    fE1 = TMath::Sqrt(MUON_MASS * MUON_MASS + fPxRec1 * fPxRec1 + fPyRec1 * fPyRec1 + fPzRec1 * fPzRec1);
     fV1.SetPxPyPzE(fPxRec1, fPyRec1, fPzRec1, fE1);
 
     fPxRec2  = PtMinus * TMath::Cos(TMath::Pi()/180.*phiMinus);
     fPyRec2  = PtMinus * TMath::Sin(TMath::Pi()/180.*phiMinus);
     fPzRec2  = PtMinus / TMath::Tan(TMath::Pi()/180.*thetaMinus);
 
-    fE2 = TMath::Sqrt(muonMass * muonMass + fPxRec2 * fPxRec2 + fPyRec2 * fPyRec2 + fPzRec2 * fPzRec2);
+    fE2 = TMath::Sqrt(MUON_MASS * MUON_MASS + fPxRec2 * fPxRec2 + fPyRec2 * fPyRec2 + fPzRec2 * fPzRec2);
     fV2.SetPxPyPzE(fPxRec2, fPyRec2, fPzRec2, fE2);
 
     // invariant mass
@@ -478,24 +528,52 @@ Bool_t MUONefficiency(char* filename = "galice.root", Int_t FirstEvent = 0, Int_
 
   // File for histograms and histogram booking
   TString outfilename = "MUONefficiency.root";
-  TFile *histoFile = new TFile(outfilename.Data(), "RECREATE");  
+  TFile *ntupleFile = new TFile(outfilename.Data(), "RECREATE");  
   
   Ktuple->Write();
   ESDtuple->Write();
-  //histoFile->Write();
+  ESDtupleBck->Write();
+
+  ntupleFile->Close();
   
+  TFile *histoFile = new TFile("MUONhistos.root", "RECREATE");  
+  hPtMuon->Write();
+  hPtMuonPlus->Write();
+  hPtMuonMinus->Write();
+  hPMuon->Write();
+  hChi2PerDof->Write();
+  hInvMassAll->Write();
+  hInvMassBg->Write();
+  hInvMassAll_vs_Pt ->Write();
+  hInvMassBgk_vs_Pt->Write();
+  hInvMassRes->Write();
+  hNumberOfTrack->Write();
+  hRapMuon ->Write();
+  hRapResonance ->Write();
+  hPtResonance ->Write();
+  hThetaPhiPlus ->Write();
+  hThetaPhiMinus ->Write();
   histoFile->Close();
+
+  cout << "" << endl ;
+  cout << "*************************************************" << endl;
+ 
+  cout << "MUONefficiency : " << nprocessedevents  << " events processed" << endl;
+  if (ResType==443)
+    cout << "Number of generated J/Psi (443)  : " <<  numberOfGeneratedResonances  << endl ;
+  if (ResType==553)
+    cout << "Number of generated Upsilon (553)  :" <<  numberOfGeneratedResonances  << endl ;
+  cout << "Chi2Cut for muon tracks = " << Chi2Cut << endl;
+  cout << "PtCutMin for muon tracks = " << PtCutMin << endl;
+  cout << "PtCutMax for muon tracks = " << PtCutMax << endl;
+  cout << "Entries (unlike sign dimuons) in the mass range  ["<<invMassMinInPeak<<";"<<invMassMaxInPeak<<"] : " << EventInMass <<endl;
+  if (ptTrig==0x800) cout << "Unlike Pair - All Pt" ;   
+  if (ptTrig==0x400) cout << "Unlike Pair - High Pt" ;   
+  if (ptTrig==0x200) cout << "Unlike Pair - Low Pt" ; 
+  cout << " triggers : " << NbTrigger << endl;
   
-  cout << "MUONefficiency " << endl;
-  cout << "FirstEvent " << FirstEvent << endl;
-  cout << "LastEvent " << LastEvent << endl;
-  cout << "ResType " << ResType << endl;
-  cout << "Chi2Cut " << Chi2Cut << endl;
-  cout << "PtCutMin " << PtCutMin << endl;
-  cout << "PtCutMax " << PtCutMax << endl;
-  cout << "massMin " << massMin << endl;
-  cout << "massMax " << massMax << endl;
-  cout << "EventInMass " << EventInMass << endl;
+  cout << "Entries in the mass range with matching between reconstructed tracks and trigger tracks " << EventInMassMatch << endl;
+
 
   return kTRUE;
 }

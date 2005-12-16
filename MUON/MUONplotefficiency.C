@@ -16,36 +16,53 @@
 /* $Id$ */
 
 // Macro to compare/plot the Ntuple stored in MUONefficiency.root
-// comparison is done between the generated and reconstructed upsilons
-// allowing to determine several important quantities 
-// reconstruction efficiency (versus pt,y), invariant mass peak variations (vs pt,t)
+// comparison is done between the generated and reconstructed resonance
+// Default is Upsilon but Jpsi can be studied if the ResType argument is changed
+// This allows to determine several important quantities 
+// reconstruction efficiency (versus pt,y), invariant mass peak variations (vs pt,y)
 // reconstructed tracks and trigger tracks  matching efficiency
 
 // Christophe Suire, IPN Orsay
 
-void MUONplotefficiency(Int_t fittype = 1, Int_t select = 0){
-  
-  //gStyle->Reset();
+void MUONplotefficiency(Int_t ResType = 553, Int_t fittype = 1){
  
   Int_t SAVE=1;
   Int_t WRITE=1;
+  
+  Double_t MUON_MASS = 0.105658369;
+  Double_t UPSILON_MASS = 9.4603 ;
+  Double_t JPSI_MASS = 3.096916;
+  Double_t PI = 3.14159265358979312; 
+  Double_t RESONANCE_MASS; 
+
+  if (ResType==553)  
+     RESONANCE_MASS = UPSILON_MASS;
+  if (ResType==443)  
+     RESONANCE_MASS = JPSI_MASS ;
+    
+  // 553 is the pdg code for Upsilon 
+  // 443 is the pdg code for Jpsi 
 
   Int_t fitfunc = fittype;
   // 0 gaussian fit +/- 450 MeV/c2
   // 1 gaussian fit +/- 250 MeV/c2
+  // the following are not implemented in this version
   // 2 approximated landau fit reverted 
   // 3 landau fit reverted convoluated with a gaussian 
   // 4 reverted landau fitlanUpsilon
 
+  
   Float_t gaussianFitWidth = 0.450 ; // in GeV/c2
   if (fitfunc==1) gaussianFitWidth = 0.250 ; 
-
-  // fit range : very important for LandauGauss Fit
-  Float_t FitLow = 8.5 ;
-  Float_t FitHigh = 10.2 ;
   
-  // two ways to set the stat box 
-  // for all histos
+  // fit range : very important for LandauGauss Fit
+  Float_t FitLow = 0.0  ;  Float_t FitHigh = 100. ;
+  if (ResType==443) FitLow = 2.2 ; FitHigh = 3.9 ;
+  if (ResType==553) FitLow = 8.5 ; FitHigh = 10.2 ;
+
+  
+  //gStyle->Reset();
+  // two ways to set the stat box for all histos
   gStyle->SetOptStat(1110);
   
   // place the stat box
@@ -53,7 +70,6 @@ void MUONplotefficiency(Int_t fittype = 1, Int_t select = 0){
   gStyle->SetStatY(0.550);
   //gStyle->SetStatW(0.2);
   gStyle->SetStatH(0.2);
-
   
   // choose histos with stat
   // gStyle->SetOptStat(1111);
@@ -74,15 +90,12 @@ void MUONplotefficiency(Int_t fittype = 1, Int_t select = 0){
 
 
   TFile *effFile = new TFile("MUONefficiency.root","READ");
-
   TNtuple *Ktuple = (TNtuple*)effFile->Get("Ktuple");
+  //("Ktuple","Kinematics NTuple","ev:npart:id:idmo:idgdmo:p:pt:y:theta:pseudorap:vx:vy:vz");
   TNtuple *ESDtuple = (TNtuple*)effFile->Get("ESDtuple");
-  
-  
-  Double_t MUON_MASS = 0.105658369;
-  Double_t UPSILON_MASS = 9.4603 ;
-  Double_t PI = 3.14159265358979312; 
-  
+  //("ESDtuple","Reconstructed Mu+Mu- pairs","ev:pt:y:theta:minv:pt1:y1:theta1:q1:pt2:y2:theta2:q2");
+
+
   /*********************************/
   // Histograms limits and binning
   Float_t ptmin = 0.0;      Float_t ptmax =  20.0;     Int_t ptbins = 10; 
@@ -91,6 +104,17 @@ void MUONplotefficiency(Int_t fittype = 1, Int_t select = 0){
   
   Float_t etacutmin = -4.04813 ;
   Float_t etacutmax = -2.54209 ;
+
+  Float_t invMassMin = .0 ;   Float_t invMassMax = 15.0 ;   Int_t   invMassBins = 100 ;
+  Float_t ptmin = 0.0;      Float_t ptmax =  20.0;     Int_t ptbins = 10; 
+ if (ResType==443){
+    invMassMin = 1.0 ;  invMassMax = 4.5 ;  
+    ptmin = 0.0;     ptmax =  10.0; 
+  }
+  if (ResType==553){
+   invMassMin =  7.0 ;  invMassMax = 11.0 ;  
+   ptmin = 0.0;   ptmax =  20.0; 
+  }
   
   /*********************************/
   // Values used to define the acceptance
@@ -101,70 +125,89 @@ void MUONplotefficiency(Int_t fittype = 1, Int_t select = 0){
   Float_t ptcutmin = 0.;
   Float_t ptcutmax = 20.;
 
+  if (ResType==443){
+    ptcutmin = 0.; ptcutmax = 10.;
+  }
+
+  if (ResType==553){
+    ptcutmin = 0.; ptcutmax = 20.;
+  }
+  
+
   Float_t masssigma  = 0.1; // 100 MeV/c2 is a correct estimation 
   Float_t masscutmin = 0; Float_t masscutmax = 0 ;    
   if (masssigma){
-    masscutmin = UPSILON_MASS - 3.0*masssigma ; 
-    masscutmax = UPSILON_MASS + 3.0*masssigma ;
+    masscutmin = RESONANCE_MASS - 3.0*masssigma ; 
+    masscutmax = RESONANCE_MASS + 3.0*masssigma ;
   }
   else {
-    masscutmin = UPSILON_MASS - 1.0 ; 
-    masscutmax = UPSILON_MASS + 1.0 ;
+    masscutmin = RESONANCE_MASS - 1.0 ; 
+    masscutmax = RESONANCE_MASS + 1.0 ;
   }
-
-
-  Int_t REALISTIC_BACKGROUND = 0 ; 
 
 
   // here no cut on theta is necesary since during the simulation 
   // gener->SetChildThetaRange(171.0,178.0);
-  // thus the upsilon are generated in 4 PI but only the ones for which the decay muons 
+  // thus the resonance are generated in 4 PI but only the ones for which the decay muons 
   // are in the dimuon arm acceptance
-  // the pt cut is also "critical", in the generation part, upsilon are generated within  the range 
-  // (ptcutmin,ptcutmax). During the reconstruction, the upsilon could have a pt greater than ptcutmax !!
-  // Should these upsilons be cut or not.
+  // the pt cut is also "critical", in the generation part, resonance are generated within  the range 
+  // (ptcutmin,ptcutmax). During the reconstruction, the resonance could have a pt greater than ptcutmax !!
+  // Should these resonances be cut or not ?
   // probably not but they will be for now (~ 1/2000)
 
   // Another acceptance cut to add is a range for the  recontructed  invariant mass, it is 
   // obvious that an upsilon reconstructed with a mass  of 5 GeV/c2 is not correct. Thus
-  Char_t UpsilonAccCutMC[200];  
-  sprintf(UpsilonAccCutMC,"pt>= %.2f && pt<= %.2f",ptcutmin,ptcutmax);
+  Char_t ResonanceAccCutMC[200];  
+  sprintf(ResonanceAccCutMC,"pt>= %.2f && pt<= %.2f",ptcutmin,ptcutmax);
 
-  Char_t UpsilonAccCutESD[200];
-  sprintf(UpsilonAccCutESD,"pt >=  %.2f && pt<= %.2f && minv>=  %.2f && minv<= %.2f",ptcutmin,ptcutmax,masscutmin,masscutmax);
+  Char_t ResonanceAccCutESD[200];
+  sprintf(ResonanceAccCutESD,"pt >=  %.2f && pt<= %.2f && minv>=  %.2f && minv<= %.2f",ptcutmin,ptcutmax,masscutmin,masscutmax);
+
+
 
   /*********************************/
   // Cut conditions (Id,Background...)
 
-  Char_t IdcutUpsilonMC[100];            sprintf(IdcutUpsilonMC,"id==553");
-  Char_t IdcutMuminusMC[100];            sprintf(IdcutMuminusMC,"id==13 && idmo==553");
-  Char_t IdcutMuplusMC[100];             sprintf(IdcutMuplusMC,"id==-13 && idmo==553");  
+  Char_t IdcutResonanceMC[100];      
+  Char_t IdcutMuminusMC[100];   
+  Char_t IdcutMuplusMC[100];      
+ 
+  if (ResType==553){
+    sprintf(IdcutResonanceMC,"id==553");
+    sprintf(IdcutMuminusMC,"id==13 && idmo==553");
+    sprintf(IdcutMuplusMC,"id==-13 && idmo==553");  
+  }
+  if (ResType==443){
+    sprintf(IdcutResonanceMC,"id==443");
+    sprintf(IdcutMuminusMC,"id==13 && idmo==443");
+    sprintf(IdcutMuplusMC,"id==-13 && idmo==443");  
+  }
+  
   //means no cuts since we don't have the trackid propagated yet pt>0
   // now we have it 10/05/2005 but it's still not being used
   
   
-  // Background is calculated in the MUONmass_ESD.C macro
-  // Background calculation is meaningful only when Upsilon have been generated with realistic background
-  // when it's a pure Upsilon file, the background lies artificially at the Upsilon mass 
+  // Background is calculated in the MUONefficiency.C macro 
+  // Background calculation is meaningful only when Resonance have been generated with realistic background
+  // when it's a pure Resonance file, the background lies artificially at the Resonance mass 
   
   //no realistic background
-  //Char_t BckgdCutUpsilonESD[100];           sprintf(BckgdCutUpsilonESD,"pt>0 && minv>7 && pt1>1 && pt2>1"); 
-  //Char_t BckgdCutUpsilonESD[100];           sprintf(BckgdCutUpsilonESD,"pt>0 && minv>0 && pt1>0 && pt2>0"); 
-  Char_t BckgdCutUpsilonESD[100];           sprintf(BckgdCutUpsilonESD,"pt>0 && minv>%f && minv<%f && pt1>0 && pt2>0",masscutmin,masscutmax); 
+  Int_t REALISTIC_BACKGROUND = 0 ; 
 
-  // realistic background 
+  // to take background into account, i.e. substraction, if necessary
+  // this is not ready yet
+  Char_t BckgdCutResonanceESD[100];      
+  sprintf(BckgdCutResonanceESD,"pt>0 && minv>%f && minv<%f && pt1>0 && pt2>0",masscutmin,masscutmax); 
+  
+  // if realistic background 
   // same cut + substract the background from hInvMassBg
   
-  //sprintf(IdcutMuplusRec,"id==-13 && ch==0 && Ptrec!=0 && Yrec!=0");
 
 
-
+  /*******************************************************************************************************************/
   Char_t txt[50];
   TLatex *tex;
   TLegend *leg;
-
-  /*******************************************************************************************************************/
-
   
   /*******************************/
   /*      Monte Carlo Part       */
@@ -173,37 +216,37 @@ void MUONplotefficiency(Int_t fittype = 1, Int_t select = 0){
   //----------------------------
   // Pt-rapidity distributions from Kinematics
   //----------------------------
-  TH2F *hptyUpsilonMC = new TH2F("hptyUpsilonMC", " Monte Carlo #Upsilon",ptbins,ptmin,ptmax,ybins,ymin,ymax);
-  hptyUpsilonMC->SetLineColor(1);
-  hptyUpsilonMC->SetLineStyle(1);
-  hptyUpsilonMC->SetLineWidth(2);
-  Ktuple->Project("hptyUpsilonMC","y:pt",IdcutUpsilonMC);
-  hptyUpsilonMC->GetXaxis()->SetTitle("P_{#perp}   [GeV/c]");
-  hptyUpsilonMC->GetYaxis()->SetTitle("Rapidity");
+  TH2F *hptyResonanceMC = new TH2F("hptyResonanceMC", " Monte Carlo Resonance",ptbins,ptmin,ptmax,ybins,ymin,ymax);
+  hptyResonanceMC->SetLineColor(1);
+  hptyResonanceMC->SetLineStyle(1);
+  hptyResonanceMC->SetLineWidth(2);
+  Ktuple->Project("hptyResonanceMC","y:pt",IdcutResonanceMC);
+  hptyResonanceMC->GetXaxis()->SetTitle("P_{#perp}   [GeV/c]");
+  hptyResonanceMC->GetYaxis()->SetTitle("Rapidity");
  
   cout << "  " << endl;
   cout << "********************" << endl;
   cout << " Monte Carlo Tracks  "<< endl;
-  cout << " " << hptyUpsilonMC->GetEntries() << " Upsilon in simulation " << endl;
+  cout << " " << hptyResonanceMC->GetEntries() << " Resonance in simulation " << endl;
   
 
   //******** Add acceptance cuts  - Theta and Pt
-  TH2F *hptyUpsilonMCAcc = new TH2F("hptyUpsilonMCAcc", " Monte Carlo #Upsilon in acceptance",ptbins,ptmin,ptmax,ybins,ymin,ymax);
-  hptyUpsilonMCAcc->SetLineColor(1);
-  hptyUpsilonMCAcc->SetLineStyle(1);
-  hptyUpsilonMCAcc->SetLineWidth(2);
+  TH2F *hptyResonanceMCAcc = new TH2F("hptyResonanceMCAcc", " Monte Carlo Resonance in acceptance",ptbins,ptmin,ptmax,ybins,ymin,ymax);
+  hptyResonanceMCAcc->SetLineColor(1);
+  hptyResonanceMCAcc->SetLineStyle(1);
+  hptyResonanceMCAcc->SetLineWidth(2);
 
-  TString m1MC(IdcutUpsilonMC);
-  TString m2MC(UpsilonAccCutMC);
+  TString m1MC(IdcutResonanceMC);
+  TString m2MC(ResonanceAccCutMC);
   TString m3MC = m1MC + " && " + m2MC ;
 
-  Ktuple->Project("hptyUpsilonMCAcc","y:pt",m3MC.Data());
-  hptyUpsilonMCAcc->GetYaxis()->SetTitle("Rapidity");
-  hptyUpsilonMCAcc->GetXaxis()->SetTitle("P_{#perp}   [GeV/c]");
-  hptyUpsilonMCAcc->SetStats(1);
-  hptyUpsilonMCAcc->Sumw2();
+  Ktuple->Project("hptyResonanceMCAcc","y:pt",m3MC.Data());
+  hptyResonanceMCAcc->GetYaxis()->SetTitle("Rapidity");
+  hptyResonanceMCAcc->GetXaxis()->SetTitle("P_{#perp}   [GeV/c]");
+  hptyResonanceMCAcc->SetStats(1);
+  hptyResonanceMCAcc->Sumw2();
   
-  TCanvas *c1 = new TCanvas("c1", "#Upsilon  Monte Carlo:  Pt vs Y",30,30,700,500);
+  TCanvas *c1 = new TCanvas("c1", "Resonance  Monte Carlo:  Pt vs Y",30,30,700,500);
   c1->Range(-1.69394,-0.648855,15.3928,2.77143);
   c1->SetBorderSize(2);
   c1->SetRightMargin(0.0229885);
@@ -211,43 +254,42 @@ void MUONplotefficiency(Int_t fittype = 1, Int_t select = 0){
   c1->SetFrameFillColor(0);
   c1->cd();
 
-  hptyUpsilonMCAcc->SetStats(0);
-  hptyUpsilonMCAcc->Draw("LEGO2ZFB"); 
+  hptyResonanceMCAcc->SetStats(0);
+  hptyResonanceMCAcc->Draw("LEGO2ZFB"); 
   //TLatex *tex = new TLatex(2,6,"#mu^{-}");
   //tex->SetTextSize(0.06);
   //tex->SetLineWidth(2);  
   //tex->Draw();
  
-  sprintf(txt,"#Upsilon : %d entries",hptyUpsilonMCAcc->GetEntries());
+  sprintf(txt,"Resonance : %d entries",hptyResonanceMCAcc->GetEntries());
   tex = new TLatex(-0.854829,0.794436,txt);
   tex->SetLineWidth(2);
   tex->Draw();
 
-  c1->Modified();
   c1->Update();
   if (SAVE){
-    c1->SaveAs("ptyUpsilonMCAcc.gif");
-    c1->SaveAs("ptyUpsilonMCAcc.eps");
+    c1->SaveAs("ptyResonanceMCAcc.gif");
+    c1->SaveAs("ptyResonanceMCAcc.eps");
   }
 
 
-  TH1F *hptUpsilonMCAcc = new TH1F("hptUpsilonMCAcc", " Monte Carlo #Upsilon in acceptance",ptbins,ptmin,ptmax);
-  hptUpsilonMCAcc->SetLineColor(1);
-  hptUpsilonMCAcc->SetLineStyle(1);
-  hptUpsilonMCAcc->SetLineWidth(2);
-  Ktuple->Project("hptUpsilonMCAcc","pt",m3MC.Data());
-  hptUpsilonMCAcc->GetXaxis()->SetTitle("P_{#perp}   [GeV/c]");
-  hptUpsilonMCAcc->SetStats(1);
-  hptUpsilonMCAcc->Sumw2();
+  TH1F *hptResonanceMCAcc = new TH1F("hptResonanceMCAcc", " Monte Carlo Resonance in acceptance",ptbins,ptmin,ptmax);
+  hptResonanceMCAcc->SetLineColor(1);
+  hptResonanceMCAcc->SetLineStyle(1);
+  hptResonanceMCAcc->SetLineWidth(2);
+  Ktuple->Project("hptResonanceMCAcc","pt",m3MC.Data());
+  hptResonanceMCAcc->GetXaxis()->SetTitle("P_{#perp}   [GeV/c]");
+  hptResonanceMCAcc->SetStats(1);
+  hptResonanceMCAcc->Sumw2();
   
-  TH1F *hyUpsilonMCAcc = new TH1F("hyUpsilonMCAcc", " Monte Carlo #Upsilon in acceptance",ybins,ymin,ymax);
-  hyUpsilonMCAcc->SetLineColor(1);
-  hyUpsilonMCAcc->SetLineStyle(1);
-  hyUpsilonMCAcc->SetLineWidth(2);
-  Ktuple->Project("hyUpsilonMCAcc","y",m3MC.Data());
-  hyUpsilonMCAcc->GetXaxis()->SetTitle("Rapidity");
-  hyUpsilonMCAcc->SetStats(1);
-  hyUpsilonMCAcc->Sumw2();
+  TH1F *hyResonanceMCAcc = new TH1F("hyResonanceMCAcc", " Monte Carlo Resonance in acceptance",ybins,ymin,ymax);
+  hyResonanceMCAcc->SetLineColor(1);
+  hyResonanceMCAcc->SetLineStyle(1);
+  hyResonanceMCAcc->SetLineWidth(2);
+  Ktuple->Project("hyResonanceMCAcc","y",m3MC.Data());
+  hyResonanceMCAcc->GetXaxis()->SetTitle("Rapidity");
+  hyResonanceMCAcc->SetStats(1);
+  hyResonanceMCAcc->Sumw2();
   
   
   //   TH2F *hKAccptyCutsMuplus = new TH2F("hKAccptyCutsMuplus", "Monte Carlo #mu^{+} ",ptbins,ptmin,ptmax,ybins,ymin,ymax);
@@ -269,7 +311,7 @@ void MUONplotefficiency(Int_t fittype = 1, Int_t select = 0){
   cout << "  " << endl;
   cout << "********************" << endl;
   cout << " Monte Carlo Tracks  "<< endl;
-  cout << " " << hptyUpsilonMCAcc->GetEntries() << " Upsilon in acceptance cuts " << endl;
+  cout << " " << hptyResonanceMCAcc->GetEntries() << " Resonance in acceptance cuts " << endl;
   
 
   /*******************************************************************************************************************/
@@ -281,75 +323,75 @@ void MUONplotefficiency(Int_t fittype = 1, Int_t select = 0){
   //----------------------------
   // Pt-rapidity distributions from ESD : reconstructed tracks/particle
   //----------------------------
-  TH2F *hptyUpsilonESD = new TH2F("hptyUpsilonESD", " Reconstucted #Upsilon",ptbins,ptmin,ptmax,ybins,ymin,ymax);
-  hptyUpsilonESD->SetLineColor(1);
-  hptyUpsilonESD->SetLineStyle(1);
-  hptyUpsilonESD->SetLineWidth(2);
-  ESDtuple->Project("hptyUpsilonESD","y:pt",BckgdCutUpsilonESD);
-  hptyUpsilonESD->GetXaxis()->SetTitle("P_{#perp}   [GeV/c]");
-  hptyUpsilonESD->GetYaxis()->SetTitle("Rapidity");
+  TH2F *hptyResonanceESD = new TH2F("hptyResonanceESD", " Reconstucted Resonances",ptbins,ptmin,ptmax,ybins,ymin,ymax);
+  hptyResonanceESD->SetLineColor(1);
+  hptyResonanceESD->SetLineStyle(1);
+  hptyResonanceESD->SetLineWidth(2);
+  ESDtuple->Project("hptyResonanceESD","y:pt",BckgdCutResonanceESD);
+  hptyResonanceESD->GetXaxis()->SetTitle("P_{#perp}   [GeV/c]");
+  hptyResonanceESD->GetYaxis()->SetTitle("Rapidity");
 
   cout << "  " << endl;
   cout << "********************" << endl;
   cout << " Reconstructed Tracks" << endl ;
-  cout << " " << hptyUpsilonESD->GetEntries() << " Upsilon reconstructed " << endl;
+  cout << " " << hptyResonanceESD->GetEntries() << " Resonance reconstructed " << endl;
 
   if (REALISTIC_BACKGROUND){
-    TH2F *hptyUpsilonESDBck = new TH2F("hptyUpsilonESDBck", "Background",ptbins,ptmin,ptmax,ybins,ymin,ymax);
-    hptyUpsilonESDBck->SetLineColor(1);
-    hptyUpsilonESDBck->SetLineStyle(1);
-    hptyUpsilonESDBck->SetLineWidth(2);
-    ESDtupleBck->Project("hptyUpsilonESDBck","y:pt",BckgdCutUpsilonESD);
-    hptyUpsilonESDBck->GetXaxis()->SetTitle("P_{#perp}   [GeV/c]");
-    hptyUpsilonESDBck->GetYaxis()->SetTitle("Rapidity");
-    cout << " with " << hptyUpsilonESDBck->GetEntries() << " Upsilons from Background (random mixing) " << endl;
+    TH2F *hptyResonanceESDBck = new TH2F("hptyResonanceESDBck", "Background",ptbins,ptmin,ptmax,ybins,ymin,ymax);
+    hptyResonanceESDBck->SetLineColor(1);
+    hptyResonanceESDBck->SetLineStyle(1);
+    hptyResonanceESDBck->SetLineWidth(2);
+    ESDtupleBck->Project("hptyResonanceESDBck","y:pt",BckgdCutResonanceESD);
+    hptyResonanceESDBck->GetXaxis()->SetTitle("P_{#perp}   [GeV/c]");
+    hptyResonanceESDBck->GetYaxis()->SetTitle("Rapidity");
+    cout << " with " << hptyResonanceESDBck->GetEntries() << " Resonances from Background (random mixing) " << endl;
   }
 
   // if something is wrong 
-  if ( hptyUpsilonESD->GetEntries()==0) {cout << " No entries in hptyUpsilonESD " << endl ; break ;}
+  if ( hptyResonanceESD->GetEntries()==0) {cout << " No entries in hptyResonanceESD " << endl ; break ;}
 
   //with Acc cuts - Theta and Pt
-  TH2F *hptyUpsilonESDAcc = new TH2F("hptyUpsilonESDAcc", "Reconstructed #Upsilon",ptbins,ptmin,ptmax,ybins,ymin,ymax);
-  hptyUpsilonESDAcc->SetLineColor(1);
-  hptyUpsilonESDAcc->SetLineStyle(1);
-  hptyUpsilonESDAcc->SetLineWidth(2);
+  TH2F *hptyResonanceESDAcc = new TH2F("hptyResonanceESDAcc", "Reconstructed Resonances",ptbins,ptmin,ptmax,ybins,ymin,ymax);
+  hptyResonanceESDAcc->SetLineColor(1);
+  hptyResonanceESDAcc->SetLineStyle(1);
+  hptyResonanceESDAcc->SetLineWidth(2);
   
-  TString m1Rec(BckgdCutUpsilonESD);
-  TString m2Rec(UpsilonAccCutESD);
+  TString m1Rec(BckgdCutResonanceESD);
+  TString m2Rec(ResonanceAccCutESD);
   TString m3Rec = m1Rec + " && " + m2Rec ;
 
-  ESDtuple->Project("hptyUpsilonESDAcc","y:pt",m3Rec.Data());
-  hptyUpsilonESDAcc->GetYaxis()->SetTitle("Rapidity");
-  hptyUpsilonESDAcc->GetXaxis()->SetTitle("P_{#perp}   [GeV/c]");
-  hptyUpsilonESDAcc->SetStats(1);
-  hptyUpsilonESDAcc->Sumw2();
+  ESDtuple->Project("hptyResonanceESDAcc","y:pt",m3Rec.Data());
+  hptyResonanceESDAcc->GetYaxis()->SetTitle("Rapidity");
+  hptyResonanceESDAcc->GetXaxis()->SetTitle("P_{#perp}   [GeV/c]");
+  hptyResonanceESDAcc->SetStats(1);
+  hptyResonanceESDAcc->Sumw2();
 
   cout << "  " << endl;
   cout << "********************" << endl;
   cout << " Reconstructed Tracks" << endl ;
-  cout << " " << hptyUpsilonESDAcc->GetEntries() << " Upsilon in acceptance cuts " << endl;
+  cout << " " << hptyResonanceESDAcc->GetEntries() << " Resonance in acceptance cuts " << endl;
 
   if (REALISTIC_BACKGROUND){
     //with Acc cuts - Theta and Pt
-    TH2F *hptyUpsilonESDBckAcc = new TH2F("hptyUpsilonESDBckAcc", "Reconstructed #Upsilon",ptbins,ptmin,ptmax,ybins,ymin,ymax);
-    hptyUpsilonESDBckAcc->SetLineColor(1);
-    hptyUpsilonESDBckAcc->SetLineStyle(1);
-    hptyUpsilonESDBckAcc->SetLineWidth(2);
+    TH2F *hptyResonanceESDBckAcc = new TH2F("hptyResonanceESDBckAcc", "Reconstructed Resonances",ptbins,ptmin,ptmax,ybins,ymin,ymax);
+    hptyResonanceESDBckAcc->SetLineColor(1);
+    hptyResonanceESDBckAcc->SetLineStyle(1);
+    hptyResonanceESDBckAcc->SetLineWidth(2);
     
-    TString m1Rec(BckgdCutUpsilonESD);
-    TString m2Rec(UpsilonAccCutESD);
+    TString m1Rec(BckgdCutResonanceESD);
+    TString m2Rec(ResonanceAccCutESD);
     TString m3Rec = m1Rec + " && " + m2Rec ;
     
-    ESDtupleBck->Project("hptyUpsilonESDBckAcc","y:pt",m3Rec.Data());
-    hptyUpsilonESDBckAcc->GetYaxis()->SetTitle("Rapidity");
-    hptyUpsilonESDBckAcc->GetXaxis()->SetTitle("P_{#perp}   [GeV/c]");
-    hptyUpsilonESDBckAcc->SetStats(1);
-    hptyUpsilonESDBckAcc->Sumw2();
-    cout << " with " << hptyUpsilonESDBckAcc->GetEntries() << " Upsilons from Background (random mixing) " << endl;
+    ESDtupleBck->Project("hptyResonanceESDBckAcc","y:pt",m3Rec.Data());
+    hptyResonanceESDBckAcc->GetYaxis()->SetTitle("Rapidity");
+    hptyResonanceESDBckAcc->GetXaxis()->SetTitle("P_{#perp}   [GeV/c]");
+    hptyResonanceESDBckAcc->SetStats(1);
+    hptyResonanceESDBckAcc->Sumw2();
+    cout << " with " << hptyResonanceESDBckAcc->GetEntries() << " Resonances from Background (random mixing) " << endl;
   }
 
 
-  TCanvas *c100 = new TCanvas("c100", "#Upsilon Reconstructed in Acceptance: Pt vs Y",210,30,700,500);
+  TCanvas *c100 = new TCanvas("c100", "Resonance Reconstructed in Acceptance: Pt vs Y",210,30,700,500);
   c100->Range(-1.69394,-0.648855,15.3928,2.77143);
   c100->SetBorderSize(2);
   c100->SetRightMargin(0.0229885);
@@ -357,22 +399,21 @@ void MUONplotefficiency(Int_t fittype = 1, Int_t select = 0){
   c100->SetFrameFillColor(0);
   
   c100->cd();
-  hptyUpsilonESDAcc->SetStats(0);
-  hptyUpsilonESDAcc->Draw("LEGO2ZFB"); 
-  sprintf(txt,"#Upsilon : %d entries",hptyUpsilonESDAcc->GetEntries());
+  hptyResonanceESDAcc->SetStats(0);
+  hptyResonanceESDAcc->Draw("LEGO2ZFB"); 
+  sprintf(txt,"Resonance : %d entries",hptyResonanceESDAcc->GetEntries());
   tex = new TLatex(-0.854829,0.794436,txt);
   tex->SetLineWidth(2);
   tex->Draw();
 
   c100->Update();
   if (SAVE){
-    c100->SaveAs("ptyUpsilonESDAcc.gif");
-    c100->SaveAs("ptyUpsilonESDAcc.eps");
+    c100->SaveAs("ptyResonanceESDAcc.gif");
+    c100->SaveAs("ptyResonanceESDAcc.eps");
   }
 
-
   if (REALISTIC_BACKGROUND){
-    TCanvas *c110 = new TCanvas("c110", "#Upsilon Background Reconstructed in Acceptance: Pt vs Y",215,35,700,500);
+    TCanvas *c110 = new TCanvas("c110", "Resonance Background Reconstructed in Acceptance: Pt vs Y",215,35,700,500);
     c110->Range(-1.69394,-0.648855,15.3928,2.77143);
     c110->SetBorderSize(2);
     c110->SetRightMargin(0.0229885);
@@ -380,9 +421,9 @@ void MUONplotefficiency(Int_t fittype = 1, Int_t select = 0){
     c110->SetFrameFillColor(0);
     
     c110->cd();
-    hptyUpsilonESDBckAcc->SetStats(0);
-    hptyUpsilonESDBckAcc->Draw("LEGO2ZFB"); 
-    sprintf(txt,"#Upsilon backround : %d entries",hptyUpsilonESDBckAcc->GetEntries());
+    hptyResonanceESDBckAcc->SetStats(0);
+    hptyResonanceESDBckAcc->Draw("LEGO2ZFB"); 
+    sprintf(txt,"Resonance backround : %d entries",hptyResonanceESDBckAcc->GetEntries());
     tex = new TLatex(-0.854829,0.794436,txt);
     tex->SetLineWidth(2);
     tex->Draw();
@@ -390,28 +431,28 @@ void MUONplotefficiency(Int_t fittype = 1, Int_t select = 0){
     
     c110->Update();
     if (SAVE){
-      c110->SaveAs("ptyUpsilonESDBckAcc.gif");
-      c110->SaveAs("ptyUpsilonESDBckAcc.eps");
+      c110->SaveAs("ptyResonanceESDBckAcc.gif");
+      c110->SaveAs("ptyResonanceESDBckAcc.eps");
     }
   }
   
-  TH1F *hptUpsilonESDAcc = new TH1F("hptUpsilonESDAcc", " Monte Carlo #Upsilon in acceptance",ptbins,ptmin,ptmax);
-  hptUpsilonESDAcc->SetLineColor(1);
-  hptUpsilonESDAcc->SetLineStyle(1);
-  hptUpsilonESDAcc->SetLineWidth(2);
-  ESDtuple->Project("hptUpsilonESDAcc","pt",m3Rec.Data());
-  hptUpsilonESDAcc->GetXaxis()->SetTitle("P_{#perp}   [GeV/c]");
-  hptUpsilonESDAcc->SetStats(1);
-  hptUpsilonESDAcc->Sumw2();
+  TH1F *hptResonanceESDAcc = new TH1F("hptResonanceESDAcc", " Monte Carlo Resonance in acceptance",ptbins,ptmin,ptmax);
+  hptResonanceESDAcc->SetLineColor(1);
+  hptResonanceESDAcc->SetLineStyle(1);
+  hptResonanceESDAcc->SetLineWidth(2);
+  ESDtuple->Project("hptResonanceESDAcc","pt",m3Rec.Data());
+  hptResonanceESDAcc->GetXaxis()->SetTitle("P_{#perp}   [GeV/c]");
+  hptResonanceESDAcc->SetStats(1);
+  hptResonanceESDAcc->Sumw2();
   
-  TH1F *hyUpsilonESDAcc = new TH1F("hyUpsilonESDAcc", " Monte Carlo #Upsilon in acceptance",ybins,ymin,ymax);
-  hyUpsilonESDAcc->SetLineColor(1);
-  hyUpsilonESDAcc->SetLineStyle(1);
-  hyUpsilonESDAcc->SetLineWidth(2);
-  ESDtuple->Project("hyUpsilonESDAcc","y",m3Rec.Data());
-  hyUpsilonESDAcc->GetXaxis()->SetTitle("Rapidity");
-  hyUpsilonESDAcc->SetStats(1);
-  hyUpsilonESDAcc->Sumw2();
+  TH1F *hyResonanceESDAcc = new TH1F("hyResonanceESDAcc", " Monte Carlo Resonance in acceptance",ybins,ymin,ymax);
+  hyResonanceESDAcc->SetLineColor(1);
+  hyResonanceESDAcc->SetLineStyle(1);
+  hyResonanceESDAcc->SetLineWidth(2);
+  ESDtuple->Project("hyResonanceESDAcc","y",m3Rec.Data());
+  hyResonanceESDAcc->GetXaxis()->SetTitle("Rapidity");
+  hyResonanceESDAcc->SetStats(1);
+  hyResonanceESDAcc->Sumw2();
   
 
   /*******************************************************************************************************************/
@@ -426,21 +467,21 @@ void MUONplotefficiency(Int_t fittype = 1, Int_t select = 0){
   cout << " Integrated efficiency" << endl ;
   
   if (REALISTIC_BACKGROUND)
-    cout << " UpsilonESDAcc/UpsilonMCAcc = " << (hptyUpsilonESDAcc->GetEntries()-hptyUpsilonESDBckAcc->GetEntries())/hptyUpsilonMCAcc->GetEntries()  << endl;
+    cout << " ResonanceESDAcc/ResonanceMCAcc = " << (hptyResonanceESDAcc->GetEntries()-hptyResonanceESDBckAcc->GetEntries())/hptyResonanceMCAcc->GetEntries()  << endl;
   else 
-    cout << " UpsilonESDAcc/UpsilonMCAcc = " << hptyUpsilonESDAcc->GetEntries()/hptyUpsilonMCAcc->GetEntries()  << endl;
+    cout << " ResonanceESDAcc/ResonanceMCAcc = " << hptyResonanceESDAcc->GetEntries()/hptyResonanceMCAcc->GetEntries()  << endl;
 
-  TH2F *hEffptyUpsilon = new TH2F("hEffptyUpsilon", " #Upsilon Efficiency",ptbins,ptmin,ptmax,ybins,ymin,ymax);
+  TH2F *hEffptyResonance = new TH2F("hEffptyResonance", " Resonance Efficiency",ptbins,ptmin,ptmax,ybins,ymin,ymax);
 
   if (REALISTIC_BACKGROUND){
-    TH2F *hptyUpsilonESDAccBckSubstracted = new TH2F("hptyUpsilonESDAccBckSubstracted","hptyUpsilonESDAccBckSubstracted",ptbins,ptmin,ptmax,ybins,ymin,ymax);
-    hptyUpsilonESDAccBckSubstracted->Add(hptyUpsilonESDAcc,hptyUpsilonESDBckAcc,1,-1);
-    hEffptyUpsilon->Divide(hptyUpsilonESDAccBckSubstracted,hptyUpsilonMCAcc,1,1);
+    TH2F *hptyResonanceESDAccBckSubstracted = new TH2F("hptyResonanceESDAccBckSubstracted","hptyResonanceESDAccBckSubstracted",ptbins,ptmin,ptmax,ybins,ymin,ymax);
+    hptyResonanceESDAccBckSubstracted->Add(hptyResonanceESDAcc,hptyResonanceESDBckAcc,1,-1);
+    hEffptyResonance->Divide(hptyResonanceESDAccBckSubstracted,hptyResonanceMCAcc,1,1);
   }
   else 
-  hEffptyUpsilon->Divide(hptyUpsilonESDAcc,hptyUpsilonMCAcc,1,1);
+  hEffptyResonance->Divide(hptyResonanceESDAcc,hptyResonanceMCAcc,1,1);
 
-  TCanvas *c1000 = new TCanvas("c1000", "#Upsilon efficiency : Pt vs Y",390,30,700,500);
+  TCanvas *c1000 = new TCanvas("c1000", "Resonance efficiency : Pt vs Y",390,30,700,500);
   c1000->Range(-1.69394,-0.648855,15.3928,2.77143);
   c1000->SetBorderSize(2);
   c1000->SetRightMargin(0.0229885);
@@ -448,19 +489,19 @@ void MUONplotefficiency(Int_t fittype = 1, Int_t select = 0){
   c1000->SetFrameFillColor(0);
 
   c1000->cd();
-  hEffptyUpsilon->SetStats(0);
-  hEffptyUpsilon->Draw("LEGO2fz");
+  hEffptyResonance->SetStats(0);
+  hEffptyResonance->Draw("LEGO2fz");
 
 
 
-  TH1F *hEffptUpsilon = new TH1F("hEffptUpsilon", "#Upsilon Efficiency vs pt",ptbins,ptmin,ptmax);
-  hEffptUpsilon->Divide(hptUpsilonESDAcc,hptUpsilonMCAcc,1,1);
-  hEffptUpsilon->SetLineWidth(2);
-  hEffptUpsilon->SetMinimum(0);
-  hEffptUpsilon->SetStats(1);
+  TH1F *hEffptResonance = new TH1F("hEffptResonance", "Resonance Efficiency vs pt",ptbins,ptmin,ptmax);
+  hEffptResonance->Divide(hptResonanceESDAcc,hptResonanceMCAcc,1,1);
+  hEffptResonance->SetLineWidth(2);
+  hEffptResonance->SetMinimum(0);
+  hEffptResonance->SetStats(1);
 
 
-  TCanvas *c1100 = new TCanvas("c1100", "#Upsilon efficiency : Pt",410,50,700,500);
+  TCanvas *c1100 = new TCanvas("c1100", "Resonance efficiency : Pt",410,50,700,500);
   c1100->Range(-1.69394,-0.648855,15.3928,2.77143);
   c1100->SetBorderSize(2);
   c1100->SetRightMargin(0.0229885);
@@ -468,19 +509,19 @@ void MUONplotefficiency(Int_t fittype = 1, Int_t select = 0){
   c1100->SetFrameFillColor(0);
 
   c1100->cd();
-  hEffptUpsilon->SetStats(0);
-  hEffptUpsilon->GetXaxis()->SetTitle("P_{#perp}  [GeV/c]");
-  hEffptUpsilon->GetYaxis()->SetTitle("Efficiency ");
-  hEffptUpsilon->Draw("E");
+  hEffptResonance->SetStats(0);
+  hEffptResonance->GetXaxis()->SetTitle("P_{#perp}  [GeV/c]");
+  hEffptResonance->GetYaxis()->SetTitle("Efficiency ");
+  hEffptResonance->Draw("E");
    
   
   
-  TH1F *hEffyUpsilon = new TH1F("hEffyUpsilon", "#Upsilon Efficiency vs y",ybins,ymin,ymax);
-  hEffyUpsilon->Divide(hyUpsilonESDAcc,hyUpsilonMCAcc,1,1);
-  hEffyUpsilon->SetLineWidth(2);
-  hEffyUpsilon->SetStats(1);
+  TH1F *hEffyResonance = new TH1F("hEffyResonance", "Resonance Efficiency vs y",ybins,ymin,ymax);
+  hEffyResonance->Divide(hyResonanceESDAcc,hyResonanceMCAcc,1,1);
+  hEffyResonance->SetLineWidth(2);
+  hEffyResonance->SetStats(1);
   
-  TCanvas *c1200 = new TCanvas("c1200", "#Upsilon efficiency : Y",430,70,700,500);
+  TCanvas *c1200 = new TCanvas("c1200", "Resonance efficiency : Y",430,70,700,500);
   c1200->Range(-1.69394,-0.648855,15.3928,2.77143);
   c1200->SetBorderSize(2);
   c1200->SetRightMargin(0.0229885);
@@ -488,21 +529,21 @@ void MUONplotefficiency(Int_t fittype = 1, Int_t select = 0){
   c1200->SetFrameFillColor(0);
 
   c1200->cd();
-  hEffyUpsilon->SetStats(0);
-  hEffyUpsilon->GetXaxis()->SetTitle("Rapidity");
-  hEffyUpsilon->GetYaxis()->SetTitle("Efficiency ");
-  hEffyUpsilon->Draw("E");
+  hEffyResonance->SetStats(0);
+  hEffyResonance->GetXaxis()->SetTitle("Rapidity");
+  hEffyResonance->GetYaxis()->SetTitle("Efficiency ");
+  hEffyResonance->Draw("E");
 
   c1000->Update();
   c1100->Update();
   c1200->Update();
   if (SAVE){
-    c1000->SaveAs("EffptyUpsilon.gif");
-    c1000->SaveAs("EffptyUpsilon.eps");
-    c1100->SaveAs("EffptUpsilon.gif");
-    c1100->SaveAs("EffptUpsilon.eps");
-    c1200->SaveAs("EffyUpsilon.gif");
-    c1200->SaveAs("EffyUpsilon.eps");
+    c1000->SaveAs("EffptyResonance.gif");
+    c1000->SaveAs("EffptyResonance.eps");
+    c1100->SaveAs("EffptResonance.gif");
+    c1100->SaveAs("EffptResonance.eps");
+    c1200->SaveAs("EffyResonance.gif");
+    c1200->SaveAs("EffyResonance.eps");
   }
 
  /*******************************************************************************************************************/
@@ -515,12 +556,8 @@ void MUONplotefficiency(Int_t fittype = 1, Int_t select = 0){
   Float_t triggerChi2Min = 0.; 
   Float_t triggerChi2Max = 7.5;
 
-  Float_t invMassMin = 7.0 ;
-  Float_t invMassMax = 11.0 ;
-  Int_t   invMassBins = 100 ;
-  
-  //TString m1Rec(BckgdCutUpsilonESD);
-  //TString m2Rec(UpsilonAccCutESD);
+  //TString m1Rec(BckgdCutResonanceESD);
+  //TString m2Rec(ResonanceAccCutESD);
   TString  m1TG = m1Rec + " && " + m2Rec ;
   //cout << m1TG.Data() << endl;
   
@@ -531,48 +568,48 @@ void MUONplotefficiency(Int_t fittype = 1, Int_t select = 0){
 
   //Add trigger UnlikePairAllPt
   TString  m2TG = m1TG + " && (tw & 0x800) == 2048" ;
-  TH1F *hInvMassUpsilonTrigger= new TH1F("hInvMassUpsilonTrigger","hInvMassUpsilonTrigger",invMassBins,invMassMin,invMassMax);
-  hInvMassUpsilonTrigger->GetXaxis()->SetTitle("Mass [GeV/c^{2}]");
-  hInvMassUpsilonTrigger->GetYaxis()->SetTitle("Counts");
-  ESDtuple->Project("hInvMassUpsilonTrigger","minv",m2TG.Data());
+  TH1F *hInvMassResonanceTrigger= new TH1F("hInvMassResonanceTrigger","hInvMassResonanceTrigger",invMassBins,invMassMin,invMassMax);
+  hInvMassResonanceTrigger->GetXaxis()->SetTitle("Mass [GeV/c^{2}]");
+  hInvMassResonanceTrigger->GetYaxis()->SetTitle("Counts");
+  ESDtuple->Project("hInvMassResonanceTrigger","minv",m2TG.Data());
 
 
   cout << "  " << endl;
   cout << "********************" << endl;
   cout << " TriggerMatching" << endl ;
-  cout << " " << hInvMassUpsilonTrigger->GetEntries() << " Upsilon with trigger UnlikePairAllPt " << endl;
+  cout << " " << hInvMassResonanceTrigger->GetEntries() << " Resonance with trigger UnlikePairAllPt " << endl;
 
   TString  m2TGNo = m1TG + " && (tw & 0x800) != 2048" ;
-  TH1F *hUpsilonTriggerNo= new TH1F("hUpsilonTriggerNo","hUpsilonTriggerNo",32769,0,32768);
-  hUpsilonTriggerNo->GetXaxis()->SetTitle("Mass [GeV/c^{2}]");
-  hUpsilonTriggerNo->GetYaxis()->SetTitle("Counts");
-  ESDtuple->Project("hUpsilonTriggerNo","tw",m2TGNo.Data());
+  TH1F *hResonanceTriggerNo= new TH1F("hResonanceTriggerNo","hResonanceTriggerNo",32769,0,32768);
+  hResonanceTriggerNo->GetXaxis()->SetTitle("Mass [GeV/c^{2}]");
+  hResonanceTriggerNo->GetYaxis()->SetTitle("Counts");
+  ESDtuple->Project("hResonanceTriggerNo","tw",m2TGNo.Data());
 
   
 
 
   //Add matching rec/trig for 2 tracks 
   TString m3TG = m2TG + " && trig1 > 0 && trig2 > 0" ;  
-  TH1F *hInvMassUpsilonTriggerTwoMatch = new TH1F("hInvMassUpsilonTriggerTwoMatch","hInvMassUpsilonTrigger with 2 matching tracks",invMassBins,invMassMin,invMassMax);
-  hInvMassUpsilonTriggerTwoMatch->GetXaxis()->SetTitle("Mass [GeV/c^{2}]");
-  hInvMassUpsilonTriggerTwoMatch->GetYaxis()->SetTitle("Counts");
-  ESDtuple->Project("hInvMassUpsilonTriggerTwoMatch","minv",m3TG.Data());
+  TH1F *hInvMassResonanceTriggerTwoMatch = new TH1F("hInvMassResonanceTriggerTwoMatch","hInvMassResonanceTrigger with 2 matching tracks",invMassBins,invMassMin,invMassMax);
+  hInvMassResonanceTriggerTwoMatch->GetXaxis()->SetTitle("Mass [GeV/c^{2}]");
+  hInvMassResonanceTriggerTwoMatch->GetYaxis()->SetTitle("Counts");
+  ESDtuple->Project("hInvMassResonanceTriggerTwoMatch","minv",m3TG.Data());
 
 
   //Add matching rec/trig for 1  tracks 
   TString m4TG = m2TG + " && (trig1 > 0 || trig2 > 0)" ;  
-  TH1F *hInvMassUpsilonTriggerOneMatch= new TH1F("hInvMassUpsilonTriggerOneMatch","hInvMassUpsilonTrigger with 1 matching tracks",invMassBins,invMassMin,invMassMax);
-  hInvMassUpsilonTriggerOneMatch->GetXaxis()->SetTitle("Mass [GeV/c^{2}]");
-  hInvMassUpsilonTriggerOneMatch->GetYaxis()->SetTitle("Counts");
-  ESDtuple->Project("hInvMassUpsilonTriggerOneMatch","minv",m4TG.Data());
+  TH1F *hInvMassResonanceTriggerOneMatch= new TH1F("hInvMassResonanceTriggerOneMatch","hInvMassResonanceTrigger with 1 matching tracks",invMassBins,invMassMin,invMassMax);
+  hInvMassResonanceTriggerOneMatch->GetXaxis()->SetTitle("Mass [GeV/c^{2}]");
+  hInvMassResonanceTriggerOneMatch->GetYaxis()->SetTitle("Counts");
+  ESDtuple->Project("hInvMassResonanceTriggerOneMatch","minv",m4TG.Data());
 
   TString m5TG = m2TG + " && (trig1 == 0 && trig2 == 0)" ;  
-  TH1F *hInvMassUpsilonTriggerNoMatch= new TH1F("hInvMassUpsilonTriggerNoMatch","hInvMassUpsilonTrigger with no matching tracks",invMassBins,invMassMin,invMassMax);
-  hInvMassUpsilonTriggerNoMatch->GetXaxis()->SetTitle("Mass [GeV/c^{2}]");
-  hInvMassUpsilonTriggerNoMatch->GetYaxis()->SetTitle("Counts");
-  ESDtuple->Project("hInvMassUpsilonTriggerNoMatch","minv",m5TG.Data());
+  TH1F *hInvMassResonanceTriggerNoMatch= new TH1F("hInvMassResonanceTriggerNoMatch","hInvMassResonanceTrigger with no matching tracks",invMassBins,invMassMin,invMassMax);
+  hInvMassResonanceTriggerNoMatch->GetXaxis()->SetTitle("Mass [GeV/c^{2}]");
+  hInvMassResonanceTriggerNoMatch->GetYaxis()->SetTitle("Counts");
+  ESDtuple->Project("hInvMassResonanceTriggerNoMatch","minv",m5TG.Data());
 
-  TCanvas *c2 = new TCanvas("c2", "#Upsilon Trigger efficiency",30,90,700,500);
+  TCanvas *c2 = new TCanvas("c2", "Resonance Trigger efficiency",30,90,700,500);
   c2->Range(-1.69394,-0.648855,15.3928,2.77143);
   c2->SetBorderSize(2);
   c2->SetRightMargin(0.0229885);
@@ -587,31 +624,31 @@ void MUONplotefficiency(Int_t fittype = 1, Int_t select = 0){
   hInvMassNoTriggerCut->SetLineColor(1);
   hInvMassNoTriggerCut->GetYaxis()->SetTitleOffset(1.2);
   hInvMassNoTriggerCut->Draw();
-  hInvMassUpsilonTrigger->SetLineWidth(2);
-  hInvMassUpsilonTrigger->SetLineStyle(0);
-  hInvMassUpsilonTrigger->SetLineColor(2);
-  hInvMassUpsilonTrigger->Draw("same");
-  hInvMassUpsilonTriggerTwoMatch->SetLineWidth(2);
-  hInvMassUpsilonTriggerTwoMatch->SetLineStyle(1);
-  hInvMassUpsilonTriggerTwoMatch->SetLineColor(4);
-  hInvMassUpsilonTriggerTwoMatch->Draw("same");
-  hInvMassUpsilonTriggerOneMatch->SetLineWidth(2);
-  hInvMassUpsilonTriggerOneMatch->SetLineStyle(2);
-  hInvMassUpsilonTriggerOneMatch->SetLineColor(51);
-  hInvMassUpsilonTriggerOneMatch->Draw("same");
-  hInvMassUpsilonTriggerNoMatch->SetLineWidth(2);
-  hInvMassUpsilonTriggerNoMatch->SetLineStyle(2);
-  hInvMassUpsilonTriggerNoMatch->SetLineColor(46);
-  hInvMassUpsilonTriggerNoMatch->Draw("same");
+  hInvMassResonanceTrigger->SetLineWidth(2);
+  hInvMassResonanceTrigger->SetLineStyle(0);
+  hInvMassResonanceTrigger->SetLineColor(2);
+  hInvMassResonanceTrigger->Draw("same");
+  hInvMassResonanceTriggerTwoMatch->SetLineWidth(2);
+  hInvMassResonanceTriggerTwoMatch->SetLineStyle(1);
+  hInvMassResonanceTriggerTwoMatch->SetLineColor(4);
+  hInvMassResonanceTriggerTwoMatch->Draw("same");
+  hInvMassResonanceTriggerOneMatch->SetLineWidth(2);
+  hInvMassResonanceTriggerOneMatch->SetLineStyle(2);
+  hInvMassResonanceTriggerOneMatch->SetLineColor(51);
+  hInvMassResonanceTriggerOneMatch->Draw("same");
+  hInvMassResonanceTriggerNoMatch->SetLineWidth(2);
+  hInvMassResonanceTriggerNoMatch->SetLineStyle(2);
+  hInvMassResonanceTriggerNoMatch->SetLineColor(46);
+  hInvMassResonanceTriggerNoMatch->Draw("same");
 
   TLegend *leg = new TLegend(0.12,0.6,0.50,0.89);
-  leg->SetHeader("Reconstructed #Upsilon Invariant Mass");
+  leg->SetHeader("Reconstructed Resonance Invariant Mass");
 
   leg->AddEntry(hInvMassNoTriggerCut,Form("All  (%.0f cnts)",hInvMassNoTriggerCut->GetEntries()),"l");
-  leg->AddEntry(hInvMassUpsilonTrigger,Form("UnlikePairAllPt Trigger (%.0f cnts)",hInvMassUpsilonTrigger->GetEntries()),"l");
-  leg->AddEntry(hInvMassUpsilonTriggerTwoMatch,Form("UPAllPt Trig. and 2 tracks matches (%.0f cnts)",hInvMassUpsilonTriggerTwoMatch->GetEntries()),"l");  
-  leg->AddEntry(hInvMassUpsilonTriggerOneMatch,Form("UPAllPt Trig. and 1 track match (%.0f cnts)",hInvMassUpsilonTriggerOneMatch->GetEntries()),"l");  
-  leg->AddEntry(hInvMassUpsilonTriggerNoMatch,Form("UPAllPt Trig. and no matching track (%.0f cnts)",hInvMassUpsilonTriggerNoMatch->GetEntries()),"l");  
+  leg->AddEntry(hInvMassResonanceTrigger,Form("UnlikePairAllPt Trigger (%.0f cnts)",hInvMassResonanceTrigger->GetEntries()),"l");
+  leg->AddEntry(hInvMassResonanceTriggerTwoMatch,Form("UPAllPt Trig. and 2 tracks matches (%.0f cnts)",hInvMassResonanceTriggerTwoMatch->GetEntries()),"l");  
+  leg->AddEntry(hInvMassResonanceTriggerOneMatch,Form("UPAllPt Trig. and 1 track match (%.0f cnts)",hInvMassResonanceTriggerOneMatch->GetEntries()),"l");  
+  leg->AddEntry(hInvMassResonanceTriggerNoMatch,Form("UPAllPt Trig. and no matching track (%.0f cnts)",hInvMassResonanceTriggerNoMatch->GetEntries()),"l");  
   leg->Draw();
 
   c2->Update();
@@ -627,14 +664,14 @@ void MUONplotefficiency(Int_t fittype = 1, Int_t select = 0){
   /*******************************/
   
   const Int_t nofMassHistograms = ptbins ; 
-  invMassMin = 7.0 ;
-  invMassMax = 11.0 ;
-  invMassBins = 100 ;
+  // cs invMassMin = 7.0 ;
+  // cs invMassMax = 11.0 ;
+  // cs invMassBins = 100 ;
   
- //Float_t ptmin = 0.0;      
+  //Float_t ptmin = 0.0;      
   //Float_t ptmax =  16.0;  Int_t ptbins = 8;    
   Float_t ptbinssize = ptmax/ptbins; 
-
+  
 
   Float_t ptbinslimits[nofMassHistograms+1];
   Float_t ptbinscenters[nofMassHistograms];
@@ -660,6 +697,48 @@ void MUONplotefficiency(Int_t fittype = 1, Int_t select = 0){
   //gROOT->ProcessLine(".L /home/suire/AliRoot/macros/FIT/FitFunction.C");
   
   TF1 *fitFunc ;  
+  
+  if (fitfunc==0 || fitfunc==1){
+    fitFunc = new TF1("gaussian","gaus(0)",FitLow,FitHigh);
+    if (!fitFunc)
+      fitFunc = new TF1("gaussian","[0]*TMath::Exp(-0.5*(x-[1])*(x-[1])/[2]/[2])",FitLow,FitHigh);
+    fitFunc->SetParNames("Constant","Mean value","Width");
+    fitFunc->SetLineColor(2);
+    fitFunc->SetLineWidth(2);
+    fitFunc->SetLineStyle(2);
+    
+    Float_t  *tParams = new Float_t[3] ;
+    if (ResType==553){
+      tParams[0] = 500;
+      tParams[1] = 9.47;
+      tParams[2] = 0.1;
+    }
+    if (ResType==443){
+      tParams[0] = 500;
+      tParams[1] = 3.1;
+      tParams[2] = 0.1;
+    }
+
+    fitFunc->SetParameters(tParams[0],tParams[1],tParams[2]);
+    
+    TString FitFuncName = "gaussian";  
+  }
+  
+  if (fitfunc==2){
+    fitFunc = new TF1("fitlan_a",fitlan_a,FitLow,FitHigh,3);
+    fitFunc->SetParNames("Constant","Mean value","Width");
+    fitFunc->SetLineColor(2);
+    fitFunc->SetLineWidth(2);
+    fitFunc->SetLineStyle(2);
+    
+    Float_t  *tParams = new Float_t[3] ;
+    tParams[0] = 1000;
+    tParams[1] = 9.47;
+    tParams[2] = 0.05;
+    fitFunc->SetParameters(tParams[0],tParams[1],tParams[2]);
+    
+    TString FitFuncName = "fitlan_a";  
+  }
   
   if (fitfunc==3){
     fitFunc = new TF1("fitlangaussUpsilon",fitlangaussUpsilon,FitLow,FitHigh,6);
@@ -691,47 +770,6 @@ void MUONplotefficiency(Int_t fittype = 1, Int_t select = 0){
     TString FitFuncName = "fitlangaussUpsilon"; 
   }
   
-  if (fitfunc==2){
-    fitFunc = new TF1("fitlan_a",fitlan_a,FitLow,FitHigh,3);
-    fitFunc->SetParNames("Constant","Mean value","Width");
-    fitFunc->SetLineColor(2);
-    fitFunc->SetLineWidth(2);
-    fitFunc->SetLineStyle(2);
-    
-    Float_t  *tParams = new Float_t[3] ;
-    tParams[0] = 1000;
-    tParams[1] = 9.47;
-    tParams[2] = 0.05;
-    fitFunc->SetParameters(tParams[0],tParams[1],tParams[2]);
-    
-    TString FitFuncName = "fitlan_a";  
-  }
-  
-  if (fitfunc==0 || fitfunc==1){
-    //mass upsilon 9.4603 GeV/c2
-    //fitFunc = new TF1("gaussian",gaussian,9,10,3);
-    fitFunc = new TF1("gaussian","[0]*TMath::Exp(-0.5*(x-[1])*(x-[1])/[2]/[2])",9,10);
-    //TF1 *fb2 = new TF1("fa3","TMath::Landau(x,[0],[1],0)",-5,10);
-    //if (sigma == 0) return 1.e30;
-    // Double_t arg = (x-mean)/sigma; (x-[1])*(x-[1])/[2]/[2]
-    //Double_t res = TMath::Exp(-0.5*arg*arg);
-    //if (!norm) return res;
-    //return res/(2.50662827463100024*sigma); //sqrt(2*Pi)=2.50662827463100024
-
-   fitFunc->SetParNames("Constant","Mean value","Width");
-    fitFunc->SetLineColor(2);
-    fitFunc->SetLineWidth(2);
-    fitFunc->SetLineStyle(2);
-    
-    Float_t  *tParams = new Float_t[3] ;
-    tParams[0] = 500;
-    tParams[1] = 9.47;
-    tParams[2] = 0.1;
-    fitFunc->SetParameters(tParams[0],tParams[1],tParams[2]);
-    
-    TString FitFuncName = "gaussian";  
-  }
-  
   if (fitfunc==4){
     fitFunc = new TF1("fitlanUpsilon",fitlanUpsilon,FitLow,FitHigh,3);
     fitFunc->SetParNames("Constant","Mean value","Width");
@@ -759,7 +797,7 @@ void MUONplotefficiency(Int_t fittype = 1, Int_t select = 0){
 
 
 
-  TCanvas *call = new TCanvas("call", "#Upsilon : invariant mass spectra",30,330,700,500);
+  TCanvas *call = new TCanvas("call", "Resonance : invariant mass spectra",30,330,700,500);
   call->Range(-1.69394,-0.648855,15.3928,2.77143);
   call->SetBorderSize(2);
   //call->SetRightMargin(0.2229885);
@@ -767,12 +805,14 @@ void MUONplotefficiency(Int_t fittype = 1, Int_t select = 0){
   call->SetTopMargin(0.0275424);
   call->SetFrameFillColor(0);
   call->cd();
-  TH1F* hInvMass = new TH1F("hInvMass","Inv. Mass Pt,Y integrated",30,0,12);
+
+  TH1F* hInvMass = new TH1F("hInvMass","Inv. Mass Pt,Y integrated",30,0,3+RESONANCE_MASS);
   ESDtuple->Project("hInvMass","minv");
   hInvMass->SetLineWidth(2);
   hInvMass->Draw("HE");
+
   if(REALISTIC_BACKGROUND){  
-    TH1F* hInvMassBck = new TH1F("hInvMassBck","Background Pt,Y integrated",30,0,12);
+    TH1F* hInvMassBck = new TH1F("hInvMassBck","Background Pt,Y integrated",30,0,3+RESONANCE_MASS);
     ESDtupleBck->Project("hInvMassBck","minv");
     hInvMassBck->SetLineWidth(2);
     hInvMassBck->SetLineStyle(2);
@@ -783,7 +823,7 @@ void MUONplotefficiency(Int_t fittype = 1, Int_t select = 0){
   call->Update();
 
 
-  TCanvas *cfit = new TCanvas("cfit", "#Upsilon : invariant mass fit",30,330,700,500);
+  TCanvas *cfit = new TCanvas("cfit", "Resonance : invariant mass fit",30,330,700,500);
   cfit->Range(-1.69394,-0.648855,15.3928,2.77143);
   cfit->SetBorderSize(2);
   //cfit->SetRightMargin(0.2229885);
@@ -801,8 +841,8 @@ void MUONplotefficiency(Int_t fittype = 1, Int_t select = 0){
   
   cfit->Update();
   if (SAVE){
-    cfit->SaveAs("UpsilonMass.gif");
-    cfit->SaveAs("UpsilonMass.eps");
+    cfit->SaveAs("ResonanceMass.gif");
+    cfit->SaveAs("ResonanceMass.eps");
   }
 
   if(REALISTIC_BACKGROUND){  
@@ -816,7 +856,6 @@ void MUONplotefficiency(Int_t fittype = 1, Int_t select = 0){
   cfit->Modified();
   cfit->Update();
 
-#if 1
   //Fit also the pt-integrated mass histogram 
    cfit->cd();
    hInvMassAll->Fit(FitFuncName.Data(),"rv");
@@ -834,9 +873,8 @@ void MUONplotefficiency(Int_t fittype = 1, Int_t select = 0){
    cout << "   ChiSquare of the fit : " << fitFunc->GetChisquare()<< " / " << fitFunc->GetNDF() << endl ;
    cout << "********************************************" << endl;
    cout << " " << endl;
-#endif
    
-   TCanvas *cptfits = new TCanvas("cptfits", "#Upsilon : invariant mass fit",30,330,700,500);
+   TCanvas *cptfits = new TCanvas("cptfits", "Resonance : invariant mass fit",30,330,700,500);
    cptfits->Range(-1.69394,-0.648855,15.3928,2.77143);
    cptfits->SetBorderSize(2);
    //cptfits->SetRightMargin(0.2229885);
@@ -923,7 +961,7 @@ void MUONplotefficiency(Int_t fittype = 1, Int_t select = 0){
   Float_t meanWidthError = 0 ;
   Int_t cnt = 0 ;
   for (Int_t qw = 0 ; qw < nofMassHistograms ; qw++){
-    if ( fitResultsMean[qw] > 9. &&   fitResultsMean[qw] <10 &&  fitResultsWidth[qw] > 0 &&  fitResultsWidth[qw] < 1){
+    if ( fitResultsMean[qw] > invMassMin &&   fitResultsMean[qw] < invMassMax &&  fitResultsWidth[qw] > 0 &&  fitResultsWidth[qw] < 1){
       meanWidth += fitResultsWidth[qw] ;
       meanWidthError += fitResultsWidthErr[qw];
       meanMass += fitResultsMean[qw] ;
@@ -945,8 +983,8 @@ void MUONplotefficiency(Int_t fittype = 1, Int_t select = 0){
 
   cout << "  " << endl;
   cout << "***********************" << endl;
-  cout << " Integrated efficiency (+/- "<< 3*masssigma << " GeV around Upsilon mass cut)" << endl ;
-  cout << " UpsilonESDAcc/UpsilonMCAcc = " << hptyUpsilonESDAcc->GetEntries() << "/" << hptyUpsilonMCAcc->GetEntries()  << " = "  << hptyUpsilonESDAcc->GetEntries()/hptyUpsilonMCAcc->GetEntries()  <<endl;
+  cout << " Integrated efficiency (+/- "<< 3*masssigma << " GeV around Resonance mass cut)" << endl ;
+  cout << " ResonanceESDAcc/ResonanceMCAcc = " << hptyResonanceESDAcc->GetEntries() << "/" << hptyResonanceMCAcc->GetEntries()  << " = "  << hptyResonanceESDAcc->GetEntries()/hptyResonanceMCAcc->GetEntries()  <<endl;
   cout << "***********************" << endl;
   cout << "  " << endl;
 
@@ -954,9 +992,9 @@ void MUONplotefficiency(Int_t fittype = 1, Int_t select = 0){
   cout << "  " << endl;
   cout << "***********************" << endl;
   cout << " Trigger  efficiency" << endl ;
-  cout << " Two muons matching = " << hInvMassUpsilonTriggerTwoMatch->GetEntries() << "/" << hInvMassUpsilonTrigger->GetEntries() << " = " <<  hInvMassUpsilonTriggerTwoMatch->GetEntries()/hInvMassUpsilonTrigger->GetEntries() << endl;
-  cout << " Single muon matching  = " << hInvMassUpsilonTriggerOneMatch->GetEntries() << "/" << hInvMassUpsilonTrigger->GetEntries() << " = " <<  hInvMassUpsilonTriggerOneMatch->GetEntries()/hInvMassUpsilonTrigger->GetEntries() << endl;
-  cout << " No matching  = " << hInvMassUpsilonTriggerNoMatch->GetEntries() << "/" << hInvMassUpsilonTrigger->GetEntries() << " = " <<  hInvMassUpsilonTriggerNoMatch->GetEntries()/hInvMassUpsilonTrigger->GetEntries() <<endl;
+  cout << " Two muons matching = " << hInvMassResonanceTriggerTwoMatch->GetEntries() << "/" << hInvMassResonanceTrigger->GetEntries() << " = " <<  hInvMassResonanceTriggerTwoMatch->GetEntries()/hInvMassResonanceTrigger->GetEntries() << endl;
+  cout << " Single muon matching  = " << hInvMassResonanceTriggerOneMatch->GetEntries() << "/" << hInvMassResonanceTrigger->GetEntries() << " = " <<  hInvMassResonanceTriggerOneMatch->GetEntries()/hInvMassResonanceTrigger->GetEntries() << endl;
+  cout << " No matching  = " << hInvMassResonanceTriggerNoMatch->GetEntries() << "/" << hInvMassResonanceTrigger->GetEntries() << " = " <<  hInvMassResonanceTriggerNoMatch->GetEntries()/hInvMassResonanceTrigger->GetEntries() <<endl;
   cout << "***********************" << endl;
   cout << "  " << endl;
 
@@ -964,12 +1002,12 @@ void MUONplotefficiency(Int_t fittype = 1, Int_t select = 0){
   
 
   TH2F *hFrame = new TH2F("hFrame", "A hFrame",ptbins,ptmin,ptmax,100,fitResultsWidth[1]-fitResultsWidth[1]*2,fitResultsWidth[1]+fitResultsWidth[1]*2);
-  hptyUpsilonMCAcc->SetLineColor(1);
-  hptyUpsilonMCAcc->SetLineStyle(1);
-  hptyUpsilonMCAcc->SetLineWidth(2);
+  hptyResonanceMCAcc->SetLineColor(1);
+  hptyResonanceMCAcc->SetLineStyle(1);
+  hptyResonanceMCAcc->SetLineWidth(2);
   
   
-  TCanvas *cA = new TCanvas("cA", "#Upsilon : Width from fit",30,330,700,500);
+  TCanvas *cA = new TCanvas("cA", "Resonance : Width from fit",30,330,700,500);
   cA->Range(-1.69394,-0.648855,15.3928,2.77143);
   cA->SetBorderSize(2);
   cA->SetRightMargin(0.0229885);
@@ -987,14 +1025,14 @@ void MUONplotefficiency(Int_t fittype = 1, Int_t select = 0){
   
   
   TGraphErrors *grWidth = new TGraphErrors(nofMassHistograms,ptbinscenters,fitResultsWidth,errx,fitResultsWidthErr);
-  grWidth->SetTitle("Upsilon Mass Width");
+  grWidth->SetTitle("Resonance Mass Width");
   grWidth->SetMarkerColor(4);
   grWidth->SetMarkerStyle(21);
   grWidth->Draw("P");
   
   
   
-  TCanvas *cB = new TCanvas("cB", "#Upsilon : Mean from fit",50,350,700,500);
+  TCanvas *cB = new TCanvas("cB", "Resonance : Mean from fit",50,350,700,500);
   cB->Range(-1.69394,-0.648855,15.3928,2.77143);
   cB->SetBorderSize(2);
   cB->SetRightMargin(0.0229885);
@@ -1003,7 +1041,7 @@ void MUONplotefficiency(Int_t fittype = 1, Int_t select = 0){
   cB->cd();
   
   //TH2F *hFrameB = new TH2F("hFrameB", "A hFrameB",ptbins,ptmin,ptmax,100,fitResultsMean[1]-fitResultsMean[1]*2,fitResultsMean[1]+fitResultsMean[1]*2);
-  TH2F *hFrameB = new TH2F("hFrameB", "A hFrameB",ptbins,ptmin,ptmax,100,8.0,10.);
+  TH2F *hFrameB = new TH2F("hFrameB", "A hFrameB",ptbins,ptmin,ptmax,100,invMassMin,invMassMax);
   hFrameB->GetYaxis()->SetTitle("Peak Position [GeV/c^{2}]");
   hFrameB->GetXaxis()->SetTitle("P_{#perp}   [GeV/c]");
   hFrameB->SetStats(0);
@@ -1025,7 +1063,7 @@ void MUONplotefficiency(Int_t fittype = 1, Int_t select = 0){
   
   
   TGraphErrors *grMean = new TGraphErrors(nofMassHistograms,ptbinscenters,fitResultsMean,errx,fitResultsMeanErr);
-  grMean->SetTitle("Upsilon Mass Mean");
+  grMean->SetTitle("Resonance Mass Mean");
   grMean->SetMarkerColor(4);
   grMean->SetMarkerStyle(21);
   grMean->Draw("P");
@@ -1033,42 +1071,39 @@ void MUONplotefficiency(Int_t fittype = 1, Int_t select = 0){
   cA->Update();
   cB->Update();
   if (SAVE){
-    cB->SaveAs("UpsilonMeanVsPt.gif");
-    cB->SaveAs("UpsilonMeanVsPt.eps");
-    cA->SaveAs("UpsilonWidthVsPt.gif");
-    cA->SaveAs("UpsilonWidthVsPt.eps");
+    cB->SaveAs("ResonanceMeanVsPt.gif");
+    cB->SaveAs("ResonanceMeanVsPt.eps");
+    cA->SaveAs("ResonanceWidthVsPt.gif");
+    cA->SaveAs("ResonanceWidthVsPt.eps");
   }
   
   if (WRITE){
     TFile *myFile = new TFile("MUONplotefficiency.root", "RECREATE");
-    hptyUpsilonMCAcc->Write();
-    hptyUpsilonMC->Write();
-    hptUpsilonMCAcc ->Write();
-    hyUpsilonMCAcc->Write();
+    hptyResonanceMCAcc->Write();
+    hptyResonanceMC->Write();
+    hptResonanceMCAcc ->Write();
+    hyResonanceMCAcc->Write();
 
-    hptyUpsilonESDAcc->Write();
-    hptyUpsilonESD->Write();
-    hptUpsilonESDAcc ->Write();
-    hyUpsilonESDAcc->Write();
+    hptyResonanceESDAcc->Write();
+    hptyResonanceESD->Write();
+    hptResonanceESDAcc ->Write();
+    hyResonanceESDAcc->Write();
 
-    hEffptyUpsilon->Write();
-    hEffyUpsilon->Write();
-    hEffptUpsilon->Write();
+    hEffptyResonance->Write();
+    hEffyResonance->Write();
+    hEffptResonance->Write();
 
     hInvMass->Write();
-    hInvMassUpsilonTrigger->Write();
-    hUpsilonTriggerNo->Write();
-    hInvMassUpsilonTriggerOneMatch->Write();
-    hInvMassUpsilonTriggerTwoMatch->Write();
-    hInvMassUpsilonTriggerNoMatch->Write();
+    hInvMassResonanceTrigger->Write();
+    hResonanceTriggerNo->Write();
+    hInvMassResonanceTriggerOneMatch->Write();
+    hInvMassResonanceTriggerTwoMatch->Write();
+    hInvMassResonanceTriggerNoMatch->Write();
 
     for (Int_t qw = 0 ; qw < nofMassHistograms ; qw++) 
       hInvMassInPtBins[qw]->Write();
     
     hInvMassAll->Write();
-    
-    grWidth->Write();
-    grMean->Write();      
     
     myFile->Close();
   }
