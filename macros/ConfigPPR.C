@@ -160,7 +160,7 @@ void Config()
 
     AliRunLoader* rl=0x0;
 
-    AliLog::Message(AliLog::kInfo, "Creating Run Loader", "", "", "Config()"," ConfigPPR.C", __LINE__);}
+    AliLog::Message(AliLog::kInfo, "Creating Run Loader", "", "", "Config()"," ConfigPPR.C", __LINE__);
 
     rl = AliRunLoader::Open("galice.root",
 			    AliConfig::GetDefaultEventFolderName(),
