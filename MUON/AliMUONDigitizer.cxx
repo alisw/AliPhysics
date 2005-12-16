@@ -15,8 +15,6 @@
 
 /* $Id$ */
 
-#include <assert.h>
-
 #include "AliRun.h"
 #include "AliRunDigitizer.h"
 #include "AliRunLoader.h"
@@ -299,8 +297,11 @@ void AliMUONDigitizer::CreateDigits()
 
 	    Int_t q = GetSignalFrom(td);
 	    if (q > 0) {
-	      assert( 0 <= td->Chamber() && td->Chamber() <= 13 );
-	      AddDigit(td, q, digitindex[td->Chamber()]++);
+	      Int_t chamber = td->Chamber();
+	      if (0 <= chamber && chamber <= 13 )
+		AddDigit(td, q, digitindex[chamber]++);
+	      else
+		AliError(Form("Invalid chamber %d\n",chamber));
 	    }
 	  }
 	  FillOutputData();
