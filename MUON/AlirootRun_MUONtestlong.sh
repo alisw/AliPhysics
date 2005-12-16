@@ -37,12 +37,18 @@ EOF
 echo "Running efficiency  ..."
 
 aliroot -b >& testEfficiency.out << EOF 
-.x ../MUONefficiency.C
+.includepath $ALICE_ROOT/STEER
+.includepath $ALICE_ROOT/MUON
+.L $ALICE_ROOT/MUON/MUONefficiency.C++
+// no argument assumes Upsilon but MUONefficiency(443) handles Jpsi
+MUONefficiency();
 .q
 EOF
 
+
 aliroot -b >& testResults.out << EOF 
-.x ../MUONplotefficiency.C
+// no argument assumes Upsilon but MUONplotefficiency(443) handles Jpsi
+.x $ALICE_ROOT/MUON/MUONplotefficiency.C
 .q
 EOF
 
