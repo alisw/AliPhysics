@@ -21,7 +21,6 @@ class AliVZEROCalibData: public TNamed {
   AliVZEROCalibData(const AliVZEROCalibData &calibda);
   AliVZEROCalibData& operator= (const AliVZEROCalibData &calibda);
   virtual ~AliVZEROCalibData();
-  void Reset();
 
   Float_t  GetPedestal(Int_t channel)   const {return fPedestal[channel];}
   Float_t* GetPedestal()   const {return (float*)fPedestal;}
