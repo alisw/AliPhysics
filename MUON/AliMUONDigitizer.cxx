@@ -298,8 +298,10 @@ void AliMUONDigitizer::CreateDigits()
 	    AliDebug(3,Form( "Creating digit from transient digit 0x%X", (void*)td));
 
 	    Int_t q = GetSignalFrom(td);
-            assert( 0 <= td->Chamber() && td->Chamber() <= 13 );
-	    if (q > 0) AddDigit(td, q, digitindex[td->Chamber()]++);
+	    if (q > 0) {
+	      assert( 0 <= td->Chamber() && td->Chamber() <= 13 );
+	      AddDigit(td, q, digitindex[td->Chamber()]++);
+	    }
 	  }
 	  FillOutputData();
 	  //	}
