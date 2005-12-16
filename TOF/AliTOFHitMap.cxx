@@ -97,7 +97,7 @@ AliTOFHitMap::~AliTOFHitMap()
 //
   delete[] fHitMap;
 
-  delete fTOFGeometry;
+  fTOFGeometry = 0x0;
 
 }
 

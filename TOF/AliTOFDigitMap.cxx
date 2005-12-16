@@ -98,7 +98,7 @@ AliTOFDigitMap::~AliTOFDigitMap()
 //
   if (fDigitMap) delete[] fDigitMap;
 
-  delete fTOFGeometry;
+  fTOFGeometry = 0;
 
 }
 

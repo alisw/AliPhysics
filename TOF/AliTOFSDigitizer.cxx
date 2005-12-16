@@ -150,7 +150,7 @@ AliTOFSDigitizer::~AliTOFSDigitizer()
   // dtor
   fTOFLoader->CleanSDigitizer();
 
-  //delete fTOFGeometry;
+  delete fTOFGeometry;
 
 }
 
