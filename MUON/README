@@ -33,6 +33,29 @@ source $ALICE_ROOT/MUON/AlirootRun_MUONtest.sh
 The results of this test are saved in test_out/ directory
 
 ==========================================================
+ How to check that your aliroot is working VERY well
+==========================================================
+There is a script file AlirootRun_MUONlongtest.sh which
+allows for simulating, reconstructing and making the
+-+invariant analysis of the generated Upsilon (1S).
+This script generates a large number of Upsilon (20k) 
+in order to access differential quantities. 
+The used configuration file is Config.C in MUON
+directory.
+One should really run this script to check if the MUON 
+code can process a large number of events WITHOUT errors,
+in particular before making important commits !!
+
+You have to type :
+$ALICE_ROOT/MUON/AlirootRun_MUONtestlong.sh
+The results of this test are saved in testlong_out/ directory
+and will be kept in CVS
+
+(NOTE: the macros performing the calculations/plots MUONefficiency.C 
+and MUONplotEfficiency.C are also able to handle J/Psi if 
+Config.C is modified accordingly )
+
+==========================================================
  How to run a MUON generation
 ==========================================================
 aliroot
