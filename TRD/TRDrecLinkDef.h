@@ -33,5 +33,6 @@
 #pragma link C++ class  AliTRDprobdist+;
 
 #pragma link C++ class  AliTRDReconstructor+;
+#pragma link C++ class  AliTRDRecParam+;
 
 #endif

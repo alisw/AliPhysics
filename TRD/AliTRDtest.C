@@ -13,7 +13,6 @@ Int_t AliTRDtest()
   gAlice->Init("$(ALICE_ROOT)/TRD/AliTRDconfig.C");
 
   // Run one event and create the hits
-  gAlice->SetDebug(2);
   gAlice->Run(1);
 
   //if (gAlice) delete gAlice;
@@ -98,7 +97,7 @@ Int_t AliTRDanalyzeHits()
     return rc;
   }
 
-  AliTRDparameter *par = new AliTRDparameter("TRDparameter","TRD parameter class");
+  AliTRDCommonParam *par = AliTRDCommonParam::Instance();
 
   // Define the histograms
   TH1F *hQdedx  = new TH1F("hQdedx","Charge dedx-hits",100,0.0,1000.0);
@@ -110,7 +109,7 @@ Int_t AliTRDanalyzeHits()
   Float_t width  = geo->GetChamberWidth(0);
   Int_t   ncol   = par->GetColMax(0);
   Int_t   nrow   = par->GetRowMax(0,2,13);
-  Int_t   ntime  = ((Int_t) (rmax - rmin) / par->GetTimeBinSize());
+  Int_t   ntime  = ((Int_t) (rmax - rmin) / 22.0);
 
   TH2F *hZY     = new TH2F("hZY"   ,"Y vs Z (chamber 0)", nrow,-length/2.,length/2.
                                                         ,ntime,      rmin,     rmax);
@@ -298,11 +297,12 @@ Int_t AliTRDanalyzeDigits()
   }
 
   // Get the parameter object
-  AliTRDparameter *parameter = new AliTRDparameter("TRDparameter"
-						  ,"TRD parameter class");
+  AliTRDSimParam    *parSim = AliTRDSimParam::Instance();
+  AliTRDCommonParam *parCom = AliTRDCommonParam::Instance();
+  AliTRDcalibDB     *cal    = AliTRDcalibDB::Instance();
 
   // Define the histograms
-  Int_t adcRange = ((Int_t) parameter->GetADCoutRange());
+  Int_t adcRange = ((Int_t) parSim->GetADCoutRange());
   TH1F *hAmpAll   = new TH1F("hAmpAll"  ,"Amplitude of the digits (all)"
                             ,adcRange+1,-0.5,((Float_t) adcRange)+0.5);
   TH1F *hAmpEl    = new TH1F("hAmpEl"   ,"Amplitude of the digits (electrons)"
@@ -347,7 +347,7 @@ Int_t AliTRDanalyzeDigits()
   Int_t countDigits = 0;
   Int_t iSec        = trd->GetSensSector();
   Int_t iCha        = trd->GetSensChamber();
-  Int_t timeMax     = parameter->GetTimeTotal();
+  Int_t timeMax     = cal->GetNumberOfTimeBins();
 
   TProfile *hAmpTimeEl = new TProfile("hAmpTimeEl","Amplitude of the digits (electrons)"
 				      ,timeMax,-0.5,((Double_t) timeMax)-0.5);
@@ -358,8 +358,8 @@ Int_t AliTRDanalyzeDigits()
   for (Int_t iPla = 0; iPla < kNpla; iPla++) {
 
     Int_t iDet   = geo->GetDetector(iPla,iCha,iSec);
-    Int_t rowMax = parameter->GetRowMax(iPla,iCha,iSec);
-    Int_t colMax = parameter->GetColMax(iPla);
+    Int_t rowMax = parCom->GetRowMax(iPla,iCha,iSec);
+    Int_t colMax = parCom->GetColMax(iPla);
   
     if (iPla == 0) {
       matrix = new AliTRDmatrix(rowMax,colMax,timeMax,iSec,iCha,iPla);

@@ -26,8 +26,10 @@ class AliTRDclusterizerMI : public AliTRDclusterizerV1 {
   void MakeCluster(Double_t * padSignal, Double_t * pos, Double_t &sigma, Double_t & relpad);
   virtual AliTRDcluster  * AddCluster(Double_t *, Int_t , Double_t , Int_t *
 				      , Double_t *, Int_t , Float_t = 0){return 0;}
+  AliTRDcluster  * AddCluster(Double_t *, Int_t , Int_t , Double_t , Int_t *
+			     , Double_t *, Int_t , Float_t ) {return 0;};
   AliTRDclusterMI *  AddCluster();
-  void SetCluster(AliTRDclusterMI * cl, Double_t *pos, Int_t det, Double_t amp
+  void SetCluster(AliTRDclusterMI * cl, Double_t *pos, Int_t timebin, Int_t det, Double_t amp
 		  , Int_t *tracks, Double_t *sig, Int_t iType, Double_t sigmay,Double_t relpos);
  protected:
 

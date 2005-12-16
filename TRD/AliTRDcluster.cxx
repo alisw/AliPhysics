@@ -78,6 +78,7 @@ AliTRDcluster::AliTRDcluster(const AliTRDcluster &c):AliCluster()
   fTracks[1]  = c.GetLabel(1);
   fTracks[2]  = c.GetLabel(2);
 
+  fX          = c.GetX();
   fY          = c.GetY();
   fZ          = c.GetZ();
   fSigmaY2    = c.GetSigmaY2();

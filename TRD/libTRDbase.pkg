@@ -16,8 +16,13 @@ SRCS= AliTRDarrayI.cxx \
       AliTRDpadPlane.cxx \
       AliTRDRawStream.cxx \
       AliTRDCalROC.cxx \
-      AliTRDCalROCVdrift.cxx \
-      AliTRDCalVdrift.cxx
+      AliTRDCalPad.cxx \
+      AliTRDCalDet.cxx \
+      AliTRDCalGlobals.cxx \
+      AliTRDCalChamber.cxx \
+      AliTRDCalStack.cxx \
+      AliTRDCommonParam.cxx \
+      AliTRDcalibDB.cxx
 
 HDRS= $(SRCS:.cxx=.h)                
 

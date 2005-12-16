@@ -28,14 +28,13 @@
 
 #include "AliTRDRawStream.h"
 #include "AliRawReader.h"
-#include "AliTRDparameter.h"
+#include "AliTRDcalibDB.h"
 
 ClassImp(AliTRDRawStream)
 
 
-AliTRDRawStream::AliTRDRawStream(AliRawReader* rawReader, AliTRDparameter* parameter) :
+AliTRDRawStream::AliTRDRawStream(AliRawReader* rawReader) :
   fRawReader(rawReader),
-  fTimeTotal(parameter->GetTimeTotal()),
   fCount(0),
   fDetector(-1),
   fPrevDetector(-1),
@@ -55,7 +54,6 @@ AliTRDRawStream::AliTRDRawStream(AliRawReader* rawReader, AliTRDparameter* param
 AliTRDRawStream::AliTRDRawStream(const AliTRDRawStream& stream) :
   TObject(stream),
   fRawReader(NULL),
-  fTimeTotal(0),
   fCount(0),
   fDetector(-1),
   fPrevDetector(-1),
@@ -94,6 +92,12 @@ Bool_t AliTRDRawStream::Next()
   fPrevColumn = fColumn;
   UChar_t data;
 
+  AliTRDcalibDB* calibration = AliTRDcalibDB::Instance();
+  if (!calibration)
+    return kFALSE;
+  
+  Int_t timeBins = calibration->GetNumberOfTimeBins();
+  
   while (fCount >= 0) {
 
     while (fCount == 0) {  // next detector
@@ -153,12 +157,12 @@ Bool_t AliTRDRawStream::Next()
       }
       fNPads += (UInt_t(data) << 8);
 
-      fTime = fTimeTotal;
+      fTime = timeBins;
 
     }
 
     // read the pad row and column number
-    if ((fTime >= fTimeTotal) && (fCount > 2)) {
+    if ((fTime >= timeBins) && (fCount > 2)) {
       if (!fRawReader->ReadNextChar(data)) {
 	Error("Next", "could not read row number");
 	fCount = -1;

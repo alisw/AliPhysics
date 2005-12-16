@@ -10,6 +10,7 @@ SRCS= AliTRDhit.cxx \
       AliTRDsimple.cxx \
       AliTRDsimpleMC.cxx \
       AliTRDsimpleGen.cxx \
+      AliTRDSimParam.cxx \
       AliTRDdigitizer.cxx
 
 HDRS= $(SRCS:.cxx=.h)                

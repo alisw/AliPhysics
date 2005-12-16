@@ -35,7 +35,7 @@ class AliTRDgeometry : public AliGeometry {
 
   virtual Bool_t   Global2Local(Int_t mode, Double_t *local, Double_t *global
                                , Int_t* index,  AliTRDparameter *par) const;
-  virtual Bool_t   Global2Detector(Double_t global[3], Int_t index[3],  AliTRDparameter *par);
+  virtual Bool_t   Global2Detector(Double_t global[3], Int_t index[3]);
 
   virtual Bool_t   Rotate(Int_t d, Double_t *pos, Double_t *rot) const;
   virtual Bool_t   RotateBack(Int_t d, Double_t *rot, Double_t *pos) const;
@@ -72,8 +72,8 @@ class AliTRDgeometry : public AliGeometry {
   virtual Bool_t   GetPHOShole() const = 0;
   virtual Bool_t   GetRICHhole() const = 0;
   virtual Bool_t   IsHole(Int_t /*iplan*/, Int_t /*icham*/, Int_t /*isect*/) const {return kFALSE;}
-  virtual Int_t    GetDetectorSec(Int_t p, Int_t c) const;
-  virtual Int_t    GetDetector(Int_t p, Int_t c, Int_t s) const;
+  static Int_t    GetDetectorSec(Int_t p, Int_t c);
+  static Int_t    GetDetector(Int_t p, Int_t c, Int_t s);
   virtual Int_t    GetPlane(Int_t d)   const;
   virtual Int_t    GetChamber(Int_t d) const;
   virtual Int_t    GetSector(Int_t d)  const;
@@ -87,6 +87,8 @@ class AliTRDgeometry : public AliGeometry {
   static  Double_t GetAlpha()  { return 2 * 3.14159265358979323846 / fgkNsect; }; 
 
   static  AliTRDgeometry* GetGeometry(AliRunLoader* runLoader = NULL);
+  
+  static Float_t  GetTime0(Int_t p)                        { return fgkTime0[p];          };
 
  protected:
  
@@ -167,6 +169,9 @@ class AliTRDgeometry : public AliGeometry {
   Float_t              fRotB21[kNsect];                     // Matrix elements for the backward rotation
   Float_t              fRotB22[kNsect];                     // Matrix elements for the backward rotation
 
+  static const Double_t fgkTime0Base;                        // Base value for calculation of Time-position of pad 0
+  static const Float_t fgkTime0[kNplan];                      //  Time-position of pad 0
+  
   ClassDef(AliTRDgeometry,6)                                // TRD geometry base class
 
 };

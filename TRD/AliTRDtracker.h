@@ -94,6 +94,7 @@ class AliTRDtracker : public AliTracker {
   void          UnloadClusters();
   AliCluster   *GetCluster(Int_t index) const { if (index >= fNclusters) return NULL; 
                                                 return (AliCluster*) fClusters->UncheckedAt(index); };
+  Bool_t        GetTrackPoint(Int_t index, AliTrackPoint& p) const;
   virtual void  CookLabel(AliKalmanTrack *t,Float_t wrong) const;
   virtual void  UseClusters(const AliKalmanTrack *t, Int_t from=0) const;  
   

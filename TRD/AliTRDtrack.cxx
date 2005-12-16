@@ -459,7 +459,7 @@ void AliTRDtrack::CookdEdx(Double_t low, Double_t up) {
   for (i=0; i<nc; i++) dedx += sorted[i];       // ADDED by PS
   if((nu-nl)) dedx /= (nu-nl);                  // ADDED by PS
 
-  SetdEdx(dedx);
+  //SetdEdx(dedx);
   //
   // now real truncated mean
   for (i=0; i < nc; i++) {
@@ -472,6 +472,8 @@ void AliTRDtrack::CookdEdx(Double_t low, Double_t up) {
   dedx /= (nu-nl+1);
   fdEdxT = dedx;
   delete [] index;
+  SetdEdx(dedx);
+
 }                     
 
 

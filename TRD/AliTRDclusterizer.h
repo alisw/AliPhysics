@@ -41,13 +41,14 @@ class AliTRDclusterizer : public TNamed {
   AliTRDparameter *GetParameter()                   const { return fPar;          };
 
   TObjArray*      RecPoints() {if (!fRecPoints) fRecPoints = new TObjArray(400); return fRecPoints;}
-  virtual AliTRDcluster  *AddCluster(Double_t *pos, Int_t det, Double_t amp, Int_t *tracks
+  virtual AliTRDcluster  * AddCluster(Double_t *pos, Int_t timebin, Int_t det, Double_t amp, Int_t *tracks
 			     , Double_t *sig, Int_t iType, Float_t center = 0);
   void            ResetRecPoints() {if (fRecPoints) fRecPoints->Delete();}
 
-
  protected:
 
+   Double_t CalcXposFromTimebin(Float_t timebin, Float_t vdrift);
+       
   AliRunLoader    *fRunLoader;     //! Run Loader
   
   TTree           *fClusterTree;   //! Tree with the cluster

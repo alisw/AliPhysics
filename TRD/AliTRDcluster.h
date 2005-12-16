@@ -34,10 +34,13 @@ class AliTRDcluster : public AliCluster {
   void    SetDetector(Int_t d)         { fDetector  = d; }
   void    SetLocalTimeBin(Int_t t)     { fTimeBin   = t; }
   void    SetQ(Float_t q)              { fQ         = q; }
+  void    SetX(Float_t x)              { fX         = x; }
   void    SetSignals(Short_t *signals);
+  
   Int_t   GetDetector() const          { return fDetector; }
   Int_t   GetLocalTimeBin() const      { return fTimeBin;  }
   Float_t GetQ() const                 { return fQ; }
+  Float_t GetX() const                 { return fX; }
 
   void    Set2pad()                    { SetBit(k2pad); fNPads=2; }
   void    Set3pad()                    { SetBit(k3pad); fNPads=3; }
@@ -60,12 +63,14 @@ class AliTRDcluster : public AliCluster {
   };
   
   Int_t   fDetector;       // TRD detector number
+  Float_t  fX;              // local (in this detector) x pos (first order proportional to time bin (depends on local drift velocity!))
   Char_t    fTimeBin;        // Time bin number within the detector
   Float_t   fQ;              // amplitude 
   Char_t    fNPads;          // number of pads in cluster
   Float_t   fCenter;         // center of the cluster relative to the pad 
   Short_t   fSignals[7];     // signals in the cluster
-  ClassDef(AliTRDcluster,2) // Cluster for the TRD
+  
+  ClassDef(AliTRDcluster,3) // Cluster for the TRD
  
 };
 

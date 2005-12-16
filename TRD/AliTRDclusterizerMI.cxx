@@ -39,6 +39,9 @@
 #include "AliTRDparameter.h"
 #include "AliTRDclusterMI.h"
 #include "AliTRDpadPlane.h"
+#include "AliTRDcalibDB.h"
+#include "AliTRDRecParam.h"
+#include "AliTRDCommonParam.h"
 
 ClassImp(AliTRDclusterizerMI)
 
@@ -81,7 +84,7 @@ AliTRDclusterMI *  AliTRDclusterizerMI::AddCluster()
 }
 
 //_____________________________________________________________________________
-void AliTRDclusterizerMI::SetCluster(AliTRDclusterMI * cl,Double_t *pos
+void AliTRDclusterizerMI::SetCluster(AliTRDclusterMI * cl, Double_t *pos, Int_t timebin
                                    , Int_t det, Double_t amp
 		                   , Int_t *tracks, Double_t *sig, Int_t iType
                                    , Double_t sigmay, Double_t relpad)
@@ -93,11 +96,12 @@ void AliTRDclusterizerMI::SetCluster(AliTRDclusterMI * cl,Double_t *pos
   cl->SetDetector(det);
   cl->AddTrackIndex(tracks);
   cl->SetQ(amp);
+  cl->SetX(pos[2]);
   cl->SetY(pos[0]);
   cl->SetZ(pos[1]);
   cl->SetSigmaY2(sig[0]);   
   cl->SetSigmaZ2(sig[1]);
-  cl->SetLocalTimeBin(((Int_t) pos[2]));
+  cl->SetLocalTimeBin(timebin);
   cl->SetNPads(iType);
   cl->SetRelPos(relpad);
   cl->fRmsY = sigmay;
@@ -166,15 +170,36 @@ Bool_t AliTRDclusterizerMI::MakeClusters()
     printf("Create the default parameter object.\n");
   }
 
-  Double_t timeBinSize = fPar->GetDriftVelocity()
-                       / fPar->GetSamplingFrequency();
+  AliTRDcalibDB* calibration = AliTRDcalibDB::Instance();
+  if (!calibration)
+  {
+    printf("<AliTRDclusterizerMI::MakeCluster> ");
+    printf("ERROR getting instance of AliTRDcalibDB");
+    return kFALSE;  
+  }
+  
+  AliTRDRecParam* recParam = AliTRDRecParam::Instance();
+  if (!recParam)
+  {
+    printf("<AliTRDclusterizerMI::MakeCluster> ");
+    printf("ERROR getting instance of AliTRDRecParam");
+    return kFALSE;  
+  }
+  
+  AliTRDCommonParam* commonParam = AliTRDCommonParam::Instance();
+  if (!commonParam)
+  {
+    printf("<AliTRDdigitizer::MakeDigits> ");
+    printf("Could not get common params\n");
+    return kFALSE;
+  }
+      
   // Half of ampl.region
   const Float_t kAmWidth = AliTRDgeometry::AmThick()/2.; 
 
-  Float_t omegaTau = fPar->GetOmegaTau();
   if (fVerbose > 0) {
-    printf("<AliTRDclusterizerMI::MakeCluster> ");
-    printf("OmegaTau = %f \n",omegaTau);
+    //printf("<AliTRDclusterizerMI::MakeCluster> ");
+    //printf("OmegaTau = %f \n",omegaTau);
     printf("<AliTRDclusterizerMI::MakeCluster> ");
     printf("Start creating clusters.\n");
   } 
@@ -185,9 +210,9 @@ Bool_t AliTRDclusterizerMI::MakeClusters()
   AliTRDdataArrayI *track2; 
 
   // Threshold value for the maximum
-  Int_t maxThresh = fPar->GetClusMaxThresh();   
+  Int_t maxThresh = recParam->GetClusMaxThresh();   
   // Threshold value for the digit signal
-  Int_t sigThresh = fPar->GetClusSigThresh();   
+  Int_t sigThresh = recParam->GetClusSigThresh();   
 
   // Iteration limit for unfolding procedure
   const Double_t kEpsilon = 0.01;             
@@ -235,12 +260,12 @@ Bool_t AliTRDclusterizerMI::MakeClusters()
                 ,icham,iplan,isect);
 	}
 
-        Int_t   nRowMax     = fPar->GetRowMax(iplan,icham,isect);
-        Int_t   nColMax     = fPar->GetColMax(iplan);
+        Int_t   nRowMax     = commonParam->GetRowMax(iplan,icham,isect);
+        Int_t   nColMax     = commonParam->GetColMax(iplan);
+        Int_t   nTimeTotal  = calibration->GetNumberOfTimeBins();
         Int_t   nTimeBefore = fPar->GetTimeBefore();
-        Int_t   nTimeTotal  = fPar->GetTimeTotal();  
 
-        AliTRDpadPlane *padPlane = fPar->GetPadPlane(iplan,icham);
+        AliTRDpadPlane *padPlane = commonParam->GetPadPlane(iplan,icham);
 
         // Get the digits
         digits = fDigitsManager->GetDigits(idet);
@@ -278,8 +303,8 @@ Bool_t AliTRDclusterizerMI::MakeClusters()
 
         // Now check the maxima and calculate the cluster position
         for ( row = 0;  row <  nRowMax  ;  row++) {
-          for (time = 0; time < nTimeTotal; time++) {
-            for ( col = 1;  col <  nColMax-1;  col++) {
+          for ( col = 1;  col <  nColMax-1;  col++) {
+            for (time = 0; time < nTimeTotal; time++) {
 
               // Maximum found ?             
               if (digits->GetDataUnchecked(row,col,time) < 0) {
@@ -391,8 +416,11 @@ Bool_t AliTRDclusterizerMI::MakeClusters()
                 clusterPads[0] = row + 0.5;
 		// Take the shift of the additional time bins into account
                 clusterPads[2] = time - nTimeBefore + 0.5;
+                
+                // correct for t0
+                clusterPads[2] -= calibration->GetT0(idet, col, row);
 
-                if (fPar->LUTOn()) {
+                if (recParam->LUTOn()) {
 
   		  // Calculate the position of the cluster by using the
 		  // lookup table method
@@ -401,7 +429,7 @@ Bool_t AliTRDclusterizerMI::MakeClusters()
 //                                                           ,clusterSignal[1]
 // 					                  ,clusterSignal[2]);
                   clusterPads[1] = 0.5
-                                 + fPar->LUTposition(iplan,clusterSignal[0]
+                      + recParam->LUTposition(iplan,clusterSignal[0]
                                                           ,clusterSignal[1]
 					                  ,clusterSignal[2]);
 
@@ -426,21 +454,26 @@ Bool_t AliTRDclusterizerMI::MakeClusters()
                                          (clusterCharge*clusterCharge);
 
 		// Calculate the position and the error
+                Float_t vdrift = calibration->GetVdrift(idet, col, row);
                 Double_t clusterPos[3];
 //                 clusterPos[0] = clusterPads[1] * colSize + col0;
 //                 clusterPos[1] = clusterPads[0] * rowSize + row0;
                 clusterPos[0] = padPlane->GetColPos(col) - clusterPads[1];
                 clusterPos[1] = padPlane->GetRowPos(row) - clusterPads[0];
-                clusterPos[2] = clusterPads[2];
+                clusterPos[2] = CalcXposFromTimebin(clusterPads[2], vdrift);
                 Double_t clusterSig[2];
                 Double_t colSize = padPlane->GetColSize(col);
                 Double_t rowSize = padPlane->GetRowSize(row);
                 clusterSig[0] = (clusterSigmaY2 + 1./12.) * colSize*colSize;
                 clusterSig[1] = rowSize * rowSize / 12.;
 
+                Int_t    local_time_bin = (Int_t) clusterPads[2];
+                
                 // Correct for ExB displacement
-                if (fPar->ExBOn()) { 
-                  Int_t    local_time_bin = (Int_t) clusterPads[2];
+                if (commonParam->ExBOn()) { 
+                  Float_t omegaTau = calibration->GetOmegaTau(vdrift);
+                  Double_t timeBinSize = vdrift / calibration->GetSamplingFrequency();
+                  
                   Double_t driftLength    = local_time_bin * timeBinSize + kAmWidth;
                   Double_t deltaY         = omegaTau * driftLength;
                   clusterPos[1]           = clusterPos[1] - deltaY;
@@ -454,10 +487,10 @@ Bool_t AliTRDclusterizerMI::MakeClusters()
 
 // 		   clusterPos[0] = clusterPads[1] * colSize + col0;
 //                 clusterPos[1] = clusterPads[0] * rowSize + row0;
-                clusterPos[2] = clusterPads[2];
+                clusterPos[2] = CalcXposFromTimebin(clusterPads[2], vdrift);
                 clusterPos[0] = padPlane->GetColPos(col) - clusterPads[1];
                 clusterPos[1] = padPlane->GetRowPos(row) - clusterPads[0];
-		SetCluster(cluster, clusterPos,idet,clusterCharge,clusterTracks,clusterSig,iType,sigma,relpos);
+                SetCluster(cluster, clusterPos, (Int_t) clusterPads[2],idet,clusterCharge,clusterTracks,clusterSig,iType,sigma,relpos);
                 // Add the cluster to the output array 
 		//                fTRD->AddCluster(clusterPos
                 //                ,idet
@@ -515,6 +548,14 @@ Double_t AliTRDclusterizerMI::Unfold(Double_t eps, Int_t plane, Double_t* padSig
   // The resulting ratio is then returned to the calling method.
   //
 
+  AliTRDCommonParam* commonParam = AliTRDCommonParam::Instance();
+  if (!commonParam)
+  {
+    printf("<AliTRDdigitizer::MakeDigits> ");
+    printf("Could not get common params\n");
+    return kFALSE;
+  }
+  
   Int_t   irc                = 0;
   Int_t   itStep             = 0;      // Count iteration steps
 
@@ -538,14 +579,14 @@ Double_t AliTRDclusterizerMI::Unfold(Double_t eps, Int_t plane, Double_t* padSig
                       / ((1-ratio)*padSignal[2] + padSignal[3] + padSignal[4]);
 
     // Set cluster charge ratio
-    irc = fPar->PadResponse(1.0,maxLeft ,plane,newSignal);
+    irc = commonParam->PadResponse(1.0,maxLeft ,plane,newSignal);
     Double_t ampLeft  = padSignal[1] / newSignal[1];
-    irc = fPar->PadResponse(1.0,maxRight,plane,newSignal);
+    irc = commonParam->PadResponse(1.0,maxRight,plane,newSignal);
     Double_t ampRight = padSignal[3] / newSignal[1];
 
     // Apply pad response to parameters
-    irc = fPar->PadResponse(ampLeft ,maxLeft ,plane,newLeftSignal );
-    irc = fPar->PadResponse(ampRight,maxRight,plane,newRightSignal);
+    irc = commonParam->PadResponse(ampLeft ,maxLeft ,plane,newLeftSignal );
+    irc = commonParam->PadResponse(ampRight,maxRight,plane,newRightSignal);
 
     // Calculate new overlapping ratio
     ratio = TMath::Min((Double_t)1.0,newLeftSignal[2] / 

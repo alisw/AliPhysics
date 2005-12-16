@@ -166,7 +166,7 @@ void AliTRDsimpleMC::NewTrack(Int_t iTrack, Int_t pdg
 
   if (!fTRD) {
     fTRD = (AliTRDv1 *) gAlice->GetDetector("TRD");   
-    fX0  = fPar->GetTime0(0) - AliTRDgeometry::DrThick(); 
+    fX0  = AliTRDgeometry::GetTime0(0) - AliTRDgeometry::DrThick(); 
   }
 
   fTRD->ResetHits();

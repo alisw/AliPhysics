@@ -34,6 +34,7 @@
 #include "AliTRDrecPoint.h"
 #include "AliTRDgeometry.h"
 #include "AliTRDparameter.h"
+#include "AliTRDcalibDB.h"
 
 ClassImp(AliTRDclusterizer)
 
@@ -261,7 +262,7 @@ Bool_t AliTRDclusterizer::WriteClusters(Int_t det)
 
 
 //_____________________________________________________________________________
-AliTRDcluster *  AliTRDclusterizer::AddCluster(Double_t *pos, Int_t det, Double_t amp
+AliTRDcluster* AliTRDclusterizer::AddCluster(Double_t *pos, Int_t timebin, Int_t det, Double_t amp
 				   , Int_t *tracks, Double_t *sig, Int_t iType, Float_t center)
 {
   //
@@ -273,11 +274,12 @@ AliTRDcluster *  AliTRDclusterizer::AddCluster(Double_t *pos, Int_t det, Double_
   c->SetDetector(det);
   c->AddTrackIndex(tracks);
   c->SetQ(amp);
+  c->SetX(pos[2]);
   c->SetY(pos[0]);
   c->SetZ(pos[1]);
   c->SetSigmaY2(sig[0]);   
   c->SetSigmaZ2(sig[1]);
-  c->SetLocalTimeBin(((Int_t) pos[2]));
+  c->SetLocalTimeBin(timebin);
   c->SetCenter(center);
   switch (iType) {
   case 0:
@@ -299,4 +301,21 @@ AliTRDcluster *  AliTRDclusterizer::AddCluster(Double_t *pos, Int_t det, Double_
 
   RecPoints()->Add(c);
   return c;
+}
+
+//_____________________________________________________________________________
+Double_t AliTRDclusterizer::CalcXposFromTimebin(Float_t timebin, Float_t vdrift)
+{
+  //
+  // Calculates the local x position in the detector from the timebin, depends on the drift velocity
+  // The timebin has to be t0 corrected already
+  //
+  
+  AliTRDcalibDB* calibration = AliTRDcalibDB::Instance();
+  if (!calibration)
+    return -1;
+    
+  Int_t totalTimebins = calibration->GetNumberOfTimeBins();
+  Float_t samplingFrequency = calibration->GetSamplingFrequency();
+  return (totalTimebins - timebin) / samplingFrequency * vdrift;
 }

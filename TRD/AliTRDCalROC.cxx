@@ -18,6 +18,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
 //  Calibration base class for a single ROC                                  //
+//  Contains one float value per pad                                         //
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -38,6 +39,8 @@ AliTRDCalROC::AliTRDCalROC():TObject()
   fNrows        = 0;
   fNcols        = 0;
 
+  fNchannels    = 0;
+  fData         = 0;
 }
 
 //_____________________________________________________________________________
@@ -118,6 +121,9 @@ AliTRDCalROC::AliTRDCalROC(Int_t p, Int_t c):TObject()
     break;
   };
 
+  fNchannels = fNrows * fNcols;
+  if (fNchannels != 0)
+    fData = new Float_t[fNchannels];
 }
 
 //_____________________________________________________________________________
@@ -138,6 +144,10 @@ AliTRDCalROC::~AliTRDCalROC()
   // AliTRDCalROC destructor
   //
 
+  if (fData) {
+    delete [] fData;
+    fData = 0;
+  }
 }
 
 //_____________________________________________________________________________
@@ -165,7 +175,29 @@ void AliTRDCalROC::Copy(TObject &c) const
   ((AliTRDCalROC &) c).fNrows        = fNrows;
   ((AliTRDCalROC &) c).fNcols        = fNcols;
 
+  Int_t iBin = 0;
+
+  ((AliTRDCalROC &) c).fNchannels = fNchannels;
+
+  if (((AliTRDCalROC &) c).fData) delete [] ((AliTRDCalROC &) c).fData;
+  ((AliTRDCalROC &) c).fData = new Float_t[fNchannels];
+  for (iBin = 0; iBin < fNchannels; iBin++) {
+    ((AliTRDCalROC &) c).fData[iBin] = fData[iBin];
+  }
+
   TObject::Copy(c);
 
 }
 
+//_____________________________________________________________________________
+void AliTRDCalROC::Scale(Float_t value)
+{
+  //
+  // Scales all values of this ROC with the provided parameter. Is used if ROC defines
+  // local variations of a global (or per detector defined) parameter
+  //
+
+  for (Int_t iBin = 0; iBin < fNchannels; iBin++) {
+    fData[iBin] *= value;
+  }
+}
