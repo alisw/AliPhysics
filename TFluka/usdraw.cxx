@@ -4,6 +4,7 @@
 #include <TLorentzVector.h>
 #include "Fdimpar.h"  //(DIMPAR) fluka include
 #include "Ftrackr.h"  //(TRACKR) fluka common
+#include "Femfstk.h"  //(EMFSTK) fluka common
 #ifndef WIN32
 # define usdraw usdraw_
 #else
@@ -19,22 +20,27 @@ void usdraw(Int_t& icode, Int_t& mreg,
   fluka->SetCaller(6);
   fluka->SetIcode(icode);
 
-  if (fluka->IsTrackDisappeared()) {
-      TRACKR.ispusr[mkbmx2 - 2] = 1;
+  if (icode/100 == 2) {
+      for (Int_t npnw = EMFSTK.npstrt-1; npnw <= EMFSTK.npemf-1; npnw++) {
+	  if (EMFSTK.iespak[npnw][mkbmx2-1] ==  TRACKR.ispusr[mkbmx2 - 1] ) {
+	      EMFSTK.iespak[npnw][mkbmx2 - 2] = 1;
 // Save properties at point where particle disappears in case this is only an interruption
-      TLorentzVector p;
-      gMC->TrackMomentum(p);
-      
-      TRACKR.spausr[0] = xsco;               // x
-      TRACKR.spausr[1] = ysco;               // y
-      TRACKR.spausr[2] = zsco;               // z
-      TRACKR.spausr[3] = gMC->TrackTime();   // t
-      TRACKR.spausr[4] = p[0];               // px
-      TRACKR.spausr[5] = p[1];               // py
-      TRACKR.spausr[6] = p[2];               // pz
-      TRACKR.spausr[7] = p[3];               // e
-      TRACKR.spausr[8] = gMC->TrackLength(); // Length 
-  }
+	      TLorentzVector p;
+	      gMC->TrackMomentum(p);
+	      EMFSTK.espark[npnw][0] = xsco;               // x
+	      EMFSTK.espark[npnw][1] = ysco;               // y
+	      EMFSTK.espark[npnw][2] = zsco;               // z
+	      EMFSTK.espark[npnw][3] = gMC->TrackTime();   // t
+	      EMFSTK.espark[npnw][4] = p[0];               // px
+	      EMFSTK.espark[npnw][5] = p[1];               // py
+	      EMFSTK.espark[npnw][6] = p[2];               // pz
+	      EMFSTK.espark[npnw][7] = p[3];               // e
+	      EMFSTK.espark[npnw][8] = gMC->TrackLength(); // Length 
+	  } // Track found in stack
+      } // Loop over emf stack 
+  } // Electromagnetic process
+  
+
 
   fluka->SetMreg(mreg);
   fluka->SetXsco(xsco);
