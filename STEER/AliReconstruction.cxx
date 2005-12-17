@@ -111,6 +111,7 @@
 #include <TROOT.h>
 #include <TPluginManager.h>
 #include <TStopwatch.h>
+#include <TGeoManager.h>
 
 #include "AliReconstruction.h"
 #include "AliReconstructor.h"
@@ -179,6 +180,8 @@ AliReconstruction::AliReconstruction(const char* gAliceFilename,
     fTracker[iDet] = NULL;
   }
   AliPID pid;
+  // Import TGeo geometry
+  TGeoManager::Import("geometry.root");
 }
 
 //_____________________________________________________________________________
