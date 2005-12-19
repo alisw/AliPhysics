@@ -91,7 +91,7 @@ AliTRDCommonParam::AliTRDCommonParam()
   fPadPlaneArray      = 0;
   
   Init();
-};
+}
 
 //_____________________________________________________________________________
 void AliTRDCommonParam::Init()
@@ -146,7 +146,7 @@ AliTRDCommonParam::~AliTRDCommonParam()
     delete fPadPlaneArray;
     fPadPlaneArray = 0;
   }
-};
+}
 
 //_____________________________________________________________________________
 AliTRDCommonParam::AliTRDCommonParam(const AliTRDCommonParam &p):TObject(p)

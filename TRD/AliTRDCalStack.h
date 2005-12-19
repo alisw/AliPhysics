@@ -44,7 +44,7 @@ void AliTRDCalStack::SetPos(Int_t chamber, Int_t sector, Float_t x, Float_t y, F
   fStackPos[stack][0] = x; 
   fStackPos[stack][1] = y; 
   fStackPos[stack][2] = z; 
-};
+}
 
 void AliTRDCalStack::SetRot(Int_t chamber, Int_t sector, Float_t x, Float_t y, Float_t z) 
 { 
@@ -52,6 +52,6 @@ void AliTRDCalStack::SetRot(Int_t chamber, Int_t sector, Float_t x, Float_t y, F
   fStackRot[stack][0] = x; 
   fStackRot[stack][1] = y; 
   fStackRot[stack][2] = z; 
-};
+}
 
 #endif
