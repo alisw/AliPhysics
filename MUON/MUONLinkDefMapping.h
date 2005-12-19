@@ -14,6 +14,7 @@
 #pragma link C++ class  AliMpVPadIterator+;
 #pragma link C++ class  AliMpPadIteratorPtr+;
 #pragma link C++ class  AliMpFiles!;
+#pragma link C++ class  AliMpBusPatch+;
 
 #pragma link C++ enum   AliMpDirection;
 #pragma link C++ enum   AliMpXDirection;
