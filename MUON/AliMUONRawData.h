@@ -12,7 +12,7 @@
 /// Raw data class for trigger and tracker chambers
 
 #include <TObject.h>
-#include <TExMap.h>
+#include "AliMpBusPatch.h"
 #include "AliMUONSubEventTracker.h"
 
 class TClonesArray;
@@ -40,16 +40,12 @@ class AliMUONRawData : public TObject
   Int_t ReadTrackerDDL(AliRawReader* rawReader);
   Int_t ReadTriggerDDL(AliRawReader* rawReader);
 
-  void GetDspInfo(Int_t iCh, Int_t& iDspMax, Int_t* iBusPerDSP);
-  Int_t  GetDDLfromBus(Int_t busPatchId);
-
   AliMUONData*   GetMUONData() {return fMUONData;}
 
   void AddData(const AliMUONSubEventTracker* event) {
     TClonesArray &temp = *fSubEventArray;
     new(temp[temp.GetEntriesFast()])AliMUONSubEventTracker(*event); 
   }
-
 
   // could be private function (public for debugging)
   Int_t GetInvMapping(const AliMUONDigit* digit, Int_t &busPatchId,
@@ -58,12 +54,9 @@ class AliMUONRawData : public TObject
   Int_t GetMapping(Int_t buspatchId, UShort_t manuId, 
 			  UChar_t channelId, AliMUONDigit* digit );
 
-
   Int_t GetGlobalTriggerPattern(const AliMUONGlobalTrigger* gloTrg) const;
   AliMUONGlobalTrigger* GetGlobalTriggerPattern(Int_t gloTrg) const;
 
-  Int_t GetDEfromBus(Int_t busPatchId);
-  TArrayI* GetBusfromDE(Int_t idDE);
 
  protected:
   AliMUONRawData();                  // Default constructor
@@ -83,17 +76,11 @@ class AliMUONRawData : public TObject
   AliMUONDDLTracker* fDDLTracker;    //! DDL tracker class pointers
   AliMUONDDLTrigger* fDDLTrigger;    //! DDL trigger class pointers
 
-  TExMap fDetElemIdToBusPatch;       //! Map from idDE to BusPatch   
-  TExMap fBusPatchToDetElem;         //! Map from BusPatch to idDE
-  TExMap fBusPatchToDDL;             //! Map from BusPatch to iDDL
-
-  Int_t fMaxBusPerCh[10];            //! max buspatch number per chamber
+  AliMpBusPatch* fBusPatchManager;    //! buspatch versus DE's & DDL
 
   // writing raw data
   Int_t WriteTrackerDDL(Int_t iCh);
   Int_t WriteTriggerDDL();
-
-  void  ReadBusPatchFile();
 
   ClassDef(AliMUONRawData,1) // MUON cluster reconstructor in ALICE
 };

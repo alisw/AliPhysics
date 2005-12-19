@@ -90,7 +90,8 @@ AliMUONRawData::AliMUONRawData(AliLoader* loader)
   fDDLTracker = new AliMUONDDLTracker();
   fDDLTrigger = new AliMUONDDLTrigger();
 
-  ReadBusPatchFile();
+  fBusPatchManager = new AliMpBusPatch();
+  fBusPatchManager->ReadBusPatchFile();
 
 }
 
@@ -142,9 +143,7 @@ AliMUONRawData::~AliMUONRawData(void)
   if (fDDLTrigger)
     delete fDDLTrigger;
 
-  fDetElemIdToBusPatch.Delete();
-  fBusPatchToDetElem.Delete();
-  fBusPatchToDDL.Delete();
+  fBusPatchManager->Delete();
 
   return;
 }
@@ -339,9 +338,9 @@ Int_t AliMUONRawData::WriteTrackerDDL(Int_t iCh)
   Int_t iDspMax; //number max of DSP per block
  
   Int_t iFile = 0;
-  GetDspInfo(iCh, iDspMax, iBusPerDSP);
+  fBusPatchManager->GetDspInfo(iCh, iDspMax, iBusPerDSP);
 
-  TArrayI* vec = GetBusfromDE((iCh+1)*100);
+  TArrayI* vec = fBusPatchManager->GetBusfromDE((iCh+1)*100);
 
   Int_t iBus0AtCh = vec->At(0); //get first bus patch id for a given ich
 	
@@ -385,7 +384,7 @@ Int_t AliMUONRawData::WriteTrackerDDL(Int_t iCh)
 	for (Int_t i = 0; i < iBusPerDSP[iDsp]; i++) {
 
 	  iBusPatch ++;
-	  if ((fBusPatchToDDL(iBusPatch) % 2) == 1) // comparing to DDL file
+	  if ((fBusPatchManager->GetDDLfromBus(iBusPatch) % 2) == 1) // comparing to DDL file
 	    iFile = 0;
 	  else
 	    iFile = 1;
@@ -669,7 +668,7 @@ Int_t AliMUONRawData::GetInvMapping(const AliMUONDigit* digit,
   channelId &= 0x3F; // 6 bits
 
   // Getting buspatch id
-  TArrayI* vec = GetBusfromDE(idDE);
+  TArrayI* vec = fBusPatchManager->GetBusfromDE(idDE);
   Int_t pos;
 
   if (idDE < 500) { // station 1 & 2
@@ -774,7 +773,7 @@ Int_t AliMUONRawData::ReadTrackerDDL(AliRawReader* rawReader)
     AliDebug(3, Form("Chamber %d\n", iDDL/2 +1 ));
 
     // getting DSP info
-    GetDspInfo(iDDL/2, iDspMax, iBusPerDSP);
+    fBusPatchManager->GetDspInfo(iDDL/2, iDspMax, iBusPerDSP);
 
     //   Each DDL is made with 2 Blocks each of which consists of 5 DSP's at most and each of DSP has at most 5 buspatches.
     //   This information is used to calculate the size of headers (DDL,Block and DSP) which has no interesting data.
@@ -913,7 +912,7 @@ Int_t AliMUONRawData::GetMapping(Int_t busPatchId, UShort_t manuId,
  // mapping  for tracker
 
   // getting DE from buspatch
-  Int_t  idDE = GetDEfromBus(busPatchId);
+  Int_t  idDE = fBusPatchManager->GetDEfromBus(busPatchId);
   AliDebug(3,Form("idDE: %d busPatchId %d\n", idDE, busPatchId));
 
   // segmentation
@@ -1124,119 +1123,4 @@ AliMUONGlobalTrigger* AliMUONRawData::GetGlobalTriggerPattern(Int_t gloTrigPat) 
 				   globalPairLike));  
 
 }
-//____________________________________________________________________
-Int_t AliMUONRawData::GetDEfromBus(Int_t busPatchId)
-{
-  // getting DE id from bus patch
-  Long_t it = fBusPatchToDetElem.GetValue(busPatchId);
 
- if ( it ) 
-   return (Int_t)it;
- else 
-   return -1;
-}
-
-//____________________________________________________________________
-TArrayI*  AliMUONRawData::GetBusfromDE(Int_t idDE)
-{
-  // getting bus patch from DE id 
-
-  return (TArrayI*)fDetElemIdToBusPatch.GetValue(idDE);
-}
-//____________________________________________________________________
-Int_t AliMUONRawData::GetDDLfromBus(Int_t busPatchId)
-{
-  // getting DE id from bus patch
-  Long_t it = fBusPatchToDDL.GetValue(busPatchId);
-
- if ( it ) 
-   return (Int_t)it;
- else 
-   return -1;
-}
-
-//____________________________________________________________________
-void AliMUONRawData::GetDspInfo(Int_t iCh, Int_t& iDspMax, Int_t* iBusPerDSP)
-{
-  // calculates the number of DSP & buspatch per block
-
-  Int_t iBusPerBlk = fMaxBusPerCh[iCh]/4; //per half chamber; per block
-
-  iDspMax =  iBusPerBlk/5; //number max of DSP per block
-  if (iBusPerBlk % 5 != 0)
-    iDspMax += 1;
-  
-  for (Int_t i = 0; i < iDspMax; i++) {
-    if ((iBusPerBlk -= 5) > 0) 
-      iBusPerDSP[i] = 5;
-    else 
-      iBusPerDSP[i] = iBusPerBlk + 5;
-  }
-  
-}
-//____________________________________________________________________
-void AliMUONRawData::ReadBusPatchFile()
-{
-
-  // idDE <> buspatch map
-  
-  // reading file
-   TString dirPath = gSystem->Getenv("ALICE_ROOT");
-   dirPath += "/MUON/mapping/data/"; 
-
-   TString infile = dirPath + "DetElemIdToBusPatch.dat";
-
-   ifstream in(infile, ios::in);
-   if (!in) AliError("DetElemIdToBusPatch.dat not found.");
-       
-   char line[80];
-
-   Int_t iChprev = 1;
-   Int_t maxBusPatch = 0;
-
-   while ( in.getline(line,80) ) {
-
-      if ( line[0] == '#' ) continue;
-
-      TString tmp(AliMpHelper::Normalize(line));
-
-      Int_t blankPos  = tmp.First(' ');
-      Int_t blankPos1 = tmp.Last(' ');
-
-      TString sDE(tmp(0, blankPos));
-
-      Int_t idDE = atoi(sDE.Data());
-      
-      if (idDE/100 != iChprev) {
-	fMaxBusPerCh[iChprev-1] = maxBusPatch-iChprev*100+1;
-	iChprev = idDE/100;
-      }
-
-      TString sDDL(tmp(blankPos1 + 1, tmp.Length()-blankPos1));
-
-      Int_t iDDL = atoi(sDDL.Data());
-
-      TString busPatch(tmp(blankPos + 1,blankPos1-blankPos-1));
-      AliDebug(3,Form("idDE %d buspatch %s iDDL %d\n", idDE, busPatch.Data(), iDDL));
-
-      TArrayI busPatchList;
-      // decoding range of buspatch
-      AliMpHelper::DecodeName(busPatch,';',busPatchList);
-      
-      // filling buspatch -> idDE
-      for (Int_t i = 0; i < busPatchList.GetSize(); i++) {
-	fBusPatchToDetElem.Add((Long_t)busPatchList[i],(Long_t)idDE);
-	fBusPatchToDDL.Add((Long_t)busPatchList[i],(Long_t)iDDL);
-	maxBusPatch = busPatchList[i];
-      }
-   
-      // filling idDE -> buspatch list (vector)
-      fDetElemIdToBusPatch.Add((Long_t)idDE, (Long_t)(new TArrayI(busPatchList))); 
-
-    }
-   
-   fMaxBusPerCh[iChprev-1] = maxBusPatch-iChprev*100+1;
-
-  in.close();
-
-}
