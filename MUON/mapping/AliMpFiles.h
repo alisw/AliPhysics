@@ -36,6 +36,10 @@ class AliMpFiles : public TObject
     // methods
     //
     
+    // bus patch
+    //
+    static TString BusPatchFilePath(); 
+
     // trigger
     //
     static TString LocalTriggerBoardMapping();
@@ -94,8 +98,9 @@ class AliMpFiles : public TObject
     static const TString fgkMotifSpecialPrefix; //special motif data file name 
     static const TString fgkPadPosPrefix;  //pad position data file name
     static const TString fgkDataExt;       //file extension
-    static const TString fgkBergToGCFileName; //name of the file with BergToGC mapping
-    static const TString fgkTriggerLocalBoards; // local board name to id mapping
+    static const TString fgkBergToGCFileName;  //BergToGC mapping filr name
+    static const TString fgkTriggerLocalBoards;// local board name to id mapping
+    static const TString fgkBusPatchFileName;  //DetElemIdToBusPatch file name
   
     static TString  fgTop; // top directory path
     

@@ -55,6 +55,7 @@ const TString AliMpFiles::fgkPadPosPrefix  = "padPos";
 const TString AliMpFiles::fgkDataExt = ".dat";      
 const TString AliMpFiles::fgkBergToGCFileName = "/bergToGC"; 
 const TString AliMpFiles::fgkTriggerLocalBoards = "MUONLocalTriggerBoard";
+const TString AliMpFiles::fgkBusPatchFileName = "DetElemIdToBusPatch";
 
 TString AliMpFiles::fgTop = AliMpFiles::fgkDefaultTop;
 
@@ -179,6 +180,22 @@ TString AliMpFiles::StationDataDir(AliMpStationType station)
 // public methods
 //
 
+//______________________________________________________________________________
+TString AliMpFiles::BusPatchFilePath()
+{
+/// Return path to data file with bus patch mapping.
+
+  return fgTop + fgkDataDir + "/" + fgkBusPatchFileName + fgkDataExt;
+}  
+
+//______________________________________________________________________________
+TString AliMpFiles::LocalTriggerBoardMapping()
+{
+  return TString(PlaneDataDir(kStationTrigger,kNonBendingPlane) 
+                 + fgkTriggerLocalBoards
+                 + fgkDataExt);
+}
+
 //_____________________________________________________________________________
 TString AliMpFiles::SlatFilePath(AliMpStationType stationType,
                                  const char* slatType,
@@ -200,14 +217,6 @@ TString AliMpFiles::SlatPCBFilePath(AliMpStationType stationType,
 
   return TString(PlaneDataDir(stationType,kNonBendingPlane) + pcbType +
                  ".pcb");
-}
-
-//______________________________________________________________________________
-TString
-AliMpFiles::LocalTriggerBoardMapping()
-{
-  return TString(PlaneDataDir(kStationTrigger,kNonBendingPlane) + fgkTriggerLocalBoards
-                 + fgkDataExt);
 }
 
 //______________________________________________________________________________
