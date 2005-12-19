@@ -438,7 +438,8 @@ void AliTOFtracker::MatchTracks( Bool_t mLastStep){
     //Double_t tof=50*c->GetTDC()+32; // in ps
     Double_t tof=AliTOFGeometry::TdcBinWidth()*c->GetTDC()+32; // in ps
     t->SetTOFsignal(tof);
-    t->SetTOFcluster(c->GetIndex());
+    //t->SetTOFcluster(c->GetIndex()); // pointing to the digits tree
+    t->SetTOFcluster(idclus); // pointing to the recPoints tree
     Double_t time[10]; t->GetIntegratedTimes(time);
     Double_t mom=t->GetP();
     for(Int_t j=0;j<=AliPID::kSPECIES;j++){
