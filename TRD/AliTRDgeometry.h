@@ -29,9 +29,9 @@ class AliTRDgeometry : public AliGeometry {
   virtual Int_t    IsVersion() const = 0;
   virtual void     Init();
   virtual Bool_t   Impact(const TParticle* ) const { return kTRUE; };
-  virtual Bool_t   Local2Global(Int_t d, Double_t *local, Double_t *global, AliTRDparameter *par) const;
+  virtual Bool_t   Local2Global(Int_t d, Double_t *local, Double_t *global) const;
   virtual Bool_t   Local2Global(Int_t p, Int_t c, Int_t s
-                                , Double_t *local, Double_t *global, AliTRDparameter *par) const;
+                                , Double_t *local, Double_t *global) const;
 
   virtual Bool_t   Global2Local(Int_t mode, Double_t *local, Double_t *global
                                , Int_t* index,  AliTRDparameter *par) const;

@@ -144,8 +144,9 @@ void AliTRDcalibDB::Invalidate()
   {
     if (fCDBEntries[i])
     {
-      if (fCDBEntries[i]->IsOwner() != kFALSE && fCDBCache[i])
+      if (fCDBEntries[i]->IsOwner() == kFALSE && fCDBCache[i])
         delete fCDBCache[i];
+      
       delete fCDBEntries[i];
       fCDBEntries[i] = 0;
       fCDBCache[i] = 0;

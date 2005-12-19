@@ -723,9 +723,6 @@ Bool_t AliTRDdigitizer::MakeDigits()
   
   Int_t nTimeTotal  = calibration->GetNumberOfTimeBins();
   Float_t samplingRate  = calibration->GetSamplingFrequency();
-  Int_t   nTimeMax      = fPar->GetTimeMax();
-  Int_t   nTimeBefore   = fPar->GetTimeBefore();
-  Int_t   nTimeAfter    = fPar->GetTimeAfter();
 
   // Loop through all entries in the tree
   for (Int_t iTrack = 0; iTrack < nTrack; iTrack++) {
@@ -766,10 +763,10 @@ Bool_t AliTRDdigitizer::MakeDigits()
         hit->Dump();
         printf("plane = %d, sector = %d, chamber = %d\n"
               ,plane,sector,chamber);
-        printf("nRowMax = %d, nColMax = %d, nTimeMax = %d\n" 
-              ,nRowMax,nColMax,nTimeMax);
-        printf("nTimeBefore = %d, nTimeAfter = %d, nTimeTotal = %d\n"
-	      ,nTimeBefore,nTimeAfter,nTimeTotal);
+        printf("nRowMax = %d, nColMax = %d\n" 
+              ,nRowMax,nColMax);
+        printf("nTimeTotal = %d\n"
+	      ,nTimeTotal);
         printf("row0 = %f, col0 = %f, time0 = %f\n"
               ,row0,col0,time0);
         printf("samplingRate = %f\n"
@@ -986,8 +983,8 @@ Bool_t AliTRDdigitizer::MakeDigits()
 	  // Sample the time response inside the drift region
 	  // + additional time bins before and after.
           // The sampling is done always in the middle of the time bin
-          for (Int_t iTimeBin = TMath::Max(timeE,-nTimeBefore)                 ;
-	       iTimeBin < TMath::Min(timeE+timeBinTRFend,nTimeMax+nTimeAfter ) ;
+          for (Int_t iTimeBin = TMath::Max(timeE, 0);
+	       iTimeBin < TMath::Min(timeE+timeBinTRFend,nTimeTotal ) ;
 	       iTimeBin++                                                       ) {
 
      	    // Apply the time response
@@ -1013,9 +1010,7 @@ Bool_t AliTRDdigitizer::MakeDigits()
               if (colPos >= nColMax) break;
 
               // Add the signals
-              // Note: The time bin number is shifted by nTimeBefore to avoid negative
-              // time bins. This has to be subtracted later.
-              Int_t iCurrentTimeBin = iTimeBin + nTimeBefore;
+              Int_t iCurrentTimeBin = iTimeBin;
               signalOld[iPad]  = signals->GetDataUnchecked(rowE,colPos,iCurrentTimeBin);
               if( colPos != colE ) {
                 signalOld[iPad] += padSignal[iPad] * (timeResponse + crossTalk);

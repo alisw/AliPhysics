@@ -28,76 +28,16 @@ class AliTRDCalChamber;
 class AliTRDCalStack;
 class AliTRDCalGlobals;
 
-  // defines call to function by providing plane, chamber, sector instead of detector
+// defines call to function by providing plane, chamber, sector instead of detector
 #define HEADER_PAD(funcname) \
   Float_t funcname(Int_t plane, Int_t chamber, Int_t sector, Int_t col, Int_t row) \
   { return funcname(AliTRDgeometry::GetDetector(plane, chamber, sector), col, row); }
 
-  // defines call to function by providing plane, chamber, sector instead of detector
+// defines call to function by providing plane, chamber, sector instead of detector
 #define HEADER_CHAMBER(funcname) \
   Bool_t funcname(Int_t plane, Int_t chamber, Int_t sector, Float_t* xyz) \
   { return funcname(AliTRDgeometry::GetDetector(plane, chamber, sector), xyz); }
 
-  // This macro creates a piece of code in the function GetCDBObject which retrieves the object with path <cdbPath> from
-  // the CDB when GetCDBObject(cdbEntryId) is called.
-  /* EXAMPLE: When called e.g. CACHE_CDB_OBJECT(kIDVdrift, "TRD/Calib/LocalVdrift") it produces the following piece of code:
-      case kIDVdrift : { \
-        if (!fCDBCache[kIDVdrift]) \
-        { \
-          fCDBEntries[kIDVdrift] = GetCDBEntry(TRD/Calib/LocalVdrift");  \
-          if (fCDBEntries[kIDVdrift]) \
-            fCDBCache[kIDVdrift] = fCDBEntries[kIDVdrift]->GetObject(); \
-        } \
-        return fCDBCache[kIDVdrift]; \
-      } \
-      break;
-   */
-#define CACHE_CDB_OBJECT(cdbEntryId, cdbPath) \
-      case cdbEntryId : { \
-        if (!fCDBCache[cdbEntryId]) \
-        { \
-          fCDBEntries[cdbEntryId] = GetCDBEntry(cdbPath);  \
-          if (fCDBEntries[cdbEntryId]) \
-            fCDBCache[cdbEntryId] = fCDBEntries[cdbEntryId]->GetObject(); \
-        } \
-        return fCDBCache[cdbEntryId]; \
-      } \
-      break;  
-
-// The following macro retrieves and caches an object from the CDB. The macro is specialized for parameters which are stored
-// as local variation at pad level of a global variable defined per detector chamber. It uses the classes AliTRDCalPad and AliTRDCalDet.
-// Before storing the object it retrieves the local variations (cdbPath) and the global variable (cdbMergePath) and merges them using
-// the AliTRDCalPad::ScaleROCs.
-#define CACHE_MERGE_CDB_OBJECT(cdbEntryId, cdbPath, cdbMergePath) \
-      case cdbEntryId : { \
-        if (!fCDBCache[cdbEntryId]) { \
-          AliTRDCalDet* detObject = 0; \
-          AliTRDCalPad* padObject = 0; \
-          \
-          fCDBEntries[cdbEntryId] = GetCDBEntry(cdbPath); \
-          if (fCDBEntries[cdbEntryId]) \
-            padObject = dynamic_cast<AliTRDCalPad*>(fCDBEntries[cdbEntryId]->GetObject()); \
-          \
-          AliCDBEntry* mergeEntry = GetCDBEntry(cdbMergePath); \
-          if (mergeEntry) \
-            detObject = dynamic_cast<AliTRDCalDet*>(mergeEntry->GetObject()); \
-          if (!padObject || !detObject) { \
-            if (fCDBEntries[cdbEntryId]) { \
-              delete fCDBEntries[cdbEntryId]; \
-              fCDBEntries[cdbEntryId] = 0; \
-            } \
-            if (mergeEntry) \
-              delete mergeEntry; \
-            return 0; \
-          } \
-          padObject->ScaleROCs(detObject); \
-          delete mergeEntry; \
-          fCDBCache[cdbEntryId] = padObject; \
-        } \
-        return fCDBCache[cdbEntryId]; \
-      } \
-      break;  
-      
 class AliTRDcalibDB : public TObject
 {
 public:
@@ -128,7 +68,7 @@ public:
   Int_t GetNumberOfTimeBins();
   
   //Related functions, these depend on calibration data
-  virtual Float_t GetOmegaTau(Float_t vdrift);
+  static Float_t GetOmegaTau(Float_t vdrift);
   
 protected:
   void Invalidate();
@@ -144,57 +84,39 @@ protected:
   AliCDBEntry* fCDBEntries[kCDBCacheSize];    // Cache for CDB entries 
   TObject* fCDBCache[kCDBCacheSize];          // Cache for calibration objects.
       
-  AliCDBEntry* GetCDBEntry(const char* cdbPath)
-  {
-    // 
-    // Retrieves an entry with path <cdbPath> from the CDB.
-    //
-    
-    if (fRun < 0)
-    {
-      AliFatal("AliTRDcalibDB: Run number not set! Use AliTRDcalibDB::SetRun.");
-      //std::cerr << "AliTRDcalibDB: Run number not set! Use AliTRDcalibDB::SetRun." << std::endl;
-      return 0;
-    }
-    if (!fLocator) 
-    { 
-      std::cerr << "AliTRDcalibDB: Storage Locator not available." << std::endl; 
-      return 0; 
-    } 
-    AliCDBEntry* entry = fLocator->Get(cdbPath, fRun); 
-    if (!entry) 
-    { 
-      std::cerr << "AliTRDcalibDB: Failed to get entry: " << cdbPath << std::endl; 
-      return 0; 
-    }
-    std::cout << "AliTRDcalibDB: Retrieved object: " << cdbPath << std::endl;
-    return entry;
-  }
+  inline AliCDBEntry* GetCDBEntry(const char* cdbPath);
+  inline TObject* CacheCDBEntry(Int_t id, const char* cdbPath);
+  inline TObject* CacheMergeCDBEntry(Int_t id, const char* cdbPadPath, const char* cdbChamberPath);
   
   TObject* GetCachedCDBObject(Int_t id)
   {
     //
     // Retrieves a cdb object with the given id. The objects are cached as long as the run number is not changed.
     //
-    // Put together the available objects by using the macros CACHE_CDB_OBJECT and CACHE_MERGE_CDB_OBJECT.
-    // The maximal number of cached objects is given above in kCDBCacheSize, the ids of the objects in the enum below kCDBCacheSize.
-    // CACHE_CDB_OBJECT can be used for usual calibration objects.
-    // CACHE_MERGE_CDB_OBJECT for calibration data which depends on two objects: One containing a value per detector and one the local
-    //   fluctuations per pad.
+    // Put together the available objects here by using the lines
+    //   a) For usual calibration objects:
+    //      ase kID<Name> : return CacheCDBEntry(kID<Name>, "TRD/Calib/<Path>"); break;
+    //      See function CacheCDBEntry for details.
+    //   and
+    //   b) For calibration data which depends on two objects: One containing a value per detector and one the local fluctuations per pad:
+    //      case kID<Name> : return CacheMergeCDBEntry(kID<Name>, "TRD/Calib/<padPath>", "TRD/Calib/<chamberPath>"); break;
+    //      See function CacheMergeCDBEntry for details.
     //
     
     switch (id)
     {
+      // parameters defined per pad and chamber
+      case kIDVdrift : return CacheMergeCDBEntry(kIDVdrift, "TRD/Calib/LocalVdrift", "TRD/Calib/ChamberVdrift"); break;
+      case kIDT0 : return CacheMergeCDBEntry(kIDT0, "TRD/Calib/LocalT0", "TRD/Calib/ChamberT0"); break;
+      
       // parameters defined per pad
-      CACHE_MERGE_CDB_OBJECT(kIDVdrift, "TRD/Calib/LocalVdrift", "TRD/Calib/ChamberVdrift");
-      CACHE_MERGE_CDB_OBJECT(kIDT0, "TRD/Calib/LocalT0", "TRD/Calib/ChamberT0");
-      CACHE_CDB_OBJECT(kIDGainFactor, "TRD/Calib/GainFactor");
-      CACHE_CDB_OBJECT(kIDPRFWidth, "TRD/Calib/PRFWidth");
+      case kIDGainFactor : return CacheCDBEntry(kIDGainFactor, "TRD/Calib/GainFactor"); break;
+      case kIDPRFWidth : return CacheCDBEntry(kIDPRFWidth, "TRD/Calib/PRFWidth"); break;
     
       // global parameters
-      CACHE_CDB_OBJECT(kIDGlobals, "TRD/Calib/Globals");
-      CACHE_CDB_OBJECT(kIDChamber, "TRD/Calib/Chamber");
-      CACHE_CDB_OBJECT(kIDStack, "TRD/Calib/Stack");
+      case kIDGlobals : return CacheCDBEntry(kIDGlobals, "TRD/Calib/Globals"); break;
+      case kIDChamber : return CacheCDBEntry(kIDChamber, "TRD/Calib/Chamber"); break;
+      case kIDStack : return CacheCDBEntry(kIDStack, "TRD/Calib/Stack"); break;
     }
     return 0;
   }
@@ -209,9 +131,100 @@ private:
   ClassDef(AliTRDcalibDB, 0)
 };
 
+AliCDBEntry* AliTRDcalibDB::GetCDBEntry(const char* cdbPath)
+{
+  // 
+  // Retrieves an entry with path <cdbPath> from the CDB.
+  //
+    
+  if (fRun < 0)
+  {
+    AliFatal("AliTRDcalibDB: Run number not set! Use AliTRDcalibDB::SetRun.");
+    //std::cerr << "AliTRDcalibDB: Run number not set! Use AliTRDcalibDB::SetRun." << std::endl;
+    return 0;
+  }
+  if (!fLocator) 
+  { 
+    std::cerr << "AliTRDcalibDB: Storage Locator not available." << std::endl; 
+    return 0; 
+  } 
+  AliCDBEntry* entry = fLocator->Get(cdbPath, fRun); 
+  if (!entry) 
+  { 
+    std::cerr << "AliTRDcalibDB: Failed to get entry: " << cdbPath << std::endl; 
+    return 0; 
+  }
+  
+  std::cout << "AliTRDcalibDB: Retrieved object: " << cdbPath << std::endl;
+  return entry;
+}
+
+TObject* AliTRDcalibDB::CacheCDBEntry(Int_t id, const char* cdbPath)
+{
+  //
+  // Caches the entry <id> with cdb path <cdbPath>
+  //
+  
+  if (!fCDBCache[id])
+  {
+    fCDBEntries[id] = GetCDBEntry(cdbPath);
+    if (fCDBEntries[id])
+      fCDBCache[id] = fCDBEntries[id]->GetObject();
+  }
+  return fCDBCache[id];
+}
+
+TObject* AliTRDcalibDB::CacheMergeCDBEntry(Int_t id, const char* cdbPadPath, const char* cdbChamberPath)
+{
+  //
+  // Retrieves and caches an object (id <id>) from the CDB. This function is specialized for parameters which are stored
+  // as local variation at pad level of a global variable defined per detector chamber. It uses the classes AliTRDCalPad and AliTRDCalDet.
+  // Before storing the object it retrieves the local variations (cdbPadPath) and the global variable (cdbChamberPath) and merges them using
+  // the AliTRDCalPad::ScaleROCs.
+  //
+    
+  if (!fCDBCache[id]) 
+  {
+    AliTRDCalPad* padObject = 0;
+    AliTRDCalDet* detObject = 0;
+   
+    fCDBEntries[id] = GetCDBEntry(cdbPadPath);
+    if (fCDBEntries[id])
+      padObject = dynamic_cast<AliTRDCalPad*>(fCDBEntries[id]->GetObject());
+   
+    AliCDBEntry* mergeEntry = GetCDBEntry(cdbChamberPath);
+    if (mergeEntry)
+      detObject = dynamic_cast<AliTRDCalDet*>(mergeEntry->GetObject());
+    
+    if (!padObject || !detObject) 
+    {
+      if (fCDBEntries[id]) {
+        if (fCDBEntries[id]->IsOwner() == kFALSE && padObject)
+          delete padObject;
+        delete fCDBEntries[id];
+        fCDBEntries[id] = 0;
+      }
+      if (mergeEntry) 
+      {
+        if (mergeEntry->IsOwner() == kFALSE && detObject)
+          delete detObject;
+        delete mergeEntry;
+      }
+      return 0;
+    }
+    
+    padObject->ScaleROCs(detObject);
+    if (mergeEntry->IsOwner() == kFALSE)
+      delete detObject;
+    delete mergeEntry;
+    
+    fCDBCache[id] = padObject;
+  }
+  
+  return fCDBCache[id];
+}
+
 #undef HEADER_PAD
 #undef HEADER_CHAMBER
-#undef CACHE_CDB_OBJECT
-#undef CACHE_MERGE_CDB_OBJECT
 
 #endif

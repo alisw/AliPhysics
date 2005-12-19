@@ -262,8 +262,7 @@ void AliTRDgeometry::CreateGeometry(Int_t* )
 
 //_____________________________________________________________________________
 Bool_t AliTRDgeometry::Local2Global(Int_t idet, Double_t *local
-                                   , Double_t *global
-                                   , AliTRDparameter *par) const
+                                   , Double_t *global) const
 {
   //
   // Converts local pad-coordinates (row,col,time) into 
@@ -274,25 +273,19 @@ Bool_t AliTRDgeometry::Local2Global(Int_t idet, Double_t *local
   Int_t isect = GetSector(idet);     // Sector info  (0-17)
   Int_t iplan = GetPlane(idet);      // Plane info   (0-5)
 
-  return Local2Global(iplan,icham,isect,local,global,par);
+  return Local2Global(iplan,icham,isect,local,global);
 
 }
  
 //_____________________________________________________________________________
 Bool_t AliTRDgeometry::Local2Global(Int_t iplan, Int_t icham, Int_t isect
-                                  , Double_t *local, Double_t *global
-                                  , AliTRDparameter *par) const
+                                  , Double_t *local, Double_t *global) const
 {
   //
   // Converts local pad-coordinates (row,col,time) into 
   // global ALICE reference frame coordinates (x,y,z)
   //
 
-  if (!par) {
-    Error("Local2Global","No parameter defined\n");
-    return kFALSE;
-  }
-  
   AliTRDCommonParam* commonParam = AliTRDCommonParam::Instance();
   if (!commonParam)
     return kFALSE;
@@ -310,7 +303,7 @@ Bool_t AliTRDgeometry::Local2Global(Int_t iplan, Int_t icham, Int_t isect
   Float_t  time0     = GetTime0(iplan);
 
   Double_t  rot[3];
-  rot[0] = time0 - (timeSlice - par->GetTimeBefore()) 
+  rot[0] = time0 - (timeSlice - calibration->GetT0(iplan, icham, isect, col, row)) 
       * calibration->GetVdrift(iplan, icham, isect, col, row)/calibration->GetSamplingFrequency();
   rot[1] = padPlane->GetColPos(col) - 0.5 * padPlane->GetColSize(col);
   rot[2] = padPlane->GetRowPos(row) - 0.5 * padPlane->GetRowSize(row);

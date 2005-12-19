@@ -30,7 +30,7 @@
 #include "AliTRDgeometry.h"
 #include "AliTRDparameter.h"
 #include "AliTRDpadPlane.h"
-#include "AliTRDgeometryDetail.h"
+#include "AliTRDgeometryFull.h"
 #include "AliTRDcluster.h" 
 #include "AliTRDtrack.h"
 #include "AliESD.h"
@@ -139,7 +139,7 @@ AliTRDtracker::AliTRDtracker(const TFile *geomfile):AliTracker()
   TFile *in=(TFile*)geomfile;  
   if (!in->IsOpen()) {
     printf("AliTRDtracker::AliTRDtracker(): geometry file is not open!\n");
-    printf("    DETAIL TRD geometry and DEFAULT TRD parameter will be used\n");
+    printf("    FULL TRD geometry and DEFAULT TRD parameter will be used\n");
   }
   else {
     in->cd();  
@@ -155,9 +155,7 @@ AliTRDtracker::AliTRDtracker(const TFile *geomfile):AliTracker()
   }
   else { 
     printf("AliTRDtracker::AliTRDtracker(): can't find TRD geometry!\n");
-    //printf("The DETAIL TRD geometry will be used\n");
-    //fGeom = new AliTRDgeometryDetail();
-    fGeom = new AliTRDgeometryDetail();
+    fGeom = new AliTRDgeometryFull();
     fGeom->SetPHOShole();
     fGeom->SetRICHhole();    
   } 

@@ -281,7 +281,6 @@ Bool_t AliTRDclusterizerV1::MakeClusters()
         Int_t    nRowMax     = commonParam->GetRowMax(iplan,icham,isect);
         Int_t    nColMax     = commonParam->GetColMax(iplan);
         Int_t    nTimeTotal  = calibration->GetNumberOfTimeBins();
-        Int_t    nTimeBefore = fPar->GetTimeBefore();
 
         AliTRDpadPlane *padPlane = commonParam->GetPadPlane(iplan,icham);
 
@@ -440,7 +439,7 @@ Bool_t AliTRDclusterizerV1::MakeClusters()
 		// The position of the cluster
                 clusterPads[0] = row + 0.5;
 		// Take the shift of the additional time bins into account
-                clusterPads[2] = time - nTimeBefore + 0.5;
+                clusterPads[2] = time + 0.5;
 
                 // correct for t0
                 clusterPads[2] -= calibration->GetT0(idet, col, row);

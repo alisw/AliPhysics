@@ -41,7 +41,6 @@ class AliTRDparameter : public TNamed {
 
           Int_t    GetTimeMax()                             const { return fTimeMax; };
           Int_t    GetTimeBefore()                          const { return fTimeBefore;        }; 
-          Int_t    GetTimeAfter()                           const { return fTimeAfter;         }; 
 
           Float_t  GetDriftVelocity()                       const { return fDriftVelocity;     };
 
