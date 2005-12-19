@@ -183,5 +183,14 @@
   .pcb (X.pcb, Y.pcb, Z.pcb)
 
   
+  DetElemIdToBusPatch.dat
+  =======================
+  Lines starting with # are comments.
   
-  
+  Contains the detection element identifier with the associated buspatch numbers 
+  and the corresponding DDL identifier.
+  The link between buspatches and DE's is needed on the rawdata level to identify 
+  the type of quadrant/slat to get the corresponding mapping.
+  The DDL id is needed for the rawdata generation only.
+
+  To generate this file, the macro MUONGenerateBusPatch.C could be used.
