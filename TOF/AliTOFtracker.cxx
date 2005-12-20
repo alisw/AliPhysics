@@ -30,11 +30,14 @@
 #include "AliRun.h"
 #include "AliModule.h"
 
-//#include "AliTOFdigit.h"
 #include "AliTOFcluster.h"
 #include "AliTOFtrack.h"
 #include "AliTOFGeometry.h"
 #include "AliTOFtracker.h"
+
+
+#include "AliTrackPointArray.h"
+#include "AliAlignObj.h"
 
 ClassImp(AliTOFtracker)
 
@@ -60,7 +63,6 @@ AliTOFtracker::AliTOFtracker(AliTOFGeometry * geom, Double_t parPID[2]) {
   fSeeds=0x0;
   fTracks=0x0;
   fN=0;
-  //Init(); // temporary solution to know about Holes/no Holes
   fHoles = fGeom->GetHoles();
 }
 //_____________________________________________________________________________
@@ -86,24 +88,6 @@ AliTOFtracker::AliTOFtracker(const AliTOFtracker &t):AliTracker() {
   fTracks=t.fTracks;
   fN=t.fN;
 }
-//_____________________________________________________________________________
-/*
-void AliTOFtracker::Init() { 
-
-// temporary solution to know about Holes/no Holes, will be implemented as 
-// an AliTOFGeometry getter
-  AliModule* frame=gAlice->GetModule("FRAME"); 
-
-  if(!frame) {
-    AliError("Could Not load FRAME! Assume Frame with Holes");
-    fHoles=true;
-  } else{
-    if(frame->IsVersion()==1) {fHoles=false;}    
-    else {fHoles=true;}      
-  }
-
-}
-*/
 //_____________________________________________________________________________
 Int_t AliTOFtracker::PropagateBack(AliESD* event) {
   //
@@ -532,4 +516,61 @@ Int_t AliTOFtracker::FindClusterIndex(Double_t z) const {
     else e=m; 
   }
   return m;
+}
+
+//_________________________________________________________________________
+Bool_t AliTOFtracker::GetTrackPoint(Int_t index, AliTrackPoint& p) const
+{
+  // Get track space point with index i
+  // Coordinates are in the global system
+  AliTOFcluster *cl = fClusters[index];
+  Float_t xyz[3];
+  xyz[0] = cl->GetR()*TMath::Cos(cl->GetPhi());
+  xyz[1] = cl->GetR()*TMath::Sin(cl->GetPhi());
+  xyz[2] = cl->GetZ();
+  p.SetXYZ(xyz[0],xyz[1],xyz[2]);
+
+  // Detector numbering scheme
+  Int_t nSector = fGeom->NSectors();
+  Int_t nPlate  = fGeom->NPlates();
+  Int_t nStripA = fGeom->NStripA();
+  Int_t nStripB = fGeom->NStripB();
+  Int_t nStripC = fGeom->NStripC();
+
+  Int_t isector = cl->GetDetInd(0);
+  if (isector >= nSector)
+    AliError(Form("Wrong sector number in TOF (%d) !",isector));
+  Int_t iplate = cl->GetDetInd(1);
+  if (iplate >= nPlate)
+    AliError(Form("Wrong plate number in TOF (%d) !",iplate));
+  Int_t istrip = cl->GetDetInd(2);
+
+  Int_t stripOffset = 0;
+  switch (iplate) {
+  case 0:
+    stripOffset = 0;
+    break;
+  case 1:
+    stripOffset = nStripC;
+    break;
+  case 2:
+    stripOffset = nStripC+nStripB;
+    break;
+  case 3:
+    stripOffset = nStripC+nStripB+nStripA;
+    break;
+  case 4:
+    stripOffset = nStripC+nStripB+nStripA+nStripB;
+    break;
+  default:
+    AliError(Form("Wrong plate number in TOF (%d) !",iplate));
+    break;
+  };
+
+  Int_t idet = (2*(nStripC+nStripB)+nStripA)*isector +
+               stripOffset +
+               istrip;
+  UShort_t volid = AliAlignObj::LayerToVolUID(AliAlignObj::kTOF,idet);
+  p.SetVolumeID((UShort_t)volid);
+  return kTRUE;
 }

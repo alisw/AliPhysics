@@ -39,20 +39,19 @@ public:
   virtual Int_t LoadClusters(TTree * /*cTree*/); // Load Clusters
   virtual void  UnloadClusters();// UnLoad Clusters
   virtual AliCluster *GetCluster(Int_t /*index*/) const {return NULL;};
+  Bool_t GetTrackPoint(Int_t index, AliTrackPoint& p) const;
 
 private:
 
-  //Int_t InsertCluster(AliTOFcluster *c); // Fills TofClusters Array
   Int_t FindClusterIndex(Double_t z) const; // Returns cluster index 
   void  MatchTracks(Bool_t mLastStep); // Matching Algorithm 
   void  CollectESD(); // Select starting Set for Matching 
-  //void  Init();
 
   AliTOFGeometry*  fGeom;                 // Pointer to TOF geometry
   AliTOFpidESD*    fTOFpid;               // Pointer to TOF PID
   AliTOFcluster *fClusters[kMaxCluster];  // pointers to the TOF clusters
 
-  Bool_t fHoles;         // flag for Geometry Version(w/wo Holes) temporary!
+  Bool_t fHoles;         // flag for Geometry Version(w/wo Holes) 
   Int_t fN;              // Number of Clusters
   Int_t fNseeds;         // Number of track seeds  
   Int_t fNseedsTOF;      // TPC BP tracks
