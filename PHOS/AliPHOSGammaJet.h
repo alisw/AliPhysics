@@ -25,7 +25,8 @@
 #include "TTask.h"
 #include "TRandom.h"
 #include "TArrayD.h"
-class AliPHOSGeometry ;
+#include "AliESD.h"
+
 class AliPHOSFastGlobalReconstruction ;
 //#include "../PYTHIA6/AliGenPythia.h"
 // --- AliRoot header files ---
@@ -70,6 +71,11 @@ public:
    TString  GetConeName(Int_t i) const {return fNameCones[i] ; }
    TString  GetPtThresName(Int_t i) const {return fNamePtThres[i] ; }
    Bool_t   GetTPCCutsLikeEMCAL() const {return fTPCCutsLikeEMCAL ; }
+   Bool_t   IsESDdata() const {return fESDdata ; }
+
+   TString  GetDirName() const {return fDirName ; }
+   TString  GetESDTreeName() const {return fESDTree ; }
+   char *   GetDirPattern()  const {return fPattern ; }
 
    Bool_t   IsAnyConeOrPt() const {return fAnyConeOrPt ; }
    Bool_t   IsFastReconstruction() const {return fOptFast ; }
@@ -120,7 +126,11 @@ public:
   void SetRatioCutRange(Double_t ratiomin, Double_t ratiomax)
   {fRatioMaxCut = ratiomax;  fRatioMinCut = ratiomin;}
   void SetTPCCutsLikeEMCAL(Bool_t b){ fTPCCutsLikeEMCAL= b ; }
+  void SetESDdata(Bool_t b){ fESDdata= b ; }
  
+  void  SetDirName(TString dn) { fDirName  = dn ; }
+  void  SetESDTreeName(TString en) { fESDTree = en ; }
+  void  SetDirPattern(char * dp)  { fPattern = dp ; }
 
  private:
 //   void AddHIJINGToList(TList & particleList, TList & particleListCh, 
@@ -129,23 +139,26 @@ public:
  
   void AddHIJINGToList(Int_t iEvent, TClonesArray * particleList, 
 		       TClonesArray * plCh, TClonesArray * plNe, 
-		       TClonesArray * plNePHOS, const AliPHOSGeometry * geom); 
+		       TClonesArray * plNePHOS); 
 
 
-  Double_t CalculateJetRatioLimit(Double_t ptg, const Double_t *param, 
+  Double_t CalculateJetRatioLimit(const Double_t ptg, const Double_t *param, 
 				  const Double_t *x);
 
   void CreateParticleList(Int_t iEvent, TClonesArray * particleList, 
 			  TClonesArray * plCh, TClonesArray * plNe, 
-			  TClonesArray * plNePHOS, 
-			  const AliPHOSGeometry * geom );
+			  TClonesArray * plNePHOS); 
+  void CreateParticleListFromESD(TClonesArray * particleList, 
+				 TClonesArray * plCh, TClonesArray * plNe, 
+				 TClonesArray * plNePHOS,  
+				 const AliESD * esd );//, Int_t iEvent); 
   
   void FillJetHistos(TClonesArray * pl, Double_t ptg, TString conf, TString type);
 
   void FillJetHistosAnyConeOrPt( TClonesArray * pl, Double_t ptg, TString conf, 
 				 TString type, TString cone, TString ptcut);
-  Bool_t IsAngleInWindow(Float_t angle, Float_t e);
-  Bool_t IsJetSelected(Double_t ptg, Double_t ptjet, 
+  Bool_t IsAngleInWindow(const Float_t angle, const Float_t e);
+  Bool_t IsJetSelected(const Double_t ptg, const Double_t ptjet, 
 		       const TString type);
 
   void MakeJet(TClonesArray * particleList, 
@@ -166,10 +179,10 @@ public:
 			Double_t &pt, Double_t &eta, Double_t &phi)  ;
 
   void InitParameters();
-  Double_t MakeEnergy(Double_t energy) ;
+  Double_t MakeEnergy(const Double_t energy) ;
   void MakeHistos() ;
   void MakePhoton(TLorentzVector & particle) ; 
-  TVector3 MakePosition(Double_t energy, const TVector3 pos) ;
+  TVector3 MakePosition(const Double_t energy, const TVector3 pos) ;
  
   void Pi0Decay(Double_t mPi0, TLorentzVector &p0, 
 		TLorentzVector &p1, TLorentzVector &p2, Double_t &angle) ;
@@ -188,6 +201,7 @@ public:
   TString    fInputFileName;   //!
   TString    fHIJINGFileName;  //!
   Bool_t     fHIJING;          // Add HIJING event to PYTHIA event?
+  Bool_t     fESDdata ;        // Read ESD?      
   Double_t   fEtaCut ;         // Eta cut
   Bool_t     fOnlyCharged ;    // Only jets of charged particles
   Double_t   fPhiEMCALCut[2] ; // Phi cut maximum
@@ -202,6 +216,11 @@ public:
   Double_t   fRatioMaxCut ;    // Leading particle/gamma Ratio cut maximum
   Double_t   fRatioMinCut ;    // Leading particle/gamma Ratio cut minimum
   Bool_t     fTPCCutsLikeEMCAL ; //Same jet energy ratio limits for both conf.
+
+  //Read ESD Paramenters
+  TString fDirName ;
+  TString fESDTree ;
+  char *  fPattern ;
 
   //Jet selection parameters
   //Fixed cuts (old)
@@ -245,7 +264,7 @@ public:
   TArrayD    fAngleMaxParam ; //Max opening angle selection parameters
   Bool_t fSelect  ;  //Select jet within limits
 
-  ClassDef(AliPHOSGammaJet,2)
+  ClassDef(AliPHOSGammaJet,3)
 } ;
  
 
