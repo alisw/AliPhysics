@@ -18,6 +18,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.52  2005/05/28 14:19:04  schutz
+ * Compilation warnings fixed by T.P.
+ *
  */
 
 //_________________________________________________________________________
@@ -361,13 +364,21 @@ void  AliPHOSEmcRecPoint::EvalDispersion(Float_t logWeight,TClonesArray * digits
     Float_t zi ;
     phosgeom->AbsToRelNumbering(digit->GetId(), relid) ;
     phosgeom->RelPosInModule(relid, xi, zi);
-    Float_t w = TMath::Max( 0., logWeight + TMath::Log( fEnergyList[iDigit] / fAmp ) ) ;
-    x    += xi * w ;
-    z    += zi * w ;
-    wtot += w ;
+    if (fAmp>0 && fEnergyList[iDigit]>0) {
+      Float_t w = TMath::Max( 0., logWeight + TMath::Log( fEnergyList[iDigit] / fAmp ) ) ;
+      x    += xi * w ;
+      z    += zi * w ;
+      wtot += w ;
+    }
+    else
+      AliError(Form("Wrong energy %f and/or amplitude %f\n", fEnergyList[iDigit], fAmp));
   }
-  x /= wtot ;
-  z /= wtot ;
+  if (wtot>0) {
+    x /= wtot ;
+    z /= wtot ;
+  }
+  else
+    AliError(Form("Wrong weight %f\n", wtot));
 
 
 // Calculates the dispersion in coordinates 
@@ -379,17 +390,25 @@ void  AliPHOSEmcRecPoint::EvalDispersion(Float_t logWeight,TClonesArray * digits
     Float_t zi ;
     phosgeom->AbsToRelNumbering(digit->GetId(), relid) ;
     phosgeom->RelPosInModule(relid, xi, zi);
-    Float_t w = TMath::Max(0.,logWeight+TMath::Log(fEnergyList[iDigit]/fAmp ) ) ;
-    d += w*((xi-x)*(xi-x) + (zi-z)*(zi-z) ) ; 
-    wtot+=w ;
-
-  
+    if (fAmp>0 && fEnergyList[iDigit]>0) {
+      Float_t w = TMath::Max(0.,logWeight+TMath::Log(fEnergyList[iDigit]/fAmp ) ) ;
+      d += w*((xi-x)*(xi-x) + (zi-z)*(zi-z) ) ; 
+      wtot+=w ;
+    }
+    else
+      AliError(Form("Wrong energy %f and/or amplitude %f\n", fEnergyList[iDigit], fAmp));
   }
   
 
-  d /= wtot ;
+  if (wtot>0) {
+    d /= wtot ;
+  }
+  else
+    AliError(Form("Wrong weight %f\n", wtot));
 
-  fDispersion = TMath::Sqrt(d) ;
+  fDispersion = 0;
+  if (d>=0)
+    fDispersion = TMath::Sqrt(d) ;
  
 }
 //______________________________________________________________________________
@@ -420,13 +439,21 @@ void AliPHOSEmcRecPoint::EvalCoreEnergy(Float_t logWeight, TClonesArray * digits
     Float_t zi ;
     phosgeom->AbsToRelNumbering(digit->GetId(), relid) ;
     phosgeom->RelPosInModule(relid, xi, zi);
-    Float_t w = TMath::Max( 0., logWeight + TMath::Log( fEnergyList[iDigit] / fAmp ) ) ;
-    x    += xi * w ;
-    z    += zi * w ;
-    wtot += w ;
+    if (fAmp>0 && fEnergyList[iDigit]>0) {
+      Float_t w = TMath::Max( 0., logWeight + TMath::Log( fEnergyList[iDigit] / fAmp ) ) ;
+      x    += xi * w ;
+      z    += zi * w ;
+      wtot += w ;
+    }
+    else
+      AliError(Form("Wrong energy %f and/or amplitude %f\n", fEnergyList[iDigit], fAmp));
   }
-  x /= wtot ;
-  z /= wtot ;
+  if (wtot>0) {
+    x /= wtot ;
+    z /= wtot ;
+  }
+  else
+    AliError(Form("Wrong weight %f\n", wtot));
 
 
   for(iDigit=0; iDigit < fMulDigit; iDigit++) {
@@ -469,22 +496,27 @@ void  AliPHOSEmcRecPoint::EvalElipsAxis(Float_t logWeight,TClonesArray * digits)
     Float_t zi ;
     phosgeom->AbsToRelNumbering(digit->GetId(), relid) ;
     phosgeom->RelPosInModule(relid, xi, zi);
-    Double_t w = TMath::Max(0.,logWeight+TMath::Log(fEnergyList[iDigit]/fAmp ) ) ;
-    dxx  += w * xi * xi ;
-    x    += w * xi ;
-    dzz  += w * zi * zi ;
-    z    += w * zi ; 
-    dxz  += w * xi * zi ; 
-    wtot += w ;
+    if (fAmp>0 && fEnergyList[iDigit]>0) {
+      Double_t w = TMath::Max(0.,logWeight+TMath::Log(fEnergyList[iDigit]/fAmp ) ) ;
+      dxx  += w * xi * xi ;
+      x    += w * xi ;
+      dzz  += w * zi * zi ;
+      z    += w * zi ; 
+      dxz  += w * xi * zi ; 
+      wtot += w ;
+    }
+    else
+      AliError(Form("Wrong energy %f and/or amplitude %f\n", fEnergyList[iDigit], fAmp));
   }
-  dxx /= wtot ;
-  x   /= wtot ;
-  dxx -= x * x ;
-  dzz /= wtot ;
-  z   /= wtot ;
-  dzz -= z * z ;
-  dxz /= wtot ;
-  dxz -= x * z ;
+  if (wtot>0) {
+    dxx /= wtot ;
+    x   /= wtot ;
+    dxx -= x * x ;
+    dzz /= wtot ;
+    z   /= wtot ;
+    dzz -= z * z ;
+    dxz /= wtot ;
+    dxz -= x * z ;
 
 //   //Apply correction due to non-perpendicular incidence
 //   Double_t CosX ;
@@ -501,15 +533,20 @@ void  AliPHOSEmcRecPoint::EvalElipsAxis(Float_t logWeight,TClonesArray * digits)
 //   dxz = dxz/(CosX*CosZ) ;
 
 
-  fLambda[0] =  0.5 * (dxx + dzz) + TMath::Sqrt( 0.25 * (dxx - dzz) * (dxx - dzz) + dxz * dxz )  ;
-  if(fLambda[0] > 0)
-    fLambda[0] = TMath::Sqrt(fLambda[0]) ;
+    fLambda[0] =  0.5 * (dxx + dzz) + TMath::Sqrt( 0.25 * (dxx - dzz) * (dxx - dzz) + dxz * dxz )  ;
+    if(fLambda[0] > 0)
+      fLambda[0] = TMath::Sqrt(fLambda[0]) ;
 
-  fLambda[1] =  0.5 * (dxx + dzz) - TMath::Sqrt( 0.25 * (dxx - dzz) * (dxx - dzz) + dxz * dxz )  ;
-  if(fLambda[1] > 0) //To avoid exception if numerical errors lead to negative lambda.
-    fLambda[1] = TMath::Sqrt(fLambda[1]) ;
-  else
-    fLambda[1]= 0. ;
+    fLambda[1] =  0.5 * (dxx + dzz) - TMath::Sqrt( 0.25 * (dxx - dzz) * (dxx - dzz) + dxz * dxz )  ;
+    if(fLambda[1] > 0) //To avoid exception if numerical errors lead to negative lambda.
+      fLambda[1] = TMath::Sqrt(fLambda[1]) ;
+    else
+      fLambda[1]= 0. ;
+  }
+  else {
+    AliError(Form("Wrong weight %f\n", wtot));
+    fLambda[0]=fLambda[1]=0.;
+  }
 }
 
 //____________________________________________________________________________
@@ -545,27 +582,38 @@ void  AliPHOSEmcRecPoint::EvalMoments(Float_t logWeight,TClonesArray * digits)
     digit = (AliPHOSDigit *) digits->At(fDigitsList[iDigit])  ;
     phosgeom->AbsToRelNumbering(digit->GetId(), relid) ;
     phosgeom->RelPosInModule(relid, xi, zi);
-    w     = TMath::Max(0.,logWeight+TMath::Log(fEnergyList[iDigit]/fAmp ) ) ;
-    x    += w * xi ;
-    z    += w * zi ; 
-    dxx  += w * xi * xi ;
-    dzz  += w * zi * zi ;
-    dxz  += w * xi * zi ; 
-    wtot += w ;
+    if (fAmp>0 && fEnergyList[iDigit]>0) {
+      w     = TMath::Max(0.,logWeight+TMath::Log(fEnergyList[iDigit]/fAmp ) ) ;
+      x    += w * xi ;
+      z    += w * zi ; 
+      dxx  += w * xi * xi ;
+      dzz  += w * zi * zi ;
+      dxz  += w * xi * zi ; 
+      wtot += w ;
+    }
+    else
+      AliError(Form("Wrong energy %f and/or amplitude %f\n", fEnergyList[iDigit], fAmp));
+    
   }
-  x   /= wtot ;
-  z   /= wtot ;
-  dxx /= wtot ;
-  dzz /= wtot ;
-  dxz /= wtot ;
-  dxx -= x * x ;
-  dzz -= z * z ;
-  dxz -= x * z ;
+  if (wtot>0) {
+    x   /= wtot ;
+    z   /= wtot ;
+    dxx /= wtot ;
+    dzz /= wtot ;
+    dxz /= wtot ;
+    dxx -= x * x ;
+    dzz -= z * z ;
+    dxz -= x * z ;
 
   // 2) Find covariance matrix eigen values lambda0 and lambda1
 
-  lambda0 =  0.5 * (dxx + dzz) + TMath::Sqrt( 0.25 * (dxx - dzz) * (dxx - dzz) + dxz * dxz )  ;
-  lambda1 =  0.5 * (dxx + dzz) - TMath::Sqrt( 0.25 * (dxx - dzz) * (dxx - dzz) + dxz * dxz )  ;
+    lambda0 =  0.5 * (dxx + dzz) + TMath::Sqrt( 0.25 * (dxx - dzz) * (dxx - dzz) + dxz * dxz )  ;
+    lambda1 =  0.5 * (dxx + dzz) - TMath::Sqrt( 0.25 * (dxx - dzz) * (dxx - dzz) + dxz * dxz )  ;
+  }
+  else {
+    AliError(Form("Wrong weight %f\n", wtot));
+    lambda0=lambda1=0.;
+  }
 
   // 3) Find covariance matrix eigen vectors e0 and e1
 
@@ -602,34 +650,44 @@ void  AliPHOSEmcRecPoint::EvalMoments(Float_t logWeight,TClonesArray * digits)
     phosgeom->RelPosInModule(relid, xiPHOS, ziPHOS);
     xi    = xiPHOS*cosPhi + ziPHOS*sinPhi;
     zi    = ziPHOS*cosPhi - xiPHOS*sinPhi;
-    w     = TMath::Max(0.,logWeight+TMath::Log(fEnergyList[iDigit]/fAmp ) ) ;
-    x    += w * xi ;
-    z    += w * zi ; 
-    dxx  += w * xi * xi ;
-    dzz  += w * zi * zi ;
-    dxz  += w * xi * zi ; 
-    dx3  += w * xi * xi * xi;
-    dz3  += w * zi * zi * zi ;
-    dz4  += w * zi * zi * zi * zi ;
-    wtot += w ;
+    if (fAmp>0 && fEnergyList[iDigit]>0) {
+      w     = TMath::Max(0.,logWeight+TMath::Log(fEnergyList[iDigit]/fAmp ) ) ;
+      x    += w * xi ;
+      z    += w * zi ; 
+      dxx  += w * xi * xi ;
+      dzz  += w * zi * zi ;
+      dxz  += w * xi * zi ; 
+      dx3  += w * xi * xi * xi;
+      dz3  += w * zi * zi * zi ;
+      dz4  += w * zi * zi * zi * zi ;
+      wtot += w ;
+    }
+    else
+      AliError(Form("Wrong energy %f and/or amplitude %f\n", fEnergyList[iDigit], fAmp));
   }
-  x   /= wtot ;
-  z   /= wtot ;
-  dxx /= wtot ;
-  dzz /= wtot ;
-  dxz /= wtot ;
-  dx3 /= wtot ;
-  dz3 /= wtot ;
-  dz4 /= wtot ;
-  dx3 += -3*dxx*x + 2*x*x*x;
-  dz4 += -4*dz3*z + 6*dzz*z*z -3*z*z*z*z;
-  dxx -= x * x ;
-  dzz -= z * z ;
-  dxz -= x * z ;
+  if (wtot>0) {
+    x   /= wtot ;
+    z   /= wtot ;
+    dxx /= wtot ;
+    dzz /= wtot ;
+    dxz /= wtot ;
+    dx3 /= wtot ;
+    dz3 /= wtot ;
+    dz4 /= wtot ;
+    dx3 += -3*dxx*x + 2*x*x*x;
+    dz4 += -4*dz3*z + 6*dzz*z*z -3*z*z*z*z;
+    dxx -= x * x ;
+    dzz -= z * z ;
+    dxz -= x * z ;
+  }
+  else
+    AliError(Form("Wrong weight %f\n", wtot));
 
   // 5) Find an angle between cluster center vector and eigen vector e0
 
-  Float_t phi = TMath::ACos ((x*e0.X() + z*e0.Y()) / sqrt(x*x + z*z));
+  Float_t phi = 0;
+  if ( (x*x+z*z) > 0 ) 
+    phi = TMath::ACos ((x*e0.X() + z*e0.Y()) / sqrt(x*x + z*z));
 
   fM2x   = lambda0;
   fM2z   = lambda1;
@@ -674,14 +732,21 @@ void AliPHOSEmcRecPoint::EvalLocalPosition(Float_t logWeight, TClonesArray * dig
     Float_t zi ;
     phosgeom->AbsToRelNumbering(digit->GetId(), relid) ;
     phosgeom->RelPosInModule(relid, xi, zi);
-    Float_t w = TMath::Max( 0., logWeight + TMath::Log( fEnergyList[iDigit] / fAmp ) ) ;
-    x    += xi * w ;
-    z    += zi * w ;
-    wtot += w ;
-
+    if (fAmp>0 && fEnergyList[iDigit]>0) {
+      Float_t w = TMath::Max( 0., logWeight + TMath::Log( fEnergyList[iDigit] / fAmp ) ) ;
+      x    += xi * w ;
+      z    += zi * w ;
+      wtot += w ;
+    }
+    else
+      AliError(Form("Wrong energy %f and/or amplitude %f\n", fEnergyList[iDigit], fAmp));
   }
-  x /= wtot ;
-  z /= wtot ;
+  if (wtot>0) {
+    x /= wtot ;
+    z /= wtot ;
+  }
+  else
+    AliError(Form("Wrong weight %f\n", wtot));
 
   // Correction for the depth of the shower starting point (TDR p 127)  
   Float_t para = 0.925 ; 
@@ -706,8 +771,14 @@ void AliPHOSEmcRecPoint::EvalLocalPosition(Float_t logWeight, TClonesArray * dig
   Float_t incidencephi = TMath::ATan((x-xoL ) / radius) ; 
   Float_t incidencetheta = TMath::ATan((z-zo) / radius) ;
  
-  Float_t depthx =  ( para * TMath::Log(fAmp) + parb ) * TMath::Sin(incidencephi) ; 
-  Float_t depthz =  ( para * TMath::Log(fAmp) + parb ) * TMath::Sin(incidencetheta) ; 
+  Float_t depthx = 0.; 
+  Float_t depthz = 0.;
+  if (fAmp>0) {
+    depthx = ( para * TMath::Log(fAmp) + parb ) * TMath::Sin(incidencephi) ; 
+    depthz = ( para * TMath::Log(fAmp) + parb ) * TMath::Sin(incidencetheta) ; 
+  }
+  else 
+    AliError(Form("Wrong amplitude %f\n", fAmp));
 
   fLocPos.SetX(x - depthx)  ;
   fLocPos.SetY(0.) ;
