@@ -67,11 +67,13 @@ public:
     void     ProcessCUTHAD();
     void     ProcessCUTMUO();
     void     ProcessTOFMAX();
+    void     ProcessSensitiveMedium();
     
     //
     static void SetStaticInfo(FILE* file, Float_t matMin, Float_t matMax, TFlukaMCGeometry* geom)
 	{fgFile = file; fgMatMin = matMin; fgMatMax = matMax; fgGeom = geom;}
     static Double_t DefaultCut(FlukaCutOption_t i) {return fgDCutValue[i];}
+    static Int_t    DefaultProcessFlag(FlukaProcessOption_t i) {return fgDProcessFlag[i];}
  protected:
     Double_t fCutValue[11];            // User cut
     Int_t    fProcessFlag[15];         // User flag assigned to processes

@@ -21,9 +21,13 @@
 #include "TFlukaCerenkov.h"
 
 #include <TString.h>
+#include <TList.h>
 #include <TObjArray.h>
 #include <TVirtualMC.h>
 #include <TGeoMaterial.h>
+#include <TGeoMedium.h>
+#include <TGeoManager.h>
+#include <TGeoMedium.h>
 
 Float_t            TFlukaConfigOption::fgMatMin(-1.);
 Float_t            TFlukaConfigOption::fgMatMax(-1.);
@@ -97,6 +101,14 @@ void TFlukaConfigOption::WriteFlukaInputCards()
     // Write the FLUKA input cards for the set of process flags and cuts
     //
     //
+    //
+    // Check if global option or medium specific
+
+    Bool_t mediumIsSensitive = kFALSE;
+    TGeoMedium*   med    = 0x0;
+    TGeoMedium*   medium = 0x0;    
+    TGeoMaterial* mat    = 0x0;
+
     if (fMedium != -1) {
 	TFluka* fluka = (TFluka*) gMC;
 	fMedium = fgGeom->GetFlukaMaterial(fMedium);
@@ -109,7 +121,8 @@ void TFlukaConfigOption::WriteFlukaInputCards()
 	    printf("Material not used !\n");
 	    return;
 	}
-
+	//
+	// Find material
 	TObjArray *matList = fluka->GetFlukaMaterials();
 	Int_t nmaterial =  matList->GetEntriesFast();
 	TGeoMaterial* material = 0;
@@ -118,11 +131,23 @@ void TFlukaConfigOption::WriteFlukaInputCards()
 	    material = dynamic_cast<TGeoMaterial*> (matList->At(im));
 	    Int_t idmat = material->GetIndex();
 	    if (idmat == fMedium) break;	    
-	}
-	
-	
-//
-// Check if global option
+	} // materials
+        //
+	// Find medium
+	TList *medlist = gGeoManager->GetListOfMedia();
+	TIter next(medlist);
+	while((med = (TGeoMedium*)next()))
+	{
+	    mat = med->GetMaterial();
+	    if (mat->GetIndex() == fMedium) {
+		medium = med;
+		break;
+	    }
+	} // media
+	//
+	// Check if sensitive
+	if (medium->GetParam(0) != 0.) mediumIsSensitive = kTRUE;
+
 
 	fprintf(fgFile,"*\n*Material specific process and cut settings for #%8d %s\n", fMedium, material->GetName());
 	fCMatMin = fMedium;
@@ -135,7 +160,17 @@ void TFlukaConfigOption::WriteFlukaInputCards()
 
 //
 // Handle Process Flags 
+//
+//
+//  First make sure that all cuts are taken into account
+    if (DefaultProcessFlag(kPAIR) > 0 && fProcessFlag[kPAIR] == -1 && (fCutValue[kCUTELE] >= 0. || fCutValue[kPPCUTM] >= 0.)) 
+	fProcessFlag[kPAIR] = DefaultProcessFlag(kPAIR);
+    if (DefaultProcessFlag(kBREM) > 0 && fProcessFlag[kBREM] == -1 && (fCutValue[kBCUTE]  >= 0. || fCutValue[kBCUTM] >= 0.)) 
+	fProcessFlag[kBREM] = DefaultProcessFlag(kBREM);
+    if (DefaultProcessFlag(kDRAY) > 0 && fProcessFlag[kDRAY] == -1 && (fCutValue[kDCUTE]  >= 0. || fCutValue[kDCUTM] >= 0.)) 
+	fProcessFlag[kDRAY] = DefaultProcessFlag(kDRAY);
 //    
+//
     if (fProcessFlag[kDCAY] != -1) ProcessDCAY();
     if (fProcessFlag[kPAIR] != -1) ProcessPAIR();
     if (fProcessFlag[kBREM] != -1) ProcessBREM();
@@ -159,8 +194,13 @@ void TFlukaConfigOption::WriteFlukaInputCards()
     if (fCutValue[kCUTNEU] >= 0.) ProcessCUTNEU();
     if (fCutValue[kCUTHAD] >= 0.) ProcessCUTHAD();
     if (fCutValue[kCUTMUO] >= 0.) ProcessCUTMUO();
-
+//
+//  Time of flight 
     if (fCutValue[kTOFMAX] >= 0.) ProcessTOFMAX();
+
+//
+//  Tracking precission
+    if (mediumIsSensitive) ProcessSensitiveMedium();
 }
 
 void TFlukaConfigOption::ProcessDCAY()
@@ -718,4 +758,19 @@ void TFlukaConfigOption::ProcessTOFMAX()
     Float_t cut = fCutValue[kTOFMAX];
     fprintf(fgFile,"*\n*Cut on time of flight. TOFMAX = %13.4g\n", fCutValue[kTOFMAX]);
     fprintf(fgFile,"TIME-CUT  %10.4g%10.1f%10.1f%10.1f%10.1f\n",cut*1.e9,0.,0.,-6.0,64.0);
+}
+
+void  TFlukaConfigOption::ProcessSensitiveMedium()
+{
+    //
+    // Special options for sensitive media
+    //
+
+    fprintf(fgFile,"*\n*Options for sensitive medium \n");
+    //
+    // EMFFIX
+    fprintf(fgFile,"EMFFIX    %10.1f%10.3f%10.1f%10.1f%10.1f%10.1f\n", fCMatMin, 0.05, 0., 0., 0., 0.);
+    //
+    // FLUKAFIX
+    fprintf(fgFile,"FLUKAFIX  %10.3f                    %10.3f\n", 0.05, fCMatMin);
 }
