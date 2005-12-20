@@ -13,18 +13,18 @@
 #endif
 
 // Define global parameters 
-const TString kgESDTreeName     = "esdTree" ; 
-const UInt_t  kgeventsToRead    = 1 ;
-const char *  kgPattern         = "Evt" ;
+// const TString kgESDTreeName     = "esdTree" ;
+// const UInt_t  kgeventsToRead    = 1 ;
+// const char *  kgPattern         = "Evt" ;
 
-TChain * AliReadESDfromdisk(const UInt_t eventsToRead, 
+TChain * AliReadESDfromdisk(const UInt_t eventsToRead,
 			       const TString dirName, 
-			       const TString esdTreeName = kgESDTreeName, 
-			       const char *  pattern     = kgPattern) ; 
-TChain * AliReadESD(const UInt_t eventsToRead = kgeventsToRead,
-		     TString fileName  = "", 
-		     const TString esdTreeName = kgESDTreeName, 
-		     const char *  pattern     = kgPattern ) ;  
+			       const TString esdTreeName = "esdTree",
+			       const char *  pattern     = "Evt") ;
+TChain * AliReadESD(const UInt_t eventsToRead = 1,
+		     TString fileName  = "",
+		     const TString esdTreeName = "esdTree",
+		     const char *  pattern     = "Evt" ) ;
 
 // Needed for AliLog (return the macro name)
 char * ClassName() { return "macro" ; } 
