@@ -966,7 +966,7 @@ Bool_t AliTRDdigitizer::MakeDigits()
             //Double_t dist = - colOffset / padPlane->GetColSize(colE);
             Double_t dist = (0.5 * padPlane->GetColSize(colE) - colOffset) 
                           / padPlane->GetColSize(colE);
-            if (!(commonParam->PadResponse(signal,dist,plane,padSignal))) continue;
+            if (!(calibration->PadResponse(signal,dist,plane,padSignal))) continue;
 	  }
 	  else {
             padSignal[0] = 0.0;
@@ -974,23 +974,23 @@ Bool_t AliTRDdigitizer::MakeDigits()
             padSignal[2] = 0.0;
 	  }
 
-          // The time bin (always positive), with correction for t0
-          Double_t timeBinExact = (drifttime * samplingRate + t0);
-          Int_t    timeE      = (Int_t) timeBinExact;
+          // The time bin (always positive), with t0 correction
+          Double_t timeBinIdeal = drifttime * samplingRate + t0;
+          Int_t    timeBinTruncated = (Int_t) timeBinIdeal;
           // The distance of the position to the middle of the timebin
-          Double_t timeOffset = ((Float_t) timeE + 0.5 - timeBinExact) / samplingRate;
-   
+          Double_t timeOffset = ((Float_t) timeBinTruncated + 0.5 - timeBinIdeal) / samplingRate;
+          
 	  // Sample the time response inside the drift region
 	  // + additional time bins before and after.
           // The sampling is done always in the middle of the time bin
-          for (Int_t iTimeBin = TMath::Max(timeE, 0);
-	       iTimeBin < TMath::Min(timeE+timeBinTRFend,nTimeTotal ) ;
-	       iTimeBin++                                                       ) {
+          for (Int_t iTimeBin = TMath::Max(timeBinTruncated, 0);
+               iTimeBin < TMath::Min(timeBinTruncated+timeBinTRFend,nTimeTotal);
+	       iTimeBin++) {
 
      	    // Apply the time response
             Double_t timeResponse = 1.0;
             Double_t crossTalk    = 0.0;
-            Double_t time         = (iTimeBin - timeE) / samplingRate + timeOffset;
+            Double_t time         = (iTimeBin - timeBinTruncated) / samplingRate + timeOffset;
             if (simParam->TRFOn()) {
               timeResponse = simParam->TimeResponse(time);
             }

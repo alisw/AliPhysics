@@ -19,7 +19,6 @@
 #pragma link C++ class  AliTRDclusterizerV1+;
 
 #pragma link C++ class  AliTRDclusterCorrection+;
-#pragma link C++ class  AliTRDclusterizerMI+;
 
 #pragma link C++ class  AliTRDtracklet+;
 #pragma link C++ class  AliTRDtrack+;

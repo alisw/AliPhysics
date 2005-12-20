@@ -41,6 +41,8 @@ class AliTRDCalGlobals;
 class AliTRDcalibDB : public TObject
 {
 public:
+  enum { kNplan = 6, kNcham = 5, kNsect = 18, kNdet = 540 };
+  
   static AliTRDcalibDB* Instance();
   static void Terminate();
 
@@ -64,45 +66,32 @@ public:
   Float_t GetGainFactor(Int_t det, Int_t col, Int_t row);
   HEADER_PAD(GetGainFactor);
 
+  Float_t GetPRFWidth(Int_t det, Int_t col, Int_t row);
+  HEADER_PAD(GetPRFWidth);
+  
   Float_t GetSamplingFrequency(); 
   Int_t GetNumberOfTimeBins();
   
   //Related functions, these depend on calibration data
   static Float_t GetOmegaTau(Float_t vdrift);
+  Int_t PadResponse(Double_t signal, Double_t dist, Int_t plane, Double_t *pad) const;
   
 protected:
-  void Invalidate();
-  
-  static AliTRDcalibDB* fgInstance;     // Instance of this class (singleton implementation)
-  static Bool_t fgTerminated;               // Defines if this class has already been terminated and therefore does not return instances in GetInstance anymore
-
-  AliCDBStorage* fLocator;                  // Storage locator retrieved from AliCDBManager
-  
   enum { kCDBCacheSize = 7 };   // Number of cached objects
   enum { kIDVdrift = 0, kIDT0 = 1, kIDGainFactor = 2, kIDPRFWidth = 3, kIDGlobals = 4, kIDChamber = 5, kIDStack = 6 };    // IDs of cached objects
-  
-  AliCDBEntry* fCDBEntries[kCDBCacheSize];    // Cache for CDB entries 
-  TObject* fCDBCache[kCDBCacheSize];          // Cache for calibration objects.
-      
-  inline AliCDBEntry* GetCDBEntry(const char* cdbPath);
-  inline TObject* CacheCDBEntry(Int_t id, const char* cdbPath);
-  inline TObject* CacheMergeCDBEntry(Int_t id, const char* cdbPadPath, const char* cdbChamberPath);
   
   TObject* GetCachedCDBObject(Int_t id)
   {
     //
-    // Retrieves a cdb object with the given id. The objects are cached as long as the
-    // run number is not changed.
+    // Retrieves a cdb object with the given id. The objects are cached as long as the run number is not changed.
     //
     // Put together the available objects here by using the lines
     //   a) For usual calibration objects:
     //      ase kID<Name> : return CacheCDBEntry(kID<Name>, "TRD/Calib/<Path>"); break;
     //      See function CacheCDBEntry for details.
     //   and
-    //   b) For calibration data which depends on two objects: One containing a value
-    //      per detector and one the local fluctuations per pad:
-    //      case kID<Name> : return CacheMergeCDBEntry(kID<Name>, "TRD/Calib/<padPath>", 
-    //      "TRD/Calib/<chamberPath>"); break;
+    //   b) For calibration data which depends on two objects: One containing a value per detector and one the local fluctuations per pad:
+    //      case kID<Name> : return CacheMergeCDBEntry(kID<Name>, "TRD/Calib/<padPath>", "TRD/Calib/<chamberPath>"); break;
     //      See function CacheMergeCDBEntry for details.
     //
     
@@ -124,7 +113,32 @@ protected:
     return 0;
   }
   
+  void Invalidate();
+  void SamplePRF();
+  
+  inline AliCDBEntry* GetCDBEntry(const char* cdbPath);
+  inline TObject* CacheCDBEntry(Int_t id, const char* cdbPath);
+  inline TObject* CacheMergeCDBEntry(Int_t id, const char* cdbPadPath, const char* cdbChamberPath);
+  
+  static AliTRDcalibDB* fgInstance;     // Instance of this class (singleton implementation)
+  static Bool_t fgTerminated;               // Defines if this class has already been terminated and therefore does not return instances in GetInstance anymore
+
+  AliCDBStorage* fLocator;                  // Storage locator retrieved from AliCDBManager
+  
+  AliCDBEntry* fCDBEntries[kCDBCacheSize];    // Cache for CDB entries 
+  TObject* fCDBCache[kCDBCacheSize];          // Cache for calibration objects.
+      
   Long64_t fRun;
+  
+  struct 
+  {
+    Float_t             *fPRFsmp;                             //! Sampled pad response
+    Int_t                fPRFbin;                             //  Number of bins for the PRF
+    Float_t              fPRFlo;                              //  Lower boundary of the PRF
+    Float_t              fPRFhi;                              //  Higher boundary of the PRF
+    Float_t              fPRFwid;                             //  Bin width of the sampled PRF
+    Int_t                fPRFpad;                             //  Distance to next pad in PRF
+  } fPadResponse;
   
 private:
   // this is a singleton, constructor is private!  
@@ -180,11 +194,10 @@ TObject* AliTRDcalibDB::CacheCDBEntry(Int_t id, const char* cdbPath)
 TObject* AliTRDcalibDB::CacheMergeCDBEntry(Int_t id, const char* cdbPadPath, const char* cdbChamberPath)
 {
   //
-  // Retrieves and caches an object (id <id>) from the CDB. This function is specialized 
-  // for parameters which are stored as local variation at pad level of a global variable
-  // defined per detector chamber. It uses the classes AliTRDCalPad and AliTRDCalDet.
-  // Before storing the object it retrieves the local variations (cdbPadPath) and the
-  // global variable (cdbChamberPath) and merges them using the AliTRDCalPad::ScaleROCs.
+  // Retrieves and caches an object (id <id>) from the CDB. This function is specialized for parameters which are stored
+  // as local variation at pad level of a global variable defined per detector chamber. It uses the classes AliTRDCalPad and AliTRDCalDet.
+  // Before storing the object it retrieves the local variations (cdbPadPath) and the global variable (cdbChamberPath) and merges them using
+  // the AliTRDCalPad::ScaleROCs.
   //
     
   if (!fCDBCache[id]) 

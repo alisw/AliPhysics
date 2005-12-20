@@ -558,14 +558,14 @@ Double_t AliTRDclusterizerV1::Unfold(Double_t eps, Int_t plane, Double_t* padSig
   // The resulting ratio is then returned to the calling method.
   //
 
-  AliTRDCommonParam* commonParam = AliTRDCommonParam::Instance();
-  if (!commonParam)
+  AliTRDcalibDB* calibration = AliTRDcalibDB::Instance();
+  if (!calibration)
   {
-    printf("<AliTRDdigitizer::MakeDigits> ");
-    printf("Could not get common params\n");
-    return kFALSE;
+    printf("<AliTRDclusterizerMI::Unfold> ");
+    printf("ERROR getting instance of AliTRDcalibDB");
+    return kFALSE;  
   }
-    
+  
   Int_t   irc                = 0;
   Int_t   itStep             = 0;      // Count iteration steps
 
@@ -589,14 +589,14 @@ Double_t AliTRDclusterizerV1::Unfold(Double_t eps, Int_t plane, Double_t* padSig
                       / ((1-ratio)*padSignal[2] + padSignal[3] + padSignal[4]);
 
     // Set cluster charge ratio
-    irc = commonParam->PadResponse(1.0,maxLeft ,plane,newSignal);
+    irc = calibration->PadResponse(1.0,maxLeft ,plane,newSignal);
     Double_t ampLeft  = padSignal[1] / newSignal[1];
-    irc = commonParam->PadResponse(1.0,maxRight,plane,newSignal);
+    irc = calibration->PadResponse(1.0,maxRight,plane,newSignal);
     Double_t ampRight = padSignal[3] / newSignal[1];
 
     // Apply pad response to parameters
-    irc = commonParam->PadResponse(ampLeft ,maxLeft ,plane,newLeftSignal );
-    irc = commonParam->PadResponse(ampRight,maxRight,plane,newRightSignal);
+    irc = calibration->PadResponse(ampLeft ,maxLeft ,plane,newLeftSignal );
+    irc = calibration->PadResponse(ampRight,maxRight,plane,newRightSignal);
 
     // Calculate new overlapping ratio
     ratio = TMath::Min((Double_t)1.0,newLeftSignal[2] / 
