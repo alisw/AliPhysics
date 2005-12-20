@@ -80,7 +80,7 @@ AliTRDRecParam::AliTRDRecParam()
   fLUTbin = 0;
   
   Init();
-};
+}
 
 //_____________________________________________________________________________
 AliTRDRecParam::~AliTRDRecParam() 
@@ -93,7 +93,7 @@ AliTRDRecParam::~AliTRDRecParam()
     delete [] fLUT;
     fLUT    = 0;
   }
-};
+}
 
 //_____________________________________________________________________________
 AliTRDRecParam::AliTRDRecParam(const AliTRDRecParam &p):TObject(p)

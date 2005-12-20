@@ -91,15 +91,18 @@ protected:
   TObject* GetCachedCDBObject(Int_t id)
   {
     //
-    // Retrieves a cdb object with the given id. The objects are cached as long as the run number is not changed.
+    // Retrieves a cdb object with the given id. The objects are cached as long as the
+    // run number is not changed.
     //
     // Put together the available objects here by using the lines
     //   a) For usual calibration objects:
     //      ase kID<Name> : return CacheCDBEntry(kID<Name>, "TRD/Calib/<Path>"); break;
     //      See function CacheCDBEntry for details.
     //   and
-    //   b) For calibration data which depends on two objects: One containing a value per detector and one the local fluctuations per pad:
-    //      case kID<Name> : return CacheMergeCDBEntry(kID<Name>, "TRD/Calib/<padPath>", "TRD/Calib/<chamberPath>"); break;
+    //   b) For calibration data which depends on two objects: One containing a value
+    //      per detector and one the local fluctuations per pad:
+    //      case kID<Name> : return CacheMergeCDBEntry(kID<Name>, "TRD/Calib/<padPath>", 
+    //      "TRD/Calib/<chamberPath>"); break;
     //      See function CacheMergeCDBEntry for details.
     //
     
@@ -177,10 +180,11 @@ TObject* AliTRDcalibDB::CacheCDBEntry(Int_t id, const char* cdbPath)
 TObject* AliTRDcalibDB::CacheMergeCDBEntry(Int_t id, const char* cdbPadPath, const char* cdbChamberPath)
 {
   //
-  // Retrieves and caches an object (id <id>) from the CDB. This function is specialized for parameters which are stored
-  // as local variation at pad level of a global variable defined per detector chamber. It uses the classes AliTRDCalPad and AliTRDCalDet.
-  // Before storing the object it retrieves the local variations (cdbPadPath) and the global variable (cdbChamberPath) and merges them using
-  // the AliTRDCalPad::ScaleROCs.
+  // Retrieves and caches an object (id <id>) from the CDB. This function is specialized 
+  // for parameters which are stored as local variation at pad level of a global variable
+  // defined per detector chamber. It uses the classes AliTRDCalPad and AliTRDCalDet.
+  // Before storing the object it retrieves the local variations (cdbPadPath) and the
+  // global variable (cdbChamberPath) and merges them using the AliTRDCalPad::ScaleROCs.
   //
     
   if (!fCDBCache[id]) 

@@ -163,7 +163,7 @@ void AliTRDSimParam::Init()
   fTimeStructOn = kTRUE;
   
   ReInit();
-};
+}
 
 //_____________________________________________________________________________
 AliTRDSimParam::~AliTRDSimParam() 
@@ -181,7 +181,7 @@ AliTRDSimParam::~AliTRDSimParam()
     delete [] fCTsmp;
     fCTsmp  = 0;
   }
-};
+}
 
 //_____________________________________________________________________________
 AliTRDSimParam::AliTRDSimParam(const AliTRDSimParam &p):TObject(p)
