@@ -432,6 +432,7 @@ Double_t AliKalmanTrack::MeanMaterialBudget(Double_t *start, Double_t *end, Doub
     bparam[0]    += snext*lparam[0];
 
     if (snext>=length) break;
+    if (!currentnode) break;
     //    printf("%s snext=%f  density=%f bparam[0]=%f\n", gGeoManager->GetPath(),snext,density,bparam[0]);
     if (!gGeoManager->IsEntering()) {
       gGeoManager->SetStep(1.E-3);
