@@ -106,7 +106,15 @@ void  AliZDCCalibData::Print(Option_t *) const
 {
    printf("\n	----	Mean pedestal values	----\n\n");
    for(int t=0; t<47; t++){
-      printf("	MeanPed Value[ADC%d] = %f\n",t,fMeanPedestal[t]);
+     if(t==0 || t==24) printf("\t ZN HighRes -------- ");
+     else if(t==5 || t==29) printf("\t ZN LowRes -------- ");
+     else if(t==10 || t==34) printf("\t ZP HighRes -------- ");
+     else if(t==15 || t==39) printf("\t ZP LowRes -------- ");
+     else if(t==20) printf("\t ZEM1 HighRes -------- ");
+     else if(t==21) printf("\t ZEM1 LowRes -------- ");
+     else if(t==22) printf("\t ZEM2 HighRes -------- ");
+     else if(t==23) printf("\t ZEM2 LowRes -------- ");
+     printf("\t MeanPed[ADC%d] = %.1f\n",t,fMeanPedestal[t]);
    }
  
    printf("\n	----	Energy calibration coefficients 	----\n\n");

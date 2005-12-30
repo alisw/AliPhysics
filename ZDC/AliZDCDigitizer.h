@@ -10,6 +10,9 @@
 ////////////////////////////////////////////////
 
 #include "AliDigitizer.h"
+#include "AliCDBManager.h"
+#include "AliCDBStorage.h"
+#include "AliZDCCalibData.h"
 
 class AliRunDigitizer;
 
@@ -39,6 +42,9 @@ public:
   //  Two conversion factor are needed for ADC CAEN V965 
     {for (Int_t i=0;i<2;i++) fADCRes[i] = adcRes[i];}
   Float_t GetADCRes(Int_t i) const {return fADCRes[i];}
+  
+  void   GetStorage(const char* uri) {fStorage = AliCDBManager::Instance()->GetStorage(uri);}
+  AliZDCCalibData *GetCalibData(int runNumber) const; 
 
 private:
   void    Fragmentation(Float_t impPar, Int_t specN, Int_t specP,
@@ -48,12 +54,14 @@ private:
 
   Int_t   Phe2ADCch(Int_t Detector, Int_t Quadrant, Float_t Light, 
                     Int_t Res) const;
-  Int_t   Pedestal() const;
+  Int_t   Pedestal(Int_t Detector, Int_t Quadrant, Int_t Res) const;
 
   Float_t fPMGain[3][5];      // PM gain
   Float_t fADCRes[2];	      // ADC conversion factors
+  
+  AliCDBStorage *fStorage; //! storage
 
        
-  ClassDef(AliZDCDigitizer, 2)     // digitizer for ZDC
+  ClassDef(AliZDCDigitizer, 3)     // digitizer for ZDC
 };    
 #endif

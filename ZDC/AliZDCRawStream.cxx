@@ -83,20 +83,20 @@ Bool_t AliZDCRawStream::Next()
   
   //ADC Header
   if (fRawADC & 0x2000000) {
-    printf("This is the ADC Header\n");
-    printf("%d data words will follow \n",2*((fRawADC & 0x3f00) >> 8));
+    //printf("This is the ADC Header\n");
+    //printf("%d data words will follow \n",2*((fRawADC & 0x3f00) >> 8));
   } 
   //ADC EOB
   else if (fRawADC & 0x4000000) {
-    printf("This is the ADC End Of Block\n");
-    printf("This was event number %d\n",(fRawADC & 0xffffff));
-  } else 
+    //printf("This is the ADC End Of Block\n");
+    //printf("This was event number %d\n",(fRawADC & 0xffffff));
+  } 
+  else 
   //ADC Data Words
   {
-    printf("This is an ADC Data Word\n");
-    printf("Channel %d range %d\n", 
-           (fRawADC & 0x1e0000) >> 17, (fRawADC & 0x10000) >> 16);
-    if(fRawADC & 0x1000) printf("Data = overflow\n");
+    //printf("This is an ADC Data Word\n");
+    //printf("Channel %d range %d\n",(fRawADC & 0x1e0000) >> 17, (fRawADC & 0x10000) >> 16);
+    //if(fRawADC & 0x1000) printf("Data = overflow\n");
     fADCGain = (fRawADC & 0x10000) >> 16;
     fADCValue = (fRawADC & 0xfff);   
     fIsADCDataWord = kTRUE;

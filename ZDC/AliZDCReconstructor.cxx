@@ -31,6 +31,7 @@
 #include "AliZDCRawStream.h"
 #include "AliZDCReco.h"
 #include "AliZDCReconstructor.h"
+#include "AliZDCCalibData.h"
 
 
 ClassImp(AliZDCReconstructor)
@@ -39,26 +40,10 @@ ClassImp(AliZDCReconstructor)
 //_____________________________________________________________________________
 AliZDCReconstructor:: AliZDCReconstructor()
 {
-// default constructor
+  // **** Default constructor
+  // if(!fStorage) fStorage =  AliCDBManager::Instance()->GetStorage("local://DBlocal");
 
   //  ---      Number of generated spectator nucleons and impact parameter
-  // --------------------------------------------------------------------------------------------------
-  // [1] ### Results in Chiara's PhD thesis -> 0<b<15 fm (Dec 2001)
-  /*// Fit results for neutrons (Nspectator n true vs. EZN)
-  fZNCen = new TF1("fZNCen",
-      "(-2.116909+sqrt(2.116909*2.116909-4*(-0.00651)*(14.556798-x)))/(2*(-0.00651))",0.,158.5);
-  fZNPer = new TF1("fZNPer",
-      "(-34.695134-sqrt(34.695134*34.695134-4*(-0.174780)*(-1562.283443-x)))/(2*(-0.174780))",0.,158.5);
-  // Fit results for protons (Nspectator p true vs. EZP)
-  fZPCen = new TF1("fZPCen",
-      "(-1.3217+sqrt(1.3217*1.3217-4*(-0.007934)*(4.742873-x)))/(2*(-0.007934))",0.,58.91);
-  fZPPer = new TF1("fZPPer",
-      "(-15.788267-sqrt(15.788267*15.788267-4*(-0.133359)*(-383.800673-x)))/(2*(-0.133359))",0.,58.91);
-  // Fit results for total number of spectators (Nspectators true vs. EZDC)
-  fZDCCen = new TF1("fZDCCen",
-      "(-1.867335+sqrt(1.867335*1.867335-4*(-0.004119)*(19.100289-x)))/(2*(-0.004119))",0.,220.4);
-  fZDCPer = new TF1("fZDCPer",
-      "(-22.429097-sqrt(22.429097*22.429097-4*(-0.072435)*(-1482.034526-x)))/(2*(-0.072435))",0.,220.4);*/
   // --------------------------------------------------------------------------------------------------
   // [1] ### Results from a new production  -> 0<b<18 fm (Apr 2002)
   // Fit results for neutrons (Nspectator n true vs. EZN)
@@ -77,24 +62,12 @@ AliZDCReconstructor:: AliZDCReconstructor()
   fZDCPer = new TF1("fZDCPer",
       "(-34.380639-sqrt(34.380639*34.380639-4*(-0.104251)*(-2612.189017-x)))/(2*(-0.104251))",0.,225.);
   // --------------------------------------------------------------------------------------------------
-  // [1] ### Results in Chiara's PhD thesis -> 0<b<15 fm (Dec 2001)
-  /*// Fit results for b (b vs. EZDC)
-  //fbCen = new TF1("fbCen","0.611543+0.052231*x-0.000112*x*x+0.000000374*x*x*x",0.,222.);
-  //fbPer = new TF1("fbPer","16.552010-0.023866*x-0.00001*x*x",0.,222.);
-  fbCen = new TF1("fbCen","0.612769+0.051929*x-0.0001074*x*x+0.0000003724*x*x*x",0.,225.);
-  fbPer = new TF1("fbPer","16.6131016-0.026053*x+0.000006893*x*x",0.,225.);*/
-  // --------------------------------------------------------------------------------------------------
+  // Fit results for b (b vs. EZDC)
   // [2] ### Results from a new production  -> 0<b<18 fm (Apr 2002)
   fbCen = new TF1("fbCen","-0.056923+0.079703*x-0.0004301*x*x+0.000001366*x*x*x",0.,220.);
   fbPer = new TF1("fbPer","17.943998-0.046846*x+0.000074*x*x",0.,220.);
   // --------------------------------------------------------------------------------------------------
   // Evaluating Nspectators and b from ZEM energy
-  // [1] ### Results in Chiara's PhD thesis -> 0<b<15 fm (Dec 2001)
-  /*fZEMn  = new TF1("fZEMn","124.2-0.0566*x+0.000006014*x*x",0.,3500.);
-  fZEMp  = new TF1("fZEMp","81.3-0.03834*x+0.000004359*x*x",0.,3500.);
-  fZEMsp = new TF1("fZEMsp","205.6-0.09567*x+0.00001056*x*x",0.,3500.);
-  fZEMb  = new TF1("fZEMb","15.8-0.02084*x+2.802e-5*x*x-2.007e-8*x*x*x+6.586e-12*x*x*x*x-8.042e-16*x*x*x*x*x",0.,3500.);*/
-  // --------------------------------------------------------------------------------------------------
   // [2] ### Results from a new production  -> 0<b<18 fm (Apr 2002)
   fZEMn  = new TF1("fZEMn","126.2-0.05399*x+0.000005679*x*x",0.,4000.);
   fZEMp  = new TF1("fZEMp","82.49-0.03611*x+0.00000385*x*x",0.,4000.);
@@ -145,7 +118,14 @@ AliZDCReconstructor::~AliZDCReconstructor()
 //_____________________________________________________________________________
 void AliZDCReconstructor::Reconstruct(AliRunLoader* runLoader) const
 {
-// local ZDC reconstruction
+  // *** Local ZDC reconstruction for digits
+  
+  // Get calibration data
+  int runNumber = 0;
+  AliZDCCalibData *calibda = GetCalibData(runNumber);  
+  
+  Float_t meanPed[47];
+  for(Int_t jj=0; jj<47; jj++) meanPed[jj] = calibda->GetMeanPed(jj);
 
   AliLoader* loader = runLoader->GetLoader("ZDCLoader");
   if (!loader) return;
@@ -165,18 +145,27 @@ void AliZDCReconstructor::Reconstruct(AliRunLoader* runLoader) const
     treeD->SetBranchAddress("ZDC", &pdigit);
 
     // loop over digits
-    Int_t znraw=0, zpraw=0, zemraw=0;
+    Float_t zncorr=0, zpcorr=0, zemcorr=0;
     for (Int_t iDigit = 0; iDigit < treeD->GetEntries(); iDigit++) {
       treeD->GetEntry(iDigit);
       if (!pdigit) continue;
 
-      if(digit.GetSector(0) == 1)	znraw  += digit.GetADCValue(0);
-      else if(digit.GetSector(0) == 2) 	zpraw  += digit.GetADCValue(0);
-      else if(digit.GetSector(0) == 3) 	zemraw += digit.GetADCValue(0);
+      if(digit.GetSector(0) == 1)
+       	 zncorr  += (Float_t) (digit.GetADCValue(0)-meanPed[digit.GetSector(1)]);	   // ped 4 high gain ZN ADCs
+      else if(digit.GetSector(0) == 2)
+	 zpcorr  += (Float_t) (digit.GetADCValue(0)-meanPed[digit.GetSector(1)+10]); // ped 4 high gain ZP ADCs
+      else if(digit.GetSector(0) == 3){
+	 if(digit.GetSector(1)==1)      zemcorr += (Float_t) (digit.GetADCValue(0)-meanPed[digit.GetSector(1)+20]); // ped 4 high gain ZEM1 ADCs
+	 else if(digit.GetSector(1)==2) zemcorr += (Float_t) (digit.GetADCValue(0)-meanPed[digit.GetSector(1)+22]); // ped 4 high gain ZEM2 ADCs
+      }
     }
+    if(zncorr<0)  zncorr=0;
+    if(zpcorr<0)  zpcorr=0;
+    if(zemcorr<0) zemcorr=0;
 
     // reconstruct the event
-    ReconstructEvent(loader, znraw, zpraw, zemraw);
+    printf("\n \t ZDCReco from digits-> Ev.#%d ZN = %.0f, ZP = %.0f, ZEM = %.0f\n",iEvent,zncorr,zpcorr,zemcorr);
+    ReconstructEvent(loader, zncorr, zpcorr, zemcorr);
   }
 
   loader->UnloadDigits();
@@ -187,7 +176,14 @@ void AliZDCReconstructor::Reconstruct(AliRunLoader* runLoader) const
 void AliZDCReconstructor::Reconstruct(AliRunLoader* runLoader, 
                                       AliRawReader* rawReader) const
 {
-// local ZDC reconstruction for raw data
+  // *** Local ZDC reconstruction for raw data
+  
+  // Calibration data
+  int runNumber = 0;
+  AliZDCCalibData *calibda = GetCalibData(runNumber);  
+  
+  Float_t meanPed[47];
+  for(Int_t jj=0; jj<47; jj++) meanPed[jj] = calibda->GetMeanPed(jj);
 
   AliLoader* loader = runLoader->GetLoader("ZDCLoader");
   if (!loader) return;
@@ -198,42 +194,34 @@ void AliZDCReconstructor::Reconstruct(AliRunLoader* runLoader,
     runLoader->GetEvent(iEvent++);
 
     // loop over raw data digits
-    Int_t znraw=0, zpraw=0, zemraw=0;
+    Float_t zncorr=0, zpcorr=0, zemcorr=0;
     AliZDCRawStream digit(rawReader);
     while (digit.Next()) {
       if(digit.IsADCDataWord()){
         if(digit.GetADCGain() == 0){
-          printf("ADC value = %d\n",digit.GetADCValue());
-          if(digit.GetSector(0) == 1)	   znraw  += digit.GetADCValue();
-          else if(digit.GetSector(0) == 2) zpraw  += digit.GetADCValue();
-          else if(digit.GetSector(0) == 3) zemraw += digit.GetADCValue();
-        }
+          if(digit.GetSector(0) == 1)	   zncorr  += (Float_t) (digit.GetADCValue()-meanPed[digit.GetSector(1)]); // pedestals for high gain ZN ADCs;
+          else if(digit.GetSector(0) == 2) zpcorr  += (Float_t) (digit.GetADCValue()-meanPed[digit.GetSector(1)+10]); // pedestals for high gain ZP ADCs;
+          else if(digit.GetSector(0) == 3) zemcorr += (Float_t) (digit.GetADCValue()-meanPed[digit.GetSector(1)+20]); // pedestals for high gain ZEM ADCs;
+	}
       }
     }
+    if(zncorr<0)  zncorr=0;
+    if(zpcorr<0)  zpcorr=0;
+    if(zemcorr<0) zemcorr=0;
+    
     // reconstruct the event
-    ReconstructEvent(loader, znraw, zpraw, zemraw);
+    printf("\n\t ZDCReco from raw-> Ev.#%d ZN = %.0f, ZP = %.0f, ZEM = %.0f\n",iEvent,zncorr,zpcorr,zemcorr);
+    ReconstructEvent(loader, zncorr, zpcorr, zemcorr);
   }
 
   loader->UnloadRecPoints();
 }
 
 //_____________________________________________________________________________
-void AliZDCReconstructor::ReconstructEvent(AliLoader* loader, Int_t znraw,
-                                           Int_t zpraw, Int_t zemraw) const
+void AliZDCReconstructor::ReconstructEvent(AliLoader* loader, Float_t zncorr,
+	Float_t zpcorr, Float_t zemcorr) const
 {
-// reconstruct one event
-
-//  if AliDebug(1,Form("\n	---	znraw = %d, zpraw = %d, zemraw = %d\n",znraw, zpraw, zemraw);
-    
-  //  ---      Pedestal subtraction
-  Int_t zncorr, zpcorr, zemcorr, meanPed=50;
-  zncorr  = znraw  - 5*meanPed;
-  zpcorr  = zpraw  - 5*meanPed;
-  zemcorr = zemraw - 2*meanPed;
-  if(zncorr<0)  zncorr=0;
-  if(zpcorr<0)  zpcorr=0;
-  if(zemcorr<0) zemcorr=0;
-//  if AliDebug(1,Form("\n    zncorr = %d, zpcorr = %d, zemcorr = %d\n",zncorr,zpcorr,zemcorr);
+  // ***** Reconstruct one event
   
   //  ---      ADCchannel -> photoelectrons
   // NB-> PM gain = 10^(5), ADC resolution = 6.4*10^(-7)
@@ -242,7 +230,7 @@ void AliZDCReconstructor::ReconstructEvent(AliLoader* loader, Int_t znraw,
   znphe  = zncorr/convFactor;
   zpphe  = zpcorr/convFactor;
   zemphe = zemcorr/convFactor;
-//  if AliDebug(1,Form("\n    znphe = %f, zpphe = %f, zemphe = %f\n",znphe, zpphe, zemphe);
+  //if AliDebug(1,Form("\n    znphe = %f, zpphe = %f, zemphe = %f\n",znphe, zpphe, zemphe);
   
   //  ---      Energy calibration
   // Conversion factors for hadronic ZDCs goes from phe yield to TRUE 
@@ -259,13 +247,13 @@ void AliZDCReconstructor::ReconstructEvent(AliLoader* loader, Int_t znraw,
   zdcenergy = znenergy+zpenergy;
   zemenergy = -4.81+0.3238*zemphe;
   if(zemenergy<0) zemenergy=0;
-//  if AliDebug(1,Form("    znenergy = %f TeV, zpenergy = %f TeV, zdcenergy = %f GeV, "
-//			   "\n		zemenergy = %f TeV\n", znenergy, zpenergy, 
-//			   zdcenergy, zemenergy);
+  //  if AliDebug(1,Form("    znenergy = %f TeV, zpenergy = %f TeV, zdcenergy = %f GeV, "
+  //			   "\n		zemenergy = %f TeV\n", znenergy, zpenergy, 
+  //			   zdcenergy, zemenergy);
   
-//  if(zdcenergy==0)
-//    if AliDebug(1,Form("\n\n	###	ATTENZIONE!!! -> ev# %d: znenergy = %f TeV, zpenergy = %f TeV, zdcenergy = %f GeV, "
-//			     " zemenergy = %f TeV\n\n", fMerger->EvNum(), znenergy, zpenergy, zdcenergy, zemenergy); 
+  //  if(zdcenergy==0)
+  //    if AliDebug(1,Form("\n\n	###	ATTENZIONE!!! -> ev# %d: znenergy = %f TeV, zpenergy = %f TeV, zdcenergy = %f GeV, "
+  //			     " zemenergy = %f TeV\n\n", fMerger->EvNum(), znenergy, zpenergy, zdcenergy, zemenergy); 
 
   //  ---      Number of incident spectator nucleons
   Int_t nDetSpecN, nDetSpecP;
@@ -276,8 +264,6 @@ void AliZDCReconstructor::ReconstructEvent(AliLoader* loader, Int_t znraw,
   Int_t nGenSpecN=0, nGenSpecP=0, nGenSpec=0;
   Double_t impPar=0;
   // Cut value for Ezem (GeV)
-  // [1] ### Results in Chiara's PhD thesis -> 0<b<15 fm (Dec 2001)
-  //Float_t eZEMCut = 360.; 
   // [2] ### Results from a new production  -> 0<b<18 fm (Apr 2002)
   Float_t eZEMCut = 420.;
   Float_t deltaEZEMSup = 690.; 
@@ -287,29 +273,19 @@ void AliZDCReconstructor::ReconstructEvent(AliLoader* loader, Int_t znraw,
     nGenSpecP = (Int_t) (fZPCen->Eval(zpenergy));
     nGenSpec  = (Int_t) (fZDCCen->Eval(zdcenergy));
     impPar    = fbCen->Eval(zdcenergy);
-    //printf("    fZNCen = %f, fZPCen = %f, fZDCCen = %f\n",fZNCen->Eval(znenergy),
-    //            fZPCen->Eval(zpenergy),fZDCCen->Eval(zdcenergy));
   }
   else if(zemenergy < (eZEMCut-deltaEZEMInf)){
     nGenSpecN = (Int_t) (fZNPer->Eval(znenergy)); 
     nGenSpecP = (Int_t) (fZPPer->Eval(zpenergy));
     nGenSpec  = (Int_t) (fZDCPer->Eval(zdcenergy));
     impPar    = fbPer->Eval(zdcenergy);
-    //printf("    fZNPer = %f, fZPPer = %f, fZDCPer = %f\n",fZNPer->Eval(znenergy),
-    //            fZPPer->Eval(zpenergy),fZDCPer->Eval(zdcenergy));
   }
   else if(zemenergy >= (eZEMCut-deltaEZEMInf) && zemenergy <= (eZEMCut+deltaEZEMSup)){
     nGenSpecN = (Int_t) (fZEMn->Eval(zemenergy));
     nGenSpecP = (Int_t) (fZEMp->Eval(zemenergy));
     nGenSpec  = (Int_t)(fZEMsp->Eval(zemenergy));
     impPar    =  fZEMb->Eval(zemenergy);
-    //printf("    Nspec ZEM = %f, Nspec ZDC = %f\n",fZEMsp->Eval(znenergy),fZDCPer->Eval(zdcenergy));
   }
-  // [1] ### Results in Chiara's PhD thesis -> 0<b<15 fm (Dec 2001)
-  /*if(znenergy>158.5)  nGenSpecN = (Int_t) (fZEMn->Eval(zemenergy));
-    if(zpenergy>58.91)  nGenSpecP = (Int_t) (fZEMp->Eval(zemenergy));
-    if(zdcenergy>220.4) nGenSpec  = (Int_t)(fZEMsp->Eval(zemenergy));
-    if(zdcenergy>225.)  impPar    =          fZEMb->Eval(zemenergy);*/
   // [2] ### Results from a new production  -> 0<b<18 fm (Apr 2002)
   if(znenergy>162.)  nGenSpecN = (Int_t) (fZEMn->Eval(zemenergy));
   if(zpenergy>59.75)  nGenSpecP = (Int_t) (fZEMp->Eval(zemenergy));
@@ -322,14 +298,13 @@ void AliZDCReconstructor::ReconstructEvent(AliLoader* loader, Int_t znraw,
   else if(nGenSpecP<0) nGenSpecP=0;
   if(nGenSpec>207)     nGenSpec=207;
   else if(nGenSpec<0)  nGenSpec=0;
-  //printf("    NRecSpecN = %d, NRecSpecP = %d, NRecSpec = %d\n",nGenSpecN,nGenSpecP,nGenSpec);
   
   //  ---      Number of participants
   Int_t nPart, nPartTot;
   nPart = 207-nGenSpecN-nGenSpecP;
   nPartTot = 207-nGenSpec;
-  //printf("	###	nPart(ZP+ZN) = %d, nPart(ZDC) = %d, b = %f fm\n",nPart,nPartTot,impPar);
-//  if AliDebug(1,Form("	###	nPart = %d, b = %f fm\n",nPartTot,impPar);
+  printf("\t  ZDCeventReco-> ZNEn = %.0f GeV, ZPEn = %.0f GeV, ZEMEn = %.0f GeV\n",
+  	znenergy, zpenergy, zemenergy);
 
   // create the output tree
   loader->MakeTree("R");
@@ -367,4 +342,24 @@ void AliZDCReconstructor::FillESD(AliRunLoader* runLoader,
 	      reco.GetNPart());
 
   loader->UnloadRecPoints();
+}
+
+//_____________________________________________________________________________
+AliZDCCalibData* AliZDCReconstructor::GetCalibData(int runNumber) const
+{
+
+  //printf("\n\t AliZDCReconstructor::GetCalibData \n");
+  //fStorage->PrintSelectionList();
+  //AliCDBEntry *entry = fStorage->Get("DBlocal/ZDC/Calib/Data",runNumber);
+
+  
+  AliCDBStorage *fStorage = AliCDBManager::Instance()->GetStorage("local://DBlocal");
+  AliCDBEntry  *entry = fStorage->Get("ZDC/Calib/Data",1);
+  
+  AliZDCCalibData *calibda = (AliZDCCalibData*) entry->GetObject();
+
+  AliCDBManager::Instance()->Destroy();
+
+  return calibda;
+
 }
