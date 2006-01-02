@@ -5,8 +5,7 @@
 
 //-------------------------------------------------------
 //                    TRD PID class
-// A very naive design... And the implementation is even poorer... 
-// Should be made better by the detector experts...
+// A very naive design... 
 //-------------------------------------------------------
 #include <Rtypes.h>
 
@@ -16,7 +15,7 @@ class AliTRDpidESD {
 public:
   AliTRDpidESD(Double_t *param);
   virtual ~AliTRDpidESD() {}
-  Int_t MakePID(AliESD *event);
+  static Int_t MakePID(AliESD *event);
   static Double_t Bethe(Double_t bg);
 private:
   Double_t fMIP;          // dEdx for MIP

@@ -93,8 +93,14 @@ Int_t AliTRDpidESD::MakePID(AliESD *event)
   //
   // The class AliTRDprobdist contains precalculated prob dis.
   AliTRDprobdist *pd = new AliTRDprobdist();
-  pd->SetADCNorm(1.0);
-  //  pd->SetADCNorm(.72);
+  pd->SetADCNorm(1.0); // The factor is the ratio of Mean of pi charge dist.
+                    // for the New TRD code divided by the Mean of pi charge
+                    // dist. given in AliTRDprobdist object
+
+  //  Example to get mean for particle 2 (pi) and momentum number 4 (2 GeV)
+  //  printf("%.2f \n", pd->GetMean(2, 4));
+  //  Example of use of Copy Constructor 
+  //  AliTRDprobdist *pd1 = new AliTRDprobdist(*pd);
 
   Int_t ntrk=event->GetNumberOfTracks();
   for (Int_t i=0; i<ntrk; i++) {
