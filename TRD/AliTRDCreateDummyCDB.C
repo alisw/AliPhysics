@@ -81,6 +81,36 @@ TObject* CreateStackObject()
   return object;
 }
 
+TObject* CreatePRFWidthObject()
+{
+  AliTRDCalPad *calPad = new AliTRDCalPad("PRFWidth","PRFWidth");
+  for (Int_t plane=0; plane<AliTRDgeometry::kNplan; ++plane)
+  {
+    Float_t value = 0;
+    switch (plane)
+    {
+      case 0: value = 0.515; break;
+      case 1: value = 0.502; break;
+      case 2: value = 0.491; break;
+      case 3: value = 0.481; break;
+      case 4: value = 0.471; break;
+      case 5: value = 0.463; break;
+      default: cout << "CreatePRFWidthObject: UNEXPECTED" << endl; return 0;
+    }
+    for (Int_t chamber=0; chamber<AliTRDgeometry::kNcham; ++chamber)
+    {
+      for (Int_t sector=0; sector<AliTRDgeometry::kNsect; ++sector)
+      {
+        AliTRDCalROC *calROC = calPad->GetCalROC(plane, chamber, sector);
+        for (Int_t channel=0; channel<calROC->GetNchannels(); ++channel)
+          calROC->SetValue(channel, value);
+      }
+    }
+  }
+      
+  return calPad;
+}
+
 AliCDBMetaData* CreateMetaObject(const char* objectClassName)
 {
   AliCDBMetaData *md1= new AliCDBMetaData(); 
@@ -123,7 +153,7 @@ void AliTRDCreateDummyCDB()
   obj = CreatePadObject("GainFactor","GainFactor", 1);
   StoreObject("TRD/Calib/GainFactor", obj, metaData);
 
-  obj = CreatePadObject("PRFWidth","PRFWidth", 0);
+  obj = CreatePRFWidthObject();
   StoreObject("TRD/Calib/PRFWidth", obj, metaData);
 
   metaData = CreateMetaObject("AliTRDCalDet");
