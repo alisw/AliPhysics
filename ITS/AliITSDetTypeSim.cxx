@@ -426,7 +426,7 @@ Bool_t AliITSDetTypeSim::GetCalibration() {
   delete entrySSD;
   if(deleteManager){
     AliCDBManager::Instance()->Destroy();
-    AliCDBManager::Instance()->RemoveDefaultStorage();
+    AliCDBManager::Instance()->UnsetDefaultStorage();
     storage = 0;   // the storage is killed by AliCDBManager::Instance()->Destroy()
   }
 
