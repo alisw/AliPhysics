@@ -353,12 +353,12 @@ AliZDCCalibData* AliZDCReconstructor::GetCalibData(int runNumber) const
   //AliCDBEntry *entry = fStorage->Get("DBlocal/ZDC/Calib/Data",runNumber);
 
   
-  AliCDBStorage *fStorage = AliCDBManager::Instance()->GetStorage("local://DBlocal");
-  AliCDBEntry  *entry = fStorage->Get("ZDC/Calib/Data",1);
+  AliCDBStorage *fStorage = AliCDBManager::Instance()->GetStorage("local://$ALICE_ROOT");
+  AliCDBEntry  *entry = fStorage->Get("ZDC/Calib/Data",0);
   
   AliZDCCalibData *calibda = (AliZDCCalibData*) entry->GetObject();
 
-  AliCDBManager::Instance()->Destroy();
+  //AliCDBManager::Instance()->Destroy();
 
   return calibda;
 
