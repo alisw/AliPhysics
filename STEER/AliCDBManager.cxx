@@ -82,6 +82,8 @@ AliCDBManager::AliCDBManager():
 AliCDBManager::~AliCDBManager() {
 // destructor
 	DestroyActiveStorages();
+	fDrainStorage = 0x0;
+	fDefaultStorage = 0x0;
 }
 
 //_____________________________________________________________________________
@@ -238,17 +240,9 @@ Bool_t AliCDBManager::Drain(AliCDBEntry *entry) {
 }
 
 //_____________________________________________________________________________
-void AliCDBManager::RemoveDrain() {
-// remove drain storage
-
-	fDrainStorage=0;
-}
-
-//_____________________________________________________________________________
 void AliCDBManager::SetDefaultStorage(const char* dbString) {
 // sets default storage from URI string
 
-	if(fDefaultStorage) fDefaultStorage = 0;
 	fDefaultStorage = GetStorage(dbString);	
 }
 
@@ -256,7 +250,6 @@ void AliCDBManager::SetDefaultStorage(const char* dbString) {
 void AliCDBManager::SetDefaultStorage(const AliCDBParam* param) {
 // set default storage from AliCDBParam object
 	
-	if(fDefaultStorage) fDefaultStorage = 0;
 	fDrainStorage = GetStorage(param);
 }
 
@@ -264,16 +257,9 @@ void AliCDBManager::SetDefaultStorage(const AliCDBParam* param) {
 void AliCDBManager::SetDefaultStorage(AliCDBStorage* storage) {
 // set default storage from another active storage
 	
-	if(fDefaultStorage) fDefaultStorage = 0;
 	fDefaultStorage = storage;
 }
 
-//_____________________________________________________________________________
-void AliCDBManager::RemoveDefaultStorage() {
-// remove default storage
-
-	fDefaultStorage = 0;
-}
 
 //_____________________________________________________________________________
 void AliCDBManager::DestroyActiveStorages() {
@@ -284,7 +270,17 @@ void AliCDBManager::DestroyActiveStorages() {
 
 //_____________________________________________________________________________
 void AliCDBManager::DestroyActiveStorage(AliCDBStorage* /*storage*/) {
-// destroys active storage (not implemented)
+// destroys active storage
+
+/*
+	TIter iter(fActiveStorages.GetTable());	
+	TPair* aPair;
+	while ((aPair = (TPair*) iter.Next())) {
+		if(storage == (AliCDBStorage*) aPair->Value())
+			delete fActiveStorages.Remove(aPair->Key());
+			storage->Delete(); storage=0x0;
+	}
+*/	
 
 }
 

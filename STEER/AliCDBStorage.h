@@ -23,9 +23,9 @@ class AliCDBStorage: public TObject {
 
 public:
 	AliCDBStorage();
-	virtual ~AliCDBStorage();	
 
-
+	void ReadSelectionFromFile(const char *fileName);
+	
 	void AddSelection(const AliCDBId& selection);
 
 	void AddSelection(const AliCDBPath& path, 
@@ -73,12 +73,16 @@ public:
 	virtual Bool_t IsReadOnly() const = 0;
 	virtual Bool_t HasSubVersion() const = 0;
 
+	virtual Bool_t Contains(const char* path) const = 0;
+
 protected:
 		
+	virtual ~AliCDBStorage();	
 	AliCDBId GetSelection(const AliCDBId& id);
 	virtual AliCDBEntry* GetEntry(const AliCDBId& query) = 0;
 	virtual TList* GetEntries(const AliCDBId& query) = 0;
 	virtual Bool_t PutEntry(AliCDBEntry* entry) = 0; 
+	virtual TList *GetIdListFromFile(const char* fileName)=0;
 
 private:
 

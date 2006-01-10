@@ -24,12 +24,14 @@ public:
 
 	virtual Bool_t IsReadOnly() const {return fReadOnly;};
 	virtual Bool_t HasSubVersion() const {return kFALSE;};
+	virtual Bool_t Contains(const char* path) const;
 
 protected:
 
-	virtual AliCDBEntry* GetEntry(const AliCDBId& query);
-        virtual TList* GetEntries(const AliCDBId& query);
-        virtual Bool_t PutEntry(AliCDBEntry* entry);
+	virtual AliCDBEntry* 	GetEntry(const AliCDBId& query);
+        virtual TList* 		GetEntries(const AliCDBId& query);
+        virtual Bool_t 		PutEntry(AliCDBEntry* entry);
+	virtual TList* 		GetIdListFromFile(const char* fileName);
 
 private:
 
@@ -69,7 +71,6 @@ public:
 
         virtual Bool_t Validate(const char* dbString);
         virtual AliCDBParam* CreateParameter(const char* dbString);
-	virtual ~AliCDBDumpFactory() {}
 
 protected:
         virtual AliCDBStorage* Create(const AliCDBParam* param);

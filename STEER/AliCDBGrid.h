@@ -7,7 +7,7 @@
 /////////////////////////////////////////////////////////////////////
 //                                                                 //
 //  class AliCDBGrid						   //
-//  access class to a DataBase in an AliEn storage 		   //
+//  access class to a DataBase in an AliEn storage  		   //
 //                                                                 //
 /////////////////////////////////////////////////////////////////////
 
@@ -21,20 +21,18 @@ public:
 		  
 	virtual Bool_t IsReadOnly() const {return kFALSE;};
 	virtual Bool_t HasSubVersion() const {return kFALSE;};
+	virtual Bool_t Contains(const char* path) const;
   
 protected:
 
 	virtual AliCDBEntry*	GetEntry(const AliCDBId& queryId);
 	virtual TList* 		GetEntries(const AliCDBId& queryId);
 	virtual Bool_t          PutEntry(AliCDBEntry* entry);
+	virtual TList* 		GetIdListFromFile(const char* fileName);
 
 private:
  
-	AliCDBGrid(const char *host="aliendb4.cern.ch", 
-		const Int_t port = 9000, 
-		const char *user="colla", 
-	        const char* dbPath = "/alice/cern.ch/user/c/colla/DB", 
-		const char *SE="ALICE::CERN::Server");
+	AliCDBGrid(const char *gridUrl, const char *user, const char* dbFolder, const char *se);
 
 	virtual ~AliCDBGrid();
 
@@ -52,10 +50,9 @@ private:
 	void GetEntriesForLevel1(const char* level0, const char* level1, 
 				 const AliCDBId& query, TList* result);
 
-	TString    fHost;	// Grid host
-	Int_t      fPort;	// port
+	TString    fGridUrl;	// Grid Url ("alien://aliendb4.cern.ch:9000")
 	TString    fUser;	// User
-	TString    fDBPath;     // path of the DB folder
+	TString    fDBFolder;   // path of the DB folder
 	TString    fSE;	  	// Storage Element 
 
 ClassDef(AliCDBGrid, 0)      // access class to a DataBase in an AliEn storage 
@@ -90,15 +87,14 @@ class AliCDBGridParam: public AliCDBParam {
 	
 public:
 	AliCDBGridParam();
-	AliCDBGridParam(const char* host, Int_t port, const char* user, 
-			const char* dbPath, const char* se);
+	AliCDBGridParam(const char* gridUrl, const char* user, 
+			const char* dbFolder, const char* se);
 	
 	virtual ~AliCDBGridParam();
 
-	const TString& GetHost() const {return fHost;};
-	const Int_t&   GetPort() const {return fPort;};
+	const TString& GridUrl() const {return fGridUrl;};
 	const TString& GetUser() const {return fUser;};
-	const TString& GetPath() const {return fDBPath;};
+	const TString& GetDBFolder() const {return fDBFolder;};
 	const TString& GetSE() 	 const {return fSE;};
 
 	virtual AliCDBParam* CloneParam() const;
@@ -107,10 +103,9 @@ public:
         virtual Bool_t IsEqual(const TObject* obj) const;
 
 private:
-	TString fHost;	     // Grid host
-	Int_t 	fPort;	     // port
+	TString fGridUrl;    // Grid url "Host:port"
 	TString fUser;	     // User
-	TString fDBPath;     // path of the DB folder
+	TString fDBFolder;   // path of the DB folder
 	TString fSE;	     // Storage Element 
 
 	ClassDef(AliCDBGridParam, 0);

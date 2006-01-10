@@ -42,7 +42,7 @@ class AliCDBManager: public TObject {
 	
 	AliCDBStorage* GetDefaultStorage() const {return fDefaultStorage;}
 
-	void RemoveDefaultStorage();
+	void UnsetDefaultStorage() {fDefaultStorage = 0x0;}
 
 	void SetDrain(const char* dbString);
 	void SetDrain(const AliCDBParam* param);
@@ -52,7 +52,7 @@ class AliCDBManager: public TObject {
 
 	Bool_t Drain(AliCDBEntry* entry);
 
-	void RemoveDrain();
+	void UnsetDrain(){fDrainStorage = 0x0;}
 
 	void DestroyActiveStorages();
 	void DestroyActiveStorage(AliCDBStorage* storage);
@@ -60,7 +60,7 @@ class AliCDBManager: public TObject {
 	static void Destroy();
 	~AliCDBManager();
 
-	static AliCDBManager* Instance();
+	static AliCDBManager* Instance(); 
 
  private:
 		
@@ -72,10 +72,10 @@ class AliCDBManager: public TObject {
 
 	void Init();
 	
-	TList fFactories; 		// list of registered storage factories
-	TMap fActiveStorages;		// list of active storages
-	AliCDBStorage *fDefaultStorage;	// pointer to default storage
-	AliCDBStorage *fDrainStorage;	// pointer to drain storage
+	TList fFactories; 		//! list of registered storage factories
+	TMap fActiveStorages;		//! list of active storages
+	AliCDBStorage *fDefaultStorage;	//! pointer to default storage
+	AliCDBStorage *fDrainStorage;	//! pointer to drain storage
 
 	ClassDef(AliCDBManager, 0);
 };
@@ -93,8 +93,7 @@ class AliCDBStorageFactory: public TObject {
 	
 public:
 	virtual Bool_t Validate(const char* dbString) = 0;
-	virtual AliCDBParam* CreateParameter(const char* dbString) = 0;
-	virtual ~AliCDBStorageFactory(){}
+	virtual AliCDBParam* CreateParameter(const char* dbString) = 0;	
 
 protected:
 	virtual AliCDBStorage* Create(const AliCDBParam* param) = 0;
@@ -127,8 +126,8 @@ protected:
 
 private:
 
-	TString fType; // CDB type?
-	TString fURI;  // CDB URI?
+	TString fType; // CDB type
+	TString fURI;  // CDB URI
 
 	ClassDef(AliCDBParam, 0);
 };

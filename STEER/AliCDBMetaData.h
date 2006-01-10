@@ -56,7 +56,7 @@ private:
 
 	TString fObjectClassName; 	// object's class name
 	TString fResponsible; 		// object's responsible person
-	UInt_t fBeamPeriod;		// beam period
+	UInt_t  fBeamPeriod;		// beam period
 	TString fAliRootVersion;	// AliRoot version
 	TString fComment;		// extra comments
 	//TList fCalibRuns;		

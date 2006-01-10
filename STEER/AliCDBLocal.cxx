@@ -101,18 +101,18 @@ Bool_t AliCDBLocal::IdToFilename(const AliCDBRunRange& runRange, Int_t version,
 // build file name from AliCDBId data (run range, version, subVersion)
 
 	if (!runRange.IsValid()) {
-		AliWarning(Form("Invalid run range <%d, %d>.", 
+		AliDebug(2,Form("Invalid run range <%d, %d>.", 
 			runRange.GetFirstRun(), runRange.GetLastRun()));
 		return kFALSE;
 	}
 
 	if (version < 0) {
-		AliWarning(Form("Invalid version <%d>.", version));
+		AliDebug(2,Form("Invalid version <%d>.", version));
                 return kFALSE;
 	}
 
 	if (subVersion < 0) {
-		AliWarning(Form("Invalid subversion <%s>.", subVersion));
+		AliDebug(2,Form("Invalid subversion <%s>.", subVersion));
 		return kFALSE;
 	}
  
@@ -166,7 +166,7 @@ Bool_t AliCDBLocal::PrepareId(AliCDBId& id) {
 	
 			if (!FilenameToId(filename, aRunRange, aVersion, 
 				aSubVersion)) {
-				AliWarning(Form(
+				AliDebug(2,Form(
 					"Bad filename <%s>! I'll skip it.", 
 					filename));
 				continue;
@@ -195,7 +195,7 @@ Bool_t AliCDBLocal::PrepareId(AliCDBId& id) {
 
 			if (!FilenameToId(filename, aRunRange, aVersion, 
 				aSubVersion)) {
-				AliWarning(Form(
+				AliDebug(2,Form(
 					"Bad filename <%s>!I'll skip it.",
 					filename));	
 				continue;
@@ -225,7 +225,7 @@ Bool_t AliCDBLocal::PrepareId(AliCDBId& id) {
 
 	if(lastStorage.Contains(TString("new"), TString::kIgnoreCase) &&
 	   id.GetSubVersion() > 0 ){
-		AliWarning(Form("*** WARNING! a NEW object is being stored with version v%d_s%d",
+		AliWarning(Form("A NEW object is being stored with version v%d_s%d",
 					id.GetVersion(),id.GetSubVersion()));
 		AliWarning(Form("and it will hide previously stored object with v%d_s%d!",
 					id.GetVersion(),id.GetSubVersion()-1));
@@ -582,7 +582,55 @@ Bool_t AliCDBLocal::PutEntry(AliCDBEntry* entry) {
 	if (!result) AliError(Form("Can't write entry to file: %s", filename.Data()));
 
 	file.Close();
-        if(result) AliInfo(Form("AliCDBEntry stored into file %s",filename.Data()));
+        if(result) AliInfo(Form("CDB object stored into file %s",filename.Data()));
+
+	return result;
+}
+
+//_____________________________________________________________________________
+TList* AliCDBLocal::GetIdListFromFile(const char* fileName){
+
+	TString fullFileName(fileName);
+	fullFileName.Prepend(fBaseDirectory+'/');
+	TFile *file = TFile::Open(fullFileName);
+	if (!file) {
+		AliError(Form("Can't open selection file <%s>!", fullFileName.Data()));
+		return NULL;
+	}
+	file->cd();
+
+	TList *list = new TList();
+	list->SetOwner();
+	int i=0;
+	TString keycycle;
+	
+	AliCDBId *id;
+	while(1){
+		i++;
+		keycycle = "AliCDBId;";
+		keycycle+=i;
+		
+		id = (AliCDBId*) file->Get(keycycle);
+		if(!id) break;
+		list->AddFirst(id);
+	}
+	file->Close(); delete file; file=0;	
+	return list;
+}
+
+//_____________________________________________________________________________
+Bool_t AliCDBLocal::Contains(const char* path) const{
+// check for path in storage's fBaseDirectory
+
+	TString dirName;
+	dirName += fBaseDirectory;
+	dirName += '/';
+	dirName += path; // dirName = fDBPath/path
+	Bool_t result=kFALSE;
+
+	void* dirPtr = gSystem->OpenDirectory(dirName); 
+	if (dirPtr) result=kTRUE;
+	gSystem->FreeDirectory(dirPtr);
 
 	return result;
 }
@@ -619,8 +667,6 @@ AliCDBParam* AliCDBLocalFactory::CreateParameter(const char* dbString) {
 	if (pathname[0] != '/') {
 		pathname.Prepend(TString(gSystem->WorkingDirectory()) + '/');
 	}
-
-	AliInfo(pathname);
 
 	return new AliCDBLocalParam(pathname);       
 }

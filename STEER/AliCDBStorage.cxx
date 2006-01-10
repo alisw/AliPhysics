@@ -13,6 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+#include <TKey.h>
 #include "AliCDBManager.h"
 #include "AliCDBStorage.h"
 
@@ -45,7 +46,7 @@ AliCDBId AliCDBStorage::GetSelection(const AliCDBId& id) {
 	while ((aSelection = (AliCDBId*) iter.Next())) {
 		// check if selection element contains id's path and run (range) 
 		if (aSelection->Comprises(id)) {
-			AliInfo(Form("Using selection criterion: %s ", aSelection->ToString().Data()));
+			AliDebug(2,Form("Using selection criterion: %s ", aSelection->ToString().Data()));
 			// return required version and subversion
 			return AliCDBId(id.GetAliCDBPath(), 
 				id.GetAliCDBRunRange(),
@@ -55,8 +56,33 @@ AliCDBId AliCDBStorage::GetSelection(const AliCDBId& id) {
 	}
 	
 	// no valid element is found in the list of selection criteria -> return
-	AliInfo("No matching selection criteria: highest version will be seeked!");
+	AliDebug(2,"Looking for objects with most recent version");
 	return AliCDBId(id.GetAliCDBPath(), id.GetAliCDBRunRange());
+}
+
+//_____________________________________________________________________________
+void AliCDBStorage::ReadSelectionFromFile(const char *fileName){
+// read selection criteria list from file
+	
+	RemoveAllSelections();
+	
+	TList *list = GetIdListFromFile(fileName);
+	if(!list) return;
+	
+	list->SetOwner();	
+	Int_t nId = list->GetEntries();
+	AliCDBId *id;
+	TKey *key;
+	
+	for(int i=nId-1;i>=0;i--){
+		key = (TKey*) list->At(i);
+		id = (AliCDBId*) key->ReadObj();
+		if(id) AddSelection(*id);
+	}
+	delete list;
+	AliInfo(Form("Selection criteria list filled with %d entries",fSelections.GetEntries()));
+	PrintSelectionList();
+	
 }
 
 //_____________________________________________________________________________
@@ -176,9 +202,9 @@ AliCDBEntry* AliCDBStorage::Get(const AliCDBId& query) {
 	AliCDBEntry* entry = GetEntry(query);
 		
   	if (entry) {
-    		AliInfo(Form("Valid AliCDBEntry object found! %s", entry->GetId().ToString().Data()));
+    		AliInfo(Form("CDB object retrieved: %s", entry->GetId().ToString().Data()));
   	} else {
-    		AliInfo(Form("Sorry, found no object valid for: name = <%s>, run = %d", 
+    		AliInfo(Form("No valid CDB object found! request was: name = <%s>, run = %d", 
 		        (query.GetPath()).Data(), query.GetFirstRun()));
   	}
 	
@@ -226,15 +252,15 @@ TList* AliCDBStorage::GetAll(const AliCDBId& query) {
 
  	Int_t nEntries = result->GetEntries();
  	if (nEntries) {
- 		 AliInfo(Form("%d AliCDBEntry objects found!",nEntries));
+ 		 AliInfo(Form("%d AliCDBEntry objects retrieved.",nEntries));
 		 for(int i=0; i<nEntries;i++){
 		 	AliCDBEntry *entry = (AliCDBEntry*) result->At(i);
 			AliInfo(Form("%s",entry->GetId().ToString().Data()));
 		 
 		 }
  	} else {
-     		 AliInfo(Form("Sorry, found no object valid for: name = <%s>, run = %d", 
-		        (query.GetPath()).Data(), query.GetFirstRun()));
+     		 AliInfo(Form("No valid CDB object found! request was: name = <%s>, run = %d, version = %d", 
+		        (query.GetPath()).Data(), query.GetFirstRun(), query.GetVersion()));
 	}
 
 	// if drain storage is set, drain entries into drain storage

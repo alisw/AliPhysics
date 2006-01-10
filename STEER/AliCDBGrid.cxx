@@ -39,25 +39,20 @@
 ClassImp(AliCDBGrid)
 
 //_____________________________________________________________________________
-AliCDBGrid::AliCDBGrid(const char *host, const Int_t port, 
-                       const char *user, const char *dbPath, const char *se) :
+AliCDBGrid::AliCDBGrid(const char *gridUrl, const char *user, const char *dbFolder, const char *se) :
 AliCDBStorage(),
-fHost(host),
-fPort(port),
+fGridUrl(gridUrl),
 fUser(user),
-fDBPath(dbPath),
+fDBFolder(dbFolder),
 fSE(se)
 {
 // constructor //
 
-	TString grid="alien://";
-	grid+=host; grid+=":"; grid+=port;
-
 	// if the same Grid is alreay active, skip connection
-	if (!gGrid || TString(host) != gGrid->GetHost() || 
-	    port != gGrid->GetPort() || TString(user) != gGrid->GetUser()) {
+	if (!gGrid || fGridUrl != gGrid->GridUrl()  
+	     || fUser != gGrid->GetUser()) {
    		// connection to the Grid
-		TGrid::Connect(grid.Data(),fUser.Data());
+		TGrid::Connect(fGridUrl.Data(),fUser.Data());
 	}
 
 	if(!gGrid) {
@@ -66,23 +61,23 @@ fSE(se)
 	}
 
 	TString initDir(gGrid->Pwd(0));
-	if (fDBPath[0] != '/') {
-		fDBPath.Prepend(initDir);
+	if (fDBFolder[0] != '/') {
+		fDBFolder.Prepend(initDir);
 	}
 
 	// check DBFolder: trying to cd to DBFolder; if it does not exist, create it
-	if(!gGrid->Cd(fDBPath.Data(),0)){
-		AliDebug(2,Form("Creating new folder <%s> ...",fDBPath.Data()));
-		if(!gGrid->Mkdir(fDBPath.Data(),"",0)){
-			AliError(Form("Cannot create folder <%s> !",fDBPath.Data())); 
+	if(!gGrid->Cd(fDBFolder.Data(),0)){
+		AliDebug(2,Form("Creating new folder <%s> ...",fDBFolder.Data()));
+		if(!gGrid->Mkdir(fDBFolder.Data(),"",0)){
+			AliError(Form("Cannot create folder <%s> !",fDBFolder.Data())); 
 		}
 	} else {
-		AliDebug(2,Form("Folder <%s> found",fDBPath.Data()));
+		AliDebug(2,Form("Folder <%s> found",fDBFolder.Data()));
 	}
 
 	// removes any '/' at the end of path, then append one '/'
-	while(fDBPath.EndsWith("/")) fDBPath.Remove(fDBPath.Last('/')); 
-	fDBPath+="/";
+	while(fDBFolder.EndsWith("/")) fDBFolder.Remove(fDBFolder.Last('/')); 
+	fDBFolder+="/";
 
 	// return to the initial directory
 	gGrid->Cd(initDir.Data(),0);
@@ -133,13 +128,13 @@ Bool_t AliCDBGrid::IdToFilename(const AliCDBRunRange& runRange, Int_t gridVersio
 // build file name from AliCDBId data (run range, version)
 
 	if (!runRange.IsValid()) {
-		AliWarning(Form("Invalid run range <%d, %d>.", 
+		AliDebug(2,Form("Invalid run range <%d, %d>.", 
 			runRange.GetFirstRun(), runRange.GetLastRun()));
 		return kFALSE;
 	}
 
 	if (gridVersion < 0) {
-		AliWarning(Form("Invalid version <%d>.", gridVersion));
+		AliDebug(2,Form("Invalid version <%d>.", gridVersion));
                 return kFALSE;
 	}
  
@@ -161,7 +156,7 @@ Bool_t AliCDBGrid::PrepareId(AliCDBId& id) {
 	TString initDir(gGrid->Pwd(0));
 	TString pathName= id.GetPath();
 
-	TString dirName(fDBPath);
+	TString dirName(fDBFolder);
 
 	Bool_t dirExist=kFALSE;
  
@@ -172,7 +167,7 @@ Bool_t AliCDBGrid::PrepareId(AliCDBId& id) {
  		dirName+=buffer; dirName+="/";
 		dirExist=gGrid->Cd(dirName,0);
 		if (!dirExist) {
-			AliInfo(Form("Creating new folder <%s> ...",dirName.Data()));
+			AliDebug(2,Form("Creating new folder <%s> ...",dirName.Data()));
 			if(!gGrid->Mkdir(dirName,"",0)){
 				AliError(Form("Cannot create directory <%s> !",dirName.Data()));
 				gGrid->Cd(initDir.Data());
@@ -207,7 +202,7 @@ Bool_t AliCDBGrid::PrepareId(AliCDBId& id) {
 
 	TString lastStorage = id.GetLastStorage();
 	if(lastStorage.Contains(TString("new"), TString::kIgnoreCase) && id.GetVersion() > 1 ){
-		AliWarning(Form("*** WARNING! a NEW object is being stored with version %d",
+		AliWarning(Form("A NEW object is being stored with version %d",
 					id.GetVersion()));
 		AliWarning(Form("and it will hide previously stored object with version %d!",
 					id.GetVersion()-1));
@@ -228,12 +223,12 @@ AliCDBId AliCDBGrid::GetId(const AliCDBId& query) {
 
 	AliCDBId result(query.GetAliCDBPath(), -1, -1, -1, -1);
 
-	TString dirName(fDBPath);
-	dirName += query.GetPath(); // dirName = fDBPath/idPath
+	TString dirName(fDBFolder);
+	dirName += query.GetPath(); // dirName = fDBFolder/idPath
 
 	if (!gGrid->Cd(dirName,0)) {
 		AliError(Form("Directory <%s> not found", (query.GetPath()).Data()));
-		AliError(Form("in DB folder %s", fDBPath.Data()));
+		AliError(Form("in DB folder %s", fDBFolder.Data()));
 		return result;
 	}
  
@@ -305,7 +300,7 @@ AliCDBEntry* AliCDBGrid::GetEntry(const AliCDBId& queryId) {
 		return NULL;
 	}
 
-	filename.Prepend("/alien" + fDBPath + queryId.GetPath() + '/');
+	filename.Prepend("/alien" + fDBFolder + queryId.GetPath() + '/');
 	filename += "?se="; filename += fSE.Data(); 
 
 	AliInfo(Form("Opening file: %s",filename.Data()));
@@ -354,7 +349,7 @@ void AliCDBGrid::GetEntriesForLevel0(const char* level0,
 	const AliCDBId& queryId, TList* result) {
 // multiple request (AliCDBStorage::GetAll)
 
-	TString level0Dir=fDBPath;
+	TString level0Dir=fDBFolder;
 	level0Dir += level0;
 
 	if (!gGrid->Cd(level0Dir,0)) {
@@ -377,7 +372,7 @@ void AliCDBGrid::GetEntriesForLevel1(const char* level0, const char* level1,
 	const AliCDBId& queryId, TList* result) {
 // multiple request (AliCDBStorage::GetAll)
 
-	TString level1Dir=fDBPath;
+	TString level1Dir=fDBFolder;
 	level1Dir += level0;
 	level1Dir += '/';
 	level1Dir += level1;
@@ -415,7 +410,7 @@ TList* AliCDBGrid::GetEntries(const AliCDBId& queryId) {
 
 	TString initDir(gGrid->Pwd(0));
 
-	TGridResult *res = gGrid->Ls(fDBPath);
+	TGridResult *res = gGrid->Ls(fDBFolder);
 	TString level0;
 
 	for(int i=0; i < res->GetEntries(); i++){
@@ -445,7 +440,7 @@ Bool_t AliCDBGrid::PutEntry(AliCDBEntry* entry) {
 		return kFALSE;
 	} 
 
-	filename.Prepend("/alien" + fDBPath + id.GetPath() + '/');
+	filename.Prepend("/alien" + fDBFolder + id.GetPath() + '/');
 	TString filenameCopy(filename);
 	filename += "?se="; filename += fSE.Data(); 
  
@@ -471,10 +466,57 @@ Bool_t AliCDBGrid::PutEntry(AliCDBEntry* entry) {
 	if (saveDir) saveDir->cd(); else gROOT->cd();
 	file->Close(); delete file; file=0;
 	if(result) {
-		AliInfo(Form("AliCDBEntry stored into file %s",filenameCopy.Data()));
+		AliInfo(Form("CDB object stored into file %s",filenameCopy.Data()));
 		AliInfo(Form("using S.E. %s", fSE.Data()));
 	}
  
+	return result;
+}
+
+//_____________________________________________________________________________
+TList* AliCDBGrid::GetIdListFromFile(const char* fileName){
+
+	TString turl(fileName);
+	turl.Prepend("/alien" + fDBFolder);
+	turl += "?se="; turl += fSE.Data(); 
+	TFile *file = TFile::Open(turl);
+	if (!file) {
+		AliError(Form("Can't open selection file <%s>!", turl.Data()));
+		return NULL;
+	}
+
+	TList *list = new TList();
+	list->SetOwner();
+	int i=0;
+	TString keycycle;
+	
+	AliCDBId *id;
+	while(1){
+		i++;
+		keycycle = "AliCDBId;";
+		keycycle+=i;
+		
+		id = (AliCDBId*) file->Get(keycycle);
+		if(!id) break;
+		list->AddFirst(id);
+	}
+	file->Close(); delete file; file=0;
+	
+	return list;
+
+
+}
+
+//_____________________________________________________________________________
+Bool_t AliCDBGrid::Contains(const char* path) const{
+// check for path in storage's DBFolder
+
+	TString initDir(gGrid->Pwd(0));
+	TString dirName(fDBFolder);
+	dirName += path; // dirName = fDBFolder/path
+	Bool_t result=kFALSE;
+	if (gGrid->Cd(dirName,0)) result=kTRUE;
+	gGrid->Cd(initDir.Data(),0);
 	return result;
 }
 
@@ -493,7 +535,8 @@ Bool_t AliCDBGridFactory::Validate(const char* gridString) {
 	// pattern: alien://hostName:Port;user;dbPath;SE
 	// example of a valid pattern:
 	// "alien://aliendb4.cern.ch:9000;colla;DBTest;ALICE::CERN::Server"
-        TRegexp gridPattern("^alien://.+:[0-9]+;[a-zA-Z0-9_-.]+;.+;.+$");
+//        TRegexp gridPattern("^alien://.+:[0-9]+;[a-zA-Z0-9_-.]+;.+;.+$");
+        TRegexp gridPattern("^alien://.+$");
 
         return TString(gridString).Contains(gridPattern);
 }
@@ -505,24 +548,58 @@ AliCDBParam* AliCDBGridFactory::CreateParameter(const char* gridString) {
 	if (!Validate(gridString)) {
 		return NULL;
 	}
-	TString buffer(gridString + sizeof("alien://") - 1);
- 	TString host = buffer(0,buffer.First(':')); // host (ex. aliendb4.cern.ch)
-	buffer = buffer(host.Sizeof(),buffer.Sizeof());
-	TString strPort = buffer(0, buffer.First(';'));
-	Int_t port = atoi(strPort.Data());	// port number (ex. 9000)
-	buffer = buffer(strPort.Sizeof(),buffer.Sizeof());
-	TString user = buffer(0,buffer.First(';')); // user (ex. colla)
-	buffer = buffer(user.Sizeof(),buffer.Sizeof());
-	TString dbPath = buffer(0,buffer.First(';')); // DB path (ex. /alice/cern.ch/user/c/colla/DB)
-	TString se = buffer(dbPath.Sizeof(),buffer.Sizeof()); // storage element (ex. ALICE::CERN::Server)
-	
-	AliInfo(Form("host: %s",host.Data()));
-	AliInfo(Form("port: %d",port));
-	AliInfo(Form("user: %s",user.Data()));
-	AliInfo(Form("dbPath: %s",dbPath.Data()));
-	AliInfo(Form("s.e.: %s",se.Data()));
+	//TString buffer(gridString + sizeof("alien://") - 1);
+	TString buffer(gridString);
+ 
+ 	TString gridUrl 	= "alien://"; 
+	TString user 		= "";
+	TString dbFolder 	= "DBGrid";
+	TString se		= "ALICE::CERN::se01";
 
-	return new AliCDBGridParam(host, port, user, dbPath, se);       
+	TObjArray *arr = buffer.Tokenize('?');
+	TIter iter(arr);
+	TObjString *str;
+	
+	while((str = (TObjString*) iter.Next())){
+		TString entry(str->String());
+		Int_t indeq = entry.Index('=');
+		if(indeq == -1) {
+			if(entry.BeginsWith("alien://")) { // maybe it's a gridUrl!
+				gridUrl = entry;
+				continue;
+			} else {
+				AliError(Form("Invalid entry! %s",entry.Data()));
+				continue;
+			}
+		}
+		
+		TString key = entry(0,indeq);
+		TString value = entry(indeq+1,entry.Length()-indeq);
+
+		if(key.Contains("grid",TString::kIgnoreCase)) {
+			gridUrl += value;
+		} 
+		else if (key.Contains("user",TString::kIgnoreCase)){
+			user = value;
+		}
+		else if (key.Contains("folder",TString::kIgnoreCase)){
+			dbFolder = value;
+		}
+		else if (key.Contains("se",TString::kIgnoreCase)){
+			se = value;
+		}
+		else{
+			AliError(Form("Invalid entry! %s",entry.Data()));
+		}
+	}
+	delete arr; arr=0;
+		
+	AliInfo(Form("gridUrl:	%s",gridUrl.Data()));
+	AliInfo(Form("user:	%s",user.Data()));
+	AliInfo(Form("dbFolder:	%s",dbFolder.Data()));
+	AliInfo(Form("s.e.:	%s",se.Data()));
+
+	return new AliCDBGridParam(gridUrl, user, dbFolder, se);       
 }
 
 //_____________________________________________________________________________
@@ -532,8 +609,8 @@ AliCDBStorage* AliCDBGridFactory::Create(const AliCDBParam* param) {
 	if (AliCDBGridParam::Class() == param->IsA()) {
 		
 		const AliCDBGridParam* gridParam = (const AliCDBGridParam*) param;
-		AliCDBGrid *grid = new AliCDBGrid(gridParam->GetHost(), gridParam->GetPort(), 
-				      gridParam->GetUser(), gridParam->GetPath(),
+		AliCDBGrid *grid = new AliCDBGrid(gridParam->GridUrl(), 
+				      gridParam->GetUser(), gridParam->GetDBFolder(),
 				      gridParam->GetSE()); 
 
 		if(gGrid) return grid;
@@ -557,25 +634,24 @@ AliCDBGridParam::AliCDBGridParam() {
 }
 
 //_____________________________________________________________________________
-AliCDBGridParam::AliCDBGridParam(const char* host, 
-				const Int_t port, 
+AliCDBGridParam::AliCDBGridParam(const char* gridUrl, 
 				const char* user, 
-			        const char* dbPath, 
+			        const char* dbFolder, 
 				const char* se):
- fHost(host),
- fPort(port),
+ fGridUrl(gridUrl),
  fUser(user),
- fDBPath(dbPath),
+ fDBFolder(dbFolder),
  fSE(se)
 {
 // constructor
 	
 	SetType("alien");
 
-	TString uri=("alien://");
-	uri+=host; uri+=":"; uri+=port; uri+=";";
-	uri+=user; uri+=";"; uri+=dbPath; uri+=";";
-	uri+=se;
+	TString uri;
+	uri+=fGridUrl; uri+="?";
+	uri+="User="; 	uri+=fUser; uri+="?"; 
+	uri+="DBFolder="; uri+=fDBFolder; uri+="?";
+	uri+="SE="; 	uri+=fSE;
 	
 	SetURI(uri);
 }
@@ -590,14 +666,14 @@ AliCDBGridParam::~AliCDBGridParam() {
 AliCDBParam* AliCDBGridParam::CloneParam() const {
 // clone parameter
 
-        return new AliCDBGridParam(fHost, fPort, fUser, fDBPath, fSE);
+        return new AliCDBGridParam(fGridUrl, fUser, fDBFolder, fSE);
 }
 
 //_____________________________________________________________________________
 ULong_t AliCDBGridParam::Hash() const {
 // return Hash function
 
-        return fHost.Hash()+fPort+fUser.Hash()+fDBPath.Hash()+fSE.Hash();
+        return fGridUrl.Hash()+fUser.Hash()+fDBFolder.Hash()+fSE.Hash();
 }
 
 //_____________________________________________________________________________
@@ -614,10 +690,9 @@ Bool_t AliCDBGridParam::IsEqual(const TObject* obj) const {
 
         AliCDBGridParam* other = (AliCDBGridParam*) obj;
 
-        if(fHost != other->fHost) return kFALSE;
-        if(fPort != other->fPort) return kFALSE;
+        if(fGridUrl != other->fGridUrl) return kFALSE;
         if(fUser != other->fUser) return kFALSE;
-        if(fDBPath != other->fDBPath) return kFALSE;
+        if(fDBFolder != other->fDBFolder) return kFALSE;
         if(fSE != other->fSE) return kFALSE;
 	return kTRUE;
 }

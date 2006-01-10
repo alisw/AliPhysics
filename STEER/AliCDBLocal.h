@@ -21,12 +21,14 @@ public:
 
 	virtual Bool_t IsReadOnly() const {return kFALSE;};
 	virtual Bool_t HasSubVersion() const {return kTRUE;};
+	virtual Bool_t Contains(const char* path) const;
 
 protected:
 
 	virtual AliCDBEntry* GetEntry(const AliCDBId& queryId);
         virtual TList* GetEntries(const AliCDBId& queryId);
         virtual Bool_t PutEntry(AliCDBEntry* entry);
+	virtual TList* 		GetIdListFromFile(const char* fileName);
 
 private:
 
