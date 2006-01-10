@@ -28,6 +28,7 @@ typedef enum {kDCAY, kPAIR, kCOMP, kPHOT, kPFIS, kDRAY, kANNI, kBREM,
 	      kMUNU, kCKOV, kHADR, kLOSS, kMULS, kRAYL, kSTRA} FlukaProcessOption_t;
 typedef enum {kCUTGAM, kCUTELE, kCUTNEU, kCUTHAD, kCUTMUO, kBCUTE, kBCUTM, kDCUTE, kDCUTM, kPPCUTM, kTOFMAX}  FlukaCutOption_t;
 class TFlukaMCGeometry;
+class TGeoMaterial;
 
 class TFlukaConfigOption : public TObject
 {
@@ -80,6 +81,7 @@ public:
     Int_t    fMedium;                  // Material assigned to user settings
     Float_t  fCMatMin;                 // Minimum material number used for current card 
     Float_t  fCMatMax;                 // Maximum material number used for current card
+    TGeoMaterial* fCMaterial;          // Current material
     
     // static
     static Double_t  fgDCutValue[11];     // User default cut

@@ -125,11 +125,11 @@ void TFlukaConfigOption::WriteFlukaInputCards()
 	// Find material
 	TObjArray *matList = fluka->GetFlukaMaterials();
 	Int_t nmaterial =  matList->GetEntriesFast();
-	TGeoMaterial* material = 0;
+	fCMaterial = 0;
 	for (Int_t im = 0; im < nmaterial; im++)
 	{
-	    material = dynamic_cast<TGeoMaterial*> (matList->At(im));
-	    Int_t idmat = material->GetIndex();
+	    fCMaterial = dynamic_cast<TGeoMaterial*> (matList->At(im));
+	    Int_t idmat = fCMaterial->GetIndex();
 	    if (idmat == fMedium) break;	    
 	} // materials
         //
@@ -149,7 +149,7 @@ void TFlukaConfigOption::WriteFlukaInputCards()
 	if (medium->GetParam(0) != 0.) mediumIsSensitive = kTRUE;
 
 
-	fprintf(fgFile,"*\n*Material specific process and cut settings for #%8d %s\n", fMedium, material->GetName());
+	fprintf(fgFile,"*\n*Material specific process and cut settings for #%8d %s\n", fMedium, fCMaterial->GetName());
 	fCMatMin = fMedium;
 	fCMatMax = fMedium;
     } else {
@@ -583,8 +583,14 @@ void TFlukaConfigOption::ProcessCUTGAM()
 	    fprintf(fgFile,"EMFCUT    %10.4g%10.4g%10.1f%10.1f%10.1f%10.1f\n", 0.,fCutValue[kCUTGAM], 0., ireg, ireg, 1.);
 	}
     }
+    
+    // Transport production cut used for pemf
+    //
+    //  FUDGEM paramter. The parameter takes into account th contribution of atomic electrons to multiple scattering.
+    //  For production and transport cut-offs larger than 100 keV it must be set = 1.0, while in the keV region it must be
+    Float_t parFudgem = (fCutValue[kCUTGAM] > 1.e-4)? 1.0 : 0.0 ;
     fprintf(fgFile,"EMFCUT    %10.4g%10.4g%10.1f%10.1f%10.1f%10.1fPROD-CUT\n", 
-	    0., fCutValue[kCUTGAM], 1., fCMatMin, fCMatMax, 1.);
+	    0., fCutValue[kCUTGAM], parFudgem, fCMatMin, fCMatMax, 1.);
 }
 
 void TFlukaConfigOption::ProcessCUTELE()
@@ -605,8 +611,13 @@ void TFlukaConfigOption::ProcessCUTELE()
 	    fprintf(fgFile,"EMFCUT    %10.4g%10.4g%10.1f%10.1f%10.1f%10.1f\n", -fCutValue[kCUTELE], 0., 0., ireg, ireg, 1.);
 	}
     }
+    // Transport production cut used for pemf
+    //
+    //  FUDGEM paramter. The parameter takes into account th contribution of atomic electrons to multiple scattering.
+    //  For production and transport cut-offs larger than 100 keV it must be set = 1.0, while in the keV region it must be
+    Float_t parFudgem = (fCutValue[kCUTELE] > 1.e-4)? 1.0 : 0.0;
     fprintf(fgFile,"EMFCUT    %10.4g%10.4g%10.1f%10.1f%10.1f%10.1fPROD-CUT\n", 
-	    -fCutValue[kCUTELE], 0., 1., fCMatMin, fCMatMax, 1.);
+	    -fCutValue[kCUTELE], 0., parFudgem, fCMatMin, fCMatMax, 1.);
 }
 
 void TFlukaConfigOption::ProcessCUTNEU()
@@ -694,7 +705,9 @@ void TFlukaConfigOption::ProcessCUTNEU()
 		  Float_t(groupCut), 73.0, 0.95, ireg, ireg, 1.);
 	}
 
-	printf("Cuts on neutral hadrons material by material only implemented for low-energy neutrons !\n");
+	Warning("ProcessCUTNEU", 
+		"Material #%4d %s: Cut on neutral hadrons (Ekin > %9.3e) material by material only implemented for low-energy neutrons !\n", 
+		fMedium, fCMaterial->GetName(), cut);
     }
 }
 
@@ -702,8 +715,8 @@ void TFlukaConfigOption::ProcessCUTHAD()
 {
     // Cut on charged hadrons
     fprintf(fgFile,"*\n*Cut for charge hadrons. CUTHAD = %13.4g\n", fCutValue[kCUTHAD]);
+    Float_t cut = fCutValue[kCUTHAD];
     if (fMedium == -1) {
-	Float_t cut = fCutValue[kCUTHAD];
 	// 1.0 = Proton
 	// 2.0 = Antiproton
 	fprintf(fgFile,"PART-THR  %10.4g%10.1f%10.1f\n", -cut,  1.0,  2.0);
@@ -734,7 +747,9 @@ void TFlukaConfigOption::ProcessCUTHAD()
 	// 58.0 = AntiXi_c minus
 	fprintf(fgFile,"PART-THR  %10.4g%10.1f%10.1f\n", -cut, 57.0, 58.0);
     } else {
-      printf("Cuts on charged hadrons material by material not yet implemented !\n"); 
+      Warning("ProcessCUTHAD", 
+	      "Material #%4d %s: Cut on charged hadrons (Ekin > 9.3e) material by material not yet implemented !\n", 
+	      fMedium, fCMaterial->GetName(), cut); 
     }
 }
 
@@ -746,7 +761,8 @@ void TFlukaConfigOption::ProcessCUTMUO()
     if (fMedium == -1) {
 	fprintf(fgFile,"PART-THR  %10.4g%10.1f%10.1f\n",-cut, 10.0, 11.0);
     } else {
-	printf("Cuts on muons material by material not yet implemented !\n");
+	Warning("ProcessCUTMUO", "Material #%4d %s: Cut on muons (Ekin > %9.3e) material by material not yet implemented !\n", 
+		fMedium, fCMaterial->GetName(), cut);
     }
     
     
