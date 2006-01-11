@@ -14,7 +14,7 @@
  **************************************************************************/
 
 // $Id$
-// $MpId: AliMpPCB.cxx,v 1.3 2005/09/19 19:01:31 ivana Exp $
+// $MpId: AliMpPCB.cxx,v 1.5 2006/01/11 10:14:17 ivana Exp $
 
 #include "AliMpPCB.h"
 
@@ -242,7 +242,7 @@ AliMpPCB::Clone(const TArrayI& manuids, Int_t ixOffset, Double_t xOffset) const
   // First get a full clone.
   AliMpPCB* pcb = static_cast<AliMpPCB*>(Clone());
 
-  if ( pcb->GetSize() != manuids.GetSize() )
+  if ( Int_t(pcb->GetSize()) != manuids.GetSize() )
   {
       AliError(Form("Cannot Clone PCB %s because I do not get the correct number of "
                     "manu ids (got %d, wanted %d)",pcb->GetID(),

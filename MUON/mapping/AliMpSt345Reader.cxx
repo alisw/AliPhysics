@@ -14,7 +14,7 @@
 **************************************************************************/
 
 // $Id$
-// $MpId: AliMpSt345Reader.cxx,v 1.5 2005/09/23 12:57:32 ivana Exp $
+// $MpId: AliMpSt345Reader.cxx,v 1.8 2006/01/11 10:45:26 ivana Exp $
 
 #include "AliMpSt345Reader.h"
 
@@ -207,7 +207,7 @@ AliMpSt345Reader::ReadSlat(const char* slatType, AliMpPlaneType planeType)
 
       TArrayI manuList;
       AliMpHelper::DecodeName(manus,';',manuList);
-      if ( manuList.GetSize() != pcbType->GetSize() )
+      if ( manuList.GetSize() != Int_t(pcbType->GetSize()) )
 	    {
         AliErrorClass(Form("Wrong number of manu ids for this PCB ("
                            "%s) : %d out of %d",pcbName.Data(),
