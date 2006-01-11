@@ -15,21 +15,21 @@
 
 /* $Id$ */
 
-#include <TMinuit.h> 
-#include <TF1.h>
-#include <TMinuit.h> 
-#include <Riostream.h>
-
 #include "AliMUONClusterFinderVS.h"
-#include "AliMpPlaneType.h"
-#include "AliMpVSegmentation.h"
 #include "AliMUONDigit.h"
 #include "AliMUONRawCluster.h"
 #include "AliMUONGeometrySegmentation.h"
 #include "AliMUONMathieson.h"
 #include "AliMUONClusterInput.h"
 #include "AliMUONDigitMapA1.h"
+
 #include "AliLog.h"
+
+#include <TMinuit.h> 
+#include <TF1.h>
+#include <TMinuit.h> 
+#include <Riostream.h>
+
 
 //_____________________________________________________________________
 // This function is minimized in the double-Mathieson fit
@@ -1437,22 +1437,18 @@ void AliMUONClusterFinderVS::FindRawClusters()
 //  Return if no input datad available
     if (!fInput->NDigits(0) && !fInput->NDigits(1)) return;
 
-    AliMpPlaneType plane1, plane2;
-
     fSeg2[0] = fInput->Segmentation2(0);
     fSeg2[1] = fInput->Segmentation2(1);
     
-    if ( fSeg2[0]->GetDirection(fInput->DetElemId()) ==  kDirY || 
-	 fSeg2[0]->GetDirection(fInput->DetElemId()) ==  kDirUndefined ) {
-      plane1 = kBendingPlane;
-      plane2 = kNonBendingPlane;
-    } else {
-      plane2 = kBendingPlane;
-      plane1 = kNonBendingPlane;
-    }
+    Int_t detElemId = fInput->DetElemId();
     
-    fDigitMap[0]  = new AliMUONDigitMapA1(fInput->DetElemId(), plane1);
-    fDigitMap[1]  = new AliMUONDigitMapA1(fInput->DetElemId(), plane2);
+    Int_t npx0  = fSeg2[0]->Npx(detElemId)+1;
+    Int_t npy0  = fSeg2[0]->Npy(detElemId)+1;
+    fDigitMap[0]  = new AliMUONDigitMapA1(detElemId, npx0, npy0);
+
+    Int_t npx1  = fSeg2[0]->Npx(detElemId)+1;
+    Int_t npy1  = fSeg2[0]->Npy(detElemId)+1;
+    fDigitMap[1]  = new AliMUONDigitMapA1(detElemId, npx1, npy1);
     
     AliMUONDigit *dig;
 
