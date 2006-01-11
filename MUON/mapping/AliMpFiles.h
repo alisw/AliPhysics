@@ -2,7 +2,7 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$
-// $MpId: AliMpFiles.h,v 1.4 2005/08/26 15:43:36 ivana Exp $
+// $MpId: AliMpFiles.h,v 1.6 2006/01/11 10:05:01 ivana Exp $
 
 /// \ingroup basic
 /// \class AliMpFiles
@@ -39,6 +39,10 @@ class AliMpFiles : public TObject
     // bus patch
     //
     static TString BusPatchFilePath(); 
+
+    // de names
+    //
+    static TString DENamesFilePath(AliMpStationType stationType);
 
     // trigger
     //
@@ -91,6 +95,7 @@ class AliMpFiles : public TObject
     static const TString fgkStationDir;    //station directory
     static const TString fgkBendingDir;    //bending plane directory
     static const TString fgkNonBendingDir; //non-bending plane directory
+    static const TString fgkDENames;       //DE names data file name
     static const TString fgkSector;        //sector data file name
     static const TString fgkSectorSpecial; //sector special data file name
     static const TString fgkSectorSpecial2;//sector special data file name

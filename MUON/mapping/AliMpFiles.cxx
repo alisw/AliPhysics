@@ -14,7 +14,7 @@
  **************************************************************************/
 
 // $Id$
-// $MpId: AliMpFiles.cxx,v 1.4 2005/08/26 15:43:36 ivana Exp $
+// $MpId: AliMpFiles.cxx,v 1.6 2006/01/11 10:05:08 ivana Exp $
 // Category: basic
 //
 // Class AliMpFiles
@@ -46,6 +46,7 @@ const TString AliMpFiles::fgkDataDir = "/data";
 const TString AliMpFiles::fgkStationDir = "/station";
 const TString AliMpFiles::fgkBendingDir = "/bending_plane/";
 const TString AliMpFiles::fgkNonBendingDir = "/non-bending_plane/";
+const TString AliMpFiles::fgkDENames = "denames"; 
 const TString AliMpFiles::fgkSector  = "zones"; 
 const TString AliMpFiles::fgkSectorSpecial = "zones_special";
 const TString AliMpFiles::fgkSectorSpecial2 = "zones_special_outer";
@@ -154,11 +155,11 @@ TString AliMpFiles::StationDataDir(AliMpStationType station)
   TString stationDataDir(fgkStationDir);
   switch (station) {
   case kStation1: 
-    stationDataDir += 1;
+    stationDataDir += "1/";
     break;
     ;;
   case kStation2: 
-    stationDataDir += 2;
+    stationDataDir += "2/";
     break;
     ;;
   case kStation345: 
@@ -187,6 +188,14 @@ TString AliMpFiles::BusPatchFilePath()
 
   return fgTop + fgkDataDir + "/" + fgkBusPatchFileName + fgkDataExt;
 }  
+
+//______________________________________________________________________________
+TString AliMpFiles::DENamesFilePath(AliMpStationType station)
+{
+/// Return path to data file with DE names for given station.
+ 
+  return fgTop + fgkDataDir + StationDataDir(station) + fgkDENames + fgkDataExt;
+}
 
 //______________________________________________________________________________
 TString AliMpFiles::LocalTriggerBoardMapping()
