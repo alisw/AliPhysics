@@ -15,13 +15,12 @@
 
 class TObjArray;
 
-class AliMUONGeometrySegmentation;
-
 class AliMUONHitMapA1 : public AliHitMap 
 {
  public:
     AliMUONHitMapA1();
-    AliMUONHitMapA1(Int_t idDE, AliMUONGeometrySegmentation* seg, TObjArray* dig);
+    //AliMUONHitMapA1(Int_t idDE, AliMUONGeometrySegmentation* seg, TObjArray* dig);
+    AliMUONHitMapA1(Int_t npx, Int_t npy, TObjArray* dig);
     virtual ~AliMUONHitMapA1();
 
     // Fill hits from list of digits into hit map

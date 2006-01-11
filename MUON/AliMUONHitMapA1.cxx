@@ -15,13 +15,13 @@
 
 /* $Id$ */
 
+#include "AliMUONHitMapA1.h"
+#include "AliMUONDigit.h"
+
+#include "AliLog.h"
+
 #include <TObjArray.h>
 #include <TMath.h>
-
-#include "AliMUONHitMapA1.h"
-#include "AliMUONGeometrySegmentation.h"
-#include "AliMUONDigit.h"
-#include "AliLog.h"
 
 ClassImp(AliMUONHitMapA1)
 
@@ -38,12 +38,16 @@ AliMUONHitMapA1::AliMUONHitMapA1()
 }
 
 //________________________________________________________________________________
-AliMUONHitMapA1::AliMUONHitMapA1(Int_t idDE, AliMUONGeometrySegmentation* seg, TObjArray* dig)
+AliMUONHitMapA1::AliMUONHitMapA1(Int_t npx, Int_t npy, TObjArray* dig)
   : AliHitMap()
 {
 // Constructor with new segmentation
+/*
     fNpx  = seg->Npx(idDE)+1;
     fNpy  = seg->Npy(idDE)+1;
+*/
+    fNpx = npx;
+    fNpy = npy;
     fMaxIndex=2*(fNpx+1)*2*(fNpy+1)+2*fNpy;
     
     fHitMap = new Int_t[fMaxIndex];
