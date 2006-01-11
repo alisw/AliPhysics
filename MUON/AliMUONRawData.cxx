@@ -62,7 +62,7 @@
 #include "AliMUONGeometrySegmentation.h"
 #include "AliMUONGeometryModule.h"
 #include "AliMUONGeometryStore.h"
-#include "AliMUONSegmentationManager.h"
+#include "AliMpSegFactory.h"
 #include "AliMpPlaneType.h"
 #include "AliMpVSegmentation.h"
 #include "AliMpHelper.h"
@@ -78,6 +78,9 @@ AliMUONRawData::AliMUONRawData(AliLoader* loader)
  
   // initialize loader's
   fLoader = loader;
+
+  // initialize segmentation factory
+  fSegFactory = new AliMpSegFactory();
 
   // initialize container
   fMUONData  = new AliMUONData(fLoader,"MUON","MUON");
@@ -99,7 +102,8 @@ AliMUONRawData::AliMUONRawData(AliLoader* loader)
 AliMUONRawData::AliMUONRawData()
   : TObject(),
     fMUONData(0),
-    fLoader(0),
+    fLoader(0),    
+    fSegFactory(0),
     fDDLTracker(0),
     fDDLTrigger(0)
 {
@@ -133,6 +137,9 @@ AliMUONRawData::operator=(const AliMUONRawData& rhs)
 //__________________________________________________________________________
 AliMUONRawData::~AliMUONRawData(void)
 {
+  if (fSegFactory) fSegFactory->Clear();
+  delete fSegFactory;  
+
   if (fMUONData)
     delete fMUONData;
   if (fSubEventArray)
@@ -650,7 +657,8 @@ Int_t AliMUONRawData::GetInvMapping(const AliMUONDigit* digit,
   // station 345 bending == cath0 for the moment
    plane = (iCath == 0) ? plane1 : plane2;
 
-  AliMpVSegmentation* seg = AliMUONSegmentationManager::Segmentation(idDE, plane);
+  //AliMpVSegmentation* seg = AliMUONSegmentationManager::Segmentation(idDE, plane);
+  AliMpVSegmentation* seg = fSegFactory->CreateMpSegmentation(idDE, iCath);
   AliMpPad pad = seg->PadByIndices(AliMpIntPair(padX,padY),kTRUE);
 
   if(!pad.IsValid()) {
@@ -920,6 +928,7 @@ Int_t AliMUONRawData::GetMapping(Int_t busPatchId, UShort_t manuId,
   Int_t iCath1 = 0;
   Int_t iCath2 = 1;
 
+/*
   AliMpPlaneType plane;
 
   if (manuId > 1000) { // again tmp solution (ChF) (+1000 for Non-Bending plane
@@ -927,6 +936,7 @@ Int_t AliMUONRawData::GetMapping(Int_t busPatchId, UShort_t manuId,
   } else {
     plane = kBendingPlane;
   }
+*/
 
   if (idDE < 500) { // should use GetDirection somehow (ChF)
     if ( ((idDE % 100) % 2) != 0 ) {
@@ -939,7 +949,9 @@ Int_t AliMUONRawData::GetMapping(Int_t busPatchId, UShort_t manuId,
 
   if (manuId > 1000) manuId -= 1000; // back to normal manuId
 
-  AliMpVSegmentation* seg = AliMUONSegmentationManager::Segmentation(idDE, plane);
+  // Could the above logic be simplified ???
+  //AliMpVSegmentation* seg = AliMUONSegmentationManager::Segmentation(idDE, plane);
+  AliMpVSegmentation* seg = fSegFactory->CreateMpSegmentation(idDE, iCath);  
   AliMpPad pad = seg->PadByLocation(AliMpIntPair(manuId,(Int_t)channelId),kTRUE);
 
   if(!pad.IsValid()){

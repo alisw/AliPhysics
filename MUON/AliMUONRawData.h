@@ -26,6 +26,7 @@ class AliMUONGlobalTrigger;
 class AliMUONSubEventTrigger;
 class AliRawReader;
 class AliMUONGlobalTrigger;
+class AliMpSegFactory;
 
 class AliMUONRawData : public TObject 
 {
@@ -69,6 +70,8 @@ class AliMUONRawData : public TObject
  
   AliLoader*    fLoader;             //! alice loader
  
+  AliMpSegFactory* fSegFactory;      //! Mapping segmentation factory
+
   FILE*         fFile[2];            //! DDL binary file pointer one per 1/2 chamber
 
   TClonesArray* fSubEventArray;      //! array to sub event tracker
