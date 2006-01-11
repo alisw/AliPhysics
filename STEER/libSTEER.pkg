@@ -19,8 +19,6 @@ AliTrackMap.cxx AliTrackMapper.cxx AliCollisionGeometry.cxx \
 AliMemoryWatcher.cxx \
 AliVertexer.cxx \
 AliMC.cxx AliSimulation.cxx AliReconstruction.cxx AliVertexGenFile.cxx \
-AliRunTag.cxx AliLHCTag.cxx AliDetectorTag.cxx AliEventTag.cxx AliTagCreator.cxx\
-AliTagAnalysis.cxx AliEventTagCuts.cxx \
 AliCDBEntry.cxx AliCDBId.cxx AliCDBMetaData.cxx \
 AliCDBPath.cxx AliCDBRunRange.cxx AliCDBManager.cxx\
 AliCDBStorage.cxx AliCDBLocal.cxx AliCDBDump.cxx AliCDBGrid.cxx\

@@ -95,15 +95,6 @@
 
 #pragma link C++ class  AliDetectorEventHeader+;
 
-#pragma link C++ class AliRunTag+;
-#pragma link C++ class AliLHCTag+;
-#pragma link C++ class AliDetectorTag+;
-#pragma link C++ class AliEventTag+;
-
-#pragma link C++ class AliTagCreator+;
-#pragma link C++ class AliTagAnalysis+;
-#pragma link C++ class AliEventTagCuts+;
-
 #pragma link C++ class AliAlignObj+;
 #pragma link C++ class AliAlignObjAngles+;
 #pragma link C++ class AliAlignObjMatrix+;
