@@ -39,9 +39,7 @@
 #include "AliMUONSt2GeometryBuilderV2.h"
 #include "AliMUONSlatGeometryBuilder.h"
 #include "AliMUONTriggerGeometryBuilder.h"
-#include "AliMUONSegFactoryV2.h"
-#include "AliMUONSegFactoryV3.h"
-#include "AliMUONSegFactoryV4.h"
+#include "AliMUONSegFactory.h"
 #include "AliMUONGeometryTransformer.h"
 #include "AliMUONGeometryModule.h"
 #include "AliMUONGeometryStore.h"
@@ -62,7 +60,10 @@ ClassImp(AliMUONTest)
 //
 
   if ( option != "default" && 
-       option != "FactoryV2" && option != "FactoryV3" && option != "FactoryV4")  
+       option != "FactoryV2" &&
+       option != "FactoryV3" && 
+       option != "FactoryV4" && 
+       option != "new" )  
   {
     BuildWithMUON(option);
   }
@@ -134,30 +135,8 @@ void AliMUONTest::BuildWithoutMUON(const TString& option)
 // Fill geometry from transform*.dat files and build segmentation via 
 // SegFactory
 
-  AliMUONGeometryTransformer* transformer 
-    = new AliMUONGeometryTransformer(true);
-  transformer->ReadTransformations("transform.dat");  
-  fkTransformer = transformer; 
-    
-  // Build segmentation
-  if ( option == "default" || option == "FactoryV2") {
-    AliMUONSegFactoryV2 segFactory("default");
-    segFactory.Build(fkTransformer);
-    fSegmentation = segFactory.GetSegmentation();
-  } 
-  else  if ( option == "FactoryV3" ) {
-    AliMUONSegFactoryV3 segFactory("default");
-    segFactory.Build(fkTransformer);
-    fSegmentation = segFactory.GetSegmentation();
-  }
-  else if ( option == "FactoryV4" ) {
-    AliMUONSegFactoryV4 segFactory("default");
-    segFactory.Build(fkTransformer);
-    fSegmentation = segFactory.GetSegmentation();
-  }
-  else {
-    AliFatal(Form("Wrong factory type : %s",option.Data()));      
-  }
+  AliMUONSegFactory segFactory("transform.dat");
+  fSegmentation = segFactory.CreateSegmentation(option);
 }  
 
 

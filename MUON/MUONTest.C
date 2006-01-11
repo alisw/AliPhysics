@@ -21,7 +21,7 @@
 // .L MUONTest.C
 // MUONTest(option, testNumber); > testN.out
 //     option     = "./Config.C", 
-//                  "default", "FactoryV2", "FactoryV3","FactoryV4"
+//                  "default", "FactoryV2", "FactoryV3","FactoryV4", "FactoryNew"
 //     testNumber = 1, 2, 3
 //
 //  Author: I. Hrivnacova, IPN Orsay

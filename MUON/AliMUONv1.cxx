@@ -29,9 +29,7 @@
 #include "AliMUONv1.h"
 #include "AliConst.h" 
 #include "AliMUONConstants.h"
-#include "AliMUONSegFactoryV4.h"
-#include "AliMUONSegFactoryV3.h"
-#include "AliMUONSegFactoryV2.h"
+#include "AliMUONSegFactory.h"
 #include "AliMUONResponseFactory.h"
 #include "AliMUONSegmentation.h"
 #include "AliMUONHit.h"
@@ -190,24 +188,12 @@ void AliMUONv1::Init()
   // Build segmentation
   // using geometry parametrisation
   //
-  if ( ftype == "default" || ftype == "FactoryV2") {
-    AliMUONSegFactoryV2 segFactory("default");
-    segFactory.Build(GetGeometryTransformer());
-    fSegmentation = segFactory.GetSegmentation();
-  } 
-  else  if ( ftype == "FactoryV3" ) {
-    AliMUONSegFactoryV3 segFactory("default");
-    segFactory.Build(GetGeometryTransformer());
-    fSegmentation = segFactory.GetSegmentation();
-  }
-  else if ( ftype == "FactoryV4" ) {
-    AliMUONSegFactoryV4 segFactory("default");
-    segFactory.Build(GetGeometryTransformer());
-    fSegmentation = segFactory.GetSegmentation();
-  }
-  else {
-    AliFatal(Form("Wrong factory type : %s",ftype.c_str()));      
-  }
+  AliMUONSegFactory segFactory(GetGeometryTransformer());
+  fSegmentation = segFactory.CreateSegmentation(ftype);
+
+  if (!fSegmentation) {
+    AliFatal(Form("Wrong factory type : %s",ftype.c_str()));
+  }        
 
   // Build response
   //
