@@ -31,7 +31,8 @@ class AliMUONSt345SlatSegmentationV2 : public AliMUONVGeometryDESegmentation
  public:
 
   AliMUONSt345SlatSegmentationV2();
-  AliMUONSt345SlatSegmentationV2(Int_t detElemId,
+  AliMUONSt345SlatSegmentationV2(AliMpVSegmentation* segmentation,
+                                 Int_t detElemId,
 				 AliMpPlaneType bendingOrNonBending);
   virtual ~AliMUONSt345SlatSegmentationV2();
 
@@ -123,14 +124,10 @@ class AliMUONSt345SlatSegmentationV2 : public AliMUONVGeometryDESegmentation
 
  private:
 
-   void ReadMappingData();
-	 
- private:
-
   Int_t fDetElemId;
 	AliMpPlaneType fPlaneType;
-  const AliMpSlat* fSlat; //!
-  AliMpSlatSegmentation* fSlatSegmentation; //!
+  const AliMpSlat* fSlat;
+  AliMpSlatSegmentation* fSlatSegmentation;
   AliMpVPadIterator* fPadIterator; //!
   AliMpPad fCurrentPad; //!FIXME: should not be needed, if we externalise the SetPad, SetHit, IntegrationLimits methods which have nothing to do here anyway, together with the iteration methods FirstPad, NextPad, MorePads, which have nothing to do here either.
   Float_t fXhit; //!

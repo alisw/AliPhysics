@@ -48,6 +48,7 @@ const Float_t  AliMUONSt12QuadrantSegmentation::fgkWireD = 0.21;
 
 //______________________________________________________________________________
 AliMUONSt12QuadrantSegmentation::AliMUONSt12QuadrantSegmentation(
+                                       AliMpVSegmentation* segmentation,
                                        AliMpStationType stationType,
 				       AliMpPlaneType planeType) 
 : AliMUONVGeometryDESegmentation(),
@@ -78,7 +79,11 @@ AliMUONSt12QuadrantSegmentation::AliMUONSt12QuadrantSegmentation(
 {
 // Normal constructor
 
-  ReadMappingData();
+  fSectorSegmentation = dynamic_cast<AliMpSectorSegmentation*>(segmentation);
+  if (fSectorSegmentation)
+    fSector = fSectorSegmentation->GetSector();
+  else 
+    AliFatal("Wrong mapping segmentation type");
 
   fCorrA = new TObjArray(3);
   fCorrA->AddAt(0,0);
@@ -174,26 +179,6 @@ void AliMUONSt12QuadrantSegmentation::UpdateCurrentPadValues(const AliMpPad& pad
   fZone = fSectorSegmentation->Zone(pad);
 }  
 
-
-//______________________________________________________________________________
-void AliMUONSt12QuadrantSegmentation::ReadMappingData()
-{
-// Reads mapping data
-// ---
-
-  // set path to mapping data files
-   if (!gSystem->Getenv("MINSTALL")) {    
-     TString dirPath = gSystem->Getenv("ALICE_ROOT");
-     dirPath += "/MUON/mapping"; 
-     AliMpFiles::SetTopPath(dirPath);
-     gSystem->Setenv("MINSTALL", dirPath.Data());
-     //cout << "AliMpFiles top path set to " << dirPath << endl;	  
-   }
-  
-  AliMpSectorReader r(fStationType, fPlaneType);
-  fSector = r.BuildSector();
-  fSectorSegmentation = new AliMpSectorSegmentation(fSector);
-}
 
 //
 // public methods
@@ -451,7 +436,7 @@ void  AliMUONSt12QuadrantSegmentation::FirstPad(Float_t xhit, Float_t yhit, Floa
         ->CreateIterator(AliMpArea(TVector2(fXhit,fYhit),TVector2(dx,dy)));
 
   AliDebug(1,Form("CreateIterator area=%e,%e +- %e,%e %s",
-                  fXhit,fYhit,dx,dy,PlaneTypeName(fPlaneType)));
+                  fXhit,fYhit,dx,dy,PlaneTypeName(fPlaneType).Data()));
   
   fSectorIterator->First();		
 
@@ -684,19 +669,3 @@ TF1* AliMUONSt12QuadrantSegmentation::CorrFunc(Int_t isec) const
 
   return (TF1*) fCorrA->At(isec);
 } 
-
-//______________________________________________________________________________
-void AliMUONSt12QuadrantSegmentation::Streamer(TBuffer &R__b)
-{
-// Stream an object of class AliMUONSt12QuadrantSegmentation.
-
-  if (R__b.IsReading()) {
-    AliMUONSt12QuadrantSegmentation::Class()->ReadBuffer(R__b, this);
-    ReadMappingData();
-  } 
-  else {
-    AliMUONSt12QuadrantSegmentation::Class()->WriteBuffer(R__b, this);
-  }
-}
-
-

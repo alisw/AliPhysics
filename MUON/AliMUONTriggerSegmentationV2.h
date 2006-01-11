@@ -32,7 +32,8 @@ class AliMUONTriggerSegmentationV2 : public AliMUONVGeometryDESegmentation
  public:
 
   AliMUONTriggerSegmentationV2();
-  AliMUONTriggerSegmentationV2(Int_t detElemId, AliMpPlaneType bendingOrNonBending);
+  AliMUONTriggerSegmentationV2(AliMpVSegmentation* segmentation,
+                               Int_t detElemId, AliMpPlaneType bendingOrNonBending);
   virtual ~AliMUONTriggerSegmentationV2();
       
   /// Distance between 1 pad and a position
@@ -120,14 +121,11 @@ public:
     
     Int_t ModuleColNum(Int_t ixGlo) const;
     
-private:    
-    void ReadMappingData();
-    
 private:
     Int_t fDetElemId;
     AliMpPlaneType fPlaneType;
-    const AliMpTrigger* fSlat; //!
-    AliMpTriggerSegmentation* fSlatSegmentation; //!
+    const AliMpTrigger* fSlat;
+    AliMpTriggerSegmentation* fSlatSegmentation;
 //    AliMpVPadIterator* fPadIterator; //!
     AliMpPad fCurrentPad; //!FIXME: should not be needed, if we externalise the SetPad, SetHit, IntegrationLimits methods which have nothing to do here anyway, together with the iteration methods FirstPad, NextPad, MorePads, which have nothing to do here either.
     Float_t fXhit; //!
