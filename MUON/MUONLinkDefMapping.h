@@ -1,12 +1,13 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-// $MpId: basicLinkDefIn.h,v 1.7 2005/09/26 16:05:45 ivana Exp $ 
+// $MpId: basicLinkDefIn.h,v 1.8 2006/01/11 10:09:18 ivana Exp $ 
 
 #pragma link C++ class  AliMpArea+;
 #pragma link C++ class  AliMpConstants+;
 #pragma link C++ class  AliMpIntPair+;
 #pragma link C++ class  AliMpExMap-;
+#pragma link C++ class  AliMpStringObjMap+;
 #pragma link C++ class  AliMpPad+;
 #pragma link C++ class  AliMpPadPair+;
 #pragma link C++ class  AliMpVIndexed+;
@@ -14,7 +15,6 @@
 #pragma link C++ class  AliMpVPadIterator+;
 #pragma link C++ class  AliMpPadIteratorPtr+;
 #pragma link C++ class  AliMpFiles!;
-#pragma link C++ class  AliMpBusPatch+;
 
 #pragma link C++ enum   AliMpDirection;
 #pragma link C++ enum   AliMpXDirection;
@@ -82,10 +82,25 @@
 #pragma link C++ class  AliMpSlatPadIterator+;
 #pragma link C++ class  AliMpSlatZonePadIterator+;
 
-#pragma link C++ class  AliMpTriggerReader+;
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
+
+// $MpId: triggerLinkDefIn.h,v 1.1 2005/10/28 15:41:21 ivana Exp $ 
+
 #pragma link C++ class  AliMpTrigger+;
+#pragma link C++ class  AliMpTriggerReader+;
 #pragma link C++ class  AliMpTriggerSegmentation+;
- 
+
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
+
+// $MpId: managementLinkDefIn.h,v 1.1 2006/01/11 10:24:20 ivana Exp $ 
+
+#pragma link C++ class  AliMpBusPatch+;
+#pragma link C++ class  AliMpDEIterator+;
+#pragma link C++ class  AliMpDEManager+;
+#pragma link C++ class  AliMpSegFactory+;
+
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
