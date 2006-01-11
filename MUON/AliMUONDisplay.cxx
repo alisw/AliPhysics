@@ -23,6 +23,34 @@
 //                                                                      //
 //////////////////////////////////////////////////////////////////////////
 
+#include "AliMUONDisplay.h"
+#include "AliMUON.h"
+#include "AliMUONPoints.h"
+#include "AliMUONGlobalTrigger.h"
+#include "AliMUONHit.h"
+#include "AliMUONDigit.h"
+#include "AliMUONRawCluster.h"
+#include "AliMUONTrack.h"
+#include "AliMUONTrackParam.h"
+#include "AliMUONGeometryTransformer.h"
+#include "AliMUONSegmentation.h"
+#include "AliMUONGeometrySegmentation.h"
+#include "AliMUONConstants.h"
+
+#include "AliMpDEIterator.h"
+#include "AliMpSegFactory.h"
+#include "AliMpSlatSegmentation.h"
+#include "AliMpSlat.h"
+#include "AliMpSectorSegmentation.h"
+#include "AliMpSector.h"
+#include "AliMpTriggerSegmentation.h"
+#include "AliMpTrigger.h"
+
+#include "AliMC.h"
+#include "AliLog.h"
+#include "AliRun.h"
+#include "AliHeader.h"
+
 #include <TButton.h>
 #include <TColor.h>
 #include <TCanvas.h>
@@ -41,37 +69,6 @@
 #include <TParticle.h>
 #include <TPolyLine3D.h>
 #include <TBox.h>
-
-#include "AliMUONDisplay.h"
-#include "AliRun.h"
-#include "AliMUON.h"
-#include "AliMUONPoints.h"
-#include "AliMUONGlobalTrigger.h"
-#include "AliHeader.h"
-
-#include "AliMUONHit.h"
-#include "AliMUONDigit.h"
-#include "AliMUONRawCluster.h"
-#include "AliMUONTrack.h"
-#include "AliMUONTrackParam.h"
-
-#include "AliMUONGeometryTransformer.h"
-#include "AliMUONGeometryModule.h"
-#include "AliMpSlatSegmentation.h"
-#include "AliMpSlat.h"
-#include "AliMpSectorSegmentation.h"
-#include "AliMpSector.h"
- 
-#include "AliMpTriggerSegmentation.h"
-#include "AliMpTrigger.h"
-
-#include "AliMUONSegmentation.h"
-#include "AliMUONGeometrySegmentation.h"
-#include "AliMUONSegmentationManager.h"
-#include "AliMUONConstants.h"
-#include "AliMC.h"
-#include "AliLog.h"
-// to manage the same zoom on both cathodes
 
 
 
@@ -795,6 +792,9 @@ void AliMUONDisplay::DrawView(Float_t theta, Float_t phi, Float_t psi)
       = pMUON->GetGeometryTransformer();
 
     AliMUONSegmentation* segmentation = pMUON->GetSegmentation();
+    AliMpSegFactory segFactory;
+        // Mapping segmentation factory will be used only to create mapping
+	// segmentations if not present in the DE segmentations
 
 // Display MUON Chamber Geometry
     char nodeName[7];
@@ -802,9 +802,10 @@ void AliMUONDisplay::DrawView(Float_t theta, Float_t phi, Float_t psi)
     printf(">>>> chamber is %d\n",fChamber);
 
     if(fChamber < 5) {
-      for(Int_t id = 0; id < 4; id++) {
+      AliMpDEIterator it;
+      for ( it.First(fChamber-1); ! it.IsDone(); it.Next() ) {
 
-	Int_t detElemId = fChamber*100+id;
+	Int_t detElemId = it.CurrentDE();
 	AliMpSectorSegmentation * seg =   
 	  (AliMpSectorSegmentation *) segmentation->GetMpSegmentation(detElemId, 0);
 	const AliMpSector * sector = seg->GetSector();
@@ -842,15 +843,17 @@ void AliMUONDisplay::DrawView(Float_t theta, Float_t phi, Float_t psi)
     }
 
     if(fChamber >4 && fChamber <11) {
-      Int_t id=0;
-      for(id=0; id<26; id++) {
-	Int_t detElemId = fChamber*100+id;
+      AliMpDEIterator it;
+      for ( it.First(fChamber-1); ! it.IsDone(); it.Next() ) {
+	Int_t detElemId = it.CurrentDE();
 	if (  segmentation->HasDE(detElemId) ) {
 	  AliMpSlatSegmentation * seg =   
 	    (AliMpSlatSegmentation *) segmentation->GetMpSegmentation(detElemId, 0);
-	  if (!seg) {  
-	    seg = (AliMpSlatSegmentation *) 
-	          AliMUONSegmentationManager::Segmentation(detElemId, kBendingPlane);
+	  if (!seg) { 
+ 	    // Create mapping segmentation if old trigger segmentation
+	    // (not using mapping)
+	    seg = (AliMpSlatSegmentation *)
+	           segFactory.CreateMpSegmentation(detElemId, 0);
 	  }	  
 	  if (seg) {  
 	    const AliMpSlat* slat = seg->Slat();
@@ -898,14 +901,16 @@ void AliMUONDisplay::DrawView(Float_t theta, Float_t phi, Float_t psi)
     
 /*-- Trigger Chambers ---------------------------------------*/
     if(fChamber >10 && fChamber <15) {
-      Int_t id=0;
-      for(id=0; id<18; id++) {
-	Int_t detElemId = fChamber*100+id;
+      AliMpDEIterator it;
+      for ( it.First(fChamber-1); ! it.IsDone(); it.Next() ) {
+	Int_t detElemId = it.CurrentDE();
 	AliMpTriggerSegmentation * seg  
 	  = (AliMpTriggerSegmentation *) segmentation->GetMpSegmentation(detElemId, 0);
 	if (!seg) {  
-	  seg = (AliMpTriggerSegmentation *) 
-                 AliMUONSegmentationManager::Segmentation(detElemId, kBendingPlane);
+	  // Create mapping segmentation if old trigger segmentation
+	  // (not using mapping)
+	  seg = (AliMpTriggerSegmentation *)
+	         segFactory.CreateMpSegmentation(detElemId, 0);
 	}	  
 	if (seg) {   
 	  const AliMpTrigger* slat = seg->Slat();
@@ -931,6 +936,9 @@ void AliMUONDisplay::DrawView(Float_t theta, Float_t phi, Float_t psi)
 	}  
       }
     }
+    // Delete mapping segmentations created with factory
+    segFactory.Delete();
+    
 //add clusters to the pad
     DrawClusters();
     DrawHits();
