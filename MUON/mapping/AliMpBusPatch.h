@@ -2,9 +2,9 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$
-// $MpId: $
+// $MpId: AliMpBusPatch.h,v 1.1 2006/01/11 10:24:20 ivana Exp $
 
-/// \ingroup basic
+/// \ingroup management
 /// \class AliMpBusPatch
 /// \brief Class that manages the maps buspatch<>DDL<>DE 
 ///
