@@ -28,7 +28,10 @@
 #include "AliMUONSegmentation.h"
 #include "AliMUONVGeometryDESegmentation.h"
 #include "AliMUONGeometrySegmentation.h"
-#include "AliMUONGeometryDEIndexing.h"
+#include "AliMUONGeometryStore.h"
+
+#include "AliMpVSegmentation.h"
+
 #include "AliLog.h"
 
 
@@ -37,9 +40,14 @@ ClassImp(AliMUONSegmentation)
 //______________________________________________________________________________
 AliMUONSegmentation::AliMUONSegmentation(Int_t nofModules)
   : TObject(),
+    fMpSegmentations(0),
     fDESegmentations(0)
 {
 /// Standard constructor
+
+  // Create array for mapping segmentations
+  fMpSegmentations = new TObjArray();
+  fMpSegmentations->SetOwner(kTRUE);
 
   // Create array for DE segmentations
   fDESegmentations = new TObjArray();
@@ -60,6 +68,7 @@ AliMUONSegmentation::AliMUONSegmentation(Int_t nofModules)
 //______________________________________________________________________________
 AliMUONSegmentation::AliMUONSegmentation() 
   : TObject(),
+    fMpSegmentations(0),
     fDESegmentations(0)
 {
 /// Default constructor
@@ -86,6 +95,7 @@ AliMUONSegmentation::~AliMUONSegmentation()
 
   AliDebug(1, Form("dtor this = %p", this));
 
+  delete fMpSegmentations;
   delete fDESegmentations;
   delete fModuleSegmentations[0];
   delete fModuleSegmentations[1];
@@ -110,12 +120,37 @@ AliMUONSegmentation::operator=(const AliMUONSegmentation& right)
 //
 
 //_____________________________________________________________________________
+void AliMUONSegmentation::AddMpSegmentation(AliMpVSegmentation* segmentation)
+{
+/// Add the mapping segmentation to the array if not present
+
+  Bool_t isPresent = false;
+  for (Int_t i=0; i<fMpSegmentations->GetEntries(); i++) 
+    if ( (AliMpVSegmentation*)fMpSegmentations->At(i) == segmentation ) {
+      isPresent = true;
+      break;
+    }  
+
+  if (!isPresent) fMpSegmentations->Add(segmentation);
+}
+
+//_____________________________________________________________________________
 void AliMUONSegmentation::AddDESegmentation(
-                             AliMUONVGeometryDESegmentation* segmentation)
+                                AliMUONVGeometryDESegmentation* segmentation)
 {
 /// Add the DE segmentation to the array
 
   fDESegmentations->Add(segmentation);
+  
+  // Deregister the mapping segmentation contained in DE segmentation
+  // from fMpSegmentations, if present
+  const AliMpVSegmentation* kmpSeg = segmentation->GetMpSegmentation();
+  
+  for (Int_t i=0; i<fMpSegmentations->GetEntries(); i++) 
+    if ( (const AliMpVSegmentation*)fMpSegmentations->At(i) == kmpSeg ) {
+      fMpSegmentations->RemoveAt(i);
+      break;
+    }  
 }
 
 //_____________________________________________________________________________
@@ -190,7 +225,7 @@ AliMUONSegmentation::GetModuleSegmentationByDEId(
 /// Return the geometry module specified by detElemId/cathod
 
   // Get moduleId 
-  Int_t moduleId = AliMUONGeometryDEIndexing::GetModuleId(detElemId);
+  Int_t moduleId = AliMUONGeometryStore::GetModuleId(detElemId);
 
   return GetModuleSegmentation(moduleId, cathod, warn);
 }    
