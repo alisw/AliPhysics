@@ -24,17 +24,17 @@
 
 /* $Id$ */
 
-#include <Riostream.h>
-#include <TObjString.h>
-#include <TClass.h>
-
-#include "AliLog.h"
-
 #include "AliMUONGeometrySegmentation.h"
 #include "AliMUONVGeometryDESegmentation.h"
 #include "AliMUONGeometryModuleTransformer.h"
 #include "AliMUONGeometryDetElement.h"
 #include "AliMUONGeometryStore.h"
+
+#include "AliLog.h"
+
+#include <Riostream.h>
+#include <TObjString.h>
+#include <TClass.h>
 
 ClassImp(AliMUONGeometrySegmentation)
 
@@ -286,6 +286,21 @@ AliMUONGeometrySegmentation::HasPad(Int_t detElemId, Int_t ix, Int_t iy)
   if (!OwnNotify(detElemId)) return false;
 	
   return fCurrentSegmentation->HasPad(ix,iy);
+}
+                                    
+//______________________________________________________________________________
+Bool_t
+AliMUONGeometrySegmentation::HasPad(Int_t detElemId, 
+                                    Float_t& xg, Float_t& yg, Float_t& zg)
+{
+// Tells if a given pad exists in a given detector element
+
+  if (!OwnNotify(detElemId)) return false;
+	
+  Float_t xl, yl, zl;
+  fCurrentDetElement->Global2Local(xg, yg, zg, xl, yl, zl); 
+
+  return fCurrentSegmentation->HasPad(xl, yl, zl);
 }
                                     
 //______________________________________________________________________________
