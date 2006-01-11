@@ -2,7 +2,7 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$
-// $MpId: AliMpVSegmentation.h,v 1.6 2005/08/26 15:43:36 ivana Exp $
+// $MpId: AliMpVSegmentation.h,v 1.7 2006/01/11 10:07:54 ivana Exp $
 
 /// \ingroup basic
 /// \class AliMpVSegmentation
@@ -39,11 +39,11 @@ class AliMpVSegmentation : public TObject
 
     // methods  
     virtual AliMpPad PadByLocation(const AliMpIntPair& location, 
-                               Bool_t warning) const = 0;
+                               Bool_t warning = true) const = 0;
     virtual AliMpPad PadByIndices (const AliMpIntPair& indices,  
-                               Bool_t warning) const = 0;
+                               Bool_t warning = true) const = 0;
     virtual AliMpPad PadByPosition(const TVector2& position,
-                               Bool_t warning) const = 0;
+                               Bool_t warning = true) const = 0;
 
     virtual AliMpPadPair PadsUp(const AliMpPad& pad) const;
     virtual AliMpPadPair PadsDown(const AliMpPad& pad) const;
