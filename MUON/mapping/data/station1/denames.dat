@@ -1,0 +1,19 @@
+# Plane types per cathods
+
+undefined  undefined
+
+# Station 1 - Chamber 1 
+
+100  st1q_bp   st1q_nbp
+101  st1q_nbp  st1q_bp
+102  st1q_bp   st1q_nbp
+103  st1q_nbp  st1q_bp 
+
+# Station 1 - Chamber 2 
+
+200  st1q_bp   st1q_nbp
+201  st1q_nbp  st1q_bp
+202  st1q_bp   st1q_nbp
+203  st1q_nbp  st1q_bp 
+
+
