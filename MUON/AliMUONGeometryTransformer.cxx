@@ -31,7 +31,6 @@
 #include "AliMUONGeometryTransformer.h"
 #include "AliMUONGeometryModuleTransformer.h"
 #include "AliMUONGeometryDetElement.h"
-#include "AliMUONGeometryDEIndexing.h"
 #include "AliMUONGeometryStore.h"
 #include "AliMUONGeometryBuilder.h"
 
@@ -181,8 +180,7 @@ void AliMUONGeometryTransformer::FillData(
 // ---
 
   // Module Id
-  Int_t moduleId 
-    = AliMUONGeometryDEIndexing::GetModuleId(detElemId);
+  Int_t moduleId = AliMUONGeometryStore::GetModuleId(detElemId);
 
   // Compose path
   TString path = ComposePath(volName, copyNo);
@@ -562,7 +560,7 @@ AliMUONGeometryTransformer::GetModuleTransformerByDEId(Int_t detElemId,
 /// Return the geometry module specified by index
 
   // Get module index
-  Int_t index = AliMUONGeometryDEIndexing::GetModuleId(detElemId);
+  Int_t index = AliMUONGeometryStore::GetModuleId(detElemId);
 
   return GetModuleTransformer(index, warn);
 }    

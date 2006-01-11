@@ -35,7 +35,6 @@
 #include "AliMUONGeometryEnvelopeStore.h"
 #include "AliMUONGeometryEnvelope.h"
 #include "AliMUONGeometryConstituent.h"
-#include "AliMUONGeometryDEIndexing.h"
 #include "AliMUONGeometryBuilder.h"
 #include "AliLog.h"
 
@@ -172,7 +171,7 @@ void AliMUONVGeometryBuilder::MapSV(const TString& path0,
 // ---
 
   // Get module sensitive volumes map
-  Int_t moduleId = AliMUONGeometryDEIndexing::GetModuleId(detElemId);
+  Int_t moduleId = AliMUONGeometryStore::GetModuleId(detElemId);
   AliMUONGeometrySVMap* svMap = GetSVMap(moduleId);     
 
   Int_t nofDaughters = gMC->NofVolDaughters(volName);
@@ -184,7 +183,7 @@ void AliMUONVGeometryBuilder::MapSV(const TString& path0,
     TString volName(path0(npos1, npos2-npos1));  
     
     // Check if it is sensitive volume
-    Int_t moduleId = AliMUONGeometryDEIndexing::GetModuleId(detElemId);
+    Int_t moduleId = AliMUONGeometryStore::GetModuleId(detElemId);
     AliMUONGeometryModule* geometry = GetGeometry(moduleId);
     if (geometry->IsSensitiveVolume(volName)) {
       //cout << ".. adding to the map  " 
