@@ -4,9 +4,6 @@
 #pragma link off all functions;
 
 // builder
-#pragma link C++ class AliMUONSegFactoryV2+;  
-#pragma link C++ class AliMUONSegFactoryV3+;  
-#pragma link C++ class AliMUONSegFactoryV4+;  
 #pragma link C++ class AliMUONResponseFactory+;  
 
 // digitizer
