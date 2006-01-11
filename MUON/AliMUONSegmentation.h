@@ -7,6 +7,15 @@
 /// \class AliMUONSegmentation
 /// \brief Container class for modules segmentations
 ///
+/// It provides access to segmentations on all levels:
+/// - mapping segmentation
+/// - DE segmentation (operating in local DE reference frame)
+/// - module segmentation (operating in global reference frame)
+/// As some detection element are sharing the same objects
+/// (AliMpVSegmentation, AliMUONVGeometryDESegmentation),
+/// all segmentations objects have to be always deleted
+/// altogether via deleting this container object. 
+/// 
 /// Author: Ivana Hrivnacova, IPN Orsay
 
 #ifndef ALI_MUON_SEGMENTATION_H
@@ -30,11 +39,15 @@ class AliMUONSegmentation : public TObject
     virtual  ~AliMUONSegmentation();
     
     // methods
+    void  AddMpSegmentation(AliMpVSegmentation* segmentation);
     void  AddDESegmentation(AliMUONVGeometryDESegmentation* segmentation);
 
     void  AddModuleSegmentation(Int_t moduleId, Int_t cathod,
                             AliMUONGeometrySegmentation* segmentation);
-    void  Init();			    
+    void  Init();
+            // This function should not be needed;
+	    // the segmentations should be built in a valid state
+	    // To be revised			    
 
     //
     // get methods
@@ -69,6 +82,7 @@ class AliMUONSegmentation : public TObject
  
   private:
     // data members
+    TObjArray*  fMpSegmentations;        // array of mapping segmentations
     TObjArray*  fDESegmentations;        // array of DE segmentations
     TObjArray*  fModuleSegmentations[2]; // array of module segmentations
                                          // for two cathods         
