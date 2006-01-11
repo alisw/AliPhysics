@@ -14,7 +14,7 @@
  **************************************************************************/
 
 // $Id$
-// $MpId: AliMpConstants.cxx,v 1.7 2005/10/28 15:09:13 ivana Exp $
+// $MpId: AliMpConstants.cxx,v 1.8 2006/01/11 10:10:31 ivana Exp $
 // Category: basic
 //
 // Class AliMpConstants
@@ -34,6 +34,7 @@ ClassImp(AliMpConstants)
 const Double_t AliMpConstants::fgkLengthTolerance = 1e-05; // 0.1 mum;
 const Double_t AliMpConstants::fgkLengthStep = 0.1; // 1 mm;
 const Int_t    AliMpConstants::fgkStartPadIndex = 1;
+const Int_t    AliMpConstants::fgkNCh = 14;
 
 //_____________________________________________________________________________
 AliMpConstants::AliMpConstants()

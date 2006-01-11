@@ -2,7 +2,7 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$
-// $MpId: AliMpConstants.h,v 1.6 2005/08/26 15:43:36 ivana Exp $
+// $MpId: AliMpConstants.h,v 1.7 2006/01/11 10:03:19 ivana Exp $
 
 /// \ingroup basic
 /// \class AliMpConstants
@@ -31,6 +31,7 @@ class AliMpConstants : public TObject
   static Double_t LengthTolerance();
   static Double_t LengthStep();
   static Int_t    StartPadIndex();
+  static Int_t    NCh();
 
  private:
   // unused derived functions
@@ -41,6 +42,7 @@ class AliMpConstants : public TObject
   static const Double_t  fgkLengthStep;     // the step in length used to move from
                                             // a geometric border inside (pad, motif)
   static const Int_t     fgkStartPadIndex;  // global pad indices start value
+  static const Int_t     fgkNCh;            // number of chambers
 
   ClassDef(AliMpConstants,1) //Class for globally used constants definition
 };
@@ -50,5 +52,6 @@ class AliMpConstants : public TObject
 inline Double_t AliMpConstants::LengthTolerance() {return fgkLengthTolerance;}
 inline Double_t AliMpConstants::LengthStep()      {return fgkLengthStep;}
 inline Int_t    AliMpConstants::StartPadIndex()   {return fgkStartPadIndex;}
+inline Int_t    AliMpConstants::NCh()             {return fgkNCh;}
 
 #endif //ALI_MP_CONSTANTS_H
