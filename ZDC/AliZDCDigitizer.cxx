@@ -350,7 +350,8 @@ AliZDCCalibData* AliZDCDigitizer::GetCalibData(int runNumber) const
   AliCDBStorage *fStorage = AliCDBManager::Instance()->GetStorage("local://$ALICE_ROOT");
   AliCDBEntry  *entry = fStorage->Get("ZDC/Calib/Data",0);
   
-  AliZDCCalibData *calibda = (AliZDCCalibData*) entry->GetObject();
+  AliZDCCalibData *calibda = 0;
+  if (entry) calibda = (AliZDCCalibData*) entry->GetObject();
   //calibda->Print("");
 
  // AliCDBManager::Instance()->Destroy();
