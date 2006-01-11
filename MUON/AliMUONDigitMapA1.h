@@ -11,8 +11,9 @@
 /// \class AliMUONDigitMapA1
 /// \brief Implements cluster Map as a 1-dim array
 
-#include "AliMpPlaneType.h"
 #include "AliHitMap.h"
+
+#include <TObject.h>
 
 class TObjArray;
 
@@ -20,7 +21,7 @@ class AliMUONDigitMapA1 : public TObject
 {
  public:
     AliMUONDigitMapA1();
-    AliMUONDigitMapA1(Int_t idDE, AliMpPlaneType plane);
+    AliMUONDigitMapA1(Int_t idDE, Int_t npx, Int_t npy);
     virtual ~AliMUONDigitMapA1();
 
     // Fill hits from list of digits into hit map
