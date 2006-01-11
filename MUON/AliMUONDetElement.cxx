@@ -120,9 +120,14 @@ void AliMUONDetElement::Fill(AliMUONData */*data*/)
   fLeft[0] = fDigits[0]->GetEntriesFast();
   fLeft[1] = fDigits[1]->GetEntriesFast();
 
-  fHitMap[0] = new AliMUONHitMapA1(fidDE, fSeg[0], fDigits[0]);
-  fHitMap[1] = new AliMUONHitMapA1(fidDE, fSeg[1], fDigits[1]);
+  Int_t  npx0  = fSeg[0]->Npx(fidDE)+1;
+  Int_t  npy0  = fSeg[0]->Npy(fidDE)+1;
+  fHitMap[0] = new AliMUONHitMapA1(npx0, npy0, fDigits[0]);
   fHitMap[0]->FillHits();
+
+  Int_t  npx1  = fSeg[1]->Npx(fidDE)+1;
+  Int_t  npy1  = fSeg[1]->Npy(fidDE)+1;
+  fHitMap[1] = new AliMUONHitMapA1(npx1, npy1, fDigits[1]);
   fHitMap[1]->FillHits();
 
   // The part below is just for debugging (fill rec. points already found)

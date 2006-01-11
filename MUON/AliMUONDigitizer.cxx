@@ -15,10 +15,6 @@
 
 /* $Id$ */
 
-#include "AliRun.h"
-#include "AliRunDigitizer.h"
-#include "AliRunLoader.h"
-
 #include "AliMUONDigitizer.h"
 #include "AliMUONConstants.h"
 #include "AliMUONSegmentation.h"
@@ -32,6 +28,10 @@
 #include "AliMUONGeometryTransformer.h"
 #include "AliMUONGeometryModule.h"
 #include "AliMUONGeometryStore.h"
+
+#include "AliRun.h"
+#include "AliRunDigitizer.h"
+#include "AliRunLoader.h"
 
 /////////////////////////////////////////////////////////////////////////////////////
 //
@@ -517,9 +517,13 @@ void AliMUONDigitizer::InitArrays()
 	idDE = detElements->GetEntry(j)->GetUniqueID();
 	fNDetElemId[idDE] = k;
 
-	fHitMap[k] = new AliMUONHitMapA1(idDE,c1Segmentation, fTDList); 
+        Int_t npx1 = c1Segmentation->Npx(idDE)+1;
+        Int_t npy1 = c1Segmentation->Npy(idDE)+1;
+	fHitMap[k] = new AliMUONHitMapA1(npx1, npy1, fTDList); 
      
-	fHitMap[k+AliMUONConstants::NDetElem()] = new AliMUONHitMapA1(idDE,c2Segmentation, fTDList);
+        Int_t npx2 = c2Segmentation->Npx(idDE)+1;
+        Int_t npy2 = c2Segmentation->Npy(idDE)+1;
+	fHitMap[k+AliMUONConstants::NDetElem()] = new AliMUONHitMapA1(npx2, npy2, fTDList);
 	k++;
       }
     }
