@@ -32,7 +32,6 @@
 #include "AliMUONGeometryEnvelope.h"
 #include "AliMUONGeometryDetElement.h"
 #include "AliMUONGeometryStore.h"
-#include "AliMUONConstants.h"
 #include "AliMUONGeometryBuilder.h"
 #include "AliLog.h"
 
