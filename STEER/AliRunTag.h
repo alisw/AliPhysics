@@ -87,7 +87,7 @@ class AliRunTag : public TObject
   
   AliLHCTag   fLHCTag;                    //LHC tag object
   
-  ClassDef(AliRunTag,1)  //(ClassName, ClassVersion)
+  ClassDef(AliRunTag,2)  //(ClassName, ClassVersion)
 };
 //______________________________________________________________________________
 
