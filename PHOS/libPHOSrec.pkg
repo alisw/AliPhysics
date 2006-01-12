@@ -15,7 +15,8 @@ SRCS          =  AliPHOSRecPoint.cxx AliPHOSEmcRecPoint.cxx \
 	         AliPHOSGammaJet.cxx \
 		 AliPHOSGridFile.cxx \
 		 AliPHOSTracker.cxx \
-
+                 AliPHOSTrigger.cxx \
+           
 HDRS:= $(SRCS:.cxx=.h) 
 
 DHDR= PHOSrecLinkDef.h
