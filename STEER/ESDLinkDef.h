@@ -39,6 +39,8 @@
 #pragma link C++ class AliTagAnalysis+;
 #pragma link C++ class AliEventTagCuts+;
 
+#pragma link C++ class AliTrackPointArray+;
+#pragma link C++ class AliTrackPoint+;
 #endif
 
 

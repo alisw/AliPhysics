@@ -25,7 +25,6 @@ AliCDBStorage.cxx AliCDBLocal.cxx AliCDBDump.cxx AliCDBGrid.cxx\
 AliReconstructor.cxx AliDetectorEventHeader.cxx TTreeStream.cxx\
 AliAlignObj.cxx AliAlignObjAngles.cxx AliAlignObjMatrix.cxx \
 AliRieman.cxx\
-AliTrackPointArray.cxx\
 AliTrackFitter.cxx AliTrackFitterRieman.cxx\
 AliTrackResiduals.cxx AliTrackResidualsChi2.cxx\
 AliAlignmentTracks.cxx
