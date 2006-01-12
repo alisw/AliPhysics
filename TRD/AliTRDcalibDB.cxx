@@ -115,7 +115,7 @@ AliTRDcalibDB::AliTRDcalibDB()
   
   // Create the sampled PRF
   SamplePRF();
-};
+}
 
 //_____________________________________________________________________________
 AliTRDcalibDB::~AliTRDcalibDB() 
@@ -130,7 +130,7 @@ AliTRDcalibDB::~AliTRDcalibDB()
   }
 
   Invalidate();
-};
+}
 
 //_____________________________________________________________________________
 void AliTRDcalibDB::SetRun(Long64_t run)
@@ -272,7 +272,7 @@ Float_t AliTRDcalibDB::GetVdrift(Int_t det, Int_t col, Int_t row)
     return -1;
 
   return roc->GetValue(col, row);
-};
+}
 
 //_____________________________________________________________________________
 Float_t AliTRDcalibDB::GetT0(Int_t det, Int_t col, Int_t row)
@@ -290,7 +290,7 @@ Float_t AliTRDcalibDB::GetT0(Int_t det, Int_t col, Int_t row)
     return -1;
 
   return roc->GetValue(col, row);
-};
+}
 
 //_____________________________________________________________________________
 Float_t AliTRDcalibDB::GetGainFactor(Int_t det, Int_t col, Int_t row)
@@ -308,7 +308,7 @@ Float_t AliTRDcalibDB::GetGainFactor(Int_t det, Int_t col, Int_t row)
     return -1;
 
   return roc->GetValue(col, row);
-};
+}
 
 //_____________________________________________________________________________
 Float_t AliTRDcalibDB::GetPRFWidth(Int_t det, Int_t col, Int_t row)
@@ -326,7 +326,7 @@ Float_t AliTRDcalibDB::GetPRFWidth(Int_t det, Int_t col, Int_t row)
     return -1;
 
   return roc->GetValue(col, row);
-};
+}
 
 //_____________________________________________________________________________
 Float_t AliTRDcalibDB::GetSamplingFrequency()
