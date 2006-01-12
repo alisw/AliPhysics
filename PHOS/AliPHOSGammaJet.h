@@ -234,9 +234,9 @@ public:
   Bool_t     fTPCCutsLikeEMCAL ; //Same jet energy ratio limits for both conf.
 
   //Read ESD Paramenters
-  TString fDirName ;
-  TString fESDTree ;
-  char *  fPattern ;
+  TString fDirName ; //Name of the directory where data is
+  TString fESDTree ; //Name of the ESD Tree
+  char *  fPattern ; //Pattern followed by  directory data
 
   //Jet selection parameters
   //Fixed cuts (old)
