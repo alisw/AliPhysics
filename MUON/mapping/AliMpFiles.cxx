@@ -28,7 +28,8 @@
 // Included in AliRoot: 2003/05/02
 // Authors: David Guez, Ivana Hrivnacova; IPN Orsay
 
-#include <stdlib.h>
+#include <TSystem.h>
+#include <Riostream.h>
 
 #include "AliMpFiles.h"
 #include "AliLog.h"
@@ -103,18 +104,18 @@ AliMpFiles& AliMpFiles::operator=(const AliMpFiles& right)
 //
 
 //______________________________________________________________________________
-const char* AliMpFiles::GetDefaultTop()
+TString AliMpFiles::GetDefaultTop()
 {
-  const char* top = getenv("MINSTALL");    
-  if (!top)
-  {
-    const char* ntop = getenv("ALICE_ROOT");
-    if (!ntop) return 0;
-    TString dirPath(ntop);
-    dirPath += "/MUON/mapping"; 
-    return dirPath.Data();
-  }
-  return top;
+  TString top = gSystem->Getenv("MINSTALL");    
+  if ( ! top.IsNull() ) return top;
+
+  TString ntop = gSystem->Getenv("ALICE_ROOT");
+  if ( ntop.IsNull() ) {
+    AliErrorClassStream() << "Cannot find path to mapping data." << endl;
+    return ntop;
+  }  
+  ntop += "/MUON/mapping";
+  return ntop;
 }
 
 //______________________________________________________________________________

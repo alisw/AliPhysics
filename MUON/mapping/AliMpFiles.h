@@ -85,7 +85,7 @@ class AliMpFiles : public TObject
   
   private: 
     // methods
-    static const char* GetDefaultTop();
+    static TString GetDefaultTop();
     static TString PlaneDataDir(AliMpStationType station, AliMpPlaneType plane); 
     static TString StationDataDir(AliMpStationType station); 
   
