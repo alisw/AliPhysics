@@ -7,6 +7,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.9  2005/12/20 07:31:51  schutz
+ * added data members
+ *
  * Revision 1.7  2005/05/28 14:19:04  schutz
  * Compilation warnings fixed by T.P.
  *
@@ -26,9 +29,12 @@
 #include "TRandom.h"
 #include "TArrayD.h"
 #include "AliESD.h"
+#include "TChain.h"
 
 class AliPHOSFastGlobalReconstruction ;
+
 //#include "../PYTHIA6/AliGenPythia.h"
+
 // --- AliRoot header files ---
 
 class AliPHOSGammaJet : public TTask {
@@ -186,9 +192,19 @@ public:
  
   void Pi0Decay(Double_t mPi0, TLorentzVector &p0, 
 		TLorentzVector &p1, TLorentzVector &p2, Double_t &angle) ;
+
+  TChain * ReadESDfromdisk(const UInt_t eventsToRead,
+			      const TString dirName, 
+			      const TString esdTreeName = "esdTree",
+			      const char *  pattern     = "Evt") ;
+  TChain * ReadESD(const UInt_t eventsToRead = 1,
+		      TString fileName  = "",
+		      const TString esdTreeName = "esdTree",
+		      const char *  pattern     = "Evt" ) ;
+  
   Double_t SigmaE(Double_t energy) ;
   Double_t SigmaP(Double_t energy) ;
-
+  
   void SetJet(TParticle * part, Bool_t & b, Float_t cone, Double_t eta, 
 	      Double_t phi);
 

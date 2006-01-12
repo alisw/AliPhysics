@@ -17,6 +17,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.8  2005/12/20 07:08:32  schutz
+ * corrected error in call AliReadESD
+ *
  * Revision 1.6  2005/05/28 14:19:04  schutz
  * Compilation warnings fixed by T.P.
  *
@@ -49,7 +52,7 @@
 #include "AliESD.h"
 #include "AliESDtrack.h"
 #include "Riostream.h"
-#include "macros/AliReadESD.C" 
+
 //#include "../PYTHIA6/AliGenPythia.h"
 
 ClassImp(AliPHOSGammaJet)
@@ -146,7 +149,6 @@ AliPHOSGammaJet::AliPHOSGammaJet(const TString inputfilename) :
   TTask("GammaJet","Analysis of gamma-jet correlations")
 {
   // ctor
-//   gSystem->Load("$ALICE_ROOT/PHOS/macros/AliReadESD_C.so"); 
   fInputFileName = inputfilename;
   fFastRec = new AliPHOSFastGlobalReconstruction(fInputFileName);  
   AliPHOSGetter *  gime = AliPHOSGetter::Instance(fInputFileName) ;
@@ -822,30 +824,31 @@ void AliPHOSGammaJet::CreateParticleListFromESD(TClonesArray * pl,
 						TClonesArray * plNe,  
 						TClonesArray * plNePHOS,
 						const AliESD * esd){
-  //, Int_t iEvent){
+  
+  //Create a list of particles from the ESD. These particles have been measured 
+  //by the Central Tracking system (TPC), PHOS and EMCAL 
+  //(EMCAL not available for the moment). 
   //Info("CreateParticleListFromESD","Inside");
-  //AliPHOSGetter * gime = AliPHOSGetter::Instance(fInputFileName) ; 
-  //gime->Event(iEvent, "P") ;
 
-  Double_t v[3] ; //vertex ;
-  esd->GetVertex()->GetXYZ(v) ;
   Int_t index = pl->GetEntries() ; 
+  Int_t npar  = 0 ;
+  Double_t pid[AliPID::kSPECIESN];  
 
-  //PHOS
+  //########### PHOS ##############
+  //Info("CreateParticleListFromESD","Fill ESD PHOS list");
   Int_t begphos = esd->GetFirstPHOSParticle();  
-  Int_t endphos = esd->GetFirstPHOSParticle() + esd->GetNumberOfPHOSParticles() ;  
-
+  Int_t endphos = esd->GetFirstPHOSParticle() + 
+    esd->GetNumberOfPHOSParticles() ;  
   Int_t indexNePHOS = plNePHOS->GetEntries() ;
-  Int_t nphP ;
-  //cout<<"Fill PHOS"<<endl;
-  //cout<<"begin "<<begphos<<" end "<<endphos<<endl;
-  for (nphP =  begphos; nphP <  endphos; nphP++) {//////////////PHOS track loop
-    AliESDtrack * track = esd->GetTrack(nphP) ; // retrieve track from esd
-    
-    // PID of this track
-    Double_t pid[AliPID::kSPECIESN];
-    track->GetPHOSpid(pid);
-    TParticle * particle = new TParticle() ;
+  if(strstr(fOptionGJ,"deb all"))
+    Info("CreateParticleListFromESD","PHOS: first particle %d, last particle %d",
+	 begphos,endphos);
+
+  for (npar =  begphos; npar <  endphos; npar++) {//////////////PHOS track loop
+    AliESDtrack * track = esd->GetTrack(npar) ; // retrieve track from esd
+   
+    //Create a TParticle to fill the particle list
+
     Double_t en = track->GetPHOSsignal() ;
     Double_t * p = new Double_t();
     track->GetPHOSposition(p) ;
@@ -855,83 +858,93 @@ void AliPHOSGammaJet::CreateParticleListFromESD(TClonesArray * pl,
     Double_t px = en*TMath::Cos(phi)*TMath::Sin(theta);;
     Double_t py = en*TMath::Sin(phi)*TMath::Sin(theta);
     Double_t pz = en*TMath::Cos(theta);
+
+    TParticle * particle = new TParticle() ;
     particle->SetMomentum(px,py,pz,en) ;
+
+    //Select only photons
+    
+    track->GetPHOSpid(pid);
     //cout<<"pid "<<pid[AliPID::kPhoton]<<endl ;
     if( pid[AliPID::kPhoton] > 0.75)
-      new((*plNePHOS)[indexNePHOS++])       TParticle(*particle) ;
+      new((*plNePHOS)[indexNePHOS++])   TParticle(*particle) ;
   }
-  //TPC
+
+  //########### TPC #####################
+  //Info("CreateParticleListFromESD","Fill ESD TPC list");
   Int_t begtpc = 0 ;  
   Int_t endtpc = esd->GetNumberOfTracks() ;
   Int_t indexCh     = plCh->GetEntries() ;
-  //cout<<"Fill TPC"<<endl;
-  //cout<<"begin "<<begtpc<<" end "<<endtpc<<endl;
-  for (nphP =  begtpc; nphP <  endtpc; nphP++) {////////////// track loop
-    AliESDtrack * track = esd->GetTrack(nphP) ; // retrieve track from esd
-    
-    // PID of this track
-    //Double_t pid[AliPID::kSPECIESN];
-    //track->GetEMCALpid(pid);
-    TParticle * particle = new TParticle() ;
-    Double_t en = track->GetTPCsignal() ;
-    //Double_t *p = 0;
-    //track->GetEMCALposition(p) ;
-    //TVector3 pos(p[0],p[1],p[2]) ; 
-    //Double_t phi  = pos.Phi();
-    //Double_t theta= pos.Theta();
+  if(strstr(fOptionGJ,"deb all"))
+    Info("CreateParticleListFromESD","TPC: first particle %d, last particle %d",
+	 begtpc,endtpc);
 
+  for (npar =  begtpc; npar <  endtpc; npar++) {////////////// track loop
+    AliESDtrack * track = esd->GetTrack(npar) ; // retrieve track from esd
+    
+    Double_t en = track ->GetTPCsignal() ;
     TVector3 mom = track->P3() ;
     Double_t px = mom.Px();
     Double_t py = mom.Py();
-    Double_t pz = mom.Pz();
+    Double_t pz = mom.Pz(); //Check with TPC people if this is correct.
 
+    //cout<<"TPC signal "<<en<<endl;
+    //cout<<"px "<<px<<"; py "<<py<<"; pz "<<pz<<endl;
+    TParticle * particle = new TParticle() ;
     particle->SetMomentum(px,py,pz,en) ;
-    //if( pid[AliPID::kPhoton] > 0.75)
+
     new((*plCh)[indexCh++])       TParticle(*particle) ;    
     new((*pl)[index++])           TParticle(*particle) ;
 
   }
 
-  //EMCAL  
+  //################ EMCAL ##############
+  Double_t v[3] ; //vertex ;
+  esd->GetVertex()->GetXYZ(v) ; 
+  //##########Uncomment when ESD for EMCAL works ##########  
+  //Info("CreateParticleListFromESD","Fill ESD EMCAL list");
+ 
   Int_t begem = esd->GetFirstEMCALParticle();  
-  Int_t endem = esd->GetFirstEMCALParticle() + esd->GetNumberOfEMCALParticles() ;  
-  Int_t indexNe     = plNe->GetEntries() ;
-  //cout<<"Fill EMCAL"<<endl;
-  //cout<<"begin "<<begem<<" end "<<endem<<endl;
-  for (nphP =  begem; nphP <  endem; nphP++) {//////////////PHOS track loop
-    AliESDtrack * track = esd->GetTrack(nphP) ; // retrieve track from esd
-    
-    // PID of this track
-    Double_t pid[AliPID::kSPECIESN];
-    track->GetEMCALpid(pid);
+  Int_t endem = esd->GetFirstEMCALParticle() + 
+    esd->GetNumberOfEMCALParticles() ;  
+  Int_t indexNe  = plNe->GetEntries() ; 
+  if(strstr(fOptionGJ,"deb all"))
+    Info("CreateParticleListFromESD","EMCAL: first particle %d, last particle %d",
+	 begem,endem);
+   
+  for (npar =  begem; npar <  endem; npar++) {//////////////EMCAL track loop
+     AliESDtrack * track = esd->GetTrack(npar) ; // retrieve track from esd
+  
     Double_t en = track->GetEMCALsignal() ;
-    //cout<<"EMCAL signal "<<en<<endl;
     Double_t *p = new Double_t();
     track->GetEMCALposition(p) ;
-    TVector3 pos(p[0],p[1],p[2]) ; 
+    TVector3 pos(p[0],p[1],p[2]) ;
     Double_t phi  = pos.Phi();
     Double_t theta= pos.Theta();
-
     Double_t px = en*TMath::Cos(phi)*TMath::Sin(theta);;
     Double_t py = en*TMath::Sin(phi)*TMath::Sin(theta);
     Double_t pz = en*TMath::Cos(theta);
-    Int_t pdg = 0;
+    //cout<<"EMCAL signal "<<en<<endl;
+    //cout<<"px "<<px<<"; py "<<py<<"; pz "<<pz<<endl;
+    //TParticle * particle = new TParticle() ;
     //particle->SetMomentum(px,py,pz,en) ;
-    if( pid[AliPID::kPhoton] > 0.75) //This has to be fixen.
-      pdg = 22;
-    //particle->SetPdgCode(22);
-    else if( pid[AliPID::kPi0] > 0.75)
-      pdg = 111;
-      //  particle->SetPdgCode(111);
-    pdg = 22 ; //Assume all photons, no PID for EMCAL available.     
+  
+    Int_t pdg = 0;
+    //  //Uncomment if PID IS WORKING, photon and pi0 idenitification.
+    //  //if( pid[AliPID::kPhoton] > 0.75) //This has to be fixen.
+    //  //pdg = 22;
+    //  //else if( pid[AliPID::kPi0] > 0.75)
+    //  //pdg = 111;
+    pdg = 22; //No PID, assume all photons
     TParticle * particle = new TParticle(pdg, 1, -1, -1, -1, -1, 
 					 px, py, pz, en, v[0], v[1], v[2], 0);
-    //cout<<"pid; ph "<<pid[AliPID::kPhoton]<<" pi0 "<<pid[AliPID::kPi0]<<endl;
+
     new((*plNe)[indexNe++])       TParticle(*particle) ; 
     new((*pl)[index++])           TParticle(*particle) ;
   }
-  //Info("CreateParticleListFromESD","End Inside");
-
+  
+  //  Info("CreateParticleListFromESD","End Inside");
+  
 }
 
 
@@ -949,7 +962,7 @@ void AliPHOSGammaJet::Exec(Option_t *option)
   if(fESDdata){
     // Create chain of esd trees
     const UInt_t kNevent = static_cast<const UInt_t>(GetNEvent()) ; 
-    t = AliReadESD(kNevent, fDirName, fESDTree, fPattern) ; 
+    t = ReadESD(kNevent, fDirName, fESDTree, fPattern) ; 
     if(!t) {
       AliError("Could not create the TChain") ; 
       //break ;
@@ -2730,6 +2743,67 @@ void AliPHOSGammaJet::Print(const Option_t * opt) const
   printf("Inv Mass min cut  : %f\n", fInvMassMinCut) ; 
  
 } 
+
+//__________________________________________________________________________
+TChain * AliPHOSGammaJet::ReadESDfromdisk(const UInt_t eventsToRead, 
+			 const TString dirName, 
+			 const TString esdTreeName, 
+			 const char *  pattern) 
+{
+  // Reads ESDs from Disk
+ TChain *  rv = 0; 
+
+  AliInfo( Form("\nReading files in %s \nESD tree name is %s \nReading %d events", 
+		dirName.Data(), esdTreeName.Data(), eventsToRead) ) ;
+  
+  // create a TChain of all the files 
+  TChain * cESDTree = new TChain(esdTreeName) ; 
+
+  // read from the directory file until the require number of events are collected
+  void * from = gSystem->OpenDirectory(dirName) ;
+  if (!from) {
+    AliError( Form("Directory %s does not exist") ) ;
+    rv = 0 ;
+  }
+  else{ // reading file names from directory
+    const char * subdir ; 
+    // search all subdirectories witch matching pattern
+    while( (subdir = gSystem->GetDirEntry(from))  && 
+	   (cESDTree->GetEntries() < eventsToRead)) {
+      if ( strstr(subdir, pattern) != 0 ) { 
+	char file[200] ; 
+        sprintf(file, "%s%s/AliESDs.root", dirName.Data(), subdir); 	
+	AliInfo( Form("Adding %s\n", file) );
+	cESDTree->Add(file) ;
+      }
+    } // while file
+  
+    AliInfo( Form(" %d events read", cESDTree->GetEntriesFast()) ) ;
+    rv = cESDTree ; 
+    
+  } // reading file names from directory
+  return rv ; 
+}
+
+//__________________________________________________________________________
+TChain * AliPHOSGammaJet::ReadESD(const UInt_t eventsToRead,
+		  const TString dirName, 
+		  const TString esdTreeName, 
+		  const char *  pattern)  
+{
+  // Read AliESDs files and return a Chain of events
+ 
+  if ( dirName == "" ) {
+    AliError("Give the name of the DIR where to find files") ; 
+    return 0 ; 
+  }
+  if ( esdTreeName == "" ) 
+    return ReadESDfromdisk(eventsToRead, dirName) ;
+  else if ( strcmp(pattern, "") == 0 )
+    return ReadESDfromdisk(eventsToRead, dirName, esdTreeName) ;
+  else 
+    return ReadESDfromdisk(eventsToRead, dirName, esdTreeName, pattern) ;	    
+}
 
 //___________________________________________________________________
 void AliPHOSGammaJet::SetJet(TParticle * part, Bool_t & b, Float_t cone, 
