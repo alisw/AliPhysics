@@ -9,7 +9,7 @@ SRCS          =  AliPHOS.cxx \
 		 AliPHOSRawStream.cxx AliPHOSClusterizer.cxx \
 		 AliPHOSCalibrationDB.cxx AliPHOSDigitizer.cxx \
 		 AliPHOSSDigitizer.cxx AliPHOSDigit.cxx \
-		 AliPHOSFastRecParticle.cxx
+		 AliPHOSFastRecParticle.cxx AliPHOSRawStream2004.cxx
 
 HDRS:= $(SRCS:.cxx=.h) 
 

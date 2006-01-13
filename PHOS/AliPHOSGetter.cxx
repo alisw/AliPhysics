@@ -339,8 +339,14 @@ void AliPHOSGetter::Event(AliRawReader *rawReader, const char* opt)
 {
   // Reads the raw event from rawReader
 
+  AliRunLoader * rl = AliRunLoader::GetRunLoader(PhosLoader()->GetTitle());
+  
   if( strstr(opt,"W")  ){
+    rawReader->NextEvent(); 
+    Int_t iEvent = rl->GetEventNumber();
+    rl->GetEvent(iEvent);
     ReadRaw(rawReader) ;
+    rl->SetEventNumber(++iEvent);
   }    
  
 }
@@ -634,13 +640,20 @@ Int_t AliPHOSGetter::CalibrateRaw(Double_t energy, Int_t *relId)
   // gime->SetCalibData(clb);
 
   if (CalibData() == 0)
-    Fatal("CalibrateRaw","Failure to calibrate raw data");
+    Warning("CalibrateRaw","Calibration DB is not initiated!");
 
   Int_t   module = relId[0];
-  Int_t   column = relId[2];
-  Int_t   row    = relId[3];
-  Float_t gainFactor = CalibData()->GetADCchannelEmc (module,column,row);
-  Float_t pedestal   = CalibData()->GetADCpedestalEmc(module,column,row);
+  Int_t   column = relId[3];
+  Int_t   row    = relId[2];
+
+  Float_t gainFactor = 0.0015; // width of one Emc ADC channel in GeV
+  Float_t pedestal   = 0.005;  // Emc pedestals
+
+  if(CalibData()) {
+    gainFactor = CalibData()->GetADCchannelEmc (module,column,row);
+    pedestal   = CalibData()->GetADCpedestalEmc(module,column,row);
+  }
+  
   Int_t   amp = static_cast<Int_t>( (energy - pedestal) / gainFactor + 0.5 ) ; 
   return amp;
 }
@@ -682,10 +695,9 @@ Int_t AliPHOSGetter::ReadRaw(AliRawReader *rawReader)
       relId[2] = in.GetRow() ;
       relId[3] = in.GetColumn() ;
       PHOSGeometry()->RelToAbsNumbering(relId, id) ;
-
       if (!first) {
 	FitRaw(lowGainFlag, gLowGain, gHighGain, signalF, energy, time) ; 
-	amp = CalibrateRaw(energy,relId);
+ 	amp = CalibrateRaw(energy,relId);
 	if (amp > 0) {
 	  new((*digits)[idigit]) AliPHOSDigit( -1, id, amp, time) ;	
 	  idigit++ ; 
@@ -721,6 +733,7 @@ Int_t AliPHOSGetter::ReadRaw(AliRawReader *rawReader)
   delete gLowGain;
   delete gHighGain ; 
   
+//   AliInfo(Form("Event %d, digits: %d\n", EventNumber(),digits->GetEntries())); //bvp
   return digits->GetEntriesFast() ; 
 }
 

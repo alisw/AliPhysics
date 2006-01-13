@@ -88,7 +88,7 @@ void AliPHOSReconstructor::Reconstruct(AliRunLoader* runLoader, AliRawReader* ra
   TString branchName(runLoader->GetEventFolder()->GetName()) ;  
   
   AliPHOSClusterizerv1 clu(headerFile, branchName);
-  clu.SetEventRange(0, 0) ; // reconstruct one events
+  clu.SetEventRange(0, -1) ; // do all the events
   clu.SetRawReader(rawreader);
   if ( Debug() ) 
     clu.ExecuteTask("deb all") ; 
