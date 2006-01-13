@@ -81,8 +81,8 @@ const Double_t AliMUONTrackReconstructor::fgkDefaultEfficiency = 0.95;
 
 ClassImp(AliMUONTrackReconstructor) // Class implementation in ROOT context
 
-  //__________________________________________________________________________
-AliMUONTrackReconstructor::AliMUONTrackReconstructor(AliLoader* loader)
+//__________________________________________________________________________
+AliMUONTrackReconstructor::AliMUONTrackReconstructor(AliLoader* loader, AliMUONData* data)
   : TObject()
 {
   // Constructor for class AliMUONTrackReconstructor
@@ -133,7 +133,8 @@ AliMUONTrackReconstructor::AliMUONTrackReconstructor(AliLoader* loader)
   fLoader = loader;
 
   // initialize container
-  fMUONData  = new AliMUONData(fLoader,"MUON","MUON");
+  // fMUONData  = new AliMUONData(fLoader,"MUON","MUON");
+  fMUONData  = data;
 
   return;
 }

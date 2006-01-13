@@ -69,7 +69,7 @@ AliMUONEventRecoCombi::~AliMUONEventRecoCombi()
 }
 
 //_________________________________________________________________________
-void AliMUONEventRecoCombi::FillEvent(AliMUONData *dataCluster, AliMUONData *dataEvent, AliMUONClusterFinderAZ *recModel)
+void AliMUONEventRecoCombi::FillEvent(AliMUONData *data, AliMUONClusterFinderAZ *recModel)
 {
   // Fill event information
 
@@ -82,7 +82,7 @@ void AliMUONEventRecoCombi::FillEvent(AliMUONData *dataCluster, AliMUONData *dat
   Int_t nDetElem = 0;
   for (Int_t ich = 0; ich < 6; ich++) {
     // loop over chambers 0-5
-    TClonesArray *digs = dataCluster->Digits(ich);
+    TClonesArray *digs = data->Digits(ich);
     //cout << ich << " " << digs << " " << digs->GetEntriesFast() << endl;
     Int_t idDE = -1;
     for (Int_t i = 0; i < digs->GetEntriesFast(); i++) {
@@ -107,7 +107,7 @@ void AliMUONEventRecoCombi::FillEvent(AliMUONData *dataCluster, AliMUONData *dat
   TArrayS *nPerZ = new TArrayS(20);
   for (Int_t i = 0; i < nDetElem; i++) {
     AliMUONDetElement *detElem = (AliMUONDetElement*) fDetElems->UncheckedAt(i);
-    detElem->Fill(dataCluster);
+    detElem->Fill(data);
     //cout << i << " " << detElem->Z() << endl;
     if (detElem->Z() - z0 < 0.5) { 
       // the same Z
@@ -124,7 +124,7 @@ void AliMUONEventRecoCombi::FillEvent(AliMUONData *dataCluster, AliMUONData *dat
   /*
   cout << fNZ << endl;
   for (Int_t i = 0; i < 7; i++) {
-    cout << i << " " << dataCluster->RawClusters(i)->GetEntriesFast() << endl;
+    cout << i << " " << data->RawClusters(i)->GetEntriesFast() << endl;
   }
   */
 
@@ -142,18 +142,18 @@ void AliMUONEventRecoCombi::FillEvent(AliMUONData *dataCluster, AliMUONData *dat
   delete nPerZ;
 
   // Fill rec. point container for stations 4 and 5
-  //cout << dataEvent->TreeR() << endl;
-  //dataEvent->MakeBranch("RC");
-  dataEvent->SetTreeAddress("RCC");
+  //cout << data->TreeR() << endl;
+  //data->MakeBranch("RC");
+  data->SetTreeAddress("RCC");
   for (Int_t ch = 6; ch < 10; ch++) {
-    TClonesArray *raw = dataCluster->RawClusters(ch);
-    //cout << raw->GetEntriesFast() << " " << dataEvent->RawClusters(ch) << endl;
+    TClonesArray *raw = data->RawClusters(ch);
+    //cout << raw->GetEntriesFast() << " " << data->RawClusters(ch) << endl;
     for (Int_t i = 0; i < raw->GetEntriesFast(); i++) {
       AliMUONRawCluster *clus = (AliMUONRawCluster*) raw->UncheckedAt(i);
-      dataEvent->AddRawCluster(ch, *clus);
+      data->AddRawCluster(ch, *clus);
     }
   }
-  //dataCluster->SetTreeAddress("RC");
+  //data->SetTreeAddress("RC");
 }
 
 //_________________________________________________________________________

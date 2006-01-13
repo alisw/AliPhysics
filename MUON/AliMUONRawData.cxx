@@ -71,7 +71,7 @@
 
 ClassImp(AliMUONRawData) // Class implementation in ROOT context
 //__________________________________________________________________________
-AliMUONRawData::AliMUONRawData(AliLoader* loader)
+AliMUONRawData::AliMUONRawData(AliLoader* loader,  AliMUONData* data)
   : TObject()
 {
   // Standard Constructor
@@ -83,7 +83,8 @@ AliMUONRawData::AliMUONRawData(AliLoader* loader)
   fSegFactory = new AliMpSegFactory();
 
   // initialize container
-  fMUONData  = new AliMUONData(fLoader,"MUON","MUON");
+//   fMUONData  = new AliMUONData(fLoader,"MUON","MUON");
+  fMUONData  = data;
 
   // initialize array
   fSubEventArray = new TClonesArray("AliMUONSubEventTracker",1000);
@@ -140,8 +141,7 @@ AliMUONRawData::~AliMUONRawData(void)
   if (fSegFactory) fSegFactory->Clear();
   delete fSegFactory;  
 
-  if (fMUONData)
-    delete fMUONData;
+ 
   if (fSubEventArray)
     fSubEventArray->Delete(); //using delete cos allocating memory in copy ctor.
 

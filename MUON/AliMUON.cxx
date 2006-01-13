@@ -429,7 +429,7 @@ void AliMUON::Digits2Raw()
   // convert digits of the current event to raw data
   AliMUONRawData* rawData;
 
-  rawData = new AliMUONRawData(fLoader);
+  rawData = new AliMUONRawData(fLoader,fMUONData);
   if (!rawData->Digits2Raw()) AliInfo("pb writting raw data");
   delete rawData;
   return;

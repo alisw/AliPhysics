@@ -60,17 +60,22 @@ void AliMUONReconstructor::Reconstruct(AliRunLoader* runLoader) const
   AliLoader* loader = runLoader->GetLoader("MUONLoader");
   Int_t nEvents = runLoader->GetNumberOfEvents();
 
-// used local container for each method
-// passing fLoader as argument, could be avoided ???
-  AliMUONTrackReconstructor* recoEvent = new AliMUONTrackReconstructor(loader);
-  AliMUONData* dataEvent = recoEvent->GetMUONData();
-  if (strstr(GetOption(),"Original")) recoEvent->SetTrackMethod(1); // Original tracking
-  else if (strstr(GetOption(),"Combi")) recoEvent->SetTrackMethod(3); // Combined cluster / track
-  else recoEvent->SetTrackMethod(2); // Kalman
+  AliMUONData* data = new AliMUONData(loader,"MUON","MUON");
 
-  AliMUONClusterReconstructor* recoCluster = new AliMUONClusterReconstructor(loader);
-  AliMUONData* dataCluster = recoCluster->GetMUONData();
+// passing loader as argument.
+  AliMUONTrackReconstructor* recoEvent = new AliMUONTrackReconstructor(loader, data);
+
+  if (strstr(GetOption(),"Original")) 
+    recoEvent->SetTrackMethod(1); // Original tracking
+  else if (strstr(GetOption(),"Combi")) 
+    recoEvent->SetTrackMethod(3); // Combined cluster / track
+  else
+    recoEvent->SetTrackMethod(2); // Kalman
+
+  AliMUONClusterReconstructor* recoCluster = new AliMUONClusterReconstructor(loader, data);
+  
   AliMUONClusterFinderVS *recModel = recoCluster->GetRecoModel();
+
   if (!strstr(GetOption(),"VS")) {
     recModel = (AliMUONClusterFinderVS*) new AliMUONClusterFinderAZ();
     recoCluster->SetRecoModel(recModel);
@@ -92,29 +97,30 @@ void AliMUONReconstructor::Reconstruct(AliRunLoader* runLoader) const
      
     // tracking branch
     if (recoEvent->GetTrackMethod() != 3) {
-      dataCluster->MakeBranch("RC");
-      dataCluster->SetTreeAddress("D,RC");
+      data->MakeBranch("RC");
+      data->SetTreeAddress("D,RC");
     } else {
-      dataCluster->SetTreeAddress("D");
-      dataCluster->SetTreeAddress("RCC");
+      data->SetTreeAddress("D");
+      data->SetTreeAddress("RCC");
     }
     // Important for avoiding a memory leak when reading digits ( to be investigated more in detail)
     // In any case the reading of GLT is needed for the Trigger2Tigger method below
-    dataCluster->SetTreeAddress("GLT");
+    data->SetTreeAddress("GLT");
 
+    data->GetDigits();
     recoCluster->Digits2Clusters(chBeg); 
     if (recoEvent->GetTrackMethod() == 3) {
       // Combined cluster / track finder
-      AliMUONEventRecoCombi::Instance()->FillEvent(dataCluster, dataEvent, (AliMUONClusterFinderAZ*)recModel);
+      AliMUONEventRecoCombi::Instance()->FillEvent(data, (AliMUONClusterFinderAZ*)recModel);
       ((AliMUONClusterFinderAZ*) recModel)->SetReco(2); 
     }
-    else dataCluster->Fill("RC"); 
+    else data->Fill("RC"); 
 
     // trigger branch
-    dataCluster->MakeBranch("TC");
-    dataCluster->SetTreeAddress("TC");
+    data->MakeBranch("TC");
+    data->SetTreeAddress("TC");
     recoCluster->Trigger2Trigger(); 
-    dataCluster->Fill("TC");
+    data->Fill("TC");
 
     //AZ loader->WriteRecPoints("OVERWRITE");
 
@@ -122,38 +128,38 @@ void AliMUONReconstructor::Reconstruct(AliRunLoader* runLoader) const
     if (!loader->TreeT()) loader->MakeTracksContainer();
 
     // trigger branch
-    dataEvent->MakeBranch("RL"); //trigger track
-    dataEvent->SetTreeAddress("RL");
+    data->MakeBranch("RL"); //trigger track
+    data->SetTreeAddress("RL");
     recoEvent->EventReconstructTrigger();
-    dataEvent->Fill("RL");
+    data->Fill("RL");
 
     // tracking branch
-    dataEvent->MakeBranch("RT"); //track
-    dataEvent->SetTreeAddress("RT");
+    data->MakeBranch("RT"); //track
+    data->SetTreeAddress("RT");
     recoEvent->EventReconstruct();
-    dataEvent->Fill("RT");
+    data->Fill("RT");
 
     loader->WriteTracks("OVERWRITE"); 
   
     if (recoEvent->GetTrackMethod() == 3) { 
       // Combined cluster / track
       ((AliMUONClusterFinderAZ*) recModel)->SetReco(1);
-      dataCluster->MakeBranch("RC");
-      dataCluster->SetTreeAddress("RC");
-      AliMUONEventRecoCombi::Instance()->FillRecP(dataCluster, recoEvent); 
-      dataCluster->Fill("RC"); 
+      data->MakeBranch("RC");
+      data->SetTreeAddress("RC");
+      AliMUONEventRecoCombi::Instance()->FillRecP(data, recoEvent); 
+      data->Fill("RC"); 
     }
     loader->WriteRecPoints("OVERWRITE"); 
 
     //--------------------------- Resetting branches -----------------------
-    dataCluster->ResetDigits();
-    dataCluster->ResetRawClusters();
-    dataCluster->ResetTrigger();
+    data->ResetDigits();
+    data->ResetRawClusters();
+    data->ResetTrigger();
 
-    dataEvent->ResetRawClusters();
-    dataEvent->ResetTrigger();
-    dataEvent->ResetRecTracks();  
-    dataEvent->ResetRecTriggerTracks();
+    data->ResetRawClusters();
+    data->ResetTrigger();
+    data->ResetRecTracks();  
+    data->ResetRecTriggerTracks();
 
   }
   loader->UnloadDigits();
@@ -162,6 +168,7 @@ void AliMUONReconstructor::Reconstruct(AliRunLoader* runLoader) const
 
   delete recoCluster;
   delete recoEvent;
+  delete data;
 }
 
 //_____________________________________________________________________________
@@ -169,16 +176,14 @@ void AliMUONReconstructor::Reconstruct(AliRunLoader* runLoader, AliRawReader* ra
 {
 //  AliLoader
   AliLoader* loader = runLoader->GetLoader("MUONLoader");
+  AliMUONData* data = new AliMUONData(loader,"MUON","MUON");
 
-// used local container for each method
-// passing fLoader as argument, could be avoided ???
-  AliMUONTrackReconstructor* recoEvent = new AliMUONTrackReconstructor(loader);
-  AliMUONData* dataEvent = recoEvent->GetMUONData();
+// passing loader as argument.
+  AliMUONTrackReconstructor* recoEvent = new AliMUONTrackReconstructor(loader, data);
 
-  AliMUONRawData* rawData = new AliMUONRawData(loader);
-  AliMUONData* dataCluster = rawData->GetMUONData();
+  AliMUONRawData* rawData = new AliMUONRawData(loader, data);
 
-  AliMUONClusterReconstructor* recoCluster = new AliMUONClusterReconstructor(loader, dataCluster);
+  AliMUONClusterReconstructor* recoCluster = new AliMUONClusterReconstructor(loader, data);
   AliMUONClusterFinderVS *recModel = recoCluster->GetRecoModel();
   recModel->SetGhostChi2Cut(10);
 
@@ -198,16 +203,16 @@ void AliMUONReconstructor::Reconstruct(AliRunLoader* runLoader, AliRawReader* ra
     if (!loader->TreeD()) loader->MakeDigitsContainer();
 
     // tracking branch
-    dataCluster->MakeBranch("D");
-    dataCluster->SetTreeAddress("D");
+    data->MakeBranch("D");
+    data->SetTreeAddress("D");
     rawData->ReadTrackerDDL(rawReader);
-    dataCluster->Fill("D"); 
+    data->Fill("D"); 
 
     // trigger branch
-    dataCluster->MakeBranch("GLT");
-    dataCluster->SetTreeAddress("GLT");
+    data->MakeBranch("GLT");
+    data->SetTreeAddress("GLT");
     rawData->ReadTriggerDDL(rawReader);
-    dataCluster->Fill("GLT"); 
+    data->Fill("GLT"); 
 
     loader->WriteDigits("OVERWRITE");
 
@@ -215,16 +220,16 @@ void AliMUONReconstructor::Reconstruct(AliRunLoader* runLoader, AliRawReader* ra
     if (!loader->TreeR()) loader->MakeRecPointsContainer();
      
     // tracking branch
-    dataCluster->MakeBranch("RC");
-    dataCluster->SetTreeAddress("RC");
+    data->MakeBranch("RC");
+    data->SetTreeAddress("RC");
     recoCluster->Digits2Clusters(); 
-    dataCluster->Fill("RC"); 
+    data->Fill("RC"); 
 
     // trigger branch
-    dataCluster->MakeBranch("TC");
-    dataCluster->SetTreeAddress("TC");
+    data->MakeBranch("TC");
+    data->SetTreeAddress("TC");
     recoCluster->Trigger2Trigger(); 
-    dataCluster->Fill("TC");
+    data->Fill("TC");
 
     loader->WriteRecPoints("OVERWRITE");
 
@@ -232,28 +237,28 @@ void AliMUONReconstructor::Reconstruct(AliRunLoader* runLoader, AliRawReader* ra
     if (!loader->TreeT()) loader->MakeTracksContainer();
 
     // trigger branch
-    dataEvent->MakeBranch("RL"); //trigger track
-    dataEvent->SetTreeAddress("RL");
+    data->MakeBranch("RL"); //trigger track
+    data->SetTreeAddress("RL");
     recoEvent->EventReconstructTrigger();
-    dataEvent->Fill("RL");
+    data->Fill("RL");
 
     // tracking branch
-    dataEvent->MakeBranch("RT"); //track
-    dataEvent->SetTreeAddress("RT");
+    data->MakeBranch("RT"); //track
+    data->SetTreeAddress("RT");
     recoEvent->EventReconstruct();
-    dataEvent->Fill("RT");
+    data->Fill("RT");
 
     loader->WriteTracks("OVERWRITE");  
   
     //--------------------------- Resetting branches -----------------------
-    dataCluster->ResetDigits();
-    dataCluster->ResetRawClusters();
-    dataCluster->ResetTrigger();
+    data->ResetDigits();
+    data->ResetRawClusters();
+    data->ResetTrigger();
 
-    dataEvent->ResetRawClusters();
-    dataEvent->ResetTrigger();
-    dataEvent->ResetRecTracks();
-    dataEvent->ResetRecTriggerTracks();
+    data->ResetRawClusters();
+    data->ResetTrigger();
+    data->ResetRecTracks();
+    data->ResetRecTriggerTracks();
   
   }
   loader->UnloadRecPoints();
@@ -262,6 +267,7 @@ void AliMUONReconstructor::Reconstruct(AliRunLoader* runLoader, AliRawReader* ra
 
   delete recoCluster;
   delete recoEvent;
+  delete data;
 }
 
 //_____________________________________________________________________________
