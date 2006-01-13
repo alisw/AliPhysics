@@ -13,6 +13,7 @@ SRCS:= AliMUONResponseFactory.cxx \
        AliMUONDigitizerv2.cxx \
        AliMUONSDigitizerv1.cxx \
        AliMUONTriggerDecision.cxx \
+       AliMUONRawWriter.cxx \
        AliMUONTest.cxx \
        AliMUONResponse.cxx \
        AliMUONResponseV0.cxx \

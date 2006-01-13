@@ -21,7 +21,7 @@ SRCS:= AliMUONClusterReconstructor.cxx \
        AliMUONScalerEventTrigger.cxx \
        AliMUONDDLTracker.cxx \
        AliMUONSubEventTracker.cxx \
-       AliMUONRawData.cxx \
+       AliMUONRawReader.cxx \
        AliMUONRawStream.cxx \
        AliMUONClusterDrawAZ.cxx \
        AliMUONDetElement.cxx \

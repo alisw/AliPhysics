@@ -30,7 +30,7 @@
 #pragma link C++ class AliMUONScalerEventTrigger+;
 #pragma link C++ class AliMUONDDLTracker+;
 #pragma link C++ class AliMUONSubEventTracker+;
-#pragma link C++ class AliMUONRawData+;
+#pragma link C++ class AliMUONRawReader+;
 #pragma link C++ class AliMUONRawStream+;
 
 #endif

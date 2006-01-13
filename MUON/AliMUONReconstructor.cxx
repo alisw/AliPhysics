@@ -38,7 +38,7 @@
 #include "AliMUONTrackParam.h"
 #include "AliMUONTriggerTrack.h"
 #include "AliESDMuonTrack.h"
-#include "AliMUONRawData.h"
+#include "AliMUONRawReader.h"
 
 #include "AliRawReader.h"
 
@@ -181,7 +181,7 @@ void AliMUONReconstructor::Reconstruct(AliRunLoader* runLoader, AliRawReader* ra
 // passing loader as argument.
   AliMUONTrackReconstructor* recoEvent = new AliMUONTrackReconstructor(loader, data);
 
-  AliMUONRawData* rawData = new AliMUONRawData(loader, data);
+  AliMUONRawReader* rawData = new AliMUONRawReader(loader, data);
 
   AliMUONClusterReconstructor* recoCluster = new AliMUONClusterReconstructor(loader, data);
   AliMUONClusterFinderVS *recModel = recoCluster->GetRecoModel();

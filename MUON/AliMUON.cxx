@@ -65,7 +65,7 @@
 #include "AliMUONGeometrySegmentation.h"
 #include "AliMUONDigitizerv2.h"
 #include "AliMUONSDigitizerv1.h"
-#include "AliMUONRawData.h"
+#include "AliMUONRawWriter.h"
 #include "AliMUONSegmentation.h"
 #include "AliLog.h"
 
@@ -427,9 +427,9 @@ void AliMUON::Hits2SDigits()
 void AliMUON::Digits2Raw()
 {
   // convert digits of the current event to raw data
-  AliMUONRawData* rawData;
+  AliMUONRawWriter* rawData;
 
-  rawData = new AliMUONRawData(fLoader,fMUONData);
+  rawData = new AliMUONRawWriter(fLoader,fMUONData);
   if (!rawData->Digits2Raw()) AliInfo("pb writting raw data");
   delete rawData;
   return;
