@@ -18,6 +18,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.10  2005/05/28 14:19:04  schutz
+ * Compilation warnings fixed by T.P.
+ *
  */
 
 //_________________________________________________________________________
@@ -66,7 +69,7 @@
 #include "AliPHOSCalibrator.h"
 #include "AliPHOSConTableDB.h"
 #include "AliRawReaderDate.h"
-#include "AliPHOSRawStream.h"
+#include "AliPHOSRawStream2004.h"
 #include "AliPHOSDigit.h"
 
 #ifdef ALI_DATE
@@ -292,7 +295,7 @@ void AliPHOSCalibrator::ScanPedestals(Option_t * option )
     
     //Now open data file
     AliRawReaderDate *rawReader = new AliRawReaderDate(file->String().Data()) ; 
-    AliPHOSRawStream     *rawStream = new AliPHOSRawStream(rawReader) ;
+    AliPHOSRawStream2004     *rawStream = new AliPHOSRawStream2004(rawReader) ;
     rawStream->SetConTableDB(fctdb) ;
     TClonesArray * digits = new TClonesArray("AliPHOSDigit",300) ;
     Int_t nevents=0 ;
@@ -414,7 +417,7 @@ void AliPHOSCalibrator::ScanGains(Option_t * option)
   while((file = static_cast<TObjString *>(next()))){
     //Now open data file
     AliRawReaderDate *rawReader = new AliRawReaderDate(file->String().Data()) ; 
-    AliPHOSRawStream     *rawStream = new AliPHOSRawStream(rawReader) ;
+    AliPHOSRawStream2004     *rawStream = new AliPHOSRawStream2004(rawReader) ;
     rawStream->SetConTableDB(fctdb) ;
   
     TClonesArray * digits = new TClonesArray("AliPHOSDigit",300) ;

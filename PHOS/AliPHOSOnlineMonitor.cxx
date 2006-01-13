@@ -57,7 +57,7 @@
 #include "AliPHOSGeometry.h"
 #include "AliRawReaderDateV3.h"
 #include "AliRawEventHeaderBase.h"
-#include "AliPHOSRawStream.h"
+#include "AliPHOSRawStream2004.h"
 #include "AliPHOSDigit.h"
 #include "AliPHOSGetterLight.h"  
 #include "AliPHOSClusterizerv1.h"  
@@ -542,13 +542,13 @@ void  AliPHOSOnlineMonitor::ScanTrigger(Int_t trig){
   TH1D * h = (TH1D*)gROOT->FindObjectAny("hTriggers");
   if(!h) return ;
   switch(trig){
-  case AliPHOSRawStream::kLED : h->Fill("LED",1.) ; break ;
-  case AliPHOSRawStream::kPUL : h->Fill("PUL",1.) ; break ;
-  case AliPHOSRawStream::kPED : h->Fill("PED",1.) ; break ;
-  case AliPHOSRawStream::kNEL : h->Fill("NEL",1.) ; break ;
-  case AliPHOSRawStream::kWEL : h->Fill("WEL",1.) ; break ;
-  case AliPHOSRawStream::kSOB : h->Fill("SOB",1.) ; break ;
-  case AliPHOSRawStream::kEOB : h->Fill("EOB",1.) ; break ;
+  case AliPHOSRawStream2004::kLED : h->Fill("LED",1.) ; break ;
+  case AliPHOSRawStream2004::kPUL : h->Fill("PUL",1.) ; break ;
+  case AliPHOSRawStream2004::kPED : h->Fill("PED",1.) ; break ;
+  case AliPHOSRawStream2004::kNEL : h->Fill("NEL",1.) ; break ;
+  case AliPHOSRawStream2004::kWEL : h->Fill("WEL",1.) ; break ;
+  case AliPHOSRawStream2004::kSOB : h->Fill("SOB",1.) ; break ;
+  case AliPHOSRawStream2004::kEOB : h->Fill("EOB",1.) ; break ;
   default : h->Fill("wrong",1.) ;
   }
 }
@@ -595,7 +595,7 @@ void  AliPHOSOnlineMonitor::Go(){
   //Now open data file
   AliRawReaderDateV3 *rawReader = new AliRawReaderDateV3(fInputFile) ; 
   rawReader->RequireHeader(kFALSE);
-  AliPHOSRawStream     *rawStream = new AliPHOSRawStream(rawReader) ;
+  AliPHOSRawStream2004     *rawStream = new AliPHOSRawStream2004(rawReader) ;
   rawStream->SetConTableDB(fcdb) ;
   
   TClonesArray * digits = gime->Digits() ;
