@@ -31,7 +31,7 @@ class AliMpSegFactory;
 class AliMUONRawData : public TObject 
 {
  public:
-  AliMUONRawData(AliLoader* loader); // Constructor
+  AliMUONRawData(AliLoader* loader, AliMUONData* data); // Constructor
   virtual ~AliMUONRawData(void); // Destructor
     
   // write raw data

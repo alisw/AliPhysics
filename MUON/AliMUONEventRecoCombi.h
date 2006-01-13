@@ -24,7 +24,7 @@ class AliMUONEventRecoCombi : public TObject
  public:
     virtual ~AliMUONEventRecoCombi();
     static AliMUONEventRecoCombi* Instance();
-    void FillEvent(AliMUONData *dataCluster, AliMUONData *dataEvent, AliMUONClusterFinderAZ *recModel); // fill event info
+    void FillEvent(AliMUONData *data, AliMUONClusterFinderAZ *recModel); // fill event info
     void FillRecP(AliMUONData *dataCluster, AliMUONTrackReconstructor *recoTrack); // fill used rec. points from det. elems
 
     Int_t Nz() const { return fNZ; } // number of DE different Z-positions
