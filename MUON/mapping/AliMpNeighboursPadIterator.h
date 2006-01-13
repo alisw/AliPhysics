@@ -67,7 +67,7 @@ class AliMpNeighboursPadIterator : public AliMpVPadIterator
     static const UInt_t   fgkInvalidIndex; // invalid index number
 
     // private methods
-    Bool_t    IsNeighbours(const AliMpPad& pad) const;
+    Bool_t    IsNeighbour(const AliMpPad& pad) const;
 #ifdef WITH_STL
     PadVector PadVectorLine(const AliMpPad& from,
                             const AliMpIntPair& direction) const;
