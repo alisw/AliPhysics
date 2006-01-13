@@ -127,7 +127,7 @@ AliMpSegFactory::CreateMpSegmentation(Int_t detElemId, Int_t cath)
 } 
     
 //______________________________________________________________________________
-void AliMpSegFactory::Delete(const Option_t* /*opt*/)
+void AliMpSegFactory::DeleteSegmentations()
 {
 /// Delete all segmentations created with this manager
 

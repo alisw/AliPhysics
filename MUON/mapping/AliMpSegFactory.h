@@ -31,7 +31,7 @@ class AliMpSegFactory : public  TObject {
     
     // methods
     AliMpVSegmentation* CreateMpSegmentation(Int_t detElemId, Int_t cath);
-    void Delete(const Option_t* opt = "");
+    void DeleteSegmentations();
 
   protected:
     AliMpSegFactory(const AliMpSegFactory& rhs);
