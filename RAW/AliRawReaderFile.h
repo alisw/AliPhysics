@@ -46,6 +46,7 @@ class AliRawReaderFile: public AliRawReader {
 
     virtual Bool_t   ReadHeader();
     virtual Bool_t   ReadNextData(UChar_t*& data);
+    virtual Bool_t   ReadNext(UChar_t* data, Int_t size);
 
     virtual Bool_t   Reset();
 
@@ -56,8 +57,6 @@ class AliRawReaderFile: public AliRawReader {
     TString          GetDirName() const;
     void*            OpenDirectory();
     Bool_t           OpenNextFile();
-
-    virtual Bool_t   ReadNext(UChar_t* data, Int_t size);
 
     Int_t            fEventIndex;  // index of the event
     TString          fDirName;     // name of the input directory

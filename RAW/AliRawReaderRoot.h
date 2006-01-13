@@ -46,6 +46,7 @@ class AliRawReaderRoot: public AliRawReader {
 
     virtual Bool_t   ReadHeader();
     virtual Bool_t   ReadNextData(UChar_t*& data);
+    virtual Bool_t   ReadNext(UChar_t* data, Int_t size);
 
     virtual Bool_t   Reset();
 
@@ -55,8 +56,6 @@ class AliRawReaderRoot: public AliRawReader {
     virtual Int_t    CheckData() const;
 
   protected :
-    virtual Bool_t   ReadNext(UChar_t* data, Int_t size);
-
     TFile*           fFile;         // raw data root file
     TBranch*         fBranch;       // branch of raw events
     Int_t            fEventIndex;   // index of the event in the tree

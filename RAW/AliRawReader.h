@@ -85,6 +85,7 @@ class AliRawReader: public TObject {
     virtual Bool_t   ReadNextInt(UInt_t& data);
     virtual Bool_t   ReadNextShort(UShort_t& data);
     virtual Bool_t   ReadNextChar(UChar_t& data);
+    virtual Bool_t   ReadNext(UChar_t* data, Int_t size) = 0;
 
     virtual Bool_t   Reset() = 0;
 
@@ -101,8 +102,6 @@ class AliRawReader: public TObject {
   protected :
     Bool_t           IsSelected() const;
     Bool_t           IsEventSelected() const;
-
-    virtual Bool_t   ReadNext(UChar_t* data, Int_t size) = 0;
 
     Bool_t           fRequireHeader; // if false, data without header is accepted
 
