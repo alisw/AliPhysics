@@ -138,7 +138,8 @@ AliMUONRawData::operator=(const AliMUONRawData& rhs)
 //__________________________________________________________________________
 AliMUONRawData::~AliMUONRawData(void)
 {
-  if (fSegFactory) fSegFactory->Clear();
+  if (fSegFactory) 
+    fSegFactory->DeleteSegmentations();
   delete fSegFactory;  
 
  

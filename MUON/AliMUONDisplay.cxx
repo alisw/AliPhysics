@@ -937,7 +937,7 @@ void AliMUONDisplay::DrawView(Float_t theta, Float_t phi, Float_t psi)
       }
     }
     // Delete mapping segmentations created with factory
-    segFactory.Delete();
+    segFactory.DeleteSegmentations();
     
 //add clusters to the pad
     DrawClusters();
