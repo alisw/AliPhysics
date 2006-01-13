@@ -28,7 +28,7 @@
 // Included in AliRoot: 2003/05/02
 // Authors: David Guez, Ivana Hrivnacova; IPN Orsay
 
-#include <TSystem.h>
+#include <stdlib.h>
 #include <Riostream.h>
 
 #include "AliMpFiles.h"
@@ -42,7 +42,6 @@ ClassImp(AliMpFiles)
 
 // static data members
 
-const TString AliMpFiles::fgkDefaultTop = GetDefaultTop();
 const TString AliMpFiles::fgkDataDir = "/data";
 const TString AliMpFiles::fgkStationDir = "/station";
 const TString AliMpFiles::fgkBendingDir = "/bending_plane/";
@@ -58,8 +57,6 @@ const TString AliMpFiles::fgkDataExt = ".dat";
 const TString AliMpFiles::fgkBergToGCFileName = "/bergToGC"; 
 const TString AliMpFiles::fgkTriggerLocalBoards = "MUONLocalTriggerBoard";
 const TString AliMpFiles::fgkBusPatchFileName = "DetElemIdToBusPatch";
-
-TString AliMpFiles::fgTop = AliMpFiles::fgkDefaultTop;
 
 //______________________________________________________________________________
 AliMpFiles::AliMpFiles()
@@ -104,12 +101,12 @@ AliMpFiles& AliMpFiles::operator=(const AliMpFiles& right)
 //
 
 //______________________________________________________________________________
-TString AliMpFiles::GetDefaultTop()
+TString AliMpFiles::GetTop()
 {
-  TString top = gSystem->Getenv("MINSTALL");    
+  TString top = getenv("MINSTALL");    
   if ( ! top.IsNull() ) return top;
 
-  TString ntop = gSystem->Getenv("ALICE_ROOT");
+  TString ntop = getenv("ALICE_ROOT");
   if ( ntop.IsNull() ) {
     AliErrorClassStream() << "Cannot find path to mapping data." << endl;
     return ntop;
@@ -130,16 +127,16 @@ TString AliMpFiles::PlaneDataDir(AliMpStationType station,
   case kStation2:
     switch (plane) {
     case kBendingPlane:
-      return fgTop + fgkDataDir + StationDataDir(station) + fgkBendingDir;
+      return GetTop() + fgkDataDir + StationDataDir(station) + fgkBendingDir;
       ;;
     case kNonBendingPlane:   
-      return fgTop + fgkDataDir + StationDataDir(station) + fgkNonBendingDir;
+      return GetTop() + fgkDataDir + StationDataDir(station) + fgkNonBendingDir;
       ;;
     }   
     break;
   case kStation345:
   case kStationTrigger:  
-    return fgTop + fgkDataDir + StationDataDir(station) + "/";
+    return GetTop() + fgkDataDir + StationDataDir(station) + "/";
     break;
   default:  
     AliFatalClass("Incomplete switch on AliMpPlaneType");
@@ -187,7 +184,7 @@ TString AliMpFiles::BusPatchFilePath()
 {
 /// Return path to data file with bus patch mapping.
 
-  return fgTop + fgkDataDir + "/" + fgkBusPatchFileName + fgkDataExt;
+  return GetTop() + fgkDataDir + "/" + fgkBusPatchFileName + fgkDataExt;
 }  
 
 //______________________________________________________________________________
@@ -195,7 +192,7 @@ TString AliMpFiles::DENamesFilePath(AliMpStationType station)
 {
 /// Return path to data file with DE names for given station.
  
-  return fgTop + fgkDataDir + StationDataDir(station) + fgkDENames + fgkDataExt;
+  return GetTop() + fgkDataDir + StationDataDir(station) + fgkDENames + fgkDataExt;
 }
 
 //______________________________________________________________________________
@@ -296,7 +293,7 @@ TString AliMpFiles::BergToGCFilePath(AliMpStationType station)
 /// Returns the path of the file which describes the correspondance between
 /// the berg number and the gassiplex channel.
 
-  return fgTop + fgkDataDir + StationDataDir(station)
+  return GetTop() + fgkDataDir + StationDataDir(station)
               + fgkBergToGCFileName + fgkDataExt;
 }
 
@@ -304,6 +301,6 @@ TString AliMpFiles::BergToGCFilePath(AliMpStationType station)
 void 
 AliMpFiles::SetTopPath(const TString& topPath)
 { 
-  fgTop = topPath; 
+  GetTop() = topPath; 
 }
 

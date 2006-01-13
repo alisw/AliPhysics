@@ -85,12 +85,11 @@ class AliMpFiles : public TObject
   
   private: 
     // methods
-    static TString GetDefaultTop();
+    static TString GetTop();
     static TString PlaneDataDir(AliMpStationType station, AliMpPlaneType plane); 
     static TString StationDataDir(AliMpStationType station); 
   
     // static data members  
-    static const TString fgkDefaultTop;    //top directory path (default)
     static const TString fgkDataDir;       //data directory
     static const TString fgkStationDir;    //station directory
     static const TString fgkBendingDir;    //bending plane directory
@@ -106,8 +105,6 @@ class AliMpFiles : public TObject
     static const TString fgkBergToGCFileName;  //BergToGC mapping filr name
     static const TString fgkTriggerLocalBoards;// local board name to id mapping
     static const TString fgkBusPatchFileName;  //DetElemIdToBusPatch file name
-  
-    static TString  fgTop; // top directory path
     
 
   ClassDef(AliMpFiles, 0) //File names and paths 
