@@ -51,6 +51,8 @@ public:
 	void RemoveSelection(int position);
 	void RemoveAllSelections();
 		
+	void PrintSelectionList();
+
 	AliCDBEntry* Get(const AliCDBId& query);
 	AliCDBEntry* Get(const AliCDBPath& path, Int_t runNumber, 
 				Int_t version = -1, Int_t subVersion = -1);
@@ -63,9 +65,6 @@ public:
 	TList* GetAll(const AliCDBPath& path, const AliCDBRunRange& runRange,
 				 Int_t version = -1, Int_t subVersion = -1); 
 	
-	void PrintSelectionList();
-
-
 	Bool_t Put(TObject* object, AliCDBId& id,  AliCDBMetaData* metaData);
 	Bool_t Put(AliCDBEntry* entry);
 

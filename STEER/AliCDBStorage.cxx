@@ -14,6 +14,7 @@
  **************************************************************************/
 
 #include <TKey.h>
+#include <TH1.h>
 #include "AliCDBManager.h"
 #include "AliCDBStorage.h"
 
@@ -198,8 +199,15 @@ AliCDBEntry* AliCDBStorage::Get(const AliCDBId& query) {
 				query.ToString().Data()));
                 return NULL;
 	}
+	
+	// This is needed otherwise TH1  objects (histos, TTree's) are lost when file is closed!
+	Bool_t oldStatus = TH1::AddDirectoryStatus();
+	TH1::AddDirectory(kFALSE);
 
 	AliCDBEntry* entry = GetEntry(query);
+
+	if (oldStatus != kFALSE)
+  		TH1::AddDirectory(kTRUE);
 		
   	if (entry) {
     		AliInfo(Form("CDB object retrieved: %s", entry->GetId().ToString().Data()));
@@ -248,7 +256,14 @@ TList* AliCDBStorage::GetAll(const AliCDBId& query) {
 		return NULL;
 	}	
         
+	// This is needed otherwise TH1  objects (histos, TTree's) are lost when file is closed!
+	Bool_t oldStatus = TH1::AddDirectoryStatus();
+	TH1::AddDirectory(kFALSE);
+
 	TList *result = GetEntries(query);
+
+	if (oldStatus != kFALSE)
+  		TH1::AddDirectory(kTRUE);
 
  	Int_t nEntries = result->GetEntries();
  	if (nEntries) {
@@ -295,7 +310,7 @@ TList* AliCDBStorage::GetAll(const AliCDBPath& path,
 
 //_____________________________________________________________________________
 Bool_t AliCDBStorage::Put(TObject* object, AliCDBId& id, AliCDBMetaData* metaData) {
-// put an AliCDBEntry object from the database
+// store an AliCDBEntry object into the database
 	
 	AliCDBEntry anEntry(object, id, metaData);
 
@@ -304,10 +319,15 @@ Bool_t AliCDBStorage::Put(TObject* object, AliCDBId& id, AliCDBMetaData* metaDat
 
 //_____________________________________________________________________________
 Bool_t AliCDBStorage::Put(AliCDBEntry* entry) {
-// put an AliCDBEntry object from the database
+// store an AliCDBEntry object into the database
 
+	if (!entry){
+		AliError("No entry!");
+		return kFALSE;
+	}
+	
 	if (!entry->GetId().IsValid()) {
-		AliWarning(Form("Invalid entry ID: %s", 
+		AliError(Form("Invalid entry ID: %s", 
 			entry->GetId().ToString().Data()));
 		return kFALSE;
 	}	
@@ -317,6 +337,9 @@ Bool_t AliCDBStorage::Put(AliCDBEntry* entry) {
 			entry->GetId().ToString().Data()));
 		return kFALSE;
 	}
+
+	// set object's class name into metaData!
+	entry->GetMetaData()->SetObjectClassName(entry->GetObject()->ClassName());
 
 	return PutEntry(entry);
 }

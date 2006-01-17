@@ -15,6 +15,10 @@
 #include <TMap.h>
 
 class AliCDBEntry;
+class AliCDBId;
+class AliCDBPath;
+class AliCDBRunRange;
+class AliCDBMetaData;
 class AliCDBStorage;
 class AliCDBStorageFactory;
 class AliCDBParam;
@@ -37,12 +41,15 @@ class AliCDBManager: public TObject {
 	void SetDefaultStorage(const char* dbString);
 	void SetDefaultStorage(const AliCDBParam* param);
 	void SetDefaultStorage(AliCDBStorage *storage);
-
-	Bool_t IsDefaultStorageSet() const {return fDefaultStorage != 0;}
 	
+	Bool_t IsDefaultStorageSet() const {return fDefaultStorage != 0;}
 	AliCDBStorage* GetDefaultStorage() const {return fDefaultStorage;}
-
 	void UnsetDefaultStorage() {fDefaultStorage = 0x0;}
+	
+	void SetSpecificStorage(const char* detName, const char* dbString);
+	void SetSpecificStorage(const char* detName, AliCDBParam* param);
+
+	AliCDBStorage* GetSpecificStorage(const char* detName);
 
 	void SetDrain(const char* dbString);
 	void SetDrain(const AliCDBParam* param);
@@ -53,6 +60,21 @@ class AliCDBManager: public TObject {
 	Bool_t Drain(AliCDBEntry* entry);
 
 	void UnsetDrain(){fDrainStorage = 0x0;}
+
+	AliCDBEntry* Get(const AliCDBId& query);
+	AliCDBEntry* Get(const AliCDBPath& path, Int_t runNumber, 
+				Int_t version = -1, Int_t subVersion = -1);
+	AliCDBEntry* Get(const AliCDBPath& path, const AliCDBRunRange& runRange,
+				 Int_t version = -1, Int_t subVersion = -1);
+
+	TList* GetAll(const AliCDBId& query);
+	TList* GetAll(const AliCDBPath& path, Int_t runNumber, 
+				Int_t version = -1, Int_t subVersion = -1);
+	TList* GetAll(const AliCDBPath& path, const AliCDBRunRange& runRange,
+				 Int_t version = -1, Int_t subVersion = -1); 
+
+	Bool_t Put(TObject* object, AliCDBId& id,  AliCDBMetaData* metaData);
+	Bool_t Put(AliCDBEntry* entry);
 
 	void DestroyActiveStorages();
 	void DestroyActiveStorage(AliCDBStorage* storage);
@@ -74,6 +96,7 @@ class AliCDBManager: public TObject {
 	
 	TList fFactories; 		//! list of registered storage factories
 	TMap fActiveStorages;		//! list of active storages
+	TMap fSpecificStorages;         //! list of detector-specific storages
 	AliCDBStorage *fDefaultStorage;	//! pointer to default storage
 	AliCDBStorage *fDrainStorage;	//! pointer to drain storage
 

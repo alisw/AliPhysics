@@ -24,9 +24,10 @@
 #include "AliCDBDump.h"
 #include "AliCDBLocal.h"
 #include "AliCDBGrid.h"
-//#include "AliCDBEntry.h"
+#include "AliCDBEntry.h"
+#include "AliCDBMetaData.h"
 
-//#include <TObjString.h>
+#include <TObjString.h>
 #include <TSystem.h>
 
 ClassImp(AliCDBParam)
@@ -64,6 +65,7 @@ void AliCDBManager::Destroy() {
 // delete ALCDBManager instance and active storages
 
 	if (fgInstance) {
+		
 		delete fgInstance;
 		fgInstance = 0x0;
 	}
@@ -260,12 +262,230 @@ void AliCDBManager::SetDefaultStorage(AliCDBStorage* storage) {
 	fDefaultStorage = storage;
 }
 
+//_____________________________________________________________________________
+void AliCDBManager::SetSpecificStorage(const char* detName, const char* dbString) {
+// sets storage specific for detector (works with AliCDBManager::Get(...))
+
+	AliCDBParam *aPar = CreateParameter(dbString);
+	if(!aPar) return;
+	SetSpecificStorage(detName, aPar);
+	delete aPar;
+}
+
+//_____________________________________________________________________________
+void AliCDBManager::SetSpecificStorage(const char* detName, AliCDBParam* param) {
+// sets storage specific for detector (works with AliCDBManager::Get(...))
+
+	if(!fDefaultStorage) {
+		AliError("Please activate a default storage first!");	
+		return;
+	}
+	
+	TObjString *objDetName = new TObjString(detName);
+	AliCDBParam *checkPar = (AliCDBParam*) fSpecificStorages.GetValue(objDetName);
+	if(checkPar){
+		AliWarning(Form("%s storage already activated! It will be replaced by the new one",objDetName->String().Data()));
+		fSpecificStorages.Remove(objDetName);	
+		delete checkPar;
+	}
+	GetStorage(param);
+	fSpecificStorages.Add(objDetName, param->CloneParam());
+}
+
+//_____________________________________________________________________________
+AliCDBStorage* AliCDBManager::GetSpecificStorage(const char* detName) {
+// get storage specific for detector 
+	TObjString objDetName(detName);
+	AliCDBParam *checkPar = (AliCDBParam*) fSpecificStorages.GetValue(&objDetName);
+	if(!checkPar){
+		AliError(Form("%s storage not found!",objDetName.String().Data()));
+		return NULL;
+	} else {
+		return GetStorage(checkPar);
+	}
+	
+}
+
+//_____________________________________________________________________________
+AliCDBEntry* AliCDBManager::Get(const AliCDBPath& path, Int_t runNumber, 
+	Int_t version, Int_t subVersion) {
+// get an AliCDBEntry object from the database
+
+	return Get(AliCDBId(path, runNumber, runNumber, version, subVersion));
+}
+
+//_____________________________________________________________________________
+AliCDBEntry* AliCDBManager::Get(const AliCDBPath& path, 
+	const AliCDBRunRange& runRange, Int_t version,
+	Int_t subVersion) {
+// get an AliCDBEntry object from the database!
+
+	return Get(AliCDBId(path, runRange, version, subVersion));
+}
+
+//_____________________________________________________________________________
+AliCDBEntry* AliCDBManager::Get(const AliCDBId& query) {	
+// get an AliCDBEntry object from the database
+	
+	if(!fDefaultStorage) {
+		AliError("No storage set!");
+		return NULL;
+	}
+
+	// check if query's path and runRange are valid
+	// query is invalid also if version is not specified and subversion is!
+	if (!query.IsValid()) {
+		AliError(Form("Invalid query: %s", query.ToString().Data()));
+		return NULL;
+	}
+
+	// query is not specified if path contains wildcard or runrange = [-1,-1] 
+	if (!query.IsSpecified()) {
+		AliError(Form("Unspecified query: %s", 
+				query.ToString().Data()));
+                return NULL;
+	}
+
+	TObjString objStrLev0(query.GetLevel0());
+	AliCDBParam *aPar = (AliCDBParam*) fSpecificStorages.GetValue(&objStrLev0);
+	AliCDBStorage *aStorage;
+	
+	if(aPar) {
+		aStorage=GetStorage(aPar);
+		TString str = aPar->GetURI();
+		AliDebug(2,Form("Looking into storage: %s",str.Data()));
+		
+	} else {
+		aStorage=GetDefaultStorage();
+		AliDebug(2,"Looking into default storage");	
+	}
+			
+	return aStorage->Get(query);
+}
+
+//_____________________________________________________________________________
+TList* AliCDBManager::GetAll(const AliCDBPath& path, Int_t runNumber, 
+	Int_t version, Int_t subVersion) {
+// get multiple AliCDBEntry objects from the database
+
+	return GetAll(AliCDBId(path, runNumber, runNumber, version, 	
+			subVersion));
+}
+
+//_____________________________________________________________________________
+TList* AliCDBManager::GetAll(const AliCDBPath& path, 
+	const AliCDBRunRange& runRange, Int_t version, Int_t subVersion) {
+// get multiple AliCDBEntry objects from the database
+
+	return GetAll(AliCDBId(path, runRange, version, subVersion));
+}
+
+//_____________________________________________________________________________
+TList* AliCDBManager::GetAll(const AliCDBId& query) {
+// get multiple AliCDBEntry objects from the database
+
+	if(!fDefaultStorage) {
+		AliError("No storage set!");
+		return NULL;
+	}
+
+	if (!query.IsValid()) {
+                AliError(Form("Invalid query: %s", query.ToString().Data()));
+                return NULL;
+        }
+
+	if(query.GetPath().BeginsWith('*')){
+                AliError("Query too generic in this context!");
+                return NULL;		
+	}
+
+	if (query.IsAnyRange()) {
+		AliError(Form("Unspecified run or runrange: %s",
+				query.ToString().Data())); 	
+		return NULL;
+	}	
+        
+	TObjString objStrLev0(query.GetLevel0());
+	AliCDBParam *aPar = (AliCDBParam*) fSpecificStorages.GetValue(&objStrLev0);
+	AliCDBStorage *aStorage;
+	
+	if(aPar) {
+		aStorage=GetStorage(aPar);
+		TString str = aPar->GetURI();
+		AliDebug(2,Form("Looking into storage: %s",str.Data()));
+		
+	} else {
+		aStorage=GetDefaultStorage();
+		AliDebug(2,"Looking into default storage");	
+	}
+
+	TList *result = aStorage->GetAll(query);
+
+        return result;
+}
+
+//_____________________________________________________________________________
+Bool_t AliCDBManager::Put(TObject* object, AliCDBId& id,  AliCDBMetaData* metaData){
+// store an AliCDBEntry object into the database
+
+	AliCDBEntry anEntry(object, id, metaData);
+	return Put(&anEntry);
+
+}
+
+
+//_____________________________________________________________________________
+Bool_t AliCDBManager::Put(AliCDBEntry* entry){
+// store an AliCDBEntry object into the database
+
+	if(!fDefaultStorage) {
+		AliError("No storage set!");
+		return kFALSE;
+	}
+
+	if (!entry){
+		AliError("No entry!");
+		return kFALSE;
+	}
+
+	if (!entry->GetId().IsValid()) {
+		AliError(Form("Invalid entry ID: %s", 
+			entry->GetId().ToString().Data()));
+		return kFALSE;
+	}	
+
+	if (!entry->GetId().IsSpecified()) {
+		AliError(Form("Unspecified entry ID: %s", 
+			entry->GetId().ToString().Data()));
+		return kFALSE;
+	}
+
+	AliCDBId id = entry->GetId();
+	TObjString objStrLev0(id.GetLevel0());
+	AliCDBParam *aPar = (AliCDBParam*) fSpecificStorages.GetValue(&objStrLev0);
+	AliCDBStorage *aStorage;
+	
+	if(aPar) {
+		aStorage=GetStorage(aPar);
+		TString str = aPar->GetURI();
+		AliDebug(2,Form("Storing object into storage: %s",str.Data()));
+		
+	} else {
+		aStorage=GetDefaultStorage();
+		AliDebug(2,"Storing object into default storage");	
+	}
+
+	return aStorage->Put(entry);
+
+
+}
 
 //_____________________________________________________________________________
 void AliCDBManager::DestroyActiveStorages() {
 // delete list of active storages
 
 	fActiveStorages.DeleteAll();
+	fSpecificStorages.DeleteAll();
 }
 
 //_____________________________________________________________________________
