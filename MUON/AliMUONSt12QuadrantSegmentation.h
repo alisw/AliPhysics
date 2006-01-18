@@ -164,9 +164,6 @@ class AliMUONSt12QuadrantSegmentation : public AliMUONVGeometryDESegmentation
     // methods
     void UpdateCurrentPadValues(const AliMpPad& pad);
   
-    // constants
-    static const Float_t  fgkWireD;     // default wire pitch
-
     // data members
 
     // From mapping

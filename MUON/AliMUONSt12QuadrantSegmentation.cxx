@@ -44,8 +44,6 @@
 
 ClassImp(AliMUONSt12QuadrantSegmentation)
 
-const Float_t  AliMUONSt12QuadrantSegmentation::fgkWireD = 0.21; 
-
 //______________________________________________________________________________
 AliMUONSt12QuadrantSegmentation::AliMUONSt12QuadrantSegmentation(
                                        AliMpVSegmentation* segmentation,
@@ -57,7 +55,7 @@ AliMUONSt12QuadrantSegmentation::AliMUONSt12QuadrantSegmentation(
   fSector(0),
   fSectorSegmentation(0),
   fSectorIterator(0),
-  fWireD(fgkWireD),
+  fWireD(0),
   fChamber(0),
   fId(0),
   fRmin(0.),
@@ -84,6 +82,14 @@ AliMUONSt12QuadrantSegmentation::AliMUONSt12QuadrantSegmentation(
     fSector = fSectorSegmentation->GetSector();
   else 
     AliFatal("Wrong mapping segmentation type");
+    
+  // Anod pitch
+  if ( stationType == kStation1 )  
+    fWireD = AliMUONConstants::PitchSt1();
+  else if ( stationType == kStation2 )   
+    fWireD = AliMUONConstants::Pitch();
+  else  
+    AliFatal("Wrong station type");
 
   fCorrA = new TObjArray(3);
   fCorrA->AddAt(0,0);
@@ -101,7 +107,7 @@ AliMUONSt12QuadrantSegmentation::AliMUONSt12QuadrantSegmentation()
   fSector(0),
   fSectorSegmentation(0),
   fSectorIterator(0),
-  fWireD(fgkWireD),
+  fWireD(0),
   fChamber(0),
   fId(0),
   fRmin(0.),
