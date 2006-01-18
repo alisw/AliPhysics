@@ -16,7 +16,7 @@ AliSimulation MuonSim
 MuonSim.SetConfigFile("$ALICE_ROOT/MUON/Config.C")
 // Minimum number of events to have enough stat. for invariant mass fit
 // 10000 is ok, 20000 is really fine
-MuonSim.Run(10000) 
+MuonSim.Run(1000) 
 .q
 EOF
 
@@ -31,6 +31,16 @@ MuonRec.SetRunVertexFinder(kFALSE)
 MuonRec.SetRunLocalReconstruction("MUON")
 MuonRec.SetFillESD("MUON")
 MuonRec.Run() 
+.q
+EOF
+
+echo "Running Trigger efficiency  ..."
+
+aliroot -b >& testTriggerResults.out << EOF
+.includepath $ALICE_ROOT/STEER
+.includepath $ALICE_ROOT/MUON
+.L $ALICE_ROOT/MUON/MUONTriggerEfficiency.C++
+MUONTriggerEfficiency();
 .q
 EOF
 

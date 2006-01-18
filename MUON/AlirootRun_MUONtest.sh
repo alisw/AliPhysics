@@ -13,7 +13,7 @@ echo "Running simulation  ..."
 
 aliroot -b >& testSim.out << EOF 
 AliSimulation MuonSim("$ALICE_ROOT/MUON/Config.C")
-MuonSim.Run(10)
+MuonSim.Run(100)
 .q
 EOF
 
@@ -31,6 +31,16 @@ MuonRec.Run()
 .q
 EOF
 
+echo "Running Trigger efficiency  ..."
+
+aliroot -b >& testTriggerResults.out << EOF
+.includepath $ALICE_ROOT/STEER
+.includepath $ALICE_ROOT/MUON
+.L $ALICE_ROOT/MUON/MUONTriggerEfficiency.C++
+MUONTriggerEfficiency();
+.q
+EOF
+
 echo "Running efficiency  ..."
 
 aliroot -b >& testResults.out << EOF
@@ -41,6 +51,8 @@ aliroot -b >& testResults.out << EOF
 MUONefficiency();
 .q
 EOF
+
+
 
 echo "Finished"  
 echo "... see results in test_out"
