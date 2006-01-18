@@ -18,6 +18,7 @@
 class TFile;
 class TList;
 class TNode;
+class AliEMCALShishKebabTrd1Module;
 
 // --- AliRoot header files ---
 #include "AliEMCAL.h"
@@ -71,11 +72,14 @@ class AliEMCALv0 : public AliEMCAL {
   void PbmoInTrd2(const AliEMCALGeometry * g, const Double_t parEMOD[5], Double_t parPBMO[5]);
   void Division2X2InPbmo(const AliEMCALGeometry * g, const Double_t parPBMO[5]);
 
+  TList  *GetShishKebabModules() {return fShishKebabModules;}
+  AliEMCALShishKebabTrd1Module *GetShishKebabModule(const Int_t neta=0);
+ private:
   TList *fShishKebabModules; //! list of modules for twist geometries
   
  protected:
 
-  ClassDef(AliEMCALv0,2)  // Implementation of EMCAL manager class for midrapidity barrel layout between 0 and 120 degrees 
+  ClassDef(AliEMCALv0,3)  // Implementation of EMCAL manager class for midrapidity barrel layout between 80 and 180(190) degrees 
     
     };
     

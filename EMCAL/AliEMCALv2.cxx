@@ -74,7 +74,7 @@ AliEMCALv2::AliEMCALv2(const char *name, const char *title): AliEMCALv1(name,tit
     if (1){
       TH1::AddDirectory(0);
       fHDe = new TH1F("fHDe","De in EMCAL", 1000, 0., 1.);
-      fHNhits = new TH1F("fHNhits","#hits in EMCAL", 1001, -0.5, 1000.5);
+      fHNhits = new TH1F("fHNhits","#hits in EMCAL", 2001, -0.5, 2000.5);
       fHistograms->Add(fHDe);
       fHistograms->Add(fHNhits);
       TH1::AddDirectory(1);
@@ -268,6 +268,8 @@ void AliEMCALv2::FinishEvent()
 
 Double_t AliEMCALv2::GetDepositEnergy(int print)
 { // 23-mar-05 - for testing
+  cout<<"AliEMCALv2::GetDepositEnergy() : fHits "<<fHits<<endl; 
+  if(fHits == 0) return 0.;
   if(fHits == 0) return 0.;
   AliEMCALHit  *hit=0;
   Double_t de=0.;

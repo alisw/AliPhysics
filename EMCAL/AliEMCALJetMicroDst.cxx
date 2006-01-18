@@ -817,3 +817,8 @@ int AliEMCALJetMicroDst::SaveListOfHists(TList *list,const char* name,Bool_t kSi
   }
   return save;
 }
+
+void AliEMCALJetMicroDst::Sgpdge(Int_t pdgId, Int_t &gId)
+{ // 8-nov-05 
+  sgpdge_(pdgId, gId);
+}

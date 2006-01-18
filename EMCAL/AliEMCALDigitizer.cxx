@@ -699,7 +699,7 @@ TList *AliEMCALDigitizer::BookControlHists(int var)
   if(var>=1){
     new TH1F("hDigiN",  "#EMCAL digits with fAmp > fDigitThreshold", 
     fNADCEC+1, -0.5, Double_t(fNADCEC));
-    new TH1F("HDigiSumEnergy","Sum.EMCAL energy from digi", 1000, 0.0, 200.);
+    new TH1F("HDigiSumEnergy","Sum.EMCAL energy from digi", 10000, 0.0, 200.);
     new TH1F("hDigiAmp",  "EMCAL digital amplitude", fNADCEC+1, -0.5, Double_t(fNADCEC));
     new TH1F("hDigiEnergy","EMCAL cell energy", 2000, 0.0, 200.);
     new TH1F("hDigiAbsId","EMCAL absId cells with fAmp > fDigitThreshold ",

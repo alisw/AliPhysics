@@ -207,8 +207,9 @@ class AliEMCALJetFinder : public TTask {
     Float_t TrackConeEnergy(Float_t eta, Float_t phi);
     virtual void DumpLego();
     virtual void ResetMap();
-    virtual Float_t PropagatePhi(Float_t pt, Float_t charge, Bool_t& curls);
     virtual void RearrangeParticlesMemory(Int_t npart);
+ public:
+    virtual Float_t PropagatePhi(Float_t pt, Float_t charge, Bool_t& curls);
 
     ClassDef(AliEMCALJetFinder,5)                    // JetFinder for EMCAL
 }

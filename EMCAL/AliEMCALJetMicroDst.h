@@ -84,6 +84,7 @@ class AliEMCALJetMicroDst: public TNamed {
   static void FillH2(TList *l=0, Int_t ind=0, Double_t x=-99999., Double_t y=-99999., Double_t w=1.);
   static int  SaveListOfHists(TList *list=0, const char* name="test", Bool_t kSingleKey=kFALSE,
   const char* opt="RECREATE");
+  static void Sgpdge(Int_t pdgId, Int_t &gId); 
 
   AliEMCALJetMicroDst & operator = (const AliEMCALJetMicroDst &) {
     Fatal("operator =", "not implemented") ; return *this ; }

@@ -103,7 +103,7 @@ void AliEMCALGeometry::Init(void){
   else if(name.Contains("SHISH")){
     // 7-sep-05; integration issue
     fArm1PhiMin     = 80.0;	// 60  -> 80
-    fArm1PhiMax     = 180.0;	// 180 -> 200
+    fArm1PhiMax     = 180.0;	// 180 -> 190
 
     fNumberOfSuperModules = 10; // 12 = 6 * 2 (6 in phi, 2 in Z);
     fSteelFrontThick = 2.54;    //  9-sep-04
@@ -156,6 +156,7 @@ void AliEMCALGeometry::Init(void){
 	    }
             fPhiModuleSize = 12.26 - fPhiGapForSM / Float_t(fNPhi); // first assumption
             fEtaModuleSize = fPhiModuleSize;
+            if(name.Contains("HUGE")) fNECLayers *= 3; // 28-oct-05 for analysing leakage    
           }
 	}
       } else if(name.Contains("TRD2")) {       // 30-jan-05
@@ -667,21 +668,17 @@ void AliEMCALGeometry::GetTowerPhiEtaIndexInSModule(Int_t nSupMod, Int_t nTower,
   else                               nphi = fNPhi;
 
   ietat = (nTower-1)/nphi + 1; // have to change from 1 to fNZ
-
   iphit = (nTower-1)%nphi + 1; // have to change from 1 to fNPhi
 }
 
 void AliEMCALGeometry::GetCellPhiEtaIndexInSModule(Int_t nSupMod, Int_t nTower, Int_t nIphi, Int_t nIeta, 
 int &iphi, int &ieta)
-{ // added nSupMod; have to check  - 19-oct-05 ! 
-  static Int_t iphit, ietat, nphi;
+{ // added nSupMod; Nov 25, 05
+  static Int_t iphit, ietat;
 
-  if(fKey110DEG == 1 && nSupMod>=11) nphi = fNPhi/2;
-  else                               nphi = fNPhi;
-
-  ietat = (nTower-1)/nphi;
-  ieta  = ietat*fNETAdiv + nIeta; // have to change from 1 to fNZ*fNETAdiv
-
-  iphit = (nTower-1)%nphi;
-  iphi  = iphit*fNPHIdiv + nIphi;  // have to change from 1 to fNPhi*fNPHIdiv
+  GetTowerPhiEtaIndexInSModule(nSupMod,nTower, iphit, ietat); 
+  // have to change from 1 to fNZ*fNETAdiv
+  ieta  = (ietat-1)*fNETAdiv + (3-nIeta); // x(module) = -z(SM) 
+  // iphi - have to change from 1 to fNPhi*fNPHIdiv
+  iphi  = (iphit-1)*fNPHIdiv + nIphi;     // y(module) =  y(SM) 
 }

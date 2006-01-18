@@ -54,7 +54,7 @@ public:
     Fatal("operator =", "not implemented") ;  
     return *this;}
   // 23-mar-05
-  Double_t GetDepositEnergy(int print=1); // *MENU*
+  virtual Double_t GetDepositEnergy(int print=1); // *MENU*
   // 30-aug-04
   virtual void Browse(TBrowser* b);
   // drawing

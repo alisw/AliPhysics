@@ -6,7 +6,9 @@ AliEMCALGeometry.cxx \
 AliEMCALv0.cxx \
 AliEMCALv1.cxx \
 AliEMCALv2.cxx \
+AliEMCALv3.cxx \
 AliEMCALHit.cxx \
+AliEMCALHitv1.cxx \
 AliEMCALLoader.cxx \
 AliEMCALGetter.cxx \
 AliEMCALGeneratorFactory.cxx \

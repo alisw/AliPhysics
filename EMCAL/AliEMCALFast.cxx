@@ -84,7 +84,7 @@ Float_t AliEMCALFast::Efficiency(Int_t ind, Float_t p)
 
 Bool_t AliEMCALFast::EmcalAcceptance(Float_t eta, Float_t phi)
 {
-//
+// 27-oct-05 -> should be change
 // EMCAL eta-phi acceptance
     Bool_t acc = kFALSE;
     if (TMath::Abs(eta) < 0.7 &&

@@ -896,7 +896,7 @@ void AliEMCALv0::CreateEmod(const char* mother, const char* child)
       for(int iy=0; iy<g->GetNPhi(); iy++) {
         ypos = g->GetPhiModuleSize()*(2*iy+1 - g->GetNPhi())/2.;
         gMC->Gspos(child, ++nr, mother, xpos, ypos, zpos, idrotm, "ONLY") ;
-      //printf(" %2i xpos %7.2f ypos %7.2f zpos %7.2f \n", nr, xpos, ypos, zpos);
+	//        printf(" %3i(%2i,2i) xpos %7.2f ypos %7.2f zpos %7.2f \n", nr,iy,iz, xpos, ypos, zpos);
       }
     }    
   } else if(gn.Contains("TRD")) { // 30-sep-04; 27-jan-05 - as for TRD1 as for TRD2
@@ -923,8 +923,8 @@ void AliEMCALv0::CreateEmod(const char* mother, const char* child)
           if(iz==0) AliMatrix(idrotm, 0.,0., 90.,90., 90.,0.); // z'(x); y'(y); x'(z)
           else      AliMatrix(idrotm, 90.-angle,180., 90.0,90.0, angle, 0.);
           phiOK = mod->GetCenterOfModule().Phi()*180./TMath::Pi(); 
-          printf(" %2i | angle | %6.3f - %6.3f = %6.3f(eta %5.3f)\n", 
-          iz+1, angle, phiOK, angle-phiOK, mod->GetEtaOfCenterOfModule());
+	  //          printf(" %2i | angle | %6.3f - %6.3f = %6.3f(eta %5.3f)\n", 
+          //iz+1, angle, phiOK, angle-phiOK, mod->GetEtaOfCenterOfModule());
           xpos = mod->GetPosXfromR() + g->GetSteelFrontThickness() - smodPar0;
           zpos = mod->GetPosZ() - smodPar2;
 
@@ -936,7 +936,9 @@ void AliEMCALv0::CreateEmod(const char* mother, const char* child)
             ypos = g->GetPhiModuleSize()*(2*iy+1 - iyMax)/2.;
             gMC->Gspos(child, ++nr, mother, xpos, ypos, zpos, idrotm, "ONLY") ;
         //printf(" %2i xpos %7.2f ypos %7.2f zpos %7.2f idrotm %i\n", nr, xpos, ypos, zpos, idrotm);
+            printf("%3.3i(%2.2i,%2.2i) ", nr,iy+1,iz+1);
           }
+          printf("\n");
 	} else {
           if(iz==0) AliMatrix(idrotm, 0.,0., 90.,0., 90.,90.); // (x')z; y'(x); z'(y)
           else      AliMatrix(idrotm, 90-angle,270., 90.0,0.0, angle,90.);
@@ -1347,4 +1349,13 @@ void AliEMCALv0::Division2X2InPbmo(const AliEMCALGeometry * g, const Double_t pa
 
     zpos    += sampleWidth;
   }
+}
+
+AliEMCALShishKebabTrd1Module* AliEMCALv0::GetShishKebabModule(const Int_t neta)
+{ // 28-oct-05
+  AliEMCALShishKebabTrd1Module* trd1=0;
+  if(fShishKebabModules && neta>=0 && neta<fShishKebabModules->GetSize()) {
+    trd1 = (AliEMCALShishKebabTrd1Module*)fShishKebabModules->At(neta);
+  }
+  return trd1;
 }

@@ -228,12 +228,24 @@ void AliEMCALJetFinder::Init()
 //  Get geometry parameters from EMCAL
 //
 //
-//  Geometry 
-  //AliEMCAL* pEMCAL = (AliEMCAL*) gAlice->GetModule("EMCAL");
-  //  AliEMCALGeometry* geom = 
-  //  AliEMCALGeometry::GetInstance(pEMCAL->GetTitle(), "");
-  AliEMCALGetter * gime = AliEMCALGetter::Instance() ; 
-  AliEMCALGeometry* geom = gime->EMCALGeometry() ;  
+  AliEMCALGeometry *geom=0;
+  AliEMCALGetter   *gime = AliEMCALGetter::Instance(); 
+  if(gime) {
+    geom = gime->EMCALGeometry() ;  
+    if(!geom) {
+      printf(" No AliEMCALGeometry !! \n");
+      assert(0);
+    }
+  } else {  
+    printf(" No AliEMCALGetter !! \n");
+    geom = AliEMCALGeometry::GetInstance();
+    if(!geom) {
+      printf(" No AliEMCALGeometry !! \n");
+      assert(0);
+    } else {
+      printf(" AliEMCALGeometry : %s\n", geom->GetName());
+    }
+  }
 
 //    SetSamplingFraction(geom->GetSampling());
 
