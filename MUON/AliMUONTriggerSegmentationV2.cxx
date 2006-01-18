@@ -89,6 +89,13 @@ fLineNumber(-1)
   else 
     AliFatal("Wrong mapping segmentation type");
 		
+  TString id(fSlat->GetID());
+  Ssiz_t pos = id.Last('L');
+  if ( pos <= 0 )
+  {
+    AliFatal(Form("Cannot infer line number for slat %s",id.Data()));
+  }
+  fLineNumber = TString(id(pos+1),1).Atoi();
 		
   AliDebug(1,Form("this=%p detElemId=%3d %s fSlatSegmentation=%p",this,detElemId,
 									( (bendingOrNonBending==kBendingPlane)?"Bending":"NonBending" ),
