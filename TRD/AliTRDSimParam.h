@@ -52,6 +52,8 @@ public:
   void SetAnodeWireOffset(Float_t offset = 0.25)      { fAnodeWireOffset = offset;};
   void SetTimeStruct(Bool_t tsOn = 1)                 { fTimeStructOn   = tsOn;     };
   
+  void     SetPadResponse(Int_t prfOn = 1)                { fPRFOn          = prfOn;    };
+    
   Float_t  GetGasGain()                             const { return fGasGain;           };
   Float_t  GetNoise()                               const { return fNoise;             };
   Float_t  GetChipGain()                            const { return fChipGain;          };
@@ -82,6 +84,8 @@ public:
   Float_t  GetAnodeWireOffset()                     const { return fAnodeWireOffset;   };
   Bool_t TimeStructOn()                             const { return fTimeStructOn;  };
     
+  Bool_t   PRFOn()                                  const { return fPRFOn;         };
+  
 protected:
   static AliTRDSimParam* fgInstance;     // Instance of this class (singleton implementation)
   static Bool_t fgTerminated;               // Defines if this class has already been terminated and therefore does not return instances in GetInstance anymore
@@ -119,6 +123,8 @@ protected:
   Float_t              fTimeCoupling;                       //  Time coupling factor (image charge of moving ions)
   Int_t                fTimeStructOn;                       //  Switch for cell time structure
   
+  Int_t                fPRFOn;                              //  Switch for the pad response
+  
 private:
   // this is a singleton, constructor is private!  
   AliTRDSimParam();
@@ -128,7 +134,7 @@ private:
   void ReInit();
   void SampleTRF();
   
-  ClassDef(AliTRDSimParam, 0)
+  ClassDef(AliTRDSimParam, 1)
 };
 
 #endif

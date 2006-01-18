@@ -18,10 +18,11 @@ SRCS= AliTRDarrayI.cxx \
       AliTRDCalPad.cxx \
       AliTRDCalDet.cxx \
       AliTRDCalGlobals.cxx \
-      AliTRDCalChamber.cxx \
-      AliTRDCalStack.cxx \
+      AliTRDCalChamberPos.cxx \
+      AliTRDCalStackPos.cxx \
       AliTRDCommonParam.cxx \
-      AliTRDcalibDB.cxx
+      AliTRDcalibDB.cxx \
+      AliTRDCalPIDLQ.cxx
 
 HDRS= $(SRCS:.cxx=.h)                
 

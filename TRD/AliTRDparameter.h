@@ -11,6 +11,8 @@
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
+// WARNING: This class is obsolete. As soon as all function calls are replaced, the class will be removed.
+
 #include "TNamed.h"
 
 class TObjArray;

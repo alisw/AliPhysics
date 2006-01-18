@@ -35,11 +35,12 @@
 #include "AliTRDCommonParam.h"
 
 #include "AliTRDCalROC.h"
-#include "AliTRDCalChamber.h"
-#include "AliTRDCalStack.h"
+#include "AliTRDCalChamberPos.h"
+#include "AliTRDCalStackPos.h"
 #include "AliTRDCalPad.h"
 #include "AliTRDCalDet.h"
 #include "AliTRDCalGlobals.h"
+#include "AliTRDCalPIDLQ.h"
 
 ClassImp(AliTRDcalibDB)
 
@@ -175,7 +176,7 @@ Bool_t AliTRDcalibDB::GetChamberPos(Int_t det, Float_t* xyz)
   // Returns the deviation of the chamber position from the nominal position.
   //
   
-  AliTRDCalChamber* chamber = dynamic_cast<AliTRDCalChamber*>(GetCachedCDBObject(kIDChamber));
+  AliTRDCalChamberPos* chamber = dynamic_cast<AliTRDCalChamberPos*>(GetCachedCDBObject(kIDChamber));
   if (!chamber)
     return kFALSE;
   
@@ -197,7 +198,7 @@ Bool_t AliTRDcalibDB::GetChamberRot(Int_t det, Float_t* xyz)
   // Returns the rotation of the chamber from the nominal position.
   //
   
-  AliTRDCalChamber* chamber = dynamic_cast<AliTRDCalChamber*>(GetCachedCDBObject(kIDChamber));
+  AliTRDCalChamberPos* chamber = dynamic_cast<AliTRDCalChamberPos*>(GetCachedCDBObject(kIDChamber));
   if (!chamber)
     return kFALSE;
   
@@ -219,7 +220,7 @@ Bool_t AliTRDcalibDB::GetStackPos(Int_t chamber, Int_t sector, Float_t* xyz)
   // Returns the deviation of the stack position from the nominal position.
   //
   
-  AliTRDCalStack* stack = dynamic_cast<AliTRDCalStack*>(GetCachedCDBObject(kIDStack));
+  AliTRDCalStackPos* stack = dynamic_cast<AliTRDCalStackPos*>(GetCachedCDBObject(kIDStack));
   if (!stack)
     return kFALSE;
   
@@ -241,7 +242,7 @@ Bool_t AliTRDcalibDB::GetStackRot(Int_t chamber, Int_t sector, Float_t* xyz)
   // Returns the rotation of the stack from the nominal position.
   //
   
-  AliTRDCalStack* stack = dynamic_cast<AliTRDCalStack*>(GetCachedCDBObject(kIDStack));
+  AliTRDCalStackPos* stack = dynamic_cast<AliTRDCalStackPos*>(GetCachedCDBObject(kIDStack));
   if (!stack)
     return kFALSE;
   
@@ -354,6 +355,22 @@ Int_t AliTRDcalibDB::GetNumberOfTimeBins()
     return -1;  
   
   return calGlobal->GetNumberOfTimeBins();
+}
+
+//_____________________________________________________________________________
+AliTRDCalPIDLQ* AliTRDcalibDB::GetPIDLQObject()
+{
+  //
+  // Returns the object storing the distributions for PID with likelihood
+  //
+  
+  // FAKE
+  /*AliTRDCalPIDLQ* pid = new AliTRDCalPIDLQ();
+  pid->ReadData("$ALICE_ROOT/TRD/TRDdEdxHistogramsV1.root");
+  return pid;*/
+  
+  // TODO due to a bug in the CDB this does not work yet
+  return dynamic_cast<AliTRDCalPIDLQ*> (GetCachedCDBObject(kIDPIDLQ));
 }
 
 //_____________________________________________________________________________

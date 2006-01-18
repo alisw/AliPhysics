@@ -960,7 +960,7 @@ Bool_t AliTRDdigitizer::MakeDigits()
           Int_t signal = (Int_t) (-(simParam->GetGasGain()) * TMath::Log(ggRndm));
 
           // Apply the pad response 
-          if (commonParam->PRFOn()) {
+          if (simParam->PRFOn()) {
   	    // The distance of the electron to the center of the pad 
 	    // in units of pad width
             //Double_t dist = - colOffset / padPlane->GetColSize(colE);

@@ -24,19 +24,7 @@
 #include "AliTRDCalPad.h"
 #include "AliTRDCalDet.h"
 
-class AliTRDCalChamber;
-class AliTRDCalStack;
-class AliTRDCalGlobals;
-
-// defines call to function by providing plane, chamber, sector instead of detector
-#define HEADER_PAD(funcname) \
-  Float_t funcname(Int_t plane, Int_t chamber, Int_t sector, Int_t col, Int_t row) \
-  { return funcname(AliTRDgeometry::GetDetector(plane, chamber, sector), col, row); }
-
-// defines call to function by providing plane, chamber, sector instead of detector
-#define HEADER_CHAMBER(funcname) \
-  Bool_t funcname(Int_t plane, Int_t chamber, Int_t sector, Float_t* xyz) \
-  { return funcname(AliTRDgeometry::GetDetector(plane, chamber, sector), xyz); }
+class AliTRDCalPIDLQ;
 
 class AliTRDcalibDB : public TObject
 {
@@ -49,36 +37,39 @@ public:
   void SetRun(Long64_t run);
   
   Bool_t GetChamberPos(Int_t det, Float_t* xyz);
-  HEADER_CHAMBER(GetChamberPos);
+  Bool_t GetChamberPos(Int_t plane, Int_t chamber, Int_t sector, Float_t* xyz) { return GetChamberPos(AliTRDgeometry::GetDetector(plane, chamber, sector), xyz); }  
   
   Bool_t GetChamberRot(Int_t det, Float_t* xyz);
-  HEADER_CHAMBER(GetChamberRot);
+  Bool_t GetChamberRot(Int_t plane, Int_t chamber, Int_t sector, Float_t* xyz) { return GetChamberRot(AliTRDgeometry::GetDetector(plane, chamber, sector), xyz); }  
   
   Bool_t GetStackPos(Int_t chamber, Int_t sector, Float_t* xyz);
   Bool_t GetStackRot(Int_t chamber, Int_t sector, Float_t* xyz);
    
   Float_t GetVdrift(Int_t det, Int_t col, Int_t row);
-  HEADER_PAD(GetVdrift);
+  Float_t GetVdrift(Int_t plane, Int_t chamber, Int_t sector, Int_t col, Int_t row) { return GetVdrift(AliTRDgeometry::GetDetector(plane, chamber, sector), col, row); }
     
   Float_t GetT0(Int_t det, Int_t col, Int_t row);
-  HEADER_PAD(GetT0);
+  Float_t GetT0(Int_t plane, Int_t chamber, Int_t sector, Int_t col, Int_t row) { return GetT0(AliTRDgeometry::GetDetector(plane, chamber, sector), col, row); }
   
   Float_t GetGainFactor(Int_t det, Int_t col, Int_t row);
-  HEADER_PAD(GetGainFactor);
+  Float_t GetGainFactor(Int_t plane, Int_t chamber, Int_t sector, Int_t col, Int_t row) { return GetGainFactor(AliTRDgeometry::GetDetector(plane, chamber, sector), col, row); }
 
   Float_t GetPRFWidth(Int_t det, Int_t col, Int_t row);
-  HEADER_PAD(GetPRFWidth);
+  Float_t GetPRFWidth(Int_t plane, Int_t chamber, Int_t sector, Int_t col, Int_t row) { return GetPRFWidth(AliTRDgeometry::GetDetector(plane, chamber, sector), col, row); }
   
   Float_t GetSamplingFrequency(); 
   Int_t GetNumberOfTimeBins();
+  
+  AliTRDCalPIDLQ* GetPIDLQObject();
   
   //Related functions, these depend on calibration data
   static Float_t GetOmegaTau(Float_t vdrift);
   Int_t PadResponse(Double_t signal, Double_t dist, Int_t plane, Double_t *pad) const;
   
 protected:
-  enum { kCDBCacheSize = 7 };   // Number of cached objects
-  enum { kIDVdrift = 0, kIDT0 = 1, kIDGainFactor = 2, kIDPRFWidth = 3, kIDGlobals = 4, kIDChamber = 5, kIDStack = 6 };    // IDs of cached objects
+  enum { kCDBCacheSize = 8 };   // Number of cached objects
+  enum { kIDVdrift = 0, kIDT0 = 1, kIDGainFactor = 2, kIDPRFWidth = 3, kIDGlobals = 4, 
+         kIDChamber = 5, kIDStack = 6, kIDPIDLQ = 7 };    // IDs of cached objects
   
   TObject* GetCachedCDBObject(Int_t id)
   {
@@ -109,6 +100,7 @@ protected:
       case kIDGlobals : return CacheCDBEntry(kIDGlobals, "TRD/Calib/Globals"); break;
       case kIDChamber : return CacheCDBEntry(kIDChamber, "TRD/Calib/Chamber"); break;
       case kIDStack : return CacheCDBEntry(kIDStack, "TRD/Calib/Stack"); break;
+      case kIDPIDLQ : return CacheCDBEntry(kIDPIDLQ, "TRD/Calib/PIDLQ"); break;
     }
     return 0;
   }
@@ -240,8 +232,5 @@ TObject* AliTRDcalibDB::CacheMergeCDBEntry(Int_t id, const char* cdbPadPath, con
   
   return fCDBCache[id];
 }
-
-#undef HEADER_PAD
-#undef HEADER_CHAMBER
 
 #endif

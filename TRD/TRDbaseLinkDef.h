@@ -36,7 +36,8 @@
 #pragma link C++ class  AliTRDCalPad+;
 #pragma link C++ class  AliTRDCalDet+;
 #pragma link C++ class  AliTRDCalGlobals+;
-#pragma link C++ class  AliTRDCalChamber+;
-#pragma link C++ class  AliTRDCalStack+;
+#pragma link C++ class  AliTRDCalChamberPos+;
+#pragma link C++ class  AliTRDCalStackPos+;
+#pragma link C++ class  AliTRDCalPIDLQ+;
 
 #endif

@@ -1,5 +1,5 @@
-#ifndef AliTRDCALCHAMBER_H
-#define AliTRDCALCHAMBER_H
+#ifndef AliTRDCALCHAMBERPOS_H
+#define AliTRDCALCHAMBERPOS_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
@@ -13,12 +13,12 @@
 
 #include "TNamed.h"
 
-class AliTRDCalChamber : public TNamed {
+class AliTRDCalChamberPos : public TNamed {
   public:
     enum { kNdet = 540 };
   
-    AliTRDCalChamber();
-    AliTRDCalChamber(const Text_t* name, const Text_t* title);
+    AliTRDCalChamberPos();
+    AliTRDCalChamberPos(const Text_t* name, const Text_t* title);
   
     const Float_t* GetChamberPos(Int_t det) const { return fChamberPos[det]; };
     const Float_t* GetChamberRot(Int_t det) const { return fChamberRot[det]; };
@@ -33,7 +33,7 @@ class AliTRDCalChamber : public TNamed {
     Float_t fChamberPos[kNdet][3];                    //  Deviations of the positions of the chambers from the ideal position
     Float_t fChamberRot[kNdet][3];                    //  Rotation of the chambers in respect to the ideal position
     
-    ClassDef(AliTRDCalChamber,1)                      
+    ClassDef(AliTRDCalChamberPos,1)                      
 };
 
 #endif

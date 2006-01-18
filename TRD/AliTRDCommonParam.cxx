@@ -79,7 +79,6 @@ AliTRDCommonParam::AliTRDCommonParam()
   fField              = 0.0;
 
   fExBOn              = kFALSE;
-  fPRFOn              = kFALSE;
   
   fPadPlaneArray      = 0;
   
@@ -95,9 +94,6 @@ void AliTRDCommonParam::Init()
   
   // E x B effects
   fExBOn          = kTRUE;
-
-  // The pad response function
-  fPRFOn          = kTRUE;
 
   // The magnetic field strength in Tesla
   Double_t x[3] = { 0.0, 0.0, 0.0 };
@@ -167,17 +163,7 @@ void AliTRDCommonParam::Copy(TObject &p) const
     return;
   
   target->fExBOn              = fExBOn;
-  target->fPRFOn              = fPRFOn;
-  /*target->fPRFbin             = fPRFbin;
-  target->fPRFlo              = fPRFlo;
-  target->fPRFhi              = fPRFhi;
-  target->fPRFwid             = fPRFwid;
-  target->fPRFpad             = fPRFpad;
-  if (target->fPRFsmp) delete [] target->fPRFsmp;
-  target->fPRFsmp = new Float_t[fPRFbin];
-  for (Int_t iBin = 0; iBin < fPRFbin; iBin++) {
-    target->fPRFsmp[iBin] = fPRFsmp[iBin];
-  }*/
+  target->fField              = fField;
 }
 
 //_____________________________________________________________________________

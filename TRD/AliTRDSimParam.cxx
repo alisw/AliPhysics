@@ -109,6 +109,8 @@ AliTRDSimParam::AliTRDSimParam()
   fTimeCoupling       = 0.0;
   fTimeStructOn       = kFALSE;
   
+  fPRFOn              = kFALSE;
+  
   Init();
 }
 
@@ -162,6 +164,9 @@ void AliTRDSimParam::Init()
   // Use drift time maps
   fTimeStructOn = kTRUE;
   
+  // The pad response function
+  fPRFOn          = kTRUE;
+
   ReInit();
 }
 
@@ -257,6 +262,8 @@ void AliTRDSimParam::Copy(TObject &p) const
   target->fAnodeWireOffset    = fAnodeWireOffset;
   target->fPadCoupling        = fPadCoupling;
   target->fTimeCoupling       = fTimeCoupling;
+  
+  target->fPRFOn              = fPRFOn;
 }
 
 //_____________________________________________________________________________

@@ -21,6 +21,8 @@
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
+// WARNING: This class is obsolete. As soon as all function calls are replaced, the class will be removed.
+
 #include <iostream>
 
 #include "AliRun.h"

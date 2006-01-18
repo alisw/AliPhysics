@@ -29,17 +29,13 @@ class AliTRDCommonParam : public TObject
     
     void SetField(Float_t field)                        { fField          = field;    };
     
-    virtual void     SetExB(Int_t exbOn = 1)                        { fExBOn          = exbOn;    };
-    
-    virtual void     SetPadResponse(Int_t prfOn = 1)                { fPRFOn          = prfOn;    };
+    void     SetExB(Int_t exbOn = 1)                        { fExBOn          = exbOn;    };
     
     Float_t  GetField()                               const { return fField; };
     
     Bool_t   ExBOn()                                  const { return fExBOn;         };
     
-    Bool_t   PRFOn()                                  const { return fPRFOn;         };
-    
-    virtual AliTRDpadPlane *GetPadPlane(Int_t p, Int_t c) const;
+    AliTRDpadPlane *GetPadPlane(Int_t p, Int_t c) const;
     Int_t    GetRowMax(Int_t p, Int_t c, Int_t /*s*/) const;
     Int_t    GetColMax(Int_t p) const;
     Double_t GetRow0(Int_t p, Int_t c, Int_t /*s*/) const;
@@ -54,16 +50,15 @@ class AliTRDCommonParam : public TObject
     Float_t              fField;                              //  Magnetic field
     
     Int_t                fExBOn;                              //  Switch for the ExB effects
-    Int_t                fPRFOn;                              //  Switch for the pad response
   
-    TObjArray  *fPadPlaneArray;                      //  Array of pad plane objects
+    TObjArray  *fPadPlaneArray;                               //!  Array of pad plane objects
   
   private:
     // this is a singleton, constructor is private!  
     AliTRDCommonParam();
-    ~AliTRDCommonParam();
+    virtual ~AliTRDCommonParam();
   
-    ClassDef(AliTRDCommonParam, 0)
+    ClassDef(AliTRDCommonParam, 1)
 };
 
 #endif

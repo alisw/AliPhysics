@@ -17,41 +17,41 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
-//  TRD calibration class for position parameters of chambers //
+//  TRD calibration class for position parameters of the stacks //
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "AliTRDCalChamber.h"
+#include "AliTRDCalStackPos.h"
 
-ClassImp(AliTRDCalChamber)
+ClassImp(AliTRDCalStackPos)
 
 //_____________________________________________________________________________
-AliTRDCalChamber::AliTRDCalChamber():TNamed()
+AliTRDCalStackPos::AliTRDCalStackPos():TNamed()
 {
   //
-  // AliTRDCalChamber default constructor
+  // AliTRDCalStackPos default constructor
   //
 
-  for (Int_t idet = 0; idet < kNdet; idet++) {
+  for (Int_t idet = 0; idet < kNstacks; idet++) {
     for (Int_t i = 0; i < 3; ++i) {
-      fChamberPos[idet][i] = 0;
-      fChamberRot[idet][i] = 0;
+      fStackPos[idet][i] = 0;
+      fStackRot[idet][i] = 0;
     }
   }
 }
 
 //_____________________________________________________________________________
-AliTRDCalChamber::AliTRDCalChamber(const Text_t *name, const Text_t *title)
+AliTRDCalStackPos::AliTRDCalStackPos(const Text_t *name, const Text_t *title)
                 :TNamed(name,title)
 {
   //
-  // AliTRDCalChamber constructor
+  // AliTRDCalStackPos constructor
   //
 
-  for (Int_t idet = 0; idet < kNdet; idet++) {
+  for (Int_t idet = 0; idet < kNstacks; idet++) {
     for (Int_t i = 0; i < 3; ++i) {
-      fChamberPos[idet][i] = 0;
-      fChamberRot[idet][i] = 0;
+      fStackPos[idet][i] = 0;
+      fStackRot[idet][i] = 0;
     }
   }
 }
