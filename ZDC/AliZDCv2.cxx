@@ -455,11 +455,13 @@ void AliZDCv2::CreateBeamLine()
   // -- ROTATE PIPES 
   Float_t angle = 0.143*kDegrad; // Rotation angle
   
-  AliMatrix(im1, 90.+0.143, 0., 90., 90., 0.143, 0.); // x<0
+  //AliMatrix(im1, 90.+0.143, 0., 90., 90., 0.143, 0.); // x<0
+  gMC->Matrix(im1, 90.+0.143, 0., 90., 90., 0.143, 0.); // x<0
   gMC->Gspos("QT17", 1, "ZDC ", TMath::Sin(angle) * 680.8/ 2. - 9.4, 
              0., -tubpar[2]-zd1, im1, "ONLY"); 
 	     
-  AliMatrix(im2, 90.-0.143, 0., 90., 90., 0.143, 180.); // x>0 (ZP)
+  //AliMatrix(im2, 90.-0.143, 0., 90., 90., 0.143, 180.); // x>0 (ZP)
+  gMC->Matrix(im2, 90.-0.143, 0., 90., 90., 0.143, 180.); // x>0 (ZP)
   gMC->Gspos("QT18", 1, "ZDC ", 9.7 - TMath::Sin(angle) * 680.8 / 2., 
              0., -tubpar[2]-zd1, im2, "ONLY"); 
 	         
