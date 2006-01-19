@@ -1,0 +1,51 @@
+#ifndef ALITRIGGERDETECTOR_H
+#define ALITRIGGERDETECTOR_H
+
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
+
+/* $Id$ */
+
+///////////////////////////////////////////////////////////////////////////////
+//                                                                           //
+//  Base Class for Detector specific Trigger                                 //                                                                           //
+//                                                                           //
+///////////////////////////////////////////////////////////////////////////////
+
+#include <TObjArray.h>
+class TNamed;
+class TString;
+class AliTriggerInput;
+
+
+class AliTriggerDetector : public TNamed {
+
+public:
+                          AliTriggerDetector();
+               virtual   ~AliTriggerDetector() { fInputs.SetOwner(); fInputs.Delete(); }
+
+          virtual void    CreateInputs();
+          virtual void    Trigger();
+  //  Setters
+                  void    AddInput( TObject * input ) { fInputs.AddLast( input ); }
+                  void    SetInput( TString & name );
+                  void    SetInput( const char * name );
+                  void    SetInput( Int_t mask );
+  //  Getters
+             TObjArray*   GetInputs() { return &fInputs; }
+                Long_t    GetMask() const { return fMask; }
+
+       AliTriggerInput*   GetInput( TString & name ) {
+                             return ((AliTriggerInput*)fInputs.FindObject( name.Data() ));
+                          }
+       AliTriggerInput*   GetInput( const char *  name ) {
+                             return ((AliTriggerInput*)fInputs.FindObject( name ));
+                          }
+protected:
+                Long_t    fMask;      // Trigger Mask ( bitwise OR of trigger inputs )
+             TObjArray    fInputs;    // Array of Triggers Inputs (AliTriggerInput class)
+
+   ClassDef( AliTriggerDetector, 1 )  // Base Class for Detector specific Trigger
+};
+
+#endif

@@ -109,4 +109,12 @@
 #pragma link C++ class  TTreeSRedirector+;
 
 #pragma link C++ class  AliRieman;
+
+#pragma link C++ class AliExpression+;
+#pragma link C++ class AliVariableExpression+;
+#pragma link C++ class AliTriggerInput+;
+#pragma link C++ class AliTriggerDetector+;
+#pragma link C++ class AliTriggerCondition+;
+#pragma link C++ class AliTriggerDescriptor+;
+#pragma link C++ class AliCentralTrigger+;
 #endif

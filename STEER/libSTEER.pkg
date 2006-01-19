@@ -27,7 +27,13 @@ AliAlignObj.cxx AliAlignObjAngles.cxx AliAlignObjMatrix.cxx \
 AliRieman.cxx\
 AliTrackFitter.cxx AliTrackFitterRieman.cxx\
 AliTrackResiduals.cxx AliTrackResidualsChi2.cxx\
-AliAlignmentTracks.cxx
+AliAlignmentTracks.cxx \
+AliExpression.cxx \
+AliTriggerInput.cxx \
+AliTriggerDetector.cxx \
+AliTriggerCondition.cxx \
+AliTriggerDescriptor.cxx \
+AliCentralTrigger.cxx
 
 HDRS:= $(SRCS:.cxx=.h) 
 

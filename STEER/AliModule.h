@@ -18,6 +18,7 @@
 #include <TNamed.h>
 
 #include "AliRndm.h"
+#include "AliTriggerDetector.h"
 
 class TClonesArray;
 class TBrowser;
@@ -92,6 +93,8 @@ public:
   virtual void        Hits2SDigits() {}
   virtual AliDigitizer* CreateDigitizer(AliRunDigitizer* /*manager*/) const 
     {return NULL;}
+  virtual AliTriggerDetector* CreateTriggerDetector() const
+    { AliTriggerDetector* det = new AliTriggerDetector(); det->SetName(GetName()); return det;}
   virtual void        SDigits2Digits() {}
   virtual void        Hits2Digits() {}
   virtual void        Digits2Reco() {}

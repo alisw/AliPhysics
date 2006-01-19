@@ -50,6 +50,8 @@ public:
   void           SetRegionOfInterest(Bool_t flag) {fRegionOfInterest = flag;};
   void           SetMakeDigits(const char* detectors)
                    {fMakeDigits = detectors;};
+  void           SetMakeTrigger(const char* descriptors)
+                   {fMakeTrigger = descriptors;};
   void           SetMakeDigitsFromHits(const char* detectors)
                    {fMakeDigitsFromHits = detectors;};
   void           SetWriteRawData(const char* detectors, 
@@ -70,6 +72,7 @@ public:
 
   virtual Bool_t RunSimulation(Int_t nEvents = 0);
   virtual Bool_t RunSDigitization(const char* detectors = "ALL");
+  virtual Bool_t RunTrigger(const char* descriptors ="" );
   virtual Bool_t RunDigitization(const char* detectors = "ALL",
 				 const char* excludeDetectors = "");
   virtual Bool_t RunHitsDigitization(const char* detectors = "ALL");
@@ -90,6 +93,7 @@ private:
   Bool_t         fRunSimulation;      // simulate detectors (hits) or not
   TString        fMakeSDigits;        // create sdigits for these detectors
   TString        fMakeDigits;         // create digits for these detectors
+  TString        fMakeTrigger;        // run trigger for these descriptors
   TString        fMakeDigitsFromHits; // create digits from hits for these detectors
   TString        fWriteRawData;       // write raw data for these detectors
   TString        fRawDataFileName;    // file name for the raw data file
