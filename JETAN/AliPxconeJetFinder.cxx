@@ -23,6 +23,7 @@
 
 #include <Riostream.h>
 #include <TLorentzVector.h>
+#include <TFile.h>
 #include "AliPxconeJetFinder.h"
 #include "AliPxconeJetHeader.h"
 #include "AliJetReader.h"

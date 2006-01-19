@@ -34,7 +34,7 @@ class AliPxconeJetHeader : public AliJetHeader
   void SetOverlap(Double_t o=.75) {fOverlap=o;}
 
   // others
-  void PrintParameters();
+  void PrintParameters() const;
    
 protected:
   Int_t fMode;           // ee or pp mode

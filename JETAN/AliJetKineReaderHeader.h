@@ -18,19 +18,19 @@ class AliJetKineReaderHeader : public AliJetReaderHeader
   virtual ~AliJetKineReaderHeader();
   
   // Setters
-  void SetFastSimTPC(Bool_t flag = kTRUE) {fFastSimTPC = flag;}
-  void SetFastSimEMCAL(Bool_t flag = kTRUE) {fFastSimEMCAL = flag;}
-  virtual void SetPtCut(Float_t par = 2.0) {fPtCut = par;}
+  void SetFastSimTPC(Bool_t flag = kTRUE) {fFastSimTPC = flag;} // if TPC fast simulation
+  void SetFastSimEMCAL(Bool_t flag = kTRUE) {fFastSimEMCAL = flag;} // if EMCAL fast simulation
+
   // Getter
   Bool_t  FastSimTPC() const  {return fFastSimTPC;}
   Bool_t  FastSimEMCAL() const  {return fFastSimEMCAL;}
-  Float_t GetPtCut()   const  {return fPtCut;}
+
 	  
  protected:
   //parameters set by user
   Bool_t fFastSimTPC;
   Bool_t fFastSimEMCAL;
-  Float_t fPtCut;
+
   ClassDef(AliJetKineReaderHeader,1);
 };
  

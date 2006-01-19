@@ -13,17 +13,14 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
  
-//
 // Jet ESD Reader 
 // ESD reader for jet analysis
-// Author: Mercedes Lopez Noriega 
-// mercedes.lopez.noriega@cern.ch
-//
-
+// Author: Mercedes Lopez Noriega (mercedes.lopez.noriega@cern.ch)
 
 #include <Riostream.h>
 #include <TSystem.h>
 #include <TLorentzVector.h>
+#include <TVector3.h>
 #include "AliJetESDReader.h"
 #include "AliJetESDReaderHeader.h"
 #include "AliESD.h"
@@ -34,7 +31,7 @@ ClassImp(AliJetESDReader)
 AliJetESDReader::AliJetESDReader()
 {
   // Constructor    
-
+  printf("\nIn reader constructor\n");
   fReaderHeader = 0x0;
   fMass = 0;
   fSign = 0;
@@ -45,14 +42,14 @@ AliJetESDReader::AliJetESDReader()
 AliJetESDReader::~AliJetESDReader()
 {
   // Destructor
-  //  delete fReaderHeader;
 }
 
 //____________________________________________________________________________
 
 void AliJetESDReader::OpenInputFiles()
-
 {
+  // Open input files
+  printf("\nOpening files\n");
   // chain for the ESDs
   fChain   = new TChain("esdTree");
   fChainMC = new TChain("mcStackTree");
@@ -69,8 +66,8 @@ void AliJetESDReader::OpenInputFiles()
       printf("Adding %s\n",name);
       char path[256];
       sprintf(path,"%s/%s",dirName,name);
-      fChain->AddFile(path,-1,"esdTree");
-      fChainMC->AddFile(path,-1,"mcStackTree");
+      fChain->AddFile(path,-1);
+      fChainMC->AddFile(path,-1);
      }
   }
 
@@ -95,50 +92,58 @@ void AliJetESDReader::OpenInputFiles()
 
 void AliJetESDReader::FillMomentumArray(Int_t event)
 {
-// Fills the momentum array
+  // Fill the momentum array for each track
   Int_t goodTrack = 0;
   Int_t nt = 0;
-  Float_t pt;
-  Double_t p[3]; // track 3 momentum vector
+  Float_t pt, eta;
+  TVector3 p3;
 
   // clear momentum array
   ClearArray();
+
   // get event from chain
   fChain->GetEntry(event);
   fChainMC->GetEntry(event);
+
   // get number of tracks in event (for the loop)
   nt = fESD->GetNumberOfTracks();
-  // tmporary storage of signal flags
-  Int_t* flag  = new Int_t[nt];
+ 
+ // temporary storage of signal and pt cut flag
+  Int_t* sflag  = new Int_t[nt];
+  Int_t* cflag  = new Int_t[nt];
 
   // get cuts set by user
-  Float_t ptMin = ((AliJetESDReaderHeader*) fReaderHeader)->GetPtCut();
+  Float_t ptMin = fReaderHeader->GetPtCut();
+  Float_t etaMin = fReaderHeader->GetFiducialEtaMin();
+  Float_t etaMax = fReaderHeader->GetFiducialEtaMax();  
 
   //loop over tracks
   for (Int_t it = 0; it < nt; it++) {
       AliESDtrack *track = fESD->GetTrack(it);
       UInt_t status = track->GetStatus();
-      if ((status & AliESDtrack::kITSrefit) == 0) continue; // quality check
-
+      p3 = track->P3();
+      pt = p3.Pt();
+      if (((status & AliESDtrack::kITSrefit) == 0) ||
+	  ((status & AliESDtrack::kTPCrefit) == 0)) continue;    // quality check
       if (((AliJetESDReaderHeader*) fReaderHeader)->ReadSignalOnly() 
-	  && TMath::Abs(track->GetLabel()) > 10000)  continue;
-    
-      track->GetPxPyPz(p);
-      pt = TMath::Sqrt(p[0] * p[0] + p[1] * p[1]); // pt of the track
+	  && TMath::Abs(track->GetLabel()) > 10000)  continue;   // quality check
+      if (((AliJetESDReaderHeader*) fReaderHeader)->ReadBkgdOnly() 
+	  && TMath::Abs(track->GetLabel()) < 10000)  continue;   // quality check
+      eta = p3.Eta();
+      if ( (eta > etaMax) || (eta < etaMin)) continue;           // checking eta cut
 
-      if (pt < ptMin) continue; //check  cuts 
-
-      new ((*fMomentumArray)[goodTrack]) 
-	  TLorentzVector(p[0], p[1], p[2],
-			 TMath::Sqrt(pt * pt +p[2] * p[2]));
-      flag[goodTrack]=0;
-      if (TMath::Abs(track->GetLabel()) < 10000) flag[goodTrack]=1;
+      new ((*fMomentumArray)[goodTrack]) TLorentzVector(p3,p3.Mag());
+      sflag[goodTrack]=0;
+      if (TMath::Abs(track->GetLabel()) < 10000) sflag[goodTrack]=1;
+      cflag[goodTrack]=0;
+      if (pt > ptMin) cflag[goodTrack]=1;                       // pt cut
       goodTrack++;
   }
   // set the signal flags
-  fSignalFlag.Set(goodTrack,flag);
+  fSignalFlag.Set(goodTrack,sflag);
+  fCutFlag.Set(goodTrack,cflag);
 
-  printf("\nIn event %d, number of good tracks %d \n", event, goodTrack);
+  //printf("\nIn event %d, number of good tracks %d \n", event, goodTrack);
 }
 
 

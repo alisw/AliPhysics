@@ -13,7 +13,13 @@ void read_jets(const char* fn = "jets.root")
     TH1F* dr1H = new TH1F("dr1H", "delta R",  160., 0.,   2.);
     TH1F* dr2H = new TH1F("dr2H", "delta R",  160., 0.,   2.);
     TH1F* dr3H = new TH1F("dr4H", "delta R",  160., 0.,   2.);
-    TH1F* etaH = new TH1F("etaH", "eta",  160., -2.,   2.);
+    TH1F* etaH  = new TH1F("etaH",  "eta",  160., -2.,   2.);
+    TH1F* eta1H = new TH1F("eta1H", "eta",  160., -2.,   2.);
+    TH1F* eta2H = new TH1F("eta2H", "eta",  160., -2.,   2.);
+
+    TH1F* phiH  = new TH1F("phiH",  "phi",  160., -3.,   3.);
+    TH1F* phi1H = new TH1F("phi1H", "phi",  160.,  0.,   6.28);
+    TH1F* phi2H = new TH1F("phi2H", "phi",  160.,  0.,   6.28);
     
 
   // load jet library
@@ -97,10 +103,18 @@ void read_jets(const char* fn = "jets.root")
 
 	      Float_t egen = gjets->GetPt(igen);
 	      e1H->Fill(gjets->GetPt(igen));
-	      
-	      if (egen > 105. && egen < 125.) {
+	      Float_t etag = gjets->GetEta(igen);
+	      Float_t phig = gjets->GetPhi(igen);
+	      Float_t dphi = phig - phij;
+
+	      if (egen > 125. && egen < 150.) {
+		  phiH->Fill((dphi));
+		  etaH->Fill(etag - etaj);
+		  phi1H->Fill(phig);
+		  phi2H->Fill(phij);		  
+		  eta1H->Fill(etag);
+		  eta2H->Fill(etaj);
 		  e4H->Fill(emax);
-		  if (rmin > 0.3) etaH->Fill(etaj);
 		  dr2H->Fill(rmin);
 	      }
 	  }
@@ -124,6 +138,7 @@ void read_jets(const char* fn = "jets.root")
 	Float_t deta = etag-etal;
 	Float_t dphi = TMath::Abs(phig - phil);
 	if (dphi > TMath::Pi()) dphi = 2. * TMath::Pi() - dphi;
+
 	Float_t r = TMath::Sqrt(deta * deta + dphi * dphi);
 	
 	if (r  < rmin) {
@@ -131,7 +146,7 @@ void read_jets(const char* fn = "jets.root")
 		igen = j;
 	}
     }
- 
+    if (egen > 125. && egen < 150.) 
 	dr3H->Fill(rmin);
 
 //    cout << " Generated Jets:" << endl;
@@ -156,8 +171,8 @@ void read_jets(const char* fn = "jets.root")
   dr2H->Draw("");
   
   TCanvas* c3 = new TCanvas("c3");
-  dr3H->Draw();
-  dr2H->Draw("same");
+  dr2H->Draw();
+  dr3H->Draw("same");
 
   TCanvas* c4 = new TCanvas("c4");
   eH->Draw();
@@ -165,6 +180,19 @@ void read_jets(const char* fn = "jets.root")
   TCanvas* c5 = new TCanvas("c5");
   etaH->Draw();
 
+  TCanvas* c5a = new TCanvas("c5a");
+  eta1H->Draw();
+
+  TCanvas* c5b = new TCanvas("c5b");
+  eta2H->Draw();
+
   TCanvas* c6 = new TCanvas("c6");
   e4H->Draw();
+  TCanvas* c7 = new TCanvas("c7");
+  phiH->Draw();
+
+  TCanvas* c7a = new TCanvas("c7a");
+  phi1H->Draw();
+  TCanvas* c7b = new TCanvas("c7b");
+  phi2H->Draw();
 }

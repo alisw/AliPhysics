@@ -18,25 +18,18 @@ class AliJetESDReaderHeader : public AliJetReaderHeader
   virtual ~AliJetESDReaderHeader();
   
   // Getters
-  Float_t GetPtCut()       const  {return fPtCut;}
-  Float_t GetDCA()         const  {return fDCA;} // not working so far..(always 0)
-  Float_t GetTLength()     const  {return fTLength;} // not working so far.. (always 0)
   Bool_t  ReadSignalOnly() const  {return fReadSignalOnly;}
-  
+  Bool_t  ReadBkgdOnly() const  {return fReadBkgdOnly;}
 	  
   // Setters
-  virtual void SetPtCut(Float_t par = 2.0) {fPtCut = par;}
-  virtual void SetDCA(Float_t dca = 3.0) {fDCA = dca;}
-  virtual void SetTLength(Float_t length = 0.0) {fTLength = length;}
   virtual void SetReadSignalOnly(Bool_t flag = kTRUE) {fReadSignalOnly = flag;}
+  virtual void SetReadBkgdOnly(Bool_t flag = kTRUE) {fReadBkgdOnly = flag;}
   
  protected:
   //parameters set by user
-  Float_t fPtCut;          // pt cut 
-  Float_t fDCA;            // dca cut
-  Float_t fTLength;        // track length cut
   Bool_t  fReadSignalOnly; // read particles from signal event only
-  ClassDef(AliJetESDReaderHeader,1);
+  Bool_t  fReadBkgdOnly;   // read particles from bkgd event only
+  ClassDef(AliJetESDReaderHeader,2);
 };
  
 #endif

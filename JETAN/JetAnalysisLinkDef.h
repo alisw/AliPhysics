@@ -13,10 +13,8 @@
 #pragma link C++ class AliUA1JetFinder+;
 #pragma link C++ class AliJetReaderHeader+;
 #pragma link C++ class AliJetESDReaderHeader+;
-#pragma link C++ class AliJetMCReaderHeader+;
 #pragma link C++ class AliJetReader+;
 #pragma link C++ class AliJetESDReader+;
-#pragma link C++ class AliJetMCReader+;
 #pragma link C++ class AliJetKineReader+;
 #pragma link C++ class AliJetKineReaderHeader+;
 #pragma link C++ class AliJetControlPlots+;
@@ -24,4 +22,5 @@
 #pragma link C++ class AliJetProductionData+;
 #pragma link C++ class AliJetProductionDataPDC2004+;
 #pragma link C++ class AliJetAnalysis+;
+#pragma link C++ class AliJetDistributions+;
 #endif

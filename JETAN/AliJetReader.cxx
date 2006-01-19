@@ -13,14 +13,15 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
  
-//---------------------------------------------------------------------
+//------------------------------------------------------------------------
 // Jet reader base class
 // manages the reading of input for jet algorithms
 // Author: jgcn@mda.cinvestav.mx
-//---------------------------------------------------------------------
+//------------------------------------------------------------------------
 
+// root
 #include <TClonesArray.h>
-
+//AliRoot
 #include "AliJetReader.h"
 #include "AliJetReaderHeader.h"
 #include "AliESD.h"
@@ -40,6 +41,7 @@ AliJetReader::AliJetReader()
   fArrayMC = 0;
   fAliHeader = 0;
   fSignalFlag = TArrayI();
+  fCutFlag = TArrayI();
 }
 
 ////////////////////////////////////////////////////////////////////////

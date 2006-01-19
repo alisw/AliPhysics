@@ -4,7 +4,6 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
  
- 
 //---------------------------------------------------------------------
 // Jet finder base class
 // manages the search for jets 
@@ -19,7 +18,6 @@ class AliJetReader;
 class AliJetControlPlots;
 class AliLeading;
 
-
 class AliJetFinder : public TObject 
 {
  public:
@@ -28,9 +26,9 @@ class AliJetFinder : public TObject
   virtual ~AliJetFinder();
 
   // getters
-  virtual AliJet *GetJets()      {return fJets;}
-  virtual Bool_t GetPlotMode()   const {return fPlotMode;}
-  virtual TFile* GetOutputFile() { return fOut; }
+  virtual AliJet *GetJets() {return fJets;}
+  virtual Bool_t GetPlotMode() const {return fPlotMode;}
+  virtual TFile* GetOutputFile() {return fOut;}
   // setters
   virtual void SetPlotMode(Bool_t b);
   virtual void SetOutputFile(const char *name="jets.root");
@@ -51,7 +49,7 @@ class AliJetFinder : public TObject
  protected:
   Bool_t fPlotMode;              // do you want control plots?
   AliJet* fJets;                 // pointer to jet class
-  AliJet* fGenJets;               // pointer to generated jets
+  AliJet* fGenJets;              // pointer to generated jets
   AliLeading* fLeading;          // pointer to leading particle data 
   AliJetReader* fReader;         // pointer to reader
   AliJetControlPlots* fPlots;    // pointer to control plots

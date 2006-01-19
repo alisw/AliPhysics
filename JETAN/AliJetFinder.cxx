@@ -12,8 +12,7 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-  
- 
+   
 //---------------------------------------------------------------------
 // Jet finder base class
 // manages the search for jets 
@@ -31,16 +30,12 @@
 #include "AliLeading.h"
 #include "AliHeader.h"
 
-
 ClassImp(AliJetFinder)
 
-////////////////////////////////////////////////////////////////////////
 
 AliJetFinder::AliJetFinder()
 {
-  //
   // Constructor
-  //
   fOut     = 0x0;
   fJets    = new AliJet();
   fGenJets = new AliJet();
@@ -50,15 +45,11 @@ AliJetFinder::AliJetFinder()
   SetPlotMode(kFALSE);
 }
 
-
 ////////////////////////////////////////////////////////////////////////
 
 AliJetFinder::~AliJetFinder()
 {
-  //
   // destructor
-  //
-
   // here reset and delete jets
   fJets->ClearJets();
   delete fJets;
@@ -72,9 +63,7 @@ AliJetFinder::~AliJetFinder()
   delete fOut;
   // reset and delete control plots
   if (fPlots) delete fPlots;
-  // delete fLeading;
 }
-
 
 ////////////////////////////////////////////////////////////////////////
 
@@ -84,25 +73,22 @@ void AliJetFinder::SetOutputFile(const char *name)
   fOut = new TFile(name,"recreate");
 }
 
-
 ////////////////////////////////////////////////////////////////////////
 
 void AliJetFinder::PrintJets()
 {
-//
-// Print jet information
+  // Print jet information
   cout << " Jets found with jet algorithm:" << endl;
   fJets->PrintJets();
   cout << " Jets found by pythia:" << endl;
   fGenJets->PrintJets();
 }
 
-
 ////////////////////////////////////////////////////////////////////////
 
 void AliJetFinder::SetPlotMode(Bool_t b)
 {
-// Sets the plotting mode
+  // Sets the plotting mode
   fPlotMode=b;
   if (b && !fPlots) fPlots = new AliJetControlPlots(); 
 }
@@ -111,7 +97,7 @@ void AliJetFinder::SetPlotMode(Bool_t b)
 
 void AliJetFinder::WriteJetsToFile(Int_t i)
 {
-// Writes the jets to file
+  // Writes the jets to file
   fOut->cd();
   char hname[30];
   sprintf(hname,"TreeJ%d",i);
@@ -134,12 +120,11 @@ void AliJetFinder::WriteRHeaderToFile()
   rh->Write();
 }
 
-
 ////////////////////////////////////////////////////////////////////////
 
 void AliJetFinder::GetGenJets()
 {
-// Get the generated jet information from mc header
+  // Get the generated jet information from mc header
   AliHeader* alih = fReader->GetAliHeader(); 
   if (alih == 0) return;
   AliGenEventHeader * genh = alih->GenEventHeader();
@@ -175,7 +160,6 @@ void AliJetFinder::Run()
       WriteRHeaderToFile();
       WriteJHeaderToFile();
   }
-
   // loop over events
   Int_t nFirst,nLast;
   nFirst = fReader->GetReaderHeader()->GetFirstEvent();
@@ -187,7 +171,7 @@ void AliJetFinder::Run()
       GetGenJets();
       FindJets();
       if (fOut) WriteJetsToFile(i);
-      if (fPlots) fPlots->FillHistos(fJets,fReader);
+      if (fPlots) fPlots->FillHistos(fJets);
       fLeading->Reset();
       fGenJets->ClearJets();
       Reset();
@@ -203,4 +187,3 @@ void AliJetFinder::Run()
       fOut->Close();
   }
 }
-

@@ -4,11 +4,9 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
  
-//---------------------------------------------------------------------
 // Jet reader base class
 // manages the reading of input for jet algorithms
 // Author: jgcn@mda.cinvestav.mx
-//---------------------------------------------------------------------
   
 #include <TObject.h>
 #include <TChain.h>
@@ -18,7 +16,6 @@ class TClonesArray;
 class AliJetReaderHeader;
 class AliESD;
 class AliHeader;
-
 
 class AliJetReader : public TObject 
 {
@@ -30,8 +27,9 @@ class AliJetReader : public TObject
   virtual TClonesArray *GetMomentumArray() {return fMomentumArray;}
   virtual Int_t GetChainEntries() {return fChain->GetEntries();} 
   virtual AliJetReaderHeader* GetReaderHeader() { return fReaderHeader;}
-  virtual AliHeader* GetAliHeader() { return fAliHeader;}
+  virtual AliHeader* GetAliHeader() {return fAliHeader;}
   virtual Int_t GetSignalFlag(Int_t i) const {return fSignalFlag[i];}
+  virtual Int_t GetCutFlag(Int_t i) const {return fCutFlag[i];}
 
   // Setters
   virtual void FillMomentumArray(Int_t) {}
@@ -51,7 +49,8 @@ class AliJetReader : public TObject
   AliJetReaderHeader      *fReaderHeader;  // pointer to header
   AliHeader               *fAliHeader;     // pointer to event header
   TArrayI fSignalFlag;   // to flag if a particle comes from pythia or 
-                        // from the underlying event
+                         // from the underlying event
+  TArrayI fCutFlag;      // to flag if a particle passed the pt cut or not
 
   ClassDef(AliJetReader,1)
 };

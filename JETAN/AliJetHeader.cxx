@@ -32,6 +32,8 @@ AliJetHeader::AliJetHeader():
   //
   // Constructor
   //
+    fJetEtaMax = 0.5;
+    fJetEtaMin = -0.5;    
 }
  
 ////////////////////////////////////////////////////////////////////////
@@ -43,6 +45,8 @@ AliJetHeader::AliJetHeader(const char * name):
   //
   // Constructor
   //
+    fJetEtaMax = 0.5;
+    fJetEtaMin = -0.5;    
 }
 
 ////////////////////////////////////////////////////////////////////////

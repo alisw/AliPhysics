@@ -14,6 +14,7 @@ extern "C" {
 	Float_t etaj[2][100];
 	Float_t phij[2][100];
 	Int_t   ncellj[100];
+      Float_t etavg;
     } UA1JetsCommon;
 
 #define UA1JETS COMMON_BLOCK(UA1JETS,ua1jets)

@@ -34,9 +34,7 @@ ClassImp(AliLeading)
 
 AliLeading::AliLeading() 
 {
-  //
   // Constructor
-  //
   fNassoc =  0;
   fLeading = new TLorentzVector(0.,0.,0.,0.);
   fLow     = -TMath::Pi()/2.0;
@@ -49,66 +47,62 @@ AliLeading::AliLeading()
 
 AliLeading::~AliLeading()
 {
-  //
   // Destructor
-  //
   delete fLeading;
 }
 
 ////////////////////////////////////////////////////////////////////////
 
 void AliLeading::FindLeading(AliJetReader *reader)
-
 {
-  //
   // find leading particle in the array of lorentz vectors
   // lvArray and fill the correlation histogram
-  //
-
-    
+  
   AliJetReaderHeader* header = reader->GetReaderHeader();
-    
+  
   TClonesArray* lvArray = reader->GetMomentumArray();
   Int_t nIn = lvArray->GetEntries();
-  fNassoc = nIn-1;
-
-  if (fNassoc < 0) return;
-
+  
   // find max
   Double_t ptMax = 0.0;
   Int_t idxMax = -1;
   for (Int_t i = 0; i < nIn; i++){
-      TLorentzVector *lv = (TLorentzVector*) lvArray->At(i);
-      if (lv->Pt()   > ptMax                       && 
-	  lv->Eta()  > header->GetFiducialEtaMin() &&
-	  lv->Eta()  < header->GetFiducialEtaMax()) 
-      {
-	  ptMax  = lv->Pt();
-	  idxMax = i;
-      }
+    TLorentzVector *lv = (TLorentzVector*) lvArray->At(i);
+    if ((reader->GetCutFlag(i) == 1)             &&
+	lv->Pt()   > ptMax                       && 
+	lv->Eta()  > header->GetFiducialEtaMin() &&
+	lv->Eta()  < header->GetFiducialEtaMax()){
+      ptMax  = lv->Pt();
+      idxMax = i;
+    }
   }
   
   if (idxMax == -1) {
-      fFound = kFALSE;
-      Reset();
-      return;
+    fFound = kFALSE;
+    Reset();
+    return;
   }
   
   // fill correlation array
   fLeading = (TLorentzVector*) lvArray->At(idxMax);
   fFound = kTRUE;
   
+  fNassoc = 0;  
   for (Int_t i = 0; i < nIn; i++) {
-      if (i == idxMax) continue;
-      TLorentzVector *lv = (TLorentzVector*) lvArray->At(i);
+    if (i == idxMax) continue;
+    TLorentzVector *lv = (TLorentzVector*) lvArray->At(i);
+    if ( (reader->GetCutFlag(i) == 1) &&
+	 lv->Eta()  > header->GetFiducialEtaMin() &&
+	 lv->Eta()  < header->GetFiducialEtaMax()) {
       Double_t dphi = fLeading->DeltaPhi(*lv);
       if (dphi < fLow) dphi = 2.0 * TMath::Pi() + dphi;
       // find bin and fill array
-      
       Int_t iBin = (Int_t) 
-	  TMath::Floor((dphi - fLow)
-		       *((Double_t) fnBin) / (2.0 * TMath::Pi()));
+	TMath::Floor((dphi - fLow)
+		     *((Double_t) fnBin) / (2.0 * TMath::Pi()));
       fCorr.AddAt(fCorr.At(iBin)+1,iBin);
+      fNassoc++;
+    }
   }
 }
 
@@ -126,7 +120,6 @@ void AliLeading::Reset()
 ////////////////////////////////////////////////////////////////////////
 
 void AliLeading::PrintLeading()
-
 {
 // Print leading particle information
   if (fNassoc<0) {
@@ -141,3 +134,35 @@ void AliLeading::PrintLeading()
        << fLeading->Eta() << "," << fLeading->Phi() << ")" << endl;
   cout << "    " << fNassoc << " associated particles." << endl;
 }
+
+////////////////////////////////////////////////////////////////////////
+ 
+Double_t AliLeading::GetE()
+{
+  return fLeading->E();
+}
+ 
+////////////////////////////////////////////////////////////////////////
+ 
+Double_t AliLeading::GetPt()
+{
+  return fLeading->Pt();
+}
+ 
+////////////////////////////////////////////////////////////////////////
+ 
+Double_t AliLeading::GetEta()
+{
+  return fLeading->Eta();
+}
+ 
+////////////////////////////////////////////////////////////////////////
+ 
+Double_t AliLeading::GetPhi()
+{
+  // get phi of leading
+  return ( (fLeading->Phi() < 0) ? 
+	   (fLeading->Phi()) + 2. * TMath::Pi() : 
+	   fLeading->Phi());
+}
+                                                                                

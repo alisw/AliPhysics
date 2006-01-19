@@ -13,9 +13,11 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
  
+//---------------------------------------------------------------------
 // Jet Kine Reader Header
 // Header for the MC kinematics reader in the jet analysis
 // Author: Andreas Morsch (andreas.morsch@cern.ch)
+//---------------------------------------------------------------------
 
  
 #include "AliJetKineReaderHeader.h"
@@ -28,8 +30,8 @@ AliJetKineReaderHeader::AliJetKineReaderHeader():
  AliJetReaderHeader("AliJetKineReaderHeader") 
 {
   // Constructor
-  SetPtCut();
   SetFastSimTPC(kFALSE);
+  SetFastSimEMCAL(kFALSE);
 }
 
 //____________________________________________________________________________

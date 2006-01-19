@@ -12,13 +12,12 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
- 
-//
+
+//---------------------------------------------------------------------
 // Jet ESD Reader Header
 // Header for the ESD reader in the jet analysis
-// Author: Mercedes Lopez Noriega 
-// mercedes.lopez.noriega@cern.ch
-//
+// Author: Mercedes Lopez Noriega (mercedes.lopez.noriega@cern.ch)
+//---------------------------------------------------------------------
  
 #include "AliJetESDReaderHeader.h"
 
@@ -29,10 +28,8 @@ AliJetESDReaderHeader::AliJetESDReaderHeader():
  AliJetReaderHeader("AliJetESDReaderHeader") 
 {
   // Constructor
-  SetPtCut();
-  SetDCA();
-  SetTLength();
   SetReadSignalOnly(kFALSE);
+  SetReadBkgdOnly(kFALSE);
   
 }
 

@@ -4,9 +4,11 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
  
+//---------------------------------------------------------------------
 // Jet ESD Reader 
 // ESD reader for jet analysis
 // Author: Mercedes Lopez Noriega (mercedes.lopez.noriega@cern.ch)
+//---------------------------------------------------------------------
 
 #include "AliJetReader.h"
 class AliJetESDReaderHeader;
@@ -19,8 +21,8 @@ class AliJetESDReader : public AliJetReader
   virtual ~AliJetESDReader();
 
   // Getters
-  Float_t GetTrackMass() const {return fMass;}     // returns mass of the track
-  Int_t   GetTrackSign() const {return fSign;}     // returns sign of the track
+  Float_t GetTrackMass() const {return fMass;}  // returns mass of the track
+  Int_t   GetTrackSign() const {return fSign;}  // returns sign of the track
 
   // Setters
   void FillMomentumArray(Int_t event); 

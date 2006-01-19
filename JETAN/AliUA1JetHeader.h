@@ -4,7 +4,6 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
  
- 
 //---------------------------------------------------------------------
 // Jet header class for UA1 algorithm
 // Stores the parameters of the UA1 jet algorithm
@@ -29,12 +28,14 @@ class AliUA1JetHeader : public AliJetHeader
   Float_t GetMinMove()   const  {return fMinMove;}
   Float_t GetMaxMove()   const  {return fMaxMove;}
   Float_t GetPrecBg()    const  {return fPrecBg;}
-  Int_t   GetNbinEta()   const  {return fNbinEta;}
-  Int_t   GetNbinPhi()   const  {return fNbinPhi;}
-  Float_t GetEtaMin()    const  {return fEtaMin;}
-  Float_t GetEtaMax()    const  {return fEtaMax;}
-  Float_t GetPhiMin()    const  {return fPhiMin;}
-  Float_t GetPhiMax()    const  {return fPhiMax;}
+  Int_t   GetLegoNbinEta()   const  {return fLegoNbinEta;}
+  Int_t   GetLegoNbinPhi()   const  {return fLegoNbinPhi;}
+  Float_t GetLegoEtaMin()    const  {return fLegoEtaMin;}
+  Float_t GetLegoEtaMax()    const  {return fLegoEtaMax;}
+  Float_t GetLegoPhiMin()    const  {return fLegoPhiMin;}
+  Float_t GetLegoPhiMax()    const  {return fLegoPhiMax;}
+  Bool_t GetOnlySignal()     const {return fOnlySignal;}
+  Bool_t GetOnlyBkgd()     const {return fOnlyBkgd;}
 
   // Setters
   void SetRadius(Float_t f) {fConeRadius=f;}
@@ -45,12 +46,14 @@ class AliUA1JetHeader : public AliJetHeader
   void SetMinMove(Float_t f) {fMinMove=f;}
   void SetMaxMove(Float_t f) {fMaxMove=f;}
   void SetPrecBg(Float_t f) {fPrecBg=f;}
-  void SetNbinEta(Int_t f) {fNbinEta=f;}
-  void SetNbinPhi(Int_t f) {fNbinPhi=f;}
-  void SetEtaMin(Float_t f) {fEtaMin=f;}
-  void SetEtaMax(Float_t f) {fEtaMax=f;}
-  void SetPhiMin(Float_t f) {fPhiMin=f;}
-  void SetPhiMax(Float_t f) {fPhiMax=f;}
+  void SetLegoNbinEta(Int_t f) {fLegoNbinEta=f;}
+  void SetLegoNbinPhi(Int_t f) {fLegoNbinPhi=f;}
+  void SetLegoEtaMin(Float_t f) {fLegoEtaMin=f;}
+  void SetLegoEtaMax(Float_t f) {fLegoEtaMax=f;}
+  void SetLegoPhiMin(Float_t f) {fLegoPhiMin=f;}
+  void SetLegoPhiMax(Float_t f) {fLegoPhiMax=f;}
+  void SetOnlySignal(Bool_t b) {fOnlySignal= b;}
+  void SetOnlyBkgd(Bool_t b) {fOnlyBkgd= b;}
 
   // others
   void PrintParameters() const; 
@@ -68,12 +71,15 @@ protected:
   Float_t fMaxMove;         // max cone move
   Float_t fPrecBg;          // max value of change for BG (in %)
   // parameters for legos
-  Int_t   fNbinEta;         //! number of cells in eta
-  Int_t   fNbinPhi;         //! number of cells in phi
-  Float_t fEtaMin;          //! minimum eta  
-  Float_t fEtaMax;          //! maximum eta
-  Float_t fPhiMin;          //! minimun phi
-  Float_t fPhiMax;          //! maximum phi
+  Int_t   fLegoNbinEta;         //! number of cells in eta
+  Int_t   fLegoNbinPhi;         //! number of cells in phi
+  Float_t fLegoEtaMin;          //! minimum eta  
+  Float_t fLegoEtaMax;          //! maximum eta
+  Float_t fLegoPhiMin;          //! minimun phi
+  Float_t fLegoPhiMax;          //! maximum phi
+  // parameters for Jet search
+  Bool_t fOnlySignal; // use only signal
+  Bool_t fOnlyBkgd;   // use only background
 
   ClassDef(AliUA1JetHeader,1)
 };

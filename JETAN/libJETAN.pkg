@@ -4,10 +4,10 @@ SRCS = 	AliJet.cxx AliJetHeader.cxx AliPxconeJetHeader.cxx \
 	AliJetFinder.cxx AliPxconeJetFinder.cxx AliJetReaderHeader.cxx \
 	AliJetESDReaderHeader.cxx AliJetReader.cxx AliJetESDReader.cxx \
 	AliJetControlPlots.cxx AliUA1JetHeader.cxx AliUA1JetFinder.cxx \
-	AliJetMCReaderHeader.cxx AliJetMCReader.cxx AliLeading.cxx \
+	AliLeading.cxx \
 	AliJetKineReader.cxx AliJetKineReaderHeader.cxx \
 	AliJetProductionData.cxx AliJetProductionDataPDC2004.cxx \
-	AliJetAnalysis.cxx
+	AliJetAnalysis.cxx AliJetDistributions.cxx
 
 FSRCS = pxcone.F ua1_jet_finder.F
 

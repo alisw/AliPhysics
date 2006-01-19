@@ -24,15 +24,12 @@
 #include "AliUA1JetHeader.h"
 ClassImp(AliUA1JetHeader)
  
- 
 ////////////////////////////////////////////////////////////////////////
 
 AliUA1JetHeader::AliUA1JetHeader():
   AliJetHeader("AliUA1JetHeader")
 {
-  //
   // Constructor
-  //
   fConeRadius =  0.3;
   fEtSeed     =  3.0;
   fMinJetEt   = 10.0;
@@ -41,23 +38,21 @@ AliUA1JetHeader::AliUA1JetHeader():
   fMinMove    =  0.05;
   fMaxMove    =  0.15;
   fPrecBg     =  0.035;
-  fNbinEta    =  36;
-  fNbinPhi    = 124;
-  fPhiMin     =   0.;
-  fPhiMax     = 2. * TMath::Pi();
-  fEtaMin     = -0.9;
-  fEtaMax     =  0.9;
+  fLegoNbinEta    =  36;
+  fLegoNbinPhi    = 124;
+  fLegoPhiMin     =   0.;
+  fLegoPhiMax     = 2. * TMath::Pi();
+  fLegoEtaMin     = -0.9;
+  fLegoEtaMax     =  0.9;
+  fOnlySignal = kFALSE;
+  fOnlyBkgd = kFALSE;
 }
  
-
 ////////////////////////////////////////////////////////////////////////
  
 void AliUA1JetHeader::PrintParameters() const
-
 {
-  //
   // prints out parameters of jet algorithm
-  //
 
   cout << " UA1 jet algorithm " << endl;
   cout << " * Jet parameters: " << endl;
@@ -71,10 +66,10 @@ void AliUA1JetHeader::PrintParameters() const
   cout << "   Maximum allowed move: " << fMaxMove << endl;
   cout << "   Precision for background: " << fPrecBg << endl;
   cout << " * Lego parameters: " << endl;
-  cout << "   Number of bins in eta: " << fNbinEta<< endl;
-  cout << "   Number of bins in phi: " << fNbinPhi<< endl;
-  cout << "   Minimum azimuthal angle: " << fPhiMin<< endl;
-  cout << "   Maximum azimuthal angle: " << fPhiMax<< endl;
-  cout << "   Minimum rapidity angle: " << fEtaMin<< endl;
-  cout << "   Maximum rapidity angle: " << fEtaMax<< endl;
+  cout << "   Number of bins in eta: " << fLegoNbinEta<< endl;
+  cout << "   Number of bins in phi: " << fLegoNbinPhi<< endl;
+  cout << "   Minimum azimuthal angle: " << fLegoPhiMin<< endl;
+  cout << "   Maximum azimuthal angle: " << fLegoPhiMax<< endl;
+  cout << "   Minimum rapidity angle: " << fLegoEtaMin<< endl;
+  cout << "   Maximum rapidity angle: " << fLegoEtaMax<< endl;
 }

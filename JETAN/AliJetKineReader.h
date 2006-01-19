@@ -21,7 +21,6 @@ class AliJetKineReader : public AliJetReader
   // Getters
   Float_t GetParticleMass() const {return fMass;}        // returns mass of the Track
   Int_t   GetParticlePdgCode() const {return fPdgC;}     // returns Pdg code
-
   // Setters
   void FillMomentumArray(Int_t event);
   void OpenInputFiles();

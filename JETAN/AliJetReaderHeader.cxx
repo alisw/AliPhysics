@@ -13,12 +13,12 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
  
-//---------------------------------------------------------------------
+//-------------------------------------------------------------------------
+//-------------------------------------------------------------------------
 // base class for Jet Reader Header 
 // Author: jgcn@mda.cinvestav.mx
-//---------------------------------------------------------------------
+//-------------------------------------------------------------------------
 
- 
 #include "AliJetReaderHeader.h"
 
 ClassImp(AliJetReaderHeader)
@@ -29,13 +29,12 @@ AliJetReaderHeader::AliJetReaderHeader():
  TNamed("AliJetReaderHeader", "Jet Reader Header"),
  fComment("No comment"),fDir(""),fPattern("")
 {
-  //
   // Constructor
-  //
   fFirst = 0;
   fLast = -1;
-  fFiducialEtaMin = -0.5;
-  fFiducialEtaMax =  0.5;
+  fFiducialEtaMin = -0.9;
+  fFiducialEtaMax =  0.9;
+  SetPtCut();
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -44,13 +43,12 @@ AliJetReaderHeader::AliJetReaderHeader(const char * name):
  TNamed(name, "Jet Reader Header"),
  fComment("No comment"),fDir(""),fPattern("")
 {
-  //
   // Constructor
-  //
   fFirst = 0;
   fLast = -1;
-  fFiducialEtaMin = -0.5;
-  fFiducialEtaMax =  0.5;
+  fFiducialEtaMin = -0.9;
+  fFiducialEtaMax =  0.9;
+  SetPtCut();
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -58,7 +56,5 @@ AliJetReaderHeader::AliJetReaderHeader(const char * name):
 AliJetReaderHeader::~AliJetReaderHeader()
 {
   // destructor
-  //  delete fComment;
-  //delete fDir;
-  //delete fPattern;
+
 }

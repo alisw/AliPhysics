@@ -38,10 +38,10 @@ c:>------------------------------------------------------------------
       integer kpri
       data    kpri /0/
       integer njet, ncellj
-      real    etj, etaj, phij
+      real    etj, etaj, phij, etavg
 *    Results
       COMMON /UA1JETS/ NJET, ETJ(100), ETAJ(100,2), PHIJ(100,2), 
-     +     NCELLJ(100)
+     +     NCELLJ(100), ETAVG
 *    Cell Geometry
       COMMON /UA1CELL/ etaCellSize, phiCellSize
 *    Parameters
@@ -227,17 +227,17 @@ c*-sum up unused cells within required distance of given eta/phi
             
 c*-reject cluster below minimum Ej_min
 c* protection (am)
-            etas=eta+etas/ets
-            arg = 0.
-            if (ets .ne. 0.) then
-               if (abs(etas/ets) .lt. 23.719) then
-                  arg = ets * cosh(etas/ets)
-               else
-                  arg = 1.e10
-               endif
-            endif
+
+c            arg = 0.
+c            if (ets .ne. 0.) then
+c               if (abs(etas/ets) .lt. 23.719) then
+c                  arg = ets * cosh(etas/ets)
+c               else
+c                  arg = 1.e10
+c               endif
+c            endif
             
-            if(arg .lt. ej_min) then
+            if(ets .lt. ej_min) then
                do k=1,ncell
                   if(flag(k).le.0) flag(k)=0
                enddo
@@ -246,6 +246,7 @@ c*-eles, store flags and jet variables
                do k=1,ncell
                   if(flag(k).eq.-1) flag(k)=1
                enddo
+               etas=eta+etas/ets
                phi=phi+phis/ets
                do while(phi .ge. C_2PI)
                   phi=phi-C_2PI
@@ -260,6 +261,7 @@ c*-eles, store flags and jet variables
                etaj(njet,2)=etas
                phij(njet,2)=phi
                ncellj(njet)=nc
+               etavg = et_ave
             endif 
          endif
          i=i+1

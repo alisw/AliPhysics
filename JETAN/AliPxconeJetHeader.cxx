@@ -29,9 +29,7 @@ ClassImp(AliPxconeJetHeader)
 AliPxconeJetHeader::AliPxconeJetHeader():
   AliJetHeader("AliPxconeJetHeader")
 {
-  //
   // Constructor
-  //
   SetMode();
   SetRadius();
   SetMinPt();
@@ -41,13 +39,10 @@ AliPxconeJetHeader::AliPxconeJetHeader():
 
 ////////////////////////////////////////////////////////////////////////
  
-void AliPxconeJetHeader::PrintParameters()
+void AliPxconeJetHeader::PrintParameters() const
 
 {
-  //
   // prints out parameters of jet algorithm
-  //
-
   cout << " PXCONE jet algorithm " << endl;
   cout << "  Running mode: " << fMode << endl;
   cout << "  Cone size: " << fRadius << endl;
