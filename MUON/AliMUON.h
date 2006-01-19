@@ -19,6 +19,7 @@
 #include "AliDetector.h"
 #include "AliMUONData.h"
 #include "AliMUONChamber.h"
+#include "AliMUONTrigger.h"
 
 class TVector;
 class TFile;
@@ -72,7 +73,11 @@ class AliMUON : public  AliDetector
     virtual void   SDigits2Digits();      
     virtual void   Hits2SDigits();
     virtual void   Digits2Raw();
-
+    
+    // Trigger
+    virtual AliTriggerDetector* CreateTriggerDetector() const
+       { return new AliMUONTrigger(); }
+    
 
     // Configuration Methods (per station id)
     //

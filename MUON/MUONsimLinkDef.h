@@ -31,6 +31,8 @@
 #pragma link C++ class AliMUONResponseTrigger+; 
 #pragma link C++ class AliMUONResponseTriggerV1+;
 
+#pragma link C++ class AliMUONTrigger+;
+
 #endif
 
 

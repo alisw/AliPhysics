@@ -18,7 +18,8 @@ SRCS:= AliMUONResponseFactory.cxx \
        AliMUONResponse.cxx \
        AliMUONResponseV0.cxx \
        AliMUONResponseTrigger.cxx \
-       AliMUONResponseTriggerV1.cxx
+       AliMUONResponseTriggerV1.cxx \
+       AliMUONTrigger.cxx
 
 HDRS:= $(SRCS:.cxx=.h)
 
