@@ -9,9 +9,9 @@
 #pragma link C++ class AliEMCALv0+;
 #pragma link C++ class AliEMCALv1+;
 #pragma link C++ class AliEMCALv2+;
-#pragma link C++ class AliEMCALv3+;
+//#pragma link C++ class AliEMCALv3+;
 #pragma link C++ class AliEMCALHit+;
-#pragma link C++ class AliEMCALHitv1+;
+//#pragma link C++ class AliEMCALHitv1+;
 #pragma link C++ class AliEMCALLoader+;	
 #pragma link C++ class AliEMCALGetter+;
 #pragma link C++ class AliEMCALGeneratorFactory+;
