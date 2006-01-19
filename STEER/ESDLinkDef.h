@@ -26,7 +26,6 @@
 #pragma link C++ class  AliKalmanTrack+;
 #pragma link C++ class  AliHelix+;
 #pragma link C++ class  AliExternalTrackParam+;
-#pragma link C++ class  AliTrackParam+;
 #pragma link C++ class  AliLog+;
 #pragma link C++ class  AliPID+;
 
