@@ -30,41 +30,60 @@
 
 
 // --- ROOT system ---
-
+#include "TMatrixD.h"
 
 // --- ALIROOT system ---
 #include "AliPHOSTrigger.h" 
 #include "AliPHOSGeometry.h"
 #include "AliPHOSGetter.h" 
+#include "AliTriggerInput.h"
 
 
 ClassImp(AliPHOSTrigger)
 
-//____________________________________________________________________________
-  AliPHOSTrigger::AliPHOSTrigger() : TObject(), 
-				     fL0(kFALSE), fL1Low(kFALSE), fL1Medium(kFALSE), 
-				     fL1High(kFALSE), fL0Threshold(50), fL1LowThreshold(1200),
-				     fL1MediumThreshold(12000), fL1HighThreshold(30000)  
+//______________________________________________________________________
+AliPHOSTrigger::AliPHOSTrigger()
+  : AliTriggerDetector(), fL0Threshold(50), fL1LowThreshold(1200),
+    fL1MediumThreshold(12000), fL1HighThreshold(30000) 
 {
-  // default ctor
-  Print("") ; 
+  //ctor
+
+   SetName("PHOS");
+   CreateInputs();
+   
+   Print("") ; 
 }
 
+
+
 //____________________________________________________________________________
-AliPHOSTrigger::AliPHOSTrigger(const AliPHOSTrigger & trig) : TObject(trig)
+AliPHOSTrigger::AliPHOSTrigger(const AliPHOSTrigger & trig) 
+  : AliTriggerDetector(trig) 
 {
 
   // cpy ctor
 
-  fL0                = trig.fL0 ;
-  fL1Low             = trig.fL1Low ;
-  fL1Medium          = trig.fL1Medium ;
-  fL1High            = trig.fL1High ;
   fL0Threshold       = trig.fL0Threshold ; 
   fL1LowThreshold    = trig.fL1LowThreshold ;
   fL1MediumThreshold = trig.fL1MediumThreshold ;
   fL1HighThreshold   = trig.fL1HighThreshold ;
 
+}
+
+//----------------------------------------------------------------------
+void AliPHOSTrigger::CreateInputs()
+{
+   // inputs 
+   
+   // Do not create inputs again!!
+   if( fInputs.GetEntriesFast() > 0 ) return;
+   
+   fInputs.AddLast( new AliTriggerInput( "PHOS_MB_L0", "PHOS Minimum Bias L0",  0x01 ) );
+ 
+   fInputs.AddLast( new AliTriggerInput( "PHOS_HPt_L1", "PHOS High Pt L1", 0x02 ) );
+   fInputs.AddLast( new AliTriggerInput( "PHOS_MPt_L1", "PHOS Medium Pt L1", 0x04 ) );
+   fInputs.AddLast( new AliTriggerInput( "PHOS_LPt_L1", "PHOS Low Pt L1", 0x08 ) );
+ 
 }
 
 //____________________________________________________________________________
@@ -134,17 +153,6 @@ TClonesArray *  AliPHOSTrigger::FillTRU(const TClonesArray * digits){
 }
 
 //____________________________________________________________________________
-void AliPHOSTrigger::InitTriggers()  
-{
-  //Initialize Boolean variables per each event
-
-  fL0                = kFALSE ;
-  fL1Low             = kFALSE ;
-  fL1Medium          = kFALSE ;
-  fL1High            = kFALSE ;
-
-}
-//____________________________________________________________________________
 void AliPHOSTrigger::MakeSlidingCell(const TClonesArray * trus, const Int_t mod, 
 				     Float_t *ampmax){
 
@@ -180,12 +188,12 @@ void AliPHOSTrigger::MakeSlidingCell(const TClonesArray * trus, const Int_t mod,
 }
 
 //____________________________________________________________________________
-void AliPHOSTrigger::MakeTrigger() 
+void AliPHOSTrigger::Trigger() 
 {
 
   //Main Method to select triggers.
 
-  InitTriggers() ; //Initialize triggers to kFALSE
+  //InitTriggers() ; //Initialize triggers to kFALSE
 
   AliPHOSGetter * gime = AliPHOSGetter::Instance() ; 
   
@@ -211,29 +219,29 @@ void AliPHOSTrigger::Print(const Option_t * opt) const
  
   if(! opt)
     return;
+  AliTriggerInput* in = 0x0 ;
 
-    AliInfo("PHOS trigger information:") ; 
-    printf( "                         Threshold for LO %d\n", fL0Threshold) ;  
-    printf( "                     Low Threshold for L1 %d\n", fL1LowThreshold) ;  
-    printf( "                  Medium Threshold for L1 %d\n", fL1MediumThreshold) ;  
-    printf( "                    High Threshold for L1 %d\n", fL1HighThreshold) ;  
-    if ( IsL0Set() ) 
-      printf("                         LO is set\n") ; 
-    else 
-      printf("                         LO is not set\n") ;  
-    if ( IsL1LowSet() ) 
-      printf("                         L1 Low is set\n") ; 
-    else 
-      printf("                         L1 Low is not set\n") ;  
-    if ( IsL1MediumSet() ) 
-      printf("                         L1 Medium is set\n") ; 
-    else 
-      printf("                         L1 Medium is not set\n") ;  
-    if ( IsL1HighSet() ) 
-      printf("                         L1 High is set\n") ; 
-    else 
-      printf("                         L1 High is not set\n") ; 
+  AliInfo("PHOS trigger information:") ; 
+  printf( "                         Threshold for LO %d\n", fL0Threshold) ;  
+  in = (AliTriggerInput*)fInputs.FindObject( "PHOS_MB_L0" );
+  if(in->GetValue())
+    printf( "                         PHOS MB LO is set\n") ; 
+  
+  printf( "                     Low Threshold for L1 %d\n", fL1LowThreshold) ;  
+  in = (AliTriggerInput*)fInputs.FindObject( "PHOS_LPt_L1" );
+  if(in->GetValue())
+    printf( "                         PHOS Low Pt  L1 is set\n") ;
 
+  printf( "                  Medium Threshold for L1 %d\n", fL1MediumThreshold) ; 
+  in = (AliTriggerInput*) fInputs.FindObject( "PHOS_MPt_L1" );
+  if(in->GetValue())
+  printf( "                         PHOS Medium Pt L1 is set\n") ;
+
+  printf( "                    High Threshold for L1 %d\n", fL1HighThreshold) ;  
+  in = (AliTriggerInput*) fInputs.FindObject( "PHOS_HPt_L1" );
+  if(in->GetValue())
+    printf( "                         PHOS High Pt L1 is set\n") ;
+      
 }
 
 //____________________________________________________________________________
@@ -248,15 +256,14 @@ void AliPHOSTrigger::SetTriggers(const Float_t * amp)
     if(max < amp[i] )
       max = amp[i] ;
   }
-
   if(max >= fL0Threshold){
-    SetL0();
+    SetInput("PHOS_MB_L0");
     if(max >= fL1LowThreshold){
-      SetL1Low(); 
+      SetInput("PHOS_LPt_L1"); 
       if(max >= fL1MediumThreshold){
-	SetL1Medium(); 
+	SetInput("PHOS_MPt_L1"); 
 	if(max >= fL1HighThreshold){
-	  SetL1High();
+	  SetInput("PHOS_HPt_L1");
 	}
       }
     }
