@@ -283,10 +283,10 @@ Double_t AliTRDCalPIDLQ::GetProbability(Int_t k, Double_t mom, Double_t dedx1) c
   // Upper Limit
   if(mom>=fTrackMomentum[fNMom-1]) 
   {
-    hist1 = (TH1F*) fHistdEdx->At(GetHistID(k,fNMom-1));
-    hist2 = (TH1F*) fHistdEdx->At(GetHistID(k,fNMom-2));
-    mom1 = fTrackMomentum[fNMom-1];
-    mom2 = fTrackMomentum[fNMom-2];
+    hist2 = (TH1F*) fHistdEdx->At(GetHistID(k,fNMom-1));
+    hist1 = (TH1F*) fHistdEdx->At(GetHistID(k,fNMom-2));
+    mom2 = fTrackMomentum[fNMom-1];
+    mom1 = fTrackMomentum[fNMom-2];
   }
     
   // In the range
