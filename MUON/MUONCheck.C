@@ -45,12 +45,13 @@
 #include "AliMUONRawCluster.h"
 #include "AliMUONGlobalTrigger.h"
 #include "AliMUONLocalTrigger.h"
-#include "AliMUONSegmentationManager.h"
 #include "AliMUONTrack.h"
 #include "AliMUONTrackParam.h"
 
 #include "AliMpVSegmentation.h"
 #include "AliMpIntPair.h"
+#include "AliMpDEManager.h"
+#include "AliMpSegFactory.h"
 #endif
 
 
@@ -162,7 +163,7 @@ void MUONdigits(Int_t event2Check=0, char * filename="galice.root")
     // Addressing
     Int_t ichamber, nchambers;
     nchambers = AliMUONConstants::NCh(); ;
-    muondata.SetTreeAddress("D"); 
+    muondata.SetTreeAddress("D,GLT");
     //    char branchname[30];    
  
     muondata.GetDigits();
@@ -236,6 +237,8 @@ void MUONoccupancy(Int_t event2Check=0,  Bool_t perDetEle =kFALSE, char * filena
   Int_t ichamber, nchambers,idetele, detele, ix, iy;
   nchambers = AliMUONConstants::NCh(); ;
 
+  AliMpSegFactory factory;
+
   for (ichamber=0; ichamber<nchambers; ichamber++) {
     cHchannels_bending[ichamber]=0;
     cHchannels_nonbending[ichamber]=0;
@@ -245,9 +248,16 @@ void MUONoccupancy(Int_t event2Check=0,  Bool_t perDetEle =kFALSE, char * filena
       dEchannels_nonbending[ichamber][idetele]=0;
       dEoccupancy_bending[ichamber][idetele]=0;
       dEoccupancy_nonbending[ichamber][idetele]=0;
-      if ( AliMUONSegmentationManager::IsValidDetElemId(detele) ) {
-	segbend    =  AliMUONSegmentationManager::Segmentation(detele, kBendingPlane);
-	segnonbend =  AliMUONSegmentationManager::Segmentation(detele, kNonBendingPlane);
+      if ( AliMpDEManager::IsValidDetElemId(detele) ) {
+	
+	segbend    =  factory.CreateMpSegmentation(detele, 0);
+	segnonbend =  factory.CreateMpSegmentation(detele, 1);
+        if (AliMpDEManager::GetPlaneType(detele, 0) != kBendingPlane ) {
+	  AliMpVSegmentation* tmp = segbend;
+	  segbend    =  segnonbend;
+	  segnonbend =  tmp;
+	}  
+	  
 	for(ix=0; ix<=segbend->MaxPadIndexX(); ix++) {
 	  for(iy=0; iy<=segbend->MaxPadIndexY(); iy++) {
 	    pad.SetFirst(ix);
@@ -279,6 +289,8 @@ void MUONoccupancy(Int_t event2Check=0,  Bool_t perDetEle =kFALSE, char * filena
   }
   printf(">>Spectrometer has  %7d channels in bending and %7d channels in nonbending \n",
 	 totalchannels_bending, totalchannels_nonbending);
+
+  factory.DeleteSegmentations();
 
   ievent=event2Check;
   printf(">>> Event %d \n",ievent);
@@ -322,7 +334,7 @@ void MUONoccupancy(Int_t event2Check=0,  Bool_t perDetEle =kFALSE, char * filena
 
     for(Int_t idetele=0; idetele<26; idetele++) {
       Int_t detele = idetele + 100*(ichamber+1);
-      if ( AliMUONSegmentationManager::IsValidDetElemId(detele) ) {
+      if ( AliMpDEManager::IsValidDetElemId(detele) ) {
 	if (perDetEle) {
 	  printf(">>> DetEle %4d nChannels Bending %5d  nChannels NonBending %5d \n", 
 		 idetele+100*(ichamber+1), 
@@ -369,7 +381,7 @@ void MUONrecpoints(Int_t event2Check=0, char * filename="galice.root") {
     // Addressing
     Int_t ichamber, nchambers;
     nchambers = AliMUONConstants::NTrackingCh();
-    muondata.SetTreeAddress("RC"); 
+    muondata.SetTreeAddress("RC,TC"); 
     char branchname[30];    
     muondata.GetRawClusters();
     // Loop on chambers
@@ -435,7 +447,7 @@ void MUONrectrigger (Int_t event2Check=0, char * filename="galice.root"){
     if (event2Check!=0) ievent=event2Check;
     RunLoader->GetEvent(ievent);
     
-    muondata.SetTreeAddress("GLT"); 
+    muondata.SetTreeAddress("D,GLT"); 
     muondata.GetTriggerD();
     
     globalTrigger = muondata.GlobalTrigger();
