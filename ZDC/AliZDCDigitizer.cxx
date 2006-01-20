@@ -36,6 +36,7 @@
 #include "AliGenHijingEventHeader.h"
 #include "AliRunDigitizer.h"
 #include "AliRunLoader.h"
+#include "AliCDBManager.h"
 #include "AliCDBStorage.h"
 #include "AliCDBEntry.h"
 #include "AliZDCSDigit.h"
@@ -58,8 +59,14 @@ AliZDCDigitizer::AliZDCDigitizer()
 AliZDCDigitizer::AliZDCDigitizer(AliRunDigitizer* manager):
   AliDigitizer(manager)
 {
+
   // Constructor    
-  // if(!fStorage) fStorage =  AliCDBManager::Instance()->GetStorage("local://DBlocal");
+  fStorage =  SetStorage("local://$ALICE_ROOT");
+
+  // Get calibration data
+  int runNumber = 0;
+  fCalibData = GetCalibData(runNumber); 
+
 }
 
 //____________________________________________________________________________
@@ -153,9 +160,9 @@ void AliZDCDigitizer::Exec(Option_t* /*option*/)
     // 
     specN = ((AliGenHijingEventHeader*) genHeader)->ProjSpectatorsn();
     specP = ((AliGenHijingEventHeader*) genHeader)->ProjSpectatorsp();
-    AliDebug(2, Form("\n b = %f fm, Nspecn = %d, Nspecp = %d\n",
+    AliDebug(2, Form("\n AliZDCDigitizer -> b = %f fm, Nspecn = %d, Nspecp = %d\n",
                      impPar, specN, specP));
-   printf("\n\t **** b = %f fm, Nspecn = %d, Nspecp = %d\n",
+   printf("\n\t AliZDCDigitizer -> b = %f fm, Nspecn = %d, Nspecp = %d\n",
                      impPar, specN, specP);
   }
 
@@ -163,9 +170,9 @@ void AliZDCDigitizer::Exec(Option_t* /*option*/)
   if (impPar >= 0) {
     Int_t freeSpecN, freeSpecP;
     Fragmentation(impPar, specN, specP, freeSpecN, freeSpecP);
-    printf("\n\t ---- Adding signal for %d free spectator n\n",freeSpecN);
+    printf("\n\t AliZDCDigitizer ---- Adding signal for %d free spectator n\n",freeSpecN);
     SpectatorSignal(1, freeSpecN, pm);
-    printf("\t ---- Adding signal for %d free spectator p\n\n",freeSpecP);
+    printf("\t AliZDCDigitizer ---- Adding signal for %d free spectator p\n\n",freeSpecP);
     SpectatorSignal(2, freeSpecP, pm);
   }
 
@@ -198,8 +205,8 @@ void AliZDCDigitizer::Exec(Option_t* /*option*/)
         for (Int_t res = 0; res < 2; res++){
           digi[res] = Phe2ADCch(sector[0], sector[1], pm[sector[0]-1][sector[1]], res) 
 	            + Pedestal(sector[0], sector[1], res);
-	  printf("\t DIGIT added -> det = %d, quad = %d - digi[%d] = %d\n\n",
-	      sector[0], sector[1], res, digi[res]); // Chiara debugging!
+	  //printf("\t DIGIT added -> det = %d, quad = %d - digi[%d] = %d\n\n",
+	  //    sector[0], sector[1], res, digi[res]); // Chiara debugging!
 	}
         new(pdigit) AliZDCDigit(sector, digi);
         treeD->Fill();
@@ -283,7 +290,7 @@ void AliZDCDigitizer::SpectatorSignal(Int_t SpecType, Int_t numEvents,
 	  //
 	  Float_t lightQ = hitsSpec[4];
 	  Float_t lightC = hitsSpec[5];
-	  AliDebug(3, Form("Volume = (%d, %d), lightQ = %.0f, lightC = %.0f",
+	  AliDebug(3, Form("SpectatorSignal -> vol = (%d, %d), lightQ = %.0f, lightC = %.0f",
                            volume[0], volume[1], lightQ, lightC));
 	  //printf("\n   Volume = (%d, %d), lightQ = %.0f, lightC = %.0f",
           //                 volume[0], volume[1], lightQ, lightC);
@@ -317,45 +324,60 @@ Int_t AliZDCDigitizer::Phe2ADCch(Int_t Det, Int_t Quad, Float_t Light,
 {
   // Evaluation of the ADC channel corresponding to the light yield Light
   Int_t ADCch = (Int_t) (Light * fPMGain[Det-1][Quad] * fADCRes[Res]);
-  printf("\t Phe2ADCch -> det %d quad %d - phe %.0f  ADC %d\n", Det,Quad,Light,ADCch);
+  //printf("\t Phe2ADCch -> det %d quad %d - phe %.0f  ADC %d\n", Det,Quad,Light,ADCch);
   return ADCch;
 }
 
 //_____________________________________________________________________________
 Int_t AliZDCDigitizer::Pedestal(Int_t Det, Int_t Quad, Int_t Res) const
 {
-  // Get calibration data
-  int runNumber = 0;
-  AliZDCCalibData *calibda = GetCalibData(runNumber);  
-  //calibda->Print("");
   
   Float_t meanPed;
-  if(Det != 3) meanPed = calibda->GetMeanPed(10*(Det-1)+Quad+5*Res);
-  else         meanPed = calibda->GetMeanPed(10*(Det-1)+Quad+1*Res);
+  if(Det != 3) meanPed = fCalibData->GetMeanPed(10*(Det-1)+Quad+5*Res);
+  else         meanPed = fCalibData->GetMeanPed(10*(Det-1)+Quad+1*Res);
   
-  printf("\t Pedestal -> det = %d, quad = %d, res = %d - Ped[%d] = %d\n",
-  	Det, Quad, Res,10*(Det-1)+Quad+5*Res,(Int_t) meanPed); // Chiara debugging!
+  //printf("\t Pedestal -> det = %d, quad = %d, res = %d - Ped[%d] = %d\n",
+  //	Det, Quad, Res,10*(Det-1)+Quad+5*Res,(Int_t) meanPed); // Chiara debugging!
   
   return (Int_t) meanPed;
+}
+
+//_____________________________________________________________________________
+AliCDBStorage* AliZDCDigitizer::SetStorage(const char *uri) 
+{
+  //printf("\n\t AliZDCDigitizer::SetStorage \n");
+
+  Bool_t deleteManager = kFALSE;
+  
+  AliCDBManager *manager = AliCDBManager::Instance();
+  AliCDBStorage *defstorage = manager->GetDefaultStorage();
+  
+  if(!defstorage || !(defstorage->Contains("ZDC"))){ 
+     AliWarning("No default storage set or default storage doesn't contain ZDC!");
+     manager->SetDefaultStorage(uri);
+     deleteManager = kTRUE;
+  }
+ 
+  AliCDBStorage *storage = manager->GetDefaultStorage();
+
+  if(deleteManager){
+    AliCDBManager::Instance()->UnsetDefaultStorage();
+    defstorage = 0;   // the storage is killed by AliCDBManager::Instance()->Destroy()
+  }
+
+  return storage; 
 }
 
 //_____________________________________________________________________________
 AliZDCCalibData* AliZDCDigitizer::GetCalibData(int runNumber) const
 {
 
-  printf("\t AliZDCReconstructor::GetCalibData for RUN #%d\n",runNumber);
-  //fStorage->PrintSelectionList();
-  //AliCDBEntry *entry = fStorage->Get("ZDC/Calib/Data",runNumber);
-  
-  AliCDBStorage *fStorage = AliCDBManager::Instance()->GetStorage("local://$ALICE_ROOT");
-  AliCDBEntry  *entry = fStorage->Get("ZDC/Calib/Data",0);
-  
-  AliZDCCalibData *calibda = 0;
-  if (entry) calibda = (AliZDCCalibData*) entry->GetObject();
-  //calibda->Print("");
+  //printf("\n\t AliZDCDigitizer::GetCalibData \n");
+      
+  AliCDBEntry  *entry = fStorage->Get("ZDC/Calib/Data",runNumber);  
+  AliZDCCalibData *calibdata = (AliZDCCalibData*) entry->GetObject();
+    
+  if (!calibdata)  AliWarning("No calibration data from calibration database !");
 
- // AliCDBManager::Instance()->Destroy();
-
-  return calibda;
-
+  return calibdata;
 }

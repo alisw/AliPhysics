@@ -44,6 +44,7 @@ public:
   Float_t GetADCRes(Int_t i) const {return fADCRes[i];}
   
   void   GetStorage(const char* uri) {fStorage = AliCDBManager::Instance()->GetStorage(uri);}
+  AliCDBStorage   *SetStorage(const char* uri);
   AliZDCCalibData *GetCalibData(int runNumber) const; 
 
 private:
@@ -56,11 +57,11 @@ private:
                     Int_t Res) const;
   Int_t   Pedestal(Int_t Detector, Int_t Quadrant, Int_t Res) const;
 
-  Float_t fPMGain[3][5];      // PM gain
-  Float_t fADCRes[2];	      // ADC conversion factors
+  Float_t fPMGain[3][5];      	// PM gain
+  Float_t fADCRes[2];	      	// ADC conversion factors
   
-  AliCDBStorage *fStorage; //! storage
-
+  AliCDBStorage *fStorage; 	//! storage
+  AliZDCCalibData *fCalibData; 	//! calibration data
        
   ClassDef(AliZDCDigitizer, 3)     // digitizer for ZDC
 };    

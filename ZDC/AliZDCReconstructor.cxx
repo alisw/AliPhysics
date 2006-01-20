@@ -41,7 +41,7 @@ ClassImp(AliZDCReconstructor)
 AliZDCReconstructor:: AliZDCReconstructor()
 {
   // **** Default constructor
-  // if(!fStorage) fStorage =  AliCDBManager::Instance()->GetStorage("local://DBlocal");
+  fStorage =  0;
 
   //  ---      Number of generated spectator nucleons and impact parameter
   // --------------------------------------------------------------------------------------------------
@@ -73,6 +73,13 @@ AliZDCReconstructor:: AliZDCReconstructor()
   fZEMp  = new TF1("fZEMp","82.49-0.03611*x+0.00000385*x*x",0.,4000.);
   fZEMsp = new TF1("fZEMsp","208.7-0.09006*x+0.000009526*x*x",0.,4000.);
   fZEMb  = new TF1("fZEMb","16.06-0.01633*x+1.44e-5*x*x-6.778e-9*x*x*x+1.438e-12*x*x*x*x-1.112e-16*x*x*x*x*x",0.,4000.);
+  
+  // Setting storage
+  fStorage =  SetStorage("local://$ALICE_ROOT");
+
+  // Get calibration data
+  int runNumber = 0;
+  fCalibData = GetCalibData(runNumber); 
 }
 
 //_____________________________________________________________________________
@@ -119,13 +126,9 @@ AliZDCReconstructor::~AliZDCReconstructor()
 void AliZDCReconstructor::Reconstruct(AliRunLoader* runLoader) const
 {
   // *** Local ZDC reconstruction for digits
-  
-  // Get calibration data
-  int runNumber = 0;
-  AliZDCCalibData *calibda = GetCalibData(runNumber);  
-  
+    
   Float_t meanPed[47];
-  for(Int_t jj=0; jj<47; jj++) meanPed[jj] = calibda->GetMeanPed(jj);
+  for(Int_t jj=0; jj<47; jj++) meanPed[jj] = fCalibData->GetMeanPed(jj);
 
   AliLoader* loader = runLoader->GetLoader("ZDCLoader");
   if (!loader) return;
@@ -151,12 +154,14 @@ void AliZDCReconstructor::Reconstruct(AliRunLoader* runLoader) const
       if (!pdigit) continue;
 
       if(digit.GetSector(0) == 1)
-       	 zncorr  += (Float_t) (digit.GetADCValue(0)-meanPed[digit.GetSector(1)]);	   // ped 4 high gain ZN ADCs
+       	 zncorr  += (Float_t) (digit.GetADCValue(0)-meanPed[digit.GetSector(1)]);     // ped 4 high gain ZN ADCs
       else if(digit.GetSector(0) == 2)
-	 zpcorr  += (Float_t) (digit.GetADCValue(0)-meanPed[digit.GetSector(1)+10]); // ped 4 high gain ZP ADCs
+	 zpcorr  += (Float_t) (digit.GetADCValue(0)-meanPed[digit.GetSector(1)+10]);  // ped 4 high gain ZP ADCs
       else if(digit.GetSector(0) == 3){
-	 if(digit.GetSector(1)==1)      zemcorr += (Float_t) (digit.GetADCValue(0)-meanPed[digit.GetSector(1)+20]); // ped 4 high gain ZEM1 ADCs
-	 else if(digit.GetSector(1)==2) zemcorr += (Float_t) (digit.GetADCValue(0)-meanPed[digit.GetSector(1)+22]); // ped 4 high gain ZEM2 ADCs
+	 if(digit.GetSector(1)==1)      
+	   zemcorr += (Float_t) (digit.GetADCValue(0)-meanPed[digit.GetSector(1)+20]); // ped 4 high gain ZEM1 ADCs
+	 else if(digit.GetSector(1)==2) 
+	   zemcorr += (Float_t) (digit.GetADCValue(0)-meanPed[digit.GetSector(1)+22]); // ped 4 high gain ZEM2 ADCs
       }
     }
     if(zncorr<0)  zncorr=0;
@@ -164,7 +169,7 @@ void AliZDCReconstructor::Reconstruct(AliRunLoader* runLoader) const
     if(zemcorr<0) zemcorr=0;
 
     // reconstruct the event
-    printf("\n \t ZDCReco from digits-> Ev.#%d ZN = %.0f, ZP = %.0f, ZEM = %.0f\n",iEvent,zncorr,zpcorr,zemcorr);
+    //printf("\n \t ZDCReco from digits-> Ev.#%d ZN = %.0f, ZP = %.0f, ZEM = %.0f\n",iEvent,zncorr,zpcorr,zemcorr);
     ReconstructEvent(loader, zncorr, zpcorr, zemcorr);
   }
 
@@ -178,12 +183,8 @@ void AliZDCReconstructor::Reconstruct(AliRunLoader* runLoader,
 {
   // *** Local ZDC reconstruction for raw data
   
-  // Calibration data
-  int runNumber = 0;
-  AliZDCCalibData *calibda = GetCalibData(runNumber);  
-  
   Float_t meanPed[47];
-  for(Int_t jj=0; jj<47; jj++) meanPed[jj] = calibda->GetMeanPed(jj);
+  for(Int_t jj=0; jj<47; jj++) meanPed[jj] = fCalibData->GetMeanPed(jj);
 
   AliLoader* loader = runLoader->GetLoader("ZDCLoader");
   if (!loader) return;
@@ -210,7 +211,7 @@ void AliZDCReconstructor::Reconstruct(AliRunLoader* runLoader,
     if(zemcorr<0) zemcorr=0;
     
     // reconstruct the event
-    printf("\n\t ZDCReco from raw-> Ev.#%d ZN = %.0f, ZP = %.0f, ZEM = %.0f\n",iEvent,zncorr,zpcorr,zemcorr);
+    //printf("\n\t ZDCReco from raw-> Ev.#%d ZN = %.0f, ZP = %.0f, ZEM = %.0f\n",iEvent,zncorr,zpcorr,zemcorr);
     ReconstructEvent(loader, zncorr, zpcorr, zemcorr);
   }
 
@@ -250,7 +251,6 @@ void AliZDCReconstructor::ReconstructEvent(AliLoader* loader, Float_t zncorr,
   //  if AliDebug(1,Form("    znenergy = %f TeV, zpenergy = %f TeV, zdcenergy = %f GeV, "
   //			   "\n		zemenergy = %f TeV\n", znenergy, zpenergy, 
   //			   zdcenergy, zemenergy);
-  
   //  if(zdcenergy==0)
   //    if AliDebug(1,Form("\n\n	###	ATTENZIONE!!! -> ev# %d: znenergy = %f TeV, zpenergy = %f TeV, zdcenergy = %f GeV, "
   //			     " zemenergy = %f TeV\n\n", fMerger->EvNum(), znenergy, zpenergy, zdcenergy, zemenergy); 
@@ -303,8 +303,8 @@ void AliZDCReconstructor::ReconstructEvent(AliLoader* loader, Float_t zncorr,
   Int_t nPart, nPartTot;
   nPart = 207-nGenSpecN-nGenSpecP;
   nPartTot = 207-nGenSpec;
-  printf("\t  ZDCeventReco-> ZNEn = %.0f GeV, ZPEn = %.0f GeV, ZEMEn = %.0f GeV\n",
-  	znenergy, zpenergy, zemenergy);
+  //printf("\t  ZDCeventReco-> ZNEn = %.0f GeV, ZPEn = %.0f GeV, ZEMEn = %.0f GeV\n",
+  //	znenergy, zpenergy, zemenergy);
 
   // create the output tree
   loader->MakeTree("R");
@@ -345,21 +345,41 @@ void AliZDCReconstructor::FillESD(AliRunLoader* runLoader,
 }
 
 //_____________________________________________________________________________
+AliCDBStorage* AliZDCReconstructor::SetStorage(const char *uri) 
+{
+  //printf("\n\t AliZDCReconstructor::SetStorage \n");
+
+  Bool_t deleteManager = kFALSE;
+  
+  AliCDBManager *manager = AliCDBManager::Instance();
+  AliCDBStorage *defstorage = manager->GetDefaultStorage();
+  
+  if(!defstorage || !(defstorage->Contains("ZDC"))){ 
+     AliWarning("No default storage set or default storage doesn't contain ZDC!");
+     manager->SetDefaultStorage(uri);
+     deleteManager = kTRUE;
+  }
+ 
+  AliCDBStorage *storage = manager->GetDefaultStorage();
+
+  if(deleteManager){
+    AliCDBManager::Instance()->UnsetDefaultStorage();
+    defstorage = 0;   // the storage is killed by AliCDBManager::Instance()->Destroy()
+  }
+
+  return storage; 
+}
+
+//_____________________________________________________________________________
 AliZDCCalibData* AliZDCReconstructor::GetCalibData(int runNumber) const
 {
 
   //printf("\n\t AliZDCReconstructor::GetCalibData \n");
-  //fStorage->PrintSelectionList();
-  //AliCDBEntry *entry = fStorage->Get("DBlocal/ZDC/Calib/Data",runNumber);
+      
+  AliCDBEntry  *entry = fStorage->Get("ZDC/Calib/Data",runNumber);  
+  AliZDCCalibData *calibdata = (AliZDCCalibData*) entry->GetObject();
+    
+  if (!calibdata)  AliWarning("No calibration data from calibration database !");
 
-  
-  AliCDBStorage *fStorage = AliCDBManager::Instance()->GetStorage("local://$ALICE_ROOT");
-  AliCDBEntry  *entry = fStorage->Get("ZDC/Calib/Data",0);
-  
-  AliZDCCalibData *calibda = (AliZDCCalibData*) entry->GetObject();
-
-  //AliCDBManager::Instance()->Destroy();
-
-  return calibda;
-
+  return calibdata;
 }

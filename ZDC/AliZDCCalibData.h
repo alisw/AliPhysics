@@ -29,9 +29,9 @@ class AliZDCCalibData: public TNamed {
   Float_t  GetEnCalib(Int_t channel)	const {return fEnCalibration[channel];}
   Float_t* GetEnCalib()   const {return (float*)fEnCalibration;}
   //
-  void     SetMeanPed(Float_t val, Int_t channel) {fMeanPedestal[channel]=val;}
+  void     SetMeanPed(Int_t channel, Float_t val) {fMeanPedestal[channel]=val;}
   void     SetMeanPed(Float_t* MeanPed);
-  void 	   SetEnCalib(Float_t val, Int_t channel) {fEnCalibration[channel]=val;}
+  void 	   SetEnCalib(Int_t channel, Float_t val) {fEnCalibration[channel]=val;}
   void 	   SetEnCalib(Float_t* EnCalib);
   //
   void     PrepHistos();
@@ -40,7 +40,7 @@ class AliZDCCalibData: public TNamed {
 
  protected:
   Float_t  fMeanPedestal[47];	// Mean pedestal values
-  Float_t  fEnCalibration[4];	// Coeff. for energy calibration (4 different ZDC's?)
+  Float_t  fEnCalibration[3];	// Coeff. for energy calibration
   TH1F*    fHistMeanPed;        //! histos for drawing mean pedestals
   //
   ClassDef(AliZDCCalibData,1)    // ZDC Sensor Calibration data

@@ -95,10 +95,8 @@ void AliZDCCalibData::PrepHistos()
   Int_t   kNChannels = 47;
   Float_t kMaxPedVal = 47.;
   TString hname = GetName();  hname += "_Pedestals";
-  fHistMeanPed   = new TH1F(hname.Data(),hname.Data(),kNChannels,0.,kMaxPedVal);
-  for (int i=0; i<47; i++) {
-    fHistMeanPed->SetBinContent(i+1,GetMeanPed(i));
-  }
+  fHistMeanPed = new TH1F(hname.Data(),hname.Data(),kNChannels,0.,kMaxPedVal);
+  for(int i=0; i<47; i++)  fHistMeanPed->SetBinContent(i+1,GetMeanPed(i));
 }
 
 //________________________________________________________________
@@ -118,7 +116,7 @@ void  AliZDCCalibData::Print(Option_t *) const
    }
  
    printf("\n	----	Energy calibration coefficients 	----\n\n");
-   for(int t=0; t<4; t++){
+   for(int t=0; t<3; t++){
       printf("	En Calib Coeff. [ZDC%d] = %f\n",t,fEnCalibration[t]);
    }
 } 

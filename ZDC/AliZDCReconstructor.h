@@ -40,6 +40,7 @@ public:
   		  {AliReconstructor::FillESD(runLoader,rawReader,esd);}
   
   void   GetStorage(const char* uri) {fStorage = AliCDBManager::Instance()->GetStorage(uri);}
+  AliCDBStorage   *SetStorage(const char* uri);
   AliZDCCalibData *GetCalibData(int runNumber) const; 
 
 private:
@@ -61,7 +62,8 @@ private:
   TF1*   fZEMsp;     //! Nspectators from ZEM energy
   TF1*   fZEMb;      //! b from ZEM energy
   
-  AliCDBStorage *fStorage; //! storage
+  AliCDBStorage *fStorage; 	//! storage
+  AliZDCCalibData *fCalibData; 	//! calibration data
 
   ClassDef(AliZDCReconstructor, 1)   // class for the ZDC reconstruction
 };
