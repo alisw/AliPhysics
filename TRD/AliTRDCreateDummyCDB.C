@@ -111,6 +111,17 @@ TObject* CreatePRFWidthObject()
   return calPad;
 }
 
+AliTRDCalPIDLQ* CreatePIDLQObject()
+{
+  AliTRDCalPIDLQ* pid = new AliTRDCalPIDLQ();
+  pid->ReadData("$ALICE_ROOT/TRD/TRDdEdxHistogramsV1.root");
+  pid->SetMeanChargeRatio(1.0); // The factor is the ratio of Mean of pi charge dist.
+                    // for the New TRD code divided by the Mean of pi charge
+                    // dist. given in AliTRDCalPIDLQ object
+  
+  return pid;
+}
+
 AliCDBMetaData* CreateMetaObject(const char* objectClassName)
 {
   AliCDBMetaData *md1= new AliCDBMetaData(); 
@@ -176,4 +187,7 @@ void AliTRDCreateDummyCDB()
   obj = CreateStackObject();
   StoreObject("TRD/Calib/Stack", obj, metaData);
   
+  metaData = CreateMetaObject("AliTRDCalPIDLQ");
+  obj = CreatePIDLQObject();
+  StoreObject("TRD/Calib/PIDLQ", obj, metaData);
 }
