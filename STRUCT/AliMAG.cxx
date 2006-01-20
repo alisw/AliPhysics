@@ -35,6 +35,12 @@
 ///////////////////////////////////////////////////////////////////////////////
  
 #include <TVirtualMC.h>
+#include <TGeoMedium.h>
+#include <TGeoVolume.h>
+#include <TGeoMatrix.h>
+#include <TGeoPgon.h>
+#include <TGeoCompositeShape.h>
+#include <TGeoManager.h>
 
 #include "AliMAG.h"
 #include "AliMagF.h"
@@ -85,142 +91,96 @@ void AliMAG::CreateGeometry()
   */
   //End_Html
   
-  Int_t *idtmed = fIdtmed->GetArray()-299;
-  
-  Float_t dpar[13];
-  Int_t idrotm[399];
-  Float_t par[10];
-  
-  // ANGLE POLAIRE MAXIMUM 
-  
+  //
+  // Top volume 
+  TGeoVolume* top = gGeoManager->GetVolume("ALIC");
+  // Media 
+  TGeoMedium* medAir  = gGeoManager->GetMedium("MAG_AIR_C1");
+  TGeoMedium* medAlu  = gGeoManager->GetMedium("MAG_ALU_C1");  
+  TGeoMedium* medAluI = gGeoManager->GetMedium("MAG_ALU_C0");
+  TGeoMedium* medFe   = gGeoManager->GetMedium("MAG_FE_C1");
+  TGeoMedium* medFeI  = gGeoManager->GetMedium("MAG_FE_C0");
+  //
+  // Offset between LHC and LEP axis
+  Float_t os = -30.;
+
+  //
   //  Define Mother 
-  
-  par[0] = 22.5;
-  par[1] = 360.;
-  par[2] = 8.;
-  par[3] = 2.;
-  par[4] = -600.;
-  par[5] = 580.;
-  par[6] = 790.;
-  par[7] = 600.;
-  par[8] = 580.;
-  par[9] = 790.;
-  gMC->Gsvolu("L3MO", "PGON", idtmed[334], par, 10);
-  gMC->Gspos("L3MO", 1, "ALIC", 0., -30., 0., 0, "ONLY");
-  
+  //  
+  TGeoPgon* shMother = new TGeoPgon(22.5, 360., 8, 2);
+  shMother->DefineSection(0, -600., 580., 790.);
+  shMother->DefineSection(1,  600., 580., 790.);  
+  // 
+  TGeoVolume* voMother = new TGeoVolume("L3MO", shMother, medAir);
+  //  
   // Define coils 
-  
-  par[5] = 585.;
-  par[6] = 690.;
-  par[8] = 585.;
-  par[9] = 690.;
-  gMC->Gsvolu("L3CO", "PGON", idtmed[328], par, 10);
-  gMC->Gspos("L3CO", 1, "L3MO", 0., 0., 0., 0, "ONLY");
-  
-  par[5] = 580.;
-  par[6] = 585.;
-  par[8] = 580.;
-  par[9] = 585.;
-  gMC->Gsvolu("L3C1", "PGON", idtmed[308], par, 10);
-  gMC->Gspos("L3C1", 1, "L3MO", 0., 0., 0., 0, "ONLY");
-  
-  // Define yoke 
-  
-  par[5] = 690.;
-  par[6] = 790.;
-  par[8] = 690.;
-  par[9] = 790.;
-  gMC->Gsvolu("L3YO", "PGON", idtmed[329], par, 10);
-  gMC->Gspos("L3YO", 1, "L3MO", 0., 0., 0., 0, "ONLY");
-  
-  // Define the return yoke of L3 (DOOR) 
-  
-  par[4] = 600.;
-  par[5] = 0.;
-  par[6] = 790.;
-  par[7] = 700.;
-  par[8] = par[5];
-  par[9] = par[6];
-  gMC->Gsvolu("L3DO", "PGON", idtmed[334], par, 10);
-  gMC->Gsvolu("L3DX", "PGON", idtmed[334], par, 10);
-  
-  par[4] = 610.;
-  par[5] = 0.;
-  par[6] = 790.;
-  par[7] = 700.;
-  par[8] = par[5];
-  par[9] = par[6];
-  gMC->Gsvolu("L3FR", "PGON", idtmed[329], par, 10);
-  gMC->Gsvolu("L3FX", "PGON", idtmed[329], par, 10);
-  
-  // INNER LAYER 
-  
-  par[4] = 600.;
-  par[7] = 610.;
-  gMC->Gsvolu("L3IR", "PGON", idtmed[309], par, 10);
-  gMC->Gsvolu("L3IX", "PGON", idtmed[309], par, 10);
-  
-  //     DOOR OPENING 
-  
-  dpar[0] = 22.5;
-  dpar[1] = 360;
-  dpar[2] = 8.;
-  dpar[3] = 3.;
-  dpar[4] = 610.;
-  dpar[5] = 0.;
-  dpar[6] = 163.5;
-  dpar[7] = 670.;
-  dpar[8] = dpar[5];
-  dpar[9] = dpar[6];
-  dpar[10] = 700.;
-  dpar[11] = dpar[5];
-  dpar[12] = dpar[6] + 50.;
-  gMC->Gsvolu("L3O1", "PGON", idtmed[314], dpar, 13);
-  gMC->Gsvolu("L3O3", "PGON", idtmed[314], dpar, 13);
-  par[4] = 600.;
-  par[5] = 0.;
-  par[6] = 163.5;
-  par[7] = 610.;
-  par[8] = 0.;
-  par[9] = 163.5;
-  gMC->Gsvolu("L3O2", "PGON", idtmed[314], par, 10);
-  gMC->Gsvolu("L3O4", "PGON", idtmed[314], par, 10);
-  
-  //     THE DOOR OPENING HAS TO BE PLACED WITH 'MANY' SINCE THE REGION 
-  //     WILL CONTAIN A MUON CHAMBER, BEAM PIPE AND BEAM SHIELD 
-  //     PLACED WITH 'ONLY'. 
-  
-  AliMatrix(idrotm[300], 90., 0., 90., 90., 180., 0.);
+  //
+  TGeoPgon* shCoils = new TGeoPgon(22.5, 360., 8, 2);
+  shCoils->DefineSection(0, -600., 585., 690.);
+  shCoils->DefineSection(1,  600., 585., 690.);  
+  // 
+  TGeoVolume* voCoils = new TGeoVolume("L3C0", shCoils, medAlu);
+  voMother->AddNode(voCoils, 1, new TGeoTranslation(0., 0., 0.));
+  //
+  TGeoPgon* shCoilsI = new TGeoPgon(22.5, 360., 8, 2);
+  shCoilsI->DefineSection(0, -600., 580., 585.);
+  shCoilsI->DefineSection(1,  600., 580., 585.);  
+  //
+  TGeoVolume* voCoilsI = new TGeoVolume("L3C1", shCoilsI, medAluI);
+  voMother->AddNode(voCoilsI, 1, new TGeoTranslation(0., 0., 0.));
+  //
+  // Define yoke
+  //
+  TGeoPgon* shYoke = new TGeoPgon(22.5, 360., 8, 2);
+  shYoke->DefineSection(0, -600., 690., 790.);
+  shYoke->DefineSection(1,  600., 690., 790.);  
+  // 
+  TGeoVolume* voYoke = new TGeoVolume("L3YO", shYoke, medFe);
+  voMother->AddNode(voYoke, 1, new TGeoTranslation(0., 0., 0.));
 
-  gMC->Gspos("L3DO", 1, "ALIC", 0., -30., 0., 0, "MANY");
-  gMC->Gspos("L3FR", 1, "L3DO", 0., 0., 0., 0, "MANY");
-  gMC->Gspos("L3IR", 1, "L3DO", 0., 0., 0., 0, "MANY");
-  
-  gMC->Gspos("L3DX", 1, "ALIC", 0., -30., 0., idrotm[300], "MANY");
-  gMC->Gspos("L3FX", 1, "L3DX", 0., 0., 0., 0, "MANY");
-  gMC->Gspos("L3IX", 1, "L3DX", 0., 0., 0., 0, "MANY");
-
-  if(!strcmp(gMC->GetName(),"TGeant3") 
-     || !strcmp(gMC->GetName(),"TFluka")
-     || !strcmp(gMC->GetName(),"TGeant3TGeo")) {
-
-    gMC->Gspos("L3O1", 1, "L3FR", 0., 30., 0., 0, "MANY");
-    gMC->Gspos("L3O2", 1, "L3IR", 0., 30., 0., 0, "MANY");
-    gMC->Gspos("L3O3", 1, "L3FX", 0., 30., 0., 0, "MANY");
-    gMC->Gspos("L3O4", 1, "L3IX", 0., 30., 0., 0, "MANY");
-
-  }
-  else {
-    gMC->Gspos("L3O1", 1, "ALIC", 0., 0., 0., 0, "MANY");
-    gMC->Gspos("L3O2", 1, "ALIC", 0., 0., 0., 0, "MANY");
-    gMC->Gsbool("L3O1", "L3DO");
-    gMC->Gsbool("L3O2", "L3DO");
-  
-    gMC->Gspos("L3O3", 1, "ALIC", 0., 0., 0., idrotm[300], "MANY");
-    gMC->Gspos("L3O4", 1, "ALIC", 0., 0., 0., idrotm[300], "MANY");
-    gMC->Gsbool("L3O3", "L3DX");
-    gMC->Gsbool("L3O4", "L3DX");
-  }      
+  //
+  // Define the return yoke of L3 ("Doors") 
+  //
+  // Original outer part
+  TGeoPgon* shDoorO = new TGeoPgon(22.5, 360., 8, 2);
+  shDoorO->DefineSection(0,  600., 240., 790.);
+  shDoorO->DefineSection(1,  700., 240., 790.);  
+  shDoorO->SetName("A");
+  //
+  // Additional inner part
+  TGeoPgon* shDoorI = new TGeoPgon(22.5, 360., 8, 3);
+  shDoorI->DefineSection(0,  600., 163.5, 270.);
+  shDoorI->DefineSection(1,  670., 163.5, 270.);  
+  shDoorI->DefineSection(2,  700., 213.5, 270.);
+  shDoorI->SetName("B"); 
+  //
+  // For transport: low thresholds close to chambers requires special volume
+  //
+  TGeoPgon* shDoorIe = new TGeoPgon(22.5, 360., 8, 3);
+  shDoorIe->DefineSection(0,  600., 163.5, 168.5);
+  shDoorIe->DefineSection(1,  670., 163.5, 168.5);  
+  shDoorIe->DefineSection(2,  700., 213.5, 218.5);
+  TGeoVolume* voDoorIe = new TGeoVolume("L3DE", shDoorIe, medFeI);
+  //
+  // Use composite shape here to account for the excentric door opening.
+  // This avoids the overlap with the beam shield and the muon tracking station 1
+  //
+  TGeoTranslation* offset = new TGeoTranslation("t1", 0., -os, 0.);
+  offset->RegisterYourself();
+    
+  TGeoCompositeShape* shDoor = new TGeoCompositeShape("L3Door", "A+B:t1");
+  //
+  TGeoVolume* voDoor = new TGeoVolume("L3DO", shDoor, medFe);
+  voDoor->AddNode(voDoorIe, 1, new TGeoTranslation(0., -os, 0.));
+  //
+  // The assembly of everything
+  //
+  TGeoVolumeAssembly* l3 = new TGeoVolumeAssembly("L3TV");
+  TGeoRotation* rotxz = new TGeoRotation("rotxz",  90., 0., 90., 90., 180., 0.);
+  l3->AddNode(voMother, 1, new TGeoTranslation(0., 0., 0.));
+  l3->AddNode(voDoor, 1, new TGeoTranslation(0., 0., 0.));  
+  l3->AddNode(voDoor, 2, new TGeoCombiTrans(0., 0., 0., rotxz));
+  top->AddNode(l3, 1, new TGeoTranslation(0., os, 0.));
 }
 
 //_____________________________________________________________________________
