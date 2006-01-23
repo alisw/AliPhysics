@@ -43,9 +43,11 @@ class TFlukaMCGeometry :public TNamed {
     void          PrintHeader(ofstream &out, const char *text) const;
     Bool_t        IsDebugging() const {return fDebug;}
     void          SetDebugMode(Bool_t flag=kTRUE) {fDebug = flag;}
-    void          SetMreg(Int_t mreg);
+    void          SetMreg(Int_t mreg, Int_t lttc);
     void          SetCurrentRegion(Int_t mreg, Int_t latt);
     void          GetCurrentRegion(Int_t &mreg, Int_t &latt) const {mreg=fCurrentRegion; latt=fCurrentLattice;}
+    Int_t         GetDummyRegion() const {return fDummyRegion;}
+    Int_t         GetDummyLattice() const {return kLttcVirtual;}
     void          SetNextRegion(Int_t mreg, Int_t latt);
     void          GetNextRegion(Int_t &mreg, Int_t &latt) const {mreg=fNextRegion; latt=fNextLattice;}
     TGeoMaterial *GetMakeWrongMaterial(Double_t z);
@@ -64,11 +66,12 @@ class TFlukaMCGeometry :public TNamed {
    
   private:
     TFlukaMCGeometry(const TFlukaMCGeometry& rhs);
-    TFlukaMCGeometry& operator=(const TFlukaMCGeometry& rhs);
+    TFlukaMCGeometry& operator=(const TFlukaMCGeometry& rhs) {return (*this);}
 
     static TFlukaMCGeometry*  fgInstance; // singleton instance
     Bool_t       fDebug;                  // debug flag
     Int_t        fLastMaterial;           // last FLUKA material index
+    Int_t        fDummyRegion;            // index of dummy region
     Int_t        fCurrentRegion;          // current region number
     Int_t        fCurrentLattice;         // current lattice history
     Int_t        fNextRegion;             // next region number
