@@ -51,8 +51,9 @@ AliZDCCalibData::AliZDCCalibData(const AliZDCCalibData& calibda) :
   SetName(calibda.GetName());
   SetTitle(calibda.GetName());
   Reset();
-  for(int t=0; t<47; t++) fMeanPedestal[t] = calibda.GetMeanPed(t);
-  for(int t=0; t<4; t++) fEnCalibration[t] = calibda.GetEnCalib(t);
+  for(int t=0; t<47; t++) fMeanPedestal[t]  = calibda.GetMeanPed(t);
+  for(int t=0; t<44; t++) fOOTPedestal[t]   = calibda.GetOOTPed(t);
+  for(int t=0; t<6; t++)  fEnCalibration[t] = calibda.GetEnCalib(t);
   PrepHistos();
 }
 
@@ -64,7 +65,8 @@ AliZDCCalibData &AliZDCCalibData::operator =(const AliZDCCalibData& calibda)
   SetTitle(calibda.GetName());
   Reset();
   for(int t=0; t<47; t++) fMeanPedestal[t] = calibda.GetMeanPed(t);
-  for(int t=0; t<4; t++) fEnCalibration[t] = calibda.GetEnCalib(t);
+  for(int t=0; t<44; t++) fOOTPedestal[t]  = calibda.GetOOTPed(t);
+  for(int t=0; t<6; t++) fEnCalibration[t] = calibda.GetEnCalib(t);
   PrepHistos();
   return *this;
 }
@@ -79,7 +81,8 @@ AliZDCCalibData::~AliZDCCalibData()
 void AliZDCCalibData::Reset()
 {
   memset(fMeanPedestal,0,47*sizeof(Float_t));
-  memset(fEnCalibration,0,4*sizeof(Float_t));
+  memset(fOOTPedestal,0,44*sizeof(Float_t));
+  memset(fEnCalibration,0,6*sizeof(Float_t));
 }                                                                                       
 
 //________________________________________________________________
@@ -102,36 +105,59 @@ void AliZDCCalibData::PrepHistos()
 //________________________________________________________________
 void  AliZDCCalibData::Print(Option_t *) const
 {
-   printf("\n	----	Mean pedestal values	----\n\n");
+   printf("\n	#######	Mean pedestal values	####### \n");
    for(int t=0; t<47; t++){
-     if(t==0 || t==24) printf("\t ZN HighRes -------- ");
-     else if(t==5 || t==29) printf("\t ZN LowRes -------- ");
-     else if(t==10 || t==34) printf("\t ZP HighRes -------- ");
-     else if(t==15 || t==39) printf("\t ZP LowRes -------- ");
-     else if(t==20) printf("\t ZEM1 HighRes -------- ");
-     else if(t==21) printf("\t ZEM1 LowRes -------- ");
-     else if(t==22) printf("\t ZEM2 HighRes -------- ");
-     else if(t==23) printf("\t ZEM2 LowRes -------- ");
-     printf("\t MeanPed[ADC%d] = %.1f\n",t,fMeanPedestal[t]);
+     if(t==0 || t==24) printf("\n\t -------- ZN HighRes -------- \n");
+     else if(t==5 || t==29) printf("\n\t -------- ZN LowRes -------- \n");
+     else if(t==10 || t==34) printf("\n\t -------- ZP HighRes -------- \n");
+     else if(t==15 || t==39) printf("\n\t -------- ZP LowRes -------- \n");
+     else if(t==20) printf("\n\t -------- ZEM1 HighRes -------- ");
+     else if(t==21) printf("\n\t -------- ZEM1 LowRes -------- ");
+     else if(t==22) printf("\n\t -------- ZEM2 HighRes -------- ");
+     else if(t==23) printf("\n\t -------- ZEM2 LowRes -------- ");
+     printf("    MeanPed[ADC%d] = %.1f \t",t,fMeanPedestal[t]);
+   }
+   
+   printf("\n\n\n	#######	Out Of Time pedestal values	####### \n");
+   for(int t=0; t<44; t++){
+     if(t==0 || t==24) printf("\n\t -------- ZN HighRes -------- \n");
+     else if(t==5 || t==29) printf("\n\t -------- ZN LowRes -------- \n");
+     else if(t==10 || t==34) printf("\n\t -------- ZP HighRes -------- \n");
+     else if(t==15 || t==39) printf("\n\t -------- ZP LowRes -------- \n");
+     else if(t==20) printf("\n\t -------- ZEM1 HighRes -------- ");
+     else if(t==21) printf("\n\t -------- ZEM1 LowRes -------- ");
+     else if(t==22) printf("\n\t -------- ZEM2 HighRes -------- ");
+     else if(t==23) printf("\n\t -------- ZEM2 LowRes -------- ");
+     printf("    OOTPed[ADC%d] = %.1f \t",t,fOOTPedestal[t]);
    }
  
-   printf("\n	----	Energy calibration coefficients 	----\n\n");
-   for(int t=0; t<3; t++){
-      printf("	En Calib Coeff. [ZDC%d] = %f\n",t,fEnCalibration[t]);
-   }
+   printf("\n\n\n	#######	Energy calibration coefficients #######	\n");
+   printf("	ZN1 = %.2f (E[TeV]/ADCch.) \n",fEnCalibration[0]);
+   printf("	ZP1 = %.2f (E[TeV]/ADCch.) \n",fEnCalibration[1]);
+   printf("	ZN2 = %.2f (E[TeV]/ADCch.) \n",fEnCalibration[2]);
+   printf("	ZP2 = %.2f (E[TeV]/ADCch.) \n",fEnCalibration[3]);
+   printf("	ZEM1 = %.2f (E[TeV]/ADCch.) \n",fEnCalibration[4]);
+   printf("	ZEM2 = %.2f (E[TeV]/ADCch.) \n",fEnCalibration[5]);
 } 
 
 //________________________________________________________________
 void AliZDCCalibData::SetMeanPed(Float_t* MeanPed)
 {
   if(MeanPed) for(int t=0; t<47; t++) fMeanPedestal[t] = MeanPed[t];
-  else for(int t=0; t<43; t++) fMeanPedestal[t] = 0.;
+  else for(int t=0; t<47; t++) fMeanPedestal[t] = 0.;
+}
+
+//________________________________________________________________
+void AliZDCCalibData::SetOOTPed(Float_t* OOTPed)
+{
+  if(OOTPed) for(int t=0; t<44; t++) fOOTPedestal[t] = OOTPed[t];
+  else for(int t=0; t<44; t++) fOOTPedestal[t] = 0.;
 }
 
 //________________________________________________________________
 void AliZDCCalibData::SetEnCalib(Float_t* EnCalib) 
 {
-  if(EnCalib) for(int t=0; t<4; t++) fEnCalibration[t] = EnCalib[t];
-  else for(int t=0; t<4; t++) fEnCalibration[t] = 0.;
+  if(EnCalib) for(int t=0; t<6; t++) fEnCalibration[t] = EnCalib[t];
+  else for(int t=0; t<6; t++) fEnCalibration[t] = 0.;
 }
 
