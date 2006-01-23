@@ -32,6 +32,7 @@
 #include <Riostream.h>
 
 #include "TFluka.h"
+#include "TFlukaCodes.h"
 #include "TCallf77.h"      //For the fortran calls
 #include "Fdblprc.h"       //(DBLPRC) fluka common
 #include "Fsourcm.h"       //(SOURCM) fluka common
@@ -46,6 +47,7 @@
 #include "Fflkstk.h"       //(FLKSTK) fluka common
 #include "Fstepsz.h"       //(STEPSZ) fluka common
 #include "Fopphst.h"       //(OPPHST) fluka common
+#include "Fltclcm.h"       //(LTCLCM) fluka common
 
 #include "TVirtualMC.h"
 #include "TMCProcess.h"
@@ -59,10 +61,13 @@
 #include "TFlukaScoringOption.h"
 #include "TLorentzVector.h"
 #include "TArrayI.h"
+#include "TArrayD.h"
 
 // Fluka methods that may be needed.
 #ifndef WIN32 
 # define flukam  flukam_
+# define dedx  dedx_
+# define dedxmy  dedxmy_
 # define fluka_openinp fluka_openinp_
 # define fluka_openout fluka_openout_
 # define fluka_closeinp fluka_closeinp_
@@ -71,6 +76,8 @@
 # define newplo newplo_
 #else 
 # define flukam  FLUKAM
+# define dedx  DEDX
+# define dedxmy  DEDXMY
 # define fluka_openinp FLUKA_OPENINP
 # define fluka_openout FLUKA_OPENOUT
 # define fluka_closeinp FLUKA_CLOSEINP
@@ -85,6 +92,8 @@ extern "C"
   // Prototypes for FLUKA functions
   //
   void type_of_call flukam(const int&);
+  double type_of_call dedx(int&, double&, int&);
+  double type_of_call dedxmy(double&, int&);
   void type_of_call newplo();
   void type_of_call fluka_openinp(const int&, DEFCHARA);
   void type_of_call fluka_openout(const int&, DEFCHARA);
@@ -115,6 +124,7 @@ TFluka::TFluka()
    fGeneratePemf = kFALSE;
    fNVolumes = 0;
    fCurrentFlukaRegion = -1;
+   fNewReg = -1;
    fGeom = 0;
    fMCGeo = 0;
    fMaterials = 0;
@@ -145,6 +155,7 @@ TFluka::TFluka(const char *title, Int_t verbosity, Bool_t isRootGeometrySupporte
    SetGeneratePemf(kFALSE);
    fNVolumes      = 0;
    fCurrentFlukaRegion = -1;
+   fNewReg = -1;
    fDummyBoundary = 0;
    fFieldFlag = 1;
    fGeneratePemf = kFALSE;
@@ -198,7 +209,7 @@ void TFluka::Init() {
     } else {
        TGeoNodeCache *cache = gGeoManager->GetCache();
        if (!cache->HasIdArray()) {
-          printf("Node ID tracking must be enabled with TFluka: enabling...\n");
+          Warning("Init", "Node ID tracking must be enabled with TFluka: enabling...\n");
           cache->BuildIdArray();
        }   
     }           
@@ -299,7 +310,7 @@ void TFluka::ProcessEvent() {
 // Process one event
 //
     if (fStopRun) {
-	printf("User Run Abortion: No more events handled !\n");
+	Warning("ProcessEvent", "User Run Abortion: No more events handled !\n");
 	fNEvent += 1;
 	return;
     }
@@ -486,7 +497,6 @@ void TFluka::Mixture(Int_t& kmat, const char *name, Double_t *a,
         if (!mat->IsMixture()) continue;
         mix = (TGeoMixture*)mat;
         if (TMath::Abs(z[i]-mix->GetZ()) >1E-3) continue;
-//        printf(" FOUND component %i as mixture %s\n", i, mat->GetName());
         mixnew = kTRUE;
         break;
      }
@@ -715,6 +725,108 @@ void TFluka::Gsbool(const char* /*onlyVolName*/, const char* /*manyVolName*/) {
 // Nothing to do with TGeo
 }
 
+//______________________________________________________________________
+Bool_t TFluka::GetTransformation(const TString &volumePath,TGeoHMatrix &mat)
+{
+    // Returns the Transformation matrix between the volume specified
+    // by the path volumePath and the Top or mater volume. The format
+    // of the path volumePath is as follows (assuming ALIC is the Top volume)
+    // "/ALIC_1/DDIP_1/S05I_2/S05H_1/S05G_3". Here ALIC is the top most
+    // or master volume which has only 1 instance of. Of all of the daughter
+    // volumes of ALICE, DDIP volume copy #1 is indicated. Similarly for
+    // the daughter volume of DDIP is S05I copy #2 and so on.
+    // Inputs:
+    //   TString& volumePath  The volume path to the specific volume
+    //                        for which you want the matrix. Volume name
+    //                        hierarchy is separated by "/" while the
+    //                        copy number is appended using a "_".
+    // Outputs:
+    //  TGeoHMatrix &mat      A matrix with its values set to those
+    //                        appropriate to the Local to Master transformation
+    // Return:
+    //   A logical value if kFALSE then an error occurred and no change to
+    //   mat was made.
+
+   // We have to preserve the modeler state
+   return fMCGeo->GetTransformation(volumePath, mat);
+}   
+   
+//______________________________________________________________________
+Bool_t TFluka::GetShape(const TString &volumePath,TString &shapeType,
+                        TArrayD &par)
+{
+    // Returns the shape and its parameters for the volume specified
+    // by volumeName.
+    // Inputs:
+    //   TString& volumeName  The volume name
+    // Outputs:
+    //   TString &shapeType   Shape type
+    //   TArrayD &par         A TArrayD of parameters with all of the
+    //                        parameters of the specified shape.
+    // Return:
+    //   A logical indicating whether there was an error in getting this
+    //   information
+   return fMCGeo->GetShape(volumePath, shapeType, par);
+}
+   
+//______________________________________________________________________
+Bool_t TFluka::GetMaterial(const TString &volumeName,
+                            TString &name,Int_t &imat,
+                            Double_t &a,Double_t &z,Double_t &dens,
+                            Double_t &radl,Double_t &inter,TArrayD &par)
+{
+    // Returns the Material and its parameters for the volume specified
+    // by volumeName.
+    // Note, Geant3 stores and uses mixtures as an element with an effective
+    // Z and A. Consequently, if the parameter Z is not integer, then
+    // this material represents some sort of mixture.
+    // Inputs:
+    //   TString& volumeName  The volume name
+    // Outputs:
+    //   TSrting   &name       Material name
+    //   Int_t     &imat       Material index number
+    //   Double_t  &a          Average Atomic mass of material
+    //   Double_t  &z          Average Atomic number of material
+    //   Double_t  &dens       Density of material [g/cm^3]
+    //   Double_t  &radl       Average radiation length of material [cm]
+    //   Double_t  &inter      Average interaction length of material [cm]
+    //   TArrayD   &par        A TArrayD of user defined parameters.
+    // Return:
+    //   kTRUE if no errors
+   return fMCGeo->GetMaterial(volumeName,name,imat,a,z,dens,radl,inter,par);
+}
+
+//______________________________________________________________________
+Bool_t TFluka::GetMedium(const TString &volumeName,TString &name,
+                         Int_t &imed,Int_t &nmat,Int_t &isvol,Int_t &ifield,
+                         Double_t &fieldm,Double_t &tmaxfd,Double_t &stemax,
+                         Double_t &deemax,Double_t &epsil, Double_t &stmin,
+                         TArrayD &par)
+{
+    // Returns the Medium and its parameters for the volume specified
+    // by volumeName.
+    // Inputs:
+    //   TString& volumeName  The volume name.
+    // Outputs:
+    //   TString  &name       Medium name
+    //   Int_t    &nmat       Material number defined for this medium
+    //   Int_t    &imed       The medium index number
+    //   Int_t    &isvol      volume number defined for this medium
+    //   Int_t    &iflield    Magnetic field flag
+    //   Double_t &fieldm     Magnetic field strength
+    //   Double_t &tmaxfd     Maximum angle of deflection per step
+    //   Double_t &stemax     Maximum step size
+    //   Double_t &deemax     Maximum fraction of energy allowed to be lost
+    //                        to continuous process.
+    //   Double_t &epsil      Boundary crossing precision
+    //   Double_t &stmin      Minimum step size allowed
+    //   TArrayD  &par        A TArrayD of user parameters with all of the
+    //                        parameters of the specified medium.
+    // Return:
+    //   kTRUE if there where no errors
+   return fMCGeo->GetMedium(volumeName,name,imed,nmat,isvol,ifield,fieldm,tmaxfd,stemax,deemax,epsil,stmin,par);
+}         
+
 //______________________________________________________________________________ 
 void TFluka::SetCerenkov(Int_t itmed, Int_t npckov, Float_t* ppckov,
 			 Float_t* absco, Float_t* effic, Float_t* rindex) {
@@ -780,7 +892,7 @@ void TFluka::WriteEuclid(const char* /*fileName*/, const char* /*topVol*/,
                           Int_t /*number*/, Int_t /*nlevel*/) {
 //
 // Not with TGeo
-   Warning("WriteEuclid", "Not implemented with TGeo");
+   Warning("WriteEuclid", "Not implemented !");
 } 
 
 
@@ -796,7 +908,19 @@ Int_t TFluka::GetMedium() const {
     return fGeom->GetMedium(); // this I need to check due to remapping !!!
 }
 
+//____________________________________________________________________________ 
+Int_t TFluka::GetDummyRegion() const
+{
+// Returns index of the dummy region.
+   return fGeom->GetDummyRegion();
+}   
 
+//____________________________________________________________________________ 
+Int_t TFluka::GetDummyLattice() const
+{
+// Returns index of the dummy lattice.
+   return fGeom->GetDummyLattice();
+}   
 
 //____________________________________________________________________________ 
 // particle table usage
@@ -808,7 +932,7 @@ Int_t TFluka::IdFromPDG(Int_t pdg) const
     // Return Fluka code from PDG and pseudo ENDF code
     
     // Catch the feedback photons
-    if (pdg == 50000051) return (-1);
+    if (pdg == 50000051) return (kFLUKAoptical);
     // MCIHAD() goes from pdg to fluka internal.
     Int_t intfluka = mcihad(pdg);
     // KPTOIP array goes from internal to official
@@ -824,7 +948,7 @@ Int_t TFluka::PDGFromId(Int_t id) const
     Int_t idSpecial[6] = {10020040, 10020030, 10010030, 10010020, 10000000, 50000050};
   // IPTOKP array goes from official to internal
 
-    if (id == -1) {
+    if (id == kFLUKAoptical) {
 // Cerenkov photon
 	if (fVerbosityLevel >= 3)
 	    printf("\n PDGFromId: Cerenkov Photon \n");
@@ -955,7 +1079,7 @@ void TFluka::SetUserScoring(const char* option, Int_t npr, char* outfile, Float_
 //______________________________________________________________________________ 
 Double_t TFluka::Xsec(char*, Double_t, Int_t, Int_t)
 {
-  printf("WARNING: Xsec not yet implemented !\n"); return -1.;
+  Warning("Xsec", "Not yet implemented.!\n"); return -1.;
 }
 
 
@@ -965,8 +1089,6 @@ void TFluka::InitPhysics()
 //
 // Physics initialisation with preparation of FLUKA input cards
 //
-    printf("=>InitPhysics\n");
-
 // Construct file names
     FILE *pFlukaVmcCoreInp, *pFlukaVmcFlukaMat, *pFlukaVmcInp;
     TString sFlukaVmcCoreInp = getenv("ALICE_ROOT");
@@ -977,15 +1099,15 @@ void TFluka::InitPhysics()
     
 // Open files 
     if ((pFlukaVmcCoreInp = fopen(sFlukaVmcCoreInp.Data(),"r")) == NULL) {
-	printf("\nCannot open file %s\n",sFlukaVmcCoreInp.Data());
+	Warning("InitPhysics", "\nCannot open file %s\n",sFlukaVmcCoreInp.Data());
 	exit(1);
     }
     if ((pFlukaVmcFlukaMat = fopen(sFlukaVmcTmp.Data(),"r")) == NULL) {
-	printf("\nCannot open file %s\n",sFlukaVmcTmp.Data());
+	Warning("InitPhysics", "\nCannot open file %s\n",sFlukaVmcTmp.Data());
 	exit(1);
     }
     if ((pFlukaVmcInp = fopen(sFlukaVmcInp.Data(),"w")) == NULL) {
-	printf("\nCannot open file %s\n",sFlukaVmcInp.Data());
+	Warning("InitPhysics", "\nCannot open file %s\n",sFlukaVmcInp.Data());
 	exit(1);
     }
 
@@ -1036,8 +1158,8 @@ void TFluka::InitPhysics()
     Int_t inp             = 0;
     Int_t nscore          = fUserScore->GetEntries();
     
-    TFlukaScoringOption *mopo = 0x0;
-    TFlukaScoringOption *mopi = 0x0;
+    TFlukaScoringOption *mopo = 0;
+    TFlukaScoringOption *mopi = 0;
 
     for (Int_t isc = 0; isc < nscore; isc++) 
     {
@@ -1143,25 +1265,27 @@ void TFluka::TrackPosition(TLorentzVector& position) const
 // TRACKR.xtrack = x-position of the last point
 // TRACKR.ytrack = y-position of the last point
 // TRACKR.ztrack = z-position of the last point
-  Int_t caller = GetCaller();
-  if (caller == 3 || caller == 6 || caller == 11 || caller == 12 || caller == 50) { //bxdraw,endraw,usdraw,ckov
+  FlukaCallerCode_t caller = GetCaller();
+  if (caller == kENDRAW    || caller == kUSDRAW || 
+      caller == kBXExiting || caller == kBXEntering || 
+      caller == kUSTCKV) { 
     position.SetX(GetXsco());
     position.SetY(GetYsco());
     position.SetZ(GetZsco());
     position.SetT(TRACKR.atrack);
   }
-  else if (caller == 4) { // mgdraw,mgdraw resuming
+  else if (caller == kMGDRAW) { 
     position.SetX(TRACKR.xtrack[TRACKR.ntrack]);
     position.SetY(TRACKR.ytrack[TRACKR.ntrack]);
     position.SetZ(TRACKR.ztrack[TRACKR.ntrack]);
     position.SetT(TRACKR.atrack);
   }
-  else if (caller == 5) { // sodraw
+  else if (caller == kSODRAW) { 
     position.SetX(TRACKR.xtrack[TRACKR.ntrack]);
     position.SetY(TRACKR.ytrack[TRACKR.ntrack]);
     position.SetZ(TRACKR.ztrack[TRACKR.ntrack]);
     position.SetT(0);
-  } else if (caller == 40) { // mgdraw resuming transport
+  } else if (caller == kMGResumedTrack) { 
     position.SetX(TRACKR.spausr[0]);
     position.SetY(TRACKR.spausr[1]);
     position.SetZ(TRACKR.spausr[2]);
@@ -1180,18 +1304,20 @@ void TFluka::TrackPosition(Double_t& x, Double_t& y, Double_t& z) const
 // TRACKR.xtrack = x-position of the last point
 // TRACKR.ytrack = y-position of the last point
 // TRACKR.ztrack = z-position of the last point
-  Int_t caller = GetCaller();
-  if (caller == 3 || caller == 6 || caller == 11 || caller == 12 || caller == 50) { //bxdraw,endraw,usdraw,ckov
+  FlukaCallerCode_t caller = GetCaller();
+  if (caller == kENDRAW    || caller == kUSDRAW || 
+      caller == kBXExiting || caller == kBXEntering || 
+      caller == kUSTCKV) { 
     x = GetXsco();
     y = GetYsco();
     z = GetZsco();
   }
-  else if (caller == 4 || caller == 5) { // mgdraw, sodraw, mgdraw resuming
+  else if (caller == kMGDRAW || caller == kSODRAW) { 
     x = TRACKR.xtrack[TRACKR.ntrack];
     y = TRACKR.ytrack[TRACKR.ntrack];
     z = TRACKR.ztrack[TRACKR.ntrack];
   }
-  else if (caller == 40) { // mgdraw resuming transport
+  else if (caller == kMGResumedTrack) {
     x = TRACKR.spausr[0];
     y = TRACKR.spausr[1];
     z = TRACKR.spausr[2];
@@ -1211,8 +1337,11 @@ void TFluka::TrackMomentum(TLorentzVector& momentum) const
 // TRACKR.etrack = total energy of the particle
 // TRACKR.jtrack = identity number of the particle
 // PAPROP.am[TRACKR.jtrack] = particle mass in gev
-  Int_t caller = GetCaller();
-  if (caller != 2 && caller != 40) { // not eedraw or mgdraw resuming 
+  FlukaCallerCode_t  caller = GetCaller();
+  FlukaProcessCode_t icode  = GetIcode();
+  
+  if (caller != kEEDRAW && caller != kMGResumedTrack && 
+      (caller != kENDRAW || (icode != kEMFSCOstopping1 && icode != kEMFSCOstopping2))) {
     if (TRACKR.ptrack >= 0) {
       momentum.SetPx(TRACKR.ptrack*TRACKR.cxtrck);
       momentum.SetPy(TRACKR.ptrack*TRACKR.cytrck);
@@ -1228,12 +1357,17 @@ void TFluka::TrackMomentum(TLorentzVector& momentum) const
       momentum.SetE(TRACKR.etrack);
       return;
     }
-  } else if  (caller == 40) { // mgdraw resuming transport
+  } else if  (caller == kMGResumedTrack) {
     momentum.SetPx(TRACKR.spausr[4]);
     momentum.SetPy(TRACKR.spausr[5]);
     momentum.SetPz(TRACKR.spausr[6]);
     momentum.SetE (TRACKR.spausr[7]);
     return;
+  } else if (caller == kENDRAW && (icode == kEMFSCOstopping1 || icode == kEMFSCOstopping2)) {
+      momentum.SetPx(0.);
+      momentum.SetPy(0.);
+      momentum.SetPz(0.);
+      momentum.SetE(TrackMass());
   }
   else
     Warning("TrackMomentum","momentum not available");
@@ -1250,13 +1384,15 @@ void TFluka::TrackMomentum(Double_t& px, Double_t& py, Double_t& pz, Double_t& e
 // TRACKR.etrack = total energy of the particle
 // TRACKR.jtrack = identity number of the particle
 // PAPROP.am[TRACKR.jtrack] = particle mass in gev
-  Int_t caller = GetCaller();
-  if (caller != 2 && caller != 40) { // not eedraw and not mgdraw resuming 
+  FlukaCallerCode_t   caller = GetCaller();
+  FlukaProcessCode_t  icode  = GetIcode();
+  if (caller != kEEDRAW && caller != kMGResumedTrack && 
+      (caller != kENDRAW || (icode != kEMFSCOstopping1 && icode != kEMFSCOstopping2))) {
     if (TRACKR.ptrack >= 0) {
       px = TRACKR.ptrack*TRACKR.cxtrck;
       py = TRACKR.ptrack*TRACKR.cytrck;
       pz = TRACKR.ptrack*TRACKR.cztrck;
-      e = TRACKR.etrack;
+      e  = TRACKR.etrack;
       return;
     }
     else {
@@ -1264,15 +1400,20 @@ void TFluka::TrackMomentum(Double_t& px, Double_t& py, Double_t& pz, Double_t& e
       px = p*TRACKR.cxtrck;
       py = p*TRACKR.cytrck;
       pz = p*TRACKR.cztrck;
-      e = TRACKR.etrack;
+      e  = TRACKR.etrack;
       return;
     }
-  } else if (caller == 40) { // mgdraw resuming transport
+  } else if (caller == kMGResumedTrack) {
       px = TRACKR.spausr[4];
       py = TRACKR.spausr[5];
       pz = TRACKR.spausr[6];
       e  = TRACKR.spausr[7];
       return;
+  } else if (caller == kENDRAW && (icode == kEMFSCOstopping1 || icode == kEMFSCOstopping2)) {
+      px = 0.;
+      py = 0.;
+      pz = 0.;
+      e  = TrackMass();
   }
   else
     Warning("TrackMomentum","momentum not available");
@@ -1283,10 +1424,12 @@ Double_t TFluka::TrackStep() const
 {
 // Return the length in centimeters of the current step
 // TRACKR.ctrack = total curved path
-  Int_t caller = GetCaller();
-  if (caller == 11 || caller==12 || caller == 3 || caller == 6 || caller == 50 || caller == 40) //bxdraw,endraw,usdraw, ckov
+  FlukaCallerCode_t caller = GetCaller();
+  if (caller == kBXEntering || caller == kBXExiting || 
+      caller == kENDRAW     || caller == kUSDRAW || 
+      caller == kUSTCKV     || caller == kMGResumedTrack)
     return 0.0;
-  else if (caller == 4) //mgdraw
+  else if (caller == kMGDRAW)
     return TRACKR.ctrack;
   else {
     Warning("TrackStep", "track step not available");
@@ -1298,10 +1441,12 @@ Double_t TFluka::TrackStep() const
 Double_t TFluka::TrackLength() const
 {
 // TRACKR.cmtrck = cumulative curved path since particle birth
-  Int_t caller = GetCaller();
-  if (caller == 11 || caller==12 || caller == 3 || caller == 4 || caller == 6 || caller == 50) //bxdraw,endraw,mgdraw,usdraw,ckov
+  FlukaCallerCode_t caller = GetCaller();
+  if (caller == kBXEntering || caller == kBXExiting || 
+      caller == kENDRAW || caller == kUSDRAW || caller == kMGDRAW || 
+      caller == kUSTCKV) 
     return TRACKR.cmtrck;
-  else if (caller == 40) // mgdraw resuming transport
+  else if (caller == kMGResumedTrack) 
     return TRACKR.spausr[8];
   else {
     Warning("TrackLength", "track length not available");
@@ -1314,10 +1459,12 @@ Double_t TFluka::TrackTime() const
 {
 // Return the current time of flight of the track being transported
 // TRACKR.atrack = age of the particle
-  Int_t caller = GetCaller();
-  if (caller == 11 || caller==12 || caller == 3 || caller == 4 || caller == 6 || caller == 50) //bxdraw,endraw,mgdraw,usdraw,ckov
+  FlukaCallerCode_t caller = GetCaller();
+  if (caller == kBXEntering || caller == kBXExiting || 
+      caller == kENDRAW     || caller == kUSDRAW    || caller == kMGDRAW || 
+      caller == kUSTCKV)
     return TRACKR.atrack;
-  else if (caller == 40)
+  else if (caller == kMGResumedTrack)
     return TRACKR.spausr[3];
   else {
     Warning("TrackTime", "track time not available");
@@ -1341,8 +1488,9 @@ Double_t TFluka::Edep() const
   // If coming from bxdraw we have 2 steps of 0 length and 0 edep
   // If coming from usdraw we just signal particle production - no edep
   // If just first time after resuming, no edep for the primary
-  Int_t caller = GetCaller();
-  if (caller == 11 || caller==12 || caller==6 || caller == 40) return 0.0;
+  FlukaCallerCode_t caller = GetCaller();
+  if (caller == kBXExiting || caller == kBXEntering || 
+      caller == kUSDRAW    || caller == kMGResumedTrack) return 0.0;
   Double_t sum = 0;
   for ( Int_t j=0;j<TRACKR.mtrack;j++) {
       sum +=TRACKR.dtrack[j];  
@@ -1359,8 +1507,8 @@ Int_t TFluka::TrackPid() const
 {
 // Return the id of the particle transported
 // TRACKR.jtrack = identity number of the particle
-  Int_t caller = GetCaller();
-  if (caller != 2) { // not eedraw 
+  FlukaCallerCode_t caller = GetCaller();
+  if (caller != kEEDRAW) {
       return PDGFromId(TRACKR.jtrack);
   }
   else
@@ -1373,8 +1521,8 @@ Double_t TFluka::TrackCharge() const
 // Return charge of the track currently transported
 // PAPROP.ichrge = electric charge of the particle
 // TRACKR.jtrack = identity number of the particle
-  Int_t caller = GetCaller();
-  if (caller != 2)  // not eedraw 
+  FlukaCallerCode_t caller = GetCaller();
+  if (caller != kEEDRAW) 
     return PAPROP.ichrge[TRACKR.jtrack+6];
   else
     return -1000.0;
@@ -1385,8 +1533,8 @@ Double_t TFluka::TrackMass() const
 {
 // PAPROP.am = particle mass in GeV
 // TRACKR.jtrack = identity number of the particle
-  Int_t caller = GetCaller();
-  if (caller != 2)  // not eedraw 
+  FlukaCallerCode_t caller = GetCaller();
+  if (caller != kEEDRAW)
     return PAPROP.am[TRACKR.jtrack+6];
   else
     return -1000.0;
@@ -1396,8 +1544,8 @@ Double_t TFluka::TrackMass() const
 Double_t TFluka::Etot() const
 {
 // TRACKR.etrack = total energy of the particle
-  Int_t caller = GetCaller();
-  if (caller != 2)  // not eedraw
+  FlukaCallerCode_t caller = GetCaller();
+  if (caller != kEEDRAW)
     return TRACKR.etrack;
   else
     return -1000.0;
@@ -1429,8 +1577,8 @@ Bool_t   TFluka::IsTrackInside() const
 // If the step would go behind the region of one material,
 // it will be shortened to reach only the boundary.
 // Therefore IsTrackInside() is always true.
-  Int_t caller = GetCaller();
-  if (caller == 11 || caller==12)  // bxdraw
+  FlukaCallerCode_t caller = GetCaller();
+  if (caller == kBXEntering || caller == kBXExiting)
     return 0;
   else
     return 1;
@@ -1441,8 +1589,8 @@ Bool_t   TFluka::IsTrackEntering() const
 {
 // True if this is the first step of the track in the current volume
 
-  Int_t caller = GetCaller();
-  if (caller == 11)  // bxdraw entering
+  FlukaCallerCode_t caller = GetCaller();
+  if (caller == kBXEntering)
     return 1;
   else return 0;
 }
@@ -1452,8 +1600,8 @@ Bool_t   TFluka::IsTrackExiting() const
 {
 // True if track is exiting volume
 //
-  Int_t caller = GetCaller();
-  if (caller == 12)  // bxdraw exiting
+  FlukaCallerCode_t caller = GetCaller();
+  if (caller == kBXExiting)
     return 1;
   else return 0;
 }
@@ -1463,37 +1611,38 @@ Bool_t   TFluka::IsTrackOut() const
 {
 // True if the track is out of the setup
 // means escape
-// Icode = 14: escape - call from Kaskad
-// Icode = 23: escape - call from Emfsco
-// Icode = 32: escape - call from Kasneu
-// Icode = 40: escape - call from Kashea
-// Icode = 51: escape - call from Kasoph
-  if (fIcode == 14 ||
-      fIcode == 23 ||
-      fIcode == 32 ||
-      fIcode == 40 ||
-      fIcode == 51) return 1;
+  FlukaProcessCode_t icode = GetIcode();
+    
+  if (icode == kKASKADescape ||
+      icode == kEMFSCOescape ||
+      icode == kKASNEUescape ||
+      icode == kKASHEAescape ||
+      icode == kKASOPHescape) 
+       return 1;
   else return 0;
 }
 
 //______________________________________________________________________________ 
 Bool_t   TFluka::IsTrackDisappeared() const
 {
-// means all inelastic interactions and decays
+// All inelastic interactions and decays
 // fIcode from usdraw
-  if (fIcode == 101 || // inelastic interaction
-      fIcode == 102 || // particle decay
-      fIcode == 103 || // delta ray generation by hadron
-      fIcode == 104 || // direct pair production
-      fIcode == 105 || // bremsstrahlung (muon)
-      fIcode == 208 || // bremsstrahlung (electron)
-      fIcode == 214 || // in-flight annihilation
-      fIcode == 215 || // annihilation at rest
-      fIcode == 217 || // pair production
-      fIcode == 219 || // Compton scattering
-      fIcode == 221 || // Photoelectric effect
-      fIcode == 300 || // hadronic interaction
-      fIcode == 400    // delta-ray
+  FlukaProcessCode_t icode = GetIcode();
+  if (icode == kKASKADinelint    || // inelastic interaction
+      icode == kKASKADdecay      || // particle decay
+      icode == kKASKADdray       || // delta ray generation by hadron
+      icode == kKASKADpair       || // direct pair production
+      icode == kKASKADbrems      || // bremsstrahlung (muon)
+      icode == kEMFSCObrems      || // bremsstrahlung (electron)
+      icode == kEMFSCOmoller     || // Moller scattering
+      icode == kEMFSCObhabha     || // Bhaba scattering
+      icode == kEMFSCOanniflight || // in-flight annihilation
+      icode == kEMFSCOannirest   || // annihilation at rest
+      icode == kEMFSCOpair       || // pair production
+      icode == kEMFSCOcompton    || // Compton scattering
+      icode == kEMFSCOphotoel    || // Photoelectric effect
+      icode == kKASNEUhadronic   || // hadronic interaction
+      icode == kKASHEAdray        // delta-ray
       ) return 1;
   else return 0;
 }
@@ -1503,24 +1652,16 @@ Bool_t   TFluka::IsTrackStop() const
 {
 // True if the track energy has fallen below the threshold
 // means stopped by signal or below energy threshold
-// Icode = 12: stopping particle       - call from Kaskad
-// Icode = 15: time kill               - call from Kaskad
-// Icode = 21: below threshold, iarg=1 - call from Emfsco
-// Icode = 22: below threshold, iarg=2 - call from Emfsco
-// Icode = 24: time kill               - call from Emfsco
-// Icode = 31: below threshold         - call from Kasneu
-// Icode = 33: time kill               - call from Kasneu
-// Icode = 41: time kill               - call from Kashea
-// Icode = 52: time kill               - call from Kasoph
-  if (fIcode == 12 ||
-      fIcode == 15 ||
-      fIcode == 21 ||
-      fIcode == 22 ||
-      fIcode == 24 ||
-      fIcode == 31 ||
-      fIcode == 33 ||
-      fIcode == 41 ||
-      fIcode == 52) return 1;
+  FlukaProcessCode_t icode = GetIcode();
+  if (icode == kKASKADstopping  ||
+      icode == kKASKADtimekill  ||
+      icode == kEMFSCOstopping1 ||
+      icode == kEMFSCOstopping2 ||
+      icode == kEMFSCOtimekill  ||
+      icode == kKASNEUstopping  ||
+      icode == kKASNEUtimekill  ||
+      icode == kKASHEAtimekill  ||
+      icode == kKASOPHtimekill) return 1;
   else return 0;
 }
 
@@ -1543,10 +1684,10 @@ Int_t TFluka::NSecondaries() const
 // Number of secondary particles generated in the current step
 // GENSTK.np = number of secondaries except light and heavy ions
 // FHEAVY.npheav = number of secondaries for light and heavy secondary ions
-    Int_t caller = GetCaller();
-    if (caller == 6)  // valid only after usdraw
+    FlukaCallerCode_t caller = GetCaller();
+    if (caller == kUSDRAW)  // valid only after usdraw
 	return GENSTK.np + FHEAVY.npheav;
-    else if (caller == 50) {
+    else if (caller == kUSTCKV) {
 	// Cerenkov Photon production
 	return fNCerenkov;
     }
@@ -1560,8 +1701,8 @@ void TFluka::GetSecondary(Int_t isec, Int_t& particleId,
 // Copy particles from secondary stack to vmc stack
 //
 
-    Int_t caller = GetCaller();
-    if (caller == 6) {  // valid only after usdraw
+    FlukaCallerCode_t caller = GetCaller();
+    if (caller == kUSDRAW) {  // valid only after usdraw
 	if (GENSTK.np > 0) {
 	    // Hadronic interaction
 	    if (isec >= 0 && isec < GENSTK.np) {
@@ -1593,7 +1734,7 @@ void TFluka::GetSecondary(Int_t isec, Int_t& particleId,
 	    else
 		Warning("GetSecondary","isec out of range");
 	} 
-    } else if (caller == 50) {
+    } else if (caller == kUSTCKV) {
 	Int_t index = OPPHST.lstopp - isec;
 	position.SetX(OPPHST.xoptph[index]);
 	position.SetY(OPPHST.yoptph[index]);
@@ -1619,25 +1760,27 @@ TMCProcess TFluka::ProdProcess(Int_t) const
 // Name of the process that has produced the secondary particles
 // in the current step
 
-    Int_t mugamma = (TRACKR.jtrack == 7 || TRACKR.jtrack == 10 || TRACKR.jtrack == 11);
+    Int_t mugamma = (TRACKR.jtrack == kFLUKAphoton || 
+		     TRACKR.jtrack == kFLUKAmuplus || 
+		     TRACKR.jtrack == kFLUKAmuminus);
+    FlukaProcessCode_t icode = GetIcode();
 
-    if      (fIcode == 102)                  return kPDecay;
-    else if (fIcode == 104 || fIcode == 217) return kPPair;
-    else if (fIcode == 219)                  return kPCompton;
-    else if (fIcode == 221)                  return kPPhotoelectric;
-    else if (fIcode == 105 || fIcode == 208) return kPBrem;
-    else if (fIcode == 103 || fIcode == 400) return kPDeltaRay;
-    else if (fIcode == 210 || fIcode == 212) return kPDeltaRay;
-    else if (fIcode == 214 || fIcode == 215) return kPAnnihilation;
-    else if (fIcode == 101)                  return kPHadronic;
-    else if (fIcode == 101) {
-	if (!mugamma)                        return kPHadronic;
-	else if (TRACKR.jtrack == 7)         return kPPhotoFission;
-	else return kPMuonNuclear;
+    if      (icode == kKASKADdecay)                                   return kPDecay;
+    else if (icode == kKASKADpair || icode == kEMFSCOpair)            return kPPair;
+    else if (icode == kEMFSCOcompton)                                 return kPCompton;
+    else if (icode == kEMFSCOphotoel)                                 return kPPhotoelectric;
+    else if (icode == kKASKADbrems      || icode == kEMFSCObrems)     return kPBrem;
+    else if (icode == kKASKADdray       || icode == kKASHEAdray)      return kPDeltaRay;
+    else if (icode == kEMFSCOmoller     || icode == kEMFSCObhabha)    return kPDeltaRay;
+    else if (icode == kEMFSCOanniflight || icode == kEMFSCOannirest)  return kPAnnihilation;
+    else if (icode == kKASKADinelint) {
+	if (!mugamma)                                                 return kPHadronic;
+	else if (TRACKR.jtrack == kFLUKAphoton)                       return kPPhotoFission;
+	else                                                          return kPMuonNuclear;
     }
-    else if (fIcode == 225)                  return kPRayleigh;
+    else if (icode == kEMFSCOrayleigh)                                return kPRayleigh;
 // Fluka codes 100, 300 and 400 still to be investigasted
-    else                                     return kPNoProcess;
+    else                                                              return kPNoProcess;
 }
 
 
@@ -1646,33 +1789,34 @@ Int_t TFluka::StepProcesses(TArrayI &proc) const
   //
   // Return processes active in the current step
   //
+    FlukaProcessCode_t icode = GetIcode();
     proc.Set(1);
     TMCProcess iproc;
-    switch (fIcode) {
-    case 15:
-    case 24:
-    case 33:
-    case 41:
-    case 52:
+    switch (icode) {
+    case kKASKADtimekill:
+    case kEMFSCOtimekill:
+    case kKASNEUtimekill:
+    case kKASHEAtimekill:
+    case kKASOPHtimekill:
 	iproc =  kPTOFlimit;
 	break;
-    case 12:
-    case 14:
-    case 21:
-    case 22:
-    case 23:
-    case 31:
-    case 32:
-    case 40:
-    case 51:
+    case kKASKADstopping:
+    case kKASKADescape:
+    case kEMFSCOstopping1:
+    case kEMFSCOstopping2:
+    case kEMFSCOescape:
+    case kKASNEUstopping:
+    case kKASNEUescape:
+    case kKASHEAescape:
+    case kKASOPHescape:
 	iproc = kPStop;
 	break;
-    case 50:
+    case kKASOPHabsorption:
 	iproc = kPLightAbsorption;
 	break;
-    case 59:
+    case kKASOPHrefraction:
 	iproc = kPLightRefraction;
-    case 20: 
+    case kEMSCOlocaledep : 
 	iproc = kPPhotoelectric;
 	break;
     default:
@@ -1867,11 +2011,11 @@ TObjArray *TFluka::GetFlukaMaterials()
 }   
 
 //______________________________________________________________________________
-void TFluka::SetMreg(Int_t l) 
+void TFluka::SetMreg(Int_t l, Int_t lttc) 
 {
 // Set current fluka region
    fCurrentFlukaRegion = l;
-   fGeom->SetMreg(l);
+   fGeom->SetMreg(l,lttc);
 }
 
 
@@ -1931,6 +2075,17 @@ void TFluka::PrintHeader()
     printf("\n");    
 }
 
+Double_t TFluka::Dedx(Int_t ip, Double_t p, Int_t mat)
+{
+    return dedx(ip, p, mat);
+}
+
+Double_t TFluka::EDedx(Double_t p, Int_t mat)
+{
+    return dedxmy(p, mat);
+}
+
+  
 
 
 #define pshckp pshckp_
@@ -1962,14 +2117,15 @@ extern "C" {
 	// Calls stepping in order to signal cerenkov production
 	//
 	TFluka *fluka = (TFluka*)gMC;
-	fluka->SetMreg(mreg);
+	fluka->SetMreg(mreg,LTCLCM.mlatm1);
 	fluka->SetXsco(x);
 	fluka->SetYsco(y);
 	fluka->SetZsco(z);
 	fluka->SetNCerenkov(nphot);
-	fluka->SetCaller(50);
+	fluka->SetCaller(kUSTCKV);
 	if (fluka->GetVerbosityLevel() >= 3) 
 	(TVirtualMCApplication::Instance())->Stepping();
 	
     }
 }
+

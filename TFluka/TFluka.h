@@ -15,7 +15,7 @@
 
 
 #include "TVirtualMC.h"
-
+#include "TFlukaCodes.h"
 //Forward declaration
 class TGeoMCGeometry;
 class TFlukaMCGeometry;
@@ -90,6 +90,34 @@ class TFluka : public TVirtualMC {
 			const char *konly, Double_t *upar, Int_t np);
   virtual void   Gsbool(const char* onlyVolName, const char* manyVolName);
   
+   // functions for access to geometry
+   //
+   // Return the Transformation matrix between the volume specified by
+   // the path volumePath and the top or master volume.
+   virtual Bool_t GetTransformation(const TString& volumePath, 
+                        TGeoHMatrix& matrix);
+   
+   // Return the name of the shape and its parameters for the volume
+   // specified by the volume name.
+   virtual Bool_t GetShape(const TString& volumePath, 
+                        TString& shapeType, TArrayD& par);
+
+   // Returns the material parameters for the volume specified by
+   // the volume name.
+   virtual Bool_t GetMaterial(const TString& volumeName,
+ 	         TString& name, Int_t& imat,
+	         Double_t& a, Double_t& z, Double_t& density,
+	         Double_t& radl, Double_t& inter, TArrayD& par);
+		     
+   // Returns the medium parameters for the volume specified by the
+   // volume name.
+   virtual Bool_t GetMedium(const TString& volumeName,
+                        TString& name, Int_t& imed,
+	         Int_t& nmat, Int_t& isvol, Int_t& ifield,
+	         Double_t& fieldm, Double_t& tmaxfd, Double_t& stemax,
+	         Double_t& deemax, Double_t& epsil, Double_t& stmin,
+	         TArrayD& par);
+    
   virtual void   SetCerenkov(Int_t itmed, Int_t npckov, Float_t *ppckov,
 			     Float_t *absco, Float_t *effic, Float_t *rindex);
   virtual void   SetCerenkov(Int_t itmed, Int_t npckov, Double_t *ppckov,
@@ -102,17 +130,19 @@ class TFluka : public TVirtualMC {
   
   // Functions for drawing
   virtual void   DrawOneSpec(const char* /*name*/)
-      {printf("WARNING: DrawOneSpec not yet implemented !\n");}
+      {Warning("DrawOneSpec",  "Not yet implemented !\n");}
   virtual void   Gsatt(const char* name, const char* att, Int_t val);
   virtual void   Gdraw(const char*,Double_t /*theta = 30*/, Double_t /*phi = 30*/,
 		       Double_t /*psi = 0*/, Double_t /*u0 = 10*/, Double_t /*v0 = 10*/,
 		       Double_t /*ul = 0.01*/, Double_t /*vl = 0.01*/)
-      {printf("WARNING: Gdraw not yet implemented !\n");}
+      {Warning("Gdraw", "Not yet implemented !\n");}
   
   // Euclid
   virtual void   WriteEuclid(const char*, const char*, Int_t, Int_t);
   
   // Getters
+  Int_t          GetDummyRegion() const;
+  Int_t          GetDummyLattice() const;
   virtual Int_t  VolId(const Text_t* volName) const;
   virtual const  char* VolName(Int_t id) const;
   virtual Int_t  NofVolumes() const {return fNVolumes;}
@@ -135,7 +165,7 @@ class TFluka : public TVirtualMC {
   virtual Int_t    IdFromPDG(Int_t id) const;
   virtual Int_t    PDGFromId(Int_t pdg) const;
   virtual void     DefineParticles()
-  {printf("WARNING: DefineParticles not yet implemented !\n");}     
+  {Warning("DefineParticles", "Not yet implemented !\n");}     
   
   //
   // methods for step management
@@ -177,7 +207,7 @@ class TFluka : public TVirtualMC {
   
   virtual Double_t MaxStep() const;
   virtual Int_t    GetMaxNStep() const
-      {printf("WARNING: GetMaxNStep not yet implemented !\n"); return -1;}
+      {Warning("GetMaxNStep",  "Not yet implemented !\n"); return -1;}
   virtual Int_t    GetMedium() const;
   
   // Tracking particle 
@@ -219,30 +249,30 @@ class TFluka : public TVirtualMC {
   // !!! need to be transformed to common interface
   //
   virtual void Gdopt(const char*,const char*)
-    {printf("WARNING: Gdopt not yet implemented !\n");}
+    {Warning("Gdopt", "Not yet implemented !\n");}
   virtual void SetClipBox(const char*,Double_t=-9999,Double_t=0, Double_t=-9999,
 			  Double_t=0,Double_t=-9999,Double_t=0)
-    {printf("WARNING: SetClipBox not yet implemented !\n");}
+    {Warning("SetClipBox", "Not yet implemented !\n");}
   virtual void DefaultRange()
-    {printf("WARNING: DefaultRange not yet implemented !\n");}
+    {Warning("DefaultRange", "Not yet implemented !\n");}
   virtual void Gdhead(Int_t, const char*, Double_t=0)
-    {printf("WARNING: Gdhead not yet implemented !\n");}  
+    {Warning("Gdhead", "Not yet implemented !\n");}  
   virtual void Gdman(Double_t, Double_t, const char*)
-    {printf("WARNING: Gdman not yet implemented !\n");}
+    {Warning("Gdman", "Not yet implemented !\n");}
   virtual void SetColors()
-    {printf("WARNING: SetColors not yet implemented !\n");}
+    {Warning("SetColors", "Not yet implemented !\n");}
   virtual void Gtreve()
-    {printf("WARNING: Gtreve not yet implemented !\n");}
+    {Warning("Gtreve", "Not yet implemented !\n");}
   virtual void GtreveRoot()
-    {printf("WARNING: GtreveRoot not yet implemented !\n");}
+    {Warning("GtreveRoot", "Not yet implemented !\n");}
   virtual void Gckmat(Int_t, char*)
-    {printf("WARNING: Gckmat not yet implemented !\n");}
+    {Warning("Gckmat", "Not yet implemented !\n");}
   virtual void InitLego()
-    {printf("WARNING: InitLego not yet implemented !\n");}
+    {Warning("InitLego", "Not yet implemented !\n");}
 //
   virtual void Gfpart(Int_t pdg, char* name, Int_t& type, Float_t& mass, Float_t& charge, Float_t& tlife);
   virtual void Gspart(Int_t, const char*, Int_t, Double_t, Double_t, Double_t)
-      {printf("WARNING: Gspart not yet implemented !\n");}
+      {Warning("Gspart", "Not yet implemented !\n");}
 
   //
   // Particle Properties
@@ -300,19 +330,19 @@ class TFluka : public TVirtualMC {
   // mgdraw = 4
   // sodraw = 5
   // usdraw = 6
-  Int_t GetCaller() const {return fCaller;}
-  void SetCaller(Int_t l) {fCaller = l;}
+  FlukaCallerCode_t GetCaller() const {return fCaller;}
+  void SetCaller(FlukaCallerCode_t l) {fCaller = l;}
   
   // - Fluka Draw procedures formal parameters
-  Int_t GetIcode() const {return fIcode;}
-  void SetIcode(Int_t l) {fIcode = l;}
+  FlukaProcessCode_t GetIcode() const {return fIcode;}
+  void  SetIcode(FlukaProcessCode_t l) {fIcode = l;}
   // in the case of sodraw fIcode=0
 
   Int_t GetMreg() const {return fCurrentFlukaRegion;}
-  void SetMreg(Int_t l);
+  void SetMreg(Int_t l, Int_t lttc);
 
   Int_t GetNewreg() const {return fNewReg;}
-  void SetNewreg(Int_t l) {fNewReg = l;}
+  void SetNewreg(Int_t l, Int_t /*lttc*/) {fNewReg = l;}
 
   Double_t GetRull() const {return fRull;}
   void SetRull(Double_t r) {fRull = r;}
@@ -353,19 +383,22 @@ class TFluka : public TVirtualMC {
   virtual Int_t        VolDaughterCopyNo(const char* volName, Int_t i) const;
   virtual const char*  CurrentVolPath();
   virtual void         ForceDecayTime(Float_t){;}
+  Double_t Dedx(Int_t ip, Double_t p, Int_t mat);
+  Double_t EDedx(Double_t p, Int_t mat);
   private:
   void PrintHeader();
   TFluka(const TFluka &mc): TVirtualMC(mc) {;}
   TFluka & operator=(const TFluka &) {return (*this);}
-  
+
+
   
   Int_t   fVerbosityLevel; //Verbosity level (0 lowest - 3 highest)
   Int_t   fNEvent;         //Current event number
   TString fInputFileName;     //Name of the real input file 
   TString fCoreInputFileName; //Name of the input file 
 
-  Int_t    fCaller; //Parameter to indicate who is the caller of the Fluka Draw
-  Int_t    fIcode;  //Fluka Draw procedures formal parameter 
+  FlukaCallerCode_t     fCaller; //Parameter to indicate who is the caller of the Fluka Draw
+  FlukaProcessCode_t    fIcode;  //Fluka Draw procedures formal parameter 
   Int_t    fNewReg; //Fluka Draw procedures formal parameter
   Double_t fRull;   //Fluka Draw procedures formal parameter
   Double_t fXsco;   //Fluka Draw procedures formal parameter
