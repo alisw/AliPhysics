@@ -3,13 +3,15 @@
 #include "TVirtualMCStack.h"
 
 #include "TFluka.h"
-
+#include "TFlukaCodes.h"
 // Fluka include
 #include "Fdimpar.h"  //(DIMPAR) fluka include
 #include "Fdblprc.h"  //(DBLPRC) fluka common
 #include "Ftrackr.h"  //(TRACKR) fluka common
 #include "Fopphst.h"  //(OPPHST) fluka common
 #include "Fflkstk.h"  //(FLKSTK) fluka common
+#include "Fltclcm.h"  //(LTCLCM) fluka common
+#include "Fpaprop.h"  //(PAPROP) fluka common
 
 #ifndef WIN32
 # define mgdraw mgdraw_
@@ -21,6 +23,7 @@ extern "C" {
 void mgdraw(Int_t& icode, Int_t& mreg)
 {
     TFluka* fluka =  (TFluka*) gMC;
+    if (mreg == fluka->GetDummyRegion()) return;
     Int_t verbosityLevel = fluka->GetVerbosityLevel();
 //
 //  Make sure that stack has currrent track Id
@@ -40,23 +43,18 @@ void mgdraw(Int_t& icode, Int_t& mreg)
     cppstack->SetCurrentTrack(trackId);
 //
 //    
-    fluka->SetMreg(mreg);
-    fluka->SetNewreg(mreg);
-    fluka->SetIcode(icode);
-    fluka->SetCaller(4);
+    Int_t mlttc = LTCLCM.mlatm1;
+    fluka->SetMreg(mreg, mlttc);
+    fluka->SetNewreg(mreg, mlttc);
+    fluka->SetIcode((FlukaProcessCode_t) icode);
+    fluka->SetCaller(kMGDRAW);
 
     if (!TRACKR.ispusr[mkbmx2 - 2]) {
 	//
 	// Single step
-	if (TRACKR.jtrack == -1 && trackId == 109340) {
-	    cout << endl << " !!! I am in mgdraw - calling Stepping(): " << icode << endl;
-	    cout << endl << " Track Id = " << trackId << " region = " << mreg << endl;
-	    printf("Stepsize %13.5e \n", fluka->TrackStep());
+	if (verbosityLevel >= 3) {
+	    cout << endl << "mgdraw: energy deposition for:" << trackId << endl;
 	}
-
-
-
-      
 	(TVirtualMCApplication::Instance())->Stepping();
 	fluka->SetTrackIsNew(kFALSE);
     } else {
@@ -64,11 +62,11 @@ void mgdraw(Int_t& icode, Int_t& mreg)
 	// Tracking is being resumed after secondary tracking
 	//
 	if (verbosityLevel >= 3) {
-	    cout << endl << " !!! I am in mgdraw - resuming Stepping(): " << trackId << endl;
+	    cout << endl << "mgdraw: resuming Stepping(): " << trackId << endl;
 	}
-	
+
 	fluka->SetTrackIsNew(kTRUE);
-	fluka->SetCaller(40);
+	fluka->SetCaller(kMGResumedTrack);
 	(TVirtualMCApplication::Instance())->Stepping();
 
 	// Reset flag and stored values
@@ -82,11 +80,9 @@ void mgdraw(Int_t& icode, Int_t& mreg)
 	}
 
 	fluka->SetTrackIsNew(kFALSE);
-	fluka->SetCaller(4);
+	fluka->SetCaller(kMGDRAW);
 	(TVirtualMCApplication::Instance())->Stepping();
     }
-    
-    
 } // end of mgdraw
 } // end of extern "C"
 

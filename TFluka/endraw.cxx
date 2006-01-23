@@ -5,9 +5,12 @@
 #include "TFlukaCerenkov.h"
 
 #include "TFluka.h"
+#include "TFlukaCodes.h"
 
 #include "Fdimpar.h"  //(DIMPAR) fluka include
 #include "Ftrackr.h"  //(TRACKR) fluka common
+#include "Fltclcm.h"  //(LTCLCM) fluka common
+#include "Fpaprop.h"  //(PAPROP) fluka common
 #ifndef WIN32
 # define endraw endraw_
 #else
@@ -17,26 +20,29 @@ extern "C" {
 void endraw(Int_t& icode, Int_t& mreg, Double_t& rull, Double_t& xsco, Double_t& ysco, Double_t& zsco)
 {
   TFluka* fluka = (TFluka*) gMC;
+  // nothing to do if particle in dummy region
+  if (mreg == fluka->GetDummyRegion()) return;
   Int_t verbosityLevel = fluka->GetVerbosityLevel();
   Bool_t debug = (verbosityLevel >= 3)? kTRUE : kFALSE;
-  fluka->SetCaller(3);
+  Int_t mlttc = LTCLCM.mlatm1;
+  fluka->SetCaller(kENDRAW);
   fluka->SetRull(rull);
   fluka->SetXsco(xsco);
   fluka->SetYsco(ysco);
   fluka->SetZsco(zsco);
-  fluka->SetMreg(mreg);
+  fluka->SetMreg(mreg, mlttc);
   
   Float_t edep = rull;
   
-  if (icode == 11) {
+  if (icode == kKASKADinelarecoil) {
     if (debug) cout << " For icode=" << icode << " Stepping is NOT called" << endl;
     return;
   }
+
   if (TRACKR.jtrack == -1) {
 // Handle quantum efficiency the G3 way
       if (debug) printf("endraw: Cerenkov photon depositing energy: %d %e\n", mreg, rull);
       TGeoMaterial* material = (gGeoManager->GetCurrentVolume())->GetMaterial();
-      // Int_t nmat = material->GetIndex();
       TFlukaCerenkov*  cerenkov = dynamic_cast<TFlukaCerenkov*> (material->GetCerenkovProperties());
       if (cerenkov) {
 	  Double_t eff = (cerenkov->GetQuantumEfficiency(rull));
@@ -45,22 +51,21 @@ void endraw(Int_t& icode, Int_t& mreg, Double_t& rull, Double_t& xsco, Double_t&
 	  }
       }
   }
-  if (debug) printf("endraw: Depositing energy for : %d %e icode: %d \n", TRACKR.ispusr[mkbmx2-1], rull, icode);
 
-  if (icode != 21 && icode != 22) {
-      fluka->SetIcode(icode);
+  if (icode != kEMFSCOstopping1 && icode != kEMFSCOstopping2) {
+      fluka->SetIcode((FlukaProcessCode_t)icode);
       fluka->SetRull(edep);
       (TVirtualMCApplication::Instance())->Stepping();
   } else {
   //
-  // for icode 21,22 the particle has fallen below thresshold 
+  // For icode 21,22 the particle has fallen below thresshold.
   // This has to be signalled to the StepManager() 
   //
       fluka->SetRull(edep);
-      fluka->SetIcode(20);
+      fluka->SetIcode((FlukaProcessCode_t) icode);
       (TVirtualMCApplication::Instance())->Stepping();
       fluka->SetTrackIsNew(kFALSE);
-      fluka->SetIcode(icode);
+      fluka->SetIcode((FlukaProcessCode_t)icode);
       fluka->SetRull(0.);
       (TVirtualMCApplication::Instance())->Stepping();
   }

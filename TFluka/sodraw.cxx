@@ -2,6 +2,7 @@
 #include "TVirtualMCApplication.h"
 
 #include "TFluka.h"
+#include "TFlukaCodes.h"
 
 #ifndef WIN32
 # define sodraw sodraw_
@@ -11,8 +12,8 @@
 extern "C" {
 void sodraw()
 {
-  ((TFluka*) gMC)->SetCaller(5);
-  ((TFluka*) gMC)->SetIcode(0);
+  ((TFluka*) gMC)->SetCaller(kSODRAW);
+  ((TFluka*) gMC)->SetIcode((FlukaProcessCode_t)0);
 } // end of sodraw
 } // end of extern "C"
 

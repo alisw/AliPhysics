@@ -18,6 +18,7 @@
 
 //Virtual MC
 #include "TFluka.h"
+#include "TFlukaCodes.h"
 #include "TVirtualMCStack.h"
 #include "TVirtualMCApplication.h"
 #include "TParticle.h"
@@ -31,13 +32,15 @@ void stupre()
 //*  SeT User PRoperties for Emf particles                               *
 //*                                                                      *
 //*----------------------------------------------------------------------*
-  static Double_t emassmev = PAPROP.am[9] * 1000.;
+// Get the pointer to the VMC
+  TFluka* fluka =  (TFluka*) gMC;
+  static Double_t emassmev = PAPROP.am[kFLUKAelectron + 6] * 1000.;
     
   Int_t lbhabh = 0;
   if (EVTFLG.ldltry == 1) {
     if (EMFSTK.ichemf[EMFSTK.npemf-1] * EMFSTK.ichemf[EMFSTK.npemf-2] < 0) lbhabh = 1;
   }
-  
+
 // mkbmx1         = dimension for kwb real spare array in fluka stack in DIMPAR
 // mkbmx2         = dimension for kwb int. spare array in fluka stack in DIMPAR
 // EMFSTK.espark  = spare real variables available for 
@@ -49,18 +52,17 @@ void stupre()
 
   Int_t npnw, ispr;
   for (npnw = EMFSTK.npstrt-1; npnw <= EMFSTK.npemf-1; npnw++) {
-
-    for (ispr = 0; ispr <= mkbmx1-1; ispr++) 
-      EMFSTK.espark[npnw][ispr] = TRACKR.spausr[ispr];
+      
+      for (ispr = 0; ispr <= mkbmx1-1; ispr++) 
+	  EMFSTK.espark[npnw][ispr] = TRACKR.spausr[ispr];
+      
+      for (ispr = 0; ispr <= mkbmx2-1; ispr++) 
+	  EMFSTK.iespak[npnw][ispr] = TRACKR.ispusr[ispr];
     
-    for (ispr = 0; ispr <= mkbmx2-1; ispr++) 
-      EMFSTK.iespak[npnw][ispr] = TRACKR.ispusr[ispr];
-    
-    EMFSTK.louemf[npnw] = TRACKR.llouse;
+      EMFSTK.louemf[npnw] = TRACKR.llouse;
   }
 
-// Get the pointer to the VMC
-  TFluka* fluka =  (TFluka*) gMC;
+
   Int_t verbosityLevel = fluka->GetVerbosityLevel();
   Bool_t debug = (verbosityLevel>=3)?kTRUE:kFALSE;
   fluka->SetTrackIsNew(kTRUE);
@@ -76,8 +78,8 @@ void stupre()
   for (kp = EMFSTK.npstrt - 1; kp <= EMFSTK.npemf - 1; kp++) {
     
 // Ckeck transport cut first
-    Int_t ireg = EMFSTK.iremf[kp];
-    Double_t cut = (TMath::Abs(EMFSTK.ichemf[kp]) == 1) ? EMFRGN.elethr[ireg-1] :  EMFRGN.phothr[ireg-1];
+    Int_t    ireg   = EMFSTK.iremf[kp];
+    Double_t cut    = (TMath::Abs(EMFSTK.ichemf[kp]) == 1) ? EMFRGN.elethr[ireg-1] :  EMFRGN.phothr[ireg-1];
     Double_t e      = EMFSTK.etemf[kp];
 
     if ((e < cut) 
@@ -93,18 +95,18 @@ void stupre()
 	continue;
     }
 
-//* save the parent track number and reset it at each loop
+// Save the parent track number and reset it at each loop
     Int_t done = 0;
     Int_t parent =  TRACKR.ispusr[mkbmx2-1];
     Int_t flukaid = 0;
     
 // Identify particle type
-    if      (EMFSTK.ichemf[kp] == -1)  flukaid = 3;
-    else if (EMFSTK.ichemf[kp] ==  0)  flukaid = 7;
-    else if (EMFSTK.ichemf[kp] ==  1)  flukaid = 4;
+    if      (EMFSTK.ichemf[kp] == -1)  flukaid = kFLUKAelectron;
+    else if (EMFSTK.ichemf[kp] ==  0)  flukaid = kFLUKAphoton;
+    else if (EMFSTK.ichemf[kp] ==  1)  flukaid = kFLUKApositron;
     
 
-    e      *= emvgev;
+    e *= emvgev;
     Int_t    pdg    = fluka->PDGFromId(flukaid);
     Double_t p      = sqrt(e * e - PAPROP.am[flukaid+6] * PAPROP.am[flukaid+6]);
     Double_t px     = p * EMFSTK.uemf[kp];

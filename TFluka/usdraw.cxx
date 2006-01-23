@@ -1,9 +1,11 @@
 #include <Riostream.h>
 #include "TVirtualMCApplication.h"
 #include "TFluka.h"
+#include "TFlukaCodes.h"
 #include <TLorentzVector.h>
 #include "Fdimpar.h"  //(DIMPAR) fluka include
 #include "Ftrackr.h"  //(TRACKR) fluka common
+#include "Fltclcm.h"  //(LTCLCM) fluka common
 #include "Femfstk.h"  //(EMFSTK) fluka common
 #ifndef WIN32
 # define usdraw usdraw_
@@ -15,12 +17,14 @@ void usdraw(Int_t& icode, Int_t& mreg,
             Double_t& xsco, Double_t& ysco, Double_t& zsco)
 {
   TFluka *fluka = (TFluka*)gMC;
+  // nothing to do if particle inside dummy region
+  if (mreg == fluka->GetDummyRegion()) return;
   Int_t verbosityLevel = fluka->GetVerbosityLevel();
   Bool_t debug = (verbosityLevel >= 3)? kTRUE : kFALSE;
-  fluka->SetCaller(6);
-  fluka->SetIcode(icode);
+  fluka->SetCaller(kUSDRAW);
+  fluka->SetIcode((FlukaProcessCode_t) icode);
 
-  if (icode/100 == 2) {
+  if (icode/100 == kEMFSCO) {
       for (Int_t npnw = EMFSTK.npstrt-1; npnw <= EMFSTK.npemf-1; npnw++) {
 	  if (EMFSTK.iespak[npnw][mkbmx2-1] ==  TRACKR.ispusr[mkbmx2 - 1] ) {
 	      EMFSTK.iespak[npnw][mkbmx2 - 2] = 1;
@@ -42,7 +46,8 @@ void usdraw(Int_t& icode, Int_t& mreg,
   
 
 
-  fluka->SetMreg(mreg);
+  Int_t mlttc = LTCLCM.mlatm1;
+  fluka->SetMreg(mreg, mlttc);
   fluka->SetXsco(xsco);
   fluka->SetYsco(ysco);
   fluka->SetZsco(zsco);

@@ -2,6 +2,7 @@
 #include "TVirtualMCApplication.h"
 
 #include "TFluka.h"
+#include "TFlukaCodes.h"
 
 #ifndef WIN32
 # define eedraw eedraw_
@@ -11,8 +12,8 @@
 extern "C" {
 void eedraw(Int_t& icode)
 {
-  ((TFluka*) gMC)->SetCaller(2);
-  ((TFluka*) gMC)->SetIcode(icode);
+  ((TFluka*) gMC)->SetCaller(kEEDRAW);
+  ((TFluka*) gMC)->SetIcode((FlukaProcessCode_t) icode);
 } // end of eedraw
 } // end of extern "C"
 
