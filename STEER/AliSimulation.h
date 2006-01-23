@@ -15,13 +15,9 @@
 #include <TNamed.h>
 #include <TString.h>
 #include <TObjArray.h>
-#include <TGeoManager.h>
-#include <TGeoPhysicalNode.h>
-#include "AliCDBManager.h"
-#include "AliCDBStorage.h"
-#include "AliCDBEntry.h"
-#include "AliCDBId.h"
 
+class AliCDBId;
+class AliCDBParam;
 class AliRunLoader;
 
 
@@ -59,6 +55,7 @@ public:
 				 Bool_t deleteIntermediateFiles = kFALSE)
                    {fWriteRawData = detectors; fRawDataFileName = fileName;
 		   fDeleteIntermediateFiles = deleteIntermediateFiles;};
+
   static Bool_t  ApplyDisplacements(const char* fileName,
 				    const char* ClArrayName);
   static Bool_t  ApplyDisplacements(TClonesArray* AlObjArray);

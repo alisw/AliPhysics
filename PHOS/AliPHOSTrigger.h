@@ -12,7 +12,6 @@
      
 // --- ROOT system ---
 
-class TMatrixD ;
 class TClonesArray ;
 
 
@@ -30,13 +29,13 @@ class AliPHOSTrigger : public AliTriggerDetector {
   virtual void    CreateInputs();
   virtual void    Trigger();  //Make PHOS trigger
   
-  const Int_t  GetNTRU() const              {return fNTRU ; }  
-  const Int_t  GetNTRUZ() const             {return fNTRUZ ; }  
-  const Int_t  GetNTRUPhi() const           {return fNTRUPhi ; }  
-  const Int_t  GetL0Threshold() const       {return fL0Threshold ; }  
-  const Int_t  GetL1LowThreshold() const    {return fL1LowThreshold ; }
-  const Int_t  GetL1MediumThreshold() const {return fL1MediumThreshold ; }
-  const Int_t  GetL1HighThreshold() const   {return fL1HighThreshold ; }
+  Int_t  GetNTRU() const              {return fNTRU ; }  
+  Int_t  GetNTRUZ() const             {return fNTRUZ ; }  
+  Int_t  GetNTRUPhi() const           {return fNTRUPhi ; }  
+  Int_t  GetL0Threshold() const       {return fL0Threshold ; }  
+  Int_t  GetL1LowThreshold() const    {return fL1LowThreshold ; }
+  Int_t  GetL1MediumThreshold() const {return fL1MediumThreshold ; }
+  Int_t  GetL1HighThreshold() const   {return fL1HighThreshold ; }
 
   void         Print(const Option_t * opt ="") const ;  
 

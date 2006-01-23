@@ -11,11 +11,11 @@
 /// \brief Cluster finder in MUON arm of ALICE
 
 #include "AliMUONClusterFinderVS.h"
+#include <TMatrixDfwd.h>
 
 class TH2D;
 class TClonesArray;
 class TMinuit;
-class TMatrixD;
 
 class AliSegmentation;
 class AliMUONResponse;

@@ -24,16 +24,15 @@ AliCDBPath.cxx AliCDBRunRange.cxx AliCDBManager.cxx\
 AliCDBStorage.cxx AliCDBLocal.cxx AliCDBDump.cxx AliCDBGrid.cxx\
 AliReconstructor.cxx AliDetectorEventHeader.cxx TTreeStream.cxx\
 AliAlignObj.cxx AliAlignObjAngles.cxx AliAlignObjMatrix.cxx \
-AliRieman.cxx\
-AliTrackFitter.cxx AliTrackFitterRieman.cxx\
-AliTrackResiduals.cxx AliTrackResidualsChi2.cxx\
-AliAlignmentTracks.cxx \
-AliExpression.cxx \
 AliTriggerInput.cxx \
 AliTriggerDetector.cxx \
 AliTriggerCondition.cxx \
 AliTriggerDescriptor.cxx \
-AliCentralTrigger.cxx
+AliCentralTrigger.cxx AliRieman.cxx\
+AliTrackFitter.cxx AliTrackFitterRieman.cxx\
+AliTrackResiduals.cxx AliTrackResidualsChi2.cxx\
+AliAlignmentTracks.cxx \
+AliExpression.cxx
 
 HDRS:= $(SRCS:.cxx=.h) 
 

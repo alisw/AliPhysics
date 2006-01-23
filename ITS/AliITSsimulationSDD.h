@@ -16,7 +16,6 @@
 
 class TH1F;
 class TFile;
-class TVector;
 class TArrayI;
 class TArrayF;
 class AliITS;

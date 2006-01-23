@@ -7,9 +7,9 @@
 /////////////////////////////////////////////////////////////////
 
 #include <TObject.h>
+#include <TVectorfwd.h>
 
 class TClonesArray;
-class TVector;
 class AliITSIOTrack;
 class AliKalmanTrack;
 class AliITStrackV2;
@@ -29,7 +29,7 @@ public:
         virtual void Print(Option_t *option="") const {TObject::Print(option);}
 	void	Tab(void);
 	void    Reset(void);
-	void	SetVec(Int_t track,TVector info) const;
+	void	SetVec(Int_t track,const TVector& info) const;
 	TVector* GetVec(Int_t track) const;
 	Int_t	GetPcode(TClonesArray* rps,Float_t pm);
 	Int_t	GetPcode(Float_t p,Float_t pm);

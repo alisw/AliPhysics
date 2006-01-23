@@ -22,6 +22,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <TParticle.h>
+#include <TVector.h>
 
 #include "AliRunLoader.h"
 #include "AliRun.h"

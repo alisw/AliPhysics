@@ -21,7 +21,8 @@
 #include "AliMUONChamber.h"
 #include "AliMUONTrigger.h"
 
-class TVector;
+#include <TVectorfwd.h>
+
 class TFile;
 class TTree;
 

@@ -12,9 +12,9 @@
 
 #include <TObject.h>
 #include "AliMUONTrack.h" 
+#include <TMatrixDfwd.h>
 
 class TArrayD;
-class TMatrixD;
 class AliMUONTrackReconstructor;
 class TClonesArray;
 class TObjArray;

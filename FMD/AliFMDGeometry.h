@@ -17,8 +17,6 @@
 #ifndef ALIGEOMETRY_H
 # include <AliGeometry.h>
 #endif
-class TVector3;
-class TMatrix;
 class TParticle;
 class AliRecPoint;
 class AliFMDRing;
@@ -81,7 +79,7 @@ public:
 
   // AliGeometry member functions 
   virtual void GetGlobal(const AliRecPoint* p, TVector3& pos, 
-			 TMatrix& mat) const;
+			 TMatrixF& mat) const;
   virtual void GetGlobal(const AliRecPoint* p, TVector3& pos) const;
   virtual Bool_t Impact(const TParticle* particle) const;
 protected:

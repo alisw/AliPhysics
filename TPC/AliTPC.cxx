@@ -40,7 +40,8 @@
 #include <TGeometry.h>
 #include <TInterpreter.h>
 #include <TMath.h>
-#include <TMatrix.h>
+#include <TMatrixF.h>
+#include <TVector.h>
 #include <TNode.h>
 #include <TObjectTable.h>
 #include <TParticle.h>
@@ -1421,10 +1422,10 @@ void AliTPC::DigitizeRow(Int_t irow,Int_t isec,TObjArray **rows)
   //  and a single track signal
   //    
 
-  TMatrix *m1 = new TMatrix(0,nofPads,0,nofTbins); // integrated
-  TMatrix *m2 = new TMatrix(0,nofPads,0,nofTbins); // single
+  TMatrixF *m1 = new TMatrixF(0,nofPads,0,nofTbins); // integrated
+  TMatrixF *m2 = new TMatrixF(0,nofPads,0,nofTbins); // single
   //
-  TMatrix &total  = *m1;
+  TMatrixF &total  = *m1;
 
   //  Array of pointers to the label-signal list
 
@@ -1519,7 +1520,7 @@ void AliTPC::DigitizeRow(Int_t irow,Int_t isec,TObjArray **rows)
 //_____________________________________________________________________________
 
 Float_t AliTPC::GetSignal(TObjArray *p1, Int_t ntr, 
-             TMatrix *m1, TMatrix *m2,Int_t *indexRange)
+             TMatrixF *m1, TMatrixF *m2,Int_t *indexRange)
 {
 
   //---------------------------------------------------------------
@@ -1547,8 +1548,8 @@ Float_t AliTPC::GetSignal(TObjArray *p1, Int_t ntr,
   indexRange[2]=9999; //min time
   indexRange[3]=-1; // max time
 
-  TMatrix &signal = *m1;
-  TMatrix &total = *m2;
+  TMatrixF &signal = *m1;
+  TMatrixF &total = *m2;
   //
   //  Loop over all electrons
   //
@@ -1587,7 +1588,7 @@ Float_t AliTPC::GetSignal(TObjArray *p1, Int_t ntr,
 }
 
 //_____________________________________________________________________________
-void AliTPC::GetList(Float_t label,Int_t np,TMatrix *m,
+void AliTPC::GetList(Float_t label,Int_t np,TMatrixF *m,
                      Int_t *indexRange, Float_t **pList)
 {
   //----------------------------------------------------------------------
@@ -1598,7 +1599,7 @@ void AliTPC::GetList(Float_t label,Int_t np,TMatrix *m,
   // Origin: Marek Kowalski  IFJ, Krakow, Marek.Kowalski@ifj.edu.pl
   //-----------------------------------------------------------------
 
-  TMatrix &signal = *m;
+  TMatrixF &signal = *m;
 
   // lop over nonzero digits
 

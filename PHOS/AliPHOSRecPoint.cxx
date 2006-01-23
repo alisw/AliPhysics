@@ -247,7 +247,7 @@ void  AliPHOSRecPoint::EvalPrimaries(TClonesArray * digits)
   
 }
 //____________________________________________________________________________
-void AliPHOSRecPoint::GetGlobalPosition(TVector3 & gpos, TMatrix & gmat) const
+void AliPHOSRecPoint::GetGlobalPosition(TVector3 & gpos, TMatrixF & gmat) const
 {
   // returns the position of the cluster in the global reference system of ALICE
   // and the uncertainty on this position

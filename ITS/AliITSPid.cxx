@@ -260,7 +260,7 @@ void	AliITSPid::SetCut(Int_t n,Float_t pm,Float_t pilo,Float_t pihi,
     return ;    
 }
 //------------------------------------------------------------
-void AliITSPid::SetVec(Int_t ntrack,TVector info) const
+void AliITSPid::SetVec(Int_t ntrack,const TVector& info) const
 {
   //Store track info in tracls table
 TClonesArray& arr=*fTrs;

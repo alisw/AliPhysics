@@ -41,7 +41,7 @@ public:
   };
 
   Bool_t AreInSameTower(Int_t id1, Int_t id2) const ;  
-  virtual void GetGlobal(const AliRecPoint *, TVector3 &, TMatrix &) const {}
+  virtual void GetGlobal(const AliRecPoint *, TVector3 &, TMatrixF &) const {}
   virtual void GetGlobal(const AliRecPoint *, TVector3 &) const {}
   virtual Bool_t Impact(const TParticle *) const {return kTRUE;}
 

@@ -91,13 +91,22 @@
 #pragma link C++ class AliCDBDumpParam; 
 #pragma link C++ class AliCDBGrid;
 #pragma link C++ class AliCDBGridFactory;
-#pragma link C++ class AliCDBGridParam; 
+#pragma link C++ class AliCDBGridParam;
+
+#pragma link C++ class AliExpression+;
+#pragma link C++ class AliVariableExpression+;
+#pragma link C++ class AliTriggerInput+;
+#pragma link C++ class AliTriggerDetector+;
+#pragma link C++ class AliTriggerCondition+;
+#pragma link C++ class AliTriggerDescriptor+;
+#pragma link C++ class AliCentralTrigger+;
 
 #pragma link C++ class  AliDetectorEventHeader+;
 
 #pragma link C++ class AliAlignObj+;
 #pragma link C++ class AliAlignObjAngles+;
 #pragma link C++ class AliAlignObjMatrix+;
+
 #pragma link C++ class AliTrackFitter+;
 #pragma link C++ class AliTrackFitterRieman+;
 #pragma link C++ class AliTrackResiduals+;
@@ -117,4 +126,5 @@
 #pragma link C++ class AliTriggerCondition+;
 #pragma link C++ class AliTriggerDescriptor+;
 #pragma link C++ class AliCentralTrigger+;
+
 #endif

@@ -18,9 +18,9 @@
 
 // --- ROOT system ---
 
-#include "TObject.h"
-#include "TVector3.h"
-class TMatrix;
+#include <TObject.h>
+#include <TMatrixFfwd.h>
+#include <TVector3.h>
 
 // --- AliRoot header files ---
 
@@ -38,9 +38,9 @@ public:
  
   virtual void  AddDigit(AliDigitNew & digit) ;  // add a digit to the digit's indexes list  
   //  virtual void  AddTrack(AliTrack & track) ;  // add a track to the tracks list  
-  virtual void  GetCovarianceMatrix(TMatrix & mat) const;
+  virtual void  GetCovarianceMatrix(TMatrixF & mat) const;
   virtual AliGeometry * GetGeom() const { return fGeom; } 
-  virtual void  GetGlobalPosition(TVector3 & gpos, TMatrix & gmat) const ; // return global position in ALICE
+  virtual void  GetGlobalPosition(TVector3 & gpos, TMatrixF & gmat) const ; // return global position in ALICE
   virtual int * GetDigitsList(void) const { return fDigitsList ; }
   //  virtual int * GetTracksList(void) const { return fTracksList ; }
   virtual Float_t GetEnergy() const {return fAmp; } 
@@ -63,7 +63,7 @@ protected:
   AliGeometry * fGeom ;       //! pointer to the geometry class 
   Int_t         fIndexInList ;// the index of this RecPoint in the list stored in TreeR (to be set by analysis)
   TVector3      fLocPos ;     // local position in the sub-detector coordinate
-  TMatrix *     fLocPosM ;    // covariance matrix ;  
+  TMatrixF *     fLocPosM ;    // covariance matrix ;  
   Int_t         fMaxDigit ;   //! max initial size of digits array (not saved)
   Int_t         fMulDigit ;   // total multiplicity of digits
   Int_t         fMaxTrack ;   //! max initial size of tracks array (not saved)

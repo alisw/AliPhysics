@@ -9,7 +9,6 @@
 
 #include "TH2.h" 
 
-class TMatrix;
 class TH1F;
 class TClonesArray;
 

@@ -325,7 +325,7 @@ AliFMDGeometry::XYZ2Detector(Double_t  x,
 void
 AliFMDGeometry::GetGlobal(const AliRecPoint* p, 
 			  TVector3& pos, 
-			  TMatrix& /* mat */) const 
+			  TMatrixF& /* mat */) const 
 {
   // Get the global coordinates cooresponding to the reconstructed
   // point p.  The coordiates is returned in the 3-vector pos passed

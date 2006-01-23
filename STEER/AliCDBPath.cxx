@@ -34,14 +34,17 @@
 ClassImp(AliCDBPath)
 
 //_____________________________________________________________________________
-AliCDBPath::AliCDBPath() {
+AliCDBPath::AliCDBPath() :
+fIsValid(kTRUE),
+fIsWildcard(kFALSE)
+{
 // default constructor
 
 }
 
 //_____________________________________________________________________________
 AliCDBPath::AliCDBPath(const AliCDBPath& other):
-TObject(),
+TObject(other),
 fPath(other.fPath)
 {
 // constructor
@@ -105,7 +108,7 @@ void AliCDBPath::InitPath() {
 	TString aString(strippedString);
 	strippedString = aString.Strip(TString::kBoth, '/');
 
-	TObjArray* anArray = TString(strippedString).Tokenize("/");	
+	TObjArray* anArray = TString(strippedString).Tokenize("/");
 	Int_t paramCount = anArray->GetEntriesFast();
 	
 	if (paramCount == 1) {

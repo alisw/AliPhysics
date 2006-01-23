@@ -25,6 +25,8 @@
 #include <TObject.h>
 #include <TObjArray.h>
 
+class AliRunLoader;
+
 class AliCentralTrigger : public TObject {
 
 public:

@@ -23,10 +23,9 @@
 #define ALIITSTRACKERV1_H
 
 #include <TObject.h>
+#include <TVectorfwd.h>
 
 class TObjArray;
-class TVector;
-class TMatrix;
 class AliITSTrackV1;
 class AliITSRad;
 class TStopwatch;

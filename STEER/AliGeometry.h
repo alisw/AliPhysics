@@ -14,12 +14,13 @@
 ////////////////////////////////////////////////
 
 // --- ROOT system ---
-#include "TNamed.h"
 
-class AliRecPoint;
-class TMatrix;
 class TParticle;
 class TVector3;
+#include <TNamed.h>
+#include <TMatrixFfwd.h>
+
+class AliRecPoint;
 
 class AliGeometry : public TNamed {
 
@@ -28,7 +29,7 @@ public:
   AliGeometry() ;          // ctor            
   virtual ~AliGeometry() ; // dtor
  
-  virtual void GetGlobal(const AliRecPoint * p, TVector3 & pos, TMatrix & mat) const = 0; 
+  virtual void GetGlobal(const AliRecPoint * p, TVector3 & pos, TMatrixF & mat) const = 0; 
   virtual void GetGlobal(const AliRecPoint * p, TVector3 & pos) const = 0; 
   virtual Bool_t Impact(const TParticle * particle) const             = 0;
 

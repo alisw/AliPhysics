@@ -54,7 +54,7 @@
 class TH3D;
 class AliStack;
 class TParticle;
-class TVector;
+class TVector3;
 
 #include <Riostream.h>
 

@@ -63,7 +63,7 @@ AliRecPoint::AliRecPoint(const char * ):
   fGeom(0),
   fIndexInList(-1), // to be set when the point is already stored
   fLocPos(0,0,0),
-  fLocPosM(new TMatrix(3,3)),
+  fLocPosM(new TMatrixF(3,3)),
   fMaxDigit(100),
   fMulDigit(0),
   fMaxTrack(5),
@@ -164,7 +164,7 @@ void AliRecPoint::Copy(TObject& recp) const
     (dynamic_cast<AliRecPoint&>(recp)).fGeom = fGeom;
     (dynamic_cast<AliRecPoint&>(recp)).fIndexInList = fIndexInList;
     (dynamic_cast<AliRecPoint&>(recp)).fLocPos = fLocPos;
-    (dynamic_cast<AliRecPoint&>(recp)).fLocPosM = new TMatrix(*fLocPosM);
+    (dynamic_cast<AliRecPoint&>(recp)).fLocPosM = new TMatrixF(*fLocPosM);
     (dynamic_cast<AliRecPoint&>(recp)).fMaxDigit = fMaxDigit;
     (dynamic_cast<AliRecPoint&>(recp)).fMulDigit = fMulDigit;
     (dynamic_cast<AliRecPoint&>(recp)).fMaxTrack = fMaxTrack;
@@ -179,7 +179,7 @@ void AliRecPoint::Copy(TObject& recp) const
 }
 
 //_______________________________________________________________________
-void AliRecPoint::GetCovarianceMatrix(TMatrix & mat) const
+void AliRecPoint::GetCovarianceMatrix(TMatrixF & mat) const
 {
   // returns the covariant matrix for the local position
   
@@ -198,7 +198,7 @@ void AliRecPoint::GetLocalPosition(TVector3 & pos) const
 }
 
 //____________________________________________________________________________
-void AliRecPoint::GetGlobalPosition(TVector3 & gpos, TMatrix & gmat) const
+void AliRecPoint::GetGlobalPosition(TVector3 & gpos, TMatrixF & gmat) const
 {
   // returns the position of the cluster in the global reference system of ALICE
   // and the uncertainty on this position

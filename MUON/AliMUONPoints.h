@@ -12,8 +12,8 @@
 /// \brief Class to draw detector clusters (is PolyMarker3D)
 
 #include "AliPoints.h"
+#include <TMatrixFfwd.h>
 
-class TMatrix;
 class TMarker3DBox;
 
 class AliMUONDigit;
@@ -40,7 +40,7 @@ public:
   virtual void          SetTrackIndex(Int_t trackindex) {fTrackIndex = trackindex;}
   virtual void          SetDigitIndex(Int_t digitindex) {fDigitIndex = digitindex;}
   virtual void          Set3DMarker(Int_t i,TMarker3DBox *marker) {fMarker[i] = marker;}
-  virtual void          SetMatrix(TMatrix *matrix) {fMatrix = matrix;}
+  virtual void          SetMatrix(TMatrixF *matrix) {fMatrix = matrix;}
   
 protected:
   AliMUONPoints(const AliMUONPoints& points);  
@@ -50,7 +50,7 @@ protected:
    Int_t            fTrackIndex;       // Link to track number 
    Int_t            fDigitIndex;       // Link to digit 
   TMarker3DBox     *fMarker[3];        // pointer to  associated 3D-marker
-  TMatrix          *fMatrix;           // test
+  TMatrixF          *fMatrix;           // test
   
   ClassDef(AliMUONPoints,1) //Class to draw detector clusters (is PolyMarker3D) for MUON
 };

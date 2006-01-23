@@ -18,6 +18,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.101  2005/05/28 14:19:04  schutz
+ * Compilation warnings fixed by T.P.
+ *
  */
 
 //_________________________________________________________________________
@@ -87,6 +90,7 @@
 
 
 // --- Standard library ---
+#include <TMatrixF.h>
 #include "TFormula.h"
 #include "TBenchmark.h"
 #include "TPrincipal.h"
@@ -787,7 +791,7 @@ TVector3 AliPHOSPIDv1::GetMomentumDirection(AliPHOSEmcRecPoint * emc, AliPHOSCpv
   //  in case 1.
 
   TVector3 dir(0,0,0) ; 
-  TMatrix  dummy ;
+  TMatrixF  dummy ;
   
   emc->GetGlobalPosition(dir, dummy) ;
 
@@ -1452,7 +1456,7 @@ void  AliPHOSPIDv1::SetParameters()
   // lines 14-15: parameters to calculate border for high-pt photons and pi0
 
   fFileNameParameters = gSystem->ExpandPathName("$ALICE_ROOT/PHOS/Parameters.dat");
-  fParameters = new TMatrix(16,4) ;
+  fParameters = new TMatrixF(16,4) ;
   const Int_t kMaxLeng=255;
   char string[kMaxLeng];
 

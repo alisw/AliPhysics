@@ -81,7 +81,7 @@ class AliTRDgeometry : public AliGeometry {
           Float_t  GetChamberWidth(Int_t p) const           { return fCwidth[p];     };
           Float_t  GetChamberLength(Int_t p, Int_t c) const { return fClength[p][c]; }; 
 
-  virtual void     GetGlobal(const AliRecPoint* , TVector3& , TMatrix& ) const { }; 
+  virtual void     GetGlobal(const AliRecPoint* , TVector3& , TMatrixF& ) const { }; 
   virtual void     GetGlobal(const AliRecPoint* , TVector3& ) const { };
  
   static  Double_t GetAlpha()  { return 2 * 3.14159265358979323846 / fgkNsect; }; 

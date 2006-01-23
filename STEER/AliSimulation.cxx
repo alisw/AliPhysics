@@ -105,13 +105,24 @@
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
+#include <TGeoManager.h>
+#include <TGeoShape.h>
+#include <TGeoNode.h>
+#include <TGeoMatrix.h>
+#include <TGeoPhysicalNode.h>
 #include <TObjString.h>
 #include <TStopwatch.h>
 #include <TSystem.h>
 
-#include "AliLog.h"
+#include "AliCDBStorage.h"
+#include "AliCDBEntry.h"
+#include "AliCDBManager.h"
+#include "AliAlignObj.h"
+#include "AliCentralTrigger.h"
+#include "AliDAQConfig.h"
 #include "AliDigitizer.h"
 #include "AliGenerator.h"
+#include "AliLog.h"
 #include "AliModule.h"
 #include "AliRun.h"
 #include "AliRunDigitizer.h"
@@ -119,11 +130,6 @@
 #include "AliSimulation.h"
 #include "AliVertexGenFile.h"
 #include "AliCentralTrigger.h"
-
-#include "AliDAQConfig.h"
-#include "AliAlignObj.h"
-#include "AliAlignObjAngles.h"
-#include "AliAlignObjMatrix.h"
 
 ClassImp(AliSimulation)
 
