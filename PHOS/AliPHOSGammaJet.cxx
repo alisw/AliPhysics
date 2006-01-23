@@ -17,6 +17,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.9  2006/01/12 16:23:26  schutz
+ * ESD is properly read with methods of macros/AliReadESD.C copied in it
+ *
  * Revision 1.8  2005/12/20 07:08:32  schutz
  * corrected error in call AliReadESD
  *
@@ -961,7 +964,7 @@ void AliPHOSGammaJet::Exec(Option_t *option)
 
   if(fESDdata){
     // Create chain of esd trees
-    const UInt_t kNevent = static_cast<const UInt_t>(GetNEvent()) ; 
+    const UInt_t kNevent = static_cast<UInt_t>(GetNEvent()) ; 
     t = ReadESD(kNevent, fDirName, fESDTree, fPattern) ; 
     if(!t) {
       AliError("Could not create the TChain") ; 
