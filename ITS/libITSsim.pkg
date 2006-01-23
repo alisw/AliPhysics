@@ -26,7 +26,8 @@ SRCS = 	AliITS.cxx \
 		AliITSsDigitize.cxx \
 		AliITSDigitizer.cxx \
 		AliITSFDigitizer.cxx \
-                AliITSspdTestBeam.cxx \
+      AliITSspdTestBeam.cxx \
+      AliITSTrigger.cxx
 
 
 HDRS:=  $(SRCS:.cxx=.h)

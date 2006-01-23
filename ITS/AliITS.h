@@ -12,6 +12,7 @@
 
 #include <TObjArray.h> // used in inline function GetModule.
 #include "AliDetector.h"
+#include "AliITSTrigger.h"
 #include "AliITSDetTypeSim.h"
 
 
@@ -102,7 +103,11 @@ class AliITS : public AliDetector {
     virtual void FillModules(TTree *treeH, Int_t mask = 0);
     virtual void ClearModules(){if(fITSmodules) fITSmodules->Delete();}
     virtual void AddHit(Int_t track, Int_t *vol, Float_t *hits);
-   
+
+    // Trigger
+    virtual AliTriggerDetector* CreateTriggerDetector() const
+       { return new AliITSTrigger(); }
+
     TClonesArray* GetSDigits() const { return fDetTypeSim->GetSDigits();}
 
     AliDigitizer* CreateDigitizer(AliRunDigitizer* manager) const;

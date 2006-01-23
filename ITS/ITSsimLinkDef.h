@@ -11,8 +11,8 @@
 
 //#pragma link C++ global gITSdisplay;  // global used by AliITSdisplay
 
-// Standard ITS classes 
- 
+// Standard ITS classes
+
 #pragma link C++ class  AliITS+;
 #pragma link C++ class  AliITSvPPRcoarseasymm+;
 #pragma link C++ class  AliITSvPPRasymmFMD+;
@@ -71,5 +71,9 @@
 #pragma link C++ class AliITSFDigitizer+;
 //#pragma link C++ class DisplayITSv11+;
 // Raw data
+
+#pragma link C++ class AliITSTrigger+;
+
+
 
 #endif
