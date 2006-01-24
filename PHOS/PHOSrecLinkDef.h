@@ -28,6 +28,5 @@
 #pragma link C++ class AliPHOSGammaJet+;
 #pragma link C++ class AliPHOSGridFile+;
 #pragma link C++ class AliPHOSTracker+;
-#pragma link C++ class AliPHOSTrigger+;
 
 #endif
