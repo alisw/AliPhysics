@@ -282,6 +282,7 @@ class TFluka : public TVirtualMC {
   virtual Bool_t DefineIon(const char*, int, int, int, double, double) {return kFALSE;}
   virtual TString  ParticleName(int pdg)      const;
   virtual Double_t ParticleMass(int pdg)      const;
+  virtual Double_t ParticleMassFPC(int fpc)   const;
   virtual Double_t ParticleCharge(int pdg)    const;
   virtual Double_t ParticleLifeTime(int pdg)  const;
   virtual TMCParticleType ParticleMCType(int) const {return (TMCParticleType) 9;}
@@ -333,10 +334,8 @@ class TFluka : public TVirtualMC {
   FlukaCallerCode_t GetCaller() const {return fCaller;}
   void SetCaller(FlukaCallerCode_t l) {fCaller = l;}
   
-  // - Fluka Draw procedures formal parameters
   FlukaProcessCode_t GetIcode() const {return fIcode;}
   void  SetIcode(FlukaProcessCode_t l) {fIcode = l;}
-  // in the case of sodraw fIcode=0
 
   Int_t GetMreg() const {return fCurrentFlukaRegion;}
   void SetMreg(Int_t l, Int_t lttc);
@@ -375,16 +374,12 @@ class TFluka : public TVirtualMC {
   
   Int_t GetMaterialIndex(Int_t idmat) const {return fMaterials[idmat];}
   TObjArray *GetFlukaMaterials();
-  //
-  // Dummy
-  virtual void SetRootGeometry() {;}
+  virtual void SetRootGeometry() {;} // Dummy
   virtual Int_t        NofVolDaughters(const char* volName) const;
   virtual const char*  VolDaughterName(const char* volName, Int_t i) const;
   virtual Int_t        VolDaughterCopyNo(const char* volName, Int_t i) const;
   virtual const char*  CurrentVolPath();
   virtual void         ForceDecayTime(Float_t){;}
-  Double_t Dedx(Int_t ip, Double_t p, Int_t mat);
-  Double_t EDedx(Double_t p, Int_t mat);
   private:
   void PrintHeader();
   TFluka(const TFluka &mc): TVirtualMC(mc) {;}

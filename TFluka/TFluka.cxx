@@ -66,18 +66,13 @@
 // Fluka methods that may be needed.
 #ifndef WIN32 
 # define flukam  flukam_
-# define dedx  dedx_
-# define dedxmy  dedxmy_
 # define fluka_openinp fluka_openinp_
 # define fluka_openout fluka_openout_
 # define fluka_closeinp fluka_closeinp_
 # define mcihad mcihad_
 # define mpdgha mpdgha_
-# define newplo newplo_
 #else 
 # define flukam  FLUKAM
-# define dedx  DEDX
-# define dedxmy  DEDXMY
 # define fluka_openinp FLUKA_OPENINP
 # define fluka_openout FLUKA_OPENOUT
 # define fluka_closeinp FLUKA_CLOSEINP
@@ -92,8 +87,6 @@ extern "C"
   // Prototypes for FLUKA functions
   //
   void type_of_call flukam(const int&);
-  double type_of_call dedx(int&, double&, int&);
-  double type_of_call dedxmy(double&, int&);
   void type_of_call newplo();
   void type_of_call fluka_openinp(const int&, DEFCHARA);
   void type_of_call fluka_openout(const int&, DEFCHARA);
@@ -955,7 +948,7 @@ Int_t TFluka::PDGFromId(Int_t id) const
 	return  50000050;
     }
 // Error id    
-    if (id == 0 || id < -6 || id > 250) {
+    if (id == 0 || id < kFLUKAcodemin || id > kFLUKAcodemax) {
 	if (fVerbosityLevel >= 3)
 	    printf("PDGFromId: Error id = 0\n");
 	return -1;
@@ -974,11 +967,10 @@ Int_t TFluka::PDGFromId(Int_t id) const
 	}
 	if (fVerbosityLevel >= 3)
 	    printf("mpdgha called with %d %d \n", id, intfluka);
-	// MPDGHA() goes from fluka internal to pdg.
 	return mpdgha(intfluka);
     } else {
 	// ions and optical photons
-	return idSpecial[id + 6];
+	return idSpecial[id - kFLUKAcodemin];
     }
 }
 
@@ -1350,7 +1342,7 @@ void TFluka::TrackMomentum(TLorentzVector& momentum) const
       return;
     }
     else {
-      Double_t p = sqrt(TRACKR.etrack*TRACKR.etrack - PAPROP.am[TRACKR.jtrack+6]*PAPROP.am[TRACKR.jtrack+6]);
+      Double_t p = sqrt(TRACKR.etrack * TRACKR.etrack - ParticleMassFPC(TRACKR.jtrack) * ParticleMassFPC(TRACKR.jtrack));
       momentum.SetPx(p*TRACKR.cxtrck);
       momentum.SetPy(p*TRACKR.cytrck);
       momentum.SetPz(p*TRACKR.cztrck);
@@ -1396,7 +1388,7 @@ void TFluka::TrackMomentum(Double_t& px, Double_t& py, Double_t& pz, Double_t& e
       return;
     }
     else {
-      Double_t p = sqrt(TRACKR.etrack*TRACKR.etrack - PAPROP.am[TRACKR.jtrack+6]*PAPROP.am[TRACKR.jtrack+6]);
+      Double_t p = sqrt(TRACKR.etrack * TRACKR.etrack - ParticleMassFPC(TRACKR.jtrack) *  ParticleMassFPC(TRACKR.jtrack));
       px = p*TRACKR.cxtrck;
       py = p*TRACKR.cytrck;
       pz = p*TRACKR.cztrck;
@@ -2025,7 +2017,7 @@ TString TFluka::ParticleName(Int_t pdg) const
 {
     // Return particle name for particle with pdg code pdg.
     Int_t ifluka = IdFromPDG(pdg);
-    return TString((CHPPRP.btype[ifluka+6]), 8);
+    return TString((CHPPRP.btype[ifluka - kFLUKAcodemin]), 8);
 }
  
 
@@ -2033,21 +2025,27 @@ Double_t TFluka::ParticleMass(Int_t pdg) const
 {
     // Return particle mass for particle with pdg code pdg.
     Int_t ifluka = IdFromPDG(pdg);
-    return (PAPROP.am[ifluka+6]);
+    return (PAPROP.am[ifluka - kFLUKAcodemin]);
+}
+
+Double_t TFluka::ParticleMassFPC(Int_t fpc) const
+{
+    // Return particle mass for particle with Fluka particle code fpc
+    return (PAPROP.am[fpc - kFLUKAcodemin]);
 }
 
 Double_t TFluka::ParticleCharge(Int_t pdg) const
 {
     // Return particle charge for particle with pdg code pdg.
     Int_t ifluka = IdFromPDG(pdg);
-    return Double_t(PAPROP.ichrge[ifluka+6]);
+    return Double_t(PAPROP.ichrge[ifluka - kFLUKAcodemin]);
 }
 
 Double_t TFluka::ParticleLifeTime(Int_t pdg) const
 {
     // Return particle lifetime for particle with pdg code pdg.
     Int_t ifluka = IdFromPDG(pdg);
-    return (PAPROP.tmnlf[ifluka+6]);
+    return (PAPROP.tmnlf[ifluka - kFLUKAcodemin]);
 }
 
 void TFluka::Gfpart(Int_t pdg, char* name, Int_t& type, Float_t& mass, Float_t& charge, Float_t& tlife)
@@ -2074,18 +2072,6 @@ void TFluka::PrintHeader()
     printf("\n");
     printf("\n");    
 }
-
-Double_t TFluka::Dedx(Int_t ip, Double_t p, Int_t mat)
-{
-    return dedx(ip, p, mat);
-}
-
-Double_t TFluka::EDedx(Double_t p, Int_t mat)
-{
-    return dedxmy(p, mat);
-}
-
-  
 
 
 #define pshckp pshckp_
