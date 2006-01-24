@@ -1,12 +1,8 @@
 #ifndef TFLUKACODES
 #define TFLUKACODES 
-//
-// Enumeration of the constants for the PDG particle IDs.
-//
-
 typedef enum {
     kNoProcess         =   0,
-    kKASKAD            =   1,  // any KASKAD code / 100
+    kKASKAD            =   1,  // KASKAD code first digit
     kKASKADelarecoil   =  10,  // elastic interaction recoil
     kKASKADinelarecoil =  11,  // inelastic interaction recoil   
     kKASKADstopping    =  12,  // stopping particle
@@ -20,7 +16,7 @@ typedef enum {
     kKASKADdray        = 103,  // delta ray  generation 
     kKASKADpair        = 104,  // pair production
     kKASKADbrems       = 105,  // bremsstrahlung
-    kEMFSCO            =   2,
+    kEMFSCO            =   2,  // EMFSCO code first digit
     kEMSCOlocaledep    =  20,  // local energy deposition (i.e. photoelectric)
     kEMFSCOstopping1   =  21,  // below user-defined cut-off
     kEMFSCOstopping2   =  22,  // below user cut-off
@@ -36,19 +32,19 @@ typedef enum {
     kEMFSCOcompton     = 219,  // Compton scattering
     kEMFSCOphotoel     = 221,  // photoelectric effect 
     kEMFSCOrayleigh    = 225,  // Rayleigh scattering  
-    kKASNEU            =   3,
+    kKASNEU            =   3,  // KASNEU code first digit
     kKASNEUtargrecoil  =  30,  // target recoil
     kKASNEUstopping    =  31,  // neutron below threshold
     kKASNEUescape      =  32,  // escape 
     kKASNEUtimekill    =  33,  // time kill
     kKASNEUboundary    =  39,  // boundary crossing
     kKASNEUhadronic    = 300,  // neutron interaction
-    kKASHEA            =   4,
+    kKASHEA            =   4,  // KASHEA code first digit
     kKASHEAescape      =  40,  // escape
     kKASHEAtimekill    =  41,  // time kill 
     kKASHEAboundary    =  49,  // boundary crossing
     kKASHEAdray        = 400,  // delta ray generation
-    kKASOPH            =   5,
+    kKASOPH            =   5,  // KASOPH code first digit
     kKASOPHabsorption  =  50,  // optical photon absorption 
     kKASOPHescape      =  51,  // escape 
     kKASOPHtimekill    =  52,  // time kill
@@ -57,20 +53,27 @@ typedef enum {
 FlukaProcessCode_t;	  
 
 typedef enum {
-    kEEDRAW = 2, kENDRAW = 3, kMGDRAW = 4, kSODRAW = 5, kUSDRAW = 6,
-    kBXEntering = 11, kBXExiting = 12,
-    kMGResumedTrack = 40,
-    kUSTCKV = 50
+    kEEDRAW         =  2,      // Stepping called from eedraw 
+    kENDRAW         =  3,      // Stepping called from endraw      
+    kMGDRAW         =  4,      // Stepping called from mgdraw 
+    kSODRAW         =  5,      // Stepping called from sodraw 
+    kUSDRAW         =  6,      // Stepping called from usdraw 
+    kBXEntering     = 11,      // Stepping called from bxdraw (entering track) 
+    kBXExiting      = 12,      // Stepping called from bxdraw (exiting  track) 
+    kMGResumedTrack = 40,      // Stepping called from mgdraw (resumed  track) 
+    kUSTCKV         = 50       // Stepping called from ustckv 
 }
 FlukaCallerCode_t;	  
 
 typedef enum {
-    kFLUKAoptical  = -1,
-    kFLUKAelectron = 3,
-    kFLUKApositron = 4,
-    kFLUKAphoton   = 7,
-    kFLUKAmuplus   = 10,
-    kFLUKAmuminus  = 11
+    kFLUKAcodemin  = -  6,     // minimum particle code used by FLUKA
+    kFLUKAcodemax  =  250,     // maximum particle code used by FLUKA
+    kFLUKAoptical  = -  1,     // code for optical photon
+    kFLUKAelectron =    3,     // electron
+    kFLUKApositron =    4,     // positron
+    kFLUKAphoton   =    7,     // photon
+    kFLUKAmuplus   =   10,     // mu+
+    kFLUKAmuminus  =   11      // mu-
 }
 FlukaParticleCode_t;	  
 
