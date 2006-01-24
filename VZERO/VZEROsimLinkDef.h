@@ -11,6 +11,7 @@
 #pragma link C++ class  AliVZEROv3+;
 #pragma link C++ class  AliVZEROv4+;
 #pragma link C++ class  AliVZEROv5+;
+#pragma link C++ class  AliVZEROv6+;
 #pragma link C++ class  AliVZEROhit+;
 #pragma link C++ class  AliVZERODigitizer+;
 #pragma link C++ class  AliVZEROBuffer+;

@@ -7,6 +7,7 @@ AliVZEROv2.cxx \
 AliVZEROv3.cxx \
 AliVZEROv4.cxx \
 AliVZEROv5.cxx \
+AliVZEROv6.cxx \
 AliVZEROhit.cxx \
 AliVZERODigitizer.cxx \
 AliVZEROBuffer.cxx
