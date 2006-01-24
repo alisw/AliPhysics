@@ -400,6 +400,7 @@ Double_t AliKalmanTrack::MeanMaterialBudget(Double_t *start, Double_t *end, Doub
   lparam[1]   = material->GetRadLen();
   lparam[2]   = material->GetA();
   lparam[3]   = material->GetZ();
+  lparam[4]   = length; 
   lparam[5]   = lparam[3]/lparam[2];
   if (material->IsMixture()) {
     lparam[1]*=lparam[0];  // different normalization in the modeler for mixture
