@@ -71,6 +71,7 @@
 # define fluka_closeinp fluka_closeinp_
 # define mcihad mcihad_
 # define mpdgha mpdgha_
+# define newplo newplo_
 #else 
 # define flukam  FLUKAM
 # define fluka_openinp FLUKA_OPENINP
@@ -1634,7 +1635,7 @@ Bool_t   TFluka::IsTrackDisappeared() const
       icode == kEMFSCOcompton    || // Compton scattering
       icode == kEMFSCOphotoel    || // Photoelectric effect
       icode == kKASNEUhadronic   || // hadronic interaction
-      icode == kKASHEAdray        // delta-ray
+      icode == kKASHEAdray          // delta-ray
       ) return 1;
   else return 0;
 }
@@ -1958,6 +1959,9 @@ void TFluka::Gmtod(Float_t* xm, Float_t* xd, Int_t iflag)
 //______________________________________________________________________________ 
 void TFluka::Gmtod(Double_t* xm, Double_t* xd, Int_t iflag)
 {
+//
+// See Gmtod(Float_t*, Float_t*, Int_t)
+//
    if (iflag == 1) gGeoManager->MasterToLocal(xm,xd);
    else            gGeoManager->MasterToLocalVect(xm,xd);
 }
@@ -1992,6 +1996,9 @@ void TFluka::Gdtom(Float_t* xd, Float_t* xm, Int_t iflag)
 //______________________________________________________________________________ 
 void TFluka::Gdtom(Double_t* xd, Double_t* xm, Int_t iflag)
 {
+//
+// See Gdtom(Float_t*, Float_t*, Int_t)
+//
    if (iflag == 1) gGeoManager->LocalToMaster(xd,xm);
    else            gGeoManager->LocalToMasterVect(xd,xm);
 }
@@ -1999,6 +2006,8 @@ void TFluka::Gdtom(Double_t* xd, Double_t* xm, Int_t iflag)
 //______________________________________________________________________________
 TObjArray *TFluka::GetFlukaMaterials()
 {
+//
+// Get array of Fluka materials
    return fGeom->GetMatList();
 }   
 
