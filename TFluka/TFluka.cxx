@@ -266,36 +266,17 @@ void TFluka::BuildPhysics() {
     // Prepare input file with the current physics settings
     
     InitPhysics(); 
-    
-    cout << "\t* InitPhysics() - Prepare input file was called" << endl; 
-    
-    if (fVerbosityLevel >=2)
-	cout << "\t* Changing lfdrtr = (" << (GLOBAL.lfdrtr?'T':'F')
-	     << ") in fluka..." << endl;
-    GLOBAL.lfdrtr = true;
-    
-    if (fVerbosityLevel >=2)
-	cout << "\t* Opening file " << fInputFileName << endl;
+//  Open fortran files    
     const char* fname = fInputFileName;
-    
     fluka_openinp(lunin, PASSCHARA(fname));
     fluka_openout(11, PASSCHARA("fluka.out"));
-    
-    if (fVerbosityLevel >=2)
-	cout << "\t* Calling flukam..." << endl;
+//  Read input cards    
+    GLOBAL.lfdrtr = true;
     flukam(1);
-    
-    if (fVerbosityLevel >=2)
-	cout << "\t* Closing file " << fInputFileName << endl;
+//  Close input file
     fluka_closeinp(lunin);
-    
+//  Finish geometry    
     FinishGeometry();
-    
-    if (fVerbosityLevel >=3)
-	cout << "<== TFluka::Init() called." << endl;
-    
-    if (fVerbosityLevel >=3)
-	cout << "<== TFluka::BuildPhysics() called." << endl;
 }  
 
 //______________________________________________________________________________ 
@@ -1183,7 +1164,9 @@ void TFluka::InitPhysics()
 	}
 	mopo->WriteFlukaInputCards();
     }
-    
+
+// Add RANDOMIZ card
+    fprintf(pFlukaVmcInp,"RANDOMIZ  %10.1f%10.0f\n", 1., Float_t(gRandom->GetSeed()));
 // Add START and STOP card
     fprintf(pFlukaVmcInp,"START     %10.1f\n",fEventsPerRun);
     fprintf(pFlukaVmcInp,"STOP      \n");
