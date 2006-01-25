@@ -16,6 +16,7 @@
 #include <TMCProcess.h>
 #include <TVirtualMCApplication.h>
 
+class TParticle;
 class AliGenerator;
 class AliMCQA;
 
