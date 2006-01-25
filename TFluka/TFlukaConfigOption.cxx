@@ -118,7 +118,7 @@ void TFlukaConfigOption::WriteFlukaInputCards()
 	Int_t nreg;	
 	reglist = fgGeom->GetMaterialList(fMedium, nreg);
 	if (nreg == 0) {
-	    printf("Material not used !\n");
+	    // Material not used -- return
 	    return;
 	}
 	//
