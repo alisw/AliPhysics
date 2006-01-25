@@ -6,16 +6,15 @@ OPEN             15.                                                  UNKNOWN
 FlukaVmc.err
 OPEN              2.                                                  UNKNOWN
 ran.new                                                      
-*OPEN              3.                                                  OLD
-*old.seed
-*RANDOMIZ          3.
+OPEN              1.                                                  OLD
+random.dat
 GEOBEGIN                                                              COMBINAT
 GEOEND
 *
 *...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+ 
 *
 EVENTYPE                             1.0
-BEAM         70000.0                                                  MUON-
+BEAM          7000.0                                                  MUON-
 SOURCE
 *...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+ 
 USERDUMP        200.      37.0      -2.0       1.0                    TRAKFILE
