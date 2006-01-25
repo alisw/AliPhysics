@@ -7,7 +7,7 @@ cd tmp
 
 # Link here some special Fluka files needed
 ln -s $FLUPRO/neuxsc_72.bin neuxsc.bin
-
+ln -s $FLUPRO/random.dat random.dat
 # Copy the random seed
 cp $FLUPRO/random.dat old.seed
 
