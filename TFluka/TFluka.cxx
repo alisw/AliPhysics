@@ -62,6 +62,7 @@
 #include "TLorentzVector.h"
 #include "TArrayI.h"
 #include "TArrayD.h"
+#include "TDatabasePDG.h"
 
 // Fluka methods that may be needed.
 #ifndef WIN32 
@@ -215,7 +216,11 @@ void TFluka::Init() {
     }
 
     fApplication->InitGeometry();
-    
+
+    //
+    // Add ions to PDG Data base
+    //
+     AddParticlesToPdgDataBase();
 }
 
 
@@ -2105,5 +2110,34 @@ extern "C" {
 	(TVirtualMCApplication::Instance())->Stepping();
 	
     }
+}
+
+void TFluka::AddParticlesToPdgDataBase() const
+{
+
+//
+// Add particles to the PDG data base
+
+    TDatabasePDG *pdgDB = TDatabasePDG::Instance();
+
+    const Int_t kion=10000000;
+
+    const Double_t kAu2Gev   = 0.9314943228;
+    const Double_t khSlash   = 1.0545726663e-27;
+    const Double_t kErg2Gev  = 1/1.6021773349e-3;
+    const Double_t khShGev   = khSlash*kErg2Gev;
+    const Double_t kYear2Sec = 3600*24*365.25;
+//
+// Ions
+//
+
+  pdgDB->AddParticle("Deuteron","Deuteron",2*kAu2Gev+8.071e-3,kTRUE,
+                     0,3,"Ion",kion+10020);
+  pdgDB->AddParticle("Triton","Triton",3*kAu2Gev+14.931e-3,kFALSE,
+                     khShGev/(12.33*kYear2Sec),3,"Ion",kion+10030);
+  pdgDB->AddParticle("Alpha","Alpha",4*kAu2Gev+2.424e-3,kTRUE,
+                     khShGev/(12.33*kYear2Sec),6,"Ion",kion+20040);
+  pdgDB->AddParticle("HE3","HE3",3*kAu2Gev+14.931e-3,kFALSE,
+                     0,6,"Ion",kion+20030);
 }
 

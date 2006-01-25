@@ -382,6 +382,7 @@ class TFluka : public TVirtualMC {
   virtual void         ForceDecayTime(Float_t){;}
   private:
   void PrintHeader();
+  void AddParticlesToPdgDataBase() const;
   TFluka(const TFluka &mc): TVirtualMC(mc) {;}
   TFluka & operator=(const TFluka &) {return (*this);}
 
