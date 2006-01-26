@@ -1468,7 +1468,8 @@ void g1wr(Double_t &pSx, Double_t &pSy, Double_t &pSz,
    sLt[lttcFlag] = snext;
    jrLt[lttcFlag+1] = -1;
    sLt[lttcFlag+1] = 0.;      
-   if (gGeoManager->IsOutside()) gGeoManager->SetOutside(kFALSE);
+   gGeoManager->SetOutside(kFALSE);
+   gGeoManager->CdNode(olttc-1);
    if (gMCGeom->IsDebugging()) {
       printf("=> snext=%g safe=%g\n", snext, saf);
       for (Int_t i=0; i<lttcFlag+1; i++) printf("   jrLt[%i]=%i  sLt[%i]=%g\n", i,jrLt[i],i,sLt[i]);
@@ -1570,8 +1571,11 @@ void lkwr(Double_t &pSx, Double_t &pSy, Double_t &pSz,
    if (gGeoManager->IsOutside()) {
       newReg = gMCGeom->NofVolumes()+2;
       newLttc = TFlukaMCGeometry::kLttcOutside;
+      gGeoManager->SetOutside(kFALSE);
+      if (oldLttc>0 && oldLttc<newLttc) gGeoManager->CdNode(oldLttc-1);
       return;
    } 
+   gGeoManager->SetOutside(kFALSE);
    newReg = node->GetVolume()->GetNumber();
    newLttc = gGeoManager->GetCurrentNodeId()+1;
    if (oldLttc==TFlukaMCGeometry::kLttcOutside || oldLttc==0) return;
@@ -1622,6 +1626,7 @@ void nrmlwr(Double_t &pSx, Double_t &pSy, Double_t &pSz,
       norml[1] = -dnorm[1];   
       norml[2] = -dnorm[2]; 
    }  
+       
    if (gMCGeom->IsDebugging()) {
       printf("   normal to boundary: (%g, %g, %g)\n", norml[0], norml[1], norml[2]);  
       printf("<= NRMLWR\n");
