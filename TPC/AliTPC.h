@@ -51,23 +51,13 @@ public:
   virtual void  Hits2DigitsSector(Int_t isec);  //MI change
   virtual void  Init();
   virtual Int_t IsVersion() const =0;
-
   virtual void  Digits2Raw();
-
   Int_t         GetNsectors() const  {return fNsectors;}
   virtual void  MakeBranch(Option_t *opt=" ");
   virtual void  ResetDigits();
-  virtual void  SetSecAL(Int_t sec);
-  virtual void  SetSecAU(Int_t sec);
-  virtual void  SetSecLows(Int_t s1,Int_t s2,Int_t s3,Int_t s4,Int_t s5, Int_t s6);
-  virtual void  SetSecUps (Int_t s1,Int_t s2,Int_t s3,Int_t s4,Int_t s5, Int_t s6,
-	  Int_t s7,Int_t s8,Int_t s9,Int_t s10, Int_t s11, Int_t s12);
   virtual void  SetSens(Int_t sens);
-
-
   virtual void  SetSide(Float_t side);
-  virtual void  SetGasMixt(Int_t nc,Int_t c1,Int_t c2,Int_t c3,Float_t p1,
-                           Float_t p2,Float_t p3); 
+
 
   virtual void  StepManager()=0;
   virtual void  DrawDetector() {}
@@ -108,10 +98,6 @@ public:
 protected:
    Int_t          fDefaults; // defaults switch
   Int_t          fSens;             // ISENS
-  Int_t          fSecAL;            // Upper sector selector
-  Int_t          fSecAU;            // Lower sector selector
-  Int_t          fSecLows[6];       // List of lower sectors selected
-  Int_t          fSecUps[12];       // List of upper sectors selected
   Int_t          fNsectors;         // Number of sectors in TPC
   //MI changes
   AliTPCDigitsArray * fDigitsArray;              //!detector digit object  
@@ -126,9 +112,6 @@ protected:
   //MK changes
 
   Float_t        fSide;  // selects left(-1), right(+1), or both(0) sides of the TPC
-  Int_t          fNoComp; // number of a drift gas components
-  Int_t          fMixtComp[3]; // drift gas components
-  Float_t        fMixtProp[3]; // mixture proportions 
    
  private:
   //

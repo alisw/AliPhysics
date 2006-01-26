@@ -293,7 +293,7 @@ void AliTPC::CreateMaterials()
   // Origin: Marek Kowalski  IFJ, Krakow, Marek.Kowalski@ifj.edu.pl
   //-----------------------------------------------------------------
 
-  Int_t iSXFLD=gAlice->Field()->Integ();
+   Int_t iSXFLD=gAlice->Field()->Integ();
   Float_t sXMGMX=gAlice->Field()->Max();
 
   Float_t amat[5]; // atomic numbers
@@ -301,42 +301,15 @@ void AliTPC::CreateMaterials()
   Float_t wmat[5]; // proportions
 
   Float_t density;
-  Float_t apure[2];
+ 
 
 
   //***************** Gases *************************
-  
-  //-------------------------------------------------
-  // pure gases
-  //-------------------------------------------------
 
-  // Neon
-
-
-  amat[0]= 20.18;
-  zmat[0]= 10.;  
-  density = 0.0009;
  
-  apure[0]=amat[0];
-
-  AliMaterial(20,"Ne",amat[0],zmat[0],density,999.,999.);
-
-  // Argon
-
-  amat[0]= 39.948;
-  zmat[0]= 18.;  
-  density = 0.001782;  
-
-  apure[1]=amat[0];
-
-  AliMaterial(21,"Ar",amat[0],zmat[0],density,999.,999.);
- 
-
   //--------------------------------------------------------------
-  // gases - compounds
+  // gases - air and CO2
   //--------------------------------------------------------------
-
-  Float_t amol[3];
 
   // CO2
 
@@ -346,134 +319,56 @@ void AliTPC::CreateMaterials()
   zmat[0]=6.;
   zmat[1]=8.;
 
-  wmat[0]=1.;
-  wmat[1]=2.;
+  wmat[0]=0.2729;
+  wmat[1]=0.7271;
 
   density=0.001977;
 
-  amol[0] = amat[0]*wmat[0]+amat[1]*wmat[1];
 
-  AliMixture(10,"CO2",amat,zmat,density,-2,wmat);
-   
-  // CF4
+  AliMixture(10,"CO2",amat,zmat,density,2,wmat);
+  //
+  // Air
+  //
+  amat[0]=15.9994;
+  amat[1]=14.007;
+  //
+  zmat[0]=8.;
+  zmat[1]=7.;
+  //
+  wmat[0]=0.233;
+  wmat[1]=0.767;
+  //
+  density=0.001205;
 
-  amat[0]=12.011;
-  amat[1]=18.998;
-
-  zmat[0]=6.;
-  zmat[1]=9.;
- 
-  wmat[0]=1.;
-  wmat[1]=4.;
- 
-  density=0.003034;
-
-  amol[1] = amat[0]*wmat[0]+amat[1]*wmat[1];
-
-  AliMixture(11,"CF4",amat,zmat,density,-2,wmat); 
-
-
-  // CH4
-
-  amat[0]=12.011;
-  amat[1]=1.;
-
-  zmat[0]=6.;
-  zmat[1]=1.;
-
-  wmat[0]=1.;
-  wmat[1]=4.;
-
-  density=0.000717;
-
-  amol[2] = amat[0]*wmat[0]+amat[1]*wmat[1];
-
-  AliMixture(12,"CH4",amat,zmat,density,-2,wmat);
-
+  AliMixture(11,"Air",amat,zmat,density,2,wmat);
+  
   //----------------------------------------------------------------
-  // gases - mixtures, ID >= 20 pure gases, <= 10 ID < 20 -compounds
+  // drift gases 
   //----------------------------------------------------------------
 
-  char namate[21]=""; 
-  density = 0.;
-  Float_t am=0;
-  Int_t nc;
-  Float_t rho,absl,x0,buf[1];
-  Int_t nbuf;
-  Float_t a,z;
-
-  for(nc = 0;nc<fNoComp;nc++) {
-    
-    // retrive material constants
-      
-    gMC->Gfmate((*fIdmate)[fMixtComp[nc]],namate,a,z,rho,x0,absl,buf,nbuf);
-
-    amat[nc] = a;
-    zmat[nc] = z;
-    
-    Int_t nnc = (fMixtComp[nc]>=20) ? fMixtComp[nc]%20 : fMixtComp[nc]%10;
-    
-    am += fMixtProp[nc]*((fMixtComp[nc]>=20) ? apure[nnc] : amol[nnc]); 
-    density += fMixtProp[nc]*rho;  // density of the mixture
-    
-  }
-  
-  // mixture proportions by weight!
-  
-  for(nc = 0;nc<fNoComp;nc++) {
-
-    Int_t nnc = (fMixtComp[nc]>=20) ? fMixtComp[nc]%20 : fMixtComp[nc]%10;
-
-    wmat[nc] = fMixtProp[nc]*((fMixtComp[nc]>=20) ? 
-			      apure[nnc] : amol[nnc])/am;
-
-  } 
 
   // Drift gases 1 - nonsensitive, 2 - sensitive
-
-  //  AliMixture(31,"Drift gas 1",amat,zmat,density,fNoComp,wmat);
-  //  AliMixture(32,"Drift gas 2",amat,zmat,density,fNoComp,wmat);
+  // Ne-CO2-N (85-10-5)
 
   amat[0]= 20.18;
   amat[1]=12.011;
   amat[2]=15.9994;
+  amat[3]=14.007;
 
   zmat[0]= 10.; 
   zmat[1]=6.;
   zmat[2]=8.;
+  zmat[3]=7.;
 
-  wmat[2] = wmat[1]*0.728; 
-  wmat[1] *= 0.272;
+  wmat[0]=0.7707;
+  wmat[1]=0.0539;
+  wmat[2]=0.1438;
+  wmat[3]=0.0316;
+ 
+  density=0.0010252;
 
-
-
-  AliMixture(31,"Drift gas 1",amat,zmat,density,3,wmat);
-  AliMixture(32,"Drift gas 2",amat,zmat,density,3,wmat);
-
-
-  // Air
-
-  /*  amat[0] = 14.61;
-  zmat[0] = 7.3;
-  density = 0.001205;
-
-  AliMaterial(24,"Air",amat[0],zmat[0],density,999.,999.); 
-  */
-
-
-  // Air (79% N 21% 0)
-
-  
-  amat[0]=15.9994;
-  amat[1]=14.007;
-  zmat[0]=8.;
-  zmat[1]=7.;
-  density = 0.001205;
-
-  wmat[0]=0.233;
-  wmat[1]=0.767;
-
-  AliMixture(24,"Air",amat,zmat,density,2,wmat); 
+  AliMixture(12,"Ne-CO2-N-1",amat,zmat,density,4,wmat);
+  AliMixture(13,"Ne-CO2-N-2",amat,zmat,density,4,wmat);
 
   //----------------------------------------------------------------------
   //               solid materials
@@ -499,7 +394,7 @@ void AliTPC::CreateMaterials()
 
   density = 1.45;
 
-  AliMixture(34,"Kevlar",amat,zmat,density,-4,wmat);  
+  AliMixture(14,"Kevlar",amat,zmat,density,-4,wmat);  
 
   // NOMEX
 
@@ -518,10 +413,9 @@ void AliTPC::CreateMaterials()
   wmat[2] = 2.;
   wmat[3] = 2.;
 
-  density = 0.03;
-
-  
-  AliMixture(35,"NOMEX",amat,zmat,density,-4,wmat);
+  density = 0.029;
+ 
+  AliMixture(15,"NOMEX",amat,zmat,density,-4,wmat);
 
   // Makrolon C16H18O3
 
@@ -539,66 +433,7 @@ void AliTPC::CreateMaterials()
   
   density = 1.2;
 
-  AliMixture(36,"Makrolon",amat,zmat,density,-3,wmat);
-  
-  // Mylar C5H4O2
-
-  amat[0]=12.011;
-  amat[1]=1.;
-  amat[2]=15.9994;
-
-  zmat[0]=6.;
-  zmat[1]=1.;
-  zmat[2]=8.;
-
-  wmat[0]=5.;
-  wmat[1]=4.;
-  wmat[2]=2.; 
-
-  density = 1.39;
-  
-  AliMixture(37, "Mylar",amat,zmat,density,-3,wmat); 
-
-  // SiO2 - used later for the glass fiber
-
-  amat[0]=28.086;
-  amat[1]=15.9994;
-
-  zmat[0]=14.;
-  zmat[1]=8.;
-
-  wmat[0]=1.;
-  wmat[1]=2.;
-
-
-  AliMixture(38,"SiO2",amat,zmat,2.2,-2,wmat); //SiO2 - quartz (rho=2.2)
-
-  // Al
-
-  amat[0] = 26.98;
-  zmat[0] = 13.;
-
-  density = 2.7;
-
-  AliMaterial(40,"Al",amat[0],zmat[0],density,999.,999.);
-
-  // Si
-
-  amat[0] = 28.086;
-  zmat[0] = 14.;
-
-  density = 2.33;
-
-  AliMaterial(41,"Si",amat[0],zmat[0],density,999.,999.);
-
-  // Cu
-
-  amat[0] = 63.546;
-  zmat[0] = 29.;
-
-  density = 8.96;
-
-  AliMaterial(42,"Cu",amat[0],zmat[0],density,999.,999.);
+  AliMixture(16,"Makrolon",amat,zmat,density,-3,wmat);
 
   // Tedlar C2H3F
 
@@ -616,8 +451,153 @@ void AliTPC::CreateMaterials()
 
   density = 1.71;
 
-  AliMixture(43, "Tedlar",amat,zmat,density,-3,wmat);  
+  AliMixture(17, "Tedlar",amat,zmat,density,-3,wmat);  
+  
+  // Mylar C5H4O2
 
+  amat[0]=12.011;
+  amat[1]=1.;
+  amat[2]=15.9994;
+
+  zmat[0]=6.;
+  zmat[1]=1.;
+  zmat[2]=8.;
+
+  wmat[0]=5.;
+  wmat[1]=4.;
+  wmat[2]=2.; 
+
+  density = 1.39;
+  
+  AliMixture(18, "Mylar",amat,zmat,density,-3,wmat); 
+  // material for "prepregs"
+  // Epoxy - C14 H20 O3
+  // Quartz SiO2
+  // Carbon C
+  // prepreg1 60% C-fiber, 40% epoxy (vol)
+  amat[0]=12.011;
+  amat[1]=1.;
+  amat[2]=15.994;
+
+  zmat[0]=6.;
+  zmat[1]=1.;
+  zmat[2]=8.;
+
+  wmat[0]=0.923;
+  wmat[1]=0.023;
+  wmat[2]=0.054;
+
+  density=1.859;
+
+  AliMixture(19, "Prepreg1",amat,zmat,density,3,wmat);
+
+  //prepreg2 60% glass-fiber, 40% epoxy
+
+  amat[0]=12.01;
+  amat[1]=1.;
+  amat[2]=15.994;
+  amat[3]=28.086;
+
+  zmat[0]=6.;
+  zmat[1]=1.;
+  zmat[2]=8.;
+  zmat[3]=14.;
+
+  wmat[0]=0.194;
+  wmat[1]=0.023;
+  wmat[2]=0.443;
+  wmat[3]=0.340;
+
+  density=1.82;
+
+  AliMixture(20, "Prepreg2",amat,zmat,density,4,wmat);
+
+  //prepreg3 50% glass-fiber, 50% epoxy
+
+  amat[0]=12.01;
+  amat[1]=1.;
+  amat[2]=15.994;
+  amat[3]=28.086;
+
+  zmat[0]=6.;
+  zmat[1]=1.;
+  zmat[2]=8.;
+  zmat[3]=14.;
+
+  wmat[0]=0.225;
+  wmat[1]=0.03;
+  wmat[2]=0.443;
+  wmat[3]=0.3;
+
+  density=1.163;
+
+  AliMixture(21, "Prepreg3",amat,zmat,density,4,wmat);
+
+  // G10 60% SiO2 40% epoxy
+
+  amat[0]=12.01;
+  amat[1]=1.;
+  amat[2]=15.994;
+  amat[3]=28.086;
+
+  zmat[0]=6.;
+  zmat[1]=1.;
+  zmat[2]=8.;
+  zmat[3]=14.;
+
+  wmat[0]=0.194;
+  wmat[1]=0.023;
+  wmat[2]=0.443;
+  wmat[3]=0.340;
+
+  density=1.7;
+
+  AliMixture(22, "G10",amat,zmat,density,4,wmat);
+ 
+  // Al
+
+  amat[0] = 26.98;
+  zmat[0] = 13.;
+
+  density = 2.7;
+
+  AliMaterial(23,"Al",amat[0],zmat[0],density,999.,999.);
+
+  // Si (for electronics
+
+  amat[0] = 28.086;
+  zmat[0] = 14.;
+
+  density = 2.33;
+
+  AliMaterial(24,"Si",amat[0],zmat[0],density,999.,999.);
+
+  // Cu
+
+  amat[0] = 63.546;
+  zmat[0] = 29.;
+
+  density = 8.96;
+
+  AliMaterial(25,"Cu",amat[0],zmat[0],density,999.,999.);
+
+  // Epoxy - C14 H20 O3
+ 
+  amat[0]=12.011;
+  amat[1]=1.;
+  amat[2]=15.9994;
+
+  zmat[0]=6.;
+  zmat[1]=1.;
+  zmat[2]=8.;
+
+  wmat[0]=14.;
+  wmat[1]=20.;
+  wmat[2]=3.;
+
+  density=1.25;
+
+  AliMixture(26,"Epoxy",amat,zmat,density,-3,wmat);
 
   // Plexiglas  C5H8O2
 
@@ -635,26 +615,7 @@ void AliTPC::CreateMaterials()
 
   density=1.18;
 
-  AliMixture(44,"Plexiglas",amat,zmat,density,-3,wmat);
-
-  // Epoxy - C14 H20 O3
-
-  
-  amat[0]=12.011;
-  amat[1]=1.;
-  amat[2]=15.9994;
-
-  zmat[0]=6.;
-  zmat[1]=1.;
-  zmat[2]=8.;
-
-  wmat[0]=14.;
-  wmat[1]=20.;
-  wmat[2]=3.;
-
-  density=1.25;
-
-  AliMixture(45,"Epoxy",amat,zmat,density,-3,wmat);
+  AliMixture(27,"Plexiglas",amat,zmat,density,-3,wmat);
 
   // Carbon
 
@@ -662,100 +623,48 @@ void AliTPC::CreateMaterials()
   zmat[0]=6.;
   density= 2.265;
 
-  AliMaterial(46,"C",amat[0],zmat[0],density,999.,999.);
+  AliMaterial(28,"C",amat[0],zmat[0],density,999.,999.);
 
-  // get epoxy
-
-  gMC->Gfmate((*fIdmate)[45],namate,amat[1],zmat[1],rho,x0,absl,buf,nbuf);
-
-  // Carbon fiber
-
-
-
-  amat[1]=12.011;
-  amat[2]=1.;
-  amat[3]=15.9994;
-
-  zmat[1]=6.;
-  zmat[2]=1.;
-  zmat[3]=8.;
-
-  wmat[0]=0.644; // by weight! C
-  wmat[1]=0.356;  // epoxy altogether
-  
-
-  wmat[3]=wmat[1]*0.203;
-  wmat[2]=wmat[1]*0.085;
-  wmat[1] *= 0.712;
-
-
-  density=0.5*(1.25+2.265);
-
-  AliMixture(47,"Cfiber",amat,zmat,density,4,wmat);
-
-  // get SiO2
-
-  gMC->Gfmate((*fIdmate)[38],namate,amat[0],zmat[0],rho,x0,absl,buf,nbuf); 
-
-
-  //
-  amat[0]=28.086;
-  amat[1]=15.9994;
-
-  zmat[0]=14.;
-  zmat[1]=8.;
-
-  //
+  // Fe (steel for the inner heat screen)
  
-  amat[2]=12.011;
-  amat[3]=1.;
-  amat[4]=15.9994;
+  amat[0]=55.845;
 
-  zmat[2]=6.;
-  zmat[3]=1.;
-  zmat[4]=8.;  
+  zmat[0]=26.;
 
-  wmat[0]=0.725; // by weight!
-  wmat[1]=wmat[0]*0.533;
-  wmat[0] *=0.467;
+  density=7.87;
 
-  wmat[2]=0.275;
-  wmat[3]=wmat[2]*0.085;
-  wmat[4]=wmat[2]*0.203;
-  wmat[2] *= 0.712;
-
-  density=1.7;
-
-  AliMixture(39,"G10",amat,zmat,density,5,wmat);
-
+  AliMaterial(29,"Fe",amat[0],zmat[0],density,999.,999.);
  
-
-
   //----------------------------------------------------------
   // tracking media for gases
   //----------------------------------------------------------
 
-  AliMedium(0, "Air", 24, 0, iSXFLD, sXMGMX, 10., 999., .1, .01, .1);
-  AliMedium(1, "Drift gas 1", 31, 0, iSXFLD, sXMGMX, 10., 999.,.1,.001, .001);
-  AliMedium(2, "Drift gas 2", 32, 1, iSXFLD, sXMGMX, 10., 999.,.1,.001, .001);
+  AliMedium(0, "Air", 11, 0, iSXFLD, sXMGMX, 10., 999., .1, .01, .1);
+  AliMedium(1, "Ne-CO2-N-1", 12, 0, iSXFLD, sXMGMX, 10., 999.,.1,.001, .001);
+  AliMedium(2, "Ne-CO2-N-2", 13, 1, iSXFLD, sXMGMX, 10., 999.,.1,.001, .001);
   AliMedium(3,"CO2",10,0, iSXFLD, sXMGMX, 10., 999.,.1, .001, .001); 
 
   //-----------------------------------------------------------  
   // tracking media for solids
   //-----------------------------------------------------------
   
-  AliMedium(4,"Al",40,0, iSXFLD, sXMGMX, 10., 999., .1, .0005, .001);
-  AliMedium(5,"Kevlar",34,0, iSXFLD, sXMGMX, 10., 999., .1, .0005, .001);
-  AliMedium(6,"Nomex",35,0, iSXFLD, sXMGMX, 10., 999., .1, .001, .001);
-  AliMedium(7,"Makrolon",36,0, iSXFLD, sXMGMX, 10., 999., .1, .001, .001);
-  AliMedium(8,"Mylar",37,0, iSXFLD, sXMGMX, 10., 999., .1, .0005, .001);
-  AliMedium(9,"Tedlar",43,0, iSXFLD, sXMGMX, 10., 999., .1, .0005, .001);
-  AliMedium(10,"Cu",42,0, iSXFLD, sXMGMX, 10., 999., .1, .001, .001);
-  AliMedium(11,"Si",41,0, iSXFLD, sXMGMX, 10., 999., .1, .001, .001);
-  AliMedium(12,"G10",39,0, iSXFLD, sXMGMX, 10., 999., .1, .001, .001);
-  AliMedium(13,"Plexiglas",44,0, iSXFLD, sXMGMX, 10., 999., .1, .001, .001);
-  AliMedium(14,"Epoxy",45,0, iSXFLD, sXMGMX, 10., 999., .1, .0005, .001);
-  AliMedium(15,"Cfiber",47,0, iSXFLD, sXMGMX, 10., 999., .1, .001, .001);
+  AliMedium(4,"Al",23,0, iSXFLD, sXMGMX, 10., 999., .1, .0005, .001);
+  AliMedium(5,"Kevlar",14,0, iSXFLD, sXMGMX, 10., 999., .1, .0005, .001);
+  AliMedium(6,"Nomex",15,0, iSXFLD, sXMGMX, 10., 999., .1, .001, .001);
+  AliMedium(7,"Makrolon",16,0, iSXFLD, sXMGMX, 10., 999., .1, .001, .001);
+  AliMedium(8,"Mylar",18,0, iSXFLD, sXMGMX, 10., 999., .1, .0005, .001);
+  AliMedium(9,"Tedlar",17,0, iSXFLD, sXMGMX, 10., 999., .1, .0005, .001);
+  //
+  AliMedium(10,"Prepreg1",19,0, iSXFLD, sXMGMX, 10., 999., .1, .0005, .001);
+  AliMedium(11,"Prepreg2",20,0, iSXFLD, sXMGMX, 10., 999., .1, .0005, .001);
+  AliMedium(12,"Prepreg3",21,0, iSXFLD, sXMGMX, 10., 999., .1, .0005, .001);
+  AliMedium(13,"Epoxy",26,0, iSXFLD, sXMGMX, 10., 999., .1, .0005, .001);
+
+  AliMedium(14,"Cu",25,0, iSXFLD, sXMGMX, 10., 999., .1, .001, .001);
+  AliMedium(15,"Si",24,0, iSXFLD, sXMGMX, 10., 999., .1, .001, .001);
+  AliMedium(16,"G10",22,0, iSXFLD, sXMGMX, 10., 999., .1, .001, .001);
+  AliMedium(17,"Plexiglas",27,0, iSXFLD, sXMGMX, 10., 999., .1, .001, .001);
+  AliMedium(18,"Steel",29,0, iSXFLD, sXMGMX, 10., 999., .1, .001, .001); 
     
 }
 
@@ -1926,77 +1835,7 @@ void AliTPC::ResetDigits()
   if (fDigits)   fDigits->Clear();
 }
 
-//_____________________________________________________________________________
-void AliTPC::SetSecAL(Int_t sec)
-{
-  //---------------------------------------------------
-  // Activate/deactivate selection for lower sectors
-  //---------------------------------------------------
 
-  //-----------------------------------------------------------------
-  // Origin: Marek Kowalski  IFJ, Krakow, Marek.Kowalski@ifj.edu.pl
-  //-----------------------------------------------------------------
-  fSecAL = sec;
-}
-
-//_____________________________________________________________________________
-void AliTPC::SetSecAU(Int_t sec)
-{
-  //----------------------------------------------------
-  // Activate/deactivate selection for upper sectors
-  //---------------------------------------------------
-
-  //-----------------------------------------------------------------
-  // Origin: Marek Kowalski  IFJ, Krakow, Marek.Kowalski@ifj.edu.pl
-  //-----------------------------------------------------------------
-  fSecAU = sec;
-}
-
-//_____________________________________________________________________________
-void AliTPC::SetSecLows(Int_t s1,Int_t s2,Int_t s3,Int_t s4,Int_t s5, Int_t s6)
-{
-  //----------------------------------------
-  // Select active lower sectors
-  //----------------------------------------
-
-  //-----------------------------------------------------------------
-  // Origin: Marek Kowalski  IFJ, Krakow, Marek.Kowalski@ifj.edu.pl
-  //-----------------------------------------------------------------
-
-  fSecLows[0] = s1;
-  fSecLows[1] = s2;
-  fSecLows[2] = s3;
-  fSecLows[3] = s4;
-  fSecLows[4] = s5;
-  fSecLows[5] = s6;
-}
-
-//_____________________________________________________________________________
-void AliTPC::SetSecUps(Int_t s1,Int_t s2,Int_t s3,Int_t s4,Int_t s5, Int_t s6,
-                       Int_t s7, Int_t s8 ,Int_t s9 ,Int_t s10, 
-                       Int_t s11 , Int_t s12)
-{
-  //--------------------------------
-  // Select active upper sectors
-  //--------------------------------
-
-  //-----------------------------------------------------------------
-  // Origin: Marek Kowalski  IFJ, Krakow, Marek.Kowalski@ifj.edu.pl
-  //-----------------------------------------------------------------
-
-  fSecUps[0] = s1;
-  fSecUps[1] = s2;
-  fSecUps[2] = s3;
-  fSecUps[3] = s4;
-  fSecUps[4] = s5;
-  fSecUps[5] = s6;
-  fSecUps[6] = s7;
-  fSecUps[7] = s8;
-  fSecUps[8] = s9;
-  fSecUps[9] = s10;
-  fSecUps[10] = s11;
-  fSecUps[11] = s12;
-}
 
 //_____________________________________________________________________________
 void AliTPC::SetSens(Int_t sens)
@@ -2021,23 +1860,6 @@ void AliTPC::SetSide(Float_t side=0.)
 
   fSide = side;
  
-}
-//____________________________________________________________________________
-void AliTPC::SetGasMixt(Int_t nc,Int_t c1,Int_t c2,Int_t c3,Float_t p1,
-                           Float_t p2,Float_t p3)
-{
-
-  // gax mixture definition
-
-  fNoComp = nc;
- 
-  fMixtComp[0]=c1;
-  fMixtComp[1]=c2;
-  fMixtComp[2]=c3;
-
-  fMixtProp[0]=p1;
-  fMixtProp[1]=p2;
-  fMixtProp[2]=p3; 
 }
 //_____________________________________________________________________________
 

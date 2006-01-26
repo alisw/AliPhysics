@@ -27,8 +27,6 @@ public:
 
 protected:
   Int_t fIdSens;    //Sensitive volume identifier
-  Int_t fIdLSec;    // Lower sector identifier
-  Int_t fIdUSec;    // Upper sector identifier
 
   
   ClassDef(AliTPCv1,1)  // Time Projection Chamber version 1

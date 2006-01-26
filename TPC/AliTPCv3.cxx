@@ -45,6 +45,14 @@
 #include "AliTPCTrackHitsV2.h"
 #include "AliTPCv3.h"
 #include "AliMC.h"
+#include "TGeoManager.h"
+#include "TGeoVolume.h"
+#include "TGeoPcon.h"
+#include "TGeoTube.h"
+#include "TGeoPgon.h"
+#include "TGeoTrd1.h"
+#include "TGeoCompositeShape.h"
+#include "TGeoPara.h"
 
 ClassImp(AliTPCv3)
 //_____________________________________________________________________________
@@ -66,7 +74,6 @@ AliTPCv3::AliTPCv3(const char *name, const char *title) :
   SetBufferSize(128000);
   fIdSens=0;
 
-  SetGasMixt(2,20,10,-1,0.9,0.1,0.);
 
   if (fTPCParam)
      fTPCParam->Write(fTPCParam->GetTitle());
@@ -92,1379 +99,733 @@ void AliTPCv3::CreateGeometry()
     <img src="picts/AliTPCv3Tree.gif">
   */
   //End_Html
-  Float_t dm[50];
-
-  Int_t *idtmed = fIdtmed->GetArray(); // TPC media
-
-  Int_t idrotm[120]; // rotation matrices
-
-  Int_t nRotMat = 0; // actual number of rotation matrices
-
-
+   //----------------------------------------------------------
+  // This geometry is written using TGeo class
+  // Firstly the shapes are defined, and only then the volumes
+  // What is recognized by the MC are volumes
+  //----------------------------------------------------------
   //
-  //  Mother volume (Air) - all volumes will be positioned in it
-  //
-  
-  dm[0]=0.;
-  dm[1]=360.;
-  dm[2]=8.;
-
+  //  tpc - this will be the mother volume
   //
 
-  dm[3]=-283.7;
-  dm[4]=77.017;
-  dm[5]=278.;
-
   //
-
-  dm[6]=-253.6;
-  dm[7]=65.6;
-  dm[8]=278.;
-
+  // here I define a volume TPC
+  // retrive the medium name with "TPC_" as a leading string
   //
-
-  dm[9]=-73.3;
-  dm[10]=60.9;
-  dm[11]=278.;  
-
+  TGeoPcon *tpc = new TGeoPcon(0.,360.,18); //18 sections
+  tpc->DefineSection(0,-290.,77.,278.);
+  tpc->DefineSection(1,-259.6,77.,278.);
   //
-
-  dm[12]=-73.3;
-  dm[13]=56.9;
-  dm[14]=278.;
-
+  tpc->DefineSection(2,-259.6,68.1,278.);
+  tpc->DefineSection(3,-253.6,68.1,278.);
   //
-
-  dm[15]=73.3;
-  dm[16]=56.9;
-  dm[17]=278.;
-
+  tpc->DefineSection(4,-253.6,68.,278.);
+  tpc->DefineSection(5,-74.0,60.8,278.);
   //
-
-  dm[18]=73.3;
-  dm[19]=60.9;
-  dm[20]=278.;
-
+  tpc->DefineSection(6,-74.0,60.1,278.);
+  tpc->DefineSection(7,-73.3,60.1,278.);
   //
-
-  dm[21]=253.6;
-  dm[22]=65.6;
-  dm[23]=278.;
-
+  tpc->DefineSection(8,-73.3,56.9,278.); 
+  tpc->DefineSection(9,73.3,56.9,278.);
   //
-
-  dm[24]=283.7;
-  dm[25]=77.017;
-  dm[26]=278.;
-  
-  gMC->Gsvolu("TPC ","PCON",idtmed[0],dm,27);
-
-  // outer part
-
-  //-------------------------------------------------------------------
-  //   Tpc Outer INsulator (CO2) - contains cont. vessel and field cage
-  //-------------------------------------------------------------------
-
-  dm[0]= 0.;
-  dm[1]= 360.;
-  dm[2]= 6.;
-
+  tpc->DefineSection(10,73.3,60.1,278.);
+  tpc->DefineSection(11,74.0,60.1,278.);
   //
-
-  dm[3]=-253.6;
-  dm[4]=258.;
-  dm[5]=275.5;
-
+  tpc->DefineSection(12,74.0,60.8,278.);
+  tpc->DefineSection(13,253.6,65.5,278.);
   //
-
-  dm[6]=-250.6;
-  dm[7]=258.;
-  dm[8]=275.5; 
-
+  tpc->DefineSection(14,253.6,65.6,278.);
+  tpc->DefineSection(15,259.6,65.6,278.);
   //
-
-  dm[9]=-250.6;
-  dm[10]=258.;
-  dm[11]=278.;
-
+  tpc->DefineSection(16,259.6,77.0,278.);
+  tpc->DefineSection(17,290.,77.,278.);
   //
-
-  dm[12]=253.6;
-  dm[13]=258.;
-  dm[14]=278.; 
-
+  TGeoMedium *m1 = gGeoManager->GetMedium("TPC_Air");
+  TGeoVolume *v1 = new TGeoVolume("TPC_M",tpc,m1);
   //
-
-  dm[15]=253.6;
-  dm[16]=264.8;
-  dm[17]=278.;  
-
+  // drift volume - sensitive volume, extended beyond the
+  // endcaps, because of the alignment
   //
-
-  dm[18]=256.6;
-  dm[19]=264.8;
-  dm[20]=278.;
-
-  gMC->Gsvolu("TOIN","PCON",idtmed[3],dm,21);
-
-  //----------------------------------------------------------------
-  // Tpc Outer Contaiment Vessel  
-  //  mother volume - Al, daughters - composite (sandwich)
-  //----------------------------------------------------------------
-
-  dm[0]=0.;
-  dm[1]=360.;
-  dm[2]=6.;
-
+  TGeoPcon *dvol = new TGeoPcon(0.,360.,6);
+  dvol->DefineSection(0,-260.,74.5,264.4);
+  dvol->DefineSection(1,-253.6,74.5,264.4);
   //
-
-  dm[3]=-250.6;
-  dm[4]=270.4;
-  dm[5]=278.;
-
+  dvol->DefineSection(2,-253.6,76.6774,258.);
+  dvol->DefineSection(3,253.6,76.6774,258.); 
   //
-
-  dm[6]=-247.6;
-  dm[7]=270.4;
-  dm[8]=278.; 
-
+  dvol->DefineSection(4,253.6,74.5,264.4);
+  dvol->DefineSection(5,260.,74.5,264.4);
   //
-
-  dm[9]=-247.6;
-  dm[10]=274.8124;
-  dm[11]=278.;
-
+  TGeoMedium *m5 = gGeoManager->GetMedium("TPC_Ne-CO2-N-2");
+  TGeoVolume *v9 = new TGeoVolume("TPC_Drift",dvol,m5);
   //
-
-  dm[12]=253.6;
-  dm[13]=274.8124;
-  dm[14]=278.;
-
+  v1->AddNode(v9,1);
   //
-
-  dm[15]=253.6;
-  dm[16]=264.8;
-  dm[17]=278.;
-
+  // outer insulator
   //
-
-  dm[18]=256.6;
-  dm[19]=264.8;
-  dm[20]=278.;
-
-  gMC->Gsvolu("TOCV","PCON",idtmed[4],dm,21);
-
-  // Daughter volumes - sandwich
-
-  // Tpc SAndwich 1 - Al
-
-  dm[0]=274.8124;
-  dm[1]=278.;
-  dm[2]=252.1;
-
-  gMC->Gsvolu("TSA1","TUBE",idtmed[4],dm,3);
-
-  // Tpc SAndwich 2 - epoxy glue (I use Lexan)
-
-  dm[0] += 5.e-3;
-  dm[1] -= 5.e-3;
-
-  gMC->Gsvolu("TSA2","TUBE",idtmed[14],dm,3);
-
-  // Tpc SAndwich 3 - Tedlar
-
-  dm[0] += 0.01;
-  dm[1] -= 0.01;
-  
-  gMC->Gsvolu("TSA3","TUBE",idtmed[9],dm,3);
-
-
-  // Tpc SAndwich 4 - fiber glass (G10)
-
-  dm[0] += 3.8e-3;
-  dm[1] -= 3.8e-3;
-
-  gMC->Gsvolu("TSA4","TUBE",idtmed[12],dm,3);  
-
-  // Tpc SAndwich 5 - NOMEX honeycomb
-
-  dm[0] += 0.075;
-  dm[1] -= 0.075;   
-  
-  gMC->Gsvolu("TSA5","TUBE",idtmed[6],dm,3);
-
-  // 5->4->3->2->1->TCOV
-
-
-  gMC->Gspos("TSA5",1,"TSA4",0.,0.,0.,0,"ONLY");
-  gMC->Gspos("TSA4",1,"TSA3",0.,0.,0.,0,"ONLY");
-  gMC->Gspos("TSA3",1,"TSA2",0.,0.,0.,0,"ONLY");
-  gMC->Gspos("TSA2",1,"TSA1",0.,0.,0.,0,"ONLY");  
-
-  gMC->Gspos("TSA1",1,"TOCV",0.,0.,3.,0,"ONLY");
-
-  // TCOV-> TOIN
-
-  gMC->Gspos("TOCV",1,"TOIN",0.,0.,0.,0,"ONLY");
+  TGeoPcon *tpco = new TGeoPcon(0.,360.,6); //insulator
+  //
+  tpco->DefineSection(0,-256.6,264.8,278.);
+  tpco->DefineSection(1,-253.6,264.8,278.);
+  //
+  tpco->DefineSection(2,-253.6,258.,278.);
+  tpco->DefineSection(3,250.6,258.,278.);
+  //
+  tpco->DefineSection(4,250.6,258.,275.5);
+  tpco->DefineSection(5,253.6,258.,275.5);
+  //
+  TGeoMedium *m2 = gGeoManager->GetMedium("TPC_CO2");
+  TGeoVolume *v2 = new TGeoVolume("TPC_OI",tpco,m2);
+  //
+  // outer containment vessel
+  //
+  TGeoPcon *tocv = new TGeoPcon(0.,360.,6);  // containment vessel
+  //
+  tocv->DefineSection(0,-256.6,264.8,278.);
+  tocv->DefineSection(1,-253.6,264.8,278.);
+  //
+  tocv->DefineSection(2,-253.6,274.8124,278.);
+  tocv->DefineSection(3,247.6,274.8124,278.);  
+  //
+  tocv->DefineSection(4,247.6,270.4,278.);
+  tocv->DefineSection(5,250.6,270.4,278.);
+  //
+  TGeoMedium *m3 = gGeoManager->GetMedium("TPC_Al");
+  TGeoVolume *v3 = new TGeoVolume("TPC_OCV",tocv,m3); 
+  //
+  TGeoTube *to1 = new TGeoTube(274.8174,277.995,252.1); //epoxy
+  TGeoTube *to2 = new TGeoTube(274.8274,277.985,252.1); //tedlar
+  TGeoTube *to3 = new TGeoTube(274.8312,277.9812,252.1);//prepreg2
+  TGeoTube *to4 = new TGeoTube(274.9062,277.9062,252.1);//nomex
+  //
+  TGeoMedium *sm1 = gGeoManager->GetMedium("TPC_Epoxy");
+  TGeoMedium *sm2 = gGeoManager->GetMedium("TPC_Tedlar");
+  TGeoMedium *sm3 = gGeoManager->GetMedium("TPC_Prepreg2");
+  TGeoMedium *sm4 = gGeoManager->GetMedium("TPC_Nomex");
+  //
+  TGeoVolume *tov1 = new TGeoVolume("TPC_OCV1",to1,sm1);
+  TGeoVolume *tov2 = new TGeoVolume("TPC_OCV2",to2,sm2);
+  TGeoVolume *tov3 = new TGeoVolume("TPC_OCV3",to3,sm3);
+  TGeoVolume *tov4 = new TGeoVolume("TPC_OCV4",to4,sm4);
 
   //-------------------------------------------------------
   //  Tpc Outer Field Cage
-  //  mother volume - Al, daughters - composite (sandwich)
+  //  daughters - composite (sandwich)
   //-------------------------------------------------------
 
-  dm[0]=0.;
-  dm[1]=360.;
-  dm[2]=6.;
-
+  TGeoPcon *tofc = new TGeoPcon(0.,360.,6);
   //
-
-  dm[3]=-253.6;
-  dm[4]=258.;
-  dm[5]=275.5;
-
+  tofc->DefineSection(0,-253.6,258.,269.6);
+  tofc->DefineSection(1,-250.6,258.,269.6);
   //
-
-  dm[6]=-250.6;
-  dm[7]=258.;
-  dm[8]=275.5;
-
+  tofc->DefineSection(2,-250.6,258.,260.0676); 
+  tofc->DefineSection(3,250.6,258.,260.0676);
   //
-
-  dm[9]=-250.6;
-  dm[10]=258.;
-  dm[11]=260.0476;
-
+  tofc->DefineSection(4,250.6,258.,275.5);
+  tofc->DefineSection(5,253.6,258.,275.5);
   //
-
-  dm[12]=250.6;
-  dm[13]=258.;
-  dm[14]=260.0476;
-
+  TGeoVolume *v4 = new TGeoVolume("TPC_TOFC",tofc,m3); 
+  //sandwich
+  TGeoTube *tf1 = new TGeoTube(258.0,260.0676,252.1); //tedlar
+  TGeoTube *tf2 = new TGeoTube(258.0038,260.0638,252.1); //prepreg3
+  TGeoTube *tf3 = new TGeoTube(258.0338,260.0338,252.1);//nomex
   //
-
-  dm[15]=250.6;
-  dm[16]=258.;
-  dm[17]=269.6;
-
+  TGeoMedium *sm5 = gGeoManager->GetMedium("TPC_Prepreg3");
   //
-
-  dm[18]=253.6;
-  dm[19]=258.;
-  dm[20]=269.6;
-
-  gMC->Gsvolu("TOFC","PCON",idtmed[4],dm,21);
-
-  // Daughter volumes 
-
-  // Tpc SAndwich 6 - Tedlar
-
-  dm[0]= 258.;
-  dm[1]= 260.0476;
-  dm[2]= 252.1;
-
-  gMC->Gsvolu("TSA6","TUBE",idtmed[9],dm,3);
-
-  // Tpc SAndwich 7 - fiber glass
-
-  dm[0] += 3.8e-3;
-  dm[1] -= 3.8e-3;
-
-  gMC->Gsvolu("TSA7","TUBE",idtmed[12],dm,3);
+  TGeoVolume *tf1v = new TGeoVolume("TPC_OFC1",tf1,sm2);
+  TGeoVolume *tf2v = new TGeoVolume("TPC_OFC2",tf2,sm5);
+  TGeoVolume *tf3v = new TGeoVolume("TPC_OFC3",tf3,sm4);
+  //
+  // outer part - positioning
+  //
+  tov1->AddNode(tov2,1); tov2->AddNode(tov3,1); tov3->AddNode(tov4,1);
+  //
+  tf1v->AddNode(tf2v,1); tf2v->AddNode(tf3v,1);
+  //
+  v3->AddNode(tov1,1); v4->AddNode(tf1v,1);
+  //
+  v2->AddNode(v3,1); v2->AddNode(v4,1); 
+  //
+  v1->AddNode(v2,1);
+  //-----------------------------------------------------------
 
 
-  // Tpc SAndwich 8 - NOMEX
 
-  dm[0] += 0.02;
-  dm[1] -= 0.02;
 
-  gMC->Gsvolu("TSA8","TUBE",idtmed[6],dm,3);    
 
-  // 8->7->6->TOFC
-
-  gMC->Gspos("TSA8",1,"TSA7",0.,0.,0.,0,"ONLY");
-  gMC->Gspos("TSA7",1,"TSA6",0.,0.,0.,0,"ONLY"); 
-  gMC->Gspos("TSA6",1,"TOFC",0.,0.,0.,0,"ONLY");
-
-  // TOFC->TOIN
-
-  gMC->Gspos("TOFC",1,"TOIN",0.,0.,0.,0,"ONLY");
-
-  // TOIN->TPC
-
-  gMC->Gspos("TOIN",1,"TPC ",0.,0.,0.,0,"ONLY");
-
-  // inner part
 
   //--------------------------------------------------------------------
-  // Tpc Inner INsulator (CO2) - inner f.c. will be placed there
-  // Inner containment vessel will be placed directly in the TPC
-  //-------------------------------------------------------------------- 
-
-  dm[0]=0.;
-  dm[1]=360.;
-  dm[2]=4.;
-
-  // 
-
-  dm[3]=-253.6;
-  dm[4]=65.9;
-  dm[5]=79.2;
-
+  // Tpc Inner INsulator (CO2) 
+  // the cones, the central drum and the inner f.c. sandwich with a piece
+  // of the flane will be placed in the TPC
+  //--------------------------------------------------------------------
+  TGeoPcon *tpci = new TGeoPcon(0.,360.,4);
   //
-
-  dm[6]=-73.3;
-  dm[7]=61.2;
-  dm[8]=79.2;  
-
+  tpci->DefineSection(0,-253.6,68.4,76.6774);
+  tpci->DefineSection(1,-74.0,61.2,76.6774);
   //
-
-  dm[9]=73.3;
-  dm[10]=61.2;
-  dm[11]=79.2;
-
+  tpci->DefineSection(2,74.0,61.2,76.6774);  
   //
-
-  dm[12]=253.6;
-  dm[13]=65.9;
-  dm[14]=79.2;
-
-  gMC->Gsvolu("TIIN","PCON",idtmed[3],dm,15);
-
-  // the middle part of the F.C. is thinner - carve out the strip - Ne-CO2
-
-  dm[0]=79.16;
-  dm[1]=79.2;
-  dm[2]=88.;
-
-  gMC->Gsvolu("TII1","TUBE",idtmed[1],dm,3);
-
-  gMC->Gspos("TII1",1,"TIIN",0.,0.,0.,0,"ONLY");
-
-  //-----------------------------------------------------
-  // Tpc Inner Field Cage
-  // mother volume - Al, daughters - composite (sandwich)
-  //------------------------------------------------------
-
-  dm[0]=0.;
-  dm[1]=360.;
-  dm[2]=10.;
-
+  tpci->DefineSection(3,253.6,65.9,76.6774);
   //
-
-  dm[3]=-253.6;
-  dm[4]=70.3;
-  dm[5]=79.2;
-
+  TGeoVolume *v5 = new TGeoVolume("TPC_INI",tpci,m2);
   //
-
-  dm[6]=-250.6;
-  dm[7]=70.3;
-  dm[8]=79.2;
-
+  // now the inner field cage - only part of flanges (2 copies)
   //
-
-  dm[9]=-250.6;
-  dm[10]=77.0524;
-  dm[11]=79.2;
-
+  TGeoTube *tif1 = new TGeoTube(69.9,76.6774,1.5); 
+  TGeoVolume *v6 = new TGeoVolume("TPC_IFC1",tif1,m3);
   //
-
-  dm[12]=-88.;
-  dm[13]=77.0524;
-  dm[14]=79.2;
-
-  //
-
-  dm[15]=-88.;
-  dm[16]=77.0924;
-  dm[17]=79.16;
-
-  //
-
-  dm[18]=88.;
-  dm[19]=77.0924;
-  dm[20]=79.16;
-
-  //
-
-  dm[21]=88.;
-  dm[22]=77.0524;
-  dm[23]=79.2;
-
-  //
-
-  dm[24]=250.6;
-  dm[25]=77.0524;
-  dm[26]=79.2;
-
-  //
-
-  dm[27]=250.6;
-  dm[28]=70.3;
-  dm[29]=79.2;
-
-  //
-
-  dm[30]=253.6;
-  dm[31]=70.3;
-  dm[32]=79.2;
-
-  gMC->Gsvolu("TIFC","PCON",idtmed[4],dm,33);
-
-  // daughter volumes - central part
-
-  // Tpc Sandwich 9 -Tedlar
-
-  dm[0]=77.0924;
-  dm[1]=79.16;
-  dm[2]=88.;
-
-  gMC->Gsvolu("TSA9","TUBE",idtmed[9],dm,3); 
-
-  // Tpc Sandwich 10 - fiber glass (G10) 
-
-  dm[0] += 3.8e-3;
-  dm[1] -= 3.8e-3;
-
-  gMC->Gsvolu("TS10","TUBE",idtmed[12],dm,3);
-
-  // Tpc Sandwich 11 - NOMEX
-
-  dm[0] += 0.03;
-  dm[1] -= 0.03; 
-
-  gMC->Gsvolu("TS11","TUBE",idtmed[6],dm,3);
-
-  // 11->10->9->TIFC
-
-  gMC->Gspos("TS11",1,"TS10",0.,0.,0.,0,"ONLY");
-  gMC->Gspos("TS10",1,"TSA9",0.,0.,0.,0,"ONLY");
-
-  gMC->Gspos("TSA9",1,"TIFC",0.,0.,0.,0,"ONLY");
-
-  // daughter volumes - outer parts (reinforced)
-
-  // Tpc Sandwich 12 -Tedlar
-
-  dm[0]=77.0524;
-  dm[1]=79.2;
-  dm[2]=82.05;
-
-  gMC->Gsvolu("TS12","TUBE",idtmed[9],dm,3);
-
-  // Tpc Sandwich 13 - fiber glass (G10) 
-
-  dm[0] += 3.8e-3;
-  dm[1] -= 3.8e-3;
-
-  gMC->Gsvolu("TS13","TUBE",idtmed[12],dm,3);
-
-  // Tpc Sandwich 14 - NOMEX
-
-  dm[0] += 0.07;
-  dm[1] -= 0.07;  
-
-  gMC->Gsvolu("TS14","TUBE",idtmed[6],dm,3);
-
-  // 14->13->12->TIFC
-
-  gMC->Gspos("TS14",1,"TS13",0.,0.,0.,0,"ONLY");
-  gMC->Gspos("TS13",1,"TS12",0.,0.,0.,0,"ONLY"); 
-
-  gMC->Gspos("TS12",1,"TIFC",0.,0.,170.05,0,"ONLY");
-  gMC->Gspos("TS12",2,"TIFC",0.,0.,-170.05,0,"ONLY"); 
-
-  // place this inside the inner insulator
-
-  gMC->Gspos("TIFC",1,"TIIN",0.,0.,0.,0,"ONLY");
-
-  // and now in the TPC...
-
-  gMC->Gspos("TIIN",1,"TPC ",0.,0.,0.,0,"ONLY");
-
+ //---------------------------------------------------------
+  // Tpc Inner Containment vessel - Muon side
   //---------------------------------------------------------
-  // Tpc Inner Containment vessel - Cones
-  //---------------------------------------------------------
-
-  dm[0]=0.;
-  dm[1]=360.;
-  dm[2]=8.;
-
+  TGeoPcon *tcms = new TGeoPcon(0.,360.,10);
   //
-
-  dm[3]=71.8;
-  dm[4]=56.9;
-  dm[5]=59.4;
-
+  tcms->DefineSection(0,-259.1,68.1,74.2);
+  tcms->DefineSection(1,-253.6,68.1,74.2);
   //
-
-  dm[6]=73.;
-  dm[7]=56.9;
-  dm[8]=59.4;
-
+  tcms->DefineSection(2,-253.6,68.1,68.4);
+  tcms->DefineSection(3,-74.0,60.9,61.2);
   //
-
-  dm[9]=73.;
-  dm[10]=56.9;
-  dm[11]=61.2;
-
+  tcms->DefineSection(4,-74.0,60.1,61.2);
+  tcms->DefineSection(5,-73.3,60.1,61.2);
   //
-
-  dm[12]=73.3;
-  dm[13]=56.9;
-  dm[14]=61.2;
-
+  tcms->DefineSection(6,-73.3,56.9,61.2);
+  tcms->DefineSection(7,-73.0,56.9,61.2);
   //
-   
-  dm[15]=73.3;
-  dm[16]=60.9;
-  dm[17]=61.2;
-
-  // 
-
-  dm[18]=253.6;
-  dm[19]=65.6;
-  dm[20]=65.9; 
-
+  tcms->DefineSection(8,-73.0,56.9,58.8);
+  tcms->DefineSection(9,-71.3,56.9,58.8);
   //
-
-  dm[21]=253.6;
-  dm[22]=65.6;
-  dm[23]=74.6;
-
+  TGeoVolume *v7 = new TGeoVolume("TPC_ICVM",tcms,m3);
+  //-----------------------------------------------
+  // inner containment vessel - shaft side
+  //-----------------------------------------------
+  TGeoPcon *tcss = new TGeoPcon(0.,360.,10);
   //
-
-  dm[24]=256.6;
-  dm[25]=65.6;
-  dm[26]=74.6;
-
-  gMC->Gsvolu("TICC","PCON",idtmed[4],dm,27);
-
-  Float_t phi1,phi2,phi3,theta1,theta2,theta3; // rotation angles
-
-  // reflection matrix
-  
-  theta1 = 90.;
-  phi1   = 0.;
-  theta2 = 90.;
-  phi2   = 270.;
-  theta3 = 180.;
-  phi3   = 0.;
-
-  AliMatrix(idrotm[nRotMat], theta1, phi1, theta2, phi2, theta3, phi3);
-
-  gMC->Gspos("TICC",1,"TPC ",0.,0.,0.,0,"ONLY");
-  gMC->Gspos("TICC",2,"TPC ",0.,0.,0.,idrotm[nRotMat],"ONLY");
-
-
-  //---------------------------------------------------------
-  // Tpc Inner Containment vessel - Middle part -Al
-  //---------------------------------------------------------
-
-  dm[0]=0.;
-  dm[1]=360.;
-  dm[2]=6.;
-
+  tcss->DefineSection(0,71.3,56.9,58.8);
+  tcss->DefineSection(1,73.0,56.9,58.8);
   //
-
-  dm[3]=-71.6;
-  dm[4]=60.2;
-  dm[5]=61.2;
-
+  tcss->DefineSection(2,73.0,56.9,61.2);
+  tcss->DefineSection(3,73.3,56.9,61.2);
+  //  
+  tcss->DefineSection(4,73.3,60.1,61.2);
+  tcss->DefineSection(5,74.0,60.1,61.2);
   //
-
-  dm[6]=-69.1;
-  dm[7]=60.2;
-  dm[8]=61.2;
-
+  tcss->DefineSection(6,74.0,60.9,61.2);
+  tcss->DefineSection(7,253.6,65.6,65.9);
   //
-
-  dm[9]=-69.1;
-  dm[10]=60.6224;
-  dm[11]=61.2;  
-
+  tcss->DefineSection(8,253.6,65.6,74.2);
+  tcss->DefineSection(9,258.1,65.6,74.2);
   //
-
-  dm[12]=69.1;
-  dm[13]=60.6224;
-  dm[14]=61.2;
-
+  TGeoVolume *v8 = new TGeoVolume("TPC_ICVS",tcss,m3);
+  //-----------------------------------------------
+  //  Inner field cage
+  //  define 4 parts and make an assembly
+  //-----------------------------------------------
+  // part1 - Al - 2 copies
+  TGeoTube *t1 = new TGeoTube(76.6774,78.845,0.75);
+  TGeoVolume *tv1 = new TGeoVolume("TPC_IFC2",t1,m3);
+  // sandwich - outermost parts - 2 copies
+  TGeoTube *t2 = new TGeoTube(76.6774,78.845,74.175); // tedlar 38 microns
+  TGeoTube *t3 = new TGeoTube(76.6812,78.8412,74.175); // prepreg2 500 microns
+  TGeoTube *t4 = new TGeoTube(76.7312,78.7912,74.175); // prepreg3 300 microns
+  TGeoTube *t5 = new TGeoTube(76.7612,78.7612,74.175); // nomex 2 cm
   //
-
-  dm[15]=69.1;
-  dm[16]=60.2;
-  dm[17]=61.2;
-
+  TGeoVolume *tv2 = new TGeoVolume("TPC_IFC3",t2,sm2);
+  TGeoVolume *tv3 = new TGeoVolume("TPC_IFC4",t3,sm3);
+  TGeoVolume *tv4 = new TGeoVolume("TPC_IFC5",t4,sm5);
+  TGeoVolume *tv5 = new TGeoVolume("TPC_IFC6",t5,sm4);
   //
-
-  dm[18]=71.6;
-  dm[19]=60.2;
-  dm[20]=61.2;
-
-  gMC->Gsvolu("TICM","PCON",idtmed[4],dm,21);
-
-  // Tpc Sandwich 15 - Al
-
-  dm[0]=60.6224;
-  dm[1]=61.2;
-  dm[2]=70.1;
-
-  gMC->Gsvolu("TS15","TUBE",idtmed[4],dm,3);
-
-  // Tpc Sandwich 16 -  epoxy glue
-
-  dm[0] += 5.e-3;
-  dm[1] -= 5.e-3;
-
-  gMC->Gsvolu("TS16","TUBE",idtmed[14],dm,3);
-
-  // Tpc Sandwich 17 - Tedlar
-
-  dm[0] += 0.01;
-  dm[1] -= 0.01;
-
-  gMC->Gsvolu("TS17","TUBE",idtmed[9],dm,3);
-
-  // Tpc Sandwich 18 - carbon fiber
-
-  dm[0] += 3.8e-3;
-  dm[1] -= 3.8e-3;
-
-  gMC->Gsvolu("TS18","TUBE",idtmed[15],dm,3);  
-
-  // Tpc Sandwich 19 - Nomex
-
-  dm[0] += 0.02;
-  dm[1] -= 0.02;
-
-  gMC->Gsvolu("TS19","TUBE",idtmed[6],dm,3); 
-
-  // 19->18->17->16->15-> TICM
-
-  gMC->Gspos("TS19",1,"TS18",0.,0.,0.,0,"ONLY"); 
-  gMC->Gspos("TS18",1,"TS17",0.,0.,0.,0,"ONLY");
-  gMC->Gspos("TS17",1,"TS16",0.,0.,0.,0,"ONLY");
-  gMC->Gspos("TS16",1,"TS15",0.,0.,0.,0,"ONLY");
-
-  gMC->Gspos("TS15",1,"TICM ",0.,0.,0.,0,"ONLY");
- 
-
-  // TPc inner cont. vessel Joints
-
-  dm[0]=60.2;
-  dm[1]=61.2;
-  dm[2]=0.5;
-
-  gMC->Gsvolu("TPJ1","TUBE",idtmed[4],dm,3);
-
-  gMC->Gspos("TPJ1",1,"TPC ",0.,0.,72.3,0,"ONLY");
-  gMC->Gspos("TPJ1",2,"TPC ",0.,0.,-72.3,0,"ONLY");
-
+  // middle parts - 2 copies
+  TGeoTube *t6 = new TGeoTube(76.6774,78.795,5.); // tedlar 38 microns
+  TGeoTube *t7 = new TGeoTube(76.6812,78.7912,5.); // prepreg2 250 microns
+  TGeoTube *t8 = new TGeoTube(76.7062,78.7662,5.); // prepreg3 300 microns
+  TGeoTube *t9 = new TGeoTube(76.7362,78.7362,5.); // nomex 2 cm
   //
-
-  dm[0]=0.;
-  dm[1]=360.;
-  dm[2]=4.;
-
+  TGeoVolume *tv6 = new TGeoVolume("TPC_IFC7",t6,sm2);
+  TGeoVolume *tv7 = new TGeoVolume("TPC_IFC8",t7,sm3);
+  TGeoVolume *tv8 = new TGeoVolume("TPC_IFC9",t8,sm5);
+  TGeoVolume *tv9 = new TGeoVolume("TPC_IFC10",t9,sm4);
+  // central part - 1 copy
+  TGeoTube *t10 = new TGeoTube(76.6774,78.745,93.75); // tedlar 38 microns 
+  TGeoTube *t11 = new TGeoTube(76.6812,78.7412,93.75); // prepreg3 300 microns
+  TGeoTube *t12 = new TGeoTube(76.7112,78.7112,93.75); // nomex 2 cm
   //
-
-  dm[3]=70.8;
-  dm[4]=58.4;
-  dm[5]=60.1;
-
+  TGeoVolume *tv10 = new TGeoVolume("TPC_IFC11",t10,sm2);
+  TGeoVolume *tv11 = new TGeoVolume("TPC_IFC12",t11,sm5);
+  TGeoVolume *tv12 = new TGeoVolume("TPC_IFC13",t12,sm4);
   //
-
-  dm[6]=71.2;
-  dm[7]=58.4;
-  dm[8]=60.1;
-
+  // inner part - positioning
   //
-
-  dm[9]=71.2;
-  dm[10]=58.4;
-  dm[11]=59.4;
-
+  // creating a sandwich
+  tv2->AddNode(tv3,1); tv3->AddNode(tv4,1); tv4->AddNode(tv5,1);
   //
-
-  dm[12]=71.6;
-  dm[13]=58.4;
-  dm[14]=59.4;
-
-  gMC->Gsvolu("TPJ2","PCON",idtmed[4],dm,15);
-
-  gMC->Gspos("TPJ2",1,"TPC ",0.,0.,0.,0,"ONLY");
-  gMC->Gspos("TPJ2",2,"TPC ",0.,0.,0.,idrotm[nRotMat],"ONLY");
-
-
-
-  // Tpc Inner Containment vessel Seal (Viton, I use Lexan for a time being)
-
-  dm[0]=58.4;
-  dm[1]=61.2;
-  dm[2]=0.1;
-
-  gMC->Gsvolu("TICS","TUBE",idtmed[14],dm,3);
-
-  gMC->Gspos("TICS",1,"TPC ",0.,0.,71.7,0,"ONLY");
-  gMC->Gspos("TICS",2,"TPC ",0.,0.,-71.7,0,"ONLY"); 
-
-  // TICM -> TPC
-
-  gMC->Gspos("TICM",1,"TPC ",0.,0.,0.,0,"ONLY");
-
+  tv6->AddNode(tv7,1); tv7->AddNode(tv8,1); tv8->AddNode(tv9,1);
   //
-
-  nRotMat++; // prepare for the next rotation matrix 
-
-  //---------------------------------------------------------
-  //  Tpc Dift Gas volume Nonsensitive (Ne-CO2 90/10)
-  //  and its daughters (HV membrane, rods, readout chambers)
-  //---------------------------------------------------------
-
-  dm[0]= 79.2;
-  dm[1]= 258.0;
-  dm[2]= 253.6;
-
-  gMC->Gsvolu("TDGS","TUBE",idtmed[2],dm,3); 
-
-  // sector opening angles
-
-  Float_t innerOpenAngle = fTPCParam->GetInnerAngle();
-
-  // sector angle shift
-
-  Float_t innerAngleShift = fTPCParam->GetInnerAngleShift();
-
-  // number of sectors
-
-  Int_t nInnerSector = fTPCParam->GetNInnerSector()/2;
-  Int_t nOuterSector = fTPCParam->GetNOuterSector()/2;
-
-  // All above parameters are identical for inner and outer
-  // sectors. The distinction is kept for the historical reasons
-  // and eventually will disappear.
-
-  Float_t tanAlpha = TMath::Tan(0.5*innerOpenAngle);
-  Float_t cosAlpha = TMath::Sqrt(1.+tanAlpha*tanAlpha);
-  Float_t space;
-
-  //-------------------------------------------------------------------------
-  //   Tpc Inner Readout Chambers 
-  //-------------------------------------------------------------------------
-
-  dm[0]= 14.483;
-  dm[1]= 23.3345; 
-  dm[2]= 1.6; // thickness
-  dm[3]= 25.1;
-
-  gMC->Gsvolu("TIRC","TRD1",idtmed[4],dm,4);
-
-  // this volume will be positioned in the empty space
-  // of the end-cap to avoid overlaps
-
-  dm[0]= 13.7305;
-  dm[1]= 21.1895;
-  dm[2]= 2.25;
-  dm[3]= 21.15;
-
-  gMC->Gsvolu("TIC1","TRD1",idtmed[4],dm,4);
-
-
-  //------------------------------------------------
-  // Tpc Inner readout chamber Pad Plane
-  //------------------------------------------------
-
-  dm[0]= 14.483;
-  dm[1]= 23.3345;
-  dm[2]= 0.5;
-  dm[3]= 25.1;
-
-  gMC->Gsvolu("TIPP","TRD1",idtmed[12],dm,4);
-
-  // 
-
-  dm[0] -= 1.218511934;
-  dm[1] -= 1.218511934;
-  dm[2] = 0.35;
-
-  gMC->Gsvolu("TIC3","TRD1",idtmed[1],dm,4);
-
-  gMC->Gspos("TIC3",1,"TIPP",0.,0.15,0.,0,"ONLY");
-
-  gMC->Gspos("TIPP",1,"TIRC",0.,1.1,0.,0,"ONLY");
-
-
-  //----------------------------------------------
-  // Tpc Readout Chambers Empty spaces - for both
-  // inner and outer sectors
-  //----------------------------------------------
-
-  gMC->Gsvolu("TRCE","TRD1",idtmed[0],dm,0);
-
-  // Inner sector - 4 spaces
-
-
-  dm[3] = 4.7625;
-  dm[0] = 12.472;
-
-  Float_t rr = 90.52;
-  Float_t zz;
-
-  zz= -12.7875;
-  
-  space = rr*tanAlpha-dm[0];
-
-  for(Int_t nsLow=0;nsLow<4;nsLow++){
-
-    rr += 9.525;
-    dm[1]= rr*tanAlpha - space;  
-
-    dm[2]=0.8;
-
-    gMC->Gsposp("TRCE",nsLow+1,"TIRC",0.,-0.8,zz,0,"ONLY",dm,4);
-
-    //
-
-    dm[2] = 1.2;
-
-    gMC->Gsposp("TRCE",nsLow+5,"TIC1",0.,1.05,zz-2.1,0,"ONLY",dm,4);
-
-    rr += 0.4;
-    dm[0] = rr*tanAlpha - space;
-    zz += (0.4+9.525); 
-
-  }
-
-  dm[0]= 12.472;
-  // dm[1] - this is the dm[1] from the previous TRCE
-  dm[2]= 1.05;
-  dm[3]= 19.65;
-
-  gMC->Gsposp("TRCE",9,"TIC1",0.,-1.2,0.,0,"ONLY",dm,4);   
-
+  tv10->AddNode(tv11,1); tv11->AddNode(tv12,1);
   //
-  // TPc Space for Connectors
+  TGeoVolumeAssembly *tv100 = new TGeoVolumeAssembly("TPC_IFC");
   //
-
-  dm[0]= .3;
-  dm[1]= .3;
-  dm[2]= 4.5;
-
-  gMC->Gsvolu("TPSC","BOX ",idtmed[0],dm,3);
-
-  // TPC Connectors
-
-  dm[0]= .25;
-  dm[1]= .15;
-  dm[2]= 3.75;
-
-  gMC->Gsvolu("TPCC","BOX ",idtmed[13],dm,3); 
-
-  gMC->Gspos("TPCC",1,"TPSC",0.,0.15,0.,0,"ONLY");
-
-  zz = -12.7875;
-
-
-  Float_t alpha;
-  Float_t astep;
-
-  // inner part of the inner sector - 2 x 20 holes
-  
-  astep = 20.00096874/19.;
-
-  alpha = 10.00048437-astep;
-
-  Float_t x1,x2;
-
-    x1 = 13.31175725;
-    x1 -= 0.996357832; 
-
-    x2 = 15.06180253;
-    x2 -= 1.163028812;
-
-  Int_t ncon;
-
-  for(ncon=0;ncon<20;ncon++){
-
-    phi1 = 0.;
-    theta1 = 90.+alpha;
-    phi2=90.;
-    theta2 = 90.;
-    phi3 = (alpha>0) ? 0. : 180.;
-    theta3 = TMath::Abs(alpha);
-
-    AliMatrix(idrotm[nRotMat], theta1, phi1, theta2, phi2, theta3, phi3);
-
- 
-
-    gMC->Gspos("TPSC",ncon+1,"TIRC",x1,0.3,-12.7875,idrotm[nRotMat],"ONLY");
-    gMC->Gspos("TPSC",ncon+21,"TIRC",x2,0.3,-2.8625,idrotm[nRotMat],"ONLY");
-
-
-    x1 -= 1.296357833;
-    x2 -= 1.463028812;
-
-    alpha -= astep;   
-    nRotMat++; 
-
-  }
-
-  // outer part of the inner sector - 2 x 25 holes
-
-   astep = 20.00096874/24.; 
-   alpha = 10.00048437-astep;
-
-   x1 = 16.81184781;
-   x1 -= 1.016295986;
-
-   x2 = 18.5618931;
-   x2 -= 1.150914854;
-
-  for(ncon=0;ncon<25;ncon++){
-
-    phi1 = 0.;
-    theta1 = 90.+alpha;
-    phi2=90.;
-    theta2 = 90.;
-    phi3 = (alpha>0) ? 0. : 180.;
-    theta3 = TMath::Abs(alpha);
-
-    AliMatrix(idrotm[nRotMat], theta1, phi1, theta2, phi2, theta3, phi3);
-
- 
-
-    gMC->Gspos("TPSC",ncon+41,"TIRC",x1,0.3,7.0625,idrotm[nRotMat],"ONLY");
-    gMC->Gspos("TPSC",ncon+66,"TIRC",x2,0.3,16.9875,idrotm[nRotMat],"ONLY");
-
-
-    x1 -= 1.316295986;
-    x2 -= 1.450914854;
-
-    alpha -= astep;   
-    nRotMat++; 
-
-  }  
-
-  //--------------------------------------------------------------------------
-  //  TPC Outer Readout Chambers
-  //  this is NOT a final design
-  //--------------------------------------------------------------------------
-
-  dm[0]= 23.3875;
-  dm[1]= 43.524;
-  dm[2]= 1.5; //thickness
-  dm[3]= 57.1;
-
-  gMC->Gsvolu("TORC","TRD1",idtmed[4],dm,4);
-
-  //------------------------------------------------
-  // Tpc Outer readout chamber Pad Plane
-  //------------------------------------------------
-
-  dm[2]= 0.5;
-
-  gMC->Gsvolu("TOPP","TRD1",idtmed[12],dm,4);
-
-  dm[0] -= 1.218511934;
-  dm[1] -= 1.218511934;
-  dm[2] = 0.35;
-
-  gMC->Gsvolu("TOC3","TRD1",idtmed[1],dm,4);
-
-  gMC->Gspos("TOC3",1,"TOPP",0.,0.15,0.,0,"ONLY");
-
-  gMC->Gspos("TOPP",1,"TORC",0.,1.0,0.,0,"ONLY");
-
+  tv100->AddNode(tv10,1);
+  tv100->AddNode(tv6,1,new TGeoTranslation(0.,0.,-98.75));
+  tv100->AddNode(tv6,2,new TGeoTranslation(0.,0.,98.75));
+  tv100->AddNode(tv2,1,new TGeoTranslation(0.,0.,-177.925));
+  tv100->AddNode(tv2,2,new TGeoTranslation(0.,0.,177.925));
+  tv100->AddNode(tv1,1,new TGeoTranslation(0.,0.,-252.85));
+  tv100->AddNode(tv1,2,new TGeoTranslation(0.,0.,252.85));
+  //
+  v5->AddNode(v6,1, new TGeoTranslation(0.,0.,-252.1));
+  v5->AddNode(v6,2, new TGeoTranslation(0.,0.,252.1));
+  v1->AddNode(v5,1); v1->AddNode(v7,1); v1->AddNode(v8,1); 
+  v9->AddNode(tv100,1);
+  //
+  // central drum 
+  //
+  // flange + sandwich
+  //
+  TGeoPcon *cfl = new TGeoPcon(0.,360.,6);
+  cfl->DefineSection(0,-71.1,59.7,61.2);
+  cfl->DefineSection(1,-68.6,59.7,61.2);
+  //
+  cfl->DefineSection(2,-68.6,60.6324,61.2);
+  cfl->DefineSection(3,68.6,60.6324,61.2); 
+  //
+  cfl->DefineSection(4,68.6,59.7,61.2);
+  cfl->DefineSection(5,71.1,59.7,61.2);  
+  //
+  TGeoVolume *cflv = new TGeoVolume("TPC_CDR",cfl,m3);
+  // sandwich
+  TGeoTube *cd1 = new TGeoTube(60.6424,61.19,71.1);
+  TGeoTube *cd2 = new TGeoTube(60.6462,61.1862,71.1);
+  TGeoTube *cd3 = new TGeoTube(60.6662,61.1662,71.1);  
+  //
+  TGeoMedium *sm6 = gGeoManager->GetMedium("TPC_Prepreg1");
+  TGeoVolume *cd1v = new TGeoVolume("TPC_CDR1",cd1,sm2); //tedlar
+  TGeoVolume *cd2v = new TGeoVolume("TPC_CDR2",cd2,sm6);// prepreg1
+  TGeoVolume *cd3v = new TGeoVolume("TPC_CDR3",cd3,sm4); //nomex
+  //
+  // seals for central drum 2 copies
+  //
+  TGeoTube *cs = new TGeoTube(56.9,61.2,0.1);
+  TGeoMedium *sm7 = gGeoManager->GetMedium("TPC_Mylar");
+  TGeoVolume *csv = new TGeoVolume("TPC_CDRS",cs,sm7);
+  v1->AddNode(csv,1,new TGeoTranslation(0.,0.,-71.));
+  v1->AddNode(csv,2,new TGeoTranslation(0.,0.,71.));
+  //
+  // seal collars 
+  TGeoPcon *se = new TGeoPcon(0.,360.,6);
+  se->DefineSection(0,-72.8,59.7,61.2);
+  se->DefineSection(1,-72.3,59.7,61.2);
+  //
+  se->DefineSection(2,-72.3,58.85,61.2);
+  se->DefineSection(3,-71.6,58.85,61.2); 
+  //
+  se->DefineSection(4,-71.6,59.7,61.2);
+  se->DefineSection(5,-71.3,59.7,61.2);  
+  //
+  TGeoVolume *sev = new TGeoVolume("TPC_CDCE",se,m3);
+  //
+  TGeoTube *si = new TGeoTube(56.9,58.8,1.); 
+  TGeoVolume *siv = new TGeoVolume("TPC_CDCI",si,m3);
+  //
+  // define reflection matrix 
+  //
+  TGeoRotation *ref = new TGeoRotation("ref",90.,0.,90.,270.,180.,0.);
+  //
+  cd1v->AddNode(cd2v,1); cd2v->AddNode(cd3v,1); cflv->AddNode(cd1v,1);
+  //
+  v1->AddNode(siv,1,new TGeoTranslation(0.,0.,-72.1));
+  v1->AddNode(siv,2,new TGeoTranslation(0.,0.,72.1));
+  v1->AddNode(sev,1); v1->AddNode(sev,2,ref); v1->AddNode(cflv,1);
+  //
+  // central membrane - 2 rings and a mylar membrane - assembly
+  //
+  TGeoTube *ih = new TGeoTube(81.05,84.05,0.3);
+  TGeoTube *oh = new TGeoTube(250.,256.,.5);
+  TGeoTube *mem = new TGeoTube(84.05,250,0.01);
+  TGeoVolume *ihv = new TGeoVolume("TPC_IHVH",ih,m3);
+  TGeoVolume *ohv = new TGeoVolume("TPC_OHVH",oh,m3);
+  TGeoVolume *memv = new TGeoVolume("TPC_HV",mem,sm7);
+  //
+  TGeoVolumeAssembly *cm = new TGeoVolumeAssembly("TPC_HVMEM");
+  cm->AddNode(ihv,1);
+  cm->AddNode(ohv,1);
+  cm->AddNode(memv,1);
+  v9->AddNode(cm,1);
+  //
+  // end caps - they are make as an assembly of single segments
+  // containing both readout chambers
+  //
+  Double_t OpeningAngle = 10.*TMath::DegToRad();
+  Double_t thick=1.5; // rib
+  Double_t shift = thick/TMath::Sin(OpeningAngle);
+  //
+  Double_t LowEdge = 86.3; // hole in the wheel
+  Double_t UpEdge = 240.4; // hole in the wheel
+  //
+  new TGeoTubeSeg("sec",74.5,264.4,3.,0.,20.);
+  //
+  TGeoPgon *hole = new TGeoPgon("hole",0.,20.,1,4);
+  //
+  hole->DefineSection(0,-3.5,LowEdge-shift,UpEdge-shift);
+  hole->DefineSection(1,-1.5,LowEdge-shift,UpEdge-shift);
+  //
+  hole->DefineSection(2,-1.5,LowEdge-shift,UpEdge+3.-shift);
+  hole->DefineSection(3,3.5,LowEdge-shift,UpEdge+3.-shift);
+  //
+  Double_t ys = shift*TMath::Sin(OpeningAngle); 
+  Double_t xs = shift*TMath::Cos(OpeningAngle);
+  TGeoTranslation *tr = new TGeoTranslation("tr",xs,ys,0.);  
+  tr->RegisterYourself();
+  TGeoCompositeShape *chamber = new TGeoCompositeShape("sec-hole:tr");
+  TGeoVolume *sv = new TGeoVolume("TPC_WSEG",chamber,m3);
+  TGeoPgon *bar = new TGeoPgon("bar",0.,20.,1,2);
+  bar->DefineSection(0,-3.,131.5-shift,136.5-shift);
+  bar->DefineSection(1,1.5,131.5-shift,136.5-shift);
+  TGeoVolume *barv = new TGeoVolume("TPC_WBAR",bar,m3);
+  TGeoVolumeAssembly *ch = new TGeoVolumeAssembly("TPC_WCH");//empty segment
+  //
+  ch->AddNode(sv,1); ch->AddNode(barv,1,tr);
+  //
+  // readout chambers
+  //
+  // IROC first
+  //
+   TGeoTrd1 *ibody = new TGeoTrd1(13.8742,21.3328,4.29,21.15);
+   TGeoVolume *ibdv = new TGeoVolume("TPC_IROCB",ibody,m3);
   // empty space
-
-  dm[0]= 21.035;
-  dm[1]= 38.7205;
-  dm[2]= 0.7; 
-  dm[3]= 50.15;
-
-  gMC->Gsposp("TRCE",10,"TORC",0.,-0.8,-2.15,0,"ONLY",dm,4);  
-
-  dm[0]= 22.2935;
-  dm[1]= 40.5085;
-  dm[2]= 2.25;
-  dm[3]= 51.65;
-
-  gMC->Gsvolu("TOC1","TRD1",idtmed[4],dm,4);
-
-  dm[0]= 21.35;
-  dm[1]= 38.7205;
-  dm[2]= 2.25;
-  dm[3]= 50.15;
-
-  gMC->Gsposp("TRCE",11,"TOC1",0.,0.,0.,0,"ONLY",dm,4);
-
-  //-----------------------------------------------
-  // Tpc Services Support Wheel
-  //-----------------------------------------------
-
-  dm[0]=0.;
-  dm[1]=360.;
-  dm[2]=18.;
-  dm[3]=2.;
-
-  dm[4]= -5.;
-  dm[5]= 77.017;
-  dm[6]= 255.267;
-
-  dm[7]= 5.;
-  dm[8]= dm[5];
-  dm[9]= dm[6];
-
-  gMC->Gsvolu("TSSW","PGON",idtmed[4],dm,10);
-
-  // Tpc Services Wheel Cover
-
-  dm[4]= -0.5;
-  dm[7]= 0.5;
-
-  gMC->Gsvolu("TSWC","PGON",idtmed[4],dm,10);
-
-  // Tpc Service wheel Cover Empty space
+   TGeoTrd1 *emp = new TGeoTrd1(12.3742,19.8328,3.99,19.65);
+   TGeoVolume *empv = new TGeoVolume("TPC_IROCE",emp,m1);
+   ibdv->AddNode(empv,1,new TGeoTranslation(0.,-0.3,0.));
+   //bars
+   Double_t tga = (19.8328-12.3742)/39.3;
+   Double_t xmin,xmax;
+   xmin = 9.55*tga+12.3742;
+   xmax = 9.95*tga+12.3742;
+   TGeoTrd1 *ib1 = new TGeoTrd1(xmin,xmax,3.29,0.2);
+   TGeoVolume *ib1v = new TGeoVolume("TPC_IRB1",ib1,m3);
+   empv->AddNode(ib1v,1,new TGeoTranslation("tt1",0.,0.7,-9.9));
+   xmin=19.4*tga+12.3742;
+   xmax=19.9*tga+12.3742;
+   TGeoTrd1 *ib2 = new TGeoTrd1(xmin,xmax,3.29,0.25);
+   TGeoVolume *ib2v = new TGeoVolume("TPC_TRB2",ib2,m3);
+   empv->AddNode(ib2v,1,new TGeoTranslation(0.,0.7,0.));
+   xmin=29.35*tga+12.3742;
+   xmax=29.75*tga+12.3742;
+   TGeoTrd1 *ib3 = new TGeoTrd1(xmin,xmax,3.29,0.2); 
+   TGeoVolume *ib3v = new TGeoVolume("TPC_IRB3",ib3,m3);    
+   empv->AddNode(ib3v,1,new TGeoTranslation(0.,0.7,9.9));
+   //
+   // holes for connectors
+   //
+   TGeoBBox *conn = new TGeoBBox(0.4,0.3,4.675); // identical for iroc and oroc
+   TGeoVolume *connv = new TGeoVolume("TPC_RCCON",conn,m1);
+   ifstream in;
+   in.open("conn_iroc.dat", ios_base::in); // asci file
+   for(Int_t i =0;i<86;i++){
+      Double_t y = 3.9;
+      Double_t x,z,ang;
+      in>>x>>z>>ang;
+      TGeoRotation *rrr = new TGeoRotation();
+      rrr->RotateY(ang);
+      TGeoCombiTrans *trans = new TGeoCombiTrans("trans",x,y,z,rrr);
+      ibdv->AddNode(connv,i+1,trans);
+   }
+   in.close();
+   // "cap"
+   new TGeoTrd1("icap",14.5974,23.3521,1.19,24.825);
+   // "hole"
+   new TGeoTrd1("ihole",13.8742,21.3328,1.2,21.15);
+   TGeoTranslation *tr1 = new TGeoTranslation("tr1",0.,0.,1.725);  
+   tr1->RegisterYourself();
+   TGeoCompositeShape *ic = new TGeoCompositeShape("icap-ihole:tr1");
+   TGeoVolume *icv = new TGeoVolume("TPC_IRCAP",ic,m3);
+   //
+   // pad plane and wire fixations
+   //
+   TGeoTrd1 *pp = new TGeoTrd1(14.5974,23.3521,0.3,24.825); //pad+iso
+   TGeoMedium *m4 = gGeoManager->GetMedium("TPC_G10");
+   TGeoVolume *ppv = new TGeoVolume("TPC_IRPP",pp,m4);
+   TGeoPara *f1 = new TGeoPara(.6,.5,24.825,0.,-10.,0.);
+   TGeoVolume *f1v = new TGeoVolume("TPC_IRF1",f1,m4);
+   TGeoPara *f2 = new TGeoPara(.6,.5,24.825,0.,10.,0.);
+   TGeoVolume *f2v = new TGeoVolume("TPC_IRF2",f2,m4);
+   //
+   TGeoVolumeAssembly *iroc = new TGeoVolumeAssembly("TPC_IROC");
+   //
+   iroc->AddNode(ibdv,1);
+   iroc->AddNode(icv,1,new TGeoTranslation(0.,3.1,-1.725));
+   iroc->AddNode(ppv,1,new TGeoTranslation(0.,4.59,-1.725));
+   tga =(23.3521-14.5974)/49.65; 
+   Double_t xx = 24.825*tga+14.5974-0.6;
+   iroc->AddNode(f1v,1,new TGeoTranslation(-xx,5.39,-1.725));
+   iroc->AddNode(f2v,1,new TGeoTranslation(xx,5.39,-1.725));
+   //
+   // OROC
+   //
+   TGeoTrd1 *obody = new TGeoTrd1(22.2938,40.5084,4.19,51.65);
+   TGeoVolume *obdv = new TGeoVolume("TPC_OROCB",obody,m3);
+   TGeoTrd1 *oemp = new TGeoTrd1(20.2938,38.5084,3.89,49.65);
+   TGeoVolume *oempv = new TGeoVolume("TPC_OROCE",oemp,m1);
+   obdv->AddNode(oempv,1,new TGeoTranslation(0.,-0.3,0.));
+   //horizontal bars
+   tga=(38.5084-20.2938)/99.3;
+   xmin=tga*10.2+20.2938;
+   xmax=tga*10.6+20.2938;
+   TGeoTrd1 *ob1 = new TGeoTrd1(xmin,xmax,2.915,0.2);
+   TGeoVolume *ob1v = new TGeoVolume("TPC_ORB1",ob1,m3);
+   //
+   xmin=22.55*tga+20.2938;
+   xmax=24.15*tga+20.2938;
+   TGeoTrd1 *ob2 = new TGeoTrd1(xmin,xmax,2.915,0.8);
+   TGeoVolume *ob2v = new TGeoVolume("TPC_ORB2",ob2,m3);
+   //
+   xmin=36.1*tga+20.2938;
+   xmax=36.5*tga+20.2938;
+   TGeoTrd1 *ob3 = new TGeoTrd1(xmin,xmax,2.915,0.2);
+   TGeoVolume *ob3v = new TGeoVolume("TPC_ORB3",ob3,m3);
+   //
+   xmin=49.0*tga+20.2938;
+   xmax=50.6*tga+20.2938;   
+   TGeoTrd1 *ob4 = new TGeoTrd1(xmin,xmax,2.915,0.8);
+   TGeoVolume *ob4v = new TGeoVolume("TPC_ORB4",ob4,m3);
+   //
+   xmin=63.6*tga+20.2938;
+   xmax=64.0*tga+20.2938;
+   TGeoTrd1 *ob5 = new TGeoTrd1(xmin,xmax,2.915,0.2);
+   TGeoVolume *ob5v = new TGeoVolume("TPC_ORB5",ob5,m3);
+   //
+   xmin=75.5*tga+20.2938;
+   xmax=77.15*tga+20.2938;
+   TGeoTrd1 *ob6 = new TGeoTrd1(xmin,xmax,2.915,0.8);
+   TGeoVolume *ob6v = new TGeoVolume("TPC_ORB6",ob6,m3);
+   //
+   xmin=88.7*tga+20.2938;
+   xmax=89.1*tga+20.2938;
+   TGeoTrd1 *ob7 = new TGeoTrd1(xmin,xmax,2.915,0.2);
+   TGeoVolume *ob7v = new TGeoVolume("TPC_ORB7",ob7,m3);
+   //
+   oempv->AddNode(ob1v,1,new TGeoTranslation(0.,0.975,-39.25));
+   oempv->AddNode(ob2v,1,new TGeoTranslation(0.,0.975,-26.3));
+   oempv->AddNode(ob3v,1,new TGeoTranslation(0.,0.975,-13.35));
+   oempv->AddNode(ob4v,1,new TGeoTranslation(0.,0.975,0.15));
+   oempv->AddNode(ob5v,1,new TGeoTranslation(0.,0.975,14.15));
+   oempv->AddNode(ob6v,1,new TGeoTranslation(0.,0.975,26.7));
+   oempv->AddNode(ob7v,1,new TGeoTranslation(0.,0.975,39.25));
+   // vertical bars
+   TGeoBBox *ob8 = new TGeoBBox(0.8,2.915,5.1); 
+   TGeoBBox *ob9 = new TGeoBBox(0.8,2.915,5.975);
+   TGeoBBox *ob10 = new TGeoBBox(0.8,2.915,5.775);
+   TGeoBBox *ob11 = new TGeoBBox(0.8,2.915,6.25);
+   TGeoBBox *ob12 = new TGeoBBox(0.8,2.915,6.5);
+   //
+   TGeoVolume *ob8v = new TGeoVolume("TPC_ORB8",ob8,m3);
+   TGeoVolume *ob9v = new TGeoVolume("TPC_ORB9",ob9,m3);
+   TGeoVolume *ob10v = new TGeoVolume("TPC_ORB10",ob10,m3);
+   TGeoVolume *ob11v = new TGeoVolume("TPC_ORB11",ob11,m3);
+   TGeoVolume *ob12v = new TGeoVolume("TPC_ORB12",ob12,m3);
+   //
+   oempv->AddNode(ob8v,1,new TGeoTranslation(0.,0.975,-44.55));
+   oempv->AddNode(ob8v,2,new TGeoTranslation(0.,0.975,44.55));
+   oempv->AddNode(ob9v,1,new TGeoTranslation(0.,0.975,-33.075));
+   oempv->AddNode(ob9v,2,new TGeoTranslation(0.,0.975,-19.525));
+   oempv->AddNode(ob10v,1,new TGeoTranslation(0.,0.975,20.125));
+   oempv->AddNode(ob10v,2,new TGeoTranslation(0.,0.975,33.275));
+   oempv->AddNode(ob11v,1,new TGeoTranslation(0.,0.975,-6.9));
+   oempv->AddNode(ob12v,1,new TGeoTranslation(0.,0.975,7.45));
+   //
+   // holes for connectors
+   //
+   in.open("conn_oroc.dat", ios_base::in); // asci file
+   for(Int_t i =0;i<78;i++){
+      Double_t y =3.89;
+      Double_t x,z,ang;
+      Double_t x1,z1,x2,z2;
+      in>>x>>z>>ang;        
+      Double_t xr = 4.7*TMath::Sin(ang*TMath::DegToRad());
+      Double_t zr = 4.7*TMath::Cos(ang*TMath::DegToRad());
+      //
+      x1=xr+x; x2=-xr+x; z1=zr+z; z2 = -zr+z;      
+      //
+      TGeoRotation *rr = new TGeoRotation();
+      rr->RotateY(ang); 
+      z1-=54.95;
+      z2-=54.95;
+      TGeoCombiTrans *trans1 = new TGeoCombiTrans("trans1",x1,y,z1,rr);
+      TGeoCombiTrans *trans2 = new TGeoCombiTrans("trans2",x2,y,z2,rr);
+      obdv->AddNode(connv,i+1,trans1);
+      obdv->AddNode(connv,i+79,trans2);
+   }
+   in.close();
+   // cap
+   new TGeoTrd1("ocap",23.3874,43.5239,1.09,57.1);
+   new TGeoTrd1("ohole",22.2938,40.5084,1.09,51.65);
+   TGeoTranslation *tr5 = new TGeoTranslation("tr5",0.,0.,-2.15);
+   tr5->RegisterYourself();
+   TGeoCompositeShape *oc = new TGeoCompositeShape("ocap-ohole:tr5");
+   TGeoVolume *ocv = new TGeoVolume("TPC_ORCAP",oc,m3);
+   //
+   // pad plane and wire fixations
+   //
+   TGeoTrd1 *opp = new TGeoTrd1(23.3874,43.5239,0.3,57.1);
+   TGeoVolume *oppv = new TGeoVolume("TPC_ORPP",opp,m4);
+   //
+   tga=(43.5239-23.3874)/114.2;
+   TGeoPara *f3 = new TGeoPara(.7,.6,57.1,0.,-10.,0.);
+   TGeoPara *f4 = new TGeoPara(.7,.6,57.1,0.,10.,0.);  
+   xx = 57.1*tga+23.3874-0.7;
+   TGeoVolume *f3v = new TGeoVolume("TPC_ORF1",f3,m4);
+   TGeoVolume *f4v = new TGeoVolume("TPC_ORF2",f4,m4);
+   //
+   TGeoVolumeAssembly *oroc = new TGeoVolumeAssembly("TPC_OROC");
+   //
+   oroc->AddNode(obdv,1);
+   oroc->AddNode(ocv,1,new TGeoTranslation(0.,3.1,2.15));
+   oroc->AddNode(oppv,1,new TGeoTranslation(0.,4.49,2.15));
+   oroc->AddNode(f3v,1,new TGeoTranslation(-xx,5.39,2.15));
+   oroc->AddNode(f4v,1,new TGeoTranslation(xx,5.39,2.15));
+   // 
+   // now iroc and oroc are placed into a sector...
+   //
+   TGeoVolumeAssembly *sect = new TGeoVolumeAssembly("TPC_SECT");
+   TGeoRotation rot1("rot1",90.,90.,0.);
+   TGeoRotation rot2("rot2");
+   rot2.RotateY(10.);
+   TGeoRotation *rot = new TGeoRotation("rot");
+   *rot=rot1*rot2;
+   //
+   Double_t x0,y0;
+   x0=110.2*TMath::Cos(OpeningAngle);
+   y0=110.2*TMath::Sin(OpeningAngle);
+   TGeoCombiTrans *combi1 = new TGeoCombiTrans("combi1",x0,y0,1.09,rot);
+   x0=188.45*TMath::Cos(OpeningAngle);
+   y0=188.45*TMath::Sin(OpeningAngle);
+   TGeoCombiTrans *combi2 = new TGeoCombiTrans("combi2",x0,y0,0.99,rot);
+   //
+   sect->AddNode(ch,1);
+   sect->AddNode(iroc,1,combi1);
+   sect->AddNode(oroc,1,combi2);
+   //
+   // segment is ready...
+   // now I try to make a wheel...
+   //
+   TGeoVolumeAssembly *wheel = new TGeoVolumeAssembly("TPC_ENDCAP");
+   //
+   for(Int_t i =0;i<18;i++){
+     Double_t phi = (20.*i);
+     TGeoRotation *r = new TGeoRotation();
+     r->RotateZ(phi);
+     wheel->AddNode(sect,i+1,r);
+    
+   }
+   // wheels in the drift volume!
+   v9->AddNode(wheel,1,new TGeoTranslation(0.,0.,-256.6));
+   TGeoCombiTrans *combi3 = new TGeoCombiTrans("combi3",0.,0.,256.6,ref);
+   v9->AddNode(wheel,2,combi3);
    
-  dm[0]= 10.99;
-  dm[1]= 39.599;
-  dm[2]= .5;
-  dm[3]= 81.125;
-
-  gMC->Gsvolu("TSCE","TRD1",idtmed[0],dm,4);
-
-  // Tpc services Wheel Empty Spaces
-
-  dm[0]= 13.18017507;
-  dm[1]= 44.61045938;
-  dm[2]= 4.;
-  dm[3]= 89.125;
-
-  gMC->Gsvolu("TWES","TRD1",idtmed[0],dm,4);
-
-  // Tpc Services Wheel Bars
-
-  gMC->Gsvolu("TSWB","TRD1",idtmed[4],dm,0);
-
-  // bars-> TWES
-
-  dm[2]= 4.;
-  dm[3]= .4;
-
-  dm[0]= 13.8149522;
-  dm[1]= 13.95601379;
-  
-  gMC->Gsposp("TSWB",1,"TWES",0.,0.,-85.125,0,"ONLY",dm,4);
-
-  dm[0]= 43.83462067; 
-  dm[1]= 43.97568225;
-
-  gMC->Gsposp("TSWB",2,"TWES",0.,0.,85.125,0,"ONLY",dm,4);
-
-  // TPc ELectronics - right now 30% X0 Si
-
-  dm[0]= 14.03813696;
-  dm[1]= 43.3524075;
-  dm[2]= 1.404;
-  dm[3]= 83.125;
-
-  gMC->Gsvolu("TPEL","TRD1",idtmed[11],dm,4);
-  gMC->Gspos("TPEL",1,"TWES",0.,0.,0.,0,"ONLY");
-
-  //--------------------------------------------------------------------------
-  //  End caps
-  //--------------------------------------------------------------------------
-
-  // TPc Main Wheel - Al
-
-  dm[0]= 74.9;
-  dm[1]= 264.4;
-  dm[2]= 3.0;
-
-  gMC->Gsvolu("TPMW","TUBE",idtmed[4],dm,3);
-
-  //--------------------------------------------------------------------------
-  //  Tpc Empty Space for the Readout chambers
-  //--------------------------------------------------------------------------  
-
-  Float_t rLow= 86.2;
-  Float_t rUp= 243.5;
-  Float_t dR = 0.5*(rUp-rLow);
-
-  space= 1.5/cosAlpha; // wheel ribs are 3.0 cm wide
-
-  dm[0]= rLow*tanAlpha-space;
-  dm[1]= rUp*tanAlpha-space;
-  dm[2] = 3.0;
-  dm[3]= dR;
-
-  gMC->Gsvolu("TESR","TRD1",idtmed[0],dm,4);
-
-  // TIC1->TESR
-
-  gMC->Gspos("TIC1",1,"TESR",0.,0.75,-dR+23.97,0,"ONLY");
-
-  // TOC1->TESR
-
-  gMC->Gspos("TOC1",1,"TESR",0.,0.75,dR-55.02,0,"ONLY");
-
-  // Tpc Empty Space Bars - Al (daughters of TESR)
-
-  Float_t zBar;
-
-  gMC->Gsvolu("TESB","TRD1",idtmed[4],dm,0);
-
-  // lower bar
-
-  dm[0]= rLow*tanAlpha-space;
-  dm[1]= 88.7*tanAlpha-space;
-  dm[2]= 2.25;
-  dm[3]= 1.275;
-
-  zBar = -dR+dm[3];
-
-  gMC->Gsposp("TESB",1,"TESR",0.,0.75,zBar,0,"ONLY",dm,4);
-
-  // middle bar
-
-  dm[0]= 131.65*tanAlpha-space;
-  dm[1]= 136.5*tanAlpha-space;
-  dm[3]= 2.425;
-
-  zBar = -dR +131.65+dm[3]-rLow;
-
-  gMC->Gsposp("TESB",2,"TESR",0.,0.75,zBar,0,"ONLY",dm,4);  
-
-  // upper bar
-
-  dm[0]= 240.4*tanAlpha-space;
-  dm[1]= rUp*tanAlpha-space;
-  dm[3]= 1.55;
-
-  zBar = dR-dm[3];
-
-  gMC->Gsposp("TESB",3,"TESR",0.,0.75,zBar,0,"ONLY",dm,4);
-
-  //  positioning of the empty spaces into the main wheel
-
-  Float_t rCenter,xc,yc;
-  Float_t rInner,rOuter; // center of the inner and outer chamber
-
-  rCenter = rLow+dR;
-
-  rInner = 108.07;
-  rOuter = 190.68;
-
-
-  for(Int_t ns=0; ns<nInnerSector;ns++){
-
-    phi1 = ns * innerOpenAngle + innerAngleShift;
-    phi1 *= kRaddeg; // in degrees
-
-    phi1 = (Float_t)TMath::Nint(phi1) + 270.;
-
-    if (phi1 > 360.) phi1 -= 360.;
-
-    theta1 = 90.;
-    phi2   = 90.;
-    theta2 = 180.;
-    phi3   = ns * innerOpenAngle + innerAngleShift;
-    phi3 *= kRaddeg; // in degrees
-
-    phi3 = (Float_t)TMath::Nint(phi3);
-      
-    if(phi3 > 360.) phi3 -= 360.;
-
-    theta3 = 90.;
-
-    // "holes"->End plate
-
-    xc = rCenter*TMath::Cos(phi3*kDegrad);
-    yc = rCenter*TMath::Sin(phi3*kDegrad);
-
-    AliMatrix(idrotm[nRotMat], theta1, phi1, theta2, phi2, theta3, phi3);
-
-    gMC->Gspos("TESR",ns+1,"TPMW",xc,yc,0.,idrotm[nRotMat],"ONLY");
-
-    // TSCE->TSWC (services wheel volumes)
-
-    xc = 166.142*TMath::Cos(phi3*kDegrad);
-    yc = 166.142*TMath::Sin(phi3*kDegrad);
-
-    gMC->Gspos("TSCE",ns+1,"TSWC",xc,yc,0.,idrotm[nRotMat],"ONLY");
-    gMC->Gspos("TWES",ns+1,"TSSW",xc,yc,0.,idrotm[nRotMat],"ONLY");
-
-
-    // readout chambers->TDGS (drift gas)
-
-    xc = rInner*TMath::Cos(phi3*kDegrad);
-    yc = rInner*TMath::Sin(phi3*kDegrad);
-
-    gMC->Gspos("TIRC",ns+1,"TDGS",xc,yc,252.,idrotm[nRotMat],"ONLY");
-     
-    xc = rOuter*TMath::Cos(phi3*kDegrad);
-    yc = rOuter*TMath::Sin(phi3*kDegrad);
-
-    gMC->Gspos("TORC",ns+1,"TDGS",xc,yc,252.1,idrotm[nRotMat],"ONLY");
-
-    nRotMat++;
-
-    theta2 = 0.; // reflection
-
-    AliMatrix(idrotm[nRotMat], theta1, phi1, theta2, phi2, theta3, phi3);
-
-    xc = rInner*TMath::Cos(phi3*kDegrad);
-    yc = rInner*TMath::Sin(phi3*kDegrad);
-
-    gMC->Gspos("TIRC",ns+nInnerSector+1,"TDGS",xc,yc,-252.,idrotm[nRotMat],"ONLY");
-
-    xc = rOuter*TMath::Cos(phi3*kDegrad);
-    yc = rOuter*TMath::Sin(phi3*kDegrad);
-
-    gMC->Gspos("TORC",ns+nOuterSector+1,"TDGS",xc,yc,-252.1,idrotm[nRotMat],"ONLY");
-
-    nRotMat++;
-
-  } 
-  // TPMW->TPC
-
-  gMC->Gspos("TPMW",1,"TPC ",0.,0.,256.6,0,"ONLY");
-  gMC->Gspos("TPMW",2,"TPC ",0.,0.,-256.6,idrotm[0],"ONLY");
-
-  //---------------------------------------------------------
-  //  Tpc High Voltage Membrane - 100 microns of mylar
-  //---------------------------------------------------------
-
-  dm[0]=82.8;
-  dm[1]=252.;
-  dm[2]=0.005;
-
-  gMC->Gsvolu("THVM","TUBE",idtmed[8],dm,3);
-
-  gMC->Gspos("THVM",1,"TDGS",0.,0.,0.,0,"ONLY");
-
-  // Tpc High Voltage membrane Holders
-
-  gMC->Gsvolu("THVH","TUBE",idtmed[4],dm,0);
-
-  
-
-  // inner
-
-  dm[0]=79.3;
-  dm[1]=82.8;
-  dm[2]=0.2;
-
-  gMC->Gsposp("THVH",1,"TDGS",0.,0.,0.,0,"ONLY",dm,3);
-  
-  // outer
-
-  dm[0]= 252.;
-  dm[1]= 257.9;
-  dm[2]= 0.4;
-
-  gMC->Gsposp("THVH",2,"TDGS",0.,0.,0.,0,"ONLY",dm,3);
-
+   //_____________________________________________________________
+   // service support wheel
+   //_____________________________________________________________
+  TGeoPgon *sw = new TGeoPgon(0.,20.,1,2);
+  sw->DefineSection(0,-4.,80.5,251.75);
+  sw->DefineSection(1,4.,80.5,251.75); 
+  TGeoVolume *swv = new TGeoVolume("TPC_SWSEG",sw,m3); //Al
+  //
+  thick=1.;
+  shift = thick/TMath::Sin(OpeningAngle);
+  TGeoPgon *sh = new TGeoPgon(0.,20.,1,2);
+  sh->DefineSection(0,-4.,81.5-shift,250.75-shift);
+  sh->DefineSection(1,4.,81.5-shift,250.75-shift);
+  TGeoVolume *shv = new TGeoVolume("TPC_SWS1",sh,m1); //Air
+  //
+  ys = shift*TMath::Sin(OpeningAngle);
+  xs = shift*TMath::Cos(OpeningAngle);
+  swv->AddNode(shv,1,new TGeoTranslation(xs,ys,0.));
+  // cover
+  TGeoPgon *co = new TGeoPgon(0.,20.,1,2);
+  co->DefineSection(0,-0.5,77.,255.25);
+  co->DefineSection(1,0.5,77.,255.25);
+  TGeoVolume *cov = new TGeoVolume("TPC_SWC1",co,m3);//Al
+  // hole in a cover
+  TGeoPgon *coh = new TGeoPgon(0.,20.,1,2);
+  shift=4./TMath::Sin(OpeningAngle);
+  coh->DefineSection(0,-0.5,85.-shift,247.25-shift);
+  coh->DefineSection(1,0.5,85.-shift,247.25-shift);  
+  //
+  TGeoVolume *cohv = new TGeoVolume("TPC_SWC2",coh,m1);
+  //
+  ys = shift*TMath::Sin(OpeningAngle);
+  xs = shift*TMath::Cos(OpeningAngle);  
+  cov->AddNode(cohv,1,new TGeoTranslation(xs,ys,0.));
+  //
+  // Sector as an Assembly
+  //
+  TGeoVolumeAssembly *swhs = new TGeoVolumeAssembly("TPC_SSWSEC");
+  swhs->AddNode(swv,1);
+  swhs->AddNode(cov,1,new TGeoTranslation(0.,0.,-4.5));
+  swhs->AddNode(cov,2,new TGeoTranslation(0.,0.,4.5));
+  //
+  // SSW as an Assembly of sectors
+  //
+ TGeoVolumeAssembly *swheel = new TGeoVolumeAssembly("TPC_SSWHEEL");
+   for(Int_t i =0;i<18;i++){
+     Double_t phi = (20.*i);
+     TGeoRotation *r = new TGeoRotation();
+     r->RotateZ(phi);
+     swheel->AddNode(swhs,i+1,r);   
+   }
+   v1->AddNode(swheel,1,new TGeoTranslation(0.,0.,-284.6));
+   v1->AddNode(swheel,2,new TGeoTranslation(0.,0.,284.6));
+   //
   //----------------------------------------------------------
   // TPc Support Rods - MAKROLON
   //----------------------------------------------------------
-
-  dm[0]= 0.9;
-  dm[1]= 1.2;
-
-  gMC->Gsvolu("TPSR","TUBE",idtmed[7],dm,0); // inner and outer rods differ
-
-
-  for(Int_t nrod=0;nrod<18;nrod++){
-    Float_t angle=innerOpenAngle*(Float_t)nrod;
-
-    xc=81.5*TMath::Cos(angle);
-    yc=81.5*TMath::Sin(angle); 
-
-    dm[2]=126.7;
-
-    gMC->Gsposp("TPSR",nrod+1,"TDGS",xc,yc,126.9,0,"ONLY",dm,3); 
-    gMC->Gsposp("TPSR",nrod+19,"TDGS",xc,yc,-126.9,0,"ONLY",dm,3);
-
-    dm[2]=126.6;
-
-    xc=254.25*TMath::Cos(angle);
-    yc=254.25*TMath::Sin(angle);   
-      
-    // rod number 54 contans the HV cable
-
-    if(nrod<17) {
-      gMC->Gsposp("TPSR",nrod+37,"TDGS",xc,yc,127.,0,"ONLY",dm,3);
-      gMC->Gsposp("TPSR",nrod+54,"TDGS",xc,yc,-127.,0,"ONLY",dm,3);
+  TGeoMedium *m6=gGeoManager->GetMedium("TPC_Makrolon");
+  TGeoMedium *m7=gGeoManager->GetMedium("TPC_Cu");
+  // upper and lower rods differ in length!
+  Double_t *upar;
+  upar=NULL;
+  gGeoManager->Volume("TPC_Rod","TUBE",m6->GetId(),upar);
+  upar=new Double_t [3];
+  upar[0]=1.8;
+  upar[1]=2.2;
+  
+  //
+  //HV rods - makrolon + 0.58cm (diameter) Cu
+  TGeoTube *hvr = new TGeoTube(0.,4.4,126.64);
+  TGeoTube *hvc = new TGeoTube(0.,0.29,126.64);
+  //
+  TGeoVolume *hvrv = new TGeoVolume("TPC_HV_Rod",hvr,m6);
+  TGeoVolume *hvcv = new TGeoVolume("TPC_HV_Cable",hvc,m7);
+  hvrv->AddNode(hvcv,1);
+  for(Int_t i=0;i<17;i++){
+    Double_t angle,x,y;
+    Double_t z,r; 
+    angle=TMath::DegToRad()*20.*(Double_t)i;
+    r=81.5;
+    x=r * TMath::Cos(angle);
+    y=r * TMath::Sin(angle);
+    upar[2]=126.64; //lower
+    z= 126.96;
+    if(i==15){
+      v9->AddNode(hvrv,1,new TGeoTranslation(x,y,z));
+      v9->AddNode(hvrv,2,new TGeoTranslation(x,y,-z));
     }
-    
+    else{
+     gGeoManager->Node("TPC_Rod",i+1,"TPC_Drift",x,y,z,0,kTRUE,upar,3);//shaft
+     gGeoManager->Node("TPC_Rod",i+18,"TPC_Drift",x,y,-z,0,kTRUE,upar,3);//muon
+    }
+    r=254.25;
+    x=r * TMath::Cos(angle);
+    y=r * TMath::Sin(angle);
+    upar[2]=126.54; //upper
+    z=127.06;
+    gGeoManager->Node("TPC_Rod",i+36,"TPC_Drift",x,y,z,0,kTRUE,upar,3);
+    gGeoManager->Node("TPC_Rod",i+54,"TPC_Drift",x,y,-z,0,kTRUE,upar,3);
   }
 
-  //----------------------------------------------------------
-  // Tpc High Voltage Rod - MAKROLON + Copper cable
-  //----------------------------------------------------------
 
-  // rod with cable (Left)
-
-  dm[0]=0.;
-  dm[1]=2.25;
-  dm[2]=126.6;
-
-  gMC->Gsvolu("THVL","TUBE",idtmed[7],dm,3);
-
-  // HV cable
- 
-  dm[0]=0.;
-  dm[1]=0.3;
-  dm[2]=126.6;
-
-  gMC->Gsvolu("THVC","TUBE",idtmed[10],dm,3);  
-
-  // empty space
-
-  dm[0]=0.3;
-  dm[1]=1.;
-  dm[2]=126.6;
-
-  gMC->Gsvolu("THVE","TUBE",idtmed[1],dm,3);
-
-  gMC->Gspos("THVC",1,"THVL",0.,0.,0.,0,"ONLY");
-  gMC->Gspos("THVE",1,"THVL",0.,0.,0.,0,"ONLY");
-
-  // rod without cable
-
-  dm[0]=1.8;
-  dm[1]=2.25;
-  dm[2]=126.6;
-
-  gMC->Gsvolu("THVR","TUBE",idtmed[7],dm,3);
-
-  gMC->Gspos("THVL",1,"TDGS",xc,yc,-127.,0,"ONLY");  
-  gMC->Gspos("THVR",1,"TDGS",xc,yc,127.,0,"ONLY");
-
-  gMC->Gspos("TDGS",1,"TPC ",0.,0.,0.,0,"ONLY"); 
- 
-  // services wheel cover -> wheel
-
-
-  gMC->Gspos("TSWC",1,"TSSW",0.,0.,4.5,0,"ONLY");
-  gMC->Gspos("TSWC",2,"TSSW",0.,0.,-4.5,0,"ONLY");
-
-
-  // put the wheel into the TPC
-
-  gMC->Gspos("TSSW",1,"TPC ",0.,0.,278.7,0,"ONLY");
-  gMC->Gspos("TSSW",2,"TPC ",0.,0.,-278.7,0,"ONLY");
-
-  //
-
-  gMC->Gsord("TPMW",6);
-  gMC->Gsord("TSSW",6);
-  gMC->Gsord("TSWC",6);
-
-  // put the TPC into ALIC (main mother volume)
-
-  gMC->Gspos("TPC ",1,"ALIC",0.,0.,0.,0,"ONLY");
+   
+  gMC->Gspos("TPC_M ",1,"ALIC",0.,0.,0.,0,"ONLY");
 
  
 } // end of function
@@ -1597,7 +958,7 @@ void AliTPCv3::Init()
 
   AliTPC::Init();
 
-  fIdSens=gMC->VolId("TDGS"); // drift gas as a sensitive volume
+   fIdSens=gMC->VolId("TPC_Drift"); // drift gas as a sensitive volume
 
   gMC->SetMaxNStep(30000); // max. number of steps increased
 
@@ -1651,8 +1012,7 @@ void AliTPCv3::StepManager()
   
   
   id=gMC->CurrentVolID(copy);
-  
-  // Check the sensitive volume
+
   
   if (id != fIdSens) return;
   

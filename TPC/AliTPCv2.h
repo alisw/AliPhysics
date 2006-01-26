@@ -27,8 +27,8 @@ public:
 
 protected:
   Int_t fIdSens;    // sensitive strip
-  Int_t fIdLSec;    // lower sector
-  Int_t fIdUSec;    // upper sector    
+  Int_t fIDrift;    // drift gas
+  Int_t fSecOld;    // indicate the previous sector - for reference points    
 
 private:
 
