@@ -26,7 +26,7 @@
 ClassImp(AliAlignObjAngles)
 
 //_____________________________________________________________________________
-AliAlignObjAngles::AliAlignObjAngles() //: AliAlignObj()
+AliAlignObjAngles::AliAlignObjAngles() : AliAlignObj()
 {
   // default constructor
   //
@@ -35,7 +35,7 @@ AliAlignObjAngles::AliAlignObjAngles() //: AliAlignObj()
 }
 
 //_____________________________________________________________________________
-AliAlignObjAngles::AliAlignObjAngles(const char* volpath, UShort_t voluid, Double_t x, Double_t y, Double_t z, Double_t psi, Double_t theta, Double_t phi)
+AliAlignObjAngles::AliAlignObjAngles(const char* volpath, UShort_t voluid, Double_t x, Double_t y, Double_t z, Double_t psi, Double_t theta, Double_t phi) : AliAlignObj()
 {
   // standard constructor with 3 translation + 3 rotation parameters
   //
@@ -46,7 +46,7 @@ AliAlignObjAngles::AliAlignObjAngles(const char* volpath, UShort_t voluid, Doubl
 }
 
 //_____________________________________________________________________________
-AliAlignObjAngles::AliAlignObjAngles(const char* volpath, ELayerID detId, Int_t volId, Double_t x, Double_t y, Double_t z, Double_t psi, Double_t theta, Double_t phi)
+AliAlignObjAngles::AliAlignObjAngles(const char* volpath, ELayerID detId, Int_t volId, Double_t x, Double_t y, Double_t z, Double_t psi, Double_t theta, Double_t phi) : AliAlignObj()
 {
   // standard constructor with 3 translation + 3 rotation parameters
   //
@@ -57,7 +57,7 @@ AliAlignObjAngles::AliAlignObjAngles(const char* volpath, ELayerID detId, Int_t 
 }
 
 //_____________________________________________________________________________
-AliAlignObjAngles::AliAlignObjAngles(const char* volpath, UShort_t voluid, TGeoMatrix& m)
+AliAlignObjAngles::AliAlignObjAngles(const char* volpath, UShort_t voluid, TGeoMatrix& m) : AliAlignObj()
 {
   // standard constructor with TGeoMatrix
   //
@@ -153,3 +153,17 @@ void AliAlignObjAngles::GetMatrix(TGeoHMatrix& m) const
   m.SetRotation(rot);
 }
 
+//_____________________________________________________________________________
+AliAlignObj& AliAlignObjAngles::Inverse() const
+{
+  // Return a temporary inverse of the alignment
+  // object. This means 'mis
+   static AliAlignObjAngles a;
+   a = *this;
+
+   TGeoHMatrix m;
+   GetMatrix(m);
+   a.SetMatrix(m.Inverse());
+
+   return a;
+}

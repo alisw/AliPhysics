@@ -11,6 +11,9 @@
 #include "TString.h"
 #include "TGeoMatrix.h"
 
+class AliTrackPoint;
+class AliTrackPointArray;
+
 class AliAlignObj : public TObject {
 
  public:
@@ -53,6 +56,11 @@ class AliAlignObj : public TObject {
   virtual void GetPars(Double_t transl[], Double_t rot[]) const=0;
   virtual void GetMatrix(TGeoHMatrix& m) const=0;
 
+  virtual AliAlignObj& Inverse() const=0;
+
+  void  Transform(AliTrackPoint &p) const;
+  void  Transform(AliTrackPointArray &array) const;
+
   void  Print(Option_t *) const;
 
   static Int_t       LayerSize(Int_t layer) { return fgLayerSize[layer]; }
@@ -61,10 +69,20 @@ class AliAlignObj : public TObject {
   static UShort_t LayerToVolUID(ELayerID layerId, Int_t modId);
   static ELayerID VolUIDToLayer(UShort_t voluid, Int_t &modId);
   static ELayerID VolUIDToLayer(UShort_t voluid);
+
+  static const char* GetVolPath(UShort_t voluid) {
+    Int_t modId;
+    ELayerID layerId = VolUIDToLayer(voluid,modId);
+    return GetVolPath(layerId,modId);
+  }
+  static const char* GetVolPath(ELayerID layerId, Int_t modId) { return fgVolPath[layerId-kFirstLayer][modId]; }
+
  protected:
 
   void AnglesToMatrix(const Double_t *angles, Double_t *rot) const;
   Bool_t MatrixToAngles(const Double_t *rot, Double_t *angles) const;
+
+  void InitVolPaths();
 
   //Volume identifiers
   TString  fVolPath; // Volume path inside TGeo geometry
@@ -72,8 +90,10 @@ class AliAlignObj : public TObject {
 
   static Int_t       fgLayerSize[kLastLayer - kFirstLayer];
   static const char* fgLayerName[kLastLayer - kFirstLayer];
-  
-  ClassDef(AliAlignObj, 1)
+
+  static const char**fgVolPath[kLastLayer - kFirstLayer];
+
+  ClassDef(AliAlignObj, 2)
 };
 
 #endif

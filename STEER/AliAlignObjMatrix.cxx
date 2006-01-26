@@ -33,7 +33,7 @@ AliAlignObjMatrix::AliAlignObjMatrix() : AliAlignObj()
 }
 
 //_____________________________________________________________________________
-AliAlignObjMatrix::AliAlignObjMatrix(const char* volpath, UShort_t voluid, Double_t x, Double_t y, Double_t z, Double_t psi, Double_t theta, Double_t phi)
+AliAlignObjMatrix::AliAlignObjMatrix(const char* volpath, UShort_t voluid, Double_t x, Double_t y, Double_t z, Double_t psi, Double_t theta, Double_t phi) : AliAlignObj()
 {
   // standard constructor with 3 translation + 3 rotation parameters
   //
@@ -44,7 +44,7 @@ AliAlignObjMatrix::AliAlignObjMatrix(const char* volpath, UShort_t voluid, Doubl
 }
 
 //_____________________________________________________________________________
-AliAlignObjMatrix::AliAlignObjMatrix(const char* volpath, ELayerID detId, Int_t volId, Double_t x, Double_t y, Double_t z, Double_t psi, Double_t theta, Double_t phi)
+AliAlignObjMatrix::AliAlignObjMatrix(const char* volpath, ELayerID detId, Int_t volId, Double_t x, Double_t y, Double_t z, Double_t psi, Double_t theta, Double_t phi) : AliAlignObj()
 {
   // standard constructor with 3 translation + 3 rotation parameters
   //
@@ -55,7 +55,7 @@ AliAlignObjMatrix::AliAlignObjMatrix(const char* volpath, ELayerID detId, Int_t 
 }
 
 //_____________________________________________________________________________
-AliAlignObjMatrix::AliAlignObjMatrix(const char* volpath, UShort_t voluid, TGeoMatrix& m)
+AliAlignObjMatrix::AliAlignObjMatrix(const char* volpath, UShort_t voluid, TGeoMatrix& m) : AliAlignObj()
 {
   // standard constructor with TGeoMatrix
   //
@@ -189,3 +189,17 @@ void AliAlignObjMatrix::GetMatrix(TGeoHMatrix& m) const
   m.SetRotation(rot);
 }
 
+//_____________________________________________________________________________
+AliAlignObj& AliAlignObjMatrix::Inverse() const
+{
+  // Return a temporary inverse of the alignment
+  // object. This means 'mis
+   static AliAlignObjMatrix a;
+   a = *this;
+
+   TGeoHMatrix m;
+   GetMatrix(m);
+   a.SetMatrix(m.Inverse());
+
+   return a;
+}

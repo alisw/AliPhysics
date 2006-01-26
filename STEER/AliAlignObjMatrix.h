@@ -33,6 +33,8 @@ class AliAlignObjMatrix : public AliAlignObj {
   virtual Bool_t GetAngles(Double_t* angles)  const;
   virtual void GetPars(Double_t tr[], Double_t rot[]) const;
   virtual void GetMatrix(TGeoHMatrix& m) const;
+
+  virtual AliAlignObj& Inverse() const;
   
  protected:
   TGeoHMatrix fMatrix; // Transformation matrix

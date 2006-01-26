@@ -45,6 +45,8 @@ class AliAlignObjAngles : public AliAlignObj{
     angles[2] = fRotation[2]; return kTRUE;}
   virtual void GetPars(Double_t tr[], Double_t angles[]) const;
   virtual void GetMatrix(TGeoHMatrix& m) const;
+
+  virtual AliAlignObj& Inverse() const;
   
  protected:
   Double_t fTranslation[3]; // Translation vector

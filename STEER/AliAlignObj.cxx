@@ -30,7 +30,8 @@
  *****************************************************************************/
 
 #include "AliAlignObj.h"
-//#include "AliLog.h"
+#include "AliTrackPointArray.h"
+#include "AliLog.h"
  
 ClassImp(AliAlignObj)
 
@@ -42,7 +43,7 @@ Int_t AliAlignObj::fgLayerSize[kLastLayer - kFirstLayer] = {
   90, 90, 90, 90, 90, 90,  // TRD
   1,        // TOF ??
   1, 1,     // PHOS ??
-  1,        // RICH ??
+  7,        // RICH ??
   1         // MUON ??
 };
 
@@ -55,15 +56,29 @@ const char* AliAlignObj::fgLayerName[kLastLayer - kFirstLayer] = {
   "TRD chambers layer 4", "TRD chambers layer 5", "TRD chambers layer 6",
   "TOF layer",
   "?","?",
-  "?",
+  "RICH layer",
   "?"
+};
+
+const char** AliAlignObj::fgVolPath[kLastLayer - kFirstLayer] = {
+  0x0,0x0,
+  0x0,0x0,
+  0x0,0x0,
+  0x0,0x0,
+  0x0,0x0,0x0,
+  0x0,0x0,0x0,
+  0x0,
+  0x0,0x0,
+  0x0,
+  0x0
 };
 
 //_____________________________________________________________________________
 AliAlignObj::AliAlignObj():
   fVolUID(0)
 {
-  // dummy constructor
+  // default constructor
+  InitVolPaths();
 }
 
 //_____________________________________________________________________________
@@ -150,6 +165,44 @@ Bool_t AliAlignObj::MatrixToAngles(const Double_t *rot, Double_t *angles) const
   return kTRUE;
 }
 
+//______________________________________________________________________________
+void AliAlignObj::Transform(AliTrackPoint &p) const
+{
+  // The method transforms the space-point coordinates using the
+  // transformation matrix provided by the AliAlignObj
+  // The covariance matrix is not affected since we assume
+  // that the transformations are sufficiently small
+
+  if (fVolUID != p.GetVolumeID())
+    AliWarning(Form("Alignment object ID is not equal to the space-point ID (%d != %d)",fVolUID,p.GetVolumeID())); 
+
+  TGeoHMatrix m;
+  GetMatrix(m);
+  Double_t *rot = m.GetRotationMatrix();
+  Double_t *tr  = m.GetTranslation();
+
+  Float_t xyzin[3],xyzout[3];
+  p.GetXYZ(xyzin);
+  for (Int_t i = 0; i < 3; i++)
+    xyzout[i] = tr[i]+
+                xyzin[0]*rot[3*i]+
+                xyzin[1]*rot[3*i+1]+
+                xyzin[2]*rot[3*i+2];
+  p.SetXYZ(xyzout);
+  
+}
+
+//______________________________________________________________________________
+void AliAlignObj::Transform(AliTrackPointArray &array) const
+{
+  AliTrackPoint p;
+  for (Int_t i = 0; i < array.GetNPoints(); i++) {
+    array.GetPoint(p,i);
+    Transform(p);
+    array.AddPoint(i,&p);
+  }
+}
+
 //_____________________________________________________________________________
 void AliAlignObj::Print(Option_t *) const
 {
@@ -207,4 +260,166 @@ AliAlignObj::ELayerID AliAlignObj::VolUIDToLayer(UShort_t voluid)
   // remaining 11 for module ID inside det (2048 possible values).
   //
   return ELayerID((voluid >> 11) & 0x1f);
+}
+
+//_____________________________________________________________________________
+void AliAlignObj::InitVolPaths()
+{
+  // Initialize the LUTs which contain
+  // the TGeo volume paths for each
+  // alignable volume. The LUTs are
+  // static, so they are created during
+  // the creation of the first intance
+  // of AliAlignObj
+
+  if (fgVolPath[0]) return;
+
+  for (Int_t iLayer = 0; iLayer < (kLastLayer - kFirstLayer); iLayer++)
+    fgVolPath[iLayer] = new const char *[fgLayerSize[iLayer]];
+
+  /*********************       SPD layer1  ***********************/
+  {
+    Int_t modnum = 0;
+    TString str0 = "ALIC_1/ITSV_1/ITSD_1/IT12_1/I12B_"; //".../I12A_"
+    TString str1 = "/I10B_";    //"/I10A_";
+    TString str2 = "/I107_";    //"/I103_"
+    TString str3 = "/I101_1/ITS1_1";
+    TString volpath, volpath1, volpath2;
+
+    for(Int_t c1 = 1; c1<=10; c1++){
+      volpath = str0;
+      volpath += c1;
+      volpath += str1;
+      for(Int_t c2 =1; c2<=2; c2++){
+	volpath1 = volpath;
+	volpath1 += c2;
+	volpath1 += str2;
+	for(Int_t c3 =1; c3<=4; c3++){
+	  volpath2 = volpath1;
+	  volpath2 += c3;
+	  volpath2 += str3;
+	  fgVolPath[kSPD1-kFirstLayer][modnum] = volpath2.Data();
+	  modnum++;
+	}
+      }
+    }
+  }
+  
+  /*********************       SPD layer2  ***********************/
+  {
+    Int_t modnum = 0;
+    TString str0 = "ALIC_1/ITSV_1/ITSD_1/IT12_1/I12B_";  //".../I12A_"
+    TString str1 = "/I20B_";  //"/I20A"
+    TString str2 = "/I1D7_";  //"/I1D3"
+    TString str3 = "/I1D1_1/ITS2_1";
+    TString volpath, volpath1, volpath2;
+
+    for(Int_t c1 = 1; c1<=10; c1++){
+      volpath = str0;
+      volpath += c1;
+      volpath += str1;
+      for(Int_t c2 =1; c2<=4; c2++){
+	volpath1 = volpath;
+	volpath1 += c2;
+	volpath1 += str2;
+	for(Int_t c3 =1; c3<=4; c3++){
+	  volpath2 = volpath1;
+	  volpath2 += c3;
+	  volpath2 += str3;
+	  fgVolPath[kSPD2-kFirstLayer][modnum] = volpath2.Data();
+	  modnum++;
+	}
+      }
+    }
+  }
+
+  /*********************       SDD layer1  ***********************/
+  {
+    Int_t modnum=0;
+    TString str0 = "ALIC_1/ITSV_1/ITSD_1/IT34_1/I004_";
+    TString str1 = "/I302_";
+    TString str2 = "/ITS3_1";
+    TString volpath, volpath1;
+
+    for(Int_t c1 = 1; c1<=14; c1++){
+      volpath = str0;
+      volpath += c1;
+      volpath += str1;
+      for(Int_t c2 =1; c2<=6; c2++){
+	volpath1 = volpath;
+	volpath1 += c2;
+	volpath1 += str2;
+	fgVolPath[kSDD1-kFirstLayer][modnum] = volpath1.Data();
+	modnum++;
+      }
+    }
+  }
+
+  /*********************       SDD layer2  ***********************/
+  {
+    Int_t modnum=0;
+    TString str0 = "ALIC_1/ITSV_1/ITSD_1/IT34_1/I005_";
+    TString str1 = "/I402_";
+    TString str2 = "/ITS4_1";
+    TString volpath, volpath1;
+
+    for(Int_t c1 = 1; c1<=22; c1++){
+      volpath = str0;
+      volpath += c1;
+      volpath += str1;
+      for(Int_t c2 = 1; c2<=8; c2++){
+	volpath1 = volpath;
+	volpath1 += c2;
+	volpath1 += str2;
+	fgVolPath[kSDD2-kFirstLayer][modnum] = volpath1.Data();
+	modnum++;
+      }
+    }
+  }
+
+  /*********************       SSD layer1  ***********************/
+  {
+    Int_t modnum=0;
+    TString str0 = "ALIC_1/ITSV_1/ITSD_1/IT56_1/I565_";
+    TString str1 = "/I562_";
+    TString str2 = "/ITS5_1";
+    TString volpath, volpath1;
+
+    for(Int_t c1 = 1; c1<=34; c1++){
+      volpath = str0;
+      volpath += c1;
+      volpath += str1;
+      for(Int_t c2 = 1; c2<=22; c2++){
+	volpath1 = volpath;
+	volpath1 += c2;
+	volpath1 += str2;
+	fgVolPath[kSSD1-kFirstLayer][modnum] = volpath1.Data();
+	modnum++;
+      }
+    }
+  }
+
+  /*********************       SSD layer1  ***********************/
+  {
+    Int_t modnum=0;
+    TString str0 = "ALIC_1/ITSV_1/ITSD_1/IT56_1/I569_";
+    TString str1 = "/I566_";
+    TString str2 = "/ITS6_1";
+    TString volpath, volpath1;
+
+    for(Int_t c1 = 1; c1<=38; c1++){
+      volpath = str0;
+      volpath += c1;
+      volpath += str1;
+      for(Int_t c2 = 1; c2<=25; c2++){
+	volpath1 = volpath;
+	volpath1 += c2;
+	volpath1 += str2;
+	fgVolPath[kSSD2-kFirstLayer][modnum] = volpath1.Data();
+	modnum++;
+      }
+    }
+  }
+
+ 
 }
