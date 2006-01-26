@@ -8,20 +8,20 @@
 ////////////////////////////////////////////////
 //  Manager class for TPC                     //
 ////////////////////////////////////////////////
-#include "AliDetector.h"
-#include "AliHit.h" 
-#include "AliDigit.h" 
-#include <TMatrixFfwd.h>
-
-class TTree;
 
 class TFile;
-class AliTPCParam;
+class TTree;
+#include <TMatrixFfwd.h>
+#include <TVector.h>
+
 class AliTPCDigitsArray;
-class AliTPCTrackHitsV2; // M.I.
-class AliTPCTrackHits; // M.I.  -MI4 old hits - to be removed later
-//class TLorentzVector;
 class AliTPCLoader;
+class AliTPCParam;
+class AliTPCTrackHits; // M.I.  -MI4 old hits - to be removed later
+class AliTPCTrackHitsV2; // M.I.
+#include "AliDetector.h"
+#include "AliDigit.h" 
+#include "AliHit.h" 
 
 
 class AliTPC : public AliDetector {
