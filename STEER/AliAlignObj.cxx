@@ -60,7 +60,7 @@ const char* AliAlignObj::fgLayerName[kLastLayer - kFirstLayer] = {
   "?"
 };
 
-const char** AliAlignObj::fgVolPath[kLastLayer - kFirstLayer] = {
+TString* AliAlignObj::fgVolPath[kLastLayer - kFirstLayer] = {
   0x0,0x0,
   0x0,0x0,
   0x0,0x0,
@@ -275,7 +275,7 @@ void AliAlignObj::InitVolPaths()
   if (fgVolPath[0]) return;
 
   for (Int_t iLayer = 0; iLayer < (kLastLayer - kFirstLayer); iLayer++)
-    fgVolPath[iLayer] = new const char *[fgLayerSize[iLayer]];
+    fgVolPath[iLayer] = new TString[fgLayerSize[iLayer]];
 
   /*********************       SPD layer1  ***********************/
   {

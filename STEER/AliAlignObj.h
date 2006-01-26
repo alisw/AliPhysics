@@ -75,7 +75,7 @@ class AliAlignObj : public TObject {
     ELayerID layerId = VolUIDToLayer(voluid,modId);
     return GetVolPath(layerId,modId);
   }
-  static const char* GetVolPath(ELayerID layerId, Int_t modId) { return fgVolPath[layerId-kFirstLayer][modId]; }
+  static const char* GetVolPath(ELayerID layerId, Int_t modId) { return fgVolPath[layerId-kFirstLayer][modId].Data(); }
 
  protected:
 
@@ -91,7 +91,7 @@ class AliAlignObj : public TObject {
   static Int_t       fgLayerSize[kLastLayer - kFirstLayer];
   static const char* fgLayerName[kLastLayer - kFirstLayer];
 
-  static const char**fgVolPath[kLastLayer - kFirstLayer];
+  static TString*    fgVolPath[kLastLayer - kFirstLayer];
 
   ClassDef(AliAlignObj, 2)
 };
