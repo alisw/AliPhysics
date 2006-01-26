@@ -341,7 +341,7 @@ Bool_t AliTPCParamSR::Update()
   if (AliTPCParam::Update()==kFALSE) return kFALSE;
   fbStatus = kFALSE;
 
- Float_t firstrow = fInnerRadiusLow + 2.225 ;   
+ Float_t firstrow = fInnerRadiusLow + 1.575;   
  for( i= 0;i<fNRowLow;i++)
    {
      Float_t x = firstrow + fInnerPadPitchLength*(Float_t)i;  

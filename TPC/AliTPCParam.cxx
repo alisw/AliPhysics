@@ -246,18 +246,18 @@ void AliTPCParam::SetDefault()
   //
   //sector default parameters
   //
-  static const  Float_t kInnerRadiusLow = 82.97;
-  static const  Float_t kInnerRadiusUp  = 133.17;
-  static const  Float_t kOuterRadiusLow = 133.58;
-  static const  Float_t kOuterRadiusUp  = 247.78;
+  static const  Float_t kInnerRadiusLow = 83.65;
+  static const  Float_t kInnerRadiusUp  = 133.3;
+  static const  Float_t kOuterRadiusLow = 133.5;
+  static const  Float_t kOuterRadiusUp  = 247.7;
   static const  Float_t kInnerAngle = 20; // 20 degrees
   static const  Float_t kInnerAngleShift = 10;
   static const  Float_t kOuterAngle = 20; //  20 degrees
   static const  Float_t kOuterAngleShift = 10;
   static const  Float_t kInnerFrameSpace = 1.5;
   static const  Float_t kOuterFrameSpace = 1.5;
-  static const  Float_t kInnerWireMount = 1.370825926;
-  static const  Float_t kOuterWireMount = 1.370825926;
+  static const  Float_t kInnerWireMount = 1.2;
+  static const  Float_t kOuterWireMount = 1.4;
   static const  Float_t kZLength =250.;
   static const  Int_t   kGeometryType = 0; //straight rows 
   static const Int_t kNRowLow = 63;
@@ -270,14 +270,14 @@ void AliTPCParam::SetDefault()
   static const Int_t    kNInnerWiresPerPad = 3;
   static const Int_t    kInnerDummyWire = 2;
   static const Float_t  kInnerWWPitch = 0.25;
-  static const Float_t  kRInnerFirstWire = 84.445;
-  static const Float_t  kRInnerLastWire = 132.445;
+  static const Float_t  kRInnerFirstWire = 84.475;
+  static const Float_t  kRInnerLastWire = 132.475;
   static const Float_t  kInnerOffWire = 0.5;
   static const Int_t    kNOuter1WiresPerPad = 4;
   static const Int_t    kNOuter2WiresPerPad = 6;
   static const Float_t  kOuterWWPitch = 0.25;  
-  static const Float_t  kROuterFirstWire = 134.305;
-  static const Float_t  kROuterLastWire = 247.055;
+  static const Float_t  kROuterFirstWire = 134.225;
+  static const Float_t  kROuterLastWire = 246.975;
   static const Int_t    kOuterDummyWire = 2;
   static const Float_t  kOuterOffWire = 0.5;
   //
