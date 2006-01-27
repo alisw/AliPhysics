@@ -17,9 +17,9 @@
 
 ClassImp(AliMUONScalerEventTrigger)
   const Int_t AliMUONScalerEventTrigger::fgkLocalScalerLength  = 45;
-  const Int_t AliMUONScalerEventTrigger::fgkRegScalerLength    = 11;
+  const Int_t AliMUONScalerEventTrigger::fgkRegScalerLength    = 8;
   const Int_t AliMUONScalerEventTrigger::fgkGlobalScalerLength = 10;
-  const Int_t AliMUONScalerEventTrigger::fgkDarcScalerLength   =  6;
+  const Int_t AliMUONScalerEventTrigger::fgkDarcScalerLength   = 6;
 
 //___________________________________________
 AliMUONScalerEventTrigger::AliMUONScalerEventTrigger()
@@ -61,5 +61,50 @@ AliMUONScalerEventTrigger::AliMUONScalerEventTrigger()
 
   for (Int_t i = 0; i < 6; i++)
     fGlobalScaler[i] = 0;
+
+}
+//___________________________________________
+void AliMUONScalerEventTrigger::SetNumbers()
+{
+  // set crasy numbers for scaler words, while no beam is coming
+
+  fLocalL0       = 1000;   
+  fLocalHold     = 100; 
+  fLocalClk      = 10000;  
+  fLocalLPtNTrig = 1; 
+  fLocalHPtNTrig = 1; 
+  fLocalLPtRTrig = 2; 
+  fLocalHPtRTrig = 2; 
+  fLocalLPtLTrig = 3; 
+  fLocalHPtLTrig = 3; 
+  fLocalLPtSTrig = 4; 
+  fLocalHPtSTrig = 4; 
+  fLocalEOS      = 0x2AA;         
+  fLocalReset    = 10;     
+
+  fRegL0   = 1000;
+  fRegClk  = 10000;
+  fRegHold = 100;      
+
+  fGlobalL0    = 1000;
+  fGlobalClk   = 10000;
+  fGlobalHold  = 100;    
+  fGlobalSpare = 1;    
+
+  fDarcL0R  = 1000;
+  fDarcL0U  = 900;
+  fDarcL0P  = 800;
+  fDarcL0S  = 700;
+  fDarcClk  = 10000;
+  fDarcHold = 100;
+
+  for (Int_t i = 0; i < 8*4; i++)
+    fLocalScaler[i] = i;
+
+  for (Int_t i = 0; i < 8; i++)
+    fRegScaler[i] = i;
+
+  for (Int_t i = 0; i < 6; i++)
+    fGlobalScaler[i] = i;
 
 }

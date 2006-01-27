@@ -15,22 +15,20 @@
 
 ////////////////////////////////////
 //
-// MUON Raw Data generator and reader in ALICE-MUON
-// This class version 3 (further details could be found in Alice-note)
+// MUON Raw Data reader in ALICE-MUON
+// Class version 3 (further details could be found in Alice-note)
 //
 // Implemented non-constant buspatch numbers for tracking
 // with correct DDL id (first guess)
 // (Ch. Finck, dec 2005)
 //
-// Digits2Raw:
-// Generates raw data for MUON tracker and finally for trigger
-// Using real mapping (inverse) for tracker
-// For trigger there is no mapping (mapping could be found in AliMUONTriggerCircuit)
-// Ch. Finck july 04
 //
 // Raw2Digits:
 // Using real mapping  for tracker
 // Indranil Das (Adapted for runloader: Ch. Finck) july 05
+// Add reader for scaler trigger events
+// Use memcpy instead of assignment elt by elt
+// (Ch. Finck, Jan 06)
 // 
 ////////////////////////////////////
 
@@ -53,6 +51,7 @@
 #include "AliMUONData.h"
 
 #include "AliMUONSubEventTracker.h"
+#include "AliMUONScalerEventTrigger.h"
 #include "AliMUONSubEventTrigger.h"
 #include "AliMUONDDLTracker.h"
 #include "AliMUONDDLTrigger.h"
@@ -73,7 +72,8 @@
 ClassImp(AliMUONRawReader) // Class implementation in ROOT context
 //__________________________________________________________________________
 AliMUONRawReader::AliMUONRawReader(AliLoader* loader,  AliMUONData* data)
-  : TObject()
+  : TObject(),
+    fScalerEvent(kFALSE)
 {
   // Standard Constructor
  
@@ -102,7 +102,9 @@ AliMUONRawReader::AliMUONRawReader()
     fLoader(0),    
     fSegFactory(0),
     fDDLTracker(0),
-    fDDLTrigger(0)
+    fDDLTrigger(0),
+    fBusPatchManager(0),
+    fScalerEvent(kFALSE)
 {
   // Default Constructor
   
@@ -172,12 +174,12 @@ Int_t AliMUONRawReader::ReadTrackerDDL(AliRawReader* rawReader)
   AliMUONDigit* digit = new AliMUONDigit();
 
 
-  //Read Header Size of DDL,Block,DSP and BusPatch.
+  //Read Header Size of DDL,Block,DSP and BusPatch (put k before constant imb'cile)
 
-  Int_t ddlHeaderSize      = fDDLTracker->GetHeaderSize();
-  Int_t blockHeaderSize    = fDDLTracker->GetBlkHeaderLength();
-  Int_t dspHeaderSize      = fDDLTracker->GetDspHeaderLength();
-  Int_t buspatchHeaderSize = subEventTracker->GetHeaderLength();
+  Int_t kDDLHeaderSize      = fDDLTracker->GetHeaderSize();
+  Int_t kBlockHeaderSize    = fDDLTracker->GetBlkHeaderLength();
+  Int_t kDspHeaderSize      = fDDLTracker->GetDspHeaderLength();
+  Int_t kBusPatchHeaderSize = subEventTracker->GetHeaderLength();
 
   Int_t totalDDLSize, totalBlockSize, totalDspSize , totalBusPatchSize, dataSize; 
 
@@ -199,12 +201,12 @@ Int_t AliMUONRawReader::ReadTrackerDDL(AliRawReader* rawReader)
 
     //   Each DDL is made with 2 Blocks each of which consists of 5 DSP's at most and each of DSP has at most 5 buspatches.
     //   This information is used to calculate the size of headers (DDL,Block and DSP) which has no interesting data.
-    blankDDLSize   = ddlHeaderSize + 2*blockHeaderSize + 2*iDspMax*dspHeaderSize;
-    blankBlockSize = blockHeaderSize + iDspMax*dspHeaderSize;
+    blankDDLSize   = kDDLHeaderSize + 2*kBlockHeaderSize + 2*iDspMax*kDspHeaderSize;
+    blankBlockSize = kBlockHeaderSize + iDspMax*kDspHeaderSize;
 
     for (Int_t i = 0; i < iDspMax; i++) {
-      blankDDLSize   += 2*iBusPerDSP[i]*buspatchHeaderSize;
-      blankBlockSize +=   iBusPerDSP[i]*buspatchHeaderSize;
+      blankDDLSize   += 2*iBusPerDSP[i]*kBusPatchHeaderSize;
+      blankBlockSize +=   iBusPerDSP[i]*kBusPatchHeaderSize;
     }
 
     rawReader->Select(0X9, iDDL, iDDL);  //Select the DDL file to be read  
@@ -215,12 +217,10 @@ Int_t AliMUONRawReader::ReadTrackerDDL(AliRawReader* rawReader)
 
     if(totalDDLSize > blankDDLSize) {      // Compare the DDL header with an empty DDL header size to read the file
 
-      Int_t totalDataWord = rawReader->GetDataSize()/4 ;
-      UInt_t *buffer = new UInt_t[totalDataWord];
-      for(Int_t i = 0; i < totalDataWord; i++) { 
-	UInt_t& temp = buffer[i]; 
-	rawReader->ReadNextInt(temp);      // takes the whole result into buffer variable for future analysis
-      }
+      Int_t totalDataWord = rawReader->GetDataSize(); // in bytes
+      UInt_t *buffer = new UInt_t[totalDataWord/4];
+  
+      rawReader->ReadNext((UChar_t*)buffer, totalDataWord); 
 
       // elex info
       Int_t    buspatchId;
@@ -238,34 +238,41 @@ Int_t AliMUONRawReader::ReadTrackerDDL(AliRawReader* rawReader)
 	totalBlockSize = buffer[index];
 	  
 	if(totalBlockSize > blankBlockSize) {        // compare block header
-	  index += blockHeaderSize;
+	  index += kBlockHeaderSize;
 
 	  for(Int_t iDsp = 0; iDsp < iDspMax ;iDsp++){   //DSP loop
 
 	    totalDspSize = buffer[index];
 	    indexDsp = index;
 
-	    blankDspSize =  dspHeaderSize + iBusPerDSP[iDsp]*buspatchHeaderSize; // no data just header
+	    blankDspSize =  kDspHeaderSize + iBusPerDSP[iDsp]*kBusPatchHeaderSize; // no data just header
 
 	    if(totalDspSize > blankDspSize) {       // Compare DSP Header
-	      index += dspHeaderSize;
+	      index += kDspHeaderSize;
 		
 	      for(Int_t iBusPatch = 0; iBusPatch < iBusPerDSP[iDsp]; iBusPatch++) {  
 
-		totalBusPatchSize = buffer[index];
-		buspatchId        = buffer[index+2];
+		//copy buffer into header structure
+		memcpy(subEventTracker->GetBusPatchHeader(), &buffer[index], kBusPatchHeaderSize*4);
+
+		totalBusPatchSize = subEventTracker->GetTotalLength();
+		buspatchId        = subEventTracker->GetBusPatchId();
 		indexBusPatch     = index;
+		
 
-		if(totalBusPatchSize > buspatchHeaderSize) {    //Check Buspatch header
+		if(totalBusPatchSize > kBusPatchHeaderSize) {    //Check Buspatch header, not empty events
 
-		  index   += buspatchHeaderSize;
-		  dataSize = totalBusPatchSize - buspatchHeaderSize;
+		  index   += kBusPatchHeaderSize;
+		  dataSize = subEventTracker->GetLength();
 
 		  if(dataSize>0) { // check data present
 
+		    //copy buffer into data structure
+		    memcpy(subEventTracker->GetData(), &buffer[index], dataSize*4); 
+		    index += dataSize;
+
 		    for(Int_t iData = 0; iData < dataSize; iData++) {
 
-		      subEventTracker->SetData(buffer[index++],iData);   //Set to extract data
 		      // digits info
 		      parity    = subEventTracker->GetParity(iData); // test later for parity
 		      manuId    = subEventTracker->GetManuId(iData);
@@ -342,16 +349,6 @@ Int_t AliMUONRawReader::GetMapping(Int_t busPatchId, UShort_t manuId,
   Int_t iCath1 = 0;
   Int_t iCath2 = 1;
 
-/*
-  AliMpPlaneType plane;
-
-  if (manuId > 1000) { // again tmp solution (ChF) (+1000 for Non-Bending plane
-    plane = kNonBendingPlane;
-  } else {
-    plane = kBendingPlane;
-  }
-*/
-
   if (idDE < 500) { // should use GetDirection somehow (ChF)
     if ( ((idDE % 100) % 2) != 0 ) {
       iCath1 = 1;
@@ -402,22 +399,23 @@ Int_t AliMUONRawReader::ReadTriggerDDL(AliRawReader* rawReader)
   // reading DDL for trigger
 
   AliMUONSubEventTrigger* subEventTrigger = new AliMUONSubEventTrigger();
+  AliMUONScalerEventTrigger* scalerEvent = 0x0;
+
   AliMUONGlobalTrigger* globalTrigger = 0x0;
   AliMUONLocalTrigger* localTrigger = new  AliMUONLocalTrigger();
 
 
-  //Int_t ddlHeaderSize = fDDLTrigger->GetHeaderSize();    
+  //Int_t kDDLHeaderSize = fDDLTrigger->GetHeaderSize();    
   // we dont need this, as size of ddl data is same for triger and no trigger
 
-  Int_t ddlEnhanceHeaderSize = fDDLTrigger->GetHeaderLength(); 
-  Int_t regHeaderLength      = subEventTrigger->GetRegHeaderLength() ;
+  Int_t kDDLEnhanceHeaderSize = fDDLTrigger->GetHeaderLength(); 
+  Int_t kRegHeaderSize        = subEventTrigger->GetRegHeaderLength() ;
 
   Int_t loCircuit, loStripX, loDev, loStripY, loLpt, loHpt;
   Char_t loDecision; 
 
   UShort_t x1Pattern, x2Pattern, x3Pattern, x4Pattern;
   UShort_t y1Pattern, y2Pattern, y3Pattern, y4Pattern;
-
 
   // loop over the two ddl's
   for(Int_t iDDL = 0; iDDL < 2; iDDL++) { //DDL loop
@@ -426,33 +424,51 @@ Int_t AliMUONRawReader::ReadTriggerDDL(AliRawReader* rawReader)
 
     rawReader->ReadHeader();
 
-    Int_t totalDataWord = rawReader->GetDataSize()/4 ;
-    UInt_t *buffer = new UInt_t[totalDataWord];
-    for(Int_t i=0;i<totalDataWord;i++){
-      UInt_t& temp = buffer[i]; 
-      rawReader->ReadNextInt(temp);      // takes the whole result into buffer variable for future analysis
-    }
+    Int_t totalDataWord = rawReader->GetDataSize(); // in bytes
+    UInt_t *buffer = new UInt_t[totalDataWord/4];
 
-    // rawReader->ReadNext((UChar_t*)buffer, totalDataWord);     // method is protected ????
+    rawReader->ReadNext((UChar_t*)buffer, totalDataWord); 
   
     Int_t index = 0;
+    fDDLTrigger->SetDDLWord(buffer[index++]);
 
-    // fill DDL header informations
-    memcpy(fDDLTrigger->GetEnhancedHeader(), &buffer[index], ddlEnhanceHeaderSize*4); 
+    if(fDDLTrigger->GetEventType() == 2) {
+      fScalerEvent = kTRUE;
+      scalerEvent = new  AliMUONScalerEventTrigger();
+    } else
+      fScalerEvent = kFALSE;
+
+    if(fScalerEvent) {
+      // 6 DARC scaler words
+      memcpy(scalerEvent->GetDarcScalers(), &buffer[index], scalerEvent->GetDarcScalerLength()*4);
+      index += scalerEvent->GetDarcScalerLength();
+    }
+
+    // 4 words of global board input + Global board output
+    memcpy(fDDLTrigger->GetGlobalInput(), &buffer[index], (kDDLEnhanceHeaderSize-1)*4); 
+    index += kDDLEnhanceHeaderSize - 1; // kind tricky cos scaler info in-between Darc header
+
+    if(fScalerEvent) {
+      // 10 Global scaler words
+      memcpy(scalerEvent->GetGlobalScalers(), &buffer[index], scalerEvent->GetGlobalScalerLength()*4);
+      index += scalerEvent->GetGlobalScalerLength();
+    }
 
     // fill global trigger information
     globalTrigger = GetGlobalTriggerPattern(fDDLTrigger->GetGlobalOuput());
     fMUONData->AddGlobalTrigger(*globalTrigger);
-
-    index += ddlEnhanceHeaderSize;
-
+    
     // 8 regional boards
     for (Int_t iReg = 0; iReg < 8; iReg++) {           //loop over regeonal card
 
+      memcpy(subEventTrigger->GetRegHeader(), &buffer[index], kRegHeaderSize*4);
+      index += kRegHeaderSize;
 
-      subEventTrigger->SetRegWord(buffer[index]);      //read regional data 
-
-      index += regHeaderLength;
+     // 11 regional scaler word
+      if(fScalerEvent) {
+	memcpy(scalerEvent->GetRegScalers(), &buffer[index], scalerEvent->GetRegScalerLength()*4);
+	index += scalerEvent->GetRegScalerLength();
+      }
 
       // 16 local cards per regional board
       for (Int_t iLoc = 0; iLoc < 16; iLoc++) {         //loop over local card
@@ -467,9 +483,9 @@ Int_t AliMUONRawReader::ReadTriggerDDL(AliRawReader* rawReader)
 	if(buffer[iLocIndex] > 0) {
 
 	  loCircuit = (Int_t)subEventTrigger->GetLocalId(iLoc)+ 16*iReg + 128*iDDL; 
-	  loStripX =  (Int_t)subEventTrigger->GetXPos(iLoc);
-	  loStripY = (Int_t)subEventTrigger->GetYPos(iLoc);
-	  loDev = (Int_t)subEventTrigger->GetXDev(iLoc);
+	  loStripX  = (Int_t)subEventTrigger->GetXPos(iLoc);
+	  loStripY  = (Int_t)subEventTrigger->GetYPos(iLoc);
+	  loDev     = (Int_t)subEventTrigger->GetXDev(iLoc);
 	    
 	  // fill local trigger
 	  localTrigger->SetLoCircuit(loCircuit);
@@ -508,6 +524,12 @@ Int_t AliMUONRawReader::ReadTriggerDDL(AliRawReader* rawReader)
 	  localTrigger->SetY4Pattern(y4Pattern);
 	  fMUONData->AddLocalTrigger(*localTrigger);
 
+	} // if buffer[] > 0
+
+	// 45 regional scaler word
+	if(fScalerEvent) {
+	  memcpy(scalerEvent->GetLocalScalers(), &buffer[index], scalerEvent->GetLocalScalerLength()*4);
+	  index += scalerEvent->GetLocalScalerLength();
 	}
 	  
       } // local card loop
@@ -520,6 +542,9 @@ Int_t AliMUONRawReader::ReadTriggerDDL(AliRawReader* rawReader)
   delete subEventTrigger;
   delete globalTrigger;
   delete localTrigger;
+
+  if(fScalerEvent)
+    delete scalerEvent;
 
   return kTRUE;
 

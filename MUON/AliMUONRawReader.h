@@ -44,6 +44,7 @@ class AliMUONRawReader : public TObject
 
   AliMUONGlobalTrigger* GetGlobalTriggerPattern(Int_t gloTrg) const;
 
+  void  SetScalerEvent() {fScalerEvent = kTRUE;}
 
  protected:
   AliMUONRawReader();                  // Default constructor
@@ -62,7 +63,9 @@ class AliMUONRawReader : public TObject
   AliMUONDDLTracker* fDDLTracker;    //! DDL tracker class pointers
   AliMUONDDLTrigger* fDDLTrigger;    //! DDL trigger class pointers
 
-  AliMpBusPatch* fBusPatchManager;    //! buspatch versus DE's & DDL
+  AliMpBusPatch* fBusPatchManager;   //! buspatch versus DE's & DDL
+
+  Bool_t fScalerEvent;               // flag to generates scaler event
 
   ClassDef(AliMUONRawReader,1) // MUON cluster reconstructor in ALICE
 };

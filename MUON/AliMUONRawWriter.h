@@ -50,6 +50,8 @@ class AliMUONRawWriter : public TObject
 
   Int_t GetGlobalTriggerPattern(const AliMUONGlobalTrigger* gloTrg) const;
 
+  void  SetScalerEvent() {fScalerEvent = kTRUE;}
+
  protected:
   AliMUONRawWriter();                  // Default constructor
   AliMUONRawWriter (const AliMUONRawWriter& rhs); // copy constructor
@@ -70,7 +72,15 @@ class AliMUONRawWriter : public TObject
   AliMUONDDLTracker* fDDLTracker;    //! DDL tracker class pointers
   AliMUONDDLTrigger* fDDLTrigger;    //! DDL trigger class pointers
 
-  AliMpBusPatch* fBusPatchManager;    //! buspatch versus DE's & DDL
+  AliMpBusPatch* fBusPatchManager;   //! buspatch versus DE's & DDL
+
+  Bool_t fScalerEvent;               // flag to generates scaler event
+
+  static Int_t fgManuPerBusSwp1B[12];   //! array containing the first manuId for each buspatch st1, Bending
+  static Int_t fgManuPerBusSwp1NB[12];  //! array containing the first manuId for each buspatch st1, NBending
+
+  static Int_t fgManuPerBusSwp2B[12];   //! array containing the first manuId for each buspatch st2, Bending
+  static Int_t fgManuPerBusSwp2NB[12];  //! array containing the first manuId for each buspatch st2, NBending
 
   // writing raw data
   Int_t WriteTrackerDDL(Int_t iCh);

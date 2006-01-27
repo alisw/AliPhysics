@@ -66,6 +66,9 @@ public:
    Int_t GetGlobalScalerLength() const {return fgkGlobalScalerLength;}
    Int_t GetDarcScalerLength()   const {return fgkDarcScalerLength;} 
 
+   // set random numbers to fill variable
+   void SetNumbers();
+
  private:
 
    // local card scalers   

@@ -35,7 +35,7 @@ public:
    void    SetLength(Int_t l)      {fLength = l;}
    void    SetBusPatchId(Int_t b)  {fBusPatchId = b;}  
    void    SetTriggerWord(Int_t w) {fTriggerWord = w;}
-   void    SetData(UInt_t d, Int_t n)  {fData[n] = d; fLength++;}
+   void    SetData(UInt_t d, Int_t n)  {fData[n] = d;}
 
    void    AddData(UInt_t d);
    void    SetAlloc(Int_t size);
@@ -43,9 +43,9 @@ public:
    Bool_t  IsSortable() const {return kTRUE;}
    Int_t   Compare(const TObject *obj) const;
 
-   Int_t GetHeaderLength() const {return fgkHeaderLength;}
+   Int_t   GetHeaderLength() const {return fgkHeaderLength;}
 
-   Int_t* GetAddress() {return &fTotalLength;}
+   Int_t*  GetBusPatchHeader() {return &fTotalLength;}
 
  private:
    Int_t     fTotalLength;   // total length of buspatch structure

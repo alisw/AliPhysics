@@ -104,7 +104,8 @@ AliMUON::AliMUON()
     fMaxDestepGas(0.),
     fMaxDestepAlu(0.),
     fMaxIterPad(0),
-    fCurIterPad(0)
+    fCurIterPad(0),
+    fTriggerScalerEvent(kFALSE)
 {
 // Default Constructor
 //
@@ -131,7 +132,8 @@ AliMUON::AliMUON(const char *name, const char *title)
     fMaxDestepGas(-1), // Negatives values are ignored by geant3 CONS200 
     fMaxDestepAlu(-1), // in the calculation of the tracking parameters
     fMaxIterPad(0),
-    fCurIterPad(0)
+    fCurIterPad(0),
+    fTriggerScalerEvent(kFALSE)
 {
 	AliDebug(1,Form("ctor this=%p",this));
   fIshunt =  0;
@@ -427,9 +429,12 @@ void AliMUON::Hits2SDigits()
 void AliMUON::Digits2Raw()
 {
   // convert digits of the current event to raw data
-  AliMUONRawWriter* rawData;
+  
+  AliMUONRawWriter* rawData = new AliMUONRawWriter(fLoader,fMUONData);
 
-  rawData = new AliMUONRawWriter(fLoader,fMUONData);
+  if(fTriggerScalerEvent == kTRUE)
+    rawData->SetScalerEvent();
+
   if (!rawData->Digits2Raw()) AliInfo("pb writting raw data");
   delete rawData;
   return;

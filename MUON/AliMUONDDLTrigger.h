@@ -40,6 +40,8 @@ public:
 
 
    UInt_t* GetEnhancedHeader() {return &fddlWord;}
+   Int_t*  GetGlobalInput()    {return &fGlobalInput[0];}
+
 
    AliRawDataHeader GetHeader(){return fHeader;}
    Int_t GetHeaderSize() {return sizeof(AliRawDataHeader)/4;} // in words

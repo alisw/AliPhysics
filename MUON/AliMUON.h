@@ -105,7 +105,10 @@ class AliMUON : public  AliDetector
     // Set alignement option
     virtual void  SetAlign(Bool_t align = true);
     virtual void  SetAlign(const TString& fileName, Bool_t align = true);
-   
+
+    // Set scaler event for trigger
+    virtual void  SetTriggerScalerEvent(Bool_t scaler = true){fTriggerScalerEvent = scaler;}
+
     // Return reference to Chamber #id
     virtual AliMUONChamber& Chamber(Int_t id)
       {return *((AliMUONChamber *) (*fChambers)[id]);}
@@ -147,7 +150,9 @@ class AliMUON : public  AliDetector
     // Pad Iterator
     Int_t fMaxIterPad;        // Maximum pad index
     Int_t fCurIterPad;        // Current pad index
-    // Background eent for event mixing
+   
+    // setting scaler for trigger
+    Bool_t fTriggerScalerEvent; // flag to generates scaler event
     
     ClassDef(AliMUON,9)  // MUON Detector base class
 };

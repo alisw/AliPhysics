@@ -15,7 +15,7 @@
 
 ////////////////////////////////////
 //
-// MUON Raw Data generator and reader in ALICE-MUON
+// MUON Raw Data generaton in ALICE-MUON
 // This class version 3 (further details could be found in Alice-note)
 //
 // Implemented non-constant buspatch numbers for tracking
@@ -27,10 +27,10 @@
 // Using real mapping (inverse) for tracker
 // For trigger there is no mapping (mapping could be found in AliMUONTriggerCircuit)
 // Ch. Finck july 04
-//
-// Raw2Digits:
-// Using real mapping  for tracker
-// Indranil Das (Adapted for runloader: Ch. Finck) july 05
+// Use memcpy instead of assignment elt by elt
+// Introducing variable DSP numbers, real manu numbers per buspatch for st12
+// Implemented scaler event for Trigger
+// Ch. Finck , Jan. 06
 // 
 ////////////////////////////////////
 
@@ -53,6 +53,7 @@
 #include "AliMUONData.h"
 
 #include "AliMUONSubEventTrigger.h"
+#include "AliMUONScalerEventTrigger.h"
 #include "AliMUONDDLTracker.h"
 #include "AliMUONDDLTrigger.h"
 
@@ -68,11 +69,19 @@
 #include "AliMpHelper.h"
 #include "AliMpPad.h"
 
-
 ClassImp(AliMUONRawWriter) // Class implementation in ROOT context
+
+Int_t AliMUONRawWriter::fgManuPerBusSwp1B[12]  = {1, 27, 53, 79, 105, 131, 157, 183, 201, 214, 224, 232};
+Int_t AliMUONRawWriter::fgManuPerBusSwp1NB[12] = {1, 27, 53, 79, 105, 131, 157, 183, 201, 214, 225, 233};
+
+Int_t AliMUONRawWriter::fgManuPerBusSwp2B[12]  = {1, 27, 53, 79, 105, 131, 157, 183, 201, 214, 226, 246};
+Int_t AliMUONRawWriter::fgManuPerBusSwp2NB[12] = {1, 27, 53, 79, 105, 131, 157, 183, 201, 214, 227, 245};
+
+
 //__________________________________________________________________________
 AliMUONRawWriter::AliMUONRawWriter(AliLoader* loader,  AliMUONData* data)
-  : TObject()
+  : TObject(),
+    fScalerEvent(kFALSE)
 {
   // Standard Constructor
  
@@ -83,7 +92,6 @@ AliMUONRawWriter::AliMUONRawWriter(AliLoader* loader,  AliMUONData* data)
   fSegFactory = new AliMpSegFactory();
 
   // initialize container
-//   fMUONData  = new AliMUONData(fLoader,"MUON","MUON");
   fMUONData  = data;
 
   // initialize array
@@ -96,7 +104,6 @@ AliMUONRawWriter::AliMUONRawWriter(AliLoader* loader,  AliMUONData* data)
 
   fBusPatchManager = new AliMpBusPatch();
   fBusPatchManager->ReadBusPatchFile();
-
 }
 
 //__________________________________________________________________________
@@ -106,7 +113,9 @@ AliMUONRawWriter::AliMUONRawWriter()
     fLoader(0),    
     fSegFactory(0),
     fDDLTracker(0),
-    fDDLTrigger(0)
+    fDDLTrigger(0),
+    fBusPatchManager(0),
+    fScalerEvent(kFALSE)
 {
   // Default Constructor
   fFile[0] = fFile[1] = 0x0;
@@ -412,7 +421,7 @@ Int_t AliMUONRawWriter::WriteTrackerDDL(Int_t iCh)
 	  if (busPatchId != -1) {
 	    // add bus patch structure
 	    length = temp->GetHeaderLength();
-	    memcpy(&buffer[index],temp->GetAddress(),length*4);
+	    memcpy(&buffer[index],temp->GetBusPatchHeader(),length*4);
 	    index += length;
 	    for (Int_t j = 0; j < temp->GetLength(); j++) {
 	      buffer[index++] =  temp->GetData(j);
@@ -451,12 +460,113 @@ Int_t AliMUONRawWriter::WriteTrackerDDL(Int_t iCh)
 
   return kTRUE;
 }
+
+//____________________________________________________________________
+Int_t AliMUONRawWriter::GetInvMapping(const AliMUONDigit* digit,
+				     Int_t &busPatchId, UShort_t &manuId, UChar_t &channelId)
+{
+
+  // Inverse mapping for tracker
+
+  Int_t* ptr = 0;
+
+  // information from digits
+  Int_t iCath = digit->Cathode();
+  Int_t idDE  = digit->DetElemId();
+  Int_t padX  = digit->PadX();
+  Int_t padY  = digit->PadY();
+  Int_t iCh   = idDE/100;
+
+  if (idDE >= 500) { // Since in AliMpSlat pads begin at (0,0) 
+    padX--;         // while in AliMUONSt345Seg. they begin at (1,1)
+    padY--;
+  }
+
+  // segmentation
+  AliMpPlaneType plane;
+  AliMpPlaneType plane1 = kBendingPlane;
+  AliMpPlaneType plane2 = kNonBendingPlane;
+
+  if (idDE < 500) { // should use GetDirection somehow (ChF)
+    if ( ((idDE % 100) % 2) != 0 ) {
+      plane1 = kNonBendingPlane;
+      plane2 = kBendingPlane;
+    }
+  }
+  // station 345 bending == cath0 for the moment
+   plane = (iCath == 0) ? plane1 : plane2;
+
+   if (idDE < 500) {
+     if (iCh == 1 || iCh == 2)
+       if (plane == kBendingPlane)
+	 ptr = &fgManuPerBusSwp1B[0];
+       else 
+	 ptr = &fgManuPerBusSwp1NB[0];
+     else 
+       if (plane == kBendingPlane)
+	 ptr = &fgManuPerBusSwp2B[0];
+       else 
+	 ptr = &fgManuPerBusSwp2NB[0];
+   }
+
+  //AliMpVSegmentation* seg = AliMUONSegmentationManager::Segmentation(idDE, plane);
+  AliMpVSegmentation* seg = fSegFactory->CreateMpSegmentation(idDE, iCath);
+  AliMpPad pad = seg->PadByIndices(AliMpIntPair(padX,padY),kTRUE);
+
+  if (!pad.IsValid()) {
+     AliWarning(Form("No elec. for idDE: %d, padx: %d pady %d, charge: %d\n",
+		  idDE, digit->PadX(), digit->PadY(), digit->Signal()));
+    return kTRUE;
+  }
+
+  // Getting Manu id
+  manuId = pad.GetLocation().GetFirst();
+  manuId &= 0x7FF; // 11 bits 
+
+  // Getting channel id
+  channelId =  pad.GetLocation().GetSecond();
+  channelId &= 0x3F; // 6 bits
+
+  // Getting buspatch id
+  TArrayI* vec = fBusPatchManager->GetBusfromDE(idDE);
+  Int_t pos = 0;
+
+  if (idDE < 500) { // station 1 & 2
+    for (Int_t i = 0; i < 12; i++)
+      if (manuId >= *(ptr + pos++))
+	  break;
+ //    while(*(ptr + pos) <= manuId)
+//       pos++;
+//     pos--;
+  } else {
+    // offset of 100 in manuId for following bus patch
+    pos = manuId/100;
+  }
+
+  if (pos >(Int_t) vec->GetSize())
+    AliWarning(Form("pos greater %d than size %d manuId %d idDE %d \n", 
+		    pos, (Int_t)vec->GetSize(), manuId, idDE));
+  busPatchId = vec->At(pos);
+
+  if (plane ==  kNonBendingPlane) // for Non-Bending manuid+= 1000;
+    manuId += 1000; // tmp solution til one finds something better  (ChF)
+  
+  AliDebug(3,Form("idDE: %d, busPatchId %d, manuId: %d, channelId:%d\n",
+		  idDE, busPatchId, manuId, channelId));
+
+  AliDebug(3,Form("idDE: %d, busPatchId %d, manuId: %d, channelId: %d, padx: %d pady: %d, charge: %d\n",
+		  idDE, busPatchId, manuId, channelId, digit->PadX(), digit->PadY(), digit->Signal()));
+
+  return kFALSE; // no error
+}
+
 //____________________________________________________________________
 Int_t AliMUONRawWriter::WriteTriggerDDL()
 {
 
  // DDL event one per half chamber
-  AliMUONSubEventTrigger* subEvent = 0x0;
+  AliMUONSubEventTrigger*    subEvent    = 0x0;
+  AliMUONScalerEventTrigger* scalerEvent = 0x0;
 
 
   // stored local id number 
@@ -467,7 +577,7 @@ Int_t AliMUONRawWriter::WriteTriggerDDL()
  // DDL header
   AliRawDataHeader header = fDDLTrigger->GetHeader();
   Int_t headerSize = fDDLTrigger->GetHeaderSize();
-  Int_t length;
+
   TClonesArray* localTrigger;
   TClonesArray* globalTrigger;
   AliMUONGlobalTrigger* gloTrg;
@@ -496,6 +606,9 @@ Int_t AliMUONRawWriter::WriteTriggerDDL()
   Int_t serialNb = 0xF; // serial nb of card: all bits on for the moment
   Int_t globalFlag = 1; // set to 2 if global info present in DDL else set to 1
 
+  if(fScalerEvent)
+    eventType = 2; //set to generate scaler events
+
   Int_t nEntries = (Int_t) (localTrigger->GetEntries());// 234 local cards
   // stored the local card id that's fired
   for (Int_t i = 0; i <  nEntries; i++) {
@@ -506,7 +619,17 @@ Int_t AliMUONRawWriter::WriteTriggerDDL()
   if (!nEntries)
     AliError("No Trigger information available");
 
-  buffer = new Int_t [672]; // [16(local)*5 words + 3 words]*8(reg) + 8 words = 672
+  if(fScalerEvent)
+    // [16(local)*50 words + 14 words]*8(reg) + 6 + 10 + 6 words scaler event 6534 words
+    buffer = new Int_t [6534];
+  else
+    // [16(local)*5 words + 3 words]*8(reg) + 8 words = 672 
+    buffer = new Int_t [672];
+
+  if(fScalerEvent) {
+    scalerEvent = new  AliMUONScalerEventTrigger();
+    scalerEvent->SetNumbers(); // set some numbers for scalers
+  }
 
   // open DDL file, on per 1/2 chamber
   for (Int_t iDDL = 0; iDDL < 2; iDDL++) {
@@ -524,16 +647,31 @@ Int_t AliMUONRawWriter::WriteTriggerDDL()
       globalFlag = 2;
     else 
       globalFlag = 1;
+
     AliBitPacking::PackWord((UInt_t)globalFlag,word,8,11);
     fDDLTrigger->SetDDLWord(word);
+    buffer[index++]= word;
 
     if (iDDL == 0)
       fDDLTrigger->SetGlobalOutput(gloTrigPat);// no global input for the moment....
     else 
       fDDLTrigger->SetGlobalOutput(0);
-    length = fDDLTrigger->GetHeaderLength(); 
-    memcpy(&buffer[index],fDDLTrigger->GetEnhancedHeader(),length*4);
-    index += length; 
+
+    if (fScalerEvent) {
+      // 6 DARC scaler words
+      memcpy(&buffer[index], scalerEvent->GetDarcScalers(),scalerEvent->GetDarcScalerLength()*4);
+      index += scalerEvent->GetDarcScalerLength();
+    }
+
+    // 4 words of global board input + Global board output
+    memcpy(&buffer[index], fDDLTrigger->GetGlobalInput(), (fDDLTrigger->GetHeaderLength()-1)*4); 
+    index += fDDLTrigger->GetHeaderLength() - 1; // kind tricky cos scaler info in-between Darc header
+
+    if (fScalerEvent) {
+      // 10 Global scaler words
+      memcpy(scalerEvent->GetGlobalScalers(), &buffer[index], scalerEvent->GetGlobalScalerLength()*4);
+      index += scalerEvent->GetGlobalScalerLength();
+    }
 
     // 8 regional cards per DDL
     for (Int_t iReg = 0; iReg < 8; iReg++) {
@@ -549,10 +687,14 @@ Int_t AliMUONRawWriter::WriteTriggerDDL()
       AliBitPacking::PackWord((UInt_t)regOut,word,0,7); // whenever regional output will be implemented
 
       subEvent->SetRegWord(word);
-      memcpy(&buffer[index++],subEvent->GetAddress(),4);
+      memcpy(&buffer[index],subEvent->GetRegHeader(),subEvent->GetRegHeaderLength()*4);
+      index += subEvent->GetRegHeaderLength();
 
-      buffer[index++] = 0;// 2 words of regional input
-      buffer[index++] = 0;
+      // 11 regional scaler word
+      if (fScalerEvent) {
+	memcpy(&buffer[index], scalerEvent->GetRegScalers(), scalerEvent->GetRegScalerLength()*4);
+	index += scalerEvent->GetRegScalerLength();
+      }
 
       // 16 local card per regional board
       for (Int_t iLoc = 0; iLoc < 16; iLoc++) {
@@ -604,6 +746,12 @@ Int_t AliMUONRawWriter::WriteTriggerDDL()
 	  buffer[index++] = (Int_t)word; // data word
 
 	}
+	// 45 regional scaler word
+	if (fScalerEvent) {
+	  memcpy(&buffer[index], scalerEvent->GetLocalScalers(), scalerEvent->GetLocalScalerLength()*4);
+	  index += scalerEvent->GetLocalScalerLength();
+	}
+
       } // local card 
 
       delete subEvent;	
@@ -622,85 +770,10 @@ Int_t AliMUONRawWriter::WriteTriggerDDL()
   }
   delete[] buffer;
 
+  if (fScalerEvent)
+    delete scalerEvent;
+
   return kTRUE;
-}
-
-//____________________________________________________________________
-Int_t AliMUONRawWriter::GetInvMapping(const AliMUONDigit* digit,
-				     Int_t &busPatchId, UShort_t &manuId, UChar_t &channelId)
-{
-
-  // Inverse mapping for tracker
-
-  // information from digits
-  Int_t iCath = digit->Cathode();
-  Int_t idDE  = digit->DetElemId();
-  Int_t padX  = digit->PadX();
-  Int_t padY  = digit->PadY();
-
-  if (idDE >= 500) { // Since in AliMpSlat pads begin at (0,0) 
-    padX--;         // while in AliMUONSt345Seg. they begin at (1,1)
-    padY--;
-  }
-
-  // segmentation
-  AliMpPlaneType plane;
-  AliMpPlaneType plane1 = kBendingPlane;
-  AliMpPlaneType plane2 = kNonBendingPlane;
-
-  if (idDE < 500) { // should use GetDirection somehow (ChF)
-    if ( ((idDE % 100) % 2) != 0 ) {
-      plane1 = kNonBendingPlane;
-      plane2 = kBendingPlane;
-    }
-  }
-  // station 345 bending == cath0 for the moment
-   plane = (iCath == 0) ? plane1 : plane2;
-
-  //AliMpVSegmentation* seg = AliMUONSegmentationManager::Segmentation(idDE, plane);
-  AliMpVSegmentation* seg = fSegFactory->CreateMpSegmentation(idDE, iCath);
-  AliMpPad pad = seg->PadByIndices(AliMpIntPair(padX,padY),kTRUE);
-
-  if(!pad.IsValid()) {
-     AliWarning(Form("No elec. for idDE: %d, padx: %d pady %d, charge: %d\n",
-		  idDE, digit->PadX(), digit->PadY(), digit->Signal()));
-    return kTRUE;
-  }
-
-  // Getting Manu id
-  manuId = pad.GetLocation().GetFirst();
-  manuId &= 0x7FF; // 11 bits 
-
-  // Getting channel id
-  channelId =  pad.GetLocation().GetSecond();
-  channelId &= 0x3F; // 6 bits
-
-  // Getting buspatch id
-  TArrayI* vec = fBusPatchManager->GetBusfromDE(idDE);
-  Int_t pos;
-
-  if (idDE < 500) { // station 1 & 2
-    // set 32 manus for one bus patch ? (ChF)
-    pos = manuId/32;
-  } else {
-    // offset of 100 in manuId for following bus patch
-    pos = manuId/100;
-  }
-
- //  if (pos >(int_t) vec.size())
-//     AliWarning("pos greater than size\n");
-  busPatchId = vec->At(pos);
-
-  if (plane ==  kNonBendingPlane) // for Non-Bending manuid+= 1000;
-    manuId += 1000; // tmp solution til one finds something better  (ChF)
-  
-  AliDebug(3,Form("idDE: %d, busPatchId %d, manuId: %d, channelId:%d\n",
-		  idDE, busPatchId, manuId, channelId));
-
-  AliDebug(3,Form("idDE: %d, busPatchId %d, manuId: %d, channelId: %d, padx: %d pady: %d, charge: %d\n",
-		  idDE, busPatchId, manuId, channelId, digit->PadX(), digit->PadY(), digit->Signal()));
-
-  return kFALSE; // no error
 }
 
 //____________________________________________________________________
