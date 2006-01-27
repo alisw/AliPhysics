@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.9  2004/02/03 16:45:20  morsch
+Unique name for functions (TF1).
+
 Revision 1.8  2004/01/27 18:02:38  hristov
 Removing some warning (Sun)
 
@@ -75,7 +78,7 @@ static Double_t FitP(Double_t *x, Double_t *par){
     Double_t sigma2 = par[1] * par[5];
     Double_t fgauss = TMath::Exp(-0.5 * dx2 * dx2 / (sigma2 * sigma2));
     Double_t value = fasymm + par[3] * fgauss; 
-    return value;
+    return TMath::Abs(value);
 } 
 
 AliMUONFastTracking::AliMUONFastTracking(const AliMUONFastTracking & ft):TObject()

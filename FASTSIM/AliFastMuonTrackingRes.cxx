@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.6  2003/11/13 14:21:57  morsch
+Coding Rule violation corrections.
+
 Revision 1.5  2003/08/13 17:37:29  hristov
 Bug fix (Alpha)
 
@@ -105,8 +108,8 @@ void AliFastMuonTrackingRes::Evaluate(Float_t   p,  Float_t  theta , Float_t   p
     //    Float_t dpmax = 5. + ip * 2.5; 
     //    Float_t dpmax = 5. + ip * 2; 
     Float_t dpmax;
-    if (sigmag2<999.) dpmax = 5. * (sigmap + sigmag2); 
-    else dpmax = 5. * sigmap;
+    if (sigmag2<999.) dpmax = 5. * TMath::Abs(sigmap + sigmag2); 
+    else dpmax = 5. * TMath::Abs(sigmap);
     Float_t dp = 100;
     while (pS<0 || TMath::Abs(dp)>dpmax) { 
       pS = p + fitp->GetRandom();
