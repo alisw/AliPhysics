@@ -17,7 +17,7 @@
 void MUONGenerateBusPatch()
 {
   // Generates buspatch id and DDL id for given detection element id
-  // station 1 & 2 assuming 25 bus patch per quadrant ???
+  // station 1 & 2 assuming 24 buspatches per quadrant
   // station345, reading from DetElemIdToSlatType.dat file and calculates
   // the number of bus patches per slat (and also number of Translator and Bridge Boards).
   // Generates an output file DetElemIdToBusPatch.dat.out, preserve from overwriting
@@ -56,7 +56,7 @@ void MUONGenerateBusPatch()
 
   Int_t iDDL = 0;
   // station 1 & 2
-  nbBusPatch = 25;
+  nbBusPatch = 24;
   cout << "#DE BusPatch DDL SlatName" << endl;
   out << "#DE BusPatch DDL " << endl;
 
@@ -106,9 +106,10 @@ void MUONGenerateBusPatch()
     nbTB += nbBusPatch;
     if (nameSlat[len-1] == '1')
       nbBB += 4;
-    if (nameSlat[len-1] == '2' || nameSlat[len-1] == '3')
+    if (nameSlat[len-1] == '2' || nameSlat[len-1] == '3') {
       nbTB += 1;
-
+      nbBusPatch++;
+    }
     listDE[cursor] = idDE;
     if (idDE % 100 == 0) {
       iDDL++;
