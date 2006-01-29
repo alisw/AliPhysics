@@ -154,7 +154,7 @@ class AliMUON : public  AliDetector
     // setting scaler for trigger
     Bool_t fTriggerScalerEvent; // flag to generates scaler event
     
-    ClassDef(AliMUON,9)  // MUON Detector base class
+    ClassDef(AliMUON,10)  // MUON Detector base class
 };
 #endif
 

@@ -34,7 +34,7 @@ private:
 
   Float_t BetheBloch(Float_t bg);
   
-  ClassDef(AliTPCv2,1)  // Time Projection Chamber version 2
+  ClassDef(AliTPCv2,2)  // Time Projection Chamber version 2
 };
 
 #endif
