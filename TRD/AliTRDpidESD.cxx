@@ -136,6 +136,5 @@ Int_t AliTRDpidESD::MakePID(AliESD *event)
     } //loop over particle species
     t->SetTRDpid(p);
   } //loop over tracks
-  delete pd;
   return 0;
 }
