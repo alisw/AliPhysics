@@ -29,6 +29,7 @@
 <a href="mailto:andreas.morsch@cern.ch">Andreas Morsch</a>.
 </font>
 <pre>
+
 */
 //End_Html
 //                                                                           //
@@ -85,12 +86,45 @@ void AliMAG::CreateGeometry()
     <img src="picts/mag.gif">
   */
   //End_Html
+    
   //Begin_Html
   /*
     <img src="picts/tree_mag.gif">
-  */
+    <br> Dimensions taken from drawing: ALIL3___00010
   //End_Html
-  
+  */
+// Octagon
+    const Int_t   kNSides              =    8;
+    const Float_t kStartAngle          =   22.5; // deg
+    const Float_t kFullAngle           =  360.0; // deg
+//  Mother volume 
+    const Float_t kRBMotherInner       = 560.00; // cm
+    const Float_t kRBMotherOuter       = 790.50; // cm
+    const Float_t kLBMother            = 706.00; // cm
+// Yoke     
+    const Float_t kRYokeInner          = 703.50; // cm
+    const Float_t kRYokeOuter          = 790.50; // cm
+    const Float_t kLYoke               = 620.00; // cm
+// Coil
+    const Float_t kRCoilInner          = 593.00; // cm
+    const Float_t kRCoilOuter          = 682.00; // cm
+    const Float_t kLCoil               = 587.30; // cm
+// Thermal Shield    
+    const Float_t kRThermalShieldInner = 566.00; // cm
+    const Float_t kRThermalShieldOuter = 571.00; // cm
+// Crown    
+    const Float_t kRCrownInner         = 560.00; // cm    
+    const Float_t kRCrownOuter         = 785.50; // cm
+    const Float_t kLCrown1             = 605.00; // cm
+    const Float_t kLCrown2             = 620.00; // cm
+    const Float_t kLCrown3             = 706.00; // cm
+// Door
+    const Float_t kRDoorInner          = 246.50; // cm
+    const Float_t kRDoorOuter          = 560.00; // cm
+    const Float_t kLDoor1              = 615.50; // cm
+    const Float_t kLDoor2              = 714.60; // cm
+    
+    
   //
   // Top volume 
   TGeoVolume* top = gGeoManager->GetVolume("ALIC");
@@ -105,61 +139,73 @@ void AliMAG::CreateGeometry()
   Float_t os = -30.;
 
   //
-  //  Define Mother 
+  //  Define Barrel Mother 
   //  
-  TGeoPgon* shMother = new TGeoPgon(22.5, 360., 8, 2);
-  shMother->DefineSection(0, -600., 580., 790.);
-  shMother->DefineSection(1,  600., 580., 790.);  
+  TGeoPgon* shBMother = new TGeoPgon(kStartAngle, kFullAngle, kNSides, 2);
+  shBMother->DefineSection(0, -kLBMother, kRBMotherInner, kRBMotherOuter);
+  shBMother->DefineSection(1,  kLBMother, kRBMotherInner, kRBMotherOuter);  
   // 
-  TGeoVolume* voMother = new TGeoVolume("L3MO", shMother, medAir);
-  //  
-  // Define coils 
+  TGeoVolume* voBMother = new TGeoVolume("L3BM", shBMother, medAir);
   //
-  TGeoPgon* shCoils = new TGeoPgon(22.5, 360., 8, 2);
-  shCoils->DefineSection(0, -600., 585., 690.);
-  shCoils->DefineSection(1,  600., 585., 690.);  
+  // Define Thermal Shield
+  //
+  TGeoPgon* shThermSh = new TGeoPgon(kStartAngle, kFullAngle, kNSides, 2);
+  shThermSh->DefineSection(0, -kLCoil, kRThermalShieldInner, kRThermalShieldOuter);
+  shThermSh->DefineSection(1,  kLCoil, kRThermalShieldInner, kRThermalShieldOuter);  
+  // 
+  TGeoVolume* voThermSh = new TGeoVolume("L3TS", shThermSh, medAluI);
+  voBMother->AddNode(voThermSh, 1, new TGeoTranslation(0., 0., 0.));
+  //  
+  // Define Coils
+  //
+  TGeoPgon* shCoils = new TGeoPgon(kStartAngle, kFullAngle, kNSides, 2);
+  shCoils->DefineSection(0, -kLCoil, kRCoilInner, kRCoilOuter);
+  shCoils->DefineSection(1,  kLCoil, kRCoilInner, kRCoilOuter);  
   // 
   TGeoVolume* voCoils = new TGeoVolume("L3C0", shCoils, medAlu);
-  voMother->AddNode(voCoils, 1, new TGeoTranslation(0., 0., 0.));
+  voBMother->AddNode(voCoils, 1, new TGeoTranslation(0., 0., 0.));
   //
-  TGeoPgon* shCoilsI = new TGeoPgon(22.5, 360., 8, 2);
-  shCoilsI->DefineSection(0, -600., 580., 585.);
-  shCoilsI->DefineSection(1,  600., 580., 585.);  
+  // Define Yoke
   //
-  TGeoVolume* voCoilsI = new TGeoVolume("L3C1", shCoilsI, medAluI);
-  voMother->AddNode(voCoilsI, 1, new TGeoTranslation(0., 0., 0.));
-  //
-  // Define yoke
-  //
-  TGeoPgon* shYoke = new TGeoPgon(22.5, 360., 8, 2);
-  shYoke->DefineSection(0, -600., 690., 790.);
-  shYoke->DefineSection(1,  600., 690., 790.);  
+  TGeoPgon* shYoke = new TGeoPgon(kStartAngle, kFullAngle, kNSides, 2);
+  shYoke->DefineSection(0, -kLYoke, kRYokeInner, kRYokeOuter);
+  shYoke->DefineSection(1, +kLYoke, kRYokeInner, kRYokeOuter);  
   // 
   TGeoVolume* voYoke = new TGeoVolume("L3YO", shYoke, medFe);
-  voMother->AddNode(voYoke, 1, new TGeoTranslation(0., 0., 0.));
+  voBMother->AddNode(voYoke, 1, new TGeoTranslation(0., 0., 0.));
 
   //
-  // Define the return yoke of L3 ("Doors") 
+  // Define Crown
+  //
+  TGeoPgon* shCrown = new TGeoPgon(kStartAngle, kFullAngle, kNSides, 4);
+  shCrown->DefineSection(0,  kLCrown1, kRCrownInner, kRYokeInner);
+  shCrown->DefineSection(1,  kLCrown2, kRCrownInner, kRYokeInner);  
+  shCrown->DefineSection(2,  kLCrown2, kRCrownInner, kRCrownOuter);  
+  shCrown->DefineSection(3,  kLCrown3, kRCrownInner, kRCrownOuter);  
+  // 
+  TGeoVolume* voCrown = new TGeoVolume("L3CR", shCrown, medFe);
+  //
+  // Define Door 
   //
   // Original outer part
-  TGeoPgon* shDoorO = new TGeoPgon(22.5, 360., 8, 2);
-  shDoorO->DefineSection(0,  600., 240., 790.);
-  shDoorO->DefineSection(1,  700., 240., 790.);  
+  TGeoPgon* shDoorO = new TGeoPgon(kStartAngle, kFullAngle, kNSides, 2);
+  shDoorO->DefineSection(0,  kLDoor1, kRDoorInner, kRDoorOuter);
+  shDoorO->DefineSection(1,  kLDoor2, kRDoorInner, kRDoorOuter);  
   shDoorO->SetName("A");
   //
   // Additional inner part
-  TGeoPgon* shDoorI = new TGeoPgon(22.5, 360., 8, 3);
-  shDoorI->DefineSection(0,  600., 163.5, 270.);
-  shDoorI->DefineSection(1,  670., 163.5, 270.);  
-  shDoorI->DefineSection(2,  700., 213.5, 270.);
+  TGeoPgon* shDoorI = new TGeoPgon(kStartAngle, kFullAngle, kNSides, 3);
+  shDoorI->DefineSection(0,  kLDoor1, 163.5, 280.);
+  shDoorI->DefineSection(1,  686.,    163.5, 280.);  
+  shDoorI->DefineSection(2,  kLDoor2, 213.5, 280.);
   shDoorI->SetName("B"); 
   //
-  // For transport: low thresholds close to chambers requires special volume
+  // For transport: low thresholds close to chambers requires special medium
   //
-  TGeoPgon* shDoorIe = new TGeoPgon(22.5, 360., 8, 3);
-  shDoorIe->DefineSection(0,  600., 163.5, 168.5);
-  shDoorIe->DefineSection(1,  670., 163.5, 168.5);  
-  shDoorIe->DefineSection(2,  700., 213.5, 218.5);
+  TGeoPgon* shDoorIe = new TGeoPgon(kStartAngle, kFullAngle, kNSides, 3);
+  shDoorIe->DefineSection(0,  kLDoor1, 163.5, 168.5);
+  shDoorIe->DefineSection(1,  686.,    163.5, 168.5);  
+  shDoorIe->DefineSection(2,  kLDoor2, 213.5, 218.5);
   TGeoVolume* voDoorIe = new TGeoVolume("L3DE", shDoorIe, medFeI);
   //
   // Use composite shape here to account for the excentric door opening.
@@ -172,14 +218,15 @@ void AliMAG::CreateGeometry()
   //
   TGeoVolume* voDoor = new TGeoVolume("L3DO", shDoor, medFe);
   voDoor->AddNode(voDoorIe, 1, new TGeoTranslation(0., -os, 0.));
-  //
-  // The assembly of everything
-  //
-  TGeoVolumeAssembly* l3 = new TGeoVolumeAssembly("L3TV");
+  // Position crown and door
   TGeoRotation* rotxz = new TGeoRotation("rotxz",  90., 0., 90., 90., 180., 0.);
-  l3->AddNode(voMother, 1, new TGeoTranslation(0., 0., 0.));
-  l3->AddNode(voDoor, 1, new TGeoTranslation(0., 0., 0.));  
-  l3->AddNode(voDoor, 2, new TGeoCombiTrans(0., 0., 0., rotxz));
+
+  TGeoVolumeAssembly *l3 = new TGeoVolumeAssembly("L3MO");
+  voBMother->AddNode(voCrown, 1, new TGeoTranslation(0., 0., 0.));  
+  voBMother->AddNode(voCrown, 2, new TGeoCombiTrans(0., 0., 0., rotxz));
+  l3->AddNode(voBMother, 1, new TGeoTranslation(0.,0.,0.));
+  l3->AddNode(voDoor,  1, new TGeoTranslation(0., 0., 0.));  
+  l3->AddNode(voDoor,  2, new TGeoCombiTrans(0., 0., 0., rotxz));
   top->AddNode(l3, 1, new TGeoTranslation(0., os, 0.));
 }
 
