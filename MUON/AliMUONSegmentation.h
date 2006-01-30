@@ -87,7 +87,7 @@ class AliMUONSegmentation : public TObject
     TObjArray*  fModuleSegmentations[2]; // array of module segmentations
                                          // for two cathods         
 
-  ClassDef(AliMUONSegmentation,1)  // Container class for module segmentations
+  ClassDef(AliMUONSegmentation,2)  // Container class for module segmentations
 };
 
 #endif //ALI_MUON_SEGMENTATION_H
