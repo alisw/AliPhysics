@@ -151,7 +151,7 @@ void MUONTriggerEfficiency (char filename[10]="galice.root"){
     if (CoincMuPlus==1 && CoincMuMinus==1) coincmuon++;         
            
 // Trigger
-    data_digits.SetTreeAddress("GLT"); 
+    data_digits.SetTreeAddress("D,GLT"); 
     data_digits.GetTriggerD();
    
     globalTrigger = data_digits.GlobalTrigger();
