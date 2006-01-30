@@ -233,6 +233,7 @@ Double_t AliTPCtrack::GetYat(Double_t xk) const {
 //-----------------------------------------------------------------
 // This function calculates the Y-coordinate of a track at the plane x=xk.
 //-----------------------------------------------------------------
+  if (TMath::Abs(fP4*fX - fP2)>0.9999) return 1e10; //patch 01 jan 06
     Double_t c1=fP4*fX - fP2, r1=TMath::Sqrt(1.- c1*c1);
     Double_t c2=fP4*xk - fP2;
     if (c2*c2>0.99999) {
@@ -447,6 +448,8 @@ Int_t AliTPCtrack::Rotate(Double_t alpha)
   Double_t ca=cos(alpha), sa=sin(alpha);
   Double_t r1=fP4*fX - fP2;
   
+  if (TMath::Abs(1.- r1*r1)>0.9999) return 0; //patch 01 jan 06
+
   fX = x1*ca + y1*sa;
   fP0=-x1*sa + y1*ca;
   fP2=fP2*ca + (fP4*y1 + sqrt(1.- r1*r1))*sa;
