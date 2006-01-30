@@ -306,7 +306,7 @@ void AliMUONVGeometryBuilder::SetTransformation(Int_t moduleId,
     = TGeoCombiTrans(translation, rotation);
 
   // Apply frame transform
-  TGeoHMatrix newTransform = ConvertTransform(translation);
+  TGeoHMatrix newTransform = ConvertTransform(transformation);
 
   // Set new transformation
   geometry->SetTransformation(newTransform);
