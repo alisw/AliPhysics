@@ -210,7 +210,7 @@ class AliMUONSt12QuadrantSegmentation : public AliMUONVGeometryDESegmentation
 
     TObjArray* fCorrA; // ! Array of correction functions
 
-  ClassDef(AliMUONSt12QuadrantSegmentation,1) // Station1 segmentation
+  ClassDef(AliMUONSt12QuadrantSegmentation,2) // Station1 segmentation
 };
 
 #endif //ALI_MUON_ST12_QUADRANT_SEGMENTATION_H

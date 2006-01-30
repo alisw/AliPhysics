@@ -38,7 +38,7 @@ class AliMUONChamberTrigger : public AliMUONChamber
   protected:   
     const AliMUONGeometryTransformer* fkGeomTransformer;// geometry transformations
 
-  ClassDef(AliMUONChamberTrigger,1) // Muon trigger chamber class
+  ClassDef(AliMUONChamberTrigger,2) // Muon trigger chamber class
 };
 #endif
 

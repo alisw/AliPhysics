@@ -48,7 +48,7 @@ class AliZDCCalibData: public TNamed {
   Float_t  fEnCalibration[6];	// Coeff. for energy calibration
   TH1F*    fHistMeanPed;        //! histos for drawing mean pedestals
   //
-  ClassDef(AliZDCCalibData,1)    // ZDC  Calibration data
+  ClassDef(AliZDCCalibData,2)    // ZDC  Calibration data
 };
 
 #endif

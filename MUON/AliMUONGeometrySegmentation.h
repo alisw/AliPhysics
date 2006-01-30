@@ -205,7 +205,7 @@ class AliMUONGeometrySegmentation : public TObject
     AliMUONGeometryStore*        fDENames;        // DE names
     
  
-   ClassDef(AliMUONGeometrySegmentation,2) // Geometry segmentation
+   ClassDef(AliMUONGeometrySegmentation,3) // Geometry segmentation
 };
 
 // inline functions

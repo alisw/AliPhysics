@@ -135,7 +135,7 @@ protected:
 #endif
   TObjArray*         fBad;                  //! debugging - bad hits 
   
-  ClassDef(AliFMD,10)     // Base class FMD entry point
+  ClassDef(AliFMD,11)     // Base class FMD entry point
 };
 
 #endif

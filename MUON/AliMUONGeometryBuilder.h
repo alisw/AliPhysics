@@ -90,7 +90,7 @@ class AliMUONGeometryBuilder : public TObject
     TObjArray*       fGeometryBuilders;    // list of Geometry Builders
     AliMUONGeometry* fGeometry;            // geometry parametrisation
 
-  ClassDef(AliMUONGeometryBuilder,4)  // Geometry builder
+  ClassDef(AliMUONGeometryBuilder,5)  // Geometry builder
 };
 
 // inline functions
