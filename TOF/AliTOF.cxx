@@ -354,7 +354,7 @@ void AliTOF::CreateGeometry()
 
   if (IsVersion()==7) {
 
-    xTof = fTOFGeometry->StripLength();               // cm,  x-dimension of FTOA volume
+    xTof = fTOFGeometry->StripLength()+2.*0.3;        // cm,  x-dimension of FTOA volume
     yTof = fTOFGeometry->Rmax()-fTOFGeometry->Rmin(); // cm,  y-dimension of FTOA volume
     Float_t zTof = fTOFGeometry->ZlenA();             // cm,  z-dimension of FTOA volume
     
