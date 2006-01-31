@@ -10,9 +10,13 @@
 /// \class AliMUONMathieson
 /// \brief Implementation of Mathieson response
 
+#ifndef ROOT_TObject
+#  include "TObject.h"
+#endif
+
 class AliMUONGeometrySegmentation;
 
-class AliMUONMathieson 
+class AliMUONMathieson : public TObject
 {
  public:
     AliMUONMathieson();
@@ -40,11 +44,12 @@ class AliMUONMathieson
     void    SetKy2(Float_t p1) {fKy2 = p1;};
     // Mathieson Ky4
     void    SetKy4(Float_t p1) {fKy4 = p1;};
-    // Charge disintegration
+    /// \deprecated To be removed when old (s)digitizers go off.
     Float_t  IntXY(Int_t id, AliMUONGeometrySegmentation* segmentation);
-
-    ClassDef(AliMUONMathieson,1) // Implementation of Mathieson response
- protected:
+    /// Charge integration on region (x1,y1,x2,y2).
+    Float_t IntXY(Float_t xi1, Float_t yi1, Float_t xi2, Float_t yi2) const;
+    
+ private:
   
     Float_t fSqrtKx3;                  // Mathieson Sqrt(Kx3)
     Float_t fKx2;                      // Mathieson Kx2
@@ -53,6 +58,8 @@ class AliMUONMathieson
     Float_t fKy2;                      // Mathieson Ky2
     Float_t fKy4;                      // Mathieson Ky4 = Ky1/Ky2/Sqrt(Ky3)
     Float_t fPitch;                    // anode-cathode pitch
+    
+    ClassDef(AliMUONMathieson,2) // Implementation of Mathieson response
 };
 #endif
 

@@ -15,12 +15,14 @@
 
 /* $Id$ */
 
-#include <TMath.h>
-#include <TRandom.h>
-
 #include "AliMUONMathieson.h"
+
+#include "AliLog.h"
 #include "AliMUONGeometrySegmentation.h"
 
+#include <TClass.h>
+#include <TMath.h>
+#include <TRandom.h>
 
 ClassImp(AliMUONMathieson)
 	
@@ -64,31 +66,39 @@ void AliMUONMathieson::SetSqrtKy3AndDeriveKy2Ky4(Float_t SqrtKy3)
   fKy4 = cy1 / fKy2 / fSqrtKy3;
 }
 
+//_____________________________________________________________________________
+Float_t
+AliMUONMathieson::IntXY(Float_t xi1, Float_t yi1, Float_t xi2, Float_t yi2) const
+{
+  AliDebug(1,Form("xi1=%e yi1=%e xi2=%e yi2=%e",xi1,yi1,xi2,yi2));
+  
+  const Float_t kInversePitch = 1./fPitch;
+  xi1 *= kInversePitch;
+  xi2 *= kInversePitch;
+  yi1 *= kInversePitch;
+  yi2 *= kInversePitch;
+  //
+  // The Mathieson function 
+  Double_t ux1=fSqrtKx3*TMath::TanH(fKx2*xi1);
+  Double_t ux2=fSqrtKx3*TMath::TanH(fKx2*xi2);
+  
+  Double_t uy1=fSqrtKy3*TMath::TanH(fKy2*yi1);
+  Double_t uy2=fSqrtKy3*TMath::TanH(fKy2*yi2);
+  
+  
+  return Float_t(4.*fKx4*(TMath::ATan(ux2)-TMath::ATan(ux1))*
+                 fKy4*(TMath::ATan(uy2)-TMath::ATan(uy1)));
+}
+
 // -------------------------------------------
 Float_t AliMUONMathieson::IntXY(Int_t idDE, AliMUONGeometrySegmentation* segmentation)
 {
 // Calculate charge on current pad according to Mathieson distribution
 // using Detection elt
-   
-    const Float_t kInversePitch = 1./fPitch;
 //
 //  Integration limits defined by segmentation model
 //  
     Float_t xi1, xi2, yi1, yi2;
     segmentation->IntegrationLimits(idDE, xi1,xi2,yi1,yi2);
-    xi1=xi1*kInversePitch;
-    xi2=xi2*kInversePitch;
-    yi1=yi1*kInversePitch;
-    yi2=yi2*kInversePitch;
-//
-// The Mathieson function 
-    Double_t ux1=fSqrtKx3*TMath::TanH(fKx2*xi1);
-    Double_t ux2=fSqrtKx3*TMath::TanH(fKx2*xi2);
-
-    Double_t uy1=fSqrtKy3*TMath::TanH(fKy2*yi1);
-    Double_t uy2=fSqrtKy3*TMath::TanH(fKy2*yi2);
-
-    
-    return Float_t(4.*fKx4*(TMath::ATan(ux2)-TMath::ATan(ux1))*
-		      fKy4*(TMath::ATan(uy2)-TMath::ATan(uy1)));
+    return IntXY(xi1,yi1,xi2,yi2);
 }
