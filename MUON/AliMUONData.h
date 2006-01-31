@@ -79,8 +79,8 @@ class AliMUONData : public TNamed
     virtual void   AddRecTriggerTrack(const AliMUONTriggerTrack& triggertrack);
 
     TClonesArray*  Hits() {return fHits;}
-    TClonesArray*  Digits(Int_t DetectionPlane);
-    TClonesArray*  SDigits(Int_t DetectionPlane);
+    TClonesArray*  Digits(Int_t DetectionPlane) const;
+    TClonesArray*  SDigits(Int_t DetectionPlane) const;
 //    TClonesArray*  LocalTrigger() {return fLocalTrigger;}
 //    TClonesArray*  GlobalTrigger() {return fGlobalTrigger;}
     TClonesArray*  LocalTrigger();
@@ -116,7 +116,8 @@ class AliMUONData : public TNamed
     
     void           SetSplitLevel(Int_t SplitLevel) {fSplitLevel=SplitLevel;}
     
-
+    virtual void Print(Option_t* opt="") const;
+    
     virtual void   ResetHits();
     virtual void   ResetDigits();
     virtual void   ResetSDigits();
