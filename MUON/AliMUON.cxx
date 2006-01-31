@@ -69,6 +69,9 @@
 #include "AliMUONSegmentation.h"
 #include "AliLog.h"
 
+#include "AliMUONSDigitizerV2.h"
+#include "AliMUONDigitizerV3.h"
+
 // Defaults parameters for Z positions of chambers
 // taken from values for "stations" in AliMUON::AliMUON
 //     const Float_t zch[7]={528, 690., 975., 1249., 1449., 1610, 1710.};
@@ -105,7 +108,9 @@ AliMUON::AliMUON()
     fMaxDestepAlu(0.),
     fMaxIterPad(0),
     fCurIterPad(0),
-    fTriggerScalerEvent(kFALSE)
+    fTriggerScalerEvent(kFALSE),
+    fSDigitizerType(""),
+    fDigitizerType("")
 {
 // Default Constructor
 //
@@ -114,7 +119,9 @@ AliMUON::AliMUON()
 }
 
 //__________________________________________________________________
-AliMUON::AliMUON(const char *name, const char *title)
+AliMUON::AliMUON(const char *name, const char *title,
+                 const char* sDigitizerClassName,
+                 const char* digitizerClassName)
   : AliDetector(name,title),
     fNCh(AliMUONConstants::NCh()),
     fNTrackingCh(AliMUONConstants::NTrackingCh()),
@@ -133,7 +140,9 @@ AliMUON::AliMUON(const char *name, const char *title)
     fMaxDestepAlu(-1), // in the calculation of the tracking parameters
     fMaxIterPad(0),
     fCurIterPad(0),
-    fTriggerScalerEvent(kFALSE)
+	  fTriggerScalerEvent(kFALSE),
+    fSDigitizerType(sDigitizerClassName),
+    fDigitizerType(digitizerClassName)
 {
 	AliDebug(1,Form("ctor this=%p",this));
   fIshunt =  0;
@@ -396,8 +405,37 @@ void   AliMUON::SetResponseModel(Int_t id, AliMUONResponse *response)
 //____________________________________________________________________
 AliDigitizer* AliMUON::CreateDigitizer(AliRunDigitizer* manager) const
 {
-  return new AliMUONDigitizerv2(manager);
+  // FIXME: the selection of the class should be done through a factory
+  // mechanism. (see also Hits2SDigits()).
+  
+  AliInfo(Form("Digitizer used : %s",fDigitizerType.Data()));
+  
+  if ( fDigitizerType == "digitizer:default" )
+  {
+    return new AliMUONDigitizerv2(manager);
+  }
+  else if ( fDigitizerType == "digitizer:NewDigitizerNewTrigger" ) 
+  {
+    return new AliMUONDigitizerV3(manager,AliMUONDigitizerV3::kTriggerElectronics);
+  }
+  else if ( fDigitizerType == "digitizer:NewDigitizerOldTrigger" )
+  {
+    return new AliMUONDigitizerV3(manager,AliMUONDigitizerV3::kTriggerDecision);
+  }
+  else
+  {
+    AliFatal(Form("Unknown digitizer type : %s",fDigitizerType.Data()));
+  }
+  return 0x0;
 }
+
+//_____________________________________________________________________
+TString
+AliMUON::SDigitizerType() const
+{
+  return fSDigitizerType;
+}
+
 //_____________________________________________________________________
 void AliMUON::SDigits2Digits()
 {
@@ -413,32 +451,53 @@ void AliMUON::SDigits2Digits()
 //_____________________________________________________________________
 void AliMUON::Hits2SDigits()
 {
-  // Adaption of AliMUONSDigitizerv1 to be excuted by the AliSimulation framework
-  AliRunLoader* runLoader = fLoader->GetRunLoader();
-  AliRunDigitizer   * manager = new AliRunDigitizer(1,1);
-  manager->SetInputStream(0,runLoader->GetFileName(),AliConfig::GetDefaultEventFolderName());
-  AliMUONDigitizer * dMUON   = new AliMUONSDigitizerv1(manager);
-  fLoader->LoadHits("READ");
-  for (Int_t iEvent = 0; iEvent < runLoader->GetNumberOfEvents(); iEvent++) {
-    runLoader->GetEvent(iEvent);
-    dMUON->Exec("");
+  // FIXME: the selection of the sdigitizer should be done through a
+  // factory mechanism.
+  
+  AliInfo(Form("SDigitizer used : %s",fSDigitizerType.Data()));
+
+  if ( fSDigitizerType == "sdigitizer:default" )
+  {
+    // Adaption of AliMUONSDigitizerv1 to be excuted by the AliSimulation framework
+    AliRunLoader* runLoader = fLoader->GetRunLoader();
+    AliRunDigitizer   * manager = new AliRunDigitizer(1,1);
+    manager->SetInputStream(0,runLoader->GetFileName(),AliConfig::GetDefaultEventFolderName());
+    AliMUONDigitizer * dMUON   = new AliMUONSDigitizerv1(manager);
+    fLoader->LoadHits("READ");
+    for (Int_t iEvent = 0; iEvent < runLoader->GetNumberOfEvents(); iEvent++) {
+      runLoader->GetEvent(iEvent);
+      dMUON->Exec("");
+    }
+    fLoader->UnloadHits();
   }
-  fLoader->UnloadHits();
+  else if ( fSDigitizerType == "sdigitizer:AliMUONSDigitizerV2" )
+  {
+    TTask* sdigitizer = new AliMUONSDigitizerV2;
+    sdigitizer->ExecuteTask();
+  }
+  else
+  {
+    AliFatal(Form("Unknown sdigitizer classname : %s",fSDigitizerType.Data()));
+  }
 }
+
+//_____________________________________________________________________
+TString
+AliMUON::DigitizerType() const
+{
+  return fDigitizerType;
+}
+
 //_____________________________________________________________________
 void AliMUON::Digits2Raw()
 {
   // convert digits of the current event to raw data
-  
-  AliMUONRawWriter* rawData = new AliMUONRawWriter(fLoader,fMUONData);
+  AliMUONRawWriter rawData(fLoader,fMUONData);
 
-  if(fTriggerScalerEvent == kTRUE)
-    rawData->SetScalerEvent();
-
-  if (!rawData->Digits2Raw()) AliInfo("pb writting raw data");
-  delete rawData;
-  return;
+  if (fTriggerScalerEvent == kTRUE) rawData.SetScalerEvent();
+  if (!rawData.Digits2Raw()) AliInfo("pb writting raw data");
 }
+
 //_______________________________________________________________________
 AliLoader* AliMUON::MakeLoader(const char* topfoldername)
 { 

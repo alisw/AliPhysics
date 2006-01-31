@@ -43,7 +43,9 @@ class AliMUON : public  AliDetector
 {
   public:
     AliMUON();
-    AliMUON(const char *name, const char *title);
+    AliMUON(const char *name, const char *title,
+            const char* sDigitizerType="sdigitizer:default",
+            const char* digitizerType="digitizer:default");
     virtual       ~AliMUON();
    
     // Geometry
@@ -121,6 +123,9 @@ class AliMUON : public  AliDetector
     // Inherited and overridden from AliModule:
     //PH    virtual void RemapTrackHitIDs(Int_t * map);
 
+    TString SDigitizerType() const;
+    TString DigitizerType() const;
+    
   protected:
     AliMUON(const AliMUON& rMUON);
     AliMUON& operator = (const AliMUON& rhs);
@@ -154,7 +159,10 @@ class AliMUON : public  AliDetector
     // setting scaler for trigger
     Bool_t fTriggerScalerEvent; // flag to generates scaler event
     
-    ClassDef(AliMUON,10)  // MUON Detector base class
+    TString fSDigitizerType; // Class to use for SDigitizer
+    TString fDigitizerType; // Class to use for Digitizer
+    
+    ClassDef(AliMUON,11)  // MUON Detector base class
 };
 #endif
 
