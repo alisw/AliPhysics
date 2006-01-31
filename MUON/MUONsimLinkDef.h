@@ -10,8 +10,11 @@
 #pragma link C++ class AliMUONHitMapA1+; 
 #pragma link C++ class AliMUONDigitizer+; 
 #pragma link C++ class AliMUONDigitizerv2+; 
+#pragma link C++ class AliMUONDigitizerV3+; 
 #pragma link C++ class AliMUONSDigitizerv1+;  
+#pragma link C++ class AliMUONSDigitizerV2+;  
 #pragma link C++ class AliMUONTriggerDecision+; 
+#pragma link C++ class AliMUONTriggerDecisionV1+; 
 #pragma link C++ class AliMUONRawWriter+;
 
 

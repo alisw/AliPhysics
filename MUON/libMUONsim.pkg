@@ -13,13 +13,18 @@ SRCS:= AliMUONResponseFactory.cxx \
        AliMUONDigitizerv2.cxx \
        AliMUONSDigitizerv1.cxx \
        AliMUONTriggerDecision.cxx \
+       AliMUONTriggerDecisionV1.cxx \
        AliMUONRawWriter.cxx \
        AliMUONTest.cxx \
        AliMUONResponse.cxx \
        AliMUONResponseV0.cxx \
        AliMUONResponseTrigger.cxx \
        AliMUONResponseTriggerV1.cxx \
-       AliMUONTrigger.cxx
+       AliMUONTrigger.cxx \
+       AliMUONSDigitizerV2.cxx \
+       AliMUONDigitizerV3.cxx
+       
+
 
 HDRS:= $(SRCS:.cxx=.h)
 
