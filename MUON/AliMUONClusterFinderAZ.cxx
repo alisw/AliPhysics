@@ -2744,10 +2744,10 @@ void AliMUONClusterFinderAZ::Simple()
 {
   // Process simple cluster (small number of pads) without EM-procedure
 
-  Int_t nForFit = 1, clustFit[1] = {1}, nfit;
+  Int_t nForFit = 1, clustFit[1] = {0}, nfit;
   Double_t parOk[3] = {0.}; 
   TObjArray *clusters[1]; 
-  clusters[1] = fPixArray;
+  clusters[0] = fPixArray;
   for (Int_t i = 0; i < fnPads[0]+fnPads[1]; i++) {
     if (fXyq[2][i] > fResponse->Saturation()-1) fPadIJ[1][i] = -9;
     else fPadIJ[1][i] = 1;
