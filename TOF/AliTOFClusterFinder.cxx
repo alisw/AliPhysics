@@ -54,6 +54,7 @@ Revision 0.01  2005/07/25 A. De Caro
 #include <TTree.h>
 #include <TObjArray.h>
 #include <TClonesArray.h>
+#include <TFile.h>
 
 #include "AliLog.h"
 #include "AliRunLoader.h"

@@ -109,6 +109,7 @@
 #include <TObjString.h>
 #include <TStopwatch.h>
 #include <TSystem.h>
+#include <TFile.h>
 
 #include "AliCDBStorage.h"
 #include "AliCDBEntry.h"

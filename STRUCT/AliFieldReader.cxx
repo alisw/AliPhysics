@@ -27,6 +27,7 @@
 #include <TObjString.h>
 #include <TString.h>
 #include <TStyle.h>
+#include <TFile.h>
 ClassImp(AliFieldReader)
 
 

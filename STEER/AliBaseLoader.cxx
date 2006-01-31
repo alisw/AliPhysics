@@ -29,6 +29,7 @@
 /* $Id$ */
 
 #include <TString.h>
+#include <TFile.h>
 
 #include "AliBaseLoader.h"
 #include "AliLog.h"

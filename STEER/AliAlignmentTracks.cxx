@@ -23,6 +23,7 @@
 //-----------------------------------------------------------------
 
 #include <TChain.h>
+#include <TFile.h>
 
 #include "AliAlignmentTracks.h"
 #include "AliTrackPointArray.h"
