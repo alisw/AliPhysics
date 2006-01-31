@@ -27,7 +27,9 @@ class AliMUONv1 : public AliMUON
 {
  public:
    AliMUONv1();
-   AliMUONv1(const char *name, const char *title);
+   AliMUONv1(const char *name, const char *title,
+           const char* sDigitizerType="sdigitizer:default",
+           const char* digitizerType="digitizer:default");
    virtual  ~AliMUONv1();
    virtual void   CreateGeometry();
    virtual void   CreateMaterials();
@@ -67,8 +69,8 @@ class AliMUONv1 : public AliMUON
    TF1 *          fElossRatio;    // Ratio of particle mean eloss with respect MIP's 
    TF1 *          fAngleEffect10; // Angle effect in tracking chambers at theta =10 degres as a function of ElossRatio (Khalil BOUDJEMLINE sep 2003 Ph.D Thesis) (in micrometers)  
    TF1 *          fAngleEffectNorma;// Angle effect: Normalisation form theta=10 degres to theta between 0 and 10 (Khalil BOUDJEMLINE sep 2003 Ph.D Thesis)
-	 
-   ClassDef(AliMUONv1,4)  // MUON Detector class Version 1
+     
+   ClassDef(AliMUONv1,5)  // MUON Detector class Version 1
 };
 #endif
 

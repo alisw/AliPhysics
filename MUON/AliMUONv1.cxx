@@ -69,8 +69,10 @@ AliMUONv1::AliMUONv1()
 } 
 
 //___________________________________________
-AliMUONv1::AliMUONv1(const char *name, const char *title)
-  : AliMUON(name,title), 
+AliMUONv1::AliMUONv1(const char *name, const char *title,
+                     const char* sDigitizerClassName,
+                     const char* digitizerClassName)
+: AliMUON(name,title,sDigitizerClassName,digitizerClassName), 
     fStepManagerVersionOld(kTRUE),
     fStepManagerVersionDE(kTRUE),
     fAngleEffect(kTRUE),
