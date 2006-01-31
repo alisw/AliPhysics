@@ -643,9 +643,6 @@ void AliMC::Init()
    // Register MC in configuration 
    AliConfig::Instance()->Add(gMC);
 
-   // Export TGeo geometry
-   if (gGeoManager) gGeoManager->Export("geometry.root");
-
 }
 
 //_______________________________________________________________________

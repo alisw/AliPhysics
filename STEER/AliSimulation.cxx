@@ -106,10 +106,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <TGeoManager.h>
-#include <TGeoShape.h>
-#include <TGeoNode.h>
-#include <TGeoMatrix.h>
-#include <TGeoPhysicalNode.h>
 #include <TObjString.h>
 #include <TStopwatch.h>
 #include <TSystem.h>
@@ -155,6 +151,7 @@ AliSimulation::AliSimulation(const char* configFileName,
   fGAliceFileName("galice.root"),
   fEventsPerFile(),
   fBkgrdFileNames(NULL),
+  fAlignObjArray(NULL),
   fUseBkgrdVertex(kTRUE),
   fRegionOfInterest(kFALSE)
 {
@@ -183,6 +180,7 @@ AliSimulation::AliSimulation(const AliSimulation& sim) :
   fGAliceFileName(sim.fGAliceFileName),
   fEventsPerFile(),
   fBkgrdFileNames(NULL),
+  fAlignObjArray(NULL),
   fUseBkgrdVertex(sim.fUseBkgrdVertex),
   fRegionOfInterest(sim.fRegionOfInterest)
 {
@@ -270,7 +268,7 @@ void AliSimulation::SetEventsPerFile(const char* detector, const char* type,
 }
 
 //_____________________________________________________________________________
-Bool_t AliSimulation::ApplyDisplacements(const char* fileName, const char* ClArrayName)
+Bool_t AliSimulation::ApplyDisplacements(const char* fileName, const char* clArrayName)
 {
   // read collection of alignment objects (AliAlignObj derived) saved
   // in the TClonesArray ClArrayName in the file fileName and apply
@@ -283,47 +281,14 @@ Bool_t AliSimulation::ApplyDisplacements(const char* fileName, const char* ClArr
     return kFALSE;
   }
 
-  TClonesArray* AlObjArray = ((TClonesArray*) inFile->Get(ClArrayName));
+  TClonesArray* alObjArray = ((TClonesArray*) inFile->Get(clArrayName));
   inFile->Close();
+  if (!alObjArray) {
+    AliErrorClass(Form("Could not get array (%s) from file (%s) !",clArrayName,fileName));
+    return kFALSE;
+  }
 
-  return AliSimulation::ApplyDisplacements(AlObjArray);
-
-}
-
-//_____________________________________________________________________________
-Bool_t AliSimulation::ApplyDisplacements(TClonesArray* AlObjArray)
-{
-  // Read collection of alignment objects (AliAlignObj derived) saved
-  // in the TClonesArray ClArrayName and apply them to the geometry
-  // manager singleton.
-  //
-  Int_t nvols = AlObjArray->GetEntriesFast();
-
-  AliAlignObj::ELayerID layerId; // unique identity for volume in the alobj
-  Int_t modId; // unique identity for volume in the alobj
-  Bool_t ispathvalid; // false if volume path for alobj is not valid for TGeo
-
-  TGeoHMatrix dm;
-
-  for(Int_t j=0; j<nvols; j++)
-    {
-      AliAlignObj* alobj = (AliAlignObj*) AlObjArray->UncheckedAt(j);
-      const char* volpath = alobj->GetVolPath();
-      TGeoPhysicalNode* node = (TGeoPhysicalNode*) gGeoManager->MakePhysicalNode(volpath);
-      alobj->GetMatrix(dm);
-      alobj->GetVolUID(layerId, modId);
-      ispathvalid = gGeoManager->cd(volpath);
-      if(!ispathvalid){
-	AliWarningClass(Form("Volume path %s not valid!",volpath));
-	return kFALSE;
-      }
-      TGeoHMatrix* hm = gGeoManager->GetCurrentMatrix();
-      hm->MultiplyLeft(&dm);
-      AliInfoClass(Form("Aligning volume %s of detector layer %d with local ID %d",volpath,layerId,modId));
-      node->Align(hm);
-    }
-
-  return kTRUE;
+  return gAlice->ApplyDisplacements(alObjArray);
 
 }
 
@@ -340,7 +305,7 @@ Bool_t AliSimulation::ApplyDisplacements(AliCDBParam* param, AliCDBId& Id)
   AliCDBEntry* entry = storage->Get(Id);
   TClonesArray* AlObjArray = ((TClonesArray*) entry->GetObject());
 
-  return AliSimulation::ApplyDisplacements(AlObjArray);
+  return gAlice->ApplyDisplacements(AlObjArray);
 
 }
 
@@ -527,6 +492,26 @@ Bool_t AliSimulation::RunSimulation(Int_t nEvents)
   StdoutToAliInfo(StderrToAliError(
     gAlice->Init(fConfigFileName.Data());
   ););
+
+  // Check if the array with alignment objects was
+  // provided by the user. If yes, apply the objects
+  // to the present TGeo geometry
+  if (fAlignObjArray) {
+    if (gGeoManager && gGeoManager->IsClosed()) {
+      if (gAlice->ApplyDisplacements(fAlignObjArray) == kFALSE) {
+	AliError("The application of misalignment failed! Restart aliroot and try again. ");
+	return kFALSE;
+      }
+    }
+    else {
+      AliError("Can't apply the misalignment! gGeoManager doesn't exist or it is still opened!");
+      return kFALSE;
+    }
+  }
+
+  // Export TGeo geometry
+  if (gGeoManager) gGeoManager->Export("geometry.root");
+
   AliRunLoader* runLoader = gAlice->GetRunLoader();
   if (!runLoader) {
     AliError(Form("gAlice has no run loader object. "

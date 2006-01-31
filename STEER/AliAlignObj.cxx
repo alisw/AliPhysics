@@ -29,6 +29,9 @@
  *   is fully consistent with the TGeo Rotation methods.                     *
  *****************************************************************************/
 
+#include <TGeoManager.h>
+#include <TGeoPhysicalNode.h>
+
 #include "AliAlignObj.h"
 #include "AliTrackPointArray.h"
 #include "AliLog.h"
@@ -263,6 +266,92 @@ AliAlignObj::ELayerID AliAlignObj::VolUIDToLayer(UShort_t voluid)
 }
 
 //_____________________________________________________________________________
+Bool_t AliAlignObj::ApplyToGeometry()
+{
+  // Apply the current alignment object
+  // to the TGeo geometry
+
+  if (!gGeoManager || !gGeoManager->IsClosed()) {
+    AliError("Can't apply the alignment object! gGeoManager doesn't exist or it is still opened!");
+    return kFALSE;
+  }
+  
+  const char* volpath = GetVolPath();
+  TGeoPhysicalNode* node = (TGeoPhysicalNode*) gGeoManager->MakePhysicalNode(volpath);
+  if (!node) {
+    AliError(Form("Volume path %s not valid!",volpath));
+    return kFALSE;
+  }
+  if (node->IsAligned()) {
+    AliWarning(Form("Volume %s has been already misaligned!",volpath));
+    return kFALSE;
+  }
+
+  TGeoHMatrix align,gprime;
+  gprime = *node->GetMatrix();
+  GetMatrix(align);
+  gprime.MultiplyLeft(&align);
+  TGeoHMatrix *ginv = new TGeoHMatrix;
+  TGeoHMatrix *g = node->GetMatrix(node->GetLevel()-1);
+  *ginv = g->Inverse();
+  *ginv *= gprime;
+  AliAlignObj::ELayerID layerId; // unique identity for volume in the alobj
+  Int_t modId; // unique identity for volume in the alobj
+  GetVolUID(layerId, modId);
+  AliInfo(Form("Aligning volume %s of detector layer %d with local ID %d",volpath,layerId,modId));
+  node->Align(ginv);
+
+  return kTRUE;
+}
+
+//_____________________________________________________________________________
+Bool_t AliAlignObj::GetFromGeometry(const char *path, AliAlignObj &alobj)
+{
+  // Get the alignment object which correspond
+  // to the TGeo volume defined by the 'path'.
+  // The method is extremely slow due to the
+  // searching by string. Therefore it should
+  // be used with great care!!
+
+  // Reset the alignment object
+  alobj.SetPars(0,0,0,0,0,0);
+  alobj.SetVolPath(path);
+
+  if (!gGeoManager || !gGeoManager->IsClosed()) {
+    AliErrorClass("Can't get the alignment object! gGeoManager doesn't exist or it is still opened!");
+    return kFALSE;
+  }
+
+  if (!gGeoManager->GetListOfPhysicalNodes()) {
+    AliErrorClass("Can't get the alignment object! gGeoManager doesn't contain any aligned nodes!");
+    return kFALSE;
+  }
+
+  TObjArray* nodesArr = gGeoManager->GetListOfPhysicalNodes();
+  TGeoPhysicalNode* node = NULL;
+  for (Int_t iNode = 0; iNode < nodesArr->GetEntriesFast(); iNode++) {
+    node = (TGeoPhysicalNode*) nodesArr->UncheckedAt(iNode);
+    const char *nodePath = node->GetName();
+    if (strcmp(path,nodePath) == 0) break;
+  }
+  if (!node) {
+    AliWarningClass(Form("Volume path %s not found!",path));
+    return kFALSE;
+  }
+
+  TGeoHMatrix align,gprime,g,ginv,l;
+  gprime = *node->GetMatrix();
+  l = *node->GetOriginalMatrix();
+  g = *node->GetMatrix(node->GetLevel()-1);
+  g *= l;
+  ginv = g.Inverse();
+  align = gprime * ginv;
+  alobj.SetMatrix(align);
+
+  return kTRUE;
+}
+
+//_____________________________________________________________________________
 void AliAlignObj::InitVolPaths()
 {
   // Initialize the LUTs which contain
@@ -283,7 +372,7 @@ void AliAlignObj::InitVolPaths()
     TString str0 = "ALIC_1/ITSV_1/ITSD_1/IT12_1/I12B_"; //".../I12A_"
     TString str1 = "/I10B_";    //"/I10A_";
     TString str2 = "/I107_";    //"/I103_"
-    TString str3 = "/I101_1/ITS1_1";
+    //    TString str3 = "/I101_1/ITS1_1";
     TString volpath, volpath1, volpath2;
 
     for(Int_t c1 = 1; c1<=10; c1++){
@@ -297,7 +386,7 @@ void AliAlignObj::InitVolPaths()
 	for(Int_t c3 =1; c3<=4; c3++){
 	  volpath2 = volpath1;
 	  volpath2 += c3;
-	  volpath2 += str3;
+	  //	  volpath2 += str3;
 	  fgVolPath[kSPD1-kFirstLayer][modnum] = volpath2.Data();
 	  modnum++;
 	}
@@ -311,7 +400,7 @@ void AliAlignObj::InitVolPaths()
     TString str0 = "ALIC_1/ITSV_1/ITSD_1/IT12_1/I12B_";  //".../I12A_"
     TString str1 = "/I20B_";  //"/I20A"
     TString str2 = "/I1D7_";  //"/I1D3"
-    TString str3 = "/I1D1_1/ITS2_1";
+    //    TString str3 = "/I1D1_1/ITS2_1";
     TString volpath, volpath1, volpath2;
 
     for(Int_t c1 = 1; c1<=10; c1++){
@@ -325,7 +414,7 @@ void AliAlignObj::InitVolPaths()
 	for(Int_t c3 =1; c3<=4; c3++){
 	  volpath2 = volpath1;
 	  volpath2 += c3;
-	  volpath2 += str3;
+	  //	  volpath2 += str3;
 	  fgVolPath[kSPD2-kFirstLayer][modnum] = volpath2.Data();
 	  modnum++;
 	}
@@ -338,7 +427,7 @@ void AliAlignObj::InitVolPaths()
     Int_t modnum=0;
     TString str0 = "ALIC_1/ITSV_1/ITSD_1/IT34_1/I004_";
     TString str1 = "/I302_";
-    TString str2 = "/ITS3_1";
+    //    TString str2 = "/ITS3_1";
     TString volpath, volpath1;
 
     for(Int_t c1 = 1; c1<=14; c1++){
@@ -348,7 +437,7 @@ void AliAlignObj::InitVolPaths()
       for(Int_t c2 =1; c2<=6; c2++){
 	volpath1 = volpath;
 	volpath1 += c2;
-	volpath1 += str2;
+	//	volpath1 += str2;
 	fgVolPath[kSDD1-kFirstLayer][modnum] = volpath1.Data();
 	modnum++;
       }
@@ -360,7 +449,7 @@ void AliAlignObj::InitVolPaths()
     Int_t modnum=0;
     TString str0 = "ALIC_1/ITSV_1/ITSD_1/IT34_1/I005_";
     TString str1 = "/I402_";
-    TString str2 = "/ITS4_1";
+    //    TString str2 = "/ITS4_1";
     TString volpath, volpath1;
 
     for(Int_t c1 = 1; c1<=22; c1++){
@@ -370,7 +459,7 @@ void AliAlignObj::InitVolPaths()
       for(Int_t c2 = 1; c2<=8; c2++){
 	volpath1 = volpath;
 	volpath1 += c2;
-	volpath1 += str2;
+	//	volpath1 += str2;
 	fgVolPath[kSDD2-kFirstLayer][modnum] = volpath1.Data();
 	modnum++;
       }
@@ -382,7 +471,7 @@ void AliAlignObj::InitVolPaths()
     Int_t modnum=0;
     TString str0 = "ALIC_1/ITSV_1/ITSD_1/IT56_1/I565_";
     TString str1 = "/I562_";
-    TString str2 = "/ITS5_1";
+    //    TString str2 = "/ITS5_1";
     TString volpath, volpath1;
 
     for(Int_t c1 = 1; c1<=34; c1++){
@@ -392,7 +481,7 @@ void AliAlignObj::InitVolPaths()
       for(Int_t c2 = 1; c2<=22; c2++){
 	volpath1 = volpath;
 	volpath1 += c2;
-	volpath1 += str2;
+	//	volpath1 += str2;
 	fgVolPath[kSSD1-kFirstLayer][modnum] = volpath1.Data();
 	modnum++;
       }
@@ -404,7 +493,7 @@ void AliAlignObj::InitVolPaths()
     Int_t modnum=0;
     TString str0 = "ALIC_1/ITSV_1/ITSD_1/IT56_1/I569_";
     TString str1 = "/I566_";
-    TString str2 = "/ITS6_1";
+    //    TString str2 = "/ITS6_1";
     TString volpath, volpath1;
 
     for(Int_t c1 = 1; c1<=38; c1++){
@@ -414,7 +503,7 @@ void AliAlignObj::InitVolPaths()
       for(Int_t c2 = 1; c2<=25; c2++){
 	volpath1 = volpath;
 	volpath1 += c2;
-	volpath1 += str2;
+	//	volpath1 += str2;
 	fgVolPath[kSSD2-kFirstLayer][modnum] = volpath1.Data();
 	modnum++;
       }

@@ -77,6 +77,9 @@ class AliAlignObj : public TObject {
   }
   static const char* GetVolPath(ELayerID layerId, Int_t modId) { return fgVolPath[layerId-kFirstLayer][modId].Data(); }
 
+  Bool_t ApplyToGeometry();
+  static Bool_t   GetFromGeometry(const char *path, AliAlignObj &alobj);
+
  protected:
 
   void AnglesToMatrix(const Double_t *angles, Double_t *rot) const;

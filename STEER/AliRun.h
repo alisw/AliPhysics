@@ -139,6 +139,9 @@ public:
       else ::Warning(method, "method is depricated\nPlease use: %s", replace);
     }
 
+  // Method to introduce the detector misliagnment
+  // It is called by AliSimulation
+  static Bool_t  ApplyDisplacements(TClonesArray* AlObjArray);
 
 protected:
   virtual  void  Tree2Tree(Option_t *option, const char *detector=0);

@@ -57,13 +57,14 @@ public:
 		   fDeleteIntermediateFiles = deleteIntermediateFiles;};
 
   static Bool_t  ApplyDisplacements(const char* fileName,
-				    const char* ClArrayName);
-  static Bool_t  ApplyDisplacements(TClonesArray* AlObjArray);
+				    const char* clArrayName);
   static Bool_t  ApplyDisplacements(AliCDBParam* param,
 				    AliCDBId& Id);
   static Bool_t  ApplyDisplacements(const char* uri, const char* path,
 				    Int_t runnum, Int_t version,
 				    Int_t sversion);
+  void           SetAlignObjArray(TClonesArray *array)
+                   {fAlignObjArray = array;}
 
   virtual Bool_t Run(Int_t nEvents = 0);
 
@@ -103,6 +104,7 @@ private:
   TObjArray      fEventsPerFile;      // number of events per file for given detectors and data types
 
   TObjArray*     fBkgrdFileNames;     // names of background files for merging
+  TClonesArray*  fAlignObjArray;      // array with the alignment objects to be applied to the geometry
   Bool_t         fUseBkgrdVertex;     // use vertex from background in case of merging
   Bool_t         fRegionOfInterest;   // digitization in region of interest
 

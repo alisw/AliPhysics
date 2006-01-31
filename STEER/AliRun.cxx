@@ -49,7 +49,6 @@
 #include <TRandom3.h>
 #include <TSystem.h>
 #include <TVirtualMC.h>
-#include <TGeoManager.h>
 // 
 #include "AliLog.h"
 #include "AliDetector.h"
@@ -64,6 +63,7 @@
 #include "AliPDG.h"
 #include "AliRun.h"
 #include "AliStack.h"
+#include "AliAlignObj.h"
 #ifdef __APPLE__
 //#include "AliTPCTrackHitsInterfaces.h"
 #endif
@@ -972,4 +972,23 @@ void AliRun::AddModule(AliModule* mod)
   return !gSystem->AccessPathName(str.Data(),mode);
 }
 
+//_____________________________________________________________________________
+Bool_t AliRun::ApplyDisplacements(TClonesArray* AlObjArray)
+{
+  // Read collection of alignment objects (AliAlignObj derived) saved
+  // in the TClonesArray ClArrayName and apply them to the geometry
+  // manager singleton.
+  //
+  Int_t nvols = AlObjArray->GetEntriesFast();
+
+  for(Int_t j=0; j<nvols; j++)
+    {
+      AliAlignObj* alobj = (AliAlignObj*) AlObjArray->UncheckedAt(j);
+      if (alobj->ApplyToGeometry() == kFALSE)
+	return kFALSE;
+    }
+
+  return kTRUE;
+
+}
 
