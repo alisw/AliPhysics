@@ -43,6 +43,16 @@
 #pragma link C++ class AliMUONLocalTrigger+; 
 #pragma link C++ class AliMUONTriggerLut+; 
 
+// calibration
+#pragma link C++ class AliMUONV1DStore+;
+#pragma link C++ class AliMUONV2DStore+;
+#pragma link C++ class AliMUONV3DStore+;
+#pragma link C++ class AliMUON1DMap+;
+#pragma link C++ class AliMUON2DMap+;
+#pragma link C++ class AliMUON3DMap+;
+#pragma link C++ class AliMUONCalibParam+;
+#pragma link C++ class AliMUONCalibrationData+;
+
 // display
 #pragma link C++ class AliMUONDisplay+; 
 #pragma link C++ class AliMUONRecoCheck+; 
