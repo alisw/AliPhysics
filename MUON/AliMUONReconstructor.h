@@ -12,11 +12,17 @@
 
 #include "AliReconstructor.h"
 
+class AliMUONCalibrationData;
+class AliMUONData;
+class TTask;
+
 class AliMUONReconstructor: public AliReconstructor 
 {
   public:
     AliMUONReconstructor();
     virtual ~AliMUONReconstructor();
+
+    virtual void         Init(AliRunLoader* runLoader);
 
     virtual void         Reconstruct(TTree* /*digitsTree*/, 
 				     TTree* /*clustersTree*/) const {return;}
@@ -34,7 +40,14 @@ class AliMUONReconstructor: public AliReconstructor
     virtual void         FillESD(AliRunLoader* runLoader, 
 				 AliRawReader* /*rawReader*/, AliESD* esd) const;
 
- 
+private:
+
+    TTask* GetCalibrationTask(AliMUONData* data) const;
+
+private:
+    AliRunLoader* fRunLoader; //!
+    mutable AliMUONCalibrationData* fCalibrationData; //!
+    
   ClassDef(AliMUONReconstructor, 0)   // class for the MUON reconstruction
 };
 

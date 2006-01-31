@@ -19,40 +19,91 @@
 // class for MUON reconstruction                                             //
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
-#include <TParticle.h>
-#include <TArrayF.h>
 
-#include "AliRunLoader.h"
-#include "AliHeader.h"
-#include "AliGenEventHeader.h"
-#include "AliESD.h"
 #include "AliMUONReconstructor.h"
- 
-#include "AliMUONData.h"
-#include "AliMUONTrackReconstructor.h"
-#include "AliMUONClusterReconstructor.h"
-#include "AliMUONClusterFinderVS.h"
+
+#include "AliESD.h"
+#include "AliESDMuonTrack.h"
+#include "AliGenEventHeader.h"
+#include "AliHeader.h"
+#include "AliMUON.h"
+#include "AliMUONCalibrationData.h"
 #include "AliMUONClusterFinderAZ.h"
+#include "AliMUONClusterFinderVS.h"
+#include "AliMUONClusterReconstructor.h"
+#include "AliMUONData.h"
+#include "AliMUONDigitCalibrator.h"
 #include "AliMUONEventRecoCombi.h" 
+#include "AliMUONRawReader.h"
 #include "AliMUONTrack.h"
 #include "AliMUONTrackParam.h"
+#include "AliMUONTrackReconstructor.h"
 #include "AliMUONTriggerTrack.h"
-#include "AliESDMuonTrack.h"
-#include "AliMUONRawReader.h"
-
 #include "AliRawReader.h"
-
+#include "AliRun.h"
+#include "AliRunLoader.h"
+#include "TTask.h"
+#include <TArrayF.h>
+#include <TParticle.h>
 
 ClassImp(AliMUONReconstructor)
+
 //_____________________________________________________________________________
 AliMUONReconstructor::AliMUONReconstructor()
-  : AliReconstructor()
+  : AliReconstructor(), fCalibrationData(0x0)
 {
 }
 //_____________________________________________________________________________
 AliMUONReconstructor::~AliMUONReconstructor()
 {
+  delete fCalibrationData;
 }
+
+//_____________________________________________________________________________
+TTask* 
+AliMUONReconstructor::GetCalibrationTask(AliMUONData* data) const
+{
+  //
+  // Create the calibration task(s). 
+  //
+  
+  const AliRun* run = fRunLoader->GetAliRun();
+  
+  // Not really clean, but for the moment we must check whether the
+  // simulation has decalibrated the data or not...
+  const AliMUON* muon = static_cast<AliMUON*>(run->GetModule("MUON"));
+  if ( muon->DigitizerType().Contains("NewDigitizer") )
+  {
+    AliInfo("Calibration will occur.");
+    Int_t runNumber = run->GetRunNumber();     
+    fCalibrationData = new AliMUONCalibrationData(runNumber);
+    if ( !fCalibrationData->IsValid() )
+    {
+      AliError("Could not retrieve calibrations !");
+      delete fCalibrationData;
+      fCalibrationData = 0x0;
+      return 0x0;
+    }    
+    TTask* calibration = new TTask("MUONCalibrator","MUON Digit calibrator");
+    calibration->Add(new AliMUONDigitCalibrator(data,fCalibrationData));
+    //FIXME: calibration->Add(something about dead channels should go here).
+    return calibration;
+  }
+  else
+  {
+    AliInfo("Detected the usage of old digitizer (w/o decalibration). "
+            "Will not calibrate then.");
+    return 0x0;
+  }
+}
+
+//_____________________________________________________________________________
+void
+AliMUONReconstructor::Init(AliRunLoader* runLoader)
+{
+  fRunLoader = runLoader;
+}
+
 //_____________________________________________________________________________
 void AliMUONReconstructor::Reconstruct(AliRunLoader* runLoader) const
 {
@@ -86,6 +137,8 @@ void AliMUONReconstructor::Reconstruct(AliRunLoader* runLoader) const
   loader->LoadRecPoints("RECREATE");
   loader->LoadTracks("RECREATE");
   
+  TTask* calibration = GetCalibrationTask(data);
+  
   Int_t chBeg = recoEvent->GetTrackMethod() == 3 ? 6 : 0; 
   //   Loop over events              
   for(Int_t ievent = 0; ievent < nEvents; ievent++) {
@@ -108,7 +161,14 @@ void AliMUONReconstructor::Reconstruct(AliRunLoader* runLoader) const
     data->SetTreeAddress("GLT");
 
     data->GetDigits();
+    
+    if ( calibration ) 
+    {
+      calibration->ExecuteTask();
+    }
+    
     recoCluster->Digits2Clusters(chBeg); 
+    
     if (recoEvent->GetTrackMethod() == 3) {
       // Combined cluster / track finder
       AliMUONEventRecoCombi::Instance()->FillEvent(data, (AliMUONClusterFinderAZ*)recModel);
@@ -169,6 +229,7 @@ void AliMUONReconstructor::Reconstruct(AliRunLoader* runLoader) const
   delete recoCluster;
   delete recoEvent;
   delete data;
+  delete calibration;
 }
 
 //_____________________________________________________________________________
@@ -187,10 +248,11 @@ void AliMUONReconstructor::Reconstruct(AliRunLoader* runLoader, AliRawReader* ra
   AliMUONClusterFinderVS *recModel = recoCluster->GetRecoModel();
   recModel->SetGhostChi2Cut(10);
 
+  TTask* calibration = GetCalibrationTask(data);
+  
   loader->LoadRecPoints("RECREATE");
   loader->LoadTracks("RECREATE");
   loader->LoadDigits("RECREATE");
-
 
   //   Loop over events  
   Int_t iEvent = 0;
@@ -214,6 +276,11 @@ void AliMUONReconstructor::Reconstruct(AliRunLoader* runLoader, AliRawReader* ra
     rawData->ReadTriggerDDL(rawReader);
     data->Fill("GLT"); 
 
+    if ( calibration )
+    {
+      calibration->ExecuteTask();
+    }
+    
     loader->WriteDigits("OVERWRITE");
 
     //----------------------- digit2cluster & Trigger2Trigger -------------------
