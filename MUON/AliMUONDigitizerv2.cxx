@@ -153,6 +153,10 @@ Int_t AliMUONDigitizerv2::GetSignalFrom(AliMUONTransientDigit* td)
 	AliMUONChamber& chamber = fMUON->Chamber(td->Chamber());
 	AliMUONResponse* response = chamber.ResponseModel();
 	q = response->DigitResponse(q, td);
+  if ( q >= response->Saturation() )
+  {
+    td->Saturated(kTRUE);
+  }
 	return q;
 }
 
