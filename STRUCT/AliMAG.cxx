@@ -108,7 +108,10 @@ void AliMAG::CreateGeometry()
 // Coil
     const Float_t kRCoilInner          = 593.00; // cm
     const Float_t kRCoilOuter          = 682.00; // cm
-    const Float_t kLCoil               = 587.30; // cm
+    const Float_t kLCoil               = 588.00; // cm
+// Cooling
+    const Float_t kRCoolingOuter       = 1.70; // cm
+    const Float_t kRCoolingInner       = 1.00; // cm
 // Thermal Shield    
     const Float_t kRThermalShieldInner = 566.00; // cm
     const Float_t kRThermalShieldOuter = 571.00; // cm
@@ -129,11 +132,12 @@ void AliMAG::CreateGeometry()
   // Top volume 
   TGeoVolume* top = gGeoManager->GetVolume("ALIC");
   // Media 
-  TGeoMedium* medAir  = gGeoManager->GetMedium("MAG_AIR_C1");
-  TGeoMedium* medAlu  = gGeoManager->GetMedium("MAG_ALU_C1");  
-  TGeoMedium* medAluI = gGeoManager->GetMedium("MAG_ALU_C0");
-  TGeoMedium* medFe   = gGeoManager->GetMedium("MAG_FE_C1");
-  TGeoMedium* medFeI  = gGeoManager->GetMedium("MAG_FE_C0");
+  TGeoMedium* medAir    = gGeoManager->GetMedium("MAG_AIR_C1");
+  TGeoMedium* medAlu    = gGeoManager->GetMedium("MAG_ALU_C1");  
+  TGeoMedium* medAluI   = gGeoManager->GetMedium("MAG_ALU_C0");
+  TGeoMedium* medFe     = gGeoManager->GetMedium("MAG_FE_C1");
+  TGeoMedium* medFeI    = gGeoManager->GetMedium("MAG_FE_C0");
+  TGeoMedium* medWater  = gGeoManager->GetMedium("MAG_WATER");
   //
   // Offset between LHC and LEP axis
   Float_t os = -30.;
@@ -149,6 +153,9 @@ void AliMAG::CreateGeometry()
   //
   // Define Thermal Shield
   //
+  // Only one layer
+  // This can be improved: replace by (protection - shield - insulation) !
+  //
   TGeoPgon* shThermSh = new TGeoPgon(kStartAngle, kFullAngle, kNSides, 2);
   shThermSh->DefineSection(0, -kLCoil, kRThermalShieldInner, kRThermalShieldOuter);
   shThermSh->DefineSection(1,  kLCoil, kRThermalShieldInner, kRThermalShieldOuter);  
@@ -156,14 +163,72 @@ void AliMAG::CreateGeometry()
   TGeoVolume* voThermSh = new TGeoVolume("L3TS", shThermSh, medAluI);
   voBMother->AddNode(voThermSh, 1, new TGeoTranslation(0., 0., 0.));
   //  
-  // Define Coils
+  // Define Coils and cooling circuits
   //
+  TGeoPgon* shCoilMother = new TGeoPgon(kStartAngle, kFullAngle, kNSides, 2);
+  shCoilMother->DefineSection(0, -kLCoil, kRCoilInner - 2. * kRCoolingOuter, kRCoilOuter + 2. * kRCoolingOuter);
+  shCoilMother->DefineSection(1,  kLCoil, kRCoilInner - 2. * kRCoolingOuter, kRCoilOuter + 2. * kRCoolingOuter);  
+  // 
+  // Coils
+  TGeoVolume* voCoilMother = new TGeoVolume("L3CM", shCoilMother, medAir);
+  voBMother->AddNode(voCoilMother, 1, new TGeoTranslation(0., 0., 0.));
+  // Devide into the 168 turns
+  TGeoVolume* voCoilTurn   = voCoilMother->Divide("L3CD", 3, 168, 0., 0.);
   TGeoPgon* shCoils = new TGeoPgon(kStartAngle, kFullAngle, kNSides, 2);
-  shCoils->DefineSection(0, -kLCoil, kRCoilInner, kRCoilOuter);
-  shCoils->DefineSection(1,  kLCoil, kRCoilInner, kRCoilOuter);  
+  shCoils->DefineSection(0, -3., kRCoilInner, kRCoilOuter);
+  shCoils->DefineSection(1,  3., kRCoilInner, kRCoilOuter); 
   // 
   TGeoVolume* voCoils = new TGeoVolume("L3C0", shCoils, medAlu);
-  voBMother->AddNode(voCoils, 1, new TGeoTranslation(0., 0., 0.));
+  voCoilTurn->AddNode(voCoils, 1, new TGeoTranslation(0., 0., 0.));
+  //
+  // Hexagonal Cooling circuits
+  // 
+  const Float_t kRCC = kRCoolingOuter;
+  const Float_t kRCW = kRCoolingInner;
+  const Float_t kRCL = kRCC * TMath::Tan(30. / 180. * TMath::Pi());
+  const Float_t kRWL = kRCW * TMath::Tan(30. / 180. * TMath::Pi());
+  // Outer Circuits
+  //
+  // Pipe
+  TGeoPgon* shCoolingPipeO = new TGeoPgon(kStartAngle, kFullAngle, kNSides, 4);
+  shCoolingPipeO->DefineSection(0, -kRCC, kRCoilOuter + kRCC, kRCoilOuter + kRCC + 0.01);
+  shCoolingPipeO->DefineSection(1, -kRCL, kRCoilOuter, kRCoilOuter + 2. * kRCC);
+  shCoolingPipeO->DefineSection(2,  kRCL, kRCoilOuter, kRCoilOuter + 2. * kRCC);
+  shCoolingPipeO->DefineSection(3,  kRCC, kRCoilOuter + kRCC, kRCoilOuter + kRCC + 0.01);
+  //
+  TGeoVolume* voCoolingPipeO = new TGeoVolume("L3CCO", shCoolingPipeO, medAlu);
+  voCoilTurn->AddNode(voCoolingPipeO, 1, new TGeoTranslation(0., 0., 0.));
+  //
+  TGeoPgon* shCoolingWaterO = new TGeoPgon(kStartAngle, kFullAngle, kNSides, 4);
+  shCoolingWaterO->DefineSection(0, -kRCW, kRCoilOuter + kRCC, kRCoilOuter + kRCC + 0.01);
+  shCoolingWaterO->DefineSection(1, -kRWL, kRCoilOuter + (kRCC - kRCW), kRCoilOuter + kRCC + kRCW);
+  shCoolingWaterO->DefineSection(2,  kRWL, kRCoilOuter + (kRCC - kRCW), kRCoilOuter + kRCC + kRCW);
+  shCoolingWaterO->DefineSection(3,  kRCW, kRCoilOuter + kRCC, kRCoilOuter + kRCC + 0.01);
+  //
+  TGeoVolume* voCoolingWaterO = new TGeoVolume("L3CWO", shCoolingWaterO, medWater);
+  voCoolingPipeO->AddNode(voCoolingWaterO, 1, new TGeoTranslation(0., 0., 0.));
+
+  // Inner Circuits
+  //
+  // Pipe
+  TGeoPgon* shCoolingPipeI = new TGeoPgon(kStartAngle, kFullAngle, kNSides, 4);
+  shCoolingPipeI->DefineSection(0, -kRCC, kRCoilInner - kRCC, kRCoilInner - kRCC + 0.01);
+  shCoolingPipeI->DefineSection(1, -kRCL, kRCoilInner - 2. * kRCC, kRCoilInner);
+  shCoolingPipeI->DefineSection(2,  kRCL, kRCoilInner - 2. * kRCC, kRCoilInner);
+  shCoolingPipeI->DefineSection(3,  kRCC, kRCoilInner - kRCC, kRCoilInner - kRCC + 0.01);
+  //
+  TGeoVolume* voCoolingPipeI = new TGeoVolume("L3CCI", shCoolingPipeI, medAlu);
+  voCoilTurn->AddNode(voCoolingPipeI, 1, new TGeoTranslation(0., 0., 0.));
+  //
+  TGeoPgon* shCoolingWaterI = new TGeoPgon(kStartAngle, kFullAngle, kNSides, 4);
+  shCoolingWaterI->DefineSection(0, -kRCW, kRCoilInner - kRCC, kRCoilInner - kRCC + 0.01);
+  shCoolingWaterI->DefineSection(1, -kRWL, kRCoilInner - kRCC - kRCW, kRCoilInner - (kRCC - kRCW));
+  shCoolingWaterI->DefineSection(2,  kRWL, kRCoilInner - kRCC - kRCW, kRCoilInner - (kRCC - kRCW));
+  shCoolingWaterI->DefineSection(3,  kRCW, kRCoilInner - kRCC, kRCoilInner - kRCC + 0.01);
+  //
+  TGeoVolume* voCoolingWaterI = new TGeoVolume("L3CWI", shCoolingWaterI, medWater);
+  voCoolingPipeI->AddNode(voCoolingWaterI, 1, new TGeoTranslation(0., 0., 0.));
+
   //
   // Define Yoke
   //
@@ -193,7 +258,7 @@ void AliMAG::CreateGeometry()
   shDoorO->DefineSection(1,  kLDoor2, kRDoorInner, kRDoorOuter);  
   shDoorO->SetName("A");
   //
-  // Additional inner part
+  // Additional inner part ("Plug")
   TGeoPgon* shDoorI = new TGeoPgon(kStartAngle, kFullAngle, kNSides, 3);
   shDoorI->DefineSection(0,  kLDoor1, 163.5, 280.);
   shDoorI->DefineSection(1,  686.,    163.5, 280.);  
@@ -248,7 +313,10 @@ void AliMAG::CreateMaterials()
   Float_t zAir[4]={6.,7.,8.,18.};
   Float_t wAir[4]={0.000124,0.755267,0.231781,0.012827};
   Float_t dAir = 1.20479E-3;
-
+  Float_t aWater[2]={1.00794,15.9994};
+  Float_t zWater[2]={1.,8.};
+  Float_t wWater[2]={0.111894,0.888106};
+  
 
   //     Aluminum 
   AliMaterial(9, "Al0$", 26.98, 13., 2.7, 8.9, 37.2);
@@ -261,6 +329,9 @@ void AliMAG::CreateMaterials()
   //     Air 
   AliMixture(15, "AIR0$      ", aAir, zAir, dAir, 4, wAir);
   AliMixture(35, "AIR1$      ", aAir, zAir, dAir, 4, wAir);
+  //     Water
+  AliMixture(16, "WATER", aWater, zWater, 1., 2, wWater);
+
   
   // **************** 
   //     Defines tracking media parameters. 
@@ -287,6 +358,9 @@ void AliMAG::CreateMaterials()
   
   AliMedium(15, "AIR_C0            ", 15, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
   AliMedium(35, "AIR_C1            ", 35, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
+
+  //    WATER
+  AliMedium(16, "WATER             ", 16, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
 }
 
 //_____________________________________________________________________________
