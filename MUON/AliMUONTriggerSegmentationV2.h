@@ -113,11 +113,11 @@ public:
     void GetPadLoc2Glo(Int_t ixLoc, Int_t iyLoc, Int_t& ixGlo, Int_t& iyGlo) const;
     void GetPadGlo2Loc(Int_t ixLoc, Int_t iyLoc, Int_t& ixGlo, Int_t& iyGlo) const;
     
-    void PC2LA(Int_t ixPC, Int_t iyPC, Int_t& ixLA, Int_t& iyLA);
-    void LA2PC(Int_t ixLA, Int_t iyLA, Int_t& ixPC, Int_t& iyPC);
+    void PC2LA(Int_t ixPC, Int_t iyPC, Int_t& ixLA, Int_t& iyLA) const;
+    void LA2PC(Int_t ixLA, Int_t iyLA, Int_t& ixPC, Int_t& iyPC) const;
     
-    void IGlo2ILoc(Int_t ixGlo, Int_t iyGlo, Int_t& ixLA, Int_t& iyLA);
-    void ILoc2IGlo(Int_t ixLA, Int_t iyLA, Int_t& ixGlo, Int_t& iyGlo);
+    void IGlo2ILoc(Int_t ixGlo, Int_t iyGlo, Int_t& ixLA, Int_t& iyLA) const;
+    void ILoc2IGlo(Int_t ixLA, Int_t iyLA, Int_t& ixGlo, Int_t& iyGlo) const;
     
     Int_t ModuleColNum(Int_t ixGlo) const;
     

@@ -390,7 +390,7 @@ AliMUONTriggerSegmentationV2::HasPad(Int_t ixGlo, Int_t iyGlo)
 //_____________________________________________________________________________
 void
 AliMUONTriggerSegmentationV2::IGlo2ILoc(Int_t ixGlo, Int_t iyGlo,
-                                        Int_t& ixLA, Int_t& iyLA)
+                                        Int_t& ixLA, Int_t& iyLA) const
 {
   Int_t ixPC, iyPC;
   GetPadGlo2Loc(ixGlo,iyGlo,ixPC,iyPC);
@@ -400,7 +400,7 @@ AliMUONTriggerSegmentationV2::IGlo2ILoc(Int_t ixGlo, Int_t iyGlo,
 //_____________________________________________________________________________
 void
 AliMUONTriggerSegmentationV2::ILoc2IGlo(Int_t ixLA, Int_t iyLA,
-                                        Int_t& ixGlo, Int_t& iyGlo)
+                                        Int_t& ixGlo, Int_t& iyGlo) const
 {
   Int_t ixPC, iyPC;
   LA2PC(ixLA,iyLA,ixPC,iyPC);
@@ -510,7 +510,7 @@ AliMUONTriggerSegmentationV2::Iy()
 //_____________________________________________________________________________
 void
 AliMUONTriggerSegmentationV2::LA2PC(Int_t ixLA, Int_t iyLA,
-                                    Int_t& ixPC, Int_t& iyPC)
+                                    Int_t& ixPC, Int_t& iyPC) const
 {
   //
   // From LA to PC conventions for integers indices.
@@ -617,7 +617,7 @@ AliMUONTriggerSegmentationV2::Npy() const
 //_____________________________________________________________________________
 void
 AliMUONTriggerSegmentationV2::PC2LA(Int_t ixPC, Int_t iyPC,
-                                    Int_t& ixLA, Int_t& iyLA)
+                                    Int_t& ixLA, Int_t& iyLA) const
 {
   //
   // From PC to LA conventions for integers indices.
