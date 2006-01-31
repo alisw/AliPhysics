@@ -24,6 +24,9 @@
 #pragma link C++ class AliMUONDetElement+; 
 #pragma link C++ class AliMUONEventRecoCombi+; 
 
+// calibration
+#pragma link C++ class AliMUONDigitCalibrator+;
+
 // raw data
 #pragma link C++ class AliMUONDDLTrigger+;
 #pragma link C++ class AliMUONSubEventTrigger+;
