@@ -86,7 +86,7 @@ void AliALIFE:: Cylinder(Float_t rmin, Float_t rmax,
 //
 // Bodies
 // ^^^^^^
-    char name1[5], name2[5], name3[5], name4[5];
+    char name1[6], name2[6], name3[6], name4[6];
 
 //  outer radius
     sprintf(name1, "R%4.4d", fNBodies++);
