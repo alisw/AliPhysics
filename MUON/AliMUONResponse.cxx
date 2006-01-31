@@ -17,6 +17,9 @@
 
 #include "AliMUONResponse.h"
 
+#include "AliLog.h"
+#include "TList.h"
+
 ClassImp(AliMUONResponse)
 
 AliMUONResponse::AliMUONResponse()
@@ -29,5 +32,13 @@ AliMUONResponse::AliMUONResponse()
 AliMUONResponse::~AliMUONResponse()
 {
 // Destructor
+}
+
+//_____________________________________________________________________________
+void
+AliMUONResponse::DisIntegrate(const AliMUONHit&, TList& digits)
+{
+  digits.Clear();
+  AliError("Not implemented in this base class");
 }
 

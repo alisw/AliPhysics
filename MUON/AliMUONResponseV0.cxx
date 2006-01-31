@@ -15,23 +15,70 @@
 
 /* $Id$ */
 
+
+#include "AliMUONResponseV0.h"
+
+#include "AliLog.h"
+#include "AliMUON.h"
+#include "AliMUONConstants.h"
+#include "AliMUONDigit.h"
+#include "AliMUONGeometrySegmentation.h"
+#include "AliMUONGeometryTransformer.h"
+#include "AliMUONHit.h"
+#include "AliMUONSegmentation.h"
+#include "AliMpArea.h"
+#include "AliMpDEManager.h"
+#include "AliMpPlaneType.h"
+#include "AliMpStationType.h"
+#include "AliMpVPadIterator.h"
+#include "AliMpVSegmentation.h"
+#include "AliRun.h"
+#include "Riostream.h"
+#include "TVector2.h"
 #include <TMath.h>
 #include <TRandom.h>
 
-#include "AliMUONResponseV0.h"
-#include "AliMUONGeometrySegmentation.h"
-#include "AliLog.h"
-
 ClassImp(AliMUONResponseV0)
 	
+AliMUON* muon()
+{
+    return static_cast<AliMUON*>(gAlice->GetModule("MUON"));
+}
+
+void Global2Local(Int_t detElemId, Double_t xg, Double_t yg, Double_t zg,
+                  Double_t& xl, Double_t& yl, Double_t& zl)
+{  
+  // ideally should be : 
+  // Double_t x,y,z;
+  // AliMUONGeometry::Global2Local(detElemId,xg,yg,zg,x,y,z);
+  // but while waiting for this geometry singleton, let's go through
+  // AliMUON still.
+  
+  const AliMUONGeometryTransformer* transformer = muon()->GetGeometryTransformer();
+  transformer->Global2Local(detElemId,xg,yg,zg,xl,yl,zl);
+}
+
+AliMUONSegmentation* Segmentation()
+{
+  static AliMUONSegmentation* segmentation = muon()->GetSegmentation();
+  return segmentation;
+}
+
 //__________________________________________________________________________
 AliMUONResponseV0::AliMUONResponseV0()
-  : AliMUONResponse()
+  : AliMUONResponse(),
+  fChargeSlope(0.0),
+  fChargeSpreadX(0.0),
+  fChargeSpreadY(0.0),
+  fSigmaIntegration(0.0),
+  fMaxAdc(0),
+  fZeroSuppression(0),
+  fChargeCorrel(0.0),
+  fMathieson(new AliMUONMathieson),
+  fChargeThreshold(1e-4)
 {
-// Default constructor
-
-  fMathieson = new AliMUONMathieson();
-  fChargeCorrel = 0;
+    // Normal constructor
+    AliDebug(1,Form("Default ctor"));
 }
 
    //_________________________________________________________________________
@@ -46,6 +93,7 @@ AliMUONResponseV0::AliMUONResponseV0(const AliMUONResponseV0& rhs)
    //__________________________________________________________________________
 AliMUONResponseV0::~AliMUONResponseV0()
 {
+  AliDebug(1,"");
   delete fMathieson;
 }
 
@@ -59,6 +107,31 @@ AliMUONResponseV0& AliMUONResponseV0::operator = (const AliMUONResponseV0& rhs)
   AliFatal("Not implemented.");
     
   return *this;  
+}
+
+//______________________________________________________________________________
+void
+AliMUONResponseV0::Print(Option_t*) const
+{
+  cout << " ChargeSlope=" << fChargeSlope
+    << " ChargeSpreadX,Y=" << fChargeSpreadX
+    << fChargeSpreadY
+    << " ChargeCorrelation=" << fChargeCorrel
+    << endl;
+  
+//Float_t fChargeSlope;              // Slope of the charge distribution
+//Float_t fChargeSpreadX;            // Width of the charge distribution in x
+//Float_t fChargeSpreadY;            // Width of the charge distribution in y
+//Float_t fSigmaIntegration;         // Number of sigma's used for charge distribution
+//Int_t   fMaxAdc;                   // Maximum ADC channel
+//Int_t   fSaturation;               // Pad saturation in ADC channel
+//Int_t   fZeroSuppression;          // Zero suppression threshold
+//Float_t fChargeCorrel;             // amplitude of charge correlation on 2 cathods
+//                                   // is RMS of ln(q1/q2)
+//AliMUONMathieson* fMathieson;      // pointer to mathieson fct
+//Float_t fChargeThreshold;          // Charges below this threshold are = 0  
+//
+
 }
 
   //__________________________________________________________________________
@@ -103,28 +176,144 @@ Float_t AliMUONResponseV0::IntXY(Int_t idDE, AliMUONGeometrySegmentation* segmen
 
   return fMathieson->IntXY(idDE, segmentation);
 }
+
+
   //-------------------------------------------
 Int_t  AliMUONResponseV0::DigitResponse(Int_t digit, AliMUONTransientDigit* /*where*/)
 {
+//  FIXME : AliFatal("put the pedestal adding here!");
     // add white noise and do zero-suppression and signal truncation
 //     Float_t meanNoise = gRandom->Gaus(1, 0.2);
     // correct noise for slat chambers;
     // one more field to add to AliMUONResponseV0 to allow different noises ????
-    Float_t meanNoise = gRandom->Gaus(1., 0.2);
-    Float_t noise     = gRandom->Gaus(0., meanNoise);
+//    Float_t meanNoise = gRandom->Gaus(1., 0.2);
+//    Float_t noise     = gRandom->Gaus(0., meanNoise);
+    Float_t noise     = gRandom->Gaus(0., 1.0);
     digit += TMath::Nint(noise); 
     if ( digit <= ZeroSuppression()) digit = 0;
     // if ( digit >  MaxAdc())          digit=MaxAdc();
-    if ( digit >  Saturation())          digit=Saturation();
+    if ( digit >  Saturation())          
+    {
+      digit=Saturation();
+    }
 
     return digit;
 }
 
+//_____________________________________________________________________________
+Float_t
+AliMUONResponseV0::GetAnod(Float_t x) const
+{
+  //
+  // Return wire coordinate closest to x.
+  //
+  Int_t n = Int_t(x/Pitch());
+  Float_t wire = (x>0) ? n+0.5 : n-0.5;
+  return Pitch()*wire;
+}
+
+//______________________________________________________________________________
+void 
+AliMUONResponseV0::DisIntegrate(const AliMUONHit& hit, TList& digits)
+{
+  //
+  //
+  //
+  
+  digits.Clear();
+  
+  Int_t detElemId = hit.DetElemId();
+  
+  //
+  // Width of the integration area
+  //
+  Double_t dx = SigmaIntegration()*ChargeSpreadX();
+  Double_t dy = SigmaIntegration()*ChargeSpreadY();
+  
+  // Use that (dx,dy) to specify the area upon which
+  // we will iterate to spread charge into.
+  Double_t x,y,z;
+  Global2Local(detElemId,hit.X(),hit.Y(),hit.Z(),x,y,z);
+  x = GetAnod(x);
+  TVector2 hitPosition(x,y);
+  AliMpArea area(hitPosition,TVector2(dx,dy));
+  
+  //
+  // Get pulse height from energy loss
+  Float_t qtot = IntPH(hit.Eloss());
+  
+  Float_t currentCorrel = TMath::Exp(gRandom->Gaus(0.0,ChargeCorrel()/2.0));
+
+  AliDebug(4,Form("DE=%d eloss=%e x,y,z=%e,%e,%e fCurrentCorrel=%e dx,dy=%e,%e",
+                  detElemId,hit.Eloss(),hit.X(),hit.Y(),hit.Z(),
+                  currentCorrel,dx,dy));
+      
+  AliMpStationType station = AliMpDEManager::GetStationType(detElemId);
+  
+  Int_t intOffset = 1;
+  if ( station == kStation1 || station == kStation2 )
+  {
+    intOffset = 0;
+  }
+  
+  for ( Int_t cath = 0; cath < 2; ++cath )
+  {
+    Float_t qcath = qtot * ( cath == 0 ? currentCorrel : 1.0/currentCorrel);
+    
+    AliDebug(4,Form("i=%d qtot=%e qcath=%e",cath+1,qtot,qcath));      
+    // Get an iterator to loop over pads, within the given area.
+      const AliMpVSegmentation* seg = 
+        Segmentation()->GetMpSegmentation(detElemId,cath);
+      AliMpVPadIterator* it = seg->CreateIterator(area);
+      
+      if (!it)
+      {
+        AliError(Form("Could not get iterator for detElemId %d",detElemId));
+        return;
+      }
+      
+      // Start loop over pads.
+      it->First();
+      while ( !it->IsDone() )
+      {
+        AliMpPad pad = it->CurrentItem();      
+        TVector2 lowerLeft(hitPosition-pad.Position()-pad.Dimensions());
+        TVector2 upperRight(lowerLeft + pad.Dimensions()*2.0);
+        Float_t qp = TMath::Abs(fMathieson->IntXY(lowerLeft.X(),lowerLeft.Y(),
+                                                  upperRight.X(),upperRight.Y()));
 
 
-
-
-
+        Int_t icharge = Int_t(qp*qcath);
+        
+        if ( qp > fChargeThreshold )
+        {
+          AliDebug(4,Form("ix,iy=%d,%d qp=%e",
+                          pad.GetIndices().GetFirst()+intOffset,
+                          pad.GetIndices().GetSecond()+intOffset,
+                          qp));
+          AliMUONDigit* d = new AliMUONDigit;
+          d->SetDetElemId(detElemId);
+          d->SetPadX(pad.GetIndices().GetFirst()+intOffset);
+          d->SetPadY(pad.GetIndices().GetSecond()+intOffset);
+          d->SetSignal(icharge);
+          d->AddPhysicsSignal(d->Signal());
+          d->SetCathode(cath);
+          Int_t manuId = pad.GetLocation().GetFirst();
+          Int_t manuChannel = pad.GetLocation().GetSecond();
+          AliMpPlaneType planeType = AliMpDEManager::GetPlaneType(detElemId,cath);
+          if ( planeType == kNonBendingPlane )
+          {
+            // FIXME: this should not be there, but integrated in the mapping files directly.
+            manuId |= (1<<11);
+          }
+          d->SetElectronics(manuId,manuChannel);
+          digits.Add(d);   
+        }       
+        it->Next();
+      }
+      delete it;
+  }
+}
 
 
 

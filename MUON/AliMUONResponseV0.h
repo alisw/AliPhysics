@@ -16,7 +16,7 @@
 class AliMUONResponseV0 : public AliMUONResponse
 {
  public:
-    AliMUONResponseV0();
+  AliMUONResponseV0();
     virtual ~AliMUONResponseV0();
     //
     // Configuration methods
@@ -87,7 +87,12 @@ class AliMUONResponseV0 : public AliMUONResponse
     // Noise, zero-suppression, adc saturation
     virtual Int_t DigitResponse(Int_t digit, AliMUONTransientDigit* where);
 
-    ClassDef(AliMUONResponseV0,1) // Implementation of Mathieson response
+    virtual Float_t GetAnod(Float_t x) const;
+    
+    virtual void DisIntegrate(const AliMUONHit& hit, TList& digits);
+    
+    virtual void Print(Option_t* opt="") const;
+     
  protected:
     AliMUONResponseV0(const AliMUONResponseV0& rhs);
     AliMUONResponseV0& operator = (const AliMUONResponseV0& rhs);
@@ -102,8 +107,11 @@ class AliMUONResponseV0 : public AliMUONResponse
     Float_t fChargeCorrel;             // amplitude of charge correlation on 2 cathods
                                        // is RMS of ln(q1/q2)
     AliMUONMathieson* fMathieson;      // pointer to mathieson fct
-
+    Float_t fChargeThreshold;          // Charges below this threshold are = 0  
+    
+    ClassDef(AliMUONResponseV0,2) // Implementation of detector response
 };
+
 #endif
 
 

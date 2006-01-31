@@ -10,11 +10,16 @@
 /// \class AliMUONResponse
 /// \brief Chamber response base class
 
-#include <TObject.h>
+#ifndef ROOT_TObject
+#include "TObject.h"
+#endif
 
-class TF1;
+class AliMUONDigit;
 class AliMUONGeometrySegmentation;
+class AliMUONHit;
 class AliMUONTransientDigit;
+class TF1;
+class TList;
 
 class AliMUONResponse : public TObject 
 {
@@ -70,6 +75,10 @@ class AliMUONResponse : public TObject
     //virtual Int_t DigitResponse(Int_t )                {return kTRUE;}
     virtual Int_t DigitResponse(Int_t , 
                                 AliMUONTransientDigit* ) {return kTRUE;}
+    
+    /// Go from one hit to several digits, applying charge spreading.
+    virtual void DisIntegrate(const AliMUONHit& hit, TList& digits);
+
     // 
     ClassDef(AliMUONResponse,1) // Chamber response virtual base class 
 };
