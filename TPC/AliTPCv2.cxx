@@ -107,7 +107,7 @@ void AliTPCv2::CreateGeometry()
   //
   TGeoPcon *tpc = new TGeoPcon(0.,360.,18); //18 sections
   tpc->DefineSection(0,-290.,77.,278.);
-  tpc->DefineSection(1,-259.6,77.,278.);
+  tpc->DefineSection(1,-259.6,70.,278.);
   //
   tpc->DefineSection(2,-259.6,68.1,278.);
   tpc->DefineSection(3,-253.6,68.1,278.);
@@ -130,7 +130,7 @@ void AliTPCv2::CreateGeometry()
   tpc->DefineSection(14,253.6,65.6,278.);
   tpc->DefineSection(15,259.6,65.6,278.);
   //
-  tpc->DefineSection(16,259.6,77.0,278.);
+  tpc->DefineSection(16,259.6,70.0,278.);
   tpc->DefineSection(17,290.,77.,278.);
   //
   TGeoMedium *m1 = gGeoManager->GetMedium("TPC_Air");
@@ -234,7 +234,7 @@ void AliTPCv2::CreateGeometry()
   //
   tf1v->AddNode(tf2v,1); tf2v->AddNode(tf3v,1);
   //
-  v3->AddNode(tov1,1); v4->AddNode(tf1v,1);
+  v3->AddNode(tov1,1,new TGeoTranslation(0.,0.,-1.5)); v4->AddNode(tf1v,1);
   //
   v2->AddNode(v3,1); v2->AddNode(v4,1); 
   //
@@ -509,9 +509,10 @@ void AliTPCv2::CreateGeometry()
    ifstream in;
    in.open(fileName.Data(), ios_base::in); // asci file
    for(Int_t i =0;i<86;i++){
-      Double_t y = 3.9;
+      Double_t y = 3.99;
       Double_t x,z,ang;
       in>>x>>z>>ang;
+      z-=26.5;
       TGeoRotation *rrr = new TGeoRotation();
       rrr->RotateY(ang);
       TGeoCombiTrans *trans = new TGeoCombiTrans("trans",x,y,z,rrr);
