@@ -10,6 +10,8 @@
 #include "TString.h"
 #include "TGeoMatrix.h"
 
+#include "AliAlignObj.h"
+
 class AliAlignObjMatrix : public AliAlignObj {
  public:
   AliAlignObjMatrix();

@@ -14,6 +14,8 @@
 #include "TString.h"
 #include "TGeoMatrix.h"
 
+#include "AliAlignObj.h"
+
 class AliAlignObjAngles : public AliAlignObj{
  public:
   AliAlignObjAngles();
