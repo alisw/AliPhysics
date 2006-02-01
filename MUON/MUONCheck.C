@@ -559,31 +559,32 @@ void MUONrectrigger (Int_t event2Check=0, char * filename="galice.root"){
   } // end loop on event  
   
   // Print out summary if loop ran over all event
-  if (!event2Check)
-  printf("\n");
-  printf("===================================================\n");
-  printf("===================  SUMMARY  =====================\n");
-  printf("\n");
-  printf("Total number of events processed %d \n", (event2Check==0) ? nevents : 1);
-  printf("\n");
-  printf(" Global Trigger output       Low pt  High pt   All\n");
-  printf(" number of Single Plus      :\t");
-  printf("%i\t%i\t%i\t",SPLowpt,SPHighpt,SPAllpt);
-  printf("\n");
-  printf(" number of Single Minus     :\t");
-  printf("%i\t%i\t%i\t",SMLowpt,SMHighpt,SMAllpt);
-  printf("\n");
-  printf(" number of Single Undefined :\t"); 
-  printf("%i\t%i\t%i\t",SULowpt,SUHighpt,SUAllpt);
-  printf("\n");
-  printf(" number of UnlikeSign pair  :\t"); 
-  printf("%i\t%i\t%i\t",USLowpt,USHighpt,USAllpt);
-  printf("\n");
-  printf(" number of LikeSign pair    :\t");  
-  printf("%i\t%i\t%i\t",LSLowpt,LSHighpt, LSAllpt);
-  printf("\n");
-  printf("===================================================\n");
-
+  if (!event2Check){
+    printf("\n");
+    printf("===================================================\n");
+    printf("===================  SUMMARY  =====================\n");
+    printf("\n");
+    printf("Total number of events processed %d \n", (event2Check==0) ? nevents : 1);
+    printf("\n");
+    printf(" Global Trigger output       Low pt  High pt   All\n");
+    printf(" number of Single Plus      :\t");
+    printf("%i\t%i\t%i\t",SPLowpt,SPHighpt,SPAllpt);
+    printf("\n");
+    printf(" number of Single Minus     :\t");
+    printf("%i\t%i\t%i\t",SMLowpt,SMHighpt,SMAllpt);
+    printf("\n");
+    printf(" number of Single Undefined :\t"); 
+    printf("%i\t%i\t%i\t",SULowpt,SUHighpt,SUAllpt);
+    printf("\n");
+    printf(" number of UnlikeSign pair  :\t"); 
+    printf("%i\t%i\t%i\t",USLowpt,USHighpt,USAllpt);
+    printf("\n");
+    printf(" number of LikeSign pair    :\t");  
+    printf("%i\t%i\t%i\t",LSLowpt,LSHighpt, LSAllpt);
+    printf("\n");
+    printf("===================================================\n");
+  }
+  
   if (WRITE){
     TFile *myFile = new TFile("TriggerCheck.root", "RECREATE");
     Tgtuple->Write();
