@@ -30,13 +30,20 @@ ClassImp(AliTRDCalPIDLQ)
 Char_t* AliTRDCalPIDLQ::fpartName[AliPID::kSPECIES] = {"electron", "muon", "pion", "kaon", "proton"};
     
 //_________________________________________________________________________
-AliTRDCalPIDLQ::AliTRDCalPIDLQ(): TNamed()
+AliTRDCalPIDLQ::AliTRDCalPIDLQ():
+  TNamed(),
+  fNMom(0),
+  fTrackMomentum(0),
+  fMeanChargeRatio(0),
+  fNbins(0),
+  fBinSize(0),
+  fHistdEdx(0),
+  fHistTimeBin(0)
 {
   //
   //  The Default constructor
   //
   
-  Init();
 }
 
 //_________________________________________________________________________
