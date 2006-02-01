@@ -439,12 +439,12 @@ void AliMUONv1::StepManager2()
   
   // Only gas gap inside chamber
   // Tag chambers and record hits when track enters 
-  static Int_t   idvol=-1;
+  static Int_t   idvol=-1, iEnter = 0;
   Int_t   iChamber=0;
   Int_t   id=0;
   Int_t   copy;
   const  Float_t kBig = 1.e10;
-
+  static Double_t xyzEnter[3];
 
   //
   // Only gas gap inside chamber
@@ -462,6 +462,8 @@ void AliMUONv1::StepManager2()
    if( gMC->IsTrackEntering() ) {
      Float_t theta = fTrackMomentum.Theta();
      if ((TMath::Pi()-theta)*kRaddeg>=15.) gMC->SetMaxStep(fStepMaxInActiveGas); // We use Pi-theta because z is negative
+     iEnter = 1;
+     gMC->TrackPosition(xyzEnter[0], xyzEnter[1], xyzEnter[2]); // save coordinates of entrance point
   }
 
    //   AliDebug(1,
@@ -496,19 +498,49 @@ void AliMUONv1::StepManager2()
     if   ( gMC->IsTrackExiting() || 
            gMC->IsTrackStop() || 
            gMC->IsTrackDisappeared() ) gMC->SetMaxStep(kBig);
+    if (fDestepSum[idvol] == 0) {
+      // AZ - no energy release
+      fStepSum[idvol] = 0; // Reset for the next event
+      iEnter = 0;
+      return; 
+    }
 
     gMC->TrackPosition(fTrackPosition);
     Float_t theta = fTrackMomentum.Theta();
     Float_t phi   = fTrackMomentum.Phi();
     
-    TLorentzVector backToWire( fStepSum[idvol]/2.*sin(theta)*cos(phi),
-                               fStepSum[idvol]/2.*sin(theta)*sin(phi),
-                               fStepSum[idvol]/2.*cos(theta),0.0       );
-    //    AliDebug(1,
-    //	     Form("Track Position %f %f %f",fTrackPosition.X(),fTrackPosition.Y(),fTrackPosition.Z()));
-    // AliDebug(1,
-    //	     Form("Exit: Track backToWire %f %f %f",backToWire.X(),backToWire.Y(),backToWire.Z())) ;
-    fTrackPosition-=backToWire;
+    if (gMC->IsTrackExiting() && iEnter != 0) {
+      // AZ - this code is to avoid artificial hit splitting at the
+      // "fake" boundary inside the same chamber. It will still produce 
+      // 2 hits but with the same coordinates (at the wire) to allow 
+      // their merging at the digitization level.
+
+      // Only for a track going from the entrance to the exit from the volume
+      // Get local coordinates
+      Double_t xyz0[3], xyz1[3], tmp[3];
+      gMC->Gmtod(xyzEnter, xyz0, 1); // local coord. at the entrance
+
+      fTrackPosition.Vect().GetXYZ(tmp);
+      gMC->Gmtod(tmp, xyz1, 1); // local coord. at the exit
+
+      Double_t dz = -0.5;
+      if (xyz1[2] != xyz0[2]) dz = xyz0[2] / (xyz1[2] - xyz0[2]);
+      tmp[0] = xyz0[0] - (xyz1[0] - xyz0[0]) * dz; // local coord. at the wire
+      tmp[1] = xyz0[1] - (xyz1[1] - xyz0[1]) * dz;
+      tmp[2] = xyz0[2] - (xyz1[2] - xyz0[2]) * dz;
+      gMC->Gdtom(tmp, xyz1, 1); // global coord. at the wire
+      fTrackPosition.SetXYZT(xyz1[0], xyz1[1], xyz1[2], fTrackPosition.T());
+    } else {
+      TLorentzVector backToWire( fStepSum[idvol]/2.*sin(theta)*cos(phi),
+				 fStepSum[idvol]/2.*sin(theta)*sin(phi),
+				 fStepSum[idvol]/2.*cos(theta),0.0       );
+      fTrackPosition-=backToWire;
+      //printf(" %d %d %d %f %d \n", gMC->IsTrackExiting(), gMC->IsTrackStop(), gMC->IsTrackDisappeared(), fStepSum[idvol], iEnter);
+      //    AliDebug(1,
+      //     Form("Track Position %f %f %f",fTrackPosition.X(),fTrackPosition.Y(),fTrackPosition.Z()));
+      // AliDebug(1,
+      //     Form("Exit: Track backToWire %f %f %f",backToWire.X(),backToWire.Y(),backToWire.Z())) ;
+    }
     
     //-------------- Angle effect 
     // Ratio between energy loss of particle and Mip as a function of BetaGamma of particle (Energy/Mass)
@@ -584,5 +616,6 @@ void AliMUONv1::StepManager2()
 
     fStepSum[idvol]  =0; // Reset for the next event
     fDestepSum[idvol]=0; // Reset for the next event
+    iEnter = 0;
   }
 }
