@@ -401,34 +401,42 @@ Bool_t AliITSDetTypeSim::GetCalibration() {
   // Get Default calibration if a storage is not defined.
 
 
-  Bool_t deleteManager = kFALSE;
-  if(!AliCDBManager::Instance()->IsDefaultStorageSet()) {
-    AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT");
-    deleteManager = kTRUE;
-  }
-  AliCDBStorage *storage = AliCDBManager::Instance()->GetDefaultStorage();
 
-  AliCDBEntry *entrySPD = storage->Get("ITS/Calib/RespSPD", fRunNumber);
+  AliCDBEntry *entrySPD = AliCDBManager::Instance()->Get("ITS/Calib/RespSPD", fRunNumber);
+  AliCDBEntry *entrySDD = AliCDBManager::Instance()->Get("ITS/Calib/RespSDD", fRunNumber);
+  AliCDBEntry *entrySSD = AliCDBManager::Instance()->Get("ITS/Calib/RespSSD", fRunNumber);
+
+  if(!entrySPD || !entrySDD || !entrySSD){
+  	AliWarning("Calibration object retrieval failed! Dummy calibration will be used.");
+	AliCDBStorage *origStorage = AliCDBManager::Instance()->GetDefaultStorage();
+	AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT");
+	
+  	entrySPD = AliCDBManager::Instance()->Get("ITS/Calib/RespSPD", fRunNumber);
+  	entrySDD = AliCDBManager::Instance()->Get("ITS/Calib/RespSDD", fRunNumber);
+  	entrySSD = AliCDBManager::Instance()->Get("ITS/Calib/RespSSD", fRunNumber);
+	
+	AliCDBManager::Instance()->SetDefaultStorage(origStorage);
+  }
+
+
   TObjArray *respSPD = (TObjArray *)entrySPD->GetObject();
   entrySPD->SetObject(NULL);
   entrySPD->SetOwner(kTRUE);
-  AliCDBEntry *entrySDD = storage->Get("ITS/Calib/RespSDD", fRunNumber);
+
   TObjArray *respSDD = (TObjArray *)entrySDD->GetObject();
   entrySDD->SetObject(NULL);
   entrySDD->SetOwner(kTRUE);
-  AliCDBEntry *entrySSD = storage->Get("ITS/Calib/RespSSD", fRunNumber);
+
   TObjArray *respSSD = (TObjArray *)entrySSD->GetObject();
   entrySSD->SetObject(NULL);
   entrySSD->SetOwner(kTRUE);
+
+
   // DB entries are dleted. In this waymetadeta objects are deleted as well
   delete entrySPD;
   delete entrySDD;
   delete entrySSD;
-  if(deleteManager){
-    AliCDBManager::Instance()->Destroy();
-    AliCDBManager::Instance()->UnsetDefaultStorage();
-    storage = 0;   // the storage is killed by AliCDBManager::Instance()->Destroy()
-  }
+
 
   if ((! respSPD)||(! respSDD)||(! respSSD)) {
     AliWarning("Can not get calibration from calibration database !");
@@ -738,7 +746,7 @@ void AliITSDetTypeSim::StoreCalibration(Int_t firstRun, Int_t lastRun, AliCDBMet
   // a configuration macro )
 
   if(!AliCDBManager::Instance()->IsDefaultStorageSet()) {
-    //AliError("No storage set!");
+    AliWarning("No storage set! Will use dummy one");
     AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT");
     //return;
   }
@@ -774,11 +782,13 @@ void AliITSDetTypeSim::StoreCalibration(Int_t firstRun, Int_t lastRun, AliCDBMet
   for (Int_t i = index[1]; i<index[2]; i++ )
     respSSD.Add(fResponse->At(i));
 
-  AliCDBManager::Instance()->GetDefaultStorage()->Put(&respSPD, idRespSPD, &md);
+  // AliCDBManager::Instance()->GetDefaultStorage()->Put(&respSPD, idRespSPD, &md);
+  // AliCDBManager::Instance()->GetDefaultStorage()->Put(&respSDD, idRespSDD, &md);
+  // AliCDBManager::Instance()->GetDefaultStorage()->Put(&respSSD, idRespSSD, &md);
 
-  AliCDBManager::Instance()->GetDefaultStorage()->Put(&respSDD, idRespSDD, &md);
-  
-  AliCDBManager::Instance()->GetDefaultStorage()->Put(&respSSD, idRespSSD, &md);
+  AliCDBManager::Instance()->Put(&respSPD, idRespSPD, &md);
+  AliCDBManager::Instance()->Put(&respSDD, idRespSDD, &md);
+  AliCDBManager::Instance()->Put(&respSSD, idRespSSD, &md);
 }
 
 

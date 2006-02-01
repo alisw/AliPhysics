@@ -343,22 +343,38 @@ void AliITSDetTypeRec::SetDefaults(){
 Bool_t AliITSDetTypeRec::GetCalibration() {
   // Get Default calibration if a storage is not defined.
 
-  Bool_t deleteManager = kFALSE;
-  if(!AliCDBManager::Instance()->IsDefaultStorageSet()) {
-    AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT");
-    deleteManager = kTRUE;
-  }
-  AliCDBStorage *storage = AliCDBManager::Instance()->GetDefaultStorage();
+//  Bool_t deleteManager = kFALSE;
+//  if(!AliCDBManager::Instance()->IsDefaultStorageSet()) {
+//    AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT");
+//    deleteManager = kTRUE;
+//  }
+//  AliCDBStorage *storage = AliCDBManager::Instance()->GetDefaultStorage();
 
-  AliCDBEntry *entrySPD = storage->Get("ITS/Calib/RespSPD", fRunNumber);
+  AliCDBEntry *entrySPD = AliCDBManager::Instance()->Get("ITS/Calib/RespSPD", fRunNumber);
+  AliCDBEntry *entrySDD = AliCDBManager::Instance()->Get("ITS/Calib/RespSDD", fRunNumber);
+  AliCDBEntry *entrySSD = AliCDBManager::Instance()->Get("ITS/Calib/RespSSD", fRunNumber);
+
+  if(!entrySPD || !entrySDD || !entrySSD){
+  	AliWarning("Calibration object retrieval failed! Dummy calibration will be used.");
+	AliCDBStorage *origStorage = AliCDBManager::Instance()->GetDefaultStorage();
+	AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT");
+	
+  	entrySPD = AliCDBManager::Instance()->Get("ITS/Calib/RespSPD", fRunNumber);
+  	entrySDD = AliCDBManager::Instance()->Get("ITS/Calib/RespSDD", fRunNumber);
+  	entrySSD = AliCDBManager::Instance()->Get("ITS/Calib/RespSSD", fRunNumber);
+	
+	AliCDBManager::Instance()->SetDefaultStorage(origStorage);
+  }
+
+//  AliCDBEntry *entrySPD = storage->Get("ITS/Calib/RespSPD", fRunNumber);
   TObjArray *respSPD = (TObjArray *)entrySPD->GetObject();
   entrySPD->SetObject(NULL);
   entrySPD->SetOwner(kTRUE);
-  AliCDBEntry *entrySDD = storage->Get("ITS/Calib/RespSDD", fRunNumber);
+//  AliCDBEntry *entrySDD = storage->Get("ITS/Calib/RespSDD", fRunNumber);
   TObjArray *respSDD = (TObjArray *)entrySDD->GetObject();
   entrySDD->SetObject(NULL);
   entrySDD->SetOwner(kTRUE);
-  AliCDBEntry *entrySSD = storage->Get("ITS/Calib/RespSSD", fRunNumber);
+//  AliCDBEntry *entrySSD = storage->Get("ITS/Calib/RespSSD", fRunNumber);
   TObjArray *respSSD = (TObjArray *)entrySSD->GetObject();
   entrySSD->SetObject(NULL);
   entrySSD->SetOwner(kTRUE);
@@ -366,11 +382,14 @@ Bool_t AliITSDetTypeRec::GetCalibration() {
   delete entrySPD;
   delete entrySDD;
   delete entrySSD;
-  if(deleteManager){
-    AliCDBManager::Instance()->Destroy();
-    AliCDBManager::Instance()->UnsetDefaultStorage();
-    storage = 0;   // the storage is killed by AliCDBManager::Instance()->Destroy()
-  }
+
+//  if(deleteManager){
+//    AliCDBManager::Instance()->Destroy();
+//    AliCDBManager::Instance()->UnsetDefaultStorage();
+//    storage = 0;   // the storage is killed by AliCDBManager::Instance()->Destroy()
+//  }
+
+
   if ((! respSPD)||(! respSDD)||(! respSSD)) {
     AliWarning("Can not get calibration from calibration database !");
     return kFALSE;
