@@ -28,6 +28,7 @@
 #include "TMath.h"
 #include "TParticle.h"
 #include "TTree.h"
+#include "TNtuple.h"
 
 // STEER includes
 #include "AliRun.h"
@@ -419,11 +420,27 @@ void MUONrecpoints(Int_t event2Check=0, char * filename="galice.root") {
   MUONLoader->UnloadRecPoints();
 }
 
+
+
 void MUONrectrigger (Int_t event2Check=0, char * filename="galice.root"){
-// reads and dumps trigger objects from MUON.RecPoints.root
+  // reads and dumps trigger objects from MUON.RecPoints.root
   TClonesArray * globalTrigger;
   TClonesArray * localTrigger;
   
+  // Do NOT print out all the info if the loop runs over all events 
+  Int_t PRINTOUT = (event2Check == 0 ) ? 0 : 1 ;  
+  
+  // Book a ntuple for more detailled studies
+  TNtuple *Tgtuple = new TNtuple("Tgtuple","Trigger Ntuple","ev:global:spapt:smapt:undefapt:uplpt:uphpt:upapt:suapt");
+  Int_t WRITE = 0;
+
+  // counters
+  Int_t SPLowpt=0,SPHighpt=0,SPAllpt=0;
+  Int_t SMLowpt=0,SMHighpt=0,SMAllpt=0;
+  Int_t SULowpt=0,SUHighpt=0,SUAllpt=0;
+  Int_t USLowpt=0,USHighpt=0,USAllpt=0;
+  Int_t LSLowpt=0,LSHighpt=0,LSAllpt=0;
+
   // Creating Run Loader and openning file containing Hits
   AliRunLoader * RunLoader = AliRunLoader::Open(filename,"MUONFolder","READ");
   if (RunLoader ==0x0) {
@@ -445,9 +462,10 @@ void MUONrectrigger (Int_t event2Check=0, char * filename="galice.root"){
   
   for (ievent=0; ievent<nevents; ievent++) {
     if (event2Check!=0) ievent=event2Check;
+    if (ievent%100==0 || event2Check) cout << "Processing event " << ievent << endl;
     RunLoader->GetEvent(ievent);
     
-    muondata.SetTreeAddress("D,GLT"); 
+    muondata.SetTreeAddress("GLT"); 
     muondata.GetTriggerD();
     
     globalTrigger = muondata.GlobalTrigger();
@@ -455,63 +473,126 @@ void MUONrectrigger (Int_t event2Check=0, char * filename="galice.root"){
     
     Int_t nglobals = (Int_t) globalTrigger->GetEntriesFast(); // should be 1
     Int_t nlocals  = (Int_t) localTrigger->GetEntriesFast(); // up to 234
-    printf("###################################################\n");
-    cout << " event " << ievent 
-	 << " nglobals nlocals: " << nglobals << " " << nlocals << "\n"; 
+    if (PRINTOUT) printf("###################################################\n");
+    if (PRINTOUT) {cout << " event " << ievent 
+                        << " nglobals nlocals: " << nglobals << " " << nlocals << "\n"; }
     
     for (Int_t iglobal=0; iglobal<nglobals; iglobal++) { // Global Trigger
       gloTrg = static_cast<AliMUONGlobalTrigger*>(globalTrigger->At(iglobal));
       
-      printf("===================================================\n");
-      printf(" Global Trigger output       Low pt  High pt   All\n");
-      printf(" number of Single Plus      :\t");
-      printf("%i\t%i\t%i\t",gloTrg->SinglePlusLpt(),
-	     gloTrg->SinglePlusHpt(),gloTrg->SinglePlusApt());
-      printf("\n");
-      printf(" number of Single Minus     :\t");
-      printf("%i\t%i\t%i\t",gloTrg->SingleMinusLpt(),
-	     gloTrg->SingleMinusHpt(),gloTrg->SingleMinusApt());
-      printf("\n");
-      printf(" number of Single Undefined :\t"); 
-      printf("%i\t%i\t%i\t",gloTrg->SingleUndefLpt(),
-	     gloTrg->SingleUndefHpt(),gloTrg->SingleUndefApt());
-      printf("\n");
-      printf(" number of UnlikeSign pair  :\t"); 
-      printf("%i\t%i\t%i\t",gloTrg->PairUnlikeLpt(),
-	     gloTrg->PairUnlikeHpt(),gloTrg->PairUnlikeApt());
-      printf("\n");
-      printf(" number of LikeSign pair    :\t");  
-      printf("%i\t%i\t%i\t",gloTrg->PairLikeLpt(),
-	     gloTrg->PairLikeHpt(),gloTrg->PairLikeApt());
-      printf("\n");
-      printf("===================================================\n");
+      SPLowpt+=gloTrg->SinglePlusLpt() ;
+      SPHighpt+=gloTrg->SinglePlusHpt() ;
+      SPAllpt+=gloTrg->SinglePlusApt() ;
+      SMLowpt+=gloTrg->SingleMinusLpt();
+      SMHighpt+=gloTrg->SingleMinusHpt();
+      SMAllpt+=gloTrg->SingleMinusApt();
+      SULowpt+=gloTrg->SingleUndefLpt();
+      SUHighpt+=gloTrg->SingleUndefHpt();
+      SUAllpt+=gloTrg->SingleUndefApt();
+      USLowpt+=gloTrg->PairUnlikeLpt(); 
+      USHighpt+=gloTrg->PairUnlikeHpt();
+      USAllpt+=gloTrg->PairUnlikeApt();
+      LSLowpt+=gloTrg->PairLikeLpt(); 
+      LSHighpt+=gloTrg->PairLikeHpt();
+      LSAllpt+=gloTrg->PairLikeApt();
+
+      if (PRINTOUT) {
+        printf("===================================================\n");
+        printf(" Global Trigger output       Low pt  High pt   All\n");
+        printf(" number of Single Plus      :\t");
+        printf("%i\t%i\t%i\t",gloTrg->SinglePlusLpt(),
+               gloTrg->SinglePlusHpt(),gloTrg->SinglePlusApt());
+        printf("\n");
+
+        printf(" number of Single Minus     :\t");
+        printf("%i\t%i\t%i\t",gloTrg->SingleMinusLpt(),
+               gloTrg->SingleMinusHpt(),gloTrg->SingleMinusApt());
+        printf("\n");
+
+        printf(" number of Single Undefined :\t"); 
+        printf("%i\t%i\t%i\t",gloTrg->SingleUndefLpt(),
+               gloTrg->SingleUndefHpt(),gloTrg->SingleUndefApt());
+        printf("\n");
+        
+        printf(" number of UnlikeSign pair  :\t"); 
+        printf("%i\t%i\t%i\t",gloTrg->PairUnlikeLpt(),
+               gloTrg->PairUnlikeHpt(),gloTrg->PairUnlikeApt());
+        printf("\n");
+        
+        printf(" number of LikeSign pair    :\t");  
+        printf("%i\t%i\t%i\t",gloTrg->PairLikeLpt(),
+               gloTrg->PairLikeHpt(),gloTrg->PairLikeApt());
+        printf("\n");
+        
+        printf("===================================================\n");
+      }
       
     } // end of loop on Global Trigger
     
     for (Int_t ilocal=0; ilocal<nlocals; ilocal++) { // Local Trigger
-      cout << " >>> Output for Local Trigger " << ilocal << "\n";
+      if (PRINTOUT) cout << " >>> Output for Local Trigger " << ilocal << "\n";
       
       locTrg = static_cast<AliMUONLocalTrigger*>(localTrigger->At(ilocal));
       
-      cout << "Circuit StripX Dev StripY: " 
-	   << locTrg->LoCircuit() << " " 
-	   << locTrg->LoStripX() << " " 
-	   << locTrg->LoDev() << " " 
-	   << locTrg->LoStripY() 
-	   << "\n";
-      cout << "Lpt Hpt Apt: "     
-	   << locTrg->LoLpt() << " "   
-	   << locTrg->LoHpt() << " "  
-	   << locTrg->LoApt() << "\n";
-      
+      if (PRINTOUT){
+        cout << "Circuit StripX Dev StripY: " 
+             << locTrg->LoCircuit() << " " 
+             << locTrg->LoStripX() << " " 
+             << locTrg->LoDev() << " " 
+             << locTrg->LoStripY() 
+             << "\n";
+        cout << "Lpt Hpt Apt: "     
+             << locTrg->LoLpt() << " "   
+             << locTrg->LoHpt() << " "  
+             << locTrg->LoApt() << "\n";
+      }
     } // end of loop on Local Trigger
+
+
+    // fill ntuple
+    //TNtuple *Tgtuple = new TNtuple("Tgtuple","Trigger Ntuple","ev:global:spapt:smapt:undefapt:uplpt:uphpt:upapt:suapt");
+       Tgtuple->Fill(ievent,nglobals,gloTrg->SinglePlusApt(),gloTrg->SingleMinusApt(),gloTrg->SingleUndefApt(),gloTrg->PairUnlikeLpt(),gloTrg->PairUnlikeHpt(),gloTrg->PairUnlikeApt(),gloTrg->SingleUndefApt());
+
+
     muondata.ResetTrigger();
     if (event2Check!=0) ievent=nevents;
   } // end loop on event  
+  
+  // Print out summary if loop ran over all event
+  if (!event2Check)
+  printf("\n");
+  printf("===================================================\n");
+  printf("===================  SUMMARY  =====================\n");
+  printf("\n");
+  printf("Total number of events processed %d \n", (event2Check==0) ? nevents : 1);
+  printf("\n");
+  printf(" Global Trigger output       Low pt  High pt   All\n");
+  printf(" number of Single Plus      :\t");
+  printf("%i\t%i\t%i\t",SPLowpt,SPHighpt,SPAllpt);
+  printf("\n");
+  printf(" number of Single Minus     :\t");
+  printf("%i\t%i\t%i\t",SMLowpt,SMHighpt,SMAllpt);
+  printf("\n");
+  printf(" number of Single Undefined :\t"); 
+  printf("%i\t%i\t%i\t",SULowpt,SUHighpt,SUAllpt);
+  printf("\n");
+  printf(" number of UnlikeSign pair  :\t"); 
+  printf("%i\t%i\t%i\t",USLowpt,USHighpt,USAllpt);
+  printf("\n");
+  printf(" number of LikeSign pair    :\t");  
+  printf("%i\t%i\t%i\t",LSLowpt,LSHighpt, LSAllpt);
+  printf("\n");
+  printf("===================================================\n");
+
+  if (WRITE){
+    TFile *myFile = new TFile("TriggerCheck.root", "RECREATE");
+    Tgtuple->Write();
+    myFile->Close();
+  }
+
+
   MUONLoader->UnloadRecPoints();
 }
-
-
 
 void MUONrectracks (Int_t event2Check=0, char * filename="galice.root"){
 // reads and dumps trigger objects from MUON.RecPoints.root
