@@ -29,6 +29,7 @@
 
 #include "AliMUONClusterDrawAZ.h"
 #include "AliMUONClusterFinderAZ.h"
+#include "AliMUONGeometryModuleTransformer.h"
 #include "AliHeader.h"
 #include "AliRun.h"
 #include "AliMUON.h"
@@ -36,7 +37,7 @@
 #include "AliMUONDigit.h"
 #include "AliMUONHit.h"
 #include "AliMUONRawCluster.h"
-//#include "AliMUONClusterInput.h"
+#include "AliMUONClusterInput.h"
 #include "AliMUONPixel.h"
 //#include "AliMC.h"
 #include "AliMUONLoader.h"
@@ -61,8 +62,8 @@ AliMUONClusterDrawAZ::AliMUONClusterDrawAZ(AliMUONClusterFinderAZ *clusFinder)
   fFind = clusFinder;
   for (Int_t i=0; i<4; i++) fHist[i] = NULL;
   fDebug = 1; 
-  fEvent = fChamber = 0;
-  fModif = 0; 
+  fEvent = fChamber = fidDE = 0;
+  fModif = 0; //0; 
   Init();
 }
 
@@ -122,9 +123,13 @@ Bool_t AliMUONClusterDrawAZ::FindEvCh(Int_t nev, Int_t ch)
   // Find requested event and chamber (skip the ones before the selected)
 
   if (nev < fEvent) return kFALSE;
-  else if (nev == fEvent && ch < fChamber) return kFALSE;
+  else if (nev == fEvent) {
+    if (ch < fChamber) return kFALSE;
+    if (AliMUONClusterInput::Instance()->DetElemId() < fidDE) return kFALSE;
+  }
   fEvent = nev;
   fChamber = ch;
+  fidDE = AliMUONClusterInput::Instance()->DetElemId();
   return kTRUE;
 }
 
@@ -140,8 +145,10 @@ void AliMUONClusterDrawAZ::DrawCluster()
   char hName[4];
   for (Int_t cath = 0; cath < 2; cath++) {
     // Build histograms
-    if (fHist[cath*2]) {fHist[cath*2]->Delete(); fHist[cath*2] = 0;}
-    if (fHist[cath*2+1]) {fHist[cath*2+1]->Delete(); fHist[cath*2+1] = 0;}
+    //if (fHist[cath*2]) {fHist[cath*2]->Delete(); fHist[cath*2] = 0;}
+    //if (fHist[cath*2+1]) {fHist[cath*2+1]->Delete(); fHist[cath*2+1] = 0;}
+    if (fHist[cath*2]) fHist[cath*2] = 0;
+    if (fHist[cath*2+1]) fHist[cath*2+1] = 0;
     if (fFind->GetNPads(cath) == 0) continue; // cluster on one cathode only
     Float_t wxMin = 999, wxMax = 0, wyMin = 999, wyMax = 0; 
     Int_t minDx = 0, maxDx = 0, minDy = 0, maxDy = 0;
@@ -322,7 +329,7 @@ void AliMUONClusterDrawAZ::DrawHits()
   // Draw simulated and reconstructed hits 
 
   TView *view[2] = { 0x0, 0x0 };
-  Double_t p1[3]={0}, p2[3], xNDC[6];
+  Double_t p1[3]={0}, p2[3], xNDC[6], xl, yl, zl;
   TLine *line[99] = {0};
   TCanvas *c1 = (TCanvas*) gROOT->GetListOfCanvases()->FindObject("c1");
   if (c1) {
@@ -338,7 +345,8 @@ void AliMUONClusterDrawAZ::DrawHits()
 
   // Draw simulated hits
   cout << " *** Simulated hits *** " << endl;
-  Int_t ntracks = (Int_t) fData->GetNtracks();
+  Int_t ntracks = 0;
+  if (fData->TreeH()) ntracks = (Int_t) fData->GetNtracks();
   fnMu = 0;
   Int_t ix, iy, iok, nLine = 0;
   TClonesArray *hits = NULL;
@@ -350,9 +358,11 @@ void AliMUONClusterDrawAZ::DrawHits()
     for (Int_t ihit = 0; ihit < nhits; ihit++) {
       mHit = (AliMUONHit*) hits->UncheckedAt(ihit);
       if (mHit->Chamber() != fChamber+1) continue;  // chamber number
-      if (TMath::Abs(mHit->Z()-fFind->GetZpad()) > 1) continue; // different slat
-      p2[0] = p1[0] = mHit->X();        // x-pos of hit
-      p2[1] = p1[1] = mHit->Y();        // y-pos
+      AliMUONClusterInput::Instance()->Segmentation2(0)->GetTransformer()->
+ 	                 Global2Local(fidDE, mHit->X(), mHit->Y(), mHit->Z(), xl, yl, zl);
+      if (TMath::Abs(zl-fFind->GetZpad()) > 1) continue; // different slat
+      p2[0] = p1[0] = xl;        // x-pos of hit
+      p2[1] = p1[1] = yl;        // y-pos
       if (p1[0] < hist->GetXaxis()->GetXmin() || 
 	  p1[0] > hist->GetXaxis()->GetXmax()) continue;
       if (p1[1] < hist->GetYaxis()->GetXmin() || 
@@ -374,7 +384,8 @@ void AliMUONClusterDrawAZ::DrawHits()
 	  fxyMu[fnMu++][1] = p1[1];
 	}
       }	    
-      if (fDebug) printf(" X=%10.4f, Y=%10.4f, Z=%10.4f\n",p1[0],p1[1],mHit->Z());
+      printf(" Local coord.:  X=%10.4f, Y=%10.4f\n",p1[0],p1[1]);
+      printf(" Global coord.: X=%10.4f, Y=%10.4f, Z=%10.4f\n",mHit->X(),mHit->Y(),mHit->Z());
       if (view[0] || view[1]) {
 	// Take into account track angles
 	p2[0] += mHit->Tlength() * TMath::Sin(mHit->Theta()/180*TMath::Pi()) 
@@ -403,9 +414,11 @@ void AliMUONClusterDrawAZ::DrawHits()
   if (rawclust) {
     for (Int_t i = 0; i < rawclust ->GetEntriesFast(); i++) {
       mRaw = (AliMUONRawCluster*)rawclust ->UncheckedAt(i);
-      if (TMath::Abs(mRaw->GetZ(0)-fFind->GetZpad()) > 1) continue; // different slat
-      p2[0] = p1[0] = mRaw->GetX(0);        // x-pos of hit
-      p2[1] = p1[1] = mRaw->GetY(0);        // y-pos
+      AliMUONClusterInput::Instance()->Segmentation2(0)->GetTransformer()->
+ 	            Global2Local(fidDE, mRaw->GetX(0), mRaw->GetY(0), mRaw->GetZ(0), xl, yl, zl);
+      if (TMath::Abs(zl-fFind->GetZpad()) > 1) continue; // different slat
+      p2[0] = p1[0] = xl;        // x-pos of hit
+      p2[1] = p1[1] = yl;        // y-pos
       if (p1[0] < hist->GetXaxis()->GetXmin() || 
 	  p1[0] > hist->GetXaxis()->GetXmax()) continue;
       if (p1[1] < hist->GetYaxis()->GetXmin() || 
@@ -427,7 +440,8 @@ void AliMUONClusterDrawAZ::DrawHits()
 	if (fHist[ihist]->GetCellContent(ix,iy) > 0.5) {iok = 1; break;}
       }
       if (!iok) continue;
-      if (fDebug) printf(" X=%10.4f, Y=%10.4f, Z=%10.4f\n",p1[0],p1[1],mRaw->GetZ(0));
+      printf(" Local coord.:  X=%10.4f, Y=%10.4f\n",p1[0],p1[1]);
+      printf(" Global coord.: X=%10.4f, Y=%10.4f, Z=%10.4f\n",mRaw->GetX(0),mRaw->GetY(0),mRaw->GetZ(0));
       if (view[0] || view[1]) {
 	for (Int_t ipad = 1; ipad < 3; ipad++) {
 	  c1->cd(ipad);
@@ -468,10 +482,11 @@ Int_t AliMUONClusterDrawAZ::Next()
   cout << " What is next? " << endl;
   command[0] = ' '; 
   gets(command);
-  if (command[0] == 'n' || command[0] == 'N') { fEvent++; fChamber = 0; } // next event
+  if (command[0] == 'n' || command[0] == 'N') { fEvent++; fChamber = fidDE = 0; } // next event
   else if (command[0] == 'q' || command[0] == 'Q') { if (lun) fclose(lun); } // exit display 
   else if (command[0] == 'c' || command[0] == 'C') sscanf(command+1,"%d",&fChamber); // new chamber
-  else if (command[0] == 'e' || command[0] == 'E') { sscanf(command+1,"%d",&fEvent); fChamber = 0; } // new event
+  else if (command[0] == 'e' || command[0] == 'E') { sscanf(command+1,"%d",&fEvent); fChamber = fidDE = 0; } // new event
+  else if (command[0] == 'd' || command[0] == 'D') { sscanf(command+1,"%d",&fidDE); fChamber = fidDE / 100 - 1; } // new DetElem.
   else return 1; // Next precluster
   return 0;
 }
@@ -615,7 +630,8 @@ void AliMUONClusterDrawAZ::DrawHist(const char* canvas, TH2D *hist)
   gPad->SetPhi(30);
   hist->Draw("lego1Fb");
   gPad->Update();
-  gets((char*)&ix);
+  //gets((char*)&ix);
+  if (fnMu) gets((char*)&ix);
 }
 
 //_____________________________________________________________________________

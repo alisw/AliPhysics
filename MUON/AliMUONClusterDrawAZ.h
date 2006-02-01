@@ -44,6 +44,7 @@ private:
   Double_t   fxyMu[2][7]; // ! muon information
   Int_t      fEvent; // ! current event
   Int_t      fChamber; //! current chamber
+  Int_t      fidDE; //! current Det. Elem.
   Int_t      fDebug; // ! debug level
   Int_t      fModif; // ! modification flag (modified ROOT)
 

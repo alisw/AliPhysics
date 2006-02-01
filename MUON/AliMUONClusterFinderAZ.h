@@ -4,7 +4,6 @@
  * See cxx source for full Copyright notice                               */
 
 /* $Id$ */
-// Revision of includes 07/05/2004
 
 /// \ingroup rec
 /// \class AliMUONClusterFinderAZ
@@ -17,8 +16,7 @@ class TH2D;
 class TClonesArray;
 class TMinuit;
 
-class AliSegmentation;
-class AliMUONResponse;
+class AliMUONVGeometryDESegmentation;
 class AliMUONPixel;
 class AliMUONClusterDrawAZ;
 
@@ -49,14 +47,15 @@ protected:
   // Some constants
   static const Int_t fgkDim = 10000; // array size
   static const Double_t fgkCouplMin; // threshold on coupling 
+  static const Double_t fgkZeroSuppression; // average zero suppression value
+  static const Double_t fgkSaturation; // average saturation level
 
   static  AliMUONClusterFinderAZ* fgClusterFinder; // the ClusterFinderAZ instance
 
   Int_t      fnPads[2];         // ! number of pads in the cluster on 2 cathodes
   Float_t    fXyq[7][fgkDim];   // ! pad information
-  Int_t      fPadIJ[2][fgkDim]; // ! pad information
-  AliMUONGeometrySegmentation *fSegmentation[2]; // ! new segmentation
-  AliMUONResponse *fResponse;   // ! response
+  Int_t      fPadIJ[4][fgkDim]; // ! pad information
+  AliMUONVGeometryDESegmentation *fSegmentation[2]; // ! new segmentation
   Float_t    fZpad;             // ! z-coordinate of the hit
   Int_t      fNpar;             // ! number of fit parameters
   Double_t   fQtot;             // ! total cluster charge
@@ -66,10 +65,7 @@ protected:
 
   static     TMinuit* fgMinuit; // ! Fitter
   Bool_t     fUsed[2][fgkDim]; // ! flags for used pads
-  //TH2F*      fHist[4]; // ! histograms
   AliMUONClusterDrawAZ *fDraw; // ! drawing object 
-  //Int_t      fnMu; // ! number of muons passing thru the selected area
-  //Double_t   fxyMu[2][7]; // ! muon information
   TObjArray* fPixArray; // ! collection of pixels
   Int_t fnCoupled; // ! number of coupled clusters in precluster
   Int_t fDebug; // ! debug level
@@ -94,10 +90,10 @@ protected:
   Double_t MinGroupCoupl(Int_t nCoupled, Int_t *clustNumb, TMatrixD *aijcluclu, Int_t *minGroup); // find group of cluster with min. coupling to others
   Int_t  SelectPad(Int_t nCoupled, Int_t nForFit, Int_t *clustNumb, Int_t *clustFit, TMatrixD *aijcluclu); //select pads for fit
   void   Merge(Int_t nForFit, Int_t nCoupled, Int_t *clustNumb, Int_t *clustFit, TObjArray **clusters, TMatrixD *aijcluclu, TMatrixD *aijclupad); // merge clusters
-  Int_t  Fit(Int_t nfit, Int_t *clustFit, TObjArray **clusters, Double_t *parOk); // do the fitting 
+  Int_t  Fit(Int_t iSimple, Int_t nfit, Int_t *clustFit, TObjArray **clusters, Double_t *parOk); // do the fitting 
   void  UpdatePads(Int_t nfit, Double_t *par); // subtract fitted charges from pads
   void  AddRawCluster(Double_t x, Double_t y, Double_t qTot, Double_t fmin, Int_t nfit, Int_t *tracks, Double_t sigx, Double_t sigy, Double_t dist); // add new reconstructed cluster
-  Int_t FindLocalMaxima(Int_t *localMax, Double_t *maxVal); // find local maxima 
+  Int_t FindLocalMaxima(TObjArray *pixArray, Int_t *localMax, Double_t *maxVal); // find local maxima 
   void  FlagLocalMax(TH2D *hist, Int_t i, Int_t j, Int_t *isLocalMax); // flag local max
   void  FindCluster(Int_t *localMax, Int_t iMax); // find cluster around local max
   void  AddVirtualPad(); // add virtual pads for some clusters (if necessary)
