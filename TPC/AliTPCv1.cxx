@@ -38,6 +38,8 @@
 #include <TNode.h>
 #include <TTUBE.h>
 #include <TVirtualMC.h>
+#include <TString.h>
+#include <TSystem.h>
 
 #include "AliConst.h"
 #include "AliRun.h"
@@ -514,8 +516,10 @@ void AliTPCv1::CreateGeometry()
    //
    TGeoBBox *conn = new TGeoBBox(0.4,0.3,4.675); // identical for iroc and oroc
    TGeoVolume *connv = new TGeoVolume("TPC_RCCON",conn,m1);
+   TString fileName(gSystem->Getenv("ALICE_ROOT"));
+   fileName += "/TPC/conn_iroc.dat";
    ifstream in;
-   in.open("conn_iroc.dat", ios_base::in); // asci file
+   in.open(fileName.Data(), ios_base::in); // asci file
    for(Int_t i =0;i<86;i++){
       Double_t y = 3.9;
       Double_t x,z,ang;
@@ -630,7 +634,9 @@ void AliTPCv1::CreateGeometry()
    //
    // holes for connectors
    //
-   in.open("conn_oroc.dat", ios_base::in); // asci file
+   fileName = gSystem->Getenv("ALICE_ROOT");
+   fileName += "/TPC/conn_oroc.dat";
+   in.open(fileName.Data(), ios_base::in); // asci file
    for(Int_t i =0;i<78;i++){
       Double_t y =3.89;
       Double_t x,z,ang;
