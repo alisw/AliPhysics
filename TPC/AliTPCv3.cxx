@@ -830,9 +830,9 @@ void AliTPCv3::CreateGeometry()
     gGeoManager->Node("TPC_Rod",i+54,"TPC_Drift",x,y,-z,0,kTRUE,upar,3);
   }
 
-
-   
-  gMC->Gspos("TPC_M ",1,"ALIC",0.,0.,0.,0,"ONLY");
+  TGeoVolume *alice = gGeoManager->GetVolume("ALIC");
+  alice->AddNode(v1,1);
+  
 
  
 } // end of function
