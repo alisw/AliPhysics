@@ -97,7 +97,7 @@ Int_t AliTRDpidESD::MakePID(AliESD *event)
     return -1;
   
   // The class AliTRDCalPIDLQ contains precalculated prob dis.
-  AliTRDCalPIDLQ *pd = calibration->GetPIDLQObject();
+  const AliTRDCalPIDLQ *pd = calibration->GetPIDLQObject();
   if (!pd) return -1;
 
   //  Example to get mean for particle 2 (pi) and momentum number 4 (2 GeV)
