@@ -32,8 +32,8 @@ class AliTRDCalPad : public TNamed {
 
   static inline Int_t               GetDet(Int_t p, Int_t c, Int_t s) { return p+c*kNplan+s*kNplan*kNcham; };
 
-  AliTRDCalROC *GetCalROC(Int_t d) { return fROC[d]; };
-  AliTRDCalROC *GetCalROC(Int_t p, Int_t c, Int_t s)
+  AliTRDCalROC *GetCalROC(Int_t d) const { return fROC[d]; };
+  AliTRDCalROC *GetCalROC(Int_t p, Int_t c, Int_t s) const
                                                { return fROC[GetDet(p,c,s)]; };
   
   void ScaleROCs(AliTRDCalDet* values);
