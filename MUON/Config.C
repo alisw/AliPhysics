@@ -151,14 +151,24 @@ void Config(char directory[100]="", char option[6]="param")
   cout << ">>> Config.C: Creating AliMUONv1 ..."<<endl;
 
   // New MUONv1 version (geometry defined via builders)
+  //
   //AliMUON *MUON = new AliMUONv1("MUON", "default");
+  //
   AliMUON *MUON = new AliMUONv1("MUON", "FactoryV3"); // New segmentation slats 
+  //
   //AliMUON *MUON = new AliMUONv1("MUON", "FactoryV4"); // New segmentation trigger 
+  //
+  //Version below to get digitizer making a decalibration.
+  //AliMUON *MUON = new AliMUONv1("MUON", "FactoryV4",
+  //  "sdigitizer:AliMUONSDigitizerV2","digitizer:NewDigitizerOldTrigger");
+
   // If SetAlign, the detection elements transformations
   // are taken from the input file and not from the code
   // MUON->SetAlign("transform.dat");
+
   // To generate and read scaler trigger events in rawdata
   // MUON->SetTriggerScalerEvent();
+
   MUON->AddGeometryBuilder(new AliMUONSt1GeometryBuilderV2(MUON));
   MUON->AddGeometryBuilder(new AliMUONSt2GeometryBuilderV2(MUON));
   MUON->AddGeometryBuilder(new AliMUONSlatGeometryBuilder(MUON));
