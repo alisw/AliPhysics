@@ -431,7 +431,7 @@ void MUONrectrigger (Int_t event2Check=0, char * filename="galice.root"){
   Int_t PRINTOUT = (event2Check == 0 ) ? 0 : 1 ;  
   
   // Book a ntuple for more detailled studies
-  TNtuple *Tgtuple = new TNtuple("Tgtuple","Trigger Ntuple","ev:global:spapt:smapt:undefapt:uplpt:uphpt:upapt:suapt");
+  TNtuple *Tgtuple = new TNtuple("Tgtuple","Trigger Ntuple","ev:global:spapt:smapt:undefapt:uplpt:uphpt:upapt:lpapt");
   Int_t WRITE = 0;
 
   // counters
@@ -550,8 +550,8 @@ void MUONrectrigger (Int_t event2Check=0, char * filename="galice.root"){
 
 
     // fill ntuple
-    //TNtuple *Tgtuple = new TNtuple("Tgtuple","Trigger Ntuple","ev:global:spapt:smapt:undefapt:uplpt:uphpt:upapt:suapt");
-       Tgtuple->Fill(ievent,nglobals,gloTrg->SinglePlusApt(),gloTrg->SingleMinusApt(),gloTrg->SingleUndefApt(),gloTrg->PairUnlikeLpt(),gloTrg->PairUnlikeHpt(),gloTrg->PairUnlikeApt(),gloTrg->SingleUndefApt());
+    //TNtuple *Tgtuple = new TNtuple("Tgtuple","Trigger Ntuple","ev:global:spapt:smapt:undefapt:uplpt:uphpt:upapt:lpapt");
+       Tgtuple->Fill(ievent,nglobals,gloTrg->SinglePlusApt(),gloTrg->SingleMinusApt(),gloTrg->SingleUndefApt(),gloTrg->PairUnlikeLpt(),gloTrg->PairUnlikeHpt(),gloTrg->PairUnlikeApt(),gloTrg->PairLikeApt());
 
 
     muondata.ResetTrigger();
@@ -636,6 +636,7 @@ void MUONrectracks (Int_t event2Check=0, char * filename="galice.root"){
     Double_t bendingSlope, nonBendingSlope, inverseBendingMomentum;
     Double_t xRec, yRec, zRec, chi2MatchTrigger;
     Bool_t matchTrigger;
+    Double_t Pz,Px,Py,Pt,Ptot,Eta ;
 
   // setting pointer for tracks, triggertracks & trackparam at vertex
     AliMUONTrack* recTrack = 0;
@@ -658,7 +659,15 @@ void MUONrectracks (Int_t event2Check=0, char * filename="galice.root"){
       matchTrigger     = recTrack->GetMatchTrigger();
       chi2MatchTrigger = recTrack->GetChi2MatchTrigger();
       
+      Px = trackParam->Px();
+      Py = trackParam->Py(); 
+      Pz = trackParam->Pz(); 
+      Pt = TMath::Sqrt(Px*Px + Py*Py );
+      Ptot = TMath::Sqrt(Px*Px + Py*Py + Pz*Pz);
+      Eta =  (Pt!=0) ? 0.5*log( (Ptot+Pz)/(Ptot-Pz) ) : 999999999.999 ;
+       
       printf(">>> RecTrack %4d  NofClusters=%2d BendMomentum=%7.2f NonBendSlope=%5.2f  BendSlope=%5.2f Match2Trig=%1d (vertex@z=0)=(%5.2f,%5.2f,%5.1f)cm \n", iRecTracks, nTrackHits, 1/inverseBendingMomentum , nonBendingSlope*180./TMath::Pi(), bendingSlope*180./TMath::Pi(),  matchTrigger, xRec,yRec,zRec);
+      printf("    Px=%f  Py =%f  Pz =%f   Pt=%f  Ptot=%f   PseudoRap=%f  \n",Px,Py,Pz,Pt,Ptot,Eta);
     } // end loop tracks
 
     muondata.ResetRecTracks();
