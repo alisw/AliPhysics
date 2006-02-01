@@ -38,6 +38,10 @@
 #include <Riostream.h>
 #include <TSystem.h>
 #include <TVirtualMC.h>
+#include <TGeoManager.h>
+#include <TGeoVolume.h>
+#include <TGeoTube.h>
+#include <TGeoCompositeShape.h>
 
 #include "AliMpFiles.h"
 #include "AliMpSectorReader.h"
@@ -1132,6 +1136,47 @@ void AliMUONSt1GeometryBuilderV2::CreateFrame(Int_t chamber)
   par[3] = fgkMotherPhiL1; 
   par[4] = fgkMotherPhiU1;
   gMC->Gsvolu(QuadrantMLayerName(chamber),"TUBS",idAir,par,5);
+
+// Replace the volume shape with a composite shape
+// with substracted overlap with beam shield (YMOT)
+
+  if ( gMC->IsRootGeometrySupported() &&
+       TString(gMC->ClassName()) != "TGeant4") { 
+
+    // Get shape
+    TGeoVolume* mlayer 
+      = gGeoManager->FindVolumeFast(QuadrantMLayerName(chamber));
+    if ( !mlayer ) {
+      AliErrorStream() 
+         << "Quadrant volume " << QuadrantMLayerName(chamber) << " not found" 
+	 << endl;
+    }
+    else {
+      TGeoShape* quadrant = mlayer->GetShape();
+      quadrant->SetName("quadrant");	 
+
+      // Beam shield recess
+      par[0] = 0;
+      par[1] = 15.4; 
+      par[2] = fgkMotherThick1;  
+      new TGeoTube("shield_tube", par[0], par[1], par[2]);
+  
+      // Displacement
+      posX = 2.6;
+      posY = 2.6;
+      posZ = 0;
+      TGeoTranslation* displacement 
+        = new TGeoTranslation("TR", posX, posY, posZ);
+      displacement->RegisterYourself();
+
+      // Composite shape
+      TGeoShape* composite
+      = new TGeoCompositeShape("composite", "quadrant-shield_tube:TR"); 
+      
+      // Reset shape to volume      
+      mlayer->SetShape(composite);
+    }
+  }    
 
 // Quadrant volume TUBS2, positioned at the end
   par[0] = fgkMotherIR2;
