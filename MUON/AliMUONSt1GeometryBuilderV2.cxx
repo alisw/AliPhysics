@@ -66,8 +66,8 @@ ClassImp(AliMUONSt1GeometryBuilderV2)
 
 // Thickness Constants
 const GReal_t AliMUONSt1GeometryBuilderV2::fgkHzPadPlane=0.0148/2.;     //Pad plane
-const GReal_t AliMUONSt1GeometryBuilderV2::fgkHzFoam = 2.083/2.;        //Foam of mechanicalplane
-const GReal_t AliMUONSt1GeometryBuilderV2::fgkHzFR4 = 0.0031/2.;        //FR4 of mechanical plane
+const GReal_t AliMUONSt1GeometryBuilderV2::fgkHzFoam = 2.503/2.;        //Foam of mechanicalplane
+const GReal_t AliMUONSt1GeometryBuilderV2::fgkHzFR4 = 0.062/2.;         //FR4 of mechanical plane
 const GReal_t AliMUONSt1GeometryBuilderV2::fgkHzSnPb = 0.0091/2.;       //Pad/Kapton connection (66 pt)
 const GReal_t AliMUONSt1GeometryBuilderV2::fgkHzKapton = 0.0122/2.;     //Kapton
 const GReal_t AliMUONSt1GeometryBuilderV2::fgkHzBergPlastic = 0.3062/2.;//Berg connector
