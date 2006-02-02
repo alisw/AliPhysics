@@ -44,7 +44,7 @@ Int_t AliAlignObj::fgLayerSize[kLastLayer - kFirstLayer] = {
   748, 950, // ITS SSD
   36, 36,   // TPC
   90, 90, 90, 90, 90, 90,  // TRD
-  1,        // TOF ??
+  1674,     // TOF
   1, 1,     // PHOS ??
   7,        // RICH ??
   1         // MUON ??
@@ -510,5 +510,73 @@ void AliAlignObj::InitVolPaths()
     }
   }
 
+  /*********************       TOF layer   ***********************/
+  {
+    Int_t nstrA=15;
+    Int_t nstrB=19;
+    Int_t nstrC=20;
+    Int_t nStripSec=nstrA+2*nstrB+2*nstrC;
+
+    for (Int_t modnum=0; modnum < 1674; modnum++) {
+
+      Int_t sector = modnum/nStripSec;
+
+      Char_t  string1[100];
+      Char_t  string2[100];
+
+      Int_t icopy=-1;
+      if(sector<2){
+	icopy=sector+1;
+	sprintf(string1,"/ALIC_1/B077_1/B075_%i/BTO3_1",icopy);
+      }
+      else if(sector<11){
+	icopy=sector-2;
+	sprintf(string1,"/ALIC_1/B077_1/B071_%i/BTO1_1",icopy);
+      }
+      else if(sector==11 || sector==12){
+	icopy=sector-10;
+	sprintf(string1,"/ALIC_1/B077_1/B074_%i/BTO2_1",icopy);
+      }
+      else {
+	icopy=sector-4;
+	sprintf(string1,"/ALIC_1/B077_1/B071_%i/BTO1_1",icopy);
+      }
+
+      Int_t strInSec=modnum%nStripSec;
+
+      if( strInSec < nstrC){
+	icopy= strInSec+1;
+	sprintf(string2,"FTOC_1/FLTC_1/FSTR_%i",icopy);
+      }
+      else if(strInSec< nstrC+nstrB){
  
+	icopy= strInSec-nstrC+1;
+	sprintf(string2,"FTOB_1/FLTB_1/FSTR_%i",icopy);
+
+      }
+      else if(strInSec< nstrC+nstrB+nstrA){   
+
+	icopy= strInSec-(nstrC+nstrB)+1;
+	sprintf(string2,"FTOA_1/FLTA_1/FSTR_%i",icopy);
+ 
+      }
+      else if(strInSec< nstrC+2*nstrB+nstrA){ 
+
+	icopy= strInSec-(nstrC+nstrB+nstrA)+1;
+	sprintf(string2,"FTOB_2/FLTB_2/FSTR_%i",icopy);
+
+      }
+      else  { 
+
+	icopy= strInSec-(nstrC+2*nstrB+nstrA)+1;
+	sprintf(string2,"FTOC_2/FLTC_2/FSTR_%i",icopy);
+
+      }
+  
+      Char_t  path[100];
+      sprintf(path,"%s/%s",string1,string2); 
+      //      printf("%d  %s\n",modnum,path);
+      fgVolPath[kTOF-kFirstLayer][modnum] = path;
+    }
+  } 
 }
