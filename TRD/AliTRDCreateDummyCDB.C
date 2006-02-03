@@ -10,8 +10,8 @@
 #include "AliTRDgeometry.h"
 
 #include "AliTRDCalROC.h"
-#include "AliTRDCalChamber.h"
-#include "AliTRDCalStack.h"
+#include "AliTRDCalChamberPos.h"
+#include "AliTRDCalStackPos.h"
 #include "AliTRDCalPad.h"
 #include "AliTRDCalDet.h"
 #include "AliTRDCalGlobals.h"
@@ -54,7 +54,7 @@ TObject* CreateGlobalsObject()
 
 TObject* CreateChamberObject()
 {
-  AliTRDCalChamber *object = new AliTRDCalChamber("Chamber", "TRD chamber positions");
+  AliTRDCalChamberPos *object = new AliTRDCalChamberPos("Chamber", "TRD chamber positions");
   
   for (Int_t det=0; det<AliTRDgeometry::kNdet; ++det)
   {
@@ -67,7 +67,7 @@ TObject* CreateChamberObject()
 
 TObject* CreateStackObject()
 {
-  AliTRDCalStack *object = new AliTRDCalStack("Stack", "TRD stack positions");
+  AliTRDCalStackPos *object = new AliTRDCalStackPos("Stack", "TRD stack positions");
   
   for (Int_t sect=0; sect<AliTRDgeometry::kNsect; ++sect)
   {
@@ -113,7 +113,7 @@ TObject* CreatePRFWidthObject()
 
 AliTRDCalPIDLQ* CreatePIDLQObject()
 {
-  AliTRDCalPIDLQ* pid = new AliTRDCalPIDLQ();
+  AliTRDCalPIDLQ* pid = new AliTRDCalPIDLQ("pidobject", "pidobject");
   pid->ReadData("$ALICE_ROOT/TRD/TRDdEdxHistogramsV1.root");
   pid->SetMeanChargeRatio(1.0); // The factor is the ratio of Mean of pi charge dist.
                     // for the New TRD code divided by the Mean of pi charge
@@ -179,14 +179,14 @@ void AliTRDCreateDummyCDB()
   obj = CreateGlobalsObject();
   StoreObject("TRD/Calib/Globals", obj, metaData);
   
-  metaData = CreateMetaObject("AliTRDCalChamber");
+  metaData = CreateMetaObject("AliTRDCalChamberPos");
   obj = CreateChamberObject();
   StoreObject("TRD/Calib/Chamber", obj, metaData);
   
-  metaData = CreateMetaObject("AliTRDCalStack");
+  metaData = CreateMetaObject("AliTRDCalStackPos");
   obj = CreateStackObject();
   StoreObject("TRD/Calib/Stack", obj, metaData);
-  
+
   metaData = CreateMetaObject("AliTRDCalPIDLQ");
   obj = CreatePIDLQObject();
   StoreObject("TRD/Calib/PIDLQ", obj, metaData);
