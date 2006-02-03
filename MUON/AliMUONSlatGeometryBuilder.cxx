@@ -659,7 +659,7 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
     Float_t dframepOut= kVframeLength + 40.0; // Additional 30 cm gap is needed to wrap the corners of the slats 
     Float_t tpar[3];
     Double_t dstation =  ( (-AliMUONConstants::DefaultChamberZ(7)) - 
-                           (-AliMUONConstants::DefaultChamberZ(6)) ) /2.1;
+                           (-AliMUONConstants::DefaultChamberZ(6)) ) /2.2;
     tpar[0] = AliMUONConstants::Rmin(3)-dframepIn; 
     tpar[1] = AliMUONConstants::Rmax(3)+dframepOut;
     tpar[2] = dstation;
@@ -1186,26 +1186,30 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
 //______________________________________________________________________________
 void AliMUONSlatGeometryBuilder::SetTransformations()
 {
-// Defines the transformations for the station2 chambers.
+// Defines the transformations for the station345 chambers.
 // ---
-
+// Stations 345 are not perpendicular to the beam axis
+// See AliMUONConstants class
+  TGeoRotation st345inclination("rot99");
+  st345inclination.RotateX(AliMUONConstants::St345Inclination());
+  
   Double_t zpos1= - AliMUONConstants::DefaultChamberZ(4); 
-  SetTranslation(4, TGeoTranslation(0., 0., zpos1));
+  SetTransformation(4, TGeoTranslation(0., 0., zpos1), st345inclination);
 
   zpos1= - AliMUONConstants::DefaultChamberZ(5); 
-  SetTranslation(5, TGeoTranslation(0., 0., zpos1));
+  SetTransformation(5, TGeoTranslation(0., 0., zpos1), st345inclination);
 
   zpos1 = - AliMUONConstants::DefaultChamberZ(6); 
-  SetTranslation(6, TGeoTranslation(0., 0., zpos1));
+  SetTransformation(6, TGeoTranslation(0., 0., zpos1), st345inclination);
 
   zpos1 = - AliMUONConstants::DefaultChamberZ(7); 
-  SetTranslation(7, TGeoTranslation(0., 0., zpos1));
+  SetTransformation(7, TGeoTranslation(0., 0., zpos1), st345inclination );
 
   zpos1 = - AliMUONConstants::DefaultChamberZ(8); 
-  SetTranslation(8, TGeoTranslation(0., 0., zpos1));
+  SetTransformation(8, TGeoTranslation(0., 0., zpos1), st345inclination);
 
   zpos1 = - AliMUONConstants::DefaultChamberZ(9); 
-  SetTranslation(9, TGeoTranslation(0., 0., zpos1));
+  SetTransformation(9, TGeoTranslation(0., 0., zpos1), st345inclination);
 
 }
 
