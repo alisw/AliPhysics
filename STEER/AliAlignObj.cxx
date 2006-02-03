@@ -352,6 +352,16 @@ Bool_t AliAlignObj::GetFromGeometry(const char *path, AliAlignObj &alobj)
 }
 
 //_____________________________________________________________________________
+const char* AliAlignObj::GetVolPath(ELayerID layerId, Int_t modId)
+{
+  if(modId<0 || modId>=fgLayerSize[layerId-kFirstLayer]){
+    AliWarningClass(Form("Module number %d not in the valid range (0->%d) !",modId,fgLayerSize[layerId-kFirstLayer]-1));
+    return NULL;
+  }
+  return fgVolPath[layerId-kFirstLayer][modId].Data();
+}
+
+//_____________________________________________________________________________
 void AliAlignObj::InitVolPaths()
 {
   // Initialize the LUTs which contain
@@ -509,6 +519,54 @@ void AliAlignObj::InitVolPaths()
       }
     }
   }
+
+  /***************    TPC inner chambers' layer    ****************/
+  {
+    Int_t modnum = 0;
+    TString str1 = "ALIC_1/TPC_M_1/TPC_Drift_1/TPC_ENDCAP_1/TPC_SECT_";
+    TString str2 = "ALIC_1/TPC_M_1/TPC_Drift_1/TPC_ENDCAP_2/TPC_SECT_";
+    TString str_in = "/TPC_IROC_1";
+    TString volpath;
+    
+    for(Int_t cnt=1; cnt<=18; cnt++){
+      volpath = str1;
+      volpath += cnt;
+      volpath += str_in;
+      fgVolPath[kTPC1-kFirstLayer][modnum] = volpath.Data();
+      modnum++;
+    }
+    for(Int_t cnt=1; cnt<=18; cnt++){
+      volpath = str2;
+      volpath += cnt;
+      volpath += str_in;
+      fgVolPath[kTPC1-kFirstLayer][modnum] = volpath.Data();
+      modnum++;
+    }
+  }
+
+  /***************    TPC outer chambers' layer    ****************/
+  {
+    Int_t modnum = 0;
+    TString str1 = "ALIC_1/TPC_M_1/TPC_Drift_1/TPC_ENDCAP_1/TPC_SECT_";
+    TString str2 = "ALIC_1/TPC_M_1/TPC_Drift_1/TPC_ENDCAP_2/TPC_SECT_";
+    TString str_out = "/TPC_OROC_1";
+    TString volpath;
+    
+    for(Int_t cnt=1; cnt<=18; cnt++){
+      volpath = str1;
+      volpath += cnt;
+      volpath += str_out;
+      fgVolPath[kTPC2-kFirstLayer][modnum] = volpath.Data();
+      modnum++;
+    }
+    for(Int_t cnt=1; cnt<=18; cnt++){
+      volpath = str2;
+      volpath += cnt;
+      volpath += str_out;
+      fgVolPath[kTPC2-kFirstLayer][modnum] = volpath.Data();
+      modnum++;
+    }
+  }    
 
   /*********************       TOF layer   ***********************/
   {
