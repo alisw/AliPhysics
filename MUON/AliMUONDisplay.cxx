@@ -36,6 +36,7 @@
 #include "AliMUONSegmentation.h"
 #include "AliMUONGeometrySegmentation.h"
 #include "AliMUONConstants.h"
+#include "AliMUONTriggerSegmentationV2.h"
 
 #include "AliMpDEIterator.h"
 #include "AliMpSegFactory.h"
@@ -45,6 +46,8 @@
 #include "AliMpSector.h"
 #include "AliMpTriggerSegmentation.h"
 #include "AliMpTrigger.h"
+#include "AliMpStationType.h"
+#include "AliMpDEManager.h"
 
 #include "AliMC.h"
 #include "AliLog.h"
@@ -907,6 +910,8 @@ void AliMUONDisplay::DrawView(Float_t theta, Float_t phi, Float_t psi)
 	AliMpTriggerSegmentation * seg  
 	  = (AliMpTriggerSegmentation *) segmentation->GetMpSegmentation(detElemId, 0);
 	if (!seg) {  
+	    printf(" AliMUONDisplay no segmentation \n");
+	    
 	  // Create mapping segmentation if old trigger segmentation
 	  // (not using mapping)
 	  seg = (AliMpTriggerSegmentation *)
@@ -1080,6 +1085,7 @@ void AliMUONDisplay::LoadDigits(Int_t chamber, Int_t cathode)
     ResetPoints();
     
     AliMUON *pMUON  =     (AliMUON*)gAlice->GetModule("MUON");
+
     AliMUONGeometrySegmentation*  segmentation2 = 0x0;
 
     GetMUONData()->SetTreeAddress("D");
@@ -1090,100 +1096,187 @@ void AliMUONDisplay::LoadDigits(Int_t chamber, Int_t cathode)
     gAlice->ResetDigits();
     Int_t nent = 0;
  
-   if (GetLoader()->TreeD()) {
-     nent = (Int_t) GetLoader()->TreeD()->GetEntries();
-     //     gAlice->TreeD()->GetEvent(nent-2+cathode-1);
-     GetMUONData()->GetDigits();
+    if (GetLoader()->TreeD()) {
+	nent = (Int_t) GetLoader()->TreeD()->GetEntries();
+	//     gAlice->TreeD()->GetEvent(nent-2+cathode-1);
+	GetMUONData()->GetDigits();
     }
     
-    Int_t ndigits = muonDigits->GetEntriesFast();
+    Int_t ndigits = muonDigits->GetEntriesFast();    
     if (ndigits == 0) return;
     if (fPoints == 0) fPoints = new TObjArray(ndigits);
     
-    //segmentation2 = iChamber->SegmentationModel2(cathode);
-    segmentation2
-      = pMUON->GetSegmentation()->GetModuleSegmentation(chamber-1, cathode-1);
-
     Float_t zpos = AliMUONConstants::DefaultChamberZ(chamber-1);
 
     AliMUONDigit  *mdig;
     AliMUONPoints *points  = 0;
     TMarker3DBox  *marker  = 0;
-    //
-    //loop over all digits and store their position
-    
+
     Int_t npoints  = 1;
     Float_t adcmax = 1024; // default
     if (chamber<11) adcmax = 4096;
 
-    for (Int_t digit = 0; digit < ndigits; digit++) {
-        mdig    = (AliMUONDigit*)muonDigits->UncheckedAt(digit);
-	if (mdig->Cathode() != cathode-1) continue;
-	
-        //
-        // First get all needed parameters
-        //
-        Int_t charge = mdig->Signal();
-        Int_t index  = Int_t(TMath::Log(charge)/(TMath::Log(adcmax)/22));
-        Int_t color  = 261+index;
-	Int_t colorTrigger = 2;   
-        if (color > 282) color = 282;
+// check if trigger is using new or old segmentation
+    Bool_t old = true;
+    AliMUONSegmentation* segmentation = pMUON->GetSegmentation();
+    if ( segmentation->GetMpSegmentation(1100, cathode-1) ) old = false;
 
-	if (chamber > 10) { // trigger chamber 
+    if ( old  && chamber > 10) {
+	if (chamber > 10) printf(">>> old segmentation for trigger \n");
+	else printf(">>> old segmentation for tracking \n");
 
-	    Int_t sumCharge = 0;
-	    for (Int_t icharge = 0; icharge < 10; icharge++) {
-		sumCharge = sumCharge+mdig->TrackCharge(icharge);
-	    }
-	    Int_t testCharge = sumCharge-(Int_t(sumCharge/10))*10;
-	    if(sumCharge <= 10 || testCharge > 0) {
-		colorTrigger = color; 
-	    } else {
-		colorTrigger = 5; 
-	    }
-	}
-
-	// get the center of the pad - add on x and y half of pad size
-	Float_t xpad, ypad, zpad;
-	Int_t isec;
-	Float_t dpx, dpy;
-
-	Int_t detElemId = mdig->DetElemId();
-	segmentation2->GetPadC(detElemId, mdig->PadX(), mdig->PadY(), xpad, ypad, zpad);
-	isec = segmentation2->Sector(detElemId, mdig->PadX(), mdig->PadY());
-	dpx = segmentation2->Dpx(detElemId, isec)/2;
-	dpy = segmentation2->Dpy(detElemId, isec)/2;
-//
-//	segmentation->Dump();
-	
-	//
-	// Then set the objects
-	//
-        points = new AliMUONPoints(npoints);
-	fPoints->AddAt(points,digit);
-	if (chamber > 10) {
-	    points->SetMarkerColor(colorTrigger);
-	} else {  
-	    points->SetMarkerColor(color);
-	}
-        points->SetMarkerStyle(21);
-        points->SetMarkerSize(0.5);
-        points->SetParticle(-1);
-        points->SetHitIndex(-1);
-        points->SetTrackIndex(-1);
-        points->SetDigitIndex(digit);
-        points->SetPoint(0,xpad,ypad,zpos);
-	
-	Int_t lineColor = (zpad-zpos > 0) ? 2:3;
-	marker=new TMarker3DBox(xpad,ypad,zpos,dpx,dpy,0,0,0);
-
+	segmentation2
+	    = pMUON->GetSegmentation()->GetModuleSegmentation(chamber-1, cathode-1);
+	for (Int_t digit = 0; digit < ndigits; digit++) {
+	    mdig    = (AliMUONDigit*)muonDigits->UncheckedAt(digit);
+	    if (mdig->Cathode() != cathode-1) continue;
 	    
-	marker->SetLineColor(lineColor);
-	marker->SetFillStyle(1001);
-	marker->SetFillColor(color);
-	marker->SetRefObject((TObject*)points);
-	points->Set3DMarker(0, marker);
-    }
+	    //
+	    // First get all needed parameters
+	    //
+	    Int_t charge = mdig->Signal();
+	    Int_t index  = Int_t(TMath::Log(charge)/(TMath::Log(adcmax)/22));
+	    Int_t color  = 261+index;
+	    Int_t colorTrigger = 2;   
+	    if (color > 282) color = 282;
+	    
+	    if (chamber > 10) { // trigger chamber 
+		
+		Int_t sumCharge = 0;
+		for (Int_t icharge = 0; icharge < 10; icharge++) {
+		    sumCharge = sumCharge+mdig->TrackCharge(icharge);
+		}
+		Int_t testCharge = sumCharge-(Int_t(sumCharge/10))*10;
+		if(sumCharge <= 10 || testCharge > 0) {
+		    colorTrigger = color; 
+		} else {
+		    colorTrigger = 5; 
+		}
+	    }
+	    
+	    // get the center of the pad - add on x and y half of pad size
+	    Float_t xpad, ypad, zpad;
+	    Int_t isec;
+	    Float_t dpx, dpy;
+	    
+	    Int_t detElemId = mdig->DetElemId();
+	    segmentation2->GetPadC(detElemId, mdig->PadX(), mdig->PadY(), xpad, ypad, zpad);
+	    isec = segmentation2->Sector(detElemId, mdig->PadX(), mdig->PadY());
+	    dpx = segmentation2->Dpx(detElemId, isec)/2;
+	    dpy = segmentation2->Dpy(detElemId, isec)/2;
+	    
+	    // Then set the objects
+	    points = new AliMUONPoints(npoints);
+	    fPoints->AddAt(points,digit);
+	    if (chamber > 10) {
+		points->SetMarkerColor(colorTrigger);
+	    } else {  
+		points->SetMarkerColor(color);
+	    }
+	    points->SetMarkerStyle(21);
+	    points->SetMarkerSize(0.5);
+	    points->SetParticle(-1);
+	    points->SetHitIndex(-1);
+	    points->SetTrackIndex(-1);
+	    points->SetDigitIndex(digit);
+	    points->SetPoint(0,xpad,ypad,zpos);
+	    
+	    Int_t lineColor = (zpad-zpos > 0) ? 2:3;
+	    marker=new TMarker3DBox(xpad,ypad,zpos,dpx,dpy,0,0,0);
+	    
+	    
+	    marker->SetLineColor(lineColor);
+	    marker->SetFillStyle(1001);
+	    marker->SetFillColor(color);
+	    marker->SetRefObject((TObject*)points);
+	    points->Set3DMarker(0, marker);
+	} // end loop on digits	    
+	
+    } else {	
+	if (chamber > 10) printf(">>> new segmentation for trigger \n");
+	else printf(">>> new segmentation for tracking \n");
+	
+	const AliMUONGeometryTransformer* kGeomTransformer 
+	    = pMUON->GetGeometryTransformer();
+	
+	//loop over all digits and store their position
+	for (Int_t digit = 0; digit < ndigits; digit++) {
+	    mdig    = (AliMUONDigit*)muonDigits->UncheckedAt(digit);
+	    if (mdig->Cathode() != cathode-1) continue;
+	    
+	    // get all needed parameters
+	    Int_t ix=mdig->PadX();
+	    Int_t iy=mdig->PadY();
+	    Int_t detElemId=mdig->DetElemId();      
+	    Int_t charge = mdig->Signal();
+	    Int_t index  = Int_t(TMath::Log(charge)/(TMath::Log(adcmax)/22));
+	    Int_t color  = 261+index;
+	    Int_t colorTrigger = 2;   
+	    if (color > 282) color = 282;
+	    
+	    const AliMpVSegmentation* seg = 
+		pMUON->GetSegmentation()->GetMpSegmentation(detElemId,cathode-1);
+	    
+	    AliMpStationType station = AliMpDEManager::GetStationType(detElemId);
+	    
+	    Int_t intOffset = station == kStation345 ? 1 : 0;	
+	    
+	    AliMpPad pad = 
+		seg->PadByIndices(AliMpIntPair(ix-intOffset,iy-intOffset),kTRUE);
+	    
+	    if (chamber > 10) { // trigger chamber
+		Int_t sumCharge = 0;
+		for (Int_t icharge = 0; icharge < 10; icharge++) {
+		    sumCharge = sumCharge+mdig->TrackCharge(icharge);
+		}
+		Int_t testCharge = sumCharge-(Int_t(sumCharge/10))*10;
+		if(sumCharge <= 10 || testCharge > 0) {
+		    colorTrigger = color; 
+		} else {
+		    colorTrigger = 5; 
+		}
+	    }
+	    
+	    // get the pad position and dimensions
+	    Float_t xlocal1 = pad.Position().X();
+	    Float_t ylocal1 = pad.Position().Y();
+	    Float_t xlocal2 = pad.Dimensions().X();
+	    Float_t ylocal2 = pad.Dimensions().Y();
+	    
+	    Float_t xg1, xg2, yg1, yg2, zg1;
+	    
+	    kGeomTransformer->Local2Global(detElemId, xlocal1, ylocal1, 0, xg1, yg1, zg1);
+	    // (no transformation for pad dimensions)
+	    xg2 = xlocal2;
+	    yg2 = ylocal2;
+	    
+	    // Then set the objects
+	    points = new AliMUONPoints(npoints);
+	    fPoints->AddAt(points,digit);
+	    if (chamber > 10) {
+		points->SetMarkerColor(colorTrigger);
+	    } else {  
+		points->SetMarkerColor(color);
+	    }
+	    points->SetMarkerStyle(21);
+	    points->SetMarkerSize(0.5);
+	    points->SetParticle(-1);
+	    points->SetHitIndex(-1);
+	    points->SetTrackIndex(-1);
+	    points->SetDigitIndex(digit);
+	    points->SetPoint(0,xg1,yg1,zpos);
+	    
+	    Int_t lineColor = (zg1-zpos > 0) ? 2:3;
+	    marker=new TMarker3DBox(xg1,yg1,zpos,xg2,yg2,0,0,0);
+	    
+	    marker->SetLineColor(lineColor);
+	    marker->SetFillStyle(1001);
+	    marker->SetFillColor(color);
+	    marker->SetRefObject((TObject*)points);
+	    points->Set3DMarker(0, marker);
+	    
+	} // end loop on digits
+    } // end of new segmentation    
 }
 //___________________________________________
 void AliMUONDisplay::LoadCoG(Int_t chamber, Int_t /*cathode*/)
