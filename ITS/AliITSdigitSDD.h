@@ -7,7 +7,7 @@
 ////////////////////////////////////////////////////////
 #include <AliITSdigit.h>
 
-class AliITSresponseSDD;
+class AliITSCalibrationSDD;
 
 //______________________________________________________________________
 class AliITSdigitSDD: public AliITSdigit {
@@ -22,10 +22,10 @@ class AliITSdigitSDD: public AliITSdigit {
     //constructor setting also fSignalExpanded
     AliITSdigitSDD( Float_t phys,const Int_t *digits,const Int_t *tracks,
 		    const Int_t *hits,const Float_t *charges, Int_t sige);
-    //constructor setting fSignalExpanded through AliITSresponseSDD
+    //constructor setting fSignalExpanded through AliITSCalibrationSDD
     AliITSdigitSDD( Float_t phys,const Int_t *digits,const Int_t *tracks,
 		    const Int_t *hits,const Float_t *charges, 
-                    AliITSresponseSDD *resp);
+                    AliITSCalibrationSDD *resp);
     virtual ~AliITSdigitSDD(){/* destructor*/}
     // returns the array size used to store Tracks and Hits
     static Int_t GetNTracks() {return fgkSsdd;}

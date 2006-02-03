@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.1  2005/10/11 12:31:50  masera
+Preprocessor classes for SPD (Paul Nilsson)
+
 */
 
 ///////////////////////////////////////////////////////////////////////////
@@ -32,8 +35,10 @@ $Log$
 // .readDeadChannels.C  (Read dead channels from the CDB)
 ///////////////////////////////////////////////////////////////////////////
 
+#include "TFile.h"
 #include "AliITSPreprocessorSPD.h"
-
+#include "AliCDBEntry.h"
+#include "AliITSCalibrationSPD.h" 
 ClassImp(AliITSPreprocessorSPD)
 
 
@@ -633,11 +638,12 @@ Bool_t AliITSPreprocessorSPD::FillHistograms(void)
 
 		  // Fill the digits histogram
 		  ((TH2F*)(*fDigitsHistogram)[module])->Fill(column, row);
-
+		  
 		} // end digit loop
 	    } // end module loop
 	} // end event loop
     } // end numberOfEvents > 0
+
   else
     {
       status = kFALSE;
@@ -746,7 +752,7 @@ Bool_t AliITSPreprocessorSPD::FindDeadChannelsInModule(UInt_t module)
 	    // Keep track of the highest module number
 	    if (module > fHighestModuleNumber) fHighestModuleNumber = module;
 
-	    AliInfo(Form("New dead pixel in (m,c,r) = (%d,%d,%d)", module, xBin - 1, yBin - 1));
+	    //AliInfo(Form("New dead pixel in (m,c,r) = (%d,%d,%d)", module, xBin - 1, yBin - 1));
 	  }
       } // end bin loop
 
@@ -770,8 +776,7 @@ Bool_t AliITSPreprocessorSPD::FindNoisyChannels(void)
   if (fInit)
     {
       // (For testing purposes, noisy channels can be inserted here)
-      // SetFakeNoisyChannel(4,10,10);
-
+      //SetFakeNoisyChannel(4,10,10);
       // Initialize counters
       fNumberOfBadChannels = new Int_t[fNumberOfModules];
       for (UInt_t module = 0; module < fNumberOfModules; module++)
@@ -921,16 +926,15 @@ Bool_t AliITSPreprocessorSPD::FindNoisyChannelsInModuleAlgo0(UInt_t module)
 		    }
 		}
 	    }
-
+	
 	// Calculate the average. Remove the largest neighboring bin
 	// (Correction for potential clusters of noisy channels)
 	if (fSelectedAlgorithm == kOptimizedForRealDataRMS)
 	  {
 	    // Square the max bin content before removing it from the average calculation
 	    maxBinContent *= maxBinContent;
-
 	    // RMS
-	    averageBinContent = sqrt((sumBinContent - maxBinContent)/(Float_t)(numberOfNeighboringBins - 1));
+	    averageBinContent = TMath::Sqrt((sumBinContent - maxBinContent)/(Float_t)(numberOfNeighboringBins - 1));
 	  }
 	else
 	  {
@@ -1270,7 +1274,7 @@ void AliITSPreprocessorSPD::MarkNoisyChannels(void)
     }
 }
 
-
+/*
 
 //__________________________________________________________________________
 Bool_t AliITSPreprocessorSPD::Store(AliCDBId &id, AliCDBMetaData *md)
@@ -1301,9 +1305,10 @@ Bool_t AliITSPreprocessorSPD::Store(AliCDBId &id, AliCDBMetaData *md)
 
   // Store the container
  if(!AliCDBManager::Instance()->IsDefaultStorageSet()) {
-  	AliError("No storage set!");
-	return status;
-  }
+   //AliError("No storage set!");
+   //	return status;
+   AliCDBManager::Instance()->SetDefaultStorage("local://Calib");
+ }
   
   if (AliCDBManager::Instance()->GetDefaultStorage()->Put(fBadChannelsContainer, id, md))
     {
@@ -1318,9 +1323,9 @@ Bool_t AliITSPreprocessorSPD::Store(AliCDBId &id, AliCDBMetaData *md)
   return status;
 }
 
-
+*/
 //__________________________________________________________________________
-void AliITSPreprocessorSPD::ConvertObjToIntArray(void)
+void AliITSPreprocessorSPD::ConvertObjToIntArray()
 {
   // Convert the bad channel TObjArray to an Int_t array
   //
@@ -1374,4 +1379,73 @@ void AliITSPreprocessorSPD::ConvertObjToIntArray(void)
 	  j++;
 	}
     }
+}
+
+
+//__________________________________________________________________________
+Bool_t AliITSPreprocessorSPD::Store(AliCDBId& /*id*/, AliCDBMetaData* /*md*/, Int_t runNumber)
+{
+  // Store the bad channels object in the calibration database
+  // (See the corresponding run macro for further explanations)
+  //
+  // Input : fBadChannelsObjArray (now containing all found bad channels), object meta data
+  // Output: Database file containing the bad channels
+  // Return: kTRUE if successful
+
+  Bool_t status = kFALSE;
+
+  AliInfo("Storing bad channels");
+ 
+  if(!AliCDBManager::Instance()->IsDefaultStorageSet()) {
+    AliWarning("No storage set! Will use dummy one");
+    AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT");
+  }
+
+  
+  AliCDBEntry *entrySPD = AliCDBManager::Instance()->Get("ITS/Calib/CalibSPD", runNumber);
+  if(!entrySPD){
+    AliWarning("Calibration object retrieval failed! Dummy calibration will be used.");
+    AliCDBStorage *origStorage = AliCDBManager::Instance()->GetDefaultStorage();
+    AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT");
+	
+    entrySPD = AliCDBManager::Instance()->Get("ITS/Calib/CalibSPD", runNumber);
+    AliCDBManager::Instance()->SetDefaultStorage(origStorage);
+  }
+
+  TObjArray *respSPD = (TObjArray *)entrySPD->GetObject();
+
+  if ((! respSPD)) {
+    AliWarning("Can not get calibration from calibration database !");
+    return kFALSE;
+  }
+  
+  Int_t i=0;
+  AliITSChannelSPD *channel = 0;
+  AliITSCalibrationSPD* res;
+  for (Int_t module=0; module<respSPD->GetEntries(); module++) {
+    Int_t k=0;
+    res = (AliITSCalibrationSPD*) respSPD->At(module);
+    res->SetNBadChannels(fNumberOfBadChannels[module]*2+1);
+    res->AddBadChannel(fNumberOfBadChannels[module],k++);
+    Int_t j = 0;
+    while (j < fNumberOfBadChannels[module])
+	{
+	  channel = (AliITSChannelSPD *) fBadChannelsObjArray->At(i++);
+	  res->AddBadChannel(channel->GetColumn(),k++);
+	  res->AddBadChannel(channel->GetRow(),k++);
+
+	  // Go to next bad channel
+	  j++;
+	}
+    
+    
+  }
+  
+  AliCDBManager::Instance()->Put(entrySPD);
+  entrySPD->SetObject(NULL);
+  entrySPD->SetOwner(kTRUE);
+
+  delete entrySPD;
+  status=kTRUE;
+  return status;
 }

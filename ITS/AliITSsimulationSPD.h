@@ -15,9 +15,10 @@ $Id$
 // AliITSsimulationSPD is the simulation of SPDs                      //
 ////////////////////////////////////////////////////////////////////////
 
-#include "AliITSresponseSPD.h"
+#include "AliITSCalibrationSPD.h"
 #include "AliITSsegmentationSPD.h"
 #include "AliITSsimulation.h"
+#include "AliITSresponseSPD.h"
 
 class AliITSMapA2;
 class AliITSpList;
@@ -43,7 +44,7 @@ class AliITSsimulationSPD : public AliITSsimulation {
     // Initilizes the variables
     void Init();
     // Initilizes the variables with replacement segmentation/response class
-    //    void Init(AliITSsegmentationSPD *seg, AliITSresponseSPD *resp);
+    //    void Init(AliITSsegmentationSPD *seg, AliITSCalibrationSPD *resp);
 
     // Sum digitize module
     // Create maps to build the lists of tracks for each summable digit
@@ -122,15 +123,15 @@ class AliITSsimulationSPD : public AliITSsimulation {
     // Getters for data kept in fSegmentation and fResponse.
     // Returns the Threshold in electrons
     Double_t GetThreshold(){Double_t a=0.0,b=0.0;
-    AliITSresponseSPD* res = (AliITSresponseSPD*)GetResponseModel(GetModuleNumber());
+    AliITSCalibrationSPD* res = (AliITSCalibrationSPD*)GetCalibrationModel(GetModuleNumber());
     res->Thresholds(a,b); return a;}
     // Returns the threshold and rms noise.
     void GetThresholds(Double_t &t,Double_t &s){
-      AliITSresponseSPD* res = (AliITSresponseSPD*)GetResponseModel(GetModuleNumber());
+      AliITSCalibrationSPD* res = (AliITSCalibrationSPD*)GetCalibrationModel(GetModuleNumber());
       res->Thresholds(t,s);}
     // Returns the couplings Columb and Row.
     void GetCouplings(Double_t &cc,Double_t &cr){
-      AliITSresponseSPD* res = (AliITSresponseSPD*)GetResponseModel(GetModuleNumber());
+      AliITSCalibrationSPD* res = (AliITSCalibrationSPD*)GetCalibrationModel(GetModuleNumber());
       res->GetCouplingParam(cc,cr);}
     // Returns the number of pixels in x
     Int_t GetNPixelsX(){AliITSsegmentationSPD* seg= (AliITSsegmentationSPD*)GetSegmentationModel(0);return seg->Npx();}

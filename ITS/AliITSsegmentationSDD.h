@@ -4,9 +4,11 @@
 
 #include "AliITSsegmentation.h"
 
-// segmentation for SDD
-
-class AliITSresponse;
+//////////////////////////////////////////////////////
+// Segmentation class for SDD                       //
+//                                                  //
+//////////////////////////////////////////////////////
+class AliITSCalibration;
 class AliITSsegmentationSDD :
 public AliITSsegmentation {
  public:
@@ -15,7 +17,7 @@ public AliITSsegmentation {
     AliITSsegmentationSDD();
     AliITSsegmentationSDD(const AliITSsegmentationSDD &source);
     AliITSsegmentationSDD& operator=(const AliITSsegmentationSDD &source);
-    AliITSsegmentationSDD(AliITSgeom *gm, AliITSresponse *resp);
+    AliITSsegmentationSDD(AliITSgeom *gm, AliITSCalibration *resp);
     virtual ~AliITSsegmentationSDD(){}
 
     // Set Detector Segmentation Parameters

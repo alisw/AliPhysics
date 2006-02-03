@@ -22,7 +22,7 @@
 #include "AliITSmodule.h"
 #include "AliITSMapA2.h"
 #include "AliITSpList.h"
-#include "AliITSresponseSSD.h"
+#include "AliITSCalibrationSSD.h"
 #include "AliITSsegmentationSSD.h"
 #include "AliITSdcsSSD.h"
 #include "AliITS.h"
@@ -32,6 +32,7 @@
 #include "AliITSgeom.h"
 #include "AliITSsimulationSSD.h"
 #include "AliITSTableSSD.h"
+#include "AliITSresponseSSD.h"
 
 ClassImp(AliITSsimulationSSD)
 ////////////////////////////////////////////////////////////////////////
@@ -68,7 +69,7 @@ fDriftVel(){
     // Constructor 
     // Input:
     //   AliITSsegmentationSSD *seg  Pointer to the SSD segmentation to be used
-    //   AliITSresponseSSD   *resp Pointer to the SSD responce class to be used
+    //   AliITSCalibrationSSD   *resp Pointer to the SSD responce class to be used
     // Outputs:
     //   none.
     // Return
@@ -81,12 +82,12 @@ void AliITSsimulationSSD::Init(){
     // Inilizer, Inilizes all of the variable as needed in a standard place.
     // Input:
     //   AliITSsegmentationSSD *seg  Pointer to the SSD segmentation to be used
-    //   AliITSresponseSSD   *resp Pointer to the SSD responce class to be used
+    //   AliITSCalibrationSSD   *resp Pointer to the SSD responce class to be used
     // Outputs:
     //   none.
     // Return
     //   none.
-  AliITSresponseSSD* res =(AliITSresponseSSD*)GetResponseModel(fDetType->GetITSgeom()->GetStartSSD());
+  AliITSCalibrationSSD* res =(AliITSCalibrationSSD*)GetCalibrationModel(fDetType->GetITSgeom()->GetStartSSD());
   AliITSsegmentationSSD* seg = (AliITSsegmentationSSD*)GetSegmentationModel(2);
     Double_t noise[2] = {0.,0.};
     res->GetNoiseParam(noise[0],noise[1]); // retrieves noise parameters
@@ -342,7 +343,7 @@ void AliITSsimulationSSD::ApplyNoise(AliITSpList *pList,Int_t module){
     Double_t signal,noise;
     Double_t noiseP[2] = {0.,0.};
     Double_t a,b;
-    AliITSresponseSSD* res =(AliITSresponseSSD*)GetResponseModel(module);
+    AliITSCalibrationSSD* res =(AliITSCalibrationSSD*)GetCalibrationModel(module);
     res->GetNoiseParam(a,b); // retrieves noise parameters
     noiseP[0] = a; noiseP[1] = b;
     for(k=0;k<2;k++){                    // both sides (0=Pside, 1=Nside)
@@ -532,12 +533,12 @@ void AliITSsimulationSSD::ChargeToSignal(Int_t module,AliITSpList *pList) {
     Float_t charges[3] = {0.0,0.0,0.0};
     Float_t signal;
     Double_t noise[2] = {0.,0.};
-    AliITSresponseSSD* res =(AliITSresponseSSD*)GetResponseModel(module);
+    AliITSCalibrationSSD* res =(AliITSCalibrationSSD*)GetCalibrationModel(module);
     res->GetNoiseParam(noise[0],noise[1]);
 
     for(Int_t k=0;k<2;k++){         // both sides (0=Pside, 1=Nside)
         // Threshold for zero-suppression
-        // It can be defined in AliITSresponseSSD
+        // It can be defined in AliITSCalibrationSSD
         //             threshold = (Float_t)GetResp()->MinVal(k);
         // I prefer to think adjusting the threshold "manually", looking
         // at the scope, and considering noise standard deviation
@@ -545,7 +546,7 @@ void AliITSsimulationSSD::ChargeToSignal(Int_t module,AliITSpList *pList) {
         for(Int_t ix=0;ix<GetNStrips();ix++){     // loop over strips
             if(fMapA2->GetSignal(k,ix) <= threshold)continue;
             // convert to ADC signal
-            signal = res->DEvToADC(
+            signal = res->GetDEvToADC(
                 fMapA2->GetSignal(k,ix));
             if(signal>1024.) signal = 1024.;//if exceeding, accumulate last one
             digits[0] = k;

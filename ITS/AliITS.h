@@ -18,11 +18,10 @@
 
 class TString;
 class TTree;
-
 class AliITSpListItem;
 class AliITSsimulation;
 class AliITSsegmentation;
-class AliITSresponse;
+class AliITSCalibration;
 class AliITShit;
 class AliITSgeom;
 class AliITSdigit;
@@ -82,9 +81,9 @@ class AliITS : public AliDetector {
     // Returns the list of ITS subdetectors that will be processed.
     Option_t* GetDetectors(){return fOpt;}
 
-    // Set response
-    virtual void SetResponseModel(Int_t dettype, AliITSresponse *response){
-        fDetTypeSim->SetResponseModel(dettype,response);}
+    // Set calibration
+    virtual void SetCalibrationModel(Int_t dettype, AliITSCalibration *cal){
+        fDetTypeSim->SetCalibrationModel(dettype,cal);}
     // Set segmentation for Simulation
     virtual void SetSegmentationModel(Int_t id, AliITSsegmentation *seg){
         fDetTypeSim->SetSegmentationModel(id,seg);}
@@ -103,11 +102,10 @@ class AliITS : public AliDetector {
     virtual void FillModules(TTree *treeH, Int_t mask = 0);
     virtual void ClearModules(){if(fITSmodules) fITSmodules->Delete();}
     virtual void AddHit(Int_t track, Int_t *vol, Float_t *hits);
-
-    // Trigger
+   // Trigger
     virtual AliTriggerDetector* CreateTriggerDetector() const
        { return new AliITSTrigger(); }
-
+   
     TClonesArray* GetSDigits() const { return fDetTypeSim->GetSDigits();}
 
     AliDigitizer* CreateDigitizer(AliRunDigitizer* manager) const;

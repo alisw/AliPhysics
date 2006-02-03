@@ -26,14 +26,14 @@
 class TArrayS;
 class TRandom;
 class AliITSsegmentation;
-class AliITSresponse;
+class AliITSCalibration;
 
 class AliITSdcsSSD: public TObject {
 
  public:
     AliITSdcsSSD(); // Default constructor
     // Standard constructor
-    AliITSdcsSSD(AliITSsegmentation *s, AliITSresponse *r); 
+    AliITSdcsSSD(AliITSsegmentation *s, AliITSCalibration *r); 
     virtual ~AliITSdcsSSD(); // Destructor
     AliITSdcsSSD(const AliITSdcsSSD &source); // copy constructor
     AliITSdcsSSD& operator=(const AliITSdcsSSD &source); // assignment operator

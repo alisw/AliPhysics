@@ -13,56 +13,25 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 //////////////////////////////////////////////////////
-//  Response class for set:ITS                      //
-//  Specific subdetector implementation for         //
-//  Silicon pixels                                  //
-//  An alternative version "SPDdubna"               //
-//  is also available                               //
+//  Base Response class forITS                      //
+//  It is used to set static data members           //
+//  connected to parameters equal for all           //
+//  the SPD modules                                 //
 //////////////////////////////////////////////////////
-
 #include "AliITSresponseSPD.h"
 
-const Double_t AliITSresponseSPD::fgkDiffCoeffDefault = 0.;
-const Double_t AliITSresponseSPD::fgkThreshDefault = 2000.;
-const Double_t AliITSresponseSPD::fgkSigmaDefault = 280.;
+const Float_t AliITSresponseSPD::fgkDiffCoeffDefault = 0.;
+const Float_t AliITSresponseSPD::fgkCouplingColDefault = 0;
+const Float_t AliITSresponseSPD::fgkCouplingRowDefault = 0;
 
 ClassImp(AliITSresponseSPD)	
 //______________________________________________________________________
 AliITSresponseSPD::AliITSresponseSPD():
-AliITSresponse(),
-fBaseline(0.0),
-fNoise(0.0),
-fThresh(fgkThreshDefault),
-fSigma(fgkSigmaDefault),
-fCouplCol(0.0),
-fCouplRow(0.0),
-fDeadPixels(0.01){
+  AliITSresponse(){
+
+
   // constructor
+  SetCouplingParam(fgkCouplingColDefault,fgkCouplingRowDefault);
+  SetDiffCoeff(fgkDiffCoeffDefault,0.);
 
-   SetThresholds(fgkThreshDefault,fgkSigmaDefault);
-   //SetDiffCoeff(fgkDiffCoeffDefault,0.);
-   SetNoiseParam(0.,0.);
-   SetDataType("simulated");
-   SetFractionDead();
-}
-//_________________________________________________________________________
-Bool_t AliITSresponseSPD::IsPixelDead(Int_t mod,Int_t ix,Int_t iz) const {
-  // Returns kTRUE if pixel is dead
-  // Inputs:
-  //    Int_t mod      module number
-  //    Int_t ix       x pixel number
-  //    Int_t iz       z pixel number
-  // Outputs:
-  //    none.
-  // Return:
-  //    kFALSE if pixel is alive, or kTRUE if pixel is dead.
-  Bool_t  dead = kFALSE;
-  Int_t   seed;
-  static TRandom ran; // don't use gRandom. This must not be a true randome
-  // sequence. These sequence must be random one and then fully repetable.
-
-  seed = mod*256*256+iz*256+ix;
-  ran.SetSeed(seed);
-  if(ran.Rndm(0)<fDeadPixels) dead = kTRUE;
-  return dead;
 }

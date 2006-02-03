@@ -17,7 +17,7 @@ class AliITSpList;
 class AliITSTableSSD;
 class AliITSdcsSSD;
 class AliITSsegmentationSSD;
-class AliITSresponseSSD;
+class AliITSCalibrationSSD;
 
 class AliITSsimulationSSD: public AliITSsimulation {
 
@@ -38,7 +38,7 @@ class AliITSsimulationSSD: public AliITSsimulation {
     // Initilize variables for this simulation
     void Init();
     // Initilize variables for this simulation
-    //void Init(AliITSsegmentationSSD *seg,AliITSresponseSSD *resp);
+    //void Init(AliITSsegmentationSSD *seg,AliITSCalibrationSSD *resp);
     // Create maps to build the lists of tracks for each summable digit
     void InitSimulationModule(Int_t module,Int_t events);
     // Digitize module from the sum of summable digits.
@@ -84,7 +84,7 @@ class AliITSsimulationSSD: public AliITSsimulation {
 
  private:
     // Return the Response class
-    //    AliITSresponseSSD* GetResp(){return (AliITSresponseSSD*)fResponse;}
+    //    AliITSCalibrationSSD* GetResp(){return (AliITSCalibrationSSD*)fResponse;}
     // Return the Segmentation class
     //AliITSsegmentationSSD* GetSeg(){
     //  return (AliITSsegmentationSSD*)fSegmentation;}

@@ -12,8 +12,9 @@
 #include "AliITSgeom.h"
 #include "AliITShit.h"
 #include "AliITSresponseSDD.h"
-#include "AliITSresponseSPD.h"
-#include "AliITSresponseSSD.h"
+#include "AliITSCalibrationSDD.h"
+#include "AliITSCalibrationSPD.h"
+#include "AliITSCalibrationSSD.h"
 #include "AliITSsegmentationSDD.h"
 #include "AliITSsegmentationSPD.h"
 #include "AliITSsegmentationSSD.h"
@@ -75,9 +76,9 @@ const Double_t AliITSvBeamTestITS04::fgkSSD1y = 80.6;
 #include "AliITSgeomSPD.h"
 #include "AliITSgeomSSD.h"
 #include "AliITShit.h"
-#include "AliITSresponseSDD.h"
-#include "AliITSresponseSPD.h"
-#include "AliITSresponseSSD.h"
+#include "AliITSCalibrationSDD.h"
+#include "AliITSCalibrationSPD.h"
+#include "AliITSCalibrationSSD.h"
 #include "AliITSsegmentationSDD.h"
 #include "AliITSsegmentationSPD.h"
 #include "AliITSsegmentationSSD.h"
@@ -381,7 +382,7 @@ void AliITSvBeamTestITS04::SetDefaults()
     
     if(!fDetTypeSim) fDetTypeSim = new AliITSDetTypeSim();
     fDetTypeSim->SetITSgeom(GetITSgeom());
-    fDetTypeSim->ResetResponse();
+    fDetTypeSim->ResetCalibrationArray();
     fDetTypeSim->ResetSegmentation();
  
     AliITSgeomSPD *s0;
@@ -404,8 +405,8 @@ void AliITSvBeamTestITS04::SetDefaults()
 
     s0 = (AliITSgeomSPD*) GetITSgeom()->GetShape(kSPD);// Get shape info.
     if (s0) {
-	AliITSresponse *resp0=new AliITSresponseSPD();
-	SetResponseModel(kSPD,resp0);
+	AliITSCalibration *resp0=new AliITSCalibrationSPD();
+	SetCalibrationModel(kSPD,resp0);
 
 	AliITSsegmentationSPD *seg0=new AliITSsegmentationSPD(GetITSgeom());
 	seg0->SetDetSize(s0->GetDx()*2.*kconv, // base this on AliITSgeomSPD
@@ -423,7 +424,7 @@ void AliITSvBeamTestITS04::SetDefaults()
 	seg0->SetBinSize(bx,bz);               // Based on AliITSgeomSPD for now.
 	SetSegmentationModel(kSPD,seg0);
 	// set digit and raw cluster classes to be used
-	const char *kData0=(fDetTypeSim->GetResponseModel(kSPD))->DataType();
+	const char *kData0=(fDetTypeSim->GetCalibrationModel(kSPD))->DataType();
 	if (strstr(kData0,"real")) 
 	  fDetTypeSim->SetDigitClassName(kSPD,"AliITSdigit");
 	else fDetTypeSim->SetDigitClassName(kSPD,"AliITSdigitSPD");
@@ -433,16 +434,16 @@ void AliITSvBeamTestITS04::SetDefaults()
    
     s1 = (AliITSgeomSDD*) GetITSgeom()->GetShape(kSDD);// Get shape info.
     if (s1) {
-      AliITSresponseSDD *resp1=new AliITSresponseSDD("simulated");
-      SetResponseModel(kSDD,resp1);
+      AliITSCalibrationSDD *resp1=new AliITSCalibrationSDD("simulated");
+      SetCalibrationModel(kSDD,resp1);
       AliITSsegmentationSDD *seg1=new AliITSsegmentationSDD(GetITSgeom(),resp1);
       seg1->SetDetSize(s1->GetDx()*kconv, // base this on AliITSgeomSDD
 		       s1->GetDz()*4.*kconv, // for now.
 		       s1->GetDy()*4.*kconv); // x,z,y full width in microns.
       seg1->SetNPads(256,256);// Use AliITSgeomSDD for now
       SetSegmentationModel(kSDD,seg1);
-      const char *kData1=(fDetTypeSim->GetResponseModel(kSDD))->DataType();
-      const char *kopt=fDetTypeSim->GetResponseModel(kSDD)->ZeroSuppOption();
+      const char *kData1=(fDetTypeSim->GetCalibrationModel(kSDD))->DataType();
+      const char *kopt=resp1->GetZeroSuppOption();
       if((!strstr(kopt,"2D")) && (!strstr(kopt,"1D")) || strstr(kData1,"real") ){
 	fDetTypeSim->SetDigitClassName(kSDD,"AliITSdigit");
 	} else fDetTypeSim->SetDigitClassName(kSDD,"AliITSdigitSDD");
@@ -452,8 +453,8 @@ void AliITSvBeamTestITS04::SetDefaults()
     
     s2 = (AliITSgeomSSD*) GetITSgeom()->GetShape(kSSD);// Get shape info. Do it this way for now.
     if (s2) {
-      AliITSresponse *resp2=new AliITSresponseSSD("simulated");
-      SetResponseModel(kSSD,resp2);
+      AliITSCalibration *resp2=new AliITSCalibrationSSD("simulated");
+      SetCalibrationModel(kSSD,resp2);
 
       AliITSsegmentationSSD *seg2=new AliITSsegmentationSSD(GetITSgeom());
       seg2->SetDetSize(s2->GetDx()*2.*kconv, // base this on AliITSgeomSSD
@@ -465,7 +466,7 @@ void AliITSvBeamTestITS04::SetDefaults()
       seg2->SetAnglesLay5(0.0075,0.0275); // strip angels rad P and N side.
       seg2->SetAnglesLay6(0.0275,0.0075); // strip angels rad P and N side.
       SetSegmentationModel(kSSD,seg2); 
-      const char *kData2=(fDetTypeSim->GetResponseModel(kSSD))->DataType();
+      const char *kData2=(fDetTypeSim->GetCalibrationModel(kSSD))->DataType();
       if(strstr(kData2,"real") ) fDetTypeSim->SetDigitClassName(kSSD,"AliITSdigit");
       else fDetTypeSim->SetDigitClassName(kSSD,"AliITSdigitSSD");
     }

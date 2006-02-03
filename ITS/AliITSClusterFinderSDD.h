@@ -12,8 +12,8 @@
 #include "AliITSDetTypeRec.h"
 
 class AliITSMapA2;
-class AliITSresponse;
-class AliITSresponseSDD;
+class AliITSCalibration;
+class AliITSCalibrationSDD;
 class AliITSsegmentation;
 class AliITSsegmentationSDD;
 class TFile;
@@ -78,8 +78,8 @@ class AliITSClusterFinderSDD : public AliITSClusterFinder{
     void  PrintStatus() const;
 
   private:
-    virtual AliITSresponseSDD* GetResp(Int_t mod)const{
-        return (AliITSresponseSDD*) fDetTypeRec->GetCalibrationModel(mod);}//Return Response
+    virtual AliITSCalibrationSDD* GetResp(Int_t mod)const{
+        return (AliITSCalibrationSDD*) fDetTypeRec->GetCalibrationModel(mod);}//Return Response
     //Returns fSegmentation
     virtual AliITSsegmentationSDD* GetSeg()const{
         return (AliITSsegmentationSDD*)fDetTypeRec->GetSegmentationModel(1);} 

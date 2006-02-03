@@ -2,6 +2,7 @@
 #include <TArrayS.h>
 
 #include "AliITSdcsSSD.h"
+#include "AliITSCalibrationSSD.h"
 #include "AliITSresponseSSD.h"
 #include "AliITSsegmentationSSD.h"
 ///////////////////////////////////////////////////////////////////////////
@@ -32,7 +33,7 @@ AliITSdcsSSD::AliITSdcsSSD(){
     fInvalidN = 0;
 }
 //______________________________________________________________________
-AliITSdcsSSD::AliITSdcsSSD(AliITSsegmentation *seg, AliITSresponse *resp){
+AliITSdcsSSD::AliITSdcsSSD(AliITSsegmentation *seg, AliITSCalibration *resp){
     // Standard constructor
 
     fNstrips =(Float_t) (((AliITSsegmentationSSD*)seg)->Npx());
@@ -40,14 +41,14 @@ AliITSdcsSSD::AliITSdcsSSD(AliITSsegmentation *seg, AliITSresponse *resp){
     fInvalidP = new TArrayS();
     fInvalidN = new TArrayS();
 
-    Int_t npar=((AliITSresponseSSD*)resp)->NDetParam();
+    Int_t npar=((AliITSCalibrationSSD*)resp)->NDetParam();
     if (npar < 6) {
 	Warning("AliITSdcsSSD","I need 6 parameters ");
 	npar=6;
     } // end if
 
     Double_t *detpar= new Double_t[npar];
-    ((AliITSresponseSSD*)resp)->GetDetParam(detpar);
+    resp->GetDetParam(detpar);
 
     fNInvalid = detpar[0];
     fISigma   = detpar[1];
@@ -58,7 +59,7 @@ AliITSdcsSSD::AliITSdcsSSD(AliITSsegmentation *seg, AliITSresponse *resp){
     fCouplingNL = detpar[5];
 
     char opt[30],dummy[20];
-    ((AliITSresponseSSD*)resp)->ParamOptions(opt,dummy);
+    ((AliITSCalibrationSSD*)resp)->GetParamOptions(opt,dummy);
     if (strstr(opt,"SetInvalid")) SetInvalidMC(fNInvalid,fISigma);
 
     delete [] detpar;

@@ -14,32 +14,20 @@
 // of "bad channels" such as dead channels and noisy channels in the SPD
 ///////////////////////////////////////////////////////////////////////////
 
-// #include "AliITSGeometry.h"
 #include <TTask.h>
-#include <TString.h>
-#include <TTree.h>
-#include <TBranch.h>
 #include <TH2F.h>
-#include <TClonesArray.h>
-#include <TObjArray.h>
-#include <TFile.h>
-#include <TCollection.h>
 #include <TKey.h>
-#include <TDirectory.h>
-
-#include "AliRun.h"
 #include "AliRunLoader.h"
 #include "AliITSLoader.h"
-#include "AliITSdigitSPD.h"
 #include "AliITSBadChannelsSPD.h"
 #include "AliITSBadChannelsAuxSPD.h"
-#include "AliITSChannelSPD.h"
-#include "AliCDBId.h"
-#include "AliCDBManager.h"
-#include "AliCDBStorage.h"
-#include "AliCDBMetaData.h"
 #include "AliCDBLocal.h"
-#include "AliLog.h"
+
+class AliCDBManager;
+class AliCDBMetaData;
+class AliCDBId;
+class AliCDBStorage;
+class AliITSChannelSPD;
 
 class AliITSPreprocessorSPD : public TTask {
 
@@ -60,7 +48,7 @@ class AliITSPreprocessorSPD : public TTask {
   Bool_t FindNoisyChannels(void);                       // Locate the noisy channels among the digits
   Bool_t FindNoisyChannelsInModuleAlgo0(UInt_t module); // Locate the noisy channels in a module (for real data)
   Bool_t FindNoisyChannelsInModuleAlgo1(UInt_t module); // Locate the noisy channels in a module (for calibration data)
-  Bool_t Store(AliCDBId &Id, AliCDBMetaData *md);               // Write the final object to the calibration database
+  Bool_t Store(AliCDBId &Id, AliCDBMetaData *md, Int_t runNumber);               // Write the final object to the calibration database
                                                         // Returns kTRUE if successful
   Bool_t GetVMEHistograms(TFile *vmeFile);              // Get pre-filled digit histograms from input VME file
   void MarkNoisyChannels(void);                         // Mark all found noisy channels among the digits

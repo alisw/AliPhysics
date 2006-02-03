@@ -3,6 +3,7 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice     */
 
+
 /* $Id$ */
 
 ////////////////////////////////////////////////////////////
@@ -26,8 +27,8 @@ class AliITSMapA2;
 class AliITSetfSDD;
 class AliITSsegmentationSDD;
 class AliITSInStream;
-class AliITSresponse;
-class AliITSresponseSDD;
+class AliITSCalibration;
+class AliITSCalibrationSDD;
 
 class AliITSsimulationSDD : public AliITSsimulation {
   public:

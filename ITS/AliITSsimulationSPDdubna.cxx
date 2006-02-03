@@ -16,6 +16,7 @@
 /*
 $Id$
 */
+
 #include <Riostream.h>
 #include <TH1.h>
 #include <TMath.h>
@@ -29,7 +30,7 @@ $Id$
 #include "AliITShit.h"
 #include "AliITSmodule.h"
 #include "AliITSpList.h"
-#include "AliITSresponseSPD.h"
+#include "AliITSCalibrationSPD.h"
 #include "AliITSsegmentationSPD.h"
 #include "AliITSsimulationSPDdubna.h"
 #include "AliLog.h"
@@ -72,7 +73,7 @@ fCoupling(cup){
     // Inputs:
     //    AliITSsegmentation *seg  A pointer to the segmentation class
     //                             to be used for this simulation
-    //    AliITSresponse     *resp A pointer to the responce class to
+    //    AliITSCalibration     *resp A pointer to the responce class to
     //                             be used for this simulation
     //    Int_t              cup   The type of coupling to be used
     //                             =1 uses SetCoupling, =2 uses SetCouplingOld
@@ -88,7 +89,7 @@ fCoupling(cup){
 	     Form("Calling degault constructor cup=%d",cup));
     if(cup==1||cup==2){ // For the moment, remove defusion if Coupling is
         // set.
-      AliITSresponseSPD* res = (AliITSresponseSPD*)GetResponseModel(fDetType->GetITSgeom()->GetStartSPD());
+      AliITSCalibrationSPD* res = (AliITSCalibrationSPD*)GetCalibrationModel(fDetType->GetITSgeom()->GetStartSPD());
       res->SetTemperature(0.0);
       res->SetDistanceOverVoltage(0.0);
     } // end if
@@ -108,7 +109,7 @@ void AliITSsimulationSPDdubna::Init(){
     SetModuleNumber(0);
     SetEventNumber(0);
     SetMap(new AliITSpList(GetNPixelsZ(),GetNPixelsX()));
-    AliITSresponseSPD* res = (AliITSresponseSPD*)GetResponseModel(fDetType->GetITSgeom()->GetStartSPD());
+    AliITSCalibrationSPD* res = (AliITSCalibrationSPD*)GetCalibrationModel(fDetType->GetITSgeom()->GetStartSPD());
     AliITSsegmentationSPD* seg = (AliITSsegmentationSPD*)GetSegmentationModel(0);
     res->SetDistanceOverVoltage(kmictocm*seg->Dy(),50.0);
 }
@@ -297,7 +298,7 @@ void AliITSsimulationSPDdubna::HitToSDigit(AliITSmodule *mod){
     Double_t x0=0.0,x1=0.0,y0=0.0,y1=0.0,z0=0.0,z1=0.0,de=0.0;
     Double_t x,y,z,t,tp,st,dt=0.2,el,sig;
     AliITSsegmentationSPD* seg = (AliITSsegmentationSPD*)GetSegmentationModel(0);
-    AliITSresponseSPD* res = (AliITSresponseSPD*)GetResponseModel(fDetType->GetITSgeom()->GetStartSPD());
+    AliITSCalibrationSPD* res = (AliITSCalibrationSPD*)GetCalibrationModel(fDetType->GetITSgeom()->GetStartSPD());
     Double_t thick = kmictocm*seg->Dy();
 
     AliDebug(1,Form("(mod=%p) fCoupling=%d",mod,fCoupling));
@@ -456,7 +457,7 @@ void AliITSsimulationSPDdubna::pListToDigits(){
     Double_t sig;
     const Int_t    nmaxtrk=AliITSdigitSPD::GetNTracks();
     static AliITSdigitSPD dig;
-    AliITSresponseSPD* res = (AliITSresponseSPD*)GetResponseModel(fDetType->GetITSgeom()->GetStartSPD());
+    AliITSCalibrationSPD* res = (AliITSCalibrationSPD*)GetCalibrationModel(fDetType->GetITSgeom()->GetStartSPD());
     if(GetDebug(1)) Info("pListToDigits","()");
     for(iz=0; iz<GetNPixelsZ(); iz++) for(ix=0; ix<GetNPixelsX(); ix++){
         // Apply Noise/Dead channals and the like

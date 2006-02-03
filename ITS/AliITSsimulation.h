@@ -21,7 +21,7 @@
 #include "AliITSDetTypeSim.h"
 #include "AliITSpList.h"
 
-class AliITSresponse;
+class AliITSCalibration;
 class AliITSsegmentation;
 class AliITSmodule;
 class TRandom;
@@ -68,9 +68,9 @@ class AliITSsimulation : public TObject {
     virtual void CreateFastRecPoints(AliITSmodule *,Int_t,
 				     TRandom *,TClonesArray* /*recp*/) {;}
    // Return pointer to Response model
-    virtual AliITSresponse* GetResponseModel(Int_t mod = 0){return fDetType->GetResponseModel(mod);}
+    virtual AliITSCalibration* GetCalibrationModel(Int_t mod = 0){return fDetType->GetCalibrationModel(mod);}
    // set pointer to Response model
-    virtual void SetResponseModel(Int_t mod, AliITSresponse *res){fDetType->SetResponseModel(mod,res);}
+    virtual void SetCalibrationModel(Int_t mod, AliITSCalibration *res){fDetType->SetCalibrationModel(mod,res);}
     // Return pointer to Segmentation object
     virtual AliITSsegmentation* GetSegmentationModel(Int_t dt) = 0;
     // set pointer to Segmentation object

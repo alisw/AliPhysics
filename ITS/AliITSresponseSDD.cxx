@@ -13,122 +13,58 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id$ */
-
-#include <Riostream.h>
-#include <TRandom.h>
-
 #include "AliITSresponseSDD.h"
-//////////////////////////////////////////////////
-//  Response class for set:ITS                      //
-//  Specific subdetector implementation             //
-//  for silicon drift detectors                     //
+//////////////////////////////////////////////////////
+//  Base response class forITS                      //
+//  It is used to set static data members           //
+//  connected to parameters equal for all           //
+//  the modules                                     //
 //                                                  //
 //                                                  //
 //////////////////////////////////////////////////////
 
-const Int_t AliITSresponseSDD::fgkWings;   
-const Int_t AliITSresponseSDD::fgkChips;  
-const Int_t AliITSresponseSDD::fgkChannels; 
+
 const Int_t AliITSresponseSDD::fgkMaxAdcDefault = 1024;
 const Double_t AliITSresponseSDD::fgkDynamicRangeDefault = 132.;
 const Double_t AliITSresponseSDD::fgkfChargeLossDefault = 0;
-const Double_t AliITSresponseSDD::fgkDiffCoeffDefault = 3.23;
-const Double_t AliITSresponseSDD::fgkDiffCoeff1Default = 30.;
-const Double_t AliITSresponseSDD::fgkTemperatureDefault = 296.;
+const Float_t AliITSresponseSDD::fgkDiffCoeffDefault = 3.23;
+const Float_t AliITSresponseSDD::fgkDiffCoeff1Default = 30.;
 const TString AliITSresponseSDD::fgkParam1Default = "same";
 const TString AliITSresponseSDD::fgkParam2Default = "same";
-const Double_t AliITSresponseSDD::fgkNoiseDefault = 10.;
-const Double_t AliITSresponseSDD::fgkBaselineDefault = 20.;
 const TString AliITSresponseSDD::fgkOptionDefault = "1D";
-const Double_t AliITSresponseSDD::fgkMinValDefault  = 4;
 const Double_t AliITSresponseSDD::fgkDriftSpeedDefault = 7.3;
 const Double_t AliITSresponseSDD::fgkNsigmasDefault = 3.;
 const Int_t AliITSresponseSDD::fgkNcompsDefault = 121;
-//______________________________________________________________________
+
 ClassImp(AliITSresponseSDD)
 
-  AliITSresponseSDD::AliITSresponseSDD(){
+//_________________________________________________________________________
+AliITSresponseSDD::AliITSresponseSDD():AliITSresponse(){
   // default constructor
   fGaus = 0;
-  SetDeadChannels();
   SetMaxAdc(fgkMaxAdcDefault);
   SetDiffCoeff(fgkDiffCoeffDefault,fgkDiffCoeff1Default);
   SetDriftSpeed(fgkDriftSpeedDefault);
   SetNSigmaIntegration(fgkNsigmasDefault);
   SetNLookUp(fgkNcompsDefault);
-  // SetClock();
-  for(Int_t i=0;i<fgkWings;i++){
-    for(Int_t j=0;j<fgkChips;j++){
-      fBaseline=0;
-      fNoise=0;
-    }
-  }
-  SetNoiseParam(fgkNoiseDefault,fgkBaselineDefault);
-  SetNoiseAfterElectronics();
+
   SetJitterError();
   SetElectronics();
   SetDynamicRange(fgkDynamicRangeDefault);
   SetChargeLoss(fgkfChargeLossDefault);
-  SetThresholds(fgkMinValDefault,0.);
   SetParamOptions(fgkParam1Default.Data(),fgkParam2Default.Data());
-  SetTemperature(fgkTemperatureDefault);
   SetZeroSupp(fgkOptionDefault);
-  SetDataType();
-  SetFilenames();
-  SetOutputOption();
   SetDo10to8();
-  // set the default zero suppression parameters
-  fCPar[0]=(Int_t) fBaseline;
-  fCPar[1]=(Int_t) fBaseline;
-  fCPar[2]=(Int_t)(2.*fNoiseAfterEl + 0.5);
-  fCPar[3]=(Int_t)(2.*fNoiseAfterEl + 0.5);
-  fCPar[4]=0;
-  fCPar[5]=0;
-  fCPar[6]=0;
-  fCPar[7]=0;
+  SetOutputOption();
 }
+
+
 //______________________________________________________________________
-AliITSresponseSDD::AliITSresponseSDD(const char *dataType){
-  // constructor
-  fGaus = 0;
-  SetDeadChannels();
-  SetMaxAdc(fgkMaxAdcDefault);
-  SetDiffCoeff(fgkDiffCoeffDefault,fgkDiffCoeff1Default);
-  SetDriftSpeed(fgkDriftSpeedDefault);
-  SetNSigmaIntegration(fgkNsigmasDefault);
-  SetNLookUp(fgkNcompsDefault);
-  // SetClock();
-  for(Int_t i=0;i<fgkWings;i++){
-    for(Int_t j=0;j<fgkChips*fgkChannels;j++){
-      fBaseline=0;
-      fNoise=0;
-    }
-  }
-  SetNoiseParam(fgkNoiseDefault,fgkBaselineDefault);
-  SetNoiseAfterElectronics();
-  SetJitterError();
-  SetElectronics();
-  SetDynamicRange(fgkDynamicRangeDefault);
-  SetChargeLoss(fgkfChargeLossDefault);
-  SetThresholds(fgkMinValDefault,0.);
-  SetParamOptions(fgkParam1Default.Data(),fgkParam2Default.Data());
-  SetTemperature(fgkTemperatureDefault);
-  SetZeroSupp(fgkOptionDefault);
-  SetDataType(dataType);
-  SetFilenames();
-  SetOutputOption();
-  SetDo10to8();
-  // set the default zero suppression parameters
-  fCPar[0]=(Int_t) fBaseline;
-  fCPar[1]=(Int_t) fBaseline;
-  fCPar[2]=(Int_t)(2.*fNoiseAfterEl + 0.5);
-  fCPar[3]=(Int_t)(2.*fNoiseAfterEl + 0.5);
-  fCPar[4]=0;
-  fCPar[5]=0;
-  fCPar[6]=0;
-  fCPar[7]=0;
+AliITSresponseSDD::~AliITSresponseSDD() { 
+
+  if(fGaus) delete fGaus;
 }
+
 //______________________________________________________________________
 AliITSresponseSDD::AliITSresponseSDD(const AliITSresponseSDD &ob) : AliITSresponse(ob) {
   // Copy constructor
@@ -145,15 +81,10 @@ AliITSresponseSDD& AliITSresponseSDD::operator=(const AliITSresponseSDD& /* ob *
 }
 
 //______________________________________________________________________
-AliITSresponseSDD::~AliITSresponseSDD() { 
-
-  if(fGaus) delete fGaus;
-}
-
-//______________________________________________________________________
 Int_t AliITSresponseSDD::Convert8to10(Int_t signal) const {
   // Undo the lossive 10 to 8 bit compression.
   // code from Davide C. and Albert W.
+
   if(Do10to8()){  // kTRUE if the compression is active
     if (signal < 0 || signal > 255) {
       Warning("Convert8to10","out of range signal=%d",signal);
@@ -177,26 +108,7 @@ Int_t AliITSresponseSDD::Convert8to10(Int_t signal) const {
   }
 }
 
-//______________________________________________________________________
-void AliITSresponseSDD::SetCompressParam(Int_t  cp[8]){
-  // set compression param
-
-  Int_t i;
-  for (i=0; i<8; i++) {
-    fCPar[i]=cp[i];
-    //printf("\n CompressPar %d %d \n",i,fCPar[i]);    
-  } // end for i
-}
-//______________________________________________________________________
-void AliITSresponseSDD::GiveCompressParam(Int_t  cp[8]) const {
-  // give compression param
-
-  Int_t i;
-  for (i=0; i<8; i++) {
-    cp[i]=fCPar[i];
-  } // end for i
-}
-//______________________________________________________________________
+//________________________________________________________________________
 void AliITSresponseSDD::SetNLookUp(Int_t p1){
   // Set number of sigmas over which cluster disintegration is performed
   fNcomps=p1;
@@ -204,156 +116,5 @@ void AliITSresponseSDD::SetNLookUp(Int_t p1){
   for(Int_t i=0; i<=fNcomps; i++) {
     Double_t x = -fNsigmas + (2.*i*fNsigmas)/(fNcomps-1);
     (*fGaus)[i] = exp(-((x*x)/2));
-    //     cout << "fGaus[" << i << "]: " << fGaus->At(i) << endl;
   }
 }
-//______________________________________________________________________
-void AliITSresponseSDD::SetDeadChannels(Int_t nchip, Int_t nchan){
-  // Set fGain to zero to simulate a random distribution of 
-  // dead modules, dead chips and single dead channels
-
-  for( Int_t m=0; m<fgkWings; m++ ) 
-    for( Int_t n=0; n<fgkChips; n++ ) 
-      for( Int_t p=0; p<fgkChannels; p++ ) 
-	fGain[m][n][p] = 1.;
-                 
-  //fDeadModules  = nmod;  
-  fDeadChips    = nchip;  
-  fDeadChannels = nchan; 
-    
-  // nothing to do
-  //if( nmod == 0 && nchip == 0 && nchan == 0 ) return;
-
-  if( nchip == 0 && nchan == 0 ) return;
-  // if( nmod < 0 || nmod > fgkModules ) 
-  //  { 
-  //    cout << "Wrong number of dead modules: " << nmod << endl; 
-  //    return; 
-  //  }
-  
-  Int_t nmax = fgkWings*fgkChips; 
-  if( nchip < 0 || nchip > nmax ) 
-    { 
-      cout << "Wrong number of dead chips: " << nchip << endl; 
-      return; 
-    }
-  nmax = (fgkWings*fgkChips - nchip)*fgkChannels; 
-  if( nchan < 0 || nchan > nmax ) 
-    { 
-      cout << "Wrong number of dead channels: " << nchan << endl; 
-      return; 
-    }
-  
-  TRandom *gran = new TRandom();
-  /*
-  //  cout << "modules" << endl;
-  Int_t * mod = new Int_t [nmod];
-  Int_t i; //loop variable
-  for( i=0; i<nmod; i++ ) 
-    {
-      mod[i] = (Int_t) (1.+fgkModules*gran->Uniform());
-      cout << i+1 << ": Dead module nr: " << mod[i] << endl;
-      for(Int_t n=0; n<fgkChips; n++)
-	for(Int_t p=0; p<fgkChannels; p++)
-	  fGain[mod[i]-1][n][p] = 0.;
-    }
-  */
-  //  cout << "chips" << endl;
-  Int_t * chip     = new Int_t[nchip];
-  Int_t i = 0;
-  while( i < nchip ) 
-    {
-      Int_t wing = (Int_t) (fgkWings*gran->Uniform() + 1.);
-      if( wing <=0 || wing > fgkWings ) Error("SetDeadChannels","Wrong wing");
-        
-      Int_t chi = (Int_t) (fgkChips*gran->Uniform() + 1.);
-      if( chi <=0 || chi > fgkChips ) Error("SetDeadChannels","Wrong chip:%d\n",chi);
-      i++;
-      chip[i-1] = chi; 
-      for( Int_t m=0; m<fgkChannels; m++ ) 
-	fGain[wing-1][chi-1][m] = 0.;
-    }
-
-  Int_t * channel      = new Int_t[nchan];
-  Int_t * channelChip = new Int_t[nchan];
-  i = 0;
-  while( i < nchan ) 
-    {
-      Int_t k; //loop variable
-      Int_t wing = (Int_t) (fgkWings*gran->Uniform() + 1.);
-      if( wing <=0 || wing > fgkWings ) Error("SetDeadChannels","Wrong wing:%d\n",wing);
-      Int_t chipp = (Int_t) (fgkChips*gran->Uniform() + 1.);
-      if( chipp <=0 || chipp > fgkChips ) Error("SetDeadChannels","Wrong chip:%d",chipp);
-      Int_t flagChip = 0;
-      for( k=0; k<nchip; k++) 
-	if( chipp == chip[k] ) { 
-	  flagChip = 1; break; }
-      if( flagChip == 1 ) continue;
-      i++;
-      channel[i-1] = (Int_t) (fgkChannels*gran->Uniform() + 1.); 
-      if( channel[i-1] <=0 || channel[i-1] > fgkChannels ) 
-	Error("SetDeadChannels","Wrong channel:%d\n",channel[i-1]);
-      channelChip[i-1] = chipp;
-      fGain[wing-1][chipp-1][channel[i-1]-1] = 0.;
-    }
-    
-  delete [] chip;
-  delete [] channel;
-  delete [] channelChip;
-}
-//______________________________________________________________________
-void AliITSresponseSDD::PrintGains() const{
-  //
-
-  if( GetDeadChips() == 0 && 
-      GetDeadChannels() == 0 )
-    return;  
-
-  // Print Electronics Gains
-  cout << "**************************************************" << endl; 
-  cout << "             Print Electronics Gains              " << endl;
-  cout << "**************************************************" << endl;
-
-  // Print SDD electronic gains
-  for(Int_t t=0; t<fgkWings;t++)
-    for(Int_t u=0; u<fgkChips;u++)
-      for(Int_t v=0; v<fgkChannels;v++)
-	{
-	  if( fGain[t][u][v] != 1.0 )
-	    cout << "Gain for wing: " << t+1 << ", Chip " << u+1 << 
-	      ", Channel " << v+1 << " = " << fGain[t][u][v] << endl;
-	}
-}
-//______________________________________________________________________
-void AliITSresponseSDD::Print(){
-  // Print SDD response Parameters
-
-  cout << "**************************************************" << endl;
-  cout << "   Silicon Drift Detector Response Parameters    " << endl;
-  cout << "**************************************************" << endl;
-  cout << "Diffusion Coefficients: "<< fDiffCoeff<< ", "<<fDiffCoeff1 << endl;
-
-  cout << "Hardware compression parameters: " << endl; 
-  for(Int_t i=0; i<8; i++) cout << "fCPar[" << i << "] = " << fCPar[i] <<endl;
-  cout << "Noise before electronics (arbitrary units): " << fNoise << endl;
-  cout << "Baseline (ADC units): " << fBaseline << endl;
-  cout << "Noise after electronics (ADC units): " << fNoiseAfterEl << endl;
-
-  cout << "Dynamic Range: " << fDynamicRange << endl;
-  cout << "Charge Loss: " << fChargeLoss << endl;
-  cout << "Temperature: " << Temperature() << " K " << endl;
-  cout << "Drift Speed: " << fDriftSpeed << endl;
-  cout << "Electronics (1=PASCAL, 2=OLA): " << fElectronics << endl;
-
-  cout << "N. of Sigma for signal integration: " << fNsigmas << endl;
-  cout << "N. of bins in lookup table: " << fNcomps << endl;
-
-  cout << "Max. ADC Value: " << fMaxAdc << endl;
-  cout << "Min. Value: " << fMinVal << endl;
-
-  PrintGains();
-
-}
-
-
-

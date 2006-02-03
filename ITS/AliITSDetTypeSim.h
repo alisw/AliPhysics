@@ -23,7 +23,7 @@ class AliITSmodule;
 class AliITSpListItem;
 class AliITSsimulation;
 class AliITSsegmentation;
-class AliITSresponse;
+class AliITSCalibration;
 class AliLoader;
 class AliITSgeom;
 
@@ -45,13 +45,12 @@ class AliITSDetTypeSim : public TObject {
     virtual AliITSsegmentation* GetSegmentationModel(Int_t dettype);
     virtual AliITSsegmentation* GetSegmentationModelByModule(Int_t module);
 
-    virtual void SetResponseModel(Int_t iMod,AliITSresponse *resp);
-    //   virtual void SetResponse(Int_t dettype, Int_t iMod, AliITSresponse *resp);
-    virtual AliITSresponse* GetResponseModel(Int_t iMod);
+    virtual void SetCalibrationModel(Int_t iMod,AliITSCalibration *resp);
+    virtual AliITSCalibration* GetCalibrationModel(Int_t iMod);
 
-    TObjArray* GetResponse() const {return fResponse;}
+    TObjArray* GetCalibrationArray() const {return fCalibration;}
     TObjArray* GetSegmentation() const {return fSegmentation;}
-    void ResetResponse();
+    void ResetCalibrationArray();
     void ResetSegmentation();
 
     virtual void SetLoader(AliLoader* loader) {fLoader=loader;}
@@ -89,7 +88,7 @@ class AliITSDetTypeSim : public TObject {
 
  protected:
 
-    virtual void CreateResponses(); 
+    virtual void CreateCalibrationArray(); 
     virtual Bool_t GetCalibration();
     
  private:
@@ -104,7 +103,7 @@ class AliITSDetTypeSim : public TObject {
     AliITSgeom   *fGeom;         // pointer to ITS geom
     TObjArray    *fSimulation;   //! [NDet]
     TObjArray    *fSegmentation; //! [NDet]
-    TObjArray    *fResponse;     //! [NMod]
+    TObjArray    *fCalibration;  //! [NMod]
     TObjArray    *fPreProcess;   //! [] e.g. Fill fHitModule with hits
     TObjArray    *fPostProcess;  //! [] e.g. Wright Raw data
     Int_t         fNSDigits;     //! number of SDigits
@@ -117,7 +116,7 @@ class AliITSDetTypeSim : public TObject {
     Char_t*       fDigClassName[3]; //! String with digit class name.
     AliLoader* fLoader;        // loader  
     
-  ClassDef(AliITSDetTypeSim,2) // ITS Simulation structure
+  ClassDef(AliITSDetTypeSim,3) // ITS Simulation structure
  
 };
 

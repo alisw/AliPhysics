@@ -7,8 +7,9 @@
 #include "TH1F.h"
 #include "TObjArray.h"
 #include "AliITSsimulation.h"
-#include "AliITSresponseSPD.h"
+#include "AliITSCalibrationSPD.h"
 #include "AliITSsegmentationSPD.h"
+#include "AliITSresponseSPD.h"
 
 class AliITSmodule;
 
@@ -17,7 +18,7 @@ class AliITSmodule;
 class AliITSsimulationSPDdubna : public AliITSsimulation {
  public:
     AliITSsimulationSPDdubna();
-    //    AliITSsimulationSPDdubna(AliITSsegmentation *seg,AliITSresponse *res,
+    //    AliITSsimulationSPDdubna(AliITSsegmentation *seg,AliITSCalibration *res,
     //                         Int_t cup=1);
     AliITSsimulationSPDdubna(AliITSDetTypeSim *dettyp,Int_t cup=1);
     virtual ~AliITSsimulationSPDdubna();
@@ -106,11 +107,11 @@ class AliITSsimulationSPDdubna : public AliITSsimulation {
     // Getters for data kept in fSegmentation and fResponse.
     // Returns the Threshold in electrons
     Double_t GetThreshold(){
-      Double_t th,sig;AliITSresponseSPD* res=(AliITSresponseSPD*)GetResponseModel(GetModuleNumber()); 
+      Double_t th,sig;AliITSCalibrationSPD* res=(AliITSCalibrationSPD*)GetCalibrationModel(GetModuleNumber()); 
 	res->Thresholds(th,sig);return th;};
     // Returns the couplings Columb and Row.
     void GetCouplings(Double_t &cc,Double_t &cr){
-      AliITSresponseSPD* res = (AliITSresponseSPD*)GetResponseModel(0);
+      AliITSCalibrationSPD* res = (AliITSCalibrationSPD*)GetCalibrationModel(GetModuleNumber());
       res->GetCouplingParam(cc,cr);};
     // Returns the number of pixels in x
     Int_t GetNPixelsX(){return GetSegmentationModel(0)->Npx();};

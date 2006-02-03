@@ -19,8 +19,9 @@
 // #include "AliITS.h"
 #include "AliITSgeom.h"
 #include "AliITSgeomSDD.h"
-#include "AliITSresponse.h"
-
+#include "AliITSCalibration.h"
+#include "AliITSCalibrationSDD.h"
+#include "AliITSresponseSDD.h"
 //////////////////////////////////////////////////////
 // Segmentation class for                           //
 // drift detectors                                  //
@@ -38,10 +39,11 @@ const Int_t AliITSsegmentationSDD::fgkNsamplesDefault = 256;
 ClassImp(AliITSsegmentationSDD)
 //----------------------------------------------------------------------
 AliITSsegmentationSDD::AliITSsegmentationSDD(AliITSgeom* geom,
-					     AliITSresponse *resp){
+					     AliITSCalibration *resp){
   // constructor
    fGeom=geom;
-   fDriftSpeed=resp->DriftSpeed();
+   AliITSCalibrationSDD* sp = (AliITSCalibrationSDD*)resp;
+   fDriftSpeed=sp->GetDriftSpeed();
    fCorr=0;
    SetDetSize(fgkDxDefault,fgkDzDefault,fgkDyDefault);
    SetPadSize(fgkPitchDefault,fgkClockDefault);

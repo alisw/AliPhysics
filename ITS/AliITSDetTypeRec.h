@@ -19,7 +19,7 @@ $Id$
 #include "AliRunLoader.h"
 
 class AliITSsegmentation;
-class AliITSresponse;
+class AliITSCalibration;
 class AliITSClusterFinder;
 class AliITSRawCluster;
 class AliITSRecPoint;
@@ -48,11 +48,11 @@ class AliITSDetTypeRec : public TObject {
     virtual void SetTreeAddressD(TTree* treeD);
 
     virtual void SetSegmentationModel(Int_t dettype, AliITSsegmentation *seg);
-    virtual void SetCalibrationModel(Int_t iMod, AliITSresponse *cal);
+    virtual void SetCalibrationModel(Int_t iMod, AliITSCalibration *cal);
     virtual void SetReconstructionModel(Int_t dettype, AliITSClusterFinder *rec);
     virtual Bool_t GetCalibration();
     virtual AliITSsegmentation* GetSegmentationModel(Int_t dettype);
-    virtual AliITSresponse* GetCalibrationModel(Int_t iMod);
+    virtual AliITSCalibration* GetCalibrationModel(Int_t iMod);
     virtual AliITSClusterFinder* GetReconstructionModel(Int_t dettype);
 
     virtual void SetDigitClassName(Int_t i,Char_t *digit) 

@@ -14,6 +14,7 @@
  **************************************************************************/
 
 #include <AliITSdigitSDD.h>
+#include <AliITSCalibrationSDD.h>
 #include <AliITSresponseSDD.h>
 #include <TArrayI.h>
 #include <TArrayF.h>
@@ -85,11 +86,12 @@ AliITSdigitSDD::AliITSdigitSDD( Float_t phys,const Int_t *digits,
 //_____________________________________________________________________________
 AliITSdigitSDD::AliITSdigitSDD( Float_t phys,const Int_t *digits,
     const Int_t *tracks,const Int_t *hits,const Float_t *charges,
-    AliITSresponseSDD* resp): AliITSdigit(digits) {
+    AliITSCalibrationSDD* resp): AliITSdigit(digits) {
 
-  //constructor setting fSignalExpanded through AliITSresponseSDD
+  //constructor setting fSignalExpanded through AliITSCalibrationSDD
   InitObject(phys,tracks,hits,charges);
-  SetSignalExpanded(resp->Convert8to10(digits[2]));
+  AliITSresponseSDD* pd = (AliITSresponseSDD*)resp->GetResponse();
+  SetSignalExpanded(pd->Convert8to10(digits[2]));
 }
 
 //______________________________________________________________________

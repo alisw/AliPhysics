@@ -17,6 +17,7 @@
  $Id$
 */
 
+
 /////////////////////////////////////////////////////////////////////
 // Base simulation functions for ITS                               //
 //                                                                 //
@@ -42,7 +43,9 @@
 #include "AliITSDetTypeSim.h"
 #include "AliITSgeom.h"
 #include "AliITSpListItem.h"
-#include "AliITSresponseSSD.h"
+#include "AliITSresponseSDD.h"
+#include "AliITSCalibrationSDD.h"
+#include "AliITSCalibrationSSD.h"
 #include "AliITSsegmentationSPD.h"
 #include "AliITSsegmentationSDD.h"
 #include "AliITSsegmentationSSD.h"
@@ -65,7 +68,7 @@ TObject(),
 fGeom(),         //
 fSimulation(),   // [NDet]
 fSegmentation(), // [NDet]
-fResponse(),     // [NMod]
+fCalibration(),     // [NMod]
 fPreProcess(),   // [] e.g. Fill fHitModule with hits
 fPostProcess(),  // [] e.g. Wright Raw data
 fNSDigits(0),    //! number of SDigits
@@ -86,7 +89,7 @@ fDigClassName(){ // String with digit class name.
   fSimulation = new TObjArray(fgkNdettypes);
   fSegmentation = new TObjArray(fgkNdettypes);
   fSegmentation->SetOwner(kTRUE);
-  fResponse = 0;
+  fCalibration = 0;
   fPreProcess = 0;
   fPostProcess = 0;
   fNSDigits = 0;
@@ -110,7 +113,7 @@ AliITSDetTypeSim::~AliITSDetTypeSim(){
     // Return:
     //    Nothing.
   
-    
+   
     if(fSimulation){
       fSimulation->Delete();
       delete fSimulation;
@@ -123,15 +126,20 @@ AliITSDetTypeSim::~AliITSDetTypeSim(){
       fSegmentation = 0;
     }
     
-    if(fResponse){
-      
-      fResponse->Delete();
-      delete fResponse;
-      fResponse = 0;
+    if(fCalibration){
+      AliITSresponse* rspd = ((AliITSCalibration*)fCalibration->At(fGeom->GetStartSPD()))->GetResponse();    
+      AliITSresponse* rsdd = ((AliITSCalibration*)fCalibration->At(fGeom->GetStartSDD()))->GetResponse();
+      AliITSresponse* rssd = ((AliITSCalibration*)fCalibration->At(fGeom->GetStartSSD()))->GetResponse();
+      if(rspd) delete rspd;
+      if(rsdd) delete rsdd;
+      if(rssd) delete rssd;
+      fCalibration->Delete();
+      delete fCalibration;
+      fCalibration = 0;
     }
-    
-    if(fGeom) delete fGeom;
 
+    if(fGeom) delete fGeom;
+    
     if(fPreProcess){
       fPreProcess->Delete();
       delete fPreProcess;
@@ -211,7 +219,7 @@ AliITSsimulation* AliITSDetTypeSim::GetSimulationModelByModule(Int_t module){
   
   return GetSimulationModel(fGeom->GetModuleType(module));
 }
-//_____________________________________________________________________
+//_______________________________________________________________________
 void AliITSDetTypeSim::SetDefaultSegmentation(Int_t idet){
   // Set default segmentation model objects
   AliITSsegmentation *seg;
@@ -224,7 +232,7 @@ void AliITSDetTypeSim::SetDefaultSegmentation(Int_t idet){
     seg = new AliITSsegmentationSPD(fGeom);
   }
   else if(idet==1){
-    AliITSresponse* res = GetResponseModel(fGeom->GetStartSDD());
+    AliITSCalibration* res = GetCalibrationModel(fGeom->GetStartSDD());
     seg = new AliITSsegmentationSDD(fGeom,res);
   }
   else {
@@ -237,7 +245,7 @@ void AliITSDetTypeSim::SetDefaultSegmentation(Int_t idet){
 void AliITSDetTypeSim::SetSegmentationModel(Int_t dettype,AliITSsegmentation *seg){
    
   //Set segmentation model for detector type
-  if(fSegmentation==0x0) {
+  if(fSegmentation==0x0){
     fSegmentation = new TObjArray(fgkNdettypes);
     fSegmentation->SetOwner(kTRUE);
   }
@@ -268,74 +276,59 @@ AliITSsegmentation* AliITSDetTypeSim::GetSegmentationModelByModule(Int_t module)
 
 }
 //_______________________________________________________________________
-void AliITSDetTypeSim::CreateResponses() {
+void AliITSDetTypeSim::CreateCalibrationArray() {
 
-  //Create the container of response functions with correct size
-  if (fResponse) {
-    fResponse->Delete();
-    delete fResponse;
+  //Create the container of calibration functions with correct size
+  if (fCalibration) {
+    fCalibration->Delete();
+    delete fCalibration;
   }
 
   Int_t nModTot = 0;
   for (Int_t i=0; i<fgkNdettypes; i++) nModTot += fNMod[i];
-  fResponse = new TObjArray(nModTot);
-  fResponse->SetOwner(kTRUE);
-  fResponse->Clear();
+  fCalibration = new TObjArray(nModTot);
+  fCalibration->SetOwner(kTRUE);
+  fCalibration->Clear();
 
 }
 //_______________________________________________________________________
-void AliITSDetTypeSim::SetResponseModel(Int_t iMod, AliITSresponse *resp){
+void AliITSDetTypeSim::SetCalibrationModel(Int_t iMod, AliITSCalibration *resp){
 
   //Set response model for modules
 
-  if (fResponse==0) CreateResponses();
+  if (fCalibration==0) CreateCalibrationArray();
  
-  if (fResponse->At(iMod)!=0)
-    delete (AliITSresponse*) fResponse->At(iMod);
-  fResponse->AddAt(resp, iMod);
+  if (fCalibration->At(iMod)!=0)
+    delete (AliITSCalibration*) fCalibration->At(iMod);
+  fCalibration->AddAt(resp, iMod);
 
 }
-/*
-//_______________________________________________________________________
-void AliITSDetTypeSim::SetResponse(Int_t dettype, Int_t iMod, AliITSresponse *resp){
 
-  //Set response for the module iMod of type dettype
-  if (fResponse==0) CreateResponses();
-
-  Int_t nModBefore = 0;
-  for (Int_t i=0; i<dettype; i++) nModBefore += fNMod[i];
-
-  if (fResponse->At(nModBefore+iMod) != 0)
-    delete (AliITSresponse*) fResponse->At(nModBefore+iMod);
-  fResponse->AddAt(resp, nModBefore+iMod);
-
-}
-*/
 //______________________________________________________________________
-void AliITSDetTypeSim::ResetResponse(){
+void AliITSDetTypeSim::ResetCalibrationArray(){
 
   //resets response array
-  if(fResponse)
-    fResponse->Clear();
+  if(fCalibration)
+    fCalibration->Clear();
 
 }
 //______________________________________________________________________
 void AliITSDetTypeSim::ResetSegmentation(){
  
  //Resets segmentation array
-  if(fSegmentation)fSegmentation->Clear();
+  if(fSegmentation) fSegmentation->Clear();
 }
 
 //_______________________________________________________________________
-AliITSresponse* AliITSDetTypeSim::GetResponseModel(Int_t iMod){
+AliITSCalibration* AliITSDetTypeSim::GetCalibrationModel(Int_t iMod){
    //Get response model for module number iMod 
  
-  if(fResponse==0) {
-    AliError("fResponse is 0!");
+  if(fCalibration==0) {
+    AliError("fCalibration is 0!");
     return 0; 
   }
 
-  return (AliITSresponse*)(fResponse->At(iMod));
+  return (AliITSCalibration*)(fCalibration->At(iMod));
 
 }
 //_______________________________________________________________________
@@ -349,19 +342,17 @@ void AliITSDetTypeSim::SetDefaults(){
     return;
   }
 
-  if (fResponse==0) CreateResponses();
+  if (fCalibration==0) CreateCalibrationArray();
 
-  ResetResponse();
+  ResetCalibrationArray();
   ResetSegmentation();
-  
- 
   if(!GetCalibration()){AliFatal("Exit"); exit(0);}
 
   for(Int_t idet=0;idet<fgkNdettypes;idet++){
     //SPD
     if(idet==0){
-      if(!GetSegmentationModel(idet))SetDefaultSegmentation(idet);
-      const char *kData0=(GetResponseModel(fGeom->GetStartSPD()))->DataType();
+      if(!GetSegmentationModel(idet)) SetDefaultSegmentation(idet);
+      const char *kData0=(GetCalibrationModel(fGeom->GetStartSPD()))->DataType();
       if (strstr(kData0,"real")) {
 	SetDigitClassName(idet,"AliITSdigit");
       }
@@ -371,8 +362,9 @@ void AliITSDetTypeSim::SetDefaults(){
     }
     //SDD
     if(idet==1){
-      if(!GetSegmentationModel(idet))SetDefaultSegmentation(idet);
-      const char *kopt = GetResponseModel(fGeom->GetStartSDD())->ZeroSuppOption();
+      if(!GetSegmentationModel(idet)) SetDefaultSegmentation(idet);
+      AliITSCalibrationSDD* rsp = (AliITSCalibrationSDD*)GetCalibrationModel(fGeom->GetStartSDD());
+      const char *kopt = ((AliITSresponseSDD*)rsp->GetResponse())->ZeroSuppOption();
       if((!strstr(kopt,"2D"))&&(!strstr(kopt,"1D"))) {
 	SetDigitClassName(idet,"AliITSdigit");
       }
@@ -384,7 +376,8 @@ void AliITSDetTypeSim::SetDefaults(){
     //SSD
     if(idet==2){
       if(!GetSegmentationModel(idet))SetDefaultSegmentation(idet);
-      const char *kData2 = (GetResponseModel(fGeom->GetStartSSD())->DataType());
+
+      const char *kData2 = (GetCalibrationModel(fGeom->GetStartSSD())->DataType());
       if (strstr(kData2,"real")) {
 	SetDigitClassName(idet,"AliITSdigit");
       }
@@ -401,21 +394,26 @@ Bool_t AliITSDetTypeSim::GetCalibration() {
   // Get Default calibration if a storage is not defined.
 
 
+  AliCDBEntry *entrySPD = AliCDBManager::Instance()->Get("ITS/Calib/CalibSPD", fRunNumber);
+  AliCDBEntry *entrySDD = AliCDBManager::Instance()->Get("ITS/Calib/CalibSDD", fRunNumber);
+  AliCDBEntry *entrySSD = AliCDBManager::Instance()->Get("ITS/Calib/CalibSSD", fRunNumber);
+  AliCDBEntry *entry2SPD = AliCDBManager::Instance()->Get("ITS/Calib/RespSPD", fRunNumber);
+  AliCDBEntry *entry2SDD = AliCDBManager::Instance()->Get("ITS/Calib/RespSDD", fRunNumber);
+  AliCDBEntry *entry2SSD = AliCDBManager::Instance()->Get("ITS/Calib/RespSSD", fRunNumber);
 
-  AliCDBEntry *entrySPD = AliCDBManager::Instance()->Get("ITS/Calib/RespSPD", fRunNumber);
-  AliCDBEntry *entrySDD = AliCDBManager::Instance()->Get("ITS/Calib/RespSDD", fRunNumber);
-  AliCDBEntry *entrySSD = AliCDBManager::Instance()->Get("ITS/Calib/RespSSD", fRunNumber);
-
-  if(!entrySPD || !entrySDD || !entrySSD){
-  	AliWarning("Calibration object retrieval failed! Dummy calibration will be used.");
-	AliCDBStorage *origStorage = AliCDBManager::Instance()->GetDefaultStorage();
-	AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT");
+  if(!entrySPD || !entrySDD || !entrySSD || !entry2SPD || !entry2SDD || !entry2SSD){
+    AliWarning("Calibration object retrieval failed! Dummy calibration will be used.");
+    AliCDBStorage *origStorage = AliCDBManager::Instance()->GetDefaultStorage();
+    AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT");
 	
-  	entrySPD = AliCDBManager::Instance()->Get("ITS/Calib/RespSPD", fRunNumber);
-  	entrySDD = AliCDBManager::Instance()->Get("ITS/Calib/RespSDD", fRunNumber);
-  	entrySSD = AliCDBManager::Instance()->Get("ITS/Calib/RespSSD", fRunNumber);
+    entrySPD = AliCDBManager::Instance()->Get("ITS/Calib/CalibSPD", fRunNumber);
+    entrySDD = AliCDBManager::Instance()->Get("ITS/Calib/CalibSDD", fRunNumber);
+    entrySSD = AliCDBManager::Instance()->Get("ITS/Calib/CalibSSD", fRunNumber);
+    entry2SPD = AliCDBManager::Instance()->Get("ITS/Calib/RespSPD", fRunNumber);
+    entry2SDD = AliCDBManager::Instance()->Get("ITS/Calib/RespSDD", fRunNumber);
+    entry2SSD = AliCDBManager::Instance()->Get("ITS/Calib/RespSSD", fRunNumber);
 	
-	AliCDBManager::Instance()->SetDefaultStorage(origStorage);
+    AliCDBManager::Instance()->SetDefaultStorage(origStorage);
   }
 
 
@@ -423,21 +421,38 @@ Bool_t AliITSDetTypeSim::GetCalibration() {
   entrySPD->SetObject(NULL);
   entrySPD->SetOwner(kTRUE);
 
+  AliITSresponseSPD *pSPD = (AliITSresponseSPD*)entry2SPD->GetObject();
+  entry2SPD->SetObject(NULL);
+  entry2SPD->SetOwner(kTRUE);
+   
   TObjArray *respSDD = (TObjArray *)entrySDD->GetObject();
   entrySDD->SetObject(NULL);
   entrySDD->SetOwner(kTRUE);
+
+  AliITSresponseSDD *pSDD = (AliITSresponseSDD*)entry2SDD->GetObject();
+  entry2SDD->SetObject(NULL);
+  entry2SDD->SetOwner(kTRUE);
 
   TObjArray *respSSD = (TObjArray *)entrySSD->GetObject();
   entrySSD->SetObject(NULL);
   entrySSD->SetOwner(kTRUE);
 
-
+  AliITSresponseSSD *pSSD = (AliITSresponseSSD*)entry2SSD->GetObject();
+  entry2SSD->SetObject(NULL);
+  entry2SSD->SetOwner(kTRUE);
+  
   // DB entries are dleted. In this waymetadeta objects are deleted as well
   delete entrySPD;
   delete entrySDD;
   delete entrySSD;
-
-
+  delete entry2SPD;
+  delete entry2SDD;
+  delete entry2SSD;
+  
+  if ((!pSPD)||(!pSDD)||(!pSSD)) {
+    AliWarning("Can not get calibration from calibration database !");
+    return kFALSE;
+  }
   if ((! respSPD)||(! respSDD)||(! respSSD)) {
     AliWarning("Can not get calibration from calibration database !");
     return kFALSE;
@@ -447,20 +462,23 @@ Bool_t AliITSDetTypeSim::GetCalibration() {
   fNMod[2] = respSSD->GetEntries();
   AliInfo(Form("%i SPD, %i SDD and %i SSD in calibration database",
 	       fNMod[0], fNMod[1], fNMod[2]));
-  
+  AliITSCalibration* res;
   for (Int_t i=0; i<fNMod[0]; i++) {
-  AliITSresponse*  res = (AliITSresponse*) respSPD->At(i);
-  SetResponseModel(i, res);
+    res = (AliITSCalibration*) respSPD->At(i);
+    res->SetResponse((AliITSresponse*)pSPD);
+    SetCalibrationModel(i, res);
  }
   for (Int_t i=0; i<fNMod[1]; i++) {
-    AliITSresponse* res = (AliITSresponse*) respSDD->At(i);
+    res = (AliITSCalibration*) respSDD->At(i);
+    res->SetResponse(pSDD);
     Int_t iMod = i + fNMod[0];
-    SetResponseModel(iMod, res);
+    SetCalibrationModel(iMod, res);
  }
   for (Int_t i=0; i<fNMod[2]; i++) {
-     AliITSresponse* res = (AliITSresponse*) respSSD->At(i);
+    res = (AliITSCalibration*) respSSD->At(i);
+    res->SetResponse((AliITSresponse*)pSSD);
     Int_t iMod = i + fNMod[0] + fNMod[1];
-    SetResponseModel(iMod, res);
+    SetCalibrationModel(iMod, res);
  }
 
   return kTRUE;
@@ -473,23 +491,22 @@ void AliITSDetTypeSim::SetDefaultSimulation(){
 
   //Set default simulation for detector type
 
-
   if(fGeom==0){
-    Warning("SetDefaultSimulation","fGeom is 0!\n");
+    Warning("SetDefaultSimulation","fGeom is 0!");
     return;
   }
-  if(fResponse==0){
-    Warning("SetDefaultSimulation","fResponse is 0!\n");
+  if(fCalibration==0){
+    Warning("SetDefaultSimulation","fCalibration is 0!");
     return;
   }
-  if(fSegmentation ==0){
-    Warning("SetDefaultSimulation","fSegmentation is 0!\n");
-    for(Int_t i=0;i<fgkNdettypes;i++)SetDefaultSegmentation(i);
+  if(fSegmentation==0){
+    Warning("SetDefaultSimulation","fSegmentation is 0!");
+    for(Int_t i=0;i<fgkNdettypes;i++) SetDefaultSegmentation(i);
   }
-  else {
+  else{
     for(Int_t i=0;i<fgkNdettypes;i++){
       if(!GetSegmentationModel(i)){
-	Warning("SetDefaultSimulation","Segmentation not defined for det %d - Default taken\n");
+	Warning("SetDefaultSimulation","Segmentation not defined for det %d - Default taken\n!",i);
 	SetDefaultSegmentation(i);
       }
     }
@@ -500,10 +517,12 @@ void AliITSDetTypeSim::SetDefaultSimulation(){
    //SPD
     if(idet==0){
       sim = GetSimulationModel(idet);
+ 
       if(!sim){
 	sim = new AliITSsimulationSPD(this);
 	SetSimulationModel(idet,sim);
       } else{
+	// loop over all SPD modules
 	sim->SetDetType(this);
 	sim->SetSegmentationModel(0,(AliITSsegmentationSPD*)GetSegmentationModel(idet));
 	sim->Init();
@@ -519,7 +538,6 @@ void AliITSDetTypeSim::SetDefaultSimulation(){
 	sim->SetDetType(this);
 	sim->SetSegmentationModel(1,(AliITSsegmentationSDD*)GetSegmentationModel(idet));
 	sim->Init();
-
       }
       
     }
@@ -531,8 +549,11 @@ void AliITSDetTypeSim::SetDefaultSimulation(){
 	SetSimulationModel(idet,sim);
 
       } else{
+	
 	sim->SetDetType(this);
-	sim->SetSegmentationModel(2,(AliITSsegmentationSSD*)GetSegmentationModel(idet));    
+	sim->SetSegmentationModel(2,(AliITSsegmentationSSD*)GetSegmentationModel(idet));
+
+    
 	sim->Init();
       }
 
@@ -719,13 +740,13 @@ void AliITSDetTypeSim::AddSimDigit(Int_t branch,Float_t phys,Int_t *digits,
   //   Add a simulated digit to the list.
 
   TClonesArray &ldigits = *((TClonesArray*)fDigits->At(branch));
-  AliITSresponseSDD *resp = 0;
+  AliITSCalibrationSDD *resp = 0;
   switch(branch){
   case 0:
     new(ldigits[fNDigits[branch]++]) AliITSdigitSPD(digits,tracks,hits);
     break;
   case 1:
-    resp = (AliITSresponseSDD*)GetResponseModel(fGeom->GetStartSDD());
+    resp = (AliITSCalibrationSDD*)GetCalibrationModel(fGeom->GetStartSDD());
     new(ldigits[fNDigits[branch]++]) AliITSdigitSDD(phys,digits,tracks,
 						   hits,charges,resp);
     break;
@@ -748,16 +769,15 @@ void AliITSDetTypeSim::StoreCalibration(Int_t firstRun, Int_t lastRun, AliCDBMet
   if(!AliCDBManager::Instance()->IsDefaultStorageSet()) {
     AliWarning("No storage set! Will use dummy one");
     AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT");
-    //return;
   }
 
-  if (!fResponse) {
-    AliError("AliITSresponse classes are not defined - nothing done");
+  if (!fCalibration) {
+    AliError("AliITSCalibration classes are not defined - nothing done");
     return;
   }
-  AliCDBId idRespSPD("ITS/Calib/RespSPD",firstRun, lastRun);
-  AliCDBId idRespSDD("ITS/Calib/RespSDD",firstRun, lastRun);
-  AliCDBId idRespSSD("ITS/Calib/RespSSD",firstRun, lastRun);
+  AliCDBId idRespSPD("ITS/Calib/CalibSPD",firstRun, lastRun);
+  AliCDBId idRespSDD("ITS/Calib/CalibSDD",firstRun, lastRun);
+  AliCDBId idRespSSD("ITS/Calib/CalibSSD",firstRun, lastRun);
 
   TObjArray respSPD(fNMod[0]);
   TObjArray respSDD(fNMod[1]-fNMod[0]);
@@ -774,21 +794,20 @@ void AliITSDetTypeSim::StoreCalibration(Int_t firstRun, Int_t lastRun, AliCDBMet
   }
 
   for (Int_t i = 0; i<index[0]; i++ )
-    respSPD.Add(fResponse->At(i));
+    respSPD.Add(fCalibration->At(i));
 
   for (Int_t i = index[0]; i<index[1]; i++ )
-    respSDD.Add(fResponse->At(i));
+    respSDD.Add(fCalibration->At(i));
 
   for (Int_t i = index[1]; i<index[2]; i++ )
-    respSSD.Add(fResponse->At(i));
-
-  // AliCDBManager::Instance()->GetDefaultStorage()->Put(&respSPD, idRespSPD, &md);
-  // AliCDBManager::Instance()->GetDefaultStorage()->Put(&respSDD, idRespSDD, &md);
-  // AliCDBManager::Instance()->GetDefaultStorage()->Put(&respSSD, idRespSSD, &md);
+    respSSD.Add(fCalibration->At(i));
 
   AliCDBManager::Instance()->Put(&respSPD, idRespSPD, &md);
   AliCDBManager::Instance()->Put(&respSDD, idRespSDD, &md);
   AliCDBManager::Instance()->Put(&respSSD, idRespSSD, &md);
+
+
+
 }
 
 

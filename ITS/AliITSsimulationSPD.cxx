@@ -87,7 +87,7 @@ void AliITSsimulationSPD::Init() {
 /*
 //______________________________________________________________________
 void AliITSsimulationSPD::Init(AliITSsegmentationSPD *seg,
-                               AliITSresponseSPD *resp) {
+                               AliITSCalibrationSPD *resp) {
     // Initilizes the variables of AliITSsimulation SPD.
     // Inputs:
     //    AliITSsegmentationSPD   replacement segmentation class to be used
@@ -123,7 +123,6 @@ AliITSsimulationSPD::~AliITSsimulationSPD() {
     //    none.
 
     if(fMapA2) delete fMapA2;
-
     if (fHis) {
         fHis->Delete(); 
         delete fHis;     
@@ -865,7 +864,7 @@ void AliITSsimulationSPD::SetMask(Int_t mod) {
     Double_t signal;
     Int_t iz,ix,im;
     Float_t totMask;
-    Float_t perc = ((AliITSresponseSPD*)GetResponseModel(mod))->GetFractionDead();
+    Float_t perc = ((AliITSCalibrationSPD*)GetCalibrationModel(mod))->GetFractionDead();
     // in this way we get the same set of random numbers for all runs.
     // This is a cluge for now.
     static TRandom *rnd = new TRandom();

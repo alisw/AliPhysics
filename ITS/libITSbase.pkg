@@ -21,9 +21,13 @@ SRCS = 	AliITSgeom.cxx \
 		AliITSsegmentationSDD.cxx \
 		AliITSsegmentationSSD.cxx \
 		AliITSresponse.cxx \
+		AliITSCalibration.cxx \
 		AliITSresponseSPD.cxx \
 		AliITSresponseSDD.cxx \
 		AliITSresponseSSD.cxx \
+		AliITSCalibrationSPD.cxx \
+		AliITSCalibrationSDD.cxx \
+		AliITSCalibrationSSD.cxx \
 		AliITSDDLRawData.cxx \
 		AliITSRawStream.cxx \
 		AliITSRawStreamSDDv2.cxx \
