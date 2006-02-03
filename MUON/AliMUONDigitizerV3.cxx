@@ -24,7 +24,7 @@
 #include "AliMUONData.h"
 #include "AliMUONDigit.h"
 #include "AliMUONTriggerDecisionV1.h"
-//#include "AliMUONTriggerElectronics.h"
+#include "AliMUONTriggerElectronics.h"
 #include "AliMUONCalibParam.h"
 #include "AliMpDEManager.h"
 #include "AliMpStationType.h"
@@ -351,14 +351,14 @@ AliMUONDigitizerV3::Init()
       fTriggerProcessor = new AliMUONTriggerDecisionV1(fOutputData);
       break;
     case kTriggerElectronics:
-      AliFatal("Implement me!");
-//      fTrigger = new AliMUONTriggerElectronics(fOutputData);
+      fTriggerProcessor = new AliMUONTriggerElectronics(fOutputData);
       break;
     default:
       AliFatal("Unknown trigger processor type");
       break;
   }
-  
+  AliDebug(1,Form("Using the following trigger code %s - %s",
+                  fTriggerProcessor->GetName(),fTriggerProcessor->GetTitle()));
   fIsInitialized = kTRUE;
   return kTRUE;
 }
