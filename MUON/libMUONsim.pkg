@@ -22,10 +22,14 @@ SRCS:= AliMUONResponseFactory.cxx \
        AliMUONResponseTriggerV1.cxx \
        AliMUONTrigger.cxx \
        AliMUONSDigitizerV2.cxx \
-       AliMUONDigitizerV3.cxx
+       AliMUONDigitizerV3.cxx \
+       AliMUONLocalTriggerBoard.cxx \
+       AliMUONRegionalTriggerBoard.cxx \
+       AliMUONTriggerBoard.cxx \
+       AliMUONTriggerCrate.cxx \
+       AliMUONTriggerElectronics.cxx \
+       AliMUONGlobalTriggerBoard.cxx
        
-
-
 HDRS:= $(SRCS:.cxx=.h)
 
 DHDR:= MUONsimLinkDef.h

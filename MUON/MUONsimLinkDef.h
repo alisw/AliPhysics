@@ -34,7 +34,15 @@
 #pragma link C++ class AliMUONResponseTrigger+; 
 #pragma link C++ class AliMUONResponseTriggerV1+;
 
+// trigger
+
 #pragma link C++ class AliMUONTrigger+;
+#pragma link C++ class AliMUONLocalTriggerBoard+;
+#pragma link C++ class AliMUONRegionalTriggerBoard+;
+#pragma link C++ class AliMUONTriggerBoard+;
+#pragma link C++ class AliMUONTriggerCrate+;
+#pragma link C++ class AliMUONTriggerElectronics+;
+#pragma link C++ class AliMUONGlobalTriggerBoard+;
 
 #endif
 
