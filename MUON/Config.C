@@ -159,9 +159,16 @@ void Config(char directory[100]="", char option[6]="param")
   //AliMUON *MUON = new AliMUONv1("MUON", "FactoryV4"); // New segmentation trigger 
   //
   //Version below to get digitizer making a decalibration.
+  //The 4-th parameter should be put to digitizer:NewDigitizerNewTrigger
+  //to test latest and greatest trigger code (from Rachid) as well.
+  //
   //AliMUON *MUON = new AliMUONv1("MUON", "FactoryV4",
-  //  "sdigitizer:AliMUONSDigitizerV2","digitizer:NewDigitizerOldTrigger");
-
+  //                              "sdigitizer:AliMUONSDigitizerV2",
+  //                              "digitizer:NewDigitizerOldTrigger");
+  //AliMUON *MUON = new AliMUONv1("MUON", "FactoryV4",
+  //                              "sdigitizer:AliMUONSDigitizerV2",
+  //                              "digitizer:NewDigitizerNewTrigger");
+  
   // If SetAlign, the detection elements transformations
   // are taken from the input file and not from the code
   // MUON->SetAlign("transform.dat");
