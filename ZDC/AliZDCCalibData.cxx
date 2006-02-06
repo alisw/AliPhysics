@@ -28,7 +28,7 @@ ClassImp(AliZDCCalibData)
 //________________________________________________________________
 AliZDCCalibData::AliZDCCalibData()
 {
-  fHistMeanPed=0;
+//  fHistMeanPed=0;
   Reset();
 }
 
@@ -39,7 +39,7 @@ AliZDCCalibData::AliZDCCalibData(const char* name)
   namst += name;
   SetName(namst.Data());
   SetTitle(namst.Data());
-  fHistMeanPed=0;
+//  fHistMeanPed=0;
   Reset();
 }
 
@@ -51,10 +51,18 @@ AliZDCCalibData::AliZDCCalibData(const AliZDCCalibData& calibda) :
   SetName(calibda.GetName());
   SetTitle(calibda.GetName());
   Reset();
-  for(int t=0; t<47; t++) fMeanPedestal[t]  = calibda.GetMeanPed(t);
-  for(int t=0; t<44; t++) fOOTPedestal[t]   = calibda.GetOOTPed(t);
+  for(int t=0; t<47; t++){
+     fMeanPedestal[t] = calibda.GetMeanPed(t);
+     fMeanPedWidth[t] = calibda.GetMeanPedWidth(t);
+  }
+  for(int t=0; t<44; t++){
+     fOOTPedestal[t]  = calibda.GetOOTPed(t);
+     fOOTPedWidth[t]  = calibda.GetOOTPedWidth(t);
+     fPedCorrCoeff[0][t] = calibda.GetPedCorrCoeff0(t);
+     fPedCorrCoeff[1][t] = calibda.GetPedCorrCoeff1(t);
+  }
   for(int t=0; t<6; t++)  fEnCalibration[t] = calibda.GetEnCalib(t);
-  PrepHistos();
+//  PrepHistos();
 }
 
 //________________________________________________________________
@@ -64,27 +72,38 @@ AliZDCCalibData &AliZDCCalibData::operator =(const AliZDCCalibData& calibda)
   SetName(calibda.GetName());
   SetTitle(calibda.GetName());
   Reset();
-  for(int t=0; t<47; t++) fMeanPedestal[t] = calibda.GetMeanPed(t);
-  for(int t=0; t<44; t++) fOOTPedestal[t]  = calibda.GetOOTPed(t);
+  for(int t=0; t<47; t++){
+     fMeanPedestal[t] = calibda.GetMeanPed(t);
+     fMeanPedWidth[t] = calibda.GetMeanPedWidth(t);
+  }
+  for(int t=0; t<44; t++){
+     fOOTPedestal[t]  = calibda.GetOOTPed(t);
+     fOOTPedWidth[t]  = calibda.GetOOTPedWidth(t);
+     fPedCorrCoeff[0][t] = calibda.GetPedCorrCoeff0(t);
+     fPedCorrCoeff[1][t] = calibda.GetPedCorrCoeff1(t);
+  }
   for(int t=0; t<6; t++) fEnCalibration[t] = calibda.GetEnCalib(t);
-  PrepHistos();
+//  PrepHistos();
   return *this;
 }
 
 //________________________________________________________________
 AliZDCCalibData::~AliZDCCalibData()
 {
-  CleanHistos();
+//  CleanHistos();
 }
 
 //________________________________________________________________
 void AliZDCCalibData::Reset()
 {
   memset(fMeanPedestal,0,47*sizeof(Float_t));
+  memset(fMeanPedWidth,0,47*sizeof(Float_t));
   memset(fOOTPedestal,0,44*sizeof(Float_t));
+  memset(fOOTPedWidth,0,44*sizeof(Float_t));
   memset(fEnCalibration,0,6*sizeof(Float_t));
 }                                                                                       
 
+/*
 //________________________________________________________________
 void AliZDCCalibData::CleanHistos()
 {
@@ -101,6 +120,7 @@ void AliZDCCalibData::PrepHistos()
   fHistMeanPed = new TH1F(hname.Data(),hname.Data(),kNChannels,0.,kMaxPedVal);
   for(int i=0; i<47; i++)  fHistMeanPed->SetBinContent(i+1,GetMeanPed(i));
 }
+*/
 
 //________________________________________________________________
 void  AliZDCCalibData::Print(Option_t *) const
@@ -115,7 +135,7 @@ void  AliZDCCalibData::Print(Option_t *) const
      else if(t==21) printf("\n\t -------- ZEM1 LowRes -------- ");
      else if(t==22) printf("\n\t -------- ZEM2 HighRes -------- ");
      else if(t==23) printf("\n\t -------- ZEM2 LowRes -------- ");
-     printf("    MeanPed[ADC%d] = %.1f \t",t,fMeanPedestal[t]);
+     printf("   MeanPed[ADC%d] = %.1f   ",t,fMeanPedestal[t]);
    }
    
    printf("\n\n\n	#######	Out Of Time pedestal values	####### \n");
@@ -128,7 +148,7 @@ void  AliZDCCalibData::Print(Option_t *) const
      else if(t==21) printf("\n\t -------- ZEM1 LowRes -------- ");
      else if(t==22) printf("\n\t -------- ZEM2 HighRes -------- ");
      else if(t==23) printf("\n\t -------- ZEM2 LowRes -------- ");
-     printf("    OOTPed[ADC%d] = %.1f \t",t,fOOTPedestal[t]);
+     printf("   OOTPed[ADC%d] = %.1f   ",t,fOOTPedestal[t]);
    }
  
    printf("\n\n\n	#######	Energy calibration coefficients #######	\n");
@@ -146,12 +166,32 @@ void AliZDCCalibData::SetMeanPed(Float_t* MeanPed)
   if(MeanPed) for(int t=0; t<47; t++) fMeanPedestal[t] = MeanPed[t];
   else for(int t=0; t<47; t++) fMeanPedestal[t] = 0.;
 }
+//________________________________________________________________
+void AliZDCCalibData::SetMeanPedWidth(Float_t* MeanPedWidth)
+{
+  if(MeanPedWidth) for(int t=0; t<47; t++) fMeanPedWidth[t] = MeanPedWidth[t];
+  else for(int t=0; t<47; t++) fMeanPedWidth[t] = 0.;
+}
 
 //________________________________________________________________
 void AliZDCCalibData::SetOOTPed(Float_t* OOTPed)
 {
   if(OOTPed) for(int t=0; t<44; t++) fOOTPedestal[t] = OOTPed[t];
   else for(int t=0; t<44; t++) fOOTPedestal[t] = 0.;
+}
+
+//________________________________________________________________
+void AliZDCCalibData:: SetPedCorrCoeff(Float_t* PedCorrCoeff0, 
+	Float_t* PedCorrCoeff1)
+{
+  if(PedCorrCoeff0 && PedCorrCoeff1) for(int t=0; t<44; t++){
+    fPedCorrCoeff[0][t] = PedCorrCoeff0[t];
+    fPedCorrCoeff[1][t] = PedCorrCoeff1[t];
+  }
+  else for(int t=0; t<44; t++){
+    fPedCorrCoeff[0][t] = 0.;
+    fPedCorrCoeff[1][t] = 0.;
+  }
 }
 
 //________________________________________________________________
