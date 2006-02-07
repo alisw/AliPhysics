@@ -921,17 +921,17 @@ Bool_t AliTRDdigitizer::MakeDigits()
 
           // The electron position after diffusion and ExB in pad coordinates.
           // The pad row (z-direction)
-          rowE      = padPlane->GetPadRowNumber(xyz[2]);
+          rowE       = padPlane->GetPadRowNumber(xyz[2]);
           if (rowE < 0) continue;
-          rowOffset = padPlane->GetPadRowOffset(rowE,xyz[2]);
+          rowOffset  = padPlane->GetPadRowOffset(rowE,xyz[2]);
 
           // The pad column (rphi-direction)
-          offsetTilt     = padPlane->GetTiltOffset(rowOffset);   // MI change
-          colE      = padPlane->GetPadColNumber(xyz[1]+offsetTilt,rowOffset);
+          offsetTilt = padPlane->GetTiltOffset(rowOffset);   // MI change
+          colE       = padPlane->GetPadColNumber(xyz[1]+offsetTilt,rowOffset);
           if (colE < 0) continue;         
-          colOffset = padPlane->GetPadColOffset(colE,xyz[1]+offsetTilt);
+          colOffset  = padPlane->GetPadColOffset(colE,xyz[1]+offsetTilt);
 	  
-          // also re-retrieve drift velocity because col and row may have changed
+          // Also re-retrieve drift velocity because col and row may have changed
           driftvelocity = calibration->GetVdrift(detector, colE, rowE);
           Float_t t0 = calibration->GetT0(detector, colE, rowE);
           
@@ -964,8 +964,9 @@ Bool_t AliTRDdigitizer::MakeDigits()
   	    // The distance of the electron to the center of the pad 
 	    // in units of pad width
             //Double_t dist = - colOffset / padPlane->GetColSize(colE);
-            Double_t dist = (0.5 * padPlane->GetColSize(colE) - colOffset) 
+	    Double_t dist = (colOffset - 0.5*padPlane->GetColSize(colE))
                           / padPlane->GetColSize(colE);
+
             if (!(calibration->PadResponse(signal,dist,plane,padSignal))) continue;
 	  }
 	  else {
