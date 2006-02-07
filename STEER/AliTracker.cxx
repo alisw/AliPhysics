@@ -24,11 +24,8 @@
 #include <TMath.h>
 
 #include "AliTracker.h"
-#include "AliKalmanTrack.h"
 #include "AliCluster.h"
-#include "AliLog.h"
 #include "AliRun.h"
-#include "AliMagF.h"
 
 const AliMagF *AliTracker::fgkFieldMap=0;
 
@@ -46,16 +43,6 @@ AliTracker::AliTracker():
   // The default constructor.
   //--------------------------------------------------------------------
   if (!fgkFieldMap) AliWarning("Field map is not set. Call AliTracker::SetFieldMap before creating a tracker!");
-}
-
-void AliTracker::SetFieldMap(const AliMagF* map, Bool_t uni) {
-  //--------------------------------------------------------------------
-  //This passes the field map to the reconstruction.
-  //--------------------------------------------------------------------
-  if (map==0) AliFatalClass("Can't access the field map !");
-  AliKalmanTrack::SetFieldMap(map);
-  if (uni) AliKalmanTrack::SetUniformFieldTracking();
-  fgkFieldMap=map;
 }
 
 //__________________________________________________________________________

@@ -11,12 +11,14 @@
 //       Origin: Iouri Belikov, CERN, Jouri.Belikov@cern.ch 
 //-------------------------------------------------------------------------
 #include <TObject.h>
+#include <TClass.h>
+#include "AliKalmanTrack.h"
+#include "AliMagF.h"
+#include "AliLog.h"
 
 class AliCluster;
 class TTree;
-class AliKalmanTrack;
 class AliESD;
-class AliMagF;
 class AliTrackPoint;
 
 class AliTracker : public TObject {
@@ -72,6 +74,18 @@ private:
 
   ClassDef(AliTracker,2) //abstract tracker
 };
+
+inline void AliTracker::SetFieldMap(const AliMagF* map, Bool_t uni) {
+  //--------------------------------------------------------------------
+  //This passes the field map to the reconstruction.
+  //--------------------------------------------------------------------
+  if (map==0) AliFatalClass("Can't access the field map !");
+  AliKalmanTrack::SetFieldMap(map);
+  if (uni) AliKalmanTrack::SetUniformFieldTracking();
+  fgkFieldMap=map;
+}
+
+
 
 #endif
 

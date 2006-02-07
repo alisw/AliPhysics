@@ -32,403 +32,244 @@
 // between different detectors.                                              //
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
-
-#include <TMath.h>
-#include <TVector3.h>
-
 #include "AliExternalTrackParam.h"
 #include "AliKalmanTrack.h"
-#include "AliTrackReference.h"
-#include "AliLog.h"
 
 ClassImp(AliExternalTrackParam)
 
-const AliMagF *AliExternalTrackParam::fgkFieldMap=0;
-Double_t AliExternalTrackParam::fgConvConst=0.;
-
-
 //_____________________________________________________________________________
 AliExternalTrackParam::AliExternalTrackParam() :
-  fMass(-1),
   fX(0),
-  fAlpha(0),
-  fLocalConvConst(0)
+  fAlpha(0)
 {
   //
   // default constructor
   //
-  for (Int_t i = 0; i < 5; i++) fParam[i] = 0;
-  for (Int_t i = 0; i < 15; i++) fCovar[i] = 0;
+  for (Int_t i = 0; i < 5; i++) fP[i] = 0;
+  for (Int_t i = 0; i < 15; i++) fC[i] = 0;
 }
 
 //_____________________________________________________________________________
 AliExternalTrackParam::AliExternalTrackParam(Double_t x, Double_t alpha, 
 					     const Double_t param[5], 
 					     const Double_t covar[15]) :
-  fMass(-1),
   fX(x),
-  fAlpha(alpha),
-  fLocalConvConst(0)
+  fAlpha(alpha)
 {
   //
   // create external track parameters from given arguments
   //
-  for (Int_t i = 0; i < 5; i++) fParam[i] = param[i];
-  for (Int_t i = 0; i < 15; i++) fCovar[i] = covar[i];
+  for (Int_t i = 0; i < 5; i++)  fP[i] = param[i];
+  for (Int_t i = 0; i < 15; i++) fC[i] = covar[i];
 }
 
 //_____________________________________________________________________________
 AliExternalTrackParam::AliExternalTrackParam(const AliKalmanTrack& track) :
-  fMass(track.GetMass()),
-  fX(0),
-  fAlpha(track.GetAlpha()),
-  fLocalConvConst(0)
+  fAlpha(track.GetAlpha())
 {
   //
   //
-  track.GetExternalParameters(fX,fParam);
-  track.GetExternalCovariance(fCovar);
-  SaveLocalConvConst();
-}
-
-
-
-//_____________________________________________________________________________
-const Double_t* AliExternalTrackParam::GetParameter() const
-{
-// get a pointer to the array of track parameters
-
-  return fParam;
+  track.GetExternalParameters(fX,fP);
+  track.GetExternalCovariance(fC);
 }
 
 //_____________________________________________________________________________
-const Double_t* AliExternalTrackParam::GetCovariance() const
-{
-// get a pointer to the array of the track parameter covariance matrix
-
-  return fCovar;
-}
-
-//_____________________________________________________________________________
-AliExternalTrackParam* AliExternalTrackParam::CreateExternalParam() const
-{
-// copy this instance
-
-  return new AliExternalTrackParam(fX, fAlpha, fParam, fCovar);
-}
-
-//_____________________________________________________________________________
-void AliExternalTrackParam::ResetCovariance(Double_t factor,
-					    Bool_t clearOffDiagonal)
-{
-// reset the covariance matrix ("forget" track history)
-
-  Int_t k = 0;
-  for (Int_t i = 0; i < 5; i++) {
-    for (Int_t j = 0; j < i; j++) {  // off diagonal elements
-      if (clearOffDiagonal) {
-	fCovar[k++] = 0;
-      } else {
-	fCovar[k++] *= factor;
-      }
-    }
-    fCovar[k++] *= factor;     // diagonal elements
-  }
-}
-
-
-//_____________________________________________________________________________
-Bool_t AliExternalTrackParam::PropagateTo(Double_t xk, Double_t x0, Double_t rho)
-{
+void AliExternalTrackParam::Set(const AliKalmanTrack& track) {
   //
-  // Propagate the track parameters to the given x coordinate assuming vacuum.
-  // If length is not NULL, the change of track length is added to it.
   //
-  
-  Double_t lcc=GetLocalConvConst();  
-  Double_t cur = fParam[4]/lcc;
-  Double_t x1=fX, x2=xk, dx=x2-x1;
-  Double_t f1=fParam[2], f2=f1 + cur*dx;
-  if (TMath::Abs(f2) >= 0.98) {
-    // MI change  - don't propagate highly inclined tracks
-    //              covariance matrix distorted
-    return kFALSE;
-  }
+  fAlpha=track.GetAlpha();
+  track.GetExternalParameters(fX,fP);
+  track.GetExternalCovariance(fC);
+}
 
-  // old position [SR, GSI, 17.02.2003]
-  Double_t oldX = fX, oldY = fParam[0], oldZ = fParam[1];
-  Double_t r1=sqrt(1.- f1*f1), r2=sqrt(1.- f2*f2);  
-  fParam[0] += dx*(f1+f2)/(r1+r2);
-  fParam[1] += dx*(f1+f2)/(f1*r2 + f2*r1)*fParam[3];
-  fParam[2] += dx*cur;
-  // transform error matrix to the curvature
-  fCovar[10]/=lcc;
-  fCovar[11]/=lcc;
-  fCovar[12]/=lcc;
-  fCovar[13]/=lcc;
-  fCovar[14]/=lcc*lcc;
+//_____________________________________________________________________________
+void AliExternalTrackParam::Reset() {
+  fX=fAlpha=0.;
+  for (Int_t i = 0; i < 5; i++) fP[i] = 0;
+  for (Int_t i = 0; i < 15; i++) fC[i] = 0;
+}
 
-  //f = F - 1
-  
-  Double_t f02=    dx/(r1*r1*r1);
-  Double_t f04=0.5*dx*dx/(r1*r1*r1);
-  Double_t f12=    dx*fParam[3]*f1/(r1*r1*r1);
-  Double_t f14=0.5*dx*dx*fParam[3]*f1/(r1*r1*r1);
-  Double_t f13=    dx/r1;
-  Double_t f24=    dx; 
-  
-  //b = C*ft
-  Double_t b00=f02*fCovar[3] + f04*fCovar[10], b01=f12*fCovar[3] + f14*fCovar[10] + f13*fCovar[6];
-  Double_t b02=f24*fCovar[10];
-  Double_t b10=f02*fCovar[4] + f04*fCovar[11], b11=f12*fCovar[4] + f14*fCovar[11] + f13*fCovar[7];
-  Double_t b12=f24*fCovar[11];
-  Double_t b20=f02*fCovar[5] + f04*fCovar[12], b21=f12*fCovar[5] + f14*fCovar[12] + f13*fCovar[8];
-  Double_t b22=f24*fCovar[12];
-  Double_t b40=f02*fCovar[12] + f04*fCovar[14], b41=f12*fCovar[12] + f14*fCovar[14] + f13*fCovar[13];
-  Double_t b42=f24*fCovar[14];
-  Double_t b30=f02*fCovar[8] + f04*fCovar[13], b31=f12*fCovar[8] + f14*fCovar[13] + f13*fCovar[9];
-  Double_t b32=f24*fCovar[13];
-  
-  //a = f*b = f*C*ft
-  Double_t a00=f02*b20+f04*b40,a01=f02*b21+f04*b41,a02=f02*b22+f04*b42;
-  Double_t a11=f12*b21+f14*b41+f13*b31,a12=f12*b22+f14*b42+f13*b32;
-  Double_t a22=f24*b42;
+Double_t AliExternalTrackParam::GetP() const {
+  //---------------------------------------------------------------------
+  // This function returns the track momentum
+  // Results for (nearly) straight tracks are meaningless !
+  //---------------------------------------------------------------------
+  if (TMath::Abs(fP[4])<=0) return 0;
+  return TMath::Sqrt(1.+ fP[3]*fP[3])/TMath::Abs(fP[4]);
+}
 
-  //F*C*Ft = C + (b + bt + a)
-  fCovar[0] += b00 + b00 + a00;
-  fCovar[1] += b10 + b01 + a01; 
-  fCovar[2] += b11 + b11 + a11;
-  fCovar[3] += b20 + b02 + a02;
-  fCovar[4] += b21 + b12 + a12;
-  fCovar[5] += b22 + b22 + a22;
-  fCovar[6] += b30;
-  fCovar[7] += b31; 
-  fCovar[8] += b32;
-  fCovar[10] += b40;
-  fCovar[11] += b41;
-  fCovar[12] += b42;
+//_______________________________________________________________________
+Double_t AliExternalTrackParam::GetD(Double_t b,Double_t x,Double_t y) const {
+  //------------------------------------------------------------------
+  // This function calculates the transverse impact parameter
+  // with respect to a point with global coordinates (x,y)
+  // in the magnetic field "b" (kG)
+  //------------------------------------------------------------------
+  Double_t convconst=0.299792458*b/1000.;
+  Double_t rp4=fP[4]*convconst;
 
-  fX=x2;
+  Double_t xt=fX, yt=fP[0];
 
-  //Change of the magnetic field *************
-  SaveLocalConvConst();
-  // transform back error matrix from curvature to the 1/pt
-  fCovar[10]*=lcc;
-  fCovar[11]*=lcc;
-  fCovar[12]*=lcc;
-  fCovar[13]*=lcc;
-  fCovar[14]*=lcc*lcc;
+  Double_t sn=TMath::Sin(fAlpha), cs=TMath::Cos(fAlpha);
+  Double_t a = x*cs + y*sn;
+  y = -x*sn + y*cs; x=a;
+  xt-=x; yt-=y;
 
-  Double_t dist = TMath::Sqrt((fX-oldX)*(fX-oldX)+(fParam[0]-oldY)*(fParam[0]-oldY)+
-			      (fParam[1]-oldZ)*(fParam[1]-oldZ));
-  if (!CorrectForMaterial(dist,x0,rho)) return 0;
+  sn=rp4*xt - fP[2]; cs=rp4*yt + TMath::Sqrt(1.- fP[2]*fP[2]);
+  a=2*(xt*fP[2] - yt*TMath::Sqrt(1.- fP[2]*fP[2]))-rp4*(xt*xt + yt*yt);
+  if (rp4<0) a=-a;
+  return a/(1 + TMath::Sqrt(sn*sn + cs*cs));
+}
 
-  // Integrated Time [SR, GSI, 17.02.2003]
- //  if (IsStartedTimeIntegral() && fX>oldX) {
-//     Double_t l2 = (fX-oldX)*(fX-oldX)+(fParam[0]-oldY)*(fParam[0]-oldY)+
-//                   (fParam[1]-oldZ)*(fParam[1]-oldZ);
-//     AddTimeStep(TMath::Sqrt(l2));
-//   }
-  //
+Bool_t Local2GlobalMomentum(Double_t p[3],Double_t alpha) {
+  //----------------------------------------------------------------
+  // This function performs local->global transformation of the
+  // track momentum.
+  // When called, the arguments are:
+  //    p[0] = 1/pt of the track;
+  //    p[1] = sine of local azim. angle of the track momentum;
+  //    p[2] = tangent of the track momentum dip angle;
+  //   alpha - rotation angle. 
+  // The result is returned as:
+  //    p[0] = px
+  //    p[1] = py
+  //    p[2] = pz
+  // Results for (nearly) straight tracks are meaningless !
+  //----------------------------------------------------------------
+  if (TMath::Abs(p[0])<=0)        return kFALSE;
+  if (TMath::Abs(p[1])> 0.999999) return kFALSE;
+
+  Double_t pt=1./TMath::Abs(p[0]);
+  Double_t cs=TMath::Cos(alpha), sn=TMath::Sin(alpha);
+  Double_t r=TMath::Sqrt(1 - p[1]*p[1]);
+  p[0]=pt*(r*cs - p[1]*sn); p[1]=pt*(p[1]*cs + r*sn); p[2]=pt*p[2];
 
   return kTRUE;
 }
 
-Bool_t     AliExternalTrackParam::PropagateToDCA(Double_t xd, Double_t yd,  Double_t x0, Double_t rho){
-  //
-  // Propagate the track parameters to the nearest point of given xv yv coordinate
-  //
-  Double_t a=fAlpha;
-  Double_t cs=TMath::Cos(a),sn=TMath::Sin(a);
+Bool_t Local2GlobalPosition(Double_t r[3],Double_t alpha) {
+  //----------------------------------------------------------------
+  // This function performs local->global transformation of the
+  // track position.
+  // When called, the arguments are:
+  //    r[0] = local x
+  //    r[1] = local y
+  //    r[2] = local z
+  //   alpha - rotation angle. 
+  // The result is returned as:
+  //    r[0] = global x
+  //    r[1] = global y
+  //    r[2] = global z
+  //----------------------------------------------------------------
+  Double_t cs=TMath::Cos(alpha), sn=TMath::Sin(alpha), x=r[0];
+  r[0]=x*cs - r[1]*sn; r[1]=x*sn + r[1]*cs;
 
-  Double_t xv= xd*cs + yd*sn;
-  Double_t yv=-xd*sn + yd*cs;   // vertex position in local frame
-  //  
-  Double_t c=fParam[4]/GetLocalConvConst(), snp=fParam[2];
-  //
-  Double_t x=fX, y=fParam[1];
-  Double_t tgfv=-(c*(x-xv)-snp)/(c*(y-yv) + TMath::Sqrt(1.-snp*snp));
-  Double_t fv=TMath::ATan(tgfv);
-  cs=TMath::Cos(fv); sn=TMath::Sin(fv);
-  x = xv*cs + yv*sn;
-  yv=-xv*sn + yv*cs; xv=x;
-  RotateTo(fv+a);
-  return PropagateTo(xv,x0,rho);  
-}
-
-
-//_____________________________________________________________________________
-Bool_t AliExternalTrackParam::RotateTo(Double_t alp)
-{
-  // Rotate the reference axis for the parametrisation to the given angle.
-  //
-  Double_t  x=fX;
-  Double_t p0=fParam[0];
-  //
-  if      (alp < -TMath::Pi()) alp += 2*TMath::Pi();
-  else if (alp >= TMath::Pi()) alp -= 2*TMath::Pi();
-  Double_t ca=TMath::Cos(alp-fAlpha), sa=TMath::Sin(alp-fAlpha);
-  Double_t sf=fParam[2], cf=TMath::Sqrt(1.- fParam[2]*fParam[2]);
-  // **** rotation **********************
-  
-  fAlpha = alp;
-  fX =  x*ca + p0*sa;
-  fParam[0]= -x*sa + p0*ca;
-  fParam[2]=  sf*ca - cf*sa;
-  Double_t rr=(ca+sf/cf*sa);  
-  //
-  fCovar[0] *= (ca*ca);
-  fCovar[1] *= ca; 
-  fCovar[3] *= ca*rr;
-  fCovar[6] *= ca;
-  fCovar[10] *= ca;
-  fCovar[4] *= rr;
-  fCovar[5] *= rr*rr;
-  fCovar[7] *= rr;
-  fCovar[11] *= rr;
   return kTRUE;
 }
 
-//_____________________________________________________________________________
-Bool_t AliExternalTrackParam::CorrectForMaterial(Double_t d, Double_t x0, Double_t rho)
-{
-  //
-  // Take into account material effects assuming:
-  // x0  - mean rad length
-  // rho - mean density
+Bool_t AliExternalTrackParam::GetPxPyPz(Double_t *p) const {
+  //---------------------------------------------------------------------
+  // This function returns the global track momentum components
+  // Results for (nearly) straight tracks are meaningless !
+  //---------------------------------------------------------------------
+  p[0]=fP[4]; p[1]=fP[2]; p[2]=fP[3];
+  return Local2GlobalMomentum(p,fAlpha);
+}
 
+Bool_t AliExternalTrackParam::GetXYZ(Double_t *r) const {
+  //---------------------------------------------------------------------
+  // This function returns the global track position
+  //---------------------------------------------------------------------
+  r[0]=fX; r[1]=fP[0]; r[2]=fP[1];
+  return Local2GlobalPosition(r,fAlpha);
+}
+
+Bool_t AliExternalTrackParam::GetCovarianceXYZPxPyPz(Double_t cv[21]) const {
+  //---------------------------------------------------------------------
+  // This function returns the global covariance matrix of the track params
+  // 
+  // Cov(x,x) ... :   cv[0]
+  // Cov(y,x) ... :   cv[1]  cv[2]
+  // Cov(z,x) ... :   cv[3]  cv[4]  cv[5]
+  // Cov(px,x)... :   cv[6]  cv[7]  cv[8]  cv[9]
+  // Cov(py,x)... :   cv[10] cv[11] cv[12] cv[13] cv[14]
+  // Cov(pz,x)... :   cv[15] cv[16] cv[17] cv[18] cv[19] cv[20]
   //
-  // multiple scattering
-  //
-  if (fMass<=0) {
-    AliError("Non-positive mass");
-    return kFALSE;
+  // Results for (nearly) straight tracks are meaningless !
+  //---------------------------------------------------------------------
+  if (TMath::Abs(fP[4])<=0) {
+     for (Int_t i=0; i<21; i++) cv[i]=0.;
+     return kFALSE;
   }
-  Double_t p2=(1.+ fParam[3]*fParam[3])/(fParam[4]*fParam[4]);
-  Double_t beta2=p2/(p2 + fMass*fMass);
-  Double_t theta2=14.1*14.1/(beta2*p2*1e6)*d/x0*rho;
-  //
-  fCovar[5] += theta2*(1.- fParam[2]*fParam[2])*(1. + fParam[3]*fParam[3]);
-  fCovar[9] += theta2*(1. + fParam[3]*fParam[3])*(1. + fParam[3]*fParam[3]);
-  fCovar[13] += theta2*fParam[3]*fParam[4]*(1. + fParam[3]*fParam[3]);
-  fCovar[14] += theta2*fParam[3]*fParam[4]*fParam[3]*fParam[4];
-  
-  Double_t dE=0.153e-3/beta2*(log(5940*beta2/(1-beta2+1e-10)) - beta2)*d*rho;  
-  fParam[4] *=(1.- TMath::Sqrt(p2+fMass*fMass)/p2*dE);
-  //
-  Double_t sigmade = 0.02*TMath::Sqrt(TMath::Abs(dE));   // energy loss fluctuation 
-  Double_t sigmac2 = sigmade*sigmade*fParam[4]*fParam[4]*(p2+fMass*fMass)/(p2*p2);
-  fCovar[14] += sigmac2;
-  //
-  //
-  
-
-
-  return kTRUE;
-}
-
-//_____________________________________________________________________________
-Bool_t AliExternalTrackParam::GetProlongationAt(Double_t xk, 
-						Double_t& y, 
-						Double_t& z) const
-{
-  //
-  // Get the local y and z coordinates at the given x value
-  //
-  Double_t lcc=GetLocalConvConst();  
-  Double_t cur = fParam[4]/lcc;
-  Double_t x1=fX, x2=xk, dx=x2-x1; 
-  Double_t f1=fParam[2], f2=f1 + cur*dx;
-  //  
-  if (TMath::Abs(f2) >= 0.98) {
-    // MI change  - don't propagate highly inclined tracks
-    //              covariance matrix distorted
-    return kFALSE;
+  if (TMath::Abs(fP[2]) > 0.999999) {
+     for (Int_t i=0; i<21; i++) cv[i]=0.;
+     return kFALSE;
   }
-  Double_t r1=sqrt(1.- f1*f1), r2=sqrt(1.- f2*f2);
-  y = fParam[0] + dx*(f1+f2)/(r1+r2);
-  z = fParam[1] + dx*(f1+f2)/(f1*r2 + f2*r1)*fParam[3];
+  Double_t pt=1./TMath::Abs(fP[4]);
+  Double_t cs=TMath::Cos(fAlpha), sn=TMath::Sin(fAlpha);
+  Double_t r=TMath::Sqrt(1-fP[2]*fP[2]);
+
+  Double_t m00=-sn, m10=cs;
+  Double_t m23=-pt*(sn + fP[2]*cs/r), m43=-pt*pt*(r*cs - fP[2]*sn);
+  Double_t m24= pt*(cs - fP[2]*sn/r), m44=-pt*pt*(r*sn + fP[2]*cs);
+  Double_t m35=pt, m45=-pt*pt*fP[3];
+
+  cv[0 ] = fC[0]*m00*m00;
+  cv[1 ] = fC[0]*m00*m10; 
+  cv[2 ] = fC[0]*m10*m10;
+  cv[3 ] = fC[1]*m00; 
+  cv[4 ] = fC[1]*m10; 
+  cv[5 ] = fC[2];
+  cv[6 ] = m00*(fC[3]*m23 + fC[10]*m43); 
+  cv[7 ] = m10*(fC[3]*m23 + fC[10]*m43); 
+  cv[8 ] = fC[4]*m23 + fC[11]*m43; 
+  cv[9 ] = m23*(fC[5]*m23 + fC[12]*m43)  +  m43*(fC[12]*m23 + fC[14]*m43);
+  cv[10] = m00*(fC[3]*m24 + fC[10]*m44); 
+  cv[11] = m10*(fC[3]*m24 + fC[10]*m44); 
+  cv[12] = fC[4]*m24 + fC[11]*m44; 
+  cv[13] = m23*(fC[5]*m24 + fC[12]*m44)  +  m43*(fC[12]*m24 + fC[14]*m44);
+  cv[14] = m24*(fC[5]*m24 + fC[12]*m44)  +  m44*(fC[12]*m24 + fC[14]*m44);
+  cv[15] = m00*(fC[6]*m35 + fC[10]*m45); 
+  cv[16] = m10*(fC[6]*m35 + fC[10]*m45); 
+  cv[17] = fC[7]*m35 + fC[11]*m45; 
+  cv[18] = m23*(fC[8]*m35 + fC[12]*m45)  +  m43*(fC[13]*m35 + fC[14]*m45);
+  cv[19] = m24*(fC[8]*m35 + fC[12]*m45)  +  m44*(fC[13]*m35 + fC[14]*m45); 
+  cv[20] = m35*(fC[9]*m35 + fC[13]*m45)  +  m45*(fC[13]*m35 + fC[14]*m45);
+
   return kTRUE;
 }
 
-//_____________________________________________________________________________
-Double_t AliExternalTrackParam::GetXAtVertex(Double_t /*x*/, 
-					     Double_t /*y*/) const
-{
-// Get the x coordinate at the given vertex (x,y)
-//
-// NOT IMPLEMENTED for this class
 
-  return 0;
+Bool_t 
+AliExternalTrackParam::GetPxPyPzAt(Double_t x, Double_t b, Double_t *p) const {
+  //---------------------------------------------------------------------
+  // This function returns the global track momentum extrapolated to
+  // the radial position "x" (cm) in the magnetic field "b" (kG)
+  //---------------------------------------------------------------------
+  Double_t convconst=0.299792458*b/1000.;
+  p[0]=fP[4]; 
+  p[1]=fP[2]+(x-fX)*fP[4]*convconst; 
+  p[2]=fP[3];
+  return Local2GlobalMomentum(p,fAlpha);
 }
 
+Bool_t 
+AliExternalTrackParam::GetXYZAt(Double_t x, Double_t b, Double_t *r) const {
+  //---------------------------------------------------------------------
+  // This function returns the global track position extrapolated to
+  // the radial position "x" (cm) in the magnetic field "b" (kG)
+  //---------------------------------------------------------------------
+  Double_t convconst=0.299792458*b/1000.;
+  Double_t dx=x-fX;
+  Double_t f1=fP[2], f2=f1 + dx*fP[4]*convconst;
 
-// //_____________________________________________________________________________
-// Double_t AliExternalTrackParam::GetPredictedChi2(const AliCluster* /*cluster*/)
-// {
-// // calculate the chi2 contribution of the given cluster
-// //
-// // NOT IMPLEMENTED for this class
-
-//   return -1;
-// }
-
-// //_____________________________________________________________________________
-// Bool_t AliExternalTrackParam::Update(const AliCluster* /*cluster*/)
-// {
-// // update the track parameters using the position and error 
-// // of the given cluster
-// //
-// // NOT IMPLEMENTED for this class
-
-//   return kFALSE;
-// }
-
-
-//_____________________________________________________________________________
-Double_t AliExternalTrackParam::SigmaPhi() const
-{
-// get the error of the azimuthal angle
-
-  return TMath::Sqrt(TMath::Abs(fCovar[5] / (1. - fParam[2]*fParam[2])));
-}
-
-//_____________________________________________________________________________
-Double_t AliExternalTrackParam::SigmaTheta() const
-{
-// get the error of the polar angle
-
-  return TMath::Sqrt(TMath::Abs(fCovar[9])) / (1. + fParam[3]*fParam[3]);
-}
-
-//_____________________________________________________________________________
-Double_t AliExternalTrackParam::SigmaPt() const
-{
-// get the error of the transversal component of the momentum
-
-  return TMath::Sqrt(fCovar[14]) / TMath::Abs(fParam[4]);
-}
-
-//_____________________________________________________________________________
-TVector3 AliExternalTrackParam::Momentum() const
-{
-// get the momentum vector
-
-  Double_t phi = TMath::ASin(fParam[2]) + fAlpha;
-  Double_t pt = 1. / TMath::Abs(fParam[4]);
-  return TVector3(pt * TMath::Cos(phi), 
-		  pt * TMath::Sin(phi), 
-		  pt * fParam[3]);
-}
-
-//_____________________________________________________________________________
-TVector3 AliExternalTrackParam::Position() const
-{
-// get the current spatial position in global coordinates
-
-  return TVector3(fX * TMath::Cos(fAlpha) - fParam[0] * TMath::Sin(fAlpha),
-		  fX * TMath::Sin(fAlpha) + fParam[0] * TMath::Cos(fAlpha),
-		  fParam[1]);
+  if (TMath::Abs(f2) >= 0.9999) return kFALSE;
+  
+  Double_t r1=TMath::Sqrt(1.- f1*f1), r2=TMath::Sqrt(1.- f2*f2);
+  r[0] = x;
+  r[1] = fP[0] + dx*(f1+f2)/(r1+r2);
+  r[2] = fP[1] + dx*(f1+f2)/(f1*r2 + f2*r1)*fP[3];
+  return Local2GlobalPosition(r,fAlpha);
 }
 
 
@@ -439,12 +280,12 @@ void AliExternalTrackParam::Print(Option_t* /*option*/) const
 
   printf("AliExternalTrackParam: x = %-12g  alpha = %-12g\n", fX, fAlpha);
   printf("  parameters: %12g %12g %12g %12g %12g\n",
-	 fParam[0], fParam[1], fParam[2], fParam[3], fParam[4]);
-  printf("  covariance: %12g\n", fCovar[0]);
-  printf("              %12g %12g\n", fCovar[1], fCovar[2]);
-  printf("              %12g %12g %12g\n", fCovar[3], fCovar[4], fCovar[5]);
+	 fP[0], fP[1], fP[2], fP[3], fP[4]);
+  printf("  covariance: %12g\n", fC[0]);
+  printf("              %12g %12g\n", fC[1], fC[2]);
+  printf("              %12g %12g %12g\n", fC[3], fC[4], fC[5]);
   printf("              %12g %12g %12g %12g\n", 
-	 fCovar[6], fCovar[7], fCovar[8], fCovar[9]);
+	 fC[6], fC[7], fC[8], fC[9]);
   printf("              %12g %12g %12g %12g %12g\n", 
-	 fCovar[10], fCovar[11], fCovar[12], fCovar[13], fCovar[14]);
+	 fC[10], fC[11], fC[12], fC[13], fC[14]);
 }

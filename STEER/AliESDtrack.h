@@ -23,7 +23,7 @@
  *****************************************************************************/
 
 #include <TBits.h>
-#include <TObject.h>
+#include "AliExternalTrackParam.h"
 #include "AliPID.h"
 #include <TVector3.h>
 
@@ -32,7 +32,7 @@ class AliTrackPointArray;
 
 const Int_t kNPlane = 6;
 
-class AliESDtrack : public TObject {
+class AliESDtrack : public AliExternalTrackParam {
 public:
   AliESDtrack();
   AliESDtrack(const AliESDtrack& track);
@@ -52,43 +52,58 @@ public:
   ULong_t GetStatus() const {return fFlags;}
   Int_t GetLabel() const {return fLabel;}
   void SetLabel(Int_t label) {fLabel = label;}
-  Double_t GetAlpha() const {return fRalpha;}
+
   void GetExternalParameters(Double_t &x, Double_t p[5]) const;
   void GetExternalCovariance(Double_t cov[15]) const;
 
-  Bool_t GetExternalParametersAt(Double_t x, Double_t b, Double_t p[5]) const;
-  Bool_t GetPxPyPzAt(Double_t x, Double_t b, Double_t p[3]) const;
-  Bool_t GetXYZAt(Double_t x, Double_t b, Double_t r[3]) const;
-
   void GetImpactParameters(Float_t &xy,Float_t &z) const {xy=fD; z=fZ;}
-  Double_t GetD(Double_t b, Double_t x=0, Double_t y=0) const; 
   Double_t GetIntegratedLength() const {return fTrackLength;}
   void GetIntegratedTimes(Double_t *times) const;
   Double_t GetMass() const;
-  Double_t GetP() const;
-  Bool_t GetPxPyPz(Double_t *p) const;
   TVector3 P3() const {Double_t p[3]; GetPxPyPz(p); return TVector3(p[0],p[1],p[2]);} //running track momentum
-  Bool_t GetXYZ(Double_t *r) const;
   TVector3 X3() const {Double_t x[3]; GetXYZ(x); return TVector3(x[0],x[1],x[2]);}    //running track position 
-  void GetCovariance(Double_t cov[21]) const;
-  Int_t GetSign() const {return (fRp[4]>0) ? 1 : -1;} 
 
   void SetConstrainedTrackParams(const AliKalmanTrack *t, Double_t chi2);
 
-  Double_t GetConstrainedAlpha() const {return fCalpha;}
-  Double_t GetConstrainedChi2() const {return fCchi2;}
+  Double_t GetConstrainedAlpha() const {
+    if (!fCp) return 720;
+    return fCp->GetAlpha();
+  }
+  Bool_t GetConstrainedPxPyPz(Double_t *p) const {
+    if (!fCp) return kFALSE;
+    return fCp->GetPxPyPz(p);
+  }
+  Bool_t GetConstrainedXYZ(Double_t *r) const {
+    if (!fCp) return kFALSE;
+    return fCp->GetXYZ(r);
+  }
   void GetConstrainedExternalParameters(Double_t &x, Double_t p[5]) const;
   void GetConstrainedExternalCovariance(Double_t cov[15]) const;
+  Double_t GetConstrainedChi2() const {return fCchi2;}
 
-  Bool_t GetConstrainedPxPyPz(Double_t *p) const;
-  Bool_t GetConstrainedXYZ(Double_t *r) const;
 
-  Bool_t GetInnerPxPyPz(Double_t *p) const;
-  Bool_t GetInnerXYZ(Double_t *r) const;
-  void GetInnerExternalParameters(Double_t &x, Double_t p[5]) const;//skowron
-  void GetInnerExternalCovariance(Double_t cov[15]) const;//skowron
-  Double_t GetInnerAlpha() const {return fIalpha;}
+  Double_t GetInnerAlpha() const {
+    if (!fIp) return 720;
+    return fIp->GetAlpha();
+  }
+  Bool_t GetInnerPxPyPz(Double_t *p) const {
+    if (!fIp) return kFALSE;
+    return fIp->GetPxPyPz(p);
+  }
+  Bool_t GetInnerXYZ(Double_t *r) const {
+    if (!fIp) return kFALSE;
+    return fIp->GetXYZ(r);
+  }
+  void GetInnerExternalParameters(Double_t &x, Double_t p[5]) const;
+  void GetInnerExternalCovariance(Double_t cov[15]) const;
  
+  Double_t GetOuterAlpha() const {
+    if (!fOp) return 720;
+    return fOp->GetAlpha();
+  }
+  void GetOuterExternalParameters(Double_t &x, Double_t p[5]) const;
+  void GetOuterExternalCovariance(Double_t cov[15]) const;
+
   Int_t GetNcls(Int_t idet) const;
   Int_t GetClusters(Int_t idet, UInt_t *idx) const;
  
@@ -136,7 +151,8 @@ public:
   void    SetTRDpid(Int_t iSpecies, Float_t p);
   Float_t GetTRDpid(Int_t iSpecies) const;
   Int_t GetTRDLabel() const {return fTRDLabel;}
-  void GetTRDExternalParameters(Double_t &x, Double_t &alpha, Double_t p[5], Double_t cov[15]) const;//MI
+
+
   AliKalmanTrack * GetTRDtrack(){return fTRDtrack;}
 
   void SetTOFsignal(Double_t tof) {fTOFsignal=tof;}
@@ -228,34 +244,19 @@ protected:
   Float_t   fD;            // Impact parameter in XY-plane
   Float_t   fZ;            // Impact parameter in Z 
   Float_t   fTrackTime[AliPID::kSPECIES]; // TOFs estimated by the tracking
-  Float_t   fR[AliPID::kSPECIES];         // combined "detector response probability"
+  Float_t   fR[AliPID::kSPECIES]; // combined "detector response probability"
 
-  Int_t     fStopVertex;          // Index of stop vertex
-
-//Running track parameters
-  Double_t fRalpha;  // track rotation angle
-  Double_t fRx;      // X-coordinate of the track reference plane 
-  Double_t fRp[5];   // external track parameters  
-  Double_t fRc[15];  // external cov. matrix of the track parameters
+  Int_t     fStopVertex;  // Index of stop vertex
 
 //Track parameters constrained to the primary vertex
-  Double_t fCalpha;   // Track rotation angle
-  Double_t fCx;       // x-coordinate of the track reference plane
-  Double_t fCp[5];    // external track parameters
-  Double_t fCc[15];   // external cov. matrix of the track parameters
+  AliExternalTrackParam *fCp; 
   Double_t fCchi2; //chi2 at the primary vertex
 
 //Track parameters at the inner wall of the TPC
-  Double_t fIalpha;   // Track rotation angle
-  Double_t fIx;       // x-coordinate of the track reference plane
-  Double_t fIp[5];    // external track parameters
-  Double_t fIc[15];   // external cov. matrix of the track parameters
+  AliExternalTrackParam *fIp;
 
 //Track parameters at the inner wall of the TRD 
-  Double_t fTalpha;   // Track rotation angle
-  Double_t fTx;       // x-coordinate of the track reference plane
-  Double_t fTp[5];    // external track parameters
-  Double_t fTc[15];   // external cov. matrix of the track parameters
+  AliExternalTrackParam *fOp;
 
   // ITS related track information
   Float_t fITSchi2;        // chi2 in the ITS
@@ -325,7 +326,7 @@ protected:
 
   AliTrackPointArray *fPoints; // Array which contains the track space points in the global frame
 
-  ClassDef(AliESDtrack,18)  //ESDtrack 
+  ClassDef(AliESDtrack,20)  //ESDtrack 
 };
 
 #endif 

@@ -4192,7 +4192,7 @@ void  AliTPCtrackerMI::FindKinks(TObjArray * array, AliESD *esd)
       if (TMath::Abs(ktrack0->GetC())>5) continue; // cut on the curvature for mother particle
       AliExternalTrackParam paramm(*ktrack0);
       AliExternalTrackParam paramd(*ktrack1);
-      if (row0>60&&ktrack1->GetReference().X()>90.) new (&paramd) AliExternalTrackParam(ktrack1->GetReference()); 
+      if (row0>60&&ktrack1->GetReference().GetX()>90.) new (&paramd) AliExternalTrackParam(ktrack1->GetReference()); 
       //
       //
       kink->SetMother(paramm);

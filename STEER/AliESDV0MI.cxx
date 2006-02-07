@@ -84,7 +84,7 @@ Double_t AliESDV0MI::GetSigmaY(){
   //
   const Double_t * cp  = fParamP.GetCovariance();
   const Double_t * cm  = fParamM.GetCovariance();
-  Double_t sigmay = cp[0]+cm[0]+ cp[5]*(fParamP.X()-fRr)*(fParamP.X()-fRr)+ cm[5]*(fParamM.X()-fRr)*(fParamM.X()-fRr);
+  Double_t sigmay = cp[0]+cm[0]+ cp[5]*(fParamP.GetX()-fRr)*(fParamP.GetX()-fRr)+ cm[5]*(fParamM.GetX()-fRr)*(fParamM.GetX()-fRr);
   return (sigmay>0) ? TMath::Sqrt(sigmay):100;
 }
 
@@ -94,7 +94,7 @@ Double_t AliESDV0MI::GetSigmaZ(){
   //
   const Double_t * cp  = fParamP.GetCovariance();
   const Double_t * cm  = fParamM.GetCovariance();
-  Double_t sigmaz = cp[2]+cm[2]+ cp[9]*(fParamP.X()-fRr)*(fParamP.X()-fRr)+ cm[9]*(fParamM.X()-fRr)*(fParamM.X()-fRr);
+  Double_t sigmaz = cp[2]+cm[2]+ cp[9]*(fParamP.GetX()-fRr)*(fParamP.GetX()-fRr)+ cm[9]*(fParamM.GetX()-fRr)*(fParamM.GetX()-fRr);
   return (sigmaz>0) ? TMath::Sqrt(sigmaz):100;
 }
 
@@ -110,8 +110,8 @@ Double_t AliESDV0MI::GetSigmaD0(){
   const Double_t * cp      = fParamP.GetCovariance();
   const Double_t * cm      = fParamM.GetCovariance();
   Double_t sigmaD0   = cp[0]+cm[0]+cp[2]+cm[2]+fgkParams.fPSigmaOffsetD0*fgkParams.fPSigmaOffsetD0;
-  sigmaD0           += ((fParamP.X()-fRr)*(fParamP.X()-fRr))*(cp[5]+cp[9]);
-  sigmaD0           += ((fParamM.X()-fRr)*(fParamM.X()-fRr))*(cm[5]+cm[9]);
+  sigmaD0           += ((fParamP.GetX()-fRr)*(fParamP.GetX()-fRr))*(cp[5]+cp[9]);
+  sigmaD0           += ((fParamM.GetX()-fRr)*(fParamM.GetX()-fRr))*(cm[5]+cm[9]);
   return (sigmaD0>0)? TMath::Sqrt(sigmaD0):100;
 }
 
@@ -438,7 +438,7 @@ void  AliESDV0MI::Update(Float_t vertex[3])
   if (points>0){
     phelix.ParabolicDCA(mhelix,phase[0][0],phase[0][1],radius[0],delta1);
     phelix.ParabolicDCA(mhelix,phase[0][0],phase[0][1],radius[0],delta1);
-    if (TMath::Abs(fParamP.X()-TMath::Sqrt(radius[0])<3) && TMath::Abs(fParamM.X()-TMath::Sqrt(radius[0])<3)){
+    if (TMath::Abs(fParamP.GetX()-TMath::Sqrt(radius[0])<3) && TMath::Abs(fParamM.GetX()-TMath::Sqrt(radius[0])<3)){
       // if we are close to vertex use error parama
       //
       err[1] = fParamP.GetCovariance()[0]+fParamM.GetCovariance()[0]+0.05*0.05
@@ -461,7 +461,7 @@ void  AliESDV0MI::Update(Float_t vertex[3])
   if (points==2){    
     phelix.ParabolicDCA(mhelix,phase[1][0],phase[1][1],radius[1],delta2);
     phelix.ParabolicDCA(mhelix,phase[1][0],phase[1][1],radius[1],delta2);
-    if (TMath::Abs(fParamP.X()-TMath::Sqrt(radius[1])<3) && TMath::Abs(fParamM.X()-TMath::Sqrt(radius[1])<3)){
+    if (TMath::Abs(fParamP.GetX()-TMath::Sqrt(radius[1])<3) && TMath::Abs(fParamM.GetX()-TMath::Sqrt(radius[1])<3)){
       // if we are close to vertex use error paramatrization
       //
       err[1] = fParamP.GetCovariance()[0]+fParamM.GetCovariance()[0]+0.05*0.05

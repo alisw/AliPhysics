@@ -88,8 +88,8 @@ AliHelix::AliHelix(const AliExternalTrackParam &t)
   Double_t alpha,x,cs,sn;
   const Double_t *param =t.GetParameter(); 
   for (Int_t i=0;i<5;i++) fHelix[i]=param[i]; 
-  x = t.X();
-  alpha=t.Alpha();
+  x = t.GetX();
+  alpha=t.GetAlpha();
   //
   //circle parameters
   fHelix[4]=fHelix[4]/AliKalmanTrack::GetConvConst();    // C
