@@ -181,6 +181,13 @@ void AliZDCCalibData::SetOOTPed(Float_t* OOTPed)
 }
 
 //________________________________________________________________
+void AliZDCCalibData::SetOOTPedWidth(Float_t* OOTPedWidth)
+{
+  if(OOTPedWidth) for(int t=0; t<44; t++) fOOTPedWidth[t] = OOTPedWidth[t];
+  else for(int t=0; t<44; t++) fOOTPedWidth[t] = 0.;
+}
+
+//________________________________________________________________
 void AliZDCCalibData:: SetPedCorrCoeff(Float_t* PedCorrCoeff0, 
 	Float_t* PedCorrCoeff1)
 {
