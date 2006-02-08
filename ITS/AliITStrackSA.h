@@ -22,23 +22,34 @@ class AliITStrackSA : public AliITStrackMI {
   AliITStrackSA(AliITSgeom* geom,Int_t layer, Int_t ladder, Int_t detector, 
                 Double_t Ycoor, Double_t Zcoor, Double_t phi, 
                 Double_t tanlambda, Double_t curv, Int_t lab);
-
-
   Int_t GetClusterIndexSA(Int_t i) const {return fSain[i];}
+  Int_t GetClusterMark(Int_t layer,Int_t i) const {return fCluMark[layer][i];}
   Int_t GetNumberOfClustersSA() const {return fNSA;}
+  Int_t GetNumberOfMarked(Int_t lay) const {return fNM[lay];}
+  Int_t GetMaxNumberOfClusters() const {return fgkMaxNumberOfClusters;}
+  Int_t GetMaxNMarkedPerLayer() const {return fgkMaxNumberOfClustersL;}
   void  AddClusterSA(Int_t layer, Int_t clnumb);
   void  AddClusterV2(Int_t layer,Int_t clnumb);
+  void  AddClusterMark(Int_t layer, Int_t clnumb);
 
  protected: 
 
   void SetNumberOfClustersSA(Int_t n){fNSA = n;}
+  void SetNumberOfMarked(Int_t lay,Int_t n) {fNM[lay] = n;}
   void ResetIndexSA(){for(Int_t k=0; k<fgkMaxNumberOfClusters; k++) fSain[k]=0;}
-  static const Int_t fgkMaxNumberOfClusters = 20; // Max. number of clusters 
+  void ResetMarked(); 
+
+  static const Int_t fgkMaxNumberOfClustersL = 4;// Max. n. of clusters/layer 
+  static const Int_t fgkMaxNumberOfClusters = 15;// Max. number of clusters 
+  static const Int_t fgkLayers = 6; //Number of lyers
                                             // per trackSA
   UInt_t  fSain[fgkMaxNumberOfClusters];   // cluster index (SA)
   Int_t fNSA;          // number of clusters SA 
- 
-  ClassDef(AliITStrackSA,2)
+
+  Int_t fCluMark[fgkLayers][fgkMaxNumberOfClustersL]; //indices for cluster used
+  Int_t fNM[fgkLayers]; //number of marked clusters
+
+  ClassDef(AliITStrackSA,3)
 };
 
 #endif

@@ -35,6 +35,10 @@ AliITStrackSA:: AliITStrackSA() : AliITStrackMI(){
   SetNumberOfClusters(0);
   SetNumberOfClustersSA(0);
   ResetIndexSA();
+  for(Int_t nlay=0;nlay<fgkLayers;nlay++){ 
+    SetNumberOfMarked(nlay,0);
+  }
+  ResetMarked();
 }
 
 
@@ -44,6 +48,11 @@ AliITStrackMI(t){
 // Copy a V2 track into a SA track
   SetNumberOfClustersSA(0);
   ResetIndexSA();
+  for(Int_t nlay=0;nlay<fgkLayers;nlay++){ 
+    SetNumberOfMarked(nlay,0);
+  }
+  ResetMarked();
+
 }
 //___________________________________________________
 AliITStrackSA::AliITStrackSA(const AliITStrackSA& t) : 
@@ -52,12 +61,20 @@ AliITStrackMI(t){
 
 
   ResetIndexSA();
+  ResetMarked();
   Int_t number = t.GetNumberOfClustersSA();
   SetNumberOfClustersSA(number);
+  for(Int_t nlay=0;nlay<fgkLayers;nlay++){
+    SetNumberOfMarked(nlay,t.GetNumberOfMarked(nlay));
+  }
   for(Int_t i=0;i<number;i++){
     fSain[i]=t.fSain[i];
   }
-
+  for(Int_t nlay=0;nlay<fgkLayers;nlay++){
+    for(Int_t i=0;i<t.GetNumberOfMarked(nlay);i++){
+      fCluMark[nlay][i]=t.fCluMark[nlay][i];
+    }
+  }
 }
 //____________________________________________________
 AliITStrackSA::AliITStrackSA(AliITSgeom* geom,Int_t layer, Int_t ladder, Int_t detector, Double_t Ycoor, Double_t Zcoor, Double_t phi, Double_t tanlambda, Double_t curv, Int_t lab ) {
@@ -118,7 +135,9 @@ AliITStrackSA::AliITStrackSA(AliITSgeom* geom,Int_t layer, Int_t ladder, Int_t d
 
   SetNumberOfClusters(0);
   SetNumberOfClustersSA(0);
+  for(Int_t nlay=0;nlay<fgkLayers;nlay++) SetNumberOfMarked(nlay,0);
   ResetIndexSA();
+  ResetMarked();
   SetChi2(0);
   SetMass(0.139);    // pion mass
   SetLabel(lab); 
@@ -141,6 +160,21 @@ void AliITStrackSA::AddClusterSA(Int_t layer, Int_t clnumb) {
 }
 
 //____________________________________________________________
+void AliITStrackSA::AddClusterMark(Int_t layer, Int_t clnumb) {
+  // add one clusters to the list (maximum number=fgkMaxNumberOfClusters)
+  Int_t presnum = GetNumberOfMarked(layer);
+  //  printf("presnum=%d\n",presnum);
+  if(presnum>=fgkMaxNumberOfClustersL){
+    Warning("AddClusterMark","Maximum number of clusters already reached. Nothing is done\n");
+    return;
+  }
+
+  fCluMark[layer][presnum] = clnumb;  
+  presnum++;
+  SetNumberOfMarked(layer,presnum);
+}
+
+//____________________________________________________________
 void AliITStrackSA::AddClusterV2(Int_t layer,Int_t clnumb) {
   // add one clusters to the list (maximum number=6)
   Int_t presnum = GetNumberOfClusters();
@@ -154,9 +188,14 @@ void AliITStrackSA::AddClusterV2(Int_t layer,Int_t clnumb) {
   SetNumberOfClusters(presnum);
 }
 
+//_____________________________________________________________
+void AliITStrackSA::ResetMarked(){
 
-
-
+  //Reset array of marked clusters
+  for(Int_t nlay=0;nlay<fgkLayers;nlay++){
+    for(Int_t k=0; k<fgkMaxNumberOfClustersL; k++) fCluMark[nlay][k]=0;
+  }
+}
 
 
 

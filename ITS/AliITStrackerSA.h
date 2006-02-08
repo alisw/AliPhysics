@@ -19,6 +19,7 @@ class AliITStrackSA;
 class AliESDVertex;
 class AliITSVertexer;
 class TTree;
+class TArrayD;
 
 class AliITStrackerSA : public AliITStrackerMI {
 
@@ -34,19 +35,16 @@ class AliITStrackerSA : public AliITStrackerMI {
   virtual ~AliITStrackerSA();  
   virtual Int_t Clusters2Tracks(AliESD *event){Int_t rc = AliITStrackerMI::Clusters2Tracks(event); if(!rc) rc=FindTracks(event); return rc;}
   Int_t FindTracks(AliESD* event);
-  void  FindTracks(TTree *out,Int_t evnumber=0);
-  AliITStrackV2* FitTrack(AliITStrackSA* tr,Double_t* primaryVertex,
-                          Double_t *errorprimvert);
 
-  AliITStrackV2* FindTrackLowChiSquare(TObjArray* tracklist, Int_t dim) const;
+  AliITStrackV2* FitTrack(AliITStrackSA* tr,Double_t* primaryVertex);
+
+  Int_t FindTrackLowChiSquare(TObjArray* tracklist, Int_t dim) const;
   Int_t LoadClusters(TTree *cf) {Int_t rc=AliITStrackerMI::LoadClusters(cf); SetClusterTree(cf);SetSixPoints(kTRUE); return rc;}
   void SetVertex(AliESDVertex *vtx){fVert = vtx;}
   void SetClusterTree(TTree * itscl){fITSclusters = itscl;}
-  void SetSixPoints(Bool_t sp = kTRUE){fSixPoints = sp;}
+  void SetSixPoints(Bool_t sp = kFALSE){fSixPoints = sp;}
   Bool_t GetSixPoints() const {return fSixPoints;}
   void SetWindowSizes(Int_t n=46, Double_t *phi=0, Double_t *lam=0);
-  void UseFoundTracksV2(Int_t evnum,TTree* treev2);
-  void UseFoundTracksV2(AliESD *event);
 
   enum {kSAflag=0x8000}; //flag to mark clusters used in the SA tracker
 
@@ -76,7 +74,16 @@ class AliITStrackerSA : public AliITStrackerMI {
  
   Int_t SearchClusters(Int_t layer,Double_t phiwindow,Double_t lambdawindow, 
                        AliITStrackSA* trs,Double_t zvertex,Int_t flagp); 
+
  
+
+  void GetCoorAngles(AliITSclusterV2* cl,Int_t module,Double_t &phi,Double_t &lambda,Float_t &x,Float_t &y,Float_t &z,Double_t* vertex);
+  void GetCoorErrors(AliITSclusterV2* cl, Int_t module,Float_t &sx,Float_t &sy, Float_t &sz);
+
+  AliITSclusterTable* GetClusterCoord(Int_t layer,Int_t n) const {return (AliITSclusterTable*)fCluCoord[layer]->UncheckedAt(n);}
+  void RemoveClusterCoord(Int_t layer, Int_t n) {fCluCoord[layer]->RemoveAt(n);fCluCoord[layer]->Compress();}
+
+
   Double_t fPhiEstimate; //Estimation of phi angle on next layer
   Float_t fPoint1[2];   //! coord. of 1-st point to evaluate the curvature
   Float_t fPoint2[2];   //! coord. of 2-nd point to evaluate the curvature
@@ -96,8 +103,11 @@ class AliITStrackerSA : public AliITStrackerMI {
   TObjArray *fListOfTracks;   //! container for found tracks 
   TTree *fITSclusters;        //! pointer to ITS tree of clusters
   Bool_t fSixPoints;          // If true 6/6 points are required (default). 5/6 otherwise
-  AliITSclusterTable* fTable; //  table with clusters
-  ClassDef(AliITStrackerSA,1)
+
+  TClonesArray** fCluLayer; //! array with clusters 
+  TClonesArray** fCluCoord; //! array with cluster info
+
+  ClassDef(AliITStrackerSA,2)
 };
 
 #endif
