@@ -15,9 +15,10 @@
 
 #include <TObject.h>
 #include <TGeoMatrix.h>
-class TRandom;
 
 class AliMUONGeometryTransformer;
+
+class TRandom;
 
 class AliMUONGeometryMisAligner:public TObject
 {
@@ -30,11 +31,9 @@ class AliMUONGeometryMisAligner:public TObject
   // methods
   
   // return a misaligned geometry obtained from the existing one.
-  AliMUONGeometryTransformer* MisAlign(const AliMUONGeometryTransformer* transformer, Bool_t verbose = kFALSE);
+  AliMUONGeometryTransformer* MisAlign(const AliMUONGeometryTransformer* transformer, 
+                                       Bool_t verbose = kFALSE);
   
-  // return a misaligned transformation
-  TGeoCombiTrans MisAlign(const TGeoCombiTrans& transform) const;
-
   void SetMaxCartMisAlig(Double_t offset)
     {fMaxCartMisAlig = offset ;}
   
@@ -49,6 +48,9 @@ class AliMUONGeometryMisAligner:public TObject
   AliMUONGeometryMisAligner & operator =(const AliMUONGeometryMisAligner &right);
   
  private:
+  // return a misaligned transformation
+  TGeoCombiTrans MisAlign(const TGeoCombiTrans& transform) const;
+
   Double_t fMaxCartMisAlig;   // cartesian displacement range, set by SetMaxCartMisAlig (translations)
   Double_t fMaxAngMisAlig;    // Angular displacement range (rotations)
   Double_t fXYAngMisAligFactor; // factor (<1) to apply to angular misalignment range since range of motion is restricted out of the xy plane

@@ -46,22 +46,21 @@
 //  Eric only allowed 3 :  x,y,theta_xy, but in principle z and the other 
 //  two angles are alignable as well.
 
-
-
 #include "AliMUONGeometryMisAligner.h"
 #include "AliMUONGeometryTransformer.h"
 #include "AliMUONGeometryModuleTransformer.h"
 #include "AliMUONGeometryDetElement.h"
 #include "AliMUONGeometryStore.h"
 #include "AliMUONGeometryBuilder.h"
+
+#include "AliLog.h"
+
 #include <TGeoManager.h>
 #include <Riostream.h>
 #include <TObjArray.h>
 #include <TSystem.h>
 #include <TMath.h>
 #include <TRandom.h>
-
-#include "AliLog.h"
 
 #include <sstream>
 
@@ -203,10 +202,12 @@ AliMUONGeometryMisAligner::MisAlign(const AliMUONGeometryTransformer *
 	new AliMUONGeometryModuleTransformer(iMt);
       newGeometryTransformer->AddModuleTransformer(newModuleTransformer);
 
-      const TGeoCombiTrans *kModuleTransform =
-	kModuleTransformer->GetTransformation();
-      TGeoCombiTrans *newModuleTransform = new TGeoCombiTrans(*kModuleTransform);	// same module transform as the previous one 
-      newModuleTransformer->SetTransformation(*kModuleTransform);
+      TGeoCombiTrans moduleTransform =
+	TGeoCombiTrans(*kModuleTransformer->GetTransformation());
+      TGeoCombiTrans *newModuleTransform = new TGeoCombiTrans(moduleTransform);	
+              // same module transform as the previous one 
+	      // no mis align object created
+      newModuleTransformer->SetTransformation(moduleTransform);
 
       AliMUONGeometryStore *detElements =
 	kModuleTransformer->GetDetElementStore();
@@ -223,27 +224,36 @@ AliMUONGeometryMisAligner::MisAlign(const AliMUONGeometryTransformer *
 	  if (!detElement)
 	    AliFatal("Detection element not found.");
 
-	  // local transformation of this detection element.
-	  const TGeoCombiTrans *kLocalTransform =
-	    detElement->GetLocalTransformation();
-	  TGeoCombiTrans newLocalTransform = MisAlign(*kLocalTransform);
-
-	  /// make a new detection element with this local transform
+	  /// make a new detection element
 	  AliMUONGeometryDetElement *newDetElement =
 	    new AliMUONGeometryDetElement(detElement->GetId(),
-					  detElement->GetAlignedVolume(),
-					  newLocalTransform);
+					  detElement->GetVolumePath());
 
+	  // local transformation of this detection element.
+          TGeoCombiTrans localTransform
+	    = TGeoCombiTrans(*detElement->GetLocalTransformation());
+	  TGeoCombiTrans newLocalTransform = MisAlign(localTransform);
+          newDetElement->SetLocalTransformation(newLocalTransform);					  
+
+	  // global transformation
 	  TGeoHMatrix newGlobalTransform =
-	    AliMUONGeometryBuilder::Multiply(newLocalTransform,
-					     *newModuleTransform);
-
+	    AliMUONGeometryBuilder::Multiply(*newModuleTransform,
+	                                      newLocalTransform);
 	  newDetElement->SetGlobalTransformation(newGlobalTransform);
-	  if (verbose)
-	    AliInfo("GlobalTransforms:");
-	  newModuleTransformer->GetDetElementStore()->Add(
-							  newDetElement->GetId(),
+	  
+	  // add this det element to module
+	  newModuleTransformer->GetDetElementStore()->Add(newDetElement->GetId(),
 							  newDetElement);
+          // Get delta transformation: 
+	  // Tdelta = Tnew * Told.inverse
+	  TGeoHMatrix  deltaTransform
+	    = AliMUONGeometryBuilder::Multiply(
+	        newGlobalTransform, 
+		detElement->GetGlobalTransformation()->Inverse());
+	  
+	  // Create mis alignment matrix
+	  newGeometryTransformer
+	    ->AddMisAlignDetElement(detElement->GetId(), deltaTransform);
 	}
       if (verbose)
 	AliInfo(Form("Added module transformer %i to the transformer", iMt));
