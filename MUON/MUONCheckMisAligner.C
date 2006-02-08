@@ -52,12 +52,27 @@ void MUONCheckMisAligner(Double_t cartmisalig = 1.0, Double_t angmisalig = 10.)
 {
   
   AliMUONGeometryTransformer *transform = new AliMUONGeometryTransformer(true);
-  transform->ReadTransformations("transform.dat");
+  transform->ReadGeometryData("volpath.dat", "transform.dat");
 
   AliMUONGeometryMisAligner misAligner(cartmisalig,angmisalig);
 
+  // Generate mis alignment data
   AliMUONGeometryTransformer *newTransform = misAligner.MisAlign(transform,true); 
   newTransform->WriteTransformations("transform2.dat");
+  newTransform->WriteMisAlignmentData("misalign.root");
+
+  // Apply misAlignment via AliRoot framework
+  TGeoManager::Import("geometry.root");
+  AliRun::ApplyDisplacements(
+     const_cast<TClonesArray*>(newTransform->GetMisAlignmentData()));
+  // Save new geometry file
+  gGeoManager->Export("geometry2.root");
+  
+  // Extract new transformations
+  AliMUONGeometryTransformer* transform3 = new AliMUONGeometryTransformer(true);
+  transform3->ReadGeometryData("volpath.dat", "geometry2.root");
+  transform3->WriteTransformations("transform3.dat");
+               // Check that transform3.dat is equal to transform2.dat
 
   // To run simulation with misaligned geometry, you have to set
   // the Align option in Config.C:
