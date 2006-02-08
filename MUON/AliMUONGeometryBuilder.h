@@ -12,10 +12,10 @@
 #ifndef ALI_MUON_GEOMETRY_BUILDER_H
 #define ALI_MUON_GEOMETRY_BUILDER_H
 
+#include "AliMUONGeometry.h"
+
 #include <TObject.h>
 #include <TGeoMatrix.h>
-
-#include "AliMUONGeometry.h"
 
 class TObjArray;
 
@@ -45,12 +45,6 @@ class AliMUONGeometryBuilder : public TObject
     void  InitGeometry();
     void  InitGeometry(const TString& svmapFileName);
 
-    void  ReadTransformations();
-    void  ReadTransformations(const TString& fileName);
-
-    void  WriteTransformations();
-    void  WriteTransformations(const TString& fileName);
-
     void  WriteSVMaps();
     void  WriteSVMaps(const TString& fileName, Bool_t rebuild = true);
     
@@ -71,10 +65,13 @@ class AliMUONGeometryBuilder : public TObject
     // method
     void PlaceVolume(const TString& name, const TString& mName, Int_t copyNo, 
              const TGeoHMatrix& matrix, Int_t npar, Double_t* param,
-	     const char* only) const;
+	     const char* only, Bool_t makeAssembly = false) const;
+    void CreateGeometryWithTGeo();
+    void CreateGeometryWithoutTGeo();
     void SetAlign(AliMUONVGeometryBuilder* builder);	     
 
     // static data members
+    static const TString  fgkDefaultVolPathsFileName;  // default volume paths file name					   
     static const TString  fgkDefaultTransformFileName; // default transformations file name					   
     static const TString  fgkDefaultSVMapFileName;     // default svmaps file name					   
     static const TString  fgkOutFileNameExtension;     // default output file name extension					   
@@ -90,19 +87,13 @@ class AliMUONGeometryBuilder : public TObject
     TObjArray*       fGeometryBuilders;    // list of Geometry Builders
     AliMUONGeometry* fGeometry;            // geometry parametrisation
 
-  ClassDef(AliMUONGeometryBuilder,5)  // Geometry builder
+  ClassDef(AliMUONGeometryBuilder,6)  // Geometry builder
 };
 
 // inline functions
 
 inline void  AliMUONGeometryBuilder::InitGeometry()
 { InitGeometry(fSVMapFileName); }
-
-inline void  AliMUONGeometryBuilder::ReadTransformations()
-{ ReadTransformations(fTransformFileName); }
-
-inline void  AliMUONGeometryBuilder::WriteTransformations()
-{ WriteTransformations(fTransformFileName + fgkOutFileNameExtension); }
 
 inline void  AliMUONGeometryBuilder::WriteSVMaps()
 { WriteSVMaps(fSVMapFileName + fgkOutFileNameExtension); }
