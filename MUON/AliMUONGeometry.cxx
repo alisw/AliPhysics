@@ -21,19 +21,19 @@
 //
 // Author: Ivana Hrivnacova, IPN Orsay
 
-#include <iostream>
+#include "AliMUONGeometry.h"
+#include "AliMUONGeometryTransformer.h"
+#include "AliMUONGeometryModule.h"
+#include "AliMUONStringIntMap.h"
+#include "AliMUONGeometryStore.h"
+
+#include "AliLog.h"
 
 #include <TObjArray.h>
 #include <Riostream.h>
 #include <TSystem.h>
 
-#include "AliMUONGeometry.h"
-#include "AliMUONGeometryTransformer.h"
-#include "AliMUONGeometryModule.h"
-#include "AliMUONGeometrySVMap.h"
-#include "AliMUONGeometryStore.h"
-#include "AliLog.h"
-
+#include <iostream>
 
 ClassImp(AliMUONGeometry)
  
@@ -135,7 +135,7 @@ void AliMUONGeometry::FillData3(const TString& sensVolumePath,
   }    
     
   // Get module sensitive volumes map
-  AliMUONGeometrySVMap* svMap = module->GetSVMap();     
+  AliMUONStringIntMap* svMap = module->GetSVMap();     
 
   // Map the sensitive volume to detection element
   svMap->Add(sensVolumePath, detElemId); 
@@ -182,10 +182,10 @@ void AliMUONGeometry::WriteData3(ofstream& out) const
   for (Int_t i=0; i<fModules->GetEntriesFast(); i++) {
     AliMUONGeometryModule* geometry 
       = (AliMUONGeometryModule*)fModules->At(i);
-    AliMUONGeometrySVMap* svMap
+    AliMUONStringIntMap* svMap
       = geometry->GetSVMap();
 
-    svMap->WriteMap(out);
+    svMap->Print("SV", out);
     out << endl;  
   }    
 }

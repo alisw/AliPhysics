@@ -15,10 +15,10 @@
 #include <TObject.h>
 #include <TGeoMatrix.h>
 
-class TObjArray;
-
 class AliMUONGeometryModule;
 class AliMUONGeometryTransformer;
+
+class TObjArray;
 
 class AliMUONGeometry : public TObject
 {
@@ -32,7 +32,6 @@ class AliMUONGeometry : public TObject
 
     Bool_t  ReadSVMap(const TString& fileName);
     Bool_t  WriteSVMap(const TString& fileName) const;
-
 
     // get methods
     const AliMUONGeometryModule* GetModule(

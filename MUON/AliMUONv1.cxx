@@ -19,15 +19,7 @@
 //  Manager and hits classes for set:MUON version 1    //
 /////////////////////////////////////////////////////////
 
-#include <TRandom.h>
-#include <TF1.h>
-#include <TClonesArray.h>
-#include <TRandom.h> 
-#include <TVirtualMC.h>
-#include <TGeoMatrix.h>
-
 #include "AliMUONv1.h"
-#include "AliConst.h" 
 #include "AliMUONConstants.h"
 #include "AliMUONSegFactory.h"
 #include "AliMUONResponseFactory.h"
@@ -38,12 +30,21 @@
 #include "AliMUONGeometry.h"	
 #include "AliMUONGeometryTransformer.h"	
 #include "AliMUONGeometryModule.h"	
-#include "AliMUONGeometrySVMap.h"	
+#include "AliMUONStringIntMap.h"	
 #include "AliMUONGeometryDetElement.h"	
+
+#include "AliConst.h" 
 #include "AliMagF.h"
 #include "AliRun.h"
 #include "AliMC.h"
 #include "AliLog.h"
+
+#include <TRandom.h>
+#include <TF1.h>
+#include <TClonesArray.h>
+#include <TRandom.h> 
+#include <TVirtualMC.h>
+#include <TGeoMatrix.h>
 
 #include <string>
 
@@ -249,7 +250,7 @@ TString  AliMUONv1::CurrentVolumePath() const
     gMC->CurrentVolOffID(imother++, copyNo);
     TString add = "/";
     add += name;
-    add += ".";
+    add += "_";
     add += copyNo;
     path.Insert(0,add); 
   }

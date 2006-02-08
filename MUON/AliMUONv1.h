@@ -14,9 +14,9 @@
 //  Manager and hits classes for set:MUON version 1    //
 /////////////////////////////////////////////////////////
  
-#include <TLorentzVector.h>
-
 #include "AliMUON.h"
+
+#include <TLorentzVector.h>
 
 class TF1;
 class TGeoCombiTrans;
