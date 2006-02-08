@@ -31,11 +31,11 @@
 #include "AliMUONGeometryModule.h"
 #include "AliMUONGeometryDetElement.h"
 #include "AliMUONGeometryStore.h"
-#include "AliMUONGeometrySVMap.h"
 #include "AliMUONGeometryEnvelopeStore.h"
 #include "AliMUONGeometryEnvelope.h"
 #include "AliMUONGeometryConstituent.h"
 #include "AliMUONGeometryBuilder.h"
+#include "AliMUONStringIntMap.h"
 #include "AliLog.h"
 
 ClassImp(AliMUONVGeometryBuilder)
@@ -149,14 +149,15 @@ AliMUONVGeometryBuilder::ConvertDETransform(const TGeoHMatrix& transform) const
 }
 
 //______________________________________________________________________________
-TString  AliMUONVGeometryBuilder::ComposePath(const TString& volName, 
-                                               Int_t copyNo) const
+TString  AliMUONVGeometryBuilder::ComposePath(const TString& volName,
+                                              Int_t copyNo) const
 {
 // Compose path from given volName and copyNo
 // ---
 
-  TString path(volName);
-  path += ".";
+  TString path = "/";
+  path += volName;
+  path += '_';
   path += copyNo;
   
   return path;
@@ -172,20 +173,21 @@ void AliMUONVGeometryBuilder::MapSV(const TString& path0,
 
   // Get module sensitive volumes map
   Int_t moduleId = AliMUONGeometryStore::GetModuleId(detElemId);
-  AliMUONGeometrySVMap* svMap = GetSVMap(moduleId);     
+  AliMUONStringIntMap* svMap = GetSVMap(moduleId);     
 
   Int_t nofDaughters = gMC->NofVolDaughters(volName);
   if (nofDaughters == 0) {
 
     // Get the name of the last volume in the path
     Ssiz_t npos1 = path0.Last('/')+1; 
-    Ssiz_t npos2 = path0.Last('.');
+    Ssiz_t npos2 = path0.Last('_');
     TString volName(path0(npos1, npos2-npos1));  
     
     // Check if it is sensitive volume
     Int_t moduleId = AliMUONGeometryStore::GetModuleId(detElemId);
     AliMUONGeometryModule* geometry = GetGeometry(moduleId);
-    if (geometry->IsSensitiveVolume(volName)) {
+    if (  geometry->IsSensitiveVolume(volName) &&
+        ! svMap->Get(path0) ) {
       //cout << ".. adding to the map  " 
       //     <<  path0 << "  "  << detElemId << endl;
     
@@ -200,7 +202,6 @@ void AliMUONVGeometryBuilder::MapSV(const TString& path0,
     TString newName =  gMC->VolDaughterName(volName, i);
             
     TString path = path0;
-    path += "/";
     path += ComposePath(newName, copyNo);
 
     MapSV(path, newName, detElemId);
@@ -247,7 +248,7 @@ AliMUONVGeometryBuilder::GetEnvelopes(Int_t moduleId) const
 }  
 
 //______________________________________________________________________________
-AliMUONGeometrySVMap*  
+AliMUONStringIntMap*  
 AliMUONVGeometryBuilder::GetSVMap(Int_t moduleId) const
 {
 // Returns the transformation store of the module geometry specified by moduleId
@@ -312,6 +313,39 @@ void AliMUONVGeometryBuilder::SetTransformation(Int_t moduleId,
   geometry->SetTransformation(newTransform);
 }  
 
+//______________________________________________________________________________
+void AliMUONVGeometryBuilder::SetVolume(Int_t moduleId, 
+                                 const TString& volumeName, 
+				 Bool_t isVirtual)
+{
+/// Set volume name, virtuality
+
+  TString path = GetGeometry(moduleId)->GetVolumePath();
+  // cout << "in AliMUONVGeometryBuilder::SetVolume " << path.Data() << endl;
+  
+  if ( path == "" ) path = "/ALIC_1";
+  path += ComposePath(volumeName, 1);
+
+  GetGeometry(moduleId)->SetVolumePath(path);
+  GetGeometry(moduleId)->SetIsVirtual(isVirtual);
+  // cout << "... set " << path.Data() << endl;
+}  				 
+
+//______________________________________________________________________________
+void AliMUONVGeometryBuilder::SetMotherVolume(Int_t moduleId, 
+                                 const TString& volumeName)
+{
+/// Set mother volume name
+
+  TString motherVolumeName = ComposePath(volumeName, 1);
+
+  TString path = GetGeometry(moduleId)->GetVolumePath();
+  if ( path == "" ) path = "/ALIC_1";
+  path.Insert(7, motherVolumeName);  
+  
+  GetGeometry(moduleId)->SetVolumePath(path);
+}  				 
+
 //
 // public functions
 //
@@ -334,14 +368,15 @@ void  AliMUONVGeometryBuilder::SetReferenceFrame(
 
 
 //______________________________________________________________________________
-void  AliMUONVGeometryBuilder::FillTransformations() const
+void  AliMUONVGeometryBuilder::CreateDetElements() const
 {
-// Fills transformations store from defined geometry.
-// ---
+/// Create detection element and fill their global and
+/// local transformations from geometry.
 
   for (Int_t i=0; i<fGeometryModules->GetEntriesFast(); i++) {
     AliMUONGeometryModule* geometry 
       = (AliMUONGeometryModule*)fGeometryModules->At(i);
+      
     const TObjArray* envelopes 
       = geometry->GetEnvelopeStore()->GetEnvelopes();    
     
@@ -357,17 +392,21 @@ void  AliMUONVGeometryBuilder::FillTransformations() const
        
       // Get envelope data 
       Int_t detElemId = envelope->GetUniqueID();	
-      TString path = ComposePath(envelope->GetName(), 
-                                 envelope->GetCopyNo());
+
+      // Compose full volume path
+      TString volPath = geometry->GetVolumePath();
+      volPath += ComposePath(envelope->GetName(), envelope->GetCopyNo());
+
+      // Create detection element 
+      AliMUONGeometryDetElement* detElement
+        = new AliMUONGeometryDetElement(detElemId, volPath);
+      detElements->Add(detElemId, detElement);
+
+      // Compose  local transformation
       const TGeoCombiTrans* transform = envelope->GetTransformation(); 
-      
       // Apply frame transform
       TGeoHMatrix localTransform = ConvertDETransform(*transform);
-
-      // Add detection element transformation 
-      AliMUONGeometryDetElement* detElement
-        = new AliMUONGeometryDetElement(detElemId, path, localTransform);
-      detElements->Add(detElemId, detElement);
+      detElement->SetLocalTransformation(localTransform);
 
       // Compose global transformation
       TGeoHMatrix globalTransform 
@@ -377,12 +416,12 @@ void  AliMUONVGeometryBuilder::FillTransformations() const
 		    ;
       // Set the global transformation to detection element
       detElement->SetGlobalTransformation(globalTransform);
+      
     }  
   }
 }
-
 //_____ _________________________________________________________________________
-void  AliMUONVGeometryBuilder::RebuildSVMaps() const
+void  AliMUONVGeometryBuilder::RebuildSVMaps(Bool_t withEnvelopes) const
 {
 // Clear the SV maps in memory and fill them from defined geometry.
 // ---
@@ -403,30 +442,32 @@ void  AliMUONVGeometryBuilder::RebuildSVMaps() const
         = (AliMUONGeometryEnvelope*)envelopes->At(j);
 
       // skip envelope not corresponding to detection element
-      if(envelope->GetUniqueID() == 0) continue;
-       
-      TString path0("/ALIC.1");
-      if (geometry->GetMotherVolume() != "ALIC") {
-        path0 += "/";
-	path0 += ComposePath(geometry->GetMotherVolume(), 1);
+      if ( envelope->GetUniqueID() == 0 ) continue;
+      
+      // Get volume path of detection element
+      AliMUONGeometryDetElement* detElement
+        = geometry->GetTransformer()->GetDetElement(envelope->GetUniqueID());
+      std::string path0 = detElement->GetVolumePath().Data();	
+	
+      if ( ! withEnvelopes && geometry->IsVirtual() ) {
+         std::string vName = geometry->GetTransformer()->GetVolumeName().Data();
+	 std::string vPath = ComposePath(vName, 1).Data();
+	 path0.erase(path0.find(vPath), vPath.size());
       }  
-      if (! geometry->IsVirtual() ) {
-        path0 += "/";
-	path0 += ComposePath(geometry->GetVolume(), 1);
-      }  
        
-      if (!envelope->IsVirtual()) {
-         TString path = path0;
-         path += "/";
-	 path += ComposePath(envelope->GetName(), envelope->GetCopyNo());
-	 MapSV(path, envelope->GetName(), envelope->GetUniqueID());
+      if ( ! withEnvelopes && envelope->IsVirtual()) {
+         std::string eName = envelope->GetName();
+	 std::string ePath = ComposePath(eName, envelope->GetCopyNo()).Data();
+	 path0.erase(path0.find(ePath), ePath.size());
       }
-      else {	 
+
+      if ( ! envelope->IsVirtual() )
+        MapSV(path0, envelope->GetName(), envelope->GetUniqueID());
+      else { 	
         for  (Int_t k=0; k<envelope->GetConstituents()->GetEntriesFast(); k++) {
           AliMUONGeometryConstituent* constituent
             = (AliMUONGeometryConstituent*)envelope->GetConstituents()->At(k);
          TString path = path0;
-         path += "/";
 	 path += ComposePath(constituent->GetName(), constituent->GetCopyNo());
 	 MapSV(path, constituent->GetName(), envelope->GetUniqueID());
         }

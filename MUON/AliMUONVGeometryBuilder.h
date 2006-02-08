@@ -26,7 +26,7 @@ class TGeoCombiTrans;
 class AliMUONGeometryModule;
 class AliMUONGeometryEnvelopeStore;
 class AliMUONGeometryStore;
-class AliMUONGeometrySVMap;
+class AliMUONStringIntMap;
 
 class AliMUONVGeometryBuilder : public TObject
 {
@@ -42,8 +42,8 @@ class AliMUONVGeometryBuilder : public TObject
   
     // methods
     void  SetReferenceFrame(const TGeoCombiTrans& referenceFrame);
-    void  RebuildSVMaps() const;
-    void  FillTransformations() const;
+    void  RebuildSVMaps(Bool_t withEnvelopes = true) const;
+    void  CreateDetElements() const;
 
     virtual void CreateMaterials() {}  // make = 0; ?
                   // Function to be overriden in a concrete chamber/station
@@ -95,7 +95,7 @@ class AliMUONVGeometryBuilder : public TObject
     // methods
     AliMUONGeometryModule*         GetGeometry(Int_t moduleId) const;
     AliMUONGeometryEnvelopeStore*  GetEnvelopes(Int_t moduleId) const;
-    AliMUONGeometrySVMap*          GetSVMap(Int_t moduleId) const;
+    AliMUONStringIntMap*           GetSVMap(Int_t moduleId) const;
     
     // set module transformation
     void SetTranslation(Int_t moduleId, 
@@ -103,6 +103,11 @@ class AliMUONVGeometryBuilder : public TObject
     void SetTransformation(Int_t moduleId, 
                         const TGeoTranslation& translation,
 			const TGeoRotation& rotation);
+			
+    // set volumes 
+    void SetVolume(Int_t moduleId, const TString& volumeName, 
+                   Bool_t isVirtual = false);			
+    void SetMotherVolume(Int_t moduleId, const TString& volumeName);			
     
   private:
     //methods
