@@ -16,20 +16,18 @@
 // $Id$
 //
 // Macro for generating the geometry data files:
-// (transform_*.dat, svmap_*.dat).
+// (volpaths.dat, transform.dat, svmap.dat).
 // To be run from aliroot:
 // .x MUONGenerateGeometryData.C
 //
 // The generated files do not replace the existing ones
 // but have different names (with extension ".out").
-// To compare/replace the existing files with generated ones
-// run the scripts in MUON/data: 
-//   compare_data [transform] [svmaps]
-//   reset_data [transform] [svmaps]
 //
 //  Author: I. Hrivnacova, IPN Orsay
 
-void MUONGenerateGeometryData(Bool_t transforms = true, Bool_t svmaps = true)
+void MUONGenerateGeometryData(Bool_t volpaths = true,
+                              Bool_t transforms = true, 
+                              Bool_t svmaps = true)
 {
   // Initialize
   gAlice->Init("$ALICE_ROOT/MUON/Config.C");
@@ -44,14 +42,19 @@ void MUONGenerateGeometryData(Bool_t transforms = true, Bool_t svmaps = true)
 
   // Get geometry builder
   AliMUONGeometryBuilder* builder = muon ->GetGeometryBuilder();
+  
+  if (volpaths) {
+    cout << "Generating volpath file ..." << endl;
+    builder->GetTransformer()->WriteVolumePaths("volpath.dat.out");
+  }  
 
   if (transforms) {
-    cout << "Generating transformation files ..." << endl;
-    builder->WriteTransformations();
+    cout << "Generating transformation file ..." << endl;
+    builder->GetTransformer()->WriteTransformations("transform.dat.out");
   }  
 
   if (svmaps) {
-    cout << "Generating svmaps files ..." << endl;
+    cout << "Generating svmaps file ..." << endl;
     builder->WriteSVMaps();
   }  
 }  
