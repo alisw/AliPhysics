@@ -267,8 +267,7 @@ AliTRDtrack::AliTRDtrack(const AliESDtrack& t)
   //Conversion of the covariance matrix
   Double_t c[15]; t.GetExternalCovariance(c);
   if (t.GetStatus()&AliESDtrack::kTRDbackup){
-    fAlpha=t.GetOuterAlpha();
-    t.GetOuterExternalParameters(x,p);
+    t.GetOuterExternalParameters(fAlpha,x,p);
     t.GetOuterExternalCovariance(c);
     if      (fAlpha < -TMath::Pi()) fAlpha += 2*TMath::Pi();
     else if (fAlpha >= TMath::Pi()) fAlpha -= 2*TMath::Pi();

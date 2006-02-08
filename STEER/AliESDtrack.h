@@ -65,10 +65,7 @@ public:
 
   void SetConstrainedTrackParams(const AliKalmanTrack *t, Double_t chi2);
 
-  Double_t GetConstrainedAlpha() const {
-    if (!fCp) return 720;
-    return fCp->GetAlpha();
-  }
+
   Bool_t GetConstrainedPxPyPz(Double_t *p) const {
     if (!fCp) return kFALSE;
     return fCp->GetPxPyPz(p);
@@ -77,15 +74,13 @@ public:
     if (!fCp) return kFALSE;
     return fCp->GetXYZ(r);
   }
-  void GetConstrainedExternalParameters(Double_t &x, Double_t p[5]) const;
-  void GetConstrainedExternalCovariance(Double_t cov[15]) const;
+  Bool_t GetConstrainedExternalParameters
+              (Double_t &alpha, Double_t &x, Double_t p[5]) const;
+  Bool_t GetConstrainedExternalCovariance(Double_t cov[15]) const;
   Double_t GetConstrainedChi2() const {return fCchi2;}
 
 
-  Double_t GetInnerAlpha() const {
-    if (!fIp) return 720;
-    return fIp->GetAlpha();
-  }
+
   Bool_t GetInnerPxPyPz(Double_t *p) const {
     if (!fIp) return kFALSE;
     return fIp->GetPxPyPz(p);
@@ -94,15 +89,23 @@ public:
     if (!fIp) return kFALSE;
     return fIp->GetXYZ(r);
   }
-  void GetInnerExternalParameters(Double_t &x, Double_t p[5]) const;
-  void GetInnerExternalCovariance(Double_t cov[15]) const;
+  Bool_t GetInnerExternalParameters
+        (Double_t &alpha, Double_t &x, Double_t p[5]) const;
+  Bool_t GetInnerExternalCovariance(Double_t cov[15]) const;
  
-  Double_t GetOuterAlpha() const {
-    if (!fOp) return 720;
-    return fOp->GetAlpha();
+
+  Bool_t GetOuterPxPyPz(Double_t *p) const {
+    if (!fOp) return kFALSE;
+    return fOp->GetPxPyPz(p);
   }
-  void GetOuterExternalParameters(Double_t &x, Double_t p[5]) const;
-  void GetOuterExternalCovariance(Double_t cov[15]) const;
+  Bool_t GetOuterXYZ(Double_t *r) const {
+    if (!fOp) return kFALSE;
+    return fOp->GetXYZ(r);
+  }
+  Bool_t GetOuterExternalParameters
+        (Double_t &alpha, Double_t &x, Double_t p[5]) const;
+  Bool_t GetOuterExternalCovariance(Double_t cov[15]) const;
+
 
   Int_t GetNcls(Int_t idet) const;
   Int_t GetClusters(Int_t idet, UInt_t *idx) const;

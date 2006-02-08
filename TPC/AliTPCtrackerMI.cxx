@@ -2608,8 +2608,8 @@ void AliTPCtrackerMI::ReadSeeds(AliESD *event, Int_t direction)
       continue;    
     }
     if ( direction ==2 &&(status & AliESDtrack::kTRDrefit) > 0 )  {
-      Double_t par0[5],par1[5],x;
-      esd->GetInnerExternalParameters(x,par0);
+      Double_t par0[5],par1[5],alpha,x;
+      esd->GetInnerExternalParameters(alpha,x,par0);
       esd->GetExternalParameters(x,par1);
       Double_t delta1 = TMath::Abs(par0[4]-par1[4])/(0.000000001+TMath::Abs(par0[4]+par1[4]));
       Double_t delta2 = TMath::Abs(par0[3]-par1[3]);

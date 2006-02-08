@@ -134,9 +134,9 @@ AliTrackPoints::AliTrackPoints(Int_t n, AliESDtrack* track, Float_t mf, Float_t 
      return;
    }
   
-  Double_t x;
+  Double_t alpha,x;
   Double_t par[5];
-  track->GetInnerExternalParameters(x,par);     //get properties of the track
+  track->GetInnerExternalParameters(alpha,x,par);//get properties of the track
   if (par[4] == 0)
    {
      Error("AliTrackPoints","This ESD track seem not to contain TPC information (curv is 0)");
@@ -149,7 +149,7 @@ AliTrackPoints::AliTrackPoints(Int_t n, AliESDtrack* track, Float_t mf, Float_t 
      return;
    }
    
-  Double_t alpha = track->GetInnerAlpha();
+  //Double_t alpha = track->GetInnerAlpha();
   Double_t cc = 1000./0.299792458/mf;//conversion constant
   Double_t c=par[4]/cc;
   

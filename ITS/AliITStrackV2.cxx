@@ -81,7 +81,7 @@ AliKalmanTrack() {
 
   //Conversion of the track parameters
   Double_t x,p[5]; 
-  if (c) t.GetConstrainedExternalParameters(x,p);
+  if (c) t.GetConstrainedExternalParameters(fAlpha,x,p);
   else t.GetExternalParameters(x,p);
   fX=x;   
   fP0=p[0]; 

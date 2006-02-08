@@ -320,9 +320,9 @@ Int_t AliReaderESD::ReadESDCentral(AliESD* esd)
       }
 
 
-     Double_t extx;
+     Double_t alpha,extx;
      Double_t extp[5];
-     esdtrack->GetConstrainedExternalParameters(extx,extp);
+     esdtrack->GetConstrainedExternalParameters(alpha,extx,extp);
      if (extp[4] == 0.0)
       {
         AliDebug(3,"Track has 0 contrianed curvature -> Probobly parameters never updated. Skipping.");

@@ -635,14 +635,12 @@ void  AliESDRecV0Info::Update(Float_t vertex[3])
     if (fDist2<10.5){
       Double_t x,alpha,param[5],cov[15];
       //
-      fT1.fESDTrack.GetInnerExternalParameters(x,param);
+      fT1.fESDTrack.GetInnerExternalParameters(alpha,x,param);
       fT1.fESDTrack.GetInnerExternalCovariance(cov);
-      alpha = fT1.fESDTrack.GetInnerAlpha();
       AliExternalTrackParam paramm(x,alpha,param,cov);
       //
-      fT2.fESDTrack.GetInnerExternalParameters(x,param);
+      fT2.fESDTrack.GetInnerExternalParameters(alpha,x,param);
       fT2.fESDTrack.GetInnerExternalCovariance(cov);
-      alpha = fT2.fESDTrack.GetInnerAlpha();
       AliExternalTrackParam paramd(x,alpha,param,cov);
     }    
     //            
@@ -768,14 +766,12 @@ void  AliESDRecKinkInfo::Update()
     if (fDist2<10.5){
       Double_t x,alpha,param[5],cov[15];
       //
-      fT1.fESDTrack.GetInnerExternalParameters(x,param);
+      fT1.fESDTrack.GetInnerExternalParameters(alpha,x,param);
       fT1.fESDTrack.GetInnerExternalCovariance(cov);
-      alpha = fT1.fESDTrack.GetInnerAlpha();
       AliExternalTrackParam paramm(x,alpha,param,cov);
       //
-      fT2.fESDTrack.GetInnerExternalParameters(x,param);
+      fT2.fESDTrack.GetInnerExternalParameters(alpha,x,param);
       fT2.fESDTrack.GetInnerExternalCovariance(cov);
-      alpha = fT2.fESDTrack.GetInnerAlpha();
       AliExternalTrackParam paramd(x,alpha,param,cov);
       /*
       AliESDkink kink;
@@ -1571,14 +1567,12 @@ Int_t ESDCmpTr::BuildV0Info(Int_t eventNr)
 	//
 	// TPC V0 Info
 	Double_t x,alpha, param[5],cov[15];
-	fRecV0Info->fT1.fESDTrack.GetInnerExternalParameters(x,param);
+	fRecV0Info->fT1.fESDTrack.GetInnerExternalParameters(alpha,x,param);
 	fRecV0Info->fT1.fESDTrack.GetInnerExternalCovariance(cov);
-	alpha = fRecV0Info->fT1.fESDTrack.GetInnerAlpha();
 	AliExternalTrackParam paramP(x,alpha,param,cov);
 	//
-	fRecV0Info->fT2.fESDTrack.GetInnerExternalParameters(x,param);
+	fRecV0Info->fT2.fESDTrack.GetInnerExternalParameters(alpha,x,param);
 	fRecV0Info->fT2.fESDTrack.GetInnerExternalCovariance(cov);
-	alpha = fRecV0Info->fT2.fESDTrack.GetInnerAlpha();
 	AliExternalTrackParam paramM(x,alpha,param,cov);
 	//
 	fRecV0Info->fV0tpc.SetM(paramM);

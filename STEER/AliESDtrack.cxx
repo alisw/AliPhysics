@@ -521,66 +521,77 @@ void AliESDtrack::GetExternalCovariance(Double_t cov[15]) const {
 }
 
 //_______________________________________________________________________
-void 
-AliESDtrack::GetConstrainedExternalParameters(Double_t &x, Double_t p[5])const{
+Bool_t AliESDtrack::GetConstrainedExternalParameters
+                 (Double_t &alpha, Double_t &x, Double_t p[5]) const {
   //---------------------------------------------------------------------
   // This function returns the constrained external track parameters
   //---------------------------------------------------------------------
-  if (!fCp) return;
+  if (!fCp) return kFALSE;
+  alpha=fCp->GetAlpha();
   x=fCp->GetX();
   for (Int_t i=0; i<5; i++) p[i]=fCp->GetParameter()[i];
+  return kTRUE;
 }
 
 //_______________________________________________________________________
-void 
+Bool_t 
 AliESDtrack::GetConstrainedExternalCovariance(Double_t c[15]) const {
   //---------------------------------------------------------------------
   // This function returns the constrained external cov. matrix
   //---------------------------------------------------------------------
-  if (!fCp) return;
+  if (!fCp) return kFALSE;
   for (Int_t i=0; i<15; i++) c[i]=fCp->GetCovariance()[i];
+  return kTRUE;
 }
 
-void AliESDtrack::GetInnerExternalParameters(Double_t &x, Double_t p[5]) const 
-{
- //---------------------------------------------------------------------
+Bool_t
+AliESDtrack::GetInnerExternalParameters
+                 (Double_t &alpha, Double_t &x, Double_t p[5]) const {
+  //---------------------------------------------------------------------
   // This function returns external representation of the track parameters 
   // at the inner layer of TPC
   //---------------------------------------------------------------------
-  if (!fIp) return;
+  if (!fIp) return kFALSE;
+  alpha=fIp->GetAlpha();
   x=fIp->GetX();
   for (Int_t i=0; i<5; i++) p[i]=fIp->GetParameter()[i];
+  return kTRUE;
 }
 
-void AliESDtrack::GetInnerExternalCovariance(Double_t cov[15]) const
-{
+Bool_t 
+AliESDtrack::GetInnerExternalCovariance(Double_t cov[15]) const {
  //---------------------------------------------------------------------
  // This function returns external representation of the cov. matrix 
  // at the inner layer of TPC
  //---------------------------------------------------------------------
-  if (!fIp) return;
+  if (!fIp) return kFALSE;
   for (Int_t i=0; i<15; i++) cov[i]=fIp->GetCovariance()[i];
+  return kTRUE;
 }
 
-void AliESDtrack::GetOuterExternalParameters(Double_t &x, Double_t p[5]) const 
-{
- //---------------------------------------------------------------------
+Bool_t 
+AliESDtrack::GetOuterExternalParameters
+                 (Double_t &alpha, Double_t &x, Double_t p[5]) const {
+  //---------------------------------------------------------------------
   // This function returns external representation of the track parameters 
   // at the inner layer of TRD
   //---------------------------------------------------------------------
-  if (!fOp) return;
+  if (!fOp) return kFALSE;
+  alpha=fOp->GetAlpha();
   x=fOp->GetX();
   for (Int_t i=0; i<5; i++) p[i]=fOp->GetParameter()[i];
+  return kTRUE;
 }
 
-void AliESDtrack::GetOuterExternalCovariance(Double_t cov[15]) const
-{
+Bool_t 
+AliESDtrack::GetOuterExternalCovariance(Double_t cov[15]) const {
  //---------------------------------------------------------------------
  // This function returns external representation of the cov. matrix 
  // at the inner layer of TRD
  //---------------------------------------------------------------------
-  if (!fOp) return;
+  if (!fOp) return kFALSE;
   for (Int_t i=0; i<15; i++) cov[i]=fOp->GetCovariance()[i];
+  return kTRUE;
 }
 
 Int_t AliESDtrack::GetNcls(Int_t idet) const
