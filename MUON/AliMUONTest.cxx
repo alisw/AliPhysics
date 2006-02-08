@@ -21,16 +21,6 @@
 //
 // Author: Ivana Hrivnacova, IPN Orsay
 
-#include <TStopwatch.h>
-#include <Riostream.h>
-#include <TH2F.h>
-#include <TPave.h>
-#include <TCanvas.h>
-#include <TGeoMatrix.h>
-
-#include "AliRun.h"
-#include "AliLog.h"
-
 #include "AliMUONTest.h"
 #include "AliMUON.h"
 #include "AliMUONConstants.h"
@@ -46,6 +36,16 @@
 #include "AliMUONGeometryTransformer.h"
 #include "AliMUONSegmentation.h"
 #include "AliMUONGeometrySegmentation.h"
+
+#include "AliRun.h"
+#include "AliLog.h"
+
+#include <TStopwatch.h>
+#include <Riostream.h>
+#include <TH2F.h>
+#include <TPave.h>
+#include <TCanvas.h>
+#include <TGeoMatrix.h>
 
 ClassImp(AliMUONTest)
 
@@ -135,7 +135,7 @@ void AliMUONTest::BuildWithoutMUON(const TString& option)
 // Fill geometry from transform*.dat files and build segmentation via 
 // SegFactory
 
-  AliMUONSegFactory segFactory("transform.dat");
+  AliMUONSegFactory segFactory("volpaths.dat", "transform.dat");
   fSegmentation = segFactory.CreateSegmentation(option);
 }  
 

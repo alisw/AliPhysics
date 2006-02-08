@@ -14,10 +14,12 @@
 
 #include <TObject.h>
 
-class TCanvas;
 class AliMUONGeometryTransformer;
 class AliMUONSegmentation;
 class AliMUONGeometrySegmentation;
+
+class TCanvas;
+class TString;
 
 enum AliMUONTests {
   kPrintPads,
