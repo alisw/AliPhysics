@@ -35,6 +35,7 @@ class AliMUONTriggerDecisionV1 : public TTask
   void Trigger();
   void ResetBit();
   void SetBit();
+  void SetBitUpDownX();
   void SetBitUpDownY();
 
   void TrigX(Int_t ch1q[16], Int_t ch2q[16], Int_t ch3q[32], Int_t ch4q[32], 
@@ -68,7 +69,12 @@ class AliMUONTriggerDecisionV1 : public TTask
 			Int_t singleUndef[3], Int_t pairUnlike[3], 
 			Int_t pairLike[3]) const;  
 
+  Int_t Board2Circuit(Int_t iboard) const;
+  Int_t CircuitNumber(Int_t idCircuit) const;
+  Int_t ModuleNumber(Int_t idModule) const; 
+  static const Int_t CircuitSortedAsBoard[234]; // circuit Id. number
 
+  
   ClassDef(AliMUONTriggerDecisionV1,1) // Trigger Decision class
 
 

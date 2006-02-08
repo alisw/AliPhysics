@@ -129,6 +129,8 @@ AliMUONResponseTrigger::DisIntegrate(const AliMUONHit& hit, TList& digits)
     }
     AliMUONDigit* d = new AliMUONDigit;
     d->SetDetElemId(detElemId);
+/* pc 09/02/06 no need for that anymore : trigger is in local numbering
+
     //FIXME: >> the following code to get the ixGlo and iyGlo is a bad hack 
     // because trigger has not yet switched to local numbering of its indices !
     // We should be able to use directly the (local) ix,iy from the pad !
@@ -146,6 +148,10 @@ AliMUONResponseTrigger::DisIntegrate(const AliMUONHit& hit, TList& digits)
     // << end of bad hack.
     d->SetPadX(ixGlo);
     d->SetPadY(iyGlo);
+*/
+    d->SetPadX(ix);
+    d->SetPadY(iy);
+
     d->SetSignal(twentyNano);
     d->AddPhysicsSignal(d->Signal());
     d->SetCathode(cath);
