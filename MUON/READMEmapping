@@ -6,11 +6,6 @@
  
  See detailed description in ALICE-INT-2003-025.
 
- Units used
- ============
- 
- Lengths are in centimeters.
- 
  Test macros
  ============
    cd ../mapping/macro
@@ -194,3 +189,9 @@
   The DDL id is needed for the rawdata generation only.
 
   To generate this file, the macro MUONGenerateBusPatch.C could be used.
+
+  Units used
+  ============
+ 
+  Lengths are in centimeters.
+ 
