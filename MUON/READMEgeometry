@@ -1,0 +1,41 @@
+ $Id$
+
+ Geometry data files description
+ 
+ volpath.dat
+ -----------
+ 
+ List of volume paths for chambers geometry modules and detection
+ elements; in format:
+
+ KEY   ID   volpath
+                       
+ where  KEY     = CH or DE
+        ID      = chamberId or detElemId
+	volpath = in format /volname1_copyNo1/volname2_copyNo2/...
+	
+
+ transform.dat
+ -------------
+ 
+ List of transformations for chambers geometry modules and detection
+ elements; in format:
+ 
+ KEY   ID  [nofDE]  pos: posX posY posZ  rot: theX phiX theY phiY theZ phiZ
+  
+ where  KEY  = CH or DE
+        ID   = chamberId or detElemId
+	pos: posX posY posZ  = position in cm
+	rot: theX phiX theY phiY theZ phiZ = rotation angles as in Geant3 in deg
+
+ svmap.dat
+ -------------
+
+ Map of sensitive volumes to detction element Ids;
+ in format:
+ KEY  volpath  detElemId
+  
+ where  KEY  = SV
+	volpath   = volume path in format /volname1_copyNo1/volname2_copyNo2/...
+        detElemId = detection element Id
+ 
