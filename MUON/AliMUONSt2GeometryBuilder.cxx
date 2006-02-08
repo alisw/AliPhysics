@@ -214,6 +214,10 @@ void AliMUONSt2GeometryBuilder::SetTransformations()
 // Defines the transformations for the station2 chambers.
 // ---
 
+  // Define chamber volumes as virtual
+  SetVolume(2, "SC03", true);
+  SetVolume(3, "SC04", true);
+
   Double_t zpos1 = - AliMUONConstants::DefaultChamberZ(2); 
   SetTranslation(2, TGeoTranslation(0., 0., zpos1));
 

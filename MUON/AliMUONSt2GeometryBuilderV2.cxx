@@ -103,7 +103,6 @@ void AliMUONSt2GeometryBuilderV2::CreateGeometry()
      // iChamber (first chamber) kept for other quanties than Z,
      // assumed to be the same in both chambers
 
-
      // Get tracking medias Ids
      Int_t *idtmed = fMUON->GetIdtmed()->GetArray()-1099;
      Int_t idAir  = idtmed[1100]; // medium 1
@@ -785,6 +784,10 @@ void AliMUONSt2GeometryBuilderV2::SetTransformations()
 {
 // Defines the transformations for the station2 chambers.
 // ---
+
+  // Define chamber volumes as virtual
+  SetVolume(2, "SC03", true);
+  SetVolume(3, "SC04", true);
 
   Double_t zpos1 = - AliMUONConstants::DefaultChamberZ(2); 
   SetTranslation(2, TGeoTranslation(0., 0., zpos1));
