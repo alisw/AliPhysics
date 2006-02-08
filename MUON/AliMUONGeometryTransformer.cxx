@@ -35,6 +35,7 @@
 #include <TClonesArray.h>
 #include <TGeoManager.h>
 #include <TGeoPhysicalNode.h>
+#include <TFile.h>
 
 #include <sstream>
 
