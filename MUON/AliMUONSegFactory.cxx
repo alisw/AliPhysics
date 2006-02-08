@@ -58,7 +58,8 @@ AliMUONSegFactory::AliMUONSegFactory(const AliMUONGeometryTransformer* geometry)
 }
 
 //______________________________________________________________________________
-AliMUONSegFactory::AliMUONSegFactory(const TString& fileName)
+AliMUONSegFactory::AliMUONSegFactory(const TString& volPathsFileName,
+                                     const TString& transformsFileName)
     : TObject(),
       fMpSegFactory(),
       fDESegmentations(),
@@ -69,7 +70,7 @@ AliMUONSegFactory::AliMUONSegFactory(const TString& fileName)
 
   // Transformer
   AliMUONGeometryTransformer* transformer = new AliMUONGeometryTransformer(true);
-  transformer->ReadTransformations(fileName);
+  transformer->ReadGeometryData(volPathsFileName, transformsFileName);
   fkTransformer = transformer;  
 }
 

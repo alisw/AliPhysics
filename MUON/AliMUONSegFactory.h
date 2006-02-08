@@ -17,7 +17,7 @@
 ///
 /// Construction:
 /// - AliMUONSegFactory  factory(kTransformer);
-/// - AliMUONSegFactory  factory("transform.dat");
+/// - AliMUONSegFactory  factory("volpaths.dat", "transform.dat");
 /// - AliMUONSegFactory  factory(0);                                          \n
 ///
 /// All created objects are registered in the AliMUONSegmentation
@@ -50,7 +50,8 @@ class AliMUONSegFactory : public  TObject {
 
   public:
     AliMUONSegFactory(const AliMUONGeometryTransformer* geometry);
-    AliMUONSegFactory(const TString& transformsFileName);
+    AliMUONSegFactory(const TString& volPathsFileName,
+                      const TString& transformsFileName);
     AliMUONSegFactory();
     virtual ~AliMUONSegFactory();
     
