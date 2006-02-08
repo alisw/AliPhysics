@@ -21,9 +21,6 @@
 //
 // Author: Ivana Hrivnacova, IPN Orsay
 
-#include <TObjArray.h>
-#include <TVirtualMC.h>
-
 #include "AliMUONGeometryBuilder.h"
 #include "AliMUONVGeometryBuilder.h"	
 #include "AliMUONGeometry.h"
@@ -35,15 +32,21 @@
 #include "AliMUONGeometryDetElement.h"
 #include "AliMUONGeometryStore.h"
 #include "AliMUONGeometryConstituent.h"
+
 #include "AliModule.h"
 #include "AliLog.h"
 #include "AliRun.h"
+
+#include <TObjArray.h>
+#include <TVirtualMC.h>
+#include <TGeoManager.h>
 
 
 ClassImp(AliMUONGeometryBuilder)
 
 // static data members
  
+const TString  AliMUONGeometryBuilder::fgkDefaultVolPathsFileName = "volpath.dat";   
 const TString  AliMUONGeometryBuilder::fgkDefaultTransformFileName = "transform.dat";   
 const TString  AliMUONGeometryBuilder::fgkDefaultSVMapFileName = "svmap.dat";    
 const TString  AliMUONGeometryBuilder::fgkOutFileNameExtension = ".out";    
@@ -185,9 +188,13 @@ AliMUONGeometryBuilder::operator=(const AliMUONGeometryBuilder& right)
 //______________________________________________________________________________
 void AliMUONGeometryBuilder::PlaceVolume(const TString& name, const TString& mName, 
                             Int_t copyNo, const TGeoHMatrix& matrix, 
-			    Int_t npar, Double_t* param, const char* only) const
+			    Int_t npar, Double_t* param, const char* only,
+			    Bool_t makeAssembly) const
 {
 /// Place the volume specified by name with the given transformation matrix
+
+  if (makeAssembly)
+    gGeoManager->MakeVolumeAssembly(name.Data());
 
   TGeoHMatrix transform(matrix);
   // Do not apply global transformation 
@@ -244,50 +251,114 @@ void AliMUONGeometryBuilder::PlaceVolume(const TString& name, const TString& mNa
   else 
     gMC->Gsposp(name, copyNo, mName, xyz[0], xyz[1], xyz[2] , krot, only,
                 param, npar);
-
 } 
 
-//_____________________________________________________________________________
-void AliMUONGeometryBuilder::SetAlign(AliMUONVGeometryBuilder* builder)
+//______________________________________________________________________________
+void AliMUONGeometryBuilder::CreateGeometryWithTGeo()
 {
-/// Set align option to all geometry modules associated with the builder
+/// Construct geometry using geometry builders.
+/// Virtual modules/envelopes are placed as TGeoVolume assembly
 
-  for (Int_t j=0; j<builder->NofGeometries(); j++) {
+  if (fAlign) {
+    // Read transformations from ASCII data file  
+    fGeometry->GetTransformer()
+      ->ReadGeometryData(fgkDefaultVolPathsFileName, fTransformFileName);
+  }    
+ 
+  for (Int_t i=0; i<fGeometryBuilders->GetEntriesFast(); i++) {
 
-    AliMUONGeometryModule* geometry = builder->Geometry(j);
+    // Get the builder
+    AliMUONVGeometryBuilder* builder
+      = (AliMUONVGeometryBuilder*)fGeometryBuilders->At(i);
+
+    // Create geometry + envelopes
+    //
+    builder->CreateGeometry();
+    if (!fAlign) builder->SetTransformations();
+    
+    // Place module volumes and envelopes
+    //
+    for (Int_t j=0; j<builder->NofGeometries(); j++) {
+
+      AliMUONGeometryModule* geometry = builder->Geometry(j);
+      AliMUONGeometryModuleTransformer* transformer= geometry->GetTransformer();
+      const TGeoHMatrix* kModuleTransform = transformer->GetTransformation();
+      TString volName       = transformer->GetVolumeName(); 
+      TString motherVolName = transformer->GetMotherVolumeName(); 
+      
+      // Place the module volume
+      PlaceVolume(volName, motherVolName, 
+                  1, *kModuleTransform, 0, 0, "ONLY", geometry->IsVirtual());
   
-    geometry->SetAlign(fAlign);
-  }  	  
-}  	     
+      TGeoCombiTrans appliedGlobalTransform;
+      if (builder->ApplyGlobalTransformation())
+        appliedGlobalTransform = fGlobalTransformation;
 
-//
-// public functions
-//
+      // Loop over envelopes
+      const TObjArray* kEnvelopes 
+        = geometry->GetEnvelopeStore()->GetEnvelopes();
+      for (Int_t k=0; k<kEnvelopes->GetEntriesFast(); k++) {
 
-//_____________________________________________________________________________
-void AliMUONGeometryBuilder::AddBuilder(AliMUONVGeometryBuilder* geomBuilder)
-{
-/// Add the geometry builder to the list
+        // Get envelope
+        AliMUONGeometryEnvelope* env 
+	  = (AliMUONGeometryEnvelope*)kEnvelopes->At(k);
+	  
+        const TGeoCombiTrans* kEnvTrans = env->GetTransformation();
+        const char* only = "ONLY";
+        if (env->IsMANY()) only = "MANY";
 
-  fGeometryBuilders->Add(geomBuilder);
-  
-  // Pass geometry modules created in the to the geometry parametrisation
-  for (Int_t i=0; i<geomBuilder->NofGeometries(); i++) {
-    fGeometry->AddModule(geomBuilder->Geometry(i));
-  }  
-  
-  if (geomBuilder->ApplyGlobalTransformation())
-    geomBuilder->SetReferenceFrame(fGlobalTransformation);
-  
-  SetAlign(geomBuilder);
+        if (env->IsVirtual() && env->GetConstituents()->GetEntriesFast() == 0 ) {
+          // virtual envelope + nof constituents = 0 
+          //         => not allowed;
+          //            empty virtual envelope has no sense 
+          AliFatal("Virtual envelope must have constituents.");
+          return;
+        }
+
+        if (!env->IsVirtual() && env->GetConstituents()->GetEntriesFast() > 0 ) {
+          // non virtual envelope + nof constituents > 0 
+          //        => not allowed;
+          //           use VMC to place constituents
+          AliFatal("Non virtual envelope cannot have constituents.");
+          return;
+        }
+
+        // Place envelope in geometry module by composed transformation:
+        // [Tglobal] * Tenv
+        TGeoHMatrix total 
+	  = Multiply( appliedGlobalTransform, 
+                     (*kEnvTrans) );
+        PlaceVolume(env->GetName(), volName,
+	            env->GetCopyNo(), total, 0, 0, only, env->IsVirtual());
+	
+        if ( env->IsVirtual() )  {
+          //  Place constituents in the envelope
+          for  (Int_t l=0; l<env->GetConstituents()->GetEntriesFast(); l++) {
+            AliMUONGeometryConstituent* constituent
+              = (AliMUONGeometryConstituent*)env->GetConstituents()->At(l);
+ 
+            PlaceVolume(constituent->GetName(), env->GetName(),
+	                constituent->GetCopyNo(),
+		        *constituent->GetTransformation() ,
+                        constituent->GetNpar(), constituent->GetParam(), only);
+          }
+        }
+      } // end of loop over envelopes
+    } // end of loop over builder geometries
+  } // end of loop over builders
 }
 
 //______________________________________________________________________________
-void AliMUONGeometryBuilder::CreateGeometry()
+void AliMUONGeometryBuilder::CreateGeometryWithoutTGeo()
 {
 /// Construct geometry using geometry builders.
+/// Virtual modules/enevlopes are not placed
 
-  if (fAlign) ReadTransformations();
+  if (fAlign) {
+    // Read transformations from ASCII data file  
+    fGeometry->GetTransformer()
+      ->ReadGeometryData(fgkDefaultVolPathsFileName, fTransformFileName);
+  }     
 
   for (Int_t i=0; i<fGeometryBuilders->GetEntriesFast(); i++) {
 
@@ -305,12 +376,14 @@ void AliMUONGeometryBuilder::CreateGeometry()
     for (Int_t j=0; j<builder->NofGeometries(); j++) {
 
       AliMUONGeometryModule* geometry = builder->Geometry(j);
-      const TGeoCombiTrans* kModuleTransform 
-       = geometry->GetTransformer()->GetTransformation();
+      AliMUONGeometryModuleTransformer* transformer= geometry->GetTransformer();
+      const TGeoHMatrix* kModuleTransform = transformer->GetTransformation();
+      TString volName       = transformer->GetVolumeName(); 
+      TString motherVolName = transformer->GetMotherVolumeName(); 
       
       // Place the module volume
       if ( !geometry->IsVirtual() ) {
-          PlaceVolume(geometry->GetVolume(), geometry->GetMotherVolume(), 
+          PlaceVolume(volName, motherVolName, 
 	              1, *kModuleTransform, 0, 0, "ONLY");
       }		      
   
@@ -358,14 +431,14 @@ void AliMUONGeometryBuilder::CreateGeometry()
 	       = Multiply( (*kModuleTransform), 
 	                    appliedGlobalTransform, 
 	                   (*kEnvTrans) );
-             PlaceVolume(env->GetName(), geometry->GetMotherVolume(),
+             PlaceVolume(env->GetName(), motherVolName,
 	                 env->GetCopyNo(), total, 0, 0, only);
           }
 	  else {
              TGeoHMatrix total 
 	       = Multiply( appliedGlobalTransform, 
 	                   (*kEnvTrans) );
-             PlaceVolume(env->GetName(), geometry->GetVolume(),
+             PlaceVolume(env->GetName(), volName,
 	                 env->GetCopyNo(), total, 0, 0, only);
           }			 
         }
@@ -388,7 +461,7 @@ void AliMUONGeometryBuilder::CreateGeometry()
 	                     (*kEnvTrans), 
 	                     (*constituent->GetTransformation()) );
 
-              PlaceVolume(constituent->GetName(), geometry->GetMotherVolume(),
+              PlaceVolume(constituent->GetName(), motherVolName,
 	                  constituent->GetCopyNo(), total,
                           constituent->GetNpar(), constituent->GetParam(), only);
             }
@@ -398,7 +471,7 @@ void AliMUONGeometryBuilder::CreateGeometry()
 	                     (*kEnvTrans),
 	                     (*constituent->GetTransformation()) );
 
-              PlaceVolume(constituent->GetName(), geometry->GetVolume(),
+              PlaceVolume(constituent->GetName(), volName,
 	                  constituent->GetCopyNo(), total,
                           constituent->GetNpar(), constituent->GetParam(), only);
             }			  
@@ -407,6 +480,55 @@ void AliMUONGeometryBuilder::CreateGeometry()
       } // end of loop over envelopes
     } // end of loop over builder geometries
   } // end of loop over builders
+}
+
+//_____________________________________________________________________________
+void AliMUONGeometryBuilder::SetAlign(AliMUONVGeometryBuilder* builder)
+{
+/// Set align option to all geometry modules associated with the builder
+
+  for (Int_t j=0; j<builder->NofGeometries(); j++) {
+
+    AliMUONGeometryModule* geometry = builder->Geometry(j);
+  
+    geometry->SetAlign(fAlign);
+  }  	  
+}  	     
+
+//
+// public functions
+//
+
+//_____________________________________________________________________________
+void AliMUONGeometryBuilder::AddBuilder(AliMUONVGeometryBuilder* geomBuilder)
+{
+/// Add the geometry builder to the list
+
+  fGeometryBuilders->Add(geomBuilder);
+  
+  // Pass geometry modules created in the to the geometry parametrisation
+  for (Int_t i=0; i<geomBuilder->NofGeometries(); i++) {
+    fGeometry->AddModule(geomBuilder->Geometry(i));
+  }  
+  
+  if (geomBuilder->ApplyGlobalTransformation())
+    geomBuilder->SetReferenceFrame(fGlobalTransformation);
+  
+  SetAlign(geomBuilder);
+}
+
+//______________________________________________________________________________
+void AliMUONGeometryBuilder::CreateGeometry()
+{
+/// Construct geometry using geometry builders.
+
+  if ( gMC->IsRootGeometrySupported() && 
+       TString(gMC->ClassName()) != "TGeant4" ) {
+       
+   CreateGeometryWithTGeo();
+  } 
+  else
+   CreateGeometryWithoutTGeo();
 }
 
 //_____________________________________________________________________________
@@ -430,11 +552,13 @@ void AliMUONGeometryBuilder::InitGeometry(const TString& svmapFileName)
 {
 /// Initialize geometry
 
-  // Read alignement data if geometry is read from Root file
+  // Load alignement data from geometry if geometry is read from Root file
   if ( gAlice->IsRootGeometry() ) {
     fAlign = true;
-    ReadTransformations();
-  }
+
+    fGeometry->GetTransformer()
+      ->ReadGeometryData(fgkDefaultVolPathsFileName, gGeoManager);
+  }    
 
   // Read sensitive volume map from a file
   fGeometry->ReadSVMap(svmapFileName);
@@ -451,33 +575,10 @@ void AliMUONGeometryBuilder::InitGeometry(const TString& svmapFileName)
     builder->SetSensitiveVolumes();
 
     if (!fAlign)  {
-      // Fill local transformations from built geometry
-      builder->FillTransformations();
+      // Create detection elements from built geometry
+      builder->CreateDetElements();
     }  
   }  
-}
-
-
-
-//______________________________________________________________________________
-void AliMUONGeometryBuilder::ReadTransformations(const TString& fileName)
-{
-/// Read transformations from ASCII files 
-/// and store them in the geometry parametrisation
-
-  // Read transformations
-  //
-  AliMUONGeometryTransformer* geomTransformer = fGeometry->GetTransformer();
-  geomTransformer->ReadTransformations(fileName);
-}
-
-//______________________________________________________________________________
-void AliMUONGeometryBuilder::WriteTransformations(const TString& fileName)
-{
-/// Write transformations into files per builder
-
-  AliMUONGeometryTransformer* geomTransformer = fGeometry->GetTransformer();
-  geomTransformer->WriteTransformations(fileName);
 }
 
 //______________________________________________________________________________
@@ -494,7 +595,11 @@ void AliMUONGeometryBuilder::WriteSVMaps(const TString& fileName,
       AliMUONVGeometryBuilder* builder
         = (AliMUONVGeometryBuilder*)fGeometryBuilders->At(i);
 
-      builder->RebuildSVMaps();
+      Bool_t writeEnvelopes = false;
+      if ( gMC->IsRootGeometrySupported() &&
+           TString(gMC->ClassName()) != "TGeant4") writeEnvelopes = true;
+
+      builder->RebuildSVMaps(writeEnvelopes);
     }  
     
   // Write maps in file
