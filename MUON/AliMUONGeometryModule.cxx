@@ -23,21 +23,21 @@
 //
 // Author: Ivana Hrivnacova, IPN Orsay
 
-#include <TVirtualMC.h>
-#include <TGeoMatrix.h>
-#include <TObjArray.h>
-#include <TArrayI.h>
-#include <Riostream.h>
-
-#include "AliLog.h"	
-
 #include "AliMUONGeometryModule.h"
 #include "AliMUONGeometryModuleTransformer.h"
 #include "AliMUONGeometryEnvelope.h"
 #include "AliMUONGeometryEnvelopeStore.h"
 #include "AliMUONGeometryDetElement.h"	
 #include "AliMUONGeometryStore.h"	
-#include "AliMUONGeometrySVMap.h"	
+#include "AliMUONStringIntMap.h"	
+
+#include "AliLog.h"	
+
+#include <TVirtualMC.h>
+#include <TGeoMatrix.h>
+#include <TObjArray.h>
+#include <TArrayI.h>
+#include <Riostream.h>
 
 ClassImp(AliMUONGeometryModule)
 
@@ -45,8 +45,6 @@ ClassImp(AliMUONGeometryModule)
 AliMUONGeometryModule::AliMUONGeometryModule(Int_t moduleId)
  : TObject(),
    fIsVirtual(true),
-   fMotherVolume("ALIC"),
-   fVolume("NONE"),
    fNofSVs(0),
    fSVVolumeIds(0),
    fEnvelopes(0),
@@ -59,7 +57,7 @@ AliMUONGeometryModule::AliMUONGeometryModule(Int_t moduleId)
   fSVVolumeIds = new TArrayI(20);
 
   // Sensitive volumes map
-  fSVMap = new AliMUONGeometrySVMap(100);
+  fSVMap = new AliMUONStringIntMap();
 
   // Geometry parametrisation
   fTransformer = new AliMUONGeometryModuleTransformer(moduleId);
@@ -74,8 +72,6 @@ AliMUONGeometryModule::AliMUONGeometryModule(Int_t moduleId)
 AliMUONGeometryModule::AliMUONGeometryModule()
  : TObject(),
    fIsVirtual(true),
-   fMotherVolume(),
-   fVolume(),
    fNofSVs(0),
    fSVVolumeIds(0),
    fEnvelopes(0),
@@ -142,22 +138,20 @@ Int_t AliMUONGeometryModule::GetSVIndex(Int_t svVolId) const
 //
 
 //______________________________________________________________________________
-void AliMUONGeometryModule::SetVolume(const TString& volumeName)
-{ 
-/// Set the concrete volume associated with this module.
-/// The module in not virtual in this case
-
-  fVolume = volumeName;
-  fIsVirtual = false;
-}
-
-//______________________________________________________________________________
 void  AliMUONGeometryModule::SetTransformation(const TGeoCombiTrans& transform)
 {
 /// Set the module position wrt world.
 
   fTransformer->SetTransformation(transform);
 }  
+
+//______________________________________________________________________________
+void AliMUONGeometryModule::SetVolumePath(const TString& volumePath)
+{ 
+/// Set the volume path to transformer
+
+  fTransformer->SetVolumePath(volumePath);
+}
 
 //______________________________________________________________________________
 void  AliMUONGeometryModule::SetSensitiveVolume(Int_t svVolId)
@@ -194,7 +188,7 @@ AliMUONGeometryModule::FindBySensitiveVolume(const TString& sensVolume) const
 {
 /// Find TGeoCombiTrans for the detector element Id specified by aligned volume 
 
-  Int_t detElemId = fSVMap->GetDetElemId(sensVolume);
+  Int_t detElemId = fSVMap->Get(sensVolume);
 
   if (!detElemId) return 0; 
         // The specified sensitive volume is not in the map   

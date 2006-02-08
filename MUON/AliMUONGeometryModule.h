@@ -17,22 +17,22 @@
 #ifndef ALI_MUON_GEOMETRY_MODULE_H
 #define ALI_MUON_GEOMETRY_MODULE_H
 
+#include "AliMUONGeometryModuleTransformer.h"
+
 #include <TObject.h>
 #include <TString.h>
 
-#include "AliMUONGeometryModuleTransformer.h"
+class AliMUONGeometryEnvelope;
+class AliMUONGeometryEnvelopeStore;
+class AliMUONGeometryDetElement;
+class AliMUONGeometryStore;
+class AliMUONStringIntMap;
 
 class TGeoTranslation;
 class TGeoRotation;
 class TGeoCombiTrans;
 class TObjArray;
 class TArrayI;
-
-class AliMUONGeometryEnvelope;
-class AliMUONGeometryEnvelopeStore;
-class AliMUONGeometryDetElement;
-class AliMUONGeometryStore;
-class AliMUONGeometrySVMap;
 
 class AliMUONGeometryModule : public TObject
 {
@@ -43,9 +43,9 @@ class AliMUONGeometryModule : public TObject
 
     // set methods
     //
-    void  SetMotherVolume(const TString& motherVolumeName);
-    void  SetVolume(const TString& volumeName);
     void  SetTransformation(const TGeoCombiTrans& transform);
+    void  SetVolumePath(const TString& volumePath);
+    void  SetIsVirtual(Bool_t isVirtual);
     
     void  SetSensitiveVolume(Int_t volId);
     void  SetSensitiveVolume(const TString& name);
@@ -55,8 +55,7 @@ class AliMUONGeometryModule : public TObject
     //
     Bool_t   IsVirtual() const;  
     Int_t    GetModuleId() const;
-    TString  GetMotherVolume() const;
-    TString  GetVolume() const;
+    TString  GetVolumePath() const;
     
     AliMUONGeometryDetElement* FindBySensitiveVolume(
                                          const TString& volumePath) const;
@@ -64,12 +63,12 @@ class AliMUONGeometryModule : public TObject
     Bool_t IsSensitiveVolume(const TString& volName) const; 
 
     AliMUONGeometryEnvelopeStore*     GetEnvelopeStore() const;
-    AliMUONGeometrySVMap*             GetSVMap() const;
+    AliMUONStringIntMap*              GetSVMap() const;
     AliMUONGeometryModuleTransformer* GetTransformer() const;
 
   protected:
     AliMUONGeometryModule(const AliMUONGeometryModule& rhs);
-     AliMUONGeometryModule& operator = (const AliMUONGeometryModule& rhs);
+    AliMUONGeometryModule& operator = (const AliMUONGeometryModule& rhs);
 
   private:
     // methods
@@ -78,23 +77,20 @@ class AliMUONGeometryModule : public TObject
     // data members
     Bool_t           fIsVirtual;     // true if module is not represented
                                      // by a real volume
-    TString          fMotherVolume;  // mother volume name
-    TString          fVolume;        // the volume name if not virtual
     Int_t            fNofSVs;        // number of sensitive volumes   
-    TArrayI*         fSVVolumeIds;   // densitive volumes IDs  
+    TArrayI*         fSVVolumeIds;   // sensitive volumes IDs  
 
     AliMUONGeometryEnvelopeStore*     fEnvelopes;  // envelopes                                 
-    AliMUONGeometrySVMap*             fSVMap;      // sensitive volumes map
+    AliMUONStringIntMap*              fSVMap;      // sensitive volumes map
     AliMUONGeometryModuleTransformer* fTransformer;// geometry transformations
  
-  ClassDef(AliMUONGeometryModule,3) // MUON geometry module class
+  ClassDef(AliMUONGeometryModule,4) // MUON geometry module class
 };
 
 // inline functions
 
-inline 
-void  AliMUONGeometryModule::SetMotherVolume(const TString& motherVolumeName)
-{ fMotherVolume = motherVolumeName; }
+inline void  AliMUONGeometryModule::SetIsVirtual(Bool_t isVirtual)
+{ fIsVirtual = isVirtual; }
 
 inline Bool_t AliMUONGeometryModule::IsVirtual() const
 { return fIsVirtual; }  
@@ -102,18 +98,15 @@ inline Bool_t AliMUONGeometryModule::IsVirtual() const
 inline Int_t  AliMUONGeometryModule::GetModuleId() const
 { return fTransformer->GetModuleId(); }
 
-inline TString  AliMUONGeometryModule::GetMotherVolume() const
-{ return fMotherVolume; }
-
-inline TString  AliMUONGeometryModule::GetVolume() const
-{ return fVolume; }
+inline TString AliMUONGeometryModule::GetVolumePath() const
+{ return fTransformer->GetVolumePath(); }
 
 inline  
 AliMUONGeometryEnvelopeStore* AliMUONGeometryModule::GetEnvelopeStore() const
 { return fEnvelopes; }
 
 inline 
-AliMUONGeometrySVMap* AliMUONGeometryModule::GetSVMap() const
+AliMUONStringIntMap* AliMUONGeometryModule::GetSVMap() const
 { return fSVMap; }
 
 inline 
