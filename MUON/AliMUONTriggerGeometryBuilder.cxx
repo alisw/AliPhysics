@@ -147,7 +147,7 @@ void AliMUONTriggerGeometryBuilder::CreateGeometry()
 	    Char_t volName[6];
 	    sprintf(volName,"%s%d", "SC",11+icount);
  	    gMC->Gsvolu(volName,"TUBE", idAir, par, 3);
- 	    GetGeometry(10+icount)->SetVolume(volName);
+ 	    //SetVolume(10+icount, volName);
 	    Float_t zpos =  AliMUONConstants::DefaultChamberZ(10+icount);	     
 	    
 /* removed 03/18/05
@@ -180,7 +180,7 @@ void AliMUONTriggerGeometryBuilder::CreateGeometry()
 			sprintf(volEnv[i],"S%dR%d",icount,iline);
 		    else
 			sprintf(volEnv[i],"S%dL%d",icount,iline);
-		    gMC->Gsvolu(volEnv[i],"BOX",idAir,tpar,0); 
+		    // gMC->Gsvolu(volEnv[i],"BOX",idAir,tpar,0); 
 		    i++;
 		}
 	    }
@@ -334,6 +334,11 @@ void AliMUONTriggerGeometryBuilder::SetTransformations()
 // Defines the transformations for the trigger chambers.
 // ---
 
+    SetVolume(10, "SC11");
+    SetVolume(11, "SC12");
+    SetVolume(12, "SC13");
+    SetVolume(13, "SC14");
+
     Double_t zpos1= AliMUONConstants::DefaultChamberZ(10); 
     SetTranslation(10, TGeoTranslation(0., 0., zpos1));
     
@@ -345,7 +350,6 @@ void AliMUONTriggerGeometryBuilder::SetTransformations()
 
     zpos1= AliMUONConstants::DefaultChamberZ(13); 
     SetTranslation(13, TGeoTranslation(0., 0., zpos1));
-
 }
 
 //______________________________________________________________________________
