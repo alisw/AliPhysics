@@ -23,25 +23,12 @@
 // (Originally defined in AliMUONv2.cxx - now removed.)
 // Included in AliRoot 2004/01/23
 
-#ifdef ST1_WITH_STL
-  #include <vector>
-#endif
-
-#ifdef ST1_WITH_ROOT
-  #include "TArrayI.h"
-#endif
-
-#include <TVector2.h>
-#include <TVector3.h>
-#include <TGeoMatrix.h>
-#include <TClonesArray.h>
-#include <Riostream.h>
-#include <TSystem.h>
-#include <TVirtualMC.h>
-#include <TGeoManager.h>
-#include <TGeoVolume.h>
-#include <TGeoTube.h>
-#include <TGeoCompositeShape.h>
+#include "AliMUONSt1GeometryBuilderV2.h"
+#include "AliMUONSt1SpecialMotif.h"
+#include "AliMUON.h"
+#include "AliMUONConstants.h"
+#include "AliMUONGeometryModule.h"
+#include "AliMUONGeometryEnvelopeStore.h"
 
 #include "AliMpFiles.h"
 #include "AliMpSectorReader.h"
@@ -55,12 +42,25 @@
 #include "AliMagF.h"
 #include "AliLog.h"
 
-#include "AliMUONSt1GeometryBuilderV2.h"
-#include "AliMUONSt1SpecialMotif.h"
-#include "AliMUON.h"
-#include "AliMUONConstants.h"
-#include "AliMUONGeometryModule.h"
-#include "AliMUONGeometryEnvelopeStore.h"
+#include <TVector2.h>
+#include <TVector3.h>
+#include <TGeoMatrix.h>
+#include <TClonesArray.h>
+#include <Riostream.h>
+#include <TSystem.h>
+#include <TVirtualMC.h>
+#include <TGeoManager.h>
+#include <TGeoVolume.h>
+#include <TGeoTube.h>
+#include <TGeoCompositeShape.h>
+
+#ifdef ST1_WITH_STL
+  #include <vector>
+#endif
+
+#ifdef ST1_WITH_ROOT
+  #include "TArrayI.h"
+#endif
 
 ClassImp(AliMUONSt1GeometryBuilderV2)
 
@@ -2506,6 +2506,9 @@ void AliMUONSt1GeometryBuilderV2::CreateGeometry()
 // --
   AliDebug(1,"Called");
 
+  // Define chamber volumes as virtual
+  // 
+
   // Create basic volumes
   // 
   CreateHole();
@@ -2620,6 +2623,9 @@ void AliMUONSt1GeometryBuilderV2::SetTransformations()
 {
 // Defines the transformations for the station2 chambers.
 // ---
+
+  SetVolume(0, "SC01", true);
+  SetVolume(1, "SC02", true);
 
   Double_t zpos1 = - AliMUONConstants::DefaultChamberZ(0); 
   SetTranslation(0, TGeoTranslation(0., 0., zpos1));

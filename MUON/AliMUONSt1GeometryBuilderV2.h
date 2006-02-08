@@ -19,12 +19,12 @@
 //typedef Float_t GReal_t; // for AliGeant3
 typedef Double_t GReal_t;  // for VirtualMC
 
+class AliMUON;
+class AliMpSector;
+
 class TTree;
 class TVector2;
 class TVector3;
-
-class AliMpSector;
-class AliMUON;
 
 class AliMUONSt1GeometryBuilderV2 : public AliMUONVGeometryBuilder 
 {
