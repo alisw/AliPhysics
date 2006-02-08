@@ -4774,7 +4774,14 @@ void AliITSvPPRasymmFMD::CreateMaterials(){
     AliMaterial(75,"ELASTO SIL$",0.28086E+02,0.14000E+02,0.23300E+01,0.93600E+01,0.99900E+03);
     AliMedium(75,"ELASTO SIL$",75,0,ifield,fieldm,tmaxfd,stemax,deemax,epsil,stmin);
 
-    AliMaterial(76,"SPDBUS(AL+KPT+EPOX)$",0.19509E+02,0.96502E+01,0.19060E+01,0.15413E+02,0.99900E+03);
+    // SPD bus (data from Petra Riedler)
+    Float_t aSPDbus[5] = {1.00794,12.0107,14.01,15.9994,26.982 };
+    Float_t zSPDbus[5] = {1.,6.,7.,8.,13.};
+    Float_t wSPDbus[5] = {0.023523,0.318053,0.009776,0.078057,0.570591};
+    Float_t dSPDbus    = 2.128505;
+
+    //   AliMaterial(76,"SPDBUS(AL+KPT+EPOX)$",0.19509E+02,0.96502E+01,0.19060E+01,0.15413E+02,0.99900E+03);
+    AliMixture(76,"SPDBUS(AL+KPT+EPOX)$",aSPDbus,zSPDbus,dSPDbus,5,wSPDbus);
     AliMedium(76,"SPDBUS(AL+KPT+EPOX)$",76,0,ifield,fieldm,tmaxfd,stemax,deemax,epsil,stmin);
                
     AliMixture(77,"SDD X7R capacitors$",aX7R,zX7R,dX7R,7,wX7R);
@@ -4965,7 +4972,14 @@ void AliITSvPPRasymmFMD::CreateMaterials(){
     AliMaterial(90,"SPD shield$", 12.011, 6., 1.93/10. , 22.1*10., 999);
     AliMedium(90,"SPD shield$",90,0,ifield,fieldm,tmaxfdServ,stemaxServ,deemaxServ,epsilServ,stminServ);
 
-    AliMaterial(91, "SPD End ladder$", 47.0447, 21.7963, 3.6374, 4.4711, 999); 
+    // SPD End Ladder (data from Petra Riedler)
+    Float_t aSPDel[5] = {1.00794,12.0107,14.01,15.9994,63.54 };
+    Float_t zSPDel[5] = {1.,6.,7.,8.,29.};
+    Float_t wSPDel[5] = {0.004092,0.107274,0.011438,0.032476,0.844719};
+    Float_t dSPDel    = 3.903403;
+
+    //   AliMaterial(91, "SPD End ladder$", 47.0447, 21.7963, 3.6374, 4.4711, 999); 
+    AliMixture(91,"SPD End ladder$",aSPDel,zSPDel,dSPDel,5,wSPDel);
     AliMedium(91,"SPD End ladder$",91,0,ifield,fieldm,tmaxfdServ,stemaxServ,deemaxServ,epsilServ,stminServ);
 
     AliMaterial(92, "SPD cone$",28.0855, 14., 2.33, 9.36, 999);    
