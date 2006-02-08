@@ -327,7 +327,7 @@ void MUONoccupancy(Int_t event2Check=0,  Bool_t perDetEle =kFALSE, char * filena
 	   ichamber+1, 
 	   cHoccupancy_bending[ichamber],
 	   cHoccupancy_nonbending[ichamber]);           
-    printf(">>> Chamber %2d  Occupancy Bending %5.2f \%  Occupancy NonBending %5.2f \% \n", 
+    printf(">>> Chamber %2d  Occupancy Bending %5.2f %%  Occupancy NonBending %5.2f %% \n", 
 	   ichamber+1, 
 	   100.*((Float_t) cHoccupancy_bending[ichamber])/((Float_t) cHchannels_bending[ichamber]),
 	   100.*((Float_t) cHoccupancy_nonbending[ichamber])/((Float_t) cHchannels_bending[ichamber])            );
@@ -341,7 +341,7 @@ void MUONoccupancy(Int_t event2Check=0,  Bool_t perDetEle =kFALSE, char * filena
 		 idetele+100*(ichamber+1), 
 		 dEoccupancy_bending[ichamber][idetele],
 		 dEoccupancy_nonbending[ichamber][idetele]);  
-	  printf(">>> DetEle %4d Occupancy Bending %5.2f \%  Occupancy NonBending %5.2f \% \n", 
+	  printf(">>> DetEle %4d Occupancy Bending %5.2f %%  Occupancy NonBending %5.2f %% \n", 
 		 idetele+100*(ichamber+1), 
 		 100.*((Float_t) dEoccupancy_bending[ichamber][idetele])/((Float_t) dEchannels_bending[ichamber][idetele]),
 		 100.*((Float_t) dEoccupancy_nonbending[ichamber][idetele])/((Float_t) dEchannels_bending[ichamber][idetele]));  
@@ -349,7 +349,7 @@ void MUONoccupancy(Int_t event2Check=0,  Bool_t perDetEle =kFALSE, char * filena
       }
     }
   } // end chamber loop
-  printf(">>> Muon Spectrometer  Occupancy Bending %5.2f\%  Occupancy NonBending %5.2f\% \n",  
+  printf(">>> Muon Spectrometer  Occupancy Bending %5.2f %%  Occupancy NonBending %5.2f %% \n",  
 	   100.*((Float_t) totaloccupancy_bending)/((Float_t) totalchannels_bending),
 	 100.*((Float_t) totaloccupancy_nonbending)/((Float_t) totalchannels_nonbending)            );
   muondata.ResetDigits();
@@ -457,8 +457,8 @@ void MUONrectrigger (Int_t event2Check=0, char * filename="galice.root"){
   Int_t ievent, nevents;
   nevents = RunLoader->GetNumberOfEvents();
   
-  AliMUONGlobalTrigger *gloTrg;
-  AliMUONLocalTrigger *locTrg;
+  AliMUONGlobalTrigger *gloTrg(0x0);
+  AliMUONLocalTrigger *locTrg(0x0);
   
   for (ievent=0; ievent<nevents; ievent++) {
     if (event2Check!=0) ievent=event2Check;
