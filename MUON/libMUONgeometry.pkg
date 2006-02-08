@@ -9,7 +9,6 @@ SRCS  =  AliMUONGeometryConstituent.cxx \
 	 AliMUONGeometryEnvelopeStore.cxx \
 	 AliMUONGeometryDetElement.cxx \
 	 AliMUONStringIntMap.cxx \
-	 AliMUONGeometrySVMap.cxx \
 	 AliMUONGeometryModuleTransformer.cxx \
 	 AliMUONGeometryModule.cxx \
 	 AliMUONGeometryTransformer.cxx \

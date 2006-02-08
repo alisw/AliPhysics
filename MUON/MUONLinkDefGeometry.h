@@ -9,7 +9,6 @@
 #pragma link C++ class  AliMUONGeometryEnvelope+;
 #pragma link C++ class  AliMUONGeometryEnvelopeStore+;
 #pragma link C++ class  AliMUONGeometryDetElement+;
-#pragma link C++ class  AliMUONGeometrySVMap+;
 #pragma link C++ class  AliMUONGeometryModuleTransformer+;
 #pragma link C++ class  AliMUONGeometryModule+;
 #pragma link C++ class  AliMUONGeometryTransformer+;
