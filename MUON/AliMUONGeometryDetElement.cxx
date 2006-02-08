@@ -21,35 +21,35 @@
 //
 // Author: Ivana Hrivnacova, IPN Orsay
 
-#include <TGeoMatrix.h>
-#include <Riostream.h>
+#include "AliMUONGeometryDetElement.h"
 
 #include "AliLog.h"
 
-#include "AliMUONGeometryDetElement.h"
+#include <TGeoMatrix.h>
+#include <Riostream.h>
+
+#include <sstream>
 
 ClassImp(AliMUONGeometryDetElement)
 
 //______________________________________________________________________________
 AliMUONGeometryDetElement::AliMUONGeometryDetElement(
                                         Int_t detElemId,
-                                        const TString& alignedVolume, 
-				        const TGeoCombiTrans& relTransform)
+                                        const TString& volumePath)
  : TObject(),
-   fAlignedVolume(alignedVolume),
+   fVolumePath(volumePath),
    fLocalTransformation(0),
    fGlobalTransformation(0)
 { 
 /// Standard constructor
 
   SetUniqueID(detElemId);
-  fLocalTransformation = new TGeoCombiTrans(relTransform);
 }
 
 //______________________________________________________________________________
 AliMUONGeometryDetElement::AliMUONGeometryDetElement()
  : TObject(),
-   fAlignedVolume(),
+   fVolumePath(),
    fLocalTransformation(0),
    fGlobalTransformation(0)
 {
@@ -95,12 +95,17 @@ AliMUONGeometryDetElement::operator = (const AliMUONGeometryDetElement& rhs)
 
 //______________________________________________________________________________
 void  AliMUONGeometryDetElement::PrintTransform(
-                                            const TGeoCombiTrans* transform) const
+                                            const TGeoHMatrix* transform) const
 {
 /// Prints the detection element transformation
 
   cout << "DetElemId: " << GetUniqueID();
-  cout << "  name: " << fAlignedVolume << endl;
+  cout << "  name: " << fVolumePath << endl;
+
+  if ( !transform ) {
+    cout << "    Transformation not defined." << endl;
+    return;
+  }  
 
   const double* translation = transform->GetTranslation();
   cout << "   translation: "
@@ -233,8 +238,23 @@ void  AliMUONGeometryDetElement::Local2Global(
 }
 
 //______________________________________________________________________________
+void AliMUONGeometryDetElement::SetLocalTransformation(
+                                                const TGeoHMatrix& transform)
+{ 
+/// Sets global transformation;
+/// gives warning if the global transformation is already defined.
+ 
+  if (fLocalTransformation) {
+    delete fLocalTransformation;
+    AliWarning("Local transformation already defined was deleted.");
+  }  
+
+  fLocalTransformation = new TGeoHMatrix(transform);
+}  
+					      
+//______________________________________________________________________________
 void AliMUONGeometryDetElement::SetGlobalTransformation(
-                                                const TGeoCombiTrans& transform)
+                                                const TGeoHMatrix& transform)
 { 
 /// Sets global transformation;
 /// gives warning if the global transformation is already defined.
@@ -244,7 +264,7 @@ void AliMUONGeometryDetElement::SetGlobalTransformation(
     AliWarning("Global transformation already defined was deleted.");
   }  
 
-  fGlobalTransformation = new TGeoCombiTrans(transform);
+  fGlobalTransformation = new TGeoHMatrix(transform);
 }  
 					      
 //______________________________________________________________________________
@@ -264,3 +284,31 @@ void AliMUONGeometryDetElement::PrintGlobalTransform() const
 
   PrintTransform(fGlobalTransformation);
 }  
+
+//______________________________________________________________________________
+TString AliMUONGeometryDetElement::GetVolumeName() const
+{ 
+/// Extract volume name from the path
+  
+  std::string volPath = fVolumePath.Data();
+  std::string::size_type first = volPath.rfind('/')+1;
+  std::string::size_type last = volPath.rfind('_');
+  
+  return volPath.substr(first, last-first );
+}
+
+//______________________________________________________________________________
+Int_t AliMUONGeometryDetElement::GetVolumeCopyNo() const
+{ 
+/// Extract volume copyNo from the path
+  
+  string volPath = fVolumePath.Data();
+  std::string::size_type first = volPath.rfind('_');
+  std::string copyNoStr = volPath.substr(first+1, volPath.length());
+  std::istringstream in(copyNoStr);
+  Int_t copyNo;
+  in >> copyNo;
+  
+  return copyNo;
+}
+

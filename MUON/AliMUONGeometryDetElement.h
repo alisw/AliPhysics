@@ -5,9 +5,7 @@
 
 /// \ingroup geometry
 /// \class AliMUONGeometryDetElement
-/// \brief Detection element
-///
-/// The class defines the detection element.
+/// \brief Class for storing detection element transformations 
 ///
 /// Author: Ivana Hrivnacova, IPN Orsay
 
@@ -15,15 +13,15 @@
 #define ALI_MUON_GEOMETRY_DET_ELEMENT_H
 
 #include <TObject.h>
+#include <TString.h>
 
-class TGeoCombiTrans;
+class TGeoHMatrix;
 
 class AliMUONGeometryDetElement : public TObject
 {
   public:
     AliMUONGeometryDetElement(Int_t detElemId,
-                              const TString& alignedVolume, 
-			      const TGeoCombiTrans& relTransform);
+                              const TString& volumePath);
     AliMUONGeometryDetElement();
     virtual ~AliMUONGeometryDetElement();
 
@@ -45,13 +43,17 @@ class AliMUONGeometryDetElement : public TObject
     void PrintGlobalTransform() const;
 
     // set methods
-    void SetGlobalTransformation(const TGeoCombiTrans& transform);
+    void SetLocalTransformation(const TGeoHMatrix& transform);
+    void SetGlobalTransformation(const TGeoHMatrix& transform);
+    void SetVolumePath(const TString& volumePath);
     
     // get methods
-    Int_t  GetId() const;
-    const TString&        GetAlignedVolume() const;
-    const TGeoCombiTrans* GetLocalTransformation() const;
-    const TGeoCombiTrans* GetGlobalTransformation() const;
+    Int_t    GetId() const;
+    TString  GetVolumePath() const;
+    TString  GetVolumeName() const;
+    Int_t    GetVolumeCopyNo() const;
+    const TGeoHMatrix*  GetLocalTransformation() const;
+    const TGeoHMatrix*  GetGlobalTransformation() const;
 
   protected:
     AliMUONGeometryDetElement(const AliMUONGeometryDetElement& rhs);
@@ -61,30 +63,33 @@ class AliMUONGeometryDetElement : public TObject
   
   private:
     // methods
-    void PrintTransform(const TGeoCombiTrans* transform) const;
+    void PrintTransform(const TGeoHMatrix* transform) const;
   
     // data members
-    TString          fAlignedVolume; // the name of aligned volume or envelope
-                                      // representing this detection element
-    TGeoCombiTrans*  fLocalTransformation;  // the transformation wrt module
-    TGeoCombiTrans*  fGlobalTransformation; // the transformation wrt world
+    TString       fVolumePath; // the full path of aligned volume or envelope
+                               // in geometry
+    TGeoHMatrix*  fLocalTransformation;  // the transformation wrt module
+    TGeoHMatrix*  fGlobalTransformation; // the transformation wrt world
 
-  ClassDef(AliMUONGeometryDetElement,1) // MUON transformations store
+  ClassDef(AliMUONGeometryDetElement,2) // MUON det element transformations
 };
 
 // inline functions
 
+inline void AliMUONGeometryDetElement::SetVolumePath(const TString& volumePath)
+{ fVolumePath = volumePath; }
+
 inline Int_t AliMUONGeometryDetElement::GetId() const
 { return GetUniqueID(); }
 
-inline const TString& AliMUONGeometryDetElement::GetAlignedVolume() const
-{ return fAlignedVolume; }
+inline TString AliMUONGeometryDetElement::GetVolumePath() const
+{ return fVolumePath; }
 
-inline const TGeoCombiTrans* 
+inline const TGeoHMatrix* 
 AliMUONGeometryDetElement::GetLocalTransformation() const
 { return fLocalTransformation; }
 
-inline const TGeoCombiTrans* 
+inline const TGeoHMatrix* 
 AliMUONGeometryDetElement::GetGlobalTransformation() const
 { return fGlobalTransformation; }
 
