@@ -20,14 +20,14 @@
 #include <TObject.h>
 #include <TString.h>
 
-class TGeoTranslation;
-class TGeoRotation;
-class TGeoCombiTrans;
-class TObjArray;
-class TArrayI;
-
 class AliMUONGeometryDetElement;
 class AliMUONGeometryStore;
+
+class TGeoTranslation;
+class TGeoRotation;
+class TGeoHMatrix;
+class TObjArray;
+class TArrayI;
 
 class AliMUONGeometryModuleTransformer : public TObject
 {
@@ -52,11 +52,16 @@ class AliMUONGeometryModuleTransformer : public TObject
                  Double_t& xg, Double_t& yg, Double_t& zg) const;
 
     // set methods
-    void  SetTransformation(const TGeoCombiTrans& transform);
+    void  SetTransformation(const TGeoHMatrix& transform);
+    void  SetVolumePath(const TString& volumePath);
  
     // get methods
-    Int_t                  GetModuleId() const;
-    const TGeoCombiTrans*  GetTransformation() const;    
+    Int_t    GetModuleId() const;
+    TString  GetVolumePath() const;
+    TString  GetVolumeName() const;
+    TString  GetMotherVolumeName() const;
+
+    const TGeoHMatrix*  GetTransformation() const;    
 
     AliMUONGeometryStore*       GetDetElementStore() const;
     AliMUONGeometryDetElement*  GetDetElement(
@@ -65,27 +70,41 @@ class AliMUONGeometryModuleTransformer : public TObject
   protected:
     AliMUONGeometryModuleTransformer(const AliMUONGeometryModuleTransformer& rhs);
     // operators  
-    AliMUONGeometryModuleTransformer& operator = (const AliMUONGeometryModuleTransformer& rhs);
+    AliMUONGeometryModuleTransformer& 
+      operator = (const AliMUONGeometryModuleTransformer& rhs);
 
   private:
     // data members
-    Int_t                 fModuleId;      // the module Id
-    TGeoCombiTrans*       fTransformation;// the module transformation wrt to top
+    Int_t                 fModuleId;   // the module Id
+    TString               fVolumePath; // the full path of aligned module volume
+                                       // or envelope in geometry
+    TGeoHMatrix*          fTransformation;// the module transformation wrt to top
                                           // volume
     AliMUONGeometryStore* fDetElements;   // detection elements
  
-  ClassDef(AliMUONGeometryModuleTransformer,2) // MUON geometry module class
+  ClassDef(AliMUONGeometryModuleTransformer,3) // MUON geometry module class
 };
 
 // inline functions
 
-inline Int_t  AliMUONGeometryModuleTransformer::GetModuleId() const
+inline void 
+AliMUONGeometryModuleTransformer::SetVolumePath(const TString& volumePath)
+{ fVolumePath = volumePath; }
+
+inline Int_t  
+AliMUONGeometryModuleTransformer::GetModuleId() const
 { return fModuleId; }
 
-inline const TGeoCombiTrans* AliMUONGeometryModuleTransformer::GetTransformation() const 
+inline TString 
+AliMUONGeometryModuleTransformer::GetVolumePath() const
+{ return fVolumePath; }
+
+inline const TGeoHMatrix* 
+AliMUONGeometryModuleTransformer::GetTransformation() const 
 { return fTransformation; }
 
-inline  AliMUONGeometryStore* AliMUONGeometryModuleTransformer::GetDetElementStore() const
+inline  AliMUONGeometryStore* 
+AliMUONGeometryModuleTransformer::GetDetElementStore() const
 { return fDetElements; }
 
 #endif //ALI_MUON_GEOMETRY_MODULE_PARAM_H

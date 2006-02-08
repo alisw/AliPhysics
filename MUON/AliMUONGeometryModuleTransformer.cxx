@@ -21,17 +21,17 @@
 //
 // Author: Ivana Hrivnacova, IPN Orsay
 
+#include "AliMUONGeometryModuleTransformer.h"
+#include "AliMUONGeometryDetElement.h"	
+#include "AliMUONGeometryStore.h"	
+
+#include "AliLog.h"	
+
 #include <TVirtualMC.h>
 #include <TGeoMatrix.h>
 #include <TObjArray.h>
 #include <TArrayI.h>
 #include <Riostream.h>
-
-#include "AliLog.h"	
-
-#include "AliMUONGeometryModuleTransformer.h"
-#include "AliMUONGeometryDetElement.h"	
-#include "AliMUONGeometryStore.h"	
 
 ClassImp(AliMUONGeometryModuleTransformer)
 
@@ -39,13 +39,14 @@ ClassImp(AliMUONGeometryModuleTransformer)
 AliMUONGeometryModuleTransformer::AliMUONGeometryModuleTransformer(Int_t moduleId)
  : TObject(),
    fModuleId(moduleId),
+   fVolumePath(),
    fTransformation(0),
    fDetElements(0)
 {
 /// Standard constructor
 
   // Chamber transformation
-  fTransformation = new TGeoCombiTrans("");
+  fTransformation = new TGeoHMatrix("");
 
   // Det elements transformation stores
   fDetElements = new AliMUONGeometryStore(true);
@@ -56,6 +57,7 @@ AliMUONGeometryModuleTransformer::AliMUONGeometryModuleTransformer(Int_t moduleI
 AliMUONGeometryModuleTransformer::AliMUONGeometryModuleTransformer()
  : TObject(),
    fModuleId(0),
+   fVolumePath(),
    fTransformation(0),
    fDetElements(0)
 {
@@ -169,12 +171,39 @@ void  AliMUONGeometryModuleTransformer::Local2Global(Int_t detElemId,
 
 //______________________________________________________________________________
 void  AliMUONGeometryModuleTransformer::SetTransformation(
-                                           const TGeoCombiTrans& transform)
+                                           const TGeoHMatrix& transform)
 {
 /// Set the module position wrt world.
 
   *fTransformation = transform;
 }  
+
+//______________________________________________________________________________
+TString AliMUONGeometryModuleTransformer::GetVolumeName() const
+{ 
+/// Extract volume name from the path
+  
+  std::string volPath = fVolumePath.Data();
+  std::string::size_type first = volPath.rfind('/')+1;
+  std::string::size_type last = volPath.rfind('_');
+  
+  return volPath.substr(first, last-first );
+}
+
+//______________________________________________________________________________
+TString AliMUONGeometryModuleTransformer::GetMotherVolumeName() const
+{ 
+/// Extract volume name from the path
+  
+  std::string volPath = fVolumePath.Data();
+  std::string::size_type first = volPath.rfind('/');
+  volPath = volPath.substr(0, first);
+
+  std::string::size_type next = volPath.rfind('/')+1;
+  std::string::size_type last = volPath.rfind('_');
+  
+  return volPath.substr(next, last-next );
+}
 
 //______________________________________________________________________________
 AliMUONGeometryDetElement*
