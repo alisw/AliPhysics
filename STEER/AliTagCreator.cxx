@@ -209,20 +209,20 @@ void AliTagCreator::CreateTag(TFile* file, const char *guid, const char *md5, co
   /////////////
   //muon code//
   ////////////
-  Double_t MUON_MASS = 0.105658369;
+  Double_t fMUONMASS = 0.105658369;
   //Variables
-  Double_t X,Y,Z ;
-  Double_t ThetaX, ThetaY, Pyz,Chisquare;
-  Double_t PxRec,PyRec, PzRec, Energy;
-  Int_t Charge;
-  TLorentzVector EPvector;
+  Double_t fX,fY,fZ ;
+  Double_t fThetaX, fThetaY, fPyz, fChisquare;
+  Double_t fPxRec, fPyRec, fPzRec, fEnergy;
+  Int_t fCharge;
+  TLorentzVector fEPvector;
 
-  Float_t ZVertexCut = 10.0; 
-  Float_t RhoVertexCut = 2.0; 
+  Float_t fZVertexCut = 10.0; 
+  Float_t fRhoVertexCut = 2.0; 
 
-  Float_t LowPtCut = 1.0;
-  Float_t HighPtCut = 3.0;
-  Float_t VeryHighPtCut = 10.0;
+  Float_t fLowPtCut = 1.0;
+  Float_t fHighPtCut = 3.0;
+  Float_t fVeryHighPtCut = 10.0;
   ////////////
 
   Double_t partFrac[5] = {0.01, 0.01, 0.85, 0.10, 0.05};
@@ -305,15 +305,15 @@ void AliTagCreator::CreateTag(TFile* file, const char *guid, const char *md5, co
       
       if(esdTrack->GetSign() > 0) {
 	nPos++;
-	if(fPt > LowPtCut) nCh1GeV++;
-	if(fPt > HighPtCut) nCh3GeV++;
-	if(fPt > VeryHighPtCut) nCh10GeV++;
+	if(fPt > fLowPtCut) nCh1GeV++;
+	if(fPt > fHighPtCut) nCh3GeV++;
+	if(fPt > fVeryHighPtCut) nCh10GeV++;
       }
       if(esdTrack->GetSign() < 0) {
 	nNeg++;
-	if(fPt > LowPtCut) nCh1GeV++;
-	if(fPt > HighPtCut) nCh3GeV++;
-	if(fPt > VeryHighPtCut) nCh10GeV++;
+	if(fPt > fLowPtCut) nCh1GeV++;
+	if(fPt > fHighPtCut) nCh3GeV++;
+	if(fPt > fVeryHighPtCut) nCh10GeV++;
       }
       if(esdTrack->GetSign() == 0) nNeutr++;
       
@@ -337,9 +337,9 @@ void AliTagCreator::CreateTag(TFile* file, const char *guid, const char *md5, co
       //electrons
       if ((w[0]>w[4])&&(w[0]>w[3])&&(w[0]>w[2])&&(w[0]>w[1])) {
 	nElectrons++;
-	if(fPt > LowPtCut) nEl1GeV++;
-	if(fPt > HighPtCut) nEl3GeV++;
-	if(fPt > VeryHighPtCut) nEl10GeV++;
+	if(fPt > fLowPtCut) nEl1GeV++;
+	if(fPt > fHighPtCut) nEl3GeV++;
+	if(fPt > fVeryHighPtCut) nEl10GeV++;
       }	  
       ntrack++;
     }//esd track loop
@@ -354,32 +354,32 @@ void AliTagCreator::CreateTag(TFile* file, const char *guid, const char *md5, co
       if (muonTrack == 0x0) continue;
       
       // Coordinates at vertex
-      Z = muonTrack->GetZ(); 
-      Y = muonTrack->GetBendingCoor();
-      X = muonTrack->GetNonBendingCoor(); 
+      fZ = muonTrack->GetZ(); 
+      fY = muonTrack->GetBendingCoor();
+      fX = muonTrack->GetNonBendingCoor(); 
       
-      ThetaX = muonTrack->GetThetaX();
-      ThetaY = muonTrack->GetThetaY();
+      fThetaX = muonTrack->GetThetaX();
+      fThetaY = muonTrack->GetThetaY();
       
-      Pyz = 1./TMath::Abs(muonTrack->GetInverseBendingMomentum());
-      PzRec = - Pyz / TMath::Sqrt(1.0 + TMath::Tan(ThetaY)*TMath::Tan(ThetaY));
-      PxRec = PzRec * TMath::Tan(ThetaX);
-      PyRec = PzRec * TMath::Tan(ThetaY);
-      Charge = Int_t(TMath::Sign(1.,muonTrack->GetInverseBendingMomentum()));
+      fPyz = 1./TMath::Abs(muonTrack->GetInverseBendingMomentum());
+      fPzRec = - fPyz / TMath::Sqrt(1.0 + TMath::Tan(fThetaY)*TMath::Tan(fThetaY));
+      fPxRec = fPzRec * TMath::Tan(fThetaX);
+      fPyRec = fPzRec * TMath::Tan(fThetaY);
+      fCharge = Int_t(TMath::Sign(1.,muonTrack->GetInverseBendingMomentum()));
       
       //ChiSquare of the track if needed
-      Chisquare = muonTrack->GetChi2()/(2.0 * muonTrack->GetNHit() - 5);
-      Energy = TMath::Sqrt(MUON_MASS * MUON_MASS + PxRec * PxRec + PyRec * PyRec + PzRec * PzRec);
-      EPvector.SetPxPyPzE(PxRec, PyRec, PzRec, Energy);
+      fChisquare = muonTrack->GetChi2()/(2.0 * muonTrack->GetNHit() - 5);
+      fEnergy = TMath::Sqrt(fMUONMASS * fMUONMASS + fPxRec * fPxRec + fPyRec * fPyRec + fPzRec * fPzRec);
+      fEPvector.SetPxPyPzE(fPxRec, fPyRec, fPzRec, fEnergy);
       
       // total number of muons inside a vertex cut 
-      if((TMath::Abs(Z)<ZVertexCut) && (TMath::Sqrt(Y*Y+X*X)<RhoVertexCut)) {
+      if((TMath::Abs(fZ)<fZVertexCut) && (TMath::Sqrt(fY*fY+fX*fX)<fRhoVertexCut)) {
 	nMuons++;
-	if(EPvector.Pt() > LowPtCut) {
+	if(fEPvector.Pt() > fLowPtCut) {
 	  nMu1GeV++; 
-	  if(EPvector.Pt() > HighPtCut) {
+	  if(fEPvector.Pt() > fHighPtCut) {
 	    nMu3GeV++; 
-	    if (EPvector.Pt() > VeryHighPtCut) {
+	    if (fEPvector.Pt() > fVeryHighPtCut) {
 	      nMu10GeV++;
 	    }
 	  }
