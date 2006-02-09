@@ -29,23 +29,25 @@ class AliPHOSTrigger : public AliTriggerDetector {
   virtual void    CreateInputs();
   virtual void    Trigger();  //Make PHOS trigger
   
-  Int_t  GetNTRU() const              {return fNTRU ; }  
-  Int_t  GetNTRUZ() const             {return fNTRUZ ; }  
-  Int_t  GetNTRUPhi() const           {return fNTRUPhi ; }  
-  Int_t  GetL0Threshold() const       {return fL0Threshold ; }  
-  Int_t  GetL1LowThreshold() const    {return fL1LowThreshold ; }
-  Int_t  GetL1MediumThreshold() const {return fL1MediumThreshold ; }
-  Int_t  GetL1HighThreshold() const   {return fL1HighThreshold ; }
+  Int_t  GetNTRU() const                 {return fNTRU ; }  
+  Int_t  GetNTRUZ() const                {return fNTRUZ ; }  
+  Int_t  GetNTRUPhi() const              {return fNTRUPhi ; }  
+  Int_t  GetL0MBPbPbThreshold() const    {return fL0MBPbPbThreshold ; } 
+  Int_t  GetL0MBppThreshold() const      {return fL0MBppThreshold ; } 
+  Int_t  GetL1JetLowPtThreshold() const  {return fL1JetLowPtThreshold ; }
+  Int_t  GetL1JetHighPtThreshold() const {return fL1JetHighPtThreshold ; }
 
   void         Print(const Option_t * opt ="") const ;  
 
-  void         SetNTRU(Int_t ntru)            {fNTRU              = ntru; }
-  void         SetNTRUZ(Int_t ntru)           {fNTRUZ             = ntru; }
-  void         SetNTRUPhi(Int_t ntru)         {fNTRUPhi           = ntru; }
-  void         SetL0Threshold(Int_t amp)      {fL0Threshold       = amp; }
-  void         SetL1LowThreshold(Int_t amp)   {fL1LowThreshold    = amp; } 
-  void         SetL1MediumThreshold(Int_t amp){fL1MediumThreshold = amp; } 
-  void         SetL1HighThreshold(Int_t amp)  {fL1HighThreshold   = amp; }
+  void         SetNTRU(Int_t ntru)               {fNTRU              = ntru; }
+  void         SetNTRUZ(Int_t ntru)              {fNTRUZ             = ntru; }
+  void         SetNTRUPhi(Int_t ntru)            {fNTRUPhi           = ntru; }
+  void         SetL0MBPbPbThreshold(Int_t amp)   {fL0MBPbPbThreshold   = amp; }
+  void         SetL0MBppThreshold(Int_t amp)     {fL0MBppThreshold     = amp; }
+  void         SetL1JetLowPtThreshold(Int_t amp) 
+    {fL1JetLowPtThreshold  = amp; } 
+  void         SetL1JetHighPtThreshold(Int_t amp)
+    {fL1JetHighPtThreshold = amp; }
 
  private:
   TClonesArray *  FillTRU(const TClonesArray * digits, 
@@ -59,15 +61,15 @@ class AliPHOSTrigger : public AliTriggerDetector {
 
  private: 
 
-  Int_t    fNTRU ;              //! Number of TRUs per module
-  Int_t    fNTRUZ ;             //! Number of crystal rows per Z in one TRU
-  Int_t    fNTRUPhi ;           //! Number of crystal rows per Phi in one TRU
-  Int_t    fL0Threshold ;       //! L0 trigger energy threshold
-  Int_t    fL1LowThreshold ;    //! High pT trigger energy threshold
-  Int_t    fL1MediumThreshold ; //! 
-  Int_t    fL1HighThreshold ;   //! 
+  Int_t    fNTRU ;                 //! Number of TRUs per module
+  Int_t    fNTRUZ ;                //! Number of crystal rows per Z in one TRU
+  Int_t    fNTRUPhi ;              //! Number of crystal rows per Phi in one TRU
+  Int_t    fL0MBPbPbThreshold ;    //! L0 PbPb trigger energy threshold
+  Int_t    fL0MBppThreshold ;      //! L0 pp trigger energy threshold
+  Int_t    fL1JetLowPtThreshold ;  //! Low and High pT trigger energy threshold
+  Int_t    fL1JetHighPtThreshold ; //! 
 
-  ClassDef(AliPHOSTrigger,2)
+  ClassDef(AliPHOSTrigger,3)
 } ;
 
 

@@ -41,8 +41,9 @@ ClassImp(AliPHOSTrigger)
 
 //______________________________________________________________________
 AliPHOSTrigger::AliPHOSTrigger()
-  : AliTriggerDetector(), fNTRU(8), fNTRUZ(2), fNTRUPhi(4), fL0Threshold(50), 
-    fL1LowThreshold(1200), fL1MediumThreshold(12000), fL1HighThreshold(30000) 
+  : AliTriggerDetector(), fNTRU(8), fNTRUZ(2), fNTRUPhi(4), 
+    fL0MBPbPbThreshold(500), fL0MBppThreshold(50), 
+    fL1JetLowPtThreshold(1200), fL1JetHighPtThreshold(30000) 
 {
   //ctor
 
@@ -60,13 +61,13 @@ AliPHOSTrigger::AliPHOSTrigger(const AliPHOSTrigger & trig)
 {
 
   // cpy ctor
-  fNTRU              = trig.fNTRU ; 
-  fNTRUZ             = trig.fNTRUZ ; 
-  fNTRUPhi           = trig.fNTRUPhi ; 
-  fL0Threshold       = trig.fL0Threshold ; 
-  fL1LowThreshold    = trig.fL1LowThreshold ;
-  fL1MediumThreshold = trig.fL1MediumThreshold ;
-  fL1HighThreshold   = trig.fL1HighThreshold ;
+  fNTRU                 = trig.fNTRU ; 
+  fNTRUZ                = trig.fNTRUZ ; 
+  fNTRUPhi              = trig.fNTRUPhi ; 
+  fL0MBPbPbThreshold    = trig.fL0MBPbPbThreshold ; 
+  fL0MBppThreshold      = trig.fL0MBppThreshold ; 
+  fL1JetLowPtThreshold  = trig.fL1JetLowPtThreshold ;
+  fL1JetHighPtThreshold = trig.fL1JetHighPtThreshold ;
 
 }
 
@@ -78,11 +79,10 @@ void AliPHOSTrigger::CreateInputs()
    // Do not create inputs again!!
    if( fInputs.GetEntriesFast() > 0 ) return;
    
-   fInputs.AddLast( new AliTriggerInput( "PHOS_MB_L0", "PHOS Minimum Bias L0",  0x01 ) );
- 
-   fInputs.AddLast( new AliTriggerInput( "PHOS_HPt_L1", "PHOS High Pt L1", 0x02 ) );
-   fInputs.AddLast( new AliTriggerInput( "PHOS_MPt_L1", "PHOS Medium Pt L1", 0x04 ) );
-   fInputs.AddLast( new AliTriggerInput( "PHOS_LPt_L1", "PHOS Low Pt L1", 0x08 ) );
+   fInputs.AddLast( new AliTriggerInput( "PHOS_MB_PbPb_L0", "PHOS PbPb Minimum Bias L0",  0x01 ) );
+   fInputs.AddLast( new AliTriggerInput( "PHOS_MB_pp_L0", "PHOS pp Minimum Bias L0",  0x02 ) );
+   fInputs.AddLast( new AliTriggerInput( "PHOS_PbPb_JetHPt_L1", "PHOS PbPb Jet High Pt L1", 0x04 ) );
+   fInputs.AddLast( new AliTriggerInput( "PHOS_PbPb_JetLPt_L1", "PHOS PbPb Jet Low Pt L1", 0x08 ) );
  
 }
 
@@ -238,25 +238,25 @@ void AliPHOSTrigger::Print(const Option_t * opt) const
   AliTriggerInput* in = 0x0 ;
 
   AliInfo("PHOS trigger information:") ; 
-  printf( "                         Threshold for LO %d\n", fL0Threshold) ;  
-  in = (AliTriggerInput*)fInputs.FindObject( "PHOS_MB_L0" );
+  printf( "             Threshold for pp MB LO %d\n", fL0MBppThreshold) ;  
+  in = (AliTriggerInput*)fInputs.FindObject( "PHOS_MB_pp_L0" );
   if(in->GetValue())
-    printf( "                         PHOS MB LO is set\n") ; 
+    printf( "             *** PHOS MB pp LO is set ***\n") ; 
+
+  printf( "             Threshold for PbPb MB LO %d\n", fL0MBPbPbThreshold) ;  
+  in = (AliTriggerInput*)fInputs.FindObject( "PHOS_MB_PbPb_L0" );
+  if(in->GetValue())
+    printf( "             *** PHOS MB PbPb LO is set ***\n") ; 
   
-  printf( "                     Low Threshold for L1 %d\n", fL1LowThreshold) ;  
-  in = (AliTriggerInput*)fInputs.FindObject( "PHOS_LPt_L1" );
+  printf( "             Jet Low Pt Threshold for PbPb L1 %d\n", fL1JetLowPtThreshold) ;
+  in = (AliTriggerInput*)fInputs.FindObject( "PHOS_PbPb_JetLPt_L1" );
   if(in->GetValue())
-    printf( "                         PHOS Low Pt  L1 is set\n") ;
+    printf( "             *** PHOS Jet Low Pt for PbPb L1 is set ***\n") ;
 
-  printf( "                  Medium Threshold for L1 %d\n", fL1MediumThreshold) ; 
-  in = (AliTriggerInput*) fInputs.FindObject( "PHOS_MPt_L1" );
+  printf( "             Jet High Pt Threshold for L1 %d\n", fL1JetHighPtThreshold) ;  
+  in = (AliTriggerInput*) fInputs.FindObject( "PHOS_PbPb_JetHPt_L1" );
   if(in->GetValue())
-  printf( "                         PHOS Medium Pt L1 is set\n") ;
-
-  printf( "                    High Threshold for L1 %d\n", fL1HighThreshold) ;  
-  in = (AliTriggerInput*) fInputs.FindObject( "PHOS_HPt_L1" );
-  if(in->GetValue())
-    printf( "                         PHOS High Pt L1 is set\n") ;
+    printf( "             *** PHOS Jet High Pt for PbPb L1 is set ***\n") ;
 
   if(strstr(opt,"all")){
     printf( "                         Number of TRUs %d\n", fNTRU) ;
@@ -280,16 +280,13 @@ void AliPHOSTrigger::SetTriggers(const Float_t * amp)
       max = amp[i] ;
   }
  
-  if(max >= fL0Threshold){
-    SetInput("PHOS_MB_L0");
-    if(max >= fL1LowThreshold){
-      SetInput("PHOS_LPt_L1"); 
-      if(max >= fL1MediumThreshold){
-	SetInput("PHOS_MPt_L1"); 
-	if(max >= fL1HighThreshold){
-	  SetInput("PHOS_HPt_L1");
-	}
-      }
-    }
-  }
+  if(max >= fL0MBppThreshold)
+    SetInput("PHOS_MB_pp_L0");
+  if(max >= fL0MBPbPbThreshold)
+    SetInput("PHOS_MB_PbPb_L0");
+  if(max >= fL1JetLowPtThreshold)
+    SetInput("PHOS_PbPb_JetLPt_L1"); 
+  if(max >= fL1JetHighPtThreshold)
+    SetInput("PHOS_PbPb_JetHPt_L1");
+  
 }
