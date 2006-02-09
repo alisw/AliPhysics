@@ -114,9 +114,6 @@ AliKalmanTrack() {
 void AliITStrackV2::UpdateESDtrack(ULong_t flags) const {
   fESDtrack->UpdateTrackParams(this,flags);
 }
-void AliITStrackV2::SetConstrainedESDtrack(Double_t chi2) const {
-  fESDtrack->SetConstrainedTrackParams(this,chi2);
-}
 
 //____________________________________________________________________________
 AliITStrackV2::AliITStrackV2(const AliITStrackV2& t) : AliKalmanTrack(t) {

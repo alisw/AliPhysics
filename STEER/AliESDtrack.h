@@ -27,6 +27,7 @@
 #include "AliPID.h"
 #include <TVector3.h>
 
+class AliESDVertex;
 class AliKalmanTrack;
 class AliTrackPointArray;
 
@@ -43,7 +44,6 @@ public:
   void SetStatus(ULong_t flags) {fFlags|=flags;}
   void ResetStatus(ULong_t flags) {fFlags&=~flags;}
   Bool_t UpdateTrackParams(const AliKalmanTrack *t, ULong_t flags);
-  void SetImpactParameters(Float_t xy,Float_t z) {fD=xy; fZ=z;}
   void SetIntegratedLength(Double_t l) {fTrackLength=l;}
   void SetIntegratedTimes(const Double_t *times);
   void SetESDpid(const Double_t *p);
@@ -56,14 +56,11 @@ public:
   void GetExternalParameters(Double_t &x, Double_t p[5]) const;
   void GetExternalCovariance(Double_t cov[15]) const;
 
-  void GetImpactParameters(Float_t &xy,Float_t &z) const {xy=fD; z=fZ;}
   Double_t GetIntegratedLength() const {return fTrackLength;}
   void GetIntegratedTimes(Double_t *times) const;
   Double_t GetMass() const;
   TVector3 P3() const {Double_t p[3]; GetPxPyPz(p); return TVector3(p[0],p[1],p[2]);} //running track momentum
   TVector3 X3() const {Double_t x[3]; GetXYZ(x); return TVector3(x[0],x[1],x[2]);}    //running track position 
-
-  void SetConstrainedTrackParams(const AliKalmanTrack *t, Double_t chi2);
 
 
   Bool_t GetConstrainedPxPyPz(Double_t *p) const {
@@ -78,7 +75,6 @@ public:
               (Double_t &alpha, Double_t &x, Double_t p[5]) const;
   Bool_t GetConstrainedExternalCovariance(Double_t cov[15]) const;
   Double_t GetConstrainedChi2() const {return fCchi2;}
-
 
 
   Bool_t GetInnerPxPyPz(Double_t *p) const {
@@ -223,6 +219,12 @@ public:
   void   SetTrackPointArray(AliTrackPointArray *points) { fPoints = points; }
   AliTrackPointArray *GetTrackPointArray() const { return fPoints; }
 
+  Bool_t 
+    RelateToVertex(const AliESDVertex *vtx, Double_t b, Double_t maxd);
+  void GetImpactParameters(Float_t &xy,Float_t &z) const {xy=fD; z=fZ;}
+  void GetImpactParameters(Float_t p[2], Float_t cov[3]) const {
+    p[0]=fD; p[1]=fZ; cov[0]=fCdd; cov[1]=fCdz; cov[2]=fCzz;
+  }
   virtual void Print(Option_t * opt) const ; 
 
   enum {
@@ -240,16 +242,17 @@ protected:
   
   //AliESDtrack & operator=(const AliESDtrack & );
 
-  ULong_t   fFlags;        // Reconstruction status flags 
-  Int_t     fLabel;        // Track label
-  Int_t     fID;           // Unique ID of the track
-  Float_t   fTrackLength;  // Track length
-  Float_t   fD;            // Impact parameter in XY-plane
-  Float_t   fZ;            // Impact parameter in Z 
+  ULong_t   fFlags;         // Reconstruction status flags 
+  Int_t     fLabel;         // Track label
+  Int_t     fID;            // Unique ID of the track
+  Float_t   fTrackLength;   // Track length
+  Float_t   fD;             // Impact parameter in XY plane
+  Float_t   fZ;             // Impact parameter in Z
+  Float_t   fCdd,fCdz,fCzz; // Covariance matrix of the impact parameters 
   Float_t   fTrackTime[AliPID::kSPECIES]; // TOFs estimated by the tracking
   Float_t   fR[AliPID::kSPECIES]; // combined "detector response probability"
 
-  Int_t     fStopVertex;  // Index of stop vertex
+  Int_t   fStopVertex;  // Index of the stop vertex
 
 //Track parameters constrained to the primary vertex
   AliExternalTrackParam *fCp; 
@@ -329,7 +332,7 @@ protected:
 
   AliTrackPointArray *fPoints; // Array which contains the track space points in the global frame
 
-  ClassDef(AliESDtrack,20)  //ESDtrack 
+  ClassDef(AliESDtrack,21)  //ESDtrack 
 };
 
 #endif 

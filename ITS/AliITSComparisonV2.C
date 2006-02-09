@@ -68,11 +68,11 @@ Int_t AliITSComparisonV2
  
    TH1F *hmpt=(TH1F*)gROOT->FindObject("hmpt");
    if (!hmpt) 
-      hmpt=new TH1F("hmpt","Transverse impact parameter",30,-300,300); 
+      hmpt=new TH1F("hmpt","Transverse impact parameter",30,-777,777); 
    hmpt->SetFillColor(6);
 
    TH1F *hz=(TH1F*)gROOT->FindObject("hz");
-   if (!hz) hz=new TH1F("hz","Longitudinal impact parameter",30,-300,300); 
+   if (!hz) hz=new TH1F("hz","Longitudinal impact parameter",30,-777,777); 
 
 
 
@@ -216,8 +216,9 @@ Int_t AliITSComparisonV2
           hfake->Fill(ptg); 
         }
 
-        Double_t xv,par[5]; esd->GetExternalParameters(xv,par);
-        Float_t phi=TMath::ASin(par[2]) + esd->GetAlpha();
+        Double_t alpha=esd->GetAlpha(),xv,par[5]; 
+        esd->GetExternalParameters(xv,par);
+        Float_t phi=TMath::ASin(par[2]) + alpha;
         if (phi<-TMath::Pi()) phi+=2*TMath::Pi();
         if (phi>=TMath::Pi()) phi-=2*TMath::Pi();
         Float_t lam=TMath::ATan(par[3]); 
@@ -231,7 +232,7 @@ Int_t AliITSComparisonV2
 
         Float_t d,z; esd->GetImpactParameters(d,z);
         hmpt->Fill(10000*d);
-        hz->Fill(10000*(z-ref->Z()));
+        hz->Fill(10000*z);
 
         hpt->Fill((pt_1 - 1/ptg)/(1/ptg)*100.);
 

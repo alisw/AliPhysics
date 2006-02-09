@@ -485,39 +485,12 @@ Int_t AliITStrackerMI::RefitInward(AliESD *event) {
        CookLabel(&fTrackToFollow,0.0); //For comparison only
 
        if (fTrackToFollow.PropagateTo(3.,0.0028,65.19)) {//The beam pipe    
-         Double_t a=fTrackToFollow.GetAlpha();
-         Double_t cs=TMath::Cos(a),sn=TMath::Sin(a);
-         Double_t xv= GetX()*cs + GetY()*sn;
-         Double_t yv=-GetX()*sn + GetY()*cs;
-         
-         Double_t c=fTrackToFollow.GetC(), snp=fTrackToFollow.GetSnp();
-         Double_t x=fTrackToFollow.GetX(), y=fTrackToFollow.GetY();
-         Double_t tgfv=-(c*(x-xv)-snp)/(c*(y-yv) + TMath::Sqrt(1.-snp*snp));
-         Double_t fv=TMath::ATan(tgfv);
-
-         cs=TMath::Cos(fv); sn=TMath::Sin(fv);
-         x = xv*cs + yv*sn;
-         yv=-xv*sn + yv*cs; xv=x;
-
-	 if (fTrackToFollow.Propagate(fv+a,xv)) {
-            fTrackToFollow.UpdateESDtrack(AliESDtrack::kITSrefit);
-	    Float_t d=fTrackToFollow.GetD(GetX(),GetY());
-            Float_t z=fTrackToFollow.GetZ()-GetZ();
-            fTrackToFollow.GetESDtrack()->SetImpactParameters(d,z);
-            //UseClusters(&fTrackToFollow);
-            {
-            AliITSclusterV2 c; c.SetY(yv); c.SetZ(GetZ());
-            c.SetSigmaY2(GetSigmaY()*GetSigmaY());
-            c.SetSigmaZ2(GetSigmaZ()*GetSigmaZ());
-            Double_t chi2=fTrackToFollow.GetPredictedChi2(&c);
-            //Double_t chi2=GetPredictedChi2MI(&fTrackToFollow,&c,fI);
-            if (chi2<kMaxChi2)
-	      if (fTrackToFollow.Update(&c,-chi2,0))
-		//if (UpdateMI(&fTrackToFollow,&c,-chi2,0))
-		fTrackToFollow.SetConstrainedESDtrack(chi2);            
-            }
-            ntrk++;
-         }
+         AliESDtrack  *esdTrack =fTrackToFollow.GetESDtrack();
+         esdTrack->UpdateTrackParams(&fTrackToFollow,AliESDtrack::kITSrefit);
+         Float_t r[3]={0.,0.,0.};
+         Double_t maxD=3.;
+	 esdTrack->RelateToVertex(event->GetVertex(),GetBz(r),maxD);
+         ntrk++;
        }
     }
     delete t;

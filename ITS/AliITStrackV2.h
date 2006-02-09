@@ -50,7 +50,6 @@ public:
   void ResetCovariance();
   void ResetClusters() { SetChi2(0.); SetNumberOfClusters(0); }
   void UpdateESDtrack(ULong_t flags) const;
-  void SetConstrainedESDtrack(Double_t chi2) const; 
   
   AliESDtrack *GetESDtrack() const {return fESDtrack;}
 

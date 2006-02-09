@@ -22,6 +22,7 @@
 
 #include "TMath.h"
 
+#include "AliESDVertex.h"
 #include "AliESDtrack.h"
 #include "AliKalmanTrack.h"
 #include "AliTrackPointArray.h"
@@ -63,8 +64,8 @@ AliESDtrack::AliESDtrack() :
   fLabel(0),
   fID(0),
   fTrackLength(0),
-  fD(0),
-  fZ(0),
+  fD(0),fZ(0),
+  fCdd(0),fCdz(0),fCzz(0),
   fStopVertex(0),
   fCp(0),
   fCchi2(1e10),
@@ -152,8 +153,8 @@ AliESDtrack::AliESDtrack(const AliESDtrack& track):
   fLabel(track.fLabel),
   fID(track.fID),
   fTrackLength(track.fTrackLength),
-  fD(track.fD),
-  fZ(track.fZ),
+  fD(track.fD),fZ(track.fZ),
+  fCdd(track.fCdd),fCdz(track.fCdz),fCzz(track.fCzz),
   fStopVertex(track.fStopVertex),
   fCp(0),
   fCchi2(track.fCchi2),
@@ -490,18 +491,6 @@ Bool_t AliESDtrack::UpdateTrackParams(const AliKalmanTrack *t, ULong_t flags){
 
   return rc;
 }
-
-//_______________________________________________________________________
-void 
-AliESDtrack::SetConstrainedTrackParams(const AliKalmanTrack *t, Double_t chi2) {
-  // 
-  // This function sets the constrained track parameters 
-  //
-  if (!fCp) fCp=new AliExternalTrackParam(*t);
-  else fCp->Set(*t);
-  fCchi2=chi2;
-}
-
 
 //_______________________________________________________________________
 void AliESDtrack::GetExternalParameters(Double_t &x, Double_t p[5]) const {
@@ -851,6 +840,67 @@ void AliESDtrack::SetESDpid(const Double_t *p) {
 void AliESDtrack::GetESDpid(Double_t *p) const {
   // Gets probability of each particle type for the ESD track
   for (Int_t i=0; i<AliPID::kSPECIES; i++) p[i]=fR[i];
+}
+
+//_______________________________________________________________________
+Bool_t AliESDtrack::RelateToVertex
+(const AliESDVertex *vtx, Double_t b, Double_t maxd) {
+  //
+  // Try to relate this track to the vertex "vtx", 
+  // if the (rough) transverse impact parameter is not bigger then "maxd". 
+  //            Magnetic field is "b" (kG).
+  //
+  // a) The track gets extapolated to the DCA to the vertex.
+  // b) The impact parameters and their covariance matrix are calculated.
+  // c) An attempt to constrain this track to the vertex is done.
+  //
+  //    In the case of success, the returned value is kTRUE
+  //    (otherwise, it's kFALSE)
+  //  
+  Double_t alpha=GetAlpha();
+  Double_t sn=TMath::Sin(alpha), cs=TMath::Cos(alpha);
+  Double_t x=GetX(), y=GetParameter()[0], snp=GetParameter()[2];
+  Double_t xv= vtx->GetXv()*cs + vtx->GetYv()*sn;
+  Double_t yv=-vtx->GetXv()*sn + vtx->GetYv()*cs, zv=vtx->GetZv();
+  x-=xv; y-=yv;
+
+  //Estimate the impact parameter neglecting the track curvature
+  Double_t d=TMath::Abs(x*snp - y*TMath::Sqrt(1.- snp*snp));
+  if (d > maxd) return kFALSE; 
+
+  //Propagate to the DCA
+  Double_t crv=0.299792458e-3*b*GetParameter()[4];
+  Double_t tgfv=-(crv*x - snp)/(crv*y + TMath::Sqrt(1.-snp*snp));
+  sn=tgfv/TMath::Sqrt(1.+ tgfv*tgfv); cs=TMath::Sqrt(1.+ sn*sn);
+
+  x = xv*cs + yv*sn;
+  yv=-xv*sn + yv*cs; xv=x;
+
+  if (!Propagate(alpha+TMath::ASin(sn),xv,b)) return kFALSE;
+
+  fD = GetParameter()[0] - yv;
+  fZ = GetParameter()[1] - zv;
+  
+  Double_t cov[6]; vtx->GetCovMatrix(cov);
+  fCdd = GetCovariance()[0] + cov[2];      // neglecting non-diagonals
+  fCdz = GetCovariance()[1];               //     in the vertex's    
+  fCzz = GetCovariance()[2] + cov[5];      //    covariance matrix
+
+  {//Try to constrain 
+    Double_t p[2]={yv,zv}, c[3]={cov[2],0.,cov[5]};
+    Double_t chi2=GetPredictedChi2(p,c);
+
+    if (chi2>77.) return kFALSE;
+
+    AliExternalTrackParam tmp(*this);
+    if (!tmp.Update(p,c)) return kFALSE;
+
+    fCchi2=chi2;
+    if (!fCp) fCp=new AliExternalTrackParam();
+    new (fCp) AliExternalTrackParam(tmp);
+  }
+
+  return kTRUE;
 }
 
 //_______________________________________________________________________
