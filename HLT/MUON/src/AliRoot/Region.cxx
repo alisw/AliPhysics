@@ -83,7 +83,11 @@ void Region::Top(Float_t value)
 
 Bool_t Region::Contains(const Point& p) const
 {
-	return fLeft <= p.fX and p.fX <= fRight and fBottom <= p.fY and p.fY <= fTop;
+	return 
+	  fLeft <= p.fX 
+	  && p.fX <= fRight 
+	  && fBottom <= p.fY 
+	  && p.fY <= fTop;
 }
 
 

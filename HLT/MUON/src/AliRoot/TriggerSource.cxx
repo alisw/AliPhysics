@@ -72,7 +72,7 @@ void TriggerSource::FillFrom(AliMUONDataInterface* data)
 	if (FileAndFolderOk(data))
 	{
 		AliMUON* module = NULL;
-		if ( not FetchAliMUON(module) ) return;
+		if ( ! FetchAliMUON(module) ) return;
 		
 		for (Int_t i = 0; i < data->NumberOfEvents(); i++)
 		{
@@ -91,7 +91,7 @@ void TriggerSource::FillFrom(AliMUONDataInterface* data, Int_t event)
 	if (FileAndFolderOk(data))
 	{
 		AliMUON* module = NULL;
-		if ( not FetchAliMUON(module) ) return;
+		if ( ! FetchAliMUON(module) ) return;
 		AddEventFrom(data, module, event);
 		FinishedWithAliMUON();
 	}
@@ -109,7 +109,7 @@ void TriggerSource::FillFrom(
 	{
 		data->GetEvent(event);
 		AliMUON* module = NULL;
-		if ( not FetchAliMUON(module) ) return;
+		if ( ! FetchAliMUON(module) ) return;
 
 		// Check if the current event corresponds to the event number we are
 		// attempting to add to. If they do not or no event is selected then
@@ -117,16 +117,16 @@ void TriggerSource::FillFrom(
 		if ( fCurrentEvent == NULL )
 		{
 			Bool_t found = GetEvent(event);
-			if (not found) AddEvent(event);
+			if ( ! found) AddEvent(event);
 		}
 		else
 		{
 			if (fCurrentEvent->fEventNumber != event)
 			{
 				Bool_t found = GetEvent(event);
-				if (not found) AddEvent(event);
-			};
-		};
+				if ( ! found) AddEvent(event);
+			}
+		}
 		
 		if ( fCurrentBlock != NULL )
 		{
@@ -169,8 +169,8 @@ Bool_t TriggerSource::GetEvent(Int_t eventnumber) const
 				<< " , fTriggerIndex = " << fTriggerIndex
 			);
 			return kTRUE;
-		};
-	};
+		}
+	}
 	return kFALSE;
 }
 
@@ -200,7 +200,7 @@ Bool_t TriggerSource::GetFirstEvent() const
 
 Bool_t TriggerSource::MoreEvents() const
 {
-	return 0 <= fEventIndex and fEventIndex < fEventList.GetEntriesFast();
+	return 0 <= fEventIndex && fEventIndex < fEventList.GetEntriesFast();
 }
 
 
@@ -254,7 +254,7 @@ Bool_t TriggerSource::GetBlock(Int_t index) const
 	Int_t numberofblocks = NumberOfBlocks();
 	if (numberofblocks < 0) return kFALSE;
 
-	if ( 0 <= index and index < numberofblocks )
+	if ( 0 <= index && index < numberofblocks )
 	{
 		fBlockIndex = index;
 		fCurrentBlock = (TClonesArray*) fCurrentEvent->fBlocks[index];
@@ -303,7 +303,7 @@ Bool_t TriggerSource::GetFirstBlock() const
 
 Bool_t TriggerSource::MoreBlocks() const
 {
-	return 0 <= fBlockIndex and fBlockIndex < NumberOfBlocks();
+	return 0 <= fBlockIndex && fBlockIndex < NumberOfBlocks();
 }
 
 
@@ -351,7 +351,7 @@ const TriggerRecord* TriggerSource::GetTrigger(Int_t triggernumber) const
 	{
 		Error("GetTrigger", "No block selected.");
 		return NULL;
-	};
+	}
 	
 	// Try find the corresponding trigger record in the list of events.
 	for (Int_t i = 0; i < fCurrentBlock->GetEntriesFast(); i++)
@@ -386,12 +386,12 @@ const TriggerRecord* TriggerSource::GetFirstTrigger() const
 	}
 	else
 		return NULL;
-};
+}
 
 
 Bool_t TriggerSource::MoreTriggers() const
 {
-	return 0 <= fTriggerIndex and fTriggerIndex < NumberOfTriggers();
+	return 0 <= fTriggerIndex && fTriggerIndex < NumberOfTriggers();
 }
 
 
@@ -413,8 +413,8 @@ const TriggerRecord* TriggerSource::GetNextTrigger() const
 	{
 		ResetTriggerPointers();
 		return NULL;
-	};
-};
+	}
+}
 
 
 Int_t TriggerSource::CurrentTrigger() const
@@ -458,7 +458,7 @@ void TriggerSource::AddBlock()
 	{
 		Error("AddBlock", "No event selected.");
 		return;
-	};
+	}
 	
 	fBlockIndex = fCurrentEvent->fBlocks.GetEntriesFast();
 	new ( fCurrentEvent->fBlocks[fBlockIndex] ) TClonesArray(TriggerRecord::Class());
@@ -501,7 +501,7 @@ Bool_t TriggerSource::FileAndFolderOk(AliMUONDataInterface* data)
 		fFilename = data->CurrentFile();
 		fFoldername = data->CurrentFolder();
 		return kTRUE;
-	};
+	}
 
 	if ( fFilename != data->CurrentFile() )
 	{
@@ -510,7 +510,7 @@ Bool_t TriggerSource::FileAndFolderOk(AliMUONDataInterface* data)
 			fFilename.Data(), data->CurrentFile().Data()
 		);
 		return kFALSE;
-	};
+	}
 	
 	if ( fFoldername != data->CurrentFolder() )
 	{
@@ -519,7 +519,7 @@ Bool_t TriggerSource::FileAndFolderOk(AliMUONDataInterface* data)
 			fFoldername.Data(), data->CurrentFolder().Data()
 		);
 		return kFALSE;
-	};
+	}
 	
 	return kTRUE;
 }
@@ -540,7 +540,7 @@ void TriggerSource::AddEventFrom(AliMUONDataInterface* data, AliMUON* module, In
 		case FromHits:
 			for (Int_t track = 0; track < data->NumberOfTracks(); track++)
 			{
-				if ( not FillTriggerFromHits(data, track, trigdata) )
+				if ( ! FillTriggerFromHits(data, track, trigdata) )
 					continue;  // Continue if unable to find hits.
 
 				if (InFillRegion(trigdata))
@@ -552,9 +552,9 @@ void TriggerSource::AddEventFrom(AliMUONDataInterface* data, AliMUON* module, In
 					{
 						AddBlock();
 						currentblocksize = 0;
-					};
-				};
-			};
+					}
+				}
+			}
 			break;
 
 		case FromLocalTriggers:
@@ -576,9 +576,9 @@ void TriggerSource::AddEventFrom(AliMUONDataInterface* data, AliMUON* module, In
 					{
 						AddBlock();
 						currentblocksize = 0;
-					};
-				};
-			};
+					}
+				}
+			}
 			break;
 
 		default:
@@ -599,7 +599,7 @@ void TriggerSource::AddTriggerFrom(AliMUONDataInterface* data, AliMUON* module, 
 	case FromHits:
 		{
 		// Note: in this case we treat the trigger parameter as a track number.
-		if ( not FillTriggerFromHits(data, trigger, trigdata) )
+		if ( ! FillTriggerFromHits(data, trigger, trigdata) )
 			return;  // Continue if unable to find hits.
 		}
 		break;
@@ -616,7 +616,7 @@ void TriggerSource::AddTriggerFrom(AliMUONDataInterface* data, AliMUON* module, 
 	default:
 		Error("AddTriggerFrom", "fDataToUse is not set to a valid value.");
 		return;
-	};
+	}
 	
 	AddTrigger(trigdata);
 	
@@ -659,7 +659,7 @@ void TriggerSource::FillTriggerFromLocalTrigger(
 	else
 	{
 		record.ParticleSign(0);
-	};
+	}
 	DebugMsg(2, "Particle sign = " << record.ParticleSign() );
 
 	// Compute the transverse momentum.
@@ -672,7 +672,7 @@ void TriggerSource::FillTriggerFromLocalTrigger(
 	{
 		Float_t pt = circuit.PtCal( trigger->LoStripX(), trigger->LoDev(), trigger->LoStripY() );
 		record.Pt(pt);
-	};
+	}
 	DebugMsg(2, "Pt = " << record.Pt() );
 
 	// Build the impact points.
@@ -694,7 +694,7 @@ Bool_t TriggerSource::FillTriggerFromHits(AliMUONDataInterface* data, Int_t trac
 	Float_t x1, y1, z1, x2, y2, z2, x3, y3, z3, x4, y4, z4;
 #ifndef __alpha
 #ifndef __sun
-	x1 = y1 = z1 = x2 = y2 = z2 = x3 = y3 = z3 = x4 = y4 = z4 = NAN;
+	x1 = y1 = z1 = x2 = y2 = z2 = x3 = y3 = z3 = x4 = y4 = z4 = nanf("");
 #else
 	x1 = y1 = z1 = x2 = y2 = z2 = x3 = y3 = z3 = x4 = y4 = z4 = 0;
 #endif
@@ -704,7 +704,7 @@ Bool_t TriggerSource::FillTriggerFromHits(AliMUONDataInterface* data, Int_t trac
 	// Find the hit that corresponds to chambers. 11 to 14. We can ignore any
 	// hits above the first 14. If there are that many it means the particle
 	// is cycling in the detector.
-	for (Int_t i = 0; i < data->NumberOfHits(track) and i < 14; i++)
+	for (Int_t i = 0; i < data->NumberOfHits(track) && i < 14; i++)
 	{
 		AliMUONHit* h = data->Hit(track, i);
 
@@ -718,8 +718,8 @@ Bool_t TriggerSource::FillTriggerFromHits(AliMUONDataInterface* data, Int_t trac
 		case 12: x2 = h->X(); y2 = h->Y(); z2 = (Float_t)fabs(h->Z()); break;
 		case 13: x3 = h->X(); y3 = h->Y(); z3 = (Float_t)fabs(h->Z()); break;
 		case 14: x4 = h->X(); y4 = h->Y(); z4 = (Float_t)fabs(h->Z()); break;
-		};
-	};
+		}
+	}
 	DebugMsg(4, "Found: x1 = " << x1 << ", y1 = " << y1 << ", z1 = " << z1);
 	DebugMsg(4, "Found: x2 = " << x2 << ", y2 = " << y2 << ", z2 = " << z2);
 	DebugMsg(4, "Found: x3 = " << x3 << ", y3 = " << y3 << ", z3 = " << z3);
@@ -727,13 +727,13 @@ Bool_t TriggerSource::FillTriggerFromHits(AliMUONDataInterface* data, Int_t trac
 
 	// Get a coordinate for station 1, perferably from chamber 11 otherwise
 	// use hits from chamber 12.
-	if (not TMath::IsNaN(x1))
+	if ( ! TMath::IsNaN(x1))
 	{
 		record.Station1Point().fX = x1;
 		record.Station1Point().fY = y1;
 		DebugMsg(3, "Using value from chamber 11: x1 = " << x1 << ", y1 = " << y1 << ", z1 = " << z1 );
 	}
-	else if (not TMath::IsNaN(x2))
+	else if ( ! TMath::IsNaN(x2))
 	{
 		record.Station1Point().fX = x2;
 		record.Station1Point().fY = y2;
@@ -745,18 +745,18 @@ Bool_t TriggerSource::FillTriggerFromHits(AliMUONDataInterface* data, Int_t trac
 		// Return false if we could not find any hits on chambers 11 or 12.
 		Warning("FillTriggerFromHits", "Could not find any hits on chambers 11 and 12.");
 		return kFALSE;
-	};
+	}
 
 	// Get a coordinate for station 2, perferably from chamber 13 otherwise
 	// use hits from chamber 14.
-	if (not TMath::IsNaN(x3))
+	if ( ! TMath::IsNaN(x3))
 	{
 		record.Station2Point().fX = x3;
 		record.Station2Point().fY = y3;
 		z2 = z3;
 		DebugMsg(3, "Using value from chamber 13: x3 = " << x3 << ", y3 = " << y3 << ", z3 = " << z3 );
 	}
-	else if (not TMath::IsNaN(x4))
+	else if ( ! TMath::IsNaN(x4))
 	{
 		record.Station2Point().fX = x4;
 		record.Station2Point().fY = y4;
@@ -768,7 +768,7 @@ Bool_t TriggerSource::FillTriggerFromHits(AliMUONDataInterface* data, Int_t trac
 		// Return false if we could not find any hits on chambers 13 or 14.
 		Warning("FillTriggerFromHits", "Could not find any hits on chambers 13 and 14.");
 		return kFALSE;
-	};
+	}
 	
 	record.TriggerNumber(track);
 	
@@ -815,14 +815,14 @@ Bool_t TriggerSource::FetchAliMUON(AliMUON*& module)
 		// by setting the fHadToLoadgAlice to false.
 		fHadToLoadgAlice = kFALSE;
 		return kTRUE;
-	};
+	}
 	
 	AliRunLoader* runloader = AliRunLoader::GetRunLoader();
 	if ( runloader == NULL )
 	{
 		Error("FetchAliMUON", "AliRunLoader not initialised!");
 		return kFALSE;
-	};
+	}
 
 	// Try fetch the AliRun object. If it is not found then try load it using
 	// the runloader.
@@ -834,7 +834,7 @@ Bool_t TriggerSource::FetchAliMUON(AliMUON*& module)
 			// Error.
 			DebugMsg(1, "Leaving FillFrom(AliMUONDataInterface*)");
 			return kFALSE;
-		};
+		}
 		fHadToLoadgAlice = kTRUE;
 		alirun = runloader->GetAliRun();
 	}

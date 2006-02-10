@@ -89,7 +89,7 @@ public:
 	 */
 	RegionOfInterest(Float left0, Float right0, Float bottom0, Float top0, ChamberID chamber0)
 	{
-		Assert( 0 <= chamber0 and chamber0 < NUMBER_OF_TRACKING_CHAMBERS );
+		Assert( 0 <= chamber0 && chamber0 < NUMBER_OF_TRACKING_CHAMBERS );
 		this->chamber = chamber0;
 		this->left = left0;
 		this->right = right0;
@@ -102,8 +102,10 @@ public:
 	 */
 	bool Contains(const ClusterPoint& point) const
 	{
-		return left <= point.x and point.x <= right and
-			bottom <= point.y and point.y <= top;
+		return left <= point.x 
+		  && point.x <= right 
+		  && bottom <= point.y
+		  && point.y <= top;
 	}
 
 
@@ -112,9 +114,11 @@ public:
 	 */
 	bool Contains(const ClusterPoint& point, ChamberID chamber0) const
 	{
-		return left <= point.x and point.x <= right and
-			bottom <= point.y and point.y <= top and
-			this->chamber == chamber0;
+		return left <= point.x 
+		  && point.x <= right
+		  && bottom <= point.y
+		  && point.y <= top
+		  && this->chamber == chamber0;
 	}
 
 
@@ -123,9 +127,11 @@ public:
 	 */
 	bool Contains(const RegionOfInterest& roi) const
 	{
-		return chamber == roi.chamber and 
-			left <= roi.left and right >= roi.right and
-			bottom <= roi.bottom and top >= roi.top;
+		return chamber == roi.chamber
+		  && left <= roi.left
+		  && right >= roi.right
+		  && bottom <= roi.bottom
+		  && top >= roi.top;
 	}
 
 

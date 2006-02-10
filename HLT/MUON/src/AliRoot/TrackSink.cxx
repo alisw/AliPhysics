@@ -219,7 +219,7 @@ Bool_t TrackSink::GetFirstEvent() const
 
 Bool_t TrackSink::MoreEvents() const
 {
-	return 0 <= fEventIndex and fEventIndex < fEventList.GetEntriesFast();
+	return 0 <= fEventIndex && fEventIndex < fEventList.GetEntriesFast();
 }
 
 
@@ -273,7 +273,7 @@ Bool_t TrackSink::GetBlock(Int_t index) const
 	Int_t numberofblocks = NumberOfBlocks();
 	if (numberofblocks < 0) return kFALSE;
 
-	if ( 0 <= index and index < numberofblocks )
+	if ( 0 <= index && index < numberofblocks )
 	{
 		fBlockIndex = index;
 		fCurrentBlock = (TClonesArray*) fCurrentEvent->fBlocks[index];
@@ -322,7 +322,7 @@ Bool_t TrackSink::GetFirstBlock() const
 
 Bool_t TrackSink::MoreBlocks() const
 {
-	return 0 <= fBlockIndex and fBlockIndex < NumberOfBlocks();
+	return 0 <= fBlockIndex && fBlockIndex < NumberOfBlocks();
 }
 
 
@@ -370,7 +370,7 @@ const Track* TrackSink::GetTrack(Int_t index) const
 	Int_t numberoftracks = NumberOfTracks();
 	if (numberoftracks < 0) return NULL;
 	
-	if ( 0 <= index and index < numberoftracks )
+	if ( 0 <= index && index < numberoftracks )
 	{
 		fTrackIndex = index;
 		fCurrentTrack = (Track*) fCurrentBlock->At(index);
@@ -417,7 +417,7 @@ const Track* TrackSink::GetFirstTrack() const
 
 Bool_t TrackSink::MoreTracks() const
 {
-	return 0 <= fTrackIndex and fTrackIndex < NumberOfTracks();
+	return 0 <= fTrackIndex && fTrackIndex < NumberOfTracks();
 }
 
 

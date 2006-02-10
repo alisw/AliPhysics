@@ -32,7 +32,7 @@ TriggerRecord::TriggerRecord(
 			triggernumber
 		);
 	}
-	else if (sign < -1 or +1 < sign)
+	else if (sign < -1 || +1 < sign)
 	{
 		Init();
 		Error("TriggerRecord",
@@ -81,7 +81,7 @@ void TriggerRecord::TriggerNumber(Int_t value)
 
 void TriggerRecord::ParticleSign(Int_t value)
 {
-	if (-1 <= value and value <= +1)
+	if (-1 <= value && value <= +1)
 		fParticleSign = value;
 	else
 		Error("ParticleSign",

@@ -26,7 +26,7 @@ Track::Track(
 		const Point hits[10], const Region regions[10]
 	) : TObject()
 {
-	if (sign < -1 or +1 < sign)
+	if (sign < -1 || +1 < sign)
 	{
 		Init();
 		Error("Track", "The particle sign was not one of -1, 0 or +1. Got %d", sign);
@@ -68,7 +68,7 @@ void Track::Init()
 
 void Track::ParticleSign(Int_t value)
 {
-	if (-1 <= value and value <= +1)
+	if (-1 <= value && value <= +1)
 		fParticleSign = value;
 	else
 		Error("ParticleSign",
@@ -194,7 +194,7 @@ Bool_t Track::HitsInRegions() const
 {
 	for (Int_t i = 0; i < 10; i++)
 	{
-		if ( not fRegionOfInterest[i].Contains(fHit[i]) )
+		if ( ! fRegionOfInterest[i].Contains(fHit[i]) )
 			return kFALSE;
 	}
 	return kTRUE;

@@ -112,16 +112,16 @@ void ClusterSource::FillFrom(
 		if ( fCurrentEvent == NULL )
 		{
 			Bool_t found = GetEvent(event);
-			if (not found) AddEvent(event);
+			if ( ! found) AddEvent(event);
 		}
 		else
 		{
 			if (fCurrentEvent->fEventNumber != event)
 			{
 				Bool_t found = GetEvent(event);
-				if (not found) AddEvent(event);
-			};
-		};
+				if ( ! found) AddEvent(event);
+			}
+		}
 		
 		if ( fCurrentBlock != 0)
 		{
@@ -137,7 +137,7 @@ void ClusterSource::FillFrom(
 			{
 				// If the newblock flag is set then force a new block.
 				if (newblock) AddBlock(chamber);
-			};
+			}
 		}
 		else
 			AddBlock(chamber);  // No block selected so we need to create a new block.
@@ -204,7 +204,7 @@ Bool_t ClusterSource::GetFirstEvent() const
 
 Bool_t ClusterSource::MoreEvents() const
 {
-	return 0 <= fEventIndex and fEventIndex < fEventList.GetEntriesFast();
+	return 0 <= fEventIndex && fEventIndex < fEventList.GetEntriesFast();
 }
 
 
@@ -224,8 +224,8 @@ Bool_t ClusterSource::GetNextEvent() const
 	{
 		ResetAllPointers();
 		return kFALSE;
-	};
-};
+	}
+}
 
 
 Int_t ClusterSource::CurrentEvent() const
@@ -234,7 +234,7 @@ Int_t ClusterSource::CurrentEvent() const
 		return fCurrentEvent->fEventNumber;
 	else
 		return -1;
-};
+}
 
 
 Int_t ClusterSource::NumberOfBlocks() const
@@ -258,7 +258,7 @@ Bool_t ClusterSource::GetBlock(Int_t index) const
 	Int_t numberofblocks = NumberOfBlocks();
 	if (numberofblocks < 0) return kFALSE;
 
-	if ( 0 <= index and index < numberofblocks )
+	if ( 0 <= index && index < numberofblocks )
 	{
 		fBlockIndex = index;
 		fCurrentBlock = (BlockData*) fCurrentEvent->fBlocks[index];
@@ -307,7 +307,7 @@ Bool_t ClusterSource::GetFirstBlock() const
 
 Bool_t ClusterSource::MoreBlocks() const
 {
-	return 0 <= fBlockIndex and fBlockIndex < NumberOfBlocks();
+	return 0 <= fBlockIndex && fBlockIndex < NumberOfBlocks();
 }
 
 
@@ -367,7 +367,7 @@ const Point* ClusterSource::GetCluster(Int_t index) const
 	Int_t numberofclusters = NumberOfClusters();
 	if (numberofclusters < 0) return NULL;
 	
-	if ( 0 <= index and index < numberofclusters )
+	if ( 0 <= index && index < numberofclusters )
 	{
 		fClusterIndex = index;
 		fCurrentCluster = (Point*) fCurrentBlock->fClusters[index];
@@ -414,8 +414,8 @@ const Point* ClusterSource::GetFirstCluster() const
 
 Bool_t ClusterSource::MoreClusters() const
 {
-	return 0 <= fClusterIndex and fClusterIndex < NumberOfClusters();
-};
+	return 0 <= fClusterIndex && fClusterIndex < NumberOfClusters();
+}
 
 
 const Point* ClusterSource::GetNextCluster() const
@@ -436,8 +436,8 @@ const Point* ClusterSource::GetNextCluster() const
 	{
 		ResetClusterPointers();
 		return NULL;
-	};
-};
+	}
+}
 
 
 Bool_t ClusterSource::FetchCluster(Float_t& x, Float_t& y) const
@@ -483,7 +483,7 @@ void ClusterSource::AddBlock(Int_t chamber)
 	{
 		Error("AddBlock", "No event selected.");
 		return;
-	};
+	}
 	
 	fBlockIndex = fCurrentEvent->fBlocks.GetEntriesFast();
 	new ( fCurrentEvent->fBlocks[fBlockIndex] ) BlockData(chamber);
@@ -506,7 +506,7 @@ void ClusterSource::AddPoint(Float_t x, Float_t y)
 	{
 		Error("AddPoint", "No block selected.");
 		return;
-	};
+	}
 	
 	fClusterIndex = fCurrentBlock->fClusters.GetEntriesFast();
 	new ( fCurrentBlock->fClusters[fClusterIndex] ) Point(x, y);
@@ -526,7 +526,7 @@ Bool_t ClusterSource::FileAndFolderOk(AliMUONDataInterface* data)
 		fFilename = data->CurrentFile();
 		fFoldername = data->CurrentFolder();
 		return kTRUE;
-	};
+	}
 
 	if ( fFilename != data->CurrentFile() )
 	{
@@ -535,7 +535,7 @@ Bool_t ClusterSource::FileAndFolderOk(AliMUONDataInterface* data)
 			fFilename.Data(), data->CurrentFile().Data()
 		);
 		return kFALSE;
-	};
+	}
 	
 	if ( fFoldername != data->CurrentFolder() )
 	{
@@ -571,7 +571,7 @@ void ClusterSource::AddChamberFrom(AliMUONDataInterface* data, Int_t chamber)
 	UInt_t currentblocksize = 0;
 #ifndef __alpha
 #ifndef __sun
-	Float_t x = NAN, y = NAN;
+	Float_t x = nanf(""), y = nanf("");
 #else
 	Float_t x = 0, y = 0;
 #endif
@@ -595,8 +595,8 @@ void ClusterSource::AddChamberFrom(AliMUONDataInterface* data, Int_t chamber)
 					x = h->X();
 					y = h->Y();
 					break;
-				};
-			};
+				}
+			}
 
 			// Continue to the next track if we could not find a hit
 			// on the current track and chamber.
@@ -606,7 +606,7 @@ void ClusterSource::AddChamberFrom(AliMUONDataInterface* data, Int_t chamber)
 					chamber, track, data->CurrentEvent()
 				);
 				continue;
-			};
+			}
 
 			if (InFillRegion(x, y))
 			{
@@ -617,9 +617,9 @@ void ClusterSource::AddChamberFrom(AliMUONDataInterface* data, Int_t chamber)
 				{
 					AddBlock(chamber);
 					currentblocksize = 0;
-				};
-			};
-		};
+				}
+			}
+		}
 		break;
 
 	case FromRawClusters:
@@ -638,9 +638,9 @@ void ClusterSource::AddChamberFrom(AliMUONDataInterface* data, Int_t chamber)
 				{
 					AddBlock(chamber);
 					currentblocksize = 0;
-				};
-			};
-		};
+				}
+			}
+		}
 		break;
 
 	default:
@@ -658,7 +658,7 @@ void ClusterSource::AddClusterFrom(
 	DebugMsg(1, "Entering AddClusterFrom");
 #ifndef __alpha
 #ifndef __sun	
-	Float_t x = NAN, y = NAN;
+	Float_t x = nanf(""), y = nanf("");
 #else
 	Float_t x = 0, y = 0;
 #endif
@@ -681,8 +681,8 @@ void ClusterSource::AddClusterFrom(
 				x = h->X();
 				y = h->Y();
 				break;
-			};
-		};
+			}
+		}
 
 		if (i >= data->NumberOfHits(cluster))
 		{
@@ -692,7 +692,7 @@ void ClusterSource::AddClusterFrom(
 			);
 			DebugMsg(1, "Leaving AddClusterFrom");
 			return;
-		};
+		}
 		}
 		break;
 
@@ -707,12 +707,12 @@ void ClusterSource::AddClusterFrom(
 	default:
 		Error("AddClusterFrom", "fDataToUse is not set to a valid value.");
 		return;
-	};
+	}
 	
 	AddPoint(x, y);
 	
 	DebugMsg(1, "Leaving AddClusterFrom");
-};
+}
 
 
 Bool_t ClusterSource::InFillRegion(Float_t x, Float_t /*y*/)
@@ -726,8 +726,8 @@ Bool_t ClusterSource::InFillRegion(Float_t x, Float_t /*y*/)
 	default:
 		Error("InFillRegion", "fAreaToUse is not set to a valid value.");
 		return kFALSE;
-	};
-};
+	}
+}
 
 
 void ClusterSource::ResetAllPointers() const
@@ -741,7 +741,7 @@ void ClusterSource::ResetAllPointers() const
 	DebugMsg(2, "\tfEventIndex = " << fEventIndex << " , fBlockIndex = " << fBlockIndex
 		<< " , fClusterIndex = " << fClusterIndex
 	);
-};
+}
 
 
 void ClusterSource::ResetBlockPointers() const

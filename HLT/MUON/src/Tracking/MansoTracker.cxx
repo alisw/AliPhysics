@@ -31,9 +31,9 @@ std::ostream& operator << (std::ostream& os, MansoTracker::StatesSM4 state)
 	case MansoTracker::WaitChamber7:     os << "WaitChamber7"; break;
 	case MansoTracker::WaitMoreChamber7: os << "WaitMoreChamber7"; break;
 	default:                             os << "FAULT!!"; 
-	};
+	}
 	return os;
-};
+}
 
 std::ostream& operator << (std::ostream& os, MansoTracker::StatesSM5 state)
 {
@@ -46,9 +46,9 @@ std::ostream& operator << (std::ostream& os, MansoTracker::StatesSM5 state)
 	case MansoTracker::WaitMoreChamber9:  os << "WaitMoreChamber9"; break;
 	case MansoTracker::SM5Done:           os << "SM5Done"; break;
 	default:                              os << "FAULT!!"; 
-	};
+	}
 	return os;
-};
+}
 
 } // end of namespace
 #endif // DEBUG
@@ -95,7 +95,7 @@ void MansoTracker::RegionOfInterest::Create(Point p, Float a, Float b)
 	//     Rs = a * Rp + b
 	//   given on page 3 section 4.
 	Rs = a * Rp + b;
-};
+}
 
 
 bool MansoTracker::RegionOfInterest::Contains(Point p) const
@@ -110,7 +110,7 @@ bool MansoTracker::RegionOfInterest::Contains(Point p) const
 		<< " , centre = " << centre << " , r = " << r << " , Rs = " << Rs
 	);
 	return r <= Rs;
-};
+}
 
 
 void MansoTracker::RegionOfInterest::GetBoundaryBox(Float& left, Float& right, Float& bottom, Float& top)
@@ -119,7 +119,7 @@ void MansoTracker::RegionOfInterest::GetBoundaryBox(Float& left, Float& right, F
 	right = centre.x + Rs;
 	bottom = centre.y - Rs;
 	top = centre.y + Rs;
-};
+}
 
 
 MansoTracker::Vertex::Vertex(Float x, Float y, Float z)
@@ -127,7 +127,7 @@ MansoTracker::Vertex::Vertex(Float x, Float y, Float z)
 	this->x = x;
 	this->y = y;
 	this->z = z;
-};
+}
 
 
 MansoTracker::Vertex::Vertex(Point xy, Float z)
@@ -135,7 +135,7 @@ MansoTracker::Vertex::Vertex(Point xy, Float z)
 	x = xy.x;
 	y = xy.y;
 	this->z = z;
-};
+}
 
 
 MansoTracker::Line::Line(
@@ -149,7 +149,7 @@ MansoTracker::Line::Line(
 	Cx = Bx;
 	Cy = By;
 	Cz = Bz;
-};
+}
 
 
 MansoTracker::Line::Line(Vertex A, Vertex B)
@@ -160,7 +160,7 @@ MansoTracker::Line::Line(Vertex A, Vertex B)
 	Cx = B.x;
 	Cy = B.y;
 	Cz = B.z;
-};
+}
 
 
 Point MansoTracker::Line::FindIntersectWithXYPlain(Float z) const
@@ -171,7 +171,7 @@ Point MansoTracker::Line::FindIntersectWithXYPlain(Float z) const
 	Float Ly = My*t + Cy;
 
 	return Point(Lx, Ly);
-};
+}
 
 
 MansoTracker::MansoTracker() : Tracker()
@@ -179,7 +179,7 @@ MansoTracker::MansoTracker() : Tracker()
 	sm4state = SM4Idle;
 	sm5state = SM5Idle;
 	requests_completed = 0;
-};
+}
 
 
 void MansoTracker::FindTrack(const TriggerRecord& trigger)
@@ -207,7 +207,7 @@ void MansoTracker::FindTrack(const TriggerRecord& trigger)
 	Float left, right, bottom, top;
 	mc1.roi.GetBoundaryBox(left, right, bottom, top);
 	RequestClusters(left, right, bottom, top, Chamber10, &mc1);
-};
+}
 
 
 void MansoTracker::ReturnClusters(void* tag, const ClusterPoint* clusters, UInt count)
@@ -231,8 +231,8 @@ void MansoTracker::ReturnClusters(void* tag, const ClusterPoint* clusters, UInt 
 	default:
 		// Error
 		DebugMsg(1, "ERROR: Got tag with an invalid value: " << data->chamber);
-	};
-};
+	}
+}
 
 
 void MansoTracker::EndOfClusters(void* tag)
@@ -250,8 +250,8 @@ void MansoTracker::EndOfClusters(void* tag)
 	default:
 		// Error
 		DebugMsg(1, "ERROR: Got tag with an invalid value: " << data->chamber);
-	};
-};
+	}
+}
 
 
 void MansoTracker::FillTrackData(Track& track)
@@ -281,7 +281,7 @@ void MansoTracker::FillTrackData(Track& track)
 	{
 		track.point[i] = Point(0.0, 0.0);
 		track.region[i] = INVALID_ROI;
-	};
+	}
 
 	Float left, right, bottom, top;
 	
@@ -306,7 +306,7 @@ void MansoTracker::FillTrackData(Track& track)
 		track.region[6] = region4;
 		track.point[7] = Point(0.0, 0.0);
 		track.region[7] = INVALID_ROI;
-	};
+	}
 	if (mc1.chamber == Chamber10)
 	{
 		track.point[8] = Point(0.0, 0.0);
@@ -320,8 +320,8 @@ void MansoTracker::FillTrackData(Track& track)
 		track.region[8] = region5;
 		track.point[9] = Point(0.0, 0.0);
 		track.region[9] = INVALID_ROI;
-	};
-};
+	}
+}
 
 
 void MansoTracker::Reset()
@@ -332,7 +332,7 @@ void MansoTracker::Reset()
 	sm4state = SM4Idle;
 	sm5state = SM5Idle;
 	requests_completed = 0;
-};
+}
 
 
 // Note: In the following ReceiveClustersXXX and EndOfClustersXXX methods we make
@@ -362,14 +362,14 @@ void MansoTracker::ReceiveClustersChamber7(const ClusterPoint* clusters, UInt co
 				Station4Data* newdata = st4points.New();
 				newdata->clusterpoint = cluster;
 				newdata->st5tag = data;
-			};
-		};
+			}
+		}
 		break;
 	
 	default:
 		DebugMsg(1, "ERROR: Unexpected state for SM4 in MansoTracker::ReceiveClustersChamber7!");
-	};
-};
+	}
+}
 
 
 void MansoTracker::ReceiveClustersChamber8(const ClusterPoint* clusters, UInt count, const TagData* data)
@@ -392,14 +392,14 @@ void MansoTracker::ReceiveClustersChamber8(const ClusterPoint* clusters, UInt co
 				Station4Data* newdata = st4points.New();
 				newdata->clusterpoint = cluster;
 				newdata->st5tag = data;
-			};
-		};
+			}
+		}
 		break;
 		
 	default:
 		DebugMsg(1, "ERROR: Unexpected state for SM4 in MansoTracker::ReceiveClustersChamber8!");
-	};
-};
+	}
+}
 
 
 void MansoTracker::ReceiveClustersChamber9(const ClusterPoint* clusters, UInt count)
@@ -421,14 +421,14 @@ void MansoTracker::ReceiveClustersChamber9(const ClusterPoint* clusters, UInt co
 				Station5Data* data = st5data.New();
 				data->clusterpoint = cluster;
 				ProjectToStation4(data, z9);  // This adds a new request for station 4.
-			};
-		};
+			}
+		}
 		break;
 
 	default:
 		DebugMsg(1, "ERROR: Unexpected state for SM5 in MansoTracker::ReceiveClustersChamber9!");
-	};
-};
+	}
+}
 
 
 void MansoTracker::ReceiveClustersChamber10(const ClusterPoint* clusters, UInt count)
@@ -451,14 +451,14 @@ void MansoTracker::ReceiveClustersChamber10(const ClusterPoint* clusters, UInt c
 				Station5Data* data = st5data.New();
 				data->clusterpoint = cluster;
 				ProjectToStation4(data, z10);  // This adds a new request for station 4.
-			};
-		};
+			}
+		}
 		break;
 
 	default:
 		DebugMsg(1, "ERROR: Unexpected state for SM5 in MansoTracker::ReceiveClustersChamber10!");
-	};
-};
+	}
+}
 
 
 void MansoTracker::EndOfClustersChamber7()
@@ -475,14 +475,14 @@ void MansoTracker::EndOfClustersChamber7()
 		break;
 	
 	case WaitMoreChamber7:
-		if (requests_completed == st5data.Count() and sm5state == SM5Done)
+		if (requests_completed == st5data.Count() && sm5state == SM5Done)
 			ProcessClusters();
 		break;
 	
 	default:
 		DebugMsg(1, "ERROR: Unexpected state for SM4 in MansoTracker::EndOfClustersChamber7!");
-	};
-};
+	}
+}
 
 
 void MansoTracker::EndOfClustersChamber8()
@@ -525,19 +525,19 @@ void MansoTracker::EndOfClustersChamber8()
 			data->tag.roi.GetBoundaryBox(left, right, bottom, top);
 			// Make request for chamber 7 data.
 			RequestClusters(left, right, bottom, top, Chamber7, &data->tag);
-		};
+		}
 		}
 		break;
 	
 	case WaitMoreChamber8:
-		if (requests_completed == st5data.Count() and sm5state == SM5Done)
+		if (requests_completed == st5data.Count() && sm5state == SM5Done)
 			ProcessClusters();
 		break;
 	
 	default:
 		DebugMsg(1, "ERROR: Unexpected state for SM4 in MansoTracker::EndOfClustersChamber8!");
-	};
-};
+	}
+}
 
 
 void MansoTracker::EndOfClustersChamber9()
@@ -559,8 +559,8 @@ void MansoTracker::EndOfClustersChamber9()
 
 	default:
 		DebugMsg(1, "ERROR: Unexpected state for SM5 in MansoTracker::EndOfClustersChamber9!");
-	};
-};
+	}
+}
 
 
 void MansoTracker::EndOfClustersChamber10()
@@ -596,8 +596,8 @@ void MansoTracker::EndOfClustersChamber10()
 
 	default:
 		DebugMsg(1, "ERROR: Unexpected state for SM5 in MansoTracker::EndOfClustersChamber10!");
-	};
-};
+	}
+}
 
 
 void MansoTracker::ProjectToStation4(Station5Data* data, register Float station5z)
@@ -606,11 +606,13 @@ void MansoTracker::ProjectToStation4(Station5Data* data, register Float station5
 	// Since certain states of SM4 means that it is fetching for Chamber8
 	// and other states are for fetching from Chamber7. We need to make
 	// requests for the correct chamber.
-	Assert( sm4state == WaitChamber8 or sm4state == WaitMoreChamber8 or
-		sm4state == WaitChamber7 or sm4state == WaitMoreChamber7
+	Assert( sm4state == WaitChamber8 
+		|| sm4state == WaitMoreChamber8
+		|| sm4state == WaitChamber7
+		|| sm4state == WaitMoreChamber7
 	);
 	TagData* tag = &data->tag;
-	if (sm4state == WaitChamber8 or sm4state == WaitMoreChamber8)
+	if (sm4state == WaitChamber8 || sm4state == WaitMoreChamber8)
 	{
 		// Form the vector line between trigger station 1 and tracking station 5,
 		// and find the intersection point of the line with station 4 (chamber8).
@@ -633,13 +635,13 @@ void MansoTracker::ProjectToStation4(Station5Data* data, register Float station5
 		// Build a region of interest for tracking station 4.
 		tag->chamber = Chamber7;
 		tag->roi.Create(intercept, a7, b7);
-	};
+	}
 
 	// Make the request for clusters from station 4.
 	Float left, right, bottom, top;
 	tag->roi.GetBoundaryBox(left, right, bottom, top);
 	RequestClusters(left, right, bottom, top, tag->chamber, tag);
-};
+}
 
 
 void MansoTracker::ProcessClusters()
@@ -653,7 +655,7 @@ void MansoTracker::ProcessClusters()
 	{
 		NoTrackFound();
 		return;
-	};
+	}
 	
 	st5rec = st5data.First();
 	if (st5rec != st5data.End())
@@ -667,7 +669,7 @@ void MansoTracker::ProcessClusters()
 		{
 			NoTrackFound();
 			return;
-		};
+		}
 		 
 		// For all combinations of cluster point pairs from station 4 and 5
 		// signal a found track:
@@ -684,11 +686,11 @@ void MansoTracker::ProcessClusters()
 			}
 
 			st5rec++;  // Get next station 5 cluster point.
-		} while (st5rec != st5data.End() and st5rec->tag.chamber == st4chamber);
+		} while (st5rec != st5data.End() && st5rec->tag.chamber == st4chamber);
 	}
 	else
 		NoTrackFound();
-};
+}
 
 
 } // Tracking

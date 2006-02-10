@@ -43,11 +43,11 @@ Float RegionOfInterest::planescale[NUMBER_OF_TRACKING_CHAMBERS]
 
 void RegionOfInterest::CreateToContain(const ClusterPoint& point, ChamberID chamber)
 {
-	Assert( 0 <= chamber and chamber < NUMBER_OF_TRACKING_CHAMBERS );
+	Assert( 0 <= chamber && chamber < NUMBER_OF_TRACKING_CHAMBERS );
 	this->chamber = chamber;
 	left = right = point.x;
 	bottom = top = point.y;
-};
+}
 
 
 void RegionOfInterest::ExpandToContain(const ClusterPoint& point)
@@ -60,27 +60,29 @@ void RegionOfInterest::ExpandToContain(const ClusterPoint& point)
 		bottom = point.y;
 	else
 		if (point.y > top) top = point.y;
-};
+}
 
 
 void RegionOfInterest::CreateToContain(const ClusterPoint* points, UInt count, ChamberID chamber)
 {
-	Assert( 0 <= chamber and chamber < NUMBER_OF_TRACKING_CHAMBERS );
+	Assert( 0 <= chamber && chamber < NUMBER_OF_TRACKING_CHAMBERS );
 	Assert( count > 0 );
 	
 	CreateToContain(points[0], chamber);
 	for (UInt i = 1; i < count; i++)
 		ExpandToContain(points[i]);
-};
+}
 
 
 bool RegionOfInterest::InBounds()
 {
-	Assert( 0 <= chamber and chamber < NUMBER_OF_TRACKING_CHAMBERS );
+	Assert( 0 <= chamber && chamber < NUMBER_OF_TRACKING_CHAMBERS );
 	register Float bound = planescale[chamber];
-	return -bound <= left and right <= bound
-		and -bound <= bottom and top <= bound;
-};
+	return -bound <= left
+	  && right <= bound
+	  && -bound <= bottom
+	  && top <= bound;
+}
 
 
 #define MAX_LEVELS           13
@@ -123,7 +125,7 @@ UInt RegionOfInterest::indexoffsets[13]
 
 inline void RegionOfInterest::ConvertToGrid(register UInt& l, register UInt& r, register UInt& b, register UInt& t) const
 {
-	Assert( 0 <= chamber and chamber < NUMBER_OF_TRACKING_CHAMBERS );
+	Assert( 0 <= chamber && chamber < NUMBER_OF_TRACKING_CHAMBERS );
 
 	register Float scale = planescale[chamber];
 	l = (UInt) floor( (left / scale + 1.0f) * 0.5f * GRID_SIZE );
@@ -139,7 +141,7 @@ inline void RegionOfInterest::ConvertToGrid(register UInt& l, register UInt& r, 
 	Assert( b <= GRID_SIZE );
 	Assert( t <= GRID_SIZE );
 	*/
-};
+}
 
 
 inline void RegionOfInterest::ConvertBackFromGrid(register UInt l, register UInt r, register UInt b, register UInt t)
@@ -149,13 +151,13 @@ inline void RegionOfInterest::ConvertBackFromGrid(register UInt l, register UInt
 	Assert( b <= GRID_SIZE );
 	Assert( t <= GRID_SIZE );
 
-	Assert( 0 <= chamber and chamber < NUMBER_OF_TRACKING_CHAMBERS );
+	Assert( 0 <= chamber && chamber < NUMBER_OF_TRACKING_CHAMBERS );
 	register Float scale = planescale[chamber];
 	left = ((Float)l / (Float)GRID_SIZE - 0.5f) * 2.0f * scale;
 	right = ((Float)r / (Float)GRID_SIZE - 0.5f) * 2.0f * scale;
 	bottom = ((Float)b / (Float)GRID_SIZE - 0.5f) * 2.0f * scale;
 	top = ((Float)t / (Float)GRID_SIZE - 0.5f) * 2.0f * scale;
-};
+}
 
 
 ROI RegionOfInterest::Encode() const
@@ -171,18 +173,18 @@ ROI RegionOfInterest::Encode() const
 	// More specificaly we search for which n,
 	//   (l * 2^(-n) + 2) * 2^n >= r and (b * 2^(-n) + 2) * 2^n >= t
 	
-	if ( ((l >> 6) + 2) << 6 >= r and ((b >> 6) + 2) << 6 >= t )
+	if ( ((l >> 6) + 2) << 6 >= r && ((b >> 6) + 2) << 6 >= t )
 	{
-		if ( ((l >> 2) + 2) << 2 >= r and ((b >> 2) + 2) << 2 >= t )
+		if ( ((l >> 2) + 2) << 2 >= r && ((b >> 2) + 2) << 2 >= t )
 		{
-			if ( l + 2 >= r and b + 2 >= t )
+			if ( l + 2 >= r && b + 2 >= t )
 			{
 				index = INDICES_TO_LEVEL_13;
 				maxwidth = (2 << 13) - 1;
 			}
 			else
 			{
-				if ( ((l >> 1) + 2) << 1 >= r and ((b >> 1) + 2) << 1 >= t )
+				if ( ((l >> 1) + 2) << 1 >= r && ((b >> 1) + 2) << 1 >= t )
 				{
 					index = INDICES_TO_LEVEL_12;
 					maxwidth = (2 << 12) - 1;
@@ -193,14 +195,14 @@ ROI RegionOfInterest::Encode() const
 					index = INDICES_TO_LEVEL_11;
 					maxwidth = (2 << 11) - 1;
 					l >>= 2; b >>= 2;
-				};
-			};
+				}
+			}
 		}
 		else
 		{
-			if ( ((l >> 4) + 2) << 4 >= r and ((b >> 4) + 2) << 4 >= t )
+			if ( ((l >> 4) + 2) << 4 >= r && ((b >> 4) + 2) << 4 >= t )
 			{
-				if ( ((l >> 3) + 2) << 3 >= r and ((b >> 3) + 2) << 3 >= t )
+				if ( ((l >> 3) + 2) << 3 >= r && ((b >> 3) + 2) << 3 >= t )
 				{
 					index = INDICES_TO_LEVEL_10;
 					maxwidth = (2 << 10) - 1;
@@ -211,11 +213,11 @@ ROI RegionOfInterest::Encode() const
 					index = INDICES_TO_LEVEL_9;
 					maxwidth = (2 << 9) - 1;
 					l >>= 4; b >>= 4;
-				};
+				}
 			}
 			else
 			{
-				if ( ((l >> 5) + 2) << 5 >= r and ((b >> 5) + 2) << 5 >= t )
+				if ( ((l >> 5) + 2) << 5 >= r && ((b >> 5) + 2) << 5 >= t )
 				{
 					index = INDICES_TO_LEVEL_8;
 					maxwidth = (2 << 8) - 1;
@@ -226,17 +228,17 @@ ROI RegionOfInterest::Encode() const
 					index = INDICES_TO_LEVEL_7;
 					maxwidth = (2 << 7) - 1;
 					l >>= 6; b >>= 6;
-				};
-			};
-		};
+				}
+			}
+		}
 	}
 	else
 	{
-		if ( ((l >> 10) + 2) << 10 >= r and ((b >> 10) + 2) << 10 >= t )
+		if ( ((l >> 10) + 2) << 10 >= r && ((b >> 10) + 2) << 10 >= t )
 		{
-			if ( ((l >> 8) + 2) << 8 >= r and ((b >> 8) + 2) << 8 >= t )
+			if ( ((l >> 8) + 2) << 8 >= r && ((b >> 8) + 2) << 8 >= t )
 			{
-				if ( ((l >> 7) + 2) << 7 >= r and ((b >> 7) + 2) << 7 >= t )
+				if ( ((l >> 7) + 2) << 7 >= r && ((b >> 7) + 2) << 7 >= t )
 				{
 					index = INDICES_TO_LEVEL_6;
 					maxwidth = (2 << 6) - 1;
@@ -247,11 +249,11 @@ ROI RegionOfInterest::Encode() const
 					index = INDICES_TO_LEVEL_5;
 					maxwidth = (2 << 5) - 1;
 					l >>= 8; b >>= 8;
-				};
+				}
 			}
 			else
 			{
-				if ( ((l >> 9) + 2) << 9 >= r and ((b >> 9) + 2) << 9 >= t )
+				if ( ((l >> 9) + 2) << 9 >= r && ((b >> 9) + 2) << 9 >= t )
 				{
 					index = INDICES_TO_LEVEL_4;
 					maxwidth = (2 << 4) - 1;
@@ -262,14 +264,14 @@ ROI RegionOfInterest::Encode() const
 					index = INDICES_TO_LEVEL_3;
 					maxwidth = (2 << 3) - 1;
 					l >>= 10; b >>= 10;
-				};
-			};
+				}
+			}
 		}
 		else
 		{
-			if ( ((l >> 12) + 2) << 12 >= r and ((b >> 12) + 2) << 12 >= t )
+			if ( ((l >> 12) + 2) << 12 >= r && ((b >> 12) + 2) << 12 >= t )
 			{
-				if ( ((l >> 11) + 2) << 11 >= r and ((b >> 11) + 2) << 11 >= t )
+				if ( ((l >> 11) + 2) << 11 >= r && ((b >> 11) + 2) << 11 >= t )
 				{
 					index = INDICES_TO_LEVEL_2;
 					maxwidth = (2 << 2) - 1;
@@ -280,16 +282,16 @@ ROI RegionOfInterest::Encode() const
 					index = INDICES_TO_LEVEL_1;
 					maxwidth = (2 << 1) - 1;
 					l >>= 12; b >>= 12;
-				};
+				}
 			}
 			else
 			{
 				index = 0;
 				maxwidth = 0;
 				l = 0; b = 0;
-			};
-		};
-	};
+			}
+		}
+	}
 	
 	// Make sure the ROI boundary box does not go outside the
 	// global region of interest.
@@ -297,7 +299,7 @@ ROI RegionOfInterest::Encode() const
 	if ( b > maxwidth - 1 ) b = maxwidth - 1;
 	
 	return MAX_INDICES * chamber + b * maxwidth + l + index;
-};
+}
 
 
 ROI RegionOfInterest::Encode(UChar& level, UInt& l, UInt& b) const
@@ -313,11 +315,11 @@ ROI RegionOfInterest::Encode(UChar& level, UInt& l, UInt& b) const
 	// More specificaly we search for which n,
 	//   (l * 2^(-n) + 2) * 2^n >= r and (b * 2^(-n) + 2) * 2^n >= t
 	
-	if ( ((l >> 6) + 2) << 6 >= r and ((b >> 6) + 2) << 6 >= t )
+	if ( ((l >> 6) + 2) << 6 >= r && ((b >> 6) + 2) << 6 >= t )
 	{
-		if ( ((l >> 2) + 2) << 2 >= r and ((b >> 2) + 2) << 2 >= t )
+		if ( ((l >> 2) + 2) << 2 >= r && ((b >> 2) + 2) << 2 >= t )
 		{
-			if ( l + 2 >= r and b + 2 >= t )
+			if ( l + 2 >= r && b + 2 >= t )
 			{
 				level = 13;
 				index = INDICES_TO_LEVEL_13;
@@ -325,7 +327,7 @@ ROI RegionOfInterest::Encode(UChar& level, UInt& l, UInt& b) const
 			}
 			else
 			{
-				if ( ((l >> 1) + 2) << 1 >= r and ((b >> 1) + 2) << 1 >= t )
+				if ( ((l >> 1) + 2) << 1 >= r && ((b >> 1) + 2) << 1 >= t )
 				{
 					level = 12;
 					index = INDICES_TO_LEVEL_12;
@@ -338,14 +340,14 @@ ROI RegionOfInterest::Encode(UChar& level, UInt& l, UInt& b) const
 					index = INDICES_TO_LEVEL_11;
 					maxwidth = (2 << 11) - 1;
 					l >>= 2; b >>= 2;
-				};
-			};
+				}
+			}
 		}
 		else
 		{
-			if ( ((l >> 4) + 2) << 4 >= r and ((b >> 4) + 2) << 4 >= t )
+			if ( ((l >> 4) + 2) << 4 >= r && ((b >> 4) + 2) << 4 >= t )
 			{
-				if ( ((l >> 3) + 2) << 3 >= r and ((b >> 3) + 2) << 3 >= t )
+				if ( ((l >> 3) + 2) << 3 >= r && ((b >> 3) + 2) << 3 >= t )
 				{
 					level = 10;
 					index = INDICES_TO_LEVEL_10;
@@ -358,11 +360,11 @@ ROI RegionOfInterest::Encode(UChar& level, UInt& l, UInt& b) const
 					index = INDICES_TO_LEVEL_9;
 					maxwidth = (2 << 9) - 1;
 					l >>= 4; b >>= 4;
-				};
+				}
 			}
 			else
 			{
-				if ( ((l >> 5) + 2) << 5 >= r and ((b >> 5) + 2) << 5 >= t )
+				if ( ((l >> 5) + 2) << 5 >= r && ((b >> 5) + 2) << 5 >= t )
 				{
 					level = 8;
 					index = INDICES_TO_LEVEL_8;
@@ -375,17 +377,17 @@ ROI RegionOfInterest::Encode(UChar& level, UInt& l, UInt& b) const
 					index = INDICES_TO_LEVEL_7;
 					maxwidth = (2 << 7) - 1;
 					l >>= 6; b >>= 6;
-				};
-			};
-		};
+				}
+			}
+		}
 	}
 	else
 	{
-		if ( ((l >> 10) + 2) << 10 >= r and ((b >> 10) + 2) << 10 >= t )
+		if ( ((l >> 10) + 2) << 10 >= r && ((b >> 10) + 2) << 10 >= t )
 		{
-			if ( ((l >> 8) + 2) << 8 >= r and ((b >> 8) + 2) << 8 >= t )
+			if ( ((l >> 8) + 2) << 8 >= r && ((b >> 8) + 2) << 8 >= t )
 			{
-				if ( ((l >> 7) + 2) << 7 >= r and ((b >> 7) + 2) << 7 >= t )
+				if ( ((l >> 7) + 2) << 7 >= r && ((b >> 7) + 2) << 7 >= t )
 				{
 					level = 6;
 					index = INDICES_TO_LEVEL_6;
@@ -398,11 +400,11 @@ ROI RegionOfInterest::Encode(UChar& level, UInt& l, UInt& b) const
 					index = INDICES_TO_LEVEL_5;
 					maxwidth = (2 << 5) - 1;
 					l >>= 8; b >>= 8;
-				};
+				}
 			}
 			else
 			{
-				if ( ((l >> 9) + 2) << 9 >= r and ((b >> 9) + 2) << 9 >= t )
+				if ( ((l >> 9) + 2) << 9 >= r && ((b >> 9) + 2) << 9 >= t )
 				{
 					level = 4;
 					index = INDICES_TO_LEVEL_4;
@@ -415,14 +417,14 @@ ROI RegionOfInterest::Encode(UChar& level, UInt& l, UInt& b) const
 					index = INDICES_TO_LEVEL_3;
 					maxwidth = (2 << 3) - 1;
 					l >>= 10; b >>= 10;
-				};
-			};
+				}
+			}
 		}
 		else
 		{
-			if ( ((l >> 12) + 2) << 12 >= r and ((b >> 12) + 2) << 12 >= t )
+			if ( ((l >> 12) + 2) << 12 >= r && ((b >> 12) + 2) << 12 >= t )
 			{
-				if ( ((l >> 11) + 2) << 11 >= r and ((b >> 11) + 2) << 11 >= t )
+				if ( ((l >> 11) + 2) << 11 >= r && ((b >> 11) + 2) << 11 >= t )
 				{
 					level = 2;
 					index = INDICES_TO_LEVEL_2;
@@ -435,7 +437,7 @@ ROI RegionOfInterest::Encode(UChar& level, UInt& l, UInt& b) const
 					index = INDICES_TO_LEVEL_1;
 					maxwidth = (2 << 1) - 1;
 					l >>= 12; b >>= 12;
-				};
+				}
 			}
 			else
 			{
@@ -443,9 +445,9 @@ ROI RegionOfInterest::Encode(UChar& level, UInt& l, UInt& b) const
 				index = 0;
 				maxwidth = 0;
 				l = 0; b = 0;
-			};
-		};
-	};
+			}
+		}
+	}
 	
 	// Make sure the ROI boundary box does not go outside the
 	// global region of interest.
@@ -453,7 +455,7 @@ ROI RegionOfInterest::Encode(UChar& level, UInt& l, UInt& b) const
 	if ( b > maxwidth - 1 ) b = maxwidth - 1;
 	
 	return MAX_INDICES * chamber + b * maxwidth + l + index;
-};
+}
 
 
 void RegionOfInterest::Decode(ROI code)
@@ -471,7 +473,7 @@ void RegionOfInterest::Decode(ROI code)
 	t = b + (2 << colevel);
 
 	ConvertBackFromGrid(l, r, b, t);
-};
+}
 
 
 void RegionOfInterest::Decode(ROI code, ChamberID& chamber, UChar& level, UInt& l, UInt& b)
@@ -479,7 +481,7 @@ void RegionOfInterest::Decode(ROI code, ChamberID& chamber, UChar& level, UInt& 
 	UChar colevel;
 	DecodeBits(code, chamber, colevel, l, b);
 	level = MAX_LEVELS - colevel;
-};
+}
 
 
 void RegionOfInterest::DecodeBits(ROI code, ChamberID& chamber, UChar& colevel, UInt& l, UInt& b)
@@ -515,8 +517,8 @@ void RegionOfInterest::DecodeBits(ROI code, ChamberID& chamber, UChar& colevel, 
 					index -= INDICES_TO_LEVEL_11;
 					width = (2 << 11) - 1;
 					colevel = 2;
-				};
-			};
+				}
+			}
 		}
 		else
 		{
@@ -533,7 +535,7 @@ void RegionOfInterest::DecodeBits(ROI code, ChamberID& chamber, UChar& colevel, 
 					index -= INDICES_TO_LEVEL_9;
 					width = (2 << 9) - 1;
 					colevel = 4;
-				};
+				}
 			}
 			else
 			{
@@ -548,9 +550,9 @@ void RegionOfInterest::DecodeBits(ROI code, ChamberID& chamber, UChar& colevel, 
 					index -= INDICES_TO_LEVEL_7;
 					width = (2 << 7) - 1;
 					colevel = 6;
-				};
-			};
-		};
+				}
+			}
+		}
 	}
 	else
 	{
@@ -569,7 +571,7 @@ void RegionOfInterest::DecodeBits(ROI code, ChamberID& chamber, UChar& colevel, 
 					index -= INDICES_TO_LEVEL_5;
 					width = (2 << 5) - 1;
 					colevel = 8;
-				};
+				}
 			}
 			else
 			{
@@ -584,8 +586,8 @@ void RegionOfInterest::DecodeBits(ROI code, ChamberID& chamber, UChar& colevel, 
 					index -= INDICES_TO_LEVEL_3;
 					width = (2 << 3) - 1;
 					colevel = 10;
-				};
-			};
+				}
+			}
 		}
 		else
 		{
@@ -602,27 +604,27 @@ void RegionOfInterest::DecodeBits(ROI code, ChamberID& chamber, UChar& colevel, 
 					index -= INDICES_TO_LEVEL_1;
 					width = (2 << 1) - 1;
 					colevel = 12;
-				};
+				}
 			}
 			else
 			{
 				width = 1;
 				colevel = 13;
-			};
-		};
-	};
+			}
+		}
+	}
 
 	// Can now decode the x, y position of the bottom left corner
 	// of the ROI boundary box.
 	b = (index / width);
 	l = (index % width);
-};
+}
 
 
 ChamberID RegionOfInterest::DecodeChamber(ROI code)
 {
 	return (ChamberID)(code / MAX_INDICES);
-};
+}
 
 
 } // dHLT

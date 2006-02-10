@@ -125,7 +125,7 @@ Int_t ADCStreamSource::NumberOfStreams() const
 
 Bool_t ADCStreamSource::GetStream(Int_t index) const
 {
-	if ( 0 <= index and index < NumberOfStreams() )
+	if ( 0 <= index && index < NumberOfStreams() )
 	{
 		fCurrentStream = index;
 		return kTRUE;
@@ -162,7 +162,7 @@ Bool_t ADCStreamSource::FirstStream() const
 
 Bool_t ADCStreamSource::NextStream() const
 {
-	if ( 0 <= fCurrentStream and fCurrentStream < NumberOfStreams() - 1 )
+	if ( 0 <= fCurrentStream && fCurrentStream < NumberOfStreams() - 1 )
 	{
 		fCurrentStream++;
 		return kTRUE;
