@@ -419,9 +419,9 @@ AliMUONSt345SlatSegmentationV2::Neighbours(Int_t iX, Int_t iY, Int_t* Nlist,
 	fSlatSegmentation->PadByIndices(AliMpIntPair(iX-fgIntOffset,iY-fgIntOffset),kTRUE);
 	
   // Define the region to look into : a region slightly bigger
-  // than the pad itself (10% bigger), in order to catch first neighbours.
-//  AliMpArea area(pad.Position()+fSlat->Dimensions(),pad.Dimensions()*2.1); 
-  AliMpArea area(pad.Position(),pad.Dimensions()*2.1); 
+  // than the pad itself (5% bigger), in order to catch first neighbours.
+
+  AliMpArea area(pad.Position(),pad.Dimensions()*1.05); 
 		
   AliMpVPadIterator* it = fSlatSegmentation->CreateIterator(area);
   it->First();
