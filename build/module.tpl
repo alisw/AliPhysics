@@ -376,15 +376,5 @@ check-@MODULE@: $(@PACKAGE@CHECKS)
 
 .SECONDARY: $(@PACKAGE@REVENGS) $(@PACKAGE@PREPROC)
 
-reveng-@PACKAGE@:		@PACKAGE@/check/classDiagram.dot
-
-@PACKAGE@/check/classDiagram.dot:	$(@PACKAGE@PREPROC)
-	@$(REV_ENG) $^
-	@-mv classDiagram.dot $@
-
-revdisp-@PACKAGE@:	reveng-@PACKAGE@
-	@echo revdisp for @PACKAGE@
-	@cd @PACKAGE@/check ; \
-      $(IRST_INSTALLDIR)/webreveng/create-class-diagram-pages.sh
-	@sed -e "s/\@PACKAGE\@/@PACKAGE@/g" < $(ALICE_ROOT)/build/HomePage.html > @PACKAGE@/check/HomePage.html
+PACKREVENG += $(@PACKAGE@PREPROC)
 
