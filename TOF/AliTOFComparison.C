@@ -29,7 +29,7 @@
   #include "AliRun.h"
   #include "AliESD.h"
 
-  #include "AliTOFdigit.h"
+  #include "AliTOFcluster.h"
   #include "AliLoader.h"
 
   #include "TClonesArray.h"
@@ -137,7 +137,7 @@ Int_t AliTOFComparison(const Char_t *dir=".") {
       cerr<<"Can not get the TOF loader"<<endl;
       return 2;
    }
-   tofl->LoadDigits("read");
+   tofl->LoadRecPoints("read");
 
 
    sprintf(fname,"%s/AliESDs.root",dir);
@@ -164,22 +164,22 @@ Int_t AliTOFComparison(const Char_t *dir=".") {
 
      rl->GetEvent(e);
 
-     TTree *digTree=tofl->TreeD();
-     if (!digTree) {
+     TTree *clsTree=tofl->TreeR();
+     if (!clsTree) {
         cerr<<"Can't get the TOF cluster tree !\n";
         return 3;
      } 
-     TBranch *branch=digTree->GetBranch("TOF");
+     TBranch *branch=clsTree->GetBranch("TOF");
      if (!branch) { 
         cerr<<"Can't get the branch with the TOF digits !\n";
         return 4;
      }
-     TClonesArray dummy("AliTOFdigit",10000), *digits=&dummy;   
-     branch->SetAddress(&digits);
+     TClonesArray dummy("AliTOFcluster",10000), *clusters=&dummy;   
+     branch->SetAddress(&clusters);
 
-     digTree->GetEvent(0);
-     Int_t nd=digits->GetEntriesFast();
-     cerr<<"Number of the TOF digits: "<<nd<<endl;
+     clsTree->GetEvent(0);
+     Int_t nd=clusters->GetEntriesFast();
+     cerr<<"Number of the TOF clusters: "<<nd<<endl;
 
 
 
@@ -215,14 +215,13 @@ Int_t AliTOFComparison(const Char_t *dir=".") {
              if (tt->GetTOFsignal() < 0) continue;
              UInt_t idx=tt->GetTOFcluster();
              if ((Int_t)idx>=nd) {
-	       cerr<<"Wrong digit index ! "<<idx<<endl;
+	       cerr<<"Wrong cluster index ! "<<idx<<endl;
                return 5;
              }
-             AliTOFdigit *dig=(AliTOFdigit*)digits->UncheckedAt(idx);
-             Int_t *label=dig->GetTracks();
-             if (label[0]!=lab)
-             if (label[1]!=lab)
-	       if (label[2]!=lab) {
+             AliTOFcluster *cls=(AliTOFcluster*)clusters->UncheckedAt(idx);
+             if (cls->GetLabel(0)!=lab)
+	       if (cls->GetLabel(1)!=lab)
+		 if (cls->GetLabel(2)!=lab) {
                  mismatched++; 
                  if (ptg>pmin) { hfake->Fill(ptg); hfak->Fill(tgl); } 
                  break;
@@ -339,7 +338,7 @@ Int_t GoodTracksTOF(const Char_t *dir) {
       delete rl;
       return 2;
    }
-   tofl->LoadDigits("read");
+   tofl->LoadRecPoints("read");
 
    Int_t nev=rl->GetNumberOfEvents();
    ::Info("GoodTracksTOF","Number of events : %d\n",nev);  
@@ -385,36 +384,36 @@ Int_t GoodTracksTOF(const Char_t *dir) {
      //******** Fill the "good" masks
      Int_t *good=new Int_t[np]; Int_t k; for (k=0; k<np; k++) good[k]=0;
 
-     TTree *dTree=tofl->TreeD();
-     if (!dTree) {
+     TTree *cTree=tofl->TreeR();
+     if (!cTree) {
         ::Error("GoodTracksTOF","Can't get the TOF cluster tree !");
         delete rl;
         return 8;
      } 
-     TBranch *branch=dTree->GetBranch("TOF");
+     TBranch *branch=cTree->GetBranch("TOF");
      if (!branch) { 
         ::Error("GoodTracksTOF","Can't get the branch with the TOF digits !");
         return 9;
      }
-     TClonesArray dummy("AliTOFdigit",10000), *digits=&dummy;
-     branch->SetAddress(&digits);
+     TClonesArray dummy("AliTOFcluster",10000), *clusters=&dummy;
+     branch->SetAddress(&clusters);
    
-     dTree->GetEvent(0);
-     Int_t nd=digits->GetEntriesFast();
+     cTree->GetEvent(0);
+     Int_t nd=clusters->GetEntriesFast();
 
      for (Int_t i=0; i<nd; i++) {
-       AliTOFdigit *d=(AliTOFdigit*)digits->UncheckedAt(i);
-       Int_t l0=d->GetTrack(0);
+       AliTOFcluster *c=(AliTOFcluster*)clusters->UncheckedAt(i);
+       Int_t l0=c->GetLabel(0);
           if (l0>=np) {cerr<<"Wrong label: "<<l0<<endl; continue;}
-       Int_t l1=d->GetTrack(1);
+       Int_t l1=c->GetLabel(1);
           if (l1>=np) {cerr<<"Wrong label: "<<l1<<endl; continue;}
-       Int_t l2=d->GetTrack(2);
+       Int_t l2=c->GetLabel(2);
           if (l2>=np) {cerr<<"Wrong label: "<<l2<<endl; continue;}
        if (l0>=0) good[l0]++; 
        if (l1>=0) good[l1]++; 
        if (l2>=0) good[l2]++;
      }
-     digits->Clear();
+     clusters->Clear();
 
 
      //****** select tracks which are "good" enough
