@@ -219,6 +219,12 @@ class AliITSgeom : public TObject {
           Double_t rot[3][3];
 	  GetGeomMatrix(index)->GetMatrix(rot);
           for(Int_t i=0;i<3;i++)for(Int_t j=0;j<3;j++) mat[3*i+j] = rot[i][j];}
+    //     This function sets the rotation matrix in a Double
+    // precision pointer for a given module. mat[i][j] => mat[3*i+j].
+    void  SetRotMatrix(Int_t index,Double_t *mat){Double_t rot[3][3];
+          for(Int_t i=0;i<3;i++)for(Int_t j=0;j<3;j++) rot[i][j]=mat[3*i+j];
+          GetGeomMatrix(index)->SetMatrix(rot);}
+
 //
     //     Will define fShape if it isn't already defined.
     void DefineShapes(Int_t size=4)
