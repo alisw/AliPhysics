@@ -5,24 +5,41 @@
 // 1) equal parameters
 // 2) randomly distributed parameters for decalibrated detector silumations
 
+#if !defined(__CINT__)
+#include "TControlBar.h"
+#include "TString.h"
+#include "TRandom.h"
+#include "TH2F.h"
+#include "TCanvas.h"
+
+#include "AliRun.h"
+#include "AliPHOSCalibData.h"
+#include "AliCDBMetaData.h"
+#include "AliCDBId.h"
+#include "AliCDBEntry.h"
+#include "AliCDBManager.h"
+#include "AliCDBStorage.h"
+#endif
+
+
 void AliPHOSSetCDB()
 {
-   menu = new TControlBar("vertical","PHOS CDB");
-   menu->AddButton("Help to run PHOS CDB","Help()",
-		   "Explains how to use PHOS CDS menus");
-   menu->AddButton("Equal CC","SetCC(0)",
-		   "Set equal calibration coefficients");
-   menu->AddButton("Decalibrate","SetCC(1)",
-		   "Set random decalibration calibration coefficients");
-   menu->AddButton("Real equal CC","GetCC(0)",
-		   "Read initial equal calibration coefficients");
-   menu->AddButton("Real random CC","GetCC(1)",
-		   "Read random decalibration calibration coefficients");
-   menu->Show();
+  TControlBar *menu = new TControlBar("vertical","PHOS CDB");
+  menu->AddButton("Help to run PHOS CDB","Help()",
+		  "Explains how to use PHOS CDS menus");
+  menu->AddButton("Equal CC","SetCC(0)",
+		  "Set equal calibration coefficients");
+  menu->AddButton("Decalibrate","SetCC(1)",
+		  "Set random decalibration calibration coefficients");
+  menu->AddButton("Read equal CC","GetCC(0)",
+		  "Read initial equal calibration coefficients");
+  menu->AddButton("Read random CC","GetCC(1)",
+		  "Read random decalibration calibration coefficients");
+  menu->Show();
 }
 
 //------------------------------------------------------------------------
-Help()
+void Help()
 {
   char *string =
     "\nSet calibration parameters and write them into ALICE CDB.
@@ -32,7 +49,7 @@ Press button \"Decalibrate\" to create random pedestals and gain factors to imit
 }
 
 //------------------------------------------------------------------------
-SetCC(Int_t flag=0)
+void SetCC(Int_t flag=0)
 {
   // Writing calibration coefficients into the Calibration DB
   // Arguments:
@@ -44,7 +61,7 @@ SetCC(Int_t flag=0)
   Int_t firstRun   =  0;
   Int_t lastRun    = 10;
   Int_t beamPeriod =  1;
-  char* objFormat;
+  char* objFormat  = "";
 
   if      (flag == 0) {
     DBFolder  ="local://InitCalibDB";
@@ -53,7 +70,7 @@ SetCC(Int_t flag=0)
     objFormat = "PHOS initial gain factors and pedestals";
   }
   else if (flag == 1) {
-    DBFolder  ="local://deCalibDB";
+    DBFolder  ="local://DeCalibDB";
     firstRun  =  0;
     lastRun   = 10;
     objFormat = "PHOS random pedestals and ADC gain factors (5x64x56)";
@@ -99,7 +116,7 @@ SetCC(Int_t flag=0)
 }
 
 //------------------------------------------------------------------------
-GetCC(Int_t flag=0)
+void GetCC(Int_t flag=0)
 {
   // Read calibration coefficients into the Calibration DB
   // Arguments:
@@ -108,21 +125,19 @@ GetCC(Int_t flag=0)
   // Author: Yuri.Kharlov at cern.ch
 
   TString DBFolder;
-  Int_t firstRun   =  0;
-  Int_t lastRun    = 10;
-  Int_t beamPeriod =  1;
-  char* objFormat;
 
   if      (flag == 0) {
     DBFolder  ="local://InitCalibDB";
   }
   else if (flag == 1) {
-    DBFolder  ="local://deCalibDB";
+    DBFolder  ="local://DeCalibDB";
   }
 
-  AliPHOSCalibData* clb  = (AliPHOSCalibData*)(AliCDBManager::Instance()
-    ->GetStorage(DBFolder.Data())->Get("PHOS/Calib/GainFactors_and_Pedestals",
-    gAlice->GetRunNumber())->GetObject());
+  AliPHOSCalibData* clb  = (AliPHOSCalibData*)
+    (AliCDBManager::Instance()
+     ->GetStorage(DBFolder.Data())
+     ->Get("PHOS/Calib/GainFactors_and_Pedestals",
+	   gAlice->GetRunNumber())->GetObject());
 
   static const Int_t nMod =  5;
   static const Int_t nCol = 56;
