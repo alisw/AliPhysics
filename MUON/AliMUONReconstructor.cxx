@@ -245,7 +245,19 @@ void AliMUONReconstructor::Reconstruct(AliRunLoader* runLoader, AliRawReader* ra
   AliMUONRawReader* rawData = new AliMUONRawReader(loader, data);
 
   AliMUONClusterReconstructor* recoCluster = new AliMUONClusterReconstructor(loader, data);
+
+  if (strstr(GetOption(),"Original")) 
+    recoEvent->SetTrackMethod(1); // Original tracking
+//   else if (strstr(GetOption(),"Combi")) 
+//     recoEvent->SetTrackMethod(3); // Combined cluster / track
+  else
+    recoEvent->SetTrackMethod(2); // Kalman
+
   AliMUONClusterFinderVS *recModel = recoCluster->GetRecoModel();
+  if (!strstr(GetOption(),"VS")) {
+    recModel = (AliMUONClusterFinderVS*) new AliMUONClusterFinderAZ();
+    recoCluster->SetRecoModel(recModel);
+  }
   recModel->SetGhostChi2Cut(10);
 
   TTask* calibration = GetCalibrationTask(data);
