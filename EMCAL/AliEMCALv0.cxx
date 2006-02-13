@@ -663,7 +663,7 @@ void AliEMCALv0::CreateSmod(const char* mother)
   AliEMCALGeometry * g = GetGeometry(); 
   TString gn(g->GetName()); gn.ToUpper();
 
-  Double_t par[1], parTubs[5], xpos=0., ypos=0., zpos=0., rpos=0., dphi=0., phi=0.0, phiRad=0.;
+  Double_t par[3], parTubs[5], xpos=0., ypos=0., zpos=0., rpos=0., dphi=0., phi=0.0, phiRad=0.;
   Double_t par1C = 0.;
   //  ===== define Super Module from air - 14x30 module ==== ;
   sampleWidth = double(g->GetECPbRadThick()+g->GetECScintThick());
