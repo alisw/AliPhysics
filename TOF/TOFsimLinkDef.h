@@ -17,6 +17,17 @@
 #pragma link C++ class  AliTOFHitMap+;
 #pragma link C++ class  AliTOFSDigit+;
 #pragma link C++ class  AliTOFSDigitizer+;
+#pragma link C++ class  AliTOFChannel+;
+#pragma link C++ class  AliTOFChSim+;
+#pragma link C++ class  AliTOFcalibESD+;
+#pragma link C++ class  AliTOFcalib+;
+#pragma link C++ class  AliTOFCalPadZ+;
+#pragma link C++ class  AliTOFCalStrip+;
+#pragma link C++ class  AliTOFCalPlateA+;
+#pragma link C++ class  AliTOFCalPlateB+;
+#pragma link C++ class  AliTOFCalPlateC+;
+#pragma link C++ class  AliTOFCalSector+;
+#pragma link C++ class  AliTOFCal+;
 #pragma link C++ class  AliTOFDigitizer+;
 
 #pragma link C++ class  AliTOFDigitMap+;

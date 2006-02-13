@@ -178,6 +178,8 @@ void AliTOFClusterFinder::Digits2RecPoints(Int_t iEvent)
   Int_t dig[5];
   Float_t g[3];
   Double_t h[5];
+  Float_t ToT;
+  Double_t TdcND;
   for (ii=0; ii<nDigits; ii++) {
     AliTOFdigit *d = (AliTOFdigit*)digits->UncheckedAt(ii);
     dig[0]=d->GetSector();
@@ -194,8 +196,10 @@ void AliTOFClusterFinder::Digits2RecPoints(Int_t iEvent)
     h[2] = g[2];
     h[3] = d->GetTdc();
     h[4] = d->GetAdc();
+    ToT = d->GetToT();
+    TdcND = d->GetTdcND();
 
-    AliTOFcluster *tofCluster = new AliTOFcluster(h,d->GetTracks(),dig,ii);
+    AliTOFcluster *tofCluster = new AliTOFcluster(h,d->GetTracks(),dig,ii,ToT, TdcND);
     InsertCluster(tofCluster);
 
   }
@@ -482,6 +486,8 @@ void AliTOFClusterFinder::FillRecPoint()
   Double_t cylindricalPosition[5];
   Int_t trackLabels[3];
   Int_t digitIndex = -1;
+  Float_t ToT;
+  Double_t TdcND;
 
   TClonesArray &lRecPoints = *fRecPoints;
   
@@ -495,8 +501,10 @@ void AliTOFClusterFinder::FillRecPoint()
     cylindricalPosition[2] = fTofClusters[ii]->GetZ();
     cylindricalPosition[3] = fTofClusters[ii]->GetTDC();
     cylindricalPosition[4] = fTofClusters[ii]->GetADC();
+    ToT = fTofClusters[ii]->GetToT();
+    TdcND = fTofClusters[ii]->GetTDCND();
 
-    new(lRecPoints[ii]) AliTOFcluster(cylindricalPosition, trackLabels, detectorIndex, digitIndex);
+    new(lRecPoints[ii]) AliTOFcluster(cylindricalPosition, trackLabels, detectorIndex, digitIndex, ToT, TdcND);
 
     //AliInfo(Form("%3i  %3i  %f %f %f %f %f  %2i %2i %2i %1i %2i",ii,digitIndex, cylindricalPosition[2],cylindricalPosition[0],cylindricalPosition[1],cylindricalPosition[3],cylindricalPosition[4],detectorIndex[0],detectorIndex[1],detectorIndex[2],detectorIndex[3],detectorIndex[4]));
 

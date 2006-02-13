@@ -36,16 +36,20 @@ friend ostream& operator << ( ostream& , const AliTOFdigit&) ;
   void            AddTrack(Int_t track);
   // getters for AliTOFdigit object 
   Float_t GetTdc()    const     {return fTdc;}
+  Float_t GetTdcND()  const     {return fTdcND;}
   Float_t GetAdc()    const     {return fAdc;}
   Int_t   GetSector() const     {return fSector;}
   Int_t   GetPlate()  const     {return fPlate;}
   Int_t   GetStrip()  const     {return fStrip;}
   Int_t   GetPadx()   const     {return fPadx;}
   Int_t   GetPadz()   const     {return fPadz;}
+  Float_t GetToT() const{return fToT;}         //Time Over Threshold
 
   // setters for AliTOFdigit object
   void    SetTdc(Float_t TDC){fTdc = TDC;}
+  void    SetTdcND(Float_t TDCND){fTdcND = TDCND;}
   void    SetAdc(Float_t ADC){fAdc = ADC;}
+  void    SetToT(Float_t ToT) {fToT=ToT;}
 
   //overloading of ==, + operators (summable digits)
   
@@ -62,11 +66,13 @@ protected:
   Float_t fTdc;     // tdc channel value, to be multiplied by
 		    // AliTOFGeometry::TdcBinWidth() to have the
 		    // time-of-flight measurement
+  Float_t fTdcND;   // simulated (non slewed) time signal
   Float_t fAdc;     // adc channel value, to be multiplie by
 		    // AliTOFSDigitizer::GetAdcBin() to have the
 		    // 'charge' measurement
+  Float_t  fToT;    // simulated ToT
 
-  ClassDef(AliTOFdigit,2)  // Digit for Time Of Flight
+  ClassDef(AliTOFdigit,3)  // Digit for Time Of Flight
 };
 
 #endif /* ALITOFDIGIT_H */

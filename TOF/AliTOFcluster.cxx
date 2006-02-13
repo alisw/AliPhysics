@@ -41,6 +41,8 @@ AliTOFcluster::AliTOFcluster() {
   fZ   = 0.;
   fTDC = 0.;
   fADC = 0.;
+  fToT = 0.;
+  fTdcND = 0;
   for (ii=0; ii<3; ii++) fLab[ii]      = -1;
   fIdx = -1;
   for (ii=0; ii<5; ii++) fdetIndex[ii] = -1;
@@ -48,7 +50,7 @@ AliTOFcluster::AliTOFcluster() {
 }
 //-------------------------------------------------------------------------
 
-AliTOFcluster::AliTOFcluster(Double_t *h, Int_t *l, Int_t *ind, Int_t idx)
+AliTOFcluster::AliTOFcluster(Double_t *h, Int_t *l, Int_t *ind, Int_t idx, Float_t ToT, Double_t TdcND)
 :TObject() {
   //
   // constructor
@@ -60,6 +62,8 @@ AliTOFcluster::AliTOFcluster(Double_t *h, Int_t *l, Int_t *ind, Int_t idx)
   fZ   = h[2];
   fTDC = h[3];
   fADC = h[4];
+  fToT = ToT;
+  fTdcND = TdcND;
   for (ii=0; ii<3; ii++) fLab[ii]      = l[ii];
   fIdx = idx;
   for (ii=0; ii<5; ii++) fdetIndex[ii] = ind[ii];
@@ -102,6 +106,8 @@ AliTOFcluster::AliTOFcluster(const AliTOFcluster & cluster)
   fIdx      = cluster.fIdx;
   for (ii=0; ii<5; ii++) fdetIndex[ii] = cluster.fdetIndex[ii];
   fQuality    = cluster.fQuality; 
+  fToT    = cluster.fToT; 
+  fTdcND    = cluster.fTdcND; 
 }
 //-------------------------------------------------------------------------
 

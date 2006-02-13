@@ -48,6 +48,7 @@
 #include "AliTOFdigit.h"
 #include "AliTOFSDigit.h"
 #include "AliTOFHitMap.h"
+#include "AliTOFcalib.h"
 
 ClassImp(AliTOFDigitizer)
 
@@ -172,7 +173,7 @@ void AliTOFDigitizer::Exec(Option_t* /*option*/)
 
 //---------------------------------------------------------------------
 
-void AliTOFDigitizer::CreateDigits()
+void AliTOFDigitizer::CreateDigits(Option_t *option)
 {
   // loop on sdigits container to fill the AliTOFdigit TClonesArray
   // start digitizing all the collected sdigits 
@@ -245,7 +246,11 @@ void AliTOFDigitizer::CreateDigits()
     }
     
   } // end loop on sdigits - end digitizing all collected sdigits
-
+  if(strstr(option,"DECALIB")){
+    AliTOFcalib * cal = new AliTOFcalib();
+    cal->Init();
+    cal->DecalibrateDigits(fDigits);
+  }    
 }
 
 //---------------------------------------------------------------------

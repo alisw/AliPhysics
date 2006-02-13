@@ -28,7 +28,7 @@ class AliTOFDigitizer : public AliDigitizer {
   void Exec(Option_t* option=0) ;
   TClonesArray* SDigits() const {return fSDigitsArray;}
   void ReadSDigit(Int_t);
-  void CreateDigits();
+  void CreateDigits(Option_t *option="");
   
  private:
   void CollectSDigit(AliTOFSDigit * sdigit) ;

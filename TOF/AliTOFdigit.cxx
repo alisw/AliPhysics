@@ -54,7 +54,9 @@ AliTOFdigit::AliTOFdigit(Int_t *tracks, Int_t *vol,Float_t *digit)
   fPadx   = vol[3];
   fPadz   = vol[4];
   fTdc    = digit[0];
+  fTdcND  =0;
   fAdc    = digit[1];
+  fToT = 0;
 }
 
 //____________________________________________________________________________
@@ -74,7 +76,9 @@ AliTOFdigit::AliTOFdigit(const AliTOFdigit & digit)
   fPadx   = digit.fPadx;
   fPadz   = digit.fPadz;
   fTdc    = digit.fTdc;
+  fTdcND    = digit.fTdcND;
   fAdc    = digit.fAdc;
+  fToT = digit.fToT;
 
 }
 
@@ -91,7 +95,9 @@ Int_t padz, Float_t tdc, Float_t adc)
   fPadx   = padx;
   fPadz   = padz;  
   fTdc    = tdc;   
+  fTdcND    = 0;   
   fAdc    = adc;     
+  fToT = 0;
 }
    
 //______________________________________________________________________________
@@ -175,7 +181,9 @@ Bool_t AliTOFdigit::operator==(AliTOFdigit const &digit) const
      fPadx==digit.fPadx &&
      fPadz==digit.fPadz &&
      fTdc==digit.fTdc &&
-     fAdc==digit.fAdc) return kTRUE;
+     fTdcND==digit.fTdcND &&
+     fAdc==digit.fAdc &&
+     fToT==digit.fToT ) return kTRUE;
      else return kFALSE;
 }
 

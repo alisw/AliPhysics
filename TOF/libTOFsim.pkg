@@ -5,6 +5,13 @@ SRCS  = AliTOF.cxx  AliTOFv5T0.cxx  AliTOFv4T0.cxx  \
 	AliTOFhit.cxx  AliTOFhitT0.cxx  \
 	AliTOFHitMap.cxx  \
 	AliTOFSDigit.cxx  AliTOFSDigitizer.cxx  \
+	AliTOFChannel.cxx  \
+	AliTOFChSim.cxx  \
+	AliTOFcalibESD.cxx AliTOFcalib.cxx \
+	AliTOFCalPadZ.cxx \
+        AliTOFCalStrip.cxx  AliTOFCalPlateA.cxx \
+	AliTOFCalPlateB.cxx AliTOFCalPlateC.cxx   AliTOFCalSector.cxx \
+	AliTOFCal.cxx \
 	AliTOFDigitizer.cxx  \
 	AliTOFDigitMap.cxx  \
 	AliTOFDDLRawData.cxx  \
