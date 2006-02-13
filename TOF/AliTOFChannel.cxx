@@ -13,9 +13,13 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*$Log$
+/*
+$Log$
+Revision 1.1  2006/02/13 16:10:48  arcelli
+Add classes for TOF Calibration (C.Zampolli)
+
 author: Chiara Zampolli, zampolli@bo.infn.it
- */  
+*/  
 
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
@@ -75,6 +79,4 @@ void AliTOFChannel::SetSlewPar(Float_t* slewingPar)
   if(slewingPar) for(Int_t i = 0; i<6;i++) fSlewPar[i]=slewingPar[i];
   else for(int t=0; t<6; t++) fSlewPar[t] = 0.;
 }
-
-
 

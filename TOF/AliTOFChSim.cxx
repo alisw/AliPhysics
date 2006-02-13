@@ -13,9 +13,13 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*$Log$
+/*
+$Log$
+Revision 1.1  2006/02/13 16:10:48  arcelli
+Add classes for TOF Calibration (C.Zampolli)
+
 author: Chiara Zampolli, zampolli@bo.infn.it
- */  
+*/  
 
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
@@ -50,7 +54,4 @@ AliTOFChSim &AliTOFChSim::operator =(const AliTOFChSim& channel)
   fSpectrum= channel.GetSpectrum();
   return *this;
 }
-
-
-
 
