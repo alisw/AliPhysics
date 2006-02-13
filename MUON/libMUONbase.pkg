@@ -40,7 +40,13 @@ SRCS:=  AliMUON.cxx AliMUONv1.cxx \
         AliMUON2DMap.cxx \
         AliMUON3DMap.cxx \
         AliMUONCalibParam.cxx \
-        AliMUONCalibrationData.cxx
+        AliMUONCalibrationData.cxx \
+       AliMUONRawWriter.cxx \
+       AliMUONSubEventTracker.cxx \
+       AliMUONDDLTrigger.cxx \
+       AliMUONDDLTracker.cxx \
+       AliMUONSubEventTrigger.cxx \
+       AliMUONScalerEventTrigger.cxx
                 
 HDRS:= $(SRCS:.cxx=.h)
 

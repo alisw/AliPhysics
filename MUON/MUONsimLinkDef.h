@@ -15,7 +15,6 @@
 #pragma link C++ class AliMUONSDigitizerV2+;  
 #pragma link C++ class AliMUONTriggerDecision+; 
 #pragma link C++ class AliMUONTriggerDecisionV1+; 
-#pragma link C++ class AliMUONRawWriter+;
 
 
 #pragma link C++ class AliMUONTest+; 

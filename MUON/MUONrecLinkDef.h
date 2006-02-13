@@ -28,11 +28,6 @@
 #pragma link C++ class AliMUONDigitCalibrator+;
 
 // raw data
-#pragma link C++ class AliMUONDDLTrigger+;
-#pragma link C++ class AliMUONSubEventTrigger+;
-#pragma link C++ class AliMUONScalerEventTrigger+;
-#pragma link C++ class AliMUONDDLTracker+;
-#pragma link C++ class AliMUONSubEventTracker+;
 #pragma link C++ class AliMUONRawReader+;
 #pragma link C++ class AliMUONRawStream+;
 
