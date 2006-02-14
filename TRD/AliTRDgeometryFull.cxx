@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.16  2005/12/16 12:11:14  cblume
+First implementation of calibration scheme by Jan Fiete
+
 Revision 1.15  2005/04/20 13:03:36  cblume
 Fix of geometry and pad plane parameter
 
@@ -161,6 +164,12 @@ void AliTRDgeometryFull::CreateGeometry(Int_t *idtmed)
   //
   // Names of the TRD volumina (xx = detector number):
   //
+  //      Volume (Air) wrapping the readout chamber components
+  //        UTxx    includes: UAxx, UDxx, UFxx, UUxx
+  //      Obs:
+  //        UUxx    the services volume has been reduced by 7.42 mm
+  //                in order to allow shifts in radial direction
+  //
   //      Lower part of the readout chambers (gas volume + radiator)
   //
   //        UAxx    Aluminum frames             (Al)
@@ -184,7 +193,7 @@ void AliTRDgeometryFull::CreateGeometry(Int_t *idtmed)
   //        UMxx    Support structure           (Rohacell)
   //
 
-  const Int_t kNdet    = kNplan * kNcham;
+  //const Int_t kNdet    = kNplan * kNcham;  ... replaced by kNdets = 30
 
   const Int_t kNparTrd = 4;
   const Int_t kNparCha = 3;
@@ -258,6 +267,11 @@ void AliTRDgeometryFull::CreateGeometry(Int_t *idtmed)
       parCha[0] = fCwidth[iplan]/2.;
       parCha[1] = fClength[iplan][icham]/2. - fgkHspace/2.;
       parCha[2] = fgkCraH/2. + fgkCdrH/2.;
+      
+      fChamberUAboxd[iDet][0] = parCha[0];
+      fChamberUAboxd[iDet][1] = parCha[1];
+      fChamberUAboxd[iDet][2] = parCha[2];
+      
       gMC->Gsvolu(cTagV,"BOX ",idtmed[1301-1],parCha,kNparCha);
       // The G10 frames 
       sprintf(cTagV,"UB%02d",iDet);
@@ -274,19 +288,24 @@ void AliTRDgeometryFull::CreateGeometry(Int_t *idtmed)
       if (fPHOShole) {
         if (fClengthPH[iplan][icham] > 0.0) {
           // The aluminum frames 
-          sprintf(cTagV,"UA%02d",iDet+kNdet);
+          sprintf(cTagV,"UA%02d",iDet+kNdets);
           parCha[0] = fCwidth[iplan]/2.;
           parCha[1] = fClengthPH[iplan][icham]/2. - fgkHspace/2.;
           parCha[2] = fgkCraH/2. + fgkCdrH/2.;
+
+	  fChamberUAboxd[iDet+kNdets][0] = parCha[0];
+	  fChamberUAboxd[iDet+kNdets][1] = parCha[1];
+	  fChamberUAboxd[iDet+kNdets][2] = parCha[2];
+      
           gMC->Gsvolu(cTagV,"BOX ",idtmed[1301-1],parCha,kNparCha);
           // The G10 frames 
-          sprintf(cTagV,"UB%02d",iDet+kNdet);
+          sprintf(cTagV,"UB%02d",iDet+kNdets);
           parCha[0] = fCwidth[iplan]/2. - fgkCalT; 
           parCha[1] = -1.;
           parCha[2] = -1.;
           gMC->Gsvolu(cTagV,"BOX ",idtmed[1307-1],parCha,kNparCha);
           // The inner part (air)
-          sprintf(cTagV,"UC%02d",iDet+kNdet);
+          sprintf(cTagV,"UC%02d",iDet+kNdets);
           parCha[0] = fCwidth[iplan]/2. - fgkCalT - fgkCclsT; 
           parCha[1] = fClengthPH[iplan][icham]/2. - fgkHspace/2.- fgkCclfT;
           parCha[2] = -1.;
@@ -296,19 +315,24 @@ void AliTRDgeometryFull::CreateGeometry(Int_t *idtmed)
       if (fRICHhole) {
         if (fClengthRH[iplan][icham] > 0.0) {
           // The aluminum frames 
-          sprintf(cTagV,"UA%02d",iDet+2*kNdet);
+          sprintf(cTagV,"UA%02d",iDet+2*kNdets);
           parCha[0] = fCwidth[iplan]/2.;
           parCha[1] = fClengthRH[iplan][icham]/2. - fgkHspace/2.;
           parCha[2] = fgkCraH/2. + fgkCdrH/2.;
+
+	  fChamberUAboxd[iDet+2*kNdets][0] = parCha[0];
+	  fChamberUAboxd[iDet+2*kNdets][1] = parCha[1];
+	  fChamberUAboxd[iDet+2*kNdets][2] = parCha[2];
+      
           gMC->Gsvolu(cTagV,"BOX ",idtmed[1301-1],parCha,kNparCha);
           // The G10 frames 
-          sprintf(cTagV,"UB%02d",iDet+2*kNdet);
+          sprintf(cTagV,"UB%02d",iDet+2*kNdets);
           parCha[0] = fCwidth[iplan]/2. - fgkCalT; 
           parCha[1] = -1.;
           parCha[2] = -1.;
           gMC->Gsvolu(cTagV,"BOX ",idtmed[1307-1],parCha,kNparCha);
           // The inner part (air)
-          sprintf(cTagV,"UC%02d",iDet+2*kNdet);
+          sprintf(cTagV,"UC%02d",iDet+2*kNdets);
           parCha[0] = fCwidth[iplan]/2. - fgkCalT - fgkCclsT; 
           parCha[1] = fClengthRH[iplan][icham]/2. - fgkHspace/2.- fgkCclfT;
           parCha[2] = -1.;
@@ -322,6 +346,11 @@ void AliTRDgeometryFull::CreateGeometry(Int_t *idtmed)
       parCha[0] = fCwidth[iplan]/2. + fgkCroW;
       parCha[1] = fClength[iplan][icham]/2. - fgkHspace/2.;
       parCha[2] = fgkCamH/2.;
+      
+      fChamberUDboxd[iDet][0] = parCha[0];
+      fChamberUDboxd[iDet][1] = parCha[1];
+      fChamberUDboxd[iDet][2] = parCha[2];
+      
       gMC->Gsvolu(cTagV,"BOX ",idtmed[1307-1],parCha,kNparCha);
       // The inner part of the G10 frame (air)
       sprintf(cTagV,"UE%02d",iDet);
@@ -334,6 +363,11 @@ void AliTRDgeometryFull::CreateGeometry(Int_t *idtmed)
       parCha[0] = fCwidth[iplan]/2. + fgkCroW;
       parCha[1] = fClength[iplan][icham]/2. - fgkHspace/2.;
       parCha[2] = fgkCroH/2.;
+      
+      fChamberUFboxd[iDet][0] = parCha[0];
+      fChamberUFboxd[iDet][1] = parCha[1];
+      fChamberUFboxd[iDet][2] = parCha[2];
+      
       gMC->Gsvolu(cTagV,"BOX ",idtmed[1301-1],parCha,kNparCha);
       // The inner part of the aluminum frames
       sprintf(cTagV,"UG%02d",iDet);
@@ -343,25 +377,35 @@ void AliTRDgeometryFull::CreateGeometry(Int_t *idtmed)
       gMC->Gsvolu(cTagV,"BOX ",idtmed[1302-1],parCha,kNparCha);
       if (fPHOShole) {
         if (fClengthPH[iplan][icham] > 0.0) {
-          sprintf(cTagV,"UD%02d",iDet+kNdet);
+          sprintf(cTagV,"UD%02d",iDet+kNdets);
           parCha[0] = fCwidth[iplan]/2. + fgkCroW;
           parCha[1] = fClengthPH[iplan][icham]/2. - fgkHspace/2.;
           parCha[2] = fgkCamH/2.;
+
+	  fChamberUDboxd[iDet+kNdets][0] = parCha[0];
+	  fChamberUDboxd[iDet+kNdets][1] = parCha[1];
+	  fChamberUDboxd[iDet+kNdets][2] = parCha[2];
+      
           gMC->Gsvolu(cTagV,"BOX ",idtmed[1307-1],parCha,kNparCha);
           // The inner part of the G10 frame (air)
-          sprintf(cTagV,"UE%02d",iDet+kNdet);
+          sprintf(cTagV,"UE%02d",iDet+kNdets);
           parCha[0] = fCwidth[iplan]/2. + fgkCroW - fgkCcuT; 
           parCha[1] = fClengthPH[iplan][icham]/2. - fgkHspace/2.- fgkCcuT;
           parCha[2] = -1.;
           gMC->Gsvolu(cTagV,"BOX ",idtmed[1302-1],parCha,kNparCha);
           // The aluminum frames
-          sprintf(cTagV,"UF%02d",iDet+kNdet);
+          sprintf(cTagV,"UF%02d",iDet+kNdets);
           parCha[0] = fCwidth[iplan]/2. + fgkCroW;
           parCha[1] = fClengthPH[iplan][icham]/2. - fgkHspace/2.;
           parCha[2] = fgkCroH/2.;
+
+	  fChamberUFboxd[iDet+kNdets][0] = parCha[0];
+	  fChamberUFboxd[iDet+kNdets][1] = parCha[1];
+	  fChamberUFboxd[iDet+kNdets][2] = parCha[2];
+	  
           gMC->Gsvolu(cTagV,"BOX ",idtmed[1301-1],parCha,kNparCha);
           // The inner part of the aluminum frames
-          sprintf(cTagV,"UG%02d",iDet+kNdet);
+          sprintf(cTagV,"UG%02d",iDet+kNdets);
           parCha[0] = fCwidth[iplan]/2. + fgkCroW - fgkCauT; 
           parCha[1] = fClengthPH[iplan][icham]/2. - fgkHspace/2.- fgkCauT;
           parCha[2] = -1.;
@@ -370,25 +414,35 @@ void AliTRDgeometryFull::CreateGeometry(Int_t *idtmed)
       }
       if (fRICHhole) {
         if (fClengthRH[iplan][icham] > 0.0) {
-          sprintf(cTagV,"UD%02d",iDet+2*kNdet);
+          sprintf(cTagV,"UD%02d",iDet+2*kNdets);
           parCha[0] = fCwidth[iplan]/2. + fgkCroW;
           parCha[1] = fClengthRH[iplan][icham]/2. - fgkHspace/2.;
           parCha[2] = fgkCamH/2.;
+
+	  fChamberUDboxd[iDet+2*kNdets][0] = parCha[0];
+	  fChamberUDboxd[iDet+2*kNdets][1] = parCha[1];
+	  fChamberUDboxd[iDet+2*kNdets][2] = parCha[2];
+      
           gMC->Gsvolu(cTagV,"BOX ",idtmed[1307-1],parCha,kNparCha);
           // The inner part of the G10 frame (air)
-          sprintf(cTagV,"UE%02d",iDet+2*kNdet);
+          sprintf(cTagV,"UE%02d",iDet+2*kNdets);
           parCha[0] = fCwidth[iplan]/2. + fgkCroW - fgkCcuT; 
           parCha[1] = fClengthRH[iplan][icham]/2. - fgkHspace/2.- fgkCcuT;
           parCha[2] = -1.;
           gMC->Gsvolu(cTagV,"BOX ",idtmed[1302-1],parCha,kNparCha);
           // The aluminum frames
-          sprintf(cTagV,"UF%02d",iDet+2*kNdet);
+          sprintf(cTagV,"UF%02d",iDet+2*kNdets);
           parCha[0] = fCwidth[iplan]/2. + fgkCroW;
           parCha[1] = fClengthRH[iplan][icham]/2. - fgkHspace/2.;
           parCha[2] = fgkCroH/2.;
+
+	  fChamberUFboxd[iDet+2*kNdets][0] = parCha[0];
+	  fChamberUFboxd[iDet+2*kNdets][1] = parCha[1];
+	  fChamberUFboxd[iDet+2*kNdets][2] = parCha[2];
+	  
           gMC->Gsvolu(cTagV,"BOX ",idtmed[1301-1],parCha,kNparCha);
           // The inner part of the aluminum frames
-          sprintf(cTagV,"UG%02d",iDet+2*kNdet);
+          sprintf(cTagV,"UG%02d",iDet+2*kNdets);
           parCha[0] = fCwidth[iplan]/2. + fgkCroW - fgkCauT; 
           parCha[1] = fClengthRH[iplan][icham]/2. - fgkHspace/2.- fgkCauT;
           parCha[2] = -1.;
@@ -427,27 +481,27 @@ void AliTRDgeometryFull::CreateGeometry(Int_t *idtmed)
         if (fClengthPH[iplan][icham] > 0.0) {
           // Rohacell layer (radiator)
           parCha[2] = fgkRaThick/2;
-          sprintf(cTagV,"UH%02d",iDet+kNdet);
+          sprintf(cTagV,"UH%02d",iDet+kNdets);
           gMC->Gsvolu(cTagV,"BOX ",idtmed[1315-1],parCha,kNparCha);
           // Mylar layer (entrance window + HV cathode) 
           parCha[2] = fgkMyThick/2;
-          sprintf(cTagV,"UI%02d",iDet+kNdet);
+          sprintf(cTagV,"UI%02d",iDet+kNdets);
           gMC->Gsvolu(cTagV,"BOX ",idtmed[1308-1],parCha,kNparCha);
           // Xe/Isobutane layer (drift volume) 
           parCha[2] = fgkDrThick/2.;
-          sprintf(cTagV,"UJ%02d",iDet+kNdet);
+          sprintf(cTagV,"UJ%02d",iDet+kNdets);
           gMC->Gsvolu(cTagV,"BOX ",idtmed[1309-1],parCha,kNparCha);
           // Xe/Isobutane layer (amplification volume)
           parCha[2] = fgkAmThick/2.;
-          sprintf(cTagV,"UK%02d",iDet+kNdet);
+          sprintf(cTagV,"UK%02d",iDet+kNdets);
           gMC->Gsvolu(cTagV,"BOX ",idtmed[1309-1],parCha,kNparCha);  
           // Cu layer (pad plane)
           parCha[2] = fgkCuThick/2;
-          sprintf(cTagV,"UL%02d",iDet+kNdet);
+          sprintf(cTagV,"UL%02d",iDet+kNdets);
           gMC->Gsvolu(cTagV,"BOX ",idtmed[1305-1],parCha,kNparCha);
           // G10 layer (support structure / honeycomb)
           parCha[2] = fgkSuThick/2;
-          sprintf(cTagV,"UM%02d",iDet+kNdet);
+          sprintf(cTagV,"UM%02d",iDet+kNdets);
           gMC->Gsvolu(cTagV,"BOX ",idtmed[1313-1],parCha,kNparCha);
 	}
       }
@@ -455,27 +509,27 @@ void AliTRDgeometryFull::CreateGeometry(Int_t *idtmed)
         if (fClengthRH[iplan][icham] > 0.0) {
           // Rohacell layer (radiator)
           parCha[2] = fgkRaThick/2;
-          sprintf(cTagV,"UH%02d",iDet+2*kNdet);
+          sprintf(cTagV,"UH%02d",iDet+2*kNdets);
           gMC->Gsvolu(cTagV,"BOX ",idtmed[1315-1],parCha,kNparCha);
           // Mylar layer (entrance window + HV cathode) 
           parCha[2] = fgkMyThick/2;
-          sprintf(cTagV,"UI%02d",iDet+2*kNdet);
+          sprintf(cTagV,"UI%02d",iDet+2*kNdets);
           gMC->Gsvolu(cTagV,"BOX ",idtmed[1308-1],parCha,kNparCha);
           // Xe/Isobutane layer (drift volume) 
           parCha[2] = fgkDrThick/2.;
-          sprintf(cTagV,"UJ%02d",iDet+2*kNdet);
+          sprintf(cTagV,"UJ%02d",iDet+2*kNdets);
           gMC->Gsvolu(cTagV,"BOX ",idtmed[1309-1],parCha,kNparCha);
           // Xe/Isobutane layer (amplification volume)
           parCha[2] = fgkAmThick/2.;
-          sprintf(cTagV,"UK%02d",iDet+2*kNdet);
+          sprintf(cTagV,"UK%02d",iDet+2*kNdets);
           gMC->Gsvolu(cTagV,"BOX ",idtmed[1309-1],parCha,kNparCha);  
           // Cu layer (pad plane)
           parCha[2] = fgkCuThick/2;
-          sprintf(cTagV,"UL%02d",iDet+2*kNdet);
+          sprintf(cTagV,"UL%02d",iDet+2*kNdets);
           gMC->Gsvolu(cTagV,"BOX ",idtmed[1305-1],parCha,kNparCha);
           // G10 layer (support structure / honeycomb)
           parCha[2] = fgkSuThick/2;
-          sprintf(cTagV,"UM%02d",iDet+2*kNdet);
+          sprintf(cTagV,"UM%02d",iDet+2*kNdets);
           gMC->Gsvolu(cTagV,"BOX ",idtmed[1313-1],parCha,kNparCha);
 	}
       }
@@ -521,35 +575,35 @@ void AliTRDgeometryFull::CreateGeometry(Int_t *idtmed)
           // Lower part
           // Rohacell layer (radiator)
           zpos = fgkRaZpos;
-          sprintf(cTagV,"UH%02d",iDet+kNdet);
-          sprintf(cTagM,"UC%02d",iDet+kNdet);
+          sprintf(cTagV,"UH%02d",iDet+kNdets);
+          sprintf(cTagM,"UC%02d",iDet+kNdets);
           gMC->Gspos(cTagV,1,cTagM,xpos,ypos,zpos,0,"ONLY");
           // Mylar layer (entrance window + HV cathode)   
           zpos = fgkMyZpos;
-          sprintf(cTagV,"UI%02d",iDet+kNdet);
-          sprintf(cTagM,"UC%02d",iDet+kNdet);
+          sprintf(cTagV,"UI%02d",iDet+kNdets);
+          sprintf(cTagM,"UC%02d",iDet+kNdets);
           gMC->Gspos(cTagV,1,cTagM,xpos,ypos,zpos,0,"ONLY");
           // Xe/Isobutane layer (drift volume) 
           zpos = fgkDrZpos;
-          sprintf(cTagV,"UJ%02d",iDet+kNdet);
-          sprintf(cTagM,"UC%02d",iDet+kNdet);
+          sprintf(cTagV,"UJ%02d",iDet+kNdets);
+          sprintf(cTagM,"UC%02d",iDet+kNdets);
           gMC->Gspos(cTagV,1,cTagM,xpos,ypos,zpos,0,"ONLY");
           // Upper part
           // Xe/Isobutane layer (amplification volume)
           zpos = fgkAmZpos;
-          sprintf(cTagV,"UK%02d",iDet+kNdet);
-          sprintf(cTagM,"UE%02d",iDet+kNdet);
+          sprintf(cTagV,"UK%02d",iDet+kNdets);
+          sprintf(cTagM,"UE%02d",iDet+kNdets);
           gMC->Gspos(cTagV,1,cTagM,xpos,ypos,zpos,0,"ONLY");
           // Readout part
           // Cu layer (pad plane)
           zpos = fgkCuZpos; 
-          sprintf(cTagV,"UL%02d",iDet+kNdet);
-          sprintf(cTagM,"UG%02d",iDet+kNdet);
+          sprintf(cTagV,"UL%02d",iDet+kNdets);
+          sprintf(cTagM,"UG%02d",iDet+kNdets);
           gMC->Gspos(cTagV,1,cTagM,xpos,ypos,zpos,0,"ONLY");
           // G10 layer (support structure)
           zpos = fgkSuZpos;
-          sprintf(cTagV,"UM%02d",iDet+kNdet);
-          sprintf(cTagM,"UG%02d",iDet+kNdet);
+          sprintf(cTagV,"UM%02d",iDet+kNdets);
+          sprintf(cTagM,"UG%02d",iDet+kNdets);
           gMC->Gspos(cTagV,1,cTagM,xpos,ypos,zpos,0,"ONLY");
 	}
       }
@@ -558,35 +612,35 @@ void AliTRDgeometryFull::CreateGeometry(Int_t *idtmed)
           // Lower part
           // Rohacell layer (radiator)
           zpos = fgkRaZpos;
-          sprintf(cTagV,"UH%02d",iDet+2*kNdet);
-          sprintf(cTagM,"UC%02d",iDet+2*kNdet);
+          sprintf(cTagV,"UH%02d",iDet+2*kNdets);
+          sprintf(cTagM,"UC%02d",iDet+2*kNdets);
           gMC->Gspos(cTagV,1,cTagM,xpos,ypos,zpos,0,"ONLY");
           // Mylar layer (entrance window + HV cathode)   
           zpos = fgkMyZpos;
-          sprintf(cTagV,"UI%02d",iDet+2*kNdet);
-          sprintf(cTagM,"UC%02d",iDet+2*kNdet);
+          sprintf(cTagV,"UI%02d",iDet+2*kNdets);
+          sprintf(cTagM,"UC%02d",iDet+2*kNdets);
           gMC->Gspos(cTagV,1,cTagM,xpos,ypos,zpos,0,"ONLY");
           // Xe/Isobutane layer (drift volume) 
           zpos = fgkDrZpos;
-          sprintf(cTagV,"UJ%02d",iDet+2*kNdet);
-          sprintf(cTagM,"UC%02d",iDet+2*kNdet);
+          sprintf(cTagV,"UJ%02d",iDet+2*kNdets);
+          sprintf(cTagM,"UC%02d",iDet+2*kNdets);
           gMC->Gspos(cTagV,1,cTagM,xpos,ypos,zpos,0,"ONLY");
           // Upper part
           // Xe/Isobutane layer (amplification volume)
           zpos = fgkAmZpos;
-          sprintf(cTagV,"UK%02d",iDet+2*kNdet);
-          sprintf(cTagM,"UE%02d",iDet+2*kNdet);
+          sprintf(cTagV,"UK%02d",iDet+2*kNdets);
+          sprintf(cTagM,"UE%02d",iDet+2*kNdets);
           gMC->Gspos(cTagV,1,cTagM,xpos,ypos,zpos,0,"ONLY");
           // Readout part
           // Cu layer (pad plane)
           zpos = fgkCuZpos; 
-          sprintf(cTagV,"UL%02d",iDet+2*kNdet);
-          sprintf(cTagM,"UG%02d",iDet+2*kNdet);
+          sprintf(cTagV,"UL%02d",iDet+2*kNdets);
+          sprintf(cTagM,"UG%02d",iDet+2*kNdets);
           gMC->Gspos(cTagV,1,cTagM,xpos,ypos,zpos,0,"ONLY");
           // G10 layer (support structure)
           zpos = fgkSuZpos;
-          sprintf(cTagV,"UM%02d",iDet+2*kNdet);
-          sprintf(cTagM,"UG%02d",iDet+2*kNdet);
+          sprintf(cTagV,"UM%02d",iDet+2*kNdets);
+          sprintf(cTagM,"UG%02d",iDet+2*kNdets);
           gMC->Gspos(cTagV,1,cTagM,xpos,ypos,zpos,0,"ONLY");
 	}
       }
@@ -614,40 +668,40 @@ void AliTRDgeometryFull::CreateGeometry(Int_t *idtmed)
       if (fPHOShole) {
         if (fClengthPH[iplan][icham] > 0.0) {
           // The inside of the lower G10 frame
-          sprintf(cTagV,"UC%02d",iDet+kNdet);
-          sprintf(cTagM,"UB%02d",iDet+kNdet);
+          sprintf(cTagV,"UC%02d",iDet+kNdets);
+          sprintf(cTagM,"UB%02d",iDet+kNdets);
           gMC->Gspos(cTagV,1,cTagM,xpos,ypos,zpos,0,"ONLY");
           // The lower G10 frame inside the aluminum frame
-          sprintf(cTagV,"UB%02d",iDet+kNdet);
-          sprintf(cTagM,"UA%02d",iDet+kNdet);
+          sprintf(cTagV,"UB%02d",iDet+kNdets);
+          sprintf(cTagM,"UA%02d",iDet+kNdets);
           gMC->Gspos(cTagV,1,cTagM,xpos,ypos,zpos,0,"ONLY");
           // The inside of the upper G10 frame
-          sprintf(cTagV,"UE%02d",iDet+kNdet);
-          sprintf(cTagM,"UD%02d",iDet+kNdet);
+          sprintf(cTagV,"UE%02d",iDet+kNdets);
+          sprintf(cTagM,"UD%02d",iDet+kNdets);
           gMC->Gspos(cTagV,1,cTagM,xpos,ypos,zpos,0,"ONLY");
           // The inside of the upper aluminum frame
-          sprintf(cTagV,"UG%02d",iDet+kNdet);
-          sprintf(cTagM,"UF%02d",iDet+kNdet);
+          sprintf(cTagV,"UG%02d",iDet+kNdets);
+          sprintf(cTagM,"UF%02d",iDet+kNdets);
           gMC->Gspos(cTagV,1,cTagM,xpos,ypos,zpos,0,"ONLY");      
 	}
       }
       if (fRICHhole) {
         if (fClengthRH[iplan][icham] > 0.0) {
           // The inside of the lower G10 frame
-          sprintf(cTagV,"UC%02d",iDet+2*kNdet);
-          sprintf(cTagM,"UB%02d",iDet+2*kNdet);
+          sprintf(cTagV,"UC%02d",iDet+2*kNdets);
+          sprintf(cTagM,"UB%02d",iDet+2*kNdets);
           gMC->Gspos(cTagV,1,cTagM,xpos,ypos,zpos,0,"ONLY");
           // The lower G10 frame inside the aluminum frame
-          sprintf(cTagV,"UB%02d",iDet+2*kNdet);
-          sprintf(cTagM,"UA%02d",iDet+2*kNdet);
+          sprintf(cTagV,"UB%02d",iDet+2*kNdets);
+          sprintf(cTagM,"UA%02d",iDet+2*kNdets);
           gMC->Gspos(cTagV,1,cTagM,xpos,ypos,zpos,0,"ONLY");
           // The inside of the upper G10 frame
-          sprintf(cTagV,"UE%02d",iDet+2*kNdet);
-          sprintf(cTagM,"UD%02d",iDet+2*kNdet);
+          sprintf(cTagV,"UE%02d",iDet+2*kNdets);
+          sprintf(cTagM,"UD%02d",iDet+2*kNdets);
           gMC->Gspos(cTagV,1,cTagM,xpos,ypos,zpos,0,"ONLY");
           // The inside of the upper aluminum frame
-          sprintf(cTagV,"UG%02d",iDet+2*kNdet);
-          sprintf(cTagM,"UF%02d",iDet+2*kNdet);
+          sprintf(cTagV,"UG%02d",iDet+2*kNdets);
+          sprintf(cTagM,"UF%02d",iDet+2*kNdets);
           gMC->Gspos(cTagV,1,cTagM,xpos,ypos,zpos,0,"ONLY");      
 	}
       }
@@ -662,15 +716,33 @@ void AliTRDgeometryFull::CreateGeometry(Int_t *idtmed)
       zpos  = fgkCraH/2. + fgkCdrH/2. - fgkSheight/2. + iplan * (fgkCH + fgkVspace);
       // The lower aluminum frame, radiator + drift region
       sprintf(cTagV,"UA%02d",iDet);
-      gMC->Gspos(cTagV,1,"UTI1",xpos,ypos,zpos,0,"ONLY");
+      
+      fChamberUAorig[iDet][0] = xpos;
+      fChamberUAorig[iDet][1] = ypos;
+      fChamberUAorig[iDet][2] = zpos;
+
+      //gMC->Gspos(cTagV,1,"UTI1",xposs,yposs,zposs,0,"ONLY");
+
       // The upper G10 frame, amplification region
       sprintf(cTagV,"UD%02d",iDet);
       zpos += fgkCamH/2. + fgkCraH/2. + fgkCdrH/2.;
-      gMC->Gspos(cTagV,1,"UTI1",xpos,ypos,zpos,0,"ONLY");
+      
+      fChamberUDorig[iDet][0] = xpos;
+      fChamberUDorig[iDet][1] = ypos;
+      fChamberUDorig[iDet][2] = zpos;
+
+      //gMC->Gspos(cTagV,1,"UTI1",xposs,yposs,zposs,0,"ONLY");
+
       // The upper aluminum frame
       sprintf(cTagV,"UF%02d",iDet);
       zpos += fgkCroH/2. + fgkCamH/2.;
-      gMC->Gspos(cTagV,1,"UTI1",xpos,ypos,zpos,0,"ONLY");
+      
+      fChamberUForig[iDet][0] = xpos;
+      fChamberUForig[iDet][1] = ypos;
+      fChamberUForig[iDet][2] = zpos;
+
+      //gMC->Gspos(cTagV,1,"UTI1",xposs,yposs,zposs,0,"ONLY");
+
       if (fPHOShole) {
         if (fClengthPH[iplan][icham] > 0.0) {
           xpos  = 0.;
@@ -687,16 +759,34 @@ void AliTRDgeometryFull::CreateGeometry(Int_t *idtmed)
 	  }
           zpos  = fgkCraH/2. + fgkCdrH/2. - fgkSheight/2. + iplan * (fgkCH + fgkVspace);
           // The lower aluminum frame, radiator + drift region
-          sprintf(cTagV,"UA%02d",iDet+kNdet);
-          gMC->Gspos(cTagV,1,"UTI2",xpos,ypos,zpos,0,"ONLY");
+          sprintf(cTagV,"UA%02d",iDet+kNdets);
+
+	  fChamberUAorig[iDet+kNdets][0] = xpos;
+	  fChamberUAorig[iDet+kNdets][1] = ypos;
+	  fChamberUAorig[iDet+kNdets][2] = zpos;
+
+          //gMC->Gspos(cTagV,1,"UTI2",xpos,ypos,zpos,0,"ONLY");
+
           // The upper G10 frame, amplification region
-          sprintf(cTagV,"UD%02d",iDet+kNdet);
+          sprintf(cTagV,"UD%02d",iDet+kNdets);
           zpos += fgkCamH/2. + fgkCraH/2. + fgkCdrH/2.;
-          gMC->Gspos(cTagV,1,"UTI2",xpos,ypos,zpos,0,"ONLY");
+
+	  fChamberUDorig[iDet+kNdets][0] = xpos;
+	  fChamberUDorig[iDet+kNdets][1] = ypos;
+	  fChamberUDorig[iDet+kNdets][2] = zpos;
+
+          //gMC->Gspos(cTagV,1,"UTI2",xpos,ypos,zpos,0,"ONLY");
+
           // The upper aluminum frame
-          sprintf(cTagV,"UF%02d",iDet+kNdet);
+          sprintf(cTagV,"UF%02d",iDet+kNdets);
           zpos += fgkCroH/2. + fgkCamH/2.;
-          gMC->Gspos(cTagV,1,"UTI2",xpos,ypos,zpos,0,"ONLY");
+
+	  fChamberUForig[iDet+kNdets][0] = xpos;
+	  fChamberUForig[iDet+kNdets][1] = ypos;
+	  fChamberUForig[iDet+kNdets][2] = zpos;
+
+          //gMC->Gspos(cTagV,1,"UTI2",xpos,ypos,zpos,0,"ONLY");
+
 	}
       }
       if (fRICHhole) {
@@ -715,22 +805,66 @@ void AliTRDgeometryFull::CreateGeometry(Int_t *idtmed)
 	  }
           zpos  = fgkCraH/2. + fgkCdrH/2. - fgkSheight/2. + iplan * (fgkCH + fgkVspace);
           // The lower aluminum frame, radiator + drift region
-          sprintf(cTagV,"UA%02d",iDet+2*kNdet);
-          gMC->Gspos(cTagV,1,"UTI3",xpos,ypos,zpos,0,"ONLY");
+          sprintf(cTagV,"UA%02d",iDet+2*kNdets);
+
+	  fChamberUAorig[iDet+2*kNdets][0] = xpos;
+	  fChamberUAorig[iDet+2*kNdets][1] = ypos;
+	  fChamberUAorig[iDet+2*kNdets][2] = zpos;
+
+          //gMC->Gspos(cTagV,1,"UTI3",xpos,ypos,zpos,0,"ONLY");
+
           // The upper G10 frame, amplification region
-          sprintf(cTagV,"UD%02d",iDet+2*kNdet);
+          sprintf(cTagV,"UD%02d",iDet+2*kNdets);
           zpos += fgkCamH/2. + fgkCraH/2. + fgkCdrH/2.;
-          gMC->Gspos(cTagV,1,"UTI3",xpos,ypos,zpos,0,"ONLY");
+
+	  fChamberUDorig[iDet+2*kNdets][0] = xpos;
+	  fChamberUDorig[iDet+2*kNdets][1] = ypos;
+	  fChamberUDorig[iDet+2*kNdets][2] = zpos;
+
+          //gMC->Gspos(cTagV,1,"UTI3",xpos,ypos,zpos,0,"ONLY");
+
           // The upper aluminum frame
-          sprintf(cTagV,"UF%02d",iDet+2*kNdet);
+          sprintf(cTagV,"UF%02d",iDet+2*kNdets);
           zpos += fgkCroH/2. + fgkCamH/2.;
-          gMC->Gspos(cTagV,1,"UTI3",xpos,ypos,zpos,0,"ONLY");
+
+	  fChamberUForig[iDet+2*kNdets][0] = xpos;
+	  fChamberUForig[iDet+2*kNdets][1] = ypos;
+	  fChamberUForig[iDet+2*kNdets][2] = zpos;
+
+          //gMC->Gspos(cTagV,1,"UTI3",xpos,ypos,zpos,0,"ONLY");
+
 	}
       }
 
     }
   }
 
+  // Create the volumes of the super module frame
+  CreateFrame(idtmed);
+
+  // Create the volumes of the services
+  CreateServices(idtmed);
+  
+  for (Int_t icham = 0; icham < kNcham; icham++) {
+    for (Int_t iplan = 0; iplan < kNplan; iplan++) {  
+
+      GroupChamber(iplan,icham,idtmed,kFALSE,kFALSE);
+
+      if (fPHOShole) {
+        if (fClengthPH[iplan][icham] > 0.0) {
+	  GroupChamber(iplan,icham,idtmed,kTRUE,kFALSE);
+	}
+      }
+
+      if (fRICHhole) {
+        if (fClengthRH[iplan][icham] > 0.0) {
+	  GroupChamber(iplan,icham,idtmed,kFALSE,kTRUE);
+	}
+      }
+
+    }
+  }
+  
   xpos = 0.;
   ypos = 0.;
   zpos = 0.;
@@ -769,12 +903,6 @@ void AliTRDgeometryFull::CreateGeometry(Int_t *idtmed)
   else {
     gMC->Gspos("UTR1",3,"BTR3",xpos,ypos,zpos,0,"ONLY");
   }
-
-  // Create the volumes of the super module frame
-  CreateFrame(idtmed);
-
-  // Create the volumes of the services
-  CreateServices(idtmed);
 
 }
 
@@ -949,7 +1077,7 @@ void AliTRDgeometryFull::CreateServices(Int_t *idtmed)
   //        UMCM    Readout MCMs     (G10/Cu/Si)
   //
 
-  const Int_t kNdet = kNplan * kNcham;
+  //const Int_t kNdet = kNplan * kNcham;  ... replaced by kNdets = 30
 
   Int_t   iplan = 0;
   Int_t   icham = 0;
@@ -1072,7 +1200,12 @@ void AliTRDgeometryFull::CreateServices(Int_t *idtmed)
       sprintf(cTagV,"UU%02d",iDet);
       parServ[0] = fCwidth[iplan]/2.;
       parServ[1] = fClength[iplan][icham]/2. - fgkHspace/2.;
-      parServ[2] = fgkVspace/2.;
+      parServ[2] = fgkVspace/2. - 0.742/2.;
+      
+      fChamberUUboxd[iDet][0] = parServ[0];
+      fChamberUUboxd[iDet][1] = parServ[1];
+      fChamberUUboxd[iDet][2] = parServ[2];
+      
       gMC->Gsvolu(cTagV,"BOX",idtmed[1302-1],parServ,kNparServ);
       xpos  = 0.;
       ypos  = - fClength[iplan][0] - fClength[iplan][1] - fClength[iplan][2]/2.;
@@ -1081,14 +1214,25 @@ void AliTRDgeometryFull::CreateServices(Int_t *idtmed)
       }
       ypos += fClength[iplan][icham]/2.;
       zpos  = fgkCH + fgkVspace/2. - fgkSheight/2. + iplan * (fgkCH + fgkVspace);
-      gMC->Gspos(cTagV,1,"UTI1",xpos,ypos,zpos,0,"ONLY");
+      zpos -= 0.742/2.;
+      
+      fChamberUUorig[iDet][0] = xpos;
+      fChamberUUorig[iDet][1] = ypos;
+      fChamberUUorig[iDet][2] = zpos;
+
+      //gMC->Gspos(cTagV,1,"UTI1",xposs,yposs,zposs,0,"ONLY");
 
       if (fPHOShole) {
         if (fClengthPH[iplan][icham] > 0.0) {
-          sprintf(cTagV,"UU%02d",iDet+kNdet);
+          sprintf(cTagV,"UU%02d",iDet+kNdets);
           parServ[0] = fCwidth[iplan]/2.;
           parServ[1] = fClengthPH[iplan][icham]/2. - fgkHspace/2.;
           parServ[2] = fgkVspace/2.;
+
+	  fChamberUUboxd[iDet+kNdets][0] = parServ[0];
+	  fChamberUUboxd[iDet+kNdets][1] = parServ[1];
+	  fChamberUUboxd[iDet+kNdets][2] = parServ[2];
+      
           gMC->Gsvolu(cTagV,"BOX",idtmed[1302-1],parServ,kNparServ);
           xpos  = 0.;
           ypos  = - fClength[iplan][0] - fClength[iplan][1] - fClength[iplan][2]/2.;
@@ -1103,16 +1247,27 @@ void AliTRDgeometryFull::CreateServices(Int_t *idtmed)
             ypos += fClengthPH[iplan][icham]/2.;
 	  }
           zpos  = fgkCH + fgkVspace/2. - fgkSheight/2. + iplan * (fgkCH + fgkVspace);
-          gMC->Gspos(cTagV,1,"UTI2",xpos,ypos,zpos,0,"ONLY");
+
+	  fChamberUUorig[iDet+kNdets][0] = xpos;
+	  fChamberUUorig[iDet+kNdets][1] = ypos;
+	  fChamberUUorig[iDet+kNdets][2] = zpos;
+
+          //gMC->Gspos(cTagV,1,"UTI2",xpos,ypos,zpos,0,"ONLY");
+
 	}
       }
 
       if (fRICHhole) {
         if (fClengthRH[iplan][icham] > 0.0) {
-          sprintf(cTagV,"UU%02d",iDet+2*kNdet);
+          sprintf(cTagV,"UU%02d",iDet+2*kNdets);
           parServ[0] = fCwidth[iplan]/2.;
           parServ[1] = fClengthRH[iplan][icham]/2. - fgkHspace/2.;
           parServ[2] = fgkVspace/2.;
+
+	  fChamberUUboxd[iDet+2*kNdets][0] = parServ[0];
+	  fChamberUUboxd[iDet+2*kNdets][1] = parServ[1];
+	  fChamberUUboxd[iDet+2*kNdets][2] = parServ[2];
+      
           gMC->Gsvolu(cTagV,"BOX",idtmed[1302-1],parServ,kNparServ);
           xpos  = 0.;
           ypos  = - fClength[iplan][0] - fClength[iplan][1] - fClength[iplan][2]/2.;
@@ -1127,7 +1282,13 @@ void AliTRDgeometryFull::CreateServices(Int_t *idtmed)
             ypos += fClengthRH[iplan][icham]/2.;
 	  }
           zpos  = fgkCH + fgkVspace/2. - fgkSheight/2. + iplan * (fgkCH + fgkVspace);
-          gMC->Gspos(cTagV,1,"UTI3",xpos,ypos,zpos,0,"ONLY");
+
+	  fChamberUUorig[iDet+2*kNdets][0] = xpos;
+	  fChamberUUorig[iDet+2*kNdets][1] = ypos;
+	  fChamberUUorig[iDet+2*kNdets][2] = zpos;
+
+          //gMC->Gspos(cTagV,1,"UTI3",xpos,ypos,zpos,0,"ONLY");
+
 	}
       }
 
@@ -1173,7 +1334,7 @@ void AliTRDgeometryFull::CreateServices(Int_t *idtmed)
         xpos   = 0.0;
         ypos   = (0.5 + iMCMrow) * ySize - 1.9 
                - fClength[iplan][icham]/2. + fgkHspace/2.;
-        zpos   = 0.0;                 
+        zpos   = 0.0 + 0.742/2.;                 
         par[0] = 0.0;
         par[1] = 0.3/2.; // Thickness of the cooling pipes
         par[2] = fCwidth[iplan]/2.;
@@ -1181,7 +1342,7 @@ void AliTRDgeometryFull::CreateServices(Int_t *idtmed)
                           ,matrix[2],"ONLY",par,kNpar);
       }
       if (fPHOShole) {
-        sprintf(cTagV,"UU%02d",iDet+kNdet);
+        sprintf(cTagV,"UU%02d",iDet+kNdets);
         for (Int_t iMCMrow = 0; iMCMrow < nMCMrow; iMCMrow++) {
           xpos   = 0.0;
           ypos   = (0.5 + iMCMrow) * ySize - 1.9 
@@ -1197,7 +1358,7 @@ void AliTRDgeometryFull::CreateServices(Int_t *idtmed)
 	}
       }
       if (fRICHhole) {
-        sprintf(cTagV,"UU%02d",iDet+2*kNdet);
+        sprintf(cTagV,"UU%02d",iDet+2*kNdets);
         for (Int_t iMCMrow = 0; iMCMrow < nMCMrow; iMCMrow++) {
           xpos   = 0.0;
           ypos   = (0.5 + iMCMrow) * ySize - 1.9 
@@ -1240,7 +1401,7 @@ void AliTRDgeometryFull::CreateServices(Int_t *idtmed)
         xpos   = 0.0;
         ypos   = (0.5 + iMCMrow) * ySize - 1.0 
                - fClength[iplan][icham]/2. + fgkHspace/2.;
-        zpos   = -0.4;
+        zpos   = -0.4 + 0.742/2.;
         par[0] = 0.0;
         par[1] = 0.2/2.; // Thickness of the power lines
         par[2] = fCwidth[iplan]/2.;
@@ -1248,7 +1409,7 @@ void AliTRDgeometryFull::CreateServices(Int_t *idtmed)
                           ,matrix[2],"ONLY",par,kNpar);
       }
       if (fPHOShole) {
-        sprintf(cTagV,"UU%02d",iDet+kNdet);
+        sprintf(cTagV,"UU%02d",iDet+kNdets);
         for (Int_t iMCMrow = 0; iMCMrow < nMCMrow; iMCMrow++) {
           xpos   = 0.0;
           ypos   = (0.5 + iMCMrow) * ySize - 1.0 
@@ -1264,7 +1425,7 @@ void AliTRDgeometryFull::CreateServices(Int_t *idtmed)
 	}
       }
       if (fRICHhole) {
-        sprintf(cTagV,"UU%02d",iDet+2*kNdet);
+        sprintf(cTagV,"UU%02d",iDet+2*kNdets);
         for (Int_t iMCMrow = 0; iMCMrow < nMCMrow; iMCMrow++) {
           xpos   = 0.0;
           ypos   = (0.5 + iMCMrow) * ySize - 1.0 
@@ -1340,7 +1501,7 @@ void AliTRDgeometryFull::CreateServices(Int_t *idtmed)
                  - fCwidth[iplan]/2.;
           ypos   = (0.5 + iMCMrow) * ySize + 1.0 
                  - fClength[iplan][icham]/2. + fgkHspace/2.;
-          zpos   = -0.4;
+          zpos   = -0.4 + 0.742/2.;
           par[0] = 0.0;
           par[1] = 0.2/2.; // Thickness of the power lines
           par[2] = fCwidth[iplan]/2.;
@@ -1349,7 +1510,7 @@ void AliTRDgeometryFull::CreateServices(Int_t *idtmed)
 	}
       }
       if (fPHOShole) {
-        sprintf(cTagV,"UU%02d",iDet+kNdet);
+        sprintf(cTagV,"UU%02d",iDet+kNdets);
         for (Int_t iMCMrow = 0; iMCMrow < nMCMrow; iMCMrow++) {
           for (Int_t iMCMcol = 0; iMCMcol < nMCMcol; iMCMcol++) {
             xpos   = (0.5 + iMCMcol) * xSize + 1.0 
@@ -1368,7 +1529,7 @@ void AliTRDgeometryFull::CreateServices(Int_t *idtmed)
         }
       }
       if (fRICHhole) {
-        sprintf(cTagV,"UU%02d",iDet+2*kNdet);
+        sprintf(cTagV,"UU%02d",iDet+2*kNdets);
         for (Int_t iMCMrow = 0; iMCMrow < nMCMrow; iMCMrow++) {
           for (Int_t iMCMcol = 0; iMCMcol < nMCMcol; iMCMcol++) {
             xpos   = (0.5 + iMCMcol) * xSize + 1.0 
@@ -1390,3 +1551,104 @@ void AliTRDgeometryFull::CreateServices(Int_t *idtmed)
     }
   }
 }
+
+//_____________________________________________________________________________
+void AliTRDgeometryFull::GroupChamber(Int_t iplan, Int_t icham, Int_t *idtmed, Bool_t PHOShole, Bool_t RICHhole)
+{
+  //
+  // Group volumes UA, UD, UF, UU in a single chamber (Air)
+  // UA, UD, UF, UU are boxes
+  // UT will be a box
+  //
+  // ... for the moment there are no services (UU) for the upper plane !
+
+  const Int_t kNparCha = 3;
+
+  Int_t iDet = GetDetectorSec(iplan,icham);
+
+  if (PHOShole) iDet +=   kNdets;
+  if (RICHhole) iDet += 2*kNdets;
+
+  Float_t xyzMin[3], xyzMax[3];
+  Float_t xyzOrig[3], xyzBoxd[3];
+
+  Char_t  cTagV[5];
+  Char_t  cTagM[5];
+
+  for (Int_t i = 0; i < 3; i++) {
+    xyzMin[i] = +9999; xyzMax[i] = -9999;
+  }
+
+  for (Int_t i = 0; i < 3; i++) {
+
+    xyzMin[i] = TMath::Min(xyzMin[i],fChamberUAorig[iDet][i]-fChamberUAboxd[iDet][i]);
+    xyzMax[i] = TMath::Max(xyzMax[i],fChamberUAorig[iDet][i]+fChamberUAboxd[iDet][i]);
+
+    xyzMin[i] = TMath::Min(xyzMin[i],fChamberUDorig[iDet][i]-fChamberUDboxd[iDet][i]);
+    xyzMax[i] = TMath::Max(xyzMax[i],fChamberUDorig[iDet][i]+fChamberUDboxd[iDet][i]);
+
+    xyzMin[i] = TMath::Min(xyzMin[i],fChamberUForig[iDet][i]-fChamberUFboxd[iDet][i]);
+    xyzMax[i] = TMath::Max(xyzMax[i],fChamberUForig[iDet][i]+fChamberUFboxd[iDet][i]);
+
+    if (iplan < (kNplan-1)) {
+      xyzMin[i] = TMath::Min(xyzMin[i],fChamberUUorig[iDet][i]-fChamberUUboxd[iDet][i]);
+      xyzMax[i] = TMath::Max(xyzMax[i],fChamberUUorig[iDet][i]+fChamberUUboxd[iDet][i]);
+    }
+
+    xyzOrig[i] = 0.5*(xyzMax[i]+xyzMin[i]);
+    xyzBoxd[i] = 0.5*(xyzMax[i]-xyzMin[i]);
+
+  }
+  
+  sprintf(cTagM,"UT%02d",iDet);
+
+  gMC->Gsvolu(cTagM,"BOX ",idtmed[1302-1],xyzBoxd,kNparCha);
+
+  sprintf(cTagV,"UA%02d",iDet);
+  gMC->Gspos(cTagV,1,cTagM,
+	     fChamberUAorig[iDet][0]-xyzOrig[0],
+	     fChamberUAorig[iDet][1]-xyzOrig[1],
+	     fChamberUAorig[iDet][2]-xyzOrig[2],
+	     0,"ONLY");
+
+  sprintf(cTagV,"UD%02d",iDet);
+  gMC->Gspos(cTagV,1,cTagM,
+	     fChamberUDorig[iDet][0]-xyzOrig[0],
+	     fChamberUDorig[iDet][1]-xyzOrig[1],
+	     fChamberUDorig[iDet][2]-xyzOrig[2],
+	     0,"ONLY");
+
+  sprintf(cTagV,"UF%02d",iDet);
+  gMC->Gspos(cTagV,1,cTagM,
+	     fChamberUForig[iDet][0]-xyzOrig[0],
+	     fChamberUForig[iDet][1]-xyzOrig[1],
+	     fChamberUForig[iDet][2]-xyzOrig[2],
+	     0,"ONLY");
+  
+  if (iplan < (kNplan-1)) {
+    sprintf(cTagV,"UU%02d",iDet);
+    gMC->Gspos(cTagV,1,cTagM,
+	       fChamberUUorig[iDet][0]-xyzOrig[0],
+	       fChamberUUorig[iDet][1]-xyzOrig[1],
+	       fChamberUUorig[iDet][2]-xyzOrig[2],
+	       0,"ONLY");
+
+  }
+
+  sprintf(cTagV,"UT%02d",iDet);
+
+  if (!PHOShole && !RICHhole) {
+    gMC->Gspos(cTagV,1,"UTI1",xyzOrig[0],xyzOrig[1],xyzOrig[2],0,"ONLY");
+  }
+
+  if (PHOShole) {
+    gMC->Gspos(cTagV,1,"UTI2",xyzOrig[0],xyzOrig[1],xyzOrig[2],0,"ONLY");
+  }
+
+  if (RICHhole) {
+    gMC->Gspos(cTagV,1,"UTI3",xyzOrig[0],xyzOrig[1],xyzOrig[2],0,"ONLY");
+  }
+
+}
+
+

@@ -20,7 +20,7 @@ class AliTRDgeometry : public AliGeometry {
 
  public:
 
-  enum { kNplan = 6, kNcham = 5, kNsect = 18, kNdet = 540 };
+  enum { kNplan = 6, kNcham = 5, kNsect = 18, kNdet = 540, kNdets = 30 };
 
   AliTRDgeometry();
   virtual ~AliTRDgeometry();
@@ -72,8 +72,8 @@ class AliTRDgeometry : public AliGeometry {
   virtual Bool_t   GetPHOShole() const = 0;
   virtual Bool_t   GetRICHhole() const = 0;
   virtual Bool_t   IsHole(Int_t /*iplan*/, Int_t /*icham*/, Int_t /*isect*/) const {return kFALSE;}
-  static Int_t    GetDetectorSec(Int_t p, Int_t c);
-  static Int_t    GetDetector(Int_t p, Int_t c, Int_t s);
+  static  Int_t    GetDetectorSec(Int_t p, Int_t c);
+  static  Int_t    GetDetector(Int_t p, Int_t c, Int_t s);
   virtual Int_t    GetPlane(Int_t d)   const;
   virtual Int_t    GetChamber(Int_t d) const;
   virtual Int_t    GetSector(Int_t d)  const;
@@ -169,10 +169,20 @@ class AliTRDgeometry : public AliGeometry {
   Float_t              fRotB21[kNsect];                     // Matrix elements for the backward rotation
   Float_t              fRotB22[kNsect];                     // Matrix elements for the backward rotation
 
-  static const Double_t fgkTime0Base;                        // Base value for calculation of Time-position of pad 0
-  static const Float_t fgkTime0[kNplan];                      //  Time-position of pad 0
+  static const Double_t fgkTime0Base;                       // Base value for calculation of Time-position of pad 0
+  static const Float_t fgkTime0[kNplan];                    //  Time-position of pad 0
   
-  ClassDef(AliTRDgeometry,6)                                // TRD geometry base class
+  Float_t              fChamberUAorig[3*kNdets][3];         // Volumes origin in
+  Float_t              fChamberUDorig[3*kNdets][3];         // the chamber
+  Float_t              fChamberUForig[3*kNdets][3];         // [3] = x, y, z
+  Float_t              fChamberUUorig[3*kNdets][3];
+
+  Float_t              fChamberUAboxd[3*kNdets][3];         // Volumes box
+  Float_t              fChamberUDboxd[3*kNdets][3];         // dimensions (half)
+  Float_t              fChamberUFboxd[3*kNdets][3];         // [3] = x, y, z
+  Float_t              fChamberUUboxd[3*kNdets][3];
+
+  ClassDef(AliTRDgeometry,7)                                // TRD geometry base class
 
 };
 
