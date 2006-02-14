@@ -104,6 +104,21 @@ AliAlignObj &AliAlignObj::operator =(const AliAlignObj& theAlignObj)
 }
 
 //_____________________________________________________________________________
+AliAlignObj &AliAlignObj::operator*=(const AliAlignObj& theAlignObj)
+{
+  // multiplication operator
+  // The operator can be used to 'combine'
+  // two alignment objects
+  TGeoHMatrix m1;
+  GetMatrix(m1);
+  TGeoHMatrix m2;
+  theAlignObj.GetMatrix(m2);
+  m1.MultiplyLeft(&m2);
+  SetMatrix(m1);
+  return *this;
+}
+
+//_____________________________________________________________________________
 AliAlignObj::~AliAlignObj()
 {
   // dummy destructor
@@ -578,12 +593,12 @@ void AliAlignObj::InitVolPaths()
     for (Int_t modnum=0; modnum < 1674; modnum++) {
 
       Int_t sector = modnum/nStripSec;
-
       Char_t  string1[100];
       Char_t  string2[100];
 
       Int_t icopy=-1;
-      if(sector<2){
+
+      if(sector<3){
 	icopy=sector+1;
 	sprintf(string1,"/ALIC_1/B077_1/B075_%i/BTO3_1",icopy);
       }
@@ -603,31 +618,30 @@ void AliAlignObj::InitVolPaths()
       Int_t strInSec=modnum%nStripSec;
 
       if( strInSec < nstrC){
-	icopy= strInSec+1;
-	sprintf(string2,"FTOC_1/FLTC_1/FSTR_%i",icopy);
+	icopy= nstrC - (strInSec+1) + 1;
+	sprintf(string2,"FTOC_1/FLTC_0/FSTR_%i",icopy);
       }
       else if(strInSec< nstrC+nstrB){
  
-	icopy= strInSec-nstrC+1;
-	sprintf(string2,"FTOB_1/FLTB_1/FSTR_%i",icopy);
+	icopy= nstrB - (strInSec-nstrC+1) + 1;
+	sprintf(string2,"FTOB_1/FLTB_0/FSTR_%i",icopy);
 
       }
       else if(strInSec< nstrC+nstrB+nstrA){   
 
 	icopy= strInSec-(nstrC+nstrB)+1;
-	sprintf(string2,"FTOA_1/FLTA_1/FSTR_%i",icopy);
- 
+   	sprintf(string2,"FTOA_0/FLTA_0/FSTR_%i",icopy); 
       }
       else if(strInSec< nstrC+2*nstrB+nstrA){ 
 
 	icopy= strInSec-(nstrC+nstrB+nstrA)+1;
-	sprintf(string2,"FTOB_2/FLTB_2/FSTR_%i",icopy);
+ 	sprintf(string2,"FTOB_2/FLTB_0/FSTR_%i",icopy);
 
       }
       else  { 
 
 	icopy= strInSec-(nstrC+2*nstrB+nstrA)+1;
-	sprintf(string2,"FTOC_2/FLTC_2/FSTR_%i",icopy);
+	sprintf(string2,"FTOC_2/FLTC_0/FSTR_%i",icopy);
 
       }
   
