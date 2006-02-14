@@ -651,4 +651,16 @@ void AliAlignObj::InitVolPaths()
       fgVolPath[kTOF-kFirstLayer][modnum] = path;
     }
   } 
+
+  /*********************      RICH layer   ***********************/
+  {
+    TString str = "ALIC_1/RICH_";
+    TString volpath;
+
+    for (Int_t modnum=0; modnum < 7; modnum++) {
+      volpath = str;
+      volpath += (modnum+1);
+      fgVolPath[kRICH-kFirstLayer][modnum] = volpath.Data();
+    }
+  }
 }
