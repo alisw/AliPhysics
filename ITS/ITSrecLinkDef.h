@@ -52,6 +52,7 @@
 #pragma link C++ class  AliITSVertexerPPZ+;
 #pragma link C++ class  AliITSVertexerZ+;
 #pragma link C++ class  AliITSStrLine+;
+#pragma link C++ class  AliITSSimpleVertex+;
 #pragma link C++ class  AliITSVertexerTracks+;
 
 // Classes for neural tracking
@@ -75,6 +76,7 @@
 #pragma link C++ class AliITSClusterFinderV2SSD+;
 
 //beam test classes
+#pragma link C++ class  AliITSspdTestBeam+;
 #pragma link C++ class AliITSBeamTestDig+;
 #pragma link C++ class AliITSBeamTestDigSPD+;
 #pragma link C++ class AliITSBeamTestDigSDD+;

@@ -21,6 +21,7 @@ SRCS = 	AliITSDetTypeRec.cxx \
 		AliITSVertexer.cxx \
 		AliITSVertexerIons.cxx \
 		AliITSVertexerPPZ.cxx \
+		AliITSSimpleVertex.cxx \
 		AliITSVertexerTracks.cxx \
 		AliITSVertexerZ.cxx \
 		AliITSVertexerFast.cxx \
@@ -50,6 +51,7 @@ SRCS = 	AliITSDetTypeRec.cxx \
 		AliITSBeamTestDigSPD.cxx \
 		AliITSBeamTestDigSSD.cxx \
 		AliITSBeamTestDigitizer.cxx\
+                AliITSspdTestBeam.cxx \
 
 HDRS:=  $(SRCS:.cxx=.h)
 

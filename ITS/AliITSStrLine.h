@@ -21,18 +21,22 @@ class AliITSStrLine : public TObject {
     void SetP0(Double_t *point) {for(Int_t i=0;i<3;i++)fP0[i]=point[i];}
     void SetCd(Double_t *cd) {for(Int_t i=0;i<3;i++)fCd[i]=cd[i];}
     void SetDebug(Int_t dbfl = 0){fDebug = dbfl; }  
-    void GetP0(Double_t *point) {for(Int_t i=0;i<3;i++)point[i]=fP0[i];}
-    void GetCd(Double_t *cd) {for(Int_t i=0;i<3;i++)cd[i]=fCd[i];}
-    void GetCurrentPoint(Double_t *point);
+    void GetP0(Double_t *point) const {for(Int_t i=0;i<3;i++)point[i]=fP0[i];}
+    void GetCd(Double_t *cd) const {for(Int_t i=0;i<3;i++)cd[i]=fCd[i];}
+    void GetCurrentPoint(Double_t *point) const;
+    Int_t IsParallelTo(AliITSStrLine *line) const;
     Int_t Crossrphi(AliITSStrLine *line);
-    Int_t Cross(AliITSStrLine *line,Double_t *point);
- private:
-    void SetPar(Double_t par){fTpar = par;}
+    Int_t CrossPoints(AliITSStrLine *line, Double_t *point1, Double_t *point2);
+    Int_t Cross(AliITSStrLine *line, Double_t *point);
+    Double_t GetDCA(AliITSStrLine *line);
  protected:
     Double_t fP0[3];           // given point
     Double_t fCd[3];           // direction cosines
     Double_t fTpar;            //! parameter 
     Int_t   fDebug;           //! debug flag - verbose printing if >0
+ private:
+    void SetPar(Double_t par){fTpar = par;}
+
   ClassDef(AliITSStrLine,1);
 };
 

@@ -13,17 +13,18 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-//-------------------------------------------------------------------------
+///////////////////////////////////////////////////////////////////////////
 //                Implementation of the ITS track class
 //
 //          Origin: Iouri Belikov, CERN, Jouri.Belikov@cern.ch
 //     dEdx analysis by: Boris Batyunya, JINR, Boris.Batiounia@cern.ch
-//-------------------------------------------------------------------------
+///////////////////////////////////////////////////////////////////////////
 #include <TMath.h>
 
 #include "AliCluster.h"
 #include "AliESDtrack.h"
 #include "AliITStrackV2.h"
+#include "AliITSStrLine.h"
 
 ClassImp(AliITStrackV2)
 
@@ -210,6 +211,24 @@ GetGlobalXYZat(Double_t xk, Double_t &x, Double_t &y, Double_t &z) const {
   return 1;
 }
 
+//_____________________________________________________________________________
+void AliITStrackV2::ApproximateHelixWithLine(Double_t xk, AliITSStrLine *line)
+{
+  //------------------------------------------------------------
+  // Approximate the track (helix) with a straight line tangent to the
+  // helix in the point defined by r (F. Prino, prino@to.infn.it)
+  //------------------------------------------------------------
+  Double_t mom[3];
+  Double_t azim = TMath::ASin(fP2)+fAlpha;
+  Double_t theta = TMath::Pi()/2. - TMath::ATan(fP3);
+  mom[0] = TMath::Sin(theta)*TMath::Cos(azim);
+  mom[1] = TMath::Sin(theta)*TMath::Sin(azim);
+  mom[2] = TMath::Cos(theta);
+  Double_t pos[3];
+  GetGlobalXYZat(xk,pos[0],pos[1],pos[2]);
+  line->SetP0(pos);
+  line->SetCd(mom);
+}
 //_____________________________________________________________________________
 Double_t AliITStrackV2::GetPredictedChi2(const AliCluster *c) const 
 {

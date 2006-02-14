@@ -32,17 +32,6 @@
 //#pragma link C++ class  AliITSv11GeomCable+;
 //#pragma link C++ class  AliITSv11GeomcableFlat+;
 //#pragma link C++ class  AliITSv11GeomcableRound+;
-//
-#pragma link C++ class  AliITSspdTestBeam+;
-//#pragma link C++ class  AliITSTestBeamData-;
-//#pragma link C++ class  AliITSspdTestBeamHeader-;
-//#pragma link C++ class  AliITSspdTestBeamTail-;
-//#pragma link C++ class  AliITSspdTestBeamBurst-;
-//#pragma link C++ class  AliITSspdTestBeamData-;
-//
-//#pragma link C++ class  AliITSMixture+;
-//#pragma link C++ class  AliITSGeoCable+;
-//
 #pragma link C++ class  AliITShit+;
 #pragma link C++ class  AliITSGeant3Geometry+;
 // Standard ITS detector class initilizers

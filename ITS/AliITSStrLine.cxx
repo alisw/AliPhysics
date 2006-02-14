@@ -19,11 +19,7 @@
 //                                                               //
 ///////////////////////////////////////////////////////////////////
 #include <Riostream.h>
-#include <TMath.h>
-#include <TObject.h>
-#include <TObjArray.h>
 #include <TTree.h>
-#include <TClonesArray.h>
 #include "AliITSStrLine.h"
 
 ClassImp(AliITSStrLine)
@@ -77,6 +73,19 @@ void AliITSStrLine::PrintStatus() const {
 }
 
 //________________________________________________________
+Int_t AliITSStrLine::IsParallelTo(AliITSStrLine *line) const {
+  // returns 1 if lines are parallel, 0 if not paralel
+  Double_t cd2[3];
+  line->GetCd(cd2);
+  Double_t vecpx=fCd[1]*cd2[2]-fCd[2]*cd2[1];
+  if(vecpx!=0) return 0;
+  Double_t vecpy=-fCd[0]*cd2[2]+fCd[2]*cd2[0];
+  if(vecpy!=0) return 0;
+  Double_t vecpz=fCd[0]*cd2[1]-fCd[1]*cd2[0];
+  if(vecpz!=0) return 0;
+  return 1;
+}
+//________________________________________________________
 Int_t AliITSStrLine::Crossrphi(AliITSStrLine *line){
   // Cross 2 lines in the X-Y plane
   Double_t p2[3];
@@ -101,7 +110,7 @@ Int_t AliITSStrLine::Crossrphi(AliITSStrLine *line){
 }
 
 //________________________________________________________
-Int_t AliITSStrLine::Cross(AliITSStrLine *line, Double_t *point){
+Int_t AliITSStrLine::CrossPoints(AliITSStrLine *line, Double_t *point1, Double_t *point2){
   // Looks for the crossing point estimated starting from the
   // DCA segment
   Double_t p2[3];
@@ -125,15 +134,64 @@ Int_t AliITSStrLine::Cross(AliITSStrLine *line, Double_t *point){
   fTpar = (a11*k2-a21*k1) / deno;
   Double_t par2 = (k1*a22-k2*a12) / deno;
   line->SetPar(par2);
-  Double_t point1[3];
-  Double_t point2[3];
   GetCurrentPoint(point1);
   line->GetCurrentPoint(point2);
-  for(i=0;i<3;i++)point[i]=(point1[i]+point2[i])/2.;
   return 0;
 }
+//________________________________________________________________
+Int_t AliITSStrLine::Cross(AliITSStrLine *line, Double_t *point){
+
+  //Finds intersection between lines
+  Double_t point1[3];
+  Double_t point2[3];
+  Int_t retcod=CrossPoints(line,point1,point2);
+  if(retcod==0){
+    for(Int_t i=0;i<3;i++)point[i]=(point1[i]+point2[i])/2.;
+    return 0;
+  }else{
+    return -1;
+  }
+}
+
+//___________________________________________________________
+Double_t AliITSStrLine::GetDCA(AliITSStrLine *line){
+  //Returns the distance of closest approach between two lines
+  Double_t p2[3];
+  Double_t cd2[3];
+  line->GetP0(p2);
+  line->GetCd(cd2);
+  Int_t i;
+  Int_t ispar=IsParallelTo(line);
+  if(ispar){
+    Double_t dist1q=0,dist2=0,mod=0;
+    for(i=0;i<3;i++){
+      dist1q+=(fP0[i]-p2[i])*(fP0[i]-p2[i]);
+      dist2+=(fP0[i]-p2[i])*fCd[i];
+      mod+=fCd[i]*fCd[i];
+    }
+    if(mod!=0){
+      dist2/=mod;
+      return TMath::Sqrt(dist1q-dist2*dist2);
+    }else{return -1;}
+  }else{
+     Double_t perp[3];
+     perp[0]=fCd[1]*cd2[2]-fCd[2]*cd2[1];
+     perp[1]=-fCd[0]*cd2[2]+fCd[2]*cd2[0];
+     perp[2]=fCd[0]*cd2[1]-fCd[1]*cd2[0];
+     Double_t mod=0,dist=0;
+     for(i=0;i<3;i++){
+       mod+=perp[i]*perp[i];
+       dist+=(fP0[i]-p2[i])*perp[i];
+     }
+     mod=sqrt(mod);
+     if(mod!=0){
+       dist/=mod;
+       return TMath::Abs(dist);
+     }else{return -1;}
+  }
+}
 //________________________________________________________
-void AliITSStrLine::GetCurrentPoint(Double_t *point){
+void AliITSStrLine::GetCurrentPoint(Double_t *point) const {
   // Fills the array point with the current value on the line
   for(Int_t i=0;i<3;i++)point[i]=fP0[i]+fCd[i]*fTpar;
 }

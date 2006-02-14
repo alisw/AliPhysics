@@ -26,7 +26,6 @@ SRCS = 	AliITS.cxx \
 		AliITSsDigitize.cxx \
 		AliITSDigitizer.cxx \
 		AliITSFDigitizer.cxx \
-      AliITSspdTestBeam.cxx \
       AliITSTrigger.cxx
 
 
