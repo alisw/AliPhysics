@@ -43,7 +43,8 @@ private:
     AliITSspdTestBeamHeader  *fRH;    //! Run Header
     AliITSspdTestBeamTail    *fRT;    //! Run Trailer
     Int_t                     fNBrst; //! Number of burts (size of array).
-    Int_t                   **fBrstSize; //! Size of each burst for each pilot
+    //orig    Int_t                   **fBrstSize; //! Size of each burst for each pilot
+    UInt_t                 ***fBrstSize; //! Size of each burst for each pilot
     AliITSspdTestBeamBurst  **fBrst;  //! Array of bursts.
     Int_t                   **fNData; //! array of the number of data points
     AliITSspdTestBeamData  ***fData;  //! Data

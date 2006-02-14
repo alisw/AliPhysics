@@ -285,13 +285,15 @@ Int_t AliITSspdTestBeam::Decode(){
     fNEvents  = fRH->GetNumberOfEvents();
     fNBrst    = fNEvents/fRH->GetBurstSize();
     fBrst     = new AliITSspdTestBeamBurst*[fNBrst];
-    fBrstSize = new Int_t*[np];
+    //orig    fBrstSize = new Int_t*[np];
+    fBrstSize = new UInt_t**[np];
     fNData    = new Int_t*[np];
     fData     = new AliITSspdTestBeamData**[np];
     fHData    = new AliITSspdTestBeamData**[np];
     fTData    = new AliITSspdTestBeamData**[np];
     for(i=0;i<np;i++){
-        fBrstSize[i] = new Int_t[fNBrst];
+      //orig        fBrstSize[i] = new Int_t[fNBrst];
+        fBrstSize[i] = new UInt_t*[fNBrst];
         fNData[i]    = new Int_t[fNEvents];
         fData[i]     = new AliITSspdTestBeamData*[fNEvents];
         fHData[i]    = new AliITSspdTestBeamData*[fNEvents];
@@ -313,9 +315,11 @@ Int_t AliITSspdTestBeam::Decode(){
         u.bt += b->SizeOf(); // increment wd byte wise
         for(ip=0;ip<np;ip++){  // loop over pilots
             // Get size of data stored for this pilot.
-            fBrstSize[ip][iburst] = (UInt_t) u.wd;
+	  //orig            fBrstSize[ip][iburst] = (UInt_t) u.wd;
+           fBrstSize[ip][iburst] =  u.wd;
             u.bt += sizeof(UInt_t); // increment wd byte wise
-            for(i=0;i<fBrstSize[ip][iburst];i++){ // loop over data
+	    //orig            for(i=0;i<fBrstSize[ip][iburst];i++){ // loop over data
+            for(i=0;i<(Int_t)(*fBrstSize[ip][iburst]);i++){ // loop over data
                 d = (AliITSspdTestBeamData *) u.wd;
                 switch (d->Mode()){
                 case AliITSTestBeamData::kData :
