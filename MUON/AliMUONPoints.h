@@ -11,13 +11,12 @@
 /// \class AliMUONPoints
 /// \brief Class to draw detector clusters (is PolyMarker3D)
 
-#include "AliPoints.h"
-#include <TMatrixFfwd.h>
-
 class TMarker3DBox;
+#include <TMatrixFfwd.h>
 
 class AliMUONDigit;
 class AliMUONHit;
+#include "AliPoints.h"
 
 class AliMUONPoints : public AliPoints 
 {
