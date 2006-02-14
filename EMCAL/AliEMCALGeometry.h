@@ -11,17 +11,15 @@
 //                  
 //*-- Author: Sahal Yacoob (LBL / UCT)
 //*--   and : Yves Schutz (Subatech)
-
-//#include <assert.h> 
+//*--   and : Aleksei Pavlinov (WSU) - shashlyk staff
 
 // --- ROOT system ---
 class TString ;
-class TObjArray ;
+class TObjArray;
 class TVector3 ;
 class TParticle ; 
 
 // --- AliRoot header files ---
-
 #include "AliGeometry.h"
 
 class AliEMCALGeometry : public AliGeometry {
@@ -48,7 +46,7 @@ public:
   Bool_t IsInEMCAL(Double_t x, Double_t y, Double_t z) const;
   // General
   Bool_t  IsInitialized(void) const { return fgInit ; }
-  	// Return EMCA geometrical parameters
+  // Return EMCAL geometrical parameters
   // geometry
   Float_t GetAlFrontThickness() const { return fAlFrontThick;}
   Float_t GetArm1PhiMin() const { return fArm1PhiMin ; }
@@ -60,7 +58,7 @@ public:
   Float_t GetEnvelop(Int_t index) const { return fEnvelop[index] ; }  
   Float_t GetShellThickness() const { return fShellThickness ; }
   Float_t GetZLength() const { return fZLength ; } 
-  Float_t GetGap2Active() const {return  fGap2Active ; }
+  Float_t GetGap2Active() const {return  fGap2Active ;}
   Float_t GetDeltaEta() const {return (fArm1EtaMax-fArm1EtaMin)/
 				       ((Float_t)fNZ);}
   Float_t GetDeltaPhi() const {return (fArm1PhiMax-fArm1PhiMin)/
@@ -112,6 +110,7 @@ public:
     // pseudorapidity and r=sqrt(x*x+y*y).
     return r/TMath::Tan(AngleFromEta(eta));
   }
+  // These methods are obsolete but use in AliEMCALRecPoint - keep it now
   Int_t TowerIndex(Int_t iz,Int_t iphi) const; // returns tower index
   	// returns tower indexs iz, iphi.
   void TowerIndexes(Int_t index,Int_t &iz,Int_t &iphi) const;
@@ -126,6 +125,7 @@ public:
   void PosInAlice(const Int_t *relid, Float_t &theta, Float_t &phi) const ;
   void PosInAlice(Int_t absid, Float_t &theta, Float_t &phi) const ;
   Bool_t AbsToRelNumbering(Int_t AbsId, Int_t *relid) const;
+  // --
   void SetNZ(Int_t nz) { fNZ= nz ; printf("SetNZ: Number of modules in Z set to %d", fNZ) ; }
   void SetNPhi(Int_t nphi) { fNPhi= nphi ; printf("SetNPhi: Number of modules in Phi set to %d", fNPhi) ; }
   void SetSampling(Float_t samp) { fSampling = samp; printf("SetSampling: Sampling factor set to %f", fSampling) ; }
@@ -140,12 +140,14 @@ protected:
     Init();
   };
   void Init(void);     			// initializes the parameters of EMCAL
+  void CheckAditionalOptions();              //
   
 private:
   static AliEMCALGeometry * fgGeom;	// pointer to the unique instance of the singleton
   static Bool_t fgInit;			// Tells if geometry has been succesfully set up.
-  Float_t fAlFrontThick;		// Thickness of the front Al face of the support box
-  
+  TObjArray *fArrayOpts;                //! array of geometry options
+
+  Float_t fAlFrontThick;		// Thickness of the front Al face of the support box  
   Float_t fECPbRadThickness;		// cm, Thickness of the Pb radiators
   Float_t fECScintThick;		// cm, Thickness of the scintillators
   Int_t   fNECLayers;			// number of scintillator layers
@@ -182,7 +184,7 @@ private:
   //
   Int_t   fNCells;                       // number of cells in calo
   Int_t   fNCellsInSupMod;               // number cell in super module
-  Int_t   fNCellsInTower;                // number cell in tower
+  Int_t   fNCellsInTower;                // number cell in tower(or module)
   // TRD1 options - 30-sep-04
   Float_t fTrd1Angle;                    // angle in x-z plane (in degree) 
   Float_t f2Trd1Dx2;                     // 2*dx2 for TRD1
@@ -195,8 +197,10 @@ private:
   // Super module as TUBS
   Float_t fTubsR;                        // radius of tubs 
   Float_t fTubsTurnAngle;                // turn angle of tubs in degree
+  // Service routine 
+  static int ParseString(const TString &topt, TObjArray &Opt);
 
-  ClassDef(AliEMCALGeometry,9) // EMCAL geometry class 
-    };
+  ClassDef(AliEMCALGeometry,10) // EMCAL geometry class 
+  };
 
 #endif // AliEMCALGEOMETRY_H

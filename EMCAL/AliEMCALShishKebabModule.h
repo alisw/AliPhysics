@@ -49,7 +49,7 @@ class AliEMCALShishKebabModule : public TNamed {
   Double_t fA;  // parameters of line = y = A*z + B
   Double_t fB;  // 
   // service methods
-  void Print(int pri=1) const;  // *MENU*
+  void PrintShish(int pri=1) const;  // *MENU*
  protected:
   // size of SK module
   Double_t fTheta; // theta for SK module

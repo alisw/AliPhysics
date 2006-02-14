@@ -130,15 +130,15 @@ Bool_t AliEMCALShishKebabTrd1Module::GetParameters()
   fgr        = (Double_t)fgGeometry->GetIPDistance();
   if(!sn.Contains("TRD2")) fgr += fgGeometry->GetSteelFrontThickness();
   fga2       = Double_t(fgGeometry->Get2Trd1Dx2());
-  Print(0);
+  PrintShish(0);
   return kTRUE;
 }
 
 // service methods
-void AliEMCALShishKebabTrd1Module::Print(int pri) const
+void AliEMCALShishKebabTrd1Module::PrintShish(int pri) const
 {
   if(pri>=0) {
-    Info("Print()", "\n a %7.3f:%7.3f | b %7.2f | r %7.2f \n TRD1 angle %7.6f(%5.2f) | tanBetta %7.6f", 
+    Info("PrintShish()", "\n a %7.3f:%7.3f | b %7.2f | r %7.2f \n TRD1 angle %7.6f(%5.2f) | tanBetta %7.6f", 
     fga, fga2, fgb, fgr, fgangle, fgangle*TMath::RadToDeg(), fgtanBetta);
     printf(" fTheta %f : %5.2f : cos(theta) %f\n", 
     fTheta, GetThetaInDegree(),TMath::Cos(fTheta)); 

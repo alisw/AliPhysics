@@ -11,7 +11,6 @@
 //*-- Author: Yves Schutz (SUBATECH)
 //*-- and   : Sahal Yacoob (LBL / UCT) 
 //          : Aleksei Pavlinov (WSU)     SHASHLYK
-//#include <assert.h>
 
 // --- ROOT system ---
 
@@ -75,11 +74,11 @@ class AliEMCALv0 : public AliEMCAL {
   TList  *GetShishKebabModules() {return fShishKebabModules;}
   AliEMCALShishKebabTrd1Module *GetShishKebabModule(const Int_t neta=0);
  private:
-  TList *fShishKebabModules; //! list of modules for twist geometries
+  TList *fShishKebabModules; //! list of modules
   
  protected:
 
-  ClassDef(AliEMCALv0,3)  // Implementation of EMCAL manager class for midrapidity barrel layout between 80 and 180(190) degrees 
+  ClassDef(AliEMCALv0,3) // Implementation of EMCAL manager class for midrapidity barrel layout between 80 and 180(190) degrees 
     
     };
     

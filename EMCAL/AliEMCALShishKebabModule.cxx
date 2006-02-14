@@ -162,15 +162,15 @@ Bool_t AliEMCALShishKebabModule::GetParameters()
   fga = (Double_t)fgGeometry->GetPhiModuleSize();
   fgb = (Double_t)fgGeometry->GetLongModuleSize();
   fgr = (Double_t)(fgGeometry->GetIPDistance() + fgGeometry->GetSteelFrontThickness());
-  Print(0);
+  PrintShish(0);
   return kTRUE;
 }
 
 // service methods
-void AliEMCALShishKebabModule::Print(int pri) const
+void AliEMCALShishKebabModule::PrintShish(int pri) const
 {
   if(pri>=0) {
-    Info("Print()", " a %7.2f | b %7.2f | r %7.2f ", fga, fgb, fgr);
+    Info("PrintShish()", " a %7.2f | b %7.2f | r %7.2f ", fga, fgb, fgr);
     printf(" fTheta %f : %5.2f : cos(theta) %f\n", fTheta, GetThetaInDegree(),TMath::Cos(fTheta)); 
     if(pri>0) {
       printf("%i %s | theta %f -> %f\n", GetUniqueID(), GetName(), fTheta, fOK.Phi());

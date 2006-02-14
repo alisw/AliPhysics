@@ -60,7 +60,6 @@ AliEMCALv2::AliEMCALv2():AliEMCALv1(), fGeometry(0){
 AliEMCALv2::AliEMCALv2(const char *name, const char *title): AliEMCALv1(name,title) {
     // Standard Creator.
 
-  //    fGeant3 = (TGeant3*)gMC;
     fHits= new TClonesArray("AliEMCALHit",1000);
     gAlice->GetMCApp()->AddHitList(fHits);
 
@@ -268,8 +267,6 @@ void AliEMCALv2::FinishEvent()
 
 Double_t AliEMCALv2::GetDepositEnergy(int print)
 { // 23-mar-05 - for testing
-  cout<<"AliEMCALv2::GetDepositEnergy() : fHits "<<fHits<<endl; 
-  if(fHits == 0) return 0.;
   if(fHits == 0) return 0.;
   AliEMCALHit  *hit=0;
   Double_t de=0.;
@@ -278,6 +275,7 @@ Double_t AliEMCALv2::GetDepositEnergy(int print)
     de += hit->GetEnergy();
   }
   if(print>0) {
+    cout<<"AliEMCALv2::GetDepositEnergy() : fHits "<<fHits<<endl; 
     printf(" #hits %i de %f \n", fHits->GetEntries(), de);
     if(print>1) {
       printf(" #primary particles %i\n", gAlice->GetHeader()->GetNprimary()); 
@@ -539,37 +537,3 @@ void AliEMCALv2::TestIndexTransition(int pri, int idmax)
   }
   printf(" Good decoding %i : %i <- #cells \n", nGood, fGeometry->GetNCells());
 }
-
-/* try to draw hits
- gMC->Gsatt("*","seen",0);
- gMC->Gsatt("scm0","seen",5);
- g3->Gdrawc("alic", 1,   2.0, 12., -125, 0.3, 0.3);
-*/
-//void AliEMCALv2::Gdaxis(float x0, float y0, float z0, float <axsiz) {gdaxis_(x0,y0,z0,axsiz);}
-
-/*
-
-void AliEMCALv2::RemapTrackHitIDs(Int_t *map) {
-  // remap track index numbers for primary and parent indices
-  // (Called by AliStack::PurifyKine)
-  if (Hits()==0)
-    return;
-  TIter hit_it(Hits());
-  Int_t i_hit=0;
-  while (AliEMCALHit *hit=dynamic_cast<AliEMCALHit*>(hit_it()) ) {
-    if (map[hit->GetIparent()]==-99)
-      cout << "Remapping, found -99 for parent id " << hit->GetIparent() << ", " << map[hit->GetIparent()] << ", i_hit " << i_hit << endl;
-    hit->SetIparent(map[hit->GetIparent()]);
-    if (map[hit->GetPrimary()]==-99)
-      cout << "Remapping, found -99 for primary id " << hit->GetPrimary() << ", " << map[hit->GetPrimary()] << ", i_hit " << i_hit << endl;
-    hit->SetPrimary(map[hit->GetPrimary()]);
-    i_hit++;
-  }
-}
-
-void AliEMCALv2::FinishPrimary() {
-  fCurPrimary=-1;
-  fCurParent=-1;
-  fCurTrack=-1;
-}
-*/

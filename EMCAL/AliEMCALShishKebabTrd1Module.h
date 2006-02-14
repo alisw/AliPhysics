@@ -43,7 +43,7 @@ class AliEMCALShishKebabTrd1Module : public TNamed {
   Double_t GetTanBetta() {return fgtanBetta;}
   Double_t Getb()        {return fgb;}
   // service methods
-  void Print(int pri=1) const;  // *MENU*
+  void PrintShish(int pri=1) const;  // *MENU*
 
   // geometry info
   static AliEMCALGeometry *fgGeometry; //!

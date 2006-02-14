@@ -27,10 +27,14 @@
 //     and  : Yves Schutz (SUBATECH)
 //     and  : Jennifer Klay (LBL)
 //     SHASHLYK : Aleksei Pavlinov (WSU)
+//     SuperModules -> module(or tower) -> cell
 
 // --- AliRoot header files ---
 #include <TMath.h>
 #include <TVector3.h>
+#include <TRegexp.h>
+#include <TObjArray.h>
+#include <TObjString.h>
 
 // -- ALICE Headers.
 //#include "AliConst.h"
@@ -44,6 +48,12 @@ AliEMCALGeometry *AliEMCALGeometry::fgGeom = 0;
 Bool_t            AliEMCALGeometry::fgInit = kFALSE;
 TString name; // contains name of geometry
 
+char *additionalOpts[]={"nl=",   // number of sampling layers
+		       "pbTh=", // cm, Thickness of the Pb
+		       "scTh="  // cm, Thickness of the Sc
+};
+int  nAdditionalOpts = sizeof(additionalOpts) / sizeof(char*);
+
 //______________________________________________________________________
 AliEMCALGeometry::~AliEMCALGeometry(void){
     // dtor
@@ -51,7 +61,7 @@ AliEMCALGeometry::~AliEMCALGeometry(void){
 
 //______________________________________________________________________
 Bool_t AliEMCALGeometry::AreInSameTower(Int_t id1, Int_t id2) const {
-  // Find out whether two hits are in the same tower
+  // Find out whether two hits are in the same tower - have to be change
   Int_t idmax = TMath::Max(id1, id2) ; 
   Int_t idmin = TMath::Min(id1, id2) ;
   if ( ((idmax - GetNZ() * GetNPhi()) == idmin ) || 
@@ -70,7 +80,8 @@ void AliEMCALGeometry::Init(void){
   // New geometry: EMCAL_55_25
   // 24-aug-04 for shish-kebab
   // SHISH_25 or SHISH_62
-  // 11-oct-05 - correction for final design
+  // 11-oct-05   - correction for pre final design
+  // Feb 06,2006 - decrease the weight of EMCAL
   fgInit = kFALSE; // Assume failed until proven otherwise.
   name   = GetName();
   name.ToUpper();
@@ -87,20 +98,7 @@ void AliEMCALGeometry::Init(void){
   fPhiGapForSM    = 0.;         // cm, only for final TRD1 geometry
 
   // geometry
-  if (name == "EMCAL_55_25") {
-    fECPbRadThickness  = 0.5;  // cm, Thickness of the Pb radiators
-    fECScintThick      = 0.5;  // cm, Thickness of the scintillator
-    fNECLayers         = 25;   // number of scintillator layers
-    
-    fSampling          = 13.1;  // calculated with Birk's law implementation
- 
-    fAlFrontThick      = 3.5;  // cm, Thickness of front Al layer
-    fGap2Active        = 1.0;  // cm, Gap between Al and 1st Scintillator
-  }
-  else if( name == "G56_2_55_19" || name == "EMCAL_5655_21" || name == "G56_2_55_19_104_14"|| name == "G65_2_64_19" || name == "EMCAL_6564_21"){
-    Fatal("Init", "%s is an old geometry! Please update your Config file", name.Data()) ;
-  }
-  else if(name.Contains("SHISH")){
+  if(name.Contains("SHISH")){ // Only shahslyk now
     // 7-sep-05; integration issue
     fArm1PhiMin     = 80.0;	// 60  -> 80
     fArm1PhiMax     = 180.0;	// 180 -> 190
@@ -190,6 +188,9 @@ void AliEMCALGeometry::Init(void){
       fShellThickness = 30.; // should be change 
       fNPhi = fNZ = 4; 
     }
+
+    CheckAditionalOptions();
+
     // constant for transition absid <--> indexes
     fNCellsInTower  = fNPHIdiv*fNETAdiv;
     fNCellsInSupMod = fNCellsInTower*fNPhi*fNZ;
@@ -206,10 +207,7 @@ void AliEMCALGeometry::Init(void){
         f2Trd2Dy2 = fPhiModuleSize + 2.*fLongModuleSize*TMath::Tan(fTrd2AngleY*TMath::DegToRad()/2.);
       }
     }
-  }
-  else
-    Fatal("Init", "%s is an undefined geometry!", name.Data()) ; 
-		 
+  } else Fatal("Init", "%s is an undefined geometry!", name.Data()) ; 
 
   fNPhiSuperModule = fNumberOfSuperModules/2;
   if(fNPhiSuperModule<1) fNPhiSuperModule = 1;
@@ -250,9 +248,10 @@ void AliEMCALGeometry::Init(void){
  	printf(" fPassiveScintThick  %6.4f cm (thickness of front passive Sc tile)\n",
         fPassiveScintThick);
       }
-      printf(" X:Y module size   %6.3f , %6.3f cm \n", fPhiModuleSize, fEtaModuleSize);
-      printf(" X:Y   tile size   %6.3f , %6.3f cm \n", fPhiTileSize, fEtaTileSize);
-      printf(" fLongModuleSize   %6.3f cm \n", fLongModuleSize);
+      printf(" X:Y module size     %6.3f , %6.3f cm \n", fPhiModuleSize, fEtaModuleSize);
+      printf(" X:Y   tile size     %6.3f , %6.3f cm \n", fPhiTileSize, fEtaTileSize);
+      printf(" #of sampling layers %i(fNECLayers) \n", fNECLayers);
+      printf(" fLongModuleSize     %6.3f cm \n", fLongModuleSize);
       printf(" #supermodule in phi direction %i \n", fNPhiSuperModule );
     }
     if(name.Contains("TRD")) {
@@ -272,6 +271,49 @@ void AliEMCALGeometry::Init(void){
     printf("Granularity: %d in eta and %d in phi\n", GetNZ(), GetNPhi()) ;
     printf("Layout: phi = (%7.1f, %7.1f), eta = (%5.2f, %5.2f), IP = %7.2f\n",  
 	   GetArm1PhiMin(), GetArm1PhiMax(),GetArm1EtaMin(), GetArm1EtaMax(), GetIPDistance() );
+  }
+}
+
+//______________________________________________________________________
+
+void AliEMCALGeometry::CheckAditionalOptions()
+{ // Feb 06,2006
+  fArrayOpts = new TObjArray;
+  Int_t nopt = ParseString(name, *fArrayOpts);
+  if(nopt==1) { // no aditional option(s)
+    fArrayOpts->Delete();
+    delete fArrayOpts;
+    fArrayOpts = 0; 
+    return;
+  }  		 
+  for(Int_t i=1; i<nopt; i++){
+    TObjString *o = (TObjString*)fArrayOpts->At(i); 
+
+    TString addOpt = o->String();
+    Int_t indj=-1;
+    for(Int_t j=0; j<nAdditionalOpts; j++) {
+      TString opt = additionalOpts[j];
+      if(addOpt.Contains(opt,TString::kIgnoreCase)) {
+	  indj = j;
+        break;
+      }
+    }
+    if(indj<0) {
+      printf("<E> option |%s| unavailable : ** look to the file AliEMCALGeometry.h **\n", 
+      addOpt.Data());
+      assert(0);
+    } else {
+      printf("<I> option |%s| is valid : number %i : |%s|\n", 
+	     addOpt.Data(), indj, additionalOpts[indj]);
+      if       (addOpt.Contains("NL=",TString::kIgnoreCase))   {// number of sampling layers
+        sscanf(addOpt.Data(),"NL=%i", &fNECLayers);
+        printf(" fNECLayers %i (new) \n", fNECLayers);
+      } else if(addOpt.Contains("PBTH=",TString::kIgnoreCase)) {//Thickness of the Pb
+        sscanf(addOpt.Data(),"PBTH=%f", &fECPbRadThickness);
+      } else if(addOpt.Contains("SCTH=",TString::kIgnoreCase)) {//Thickness of the Sc
+        sscanf(addOpt.Data(),"SCTH=%f", &fECScintThick);
+      }
+    }
   }
 }
 
@@ -312,6 +354,7 @@ AliEMCALGeometry* AliEMCALGeometry::GetInstance(const Text_t* name,
     return rv; 
 }
 
+// These methods are obsolete but use in AliEMCALRecPoint - keep it now
 //______________________________________________________________________
 Int_t AliEMCALGeometry::TowerIndex(Int_t ieta,Int_t iphi) const {
   // Returns the tower index number from the based on the Z and Phi
@@ -592,6 +635,7 @@ Bool_t AliEMCALGeometry::IsInEMCAL(Double_t x, Double_t y, Double_t z) const {
   }
   return 0;
 }
+// ==
 
 //
 // == Shish-kebab cases ==
@@ -681,4 +725,21 @@ int &iphi, int &ieta)
   ieta  = (ietat-1)*fNETAdiv + (3-nIeta); // x(module) = -z(SM) 
   // iphi - have to change from 1 to fNPhi*fNPHIdiv
   iphi  = (iphit-1)*fNPHIdiv + nIphi;     // y(module) =  y(SM) 
+}
+// Service routine 
+int  AliEMCALGeometry::ParseString(const TString &topt, TObjArray &Opt)
+{ // Feb 06, 2006
+  Ssiz_t begin, index, end, end2;
+  begin = index = end = end2 = 0;
+  TRegexp separator("[^ ;,\\t\\s/]+");
+  while ( (begin < topt.Length()) && (index != kNPOS) ) {
+    // loop over given options
+    index = topt.Index(separator,&end,begin);
+    if (index >= 0 && end >= 1) {
+      TString substring(topt(index,end));
+      Opt.Add(new TObjString(substring.Data()));
+    }
+    begin += end+1;
+  }
+  return Opt.GetEntries();
 }

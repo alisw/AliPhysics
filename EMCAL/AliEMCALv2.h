@@ -45,11 +45,6 @@ public:
   // Gives the version number 
   virtual Int_t  IsVersion(void) const {return 2;}
   virtual const TString Version(void)const {return TString("v2");}
-  //  virtual void RemapTrackHitIDs(Int_t *map);
-  //virtual void FinishPrimary();
-  // virtual void SetTimeCut(Float_t tc){ fTimeCut = tc;}
-  // virtual Float_t GetTimeCut(){return fTimeCut;}
-  // assignement operator requested by coding convention but not needed  
   AliEMCALv2 & operator = (const AliEMCALv1 & /*rvalue*/){
     Fatal("operator =", "not implemented") ;  
     return *this;}
