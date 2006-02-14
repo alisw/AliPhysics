@@ -562,11 +562,12 @@ AliMUONGlobalTrigger* AliMUONRawReader::GetGlobalTriggerPattern(Int_t gloTrigPat
 
 
   for (Int_t i = 0; i < 3; i++) {
-    globalSinglePlus[i]  = gloTrigPat & (0x1 << i);
-    globalSingleMinus[i] = gloTrigPat & (0x1 << i+3);
-    globalSingleUndef[i] = gloTrigPat & (0x1 << i+6);
-    globalPairUnlike[i]  = gloTrigPat & (0x1 << i+9);
-    globalPairLike[i]    = gloTrigPat & (0x1 << i+12);
+
+    globalSinglePlus[i]  = (gloTrigPat >> i) & 0x1;
+    globalSingleMinus[i] = (gloTrigPat >> (i+3)) & 0x1;
+    globalSingleUndef[i] = (gloTrigPat >> (i+6)) & 0x1;
+    globalPairUnlike[i]  = (gloTrigPat >> (i+9)) & 0x1;
+    globalPairLike[i]    = (gloTrigPat >> (i+12)) & 0x1;
   }
 
   return (new AliMUONGlobalTrigger(globalSinglePlus, globalSingleMinus,
