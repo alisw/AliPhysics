@@ -76,7 +76,6 @@
 #pragma link C++ class AliITSClusterFinderV2SSD+;
 
 //beam test classes
-#pragma link C++ class  AliITSspdTestBeam+;
 #pragma link C++ class AliITSBeamTestDig+;
 #pragma link C++ class AliITSBeamTestDigSPD+;
 #pragma link C++ class AliITSBeamTestDigSDD+;

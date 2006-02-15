@@ -51,7 +51,6 @@ SRCS = 	AliITSDetTypeRec.cxx \
 		AliITSBeamTestDigSPD.cxx \
 		AliITSBeamTestDigSSD.cxx \
 		AliITSBeamTestDigitizer.cxx\
-                AliITSspdTestBeam.cxx \
 
 HDRS:=  $(SRCS:.cxx=.h)
 
