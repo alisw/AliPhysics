@@ -695,10 +695,7 @@ void AliMUONTrackK::ParPropagation(Double_t zEnd)
       distance = zEnd - vGeant3New[2];
       step /= 2;
       nTries ++;
-      if (nTries > fgkTriesMax) {
-	cout << " ***** ParPropagation: too many tries " << nTries << endl;
-	AliFatal("Too many tries.");
-      }
+      if (nTries > fgkTriesMax) AliError(Form(" Too many tries: %d", nTries));
     } while (distance*iFB < 0);
 
     GetFromGeantParam(vGeant3New,iFB);
@@ -868,7 +865,7 @@ Bool_t AliMUONTrackK::FindPoint(Int_t ichamb, Double_t zEnd, Int_t currIndx, Int
         if (TMath::Abs(hit->GetZ()-zEnd) > 0.05) {
 	  // adjust position: for multiple hits in the chamber
 	  // (mostly (only?) for GEANT hits)
-	  cout << " ******* adjust " << zEnd << " " << hit->GetZ() << endl;
+	  AliWarning(Form(" *** adjust %f %f ", zEnd, hit->GetZ()));
 	  zEnd = hit->GetZ();
 	  *fTrackPar = *fTrackParNew;
 	  ParPropagation(zEnd);
@@ -979,9 +976,7 @@ Bool_t AliMUONTrackK::FindPoint(Int_t ichamb, Double_t zEnd, Int_t currIndx, Int
 		  if (TMath::Abs(hit->GetZ()-(*trackK->fSteps)[i]) > 0.1) {
 		  //if (TMath::Abs(hit->GetZ()-(trackK->fSteps)[i]) > 0.1) {
 		    RemoveMatrices(trackK);
-		    cout << " *** Position adjustment 1 " << hit->GetZ() << " " 
-                         << (*trackK->fSteps)[i] << endl;
-		    AliFatal(" Position adjustment 1.");
+		    AliError(Form(" *** Position adjustment 1: %f %f", hit->GetZ(), (*trackK->fSteps)[i]));
 		  }
 		  else break;
 		}
@@ -1202,7 +1197,7 @@ void AliMUONTrackK::SetTrackQuality(Int_t iChi2)
   // Computes "track quality" from Chi2 (if iChi2==0) or vice versa
 
   if (fChi2 > 500) {
-    cout << " ***** Too high Chi2: " << fChi2 << endl;
+    AliWarning(Form(" *** Too high Chi2: %f ", fChi2));
     fChi2 = 500;
   }
   if (iChi2 == 0) fChi2 = fNTrackHits + (500.-fChi2)/501;
@@ -1336,7 +1331,7 @@ void AliMUONTrackK::Branson(void)
   (*fTrackPar)(4,0) = TMath::Cos((*fTrackPar)(3,0))*trackParam.GetInverseBendingMomentum();
   fPosition = trackParam.GetZ();
   //delete trackParam;
-  cout << 1/(*fTrackPar)(4,0) << " " << fPosition << " " << (*fTrackPar)(0,0) << endl;
+  if (fgDebug > 0) cout << 1/(*fTrackPar)(4,0) << " " << fPosition << " " << (*fTrackPar)(0,0) << endl;
 
   // Get covariance matrix
   *fCovariance = *fWeight;
@@ -2009,8 +2004,8 @@ L33:
     if (chi2(0,0) > chi2max) chi2max = chi2(0,0); 
     fChi2 += chi2(0,0);
     if (chi2(0,0) < 0) { 
-      chi2.Print(); cout << " chi2 < 0 " << i << " " << iLast << endl;
-      //AliFatal("chi2 < 0.");
+      //chi2.Print(); 
+      AliError(Form(" *** chi2 < 0: %d %d ", i, iLast));
     }
     // Save smoothed parameters
     TMatrixD *par = new TMatrixD(parSmooth);

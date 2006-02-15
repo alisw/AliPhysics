@@ -233,7 +233,7 @@ next:
     */
     for (Int_t i=0; i<nMax; i++) {
       if (nMax > 1) FindCluster(localMax, maxPos[i]);
-      if (!MainLoop(iSimple)) cout << " MainLoop failed " << endl;
+      if (!MainLoop(iSimple)) AliWarning(Form(" MainLoop failed "));
       if (i < nMax-1) {
 	for (Int_t j=0; j<fnPads[0]+fnPads[1]; j++) {
 	  if (fPadIJ[1][j] == 0) continue; // pad charge was not modified
@@ -603,7 +603,10 @@ Bool_t AliMUONClusterFinderAZ::CheckPrecluster(Int_t *nShown)
     beg++;
   } // while
   npad = fnPads[0] + fnPads[1];
-  if (npad > 500) { cout << " ***** Too large cluster. Give up. " << npad << endl; return kFALSE; }
+  if (npad > 500) { 
+    AliWarning(Form(" *** Too large cluster. Give up. %d ", npad));
+    return kFALSE; 
+  }
   // Back up charge value
   for (Int_t j = 0; j < npad; j++) fXyq[6][j] = fXyq[2][j];
 
@@ -816,9 +819,8 @@ void AliMUONClusterFinderAZ::AdjustPixel(Float_t wxmin, Float_t wymin)
     if (fDebug) cout << " Different " << pixPtr->Size(0) << " " << wxy[0] << " "
 		     << pixPtr->Size(1) << " " << wxy[1] <<endl;
     
-    //if (n2[0] > 2 || n2[1] > 2) { cout << n2[0] << " " << n2[1] << endl; AliFatal("Too large pixel.");}
     if (n2[0] > 2 || n2[1] > 2) { 
-      cout << n2[0] << " " << n2[1] << endl; 
+      //cout << n2[0] << " " << n2[1] << endl; 
       if (n2[0] > 2 && n1[0] < 999) n1[0]--;
       if (n2[1] > 2 && n1[1] < 999) n1[1]--;
     }
@@ -1559,7 +1561,7 @@ TObject* AliMUONClusterFinderAZ::BinToPix(TH2D *mlem, Int_t jc, Int_t ic)
     if (pixPtr->Charge() < 0.5) continue;
     if (TMath::Abs(pixPtr->Coord(0)-xc)<1.e-4 && TMath::Abs(pixPtr->Coord(1)-yc)<1.e-4) return (TObject*) pixPtr;
   }
-  AliWarning(Form(" Something wrong ??? %f %f %f %f", xc, yc));
+  AliError(Form(" Something wrong ??? %f %f ", xc, yc));
   return NULL;
 }
 
@@ -2550,6 +2552,7 @@ void AliMUONClusterFinderAZ::AddVirtualPad()
     if (maxpad[0][0] < 0) iPad = 1;
 
     for (iPad=0; iPad<2; iPad++) {
+      if (maxpad[cath][iPad] < 0) continue;
       if (iPad && !iAddX && !iAddY) break;
       if (iPad && fXyq[2][maxpad[cath][1]] / sigmax[cath] < 0.5) break;
 
