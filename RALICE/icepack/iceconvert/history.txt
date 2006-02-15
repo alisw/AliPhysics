@@ -42,4 +42,7 @@
                 event structures. The information is stored in the IceEvent structure in the
                 form of a device named "Trigger". The various event triggers encountered in the
                 F2K input data are stored as "hits" into this trigger device.
+15-feb-2006 NvE Name of reconstructed tracks set to "Sieglinde" in IceF2k.
+                This is in line with the names "IceDwalk", "IcePandel" etc... and allows
+                easy retrieval of specific reconstruction results.
  

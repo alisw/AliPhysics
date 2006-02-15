@@ -36,4 +36,6 @@
                 the IceEvent trigger information.
 14-nov-2005 NvE Typo corrected in IceCleanHits::SetTnameA.
 17-nov-2005 NvE Prototype version of IceDwalk tuned/improved for multi-track reconstruction. 
+15-feb-2006 NvE Class IcePandel introduced. In the /macros directory an example job
+                icepandel.cc was introduced as well.
 

@@ -850,8 +850,7 @@ void IceF2k::PutRecoTracks()
   }
 
   t.SetParticleCode(idpdg);
-  t.SetName(fPdg->GetParticle(idpdg)->GetName());
-  t.SetTitle("RECO track");
+  t.SetNameTitle("Sieglinde","RECO track");
   t.SetMass(fPdg->GetParticle(idpdg)->Mass());
   t.SetCharge(fPdg->GetParticle(idpdg)->Charge()/3.);
 

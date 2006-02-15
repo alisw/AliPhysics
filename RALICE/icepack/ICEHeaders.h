@@ -18,4 +18,5 @@
 #include "IceCalibrate.h"
 #include "IceCleanHits.h"
 #include "IceDwalk.h"
+#include "IcePandel.h"
 
