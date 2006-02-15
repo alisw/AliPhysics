@@ -3,6 +3,7 @@ FSRCS = jet_finder_ua1.F
 
 SRCS =\
 AliEMCALReconstructor.cxx \
+AliEMCALClusterizerv1.cxx \
 AliEMCALJetFinder.cxx \
 AliEMCALJetFinderInput.cxx \
 AliEMCALJetFinderInputSimPrep.cxx \
@@ -12,14 +13,6 @@ AliEMCALJetFinderAlgo.cxx \
 AliEMCALJetFinderAlgoOmni.cxx \
 AliEMCALJetFinderAlgoUA1Unit.cxx \
 AliEMCALJetFinderPlots.cxx \
-AliEMCALClusterizerv1.cxx \
-AliEMCALLink.cxx \
-AliEMCALTracker.cxx \
-AliEMCALTrackSegment.cxx \
-AliEMCALTrackSegmentMakerv1.cxx \
-AliEMCALRecParticle.cxx \
-AliEMCALFastRecParticle.cxx \
-AliEMCALPIDv1.cxx \
 AliEMCALJetMicroDst.cxx \
 AliEMCALHadronCorrection.cxx \
 AliEMCALHadronCorrectionv0.cxx \

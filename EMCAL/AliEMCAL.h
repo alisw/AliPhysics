@@ -33,10 +33,12 @@ class AliEMCAL : public AliDetector {
     Fatal("cpy ctor", "not implemented") ;  
   }
   virtual ~AliEMCAL() ; 
-  virtual void   AddHit(Int_t, Int_t*, Float_t *) const{
+  virtual void   AddHit(Int_t, Int_t*, Float_t *) {
     Fatal("AddHit(Int_t, Int_t*, Float_t *", "not to be used: use AddHit( Int_t shunt, Int_t primary, Int_t track,Int_t id, Float_t *hits )") ;  
   }
-  virtual void  Copy(AliEMCAL & emcal) ; 
+  virtual void  Copy(TObject & emcal) const 
+    { Copy(dynamic_cast<AliEMCAL&>(emcal)); }
+  virtual void  Copy(AliEMCAL & emcal) const; 
   virtual AliDigitizer* CreateDigitizer(AliRunDigitizer* manager) const;
   virtual void  CreateMaterials() ;   
   //  virtual void  
@@ -62,17 +64,14 @@ class AliEMCAL : public AliDetector {
   static Double_t RawResponseFunctionMax(Double_t charge, Double_t gain) ;
   //  
   virtual AliLoader* MakeLoader(const char* topfoldername);
-  virtual void SetTreeAddress() ;              
   virtual const TString Version() const {return TString(" ") ; }   
   AliEMCAL & operator = (const AliEMCAL & /*rvalue*/)  {
     Fatal("operator =", "not implemented") ;  return *this ; }
 
 protected:
   
-  friend class AliEMCALGetter;
   static Double_t RawResponseFunction(Double_t *x, Double_t *par) ; 
   Bool_t   RawSampledResponse(const Double_t dtime, const Double_t damp, Int_t * adcH, Int_t * adcL) const ; 
-
 
   Int_t fBirkC0;    // constants for Birk's Law implementation
   Double_t fBirkC1; // constants for Birk's Law implementation

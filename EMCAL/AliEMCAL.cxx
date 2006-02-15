@@ -39,10 +39,11 @@ class TFile;
 // --- AliRoot header files ---
 #include "AliMagF.h"
 #include "AliEMCAL.h"
-#include "AliEMCALGetter.h"
 #include "AliRun.h"
+#include "AliEMCALLoader.h"
 #include "AliEMCALSDigitizer.h"
 #include "AliEMCALDigitizer.h"
+#include "AliEMCALDigit.h"
 #include "AliAltroBuffer.h"
 
 ClassImp(AliEMCAL)
@@ -77,7 +78,7 @@ AliEMCAL::~AliEMCAL()
 }
 
 //____________________________________________________________________________
-void AliEMCAL::Copy(AliEMCAL & emcal)
+void AliEMCAL::Copy(AliEMCAL & emcal) const
 {
   TObject::Copy(emcal) ; 
   emcal.fHighCharge        = fHighCharge ;
@@ -329,6 +330,7 @@ void AliEMCAL::Hits2SDigits()
 }
 
 //____________________________________________________________________________
+
 AliLoader* AliEMCAL::MakeLoader(const char* topfoldername)
 {
 //different behaviour than standard (singleton getter)
@@ -402,28 +404,4 @@ const Double_t dtime, const Double_t damp, Int_t * adcH, Int_t * adcL) const
 
   }
   return lowGain ; 
-}
-
-//____________________________________________________________________________
-void AliEMCAL::SetTreeAddress()
-{ 
-  // Linking Hits in Tree to Hits array
-  TBranch *branch;
-  //  char branchname[20];
-  //  sprintf(branchname,"%s",GetName());
-  // Branch address for hit tree
-  TTree *treeH = TreeH();
-  if (treeH) {
-    //    treeH->Print();
-    branch = treeH->GetBranch(GetName());
-    if (branch) { 
-	if (fHits == 0x0) 
-	fHits= new TClonesArray("AliEMCALHit",1000);
-	branch->SetAddress(&fHits);
-    } else {
-      Warning("SetTreeAddress","<%s> Failed",GetName());
-    }
-  } else {
-    //    Warning("SetTreeAddress"," no treeH ");
-  }
 }

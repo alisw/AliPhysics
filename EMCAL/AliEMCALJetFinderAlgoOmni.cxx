@@ -20,6 +20,9 @@
 /*
  
 $Log$
+Revision 1.15  2004/11/22 19:52:05  mhorner
+Make sure pi0 get through
+
 Revision 1.14  2004/04/02 17:11:33  mhorner
 Marco's bug - fixes implemented
 
@@ -64,19 +67,20 @@ Changed hadron correction and added saving EMCAL and track contributions
 //*--Based on UA1 jet algorithm from LUND JETSET called from EMC-erj
 
 #include "TTask.h"
+#include "TMath.h"
+#include "TParticle.h"
+#include "AliRun.h"
+#include "AliRunLoader.h"
 #include "AliEMCALJetFinderInput.h"
 #include "AliEMCALJetFinderOutput.h"
 #include "AliEMCALJetFinderAlgo.h"
 #include "AliEMCALJetFinderAlgoOmni.h"
 #include "AliEMCALJetFinderAlgoUA1Unit.h"
-#include "AliEMCALGetter.h"
 #include "AliEMCALGeometry.h"
+#include "AliEMCALLoader.h"
 #include "AliEMCAL.h"
 #include "AliEMCALDigit.h"
-#include "TParticle.h"
-#include "AliRun.h"
 #include "AliEMCALJet.h"
-#include "TMath.h"
 
 
 ClassImp(AliEMCALJetFinderAlgoOmni)
@@ -85,9 +89,6 @@ ClassImp(AliEMCALJetFinderAlgoOmni)
 {
   //Default constructor
 if (fDebug>0) Info("AliEMCALJetFinderAlgoOmni","Beginning Default Constructor");
-
-// AliEMCALGetter * gime = AliEMCALGetter::Instance() ;
-//  AliEMCALGeometry * geom = gime->EMCALGeometry();
   AliEMCALGeometry * geom = AliEMCALGeometry::GetInstance("EMCAL_55_25","EMCAL");
   fNumIter           = 0;
   fNumUnits          = geom->GetNTowers();     //Number of towers in EMCAL
@@ -187,11 +188,8 @@ if (fDebug>0) Info("AliEMCALJetFinderAlgoOmni","Beginning Default Constructor");
          //     }else
          //    {
 
-     AliEMCALGetter * gime = AliEMCALGetter::Instance() ;
-     AliEMCALGeometry * geom;
-     if (gime)
-      geom = gime->EMCALGeometry();
-     else
+     AliEMCALGeometry * geom = AliEMCALGeometry::GetInstance();
+     if (geom == 0)
       geom = AliEMCALGeometry::GetInstance("EMCAL_55_25","EMCAL");
 
         //    }
@@ -565,12 +563,9 @@ if (fDebug>0) Info("AliEMCALJetFinderAlgoOmni","Beginning Default Constructor");
    {
      //Stores the resulting jet information in appropriate storage structure (TO BE DECIDED!!!!)
      if (fDebug>1) Info("StoreJetInfo","Storing Jet Information");
-     AliEMCALGetter * gime = AliEMCALGetter::Instance() ;
-     AliEMCALGeometry * geom;
-     if (gime)
-      geom = gime->EMCALGeometry();
-     else
-      geom = AliEMCALGeometry::GetInstance("EMCAL_55_25","EMCAL");
+     AliEMCALGeometry * geom = AliEMCALGeometry::GetInstance();
+     if (geom == 0)
+       geom = AliEMCALGeometry::GetInstance("EMCAL_55_25","EMCAL");
      //Store:
      //fJetESum is the final jet energy (background has been subtracted)
      //fJetEta is the final jet Eta

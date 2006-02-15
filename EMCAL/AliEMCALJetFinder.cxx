@@ -45,21 +45,23 @@
 #include <TBrowser.h>
 
 // From AliRoot ...
+#include "AliEMCALJetFinder.h"
+#include "AliHeader.h"
+#include "AliMagF.h"
+#include "AliMagFCM.h"
+#include "AliRun.h"
+#include "AliGenerator.h"
+#include "AliRunLoader.h"
 #include "AliEMCAL.h"
+#include "AliEMCALLoader.h"
 #include "AliEMCALDigit.h"
 #include "AliEMCALDigitizer.h"
 #include "AliEMCALFast.h"
 #include "AliEMCALGeometry.h"
 #include "AliEMCALHadronCorrection.h"
 #include "AliEMCALHit.h"
-#include "AliEMCALJetFinder.h"
 #include "AliEMCALJetMicroDst.h"
-#include "AliHeader.h"
-#include "AliMagF.h"
-#include "AliMagFCM.h"
-#include "AliRun.h"
-#include "AliGenerator.h"
-#include "AliEMCALGetter.h"
+
 // Interface to FORTRAN
 #include "Ecommon.h"
 #include "AliMC.h"
@@ -228,24 +230,9 @@ void AliEMCALJetFinder::Init()
 //  Get geometry parameters from EMCAL
 //
 //
-  AliEMCALGeometry *geom=0;
-  AliEMCALGetter   *gime = AliEMCALGetter::Instance(); 
-  if(gime) {
-    geom = gime->EMCALGeometry() ;  
-    if(!geom) {
-      printf(" No AliEMCALGeometry !! \n");
-      assert(0);
-    }
-  } else {  
-    printf(" No AliEMCALGetter !! \n");
-    geom = AliEMCALGeometry::GetInstance();
-    if(!geom) {
-      printf(" No AliEMCALGeometry !! \n");
-      assert(0);
-    } else {
-      printf(" AliEMCALGeometry : %s\n", geom->GetName());
-    }
-  }
+//  Geometry 
+  //AliEMCAL* pEMCAL = (AliEMCAL*) gAlice->GetModule("EMCAL");
+  AliEMCALGeometry* geom = AliEMCALGeometry::GetInstance();
 
 //    SetSamplingFraction(geom->GetSampling());
 
@@ -542,21 +529,23 @@ void AliEMCALJetFinder::WriteJets()
     }
 
 // I/O
-    AliEMCALGetter * gime = AliEMCALGetter::Instance() ; 
+    AliRunLoader *rl = AliRunLoader::GetRunLoader();
+    AliEMCALLoader *emcalLoader = dynamic_cast<AliEMCALLoader*>(rl->GetDetectorLoader("EMCAL"));
+
     if (!fOutFileName) {
 //
 // output written to input file
 //
       AliEMCAL* pEMCAL = (AliEMCAL* )gAlice->GetModule("EMCAL");
-      TTree* pK = gAlice->TreeK();
+      TTree* pK = rl->TreeK();
       file = (pK->GetCurrentFile())->GetName();
       TBranch * jetBranch ;  
 	if (fDebug > 1)
 	    printf("Make Branch - TreeR address %p %p\n",(void*)gAlice->TreeR(), (void*)pEMCAL);
 	//if (fJets && gAlice->TreeR()) {
-	if (fJets && gime->TreeR()) {
+	if (fJets && emcalLoader->TreeR()) {
 	  // pEMCAL->MakeBranchInTree(gAlice->TreeR(), 
-          jetBranch = gime->TreeR()->Branch("EMCALJets", &fJets, kBufferSize, 0) ; 
+          jetBranch = emcalLoader->TreeR()->Branch("EMCALJets", &fJets, kBufferSize, 0) ; 
 	  //pEMCAL->MakeBranchInTree(gime->TreeR(), 
 	  //			     "EMCALJets", 
 	  //			     &fJets, 
@@ -570,14 +559,15 @@ void AliEMCALJetFinder::WriteJets()
 	  //sprintf(hname,"TreeR%d", nev);
 	  //gAlice->TreeR()->Write(hname);
 	  //gAlice->TreeR()->Reset();
-	  gime->WriteRecPoints("OVERWRITE");
+	  //gime->WriteRecPoints("OVERWRITE");
+	  emcalLoader->WriteRecPoints("OVERWRITE");
 	}
     } else {
 //
 // Output written to user specified output file
 //
       //TTree* pK = gAlice->TreeK();
-      TTree* pK = gAlice->TreeK();
+      TTree* pK = rl->TreeK();
       fInFile  = pK->GetCurrentFile();
 
       fOutFile->cd();
@@ -960,8 +950,8 @@ void AliEMCALJetFinder::FillFromHits(Int_t flag)
 //
 // Access hit information    
     AliEMCAL* pEMCAL = (AliEMCAL*) gAlice->GetModule("EMCAL");
-    AliEMCALGetter * gime = AliEMCALGetter::Instance() ; 
-    TTree *treeH = gime->TreeH();
+    AliLoader *emcalLoader = AliRunLoader::GetRunLoader()->GetDetectorLoader("EMCAL");
+    TTree *treeH = emcalLoader->TreeH();
     Int_t ntracks = (Int_t) treeH->GetEntries();
 //
 //   Loop over tracks
@@ -1321,10 +1311,11 @@ void AliEMCALJetFinder::BuildTrackFlagTable() {
     for (Int_t i = 0; i < nKTrks; i++) {	//Initialize members to 0
 	fTrackList[i] = 0;
     }
-    
-    AliEMCALGetter * gime = AliEMCALGetter::Instance() ; 
+
+    AliLoader *emcalLoader = AliRunLoader::GetRunLoader()->GetDetectorLoader("EMCAL");
+    //AliEMCALGetter * gime = AliEMCALGetter::Instance() ; 
     // TTree *treeH = gAlice->TreeH();
-    TTree *treeH = gime->TreeH();
+    TTree *treeH = emcalLoader->TreeH();
    Int_t ntracks = (Int_t) treeH->GetEntries();
 //
 //   Loop over tracks

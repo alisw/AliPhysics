@@ -30,7 +30,7 @@ class AliEMCALJetFinderInputSimPrep : public AliEMCALJetFinderInputPrep
 	void SetTrackType(AliEMCALJetFinderTrackType_t tracktype){fTrackType = tracktype;}  
 	void SetEfficiency(Float_t efficiency)  {fEfficiency = efficiency;}
 	void SetTimeCut(Float_t timecut)  {fTimeCut = timecut; fEMCALType = kTimeCut;}
-	Int_t FillFromFile(TString *filename, AliEMCALJetFinderFileType_t filetype,Int_t EventNumber,TString data);
+	Int_t FillFromFile(TString *filename, AliEMCALJetFinderFileType_t filetype,Int_t EventNumber,TString data="XH");
 	AliEMCALJetFinderInput* GetJetFinderInput(){return &fInputObject;}
 	private:
 	void FillHits();		// Fill from the hits to input object from simulation

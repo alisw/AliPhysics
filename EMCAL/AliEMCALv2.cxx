@@ -42,7 +42,6 @@
 #include "AliHeader.h"
 #include "AliMC.h"
 #include "AliPoints.h"
-#include "AliEMCALGetter.h"
 // for TRD1,2 case
 
 ClassImp(AliEMCALv2)

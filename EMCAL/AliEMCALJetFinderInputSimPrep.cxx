@@ -36,12 +36,13 @@
 
 
 #include "AliRun.h"
+#include "AliRunLoader.h"
+#include "AliStack.h"
 #include "AliMagF.h"
 #include "AliEMCALFast.h"
 #include "AliEMCAL.h"
 #include "AliEMCALHit.h"
 #include "AliEMCALGeometry.h"
-#include "AliEMCALGetter.h"
 #include "AliEMCALLoader.h"
 #include "AliGenEventHeader.h"
 #include "AliGenPythiaEventHeader.h"
@@ -74,7 +75,7 @@ if (fDebug > 0) Info("~AliEMCALJetFinderInputSimPrep","Beginning Destructor");
 void AliEMCALJetFinderInputSimPrep::Reset(AliEMCALJetFinderResetType_t resettype)
 {
 	// Method to reset data
-if (fDebug > 1) Info("Reset","Beginning Reset");
+  if (fDebug > 1) Info("Reset","Beginning Reset");
 	switch (resettype){
 
 	case kResetData:
@@ -110,18 +111,22 @@ if (fDebug > 1) Info("Reset","Beginning Reset");
 
 }
 
-Int_t AliEMCALJetFinderInputSimPrep::FillFromFile(TString *filename, AliEMCALJetFinderFileType_t filetype,Int_t EventNumber,TString data="H")
+Int_t AliEMCALJetFinderInputSimPrep::FillFromFile(TString *filename, AliEMCALJetFinderFileType_t filetype,Int_t EventNumber,TString data)
 {
-if (fDebug > 1) Info("FillFromFile","Beginning FillFromFile");
-   fFileType = filetype;	
-   AliEMCALGetter *gime = AliEMCALGetter::Instance(filename->Data());
-   if (fDebug > 1) Info("FillFromFile","Instantiated Getter with %s as the file",filename->Data());
+  if (fDebug > 1) Info("FillFromFile","Beginning FillFromFile");
+  fFileType = filetype;	
+  AliRunLoader *rl=AliRunLoader::Open(filename->Data());
+  if (fDebug > 1) Info("FillFromFile","Opened file %s",filename->Data());
    if (data.Contains("S"))
    {
-	   gime->Event(EventNumber,"XS") ;
+	   rl->LoadKinematics();
+	   rl->LoadSDigits();
+	   rl->GetEvent(EventNumber);
    }else
    {
-   	   gime->Event(EventNumber,"XH") ;
+	   rl->LoadKinematics();
+	   rl->LoadHits();
+	   rl->GetEvent(EventNumber);
    }
    if (fDebug > 1) Info("FillFromFile","Got event %i with option \"XH\"",EventNumber);
 
@@ -140,9 +145,6 @@ if (fDebug > 1) Info("FillFromFile","Beginning FillFromFile");
    if ( fFileType  != kData){
 	   FillPartons();
    }
-/*   gime->EmcalLoader()->UnloadRecParticles();   
-   gime->EmcalLoader()->UnloadTracks();   
-   gime->Reset();*/
    return 0;	
 }
 
@@ -152,12 +154,11 @@ void AliEMCALJetFinderInputSimPrep::FillHits()
 if (fDebug > 1) Info("FillHits","Beginning FillHits");
 	
 // Access hit information
-    AliEMCALHit *mHit;
 //  AliEMCAL* pEMCAL = (AliEMCAL*) gAlice->GetModule("EMCAL");
 //  Info("AliEMCALJetFinderInputSimPrep","Title of the geometry is %s",pEMCAL->GetTitle());
-    AliEMCALGeometry* geom =  AliEMCALGetter::Instance()->EMCALGeometry();
-    AliEMCALGetter *gime = AliEMCALGetter::Instance();
-    
+    AliEMCALGeometry* geom =  AliEMCALGeometry::GetInstance();
+    AliEMCALLoader *emcalLoader = dynamic_cast<AliEMCALLoader*>(AliRunLoader::GetRunLoader()->GetDetectorLoader("EMCAL"));
+
     //    TTree *treeH = AliEMCALGetter::Instance()->TreeH();
 //    Int_t ntracks = (Int_t) treeH->GetEntries();
 //
@@ -171,10 +172,10 @@ if (fDebug > 1) Info("FillHits","Beginning FillHits");
 //
 //  Loop over hits
 //
-        for(Int_t i =0; i < gime->Hits()->GetEntries() ;i++)
+        for(Int_t i =0; i < emcalLoader->Hits()->GetEntries() ;i++)
         {
-	    mHit = gime->Hit(i);	
-                if (fEMCALType == kTimeCut && 
+	    const AliEMCALHit *mHit = emcalLoader->Hit(i);	
+	    if (fEMCALType == kTimeCut && 
 		    (mHit->GetTime()>fTimeCut) ) continue;
             Float_t x      =    mHit->X();         // x-pos of hit
             Float_t y      =    mHit->Y();         // y-pos
@@ -205,28 +206,23 @@ if (fDebug > 1) Info("FillHits","Beginning FillHits");
 void AliEMCALJetFinderInputSimPrep::FillTracks()	
 {
 	// Fill from particles simulating a TPC to input object from simulation
-
     if (fDebug > 1) Info("FillTracks","Beginning FillTracks");
 	
+    AliRunLoader *rl = AliRunLoader::GetRunLoader();
     TParticlePDG* pdgP = 0;
     TParticle *mPart;
-    Int_t npart = (gAlice->GetHeader())->GetNprimary();
+    Int_t npart = rl->Stack()->GetNprimary();
     if (fDebug > 1) Info("FillTracks","Header says there are %i primaries",npart);
-    //AliEMCALGetter *gime = AliEMCALGetter::Instance();
     Float_t bfield,rEMCAL;		 
-/*	for (Int_t i =0; i<gime->NPrimaries(); i++)
-	{
-		cout<<gime->Primary(i)->GetFirstMother()<<endl;
-		if (gime->Primary(i)->GetFirstMother() == -1) {
-			counterforus++;
-			gime->Primary(i)->Dump();
-		}
-	}*/
     
     if (fDebug > 1) Info("FillTracks","Defining the geometry");
     
     AliEMCAL* pEMCAL = (AliEMCAL*) gAlice->GetModule("EMCAL");
-    AliEMCALGeometry* geom =  AliEMCALGeometry::GetInstance(pEMCAL->GetTitle(), "");
+    AliEMCALGeometry* geom = AliEMCALGeometry::GetInstance();
+    if (geom == 0 && pEMCAL) 
+      geom = AliEMCALGeometry::GetInstance(pEMCAL->GetTitle(), "");
+    if (geom == 0) 
+      geom = AliEMCALGeometry::GetInstance("EMCAL_55_25","");//","SHISH_77_TRD1_2X2_FINAL_110DEG");
     fEtaMax = geom->GetArm1EtaMax();
     fEtaMin = geom->GetArm1EtaMin();
     fPhiMax = TMath::Pi()/180.0*geom->GetArm1PhiMax();
@@ -236,8 +232,7 @@ void AliEMCALJetFinderInputSimPrep::FillTracks()
 	    
     if (fDebug > 1) Info("FillTracks","Particle loop of %i",npart);
     for (Int_t part = 0; part < npart; part++) {
-	mPart = gAlice->GetMCApp()->Particle(part);
-	//if (part%10) gObjectTable->Print();
+	mPart = rl->Stack()->Particle(part);
 	pdgP = mPart->GetPDG();
 
 	if (fDebug > 5) Info("FillTracks","Checking if track is a primary");
@@ -273,7 +268,10 @@ void AliEMCALJetFinderInputSimPrep::FillTracks()
             }
 	}
 
-   	bfield = gAlice->Field()->SolenoidField();
+	if (gAlice && gAlice->Field()) 
+	  bfield = gAlice->Field()->SolenoidField();
+	else
+	  bfield = 0.4;
 	rEMCAL = AliEMCALGeometry::GetInstance()->GetIPDistance();
 	Float_t rB = 3335.6 * mPart->Pt() / bfield;  // [cm]  (case of |charge|=1)
 	if (2.*rB < rEMCAL) continue;  // track curls away
@@ -436,7 +434,8 @@ void AliEMCALJetFinderInputSimPrep::FillPartons()
 	// input object from simulation
 if (fDebug > 1) Info("FillPartons","Beginning FillPartons");
 
-  AliGenEventHeader* evHeader = ((AliHeader*)(gAlice->GetHeader()))->GenEventHeader();
+  AliRunLoader *rl = AliRunLoader::GetRunLoader();
+  AliGenEventHeader* evHeader = rl->GetHeader()->GenEventHeader();
   Float_t triggerJetValues[4];
   AliEMCALParton tempParton;
   
@@ -593,12 +592,12 @@ void AliEMCALJetFinderInputSimPrep::FillDigits()
 void AliEMCALJetFinderInputSimPrep::FillSDigits()  
 {
 Info("FillSDigits","Beginning FillSDigits");
-	AliEMCALGetter *gime = AliEMCALGetter::Instance();
+	AliEMCALLoader *emcalLoader = dynamic_cast<AliEMCALLoader*>(AliRunLoader::GetRunLoader()->GetDetectorLoader("EMCAL"));
 	 
 	// Fill digits to input object
-	for (Int_t towerid=0; towerid < gime->SDigits()->GetEntries(); towerid++)
+	for (Int_t towerid=0; towerid < emcalLoader->SDigits()->GetEntries(); towerid++)
 	{
-		fInputObject.AddEnergyToDigit(gime->SDigit(towerid)->GetId(), gime->SDigit(towerid)->GetAmp());
+		fInputObject.AddEnergyToDigit(emcalLoader->SDigit(towerid)->GetId(), emcalLoader->SDigit(towerid)->GetAmp());
 	}
 
 }
@@ -626,14 +625,16 @@ if (fDebug > 5) Info("Smear","Beginning Smear");
 void AliEMCALJetFinderInputSimPrep::FillPartonTracks(AliEMCALParton *parton)
 {
 	// Populate parton tracks for input distributions
- 	if (fDebug>1) Info("FillPartonTracks","Beginning FillPartonTracks");    
-	Int_t npart = (gAlice->GetHeader())->GetNprimary();
+  if (fDebug>1) Info("FillPartonTracks","Beginning FillPartonTracks");
+  AliRunLoader *rl = AliRunLoader::GetRunLoader();
+	
+	Int_t npart = rl->Stack()->GetNprimary();
 	Int_t ntracks =0;
 	TParticlePDG *getpdg;
 	TParticle *tempPart;
 	for (Int_t part = 0; part < npart; part++)
 	{
-		tempPart = gAlice->GetMCApp()->Particle(part);
+		tempPart = rl->Stack()->Particle(part);
 		if (tempPart->GetStatusCode() != 1) continue;
 		if ((!fPythiaComparison)&&(tempPart->Eta() > fEtaMax || tempPart->Eta() < fEtaMin || 
 		    tempPart->Phi() > fPhiMax || tempPart->Phi() < fPhiMin) ){
@@ -655,7 +656,7 @@ void AliEMCALJetFinderInputSimPrep::FillPartonTracks(AliEMCALParton *parton)
 	ntracks=0;
 	for (Int_t part = 0; part < npart; part++)
 	{
-		tempPart = gAlice->GetMCApp()->Particle(part);
+		tempPart = rl->Stack()->Particle(part);
 		if (tempPart->GetStatusCode() != 1) continue;
 		if ((!fPythiaComparison)&&(tempPart->Eta() > fEtaMax || tempPart->Eta() < fEtaMin ||
  		    tempPart->Phi() > fPhiMax || tempPart->Phi() < fPhiMin) ){ 

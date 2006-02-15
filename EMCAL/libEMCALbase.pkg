@@ -8,7 +8,6 @@ AliEMCALv1.cxx \
 AliEMCALv2.cxx \
 AliEMCALHit.cxx \
 AliEMCALLoader.cxx \
-AliEMCALGetter.cxx \
 AliEMCALGeneratorFactory.cxx \
 AliEMCALShishKebabModule.cxx \
 AliEMCALShishKebabTrd1Module.cxx \
@@ -19,11 +18,9 @@ AliEMCALParton.cxx \
 AliEMCALRecPoint.cxx \
 AliEMCALRawStream.cxx \
 AliEMCALClusterizer.cxx \
-AliEMCALPID.cxx \
-AliEMCALTrackSegmentMaker.cxx \
 AliEMCALSDigitizer.cxx \
 AliEMCALDigitizer.cxx \
-AliEMCALDigit.cxx
+AliEMCALDigit.cxx 
 
 HDRS= $(SRCS:.cxx=.h) 
 

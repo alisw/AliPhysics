@@ -34,7 +34,6 @@
 #include "AliEMCALGeometry.h"
 #include "AliEMCALDigit.h"
 #include "AliEMCALRecPoint.h"
-#include "AliEMCALGetter.h"
 
 ClassImp(AliEMCALRecPoint)
 
@@ -131,7 +130,8 @@ Bool_t AliEMCALRecPoint::AreNeighbours(AliEMCALDigit * digit1, AliEMCALDigit * d
   
   Bool_t areNeighbours = kFALSE ;
   
-  AliEMCALGeometry * geom =  (AliEMCALGetter::Instance())->EMCALGeometry();
+  //AliEMCALGeometry * geom =  (AliEMCALGetter::Instance())->EMCALGeometry();
+  AliEMCALGeometry * geom =  AliEMCALGeometry::GetInstance();
 
   Int_t relid1[2] ; 
     //copied for shish-kebab geometry, ieta,iphi is cast as float as eta,phi conversion
@@ -334,8 +334,9 @@ void  AliEMCALRecPoint::EvalDispersion(Float_t logWeight, TClonesArray * digits)
 
   AliEMCALDigit * digit ;
  
-  AliEMCALGeometry * geom = (AliEMCALGetter::Instance())->EMCALGeometry();
-  
+  //AliEMCALGeometry * geom = (AliEMCALGetter::Instance())->EMCALGeometry();
+  AliEMCALGeometry * geom =  AliEMCALGeometry::GetInstance();
+
   // Calculates the centre of gravity in the local EMCAL-module coordinates   
   Int_t iDigit;
 
@@ -401,7 +402,8 @@ void AliEMCALRecPoint::EvalLocalPosition(Float_t logWeight, TClonesArray * digit
   //  Int_t relid[3] ;
   
   AliEMCALDigit * digit ;
-  AliEMCALGeometry * geom  =  (AliEMCALGetter::Instance())->EMCALGeometry();
+  //AliEMCALGeometry * geom  =  (AliEMCALGetter::Instance())->EMCALGeometry();
+  AliEMCALGeometry * geom =  AliEMCALGeometry::GetInstance();
   Int_t iDigit;
   Float_t cluEta = 0;
   Float_t cluPhi = 0;
@@ -455,7 +457,9 @@ void AliEMCALRecPoint::EvalCoreEnergy(Float_t logWeight, TClonesArray * digits)
 
   AliEMCALDigit * digit ;
   const Float_t kDeg2Rad = TMath::DegToRad() ;
-  AliEMCALGeometry * geom = (AliEMCALGetter::Instance())->EMCALGeometry();    
+  //AliEMCALGeometry * geom = (AliEMCALGetter::Instance())->EMCALGeometry();    
+  AliEMCALGeometry * geom =  AliEMCALGeometry::GetInstance();
+
   Int_t iDigit;
 
   if (!fLocPos.X() || !fLocPos.Y() ) {
@@ -490,7 +494,8 @@ void  AliEMCALRecPoint::EvalElipsAxis(Float_t logWeight,TClonesArray * digits)
   const Float_t kDeg2Rad = TMath::DegToRad();
   AliEMCALDigit * digit ;
 
-  AliEMCALGeometry * geom = (AliEMCALGetter::Instance())->EMCALGeometry();
+  //AliEMCALGeometry * geom = (AliEMCALGetter::Instance())->EMCALGeometry();
+  AliEMCALGeometry * geom =  AliEMCALGeometry::GetInstance();
   TString gn(geom->GetName());
 
   Int_t iDigit;
@@ -676,7 +681,8 @@ void AliEMCALRecPoint::GetGlobalPosition(TVector3 & gpos) const
   // returns the position of the cluster in the global reference system of ALICE
   // These are now the Cartesian X, Y and Z
 
-  AliEMCALGeometry * geom = (AliEMCALGetter::Instance())->EMCALGeometry();
+  //AliEMCALGeometry * geom = (AliEMCALGetter::Instance())->EMCALGeometry();
+  AliEMCALGeometry * geom =  AliEMCALGeometry::GetInstance();
   Int_t absid = geom->TowerIndexFromEtaPhi(fLocPos.X(), TMath::RadToDeg()*fLocPos.Y());
   geom->XYZFromIndex(absid, gpos);
 }

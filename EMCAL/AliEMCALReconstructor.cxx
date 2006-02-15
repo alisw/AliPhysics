@@ -26,11 +26,13 @@
 // --- Standard library ---
 
 // --- AliRoot header files ---
-#include "AliESD.h"
 #include "AliEMCALReconstructor.h"
+
+#include "AliESD.h"
+#include "AliRunLoader.h"
+#include "AliEMCALLoader.h"
 #include "AliEMCALClusterizerv1.h"
-#include "AliEMCALPIDv1.h"
-#include "AliEMCALGetter.h"
+#include "AliEMCALRecPoint.h"
 #include "AliRawReaderFile.h"
 
 ClassImp(AliEMCALReconstructor)
@@ -70,7 +72,7 @@ void AliEMCALReconstructor::Reconstruct(AliRunLoader* runLoader) const
 }
 
 //____________________________________________________________________________
-void AliEMCALReconstructor::Reconstruct(AliRunLoader* runLoader, AliRawReaderFile* rawreader) const 
+void AliEMCALReconstructor::Reconstruct(AliRunLoader* runLoader, AliRawReader* rawreader) const 
 {
   // method called by AliReconstruction; 
   // Only the clusterization is performed,; the rest of the reconstruction is done in FillESD because the track
@@ -95,41 +97,46 @@ void AliEMCALReconstructor::Reconstruct(AliRunLoader* runLoader, AliRawReaderFil
 void AliEMCALReconstructor::FillESD(AliRunLoader* runLoader, AliESD* esd) const
 {
   // Called by AliReconstruct after Reconstruct() and global tracking and vertxing 
-  //Creates the tracksegments and Recparticles
   
   Int_t eventNumber = runLoader->GetEventNumber() ;
 
   TString headerFile(runLoader->GetFileName()) ; 
   TString branchName(runLoader->GetEventFolder()->GetName()) ;  
 
-  AliEMCALPIDv1 pid(headerFile, branchName);
-
+  // PID is not implemented. Skipping for now
+  //AliEMCALPIDv1 pid(headerFile, branchName);
 
   // do current event; the loop over events is done by AliReconstruction::Run()
+  /*
   pid.SetEventRange(eventNumber, eventNumber) ; 
   if ( Debug() ) 
     pid.ExecuteTask("deb all") ;
   else 
     pid.ExecuteTask("") ;
- 
-  // Creates AliESDtrack from AliEMCALRecParticles 
-  AliEMCALGetter::Instance()->Event(eventNumber, "P") ; 
-  TClonesArray *recParticles = AliEMCALGetter::Instance()->RecParticles();
-  Int_t nOfRecParticles = recParticles->GetEntries();
-  esd->SetNumberOfEMCALParticles(nOfRecParticles) ; 
+  */
+
+  // Creates AliESDtrack from AliEMCALRecPoints 
+  AliRunLoader *rl = AliRunLoader::GetRunLoader();
+  AliEMCALLoader *emcalLoader = dynamic_cast<AliEMCALLoader*>(rl->GetDetectorLoader("EMCAL"));
+  rl->LoadRecPoints();
+  rl->GetEvent(eventNumber);
+  TObjArray *clusters = emcalLoader->RecPoints();
+  Int_t nClusters = clusters->GetEntries();
+  esd->SetNumberOfEMCALParticles(nClusters) ; 
   esd->SetFirstEMCALParticle(esd->GetNumberOfTracks()) ; 
-  for (Int_t recpart = 0 ; recpart < nOfRecParticles ; recpart++) {
-    AliEMCALRecParticle * rp = dynamic_cast<AliEMCALRecParticle*>(recParticles->At(recpart));
+  for (Int_t iClust = 0 ; iClust < nClusters ; iClust++) {
+    const AliEMCALRecPoint * clust = emcalLoader->RecPoint(iClust);
     if (Debug()) 
-      rp->Print();
+      clust->Print();
     AliESDtrack * et = new AliESDtrack() ; 
     // fills the ESDtrack
     Double_t xyz[3];
+    TVector3 gpos;
+    clust->GetGlobalPosition(gpos);
     for (Int_t ixyz=0; ixyz<3; ixyz++) 
-      xyz[ixyz] = rp->GetPos()[ixyz];
+      xyz[ixyz] = gpos[ixyz];
     et->SetEMCALposition(xyz) ; 
-    et->SetEMCALsignal  (rp->Energy()) ; 
-    et->SetEMCALpid     (rp->GetPID()) ;
+    et->SetEMCALsignal  (clust->GetEnergy()) ; 
     // add the track to the esd object
     esd->AddTrack(et);
     delete et;

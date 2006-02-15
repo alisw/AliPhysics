@@ -38,7 +38,7 @@ public:
   Int_t         Digitize(Float_t energy)const { return (Int_t ) (fA + energy*fB); }
   virtual void  Exec(Option_t *option); 
   Int_t         GetSDigitsInRun() const {return fSDigitsInRun ;}  
-  virtual void  Print() const;
+  virtual void  Print(Option_t *option="") const;
   void          Print1(Option_t *option="all");  // *MENU*
   void          SetEventFolderName(TString name) { fEventFolderName = name ; }
   void          SetEventRange(Int_t first=0, Int_t last=-1) {fFirstEvent=first; fLastEvent=last; }

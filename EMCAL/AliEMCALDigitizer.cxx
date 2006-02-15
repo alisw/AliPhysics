@@ -70,9 +70,10 @@
 
 // --- AliRoot header files ---
 #include "AliRunDigitizer.h"
+#include "AliRunLoader.h"
 #include "AliEMCALDigit.h"
 #include "AliEMCAL.h"
-#include "AliEMCALGetter.h"
+#include "AliEMCALLoader.h"
 #include "AliEMCALDigitizer.h"
 #include "AliEMCALSDigitizer.h"
 #include "AliEMCALGeometry.h"
@@ -145,14 +146,15 @@ AliEMCALDigitizer::AliEMCALDigitizer(AliRunDigitizer * rd):
 //____________________________________________________________________________ 
   AliEMCALDigitizer::~AliEMCALDigitizer()
 {
-  AliEMCALGetter * gime = AliEMCALGetter::Instance(GetTitle()) ;
-   
-  // Clean Digitizer from the white board
-  gime->EmcalLoader()->CleanDigitizer() ;
-
+  if (AliRunLoader::GetRunLoader()) {
+    AliLoader *emcalLoader=0;
+    if ((emcalLoader = AliRunLoader::GetRunLoader()->GetDetectorLoader("EMCAL")))
+      emcalLoader->CleanDigitizer();
+  }
+  else
+    AliDebug(1," no runloader present");
   delete [] fInputFileNames ; 
   delete [] fEventNames ; 
-
 }
 
 //____________________________________________________________________________
@@ -168,18 +170,20 @@ void AliEMCALDigitizer::Digitize(Int_t event)
   static int isTrd1Geom = -1; // -1 - mean undefined 
   static int nEMC=0; //max number of digits possible
 
-  AliEMCALGetter * gime = AliEMCALGetter::Instance(GetTitle()) ; 
+  AliRunLoader *rl = AliRunLoader::GetRunLoader();
+  AliEMCALLoader *emcalLoader = dynamic_cast<AliEMCALLoader*>(rl->GetDetectorLoader("EMCAL"));
   Int_t ReadEvent = event ; 
   // fManager is data member from AliDigitizer
   if (fManager) 
     ReadEvent = dynamic_cast<AliStream*>(fManager->GetInputStream(0))->GetCurrentEventNumber() ; 
   AliDebug(1,Form("Adding event %d from input stream 0 %s %s", 
 		  ReadEvent, GetTitle(), fEventFolderName.Data())) ; 
-  gime->Event(ReadEvent, "S") ;
-  TClonesArray * digits = gime->Digits() ; 
+  rl->GetEvent(ReadEvent);
+
+  TClonesArray * digits = emcalLoader->Digits() ; 
   digits->Clear() ;
 
-  const AliEMCALGeometry *geom = gime->EMCALGeometry() ;
+  const AliEMCALGeometry *geom = AliEMCALGeometry::GetInstance();
   if(isTrd1Geom < 0) { 
     TString ng(geom->GetName());
     isTrd1Geom = 0;
@@ -187,35 +191,37 @@ void AliEMCALDigitizer::Digitize(Int_t event)
 
     if(isTrd1Geom == 0) nEMC = geom->GetNPhi()*geom->GetNZ();
     else                nEMC = geom->GetNCells();
-    printf(" nEMC %i (number cells in EMCAL) | %s | isTrd1Geom %i\n", nEMC, geom->GetName(), isTrd1Geom);
+    AliDebug(1,Form("nEMC %i (number cells in EMCAL) | %s | isTrd1Geom %i\n", nEMC, geom->GetName(), isTrd1Geom));
   }
   Int_t absID ;
 
   digits->Expand(nEMC) ;
 
   // get first the sdigitizer from the tasks list (must have same name as the digitizer)
-  if ( !gime->SDigitizer() ) 
-    gime->LoadSDigitizer();
-  AliEMCALSDigitizer * sDigitizer = gime->SDigitizer(); 
+  if ( !emcalLoader->SDigitizer() ) 
+    emcalLoader->LoadSDigitizer();
+  AliEMCALSDigitizer * sDigitizer = dynamic_cast<AliEMCALSDigitizer*>(emcalLoader->SDigitizer()); 
   
   if ( !sDigitizer )
     Fatal("Digitize", "SDigitizer with name %s %s not found", fEventFolderName.Data(), GetTitle() ) ; 
 
   //take all the inputs to add together and load the SDigits
   TObjArray * sdigArray = new TObjArray(fInput) ;
-  sdigArray->AddAt(gime->SDigits(), 0) ;
+  sdigArray->AddAt(emcalLoader->SDigits(), 0) ;
   Int_t i ;
+
   for(i = 1 ; i < fInput ; i++){
     TString tempo(fEventNames[i]) ; 
     tempo += i ;
-    AliEMCALGetter * gime = AliEMCALGetter::Instance(fInputFileNames[i], tempo) ; 
+    rl = AliRunLoader::Open(fInputFileNames[i], tempo) ; 
     if (fManager) 
       ReadEvent = dynamic_cast<AliStream*>(fManager->GetInputStream(i))->GetCurrentEventNumber() ; 
     Info("Digitize", "Adding event %d from input stream %d %s %s", ReadEvent, i, fInputFileNames[i].Data(), tempo.Data()) ; 
-    gime->Event(ReadEvent,"S");
-    sdigArray->AddAt(gime->SDigits(), i) ;
+    rl->LoadSDigits();
+    rl->GetEvent(ReadEvent);
+    sdigArray->AddAt(emcalLoader->SDigits(), i) ;
   }
- 
+  
   //Find the first tower with signal
   Int_t nextSig = nEMC + 1 ; 
   TClonesArray * sdigits ;  
@@ -239,7 +245,7 @@ void AliEMCALDigitizer::Digitize(Int_t event)
 
   TClonesArray * ticks = new TClonesArray("AliEMCALTick",1000) ;
 
-  //Put Noise contributiony
+  //Put Noise contribution
   for(absID = 1; absID <= nEMC; absID++){
     Float_t amp = 0 ;
     // amplitude set to zero, noise will be added later
@@ -382,22 +388,25 @@ void AliEMCALDigitizer::Exec(Option_t *option)
   
   if(strstr(option,"tim"))
     gBenchmark->Start("EMCALDigitizer");
-  
-  AliEMCALGetter * gime = AliEMCALGetter::Instance(GetTitle()) ;
-   
+
+  AliRunLoader *rl = AliRunLoader::GetRunLoader();
+  AliEMCALLoader *emcalLoader = dynamic_cast<AliEMCALLoader*>(rl->GetDetectorLoader("EMCAL"));
+
   // Post Digitizer to the white board
-  gime->PostDigitizer(this) ;
+  emcalLoader->PostDigitizer(this) ;
   
   if (fLastEvent == -1) 
-    fLastEvent = gime->MaxEvent() - 1 ;
+    fLastEvent = rl->GetNumberOfEvents() - 1 ;
   else if (fManager) 
     fLastEvent = fFirstEvent ; // what is this ??
 
   Int_t nEvents   = fLastEvent - fFirstEvent + 1;
   Int_t ievent;
 
+  rl->LoadSDigits("EMCAL");
   for (ievent = fFirstEvent; ievent <= fLastEvent; ievent++) {
-    gime->Event(ievent,"S") ; 
+    //gime->Event(ievent,"S") ; 
+    rl->GetEvent(ievent);
 
     Digitize(ievent) ; //Add prepared SDigits to digits and add the noise
 
@@ -408,11 +417,11 @@ void AliEMCALDigitizer::Exec(Option_t *option)
     if(strstr(option,"table")) gObjectTable->Print();
 
     //increment the total number of Digits per run 
-    fDigitsInRun += gime->Digits()->GetEntriesFast() ;  
+    fDigitsInRun += emcalLoader->Digits()->GetEntriesFast() ;  
   }
   //  gime->WriteDigitizer("OVERWRITE");
 
-  gime->EmcalLoader()->CleanDigitizer() ;
+  emcalLoader->CleanDigitizer() ;
 
   if(strstr(option,"tim")){
     gBenchmark->Stop("EMCALDigitizer");
@@ -448,16 +457,12 @@ Bool_t AliEMCALDigitizer::Init()
 {
   // Makes all memory allocations
   fInit = kTRUE ; 
-  AliEMCALGetter * gime = AliEMCALGetter::Instance(GetTitle(), fEventFolderName) ;  
-  if ( gime == 0 ) {
-    Error("Init", "Could not obtain the Getter object for file %s and event %s !", GetTitle(), fEventFolderName.Data()) ;   
+  AliEMCALLoader *emcalLoader = dynamic_cast<AliEMCALLoader*>(AliRunLoader::GetRunLoader()->GetDetectorLoader("EMCAL"));
+
+  if ( emcalLoader == 0 ) {
+    Fatal("Init", "Could not obtain the AliEMCALLoader");  
     return kFALSE;
   } 
-  TString opt("Digits") ; 
-  if(gime->VersionExists(opt) ) { 
-    Error( "Init", "Give a version name different from %s", fEventFolderName.Data() ) ;
-    fInit = kFALSE ; 
-  }
 
   fFirstEvent = 0 ; 
   fLastEvent = fFirstEvent ; 
@@ -479,7 +484,7 @@ Bool_t AliEMCALDigitizer::Init()
   }
   
   //to prevent cleaning of this object while GetEvent is called
-  gime->EmcalLoader()->GetDigitsDataLoader()->GetBaseTaskLoader()->SetDoNotReload(kTRUE);
+  emcalLoader->GetDigitsDataLoader()->GetBaseTaskLoader()->SetDoNotReload(kTRUE);
   
   return fInit ;    
 }
@@ -534,8 +539,9 @@ void AliEMCALDigitizer::MixWith(TString alirunFileName, TString eventFolderName)
     return ; 
   }
   // looking for the file which contains SDigits
-  AliEMCALGetter * gime = AliEMCALGetter::Instance() ; 
-  TString fileName( gime->GetSDigitsFileName() ) ; 
+  //AliEMCALGetter * gime = AliEMCALGetter::Instance() ; 
+  AliEMCALLoader *emcalLoader = dynamic_cast<AliEMCALLoader*>(AliRunLoader::GetRunLoader()->GetDetectorLoader("EMCAL"));
+  TString fileName( emcalLoader->GetSDigitsFileName() ) ; 
     if ( eventFolderName != AliConfig::GetDefaultEventFolderName()) // only if not the default folder name 
       fileName = fileName.ReplaceAll(".root", "") + "_" + eventFolderName + ".root" ;
     if ( (gSystem->AccessPathName(fileName)) ) { 
@@ -579,17 +585,24 @@ void AliEMCALDigitizer::Print(Option_t*)const
       nStreams = fInput ; 
     
     Int_t index = 0 ;  
+
+    AliRunLoader *rl=0;
+
     for (index = 0 ; index < nStreams ; index++) {  
       TString tempo(fEventNames[index]) ; 
       tempo += index ;
-      AliEMCALGetter * gime = AliEMCALGetter::Instance(fInputFileNames[index], tempo) ; 
-      TString fileName( gime->GetSDigitsFileName() ) ; 
+      if ((rl = AliRunLoader::GetRunLoader(tempo)) == 0)
+	rl = AliRunLoader::Open(fInputFileNames[index], tempo) ; 
+      AliEMCALLoader *emcalLoader = dynamic_cast<AliEMCALLoader*>(rl->GetDetectorLoader("EMCAL"));
+      TString fileName( emcalLoader->GetSDigitsFileName() ) ; 
       if ( fEventNames[index] != AliConfig::GetDefaultEventFolderName()) // only if not the default folder name 
 	fileName = fileName.ReplaceAll(".root", "") + "_" + fEventNames[index]  + ".root" ;
       printf ("Adding SDigits from %s %s\n", fInputFileNames[index].Data(), fileName.Data()) ; 
     }
-    AliEMCALGetter * gime = AliEMCALGetter::Instance(GetTitle(), fEventFolderName) ; 
-    printf("\nWriting digits to %s", gime->GetDigitsFileName().Data()) ;
+
+    AliEMCALLoader *emcalLoader = dynamic_cast<AliEMCALLoader*>(AliRunLoader::GetRunLoader()->GetDetectorLoader("EMCAL"));
+
+    printf("\nWriting digits to %s", emcalLoader->GetDigitsFileName().Data()) ;
     
     printf("\nWith following parameters:\n") ;
     
@@ -603,13 +616,12 @@ void AliEMCALDigitizer::Print(Option_t*)const
 
 //__________________________________________________________________
 void AliEMCALDigitizer::PrintDigits(Option_t * option){
-    
-  AliEMCALGetter * gime = AliEMCALGetter::Instance(GetTitle(), fEventFolderName) ; 
-  TClonesArray * digits  = gime->Digits() ;
-  TClonesArray * sdigits = gime->SDigits() ;
+  AliEMCALLoader *emcalLoader = dynamic_cast<AliEMCALLoader*>(AliRunLoader::GetRunLoader()->GetDetectorLoader("EMCAL"));
+  TClonesArray * digits  = emcalLoader->Digits() ;
+  TClonesArray * sdigits = emcalLoader->SDigits() ;
   
   printf("\n #Digits: %d : sdigits %d ", digits->GetEntriesFast(), sdigits->GetEntriesFast()) ; 
-  printf("\n event %d", gAlice->GetEvNumber()) ;
+  printf("\n event %d", emcalLoader->GetRunLoader()->GetEventNumber());
   
   if(strstr(option,"all")){  
     //loop over digits
@@ -642,16 +654,17 @@ Float_t AliEMCALDigitizer::TimeOfNoise(void)
 void AliEMCALDigitizer::Unload() 
 {  
   // Unloads the SDigits and Digits
+  AliRunLoader *rl=0;
+    
   Int_t i ; 
   for(i = 1 ; i < fInput ; i++){
     TString tempo(fEventNames[i]) ; 
-    tempo += i ;
-    AliEMCALGetter * gime = AliEMCALGetter::Instance(fInputFileNames[i], tempo) ; 
-    gime->EmcalLoader()->UnloadSDigits() ; 
+    tempo += i;
+    if ((rl = AliRunLoader::GetRunLoader(tempo))) 
+      rl->GetDetectorLoader("EMCAL")->UnloadSDigits() ; 
   }
-  
-  AliEMCALGetter * gime = AliEMCALGetter::Instance(GetTitle(), fEventFolderName) ; 
-  gime->EmcalLoader()->UnloadDigits() ; 
+  AliEMCALLoader *emcalLoader = dynamic_cast<AliEMCALLoader*>(AliRunLoader::GetRunLoader()->GetDetectorLoader("EMCAL"));
+  emcalLoader->UnloadDigits() ; 
 }
 
 //_________________________________________________________________________________________
@@ -666,19 +679,27 @@ void AliEMCALDigitizer::WriteDigits()
   //      and branch "AliEMCALDigitizer", with the same title to keep all the parameters
   //      and names of files, from which digits are made.
 
-  AliEMCALGetter * gime = AliEMCALGetter::Instance(GetTitle()) ; 
+  AliEMCALLoader *emcalLoader = dynamic_cast<AliEMCALLoader*>(AliRunLoader::GetRunLoader()->GetDetectorLoader("EMCAL"));
 
-  const TClonesArray * digits = gime->Digits() ; 
-  TTree * treeD = gime->TreeD(); 
+  const TClonesArray * digits = emcalLoader->Digits() ; 
+  TTree * treeD = emcalLoader->TreeD(); 
+  if ( !treeD ) {
+    emcalLoader->MakeDigitsContainer();
+    treeD = emcalLoader->TreeD(); 
+  }
 
   // -- create Digits branch
   Int_t bufferSize = 32000 ;    
-  TBranch * digitsBranch = treeD->Branch("EMCAL","TClonesArray",&digits,bufferSize);
-  digitsBranch->SetTitle(fEventFolderName);
-  digitsBranch->Fill() ;
+  TBranch * digitsBranch = 0;
+  if ((digitsBranch = treeD->GetBranch("EMCAL")))
+    digitsBranch->SetAddress(&digits);
+  else
+    treeD->Branch("EMCAL","TClonesArray",&digits,bufferSize);
+  //digitsBranch->SetTitle(fEventFolderName);
+  treeD->Fill() ;
   
-  gime->WriteDigits("OVERWRITE");
-  gime->WriteDigitizer("OVERWRITE");
+  emcalLoader->WriteDigits("OVERWRITE");
+  emcalLoader->WriteDigitizer("OVERWRITE");
 
   Unload() ; 
 
@@ -694,18 +715,18 @@ TList *AliEMCALDigitizer::BookControlHists(int var)
 { // 22-nov-04
   Info("BookControlHists"," started ");
   gROOT->cd();
-  AliEMCALGetter * gime = AliEMCALGetter::Instance(GetTitle(), fEventFolderName);
-  const AliEMCALGeometry *geom = gime->EMCALGeometry() ;
+  const AliEMCALGeometry *geom = AliEMCALGeometry::GetInstance();
   if(var>=1){
     new TH1F("hDigiN",  "#EMCAL digits with fAmp > fDigitThreshold", 
     fNADCEC+1, -0.5, Double_t(fNADCEC));
-    new TH1F("HDigiSumEnergy","Sum.EMCAL energy from digi", 10000, 0.0, 200.);
+    new TH1F("HDigiSumEnergy","Sum.EMCAL energy from digi", 1000, 0.0, 200.);
     new TH1F("hDigiAmp",  "EMCAL digital amplitude", fNADCEC+1, -0.5, Double_t(fNADCEC));
     new TH1F("hDigiEnergy","EMCAL cell energy", 2000, 0.0, 200.);
     new TH1F("hDigiAbsId","EMCAL absId cells with fAmp > fDigitThreshold ",
     geom->GetNCells(), 0.5, Double_t(geom->GetNCells())+0.5);
   }
   fHists = sv::MoveHistsToList("EmcalDigiControlHists", kFALSE);
+  fHists = 0;
   return fHists;
 }
 

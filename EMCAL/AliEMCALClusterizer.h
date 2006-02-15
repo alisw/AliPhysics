@@ -36,8 +36,7 @@ public:
   virtual Int_t GetRecPointsInRun()  const {Warning("GetRecPointsInRun", "Not Defined") ; return 0 ; }
   virtual const char *  GetDigitsBranch() const  {Warning("GetDigitsBranch", "Not Defined") ; return 0 ; }
 
-  virtual void MakeClusters() const {Warning("MakeClusters", "Not Defined") ; }
-  virtual void Print(Option_t * /*option*/)const {Warning("Print", "Not Defined") ; }
+  virtual void MakeClusters() = 0;
 
   virtual void SetECAClusteringThreshold(Float_t) = 0;
   virtual void SetECALocalMaxCut(Float_t)         = 0;
