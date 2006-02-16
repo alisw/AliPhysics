@@ -75,6 +75,14 @@ class AliCDBManager: public TObject {
 
 	Bool_t Put(TObject* object, AliCDBId& id,  AliCDBMetaData* metaData);
 	Bool_t Put(AliCDBEntry* entry);
+		
+	void SetCacheFlag(Bool_t cacheFlag) {fCache=cacheFlag;}
+	Bool_t GetCacheFlag() {return fCache;}
+
+	void SetRun(Long64_t run);
+	Long64_t GetRun() {return fRun;}
+
+	AliCDBEntry* Get(const char* path);
 
 	void DestroyActiveStorages();
 	void DestroyActiveStorage(AliCDBStorage* storage);
@@ -91,14 +99,24 @@ class AliCDBManager: public TObject {
 	
 	AliCDBStorage* GetActiveStorage(const AliCDBParam* param);
 	void PutActiveStorage(AliCDBParam* param, AliCDBStorage* storage);
+	
+  	void ClearCache();
+  	void CacheEntry(const char* path, AliCDBEntry* entry);
+	
 
 	void Init();
 	
 	TList fFactories; 		//! list of registered storage factories
 	TMap fActiveStorages;		//! list of active storages
 	TMap fSpecificStorages;         //! list of detector-specific storages
+
 	AliCDBStorage *fDefaultStorage;	//! pointer to default storage
 	AliCDBStorage *fDrainStorage;	//! pointer to drain storage
+
+  	TMap fEntryCache;    	//! cache of the retrieved objects
+
+	Bool_t fCache;			//! The cache flag
+  	Long64_t fRun;			//! The run number
 
 	ClassDef(AliCDBManager, 0);
 };

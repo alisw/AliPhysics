@@ -41,7 +41,7 @@ private:
 			Int_t subVersion, TString& filename);
 
 	Bool_t PrepareId(AliCDBId& id);
-	AliCDBId GetId(const AliCDBId& query);
+	Bool_t GetId(const AliCDBId& query, AliCDBId& result);
 
 	void GetEntriesForLevel0(const char* level0, const AliCDBId& query, TList* result);
 	void GetEntriesForLevel1(const char* level0, const char* Level1,

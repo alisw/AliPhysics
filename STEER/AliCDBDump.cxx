@@ -250,10 +250,9 @@ Bool_t AliCDBDump::PrepareId(AliCDBId& id) {
 
 
 //_____________________________________________________________________________
-AliCDBId AliCDBDump::GetId(const AliCDBId& query) {
+Bool_t AliCDBDump::GetId(const AliCDBId& query, AliCDBId& result) {
 // look for filename matching query (called by GetEntry)
 
-        AliCDBId result(query.GetAliCDBPath(), -1, -1, -1, -1);
 
         AliCDBRunRange aRunRange; // the runRange got from filename
         Int_t aVersion, aSubVersion; // the version and subVersion got from filename
@@ -295,7 +294,7 @@ AliCDBId AliCDBDump::GetId(const AliCDBId& query) {
               			AliError(Form("More than one object valid for run %d, version %d_%d!", 
 		       			query.GetFirstRun(), aVersion, aSubVersion));
 	      			result.SetRunRange(-1,-1); result.SetVersion(-1); result.SetSubVersion(-1);
-	      			return result; 
+	      			return kFALSE; 
 				}
 		}
 		
@@ -318,7 +317,7 @@ AliCDBId AliCDBDump::GetId(const AliCDBId& query) {
               			AliError(Form("More than one object valid for run %d, version %d_%d!", 
 		       			query.GetFirstRun(), aVersion, aSubVersion));
 	     			result.SetRunRange(-1,-1); result.SetVersion(-1); result.SetSubVersion(-1);
-	     			return result; 
+	     			return kFALSE; 
 	 		}
 			if( result.GetSubVersion() < aSubVersion) {
 
@@ -348,7 +347,7 @@ AliCDBId AliCDBDump::GetId(const AliCDBId& query) {
               			AliError(Form("More than one object valid for run %d, version %d_%d!", 
 		       			query.GetFirstRun(), aVersion, aSubVersion));
 	     			result.SetRunRange(-1,-1); result.SetVersion(-1); result.SetSubVersion(-1);
-	     			return result; 
+	     			return kFALSE; 
 			}
 			result.SetVersion(aVersion);
 		        result.SetSubVersion(aSubVersion);
@@ -358,11 +357,11 @@ AliCDBId AliCDBDump::GetId(const AliCDBId& query) {
 		}
 	}
 
-	return result;
+	return kTRUE;
 }
 
 //_____________________________________________________________________________
-AliCDBEntry* AliCDBDump::GetEntry(const AliCDBId& query) {
+AliCDBEntry* AliCDBDump::GetEntry(const AliCDBId& queryId) {
 // get AliCDBEntry from the database
 
 	TDirectory::TContext context(gDirectory, fFile);
@@ -372,21 +371,24 @@ AliCDBEntry* AliCDBDump::GetEntry(const AliCDBId& query) {
                 return NULL;
         }
 
-        if (!gDirectory->cd(query.GetPath())) {
+        if (!gDirectory->cd(queryId.GetPath())) {
                 return NULL;
         }
 
-	AliCDBId dataId;
+	AliCDBId dataId(queryId.GetAliCDBPath(), -1, -1, -1, -1);
+        Bool_t result;
 
 	// look for a filename matching query requests (path, runRange, version, subVersion)
-	if (!query.HasVersion()) {
+	if (!queryId.HasVersion()) {
 		// if version is not specified, first check the selection criteria list
-		dataId = GetId(GetSelection(query));
+		AliCDBId selectedId(queryId);
+		GetSelection(&selectedId);
+		result = GetId(selectedId, dataId);
 	} else {
-		dataId = GetId(query);
+		result = GetId(queryId, dataId);
 	}
 
-	if (!dataId.IsSpecified()) {
+	if (!result || !dataId.IsSpecified()) {
 		return NULL;
 	}
 	

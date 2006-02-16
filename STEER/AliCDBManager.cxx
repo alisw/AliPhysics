@@ -65,7 +65,7 @@ void AliCDBManager::Destroy() {
 // delete ALCDBManager instance and active storages
 
 	if (fgInstance) {
-		
+		//fgInstance->Delete();
 		delete fgInstance;
 		fgInstance = 0x0;
 	}
@@ -74,15 +74,19 @@ void AliCDBManager::Destroy() {
 //_____________________________________________________________________________
 AliCDBManager::AliCDBManager():
 	fDefaultStorage(NULL),
-	fDrainStorage(NULL)
+	fDrainStorage(NULL),
+	fCache(kTRUE),
+	fRun(0)
 {
 // default constuctor
-	fFactories.SetOwner();
+	fFactories.SetOwner(1);
+  	fEntryCache.SetOwner(1);
 }
 
 //_____________________________________________________________________________
 AliCDBManager::~AliCDBManager() {
 // destructor
+	ClearCache();
 	DestroyActiveStorages();
 	fDrainStorage = 0x0;
 	fDefaultStorage = 0x0;
@@ -295,10 +299,10 @@ void AliCDBManager::SetSpecificStorage(const char* detName, AliCDBParam* param) 
 //_____________________________________________________________________________
 AliCDBStorage* AliCDBManager::GetSpecificStorage(const char* detName) {
 // get storage specific for detector 
-	TObjString objDetName(detName);
-	AliCDBParam *checkPar = (AliCDBParam*) fSpecificStorages.GetValue(&objDetName);
+
+	AliCDBParam *checkPar = (AliCDBParam*) fSpecificStorages.GetValue(detName);
 	if(!checkPar){
-		AliError(Form("%s storage not found!",objDetName.String().Data()));
+		AliError(Form("%s storage not found!",detName));
 		return NULL;
 	} else {
 		return GetStorage(checkPar);
@@ -477,6 +481,69 @@ Bool_t AliCDBManager::Put(AliCDBEntry* entry){
 
 	return aStorage->Put(entry);
 
+
+}
+
+//_____________________________________________________________________________
+AliCDBEntry* AliCDBManager::Get(const char* path)
+{
+// get an AliCDBEntry object from the database, using fRun as run number
+    
+  	if (fRun < 0)
+  	{
+   	 	AliError("Run number not set! Use AliCDBManager::SetRun.");
+    		return 0;
+  	}
+	
+  	AliCDBEntry *entry;
+  
+  	// first look into map of cached objects
+  	entry = (AliCDBEntry*) fEntryCache.GetValue(path);
+  	if(entry) return entry;
+
+  	// Entry is not in cache -> retrieve it from CDB and cache it!!
+  	entry = Get(path, fRun); 
+  	if (!entry) return 0;
+   
+ 	if(fCache) CacheEntry(path, entry);
+  
+  	return entry;
+
+}
+
+//_____________________________________________________________________________
+void AliCDBManager::CacheEntry(const char* path, AliCDBEntry* entry)
+{
+// cache AliCDBEntry. Cache is valid until run number is changed.
+
+	AliDebug(2,Form("Filling cache with entry %s",path));
+	fEntryCache.Add(new TObjString(path), entry);
+	AliDebug(2,Form("Cache entries: %d",fEntryCache.GetEntries()));
+
+}
+
+//_____________________________________________________________________________
+void AliCDBManager::SetRun(Long64_t run)
+{
+//
+// Sets current run number.  
+// When the run number changes the caching is cleared.
+//
+  
+	if (fRun == run)
+		return;
+  
+	fRun = run;
+	ClearCache();
+}
+
+//_____________________________________________________________________________
+void AliCDBManager::ClearCache(){
+// clear AliCDBEntry cache
+
+	AliDebug(2,Form("Clearing cache!"));
+	fEntryCache.DeleteAll();
+	AliDebug(2,Form("Cache entries: %d",fEntryCache.GetEntries()));
 
 }
 

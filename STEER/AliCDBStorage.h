@@ -77,7 +77,7 @@ public:
 protected:
 		
 	virtual ~AliCDBStorage();	
-	AliCDBId GetSelection(const AliCDBId& id);
+	void    GetSelection(/*const*/ AliCDBId* id);
 	virtual AliCDBEntry* GetEntry(const AliCDBId& query) = 0;
 	virtual TList* GetEntries(const AliCDBId& query) = 0;
 	virtual Bool_t PutEntry(AliCDBEntry* entry) = 0; 

@@ -43,7 +43,7 @@ private:
 	Bool_t IdToFilename(const AliCDBRunRange& runRange, Int_t version, TString& filename);
 
 	Bool_t PrepareId(AliCDBId& id);
-	AliCDBId GetId(const AliCDBId& query);
+	Bool_t GetId(const AliCDBId& query, AliCDBId& result);
 
 
 	void GetEntriesForLevel0(const char* level0, const AliCDBId& query, TList* result);

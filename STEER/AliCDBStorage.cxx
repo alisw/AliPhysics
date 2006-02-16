@@ -37,7 +37,7 @@ AliCDBStorage::~AliCDBStorage() {
 }
 
 //_____________________________________________________________________________
-AliCDBId AliCDBStorage::GetSelection(const AliCDBId& id) {
+void AliCDBStorage::GetSelection(/*const*/ AliCDBId* id) {
 // return required version and subversion from the list of selection criteria 
 	
 	TIter iter(&fSelections);
@@ -46,19 +46,19 @@ AliCDBId AliCDBStorage::GetSelection(const AliCDBId& id) {
 	// loop on the list of selection criteria
 	while ((aSelection = (AliCDBId*) iter.Next())) {
 		// check if selection element contains id's path and run (range) 
-		if (aSelection->Comprises(id)) {
+		if (aSelection->Comprises(*id)) {
 			AliDebug(2,Form("Using selection criterion: %s ", aSelection->ToString().Data()));
 			// return required version and subversion
-			return AliCDBId(id.GetAliCDBPath(), 
-				id.GetAliCDBRunRange(),
-				aSelection->GetVersion(), 
-				aSelection->GetSubVersion());  
+			
+			id->SetVersion(aSelection->GetVersion());
+			id->SetSubVersion(aSelection->GetSubVersion());
+			return;  
 		}
 	}
 	
 	// no valid element is found in the list of selection criteria -> return
 	AliDebug(2,"Looking for objects with most recent version");
-	return AliCDBId(id.GetAliCDBPath(), id.GetAliCDBRunRange());
+	return;
 }
 
 //_____________________________________________________________________________

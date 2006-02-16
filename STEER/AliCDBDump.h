@@ -47,7 +47,7 @@ private:
 
 
 	Bool_t PrepareId(AliCDBId& id);
-	AliCDBId GetId(const AliCDBId& query);
+	Bool_t GetId(const AliCDBId& query, AliCDBId& result);
 
 
 	void GetEntriesForLevel0(const AliCDBId& query, TList* result);

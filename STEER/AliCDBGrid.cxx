@@ -216,12 +216,10 @@ Bool_t AliCDBGrid::PrepareId(AliCDBId& id) {
 }
 
 //_____________________________________________________________________________
-AliCDBId AliCDBGrid::GetId(const AliCDBId& query) {
+Bool_t AliCDBGrid::GetId(const AliCDBId& query, AliCDBId& result) {
 // look for filename matching query (called by GetEntry)
 
 	TString initDir(gGrid->Pwd(0));
-
-	AliCDBId result(query.GetAliCDBPath(), -1, -1, -1, -1);
 
 	TString dirName(fDBFolder);
 	dirName += query.GetPath(); // dirName = fDBFolder/idPath
@@ -229,7 +227,7 @@ AliCDBId AliCDBGrid::GetId(const AliCDBId& query) {
 	if (!gGrid->Cd(dirName,0)) {
 		AliError(Form("Directory <%s> not found", (query.GetPath()).Data()));
 		AliError(Form("in DB folder %s", fDBFolder.Data()));
-		return result;
+		return kFALSE;
 	}
  
 	TGridResult *res = gGrid->Ls(dirName);
@@ -251,8 +249,7 @@ AliCDBId AliCDBGrid::GetId(const AliCDBId& query) {
 			if(result.GetVersion() == aVersion) {
 				AliError(Form("More than one object valid for run %d, version %d!", 
 					query.GetFirstRun(), aVersion));
-				result.SetRunRange(-1,-1); result.SetVersion(-1);
-			return result; 
+			return kFALSE; 
 			}
 			result.SetVersion(aVersion);
 			result.SetFirstRun(aRunRange.GetFirstRun());
@@ -263,8 +260,7 @@ AliCDBId AliCDBGrid::GetId(const AliCDBId& query) {
 			if(result.GetVersion() == aVersion){
 				AliError(Form("More than one object valid for run %d, version %d!", 
 					query.GetFirstRun(), aVersion));
-					result.SetRunRange(-1,-1); result.SetVersion(-1); 
-					return result; 
+					return kFALSE; 
 			}
 			result.SetVersion(aVersion);
 			result.SetFirstRun(aRunRange.GetFirstRun());
@@ -275,24 +271,27 @@ AliCDBId AliCDBGrid::GetId(const AliCDBId& query) {
 	
 	gGrid->Cd(initDir.Data(),0);
  
-	return result;
+	return kTRUE;
 }
 
 //_____________________________________________________________________________
 AliCDBEntry* AliCDBGrid::GetEntry(const AliCDBId& queryId) {
 // get AliCDBEntry from the database
 
-	AliCDBId dataId;
+	AliCDBId dataId(queryId.GetAliCDBPath(), -1, -1, -1, -1);
+        Bool_t result;
 	
 	// look for a filename matching query requests (path, runRange, version, subVersion)
 	if (!queryId.HasVersion()) {
 		// if version is not specified, first check the selection criteria list
-		dataId = GetId(GetSelection(queryId));
+		AliCDBId selectedId(queryId);
+		GetSelection(&selectedId);
+		result = GetId(selectedId,dataId);
 	} else {
-		dataId = GetId(queryId);
+		result = GetId(queryId,dataId);
 	}
 
-	if (!dataId.IsSpecified()) return NULL;
+	if (!result || !dataId.IsSpecified()) return NULL;
 
 	TString filename;
 	if (!IdToFilename(dataId.GetAliCDBRunRange(), dataId.GetVersion(),filename)) {

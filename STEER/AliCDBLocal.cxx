@@ -60,9 +60,9 @@ AliCDBLocal::~AliCDBLocal() {
 
 //_____________________________________________________________________________
 Bool_t AliCDBLocal::FilenameToId(const char* filename, AliCDBRunRange& runRange,
+	Int_t& version, Int_t& subVersion) {
 // build AliCDBId from filename numbers
 
-	Int_t& version, Int_t& subVersion) {
 
         Ssiz_t mSize;
 
@@ -240,10 +240,8 @@ Bool_t AliCDBLocal::PrepareId(AliCDBId& id) {
 }
 
 //_____________________________________________________________________________
-AliCDBId AliCDBLocal::GetId(const AliCDBId& query) {
+Bool_t AliCDBLocal::GetId(const AliCDBId& query, AliCDBId& result) {
 // look for filename matching query (called by GetEntry)
-
-	AliCDBId result(query.GetAliCDBPath(), -1, -1, -1, -1);
 
 	TString dirName;
 	dirName += fBaseDirectory;
@@ -254,7 +252,7 @@ AliCDBId AliCDBLocal::GetId(const AliCDBId& query) {
 	if (!dirPtr) {
    	 	AliError(Form("Directory <%s> not found", (query.GetPath()).Data()));
    	 	AliError(Form("in DB folder %s", fBaseDirectory.Data()));
-		return result;
+		return kFALSE;
 	}
 
 	const char* filename;	
@@ -298,8 +296,8 @@ AliCDBId AliCDBLocal::GetId(const AliCDBId& query) {
 				&& result.GetSubVersion() == aSubVersion){
               			AliError(Form("More than one object valid for run %d, version %d_%d!", 
 		       			query.GetFirstRun(), aVersion, aSubVersion));
-	      			result.SetRunRange(-1,-1); result.SetVersion(-1); result.SetSubVersion(-1);
-	      			return result; 
+				gSystem->FreeDirectory(dirPtr);
+	      			return kFALSE; 
 				}
 		}
 		
@@ -324,8 +322,8 @@ AliCDBId AliCDBLocal::GetId(const AliCDBId& query) {
 	 		if(result.GetSubVersion() == aSubVersion){
               			AliError(Form("More than one object valid for run %d, version %d_%d!", 
 		       			query.GetFirstRun(), aVersion, aSubVersion));
-	     			result.SetRunRange(-1,-1); result.SetVersion(-1); result.SetSubVersion(-1);
-	     			return result; 
+				gSystem->FreeDirectory(dirPtr);
+	     			return kFALSE; 
 	 		}
 			if( result.GetSubVersion() < aSubVersion) {
 
@@ -357,8 +355,8 @@ AliCDBId AliCDBLocal::GetId(const AliCDBId& query) {
 			if(result.GetVersion() == aVersion && result.GetSubVersion() == aSubVersion){
               			AliError(Form("More than one object valid for run %d, version %d_%d!", 
 		       			query.GetFirstRun(), aVersion, aSubVersion));
-	     			result.SetRunRange(-1,-1); result.SetVersion(-1); result.SetSubVersion(-1);
-	     			return result; 
+				gSystem->FreeDirectory(dirPtr);
+	     			return kFALSE; 
 			}
 			result.SetVersion(aVersion);
 		        result.SetSubVersion(aSubVersion);
@@ -370,24 +368,27 @@ AliCDBId AliCDBLocal::GetId(const AliCDBId& query) {
 
 	gSystem->FreeDirectory(dirPtr);
 
-	return result;
+	return kTRUE;
 }
 
 //_____________________________________________________________________________
 AliCDBEntry* AliCDBLocal::GetEntry(const AliCDBId& queryId) {
 // get AliCDBEntry from the database
 
-	AliCDBId dataId;
-	
+	AliCDBId dataId(queryId.GetAliCDBPath(), -1, -1, -1, -1);
+        Bool_t result;
+		
 	// look for a filename matching query requests (path, runRange, version, subVersion)
 	if (!queryId.HasVersion()) {
 		// if version is not specified, first check the selection criteria list
-		dataId = GetId(GetSelection(queryId));
+		AliCDBId selectedId(queryId);
+		GetSelection(&selectedId);
+		result = GetId(selectedId, dataId);
 	} else {
-		dataId = GetId(queryId);
+		result = GetId(queryId, dataId);
 	}
 
-	if (!dataId.IsSpecified()) return NULL;
+	if (!result || !dataId.IsSpecified()) return NULL;
 
 	TString filename;
 	if (!IdToFilename(dataId.GetAliCDBRunRange(), dataId.GetVersion(),
