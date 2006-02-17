@@ -812,7 +812,7 @@ int AliEMCALJetMicroDst::SaveListOfHists(TList *list,const char* name,Bool_t kSi
     file.Close();
   } else {
     printf("TAliasPAI::saveListOfHists : N O  S A V I N G \n");
-    if(list==0) printf("List of object 0 : %i \n", (int)list);
+    if(list==0) printf("List of object 0 : %p \n", list);
     else printf("Size of list %i \n", list->GetSize());
   }
   return save;
