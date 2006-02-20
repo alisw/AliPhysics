@@ -151,15 +151,20 @@ AliMCQA::AliMCQA(Int_t ndets):
   //
   AliMC * mc = gAlice->GetMCApp();
   for(i=0;i<fNvolumes;++i) {
-    AliModule *mod = dynamic_cast<AliModule*>
-      ((*gAlice->Modules())[mc->DetFromMate(gMC->VolId2Mate(i+1))]);
-    (*fVolNames)[i]=new TNamed(gMC->VolName(i+1),mod->GetName());
+    Int_t mat = gMC->VolId2Mate(i+1);
+    if (mat > 0) {
+	AliModule *mod = dynamic_cast<AliModule*>
+	    ((*gAlice->Modules())[mc->DetFromMate(gMC->VolId2Mate(i+1))]);
+	(*fVolNames)[i] = new TNamed(gMC->VolName(i+1),mod->GetName());
+    } else {
+	(*fVolNames)[i] = new TNamed(gMC->VolName(i+1), "Assembly");
+    }
   }
 
   fQAHist->Add(new TH1F("hMCMcalls","Monte Carlo calls per module",
 			fNdets, -0.5, fNdets-0.5));
   h = dynamic_cast<TH1F*>(dir->FindObject("hMCMcalls"));
-   h->GetListOfFunctions()->Add(new TExec("ex","gAlice->GetMCQA()->AddModuleName()"));
+  h->GetListOfFunctions()->Add(new TExec("ex","gAlice->GetMCQA()->AddModuleName()"));
 
   dir->Remove(dir->FindObject("hMCMcalls"));
   //
