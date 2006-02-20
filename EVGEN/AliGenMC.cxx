@@ -107,6 +107,7 @@ void AliGenMC::Init()
     case kKaToMu:
     case kWToMuon:
     case kWToCharmToMuon:
+    case kZDiMuon:
 	fChildSelect[0]=kMuonMinus;
 	break;
     case kWToCharm:
