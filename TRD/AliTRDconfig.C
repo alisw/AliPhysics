@@ -6,7 +6,7 @@ void Config()
   // libraries required by geant321
   gSystem->Load("libgeant321");
 
-  new     TGeant3("C++ Interface to Geant3");
+  new     TGeant3TGeo("C++ Interface to Geant3");
 
   // Create the output file
   TFile *rootfile = new TFile("TRD_test.root","recreate");
@@ -122,8 +122,8 @@ void Config()
   }
 
   Int_t iMAG   = 1;
-  Int_t iITS   = 1;
-  Int_t iTPC   = 1;
+  Int_t iITS   = 0;
+  Int_t iTPC   = 0;
   Int_t iTRD   = 1;
   Int_t iABSO  = 1;
   Int_t iDIPO  = 1;
@@ -211,8 +211,8 @@ void Config()
 
     AliTPC *TPC  = new AliTPCv2("TPC","Default");
     // All sectors included 
-    TPC->SetSecAL(-1);
-    TPC->SetSecAU(-1);
+    //TPC->SetSecAL(-1);
+    //TPC->SetSecAU(-1);
 
   }
 
