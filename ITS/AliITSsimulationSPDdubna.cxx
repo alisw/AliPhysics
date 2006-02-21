@@ -478,7 +478,7 @@ void AliITSsimulationSPDdubna::pListToDigits(){
         dig.SetSignal(1);
         dig.SetSignalSPD((Int_t) GetMap()->GetSignal(iz,ix));
         for(j=0;j<nmaxtrk;j++){
-            if (j<GetMap()->GetNEnteries()) {
+            if (j<GetMap()->GetNEntries()) {
                 dig.SetTrack(j,GetMap()->GetTrack(iz,ix,j));
                 dig.SetHit(j,GetMap()->GetHit(iz,ix,j));
             }else { // Default values

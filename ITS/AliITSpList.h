@@ -3,10 +3,9 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice     */
 
+#include "TClonesArray.h"
 #include "AliITSMap.h"
 #include "AliITSpListItem.h"
-class TObjArray;
-// class AliITSpListItem;
 
 class AliITSpList: public AliITSMap {
 
@@ -26,10 +25,10 @@ class AliITSpList: public AliITSMap {
     // returns the max index value.
     Int_t GetMaxIndex() const {return fNi*fNj;}
     // returns the largest non-zero entry kept in the array fa.
-    Int_t GetEntries() const {return fEnteries;}
+    Int_t GetEntries() const {return fEntries;}
     // returns the max number of track/hit entries per cell.
-    Int_t GetNEnteries() const {return AliITSpListItem::GetMaxKept();}
-    // for a give TObjArray index it returns the corresponding map index
+    Int_t GetNEntries() const {return AliITSpListItem::GetMaxKept();}
+    // for a given TClonesArray index it returns the corresponding map index
     void  GetMapIndex(Int_t index,Int_t &i,Int_t &j) const {
 	i = index/fNj;j = index - fNj*i;
 	if(i<0||i>=fNi || j<0||j>=fNj){i=-1;j=-1; return;}
@@ -87,20 +86,20 @@ class AliITSpList: public AliITSMap {
     void AddSignal(Int_t i,Int_t j,Int_t trk,Int_t ht,Int_t mod,Double_t sig);
     // Adds a Noise value to the map. Creating and expanding arrays as needed.
     void AddNoise(Int_t i,Int_t j,Int_t mod,Double_t noise);
-    // Delete all AliITSpListItems and zero the TObjArray
+    // Delete all AliITSpListItems and zero the TClonesArray
     virtual void ClearMap();
-    // Delete a particular AliITSpListItem in the TObjArray.
+    // Delete a particular AliITSpListItem in the TClonesArray.
     virtual void DeleteHit(Int_t i,Int_t j);
-    // returns hit index in TObjArray
+    // returns hit index in TClonesArray
     virtual Int_t GetHitIndex(Int_t i,Int_t j) const {return GetIndex(i,j);}
     // returns "hit" AliITSpListItem as a TObject.
     TObject * GetHit(Int_t i,Int_t j){return (TObject*)GetpListItem(i,j);}
     // tests hit status.
     virtual FlagType TestHit(Int_t i,Int_t j){if(GetpListItem(i,j)==0) return kEmpty;
     else if(GetSignal(i,j)<=0) return kUnused; else return kUsed;}
-    // Returns the pointer to the TObjArray of pList Items
-    TObjArray * GetpListItems(){return fa;}
-    // returns the pList Item stored in the TObject array
+    // Returns the pointer to the TClonesArray of pList Items
+    TClonesArray * GetpListItems(){return fa;}
+    // returns the pList Item stored in the TClonesArray
     AliITSpListItem* GetpListItem(Int_t index){
 	if(fa!=0)return (AliITSpListItem*) (fa->At(index));
 	else return 0;}
@@ -127,8 +126,8 @@ class AliITSpList: public AliITSMap {
          Warning(method,"This method is not implemented for this class");}
 // data members
     Int_t     fNi,fNj;   // The max index in i,j.
-    TObjArray *fa;       // array of pList items
-    Int_t     fEnteries; // keepts track of the number of non-zero entries.
+    TClonesArray *fa;       // array of pList items
+    Int_t     fEntries; // keepts track of the number of non-zero entries.
 
     ClassDef(AliITSpList,3) // list of signals and track numbers
 };	

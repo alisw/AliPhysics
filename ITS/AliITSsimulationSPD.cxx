@@ -784,7 +784,7 @@ void AliITSsimulationSPD::CreateDigit(Int_t module,AliITSpList *pList) {
                 digits[2] =  (Int_t) signal;  // the signal is stored in
                                               //  electrons
                 for(j1=0;j1<size;j1++){
-                    if(j1<pList->GetNEnteries()){
+                    if(j1<pList->GetNEntries()){
                         tracks[j1] = pList->GetTrack(r,c,j1);
                         hits[j1]   = pList->GetHit(r,c,j1);
                         //}else{

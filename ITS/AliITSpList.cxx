@@ -16,15 +16,13 @@
 
 //***********************************************************************
 //
-// It consist of a TObjectArray of 
+// It consist of a TClonesArray of 
 // AliITSpListItem objects
 // This array can be accessed via 2 indexed
 // it is used at digitization level by 
 // all the 3 ITS subdetectors
 //
 // ***********************************************************************
-
-#include <TObjArray.h>
 
 #include "AliITSpList.h"
 #include "AliITSpListItem.h"
@@ -59,9 +57,8 @@ AliITSpList::AliITSpList(Int_t imax,Int_t jmax){
 
     fNi = imax;
     fNj = jmax;
-    fEnteries = 0;
-    fa  = new TObjArray(fNi*fNj); // elements are zeroed by 
-                                  // TObjArray creator
+    fEntries = 0;
+    fa = new TClonesArray("AliITSpListItem",fNi*fNj);
 }
 //______________________________________________________________________
 AliITSpList::~AliITSpList(){
@@ -73,20 +70,20 @@ AliITSpList::~AliITSpList(){
     // Return:
     //    a properly destroyed class
 
-    for(Int_t i=0;i<GetMaxIndex();i++) if(fa->At(i)!=0){
-        delete fa->At(i);
-        fa->AddAt(0,i); // zero content
-    } // end for i && if
+  if(fa){
+    fa->Delete();
+    delete fa;
+    fa = 0;
+  }
     fNi = 0;
     fNj = 0;
-    delete fa;
-    fa  = 0;
-    fEnteries = 0;
+
+    fEntries = 0;
 }
 
 //______________________________________________________________________
 void AliITSpList::ClearMap(){
-    // Delete all AliITSpListItems and zero TObjArray.
+    // Delete all AliITSpListItems and zero TClonesArray.
     // Inputs:
     //    none.
     // Outputs:
@@ -95,17 +92,11 @@ void AliITSpList::ClearMap(){
     //    A zeroed AliITSpList class.
 
     fa->Delete();
-    /*
-    for(Int_t i=0;i<GetMaxIndex();i++) if(fa->At(i)!=0){
-        delete fa->At(i);
-        fa->AddAt(0,i); // zero content
-    } // end for i && if
-    */
-    fEnteries = 0;
+    fEntries = 0;
 }
 //______________________________________________________________________
 void AliITSpList::DeleteHit(Int_t i,Int_t j){
-    // Delete a particular AliITSpListItems and zero TObjArray.
+    // Delete a particular AliITSpListItems.
     // Inputs:
     //    Int_t i   Row number
     //    Int_t j   Columns number
@@ -116,10 +107,9 @@ void AliITSpList::DeleteHit(Int_t i,Int_t j){
     Int_t k = GetIndex(i,j);
 
     if(fa->At(k)!=0){
-        delete fa->At(k);
-        fa->AddAt(0,k); // zero content
+      fa->RemoveAt(k);
     } // end for i && if
-    if(k==fEnteries-1) fEnteries--;
+    if(k==fEntries-1) fEntries--;
 }
 //______________________________________________________________________
 AliITSpList& AliITSpList::operator=(const AliITSpList &source){
@@ -134,16 +124,14 @@ AliITSpList& AliITSpList::operator=(const AliITSpList &source){
     if(this == &source) return *this;
 
     if(this->fa!=0){ // if this->fa exists delete it first.
-        for(Int_t i=0;i<GetMaxIndex();i++) if(fa->At(i)!=0){
-            delete fa->At(i);
-            fa->AddAt(0,i); // zero content
-        } // end for i && if
-        delete this->fa;
+      fa->Delete();
+      delete fa;
+      fa = 0;
     } // end if this->fa!=0
     this->fNi = source.fNi;
     this->fNj = source.fNj;
-    this->fa = new TObjArray(*(source.fa));
-    this->fEnteries = source.fEnteries;
+    this->fa = new TClonesArray(*(source.fa));
+    this->fEntries = source.fEntries;
 
     return *this;
 }
@@ -153,8 +141,8 @@ AliITSpList::AliITSpList(const AliITSpList &source) : AliITSMap(source){
 
   fNi = source.fNi;
   fNj = source.fNj;
-  fa = new TObjArray(*(source.fa));
-  fEnteries = source.fEnteries;
+  fa = new TClonesArray(*(source.fa));
+  fEntries = source.fEntries;
 }
 //______________________________________________________________________
 void AliITSpList::AddItemTo(Int_t fileIndex, AliITSpListItem *pl) {
@@ -169,18 +157,19 @@ void AliITSpList::AddItemTo(Int_t fileIndex, AliITSpListItem *pl) {
     // Return:
     //    none.
     Int_t index = pl->GetIndex();
-
+    TClonesArray &rfa = *fa;
     if( fa->At( index ) == 0 ) { // most create AliITSpListItem
-        fa->AddAt(new AliITSpListItem(-2,-1,pl->GetModule(),index,0.0),index);
+      new(rfa[index])AliITSpListItem(-2,-1,pl->GetModule(),index,0.0);
     } // end if
  
     ((AliITSpListItem*)(fa->At(index)))->AddTo( fileIndex,pl);
-    if(index>=fEnteries) fEnteries = index +1;
+    if(index>=fEntries) fEntries = index +1;
 }
 //______________________________________________________________________
 void AliITSpList::AddSignal(Int_t i,Int_t j,Int_t trk,Int_t ht,Int_t mod,
                        Double_t signal){
-    // Adds a Signal value to the TObjArray at i,j. Creates the AliITSpListItem
+    // Adds a Signal value to the TClonesArray at i,j. 
+    // Creates the AliITSpListItem
     // if needed.
     // Inputs:
     //    Int_t i         Row number for this signal
@@ -194,17 +183,18 @@ void AliITSpList::AddSignal(Int_t i,Int_t j,Int_t trk,Int_t ht,Int_t mod,
     // Return:
     //    none.
     Int_t index = GetIndex(i,j);
-
-    if(GetpListItem(index)==0){ // most create AliITSpListItem
-        fa->AddAt(new AliITSpListItem(trk,ht,mod,index,signal),index);
+    TClonesArray &rfa = *fa;
+    if(GetpListItem(index)==0){ // must create AliITSpListItem
+      new(rfa[index])AliITSpListItem(trk,ht,mod,index,signal);
     }else{ // AliITSpListItem exists, just add signal to it.
         GetpListItem(index)->AddSignal(trk,ht,mod,index,signal);
     } // end if
-    if(index>=fEnteries) fEnteries = index +1;
+    if(index>=fEntries) fEntries = index +1;
 }
 //______________________________________________________________________
 void AliITSpList::AddNoise(Int_t i,Int_t j,Int_t mod,Double_t noise){
-    // Adds a noise value to the TObjArray at i,j. Creates the AliITSpListItem
+    // Adds a noise value to the TClonesArray at i,j. 
+    // Creates the AliITSpListItem
     // if needed.
     // Inputs:
     //    Int_t i        Row number for this noise
@@ -215,13 +205,13 @@ void AliITSpList::AddNoise(Int_t i,Int_t j,Int_t mod,Double_t noise){
     // Return:
     //    none.
     Int_t index = GetIndex(i,j);
-
+    TClonesArray &rfa = *fa;
     if(GetpListItem(index)==0){ // most create AliITSpListItem
-        fa->AddAt(new AliITSpListItem(mod,index,noise),index);
+      new(rfa[index]) AliITSpListItem(mod,index,noise);
     }else{ // AliITSpListItem exists, just add signal to it.
         GetpListItem(index)->AddNoise(mod,index,noise);
     } // end if
-    if(index>=fEnteries) fEnteries = index +1;
+    if(index>=fEntries) fEntries = index +1;
 }
 //______________________________________________________________________
 void AliITSpList::GetCell(Int_t index,Int_t &i,Int_t &j) const {
@@ -239,7 +229,7 @@ void AliITSpList::GetCell(Int_t index,Int_t &i,Int_t &j) const {
 }
 //______________________________________________________________________
 Int_t AliITSpList::GetIndex(Int_t i, Int_t j) const {
- // returns the TObjArray index for a given set of map indexes.
+ // returns the TClonesArray index for a given set of map indexes.
   if(i<0||i>=fNi || j<0||j>=fNj){
     Warning("GetIndex","Index out of range 0<i=%d<%d and 0<0j=%d<%d",i,fNi,j,fNj);
     return -1;

@@ -552,7 +552,7 @@ void AliITSsimulationSSD::ChargeToSignal(Int_t module,AliITSpList *pList) {
             digits[0] = k;
             digits[1] = ix;
             digits[2] = (Int_t) signal;
-            for(j1=0;j1<size;j1++)if(j1<pList->GetNEnteries()){
+            for(j1=0;j1<size;j1++)if(j1<pList->GetNEntries()){
                 // only three in digit.
                 tracks[j1]  = pList->GetTrack(k,ix,j1);
                 hits[j1]    = pList->GetHit(k,ix,j1);
