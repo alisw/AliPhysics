@@ -1100,5 +1100,5 @@ void AliMC::FixParticleDecaytime()
     //
     // Force decay time in transport code
     //
-    gMC->ForceDecayTime(t);
+    gMC->ForceDecayTime(t / 2.99792458e10);
 }
