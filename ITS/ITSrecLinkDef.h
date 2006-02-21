@@ -26,9 +26,6 @@
 
 #pragma link C++ class  AliITSclusterSSD+;
 #pragma link C++ class  AliITSpackageSSD+;
-#pragma link C++ class  AliITSPid+;
-#pragma link C++ class  AliITSpidESD+;
-#pragma link C++ class  AliITStrackV2Pid+;
 // Classes used for Tracking
 //#pragma link C++ class  AliITSTrackV1+;
 #pragma link C++ class  AliITSRad+;
@@ -75,6 +72,15 @@
 #pragma link C++ class AliITSClusterFinderV2SPD+;
 #pragma link C++ class AliITSClusterFinderV2SSD+;
 
+// Classes for PID
+#pragma link C++ class  AliITSPid+;
+#pragma link C++ class  AliITStrackV2Pid+;
+#pragma link C++ class AliITSPidParItem+;
+#pragma link C++ class AliITSPident+;
+#pragma link C++ class AliITSSteerPid+;
+#pragma link C++ class AliITSpidESD+;
+#pragma link C++ class AliITSpidESD1+;
+#pragma link C++ class AliITSpidESD2+;
 //beam test classes
 #pragma link C++ class AliITSBeamTestDig+;
 #pragma link C++ class AliITSBeamTestDigSPD+;

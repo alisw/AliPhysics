@@ -42,6 +42,11 @@ SRCS = 	AliITSDetTypeRec.cxx \
 		AliITSNeuralTracker.cxx \
 		AliITStrackerANN.cxx \
 		AliITSpidESD.cxx \
+		AliITSpidESD1.cxx \
+		AliITSpidESD2.cxx \
+                AliITSPident.cxx \
+                AliITSSteerPid.cxx \
+                AliITSPidParItem.cxx \
 		AliITSRawClusterSPD.cxx \
 		AliITSRawClusterSDD.cxx \
 		AliITSRawClusterSSD.cxx\

@@ -19,6 +19,7 @@ ClassImp(AliITSLoader)
 /**********************************************************************/
   AliITSLoader::AliITSLoader():AliLoader(){
   // Default constructor
+  fITSpid = 0;
 }
 /*********************************************************************/
 AliITSLoader::AliITSLoader(const Char_t *name,const Char_t *topfoldername):
@@ -57,6 +58,7 @@ AliLoader(name,topfoldername){
     fDataLoaders->Add(cascadeDataLoader);
     cascadeDataLoader->SetEventFolder(fEventFolder);
     cascadeDataLoader->SetFolder(GetDetectorDataFolder());
+    fITSpid=0;
 }
 /**********************************************************************/
 AliITSLoader::AliITSLoader(const Char_t *name,TFolder *topfolder): 
@@ -95,7 +97,24 @@ AliLoader(name,topfolder) {
     fDataLoaders->Add(cascadeDataLoader);
     cascadeDataLoader->SetEventFolder(fEventFolder);
     cascadeDataLoader->SetFolder(GetDetectorDataFolder());
+    fITSpid=0;
 }
+
+//______________________________________________________________________
+AliITSLoader::AliITSLoader(const AliITSLoader &ob) : AliLoader(ob) {
+  // Copy constructor
+  // Copies are not allowed. The method is protected to avoid misuse.
+  Error("AliITSLoader","Copy constructor not allowed\n");
+}
+
+//______________________________________________________________________
+AliITSLoader& AliITSLoader::operator=(const AliITSLoader& /* ob */){
+  // Assignment operator
+  // Assignment is not allowed. The method is protected to avoid misuse.
+  Error("= operator","Assignment operator not allowed\n");
+  return *this;
+}
+
 /**********************************************************************/
 AliITSLoader::~AliITSLoader(){
     //destructor
@@ -119,6 +138,7 @@ AliITSLoader::~AliITSLoader(){
     UnloadCascades();
     dl = GetCascadeDataLoader();
     fDataLoaders->Remove(dl);
+    if(fITSpid)delete fITSpid;
 }
 /*
 //----------------------------------------------------------------------

@@ -5,23 +5,21 @@
 
 //-------------------------------------------------------
 //                    ITS PID class
-// A very naive design... Should be made better by the detector experts...
-//   Origin: Iouri Belikov, CERN, Jouri.Belikov@cern.ch 
+// Base class:
+// See the implementations AliITSpidESD1 and AliITSpidESD2
 //-------------------------------------------------------
-#include <Rtypes.h>
+//#include <Rtypes.h>
+#include <TObject.h>
 
 class AliESD;
 
-class AliITSpidESD {
+class AliITSpidESD : public TObject {
 public:
-  AliITSpidESD(Double_t *param);
+  AliITSpidESD();
   virtual ~AliITSpidESD() {}
-  Int_t MakePID(AliESD *event);
+  virtual Int_t MakePID(AliESD *event) =0;
   static Double_t Bethe(Double_t bg);
 private:
-  Double_t fMIP;          // dEdx for MIP
-  Double_t fRes;          // relative dEdx resolution
-  Double_t fRange;        // one particle type PID range (in sigmas)
   ClassDef(AliITSpidESD,1)   // ITS PID class
 };
 

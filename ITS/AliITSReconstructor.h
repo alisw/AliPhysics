@@ -13,12 +13,17 @@
 #include "AliReconstructor.h"
 
 class AliITSgeom;
-
+class AliLoader;
+class AliTracker;
+class AliITStrackerMI;
+class AliITSpidESD;
 
 class AliITSReconstructor: public AliReconstructor {
 public:
-  AliITSReconstructor(): AliReconstructor() {};
-  virtual ~AliITSReconstructor() {};
+  AliITSReconstructor();
+  virtual ~AliITSReconstructor();
+  AliITSReconstructor(const AliITSReconstructor &ob); // copy constructor
+  AliITSReconstructor& operator=(const AliITSReconstructor & /* source */); // ass. op.
 
   virtual void         Reconstruct(AliRunLoader* runLoader) const;
   virtual void         Reconstruct(AliRunLoader* runLoader,
@@ -43,9 +48,11 @@ public:
     {AliReconstructor::FillESD(runLoader,rawReader, esd);}
 
 private:
+  // methods
   AliITSgeom*          GetITSgeom(AliRunLoader* runLoader) const;
-
-  ClassDef(AliITSReconstructor, 0)   // class for the ITS reconstruction
+  //data
+  AliITSpidESD *fItsPID; //Pid for ITS
+  ClassDef(AliITSReconstructor, 1)   // class for the ITS reconstruction
 };
 
 #endif

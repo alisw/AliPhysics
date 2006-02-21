@@ -6,7 +6,7 @@
 #include <AliLoader.h>
 #include <AliESDVertex.h>
 #include <AliITSgeom.h>
-
+#include <AliITSpidESD.h>
 class AliITSdigit;
 class TObjArray;
 
@@ -15,6 +15,9 @@ class AliITSLoader: public AliLoader{
     AliITSLoader();
     AliITSLoader(const Char_t *name,const Char_t *topfoldername);
     AliITSLoader(const Char_t *name,TFolder *topfolder);
+    AliITSLoader(const AliITSLoader &ob); // copy constructor
+    AliITSLoader& operator=(const AliITSLoader & /* source */); // ass.
+
 
     virtual ~AliITSLoader();
 
@@ -108,6 +111,9 @@ class AliITSLoader: public AliLoader{
 
     // Geometry
     AliITSgeom* GetITSgeom();
+    // PID
+    AliITSpidESD* GetITSpid() const {return fITSpid;}
+    void  AdoptITSpid(AliITSpidESD* pid) {fITSpid=pid;}
   protected:
 
     // METHODS
@@ -133,8 +139,8 @@ class AliITSLoader: public AliLoader{
     static const TString fgkDefaultVerticesContainerName;     //default for primary vertices container name
     static const TString fgkDefaultV0ContainerName;           //default for V0 container name
     static const TString fgkDefaultCascadeContainerName;      //default fo cascade container name
-
-    ClassDef(AliITSLoader,3) // Loader for additional ITS specific trees.
+    AliITSpidESD* fITSpid; //!pointer for ITS pid
+    ClassDef(AliITSLoader,4) // Loader for additional ITS specific trees.
 };
  
 #endif

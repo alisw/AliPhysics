@@ -20,22 +20,16 @@
 //-----------------------------------------------------------------
 
 #include "AliITSpidESD.h"
-#include "AliESD.h"
 #include "AliESDtrack.h"
 
 ClassImp(AliITSpidESD)
 
-//_________________________________________________________________________
-AliITSpidESD::AliITSpidESD(Double_t *param)
-{
-  //
-  //  The main constructor
-  //
-  fMIP=param[0];
-  fRes=param[1];
-  fRange=param[2];
-}
 
+//______________________________________________________________________
+AliITSpidESD::AliITSpidESD():TObject(){
+  //Default constructor
+ 
+}
 Double_t AliITSpidESD::Bethe(Double_t bg) {
   //
   // This is the Bethe-Bloch function normalised to 1 at the minimum
@@ -49,32 +43,3 @@ Double_t AliITSpidESD::Bethe(Double_t bg) {
   return bethe/11.091;
 }
 
-//_________________________________________________________________________
-Int_t AliITSpidESD::MakePID(AliESD *event)
-{
-  //
-  //  This function calculates the "detector response" PID probabilities 
-  //
-  Int_t ntrk=event->GetNumberOfTracks();
-  for (Int_t i=0; i<ntrk; i++) {
-    AliESDtrack *t=event->GetTrack(i);
-    if ((t->GetStatus()&AliESDtrack::kITSin )==0)
-      if ((t->GetStatus()&AliESDtrack::kITSout)==0) continue;
-    Double_t mom=t->GetP();
-    Double_t dedx=t->GetITSsignal()/fMIP;
-    Int_t ns=AliPID::kSPECIES;
-    Double_t p[10];
-    for (Int_t j=0; j<ns; j++) {
-      Double_t mass=AliPID::ParticleMass(j);
-      Double_t bethe=Bethe(mom/mass); 
-      Double_t sigma=fRes*bethe;
-      if (TMath::Abs(dedx-bethe) > fRange*sigma) {
-	p[j]=TMath::Exp(-0.5*fRange*fRange)/sigma;
-        continue;
-      }
-      p[j]=TMath::Exp(-0.5*(dedx-bethe)*(dedx-bethe)/(sigma*sigma))/sigma;
-    }
-    t->SetITSpid(p);
-  }
-  return 0;
-}

@@ -21,7 +21,7 @@
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
-
+#include "Riostream.h"
 #include "AliITSReconstructor.h"
 #include "AliRunLoader.h"
 #include "AliRawReader.h"
@@ -35,20 +35,44 @@
 #include "AliITSVertexerZ.h"
 #include "AliESD.h"
 #include "AliITSpidESD.h"
+#include "AliITSpidESD1.h"
+#include "AliITSpidESD2.h"
 #include "AliV0vertexer.h"
 #include "AliCascadeVertexer.h"
 
 ClassImp(AliITSReconstructor)
 
-  
-  
+//___________________________________________________________________________
+AliITSReconstructor::AliITSReconstructor() : AliReconstructor(){
+  // Default constructor
+  fItsPID=0;
+}
+ //___________________________________________________________________________
+AliITSReconstructor::~AliITSReconstructor(){
+// destructor
+  delete fItsPID;
+} 
+//______________________________________________________________________
+AliITSReconstructor::AliITSReconstructor(const AliITSReconstructor &ob) :AliReconstructor(ob) {
+  // Copy constructor
+  // Copies are not allowed. The method is protected to avoid misuse.
+  Error("AliITSpidESD2","Copy constructor not allowed\n");
+}
+
+//______________________________________________________________________
+AliITSReconstructor& AliITSReconstructor::operator=(const AliITSReconstructor& /* ob */){
+  // Assignment operator
+  // Assignment is not allowed. The method is protected to avoid misuse.
+  Error("= operator","Assignment operator not allowed\n");
+  return *this;
+}
 //_____________________________________________________________________________
 void AliITSReconstructor::Reconstruct(AliRunLoader* runLoader) const
 {
 // reconstruct clusters
 
 
-  AliLoader* loader = runLoader->GetLoader("ITSLoader");
+  AliITSLoader *loader = (AliITSLoader *)runLoader->GetLoader("ITSLoader");
   if (!loader) {
     Error("Reconstruct", "ITS loader not found");
     return;
@@ -92,7 +116,7 @@ void AliITSReconstructor::Reconstruct(AliRunLoader* runLoader,
 {
 // reconstruct clusters from raw data
 
-  AliITSLoader* loader = (AliITSLoader*)runLoader->GetLoader("ITSLoader");
+  AliITSLoader *loader = (AliITSLoader*)runLoader->GetLoader("ITSLoader");
   if (!loader) {
     Error("Reconstruct", "ITS loader not found");
     return;
@@ -122,17 +146,34 @@ void AliITSReconstructor::Reconstruct(AliRunLoader* runLoader,
 }
 
 //_____________________________________________________________________________
-AliTracker* AliITSReconstructor::CreateTracker(AliRunLoader* runLoader) const
+AliTracker* AliITSReconstructor::CreateTracker(AliRunLoader* runLoader)const
 {
 // create a ITS tracker
 
   
   AliITSgeom* geom = GetITSgeom(runLoader);
   TString selectedTracker = GetOption();
-  if (selectedTracker.Contains("MI")) return new AliITStrackerMI(geom);
-  return new AliITStrackerSA(geom);
-  
+  AliTracker* tracker;    
+  if (selectedTracker.Contains("MI")) {
+    tracker = new AliITStrackerMI(geom);
+  }
+  else {
+    tracker =  new AliITStrackerSA(geom);  // inherits from AliITStrackerMI
+  }
 
+  TString selectedPIDmethod = GetOption();
+  AliITSLoader *loader = (AliITSLoader*)runLoader->GetLoader("ITSLoader");
+  if (!loader) {
+    Error("CreateTracker", "ITS loader not found");
+  }
+  if(selectedPIDmethod.Contains("LandauFitPID")){
+    loader->AdoptITSpid(new AliITSpidESD2((AliITStrackerMI*)tracker,loader));
+  }
+  else{
+    Double_t parITS[] = {34., 0.15, 10.};
+    loader->AdoptITSpid(new AliITSpidESD1(parITS));
+  }
+  return tracker;
   
 }
 
@@ -161,15 +202,25 @@ AliVertexer* AliITSReconstructor::CreateVertexer(AliRunLoader* /*runLoader*/) co
 }
 
 //_____________________________________________________________________________
-void AliITSReconstructor::FillESD(AliRunLoader* /*runLoader*/, 
+void AliITSReconstructor::FillESD(AliRunLoader* runLoader, 
 				  AliESD* esd) const
 {
-// make PID, find V0s and cascades
-
-  Double_t parITS[] = {34., 0.15, 10.};
-  AliITSpidESD itsPID(parITS);
-  itsPID.MakePID(esd);
-
+// make PID, find V0s and cascade
+  AliITSLoader *loader = (AliITSLoader*)runLoader->GetLoader("ITSLoader");
+  AliITSpidESD *pidESD = 0;
+  TString selectedPIDmethod = GetOption();
+  if(selectedPIDmethod.Contains("LandauFitPID")){
+    pidESD=loader->GetITSpid();
+  }
+  else{
+    pidESD=loader->GetITSpid();
+  }
+  if(pidESD!=0){
+    pidESD->MakePID(esd);
+  }
+  else {
+    Error("FillESD","!! cannot do the PID !!\n");
+  }
   // V0 finding
   Double_t cuts[]={33,  // max. allowed chi2
 		   0.16,// min. allowed negative daughter's impact parameter 
