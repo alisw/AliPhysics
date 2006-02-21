@@ -129,6 +129,6 @@ class AliITSpList: public AliITSMap {
     TClonesArray *fa;       // array of pList items
     Int_t     fEntries; // keepts track of the number of non-zero entries.
 
-    ClassDef(AliITSpList,3) // list of signals and track numbers
+    ClassDef(AliITSpList,4) // list of signals and track numbers
 };	
 #endif
