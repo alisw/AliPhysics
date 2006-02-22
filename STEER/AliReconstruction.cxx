@@ -179,7 +179,9 @@ AliReconstruction::AliReconstruction(const char* gAliceFilename,
   }
   AliPID pid;
   // Import TGeo geometry
-  TGeoManager::Import("geometry.root");
+  TString geom(gSystem->DirName(gAliceFilename));
+  geom += "/geometry.root";
+  TGeoManager::Import(geom.Data());
 }
 
 //_____________________________________________________________________________
