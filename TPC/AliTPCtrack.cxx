@@ -448,7 +448,7 @@ Int_t AliTPCtrack::Rotate(Double_t alpha)
   Double_t ca=cos(alpha), sa=sin(alpha);
   Double_t r1=fP4*fX - fP2;
   
-  if (TMath::Abs(1.- r1*r1)>0.9999) return 0; //patch 01 jan 06
+  if (TMath::Abs(r1)>=0.9999) return 0; //patch 01 jan 06
 
   fX = x1*ca + y1*sa;
   fP0=-x1*sa + y1*ca;
