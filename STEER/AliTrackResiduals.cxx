@@ -30,18 +30,23 @@ ClassImp(AliTrackResiduals)
 AliTrackResiduals::AliTrackResiduals():
   fN(0),
   fLast(0),
+  fAlignObj(0),
+  fVolArray(0),
+  fTrackArray(0),
+  fChi2(0),
+  fNdf(0),
   fIsOwner(kTRUE)
 {
   // Default constructor
-  fAlignObj = 0x0;
-  fVolArray = fTrackArray = 0x0;
 }
 
 //_____________________________________________________________________________
-AliTrackResiduals::AliTrackResiduals(Int_t ntracks, AliAlignObj *alignobj):
+AliTrackResiduals::AliTrackResiduals(Int_t ntracks):
   fN(ntracks),
   fLast(0),
-  fAlignObj(alignobj),
+  fAlignObj(0),
+  fChi2(0),
+  fNdf(0),
   fIsOwner(kTRUE)
 {
   // Constructor
@@ -58,11 +63,15 @@ AliTrackResiduals::AliTrackResiduals(const AliTrackResiduals &res):
   TObject(res),
   fN(res.fN),
   fLast(res.fLast),
-  fAlignObj(res.fAlignObj),
+  fChi2(res.fChi2),
+  fNdf(res.fNdf),
   fIsOwner(kTRUE)
 {
   // Copy constructor
   // By default the created copy owns the track point arrays
+  if (res.fAlignObj)
+    fAlignObj = (AliAlignObj *)res.fAlignObj->Clone();
+
   if (fN > 0) {
     fVolArray = new AliTrackPointArray*[fN];
     fTrackArray = new AliTrackPointArray*[fN];
@@ -90,6 +99,8 @@ AliTrackResiduals &AliTrackResiduals::operator =(const AliTrackResiduals& res)
 
   fN = res.fN;
   fLast = res.fLast;
+  fChi2 = res.fChi2;
+  fNdf  = res.fNdf;
   fIsOwner = kFALSE;
   fAlignObj = res.fAlignObj;
 
@@ -103,6 +114,7 @@ AliTrackResiduals &AliTrackResiduals::operator =(const AliTrackResiduals& res)
 AliTrackResiduals::~AliTrackResiduals()
 {
   // Destructor
+  if (fAlignObj) delete fAlignObj;
   DeleteTrackPointArrays();
 }
 
@@ -116,6 +128,8 @@ void AliTrackResiduals::SetNTracks(Int_t ntracks)
 
   fN = ntracks;
   fLast = 0;
+  fChi2 = 0;
+  fNdf  = 0;
   fIsOwner = kTRUE;
 
   if (ntracks > 0) {
@@ -141,6 +155,17 @@ Bool_t AliTrackResiduals::AddTrackPointArrays(AliTrackPointArray *volarray, AliT
 
   return kTRUE;
 }
+
+//_____________________________________________________________________________
+void AliTrackResiduals::SetAlignObj(AliAlignObj *alignobj)
+{
+  // Copy the alignment object to be updated in fAlignObj
+  // and flush its parameters
+  if (fAlignObj) delete fAlignObj;
+  fAlignObj = (AliAlignObj *)alignobj->Clone();
+  fAlignObj->SetPars(0,0,0,0,0,0);
+}
+
 
 //_____________________________________________________________________________
 Bool_t AliTrackResiduals::GetTrackPointArrays(Int_t i, AliTrackPointArray* &volarray, AliTrackPointArray* &trackarray) const

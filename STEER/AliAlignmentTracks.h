@@ -41,7 +41,7 @@ class AliAlignmentTracks : public TObject {
 /*   void BuildIndexLayer(AliAlignObj::ELayerID layer); */
 /*   void BuildIndexVolume(UShort_t volid); */
 
-  Bool_t ReadAlignObjs(const char *alignobjfilename = "AlignObjs.root");
+  Bool_t ReadAlignObjs(const char *alignObjFileName = "AlignObjs.root", const char* arrayName = "Alignment");
 
   void SetTrackFitter(AliTrackFitter *fitter) { fTrackFitter = fitter; }
   void SetMinimizer(AliTrackResiduals *minimizer) { fMinimizer = minimizer; }
@@ -51,9 +51,10 @@ class AliAlignmentTracks : public TObject {
 		  AliAlignObj::ELayerID layerRangeMin = AliAlignObj::kFirstLayer,
 		  AliAlignObj::ELayerID layerRangeMax = AliAlignObj::kLastLayer,
 		  Int_t iterations = 1);
-  void AlignVolume(UShort_t volid,
+  void AlignVolume(UShort_t volid, UShort_t volidfit = 0,
 		   AliAlignObj::ELayerID layerRangeMin = AliAlignObj::kFirstLayer,
-		   AliAlignObj::ELayerID layerRangeMax = AliAlignObj::kLastLayer);
+		   AliAlignObj::ELayerID layerRangeMax = AliAlignObj::kLastLayer,
+		   Int_t iterations = 1);
 
  protected:
 
@@ -71,6 +72,8 @@ class AliAlignmentTracks : public TObject {
   AliTrackFitter *CreateFitter();
   AliTrackResiduals *CreateMinimizer();
 
+  Bool_t Misalign(const char *misalignObjFileName, const char* arrayName);
+
   TChain           *fESDChain;       //! Chain with ESDs
   TString           fPointsFilename; //  Name of the file containing the track point arrays
   TFile            *fPointsFile;     //  File containing the track point arrays
@@ -79,6 +82,7 @@ class AliAlignmentTracks : public TObject {
   TArrayI        ***fArrayIndex;     //! Volume arrays which contains the tree index
   Bool_t            fIsIndexBuilt;   //  Is points tree index built
   AliAlignObj    ***fAlignObjs;      //  Array with alignment objects
+  AliAlignObj    ***fMisalignObjs;   //  Array with alignment objects used to introduce misalignment of the space-points
   AliTrackFitter   *fTrackFitter;    //  Pointer to the track fitter
   AliTrackResiduals*fMinimizer;      //  Pointer to track residuals minimizer
 

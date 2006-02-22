@@ -34,6 +34,9 @@ AliTrackFitter::AliTrackFitter()
   for (Int_t i=0;i<6;i++) fParams[i] = 0;
   fCov = 0;
   fPoints = 0;
+  fPVolId = fPTrack = 0;
+  fChi2 = 0;
+  fNdf = 0;
   fIsOwner = kFALSE;
 }
 
@@ -44,6 +47,9 @@ AliTrackFitter::AliTrackFitter(AliTrackPointArray *array, Bool_t owner)
   //
   for (Int_t i=0;i<6;i++) fParams[i] = 0;
   fCov = new TMatrixDSym(6);
+  fPVolId = fPTrack = 0;
+  fChi2 = 0;
+  fNdf = 0;
   fIsOwner = kFALSE;
   SetTrackPointArray(array,owner);
 }
@@ -54,10 +60,12 @@ AliTrackFitter::AliTrackFitter(const AliTrackFitter &fitter):
 {
   // Copy constructor
   //
+  SetTrackPointArray(fitter.fPoints,fitter.fIsOwner);
   for (Int_t i=0;i<6;i++) fParams[i] = fitter.fParams[i];
   fCov = new TMatrixDSym(*fitter.fCov);
+  fChi2 = fitter.fChi2;
+  fNdf = fitter.fNdf;
   fIsOwner = kFALSE;
-  SetTrackPointArray(fitter.fPoints,fitter.fIsOwner);
 }
 
 //_____________________________________________________________________________
@@ -67,10 +75,12 @@ AliTrackFitter &AliTrackFitter::operator =(const AliTrackFitter& fitter)
   //
   if(this==&fitter) return *this;
 
+  SetTrackPointArray(fitter.fPoints);
   for (Int_t i=0;i<6;i++) fParams[i] = fitter.fParams[i];
   fCov = new TMatrixDSym(*fitter.fCov);
+  fChi2 = fitter.fChi2;
+  fNdf = fitter.fNdf;
   fIsOwner = kFALSE;
-  SetTrackPointArray(fitter.fPoints);
   
   return *this;
 }
@@ -89,6 +99,9 @@ void AliTrackFitter::Reset()
   for (Int_t i=0;i<6;i++) fParams[i] = 0;
   delete fCov;
   fCov = new TMatrixDSym(6);
+  fPVolId = fPTrack = 0;
+  fChi2 = 0;
+  fNdf = 0;
 }
 
 void AliTrackFitter::SetTrackPointArray(AliTrackPointArray *array, Bool_t owner)

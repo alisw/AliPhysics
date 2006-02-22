@@ -37,6 +37,14 @@ class AliTrackPoint : public TObject {
   const Float_t *GetCov() const { return &fCov[0]; }
   UShort_t GetVolumeID() const { return fVolumeID; }
 
+  Float_t  GetResidual(const AliTrackPoint &p, Bool_t weighted = kFALSE) const;
+
+  Float_t  GetAngle() const;
+  AliTrackPoint& Rotate(Float_t alpha) const;
+  AliTrackPoint& MasterToLocal() const;
+
+  void     Print(Option_t *) const;
+
  private:
 
   Float_t  fX;        // X coordinate
@@ -81,7 +89,7 @@ class AliTrackPointArray : public TObject {
   const UShort_t* GetVolumeID() const { return &fVolumeID[0]; }
 
   Bool_t    HasVolumeID(UShort_t volid) const;
-  
+
  private:
 
   Int_t     fNPoints;    // Number of space points

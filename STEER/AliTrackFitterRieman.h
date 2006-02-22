@@ -13,8 +13,7 @@ class AliTrackFitterRieman : public AliTrackFitter{
   AliTrackFitterRieman &operator =(const AliTrackFitterRieman& rieman);
   virtual ~AliTrackFitterRieman();
 
-  Bool_t Fit(UShort_t volId,
-	     AliTrackPointArray *pVolId, AliTrackPointArray *pTrack,
+  Bool_t Fit(UShort_t volId,UShort_t volIdFit = 0,
 	     AliAlignObj::ELayerID layerRangeMin = AliAlignObj::kFirstLayer,
 	     AliAlignObj::ELayerID layerRangeMax = AliAlignObj::kLastLayer);
   Bool_t GetPCA(const AliTrackPoint &p, AliTrackPoint &p2) const;
@@ -34,7 +33,10 @@ class AliTrackFitterRieman : public AliTrackFitter{
 
   Double_t      fAlpha;     //angle to transform to the fitting coordinate system
   Double_t      fSumXY[9];  //sums for XY part
+  Double_t      fSumYY;     //sum for YY part
   Double_t      fSumXZ[9];  //sums for XZ part
+  Double_t      fSumZZ;     //sum for ZZ part
+  Int_t         fNUsed;     //actual number of space-points used in the fit
   Bool_t        fConv;      // indicates convergation
 
  private:

@@ -26,6 +26,8 @@
 #include "AliTrackPointArray.h"
 #include "AliTrackResidualsChi2.h"
 
+void Fcn(Int_t &npar, Double_t *gin, Double_t &f, Double_t *x, Int_t iflag);
+
 ClassImp(AliTrackResidualsChi2)
 
 //______________________________________________________________________________
@@ -43,26 +45,27 @@ Bool_t AliTrackResidualsChi2::Minimize()
 {
   // Implementation of Chi2 based minimization
   // of track residuala sum
-  TMinuit *gMinuit = new TMinuit(6);  //initialize TMinuit
-  gMinuit->SetObjectFit(this);
-  gMinuit->SetFCN(Fcn);
-
   Double_t arglist[10];
   Int_t ierflg = 0;
+  TMinuit *gMinuit = new TMinuit(6);  //initialize TMinuit
+  arglist[0] = -1;
+  gMinuit->mnexcm("SET PRINT", arglist, 1, ierflg);
+
+  gMinuit->SetObjectFit(this);
+  gMinuit->SetFCN(Fcn);
 
   arglist[0] = 1;
   gMinuit->mnexcm("SET ERR", arglist ,1,ierflg);
 
   // Set starting values and step sizes for parameters
-  Double_t tr[3],rot[3];
-  fAlignObj->GetPars(tr,rot);
-  static Double_t step[6] = {0,0,0,0,0,0};
-  gMinuit->mnparm(0, "x", tr[0], step[0], 0,0,ierflg);
-  gMinuit->mnparm(1, "y", tr[1], step[1], 0,0,ierflg);
-  gMinuit->mnparm(2, "z", tr[2], step[2], 0,0,ierflg);
-  gMinuit->mnparm(3, "psi", rot[0], step[3], 0,0,ierflg);
-  gMinuit->mnparm(4, "theta", rot[1], step[4], 0,0,ierflg);
-  gMinuit->mnparm(5, "phi", rot[2], step[5], 0,0,ierflg);
+  Double_t pars[6] = {0,0,0,0,0,0};
+  Double_t step[6] = {0.0001,0.0001,0.0001,0.0001,0.0001,0.0001};
+  gMinuit->mnparm(0, "dx", pars[0], step[0], 0,0,ierflg);
+  gMinuit->mnparm(1, "dy", pars[1], step[1], 0,0,ierflg);
+  gMinuit->mnparm(2, "dz", pars[2], step[2], 0,0,ierflg);
+  gMinuit->mnparm(3, "psi", pars[3], step[3], 0,0,ierflg);
+  gMinuit->mnparm(4, "theta", pars[4], step[4], 0,0,ierflg);
+  gMinuit->mnparm(5, "phi", pars[5], step[5], 0,0,ierflg);
 
   // Now ready for minimization step
   arglist[0] = 500;
@@ -73,7 +76,7 @@ Bool_t AliTrackResidualsChi2::Minimize()
   Double_t amin,edm,errdef;
   Int_t nvpar,nparx,icstat;
   gMinuit->mnstat(amin,edm,errdef,nvpar,nparx,icstat);
-  gMinuit->mnprin(3,amin);
+  fChi2 = amin; fNdf -= nvpar;
 
   return kTRUE;
 }
@@ -86,31 +89,21 @@ void AliTrackResidualsChi2::Chi2(Int_t & /* npar */, Double_t * /* gin */, Doubl
   Double_t chi2 = 0;
 
   fAlignObj->SetPars(par[0],par[1],par[2],par[3],par[4],par[5]);
-  TGeoHMatrix m;
-  fAlignObj->GetMatrix(m);
-  Double_t *rot = m.GetRotationMatrix();
-  Double_t *tr  = m.GetTranslation();
 
   AliTrackPoint p1,p2;
-  Double_t dR[3];
-  Float_t xyzvol[3],xyztr[3];
-  Float_t covvol[6],covtr[6];
+
+  Bool_t count = kFALSE;
+  if (fNdf == 0) count = kTRUE;
 
   for (Int_t itrack = 0; itrack < fLast; itrack++) {
     if (!fVolArray[itrack] || !fTrackArray[itrack]) continue;
     for (Int_t ipoint = 0; ipoint < fVolArray[itrack]->GetNPoints(); ipoint++) {
       fVolArray[itrack]->GetPoint(p1,ipoint);
+      fAlignObj->Transform(p1);
       fTrackArray[itrack]->GetPoint(p2,ipoint);
-      p1.GetXYZ(xyzvol,covvol);
-      p2.GetXYZ(xyztr,covtr);
-
-      for (Int_t i = 0; i < 3; i++)
-	dR[i] = tr[i] 
-               + xyzvol[0]*rot[3*i]
-               + xyzvol[1]*rot[3*i+1]
-               + xyzvol[2]*rot[3*i+2]
-	       - xyztr[i];
-      chi2 += dR[0]*dR[0]+dR[1]*dR[1]+dR[2]*dR[2];
+      Float_t residual = p2.GetResidual(p1,kFALSE);
+      chi2 += residual;
+      if (count) fNdf += 3;
     }
   }
   f = chi2;

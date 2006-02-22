@@ -12,7 +12,10 @@ AliTrackFitterRieman::AliTrackFitterRieman():
   //
   fAlpha = 0.;
   for (Int_t i=0;i<9;i++) fSumXY[i] = 0;
+  fSumYY = 0;
   for (Int_t i=0;i<9;i++) fSumXZ[i] = 0;
+  fSumZZ = 0;
+  fNUsed = 0;
   fConv = kFALSE;
 }
 
@@ -25,7 +28,10 @@ AliTrackFitterRieman::AliTrackFitterRieman(AliTrackPointArray *array, Bool_t own
   //
   fAlpha = 0.;
   for (Int_t i=0;i<9;i++) fSumXY[i] = 0;
+  fSumYY = 0;
   for (Int_t i=0;i<9;i++) fSumXZ[i] = 0;
+  fSumZZ = 0;
+  fNUsed = 0;
   fConv = kFALSE;
 }
 
@@ -37,7 +43,10 @@ AliTrackFitterRieman::AliTrackFitterRieman(const AliTrackFitterRieman &rieman):
   //
   fAlpha = rieman.fAlpha;
   for (Int_t i=0;i<9;i++) fSumXY[i]  = rieman.fSumXY[i];
+  fSumYY = rieman.fSumYY;
   for (Int_t i=0;i<9;i++) fSumXZ[i]  = rieman.fSumXZ[i];
+  fSumZZ = rieman.fSumZZ;
+  fNUsed = rieman.fNUsed;
   fConv = rieman.fConv;
 }
 
@@ -51,7 +60,10 @@ AliTrackFitterRieman &AliTrackFitterRieman::operator =(const AliTrackFitterRiema
 
   fAlpha = rieman.fAlpha;
   for (Int_t i=0;i<9;i++) fSumXY[i]  = rieman.fSumXY[i];
+  fSumYY = rieman.fSumYY;
   for (Int_t i=0;i<9;i++) fSumXZ[i]  = rieman.fSumXZ[i];
+  fSumZZ = rieman.fSumZZ;
+  fNUsed = rieman.fNUsed;
   fConv = rieman.fConv;
 
   return *this;
@@ -70,12 +82,14 @@ void AliTrackFitterRieman::Reset()
   AliTrackFitter::Reset();
   fAlpha = 0.;
   for (Int_t i=0;i<9;i++) fSumXY[i] = 0;
+  fSumYY = 0;
   for (Int_t i=0;i<9;i++) fSumXZ[i] = 0;
+  fSumZZ = 0;
+  fNUsed = 0;
   fConv =kFALSE;
 }
 
-Bool_t AliTrackFitterRieman::Fit(UShort_t volId,
-				 AliTrackPointArray *pVolId, AliTrackPointArray *pTrack,
+Bool_t AliTrackFitterRieman::Fit(UShort_t volId,UShort_t volIdFit,
 				 AliAlignObj::ELayerID layerRangeMin,
 				 AliAlignObj::ELayerID layerRangeMax)
 {
@@ -95,20 +109,17 @@ Bool_t AliTrackFitterRieman::Fit(UShort_t volId,
   // and the space point; in Z - the track extrapolation on the Z
   // plane defined by the space point.
 
-  pVolId = pTrack = 0x0;
-  fConv = kFALSE;
+  Reset();
 
   Int_t npoints = fPoints->GetNPoints();
   if (npoints < 3) return kFALSE;
 
-  AliTrackPoint p;
+  AliTrackPoint p,plocal;
   fPoints->GetPoint(p,0);
   fAlpha = TMath::ATan2(p.GetY(),p.GetX());
-  Double_t sin = TMath::Sin(fAlpha);
-  Double_t cos = TMath::Cos(fAlpha);
 
   Int_t npVolId = 0;
-  Int_t npused = 0;
+  fNUsed = 0;
   Int_t *pindex = new Int_t[npoints];
   for (Int_t ipoint = 0; ipoint < npoints; ipoint++)
     {
@@ -118,15 +129,22 @@ Bool_t AliTrackFitterRieman::Fit(UShort_t volId,
 	pindex[npVolId] = ipoint;
 	npVolId++;
       }
-      if (iVolId < AliAlignObj::LayerToVolUID(layerRangeMin,0) ||
-	  iVolId >= AliAlignObj::LayerToVolUID(layerRangeMax,0)) continue;
-      Float_t x = p.GetX()*cos + p.GetY()*sin;
-      Float_t y = p.GetY()*cos - p.GetX()*sin;
-      AddPoint(x,y,p.GetZ(),1,1);
-      npused++;
+      if (volIdFit != 0) {
+	if (iVolId != volIdFit) continue;
+      }
+      else {
+	if (iVolId < AliAlignObj::LayerToVolUID(layerRangeMin,0) ||
+	    iVolId > AliAlignObj::LayerToVolUID(layerRangeMax,
+						AliAlignObj::LayerSize(layerRangeMax-
+								       AliAlignObj::kFirstLayer))) continue;
+      }
+      plocal = p.Rotate(fAlpha);
+      AddPoint(plocal.GetX(),plocal.GetY(),plocal.GetZ(),
+	       TMath::Sqrt(plocal.GetCov()[3]),TMath::Sqrt(plocal.GetCov()[5]));
+      fNUsed++;
     }
 
-  if (npused < 3) {
+  if (fNUsed < 3) {
     delete [] pindex;
     return kFALSE;
   }
@@ -144,20 +162,58 @@ Bool_t AliTrackFitterRieman::Fit(UShort_t volId,
     return kFALSE;
   }
 
-  pVolId = new AliTrackPointArray(npVolId);
-  pTrack = new AliTrackPointArray(npVolId);
+  fPVolId = new AliTrackPointArray(npVolId);
+  fPTrack = new AliTrackPointArray(npVolId);
   AliTrackPoint p2;
   for (Int_t ipoint = 0; ipoint < npVolId; ipoint++)
     {
       Int_t index = pindex[ipoint];
       fPoints->GetPoint(p,index);
       if (GetPCA(p,p2)) {
-	pVolId->AddPoint(ipoint,&p);
-	pTrack->AddPoint(ipoint,&p2);
+	fPVolId->AddPoint(ipoint,&p);
+	fPTrack->AddPoint(ipoint,&p2);
       }
     }  
 
   delete [] pindex;
+
+  // debug info
+//   Float_t chi2 = 0, chi22 = 0;
+//   for (Int_t ipoint = 0; ipoint < npoints; ipoint++)
+//     {
+//       fPoints->GetPoint(p,ipoint);
+//       UShort_t iVolId = p.GetVolumeID();
+//       if (volIdFit != 0) {
+// 	if (iVolId != volIdFit) continue;
+//       }
+//       else {
+// 	if (iVolId < AliAlignObj::LayerToVolUID(layerRangeMin,0) ||
+// 	    iVolId > AliAlignObj::LayerToVolUID(layerRangeMax,AliAlignObj::LayerSize(layerRangeMax-
+// 										     AliAlignObj::kFirstLayer))) continue;
+//       }
+//       plocal = p.Rotate(fAlpha);
+//       Float_t delta = (fParams[0]*(plocal.GetX()*plocal.GetX()+plocal.GetY()*plocal.GetY())+
+// 		       2.*plocal.GetX()*fParams[1]+
+// 		       fParams[2]-
+// 		       2.*plocal.GetY())/
+// 	              (2.*TMath::Sqrt(plocal.GetCov()[3]));
+// //       Float_t delta2 = (fParams[3]+
+// // 		       plocal.GetX()*fParams[4]+
+// // 		       plocal.GetX()*plocal.GetX()*fParams[5]-
+// // 		       plocal.GetZ())/
+// // 	              (TMath::Sqrt(plocal.GetCov()[5]));
+//       Double_t r = TMath::Sqrt(plocal.GetX()*plocal.GetX()+plocal.GetY()*plocal.GetY());
+//       Double_t Rm1  = fParams[0]/TMath::Sqrt(-fParams[2]*fParams[0]+fParams[1]*fParams[1]+1); 
+//       Float_t delta2 = (fParams[3]+
+// 			r*fParams[4]+r*r*r*fParams[4]*Rm1*Rm1/24-
+// 			plocal.GetZ())/
+// 	               (TMath::Sqrt(plocal.GetCov()[5]));
+//       chi2 += delta*delta;
+//       chi22 += delta2*delta2;
+//       //      printf("pulls %d %d %f %f\n",ipoint,iVolId,delta,delta2);
+      
+//     }
+//   printf("My chi2 = %f + %f = %f\n",chi2,chi22,chi2+chi22);
 
   return kTRUE;
 }
@@ -174,7 +230,7 @@ void AliTrackFitterRieman::AddPoint(Float_t x, Float_t y, Float_t z, Float_t sy,
   //
   //  (x^2+y^2 -2*x*x0 - 2*y*y0+ x0^2 -y0^2 -R^2 =0;  ==>
   //
-  //   substitution t = 1/(x^2+y^2),   u = 2*x*t, y = 2*y*t,  D0 = R^2 - x0^2- y0^2
+  //   substitution t = 1/(x^2+y^2),   u = 2*x*t, v = 2*y*t,  D0 = R^2 - x0^2- y0^2
   //
   //  1 - u*x0 - v*y0 - t *D0 =0 ;  - linear equation
   //     
@@ -205,13 +261,27 @@ void AliTrackFitterRieman::AddPoint(Float_t x, Float_t y, Float_t z, Float_t sy,
   fSumXY[1] +=u*weight;      fSumXY[2]+=v*weight;  fSumXY[3]+=t*weight;
   fSumXY[4] +=u*u*weight;    fSumXY[5]+=t*t*weight;
   fSumXY[6] +=u*v*weight;    fSumXY[7]+=u*t*weight; fSumXY[8]+=v*t*weight;
+  fSumYY += v*v*weight;
   //
   // XZ part
   //
-  weight = 1./sz;
-  fSumXZ[0] +=weight;
-  fSumXZ[1] +=weight*x;   fSumXZ[2] +=weight*x*x; fSumXZ[3] +=weight*x*x*x; fSumXZ[4] += weight*x*x*x*x;
-  fSumXZ[5] +=weight*z;   fSumXZ[6] +=weight*x*z; fSumXZ[7] +=weight*x*x*z;
+  if (0) {
+    weight = 1./(sz*sz);
+    fSumXZ[0] +=weight;
+    fSumXZ[1] +=weight*x;   fSumXZ[2] +=weight*x*x; fSumXZ[3] +=weight*x*x*x; fSumXZ[4] += weight*x*x*x*x;
+    fSumXZ[5] +=weight*z;   fSumXZ[6] +=weight*x*z; fSumXZ[7] +=weight*x*x*z;
+    fSumZZ += z*z*weight;
+  }
+  else {
+    weight = 1./(sz*sz);
+    fSumXZ[0] +=weight;
+    Double_t r = TMath::Sqrt(x*x+y*y);
+    fSumXZ[1] +=weight*r;   fSumXZ[2] +=weight*r*r; fSumXZ[3] +=weight*z; fSumXZ[4] += weight*r*z;
+    // Now the auxulary sums
+    fSumXZ[5] +=weight*r*r*r/24; fSumXZ[6] +=weight*r*r*r*r/12; fSumXZ[7] +=weight*r*r*r*z/24;
+    fSumXZ[8] +=weight*r*r*r*r*r*r/(24*24);
+    fSumZZ += z*z*weight;
+  }
 }
 
 void AliTrackFitterRieman::Update(){
@@ -220,6 +290,8 @@ void AliTrackFitterRieman::Update(){
   //
   //
   for (Int_t i=0;i<6;i++)fParams[i]=0;
+  fChi2 = 0;
+  fNdf = 0;
   Int_t conv=0;
   //
   // XY part
@@ -244,29 +316,65 @@ void AliTrackFitterRieman::Update(){
     fParams[0] = res(0,0);
     fParams[1] = res(0,1);
     fParams[2] = res(0,2);
+    TMatrixD  tmp = res*sums.T();
+    fChi2 += fSumYY - tmp(0,0);
+    fNdf  += fNUsed - 3;
     conv++;
   }
   //
   // XZ part
   //
-  TMatrixDSym     smatrixz(3);
-  smatrixz(0,0) = fSumXZ[0]; smatrixz(0,1) = fSumXZ[1]; smatrixz(0,2) = fSumXZ[2];
-  smatrixz(1,1) = fSumXZ[2]; smatrixz(1,2) = fSumXZ[3];
-  smatrixz(2,2) = fSumXZ[4];
-  smatrixz.Invert();
-  if (smatrixz.IsValid()){
-    sums(0,0)    = fSumXZ[5];
-    sums(0,1)    = fSumXZ[6];
-    sums(0,2)    = fSumXZ[7];
-    TMatrixD res = sums*smatrixz;
-    fParams[3] = res(0,0);
-    fParams[4] = res(0,1);
-    fParams[5] = res(0,2);
-    for (Int_t i=0;i<3;i++)
-      for (Int_t j=0;j<=i;j++){
-	(*fCov)(i+2,j+2)=smatrixz(i,j);
+  if (0) {
+    TMatrixDSym     smatrixz(3);
+    smatrixz(0,0) = fSumXZ[0]; smatrixz(0,1) = fSumXZ[1]; smatrixz(0,2) = fSumXZ[2];
+    smatrixz(1,1) = fSumXZ[2]; smatrixz(1,2) = fSumXZ[3];
+    smatrixz(2,2) = fSumXZ[4];
+    smatrixz.Invert();
+    TMatrixD        sumsxz(1,3);
+    if (smatrixz.IsValid()){
+      sumsxz(0,0)    = fSumXZ[5];
+      sumsxz(0,1)    = fSumXZ[6];
+      sumsxz(0,2)    = fSumXZ[7];
+      TMatrixD res = sumsxz*smatrixz;
+      fParams[3] = res(0,0);
+      fParams[4] = res(0,1);
+      fParams[5] = res(0,2);
+      for (Int_t i=0;i<3;i++)
+	for (Int_t j=0;j<=i;j++){
+	  (*fCov)(i+2,j+2)=smatrixz(i,j);
+	}
+      TMatrixD  tmp = res*sumsxz.T();
+      fChi2 += fSumZZ - tmp(0,0);
+      fNdf  += fNUsed - 3;
+      conv++;
     }
-    conv++;
+  }
+  else {
+    Double_t Rm1  = fParams[0]/TMath::Sqrt(-fParams[2]*fParams[0]+fParams[1]*fParams[1]+1); 
+    fSumXZ[1] += fSumXZ[5]*Rm1*Rm1;
+    fSumXZ[2] += fSumXZ[6]*Rm1*Rm1 + fSumXZ[8]*Rm1*Rm1*Rm1*Rm1;
+    fSumXZ[4] += fSumXZ[7]*Rm1*Rm1;
+
+    TMatrixDSym     smatrixz(2);
+    smatrixz(0,0) = fSumXZ[0]; smatrixz(0,1) = fSumXZ[1]; smatrixz(1,1) = fSumXZ[2];
+    smatrixz.Invert();
+    TMatrixD        sumsxz(1,2);
+    if (smatrixz.IsValid()){
+      sumsxz(0,0)    = fSumXZ[3];
+      sumsxz(0,1)    = fSumXZ[4];
+      TMatrixD res = sumsxz*smatrixz;
+      fParams[3] = res(0,0);
+      fParams[4] = res(0,1);
+      fParams[5] = 0;
+      for (Int_t i=0;i<2;i++)
+	for (Int_t j=0;j<=i;j++){
+	  (*fCov)(i+3,j+3)=smatrixz(i,j);
+	}
+      TMatrixD  tmp = res*sumsxz.T();
+      fChi2 += fSumZZ - tmp(0,0);
+      fNdf  += fNUsed - 2;
+      conv++;
+    }
   }
 
   //  (x-x0)^2+(y-y0)^2-R^2=0 ===>
@@ -391,8 +499,10 @@ Bool_t AliTrackFitterRieman::GetPCA(const AliTrackPoint &p, AliTrackPoint &p2) c
   Double_t yprime = TMath::Abs(R)*(y-y0)/dR + y0;
 
   // Now Z coordinate
-  Double_t phi  = TMath::ASin((x-x0)/R);
-  Double_t phi0 = TMath::ASin((0.-x0)/R);
+  Double_t x2 = xprime*cos + yprime*sin;
+  Double_t x02 = -fParams[1]/fParams[0];
+  Double_t phi  = TMath::ASin((x2-x02)/R);
+  Double_t phi0 = TMath::ASin((0.-x02)/R);
   Double_t dphi = (phi-phi0);
   Double_t zprime = fParams[3]+fParams[4]*dphi*R;
 

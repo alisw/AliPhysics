@@ -68,6 +68,7 @@ class AliAlignObj : public TObject {
   static const char* LayerName(Int_t layer) { return fgLayerName[layer]; }
 
   static UShort_t LayerToVolUID(ELayerID layerId, Int_t modId);
+  static UShort_t LayerToVolUID(Int_t    layerId, Int_t modId);
   static ELayerID VolUIDToLayer(UShort_t voluid, Int_t &modId);
   static ELayerID VolUIDToLayer(UShort_t voluid);
 

@@ -22,6 +22,9 @@
 //   cvetan.cheshkov@cern.ch 3/11/2005                                      //
 //////////////////////////////////////////////////////////////////////////////
 
+#include <TMath.h>
+#include <TMatrixDSym.h>
+
 #include "AliTrackPointArray.h"
 
 ClassImp(AliTrackPointArray)
@@ -227,4 +230,140 @@ void AliTrackPoint::GetXYZ(Float_t *xyz, Float_t *cov) const
   xyz[2] = fZ;
   if (cov)
     memcpy(cov,fCov,6*sizeof(Float_t));
+}
+
+//______________________________________________________________________________
+Float_t AliTrackPoint::GetResidual(const AliTrackPoint &p, Bool_t weighted) const
+{
+  // This method calculates the track to space-point residuals. The track
+  // interpolation is also stored as AliTrackPoint. Using the option
+  // 'weighted' one can calculate the residual either with or without
+  // taking into account the covariance matrix of the space-point and
+  // track interpolation. The second case the residual becomes a pull.
+
+  Float_t res = 0;
+
+  if (!weighted) {
+    Float_t xyz[3],xyzp[3];
+    GetXYZ(xyz);
+    p.GetXYZ(xyzp);
+    res = (xyz[0]-xyzp[0])*(xyz[0]-xyzp[0])+
+          (xyz[1]-xyzp[1])*(xyz[1]-xyzp[1])+
+          (xyz[2]-xyzp[2])*(xyz[2]-xyzp[2]);
+  }
+  else {
+    Float_t xyz[3],xyzp[3];
+    Float_t cov[6],covp[6];
+    GetXYZ(xyz,cov);
+    TMatrixDSym mcov(3);
+    mcov(0,0) = cov[0]; mcov(0,1) = cov[1]; mcov(0,2) = cov[2];
+    mcov(1,0) = cov[1]; mcov(1,1) = cov[3]; mcov(1,2) = cov[4];
+    mcov(2,0) = cov[2]; mcov(2,1) = cov[4]; mcov(2,2) = cov[5];
+    p.GetXYZ(xyzp,covp);
+    TMatrixDSym mcovp(3);
+    mcovp(0,0) = covp[0]; mcovp(0,1) = covp[1]; mcovp(0,2) = covp[2];
+    mcovp(1,0) = covp[1]; mcovp(1,1) = covp[3]; mcovp(1,2) = covp[4];
+    mcovp(2,0) = covp[2]; mcovp(2,1) = covp[4]; mcovp(2,2) = covp[5];
+    TMatrixDSym msum = mcov + mcovp;
+    msum.Invert();
+    if (msum.IsValid()) {
+      for (Int_t i = 0; i < 3; i++)
+	for (Int_t j = 0; j < 3; j++)
+	  res += (xyz[i]-xyzp[i])*(xyz[j]-xyzp[j])*msum(i,j);
+    }
+  }
+
+  return res;
+}
+
+//______________________________________________________________________________
+Float_t AliTrackPoint::GetAngle() const
+{
+  // The method uses the covariance matrix of
+  // the space-point in order to extract the
+  // orientation of the detector plane.
+  // The rotation in XY plane only is calculated.
+
+  if ((fCov[2] != 0) || (fCov[4] != 0))
+    return TMath::ATan2(-fCov[4],-fCov[2]);
+  else {
+    if (fCov[1] == 0) return 0;
+    Float_t phi= TMath::ATan2(TMath::Abs(fCov[1]),fCov[3]);
+    if (fCov[1] < 0) {
+      phi += TMath::PiOver2();
+      if ((fY-fX) < 0) phi += TMath::Pi();
+    }
+    else {
+      if ((fX+fY) < 0) phi += TMath::Pi();
+    }
+    return phi;
+  } 
+//     return TMath::ATan2(TMath::Sign((Float_t)1.0,fY)*TMath::Abs(fCov[1]),
+// 			TMath::Sign((Float_t)1.0,fX)*fCov[3]);
+}
+
+//_____________________________________________________________________________
+AliTrackPoint& AliTrackPoint::Rotate(Float_t alpha) const
+{
+  // Transform the space-point coordinates
+  // and covariance matrix from global to
+  // local (detector plane) coordinate system
+  // XY plane rotation only
+
+  static AliTrackPoint p;
+  p = *this;
+
+  Float_t xyz[3],cov[6];
+  GetXYZ(xyz,cov);
+
+  Float_t sin = TMath::Sin(alpha), cos = TMath::Cos(alpha);
+
+  Float_t newxyz[3],newcov[6];
+  newxyz[0] = cos*xyz[0] + sin*xyz[1];
+  newxyz[1] = cos*xyz[1] - sin*xyz[0];
+  newxyz[2] = xyz[2];
+
+  newcov[0] = cov[0]*cos*cos+
+            2*cov[1]*sin*cos+
+              cov[3]*sin*sin;
+  newcov[1] = cov[1]*(cos*cos-sin*sin)+
+             (cov[3]-cov[0])*sin*cos;
+  newcov[2] = cov[2]*cos+
+              cov[4]*sin;
+  newcov[3] = cov[0]*sin*sin-
+            2*cov[1]*sin*cos+
+              cov[3]*cos*cos;
+  newcov[4] = cov[4]*cos-
+              cov[2]*sin;
+  newcov[5] = cov[5];
+
+  p.SetXYZ(newxyz,newcov);
+  p.SetVolumeID(GetVolumeID());
+
+  return p;
+}
+
+//_____________________________________________________________________________
+AliTrackPoint& AliTrackPoint::MasterToLocal() const
+{
+  // Transform the space-point coordinates
+  // and the covariance matrix from the
+  // (master) to the local (tracking)
+  // coordinate system
+
+  Float_t alpha = GetAngle();
+  return Rotate(alpha);
+}
+
+//_____________________________________________________________________________
+void AliTrackPoint::Print(Option_t *) const
+{
+  // Print the space-point coordinates and
+  // covariance matrix
+
+  printf("VolumeID=%d\n", GetVolumeID());
+  printf("X = %12.6f    Tx = %12.6f%12.6f%12.6f\n", fX, fCov[0], fCov[1], fCov[2]);
+  printf("Y = %12.6f    Ty = %12.6f%12.6f%12.6f\n", fY, fCov[1], fCov[3], fCov[4]);
+  printf("Z = %12.6f    Tz = %12.6f%12.6f%12.6f\n", fZ, fCov[2], fCov[4], fCov[5]);
+
 }

@@ -257,6 +257,17 @@ UShort_t AliAlignObj::LayerToVolUID(ELayerID layerId, Int_t modId)
 }
 
 //_____________________________________________________________________________
+UShort_t AliAlignObj::LayerToVolUID(Int_t   layerId, Int_t modId)
+{
+  // From detector (layer) index and module number (according to detector numbering)
+  // build fVolUID, unique numerical identity of that volume inside ALICE
+  // fVolUID is 16 bits, first 5 reserved for layerID (32 possible values),
+  // remaining 11 for module ID inside det (2048 possible values).
+  //
+  return ((UShort_t(layerId) << 11) | UShort_t(modId));
+}
+
+//_____________________________________________________________________________
 AliAlignObj::ELayerID AliAlignObj::VolUIDToLayer(UShort_t voluid, Int_t &modId)
 {
   // From detector (layer) name and module number (according to detector numbering)
