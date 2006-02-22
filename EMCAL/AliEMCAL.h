@@ -16,9 +16,11 @@ class TString ;
 class TTask ;
 class TFolder ;
 class TRandom ; 
+class TGraph;
+class TF1;
 
 // --- AliRoot header files ---
-
+class AliRawReader;
 #include "AliDetector.h"
 #include "AliEMCALGeometry.h" 
 class AliEMCAL : public AliDetector {
@@ -43,6 +45,7 @@ class AliEMCAL : public AliDetector {
   virtual void  CreateMaterials() ;   
   //  virtual void  
   virtual void  Digits2Raw();
+  virtual void  Raw2Digits(AliRawReader *reader);
   virtual void  FinishRun() {}                  
   virtual AliEMCALGeometry * GetGeometry() const 
   {return AliEMCALGeometry::GetInstance(GetTitle(),"") ;  }   
@@ -60,7 +63,10 @@ class AliEMCAL : public AliDetector {
   Int_t GetRawFormatTimeBins() const { return fkTimeBins ; }    
   Double_t GetRawFormatTimeMax() const { return fgTimeMax ; }   
   Double_t GetRawFormatTimePeak() const { return fgTimePeak ; }    
-  Double_t GetRawFormatTimeTrigger() const { return fgTimeTrigger ; }   
+  Double_t GetRawFormatTimeTrigger() const { return fgTimeTrigger ; }
+  Int_t GetRawFormatDDLOffset() const { return fgDDLOffset ; }       
+  Int_t GetRawFormatThreshold() const { return fgThreshold ; }       
+  Int_t GetRawFormatChannelsPerDDL() const { return fgChannelsPerDDL ; }       
   static Double_t RawResponseFunctionMax(Double_t charge, Double_t gain) ;
   //  
   virtual AliLoader* MakeLoader(const char* topfoldername);
@@ -72,6 +78,7 @@ protected:
   
   static Double_t RawResponseFunction(Double_t *x, Double_t *par) ; 
   Bool_t   RawSampledResponse(const Double_t dtime, const Double_t damp, Int_t * adcH, Int_t * adcL) const ; 
+  void FitRaw(Bool_t lowGainFlag, TGraph * gLowGain, TGraph * gHighGain, TF1* signalF, Double_t & energy, Double_t & time) ;
 
   Int_t fBirkC0;    // constants for Birk's Law implementation
   Double_t fBirkC1; // constants for Birk's Law implementation
@@ -87,6 +94,9 @@ protected:
   static Double_t fgTimeMax ;           // maximum sampled time of the raw RO signal                             
   static Double_t fgTimePeak ;          // peaking time of the raw RO signal                                    
   static Double_t fgTimeTrigger ;       // time of the trigger for the RO signal 
+  static Int_t fgDDLOffset;
+  static Int_t fgThreshold;
+  static Int_t fgChannelsPerDDL;
 
   ClassDef(AliEMCAL,9) // Electromagnetic calorimeter (base class)
     
