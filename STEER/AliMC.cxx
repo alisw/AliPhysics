@@ -53,7 +53,7 @@ AliMC::AliMC() :
   fTrRmax(1.e10),
   fTrZmax(1.e10),
   fRDecayMax(1.e10),
-  fRDecayMin(0),
+  fRDecayMin(-1.),
   fDecayPdg(0),
   fImedia(0),
   fTransParName("\0"),
@@ -76,7 +76,7 @@ AliMC::AliMC(const char *name, const char *title) :
   fTrRmax(1.e10),
   fTrZmax(1.e10),
   fRDecayMax(1.e10),
-  fRDecayMin(0),
+  fRDecayMin(-1.),
   fDecayPdg(0),
   fImedia(new TArrayI(1000)),
   fTransParName("\0"),
@@ -102,7 +102,7 @@ AliMC::AliMC(const AliMC &mc) :
   fTrRmax(1.e10),
   fTrZmax(1.e10),
   fRDecayMax(1.e10),
-  fRDecayMin(0),
+  fRDecayMin(-1.),
   fDecayPdg(0),
   fImedia(0),
   fTransParName("\0"),
@@ -282,13 +282,13 @@ void AliMC::Stepping()
   // Called at every step during transport
   //
     
-  Int_t id = DetFromMate(gMC->GetMedium());
+  Int_t id = DetFromMate(gMC->CurrentMedium());
   if (id < 0) return;
 
 
   if ( gMC->IsNewTrack()            && 
        gMC->TrackTime() == 0.       &&
-       fRDecayMin > 0.              &&  
+       fRDecayMin >= 0.             &&  
        fRDecayMax > fRDecayMin      &&
        gMC->TrackPid() == fDecayPdg ) 
   {
@@ -546,6 +546,7 @@ void AliMC::FinishEvent()
   //
   
   //
+    
   if(gAlice->Lego()) gAlice->Lego()->FinishEvent();
 
   TIter next(gAlice->Modules());
@@ -577,7 +578,7 @@ void AliMC::FinishEvent()
 
   
   // Write out the kinematics
-  stack->FinishEvent();
+  if (!gAlice->Lego()) stack->FinishEvent();
    
   // Write out the event Header information
   TTree* treeE = runloader->TreeE();
