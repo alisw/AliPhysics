@@ -57,7 +57,6 @@ AliITSVertexerTracks::AliITSVertexerTracks():AliITSVertexer() {
 }
 //----------------------------------------------------------------------------
 AliITSVertexerTracks::AliITSVertexerTracks(TFile *inFile,TFile *outFile,
-                                           const AliMagF *map,
                                            Int_t fEv,Int_t lEv,
                                            Double_t xStart,Double_t yStart) {
 //
@@ -68,7 +67,6 @@ AliITSVertexerTracks::AliITSVertexerTracks(TFile *inFile,TFile *outFile,
   fOutFile = outFile;
   SetFirstEvent(fEv);
   SetLastEvent(lEv);
-  SetFieldMap(map);
   SetVtxStart(xStart,yStart);
   SetMinTracks();
   fTrksToSkip = 0;
@@ -77,7 +75,7 @@ AliITSVertexerTracks::AliITSVertexerTracks(TFile *inFile,TFile *outFile,
   SetDebug();
 }
 //----------------------------------------------------------------------------
-AliITSVertexerTracks::AliITSVertexerTracks(const AliMagF *map, TString fn,
+AliITSVertexerTracks::AliITSVertexerTracks(TString fn,
 					   Double_t xStart,Double_t yStart)
                                           :AliITSVertexer(fn) {
 //
@@ -85,7 +83,6 @@ AliITSVertexerTracks::AliITSVertexerTracks(const AliMagF *map, TString fn,
 //
   fInFile  = 0;
   fOutFile = 0;
-  SetFieldMap(map);
   SetVtxStart(xStart,yStart);
   SetMinTracks();
   fTrksToSkip = 0;

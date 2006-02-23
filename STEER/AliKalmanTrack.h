@@ -15,7 +15,6 @@
 #include <TObject.h>
 #include "AliLog.h"
 #include "AliPID.h"
-#include "AliMagF.h"
 
 class AliCluster;
 
@@ -69,19 +68,7 @@ public:
   //virtual Int_t PropagateToVertex(Double_t /*d*/=0., Double_t /*x0*/=0.) = 0; 
   virtual Int_t Update(const AliCluster*, Double_t /*chi2*/, UInt_t) = 0;
 
-  static void SetFieldMap(const AliMagF *map) { fgkFieldMap=map; }
-  static const AliMagF *GetFieldMap() { return fgkFieldMap; }
-
-  static void SetUniformFieldTracking() {
-     if (fgkFieldMap==0) {
-        printf("AliKalmanTrack: Field map has not been set !\n"); 
-        exit(1);
-     } 
-     fgConvConst=1000/0.299792458/(fgkFieldMap->SolenoidField()+1e-13);
-  }
-  static void SetNonuniformFieldTracking() { fgConvConst=0.; }
-
-  static Double_t GetConvConst();
+  //static Double_t GetConvConst();
   static Double_t MeanMaterialBudget(Double_t *start, Double_t *end, Double_t *mparam);
  
   // Time integration (S.Radomski@gsi.de)
@@ -95,11 +82,13 @@ public:
   Double_t GetIntegratedTime(Int_t pdg) const;
   Double_t GetIntegratedLength() const {return fIntegratedLength;}
   void PrintTime() const;
+  virtual void GetXYZ(Float_t r[3]) const = 0;
+
+  static Double_t GetConvConst();
 
 protected:
-  virtual void GetXYZ(Float_t r[3]) const = 0;
   void     SaveLocalConvConst();
-  Double_t GetLocalConvConst() const;
+  Double_t GetLocalConvConst() const {return fLocalConvConst;}
 
   void External2Helix(Double_t helix[6]) const;
 
@@ -114,8 +103,6 @@ protected:
   Int_t fN;               // number of associated clusters
 
 private:
-  static const AliMagF *fgkFieldMap;//pointer to the magnetic field map
-  static Double_t fgConvConst;      //conversion "curvature(1/cm) -> pt(GeV/c)"
   Double_t fLocalConvConst;   //local conversion "curvature(1/cm) -> pt(GeV/c)"
 
   // variables for time integration (S.Radomski@gsi.de)
@@ -123,34 +110,8 @@ private:
   Double_t fIntegratedTime[AliPID::kSPECIES];       // integrated time
   Double_t fIntegratedLength;        // integrated length
   
-  ClassDef(AliKalmanTrack,4)    // Reconstructed track
+  ClassDef(AliKalmanTrack,5)    // Reconstructed track
 };
-
-inline Double_t AliKalmanTrack::GetConvConst() {
-//
-//  For backward compatibility only !
-//
-    if (fgConvConst > 0 || fgConvConst < 0) return fgConvConst; 
-    return 1000/0.299792458/(fgkFieldMap->SolenoidField()+1e-13);
-}
-
-inline void AliKalmanTrack::SaveLocalConvConst() {
-  //---------------------------------------------------------------------
-  // Saves local conversion constant "curvature (1/cm) -> pt (GeV/c)" 
-  //---------------------------------------------------------------------
-     if (fgConvConst > 0 || fgConvConst < 0) return; //uniform field tracking
-     Float_t r[3]={0.,0.,0.}; GetXYZ(r);
-     Float_t b[3]; fgkFieldMap->Field(r,b);
-     fLocalConvConst=1000/0.299792458/(1e-13 - b[2]);
-} 
-
-inline Double_t AliKalmanTrack::GetLocalConvConst() const {
-  //---------------------------------------------------------------------
-  // Returns conversion constant "curvature (1/cm) -> pt (GeV/c)" 
-  //---------------------------------------------------------------------
-     if (fgConvConst > 0 || fgConvConst < 0) return fgConvConst; //uniform field tracking
-     return fLocalConvConst;
-} 
 
 #endif
 

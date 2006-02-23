@@ -75,7 +75,7 @@
 #include <TFile.h>
 //------ AliRoot headers ------
 #include "AliGausCorr.h"
-#include "AliKalmanTrack.h"
+#include "AliTracker.h"
 #include "AliMC.h"
 #include "AliMagF.h"
 #include "AliRun.h"
@@ -301,7 +301,7 @@ Int_t AliTPCtrackerParam::BuildTPCtracks(const TFile *inp, TFile *out) {
   tpc->SetParam(digp);
 
   // Set the conversion constant between curvature and Pt
-  AliKalmanTrack::SetFieldMap(fiel);
+  AliTracker::SetFieldMap(fiel,kTRUE);
 
   TParticle       *part=0;
   AliTPCseedGeant *seed=0;

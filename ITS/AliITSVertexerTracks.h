@@ -24,8 +24,6 @@
  *    matrix and a chi2 for the vertex are given.                            *
  *                                                                           *
  *****************************************************************************/
-
-#include "AliKalmanTrack.h"
 #include "AliITSVertexer.h"
 #include "AliITSSimpleVertex.h"
 
@@ -41,14 +39,13 @@ class AliITSVertexerTracks : public AliITSVertexer {
   
  public:
   // default constructor
-  AliITSVertexerTracks();  
+  AliITSVertexerTracks(); 
   // standard constructor     
   AliITSVertexerTracks(TFile *inFile,TFile *outFile,
-	        const AliMagF *map,Int_t fEv=0,Int_t lEv=0,
+	               Int_t fEv=0,Int_t lEv=0,
 		       Double_t xStart=0.,Double_t yStart=0.);
   // alternative constructor
-  AliITSVertexerTracks(const AliMagF *map, TString fn,
-		       Double_t xStart=0,Double_t yStart=0); 
+  AliITSVertexerTracks(TString fn,Double_t xStart=0,Double_t yStart=0); 
   // destructor
   virtual ~AliITSVertexerTracks();
   // return vertex from the set of tracks in the tree
@@ -88,7 +85,6 @@ class AliITSVertexerTracks : public AliITSVertexer {
 
 
   virtual void  PrintStatus() const;
-  void  SetFieldMap(const AliMagF *map)const{AliKalmanTrack::SetFieldMap(map);}
   void  SetMinTracks(Int_t n=2) { fMinTracks = n; return; }
   void  SetSkipTracks(Int_t n,Int_t *skipped); 
   void  SetVtxStart(Double_t x=0,Double_t y=0) 

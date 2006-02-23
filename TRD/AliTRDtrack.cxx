@@ -308,7 +308,7 @@ AliTRDtrack::AliTRDtrack(const AliESDtrack& t)
 
 }  
 
-
+/*
 AliTRDtrack * AliTRDtrack::MakeTrack(const AliTrackReference *ref, Double_t mass)
 {
   //
@@ -341,6 +341,7 @@ AliTRDtrack * AliTRDtrack::MakeTrack(const AliTrackReference *ref, Double_t mass
   track->StartTimeIntegral();  
   return track;
 }
+*/
 
 
 AliTRDtrack::~AliTRDtrack()

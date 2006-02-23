@@ -11,13 +11,11 @@
 //       Origin: Iouri Belikov, CERN, Jouri.Belikov@cern.ch 
 //-------------------------------------------------------------------------
 #include <TObject.h>
-#include <TClass.h>
-#include "AliKalmanTrack.h"
 #include "AliMagF.h"
-#include "AliLog.h"
 
 class AliCluster;
 class TTree;
+class AliKalmanTrack;
 class AliESD;
 class AliTrackPoint;
 
@@ -44,7 +42,6 @@ public:
   virtual Int_t LoadClusters(TTree *)=0;
   virtual void UnloadClusters()=0;
   virtual AliCluster *GetCluster(Int_t index) const=0;
-  //  virtual UShort_t GetVolumeID(Int_t index) {return 0;}
   virtual Bool_t GetTrackPoint(Int_t /* index */ , AliTrackPoint& /* p */) const { return kFALSE;}
   virtual void  UseClusters(const AliKalmanTrack *t, Int_t from=0) const;
   virtual void  CookLabel(AliKalmanTrack *t,Float_t wrong) const; 
@@ -62,12 +59,16 @@ public:
     Double_t bz=-Double_t(b[2]);
     return  (TMath::Sign(1e-13,bz) + bz);
   }
+  static Double_t GetBz() {return fgBz;}
+  static Bool_t UniformField() {return fgUniformField;}
 
 private:
 
   AliTracker & operator=(const AliTracker & atr);
 
-  static const AliMagF *fgkFieldMap; //field map
+  static Bool_t fgUniformField;       // uniform field flag
+  static const AliMagF *fgkFieldMap;  // field map
+  static Double_t fgBz;               // Nominal Bz (kG)
 
   Double_t fX;  //X-coordinate of the primary vertex
   Double_t fY;  //Y-coordinate of the primary vertex
@@ -77,20 +78,8 @@ private:
   Double_t fSigmaY; // error of the primary vertex position in Y
   Double_t fSigmaZ; // error of the primary vertex position in Z
 
-  ClassDef(AliTracker,2) //abstract tracker
+  ClassDef(AliTracker,3) //abstract tracker
 };
-
-inline void AliTracker::SetFieldMap(const AliMagF* map, Bool_t uni) {
-  //--------------------------------------------------------------------
-  //This passes the field map to the reconstruction.
-  //--------------------------------------------------------------------
-  if (map==0) AliFatalClass("Can't access the field map !");
-  AliKalmanTrack::SetFieldMap(map);
-  if (uni) AliKalmanTrack::SetUniformFieldTracking();
-  fgkFieldMap=map;
-}
-
-
 
 #endif
 

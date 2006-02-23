@@ -66,7 +66,7 @@ void AliITSVertexerTracksTest(Int_t evFirst=0,Int_t evLast=0,Bool_t esd=kTRUE,
 
   // Create vertexer
   AliITSVertexerTracks *vertexer = 
-    new AliITSVertexerTracks(inFile,outFile,field,evFirst,evLast);
+    new AliITSVertexerTracks(inFile,outFile,evFirst,evLast);
   // Find vertices
   if(esd) {
     vertexer->FindVerticesESD();

@@ -14,6 +14,7 @@
 #include <TNamed.h>
 #include "AliESD.h"
 #include "AliMagF.h"
+#include "AliTracker.h"
 #include "AliITStrackV2.h"
 
 //-----------------------------------------------------------------------------
@@ -31,7 +32,7 @@ class AliD0toKpiAnalysis : public TNamed {
   			 const Char_t *outName="AliD0toKpi.root");
   void PrintStatus() const;
   void SetBz(const AliMagF *map) { 
-     AliKalmanTrack::SetFieldMap(map); fBz=map->SolenoidField()/10.; 
+    AliTracker::SetFieldMap(map,kTRUE); fBz=map->SolenoidField()/10.; 
   }
   void SetVertexOnTheFly() { fVertexOnTheFly=kTRUE; }
   void SetSimulation() { fSim=kTRUE; }

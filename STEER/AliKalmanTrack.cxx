@@ -20,14 +20,11 @@
 //   that is the base for AliTPCtrack, AliITStrackV2 and AliTRDtrack
 //        Origin: Iouri Belikov, CERN, Jouri.Belikov@cern.ch
 //-------------------------------------------------------------------------
-
+#include "AliTracker.h"
 #include "AliKalmanTrack.h"
 #include "TGeoManager.h"
 
 ClassImp(AliKalmanTrack)
-
-const AliMagF *AliKalmanTrack::fgkFieldMap=0;
-Double_t AliKalmanTrack::fgConvConst=0.;
 
 //_______________________________________________________________________
 AliKalmanTrack::AliKalmanTrack():
@@ -43,11 +40,11 @@ AliKalmanTrack::AliKalmanTrack():
   //
   // Default constructor
   //
-    if (fgkFieldMap==0) {
+  if (AliTracker::GetFieldMap()==0) {
       AliFatal("The magnetic field has not been set!");
-    }
+  }
 
-    for(Int_t i=0; i<AliPID::kSPECIES; i++) fIntegratedTime[i] = 0;
+  for(Int_t i=0; i<AliPID::kSPECIES; i++) fIntegratedTime[i] = 0;
 }
 
 //_______________________________________________________________________
@@ -65,7 +62,7 @@ AliKalmanTrack::AliKalmanTrack(const AliKalmanTrack &t):
   //
   // Copy constructor
   //
-  if (fgkFieldMap==0) {
+  if (AliTracker::GetFieldMap()==0) {
     AliFatal("The magnetic field has not been set!");
   }
   
@@ -90,6 +87,7 @@ void AliKalmanTrack::StartTimeIntegral()
   for(Int_t i=0; i<AliPID::kSPECIES; i++) fIntegratedTime[i] = 0;  
   fIntegratedLength = 0;
 }
+
 //_______________________________________________________________________
 void AliKalmanTrack:: AddTimeStep(Double_t length) 
 {
@@ -141,7 +139,6 @@ void AliKalmanTrack:: AddTimeStep(Double_t length)
 }
 
 //_______________________________________________________________________
-
 Double_t AliKalmanTrack::GetIntegratedTime(Int_t pdg) const 
 {
   // Sylwester Radomski, GSI
@@ -173,22 +170,6 @@ void AliKalmanTrack::GetIntegratedTimes(Double_t *times) const {
 
 void AliKalmanTrack::SetIntegratedTimes(const Double_t *times) {
   for (Int_t i=0; i<AliPID::kSPECIES; i++) fIntegratedTime[i]=times[i];
-}
-
-//_______________________________________________________________________
-
-void AliKalmanTrack::PrintTime() const
-{
-  // Sylwester Radomski, GSI
-  // S.Radomski@gsi.de
-  //
-  // For testing
-  // Prints time for all hypothesis
-  //
-
-  for (Int_t i=0; i<AliPID::kSPECIES; i++)
-    printf("%d: %.2f  ", AliPID::ParticleCode(i), fIntegratedTime[i]);
-  printf("\n");  
 }
 
 void AliKalmanTrack::External2Helix(Double_t helix[6]) const { 
@@ -325,8 +306,8 @@ GetDCA(const AliKalmanTrack *p, Double_t &xthis, Double_t &xp) const {
   return TMath::Sqrt(dm*TMath::Sqrt(dy2*dz2));
 }
 
-Double_t AliKalmanTrack::
-PropagateToDCA(AliKalmanTrack *p, Double_t d, Double_t x0) {
+Double_t 
+AliKalmanTrack::PropagateToDCA(AliKalmanTrack *p, Double_t d, Double_t x0) {
   //--------------------------------------------------------------
   // Propagates this track and the argument track to the position of the
   // distance of closest approach. 
@@ -487,3 +468,20 @@ Double_t AliKalmanTrack::MeanMaterialBudget(Double_t *start, Double_t *end, Doub
   return bparam[0]/step;   
   
 }
+
+Double_t AliKalmanTrack::GetConvConst() {
+  return 1000/0.299792458/AliTracker::GetBz();
+}
+
+void AliKalmanTrack::SaveLocalConvConst() {
+  //---------------------------------------------------------------------
+  // Saves local conversion constant "curvature (1/cm) -> pt (GeV/c)" 
+  //---------------------------------------------------------------------
+  if (AliTracker::UniformField()) {
+     fLocalConvConst=1000/0.299792458/AliTracker::GetBz();
+  } else {
+     Float_t r[3]; GetXYZ(r);
+     fLocalConvConst=1000/0.299792458/AliTracker::GetBz(r);
+  }
+} 
+

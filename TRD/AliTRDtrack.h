@@ -79,7 +79,7 @@ public:
    AliTRDtrack(const AliTRDtrack& t);    
    AliTRDtrack(const AliKalmanTrack& t, Double_t alpha); 
    AliTRDtrack(const AliESDtrack& t);    
-   static AliTRDtrack * MakeTrack(const AliTrackReference *ref, Double_t mass);
+ //static AliTRDtrack * MakeTrack(const AliTrackReference *ref, Double_t mass);
    ~AliTRDtrack();
    Int_t    Compare(const TObject *o) const;
    void     CookdEdx(Double_t low=0.05, Double_t up=0.7);   

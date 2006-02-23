@@ -41,6 +41,8 @@
 #include "AliITStrackV2.h"
 
 #include "AliRun.h"
+#include "AliMagF.h"
+#include "AliTracker.h"
 #include "AliESD.h"
 #include "AliRunLoader.h"
 #include "AliTPCtrack.h"
@@ -579,7 +581,7 @@ void AliTrackPoints::Testtpc(Int_t entr)
   AliRunLoader* rl = AliRunLoader::Open();
   AliLoader* l = rl->GetLoader("TPCLoader");
   rl->LoadgAlice();
-  AliKalmanTrack::SetFieldMap(rl->GetAliRun()->Field());
+  AliTracker::SetFieldMap(rl->GetAliRun()->Field(),kTRUE);
   l->LoadTracks();
   AliTPCtrack* t = new AliTPCtrack();
   TBranch* b=l->TreeT()->GetBranch("tracks");

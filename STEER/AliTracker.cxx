@@ -20,13 +20,15 @@
 //  that is the base for AliTPCtracker, AliITStrackerV2 and AliTRDtracker    
 //        Origin: Iouri Belikov, CERN, Jouri.Belikov@cern.ch
 //-------------------------------------------------------------------------
-
+#include <TClass.h>
 #include <TMath.h>
 
 #include "AliTracker.h"
 #include "AliCluster.h"
-#include "AliRun.h"
+#include "AliKalmanTrack.h"
 
+Bool_t AliTracker::fgUniformField=kTRUE;
+Double_t AliTracker::fgBz=0.;
 const AliMagF *AliTracker::fgkFieldMap=0;
 
 ClassImp(AliTracker)
@@ -43,6 +45,22 @@ AliTracker::AliTracker():
   // The default constructor.
   //--------------------------------------------------------------------
   if (!fgkFieldMap) AliWarning("Field map is not set. Call AliTracker::SetFieldMap before creating a tracker!");
+}
+
+void AliTracker::SetFieldMap(const AliMagF* map, Bool_t uni) {
+  //--------------------------------------------------------------------
+  //This passes the field map to the reconstruction.
+  //--------------------------------------------------------------------
+  if (map==0) AliFatalClass("Can't access the field map !");
+
+  fgUniformField=uni;
+  fgkFieldMap=map;
+
+  //Float_t r[3]={0.,0.,0.},b[3]; map->Field(r,b);
+  //fgBz= - b[2];
+ 
+  fgBz=map->SolenoidField();
+
 }
 
 //__________________________________________________________________________
