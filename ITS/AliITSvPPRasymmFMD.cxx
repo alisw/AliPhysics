@@ -38,6 +38,8 @@
 #include <TString.h>
 #include <TNode.h>
 #include <TTUBE.h>
+#include <TGeoManager.h>
+#include <TGeoVolume.h>
 
 #include "AliITS.h"
 #include "AliITSDetTypeSim.h"
@@ -539,6 +541,7 @@ void AliITSvPPRasymmFMD::CreateGeometry(){
 	AliMatrix(idrotm[218],90.0,337.003998,90.0,67.003998,0.0,0.0);
 	AliMatrix(idrotm[219],90.0,247.000305,90.0,337.000305,0.0,0.0);
 	AliMatrix(idrotm[220],90.0,305.633514,90.0,35.633499,0.0,0.0);
+
 	AliMatrix(idrotm[221],90.0,58.000198,90.0,148.000198,0.0,0.0);
 	AliMatrix(idrotm[222],90.0,327.997101,90.0,57.997101,0.0,0.0);
 	AliMatrix(idrotm[223],90.0,237.994202,90.0,327.994202,0.0,0.0);
@@ -1078,6 +1081,7 @@ void AliITSvPPRasymmFMD::CreateGeometry(){
 	dits[3] = 0;
 	dits[4] = 75.261;
 	gMC->Gsvolu("I137", "TUBS", idtmed[253], dits, 5);  
+
 
 	dits[0] = 1.3401;
 	dits[1] = 0.01;
@@ -2107,7 +2111,8 @@ void AliITSvPPRasymmFMD::CreateGeometry(){
   dits[18] = 57.45;
   dits[19] = 43.6;
   dits[20] = 48;   
-  gMC->Gsvolu("IT56", "PCON", idtmed[220], dits, 21);   
+  //gMC->Gsvolu("IT56", "PCON", idtmed[220], dits, 21);  // SSD air 
+  gMC->Gsvolu("IT56", "PCON", idtmed[204], dits, 21);    // air 
   
   dits[0] =  3.4;
   dits[1] = 1.955;
@@ -4482,6 +4487,166 @@ void AliITSvPPRasymmFMD::CreateGeometry(){
   
   if (fEuclidOut) {
     gMC->WriteEuclid("ITSgeometry", "ITSV", 1, 5);
+  }
+
+
+  //======  Converting mother volumes of alignable objects
+  //======  into TGeoAssemblies :
+
+  {
+    if (!gGeoManager) {
+      AliError("TGeoManager doesn't exist !");
+      return;
+    }
+
+    TObjArray *list = gGeoManager->GetListOfVolumes();
+
+    {
+      char spdLaddName[20] = "I10B";
+
+      TGeoVolume *toTransform = gGeoManager->FindVolumeFast(spdLaddName);
+      Int_t index = list->IndexOf(toTransform);
+      do {
+	TGeoVolume *transformed = 0; // this will be in fact TGeoVolumeAssembly
+	if (toTransform)
+	  transformed = TGeoVolumeAssembly::MakeAssemblyFromVolume(toTransform);
+	if (transformed)
+	  gGeoManager->ReplaceVolume(toTransform, transformed);
+	index++;
+	toTransform = (TGeoVolume*)list->At(index);
+      }
+      while (strcmp(spdLaddName,toTransform->GetName()) == 0);
+    }
+
+    // SPD 2
+    {
+      char spdLaddName[20] = "I20B";
+
+      TGeoVolume *toTransform = gGeoManager->FindVolumeFast(spdLaddName);
+      Int_t index = list->IndexOf(toTransform);
+      do {
+	TGeoVolume *transformed = 0; // this will be in fact TGeoVolumeAssembly
+	if (toTransform)
+	  transformed = TGeoVolumeAssembly::MakeAssemblyFromVolume(toTransform);
+	if (transformed)
+	  gGeoManager->ReplaceVolume(toTransform, transformed);
+	index++;
+	toTransform = (TGeoVolume*)list->At(index);
+      }
+      while (strcmp(spdLaddName, toTransform->GetName()) == 0);
+    }
+
+    //---
+
+    // SPD 1
+    {
+      char spdLaddName[20] = "I107"; // "I107"
+
+      TGeoVolume *toTransform = gGeoManager->FindVolumeFast(spdLaddName);
+      Int_t index = list->IndexOf(toTransform);
+      do {
+	TGeoVolume *transformed = 0; // this will be in fact TGeoVolumeAssembly
+	if (toTransform)
+	  transformed = TGeoVolumeAssembly::MakeAssemblyFromVolume(toTransform);
+	if (transformed)
+	  gGeoManager->ReplaceVolume(toTransform, transformed);
+	index++;
+	toTransform = (TGeoVolume*)list->At(index);
+      }
+      while (strcmp(spdLaddName,toTransform->GetName()) == 0);
+    }
+
+    // SPD 2
+    {
+      char spdLaddName[20] = "I1D7"; // "I1D7"
+
+      TGeoVolume *toTransform = gGeoManager->FindVolumeFast(spdLaddName);
+      Int_t index = list->IndexOf(toTransform);
+      do {
+	TGeoVolume *transformed = 0; // this will be in fact TGeoVolumeAssembly
+	if (toTransform)
+	  transformed = TGeoVolumeAssembly::MakeAssemblyFromVolume(toTransform);
+	if (transformed)
+	  gGeoManager->ReplaceVolume(toTransform, transformed);
+	index++;
+	toTransform = (TGeoVolume*)list->At(index);
+      }
+      while (strcmp(spdLaddName, toTransform->GetName()) == 0);
+    }
+
+    // SDD 1
+    {
+      char sddLaddName[20] = "I004";// "I302"
+
+      TGeoVolume *toTransform = gGeoManager->FindVolumeFast(sddLaddName);
+      Int_t index = list->IndexOf(toTransform);
+      do {
+	TGeoVolume *transformed = 0; // this will be in fact TGeoVolumeAssembly
+	if (toTransform)
+	  transformed = TGeoVolumeAssembly::MakeAssemblyFromVolume(toTransform);
+	if (transformed)
+	  gGeoManager->ReplaceVolume(toTransform, transformed);
+	index++;
+	toTransform = (TGeoVolume*)list->At(index);
+      }
+      while (strcmp(sddLaddName, toTransform->GetName()) == 0);
+    }
+
+    // SDD 2
+    {
+      char sddLaddName[20] = "I005";// "I402"
+
+      TGeoVolume *toTransform = gGeoManager->FindVolumeFast(sddLaddName);
+      Int_t index = list->IndexOf(toTransform);
+      do {
+	TGeoVolume *transformed = 0; // this will be in fact TGeoVolumeAssembly
+	if (toTransform)
+	  transformed = TGeoVolumeAssembly::MakeAssemblyFromVolume(toTransform);
+	if (transformed)
+	  gGeoManager->ReplaceVolume(toTransform, transformed);
+	index++;
+	toTransform = (TGeoVolume*)list->At(index);
+      }
+      while (strcmp(sddLaddName, toTransform->GetName()) == 0);
+    }
+
+
+    // SSD 1
+    {
+      char ssdLaddName[20] = "I565";// "I562"
+
+      TGeoVolume *toTransform = gGeoManager->FindVolumeFast(ssdLaddName);
+      Int_t index = list->IndexOf(toTransform);
+      do {
+	TGeoVolume *transformed = 0; // this will be in fact TGeoVolumeAssembly
+	if (toTransform)
+	  transformed = TGeoVolumeAssembly::MakeAssemblyFromVolume(toTransform);
+	if (transformed)
+	  gGeoManager->ReplaceVolume(toTransform, transformed);
+	index++;
+	toTransform = (TGeoVolume*)list->At(index);
+      }
+      while (strcmp(ssdLaddName,toTransform->GetName()) == 0);
+    }
+
+    // SSD 2
+    {
+      char ssdLaddName[20] = "I569";// "I566"
+
+      TGeoVolume *toTransform = gGeoManager->FindVolumeFast(ssdLaddName);
+      Int_t index = list->IndexOf(toTransform);
+      do {
+	TGeoVolume *transformed = 0; // this will be in fact TGeoVolumeAssembly
+	if (toTransform)
+	  transformed = TGeoVolumeAssembly::MakeAssemblyFromVolume(toTransform);
+	if (transformed)
+	  gGeoManager->ReplaceVolume(toTransform, transformed);
+	index++;
+	toTransform = (TGeoVolume*)list->At(index);
+      }
+      while (strcmp(ssdLaddName, toTransform->GetName()) == 0);
+    }
+
   }
 
 }
