@@ -38,6 +38,7 @@ ClassImp(AliTRDcluster)
   fTimeBin=0; 
   fDetector=0; 
   fNPads=0; 
+  fX    =0;
   for (Int_t i = 0;i<7; i++) fSignals[i]=0;
 }
 //_____________________________________________________________________________

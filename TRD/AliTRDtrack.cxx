@@ -170,6 +170,7 @@ AliTRDtrack::AliTRDtrack(const AliKalmanTrack& t, Double_t alpha)
   SetNumberOfClusters(0);
 
   fdEdx=t.GetPIDsignal();
+  fDE  = 0;
   for (Int_t i=0;i<kNPlane;i++){
     fdEdxPlane[i] = 0.0;
     fTimBinPlane[i] = -1;
@@ -231,7 +232,6 @@ AliTRDtrack::AliTRDtrack(const AliESDtrack& t)
   //
   // Constructor from AliESDtrack
   //
-  fDE =0;     
   SetLabel(t.GetLabel());
   SetChi2(0.);
   SetMass(t.GetMass());
@@ -241,7 +241,8 @@ AliTRDtrack::AliTRDtrack(const AliESDtrack& t)
     fIndexBackup[i]=0;
     fIndex[i] = 0; //MI store indexes
   }
-  fdEdx=t.GetTRDsignal();
+  fdEdx=t.GetTRDsignal();  
+  fDE =0;     
   for (Int_t i=0;i<kNPlane;i++){
     fdEdxPlane[i] = t.GetTRDsignals(i);
     fTimBinPlane[i] = t.GetTRDTimBin(i);
