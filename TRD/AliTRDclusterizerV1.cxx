@@ -485,7 +485,7 @@ Bool_t AliTRDclusterizerV1::MakeClusters()
                 Double_t colSize = padPlane->GetColSize(col);
                 Double_t rowSize = padPlane->GetRowSize(row);
                 Double_t clusterPos[3];
-		clusterPos[0] = padPlane->GetColPos(col) + (clusterPads[1]-0.5)*colSize;  // MI change
+		clusterPos[0] = padPlane->GetColPos(col) - (clusterPads[1]+0.5)*colSize;  // MI change
 		clusterPos[1] = padPlane->GetRowPos(row) -0.5*rowSize; //MI change
                 clusterPos[2] = CalcXposFromTimebin(clusterPads[2], vdrift);
                 Double_t clusterSig[2];
