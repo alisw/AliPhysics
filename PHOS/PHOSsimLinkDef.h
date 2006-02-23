@@ -19,7 +19,6 @@
 #pragma link C++ class AliPHOSCalibrator+;
 #pragma link C++ class AliPHOSConTableDB+;
 #pragma link C++ class AliPHOSOnlineMonitor+;
-#pragma link C++ class AliPHOSCalibData+;
 #pragma link C++ class AliPHOSTrigger+;
 
 #endif

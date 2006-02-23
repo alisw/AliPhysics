@@ -37,6 +37,7 @@ class TF1 ;
 #include "AliPHOSDigitizer.h"
 #include "AliPHOSSDigitizer.h"
 #include "AliPHOSCalibData.h"
+#include "AliPHOSAlignData.h"
 
 class AliPHOS ;  
 class AliPHOSGeometry ;
@@ -110,7 +111,9 @@ public:
   void SetCalibrationDB(AliPHOSCalibrationDB * cdb) {fcdb = cdb ;}
   
   void SetCalibData(AliPHOSCalibData* calibda) { fCalibData = calibda; }
+  void SetAlignData(AliPHOSAlignData* alignda) { fAlignData = alignda; }
   AliPHOSCalibData * CalibData();
+  AliPHOSAlignData * AlignData();
 
   //=========== Primaries ============
   virtual TClonesArray *    Primaries(void) ;
@@ -249,6 +252,7 @@ private:
 
   AliPHOSCalibrationDB * fcdb ;       //!
   static AliPHOSCalibData * fCalibData;
+  static AliPHOSAlignData * fAlignData;
 
   static AliPHOSLoader * fgPhosLoader ; // the loader for the NewIO
   

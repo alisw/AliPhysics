@@ -74,6 +74,7 @@ AliPHOSGetter * AliPHOSGetter::fgObjGetter = 0 ;
 AliPHOSLoader * AliPHOSGetter::fgPhosLoader = 0;
 Int_t AliPHOSGetter::fgDebug = 0;
 AliPHOSCalibData* AliPHOSGetter::fCalibData = 0;
+AliPHOSAlignData* AliPHOSGetter::fAlignData = 0;
 
 //  TFile * AliPHOSGetter::fgFile = 0 ; 
 
@@ -1088,14 +1089,19 @@ Float_t AliPHOSGetter::BeamEnergy(void) const
 
 AliPHOSCalibData* AliPHOSGetter::CalibData()
 { 
+  // Check if the instance of AliPHOSCalibData exists, and return it
 
-  if( !(AliCDBManager::Instance()->IsDefaultStorageSet()) ) {
+  if( !(AliCDBManager::Instance()->IsDefaultStorageSet()) )
     fCalibData=0x0;
-    Warning("CalibData","Calibration DB is not initiated!");
-    return fCalibData;
-  }
-
   return fCalibData;
+}
+//____________________________________________________________________________ 
 
-  
+AliPHOSAlignData* AliPHOSGetter::AlignData()
+{ 
+  // Check if the instance of AliPHOSAlignData exists, and return it
+
+  if( !(AliCDBManager::Instance()->IsDefaultStorageSet()) )
+    fAlignData=0x0;
+  return fAlignData;
 }

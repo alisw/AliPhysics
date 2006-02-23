@@ -24,6 +24,8 @@
 #pragma link C++ class AliPHOSDigit+;
 #pragma link C++ class AliPHOSFastRecParticle+;
 #pragma link C++ class AliPHOSRawStream2004+;
+#pragma link C++ class AliPHOSCalibData+;
+#pragma link C++ class AliPHOSAlignData+;
 
 
 #endif
