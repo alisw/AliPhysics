@@ -420,19 +420,18 @@ void MUONrecpoints(Int_t event2Check=0, char * filename="galice.root") {
   MUONLoader->UnloadRecPoints();
 }
 
-
-
-void MUONrectrigger (Int_t event2Check=0, char * filename="galice.root"){
+void MUONrectrigger (Int_t event2Check=0, char * filename="galice.root", Int_t WRITE = 0)
+{
   // reads and dumps trigger objects from MUON.RecPoints.root
   TClonesArray * globalTrigger;
   TClonesArray * localTrigger;
   
   // Do NOT print out all the info if the loop runs over all events 
   Int_t PRINTOUT = (event2Check == 0 ) ? 0 : 1 ;  
-  
+
   // Book a ntuple for more detailled studies
-  TNtuple *Tgtuple = new TNtuple("Tgtuple","Trigger Ntuple","ev:global:spapt:smapt:undefapt:uplpt:uphpt:upapt:lpapt");
-  Int_t WRITE = 0;
+  TNtuple *TgtupleGlo = new TNtuple("TgtupleGlo","Global Trigger Ntuple","ev:global:spapt:smapt:undefapt:uplpt:uphpt:upapt:lpapt");
+  TNtuple *TgtupleLoc = new TNtuple("TgtupleLoc","Local Trigger Ntuple","LoCircuit:LoStripX:LoDev:StripY:LoLpt:LoHpt:LoApt");
 
   // counters
   Int_t SPLowpt=0,SPHighpt=0,SPAllpt=0;
@@ -465,7 +464,7 @@ void MUONrectrigger (Int_t event2Check=0, char * filename="galice.root"){
     if (ievent%100==0 || event2Check) cout << "Processing event " << ievent << endl;
     RunLoader->GetEvent(ievent);
     
-    muondata.SetTreeAddress("GLT"); 
+    muondata.SetTreeAddress("D,GLT"); 
     muondata.GetTriggerD();
     
     globalTrigger = muondata.GlobalTrigger();
@@ -545,14 +544,15 @@ void MUONrectrigger (Int_t event2Check=0, char * filename="galice.root"){
              << locTrg->LoLpt() << " "   
              << locTrg->LoHpt() << " "  
              << locTrg->LoApt() << "\n";
+
       }
+	TgtupleLoc->Fill(locTrg->LoCircuit(),locTrg->LoStripX(),locTrg->LoDev(),locTrg->LoStripY(),locTrg->LoLpt(),locTrg->LoHpt(),locTrg->LoApt());
     } // end of loop on Local Trigger
 
 
     // fill ntuple
     //TNtuple *Tgtuple = new TNtuple("Tgtuple","Trigger Ntuple","ev:global:spapt:smapt:undefapt:uplpt:uphpt:upapt:lpapt");
-       Tgtuple->Fill(ievent,nglobals,gloTrg->SinglePlusApt(),gloTrg->SingleMinusApt(),gloTrg->SingleUndefApt(),gloTrg->PairUnlikeLpt(),gloTrg->PairUnlikeHpt(),gloTrg->PairUnlikeApt(),gloTrg->PairLikeApt());
-
+       TgtupleGlo->Fill(ievent,nglobals,gloTrg->SinglePlusApt(),gloTrg->SingleMinusApt(),gloTrg->SingleUndefApt(),gloTrg->PairUnlikeLpt(),gloTrg->PairUnlikeHpt(),gloTrg->PairUnlikeApt(),gloTrg->PairLikeApt());
 
     muondata.ResetTrigger();
     if (event2Check!=0) ievent=nevents;
@@ -586,14 +586,16 @@ void MUONrectrigger (Int_t event2Check=0, char * filename="galice.root"){
   }
   
   if (WRITE){
-    TFile *myFile = new TFile("TriggerCheck.root", "RECREATE");
-    Tgtuple->Write();
+    TFile *myFile = new TFile("TriggerCheck.root", "RECREATE");  
+    TgtupleGlo->Write();
+    TgtupleLoc->Write();
     myFile->Close();
   }
 
 
   MUONLoader->UnloadRecPoints();
 }
+
 
 void MUONrectracks (Int_t event2Check=0, char * filename="galice.root"){
 // reads and dumps trigger objects from MUON.RecPoints.root
