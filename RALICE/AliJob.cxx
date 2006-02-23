@@ -98,7 +98,8 @@
 //
 // It is the user's responsibility to invoke the sub-tasks via the
 // ExecuteTasks() statement at the appropriate location in the top level
-// processor class. 
+// processor class if auto-execution was not explicitly selected via the
+// "mode" argument of the ExecuteJob() memberfunction.
 //
 //--- Author: Nick van Eijndhoven 07-may-2005 Utrecht University
 //- Modified: NvE $Date$ Utrecht University
@@ -182,22 +183,36 @@ void AliJob::ExecuteJob(Int_t mode)
 {
 // Invokation of the top level processor via its Exec() memberfunction.
 // The input argument "mode" can be used to explicitly specify the
-// (de)selection of the folder environment creation.
+// (de)selection of the folder environment creation and automatic
+// invokation of all subtasks after execution of the top level
+// Exec() memberfunction.
+// The latter is convenient if an AliJob instance is used directly
+// by the user (e.g. in a ROOT macro) in order to provide a hook
+// for event-by-event processing of various subtasks.  
 //
 // mode = -1 : Explicitly prohibit folder creation for the complete job
 //         0 : Folder creation selection steered by MakeFolder()
 //         1 : Explicitly select creation of the folder environment
 //             for the complete job.
+//       -11 : Same as mode=-1 but also auto-execution of subtasks after Exec()
+//        10 : Same as mode=0 but also auto-execution of subtasks after Exec()
+//        11 : Same as mode=1 but also auto-execution of subtasks after Exec()
 //
 // The default is mode=0.
 //
 // Note : Before execution gROOT is set as the global working directory.
 
  if (mode<0) fMakefolder=-1;
- if (mode>0) fMakefolder=1;
+ if (mode==1 || mode==11) fMakefolder=1;
 
  gROOT->cd(); 
  Exec(GetName());
+
+ if (abs(mode)>9)
+ {
+  CleanTasks();
+  ExecuteTasks(GetName());
+ }
 }
 ///////////////////////////////////////////////////////////////////////////
 void AliJob::MakeFolder()

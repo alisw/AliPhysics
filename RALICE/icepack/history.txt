@@ -38,4 +38,10 @@
 17-nov-2005 NvE Prototype version of IceDwalk tuned/improved for multi-track reconstruction. 
 15-feb-2006 NvE Class IcePandel introduced. In the /macros directory an example job
                 icepandel.cc was introduced as well.
+23-feb-2006 NvE All global slotnames and signals copied from OM Dbase info (if present)
+                in IceCalibrate. This will provide all necessary calib. info in case
+                the original F2K file didn't contain these data.
+                Also anaroot.cc example macro introduced in /macros sub-directory.
+                This example macro shows how to analyse the IcePack event structures
+                from a chain of ROOT files using the task processor facilities.
 

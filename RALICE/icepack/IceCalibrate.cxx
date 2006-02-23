@@ -112,6 +112,7 @@ void IceCalibrate::Exec(Option_t* opt)
  Float_t sigc=0;
  TF1* fcal=0;
  TF1* fdecal=0;
+ TString slotname;
 
  for (Int_t imod=0; imod<nmods; imod++)
  {
@@ -127,14 +128,19 @@ void IceCalibrate::Exec(Option_t* opt)
   if (omd)
   {
    ome->SetPosition((Ali3Vector&)omd->GetPosition());
-   for (Int_t isd=4; isd<17; isd++)
+   for (Int_t ind=1; ind<=omd->GetNnames(); ind++)
+   {
+    slotname=omd->GetSlotName(ind);
+    ome->SetSlotName(slotname.Data(),ind);
+   }
+   for (Int_t isd=1; isd<=omd->GetNvalues(); isd++)
    {
     ome->SetSignal(omd->GetSignal(isd),isd);
    }
   }
   else
   {
-   for (Int_t ise=8; ise<17; ise++)
+   for (Int_t ise=8; ise<=ome->GetNvalues(); ise++)
    {
     ome->SetSignal(0,ise);
    }
