@@ -210,9 +210,11 @@ void AliITSReconstructor::FillESD(AliRunLoader* runLoader,
   AliITSpidESD *pidESD = 0;
   TString selectedPIDmethod = GetOption();
   if(selectedPIDmethod.Contains("LandauFitPID")){
+    Info("FillESD","ITS LandauFitPID option has been selected\n");
     pidESD=loader->GetITSpid();
   }
   else{
+    Info("FillESD","ITS default PID\n");
     pidESD=loader->GetITSpid();
   }
   if(pidESD!=0){

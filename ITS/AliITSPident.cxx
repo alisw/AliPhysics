@@ -57,8 +57,7 @@ AliITSPident::AliITSPident(Double_t mom,Double_t invPt,Double_t dEdx,AliITSSteer
   for(Int_t la=0;la<4;la++){//loop on layers
     Double_t parp[3];Double_t park[3];Double_t parpi[3];
     sp->GetParFitLayer(la,fMom,parp,park,parpi);
-    // cout<<"lay = "<<la<<endl;
-    //for(Int_t i=0;i<3;i++)cout<<parp[i]<<"  "<<park[i]<<"  "<<parpi[i]<<endl;
+
     Double_t range[6];
     range[0]=0.3*parp[1];
     range[1]=2.*parp[1];
@@ -92,17 +91,9 @@ AliITSPident::AliITSPident(Double_t mom,Double_t invPt,Double_t dEdx,AliITSSteer
     
   }
 
-  cout<<"PROTONS"<<endl;
   fPBayesp=CookCombinedBayes(condFun,prior,0);
-  for(Int_t la=0;la<4;la++)cout<<"    lay "<<la<<"->prob "<<condFun[la][0];cout<<endl;cout<<"bayes = "<<fPBayesp<<endl;
-  cout<<"KAONS"<<endl;
   fPBayesk=CookCombinedBayes(condFun,prior,1); 
-  for(Int_t la=0;la<4;la++)cout<<"    lay "<<la<<"->prob "<<condFun[la][1];cout<<endl;cout<<"bayes = "<<fPBayesk<<endl;
-  cout<<"PIONS"<<endl;
   fPBayespi=CookCombinedBayes(condFun,prior,2); 
-  for(Int_t la=0;la<4;la++)cout<<"    lay "<<la<<"->prob "<<condFun[la][2];cout<<endl;cout<<"bayes = "<<fPBayespi<<endl;
- 
-  
   fdEdx=dEdx;
 }
 
@@ -155,15 +146,9 @@ AliITSPident::AliITSPident(AliITStrackV2 *trackITS,AliITSSteerPid *sp,Float_t *Q
     
   }
 
-  cout<<"PROTONS"<<endl;
   fPBayesp=CookCombinedBayes(condFun,prior,0);
-  for(Int_t la=0;la<4;la++)cout<<"    lay "<<la<<"->prob "<<condFun[la][0];cout<<endl;cout<<"bayes = "<<fPBayesp<<endl;
-  cout<<"KAONS"<<endl;
   fPBayesk=CookCombinedBayes(condFun,prior,1); 
-  for(Int_t la=0;la<4;la++)cout<<"    lay "<<la<<"->prob "<<condFun[la][1];cout<<endl;cout<<"bayes = "<<fPBayesk<<endl;
-  cout<<"PIONS"<<endl;
   fPBayespi=CookCombinedBayes(condFun,prior,2); 
-  for(Int_t la=0;la<4;la++)cout<<"    lay "<<la<<"->prob "<<condFun[la][2];cout<<endl;cout<<"bayes = "<<fPBayespi<<endl;
   fdEdx=trackITS->GetdEdx();
 
 }

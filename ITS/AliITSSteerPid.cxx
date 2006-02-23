@@ -43,7 +43,6 @@ AliITSSteerPid& AliITSSteerPid::operator=(const AliITSSteerPid& /* ob */){
 //______________________________________________________________
 void AliITSSteerPid::InitLayer(TString fileITS,TString fileFitPar){
   // it opens the files useful for the PID 
-  printf("££££ InitLayer.....\n");
   TFile *fClonarr2=new TFile (fileITS,"r");
   fVect2=(TClonesArray*)fClonarr2->Get("vectfitits_0");//truncated mean
   fVect2lay1=(TClonesArray*)fClonarr2->Get("vectfitits_1");//lay 1
@@ -54,7 +53,6 @@ void AliITSSteerPid::InitLayer(TString fileITS,TString fileFitPar){
   TFile *fFitPar=new TFile (fileFitPar);
   fFitTree=(TTree*)fFitPar->Get("tree");
  
-   printf("££££ InitLayer.....DONE \n");
 }
 
 //______________________________________________________________
@@ -74,7 +72,8 @@ AliITSPidParItem* AliITSSteerPid::GetItemLayer(Int_t nolay,Float_t mom){
 
 //______________________________________________________________
 void AliITSSteerPid::GetParFitLayer(Int_t nolay,Float_t mom,Double_t *parp,Double_t *park,Double_t *parpi){
-  //it gives the parameters of the convoluted functions (WL, MP, WG) for protons, kaons and pions for a given momentum and ITS layer
+  //it gives the parameters of the convoluted functions (WL, MP, WG) for 
+  //protons, kaons and pions for a given momentum and ITS layer
 
   Double_t parfit0pro[3]={0,0,0};
   Double_t parfit1pro[3]={0,0,0};
@@ -107,14 +106,16 @@ void AliITSSteerPid::GetParFitLayer(Int_t nolay,Float_t mom,Double_t *parp,Doubl
 }//______________________________________________________________
 void AliITSSteerPid::GetLangausProPars(Float_t mom,Double_t *parfit0,Double_t *parfit1,Double_t *parfit3,Double_t *par){
  
-  //It finds the parameters of the convoluted Landau-Gaussian response function for protons (Width Landau, Most Probable, Width Gaussian)
+  //It finds the parameters of the convoluted Landau-Gaussian response 
+  //function for protons (Width Landau, Most Probable, Width Gaussian)
   par[0]=parfit0[0]+parfit0[1]/mom;
   par[1]=parfit1[0]/(mom*mom)+parfit1[1]/(mom*mom)*TMath::Log(mom*mom)+parfit1[2];
   par[2]=parfit3[0]/(mom*mom)+parfit3[1]/(mom*mom)*TMath::Log(mom*mom)+parfit3[2];
 }
 //______________________________________________________________
 void AliITSSteerPid::GetLangausKaoPars(Float_t mom,Double_t *parfit0,Double_t *parfit1,Double_t *parfit3,Double_t *par){
-  // It finds the parameters of the convoluted Landau-Gaussian response function for kaons (Width Landau, Most Probable, Width Gaussian)
+  // It finds the parameters of the convoluted Landau-Gaussian response 
+  //function for kaons (Width Landau, Most Probable, Width Gaussian)
 
   par[0]=parfit0[0]+parfit0[1]/(mom*mom);
   par[1]=parfit1[0]/(mom*mom)+parfit1[1]/(mom*mom)*TMath::Log(mom*mom)+parfit1[2];
@@ -123,7 +124,8 @@ void AliITSSteerPid::GetLangausKaoPars(Float_t mom,Double_t *parfit0,Double_t *p
 
 //______________________________________________________________
 void AliITSSteerPid::GetLangausPiPars(Float_t mom,Double_t *parfit0,Double_t *parfit1,Double_t *parfit3,Double_t *par){
-  //It finds the parameters of the convoluted Landau-Gaussian response function for pions (Width Landau, Most Probable, Width Gaussian)
+  //It finds the parameters of the convoluted Landau-Gaussian response 
+  //function for pions (Width Landau, Most Probable, Width Gaussian)
 
   par[0]=parfit0[0]/(mom*mom)+parfit0[1]/(mom*mom)*TMath::Log(mom*mom)+parfit0[2];
   par[1]=parfit1[0]/(mom)+parfit1[1]/(mom)*TMath::Log(mom*mom)+parfit1[2];
