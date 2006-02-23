@@ -43,6 +43,8 @@ class AliAlignObj : public TObject {
   virtual Bool_t SetRotation(const TGeoMatrix& m) = 0;
   virtual void SetPars(Double_t x, Double_t y, Double_t z, Double_t psi,
                Double_t theta, Double_t phi) = 0;
+  virtual Bool_t SetLocalPars(Double_t x, Double_t y, Double_t z,
+			      Double_t psi, Double_t theta, Double_t phi);
   virtual void SetMatrix(const TGeoMatrix& m) = 0;
   void  SetVolPath(const TString& volpath) {fVolPath=volpath;}
   void  SetVolUID(UShort_t voluid) {fVolUID=voluid;}

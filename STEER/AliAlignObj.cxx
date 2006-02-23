@@ -292,6 +292,49 @@ AliAlignObj::ELayerID AliAlignObj::VolUIDToLayer(UShort_t voluid)
 }
 
 //_____________________________________________________________________________
+Bool_t AliAlignObj::SetLocalPars(Double_t x, Double_t y, Double_t z,
+				 Double_t psi, Double_t theta, Double_t phi)
+{
+  // Set the translations and angles by using parameters
+  // defined in the local (in TGeo means) coordinate system
+  // of the alignable volume. In case that the TGeo was
+  // initialized, returns false and the object parameters are
+  // not set.
+  if (!gGeoManager || !gGeoManager->IsClosed()) {
+    AliError("Can't set the alignment object parameters! gGeoManager doesn't exist or it is still opened!");
+    return kFALSE;
+  }
+
+  const char* volpath = GetVolPath();
+  TGeoPhysicalNode* node = (TGeoPhysicalNode*) gGeoManager->MakePhysicalNode(volpath);
+  if (!node) {
+    AliError(Form("Volume path %s not valid!",volpath));
+    return kFALSE;
+  }
+  if (node->IsAligned())
+    AliWarning(Form("Volume %s has been already misaligned!",volpath));
+
+  TGeoHMatrix m;
+  Double_t tr[3];
+  tr[0]=x; tr[1]=y; tr[2]=z;
+  m.SetTranslation(tr);
+  Double_t angles[3] = {psi, theta, phi};
+  Double_t rot[9];
+  AnglesToMatrix(angles,rot);
+  m.SetRotation(rot);
+
+  TGeoHMatrix align,gprime,gprimeinv;
+  gprime = *node->GetMatrix();
+  gprimeinv = gprime.Inverse();
+  m.Multiply(&gprimeinv);
+  m.MultiplyLeft(&gprime);
+
+  SetMatrix(m);
+
+  return kTRUE;
+}
+
+//_____________________________________________________________________________
 Bool_t AliAlignObj::ApplyToGeometry()
 {
   // Apply the current alignment object
