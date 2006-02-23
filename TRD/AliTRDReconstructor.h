@@ -14,6 +14,7 @@
 #include "AliReconstructor.h"
 
 class AliTRDparameter;
+class AliRawReader;
 
 class AliTRDReconstructor: public AliReconstructor {
 public:

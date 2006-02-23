@@ -29,7 +29,7 @@
 #include "AliTRDtracker.h"
 #include "AliTRDpidESD.h"
 #include <TFile.h>
-#include "AliRawReaderFile.h"
+#include "AliRawReader.h"
 #include "AliLog.h"
 
 ClassImp(AliTRDReconstructor)
