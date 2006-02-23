@@ -33,6 +33,10 @@ Float_t AliMUONConstants::fgDefaultChamberZ[14] =
    -967.5, -998.5, -1276.5, -1307.5, -1406.6, -1437.6,// updated 08/05, EDMS id 335328 (A. Tournaire)
    -1603.5, -1620.5, -1703.5, -1720.5}; // M1 & M2
 
+Float_t AliMUONConstants::fgDefaultRatioTriggerChamber[4] =
+{1., 1.01060, 1.06236, 1.07296};
+
+
 Float_t  AliMUONConstants::fgSt345inclination = 0.794; // in degrees, rotation axis is X axis 
 
 Float_t  AliMUONConstants::fgDzCh   = 15.5/2.;

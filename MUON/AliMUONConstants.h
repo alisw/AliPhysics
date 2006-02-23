@@ -26,6 +26,8 @@ class AliMUONConstants : public TObject {
     static Int_t    NDetElem() {return fgNDetElem;}
     // return position of chamber i
     static Float_t  DefaultChamberZ(Int_t i) {return fgDefaultChamberZ[i];}
+    // return ratio between trigger chambers
+    static Float_t  DefaultRatioTriggerChamber(Int_t i) {return fgDefaultRatioTriggerChamber[i];}
 // return Inclination with respect the vertical axis of stations 345
     static Float_t  St345Inclination() {return fgSt345inclination;}
     // return pointer to array of positions
@@ -70,6 +72,7 @@ class AliMUONConstants : public TObject {
     static Int_t  fgNDetElem;           //  Number of Detection Elements.
 //
     static Float_t  fgDefaultChamberZ[14];    // ! Z-positions of chambers
+    static Float_t  fgDefaultRatioTriggerChamber[4]; // ratio between trigger chambers
     static Float_t  fgSt345inclination;       // ! Inclination with respect the vertical axis of stations 345
     static Float_t  fgDmin[7];                // ! inner diameter
     static Float_t  fgDmax[7];                // ! outer diameter

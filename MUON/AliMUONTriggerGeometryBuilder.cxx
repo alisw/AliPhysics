@@ -148,8 +148,8 @@ void AliMUONTriggerGeometryBuilder::CreateGeometry()
 	    sprintf(volName,"%s%d", "SC",11+icount);
  	    gMC->Gsvolu(volName,"TUBE", idAir, par, 3);
  	    //SetVolume(10+icount, volName);
-	    Float_t zpos =  AliMUONConstants::DefaultChamberZ(10+icount);	     
-	    
+//	    Float_t zpos =  AliMUONConstants::DefaultChamberZ(10+icount);
+
 /* removed 03/18/05
 // Flange between beam shielding and RPC 
 	    tpar[0]= kRMIN[istation];
@@ -165,8 +165,12 @@ void AliMUONTriggerGeometryBuilder::CreateGeometry()
 */
 	    
 // scaling factor
-	    Float_t zRatio = zpos / zpos1;
-	    
+//	    Float_t zRatio = zpos / zpos1;
+	    Float_t zRatio = AliMUONConstants::DefaultRatioTriggerChamber(icount);	    	    
+
+
+
+    
 // envelopes (same size except line 5, all virtual)
 	    char volEnv[18][5];
 	    tpar[1] = kYMIN * zRatio; 
