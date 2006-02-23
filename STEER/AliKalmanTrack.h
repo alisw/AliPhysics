@@ -81,7 +81,6 @@ public:
   void GetIntegratedTimes(Double_t *times) const;
   Double_t GetIntegratedTime(Int_t pdg) const;
   Double_t GetIntegratedLength() const {return fIntegratedLength;}
-  void PrintTime() const;
   virtual void GetXYZ(Float_t r[3]) const = 0;
 
   static Double_t GetConvConst();
