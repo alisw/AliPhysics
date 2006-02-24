@@ -30,6 +30,7 @@
 //     SuperModules -> module(or tower) -> cell
 
 // --- AliRoot header files ---
+#include <assert.h>
 #include <TMath.h>
 #include <TVector3.h>
 #include <TRegexp.h>
