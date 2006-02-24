@@ -1455,14 +1455,15 @@ void AliReconstruction::WriteAlignmentData(AliESD* esd)
   // For the moment only ITS, TRD and TPC
 
   // Load TOF clusters
-  fLoader[3]->LoadRecPoints("read");
-  TTree* tree = fLoader[3]->TreeR();
-  if (!tree) {
-    AliError(Form("Can't get the %s cluster tree", fgkDetectorName[3]));
-    return;
+  if (fTracker[3]){
+    fLoader[3]->LoadRecPoints("read");
+    TTree* tree = fLoader[3]->TreeR();
+    if (!tree) {
+      AliError(Form("Can't get the %s cluster tree", fgkDetectorName[3]));
+      return;
+    }
+    fTracker[3]->LoadClusters(tree);
   }
-  fTracker[3]->LoadClusters(tree);
-
   Int_t ntracks = esd->GetNumberOfTracks();
   for (Int_t itrack = 0; itrack < ntracks; itrack++)
     {
@@ -1479,7 +1480,6 @@ void AliReconstruction::WriteAlignmentData(AliESD* esd)
 	  AliTracker *tracker = fTracker[iDet];
 	  if (!tracker) continue;
 	  Int_t nspdet = track->GetNcls(iDet);
-	  cout<<iDet<<" "<<nspdet<<endl;
 	  if (nspdet <= 0) continue;
 	  track->GetClusters(iDet,idx);
 	  AliTrackPoint p;
@@ -1490,15 +1490,11 @@ void AliReconstruction::WriteAlignmentData(AliESD* esd)
 	    if (!isvalid) continue;
 	    sp->AddPoint(isptrack,&p); isptrack++; isp++;
 	  }
-	  //	  for (Int_t isp = 0; isp < nspdet; isp++) {
-	    //	    AliCluster *cl = tracker->GetCluster(idx[isp]);
-	    //	    UShort_t volid = tracker->GetVolumeID(idx[isp]);
-	  //	    tracker->GetTrackPoint(idx[isp],p);
-	  //	    sp->AddPoint(isptrack,&p); isptrack++;
-	  //	  }
 	}	
       }
     }
-  fTracker[3]->UnloadClusters();
-  fLoader[3]->UnloadRecPoints();
+  if (fTracker[3]){
+    fTracker[3]->UnloadClusters();
+    fLoader[3]->UnloadRecPoints();
+  }
 }
