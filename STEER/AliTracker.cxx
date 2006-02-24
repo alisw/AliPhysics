@@ -53,6 +53,11 @@ void AliTracker::SetFieldMap(const AliMagF* map, Bool_t uni) {
   //--------------------------------------------------------------------
   if (map==0) AliFatalClass("Can't access the field map !");
 
+  if (fgkFieldMap) {
+     AliWarningClass("The magnetic field map has been already set !");
+     return;
+  }
+
   fgUniformField=uni;
   fgkFieldMap=map;
 
