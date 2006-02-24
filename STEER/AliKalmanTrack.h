@@ -84,7 +84,7 @@ public:
   virtual void GetXYZ(Float_t r[3]) const = 0;
 
   static Double_t GetConvConst();
-
+  void SetNumberOfClusters(Int_t n) {fN=n;} 
 protected:
   void     SaveLocalConvConst();
   Double_t GetLocalConvConst() const {return fLocalConvConst;}
@@ -93,7 +93,6 @@ protected:
 
   void SetChi2(Double_t chi2) {fChi2=chi2;} 
   void SetMass(Double_t mass) {fMass=mass;}
-  void SetNumberOfClusters(Int_t n) {fN=n;} 
 
   Int_t fLab;             // track label
   Float_t fFakeRatio;     // fake ratio
