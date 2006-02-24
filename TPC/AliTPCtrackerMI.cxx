@@ -54,6 +54,9 @@
 #include "AliESDkink.h"
 #include "AliPID.h"
 #include "TTreeStream.h"
+#include "AliAlignObj.h"
+#include "AliTrackPointArray.h"
+
 //
 
 ClassImp(AliTPCtrackerMI)
@@ -1547,6 +1550,52 @@ Int_t AliTPCtrackerMI::FollowToNextFast(AliTPCseed& t, Int_t nr) {
 
 
 
+//_________________________________________________________________________
+Bool_t AliTPCtrackerMI::GetTrackPoint(Int_t index, AliTrackPoint &p ) const
+{
+  // Get track space point by index
+  // return false in case the cluster doesn't exist
+  AliTPCclusterMI *cl = GetClusterMI(index);
+  if (!cl) return kFALSE;
+  Int_t sector = (index&0xff000000)>>24;
+  Int_t row = (index&0x00ff0000)>>16;
+  Float_t xyz[3];
+  xyz[0] = fParam->GetPadRowRadii(sector,row);
+  xyz[1] = cl->GetY();
+  xyz[2] = cl->GetZ();
+  Float_t sin,cos;
+  fParam->AdjustCosSin(sector,cos,sin);
+  Float_t x = cos*xyz[0]-sin*xyz[1];
+  Float_t y = cos*xyz[1]+sin*xyz[0];
+  Float_t cov[6];
+  Float_t sigmaY2 = 0.027*cl->GetSigmaY2();
+  if (sector < fParam->GetNInnerSector()) sigmaY2 *= 2.07;
+  Float_t sigmaZ2 = 0.066*cl->GetSigmaZ2();
+  if (sector < fParam->GetNInnerSector()) sigmaZ2 *= 1.77;
+  cov[0] = sin*sin*sigmaY2;
+  cov[1] = -sin*cos*sigmaY2;
+  cov[2] = 0.;
+  cov[3] = cos*cos*sigmaY2;
+  cov[4] = 0.;
+  cov[5] = sigmaZ2;
+  p.SetXYZ(x,y,xyz[2],cov);
+  AliAlignObj::ELayerID iLayer;
+  Int_t idet;
+  if (sector < fParam->GetNInnerSector()) {
+    iLayer = AliAlignObj::kTPC1;
+    idet = sector;
+  }
+  else {
+    iLayer = AliAlignObj::kTPC2;
+    idet = sector - fParam->GetNInnerSector();
+  }
+  UShort_t volid = AliAlignObj::LayerToVolUID(iLayer,idet);
+  p.SetVolumeID(volid);
+  return kTRUE;
+}
+
+
+
 Int_t AliTPCtrackerMI::UpdateClusters(AliTPCseed& t,  Int_t nr) {
   //-----------------------------------------------------------------
   // This function tries to find a track prolongation to next pad row
@@ -2522,7 +2571,7 @@ Int_t AliTPCtrackerMI::PropagateBack(AliESD *event)
 
   fEvent = event;
   fIteration = 1;
-  ReadSeeds(event,0);
+  ReadSeeds(event,1);
   PropagateBack(fSeeds);
   Int_t nseed = fSeeds->GetEntriesFast();
   Int_t ntracks=0;
@@ -2582,6 +2631,7 @@ void AliTPCtrackerMI::ReadSeeds(AliESD *event, Int_t direction)
     ULong_t status=esd->GetStatus();
     if (!(status&AliESDtrack::kTPCin)) continue;
     AliTPCtrack t(*esd);
+    t.SetNumberOfClusters(0);
     //    AliTPCseed *seed = new AliTPCseed(t,t.GetAlpha());
     AliTPCseed *seed = new AliTPCseed(t/*,t.GetAlpha()*/);
     for (Int_t ikink=0;ikink<3;ikink++) {
@@ -2600,7 +2650,7 @@ void AliTPCtrackerMI::ReadSeeds(AliESD *event, Int_t direction)
       }
 
     }
-    if ((status==AliESDtrack::kTPCin)&&(direction==1)) seed->ResetCovariance(); 
+    if (((status&AliESDtrack::kITSout)==0)&&(direction==1)) seed->ResetCovariance(); 
     if ( direction ==2 &&(status & AliESDtrack::kTRDrefit) == 0 ) seed->ResetCovariance();
     if ( direction ==2 && ((status & AliESDtrack::kTPCout) == 0) ) {
       fSeeds->AddAt(0,i);
