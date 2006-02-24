@@ -28,7 +28,7 @@ class AliESD;
 class TTree;
 class AliESDkink;
 class TTreeSRedirector;
-
+class AliTrackPoint;
 
 class AliTPCtrackerMI : public AliTracker {
 public:
@@ -75,7 +75,8 @@ public:
    
    Int_t FollowProlongation(AliTPCseed& t, Int_t rf=0, Int_t step=1);
    Int_t FollowProlongationFast(AliTPCseed& t, Int_t rf=0, Int_t step=1);
-   
+   Bool_t GetTrackPoint(Int_t index, AliTrackPoint &p ) const; 
+
    Int_t FollowBackProlongation(AliTPCseed& t, Int_t rf);
    Int_t FollowToNext(AliTPCseed& t, Int_t nr);
    Int_t FollowToNextFast(AliTPCseed& t, Int_t nr);
