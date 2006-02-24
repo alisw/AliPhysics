@@ -463,7 +463,6 @@ void AliEMCALClusterizerv1::MakeClusters()
   // Steering method to construct the clusters stored in a list of Reconstructed Points
   // A cluster is defined as a list of neighbour digits
 
-  cout << "Star of " << __PRETTY_FUNCTION__ << endl;
   AliEMCALLoader *emcalLoader = dynamic_cast<AliEMCALLoader*>(AliRunLoader::GetRunLoader()->GetDetectorLoader("EMCAL"));
 
   TObjArray * aECARecPoints = emcalLoader->RecPoints() ; 

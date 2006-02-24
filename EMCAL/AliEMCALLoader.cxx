@@ -97,7 +97,6 @@ AliEMCALLoader::~AliEMCALLoader()
 Int_t AliEMCALLoader::GetEvent() {
   AliLoader::GetEvent();  // First call AliLoader to do all the groundwork
 
-  AliDebug(1,__PRETTY_FUNCTION__);
   // Now connect and fill TClonesArray
 
   // Hits
@@ -105,7 +104,7 @@ Int_t AliEMCALLoader::GetEvent() {
   if (treeH) {
     treeH->SetBranchAddress(fDetectorName,&fHits);
     if (treeH->GetEntries() > 1)
-      Warning(__PRETTY_FUNCTION__,"multiple arrays in treeH no longer supported");
+      AliWarning("Multiple arrays in treeH no longer supported");
     treeH->GetEvent(0);
   }
 
