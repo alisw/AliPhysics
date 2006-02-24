@@ -194,10 +194,10 @@ void AliAlignmentTracks::ProcessESD()
       AliESDtrack * track = esd->GetTrack(itrack);
       if (!track) continue;
  
-      UInt_t status = AliESDtrack::kITSpid; 
-      status|=AliESDtrack::kTPCpid; 
-      status|=AliESDtrack::kTRDpid; 
-      if ((track->GetStatus() & status) != status) continue;
+     //  UInt_t status = AliESDtrack::kITSpid; 
+//       status|=AliESDtrack::kTPCpid; 
+//       status|=AliESDtrack::kTRDpid; 
+//       if ((track->GetStatus() & status) != status) continue;
 
       if (track->GetP() < 0.5) continue;
 
