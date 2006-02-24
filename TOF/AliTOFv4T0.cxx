@@ -1085,7 +1085,7 @@ void AliTOFv4T0::StepManager()
 
   TLorentzVector mom, pos;
   Float_t xm[3],pm[3],xpad[3],ppad[3];
-  Float_t hits[14],phi,phid,z;
+  Float_t hits[14];
   Int_t   vol[5];
   Int_t   sector, plate, padx, padz, strip;
   Int_t   copy, padzid, padxid, stripid, i;
@@ -1096,6 +1096,7 @@ void AliTOFv4T0::StepManager()
      gMC->IsTrackEntering()
      && gMC->TrackCharge()
      && gMC->GetMedium()==idtmed[513]
+     && gMC->CurrentMedium()==idtmed[513]
      && gMC->CurrentVolID(copy)==fIdSens
      )
   {
@@ -1143,17 +1144,27 @@ void AliTOFv4T0::StepManager()
     incidenceAngle = TMath::ACos(ppad[1])*kRaddeg;
 
 
-    z = pos[2];
+    const char * pathA="FTOA";
+    const char * pathB="FTOB";
+    const char * pathC="FTOC";
+    const char * path71="B071";
+    const char * path75="B075";
+    const char * path74="B074";
+    const char* volpath;    
 
-    plate = -1;  
+    Int_t index=0;
+    volpath=gMC->CurrentVolOffName(6);
+    index=gMC->CurrentVolOffID(6,copy);
+    index=copy;
 
-    if (TMath::Abs(z) <=  fTOFGeometry->ZlenA()*0.5)  plate = 2;
-    if (z < (fTOFGeometry->ZlenA()*0.5+fTOFGeometry->ZlenB()) && 
-        z >  fTOFGeometry->ZlenA()*0.5)               plate = 1;
-    if (z >-(fTOFGeometry->ZlenA()*0.5+fTOFGeometry->ZlenB()) &&
-        z < -fTOFGeometry->ZlenA()*0.5)               plate = 3;
-    if (z > (fTOFGeometry->ZlenA()*0.5+fTOFGeometry->ZlenB()))     plate = 0;
-    if (z <-(fTOFGeometry->ZlenA()*0.5+fTOFGeometry->ZlenB()))     plate = 4;
+    
+    plate=-1;
+    if(strcmp(pathC,volpath)==0 && index==1)plate=0;
+    if(strcmp(pathB,volpath)==0 && index==1)plate=1;
+    if(strcmp(pathA,volpath)==0 && index==0)plate=2;
+    if(strcmp(pathB,volpath)==0 && index==2)plate=3;
+    if(strcmp(pathC,volpath)==0 && index==2)plate=4;
+
 
 
     if (plate==0) strip=fTOFGeometry->NStripC()-strip;
@@ -1175,11 +1186,15 @@ void AliTOFv4T0::StepManager()
 
 
 
-    phi = pos.Phi();
-    if (phi>=0.) phid = phi*kRaddeg;
-    else phid = phi*kRaddeg + 360.;
+    volpath=gMC->CurrentVolOffName(8);
+    index=gMC->CurrentVolOffID(8,copy);
+    index=copy;
 
-    sector = Int_t (phid/20.);
+    sector=-1;
+    if(strcmp(path71,volpath)==0 && index <6) sector=12+index;
+    if(strcmp(path71,volpath)==0 && index >=6) sector=index-3;
+    if(strcmp(path75,volpath)==0) sector=index-1;
+    if(strcmp(path74,volpath)==0) sector=10+index;
 
     for(i=0;i<3;++i) {
       hits[i]   = pos[i];
