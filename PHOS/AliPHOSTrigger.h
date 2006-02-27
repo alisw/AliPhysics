@@ -3,17 +3,29 @@
 
 //____________________________________________________________
 //  Class for trigger analysis.
-//  Digits are grouped in TRU's (16x28 crystals). The algorithm searches 
-//  all possible 4x4 crystal combinations and per each TRU, adding the 
-//  digits amplitude and finding the maximum. Maximums are compared to 
-//  triggers threshold and they are set.
-
+//  Class for trigger analysis.
+//  Digits are grouped in TRU's (16x28 ordered fNTRUPhi x fNTRUEta). 
+//  The algorithm searches all possible 4x4 cell combinations per each TRU, 
+//  adding the digits amplitude and finding the maximum. Maximums are compared 
+//  to triggers threshold and they are set. Thresholds need to be fixed. 
+//  Usage:
+//
+//  //Inside the event loop
+//  AliEMCALTrigger *tr = new AliEMCALTrigger();//Init Trigger
+//  tr->SetL0MBPbPbThreshold(500);
+//  tr->SetL0MBppThreshold(100);
+//  tr->SetL1JetLowPtThreshold(1000);
+//  tr->SetL1JetMediumPtThreshold(10000);
+//  tr->SetL1JetHighPtThreshold(20000);
+//  tr->Trigger(); //Execute Trigger
+//  tr->Print(""); //Print result, with "deb" option all data members 
+//  //are printed
+//
 //*-- Author: Gustavo Conesa & Yves Schutz (IFIC, SUBATECH, CERN)
      
 // --- ROOT system ---
 
 class TClonesArray ;
-
 
 // --- AliRoot header files ---
 #include "AliTriggerDetector.h"

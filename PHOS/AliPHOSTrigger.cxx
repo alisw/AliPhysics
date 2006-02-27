@@ -18,11 +18,23 @@
 //_________________________________________________________________________  
 //
 //  Class for trigger analysis.
-//  Digits are grouped in TRU's (16x28 crystals). The algorithm searches all  
-//  possible 4x4 crystal combinations and per each TRU, adding the digits 
-//  amplitude and finding the maximum. Maximums are compared to triggers 
-//  threshold and they are set.
-// 
+//  Digits are grouped in TRU's (16x28 crystals ordered fNTRUPhi x fNTRUZ). 
+//  The algorithm searches all possible 4x4 cell combinations per each TRU, 
+//  adding the digits amplitude and finding the maximum. Maximums are compared 
+//  to triggers threshold and they are set. Thresholds need to be fixed. 
+//  Usage:
+//
+//  //Inside the event loop
+//  AliEMCALTrigger *tr = new AliEMCALTrigger();//Init Trigger
+//  tr->SetL0MBPbPbThreshold(500);
+//  tr->SetL0MBppThreshold(100);
+//  tr->SetL1JetLowPtThreshold(1000);
+//  tr->SetL1JetMediumPtThreshold(10000);
+//  tr->SetL1JetHighPtThreshold(20000);
+//  tr->Trigger(); //Execute Trigger
+//  tr->Print(""); //Print result, with "deb" option all data members 
+//  //are printed
+//
 //*-- Author: Gustavo Conesa & Yves Schutz (IFIC, CERN) 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -93,12 +105,17 @@ TClonesArray *  AliPHOSTrigger::FillTRU(const TClonesArray * digits,
 					const Int_t nCrystalsPhi, 
 					const Int_t nCrystalsZ) const {
 
-  //Orders digits ampitudes list in 8 TRUs (16x28 crystals) per module. 
-  //Each TRU is a TMatrixD, and they are kept in TClonesArrays.
+  //Orders digits ampitudes list in fNTRU TRUs (28x16 crystals) per module. 
+  //Each TRU is a TMatrixD, and they are kept in TClonesArrays. The number of 
+  //TRU in phi is fNTRUPhi, and the number of TRU in eta is fNTRUZ. 
+
+  //Check data members
+  
+  if(fNTRUZ*fNTRUPhi != fNTRU)
+    Error("FillTRU"," Wrong number of TRUS per Z or Phi");
 
   //Initilize variables
-
-  //const AliPHOSGeometry * geom = AliPHOSGetter::Instance()->PHOSGeometry() ;
+  //List of TRU matrices initialized to 0.
 
   TClonesArray * matrix = new TClonesArray("TMatrixD",1000);
   for(Int_t k = 0; k < fNTRU*nModules ; k++){
@@ -114,36 +131,39 @@ TClonesArray *  AliPHOSTrigger::FillTRU(const TClonesArray * digits,
   //Declare variables
   Int_t relid[4] ; 
   Float_t amp = 0;
-  
+
+  //Digits loop to fill TRU matrices with amplitudes.
+
   for(Int_t idig = 0 ; idig < digits->GetEntriesFast() ; idig++){
     
     dig = static_cast<AliPHOSDigit *>(digits->At(idig)) ;
     amp = dig->GetAmp() ; //Energy of the digit (arbitrary units)	    
-    geom->AbsToRelNumbering(dig->GetId(), relid) ;//Transform digit number into 4 numbers
+    geom->AbsToRelNumbering(dig->GetId(), relid) ;
+    //Transform digit number into 4 numbers
     //relid[0] = module
     //relid[1] = EMC (0) or CPV (-1)
     //relid[2] = row <= 64 (fNPhi)
     //relid[3] = column <= 56 (fNZ)
     
-    if(relid[1] == 0){
+    if(relid[1] == 0){//Not CPV, Only EMC digits
+     
+      //Check to which TRU in the supermodule belongs the cell. 
+      //Supermodules are divided in a TRU matrix of dimension 
+      //(fNTRUPhi,fNTRUZ).
+      //Each TRU is a cell matrix of dimension (nCrystalsPhi,nCrystalsZ)
       
-      Int_t ntru = 1;
-      Int_t row  = 1;
-      Int_t col  = 1;
-      //Check which TRU in the module. It is divided in a (4,2) matrix.
-      //Fill the TRU matrix (16,28)
-      
-      Int_t i = 0 ;
-      for(i = 1; i < fNTRUZ ; i++)      
-	if(relid[3] > nCrystalsZ*i && relid[3] <= nCrystalsZ*(i+1))
-	  col = i+1;
-      
-      for(i = 1; i < fNTRUPhi ; i++)      
-	if(relid[2] > nCrystalsPhi*i && relid[2] <= nCrystalsPhi*(i+1))
-	  row = i+1;
+      //First calculate the row and column in the supermodule 
+      //of the TRU to which the cell belongs.
 
-      ntru     = col*row + (relid[0]-1)*fNTRU - 1;
-      TMatrixD * trus = dynamic_cast<TMatrixD *>(matrix->At(ntru)) ;
+      Int_t col   = (relid[3]-1)/nCrystalsZ+1; 
+      Int_t row   = (relid[2]-1)/nCrystalsPhi+1; 
+      Int_t itru  = col*row + (relid[0]-1)*fNTRU - 1;
+
+      //Fill TRU matrix with cell values
+
+      TMatrixD * trus = dynamic_cast<TMatrixD *>(matrix->At(itru)) ;
+
+    //Calculate row and column of the cell inside the TRU with number itru
 
       Int_t nrow = (relid[2]-1) - (row-1) *  nCrystalsPhi;	
       Int_t ncol = (relid[3]-1) - (col-1) *  nCrystalsZ;
@@ -197,11 +217,13 @@ void AliPHOSTrigger::Trigger()
 {
 
   //Main Method to select triggers.
-
+  //Getter
   AliPHOSGetter * gime = AliPHOSGetter::Instance() ; 
+ 
+  //Get Geometry
+  const AliPHOSGeometry * geom = AliPHOSGetter::Instance()->PHOSGeometry() ;
 
   //Define some useful parameters
-  const AliPHOSGeometry * geom = AliPHOSGetter::Instance()->PHOSGeometry() ;
   Int_t nModules     = geom->GetNModules();
   Int_t nCrystalsPhi = geom->GetNPhi()/fNTRUPhi ;// 64/4=16
   Int_t nCrystalsZ   = geom->GetNZ()/fNTRUZ ;// 56/2=28
