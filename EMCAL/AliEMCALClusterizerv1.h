@@ -29,7 +29,7 @@ class AliEMCALRecPoint ;
 class AliEMCALDigit ;
 class AliEMCALDigitizer ;
 class AliEMCALGeometry ;
-
+class AliEMCALCalibData ;
 
 class AliEMCALClusterizerv1 : public AliEMCALClusterizer {
   
@@ -117,6 +117,8 @@ private:
   Int_t   fNumberOfECAClusters ;     // number of clusters found in EC section
   
   //Calibration parameters... to be replaced by database 
+
+  AliEMCALCalibData * fCalibData  ;   //! Calibration database if aval
   Float_t fADCchannelECA ;          // width of one ADC channel for EC section (GeV)
   Float_t fADCpedestalECA ;         // pedestal of ADC for EC section (GeV) 
  

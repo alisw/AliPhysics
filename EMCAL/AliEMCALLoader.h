@@ -26,6 +26,8 @@ class TTask ;
 
 // --- AliRoot header files ---
 #include "AliLoader.h"
+#include "AliEMCALCalibData.h"
+
 class AliLoader ;
 class AliEMCAL ; 
 class AliEMCALHit ;
@@ -98,7 +100,16 @@ class AliEMCALLoader : public AliLoader {
 
   void   SetDebug(Int_t level) {fDebug = level;} // Set debug level
 
+  //Calibration
+
+  Int_t CalibrateRaw (Double_t energy, Int_t module, Int_t column, Int_t row);//take real calibration coefficients
+ 
+  void  SetCalibData(AliEMCALCalibData* calibda) { fCalibData = calibda; }
+ 
+  AliEMCALCalibData * CalibData(); // to get the CDB object
+
 private:
+ 
   static const TString fgkECARecPointsBranchName; //! Name of branch with ECA Reconstructed Points
 
   Int_t  fDebug ;             // Debug level
@@ -110,6 +121,8 @@ private:
   TClonesArray     *fDigits;       //! TClonesArray of digits (for tree reading)
   TClonesArray     *fSDigits;      //! TClonesArray of sdigits (for tree reading)
   TObjArray        *fRecPoints;    //! TClonesArray of recpoints (for tree reading)
+  static AliEMCALCalibData * fCalibData;  //  calibration data 
+
   ClassDef(AliEMCALLoader,0)  // Algorithm class that provides methods to retrieve objects from a list knowing the index 
    
 };

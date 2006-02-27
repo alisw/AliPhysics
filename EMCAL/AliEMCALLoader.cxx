@@ -49,10 +49,14 @@
 // --- AliRoot header files ---
 #include "AliEMCALLoader.h"
 #include "AliLog.h"
+#include "AliCDBLocal.h"
+#include "AliCDBStorage.h"
+#include "AliCDBManager.h"
 
 ClassImp(AliEMCALLoader)
   
 const TString AliEMCALLoader::fgkECARecPointsBranchName("EMCALECARP");//Name for branch with ECA Reconstructed Points
+AliEMCALCalibData* AliEMCALLoader::fCalibData = 0; //calibation data
 
 //____________________________________________________________________________ 
 AliEMCALLoader::AliEMCALLoader()
@@ -92,6 +96,51 @@ AliEMCALLoader::~AliEMCALLoader()
   delete fSDigits;
   delete fRecPoints;
 }
+
+//____________________________________________________________________________ 
+AliEMCALCalibData* AliEMCALLoader::CalibData()
+{ 
+  //Get the Calibration data list
+
+  if( !(AliCDBManager::Instance()->IsDefaultStorageSet()) ) {
+    fCalibData=0x0;
+    Warning("CalibData","Calibration DB is not initiated!");
+    return fCalibData;
+  }
+
+ return fCalibData;
+
+}
+
+//____________________________________________________________________________ 
+Int_t AliEMCALLoader::CalibrateRaw(Double_t energy, Int_t module, 
+				   Int_t column, Int_t row)
+{
+  // Convert energy into digitized amplitude for a cell relId
+  // It is a user responsilibity to open CDB and set
+  // AliEMCALCalibData object by the following operators:
+  // 
+  // AliCDBLocal *loc = new AliCDBLocal("deCalibDB");
+  // AliEMCALCalibData* clb = (AliEMCALCalibData*)AliCDBStorage::Instance()
+  //    ->Get(path_to_calibdata,run_number);
+  // AliEMCALGetter* gime = AliEMCALGetter::Instance("galice.root");
+  // gime->SetCalibData(clb);
+
+  if (CalibData() == 0)
+    Warning("CalibrateRaw","Calibration DB is not initiated!");
+
+  Float_t gainFactor = 0.0015; // width of one ADC channel in GeV
+  Float_t pedestal   = 0.005;  // pedestals
+
+  if(CalibData()) {
+    gainFactor = CalibData()->GetADCchannel (module,column,row);
+    pedestal   = CalibData()->GetADCpedestal(module,column,row);
+  }
+  
+  Int_t   amp = static_cast<Int_t>( (energy - pedestal) / gainFactor + 0.5 ) ; 
+  return amp;
+}
+
 
 //____________________________________________________________________________ 
 Int_t AliEMCALLoader::GetEvent() {

@@ -1,0 +1,40 @@
+#ifndef ALIEMCALCALIBDATA_H
+#define ALIEMCALCALIBDATA_H
+
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
+
+/* $Id$ */
+
+////////////////////////////////////////////////
+//  class for EMCAL calibration                 //
+////////////////////////////////////////////////
+
+#include "TNamed.h"
+#include "AliEMCAL.h"
+
+class AliEMCALCalibData: public TNamed {
+
+ public:
+  AliEMCALCalibData();
+  AliEMCALCalibData(const char* name);
+  AliEMCALCalibData(const AliEMCALCalibData &calibda);
+  AliEMCALCalibData& operator= (const AliEMCALCalibData &calibda);
+  virtual ~AliEMCALCalibData();
+  void Reset();
+  virtual void Print(Option_t *option = "") const; 
+  //
+  Float_t GetADCchannel(Int_t module, Int_t column, Int_t row) const;
+  Float_t GetADCpedestal(Int_t module, Int_t column, Int_t row) const;
+  //
+  void SetADCchannel(Int_t module, Int_t column, Int_t row, Float_t value);
+  void SetADCpedestal(Int_t module, Int_t column, Int_t row, Float_t value);
+
+ protected:
+  Float_t  fADCchannel[5][56][64] ;  // width of one ADC channel in GeV ([mod][col][row])
+  Float_t  fADCpedestal[5][56][64] ; // value of the  ADC pedestal ([mod][col][row])
+  //
+  ClassDef(AliEMCALCalibData,1)    // EMCAL Calibration data
+};
+
+#endif
