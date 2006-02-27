@@ -12,6 +12,7 @@
 #include <TSystem.h>
 
 #include "AliDetector.h"
+#include "AliZDCTrigger.h"
 
 class AliZDCCalibData;
  
@@ -40,9 +41,9 @@ public:
   void  Shower()  {fNoShower=0;}
 
 
-//Calibration methods (by Alberto Colla)
-  void    SetZDCCalibFName(const char *name="$(ALICE)/AliRoot/data/AliZDCCalib.root");
-  char*   GetZDCCalibFName() const;
+  //Calibration methods 
+  void    SetZDCCalibFName(const char *name);
+  char*   GetZDCCalibFName() const {return (char*)fZDCCalibFName.Data();}
 
   void    CreateCalibData();
   void    WriteCalibData(Int_t option=TObject::kOverwrite);
@@ -50,24 +51,28 @@ public:
   void    SetCalibData(AliZDCCalibData* data) {fCalibData = data;}
   AliZDCCalibData* GetCalibData() const  {return fCalibData;}
 
+  // Trigger
+  virtual AliTriggerDetector* CreateTriggerDetector() const
+  	{return new AliZDCTrigger();}
 
 protected:
 
   Int_t        fNoShower;	// Flag to switch off the shower	
 
-//Calibration methods (by Alberto Colla)
+  //Calibration data member 
   AliZDCCalibData* fCalibData;		// Calibration data for ZDC
   TString          fZDCCalibFName; 	//  Name of the ZDC calibration data
   
-  ClassDef(AliZDC,4)  	// Zero Degree Calorimeter base class
+  ClassDef(AliZDC,5)  	// Zero Degree Calorimeter base class
 };
  
-// Calibration methods (by Alberto Colla)
+// Calibration
 //_____________________________________________________________________________
 inline void AliZDC::SetZDCCalibFName(const char *name)  
-{fZDCCalibFName = name;        gSystem->ExpandPathName(fZDCCalibFName);}
-//_____________________________________________________________________________
-inline char* AliZDC::GetZDCCalibFName()  const {return (char*)fZDCCalibFName.Data();}
+{ 
+  fZDCCalibFName = name;        
+  gSystem->ExpandPathName(fZDCCalibFName);
+}
 
 
 #endif

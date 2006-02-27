@@ -3,7 +3,8 @@
 
 SRCS= AliZDC.cxx AliZDCv1.cxx AliZDCv2.cxx \
       AliZDCHit.cxx AliZDCSDigit.cxx AliZDCFragment.cxx AliZDCDigitizer.cxx \
-      AliGenZDC.cxx AliZDCMergedHit.cxx AliZDCMerger.cxx
+      AliGenZDC.cxx AliZDCTrigger.cxx 
+#AliZDCMergedHit.cxx AliZDCMerger.cxx
 
 HDRS= $(SRCS:.cxx=.h) 
 
