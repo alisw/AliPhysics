@@ -36,12 +36,16 @@
 #include <TRegexp.h>
 #include <TObjArray.h>
 #include <TObjString.h>
+#include <assert.h>
+#include <TMatrixD.h>
+#include <TClonesArray.h>
 
 // -- ALICE Headers.
 //#include "AliConst.h"
 
 // --- EMCAL headers
 #include "AliEMCALGeometry.h"
+#include "AliEMCALDigit.h"
 
 ClassImp(AliEMCALGeometry)
 
@@ -273,6 +277,10 @@ void AliEMCALGeometry::Init(void){
     printf("Layout: phi = (%7.1f, %7.1f), eta = (%5.2f, %5.2f), IP = %7.2f\n",  
 	   GetArm1PhiMin(), GetArm1PhiMax(),GetArm1EtaMin(), GetArm1EtaMax(), GetIPDistance() );
   }
+  //TRU parameters. These parameters values are not the final ones.
+  fNTRU    = 3 ;
+  fNTRUEta = 3 ;
+  fNTRUPhi = 1 ;
 }
 
 //______________________________________________________________________
@@ -317,6 +325,98 @@ void AliEMCALGeometry::CheckAditionalOptions()
     }
   }
 }
+
+//____________________________________________________________________________
+TClonesArray *  AliEMCALGeometry::FillTRU(const TClonesArray * digits) {
+
+
+  //Orders digits ampitudes list in fNTRU TRUs (384 cells) per supermodule. 
+  //Each TRU is a TMatrixD, and they are kept in TClonesArrays. The number of 
+  //TRU in phi is fNTRUPhi, and the number of TRU in eta is fNTRUEta. For the 
+  //moment the TRU of the 2 smaller supermodules are considered to be equal 
+  //to the rest.  
+
+  //Check data members
+
+  if(fNTRUEta*fNTRUPhi != fNTRU)
+    Error("FillTRU"," Wrong number of TRUS per Eta or Phi");
+
+  //Initilize variables
+  //List of TRU matrices initialized to 0.
+  Int_t nCellsPhi = fNPhi*2/fNTRUPhi;
+  Int_t nCellsEta = fNZ*2/fNTRUEta;
+  TClonesArray * matrix = new TClonesArray("TMatrixD",1000);
+ 
+  for(Int_t k = 0; k < fNTRU*fNumberOfSuperModules; k++){
+    TMatrixD  * trus = new TMatrixD(nCellsPhi,nCellsEta) ;
+    for(Int_t i = 0; i < nCellsPhi; i++)
+      for(Int_t j = 0; j < nCellsEta; j++)
+	(*trus)(i,j) = 0.0;
+
+    new((*matrix)[k]) TMatrixD(*trus) ;
+  }
+
+  AliEMCALDigit * dig ;
+  
+  //Declare variables
+  Int_t id      = -1; 
+  Float_t amp   = -1;
+  Int_t iSupMod = -1;
+  Int_t nTower  = -1;
+  Int_t nIphi   = -1;
+  Int_t nIeta   = -1;
+  Int_t iphi    = -1;
+  Int_t ieta    = -1;
+  
+  //Digits loop to fill TRU matrices with amplitudes.
+
+  for(Int_t idig = 0 ; idig < digits->GetEntriesFast() ; idig++){
+    
+    dig = dynamic_cast<AliEMCALDigit *>(digits->At(idig)) ;
+    amp = dig->GetAmp() ; //Energy of the digit (arbitrary units)
+    id  = dig->GetId() ;  //Id label of the cell
+    //cout<<"idig "<<idig<<" Amp "<<amp<<" Id "<<id<<endl;
+   
+    //Get eta and phi cell position in supermodule
+    Bool_t bCell = GetCellIndex(id, iSupMod, nTower, nIphi, nIeta) ;
+    if(!bCell)
+      Error("FillTRU","Wrong cell id number") ;
+    
+    GetCellPhiEtaIndexInSModule(iSupMod,nTower,nIphi, nIeta,iphi,ieta);
+
+    //Check to which TRU in the supermodule belongs the cell. 
+    //Supermodules are divided in a TRU matrix of dimension 
+    //(fNTRUPhi,fNTRUEta).
+    //Each TRU is a cell matrix of dimension (nCellsPhi,nCellsEta)
+
+    //First calculate the row and column in the supermodule 
+    //of the TRU to which the cell belongs.
+
+    Int_t col   = (ieta-1)/nCellsEta+1; 
+    Int_t row   = (iphi-1)/nCellsPhi+1; 
+    Int_t itru  = col*row + (iSupMod-1)*fNTRU - 1; //Label number of the TRU
+//     Info("FillTRU","SM %d, cell: phi %d, eta %d",iSupMod,iphi,ieta);
+//     Info("FillTRU","SM TRU: SMrow %d, SMcol %d, SMtru %d,",row,col,itru); 
+    
+ 
+    //Fill TRU matrix with cell values
+    
+    TMatrixD * trus = dynamic_cast<TMatrixD *>(matrix->At(itru)) ;
+    
+    //Calculate row and column of the cell inside the TRU with number itru
+
+    Int_t irow = (iphi-1) - (row-1) *  nCellsPhi;	
+    Int_t icol = (ieta-1) - (col-1) *  nCellsEta;
+    
+    (*trus)(irow,icol) = amp ;
+
+
+    //     Info("FillTRU","TRU: row %d, col %d",irow,icol);
+
+  }
+  return matrix;
+}
+
 
 //______________________________________________________________________
 AliEMCALGeometry *  AliEMCALGeometry::GetInstance(){ 

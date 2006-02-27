@@ -12,12 +12,14 @@
 //*-- Author: Sahal Yacoob (LBL / UCT)
 //*--   and : Yves Schutz (Subatech)
 //*--   and : Aleksei Pavlinov (WSU) - shashlyk staff
+//*--   and : Gustavo Conesa: Add TRU mapping. TRU parameters still not fixed.
 
 // --- ROOT system ---
 class TString ;
 class TObjArray;
 class TVector3 ;
 class TParticle ; 
+class TClonesArray ;
 
 // --- AliRoot header files ---
 #include "AliGeometry.h"
@@ -39,6 +41,9 @@ public:
   };
 
   Bool_t AreInSameTower(Int_t id1, Int_t id2) const ;  
+
+  TClonesArray *  FillTRU(const TClonesArray * digits)  ;
+  
   virtual void GetGlobal(const AliRecPoint *, TVector3 &, TMatrixF &) const {}
   virtual void GetGlobal(const AliRecPoint *, TVector3 &) const {}
   virtual Bool_t Impact(const TParticle *) const {return kTRUE;}
@@ -86,6 +91,11 @@ public:
   Int_t   GetNPHIdiv() const {return fNPHIdiv ;}
   Int_t   GetNETAdiv() const {return fNETAdiv ;}
   Int_t   GetNCells()  const {return fNCells;}
+
+  Int_t   GetNTRU() const    {return fNTRU ; }  
+  Int_t   GetNTRUEta() const {return fNTRUEta ; }  
+  Int_t   GetNTRUPhi() const {return fNTRUPhi ; }  
+
   Float_t GetSteelFrontThickness() const { return fSteelFrontThick;}
   Float_t GetLongModuleSize() const {return fLongModuleSize;}
 
@@ -128,6 +138,11 @@ public:
   // --
   void SetNZ(Int_t nz) { fNZ= nz ; printf("SetNZ: Number of modules in Z set to %d", fNZ) ; }
   void SetNPhi(Int_t nphi) { fNPhi= nphi ; printf("SetNPhi: Number of modules in Phi set to %d", fNPhi) ; }
+
+  void SetNTRU(Int_t ntru)    {fNTRU    = ntru; printf("SetNTRU: Number of TRUs per SuperModule set to %d", fNTRU) ; }
+  void SetNTRUEta(Int_t ntru) {fNTRUEta = ntru; ; printf("SetNTRU: Number of TRUs per SuperModule in Etaset to %d", fNTRUEta) ;}
+  void SetNTRUPhi(Int_t ntru) {fNTRUPhi = ntru; ; printf("SetNTRU: Number of TRUs per SuperModule in Phi set to %d", fNTRUPhi) ;}
+
   void SetSampling(Float_t samp) { fSampling = samp; printf("SetSampling: Sampling factor set to %f", fSampling) ; }
 
 protected:
@@ -185,6 +200,10 @@ private:
   Int_t   fNCells;                       // number of cells in calo
   Int_t   fNCellsInSupMod;               // number cell in super module
   Int_t   fNCellsInTower;                // number cell in tower(or module)
+  //TRU parameters
+  Int_t   fNTRU ;                        //! Number of TRUs per module
+  Int_t   fNTRUEta ;                     //! Number of cell rows per Z in one TRU
+  Int_t   fNTRUPhi ;                     //! Number of cell rows per Phi in one TRU
   // TRD1 options - 30-sep-04
   Float_t fTrd1Angle;                    // angle in x-z plane (in degree) 
   Float_t f2Trd1Dx2;                     // 2*dx2 for TRD1
