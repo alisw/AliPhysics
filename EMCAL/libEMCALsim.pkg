@@ -2,8 +2,9 @@
 
 SRCS =\
 AliEMCALTick.cxx \
-AliEMCALFast.cxx
-
+AliEMCALFast.cxx \
+AliEMCALCalibData.cxx \
+AliEMCALTrigger.cxx
 
 HDRS= $(SRCS:.cxx=.h) 
 
