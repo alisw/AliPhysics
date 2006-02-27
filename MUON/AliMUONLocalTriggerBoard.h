@@ -19,8 +19,9 @@ class AliMUONLocalTriggerBoard : public AliMUONTriggerBoard
       virtual ~AliMUONLocalTriggerBoard() {;}
 
       virtual void     Setbit(Int_t strip, Int_t cathode, Int_t chamber);
+      virtual void     SetbitM(Int_t strip, Int_t cathode, Int_t chamber);
 
-      virtual void     Pattern(Option_t *option = ""); // default option displays X then Y bp
+      virtual void     Pattern(Option_t *option = "X Y"); // default option displays X then Y bp
 
       virtual void     Reset();
 
@@ -31,6 +32,10 @@ class AliMUONLocalTriggerBoard : public AliMUONTriggerBoard
       virtual void     SetTC(Bool_t con) {fTC = con;}
 
       virtual Bool_t   GetTC() {return fTC;}
+
+		virtual void     SetNumber(Int_t nb) {fNumber = nb;}
+
+		virtual Int_t    GetNumber() {return fNumber;}
 
       virtual void     Module(char *mod);
 
@@ -86,6 +91,10 @@ class AliMUONLocalTriggerBoard : public AliMUONTriggerBoard
 
       virtual Int_t    GetDev() {return fDev;}
       
+		virtual void     SetCrate(TString crate) {fCrate = crate;}
+		virtual TString  GetCrate() {return fCrate;}
+
+		
 
    protected:
 
@@ -96,6 +105,8 @@ class AliMUONLocalTriggerBoard : public AliMUONTriggerBoard
    private:
 
       Int_t    fNumber;
+
+		TString  fCrate;
 
       UShort_t fSwitch[10], fXY[2][4], fXYU[2][4], fXYD[2][4], fMask[2][4];
 

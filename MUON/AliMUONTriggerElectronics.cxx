@@ -26,10 +26,18 @@
 #include "AliMUONLocalTrigger.h"
 #include "AliMUONGlobalTrigger.h"
 #include "AliLoader.h"
+#include "AliRun.h"
+#include "AliMUON.h" 
 #include "AliMUONData.h" 
 #include "AliMUONDigit.h"
 #include "AliLog.h"
 #include "AliLoader.h"
+#include "AliMUONTriggerConstants.h"
+#include "AliMpTriggerSegmentation.h"
+#include "AliMUONSegmentation.h"
+#include "AliMpVSegmentation.h"
+
+#include "TBits.h"
 
 #include "Riostream.h"
 #include "TSystem.h"
@@ -60,6 +68,9 @@ AliMUONTriggerElectronics::AliMUONTriggerElectronics(AliMUONData *Data)
    
    fGlobal       = 0; 
 
+	fCrateMap = new char*[234];
+	for (Int_t i=0;i<234;i++) fBoardMap[i] = 0;
+	
    SetDataSource();
    Factory();
 
@@ -72,6 +83,8 @@ AliMUONTriggerElectronics::~AliMUONTriggerElectronics()
 {
   delete fGlobalTriggerBoard;
   delete fCrates;
+
+  for (Int_t i=0;i<234;i++) if (fCrateMap[i]) {delete [] fCrateMap[i]; fCrateMap[i] = NULL;}
 }
 
 //___________________________________________
@@ -114,6 +127,10 @@ void AliMUONTriggerElectronics::Factory()
 
                AliMUONTriggerCrate *crate = Crate(str); 
 
+// 					cout << " Manipulating crate " << str << endl;
+
+
+
                if (!crate) 
                {
                   AddCrate(str); crate = Crate(str);
@@ -126,6 +143,20 @@ void AliMUONTriggerElectronics::Factory()
                Int_t sl = atoi(fields[10]);
 
                AliMUONLocalTriggerBoard *board = new AliMUONLocalTriggerBoard(fields[4], sl);
+
+					if (strcmp(fields[1],"nn")) 
+					{
+						Int_t sboard = atoi(fields[1]);
+
+						board->SetNumber(sboard);
+
+						fCrateMap[sboard-1] = new char[strlen(str)+1]; strcpy(fCrateMap[sboard-1], str);
+// 						cout << " fCrateMap[" << sboard-1 << "]: " << fCrateMap[sboard-1] << endl;
+						
+						fBoardMap[sboard-1] = sl;
+					}
+
+					board->SetCrate(str);
 
                crate->AddBoard(board, sl);
 
@@ -176,11 +207,7 @@ void AliMUONTriggerElectronics::Feed()
 //       GET THE SUM OF THE CODED CHARGE 
 //       SEE CODING CONVENTION IN AliMUONChamberTrigger::DisIntegration 	
 			Int_t schg = 0;
-
-      // CHECKME ! The TrackCharge is not ok with new digitizerV3 !
-//			for (Int_t ichg=0; ichg<10; ichg++) schg += mdig->TrackCharge(ichg);
-//      assert(schg==mdig->Signal());
-      schg = mdig->Signal();
+			for (Int_t ichg=0; ichg<10; ichg++) schg += mdig->TrackCharge(ichg);
       
 //       APPLY CONDITION ON SOFT BACKGROUND	
 			Int_t tchg = schg - (Int_t(schg/10))*10;	
@@ -203,9 +230,34 @@ void AliMUONTriggerElectronics::Feed()
 					if (b) 
 					{
 						Int_t digitindex = digit;
-// 						if (b->GetSwitch(6) && cathode)
-// 							b->Setbit(iy+8,cathode,ichamber-10);
-// 						else
+
+//                Y STRIP IS FIRED ONCE BUT ALL BOARDS FROM THE SAME MODULE ARE FED
+						if (cathode)
+						{	
+							if (b->GetSwitch(6)) iy += 8;
+
+							char M1[20]; b->Module(M1);
+
+							for (Int_t j=0;j<fgkNCrates;j++)
+							{            
+								AliMUONTriggerCrate *ca = (AliMUONTriggerCrate*)fCrates->UncheckedAt(j);
+            
+								TObjArray *bs = ca->Boards();
+
+								for (Int_t k=1; k<bs->GetEntries()-1; k++)
+								{									
+									AliMUONLocalTriggerBoard *h = (AliMUONLocalTriggerBoard*)bs->At(k);
+
+									if (h)
+									{
+										char M2[20]; h->Module(M2);
+										
+										if (!strcmp(M1,M2)) h->Setbit(iy,cathode,ichamber-10);
+									}
+								}
+							}
+						}
+						else
 							b->Setbit(iy,cathode,ichamber-10);
 
 						DigitFiredCircuit(b->GetI(), cathode, ichamber, digitindex);
@@ -246,118 +298,217 @@ void AliMUONTriggerElectronics::Feed()
 //    COPY X3-4 FROM BOARD 15 OF CRATE 3 TO BOARD 9 OF CRATE 2-3
       fromcb->GetX34(cX); desycb->SetX34(cX);
 
-      UShort_t cY[2];
+      UShort_t cY[4];
 
       desybb->GetY(cY); frombb->SetY(cY);
 	}
 
-// TRANSVERSE CONNECTOR TO REPLICATE Y
-	for (Int_t i=0; i<fgkNCrates; i++)
-	{            
-      AliMUONTriggerCrate *cr = (AliMUONTriggerCrate*)fCrates->UncheckedAt(i);
-            
-      TObjArray *boards = cr->Boards();
-
-		for (Int_t j=1; j<boards->GetEntries()-1; j++)
-		{
-			TObject *o = boards->At(j);
-
-			if (!o) break;
-
-			AliMUONLocalTriggerBoard *currboard = (AliMUONLocalTriggerBoard*)o;
-
-			AliMUONLocalTriggerBoard *neighbour = (AliMUONLocalTriggerBoard*)boards->At(j+1);
-
-			char **names = new char*[2]; 
-         
-			names[0] = new char[20]; names[1] = new char[20];
-         
-			currboard->Module(names[0]); neighbour->Module(names[1]);
-
-//       CASCADE Y TO NEIGHBOUR (FROM 12 BOARD TO 34, 56...)
-			if (currboard->GetTC() && !strcmp(names[0],names[1]))
-			{
-				UShort_t cY[4]; 
-
-				currboard->GetY(cY); neighbour->SetY(cY);				
-			}
-		}
-	}
-		
 // FILL UP/DOWN OF CURRENT BOARD (DONE VIA J3 BUS IN REAL LIFE)
-	for (Int_t i=0; i<fgkNCrates; i++)
+   for (Int_t i=0; i<fgkNCrates; i++)
 	{            
-      AliMUONTriggerCrate *cr = (AliMUONTriggerCrate*)fCrates->UncheckedAt(i);
-            
-      TObjArray *boards = cr->Boards();
-
+		AliMUONTriggerCrate *cr = (AliMUONTriggerCrate*)fCrates->UncheckedAt(i);
+		
+		TObjArray *boards = cr->Boards();
+		
 		for (Int_t j=1; j<boards->GetEntries()-1; j++)
 		{
 			TObject *o = boards->At(j);
-
+			
 			if (!o) break;
-
+			
 			AliMUONLocalTriggerBoard *currboard = (AliMUONLocalTriggerBoard*)o;
-
+			
 			AliMUONLocalTriggerBoard *neighbour = (AliMUONLocalTriggerBoard*)boards->At(j+1);
-
+			
 			UShort_t cXY[2][4];
-
+			
 			if (j==1) {neighbour->GetXY(cXY); currboard->SetXYU(cXY);}
-
+			
 //       LAST BOARD IN THE CRATE HAS NO UP EXCEPT FOR CRATES 2 & 3
 			if (j<boards->GetEntries()-2)  
 			{
 				AliMUONLocalTriggerBoard *nextboard = (AliMUONLocalTriggerBoard*)boards->At(j+2);
-
+				
 				currboard->GetXY(cXY); neighbour->SetXYD(cXY);
 				nextboard->GetXY(cXY); neighbour->SetXYU(cXY);
-
+				
 				if (j==boards->GetEntries()-3) {neighbour->GetXY(cXY); nextboard->SetXYD(cXY);}
 			}
 		}
 	}
-/*
-  for (Int_t i=0; i<fgkNCrates; i++)
-  {            
-  AliMUONTriggerCrate *cr = (AliMUONTriggerCrate*)fCrates->UncheckedAt(i);
-            
-  cout << "+++ CRATE " << cr->GetName() << endl;
+}
 
-  TObjArray *boards = cr->Boards();
-
-  for (Int_t j=1; j<boards->GetEntries()-1; j++)
-  {
-  TObject *o = boards->At(j);
-
-  if (!o) break;
-
-  AliMUONLocalTriggerBoard *currboard = (AliMUONLocalTriggerBoard*)o;
-
-  AliMUONLocalTriggerBoard *neighbour = (AliMUONLocalTriggerBoard*)boards->At(j+1);
-
-//       LAST BOARD IN THE CRATE HAS NO UP EXCEPT FOR CRATES 2 & 3
-if (j<boards->GetEntries()-2)  
+//___________________________________________
+void AliMUONTriggerElectronics::FeedM()
 {
-AliMUONLocalTriggerBoard *nextboard = (AliMUONLocalTriggerBoard*)boards->At(j+2);
+	for (Int_t ichamber=10; ichamber<14; ichamber++) 
+	{
+      TClonesArray *MuonDigits = fMUONData->Digits(ichamber);
+      Int_t ndigits = MuonDigits->GetEntriesFast();
 
-cout << "currb: " << currboard->GetName() << endl;
-cout << "board: " << neighbour->GetName() << endl;
-cout << "nextb: " << nextboard->GetName() << endl;
-currboard->Scan("CONF");
-currboard->Pattern("X");
-currboard->Pattern("Y");
-neighbour->Scan("CONF");
-neighbour->Pattern("X");
-neighbour->Pattern("Y");
-nextboard->Scan("CONF");
-nextboard->Pattern("X");
-nextboard->Pattern("Y");
-}
-}
-}
-*/
+// 		cout << " ichamber: " << ichamber << " ndigits: " << ndigits << endl;
+
+      for (Int_t digit=0; digit<ndigits; digit++)
+		{
+			AliMUONDigit *mdig = static_cast<AliMUONDigit*>(MuonDigits->UncheckedAt(digit));
+
+//       CHECKME ! The TrackCharge is not ok with new digitizerV3 !
+//			for (Int_t ichg=0; ichg<10; ichg++) schg += mdig->TrackCharge(ichg);
+//       assert(schg==mdig->Signal());
+			Int_t schg = mdig->Signal();
+         
+//       APPLY CONDITION ON SOFT BACKGROUND	
+			Int_t tchg = schg - (Int_t(schg/10))*10;	
+
+			if (schg<=10 || tchg>0) 
+			{
+//   				mdig->Print();
+
+				Int_t digitindex = digit;
+				Int_t detElemId  = mdig->DetElemId();
+				Int_t cathode    = mdig->Cathode();
+
+				const AliMpVSegmentation *seg = ((AliMUON*)gAlice->GetDetector("MUON"))->GetSegmentation()->GetMpSegmentation(detElemId,cathode);
+
+				Int_t ix = mdig->PadX(), iy = mdig->PadY();
+				
+				AliDebug(3,Form("cathode %d ix %d iy %d ",cathode,ix,iy));
+
+				AliMpPad pad = seg->PadByIndices(AliMpIntPair(ix,iy),kTRUE);
+				
+				for (Int_t i=0; i<pad.GetNofLocations(); i++) 
+				{
+					AliMpIntPair location = pad.GetLocation(i);
+					
+					Int_t nboard = location.GetFirst();
+
+					Int_t ibitxy = location.GetSecond();
+
+
+					AliMUONTriggerCrate *cr = (AliMUONTriggerCrate*)fCrates->FindObject(fCrateMap[nboard-1]); 
+
+					TObjArray *boards = cr->Boards();
+
+					AliMUONLocalTriggerBoard *b = (AliMUONLocalTriggerBoard*)boards->At(fBoardMap[nboard-1]);
+
+// 					if (b && nboard && b->GetNumber()==nboard) 
+					if (b) 
+					{
+						if (cathode && b->GetSwitch(6)) ibitxy += 8;
+						
+// 						cout << " nboard:\t" << nboard << " ibitxy:\t" << ibitxy << " schg:\t" << schg << " crate:\t" << fCrateMap[nboard-1] << endl;
+
+						b->SetbitM(ibitxy,cathode,ichamber-10);
+						
+						DigitFiredCircuit(b->GetI(), cathode, ichamber, digitindex);
+					}
+
+
+// 					for (Int_t j=0; j<fgkNCrates; j++)
+// 					{            
+// 						AliMUONTriggerCrate *cr = (AliMUONTriggerCrate*)fCrates->UncheckedAt(j);
+						
+// 						TObjArray *boards = cr->Boards();
+						
+// 						for (Int_t k=1; k<boards->GetEntries()-1; k++)
+// 						{									
+// 							AliMUONLocalTriggerBoard *b = (AliMUONLocalTriggerBoard*)boards->At(k);
+							
+// 							if (b && nboard && b->GetNumber()==nboard) 
+// 							{
+// 								if (cathode && b->GetSwitch(6)) ibitxy += 8;
+
+// 								b->SetbitM(ibitxy,cathode,ichamber-10);
+
+// //  								cout << "BOARD: " << b->GetName() << " Number: " << b->GetNumber() 
+// //  									  << " ibitxy: " << ibitxy
+// // 									  << " nboard: " << nboard 
+// // 									  << " ich: " << ichamber-10 << endl;
+								
+// 								DigitFiredCircuit(b->GetI(), cathode, ichamber, digitindex);
+// 							}
+// 						}
+// 					}
+				}
+			}			
 		}
+
+//       fMUONData->ResetDigits();
+	}
+
+// Particular case of the columns with 22 local boards (2R(L) 3R(L))   
+	AliMUONTriggerCrate *crate = 0x0; TObjArray *bs = 0x0;
+
+	char *scratess[4] = {  "2R",   "2L",   "3L",   "3R"}; 
+	char *scratesd[4] = {"2-3R", "2-3L", "2-3L", "2-3R"}; 
+	Int_t    slotf[4] = {     2,      2,     10,     10}; 
+	Int_t    slotd[4] = {     1,      1,      9,      9}; 
+
+	for (Int_t i=0; i<4; i++)
+	{
+      crate = (AliMUONTriggerCrate*)fCrates->FindObject(scratess[i]); 
+      bs = crate->Boards();
+      AliMUONLocalTriggerBoard *desybb = (AliMUONLocalTriggerBoard*)bs->At(14);
+      AliMUONLocalTriggerBoard *fromcb = (AliMUONLocalTriggerBoard*)bs->At(15);
+      AliMUONLocalTriggerBoard *desxbb = (AliMUONLocalTriggerBoard*)bs->At(16);
+
+      crate = (AliMUONTriggerCrate*)fCrates->FindObject(scratesd[i]); 
+      bs = crate->Boards();
+      AliMUONLocalTriggerBoard *frombb = (AliMUONLocalTriggerBoard*)bs->At(slotf[i]);
+      AliMUONLocalTriggerBoard *desycb = (AliMUONLocalTriggerBoard*)bs->At(slotd[i]);
+
+      UShort_t cX[2];
+
+//    COPY X3-4 FROM BOARD  2 OF CRATE 2-3 TO BOARD 16 OF CRATE 2
+//    COPY X3-4 FROM BOARD 10 OF CRATE 2-3 TO BOARD 16 OF CRATE 3
+      frombb->GetX34(cX); desxbb->SetX34(cX);
+
+//    COPY X3-4 FROM BOARD 15 OF CRATE 2 TO BOARD 1 OF CRATE 2-3
+//    COPY X3-4 FROM BOARD 15 OF CRATE 3 TO BOARD 9 OF CRATE 2-3
+      fromcb->GetX34(cX); desycb->SetX34(cX);
+
+      UShort_t cY[4];
+
+      desybb->GetY(cY); frombb->SetY(cY);
+
+      frombb->GetY(cY); desxbb->SetY(cY);
+      fromcb->GetY(cY); desycb->SetY(cY);
+	}
+
+// FILL UP/DOWN OF CURRENT BOARD (DONE VIA J3 BUS IN REAL LIFE)
+   for (Int_t i=0; i<fgkNCrates; i++)
+	{            
+		AliMUONTriggerCrate *cr = (AliMUONTriggerCrate*)fCrates->UncheckedAt(i);
+		
+		TObjArray *boards = cr->Boards();
+		
+		for (Int_t j=1; j<boards->GetEntries()-1; j++)
+		{
+			TObject *o = boards->At(j);
+			
+			if (!o) break;
+			
+			AliMUONLocalTriggerBoard *currboard = (AliMUONLocalTriggerBoard*)o;
+			
+			AliMUONLocalTriggerBoard *neighbour = (AliMUONLocalTriggerBoard*)boards->At(j+1);
+			
+			UShort_t cXY[2][4];
+			
+			if (j==1) {neighbour->GetXY(cXY); currboard->SetXYU(cXY);}
+			
+//       LAST BOARD IN THE CRATE HAS NO UP EXCEPT FOR CRATES 2 & 3
+			if (j<boards->GetEntries()-2)  
+			{
+				AliMUONLocalTriggerBoard *nextboard = (AliMUONLocalTriggerBoard*)boards->At(j+2);
+				
+				currboard->GetXY(cXY); neighbour->SetXYD(cXY);
+				nextboard->GetXY(cXY); neighbour->SetXYU(cXY);
+				
+				if (j==boards->GetEntries()-3) {neighbour->GetXY(cXY); nextboard->SetXYD(cXY);}
+			}
+		}
+	}
+}
 
 //___________________________________________
 void AliMUONTriggerElectronics::Feed(UShort_t pattern[2][4])
@@ -397,7 +548,7 @@ void AliMUONTriggerElectronics::DumpOS()
 
          AliMUONLocalTriggerBoard *board = (AliMUONLocalTriggerBoard*)boards->FindObject(name);
 
-			if (board) board->Scan("CONF RESPI BITP RESPF");
+			if (board) board->Scan("ALL");
       }
    }
 }
@@ -448,6 +599,14 @@ void AliMUONTriggerElectronics::Reset()
          if (b) b->Reset();
       }
    }
+
+   for (Int_t i=0;i<16;i++) 
+   {
+      fRegional[i] = 0;
+      for (Int_t j=0;j<16;j++) fLocal[i][j] = 0;
+   }
+
+   fGlobal = 0;
 }
 
 //___________________________________________
@@ -641,7 +800,7 @@ AliMUONTriggerElectronics::Exec(Option_t*)
 //_______________________________________________________________________
 void AliMUONTriggerElectronics::Trigger()
 {
-   Feed();
+   FeedM();
    LocalResponse();
    RegionalResponse();      
    GlobalResponse();
@@ -689,12 +848,8 @@ void AliMUONTriggerElectronics::Digits2Trigger()
 
 // RUN THE FULL BEE CHAIN
    Trigger();
-
- //  if ( AliDebugLevel() > 1 ) 
-//   {
-//     DumpOS();
-//   }
-
+//  	DumpOS();
+	
    for (Int_t i=0; i<fgkNCrates; i++)
    {            
       AliMUONTriggerCrate *cr = (AliMUONTriggerCrate*)fCrates->UncheckedAt(i);
@@ -781,7 +936,7 @@ void AliMUONTriggerElectronics::Digits2Trigger()
 // ADD A LOCAL TRIGGER IN THE LIST 
    fMUONData->AddGlobalTrigger(*pGloTrig);
 
-// Now reset electronics
+// NOW RESET ELECTRONICS
    Reset();
 }
 

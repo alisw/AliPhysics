@@ -130,6 +130,30 @@ void AliMUONLocalTriggerBoard::Setbit(Int_t strip, Int_t cathode, Int_t chamber)
 }
 
 //___________________________________________
+void AliMUONLocalTriggerBoard::SetbitM(Int_t strip, Int_t cathode, Int_t chamber)
+{
+// 0 .. LBS   :   N-1 .. MSB
+   TBits w, m;
+
+   UShort_t xy = fXY[cathode][chamber], mask = fMask[cathode][chamber];
+
+   w.Set(16,&xy);
+   m.Set(16,&mask);
+
+//    Int_t s = strip - int(strip / 16) * 16;
+
+   w.SetBitNumber(strip);
+   
+   w &= m;
+
+   UShort_t value;
+
+   w.Get(&value);
+
+   fXY[cathode][chamber] = value;
+}
+
+//___________________________________________
 void AliMUONLocalTriggerBoard::Pattern(Option_t *option)
 {
    TString op = option;
@@ -146,6 +170,8 @@ void AliMUONLocalTriggerBoard::BP(Option_t *option)
 // RESPECT THE OLD PRINTOUT FORMAT
 
    TString op = option;
+
+	TString nn = GetName();
 
    if (op.Contains("X"))
    {
@@ -198,8 +224,16 @@ void AliMUONLocalTriggerBoard::BP(Option_t *option)
 
 /*    OLD NUMBERING STYLE    */
 /**/
-      Int_t absidModule=TMath::Abs(Int_t(GetI()/10));
+      Int_t idCircuit = 0, absidModule = 0;
+
+		if (!(nn.Contains("Int"))) 
+		{
+			idCircuit   = AliMUONTriggerConstants::CircuitId(GetI());
+			absidModule = TMath::Abs(Int_t(idCircuit/10));
+		}
+		
       Int_t iModule=0;
+
       for (Int_t i=0; i<63; i++) 
       {
          if (AliMUONTriggerConstants::ModuleId(i)==absidModule) 
@@ -263,8 +297,6 @@ void AliMUONLocalTriggerBoard::BP(Option_t *option)
          printf("\n YMC22                      ");
          cout << v22 << endl;
       }
-
-      Int_t idCircuit = AliMUONTriggerConstants::CircuitId(GetI());
 
 //    tmp
       printf("---------------------------------------------------------------");
@@ -780,14 +812,14 @@ void AliMUONLocalTriggerBoard::TrigY(Int_t y1[16], Int_t y2[16], Int_t y3[16], I
    }
    if (fSwitch[3]==0&&fSwitch[4]==1){
       for (i=0; i<16; i++){
-         ch3[i] = tmpy3uto16[i]|tmpy3to16[i];
-         ch4[i] = tmpy4uto16[i]|tmpy4to16[i];
+         ch3[i] = tmpy3dto16[i]|tmpy3to16[i];
+         ch4[i] = tmpy4dto16[i]|tmpy4to16[i];
       }
    }
    if (fSwitch[3]==1&&fSwitch[4]==0){
       for (i=0; i<16; i++){
-         ch3[i] = tmpy3dto16[i]|tmpy3to16[i];
-         ch4[i] = tmpy4dto16[i]|tmpy4to16[i];
+         ch3[i] = tmpy3uto16[i]|tmpy3to16[i];
+         ch4[i] = tmpy4uto16[i]|tmpy4to16[i];
       }
    }
    if (fSwitch[3]==1&&fSwitch[4]==1){
@@ -957,7 +989,13 @@ void AliMUONLocalTriggerBoard::LocalTrigger()
       for (Int_t i=0; i<5; i++) fStripX11 += static_cast<int>( fMinDevStrip[i] << i );
 
       fDev      = deviation;
-      fStripY11 = iStripY / 2;
+
+		fStripY11 = iStripY;
+		
+		if ( fSwitch[1] && 
+			  (fSwitch[0] || fSwitch[2]) && 
+			  !(!fSwitch[0] && fSwitch[4]) && 
+			  !(!fSwitch[2] && fSwitch[3]) ) fStripY11 /= 2;
 
       Int_t sign = 0;
 
@@ -972,7 +1010,10 @@ void AliMUONLocalTriggerBoard::LocalTrigger()
 
       Int_t icirc = GetI();
 
-//    get Lut output for circuit/istripX/idev/istripY
+//    LEFT SHIFT OF ZERO-ALLY-LSB BOARDS TO ACCESS TO LUT
+		if (GetSwitch(6)) fStripY11 -= 8;
+
+//    GET LUT OUTPUT FOR icirc/istripX1/deviation/istripY
       fLUT->GetLutOutput(icirc, fStripX11, fDev, fStripY11, fLutLpt, fLutHpt, fLutApt);
    }  
 }
@@ -1035,7 +1076,7 @@ void AliMUONLocalTriggerBoard::Scan(Option_t *option)
 
    if (op.Contains("CONF")) Conf();
 
-   if (op.Contains("BITP")) Pattern("X Y");
+   if (op.Contains("BITP")) Pattern();
 
    if (op.Contains("RESPI")) Resp("I");
 

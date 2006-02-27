@@ -43,6 +43,7 @@ class AliMUONTriggerElectronics : public TTask
 
       virtual void Feed();
       virtual void Feed(UShort_t pattern[2][4]);
+		virtual void FeedM();
 
       virtual void BoardName(Int_t ix, Int_t iy, char *name);
 
@@ -76,6 +77,8 @@ class AliMUONTriggerElectronics : public TTask
       UShort_t                   fGlobal;
       AliMUONData               *fMUONData;          //! Data container for MUON subsystem 
       TArrayI                    fDigitNumbers[234]; //! The digit number that fired a circuit.
+      char                     **fCrateMap;
+      Int_t                      fBoardMap[234];
 
    ClassDef(AliMUONTriggerElectronics,1)
 };
