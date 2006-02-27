@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.1  2005/12/15 08:55:33  decaro
+New TOF geometry description (V5) -G. Cara Romeo and A. De Caro
+
 
 Revision 0.1 2004 November G. Cara Romeo and A. De Caro
         Implement new TOF geometry version
@@ -1210,13 +1213,19 @@ void AliTOFv5T0::StepManager()
 
   TLorentzVector mom, pos;
   Float_t xm[3],pm[3],xpad[3],ppad[3];
-  Float_t hits[14],phi,phid;
+  Float_t hits[14];
   Int_t   vol[5];
-  Int_t   plate = -1;
-  Int_t   sector, padx, padz, strip;
+  Int_t   sector, plate, padx, padz, strip;
   Int_t   copy, padzid, padxid, stripid, i;
   Int_t   *idtmed = fIdtmed->GetArray()-499;
   Float_t incidenceAngle;
+
+  const char * path71 = "B071";
+  const char * path75 = "B075";
+  const char * path74 = "B074";
+  const char* volpath;
+
+  Int_t index = 0;
 
   if(
      gMC->IsTrackEntering()
@@ -1267,12 +1276,7 @@ void AliTOFv5T0::StepManager()
     }
     incidenceAngle = TMath::ACos(ppad[1])*kRaddeg;
 
-    phi = pos.Phi();
-    if (phi>=0.) phid = phi*kRaddeg;
-    else phid = phi*kRaddeg + 360.;
-
-    sector = Int_t (phid/20.);
-
+    plate = -1;
     if      (strip <  fTOFGeometry->NStripC()) {
       plate = 0;
       //strip = strip;
@@ -1296,6 +1300,16 @@ void AliTOFv5T0::StepManager()
       plate = 4;
       strip = strip - fTOFGeometry->NStripC() - fTOFGeometry->NStripB() - fTOFGeometry->NStripA() - fTOFGeometry->NStripB();
     }
+
+    volpath=gMC->CurrentVolOffName(8);
+    index=gMC->CurrentVolOffID(8,copy);
+    index=copy;
+
+    sector=-1;
+    if(strcmp(path71,volpath)==0 && index <6) sector=12+index;
+    if(strcmp(path71,volpath)==0 && index >=6) sector=index-3;
+    if(strcmp(path75,volpath)==0) sector=index-1;
+    if(strcmp(path74,volpath)==0) sector=10+index;
 
     for(i=0;i<3;++i) {
       hits[i]   = pos[i];
