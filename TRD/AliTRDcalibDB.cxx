@@ -495,7 +495,7 @@ const AliTRDCalPIDLQ* AliTRDcalibDB::GetPIDLQObject()
   // Returns the object storing the distributions for PID with likelihood
   //
   
-  return dynamic_cast<const AliTRDCalPIDLQ* const> (GetCachedCDBObject(kIDPIDLQ));
+  return dynamic_cast<const AliTRDCalPIDLQ*> (GetCachedCDBObject(kIDPIDLQ));
 }
 
 //_____________________________________________________________________________
