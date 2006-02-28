@@ -79,8 +79,11 @@ AliESDtrack::AliESDtrack() :
   fITStrack(0),
   fTPCchi2(0),
   fTPCncls(0),
+  fTPCnclsF(0),
   fTPCClusterMap(159),//number of padrows
   fTPCsignal(0),
+  fTPCsignalN(0),
+  fTPCsignalS(0),
   fTPCLabel(0),
   fTRDchi2(0),
   fTRDncls(0),
@@ -132,7 +135,7 @@ AliESDtrack::AliESDtrack() :
   for (i=0; i<180; i++){ fTPCindex[i]=0; }
   for (i=0; i<3;i++)   { fKinkIndexes[i]=0;}
   for (i=0; i<3;i++)   { fV0Indexes[i]=-1;}
-  for (i=0; i<130; i++) { fTRDindex[i]=0; }
+  for (i=0; i<180; i++) { fTRDindex[i]=0; }
   for (i=0;i<kNPlane;i++) {fTRDsignals[i]=0.; fTRDTimBin[i]=-1;}
   for (i=0;i<4;i++) {fTPCPoints[i]=-1;}
   for (i=0;i<3;i++) {fTOFLabel[i]=-1;}
@@ -168,8 +171,11 @@ AliESDtrack::AliESDtrack(const AliESDtrack& track):
   fITStrack(0),    //coping separatelly - in user code
   fTPCchi2(track.fTPCchi2),
   fTPCncls(track.fTPCncls),
+  fTPCnclsF(track.fTPCnclsF),
   fTPCClusterMap(track.fTPCClusterMap),
   fTPCsignal(track.fTPCsignal),
+  fTPCsignalN(track.fTPCsignalN),
+  fTPCsignalS(track.fTPCsignalS),
   fTPCLabel(track.fTPCLabel),
   fTRDchi2(track.fTRDchi2),
   fTRDncls(track.fTRDncls),
@@ -191,8 +197,7 @@ AliESDtrack::AliESDtrack(const AliESDtrack& track):
   fRICHtheta(track.fRICHtheta),
   fRICHphi(track.fRICHphi),
   fRICHdx(track.fRICHdx),
-  fRICHdy(track.fRICHdy),
-  fPoints(track.fPoints)
+  fRICHdy(track.fRICHdy)
 {
   //
   //copy constructor
@@ -210,7 +215,7 @@ AliESDtrack::AliESDtrack(const AliESDtrack& track):
   for (Int_t i=0; i<3;i++)   { fKinkIndexes[i]=track.fKinkIndexes[i];}
   for (Int_t i=0; i<3;i++)   { fV0Indexes[i]=track.fV0Indexes[i];}
   //
-  for (Int_t i=0;i<130;i++) fTRDindex[i]=track.fTRDindex[i];   
+  for (Int_t i=0;i<180;i++) fTRDindex[i]=track.fTRDindex[i];   
   for (Int_t i=0;i<kNPlane;i++) {
       fTRDsignals[i]=track.fTRDsignals[i]; 
       fTRDTimBin[i]=track.fTRDTimBin[i];
@@ -232,6 +237,10 @@ AliESDtrack::AliESDtrack(const AliESDtrack& track):
   if (track.fCp) fCp=new AliExternalTrackParam(*track.fCp);
   if (track.fIp) fIp=new AliExternalTrackParam(*track.fIp);
   if (track.fOp) fOp=new AliExternalTrackParam(*track.fOp);
+  fPoints =0;
+  if (track.fPoints){
+    fPoints  = new AliTrackPointArray(*(track.fPoints));
+  }
 }
 //_______________________________________________________________________
 AliESDtrack::~AliESDtrack(){ 
@@ -290,9 +299,12 @@ void AliESDtrack::MakeMiniESDtrack(){
   // Reset TPC related track information
   fTPCchi2 = 0;       
   fTPCncls = 0;       
+  fTPCnclsF = 0;       
   for (Int_t i=0;i<180;i++) fTPCindex[i] = 0;  
   fTPCClusterMap = 0;  
   fTPCsignal= 0;      
+  fTPCsignalS= 0;      
+  fTPCsignalN= 0;      
   for (Int_t i=0;i<AliPID::kSPECIES;i++) fTPCr[i]=0; 
   fTPCLabel=0;       
   for (Int_t i=0;i<4;i++) fTPCPoints[i] = 0;
@@ -303,7 +315,7 @@ void AliESDtrack::MakeMiniESDtrack(){
   fTRDchi2 = 0;        
   fTRDncls = 0;       
   fTRDncls0 = 0;       
-  for (Int_t i=0;i<130;i++) fTRDindex[i] = 0;   
+  for (Int_t i=0;i<180;i++) fTRDindex[i] = 0;   
   fTRDsignal = 0;      
   for (Int_t i=0;i<kNPlane;i++) {
       fTRDsignals[i] = 0; 
@@ -387,7 +399,7 @@ Bool_t AliESDtrack::UpdateTrackParams(const AliKalmanTrack *t, ULong_t flags){
   }
 
   Set(*t);
-
+  
   switch (flags) {
     
   case kITSin: case kITSout: case kITSrefit:
@@ -403,10 +415,8 @@ Bool_t AliESDtrack::UpdateTrackParams(const AliKalmanTrack *t, ULong_t flags){
     fTPCLabel = t->GetLabel();
     if (!fIp) fIp=new AliExternalTrackParam(*t);
     else fIp->Set(*t);
-
   case kTPCout:
-  
-    fTPCncls=t->GetNumberOfClusters();
+    fTPCncls=t->GetNumberOfClusters();    
     fTPCchi2=t->GetChi2();
     
      {//prevrow must be declared in separate namespace, otherwise compiler cries:
@@ -719,7 +729,7 @@ Int_t AliESDtrack::GetTRDclusters(UInt_t *idx) const {
   // This function returns indices of the assgined TRD clusters 
   //---------------------------------------------------------------------
   if (idx!=0)
-    for (Int_t i=0; i<130; i++) idx[i]=fTRDindex[i];  // MI I prefer some constant
+    for (Int_t i=0; i<180; i++) idx[i]=fTRDindex[i];  // MI I prefer some constant
   return fTRDncls;
 }
 

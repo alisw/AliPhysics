@@ -28,9 +28,9 @@ marian.ivanov@cern.ch
 Usage:
  
 
-.L $ALICE_ROOT/STEER/AliGenInfo.C+
+.L $ALICE_ROOT/STEER/AliGenInfo.C++g
 //be sure you created genTracks file before
-.L $ALICE_ROOT/STEER/AliESDComparisonMI.C+
+.L $ALICE_ROOT/STEER/AliESDComparisonMI.C++g
 
 //
 ESDCmpTr *t2 = new ESDCmpTr("genTracks.root","cmpESDTracks.root","galice.root",-1,0,0);
@@ -453,9 +453,9 @@ void AliESDRecInfo::Update(AliMCInfo* info,AliTPCParam * /*par*/, Bool_t reconst
       fTPCAngle1[0] = TMath::ATan2(fTPCinP1[1],fTPCinP1[0]);
       fTPCAngle1[1] = TMath::ATan(fTPCinP1[2]/fTPCinP1[3]);  
     }    
-    Double_t cov[15], param[5],x;
+    Double_t cov[15], param[5],x, alpha;
     fESDTrack.GetInnerExternalCovariance(cov);
-    fESDTrack.GetInnerExternalParameters(x,param);
+    fESDTrack.GetInnerExternalParameters(alpha, x,param);
     if (x<50) return ;
     //
     fTPCDelta[0] = (fTPCinR0[4]-fTPCinR1[4])*fTPCinR1[3];  //delta rfi
@@ -1674,7 +1674,6 @@ Int_t ESDCmpTr::BuildV0Info(Int_t eventNr)
 
 
   fTreeCmpV0->AutoSave();
-  fRecArray->Delete();
   printf("Time spended in BuilV0Info Loop\n");
   timer.Print();
   if (fDebug > 2) cerr<<"end of BuildV0Info Loop"<<endl;

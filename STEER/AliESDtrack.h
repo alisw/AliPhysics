@@ -120,9 +120,11 @@ public:
   void SetTPCpid(const Double_t *p);
   void GetTPCpid(Double_t *p) const;
   void SetTPCPoints(Float_t points[4]){for (Int_t i=0;i<4;i++) fTPCPoints[i]=points[i];}
+  void SetTPCPointsF(UChar_t  findable){fTPCnclsF = findable;}
   Float_t GetTPCPoints(Int_t i){return fTPCPoints[i];}
   void SetKinkIndexes(Int_t points[3]) {for (Int_t i=0;i<3;i++) fKinkIndexes[i] = points[i];}
   void SetV0Indexes(Int_t points[3]) {for (Int_t i=0;i<3;i++) fV0Indexes[i] = points[i];}
+  void SetTPCsignal(Float_t signal, Float_t sigma, UChar_t npoints){ fTPCsignal = signal; fTPCsignalS = sigma; fTPCsignalN = npoints;}
   Float_t GetTPCsignal() const {return fTPCsignal;}
   Float_t GetTPCchi2() const {return fTPCchi2;}
   Int_t GetTPCclusters(Int_t *idx) const;
@@ -278,9 +280,12 @@ protected:
   // TPC related track information
   Float_t fTPCchi2;        // chi2 in the TPC
   Int_t   fTPCncls;        // number of clusters assigned in the TPC
+  UShort_t fTPCnclsF;      // number of findable clusters in the TPC
   Int_t  fTPCindex[180];  //! indices of the assigned TPC clusters
   TBits   fTPCClusterMap;  // Map of clusters, one bit per padrow; 1 if has a cluster on given padrow
   Float_t fTPCsignal;      // detector's PID signal
+  UShort_t fTPCsignalN;      // number of points used for dEdx
+  Float_t  fTPCsignalS;    // RMS of dEdx measurement
   Float_t fTPCr[AliPID::kSPECIES]; // "detector response probabilities" (for the PID)
   Int_t   fTPCLabel;       // label according TPC
   Float_t fTPCPoints[4];   // TPC points -first, max. dens, last and max density
@@ -291,7 +296,7 @@ protected:
   Float_t fTRDchi2;        // chi2 in the TRD
   Int_t   fTRDncls;        // number of clusters assigned in the TRD
   Int_t   fTRDncls0;       // number of clusters assigned in the TRD before first material cross
-  UInt_t  fTRDindex[130];   //! indices of the assigned TRD clusters
+  UInt_t  fTRDindex[180];   //! indices of the assigned TRD clusters
   Float_t fTRDsignal;      // detector's PID signal
   Float_t fTRDsignals[kNPlane];  // TRD signals from all six planes
   Int_t fTRDTimBin[kNPlane];     // Time bin of Max cluster from all six planes
@@ -332,7 +337,7 @@ protected:
 
   AliTrackPointArray *fPoints; // Array which contains the track space points in the global frame
 
-  ClassDef(AliESDtrack,21)  //ESDtrack 
+  ClassDef(AliESDtrack,22)  //ESDtrack 
 };
 
 #endif 
