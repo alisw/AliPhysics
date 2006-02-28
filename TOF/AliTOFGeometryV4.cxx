@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.1  2005/12/15 08:55:33  decaro
+New TOF geometry description (V5) -G. Cara Romeo and A. De Caro
+
 Revision 0.1  2005/07/19 A. De Caro
         Modify Global methods IsInsideThePad & DistanceToPad
                according to the PPR TOF geometry
@@ -43,13 +46,11 @@ Revision 0.1  2005/07/19 A. De Caro
 ClassImp(AliTOFGeometryV4)
 
 const Int_t AliTOFGeometryV4::kNStripC      = 20;       // number of strips in C type module
-const Int_t AliTOFGeometryV4::kMaxNstrip    = 20;       // Max. number of strips
 
 const Float_t AliTOFGeometryV4::fgkZlenA    = 106.0;    // length (cm) of the A module
 const Float_t AliTOFGeometryV4::fgkZlenB    = 141.0;    // length (cm) of the B module
 const Float_t AliTOFGeometryV4::fgkZlenC    = 177.5;    // length (cm) of the C module
 const Float_t AliTOFGeometryV4::fgkMaxhZtof = 371.5;    // Max half z-size of TOF (cm)
-const Float_t AliTOFGeometryV4::fgkStripLength = 122.;  // Strip Length (rho X phi direction) (cm)
 
 const Float_t AliTOFGeometryV4::fgkDeadBndX = 1.0;      // Dead Boundaries of a Strip along X direction (length) (cm)
 const Float_t AliTOFGeometryV4::fgkDeadBndZ = 1.5;      // Dead Boundaries of a Strip along Z direction (width) (cm)
@@ -72,13 +73,11 @@ AliTOFGeometryV4::AliTOFGeometryV4()
   //
 
   AliTOFGeometry::kNStripC   = kNStripC;         // number of strips in C type module
-  AliTOFGeometry::kMaxNstrip = kMaxNstrip;       // Max. number of strips
 
   AliTOFGeometry::kZlenA    = fgkZlenA;          // length (cm) of the A module
   AliTOFGeometry::kZlenB    = fgkZlenB;          // length (cm) of the B module
   AliTOFGeometry::kZlenC    = fgkZlenC;          // length (cm) of the C module
   AliTOFGeometry::kMaxhZtof = fgkMaxhZtof;       // Max half z-size of TOF (cm)
-  AliTOFGeometry::kStripLength = fgkStripLength; // Strip Length (rho X phi direction) (cm)
 
   AliTOFGeometry::fgkxTOF   = fgkxTOF;           // Inner radius of the TOF for Reconstruction (cm)
   AliTOFGeometry::fgkRmin   = fgkRmin;           // Inner radius of the TOF (cm)
@@ -147,9 +146,6 @@ void AliTOFGeometryV4::Init()
    -5.5, -5.5, -5.5, -5.5, -5.5, -5.5, -5.5, -5.5, -5.5, -5.5 }};
 
    // Deposit in fAngles, fHeights
-
-   for (Int_t iplate = 0; iplate < kNPlates; iplate++) AliTOFGeometry::fAngles[iplate] = new Float_t[kMaxNstrip];
-   for (Int_t iplate = 0; iplate < kNPlates; iplate++) AliTOFGeometry::fHeights[iplate] = new Float_t[kMaxNstrip];
 
    for (Int_t iplate = 0; iplate < kNPlates; iplate++) {
      for (Int_t istrip = 0; istrip < kMaxNstrip; istrip++) {

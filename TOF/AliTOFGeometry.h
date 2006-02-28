@@ -23,7 +23,7 @@ class AliTOFGeometry: public TObject{
   static  Int_t NStripA()     { return kNStripA;};
   static  Int_t NStripB()     { return kNStripB;};
   virtual Int_t NStripC()     { return kNStripC;};
-  virtual Int_t NMaxNstrip()  { return kMaxNstrip;};
+  static  Int_t NMaxNstrip()  { return kMaxNstrip;};
   static  Int_t NpadX()       { return kNpadX;};
   static  Int_t NpadZ()       { return kNpadZ;};
   static  Int_t NpadXStrip()  { return kNpadX*kNpadZ;};
@@ -39,6 +39,8 @@ class AliTOFGeometry: public TObject{
   static  Float_t XPad()      { return fgkXPad;};
   static  Float_t ZPad()      { return fgkZPad;};
 
+  static  Float_t StripLength() { return fgkStripLength;};
+
   static  Int_t TimeDiff()    { return fgkTimeDiff;};
   static  Int_t MaxTOFTree()  { return kMaxTOFTree;};
 
@@ -52,7 +54,6 @@ class AliTOFGeometry: public TObject{
   virtual  Float_t ZlenB()       { return kZlenB;};
   virtual  Float_t ZlenC()       { return kZlenC;};
   virtual  Float_t MaxhZtof()    { return kMaxhZtof;};
-  virtual  Float_t StripLength() { return kStripLength;};
 
   static  Float_t SigmaForTail1() { return fgkSigmaForTail1;};
   static  Float_t SigmaForTail2() { return fgkSigmaForTail2;};
@@ -93,7 +94,8 @@ class AliTOFGeometry: public TObject{
     kNpadZ      = 2,  // Number of pads along Z
     kNSectors   = 18, // Number of Sectors
     kNPlates    = 5,  // Number of Plates
-    kMaxTOFTree = 5   // numer of geom. levels: 
+    kMaxTOFTree = 5,  // numer of geom. levels: 
+    kMaxNstrip  = 20  // Max. number of strips
   };
 
   // DAQ characteristics
@@ -109,17 +111,17 @@ class AliTOFGeometry: public TObject{
   static const Int_t fgkTimeDiff;      // Min signal separation (ps)
 
   mutable Int_t kNStripC;       // number of strips in C type module 
-  mutable Int_t kMaxNstrip;     // Max. number of strips
 
   mutable Float_t kZlenA;       // length (cm) of the A module
   mutable Float_t kZlenB;       // length (cm) of the B module
   mutable Float_t kZlenC;       // length (cm) of the C module
   mutable Float_t kMaxhZtof;    // Max half z-size of TOF (cm)
-  mutable Float_t kStripLength; // Strip Length (rho X phi direction) (cm)
 
   mutable Float_t fgkRmin;     // Inner radius of the TOF (cm)
   mutable Float_t fgkRmax;     // Outer radius of the TOF (cm)
   mutable Float_t fgkxTOF;     // Inner TOF Radius used in Reconstruction (cm)
+
+  static const Float_t fgkStripLength; // Strip Length (rho X phi direction) (cm)
 
   static const Float_t fgkXPad;     // Pad size in the x direction (cm)
   static const Float_t fgkZPad;     // Pad size in the z direction (cm)
@@ -129,15 +131,15 @@ class AliTOFGeometry: public TObject{
 
   Bool_t fHoles; //logical for geometry version (w/wo holes)
 
-  Float_t *fAngles[kNPlates]; //Strip Tilt Angles
-  Float_t *fHeights[kNPlates];//Strip heights
-  Float_t *fDistances[kNPlates];//Strip distances
+  Float_t fAngles[kNPlates][kMaxNstrip];   //Strip Tilt Angles
+  Float_t fHeights[kNPlates][kMaxNstrip];  //Strip heights
+  Float_t fDistances[kNPlates][kMaxNstrip];//Strip distances
 
   Float_t fPhiSec; //sector Phi width (deg)
 
   static const Float_t fgkTdcBin;   // time-window for the TDC bins [ps]
 
-  ClassDef(AliTOFGeometry,2) // TOF Geometry base class
+  ClassDef(AliTOFGeometry,3) // TOF Geometry base class
 };
 
 #endif

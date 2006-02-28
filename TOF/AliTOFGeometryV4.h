@@ -35,11 +35,8 @@ class AliTOFGeometryV4: public AliTOFGeometry {
   Float_t GetMinStripTheta(Int_t iPlate, Int_t iStrip);
   Float_t GetMaxStripTheta(Int_t iPlate, Int_t iStrip);
   Float_t GetStripTheta(Int_t iPlate, Int_t iStrip);
-  //Float_t GetAngles(Int_t iplate, Int_t istrip)  const {return fAngles[iplate][istrip];};
-  //Float_t GetHeights(Int_t iplate, Int_t istrip) const {return fHeights[iplate][istrip];};
 
   Float_t NStirpC()     { return kNStripC;};
-  Int_t   NMaxNstrip()  { return kMaxNstrip;};
   Int_t   NPadXSector() { return (AliTOFGeometry::kNStripA + 2*AliTOFGeometry::kNStripB +
 				  2*kNStripC)*AliTOFGeometry::kNpadX*AliTOFGeometry::kNpadZ;};
 
@@ -51,7 +48,6 @@ class AliTOFGeometryV4: public AliTOFGeometry {
   Float_t ZlenB()       { return fgkZlenB;};
   Float_t ZlenC()       { return fgkZlenC;};
   Float_t MaxhZtof()    { return fgkMaxhZtof;};
-  Float_t StripLength() { return fgkStripLength;};
 
   static  Float_t DeadBndX()    { return fgkDeadBndX;};
   static  Float_t DeadBndZ()    { return fgkDeadBndZ;};
@@ -62,13 +58,11 @@ class AliTOFGeometryV4: public AliTOFGeometry {
   //private:
 
   static const Int_t kNStripC;         // number of strips in C type module 
-  static const Int_t kMaxNstrip;       // Max. number of strips
 
   static const Float_t fgkZlenA;       // length (cm) of the A module
   static const Float_t fgkZlenB;       // length (cm) of the B module
   static const Float_t fgkZlenC;       // length (cm) of the C module
   static const Float_t fgkMaxhZtof;    // Max half z-size of TOF (cm)
-  static const Float_t fgkStripLength; // Strip Length (rho X phi direction) (cm)
 
   static const Float_t fgkRmin;        // Inner radius of the TOF (cm)
   static const Float_t fgkRmax;        // Outer radius of the TOF (cm)
@@ -82,10 +76,7 @@ class AliTOFGeometryV4: public AliTOFGeometry {
   static const Float_t fgkDprecMax;//num.prec.tolerance on Thma 
   static const Float_t fgkDprecCen;//num.prec.tolerance on <Theta> 
 
-  //Float_t *fAngles[kNPlates]; //Strip Tilt Angles
-  //Float_t *fHeights[kNPlates];//Strip heights
-
-  ClassDef(AliTOFGeometryV4,0) // TOF Geometry class
+  ClassDef(AliTOFGeometryV4,1) // TOF Geometry class
 };
 
 #endif

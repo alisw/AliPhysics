@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.2  2006/02/27 18:12:14  decaro
+Remove in StepManager the dependence of hit indexes from parametrized TOF position
+
 Revision 1.1  2005/12/15 08:55:33  decaro
 New TOF geometry description (V5) -G. Cara Romeo and A. De Caro
 
@@ -1230,7 +1233,8 @@ void AliTOFv5T0::StepManager()
   if(
      gMC->IsTrackEntering()
      && gMC->TrackCharge()
-     && gMC->GetMedium()==idtmed[508]
+     //&& gMC->GetMedium()==idtmed[508]
+     && gMC->CurrentMedium()==idtmed[508]
      && gMC->CurrentVolID(copy)==fIdSens
      )
   {

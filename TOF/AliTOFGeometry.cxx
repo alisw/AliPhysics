@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.11  2005/12/15 14:17:29  decaro
+Correction of some parameter values
+
 Revision 1.10  2005/12/15 08:55:32  decaro
 New TOF geometry description (V5) -G. Cara Romeo and A. De Caro
 
@@ -84,6 +87,8 @@ const Int_t AliTOFGeometry::fgkTimeDiff   = 25000;  // Min signal separation (ps
 const Float_t AliTOFGeometry::fgkXPad     = 2.5;    // Pad size in the x direction (cm)
 const Float_t AliTOFGeometry::fgkZPad     = 3.5;    // Pad size in the z direction (cm)
 
+const Float_t AliTOFGeometry::fgkStripLength = 122.;// Strip Length (rho X phi direction) (cm)
+
 const Float_t AliTOFGeometry::fgkSigmaForTail1= 2.; //Sig1 for simulation of TDC tails 
 const Float_t AliTOFGeometry::fgkSigmaForTail2= 0.5;//Sig2 for simulation of TDC tails
 
@@ -97,12 +102,10 @@ AliTOFGeometry::AliTOFGeometry()
   //
 
   kNStripC     = 20;  // number of strips in C type module 
-  kMaxNstrip   = 20;  // Max. number of strips 
   kZlenA    = 106.0;  // length (cm) of the A module
   kZlenB    = 141.0;  // length (cm) of the B module
   kZlenC    = 177.5;  // length (cm) of the C module
   kMaxhZtof = 371.5;  // Max half z-size of TOF (cm)
-  kStripLength = 122.;// Strip Length (rho X phi direction) (cm)
 
   fgkxTOF     = 371.; // Inner radius of the TOF for Reconstruction (cm)
   fgkRmin     = 370.; // Inner radius of the TOF (cm)
@@ -128,6 +131,55 @@ void AliTOFGeometry::Init()
   //
  
   fPhiSec   = 360./kNSectors;
+
+  Float_t const kangles[kNPlates][kMaxNstrip] ={
+
+ {44.494, 43.725, 42.946, 42.156, 41.357, 40.548, 39.729, 38.899, 
+  38.060, 37.211, 36.353, 35.484, 34.606, 33.719, 32.822, 31.916, 
+  31.001, 30.077, 29.144, 28.202 },
+
+ {26.884, 25.922, 24.952, 23.975, 22.989, 22.320, 21.016, 20.309,
+  19.015, 18.270, 16.989, 16.205, 14.941, 14.117, 12.871, 12.008,
+  10.784, 9.8807, 8.681, 0.0 },
+
+ { 7.5835, 6.4124, 5.4058, 4.2809, 3.2448,  2.1424, 1.078, -0., -1.078, 
+  -2.1424, -3.2448, -4.2809, -5.4058, -6.4124, -7.5835, 0.0, 0.0, 0.0,
+  0.0, 0.0 },
+  
+ {-8.681, -9.8807, -10.784, -12.008, -12.871, -14.117, -14.941, -16.205,
+  -16.989, -18.27, -19.015, -20.309, -21.016, -22.32, -22.989,
+   -23.975, -24.952, -25.922, -26.884, 0. },
+  
+ {-28.202, -29.144, -30.077, -31.001, -31.916, -32.822, -33.719, -34.606,
+  -35.484, -36.353, -37.211, -38.06, -38.899, -39.729, -40.548,
+   -41.357, -42.156, -42.946, -43.725, -44.494 }};
+
+
+  //Strips Heights
+
+   Float_t const kheights[kNPlates][kMaxNstrip]= {
+
+  {-5.5, -5.5, -5.5, -5.5, -5.5, -5.5, -5.5, -5.5, -5.5, -5.5,
+   -5.5, -5.5, -5.5, -5.5, -5.5, -5.5, -5.5, -5.5, -5.5, -5.5 },
+  
+  {-6.3, -7.1, -7.9, -8.7, -9.5, -3, -9.5,   -3, -9.5,   -3, 
+   -9.5, -3.0, -9.5, -3.0, -9.5, -3, -9.5,   -3,   -9 , 0.},
+  
+  {  -3,   -9, -4.5,   -9, -4.5,     -9, -4.5,   -9, -4.5,   -9, 
+     -4.5,   -9, -4.5,   -9,   -3,   0.0, 0.0, 0.0, 0.0, 0.0 },
+  
+  {  -9,   -3, -9.5,   -3, -9.5, -3, -9.5,   -3, -9.5,   -3, -9.5,
+     -3, -9.5,   -3, -9.5,  -8.7, -7.9, -7.1, -6.3, 0. },
+  
+  {-5.5, -5.5, -5.5, -5.5, -5.5, -5.5, -5.5, -5.5, -5.5, -5.5,
+   -5.5, -5.5, -5.5, -5.5, -5.5, -5.5, -5.5, -5.5, -5.5, -5.5 }};
+
+   for (Int_t iplate = 0; iplate < kNPlates; iplate++) {
+     for (Int_t istrip = 0; istrip < kMaxNstrip; istrip++) {
+       fAngles[iplate][istrip]   = kangles[iplate][istrip];
+       fHeights[iplate][istrip]  = kheights[iplate][istrip];
+     }
+   }
 
 }
 

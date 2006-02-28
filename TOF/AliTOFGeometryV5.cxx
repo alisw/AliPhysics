@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.1  2005/12/15 08:55:33  decaro
+New TOF geometry description (V5) -G. Cara Romeo and A. De Caro
+
 Revision 0.1  2005/07/19 G. Cara Romeo and A. De Caro
         Modify Global methods IsInsideThePad & DistanceToPad
                according to the new TOF geometry
@@ -43,13 +46,11 @@ Revision 0.1  2005/07/19 G. Cara Romeo and A. De Caro
 ClassImp(AliTOFGeometryV5)
 
 const Int_t AliTOFGeometryV5::kNStripC      = 19;       // number of strips in C type module
-const Int_t AliTOFGeometryV5::kMaxNstrip    = 19;       // Max. number of strips
 
 const Float_t AliTOFGeometryV5::fgkZlenA    = 370.6*2.; // length (cm) of the A module
 const Float_t AliTOFGeometryV5::fgkZlenB    = 146.5;    // length (cm) of the B module
 const Float_t AliTOFGeometryV5::fgkZlenC    = 170.45;   // length (cm) of the C module
 const Float_t AliTOFGeometryV5::fgkMaxhZtof = 370.6;    // Max half z-size of TOF (cm)
-const Float_t AliTOFGeometryV5::fgkStripLength = 124.;  // Strip Length (rho X phi direction) (cm)
 
 const Float_t AliTOFGeometryV5::fgkxTOF     = 371.-0.01;// Inner radius of the TOF for Reconstruction (cm)
 const Float_t AliTOFGeometryV5::fgkRmin     = 370.-0.01;// Inner radius of the TOF (cm)
@@ -64,13 +65,11 @@ AliTOFGeometryV5::AliTOFGeometryV5()
   //
 
   AliTOFGeometry::kNStripC     = kNStripC;       // number of strips in C type module
-  AliTOFGeometry::kMaxNstrip   = kMaxNstrip;     // Max. number of strips
 
   AliTOFGeometry::kZlenA       = fgkZlenA;       // length of the TOF supermodule (cm)
   AliTOFGeometry::kZlenB       = fgkZlenB;       // length of the B module (cm)
   AliTOFGeometry::kZlenC       = fgkZlenC;       // length of the C module (cm)
   AliTOFGeometry::kMaxhZtof    = fgkMaxhZtof;    // Max half z-size of TOF supermodule (cm)
-  AliTOFGeometry::kStripLength = fgkStripLength; // Strip Length (rho X phi direction) (cm)
 
   AliTOFGeometry::fgkxTOF   = fgkxTOF;           // Inner radius of the TOF for Reconstruction (cm)
   AliTOFGeometry::fgkRmin   = fgkRmin;           // Inner radius of the TOF (cm)
@@ -105,60 +104,56 @@ void AliTOFGeometryV5::Init()
 
   Float_t const kangles[kNPlates][kMaxNstrip] ={
     { 43.99,  43.20,  42.40,  41.59,  40.77,  39.94,  39.11,  38.25,  37.40,  36.53,
-      35.65,  34.76,  33.87,  32.96,  32.05,  31.13,  30.19,  29.24,  12.33},
+      35.65,  34.76,  33.87,  32.96,  32.05,  31.13,  30.19,  29.24,  12.33,  0.00},
 
     { 27.26,  26.28,  25.30,  24.31,  23.31,  22.31,  21.30,  20.29,  19.26,  18.24,
-      17.20,  16.16,  15.11,  14.05,  13.00,  11.93,  10.87,   9.80,   8.74},
+      17.20,  16.16,  15.11,  14.05,  13.00,  11.93,  10.87,   9.80,   8.74,  0.00},
 
     {  0.00,   6.30,   5.31,   4.25,   3.19,   2.12,   1.06,   0.00,  -1.06,  -2.12,
-      -3.19,  -4.25,  -5.31,  -6.30,   0.00,   0.00,   0.00,   0.00,   0.00},
+      -3.19,  -4.25,  -5.31,  -6.30,   0.00,   0.00,   0.00,   0.00,   0.00,  0.00},
 
     { -8.74,  -9.80, -10.87, -11.93, -13.00, -14.05, -15.11, -16.16, -17.20, -18.24,
-     -19.26, -20.29, -21.30, -22.31, -23.31, -24.31, -25.30, -26.28, -27.26},
+     -19.26, -20.29, -21.30, -22.31, -23.31, -24.31, -25.30, -26.28, -27.26,  0.00},
     
     {-12.33, -29.24, -30.19, -31.13, -32.05, -32.96, -33.87, -34.76, -35.65, -36.53,
-     -37.40, -38.25, -39.11, -39.94, -40.77, -41.59, -42.40, -43.20, -43.99}
+     -37.40, -38.25, -39.11, -39.94, -40.77, -41.59, -42.40, -43.20, -43.99,  0.00}
   };
 
   Float_t const kheights[kNPlates][kMaxNstrip]= {
     {-8.2,  -7.5,  -8.2,  -7.7,  -8.1,  -7.6,  -7.7,  -7.7,  -7.7,  -7.7,
-     -7.5,  -7.2,  -7.3,  -7.5,  -7.6,  -7.8,  -8.3,  -9.3,  -3.1},
+     -7.5,  -7.2,  -7.3,  -7.5,  -7.6,  -7.8,  -8.3,  -9.3,  -3.1,   0.0},
 
     {-7.9,  -8.1,  -8.5,  -9.0, -10.1,  -3.9,  -5.9,  -7.7, -10.1,  -3.6,
-     -5.8,  -8.0, -10.4,  -4.4,  -7.2, -10.2,  -4.6,  -7.4, -10.4},
+     -5.8,  -8.0, -10.4,  -4.4,  -7.2, -10.2,  -4.6,  -7.4, -10.4,   0.0},
 
     {-2.5, -10.4,  -5.0,  -9.9,  -4.8,  -9.9,  -4.7, -10.2,  -4.7,  -9.9,
-     -4.8,  -9.9,  -5.0, -10.4,  -2.5,   0.0,   0.0,   0.0,   0.0},
+     -4.8,  -9.9,  -5.0, -10.4,  -2.5,   0.0,   0.0,   0.0,   0.0,   0.0},
 
     {-10.4, -7.4,  -4.6, -10.2,  -7.2,  -4.4, -10.4,  -8.0,  -5.8,  -3.6,
-     -10.1,  -7.7, -5.9,  -3.9, -10.1,  -9.0,  -8.5,  -8.1,  -7.9},
+     -10.1,  -7.7, -5.9,  -3.9, -10.1,  -9.0,  -8.5,  -8.1,  -7.9,   0.0},
 
     { -3.1,  -9.3, -8.3,  -7.8,  -7.6,  -7.5,  -7.3,  -7.2,  -7.5,  -7.7,
-      -7.7,  -7.7, -7.7,  -7.6,  -8.1,  -7.7,  -8.2,  -7.5,  -8.2}
+      -7.7,  -7.7, -7.7,  -7.6,  -8.1,  -7.7,  -8.2,  -7.5,  -8.2,   0.0}
   };
 
 
   Float_t const kdistances[kNPlates][kMaxNstrip]= {
     { 364.1,  354.9,  344.5,  335.4,  325.5,  316.6,  307.2,  298.0,  288.9,  280.0,
-      271.3,  262.7,  254.0,  244.8,  236.1,  227.7,  219.1,  210.3,  205.7},
+      271.3,  262.7,  254.0,  244.8,  236.1,  227.7,  219.1,  210.3,  205.7,    0.0},
 
     { 194.2,  186.1,  177.9,  169.8,  161.5,  156.3,  147.8,  139.4,  130.9,  125.6,
-      117.3,  109.2,  101.1,   95.3,   87.1,   79.2,   73.0,   65.1,   57.6},
+      117.3,  109.2,  101.1,   95.3,   87.1,   79.2,   73.0,   65.1,   57.6,    0.0},
 
     {  49.5,   41.3,   35.3,   27.8,   21.2,   13.9,    7.0,    0.0,   -7.0,  -13.9,
-      -21.2,  -27.8,  -35.3,  -41.3,  -49.5,    0.0,    0.0,    0.0,    0.0},
+      -21.2,  -27.8,  -35.3,  -41.3,  -49.5,    0.0,    0.0,    0.0,    0.0,    0.0},
 
     { -57.6,  -65.1,  -73.0,  -79.2,  -87.1,  -95.3, -101.1, -109.2, -117.3, -125.6,
-     -130.9, -139.4, -147.8, -156.3, -161.5, -169.8, -177.9, -186.1, -194.2},
+     -130.9, -139.4, -147.8, -156.3, -161.5, -169.8, -177.9, -186.1, -194.2,    0.0},
 
     {-205.7, -210.3, -219.1, -227.7, -236.1, -244.8, -254.0, -262.7, -271.3, -280.0,
-     -288.9, -298.0, -307.2, -316.6, -325.5, -335.4, -344.5, -354.9, -364.1}
+     -288.9, -298.0, -307.2, -316.6, -325.5, -335.4, -344.5, -354.9, -364.1,    0.0}
   };
 
-
-   for (Int_t iplate = 0; iplate < kNPlates; iplate++) AliTOFGeometry::fAngles[iplate] = new Float_t[kMaxNstrip];
-   for (Int_t iplate = 0; iplate < kNPlates; iplate++) AliTOFGeometry::fHeights[iplate] = new Float_t[kMaxNstrip];
-   for (Int_t iplate = 0; iplate < kNPlates; iplate++) AliTOFGeometry::fDistances[iplate] = new Float_t[kMaxNstrip];
 
   for (Int_t iplate = 0; iplate < kNPlates; iplate++) {
     for (Int_t istrip = 0; istrip < kMaxNstrip; istrip++) {
