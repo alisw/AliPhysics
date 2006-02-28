@@ -1,0 +1,29 @@
+# 19-Aug-05 - split from libEMCAL.pkg
+FSRCS =\
+jetfinder/jet_finder_ua1.F \
+jetfinder/sgpdge.F
+
+SRCS =\
+jetfinder/AliEMCALGeneratorFactory.cxx \
+jetfinder/AliEMCALJet.cxx \
+jetfinder/AliEMCALParton.cxx \
+jetfinder/AliEMCALJetFinder.cxx \
+jetfinder/AliEMCALJetFinderInput.cxx \
+jetfinder/AliEMCALJetFinderInputSimPrep.cxx \
+jetfinder/AliEMCALJetFinderInputPrep.cxx \
+jetfinder/AliEMCALJetFinderOutput.cxx \
+jetfinder/AliEMCALJetFinderAlgo.cxx \
+jetfinder/AliEMCALJetFinderAlgoOmni.cxx \
+jetfinder/AliEMCALJetFinderAlgoUA1Unit.cxx \
+jetfinder/AliEMCALJetFinderPlots.cxx \
+jetfinder/AliEMCALJetMicroDst.cxx \
+jetfinder/AliEMCALHadronCorrection.cxx \
+jetfinder/AliEMCALHadronCorrectionv0.cxx \
+jetfinder/AliEMCALHadronCorrectionv1.cxx \
+jetfinder/AliEMCALFast.cxx
+
+HDRS= $(SRCS:.cxx=.h) 
+
+DHDR:=EMCALLinkDefjet.h
+# have to tune
+EINCLUDE:=PYTHIA6 RAW EVGEN THijing
