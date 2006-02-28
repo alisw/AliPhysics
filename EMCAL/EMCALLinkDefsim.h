@@ -6,7 +6,6 @@
 
 #pragma link C++ class AliEMCALTick+;
 #pragma link C++ class AliEMCALFast+;
-#pragma link C++ class AliEMCALCalibData+;
 #pragma link C++ class AliEMCALTrigger+;
 
 

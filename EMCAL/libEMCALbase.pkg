@@ -20,7 +20,9 @@ AliEMCALRawStream.cxx \
 AliEMCALClusterizer.cxx \
 AliEMCALSDigitizer.cxx \
 AliEMCALDigitizer.cxx \
-AliEMCALDigit.cxx 
+AliEMCALDigit.cxx \
+AliEMCALCalibData.cxx \
+AliEMCALAlignData.cxx
 
 HDRS= $(SRCS:.cxx=.h) 
 
