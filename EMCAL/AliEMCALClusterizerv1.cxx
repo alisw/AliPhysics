@@ -454,7 +454,7 @@ void AliEMCALClusterizerv1::WriteRecPoints()
 
   emcalLoader->WriteRecPoints("OVERWRITE");
   //emcalLoader->WriteClusterizer("OVERWRITE");
-  emcalLoader->WriteReconstructioner("OVERWRITE");
+  //emcalLoader->WriteReconstructioner("OVERWRITE");
 }
 
 //____________________________________________________________________________
