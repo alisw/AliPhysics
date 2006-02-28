@@ -1,5 +1,5 @@
 // $Id$
-// $MpId: testSectorAreaIterator.C,v 1.4 2005/09/26 16:05:25 ivana Exp $
+// $MpId: testSectorAreaIterator.C,v 1.5 2005/10/28 15:37:12 ivana Exp $
 //
 // Test macro for iterating over the whole sector
 
@@ -57,7 +57,7 @@ void testSectorAreaIterator(AliMpStationType station = kStation1,
     sector=r.BuildSector();
   }
   else  {
-    TString filePath = AliMpFiles::Instance()->SectorFilePath(station,plane);
+    TString filePath = AliMpFiles::SectorFilePath(station,plane);
     filePath.ReplaceAll("zones.dat", "sector.root"); 
 
     TFile f(filePath.Data(), "READ");
@@ -68,9 +68,9 @@ void testSectorAreaIterator(AliMpStationType station = kStation1,
 
   AliMpArea area;
   if ( station == kStation1 )
-    area = AliMpArea(TVector2(450.,450.),TVector2(450.,450.));
+    area = AliMpArea(TVector2(45.,45.),TVector2(45.,45.));
   else   
-    area = AliMpArea(TVector2(600.,600.),TVector2(600.,600.));
+    area = AliMpArea(TVector2(60.,60.),TVector2(60.,60.));
   AliMpVPadIterator* iter = segmentation.CreateIterator(area);
 
   TCanvas* graph = new TCanvas("Graph");

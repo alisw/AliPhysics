@@ -1,5 +1,5 @@
 // $Id$
-// $MpId: testReadSector.C,v 1.14 2005/09/26 16:04:07 ivana Exp $
+// $MpId: testReadSector.C,v 1.16 2006/01/11 10:00:50 ivana Exp $
 //
 // Test macro for reading sector data.
 
@@ -16,7 +16,7 @@ void testReadSector(AliMpStationType station = kStation1,
     sector=r.BuildSector();
 
     // Write sector on Root file
-    TString filePath = AliMpFiles::Instance()->SectorFilePath(station,plane);
+    TString filePath = AliMpFiles::SectorFilePath(station,plane);
     filePath.ReplaceAll("zones.dat", "sector.root"); 
   
     TFile f(filePath.Data(), "RECREATE");
@@ -24,7 +24,7 @@ void testReadSector(AliMpStationType station = kStation1,
     f.Close();
   }
   else  {
-    TString filePath = AliMpFiles::Instance()->SectorFilePath(station,plane);
+    TString filePath = AliMpFiles::SectorFilePath(station,plane);
     filePath.ReplaceAll("zones.dat", "sector.root"); 
 
     TFile f(filePath.Data(), "READ");
@@ -43,13 +43,13 @@ void testReadSector(AliMpStationType station = kStation1,
     cout << "0th row low border " << sector->FindRow(TVector2(0., 0.))->GetID() << endl;
   if (plane == kNonBendingPlane)
     cout << "0th row low border " << sector->FindRow(TVector2(0., 0.215))->GetID() << endl;
-  cout << "in 0th row         " << sector->FindRow(TVector2(0., 25.))->GetID() << endl;
-  cout << "0th row up border  " << sector->FindRow(TVector2(0., 67.2))->GetID() << endl;
-  cout << "in 4th row         " << sector->FindRow(TVector2(0., 300.))->GetID() << endl;
+  cout << "in 0th row         " << sector->FindRow(TVector2(0., 2.5))->GetID() << endl;
+  cout << "0th row up border  " << sector->FindRow(TVector2(0., 6.72))->GetID() << endl;
+  cout << "in 4th row         " << sector->FindRow(TVector2(0., 30.))->GetID() << endl;
   if (plane == kBendingPlane)
-    cout << "12th row up border " << sector->FindRow(TVector2(0., 894.6))->GetID() << endl;
+    cout << "12th row up border " << sector->FindRow(TVector2(0., 89.46))->GetID() << endl;
   if (plane == kNonBendingPlane)
-    cout << "12th row up border " << sector->FindRow(TVector2(0., 848.4))->GetID() << endl;
+    cout << "12th row up border " << sector->FindRow(TVector2(0., 84.84))->GetID() << endl;
   cout << endl;
   
   // Find motif position test
@@ -72,7 +72,7 @@ void testReadSector(AliMpStationType station = kStation1,
 
   // Find motif by coordinates test
   for (Int_t i=0; i<2 ; i++) {
-    TVector2 pos(5., 186. - i*20.);  // i=0 in motif 1001,
+    TVector2 pos(0.5, 18.6 - i*2.);  // i=0 in motif 1001,
                                      // i=1 outside (below) motif 1001
     AliMpMotif* motif = sector->FindMotif(pos);
     cout << "In the position " << pos.X() << " " << pos.Y();

@@ -1,5 +1,5 @@
 // $Id$
-// $MpId: testAnyPadIterators.C,v 1.13 2005/09/26 16:05:24 ivana Exp $
+// $MpId: testAnyPadIterators.C,v 1.14 2005/10/28 15:37:12 ivana Exp $
 //
 // Test macro for reading  sector, and iterate over it
 
@@ -34,7 +34,7 @@ void testAnyPadIterators(AliMpStationType station = kStation1,
     sector=r.BuildSector();
   }
   else  {
-    TString filePath = AliMpFiles::Instance()->SectorFilePath(station,plane);
+    TString filePath = AliMpFiles::SectorFilePath(station,plane);
     filePath.ReplaceAll("zones.dat", "sector.root"); 
 
     TFile f(filePath.Data(), "READ");
@@ -48,7 +48,7 @@ void testAnyPadIterators(AliMpStationType station = kStation1,
   canv->cd(1);
   MarkPads(AliMpSectorPadIterator(sector), 150, 250, kFALSE);
   canv->cd(2);
-  AliMpVMotif* motif = sector->FindMotif(TVector2(300,30));
+  AliMpVMotif* motif = sector->FindMotif(TVector2(30,3));
 
   if (motif) {
     AliMpMotifType* motifType = motif->GetMotifType();
