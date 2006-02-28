@@ -31,8 +31,8 @@ class AliEMCALCalibData: public TNamed {
   void SetADCpedestal(Int_t module, Int_t column, Int_t row, Float_t value);
 
  protected:
-  Float_t  fADCchannel[5][56][64] ;  // width of one ADC channel in GeV ([mod][col][row])
-  Float_t  fADCpedestal[5][56][64] ; // value of the  ADC pedestal ([mod][col][row])
+  Float_t  fADCchannel[12][48][24] ;  // width of one ADC channel in GeV ([mod][col][row])
+  Float_t  fADCpedestal[12][48][24] ; // value of the  ADC pedestal ([mod][col][row])
   //
   ClassDef(AliEMCALCalibData,1)    // EMCAL Calibration data
 };
