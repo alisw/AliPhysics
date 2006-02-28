@@ -23,7 +23,14 @@
 // main object structure (e.g. AliEvent for event-by-event processing).
 // The main object structure (if needed) may be specified by the derived
 // top level processor class and will be stored automatically in the
-// working environment (see below).  
+// working environment (see below).
+//
+// However, being designed as a base class for a user defined top level
+// processor, this class can also be used as a "hook" to specify
+// various sub-tasks in an (interactive) user environment.
+// Usage of the memberfunction ProcessObject() allows an (interactive)
+// event-by-event processing of the various specified subtasks.  
+//
 // This base class provides a working environment for the derived
 // (user defined) processor class and all of its subtasks.
 //
@@ -188,7 +195,9 @@ void AliJob::ExecuteJob(Int_t mode)
 // Exec() memberfunction.
 // The latter is convenient if an AliJob instance is used directly
 // by the user (e.g. in a ROOT macro) in order to provide a hook
-// for event-by-event processing of various subtasks.  
+// for event-by-event processing of various subtasks.
+// An even more convenient alternative to achieve this is invokation of the
+// memberfunction ProcessObject().  
 //
 // mode = -1 : Explicitly prohibit folder creation for the complete job
 //         0 : Folder creation selection steered by MakeFolder()
@@ -410,5 +419,33 @@ TObjArray* AliJob::GetObjects(const char* classname)
   if (obj->InheritsFrom(classname)) fSelect->Add(obj);
  }
  return fSelect;
+}
+///////////////////////////////////////////////////////////////////////////
+void AliJob::ProcessObject(TObject* obj)
+{
+// Invokation of all user defined sub-tasks for the specified object.
+// This facility is very convenient when performing a task based
+// event-by-event analysis in an (interactive) user application.
+//
+// Note :
+// ------
+// Before processing gROOT is set as the global working directory.
+// The specified object will be added to the job's object list
+// as main object before the processing starts.
+// This will allow the various sub-tasks to access the object in the
+// usual way.
+// After the processing of this object has been performed, the object
+// will be removed from the object list and the main object pointer will
+// be set to zero.
+
+ if (!obj) return;
+
+ SetMainObject(obj);
+
+ gROOT->cd(); 
+ CleanTasks();
+ ExecuteTasks(GetName());
+
+ RemoveObject(obj);
 }
 ///////////////////////////////////////////////////////////////////////////

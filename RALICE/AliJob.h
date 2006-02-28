@@ -28,6 +28,7 @@ class AliJob : public TTask
   TObject* GetObject(Int_t j) const;                      // Provide j-th stored object
   TObjArray* GetObjects() const;                          // Provide all stored object pointers
   TObjArray* GetObjects(const char* classname);           // Provide all objects inheriting from "classname" 
+  void ProcessObject(TObject* obj);                       // Process all sub-tasks for the specified object
 
  protected :
   Int_t fMakefolder;    // Flag to indicate creation of the folder structure
@@ -38,6 +39,6 @@ class AliJob : public TTask
 
   void SetMainObject(TObject* obj); // Store pointer to the main object structure
 
- ClassDef(AliJob,3) // Base class for top level job in a task based procedure 
+ ClassDef(AliJob,4) // Base class for top level job in a task based procedure 
 };
 #endif

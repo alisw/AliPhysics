@@ -44,4 +44,6 @@
                 Also anaroot.cc example macro introduced in /macros sub-directory.
                 This example macro shows how to analyse the IcePack event structures
                 from a chain of ROOT files using the task processor facilities.
+28-feb-2006 NvE Example macro anaroot.cc in sub-directory /macros updated to use the
+                more convenient new ProcessObject() facility of AliJob.
 

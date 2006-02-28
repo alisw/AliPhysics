@@ -69,9 +69,7 @@
   if (evt) evt->Reset();
   data.GetEntry(ient);
   evt->SetOwner();
-  q.AddObject(evt);
-  q.ExecuteJob(10);
-  q.RemoveObject(evt);
+  q.ProcessObject(evt);
   
   // Further inspection of the event data if needed
   evt->Data();
