@@ -78,7 +78,7 @@
 #include "AliEMCALSDigitizer.h"
 #include "AliEMCALGeometry.h"
 #include "AliEMCALTick.h"
-#include "AliEMCALJetMicroDst.h"
+#include "AliEMCALHistoUtilities.h"
 
 ClassImp(AliEMCALDigitizer)
 
@@ -341,7 +341,7 @@ void AliEMCALDigitizer::Digitize(Int_t event)
   digits->Expand(ndigits) ;
   
   //Set indexes in list of digits and fill hists.
-  sv::FillH1(fHists, 0, Double_t(ndigits));
+  AliEMCALHistoUtilities::FillH1(fHists, 0, Double_t(ndigits));
   Float_t energy=0., esum=0.;
   for (i = 0 ; i < ndigits ; i++) { 
     digit = dynamic_cast<AliEMCALDigit *>( digits->At(i) ) ; 
@@ -349,11 +349,11 @@ void AliEMCALDigitizer::Digitize(Int_t event)
     energy = sDigitizer->Calibrate(digit->GetAmp()) ;
     esum += energy;
     digit->SetAmp(DigitizeEnergy(energy) ) ; // for what ??
-    sv::FillH1(fHists, 2, double(digit->GetAmp()));
-    sv::FillH1(fHists, 3, double(energy));
-    sv::FillH1(fHists, 4, double(digit->GetId()));
+    AliEMCALHistoUtilities::FillH1(fHists, 2, double(digit->GetAmp()));
+    AliEMCALHistoUtilities::FillH1(fHists, 3, double(energy));
+    AliEMCALHistoUtilities::FillH1(fHists, 4, double(digit->GetId()));
   }
-  sv::FillH1(fHists, 1, esum);
+  AliEMCALHistoUtilities::FillH1(fHists, 1, esum);
 }
 
 //____________________________________________________________________________
@@ -725,12 +725,12 @@ TList *AliEMCALDigitizer::BookControlHists(int var)
     new TH1F("hDigiAbsId","EMCAL absId cells with fAmp > fDigitThreshold ",
     geom->GetNCells(), 0.5, Double_t(geom->GetNCells())+0.5);
   }
-  fHists = sv::MoveHistsToList("EmcalDigiControlHists", kFALSE);
+  fHists = AliEMCALHistoUtilities::MoveHistsToList("EmcalDigiControlHists", kFALSE);
   fHists = 0;
   return fHists;
 }
 
 void AliEMCALDigitizer::SaveHists(const char* name, Bool_t kSingleKey, const char* opt)
 {
-  sv::SaveListOfHists(fHists, name, kSingleKey, opt); 
+  AliEMCALHistoUtilities::SaveListOfHists(fHists, name, kSingleKey, opt); 
 }

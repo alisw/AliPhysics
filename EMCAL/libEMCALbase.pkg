@@ -1,5 +1,3 @@
-FSRCS = sgpdge.F
-
 SRCS = \
 AliEMCAL.cxx \
 AliEMCALGeometry.cxx \
@@ -8,16 +6,14 @@ AliEMCALv1.cxx \
 AliEMCALv2.cxx \
 AliEMCALHit.cxx \
 AliEMCALLoader.cxx \
-AliEMCALGeneratorFactory.cxx \
 AliEMCALShishKebabModule.cxx \
 AliEMCALShishKebabTrd1Module.cxx \
 AliEMCALGeometryOfflineTrd1.cxx \
 AliEMCALWsuCosmicRaySetUp.cxx \
-AliEMCALJet.cxx \
-AliEMCALParton.cxx \
 AliEMCALRecPoint.cxx \
 AliEMCALRawStream.cxx \
 AliEMCALClusterizer.cxx \
+AliEMCALHistoUtilities.cxx \
 AliEMCALSDigitizer.cxx \
 AliEMCALDigitizer.cxx \
 AliEMCALDigit.cxx \

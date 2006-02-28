@@ -11,20 +11,19 @@
 #pragma link C++ class AliEMCALv2+;
 #pragma link C++ class AliEMCALHit+;
 #pragma link C++ class AliEMCALLoader+;	
-#pragma link C++ class AliEMCALGeneratorFactory+;
 #pragma link C++ class AliEMCALShishKebabModule+;
 #pragma link C++ class AliEMCALShishKebabTrd1Module+;
 #pragma link C++ class AliEMCALGeometryOfflineTrd1+;
 #pragma link C++ class AliEMCALWsuCosmicRaySetUp+;
-#pragma link C++ class AliEMCALJet+;
-#pragma link C++ class AliEMCALParton+;		
 #pragma link C++ class AliEMCALRecPoint+;
 #pragma link C++ class AliEMCALRawStream+;
 #pragma link C++ class AliEMCALClusterizer+;
+#pragma link C++ class AliEMCALHistoUtilities+;
 #pragma link C++ class AliEMCALSDigitizer+;
 #pragma link C++ class AliEMCALDigitizer+;
 #pragma link C++ class AliEMCALDigit+;
 #pragma link C++ class AliEMCALCalibData+;
 #pragma link C++ class AliEMCALAlignData+;
+
 
 #endif

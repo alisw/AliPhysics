@@ -67,7 +67,7 @@
 #include "AliEMCALHit.h"
 #include "AliEMCALSDigitizer.h"
 #include "AliEMCALGeometry.h"
-#include "AliEMCALJetMicroDst.h"
+#include "AliEMCALHistoUtilities.h"
 
 ClassImp(AliEMCALSDigitizer)
            
@@ -263,18 +263,18 @@ void AliEMCALSDigitizer::Exec(Option_t *option)
     Int_t nPrimarymax = -1 ; 
     Int_t i ;
     Double_t e=0.,esum=0.;
-    sv::FillH1(fHists, 0, double(sdigits->GetEntriesFast()));
+    AliEMCALHistoUtilities::FillH1(fHists, 0, double(sdigits->GetEntriesFast()));
     for (i = 0 ; i < sdigits->GetEntriesFast() ; i++) { 
       AliEMCALDigit * sdigit = dynamic_cast<AliEMCALDigit *>(sdigits->At(i)) ;
       sdigit->SetIndexInList(i) ;
 
-      sv::FillH1(fHists, 2, double(sdigit->GetAmp()));
+      AliEMCALHistoUtilities::FillH1(fHists, 2, double(sdigit->GetAmp()));
       e = double(Calibrate(sdigit->GetAmp()));
       esum += e;
-      sv::FillH1(fHists, 3, e);
-      sv::FillH1(fHists, 4, double(sdigit->GetId()));
+      AliEMCALHistoUtilities::FillH1(fHists, 3, e);
+      AliEMCALHistoUtilities::FillH1(fHists, 4, double(sdigit->GetId()));
     }
-    if(esum>0.) sv::FillH1(fHists, 1, esum);
+    if(esum>0.) AliEMCALHistoUtilities::FillH1(fHists, 1, esum);
     
     for (i = 0 ; i < sdigits->GetEntriesFast() ; i++) { // for what 
       if (((dynamic_cast<AliEMCALDigit *>(sdigits->At(i)))->GetNprimary()) > nPrimarymax)
@@ -412,12 +412,12 @@ TList *AliEMCALSDigitizer::BookControlHists(int var)
     new TH1F("HSDigiAbsId","EMCAL absID for sdigits",
     geom->GetNCells(), 0.5, Double_t(geom->GetNCells())+0.5);
   }
-  fHists = sv::MoveHistsToList("EmcalSDigiControlHists", kFALSE);
+  fHists = AliEMCALHistoUtilities::MoveHistsToList("EmcalSDigiControlHists", kFALSE);
   fHists = 0;
   return fHists;
 }
 
 void AliEMCALSDigitizer::SaveHists(const char* name, Bool_t kSingleKey, const char* opt)
 {
-  sv::SaveListOfHists(fHists, name, kSingleKey, opt); 
+  AliEMCALHistoUtilities::SaveListOfHists(fHists, name, kSingleKey, opt); 
 }

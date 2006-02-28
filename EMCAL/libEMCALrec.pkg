@@ -1,22 +1,7 @@
 # 19-Aug-05 - split from libEMCAL.pkg
-FSRCS = jet_finder_ua1.F
-
 SRCS =\
 AliEMCALReconstructor.cxx \
 AliEMCALClusterizerv1.cxx \
-AliEMCALJetFinder.cxx \
-AliEMCALJetFinderInput.cxx \
-AliEMCALJetFinderInputSimPrep.cxx \
-AliEMCALJetFinderInputPrep.cxx \
-AliEMCALJetFinderOutput.cxx \
-AliEMCALJetFinderAlgo.cxx \
-AliEMCALJetFinderAlgoOmni.cxx \
-AliEMCALJetFinderAlgoUA1Unit.cxx \
-AliEMCALJetFinderPlots.cxx \
-AliEMCALJetMicroDst.cxx \
-AliEMCALHadronCorrection.cxx \
-AliEMCALHadronCorrectionv0.cxx \
-AliEMCALHadronCorrectionv1.cxx 
 
 HDRS= $(SRCS:.cxx=.h) 
 

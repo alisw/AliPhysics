@@ -5,7 +5,6 @@
 #pragma link off all functions;
 
 #pragma link C++ class AliEMCALTick+;
-#pragma link C++ class AliEMCALFast+;
 #pragma link C++ class AliEMCALTrigger+;
 
 
