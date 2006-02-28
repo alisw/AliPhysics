@@ -154,7 +154,6 @@ protected:
   AliMC         *fMCApp;             //  Pointer to virtual MC Application
   AliDisplay    *fDisplay;           //! Pointer to event display
   AliMagF       *fField;             //  Magnetic Field Map
-  TVirtualMC    *fMC;                //! Pointer to MonteCarlo object
   Int_t          fNdets;             //  Number of detectors
   Bool_t         fInitDone;          //! True when initialisation done
   AliLego       *fLego;              //! Pointer to aliLego object if it exists
@@ -168,7 +167,7 @@ protected:
 private:
   void Copy(TObject &arun) const;
 
-  ClassDef(AliRun,10)      //Supervisor class for all Alice detectors
+  ClassDef(AliRun,11)      //Supervisor class for all Alice detectors
 };
  
 R__EXTERN  AliRun *gAlice;

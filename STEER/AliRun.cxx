@@ -64,9 +64,6 @@
 #include "AliRun.h"
 #include "AliStack.h"
 #include "AliAlignObj.h"
-#ifdef __APPLE__
-//#include "AliTPCTrackHitsInterfaces.h"
-#endif
 
 AliRun *gAlice;
 
@@ -83,7 +80,6 @@ AliRun::AliRun():
   fMCApp(0),
   fDisplay(0),
   fField(0),
-  fMC(0),
   fNdets(0),
   fInitDone(kFALSE),
   fLego(0),
@@ -112,7 +108,6 @@ AliRun::AliRun(const AliRun& arun):
   fMCApp(0),
   fDisplay(0),
   fField(0),
-  fMC(0),
   fNdets(0),
   fInitDone(kFALSE),
   fLego(0),
@@ -140,7 +135,6 @@ AliRun::AliRun(const char *name, const char *title):
   fMCApp(0),
   fDisplay(0),
   fField(0),
-  fMC(gMC),
   fNdets(0),
   fInitDone(kFALSE),
   fLego(0),
@@ -176,14 +170,6 @@ AliRun::AliRun(const char *name, const char *title):
 
   // Add particle list to configuration
   AliConfig::Instance()->Add(fPDGDB); 
-
-#ifdef __APPLE__
-  // Terrible hack to avoid problem with the initialisation of 
-  // static and globals on Mac OS X 
-  //  AliClassAliTrackHitsInfo p1=galiclass____AliClassAliTrackHitsInfo;
-  // AliClassAliTrackHitsParam p2=galiclass____AliTrackHitsParam;
-  //AliClassAliHitInfo p3=galiclass____AliHitInfo;
-#endif
 
 }
 
