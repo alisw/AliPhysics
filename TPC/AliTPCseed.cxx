@@ -50,6 +50,7 @@ AliTPCseed::AliTPCseed():AliTPCtrack(){
   fCurrentCluster =0;
   fCurrentSigmaY2=0;
   fCurrentSigmaZ2=0;
+  fEsd =0;
   fCircular = 0;  // not curling track
 }
 AliTPCseed::AliTPCseed(const AliTPCseed &s):AliTPCtrack(s){
@@ -62,6 +63,7 @@ AliTPCseed::AliTPCseed(const AliTPCseed &s):AliTPCtrack(s){
   fPoints  = 0;
   fEPoints = 0;
   fCircular =0;
+  fEsd =0;
 }
 AliTPCseed::AliTPCseed(const AliTPCtrack &t):AliTPCtrack(t){
   //
@@ -93,6 +95,7 @@ AliTPCseed::AliTPCseed(const AliTPCtrack &t):AliTPCtrack(t){
   fCurrentSigmaY2=0;
   fCurrentSigmaZ2=0;
   fCircular =0;
+  fEsd =0;
 }
 
 AliTPCseed::AliTPCseed(UInt_t index,  const Double_t xx[5], const Double_t cc[15], 
@@ -124,6 +127,7 @@ AliTPCseed::AliTPCseed(UInt_t index,  const Double_t xx[5], const Double_t cc[15
   fCurrentCluster =0;
   fCurrentSigmaY2=0;
   fCurrentSigmaZ2=0;
+  fEsd =0;
 }
 
 AliTPCseed::~AliTPCseed(){
