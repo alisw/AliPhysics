@@ -144,7 +144,7 @@ void AliMpSectorAreaVPadIterator::First()
 
   // Start position = left down corner of the area
   //
-  fCurrentColumnPosition = fkArea.DownBorder();
+  fCurrentColumnPosition = fkArea.LeftBorder();
   TVector2 position(fkArea.LeftDownCorner()); 
   
   fCurrentPad = fkSegmentation->PadByDirection(position, fkArea.UpBorder());
