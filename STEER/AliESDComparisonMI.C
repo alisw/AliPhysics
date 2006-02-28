@@ -28,9 +28,9 @@ marian.ivanov@cern.ch
 Usage:
  
 
-.L $ALICE_ROOT/STEER/AliGenInfo.C++g
+.L $ALICE_ROOT/STEER/AliGenInfo.C+
 //be sure you created genTracks file before
-.L $ALICE_ROOT/STEER/AliESDComparisonMI.C++g
+.L $ALICE_ROOT/STEER/AliESDComparisonMI.C+
 
 //
 ESDCmpTr *t2 = new ESDCmpTr("genTracks.root","cmpESDTracks.root","galice.root",-1,0,0);
@@ -1246,6 +1246,7 @@ Int_t ESDCmpTr::TreeGenLoop(Int_t eventNr)
   timer.Start();
   Int_t entry = fNextTreeGenEntryToRead;
   Double_t nParticlesTR = fTreeGenTracks->GetEntriesFast();
+  AliESDtrack dummytrack;
   cerr<<"fNParticles, nParticlesTR, fNextTreeGenEntryToRead: "<<fNParticles<<" "
       <<nParticlesTR<<" "<<fNextTreeGenEntryToRead<<endl;
   TBranch * branch = fTreeCmp->GetBranch("RC");
@@ -1321,7 +1322,8 @@ Int_t ESDCmpTr::TreeGenLoop(Int_t eventNr)
 	}
       }	
       //
-      fRecInfo->fESDTrack =*track; 
+      if (!track) track = &dummytrack;
+      fRecInfo->fESDTrack =*track;       
       if (track->GetITStrack())
 	fRecInfo->fITStrack = *((AliITStrackMI*)track->GetITStrack());
       else{
