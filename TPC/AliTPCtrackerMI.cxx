@@ -2600,6 +2600,11 @@ Int_t AliTPCtrackerMI::PropagateBack(AliESD *event)
     if (seed->GetNumberOfClusters()>15){
       esd->UpdateTrackParams(seed,AliESDtrack::kTPCout);
       esd->SetTPCPoints(seed->GetPoints());
+      esd->SetTPCPointsF(seed->fNFoundable);
+      Int_t ndedx   = seed->fNCDEDX[0]+seed->fNCDEDX[1]+seed->fNCDEDX[2]+seed->fNCDEDX[3];
+      Float_t sdedx = (seed->fSDEDX[0]+seed->fSDEDX[1]+seed->fSDEDX[2]+seed->fSDEDX[3])*0.25;
+      Float_t dedx  = seed->GetdEdx();
+      esd->SetTPCsignal(dedx, sdedx, ndedx);
       ntracks++;
     }
   }
