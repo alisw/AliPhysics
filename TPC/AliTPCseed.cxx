@@ -681,27 +681,7 @@ Float_t AliTPCseed::CookdEdx(Double_t low, Double_t up,Int_t i1, Int_t i2, Bool_
 
   
   SetdEdx(dedx);
-    
-  //mi deDX
-
-
-
-  //Very rough PID
-  Double_t p=TMath::Sqrt((1.+ GetTgl()*GetTgl())/(Get1Pt()*Get1Pt()));
-
-  if (p<0.6) {
-    if (dedx < 39.+ 12./(p+0.25)/(p+0.25)) { SetMass(0.13957); return dedx;}
-    if (dedx < 39.+ 12./p/p) { SetMass(0.49368); return dedx;}
-    SetMass(0.93827); return dedx;
-  }
-
-  if (p<1.2) {
-    if (dedx < 39.+ 12./(p+0.25)/(p+0.25)) { SetMass(0.13957); return dedx;}
-    SetMass(0.93827); return dedx;
-  }
-
-  SetMass(0.13957); return dedx;
-
+  return dedx;
 }
 Double_t AliTPCseed::Bethe(Double_t bg){
   //
