@@ -56,8 +56,8 @@
 // // Buffer size for the output structures
 // q.SetBufferSize(32000);
 //
-// // The F2K input filename
-// q.SetInputFile("run7825.f2k");
+// // The F2K input filename(s)
+// q.AddInputFile("run7825.f2k");
 //
 // // Output file for the event structures
 // q.SetOutputFile("events.root");
@@ -123,7 +123,7 @@ IceF2k::IceF2k(const char* name,const char* title) : AliJob(name,title)
  fBsize=32000;
  fMaxevt=-1;
  fPrintfreq=1;
- fInfile="";
+ fInfiles=0;
  fOutfile=0;
 
  fPdg=0;
@@ -135,6 +135,12 @@ IceF2k::IceF2k(const char* name,const char* title) : AliJob(name,title)
 IceF2k::~IceF2k()
 {
 // Default destructor.
+
+ if (fInfiles)
+ {
+  delete fInfiles;
+  fInfiles=0;
+ }
 
  if (fPdg)
  {
@@ -193,7 +199,36 @@ void IceF2k::SetBufferSize(Int_t bsize)
 void IceF2k::SetInputFile(TString name)
 {
 // Set the name of the F2K input file.
- fInfile=name;
+// This function has become obsolete but is kept for backward compatibility.
+// The user is advised to use AddInputFile() instead, which allows processing
+// of multiple F2K input files.
+// This function will reset the list of all F2K input files and put the specified
+// filename at the first position.
+// Additional F2K input files can be specified via AddInputFile().
+
+ if (fInfiles) delete fInfiles;
+
+ fInfiles=new TObjArray();
+ fInfiles->SetOwner();
+
+ TObjString* s=new TObjString();
+ s->SetString(name);
+ fInfiles->Add(s);
+}
+///////////////////////////////////////////////////////////////////////////
+void IceF2k::AddInputFile(TString name)
+{
+// Add the name of this F2K input file to the list to be processed.
+
+ if (!fInfiles)
+ {
+  fInfiles=new TObjArray();
+  fInfiles->SetOwner();
+ }
+
+ TObjString* s=new TObjString();
+ s->SetString(name);
+ fInfiles->Add(s);
 }
 ///////////////////////////////////////////////////////////////////////////
 void IceF2k::SetOutputFile(TFile* ofile)
@@ -259,26 +294,18 @@ void IceF2k::Exec(Option_t* opt)
 //    final data structures are written out.
 // 2) The main object in this job environment is an IceEvent* pointer.
 
- if (fInfile=="")
+ if (!fInfiles)
  {
-  cout << " *IceF2k Exec* No data input file specified." << endl;
+  cout << " *IceF2k Exec* No data input file(s) specified." << endl;
   return;
  }
 
- // Open the input file in the default ascii format (autodetection) for reading 
- fInput=rdmc_mcopen(fInfile.Data(),"r",RDMC_DEFAULT_ASCII_F);
-
- if (!fInput)
+ Int_t ninfiles=fInfiles->GetEntries();
+ if (!ninfiles)
  {
-  cout << " *IceF2k Exec* No input file found with name : " << fInfile.Data() << endl;
+  cout << " *IceF2k Exec* No data input file(s) specified." << endl;
   return;
  }
-
- // Initialise the event structure 
- rdmc_init_mevt(&fEvent);
-
- // Read the file header information
- rdmc_rarr(fInput,&fHeader);
 
  TTree* otree=0;
  if (fOutfile)
@@ -309,16 +336,6 @@ void IceF2k::Exec(Option_t* opt)
  fPdg->AddParticle("z_primary","z_primary",0,1,0,0,"none",10003000,0,0);
  fPdg->AddParticle("a_primary","a_primary",0,1,0,0,"none",10003500,0,0);
 
- // Fill the database with geometry, calib. etc... parameters
- // for all the devices
- FillOMdbase();
-
- // Set the fit definitions according to the F2000 header info
- SetFitdefs();
-
- // Set the trigger definitions according to the F2000 header info
- SetTrigdefs();
-
  // Initialise the job working environment
  SetMainObject(evt);
  if (fOutfile)
@@ -327,10 +344,18 @@ void IceF2k::Exec(Option_t* opt)
   AddObject(otree);
  }
 
+ TString inputfile;
+
  cout << " ***" << endl;
  cout << " *** Start processing of job " << GetName() << " ***" << endl;
  cout << " ***" << endl;
- cout << " F2K input file : " << fInfile.Data() << endl;
+ for (Int_t i=0; i<ninfiles; i++)
+ {
+  TObjString* sx=(TObjString*)fInfiles->At(i);
+  if (!sx) continue;
+  inputfile=sx->GetString(); 
+  cout << " F2K input file : " << inputfile.Data() << endl;
+ }
  cout << " Maximum number of events to be processed : " << fMaxevt << endl;
  cout << " Print frequency : " << fPrintfreq << endl;
  if (fOutfile)
@@ -340,41 +365,76 @@ void IceF2k::Exec(Option_t* opt)
  }
 
  ListEnvironment();
- 
+
  Int_t nevt=0;
- while (!rdmc_revt(fInput,&fHeader,&fEvent))
+ for (Int_t ifile=0; ifile<ninfiles; ifile++)
  {
-  if (fMaxevt>-1 && nevt>=fMaxevt) break;
+  TObjString* sx=(TObjString*)fInfiles->At(ifile);
+  if (!sx) continue;
 
-  // Reset the complete Event structure
-  evt->Reset();
+  inputfile=sx->GetString(); 
+  if (inputfile=="") continue;
 
-  evt->SetRunNumber(fEvent.nrun);
-  evt->SetEventNumber(fEvent.enr);
-  evt->SetMJD(fEvent.mjd,fEvent.secs,fEvent.nsecs);
+  // Open the input file in the default ascii format (autodetection) for reading 
+  fInput=rdmc_mcopen(inputfile.Data(),"r",RDMC_DEFAULT_ASCII_F);
 
-  PutTrigger();
-
-  PutMcTracks();
-
-  PutRecoTracks();
-
-  PutHits();
-
-  // Invoke all available sub-tasks (if any)
-  CleanTasks();
-  ExecuteTasks(opt);
-
-  if (fPrintfreq)
+  if (!fInput)
   {
-   if (!(nevt%fPrintfreq)) evt->HeaderData();
+   cout << " *IceF2k Exec* No input file found with name : " << inputfile.Data() << endl;
+   continue;
   }
 
-  // Write the complete structure to the output Tree
-  if (otree) otree->Fill();
+  // Initialise the event structure 
+  rdmc_init_mevt(&fEvent);
 
-  // Update event counter
-  nevt++;
+  // Read the file header information
+  rdmc_rarr(fInput,&fHeader);
+
+  // Fill the database with geometry, calib. etc... parameters
+  // for all the devices
+  FillOMdbase();
+
+  // Set the fit definitions according to the F2000 header info
+  SetFitdefs();
+
+  // Set the trigger definitions according to the F2000 header info
+  SetTrigdefs();
+ 
+  while (!rdmc_revt(fInput,&fHeader,&fEvent))
+  {
+   if (fMaxevt>-1 && nevt>=fMaxevt) break;
+
+   // Reset the complete Event structure
+   evt->Reset();
+
+   evt->SetRunNumber(fEvent.nrun);
+   evt->SetEventNumber(fEvent.enr);
+   evt->SetMJD(fEvent.mjd,fEvent.secs,fEvent.nsecs);
+
+   PutTrigger();
+
+   PutMcTracks();
+
+   PutRecoTracks();
+
+   PutHits();
+
+   // Invoke all available sub-tasks (if any)
+   CleanTasks();
+   ExecuteTasks(opt);
+
+   if (fPrintfreq)
+   {
+    if (!(nevt%fPrintfreq)) evt->HeaderData();
+   }
+
+   // Write the complete structure to the output Tree
+   if (otree) otree->Fill();
+
+   // Update event counter
+   nevt++;
+  }
+  if (fMaxevt>-1 && nevt>=fMaxevt) break;
  }
 
  // Flush possible memory resident data to the output file
@@ -394,7 +454,15 @@ void IceF2k::FillOMdbase()
 // Fill the database with geometry, calib. etc... parameters 
 // for all the devices.
 
- if (fHeader.nch<=0) return;
+ if (fHeader.nch<=0)
+ {
+  if (fOmdb)
+  {
+   delete fOmdb;
+   fOmdb=0;
+  }
+  return;
+ }
 
  Int_t adccal=fHeader.is_calib.adc;
  Int_t tdccal=fHeader.is_calib.tdc;
@@ -567,7 +635,15 @@ void IceF2k::SetFitdefs()
 //
 // This memberfunction is based on the original idea/code by Adam Bouchta.
 
- if (fHeader.n_fit<=0) return;
+ if (fHeader.n_fit<=0)
+ {
+  if (fFitdefs)
+  {
+   delete fFitdefs;
+   fFitdefs=0;
+  }
+  return;
+ }
 
  if (fFitdefs)
  {
@@ -638,7 +714,15 @@ void IceF2k::SetTrigdefs()
 //     Slot : 3 Signal value : 0 name : regi_flag
 // etc....  
 
- if (fHeader.n_trigger<=0) return;
+ if (fHeader.n_trigger<=0)
+ {
+  if (fTrigdefs)
+  {
+   delete fTrigdefs;
+   fTrigdefs=0;
+  }
+  return;
+ }
 
  if (fTrigdefs)
  {

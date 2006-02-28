@@ -45,4 +45,8 @@
 15-feb-2006 NvE Name of reconstructed tracks set to "Sieglinde" in IceF2k.
                 This is in line with the names "IceDwalk", "IcePandel" etc... and allows
                 easy retrieval of specific reconstruction results.
+28-feb-2006 NvE Memberfunction AddInputFile introduced in IceF2k to allow processing of
+                multiple F2K input files.
+                The example in the IceF2k docs and in the /macros sub-directory has been
+                updated accordingly.
  

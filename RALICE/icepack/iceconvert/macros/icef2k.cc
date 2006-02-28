@@ -23,8 +23,8 @@
  // Print frequency to produce a short summary print every printfreq events
  q.SetPrintFreq(10);
 
- // The F2K input filename
- q.SetInputFile("run7825.f2k");
+ // The F2K input filename(s)
+ q.AddInputFile("run7825.f2k");
 
  // Output file for the event structures
  TFile* ofile=new TFile("events.root","RECREATE","F2K data in IceEvent structure");

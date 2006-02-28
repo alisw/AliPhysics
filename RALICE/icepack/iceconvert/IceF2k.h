@@ -9,6 +9,8 @@
 #include "TFile.h"
 #include "TTree.h"
 #include "TString.h"
+#include "TObjString.h"
+#include "TObjArray.h"
 #include "TDatabasePDG.h"
 
 #include "AliJob.h"
@@ -28,7 +30,8 @@ class IceF2k : public AliJob
   void SetPrintFreq(Int_t f);                             // Set printfrequency to provide info every f events
   void SetSplitLevel(Int_t split);                        // Set split level for the produced ROOT data file
   void SetBufferSize(Int_t bsize);                        // Set buffersize for the produced ROO data file
-  void SetInputFile(TString name);                        // Set name of F2K input file
+  void SetInputFile(TString name);                        // Set name of F2K input file (obsolete)
+  void AddInputFile(TString name);                        // Add name of F2K input file to the list
   void SetOutputFile(TFile* ofile);                       // Set output file for the ROOT data structures       
   void SetOutputFile(TString name);                       // Create output file for the ROOT data structures
   TFile* GetOutputFile();                                 // Provide pointer to the ROOT output file
@@ -39,12 +42,12 @@ class IceF2k : public AliJob
   virtual void Exec(Option_t* opt); // Perform the format conversion
 
  protected :
-  Int_t fSplit;     // The split level of the produced ROOT data file
-  Int_t fBsize;     // The buffersize of the produced ROOT data file
-  Int_t fMaxevt;    // The maximum number of events to be processed
-  Int_t fPrintfreq; // The event info printing frequency
-  TString fInfile;  // Name of the F2K input file
-  TFile* fOutfile;  // The ROOT output file
+  Int_t fSplit;        // The split level of the produced ROOT data file
+  Int_t fBsize;        // The buffersize of the produced ROOT data file
+  Int_t fMaxevt;       // The maximum number of events to be processed
+  Int_t fPrintfreq;    // The event info printing frequency
+  TObjArray* fInfiles; // Names of all the F2K input files
+  TFile* fOutfile;     // The ROOT output file
 
   TDatabasePDG* fPdg;   // Database with PDG information
   AliObjMatrix* fOmdb;  // Database of all OM devices with their geometry, calib. etc... data
@@ -63,6 +66,6 @@ class IceF2k : public AliJob
   array   fHeader; //! Structure holding the file header info
   mevt    fEvent;  //! Structure holding the actual event data (hits, tracks, etc...)
 
- ClassDef(IceF2k,4) // Job for conversion of F2K data into IceEvent physics event structures.
+ ClassDef(IceF2k,5) // Job for conversion of F2K data into IceEvent physics event structures.
 };
 #endif
