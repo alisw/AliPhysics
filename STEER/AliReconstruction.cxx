@@ -755,6 +755,12 @@ Bool_t AliReconstruction::RunTracking(AliESD*& esd)
       fTracker[iDet]->UnloadClusters();
       fLoader[iDet]->UnloadRecPoints();
     }
+    // updated PID in TPC needed by the ITS tracker -MI
+    if (iDet == 1) {
+      GetReconstructor(1)->FillESD(fRunLoader, esd);
+      GetReconstructor(1)->FillESD((TTree*)NULL, (TTree*)NULL, esd);
+      AliESDpid::MakePID(esd);
+    }
   }
 
   // write space-points to the ESD in case alignment data output
