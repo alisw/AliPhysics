@@ -1392,7 +1392,7 @@ Int_t AliTPCtrackerMI::FollowToNext(AliTPCseed& t, Int_t nr) {
       }    
     }
   }
-  if (fIteration>1) return 0;  // not look for new cluster during refitting
+  if (fIteration>1) {t.fNFoundable++; return 0;}  // not look for new cluster during refitting
   //
   UInt_t index=0;
   if (TMath::Abs(t.GetSnp())>0.95 || TMath::Abs(x*t.GetC()-t.GetEta())>0.95) return 0;
@@ -2235,21 +2235,28 @@ void AliTPCtrackerMI::RemoveUsed2(TObjArray * arr, Float_t factor1,  Float_t fac
     Int_t found,foundable,shared;
     pt->GetClusterStatistic(first,last, found, foundable,shared,kFALSE);
     Float_t sharedfactor = Float_t(shared+1)/Float_t(found+1);
-    //
-    if (Float_t(shared+1)/Float_t(found+1)>factor){
-      if (pt->GetKinkIndexes()[0]!=0) continue;  //don't remove tracks  - part of the kinks
-      delete arr->RemoveAt(trackindex);
-      continue;
+    Bool_t itsgold =kFALSE;
+    if (pt->fEsd){
+      UInt_t dummy[12];
+      if (pt->fEsd->GetITSclusters(dummy)>4) itsgold= kTRUE;
     }
-
-    if (pt->GetNumberOfClusters()<50&&(found-0.5*shared)<minimal){  //remove short tracks
-      if (pt->GetKinkIndexes()[0]!=0) continue;  //don't remove tracks  - part of the kinks
-      delete arr->RemoveAt(trackindex);
-      continue;
+    if (!itsgold){
+      //
+      if (Float_t(shared+1)/Float_t(found+1)>factor){
+	if (pt->GetKinkIndexes()[0]!=0) continue;  //don't remove tracks  - part of the kinks
+	delete arr->RemoveAt(trackindex);
+	continue;
+      }      
+      if (pt->GetNumberOfClusters()<50&&(found-0.5*shared)<minimal){  //remove short tracks
+	if (pt->GetKinkIndexes()[0]!=0) continue;  //don't remove tracks  - part of the kinks
+	delete arr->RemoveAt(trackindex);
+	continue;
+      }
     }
 
     good++;
     if (sharedfactor>0.4) continue;
+    if (pt->GetKinkIndexes()[0]>0) continue;
     for (Int_t i=first; i<last; i++) {
       Int_t index=pt->GetClusterIndex2(i);
       // if (index<0 || index&0x8000 ) continue;
@@ -2549,6 +2556,11 @@ Int_t AliTPCtrackerMI::RefitInward(AliESD *event)
     if (seed->GetNumberOfClusters()>15){
       esd->UpdateTrackParams(seed,AliESDtrack::kTPCrefit); 
       esd->SetTPCPoints(seed->GetPoints());
+      esd->SetTPCPointsF(seed->fNFoundable);
+      Int_t ndedx   = seed->fNCDEDX[0]+seed->fNCDEDX[1]+seed->fNCDEDX[2]+seed->fNCDEDX[3];
+      Float_t sdedx = (seed->fSDEDX[0]+seed->fSDEDX[1]+seed->fSDEDX[2]+seed->fSDEDX[3])*0.25;
+      Float_t dedx  = seed->GetdEdx();
+      esd->SetTPCsignal(dedx, sdedx, ndedx);
       ntracks++;
     }
     else{
@@ -2572,7 +2584,9 @@ Int_t AliTPCtrackerMI::PropagateBack(AliESD *event)
   fEvent = event;
   fIteration = 1;
   ReadSeeds(event,1);
-  PropagateBack(fSeeds);
+  PropagateBack(fSeeds); 
+  RemoveUsed2(fSeeds,0.4,0.4,20);
+  //
   Int_t nseed = fSeeds->GetEntriesFast();
   Int_t ntracks=0;
   for (Int_t i=0;i<nseed;i++){
@@ -2689,20 +2703,22 @@ void AliTPCtrackerMI::ReadSeeds(AliESD *event, Int_t direction)
     }
     seed->fEsd = esd;
     // sign clusters
-    for (Int_t irow=0;irow<160;irow++){
-      Int_t index = seed->GetClusterIndex2(irow);    
-      if (index>0){ 
-	//
-	AliTPCclusterMI * cl = GetClusterMI(index);
-	seed->fClusterPointer[irow] = cl;
-	if (cl){
-	  if ((index & 0x8000)==0){
-	    cl->Use(10);  // accepted cluster	  
+    if (esd->GetKinkIndex(0)<=0){
+      for (Int_t irow=0;irow<160;irow++){
+	Int_t index = seed->GetClusterIndex2(irow);    
+	if (index>0){ 
+	  //
+	  AliTPCclusterMI * cl = GetClusterMI(index);
+	  seed->fClusterPointer[irow] = cl;
+	  if (cl){
+	    if ((index & 0x8000)==0){
+	      cl->Use(10);  // accepted cluster	  
+	    }else{
+	      cl->Use(6);   // close cluster not accepted
+	    }	
 	  }else{
-	    cl->Use(6);   // close cluster not accepted
-	  }	
-      	}else{
-	   Info("ReadSeeds","Not found cluster");
+	    Info("ReadSeeds","Not found cluster");
+	  }
 	}
       }
     }
