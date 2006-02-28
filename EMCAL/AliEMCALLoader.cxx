@@ -57,6 +57,7 @@ ClassImp(AliEMCALLoader)
   
 const TString AliEMCALLoader::fgkECARecPointsBranchName("EMCALECARP");//Name for branch with ECA Reconstructed Points
 AliEMCALCalibData* AliEMCALLoader::fCalibData = 0; //calibation data
+AliEMCALAlignData* AliEMCALLoader::fAlignData = 0; //alignment data
 
 //____________________________________________________________________________ 
 AliEMCALLoader::AliEMCALLoader()
@@ -97,14 +98,23 @@ AliEMCALLoader::~AliEMCALLoader()
   delete fRecPoints;
 }
 
+//____________________________________________________________________________
+AliEMCALAlignData* AliEMCALLoader::AlignData()
+{
+  // Check if the instance of AliEMCALAlignData exists, and return it
+  
+  if( !(AliCDBManager::Instance()->IsDefaultStorageSet()) )
+    fAlignData=0x0;
+  return fAlignData;
+}
+
 //____________________________________________________________________________ 
 AliEMCALCalibData* AliEMCALLoader::CalibData()
 { 
-  //Get the Calibration data list
+  // Check if the instance of AliEMCALCalibData exists, and return it
 
   if( !(AliCDBManager::Instance()->IsDefaultStorageSet()) ) {
     fCalibData=0x0;
-    Warning("CalibData","Calibration DB is not initiated!");
     return fCalibData;
   }
 

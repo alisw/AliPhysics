@@ -27,6 +27,7 @@ class TTask ;
 // --- AliRoot header files ---
 #include "AliLoader.h"
 #include "AliEMCALCalibData.h"
+#include "AliEMCALAlignData.h"
 
 class AliLoader ;
 class AliEMCAL ; 
@@ -103,10 +104,11 @@ class AliEMCALLoader : public AliLoader {
   //Calibration
 
   Int_t CalibrateRaw (Double_t energy, Int_t module, Int_t column, Int_t row);//take real calibration coefficients
- 
-  void  SetCalibData(AliEMCALCalibData* calibda) { fCalibData = calibda; }
- 
-  AliEMCALCalibData * CalibData(); // to get the CDB object
+  
+  void  SetAlignData(AliEMCALAlignData* alignda)  { fAlignData = alignda; } 
+  void  SetCalibData(AliEMCALCalibData* calibda)  { fCalibData = calibda; }
+  AliEMCALAlignData * AlignData(); // to get the alignment CDB object
+  AliEMCALCalibData * CalibData(); // to get the calibration CDB object
 
 private:
  
@@ -120,7 +122,9 @@ private:
   TClonesArray     *fHits;         //! TClonesArray of hits (for tree reading)
   TClonesArray     *fDigits;       //! TClonesArray of digits (for tree reading)
   TClonesArray     *fSDigits;      //! TClonesArray of sdigits (for tree reading)
-  TObjArray        *fRecPoints;    //! TClonesArray of recpoints (for tree reading)
+  TObjArray        *fRecPoints;    //! TClonesArray of recpoints (for tree reading)   
+  
+  static AliEMCALAlignData * fAlignData;
   static AliEMCALCalibData * fCalibData;  //  calibration data 
 
   ClassDef(AliEMCALLoader,0)  // Algorithm class that provides methods to retrieve objects from a list knowing the index 
