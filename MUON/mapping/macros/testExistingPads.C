@@ -1,5 +1,5 @@
 // $Id$
-// $MpId: testExistingPads.C,v 1.11 2005/09/26 16:05:25 ivana Exp $
+// $MpId: testExistingPads.C,v 1.12 2005/10/28 15:36:07 ivana Exp $
 //
 // Test macro for testing which pad is seen as "existing" by AliMpSector.
 
@@ -13,7 +13,7 @@ void testExistingPads(AliMpStationType station = kStation1,
     sector=r.BuildSector();
   }
   else  {
-    TString filePath = AliMpFiles::Instance()->SectorFilePath(station,plane);
+    TString filePath = AliMpFiles::SectorFilePath(station,plane);
     filePath.ReplaceAll("zones.dat", "sector.root"); 
 
     TFile f(filePath.Data(), "READ");

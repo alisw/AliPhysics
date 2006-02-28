@@ -1,5 +1,5 @@
 // $Id$
-// $MpId: testSectorPadIterators.C,v 1.8 2005/09/26 16:05:25 ivana Exp $
+// $MpId: testSectorPadIterators.C,v 1.9 2005/10/28 15:36:08 ivana Exp $
 //
 // Test macro for reading  sector, and iterate over it
 
@@ -13,7 +13,7 @@ void testSectorPadIterators(AliMpStationType station = kStation1,
     sector=r.BuildSector();
   }
   else  {
-    TString filePath = AliMpFiles::Instance()->SectorFilePath(station,plane);
+    TString filePath = AliMpFiles::SectorFilePath(station,plane);
     filePath.ReplaceAll("zones.dat", "sector.root"); 
 
     TFile f(filePath.Data(), "READ");

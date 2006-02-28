@@ -1,5 +1,5 @@
 // $Id$
-// $MpId: testSectorFind.C,v 1.9 2005/09/26 16:05:25 ivana Exp $
+// $MpId: testSectorFind.C,v 1.10 2005/10/28 15:36:08 ivana Exp $
 //
 // Test macro for which verify that all FindPosition, FindIndices
 // and FindLocation methods are consistents between them.
@@ -14,7 +14,7 @@ void testSectorFind(AliMpStationType station = kStation1,
     sector=r.BuildSector();
   }
   else  {
-    TString filePath = AliMpFiles::Instance()->SectorFilePath(station,plane);
+    TString filePath = AliMpFiles::SectorFilePath(station,plane);
     filePath.ReplaceAll("zones.dat", "sector.root"); 
 
     TFile f(filePath.Data(), "READ");

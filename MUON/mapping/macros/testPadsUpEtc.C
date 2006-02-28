@@ -1,5 +1,5 @@
 // $Id$
-// $MpId: testPadsUpEtc.C,v 1.7 2005/09/26 16:05:25 ivana Exp $
+// $MpId: testPadsUpEtc.C,v 1.8 2005/10/28 15:36:08 ivana Exp $
 //
 // Test macro that starts from a given pad and prints 
 // all pads up, down, right, left from this pad
@@ -15,7 +15,7 @@ void testPadsUpEtc(AliMpStationType station = kStation1,
     sector=r.BuildSector();
   }
   else  {
-    TString filePath = AliMpFiles::Instance()->SectorFilePath(station,plane);
+    TString filePath = AliMpFiles::SectorFilePath(station,plane);
     filePath.ReplaceAll("zones.dat", "sector.root"); 
 
     TFile f(filePath.Data(), "READ");
