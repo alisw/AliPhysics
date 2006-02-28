@@ -13,6 +13,7 @@ public:
   enum EDetectors {kPIPE=1,kITS,kTPC,kTRD,kTOF,kFRAME,kMAG,kCRT,kHALL,kPHOS,kSTART,kFMD,kABSO,kPMD,kDIPO,kEMCAL,kVZERO,kMUON,kZDC,kSHILD};
   enum EProcesses {kDCAY=1,kPAIR,kCOMP,kPHOT,kPFIS,kDRAY,kANNI,kBREM,kMUNU,kCKOV,kHADR,kLOSS,kMULS,kRAYL,kALL};
   enum EBatchFlags{kPrim=555,kTransport,kAll,kOnly,kRawDdl,kRawDate,kRawRoot,kVertex,kTrack,kEsd};
+  enum EMagField  {kFld0,kFld2,kFld4,kFld5,kFld_2,kFld_4,kFld_5};
   
   Float_t Eta2Theta      (Float_t arg)  const{return (180./TMath::Pi())*2.*TMath::ATan(TMath::Exp(-arg));}
   
@@ -26,7 +27,7 @@ public:
   void    ExitSlot();
      
   TGButtonGroup *fVerBG,*fOptBG,*fQeBG; //Rich widgets  
-  TGButton      *fMagB;                 //magnet field widgets
+  TGButtonGroup *fMagBG;                //magnet field widgets
   
   TGComboBox        *fGenPidCO,*fGenPminCO,*fGenPmaxCO,*fGenChamCO,*fGenNprimCO; //generator widgets combos
   TGCompositeFrame  *fGenF;                                                     //generator widgets frames     
@@ -45,7 +46,6 @@ RichConfig::RichConfig(const char *sFileName):TGMainFrame(gClient->GetRoot(),700
   AddFrame(pMainF=new TGHorizontalFrame(this,100,200)); //main horizontal frame
   
 // Magnetic Field
-  pMainF->AddFrame(fMagB=new TGCheckButton(pMainF,"Mag field On/Off"));  fMagB->SetState(kButtonDown);
   
   GuiRich (pMainF);
   GuiGen  (pMainF);   
@@ -84,11 +84,19 @@ void RichConfig::GuiRich(TGHorizontalFrame *pMainHF)
   pRichGF->AddFrame(fQeBG=new TGButtonGroup(pRichGF,""));
     new TGRadioButton(fQeBG,"QE=0"                 ,kQe0);       
     new TGRadioButton(fQeBG,"QE normal"            ,kQeNorm);       fQeBG->SetButton(kQeNorm);
+  pLeftVF->AddFrame(fMagBG=new TGButtonGroup(pLeftVF,"Mag field")); 
+    new TGRadioButton(fMagBG,   "0.5 T"      ,kFld5   ));
+    new TGRadioButton(fMagBG,   "0.4 T"      ,kFld4   ));
+    new TGRadioButton(fMagBG,   "0.2 T"      ,kFld2   ));  fMagBG->SetButton(kFld2);
+    new TGRadioButton(fMagBG,   "0 T"        ,kFld0   ));   
+    new TGRadioButton(fMagBG,   "-0.2 T"     ,kFld_2  ));
+    new TGRadioButton(fMagBG,   "-0.4 T"     ,kFld_4  ));
+    new TGRadioButton(fMagBG,   "-0.5 T"     ,kFld_5  ));
 }//Rich()
 //__________________________________________________________________________________________________
 void RichConfig::RichVerSlot(Int_t ver)  
 {
-  if(ver==kTest)    {fMagB->SetState(kButtonUp); fGenBG->SetButton(kGunZ); }
+  if(ver==kTest)    {fMagBG->SetButton(kFld0); fGenBG->SetButton(kGunZ); }
 } 
 //__________________________________________________________________________________________________
 void RichConfig::WriteRich(FILE *pF)
@@ -409,12 +417,9 @@ void RichConfig::WriteDet(FILE *pF)
     fprintf(pF,"  pIts->SetRails(0); pIts->SetCoolingFluid(1);\n");
     fprintf(pF,"  pIts->SetEUCLID(0);\n");
   }  
-  if(fDetBG->GetButton(kTPC  )->GetState()) {fprintf(pF,"\n  AliTPC *pTpc=new AliTPCv2(\"TPC\",\"Default\"); pTpc->SetSecAU(-1);pTpc->SetSecAL(-1);\n");}  
-  if(fDetBG->GetButton(kFRAME)->GetState())  fprintf(pF,"\n  AliFRAMEv2 *pFrame=new AliFRAMEv2(\"FRAME\",\"Space Frame\"); pFrame->SetHoles(1);\n");
-  if(fDetBG->GetButton(kTRD  )->GetState()) {
-    fprintf(pF,"\n  AliTRD *pTrd=new AliTRDv1(\"TRD\",\"TRD slow simulator\");\n");
-    fprintf(pF,"  pTrd->SetGasMix(1); pTrd->SetPHOShole(); pTrd->SetRICHhole();pTrd->CreateTR();\n");
-  }  
+  if(fDetBG->GetButton(kTPC  )->GetState()) fprintf(pF,"\n  new AliTPCv2(\"TPC\",\"Default\");\n");  
+  if(fDetBG->GetButton(kFRAME)->GetState()) fprintf(pF,"\n  AliFRAMEv2 *pFrame=new AliFRAMEv2(\"FRAME\",\"Space Frame\"); pFrame->SetHoles(1);\n");
+  if(fDetBG->GetButton(kTRD  )->GetState()){fprintf(pF,"\n  AliTRD *pTrd=new AliTRDv1(\"TRD\",\"TRD slow simulator\");\n");fprintf(pF,"  pTrd->SetGasMix(1); pTrd->SetPHOShole(); pTrd->SetRICHhole();pTrd->CreateTR();\n");}  
   if(fDetBG->GetButton(kTOF  )->GetState()) fprintf(pF,"\n  new AliTOFv4T0(\"TOF\", \"normal TOF\");\n");
 //central detectors  
   if(fDetBG->GetButton(kMAG  )->GetState()) fprintf(pF,"\n  new AliMAG(\"MAG\",\"Magnet\");\n");  
@@ -569,10 +574,14 @@ void RichConfig::WriteConfig()
   WritePhys(pF); //physics processes
   
 //Field
-  if(fMagB->GetState()==kButtonDown) 
-    fprintf(pF,"  gAlice->SetField();\n\n");
-  else 
-    fprintf(pF,"  gAlice->SetField(0);\n\n");
+       if(fMagBG->GetButton(kFld0)->GetState())     fprintf(pF,"  gAlice->SetField(0);        //no field\n\n");
+  else if(fMagBG->GetButton(kFld2)->GetState())     fprintf(pF,"  gAlice->SetField();         //2kG constant field (2kG scaled by 1)\n\n");
+  else if(fMagBG->GetButton(kFld4)->GetState())     fprintf(pF,"  gAlice->SetField(2,1,2);    //4kG constant field (2kG scaled by 2)\n\n");
+  else if(fMagBG->GetButton(kFld5)->GetState())     fprintf(pF,"  gAlice->SetField(2,1,2.5);  //5kG constant field (2kG scaled by 2.5)\n\n");
+  else if(fMagBG->GetButton(kFld_2)->GetState())    fprintf(pF,"  gAlice->SetField(2,1,-1);   //-2kG constant field (2kG scaled by -1)\n\n");
+  else if(fMagBG->GetButton(kFld_4)->GetState())    fprintf(pF,"  gAlice->SetField(2,1,-2);   //-4kG constant field (2kG scaled by -2)\n\n");
+  else if(fMagBG->GetButton(kFld_5)->GetState())    fprintf(pF,"  gAlice->SetField(2,1,-2.5); //-5kG constant field (2kG scaled by -2.5)\n\n");
+  
   fprintf(pF,"  pAL->CdGAFile();\n\n");                                 //????       
 //BODY-ALIC 
   fprintf(pF,"  new AliBODY(\"BODY\",\"Alice envelop\");\n\n");
