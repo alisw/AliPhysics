@@ -469,11 +469,6 @@ Bool_t AliESDtrack::UpdateTrackParams(const AliKalmanTrack *t, ULong_t flags){
         }
      }
     fTPCsignal=t->GetPIDsignal();
-    {Double_t mass=t->GetMass();    // preliminary mass setting 
-    if (mass>0.5) fR[4]=1.;         //        used by
-    else if (mass<0.4) fR[2]=1.;    // the ITS reconstruction
-    else fR[3]=1.;}
-                     //
     break;
 
   case kTRDout: case kTRDin: case kTRDrefit:
