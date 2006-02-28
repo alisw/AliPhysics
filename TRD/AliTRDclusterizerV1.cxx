@@ -41,6 +41,7 @@
 #include "AliTRDpadPlane.h"
 #include "AliTRDrawData.h"
 #include "AliTRDcalibDB.h"
+#include "AliTRDSimParam.h"
 #include "AliTRDRecParam.h"
 #include "AliTRDCommonParam.h"
 #include "AliTRDcluster.h"
@@ -189,15 +190,23 @@ Bool_t AliTRDclusterizerV1::MakeClusters()
   AliTRDcalibDB* calibration = AliTRDcalibDB::Instance();
   if (!calibration)
   {
-    printf("<AliTRDclusterizerMI::MakeCluster> ");
+    printf("<AliTRDclusterizerV1::MakeCluster> ");
     printf("ERROR getting instance of AliTRDcalibDB");
+    return kFALSE;  
+  }
+  
+  AliTRDSimParam* simParam = AliTRDSimParam::Instance();
+  if (!simParam)
+  {
+    printf("<AliTRDclusterizerV1::MakeCluster> ");
+    printf("ERROR getting instance of AliTRDSimParam");
     return kFALSE;  
   }
   
   AliTRDRecParam* recParam = AliTRDRecParam::Instance();
   if (!recParam)
   {
-    printf("<AliTRDclusterizerMI::MakeCluster> ");
+    printf("<AliTRDclusterizerV1::MakeCluster> ");
     printf("ERROR getting instance of AliTRDRecParam");
     return kFALSE;  
   }
@@ -205,7 +214,7 @@ Bool_t AliTRDclusterizerV1::MakeClusters()
   AliTRDCommonParam* commonParam = AliTRDCommonParam::Instance();
   if (!commonParam)
   {
-    printf("<AliTRDdigitizer::MakeDigits> ");
+    printf("<AliTRDclusterizerV1::MakeDigits> ");
     printf("Could not get common params\n");
     return kFALSE;
   }
@@ -223,7 +232,8 @@ Bool_t AliTRDclusterizerV1::MakeClusters()
     printf("Start creating clusters.\n");
   } 
 
-  AliTRDdataArrayI *digits;
+  AliTRDdataArrayI *digitsIn;
+  AliTRDdataArrayI *digitsOut;    // Should actually be Float_t here (C.L.)!!
   AliTRDdataArrayI *track0;
   AliTRDdataArrayI *track1;
   AliTRDdataArrayI *track2; 
@@ -258,12 +268,23 @@ Bool_t AliTRDclusterizerV1::MakeClusters()
   Int_t    sectBeg = 0;
   Int_t    sectEnd = AliTRDgeometry::Nsect();
 
+  Int_t    nTimeTotal  = calibration->GetNumberOfTimeBins();
+
+  if (fVerbose > 0) {
+    printf("<AliTRDclusterizerV1::MakeCluster> ");
+    printf("Number of Time Bins = %d.\n",nTimeTotal);
+  }
+
+
   // Start clustering in every chamber
   for (Int_t icham = chamBeg; icham < chamEnd; icham++) {
     for (Int_t iplan = planBeg; iplan < planEnd; iplan++) {
       for (Int_t isect = sectBeg; isect < sectEnd; isect++) {
 
-        Int_t idet = geo->GetDetector(iplan,icham,isect);
+        Int_t idet    = geo->GetDetector(iplan,icham,isect);
+
+	Int_t nRowMax = commonParam->GetRowMax(iplan,icham,isect);
+	Int_t nColMax = commonParam->GetColMax(iplan);
 
         Int_t nClusters      = 0;
         Int_t nClusters2pad  = 0;
@@ -278,15 +299,17 @@ Bool_t AliTRDclusterizerV1::MakeClusters()
                 ,icham,iplan,isect);
 	}
 
-        Int_t    nRowMax     = commonParam->GetRowMax(iplan,icham,isect);
-        Int_t    nColMax     = commonParam->GetColMax(iplan);
-        Int_t    nTimeTotal  = calibration->GetNumberOfTimeBins();
-
         AliTRDpadPlane *padPlane = commonParam->GetPadPlane(iplan,icham);
 
         // Get the digits
-        digits = fDigitsManager->GetDigits(idet);
-        digits->Expand();
+        digitsIn = digitsOut = fDigitsManager->GetDigits(idet);
+        digitsIn->Expand();
+        digitsOut->Expand();
+
+	if (simParam->TCOn()) {            // tail cancellation
+	  Transform(digitsIn, digitsOut, idet, nRowMax, nColMax, nTimeTotal);
+	}
+
         track0 = fDigitsManager->GetDictionary(idet,0);
         track0->Expand();
         track1 = fDigitsManager->GetDictionary(idet,1);
@@ -300,9 +323,9 @@ Bool_t AliTRDclusterizerV1::MakeClusters()
             //for ( col = 4;  col <  nColMax-2;    col++) {
             for (time = 0; time < nTimeTotal; time++) {
 
-              Int_t signalL = TMath::Abs(digits->GetDataUnchecked(row,col  ,time));
-              Int_t signalM = TMath::Abs(digits->GetDataUnchecked(row,col-1,time));
-              Int_t signalR = TMath::Abs(digits->GetDataUnchecked(row,col-2,time));
+              Int_t signalL = TMath::Abs(digitsOut->GetDataUnchecked(row,col  ,time));
+              Int_t signalM = TMath::Abs(digitsOut->GetDataUnchecked(row,col-1,time));
+              Int_t signalR = TMath::Abs(digitsOut->GetDataUnchecked(row,col-2,time));
  
 // 	      // Look for the maximum
 //               if (signalM >= maxThresh) {
@@ -311,7 +334,7 @@ Bool_t AliTRDclusterizerV1::MakeClusters()
 //                     ((signalR >= sigThresh) &&
 //                      (signalR <  signalM))) {
 //                   // Maximum found, mark the position by a negative signal
-//                   digits->SetDataUnchecked(row,col-1,time,-signalM);
+//                   digitsOut->SetDataUnchecked(row,col-1,time,-signalM);
 // 		}
 // 	      }
 	      // Look for the maximum
@@ -319,10 +342,9 @@ Bool_t AliTRDclusterizerV1::MakeClusters()
                 if ( (TMath::Abs(signalL)<=signalM) && (TMath::Abs(signalR)<=signalM) && 
 		     (TMath::Abs(signalL)+TMath::Abs(signalR))>sigThresh ) {
                   // Maximum found, mark the position by a negative signal
-                  digits->SetDataUnchecked(row,col-1,time,-signalM);
+                  digitsOut->SetDataUnchecked(row,col-1,time,-signalM);
 		}
 	      }
-
             }  
           }    
         }      
@@ -333,15 +355,15 @@ Bool_t AliTRDclusterizerV1::MakeClusters()
             for ( col = 1;  col <  nColMax-1;  col++) {
 
               // Maximum found ?             
-              if (digits->GetDataUnchecked(row,col,time) < 0) {
+              if (digitsOut->GetDataUnchecked(row,col,time) < 0) {
 
                 Int_t iPad;
                 for (iPad = 0; iPad < kNclus; iPad++) {
                   Int_t iPadCol = col - 1 + iPad;
-                  clusterSignal[iPad]     = TMath::Abs(digits->GetDataUnchecked(row
+                  clusterSignal[iPad]     = TMath::Abs(digitsOut->GetDataUnchecked(row
                                                                                ,iPadCol
                                                                                ,time));
-                  clusterDigit[iPad]      = digits->GetIndexUnchecked(row,iPadCol,time);
+                  clusterDigit[iPad]      = digitsOut->GetIndexUnchecked(row,iPadCol,time);
                   clusterTracks[3*iPad  ] = track0->GetDataUnchecked(row,iPadCol,time) - 1;
 		  clusterTracks[3*iPad+1] = track1->GetDataUnchecked(row,iPadCol,time) - 1;
 		  clusterTracks[3*iPad+2] = track2->GetDataUnchecked(row,iPadCol,time) - 1;
@@ -350,14 +372,14 @@ Bool_t AliTRDclusterizerV1::MakeClusters()
 		// Count the number of pads in the cluster
                 Int_t nPadCount = 0;
                 Int_t ii        = 0;
-                while (TMath::Abs(digits->GetDataUnchecked(row,col-ii  ,time))
+                while (TMath::Abs(digitsOut->GetDataUnchecked(row,col-ii  ,time))
                                                                   >= sigThresh) {
                   nPadCount++;
                   ii++;
                   if (col-ii   <        0) break;
 		}
                 ii = 0;
-                while (TMath::Abs(digits->GetDataUnchecked(row,col+ii+1,time))
+                while (TMath::Abs(digitsOut->GetDataUnchecked(row,col+ii+1,time))
                                                                   >= sigThresh) {
                   nPadCount++;
                   ii++;
@@ -391,16 +413,16 @@ Bool_t AliTRDclusterizerV1::MakeClusters()
 		 // Look for 5 pad cluster with minimum in the middle
                 Bool_t fivePadCluster = kFALSE;
                 if (col < nColMax-3) {
-                  if (digits->GetDataUnchecked(row,col+2,time) < 0) {
+                  if (digitsOut->GetDataUnchecked(row,col+2,time) < 0) {
                     fivePadCluster = kTRUE;
 	  	  }
                   if ((fivePadCluster) && (col < nColMax-5)) {
-                    if (digits->GetDataUnchecked(row,col+4,time) >= sigThresh) {
+                    if (digitsOut->GetDataUnchecked(row,col+4,time) >= sigThresh) {
                       fivePadCluster = kFALSE;
 		    }
 		  }
                   if ((fivePadCluster) && (col >         1)) {
-                    if (digits->GetDataUnchecked(row,col-2,time) >= sigThresh) {
+                    if (digitsOut->GetDataUnchecked(row,col-2,time) >= sigThresh) {
                       fivePadCluster = kFALSE;
 		    }
 		  }
@@ -418,9 +440,9 @@ Bool_t AliTRDclusterizerV1::MakeClusters()
 		// Unfold the 5 pad cluster
                 if (fivePadCluster) {
                   for (iPad = 0; iPad < kNsig; iPad++) {
-                    padSignal[iPad] = TMath::Abs(digits->GetDataUnchecked(row
-                                                                         ,col-1+iPad
-                                                                         ,time));
+                    padSignal[iPad] = TMath::Abs(digitsOut->GetDataUnchecked(row
+									     ,col-1+iPad
+									     ,time));
                   }
                   // Unfold the two maxima and set the signal on 
                   // the overlapping pad to the ratio
@@ -447,23 +469,22 @@ Bool_t AliTRDclusterizerV1::MakeClusters()
                 if (recParam->LUTOn()) {
   		  // Calculate the position of the cluster by using the
 		  // lookup table method
-                  clusterPads[1] =
-                      recParam->LUTposition(iplan,clusterSignal[0]
-                                                          ,clusterSignal[1]
-					                  ,clusterSignal[2]);
+                  clusterPads[1] = recParam->LUTposition(iplan,clusterSignal[0]
+							 ,clusterSignal[1]
+							 ,clusterSignal[2]);
 		}
 		else {
   		  // Calculate the position of the cluster by using the
 		  // center of gravity method
 		  for (Int_t i=0;i<5;i++) padSignal[i]=0;
-		  padSignal[2] = TMath::Abs(digits->GetDataUnchecked(row,col,time));   // central  pad
-		  padSignal[1] = TMath::Abs(digits->GetDataUnchecked(row,col-1,time)); // left     pad
-		  padSignal[3] = TMath::Abs(digits->GetDataUnchecked(row,col+1,time)); // right    pad
-		  if (col>2 &&TMath::Abs(digits->GetDataUnchecked(row,col-2,time)<padSignal[1])){
-		    padSignal[0] = TMath::Abs(digits->GetDataUnchecked(row,col-2,time));
+		  padSignal[2] = TMath::Abs(digitsOut->GetDataUnchecked(row,col,time));   // central  pad
+		  padSignal[1] = TMath::Abs(digitsOut->GetDataUnchecked(row,col-1,time)); // left     pad
+		  padSignal[3] = TMath::Abs(digitsOut->GetDataUnchecked(row,col+1,time)); // right    pad
+		  if (col>2 &&TMath::Abs(digitsOut->GetDataUnchecked(row,col-2,time)<padSignal[1])){
+		    padSignal[0] = TMath::Abs(digitsOut->GetDataUnchecked(row,col-2,time));
 		  }
-		  if (col<nColMax-3 &&TMath::Abs(digits->GetDataUnchecked(row,col+2,time)<padSignal[3])){
-		    padSignal[4] = TMath::Abs(digits->GetDataUnchecked(row,col+2,time));
+		  if (col<nColMax-3 &&TMath::Abs(digitsOut->GetDataUnchecked(row,col+2,time)<padSignal[3])){
+		    padSignal[4] = TMath::Abs(digitsOut->GetDataUnchecked(row,col+2,time));
 		  }		  
 		  clusterPads[1] =  GetCOG(padSignal);
 		  //Double_t check = fPar->LUTposition(iplan,clusterSignal[0]
@@ -486,7 +507,7 @@ Bool_t AliTRDclusterizerV1::MakeClusters()
                 Double_t rowSize = padPlane->GetRowSize(row);
                 Double_t clusterPos[3];
 		clusterPos[0] = padPlane->GetColPos(col) - (clusterPads[1]+0.5)*colSize;  // MI change
-		clusterPos[1] = padPlane->GetRowPos(row) -0.5*rowSize; //MI change
+		clusterPos[1] = padPlane->GetRowPos(row) - 0.5*rowSize; //MI change
                 clusterPos[2] = CalcXposFromTimebin(clusterPads[2], vdrift);
                 Double_t clusterSig[2];
                 clusterSig[0] = (clusterSigmaY2 + 1./12.) * colSize*colSize;
@@ -500,13 +521,13 @@ Bool_t AliTRDclusterizerV1::MakeClusters()
 			  ,clusterCharge
 			  ,clusterTracks
 			  ,clusterSig
-			   ,iType,clusterPads[1]);
+			  ,iType,clusterPads[1]);
 		//
 		//
 		Short_t signals[7]={0,0,0,0,0,0,0};
 		for (Int_t jPad = col-3;jPad<=col+3;jPad++){
 		  if (jPad<0 ||jPad>=nColMax-1) continue;
-		  signals[jPad-col+3] =  TMath::Abs(digits->GetDataUnchecked(row,jPad,time));
+		  signals[jPad-col+3] =  TMath::Abs(digitsOut->GetDataUnchecked(row,jPad,time));
 		}
 		cluster->SetSignals(signals);
               }
@@ -515,7 +536,7 @@ Bool_t AliTRDclusterizerV1::MakeClusters()
         }     
 
 	// Compress the arrays
-        digits->Compress(1,0);
+        digitsOut->Compress(1,0);
         track0->Compress(1,0);
 	track1->Compress(1,0);
         track2->Compress(1,0);
@@ -531,6 +552,8 @@ Bool_t AliTRDclusterizerV1::MakeClusters()
     printf("<AliTRDclusterizerV1::MakeCluster> ");
     printf("Done.\n");
   }
+
+  //delete digitsIn;
 
   return kTRUE;
 
@@ -608,3 +631,131 @@ Double_t AliTRDclusterizerV1::Unfold(Double_t eps, Int_t plane, Double_t* padSig
 
 }
 
+//_____________________________________________________________________________
+void AliTRDclusterizerV1::Transform(AliTRDdataArrayI* digitsIn,
+				    AliTRDdataArrayI* digitsOut,
+				    Int_t idet, Int_t nRowMax,
+				    Int_t nColMax, Int_t nTimeTotal)
+{
+
+  //
+  // Apply tail cancellation: Transform digitsIn to digitsOut
+  //
+
+
+  AliTRDSimParam* simParam = AliTRDSimParam::Instance();
+  if (!simParam)
+  {
+    printf("<AliTRDclusterizerV1::Transform> ");
+    printf("ERROR getting instance of AliTRDSimParam");
+    return;
+  }
+  
+  Double_t *inADC  = new Double_t[nTimeTotal];  // adc data before tail cancellation
+  Double_t *outADC = new Double_t[nTimeTotal];  // adc data after tail cancellation
+
+  if (fVerbose > 0) {
+    printf("<AliTRDclusterizerV1::Transform> ");
+    printf("Tail cancellation (nExp = %d) for detector %d.\n",
+	   simParam->GetTCnexp(),idet);
+  }
+
+  for (Int_t iRow  = 0; iRow  <  nRowMax;   iRow++ ) {
+    for (Int_t iCol  = 0; iCol  <  nColMax;   iCol++ ) {
+      for (Int_t iTime = 0; iTime < nTimeTotal; iTime++) {
+
+	inADC[iTime]  = digitsIn->GetDataUnchecked(iRow, iCol, iTime);
+	outADC[iTime] = inADC[iTime];
+
+      }
+
+      // Apply the tail cancelation via the digital filter
+      if (simParam->TCOn())
+      {
+	DeConvExp(inADC,outADC,nTimeTotal,simParam->GetTCnexp());
+      }
+
+      for (Int_t iTime = 0; iTime < nTimeTotal; iTime++) {   
+	// Store the amplitude of the digit if above threshold
+	if (outADC[iTime] > simParam->GetADCthreshold()) {
+	  if (fVerbose > 1)
+	  {
+	    printf("  iRow = %d, iCol = %d, iTime = %d, adc = %f\n"
+		   ,iRow,iCol,iTime,outADC[iTime]);
+	  }
+	  digitsOut->SetDataUnchecked(iRow,iCol,iTime,(Int_t)outADC[iTime]);
+	}
+
+      }
+
+    }
+
+  }
+
+  delete [] inADC;
+  delete [] outADC;
+
+  return;
+
+}
+
+
+//_____________________________________________________________________________
+void AliTRDclusterizerV1::DeConvExp(Double_t *source, Double_t *target,
+				    Int_t n, Int_t nexp) 
+{
+  //
+  // Tail Cancellation by Deconvolution for PASA v4 TRF
+  //
+
+  Double_t rates[2];
+  Double_t coefficients[2];
+
+  // initialize (coefficient = alpha, rates = lambda)
+
+  Double_t R1 = 1.0;
+  Double_t R2 = 1.0;
+  Double_t C1 = 0.5;
+  Double_t C2 = 0.5;
+
+  if (nexp == 1) {   // 1 Exponentials
+    R1 = 1.156;
+    R2 = 0.130;
+    C1 = 0.066;
+    C2 = 0.000;
+  }
+  if (nexp == 2) {   // 2 Exponentials
+    R1 = 1.156;
+    R2 = 0.130;
+    C1 = 0.114;
+    C2 = 0.624;
+  }
+
+  coefficients[0] = C1;
+  coefficients[1] = C2;
+
+  Double_t Dt = 0.100;
+
+  rates[0] = TMath::Exp(-Dt/(R1));
+  rates[1] = TMath::Exp(-Dt/(R2));
+  
+  Int_t i, k;
+  Double_t reminder[2];
+  Double_t correction, result;
+
+  /* attention: computation order is important */
+  correction=0.0;
+
+  for ( k=0; k<nexp; k++ ) reminder[k]=0.0;
+
+  for ( i=0; i<n; i++ ) {
+    result = ( source[i] - correction );    // no rescaling
+    target[i] = result;
+
+    for ( k=0; k<nexp; k++ ) reminder[k] = rates[k] *
+			       ( reminder[k] + coefficients[k] * result);
+    correction=0.0;
+    for ( k=0; k<nexp; k++ ) correction += reminder[k];
+  }
+
+}

@@ -58,37 +58,32 @@ class AliTRDdigitizer : public AliDigitizer {
   virtual void         SetGeometry(AliTRDgeometry *geo)     { fGeo             = geo; };
   virtual void         SetParameter(AliTRDparameter *par)   { fPar             = par; };
   virtual void         SetMergeSignalOnly(Bool_t m = kTRUE) { fMergeSignalOnly = m;   };
-  virtual void         SetSimple(Int_t v = 1)               { fSimpleSim       = v;
-                                                              fSimpleDet       = 12;
-                                                              fCompress        = kFALSE; };
 
   AliTRDdigitsManager *Digits()                       const { return fDigitsManager; };
 
-  Bool_t       GetCompress()                  const { return fCompress;      };
-  Bool_t       GetSDigits()                   const { return fSDigits;       };
-  Float_t      GetSDigitsScale()              const { return fSDigitsScale;  };
+  Bool_t               GetCompress()                  const { return fCompress;      };
+  Bool_t               GetSDigits()                   const { return fSDigits;       };
+  Float_t              GetSDigitsScale()              const { return fSDigitsScale;  };
   AliTRDparameter     *GetParameter()                 const { return fPar;           };
-  Bool_t       GetSimple()                    const { return fSimpleSim;     };
 
-  virtual Double_t TimeStruct(Float_t vdrift, Double_t time, Double_t z);  
+  virtual Double_t     TimeStruct(Float_t vdrift, Double_t time, Double_t z);  
 
-  Float_t GetDiffusionT(Float_t vdrift);
-  Float_t GetDiffusionL(Float_t vdrift);
-  virtual Int_t Diffusion(Float_t vdrift, Double_t driftlength, Double_t *xyz);
+          Float_t      GetDiffusionT(Float_t vdrift);
+          Float_t      GetDiffusionL(Float_t vdrift);
+  virtual Int_t        Diffusion(Float_t vdrift, Double_t driftlength, Double_t *xyz);
 
-  Float_t GetLorentzFactor(Float_t vdrift);
-  virtual Int_t ExB(Float_t vdrift, Double_t driftlength, Double_t *xyz);  
+          Float_t      GetLorentzFactor(Float_t vdrift);
+  virtual Int_t        ExB(Float_t vdrift, Double_t driftlength, Double_t *xyz);  
   
-  protected:
+ protected:
 
-  //TFile               *fInputFile;          //! ALIROOT-file
   AliRunLoader        *fRunLoader;          //! Local pointer
   AliTRDdigitsManager *fDigitsManager;      //! Manager for the output digits
   AliTRDdigitsManager *fSDigitsManager;     //! Manager for the summed input s-digits
   TList               *fSDigitsManagerList; //! List of managers of input s-digits
   AliTRD              *fTRD;                //! TRD detector class
   AliTRDgeometry      *fGeo;                //! TRD geometry
-  AliTRDparameter     *fPar;          //  TRD common parameter object
+  AliTRDparameter     *fPar;                //  TRD common parameter object
   Int_t                fEvent;              //! Event number
   Int_t               *fMasks;              //! Masks for the merging
   Bool_t               fCompress;           //  Switch to keep only compressed data in memory
@@ -96,11 +91,10 @@ class AliTRDdigitizer : public AliDigitizer {
   Bool_t               fSDigits;            //  Switch for the summable digits
   Float_t              fSDigitsScale;       //  Scale factor for the summable digits 
   Bool_t               fMergeSignalOnly;    //  Merge only detectors that contain a signal
-  Bool_t               fSimpleSim;          //  Switch for the simplified simulation
-  Int_t                fSimpleDet;          //  Detecttor number used in the simplified simulation
- 
-  void SampleTimeStruct(Float_t vdrift);
-  void RecalcDiffusion(Float_t vdrift);
+  Bool_t               fFixedGeometry;      //  Switch for the fixed geometry, i.e. without alignment
+
+          void         SampleTimeStruct(Float_t vdrift);
+          void         RecalcDiffusion(Float_t vdrift);
   
   struct
   {
@@ -120,14 +114,13 @@ class AliTRDdigitizer : public AliDigitizer {
     Float_t              fVDhi;                               //  Higher drift velocity, for interpolation
   } fTimeStructInfo;
   
-  private:
+ private:
     
-  virtual Bool_t Init();
+  virtual Bool_t       Init();
     
-  virtual void         DeConvExp(Double_t *source, Double_t *target, Int_t n, Int_t nexp);
   virtual Bool_t       CheckDetector(Int_t plane, Int_t chamber, Int_t sector);
 
-  ClassDef(AliTRDdigitizer,8)               //  Produces TRD-Digits
+  ClassDef(AliTRDdigitizer,9)               //  Produces TRD-Digits
 
 };
 

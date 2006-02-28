@@ -52,6 +52,7 @@
 #include <TF1.h>
 #include <TList.h>
 #include <TTask.h>
+#include <TGeoManager.h>
 
 #include "AliRun.h"
 #include "AliRunLoader.h"
@@ -91,7 +92,7 @@ AliTRDdigitizer::AliTRDdigitizer()
   fSDigitsManagerList = 0;
   fTRD                = 0;
   fGeo                = 0;
-  fPar          = 0;
+  fPar                = 0;
   fEvent              = 0;
   fMasks              = 0;
   fCompress           = kTRUE;
@@ -99,21 +100,21 @@ AliTRDdigitizer::AliTRDdigitizer()
   fSDigits            = kFALSE;
   fSDigitsScale       = 0.0;
   fMergeSignalOnly    = kFALSE;
-  fSimpleSim          = kFALSE;
-  fSimpleDet          = 0;
+  fFixedGeometry      = kFALSE;
  
-  fTimeStructInfo.fLastVdrift = 0;
-  fTimeStructInfo.fTimeStruct1        = 0;
-  fTimeStructInfo.fTimeStruct2        = 0;
-  fTimeStructInfo.fVDlo = 0;
-  fTimeStructInfo.fVDhi = 0;
+  fTimeStructInfo.fLastVdrift   = 0;
+  fTimeStructInfo.fTimeStruct1  = 0;
+  fTimeStructInfo.fTimeStruct2  = 0;
+  fTimeStructInfo.fVDlo         = 0;
+  fTimeStructInfo.fVDhi         = 0;
   
-  fDiffusionInfo.fLastVdrift = 0;
-  fDiffusionInfo.fDiffusionT         = 0.0;
-  fDiffusionInfo.fDiffusionL         = 0.0;
+  fDiffusionInfo.fLastVdrift    = 0;
+  fDiffusionInfo.fDiffusionT    = 0.0;
+  fDiffusionInfo.fDiffusionL    = 0.0;
   fDiffusionInfo.fLorentzFactor = 0.0;
   
   Init();
+
 }
 
 //_____________________________________________________________________________
@@ -125,6 +126,7 @@ AliTRDdigitizer::AliTRDdigitizer(const Text_t *name, const Text_t *title)
   //
 
   Init();
+
 }
 
 //_____________________________________________________________________________
@@ -137,6 +139,7 @@ AliTRDdigitizer::AliTRDdigitizer(AliRunDigitizer *manager
   //
 
   Init();
+
 }
 
 //_____________________________________________________________________________
@@ -148,11 +151,16 @@ AliTRDdigitizer::AliTRDdigitizer(AliRunDigitizer *manager)
   //
 
   Init();
+
 }
 
 //_____________________________________________________________________________
 Bool_t AliTRDdigitizer::Init()
 {
+  //
+  // Initialize the digitizer with default values
+  //
+
   fRunLoader          = 0;
 
   //NewIO: These data members probably are not needed anymore
@@ -161,9 +169,9 @@ Bool_t AliTRDdigitizer::Init()
   fSDigitsManagerList = 0;
   fTRD                = 0;
   fGeo                = 0;
-  fPar          = 0;
-  
+  fPar                = 0;  
   //End NewIO comment
+
   fEvent              = 0;
   fMasks              = 0;
   fCompress           = kTRUE;
@@ -171,21 +179,21 @@ Bool_t AliTRDdigitizer::Init()
   fSDigits            = kFALSE;
   fSDigitsScale       = 100.; // For the summable digits
   fMergeSignalOnly    = kFALSE;
-  fSimpleSim          = kFALSE;
-  fSimpleDet          = 0;
+  fFixedGeometry      = kFALSE;
  
-  fTimeStructInfo.fLastVdrift = -1;
-  fTimeStructInfo.fTimeStruct1        = 0;
-  fTimeStructInfo.fTimeStruct2        = 0;
-  fTimeStructInfo.fVDlo = 0;
-  fTimeStructInfo.fVDhi = 0;
+  fTimeStructInfo.fLastVdrift   = -1;
+  fTimeStructInfo.fTimeStruct1  = 0;
+  fTimeStructInfo.fTimeStruct2  = 0;
+  fTimeStructInfo.fVDlo         = 0;
+  fTimeStructInfo.fVDhi         = 0;
   
-  fDiffusionInfo.fLastVdrift = -1;
-  fDiffusionInfo.fDiffusionT         = 0.0;
-  fDiffusionInfo.fDiffusionL         = 0.0;
+  fDiffusionInfo.fLastVdrift    = -1;
+  fDiffusionInfo.fDiffusionT    = 0.0;
+  fDiffusionInfo.fDiffusionL    = 0.0;
   fDiffusionInfo.fLorentzFactor = 0.0;
 
   return AliDigitizer::Init();
+
 }
 
 //_____________________________________________________________________________
@@ -235,6 +243,7 @@ AliTRDdigitizer::~AliTRDdigitizer()
     delete [] fTimeStructInfo.fTimeStruct2;
     fTimeStructInfo.fTimeStruct2 = 0;
   }
+
 }
 
 //_____________________________________________________________________________
@@ -270,14 +279,14 @@ void AliTRDdigitizer::Copy(TObject &d) const
   ((AliTRDdigitizer &) d).fSDigits            = fSDigits;
   ((AliTRDdigitizer &) d).fSDigitsScale       = fSDigitsScale;
   ((AliTRDdigitizer &) d).fMergeSignalOnly    = fMergeSignalOnly;
-  ((AliTRDdigitizer &) d).fSimpleSim          = fSimpleSim;
-  ((AliTRDdigitizer &) d).fSimpleDet          = fSimpleDet;
+  ((AliTRDdigitizer &) d).fFixedGeometry      = fFixedGeometry;
                                        
   AliTRDdigitizer& target = (AliTRDdigitizer &) d;
   
   target.fDiffusionInfo = fDiffusionInfo;
   
-  // do not copy timestructs, just invalidate lastvdrift. Next time they are requested, they get recalculated
+  // Do not copy timestructs, just invalidate lastvdrift.
+  // Next time they are requested, they get recalculated
   if (target.fTimeStructInfo.fTimeStruct1)
   {
     delete[] target.fTimeStructInfo.fTimeStruct1;
@@ -287,9 +296,9 @@ void AliTRDdigitizer::Copy(TObject &d) const
   {
     delete[] target.fTimeStructInfo.fTimeStruct2;
     target.fTimeStructInfo.fTimeStruct2 = 0;
-  }
-  
+  }  
   target.fTimeStructInfo.fLastVdrift = -1;
+
 }
 
 //_____________________________________________________________________________
@@ -447,9 +456,8 @@ Bool_t AliTRDdigitizer::Open(const Char_t *file, Int_t nEvent)
   //
   // Opens a ROOT-file with TRD-hits and reads in the hit-tree
   //
-
   // Connect the AliRoot file containing Geometry, Kine, and Hits
-  
+  //  
 
   TString evfoldname = AliConfig::GetDefaultEventFolderName();
   fRunLoader = AliRunLoader::GetRunLoader(evfoldname);
@@ -556,7 +564,8 @@ Bool_t AliTRDdigitizer::InitDetector()
   // The list for the input s-digits manager to be merged
   if (fSDigitsManagerList) {
     fSDigitsManagerList->Delete();
-  } else {
+  } 
+  else {
     fSDigitsManagerList = new TList();
   }
 
@@ -599,7 +608,7 @@ Bool_t AliTRDdigitizer::MakeDigits()
 
   // Half the width of the amplification region
   const Float_t kAmWidth = AliTRDgeometry::AmThick() / 2.;
-  // Width of the drit region
+  // Width of the drift region
   const Float_t kDrWidth = AliTRDgeometry::DrThick();
   
   Int_t    iRow, iCol, iTime, iPad;
@@ -625,6 +634,8 @@ Bool_t AliTRDdigitizer::MakeDigits()
 
   AliTRDpadPlane   *padPlane = 0;
 
+  TGeoManager::Import("geometry.root");
+
   // Create a default parameter class if none is defined
   if (!fPar) {
     fPar = new AliTRDparameter("TRDparameter","Standard TRD parameter");
@@ -635,16 +646,14 @@ Bool_t AliTRDdigitizer::MakeDigits()
   }
   
   AliTRDSimParam* simParam = AliTRDSimParam::Instance();
-  if (!simParam)
-  {
+  if (!simParam) {
     printf("<AliTRDdigitizer::MakeDigits> ");
     printf("Could not get simulation params\n");
     return kFALSE;
   }
   
   AliTRDCommonParam* commonParam = AliTRDCommonParam::Instance();
-  if (!commonParam)
-  {
+  if (!commonParam) {
     printf("<AliTRDdigitizer::MakeDigits> ");
     printf("Could not get common params\n");
     return kFALSE;
@@ -656,11 +665,16 @@ Bool_t AliTRDdigitizer::MakeDigits()
                                              ,AliTRDgeometry::Ndet());
 
   AliTRDcalibDB* calibration = AliTRDcalibDB::Instance();
-  if (!calibration)
-  {
+  if (!calibration) {
     printf("<AliTRDdigitizer::MakeDigits> ");
     printf("Could not get calibration object\n");
     return kFALSE;
+  }
+
+  if (!gGeoManager) {
+    printf("<AliTRDdigitizer::MakeDigits> ");
+    printf("No TGeoManager available. Switch to fixed geometry.\n");
+    fFixedGeometry = kTRUE;
   }
 
   if (simParam->TRFOn()) {
@@ -687,22 +701,18 @@ Bool_t AliTRDdigitizer::MakeDigits()
   AliLoader* gimme = fRunLoader->GetLoader("TRDLoader");
   if (!gimme->TreeH()) gimme->LoadHits();
   TTree* hitTree = gimme->TreeH();
-  if (hitTree == 0x0)
-    {
+  if (hitTree == 0x0) {
       Error("MakeDigits","Can not get TreeH");
       return kFALSE;
-    }
+  }
   fTRD->SetTreeAddress();
   
   // Get the number of entries in the hit tree
   // (Number of primary particles creating a hit somewhere)
-  Int_t nTrack = 1;
-  if (!fSimpleSim) {
-    nTrack = (Int_t) hitTree->GetEntries();
-    if (fDebug > 0) {
-      printf("<AliTRDdigitizer::MakeDigits> ");
-      printf("Found %d primary particles\n",nTrack);
-    } 
+  Int_t nTrack = (Int_t) hitTree->GetEntries();
+  if (fDebug > 0) {
+    printf("<AliTRDdigitizer::MakeDigits> ");
+    printf("Found %d primary particles\n",nTrack);
   }
 
   Int_t detectorOld = -1;
@@ -721,16 +731,14 @@ Bool_t AliTRDdigitizer::MakeDigits()
     }
   }
   
-  Int_t nTimeTotal  = calibration->GetNumberOfTimeBins();
-  Float_t samplingRate  = calibration->GetSamplingFrequency();
+  Int_t   nTimeTotal   = calibration->GetNumberOfTimeBins();
+  Float_t samplingRate = calibration->GetSamplingFrequency();
 
   // Loop through all entries in the tree
   for (Int_t iTrack = 0; iTrack < nTrack; iTrack++) {
 
-    if (!fSimpleSim) {   
-      gAlice->ResetHits();
-      nBytes += hitTree->GetEvent(iTrack);
-    }
+    gAlice->ResetHits();
+    nBytes += hitTree->GetEvent(iTrack);
 
     // Loop through the TRD hits
     Int_t iHit = 0;
@@ -756,6 +764,15 @@ Bool_t AliTRDdigitizer::MakeDigits()
       Float_t col0          = padPlane->GetCol0();
       Int_t   nRowMax       = padPlane->GetNrows();
       Int_t   nColMax       = padPlane->GetNcols();
+
+      Int_t   inDrift       = 1;
+      if (!fFixedGeometry) {
+        gGeoManager->SetCurrentPoint(pos);
+        gGeoManager->FindNode();
+        if (strstr(gGeoManager->GetPath(),"/UK")) {
+          inDrift = 0;
+	}
+      }
 
       if (fDebug > 1) {
         printf("Analyze hit no. %d ",iHit);
@@ -806,14 +823,6 @@ Bool_t AliTRDdigitizer::MakeDigits()
 	    }
             signals->Allocate(nRowMax,nColMax,nTimeTotal);
 	  }
-          else if (fSimpleSim) {
-            // Clear an old one for the simple simulation
-            if (fDebug > 1) {
-              printf("<AliTRDdigitizer::MakeDigits> ");
-              printf("Clear a old container ... ");
-            }
-            signals->Clear();
-          }
           else {
 	    // Expand an existing one
             if (fCompress) {
@@ -825,29 +834,39 @@ Bool_t AliTRDdigitizer::MakeDigits()
 	    }
 	  }
 	  // The same for the dictionary
-          if (!fSimpleSim) {       
-            for (iDict = 0; iDict < kNDict; iDict++) {       
-              dictionary[iDict] = fDigitsManager->GetDictionary(detector,iDict);
-              if (dictionary[iDict]->GetNtime() == 0) {
-                dictionary[iDict]->Allocate(nRowMax,nColMax,nTimeTotal);
-	      }
-              else {
-                if (fCompress) dictionary[iDict]->Expand();
-	      }
+          for (iDict = 0; iDict < kNDict; iDict++) {       
+            dictionary[iDict] = fDigitsManager->GetDictionary(detector,iDict);
+            if (dictionary[iDict]->GetNtime() == 0) {
+              dictionary[iDict]->Allocate(nRowMax,nColMax,nTimeTotal);
 	    }
+            else {
+              if (fCompress) dictionary[iDict]->Expand();
+            }
           }      
           if (fDebug > 1) printf("done\n");
           detectorOld = detector;
         }
 
-        // Rotate the sectors on top of each other
-        if (fSimpleSim) {
-          rot[0] = pos[0];
-          rot[1] = pos[1];
-          rot[2] = pos[2];
-        }
-        else {
+        if (fFixedGeometry) {
+          // Rotate the sectors on top of each other       
           fGeo->Rotate(detector,pos,rot);
+	}
+        else {
+	  // Use the geoManager
+          Double_t aaa[3];
+          gGeoManager->MasterToLocal(pos,aaa);
+          if (inDrift) {
+            aaa[2] = time0 - (kDrWidth / 2.0 + kAmWidth) + aaa[2];
+	  } 
+          else {
+            aaa[2] = time0 + aaa[2];
+	  }
+          aaa[1] = row0 + padPlane->GetLengthRim() + fGeo->RpadW() 
+                 - 0.5 * fGeo->GetChamberLength(plane,chamber) 
+	         + aaa[1];
+          rot[0] = aaa[2];
+          rot[1] = aaa[0];
+          rot[2] = aaa[1];
 	}
 
         // The driftlength. It is negative if the hit is between pad plane and anode wires.
@@ -1023,7 +1042,7 @@ Bool_t AliTRDdigitizer::MakeDigits()
 
               // Store the track index in the dictionary
               // Note: We store index+1 in order to allow the array to be compressed
-              if ((signalOld[iPad] > 0) && (!fSimpleSim)) { 
+              if (signalOld[iPad] > 0) { 
                 for (iDict = 0; iDict < kNDict; iDict++) {
                   Int_t oldTrack = dictionary[iDict]->GetDataUnchecked(rowE
                                                                       ,colPos
@@ -1066,10 +1085,6 @@ Bool_t AliTRDdigitizer::MakeDigits()
   // Loop through all chambers to finalize the digits
   Int_t iDetBeg = 0;
   Int_t iDetEnd = AliTRDgeometry::Ndet();
-  if (fSimpleSim) {
-    iDetBeg = fSimpleDet;
-    iDetEnd = iDetBeg + 1;
-  }
   for (Int_t iDet = iDetBeg; iDet < iDetEnd; iDet++) {
 
     Int_t plane       = fGeo->GetPlane(iDet);
@@ -1092,9 +1107,6 @@ Bool_t AliTRDdigitizer::MakeDigits()
     if (digits->GetNtime() == 0) {
       digits->Allocate(nRowMax,nColMax,nTimeTotal);
     }
-    else if (fSimpleSim) {
-      digits->Clear();
-    }
  
     // Get the signal container
     signals = (AliTRDdataArrayF *) signalsArray->At(iDet);
@@ -1107,12 +1119,10 @@ Bool_t AliTRDdigitizer::MakeDigits()
       if (fCompress) signals->Expand();
     }
     // Create the missing dictionary containers
-    if (!fSimpleSim) {    
-      for (iDict = 0; iDict < kNDict; iDict++) {       
-        dictionary[iDict] = fDigitsManager->GetDictionary(iDet,iDict);
-        if (dictionary[iDict]->GetNtime() == 0) {
-          dictionary[iDict]->Allocate(nRowMax,nColMax,nTimeTotal);
-        }
+    for (iDict = 0; iDict < kNDict; iDict++) {       
+      dictionary[iDict] = fDigitsManager->GetDictionary(iDet,iDict);
+      if (dictionary[iDict]->GetNtime() == 0) {
+        dictionary[iDict]->Allocate(nRowMax,nColMax,nTimeTotal);
       } 
     }
 
@@ -1170,11 +1180,6 @@ Bool_t AliTRDdigitizer::MakeDigits()
               outADC[iTime] = adc;
 	    }
 
-	    // Apply the tail cancelation via the digital filter
-            if (simParam->TCOn()) {
-              DeConvExp(inADC,outADC,nTimeTotal,simParam->GetTCnexp());
-	    }
-
             for (iTime = 0; iTime < nTimeTotal; iTime++) {   
               // Store the amplitude of the digit if above threshold
               if (outADC[iTime] > simParam->GetADCthreshold()) {
@@ -1195,28 +1200,25 @@ Bool_t AliTRDdigitizer::MakeDigits()
     }
 
     // Compress the arrays
-    if (!fSimpleSim) {  
-      digits->Compress(1,0);
-      for (iDict = 0; iDict < kNDict; iDict++) {
-        dictionary[iDict]->Compress(1,0);
-      }
-
-      totalSizeDigits += digits->GetSize();
-      totalSizeDict0  += dictionary[0]->GetSize();
-      totalSizeDict1  += dictionary[1]->GetSize();
-      totalSizeDict2  += dictionary[2]->GetSize();
-
-      Float_t nPixel = nRowMax * nColMax * nTimeTotal;
-      if (fDebug > 0) {
-        printf("<AliTRDdigitizer::MakeDigits> ");
-        printf("Found %d digits in detector %d (%3.0f).\n"
-              ,nDigits,iDet
-              ,100.0 * ((Float_t) nDigits) / nPixel);
-      } 
-
-      if (fCompress) signals->Compress(1,0);
-
+    digits->Compress(1,0);
+    for (iDict = 0; iDict < kNDict; iDict++) {
+      dictionary[iDict]->Compress(1,0);
     }
+
+    totalSizeDigits += digits->GetSize();
+    totalSizeDict0  += dictionary[0]->GetSize();
+    totalSizeDict1  += dictionary[1]->GetSize();
+    totalSizeDict2  += dictionary[2]->GetSize();
+
+    Float_t nPixel = nRowMax * nColMax * nTimeTotal;
+    if (fDebug > 0) {
+      printf("<AliTRDdigitizer::MakeDigits> ");
+      printf("Found %d digits in detector %d (%3.0f).\n"
+            ,nDigits,iDet
+            ,100.0 * ((Float_t) nDigits) / nPixel);
+    } 
+
+    if (fCompress) signals->Compress(1,0);
 
     delete [] inADC;
     delete [] outADC;
@@ -1231,13 +1233,11 @@ Bool_t AliTRDdigitizer::MakeDigits()
   if (fDebug > 0) {
     printf("<AliTRDdigitizer::MakeDigits> ");
     printf("Total number of analyzed hits = %d\n",countHits);
-    if (!fSimpleSim) {    
-      printf("<AliTRDdigitizer::MakeDigits> ");
-      printf("Total digits data size = %d, %d, %d, %d\n",totalSizeDigits
-                                                        ,totalSizeDict0
-                                                        ,totalSizeDict1
-                                                        ,totalSizeDict2);        
-    }
+    printf("<AliTRDdigitizer::MakeDigits> ");
+    printf("Total digits data size = %d, %d, %d, %d\n",totalSizeDigits
+                                                      ,totalSizeDict0
+                                                      ,totalSizeDict1
+                                                      ,totalSizeDict2);        
   }
 
   return kTRUE;
@@ -1390,11 +1390,6 @@ Bool_t AliTRDdigitizer::ConvertSDigits()
 	  }
           inADC[iTime]  = adc;
           outADC[iTime] = adc;
-	}
-
-	// Apply the tail cancelation via the digital filter
-        if (simParam->TCOn()) {
-          DeConvExp(inADC,outADC,nTimeTotal,simParam->GetTCnexp());
 	}
 
         for (iTime = 0; iTime < nTimeTotal; iTime++) {   
@@ -1617,8 +1612,6 @@ Bool_t AliTRDdigitizer::CheckDetector(Int_t plane, Int_t chamber, Int_t sector)
   // Checks whether a detector is enabled
   //
 
-  if (fSimpleSim) return kTRUE; 
-
   if ((fTRD->GetSensChamber() >=       0) &&
       (fTRD->GetSensChamber() != chamber)) return kFALSE;
   if ((fTRD->GetSensPlane()   >=       0) &&
@@ -1654,67 +1647,6 @@ Bool_t AliTRDdigitizer::WriteDigits() const
   // Store the digits and the dictionary in the tree
   return fDigitsManager->WriteDigits();
 
-}
-
-//_____________________________________________________________________________
-void AliTRDdigitizer::DeConvExp(Double_t *source, Double_t *target
-                              , Int_t n, Int_t nexp) 
-{
-  //
-  // Does the deconvolution by the digital filter.
-  //
-  // Author:        Marcus Gutfleisch, KIP Heidelberg
-  // Optimized for: New TRF from Venelin Angelov, simulated with CADENCE
-  //                Pad-ground capacitance = 25 pF
-  //                Pad-pad cross talk capacitance = 6 pF
-  //                For 10 MHz digitization, corresponding to 20 time bins
-  //                in the drift region
-  //
-
-  Double_t rates[2];
-  Double_t coefficients[2];
-  Double_t Dt = 0.100;  // time bin width [mus] for 10 MHz sampling frequence
-
-  /* initialize (coefficient = alpha, rates = lambda) */
-  
-  rates[0] = 0.7680;
-  rates[1] = 0.0995;
-
-  rates[0] = TMath::Exp(-Dt/(rates[0]));
-  rates[1] = TMath::Exp(-Dt/(rates[1]));
-
-  // dummy initialization
-  coefficients[0] = 0.0000;
-  coefficients[1] = 0.0000;
-
-  if( nexp == 1 ) {
-    coefficients[0] = 0.0844;
-    coefficients[1] = 0.0000;
-  }
-  if( nexp == 2 ) {
-    coefficients[0] = 0.1445;
-    coefficients[1] = 0.7524;
-  }
-      
-  Int_t i, k;
-  Double_t reminder[2];
-  Double_t correction, result;
-
-  /* attention: computation order is important */
-  correction=0.0;
-  for ( k = 0; k < nexp; k++ ) reminder[k]=0.0;
-    
-  for ( i = 0; i < n; i++ ) {
-    result = ( source[i] - correction );    /* no rescaling */
-    target[i] = result;
-    
-    for ( k = 0; k < nexp; k++ ) reminder[k] = rates[k] 
-                             * ( reminder[k] + coefficients[k] * result);
-      
-    correction=0.0;
-    for ( k = 0; k < nexp; k++ ) correction += reminder[k];
-  }
-  
 }
 
 //_____________________________________________________________________________
