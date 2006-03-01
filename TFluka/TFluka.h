@@ -209,6 +209,7 @@ class TFluka : public TVirtualMC {
   virtual Int_t    GetMaxNStep() const
       {Warning("GetMaxNStep",  "Not yet implemented !\n"); return -1;}
   virtual Int_t    GetMedium() const;
+  virtual Int_t    CurrentMedium() const {return GetMedium();}
   
   // Tracking particle 
   // dynamic properties
