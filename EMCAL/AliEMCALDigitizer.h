@@ -86,7 +86,7 @@ private:
 
   //Calculate the time of crossing of the threshold by front edge
   Float_t FrontEdgeTime(TClonesArray * ticks) ;
-  Int_t   DigitizeEnergy(Float_t energy) ;
+  Int_t   DigitizeEnergy(Float_t energy, Int_t AbsId) ;
 
 private:
   
