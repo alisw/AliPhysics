@@ -45,7 +45,7 @@ public:
   
   void   GetStorage(const char* uri) {fStorage = AliCDBManager::Instance()->GetStorage(uri);}
   AliCDBStorage   *SetStorage(const char* uri);
-  AliZDCCalibData *GetCalibData(int runNumber) const; 
+  AliZDCCalibData *GetCalibData() const; 
 
 private:
   void    Fragmentation(Float_t impPar, Int_t specN, Int_t specP,
