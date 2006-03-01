@@ -84,12 +84,20 @@ class AliAlignObj : public TObject {
   Bool_t ApplyToGeometry();
   static Bool_t   GetFromGeometry(const char *path, AliAlignObj &alobj);
 
+  static void         InitAlignObjFromGeometry();
+  static AliAlignObj* GetAlignObj(UShort_t voluid) {
+    Int_t modId;
+    ELayerID layerId = VolUIDToLayer(voluid,modId);
+    return GetAlignObj(layerId,modId);
+  }
+  static AliAlignObj* GetAlignObj(ELayerID layerId, Int_t modId);
+
  protected:
 
   void AnglesToMatrix(const Double_t *angles, Double_t *rot) const;
   Bool_t MatrixToAngles(const Double_t *rot, Double_t *angles) const;
 
-  void InitVolPaths();
+  static void InitVolPaths();
 
   //Volume identifiers
   TString  fVolPath; // Volume path inside TGeo geometry
@@ -99,6 +107,8 @@ class AliAlignObj : public TObject {
   static const char* fgLayerName[kLastLayer - kFirstLayer];
 
   static TString*    fgVolPath[kLastLayer - kFirstLayer];
+
+  static AliAlignObj** fgAlignObjs[kLastLayer - kFirstLayer];
 
   ClassDef(AliAlignObj, 2)
 };

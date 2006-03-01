@@ -22,8 +22,8 @@ class AliAlignObjAngles : public AliAlignObj{
   AliAlignObjAngles(const char* volpath, UShort_t voluid, Double_t x, Double_t y, Double_t z, Double_t psi, Double_t theta, Double_t phi);
   AliAlignObjAngles(const char* volpath, ELayerID detId, Int_t volId, Double_t x, Double_t y, Double_t z, Double_t psi, Double_t theta, Double_t phi);
   AliAlignObjAngles(const char* volpath, UShort_t voluid, TGeoMatrix& m);
-  AliAlignObjAngles(const AliAlignObjAngles& theAlignObj);
-  AliAlignObjAngles& operator= (const AliAlignObjAngles& theAlignObj);
+  AliAlignObjAngles(const AliAlignObj& theAlignObj);
+  AliAlignObjAngles& operator= (const AliAlignObj& theAlignObj);
   virtual ~AliAlignObjAngles();
   
   //Setters

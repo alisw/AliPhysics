@@ -68,7 +68,7 @@ AliAlignObjAngles::AliAlignObjAngles(const char* volpath, UShort_t voluid, TGeoM
 }
 
 //_____________________________________________________________________________
-AliAlignObjAngles::AliAlignObjAngles(const AliAlignObjAngles& theAlignObj) :
+AliAlignObjAngles::AliAlignObjAngles(const AliAlignObj& theAlignObj) :
   AliAlignObj(theAlignObj)
 {
   // copy constructor
@@ -82,7 +82,7 @@ AliAlignObjAngles::AliAlignObjAngles(const AliAlignObjAngles& theAlignObj) :
 }
 
 //_____________________________________________________________________________
-AliAlignObjAngles &AliAlignObjAngles::operator =(const AliAlignObjAngles& theAlignObj)
+AliAlignObjAngles &AliAlignObjAngles::operator =(const AliAlignObj& theAlignObj)
 {
   // assignment operator
   //

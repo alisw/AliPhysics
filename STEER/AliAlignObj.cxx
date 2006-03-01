@@ -35,6 +35,7 @@
 #include "AliAlignObj.h"
 #include "AliTrackPointArray.h"
 #include "AliLog.h"
+#include "AliAlignObjAngles.h"
  
 ClassImp(AliAlignObj)
 
@@ -64,6 +65,19 @@ const char* AliAlignObj::fgLayerName[kLastLayer - kFirstLayer] = {
 };
 
 TString* AliAlignObj::fgVolPath[kLastLayer - kFirstLayer] = {
+  0x0,0x0,
+  0x0,0x0,
+  0x0,0x0,
+  0x0,0x0,
+  0x0,0x0,0x0,
+  0x0,0x0,0x0,
+  0x0,
+  0x0,0x0,
+  0x0,
+  0x0
+};
+
+AliAlignObj** AliAlignObj::fgAlignObjs[kLastLayer - kFirstLayer] = {
   0x0,0x0,
   0x0,0x0,
   0x0,0x0,
@@ -418,6 +432,37 @@ Bool_t AliAlignObj::GetFromGeometry(const char *path, AliAlignObj &alobj)
   alobj.SetMatrix(align);
 
   return kTRUE;
+}
+
+void  AliAlignObj::InitAlignObjFromGeometry()
+{
+  // Loop over all alignable volumes and extract
+  // the corresponding alignment objects from
+  // the TGeo geometry
+  
+  InitVolPaths();
+
+  for (Int_t iLayer = 0; iLayer < (AliAlignObj::kLastLayer - AliAlignObj::kFirstLayer); iLayer++) {
+    fgAlignObjs[iLayer] = new AliAlignObj*[AliAlignObj::LayerSize(iLayer)];
+    for (Int_t iModule = 0; iModule < AliAlignObj::LayerSize(iLayer); iModule++) {
+      UShort_t volid = AliAlignObj::LayerToVolUID(iLayer+ AliAlignObj::kFirstLayer,iModule);
+      fgAlignObjs[iLayer][iModule] = new AliAlignObjAngles("",volid,0,0,0,0,0,0);
+      const char *path = GetVolPath(volid);
+      if (!GetFromGeometry(path, *fgAlignObjs[iLayer][iModule]))
+	AliErrorClass(Form("Failed to extract the alignment object for the volume (ID=%d and path=%s) !",volid,path));
+    }
+  }
+  
+}
+
+//_____________________________________________________________________________
+AliAlignObj* AliAlignObj::GetAlignObj(ELayerID layerId, Int_t modId)
+{
+  if(modId<0 || modId>=fgLayerSize[layerId-kFirstLayer]){
+    AliWarningClass(Form("Module number %d not in the valid range (0->%d) !",modId,fgLayerSize[layerId-kFirstLayer]-1));
+    return NULL;
+  }
+  return fgAlignObjs[layerId-kFirstLayer][modId];
 }
 
 //_____________________________________________________________________________

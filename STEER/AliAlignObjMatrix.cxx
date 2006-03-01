@@ -66,7 +66,7 @@ AliAlignObjMatrix::AliAlignObjMatrix(const char* volpath, UShort_t voluid, TGeoM
 }
 
 //_____________________________________________________________________________
-AliAlignObjMatrix::AliAlignObjMatrix(const AliAlignObjMatrix& theAlignObj) :
+AliAlignObjMatrix::AliAlignObjMatrix(const AliAlignObj& theAlignObj) :
   AliAlignObj(theAlignObj)
 {
   //copy constructor
@@ -80,7 +80,7 @@ AliAlignObjMatrix::AliAlignObjMatrix(const AliAlignObjMatrix& theAlignObj) :
 }
 
 //_____________________________________________________________________________
-AliAlignObjMatrix &AliAlignObjMatrix::operator =(const AliAlignObjMatrix& theAlignObj)
+AliAlignObjMatrix &AliAlignObjMatrix::operator =(const AliAlignObj& theAlignObj)
 {  
   // assignment operator
   //
