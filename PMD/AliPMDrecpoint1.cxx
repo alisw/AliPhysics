@@ -32,7 +32,7 @@ AliPMDrecpoint1::AliPMDrecpoint1():
   fSMN(0)
 {
   // Default constructor
-  for (Int_t i = 0; i < 5; i++)
+  for (Int_t i = 0; i < 6; i++)
     {
       fClusData[i] = 0.;
     }
@@ -43,7 +43,7 @@ AliPMDrecpoint1::AliPMDrecpoint1(Int_t idet, Int_t ismn, Float_t *clusdata)
   // Constructor
   fDet = idet;
   fSMN = ismn;
-  for (Int_t i = 0; i < 5; i++)
+  for (Int_t i = 0; i < 6; i++)
     {
       fClusData[i] = clusdata[i];
     }
@@ -55,7 +55,7 @@ AliPMDrecpoint1::AliPMDrecpoint1(const AliPMDrecpoint1 &pmdrecpoint):TObject(pmd
   if(&pmdrecpoint == this) return;
   this->fDet = pmdrecpoint.fDet;
   this->fSMN = pmdrecpoint.fSMN;
-  for(Int_t i=0; i<5; i++)
+  for(Int_t i=0; i<6; i++)
     {
       this->fClusData[i] = pmdrecpoint.fClusData[i];
     }
@@ -68,7 +68,7 @@ AliPMDrecpoint1 & AliPMDrecpoint1::operator=(const AliPMDrecpoint1 &pmdrecpoint)
   if(&pmdrecpoint == this) return *this;
   this->fDet = pmdrecpoint.fDet;
   this->fSMN = pmdrecpoint.fSMN;
-  for(Int_t i=0; i<5; i++)
+  for(Int_t i=0; i<6; i++)
     {
       this->fClusData[i] = pmdrecpoint.fClusData[i];
     }
@@ -110,9 +110,14 @@ Float_t AliPMDrecpoint1::GetClusCells() const
   return fClusData[3];
 }
 // ------------------------------------------------------------------------- //
-Float_t AliPMDrecpoint1::GetClusRadius() const
+Float_t AliPMDrecpoint1::GetClusSigmaX() const
 {
   return fClusData[4];
+}
+// ------------------------------------------------------------------------- //
+Float_t AliPMDrecpoint1::GetClusSigmaY() const
+{
+  return fClusData[5];
 }
 // ------------------------------------------------------------------------- //
 

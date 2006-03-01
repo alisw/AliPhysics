@@ -33,7 +33,8 @@ class AliPMDrecpoint1 : public TObject
   Float_t GetClusY() const;
   Float_t GetClusADC() const;
   Float_t GetClusCells() const;
-  Float_t GetClusRadius() const;
+  Float_t GetClusSigmaX() const;
+  Float_t GetClusSigmaY() const;
   
  protected:
 
@@ -44,10 +45,10 @@ class AliPMDrecpoint1 : public TObject
     fDet         : Detector Number,  fSMN         : Serial Module Number
     fClusData[0] : Cluster x      ,  fClusData[1] : Cluster y
     fClusData[2] : Cluster adc    ,  fClusData[3] : Cluster Cells
-    fClusData[4] : Cluster radius
+    fClusData[4] : Cluster SigmaX ,  fClusData[5] : Cluster SigmaY
   */
   
-  ClassDef(AliPMDrecpoint1,2) // keep reconstructed points info
+  ClassDef(AliPMDrecpoint1,3) // keep reconstructed points info
 };
 
 #endif
