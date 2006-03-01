@@ -69,6 +69,7 @@
 #include "TObjectTable.h"
 
 // --- AliRoot header files ---
+#include "AliRun.h"
 #include "AliRunDigitizer.h"
 #include "AliRunLoader.h"
 #include "AliEMCALDigit.h"
@@ -183,7 +184,13 @@ void AliEMCALDigitizer::Digitize(Int_t event)
   TClonesArray * digits = emcalLoader->Digits() ; 
   digits->Clear() ;
 
-  const AliEMCALGeometry *geom = AliEMCALGeometry::GetInstance();
+  // Load Geometry
+  // const AliEMCALGeometry *geom = AliEMCALGeometry::GetInstance();
+  rl->LoadgAlice(); 
+  AliRun * gAlice = rl->GetAliRun(); 
+  AliEMCAL * emcal  = (AliEMCAL*)gAlice->GetDetector("EMCAL");
+  AliEMCALGeometry * geom = emcal->GetGeometry();
+
   if(isTrd1Geom < 0) { 
     TString ng(geom->GetName());
     isTrd1Geom = 0;
@@ -348,7 +355,7 @@ void AliEMCALDigitizer::Digitize(Int_t event)
     digit->SetIndexInList(i) ; 
     energy = sDigitizer->Calibrate(digit->GetAmp()) ;
     esum += energy;
-    digit->SetAmp(DigitizeEnergy(energy) ) ; // for what ??
+    digit->SetAmp(DigitizeEnergy(energy, digit->GetId()) ) ; // for what ??
     AliEMCALHistoUtilities::FillH1(fHists, 2, double(digit->GetAmp()));
     AliEMCALHistoUtilities::FillH1(fHists, 3, double(energy));
     AliEMCALHistoUtilities::FillH1(fHists, 4, double(digit->GetId()));
@@ -357,11 +364,44 @@ void AliEMCALDigitizer::Digitize(Int_t event)
 }
 
 //____________________________________________________________________________
-
-Int_t AliEMCALDigitizer::DigitizeEnergy(Float_t energy)
+Int_t AliEMCALDigitizer::DigitizeEnergy(Float_t energy, Int_t AbsId)
 { 
+  // Returns digitized value of the energy in a cell absId
+  // Loader
+  AliRunLoader *rl = AliRunLoader::GetRunLoader();
+  AliEMCALLoader *emcalLoader = dynamic_cast<AliEMCALLoader*>
+    (rl->GetDetectorLoader("EMCAL"));
+  
+  // Load EMCAL Geometry
+  rl->LoadgAlice(); 
+  AliRun * gAlice = rl->GetAliRun(); 
+  AliEMCAL * emcal  = (AliEMCAL*)gAlice->GetDetector("EMCAL");
+  AliEMCALGeometry * geom = emcal->GetGeometry();
+
+  if (geom==0)
+    AliFatal("Did not get geometry from EMCALLoader") ;
+
+  Int_t iSupMod = -1;
+  Int_t nTower  = -1;
+  Int_t nIphi   = -1;
+  Int_t nIeta   = -1;
+  Int_t iphi    = -1;
+  Int_t ieta    = -1;
   Int_t channel = -999; 
-  channel = static_cast<Int_t> (TMath::Ceil( (energy + fADCpedestalEC)/fADCchannelEC ))  ;
+
+  Bool_t bCell = geom->GetCellIndex(AbsId, iSupMod, nTower, nIphi, nIeta) ;
+  if(!bCell)
+    Error("DigitizeEnergy","Wrong cell id number") ;
+  geom->GetCellPhiEtaIndexInSModule(iSupMod,nTower,nIphi, nIeta,iphi,ieta);
+
+  if(emcalLoader->CalibData()) {
+    fADCpedestalEC = emcalLoader->CalibData()
+      ->GetADCpedestal(iSupMod,ieta,iphi);
+    fADCchannelEC = emcalLoader->CalibData()
+      ->GetADCchannel(iSupMod,ieta,iphi);
+    
+    channel = static_cast<Int_t> (TMath::Ceil( (energy + fADCpedestalEC)/fADCchannelEC ))  ;
+  }
   if(channel > fNADCEC ) 
     channel =  fNADCEC ; 
   return channel ;
