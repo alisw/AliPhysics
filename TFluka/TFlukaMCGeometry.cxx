@@ -249,11 +249,13 @@ Int_t *TFlukaMCGeometry::GetRegionList(Int_t imed, Int_t &nreg)
    TGeoVolume *vol;
    Int_t imedium, ireg;
    while ((vol = (TGeoVolume*)next())) {
-      imedium = vol->GetMedium()->GetId();
-      if (imedium == imed) {
-         ireg = vol->GetNumber();
-         fRegionList[nreg++] = ireg;
-      }
+       TGeoMedium* med;
+       if ((med = vol->GetMedium()) == 0) continue;
+       imedium = med->GetId();
+       if (imedium == imed) {
+	   ireg = vol->GetNumber();
+	   fRegionList[nreg++] = ireg;
+       }
    }
    return fRegionList;
 }         
@@ -268,11 +270,13 @@ Int_t *TFlukaMCGeometry::GetMaterialList(Int_t imat, Int_t &nreg)
    TGeoVolume *vol;
    Int_t imaterial, ireg;
    while ((vol = (TGeoVolume*)next())) {
-      imaterial = vol->GetMedium()->GetMaterial()->GetIndex();
-      if (imaterial == imat) {
-         ireg = vol->GetNumber();
-         fRegionList[nreg++] = ireg;
-      }
+       TGeoMedium* med;
+       if ((med = vol->GetMedium()) == 0) continue;
+       imaterial = med->GetMaterial()->GetIndex();
+       if (imaterial == imat) {
+	   ireg = vol->GetNumber();
+	   fRegionList[nreg++] = ireg;
+       }
    }
    return fRegionList;
 }         
@@ -766,9 +770,10 @@ void TFlukaMCGeometry::CreateFlukaMatFile(const char *fname)
    
    PrintHeader(out, "TGEO MATERIAL ASSIGNMENTS");   
    for (i=1; i<=nvols; i++) {
-       
+      TGeoMedium* med;
       vol = gGeoManager->GetVolume(i);
-      mat = vol->GetMedium()->GetMaterial();
+      if ((med = vol->GetMedium()) == 0) continue;
+      mat = med->GetMaterial();
       idmat = mat->GetIndex();
       for (Int_t j=0; j<nfmater; j++) {
          mat = (TGeoMaterial*)fMatList->At(j);
