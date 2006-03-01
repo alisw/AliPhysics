@@ -31,6 +31,8 @@ public:
   AliEMCALv1(const AliEMCALv0 & emcal):AliEMCALv0(emcal) {
     Fatal("cpy ctor", "not implemented") ;  }
   virtual ~AliEMCALv1(void) ;
+
+  using AliEMCALv0::AddHit;
   virtual void  AddHit( Int_t shunt, Int_t primary, Int_t track, Int_t iparent, Float_t ienergy,
 			Int_t id, Float_t *hits, Float_t *p);
   // Gives the version number 

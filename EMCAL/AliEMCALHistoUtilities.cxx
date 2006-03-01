@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.1  2006/02/28 21:55:11  jklay
+add histogram utilities class, correct package definitions
+
 */
 
 //*-- Authors: J.L. Klay (LLNL) & Aleksei Pavlinov (WSU) 
@@ -46,7 +49,7 @@ AliEMCALHistoUtilities::~AliEMCALHistoUtilities()
 	//destructor
 }  
 
-void AliEMCALHistoUtilities::Browse(TBrowser* b) const 
+void AliEMCALHistoUtilities::Browse(TBrowser* b)
 {
   // Browse
    if(fListHist)  b->Add((TObject*)fListHist);
@@ -97,21 +100,21 @@ void AliEMCALHistoUtilities::FillH2(TList *l, Int_t ind, Double_t x, Double_t y,
   }
 }
 
-int AliEMCALHistoUtilities::SaveListOfHists(TList *list,const char* name,Bool_t kSingleKey,const char* opt)
+int AliEMCALHistoUtilities::SaveListOfHists(TList *mylist,const char* name,Bool_t kSingleKey,const char* opt)
 {
   printf(" Name of out file |%s|\n", name); 
   int save = 0;
-  if(list && list->GetSize() && strlen(name)){
+  if(mylist && mylist->GetSize() && strlen(name)){
     TString nf(name); 
     if(nf.Contains(".root") == kFALSE) nf += ".root";
     TFile file(nf.Data(),opt);
-    TIter nextHist(list);
+    TIter nextHist(mylist);
     TObject* objHist=0;
     int nh=0;
     if(kSingleKey) {
        file.cd();
-       list->Write(list->GetName(),TObject::kSingleKey);
-       list->ls();
+       mylist->Write(mylist->GetName(),TObject::kSingleKey);
+       mylist->ls();
        save = 1;
     } else {
       while((objHist=nextHist())) { // loop over list 
@@ -129,8 +132,6 @@ int AliEMCALHistoUtilities::SaveListOfHists(TList *list,const char* name,Bool_t 
     file.Close();
   } else {
     printf("AliEMCALHistoUtilities::SaveListOfHists : N O  S A V I N G \n");
-    if(list==0) printf("List of object 0 : %p \n", list);
-    else printf("Size of list %i \n", list->GetSize());
   }
   return save;
 }

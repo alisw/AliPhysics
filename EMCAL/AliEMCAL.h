@@ -45,7 +45,10 @@ class AliEMCAL : public AliDetector {
   virtual void  CreateMaterials() ;   
   //  virtual void  
   virtual void  Digits2Raw();
+
+  using AliDetector::Raw2Digits;
   virtual void  Raw2Digits(AliRawReader *reader);
+
   virtual void  FinishRun() {}                  
   virtual AliEMCALGeometry * GetGeometry() const 
   {return AliEMCALGeometry::GetInstance(GetTitle(),"") ;  }   

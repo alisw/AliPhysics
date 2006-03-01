@@ -24,13 +24,14 @@ class AliEMCALHistoUtilities: public TNamed {
   void    SetDebug(Int_t flag) {fDebug = flag;}
   Float_t GetDebug() const  {return fDebug;}
   virtual Bool_t  IsFolder() const;
-  virtual void Browse(TBrowser* b) const ;
+
+  virtual void Browse(TBrowser* b);
 
   // service routine
   static TList *MoveHistsToList(const char* name="ListOfHists", Bool_t putToBrowser=kTRUE);
   static void FillH1(TList *l=0, Int_t ind=0, Double_t x=-99999., Double_t w=1.);
   static void FillH2(TList *l=0, Int_t ind=0, Double_t x=-99999., Double_t y=-99999., Double_t w=1.);
-  static int  SaveListOfHists(TList *list=0, const char* name="test", Bool_t kSingleKey=kFALSE,
+  static int  SaveListOfHists(TList *mylist=0, const char* name="test", Bool_t kSingleKey=kFALSE,
   const char* opt="RECREATE");
 
   AliEMCALHistoUtilities & operator = (const AliEMCALHistoUtilities &) {

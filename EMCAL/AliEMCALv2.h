@@ -36,6 +36,8 @@ public:
   AliEMCALv2(const AliEMCALv1 & emcal):AliEMCALv1(emcal) {
     Fatal("cpy ctor", "not implemented") ;  }
   virtual ~AliEMCALv2(void) ;
+
+  using AliEMCALv1::AddHit;
   virtual void  AddHit( Int_t shunt, Int_t primary, Int_t track, Int_t iparent, Float_t ienergy,
 			Int_t id, Float_t *hits, Float_t *p);
 

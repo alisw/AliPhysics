@@ -37,6 +37,8 @@ class AliEMCALv0 : public AliEMCAL {
   } 
   virtual ~AliEMCALv0(){} 
 
+  using AliEMCAL::AddHit;
+
   virtual void BuildGeometry();// creates the geometry for the ROOT display
   TNode *BuildGeometryOfWSUC();  // WSUC - test environment
   virtual void CreateGeometry() ;// creates the geometry for GEANT

@@ -321,7 +321,7 @@ void AliEMCAL::Digits2Raw()
 //____________________________________________________________________________
 void AliEMCAL::Raw2Digits(AliRawReader* reader)
 {
-  // convert digits of the current event to raw data
+  // convert raw data of the current event to digits
   AliEMCALLoader * loader = dynamic_cast<AliEMCALLoader*>(fLoader) ; 
 
   // get the digits

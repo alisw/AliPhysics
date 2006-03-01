@@ -39,10 +39,14 @@ public:
    
   virtual ~AliEMCALReconstructor() ; //dtor
 
-  Bool_t                     Debug() const { return fDebug ; }
-  virtual void               FillESD(AliRunLoader* runLoader, AliESD* esd) const ;
-  virtual void               Reconstruct(AliRunLoader* runLoader) const ;
-  virtual void               Reconstruct(AliRunLoader* runLoader, AliRawReader* rawreader) const ;
+  Bool_t       Debug() const { return fDebug ; }
+
+  using AliReconstructor::FillESD;
+  virtual void FillESD(AliRunLoader* runLoader, AliESD* esd) const ;
+
+  using AliReconstructor::Reconstruct;
+  virtual void Reconstruct(AliRunLoader* runLoader) const ;
+  virtual void Reconstruct(AliRunLoader* runLoader, AliRawReader* rawreader) const ;
   
   
   AliEMCALReconstructor & operator = (const AliEMCALReconstructor & /*rvalue*/)  {

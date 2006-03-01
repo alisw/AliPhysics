@@ -810,7 +810,7 @@ void AliEMCALRecPoint::Print(Option_t *) const
   // Print the list of digits belonging to the cluster
   return;
   TString message ; 
-  message  = "AliPHOSEmcRecPoint:\n" ;
+  message  = "AliEMCALRecPoint:\n" ;
   message +=  " digits # = " ; 
   Info("Print", message.Data()) ; 
 

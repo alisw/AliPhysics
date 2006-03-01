@@ -43,7 +43,7 @@ class AliEMCALRecPoint : public AliRecPoint {
   virtual void    EvalPrimaries(TClonesArray * digits) ;
   virtual void    EvalParents(TClonesArray * digits) ;
 
-  // virtual void    GetGlobalPosition(TVector3 & gpos, TMatrix & /*gmat*/) const; // return global position in ALICE
+  using AliRecPoint::GetGlobalPosition;
   virtual void    GetGlobalPosition(TVector3 & gpos) const; // return global position (x, y, z) in ALICE
   virtual void    GetLocalPosition(TVector3 & lpos) const;  // return local position  (x, y, z) in EMCAL SM
   virtual Int_t * GetPrimaries(Int_t & number) const {number = fMulTrack ; 
