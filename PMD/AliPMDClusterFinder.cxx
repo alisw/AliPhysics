@@ -35,8 +35,10 @@
 #include "AliPMDdigit.h"
 #include "AliPMDClusterFinder.h"
 #include "AliPMDClustering.h"
+#include "AliPMDClusteringV1.h"
 #include "AliPMDcluster.h"
 #include "AliPMDrecpoint1.h"
+#include "AliPMDrechit.h"
 #include "AliPMDRawStream.h"
 
 
@@ -50,7 +52,9 @@ AliPMDClusterFinder::AliPMDClusterFinder():
   fTreeR(0),
   fDigits(new TClonesArray("AliPMDdigit", 1000)),
   fRecpoints(new TClonesArray("AliPMDrecpoint1", 1000)),
+  fRechits(new TClonesArray("AliPMDrechit", 1000)),
   fNpoint(0),
+  fNhit(0),
   fEcut(0.)
 {
 //
@@ -65,7 +69,9 @@ AliPMDClusterFinder::AliPMDClusterFinder(AliRunLoader* runLoader):
   fTreeR(0),
   fDigits(new TClonesArray("AliPMDdigit", 1000)),
   fRecpoints(new TClonesArray("AliPMDrecpoint1", 1000)),
+  fRechits(new TClonesArray("AliPMDrechit", 1000)),
   fNpoint(0),
+  fNhit(0),
   fEcut(0.)
 {
 //
@@ -88,6 +94,12 @@ AliPMDClusterFinder::~AliPMDClusterFinder()
       delete fRecpoints;
       fRecpoints=0;
     }
+  if (fRechits)
+    {
+      fRechits->Delete();
+      delete fRechits;
+      fRechits=0;
+    }
 }
 // ------------------------------------------------------------------------- //
 
@@ -101,10 +113,10 @@ void AliPMDClusterFinder::Digits2RecPoints(Int_t ievt)
   Float_t  adc;
   Int_t    ismn;
   Int_t    idet;
-  Float_t  clusdata[5];
+  Float_t  clusdata[6];
 
   TObjArray *pmdcont = new TObjArray();
-  AliPMDClustering *pmdclust = new AliPMDClustering();
+  AliPMDClustering *pmdclust = new AliPMDClusteringV1();
 
   pmdclust->SetEdepCut(fEcut);
 
@@ -131,7 +143,8 @@ void AliPMDClusterFinder::Digits2RecPoints(Int_t ievt)
     }
 
   Int_t bufsize = 16000;
-  fTreeR->Branch("PMDRecpoint", &fRecpoints, bufsize); 
+  TBranch * branch1 = fTreeR->Branch("PMDRecpoint", &fRecpoints, bufsize); 
+  TBranch * branch2 = fTreeR->Branch("PMDRechit", &fRechits, bufsize); 
 
   Int_t nmodules = (Int_t) fTreeD->GetEntries();
 
@@ -170,13 +183,26 @@ void AliPMDClusterFinder::Digits2RecPoints(Int_t ievt)
 	  clusdata[1] = pmdcl->GetClusY();
 	  clusdata[2] = pmdcl->GetClusADC();
 	  clusdata[3] = pmdcl->GetClusCells();
-	  clusdata[4] = pmdcl->GetClusRadius();
+	  clusdata[4] = pmdcl->GetClusSigmaX();
+	  clusdata[5] = pmdcl->GetClusSigmaY();
 
 	  AddRecPoint(idet,ismn,clusdata);
+
+	  // This part will be worked out
+	  // BKN
+	  Int_t ncell = (Int_t) clusdata[3];
+	  for(Int_t ihit = 0; ihit < ncell; ihit++)
+	    {
+	      Int_t celldataX = pmdcl->GetClusCellX(ihit);
+	      Int_t celldataY = pmdcl->GetClusCellY(ihit);
+	      AddRecHit(celldataX, celldataY);
+	    }
+	  branch2->Fill();
+	  ResetRechit();
 	}
       pmdcont->Clear();
       
-      fTreeR->Fill();
+      branch1->Fill();
       ResetRecpoint();
 
     } // modules
@@ -199,17 +225,19 @@ void AliPMDClusterFinder::Digits2RecPoints(AliRawReader *rawReader,
   // algorithm on CPV and PREshower plane
   //
 
-  Float_t  clusdata[5];
+  Float_t  clusdata[6];
 
   TObjArray *pmdcont = new TObjArray();
-  AliPMDClustering *pmdclust = new AliPMDClustering();
+  AliPMDClustering *pmdclust = new AliPMDClusteringV1();
 
   pmdclust->SetEdepCut(fEcut);
 
   ResetRecpoint();
 
   Int_t bufsize = 16000;
-  clustersTree->Branch("PMDRecpoint", &fRecpoints, bufsize); 
+  TBranch *branch1 = clustersTree->Branch("PMDRecpoint", &fRecpoints, bufsize); 
+
+  TBranch * branch2 = clustersTree->Branch("PMDRechit", &fRechits, bufsize); 
 
   const Int_t kDDL = 6;
   const Int_t kRow = 48;
@@ -357,14 +385,25 @@ void AliPMDClusterFinder::Digits2RecPoints(AliRawReader *rawReader,
 	      clusdata[1] = pmdcl->GetClusY();
 	      clusdata[2] = pmdcl->GetClusADC();
 	      clusdata[3] = pmdcl->GetClusCells();
-	      clusdata[4] = pmdcl->GetClusRadius();
+	      clusdata[4] = pmdcl->GetClusSigmaX();
+	      clusdata[5] = pmdcl->GetClusSigmaY();
 
 	      AddRecPoint(idet,ismn,clusdata);
+	      // BKN
+	      Int_t ncell = (Int_t) clusdata[3];
+	      for(Int_t ihit = 0; ihit < ncell; ihit++)
+		{
+		  Int_t celldataX = pmdcl->GetClusCellX(ihit);
+		  Int_t celldataY = pmdcl->GetClusCellY(ihit);
+		  AddRecHit(celldataX, celldataY);
+		}
+	      branch2->Fill();
+	      ResetRechit();
+
 	    }
 	  pmdcont->Clear();
 	  
-	  //fTreeR->Fill();
-	  clustersTree->Fill();
+	  branch1->Fill();
 	  ResetRecpoint();
 
 
@@ -393,10 +432,11 @@ void AliPMDClusterFinder::Digits2RecPoints(Int_t ievt, AliRawReader *rawReader)
   // algorithm on CPV and PREshower plane
   //
 
-  Float_t  clusdata[5];
+  Float_t  clusdata[6];
 
   TObjArray *pmdcont = new TObjArray();
-  AliPMDClustering *pmdclust = new AliPMDClustering();
+
+  AliPMDClustering *pmdclust = new AliPMDClusteringV1();
 
   pmdclust->SetEdepCut(fEcut);
 
@@ -411,7 +451,8 @@ void AliPMDClusterFinder::Digits2RecPoints(Int_t ievt, AliRawReader *rawReader)
       fTreeR = fPMDLoader->TreeR();
     }
   Int_t bufsize = 16000;
-  fTreeR->Branch("PMDRecpoint", &fRecpoints, bufsize); 
+  TBranch *branch1 = fTreeR->Branch("PMDRecpoint", &fRecpoints, bufsize); 
+  TBranch *branch2 = fTreeR->Branch("PMDRechit", &fRechits, bufsize); 
 
   const Int_t kDDL = 6;
   const Int_t kRow = 48;
@@ -559,13 +600,26 @@ void AliPMDClusterFinder::Digits2RecPoints(Int_t ievt, AliRawReader *rawReader)
 	      clusdata[1] = pmdcl->GetClusY();
 	      clusdata[2] = pmdcl->GetClusADC();
 	      clusdata[3] = pmdcl->GetClusCells();
-	      clusdata[4] = pmdcl->GetClusRadius();
+	      clusdata[4] = pmdcl->GetClusSigmaX();
+	      clusdata[5] = pmdcl->GetClusSigmaY();
 
 	      AddRecPoint(idet,ismn,clusdata);
+
+	      // BKN
+	      Int_t ncell = (Int_t) clusdata[3];
+	      for(Int_t ihit = 0; ihit < ncell; ihit++)
+		{
+		  Int_t celldataX = pmdcl->GetClusCellX(ihit);
+		  Int_t celldataY = pmdcl->GetClusCellY(ihit);
+		  AddRecHit(celldataX, celldataY);
+		}
+	      branch2->Fill();
+	      ResetRechit();
+
 	    }
 	  pmdcont->Clear();
 	  
-	  fTreeR->Fill();
+	  branch1->Fill();
 	  ResetRecpoint();
 
 
@@ -606,6 +660,17 @@ void AliPMDClusterFinder::AddRecPoint(Int_t idet,Int_t ismn,Float_t *clusdata)
   delete newrecpoint;
 }
 // ------------------------------------------------------------------------- //
+void AliPMDClusterFinder::AddRecHit(Int_t celldataX,Int_t celldataY)
+{
+  // Add associated cell hits to the Reconstructed points
+  //
+  TClonesArray &lrechits = *fRechits;
+  AliPMDrechit *newrechit;
+  newrechit = new AliPMDrechit(celldataX, celldataY);
+  new(lrechits[fNhit++]) AliPMDrechit(newrechit);
+  delete newrechit;
+}
+// ------------------------------------------------------------------------- //
 void AliPMDClusterFinder::ResetCellADC()
 {
   // Reset the individual cell ADC value to zero
@@ -625,6 +690,13 @@ void AliPMDClusterFinder::ResetRecpoint()
   // Clear the list of reconstructed points
   fNpoint = 0;
   if (fRecpoints) fRecpoints->Clear();
+}
+// ------------------------------------------------------------------------- //
+void AliPMDClusterFinder::ResetRechit()
+{
+  // Clear the list of reconstructed points
+  fNhit = 0;
+  if (fRechits) fRechits->Clear();
 }
 // ------------------------------------------------------------------------- //
 void AliPMDClusterFinder::Load()
