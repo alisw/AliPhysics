@@ -11,10 +11,13 @@
 #pragma link C++ class  AliPMDRecPoint+;
 #pragma link C++ class  AliPMDUtility+;
 #pragma link C++ class  AliPMDrecpoint1+;
+#pragma link C++ class  AliPMDrechit+;
 #pragma link C++ class  AliPMDcluster+;
 #pragma link C++ class  AliPMDClustering+;
+#pragma link C++ class  AliPMDClusteringV1+;
 #pragma link C++ class  AliPMDclupid+;
 #pragma link C++ class  AliPMDDiscriminator+;
+#pragma link C++ class  AliPMDEmpDiscriminator+;
 #pragma link C++ class  AliPMDClusterFinder+;
 #pragma link C++ class  AliPMDtracker+;
 #pragma link C++ class  AliPMDReconstructor+;

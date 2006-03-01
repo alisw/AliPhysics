@@ -1,9 +1,9 @@
 #-*- Mode: Makefile -*-
 # $Id$
 
-SRCS:= AliPMDRecPoint.cxx AliPMDUtility.cxx AliPMDrecpoint1.cxx AliPMDcluster.cxx AliPMDClustering.cxx AliPMDclupid.cxx AliPMDDiscriminator.cxx AliPMDClusterFinder.cxx AliPMDtracker.cxx AliPMDReconstructor.cxx
+SRCS:= AliPMDRecPoint.cxx AliPMDUtility.cxx AliPMDrecpoint1.cxx AliPMDrechit.cxx AliPMDcluster.cxx AliPMDClusteringV1.cxx AliPMDclupid.cxx AliPMDEmpDiscriminator.cxx AliPMDClusterFinder.cxx AliPMDtracker.cxx AliPMDReconstructor.cxx
 
-HDRS:= $(SRCS:.cxx=.h) 
+HDRS:= $(SRCS:.cxx=.h) AliPMDClustering.h AliPMDDiscriminator.h
 
 DHDR:=PMDrecLinkDef.h
 
