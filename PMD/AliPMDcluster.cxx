@@ -31,22 +31,33 @@ AliPMDcluster::AliPMDcluster():
   fSMN(0)
 {
   // Default constructor
-  //  fDet = 0;
-  //  fSMN = 0;
-  for (Int_t i = 0; i < 5; i++)
+  for (Int_t i = 0; i < 6; i++)
     {
       fClusData[i] = 0.;
     }
+  for (Int_t i = 0; i < 15; i++)
+    {
+      fClusCellDataX[i] = 0;
+      fClusCellDataY[i] = 0;
+    }
+
 }
-AliPMDcluster::AliPMDcluster(Int_t idet, Int_t ismn, Float_t *clusdata)
+AliPMDcluster::AliPMDcluster(Int_t idet, Int_t ismn, Float_t *clusdata,
+			     Int_t *celldataX, Int_t *celldataY)
 {
   // Constructor
   fDet = idet;
   fSMN = ismn;
-  for (Int_t i = 0; i < 5; i++)
+  for (Int_t i = 0; i < 6; i++)
     {
       fClusData[i] = clusdata[i];
     }
+  for (Int_t i = 0; i < 15; i++)
+    {
+      fClusCellDataX[i] = celldataX[i];
+      fClusCellDataY[i] = celldataY[i];
+    }
+
 }
 AliPMDcluster::AliPMDcluster(const AliPMDcluster &pmdcluster):TObject(pmdcluster)
 {
@@ -54,9 +65,14 @@ AliPMDcluster::AliPMDcluster(const AliPMDcluster &pmdcluster):TObject(pmdcluster
   if(&pmdcluster == this) return;
   this->fDet = pmdcluster.fDet;
   this->fSMN = pmdcluster.fSMN;
-  for(Int_t i=0; i<5; i++)
+  for(Int_t i=0; i<6; i++)
     {
       this->fClusData[i] = pmdcluster.fClusData[i];
+    }
+  for(Int_t i=0; i<15; i++)
+    {
+      this->fClusCellDataX[i] = pmdcluster.fClusCellDataX[i];
+      this->fClusCellDataY[i] = pmdcluster.fClusCellDataY[i];
     }
   return;
 }
@@ -67,9 +83,14 @@ AliPMDcluster & AliPMDcluster::operator=(const AliPMDcluster &pmdcluster)
   if(&pmdcluster == this) return *this;
   this->fDet = pmdcluster.fDet;
   this->fSMN = pmdcluster.fSMN;
-  for(Int_t i=0; i<5; i++)
+  for(Int_t i=0; i<6; i++)
     {
       this->fClusData[i] = pmdcluster.fClusData[i];
+    }
+  for(Int_t i=0; i<15; i++)
+    {
+      this->fClusCellDataX[i] = pmdcluster.fClusCellDataX[i];
+      this->fClusCellDataY[i] = pmdcluster.fClusCellDataY[i];
     }
   return *this;
 }
@@ -103,7 +124,19 @@ Float_t AliPMDcluster::GetClusCells() const
 {
   return fClusData[3];
 }
-Float_t AliPMDcluster::GetClusRadius() const
+Float_t AliPMDcluster::GetClusSigmaX() const
 {
   return fClusData[4];
+}
+Float_t AliPMDcluster::GetClusSigmaY() const
+{
+  return fClusData[5];
+}
+Int_t AliPMDcluster::GetClusCellX(Int_t i) const
+{
+  return fClusCellDataX[i];
+}
+Int_t AliPMDcluster::GetClusCellY(Int_t i) const
+{
+  return fClusCellDataY[i];
 }
