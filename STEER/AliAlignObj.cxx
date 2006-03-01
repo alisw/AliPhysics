@@ -418,8 +418,14 @@ Bool_t AliAlignObj::GetFromGeometry(const char *path, AliAlignObj &alobj)
     if (strcmp(path,nodePath) == 0) break;
   }
   if (!node) {
-    AliWarningClass(Form("Volume path %s not found!",path));
-    return kFALSE;
+    if (!gGeoManager->cd(path)) {
+      AliErrorClass(Form("Volume path %s not found!",path));
+      return kFALSE;
+    }
+    else {
+      AliWarningClass(Form("Volume (%s) has not been misaligned!",path));
+      return kTRUE;
+    }
   }
 
   TGeoHMatrix align,gprime,g,ginv,l;
