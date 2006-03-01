@@ -439,6 +439,8 @@ void  AliAlignObj::InitAlignObjFromGeometry()
   // Loop over all alignable volumes and extract
   // the corresponding alignment objects from
   // the TGeo geometry
+
+  if(fgAlignObjs[0]) return;
   
   InitVolPaths();
 
