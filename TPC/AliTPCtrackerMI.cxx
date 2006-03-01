@@ -1395,7 +1395,7 @@ Int_t AliTPCtrackerMI::FollowToNext(AliTPCseed& t, Int_t nr) {
   if (fIteration>1) {t.fNFoundable++; return 0;}  // not look for new cluster during refitting
   //
   UInt_t index=0;
-  if (TMath::Abs(t.GetSnp())>0.95 || TMath::Abs(x*t.GetC()-t.GetEta())>0.95) return 0;
+  //  if (TMath::Abs(t.GetSnp())>0.95 || TMath::Abs(x*t.GetC()-t.GetEta())>0.95) return 0;// patch 28 fev 06
   Double_t  y=t.GetYat(x);
   if (TMath::Abs(y)>ymax){
     if (y > ymax) {
@@ -1608,14 +1608,14 @@ Int_t AliTPCtrackerMI::UpdateClusters(AliTPCseed& t,  Int_t nr) {
   Double_t  ymax= GetMaxY(nr);
 
   if (row < nr) return 1; // don't prolongate if not information until now -
-  if (TMath::Abs(t.GetSnp())>0.9 && t.GetNumberOfClusters()>40. && fIteration!=2) {
-    t.fRemoval =10;
-    return 0;  // not prolongate strongly inclined tracks
-  } 
-  if (TMath::Abs(t.GetSnp())>0.95) {
-    t.fRemoval =10;
-    return 0;  // not prolongate strongly inclined tracks
-  }
+//   if (TMath::Abs(t.GetSnp())>0.9 && t.GetNumberOfClusters()>40. && fIteration!=2) {
+//     t.fRemoval =10;
+//     return 0;  // not prolongate strongly inclined tracks
+//   } 
+//   if (TMath::Abs(t.GetSnp())>0.95) {
+//     t.fRemoval =10;
+//     return 0;  // not prolongate strongly inclined tracks
+//   }// patch 28 fev 06
 
   Double_t x= GetXrow(nr);
   Double_t y,z;
@@ -1833,7 +1833,7 @@ Int_t AliTPCtrackerMI::FollowBackProlongation(AliTPCseed& t, Int_t rf) {
   //
   if (first<0) first=0;
   for (Int_t nr=first; nr<=rf; nr++) {
-    if ( (TMath::Abs(t.GetSnp())>0.95)) break;
+    //    if ( (TMath::Abs(t.GetSnp())>0.95)) break;//patch 28 fev 06
     if (t.GetKinkIndexes()[0]<0){
       for (Int_t i=0;i<3;i++){
 	Int_t index = t.GetKinkIndexes()[i];
@@ -2606,6 +2606,11 @@ Int_t AliTPCtrackerMI::PropagateBack(AliESD *event)
       Float_t dedx  = seed->GetdEdx();
       esd->SetTPCsignal(dedx, sdedx, ndedx);
       ntracks++;
+      Int_t eventnumber = event->GetEventNumber();// patch 28 fev 06
+      (*fDebugStreamer)<<"Cback"<<
+	"Tr0.="<<seed<<
+	"EventNr="<<eventnumber<<
+	"\n"; // patch 28 fev 06   
     }
   }
   //FindKinks(fSeeds,event);
@@ -5755,7 +5760,11 @@ void AliTPCtrackerMI::SumTracks(TObjArray *arr1,TObjArray *arr2) const
   for (Int_t i=0;i<nseed;i++){
     AliTPCseed *pt=(AliTPCseed*)arr2->UncheckedAt(i);    
     if (pt){
-      
+       // REMOVE VERY SHORT  TRACKS
+      if (pt->GetNumberOfClusters()<20){ 
+	delete arr2->RemoveAt(i);
+	continue;
+      }// patch 28 fev06
       // NORMAL ACTIVE TRACK
       if (pt->IsActive()){
 	arr1->AddLast(arr2->RemoveAt(i));
@@ -5766,11 +5775,7 @@ void AliTPCtrackerMI::SumTracks(TObjArray *arr1,TObjArray *arr2) const
 	delete arr2->RemoveAt(i);
 	continue;
       }
-      // REMOVE VERY SHORT  TRACKS
-      if (pt->GetNumberOfClusters()<20){ 
-	delete arr2->RemoveAt(i);
-	continue;
-      }
+     
       // ENABLE ONLY ENOUGH GOOD STOPPED TRACKS
       if (pt->GetDensityFirst(20)>0.8 || pt->GetDensityFirst(30)>0.8 || pt->GetDensityFirst(40)>0.7)
 	arr1->AddLast(arr2->RemoveAt(i));
