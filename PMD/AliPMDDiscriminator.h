@@ -15,7 +15,7 @@ class TObjArray;
 class TTree;
 class TNtuple;
 
-class AliPMDcluster;
+class AliPMDrecpoint1;
 class AliPMDclupid;
 
 class AliPMDDiscriminator : public TObject
@@ -23,20 +23,12 @@ class AliPMDDiscriminator : public TObject
 
  public:
 
-  AliPMDDiscriminator();
-  virtual ~AliPMDDiscriminator();
+  AliPMDDiscriminator(){};
+  virtual ~AliPMDDiscriminator(){};
 
-  void Discrimination(TObjArray *pmdcontin, TObjArray *pmdcontout);
-  void EmpDiscrimination(TObjArray *pmdcontin, TObjArray *pmdcontout);
-  void NNDiscrimination();
+  virtual void Discrimination(TObjArray *pmdcontin, TObjArray *pmdcontout) = 0;
 
-  void SetDiscrimination(Int_t idiscrim);
-
- protected:
-
-  Int_t   fDiscrim;       // To switch on different discrimination method
-
-  ClassDef(AliPMDDiscriminator,2) // To run PMD discrimination
+  ClassDef(AliPMDDiscriminator,3) // Base class for PMD discrimination
 };
 #endif
 
