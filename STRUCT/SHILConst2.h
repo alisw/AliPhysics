@@ -60,12 +60,11 @@
 // Outer shield dimensions
   const Float_t kR11=15.4;
 // Steel Envelope
-  const Float_t kDRSteel1=2.;
   const Float_t kDRSteel2=4.;
 //  According to design
 //  const Float_t R21=20.3;
 //  to avoid overlap with 2deg line
-  const Float_t kR21=19.4;
+  const Float_t kR21= 19.5;
 //
 // 2nd Section
 // 
@@ -128,8 +127,8 @@
 
 const Float_t kZch11 =  517.70;
 const Float_t kZch12 =  553.70;
-const Float_t kZch21 =  667.75;
-const Float_t kZch22 =  704.05;
+const Float_t kZch21 =  661.30;
+const Float_t kZch22 =  709.90;
 const Float_t kZch31 =  951.25;
 const Float_t kZch32 = 1014.75;
 const Float_t kZch41 = 1259.90;
