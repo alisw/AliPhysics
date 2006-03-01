@@ -43,10 +43,9 @@ class AliPMDtracker:public TObject
   TObjArray    *fPMDcontin;
   TObjArray    *fPMDcontout;
 
-  AliPMDDiscriminator *fPMDdiscriminator;
   AliPMDUtility       *fPMDutil;
   AliPMDrecpoint1     *fPMDrecpoint;
-  AliPMDcluster       *fPMDclin;
+  AliPMDrecpoint1     *fPMDclin;
   AliPMDclupid        *fPMDclout;
 
   Double_t fXvertex;        // X-vertex position
@@ -56,7 +55,7 @@ class AliPMDtracker:public TObject
   Double_t fSigmaY;         // Y-vertex error
   Double_t fSigmaZ;         // Z-vertex error
 
-  ClassDef(AliPMDtracker,2) // To run PMD clustering
+  ClassDef(AliPMDtracker,3) // To run PMD clustering
 };
 #endif
 
