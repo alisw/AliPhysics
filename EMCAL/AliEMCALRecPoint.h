@@ -39,15 +39,16 @@ class AliEMCALRecPoint : public AliRecPoint {
 
   virtual void    EvalAll(Float_t logWeight, TClonesArray * digits);
   virtual void    EvalLocalPosition(Float_t logWeight, TClonesArray * digits) ;
+  //  void            EvalLocalPositionSimple(TClonesArray *digits); // ??
   virtual void    EvalPrimaries(TClonesArray * digits) ;
   virtual void    EvalParents(TClonesArray * digits) ;
 
   // virtual void    GetGlobalPosition(TVector3 & gpos, TMatrix & /*gmat*/) const; // return global position in ALICE
   virtual void    GetGlobalPosition(TVector3 & gpos) const; // return global position (x, y, z) in ALICE
-  virtual void    GetLocalPosition(TVector3 & lpos) const; // return local position (eta, phi, r) in EMCAL
+  virtual void    GetLocalPosition(TVector3 & lpos) const;  // return local position  (x, y, z) in EMCAL SM
   virtual Int_t * GetPrimaries(Int_t & number) const {number = fMulTrack ; 
                                                       return fTracksList ; }
-    virtual Int_t * GetParents(Int_t & number) const {number = fMulParent ; 
+  virtual Int_t * GetParents(Int_t & number) const {number = fMulParent ; 
                                                       return fParentsList ; }
   Float_t         GetCoreEnergy()const {return fCoreEnergy ;}
   virtual Float_t GetDispersion()const {return fDispersion ;}
@@ -58,7 +59,9 @@ class AliEMCALRecPoint : public AliRecPoint {
   Int_t       GetMaximumMultiplicity() const {return fMaxDigit ;}  // gets the maximum number of digits allowed
   Int_t       GetMultiplicity(void) const { return fMulDigit ; }   // gets the number of digits making this recpoint
   Int_t       GetMultiplicityAtLevel(Float_t level) const ;  // computes multiplicity of digits with 
-                                                                   // energy above relative level
+  Int_t *     GetAbsId() const {return fAbsIdList;}
+  Int_t       GetAbsId(int i) const {if(i>=0 && i<fMulDigit)return fAbsIdList[i]; else return -1;}
+  // energy above relative level
   virtual Int_t GetNumberOfLocalMax(AliEMCALDigit **  maxAt, Float_t * maxAtEnergy,
                                     Float_t locMaxCut,TClonesArray * digits ) const ; 
                                                                    // searches for the local maxima 
@@ -90,13 +93,15 @@ protected:
 	  Float_t fLambda[2] ;        // shower ellipse axes
 	  Float_t fDispersion ;       // shower dispersion
 	  Float_t *fEnergyList ;      //[fMulDigit] energy of digits
+          Int_t   *fAbsIdList;        //[fMulDigit] absId  of digits
 	  Float_t fTime ;             // Time of the digit with maximal energy deposition
 	  Float_t fCoreRadius;        // The radius in which the core energy is evaluated
           Int_t fMulParent;           // Multiplicity of the parents
           Int_t fMaxParent;           // Maximum number of parents allowed
           Int_t * fParentsList;       // [fMulParent] list of the parents of the digits
-
-  ClassDef(AliEMCALRecPoint,6) // RecPoint for EMCAL (Base Class)
+          Int_t   fSuperModuleNumber; //
+    
+  ClassDef(AliEMCALRecPoint,7) // RecPoint for EMCAL (Base Class)
  
 };
 

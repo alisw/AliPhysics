@@ -16,7 +16,7 @@ class AliEMCALGeometry;
 
 class AliEMCALShishKebabTrd1Module : public TNamed {
  public:
-  AliEMCALShishKebabTrd1Module(double theta=TMath::Pi()/2.);
+  AliEMCALShishKebabTrd1Module(double theta=TMath::Pi()/2., AliEMCALGeometry *g=0);
   AliEMCALShishKebabTrd1Module(AliEMCALShishKebabTrd1Module &leftNeighbor);
   void Init(double A, double B);
 
@@ -36,9 +36,15 @@ class AliEMCALShishKebabTrd1Module : public TNamed {
   Double_t  GetA() {return fA;}
   Double_t  GetB() {return fB;}
   //  Additional offline staff 
-  TVector2& GetCenterOfCell(Int_t ieta)
-  { if(ieta<=1) return fOK1;
-    else        return fOK2;}
+  TVector2& GetCenterOfCellInLocalCoordinateofSM(Int_t ieta)
+  { if(ieta<=1) return fOK2;
+    else        return fOK1;}
+  void GetCenterOfCellInLocalCoordinateofSM(Int_t ieta, Double_t &xr, Double_t &zr)
+  { 
+    if(ieta<=1) {xr = fOK2.Y(); zr = fOK2.X();
+    } else      {xr = fOK1.Y(); zr = fOK1.X();
+    }
+  }
   // 
   Double_t GetTanBetta() {return fgtanBetta;}
   Double_t Getb()        {return fgb;}
@@ -61,15 +67,13 @@ class AliEMCALShishKebabTrd1Module : public TNamed {
   Double_t fB;      // system where zero point is IP.
   Double_t fThetaA; // angle coresponding fA - for convinience
   Double_t fTheta;  // theta angle of perependicular to SK module
-  // position of towers with differents ieta (1 or 2) -  4-nov-04
-  TVector2 fOK1;
-  TVector2 fOK2;
+  // position of towers(cells) with differents ieta (1 or 2) in local coordinate of SM
+  // Nov 04,2004; Feb 19,2006 
+  TVector2 fOK1; // ieta=2
+  TVector2 fOK2; // ieta=1
 
  public:
   ClassDef(AliEMCALShishKebabTrd1Module,0) // Turned Shish-Kebab module 
 };
 
 #endif
-/* To do
- 1. Insert position the center of towers - 2 additional TVector2
- */

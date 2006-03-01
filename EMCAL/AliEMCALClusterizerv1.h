@@ -24,7 +24,7 @@
 // --- AliRoot header files ---
 
 #include "AliEMCALClusterizer.h"
-#include "TH1F.h"
+class TH1F;
 class AliEMCALRecPoint ; 
 class AliEMCALDigit ;
 class AliEMCALDigitizer ;
@@ -38,6 +38,7 @@ public:
   AliEMCALClusterizerv1() ;         
   AliEMCALClusterizerv1(const TString alirunFileNameFile, const TString eventFolderName = AliConfig::GetDefaultEventFolderName());
   virtual ~AliEMCALClusterizerv1()  ;
+  virtual void Browse(TBrowser* b);
   
   virtual Int_t   AreNeighbours(AliEMCALDigit * d1, AliEMCALDigit * d2)const ; 
                                // Checks if digits are in neighbour cells 
@@ -71,13 +72,14 @@ public:
   void Unload() ; 
   virtual const char * Version() const { return "clu-v1" ; }  
  
-  void BookHists();
-  void SaveHists();
+  TList* BookHists();
+  void   SaveHists(const char *fn="reco.root");  //*MENU*
 protected:
 
   void           WriteRecPoints() ;
   virtual void   MakeClusters( ) ;            
 ///////////////////// 
+   TList  *fHists;   //!
    TH1F* pointE;
    TH1F* pointL1;
    TH1F* pointL2;
@@ -106,7 +108,7 @@ private:
 			       AliEMCALDigit ** /*maxAt*/,
 			       Float_t * /*maxAtEnergy*/ ) const; //Unfolds cluster using TMinuit package
   void           PrintRecPoints(Option_t * option) ;
-  TFile* recofile;
+  //  TFile* recofile;
 private:
 
   Bool_t  fDefaultInit;              //! Says if the task was created by defaut ctor (only parameters are initialized)
@@ -129,8 +131,6 @@ private:
   Float_t fTimeGate ;                // Maximum time difference between the digits in ont EMC cluster
   Float_t fMinECut;                  // Minimum energy for a digit to be a member of a cluster
 
-  void ReadFile();
-    
   ClassDef(AliEMCALClusterizerv1,4)   // Clusterizer implementation version 1
 
 };

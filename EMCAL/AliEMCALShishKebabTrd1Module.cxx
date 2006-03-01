@@ -19,8 +19,10 @@
 
 #include "AliEMCALShishKebabTrd1Module.h"
 #include <assert.h>
-#include <TMath.h>
 #include "AliEMCALGeometry.h"
+
+#include "Riostream.h"
+#include <TMath.h>
 
 ClassImp(AliEMCALShishKebabTrd1Module)
 
@@ -29,13 +31,15 @@ ClassImp(AliEMCALShishKebabTrd1Module)
   Double_t AliEMCALShishKebabTrd1Module::fga2=0.; 
   Double_t AliEMCALShishKebabTrd1Module::fgb=0.; 
   Double_t AliEMCALShishKebabTrd1Module::fgr=0.; 
-  Double_t AliEMCALShishKebabTrd1Module::fgangle=0.;   // one degrre 
+  Double_t AliEMCALShishKebabTrd1Module::fgangle=0.;   // around one degree 
   Double_t AliEMCALShishKebabTrd1Module::fgtanBetta=0; //
 
-AliEMCALShishKebabTrd1Module::AliEMCALShishKebabTrd1Module(double theta) : TNamed()
+AliEMCALShishKebabTrd1Module::AliEMCALShishKebabTrd1Module(double theta, AliEMCALGeometry *g) : TNamed()
 { // theta in radians ; first object shold be with theta=pi/2.
+  cout<< " theta " << theta << " geometry " << g << endl;  
   fTheta = theta;
   if(fgGeometry==0) {
+    fgGeometry = g;
     if(GetParameters()) {
       DefineFirstModule();
     }
@@ -76,15 +80,15 @@ void AliEMCALShishKebabTrd1Module::Init(double A, double B)
   fB = yA - fA*xA;
 
   DefineName(fTheta);
-  // Centers of modules
+  // Centers of module
   Double_t kk1 = (fga+fga2)/(2.*4.); // kk1=kk2 
 
   Double_t xk1 = fOK.X() - kk1*TMath::Sin(fTheta);
-  Double_t yk1 = fOK.Y() + kk1*TMath::Cos(fTheta);
+  Double_t yk1 = fOK.Y() + kk1*TMath::Cos(fTheta) - fgr;
   fOK1.Set(xk1,yk1);
 
   Double_t xk2 = fOK.X() + kk1*TMath::Sin(fTheta);
-  Double_t yk2 = fOK.Y() - kk1*TMath::Cos(fTheta);
+  Double_t yk2 = fOK.Y() - kk1*TMath::Cos(fTheta) - fgr;
   fOK2.Set(xk2,yk2);
 }
 
@@ -99,8 +103,8 @@ void AliEMCALShishKebabTrd1Module::DefineFirstModule()
   fB = yA - fA*xA;
 
   Double_t kk1 = (fga+fga2)/(2.*4.); // kk1=kk2 
-  fOK1.Set(fOK.X() - kk1, fOK.Y());
-  fOK2.Set(fOK.X() + kk1, fOK.Y());
+  fOK1.Set(fOK.X() - kk1, fOK.Y()-fgr);
+  fOK2.Set(fOK.X() + kk1, fOK.Y()-fgr);
 
   TObject::SetUniqueID(1); //
 }
@@ -115,7 +119,7 @@ void AliEMCALShishKebabTrd1Module::DefineName(double theta)
 
 Bool_t AliEMCALShishKebabTrd1Module::GetParameters()
 {
-  fgGeometry = AliEMCALGeometry::GetInstance();
+  if(!fgGeometry) fgGeometry = AliEMCALGeometry::GetInstance();
   TString sn(fgGeometry->GetName()); // 2-Feb-05
   sn.ToUpper();
   if(!fgGeometry) {
@@ -138,18 +142,18 @@ Bool_t AliEMCALShishKebabTrd1Module::GetParameters()
 void AliEMCALShishKebabTrd1Module::PrintShish(int pri) const
 {
   if(pri>=0) {
-    Info("PrintShish()", "\n a %7.3f:%7.3f | b %7.2f | r %7.2f \n TRD1 angle %7.6f(%5.2f) | tanBetta %7.6f", 
+    Info("\n PrintShish()", "\n a %7.3f:%7.3f | b %7.2f | r %7.2f \n TRD1 angle %7.6f(%5.2f) | tanBetta %7.6f", 
     fga, fga2, fgb, fgr, fgangle, fgangle*TMath::RadToDeg(), fgtanBetta);
     printf(" fTheta %f : %5.2f : cos(theta) %f\n", 
     fTheta, GetThetaInDegree(),TMath::Cos(fTheta)); 
-    if(pri>0) {
+    if(pri>=1) {
       printf("\n%i |%s| theta %f :  fOK.Phi = %f(%5.2f)\n", 
       GetUniqueID(), GetName(), fTheta, fOK.Phi(),fOK.Phi()*TMath::RadToDeg());
       printf(" A %f B %f | fThetaA %7.6f(%5.2f)\n", fA,fB, fThetaA,fThetaA*TMath::RadToDeg());
-      fOK.Dump();
       printf(" fOK  : X %8.3f: Y %8.3f \n",  fOK.X(), fOK.Y());
-      printf(" fOK1 : X %8.3f: Y %8.3f \n", fOK1.X(), fOK1.Y());
-      printf(" fOK2 : X %8.3f: Y %8.3f \n", fOK2.X(), fOK2.Y());
+      printf(" fOK1 : X %8.3f: Y %8.3f (in SM, ieta=2)\n", fOK1.X(), fOK1.Y());
+      printf(" fOK2 : X %8.3f: Y %8.3f (in SM, ieta=1)\n\n", fOK2.X(), fOK2.Y());
+      fOK.Dump();
     }
   }
 }

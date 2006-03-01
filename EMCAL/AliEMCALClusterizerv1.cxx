@@ -1,4 +1,3 @@
-
 /**************************************************************************
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
@@ -47,15 +46,16 @@
 
 // --- ROOT system ---
 
-#include "TROOT.h" 
-#include "TFile.h" 
-#include "TFolder.h" 
-#include "TMath.h" 
-#include "TMinuit.h"
-#include "TTree.h" 
-#include "TSystem.h" 
-#include "TBenchmark.h"
-
+#include <TROOT.h>
+#include <TH1.h>
+#include <TFile.h> 
+#include <TFolder.h> 
+#include <TMath.h> 
+#include <TMinuit.h>
+#include <TTree.h> 
+#include <TSystem.h> 
+#include <TBenchmark.h>
+#include <TBrowser.h>
 // --- Standard library ---
 
 
@@ -69,11 +69,11 @@
 #include "AliEMCALDigitizer.h"
 #include "AliEMCAL.h"
 #include "AliEMCALGeometry.h"
+#include "AliEMCALHistoUtilities.h"
 
 ClassImp(AliEMCALClusterizerv1)
 
-Int_t addOn[20][60][60]; 
-
+AliEMCALGeometry * geom = 0;
 //____________________________________________________________________________
   AliEMCALClusterizerv1::AliEMCALClusterizerv1() : AliEMCALClusterizer()
 {
@@ -81,16 +81,8 @@ Int_t addOn[20][60][60];
   
   InitParameters() ; 
   fDefaultInit = kTRUE ;
-  for(Int_t is=0;is<20;is++){ 
-    for(Int_t i=0;i<60;i++){ 
-      for(Int_t j=0;j<60;j++){ 
-	addOn[is][i][j]=0;
-      }
-    }
-  }
-//PH   cout<<"file to read 1"<<endl;
-  ReadFile();
-//PH   cout<<"file read 1"<<endl;
+  geom = AliEMCALGeometry::GetInstance();
+  geom->GetTransformationForSM(); // Global <-> Local
 }
 
 //____________________________________________________________________________
@@ -102,31 +94,18 @@ AliEMCALClusterizerv1::AliEMCALClusterizerv1(const TString alirunFileName, const
   InitParameters() ; 
   Init() ;
   fDefaultInit = kFALSE ; 
-  for(Int_t is=0;is<20;is++){ 
-    for(Int_t i=0;i<60;i++){ 
-      for(Int_t j=0;j<60;j++){ 
-	addOn[is][i][j]=0;
-      }
-    }
-  }
-//PH   cout<<"file to read 2"<<endl;
-  ReadFile();
-//PH   cout<<"file read 2"<<endl;
-
 }
 
 //____________________________________________________________________________
   AliEMCALClusterizerv1::~AliEMCALClusterizerv1()
 {
   // dtor
-  
 }
 
 //____________________________________________________________________________
 const TString AliEMCALClusterizerv1::BranchName() const 
 { 
    return GetName();
-
 }
 
 //____________________________________________________________________________
@@ -185,10 +164,8 @@ void AliEMCALClusterizerv1::Exec(Option_t * option)
   if(strstr(option,"tim")){
     gBenchmark->Stop("EMCALClusterizer");
     printf("Exec took %f seconds for Clusterizing %f seconds per event", 
-	 gBenchmark->GetCpuTime("EMCALClusterizer"), gBenchmark->GetCpuTime("EMCALClusterizer")/nEvents ) ;
+	 gBenchmark->GetCpuTime("EMCALClusterizer"), gBenchmark->GetCpuTime("EMCALClusterizer")/nEvents );
   }
-
-  SaveHists();
 
 }
 
@@ -225,8 +202,6 @@ Bool_t AliEMCALClusterizerv1::FindFit(AliEMCALRecPoint * emcRP, AliEMCALDigit **
   Int_t nDigits = (Int_t) nPar / 3 ;
 
   Int_t iDigit ;
-
-  AliEMCALGeometry * geom = AliEMCALGeometry::GetInstance(); //gime->EMCALGeometry() ; 
 
   for(iDigit = 0; iDigit < nDigits; iDigit++){
     digit = maxAt[iDigit]; 
@@ -309,18 +284,18 @@ void AliEMCALClusterizerv1::Init()
   // Make all memory allocations which can not be done in default constructor.
   // Attach the Clusterizer task to the list of EMCAL tasks
   
-  //AliEMCALGeometry * geom = AliEMCALGeometry::GetInstance() ;
   AliRunLoader *rl = AliRunLoader::GetRunLoader();
-  AliEMCALGeometry *geom = dynamic_cast<AliEMCAL*>(rl->GetAliRun()->GetDetector("EMCAL"))->GetGeometry();
+  geom = dynamic_cast<AliEMCAL*>(rl->GetAliRun()->GetDetector("EMCAL"))->GetGeometry();
+  geom->GetTransformationForSM(); // Global <-> Local
   AliInfo(Form("geom 0x%x",geom));
 
 //Sub  fNTowers = geom->GetNZ() *  geom->GetNPhi() ;
-  fNTowers =400;
+  fNTowers =400; // ?
   if(!gMinuit) 
     gMinuit = new TMinuit(100) ;
  //Sub if ( !gime->Clusterizer() ) 
  //Sub   gime->PostClusterizer(this); 
- BookHists();
+ fHists = BookHists();
 }
 
 //____________________________________________________________________________
@@ -330,74 +305,46 @@ void AliEMCALClusterizerv1::InitParameters()
   fNumberOfECAClusters = 0;
 
   fECAClusteringThreshold   = 0.5;  // value obtained from Alexei
-  fECALocMaxCut = 0.03;
+  fECALocMaxCut = 0.03; // ??
 
   fECAW0     = 4.5 ;
   fTimeGate = 1.e-8 ; 
   fToUnfold = kFALSE ;
   fRecPointsInRun  = 0 ;
-  fMinECut = 0.3;
+  fMinECut = 0.01; // have to be tune
 }
 
 //____________________________________________________________________________
-Int_t AliEMCALClusterizerv1::AreNeighbours(AliEMCALDigit * d1, AliEMCALDigit * d2)const
+Int_t AliEMCALClusterizerv1::AreNeighbours(AliEMCALDigit * d1, AliEMCALDigit * d2) const
 {
   // Gives the neighbourness of two digits = 0 are not neighbour but continue searching 
   //                                       = 1 are neighbour
-  //                                       = 2 are not neighbour but do not continue searching
+  //                                       = 2 is in different SM, quit from searching
   // neighbours are defined as digits having at least a common vertex 
   // The order of d1 and d2 is important: first (d1) should be a digit already in a cluster 
   //                                      which is compared to a digit (d2)  not yet in a cluster  
 
-  //AliEMCALGeometry * geom = AliEMCALGetter::Instance()->EMCALGeometry() ;
-   AliEMCALGeometry * geom = AliEMCALGeometry::GetInstance() ;
+  static Int_t rv; 
+  static Int_t nSupMod1=0, nTower1=0, nIphi1=0, nIeta1=0, iphi1=0, ieta1=0;
+  static Int_t nSupMod2=0, nTower2=0, nIphi2=0, nIeta2=0, iphi2=0, ieta2=0;
+  static Int_t rowdiff, coldiff;
+  rv = 0 ; 
 
-  Int_t rv = 0 ; 
+  geom->GetCellIndex(d1->GetId(), nSupMod1,nTower1,nIphi1,nIeta1);
+  geom->GetCellIndex(d2->GetId(), nSupMod2,nTower2,nIphi2,nIeta2);
+  if(nSupMod1 != nSupMod2) return 2; // different SM
 
-  Int_t relid1[2] ; 
- //Sub geom->AbsToRelNumbering(d1->GetId(), relid1) ; 
-    Int_t nSupMod=0;
-    Int_t nTower=0;
-    Int_t nIphi=0;
-    Int_t nIeta=0;
-    Int_t iphi=0;
-    Int_t ieta=0;
-   geom->GetCellIndex(d1->GetId(), nSupMod,nTower,nIphi,nIeta);
-   geom->GetCellPhiEtaIndexInSModule(nSupMod,nTower,nIphi,nIeta, iphi,ieta);
-   relid1[0]=ieta;
-   relid1[1]=iphi;
+  geom->GetCellPhiEtaIndexInSModule(nSupMod1,nTower1,nIphi1,nIeta1, iphi1,ieta1);
+  geom->GetCellPhiEtaIndexInSModule(nSupMod2,nTower2,nIphi2,nIeta2, iphi2,ieta2);
 
-
-    Int_t nSupMod1=0;
-    Int_t nTower1=0;
-    Int_t nIphi1=0;
-    Int_t nIeta1=0;
-    Int_t iphi1=0;
-    Int_t ieta1=0;
-   geom->GetCellIndex(d2->GetId(), nSupMod1,nTower1,nIphi1,nIeta1);
-   geom->GetCellPhiEtaIndexInSModule(nSupMod1, nTower1,nIphi1,nIeta1, iphi1,ieta1);
-   Int_t relid2[2] ; 
-   relid2[0]=ieta1;
-   relid2[1]=iphi1;
-
-  //Sub  geom->AbsToRelNumbering(d2->GetId(), relid2) ; 
+  rowdiff = TMath::Abs(iphi1 - iphi2);  
+  coldiff = TMath::Abs(ieta1 - ieta2) ;  
   
-
-  Int_t rowdiff = TMath::Abs( relid1[0] - relid2[0] ) ;  
-  Int_t coldiff = TMath::Abs( relid1[1] - relid2[1] ) ;  
-  
-  if (( coldiff <= 1 )  && ( rowdiff <= 1 )){
-      rv = 1 ; 
-  }
-  else {
-    if((relid2[0] > relid1[0]) && (relid2[1] > relid1[1]+1)) 
-      rv = 2; //  Difference in row numbers is too large to look further 
-  }
+  if (( coldiff <= 1 )  && ( rowdiff <= 1 )) rv = 1;  // neighbours with at least commom vertex
  
-  if (gDebug == 2 ) 
-if(rv==1)printf("AreNeighbours: neighbours=%d, id1=%d, relid1=%d,%d \n id2=%d, relid2=%d,%d \n", 
-	 rv, d1->GetId(), relid1[0], relid1[1],
-	 d2->GetId(), relid2[0], relid2[1]) ;   
+  if (gDebug == 2 && rv==1) 
+  printf("AreNeighbours: neighbours=%d, id1=%d, relid1=%d,%d \n id2=%d, relid2=%d,%d \n", 
+	 rv, d1->GetId(), iphi1,ieta1, d2->GetId(), iphi2,ieta2);   
   
   return rv ; 
 }
@@ -437,8 +384,10 @@ void AliEMCALClusterizerv1::WriteRecPoints()
   
   aECARecPoints->Sort() ;
 
-  for(index = 0; index < aECARecPoints->GetEntries(); index++)
+  for(index = 0; index < aECARecPoints->GetEntries(); index++) {
     (dynamic_cast<AliEMCALRecPoint *>(aECARecPoints->At(index)))->SetIndexInList(index) ;
+    (dynamic_cast<AliEMCALRecPoint *>(aECARecPoints->At(index)))->Print();
+  }
 
   Int_t bufferSize = 32000 ;    
   Int_t splitlevel = 0 ; 
@@ -467,53 +416,52 @@ void AliEMCALClusterizerv1::MakeClusters()
 
   TObjArray * aECARecPoints = emcalLoader->RecPoints() ; 
     
-  AliEMCALGeometry * geom = AliEMCALGeometry::GetInstance();
   if (geom==0) 
      AliFatal("Did not get geometry from EMCALLoader");
 
   aECARecPoints->Clear();
 
-  TClonesArray * digits = emcalLoader->Digits() ; 
-  TClonesArray * digitsC =  dynamic_cast<TClonesArray*>(digits->Clone()) ;
+  TClonesArray * digits  = emcalLoader->Digits() ; 
+  TClonesArray * digitsC =  dynamic_cast<TClonesArray*>(digits->Clone());
 
-  // Clusterization starts    
   TIter nextdigit(digitsC) ;
   AliEMCALDigit * digit;
+  double e=0.0, ehs = 0.0;
+  while ( (digit = dynamic_cast<AliEMCALDigit *>(nextdigit())) ) { // clean up digits
+    e = Calibrate(digit->GetAmp());
+    AliEMCALHistoUtilities::FillH1(fHists, 10, digit->GetAmp());
+    AliEMCALHistoUtilities::FillH1(fHists, 11, e);
+    if(e < fMinECut ) digitsC->Remove(digit);
+    else              ehs += e;
+  }  
+  cout << " Number of digits " << digits->GetEntries() << " -> (e>" <<fMinECut <<")";
+  cout << digitsC->GetEntries()<< " ehs "<<ehs<<endl; 
 
-  cout << "Outer Loop" << endl;
+  // Clusterization starts    
+  //  cout << "Outer Loop" << endl;
+  int ineb=0;
+  nextdigit.Reset();
+  AliEMCALRecPoint * recPoint = 0 ; 
   while ( (digit = dynamic_cast<AliEMCALDigit *>(nextdigit())) ) { // scan over the list of digitsC
-    AliEMCALRecPoint * clu = 0 ; 
-    
-    TArrayI clusterECAdigitslist(50000);   
+    recPoint = 0 ; 
+    TArrayI clusterECAdigitslist(1000); // what is this   
 
-////////////////////////temp solution, embedding///////////////////
-   int nSupMod=0, nTower=0, nIphi=0, nIeta=0;
-   int iphi=0, ieta=0;
-   geom->GetCellIndex(digit->GetId(), nSupMod,nTower,nIphi,nIeta);
-   geom->GetCellPhiEtaIndexInSModule(nSupMod,nTower,nIphi,nIeta, iphi,ieta);
-   
-   //cout << "Some checking" << endl;
-   if (geom->CheckAbsCellId(digit->GetId()) && (Calibrate(digit->GetAmp()+addOn[nSupMod-1][ieta-1][iphi-1]) > fECAClusteringThreshold  ) ){
-      //if(addOn[nSupMod-1][ieta-1][iphi-1]>0)cout<<"11 digit, add "<<ieta<<" "<<iphi<<" "<<addOn[nSupMod-1][ieta-1][iphi-1]<<" "<<digit->GetAmp()<<endl;
-//	    cout<<"crossed the threshold "<<endl;
-      Int_t iDigitInECACluster = 0;
-      // start a new Tower RecPoint
-      if(fNumberOfECAClusters >= aECARecPoints->GetSize()) 
-	  aECARecPoints->Expand(2*fNumberOfECAClusters+1) ;
+    if(geom->CheckAbsCellId(digit->GetId()) && (Calibrate(digit->GetAmp()) > fECAClusteringThreshold  ) ){
+      Int_t iDigitInECACluster = 0; // start a new Tower RecPoint
+      if(fNumberOfECAClusters >= aECARecPoints->GetSize()) aECARecPoints->Expand(2*fNumberOfECAClusters+1) ;
       AliEMCALRecPoint * rp = new  AliEMCALRecPoint("") ; 
-      //rp->SetGeom(geom);
       aECARecPoints->AddAt(rp, fNumberOfECAClusters) ;
-      clu = dynamic_cast<AliEMCALRecPoint *>(aECARecPoints->At(fNumberOfECAClusters)) ; 
+      recPoint = dynamic_cast<AliEMCALRecPoint *>(aECARecPoints->At(fNumberOfECAClusters)) ; 
       fNumberOfECAClusters++ ; 
-      clu->AddDigit(*digit, Calibrate(digit->GetAmp()+addOn[nSupMod-1][ieta-1][iphi-1])) ; 
+      recPoint->AddDigit(*digit, Calibrate(digit->GetAmp())) ; 
       clusterECAdigitslist[iDigitInECACluster] = digit->GetIndexInList() ;	
       iDigitInECACluster++ ; 
-//    cout<<" 1st setp:cluno, digNo "<<fNumberOfECAClusters<<" "<<iDigitInECACluster<<endl;
       digitsC->Remove(digit) ; 
-      AliDebug(1,Form("MakeClusters: OK id = %d, ene = %f , thre = %f \n", digit->GetId(),Calibrate(digit->GetAmp()), fECAClusteringThreshold));  
-      nextdigit.Reset() ;
+      AliDebug(1,Form("MakeClusters: OK id = %d, ene = %f , thre = %f \n", digit->GetId(),
+      Calibrate(digit->GetAmp()), fECAClusteringThreshold));  
+      nextdigit.Reset(); // will start from beggining
       
-      AliEMCALDigit * digitN ; 
+      AliEMCALDigit * digitN = 0; // digi neighbor
       Int_t index = 0 ;
 
       // Find the neighbours
@@ -521,41 +469,26 @@ void AliEMCALClusterizerv1::MakeClusters()
 	digit =  (AliEMCALDigit*)digits->At(clusterECAdigitslist[index]);
 	index++ ; 
         while ( (digitN = (AliEMCALDigit *)nextdigit())) { // scan over the reduced list of digits 
-	  // cout<<"we have new digit "<<endl;
-          // check that the digit is above the min E Cut
-          geom->GetCellIndex(digitN->GetId(), nSupMod,nTower,nIphi,nIeta);
-          geom->GetCellPhiEtaIndexInSModule(nSupMod,nTower,nIphi,nIeta, iphi,ieta);
-          if( Calibrate(digitN->GetAmp()+addOn[nSupMod-1][ieta-1][iphi-1]) < fMinECut  )  digitsC->Remove(digitN);
-	  //cout<<" new digit above ECut "<<endl;
-	  Int_t ineb = AreNeighbours(digit, digitN);       // call (digit,digitN) in THAT oder !!!!! 
-//	cout<<" new digit neighbour?? "<<ineb<<endl;
-         switch (ineb ) {
-          case 0 :   // not a neighbour
-	    break ;
-	  case 1 :   // are neighbours 
-	    //if(addOn[nSupMod-1][ieta-1][iphi-1]>0)cout<<"22 digit, add "<<nSupMod<<" "<<ieta<<" "<<iphi<<" "<<addOn[nSupMod-1][ieta-1][iphi-1]<<" "<<digit->GetAmp()<<endl;
-	    clu->AddDigit(*digitN, Calibrate( digitN->GetAmp()+addOn[nSupMod-1][ieta-1][iphi-1]) ) ;
-	    clusterECAdigitslist[iDigitInECACluster] = digitN->GetIndexInList() ; 
-	    iDigitInECACluster++ ; 
-//    cout<<"when neighbour: cluno, digNo "<<digit->GetId()<<" "<<fNumberOfECAClusters<<" "<<iDigitInECACluster<<endl;
-	    digitsC->Remove(digitN) ;
-//	    break ;
-//          case 2 :   // too far from each other
-//Subh	    goto endofloop1;   
-//	    cout<<"earlier go to end of loop"<<endl;   
+	  //          if( Calibrate(digitN->GetAmp()) < fMinECut  )  digitsC->Remove(digitN);
+	  ineb = AreNeighbours(digit, digitN);       // call (digit,digitN) in THAT oder !!!!! 
+          switch (ineb ) {
+            case 0 :   // not a neighbour
+	      break ;
+	    case 1 :   // are neighbours 
+	      recPoint->AddDigit(*digitN, Calibrate( digitN->GetAmp()) ) ;
+	      clusterECAdigitslist[iDigitInECACluster] = digitN->GetIndexInList() ; 
+	      iDigitInECACluster++ ; 
+	      digitsC->Remove(digitN) ;
+	       break ;
+             case 2 :   // different SM
+	       break ;
 	  } // switch
-    //cout<<"in nextDigit loop "<<fNumberOfECAClusters<<" "<<iDigitInECACluster<<endl;
-	} // while digitN
-	//cout << "Done neighbout searching" << endl;
-	nextdigit.Reset() ; 
-      } // loop over ECA cluster
-    } // energy threshold
-    else if(Calibrate(digit->GetAmp()+addOn[nSupMod-1][ieta-1][iphi-1]) < fMinECut  ){
-      //if(addOn[nSupMod-1][ieta-1][iphi-1]>0)cout<<"33 digit, add  "<<ieta<<" "<<iphi<<" "<<addOn[nSupMod-1][ieta-1][iphi-1]<<" "<<digit->GetAmp()<<endl;
-      digitsC->Remove(digit);
+        } // scan over the reduced list of digits
+      } // scan over digits already in cluster
+      nextdigit.Reset() ;  // will start from beggining
     }
-    //cout<<"after endofloop: cluno, digNo "<<fNumberOfECAClusters<<endl;
   } // while digit  
+  if(recPoint) cout << "cl.e " << recPoint->GetEnergy() << endl; 
   delete digitsC ;
   AliDebug(1,Form("total no of clusters %d from %d digits",fNumberOfECAClusters,digits->GetEntriesFast())); 
 }
@@ -704,8 +637,10 @@ void AliEMCALClusterizerv1::PrintRecPoints(Option_t * option)
     printf("\n-----------------------------------------------------------------------\n");
   }
 }
-  void AliEMCALClusterizerv1::BookHists()
+TList* AliEMCALClusterizerv1::BookHists()
 {
+  gROOT->cd();
+
 	pointE = new TH1F("pointE","point energy", 2000, 0.0, 150.);
 	pointL1 = new TH1F("pointL1","point L1", 1000, 0.0, 3.);
 	pointL2 = new TH1F("pointL2","point L2", 1000, 0.0, 3.);
@@ -715,35 +650,21 @@ void AliEMCALClusterizerv1::PrintRecPoints(Option_t * option)
 	MaxE = new TH1F("maxE","Max point energy", 2000, 0.0, 150.);
 	MaxL1 = new TH1F("maxL1","Max point L1", 1000, 0.0, 3.);
 	MaxL2 = new TH1F("maxL2","Max point L2", 1000, 0.0, 3.);
-	MaxDis = new TH1F("maxDis","Max point Dis", 1000, 0.0, 3.);
-}
-void AliEMCALClusterizerv1::SaveHists()
-{
- recofile=new TFile("reco.root","RECREATE"); 
-	pointE->Write();
-	pointL1->Write();
-	pointL2->Write();
-	pointDis->Write();
-	pointMult->Write();
-	digitAmp->Write();
-      MaxE->Write();
-      MaxL1->Write();
-      MaxL2->Write();
-      MaxDis->Write();
-recofile->Close();
+	MaxDis = new TH1F("maxDis","Max point Dis", 1000, 0.0, 3.); // 9
+	//
+        new TH1F("adcOfDigits","adc of digits(threshold control)", 1001, -0.5, 1000.5);   // 10
+        new TH1F("energyOfDigits","energy of digits(threshold control)", 1000, 0.0, 1.);  // 11
+
+  return AliEMCALHistoUtilities::MoveHistsToList("EmcalClusterizerv1ControlHists", kFALSE);
 }
 
-void AliEMCALClusterizerv1::ReadFile()
+void AliEMCALClusterizerv1::SaveHists(const char *fn)
 {
-  return; // 3-jan-05
-	FILE *fp = fopen("hijing1.dat","r");
-        for(Int_t line=0;line<9113;line++){
-         Int_t eg,l1,l2,sm;
-         Int_t ncols0;
-         ncols0 = fscanf(fp,"%d %d %d %d",&sm,&l1,&l2,&eg);
-	// cout<<eg<<" "<<l1<<" "<<l2<<endl;
-	 addOn[sm-1][l1-1][l2-1]=eg;
-	 //addOn[sm-1][l1-1][l2-1]=0;
-	}
+  AliEMCALHistoUtilities::SaveListOfHists(fHists, fn, kTRUE);
 }
 
+void AliEMCALClusterizerv1::Browse(TBrowser* b)
+{
+  if(fHists) b->Add(fHists);
+  TTask::Browse(b);
+}

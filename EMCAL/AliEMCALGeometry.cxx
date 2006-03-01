@@ -1,4 +1,4 @@
-/**************************************************************************
+ /**************************************************************************
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
  * Author: The ALICE Off-line Project.                                    *
@@ -31,12 +31,17 @@
 
 // --- AliRoot header files ---
 #include <assert.h>
+#include "Riostream.h"
+
 #include <TMath.h>
 #include <TVector3.h>
+#include <TArrayD.h>
 #include <TRegexp.h>
 #include <TObjArray.h>
 #include <TObjString.h>
-#include <assert.h>
+#include <TGeoManager.h>
+#include <TGeoNode.h>
+#include <TGeoMatrix.h>
 #include <TMatrixD.h>
 #include <TClonesArray.h>
 
@@ -45,6 +50,9 @@
 
 // --- EMCAL headers
 #include "AliEMCALGeometry.h"
+#include "AliEMCALShishKebabTrd1Module.h"
+//#include "AliRecPoint.h"
+#include "AliEMCALRecPoint.h"
 #include "AliEMCALDigit.h"
 
 ClassImp(AliEMCALGeometry)
@@ -63,19 +71,6 @@ int  nAdditionalOpts = sizeof(additionalOpts) / sizeof(char*);
 AliEMCALGeometry::~AliEMCALGeometry(void){
     // dtor
 }
-
-//______________________________________________________________________
-Bool_t AliEMCALGeometry::AreInSameTower(Int_t id1, Int_t id2) const {
-  // Find out whether two hits are in the same tower - have to be change
-  Int_t idmax = TMath::Max(id1, id2) ; 
-  Int_t idmin = TMath::Min(id1, id2) ;
-  if ( ((idmax - GetNZ() * GetNPhi()) == idmin ) || 
-       ((idmax - 2 * GetNZ() * GetNPhi()) == idmin ) )
-    return kTRUE ; 
-  else 
-    return kFALSE ; 
-}
-
 //______________________________________________________________________
 void AliEMCALGeometry::Init(void){
   // Initializes the EMCAL parameters
@@ -92,6 +87,8 @@ void AliEMCALGeometry::Init(void){
   name.ToUpper();
   fKey110DEG = 0;
   if(name.Contains("110DEG")) fKey110DEG = 1; // for GetAbsCellId
+  fShishKebabTrd1Modules = 0;
+  fTrd2AngleY = f2Trd2Dy2 = fEmptySpace = fTubsR = fTubsTurnAngle = 0;
 
   fNZ             = 114;	// granularity along Z (eta) 
   fNPhi           = 168;	// granularity in phi (azimuth)
@@ -101,6 +98,7 @@ void AliEMCALGeometry::Init(void){
   fArm1EtaMax     = +0.7;	// pseudorapidity, Ending EMCAL Eta position
   fIPDistance     = 454.0;      // cm, Radial distance to inner surface of EMCAL
   fPhiGapForSM    = 0.;         // cm, only for final TRD1 geometry
+  for(int i=0; i<12; i++) fMatrixOfSM[i] = 0;
 
   // geometry
   if(name.Contains("SHISH")){ // Only shahslyk now
@@ -226,6 +224,10 @@ void AliEMCALGeometry::Init(void){
     } else if(name.Contains("TRD")) { // 1-oct-04
       fShellThickness  = TMath::Sqrt(fLongModuleSize*fLongModuleSize + f2Trd1Dx2*f2Trd1Dx2);
       fShellThickness += fSteelFrontThick;
+      // Local coordinates
+      fParSM[0] = GetShellThickness()/2.;        
+      fParSM[1] = GetPhiModuleSize() * GetNPhi()/2.;
+      fParSM[2] = 350./2.;
     }
   }
 
@@ -238,7 +240,9 @@ void AliEMCALGeometry::Init(void){
   
   if (kTRUE) {
     printf("Init: geometry of EMCAL named %s is as follows:\n", name.Data());
-    printf( "               ECAL      : %d x (%f cm Pb, %f cm Sc) \n", GetNECLayers(), GetECPbRadThick(), GetECScintThick() ) ; 
+    printf( "               ECAL      : %d x (%f cm Pb, %f cm Sc) \n", 
+    GetNECLayers(), GetECPbRadThick(), GetECScintThick() ) ; 
+    printf("                fSampling %5.2f \n",  fSampling );
     if(name.Contains("SHISH")){
       printf(" fIPDistance       %6.3f cm \n", fIPDistance);
       if(fSteelFrontThick>0.) 
@@ -269,6 +273,8 @@ void AliEMCALGeometry::Init(void){
         printf(" fTubsTurnAngle  %7.4f\n", fTubsTurnAngle);
         printf(" fEmptySpace     %7.4f cm\n", fEmptySpace);
       } else if(name.Contains("TRD1") && name.Contains("FINAL")){
+        printf("SM dimensions(TRD1) : dx %7.2f dy %7.2f dz %7.2f (SMOD, BOX)\n", 
+        fParSM[0],fParSM[1],fParSM[2]);
         printf(" fPhiGapForSM  %7.4f cm \n",  fPhiGapForSM);
         if(name.Contains("110DEG"))printf(" Last two modules have size 10 degree in  phi (180<phi<190)\n");
       }
@@ -422,7 +428,8 @@ TClonesArray *  AliEMCALGeometry::FillTRU(const TClonesArray * digits) {
 AliEMCALGeometry *  AliEMCALGeometry::GetInstance(){ 
   // Returns the pointer of the unique instance
   
-  return static_cast<AliEMCALGeometry *>( fgGeom ) ; 
+  AliEMCALGeometry * rv = static_cast<AliEMCALGeometry *>( fgGeom );
+  return rv; 
 }
 
 //______________________________________________________________________
@@ -450,7 +457,7 @@ AliEMCALGeometry* AliEMCALGeometry::GetInstance(const Text_t* name,
 	  printf(name);  
 	}else{
 	  rv = (AliEMCALGeometry *) fgGeom; 
-	} // end if
+	} // end 
     }  // end if fgGeom
     return rv; 
 }
@@ -741,7 +748,7 @@ Bool_t AliEMCALGeometry::IsInEMCAL(Double_t x, Double_t y, Double_t z) const {
 //
 // == Shish-kebab cases ==
 //
-Int_t AliEMCALGeometry::GetAbsCellId(Int_t nSupMod, Int_t nTower, Int_t nIphi, Int_t nIeta)
+Int_t AliEMCALGeometry::GetAbsCellId(Int_t nSupMod, Int_t nTower, Int_t nIphi, Int_t nIeta) const
 { // 27-aug-04; 
   // corr. 21-sep-04; 
   //       13-oct-05; 110 degree case
@@ -772,7 +779,7 @@ Int_t AliEMCALGeometry::GetAbsCellId(Int_t nSupMod, Int_t nTower, Int_t nIphi, I
   return id;
 }
 
-Bool_t  AliEMCALGeometry::CheckAbsCellId(Int_t ind)
+Bool_t  AliEMCALGeometry::CheckAbsCellId(Int_t ind) const
 { // 17-niv-04 - analog of IsInECA
    if(name.Contains("TRD")) {
      if(ind<=0 || ind > fNCells) return kFALSE;
@@ -780,7 +787,7 @@ Bool_t  AliEMCALGeometry::CheckAbsCellId(Int_t ind)
    } else return IsInECA(ind);
 }
 
-Bool_t AliEMCALGeometry::GetCellIndex(Int_t absId,Int_t &nSupMod,Int_t &nTower,Int_t &nIphi,Int_t &nIeta)
+Bool_t AliEMCALGeometry::GetCellIndex(Int_t absId,Int_t &nSupMod,Int_t &nTower,Int_t &nIphi,Int_t &nIeta) const
 { // 21-sep-04
   // 19-oct-05;
   static Int_t tmp=0, sm10=0;
@@ -805,7 +812,7 @@ Bool_t AliEMCALGeometry::GetCellIndex(Int_t absId,Int_t &nSupMod,Int_t &nTower,I
   return kTRUE;
 }
 
-void AliEMCALGeometry::GetTowerPhiEtaIndexInSModule(Int_t nSupMod, Int_t nTower,  int &iphit, int &ietat)
+void AliEMCALGeometry::GetTowerPhiEtaIndexInSModule(Int_t nSupMod, Int_t nTower,  int &iphit, int &ietat) const
 { // added nSupMod; have to check  - 19-oct-05 ! 
   static Int_t nphi;
 
@@ -817,7 +824,7 @@ void AliEMCALGeometry::GetTowerPhiEtaIndexInSModule(Int_t nSupMod, Int_t nTower,
 }
 
 void AliEMCALGeometry::GetCellPhiEtaIndexInSModule(Int_t nSupMod, Int_t nTower, Int_t nIphi, Int_t nIeta, 
-int &iphi, int &ieta)
+int &iphi, int &ieta) const
 { // added nSupMod; Nov 25, 05
   static Int_t iphit, ietat;
 
@@ -827,6 +834,161 @@ int &iphi, int &ieta)
   // iphi - have to change from 1 to fNPhi*fNPHIdiv
   iphi  = (iphit-1)*fNPHIdiv + nIphi;     // y(module) =  y(SM) 
 }
+
+Int_t  AliEMCALGeometry::GetSuperModuleNumber(Int_t absId)  const
+{
+  static Int_t nSupMod, nTower, nIphi, nIeta;
+  GetCellIndex(absId, nSupMod, nTower, nIphi, nIeta);
+  return nSupMod;
+} 
+
+// Methods for AliEMCALRecPoint - Feb 19, 2006
+Bool_t AliEMCALGeometry::RelPosCellInSModule(Int_t absId, Double_t &xr, Double_t &yr, Double_t &zr)
+{
+  static Int_t nSupMod, nTower, nIphi, nIeta, iphi, ieta;
+  if(!CheckAbsCellId(absId)) return kFALSE;
+
+  GetCellIndex(absId, nSupMod, nTower, nIphi, nIeta);
+  GetCellPhiEtaIndexInSModule(nSupMod,nTower,nIphi,nIeta, iphi, ieta); 
+ 
+  xr = fXCentersOfCells->At(ieta-1);
+  zr = fEtaCentersOfCells->At(ieta-1);
+
+  yr = fPhiCentersOfCells->At(iphi-1);
+
+  //  cout<<" absId "<<absId<<" iphi "<<iphi<<"ieta"<<ieta;
+  // cout<< " xr " << xr << " yr " << yr << " zr " << zr <<endl;
+  return kTRUE;
+}
+
+void AliEMCALGeometry::CreateListOfTrd1Modules()
+{
+  cout<< endl<< " AliEMCALGeometry::CreateListOfTrd1Modules() started " << endl;
+  AliEMCALShishKebabTrd1Module *mod=0, *mTmp=0; // current module
+  if(fShishKebabTrd1Modules == 0) {
+    fShishKebabTrd1Modules = new TList;
+    for(int iz=0; iz< GetNZ(); iz++) { 
+      if(iz==0) { 
+        mod  = new AliEMCALShishKebabTrd1Module(TMath::Pi()/2.,this);
+      } else {
+        mTmp  = new AliEMCALShishKebabTrd1Module(*mod);
+        mod   = mTmp;
+      }
+      fShishKebabTrd1Modules->Add(mod);
+    }
+  } else {
+    cout<<" Already exits : ";
+  }
+  cout<<" fShishKebabTrd1Modules "<< fShishKebabTrd1Modules << " has " 
+  << fShishKebabTrd1Modules->GetSize() << " modules" <<endl << endl;
+  // Feb 20,2006;
+  // define grid for cells in eta(z) and x directions in local coordinates system of SM
+  fEtaCentersOfCells = new TArrayD(fNZ *fNETAdiv);
+  fXCentersOfCells = new TArrayD(fNZ *fNETAdiv);
+  printf(" Cells grid in eta directions : size %i\n", fEtaCentersOfCells->GetSize());
+  Int_t iphi=0, ieta=0, nTower=0;
+  Double_t xr, zr;
+  for(Int_t it=0; it<fNZ; it++) { // array index
+    AliEMCALShishKebabTrd1Module *trd1 = GetShishKebabModule(it);
+    nTower = fNPhi*it + 1;
+    for(Int_t ic=0; ic<fNETAdiv; ic++) { // array index
+      trd1->GetCenterOfCellInLocalCoordinateofSM(ic+1, xr, zr);
+      GetCellPhiEtaIndexInSModule(1, nTower, 1, ic+1, iphi, ieta); // don't depend from phi
+      fXCentersOfCells->AddAt(float(xr) - fParSM[0],ieta-1);
+      fEtaCentersOfCells->AddAt(float(zr) - fParSM[2],ieta-1);
+    }
+  }
+  for(Int_t i=0; i<fEtaCentersOfCells->GetSize(); i++) {
+    printf(" ind %2.2i : z %8.3f : x %8.3f", i+1, fEtaCentersOfCells->At(i),fXCentersOfCells->At(i));
+    if(i%2 != 0) printf("\n"); 
+  }
+  printf("\n"); 
+ // define grid for cells in phi(y) direction in local coordinates system of SM
+  fPhiCentersOfCells = new TArrayD(fNPhi*fNPHIdiv);
+  printf(" Cells grid in phi directions : size %i\n", fPhiCentersOfCells->GetSize());
+  Int_t ind=0;
+  for(Int_t it=0; it<fNPhi; it++) { // array index
+    Float_t ytLeftCenterModule = -fParSM[1] + fPhiModuleSize*(2*it+1)/2;         // module
+    for(Int_t ic=0; ic<fNPHIdiv; ic++) { // array index
+      Float_t ytLeftCenterCell = ytLeftCenterModule + fPhiTileSize *(2*ic-1)/2.; // tower(cell) 
+      fPhiCentersOfCells->AddAt(ytLeftCenterCell,ind);
+      printf(" ind %2.2i : y %8.3f ", ind, fPhiCentersOfCells->At(ind++));
+      if(ic == fNPHIdiv-1) printf("\n"); 
+    }
+  }
+  printf("\n"); 
+}
+
+void  AliEMCALGeometry::GetTransformationForSM()
+{
+  static Bool_t transInit=kFALSE;
+  if(transInit) return;
+
+  int i=0;
+  if(gGeoManager == 0) {
+    Info("CreateTransformationForSM() "," Load geometry : TGeoManager::Import()");
+    assert(0);
+  }
+  TGeoNode *tn = gGeoManager->GetTopNode();
+  TGeoNode *node=0, *XEN1 = 0;
+  for(i=0; i<tn->GetNdaughters(); i++) {
+    node = tn->GetDaughter(i);
+    TString ns(node->GetName());
+    if(ns.Contains(GetNameOfEMCALEnvelope())) {
+      XEN1 = node;
+      break;
+    }
+  }
+  if(!XEN1) {
+    Info("CreateTransformationForSM() "," geometry has not EMCAL envelope with name %s", 
+    GetNameOfEMCALEnvelope());
+    assert(0);
+  }
+  printf(" i %i : EMCAL Envelope is %s : #SM %i \n", i, XEN1->GetName(), XEN1->GetNdaughters());
+  for(i=0; i<XEN1->GetNdaughters(); i++) {
+    TGeoNodeMatrix *sm = (TGeoNodeMatrix*)XEN1->GetDaughter(i);
+    fMatrixOfSM[i] = sm->GetMatrix();
+    printf(" %i : matrix %x \n", i, fMatrixOfSM[i]);
+  }
+  transInit = kTRUE;
+}
+
+void AliEMCALGeometry::GetGlobal(const Double_t *loc, Double_t *glob, int nsm) const
+{
+  //  if(fMatrixOfSM[0] == 0) GetTransformationForSM();
+  static int ind;
+  ind = nsm-1;
+  if(ind>=0 && ind < GetNumberOfSuperModules()) {
+    fMatrixOfSM[ind]->LocalToMaster(loc, glob);
+  }
+}
+
+void AliEMCALGeometry::GetGlobal(const Int_t absId, TVector3 &vglob) const
+{ // have to be defined  
+}
+
+void AliEMCALGeometry::GetGlobal(const TVector3 &vloc, TVector3 &vglob, int nsm) const
+{
+  static Double_t tglob[3], tloc[3];
+  vloc.GetXYZ(tloc);
+  GetGlobal(tloc, tglob, nsm);
+  vglob.SetXYZ(tglob[0], tglob[1], tglob[2]);
+}
+
+void AliEMCALGeometry::GetGlobal(const AliRecPoint *rp, TVector3 &vglob) const
+{
+  static TVector3 vloc;
+  static Int_t nSupMod, nTower, nIphi, nIeta;
+
+  AliRecPoint *rpTmp = (AliRecPoint*)rp; // const_cast ??
+  if(!rpTmp) return;
+  AliEMCALRecPoint *rpEmc = (AliEMCALRecPoint*)rpTmp;
+
+  GetCellIndex(rpEmc->GetAbsId(0), nSupMod, nTower, nIphi, nIeta);
+  rpTmp->GetLocalPosition(vloc);
+  GetGlobal(vloc, vglob, nSupMod);
+}
+
 // Service routine 
 int  AliEMCALGeometry::ParseString(const TString &topt, TObjArray &Opt)
 { // Feb 06, 2006

@@ -53,12 +53,12 @@ void AliEMCALGeometryOfflineTrd1::Init()
   fTrd1Modules[0] =  new AliEMCALShishKebabTrd1Module();
   fSMMaxEta = 2*fMaxInEta;
   fSMPositionEta = new TVector2[fSMMaxEta];
-  fSMPositionEta[0] = fTrd1Modules[0]->GetCenterOfCell(1);
-  fSMPositionEta[1] = fTrd1Modules[0]->GetCenterOfCell(2);
+  fSMPositionEta[0] = fTrd1Modules[0]->GetCenterOfCellInLocalCoordinateofSM(1);
+  fSMPositionEta[1] = fTrd1Modules[0]->GetCenterOfCellInLocalCoordinateofSM(2);
   for(Int_t i=1; i<fMaxInEta; i++) {
     fTrd1Modules[i] = new AliEMCALShishKebabTrd1Module(*(fTrd1Modules[i-1]));
-    fSMPositionEta[2*i]   = fTrd1Modules[i]->GetCenterOfCell(1);
-    fSMPositionEta[2*i+1] = fTrd1Modules[i]->GetCenterOfCell(2);
+    fSMPositionEta[2*i]   = fTrd1Modules[i]->GetCenterOfCellInLocalCoordinateofSM(1);
+    fSMPositionEta[2*i+1] = fTrd1Modules[i]->GetCenterOfCellInLocalCoordinateofSM(2);
   }
   // PHI direction
   fSMPositionPhi.Set(2*fGeometry->GetNPhi());

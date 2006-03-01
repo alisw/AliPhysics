@@ -67,8 +67,9 @@ AliEMCALv0::AliEMCALv0(const char *name, const char *title):
   AliEMCAL(name,title)
 {
   // ctor : title is used to identify the layout
-  GetGeometry() ; 
-  fShishKebabModules = 0;
+  AliEMCALGeometry *geom = GetGeometry() ; 
+  //geom->CreateListOfTrd1Modules(); 
+  fShishKebabModules = geom->GetShishKebabTrd1Modules(); 
 }
 
 //______________________________________________________________________
@@ -78,7 +79,8 @@ void AliEMCALv0::BuildGeometry()
 
     const Int_t kColorArm1   = kBlue ;
 
-    AliEMCALGeometry * geom = GetGeometry() ; 
+    AliEMCALGeometry * geom = GetGeometry();
+
     TString gn(geom->GetName());
     gn.ToUpper(); 
 
@@ -319,7 +321,7 @@ void AliEMCALv0::CreateGeometry()
         printf("CreateGeometry: XU0 = %f, %f\n", envelopA[5], envelopA[6]); 
       }
     // Position the EMCAL Mother Volume (XEN1) in Alice (ALIC)  
-      gMC->Gspos("XEN1", 1, "ALIC", 0.0, 0.0, 0.0, idrotm, "ONLY") ;
+      gMC->Gspos(geom->GetNameOfEMCALEnvelope(), 1, "ALIC", 0.0, 0.0, 0.0, idrotm, "ONLY") ;
     }
 
     if(gn.Contains("SHISH")){
@@ -368,7 +370,7 @@ void AliEMCALv0::CreateShishKebabGeometry()
   //  idAL = 1602;
   Double_t par[10], xpos=0., ypos=0., zpos=0.;
 
-  CreateSmod("XEN1");        // 18-may-05 
+  CreateSmod(g->GetNameOfEMCALEnvelope());
 
   CreateEmod("SMOD","EMOD"); // 18-may-05
 
@@ -537,8 +539,12 @@ void AliEMCALv0::CreateSmod(const char* mother)
       par[2] += 0.4;      // for 27 division
     } else if(gn.Contains("TRD")) {
       par[2]  = 350./2.; // 11-oct-04 - for 26 division
+      if(gn.Contains("TRD1")) {
+        printf(" par[0] %7.2f (old) \n",  par[0]);  
+        Float_t *parSM = g->GetSuperModulesPars(); 
+        for(int i=0; i<3; i++) par[i] = parSM[i];
+      }
     }
-  //  par[2] = g->GetXYModuleSize()*g->GetNZ()/2.; 
     gMC->Gsvolu("SMOD", "BOX", idtmed[idAIR], par, 3);
     printf("tmed %i | dx %7.2f dy %7.2f dz %7.2f (SMOD, BOX)\n", 
     idtmed[idAIR], par[0],par[1],par[2]);
@@ -727,18 +733,7 @@ void AliEMCALv0::CreateEmod(const char* mother, const char* child)
   } else if(gn.Contains("TRD")) { // 30-sep-04; 27-jan-05 - as for TRD1 as for TRD2
     // X->Z(0, 0); Y->Y(90, 90); Z->X(90, 0)
     AliEMCALShishKebabTrd1Module *mod=0, *mTmp; // current module
-    if(fShishKebabModules == 0) {
-      fShishKebabModules = new TList;
-      for(int iz=0; iz<g->GetNZ(); iz++) { // 27-may-05; g->GetNZ() -> 26
-        if(iz==0) { 
-          mod  = new AliEMCALShishKebabTrd1Module();
-        } else {
-          mTmp  = new AliEMCALShishKebabTrd1Module(*mod);
-          mod   = mTmp;
-        }
-      fShishKebabModules->Add(mod);
-      }
-    }
+
     for(int iz=0; iz<g->GetNZ(); iz++) {
       Double_t  angle=90., phiOK=0;
       if(gn.Contains("TRD1")) {

@@ -92,6 +92,8 @@ AliEMCALSDigitizer::AliEMCALSDigitizer(const char * alirunFileName,
   InitParameters() ; 
   fDefaultInit = kFALSE ; 
   fHists = 0;
+  fControlHists = 1;
+  if(fControlHists) BookControlHists(1);
 }
 
 
@@ -155,6 +157,7 @@ void AliEMCALSDigitizer::InitParameters()
 
  // threshold for deposit energy of hit
   fECPrimThreshold  = 0.; // 24-nov-04 - was 1.e-6;
+  Print("");
 }
 
 //____________________________________________________________________________
@@ -323,7 +326,7 @@ void AliEMCALSDigitizer::Print1(Option_t * option)
 void AliEMCALSDigitizer::Print(Option_t *option) const
 { 
   // Prints parameters of SDigitizer
-  printf("Print: \n------------------- %s -------------\n", GetName() ) ; 
+  printf("Print: \n------------------- %s ------------- option %s\n", GetName() , option) ; 
   printf("   fInit                                 %i\n", int(fInit));
   printf("   fFirstEvent                           %i\n", fFirstEvent);
   printf("   fLastEvent                            %i\n", fLastEvent);
@@ -405,6 +408,7 @@ TList *AliEMCALSDigitizer::BookControlHists(int var)
   gROOT->cd();
   const AliEMCALGeometry *geom = AliEMCALGeometry::GetInstance() ;
   if(var>=1){
+    printf(" AliEMCALSDigitizer::BookControlHists() in action \n");
     new TH1F("HSDigiN",  "#EMCAL  sdigits ", 1001, -0.5, 1000.5);
     new TH1F("HSDigiSumEnergy","Sum.EMCAL energy", 1000, 0.0, 100.);
     new TH1F("HSDigiAmp",  "EMCAL sdigits amplitude", 1000, 0., 2.e+9);
@@ -412,8 +416,10 @@ TList *AliEMCALSDigitizer::BookControlHists(int var)
     new TH1F("HSDigiAbsId","EMCAL absID for sdigits",
     geom->GetNCells(), 0.5, Double_t(geom->GetNCells())+0.5);
   }
+
   fHists = AliEMCALHistoUtilities::MoveHistsToList("EmcalSDigiControlHists", kFALSE);
   fHists = 0;
+
   return fHists;
 }
 
