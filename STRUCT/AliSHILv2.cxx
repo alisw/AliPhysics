@@ -23,10 +23,17 @@
 
 #include <TVirtualMC.h>
 #include <TArrayI.h>
+#include <TGeoVolume.h>
+#include <TGeoTube.h>
+#include <TGeoManager.h>
+#include <TGeoMatrix.h>
+#include <TGeoCompositeShape.h>
+#include <TGeoBBox.h>
+#include <TGeoPgon.h>
+#include <TGeoTorus.h>
 
 #include "AliSHILv2.h"
 #include "AliConst.h"
-#include "AliALIFE.h"
 #include "AliLog.h"
 
 ClassImp(AliSHILv2)
@@ -87,22 +94,12 @@ void AliSHILv2::CreateGeometry()
     enum {kC=1705, kAl=1708, kFe=1709, kCu=1710, kW=1711, kPb=1712,
 	  kNiCuW=1720, kVacuum=1715, kAir=1714, kConcrete=1716,
 	  kPolyCH2=1717, kSteel=1709, kInsulation=1713};	
+    Int_t i;
+    
 //
 // Material of the rear part of the shield
-  Int_t iHeavy=kNiCuW;
+  Int_t iHeavy = kNiCuW;
   if (fPbCone) iHeavy=kPb;
-//
-//
-// begin Fluka
-  AliALIFE* flukaGeom = new AliALIFE("beamshield.alife", "beamshield_vol.inp");
-  
-  Int_t i=0,ifl=0;
-  Float_t posfluka[3]={0., 0., 0.};
-  Float_t zfluka[12], rfluka1[12], rfluka2[12], rfluka3[12] ;  
-//
-// end Fluka  
-  
-  
 //
 // Mother volume
 //
@@ -115,6 +112,8 @@ void AliSHILv2::CreateGeometry()
   par0[2]  = 28.;
 
   Float_t dl=(kZvac12-zstart)/2.;
+  const Float_t kzLength = dl;
+  
   dz=zstart+dl;
 //
 // start
@@ -122,21 +121,21 @@ void AliSHILv2::CreateGeometry()
   par0[4]  = 0.;
   par0[5]  = zstart * TMath::Tan(kAccMin);
 // recess station 1
-  par0[6]  = -dz+kZch11;
+  par0[6]  = -dl  - zstart + kZch11;
   par0[7]  = 0.;
-  par0[8]  = kZch11 * TMath::Tan(kAccMin);
+  par0[8]  = 18.2;
 
   par0[9]   = par0[6];
   par0[10]  = 0.;
   par0[11]  = kR11;
 
-  par0[12]  = -dz+kZch12;
+  par0[12]  = -dl - zstart + kZch12;
   par0[13]  = 0.;
   par0[14]  = kR11;
 
   par0[15]  = par0[12];
   par0[16]  = 0.;
-  par0[17]  = kZch12 * TMath::Tan(kAccMin);
+  par0[17]  = 19.5;
 // recess station 2
   par0[18]  = -dz+kZch21;
   par0[19]  = 0.;
@@ -144,11 +143,11 @@ void AliSHILv2::CreateGeometry()
 
   par0[21]  = -dz+kZch21;
   par0[22] = 0.;
-  par0[23] = 23.;
+  par0[23] = kR21;
 
   par0[24]  = -dz+kZch22;
   par0[25] = 0.;
-  par0[26] = 23.;
+  par0[26] = kR21;
 
   par0[27]  = -dz+kZch22;
   par0[28]  = 0.;
@@ -168,11 +167,11 @@ void AliSHILv2::CreateGeometry()
 
   par0[39] = -dz+kZch31;
   par0[40] = 0.;
-  par0[41] = 29.;
+  par0[41] = 28.8;
 
   par0[42] = -dz+kZch32;
   par0[43] = 0.;
-  par0[44] = 29.;
+  par0[44] = 28.8;
 // start of 1.6 deg cone
   par0[45] = -dz+kZch32;
   par0[46] = 0.;
@@ -184,11 +183,11 @@ void AliSHILv2::CreateGeometry()
 
   par0[51] = -dz+kZch41;
   par0[52] = 0.;
-  par0[53] = 37.5;
+  par0[53] = 36.9;
 
   par0[54] = -dz+kZch42;
   par0[55] = 0.;
-  par0[56] = 37.5;
+  par0[56] = 36.9;
 
   par0[57] = -dz+kZch42;
   par0[58] = 0.;
@@ -202,11 +201,11 @@ void AliSHILv2::CreateGeometry()
 
   par0[63] = -dz+kZch51;
   par0[64] = 0.;
-  par0[65] = 37.5;
+  par0[65] = 36.9;
 
   par0[66] = -dz+kZch52;
   par0[67] = 0.;
-  par0[68] = 37.5;
+  par0[68] = 36.9;
 
   par0[69] = -dz+kZch52;
   par0[70] = 0.;
@@ -237,12 +236,6 @@ void AliSHILv2::CreateGeometry()
   gMC->Gsvolu("YMOT", "PCON", idtmed[kVacuum], par0, 87);
   dz=zstart+dl;
   AliMatrix(idrotm[1705], 270., 0., 90., 90., 180., 0.);
-  gMC->Gspos("YMOT", 1, "ALIC", 0., 0., - dz, idrotm[1705], "ONLY"); 
-  gMC->Gsbool("YMOT","L3DO");
-  gMC->Gsbool("YMOT","L3O1");
-  gMC->Gsbool("YMOT","L3O2");
- 
-//
 
   dZ=-dl;
 
@@ -252,102 +245,79 @@ void AliSHILv2::CreateGeometry()
 //
   par1[ 0]  = 0.;
   par1[ 1]  = 360.;
-  par1[ 2]  = 14.;
+  par1[ 2]  = 15.;
   dl=(kZvac4-zstart)/2.;
   
   par1[ 3]  = -dl;
   par1[ 4]  = kRAbs+(zstart-kZOpen) * TMath::Tan(kThetaOpen1);
   par1[ 5]  = zstart * TMath::Tan(kAccMin);
 
-  par1[ 6]  = -dl+dRear1;
-  par1[ 7]  = par1[4] + dRear1 * TMath::Tan(kThetaOpen1);
-  par1[ 8]  = kZRear * TMath::Tan(kAccMin);
+  par1[ 6]  = -dl-zstart+kZch11;
+  par1[ 7]  = par1[4] + (dRear1 + 19.)  * TMath::Tan(kThetaOpen1);
+  par1[ 8]  = 18.2;
 
-  par1[ 9]  = -dl+dRear1;
+  par1[ 9]  = par1[6];
   par1[10]  = par1[7];
   par1[11]  = kR11;
 
-  par1[12]  = -dl+kZvac41-zstart;
-  par1[13]  = kRAbs + (kZvac41-kZOpen) * TMath::Tan(kThetaOpen1);
+  par1[12]  = -dl-zstart+kZch12;
+  par1[13]  = par1[10] + 36. * TMath::Tan(kThetaOpen1);
   par1[14]  = kR11;
 
-  par1[15]  = par1[12];
+  par1[15]  = -dl+dRear1 + 50.7;
   par1[16]  = par1[13];
-  par1[17]  = kR21;
-
+  par1[17]  = 19.5;
 
   par1[18]  = -dl+kZvac1-zstart;
-  par1[19]  = kRAbs+ (kZvac1-kZOpen) * TMath::Tan(kThetaOpen1);
-  par1[20]  = kR21;
+  par1[19]  = par1[16] + (par1[18] - par1[15]) * TMath::Tan(kThetaOpen1);
+  par1[20]  = (par1[18] +dl +zstart) * TMath::Tan(kAccMin);
 
-  par1[21]  = par1[18]+kDr11/10.;
-  par1[22]  = par1[19]+kDr11;
-  par1[23]  = kR21;
-
-
-  par1[24]  = -dl+(kZvac1+kDr11/10.+kDB1-zstart);
-  par1[25]  = par1[22];
-  par1[26]  = kR21;
-
-  par1[27]  = par1[24]+kDr12;
-  par1[28]  = par1[25]+kDr12;
-  par1[29]  = kR21;
-
-  par1[30]  = par1[27]+kDF1;
-  par1[31]  = par1[28];
-  par1[32]  = kR21;
-
-  par1[33]  = par1[30]+kDr12;
-  par1[34]  = par1[31]-kDr12; 
-  par1[35]  = kR21;
-
-  par1[36] = par1[33]+kDB1;
-  par1[37] = par1[34];
-  par1[38] = kR21;
-
-  par1[39] = par1[36]+kDr13;
-  par1[40] = par1[37]-kDr13;
-  par1[41] = kR21;
-
-  par1[42] = -dl+kZvac4-zstart;
-  par1[43] = par1[40];
-  par1[44] = kR21;
-
-  Float_t r2  = par1[43];
-  Float_t rBox= par1[43]-0.1;
-  Float_t rc1 = par1[7];
-
-  gMC->Gsvolu("YGO1", "PCON", idtmed[kNiCuW+40], par1, 45);
-
-//
-// begin Fluka
-       
-  for (ifl=0; ifl<14; ifl++) {
-      zfluka[ifl]=par1[3+3*ifl]+dl+kZRear-kDRear;
-      rfluka1[ifl] = par1[4+3*ifl];
-      rfluka2[ifl] = par1[5+3*ifl]; 
-      if (ifl > 3)  rfluka2[ifl]=rfluka2[ifl]-kDRSteel1;
-  }
-
+  par1[21]  = -dl+kZvac1-zstart;
+  par1[22]  = kRAbs+ (kZvac1-kZOpen) * TMath::Tan(kThetaOpen1);
+  par1[23]  = (par1[21] +dl +zstart) * TMath::Tan(kAccMin);
   
-  Float_t rfluka0[8]={rBox,rBox,rBox,rBox,rBox,rBox,rBox,rBox};
-  
-  flukaGeom->Comment("1st part: Shield");
-// Use default for first three cones
-  flukaGeom->SetDefaultVolume("*ACR02");
-  rfluka2[0]=rfluka2[1]=rfluka2[2]=-1;
-//
-  flukaGeom->Comment("Shield");         
-  flukaGeom->PolyCone(rfluka1,    rfluka2,   zfluka,   12, posfluka, "NIW", "MF", "$SHS");
-  flukaGeom->Comment("Vacuum");
-  flukaGeom->PolyCone(rfluka0,  rfluka1+2, zfluka+2,   8, posfluka, "VACUUM", "MF", "$SHS");
-//
-// end Fluka
 
-  for (i=0; i<45; i++)  pars1[i]  = par1[i];
-  for (i=4; i<44; i+=3) pars1[i]  = 0.;
+  par1[24]  = par1[21]+kDr11/10.;
+  par1[25]  = par1[22]+kDr11;
+  par1[26]  = (par1[24] +dl +zstart) * TMath::Tan(kAccMin);
 
-  gMC->Gsvolu("YMO1", "PCON", idtmed[kVacuum+40], pars1, 45);
+  par1[27]  = -dl+(kZvac1+kDr11/10.+kDB1-zstart);
+  par1[28]  = par1[25];
+  par1[29]  = (par1[27] +dl +zstart) * TMath::Tan(kAccMin);
+
+  par1[30]  = par1[27]+kDr12;
+  par1[31]  = par1[28]+kDr12;
+  par1[32]  = (par1[30] +dl +zstart) * TMath::Tan(kAccMin);
+
+  par1[33]  = par1[30]+kDF1;
+  par1[34]  = par1[31];
+  par1[35]  = (par1[33] +dl +zstart) * TMath::Tan(kAccMin);
+
+  par1[36]  = par1[33]+kDr12;
+  par1[37]  = par1[34]-kDr12; 
+  par1[38]  = (par1[36] +dl +zstart) * TMath::Tan(kAccMin);
+
+  par1[39] = par1[36]+kDB1;
+  par1[40] = par1[37];
+  par1[41] = (par1[39] +dl +zstart) * TMath::Tan(kAccMin);
+
+  par1[42] = par1[39]+kDr13;
+  par1[43] = par1[40]-kDr13;
+  par1[44] = (par1[42] +dl +zstart) * TMath::Tan(kAccMin);
+
+  par1[45] =  -dl+kZvac4-zstart;
+  par1[46] = par1[43];
+  par1[47] = (par1[45] +dl +zstart) * TMath::Tan(kAccMin);
+
+  Float_t r2  = par1[46];
+  Float_t rBox= par1[46]-0.1;
+
+  gMC->Gsvolu("YGO1", "PCON", idtmed[kNiCuW+40], par1, 48);
+
+  for (i=0; i<48; i++)  pars1[i]  = par1[i];
+  for (i=4; i<47; i+=3) pars1[i]  = 0.;
+
+  gMC->Gsvolu("YMO1", "PCON", idtmed[kVacuum+40], pars1, 48);
   gMC->Gspos("YGO1", 1, "YMO1", 0., 0., 0., 0, "ONLY");  
   dZ+=dl;
   gMC->Gspos("YMO1", 1, "YMOT", 0., 0., dZ, 0, "ONLY");  
@@ -368,12 +338,6 @@ void AliSHILv2::CreateGeometry()
   gMC->Gsvolu("YSE2", "TUBE", idtmed[kSteel], tpar, 3);
   dz=dl-tpar[2]-(kZvac4-kZvac41);
   gMC->Gspos("YSE2", 1, "YGO1", 0., 0., dz, 0, "ONLY");
-
-// begin Fluka
-  flukaGeom->Comment("1st part: Steel Envelope");
-  flukaGeom->Cylinder(tpar[0], tpar[1], kZRear, kZvac4, posfluka, "NIW", "MF", "$SHS");
-//
-// end Fluka
 
 //
 // 1st section: vacuum system
@@ -440,8 +404,6 @@ void AliSHILv2::CreateGeometry()
   dz=-dl+(kZvac1-zstart)+kDr11/10.+bsize;
   gMC->Gspos("YBM1", 1, "YMO1", 0., 0., dz, 0, "ONLY"); 
 
-//  dz=dl-kDr13-(kZvac4-kZvac3)-bsize;
-//  gMC->Gspos("YBM1", 2, "YMO1", 0., 0., dz, 0, "ONLY"); 
 
 
 //
@@ -483,101 +445,7 @@ void AliSHILv2::CreateGeometry()
   gMC->Gspos("YPS1", 1, "YPF1", 0., 0., 0., 0, "ONLY"); 
   dz=-dl+(kZvac1-zstart)+kDr11/10.+2.*bsize+tpar[2];
   gMC->Gspos("YPF1", 1, "YMO1", 0., 0., dz, 0, "ONLY"); 
-//  dz=-dl+(kZvac2-zstart)+kDF1/2.+tpar[2];
-//  gMC->Gspos("YPF1", 2, "YMO1", 0., 0., dz, 0, "ONLY"); 
 
-//
-// begin Fluka
-  flukaGeom->Comment("First Bellow");
-  Float_t z1=kZvac1+kDr11;
-  Float_t z2;
-  
-  for (i=0; i<10; i++) {
-      z2=z1+kEB1;
-      flukaGeom->Cylinder(0., kRB1, z1, z2, posfluka, "VACUUM", "MF", "$SHH");
-      flukaGeom->Cylinder(kRB1, kRB1+kHB1, z1, z2, posfluka, "STEEL", "MF", "$SHH");
-      
-      z1=z2;
-      z2+=kLB1/2.-kEB1;
-      flukaGeom->Cylinder(0., kRB1+kHB1-kEB1, z1, z2, posfluka, "VACUUM", "MF", "$SHH");
-      flukaGeom->Cylinder(kRB1+kHB1-kEB1, kRB1+kHB1, z1, z2, posfluka, "STEEL", "MF", "$SHH");
-      z1=z2;
-      z2=z1+kEB1;
-      flukaGeom->Cylinder(0., kRB1, z1, z2, posfluka, "VACUUM", "MF", "$SHH");
-      flukaGeom->Cylinder(kRB1, kRB1+kHB1, z1, z2, posfluka, "STEEL", "MF", "$SHH");
-      z1=z2;
-      z2+=kLB1/2.-kEB1;
-      flukaGeom->Cylinder(0., kRB1, z1, z2, posfluka, "VACUUM", "MF", "$SHH");
-      flukaGeom->Cylinder(kRB1, kRB1+kEB1, z1, z2, posfluka, "STEEL", "MF", "$SHH");
-      flukaGeom->Cylinder(kRB1+kEB1, kRB1+kHB1, z1, z2, posfluka, "AIR", "MF", "$SHH");
-      z1=z2;
-   }
-  flukaGeom->Cylinder(kRB1+kHB1, kRB1+kHB1+0.5, kZvac1+kDr11, z1, posfluka, "AIR", "MF", "$SHH");
-  flukaGeom->Cylinder(kRB1+kHB1+0.5, rBox, kZvac1+kDr11, z1, posfluka, "AIR", "MF", "$SHH");
-  Float_t zcy1=z1;
-  
-
-  flukaGeom->Comment("Second Bellow");
-  z1=kZvac3-kDr13;
-  for (i=0; i<10; i++) {
-      z2=z1-kEB1;
-      flukaGeom->Cylinder(0., kRB1, z2, z1, posfluka, "VACUUM", "MF", "$SHH");
-      flukaGeom->Cylinder(kRB1, kRB1+kHB1, z2, z1, posfluka, "STEEL", "MF", "$SHH");
-      z1=z2;
-      z2-=kLB1/2.-kEB1;
-      flukaGeom->Cylinder(0., kRB1+kHB1-kEB1, z2, z1, posfluka, "VACUUM", "MF", "$SHH");
-      flukaGeom->Cylinder(kRB1+kHB1-kEB1, kRB1+kHB1, z2, z1, posfluka, "STEEL", "MF", "$SHH");
-      z1=z2;
-      z2=z1-kEB1;
-      flukaGeom->Cylinder(0., kRB1, z2, z1, posfluka, "VACUUM", "MF", "$SHH");
-      flukaGeom->Cylinder(kRB1, kRB1+kHB1, z2, z1, posfluka, "STEEL", "MF", "$SHH");
-      z1=z2;
-      z2-=kLB1/2.-kEB1;
-      flukaGeom->Cylinder(0., kRB1, z2, z1, posfluka, "VACUUM", "MF", "$SHH");
-      flukaGeom->Cylinder(kRB1, kRB1+kEB1, z2, z1, posfluka, "STEEL", "MF", "$SHH");
-      flukaGeom->Cylinder(kRB1+kEB1, kRB1+kHB1, z2, z1, posfluka, "AIR", "MF", "$SHH");
-      z1=z2;
-   }
-  flukaGeom->Cylinder(kRB1+kHB1, kRB1+kHB1+0.5, z1, kZvac3-kDr13, posfluka, "AIR", "MF", "$SHH");
-  flukaGeom->Cylinder(kRB1+kHB1+0.5, rBox,    z1, kZvac3-kDr13, posfluka, "AIR", "MF", "$SHH");
-
-  Float_t zcy2=z1;
-  flukaGeom->Comment("Flange");
-  Float_t zfl=(zcy1+zcy2)/2.;
-
-  z1=zfl-kDF1/2.;
-  z2=zfl+kDF1/2.;  
-  flukaGeom->Cylinder(0.,kRF1-2.        , z1, z2, posfluka, "VACUUM", "MF", "$SHH");
-  flukaGeom->Cylinder(kRF1-2., kRF1      , z1, z2, posfluka, "STEEL", "MF", "$SHH");
-  flukaGeom->Cylinder(kRF1, kRF1+0.05     , z1, z2, posfluka, "AIR", "MF", "$SHH");
-  flukaGeom->Cylinder(kRF1+0.05, rBox    , z1, z2, posfluka, "AIR", "MF", "$SHH");
-  z2=z1;
-  z1=z2-kDFlange;
-  flukaGeom->Cylinder(0.,kRB1           , z1, z2, posfluka, "VACUUM", "MF", "$SHH");
-  flukaGeom->Cylinder(kRB1, kRF1         , z1, z2, posfluka, "STEEL", "MF", "$SHH");
-  flukaGeom->Cylinder(kRF1, kRF1+0.5     , z1, z2, posfluka, "AIR", "MF", "$SHH");
-  flukaGeom->Cylinder(kRF1+0.5, rBox    , z1, z2, posfluka, "AIR", "MF", "$SHH");
-  z2=z1;
-  z1=zcy1;
-  flukaGeom->Cylinder(0.,kRB1           , z1, z2, posfluka, "VACUUM", "MF", "$SHH");
-  flukaGeom->Cylinder(kRB1, kRB1+0.1     , z1, z2, posfluka, "STEEL", "MF", "$SHH");
-  flukaGeom->Cylinder(kRB1+0.1, kRB1+0.6 , z1, z2, posfluka, "AIR", "MF", "$SHH");
-  flukaGeom->Cylinder(kRB1+0.6, rBox    , z1, z2, posfluka, "AIR", "MF", "$SHH");
-
-  z1=zfl+kDF1/2.;
-  z2=z1+kDFlange;
-  flukaGeom->Cylinder(0.,kRB1           , z1, z2, posfluka, "VACUUM", "MF", "$SHH");
-  flukaGeom->Cylinder(kRB1, kRF1         , z1, z2, posfluka, "STEEL", "MF", "$SHH");
-  flukaGeom->Cylinder(kRF1, kRF1+0.5     , z1, z2, posfluka, "AIR", "MF", "$SHH");
-  flukaGeom->Cylinder(kRF1+0.5, rBox    , z1, z2, posfluka, "AIR", "MF", "$SHH");
-  z1=z2;
-  z2=zcy2;
-  flukaGeom->Cylinder(0.,kRB1           , z1, z2, posfluka, "VACUUM", "MF", "$SHH");
-  flukaGeom->Cylinder(kRB1, kRB1+0.1     , z1, z2, posfluka, "STEEL", "MF", "$SHH");
-  flukaGeom->Cylinder(kRB1+0.1, kRB1+0.6 , z1, z2, posfluka, "AIR", "MF", "$SHH");
-  flukaGeom->Cylinder(kRB1+0.6, rBox    , z1, z2, posfluka, "AIR", "MF", "$SHH");
-// end Fluka
-//
 
 // Pipe+Heating     1.5 mm 
 // Heating Jacket   5.0 mm
@@ -606,42 +474,6 @@ void AliSHILv2::CreateGeometry()
   dz=-dl+cpar0[0];
   gMC->Gspos("YV11", 1, "YMO1", 0., 0., dz, 0, "ONLY"); 
 
-// begin Fluka
-//
-  Float_t rf1[10], rf2[10];
-  rf1[0]=0.;
-  rf1[1] = cpar0[1];
-  rf1[2]=rf1[1]+0.15;
-  rf1[3]=rf1[2]+0.5;
-  rf1[4]=rf1[3]+0.1;
-  rf1[5]=par1[4];
-  rf1[6]=0.; //PH This has to be checked...
-
-  rf2[0]=0.;
-  rf2[1] = cpar0[3];
-  rf2[2]=rf2[1]+0.15;
-  rf2[3]=rf2[2]+0.5;
-  rf2[4]=rf2[3]+0.1; 
-  rf2[5]=par1[7];
-  rf2[6]=0.; //PH This has to be checked
-  
-  const char* materialsA[7] 
-      = {"VACUUM", "STEEL", "PIPEINSU", "STEEL", "AIR", "AIR"};
-  const char* fieldsA[7] 
-      = {"MF", "MF", "MF", "MF", "MF", "MF"};
-  const char* cutsA[7] 
-      = {"$SHH","$SHH","$SHH","$SHH","$SHH","$SHH","$SHH"};
-
-  flukaGeom->Comment("1st part: Beam pipe lateral struture (left)");
-  flukaGeom->OnionCone(rf1, rf2,  6 , zstart, kZvac1, posfluka, materialsA, fieldsA, cutsA);
-  for (i=0; i<7; i++) rf1[i]=rf2[i];
-  for (i=1; i<7; i++) rf2[i]=rf1[i]+kDr11*TMath::Tan(kThetaOpen1);
-  flukaGeom->OnionCone(rf1, rf2,  6 , kZvac1, kZvac1+kDr11, posfluka, materialsA, fieldsA, cutsA);
-  flukaGeom->Cone(rc1, rf2[5], rc1, rc1+kDr11, kZvac1 , kZvac1+kDr11, posfluka,"AIR", "MF", "$SHH");
-//
-// end Fluka
-
-
 // right side
   dTubeS  = 0.35;
   dVacuS += 0.25;
@@ -666,35 +498,6 @@ void AliSHILv2::CreateGeometry()
   dz=dl-cpar0[0];
   gMC->Gspos("YV12", 1, "YMO1", 0., 0., dz, 0, "ONLY"); 
 
-//
-// begin Fluka
-  const char* materialsB[5] 
-      = {"VACUUM", "STEEL", "PIPEINSU", "STEEL", "AIR"};
-  
-  const char* fieldsB[5] 
-      = {"MF", "MF", "MF", "MF", "MF"};
- 
-  const char* cutsB[5] 
-      = {"$SHH","$SHH","$SHH","$SHH","$SHH"};
-
-  rf1[0]=rf2[0]=0.;
-  rf1[1]=cpar0[1]; 
-  rf2[1]=cpar0[3];
-
-  rf1[2]=rf1[1]+dTubeS; rf1[3]=rf1[2]+kDInsuS; rf1[4]=rf1[3]+kDEnveS;
-  rf1[5]=r2;
-  
-  rf2[2]=rf2[1]+dTubeS; rf2[3]=rf2[2]+kDInsuS; rf2[4]=rf2[3]+kDEnveS; 
-  rf2[5]=r2;
-  flukaGeom->Comment("1st part: Beam pipe lateral structure (right)");
-  flukaGeom->OnionCone(rf1, rf2,  6 , kZvac3, kZvac4, posfluka, materialsB, fieldsB, cutsB);
-  for (i=0; i<6; i++) rf2[i]=rf1[i];
-  for (i=1; i<5; i++) rf1[i]=rf2[i];
-  rf1[5]=rf2[5]+kDr13;
-  flukaGeom->OnionCone(rf1, rf2,  6 , kZvac3-kDr13, kZvac3, posfluka, materialsB, fieldsB, cutsB);
-
-//
-// end Fluka
 
 //
 // Second Section
@@ -738,11 +541,11 @@ void AliSHILv2::CreateGeometry()
 
   par2[24] = -dl+(kZch31-kZvac4);
   par2[25] = r2+(kZch31-kZvac4-10.) * TMath::Tan(kThetaOpen2);
-  par2[26] = 29.;
+  par2[26] = 28.8;
 
   par2[27] = -dl+(kZch32-kZvac4);
   par2[28] = r2+(kZch32-kZvac4-10.) * TMath::Tan(kThetaOpen2);
-  par2[29] = 29.;
+  par2[29] = 28.8;
 
   par2[30] = -dl+(kZch32-kZvac4);
   par2[31] = r2+(kZch32-kZvac4-10.) * TMath::Tan(kThetaOpen2);
@@ -753,91 +556,6 @@ void AliSHILv2::CreateGeometry()
   par2[35] = 30.;
 
   gMC->Gsvolu("YGO2", "PCON", idtmed[kSteel+40], par2, 36);
-
-//
-// begin Fluka
-
-  const char* materials1[8] 
-      = {"VACUUM", "STEEL", "PIPEINSU", "STEEL", "AIR", "NIW", "NIW", "STEEL"};
-  const char* fields1[8] 
-      = {"MF", "MF", "MF", "MF", "MF", "MF", "MF", "MF"};
-  const char* cuts1[8] 
-      = {"$SHH","$SHH","$SHH","$SHH","$SHH","$SHH","$SHH","$SHH"};
-
-  flukaGeom->Comment("2nd part: Beam shield lateral struture (0)");
-  // until end of recess 1
-  rf1[0] = 0.; rf1[1] = r2V; rf1[2] = rf1[1] + dTubeS; rf1[3] = rf1[2] + kDInsuS;
-  rf1[4] = rf1[3] + kDEnveS;  rf1[5] = r2; rf1[6] = rf1[5]+2.;
-  rf1[7] = kR11-kDRSteel1;  rf1[8] = kR21;
-
-  for (i=1; i<7; i++) rf2[i]=rf1[i]+4.*TMath::Tan(kThetaOpenB);
-  rf2[7] = rf1[7];
-  rf2[8] = rf1[8];
-  flukaGeom->OnionCone(rf1, rf2,  9 , kZvac4, kZvac4+4, posfluka, materials1, fields1, cuts1);
-
-  flukaGeom->Comment("2nd part: Beam shield lateral struture (1)");
-  // until end of recess 2
-  for (i=0; i<9; i++) rf1[i]=rf2[i];
-  rf1[7] = kR21-kDRSteel2;  rf1[8] = kR21;
-  for (i=1; i<9; i++) rf2[i]=rf1[i]+(kZvac6-kZvac4-4.)*TMath::Tan(kThetaOpenB);
-  rf2[7] = rf1[7];
-  rf2[8] = rf1[8];
-  flukaGeom->OnionCone(rf1, rf2,  9 , kZvac4+4, kZvac6, posfluka, materials1, fields1, cuts1);
-
-  flukaGeom->Comment("2nd part: Beam shield lateral struture (2)");
-  // steel recess
-  for (i=0; i<9; i++) rf1[i]=rf2[i];
-  rf1[8] = kZvac6*TMath::Tan(kAccMin);
-  rf1[7] = kR21-kDRSteel2;
-   
-  for (i=1; i<9; i++) rf2[i]=rf1[i]+4.*TMath::Tan(kThetaOpenB);
-  rf2[7] = rf1[7];
-
-  rf2[8] = -(rf1[8]+4.*TMath::Tan(kAccMin));
-  rf1[8] = -rf1[8];
-
-  flukaGeom->OnionCone(rf1, rf2, 9 , kZvac6, kZvac6+4, posfluka, materials1, fields1, cuts1);
-  rf1[8] = -rf1[8];
-  rf2[8] = -rf2[8];
-  
-  flukaGeom->Comment("2nd part: Beam shield lateral struture (3)");
-  // until start of lead section
-  for (i=0; i<9; i++) rf1[i]=rf2[i];
-  for (i=1; i<9; i++) rf2[i]=rf1[i]+(kZPb-kZvac6-4.)*TMath::Tan(kThetaOpenB);
-  rf1[7] = rf1[8] - kDRSteel2;
-  rf2[8] = rf1[8] + (kZPb-kZvac6-4.)*TMath::Tan(kAccMin);
-  rf2[7] = rf2[8] - kDRSteel2;
-
-  rf1[8]=-rf1[8];
-  rf2[8]=-rf2[8];
-  flukaGeom->OnionCone(rf1, rf2,  9 , kZvac6+4, kZPb, posfluka, materials1, fields1, cuts1);
-  rf1[8]=-rf1[8];
-  rf2[8]=-rf2[8];
-
-  flukaGeom->Comment("2nd part: Beam shield lateral struture (4)");
-  // until end of 2deg
-  materials1[5] = "LEAD";
-  materials1[6] = "LEAD";
-  for (i=0; i<9; i++) rf1[i]=rf2[i];
-  for (i=1; i<9; i++) rf2[i]=rf1[i]+(kZConeE-kZPb)*TMath::Tan(kThetaOpenB);
-  rf1[8] = -rf1[8];
-  rf2[8] = -30.;
-  rf2[7] = 26.;
-  flukaGeom->OnionCone(rf1, rf2,  9 , kZPb, kZConeE, posfluka, materials1, fields1, cuts1);
-  rf1[8]=-rf1[8];
-  rf2[8]=-rf2[8];
-
-  flukaGeom->Comment("2nd part: Beam shield lateral struture (4)");
-  // until end of this section
-  for (i=0; i<9; i++) rf1[i]=rf2[i];
-  for (i=1; i<9; i++) rf2[i]=rf1[i]+(kZvac7-kZConeE)*TMath::Tan(kThetaOpenB);
-  rf2[8] = 30;
-  rf2[7] = 26;
-  flukaGeom->OnionCone(rf1, rf2,  9 , kZConeE, kZvac7, posfluka, materials1, fields1, cuts1);
-
-  Float_t r3V = rf2[1];
-
-// end Fluka
 
 //
 // Lead cone 
@@ -1005,136 +723,6 @@ void AliSHILv2::CreateGeometry()
   Float_t r3=par3[25];
   
   gMC->Gsvolu("YGO3", "PCON", idtmed[iHeavy+40], par3, 27);
-
-// begin Fluka
-  Float_t rfvacu0[15];
-  for (ifl=0; ifl<8; ifl++) {
-      zfluka[ifl]=par3[3+3*ifl]+dl+kZvac7;
-      rfluka1[ifl] = par3[4+3*ifl];
-      rfluka2[ifl] = par3[5+3*ifl]-4.; 
-      rfluka3[ifl] = par3[5+3*ifl]; 
-      rfvacu0[ifl] = 0.;
-  }
-  for (i=0; i<8; i++) rfluka0[i]=rBox;
-  rfluka0[0]=0.; rfluka0[7]=0.;
-
-  flukaGeom->Comment("3rd part: Shield");
-  flukaGeom->PolyCone(rfluka1, rfluka2,  zfluka, 8, posfluka, "LEAD", "MF", "$SHS");
-  flukaGeom->Comment("3rd part: Steel envelope");
-  flukaGeom->PolyCone(rfluka2, rfluka3, zfluka, 8, posfluka, "STEEL", "MF", "$SHS");
-  flukaGeom->Comment("3rd part: Vacuum");
-  flukaGeom->PolyCone(rfluka0+1, rfluka1+1, zfluka+1, 6, posfluka, "AIR", "MF", "$SHH");
-
-  flukaGeom->Comment("3rd part: Beam Pipe (left)");
-  
-  rf1[0]=0.; rf2[0]=0.;
-  rf1[1] = r3V;
-  rf2[1] = rf1[1]+kDr21*TMath::Tan(kThetaOpenB);
-  rf1[2] = rf1[1]+dTubeS; rf1[3]=rf1[2]+kDInsuS; rf1[4]=rf1[3]+kDEnveS;
-  rf1[5] = par3[4];
-  rf2[2] = rf2[1]+dTubeS; rf2[3]=rf2[2]+kDInsuS; rf2[4]=rf2[3]+kDEnveS; 
-  rf2[5] = rf1[5]+kDr21;
-  flukaGeom->OnionCone(rf1, rf2,  6 , kZvac7, kZvac7+kDr21, posfluka, materialsB, fieldsB, cutsB);
-  
-  
-  flukaGeom->Comment("3rd part: Beam Pipe (right)");
-  
-  rf1[0] = 0.;
-  rf1[1] = rf2[1];
-  rf1[2] = rf1[1]+dTubeS; rf1[3]=rf1[2]+kDInsuS; rf1[4]=rf1[3]+kDEnveS;
-  rf1[5] = par3[25]; 
-  flukaGeom->OnionCylinder(rf1,  6 , kZvac9-kDr23, kZvac9, posfluka, materialsA, fieldsA, cutsA);
-
-//
-  flukaGeom->Comment("First Bellow");
-  z1=kZvac7+kDr21;
-  
-  for (i=0; i<7; i++) {
-      z2=z1+kEB2;
-      flukaGeom->Cylinder(0., kRB2, z1, z2, posfluka, "VACUUM", "MF", "$SHH");
-      flukaGeom->Cylinder(kRB2, kRB2+kHB2, z1, z2, posfluka, "STEEL", "MF", "$SHH");
-      
-      z1=z2;
-      z2+=kLB2/2.-kEB2;
-      flukaGeom->Cylinder(0., kRB2+kHB2-kEB2, z1, z2, posfluka, "VACUUM", "MF", "$SHH");
-      flukaGeom->Cylinder(kRB2+kHB2-kEB2, kRB2+kHB2, z1, z2, posfluka, "STEEL", "MF", "$SHH");
-      z1=z2;
-      z2=z1+kEB2;
-      flukaGeom->Cylinder(0., kRB2, z1, z2, posfluka, "VACUUM", "MF", "$SHH");
-      flukaGeom->Cylinder(kRB2, kRB2+kHB2, z1, z2, posfluka, "STEEL", "MF", "$SHH");
-      z1=z2;
-      z2+=kLB2/2.-kEB2;
-      flukaGeom->Cylinder(0., kRB2, z1, z2, posfluka, "VACUUM", "MF", "$SHH");
-      flukaGeom->Cylinder(kRB2, kRB2+kEB2, z1, z2, posfluka, "STEEL", "MF", "$SHH");
-      flukaGeom->Cylinder(kRB2+kEB2, kRB2+kHB2, z1, z2, posfluka, "AIR", "MF", "$SHH");
-      z1=z2;
-   }
-  flukaGeom->Cylinder(kRB2+kHB2, kRB2+kHB2+0.2, kZvac7+kDr21, z1, posfluka, "AIR", "MF", "$SHH");
-  flukaGeom->Cylinder(kRB2+kHB2+0.2, rBox, kZvac7+kDr21, z1, posfluka, "AIR", "MF", "$SHH");
-  zcy1=z1;
-  
-
-  flukaGeom->Comment("Second Bellow");
-  z1=kZvac9-kDr23;
-  for (i=0; i<7; i++) {
-      z2=z1-kEB2;
-      flukaGeom->Cylinder(0., kRB2, z2, z1, posfluka, "VACUUM", "MF", "$SHH");
-      flukaGeom->Cylinder(kRB2, kRB2+kHB2, z2, z1, posfluka, "STEEL", "MF", "$SHH");
-      z1=z2;
-      z2-=kLB2/2.-kEB2;
-      flukaGeom->Cylinder(0., kRB2+kHB2-kEB2, z2, z1, posfluka, "VACUUM", "MF", "$SHH");
-      flukaGeom->Cylinder(kRB2+kHB2-kEB2, kRB2+kHB2, z2, z1, posfluka, "STEEL", "MF", "$SHH");
-      z1=z2;
-      z2=z1-kEB2;
-      flukaGeom->Cylinder(0., kRB2, z2, z1, posfluka, "VACUUM", "MF", "$SHH");
-      flukaGeom->Cylinder(kRB2, kRB2+kHB2, z2, z1, posfluka, "STEEL", "MF", "$SHH");
-      z1=z2;
-      z2-=kLB2/2.-kEB2;
-      flukaGeom->Cylinder(0., kRB2, z2, z1, posfluka, "VACUUM", "MF", "$SHH");
-      flukaGeom->Cylinder(kRB2, kRB2+kEB2, z2, z1, posfluka, "STEEL", "MF", "$SHH");
-      flukaGeom->Cylinder(kRB2+kEB2, kRB2+kHB2, z2, z1, posfluka, "AIR", "MF", "$SHH");
-      z1=z2;
-   }
-  flukaGeom->Cylinder(kRB2+kHB2, kRB2+kHB2+0.2, z1, kZvac9-kDr23, posfluka, "AIR", "MF", "$SHH");
-  flukaGeom->Cylinder(kRB2+kHB2+0.2, rBox,    z1, kZvac9-kDr23, posfluka, "AIR", "MF", "$SHH");
-
-  zcy2=z1;
-  flukaGeom->Comment("Flange");
-  zfl=(zcy1+zcy2)/2.;
-
-  z1=zfl-kDF2/2.;
-  z2=zfl+kDF2/2.;  
-  flukaGeom->Cylinder(0.,kRF2-2.,   z1, z2, posfluka, "VACUUM", "MF", "$SHH");
-  flukaGeom->Cylinder(kRF2-2., kRF2, z1, z2, posfluka, "STEEL", "MF", "$SHH");
-  flukaGeom->Cylinder(kRF2, kRF2+0.02     , z1, z2, posfluka, "AIR", "MF", "$SHH");
-  flukaGeom->Cylinder(kRF2+0.02, rBox    , z1, z2, posfluka, "AIR", "MF", "$SHH");
-  z2=z1;
-  z1=z2-kDFlange;
-  flukaGeom->Cylinder(0.,kRB2           , z1, z2, posfluka, "VACUUM", "MF", "$SHH");
-  flukaGeom->Cylinder(kRB2, kRF2         , z1, z2, posfluka, "STEEL", "MF", "$SHH");
-  flukaGeom->Cylinder(kRF2, kRF2+0.2     , z1, z2, posfluka, "AIR", "MF", "$SHH");
-  flukaGeom->Cylinder(kRF2+0.2, rBox    , z1, z2, posfluka, "AIR", "MF", "$SHH");
-  z2=z1;
-  z1=zcy1;
-  flukaGeom->Cylinder(0.,kRB2           , z1, z2, posfluka, "VACUUM", "MF", "$SHH");
-  flukaGeom->Cylinder(kRB2, kRB2+0.1     , z1, z2, posfluka, "STEEL", "MF", "$SHH");
-  flukaGeom->Cylinder(kRB2+0.1, kRB2+0.2 , z1, z2, posfluka, "AIR", "MF", "$SHH");
-  flukaGeom->Cylinder(kRB2+0.2, rBox    , z1, z2, posfluka, "AIR", "MF", "$SHH");
-
-  z1=zfl+kDF2/2.;
-  z2=z1+kDFlange;
-  flukaGeom->Cylinder(0.,kRB2           , z1, z2, posfluka, "VACUUM", "MF", "$SHH");
-  flukaGeom->Cylinder(kRB2, kRF2         , z1, z2, posfluka, "STEEL", "MF", "$SHH");
-  flukaGeom->Cylinder(kRF2, kRF2+0.2     , z1, z2, posfluka, "AIR", "MF", "$SHH");
-  flukaGeom->Cylinder(kRF2+0.2, rBox    , z1, z2, posfluka, "AIR", "MF", "$SHH");
-  z1=z2;
-  z2=zcy2;
-  flukaGeom->Cylinder(0.,kRB2           , z1, z2, posfluka, "VACUUM", "MF", "$SHH");
-  flukaGeom->Cylinder(kRB2, kRB2+0.1     , z1, z2, posfluka, "STEEL", "MF", "$SHH");
-  flukaGeom->Cylinder(kRB2+0.1, kRB2+0.2 , z1, z2, posfluka, "AIR", "MF", "$SHH");
-  flukaGeom->Cylinder(kRB2+0.2, rBox    , z1, z2, posfluka, "AIR", "MF", "$SHH");
-//
-// end Fluka
 
   for (i=4; i<26; i+=3) par3[i]  = 0;
 
@@ -1353,35 +941,6 @@ void AliSHILv2::CreateGeometry()
   gMC->Gspos("YCC4", 1, "YGO4", 0., 0., dz, 0, "ONLY");  
 
 //
-// begin Fluka
-
-  Float_t r10=r3+(kZvac10-kZvac9-dHorZ) * TMath::Tan(kThetaOpen3);
-  Float_t r11=cpar[1];
-
-  flukaGeom->Comment("4th part: Shield");
-  
-  flukaGeom->Cone(r3, r3, 26.0, 26.0, kZvac9,  kZvac9+dHorZ, 
-	      posfluka, "LEAD", "NF", "$SHH");
-
-  flukaGeom->Cone(r3, r10, 26.0, 26.0, kZvac9+dHorZ,  kZvac10, 
-	      posfluka, "LEAD", "NF", "$SHH");
-  flukaGeom->Cone(r10, r11, 30.0, 30.0, kZvac10,  kZvac11, 
-	      posfluka, "LEAD", "NF", "$SHH");
-  flukaGeom->Cylinder( cpar[1], 30.0, kZvac11, kZvac12, 
-	      posfluka, "LEAD", "NF", "$SHH");
-
- 
-  flukaGeom->Comment("4th part: Steel Envelope");
-  flukaGeom->Cylinder(26.0, 30., kZvac9, kZvac10, posfluka, "STEEL", "NF", "$SHH");
-  flukaGeom->Comment("4th part: Closing Cone");
-  flukaGeom->Cone(cpar[1]-0.1, cpar[3], cpar[1], cpar[1], kZvac11, kZvac12, 
-	      posfluka, "PORTLAND", "NF", "$SHH");
-  flukaGeom->Comment("4th part: VACUUM");
-  flukaGeom->Cone(0., 0., cpar[1]-0.1, cpar[3], kZvac11, kZvac12, 
-	      posfluka, "VACUUM", "NF", "$SHH");
-//
-// end Fluka
-//
 // Steel envelope
 //
   dz=-dl;
@@ -1441,26 +1000,6 @@ void AliSHILv2::CreateGeometry()
   gMC->Gsvolu("YFEO", "TUBE", idtmed[kFe], tpar, 3);
   dz=-(kZvac12-kZvac11)/2.+tpar[2];
   gMC->Gspos("YFEO", 1, "YFEI", 0., 0., dz, 0, "ONLY"); 
-//
-// The following element has been moved to ZDC
-//
-// Magnet element 
-//
-//  tpar[0]=0.;
-//  tpar[1]= 40.;
-//  tpar[2]=85.;
-//  gMC->Gsvolu("YAEM", "TUBE", idtmed[kAir], tpar, 3);
-//  tpar[0]=17.6/2.;
-//  tpar[1]=40.;
-//  tpar[2]=85.;
-//  gMC->Gsvolu("YFEM", "TUBE", idtmed[kFe], tpar, 3);
-//  gMC->Gspos("YFEM", 1, "YAEM", 0., 0., 0., 0, "ONLY"); 
-
-//
-
-  dz=1921.6 + tpar[2];
-
-//  gMC->Gspos("YAEM", 1, "ALIC", 0., 0., - dz, 0, "ONLY"); 
 
 
 // 
@@ -1469,7 +1008,7 @@ void AliSHILv2::CreateGeometry()
 //
 // up to closing cone
   
-  r3V=r3-kDr23+dVacuS-1.6;
+  Float_t r3V=r3-kDr23+dVacuS-1.6;
 
   cpar0[0]=(kZvac11-kZvac9)/2;
   cpar0[1]=r3V-dVacuS;
@@ -1489,46 +1028,6 @@ void AliSHILv2::CreateGeometry()
   dz=-dl+cpar[0];
   gMC->Gspos("YV31", 1, "YMO4", 0., 0., dz, 0, "ONLY"); 
 
-//
-// begin Fluka
-  flukaGeom->Comment("4th part: Beam pipe lateral structure");
-  for (i=0; i<7; i++)  fieldsA[i] = "NF";
-
-  rf1[0]=0.;       rf2[0]=0.;
-  rf1[1]=rf2[1]; rf2[1]=rf1[1]+dHorZ*TMath::Tan(kThetaOpen3);
-  
-  rf1[2]=rf1[1]+dTubeS; rf1[3]=rf1[2]+kDInsuS; rf1[4]=rf1[3]+kDEnveS;
-  rf1[5]=r3; 
-
-  rf2[2]=rf2[1]+dTubeS; rf2[3]=rf2[2]+kDInsuS; rf2[4]=rf2[3]+kDEnveS; 
-  rf2[5]=r3;
-
-  flukaGeom->OnionCone(rf1, rf2,  6 , kZvac9 , kZvac9+dHorZ, posfluka, materialsA, fieldsA, cutsA);
-
-  rf1[0]=0.;       rf2[0]=0.;
-
-  rf1[1]=rf2[1]; rf2[1]=rf1[1]+(kZvac10-kZvac9-dHorZ)*TMath::Tan(kThetaOpen3);
-  
-  rf1[2]=rf1[1]+dTubeS; rf1[3]=rf1[2]+kDInsuS; rf1[4]=rf1[3]+kDEnveS;
-  rf1[5]=r3; 
-
-  rf2[2]=rf2[1]+dTubeS; rf2[3]=rf2[2]+kDInsuS; rf2[4]=rf2[3]+kDEnveS; 
-  rf2[5]=r10;
-
-
-  flukaGeom->OnionCone(rf1, rf2,  6 , kZvac9+dHorZ, kZvac10, posfluka, materialsA, fieldsA, cutsA);
-
-  rf1[0]=0.;       rf2[0]=0.;
-  rf1[1]=rf2[1];   rf2[1]=rf1[1]+(kZvac11-kZvac10)*TMath::Tan(kThetaOpen3);
-
-  rf1[2]=rf1[1]+dTubeS; rf1[3]=rf1[2]+kDInsuS; rf1[4]=rf1[3]+kDEnveS;
-  rf1[5]=r10; 
-  rf2[2]=rf2[1]+dTubeS; rf2[3]=rf2[2]+kDInsuS; rf2[4]=rf2[3]+kDEnveS; 
-  rf2[5]=r11;
-
-  flukaGeom->OnionCone(rf1, rf2,  6 , kZvac10, kZvac11, posfluka, materialsA, fieldsA, cutsA);
-//  
-// end Fluka
 //
 // closing cone
   cpar0[0]=(kZvac12-kZvac11)/2;
@@ -1563,179 +1062,8 @@ void AliSHILv2::CreateGeometry()
   gMC->Gspos("YFII", 1, "YFIM", 0., 0., 0., 0, "ONLY");
   gMC->Gspos("YFIM", 1, "ALIC", 0., 0., - dz, 0, "ONLY");
 //
-// Shielding close to chamber
-//
-//
-  cpar[0]=(kZch11-kZRear)/2.;
-  cpar[1]=kR11;
-  cpar[2]=kZRear*TMath::Tan(kAccMin);
-  cpar[3]=kR11;
-  cpar[4]=(kZRear+2.*cpar[0])*TMath::Tan(kAccMin);
-  gMC->Gsvolu("YCS1", "CONE", idtmed[kNiCuW+40], cpar, 5);
-  dz=-(kZvac12-zstart)/2.+(kZRear-zstart)+cpar[0];
-  gMC->Gspos("YCS1", 1, "YMOT", 0., 0., dz, 0, "ONLY");
-
-  cpar[0]=(kZvac4-kZvac41)/2.;
-  cpar[1]=kR21;
-  cpar[2]=kZvac41*TMath::Tan(kAccMin);
-  cpar[3]=kR21;
-  cpar[4]=(kZvac41+2.*cpar[0])*TMath::Tan(kAccMin);
-  gMC->Gsvolu("YCS3", "CONE", idtmed[kNiCuW+40], cpar, 5);
-  dz=-(kZvac12-zstart)/2.+(kZvac41-zstart)+cpar[0];
-  gMC->Gspos("YCS3", 1, "YMOT", 0., 0., dz, 0, "ONLY");
-
-
-// Recess station 1
-
-  cpar[0]=(kZch12-kZch11)/2.;
-  cpar[1]=kR11;
-  cpar[2]=17.9;
-  cpar[3]=kR11;
-  cpar[4]=17.9;
-//  gMC->Gsvolu("YCS2", "CONE", idtmed[kAir], cpar, 5);
-  
-//  gMC->Gspos("YCS2", 1, "ALIC", 0., 0., dz,  idrotm[1705], "ONLY");
-
-  Float_t ptubs[5];
-  ptubs[0] = kR11;
-  ptubs[1] = 17.9;
-  ptubs[2] =   0.;
-// phi_min, phi_max
-  ptubs[3] =   0.;
-  ptubs[4] =  90.;  
-  gMC->Gsvolu("YCR0", "TUBS", idtmed[kNiCuW+40], ptubs, 0);
-    
-  AliMatrix(idrotm[1701],90.,   0., 90.,  90., 0., 0.);
-  AliMatrix(idrotm[1702],90.,  90., 90., 180., 0., 0.);
-  AliMatrix(idrotm[1703],90., 180., 90., 270., 0., 0.); 
-  AliMatrix(idrotm[1704],90., 270., 90.,   0., 0., 0.); 
-  //  Int_t ipos;
-  dz= - kZch11;  
-// 1.
-  ptubs[2]=6.5/2.;
-  dz-=ptubs[2];
-  gMC->Gsposp("YCR0", 1, "ALIC", 0., 0., dz, idrotm[1701], "ONLY", ptubs, 5);
-  gMC->Gsposp("YCR0", 2, "ALIC", 0., 0., dz, idrotm[1703], "ONLY", ptubs, 5);
-  dz-=ptubs[2];
-  dz-=1.5;
-// 2.
-  ptubs[2]=5.0/2.;
-  dz-=ptubs[2];
-  gMC->Gsposp("YCR0", 3, "ALIC", 0., 0., dz, idrotm[1702], "ONLY", ptubs, 5);
-  gMC->Gsposp("YCR0", 4, "ALIC", 0., 0., dz, idrotm[1704], "ONLY", ptubs, 5);
-  dz-=ptubs[2];
-  dz-=1.5;
-// 3. 
-  ptubs[2]=5.0/2.;
-  dz-=ptubs[2];
-  gMC->Gsposp("YCR0", 5, "ALIC", 0., 0., dz, idrotm[1701], "ONLY", ptubs, 5);
-  gMC->Gsposp("YCR0", 6, "ALIC", 0., 0., dz, idrotm[1703], "ONLY", ptubs, 5);
-  dz-=ptubs[2];
-  dz-=1.5;
-// 4. 
-  ptubs[2]=6.5/2.;
-  dz-=ptubs[2];
-  gMC->Gsposp("YCR0", 7, "ALIC", 0., 0., dz, idrotm[1702], "ONLY", ptubs, 5);
-  gMC->Gsposp("YCR0", 8, "ALIC", 0., 0., dz, idrotm[1704], "ONLY", ptubs, 5);
-  dz-=ptubs[2];
-  dz-=1.5;
-
-
-  
-  cpar[0]=(kZch21-kZvac4)/2.;
-  cpar[1]=kR21;
-  cpar[2]=kZvac4*TMath::Tan(kAccMin);
-  cpar[3]=kR21;
-  cpar[4]=(kZvac4+2.*cpar[0])*TMath::Tan(kAccMin);
-  gMC->Gsvolu("YCS4", "CONE", idtmed[kNiCuW+40], cpar, 5);
-  dz=-(kZvac12 - zstart)/2.+(kZvac4-zstart)+cpar[0];
-  gMC->Gspos("YCS4", 1, "YMOT", 0., 0., dz, 0, "ONLY");
-
-  cpar[0]=(kZvac6-kZch22)/2.;
-  cpar[1]=kR21;
-  cpar[2]=kZch22*TMath::Tan(kAccMin);
-  cpar[3]=kR21;
-  cpar[4]=(kZch22+2.*cpar[0])*TMath::Tan(kAccMin);
-  gMC->Gsvolu("YCS6", "CONE", idtmed[kNiCuW+40], cpar, 5);
-  dz=-(kZvac12 - zstart)/2.+(kZch22-zstart)+cpar[0];
-  gMC->Gspos("YCS6", 1, "YMOT", 0., 0., dz, 0, "ONLY");
-  
-// Recess station 2
- 
-  cpar[0]=(kZch22-kZch21)/2.;
-  cpar[1]=kR21;
-  cpar[2]=23.;
-  cpar[3]=kR21;
-  cpar[4]=23.;
-  gMC->Gsvolu("YCS5", "CONE", idtmed[kAir], cpar, 5);
-  dz=-(kZvac12-zstart)/2.+(kZch21-zstart)+cpar[0];
-  gMC->Gspos("YCS5", 1, "YMOT", 0., 0., dz, 0, "ONLY");
-
-  ptubs[0] = kR21;
-  ptubs[1] = 23;
-  ptubs[2] =   0.;
-  ptubs[3] =   0.;
-  ptubs[4] =  90.;  
-  gMC->Gsvolu("YCR1", "TUBS", idtmed[kNiCuW+40], ptubs, 0);
-
-  dz=-cpar[0];
-// 1.
-  ptubs[2]=7.5/2.;
-  dz+=ptubs[2];
-  gMC->Gsposp("YCR1", 1, "YCS5", 0., 0., dz, idrotm[1701], "ONLY", ptubs, 5);
-  gMC->Gsposp("YCR1", 2, "YCS5", 0., 0., dz, idrotm[1703], "ONLY", ptubs, 5);
-  dz+=ptubs[2];
-  dz+=1.5;
-// 2.
-  ptubs[2]=6.0/2.;
-  dz+=ptubs[2];
-  gMC->Gsposp("YCR1", 3, "YCS5", 0., 0., dz, idrotm[1702], "ONLY", ptubs, 5);
-  gMC->Gsposp("YCR1", 4, "YCS5", 0., 0., dz, idrotm[1704], "ONLY", ptubs, 5);
-  dz+=ptubs[2];
-  dz+=1.5;
-// 3. 
-  ptubs[2]=6.0/2.;
-  dz+=ptubs[2];
-  gMC->Gsposp("YCR1", 5, "YCS5", 0., 0., dz, idrotm[1701], "ONLY", ptubs, 5);
-  gMC->Gsposp("YCR1", 6, "YCS5", 0., 0., dz, idrotm[1703], "ONLY", ptubs, 5);
-  dz+=ptubs[2];
-  dz+=1.5;
-// 4. 
-  ptubs[2]=7.5/2.;
-  dz+=ptubs[2];
-  gMC->Gsposp("YCR1", 7, "YCS5", 0., 0., dz, idrotm[1702], "ONLY", ptubs, 5);
-  gMC->Gsposp("YCR1", 8, "YCS5", 0., 0., dz, idrotm[1704], "ONLY", ptubs, 5);
-  dz+=ptubs[2];
-  dz+=1.5;
-
-
-//
-// begin Fluka
-/*
-  flukaGeom->Cone(R11, R11, -1.,  -1., 
-		  kZRear, kZch11, posfluka,"NIW", "MF", "$SHS");
-
-  flukaGeom->Cone(R11, R11, -1.,  -1., 
-		  kZch11, kZch12, posfluka,"AIR", "MF", "$SHS");
-
-  flukaGeom->Cone(R11, R11, -1.,  -1., 
-		  kZch12, kZvac4, posfluka,"NIW", "MF", "$SHS");
-
-  flukaGeom->Cone(kR21, kR21, -1.,  -1., 
-	          kZvac4, kZch21, posfluka,"NIW", "MF", "$SHS");
-  flukaGeom->Cone(kR21, kR21, -1.,  -1., 
-	          kZch21, kZch22, posfluka,"AIR", "MF", "$SHS");
-  flukaGeom->Cone(kR21, kR21, -1.,  -1., 
-	          kZch22, kZvac6, posfluka,"NIW", "MF", "$SHS");
-
-*/
-  flukaGeom->Finish(!fWriteGeometry);
-
-// 
-// end Fluka
-//
 // Outer Pb Cone
-
+//  
   if (fPbCone) {
       dl = (kZvac10-kZch32)/2.;
       dz = dl+kZch32;
@@ -1755,7 +1083,7 @@ void AliSHILv2::CreateGeometry()
 
       par0[ 9]  = -dz + kZch41;
       par0[10]  = 30.;
-      par0[11]  = 37.5;  
+      par0[11]  = 36.9;  
                                           // recess erice2000
       par0[12]  = -dz + kZch42;
       par0[13]  = 30.;
@@ -1772,7 +1100,7 @@ void AliSHILv2::CreateGeometry()
 
       par0[21]  = -dz + kZch51;
       par0[22]  = 30.;
-      par0[23]  = 37.5;  // recess erice2000
+      par0[23]  = 36.9;  // recess erice2000
 
       par0[24]  = -dz + kZch52;
       par0[25]  = 30.;
@@ -1787,7 +1115,7 @@ void AliSHILv2::CreateGeometry()
       par0[32]  = par0[29];
 //
       gMC->Gsvolu("YOPB", "PCON", idtmed[kPb+40], par0, 33);
-      Float_t dzs = -(kZvac12-zstart)/2. + (kZch32-zstart) + dl;
+      Float_t dzs = -kzLength + (kZch32-zstart) + dl;
       gMC->Gspos("YOPB", 1, "YMOT", 0., 0., dzs, 0, "ONLY");
 
 //
@@ -1816,18 +1144,18 @@ void AliSHILv2::CreateGeometry()
       par0[13]  = 33.5;
 
       par0[15]  = -dz + kZch41;
-      par0[17]  = 37.5;  
-      par0[16]  = 33.5;
+      par0[17]  = 36.9;  
+      par0[16]  = 32.9;
 
 //    5th station
 
       par0[18]  = -dz + kZch51;
-      par0[20]  = 37.5;
-      par0[19]  = 33.5;
+      par0[20]  = 36.9;
+      par0[19]  = 32.9;
 
       par0[21]  = -dz + kZch52;
-      par0[23]  = 37.5;
-      par0[22]  = 33.5;
+      par0[23]  = 36.9;
+      par0[22]  = 32.9;
 
       par0[24]  = -dz + kZch52;
       par0[26]  = 30.+(kZch52-kZConeE)*TMath::Tan(kThetaOpenPbO);
@@ -1848,33 +1176,220 @@ void AliSHILv2::CreateGeometry()
       gMC->Gsvolu("YOSE",    "PCON", idtmed[kSteel], par0, 36);
       gMC->Gspos ("YOSE", 1, "YOPB", 0., 0., 0., 0, "ONLY");
 //
-//    Concrete replacing lead
+//    Extra Tungsten shield close to stations 1 and 2
 //
-      zCC1 = 1066.;
-      zCC2 = 1188.;
-      dlCC=(zCC2-zCC1)/2.;
-      parCC[ 3]  = -dlCC;
-      parCC[ 4]  =  30.;
-      parCC[ 5]  =  30.+(zCC1-kZConeE)*TMath::Tan(kThetaOpenPbO)-4.;
-      
-      parCC[ 6]  =  dlCC;
-      parCC[ 7]  =  30.;
-      parCC[ 8]  =  30.+(zCC2-kZConeE)*TMath::Tan(kThetaOpenPbO)-4.;
-      gMC->Gsvolu("YOC1", "PCON", idtmed[kSteel], parCC, 9);	  
-//      gMC->Gspos("YOC1", 1, "YOPB", 0., 0., dl-dlCC-(kZvac10-zCC2), 0, "ONLY");  
+      TGeoRotation* rot000 = new TGeoRotation("rot000",  90.,   0., 90.,  90., 0., 0.);
+      TGeoRotation* rot090 = new TGeoRotation("rot090",  90.,  90., 90., 180., 0., 0.);
+      TGeoRotation* rot180 = new TGeoRotation("rot180",  90., 180., 90., 270., 0., 0.);
+      TGeoRotation* rot270 = new TGeoRotation("rot270",  90., 270., 90.,   0., 0., 0.);
+      TGeoVolume* mother = gGeoManager->GetVolume("YMOT");
+      TGeoVolumeAssembly* assembly = new TGeoVolumeAssembly("YASS");
+      assembly->AddNode(mother, 1, new TGeoTranslation(0., 0., 0.));
+      TGeoVolumeAssembly* extraShield1 = new TGeoVolumeAssembly("YCRE");
+      TGeoVolumeAssembly* extraShield2 = new TGeoVolumeAssembly("YCRF");
 
-      zCC1 = 1316.;
-      zCC2 = 1349.;
-      dlCC=(zCC2-zCC1)/2.;
-      parCC[ 3]  = -dlCC;
-      parCC[ 4]  =  30.;
-      parCC[ 5]  =  30.+(zCC1-kZConeE)*TMath::Tan(kThetaOpenPbO)-4.;
+///////////////////////////////////
+//                               //
+// Recess Station 1              //
+//                               //
+///////////////////////////////////
+
+
+///////////////////////////////////
+//    FA W-Ring 2                //
+//    Drawing ALIP2A__0220       //
+///////////////////////////////////
+      Float_t faWring2Rinner  = 15.40;
+      Float_t faWring2Router  = 18.40;
+      Float_t faWring2HWidth  =  3.75;
+      Float_t faWring2Cutoffx =  3.35;
+      Float_t faWring2Cutoffy =  3.35;
+      TGeoTubeSeg* shFaWring2a  = new TGeoTubeSeg(faWring2Rinner, faWring2Router, faWring2HWidth, 0., 90.);
+      shFaWring2a->SetName("shFaWring2a");
+      TGeoBBox* shFaWring2b  = new TGeoBBox(faWring2Router / 2., faWring2Router / 2., faWring2HWidth);
+      shFaWring2b->SetName("shFaWring2b");
+      TGeoTranslation* trFaWring2b 
+	  = new TGeoTranslation("trFaWring2b", faWring2Router / 2. + faWring2Cutoffx, faWring2Router / 2. + faWring2Cutoffy, 0.);
+      trFaWring2b->RegisterYourself();
+      TGeoCompositeShape*  shFaWring2 = new TGeoCompositeShape("shFaWring2", "(shFaWring2a)*(shFaWring2b:trFaWring2b)");
+      TGeoVolume* voFaWring2    = new TGeoVolume("FA_WRING2", shFaWring2, gGeoManager->GetMedium("SHIL_Ni/W3"));
+
+///////////////////////////////////
+//    FA W-Ring 3                //
+//    Drawing ALIP2A__0219       //
+///////////////////////////////////
+      Float_t faWring3Rinner  = 15.40;
+      Float_t faWring3Router  = 18.40;
+      Float_t faWring3HWidth  =  3.75;
+      Float_t faWring3Cutoffx =  3.35;
+      Float_t faWring3Cutoffy =  3.35;
+      TGeoTubeSeg* shFaWring3a  = new TGeoTubeSeg(faWring3Rinner, faWring3Router, faWring3HWidth, 0., 90.);
+      shFaWring3a->SetName("shFaWring3a");
+      TGeoBBox* shFaWring3b  = new TGeoBBox(faWring3Router / 2., faWring3Router / 2., faWring3HWidth);
+      shFaWring3b->SetName("shFaWring3b");
+      TGeoTranslation* trFaWring3b 
+	  = new TGeoTranslation("trFaWring3b", faWring3Router / 2. + faWring3Cutoffx, faWring3Router / 2. + faWring3Cutoffy, 0.);
+      trFaWring3b->RegisterYourself();
+      TGeoCompositeShape*  shFaWring3 = new TGeoCompositeShape("shFaWring3", "(shFaWring3a)*(shFaWring3b:trFaWring3b)");
+      TGeoVolume* voFaWring3    = new TGeoVolume("FA_WRING3", shFaWring3, gGeoManager->GetMedium("SHIL_Ni/W3"));
+
+///////////////////////////////////
+//    FA W-Ring 5                //
+//    Drawing ALIP2A__0221       //
+///////////////////////////////////
+      Float_t faWring5Rinner = 15.40;
+      Float_t faWring5Router = 18.67;
+      Float_t faWring5HWidth =  1.08;
+      TGeoVolume* voFaWring5    = new TGeoVolume("FA_WRING5", 
+						   new TGeoTube(faWring5Rinner, faWring5Router, faWring5HWidth), 
+						   gGeoManager->GetMedium("SHIL_Ni/W3"));
+
+//
+// Position the rings in the assembly 
+//      
+// Distance between rings
+      Float_t faDWrings = 1.92;
+//
+      dz = - (4. * faWring2HWidth + 4. * faWring3HWidth + 2. * faWring5HWidth + 2. *  faDWrings) / 2.;
+      dz +=  faWring2HWidth;
+      extraShield1->AddNode(voFaWring2,    1, new TGeoCombiTrans(0., 0., dz, rot090));
+      extraShield1->AddNode(voFaWring2,    2, new TGeoCombiTrans(0., 0., dz, rot270));
+      dz +=   faWring2HWidth;      dz +=   faDWrings;
+      dz +=   faWring3HWidth;
+      extraShield1->AddNode(voFaWring3,    1, new TGeoCombiTrans(0., 0., dz, rot000));
+      extraShield1->AddNode(voFaWring3,    2, new TGeoCombiTrans(0., 0., dz, rot180));
+      dz +=   faWring3HWidth;   
+      dz +=   faWring5HWidth;   
+      extraShield1->AddNode(voFaWring5,    1, new TGeoTranslation(0., 0., dz));
+      dz +=   faWring5HWidth;   
+      dz +=   faWring3HWidth;   
+      extraShield1->AddNode(voFaWring3,    3, new TGeoCombiTrans(0., 0., dz, rot090));
+      extraShield1->AddNode(voFaWring3,    4, new TGeoCombiTrans(0., 0., dz, rot270));
+      dz +=   faWring3HWidth;   
+      dz +=   faDWrings;
+      dz +=   faWring2HWidth;
+      extraShield1->AddNode(voFaWring2,    3, new TGeoCombiTrans(0., 0., dz, rot000));
+      extraShield1->AddNode(voFaWring2,    4, new TGeoCombiTrans(0., 0., dz, rot180));
+      dz +=   faWring2HWidth;
+
+      assembly->AddNode(extraShield1, 1, new TGeoTranslation(0., 0., -kzLength + 49.7 + dz));
+
+///////////////////////////////////
+//                               //
+// Recess Station 2              //
+//                               //
+///////////////////////////////////
+
+///////////////////////////////////
+//    SAA1 W-Ring 1              //
+//    Drawing ALIP2A__0217       //
+///////////////////////////////////
+      Float_t saa1Wring1Width  =  5.85;
+      TGeoPcon* shSaa1Wring1  = new TGeoPcon(0., 360., 2);
+      shSaa1Wring1->DefineSection(0, 0.00           , 20.30, 23.175);
+      shSaa1Wring1->DefineSection(1, saa1Wring1Width, 20.30, 23.400);
+      TGeoVolume* voSaa1Wring1  =  new TGeoVolume("SAA1_WRING1", shSaa1Wring1, gGeoManager->GetMedium("SHIL_Ni/W3"));
+
+///////////////////////////////////
+//    SAA1 W-Ring 2              //
+//    Drawing ALIP2A__0055       //
+///////////////////////////////////
+      Float_t saa1Wring2Rinner  = 20.30;
+      Float_t saa1Wring2Router  = 23.40;
+      Float_t saa1Wring2HWidth  =  3.75;
+      Float_t saa1Wring2Cutoffx =  4.45;
+      Float_t saa1Wring2Cutoffy =  4.45;
+      TGeoTubeSeg* shSaa1Wring2a  = new TGeoTubeSeg(saa1Wring2Rinner, saa1Wring2Router, saa1Wring2HWidth, 0., 90.);
+      shSaa1Wring2a->SetName("shSaa1Wring2a");
+      TGeoBBox* shSaa1Wring2b  = new TGeoBBox(saa1Wring2Router / 2., saa1Wring2Router / 2., saa1Wring2HWidth);
+      shSaa1Wring2b->SetName("shSaa1Wring2b");
+      TGeoTranslation* trSaa1Wring2b 
+	  = new TGeoTranslation("trSaa1Wring2b", saa1Wring2Router / 2. + saa1Wring2Cutoffx, saa1Wring2Router / 2. + saa1Wring2Cutoffy, 0.);
+      trSaa1Wring2b->RegisterYourself();
+      TGeoCompositeShape*  shSaa1Wring2 = new TGeoCompositeShape("shSaa1Wring2", "(shSaa1Wring2a)*(shSaa1Wring2b:trSaa1Wring2b)");
+      TGeoVolume* voSaa1Wring2    = new TGeoVolume("SAA1_WRING2", shSaa1Wring2, gGeoManager->GetMedium("SHIL_Ni/W3"));
+
+///////////////////////////////////
+//    SAA1 W-Ring 3              //
+//    Drawing ALIP2A__0216       //
+///////////////////////////////////
+
+      Float_t saa1Wring3Rinner  = 20.30;
+      Float_t saa1Wring3Router  = 23.40;
+      Float_t saa1Wring3HWidth  =  3.75;
+      Float_t saa1Wring3Cutoffx =  4.50;
+      Float_t saa1Wring3Cutoffy =  4.40;
+      TGeoTubeSeg* shSaa1Wring3a  = new TGeoTubeSeg(saa1Wring3Rinner, saa1Wring3Router, saa1Wring3HWidth, 0., 90.);
+      shSaa1Wring3a->SetName("shSaa1Wring3a");
+      TGeoBBox* shSaa1Wring3b  = new TGeoBBox(saa1Wring3Router / 2., saa1Wring3Router / 2., saa1Wring3HWidth);
+      shSaa1Wring3b->SetName("shSaa1Wring3b");
+      TGeoTranslation* trSaa1Wring3b 
+	  = new TGeoTranslation("trSaa1Wring3b", saa1Wring3Router / 2. + saa1Wring3Cutoffx, saa1Wring3Router / 2. + saa1Wring3Cutoffy, 0.);
+      trSaa1Wring3b->RegisterYourself();
+      TGeoCompositeShape*  shSaa1Wring3 = new TGeoCompositeShape("shSaa1Wring3", "(shSaa1Wring3a)*(shSaa1Wring3b:trSaa1Wring3b)");
+      TGeoVolume* voSaa1Wring3    = new TGeoVolume("SAA1_WRING3", shSaa1Wring3, gGeoManager->GetMedium("SHIL_Ni/W3"));
+
+///////////////////////////////////
+//    SAA1 W-Ring 4              //
+//    Drawing ALIP2A__0215       //
+///////////////////////////////////
+      Float_t saa1Wring4Width  =  5.85;
+      TGeoPcon* shSaa1Wring4  = new TGeoPcon(0., 360., 5);
+      shSaa1Wring4->DefineSection(0, 0.00, 20.30, 23.40);
+      shSaa1Wring4->DefineSection(1, 1.00, 20.30, 23.40);
+      shSaa1Wring4->DefineSection(2, 1.00, 20.30, 24.50);      
+      shSaa1Wring4->DefineSection(3, 4.85, 20.30, 24.80);
+      shSaa1Wring4->DefineSection(4, 5.85, 24.10, 24.80);
+      TGeoVolume* voSaa1Wring4  =  new TGeoVolume("SAA1_WRING4", shSaa1Wring4, gGeoManager->GetMedium("SHIL_Ni/W3"));
+
+///////////////////////////////////
+//    SAA1 W-Ring 5              //
+//    Drawing ALIP2A__0218       //
+///////////////////////////////////
+      Float_t saa1Wring5Rinner = 20.30;
+      Float_t saa1Wring5Router = 23.40;
+      Float_t saa1Wring5HWidth =  0.85;
+      TGeoVolume* voSaa1Wring5    = new TGeoVolume("SAA1_WRING5", 
+						   new TGeoTube(saa1Wring5Rinner, saa1Wring5Router, saa1Wring5HWidth), 
+						   gGeoManager->GetMedium("SHIL_Ni/W3"));
+//
+// Position the rings in the assembly 
+//      
+// Distance between rings
+      Float_t saa1DWrings = 2.6;
+//
+      dz = - (saa1Wring1Width + 6. * saa1Wring2HWidth + 2. * saa1Wring3HWidth + saa1Wring4Width + 2. * saa1Wring5HWidth + 2. * saa1DWrings) / 2.;
+      extraShield2->AddNode(voSaa1Wring1,    1, new TGeoTranslation(0., 0., dz));
+      dz +=   saa1Wring1Width;
+      dz +=   saa1Wring2HWidth;   
+      extraShield2->AddNode(voSaa1Wring2,    1, new TGeoCombiTrans(0., 0., dz, rot000));
+      extraShield2->AddNode(voSaa1Wring2,    2, new TGeoCombiTrans(0., 0., dz, rot180));
+      dz +=   saa1Wring2HWidth;   
+      dz +=   saa1DWrings;
+      dz +=   saa1Wring2HWidth;   
+      extraShield2->AddNode(voSaa1Wring2,    3, new TGeoCombiTrans(0., 0., dz, rot090));
+      extraShield2->AddNode(voSaa1Wring2,    4, new TGeoCombiTrans(0., 0., dz, rot270));
+      dz +=   saa1Wring2HWidth;   
+      dz +=   saa1Wring5HWidth;   
+      extraShield2->AddNode(voSaa1Wring5,    1, new TGeoTranslation(0., 0., dz));
+      dz +=   saa1Wring5HWidth;   
+      dz +=   saa1Wring2HWidth;   
+      extraShield2->AddNode(voSaa1Wring2,    3, new TGeoCombiTrans(0., 0., dz, rot000));
+      extraShield2->AddNode(voSaa1Wring2,    4, new TGeoCombiTrans(0., 0., dz, rot180));
+      dz +=   saa1Wring2HWidth;   
+      dz +=   saa1DWrings;
+      dz +=   saa1Wring3HWidth;   
+      extraShield2->AddNode(voSaa1Wring3,    1, new TGeoCombiTrans(0., 0., dz, rot090));
+      extraShield2->AddNode(voSaa1Wring3,    2, new TGeoCombiTrans(0., 0., dz, rot270));
+      dz +=   saa1Wring3HWidth;   
+      extraShield2->AddNode(voSaa1Wring4,    1, new TGeoTranslation(0., 0., dz));
+      dz +=   saa1Wring4Width;   
+      assembly->AddNode(extraShield2, 1, new TGeoTranslation(0., 0., -kzLength + (kZch21 - zstart) + dz));
       
-      parCC[ 6]  =  dlCC;
-      parCC[ 7]  =  30.;
-      parCC[ 8]  =  30.+(zCC2-kZConeE)*TMath::Tan(kThetaOpenPbO)-4.;
-      gMC->Gsvolu("YOC2", "PCON", idtmed[kSteel], parCC, 9);	  
-//      gMC->Gspos("YOC2", 1, "YOPB", 0., 0., dl-dlCC-(kZvac10-zCC2), 0, "ONLY");  
+      TGeoVolume* top =  gGeoManager->GetVolume("ALIC");
+      TGeoRotation* rotxz = new TGeoRotation("rotxz",  90., 0., 90., 90., 180., 0.);
+      top->AddNode(assembly, 1, new TGeoCombiTrans(0., 0., -zstart - kzLength, rotxz));
+      
   }
 }
 
