@@ -66,7 +66,7 @@
 /** @} */
 
 /** @defgroup management MUON_mapping_management
- *  @ingroup management
+ *  @ingroup mapping
  *  Category of classes for management in mapping
  *  @{
  */
