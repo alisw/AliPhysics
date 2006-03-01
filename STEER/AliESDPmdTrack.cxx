@@ -29,9 +29,11 @@ ClassImp(AliESDPmdTrack)
 AliESDPmdTrack::AliESDPmdTrack () :
   TObject(),
   fDet(0),
-  fTheta(0),
-  fPhi(0),
+  fX(0),
+  fY(0),
+  fZ(0),
   fCluADC(0),
+  fNcell(0),
   fCluPID(0)
 {
   // Default Constructor
@@ -41,9 +43,11 @@ AliESDPmdTrack::AliESDPmdTrack () :
 AliESDPmdTrack::AliESDPmdTrack (const AliESDPmdTrack& PMDTrack) : 
   TObject(PMDTrack),
   fDet(PMDTrack.fDet),
-  fTheta(PMDTrack.fTheta),
-  fPhi(PMDTrack.fPhi),
+  fX(PMDTrack.fX),
+  fY(PMDTrack.fY),
+  fZ(PMDTrack.fZ),
   fCluADC(PMDTrack.fCluADC),
+  fNcell(PMDTrack.fNcell),
   fCluPID(PMDTrack.fCluPID)
 {
   // Copy Constructor
@@ -55,9 +59,11 @@ AliESDPmdTrack &AliESDPmdTrack::operator=(const AliESDPmdTrack& PMDTrack)
   // Copy constructor
   if(&PMDTrack == this) return *this;
   fDet    = PMDTrack.fDet;
-  fTheta  = PMDTrack.fTheta;
-  fPhi    = PMDTrack.fPhi;
+  fX      = PMDTrack.fX;
+  fY      = PMDTrack.fY;
+  fZ      = PMDTrack.fZ;
   fCluADC = PMDTrack.fCluADC;
+  fNcell  = PMDTrack.fNcell;
   fCluPID = PMDTrack.fCluPID;
   return *this;
 }

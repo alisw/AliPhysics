@@ -20,25 +20,32 @@ class AliESDPmdTrack : public TObject {
   AliESDPmdTrack &operator=(const AliESDPmdTrack &PMDTrack); // assignment op
   
   void SetDetector(Int_t idet) {fDet = idet;}
-  void SetTheta(Float_t theta) {fTheta = theta;}
-  void SetPhi(Float_t phi) {fPhi = phi;}
+
+  void SetClusterX(Float_t xglobal) {fX = xglobal;}
+  void SetClusterY(Float_t yglobal) {fY = yglobal;}
+  void SetClusterZ(Float_t zglobal) {fZ = zglobal;}
   void SetClusterADC(Float_t cluadc) {fCluADC = cluadc;}
+  void SetClusterCells(Float_t ncell) {fNcell = ncell;}
   void SetClusterPID(Float_t clupid) {fCluPID = clupid;}
 
   Int_t   GetDetector() const {return fDet;}
-  Float_t GetTheta() const {return fTheta;}
-  Float_t GetPhi() const {return fPhi;}
+  Float_t GetClusterX() const {return fX;}
+  Float_t GetClusterY() const {return fY;}
+  Float_t GetClusterZ() const {return fZ;}
   Float_t GetClusterADC() const {return fCluADC;}
+  Float_t GetClusterCells() const {return fNcell;}
   Float_t GetClusterPID() const {return fCluPID;}
   
  protected:
   Int_t fDet;      // Detector, 0:PRE, 1:CPV
-  Float_t fTheta;  // Theta of the Cluster in radian
-  Float_t fPhi;    // Phi of the Cluster in radian
+  Float_t fX;      // Cluster X position
+  Float_t fY;      // Cluster Y position
+  Float_t fZ;      // Cluster Z position (vertex uncorrected)
   Float_t fCluADC; // Cluster Energy in ADC
+  Float_t fNcell;  // Cluster cells
   Float_t fCluPID; // Cluster probability, 1: Photon, 0: Hadron
 
-  ClassDef(AliESDPmdTrack,1)  //PMD ESD track class 
+  ClassDef(AliESDPmdTrack,2)  //PMD ESD track class 
 };
 
 #endif 
