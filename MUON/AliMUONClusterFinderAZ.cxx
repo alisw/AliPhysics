@@ -1934,7 +1934,8 @@ Int_t AliMUONClusterFinderAZ::Fit(Int_t iSimple, Int_t nfit, Int_t *clustFit, TO
   } //if (!iSimple && nfit < nfitMax)
   */
 
-  Double_t *gin = 0, func0, func1, param[8], param0[2][8], deriv[2][8], step0[8];
+  Double_t *gin = 0, func0, func1, param[8], step0[8];
+  Double_t param0[2][8]={{0},{0}}, deriv[2][8]={{0},{0}}; 
   Double_t shift[8], stepMax, derMax, parmin[8], parmax[8], func2[2], shift0;
   Double_t delta[8], scMax, dder[8], estim, shiftSave = 0;
   Int_t min, max, nCall = 0, memory[8] = {0}, nLoop, idMax = 0, iestMax = 0, nFail;
@@ -1979,7 +1980,7 @@ Int_t AliMUONClusterFinderAZ::Fit(Int_t iSimple, Int_t nfit, Int_t *clustFit, TO
 	deriv[max][j] = (func1 - func0) / delta[j] * 10; // first derivative
 	//cout << j << " " << deriv[max][j] << endl;
 	dder[j] = param0[0][j] != param0[1][j] ? (deriv[0][j] - deriv[1][j]) / 
-	                                         (param0[0][j] - param0[1][j]) : 0; // second derivative
+	  (param0[0][j] - param0[1][j]) : 0; // second derivative
       }
       param[fNpar-1] -= delta[fNpar-1] / 10;
       if (nCall > 2000) break;
