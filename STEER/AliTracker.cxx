@@ -62,9 +62,10 @@ void AliTracker::SetFieldMap(const AliMagF* map, Bool_t uni) {
   fgkFieldMap=map;
 
   //Float_t r[3]={0.,0.,0.},b[3]; map->Field(r,b);
-  //fgBz= - b[2];
+  //Double_t bz=-b[2];
  
-  fgBz=map->SolenoidField();
+  Double_t bz=-map->SolenoidField();
+  fgBz=TMath::Sign(1e-13,bz) + bz;
 
 }
 

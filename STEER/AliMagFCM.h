@@ -27,7 +27,9 @@ public:
   virtual void Field(Float_t *x, Float_t *b) const;
   virtual void ReadField();
   virtual void    SetSolenoidField(Float_t field = 2.) {fSolenoid = field;}
-  virtual Float_t SolenoidField() const {return fSolenoid;}
+  virtual Float_t SolenoidField() const {
+    return -Factor()*fSolenoid;
+  }
   
   void Copy(TObject &magf) const;
   virtual AliMagFCM & operator=(const AliMagFCM &magf)

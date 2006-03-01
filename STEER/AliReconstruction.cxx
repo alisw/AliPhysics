@@ -381,8 +381,8 @@ Bool_t AliReconstruction::Run(const char* input,
     esd->SetEventNumber(fRunLoader->GetHeader()->GetEventNrInRun());
     hltesd->SetEventNumber(fRunLoader->GetHeader()->GetEventNrInRun());
     if (gAlice) {
-      esd->SetMagneticField(gAlice->Field()->SolenoidField());
-      hltesd->SetMagneticField(gAlice->Field()->SolenoidField());
+      esd->SetMagneticField(AliTracker::GetBz());
+      hltesd->SetMagneticField(AliTracker::GetBz());
     } else {
       // ???
     }

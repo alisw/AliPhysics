@@ -172,7 +172,7 @@ Float_t AliMagFMaps::SolenoidField() const
   // Returns max. L3 (solenoid) field strength 
   // according to field map setting 
   //
-  return fSolenoid;
+  return -Factor()*fSolenoid;
 }
 
 //_______________________________________________________________________
