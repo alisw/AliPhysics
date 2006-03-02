@@ -14,7 +14,7 @@
  **************************************************************************/
 
 // $Id$
-// $MpId: AliMpMotifMap.cxx,v 1.9 2005/09/26 16:11:20 ivana Exp $
+// $MpId: AliMpMotifMap.cxx,v 1.10 2006/03/02 16:32:38 ivana Exp $
 // Category: motif
 //
 // Class AliMpMotifMap
@@ -33,6 +33,7 @@
 #include "AliMpMotifSpecial.h"
 #include "AliMpMotifType.h"
 #include "AliMpMotifPosition.h"
+#include "TArrayI.h"
 
 ClassImp(AliMpMotifMap)
 
@@ -118,10 +119,10 @@ void  AliMpMotifMap::PrintMotifPosition(
 {
 /// Print the motif position.
 
-  cout << motifPosition->GetID() << "  "
-       << motifPosition->GetMotif()->GetID() << "  " 
-       << motifPosition->Position().X() << "  "
-       << motifPosition->Position().Y() << "    ";
+  cout << " ID " << motifPosition->GetID() << "  "
+       << " Motif ID " << motifPosition->GetMotif()->GetID() << "  " 
+       << " Pos (X,Y) = (" << motifPosition->Position().X() << ","
+       << motifPosition->Position().Y() << ")";
 }
 
 //_____________________________________________________________________________
@@ -218,6 +219,36 @@ void  AliMpMotifMap::PrintMotifTypes() const
     }
     cout << endl;
   }
+#endif  
+}
+
+//_____________________________________________________________________________
+void 
+AliMpMotifMap::GetAllMotifPositionsIDs(TArrayI& ecn) const
+{
+#ifdef WITH_STL
+  ecn.Set(fMotifPositions.size());  
+  Int_t i(0);
+  MotifPositionMapIterator it;
+  for (it=fMotifPositions.begin(); it != fMotifPositions.end(); it++) {
+    AliMpMotifPosition* motifPosition = (*it).second;
+    ecn[i++] = motifPosition->GetID();
+  }
+#endif
+  
+#ifdef WITH_ROOT  
+  ecn.Set(fMotifPositions.GetSize());
+  TExMapIter it = fMotifPositions.GetIterator();
+  Long_t key, value;
+  Int_t i(0);
+  
+  while ( it.Next(key, value) ) 
+  {
+    AliMpMotifPosition* motifPosition = reinterpret_cast<AliMpMotifPosition*>(value);
+    ecn[i] = motifPosition->GetID();
+    ++i;
+  }
+  
 #endif  
 }
 
@@ -427,14 +458,18 @@ void AliMpMotifMap::FillMotifPositionMap2()
 }
 
 //_____________________________________________________________________________
-void  AliMpMotifMap::Print(const char* /*option*/) const
+void  AliMpMotifMap::Print(const char* opt) const
 {
 /// Print the motifs and motif types maps.
 
-  PrintMotifs();
-  PrintMotifTypes();
-  PrintMotifPositions();
-  PrintMotifPositions2();
+  TString sopt(opt);
+  
+  sopt.ToUpper();
+  
+  if ( sopt.Contains("MOTIFS") || sopt == "ALL" ) PrintMotifs();
+  if ( sopt.Contains("MOTIFTYPES") || sopt == "ALL" ) PrintMotifTypes();
+  if ( sopt.Contains("MOTIFPOSITIONS") || sopt == "ALL" ) PrintMotifPositions();
+  if ( sopt.Contains("MOTIFPOSITIONS2") || sopt == "ALL" ) PrintMotifPositions2();
 }
 
 //_____________________________________________________________________________

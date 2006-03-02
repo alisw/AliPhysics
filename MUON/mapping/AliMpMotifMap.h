@@ -2,7 +2,7 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$
-// $MpId: AliMpMotifMap.h,v 1.9 2005/09/26 16:10:46 ivana Exp $
+// $MpId: AliMpMotifMap.h,v 1.10 2006/03/02 16:32:16 ivana Exp $
 
 /// \ingroup motif
 /// \class AliMpMotifMap
@@ -32,6 +32,7 @@
 
 #include <TObject.h>
 
+class TArrayI;
 class TString;
 class TVector2;
 
@@ -70,7 +71,7 @@ class AliMpMotifMap : public TObject
     Bool_t  AddMotifType(AliMpMotifType* motifType, Bool_t warn = true);
     Bool_t  AddMotifPosition(AliMpMotifPosition* motifType, Bool_t warn = true);
     void   FillMotifPositionMap2();
-    virtual void Print(const char* /*option*/ = "") const;
+    virtual void Print(const char* option = "ALL") const;
     void   PrintGlobalIndices(const char* fileName) const;
     void   UpdateGlobalIndices(const char* fileName);
    
@@ -80,8 +81,10 @@ class AliMpMotifMap : public TObject
                             const TVector2& padDimensions) const;
     AliMpMotifType*      FindMotifType(const TString& motifTypeID) const;
     AliMpMotifPosition*  FindMotifPosition(Int_t motifPositionID) const;
-    // AliMpMotifPosition*  FindMotifPosition(const AliMpIntPair& indices) const;
 
+    /// Find all motifPositionsIDs (=electronicCardNumbers) handled by this map
+    void GetAllMotifPositionsIDs(TArrayI& enc) const;
+     
   private:
     // methods
     void  PrintMotif(const AliMpVMotif* motif) const;
