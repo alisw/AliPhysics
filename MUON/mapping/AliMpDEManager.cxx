@@ -14,7 +14,7 @@
  **************************************************************************/
 
 // $Id$
-// $MpId: AliMpDEManager.cxx,v 1.1 2006/01/11 10:24:44 ivana Exp $
+// $MpId: AliMpDEManager.cxx,v 1.2 2006/03/02 16:30:09 ivana Exp $
 // Category: management
 //
 // Class AliMpDEManager
@@ -26,6 +26,7 @@
 #include "AliMpDEManager.h"
 #include "AliMpConstants.h"
 #include "AliMpFiles.h"
+#include "AliMpIntPair.h"
 
 #include "AliLog.h"
 
@@ -34,12 +35,13 @@
 #include <TObjString.h>
 #include <TMap.h>
 
-ClassImp(AliMpDEManager)
-
 const char  AliMpDEManager::fgkNameSeparator = '_'; 
 const char  AliMpDEManager::fgkCommentPrefix = '#'; 
 const Int_t AliMpDEManager::fgkCoefficient = 100;
-AliMpExMap  AliMpDEManager::fgDENamesMap = AliMpExMap(true);
+AliMpExMap  AliMpDEManager::fgDENamesMap(true);
+AliMpExMap  AliMpDEManager::fgDECathBNBMap(true);
+
+ClassImp(AliMpDEManager)
 
 //______________________________________________________________________________
 AliMpDEManager::AliMpDEManager()
@@ -171,26 +173,71 @@ AliMpDEManager::ReadDENames(AliMpStationType station)
   //
   Int_t detElemId;
   TString name1, name2;
-  while ( ! in.eof() ) {
+  AliMpPlaneType planeForCathode[2];
+  
+  while ( ! in.eof() ) 
+  {
     if ( word[0] == '#' ) 
+    {
       in.getline(line, 80);
-    else {  
+    }
+    else 
+    {  
       detElemId = word.Atoi();
       in >> name1;
-      if ( ! isCathNameDefined ) 
+      // warning : important to check non bending first (=nbp),
+      // as bp is contained within nbp...
+      if ( name1.Contains(PlaneTypeName(kNonBendingPlane)) )
+      {
+        planeForCathode[0] = kNonBendingPlane;
+      }
+      else
+      {
+        planeForCathode[0] = kBendingPlane;
+      }
+      if ( !isCathNameDefined ) 
+      {       
         in >> name2;
-      else {
+        // Other cathode is other plane...
+        if ( planeForCathode[0] == kBendingPlane ) 
+        {
+          planeForCathode[1]=kNonBendingPlane;
+        }
+        else
+        {
+          planeForCathode[1]=kBendingPlane;
+        }
+      }
+      else 
+      {
         name1 += fgkNameSeparator;
-	name2 = name1;
+        name2 = name1;
         name1 += cathName1;
         name2 += cathName2;
+        if ( name2.Contains(PlaneTypeName(kNonBendingPlane)) )
+        {
+          planeForCathode[1] = kNonBendingPlane;
+        }
+        else
+        {
+          planeForCathode[1] = kBendingPlane;
+        }        
       }   
 
-      if ( ! fgDENamesMap.GetValue(detElemId) ) {
+      if ( planeForCathode[0]==planeForCathode[1] )
+      {
+        AliFatalClass(Form("Got the same cathode type for both planes"
+                      " of DetElemId %d",detElemId));
+      }
+      
+      if ( ! fgDENamesMap.GetValue(detElemId) ) 
+      {
         AliDebugClassStream(1)  
-	  << "Adding  "  << detElemId << "  " << name1 << "  " << name2 << endl;
-	fgDENamesMap.Add(detElemId, 
-                        new TPair(new TObjString(name1), new TObjString(name2)));
+        << "Adding  "  << detElemId << "  " << name1 << "  " << name2 << endl;
+        fgDENamesMap.Add(detElemId, 
+                         new TPair(new TObjString(name1), new TObjString(name2)));
+        fgDECathBNBMap.Add(detElemId,
+                           new AliMpIntPair(planeForCathode[0],planeForCathode[1]));
       } 
     } 
     in >> word;
@@ -275,6 +322,20 @@ Bool_t AliMpDEManager::IsValidModuleId(Int_t moduleId, Bool_t warn)
   
   return false;
 }    
+
+//______________________________________________________________________________
+Int_t 
+AliMpDEManager::GetCathod(Int_t detElemId, AliMpPlaneType planeType)
+{
+  if ( !IsValidDetElemId(detElemId) ) return -1;
+  AliMpIntPair* pair = 
+    static_cast<AliMpIntPair*>(fgDECathBNBMap.GetValue(detElemId));
+  if ( planeType == pair->GetFirst() )
+  {
+    return 0;
+  }
+  return 1;
+}
 
 //______________________________________________________________________________
 TString AliMpDEManager::GetDEName(Int_t detElemId, Int_t cath, Bool_t warn)

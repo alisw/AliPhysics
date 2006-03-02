@@ -43,6 +43,7 @@ class AliMpDEManager : public  TObject {
     static Int_t   GetModuleId(Int_t detElemId, Bool_t warn = true);    
     static AliMpPlaneType   GetPlaneType(Int_t detElemId, Int_t cath);
     static AliMpStationType GetStationType(Int_t detElemId);
+    static Int_t            GetCathod(Int_t detElemId, AliMpPlaneType planeType);
 
   protected:
     AliMpDEManager();
@@ -64,8 +65,10 @@ class AliMpDEManager : public  TObject {
     static const Int_t fgkCoefficient;   // Coefficient used in DE Id <-> station
 
     // data members	
-    static  AliMpExMap fgDENamesMap; // Map between DE Ids and 
-                                     // a pair of DE names for 2 cathods
+    static  AliMpExMap fgDENamesMap;  // Map between DE Ids and 
+                                      // a pair of DE names for 2 cathods
+    static  AliMpExMap fgDECathBNBMap;// Map between DE Is and a pair
+                                      // of planeTypes for cathodes (0,1)
 
   ClassDef(AliMpDEManager,0)  // 
 };
