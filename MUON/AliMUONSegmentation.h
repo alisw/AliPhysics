@@ -66,11 +66,14 @@ class AliMUONSegmentation : public TObject
     const AliMUONVGeometryDESegmentation* GetDESegmentation(
                      Int_t detElemId, Int_t cathod, Bool_t warn = true) const;
 
-    // Mapping segmentations
-    //
+    /** Mapping segmentations access by cathode number.
+      cathod can be 0 or 1. Note that there's no trivial relationship
+      between the cathode number and whether the corresponding plane
+      is a Bending or NonBending one.
+      **/
     const AliMpVSegmentation* GetMpSegmentation(
                      Int_t detElemId, Int_t cathod, Bool_t warn = true) const;
-		     
+		         
     // DE properties
     //
     Bool_t   HasDE(Int_t detElemId, Int_t cathod = 0) const;
@@ -79,14 +82,13 @@ class AliMUONSegmentation : public TObject
   protected:
     AliMUONSegmentation(const AliMUONSegmentation& right);
     AliMUONSegmentation&  operator = (const AliMUONSegmentation& right);
- 
+     
   private:
     // data members
     TObjArray*  fMpSegmentations;        // array of mapping segmentations
     TObjArray*  fDESegmentations;        // array of DE segmentations
     TObjArray*  fModuleSegmentations[2]; // array of module segmentations
                                          // for two cathods         
-
   ClassDef(AliMUONSegmentation,2)  // Container class for module segmentations
 };
 
