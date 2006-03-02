@@ -816,7 +816,7 @@ void AliMUONData::ResetDigits()
     //
     if (fDigits == 0x0) return;
     for ( int i=0;i<AliMUONConstants::NCh();i++ ) {
-      if ((*fDigits)[i])    ((TClonesArray*)fDigits->At(i))->Clear();
+      if ((*fDigits)[i])    ((TClonesArray*)fDigits->At(i))->Clear("C");
       if (fNdigits)  fNdigits[i]=0;
     }
 }
