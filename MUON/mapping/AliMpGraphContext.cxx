@@ -14,7 +14,7 @@
  **************************************************************************/
 
 // $Id$
-// $MpId: AliMpGraphContext.cxx,v 1.8 2005/09/26 16:06:36 ivana Exp $
+// $MpId: AliMpGraphContext.cxx,v 1.9 2006/03/02 16:37:24 ivana Exp $
 // Category: graphics
 //
 // Class AliMpGraphContext
@@ -24,17 +24,17 @@
 // Included in AliRoot: 2003/05/02
 // Author: David GUEZ, IPN Orsay
 
-#include <TError.h>
-
 #include "AliMpGraphContext.h"
 
-ClassImp(AliMpGraphContext)
+#include <TError.h>
 
 AliMpGraphContext *AliMpGraphContext::fgInstance = 0;
 AliMpGraphContext::GraphContextVector AliMpGraphContext::fgStack;
 #ifdef WITH_ROOT
 Int_t              AliMpGraphContext::fgStackSize = 0;
 #endif
+
+ClassImp(AliMpGraphContext)
 
 //_____________________________________________________________________________
 AliMpGraphContext::AliMpGraphContext():

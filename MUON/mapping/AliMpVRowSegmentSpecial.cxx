@@ -14,7 +14,7 @@
  **************************************************************************/
 
 // $Id$
-// $MpId: AliMpVRowSegmentSpecial.cxx,v 1.6 2005/08/26 15:43:36 ivana Exp $
+// $MpId: AliMpVRowSegmentSpecial.cxx,v 1.7 2006/03/02 16:37:30 ivana Exp $
 // Category: sector
 //
 // Class AliMpVRowSegmentSpecial
@@ -23,9 +23,6 @@
 // pad rows.
 // Included in AliRoot: 2003/05/02
 // Authors: David Guez, Ivana Hrivnacova; IPN Orsay
-
-#include <TError.h>
-#include <Riostream.h>
 
 #include "AliMpVRowSegmentSpecial.h"
 #include "AliMpRow.h"
@@ -37,11 +34,14 @@
 #include "AliMpMotifPosition.h"
 #include "AliMpConstants.h"
 
-ClassImp(AliMpVRowSegmentSpecial)
+#include <TError.h>
+#include <Riostream.h>
 
 #ifdef WITH_ROOT
 const Int_t  AliMpVRowSegmentSpecial::fgkMaxNofMotifPositionIds = 20;
 #endif    
+
+ClassImp(AliMpVRowSegmentSpecial)
 
 //______________________________________________________________________________
 AliMpVRowSegmentSpecial::AliMpVRowSegmentSpecial(AliMpRow* row, Double_t offsetX)

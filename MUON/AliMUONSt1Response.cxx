@@ -51,8 +51,6 @@
 #include "AliRun.h"
 #include "AliLog.h"
 
-ClassImp(AliMUONSt1Response)
-
 const TString AliMUONSt1Response::fgkTopDir = getenv("ALICE_ROOT");
 const TString AliMUONSt1Response::fgkDataDir = "/MUON/data/";
 const TString AliMUONSt1Response::fgkConfigBaseName = "configChamber";
@@ -81,7 +79,7 @@ const TString AliMUONSt1Response::fgkGausName ="gaus";
 const TString AliMUONSt1Response::fgkNotName ="no";
 const TString AliMUONSt1Response::fgkNofSigmaName ="nofSigma";
 
-
+ClassImp(AliMUONSt1Response)
 
 //__________________________________________________________________________
 AliMUONSt1Response::AliMUONSt1Response(Int_t chamberId)

@@ -30,10 +30,10 @@
 
 #include "AliMUONGeometryStore.h"
 
-ClassImp(AliMUONGeometryStore)
-
 const Int_t AliMUONGeometryStore::fgkInitSize = 100;
 const Int_t AliMUONGeometryStore::fgkCoefficient = 100;
+
+ClassImp(AliMUONGeometryStore)
 
 //
 // static methods

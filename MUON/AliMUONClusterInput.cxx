@@ -15,24 +15,26 @@
 
 /* $Id$ */
 
-#include <TClonesArray.h>
-#include <TMinuit.h>
+#include "AliMUONClusterInput.h"
 
-#include "AliRun.h"
 #include "AliMUON.h"
 #include "AliMUONSegmentation.h"
 #include "AliMUONConstants.h"
-#include "AliMUONClusterInput.h"
 #include "AliMUONMathieson.h"
 #include "AliMUONRawCluster.h"
 #include "AliMUONDigit.h"
+
+#include "AliRun.h"
 #include "AliLog.h"
 
-ClassImp(AliMUONClusterInput)
+#include <TClonesArray.h>
+#include <TMinuit.h>
 
 AliMUONClusterInput* AliMUONClusterInput::fgClusterInput = 0; 
 TMinuit* AliMUONClusterInput::fgMinuit = 0; 
 AliMUONMathieson* AliMUONClusterInput::fgMathieson = 0; 
+
+ClassImp(AliMUONClusterInput)
 
 AliMUONClusterInput::AliMUONClusterInput()
   : TObject(),

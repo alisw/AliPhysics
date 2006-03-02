@@ -25,7 +25,16 @@
 //
 ///////////////////////////////////////////////////
 
-#include <stdlib.h> // for exit()
+#include "AliMUONTrack.h"
+
+#include "AliMUONTrackReconstructor.h" 
+#include "AliMUONHitForRec.h" 
+#include "AliMUONSegment.h" 
+#include "AliMUONTrackHit.h"
+#include "AliMUONTriggerTrack.h"
+#include "AliMUONConstants.h"
+
+#include "AliLog.h"
 
 #include <Riostream.h> // for cout
 #include <TMath.h>
@@ -33,15 +42,7 @@
 #include <TObjArray.h>
 #include <TVirtualFitter.h>
 
-#include "AliLog.h"
-
-#include "AliMUONTrackReconstructor.h" 
-#include "AliMUONHitForRec.h" 
-#include "AliMUONSegment.h" 
-#include "AliMUONTrack.h"
-#include "AliMUONTrackHit.h"
-#include "AliMUONTriggerTrack.h"
-#include "AliMUONConstants.h"
+#include <stdlib.h> // for exit()
 
 // Functions to be minimized with Minuit
 void TrackChi2(Int_t &NParam, Double_t *Gradient, Double_t &Chi2, Double_t *Param, Int_t Flag);
@@ -51,11 +52,11 @@ void mnvertLocal(Double_t* a, Int_t l, Int_t m, Int_t n, Int_t& ifail);
 
 Double_t MultipleScatteringAngle2(AliMUONTrackHit *TrackHit);
 
-ClassImp(AliMUONTrack) // Class implementation in ROOT context
-
 TVirtualFitter* AliMUONTrack::fgFitter = NULL; 
 
-  //__________________________________________________________________________
+ClassImp(AliMUONTrack) // Class implementation in ROOT context
+
+//__________________________________________________________________________
 AliMUONTrack::AliMUONTrack()
   : TObject() 
 {

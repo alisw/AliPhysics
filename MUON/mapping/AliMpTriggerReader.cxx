@@ -14,12 +14,9 @@
 **************************************************************************/
 
 // $Id$
-// $MpId$
+// $MpId: AliMpTriggerReader.cxx,v 1.2 2006/03/02 16:36:30 ivana Exp $
 
-#include <assert.h>
 #include "AliMpTriggerReader.h"
-
-#include "AliLog.h"
 #include "AliMpMotifReader.h"
 #include "AliMpFiles.h"
 #include "AliMpMotifType.h"
@@ -32,16 +29,16 @@
 #include "AliMpSt345Reader.h"
 #include "AliMpTrigger.h"
 
-#include "Riostream.h"
+#include "AliLog.h"
 
+#include "Riostream.h"
 #include "TClass.h"
 #include "TObjString.h"
 #include "TList.h"
 #include "TString.h"
 
 #include <sstream>
-
-ClassImp(AliMpTriggerReader)
+#include <cassert>
 
 TMap AliMpTriggerReader::fgPCBMap;
 TMap AliMpTriggerReader::fgLocalBoardMap;
@@ -54,6 +51,8 @@ namespace
   const TString KEYWORD_FLIPX("FLIP_X");
   const TString KEYWORD_FLIPY("FLIP_Y");
 }
+
+ClassImp(AliMpTriggerReader)
 
 //_____________________________________________________________________________
 AliMpTriggerReader::AliMpTriggerReader() : TObject()

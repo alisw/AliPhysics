@@ -36,9 +36,9 @@
 #include <TObjString.h>
 #include <TClass.h>
 
-ClassImp(AliMUONGeometrySegmentation)
-
 const Float_t  AliMUONGeometrySegmentation::fgkMaxDistance = 1.0e6;
+
+ClassImp(AliMUONGeometrySegmentation)
 
 //______________________________________________________________________________
 AliMUONGeometrySegmentation::AliMUONGeometrySegmentation(

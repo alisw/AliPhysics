@@ -42,9 +42,9 @@
 #include "Riostream.h"
 #include "TSystem.h"
 
-ClassImp(AliMUONTriggerElectronics)
-
 const Int_t AliMUONTriggerElectronics::fgkNCrates = 16;
+
+ClassImp(AliMUONTriggerElectronics)
 
 //___________________________________________
 AliMUONTriggerElectronics::AliMUONTriggerElectronics(AliMUONData *Data) 

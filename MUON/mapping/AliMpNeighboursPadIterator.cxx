@@ -14,7 +14,7 @@
  **************************************************************************/
 
 // $Id$
-// $MpId: AliMpNeighboursPadIterator.cxx,v 1.9 2005/09/26 16:12:23 ivana Exp $
+// $MpId: AliMpNeighboursPadIterator.cxx,v 1.11 2006/03/02 16:37:30 ivana Exp $
 // Category: sector
 //
 // Class AliMpNeighboursPadIterator
@@ -23,18 +23,18 @@
 // Included in AliRoot: 2003/05/02
 // Authors: David Guez, Ivana Hrivnacova; IPN Orsay
 
-#include <TVector2.h>
-
 #include "AliMpNeighboursPadIterator.h"
 #include "AliMpIntPair.h"
 #include "AliMpSectorSegmentation.h"
 #include "AliMpRow.h"
 #include "AliMpConstants.h"
 
-ClassImp(AliMpNeighboursPadIterator)
+#include <TVector2.h>
 
 const UInt_t AliMpNeighboursPadIterator::fgkInvalidIndex = 9999; 
                                                    //never so much neighbours...
+
+ClassImp(AliMpNeighboursPadIterator)
 
 //______________________________________________________________________________
 AliMpNeighboursPadIterator::AliMpNeighboursPadIterator()

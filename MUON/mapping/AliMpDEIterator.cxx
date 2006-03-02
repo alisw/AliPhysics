@@ -24,11 +24,11 @@
 #include <Riostream.h>
 #include <TSystem.h>
 
-ClassImp(AliMpDEIterator)
-
 const  Int_t  AliMpDEIterator::fgkMaxNofDetElements = 250;
 TArrayI  AliMpDEIterator::fgDetElemIds(fgkMaxNofDetElements);
 Int_t    AliMpDEIterator::fgNofDetElemIds = 0;	
+
+ClassImp(AliMpDEIterator)
 
 //
 // static private methods

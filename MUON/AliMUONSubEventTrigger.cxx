@@ -14,11 +14,10 @@
  **************************************************************************/
 
 #include "AliMUONSubEventTrigger.h"
-
+ 
+const Int_t AliMUONSubEventTrigger::fgkRegHeaderLength = 3;
 
 ClassImp(AliMUONSubEventTrigger)
- 
- const Int_t AliMUONSubEventTrigger::fgkRegHeaderLength = 3;
 
 //___________________________________________
 AliMUONSubEventTrigger::AliMUONSubEventTrigger()

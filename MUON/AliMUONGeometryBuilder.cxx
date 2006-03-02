@@ -41,15 +41,14 @@
 #include <TVirtualMC.h>
 #include <TGeoManager.h>
 
-
-ClassImp(AliMUONGeometryBuilder)
-
 // static data members
  
 const TString  AliMUONGeometryBuilder::fgkDefaultVolPathsFileName = "volpath.dat";   
 const TString  AliMUONGeometryBuilder::fgkDefaultTransformFileName = "transform.dat";   
 const TString  AliMUONGeometryBuilder::fgkDefaultSVMapFileName = "svmap.dat";    
 const TString  AliMUONGeometryBuilder::fgkOutFileNameExtension = ".out";    
+
+ClassImp(AliMUONGeometryBuilder)
 
 // static functions
 

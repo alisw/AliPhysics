@@ -15,11 +15,8 @@
 
 /* $Id$ */
 
-#include <Riostream.h>
-#include <TClonesArray.h>
-#include <TArrayS.h>
-#include <TArrayD.h>
 #include "AliMUONEventRecoCombi.h"
+
 #include "AliMUONData.h"
 #include "AliMUONDetElement.h"
 #include "AliMUONDigit.h"
@@ -28,11 +25,17 @@
 #include "AliMUONTrackK.h"
 #include "AliMUONTrackReconstructor.h"
 #include "AliMUONConstants.h"
+
 #include "AliLoader.h"
 
-ClassImp(AliMUONEventRecoCombi)
+#include <Riostream.h>
+#include <TClonesArray.h>
+#include <TArrayS.h>
+#include <TArrayD.h>
 
 AliMUONEventRecoCombi* AliMUONEventRecoCombi::fgRecoCombi = 0; 
+
+ClassImp(AliMUONEventRecoCombi)
 
 //_________________________________________________________________________
 AliMUONEventRecoCombi::AliMUONEventRecoCombi() : TObject()

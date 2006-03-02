@@ -14,7 +14,7 @@
  **************************************************************************/
 
 // $Id$
-// $MpId: AliMpFiles.cxx,v 1.6 2006/01/11 10:05:08 ivana Exp $
+// $MpId: AliMpFiles.cxx,v 1.8 2006/03/02 16:37:20 ivana Exp $
 // Category: basic
 //
 // Class AliMpFiles
@@ -34,8 +34,6 @@
 #include "AliMpFiles.h"
 #include "AliLog.h"
 #include "TClass.h"
-
-ClassImp(AliMpFiles)
 
 //
 // static
@@ -57,6 +55,8 @@ const TString AliMpFiles::fgkDataExt = ".dat";
 const TString AliMpFiles::fgkBergToGCFileName = "/bergToGC"; 
 const TString AliMpFiles::fgkTriggerLocalBoards = "MUONLocalTriggerBoard";
 const TString AliMpFiles::fgkBusPatchFileName = "DetElemIdToBusPatch";
+
+ClassImp(AliMpFiles)
 
 //______________________________________________________________________________
 AliMpFiles::AliMpFiles()

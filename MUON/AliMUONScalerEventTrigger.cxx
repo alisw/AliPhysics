@@ -15,11 +15,12 @@
 
 #include "AliMUONScalerEventTrigger.h"
 
+const Int_t AliMUONScalerEventTrigger::fgkLocalScalerLength  = 45;
+const Int_t AliMUONScalerEventTrigger::fgkRegScalerLength    = 8;
+const Int_t AliMUONScalerEventTrigger::fgkGlobalScalerLength = 10;
+const Int_t AliMUONScalerEventTrigger::fgkDarcScalerLength   = 6;
+
 ClassImp(AliMUONScalerEventTrigger)
-  const Int_t AliMUONScalerEventTrigger::fgkLocalScalerLength  = 45;
-  const Int_t AliMUONScalerEventTrigger::fgkRegScalerLength    = 8;
-  const Int_t AliMUONScalerEventTrigger::fgkGlobalScalerLength = 10;
-  const Int_t AliMUONScalerEventTrigger::fgkDarcScalerLength   = 6;
 
 //___________________________________________
 AliMUONScalerEventTrigger::AliMUONScalerEventTrigger()
