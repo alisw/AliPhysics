@@ -11,7 +11,8 @@ ELIBS:= MUONgeometry MUONrec MUONsim MUONbase MUONmapping \
         TRDsim TRDrec TRDfast \
 	FMDbase FMDsim FMDrec TOFbase TOFrec TOFsim PHOSbase PHOSsim PHOSrec CRT \
         RICHbase RICHrec RICHsim \
-        ZDCbase ZDCsim ZDCrec VZERObase VZEROsim VZEROrec EMCALbase EMCALsim EMCALrec \
+        ZDCbase ZDCsim ZDCrec VZERObase VZEROsim VZEROrec \
+        EMCALbase EMCALsim EMCALrec EMCALjet \
         STRUCT STARTbase STARTsim STARTrec EVGEN ESD STEER \
         pythia6 AliPythia6 pdf THijing \
         hijing TMEVSIM mevsim THbtp HBTP TEPEMGEN EPEMGEN \
