@@ -513,8 +513,7 @@ void AliMUONSt12QuadrantSegmentation::Neighbours(Int_t iX, Int_t iY,
   AliMpPad pad = fSectorSegmentation->PadByIndices(AliMpIntPair(iX,iY));
   Int_t &i = *Nlist;
   i=0;
-  AliMpNeighboursPadIterator iter
-    = AliMpNeighboursPadIterator(fSectorSegmentation, pad, kFALSE);
+  AliMpNeighboursPadIterator iter(fSectorSegmentation, pad, kFALSE);
 
   for( iter.First(); !iter.IsDone() && i<10; iter.Next()) {
     Xlist[i] = iter.CurrentItem().GetIndices().GetFirst();
