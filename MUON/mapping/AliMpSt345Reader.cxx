@@ -14,7 +14,7 @@
 **************************************************************************/
 
 // $Id$
-// $MpId: AliMpSt345Reader.cxx,v 1.8 2006/01/11 10:45:26 ivana Exp $
+// $MpId: AliMpSt345Reader.cxx,v 1.9 2006/03/02 16:36:23 ivana Exp $
 
 #include "AliMpSt345Reader.h"
 
@@ -28,9 +28,9 @@
 #include "AliMpMotifPosition.h"
 #include "AliMpMotif.h"
 #include "AliMpHelper.h"
+#include "AliMpConstants.h"
 
 #include "Riostream.h"
-
 #include "TClass.h"
 #include "TObjString.h"
 #include "TString.h"
@@ -38,9 +38,9 @@
 #include <sstream>
 #include <assert.h>
 
-ClassImp(AliMpSt345Reader)
-
 TMap AliMpSt345Reader::fgPCBMap;
+
+ClassImp(AliMpSt345Reader)
 
 //_____________________________________________________________________________
 AliMpSt345Reader::AliMpSt345Reader() : TObject()
@@ -214,6 +214,11 @@ AliMpSt345Reader::ReadSlat(const char* slatType, AliMpPlaneType planeType)
                            manuList.GetSize(),pcbType->GetSize()));
 	      delete slat;
 	      return 0;
+      }
+
+      for ( Int_t i = 0; i < manuList.GetSize(); ++i )
+      {
+        manuList[i] |= AliMpConstants::ManuMask(planeType);
       }
       slat->Add(pcbType,manuList);
     }

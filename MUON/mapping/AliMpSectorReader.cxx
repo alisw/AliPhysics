@@ -14,7 +14,7 @@
  **************************************************************************/
 
 // $Id$
-// $MpId: AliMpSectorReader.cxx,v 1.5 2005/09/26 16:12:23 ivana Exp $
+// $MpId: AliMpSectorReader.cxx,v 1.7 2006/03/02 16:36:18 ivana Exp $
 // Category: sector
 //
 // Class AliMpSectorReader
@@ -22,16 +22,6 @@
 // Class that takes care of reading the sector data.
 // Included in AliRoot: 2003/05/02
 // Authors: David Guez, Ivana Hrivnacova; IPN Orsay
-
-#if !defined(__HP_aCC) && !defined(__alpha)
-  #include <sstream>
-#endif
-
-#include <Riostream.h>
-#include <Rstrstream.h>
-#include <TSystem.h>
-#include <TError.h>
-#include <TMath.h>
 
 #include "AliMpSectorReader.h"
 #include "AliMpSector.h"
@@ -52,8 +42,17 @@
 #include "AliMpConnection.h"
 #include "AliMpIntPair.h"
 #include "AliMpDirection.h"
+#include "AliMpConstants.h"
 
-ClassImp(AliMpSectorReader)
+#include <Riostream.h>
+#include <Rstrstream.h>
+#include <TSystem.h>
+#include <TError.h>
+#include <TMath.h>
+
+#if !defined(__HP_aCC) && !defined(__alpha)
+  #include <sstream>
+#endif
 
 const TString  AliMpSectorReader::fgkSectorKeyword  = "SECTOR_DATA";
 const TString  AliMpSectorReader::fgkZoneKeyword    = "ZONE";
@@ -65,6 +64,8 @@ const TString  AliMpSectorReader::fgkMotifKeyword          = "MOTIF";
 const TString  AliMpSectorReader::fgkRowSpecialKeyword     = "ROW";
 const TString  AliMpSectorReader::fgkPadRowsKeyword        = "PAD_ROWS";
 const TString  AliMpSectorReader::fgkPadRowSegmentKeyword  = "PAD_ROW_SEGMENT";
+
+ClassImp(AliMpSectorReader)
 
 //_____________________________________________________________________________
 AliMpSectorReader::AliMpSectorReader(AliMpStationType station, 
@@ -286,6 +287,9 @@ void AliMpSectorReader::ReadRowSegmentsData(ifstream& in,
     in >> nofMotifs;
     in >> firstMotifPositionId;
     in >> firstMotifPositionDId;
+    
+    firstMotifPositionId |= AliMpConstants::ManuMask(fPlaneType);
+    
     if (fVerboseLevel>0) 
        cout << fgkRowKeyword << " " 
             << offX << " " << offY << " " << inRow << " " << nofMotifs << " " 
@@ -496,6 +500,8 @@ void AliMpSectorReader::ReadRowSegmentSpecialData(ifstream& in,
     in >> motifId;
     in >> motifPositionId; 
   
+    motifPositionId |= AliMpConstants::ManuMask(fPlaneType);
+
     if (fVerboseLevel>0) 
        cout << nofPadsInRow << " " << motifId << " " << motifPositionId << endl;
 
