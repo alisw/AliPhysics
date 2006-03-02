@@ -138,6 +138,7 @@ void MUONhits(Int_t event2Check=0, char * filename="galice.root")
 }
 
 
+
 void MUONdigits(Int_t event2Check=0, char * filename="galice.root")
 {
   // Creating Run Loader and openning file containing Hits
@@ -151,7 +152,7 @@ void MUONdigits(Int_t event2Check=0, char * filename="galice.root")
   MUONLoader->LoadDigits("READ");
   // Creating MUON data container
   AliMUONData muondata(MUONLoader,"MUON","MUON");
-
+  
   Int_t ievent, nevents;
   nevents = RunLoader->GetNumberOfEvents();
   AliMUONDigit * mDigit;
@@ -160,45 +161,73 @@ void MUONdigits(Int_t event2Check=0, char * filename="galice.root")
     if (event2Check!=0) ievent=event2Check;
     printf(">>> Event %d \n",ievent);
     RunLoader->GetEvent(ievent);
-  
+    
     // Addressing
     Int_t ichamber, nchambers;
     nchambers = AliMUONConstants::NCh(); ;
     muondata.SetTreeAddress("D,GLT");
-    //    char branchname[30];    
- 
+    
     muondata.GetDigits();
     // Loop on chambers
     for( ichamber=0; ichamber<nchambers; ichamber++) {
       Int_t idigit, ndigits;
-      ndigits = (Int_t) muondata.Digits(ichamber)->GetEntriesFast();
+      TClonesArray* digits = muondata.Digits(ichamber);
+      digits->Sort();
+      ndigits = (Int_t)digits->GetEntriesFast();
       for(idigit=0; idigit<ndigits; idigit++) {
-	mDigit = static_cast<AliMUONDigit*>(muondata.Digits(ichamber)->At(idigit));
-	Int_t PadX   = mDigit->PadX();     // Pad X number
-	Int_t PadY   = mDigit->PadY();     // Pad Y number
-	Int_t Signal = mDigit->Signal();   // Physics Signal
-	Int_t Physics= mDigit->Physics();  // Physics contribution to signal
-	//	  Int_t Hit    = mDigit->Hit();      // iHit
-	Int_t Cathode= mDigit->Cathode();  // Cathode
-	Int_t Track0 = mDigit->Track(0);
-	Int_t Track1 = mDigit->Track(1); 
-	//Int_t Track2 = mDigit->Track(2);
-	Int_t TCharges0 = mDigit->TrackCharge(0);  //charge per track making this digit (up to 10)
-	Int_t TCharges1 = mDigit->TrackCharge(1);
-	//Int_t TCharges2 = mDigit->TrackCharge(2);
-	Int_t idDE = mDigit->DetElemId();
-	//	  printf(">>> Cathode %d\n",Cathode);
-	
-	printf(">>> DetEle %4d Digit%4d Cath %1d (Ix,Iy)=(%3d,%3d) Signal=%4d Physics=%4d Track0=%4d Charge0=%4d Track1=%4d Charge1=%4d \n",
-	       idDE, idigit, Cathode, PadX, PadY, Signal, Physics, Track0, 
-	       TCharges0, Track1, TCharges1);
+        mDigit = static_cast<AliMUONDigit*>(digits->At(idigit));
+        mDigit->Print("tracks");
       } // end digit loop
     } // end chamber loop
     muondata.ResetDigits();
-    //    } // end cathode loop
     if (event2Check!=0) ievent=nevents;
   }  // end event loop
   MUONLoader->UnloadDigits();
+}
+
+void MUONsdigits(Int_t event2Check=0, char * filename="galice.root")
+{
+  // Creating Run Loader and openning file containing Hits
+  AliRunLoader * RunLoader = AliRunLoader::Open(filename,"MUONFolder","READ");
+  if (RunLoader ==0x0) {
+    printf(">>> Error : Error Opening %s file \n",filename);
+    return;
+  }
+  // Loading MUON subsystem
+  AliLoader * MUONLoader = RunLoader->GetLoader("MUONLoader");
+  MUONLoader->LoadSDigits("READ");
+  // Creating MUON data container
+  AliMUONData muondata(MUONLoader,"MUON","MUON");
+  
+  Int_t ievent, nevents;
+  nevents = RunLoader->GetNumberOfEvents();
+  AliMUONDigit * mDigit;
+  
+  for(ievent=0; ievent<nevents; ievent++) {
+    if (event2Check!=0) ievent=event2Check;
+    printf(">>> Event %d \n",ievent);
+    RunLoader->GetEvent(ievent);
+    
+    // Addressing
+    Int_t ichamber, nchambers;
+    nchambers = AliMUONConstants::NCh(); ;
+    muondata.SetTreeAddress("S");
+    
+    muondata.GetSDigits();
+    // Loop on chambers
+    for( ichamber=0; ichamber<nchambers; ichamber++) {
+      Int_t idigit, ndigits;
+      TClonesArray* digits = muondata.SDigits(ichamber);
+      ndigits = (Int_t)digits->GetEntriesFast();
+      for(idigit=0; idigit<ndigits; idigit++) {
+        mDigit = static_cast<AliMUONDigit*>(digits->At(idigit));
+        mDigit->Print("tracks");
+      } // end digit loop
+    } // end chamber loop
+    muondata.ResetSDigits();
+    if (event2Check!=0) ievent=nevents;
+  }  // end event loop
+  MUONLoader->UnloadSDigits();
 }
 
 void MUONoccupancy(Int_t event2Check=0,  Bool_t perDetEle =kFALSE, char * filename="galice.root") {
