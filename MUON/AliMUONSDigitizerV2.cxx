@@ -34,11 +34,17 @@ ClassImp(AliMUONSDigitizerV2)
 AliMUONSDigitizerV2::AliMUONSDigitizerV2() 
 : TTask("AliMUONSDigitizerV2","From Hits to SDigits for MUON")
 {
+  //
+  // ctor.
+  //
 }
 
 //_____________________________________________________________________________
 AliMUONSDigitizerV2::~AliMUONSDigitizerV2()
 {
+  //
+  // dtor.
+  //
 }
 
 //_____________________________________________________________________________
@@ -47,6 +53,11 @@ AliMUONSDigitizerV2::Exec(Option_t*)
 {
   //
   // Go from hits to sdigits.
+  //
+  // In the code below, apart from the loop itself (which look complicated
+  // but is really only a loop on each hit in the input file) the main
+  // work is done in AliMUONResponse::DisIntegrate method, which converts
+  // a single hit in (possibly) several sdigits.
   //
   
   AliDebug(1,"");
@@ -63,6 +74,7 @@ AliMUONSDigitizerV2::Exec(Option_t*)
   const Int_t nofEvents(runLoader->GetNumberOfEvents());
   for ( Int_t iEvent = 0; iEvent < nofEvents; ++iEvent ) 
   {    
+    // Loop over events.
     TObjArray tdlist;
     tdlist.SetOwner(kTRUE);
     
@@ -87,28 +99,36 @@ AliMUONSDigitizerV2::Exec(Option_t*)
     Long64_t nofTracks = treeH->GetEntries();
     for ( Long64_t iTrack = 0; iTrack < nofTracks; ++iTrack )
     {
+      // Loop over the tracks of this event.
       treeH->GetEvent(iTrack);
       TClonesArray* hits = muonData.Hits();
       Int_t nofHits = hits->GetEntriesFast();
       for ( Int_t ihit = 0; ihit < nofHits; ++ihit )
       {
+        // Loop over the hits of this track.
         AliMUONHit* hit = static_cast<AliMUONHit*>(hits->At(ihit)); 
         Int_t chamberId = hit->Chamber()-1;
         AliMUONChamber& chamber = muon->Chamber(chamberId);
         AliMUONResponse* response = chamber.ResponseModel();
-        TList digits;
+        
+        // This is the heart of this method : the dis-integration
+        TList digits;        
         response->DisIntegrate(*hit,digits);
+        
         TIter next(&digits);
         AliMUONDigit* d;
         while ( ( d = (AliMUONDigit*)next() ) )
         {
+          // Update some sdigit information that could not be known
+          // by the DisIntegrate method
           d->SetHit(ihit);
+          d->AddTrack(iTrack,d->Signal());
           tdlist.Add(d);
         }
       }
       muonData.ResetHits();
-    } // loop on tracks within an event
-    tdlist.Sort(); // not really needed, except for comparing with old sdigitizer
+    } // end of loop on tracks within an event
+    
     for ( Int_t i = 0; i <= tdlist.GetLast(); ++i )
     {
       AliMUONDigit* d = (AliMUONDigit*)tdlist[i];
@@ -121,6 +141,7 @@ AliMUONSDigitizerV2::Exec(Option_t*)
     }
     muonData.Fill("S");
     fLoader->WriteSDigits("OVERWRITE");
+    
     muonData.ResetSDigits();
     fLoader->UnloadSDigits();
   } // loop on events
