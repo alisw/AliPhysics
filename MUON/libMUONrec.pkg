@@ -16,8 +16,6 @@ SRCS:= AliMUONClusterReconstructor.cxx \
        AliMUONHitForRec.cxx \
        AliMUONTrackHit.cxx \
        AliMUONSegment.cxx \
-       AliMUONRawReader.cxx \
-       AliMUONRawStream.cxx \
        AliMUONClusterDrawAZ.cxx \
        AliMUONDetElement.cxx \
        AliMUONEventRecoCombi.cxx \

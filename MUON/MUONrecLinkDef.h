@@ -27,10 +27,6 @@
 // calibration
 #pragma link C++ class AliMUONDigitCalibrator+;
 
-// raw data
-#pragma link C++ class AliMUONRawReader+;
-#pragma link C++ class AliMUONRawStream+;
-
 #endif
 
 

@@ -33,20 +33,19 @@ SRCS:=  AliMUON.cxx AliMUONv1.cxx \
         AliMUONTriggerSegmentation.cxx \
         AliMUONTriggerSegmentationV2.cxx \
         AliMUONSegFactory.cxx \
-        AliMUONV1DStore.cxx \
         AliMUONV2DStore.cxx \
-        AliMUONV3DStore.cxx \
-        AliMUON1DMap.cxx \
         AliMUON2DMap.cxx \
-        AliMUON3DMap.cxx \
-        AliMUONCalibParam.cxx \
+        AliMUONVCalibParam.cxx \
+        AliMUONCalibParam1I.cxx \
+        AliMUONCalibParam2F.cxx \
         AliMUONCalibrationData.cxx \
-       AliMUONRawWriter.cxx \
        AliMUONSubEventTracker.cxx \
        AliMUONDDLTrigger.cxx \
        AliMUONDDLTracker.cxx \
        AliMUONSubEventTrigger.cxx \
-       AliMUONScalerEventTrigger.cxx
+       AliMUONScalerEventTrigger.cxx \
+       AliMUONRawReader.cxx \
+       AliMUONRawStream.cxx \
                 
 HDRS:= $(SRCS:.cxx=.h)
 

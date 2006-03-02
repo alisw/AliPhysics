@@ -44,13 +44,11 @@
 #pragma link C++ class AliMUONTriggerLut+; 
 
 // calibration
-#pragma link C++ class AliMUONV1DStore+;
 #pragma link C++ class AliMUONV2DStore+;
-#pragma link C++ class AliMUONV3DStore+;
-#pragma link C++ class AliMUON1DMap+;
 #pragma link C++ class AliMUON2DMap+;
-#pragma link C++ class AliMUON3DMap+;
-#pragma link C++ class AliMUONCalibParam+;
+#pragma link C++ class AliMUONVCalibParam+;
+#pragma link C++ class AliMUONCalibParam1I+;
+#pragma link C++ class AliMUONCalibParam2F+;
 #pragma link C++ class AliMUONCalibrationData+;
 
 // display
@@ -61,7 +59,8 @@
 #pragma link C++ class AliMUONSegFactory+;
 
 // raw data
-#pragma link C++ class AliMUONRawWriter+;
+#pragma link C++ class AliMUONRawReader+;
+#pragma link C++ class AliMUONRawStream+;
 #pragma link C++ class AliMUONSubEventTracker+;
 #pragma link C++ class AliMUONDDLTrigger+;
 #pragma link C++ class AliMUONDDLTracker+;

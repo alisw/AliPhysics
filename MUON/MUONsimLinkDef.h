@@ -43,6 +43,10 @@
 #pragma link C++ class AliMUONTriggerElectronics+;
 #pragma link C++ class AliMUONGlobalTriggerBoard+;
 
+// raw
+
+#pragma link C++ class AliMUONRawWriter+;
+
 #endif
 
 
