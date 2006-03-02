@@ -72,6 +72,11 @@
 #include "AliMUONSDigitizerV2.h"
 #include "AliMUONDigitizerV3.h"
 
+#include "AliMUONSt1GeometryBuilderV2.h"
+#include "AliMUONSt2GeometryBuilderV2.h"
+#include "AliMUONSlatGeometryBuilder.h"
+#include "AliMUONTriggerGeometryBuilder.h"
+
 // Defaults parameters for Z positions of chambers
 // taken from values for "stations" in AliMUON::AliMUON
 //     const Float_t zch[7]={528, 690., 975., 1249., 1449., 1610, 1710.};
@@ -110,7 +115,8 @@ AliMUON::AliMUON()
     fCurIterPad(0),
     fTriggerScalerEvent(kFALSE),
     fSDigitizerType(""),
-    fDigitizerType("")
+    fDigitizerType(""),
+  fRawWriter(0x0)
 {
 // Default Constructor
 //
@@ -142,7 +148,8 @@ AliMUON::AliMUON(const char *name, const char *title,
     fCurIterPad(0),
 	  fTriggerScalerEvent(kFALSE),
     fSDigitizerType(sDigitizerClassName),
-    fDigitizerType(digitizerClassName)
+    fDigitizerType(digitizerClassName),
+  fRawWriter(0x0)
 {
 	AliDebug(1,Form("ctor this=%p",this));
   fIshunt =  0;
@@ -156,8 +163,17 @@ AliMUON::AliMUON(const char *name, const char *title,
   fGeometryBuilder
     ->AddBuilder(new AliMUONCommonGeometryBuilder(this));
 
-//
-// Creating List of Chambers
+  // By default, add also all the needed geometry builders.
+  // If you want to change this from outside, please use ResetGeometryBuilder
+  // method, followed by AddGeometryBuilder ones.
+
+  AddGeometryBuilder(new AliMUONSt1GeometryBuilderV2(this));
+  AddGeometryBuilder(new AliMUONSt2GeometryBuilderV2(this));
+  AddGeometryBuilder(new AliMUONSlatGeometryBuilder(this));
+  AddGeometryBuilder(new AliMUONTriggerGeometryBuilder(this));
+  
+  //
+  // Creating List of Chambers
     Int_t ch;
     fChambers = new TObjArray(AliMUONConstants::NCh());
 
@@ -211,6 +227,7 @@ AliMUON::~AliMUON()
   delete fMUONData;
   delete fGeometryBuilder;
   delete fSegmentation;
+  delete fRawWriter;
 }
 
 //________________________________________________________________________
@@ -492,10 +509,19 @@ AliMUON::DigitizerType() const
 void AliMUON::Digits2Raw()
 {
   // convert digits of the current event to raw data
-  AliMUONRawWriter rawData(fLoader,fMUONData);
-
-  if (fTriggerScalerEvent == kTRUE) rawData.SetScalerEvent();
-  if (!rawData.Digits2Raw()) AliInfo("pb writting raw data");
+  if (!fRawWriter)
+  {
+    fRawWriter = new AliMUONRawWriter(fMUONData);
+    if (fTriggerScalerEvent == kTRUE) 
+    {
+      fRawWriter->SetScalerEvent();
+    }
+  }
+  
+  if (!fRawWriter->Digits2Raw()) 
+  {
+    AliError("pb writting raw data");
+  }
 }
 
 //_______________________________________________________________________
@@ -532,5 +558,18 @@ AliMUONRawCluster *AliMUON::RawCluster(Int_t ichamber, Int_t icathod, Int_t iclu
     
     return  mRaw;
 }
-//________________________________________________________________________
 
+//________________________________________________________________________
+void
+AliMUON::ResetGeometryBuilder()
+{
+  // Only to be used by "experts" wanting to change the geometry builders
+  // to be used. 
+  // As the ctor of AliMUON now defines a default geometrybuilder, this
+  // ResetGeometryBuilder() must be called prior to call the 
+  // AddGeometryBuilder()
+  delete fGeometryBuilder;
+  fGeometryBuilder = new AliMUONGeometryBuilder(this);
+  fGeometryBuilder
+    ->AddBuilder(new AliMUONCommonGeometryBuilder(this));
+}

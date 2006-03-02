@@ -36,6 +36,7 @@ class AliMUONRawCluster;
 class AliMUONGeometry;
 class AliMUONGeometryTransformer;
 class AliMUONGeometryBuilder;
+class AliMUONRawWriter;
 class AliMUONVGeometryBuilder;
 class AliESD;
 
@@ -43,13 +44,15 @@ class AliMUON : public  AliDetector
 {
   public:
     AliMUON();
-    AliMUON(const char *name, const char *title,
-            const char* sDigitizerType="sdigitizer:default",
-            const char* digitizerType="digitizer:default");
-    virtual       ~AliMUON();
+    AliMUON(const char* name, const char *title="FactoryV4",
+            const char* sDigitizerType="sdigitizer:AliMUONSDigitizerV2",
+            const char* digitizerType="digitizer:NewDigitizerOldTrigger");
+    virtual ~AliMUON();
    
     // Geometry
-    void           AddGeometryBuilder(AliMUONVGeometryBuilder* geomBuilder);
+    void AddGeometryBuilder(AliMUONVGeometryBuilder* geomBuilder);
+    void ResetGeometryBuilder();
+    
     virtual void   BuildGeometry();
     virtual Int_t  IsVersion()   const {return 0;}
     
@@ -162,7 +165,9 @@ class AliMUON : public  AliDetector
     TString fSDigitizerType; // Class to use for SDigitizer
     TString fDigitizerType; // Class to use for Digitizer
     
-    ClassDef(AliMUON,11)  // MUON Detector base class
+    AliMUONRawWriter* fRawWriter; //!
+    
+    ClassDef(AliMUON,12)  // MUON Detector base class
 };
 #endif
 
