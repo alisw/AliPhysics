@@ -25,7 +25,7 @@
 #include "AliMUONDigit.h"
 #include "AliMUONTriggerDecisionV1.h"
 #include "AliMUONTriggerElectronics.h"
-#include "AliMUONCalibParam.h"
+#include "AliMUONVCalibParam.h"
 #include "AliMpDEManager.h"
 #include "AliMpStationType.h"
 #include "AliRun.h"
@@ -41,20 +41,24 @@ ClassImp(AliMUONDigitizerV3)
 AliMUONDigitizerV3::AliMUONDigitizerV3(AliRunDigitizer* manager, 
                                        ETriggerCodeVersion triggerCodeVersion)
 : AliDigitizer(manager),
-fZeroSuppression(6),
-fSaturation(3000),
 fIsInitialized(kFALSE),
 fOutputData(0x0),
 fCalibrationData(0x0),
 fTriggerProcessor(0x0),
 fTriggerCodeVersion(triggerCodeVersion)
 {
+  //
+  // Ctor.
+  //
   AliDebug(1,Form("AliRunDigitizer=%p",fManager));
 }
 
 //_____________________________________________________________________________
 AliMUONDigitizerV3::~AliMUONDigitizerV3()
 {
+  //
+  // Dtor. Note we're the owner of some pointers.
+  // 
   AliDebug(1,"dtor");
   delete fOutputData;
   delete fCalibrationData;
@@ -65,29 +69,22 @@ AliMUONDigitizerV3::~AliMUONDigitizerV3()
 void 
 AliMUONDigitizerV3::ApplyResponseToDigit(AliMUONDigit& digit)
 {
-  // For trigger digits, simply sets the digit's charge to 0 or 1.
+  // For trigger digits, simply does nothing.
   //
   // For tracking digits, starting from an ideal digit's charge, we :
   //
   // - add some noise (thus leading to a realistic charge)
   // - divide by a gain (thus decalibrating the digit)
   // - add a pedestal (thus decalibrating the digit)
-  // - sets the signal to zero if below ZeroSuppression() level (thus simulating
-  //   zero suppression).
+  // - sets the signal to zero if below 3*sigma of the noise
   //
+  
+  static const Int_t MAXADC = (1<<12)-1; // We code the charge on a 12 bits ADC.
   
   Int_t detElemId = digit.DetElemId();
   AliMpStationType stationType = AliMpDEManager::GetStationType(detElemId);
   if ( stationType == kStationTrigger )
   {
-    if ( digit.Signal() > 0  )
-    {
-      digit.SetSignal(1);
-    }
-    else
-    {
-      digit.SetSignal(0);
-    }
     return;    
   }
   
@@ -96,44 +93,50 @@ AliMUONDigitizerV3::ApplyResponseToDigit(AliMUONDigit& digit)
   Int_t manuId = digit.ManuId();
   Int_t manuChannel = digit.ManuChannel();
   
-  AliMUONCalibParam* pedestal = fCalibrationData->Pedestal(detElemId,manuId,manuChannel);
+  AliMUONVCalibParam* pedestal = fCalibrationData->Pedestal(detElemId,manuId);
   if (!pedestal)
   {
-    AliFatal(Form("Could not get pedestal for DE=%d manuId=%d manuChannel=%d",
-                  detElemId,manuId,manuChannel));    
+    AliFatal(Form("Could not get pedestal for DE=%d manuId=%d",
+                  detElemId,manuId));    
   }
-  Float_t adc_noise = gRandom->Gaus(0.0,pedestal->Sigma());
+  Float_t pedestalMean = pedestal->ValueAsFloat(manuChannel,0);
+  Float_t pedestalSigma = pedestal->ValueAsFloat(manuChannel,1);
   
-  AliMUONCalibParam* gain = fCalibrationData->Gain(detElemId,manuId,manuChannel);
+  Float_t adc_noise = gRandom->Gaus(0.0,pedestalSigma);
+  
+  AliMUONVCalibParam* gain = fCalibrationData->Gain(detElemId,manuId);
   if (!gain)
   {
-    AliFatal(Form("Could not get gain for DE=%d manuId=%d manuChannel=%d",
-                  detElemId,manuId,manuChannel));    
+    AliFatal(Form("Could not get gain for DE=%d manuId=%d",
+                  detElemId,manuId));    
   }
   
-  Float_t signal_noise = adc_noise*gain->Mean();
+  Float_t gainMean = gain->ValueAsFloat(manuChannel,0);
+  Float_t signal_noise = adc_noise*gainMean;
   
   Float_t signal = digit.Signal() + signal_noise;
   Int_t adc;
   
-  if ( signal > fSaturation )
+  if ( gainMean < 1E-6 )
   {
-    adc = fSaturation;
-    digit.Saturated(kTRUE);
+    AliError(Form("Got a too small gain %e for DE=%d manuId=%d manuChannel=%d. "
+                  "Setting signal to 0.",
+                  gainMean,detElemId,manuId,manuChannel));
+    adc = 0;
   }
   else
   {
-    if ( gain->Mean() < 1E-6 )
-    {
-      AliFatal(Form("Got a too small gain %e for DE=%d manuId=%d manuChannel=%d",
-                    gain->Mean(),detElemId,manuId,manuChannel));
-    }
-    adc = TMath::Nint( signal / gain->Mean() + pedestal->Mean() );
+    adc = TMath::Nint( signal / gainMean + pedestalMean );
     
-    if ( adc <= pedestal->Mean() + 3.0*pedestal->Sigma() ) 
+    if ( adc <= pedestalMean + 3.0*pedestalSigma ) 
     {
       adc = 0;
     }
+  }
+  // be sure we stick to 12 bits.
+  if ( adc > MAXADC )
+  {
+    adc = MAXADC;
   }
   digit.SetPhysicsSignal(TMath::Nint(signal));
   digit.SetSignal(adc);
@@ -144,6 +147,10 @@ AliMUONDigitizerV3::ApplyResponseToDigit(AliMUONDigit& digit)
 void
 AliMUONDigitizerV3::ApplyResponse()
 {
+  //
+  // Loop over all chamber digits, and apply the response to them
+  // Note that this method may remove digits.
+  //
   for ( Int_t ich = 0; ich < AliMUONConstants::NCh(); ++ich )
 	{
     TClonesArray* digits = fOutputData->Digits(ich);
@@ -157,12 +164,8 @@ AliMUONDigitizerV3::ApplyResponse()
         digits->RemoveAt(i);
       }
     }
+    digits->Compress();
   }    
-  
-  for ( Int_t ich = 0; ich < AliMUONConstants::NCh(); ++ich )
-	{
-    fOutputData->Digits(ich)->Compress();
-  }
 }
 
 //_____________________________________________________________________________
@@ -170,6 +173,10 @@ void
 AliMUONDigitizerV3::AddOrUpdateDigit(TClonesArray& array, 
                                      const AliMUONDigit& digit)
 {
+  //
+  // Add or update a digit, depending on whether there's already a digit
+  // for the corresponding channel.
+  //
   Int_t ix = FindDigitIndex(array,digit);
   
   if (ix>=0)
@@ -179,10 +186,6 @@ AliMUONDigitizerV3::AddOrUpdateDigit(TClonesArray& array,
     if (!ok)
     {
       AliError("Digits are not mergeable !");
-    }
-    else
-    {
-      new(array[ix]) AliMUONDigit(*d);
     }
   }
   else
@@ -197,6 +200,12 @@ AliMUONDigitizerV3::AddOrUpdateDigit(TClonesArray& array,
 void
 AliMUONDigitizerV3::Exec(Option_t*)
 {
+  //
+  // Main method.
+  // We first loop over input files, and merge the sdigits we found there.
+  // We then digitize all the resulting sdigits
+  // And we finally generate the trigger outputs.
+  //
   AliDebug(1, "Running digitizer.");
   
   if ( fManager->GetNinputs() == 0 )
@@ -230,14 +239,13 @@ AliMUONDigitizerV3::Exec(Option_t*)
     {
       AliFatal(Form("Could not get access to input file #%d",iFile));
     }
-    AliDebug(1,Form("inputData=%p",inputData));
-    //FIXME: what about the fMask ???
+
     inputData->GetLoader()->LoadSDigits("READ");
-    TTree* treeS = inputData->GetLoader()->TreeS();
-    AliDebug(1,Form("TreeS=%p",treeS));
     inputData->SetTreeAddress("S");
     inputData->GetSDigits();
-    MergeWithSDigits(*fOutputData,*inputData);
+
+    MergeWithSDigits(*fOutputData,*inputData,fManager->GetMask(iFile));
+    
     inputData->ResetSDigits();
     inputData->GetLoader()->UnloadSDigits();
     delete inputData;
@@ -249,9 +257,7 @@ AliMUONDigitizerV3::Exec(Option_t*)
   // is here that we do the "digitization" work.
   
   ApplyResponse();
-  
-  // 
-  
+
   // We generate the global and local trigger decisions.
   fTriggerProcessor->ExecuteTask();
   
@@ -274,8 +280,13 @@ AliMUONDigitizerV3::Exec(Option_t*)
 Int_t
 AliMUONDigitizerV3::FindDigitIndex(TClonesArray& array, const AliMUONDigit& digit)
 {
+  // 
+  // Return the index of digit within array, if that digit is there, 
+  // otherwise returns -1
+  //
   // FIXME: this is of course not the best implementation you can think of.
-  // Reconsider the use of hit/digit map...
+  // Reconsider the use of hit/digit map... ? (but be sure it's needed!)
+  //
   Int_t n = array.GetEntriesFast();
   for ( Int_t i = 0; i < n; ++i )
   {
@@ -295,6 +306,9 @@ AliMUONDigitizerV3::FindDigitIndex(TClonesArray& array, const AliMUONDigit& digi
 AliMUONData* 
 AliMUONDigitizerV3::GetDataAccess(const TString& folderName)
 {
+  //
+  // Create an AliMUONData to deal with data found in folderName.
+  //
   AliDebug(1,Form("Getting access to folder %s",folderName.Data()));
   AliRunLoader* runLoader = AliRunLoader::GetRunLoader(folderName);
   if (!runLoader)
@@ -317,6 +331,12 @@ AliMUONDigitizerV3::GetDataAccess(const TString& folderName)
 Bool_t
 AliMUONDigitizerV3::Init()
 {
+  //
+  // Initialization of the TTask :
+  // a) set the outputData pointer
+  // b) create the calibrationData, according to run number
+  // c) create the trigger processing task
+  //
   AliDebug(1,"");
   
   if ( fIsInitialized )
@@ -365,11 +385,15 @@ AliMUONDigitizerV3::Init()
 
 //_____________________________________________________________________________
 Bool_t
-AliMUONDigitizerV3::MergeDigits(const AliMUONDigit& src, AliMUONDigit& srcAndDest)
+AliMUONDigitizerV3::MergeDigits(const AliMUONDigit& src, 
+                                AliMUONDigit& srcAndDest)
 {
+  //
+  // Merge 2 digits (src and srcAndDest) into srcAndDest.
+  //
   AliDebug(1,"Merging the following digits:");
-  StdoutToAliDebug(1,src.Print(););
-  StdoutToAliDebug(1,srcAndDest.Print(););
+  StdoutToAliDebug(1,src.Print("tracks"););
+  StdoutToAliDebug(1,srcAndDest.Print("tracks"););
   
   Bool_t check = ( src.DetElemId() == srcAndDest.DetElemId() &&
                    src.PadX() == srcAndDest.PadX() &&
@@ -380,18 +404,24 @@ AliMUONDigitizerV3::MergeDigits(const AliMUONDigit& src, AliMUONDigit& srcAndDes
     return kFALSE;
   }
   
- 
   srcAndDest.AddSignal(src.Signal());
   srcAndDest.AddPhysicsSignal(src.Physics());
-  StdoutToAliDebug(1,cout << "result:"; srcAndDest.Print(););
+  for ( Int_t i = 0; i < src.Ntracks(); ++i )
+  {
+    srcAndDest.AddTrack(src.Track(i),src.TrackCharge(i));
+  }
+  StdoutToAliDebug(1,cout << "result:"; srcAndDest.Print("tracks"););
   return kTRUE;
 }
 
 //_____________________________________________________________________________
 void 
 AliMUONDigitizerV3::MergeWithSDigits(AliMUONData& outputData, 
-                                     const AliMUONData& inputData)
+                                     const AliMUONData& inputData, Int_t mask)
 {
+  //
+  // Merge the sdigits in inputData with the digits already present in outputData
+  //
   AliDebug(1,"");
   
 	for ( Int_t ich = 0; ich < AliMUONConstants::NCh(); ++ich )
@@ -407,37 +437,19 @@ AliMUONDigitizerV3::MergeWithSDigits(AliMUONData& outputData,
     for ( Int_t k = 0; k < nSDigits; ++k )
 		{
 			AliMUONDigit* sdigit = static_cast<AliMUONDigit*>(iDigits->UncheckedAt(k));
-      // FIXME: Merging logic should go here.
-      // For testing, only put the digit in the output.
       if (!sdigit)
       {
         AliError(Form("Could not get sdigit for ich=%d and k=%d",ich,k));
       }
       else
       {
+        // Update the track references using the mask.
+        // FIXME: this is dirty, for backward compatibility only.
+        // Should re-design all this way of keeping track of MC information...
+        if ( mask ) sdigit->PatchTracks(mask);
+        // Then add or update the digit to the output.
         AddOrUpdateDigit(*oDigits,*sdigit);
       }
 		}   
   }
 }
-
-//------------------------------------------------------------------------
-//void AliMUONDigitizerv2::FillTriggerOutput()
-//{
-//  // Derived to fill TreeD and resets the trigger array in fMUONData.
-//  
-//	AliDebug(3,"Filling trees with trigger.");
-//	fMUONData->Fill("GLT");
-//	fMUONData->ResetTrigger();
-//}
-//
-//------------------------------------------------------------------------
-//void AliMUONDigitizerv2::CreateTrigger()
-//{
-//  fMUONData->MakeBranch("GLT");
-//  fMUONData->SetTreeAddress("GLT");
-//  fTrigDec->Digits2Trigger(); 
-//  FillTriggerOutput();	
-//  
-//}
-

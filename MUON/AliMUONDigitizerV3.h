@@ -5,9 +5,8 @@
 
 /// \ingroup sim
 /// \class AliMUONDigitizerV3
-/// \brief New digitizer, not deriving from MUONDigitizer and doing
-/// decalibration of digits
-/// 
+/// \brief Digitizer (from SDigit to Digit), performing digit de-calibration.
+///
 /// \author Laurent Aphecetche
 
 #ifndef ALIMUONDIGITIZERV3_H
@@ -55,18 +54,17 @@ private:
 
   Bool_t MergeDigits(const AliMUONDigit& src, AliMUONDigit& srcAndDest);
 
-  void MergeWithSDigits(AliMUONData& outputData, const AliMUONData& inputData);
+  void MergeWithSDigits(AliMUONData& outputData, const AliMUONData& inputData, 
+                        Int_t mask);
   
 private:
-  Int_t fZeroSuppression;
-  Int_t fSaturation;
-  Bool_t fIsInitialized; 
-  AliMUONData* fOutputData; //!
-  AliMUONCalibrationData* fCalibrationData; //!
-  TTask* fTriggerProcessor;
-  ETriggerCodeVersion fTriggerCodeVersion;
+  Bool_t fIsInitialized; // are we initialized ?
+  AliMUONData* fOutputData; //! pointer to access digits
+  AliMUONCalibrationData* fCalibrationData; //! pointer to access calib parameters
+  TTask* fTriggerProcessor; // pointer to the trigger part of the job
+  ETriggerCodeVersion fTriggerCodeVersion; // which version of trigger job
   
-  ClassDef(AliMUONDigitizerV3,1) // 
+  ClassDef(AliMUONDigitizerV3,2) // MUON Digitizer V3-2
 };
 
 #endif
