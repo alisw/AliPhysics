@@ -173,7 +173,7 @@ void AliMUONPoints::InspectDigit()
       char ptitle[11][100];
       //      sprintf(ptitle[11],"Tracks making this digit");
       //      pad->AddText(ptitle[11]);
-  for (int i=0;i<10;i++) {
+  for (int i=0;i<digit->Ntracks();i++) {
       if (digit->Track(i) == 0) continue;  
       sprintf(ptitle[i],"fTrackIndex: %d  Charge: %d",
 	      digit->Track(i), digit->TrackCharge(i));
