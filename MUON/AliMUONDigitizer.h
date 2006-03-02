@@ -22,6 +22,8 @@ class AliMUONLoader;
 class AliMUONTransientDigit;
 class AliMUONTriggerDecision;
 
+static const Int_t kMAXTRACKS=10;
+
 class AliMUONDigitizer : public AliDigitizer
 {
 public:
