@@ -14,13 +14,15 @@
  **************************************************************************/
 
 // $Id$
-// $MpId: AliMpExMap.cxx,v 1.1 2005/09/26 16:16:16 ivana Exp $
+// $MpId: AliMpExMap.cxx,v 1.2 2006/03/02 16:28:23 ivana Exp $
 // Category: basic
 //
 // Class AliMpExMap
 // ------------------------
 // Helper class making Root persistent TExMap
 // Author:Ivana Hrivnacova; IPN Orsay
+
+#include "AliMpExMap.h"
 
 #include <stdlib.h>
 
@@ -29,12 +31,9 @@
 #include <TString.h>
 #include <TError.h>
 
-#include "AliMpExMap.h"
 //#include "AliMpConstants.h"
 #include "AliMpIntPair.h"
 #include "AliLog.h"
-
-ClassImp(AliMpExMap)
 
 //
 // static members
@@ -48,6 +47,8 @@ const Int_t AliMpExMap::fgkSeparator2 = 100;
 
 const TString  AliMpExMap::fgkCharacterMap 
   = " 1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ.";
+
+ClassImp(AliMpExMap)
 
 //
 // static methods
@@ -237,17 +238,12 @@ TExMapIter AliMpExMap::GetIterator() const
 }
 
 //_____________________________________________________________________________
-TObject*  AliMpExMap::GetValue(const AliMpIntPair& key) const
+TObject* AliMpExMap::GetValue(const AliMpIntPair& key) const
 {
 /// Return the object associated with the given key if found,
 /// otherwise return 0
 
-  Long_t value = fMap.GetValue(GetIndex(key));
-  if (value) 
-    return (TObject*)value;
-  else
-    return 0;  
-
+  return reinterpret_cast<TObject*>(fMap.GetValue(GetIndex(key)));
 }
 
 //_____________________________________________________________________________
@@ -256,12 +252,7 @@ TObject*  AliMpExMap::GetValue(const TString& key) const
 /// Return the object associated with the given key if found,
 /// otherwise return 0
 
-  Long_t value = fMap.GetValue(GetIndex(key));
-  if (value) 
-    return (TObject*)value;
-  else
-    return 0;  
-
+  return reinterpret_cast<TObject*>(fMap.GetValue(GetIndex(key)));
 }
 
 //_____________________________________________________________________________
@@ -270,12 +261,7 @@ TObject*  AliMpExMap::GetValue(Int_t key) const
 /// Return the object associated with the given key if found,
 /// otherwise return 0
 
-  Long_t value = fMap.GetValue(key);
-  if (value) 
-    return (TObject*)value;
-  else
-    return 0;  
-
+  return reinterpret_cast<TObject*>(fMap.GetValue(key));
 }
 
 //_____________________________________________________________________________
