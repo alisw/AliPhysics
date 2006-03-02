@@ -12,14 +12,14 @@
 
 #include <TObject.h>
 
-static const Int_t kMAXTRACKS=10;
-
-class AliMUONDigit : public TObject {
-
+class AliMUONDigit : public TObject 
+{
  public:
     AliMUONDigit();
     AliMUONDigit(const AliMUONDigit& rhs);
+    /// \deprecated
     AliMUONDigit(Int_t *digits);
+    /// \deprecated
     AliMUONDigit(Int_t *tracks, Int_t *charges, Int_t *digits);
     virtual ~AliMUONDigit();
 
@@ -28,7 +28,7 @@ class AliMUONDigit : public TObject {
     virtual Bool_t IsSortable() const {return kTRUE;}
     virtual int Compare(const TObject *obj) const;
 
-    virtual Int_t DetElemId()const     {return fDetElemId;}
+    virtual Int_t DetElemId()const     {return fDetElemId;}    
     virtual Int_t PadX() const         {return fPadX;}
     virtual Int_t PadY() const         {return fPadY;}
     virtual Int_t Cathode() const      {return fCathode;}
@@ -37,18 +37,21 @@ class AliMUONDigit : public TObject {
     
     virtual Int_t Physics() const      {return fPhysics;}
     
-    virtual Int_t Hit() const          {return fHit;}    
-    virtual Int_t Track(Int_t i) const {return fTracks[i];}
-    virtual Int_t TrackCharge(Int_t i) const {return fTcharges[i];} 
+    virtual Int_t Hit() const          {return fHit;}  
     
-    virtual Int_t ADC() const;
-    virtual Int_t ManuId() const;
-    virtual Int_t ManuChannel() const;
+    virtual Int_t Ntracks() const { return fNtracks; }
+    virtual void AddTrack(Int_t trackNumber, Int_t trackCharge);
+    virtual Int_t Track(Int_t i) const;
+    virtual Int_t TrackCharge(Int_t i) const;
+    
+    virtual Int_t ADC() const { return fADC; }
+    virtual Int_t ManuId() const { return fManuId; }
+    virtual Int_t ManuChannel() const { return fManuChannel; }
     virtual Bool_t IsSaturated() const;
     
     virtual void Saturated(Bool_t saturated=kTRUE);
     virtual void SetElectronics(Int_t manuId, Int_t manuChannel);
-    virtual void SetADC(Int_t adc);
+    virtual void SetADC(Int_t adc) { fADC=adc; }
     virtual void SetDetElemId(Int_t id)    {fDetElemId = id;}
     virtual void SetPadX(Int_t pad)        {fPadX = pad;}
     virtual void SetPadY(Int_t pad)        {fPadY = pad;}
@@ -63,23 +66,33 @@ class AliMUONDigit : public TObject {
     
     virtual void Copy(TObject& digit) const;
     
- private:
+    /** Delete the internal track arrays (which are dynamically allocated).
+      * This is to insure we can put those digits in e.g. TClonesArray
+      * w/o leaking memory.
+      */
+    virtual void Clear(Option_t*);
+    
+    /// Add mask to the track numbers.
+    virtual void PatchTracks(Int_t mask);
+    
+private:
+    Int_t fDetElemId;     // Detection element ID
+    Int_t fManuId;        // Id of the MANU chip.
+    Int_t fManuChannel;   // Channel within the MANU chip.
+    Int_t fSignal;        // Signal amplitude    
+      
     Int_t fPadX;          // Pad number along x
     Int_t fPadY;          // Pad number along y
     Int_t fCathode;       // Cathode number
+    Int_t fADC;           // ADC value
+    UInt_t fFlags;        // Special flags (e.g. is the signal an overflow ?)
     
-    Int_t fSignal;        // Signal amplitude
-    Int_t fTcharges[kMAXTRACKS];  // charge per track making this digit (up to 10)
-    Int_t fTracks[kMAXTRACKS];    // primary tracks making this digit (up to 10)
-    Int_t fPhysics;       // physics contribution to signal 
-    Int_t fHit;           // hit number - temporary solution
-    Int_t fDetElemId;     // Detection element ID
-
-    Int_t fManuId; // Id of the MANU chip.
-    Int_t fManuChannel; // Channel within the MANU chip.
-    Int_t fADC; // ADC value
-    Bool_t fIsSaturated; // Is the signal an overflow ? 
-    
-    ClassDef(AliMUONDigit,3)  //Digits for MUON
+    Int_t fNtracks;       // MC tracks making to this digit.
+    Int_t* fTcharges;     //[fNtracks] charges of MC track making this digit
+    Int_t* fTracks;       //[fNtracks] primary MC tracks making this digit
+    Int_t fPhysics;       // MC physics contribution to signal 
+    Int_t fHit;           // MC hit number - temporary solution
+  
+    ClassDef(AliMUONDigit,4)  //Digits for MUON
 };
 #endif

@@ -22,132 +22,337 @@
 
 ClassImp(AliMUONDigit)
 
+namespace
+{
+  const UInt_t SATURATEDFLAG = 0x1;
+}
+
 //_____________________________________________________________________________
 AliMUONDigit::AliMUONDigit()
-: TObject(),
-fPadX(0),
-fPadY(0),
-fCathode(0),
-fSignal(0),
-fPhysics(0),
-fHit(0),
-fDetElemId(0),
+: 
+TObject(),
+fDetElemId(-1),
 fManuId(-1),
 fManuChannel(-1),
+fSignal(0),
+fPadX(-1),
+fPadY(-1),
+fCathode(-1),
 fADC(0),
-fIsSaturated(kFALSE)
+fFlags(0),
+fNtracks(0),
+fTcharges(0x0),
+fTracks(0x0),
+fPhysics(0),
+fHit(0)
 {
+  //
   // Default constructor
-  
-  for ( Int_t i=0; i<kMAXTRACKS; ++i ) 
-  {
-    fTcharges[i] = 0;
-    fTracks[i] = 0;
-  }
+  //
 }
 
 //_____________________________________________________________________________
 AliMUONDigit::AliMUONDigit(const AliMUONDigit& digit)
-  : TObject(digit)
+: TObject(digit),
+fDetElemId(-1),
+fManuId(-1),
+fManuChannel(-1),
+fSignal(0),
+fPadX(-1),
+fPadY(-1),
+fCathode(-1),
+fADC(0),
+fFlags(0),
+fNtracks(0),
+fTcharges(0x0),
+fTracks(0x0),
+fPhysics(0),
+fHit(0)
 {
+  //
   // copy constructor
- 
+  //
    (static_cast<const AliMUONDigit&>(digit)).Copy(*this);
 }
 
 
 //_____________________________________________________________________________
-AliMUONDigit::~AliMUONDigit()
+AliMUONDigit::AliMUONDigit(Int_t *digits)
+: TObject(),
+fDetElemId(-1),
+fManuId(-1),
+fManuChannel(-1),
+fSignal(0),
+fPadX(-1),
+fPadY(-1),
+fCathode(-1),
+fADC(0),
+fFlags(0),
+fNtracks(0),
+fTcharges(0x0),
+fTracks(0x0),
+fPhysics(0),
+fHit(0)
+
 {
-  // Destructor 
+  //
+  // Creates a MUON digit object to be updated
+  // \deprecated
+  //
+    fPadX        = digits[0];
+    fPadY        = digits[1];
+    fCathode     = digits[2];
+    fSignal      = digits[3];
+    fPhysics     = digits[4];
+    fHit         = digits[5];
+    fDetElemId   = digits[6];
+    fManuId = -1;
+    fManuChannel = -1;
+    fADC=0;
+    fFlags = 0;
 }
 
 //_____________________________________________________________________________
-AliMUONDigit& 
-AliMUONDigit::operator=(const AliMUONDigit& digit)
+AliMUONDigit::AliMUONDigit(Int_t *tracks, Int_t *charges, Int_t *digits)
+: TObject(),
+fDetElemId(-1),
+fManuId(-1),
+fManuChannel(-1),
+fSignal(0),
+fPadX(-1),
+fPadY(-1),
+fCathode(-1),
+fADC(0),
+fFlags(0),
+fNtracks(0),
+fTcharges(0x0),
+fTracks(0x0),
+fPhysics(0),
+fHit(0)
 {
-  AliMUONDigit a(digit);
-  a.Copy(*this);
-  return *this;
+  //
+  // Creates a MUON digit object
+  //
+  // \deprecated
+    fPadX        = digits[0];
+    fPadY        = digits[1];
+    fCathode     = digits[2];
+    fSignal      = digits[3];
+    fPhysics     = digits[4];
+    fHit         = digits[5];
+    fDetElemId   = digits[6];
+    fManuId = -1;
+    fManuChannel = -1;
+    fADC=0;
+    
+    // For backward compatibility, which assumed 10 tracks.
+    fNtracks = 10;
+    fTcharges = new Int_t[fNtracks];
+    fTracks = new Int_t[fNtracks];
+    
+    for ( Int_t i=0; i<fNtracks; ++i ) 
+    {
+      fTcharges[i]  = charges[i];
+      fTracks[i]    = tracks[i];
+    }
+    fFlags=0;
+}
+
+//_____________________________________________________________________________
+AliMUONDigit::~AliMUONDigit()
+{
+  //
+  // Destructor 
+  //
+  delete[] fTcharges;
+  delete[] fTracks;
+}
+
+//_____________________________________________________________________________
+void
+AliMUONDigit::AddTrack(Int_t trackNumber, Int_t trackCharge)
+{
+  //
+  // Add 1 track information to the track list we keep.
+  // The implementation below is dumb, you've been warned !
+  //
+  
+  // First check if track is already there, in which
+  // case we simply increment its charge.
+  for ( Int_t i = 0; i < Ntracks(); ++i )
+  {
+      if ( Track(i) == trackNumber ) 
+      {
+        fTcharges[i] += trackCharge;
+        return;
+      }
+  }
+  
+  // Nope. It's a brand new track. Make a new array to get space
+  // for it, copy the old array into new one, and add the track.
+  Int_t* newTracks = new Int_t[fNtracks+1];
+  Int_t* newTcharges = new Int_t[fNtracks+1];
+  
+  for ( Int_t i = 0; i < fNtracks; ++i )
+  {
+    newTracks[i] = fTracks[i];
+    newTcharges[i] = fTcharges[i];
+  }
+  
+  newTracks[fNtracks] = trackNumber;
+  newTcharges[fNtracks] = trackCharge;
+  
+  delete[] fTracks;
+  delete[] fTcharges;
+  
+  fTracks = newTracks;
+  fTcharges = newTcharges;
+  
+  ++fNtracks;
+}
+
+//_____________________________________________________________________________
+void 
+AliMUONDigit::Clear(Option_t*)
+{
+  //
+  // Reset this digit, in particular the internal arrays are deleted.
+  //
+  delete[] fTracks;
+  delete[] fTcharges;
+  fTracks=0x0;
+  fTcharges=0x0;
+  fNtracks=0;
+}
+
+//_____________________________________________________________________________
+Int_t AliMUONDigit::Compare(const TObject *obj) const
+{
+  // 
+  // The order defined below is first by DE, then Signal, then 
+  // manuId, and then manuChannel, i.e. it should be a total ordering...
+  //
+
+  const AliMUONDigit* d = static_cast<const AliMUONDigit*>(obj);
+  
+  if ( DetElemId() > d->DetElemId() ) 
+  {
+    return 1;
+  }
+  else if ( DetElemId() < d->DetElemId() )
+  {
+    return -1;
+  }
+  else
+  {
+    if ( Signal() > d->Signal() )
+    {
+      return 1;
+    }
+    else if ( Signal() < d->Signal() )
+    {
+      return -1;
+    }
+    else
+    {
+      if ( ManuId() < d->ManuId() )
+      {
+        return 1;
+      }
+      else if ( ManuId() > d->ManuId() )
+      {
+        return -1;
+      }
+      else
+      {
+        return ( ManuChannel() < d->ManuChannel() ) ? 1 : -1;
+      }
+    }
+  }
 }
 
 //______________________________________________________________________________
 void 
 AliMUONDigit::Copy(TObject& obj) const
 {
+  //
   // Copy this line to line.
-  
+  //
   TObject::Copy(obj);
   AliMUONDigit& digit = static_cast<AliMUONDigit&>(obj);
-  digit.fPadX = fPadX;
-  digit.fPadY = fPadY;
-  digit.fCathode = fCathode;
-  digit.fSignal = fSignal;
-  digit.fHit = fHit;
+  
   digit.fDetElemId = fDetElemId;
   digit.fManuId = fManuId;
   digit.fManuChannel = fManuChannel;
+  digit.fSignal = fSignal;
+  
+  digit.fPadX = fPadX;
+  digit.fPadY = fPadY;
+  digit.fCathode = fCathode;
   digit.fADC = fADC;
-  digit.fIsSaturated = fIsSaturated;
+  digit.fFlags = fFlags;
+  
+  digit.fNtracks = fNtracks;
+  
+  delete[] digit.fTcharges;
+  delete[] digit.fTracks;
+  
+  if ( fNtracks )
+  {
+    digit.fTcharges = new Int_t[fNtracks];
+    digit.fTracks = new Int_t[fNtracks];
+  }
+  
+  for ( Int_t i=0; i<fNtracks; ++i ) 
+  {
+    digit.fTcharges[i] = fTcharges[i];
+    digit.fTracks[i] = fTracks[i];
+  }
+  
+  digit.fPhysics = fPhysics;
+  digit.fHit = fHit;
 }
 
+//_____________________________________________________________________________
+Bool_t
+AliMUONDigit::IsSaturated() const
+{
+  return (fFlags & SATURATEDFLAG );
+}
 
 //_____________________________________________________________________________
-AliMUONDigit::AliMUONDigit(Int_t *digits)
+AliMUONDigit& 
+AliMUONDigit::operator=(const AliMUONDigit& digit)
 {
   //
-  // Creates a MUON digit object to be updated
+  // Assignement operator.
   //
-    fPadX        = digits[0];
-    fPadY        = digits[1];
-    fCathode     = digits[2];
-    fSignal      = digits[3];
-    fPhysics     = digits[4];
-    fHit         = digits[5];
-    fDetElemId   = digits[6];
-    fManuId = -1;
-    fManuChannel = -1;
-    fADC=0;
-    fIsSaturated = kFALSE;
-}
-//_____________________________________________________________________________
-AliMUONDigit::AliMUONDigit(Int_t *tracks, Int_t *charges, Int_t *digits)
-{
-    //
-    // Creates a MUON digit object
-    //
-    fPadX        = digits[0];
-    fPadY        = digits[1];
-    fCathode     = digits[2];
-    fSignal      = digits[3];
-    fPhysics     = digits[4];
-    fHit         = digits[5];
-    fDetElemId   = digits[6];
-    fManuId = -1;
-    fManuChannel = -1;
-    fADC=0;
-    for(Int_t i=0; i<kMAXTRACKS; i++) {
-      fTcharges[i]  = charges[i];
-      fTracks[i]    = tracks[i];
-    }
-    fIsSaturated=kFALSE;
+  AliMUONDigit a(digit);
+  a.Copy(*this);
+  return *this;
 }
 
 //_____________________________________________________________________________
-Int_t AliMUONDigit::Compare(const TObject *obj) const
+void
+AliMUONDigit::PatchTracks(Int_t mask)
 {
-// sort by idDE
-
- AliMUONDigit* d = (AliMUONDigit*) obj;
-
- return ( fDetElemId > d->DetElemId()) ? 1 : -1;
-
+  //
+  // Add mask to each track number.
+  //
+  for ( Int_t i = 0; i < Ntracks(); ++i )
+  {
+    fTracks[i] += mask;
+  }
 }
 
 //_____________________________________________________________________________
 void
 AliMUONDigit::Print(Option_t* opt) const
 {
+  //
+  // Dump to screen.
+  // If opt=="tracks", info on tracks are printed too.
+  //
   cout << "DetEle " << setw(5) << DetElemId()
   << " Cath " << setw(2) << Cathode()
   << " (Ix,Iy)=(" << setw(3) << PadX() << "," << setw(3) << PadY()
@@ -156,7 +361,7 @@ AliMUONDigit::Print(Option_t* opt) const
   << "," << setw(3) << ManuChannel() << ")"
   << " Signal=" << setw(6) << Signal()
   << " Physics=" << setw(4) << Physics();
-  if ( fIsSaturated ) 
+  if ( IsSaturated() ) 
   {
     cout << "(S)";
   }
@@ -169,47 +374,37 @@ AliMUONDigit::Print(Option_t* opt) const
   options.ToLower();
   if ( options.Contains("tracks") )
   {
-    cout << " Track0=" << setw(3) << Track(0) 
-    << " Charge0=" << setw(4) << TrackCharge(0)
-    << " Track1=" << setw(3) << Track(1) 
-    << " Charge1=" << setw(4) << TrackCharge(1);
+    cout << " Hit " << setw(3) << Hit();
+    Int_t ntracks = Ntracks();
+    if (ntracks) 
+    {
+      cout << " Tracks : " << setw(2) << ntracks;
+      for ( Int_t i = 0; i < ntracks; ++i )
+      {
+        cout << " Track(" << i << ")=" << setw(3) << Track(i)
+        << " Charge(" << i << ")=" << setw(5) << TrackCharge(i);
+      }
+    }
+    else
+    {
+      cout << " no track info.";
+    }
   }
   cout << endl;  
 }
 
 //_____________________________________________________________________________
-Bool_t
-AliMUONDigit::IsSaturated() const
-{
-  return fIsSaturated;
-}
-
-//_____________________________________________________________________________
-Int_t
-AliMUONDigit::ManuId() const
-{
-  return fManuId;
-}
-
-//_____________________________________________________________________________
-Int_t
-AliMUONDigit::ManuChannel() const
-{
-  return fManuChannel;
-}
-
-//_____________________________________________________________________________
-Int_t 
-AliMUONDigit::ADC() const
-{
-  return fADC;
-}
-
-//_____________________________________________________________________________
 void
-AliMUONDigit::SetADC(Int_t adc)
+AliMUONDigit::Saturated(Bool_t value)
 {
-  fADC = adc;
+  if ( value )
+  {
+    fFlags |= SATURATEDFLAG;
+  }
+  else
+  {
+    fFlags ^= SATURATEDFLAG;
+  }
 }
 
 //_____________________________________________________________________________
@@ -224,10 +419,31 @@ AliMUONDigit::SetElectronics(Int_t manuId, Int_t manuChannel)
 }
 
 //_____________________________________________________________________________
-void
-AliMUONDigit::Saturated(Bool_t saturated)
+Int_t
+AliMUONDigit::Track(Int_t i) const
 {
-  fIsSaturated=saturated;
+  //
+  // Return the i-th track number (if i is >=0 and < Ntracks()) or -1.
+  //
+  if ( i >= 0 && i < fNtracks ) 
+  {
+    return fTracks[i];
+  }
+
+  return -1;
 }
 
+//_____________________________________________________________________________
+Int_t
+AliMUONDigit::TrackCharge(Int_t i) const
+{
+  //
+  // Return the i-th track charge (if i is >=0 and < Ntracjs()) or -1.
+  //
+  if ( i >= 0 && i < fNtracks ) 
+  {
+    return fTcharges[i];
+  }
 
+  return -1;
+}
