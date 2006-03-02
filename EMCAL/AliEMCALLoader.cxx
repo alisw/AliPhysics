@@ -113,13 +113,11 @@ AliEMCALCalibData* AliEMCALLoader::CalibData()
 { 
   // Check if the instance of AliEMCALCalibData exists, and return it
 
-  if( !(AliCDBManager::Instance()->IsDefaultStorageSet()) ) {
+  if( !(AliCDBManager::Instance()->IsDefaultStorageSet()) ) 
     fCalibData=0x0;
-    return fCalibData;
-  }
-
- return fCalibData;
-
+  
+  return fCalibData;
+  
 }
 
 //____________________________________________________________________________ 
@@ -139,8 +137,8 @@ Int_t AliEMCALLoader::CalibrateRaw(Double_t energy, Int_t module,
   if (CalibData() == 0)
     Warning("CalibrateRaw","Calibration DB is not initiated!");
 
-  Float_t gainFactor = 0.0015; // width of one ADC channel in GeV
-  Float_t pedestal   = 0.005;  // pedestals
+  Float_t gainFactor = 0.00305;//0.0015; // width of one ADC channel in GeV
+  Float_t pedestal   = 0.009;//0.005;  // pedestals
 
   if(CalibData()) {
     gainFactor = CalibData()->GetADCchannel (module,column,row);
