@@ -44,7 +44,7 @@ void testExistingPads2(AliMpStationType station = kStation1,
   
   // Second loop via pad area iterator
   cout << "Iterating via iterator ..." << endl;
-  AliMpArea area(TVector2(600.,600.), TVector2(600.,600.) );
+  AliMpArea area(TVector2(60.,60.), TVector2(60.,60.) );
   AliMpVPadIterator* it = segmentation.CreateIterator(area);
   Int_t counter2 = 0;
   for (it->First(); ! it->IsDone(); it->Next()){
