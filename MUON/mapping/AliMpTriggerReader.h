@@ -2,7 +2,7 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$
-// $MpId$
+// $MpId: AliMpTriggerReader.h,v 1.2 2006/03/02 16:36:26 ivana Exp $
 
 /// \ingroup trigger
 /// \class AliMpTriggerReader
