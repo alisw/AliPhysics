@@ -15,7 +15,6 @@
 
 /* $Id$ */
 
-#include <stdlib.h> // for exit()
 #include <Riostream.h>
 #include <TClonesArray.h>
 #include <TArrayD.h>
@@ -43,14 +42,13 @@ const Double_t AliMUONTrackK::fgkEpsilon = 0.002;
 
 void mnvertLocal(Double_t* a, Int_t l, Int_t m, Int_t n, Int_t& ifail); // from AliMUONTrack
 
-ClassImp(AliMUONTrackK) // Class implementation in ROOT context
-
   Int_t AliMUONTrackK::fgDebug = -1; //-1;
 Int_t AliMUONTrackK::fgNOfPoints = 0; 
 AliMUONTrackReconstructor* AliMUONTrackK::fgTrackReconstructor = NULL; 
 TClonesArray* AliMUONTrackK::fgHitForRec = NULL; 
 AliMUONEventRecoCombi *AliMUONTrackK::fgCombi = NULL;
-//FILE *lun1 = fopen("window.dat","w");
+
+ClassImp(AliMUONTrackK) // Class implementation in ROOT context
 
   //__________________________________________________________________________
 AliMUONTrackK::AliMUONTrackK()
@@ -861,26 +859,6 @@ Bool_t AliMUONTrackK::FindPoint(Int_t ichamb, Double_t zEnd, Int_t currIndx, Int
     if (hit->GetChamberNumber() == ichamb) {
       //if (TMath::Abs(hit->GetZ()-zEnd) < 0.1) {
       if (TMath::Abs(hit->GetZ()-zEnd) < 0.5) {
-        //if (TMath::Abs(hit->GetZ()-zEnd) > 0.1) {
-        if (TMath::Abs(hit->GetZ()-zEnd) > 0.05) {
-	  // adjust position: for multiple hits in the chamber
-	  // (mostly (only?) for GEANT hits)
-	  AliWarning(Form(" *** adjust %f %f ", zEnd, hit->GetZ()));
-	  zEnd = hit->GetZ();
-	  *fTrackPar = *fTrackParNew;
-	  ParPropagation(zEnd);
-	  WeightPropagation(zEnd, kTRUE);
-	  fPosition = fPositionNew;
-	  *fTrackPar = *fTrackParNew;
-	  // Get covariance
-	  *fCovariance = *fWeight;
-	  if (fCovariance->Determinant() != 0) {
-	    Int_t ifail;
-	    mnvertLocal(&((*fCovariance)(0,0)), fgkSize,fgkSize,fgkSize,ifail);
-	  } else {
-	    AliWarning(" Determinant fCovariance=0:" );
-	  }
-	}
 	y = hit->GetBendingCoor();
 	x = hit->GetNonBendingCoor();
 	if (hit->GetBendingReso2() < 0) {
@@ -927,6 +905,24 @@ Bool_t AliMUONTrackK::FindPoint(Int_t ichamb, Double_t zEnd, Int_t currIndx, Int
 	  //  hit->GetTrackRefSignal() == 1) { // just for test
 	  // Vector of measurements and covariance matrix
 	  //fprintf(lun1,"%3d %3d %10.4f %10.4f \n", gAlice->GetEvNumber(), ichamb, x, y);
+	  if (TMath::Abs(hit->GetZ()-zEnd) > 0.05) {
+	    // Adjust position: for multiple hits in the chamber or misalignment (Z as a function of X or Y)
+	    //AliWarning(Form(" *** adjust %f %f ", zEnd, hit->GetZ()));
+	    zEnd = hit->GetZ();
+	    *fTrackPar = *fTrackParNew;
+	    ParPropagation(zEnd);
+	    WeightPropagation(zEnd, kTRUE);
+	    fPosition = fPositionNew;
+	    *fTrackPar = *fTrackParNew;
+	    // Get covariance
+	    *fCovariance = *fWeight;
+	    if (fCovariance->Determinant() != 0) {
+	      Int_t ifail;
+	      mnvertLocal(&((*fCovariance)(0,0)), fgkSize,fgkSize,fgkSize,ifail);
+	    } else {
+	      AliWarning(" Determinant fCovariance=0:" );
+	    }
+	  }
 	  point.Zero();
 	  point(0,0) = y;
 	  point(1,0) = x;
@@ -1382,7 +1378,6 @@ void AliMUONTrackK::GoToVertex(Int_t iflag)
   TClonesArray *rawclusters;
 
   // First step to the rear end of the absorber
-  //AZ(z->-z) Double_t zRear = 503;
   Double_t zRear = -503;
   GoToZ(zRear);
   Double_t tan3 = TMath::Tan(3./180*TMath::Pi());
@@ -1478,14 +1473,15 @@ void AliMUONTrackK::GoToVertex(Int_t iflag)
       } else {
 	deltaP = 3.0714 + 0.011767 * p0;
       }
+      deltaP *= 0.75; 
     } else {
       if (p0 < 20) {
 	deltaP  = 2.1207 + 0.05478 * p0 - 0.00145079 * p0 * p0;
       } else { 
 	deltaP = 2.6069 + 0.0051705 * p0;
       }
+      deltaP *= 0.9; 
     }
-    deltaP *= 0.9; 
     //*/
 
     p0 = pTotal + deltaP/TMath::Abs(TMath::Cos((*fTrackPar)(2,0))/TMath::Cos((*fTrackPar)(3,0)));

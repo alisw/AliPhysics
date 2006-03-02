@@ -440,12 +440,14 @@ Double_t AliMUONTrackParam::TotalMomentumEnergyLoss(Double_t thetaLimit, Double_
     } else {
       deltaP = 3.0714 + 0.011767 *pTotal;
     }
+    deltaP *= 0.75; // AZ
   } else {
     if (pTotal < 20) {
       deltaP  = 2.1207 + 0.05478 * pTotal - 0.00145079 * pTotal * pTotal;
     } else { 
       deltaP = 2.6069 + 0.0051705 * pTotal;
     }
+    deltaP *= 0.9; // AZ
   }
   pTotalCorrected = pTotal + deltaP / TMath::Cos(theta);
   return pTotalCorrected;
