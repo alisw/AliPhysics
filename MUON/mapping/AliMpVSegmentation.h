@@ -2,7 +2,7 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$
-// $MpId: AliMpVSegmentation.h,v 1.7 2006/01/11 10:07:54 ivana Exp $
+// $MpId: AliMpVSegmentation.h,v 1.8 2006/03/02 16:29:11 ivana Exp $
 
 /// \ingroup basic
 /// \class AliMpVSegmentation
@@ -21,7 +21,9 @@
 
 #include "AliMpPadPair.h"
 #include "AliMpPad.h"
+#include "AliMpPlaneType.h"
 
+class TArrayI;
 class TVector2;
 
 class AliMpVPadIterator;
@@ -54,6 +56,13 @@ class AliMpVSegmentation : public TObject
     virtual Int_t  MaxPadIndexY() = 0;
 
     virtual Bool_t HasPad(const AliMpIntPair& indices) const = 0;
+    
+    virtual void GetAllElectronicCardIDs(TArrayI& ecn) const = 0;
+
+    virtual AliMpPlaneType PlaneType() const = 0;
+    
+    /// Gives the half-sizes (in cm) of the underlying detection element.
+    virtual TVector2 Dimensions() const = 0;
     
   private:  
     // methods
