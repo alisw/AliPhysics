@@ -122,7 +122,7 @@ void AliMUONDigitizerv2::MakeTransientDigitFromSDigit(Int_t iChamber, AliMUONDig
 	
 	AliMUONTransientDigit* mTD = new AliMUONTransientDigit(iChamber, digits);
 	// Copy list of tracks and trackcharge
-	for(Int_t itrack = 0; itrack < kMAXTRACKS; itrack++)
+	for(Int_t itrack = 0; itrack < sDigit->Ntracks(); ++itrack)
 	{
 		Int_t track = sDigit->Track(itrack);
 		if (track < 0) break;  // Check if we reached the end of the track list.
