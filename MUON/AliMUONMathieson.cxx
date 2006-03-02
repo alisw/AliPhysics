@@ -34,7 +34,8 @@ ClassImp(AliMUONMathieson)
     fSqrtKy3(0.),
     fKy2(0.),
     fKy4(0.),
-    fPitch(0.)
+    fPitch(0.),
+    fInversePitch(0.)
 {
 // Default constructor
 
@@ -70,13 +71,13 @@ void AliMUONMathieson::SetSqrtKy3AndDeriveKy2Ky4(Float_t SqrtKy3)
 Float_t
 AliMUONMathieson::IntXY(Float_t xi1, Float_t yi1, Float_t xi2, Float_t yi2) const
 {
-  AliDebug(1,Form("xi1=%e yi1=%e xi2=%e yi2=%e",xi1,yi1,xi2,yi2));
-  
-  const Float_t kInversePitch = 1./fPitch;
-  xi1 *= kInversePitch;
-  xi2 *= kInversePitch;
-  yi1 *= kInversePitch;
-  yi2 *= kInversePitch;
+  //
+  // Integrate the Mathieson over x and y
+  //
+  xi1 *= fInversePitch;
+  xi2 *= fInversePitch;
+  yi1 *= fInversePitch;
+  yi2 *= fInversePitch;
   //
   // The Mathieson function 
   Double_t ux1=fSqrtKx3*TMath::TanH(fKx2*xi1);
@@ -102,3 +103,23 @@ Float_t AliMUONMathieson::IntXY(Int_t idDE, AliMUONGeometrySegmentation* segment
     segmentation->IntegrationLimits(idDE, xi1,xi2,yi1,yi2);
     return IntXY(xi1,yi1,xi2,yi2);
 }
+
+//______________________________________________________________________________
+void 
+AliMUONMathieson::SetPitch(Float_t p1)
+{
+  //
+  // Defines the pitch, and store its inverse, which is what is used in fact.
+  //
+  fPitch = p1;
+  if ( fPitch )
+  {
+    fInversePitch = 1/fPitch;
+  }
+  else
+  {
+    AliError(Form("Invalid pitch %e",p1));
+    fInversePitch = 0.0;
+  }
+}
+

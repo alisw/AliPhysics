@@ -25,7 +25,7 @@ class AliMUONMathieson : public TObject
     // Get anode cathode Pitch
     Float_t Pitch() const        {return fPitch;}
     // Set anode cathode Pitch
-    void    SetPitch(Float_t p1) {fPitch = p1;};
+    void    SetPitch(Float_t p1);
 
     // Set Mathieson parameters
     // Mathieson \sqrt{Kx3} and derived Kx2 and Kx4
@@ -58,8 +58,8 @@ class AliMUONMathieson : public TObject
     Float_t fKy2;                      // Mathieson Ky2
     Float_t fKy4;                      // Mathieson Ky4 = Ky1/Ky2/Sqrt(Ky3)
     Float_t fPitch;                    // anode-cathode pitch
-    
-    ClassDef(AliMUONMathieson,2) // Implementation of Mathieson response
+    Float_t fInversePitch;             // 1/Pitch
+    ClassDef(AliMUONMathieson,3) // Implementation of Mathieson response
 };
 #endif
 
