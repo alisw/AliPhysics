@@ -9,24 +9,47 @@ mkdir $OUTDIR
 cp .rootrc rootlogon.C $OUTDIR
 cd $OUTDIR
 
+FULLPATH="$CURDIR/$OUTDIR"
+# Minimum number of events to have enough stat. for invariant mass fit
+# 10000 is ok, 20000 is really fine
+NEVENTS=10000
 SEED=1234567
+
+CDBDIRECTORY="$ALICE_ROOT/MUON/CDB/Default";
+CDB="local://$CDBDIRECTORY";
+
+if [ ! -d $CDBDIRECTORY"/MUON" ]; then
+
+echo "Generating Condition Database in directory $CDBDIRECTORY. This may take a while, so please be patient..."
+
+aliroot -b >& testGenerateCalibrations.out << EOF
+.L $ALICE_ROOT/MUON/MUONCDB.C++
+gRandom->SetSeed($SEED);
+generateCalibrations("$CDB",true);
+.q
+EOF
+
+else
+
+echo "Condition Database found in directory $CDBDIRECTORY. Will use it if needed."
+
+fi
 
 echo "Running simulation  ..."
 
 aliroot -b >& testSim.out << EOF  
-AliSimulation MuonSim
-MuonSim.SetConfigFile("$ALICE_ROOT/MUON/Config.C")
-// Minimum number of events to have enough stat. for invariant mass fit
-// 10000 is ok, 20000 is really fine
-MuonSim.Run(10000) 
+gRandom->SetSeed($SEED);
+AliCDBManager::Instance()->SetDefaultStorage("$CDB");
+AliSimulation MuonSim("$ALICE_ROOT/MUON/Config.C");
+MuonSim.Run($NEVENTS) 
 .q
 EOF
 
 echo "Running reconstruction  ..."
 
 aliroot -b >& testReco.out << EOF 
-TPluginManager* pluginManager = gROOT->GetPluginManager();
-pluginManager->AddHandler("AliReconstructor", "MUON","AliMUONReconstructor", "MUON","AliMUONReconstructor()")
+gRandom->SetSeed($SEED);
+AliCDBManager::Instance()->SetDefaultStorage("$CDB");
 AliReconstruction MuonRec("galice.root") 
 MuonRec.SetRunTracking("")
 MuonRec.SetRunVertexFinder(kFALSE)
