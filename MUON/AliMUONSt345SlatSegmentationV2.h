@@ -76,7 +76,7 @@ class AliMUONSt345SlatSegmentationV2 : public AliMUONVGeometryDESegmentation
 
   void SetDAnod(float);
 
-  void Init(int);
+  void Init(int) {}
   void Draw(Option_t * = "");
 
   Float_t Dpx() const;

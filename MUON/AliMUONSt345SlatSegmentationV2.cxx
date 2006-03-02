@@ -42,7 +42,6 @@ ClassImp(AliMUONSt345SlatSegmentationV2)
 
 namespace
 {
-  Int_t fgIntOffset = 1;
   Float_t FMAX(1E9);
 }
 
@@ -215,8 +214,8 @@ AliMUONSt345SlatSegmentationV2::FirstPad(Float_t xhit, Float_t yhit,
 	
   AliDebug(4,Form("xhit,yhit,dx,dy=%e,%e,%e,%e ix,iy=%3d,%3d slat=%s",
 									xhit,yhit,dx,dy,
-									fCurrentPad.GetIndices().GetFirst()+1,
-									fCurrentPad.GetIndices().GetSecond()+1,fSlat->GetID()));		  
+									fCurrentPad.GetIndices().GetFirst(),
+									fCurrentPad.GetIndices().GetSecond(),fSlat->GetID()));		  
 }
 
 //_____________________________________________________________________________
@@ -271,8 +270,7 @@ AliMUONSt345SlatSegmentationV2::GetPadC(Int_t ix, Int_t iy,
 																				Float_t& x, Float_t& y)
 {
   AliMpPad pad = 
-  fSlatSegmentation->PadByIndices(AliMpIntPair(ix-fgIntOffset,iy-fgIntOffset),
-                                  kTRUE);
+  fSlatSegmentation->PadByIndices(AliMpIntPair(ix,iy),kTRUE);
   x = pad.Position().X();
   y = pad.Position().Y();
 }
@@ -291,16 +289,12 @@ void
 AliMUONSt345SlatSegmentationV2::GetPadI(Float_t x, Float_t y,
 																				Int_t& ix, Int_t& iy)
 {
-//  Double_t slatx = fSlat->DX();
-//  Double_t slaty = fSlat->DY();
-  AliMpPad pad = 
-    fSlatSegmentation->PadByPosition(TVector2(x,y), kTRUE);
-//  fSlatSegmentation->PadByPosition(TVector2(x+slatx,y+slaty), kTRUE);
+  AliMpPad pad = fSlatSegmentation->PadByPosition(TVector2(x,y), kTRUE);
 	
   if ( pad != AliMpPad::Invalid() )
 	{
-		ix = pad.GetIndices().GetFirst() + fgIntOffset;
-		iy = pad.GetIndices().GetSecond() + fgIntOffset;
+		ix = pad.GetIndices().GetFirst();
+		iy = pad.GetIndices().GetSecond();
 	}
   else
 	{
@@ -328,14 +322,7 @@ AliMUONSt345SlatSegmentationV2::HasPad(Float_t x, Float_t y, Float_t z)
 Bool_t
 AliMUONSt345SlatSegmentationV2::HasPad(Int_t ix, Int_t iy)
 {
-  return fSlatSegmentation->HasPad(AliMpIntPair(ix-fgIntOffset,iy-fgIntOffset));
-}
-
-//_____________________________________________________________________________
-void
-AliMUONSt345SlatSegmentationV2::Init(int)
-{
-  AliWarning("Not Implemented because not needed ;-)");
+  return fSlatSegmentation->HasPad(AliMpIntPair(ix,iy));
 }
 
 //_____________________________________________________________________________
@@ -380,7 +367,7 @@ AliMUONSt345SlatSegmentationV2::Ix()
 {
   if ( fPadIterator )
 	{
-		return fPadIterator->CurrentItem().GetIndices().GetFirst() + fgIntOffset;
+		return fPadIterator->CurrentItem().GetIndices().GetFirst();
 	}
   else
 	{
@@ -394,7 +381,7 @@ AliMUONSt345SlatSegmentationV2::Iy()
 {
   if ( fPadIterator ) 
 	{
-		return fPadIterator->CurrentItem().GetIndices().GetSecond() + fgIntOffset;
+		return fPadIterator->CurrentItem().GetIndices().GetSecond();
 	}
   else
 	{
@@ -416,7 +403,7 @@ AliMUONSt345SlatSegmentationV2::Neighbours(Int_t iX, Int_t iY, Int_t* Nlist,
 {
   // Find pad at (ix,iy) for which we'll search neighbours.
   AliMpPad pad = 
-	fSlatSegmentation->PadByIndices(AliMpIntPair(iX-fgIntOffset,iY-fgIntOffset),kTRUE);
+	fSlatSegmentation->PadByIndices(AliMpIntPair(iX,iY),kTRUE);
 	
   // Define the region to look into : a region slightly bigger
   // than the pad itself (5% bigger), in order to catch first neighbours.
@@ -431,8 +418,8 @@ AliMUONSt345SlatSegmentationV2::Neighbours(Int_t iX, Int_t iY, Int_t* Nlist,
 		AliMpPad p = it->CurrentItem();
 		if ( p != pad ) // skip self
 		{
-			Xlist[n] = p.GetIndices().GetFirst() + fgIntOffset;
-			Ylist[n] = p.GetIndices().GetSecond() + fgIntOffset;
+			Xlist[n] = p.GetIndices().GetFirst();
+			Ylist[n] = p.GetIndices().GetSecond();
 			++n;
 		}
 		it->Next();
@@ -484,7 +471,7 @@ AliMUONSt345SlatSegmentationV2::Print(Option_t*) const
 Int_t
 AliMUONSt345SlatSegmentationV2::Sector(Int_t ix, Int_t)
 {
-  return fSlat->FindPCBIndex(ix - fgIntOffset);
+  return fSlat->FindPCBIndex(ix);
 }
 
 //_____________________________________________________________________________
@@ -516,19 +503,24 @@ AliMUONSt345SlatSegmentationV2::SetHit(Float_t x, Float_t y, Float_t)
   fYhit = y;
 	
   //
-  // insure we're within the slat limits. If not, issue an error and sets
-  // the current hit to slat center.
-  // FIXME: this should probably a) not happen at all b) be a fatal error
+  // insure we're within the slat limits. If not, issue a simple
+  // warning, as this might be correct (due to clustering/fitting algorithm
+  // that is allowed to go a little bit outside limits).
+  // That should only be considered an error in case the point is way
+  // outside (but by how much is the question you'll have to determine
+  // by yourself...)
   //
   if ( fXhit < -fSlat->DX() || fXhit > fSlat->DX() ||
        fYhit < -fSlat->DY() || fYhit > fSlat->DY() )
 	{
-		AliError(Form("Hit outside slat %s limits (x,y)hit = (%e,%e)."
-                  " Forcing to (0,0)",fSlat->GetID(),fXhit,fYhit));
-		fXhit = 0.0;
-		fYhit = 0.0;
-	}
-  
+    Double_t DX = - fSlat->DX() + TMath::Abs(fXhit);
+    Double_t DY = - fSlat->DY() + TMath::Abs(fYhit);
+    DX = ( DX > 0 ? DX : 0);
+    DY = ( DY > 0 ? DY : 0);
+		AliWarning(Form("Hit outside slat %s limits (x,y)hit = (%e,%e). "
+                    "Outside by (%e,%e) cm. Might be ok though.",
+                    fSlat->GetID(),fXhit,fYhit,DX,DY));
+	}  
 }
 
 //_____________________________________________________________________________
@@ -536,7 +528,7 @@ void
 AliMUONSt345SlatSegmentationV2::SetPad(Int_t ix, Int_t iy)
 {
   fCurrentPad = 
-	fSlatSegmentation->PadByIndices(AliMpIntPair(ix-fgIntOffset,iy-fgIntOffset),kTRUE);
+	fSlatSegmentation->PadByIndices(AliMpIntPair(ix,iy),kTRUE);
   if ( !fCurrentPad.IsValid() )
 	{
 		AliError(Form("Setting current pad to invalid ! (ix,iy)=(%4d,%4d)",ix,iy));
