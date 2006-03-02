@@ -28,8 +28,6 @@
 #include "AliMUONSegmentation.h"
 #include "AliMpArea.h"
 #include "AliMpDEManager.h"
-#include "AliMpPlaneType.h"
-#include "AliMpStationType.h"
 #include "AliMpVPadIterator.h"
 #include "AliMpVSegmentation.h"
 #include "AliRun.h"
@@ -181,9 +179,12 @@ Float_t AliMUONResponseV0::IntXY(Int_t idDE, AliMUONGeometrySegmentation* segmen
   //-------------------------------------------
 Int_t  AliMUONResponseV0::DigitResponse(Int_t digit, AliMUONTransientDigit* /*where*/)
 {
-//  FIXME : AliFatal("put the pedestal adding here!");
-    // add white noise and do zero-suppression and signal truncation
-//     Float_t meanNoise = gRandom->Gaus(1, 0.2);
+  // \deprecated method
+  // Now part of the digitizer (where it belongs really), e.g. DigitizerV3
+  //
+  // add white noise and do zero-suppression and signal truncation
+
+  //     Float_t meanNoise = gRandom->Gaus(1, 0.2);
     // correct noise for slat chambers;
     // one more field to add to AliMUONResponseV0 to allow different noises ????
 //    Float_t meanNoise = gRandom->Gaus(1., 0.2);
@@ -217,16 +218,17 @@ void
 AliMUONResponseV0::DisIntegrate(const AliMUONHit& hit, TList& digits)
 {
   //
-  //
+  // Go from 1 hit to a list of digits.
+  // The energy deposition of that hit is first converted into charge
+  // (in IntPH() method), and then this charge is dispatched on several
+  // pads, according to the Mathieson distribution.
   //
   
   digits.Clear();
   
   Int_t detElemId = hit.DetElemId();
   
-  //
   // Width of the integration area
-  //
   Double_t dx = SigmaIntegration()*ChargeSpreadX();
   Double_t dy = SigmaIntegration()*ChargeSpreadY();
   
@@ -238,80 +240,83 @@ AliMUONResponseV0::DisIntegrate(const AliMUONHit& hit, TList& digits)
   TVector2 hitPosition(x,y);
   AliMpArea area(hitPosition,TVector2(dx,dy));
   
-  //
-  // Get pulse height from energy loss
+  // Get pulse height from energy loss.
   Float_t qtot = IntPH(hit.Eloss());
   
+  // Get the charge correlation between cathodes.
   Float_t currentCorrel = TMath::Exp(gRandom->Gaus(0.0,ChargeCorrel()/2.0));
 
-  AliDebug(4,Form("DE=%d eloss=%e x,y,z=%e,%e,%e fCurrentCorrel=%e dx,dy=%e,%e",
-                  detElemId,hit.Eloss(),hit.X(),hit.Y(),hit.Z(),
-                  currentCorrel,dx,dy));
-      
-  AliMpStationType station = AliMpDEManager::GetStationType(detElemId);
-  
-  Int_t intOffset = 1;
-  if ( station == kStation1 || station == kStation2 )
-  {
-    intOffset = 0;
-  }
-  
   for ( Int_t cath = 0; cath < 2; ++cath )
   {
     Float_t qcath = qtot * ( cath == 0 ? currentCorrel : 1.0/currentCorrel);
     
-    AliDebug(4,Form("i=%d qtot=%e qcath=%e",cath+1,qtot,qcath));      
     // Get an iterator to loop over pads, within the given area.
-      const AliMpVSegmentation* seg = 
+    const AliMpVSegmentation* seg = 
         Segmentation()->GetMpSegmentation(detElemId,cath);
-      AliMpVPadIterator* it = seg->CreateIterator(area);
       
-      if (!it)
+    AliMpVPadIterator* it = seg->CreateIterator(area);
+      
+    if (!it)
+    {
+      AliError(Form("Could not get iterator for detElemId %d",detElemId));
+      return;
+    }
+    
+    // Start loop over pads.
+    it->First();
+    
+    if ( it->IsDone() )
+    {
+      // Exceptional case : iterator is built, but is invalid from the start.
+      AliMpPad pad = seg->PadByPosition(area.Position(),kFALSE);
+      if ( pad.IsValid() )
       {
-        AliError(Form("Could not get iterator for detElemId %d",detElemId));
-        return;
+        AliWarning(Form("Got an invalid iterator bug (area.Position() is within "
+                      " DE but the iterator is void) for detElemId %d cath %d",
+                      detElemId,cath));        
       }
-      
-      // Start loop over pads.
-      it->First();
-      while ( !it->IsDone() )
+      else
       {
-        AliMpPad pad = it->CurrentItem();      
-        TVector2 lowerLeft(hitPosition-pad.Position()-pad.Dimensions());
-        TVector2 upperRight(lowerLeft + pad.Dimensions()*2.0);
-        Float_t qp = TMath::Abs(fMathieson->IntXY(lowerLeft.X(),lowerLeft.Y(),
-                                                  upperRight.X(),upperRight.Y()));
-
-
-        Int_t icharge = Int_t(qp*qcath);
-        
-        if ( qp > fChargeThreshold )
-        {
-          AliDebug(4,Form("ix,iy=%d,%d qp=%e",
-                          pad.GetIndices().GetFirst()+intOffset,
-                          pad.GetIndices().GetSecond()+intOffset,
-                          qp));
-          AliMUONDigit* d = new AliMUONDigit;
-          d->SetDetElemId(detElemId);
-          d->SetPadX(pad.GetIndices().GetFirst()+intOffset);
-          d->SetPadY(pad.GetIndices().GetSecond()+intOffset);
-          d->SetSignal(icharge);
-          d->AddPhysicsSignal(d->Signal());
-          d->SetCathode(cath);
-          Int_t manuId = pad.GetLocation().GetFirst();
-          Int_t manuChannel = pad.GetLocation().GetSecond();
-          AliMpPlaneType planeType = AliMpDEManager::GetPlaneType(detElemId,cath);
-          if ( planeType == kNonBendingPlane )
-          {
-            // FIXME: this should not be there, but integrated in the mapping files directly.
-            manuId |= (1<<11);
-          }
-          d->SetElectronics(manuId,manuChannel);
-          digits.Add(d);   
-        }       
-        it->Next();
+        AliError(Form("Got an invalid iterator bug for detElemId %d cath %d."
+                      "Might be a bad hit ? area.Position()=(%e,%e) "
+                      "Dimensions()=(%e,%e)",
+                      detElemId,cath,area.Position().X(),area.Position().Y(),
+                      area.Dimensions().X(),area.Dimensions().Y()));
       }
       delete it;
+      return;
+    }
+    
+    while ( !it->IsDone() )
+    {
+      // For each pad given by the iterator, compute the charge of that
+      // pad, according to the Mathieson distribution.
+      AliMpPad pad = it->CurrentItem();      
+      TVector2 lowerLeft(hitPosition-pad.Position()-pad.Dimensions());
+      TVector2 upperRight(lowerLeft + pad.Dimensions()*2.0);
+      Float_t qp = TMath::Abs(fMathieson->IntXY(lowerLeft.X(),lowerLeft.Y(),
+                                                upperRight.X(),upperRight.Y()));
+            
+      Int_t icharge = Int_t(qp*qcath);
+      
+      if ( qp > fChargeThreshold )
+      {
+        // If we're above threshold, then we create a digit,
+        // and fill it with relevant information, including electronics.
+        AliMUONDigit* d = new AliMUONDigit;
+        d->SetDetElemId(detElemId);
+        d->SetPadX(pad.GetIndices().GetFirst());
+        d->SetPadY(pad.GetIndices().GetSecond());
+        d->SetSignal(icharge);
+        d->AddPhysicsSignal(d->Signal());
+        d->SetCathode(cath);
+        d->SetElectronics(pad.GetLocation().GetFirst(),
+                          pad.GetLocation().GetSecond());
+        digits.Add(d);   
+      }       
+      it->Next();
+    }
+    delete it;
   }
 }
 
