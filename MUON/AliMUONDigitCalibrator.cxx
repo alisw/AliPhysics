@@ -25,7 +25,7 @@
 #include "AliMUONConstants.h"
 #include "AliMUONData.h"
 #include "AliMUONDigit.h"
-#include "AliMUONCalibParam.h"
+#include "AliMUONVCalibParam.h"
 #include "AliMpDEManager.h"
 #include "AliMpPad.h"
 #include "AliMpPlaneType.h"
@@ -38,22 +38,37 @@ ClassImp(AliMUONDigitCalibrator)
 
 //_____________________________________________________________________________
 AliMUONDigitCalibrator::AliMUONDigitCalibrator(AliMUONData* muonData,
-                                                     AliMUONCalibrationData* calib)
+                                              AliMUONCalibrationData* calib)
 : TTask("AliMUONDigitCalibrator","Subtract pedestal from digit charge"),
   fData(muonData),
   fCalibrationData(calib)
 {
+    //
+    // ctor. This class need the muonData to get access to the digit,
+    // and the calibrationData to get access to calibration parameters.
+    //
 }
 
 //_____________________________________________________________________________
 AliMUONDigitCalibrator::~AliMUONDigitCalibrator()
 {
+  //
+  // empty dtor.
+  //
 }
 
 //_____________________________________________________________________________
 void
 AliMUONDigitCalibrator::Exec(Option_t*)
 {
+  //
+  // Main method.
+  // We loop on tracking chambers (i.e. we do nothing for trigger)
+  // and for each digit in that chamber, we calibrate it :
+  // a) if the corresponding channel is known to be bad, we set the signal to 0
+  //    (so that digit can be suppressed later on)
+  // b) we then apply pedestal and gain corrections.
+  
   for ( Int_t ch = 0; ch < AliMUONConstants::NTrackingCh(); ++ch )
   {
     TClonesArray* digitArray = fData->Digits(ch);
@@ -63,35 +78,54 @@ AliMUONDigitCalibrator::Exec(Option_t*)
       AliMUONDigit* digit = 
         static_cast<AliMUONDigit*>(digitArray->UncheckedAt(d));
  
-      AliMUONCalibParam* pedestal = static_cast<AliMUONCalibParam*>
-        (fCalibrationData->Pedestal(digit->DetElemId(),
-                                    digit->ManuId(),digit->ManuChannel()));
+      // Very first check is whether this channel is known to be bad,
+      // in which case we set the signal to zero.
+      AliMUONVCalibParam* dead = static_cast<AliMUONVCalibParam*>
+        (fCalibrationData->DeadChannel(digit->DetElemId(),digit->ManuId()));
+      if ( dead && dead->ValueAsInt(digit->ManuChannel()) )
+      {
+        AliDebug(10,Form("Removing dead channel detElemId %d manuId %d "
+                        "manuChannel %d",digit->DetElemId(),digit->ManuId(),
+                        digit->ManuChannel()));
+        digit->SetSignal(0);
+        continue;
+      }
+          
+      // If the channel is good, go on with the calibration itself.
       
-      AliMUONCalibParam* gain = static_cast<AliMUONCalibParam*>
-        (fCalibrationData->Gain(digit->DetElemId(),
-                                    digit->ManuId(),digit->ManuChannel()));
+      AliMUONVCalibParam* pedestal = static_cast<AliMUONVCalibParam*>
+        (fCalibrationData->Pedestal(digit->DetElemId(),digit->ManuId()));
+      
+      AliMUONVCalibParam* gain = static_cast<AliMUONVCalibParam*>
+        (fCalibrationData->Gain(digit->DetElemId(),digit->ManuId()));
+      
       if (!pedestal)
       {
-        AliFatal(Form("Got a null ped object for DE,manu,channel=%d,%d,%d",
-                      digit->DetElemId(),digit->ManuId(),digit->ManuChannel()));
+        AliFatal(Form("Got a null ped object for DE,manu=%d,%d",
+                      digit->DetElemId(),digit->ManuId()));
         
       }
       if (!gain)
       {
-        AliFatal(Form("Got a null gain object for DE,manu,channel=%d,%d,%d",
-                      digit->DetElemId(),digit->ManuId(),digit->ManuChannel()));
-        
+        AliFatal(Form("Got a null gain object for DE,manu=%d,%d",
+                      digit->DetElemId(),digit->ManuId()));        
       }
       
+      Int_t manuChannel = digit->ManuChannel();
       Int_t adc = digit->Signal();
-      Float_t padc = adc-pedestal->Mean();
-      if ( padc < 3.0*pedestal->Sigma() ) 
+      Float_t padc = adc-pedestal->ValueAsFloat(manuChannel,0);
+      if ( padc < 3.0*pedestal->ValueAsFloat(manuChannel,1) ) 
       {
         padc = 0.0;
       }
-      Float_t charge = padc*gain->Mean();
+      Float_t charge = padc*gain->ValueAsFloat(manuChannel,0);
       Int_t signal = TMath::Nint(charge);
       digit->SetSignal(signal);
+      Int_t saturation = gain->ValueAsInt(manuChannel,1);
+      if ( signal >= saturation )
+      {
+        digit->Saturated(kTRUE);
+      }
     }
   }
 }
