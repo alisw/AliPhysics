@@ -14,7 +14,7 @@
  **************************************************************************/
 
 // $Id$
-// $MpId: AliMpSlatZonePadIterator.cxx,v 1.4 2005/09/19 19:01:31 ivana Exp $
+// $MpId: AliMpSlatZonePadIterator.cxx,v 1.6 2006/03/02 16:38:11 ivana Exp $
 
 #include "AliMpSlatZonePadIterator.h"
 
@@ -55,7 +55,7 @@ fIsDone(kTRUE)
   //
   if (!CropArea()) 
     {
-      AliFatal(Form("Could not crop area : (x,y)min=(%e,%e) ; max=(%e,%e) for slat %s",
+      AliError(Form("Could not crop area : (x,y)min=(%e,%e) ; max=(%e,%e) for slat %s",
 		    area.LeftBorder(),area.DownBorder(),
 		    area.RightBorder(),area.UpBorder(),fkSlat->GetID()));
     }
