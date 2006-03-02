@@ -363,7 +363,7 @@ void AliEMCALDigitizer::Digitize(Int_t event)
   AliEMCALHistoUtilities::FillH1(fHists, 1, esum);
 }
 
-//____________________________________________________________________________
+// //_____________________________________________________________________
 Int_t AliEMCALDigitizer::DigitizeEnergy(Float_t energy, Int_t AbsId)
 { 
   // Returns digitized value of the energy in a cell absId
@@ -393,18 +393,24 @@ Int_t AliEMCALDigitizer::DigitizeEnergy(Float_t energy, Int_t AbsId)
   if(!bCell)
     Error("DigitizeEnergy","Wrong cell id number") ;
   geom->GetCellPhiEtaIndexInSModule(iSupMod,nTower,nIphi, nIeta,iphi,ieta);
-
+  
   if(emcalLoader->CalibData()) {
     fADCpedestalEC = emcalLoader->CalibData()
       ->GetADCpedestal(iSupMod,ieta,iphi);
     fADCchannelEC = emcalLoader->CalibData()
       ->GetADCchannel(iSupMod,ieta,iphi);
-    
+    channel = static_cast<Int_t> (TMath::Ceil( (energy + fADCpedestalEC)/fADCchannelEC ))  ;
+//     Info("DigitizeEnergy","Channel %f, Pedestal %f",
+// 	 fADCchannelEC, fADCpedestalEC);    
+  }
+  else{
+    //Calibration not available, take default parameters.
     channel = static_cast<Int_t> (TMath::Ceil( (energy + fADCpedestalEC)/fADCchannelEC ))  ;
   }
   if(channel > fNADCEC ) 
     channel =  fNADCEC ; 
   return channel ;
+  
 }
 
 //____________________________________________________________________________
