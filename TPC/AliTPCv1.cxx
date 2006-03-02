@@ -739,6 +739,15 @@ void AliTPCv1::CreateGeometry()
   sh->DefineSection(1,4.,81.5-shift,250.75-shift);
   TGeoVolume *shv = new TGeoVolume("TPC_SWS1",sh,m1); //Air
   //
+  TGeoMedium *m9 =  gGeoManager->GetMedium("TPC_Si"); 
+  TGeoPgon *el = new TGeoPgon(0.,20.,1,2);
+  el->DefineSection(0,-1.872,81.5-shift,250.75-shift);
+  el->DefineSection(1,1.872,81.5-shift,250.75-shift);
+  TGeoVolume *elv = new TGeoVolume("TPC_ELEC",el,m9); //Si 
+  //
+  shv->AddNode(elv,1);
+  //
+  //
   ys = shift*TMath::Sin(OpeningAngle);
   xs = shift*TMath::Cos(OpeningAngle);
   swv->AddNode(shv,1,new TGeoTranslation(xs,ys,0.));
