@@ -399,14 +399,10 @@ Int_t AliEMCALDigitizer::DigitizeEnergy(Float_t energy, Int_t AbsId)
       ->GetADCpedestal(iSupMod,ieta,iphi);
     fADCchannelEC = emcalLoader->CalibData()
       ->GetADCchannel(iSupMod,ieta,iphi);
-    channel = static_cast<Int_t> (TMath::Ceil( (energy + fADCpedestalEC)/fADCchannelEC ))  ;
-//     Info("DigitizeEnergy","Channel %f, Pedestal %f",
-// 	 fADCchannelEC, fADCpedestalEC);    
   }
-  else{
-    //Calibration not available, take default parameters.
-    channel = static_cast<Int_t> (TMath::Ceil( (energy + fADCpedestalEC)/fADCchannelEC ))  ;
-  }
+  
+  channel = static_cast<Int_t> (TMath::Ceil( (energy + fADCpedestalEC)/fADCchannelEC ))  ;
+  
   if(channel > fNADCEC ) 
     channel =  fNADCEC ; 
   return channel ;
