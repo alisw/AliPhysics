@@ -15,9 +15,9 @@
  
 #include "AliMUONSubEventTracker.h"
 
-ClassImp(AliMUONSubEventTracker)
+const Int_t AliMUONSubEventTracker::fgkHeaderLength = 4;
 
- const Int_t AliMUONSubEventTracker::fgkHeaderLength = 4;
+ClassImp(AliMUONSubEventTracker)
 
 //___________________________________________
 AliMUONSubEventTracker::AliMUONSubEventTracker()
@@ -34,8 +34,7 @@ AliMUONSubEventTracker::AliMUONSubEventTracker()
 //___________________________________________
 AliMUONSubEventTracker::~AliMUONSubEventTracker()
 {
-  if(fData)
-    delete[] fData;
+  delete[] fData;
 }
 
 //___________________________________________
