@@ -1,5 +1,5 @@
 // $Id$
-// $MpId: testAnyPadIterators.C,v 1.14 2005/10/28 15:37:12 ivana Exp $
+// $MpId: testAnyPadIterators.C,v 1.15 2006/03/02 16:15:29 ivana Exp $
 //
 // Test macro for reading  sector, and iterate over it
 
@@ -65,7 +65,7 @@ void testAnyPadIterators(AliMpStationType station = kStation1,
            ,i+8,j+8);
   cout<<"________________ Neighbours __________________________"<<endl;
   canv->cd(4);
-  Int_t motifPosId = 20; 
+  Int_t motifPosId = 20 | AliMpConstants::ManuMask(plane); 
   if (plane == kNonBendingPlane) motifPosId = 19;
   AliMpMotifPosition* motifPos = sector->GetMotifMap()->FindMotifPosition(motifPosId);
   if (motifPos){
