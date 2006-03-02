@@ -37,11 +37,12 @@
 
 #include <TClonesArray.h>
 
-#include "AliLoader.h"
 #include "AliBitPacking.h" 
 #include "AliRawReader.h"
 #include "AliLog.h"
 #include "AliRun.h"
+
+#include "AliMpBusPatch.h"
 
 #include "AliMUON.h"
 #include "AliMUONRawReader.h"
@@ -67,19 +68,18 @@
 #include "AliMpVSegmentation.h"
 #include "AliMpHelper.h"
 #include "AliMpPad.h"
-
+#include "AliMpDEManager.h"
 
 ClassImp(AliMUONRawReader) // Class implementation in ROOT context
 //__________________________________________________________________________
-AliMUONRawReader::AliMUONRawReader(AliLoader* loader,  AliMUONData* data)
-  : TObject(),
-    fScalerEvent(kFALSE)
+AliMUONRawReader::AliMUONRawReader(AliMUONData* data)
+: TObject(),
+  fScalerEvent(kFALSE)
 {
+  AliDebug(1,"");
+      
   // Standard Constructor
  
-  // initialize loader's
-  fLoader = loader;
-
   // initialize segmentation factory
   fSegFactory = new AliMpSegFactory();
 
@@ -93,13 +93,15 @@ AliMUONRawReader::AliMUONRawReader(AliLoader* loader,  AliMUONData* data)
   fBusPatchManager = new AliMpBusPatch();
   fBusPatchManager->ReadBusPatchFile();
 
+  fTrackerTimer.Start(kTRUE); fTrackerTimer.Stop();
+  fTriggerTimer.Start(kTRUE); fTriggerTimer.Stop();
+  fMappingTimer.Start(kTRUE); fMappingTimer.Stop();
 }
 
 //__________________________________________________________________________
 AliMUONRawReader::AliMUONRawReader()
   : TObject(),
     fMUONData(0),
-    fLoader(0),    
     fSegFactory(0),
     fDDLTracker(0),
     fDDLTrigger(0),
@@ -107,7 +109,10 @@ AliMUONRawReader::AliMUONRawReader()
     fScalerEvent(kFALSE)
 {
   // Default Constructor
-  
+      AliDebug(1,""); 
+      fTrackerTimer.Start(kTRUE); fTrackerTimer.Stop();
+      fTriggerTimer.Start(kTRUE); fTriggerTimer.Stop();
+      fMappingTimer.Start(kTRUE); fMappingTimer.Stop();
 }
 
 //_______________________________________________________________________
@@ -133,20 +138,23 @@ AliMUONRawReader::operator=(const AliMUONRawReader& rhs)
 }
 
 //__________________________________________________________________________
-AliMUONRawReader::~AliMUONRawReader(void)
+AliMUONRawReader::~AliMUONRawReader()
 {
-  if (fSegFactory) 
-    fSegFactory->DeleteSegmentations();
   delete fSegFactory;  
 
-  if (fDDLTracker)
-    delete fDDLTracker;
-  if (fDDLTrigger)
-    delete fDDLTrigger;
+  delete fDDLTracker;
+  delete fDDLTrigger;
 
-  fBusPatchManager->Delete();
+  delete fBusPatchManager;
+  
+  AliInfo(Form("Execution time for MUON tracker : R:%.2fs C:%.2fs",
+               fTrackerTimer.RealTime(),fTrackerTimer.CpuTime()));
+  AliInfo(Form("   Execution time for MUON tracker (mapping calls part) "
+               ": R:%.2fs C:%.2fs",
+               fMappingTimer.RealTime(),fMappingTimer.CpuTime()));
+  AliInfo(Form("Execution time for MUON trigger : R:%.2fs C:%.2fs",
+               fTriggerTimer.RealTime(),fTriggerTimer.CpuTime()));
 
-  return;
 }
 
 //____________________________________________________________________
@@ -169,7 +177,8 @@ Int_t AliMUONRawReader::ReadTrackerDDL(AliRawReader* rawReader)
   // reading tracker DDL
   // filling the TClonesArray in MUONData
   //
-
+  fTrackerTimer.Start(kFALSE);
+  
   AliMUONSubEventTracker* subEventTracker = new AliMUONSubEventTracker();
   AliMUONDigit* digit = new AliMUONDigit();
 
@@ -280,7 +289,8 @@ Int_t AliMUONRawReader::ReadTrackerDDL(AliRawReader* rawReader)
 		      charge    = subEventTracker->GetCharge(iData);
 		      // set charge
 		      digit->SetSignal(charge);
-
+          digit->SetPhysicsSignal(charge);
+          digit->SetADC(charge);
 		      Int_t error = GetMapping(buspatchId,manuId,channelId,digit); // Get Back the hits at pads
 		      if (error) continue;
 
@@ -289,12 +299,12 @@ Int_t AliMUONRawReader::ReadTrackerDDL(AliRawReader* rawReader)
 			Int_t padX  = digit->PadX();
 			Int_t padY  = digit->PadY();
 			Int_t iCath = digit->Cathode();  
-			Int_t idDE  = digit->DetElemId();
+			Int_t detElemId  = digit->DetElemId();
 
-			AliDebug(1,Form("output  IdDE %d busPatchid %d PadX %d PadY %d iCath %d \n", 
-				      idDE, buspatchId, padX, padY, iCath));
+			AliDebug(1,Form("output  detElemId %d busPatchid %d PadX %d PadY %d iCath %d \n", 
+				      detElemId, buspatchId, padX, padY, iCath));
 		
-			AliDebug(3,Form("idDE %d Padx %d Pady %d, Cath %d, charge %d",idDE, padX, padY, iCath, charge));
+			AliDebug(3,Form("detElemId %d Padx %d Pady %d, Cath %d, charge %d",detElemId, padX, padY, iCath, charge));
 		      }
 
 		      // fill digits
@@ -330,6 +340,8 @@ Int_t AliMUONRawReader::ReadTrackerDDL(AliRawReader* rawReader)
   delete subEventTracker;
   delete digit;
 
+  fTrackerTimer.Stop();
+  
   return kTRUE;
 }
 
@@ -340,55 +352,40 @@ Int_t AliMUONRawReader::GetMapping(Int_t busPatchId, UShort_t manuId,
 
  // mapping  for tracker
 
+  fMappingTimer.Start(kFALSE);
+  
   // getting DE from buspatch
-  Int_t  idDE = fBusPatchManager->GetDEfromBus(busPatchId);
-  AliDebug(3,Form("idDE: %d busPatchId %d\n", idDE, busPatchId));
+  Int_t  detElemId = fBusPatchManager->GetDEfromBus(busPatchId);
+  AliDebug(3,Form("detElemId: %d busPatchId %d\n", detElemId, busPatchId));
 
-  // segmentation
-  Int_t iCath;
-  Int_t iCath1 = 0;
-  Int_t iCath2 = 1;
+  AliMpVSegmentation* seg = fSegFactory->CreateMpSegmentationByElectronics(detElemId, manuId);  
+  AliMpPad pad = seg->PadByLocation(AliMpIntPair(manuId,channelId),kTRUE);
 
-  if (idDE < 500) { // should use GetDirection somehow (ChF)
-    if ( ((idDE % 100) % 2) != 0 ) {
-      iCath1 = 1;
-      iCath2 = 0;
-    }
-  }
-
-  iCath = (manuId > 1000) ? iCath2 : iCath1;
-
-  if (manuId > 1000) manuId -= 1000; // back to normal manuId
-
-  // Could the above logic be simplified ???
-  //AliMpVSegmentation* seg = AliMUONSegmentationManager::Segmentation(idDE, plane);
-  AliMpVSegmentation* seg = fSegFactory->CreateMpSegmentation(idDE, iCath);  
-  AliMpPad pad = seg->PadByLocation(AliMpIntPair(manuId,(Int_t)channelId),kTRUE);
-
-  if(!pad.IsValid()){
-    AliWarning(Form("No pad for idDE: %d, busPatchId %d, manuId: %d, channelId: %d\n",
-		  idDE, busPatchId, manuId, channelId));
+  if (!pad.IsValid())
+  {
+    AliWarning(Form("No pad for detElemId: %d, busPatchId %d, manuId: %d, channelId: %d\n",
+		  detElemId, busPatchId, manuId, channelId));
+    fMappingTimer.Stop();
     return kTRUE;
   } // return error
 
-  // Getting padX
+  // Getting padX, padY and cathode number.
   Int_t padX = pad.GetIndices().GetFirst();
-
- // Getting padY
   Int_t padY = pad.GetIndices().GetSecond();
-     
-  if (idDE >= 500) { // Since in AliMpSlat pads begin at (0,0) 
-    padX++;         // while in AliMUONSt345Seg. they begin at (1,1)
-    padY++;
-  }
+  Int_t iCath = AliMpDEManager::GetCathod(detElemId,seg->PlaneType());
+
   // storing into digits
   digit->SetPadX(padX);
   digit->SetPadY(padY);
   digit->SetCathode(iCath);
-  digit->SetDetElemId(idDE);
-
-  AliDebug(3,Form("idDE: %d, busPatchId %d, manuId: %d, channelId: %d, padx: %d pady %d\n",
-		  idDE, busPatchId, manuId, channelId, padX, padY));
+  digit->SetDetElemId(detElemId);
+  digit->SetElectronics(manuId,channelId);
+  
+  AliDebug(3,Form("detElemId: %d, busPatchId %d, manuId: %d, channelId: %d, padx: %d pady %d\n",
+		  detElemId, busPatchId, manuId, channelId, padX, padY));
+  StdoutToAliDebug(3,digit->Print(););
+  
+  fMappingTimer.Stop();
   return kFALSE;
 }
 
@@ -398,6 +395,8 @@ Int_t AliMUONRawReader::ReadTriggerDDL(AliRawReader* rawReader)
 
   // reading DDL for trigger
 
+  fTriggerTimer.Start(kFALSE);
+  
   AliMUONSubEventTrigger* subEventTrigger = new AliMUONSubEventTrigger();
   AliMUONScalerEventTrigger* scalerEvent = 0x0;
 
@@ -543,9 +542,9 @@ Int_t AliMUONRawReader::ReadTriggerDDL(AliRawReader* rawReader)
   delete globalTrigger;
   delete localTrigger;
 
-  if(fScalerEvent)
-    delete scalerEvent;
+  delete scalerEvent;
 
+  fTriggerTimer.Stop();
   return kTRUE;
 
 }

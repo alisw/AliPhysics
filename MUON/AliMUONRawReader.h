@@ -12,11 +12,9 @@
 /// Readding Raw data class for trigger and tracker chambers
 
 #include <TObject.h>
-#include "AliMpBusPatch.h"
+#include "TStopwatch.h"
 
-class TClonesArray;
-class TArrayI;
-class AliLoader;
+class AliMpBusPatch;
 class AliMUONData;
 class AliMUONDigit;
 class AliMUONDDLTracker;
@@ -28,7 +26,7 @@ class AliMpSegFactory;
 class AliMUONRawReader : public TObject 
 {
  public:
-  AliMUONRawReader(AliLoader* loader, AliMUONData* data); // Constructor
+  AliMUONRawReader(AliMUONData* data); // Constructor
   virtual ~AliMUONRawReader(void); // Destructor
     
   // write raw data
@@ -55,10 +53,7 @@ class AliMUONRawReader : public TObject
 
   AliMUONData*  fMUONData;           //! Data container for MUON subsystem 
  
-  AliLoader*    fLoader;             //! alice loader
- 
   AliMpSegFactory* fSegFactory;      //! Mapping segmentation factory
-
    
   AliMUONDDLTracker* fDDLTracker;    //! DDL tracker class pointers
   AliMUONDDLTrigger* fDDLTrigger;    //! DDL trigger class pointers
@@ -67,7 +62,11 @@ class AliMUONRawReader : public TObject
 
   Bool_t fScalerEvent;               // flag to generates scaler event
 
-  ClassDef(AliMUONRawReader,1) // MUON cluster reconstructor in ALICE
+  TStopwatch fTrackerTimer; //!
+  TStopwatch fTriggerTimer; //!
+  TStopwatch fMappingTimer; //!
+  
+  ClassDef(AliMUONRawReader,0) // MUON cluster reconstructor in ALICE
 };
 	
 #endif
