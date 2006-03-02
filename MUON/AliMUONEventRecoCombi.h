@@ -11,7 +11,8 @@
  
 #include <TObject.h>
 #include <TArrayD.h>
-class TClonesArray;
+#include <TClonesArray.h>
+
 class AliMUONData;
 class AliMUONDetElement;
 class AliMUONTrackReconstructor;

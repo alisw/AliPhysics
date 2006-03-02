@@ -12,12 +12,12 @@
 class TH2D;
 class TClonesArray;
 class TMinuit;
-#include "TMatrixDfwd.h"
 
 class AliMUONVGeometryDESegmentation;
 class AliMUONPixel;
 class AliMUONClusterDrawAZ;
 #include "AliMUONClusterFinderVS.h"
+#include "TMatrixDfwd.h"
 
 class AliMUONClusterFinderAZ : public AliMUONClusterFinderVS 
 {
