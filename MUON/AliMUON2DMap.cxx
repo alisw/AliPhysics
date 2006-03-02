@@ -27,11 +27,17 @@ ClassImp(AliMUON2DMap)
 //_____________________________________________________________________________
 AliMUON2DMap::AliMUON2DMap() : AliMUONV2DStore(), fMap(new AliMpExMap(true))
 {
+  //
+  // ctor.
+  //
 }
 
 //_____________________________________________________________________________
 AliMUON2DMap::~AliMUON2DMap()
 {
+  //
+  // dtor. we delete the map, which will delete the objects, as we're owner.
+  //
   delete fMap;
 }
 
@@ -39,6 +45,9 @@ AliMUON2DMap::~AliMUON2DMap()
 TObject* 
 AliMUON2DMap::Get(Int_t i, Int_t j) const
 {
+  //
+  // Return the value at position (i,j).
+  //
   TObject* o = fMap->GetValue(i);
   if ( o )
   {
@@ -50,23 +59,24 @@ AliMUON2DMap::Get(Int_t i, Int_t j) const
 }
 
 //_____________________________________________________________________________
-Bool_t 
-AliMUON2DMap::IsOwner() const
-{
-  return kTRUE;
-}
-
-//_____________________________________________________________________________
 void
 AliMUON2DMap::Print(Option_t*) const
 {
-  
+  //
+  // Not implemented (yet?)
+  //
 }
 
 //_____________________________________________________________________________
 Bool_t 
 AliMUON2DMap::Set(Int_t i, Int_t j, TObject* object, Bool_t replace)
 {
+  //
+  // Set the object at position (i,j).
+  // If replace==kTRUE, we don't care if there's an object there already,
+  // otherwise we might refuse to set if the (i,j) location is already
+  // filled (in which case we return kFALSE).
+  
   TObject* o = fMap->GetValue(i);
   if ( !o )
   {

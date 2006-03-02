@@ -6,10 +6,8 @@
 /// \ingroup base
 /// \class AliMUON2DMap
 /// \brief Basic implementation of AliMUONV2DStore container using
-/// AliMpExMap internally
+/// AliMpExMap internally.
 ///
-/// Should be revised for better preformance ...
-/// 
 /// \author Laurent Aphecetche
 
 #ifndef AliMUON2DMAP_H
@@ -27,14 +25,14 @@ public:
 
   virtual TObject* Get(Int_t i, Int_t j) const;
   virtual Bool_t Set(Int_t i, Int_t j, TObject*, Bool_t replace);
-  virtual Bool_t IsOwner() const;
+  virtual Bool_t IsOwner() const { return kTRUE; }
 
   virtual void Print(Option_t* opt="") const;
   
 private:
   AliMpExMap* fMap;
   
-  ClassDef(AliMUON2DMap,1) // 
+  ClassDef(AliMUON2DMap,1) // A 2D container
 };
 
 #endif
