@@ -64,7 +64,7 @@ class AliMUONTriggerSegmentationV2 : public AliMUONVGeometryDESegmentation
   virtual void GetPadC(Int_t ix, Int_t iy, Float_t &x, Float_t &y);
   virtual void GetPadC(Int_t ix, Int_t iy, Float_t &x, Float_t &y, Float_t &z);
                   
-  virtual void Init(Int_t);
+  virtual void Init(Int_t) {}
   
   virtual void IntegrationLimits(Float_t& x1, Float_t& x2, Float_t& y1, Float_t& y2);
   

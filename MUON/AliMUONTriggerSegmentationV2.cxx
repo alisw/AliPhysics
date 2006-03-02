@@ -408,13 +408,6 @@ AliMUONTriggerSegmentationV2::ILoc2IGlo(Int_t ixLA, Int_t iyLA,
 }
 
 //_____________________________________________________________________________
-void
-AliMUONTriggerSegmentationV2::Init(int)
-{
-  AliWarning("Not Implemented because not needed ;-)");
-}
-
-//_____________________________________________________________________________
 Int_t
 AliMUONTriggerSegmentationV2::ISector()
 {
