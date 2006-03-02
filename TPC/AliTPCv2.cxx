@@ -416,8 +416,8 @@ void AliTPCv2::CreateGeometry()
   //
   cd1v->AddNode(cd2v,1); cd2v->AddNode(cd3v,1); cflv->AddNode(cd1v,1);
   //
-  v1->AddNode(siv,1,new TGeoTranslation(0.,0.,-72.1));
-  v1->AddNode(siv,2,new TGeoTranslation(0.,0.,72.1));
+  v1->AddNode(siv,1,new TGeoTranslation(0.,0.,-70.1));
+  v1->AddNode(siv,2,new TGeoTranslation(0.,0.,70.1));
   v1->AddNode(sev,1); v1->AddNode(sev,2,ref); v1->AddNode(cflv,1);
   //
   // central membrane - 2 rings and a mylar membrane - assembly
@@ -843,7 +843,7 @@ void AliTPCv2::CreateGeometry()
   
   //
   //HV rods - makrolon + 0.58cm (diameter) Cu
-  TGeoTube *hvr = new TGeoTube(0.,4.4,126.64);
+  TGeoTube *hvr = new TGeoTube(0.,2.2,126.64);
   TGeoTube *hvc = new TGeoTube(0.,0.29,126.64);
   //
   TGeoVolume *hvrv = new TGeoVolume("TPC_HV_Rod",hvr,m6);
