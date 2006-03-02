@@ -761,197 +761,161 @@ void AliMUONDisplay::DrawTitle(Option_t *option)
 //_____________________________________________________________________________
 void AliMUONDisplay::DrawView(Float_t theta, Float_t phi, Float_t psi)
 {
-//    Draw a view of MUON clusters
-    AliInfo(" Draw View");
-    
-    gPad->SetCursor(kWatch);
-    // gPad->SetFillColor(39);
-    gPad->SetFillColor(1);
-    gPad->Clear();
-    // gPad->SetFillColor(39);
-    gPad->SetFillColor(1);
-    
-
-    Int_t iret=0;
-    TView *view = new TView(1);
-    
-    Float_t range = fRrange*fRangeSlider->GetMaximum();
-    view->SetRange(-range,-range,-range,range, range, range);
-    // zoom back to full scale only if DrawView not called from NextCathode
-    if (!fNextCathode) {
-	fZoomX0[0] = -1;
-	fZoomY0[0] = -1;
-	fZoomX1[0] =  1;
-	fZoomY1[0] =  1;
-	fZooms = 0;
-    }
-
-    Float_t xg1, xg2, yg1, yg2, zg1, zg2;
-
-    // Recovering the chamber 
-    AliMUON *pMUON  = (AliMUON*)gAlice->GetModule("MUON");
-
-    const AliMUONGeometryTransformer* kGeomTransformer 
-      = pMUON->GetGeometryTransformer();
-
-    AliMUONSegmentation* segmentation = pMUON->GetSegmentation();
-    AliMpSegFactory segFactory;
-        // Mapping segmentation factory will be used only to create mapping
+  //    Draw a view of MUON clusters
+  AliInfo(" Draw View");
+  
+  gPad->SetCursor(kWatch);
+  // gPad->SetFillColor(39);
+  gPad->SetFillColor(1);
+  gPad->Clear();
+  // gPad->SetFillColor(39);
+  gPad->SetFillColor(1);
+  
+  Int_t iret=0;
+  TView *view = new TView(1);
+  
+  Float_t range = fRrange*fRangeSlider->GetMaximum();
+  view->SetRange(-range,-range,-range,range, range, range);
+  // zoom back to full scale only if DrawView not called from NextCathode
+  if (!fNextCathode) {
+    fZoomX0[0] = -1;
+    fZoomY0[0] = -1;
+    fZoomX1[0] =  1;
+    fZoomY1[0] =  1;
+    fZooms = 0;
+  }
+  
+  Float_t xg1, xg2, yg1, yg2, zg1, zg2;
+  
+  // Recovering the chamber 
+  AliMUON *pMUON  = (AliMUON*)gAlice->GetModule("MUON");
+  
+  const AliMUONGeometryTransformer* kGeomTransformer 
+    = pMUON->GetGeometryTransformer();
+  
+  AliMUONSegmentation* segmentation = pMUON->GetSegmentation();
+  AliMpSegFactory segFactory;
+  // Mapping segmentation factory will be used only to create mapping
 	// segmentations if not present in the DE segmentations
-
-// Display MUON Chamber Geometry
-    char nodeName[7];
-    sprintf(nodeName,"MUON%d",100+fChamber);
-    printf(">>>> chamber is %d\n",fChamber);
-
-    if(fChamber < 5) {
-      AliMpDEIterator it;
-      for ( it.First(fChamber-1); ! it.IsDone(); it.Next() ) {
-
-	Int_t detElemId = it.CurrentDE();
-	AliMpSectorSegmentation * seg =   
-	  (AliMpSectorSegmentation *) segmentation->GetMpSegmentation(detElemId, 0);
-	const AliMpSector * sector = seg->GetSector();
-
-	// get sector measurements
-	TVector2 position  = sector->Position(); 
-	TVector2 dimension = sector->Dimensions(); // half length
-	
-	Float_t xlocal1 =  position.Px(); // mm to cm
-	Float_t ylocal1 =  position.Py();
-	Float_t xlocal2 =  dimension.Px() * 2.;
-	Float_t ylocal2 =  dimension.Px() * 2.;
-
-	kGeomTransformer->Local2Global(detElemId, xlocal1, ylocal1, 0, xg1, yg1, zg1);
-	kGeomTransformer->Local2Global(detElemId, xlocal2, ylocal2, 0, xg2, yg2, zg2);
-
-	// drawing 
-	TPolyLine3D* poly = new  TPolyLine3D();
-	Int_t nPoint = 0;
-
-	poly->SetPoint(nPoint++, xg1, yg1, 0.);
-	for (Float_t d = 0; d < TMath::Pi()/2.; d+= 0.01) {
-	  Float_t x = xg1 + xg2 * TMath::Cos(d);
-	  Float_t y = yg1 + yg2 * TMath::Sin(d);
-	  poly->SetPoint(nPoint++, x, y, 0.);
-	}
-	poly->SetPoint(nPoint++, xg1, yg1, 0.);
-
-	poly->SetLineColor(2);
-	poly->Draw("s");
+  
+  // Display MUON Chamber Geometry
+  char nodeName[7];
+  sprintf(nodeName,"MUON%d",100+fChamber);
+  printf(">>>> chamber is %d\n",fChamber);
+  
+  if(fChamber < 5) {
+    AliMpDEIterator it;
+    for ( it.First(fChamber-1); ! it.IsDone(); it.Next() ) {
+      
+      Int_t detElemId = it.CurrentDE();
+      AliMpSectorSegmentation * seg =   
+        (AliMpSectorSegmentation *) segmentation->GetMpSegmentation(detElemId, 0);
+      const AliMpSector * sector = seg->GetSector();
+      
+      // get sector measurements
+      TVector2 position  = sector->Position(); 
+      TVector2 dimension = sector->Dimensions(); // half length
+      
+      Float_t xlocal1 =  position.Px(); // FIXME: not really needed as it's 0 ?
+      Float_t ylocal1 =  position.Py(); // FIXME: not really needed as it's 0 ?
+      Float_t xlocal2 =  dimension.Px() * 2.;
+      Float_t ylocal2 =  dimension.Px() * 2.;
+      
+      kGeomTransformer->Local2Global(detElemId, xlocal1, ylocal1, 0, xg1, yg1, zg1);
+      kGeomTransformer->Local2Global(detElemId, xlocal2, ylocal2, 0, xg2, yg2, zg2);
+      
+      // drawing 
+      TPolyLine3D* poly = new  TPolyLine3D();
+      Int_t nPoint = 0;
+      
+      poly->SetPoint(nPoint++, xg1, yg1, 0.);
+      for (Float_t d = 0; d < TMath::Pi()/2.; d+= 0.01) {
+        Float_t x = xg1 + xg2 * TMath::Cos(d);
+        Float_t y = yg1 + yg2 * TMath::Sin(d);
+        poly->SetPoint(nPoint++, x, y, 0.);
       }
-   
-      //     }
-
-    }
-
-    if(fChamber >4 && fChamber <11) {
-      AliMpDEIterator it;
-      for ( it.First(fChamber-1); ! it.IsDone(); it.Next() ) {
-	Int_t detElemId = it.CurrentDE();
-	if (  segmentation->HasDE(detElemId) ) {
-	  AliMpSlatSegmentation * seg =   
-	    (AliMpSlatSegmentation *) segmentation->GetMpSegmentation(detElemId, 0);
-	  if (!seg) { 
- 	    // Create mapping segmentation if old trigger segmentation
-	    // (not using mapping)
-	    seg = (AliMpSlatSegmentation *)
-	           segFactory.CreateMpSegmentation(detElemId, 0);
-	  }	  
-	  if (seg) {  
-	    const AliMpSlat* slat = seg->Slat();
-	    Float_t deltax = slat->DX();
-	    Float_t deltay = slat->DY();
-	    Float_t xlocal1 =  -deltax;
-	    Float_t ylocal1 =  -deltay;
-	    Float_t xlocal2 =  +deltax;
-	    Float_t ylocal2 =  +deltay;
-	    kGeomTransformer->Local2Global(detElemId, xlocal1, ylocal1, 0, xg1, yg1, zg1);
-	    kGeomTransformer->Local2Global(detElemId, xlocal2, ylocal2, 0, xg2, yg2, zg2);
-
-	    // drawing slat active volumes
-	    Float_t xCenter = (xg1 + xg2)/2.;
-	    Float_t yCenter = (yg1 + yg2)/2.;
-
-	    TMarker3DBox* box = new TMarker3DBox(xCenter,yCenter,0,xlocal1,ylocal2,0,0,0);
-
-	    box->SetFillStyle(0);
-	    box->SetLineColor(2);
-	    box->Draw("s");
-
-	    // drawing inner circle + disc
-	    TPolyLine3D* poly  = new  TPolyLine3D();
-	    TPolyLine3D* poly1 = new  TPolyLine3D();
-
-	    Int_t nPoint = 0;
-	    Int_t nPoint1 = 0;
-	    for (Float_t d = 0; d < 6.24; d+= 0.005) {
-	      Double_t x = AliMUONConstants::Dmin((fChamber-1)/2) * TMath::Cos(d)/2.;
-	      Double_t y = AliMUONConstants::Dmin((fChamber-1)/2) * TMath::Sin(d)/2.;
-	      if (nPoint % 2 == 0) poly->SetPoint(nPoint++, 0., 0., 0.);
-	      poly->SetPoint(nPoint++, x, y, 0.);
-	      poly1->SetPoint(nPoint1++, x, y, 0.);
-
-	    }
-	    poly->SetLineColor(1);
-	    poly->Draw("s");
-	    poly1->SetLineColor(2);
-	    poly1->Draw("s");
-	  }  
-	}
-      }
+      poly->SetPoint(nPoint++, xg1, yg1, 0.);
+      
+      poly->SetLineColor(2);
+      poly->Draw("s");
     }
     
-/*-- Trigger Chambers ---------------------------------------*/
-    if(fChamber >10 && fChamber <15) {
-      AliMpDEIterator it;
-      for ( it.First(fChamber-1); ! it.IsDone(); it.Next() ) {
-	Int_t detElemId = it.CurrentDE();
-	AliMpTriggerSegmentation * seg  
-	  = (AliMpTriggerSegmentation *) segmentation->GetMpSegmentation(detElemId, 0);
-	if (!seg) {  
-	    printf(" AliMUONDisplay no segmentation \n");
-	    
-	  // Create mapping segmentation if old trigger segmentation
-	  // (not using mapping)
-	  seg = (AliMpTriggerSegmentation *)
-	         segFactory.CreateMpSegmentation(detElemId, 0);
-	}	  
-	if (seg) {   
-	  const AliMpTrigger* slat = seg->Slat();
-	  Float_t deltax = slat->DX();
-	  Float_t deltay = slat->DY();
-	  Float_t xlocal1 =  -deltax;
-	  Float_t ylocal1 =  -deltay;
-	  Float_t xlocal2 =  +deltax;
-	  Float_t ylocal2 =  +deltay;
-	  
-	  kGeomTransformer->Local2Global(detElemId, xlocal1, ylocal1, 0, xg1, yg1, zg1);
-	  kGeomTransformer->Local2Global(detElemId, xlocal2, ylocal2, 0, xg2, yg2, zg2);
+  }
+  
+  if (fChamber>4) 
+  {
+    AliMpDEIterator it;
+    for ( it.First(fChamber-1); ! it.IsDone(); it.Next() ) 
+    {
+      Int_t detElemId = it.CurrentDE();
+      AliMpStationType stationType = AliMpDEManager::GetStationType(detElemId);
 
-	  // drawing slat active volumes
-	  Float_t xCenter = (xg1 + xg2)/2.;
-	  Float_t yCenter = (yg1 + yg2)/2.;
-
-	  TMarker3DBox* box = new TMarker3DBox(xCenter,yCenter,0,xlocal1,ylocal2,0,0,0);
-
-	  box->SetFillStyle(0);
-	  box->SetLineColor(4);
-	  box->Draw("s");
-	}  
+      if (  segmentation->HasDE(detElemId) ) 
+      {
+        const AliMpVSegmentation* seg = segmentation->GetMpSegmentation(detElemId, 0);
+        if (!seg) { 
+          // Create mapping segmentation if old trigger segmentation
+          // (not using mapping)
+          seg = segFactory.CreateMpSegmentation(detElemId, 0);
+        }	  
+        if (seg) 
+        {  
+          Float_t deltax = seg->Dimensions().X();
+          Float_t deltay = seg->Dimensions().Y();
+          Float_t xlocal1 =  -deltax;
+          Float_t ylocal1 =  -deltay;
+          Float_t xlocal2 =  +deltax;
+          Float_t ylocal2 =  +deltay;
+          kGeomTransformer->Local2Global(detElemId, xlocal1, ylocal1, 0, xg1, yg1, zg1);
+          kGeomTransformer->Local2Global(detElemId, xlocal2, ylocal2, 0, xg2, yg2, zg2);
+          
+          // drawing slat active volumes
+          Float_t xCenter = (xg1 + xg2)/2.;
+          Float_t yCenter = (yg1 + yg2)/2.;
+          
+          TMarker3DBox* box = new TMarker3DBox(xCenter,yCenter,0,xlocal1,ylocal2,0,0,0);
+          
+          box->SetFillStyle(0);
+          box->SetLineColor( stationType == kStationTrigger ? 4 : 2);
+          box->Draw("s");
+          
+          if ( stationType == kStation345 )
+          {
+            // drawing inner circle + disc
+            TPolyLine3D* poly  = new  TPolyLine3D();
+            TPolyLine3D* poly1 = new  TPolyLine3D();
+            
+            Int_t nPoint = 0;
+            Int_t nPoint1 = 0;
+            for (Float_t d = 0; d < 6.24; d+= 0.005) 
+            {
+              Double_t x = AliMUONConstants::Dmin((fChamber-1)/2) * TMath::Cos(d)/2.;
+              Double_t y = AliMUONConstants::Dmin((fChamber-1)/2) * TMath::Sin(d)/2.;
+              if (nPoint % 2 == 0) poly->SetPoint(nPoint++, 0., 0., 0.);
+              poly->SetPoint(nPoint++, x, y, 0.);
+              poly1->SetPoint(nPoint1++, x, y, 0.);            
+            }
+            poly->SetLineColor(1);
+            poly->Draw("s");
+            poly1->SetLineColor(2);
+            poly1->Draw("s");
+          }
+        }  
       }
     }
-    // Delete mapping segmentations created with factory
-    segFactory.DeleteSegmentations();
-    
-//add clusters to the pad
-    DrawClusters();
-    DrawHits();
-    DrawCoG();
-//     DrawSegmentation();
-    // add itself to the list (must be last)
-    AppendPad();
-    view->SetView(phi, theta, psi, iret);
+  }
+  
+//   // Delete mapping segmentations created with factory
+//  segFactory.DeleteSegmentations();
+  
+  //add clusters to the pad
+  DrawClusters();
+  DrawHits();
+  DrawCoG();
+  //     DrawSegmentation();
+  // add itself to the list (must be last)
+  AppendPad();
+  view->SetView(phi, theta, psi, iret);
 }
 
 //_____________________________________________________________________________
@@ -1217,20 +1181,17 @@ void AliMUONDisplay::LoadDigits(Int_t chamber, Int_t cathode)
 	    const AliMpVSegmentation* seg = 
 		pMUON->GetSegmentation()->GetMpSegmentation(detElemId,cathode-1);
 	    
-	    AliMpStationType station = AliMpDEManager::GetStationType(detElemId);
-	    
-	    Int_t intOffset = station == kStation345 ? 1 : 0;	
-	    
-	    AliMpPad pad = 
-		seg->PadByIndices(AliMpIntPair(ix-intOffset,iy-intOffset),kTRUE);
+	    AliMpPad pad = seg->PadByIndices(AliMpIntPair(ix,iy),kTRUE);
 	    
 	    if (chamber > 10) { // trigger chamber
 		Int_t sumCharge = 0;
-		for (Int_t icharge = 0; icharge < 10; icharge++) {
+    Int_t n = mdig->Ntracks();
+		for (Int_t icharge = 0; icharge < n; icharge++) {
 		    sumCharge = sumCharge+mdig->TrackCharge(icharge);
 		}
-		Int_t testCharge = sumCharge-(Int_t(sumCharge/10))*10;
-		if(sumCharge <= 10 || testCharge > 0) {
+    assert(sumCharge==mdig->Signal());
+		Int_t testCharge = sumCharge-(Int_t(sumCharge/n))*n;
+		if(sumCharge <= n || testCharge > 0) {
 		    colorTrigger = color; 
 		} else {
 		    colorTrigger = 5; 
