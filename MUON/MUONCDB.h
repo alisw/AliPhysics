@@ -6,28 +6,19 @@
 
 /// By Laurent Aphecetche
 
+#include "Rtypes.h"
+
 class TList;
+class AliMUONV2DStore;
 
-TList* padList(Bool_t reset=kFALSE);
+void generateCalibrations(const char* cdbpath, Bool_t defaultValues = kTRUE);
 
-class Triplet : public TObject
-{
-public:
-  Triplet(Int_t detElemId=0, Int_t manuId=0, Int_t manuChannel=0)
-  : TObject(),fDetElemId(detElemId),fManuId(manuId),fManuChannel(manuChannel)
-{}
-  virtual ~Triplet() {}
-  
-  Int_t DetElemId() const { return fDetElemId; }
-  Int_t ManuId() const { return fManuId; }
-  Int_t ManuChannel() const { return fManuChannel; }
-  
-private:
-    Int_t fDetElemId;
-  Int_t fManuId;
-  Int_t fManuChannel;
-  ClassDef(Triplet,1)
-};
+TList* manuList(Bool_t reset=kFALSE);
 
+void plotCDB(const char* calibType="MUON/Calib/Pedestals");
+
+AliMUONV2DStore* readCDB(const char* calibType="MUON/Calib/Pedestals");
+
+void testMakeStores(Int_t readLoop=10);
 
 #endif
