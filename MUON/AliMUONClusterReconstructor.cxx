@@ -37,33 +37,19 @@
 #include "AliLog.h"
 
 ClassImp(AliMUONClusterReconstructor) // Class implementation in ROOT context
-
+ 
 //__________________________________________________________________________
-  AliMUONClusterReconstructor::AliMUONClusterReconstructor(AliLoader* loader, AliMUONData* data)
-  : TObject()
+AliMUONClusterReconstructor::AliMUONClusterReconstructor(AliMUONData* data)
+: TObject(),
+  fMUONData(data),
+  fRecModel(new AliMUONClusterFinderVS()),
+  fDigitsCath0(new TClonesArray("AliMUONDigit",1000)),
+  fDigitsCath1(new TClonesArray("AliMUONDigit",1000))
 {
   // Standard Constructor
 
-  // initialize loader's
-  fLoader = loader;
-
-  // initialize container
-  fMUONData = data;
-  
-  // reconstruction model
-  fRecModel = new AliMUONClusterFinderVS();
-  //fRecModel = new AliMUONClusterFinderAZ();
-
-}
-
-//__________________________________________________________________________
-AliMUONClusterReconstructor::AliMUONClusterReconstructor()
-  : TObject(),
-    fMUONData(0),
-    fRecModel(0),
-    fLoader(0)
-{
-  // Default Constructor
+  fDigitsCath0->SetOwner(kTRUE); 
+  fDigitsCath1->SetOwner(kTRUE);
 }
 
 //_______________________________________________________________________
@@ -91,97 +77,140 @@ AliMUONClusterReconstructor::operator=(const AliMUONClusterReconstructor& rhs)
 //__________________________________________________________________________
 AliMUONClusterReconstructor::~AliMUONClusterReconstructor(void)
 {
-
-  if (fRecModel)
-    delete fRecModel;
-
-  return;
+  delete fRecModel;
+  delete fDigitsCath0;
+  delete fDigitsCath1;
 }
+
+//______________________________________________________________________________
+void
+AliMUONClusterReconstructor::CheckSize(TClonesArray& a)
+{
+  // 
+  // Check if one can adds a new element, or if a is already full.
+  // If full, it is resized.
+  //
+  if ( a.GetLast()+1 >= a.GetSize() )
+  {
+    AliInfo(Form("Increasing array size from %d to %d",
+                 a.GetSize(),a.GetSize()*2));
+    a.Expand(a.GetSize()*2);
+  }
+}
+
+//______________________________________________________________________________
+void
+AliMUONClusterReconstructor::ClusterizeOneDE(Int_t detElemId)
+{
+  //
+  // Clusterize one detection element, and let fMUONData know about
+  // the results.
+  // 
+  
+  if ( fDigitsCath0->GetEntriesFast() || fDigitsCath1->GetEntriesFast() )
+  {
+    Int_t iChamber = detElemId/100 - 1;
+    AliMUONClusterInput::Instance()->SetDigits(iChamber, detElemId,
+                                               fDigitsCath0,fDigitsCath1);
+    AliDebug(3,Form("ClusterizeOneDE iChamber=%d DE=%d",iChamber,detElemId));
+    StdoutToAliDebug(3,cout << "DigitsCath0=" << endl;
+                     fDigitsCath0->Print();
+                     cout << "DigitsCath1=" << endl;
+                     fDigitsCath1->Print(););
+    fRecModel->FindRawClusters();
+    
+    // copy results into the output container
+    TClonesArray* tmp = fRecModel->GetRawClusters();
+    for (Int_t id = 0; id < tmp->GetEntriesFast(); ++id) 
+    {
+      AliMUONRawCluster* pClus = (AliMUONRawCluster*) tmp->At(id);
+      fMUONData->AddRawCluster(iChamber, *pClus);
+    }        
+    
+    // Reset the arrays
+    fDigitsCath0->Clear("C");
+    fDigitsCath1->Clear("C");
+  }
+}
+
 //____________________________________________________________________
 void AliMUONClusterReconstructor::Digits2Clusters(Int_t chBeg)
 {
-
-    TClonesArray *dig1, *dig2, *digAll;
-    Int_t ndig, k, idDE, idDEprev;
-    dig1 = new TClonesArray("AliMUONDigit",1000);
-    dig2 = new TClonesArray("AliMUONDigit",1000);
-    digAll = new TClonesArray("AliMUONDigit",2000);
-
-    AliMUONDigit* digit;
-
-    TArrayI id(200); // contains the different IdDE
-   
+  //
+  // Clusterize all the tracking chamber digits.
+  //
+  // For each chamber, we loop *once* on that chamber digits, and store them
+  // in 2 temporary arrays (one pair of arrays per detection element, 
+  // one array per cathode). Once a pair of arrays is full (i.e. all the digits
+  // of that detection element have been stored), we clusterize this DE, and
+  // move to the next one.
+  //
   
-// Loop on chambers and on cathode planes     
-    TClonesArray* muonDigits;
-    Int_t n2;
-    Int_t n1;
+  if (!fRecModel)
+  {
+    AliWarning("No reco model defined. Nothing to do...");
+    return;
+  }
+  
+  Int_t iChamber(-1);
+  Int_t currentDE(-1);
+  
+  // Loop on chambers 
+  for ( iChamber = chBeg; iChamber < AliMUONConstants::NTrackingCh(); ++iChamber ) 
+  {
+    TClonesArray* muonDigits = fMUONData->Digits(iChamber); 
+    
+    Int_t ndig = muonDigits->GetEntriesFast();
+    if (!ndig) continue;
+    
+    muonDigits->Sort(); // the sort *must* be per DE (at least), otherwise
+                        // the following logic with currentDE will fail.
+    
+    currentDE = -1; // initialize the DE counter (that is used to track 
+                    // when we change of DE in the following loop over
+                    // all digits) to an invalid value.
 
-    for (Int_t ich = chBeg; ich < AliMUONConstants::NTrackingCh(); ich++) {
- 
-      id.Reset();
-      n1 = 0;
-      n2 = 0;
-
-      //cathode 0 & 1
-      muonDigits = fMUONData->Digits(ich); 
-      ndig = muonDigits->GetEntriesFast();
-      TClonesArray &lDigit = *digAll;
-
-      idDEprev = 0;
-      muonDigits->Sort();
-      for (k = 0; k < ndig; k++) {
-
-	digit = (AliMUONDigit*) muonDigits->UncheckedAt(k);
-	new(lDigit[n1++]) AliMUONDigit(*digit);
-	idDE = digit->DetElemId();
-	if (idDE != idDEprev) {
-	  id.AddAt(idDE,n2++);
-	}
-	idDEprev = idDE;
+    for ( Int_t k = 0; k < ndig; ++k ) 
+    {
+      AliMUONDigit* digit = (AliMUONDigit*) muonDigits->UncheckedAt(k);
+      if ( ! digit->Signal() > 0 ) continue; // skip void digits.
+      
+      if ( digit->DetElemId() != currentDE )
+      {
+        AliDebug(3,Form("Switching DE from %d to %d",currentDE,digit->DetElemId()));
+        // we get to a new DE, so clusterize the previous one before
+        // moving on.
+        ClusterizeOneDE(currentDE);
+        currentDE = digit->DetElemId();
       }
-
-      Int_t idSize = n2;
-
-      // loop over id DE
-      for (idDE = 0; idDE < idSize; idDE++) {
-	TClonesArray &lhits1 = *dig1;
-	TClonesArray &lhits2 = *dig2;
-	dig1->Clear();
-	dig2->Clear();
-	n1 = n2 = 0;
-
-	for (k = 0; k < digAll->GetEntriesFast(); k++) {
-	  digit = (AliMUONDigit*) digAll->UncheckedAt(k);
-	  //	  printf("digit idDE %d\n", digit->DetElemId());
-	  if (id[idDE] == digit->DetElemId()) {
-	    if (digit->Cathode() == 0)
-	      new(lhits1[n1++]) AliMUONDigit(*digit);
-	    else 
-	      new(lhits2[n2++]) AliMUONDigit(*digit);
-	  }
-	}
-
-	// cluster finder
-	if (fRecModel) {
-	  AliMUONClusterInput::Instance()->SetDigits(ich, id[idDE], dig1, dig2);
-	  fRecModel->FindRawClusters();
-	}
-	// copy into the container
-	TClonesArray* tmp = fRecModel->GetRawClusters();
-	for (Int_t id = 0; id < tmp->GetEntriesFast(); id++) {
-	  AliMUONRawCluster* pClus = (AliMUONRawCluster*) tmp->At(id);
-	  fMUONData->AddRawCluster(ich, *pClus);
-	}
-	dig1->Delete();
-	dig2->Delete();
-      } // idDE
-      digAll->Delete();
-    } // for ich
-    delete dig1;
-    delete dig2;
-    delete digAll;
+      
+      // Add the digit to the array with the right cathode number.
+      if (digit->Cathode() == 0)
+      {
+        CheckSize(*fDigitsCath0);
+        new((*fDigitsCath0)[fDigitsCath0->GetLast()+1]) AliMUONDigit(*digit);
+      }
+      else 
+      {
+        CheckSize(*fDigitsCath1);
+        new((*fDigitsCath1)[fDigitsCath1->GetLast()+1]) AliMUONDigit(*digit);
+      }
+    } // end of loop on chamber digits
+    
+    // As the above logic is based on detecting a change in DE number,
+    // the last DE of each chamber has not been clusterized, so we do 
+    // it here.
+    ClusterizeOneDE(currentDE);
+  } // end of loop over chambers
 }
+
+//_______________________________________________________________________
+void 
+AliMUONClusterReconstructor::SetRecoModel(AliMUONClusterFinderVS* rec)
+{ 
+  delete fRecModel; 
+  fRecModel = rec;
+} 
 
 //_______________________________________________________________________
 void AliMUONClusterReconstructor::Trigger2Trigger() 

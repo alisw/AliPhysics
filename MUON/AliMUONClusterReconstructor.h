@@ -15,18 +15,15 @@
 /////////////////////////////////////
 
 #include <TObject.h>
-#include "AliMUONClusterFinderVS.h" 
 
-class AliLoader;
-class AliMUON;
-class AliMUONRawCluster;
+class AliMUONClusterFinderVS;
 class AliMUONData;
-class AliRawReader;
+class TClonesArray;
 
 class AliMUONClusterReconstructor : public TObject 
 {
  public:
-  AliMUONClusterReconstructor(AliLoader* loader, AliMUONData* data = 0x0); // Constructor
+  AliMUONClusterReconstructor(AliMUONData* data = 0x0); // Constructor
   virtual ~AliMUONClusterReconstructor(void); // Destructor
 
  
@@ -34,28 +31,29 @@ class AliMUONClusterReconstructor : public TObject
   virtual void   Digits2Clusters(Int_t chBeg = 0);
   virtual void   Trigger2Trigger() ;
 
-  // pointer to data container
-  AliMUONData*   GetMUONData() {return fMUONData;}
+//  // pointer to data container
+//  AliMUONData*   GetMUONData() {return fMUONData;}
   // Reco Model
   AliMUONClusterFinderVS* GetRecoModel() {return fRecModel;}
-  //AZ void   SetRecoModel(AliMUONClusterFinderVS* rec) {fRecModel = rec;}
-  void   SetRecoModel(AliMUONClusterFinderVS* rec) {if (fRecModel) delete fRecModel; fRecModel = rec;} //AZ
 
+  void SetRecoModel(AliMUONClusterFinderVS* rec);
 
  protected:
-  AliMUONClusterReconstructor();                  // Default constructor
   AliMUONClusterReconstructor (const AliMUONClusterReconstructor& rhs); // copy constructor
   AliMUONClusterReconstructor& operator=(const AliMUONClusterReconstructor& rhs); // assignment operator
 
+  void ClusterizeOneDE(Int_t detElemId);
+  
+  void CheckSize(TClonesArray&);
+  
  private:
 
   AliMUONData*            fMUONData;           //! Data container for MUON subsystem 
   AliMUONClusterFinderVS* fRecModel;           //! cluster recontruction model
 
-  // alice loader
-  AliLoader* fLoader;
-
-
+  TClonesArray* fDigitsCath0; //! digits for cathode 0 of the current DE
+  TClonesArray* fDigitsCath1; //! digits for cathode 1 of the current DE
+  
   ClassDef(AliMUONClusterReconstructor,0) // MUON cluster reconstructor in ALICE
 };
 	
