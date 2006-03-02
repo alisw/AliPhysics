@@ -101,6 +101,7 @@ AliTPC::AliTPC()
   fTPCParam = 0;    
   fNoiseTable = 0;
   fActiveSectors =0;
+  fSens = 0;
 
 }
  
@@ -158,6 +159,7 @@ AliTPC::AliTPC(const char *name, const char *title)
     AliWarning("In Config.C you must set non-default parameters.");
     fTPCParam=0;
   }
+  fSens = 0;
 
 }
 

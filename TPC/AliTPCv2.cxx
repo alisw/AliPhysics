@@ -65,8 +65,6 @@ AliTPCv2::AliTPCv2(const char *name, const char *title) :
   // Standard constructor for Time Projection Chamber version 2
   //
 
-  SetSens(-1); // no strips selected
-
 
   SetBufferSize(128000);
 
