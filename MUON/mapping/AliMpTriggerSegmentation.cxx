@@ -14,7 +14,7 @@
 **************************************************************************/
 
 // $Id$
-// $MpId$
+// $MpId: AliMpTriggerSegmentation.cxx,v 1.2 2006/03/02 16:35:31 ivana Exp $
 
 #include "AliMpTriggerSegmentation.h"
 
@@ -70,6 +70,20 @@ AliMpTriggerSegmentation::CreateIterator(const AliMpArea&) const
   // Not implemented for trigger.
   
   return 0;
+}
+
+//_____________________________________________________________________________
+TVector2
+AliMpTriggerSegmentation::Dimensions() const
+{
+  return Slat()->Dimensions();
+}
+
+//_____________________________________________________________________________
+void 
+AliMpTriggerSegmentation::GetAllElectronicCardIDs(TArrayI& ecn) const
+{
+  Slat()->GetAllLocalBoardNumbers(ecn);
 }
 
 //_____________________________________________________________________________
@@ -245,6 +259,13 @@ AliMpTriggerSegmentation::PadByPosition(const TVector2& position,
   }
   
   return pad;  
+}
+
+//_____________________________________________________________________________
+AliMpPlaneType
+AliMpTriggerSegmentation::PlaneType() const
+{
+  return Slat()->PlaneType();
 }
 
 //_____________________________________________________________________________

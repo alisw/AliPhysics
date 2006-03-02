@@ -2,7 +2,7 @@
 * See cxx source for full Copyright notice                               */
 
 // $Id$
-// $MpId$
+// $MpId: AliMpTriggerSegmentation.h,v 1.2 2006/03/02 16:35:27 ivana Exp $
 
 /// \ingroup trigger
 /// \class AliMpTriggerSegmentation
@@ -56,6 +56,12 @@ public:
   
   const AliMpTrigger* Slat() const;
    
+  virtual void GetAllElectronicCardIDs(TArrayI& ecn) const;
+  
+  AliMpPlaneType PlaneType() const;
+  
+  TVector2 Dimensions() const;
+  
 private:
     const AliMpTrigger* fkSlat; // Slat
   

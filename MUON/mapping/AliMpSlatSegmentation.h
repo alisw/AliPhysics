@@ -2,7 +2,7 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$
-// $MpId: AliMpSlatSegmentation.h,v 1.4 2005/09/19 19:01:09 ivana Exp $
+// $MpId: AliMpSlatSegmentation.h,v 1.7 2006/03/02 16:35:16 ivana Exp $
 
 /// \ingroup slat
 /// \class AliMpSlatSegmentation
@@ -59,7 +59,15 @@ class AliMpSlatSegmentation : public AliMpVSegmentation
   virtual AliMpPad PadByPosition(const TVector2& position,
 			 Bool_t warning) const;
 
+  virtual void Print(Option_t*) const;
+  
   const AliMpSlat* Slat() const;
+  
+  void GetAllElectronicCardIDs(TArrayI& ecn) const;
+  
+  AliMpPlaneType PlaneType() const;
+  
+  TVector2 Dimensions() const;
   
  private:
   const AliMpSlat* fkSlat; // Slat

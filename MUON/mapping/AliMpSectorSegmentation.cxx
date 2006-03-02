@@ -14,7 +14,7 @@
  **************************************************************************/
 
 // $Id$
-// $MpId: AliMpSectorSegmentation.cxx,v 1.10 2005/10/28 15:22:02 ivana Exp $
+// $MpId: AliMpSectorSegmentation.cxx,v 1.11 2006/03/02 16:35:12 ivana Exp $
 // Category: sector
 //
 // Class AliMpSectorSegmentation
@@ -25,12 +25,6 @@
 // finding pad neighbour.
 //
 // Authors: David Guez, Ivana Hrivnacova; IPN Orsay
-
-#include <Riostream.h>
-#include <TMath.h>
-#include <TError.h>
-
-#include "AliLog.h"
 
 #include "AliMpSectorSegmentation.h"
 #include "AliMpSector.h"
@@ -49,12 +43,18 @@
 #include "AliMpArea.h"
 #include "AliMpConstants.h"
 
-ClassImp(AliMpSectorSegmentation)
+#include "AliLog.h"
+
+#include <Riostream.h>
+#include <TMath.h>
+#include <TError.h>
 
 #ifdef WITH_ROOT
 const Double_t AliMpSectorSegmentation::fgkS1 = 100000.;
 const Double_t AliMpSectorSegmentation::fgkS2 = 1000.;
 #endif
+
+ClassImp(AliMpSectorSegmentation)
 
 //______________________________________________________________________________
 AliMpSectorSegmentation::AliMpSectorSegmentation(const AliMpSector* sector) 
@@ -121,6 +121,13 @@ AliMpSectorSegmentation::operator=(const AliMpSectorSegmentation& right)
 //
 // private methods
 //
+
+//_____________________________________________________________________________
+void 
+AliMpSectorSegmentation::GetAllElectronicCardIDs(TArrayI& ecn) const
+{
+  GetSector()->GetAllMotifPositionsIDs(ecn);
+}
 
 #ifdef WITH_ROOT
 //______________________________________________________________________________
@@ -354,6 +361,20 @@ AliMpSectorSegmentation::CreateIterator(const AliMpPad& centerPad,
   return new AliMpNeighboursPadIterator(this, centerPad, includeCenter);
 }   
   
+//______________________________________________________________________________
+TVector2
+AliMpSectorSegmentation::Dimensions() const
+{
+  return GetSector()->Dimensions();
+}
+
+//______________________________________________________________________________
+AliMpPlaneType
+AliMpSectorSegmentation::PlaneType() const
+{
+  return GetSector()->PlaneType();
+}
+
 //______________________________________________________________________________
 AliMpPad 
 AliMpSectorSegmentation::PadByLocation(const AliMpIntPair& location, 
@@ -635,6 +656,13 @@ Bool_t AliMpSectorSegmentation::CircleTest(const AliMpIntPair& indices) const
   }
   
   return true;
+}
+
+//______________________________________________________________________________
+void
+AliMpSectorSegmentation::Print(Option_t* opt) const
+{
+  fkSector->Print(opt);
 }
 
 //______________________________________________________________________________

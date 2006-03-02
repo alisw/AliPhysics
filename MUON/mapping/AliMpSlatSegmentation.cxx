@@ -14,7 +14,7 @@
 **************************************************************************/
 
 // $Id$
-// $MpId: AliMpSlatSegmentation.cxx,v 1.5 2005/10/28 15:26:01 ivana Exp $
+// $MpId: AliMpSlatSegmentation.cxx,v 1.7 2006/03/02 16:35:20 ivana Exp $
 
 // Caution !!
 // Implementation note.
@@ -76,7 +76,29 @@ AliMpSlatSegmentation::CreateIterator(const AliMpArea& area) const
   // Returns an iterator to loop over the pad contained within given area.
   //
   AliMpArea a(area.Position()+fkSlat->Position(),area.Dimensions());
+  AliDebug(3,Form("Converted input area wrt to slat center : "
+                  "%7.2f,%7.2f->%7.2f,%7.2f to wrt slat lower-left : "
+                  "%7.2f,%7.2f->%7.2f,%7.2f ",
+                  area.LeftBorder(),area.DownBorder(),
+                  area.RightBorder(),area.UpBorder(),
+                  a.LeftBorder(),a.DownBorder(),
+                  a.RightBorder(),a.UpBorder()));
+                  
   return new AliMpSlatPadIterator(fkSlat,a);
+}
+
+//_____________________________________________________________________________
+TVector2
+AliMpSlatSegmentation::Dimensions() const
+{
+  return Slat()->Dimensions();
+}
+
+//_____________________________________________________________________________
+void 
+AliMpSlatSegmentation::GetAllElectronicCardIDs(TArrayI& ecn) const
+{
+  Slat()->GetAllMotifPositionsIDs(ecn);
 }
 
 //_____________________________________________________________________________
@@ -280,6 +302,20 @@ AliMpSlatSegmentation::PadByPosition(const TVector2& position,
                   + motif->PadPositionLocal(localIndices)
                   - fkSlat->Position(),
                   motif->GetPadDimensions(localIndices));  
+}
+
+//_____________________________________________________________________________
+AliMpPlaneType
+AliMpSlatSegmentation::PlaneType() const
+{
+  return Slat()->PlaneType();
+}
+
+//_____________________________________________________________________________
+void
+AliMpSlatSegmentation::Print(Option_t* opt) const
+{
+  fkSlat->Print(opt);
 }
 
 //_____________________________________________________________________________

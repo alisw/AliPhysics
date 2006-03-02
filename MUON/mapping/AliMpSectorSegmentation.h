@@ -2,7 +2,7 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$
-// $MpId: AliMpSectorSegmentation.h,v 1.10 2005/09/26 16:12:11 ivana Exp $
+// $MpId: AliMpSectorSegmentation.h,v 1.11 2006/03/02 16:35:06 ivana Exp $
 
 /// \ingroup sector
 /// \class AliMpSectorSegmentation
@@ -85,7 +85,15 @@ class AliMpSectorSegmentation : public AliMpVSegmentation
    
     const AliMpSector* GetSector() const;
 
-  protected:
+    virtual void Print(Option_t* opt="") const;
+    
+    virtual void GetAllElectronicCardIDs(TArrayI& ecn) const;
+
+    AliMpPlaneType PlaneType() const;
+    
+    TVector2 Dimensions() const;
+    
+protected:
     AliMpSectorSegmentation(const AliMpSectorSegmentation& right);
     AliMpSectorSegmentation&  operator = (const AliMpSectorSegmentation& right);
 
