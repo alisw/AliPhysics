@@ -21,7 +21,7 @@ void testNeighboursPadIterator(AliMpStationType station = kStation1,
     sector = (AliMpSector*)f.Get("Sector");
   }  
 
-  AliMpSectorSegmentation segm(sect);  
+  AliMpSectorSegmentation segm(sector);  
   
   TCanvas *can = new TCanvas("canv");
 
@@ -54,5 +54,5 @@ void testNeighboursPadIterator(AliMpStationType station = kStation1,
   }
   
   delete iter2;
-  delete sect;
+  delete sector;
 }
