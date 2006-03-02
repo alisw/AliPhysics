@@ -14,7 +14,7 @@
 **************************************************************************/
 
 // $Id$
-// $MpId: AliMpSlat.cxx,v 1.3 2005/10/28 15:25:09 ivana Exp $
+// $MpId: AliMpSlat.cxx,v 1.4 2006/03/02 16:35:20 ivana Exp $
 
 #include "AliMpSlat.h"
 
@@ -84,7 +84,7 @@ void
 AliMpSlat::Add(AliMpPCB* pcbType, const TArrayI& manuList) 
 {
   //
-  // Adds a PCB to this slat. The manuList speficy the ids of the manu
+  // Adds a PCB to this slat. The manuList specifies the ids of the manu
   // that compose the PCB. The manuList ordering is important, as the 
   // assumption is that it's ordered counter-clockwise, starting from
   // the lower-left of the PCB.
@@ -169,15 +169,7 @@ AliMpSlat::FindMotifPosition(Int_t manuID) const
   // Returns the motifPosition referenced by it manuID
   //
 //#ifdef WITH_ROOT
-  TObject* rv = fManuMap.GetValue(manuID);
-  if ( rv )
-  {
-    return (AliMpMotifPosition*)(rv);
-  }
-  else
-  {
-    return 0;
-  }
+  return static_cast<AliMpMotifPosition*>(fManuMap.GetValue(manuID));
 //#else
 //  std::map<int,AliMpMotifPosition*>::const_iterator it = fManuMap.find(manuID);
 //  if ( it != fManuMap.end() )
@@ -317,7 +309,7 @@ AliMpSlat::ForcePosition(const TVector2& pos)
 
 //_____________________________________________________________________________
 void
-AliMpSlat::GetAllElectronicCardNumbers(TArrayI& ecn) const
+AliMpSlat::GetAllMotifPositionsIDs(TArrayI& ecn) const
 {
   ecn.Set(GetNofElectronicCards());
 //#ifdef WITH_ROOT
@@ -432,6 +424,13 @@ AliMpSlat::GetSize() const
 #else
   return fPCBs.size();
 #endif  
+}
+
+//_____________________________________________________________________________
+AliMpPlaneType
+AliMpSlat::PlaneType() const
+{
+  return fPlaneType;
 }
 
 //_____________________________________________________________________________

@@ -2,7 +2,7 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$
-// $MpId: AliMpSector.h,v 1.9 2005/09/26 16:12:11 ivana Exp $
+// $MpId: AliMpSector.h,v 1.10 2006/03/02 16:35:06 ivana Exp $
 
 /// \ingroup sector
 /// \class AliMpSector
@@ -28,7 +28,9 @@
 #include <TVector2.h>
 
 #include "AliMpDirection.h"
+#include "AliMpPlaneType.h"
 
+class TArrayI;
 class AliMpZone;
 class AliMpRow;
 class AliMpVRowSegment;
@@ -83,6 +85,13 @@ class AliMpSector : public TNamed
     AliMpDirection  GetDirection() const;  
     TVector2        GetMinPadDimensions() const;
     AliMpMotifMap*  GetMotifMap() const;
+    
+    virtual void Print(Option_t* opt="") const;
+    
+    /// Get all motifPositionsIDs (=electronicCardNumbers) handled by this sector
+    void GetAllMotifPositionsIDs(TArrayI& ecn) const;
+    
+    AliMpPlaneType PlaneType() const;
     
   protected:
     AliMpSector(const AliMpSector& right);

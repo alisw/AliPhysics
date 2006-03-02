@@ -14,7 +14,7 @@
  **************************************************************************/
 
 // $Id$
-// $MpId: AliMpSector.cxx,v 1.10 2005/09/26 16:12:23 ivana Exp $
+// $MpId: AliMpSector.cxx,v 1.11 2006/03/02 16:35:12 ivana Exp $
 // Category: sector
 //
 // Class AliMpSector
@@ -383,6 +383,13 @@ AliMpZone*  AliMpSector::FindZone(const TVector2& padDimensions) const
 }
 
 //_____________________________________________________________________________
+AliMpPlaneType
+AliMpSector::PlaneType() const
+{
+  return GetDirection()==kY ? kBendingPlane : kNonBendingPlane;
+}
+
+//_____________________________________________________________________________
 TVector2 AliMpSector::Position() const
 {
 /// Return the sector offset.
@@ -421,6 +428,13 @@ TVector2 AliMpSector::Dimensions() const
   
   return TVector2(x, y);  
 }  
+
+//_____________________________________________________________________________
+void 
+AliMpSector::GetAllMotifPositionsIDs(TArrayI& ecn) const
+{
+  fMotifMap->GetAllMotifPositionsIDs(ecn);
+}
 
 //_____________________________________________________________________________
 Int_t AliMpSector::GetNofZones() const
@@ -486,4 +500,12 @@ AliMpRow* AliMpSector::GetRow(Int_t rowID) const
 #ifdef WITH_ROOT
   return (AliMpRow*)fRows[rowID];
 #endif
+}
+
+//_____________________________________________________________________________
+void
+AliMpSector::Print(Option_t* opt) const
+{
+  cout << "Sector," << PlaneTypeName(PlaneType()) << endl;
+  fMotifMap->Print(opt);
 }

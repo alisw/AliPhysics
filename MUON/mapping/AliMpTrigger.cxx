@@ -14,7 +14,7 @@
 **************************************************************************/
 
 // $Id$
-// $MpId$
+// $MpId: AliMpTrigger.cxx,v 1.2 2006/03/02 16:35:31 ivana Exp $
 
 #include "AliMpTrigger.h"
 
@@ -98,6 +98,13 @@ AliMpTrigger::AdoptLayer(AliMpSlat* slat)
 }
 
 //_____________________________________________________________________________
+TVector2
+AliMpTrigger::Dimensions() const
+{
+  return TVector2(DX(),DY());
+}
+
+//_____________________________________________________________________________
 Double_t
 AliMpTrigger::DX() const
 {
@@ -128,7 +135,7 @@ AliMpTrigger::GetAllLocalBoardNumbers(TArrayI& lbn) const
   for ( Int_t i = 0; i < GetSize(); ++i )
   {
     TArrayI slbn;
-    GetLayer(i)->GetAllElectronicCardNumbers(slbn);
+    GetLayer(i)->GetAllMotifPositionsIDs(slbn);
     for ( Int_t j = 0; j < slbn.GetSize(); ++j )
     {
       lbn[index] = slbn[j];
@@ -210,6 +217,13 @@ AliMpTrigger::IsLayerValid(int layer) const
     return kTRUE;
   }
   return kFALSE;
+}
+
+//_____________________________________________________________________________
+AliMpPlaneType
+AliMpTrigger::PlaneType() const
+{
+  return fPlaneType;
 }
 
 //_____________________________________________________________________________

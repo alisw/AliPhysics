@@ -2,7 +2,7 @@
 * See cxx source for full Copyright notice                               */
 
 // $Id$
-// $MpId$
+// $MpId: AliMpTrigger.h,v 1.2 2006/03/02 16:35:27 ivana Exp $
 
 /// \ingroup trigger
 /// \class AliMpTrigger
@@ -73,6 +73,10 @@ public:
   
   void Print(Option_t* option="") const;
 
+  AliMpPlaneType PlaneType() const;
+  
+  TVector2 Dimensions() const;
+  
 private:
     
   Bool_t IsLayerValid(int layer) const;

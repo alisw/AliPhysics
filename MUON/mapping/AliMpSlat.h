@@ -2,7 +2,7 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$
-// $MpId: AliMpSlat.h,v 1.3 2005/10/28 15:25:06 ivana Exp $
+// $MpId: AliMpSlat.h,v 1.4 2006/03/02 16:35:16 ivana Exp $
 
 /// \ingroup slat
 /// \class AliMpSlat
@@ -106,7 +106,7 @@ class AliMpSlat : public TObject
   AliMpMotifPosition* FindMotifPosition(Int_t ix, Int_t iy) const;
 
   /// Return the ids of the electronic cards (either manu or local board).
-  void GetAllElectronicCardNumbers(TArrayI& ecn) const;
+  void GetAllMotifPositionsIDs(TArrayI& ecn) const;
   
   /** Returns the max. number of pads in the x-direction contained in this slat.
     This is a max only as for e.g. non-bending slats, the y-dimension depends
@@ -134,6 +134,8 @@ class AliMpSlat : public TObject
     the position is DX(),DY() simply.
     */
   void ForcePosition(const TVector2& pos);
+  
+  AliMpPlaneType PlaneType() const;
   
  private:
   TString fId;
