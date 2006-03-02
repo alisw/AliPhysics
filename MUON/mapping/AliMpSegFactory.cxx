@@ -20,32 +20,35 @@
 /* $Id$ */
 
 #include "AliMpSegFactory.h"
+
+#include "AliLog.h"
 #include "AliMpDEManager.h"
+#include "AliMpExMap.h"
 #include "AliMpSector.h"
 #include "AliMpSectorReader.h"
 #include "AliMpSectorSegmentation.h"
 #include "AliMpSlat.h"
-#include "AliMpSt345Reader.h"
 #include "AliMpSlatSegmentation.h"
+#include "AliMpSt345Reader.h"
 #include "AliMpTrigger.h"
 #include "AliMpTriggerReader.h"
 #include "AliMpTriggerSegmentation.h"
-
-#include "AliLog.h"
-
 #include <Riostream.h>
-#include <TSystem.h>
-#include <TObjString.h>
 #include <TMap.h>
+#include <TObjString.h>
+#include <TSystem.h>
 
 ClassImp(AliMpSegFactory)
 
 //______________________________________________________________________________
 AliMpSegFactory::AliMpSegFactory()
-    : TObject(),
-      fMpSegmentations()
+: TObject(),
+  fMpSegmentations(),
+  fMpMap(new AliMpExMap(true))
 {  
-/// Standard constructor
+    /// Standard constructor
+    AliDebug(1,"");
+    fMpMap->SetOwner(true);
 }
 
 //______________________________________________________________________________
@@ -64,6 +67,7 @@ AliMpSegFactory::~AliMpSegFactory()
 /// Destructor
 
   // The segmentations is supposed to be deleted in the client code
+  AliDebug(1,"");
 }
 
 //______________________________________________________________________________
@@ -98,6 +102,9 @@ AliMpSegFactory::CreateMpSegmentation(Int_t detElemId, Int_t cath)
   TObject* object = fMpSegmentations.Get(deName);
   if ( object ) return (AliMpVSegmentation*)object;
 
+  AliDebug(1,Form("Creating segmentation for detElemId=%d cath=%d",
+                  detElemId,cath));
+  
   // Read mapping data and create segmentation
   //
   AliMpStationType stationType = AliMpDEManager::GetStationType(detElemId);
@@ -125,12 +132,65 @@ AliMpSegFactory::CreateMpSegmentation(Int_t detElemId, Int_t cath)
   fMpSegmentations.Add(deName, mpSegmentation); 
   return mpSegmentation;
 } 
+
+//_____________________________________________________________________________
+AliMpVSegmentation* 
+AliMpSegFactory::CreateMpSegmentationByElectronics(Int_t detElemId,
+                                                   Int_t FEMId)
+{
+  AliMpExMap* m = static_cast<AliMpExMap*>(fMpMap->GetValue(detElemId));
+  
+  if (!m)
+  {
+    m = FillMpMap(detElemId);
+  }
+  
+  return static_cast<AliMpVSegmentation*>(m->GetValue(FEMId));
+}
     
 //______________________________________________________________________________
 void AliMpSegFactory::DeleteSegmentations()
 {
 /// Delete all segmentations created with this manager
-
+  AliDebug(1,"deleting mpSegmentations");
   fMpSegmentations.Clear();
+  AliDebug(1,"deleting mpMap");
+  delete fMpMap;
+  fMpMap = 0; 
+  AliDebug(1,"done");
 }
 
+//_____________________________________________________________________________
+AliMpExMap*
+AliMpSegFactory::FillMpMap(Int_t detElemId)
+{
+  AliDebug(1,Form("detElemId=%d",detElemId));
+  
+  AliMpExMap* mde = new AliMpExMap(true);
+  mde->SetOwner(kFALSE);
+  fMpMap->Add(detElemId,mde);
+  
+  AliMpVSegmentation* seg[2];
+  TArrayI ecn[2];
+  
+  // Do it in 2 steps to be able to set the AliMpExMap size once for all,
+  // to avoid annoying warning message in case of dynamical resizing.
+  // (not critical).
+  for ( Int_t cathode = 0; cathode < 2; ++cathode )
+  {
+    seg[cathode] = CreateMpSegmentation(detElemId,cathode);
+    seg[cathode]->GetAllElectronicCardIDs(ecn[cathode]);
+  }
+  
+  mde->SetSize(ecn[0].GetSize()+ecn[1].GetSize());
+  
+  for ( Int_t cathode = 0; cathode < 2; ++ cathode )
+  {
+    for ( Int_t i = 0; i < ecn[cathode].GetSize(); ++i )
+    {
+      mde->Add(ecn[cathode][i],const_cast<AliMpVSegmentation*>(seg[cathode]));
+    }
+  }
+  
+  return mde;
+}

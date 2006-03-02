@@ -1,3 +1,6 @@
+#ifndef ALI_MP_SEG_FACTORY_H
+#define ALI_MP_SEG_FACTORY_H
+
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
@@ -14,13 +17,15 @@
 ///
 /// Authors: Ivana Hrivnacova, IPN Orsay
 
-#ifndef ALI_MP_SEG_FACTORY_H
-#define ALI_MP_SEG_FACTORY_H
+#ifndef ROOT_TObject
+#  include "TObject.h"
+#endif
 
-#include "AliMpStringObjMap.h"
+#ifndef ALI_MP_STRING_OBJ_MAP_H
+#  include "AliMpStringObjMap.h"
+#endif
 
-#include <TObject.h>
-
+class AliMpExMap;
 class AliMpVSegmentation;
 
 class AliMpSegFactory : public  TObject {
@@ -30,7 +35,12 @@ class AliMpSegFactory : public  TObject {
     virtual ~AliMpSegFactory();
     
     // methods
-    AliMpVSegmentation* CreateMpSegmentation(Int_t detElemId, Int_t cath);
+    AliMpVSegmentation* CreateMpSegmentation(
+                              Int_t detElemId, Int_t cath);
+
+    AliMpVSegmentation* CreateMpSegmentationByElectronics(
+                              Int_t detElemId, Int_t elCardID);
+
     void DeleteSegmentations();
 
   protected:
@@ -38,9 +48,13 @@ class AliMpSegFactory : public  TObject {
     AliMpSegFactory& operator=(const AliMpSegFactory& rhs);
 
   private:
-    // data members	
-    AliMpStringObjMap  fMpSegmentations;// Map of mapping segmentations to DE names
+    AliMpExMap* FillMpMap(Int_t detElemId);
+  
+  private:
 
+    AliMpStringObjMap  fMpSegmentations;// Map of mapping segmentations to DE names
+    AliMpExMap*        fMpMap;          // Map of el. cards IDs to segmentations
+      
   ClassDef(AliMpSegFactory,0)  // MUON Factory for Chambers and Segmentation
 };
 
