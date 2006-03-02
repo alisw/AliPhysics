@@ -30,6 +30,7 @@
 #include "AliMUONGeometryModule.h"
 #include "AliMUONGeometryEnvelopeStore.h"
 
+#include "AliMpConstants.h"
 #include "AliMpFiles.h"
 #include "AliMpSectorReader.h"
 #include "AliMpSector.h"
@@ -37,6 +38,7 @@
 #include "AliMpVRowSegment.h"
 #include "AliMpMotifMap.h"
 #include "AliMpMotifPosition.h"
+#include "AliMpPlaneType.h"
 
 #include "AliRun.h"
 #include "AliMagF.h"
@@ -61,8 +63,6 @@
 #ifdef ST1_WITH_ROOT
   #include "TArrayI.h"
 #endif
-
-ClassImp(AliMUONSt1GeometryBuilderV2)
 
 // Thickness Constants
 const GReal_t AliMUONSt1GeometryBuilderV2::fgkHzPadPlane=0.0148/2.;     //Pad plane
@@ -121,6 +121,8 @@ const char* AliMUONSt1GeometryBuilderV2::fgkQuadrantMLayerName="SQM";
 const char* AliMUONSt1GeometryBuilderV2::fgkQuadrantNLayerName="SQN";
 const char* AliMUONSt1GeometryBuilderV2::fgkQuadrantFLayerName="SQF";
 const Int_t AliMUONSt1GeometryBuilderV2::fgkDaughterCopyNoOffset=1000;
+
+ClassImp(AliMUONSt1GeometryBuilderV2)
 
 //______________________________________________________________________________
 AliMUONSt1GeometryBuilderV2::AliMUONSt1GeometryBuilderV2(AliMUON* muon)
@@ -540,13 +542,14 @@ void AliMUONSt1GeometryBuilderV2::CreateQuadrant(Int_t chamber)
 #endif
 
 #ifdef ST1_WITH_ROOT
+  Int_t nb = AliMpConstants::ManuMask(kNonBendingPlane);
   specialMap.Delete();
-  specialMap.Add(76,(Long_t) new AliMUONSt1SpecialMotif(TVector2(1.01,0.59),90.));
-  specialMap.Add(75,(Long_t) new AliMUONSt1SpecialMotif(TVector2(1.96, 0.17)));
-  specialMap.Add(47,(Long_t) new AliMUONSt1SpecialMotif(TVector2(2.18,-0.98)));
-  specialMap.Add(20,(Long_t) new AliMUONSt1SpecialMotif(TVector2(0.2 ,-0.08)));
-  specialMap.Add(46,(Long_t) new AliMUONSt1SpecialMotif(TVector2(0.2 , 0.25)));
-  specialMap.Add(74,(Long_t) new AliMUONSt1SpecialMotif(TVector2(0.28, 0.21)));  
+  specialMap.Add(76 | nb,(Long_t) new AliMUONSt1SpecialMotif(TVector2(1.01,0.59),90.));
+  specialMap.Add(75 | nb,(Long_t) new AliMUONSt1SpecialMotif(TVector2(1.96, 0.17)));
+  specialMap.Add(47 | nb,(Long_t) new AliMUONSt1SpecialMotif(TVector2(2.18,-0.98)));
+  specialMap.Add(20 | nb,(Long_t) new AliMUONSt1SpecialMotif(TVector2(0.2 ,-0.08)));
+  specialMap.Add(46 | nb,(Long_t) new AliMUONSt1SpecialMotif(TVector2(0.2 , 0.25)));
+  specialMap.Add(74 | nb,(Long_t) new AliMUONSt1SpecialMotif(TVector2(0.28, 0.21)));  
       // Fix (7) - overlap of SQ42 with MCHL (after moving the whole sector
       // in the true position)   
       // Was: specialMap.Add(47,(Long_t) new AliMUONSt1SpecialMotif(TVector2(1.61,-1.18)));
