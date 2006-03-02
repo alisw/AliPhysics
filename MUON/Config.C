@@ -147,25 +147,28 @@ void Config(char directory[100]="", char option[6]="param")
   AliPIPE *PIPE = new AliPIPEv0("PIPE", "Beam Pipe");
   //=================== SHIL parameters ============================
   AliSHIL *SHIL = new AliSHILv2("SHIL", "Shielding Version 2");
+
   //=================== MUON Subsystem ===========================
   cout << ">>> Config.C: Creating AliMUONv1 ..."<<endl;
 
-  // New MUONv1 version (geometry defined via builders)
+  // With the following compact ctor, what you get (in case you wonder...) is :
   //
-  //AliMUON *MUON = new AliMUONv1("MUON", "default");
+  // - "FactoryV4", that is all stations using new segmentations/mapping
+  // - "sdigitizer:AliMUONSDigitizerV2", performing decalibration
+  // - "digitizer:NewDigitizerOldTrigger" <=> digitizer=AliMUONDigitizerV3,
+  //    using the "old" trigger code, performing calibration
   //
-  AliMUON *MUON = new AliMUONv1("MUON", "FactoryV3"); // New segmentation slats 
+  AliMUON *MUON = new AliMUONv1("MUON");
+
+  //To get old behavior (which usage is no longer supported), please use :
+  // 
+  //  AliMUON* MUON = new AliMUONv1("MUON","FactoryV3",
+  //                                "AliMUONSDigitizerv1",
+  //                                "AliMUONDigitizerv2");
   //
-  //AliMUON *MUON = new AliMUONv1("MUON", "FactoryV4"); // New segmentation trigger 
+  //To get brand new trigger code, please use :
   //
-  //Version below to get digitizer making a decalibration.
-  //The 4-th parameter should be put to digitizer:NewDigitizerNewTrigger
-  //to test latest and greatest trigger code (from Rachid) as well.
-  //
-  //AliMUON *MUON = new AliMUONv1("MUON", "FactoryV4",
-  //                              "sdigitizer:AliMUONSDigitizerV2",
-  //                              "digitizer:NewDigitizerOldTrigger");
-  //AliMUON *MUON = new AliMUONv1("MUON", "FactoryV4",
+  // AliMUON *MUON = new AliMUONv1("MUON", "FactoryV4",
   //                              "sdigitizer:AliMUONSDigitizerV2",
   //                              "digitizer:NewDigitizerNewTrigger");
   
@@ -176,10 +179,13 @@ void Config(char directory[100]="", char option[6]="param")
   // To generate and read scaler trigger events in rawdata
   // MUON->SetTriggerScalerEvent();
 
-  MUON->AddGeometryBuilder(new AliMUONSt1GeometryBuilderV2(MUON));
-  MUON->AddGeometryBuilder(new AliMUONSt2GeometryBuilderV2(MUON));
-  MUON->AddGeometryBuilder(new AliMUONSlatGeometryBuilder(MUON));
-  MUON->AddGeometryBuilder(new AliMUONTriggerGeometryBuilder(MUON));
+  // If you want to play with builders, first reset the geometry builder,
+  // and then add yours.
+  //  MUON->ResetGeometryBuilder();
+  //  MUON->AddGeometryBuilder(new AliMUONSt1GeometryBuilderV2(MUON));
+  //  MUON->AddGeometryBuilder(new AliMUONSt2GeometryBuilderV2(MUON));
+  //  MUON->AddGeometryBuilder(new AliMUONSlatGeometryBuilder(MUON));
+  //  MUON->AddGeometryBuilder(new AliMUONTriggerGeometryBuilder(MUON));
 }
 
 Float_t EtaToTheta(Float_t arg){
