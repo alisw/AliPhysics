@@ -26,6 +26,7 @@
 #include "AliESDMuonTrack.h"
 #include "AliGenEventHeader.h"
 #include "AliHeader.h"
+#include "AliLog.h"
 #include "AliMUON.h"
 #include "AliMUONCalibrationData.h"
 #include "AliMUONClusterFinderAZ.h"
@@ -45,6 +46,7 @@
 #include "TTask.h"
 #include <TArrayF.h>
 #include <TParticle.h>
+#include "TStopwatch.h"
 
 ClassImp(AliMUONReconstructor)
 
@@ -52,10 +54,13 @@ ClassImp(AliMUONReconstructor)
 AliMUONReconstructor::AliMUONReconstructor()
   : AliReconstructor(), fCalibrationData(0x0)
 {
+    AliDebug(1,"");
 }
+
 //_____________________________________________________________________________
 AliMUONReconstructor::~AliMUONReconstructor()
 {
+  AliDebug(1,"");
   delete fCalibrationData;
 }
 
@@ -123,7 +128,7 @@ void AliMUONReconstructor::Reconstruct(AliRunLoader* runLoader) const
   else
     recoEvent->SetTrackMethod(2); // Kalman
 
-  AliMUONClusterReconstructor* recoCluster = new AliMUONClusterReconstructor(loader, data);
+  AliMUONClusterReconstructor* recoCluster = new AliMUONClusterReconstructor(data);
   
   AliMUONClusterFinderVS *recModel = recoCluster->GetRecoModel();
 
@@ -142,7 +147,9 @@ void AliMUONReconstructor::Reconstruct(AliRunLoader* runLoader) const
   Int_t chBeg = recoEvent->GetTrackMethod() == 3 ? 6 : 0; 
   //   Loop over events              
   for(Int_t ievent = 0; ievent < nEvents; ievent++) {
-    printf("Event %d\n",ievent);
+
+    AliDebug(1,Form("Event %d",ievent));
+    
     runLoader->GetEvent(ievent);
 
     //----------------------- digit2cluster & Trigger2Trigger -------------------
@@ -235,118 +242,149 @@ void AliMUONReconstructor::Reconstruct(AliRunLoader* runLoader) const
 //_____________________________________________________________________________
 void AliMUONReconstructor::Reconstruct(AliRunLoader* runLoader, AliRawReader* rawReader) const
 {
-//  AliLoader
+  //  AliLoader
   AliLoader* loader = runLoader->GetLoader("MUONLoader");
-  AliMUONData* data = new AliMUONData(loader,"MUON","MUON");
+  AliMUONData data(loader,"MUON","MUON");
 
-// passing loader as argument.
-  AliMUONTrackReconstructor* recoEvent = new AliMUONTrackReconstructor(loader, data);
+  // passing loader as argument.
+  AliMUONTrackReconstructor recoEvent(loader, &data);
 
-  AliMUONRawReader* rawData = new AliMUONRawReader(loader, data);
+  AliMUONRawReader rawData(&data);
 
-  AliMUONClusterReconstructor* recoCluster = new AliMUONClusterReconstructor(loader, data);
+  AliMUONClusterReconstructor recoCluster(&data);
 
   if (strstr(GetOption(),"Original")) 
-    recoEvent->SetTrackMethod(1); // Original tracking
-//   else if (strstr(GetOption(),"Combi")) 
-//     recoEvent->SetTrackMethod(3); // Combined cluster / track
+  {
+    recoEvent.SetTrackMethod(1); // Original tracking
+  }
   else
-    recoEvent->SetTrackMethod(2); // Kalman
-
-  AliMUONClusterFinderVS *recModel = recoCluster->GetRecoModel();
-  if (!strstr(GetOption(),"VS")) {
+  {
+    recoEvent.SetTrackMethod(2); // Kalman
+  }
+  
+  AliMUONClusterFinderVS *recModel = recoCluster.GetRecoModel();
+  if (!strstr(GetOption(),"VS")) 
+  {
     recModel = (AliMUONClusterFinderVS*) new AliMUONClusterFinderAZ();
-    recoCluster->SetRecoModel(recModel);
+    recoCluster.SetRecoModel(recModel);
   }
   recModel->SetGhostChi2Cut(10);
 
-  TTask* calibration = GetCalibrationTask(data);
+  TTask* calibration = GetCalibrationTask(&data);
   
   loader->LoadRecPoints("RECREATE");
   loader->LoadTracks("RECREATE");
-  loader->LoadDigits("RECREATE");
-
+  loader->LoadDigits("READ");
+  
   //   Loop over events  
   Int_t iEvent = 0;
-            
-  while (rawReader->NextEvent()) {
-    printf("Event %d\n",iEvent);
+           
+  TStopwatch totalTimer;
+  TStopwatch rawTimer;
+  TStopwatch calibTimer;
+  TStopwatch clusterTimer;
+  TStopwatch trackingTimer;
+  
+  rawTimer.Start(kTRUE); rawTimer.Stop();
+  calibTimer.Start(kTRUE); calibTimer.Stop();
+  clusterTimer.Start(kTRUE); clusterTimer.Stop();
+  trackingTimer.Start(kTRUE); trackingTimer.Stop();
+  
+  totalTimer.Start(kTRUE);
+  
+  while (rawReader->NextEvent()) 
+  {
+    AliDebug(1,Form("Event %d",iEvent));
+    
     runLoader->GetEvent(iEvent++);
 
     //----------------------- raw2digits & raw2trigger-------------------
-    if (!loader->TreeD()) loader->MakeDigitsContainer();
-
-    // tracking branch
-    data->MakeBranch("D");
-    data->SetTreeAddress("D");
-    rawData->ReadTrackerDDL(rawReader);
-    data->Fill("D"); 
-
-    // trigger branch
-    data->MakeBranch("GLT");
-    data->SetTreeAddress("GLT");
-    rawData->ReadTriggerDDL(rawReader);
-    data->Fill("GLT"); 
-
-    if ( calibration )
+    if (!loader->TreeD()) 
     {
-      calibration->ExecuteTask();
+      AliDebug(1,Form("Making Digit Container for event %d",iEvent));
+      loader->MakeDigitsContainer();
     }
     
-    loader->WriteDigits("OVERWRITE");
-
+    data.SetTreeAddress("D,GLT");
+    rawTimer.Start(kFALSE);
+    rawData.Raw2Digits(rawReader);
+    rawTimer.Stop();
+    
+    if ( calibration )
+    {
+      calibTimer.Start(kFALSE);
+      calibration->ExecuteTask();
+      calibTimer.Stop();
+    }
+  
     //----------------------- digit2cluster & Trigger2Trigger -------------------
+    clusterTimer.Start(kFALSE);
+
     if (!loader->TreeR()) loader->MakeRecPointsContainer();
      
     // tracking branch
-    data->MakeBranch("RC");
-    data->SetTreeAddress("RC");
-    recoCluster->Digits2Clusters(); 
-    data->Fill("RC"); 
+    data.MakeBranch("RC");
+    data.SetTreeAddress("RC");
+    recoCluster.Digits2Clusters(); 
+    data.Fill("RC"); 
 
     // trigger branch
-    data->MakeBranch("TC");
-    data->SetTreeAddress("TC");
-    recoCluster->Trigger2Trigger(); 
-    data->Fill("TC");
-
+    data.MakeBranch("TC");
+    data.SetTreeAddress("TC");
+//    recoCluster.Trigger2Trigger(); 
+    data.Fill("TC");
+    
     loader->WriteRecPoints("OVERWRITE");
 
+    clusterTimer.Stop();
+
     //---------------------------- Track & TriggerTrack ---------------------
+    trackingTimer.Start(kFALSE);
     if (!loader->TreeT()) loader->MakeTracksContainer();
 
     // trigger branch
-    data->MakeBranch("RL"); //trigger track
-    data->SetTreeAddress("RL");
-    recoEvent->EventReconstructTrigger();
-    data->Fill("RL");
+    data.MakeBranch("RL"); //trigger track
+    data.SetTreeAddress("RL");
+    recoEvent.EventReconstructTrigger();
+    data.Fill("RL");
 
     // tracking branch
-    data->MakeBranch("RT"); //track
-    data->SetTreeAddress("RT");
-    recoEvent->EventReconstruct();
-    data->Fill("RT");
+    data.MakeBranch("RT"); //track
+    data.SetTreeAddress("RT");
+    recoEvent.EventReconstruct();
+    data.Fill("RT");
 
     loader->WriteTracks("OVERWRITE");  
-  
+    trackingTimer.Stop();
+    
     //--------------------------- Resetting branches -----------------------
-    data->ResetDigits();
-    data->ResetRawClusters();
-    data->ResetTrigger();
+    data.ResetDigits();
+    data.ResetRawClusters();
+    data.ResetTrigger();
 
-    data->ResetRawClusters();
-    data->ResetTrigger();
-    data->ResetRecTracks();
-    data->ResetRecTriggerTracks();
+    data.ResetRawClusters();
+    data.ResetTrigger();
+    data.ResetRecTracks();
+    data.ResetRecTriggerTracks();
   
   }
+  
+  totalTimer.Stop();
+  
   loader->UnloadRecPoints();
   loader->UnloadTracks();
   loader->UnloadDigits();
 
-  delete recoCluster;
-  delete recoEvent;
-  delete data;
+  AliInfo(Form("Execution time for converting RAW data to digits in MUON : R:%.2fs C:%.2fs",
+               rawTimer.RealTime(),rawTimer.CpuTime()));
+  AliInfo(Form("Execution time for calibrating MUON : R:%.2fs C:%.2fs",
+               calibTimer.RealTime(),calibTimer.CpuTime()));
+  AliInfo(Form("Execution time for clusterizing MUON : R:%.2fs C:%.2fs",
+               clusterTimer.RealTime(),clusterTimer.CpuTime()));
+  AliInfo(Form("Execution time for tracking MUON : R:%.2fs C:%.2fs",
+               trackingTimer.RealTime(),trackingTimer.CpuTime()));
+  AliInfo(Form("Total Execution time for Reconstruct(from raw) MUON : R:%.2fs C:%.2fs",
+               totalTimer.RealTime(),totalTimer.CpuTime()));
 }
 
 //_____________________________________________________________________________
@@ -363,7 +401,6 @@ void AliMUONReconstructor::FillESD(AliRunLoader* runLoader, AliESD* esd) const
   Int_t iEvent;// nPart;
   Int_t nTrackHits;// nPrimary;
   Double_t fitFmin;
-  TArrayF vertex(3);
 
   Double_t bendingSlope, nonBendingSlope, inverseBendingMomentum;
   Double_t xRec, yRec, zRec, chi2MatchTrigger;
@@ -378,9 +415,12 @@ void AliMUONReconstructor::FillESD(AliRunLoader* runLoader, AliESD* esd) const
   iEvent = runLoader->GetEventNumber(); 
   runLoader->GetEvent(iEvent);
 
-  // vertex calculation (maybe it exists already somewhere else)
-  vertex[0] = vertex[1] = vertex[2] = 0.;
- //  nPrimary = 0;
+  // Get vertex 
+  Double_t vertex[3] = {0};
+  const AliESDVertex *esdVert = esd->GetVertex(); 
+  if (esdVert) esdVert->GetXYZ(vertex);
+  
+  //  nPrimary = 0;
 //   if ( (header = runLoader->GetHeader()->GenEventHeader()) ) {
 //     header->PrimaryVertex(vertex);
 //   } else {
