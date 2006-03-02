@@ -296,7 +296,7 @@ AliMUONSegFactory::CreateSegmentation(const TString& option)
     return 0;
   }         
  
-  if ( option == "default" || option == "FactoryV2" ) { 
+  if ( option == "FactoryV2" ) { 
     // Default segmentation version
     for (Int_t moduleId = 0; moduleId<4; moduleId++)
       for (Int_t cath = 0; cath < 2; cath++) {
@@ -319,7 +319,7 @@ AliMUONSegFactory::CreateSegmentation(const TString& option)
     if ( IsGeometryDefined(10) ) BuildStation6();
   }      
       
-  if (option == "new" || option == "FactoryV4" ) {    
+  if (option == "default" || option == "new" || option == "FactoryV4" ) {    
 
     for (Int_t moduleId = 0; moduleId<AliMUONConstants::NCh(); moduleId++)
       for (Int_t cath = 0; cath < 2; cath++) {
