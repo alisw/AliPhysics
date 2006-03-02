@@ -14,7 +14,7 @@
  **************************************************************************/
 
 // $Id$
-// $MpId: AliMpConstants.cxx,v 1.8 2006/01/11 10:10:31 ivana Exp $
+// $MpId: AliMpConstants.cxx,v 1.9 2006/03/02 16:27:04 ivana Exp $
 // Category: basic
 //
 // Class AliMpConstants
@@ -23,18 +23,19 @@
 // Included in AliRoot: 2003/05/02
 // Authors: David Guez, Ivana Hrivnacova; IPN Orsay
 
+#include "AliMpConstants.h"
+
 #include <TMath.h>
 #include <TVector2.h>
 
-#include "AliMpConstants.h"
-
-ClassImp(AliMpConstants)
-
 // static data
-const Double_t AliMpConstants::fgkLengthTolerance = 1e-05; // 0.1 mum;
-const Double_t AliMpConstants::fgkLengthStep = 0.1; // 1 mm;
+const Double_t AliMpConstants::fgkLengthTolerance = 1e-05; // 0.1 mum
+const Double_t AliMpConstants::fgkLengthStep = 0.1; // 1 mm
 const Int_t    AliMpConstants::fgkStartPadIndex = 1;
 const Int_t    AliMpConstants::fgkNCh = 14;
+const Int_t AliMpConstants::fgNonBendingManuMask(1<<10);
+
+ClassImp(AliMpConstants)
 
 //_____________________________________________________________________________
 AliMpConstants::AliMpConstants()
@@ -65,4 +66,14 @@ Bool_t  AliMpConstants::IsEqual(const TVector2& v1, const TVector2& v2)
 
   return (  TMath::Abs(v1.X() - v2.X()) 
           + TMath::Abs(v1.Y() - v2.Y())) < 2.*fgkLengthTolerance;
+}
+
+//_____________________________________________________________________________
+Int_t
+AliMpConstants::ManuMask(AliMpPlaneType planeType)
+{
+  //
+  // The manuIDs get an offset if they are in the non-bending plane
+  //
+  return ( planeType == kNonBendingPlane ) ? fgNonBendingManuMask : 0;
 }

@@ -2,7 +2,7 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$
-// $MpId: AliMpConstants.h,v 1.7 2006/01/11 10:03:19 ivana Exp $
+// $MpId: AliMpConstants.h,v 1.8 2006/03/02 16:26:53 ivana Exp $
 
 /// \ingroup basic
 /// \class AliMpConstants
@@ -14,6 +14,7 @@
 #define ALI_MP_CONSTANTS_H
 
 #include <TObject.h>
+#include "AliMpPlaneType.h"
 
 class TVector2;
 
@@ -32,7 +33,8 @@ class AliMpConstants : public TObject
   static Double_t LengthStep();
   static Int_t    StartPadIndex();
   static Int_t    NCh();
-
+  static Int_t    ManuMask(AliMpPlaneType planeType);
+  
  private:
   // unused derived functions
   virtual Bool_t  IsEqual(const TObject*) const { return true; }
@@ -43,8 +45,9 @@ class AliMpConstants : public TObject
                                             // a geometric border inside (pad, motif)
   static const Int_t     fgkStartPadIndex;  // global pad indices start value
   static const Int_t     fgkNCh;            // number of chambers
-
-  ClassDef(AliMpConstants,1) //Class for globally used constants definition
+  static const Int_t     fgNonBendingManuMask; // bit to set to indicate a manu located in non-bending plane
+  
+  ClassDef(AliMpConstants,2) //Class for globally used constants definition
 };
 
 // inline functions
@@ -55,3 +58,4 @@ inline Int_t    AliMpConstants::StartPadIndex()   {return fgkStartPadIndex;}
 inline Int_t    AliMpConstants::NCh()             {return fgkNCh;}
 
 #endif //ALI_MP_CONSTANTS_H
+
