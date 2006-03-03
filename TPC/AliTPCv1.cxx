@@ -863,7 +863,7 @@ void AliTPCv1::CreateGeometry()
   TGeoVolume *hvcv = new TGeoVolume("TPC_HV_Cable",hvc,m7);
   hvrv->AddNode(hvcv,1);
   
-  for(Int_t i=0;i<17;i++){
+  for(Int_t i=0;i<18;i++){
     Double_t angle,x,y;
     Double_t z,r; 
     angle=TMath::DegToRad()*20.*(Double_t)i;
