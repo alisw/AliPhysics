@@ -42,6 +42,8 @@
 
 #pragma link C++ class AliTrackPointArray+;
 #pragma link C++ class AliTrackPoint+;
+#pragma link C++ class  AliCluster+;
+#pragma link C++ class  AliTracker+;
 #endif
 
 
