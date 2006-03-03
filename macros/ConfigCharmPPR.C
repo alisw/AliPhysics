@@ -27,10 +27,6 @@
 #include "TRD/AliTRDv1.h"
 #include "FMD/AliFMDv0.h"
 #include "MUON/AliMUONv1.h"
-#include "MUON/AliMUONSt1GeometryBuilder.h"
-#include "MUON/AliMUONSt2GeometryBuilder.h"
-#include "MUON/AliMUONSlatGeometryBuilder.h"
-#include "MUON/AliMUONTriggerGeometryBuilder.h"
 #include "PHOS/AliPHOSv1.h"
 #include "PMD/AliPMDv1.h"
 #include "START/AliSTARTv1.h"
@@ -353,10 +349,6 @@ void Config()
   if(iMUON) {
     //=================== MUON parameters ===========================
     AliMUON *MUON  = new AliMUONv1("MUON","default");
-    MUON->AddGeometryBuilder(new AliMUONSt1GeometryBuilder(MUON));
-    MUON->AddGeometryBuilder(new AliMUONSt2GeometryBuilder(MUON));
-    MUON->AddGeometryBuilder(new AliMUONSlatGeometryBuilder(MUON));
-    MUON->AddGeometryBuilder(new AliMUONTriggerGeometryBuilder(MUON));
   }
  
   //=================== PHOS parameters ===========================

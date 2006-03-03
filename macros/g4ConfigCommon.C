@@ -325,10 +325,6 @@ void ConfigCommon(Bool_t interactiveSetup)
         //=================== MUON parameters ===========================
 
         AliMUON *MUON = new AliMUONv1("MUON", "default");
-	MUON->AddGeometryBuilder(new AliMUONSt1GeometryBuilder(MUON));
-	MUON->AddGeometryBuilder(new AliMUONSt2GeometryBuilder(MUON));
-	MUON->AddGeometryBuilder(new AliMUONSlatGeometryBuilder(MUON));
-	MUON->AddGeometryBuilder(new AliMUONTriggerGeometryBuilder(MUON));
     }
     //=================== PHOS parameters ===========================
 
