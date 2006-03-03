@@ -1374,8 +1374,8 @@ void AliSHILv2::CreateGeometry()
       extraShield2->AddNode(voSaa1Wring5,    1, new TGeoTranslation(0., 0., dz));
       dz +=   saa1Wring5HWidth;   
       dz +=   saa1Wring2HWidth;   
-      extraShield2->AddNode(voSaa1Wring2,    3, new TGeoCombiTrans(0., 0., dz, rot000));
-      extraShield2->AddNode(voSaa1Wring2,    4, new TGeoCombiTrans(0., 0., dz, rot180));
+      extraShield2->AddNode(voSaa1Wring2,    5, new TGeoCombiTrans(0., 0., dz, rot000));
+      extraShield2->AddNode(voSaa1Wring2,    6, new TGeoCombiTrans(0., 0., dz, rot180));
       dz +=   saa1Wring2HWidth;   
       dz +=   saa1DWrings;
       dz +=   saa1Wring3HWidth;   
