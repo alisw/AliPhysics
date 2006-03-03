@@ -76,7 +76,7 @@ class AliEMCALJetMicroDst: public TNamed {
 
   Bool_t  IsPythiaDst() const ;
   virtual Bool_t  IsFolder() const;
-  virtual void Browse(TBrowser* b) const ;
+  virtual void Browse(TBrowser* b) ;
 
   // service routine
   static TList *MoveHistsToList(const char* name="ListOfHists", Bool_t putToBrowser=kTRUE);

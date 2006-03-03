@@ -156,6 +156,8 @@ AliEMCALDigitizer::AliEMCALDigitizer(AliRunDigitizer * rd):
     AliDebug(1," no runloader present");
   delete [] fInputFileNames ; 
   delete [] fEventNames ; 
+
+  if(fHists) delete fHists;
 }
 
 //____________________________________________________________________________
@@ -447,7 +449,7 @@ void AliEMCALDigitizer::Exec(Option_t *option)
 
   rl->LoadSDigits("EMCAL");
   for (ievent = fFirstEvent; ievent <= fLastEvent; ievent++) {
-    //gime->Event(ievent,"S") ; 
+    
     rl->GetEvent(ievent);
 
     Digitize(ievent) ; //Add prepared SDigits to digits and add the noise
@@ -461,8 +463,7 @@ void AliEMCALDigitizer::Exec(Option_t *option)
     //increment the total number of Digits per run 
     fDigitsInRun += emcalLoader->Digits()->GetEntriesFast() ;  
   }
-  //  gime->WriteDigitizer("OVERWRITE");
-
+  
   emcalLoader->CleanDigitizer() ;
 
   if(strstr(option,"tim")){
@@ -583,7 +584,6 @@ void AliEMCALDigitizer::MixWith(TString alirunFileName, TString eventFolderName)
     return ; 
   }
   // looking for the file which contains SDigits
-  //AliEMCALGetter * gime = AliEMCALGetter::Instance() ; 
   AliEMCALLoader *emcalLoader = dynamic_cast<AliEMCALLoader*>(AliRunLoader::GetRunLoader()->GetDetectorLoader("EMCAL"));
   TString fileName( emcalLoader->GetSDigitsFileName() ) ; 
     if ( eventFolderName != AliConfig::GetDefaultEventFolderName()) // only if not the default folder name 
@@ -769,8 +769,9 @@ TList *AliEMCALDigitizer::BookControlHists(int var)
     new TH1F("hDigiAbsId","EMCAL absId cells with fAmp > fDigitThreshold ",
     geom->GetNCells(), 0.5, Double_t(geom->GetNCells())+0.5);
   }
+
   fHists = AliEMCALHistoUtilities::MoveHistsToList("EmcalDigiControlHists", kFALSE);
-  fHists = 0;
+  fHists = 0; //huh? JLK 03-Mar-2006
   return fHists;
 }
 

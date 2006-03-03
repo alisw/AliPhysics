@@ -948,7 +948,8 @@ void  AliEMCALGeometry::GetTransformationForSM()
   for(i=0; i<XEN1->GetNdaughters(); i++) {
     TGeoNodeMatrix *sm = (TGeoNodeMatrix*)XEN1->GetDaughter(i);
     fMatrixOfSM[i] = sm->GetMatrix();
-    printf(" %i : matrix %x \n", i, fMatrixOfSM[i]);
+    //Compiler doesn't like this syntax...
+    //    printf(" %i : matrix %x \n", i, fMatrixOfSM[i]);
   }
   transInit = kTRUE;
 }
@@ -963,7 +964,7 @@ void AliEMCALGeometry::GetGlobal(const Double_t *loc, Double_t *glob, int nsm) c
   }
 }
 
-void AliEMCALGeometry::GetGlobal(const Int_t absId, TVector3 &vglob) const
+void AliEMCALGeometry::GetGlobal(const Int_t /* absId */, TVector3 & /* vglob */) const
 { // have to be defined  
 }
 

@@ -154,7 +154,6 @@ Float_t AliEMCALDigit::GetEta() const
 { // should be change in EMCALGeometry - 19-nov-04
   Float_t eta=-10., phi=-10.;
   Int_t id = GetId();
-  //const AliEMCALGeometry *g = AliEMCALGetter::Instance()->EMCALGeometry();
   const AliEMCALGeometry *g = AliEMCALGeometry::GetInstance();
   g->EtaPhiFromIndex(id,eta,phi);
   return eta ;
@@ -165,7 +164,6 @@ Float_t AliEMCALDigit::GetPhi() const
 { // should be change in EMCALGeometry - 19-nov-04
   Float_t eta=-10., phi=-10.;
   Int_t id = GetId();
-  //const AliEMCALGeometry *g = AliEMCALGetter::Instance()->EMCALGeometry();
   const AliEMCALGeometry *g = AliEMCALGeometry::GetInstance();
   g->EtaPhiFromIndex(id,eta,phi);
   return phi ;
