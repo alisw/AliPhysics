@@ -343,6 +343,18 @@ Bool_t AliSimulation::Run(Int_t nEvents)
 {
 // run the generation, simulation and digitization
 
+  // First check if we have any CDB storage set, because it is used 
+  // to retrieve the calibration and alignment constants
+
+  AliCDBManager* man = AliCDBManager::Instance();
+  if (!man->IsDefaultStorageSet())
+  {
+    AliWarning("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+    AliWarning("No default CDB storage set, so I will use $ALICE_ROOT");
+    AliWarning("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+    man->SetDefaultStorage("local://$ALICE_ROOT");
+  }  
+
   if (nEvents > 0) fNEvents = nEvents;
 
   // generation and simulation -> hits

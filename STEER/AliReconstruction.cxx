@@ -137,6 +137,7 @@
 #include "AliEventTag.h"
 
 #include "AliTrackPointArray.h"
+#include "AliCDBManager.h"
 
 ClassImp(AliReconstruction)
 
@@ -265,6 +266,18 @@ Bool_t AliReconstruction::Run(const char* input,
 			      Int_t firstEvent, Int_t lastEvent)
 {
 // run the reconstruction
+
+  // First check if we have any CDB storage set, because it is used 
+  // to retrieve the calibration and alignment constants
+
+  AliCDBManager* man = AliCDBManager::Instance();
+  if (!man->IsDefaultStorageSet())
+  {
+    AliWarning("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+    AliWarning("No default CDB storage set, so I will use $ALICE_ROOT");
+    AliWarning("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+    man->SetDefaultStorage("local://$ALICE_ROOT");
+  }  
 
   // set the input
   if (!input) input = fInput.Data();
