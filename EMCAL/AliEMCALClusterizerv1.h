@@ -43,7 +43,7 @@ public:
   virtual Int_t   AreNeighbours(AliEMCALDigit * d1, AliEMCALDigit * d2)const ; 
                                // Checks if digits are in neighbour cells 
 
-  virtual Float_t Calibrate(Int_t amp)const ;  // Tranforms Amp to energy 
+  virtual Float_t Calibrate(Int_t amp, Int_t cellId) ;  // Tranforms Amp to energy 
 
   virtual void    GetNumberOfClustersFound(int numb )const{ numb = fNumberOfECAClusters ;} 
   virtual Float_t GetECAClusteringThreshold()const{ return fECAClusteringThreshold;}  

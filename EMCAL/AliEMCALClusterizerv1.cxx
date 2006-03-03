@@ -70,6 +70,9 @@
 #include "AliEMCAL.h"
 #include "AliEMCALGeometry.h"
 #include "AliEMCALHistoUtilities.h"
+#include "AliCDBManager.h"
+#include "AliCDBStorage.h"
+#include "AliCDBEntry.h"
 
 ClassImp(AliEMCALClusterizerv1)
 
@@ -109,10 +112,46 @@ const TString AliEMCALClusterizerv1::BranchName() const
 }
 
 //____________________________________________________________________________
-Float_t  AliEMCALClusterizerv1::Calibrate(Int_t amp) const
+Float_t  AliEMCALClusterizerv1::Calibrate(Int_t amp, Int_t AbsId) 
 {
-  //To be replased later by the method, reading individual parameters from the database 
-  return -fADCpedestalECA + amp * fADCchannelECA ; 
+ 
+  // Convert digitized amplitude into energy.
+  // Calibration parameters are taken from calibration data base for raw data,
+  // or from digitizer parameters for simulated data.
+
+  if(fCalibData){
+    // Loader
+    AliRunLoader *rl = AliRunLoader::GetRunLoader();
+    
+    // Load EMCAL Geometry
+    rl->LoadgAlice(); 
+    AliRun   * gAlice = rl->GetAliRun(); 
+    AliEMCAL * emcal  = (AliEMCAL*)gAlice->GetDetector("EMCAL");
+    AliEMCALGeometry * geom = emcal->GetGeometry();
+    
+    if (geom==0)
+      AliFatal("Did not get geometry from EMCALLoader") ;
+    
+    Int_t iSupMod = -1;
+    Int_t nTower  = -1;
+    Int_t nIphi   = -1;
+    Int_t nIeta   = -1;
+    Int_t iphi    = -1;
+    Int_t ieta    = -1;
+    
+    Bool_t bCell = geom->GetCellIndex(AbsId, iSupMod, nTower, nIphi, nIeta) ;
+    if(!bCell)
+      Error("DigitizeEnergy","Wrong cell id number") ;
+    geom->GetCellPhiEtaIndexInSModule(iSupMod,nTower,nIphi, nIeta,iphi,ieta);
+
+    fADCchannelECA  = fCalibData->GetADCchannel (iSupMod,ieta,iphi);
+    fADCpedestalECA = fCalibData->GetADCpedestal(iSupMod,ieta,iphi);
+    return -fADCpedestalECA + amp * fADCchannelECA ;        
+ 
+  }
+  else //Return energy with default parameters if calibration is not available
+    return -fADCpedestalECA + amp * fADCchannelECA ; 
+  
 }
 
 //____________________________________________________________________________
@@ -129,9 +168,11 @@ void AliEMCALClusterizerv1::Exec(Option_t * option)
   if(strstr(option,"print"))
     Print("") ; 
 
-  //AliEMCALGetter * gime = AliEMCALGetter::Instance() ;
   AliRunLoader *rl = AliRunLoader::GetRunLoader();
   AliEMCALLoader *emcalLoader = dynamic_cast<AliEMCALLoader*>(rl->GetDetectorLoader("EMCAL"));
+
+  //Get calibration parameters from file or digitizer default values.
+  GetCalibrationParameters() ;
 
   if (fLastEvent == -1) 
     fLastEvent = rl->GetNumberOfEvents() - 1;
@@ -141,7 +182,6 @@ void AliEMCALClusterizerv1::Exec(Option_t * option)
   rl->LoadDigits("EMCAL");
   for (ievent = fFirstEvent; ievent <= fLastEvent; ievent++) {
     rl->GetEvent(ievent);
-    GetCalibrationParameters() ;
 
     fNumberOfECAClusters = 0;
            
@@ -265,17 +305,35 @@ Bool_t AliEMCALClusterizerv1::FindFit(AliEMCALRecPoint * emcRP, AliEMCALDigit **
 //____________________________________________________________________________
 void AliEMCALClusterizerv1::GetCalibrationParameters() 
 {
-  // Gets the parameters for the calibration from the digitizer
-  //AliEMCALGetter * gime = AliEMCALGetter::Instance() ;
-  AliEMCALLoader *emcalLoader = dynamic_cast<AliEMCALLoader*>(AliRunLoader::GetRunLoader()->GetDetectorLoader("EMCAL"));
+  // Set calibration parameters:
+  // if calibration database exists, they are read from database,
+  // otherwise, they are taken from digitizer.
+  //
+  // It is a user responsilibity to open CDB before reconstruction, 
+  // for example: 
+  // AliCDBStorage* storage = AliCDBManager::Instance()->GetStorage("local://CalibDB");
 
-  if ( !emcalLoader->Digitizer() ) 
-    emcalLoader->LoadDigitizer();
-  AliEMCALDigitizer * dig = dynamic_cast<AliEMCALDigitizer*>(emcalLoader->Digitizer());
-
-  fADCchannelECA   = dig->GetECAchannel() ;
-  fADCpedestalECA  = dig->GetECApedestal();
-//PH  cout<<"ChannelECA, peds "<<fADCchannelECA<<" "<<fADCpedestalECA<<endl;
+  //Check if calibration is stored in data base
+   if(AliCDBManager::Instance()->IsDefaultStorageSet()){
+     AliCDBEntry *entry = (AliCDBEntry*) AliCDBManager::Instance()
+       ->GetDefaultStorage()
+       ->Get("EMCAL/GainFactors_and_Pedestals/Calibration",
+	     gAlice->GetRunNumber());
+     if (entry) fCalibData = (AliEMCALCalibData*) entry->GetObject();
+   }
+   if(!fCalibData)
+     {
+       //If calibration is not available use default parameters
+       //Loader
+       AliEMCALLoader *emcalLoader = 
+	 dynamic_cast<AliEMCALLoader*>(AliRunLoader::GetRunLoader()->GetDetectorLoader("EMCAL"));
+       if ( !emcalLoader->Digitizer() ) 
+	 emcalLoader->LoadDigitizer();
+       AliEMCALDigitizer * dig = dynamic_cast<AliEMCALDigitizer*>(emcalLoader->Digitizer());
+       
+       fADCchannelECA   = dig->GetECAchannel() ;
+       fADCpedestalECA  = dig->GetECApedestal();
+     }
 }
 
 //____________________________________________________________________________
@@ -312,6 +370,8 @@ void AliEMCALClusterizerv1::InitParameters()
   fToUnfold = kFALSE ;
   fRecPointsInRun  = 0 ;
   fMinECut = 0.01; // have to be tune
+
+  fCalibData               = 0 ;
 }
 
 //____________________________________________________________________________
@@ -428,7 +488,7 @@ void AliEMCALClusterizerv1::MakeClusters()
   AliEMCALDigit * digit;
   double e=0.0, ehs = 0.0;
   while ( (digit = dynamic_cast<AliEMCALDigit *>(nextdigit())) ) { // clean up digits
-    e = Calibrate(digit->GetAmp());
+    e = Calibrate(digit->GetAmp(), digit->GetId());
     AliEMCALHistoUtilities::FillH1(fHists, 10, digit->GetAmp());
     AliEMCALHistoUtilities::FillH1(fHists, 11, e);
     if(e < fMinECut ) digitsC->Remove(digit);
@@ -446,19 +506,19 @@ void AliEMCALClusterizerv1::MakeClusters()
     recPoint = 0 ; 
     TArrayI clusterECAdigitslist(1000); // what is this   
 
-    if(geom->CheckAbsCellId(digit->GetId()) && (Calibrate(digit->GetAmp()) > fECAClusteringThreshold  ) ){
+    if(geom->CheckAbsCellId(digit->GetId()) && (Calibrate(digit->GetAmp(), digit->GetId()) > fECAClusteringThreshold  ) ){
       Int_t iDigitInECACluster = 0; // start a new Tower RecPoint
       if(fNumberOfECAClusters >= aECARecPoints->GetSize()) aECARecPoints->Expand(2*fNumberOfECAClusters+1) ;
       AliEMCALRecPoint * rp = new  AliEMCALRecPoint("") ; 
       aECARecPoints->AddAt(rp, fNumberOfECAClusters) ;
       recPoint = dynamic_cast<AliEMCALRecPoint *>(aECARecPoints->At(fNumberOfECAClusters)) ; 
       fNumberOfECAClusters++ ; 
-      recPoint->AddDigit(*digit, Calibrate(digit->GetAmp())) ; 
+      recPoint->AddDigit(*digit, Calibrate(digit->GetAmp(), digit->GetId())) ; 
       clusterECAdigitslist[iDigitInECACluster] = digit->GetIndexInList() ;	
       iDigitInECACluster++ ; 
       digitsC->Remove(digit) ; 
       AliDebug(1,Form("MakeClusters: OK id = %d, ene = %f , thre = %f \n", digit->GetId(),
-      Calibrate(digit->GetAmp()), fECAClusteringThreshold));  
+      Calibrate(digit->GetAmp(),digit->GetId()), fECAClusteringThreshold));  
       nextdigit.Reset(); // will start from beggining
       
       AliEMCALDigit * digitN = 0; // digi neighbor
@@ -469,13 +529,13 @@ void AliEMCALClusterizerv1::MakeClusters()
 	digit =  (AliEMCALDigit*)digits->At(clusterECAdigitslist[index]);
 	index++ ; 
         while ( (digitN = (AliEMCALDigit *)nextdigit())) { // scan over the reduced list of digits 
-	  //          if( Calibrate(digitN->GetAmp()) < fMinECut  )  digitsC->Remove(digitN);
+	  //          if( Calibrate(digitN->GetAmp(), digitN->GetId()) < fMinECut  )  digitsC->Remove(digitN);
 	  ineb = AreNeighbours(digit, digitN);       // call (digit,digitN) in THAT oder !!!!! 
           switch (ineb ) {
             case 0 :   // not a neighbour
 	      break ;
 	    case 1 :   // are neighbours 
-	      recPoint->AddDigit(*digitN, Calibrate( digitN->GetAmp()) ) ;
+	      recPoint->AddDigit(*digitN, Calibrate(digitN->GetAmp(),digitN->GetId()) ) ;
 	      clusterECAdigitslist[iDigitInECACluster] = digitN->GetIndexInList() ; 
 	      iDigitInECACluster++ ; 
 	      digitsC->Remove(digitN) ;
