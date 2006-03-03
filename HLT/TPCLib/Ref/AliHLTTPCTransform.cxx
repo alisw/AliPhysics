@@ -1009,7 +1009,10 @@ Bool_t AliHLTTPCTransform::MakeInitFile(Char_t *rootfilename,Char_t *filename)
   
   fVersion=fV_aliroot;
   SetBFieldFactor((Double_t)gAlice->Field()->Factor());
-  SetSolenoidBField((Double_t)gAlice->Field()->SolenoidField());
+  SetSolenoidBField(-
+		    (Double_t)gAlice->Field()->SolenoidField()/
+		    (Double_t)gAlice->Field()->Factor()
+		    );
   fPadPitchWidthLow=param->GetInnerPadPitchWidth();
   fPadPitchWidthUp=param->GetOuterPadPitchWidth();
   fZWidth=param->GetZWidth();

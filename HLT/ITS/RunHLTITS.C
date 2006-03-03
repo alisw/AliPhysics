@@ -74,10 +74,6 @@ Int_t RunHLTITS(Int_t nev=1,Int_t run=0) {
        
    AliTracker::SetFieldMap(gAlice->Field());
 
-   AliKalmanTrack::SetConvConst(
-      1000/0.299792458/gAlice->Field()->SolenoidField()
-   );
-
    AliITSLoader* itsl = (AliITSLoader*)rl->GetLoader("ITSLoader");
    if (itsl == 0x0) {
       cerr<<"AliESDtest.C : Can not get the ITS loader"<<endl;

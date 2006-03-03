@@ -791,7 +791,10 @@ Bool_t AliL3Transform::Init(AliRunLoader *runLoader)
   
   fgVersion=kValiroot;
   SetBFieldFactor((Double_t)runLoader->GetAliRun()->Field()->Factor());
-  SetSolenoidBField((Double_t)runLoader->GetAliRun()->Field()->SolenoidField());
+  SetSolenoidBField(-
+		    (Double_t)runLoader->GetAliRun()->Field()->SolenoidField()/
+		    (Double_t)runLoader->GetAliRun()->Field()->Factor()
+		    );
   fgPadPitchWidthLow=param->GetInnerPadPitchWidth();
   fgPadPitchWidthUp=param->GetOuterPadPitchWidth();
   fgZWidth=param->GetZWidth();
@@ -1131,7 +1134,10 @@ Bool_t AliL3Transform::MakeInitFile(Char_t *rootfilename,Char_t *filename)
   
   fgVersion=kValiroot;
   SetBFieldFactor((Double_t)gAlice->Field()->Factor());
-  SetSolenoidBField((Double_t)gAlice->Field()->SolenoidField());
+  SetSolenoidBField(-
+		    (Double_t)gAlice->Field()->SolenoidField()/
+		    (Double_t)gAlice->Field()->Factor()
+		    );
   fgPadPitchWidthLow=param->GetInnerPadPitchWidth();
   fgPadPitchWidthUp=param->GetOuterPadPitchWidth();
   fgZWidth=param->GetZWidth();
