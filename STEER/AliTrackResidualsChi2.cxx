@@ -101,7 +101,7 @@ void AliTrackResidualsChi2::Chi2(Int_t & /* npar */, Double_t * /* gin */, Doubl
       fVolArray[itrack]->GetPoint(p1,ipoint);
       fAlignObj->Transform(p1);
       fTrackArray[itrack]->GetPoint(p2,ipoint);
-      Float_t residual = p2.GetResidual(p1,kFALSE);
+      Float_t residual = p2.GetResidual(p1,kTRUE);
       chi2 += residual;
       if (count) fNdf += 3;
     }

@@ -20,6 +20,7 @@
 //-----------------------------------------------------------------
 
 #include <TMatrixDSym.h>
+#include <TArrayI.h>
 
 #include "AliTrackFitter.h"
 #include "AliTrackPointArray.h"
@@ -37,6 +38,7 @@ AliTrackFitter::AliTrackFitter()
   fPVolId = fPTrack = 0;
   fChi2 = 0;
   fNdf = 0;
+  fMinNPoints = 0;
   fIsOwner = kFALSE;
 }
 
@@ -50,6 +52,7 @@ AliTrackFitter::AliTrackFitter(AliTrackPointArray *array, Bool_t owner)
   fPVolId = fPTrack = 0;
   fChi2 = 0;
   fNdf = 0;
+  fMinNPoints = 0;
   fIsOwner = kFALSE;
   SetTrackPointArray(array,owner);
 }
@@ -65,6 +68,7 @@ AliTrackFitter::AliTrackFitter(const AliTrackFitter &fitter):
   fCov = new TMatrixDSym(*fitter.fCov);
   fChi2 = fitter.fChi2;
   fNdf = fitter.fNdf;
+  fMinNPoints = fitter.fMinNPoints;
   fIsOwner = kFALSE;
 }
 
@@ -80,6 +84,7 @@ AliTrackFitter &AliTrackFitter::operator =(const AliTrackFitter& fitter)
   fCov = new TMatrixDSym(*fitter.fCov);
   fChi2 = fitter.fChi2;
   fNdf = fitter.fNdf;
+  fMinNPoints = fitter.fMinNPoints;
   fIsOwner = kFALSE;
   
   return *this;
@@ -121,4 +126,23 @@ void AliTrackFitter::SetTrackPointArray(AliTrackPointArray *array, Bool_t owner)
     fPoints = array;
     fIsOwner = kFALSE;
   }
+}
+
+Bool_t AliTrackFitter::FindVolId(const TArrayI *array, UShort_t volid) const
+{
+  // The method is used to check whenever
+  // the volume id (volid) is contained in
+  // a array of integers
+  Int_t nVolIds = array->GetSize();
+  if (nVolIds == 0) return kFALSE;
+
+  Bool_t found = kFALSE;
+  for (Int_t iVolId = 0; iVolId < nVolIds; iVolId++) {
+    if ((*array)[iVolId] == volid) {
+      found = kTRUE;
+      break;
+    }
+  }
+
+  return found;
 }

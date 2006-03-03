@@ -29,7 +29,8 @@ class AliTrackResiduals : public TObject {
 
   void   SetNTracks(Int_t ntracks);
   Bool_t AddTrackPointArrays(AliTrackPointArray *volarray, AliTrackPointArray *trackarray);
-  void   SetAlignObj(AliAlignObj *alignobj);
+  void   InitAlignObj();
+  void   SetMinNPoints(Int_t n) { fMinNPoints = n; }
 
   virtual Bool_t Minimize() = 0;
 
@@ -39,6 +40,7 @@ class AliTrackResiduals : public TObject {
   AliAlignObj *GetAlignObj() const { return fAlignObj; }
   Float_t GetChi2() const { return fChi2; }
   Int_t   GetNdf() const  { return fNdf; }
+  Int_t   GetMinNPoints() const  { return fMinNPoints; }
 
  protected:
 
@@ -51,6 +53,7 @@ class AliTrackResiduals : public TObject {
   AliTrackPointArray **fTrackArray; //! Pointers to the arrays containing track extrapolation points
   Float_t            fChi2;         // Chi2 (or distance) of residuals minimization
   Int_t              fNdf;          // Number of degrees of freedom
+  Int_t              fMinNPoints;   // Minimum allowed Number of points in the volume which is to be aligned
   Bool_t             fIsOwner;      // Track point arrays owned by the object
 
   ClassDef(AliTrackResiduals,1)

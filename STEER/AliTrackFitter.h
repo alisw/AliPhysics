@@ -14,6 +14,7 @@
 #include "AliTrackPointArray.h"
 #include "AliAlignObj.h"
 
+class TArrayI;
 
 class AliTrackFitter : public TObject {
 
@@ -27,10 +28,14 @@ class AliTrackFitter : public TObject {
 
   virtual void   Reset();
   virtual void   SetTrackPointArray(AliTrackPointArray *array, Bool_t owner = kTRUE);
-  virtual Bool_t Fit(UShort_t volId,UShort_t volIdFit = 0,
+  virtual Bool_t Fit(const TArrayI *volIds,const TArrayI *volIdsFit = 0x0,
 		     AliAlignObj::ELayerID layerRangeMin = AliAlignObj::kFirstLayer,
 		     AliAlignObj::ELayerID layerRangeMax = AliAlignObj::kLastLayer) = 0;
   virtual Bool_t GetPCA(const AliTrackPoint &pIn, AliTrackPoint &pOut) const = 0;
+
+  Bool_t         FindVolId(const TArrayI *array, UShort_t volid) const;
+
+  void           SetMinNPoints(Int_t n) { fMinNPoints = n;}
 
   const Float_t* GetX() const {return fPoints->GetX();}
   const Float_t* GetY() const {return fPoints->GetY();}
@@ -39,6 +44,7 @@ class AliTrackFitter : public TObject {
   const TMatrixDSym &  GetCovariance() const {return *fCov;}
   Float_t        GetChi2() const {return fChi2;}
   Int_t          GetNdf()  const {return fNdf;}
+  Int_t          GetMinNPoints()  const {return fMinNPoints;}
   Float_t        GetNormChi2() const { return (fNdf != 0) ? fChi2/fNdf : 0; }
   void           GetTrackResiduals(AliTrackPointArray*& pVolId, AliTrackPointArray*& pTrack) const
     { pVolId = fPVolId; pTrack = fPTrack; }
@@ -52,6 +58,7 @@ class AliTrackFitter : public TObject {
   AliTrackPointArray *fPTrack; // Pointer to the array with track extrapolation points in volId
   Float_t       fChi2;         // Chi squared of the fit
   Int_t         fNdf;          // Number of degrees of freedom
+  Int_t         fMinNPoints;   // Minimum allowed number of points
   Bool_t  fIsOwner;            // Is the object owner of the space points array
 
  private:

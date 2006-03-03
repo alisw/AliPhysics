@@ -23,6 +23,7 @@
 #include <TMinuit.h>
 #include <TGeoMatrix.h>
 
+#include "AliLog.h"
 #include "AliAlignObj.h"
 #include "AliTrackPointArray.h"
 #include "AliTrackResidualsFast.h"
@@ -33,7 +34,7 @@ ClassImp(AliTrackResidualsFast)
 AliTrackResidualsFast::AliTrackResidualsFast():AliTrackResiduals()
 {
   // Default constructor
-  for (Int_t i = 0; i < 16; i++) fSum[i] = 0;
+  for (Int_t i = 0; i < 27; i++) fSum[i] = 0;
   fSumR = 0;
 }
 
@@ -42,7 +43,7 @@ AliTrackResidualsFast::AliTrackResidualsFast(Int_t ntracks):
   AliTrackResiduals(ntracks)
 {
   // Constructor
-  for (Int_t i = 0; i < 16; i++) fSum[i] = 0;
+  for (Int_t i = 0; i < 27; i++) fSum[i] = 0;
   fSumR = 0;
 }
  
@@ -51,7 +52,7 @@ AliTrackResidualsFast::AliTrackResidualsFast(const AliTrackResidualsFast &res):
   AliTrackResiduals(res)
 {
   // Copy constructor
-  for (Int_t i = 0; i < 16; i++) fSum[i] = res.fSum[i];
+  for (Int_t i = 0; i < 27; i++) fSum[i] = res.fSum[i];
   fSumR = res.fSumR;
 }
 
@@ -60,7 +61,7 @@ AliTrackResidualsFast &AliTrackResidualsFast::operator= (const AliTrackResiduals
 {
   // Assignment operator
  ((AliTrackResiduals *)this)->operator=(res);
- for (Int_t i = 0; i < 16; i++) fSum[i] = res.fSum[i];
+ for (Int_t i = 0; i < 27; i++) fSum[i] = res.fSum[i];
  fSumR = res.fSumR;
 
  return *this;
@@ -71,7 +72,7 @@ Bool_t AliTrackResidualsFast::Minimize()
 {
   // Implementation of fast linear Chi2
   // based minimization of track residuals sum
-  for (Int_t i = 0; i < 16; i++) fSum[i] = 0;
+  for (Int_t i = 0; i < 27; i++) fSum[i] = 0;
   fSumR = 0;
 
   AliTrackPoint p1,p2;
@@ -108,29 +109,68 @@ void AliTrackResidualsFast::AddPoints(AliTrackPoint &p, AliTrackPoint &pprime)
   // Update the sums used for
   // the linear chi2 minimization
   Float_t xyz[3],xyzp[3];
-  p.GetXYZ(xyz); pprime.GetXYZ(xyzp);
-  Double_t weight = 1;
-  weight *= weight;
-  fSum[0] += weight;
-  fSum[1] += xyz[0]*weight;
-  fSum[2] += xyz[1]*weight;
-  fSum[3] += xyz[2]*weight;
-  fSum[4] += (xyz[0]*xyz[0]+xyz[1]*xyz[1])*weight;
-  fSum[5] += (xyz[0]*xyz[0]+xyz[2]*xyz[2])*weight;
-  fSum[6] += (xyz[1]*xyz[1]+xyz[2]*xyz[2])*weight;
-  fSum[7] -= xyz[0]*xyz[1]*weight;
-  fSum[8] -= xyz[0]*xyz[2]*weight;
-  fSum[9] -= xyz[1]*xyz[2]*weight;
-  fSum[10] += (xyzp[0]-xyz[0])*weight;
-  fSum[11] += (xyzp[1]-xyz[1])*weight;
-  fSum[12] += (xyzp[2]-xyz[2])*weight;
-  fSum[13] += (xyzp[2]*xyz[1]-xyzp[1]*xyz[2])*weight;
-  fSum[14] += (xyzp[0]*xyz[2]-xyzp[2]*xyz[0])*weight;
-  fSum[15] += (xyzp[1]*xyz[0]-xyzp[0]*xyz[1])*weight;
+  Float_t cov[6],covp[6];
+  p.GetXYZ(xyz,cov); pprime.GetXYZ(xyzp,covp);
+  TMatrixDSym mcov(3);
+  mcov(0,0) = cov[0]; mcov(0,1) = cov[1]; mcov(0,2) = cov[2];
+  mcov(1,0) = cov[1]; mcov(1,1) = cov[3]; mcov(1,2) = cov[4];
+  mcov(2,0) = cov[2]; mcov(2,1) = cov[4]; mcov(2,2) = cov[5];
+  TMatrixDSym mcovp(3);
+  mcovp(0,0) = covp[0]; mcovp(0,1) = covp[1]; mcovp(0,2) = covp[2];
+  mcovp(1,0) = covp[1]; mcovp(1,1) = covp[3]; mcovp(1,2) = covp[4];
+  mcovp(2,0) = covp[2]; mcovp(2,1) = covp[4]; mcovp(2,2) = covp[5];
+  TMatrixDSym msum = mcov + mcovp;
+  msum.Invert();
+  if (!msum.IsValid()) return;
 
-  fSumR += ((xyzp[0]-xyz[0])*(xyzp[0]-xyz[0])+
-	    (xyzp[1]-xyz[1])*(xyzp[1]-xyz[1])+
-	    (xyzp[2]-xyz[2])*(xyzp[2]-xyz[2]))*weight;
+  TMatrixD        sums(3,1);
+  sums(0,0) = (xyzp[0]-xyz[0]); 
+  sums(1,0) = (xyzp[1]-xyz[1]);
+  sums(2,0) = (xyzp[2]-xyz[2]);   
+  TMatrixD sumst = sums.T(); sums.T();
+
+  TMatrixD        mf(3,6);
+  mf(0,0) = 1;      mf(1,0) = 0;       mf(2,0) = 0;
+  mf(0,1) = 0;      mf(1,1) = 1;       mf(2,1) = 0;
+  mf(0,2) = 0;      mf(1,2) = 0;       mf(2,2) = 1;
+  mf(0,3) = 0;      mf(1,3) =-xyz[2];  mf(2,3) = xyz[1];
+  mf(0,4) = xyz[2]; mf(1,4) = 0;       mf(2,4) =-xyz[0];
+  mf(0,5) =-xyz[1]; mf(1,5) = xyz[0];  mf(2,5) = 0;
+  TMatrixD        mft = mf.T(); mf.T();
+  TMatrixD sums2 = mft * msum * sums;
+
+  TMatrixD smatrix = mft * msum * mf;
+
+  fSum[0] += smatrix(0,0);
+  fSum[1] += smatrix(0,1);
+  fSum[2] += smatrix(0,2);
+  fSum[3] += smatrix(0,3);
+  fSum[4] += smatrix(0,4);
+  fSum[5] += smatrix(0,5);
+  fSum[6] += smatrix(1,1);
+  fSum[7] += smatrix(1,2);
+  fSum[8] += smatrix(1,3);
+  fSum[9] += smatrix(1,4);
+  fSum[10]+= smatrix(1,5);
+  fSum[11]+= smatrix(2,2);
+  fSum[12]+= smatrix(2,3);
+  fSum[13]+= smatrix(2,4);
+  fSum[14]+= smatrix(2,5);
+  fSum[15]+= smatrix(3,3);
+  fSum[16]+= smatrix(3,4);
+  fSum[17]+= smatrix(3,5);
+  fSum[18]+= smatrix(4,4);
+  fSum[19]+= smatrix(4,5);
+  fSum[20]+= smatrix(5,5);
+  fSum[21] += sums2(0,0);
+  fSum[22] += sums2(1,0);
+  fSum[23] += sums2(2,0);
+  fSum[24] += sums2(3,0);
+  fSum[25] += sums2(4,0);
+  fSum[26] += sums2(5,0);
+
+  TMatrixD  tmp = sumst * msum * sums;
+  fSumR += tmp(0,0);
 
   fNdf += 3;
 }
@@ -144,20 +184,18 @@ Bool_t AliTrackResidualsFast::Update()
   TMatrixDSym     smatrix(6);
   TMatrixD        sums(1,6);
 
-  smatrix(0,0) = fSum[0]; smatrix(1,1) = fSum[0]; smatrix(2,2)=fSum[0];
-  smatrix(3,3) = fSum[6]; smatrix(4,4) = fSum[5]; smatrix(5,5)=fSum[4];
+  smatrix(0,0) = fSum[0]; smatrix(0,1) = fSum[1]; smatrix(0,2)=fSum[2];
+  smatrix(0,3) = fSum[3]; smatrix(0,4) = fSum[4]; smatrix(0,5)=fSum[5];
+  smatrix(1,1) = fSum[6]; smatrix(1,2) = fSum[7]; smatrix(1,3)=fSum[8];
+  smatrix(1,4) = fSum[9]; smatrix(1,5) = fSum[10];
+  smatrix(2,2) = fSum[11];smatrix(2,3) = fSum[12];smatrix(2,4)=fSum[13];
+  smatrix(2,5) = fSum[14];
+  smatrix(3,3) = fSum[15];smatrix(3,4) = fSum[16];smatrix(3,5)=fSum[17];
+  smatrix(4,4) = fSum[18];smatrix(4,5) = fSum[19];
+  smatrix(5,5) = fSum[20];
 
-  smatrix(0,1) = 0; smatrix(0,2) = 0;
-  smatrix(0,3) = 0; smatrix(0,4) = fSum[3]; smatrix(0,5) = -fSum[2];
-  smatrix(1,2) = 0;
-  smatrix(1,3) = -fSum[3]; smatrix(1,4) = 0; smatrix(1,5) = fSum[1];
-  smatrix(2,3) = fSum[2]; smatrix(2,4) = -fSum[1]; smatrix(2,5) = 0;
-
-  smatrix(3,4) = fSum[7]; smatrix(3,5) = fSum[8];
-  smatrix(4,5) = fSum[9];
-
-  sums(0,0)    = fSum[10]; sums(0,1) = fSum[11]; sums(0,2) = fSum[12];
-  sums(0,3)    = fSum[13]; sums(0,4) = fSum[14]; sums(0,5) = fSum[15];
+  sums(0,0)    = fSum[21]; sums(0,1) = fSum[22]; sums(0,2) = fSum[23];
+  sums(0,3)    = fSum[24]; sums(0,4) = fSum[25]; sums(0,5) = fSum[26];
 
   smatrix.Invert();
   if (!smatrix.IsValid()) return kFALSE;

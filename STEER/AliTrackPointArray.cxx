@@ -266,6 +266,7 @@ Float_t AliTrackPoint::GetResidual(const AliTrackPoint &p, Bool_t weighted) cons
     mcovp(2,0) = covp[2]; mcovp(2,1) = covp[4]; mcovp(2,2) = covp[5];
     TMatrixDSym msum = mcov + mcovp;
     msum.Invert();
+    //    mcov.Print(); mcovp.Print(); msum.Print();
     if (msum.IsValid()) {
       for (Int_t i = 0; i < 3; i++)
 	for (Int_t j = 0; j < 3; j++)

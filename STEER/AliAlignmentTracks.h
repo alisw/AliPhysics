@@ -38,23 +38,32 @@ class AliAlignmentTracks : public TObject {
   void ProcessESD();
 
   void BuildIndex();
-/*   void BuildIndexLayer(AliAlignObj::ELayerID layer); */
-/*   void BuildIndexVolume(UShort_t volid); */
 
   Bool_t ReadAlignObjs(const char *alignObjFileName = "AlignObjs.root", const char* arrayName = "Alignment");
 
   void SetTrackFitter(AliTrackFitter *fitter) { fTrackFitter = fitter; }
   void SetMinimizer(AliTrackResiduals *minimizer) { fMinimizer = minimizer; }
 
-  void Align(Int_t iterations = 100);
+  void AlignDetector(AliAlignObj::ELayerID firstLayer,
+		     AliAlignObj::ELayerID lastLayer,
+		     AliAlignObj::ELayerID layerRangeMin = AliAlignObj::kFirstLayer,
+		     AliAlignObj::ELayerID layerRangeMax = AliAlignObj::kLastLayer,Int_t iterations = 1);
   void AlignLayer(AliAlignObj::ELayerID layer,
 		  AliAlignObj::ELayerID layerRangeMin = AliAlignObj::kFirstLayer,
 		  AliAlignObj::ELayerID layerRangeMax = AliAlignObj::kLastLayer,
 		  Int_t iterations = 1);
-  void AlignVolume(UShort_t volid, UShort_t volidfit = 0,
+  void AlignVolume(UShort_t volId, UShort_t volIdFit,
+		   Int_t iterations);
+  void AlignVolumes(const TArrayI *volids, const TArrayI *volidsfit = 0x0,
 		   AliAlignObj::ELayerID layerRangeMin = AliAlignObj::kFirstLayer,
 		   AliAlignObj::ELayerID layerRangeMax = AliAlignObj::kLastLayer,
 		   Int_t iterations = 1);
+
+  AliAlignObj* GetAlignObj(UShort_t volid) const {
+    Int_t iModule;
+    AliAlignObj::ELayerID iLayer = AliAlignObj::VolUIDToLayer(volid,iModule);
+    return fAlignObjs[iLayer-AliAlignObj::kFirstLayer][iModule];
+  }
 
  protected:
 
@@ -66,7 +75,7 @@ class AliAlignmentTracks : public TObject {
   void ResetAlignObjs();
   void DeleteAlignObjs();
 
-  Int_t LoadPoints(UShort_t volid, AliTrackPointArray** &points);
+  Int_t LoadPoints(const TArrayI *volids, AliTrackPointArray** &points);
   void  UnloadPoints(Int_t n, AliTrackPointArray **points);
 
   AliTrackFitter *CreateFitter();

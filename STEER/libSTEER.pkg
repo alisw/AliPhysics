@@ -29,7 +29,7 @@ AliTriggerDetector.cxx \
 AliTriggerCondition.cxx \
 AliTriggerDescriptor.cxx \
 AliCentralTrigger.cxx AliRieman.cxx\
-AliTrackFitter.cxx AliTrackFitterRieman.cxx\
+AliTrackFitter.cxx AliTrackFitterRieman.cxx AliTrackFitterStraight.cxx\
 AliTrackResiduals.cxx AliTrackResidualsChi2.cxx AliTrackResidualsFast.cxx\
 AliAlignmentTracks.cxx \
 AliExpression.cxx

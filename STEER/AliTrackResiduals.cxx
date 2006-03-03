@@ -22,6 +22,7 @@
 #include "AliTrackResiduals.h"
 
 #include "AliAlignObj.h"
+#include "AliAlignObjAngles.h"
 #include "AliTrackPointArray.h"
 
 ClassImp(AliTrackResiduals)
@@ -35,6 +36,7 @@ AliTrackResiduals::AliTrackResiduals():
   fTrackArray(0),
   fChi2(0),
   fNdf(0),
+  fMinNPoints(0),
   fIsOwner(kTRUE)
 {
   // Default constructor
@@ -47,6 +49,7 @@ AliTrackResiduals::AliTrackResiduals(Int_t ntracks):
   fAlignObj(0),
   fChi2(0),
   fNdf(0),
+  fMinNPoints(0),
   fIsOwner(kTRUE)
 {
   // Constructor
@@ -65,6 +68,7 @@ AliTrackResiduals::AliTrackResiduals(const AliTrackResiduals &res):
   fLast(res.fLast),
   fChi2(res.fChi2),
   fNdf(res.fNdf),
+  fMinNPoints(res.fMinNPoints),
   fIsOwner(kTRUE)
 {
   // Copy constructor
@@ -101,6 +105,7 @@ AliTrackResiduals &AliTrackResiduals::operator =(const AliTrackResiduals& res)
   fLast = res.fLast;
   fChi2 = res.fChi2;
   fNdf  = res.fNdf;
+  fMinNPoints = res.fMinNPoints;
   fIsOwner = kFALSE;
   fAlignObj = res.fAlignObj;
 
@@ -147,6 +152,10 @@ Bool_t AliTrackResiduals::AddTrackPointArrays(AliTrackPointArray *volarray, AliT
   // track extrapolation point arrays
   if (!fVolArray || !fTrackArray) return kFALSE;
 
+  if (!volarray || !trackarray) return kFALSE;
+
+  if (volarray->GetNPoints() < fMinNPoints) return kFALSE;
+
   if (fLast >= fN) return kFALSE;
 
   fVolArray[fLast] = volarray;
@@ -157,13 +166,12 @@ Bool_t AliTrackResiduals::AddTrackPointArrays(AliTrackPointArray *volarray, AliT
 }
 
 //_____________________________________________________________________________
-void AliTrackResiduals::SetAlignObj(AliAlignObj *alignobj)
+void AliTrackResiduals::InitAlignObj()
 {
-  // Copy the alignment object to be updated in fAlignObj
-  // and flush its parameters
+  // Create the alignment object 
+  // to be updated
   if (fAlignObj) delete fAlignObj;
-  fAlignObj = (AliAlignObj *)alignobj->Clone();
-  fAlignObj->SetPars(0,0,0,0,0,0);
+  fAlignObj = new AliAlignObjAngles;
 }
 
 

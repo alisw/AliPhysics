@@ -32,7 +32,7 @@ class AliTrackResidualsFast : public AliTrackResiduals {
   void   AddPoints(AliTrackPoint &p, AliTrackPoint &pprime);
   Bool_t Update();
 
-  Double_t fSum[16]; // Sums used during the chi2 minimization
+  Double_t fSum[27]; // Sums used during the chi2 minimization
   Double_t fSumR;    // Sum of r squared
 
   ClassDef(AliTrackResidualsFast,1)

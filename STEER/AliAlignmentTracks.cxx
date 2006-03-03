@@ -281,16 +281,6 @@ void AliAlignmentTracks::BuildIndex()
 
 }
 
-// //______________________________________________________________________________
-// void AliAlignmentTracks::BuildIndexLayer(AliAlignObj::ELayerID layer)
-// {
-// }
-
-// //______________________________________________________________________________
-// void AliAlignmentTracks::BuildIndexVolume(UShort_t volid)
-// {
-// }
-
 //______________________________________________________________________________
 void AliAlignmentTracks::InitIndex()
 {
@@ -391,45 +381,34 @@ void AliAlignmentTracks::DeleteAlignObjs()
   fAlignObjs = 0;
 }
 
-//______________________________________________________________________________
-void AliAlignmentTracks::Align(Int_t iterations)
+void AliAlignmentTracks::AlignDetector(AliAlignObj::ELayerID firstLayer,
+				       AliAlignObj::ELayerID lastLayer,
+				       AliAlignObj::ELayerID layerRangeMin,
+				       AliAlignObj::ELayerID layerRangeMax,
+				       Int_t iterations)
 {
-  // This method is just an example
-  // how one can user AlignLayer and
-  // AlignVolume methods to construct
-  // a custom alignment procedure
+  // Align detector volumes within
+  // a given layer range
+  // (could be whole detector).
+  // Tracks are fitted only within
+  // the range defined by the user.
+  Int_t nModules = 0;
+  for (Int_t iLayer = firstLayer; iLayer < lastLayer; iLayer++)
+    nModules += AliAlignObj::LayerSize(iLayer - AliAlignObj::kFirstLayer);
+  TArrayI volIds(nModules);
+
+  Int_t modnum = 0;
+  for (Int_t iLayer = firstLayer; iLayer < lastLayer; iLayer++) {
+    for (Int_t iModule = 0; iModule < AliAlignObj::LayerSize(iLayer - AliAlignObj::kFirstLayer); iModule++) {
+      UShort_t volId = AliAlignObj::LayerToVolUID(iLayer,iModule);
+      volIds.AddAt(volId,modnum);
+      modnum++;
+    }
+  }
+
   while (iterations > 0) {
-    // First inward pass
-    AlignLayer(AliAlignObj::kTPC1);
-    AlignLayer(AliAlignObj::kSSD2);
-    AlignLayer(AliAlignObj::kSSD1);
-    AlignLayer(AliAlignObj::kSDD2);
-    AlignLayer(AliAlignObj::kSDD1);
-    AlignLayer(AliAlignObj::kSPD2);
-    AlignLayer(AliAlignObj::kSPD1);
-    // Outward pass
-    AlignLayer(AliAlignObj::kSPD2);
-    AlignLayer(AliAlignObj::kSDD1);
-    AlignLayer(AliAlignObj::kSDD2);
-    AlignLayer(AliAlignObj::kSSD1);
-    AlignLayer(AliAlignObj::kSSD2);
-    AlignLayer(AliAlignObj::kTPC1);
-    AlignLayer(AliAlignObj::kTPC2);
-    AlignLayer(AliAlignObj::kTRD1);
-    AlignLayer(AliAlignObj::kTRD2);
-    AlignLayer(AliAlignObj::kTRD3);
-    AlignLayer(AliAlignObj::kTRD4);
-    AlignLayer(AliAlignObj::kTRD5);
-    AlignLayer(AliAlignObj::kTRD6);
-    AlignLayer(AliAlignObj::kTOF);
-    // Again inward
-    AlignLayer(AliAlignObj::kTRD6);
-    AlignLayer(AliAlignObj::kTRD5);
-    AlignLayer(AliAlignObj::kTRD4);
-    AlignLayer(AliAlignObj::kTRD3);
-    AlignLayer(AliAlignObj::kTRD2);
-    AlignLayer(AliAlignObj::kTRD1);
-    AlignLayer(AliAlignObj::kTPC2);
+    AlignVolumes(&volIds,0x0,layerRangeMin,layerRangeMax);
+    iterations--;
   }
 }
 
@@ -444,55 +423,87 @@ void AliAlignmentTracks::AlignLayer(AliAlignObj::ELayerID layer,
   // Tracks are fitted only within
   // the range defined by the user.
   Int_t nModules = AliAlignObj::LayerSize(layer - AliAlignObj::kFirstLayer);
+  TArrayI volIds(nModules);
+  for (Int_t iModule = 0; iModule < nModules; iModule++) {
+    UShort_t volId = AliAlignObj::LayerToVolUID(layer,iModule);
+    volIds.AddAt(volId,iModule);
+  }
+
   while (iterations > 0) {
-    for (Int_t iModule = 0; iModule < nModules; iModule++) {
-      UShort_t volId = AliAlignObj::LayerToVolUID(layer,iModule);
-      AlignVolume(volId,layerRangeMin,layerRangeMax);
-    }
+    AlignVolumes(&volIds,0x0,layerRangeMin,layerRangeMax);
     iterations--;
   }
 }
 
 //______________________________________________________________________________
-void AliAlignmentTracks::AlignVolume(UShort_t volid, UShort_t volidfit,
+void AliAlignmentTracks::AlignVolume(UShort_t volId, UShort_t volIdFit,
+				     Int_t iterations)
+{
+  // Align single detector volume to
+  // another volume.
+  // Tracks are fitted only within
+  // the second volume.
+  TArrayI volIds(1);
+  volIds.AddAt(volId,0);
+  TArrayI volIdsFit(1);
+  volIdsFit.AddAt(volIdFit,0);
+
+  while (iterations > 0) {
+    AlignVolumes(&volIds,&volIdsFit);
+    iterations--;
+  }
+}
+
+//______________________________________________________________________________
+void AliAlignmentTracks::AlignVolumes(const TArrayI *volids, const TArrayI *volidsfit,
 				     AliAlignObj::ELayerID layerRangeMin,
 				     AliAlignObj::ELayerID layerRangeMax,
 				     Int_t iterations)
 {
-  // Align a single detector volume.
+  // Align a set of detector volumes.
   // Tracks are fitted only within
   // the range defined by the user
   // (by layerRangeMin and layerRangeMax)
-  // or within the volid2
+  // or within the set of volidsfit
   // Repeat the procedure 'iterations' times
 
-  // First take the alignment object to be updated
-  Int_t iModule;
-  AliAlignObj::ELayerID iLayer = AliAlignObj::VolUIDToLayer(volid,iModule);
-  AliAlignObj *alignObj = fAlignObjs[iLayer-AliAlignObj::kFirstLayer][iModule];
+  Int_t nVolIds = volids->GetSize();
+  if (nVolIds == 0) {
+    AliError("Volume IDs array is empty!");
+    return;
+  }
 
-  // Then load only the tracks with at least one
-  // space point in the volume (volid)
+  // Load only the tracks with at least one
+  // space point in the set of volume (volids)
   BuildIndex();
   AliTrackPointArray **points;
   // Start the iterations
   while (iterations > 0) {
-    Int_t nArrays = LoadPoints(volid, points);
+    Int_t nArrays = LoadPoints(volids, points);
     if (nArrays == 0) return;
 
     AliTrackResiduals *minimizer = CreateMinimizer();
     minimizer->SetNTracks(nArrays);
-    minimizer->SetAlignObj(alignObj);
+    minimizer->InitAlignObj();
     AliTrackFitter *fitter = CreateFitter();
     for (Int_t iArray = 0; iArray < nArrays; iArray++) {
       fitter->SetTrackPointArray(points[iArray], kFALSE);
-      fitter->Fit(volid,volidfit,layerRangeMin,layerRangeMax);
+      fitter->Fit(volids,volidsfit,layerRangeMin,layerRangeMax);
       AliTrackPointArray *pVolId,*pTrack;
       fitter->GetTrackResiduals(pVolId,pTrack);
       minimizer->AddTrackPointArrays(pVolId,pTrack);
     }
     minimizer->Minimize();
-    *alignObj *= *minimizer->GetAlignObj();
+
+    // Update the alignment object(s)
+    for (Int_t iVolId = 0; iVolId < nVolIds; iVolId++) {
+      UShort_t volid = (*volids)[iVolId];
+      Int_t iModule;
+      AliAlignObj::ELayerID iLayer = AliAlignObj::VolUIDToLayer(volid,iModule);
+      AliAlignObj *alignObj = fAlignObjs[iLayer-AliAlignObj::kFirstLayer][iModule];
+      *alignObj *= *minimizer->GetAlignObj();
+      alignObj->Print("");
+    }
 
     UnloadPoints(nArrays, points);
     
@@ -501,26 +512,43 @@ void AliAlignmentTracks::AlignVolume(UShort_t volid, UShort_t volidfit,
 }
   
 //______________________________________________________________________________
-Int_t AliAlignmentTracks::LoadPoints(UShort_t volid, AliTrackPointArray** &points)
+Int_t AliAlignmentTracks::LoadPoints(const TArrayI *volids, AliTrackPointArray** &points)
 {
   // Load track point arrays with at least
-  // one space point in a given detector
-  // volume (volid).
+  // one space point in a given set of detector
+  // volumes (array volids).
   // Use the already created tree index for
   // fast access.
 
   if (!fPointsTree) {
-    AliWarning("Tree with the space point arrays not initialized!");
+    AliError("Tree with the space point arrays not initialized!");
     points = 0;
     return 0;
   }
 
-  Int_t iModule;
-  AliAlignObj::ELayerID iLayer = AliAlignObj::VolUIDToLayer(volid,iModule);
-  Int_t nArrays = fLastIndex[iLayer-AliAlignObj::kFirstLayer][iModule];
+  Int_t nVolIds = volids->GetSize();
+  if (nVolIds == 0) {
+    AliError("Volume IDs array is empty!");
+    points = 0;
+    return 0;
+  }
 
-  // In case of empty index
+  Int_t nArrays = 0;
+  for (Int_t iVolId = 0; iVolId < nVolIds; iVolId++) {
+    UShort_t volid = (*volids)[iVolId];
+    Int_t iModule;
+    AliAlignObj::ELayerID iLayer = AliAlignObj::VolUIDToLayer(volid,iModule);
+
+    // In case of empty index
+    if (fLastIndex[iLayer-AliAlignObj::kFirstLayer][iModule] == 0) {
+      AliWarning(Form("There are no space-points belonging to the volume which is to be aligned (Volume ID =%d)!",volid));
+      continue;
+    }
+    nArrays += fLastIndex[iLayer-AliAlignObj::kFirstLayer][iModule];
+  }
+
   if (nArrays == 0) {
+    AliError("There are no space-points belonging to all of the volumes which are to be aligned!");
     points = 0;
     return 0;
   }
@@ -528,37 +556,65 @@ Int_t AliAlignmentTracks::LoadPoints(UShort_t volid, AliTrackPointArray** &point
   AliTrackPointArray* array = 0;
   fPointsTree->SetBranchAddress("SP", &array);
 
+  // Allocate the pointer to the space-point arrays
   points = new AliTrackPointArray*[nArrays];
-  TArrayI *index = fArrayIndex[iLayer-AliAlignObj::kFirstLayer][iModule];
-  AliTrackPoint p;
-  for (Int_t iArray = 0; iArray < nArrays; iArray++) {
-    fPointsTree->GetEvent((*index)[iArray]);
-    if (!array) {
-      AliWarning("Wrong space point array index!");
-      continue;
-    }
-    Int_t nPoints = array->GetNPoints();
-    points[iArray] = new AliTrackPointArray(nPoints);
-    for (Int_t iPoint = 0; iPoint < nPoints; iPoint++) {
-      array->GetPoint(p,iPoint);
-      Int_t modnum;
-      AliAlignObj::ELayerID layer = AliAlignObj::VolUIDToLayer(p.GetVolumeID(),modnum);
 
-      // Misalignment is introduced here
-      // Switch it off in case of real
-      // alignment job!
-      if (fMisalignObjs) {
-	AliAlignObj *misalignObj = fMisalignObjs[layer-AliAlignObj::kFirstLayer][modnum];
-	if (misalignObj)
-	  misalignObj->Transform(p);
+  // Init the array used to flag already loaded tree entries
+  Bool_t *indexUsed = new Bool_t[fPointsTree->GetEntries()];
+  for (Int_t i = 0; i < fPointsTree->GetEntries(); i++)
+    indexUsed[i] = kFALSE;
+
+  // Start the loop over the volume ids
+  Int_t iArray = 0;
+  for (Int_t iVolId = 0; iVolId < nVolIds; iVolId++) {
+    UShort_t volid = (*volids)[iVolId];
+    Int_t iModule;
+    AliAlignObj::ELayerID iLayer = AliAlignObj::VolUIDToLayer(volid,iModule);
+
+    Int_t nArraysId = fLastIndex[iLayer-AliAlignObj::kFirstLayer][iModule];
+    TArrayI *index = fArrayIndex[iLayer-AliAlignObj::kFirstLayer][iModule];
+    AliTrackPoint p;
+
+    for (Int_t iArrayId = 0; iArrayId < nArraysId; iArrayId++) {
+
+      // Get tree entry
+      Int_t entry = (*index)[iArrayId];
+      if (indexUsed[entry] == kTRUE) continue;
+      fPointsTree->GetEvent(entry);
+      if (!array) {
+	AliWarning("Wrong space point array index!");
+	continue;
       }
-      // End of misalignment
+      indexUsed[entry] = kTRUE;
 
-      AliAlignObj *alignObj = fAlignObjs[layer-AliAlignObj::kFirstLayer][modnum];
-      alignObj->Transform(p);
-      points[iArray]->AddPoint(iPoint,&p);
+      // Get the space-point array
+      Int_t nPoints = array->GetNPoints();
+      points[iArray] = new AliTrackPointArray(nPoints);
+      for (Int_t iPoint = 0; iPoint < nPoints; iPoint++) {
+	array->GetPoint(p,iPoint);
+	Int_t modnum;
+	AliAlignObj::ELayerID layer = AliAlignObj::VolUIDToLayer(p.GetVolumeID(),modnum);
+
+	// Misalignment is introduced here
+	// Switch it off in case of real
+	// alignment job!
+	if (fMisalignObjs) {
+	  AliAlignObj *misalignObj = fMisalignObjs[layer-AliAlignObj::kFirstLayer][modnum];
+	  if (misalignObj)
+	    misalignObj->Transform(p);
+	}
+	// End of misalignment
+
+	AliAlignObj *alignObj = fAlignObjs[layer-AliAlignObj::kFirstLayer][modnum];
+	alignObj->Transform(p);
+	points[iArray]->AddPoint(iPoint,&p);
+      }
+      iArray++;
     }
   }
+
+
+  delete [] indexUsed;
 
   return nArrays;
 }
