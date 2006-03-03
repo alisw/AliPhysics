@@ -25,11 +25,8 @@
 #include "TObjArray.h"
 #include "TTree.h"
 
-#include "AliITSresponseSDD.h"
 #include "AliCDBManager.h"
-#include "AliCDBStorage.h"
 #include "AliCDBEntry.h"
-
 #include "AliITSClusterFinder.h"
 #include "AliITSClusterFinderV2.h"
 #include "AliITSClusterFinderV2SPD.h"
@@ -38,7 +35,6 @@
 #include "AliITSClusterFinderSPD.h"
 #include "AliITSClusterFinderSDD.h"
 #include "AliITSClusterFinderSSD.h"
-#include "AliITSclusterV2.h"
 #include "AliITSgeom.h"
 #include "AliITSDetTypeRec.h"
 #include "AliITSRawCluster.h"
@@ -50,6 +46,7 @@
 #include "AliITSsegmentationSPD.h"
 #include "AliITSsegmentationSDD.h"
 #include "AliITSsegmentationSSD.h"
+#include "AliLog.h"
 
 
 const Int_t AliITSDetTypeRec::fgkNdettypes = 3;
@@ -89,10 +86,8 @@ fRecPointClassName(){// String with RecPoint class name
   fNdtype = new Int_t[fgkNdettypes];
   fCtype = new TObjArray(fgkNdettypes);
   fNctype = new Int_t[fgkNdettypes];
-  fRecPoints = new TClonesArray("AliITSRecPoint",1000);
+  fRecPoints = new TClonesArray("AliITSRecPoint",3000);
   fNRecPoints = 0;
-  fClustersV2 = new TClonesArray("AliITSclusterV2",3000);
-  fNClustersV2 = 0;
   
   for(Int_t i=0;i<fgkNdettypes;i++){
     fNdtype[i]=0;
@@ -162,11 +157,6 @@ AliITSDetTypeRec::~AliITSDetTypeRec(){
     fRecPoints->Delete();
     delete fRecPoints;
     fRecPoints=0;
-  }
-  if(fClustersV2){
-    fClustersV2->Delete();
-    delete fClustersV2;
-    fClustersV2=0;
   }
   if(fCtype) {
     fCtype->Delete();
@@ -557,13 +547,11 @@ void AliITSDetTypeRec::MakeBranch(Option_t* option){
   //Creates branches for clusters and recpoints
   Bool_t cR = (strstr(option,"R")!=0);
   Bool_t cRF = (strstr(option,"RF")!=0);
-  Bool_t v2 = (strstr(option,"v2")!=0);
   
   if(cRF)cR = kFALSE;
 
   if(cR) MakeBranchR(0);
   if(cRF) MakeBranchRF(0);
-  if(v2) MakeBranchR(0,"v2");
 
 }
 
@@ -730,35 +718,23 @@ void AliITSDetTypeRec::MakeBranchR(const char *file, Option_t *opt){
 
   // only one branch for rec points for all detector types
   Bool_t oFast= (strstr(opt,"Fast")!=0);
-  Bool_t v2 = (strstr(opt,"v2")!=0);
   
   Char_t detname[10] = "ITS";
  
   
   if(oFast){
     sprintf(branchname,"%sRecPointsF",detname);
-  } else if(v2){
-    sprintf(branchname,"Clusters");
   } else {
     sprintf(branchname,"%sRecPoints",detname);
   }
   
-  if(v2){
-    
-    if(!fClustersV2)fClustersV2 = new TClonesArray("AliITSclusterV2",3000);
-    if(fLoader->TreeR()){
-      if(fClustersV2==0x0) fClustersV2 = new TClonesArray("AliITSclusterV2",3000);
-      MakeBranchInTree(fLoader->TreeR(),branchname,0,&fClustersV2,buffsz,99,file);
-      
-    }
-  }else{
-    if(!fRecPoints)fRecPoints = new TClonesArray("AliITSRecPoint",1000);
-    if (fLoader->TreeR()) {
-      if(fRecPoints==0x0) fRecPoints = new TClonesArray("AliITSRecPoint",
-							1000);
-      MakeBranchInTree(fLoader->TreeR(),branchname,0,&fRecPoints,buffsz,99,file);
-    } // end if
-  }
+  if(!fRecPoints)fRecPoints = new TClonesArray("AliITSRecPoint",1000);
+  if (fLoader->TreeR()) {
+    if(fRecPoints==0x0) fRecPoints = new TClonesArray("AliITSRecPoint",
+						      1000);
+    MakeBranchInTree(fLoader->TreeR(),branchname,0,&fRecPoints,buffsz,99,file);
+  } // end if
+
   
 }
 //______________________________________________________________________
@@ -775,26 +751,18 @@ void AliITSDetTypeRec::SetTreeAddressR(TTree *treeR){
 
     if(!treeR) return;
     if(fRecPoints==0x0) fRecPoints = new TClonesArray("AliITSRecPoint",1000);
-    TBranch *branch1;
-    sprintf(branchname,"Clusters");
-    branch1 = treeR->GetBranch(branchname);
-    if(branch1){
-      if(fClustersV2==0x0) fClustersV2 = new TClonesArray("AliITSclusterV2",3000);
-      branch1->SetAddress(&fClustersV2);
-    }
-    else{
-      TBranch *branch;
-      sprintf(branchname,"%sRecPoints",namedet);
+    TBranch *branch;
+    sprintf(branchname,"%sRecPoints",namedet);
+    branch = treeR->GetBranch(branchname);
+    if (branch) {
+      branch->SetAddress(&fRecPoints);
+    }else {
+      sprintf(branchname,"%sRecPointsF",namedet);
       branch = treeR->GetBranch(branchname);
       if (branch) {
-        branch->SetAddress(&fRecPoints);
-      }else {
-        sprintf(branchname,"%sRecPointsF",namedet);
-        branch = treeR->GetBranch(branchname);
-        if (branch) {
-	  branch->SetAddress(&fRecPoints);
-        }
+	branch->SetAddress(&fRecPoints);
       }
+
     }
 }
 //____________________________________________________________________
@@ -811,20 +779,6 @@ void AliITSDetTypeRec::AddRecPoint(const AliITSRecPoint &r){
     TClonesArray &lrecp = *fRecPoints;
     new(lrecp[fNRecPoints++]) AliITSRecPoint(r);
 }
-//______________________________________________________________________
-void AliITSDetTypeRec::AddClusterV2(const AliITSclusterV2 &r){
-    // Add a reconstructed space point to the list
-    // Inputs:
-    //      const AliITSClusterV2 &r class to be added to the tree
-    //                              of reconstructed points TreeR.
-    // Outputs:
-    //      none.
-    // Return:
-    //      none.
-
-    TClonesArray &lrecp = *fClustersV2;
-    new(lrecp[fNClustersV2++]) AliITSclusterV2(r);
- }
 
 //______________________________________________________________________
 void AliITSDetTypeRec::DigitsToRecPoints(Int_t evNumber,Int_t lastentry,Option_t *opt, Bool_t v2){
@@ -852,9 +806,14 @@ void AliITSDetTypeRec::DigitsToRecPoints(Int_t evNumber,Int_t lastentry,Option_t
   const char *all = strstr(opt,"All");
   const char *det[3] = {strstr(opt,"SPD"),strstr(opt,"SDD"),
                         strstr(opt,"SSD")};
-  if(!v2) SetDefaultClusterFinders();
-  else    SetDefaultClusterFindersV2();
-  
+  if(!v2) {
+    SetDefaultClusterFinders();
+    AliInfo("Original cluster finder has been selected\n");
+  }
+  else   { 
+    SetDefaultClusterFindersV2();
+    AliInfo("V2 cluster finder has been selected \n");
+  }
 
   TTree *treeC=fLoader->TreeC();
   if(!treeC){
@@ -891,7 +850,6 @@ void AliITSDetTypeRec::DigitsToRecPoints(Int_t evNumber,Int_t lastentry,Option_t
       } // end if
       fLoader->TreeR()->Fill();
       ResetRecPoints();
-      ResetClustersV2();
       treeC->Fill();
       ResetClusters();
   } 
@@ -931,8 +889,8 @@ void AliITSDetTypeRec::DigitsToRecPoints(AliRawReader* rawReader){
 
   if(!fLoader->TreeR()) fLoader->MakeTree("R");
   TTree* cTree = fLoader->TreeR();
-  TClonesArray *array=new TClonesArray("AliITSclusterV2",1000);
-  cTree->Branch("Clusters",&array);
+  TClonesArray *array=new TClonesArray("AliITSRecPoint",1000);
+  cTree->Branch("ITSRecPoints",&array);
   delete array;
  
   TClonesArray** clusters = new TClonesArray*[fGeom->GetIndexMax()]; 
@@ -954,9 +912,9 @@ void AliITSDetTypeRec::DigitsToRecPoints(AliRawReader* rawReader){
     array = clusters[iModule];
     if(!array){
       Error("DigitsToRecPoints","data for module %d missing!",iModule);
-      array = new TClonesArray("AliITSclusterV2");
+      array = new TClonesArray("AliITSRecPoint");
     }
-    cTree->SetBranchAddress("Clusters",&array);
+    cTree->SetBranchAddress("ITSRecPoints",&array);
     cTree->Fill();
     nClusters+=array->GetEntriesFast();
     delete array;
@@ -964,7 +922,7 @@ void AliITSDetTypeRec::DigitsToRecPoints(AliRawReader* rawReader){
   fLoader->WriteRecPoints("OVERWRITE");
 
   delete[] clusters;
-  Info("DigitsToRecPoints", "total number of found clustersV2 in ITS: %d\n", 
+  Info("DigitsToRecPoints", "total number of found recpoints in ITS: %d\n", 
        nClusters);
   
 }

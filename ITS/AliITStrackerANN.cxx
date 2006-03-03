@@ -31,7 +31,7 @@
 
 #include "AliITSgeom.h"
 #include "AliITStrackSA.h"
-#include "AliITSclusterV2.h"
+#include "AliITSRecPoint.h"
 #include "AliITStrackV2.h"
 
 #include "AliITStrackerANN.h"
@@ -55,7 +55,7 @@ AliITStrackerANN::AliITStrackerANN(const AliITSgeom *geom, Int_t msglev)
 			2) the flag for log-messages writing
 			
 		The AliITSgeometry is used along the class, 
-		in order to translate the local AliITSclusterV2 coordinates
+		in order to translate the local AliITSRecPoint coordinates
 		into the Global reference frame, which is necessary for the
 		Neural Network algorithm to operate.
 		In case of serialized use, the log messages should be excluded, 
@@ -275,7 +275,7 @@ Bool_t AliITStrackerANN::GetGlobalXYZ
 		
 	Operations:
 		essentially, determines the ITS module index from the 
-		detector index of the AliITSclusterV2 object, and extracts
+		detector index of the AliITSRecPoint object, and extracts
 		the roto-translation from the ITS geometry, to convert
 		the local module coordinates into the global ones.
 		
@@ -293,7 +293,7 @@ Bool_t AliITStrackerANN::GetGlobalXYZ
 		return kFALSE;
 	}
 	// checks if the referenced cluster exists and corresponds to the passed reference
-	AliITSclusterV2 *refCluster = (AliITSclusterV2*) GetCluster(refIndex);
+	AliITSRecPoint *refCluster = (AliITSRecPoint*) GetCluster(refIndex);
 	if (!refCluster) {
 		Error("GetGlobalXYZ", "Cluster not found for index %d", refIndex);
 		return kFALSE;
@@ -348,7 +348,7 @@ AliITStrackerANN::AliITSnode* AliITStrackerANN::AddNode(Int_t refIndex)
 	neuron-creation phase.
 	
 	Arguments:
-		1) reference index of the correlated AliITSclusterV2 object
+		1) reference index of the correlated AliITSRecPoint object
 		
 	Operations:
 		- allocates the new AliITSnode objects
@@ -475,7 +475,7 @@ Int_t AliITStrackerANN::ArrangePoints(char *exportFile)
 			If this file must not be created, simply pass a NULL argument
 			
 	Operations:
-		- for each AliITSclusterV2 in each AliITSlayer, a ne AliITSnode
+		- for each AliITSRecPoint in each AliITSlayer, a ne AliITSnode
 		  is created and stored in the correct location.
 		  
 	Return values:
@@ -843,7 +843,7 @@ void AliITStrackerANN::PrintMatches(Bool_t stop)
 	TObjArray *sector = 0;
 	Int_t ilayer, isector, itheta, nF;
 	AliITSnode *node1 = 0, *node2 = 0;
-	//AliITSclusterV2 *cluster1 = 0, *cluster2 = 0;
+	//AliITSRecPoint *cluster1 = 0, *cluster2 = 0;
 
 	for (ilayer = 0; ilayer < 6; ilayer++) {
 		for (isector = 0; isector < fSectorNum; isector++) {
@@ -1434,7 +1434,7 @@ Int_t AliITStrackerANN::SaveTracks(Int_t sector)
 				}
 				//if (!RiemannFit(fNLayers, node, param)) continue;
 				// initialization of Kalman Filter Tracking
-				AliITSclusterV2 *cluster = (AliITSclusterV2*)GetCluster(node[0]->ClusterRef());
+				AliITSRecPoint *cluster = (AliITSRecPoint*)GetCluster(node[0]->ClusterRef());
 				Int_t mod = cluster->GetDetectorIndex();
 				Int_t lay, lad, det;
 				fGeom->GetModuleId(mod, lay, lad, det);
@@ -1444,7 +1444,7 @@ Int_t AliITStrackerANN::SaveTracks(Int_t sector)
 				                                        y0, z0, 
 																	 param[4], param[7], param[3], 1);
 				for (l = 0; l < fNLayers; l++) {
-					cluster = (AliITSclusterV2*)GetCluster(node[l]->ClusterRef());
+					cluster = (AliITSRecPoint*)GetCluster(node[l]->ClusterRef());
 					if (cluster) trac->AddClusterV2(l, (node[l]->ClusterRef() & 0x0fffffff)>>0);
 				}
             AliITStrackV2* ot = new AliITStrackV2(*trac);
@@ -1598,7 +1598,7 @@ Int_t AliITStrackerANN::StoreTracks()
 			//if (!RiemannFit(fNLayers, trackitem, param)) continue;
 			if (!annTrack.RiemannFit()) continue;
 			// initialization of Kalman Filter Tracking
-			AliITSclusterV2 *cluster = (AliITSclusterV2*)GetCluster(annTrack[0]->ClusterRef());
+			AliITSRecPoint *cluster = (AliITSRecPoint*)GetCluster(annTrack[0]->ClusterRef());
 			Int_t mod = cluster->GetDetectorIndex();
 			Int_t lay, lad, det;
 			fGeom->GetModuleId(mod, lay, lad, det);
@@ -1609,7 +1609,7 @@ Int_t AliITStrackerANN::StoreTracks()
 																 annTrack.Curv(), 1);
 			for (Int_t l = 0; l < fNLayers; l++) {
 				if (!annTrack[l]) continue;
-				cluster = (AliITSclusterV2*)GetCluster(annTrack[l]->ClusterRef());
+				cluster = (AliITSRecPoint*)GetCluster(annTrack[l]->ClusterRef());
 				if (cluster) trac->AddClusterV2(l, (annTrack[l]->ClusterRef() & 0x0fffffff)>>0);
 			}
 			AliITStrackV2* ot = new AliITStrackV2(*trac);

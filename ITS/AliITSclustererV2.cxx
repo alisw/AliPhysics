@@ -382,9 +382,9 @@ void AliITSclustererV2::RecPoints2Clusters
   for (Int_t i=0; i<ncl; i++) {
     AliITSRecPoint *p = (AliITSRecPoint *)points->UncheckedAt(i);
     Float_t lp[5];
-    lp[0]=-(-p->GetX()+fYshift[idx]); if (idx<=fLastSPD1) lp[0]*=-1; //SPD1
+    lp[0]=-(-p->GetDetLocalX()+fYshift[idx]); if (idx<=fLastSPD1) lp[0]*=-1; //SPD1
     lp[1]=  -p->GetZ()+fZshift[idx];
-    lp[2]=p->GetSigmaX2();
+    lp[2]=p->GetSigmaDetLocX2();
     lp[3]=p->GetSigmaZ2();
     lp[4]=p->GetQ()*36./23333.;  //electrons -> ADC
     Int_t lab[4]; 

@@ -71,7 +71,7 @@ class AliITSClusterFinder :public TObject{
         FillCluster(cluster,1);}
 
     virtual void SetModule(Int_t module){fModule = module;}// Set module number
-    virtual Int_t GetModule()const{return fModule;}// Returns module number
+    virtual Int_t GetModule()const {return fModule;}// Returns module number
     //
     // RecPoints
     // Given a cluster of digits, creates the nessesary RecPoint. May also

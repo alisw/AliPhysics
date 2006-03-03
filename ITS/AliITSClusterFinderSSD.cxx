@@ -28,7 +28,6 @@
 #include "AliITSRecPoint.h"
 #include "AliITSclusterSSD.h"
 #include "AliITSdigitSSD.h"
-#include "AliITSgeom.h"
 #include "AliITSpackageSSD.h"
 #include "AliITSsegmentationSSD.h"
 #include "AliLog.h"
@@ -624,6 +623,12 @@ Bool_t AliITSClusterFinderSSD::CreateNewRecPoint(Double_t P,Double_t dP,
     Int_t *tr;
     Int_t ntracks;
 
+    Int_t lay,lad,det;
+    fDetTypeRec->GetITSgeom()->GetModuleId(fModule,lay,lad,det);
+    Int_t ind=(lad-1)*fDetTypeRec->GetITSgeom()->GetNdetectors(lay)+(det-1);
+    Int_t lyr=(lay-1);
+
+
     if (GetCrossing(P,N)) {
         //GetCrossingError(dP,dN);
         dP = dN = prob = 0.0; // to remove unused variable warning.
@@ -648,16 +653,17 @@ Bool_t AliITSClusterFinderSSD::CreateNewRecPoint(Double_t P,Double_t dP,
         cnew.SetQErr(TMath::Abs(SigP-SigN));
         cnew.SetNTrack(ntracks);
 	fDetTypeRec->AddCluster(2,&cnew);
-        AliITSRecPoint rnew;
-        rnew.SetX(P*kconv);
-        rnew.SetZ(N*kconv);
+        AliITSRecPoint rnew(fDetTypeRec->GetITSgeom());
+	rnew.SetXZ(fModule,P*kconv,N*kconv);
         rnew.SetQ(signal);
         rnew.SetdEdX(dedx);
-        rnew.SetSigmaX2( kRMSx* kRMSx); 
+        rnew.SetSigmaDetLocX2( kRMSx* kRMSx); 
         rnew.SetSigmaZ2( kRMSz* kRMSz);
-        rnew.fTracks[0]=tr[0];
-        rnew.fTracks[1]=tr[1];
-        rnew.fTracks[2]=tr[2];
+        rnew.SetLabel(tr[0],0);
+        rnew.SetLabel(tr[1],1);
+        rnew.SetLabel(tr[2],2);
+	rnew.SetDetectorIndex(ind);
+	rnew.SetLayer(lyr);
 	fDetTypeRec->AddRecPoint(rnew);
         return kTRUE;
 

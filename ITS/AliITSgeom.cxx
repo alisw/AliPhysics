@@ -1206,4 +1206,25 @@ void AliITSgeom::GetNearest27(const Double_t g[3],Int_t n[27],Int_t lay){
     } // end for i
     for(i=0;i<27;i++) n[i] = in[i];
 }
-//----------------------------------------------------------------------
+//_______________________________________________________________________
+void AliITSgeom::DetLToTrackingV2(Int_t md, Float_t xin, Float_t zin, Float_t &yout, Float_t &zout) {
+
+  //Conversion from local coordinates on detectors to local
+  //coordinates used for tracking ("v2")
+  Float_t x,y,z; Double_t rt[9];GetTrans(md,x,y,z);GetRotMatrix(md,rt);
+  Double_t al=TMath::ATan2(rt[1],rt[0])+TMath::Pi();
+  yout=-(-xin+(x*TMath::Cos(al)+y*TMath::Sin(al)));
+  if(md<(GetModuleIndex(2,1,1)-1))yout*=-1; zout=-zin+(Double_t)z; 
+}
+
+//_______________________________________________________________________
+void AliITSgeom::TrackingV2ToDetL(Int_t md,Float_t yin,Float_t zin,Float_t &xout,Float_t &zout) {
+  //Conversion from local coordinates used for tracking ("v2") to
+  //local detector coordinates
+  
+  Float_t x,y,z; Double_t rt[9];GetTrans(md,x,y,z);GetRotMatrix(md,rt);
+  Double_t al=TMath::ATan2(rt[1],rt[0])+TMath::Pi();
+  xout=yin;if(md<(GetModuleIndex(2,1,1)-1))xout=-xout;
+  xout+=(x*TMath::Cos(al)+y*TMath::Sin(al));
+  zout=-zin+(Double_t)z; 
+}

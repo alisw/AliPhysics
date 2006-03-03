@@ -28,7 +28,6 @@
 #include "AliITSRecPoint.h"
 #include "AliITSdigitSDD.h"
 #include "AliITSDetTypeRec.h"
-#include "AliITSresponseSDD.h"
 #include "AliITSCalibrationSDD.h"
 #include "AliITSsegmentationSDD.h"
 #include "AliLog.h"
@@ -929,6 +928,13 @@ void AliITSClusterFinderSDD::GetRecPoints(){
     Int_t ix, iz, idx=-1;
     AliITSdigitSDD *dig=0;
     Int_t ndigits=NDigits();
+
+    Int_t lay,lad,det;
+    fDetTypeRec->GetITSgeom()->GetModuleId(fModule,lay,lad,det);
+    Int_t ind=(lad-1)*fDetTypeRec->GetITSgeom()->GetNdetectors(lay)+(det-1);
+    Int_t lyr=(lay-1);
+
+
     for(i=0; i<nofClusters; i++) { 
         AliITSRawClusterSDD *clusterI = (AliITSRawClusterSDD*)Cluster(i);
         if(!clusterI) Error("SDD: GetRecPoints","i clusterI ",i,clusterI);
@@ -945,18 +951,18 @@ void AliITSClusterFinderSDD::GetRecPoints(){
             if (!dig) dig = (AliITSdigitSDD*)Map()->GetHit(iz-1,ix+1); 
             if (!dig) printf("SDD: cannot assign the track number!\n");
         } //  end if !dig
-        AliITSRecPoint rnew;
-        rnew.SetX(clusterI->X());
-        rnew.SetZ(clusterI->Z());
+        AliITSRecPoint rnew(fDetTypeRec->GetITSgeom());
+	rnew.SetXZ(fModule,clusterI->X(),clusterI->Z());
         rnew.SetQ(clusterI->Q());   // in KeV - should be ADC
         rnew.SetdEdX(kconvGeV*clusterI->Q());
-        rnew.SetSigmaX2(kRMSx*kRMSx);
+        rnew.SetSigmaDetLocX2(kRMSx*kRMSx);
         rnew.SetSigmaZ2(kRMSz*kRMSz);
 
-        if(dig) rnew.fTracks[0]=dig->GetTrack(0);
-        if(dig) rnew.fTracks[1]=dig->GetTrack(1);
-        if(dig) rnew.fTracks[2]=dig->GetTrack(2);
-
+        if(dig) rnew.SetLabel(dig->GetTrack(0),0);
+        if(dig) rnew.SetLabel(dig->GetTrack(1),1);
+        if(dig) rnew.SetLabel(dig->GetTrack(2),2);
+	rnew.SetDetectorIndex(ind);
+	rnew.SetLayer(lyr);
 	fDetTypeRec->AddRecPoint(rnew);        
     } // I clusters
 //    Map()->ClearMap();

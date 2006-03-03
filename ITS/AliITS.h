@@ -139,8 +139,6 @@ class AliITS : public AliDetector {
     virtual void HitsToFastRecPoints(Int_t evNumber,Int_t bgrev,Int_t size,
                  Option_t *add, Option_t *det, const char *filename);
     virtual Int_t Hits2Clusters(TTree *in, TTree *out);
-    virtual void RecPoints2Clusters
-      (const TClonesArray *points, Int_t idx, TClonesArray *clusters);
     virtual void CheckLabels(Int_t lab[3]) const;
 
     //===================== Raw Data IO ================================

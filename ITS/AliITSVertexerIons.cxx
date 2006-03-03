@@ -122,9 +122,9 @@ AliESDVertex* AliITSVertexerIons::FindVertexForCurrentEvent(Int_t evnumber){
     npoints = recpoints->GetEntries();
     for (Int_t ipoint=0;ipoint<npoints;ipoint++) {
       pnt = (AliITSRecPoint*)recpoints->UncheckedAt(ipoint);
-      l[0]=pnt->GetX();
+      l[0]=pnt->GetDetLocalX();
       l[1]=0;
-      l[2]=pnt->GetZ();
+      l[2]=pnt->GetDetLocalZ();
       g2->LtoG(i, l, p);
       r=TMath::Sqrt(TMath::Power(p[0],2)+TMath::Power(p[1],2));
 

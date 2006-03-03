@@ -287,10 +287,10 @@ void AliITSRiemannFit::InitPoints(Int_t ntracks,TTree *TR,Int_t nparticles){
 
     for (irec=0;irec<nrecp;irec++) {
       recp   = (AliITSRecPoint*)iTSrec->UncheckedAt(irec);
-      track=recp->fTracks[0];
+      track=recp->GetLabel(0);
       if(track <0 ) continue;
-      xcluster=recp->GetX();     // x on cluster
-      zcluster=recp->GetZ();     // z on cluster
+      xcluster=recp->GetDetLocalX();     // x on cluster
+      zcluster=recp->GetDetLocalZ();     // z on cluster
       part   = (TParticle*) gAlice->GetMCApp()->Particle(track);    
       part->ProductionVertex(oT);  // set the vertex 
       part->Momentum(pE);          // set the vertex momentum
@@ -306,15 +306,15 @@ void AliITSRiemannFit::InitPoints(Int_t ntracks,TTree *TR,Int_t nparticles){
       locals[0]=xcluster;     // x on cluster
       locals[1]=0.0;          // y on cluster
       locals[2]=zcluster;     // z on cluster
-      localserror[0]=sqrt(recp->GetSigmaX2());
+      localserror[0]=sqrt(recp->GetSigmaDetLocX2());
       localserror[1]=0.0;
       localserror[2]=sqrt(recp->GetSigmaZ2());
-      localsplus[0]=xcluster+sqrt(recp->GetSigmaX2());       // x on cluster
+      localsplus[0]=xcluster+sqrt(recp->GetSigmaDetLocX2());       // x on cluster
       if(layer==1||layer==2) localsplus[1]=0.0150/2;         // y on cluster
       else if(layer==3||layer==4) localsplus[1]=0.0280/2;    // y on cluster
       else if(layer==5||layer==6) localsplus[1]=0.0300/2;    // y on cluster
       localsplus[2]=zcluster+sqrt(recp->GetSigmaZ2());       // z on cluster
-      localsminus[0]=xcluster-sqrt(recp->GetSigmaX2());      // x on cluster
+      localsminus[0]=xcluster-sqrt(recp->GetSigmaDetLocX2());      // x on cluster
       localsminus[1]=0.0;                                    // y on cluster
       localsminus[2]=zcluster-sqrt(recp->GetSigmaZ2());      // z on cluster
 

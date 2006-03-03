@@ -404,6 +404,10 @@ void AliITSClusterFinderSPD::DigitToPoint(Int_t nclus,
     Double_t l[3],xg,zg;
     const Double_t kconv = 1.0e-4; // micron -> cm
 
+    Int_t lay,lad,det;
+    fDetTypeRec->GetITSgeom()->GetModuleId(fModule,lay,lad,det);
+    Int_t ind=(lad-1)*fDetTypeRec->GetITSgeom()->GetNdetectors(lay)+(det-1);
+    Int_t lyr=(lay-1);
     // get rec points
     for (Int_t i=0; i<nclus; i++){
         l[0] = kconv*xcenter[i];
@@ -415,16 +419,17 @@ void AliITSClusterFinderSPD::DigitToPoint(Int_t nclus,
 
         Double_t sigma2x = (kconv*errxcenter[i]) * (kconv*errxcenter[i]);
         Double_t sigma2z = (kconv*errzcenter[i]) * (kconv*errzcenter[i]);
-        AliITSRecPoint rnew;
-        rnew.SetX(xg);
-        rnew.SetZ(zg);
+        AliITSRecPoint rnew(fDetTypeRec->GetITSgeom());
+        rnew.SetXZ(fModule,xg,zg);
         rnew.SetQ(1.);
         rnew.SetdEdX(0.);
-        rnew.SetSigmaX2(sigma2x);
+        rnew.SetSigmaDetLocX2(sigma2x);
         rnew.SetSigmaZ2(sigma2z);
-        rnew.fTracks[0]=tr1clus[i];
-        rnew.fTracks[1]=tr2clus[i];
-        rnew.fTracks[2]=tr3clus[i];
+        rnew.SetLabel(tr1clus[i],0);
+        rnew.SetLabel(tr2clus[i],1);
+        rnew.SetLabel(tr3clus[i],2);
+	rnew.SetDetectorIndex(ind);
+	rnew.SetLayer(lyr);
 	fDetTypeRec->AddRecPoint(rnew); 
     } // end for i
 }

@@ -13,14 +13,13 @@
 
 class TTree;
 class TTreeSRedirector;
-#include <TObjArray.h>
-
 class AliESD;
 class AliHelix;
 class AliITSgeom;
 class AliV0vertex;
 
-#include "AliITSclusterV2.h"
+#include <TObjArray.h>
+#include "AliITSRecPoint.h"
 #include "AliITStrackMI.h"
 #include "AliTracker.h"
 #include "AliV0vertex.h"
@@ -33,7 +32,7 @@ public:
   ~AliITStrackerMI();
   AliCluster *GetCluster(Int_t index) const;
   virtual Bool_t GetTrackPoint(Int_t index, AliTrackPoint& p) const;
-  AliITSclusterV2 *GetClusterLayer(Int_t layn, Int_t ncl) const
+  AliITSRecPoint *GetClusterLayer(Int_t layn, Int_t ncl) const
                         {return fgLayers[layn].GetCluster(ncl);}
   Int_t GetNumberOfClustersLayer(Int_t layn) const 
                         {return fgLayers[layn].GetNumberOfClusters();}
@@ -50,18 +49,18 @@ public:
   void SetLastLayerToTrackTo(Int_t l=0) {fLastLayerToTrackTo=l;} 
   void SetLayersNotToSkip(Int_t *l);
   void UseClusters(const AliKalmanTrack *t, Int_t from=0) const;
-  void GetNTeor(Int_t layer, const AliITSclusterV2* cl, Float_t theta, Float_t phi, Float_t &ny, Float_t &nz);
-  Int_t  GetError(Int_t layer, const AliITSclusterV2*cl, Float_t theta, Float_t phi, Float_t expQ, Float_t &erry, Float_t &errz);
+  void GetNTeor(Int_t layer, const AliITSRecPoint* cl, Float_t theta, Float_t phi, Float_t &ny, Float_t &nz);
+  Int_t  GetError(Int_t layer, const AliITSRecPoint*cl, Float_t theta, Float_t phi, Float_t expQ, Float_t &erry, Float_t &errz);
 
   void  GetDCASigma(AliITStrackMI* track, Float_t & sigmarfi, Float_t &sigmaz);
-  Double_t GetPredictedChi2MI(AliITStrackMI* track, const AliITSclusterV2 *cluster,Int_t layer);
-  Int_t UpdateMI(AliITStrackMI* track, const AliITSclusterV2* cl,Double_t chi2,Int_t layer) const;
+  Double_t GetPredictedChi2MI(AliITStrackMI* track, const AliITSRecPoint *cluster,Int_t layer);
+  Int_t UpdateMI(AliITStrackMI* track, const AliITSRecPoint* cl,Double_t chi2,Int_t layer) const;
   class AliITSdetector { 
   public:
     AliITSdetector(){}
     AliITSdetector(Double_t r,Double_t phi) {fR=r; fPhi=phi; fSinPhi = TMath::Sin(phi); fCosPhi = TMath::Cos(phi);
     fYmin=10000;fYmax=-1000; fZmin=10000;fZmax=-1000;}
-    inline void GetGlobalXYZ( const AliITSclusterV2 *cl, Double_t xyz[3]) const;
+    inline void GetGlobalXYZ( const AliITSRecPoint *cl, Double_t xyz[3]) const;
     Double_t GetR()   const {return fR;}
     Double_t GetPhi() const {return fPhi;}
     Double_t GetYmin() const {return fYmin;}
@@ -89,17 +88,17 @@ public:
     AliITSlayer();
     AliITSlayer(Double_t r, Double_t p, Double_t z, Int_t nl, Int_t nd);
    ~AliITSlayer();
-    Int_t InsertCluster(AliITSclusterV2 *c);
+    Int_t InsertCluster(AliITSRecPoint *c);
     void  SortClusters();
     void ResetClusters();
     void ResetWeights();
     void SelectClusters(Double_t zmi,Double_t zma,Double_t ymi,Double_t yma);
-    const AliITSclusterV2 *GetNextCluster(Int_t &ci);
+    const AliITSRecPoint *GetNextCluster(Int_t &ci);
     void ResetRoad();
     Double_t GetRoad() const {return fRoad;}
     Double_t GetR() const {return fR;}
     Int_t FindClusterIndex(Float_t z) const;
-    AliITSclusterV2 *GetCluster(Int_t i) const {return i<fN? fClusters[i]:0;} 
+    AliITSRecPoint *GetCluster(Int_t i) const {return i<fN? fClusters[i]:0;} 
     Float_t         *GetWeight(Int_t i)  {return i<fN ?&fClusterWeight[i]:0;}
     AliITSdetector &GetDetector(Int_t n) const { return fDetectors[n]; }
     Int_t FindDetectorIndex(Double_t phi, Double_t z) const;
@@ -122,13 +121,13 @@ public:
     Int_t fNdetectors;          // detectors/ladder
     AliITSdetector *fDetectors; // array of detectors
     Int_t fN;                   // number of clusters
-    AliITSclusterV2 *fClusters[kMaxClusterPerLayer]; // pointers to clusters
+    AliITSRecPoint *fClusters[kMaxClusterPerLayer]; // pointers to clusters
     Int_t        fClusterIndex[kMaxClusterPerLayer]; // pointers to clusters
     Float_t fY[kMaxClusterPerLayer];                // y position of the clusters      
     Float_t fZ[kMaxClusterPerLayer];                // z position of the clusters      
     Float_t fYB[2];                                       // ymin and ymax
     //
-    AliITSclusterV2 *fClusters5[6][kMaxClusterPerLayer5]; // pointers to clusters -     slice in y
+    AliITSRecPoint *fClusters5[6][kMaxClusterPerLayer5]; // pointers to clusters -     slice in y
     Int_t        fClusterIndex5[6][kMaxClusterPerLayer5]; // pointers to clusters -     slice in y    
     Float_t fY5[6][kMaxClusterPerLayer5];                // y position of the clusters  slice in y    
     Float_t fZ5[6][kMaxClusterPerLayer5];                // z position of the clusters  slice in y 
@@ -136,7 +135,7 @@ public:
     Float_t fDy5;                                       //delta y
     Float_t fBy5[6][2];                                    //slice borders
     //
-    AliITSclusterV2 *fClusters10[11][kMaxClusterPerLayer10]; // pointers to clusters -     slice in y
+    AliITSRecPoint *fClusters10[11][kMaxClusterPerLayer10]; // pointers to clusters -     slice in y
     Int_t        fClusterIndex10[11][kMaxClusterPerLayer10]; // pointers to clusters -     slice in y    
     Float_t fY10[11][kMaxClusterPerLayer10];                // y position of the clusters  slice in y    
     Float_t fZ10[11][kMaxClusterPerLayer10];                // z position of the clusters  slice in y 
@@ -144,7 +143,7 @@ public:
     Float_t fDy10;                                        // delta y
     Float_t fBy10[11][2];                                 // slice borders
     //
-    AliITSclusterV2 *fClusters20[21][kMaxClusterPerLayer20]; // pointers to clusters -     slice in y
+    AliITSRecPoint *fClusters20[21][kMaxClusterPerLayer20]; // pointers to clusters -     slice in y
     Int_t        fClusterIndex20[21][kMaxClusterPerLayer20]; // pointers to clusters -     slice in y    
     Float_t fY20[21][kMaxClusterPerLayer20];                // y position of the clusters  slice in y    
     Float_t fZ20[21][kMaxClusterPerLayer20];                // z position of the clusters  slice in y 
@@ -152,7 +151,7 @@ public:
     Float_t fDy20;                                        //delta y 
     Float_t fBy20[21][2];                                 //slice borders
     //
-    AliITSclusterV2** fClustersCs;                         //clusters table in current slice
+    AliITSRecPoint** fClustersCs;                         //clusters table in current slice
     Int_t   *fClusterIndexCs;                             //cluster index in current slice 
     Float_t *fYcs;                                        //y position in current slice
     Float_t *fZcs;                                        //z position in current slice
@@ -205,7 +204,7 @@ protected:
   void  GetBestHypothesysMIP(TObjArray &itsTracks); 
   void RegisterClusterTracks(AliITStrackMI* track, Int_t id);
   void UnRegisterClusterTracks(AliITStrackMI* track, Int_t id);
-  Float_t GetNumberOfSharedClusters(AliITStrackMI* track,Int_t id, Int_t list[6], AliITSclusterV2 *clist[6]);
+  Float_t GetNumberOfSharedClusters(AliITStrackMI* track,Int_t id, Int_t list[6], AliITSRecPoint *clist[6]);
   Int_t GetOverlapTrack(AliITStrackMI *track, Int_t trackID, Int_t &shared, Int_t clusterlist[6], Int_t overlist[6]);
   AliITStrackMI * GetBest2Tracks(Int_t trackID1, Int_t treackID2, Float_t th0, Float_t th1);
   Float_t  * GetErrY(Int_t trackindex) const {return &fCoeficients[trackindex*48];}
@@ -300,7 +299,7 @@ inline Double_t AliITStrackerMI::NormalizedChi2(AliITStrackMI * track, Int_t lay
 	       1./(1.+track->fNSkipped));
   return track->fNormChi2[layer];
 }
-inline void  AliITStrackerMI::AliITSdetector::GetGlobalXYZ(const AliITSclusterV2 *cl, Double_t xyz[3]) const
+inline void  AliITStrackerMI::AliITSdetector::GetGlobalXYZ(const AliITSRecPoint *cl, Double_t xyz[3]) const
 {
   //
   // get cluster coordinates in global cooordinate 

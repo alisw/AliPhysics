@@ -71,6 +71,12 @@ void AliITSsimulationFastPoints::CreateFastRecPoints(AliITSmodule *mod,
   AliITSgeom *gm = aliITS->GetITSgeom();
   const Float_t kdEdXtoQ = 2.778e+8; 
 
+  Int_t lay,lad,det;
+  gm->GetModuleId(module,lay,lad,det);
+  Int_t ind=(lad-1)*gm->GetNdetectors(lay)+(det-1);
+  Int_t lyr=(lay-1);
+
+
   Int_t ihit,flag,numofhits;
   Float_t locals[3];
   Float_t globals[3];
@@ -123,17 +129,18 @@ void AliITSsimulationFastPoints::CreateFastRecPoints(AliITSmodule *mod,
 	if ( (hitdestep+deltaDe) > thrde ){
 	  locals[0] += deltaXl;
 	  locals[2] += deltaZl;
-	  AliITSRecPoint rp;
-	  rp.fTracks[0]=hit->GetTrack();
+	  AliITSRecPoint rp(gm);
+	  rp.SetLabel(hit->GetTrack(),0);
 	  //		    rp.fTracks[0]=mod->GetHitTrackIndex(ihit);
-	  rp.fTracks[1]=-3;
-	  rp.fTracks[2]=-3;
-	  rp.SetX(locals[0]);
-	  rp.SetZ(locals[2]);
+	  rp.SetLabel(-3,1);
+	  rp.SetLabel(-3,2);
+	  rp.SetXZ(module,locals[0],locals[2]);
 	  rp.SetdEdX(hitdestep+deltaDe);
 	  rp.SetQ(kdEdXtoQ*(hitdestep+deltaDe));  // number of e
-	  rp.SetSigmaX2(sigmarphi*sigmarphi);
+	  rp.SetSigmaDetLocX2(sigmarphi*sigmarphi);
 	  rp.SetSigmaZ2(sigmaz*sigmaz);
+	  rp.SetDetectorIndex(ind);
+	  rp.SetLayer(lyr);
 	  new (pt[irecp]) AliITSRecPoint(rp);
 	  irecp++;
 	} // end if ( (hitdestep+deltaDe)

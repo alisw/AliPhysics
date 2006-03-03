@@ -33,7 +33,7 @@
 
   #include "AliITS.h"
   #include "AliITSgeom.h"
-  #include "AliITSclusterV2.h"
+  #include "AliITSRecPoint.h"
   #include "AliITSLoader.h"
 #endif
 
@@ -455,13 +455,13 @@ Int_t GoodTracksITS(const Char_t *dir) {
         delete rl;
         return 8;
      }
-     TBranch *branch=cTree->GetBranch("Clusters");
+     TBranch *branch=cTree->GetBranch("ITSRecPoints");
      if (!branch) {
         ::Error("GoodTracksITS","Can't get the clusters branch !"); 
         delete rl;
         return 9;
      }
-     TClonesArray dummy("AliITSclusterV2",10000), *clusters=&dummy;
+     TClonesArray dummy("AliITSRecPoint",10000), *clusters=&dummy;
      branch->SetAddress(&clusters);
 
      Int_t entr=(Int_t)cTree->GetEntries();
@@ -475,7 +475,7 @@ Int_t GoodTracksITS(const Char_t *dir) {
             return 10;
          }
          while (ncl--) {
-            AliITSclusterV2 *pnt=(AliITSclusterV2*)clusters->UncheckedAt(ncl);
+            AliITSRecPoint *pnt=(AliITSRecPoint*)clusters->UncheckedAt(ncl);
             Int_t l0=pnt->GetLabel(0);
 	       if (l0>=np) {
 // 		 cerr<<"Wrong label: "<<l0<<endl;

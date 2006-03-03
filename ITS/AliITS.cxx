@@ -85,7 +85,6 @@ the AliITS class.
 #include "AliMC.h"
 #include "AliITSDigitizer.h"
 #include "AliITSRecPoint.h"
-#include "AliITSclusterV2.h"
 #include "AliRun.h"
 #include "AliLog.h"
 
@@ -837,6 +836,7 @@ void AliITS::HitsToFastRecPoints(Int_t evNumber,Int_t bgrev,Int_t size,
     //      none.
 
 
+
   if(!GetITSgeom()){
     Error("HitsToPreDigits","fGeom is null!");
     return; // need transformations to do digitization.
@@ -857,12 +857,14 @@ void AliITS::HitsToFastRecPoints(Int_t evNumber,Int_t bgrev,Int_t size,
   Int_t id,module;
 
   TTree *lTR = pITSloader->TreeR();
-  TBranch* branch = lTR->GetBranch("ITSRecPointsF");
+  if(!lTR) {
+    pITSloader->MakeTree("R");
+    lTR = pITSloader->TreeR();
+  }
+  
   TClonesArray* ptarray = new TClonesArray("AliITSRecPoint",1000);
-  if(branch)  branch->SetAddress(ptarray);
-  else lTR->Branch("ITSRecPointsF",&ptarray);
- 
-
+  TBranch* branch = (TBranch*)lTR->Branch("ITSRecPointsF",&ptarray);
+  branch->SetAddress(&ptarray);
   //m.b. : this change is nothing but a nice way to make sure
   //the CPU goes up !
   AliDebug(1,Form("N mod = %d",geom->GetIndexMax()));    
@@ -900,22 +902,18 @@ Int_t AliITS::Hits2Clusters(TTree *hTree, TTree *cTree) {
   InitModules(-1,mmax);
   FillModules(hTree,0);
 
-  TClonesArray *clusters=new TClonesArray("AliITSclusterV2",1000);
-  TBranch *branch=cTree->GetBranch("Clusters");
-  if (!branch) cTree->Branch("Clusters",&clusters);
-  else branch->SetAddress(&clusters);
-
   TClonesArray *points = new TClonesArray("AliITSRecPoint",1000);
+  TBranch *branch=cTree->GetBranch("ITSRecPoints");
+  if (!branch) cTree->Branch("ITSRecPoints",&points);
+  else branch->SetAddress(&points);
 
   AliITSsimulationFastPoints sim;
   Int_t ncl=0;
   for (Int_t m=0; m<mmax; m++) {
     AliITSmodule *mod=GetModule(m);      
     sim.CreateFastRecPoints(mod,m,gRandom,points);      
-    RecPoints2Clusters(points, m, clusters);
-    ncl+=clusters->GetEntriesFast();
+    ncl+=points->GetEntriesFast();
     cTree->Fill();
-    clusters->Clear();
     points->Clear();
   }
 
@@ -923,59 +921,10 @@ Int_t AliITS::Hits2Clusters(TTree *hTree, TTree *cTree) {
 
   //cTree->Write();
 
-  delete clusters;
   delete points;
   return 0;
 }
-//_____________________________________________________________________
-void AliITS::RecPoints2Clusters
-(const TClonesArray *points, Int_t idx, TClonesArray *clusters) {
-  //------------------------------------------------------------
-  // Conversion AliITSRecPoint -> AliITSclusterV2 for the ITS 
-  // subdetector indexed by idx 
-  //------------------------------------------------------------
 
-  if(!GetITSgeom()){
-    Error("HitsToPreDigits","fGeom is null!");
-    return; // need transformations to do digitization.
-  }
-  AliITSgeom *g=GetITSgeom();
-  Int_t mmax = g->GetIndexMax();
-  Float_t yshift[2200];
-  Float_t zshift[2200];
-  Int_t ndet[2200];
-  for (Int_t m=0; m<mmax; m++) {
-    Int_t lay,lad,det; g->GetModuleId(m,lay,lad,det);
-    Float_t x,y,z;     g->GetTrans(lay,lad,det,x,y,z); 
-    Double_t rot[9];   g->GetRotMatrix(lay,lad,det,rot);
-    Double_t alpha=TMath::ATan2(rot[1],rot[0])+TMath::Pi();
-    Double_t ca=TMath::Cos(alpha), sa=TMath::Sin(alpha);
-    yshift[m] = x*ca + y*sa;
-    zshift[m] = (Double_t)z;
-    ndet[m] = (lad-1)*g->GetNdetectors(lay) + (det-1);
-  }
-
-  //SPD geometry  
-  Float_t lastSPD1=g->GetModuleIndex(2,1,1)-1;
-
-  TClonesArray &cl=*clusters;
-  Int_t ncl=points->GetEntriesFast();
-  for (Int_t i=0; i<ncl; i++) {
-    AliITSRecPoint *p = (AliITSRecPoint *)points->UncheckedAt(i);
-    Float_t lp[5];
-    lp[0]=-(-p->GetX()+yshift[idx]); if (idx<=lastSPD1) lp[0]*=-1; //SPD1
-    lp[1]=  -p->GetZ()+zshift[idx];
-    lp[2]=p->GetSigmaX2();
-    lp[3]=p->GetSigmaZ2();
-    lp[4]=p->GetQ()*36./23333.;  //electrons -> ADC
-    Int_t lab[4]; 
-    lab[0]=p->GetLabel(0); lab[1]=p->GetLabel(1); lab[2]=p->GetLabel(2);
-    lab[3]=ndet[idx];
-    CheckLabels(lab);
-    Int_t dummy[3]={0,0,0};
-    new (cl[i]) AliITSclusterV2(lab,lp, dummy);
-  }  
-} 
 //_____________________________________________________________________
 void AliITS::CheckLabels(Int_t lab[3]) const {
   //------------------------------------------------------------

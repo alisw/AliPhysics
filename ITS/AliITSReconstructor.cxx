@@ -23,9 +23,10 @@
 
 #include "Riostream.h"
 #include "AliITSReconstructor.h"
+#include "AliRun.h"
 #include "AliRunLoader.h"
 #include "AliRawReader.h"
-#include "AliITSclustererV2.h"
+#include "AliITSDetTypeRec.h"
 #include "AliITSLoader.h"
 #include "AliITStrackerMI.h"
 #include "AliITStrackerSA.h"
@@ -66,42 +67,43 @@ AliITSReconstructor& AliITSReconstructor::operator=(const AliITSReconstructor& /
   Error("= operator","Assignment operator not allowed\n");
   return *this;
 }
+
 //_____________________________________________________________________________
 void AliITSReconstructor::Reconstruct(AliRunLoader* runLoader) const
 {
 // reconstruct clusters
 
 
-  AliITSLoader *loader = (AliITSLoader *)runLoader->GetLoader("ITSLoader");
+  AliLoader* loader = runLoader->GetLoader("ITSLoader");
   if (!loader) {
     Error("Reconstruct", "ITS loader not found");
     return;
   }
+  gAlice=runLoader->GetAliRun();
+  TDirectory* olddir = gDirectory;
+  runLoader->CdGAFile();
+  AliITSgeom* geom = (AliITSgeom*)gDirectory->Get("AliITSgeom");  
+  olddir->cd();
+  AliITSDetTypeRec* rec = new AliITSDetTypeRec();
+  rec->SetLoader((AliITSLoader*)loader);
+  rec->SetITSgeom(geom);
+  rec->SetDefaults();
+
   loader->LoadRecPoints("recreate");
   loader->LoadDigits("read");
   runLoader->LoadKinematics();
+  TString option = GetOption();
+  Bool_t clusfinder=kTRUE;   // Default: V2 cluster finder
+  if(option.Contains("OrigCF"))clusfinder=kFALSE;
 
-  AliITSgeom* geom = GetITSgeom(runLoader);
-
-  AliITSclustererV2 clusterer(geom);
   Int_t nEvents = runLoader->GetNumberOfEvents();
 
   for (Int_t iEvent = 0; iEvent < nEvents; iEvent++) {
     runLoader->GetEvent(iEvent);
-    TTree* treeClusters = loader->TreeR();
-    if (!treeClusters) {
-      loader->MakeTree("R");
-      treeClusters = loader->TreeR();
-    }
-    TTree* treeDigits = loader->TreeD();
-    if (!treeDigits) {
-      Error("Reconstruct", "Can't get digits tree !");
-      return;
-    }
-    
-    clusterer.Digits2Clusters(treeDigits, treeClusters);
-         
-    loader->WriteRecPoints("OVERWRITE");
+    if(loader->TreeR()==0x0) loader->MakeTree("R");
+    rec->MakeBranch("R");
+    rec->SetTreeAddress();
+    rec->DigitsToRecPoints(iEvent,0,"All",clusfinder);    
   }
 
   loader->UnloadRecPoints();
@@ -109,40 +111,41 @@ void AliITSReconstructor::Reconstruct(AliRunLoader* runLoader) const
   runLoader->UnloadKinematics();
 }
 
-
-//_____________________________________________________________________________
-void AliITSReconstructor::Reconstruct(AliRunLoader* runLoader,
-				      AliRawReader* rawReader) const
+//_________________________________________________________________
+void AliITSReconstructor::Reconstruct(AliRunLoader* runLoader, 
+                                      AliRawReader* rawReader) const
 {
-// reconstruct clusters from raw data
+// reconstruct clusters
 
-  AliITSLoader *loader = (AliITSLoader*)runLoader->GetLoader("ITSLoader");
+ 
+  AliLoader* loader = runLoader->GetLoader("ITSLoader");
   if (!loader) {
     Error("Reconstruct", "ITS loader not found");
     return;
   }
+  gAlice=runLoader->GetAliRun();
+  TDirectory* olddir = gDirectory;
+  runLoader->CdGAFile();
+  AliITSgeom* geom = (AliITSgeom*)gDirectory->Get("AliITSgeom");  
+  olddir->cd();
+
+  AliITSDetTypeRec* rec = new AliITSDetTypeRec();
+  rec->SetLoader((AliITSLoader*)loader);
+  rec->SetITSgeom(geom);
+  rec->SetDefaults();
+  rec->SetDefaultClusterFindersV2(kTRUE);
+
   loader->LoadRecPoints("recreate");
 
-  AliITSgeom* geom = GetITSgeom(runLoader);
-  AliITSclustererV2 clusterer(geom);
-
   Int_t iEvent = 0;
-  while (rawReader->NextEvent()) {
+
+  while(rawReader->NextEvent()) {
     runLoader->GetEvent(iEvent++);
-
-    TTree* treeClusters = loader->TreeR();
-    if (!treeClusters) {
-      loader->MakeTree("R");
-      treeClusters = loader->TreeR();
-    }
-
-    clusterer.Digits2Clusters(rawReader);
-         
-    loader->WriteRecPoints("OVERWRITE");
+    if(loader->TreeR()==0x0) loader->MakeTree("R");
+    rec->DigitsToRecPoints(rawReader);
   }
 
   loader->UnloadRecPoints();
-
 }
 
 //_____________________________________________________________________________

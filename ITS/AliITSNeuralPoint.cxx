@@ -11,7 +11,7 @@
 #include <TString.h>
 
 #include "AliITSRecPoint.h"
-#include "AliITSclusterV2.h"
+#include "AliITSRecPoint.h"
 #include "AliITSgeom.h"
 #include "AliITSgeomMatrix.h"
 
@@ -71,25 +71,25 @@ AliITSNeuralPoint::AliITSNeuralPoint(AliITSRecPoint *rp, AliITSgeomMatrix *gm)
 	}
 	
 	// local to global conversions of coords
-	locPos[0] = rp->fX;
+	locPos[0] = rp->GetDetLocalX();
 	locPos[1] = 0.0;
-	locPos[2] = rp->fZ;
+	locPos[2] = rp->GetDetLocalZ();
 	gm->LtoGPosition(locPos, globPos);
 	fX = globPos[0];
 	fY = globPos[1];
 	fZ = globPos[2];
 
 	// local to global conversions of sigmas
-	locErr[0][0] = rp->fSigmaX2;
-	locErr[2][2] = rp->fSigmaZ2;
+	locErr[0][0] = rp->GetSigmaDetLocX2();
+	locErr[2][2] = rp->GetSigmaZ2();
 	gm->LtoGPositionError(locErr, globErr);
-	for (i = 0; i < 3; i++) fLabel[i] = rp->fTracks[i];
+	for (i = 0; i < 3; i++) fLabel[i] = rp->GetLabel(i);
 	fEX = TMath::Sqrt(globErr[0][0]);
 	fEY = TMath::Sqrt(globErr[1][1]);
 	fEZ = TMath::Sqrt(globErr[2][2]);
 
 	// copy of other data-members
-	fCharge = rp->fQ;
+	fCharge = rp->GetQ();
 	fLayer = 0;
 	fIndex = 0;
 	fModule = 0;
@@ -99,11 +99,11 @@ AliITSNeuralPoint::AliITSNeuralPoint(AliITSRecPoint *rp, AliITSgeomMatrix *gm)
 //-------------------------------------------------------------------------------------------------
 //
 AliITSNeuralPoint::AliITSNeuralPoint
-(AliITSclusterV2 *rp, AliITSgeom *geom, Short_t module, Short_t index)
+(AliITSRecPoint *rp, AliITSgeom *geom, Short_t module, Short_t index)
 {
 	// Conversion constructor.
-	// Accepts a AliITSclusterV2 and an AliITSgeom,
-	// and converts the local coord of the AliITSclusterV2 object into global
+	// Accepts a AliITSRecPoint and an AliITSgeom,
+	// and converts the local coord of the AliITSRecPoint object into global
 	
 	Int_t mod = (Int_t)module, lay, lad, det;
 	fModule = module;

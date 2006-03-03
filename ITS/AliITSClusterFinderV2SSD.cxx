@@ -21,7 +21,7 @@
 
 
 #include "AliITSClusterFinderV2SSD.h"
-#include "AliITSclusterV2.h"
+#include "AliITSRecPoint.h"
 #include "AliITSDetTypeRec.h"
 #include "AliRawReader.h"
 #include "AliITSRawStreamSSD.h"
@@ -269,7 +269,7 @@ void AliITSClusterFinderV2SSD::FindClustersSSD(AliITSRawStream* input,
 
       // when all data from a module was read, search for clusters
       if (prevFlag >= 0) {
-	clusters[iModule] = new TClonesArray("AliITSclusterV2");
+	clusters[iModule] = new TClonesArray("AliITSRecPoint");
 	fModule = iModule;
 	FindClustersSSD(&clusters1D[0][0], nClusters[0], 
 			&clusters1D[1][0], nClusters[1], clusters[iModule]);
@@ -408,22 +408,34 @@ FindClustersSSD(Ali1Dcluster* neg, Int_t nn,
       CheckLabels2(milab);
       milab[3]=(((ip<<10) + j)<<10) + idet; // pos|neg|det
       Int_t info[3] = {pos[ip].GetNd(),neg[j].GetNd(),fNlayer[fModule]};
-      AliITSclusterV2 * cl2;
-      if(clusters) cl2 = new (cl[ncl]) AliITSclusterV2(milab,lp,info);
+      AliITSRecPoint * cl2;
+      if(clusters){
+	cl2 = new (cl[ncl]) AliITSRecPoint(fModule,fDetTypeRec->GetITSgeom(),milab,lp,info);
+	cl2->SetChargeRatio(ratio);    	
+	cl2->SetType(1);
+	pairs[ip][j]=1;
+	if ((pos[ip].GetNd()+neg[j].GetNd())>6){ //multi cluster
+	  cl2->SetType(2);
+	  pairs[ip][j]=2;
+	}
+	cused1[ip]++;
+	cused2[j]++;
+	
+      }
       else{
-	cl2 = new AliITSclusterV2(milab,lp,info);
-	fDetTypeRec->AddClusterV2(*cl2);
+	cl2 = new AliITSRecPoint(fModule,fDetTypeRec->GetITSgeom(),milab,lp,info);	
+	cl2->SetChargeRatio(ratio);    	
+	cl2->SetType(1);
+	pairs[ip][j]=1;
+	if ((pos[ip].GetNd()+neg[j].GetNd())>6){ //multi cluster
+	  cl2->SetType(2);
+	  pairs[ip][j]=2;
+	}
+	cused1[ip]++;
+	cused2[j]++;
+	fDetTypeRec->AddRecPoint(*cl2);
       }
       ncl++;
-      cl2->SetChargeRatio(ratio);    	
-      cl2->SetType(1);
-      pairs[ip][j]=1;
-      if ((pos[ip].GetNd()+neg[j].GetNd())>6){ //multi cluster
-	cl2->SetType(2);
-	pairs[ip][j]=2;
-      }
-      cused1[ip]++;
-      cused2[j]++;
     }
   }
     
@@ -465,25 +477,36 @@ FindClustersSSD(Ali1Dcluster* neg, Int_t nn,
 	  milab[3]=(((ip<<10) + in)<<10) + idet; // pos|neg|det
 	  Int_t info[3] = {pos[ip].GetNd(),neg[in].GetNd(),fNlayer[fModule]};
 
-	  AliITSclusterV2 * cl2;
-	  if(clusters) cl2 = new (cl[ncl]) AliITSclusterV2(milab,lp,info);
+	  AliITSRecPoint * cl2;
+	  if(clusters){
+	    cl2 = new (cl[ncl]) AliITSRecPoint(fModule,fDetTypeRec->GetITSgeom(),milab,lp,info);
+	    cl2->SetChargeRatio(ratio);    	
+	    cl2->SetType(5);
+	    pairs[ip][in] = 5;
+	    if ((pos[ip].GetNd()+neg[in].GetNd())>6){ //multi cluster
+	      cl2->SetType(6);
+	      pairs[ip][in] = 6;
+	    }	    
+	  }
 	  else{
-	    cl2 = new AliITSclusterV2(milab,lp,info);
-	    fDetTypeRec->AddClusterV2(*cl2);
+	    cl2 = new AliITSRecPoint(fModule,fDetTypeRec->GetITSgeom(),milab,lp,info);
+	    cl2->SetChargeRatio(ratio);    	
+	    cl2->SetType(5);
+	    pairs[ip][in] = 5;
+	    if ((pos[ip].GetNd()+neg[in].GetNd())>6){ //multi cluster
+	      cl2->SetType(6);
+	      pairs[ip][in] = 6;
+	    }
+	    
+	    fDetTypeRec->AddRecPoint(*cl2);
 	  }
 	  ncl++;
-	  cl2->SetChargeRatio(ratio);    	
-	  cl2->SetType(5);
-	  pairs[ip][in] = 5;
-	  if ((pos[ip].GetNd()+neg[in].GetNd())>6){ //multi cluster
-	    cl2->SetType(6);
-	    pairs[ip][in] = 6;
-	  }
 	}
+	
 	//
 	// add second pair
 	
-	//	if (!(cused1[ip2] || cused2[in])){  //
+      //	if (!(cused1[ip2] || cused2[in])){  //
 	if (pairs[ip2][in]==100){
 	  Float_t yp=pos[ip2].GetY()*fYpitchSSD;
 	  Float_t yn=neg[in].GetY()*fYpitchSSD;
@@ -508,21 +531,31 @@ FindClustersSSD(Ali1Dcluster* neg, Int_t nn,
 	  ratio = (pos[ip2].GetQ()-neg[in].GetQ())/(pos[ip2].GetQ()+neg[in].GetQ());
 	  milab[3]=(((ip2<<10) + in)<<10) + idet; // pos|neg|det
 	  Int_t info[3] = {pos[ip2].GetNd(),neg[in].GetNd(),fNlayer[fModule]};
-
-	  AliITSclusterV2 * cl2;
-	  if(clusters) cl2 = new (cl[ncl]) AliITSclusterV2(milab,lp,info);
+	  
+	  AliITSRecPoint * cl2;
+	  if(clusters){
+	    cl2 = new (cl[ncl]) AliITSRecPoint(fModule,fDetTypeRec->GetITSgeom(),milab,lp,info);
+	    cl2->SetChargeRatio(ratio);    	
+	    cl2->SetType(5);
+	    pairs[ip2][in] =5;
+	    if ((pos[ip2].GetNd()+neg[in].GetNd())>6){ //multi cluster
+	      cl2->SetType(6);
+	      pairs[ip2][in] =6;
+	    }
+	  }
 	  else{
-	    cl2 = new AliITSclusterV2(milab,lp,info);
-	    fDetTypeRec->AddClusterV2(*cl2);
+	    cl2 = new AliITSRecPoint(fModule,fDetTypeRec->GetITSgeom(),milab,lp,info);
+	    cl2->SetChargeRatio(ratio);    	
+	    cl2->SetType(5);
+	    pairs[ip2][in] =5;
+	    if ((pos[ip2].GetNd()+neg[in].GetNd())>6){ //multi cluster
+	      cl2->SetType(6);
+	      pairs[ip2][in] =6;
+	    }
+
+	    fDetTypeRec->AddRecPoint(*cl2);
 	  }
 	  ncl++;
-	  cl2->SetChargeRatio(ratio);    	
-	  cl2->SetType(5);
-	  pairs[ip2][in] =5;
-	  if ((pos[ip2].GetNd()+neg[in].GetNd())>6){ //multi cluster
-	    cl2->SetType(6);
-	    pairs[ip2][in] =6;
-	  }
 	}	
 	cused1[ip]++;
 	cused1[ip2]++;
@@ -530,7 +563,7 @@ FindClustersSSD(Ali1Dcluster* neg, Int_t nn,
       }
     }    
   }
-  
+
   //  
   for (Int_t jn=0;jn<nn;jn++){
     if (cused2[jn]) continue;
@@ -571,20 +604,31 @@ FindClustersSSD(Ali1Dcluster* neg, Int_t nn,
 	  milab[3]=(((ip<<10) + jn)<<10) + idet; // pos|neg|det
 	  Int_t info[3] = {pos[ip].GetNd(),neg[jn].GetNd(),fNlayer[fModule]};
 
-	  AliITSclusterV2 * cl2;
-	  if(clusters) cl2 = new (cl[ncl]) AliITSclusterV2(milab,lp,info);
+	  AliITSRecPoint * cl2;
+	  if(clusters){
+	    cl2 = new (cl[ncl]) AliITSRecPoint(fModule,fDetTypeRec->GetITSgeom(),milab,lp,info);
+	    cl2->SetChargeRatio(ratio);    	
+	    cl2->SetType(7);
+	    pairs[ip][jn] =7;
+	    if ((pos[ip].GetNd()+neg[jn].GetNd())>6){ //multi cluster
+	      cl2->SetType(8);
+	      pairs[ip][jn]=8;
+	    }
+
+	  }
 	  else{
-	    cl2 = new AliITSclusterV2(milab,lp,info);
-	    fDetTypeRec->AddClusterV2(*cl2);
+	    cl2 = new AliITSRecPoint(fModule,fDetTypeRec->GetITSgeom(),milab,lp,info);
+	    cl2->SetChargeRatio(ratio);    	
+	    cl2->SetType(7);
+	    pairs[ip][jn] =7;
+	    if ((pos[ip].GetNd()+neg[jn].GetNd())>6){ //multi cluster
+	      cl2->SetType(8);
+	      pairs[ip][jn]=8;
+	    }
+
+	    fDetTypeRec->AddRecPoint(*cl2);
 	  }
 	  ncl++;
-	  cl2->SetChargeRatio(ratio);    	
-	  cl2->SetType(7);
-	  pairs[ip][jn] =7;
-	  if ((pos[ip].GetNd()+neg[jn].GetNd())>6){ //multi cluster
-	    cl2->SetType(8);
-	    pairs[ip][jn]=8;
-	  }
 	}
 	//
 	// add second pair
@@ -613,21 +657,32 @@ FindClustersSSD(Ali1Dcluster* neg, Int_t nn,
 	  ratio = (pos[ip].GetQ()-neg[jn2].GetQ())/(pos[ip].GetQ()+neg[jn2].GetQ());
 	  milab[3]=(((ip<<10) + jn2)<<10) + idet; // pos|neg|det
 	  Int_t info[3] = {pos[ip].GetNd(),neg[jn2].GetNd(),fNlayer[fModule]};
-	  AliITSclusterV2 * cl2;
-	  if(clusters) cl2 = new (cl[ncl]) AliITSclusterV2(milab,lp,info);
+	  AliITSRecPoint * cl2;
+	  if(clusters){
+	    cl2 = new (cl[ncl]) AliITSRecPoint(fModule,fDetTypeRec->GetITSgeom(),milab,lp,info);
+	    cl2->SetChargeRatio(ratio);    	
+	    pairs[ip][jn2]=7;
+	    cl2->SetType(7);
+	    if ((pos[ip].GetNd()+neg[jn2].GetNd())>6){ //multi cluster
+	      cl2->SetType(8);
+	      pairs[ip][jn2]=8;
+	    }
+	    
+	  }
 	  else{
-	    cl2 = new AliITSclusterV2(milab,lp,info);
-	    fDetTypeRec->AddClusterV2(*cl2);
+	    cl2 = new AliITSRecPoint(fModule,fDetTypeRec->GetITSgeom(),milab,lp,info);
+	    cl2->SetChargeRatio(ratio);    	
+	    pairs[ip][jn2]=7;
+	    cl2->SetType(7);
+	    if ((pos[ip].GetNd()+neg[jn2].GetNd())>6){ //multi cluster
+	      cl2->SetType(8);
+	      pairs[ip][jn2]=8;
+	    }
+	    
+	    fDetTypeRec->AddRecPoint(*cl2);
 	  }
 
 	  ncl++;
-	  cl2->SetChargeRatio(ratio);    	
-	  pairs[ip][jn2]=7;
-	  cl2->SetType(7);
-	  if ((pos[ip].GetNd()+neg[jn2].GetNd())>6){ //multi cluster
-	    cl2->SetType(8);
-	    pairs[ip][jn2]=8;
-	  }
 	}
 	cused1[ip]++;
 	cused2[jn]++;
@@ -703,24 +758,34 @@ FindClustersSSD(Ali1Dcluster* neg, Int_t nn,
       ratio = (pos[ip].GetQ()-neg[j].GetQ())/(pos[ip].GetQ()+neg[j].GetQ());
       milab[3]=(((ip<<10) + j)<<10) + idet; // pos|neg|det
       Int_t info[3] = {pos[ip].GetNd(),neg[j].GetNd(),fNlayer[fModule]};
-      AliITSclusterV2 * cl2;
-      if(clusters) cl2 = new (cl[ncl]) AliITSclusterV2(milab,lp,info);
+      AliITSRecPoint * cl2;
+      if(clusters){
+	cl2 = new (cl[ncl]) AliITSRecPoint(fModule,fDetTypeRec->GetITSgeom(),milab,lp,info);
+	cl2->SetChargeRatio(ratio);    	
+	cl2->SetType(10);
+	pairs[ip][j]=10;
+	if ((pos[ip].GetNd()+neg[j].GetNd())>6){ //multi cluster
+	  cl2->SetType(11);
+	  pairs[ip][j]=11;
+	}
+	cused1[ip]++;
+	cused2[j]++;      
+      }
       else{
-	cl2 = new AliITSclusterV2(milab,lp,info);
-	    fDetTypeRec->AddClusterV2(*cl2);
-      }
-      
-
+	cl2 = new AliITSRecPoint(fModule,fDetTypeRec->GetITSgeom(),milab,lp,info);
+	cl2->SetChargeRatio(ratio);    	
+	cl2->SetType(10);
+	pairs[ip][j]=10;
+	if ((pos[ip].GetNd()+neg[j].GetNd())>6){ //multi cluster
+	  cl2->SetType(11);
+	  pairs[ip][j]=11;
+	}
+	cused1[ip]++;
+	cused2[j]++;      
+	
+	fDetTypeRec->AddRecPoint(*cl2);
+      }      
       ncl++;
-      cl2->SetChargeRatio(ratio);    	
-      cl2->SetType(10);
-      pairs[ip][j]=10;
-      if ((pos[ip].GetNd()+neg[j].GetNd())>6){ //multi cluster
-	cl2->SetType(11);
-	pairs[ip][j]=11;
-      }
-      cused1[ip]++;
-      cused2[j]++;      
     }
 
   }
@@ -760,15 +825,19 @@ FindClustersSSD(Ali1Dcluster* neg, Int_t nn,
 	CheckLabels2(milab);
 	milab[3]=(((i<<10) + j)<<10) + idet; // pos|neg|det
 	Int_t info[3] = {pos[i].GetNd(),neg[j].GetNd(),fNlayer[fModule]};
-	AliITSclusterV2 * cl2;
-	if(clusters) cl2 = new (cl[ncl]) AliITSclusterV2(milab,lp,info);
+	AliITSRecPoint * cl2;
+	if(clusters){
+	  cl2 = new (cl[ncl]) AliITSRecPoint(fModule,fDetTypeRec->GetITSgeom(),milab,lp,info);
+	  cl2->SetChargeRatio(ratio);
+	  cl2->SetType(100+cpositive[j]+cnegative[i]);	  
+	}
 	else{
-	  cl2 = new AliITSclusterV2(milab,lp,info);
-	  fDetTypeRec->AddClusterV2(*cl2);
+	  cl2 = new AliITSRecPoint(fModule,fDetTypeRec->GetITSgeom(),milab,lp,info);
+	  cl2->SetChargeRatio(ratio);
+	  cl2->SetType(100+cpositive[j]+cnegative[i]);
+	  fDetTypeRec->AddRecPoint(*cl2);
 	}
       	ncl++;
-	cl2->SetChargeRatio(ratio);
-	cl2->SetType(100+cpositive[j]+cnegative[i]);
 	//cl2->SetType(0);
 	/*
 	  if (pairs[i][j]<100){

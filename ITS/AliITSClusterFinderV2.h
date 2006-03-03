@@ -9,7 +9,7 @@
 ////////////////////////////////////////////////////////////////////  
 #include "AliITSClusterFinder.h" 
 
-class AliITSclusterV2;
+class AliITSRecPoint;
 class AliRawReader;
 class AliITSgeom;
 
@@ -58,12 +58,10 @@ protected:
     UInt_t fMask; //peak mask
     UShort_t fQ;  //signal
   };
+  void MakeCluster(Int_t k,Int_t max,AliBin *bins,UInt_t m,AliITSRecPoint &c);
   static Bool_t IsMaximum(Int_t k, Int_t max, const AliBin *bins);
   static void FindPeaks(Int_t k,Int_t m,AliBin*b,Int_t*idx,UInt_t*msk,Int_t&n);
   static void MarkPeak(Int_t k, Int_t max, AliBin *bins, UInt_t m);
-  static void MakeCluster(Int_t k,Int_t max,AliBin *bins,UInt_t m,
-   AliITSclusterV2 &c);
-
   static void FindCluster(Int_t k,Int_t maxz,AliBin *bins,Int_t &n,Int_t *idx);
 
 protected:

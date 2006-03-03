@@ -66,14 +66,22 @@ void AliITSHits2FastRecPoints (Int_t evNumber1=0,Int_t evNumber2=0, TString inFi
        return;
      }
     
+   
+    TDirectory * olddir = gDirectory;
+    rl->CdGAFile();
+    AliITSgeom* geom = (AliITSgeom*)gDirectory->Get("AliITSgeom");
+    olddir->cd();
+    if(!geom){
+      Error("GetITSgeom","no ITS geometry available");
+      return NULL;
+    }
+
+ 
    AliITS *ITS  = (AliITS*) gAlice->GetModule("ITS");
    if (!ITS) return;
 
   // Set the simulation model
 
-  for (Int_t i=0;i<3;i++) {
-    ITS->SetSimulationModel(i,new AliITSsimulationFastPoints());
-  }
    
 
   //
@@ -84,17 +92,24 @@ void AliITSHits2FastRecPoints (Int_t evNumber1=0,Int_t evNumber2=0, TString inFi
   TStopwatch timer;
 
   cout << "Creating fast reconstructed points from hits for the ITS..." << endl;
+  AliITSDetTypeSim* dettyp = new AliITSDetTypeSim();
+  dettyp->SetITSgeom(geom);
+  dettyp->SetLoader(gime);
+  ITS->SetDetTypeSim(dettyp);
+  for (Int_t i=0;i<3;i++) {
+    ITS->SetSimulationModel(i,new AliITSsimulationFastPoints());
+  }
 
+  
   for (int ev=evNumber1; ev<= evNumber2; ev++) {
     cout << "...working on event "<< ev << " ..." << endl;
     Int_t nparticles = gAlice->GetEvent(ev);
     cout << "event         " <<ev<<endl;
     cout << "nparticles  " <<nparticles<<endl;
     rl->GetEvent(ev);
-    if(gime->TreeR() == 0x0) gime->MakeTree("R");
-
-    ITS->MakeBranch("RF");
-    if (ev < evNumber1) continue;
+    //if(gime->TreeR() == 0x0) gime->MakeTree("R");
+    
+     if (ev < evNumber1) continue;
     if (nparticles <= 0) return;
 
     Int_t bgr_ev=Int_t(ev/nsignal);

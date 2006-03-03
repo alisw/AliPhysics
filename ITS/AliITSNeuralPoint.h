@@ -10,7 +10,7 @@
 class AliITSgeom;
 class AliITSgeomMatrix;
 class AliITSRecPoint;
-class AliITSclusterV2;
+class AliITSRecPoint;
 
 class AliITSNeuralPoint : public TObject {
 
@@ -19,7 +19,7 @@ public:
 	AliITSNeuralPoint();
 	AliITSNeuralPoint(AliITSNeuralPoint *p);
 	AliITSNeuralPoint(AliITSRecPoint *rp, AliITSgeomMatrix *gm);
-	AliITSNeuralPoint(AliITSclusterV2 *rp, AliITSgeom *geom, Short_t module, Short_t index);
+	AliITSNeuralPoint(AliITSRecPoint *rp, AliITSgeom *geom, Short_t module, Short_t index);
 
 	virtual ~AliITSNeuralPoint() { }
 

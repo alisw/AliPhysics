@@ -22,7 +22,7 @@
 
 
 #include "AliITSClusterFinderV2SDD.h"
-#include "AliITSclusterV2.h"
+#include "AliITSRecPoint.h"
 #include "AliITSDetTypeRec.h"
 #include "AliRawReader.h"
 #include "AliITSRawStreamSDD.h"
@@ -140,7 +140,7 @@ FindClustersSDD(AliBin* bins[2], Int_t nMaxBin, Int_t nzBins,
         
       for (k=0; k<npeaks; k++) {
          if (idx[k] < 0) continue; //removed peak
-         AliITSclusterV2 c;
+         AliITSRecPoint c(fDetTypeRec->GetITSgeom());
          MakeCluster(idx[k], nzBins, bins[s], msk[k], c);
 	 //mi change
 	 Int_t milab[10];
@@ -217,8 +217,9 @@ FindClustersSDD(AliBin* bins[2], Int_t nMaxBin, Int_t nzBins,
 
          y=-(-y+fYshift[fModule]);
          z=  -z+fZshift[fModule];
-         c.SetY(y);
-         c.SetZ(z);
+	 //      c.SetY(y);
+	 //  c.SetZ(z);
+	 c.SetYZ(fModule,y,z);
 	 c.SetNy(maxj-minj+1);
 	 c.SetNz(maxi-mini+1);
 	 c.SetType(npeaks);
@@ -242,9 +243,9 @@ FindClustersSDD(AliBin* bins[2], Int_t nMaxBin, Int_t nzBins,
 	     c.SetLayer(fNlayer[fModule]);
 	   }
 	 }
-	 if(clusters) new (cl[ncl]) AliITSclusterV2(c); 
+	 if(clusters) new (cl[ncl]) AliITSRecPoint(c); 
 	 else {
-	   fDetTypeRec->AddClusterV2(c);
+	   fDetTypeRec->AddRecPoint(c);
 	 }
 	 ncl++;
       }
@@ -285,7 +286,7 @@ void AliITSClusterFinderV2SDD::FindClustersSDD(AliITSRawStream* input,
 
       // when all data from a module was read, search for clusters
       if (bins[0]) { 
-	clusters[iModule] = new TClonesArray("AliITSclusterV2");
+	clusters[iModule] = new TClonesArray("AliITSRecPoint");
 	fModule = iModule;
 	FindClustersSDD(bins, kMaxBin, kNzBins, NULL, clusters[iModule]);
 	Int_t nClusters = clusters[iModule]->GetEntriesFast();

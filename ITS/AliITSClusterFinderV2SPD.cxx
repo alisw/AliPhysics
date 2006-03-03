@@ -21,7 +21,7 @@
 
 
 #include "AliITSClusterFinderV2SPD.h"
-#include "AliITSclusterV2.h"
+#include "AliITSRecPoint.h"
 #include "AliITSDetTypeRec.h"
 #include "AliRawReader.h"
 #include "AliITSRawStreamSPD.h"
@@ -192,17 +192,17 @@ Int_t AliITSClusterFinderV2SPD::ClustersSPD(AliBin* bins, TClonesArray* digits,T
 	hit[1] = -z+fZshift[iModule];
 	hit[2] = fYpitchSPD*fYpitchSPD/12.;
 	hit[3] = fZ1pitchSPD*fZ1pitchSPD/12.;
-	hit[4] = (zmax-zmin+1)*100 + (ymax-ymin+1);
+	hit[4] = 1.;
 	if(!rawdata) milab[3]=fNdet[iModule];
 	Int_t info[3] = {ymax-ymin+1,zmax-zmin+1,fNlayer[iModule]};
 	if(!rawdata){
-	 AliITSclusterV2 cl(milab,hit,info); 
-	 fDetTypeRec->AddClusterV2(cl);
+	 AliITSRecPoint cl(iModule,fDetTypeRec->GetITSgeom(),milab,hit,info);
+	 fDetTypeRec->AddRecPoint(cl);
 	}
         else{
 	  Int_t label[4]={milab[0],milab[1],milab[2],milab[3]};
 	  new (clusters->AddrAt(nclu)) 
-		AliITSclusterV2(label, hit,info);
+		AliITSRecPoint(iModule,fDetTypeRec->GetITSgeom(),label, hit,info);
 	} 
 	nclu++;
       }// for iiy
@@ -237,7 +237,7 @@ void AliITSClusterFinderV2SPD::FindClustersSPD(AliITSRawStream* input,
 
       // when all data from a module was read, search for clusters
       if (bins) { 
-	clusters[iModule] = new TClonesArray("AliITSclusterV2");
+	clusters[iModule] = new TClonesArray("AliITSRecPoint");
 	Int_t nClusters = ClustersSPD(bins,0,clusters[iModule],kMaxBin,kNzBins,iModule,kTRUE);
 	nClustersSPD += nClusters;
 	bins = NULL;

@@ -66,7 +66,7 @@ Int_t AliITSL2GConvertPointsV2
 	
 	// Converts and stores the ITS points into global coordinate format
 	Int_t pos = 0;
-	AliITSclusterV2 *local = 0;
+	AliITSRecPoint *local = 0;
 	AliITSNeuralPoint *global = 0;
 	TTree *TP = new TTree("TreeP", "Event points in global coords");
 	TP->Branch("pos", &pos, "pos/I");
@@ -88,7 +88,7 @@ Int_t AliITSL2GConvertPointsV2
 		TR->GetEvent(module);
 		count = (Int_t)localArray->GetEntriesFast();
 		for (index = 0; index < count; index++) {
-			local = (AliITSclusterV2*)localArray->At(index);
+			local = (AliITSRecPoint*)localArray->At(index);
 			cout << module << " - " << local->GetDetectorIndex() << endl;
 			global = new AliITSNeuralPoint(local, geom, module, index);
 			global->SetUser(-1);

@@ -206,18 +206,18 @@ AliESDVertex* AliITSVertexerPPZ::FindVertexForCurrentEvent(Int_t evnumber){
   detTypeRec.SetTreeAddressR(tR);
   itsRec = detTypeRec.RecPoints();
   // missing
-  TClonesArray dummy("AliITSclusterV2",10000), *clusters=&dummy;
+  // TClonesArray dummy("AliITSRecPoint",10000), *clusters=&dummy;
   TBranch *branch;
-  if(fUseV2Clusters){
-    branch = tR->GetBranch("Clusters");
-    branch->SetAddress(&clusters);
+  //if(fUseV2Clusters){
+  //  branch = tR->GetBranch("ITSRecPoints");
+  //  branch->SetAddress(&clusters);
+  //}
+  //else {
+  branch = tR->GetBranch("ITSRecPoints");
+  if(!branch){ 
+    branch = tR->GetBranch("ITSRecPointsF");
   }
-  else {
-    branch = tR->GetBranch("ITSRecPoints");
-    if(!branch){ 
-      branch = tR->GetBranch("ITSRecPointsF");
-    }
-  }
+  //}
   if(!branch){
    Error("FindVertexForCurrentEvent","branch for ITS rec points not found");
    return fCurrentVertex;
@@ -228,20 +228,19 @@ AliESDVertex* AliITSVertexerPPZ::FindVertexForCurrentEvent(Int_t evnumber){
   Int_t firipixe=0;
   for(Int_t module= fFirstL1; module<=fLastL1;module++){
     branch->GetEvent(module);
-    if(fUseV2Clusters){
-      Clusters2RecPoints(clusters,module,itsRec);
-    }
+    //if(fUseV2Clusters){
+    //  Clusters2RecPoints(clusters,module,itsRec);
+    //}
     Int_t nrecp1 = itsRec->GetEntries();
     for(Int_t i=0; i<nrecp1;i++){
       AliITSRecPoint *current = (AliITSRecPoint*)itsRec->At(i);
-      lc[0]=current->GetX();
-      lc[2]=current->GetZ();
+      lc[0]=current->GetDetLocalX();
+      lc[2]=current->GetDetLocalZ();
       geom->LtoG(module,lc,gc);
       zave+=gc[2];
       zave2+=gc[2]*gc[2];
       firipixe++;
     }
-    //fITS->ResetRecPoints();
     detTypeRec.ResetRecPoints();
   }
   if(firipixe>1){
@@ -271,9 +270,9 @@ AliESDVertex* AliITSVertexerPPZ::FindVertexForCurrentEvent(Int_t evnumber){
   for(Int_t module= fFirstL1; module<=fLastL1;module++){
     if(fDebug>0)cout<<"processing module   "<<module<<"                  \r";
     branch->GetEvent(module);
-    if(fUseV2Clusters){
-      Clusters2RecPoints(clusters,module,itsRec);
-    }
+    //if(fUseV2Clusters){
+    //  Clusters2RecPoints(clusters,module,itsRec);
+    //}
     Int_t nrecp1 = itsRec->GetEntries();
     TObjArray *poiL1 = new TObjArray(nrecp1);
     for(Int_t i=0; i<nrecp1;i++)poiL1->AddAt(itsRec->At(i),i);
@@ -281,8 +280,8 @@ AliESDVertex* AliITSVertexerPPZ::FindVertexForCurrentEvent(Int_t evnumber){
     detTypeRec.ResetRecPoints();
     for(Int_t i=0; i<nrecp1;i++){
       AliITSRecPoint *current = (AliITSRecPoint*)poiL1->At(i);
-      lc[0]=current->GetX();
-      lc[2]=current->GetZ();
+      lc[0]=current->GetDetLocalX();
+      lc[2]=current->GetDetLocalZ();
       geom->LtoG(module,lc,gc);
       gc[0]-=fX0;
       gc[1]-=fY0;
@@ -292,14 +291,14 @@ AliESDVertex* AliITSVertexerPPZ::FindVertexForCurrentEvent(Int_t evnumber){
       if(fDebug>1)cout<<"module "<<module<<" "<<gc[0]<<" "<<gc[1]<<" "<<gc[2]<<" "<<phi1<<"     \n";
       for(Int_t modul2=fFirstL2; modul2<=fLastL2; modul2++){
 	branch->GetEvent(modul2);
-	if(fUseV2Clusters){
-	  Clusters2RecPoints(clusters,modul2,itsRec);
-	}
+	//if(fUseV2Clusters){
+	//  Clusters2RecPoints(clusters,modul2,itsRec);
+	//}
 	Int_t nrecp2 = itsRec->GetEntries();
 	for(Int_t j=0; j<nrecp2;j++){
 	  AliITSRecPoint *recp = (AliITSRecPoint*)itsRec->At(j);
-	  lc2[0]=recp->GetX();
-	  lc2[2]=recp->GetZ();
+	  lc2[0]=recp->GetDetLocalX();
+	  lc2[2]=recp->GetDetLocalZ();
 	  geom->LtoG(modul2,lc2,gc2);
 	  gc2[0]-=fX0;
 	  gc2[1]-=fY0;
@@ -327,7 +326,6 @@ AliESDVertex* AliITSVertexerPPZ::FindVertexForCurrentEvent(Int_t evnumber){
 	    }
 	  }
 	}
-	//fITS->ResetRecPoints();
 	detTypeRec.ResetRecPoints();
       }
     }

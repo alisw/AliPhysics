@@ -367,10 +367,10 @@ void AliITSFindClustersV2::Exec(const Option_t *opt){
 	if(fGeom->GetModuleType(i)==kSSD) kmip = 38.0;
 	for(j=0;j<ncl;j++){
 	    p = (AliITSRecPoint*)(points->UncheckedAt(j));
-	    lp[0] = - (p->GetX() + yshift);
+	    lp[0] = - (p->GetDetLocalX() + yshift);
 	    if(lay==1) lp[0] = -lp[0];
 	    lp[1] = p->GetZ() + zshift;
-	    lp[2] = p->GetSigmaX2();
+	    lp[2] = p->GetSigmaDetLocX2();
 	    lp[3] = p->GetSigmaZ2();
 	    lp[4] = p->GetQ()/kmip;
 	    lab[0] = p->GetLabel(0);

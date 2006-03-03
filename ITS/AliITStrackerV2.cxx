@@ -15,7 +15,7 @@
 
 //-------------------------------------------------------------------------
 //               Implementation of the ITS tracker class
-//    It reads AliITSclusterV2 clusters and creates AliITStrackV2 tracks
+//    It reads AliITSRecPoint clusters and creates AliITStrackV2 tracks
 //                   and fills with them the ESD
 //          Origin: Iouri Belikov, CERN, Jouri.Belikov@cern.ch
 //     dEdx analysis by: Boris Batyunya, JINR, Boris.Batiounia@cern.ch
@@ -30,7 +30,7 @@
 #include "AliITSgeom.h"
 #include "AliITSRecPoint.h"
 #include "AliESD.h"
-#include "AliITSclusterV2.h"
+#include "AliITSRecPoint.h"
 #include "AliITStrackerV2.h"
 
 ClassImp(AliITStrackerV2)
@@ -109,13 +109,13 @@ Int_t AliITStrackerV2::LoadClusters(TTree *cTree) {
   //--------------------------------------------------------------------
   //This function loads ITS clusters
   //--------------------------------------------------------------------
-  TBranch *branch=cTree->GetBranch("Clusters");
+  TBranch *branch=cTree->GetBranch("ITSRecPoints");
   if (!branch) { 
     Error("LoadClusters"," can't get the branch !\n");
     return 1;
   }
 
-  TClonesArray dummy("AliITSclusterV2",10000), *clusters=&dummy;
+  TClonesArray dummy("AliITSRecPoint",10000), *clusters=&dummy;
   branch->SetAddress(&clusters);
 
   Int_t j=0;
@@ -130,14 +130,14 @@ Int_t AliITStrackerV2::LoadClusters(TTree *cTree) {
       if (!cTree->GetEvent(j)) continue;
       Int_t ncl=clusters->GetEntriesFast();
       while (ncl--) {
-        AliITSclusterV2 *c=(AliITSclusterV2*)clusters->UncheckedAt(ncl);
+        AliITSRecPoint *c=(AliITSRecPoint*)clusters->UncheckedAt(ncl);
 
         Int_t idx=c->GetDetectorIndex();
         Double_t y=r*fgLayers[i].GetDetector(idx).GetPhi()+c->GetY();
         if (y>circ) y-=circ; else if (y<0) y+=circ;
         c->SetPhiR(y);
 
-        fgLayers[i].InsertCluster(new AliITSclusterV2(*c));
+        fgLayers[i].InsertCluster(new AliITSRecPoint(*c));
       }
       clusters->Delete();
     }
@@ -516,8 +516,8 @@ Int_t AliITStrackerV2::TakeNextProlongation() {
      dz=road*scz; dy=road*scy;
   } 
 
-  const AliITSclusterV2 *c=0; Int_t ci=-1;
-  const AliITSclusterV2 *cc=0; Int_t cci=-1;
+  const AliITSRecPoint *c=0; Int_t ci=-1;
+  const AliITSRecPoint *cc=0; Int_t cci=-1;
   Double_t chi2=kMaxChi2;
   while ((c=layer.GetNextCluster(ci))!=0) {
     Int_t idet=c->GetDetectorIndex();
@@ -638,7 +638,7 @@ void AliITStrackerV2::AliITSlayer::ResetRoad() {
   if (n>1) fRoad=2*fR*TMath::Sqrt(3.14/n);
 }
 
-Int_t AliITStrackerV2::AliITSlayer::InsertCluster(AliITSclusterV2 *c) {
+Int_t AliITStrackerV2::AliITSlayer::InsertCluster(AliITSRecPoint *c) {
   //--------------------------------------------------------------------
   // This function inserts a cluster to this layer in increasing
   // order of the cluster's fZ
@@ -658,7 +658,7 @@ Int_t AliITStrackerV2::AliITSlayer::InsertCluster(AliITSclusterV2 *c) {
   else {
      Int_t i=FindClusterIndex(c->GetZ(),sec);
      Int_t k=n-i+sec*kMaxClusterPerSector;
-     memmove(fClusters+i+1 ,fClusters+i,k*sizeof(AliITSclusterV2*));
+     memmove(fClusters+i+1 ,fClusters+i,k*sizeof(AliITSRecPoint*));
      fClusters[i]=c;
   }
   n++;
@@ -703,7 +703,7 @@ SelectClusters(Float_t zmin,Float_t zmax,Float_t ymin, Float_t ymax) {
        Float_t ym = (ymax<ymin) ? ymax+circ : ymax;
        Int_t i=FindClusterIndex(zmin,i1), imax=i1*kMaxClusterPerSector+fN[i1];
        for (; i<imax; i++) {
-           AliITSclusterV2 *c=fClusters[i];
+           AliITSRecPoint *c=fClusters[i];
            if (c->IsUsed()) continue;
            if (c->GetZ()>zmax) break;
            if (c->GetPhiR()<=ymin) continue;
@@ -719,7 +719,7 @@ SelectClusters(Float_t zmin,Float_t zmax,Float_t ymin, Float_t ymax) {
        Float_t ym = (ymin>ymax) ? ymin-circ : ymin;
        Int_t i=FindClusterIndex(zmin,i2), imax=i2*kMaxClusterPerSector+fN[i2];
        for (; i<imax; i++) {
-           AliITSclusterV2 *c=fClusters[i];
+           AliITSRecPoint *c=fClusters[i];
            if (c->IsUsed()) continue;
            if (c->GetZ()>zmax) break;
            if (c->GetPhiR()<=ym) continue;
@@ -731,11 +731,11 @@ SelectClusters(Float_t zmin,Float_t zmax,Float_t ymin, Float_t ymax) {
     return fNsel;
 }
 
-const AliITSclusterV2 *AliITStrackerV2::AliITSlayer::GetNextCluster(Int_t &ci){
+const AliITSRecPoint *AliITStrackerV2::AliITSlayer::GetNextCluster(Int_t &ci){
   //--------------------------------------------------------------------
   // This function returns clusters within the "window" 
   //--------------------------------------------------------------------
-  AliITSclusterV2 *c=0;
+  AliITSRecPoint *c=0;
   ci=-1;
   if (fNsel) {
      fNsel--;
@@ -963,12 +963,12 @@ AliITStrackerV2::RefitAt(Double_t xx,AliITStrackV2 *t,const AliITStrackV2 *c) {
      }
      t->SetDetectorIndex(idet);
 
-     const AliITSclusterV2 *cl=0;
+     const AliITSRecPoint *cl=0;
      Double_t maxchi2=kMaxChi2;
 
      Int_t idx=index[i];
      if (idx>0) {
-        const AliITSclusterV2 *c=(AliITSclusterV2 *)GetCluster(idx); 
+        const AliITSRecPoint *c=(AliITSRecPoint *)GetCluster(idx); 
         if (idet != c->GetDetectorIndex()) {
            idet=c->GetDetectorIndex();
            const AliITSdetector &det=layer.GetDetector(idet);
@@ -996,7 +996,7 @@ AliITStrackerV2::RefitAt(Double_t xx,AliITStrackV2 *t,const AliITStrackV2 *c) {
         Double_t ymax=t->GetY() + phi*r + dy;
         layer.SelectClusters(zmin,zmax,ymin,ymax);
 
-        const AliITSclusterV2 *c=0; Int_t ci=-1;
+        const AliITSRecPoint *c=0; Int_t ci=-1;
         while ((c=layer.GetNextCluster(ci))!=0) {
            if (idet != c->GetDetectorIndex()) continue;
            Double_t chi2=t->GetPredictedChi2(c);
@@ -1039,9 +1039,9 @@ void AliITStrackerV2::UseClusters(const AliKalmanTrack *t, Int_t from) const {
   //--------------------------------------------------------------------
   AliTracker::UseClusters(t,from);
 
-  AliITSclusterV2 *c=(AliITSclusterV2 *)GetCluster(t->GetClusterIndex(0));
+  AliITSRecPoint *c=(AliITSRecPoint *)GetCluster(t->GetClusterIndex(0));
   if (c && c->GetSigmaZ2()>0.1) c->UnUse();
-  c=(AliITSclusterV2 *)GetCluster(t->GetClusterIndex(1));
+  c=(AliITSRecPoint *)GetCluster(t->GetClusterIndex(1));
   if (c && c->GetSigmaZ2()>0.1) c->UnUse();
 
 }

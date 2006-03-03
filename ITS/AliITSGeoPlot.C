@@ -19,7 +19,7 @@
 #include <AliITSgeom.h>
 #include <AliITSDetTypeRec.h>
 #include <AliITSRecPoint.h>
-#include <AliITSclusterV2.h>
+#include <AliITSRecPoint.h>
 #include <AliITSdigit.h>
 #include <AliITSdigitSSD.h>
 #include <AliITShit.h>
@@ -170,7 +170,6 @@ Int_t AliITSGeoPlot (Int_t evesel=0, char *opt="All+ClustersV2", char *filename=
   //RECPOINTS (V2 clusters)
   TTree *TR = ITSloader->TreeR();
   TClonesArray *ITSrec  = detTypeRec->RecPoints();
-  TClonesArray *ITScl   = detTypeRec->ClustersV2();
   TBranch *branch = 0;
   if(userec && TR && ITSrec){
     if(isfastpoints==1){
@@ -189,9 +188,9 @@ Int_t AliITSGeoPlot (Int_t evesel=0, char *opt="All+ClustersV2", char *filename=
     cout<<"WARNING: there are no RECPOINTS on this file ! \n";
     cout<<"======================================================= \n \n";
   }
-  if(useclustersv2 && TR && ITScl){
-    branch = ITSloader->TreeR()->GetBranch("Clusters");
-    if(branch)branch->SetAddress(&ITScl);
+  if(useclustersv2 && TR && ITSrec){
+    branch = ITSloader->TreeR()->GetBranch("ITSRecPoints");
+    if(branch)branch->SetAddress(&ITSrec);
   }
 
   if(useclustersv2 && (!TR || !ITSrec || !branch)){
@@ -360,11 +359,11 @@ Int_t AliITSGeoPlot (Int_t evesel=0, char *opt="All+ClustersV2", char *filename=
           nrecp=GetRecCoor(geom,ITSrec,mod,bidi,uni,verbose);
         }
         if(useclustersv2){
-          detTypeRec->ResetClustersV2();
+          detTypeRec->ResetRecPoints();
           branch->GetEvent(mod);
           TH2F *bidi=(TH2F*)histos.At(6+subd*9);
           TH1F *uni=(TH1F*)histos.At(7+subd*9);
-          nrecp=GetClusCoor(geom,ITScl,mod,bidi,uni,verbose);
+          nrecp=GetClusCoor(geom,ITSrec,mod,bidi,uni,verbose);
 	  
         }
      
@@ -495,7 +494,7 @@ Int_t GetClusCoor(TObject *ge, TClonesArray *ITSrec, Int_t mod, TH2F *h2, TH1F *
       cout<<"Number of CLUSTERS for module "<<mod<<": "<<nrecp<<endl;
     }
     for(Int_t irec=0;irec<nrecp;irec++) {
-      AliITSclusterV2 *recp = (AliITSclusterV2*)ITSrec->At(irec);
+      AliITSRecPoint *recp = (AliITSRecPoint*)ITSrec->At(irec);
       Double_t rot[9];     
       geom->GetRotMatrix(mod,rot);
       Int_t lay,lad,det;   
@@ -538,8 +537,8 @@ Int_t GetRecCoor(TObject *ge, TClonesArray *ITSrec, Int_t mod, TH2F *h2, TH1F *h
     }
     for(Int_t irec=0;irec<nrecp;irec++) {
       AliITSRecPoint *recp = (AliITSRecPoint*)ITSrec->At(irec);
-      lc[0]=recp->GetX();
-      lc[2]=recp->GetZ();
+      lc[0]=recp->GetDetLocalX();
+      lc[2]=recp->GetDetLocalZ();
       geom->LtoG(mod,lc,gc);
       if(verb){
         cout<<"recp # "<<irec<<" local coordinates. lx= "<<lc[0]<<" lz= ";

@@ -2,8 +2,6 @@
 #include <AliITSVertexer.h>
 #include <AliRunLoader.h>
 #include <AliITSLoader.h>
-#include <AliITSRecPoint.h>
-#include <AliITSclusterV2.h>
 
 ClassImp(AliITSVertexer)
 
@@ -17,7 +15,7 @@ ClassImp(AliITSVertexer)
 //______________________________________________________________________
 AliITSVertexer::AliITSVertexer():AliVertexer() {
   // Default Constructor
-  SetUseV2Clusters(kTRUE);
+  //SetUseV2Clusters(kTRUE);
 }
 
 AliITSVertexer::AliITSVertexer(TString filename) {
@@ -43,7 +41,7 @@ AliITSVertexer::AliITSVertexer(TString filename) {
     lst = static_cast<Int_t>(rl->TreeE()->GetEntries());
     SetLastEvent(lst-1);
   }
-  SetUseV2Clusters(kTRUE);
+  //SetUseV2Clusters(kTRUE);
 }
 
 //______________________________________________________________________
@@ -73,12 +71,12 @@ void AliITSVertexer::WriteCurrentVertex(){
   Int_t rc = itsLoader->PostVertex(fCurrentVertex);
   rc = itsLoader->WriteVertices();
 }
-
+/*
 //______________________________________________________________________
 void AliITSVertexer::Clusters2RecPoints
 (const TClonesArray *clusters, Int_t idx, TClonesArray *points) {
   //------------------------------------------------------------
-  // Conversion AliITSclusterV2 -> AliITSRecPoints for the ITS
+  // Conversion AliITSRecPoint -> AliITSRecPoints for the ITS
   // module "idx" (entry in the tree with the clusters).
   // Simplified version, supposed to work with the pixels only !
   //------------------------------------------------------------
@@ -100,7 +98,7 @@ void AliITSVertexer::Clusters2RecPoints
   Int_t ncl=clusters->GetEntriesFast();
   for (Int_t i=0; i<ncl; i++) {
     AliITSRecPoint p;
-    AliITSclusterV2 *c = (AliITSclusterV2 *)clusters->UncheckedAt(i);
+    AliITSRecPoint *c = (AliITSRecPoint *)clusters->UncheckedAt(i);
 
     Float_t x=c->GetY();  if (idx<=klastSPD1) x=-x;
     x+=yshift;
@@ -108,16 +106,18 @@ void AliITSVertexer::Clusters2RecPoints
     Float_t z=c->GetZ();
     z=-z; z+=zshift[idx%4];
 
-    p.SetX(x);
-    p.SetZ(z);
+    p.SetDetLocalX(x);
+    p.SetDetLocalZ(z);
     p.SetQ(c->GetQ());
-    p.SetSigmaX2(c->GetSigmaY2());
+    p.SetSigmaDetLocX2(c->GetSigmaY2());
     p.SetSigmaZ2(c->GetSigmaZ2());
-    p.SetLabel(0,c->GetLabel(0));
-    p.SetLabel(1,c->GetLabel(1));
-    p.SetLabel(2,c->GetLabel(2));
+    p.SetLabel(c->GetLabel(0),0);
+    p.SetLabel(c->GetLabel(1),1);
+    p.SetLabel(c->GetLabel(2),2);
 
     new (pn[i]) AliITSRecPoint(p);
   }
 
 }
+
+*/

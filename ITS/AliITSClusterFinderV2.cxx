@@ -22,7 +22,7 @@
 
 #include "AliRun.h"
 #include "AliITSClusterFinderV2.h"
-#include "AliITSclusterV2.h"
+#include "AliITSRecPoint.h"
 #include "AliITSDetTypeRec.h"
 //#include "AliITSgeom.h"
 #include <TParticle.h>
@@ -227,7 +227,7 @@ MarkPeak(Int_t k, Int_t max, AliBin *bins, UInt_t m) {
 
 //______________________________________________________________________
 void AliITSClusterFinderV2::
-MakeCluster(Int_t k,Int_t max,AliBin *bins,UInt_t m,AliITSclusterV2 &c) {
+MakeCluster(Int_t k,Int_t max,AliBin *bins,UInt_t m,AliITSRecPoint &c) {
   //------------------------------------------------------------
   //make cluster using digits of this peak
   //------------------------------------------------------------
@@ -235,8 +235,7 @@ MakeCluster(Int_t k,Int_t max,AliBin *bins,UInt_t m,AliITSclusterV2 &c) {
   Int_t i=k/max, j=k-i*max;
 
   c.SetQ(c.GetQ()+q);
-  c.SetY(c.GetY()+i*q); 
-  c.SetZ(c.GetZ()+j*q); 
+  c.SetYZ(GetModule(),c.GetY()+i*q,c.GetZ()+j*q);
   c.SetSigmaY2(c.GetSigmaY2()+i*i*q);
   c.SetSigmaZ2(c.GetSigmaZ2()+j*j*q);
 

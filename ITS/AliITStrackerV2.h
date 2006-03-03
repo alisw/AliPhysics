@@ -5,14 +5,14 @@
 
 //-------------------------------------------------------------------------
 //                          ITS tracker
-//     reads AliITSclusterV2 clusters and creates AliITStrackV2 tracks
+//     reads AliITSRecPoint clusters and creates AliITStrackV2 tracks
 //           Origin: Iouri Belikov, CERN, Jouri.Belikov@cern.ch 
 //-------------------------------------------------------------------------
 #include "AliTracker.h"
 #include "AliITSrecoV2.h"
 #include "AliITStrackV2.h"
 
-class AliITSclusterV2;
+class AliITSRecPoint;
 class AliESD;
 class AliITSgeom;
 class TTree;
@@ -25,7 +25,7 @@ public:
   AliITStrackerV2(const AliITSgeom *geom);
   ~AliITStrackerV2(){}
   AliCluster *GetCluster(Int_t index) const;
-  AliITSclusterV2 *GetCluster(Int_t l, Int_t c) const {
+  AliITSRecPoint *GetCluster(Int_t l, Int_t c) const {
     return fgLayers[l].GetCluster(c);
   }
   Int_t GetNumberOfClustersLayer(Int_t n) const {
@@ -62,14 +62,14 @@ public:
     AliITSlayer();
     AliITSlayer(Double_t r, Double_t p, Double_t z, Int_t nl, Int_t nd);
    ~AliITSlayer();
-    Int_t InsertCluster(AliITSclusterV2 *c);
+    Int_t InsertCluster(AliITSRecPoint *c);
     void ResetClusters();
     Int_t SelectClusters(Float_t zmi, Float_t zma, Float_t ymi, Float_t yma);
-    const AliITSclusterV2 *GetNextCluster(Int_t &ci);
+    const AliITSRecPoint *GetNextCluster(Int_t &ci);
     void ResetRoad();
     Double_t GetRoad() const {return fRoad;}
     Double_t GetR() const {return fR;}
-    AliITSclusterV2 *GetCluster(Int_t i) const { return fClusters[i]; } 
+    AliITSRecPoint *GetCluster(Int_t i) const { return fClusters[i]; } 
     AliITSdetector &GetDetector(Int_t n) const { return fDetectors[n]; }
     Int_t FindDetectorIndex(Double_t phi, Double_t z) const;
     Double_t GetThickness(Double_t y, Double_t z, Double_t &x0) const;
@@ -84,7 +84,7 @@ public:
     Int_t fNdetectors;          // detectors/ladder
     AliITSdetector *fDetectors; // array of detectors
 
-    AliITSclusterV2 *fClusters[kMaxClusterPerLayer]; // pointers to clusters
+    AliITSRecPoint *fClusters[kMaxClusterPerLayer]; // pointers to clusters
     Int_t fN[kNsector];         // numbers of clusters sector by sector 
 
     Int_t fIndex[kMaxClusterPerLayer]; // indexes of selected clusters 

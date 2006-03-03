@@ -23,7 +23,6 @@ class AliITSCalibration;
 class AliITSClusterFinder;
 class AliITSRawCluster;
 class AliITSRecPoint;
-class AliITSclusterV2;
 class AliRawReader;
 class AliITSgeom;
 
@@ -91,12 +90,6 @@ class AliITSDetTypeRec : public TObject {
     void ResetRecPoints(){if(fRecPoints) fRecPoints->Clear();fNRecPoints = 0;};
     // Return pointer to rec points 
     TClonesArray  *RecPoints()   {return fRecPoints;}
-    void AddClusterV2(const AliITSclusterV2 &cl);
-    void ResetClustersV2(){if(fClustersV2) fClustersV2->Clear();fNClustersV2=0;} 
-    Int_t GetNClustersV2()const {return fNClustersV2;}
-
-   TClonesArray *ClustersV2() {return fClustersV2;}
-
     void MakeBranchRF(const char *file){MakeBranchR(file,"Fast");}
     //    void HitsToFastRecPoints(Int_t evNumber,Int_t bgrev,Int_t size,
     //             Option_t *add, Option_t *det, const char *filename);
@@ -134,13 +127,11 @@ class AliITSDetTypeRec : public TObject {
     TClonesArray *fRecPoints;  //! List of reconstructed points
     Int_t         fNRecPoints; // Number of rec points
 
-    TClonesArray *fClustersV2; //!List of reconstructed clusters v2
-    Int_t         fNClustersV2;    //Number of clusters v2
     TString fSelectedVertexer; // Vertexer selected in CreateVertexer
     AliITSLoader* fLoader;     // ITS loader
     Int_t         fRunNumber;    //! run number (to access DB)
 
-    ClassDef(AliITSDetTypeRec,3) // ITS Reconstruction structure
+    ClassDef(AliITSDetTypeRec,4) // ITS Reconstruction structure
 };
 
 #endif

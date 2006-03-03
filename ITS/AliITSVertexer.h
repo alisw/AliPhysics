@@ -23,7 +23,7 @@ class AliITSVertexer : public AliVertexer {
     virtual ~AliITSVertexer(){;}
     virtual void SetUseV2Clusters(Bool_t v2c){fUseV2Clusters = v2c;}
     virtual void WriteCurrentVertex();
-    virtual void Clusters2RecPoints(const TClonesArray *clusters, Int_t idx, TClonesArray *points);
+    //virtual void Clusters2RecPoints(const TClonesArray *clusters, Int_t idx, TClonesArray *points);
  
 
  

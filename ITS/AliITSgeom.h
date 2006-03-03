@@ -733,6 +733,13 @@ class AliITSgeom : public TObject {
     // This function reads in that single steam printed out by PrintGeom.
     ifstream &ReadGeom(ifstream &in);
 
+    //Conversion from det. local coordinates to local ("V2") coordinates
+    //used for tracking
+
+    void DetLToTrackingV2(Int_t md, Float_t xin, Float_t zin, Float_t &yout, Float_t &zout); 
+
+    void TrackingV2ToDetL(Int_t md,Float_t yin,Float_t zin,Float_t &xout,Float_t &zout);
+
  private:
     char       fVersion[20];// Transformation version.
     Int_t      fTrans;   // Flag to keep track of which transformation 
