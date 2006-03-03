@@ -20,8 +20,8 @@ public:
   virtual ~AliCluster() {;}
   AliCluster(Int_t *lab, Float_t *hit);
   void SetLabel(Int_t lab, Int_t i) {fTracks[i]=lab;}
-  void SetY(Float_t y)              {fY=y;}
-  void SetZ(Float_t z)              {fZ=z;}
+  virtual void SetY(Float_t y)      {fY=y;}
+  virtual void SetZ(Float_t z)      {fZ=z;}
   void SetSigmaY2(Float_t sy2)      {fSigmaY2=sy2;}
   void SetSigmaZ2(Float_t sz2)      {fSigmaZ2=sz2;}
 
