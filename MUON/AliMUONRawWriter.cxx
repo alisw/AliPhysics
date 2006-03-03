@@ -428,7 +428,7 @@ Int_t AliMUONRawWriter::WriteTrackerDDL(Int_t iCh)
           
           nEntries = fSubEventArray->GetEntriesFast();
           AliMUONSubEventTracker* temp = 0x0;
-
+	  busPatchId = -1;
           for (Int_t iEntries = 0; iEntries < nEntries; iEntries++)
           { // method "bourrique"...
             temp = (AliMUONSubEventTracker*)fSubEventArray->At(iEntries);
