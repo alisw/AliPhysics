@@ -17,6 +17,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.80  2005/06/17 07:39:07  hristov
+ * Removing GetDebug and SetDebug from AliRun and AliModule. Using AliLog for the messages
+ *
  * Revision 1.79  2005/05/28 14:19:05  schutz
  * Compilation warnings fixed by T.P.
  *
@@ -336,22 +339,24 @@ void AliPHOSv0::CreateGeometry()
   // --- Position  PHOS mdules in ALICE setup ---
   
   Int_t idrotm[99] ;
-  Double_t const kRADDEG = 180.0 / TMath::Pi() ;
-  Float_t * phosParams = geom->GetPHOSParams() ;
-
-  Float_t r = geom->GetIPtoOuterCoverDistance() + phosParams[3] - geom->GetCPVBoxSize(1) ;
-  Int_t i;
-  for( i = 1; i <= geom->GetNModules()  ; i++ ) {
+  Int_t iXYZ,iAngle;
+  for (Int_t iModule = 0; iModule < geom->GetNModules(); iModule++ ) {
     
-    Float_t angle = geom->GetPHOSAngle(i) ;
-    AliMatrix(idrotm[i-1], 90.,angle, 0., 0., 90., 270. +angle) ;
+    Float_t angle[3][2];
+    for (iXYZ=0; iXYZ<3; iXYZ++)
+      for (iAngle=0; iAngle<2; iAngle++)
+	angle[iXYZ][iAngle] = geom->GetModuleAngle(iModule,iXYZ, iAngle);
+    AliMatrix(idrotm[iModule],
+	      angle[0][0],angle[0][1],
+	      angle[1][0],angle[1][1],
+	      angle[2][0],angle[2][1]) ;
     
-    Float_t xP1 =  r * TMath::Sin( angle / kRADDEG ) ;
-    Float_t yP1 = -r * TMath::Cos( angle / kRADDEG ) ;
-    
-    gMC->Gspos("PHOS", i, "ALIC", xP1, yP1, 0.0, idrotm[i-1], "ONLY") ;
-    
-  } 
+    Float_t pos[3];
+    for (iXYZ=0; iXYZ<3; iXYZ++)
+      pos[iXYZ] = geom->GetModuleCenter(iModule,iXYZ);
+    gMC->Gspos("PHOS", iModule+1, "ALIC", pos[0], pos[1], pos[2],
+	       idrotm[iModule], "ONLY") ;
+  }
 
 }
 

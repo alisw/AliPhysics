@@ -24,6 +24,7 @@
 #include "AliPHOSEMCAGeometry.h"
 #include "AliPHOSCPVGeometry.h"
 #include "AliPHOSSupportGeometry.h"
+#include "AliPHOSAlignData.h"
 
 
 class AliPHOSGeometry : public AliGeometry {
@@ -38,6 +39,8 @@ public:
   
   virtual ~AliPHOSGeometry(void) ; 
   static AliPHOSGeometry * GetInstance(const Text_t* name, const Text_t* title="") ; 
+  static AliPHOSGeometry * GetInstance(const Text_t* name, const Text_t* title,
+				       AliPHOSAlignData *alignda) ; 
   static AliPHOSGeometry * GetInstance() ; 
   virtual void   GetGlobal(const AliRecPoint* RecPoint, TVector3 & gpos, TMatrixF & gmat) const ;
   virtual void   GetGlobal(const AliRecPoint* RecPoint, TVector3 & gpos) const ;
@@ -92,6 +95,12 @@ public:
   Float_t  GetCellStep(void)                    const { return 2*(fGeometryEMCA->GetAirCellHalfSize()[0] + 
 							          fGeometryEMCA->GetStripWallWidthOut()) ;}
 
+  Float_t GetModuleCenter(Int_t module, Int_t axis) const {
+    return fModuleCenter[module][axis];}
+  Float_t GetModuleAngle(Int_t module, Int_t axis, Int_t angle) const {
+    return fModuleAngle[module][axis][angle];}
+  
+
   // Return EMCA geometry parameters
 
   AliPHOSEMCAGeometry * GetEMCAGeometry()      const {return fGeometryEMCA ;}
@@ -138,6 +147,11 @@ public:
   Float_t GetCradleWallThickness(void)   const { return fGeometrySUPP->GetCradleWallThickness();}
   Float_t GetCradleWall   (Int_t index)  const { return fGeometrySUPP->GetCradleWall   (index); }
   Float_t GetCradleWheel  (Int_t index)  const { return fGeometrySUPP->GetCradleWheel  (index); }
+  void Init(void) ;            // steering method for PHOS and PPSD/CPV
+
+
+  void SetAlignData(AliPHOSAlignData* alignda) { fgAlignData = alignda; }
+  AliPHOSAlignData * AlignData() {return fgAlignData;}
 
 protected:
 
@@ -145,8 +159,6 @@ protected:
     // ctor only for internal usage (singleton)
     Init() ; 
   }
-  void Init(void) ;            // steering method for PHOS and PPSD/CPV
-
 private:
 
   Int_t                    fNModules ;       // Number of modules constituing PHOS
@@ -158,13 +170,16 @@ private:
   AliPHOSEMCAGeometry     *fGeometryEMCA ;   // Geometry object for Electromagnetic calorimeter
   AliPHOSCPVGeometry      *fGeometryCPV ;    // Geometry object for CPV  (IHEP)
   AliPHOSSupportGeometry  *fGeometrySUPP ;   // Geometry object for PHOS support
+  Float_t fModuleCenter[5][3];   // xyz-position of the module center
+  Float_t fModuleAngle[5][3][2]; // polar and azymuth angles for 3 axes of modules
 
   void                     SetPHOSAngles();  // calculates the PHOS modules PHI angle
 
   static AliPHOSGeometry * fgGeom ; // pointer to the unique instance of the singleton 
   static Bool_t fgInit ;            // Tells if geometry has been succesfully set up 
+  static AliPHOSAlignData * fgAlignData; // PHOS alignment data
 
-  ClassDef(AliPHOSGeometry,1)       // PHOS geometry class 
+  ClassDef(AliPHOSGeometry,2)       // PHOS geometry class 
 
 } ;
 

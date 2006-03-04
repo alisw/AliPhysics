@@ -24,7 +24,7 @@
 // can be easily implemented 
 // The title is used to identify the version of CPV used.
 //                  
-//*-- Author: Yves Schutz (SUBATECH) & Dmitri Peressounko (RRC "KI" & SUBATECH)
+// -- Author: Yves Schutz (SUBATECH) & Dmitri Peressounko (RRC "KI" & SUBATECH)
 
 // --- ROOT system ---
 
@@ -43,8 +43,9 @@
 ClassImp(AliPHOSGeometry)
 
 // these initialisations are needed for a singleton
-AliPHOSGeometry * AliPHOSGeometry::fgGeom = 0 ;
-Bool_t            AliPHOSGeometry::fgInit = kFALSE ;
+AliPHOSGeometry  * AliPHOSGeometry::fgGeom = 0 ;
+Bool_t             AliPHOSGeometry::fgInit = kFALSE ;
+AliPHOSAlignData * AliPHOSGeometry::fgAlignData = 0 ;
 
 //____________________________________________________________________________
 AliPHOSGeometry::AliPHOSGeometry() {
@@ -81,10 +82,18 @@ void AliPHOSGeometry::Init(void)
   }
 
   fgInit     = kTRUE ; 
-  
-  fNModules     = 5;
-  fAngle        = 20;
-  
+
+  // YK 23.02.2006
+  if(fgAlignData != NULL) {
+    // Number of modules is read from Alignment DB if exists
+    fNModules = fgAlignData->GetNModules();
+  }
+  else {
+    // Number of modules is fixed if Alignment DB does not exist
+    fNModules     = 5;
+    fAngle        = 20;
+  }
+
   fGeometryEMCA = new AliPHOSEMCAGeometry();
   
   fGeometryCPV  = new AliPHOSCPVGeometry ();
@@ -108,9 +117,43 @@ void AliPHOSGeometry::Init(void)
   for ( index = 0; index < fNModules; index++ )
     fPHOSAngle[index] = 0.0 ; // Module position angles are set in CreateGeometry()
   
-  this->SetPHOSAngles() ; 
   fRotMatrixArray = new TObjArray(fNModules) ; 
-  
+
+  // YK 23.02.2006
+  if(fgAlignData) {
+    // Geometry parameters are read from Alignment DB if exists
+
+    for (Int_t iModule=0; iModule<fNModules; iModule++) {
+      for (Int_t iXYZ=0; iXYZ<3; iXYZ++) {
+	fModuleCenter[iModule][iXYZ]   =
+	  fgAlignData->GetModuleCenter(iModule,iXYZ);
+	fModuleAngle[iModule][iXYZ][0] = 
+	  fgAlignData->GetModuleAngle(iModule,iXYZ,0);
+	fModuleAngle[iModule][iXYZ][1] = 
+	  fgAlignData->GetModuleAngle(iModule,iXYZ,1);
+      }
+    }
+  }
+  else {
+    // Geometry parameters are calculated if Alignment DB does not exist
+
+    SetPHOSAngles();
+    Double_t const kRADDEG = 180.0 / TMath::Pi() ;
+    Float_t r = GetIPtoOuterCoverDistance() + fPHOSParams[3] - GetCPVBoxSize(1) ;
+    for (Int_t iModule=0; iModule<fNModules; iModule++) {
+      fModuleCenter[iModule][0] = r * TMath::Sin(fPHOSAngle[iModule] / kRADDEG );
+      fModuleCenter[iModule][1] =-r * TMath::Cos(fPHOSAngle[iModule] / kRADDEG );
+      fModuleCenter[iModule][2] = 0.;
+
+      fModuleAngle[iModule][0][0] =  90;
+      fModuleAngle[iModule][0][1] =   fPHOSAngle[iModule];
+      fModuleAngle[iModule][1][0] =   0;
+      fModuleAngle[iModule][1][1] =   0;
+      fModuleAngle[iModule][2][0] =  90;
+      fModuleAngle[iModule][2][1] = 270 + fPHOSAngle[iModule];
+    }
+  }
+
 }
 
 //____________________________________________________________________________
@@ -150,6 +193,17 @@ AliPHOSGeometry *  AliPHOSGeometry::GetInstance(const Text_t* name, const Text_t
       rv = (AliPHOSGeometry *) fgGeom ; 
   } 
   return rv ; 
+}
+
+//____________________________________________________________________________
+AliPHOSGeometry *  AliPHOSGeometry::GetInstance(const Text_t* name, const Text_t* title,
+						AliPHOSAlignData *alignda) 
+{
+  // Returns the pointer of the unique instance
+  // Creates it with the specified options (name, title) if it does not exist yet
+
+  fgAlignData = alignda;
+  return GetInstance(name,title);
 }
 
 //____________________________________________________________________________
