@@ -720,7 +720,7 @@ void AliEMCALJetMicroDst::Close()
   fTree = 0;
 }
 
-void AliEMCALJetMicroDst::Browse(TBrowser* b) const 
+void AliEMCALJetMicroDst::Browse(TBrowser* b) 
 {
   // Browse
    if(fTree)      b->Add((TObject*)fTree);
