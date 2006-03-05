@@ -322,6 +322,7 @@ void AliEMCAL::Digits2Raw()
 void AliEMCAL::Raw2Digits(AliRawReader* reader)
 {
   // convert raw data of the current event to digits
+  GetGeometry();
   AliEMCALLoader * loader = dynamic_cast<AliEMCALLoader*>(fLoader) ; 
 
   // get the digits
@@ -488,6 +489,7 @@ void AliEMCAL::Hits2SDigits()
 { 
 // create summable digits
 
+  GetGeometry();
   AliEMCALSDigitizer emcalDigitizer(fLoader->GetRunLoader()->GetFileName().Data()) ;
   emcalDigitizer.SetEventRange(0, -1) ; // do all the events
   emcalDigitizer.ExecuteTask() ;
