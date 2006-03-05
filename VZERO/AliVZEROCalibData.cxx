@@ -50,9 +50,14 @@ AliVZEROCalibData::AliVZEROCalibData(const AliVZEROCalibData& calibda) :
   SetName(calibda.GetName());
   SetTitle(calibda.GetName());
   
-  for(int t=0; t<80; t++) { 
+  for(int t=0; t<128; t++) { 
       fPedestal[t] = calibda.GetPedestal(t);
+      fSigma[t]    = calibda.GetSigma(t);
       fGain[t]     = calibda.GetGain(t); }
+      
+  for(int t=0; t<64; t++) { 
+      fTimeOffset[t]   = calibda.GetTimeOffset(t);
+      fTimeGain[t]     = calibda.GetTimeGain(t); }   
   
 }
 
@@ -64,9 +69,14 @@ AliVZEROCalibData &AliVZEROCalibData::operator =(const AliVZEROCalibData& calibd
   SetName(calibda.GetName());
   SetTitle(calibda.GetName());
   
-  for(int t=0; t<80; t++) {
+  for(int t=0; t<128; t++) {
       fPedestal[t] = calibda.GetPedestal(t);
+      fSigma[t]    = calibda.GetSigma(t);
       fGain[t]     = calibda.GetGain(t); }
+      
+  for(int t=0; t<64; t++) { 
+      fTimeOffset[t]   = calibda.GetTimeOffset(t);
+      fTimeGain[t]     = calibda.GetTimeGain(t); }     
   
   return *this;
   
@@ -83,14 +93,34 @@ AliVZEROCalibData::~AliVZEROCalibData()
 //________________________________________________________________
 void AliVZEROCalibData::SetPedestal(Float_t* Pedestal)
 {
-  if(Pedestal) for(int t=0; t<80; t++) fPedestal[t] = Pedestal[t];
-  else for(int t=0; t<80; t++) fPedestal[t] = 0.0;
+  if(Pedestal) for(int t=0; t<128; t++) fPedestal[t] = Pedestal[t];
+  else for(int t=0; t<128; t++) fPedestal[t] = 0.0;
+}
+
+//________________________________________________________________
+void AliVZEROCalibData::SetSigma(Float_t* Sigma)
+{
+  if(Sigma) for(int t=0; t<128; t++) fSigma[t] = Sigma[t];
+  else for(int t=0; t<128; t++) fSigma[t] = 0.0;
 }
 
 //________________________________________________________________
 void AliVZEROCalibData::SetGain(Float_t* Gain) 
 {
-  if(Gain) for(int t=0; t<80; t++) fGain[t] = Gain[t];
-  else for(int t=0; t<80; t++) fGain[t] = 0.0;
+  if(Gain) for(int t=0; t<128; t++) fGain[t] = Gain[t];
+  else for(int t=0; t<128; t++) fGain[t] = 0.0;
 }
 
+//________________________________________________________________
+void AliVZEROCalibData::SetTimeOffset(Float_t* TimeOffset) 
+{
+  if(TimeOffset) for(int t=0; t<64; t++) fTimeOffset[t] = TimeOffset[t];
+  else for(int t=0; t<64; t++) fTimeOffset[t] = 0.0;
+}
+
+//________________________________________________________________
+void AliVZEROCalibData::SetTimeGain(Float_t* TimeGain) 
+{
+  if(TimeGain) for(int t=0; t<64; t++) fTimeGain[t] = TimeGain[t];
+  else for(int t=0; t<64; t++) fTimeGain[t] = 0.0;
+}

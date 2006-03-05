@@ -21,20 +21,39 @@ class AliVZEROCalibData: public TNamed {
   AliVZEROCalibData(const AliVZEROCalibData &calibda);
   AliVZEROCalibData& operator= (const AliVZEROCalibData &calibda);
   virtual ~AliVZEROCalibData();
+  void Reset();
 
   Float_t  GetPedestal(Int_t channel)   const {return fPedestal[channel];}
   Float_t* GetPedestal()   const {return (float*)fPedestal;}
+  Float_t  GetSigma(Int_t channel)   const {return fSigma[channel];}
+  Float_t* GetSigma()   const {return (float*)fSigma;}
   Float_t  GetGain(Int_t channel)	const {return fGain[channel];}
   Float_t* GetGain()   const {return (float*)fGain;}
-  //
+  
+  Float_t  GetTimeOffset(Int_t channel)	const {return fTimeOffset[channel];}
+  Float_t* GetTimeOffset()   const {return (float*)fTimeOffset;}
+  Float_t  GetTimeGain(Int_t channel)	const {return fTimeGain[channel];}
+  Float_t* GetTimeGain()   const {return (float*)fTimeGain;}
+  
   void     SetPedestal(Float_t val, Int_t channel) {fPedestal[channel]=val;}
   void     SetPedestal(Float_t* Pedestal);
+  void     SetSigma(Float_t val, Int_t channel) {fSigma[channel]=val;}
+  void     SetSigma(Float_t* Sigma);
   void 	   SetGain(Float_t val, Int_t channel) {fGain[channel]=val;}
   void 	   SetGain(Float_t* Gain);
 
+  void     SetTimeOffset(Float_t val, Int_t channel) {fTimeOffset[channel]=val;}
+  void     SetTimeOffset(Float_t* TimeOffset);
+  void     SetTimeGain(Float_t val, Int_t channel) {fTimeGain[channel]=val;}
+  void     SetTimeGain(Float_t* TimeGain);
+
  protected:
-  Float_t  fPedestal[80];     // Mean pedestal values
-  Float_t  fGain[80];	      // PM gains
+  Float_t  fPedestal[128];     // Mean pedestal values
+  Float_t  fSigma[128];        // Sigmas of pedestal peaks
+  Float_t  fGain[128];	       // PM gains
+  
+  Float_t  fTimeOffset[64];
+  Float_t  fTimeGain[64];
 
   ClassDef(AliVZEROCalibData,1)    // VZERO Calibration data
 };
