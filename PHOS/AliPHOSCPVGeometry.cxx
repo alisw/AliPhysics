@@ -39,7 +39,7 @@ AliPHOSCPVGeometry::AliPHOSCPVGeometry()
   // Initializes the CPV parameters
   fNumberOfCPVLayers     = 1;
   fNumberOfCPVPadsPhi    = 128;
-  fNumberOfCPVPadsZ      = 64;
+  fNumberOfCPVPadsZ      = 56;
   fCPVPadSizePhi         = 1.13;
   fCPVPadSizeZ           = 2.26;
   fNumberOfCPVChipsPhi   = 8;
