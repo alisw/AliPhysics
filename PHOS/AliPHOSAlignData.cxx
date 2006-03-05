@@ -108,20 +108,22 @@ void  AliPHOSAlignData::Print(Option_t */*option =""*/) const
   printf("     Module centers in MARS:\n");
   Int_t iModule;
   for (iModule=0; iModule<fNModules; iModule++) {
-    printf("     (x=%.3f, y=%.3f, z=%.3f cm\n",
+    printf("       Module %d: (x=%.3f, y=%.3f, z=%.3f cm\n",
+	   iModule,
 	   fModuleCenter[iModule][0],
 	   fModuleCenter[iModule][1],
 	   fModuleCenter[iModule][2]);
   }
   printf("     Module orientation angles:\n");
   for (iModule=0; iModule<fNModules; iModule++) {
-    printf("     (theta1=%.3f, phi1=%.3f degrees\n",
+    printf("       Module %d:\n",iModule);
+    printf("         (theta1=%.3f, phi1=%.3f degrees\n",
 	   fModuleAngle[iModule][0][0],
 	   fModuleAngle[iModule][0][1]);
-    printf("     (theta2=%.3f, phi2=%.3f degrees\n",
+    printf("         (theta2=%.3f, phi2=%.3f degrees\n",
 	   fModuleAngle[iModule][1][0],
 	   fModuleAngle[iModule][1][1]);
-    printf("     (theta3=%.3f, phi3=%.3f degrees\n",
+    printf("         (theta3=%.3f, phi3=%.3f degrees\n",
 	   fModuleAngle[iModule][2][0],
 	   fModuleAngle[iModule][2][1]);
   }
