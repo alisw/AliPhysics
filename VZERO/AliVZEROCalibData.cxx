@@ -32,6 +32,12 @@ AliVZEROCalibData::AliVZEROCalibData()
 }
 
 //________________________________________________________________
+void AliVZEROCalibData::Reset()
+{
+  
+}
+
+//________________________________________________________________
 AliVZEROCalibData::AliVZEROCalibData(const char* name)
 {
   TString namst = "Calib_";
