@@ -42,9 +42,9 @@
 #include "Riostream.h"
 #include "TSystem.h"
 
-const Int_t AliMUONTriggerElectronics::fgkNCrates = 16;
-
 ClassImp(AliMUONTriggerElectronics)
+
+const Int_t AliMUONTriggerElectronics::fgkNCrates = 16;
 
 //___________________________________________
 AliMUONTriggerElectronics::AliMUONTriggerElectronics(AliMUONData *Data) 
@@ -127,10 +127,6 @@ void AliMUONTriggerElectronics::Factory()
 
                AliMUONTriggerCrate *crate = Crate(str); 
 
-// 					cout << " Manipulating crate " << str << endl;
-
-
-
                if (!crate) 
                {
                   AddCrate(str); crate = Crate(str);
@@ -151,7 +147,6 @@ void AliMUONTriggerElectronics::Factory()
 						board->SetNumber(sboard);
 
 						fCrateMap[sboard-1] = new char[strlen(str)+1]; strcpy(fCrateMap[sboard-1], str);
-// 						cout << " fCrateMap[" << sboard-1 << "]: " << fCrateMap[sboard-1] << endl;
 						
 						fBoardMap[sboard-1] = sl;
 					}
@@ -346,8 +341,6 @@ void AliMUONTriggerElectronics::FeedM()
       TClonesArray *MuonDigits = fMUONData->Digits(ichamber);
       Int_t ndigits = MuonDigits->GetEntriesFast();
 
-// 		cout << " ichamber: " << ichamber << " ndigits: " << ndigits << endl;
-
       for (Int_t digit=0; digit<ndigits; digit++)
 		{
 			AliMUONDigit *mdig = static_cast<AliMUONDigit*>(MuonDigits->UncheckedAt(digit));
@@ -396,44 +389,13 @@ void AliMUONTriggerElectronics::FeedM()
 					{
 						if (cathode && b->GetSwitch(6)) ibitxy += 8;
 						
-// 						cout << " nboard:\t" << nboard << " ibitxy:\t" << ibitxy << " schg:\t" << schg << " crate:\t" << fCrateMap[nboard-1] << endl;
-
 						b->SetbitM(ibitxy,cathode,ichamber-10);
 						
 						DigitFiredCircuit(b->GetI(), cathode, ichamber, digitindex);
 					}
-
-
-// 					for (Int_t j=0; j<fgkNCrates; j++)
-// 					{            
-// 						AliMUONTriggerCrate *cr = (AliMUONTriggerCrate*)fCrates->UncheckedAt(j);
-						
-// 						TObjArray *boards = cr->Boards();
-						
-// 						for (Int_t k=1; k<boards->GetEntries()-1; k++)
-// 						{									
-// 							AliMUONLocalTriggerBoard *b = (AliMUONLocalTriggerBoard*)boards->At(k);
-							
-// 							if (b && nboard && b->GetNumber()==nboard) 
-// 							{
-// 								if (cathode && b->GetSwitch(6)) ibitxy += 8;
-
-// 								b->SetbitM(ibitxy,cathode,ichamber-10);
-
-// //  								cout << "BOARD: " << b->GetName() << " Number: " << b->GetNumber() 
-// //  									  << " ibitxy: " << ibitxy
-// // 									  << " nboard: " << nboard 
-// // 									  << " ich: " << ichamber-10 << endl;
-								
-// 								DigitFiredCircuit(b->GetI(), cathode, ichamber, digitindex);
-// 							}
-// 						}
-// 					}
 				}
 			}			
 		}
-
-//       fMUONData->ResetDigits();
 	}
 
 // Particular case of the columns with 22 local boards (2R(L) 3R(L))   
@@ -647,6 +609,8 @@ void AliMUONTriggerElectronics::LocalResponse()
 
       AliMUONRegionalTriggerBoard *regb = (AliMUONRegionalTriggerBoard*)boards->At(0);
 
+      UShort_t thisl[16]; for (Int_t j=0; j<16; j++) thisl[j] = 0;
+
       for (Int_t j=1; j<boards->GetEntries(); j++)
       {     
          TObject *o = boards->At(j);
@@ -674,14 +638,12 @@ void AliMUONTriggerElectronics::LocalResponse()
 						}
 					}					
             }
+
+            thisl[j-1] = fLocal[i][j-1];
          }
-
-         UShort_t thisl[16]; for (Int_t j=0; j<16; j++) thisl[j] = 0;
-
-         for (Int_t j=1; j<boards->GetEntries(); j++) thisl[j] = fLocal[i][j-1];
-
-         regb->SetLocalResponse(thisl);
       }
+
+      regb->SetLocalResponse(thisl);
    }
 }
 
@@ -883,6 +845,9 @@ void AliMUONTriggerElectronics::Digits2Trigger()
                localtr[5] = (fLocal[i][j-1] & 48) >> 4;
                localtr[6] = (fLocal[i][j-1] &  3);
                
+               TBits rrr;
+               rrr.Set(6,&fLocal[i][j-1]);
+
 //             SAVE BIT PATTERN
                localtr[7]  = board->GetXY(0,0);
                localtr[8]  = board->GetXY(0,1);
