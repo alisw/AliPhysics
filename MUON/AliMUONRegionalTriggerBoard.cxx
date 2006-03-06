@@ -162,7 +162,15 @@ UShort_t AliMUONRegionalTriggerBoard::Algo(UShort_t i, UShort_t j, char *thres, 
 //___________________________________________
 void AliMUONRegionalTriggerBoard::Scan(Option_t*)
 {
-
+   for (Int_t i=0; i<16; i++) 
+   {
+      TBits b;
+      b.Set(6,&fLocalResponse[i]);
+      
+      cout << "Entry " << i << " is " << b << endl;
+      
+   }
+   
 }
 
 
