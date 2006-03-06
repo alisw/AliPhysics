@@ -109,8 +109,10 @@ class AliITSLoader: public AliLoader{
     virtual Int_t  WriteBackTracks(Option_t* opt=""){
         return GetBackTracksDataLoader()->GetBaseLoader(0)->WriteData(opt);}
 
-    // Geometry
-    AliITSgeom* GetITSgeom();
+    // Geometry. Geom is read from file, unless already loaded
+    // readout from file can be forced if force=kTRUE
+    AliITSgeom* GetITSgeom(Bool_t force=kFALSE); 
+    void SetITSgeom(AliITSgeom* g){fGeom=g;}
     // PID
     AliITSpidESD* GetITSpid() const {return fITSpid;}
     void  AdoptITSpid(AliITSpidESD* pid) {fITSpid=pid;}
@@ -139,8 +141,9 @@ class AliITSLoader: public AliLoader{
     static const TString fgkDefaultVerticesContainerName;     //default for primary vertices container name
     static const TString fgkDefaultV0ContainerName;           //default for V0 container name
     static const TString fgkDefaultCascadeContainerName;      //default fo cascade container name
-    AliITSpidESD* fITSpid; //!pointer for ITS pid
-    ClassDef(AliITSLoader,4) // Loader for additional ITS specific trees.
+    AliITSpidESD* fITSpid; //! pointer for ITS pid
+    AliITSgeom *fGeom;     //! pointer to the ITS geometry class
+    ClassDef(AliITSLoader,5) // Loader for additional ITS specific trees.
 };
  
 #endif

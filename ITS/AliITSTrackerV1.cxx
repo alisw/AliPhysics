@@ -97,7 +97,6 @@ AliITSTrackerV1::AliITSTrackerV1(Int_t evnumber, Bool_t flag) {
 
   //PH Initialisation taken from the default constructor
   //fITS      = IITTSS;
-  fDetTypeRec = new AliITSDetTypeRec();
   fresult = 0;
   fPtref    = 0.;
   fChi2max  =0.; 
@@ -116,8 +115,13 @@ AliITSTrackerV1::AliITSTrackerV1(Int_t evnumber, Bool_t flag) {
   
   //////////  gets information on geometry /////////////////////////////
   AliRunLoader* rl = AliRunLoader::Open("galice.root");
-  rl->CdGAFile();
-  AliITSgeom* g1 = (AliITSgeom*)gDirectory->Get("AliITSgeom");
+  AliITSLoader* loader = (AliITSLoader*)runLoader->GetLoader("ITSLoader");
+  if (!loader) {
+    Error("AliITSTrackerV1", "ITS loader not found");
+    return;
+  }
+  fDetTypeRec = new AliITSDetTypeRec(loader);
+  AliITSgeom* g1 = loader->GetITSgeom();
 
   Int_t ll=1, dd=1;
   TVector det(9);

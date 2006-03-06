@@ -74,19 +74,12 @@ void AliITSReconstructor::Reconstruct(AliRunLoader* runLoader) const
 // reconstruct clusters
 
 
-  AliLoader* loader = runLoader->GetLoader("ITSLoader");
+  AliITSLoader* loader = static_cast<AliITSLoader*>(runLoader->GetLoader("ITSLoader"));
   if (!loader) {
     Error("Reconstruct", "ITS loader not found");
     return;
   }
-  gAlice=runLoader->GetAliRun();
-  TDirectory* olddir = gDirectory;
-  runLoader->CdGAFile();
-  AliITSgeom* geom = (AliITSgeom*)gDirectory->Get("AliITSgeom");  
-  olddir->cd();
-  AliITSDetTypeRec* rec = new AliITSDetTypeRec();
-  rec->SetLoader((AliITSLoader*)loader);
-  rec->SetITSgeom(geom);
+  AliITSDetTypeRec* rec = new AliITSDetTypeRec(loader);
   rec->SetDefaults();
 
   loader->LoadRecPoints("recreate");
@@ -118,20 +111,13 @@ void AliITSReconstructor::Reconstruct(AliRunLoader* runLoader,
 // reconstruct clusters
 
  
-  AliLoader* loader = runLoader->GetLoader("ITSLoader");
+  AliITSLoader* loader = static_cast<AliITSLoader*>(runLoader->GetLoader("ITSLoader"));
   if (!loader) {
     Error("Reconstruct", "ITS loader not found");
     return;
   }
-  gAlice=runLoader->GetAliRun();
-  TDirectory* olddir = gDirectory;
-  runLoader->CdGAFile();
-  AliITSgeom* geom = (AliITSgeom*)gDirectory->Get("AliITSgeom");  
-  olddir->cd();
 
-  AliITSDetTypeRec* rec = new AliITSDetTypeRec();
-  rec->SetLoader((AliITSLoader*)loader);
-  rec->SetITSgeom(geom);
+  AliITSDetTypeRec* rec = new AliITSDetTypeRec(loader);
   rec->SetDefaults();
   rec->SetDefaultClusterFindersV2(kTRUE);
 
@@ -268,11 +254,8 @@ AliITSgeom* AliITSReconstructor::GetITSgeom(AliRunLoader* runLoader) const
     Error("GetITSgeom", "couldn't get AliRun object");
     return NULL;
   }
-  
-  TDirectory * olddir = gDirectory;
-  runLoader->CdGAFile();
-  AliITSgeom* geom = (AliITSgeom*)gDirectory->Get("AliITSgeom");
-  olddir->cd();
+  AliITSLoader *loader = (AliITSLoader*)runLoader->GetLoader("ITSLoader");
+  AliITSgeom* geom = (AliITSgeom*)loader->GetITSgeom();
   if(!geom){
     Error("GetITSgeom","no ITS geometry available");
     return NULL;

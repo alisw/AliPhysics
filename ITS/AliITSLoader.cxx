@@ -20,6 +20,7 @@ ClassImp(AliITSLoader)
   AliITSLoader::AliITSLoader():AliLoader(){
   // Default constructor
   fITSpid = 0;
+  fGeom = 0;
 }
 /*********************************************************************/
 AliITSLoader::AliITSLoader(const Char_t *name,const Char_t *topfoldername):
@@ -59,6 +60,7 @@ AliLoader(name,topfoldername){
     cascadeDataLoader->SetEventFolder(fEventFolder);
     cascadeDataLoader->SetFolder(GetDetectorDataFolder());
     fITSpid=0;
+    fGeom = 0;
 }
 /**********************************************************************/
 AliITSLoader::AliITSLoader(const Char_t *name,TFolder *topfolder): 
@@ -97,7 +99,8 @@ AliLoader(name,topfolder) {
     fDataLoaders->Add(cascadeDataLoader);
     cascadeDataLoader->SetEventFolder(fEventFolder);
     cascadeDataLoader->SetFolder(GetDetectorDataFolder());
-    fITSpid=0;
+    fITSpid = 0;
+    fGeom = 0;
 }
 
 //______________________________________________________________________
@@ -139,6 +142,7 @@ AliITSLoader::~AliITSLoader(){
     dl = GetCascadeDataLoader();
     fDataLoaders->Remove(dl);
     if(fITSpid)delete fITSpid;
+    if(fGeom)delete fGeom;
 }
 /*
 //----------------------------------------------------------------------
@@ -309,22 +313,29 @@ void AliITSLoader::MakeTree(Option_t *opt){
 }
 
 //----------------------------------------------------------------------
-AliITSgeom* AliITSLoader::GetITSgeom() {
+AliITSgeom* AliITSLoader::GetITSgeom(Bool_t force) {
   // retrieves the ITS geometry from file
+  if(fGeom && !force)return fGeom;
+  if(fGeom && force){
+    delete fGeom;
+    fGeom = 0;
+  }
   AliRunLoader *runLoader = GetRunLoader();
- if (!runLoader->GetAliRun()) runLoader->LoadgAlice();
+  if (!runLoader->GetAliRun()) runLoader->LoadgAlice();
   if (!runLoader->GetAliRun()) {
     Error("GetITSgeom", "couldn't get AliRun object");
     return NULL;
   }
   
+  TDirectory *curdir = gDirectory;
   runLoader->CdGAFile();
-  AliITSgeom* geom = (AliITSgeom*)gDirectory->Get("AliITSgeom");
-  if(!geom){
+  fGeom = (AliITSgeom*)gDirectory->Get("AliITSgeom");
+  curdir->cd();
+  if(!fGeom){
     Error("GetITSgeom","no ITS geometry available");
     return NULL;
   }
   
-  return geom;
+  return fGeom;
 }
 

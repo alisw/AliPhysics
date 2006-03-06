@@ -30,14 +30,13 @@ class AliITSgeom;
 class AliITSDetTypeRec : public TObject {
   public:
     AliITSDetTypeRec(); // Default constructor
+    AliITSDetTypeRec(AliITSLoader *loader); // Standard constructor
     AliITSDetTypeRec(const AliITSDetTypeRec& rec);
     AliITSDetTypeRec& operator=(const AliITSDetTypeRec &source);
 
     virtual ~AliITSDetTypeRec(); // Proper Destructor
-    AliITSgeom* GetITSgeom()const{return fGeom;}
-    void SetITSgeom(AliITSgeom *geom) {fGeom=geom;}
+    AliITSgeom* GetITSgeom()const{return GetLoader()->GetITSgeom();}
 
-    virtual void SetLoader(AliITSLoader* loader) {fLoader=loader;}
     AliITSLoader* GetLoader() const {return fLoader;}
     virtual void SetDefaults();
     virtual void SetDefaultClusterFinders();
@@ -102,14 +101,14 @@ class AliITSDetTypeRec : public TObject {
     virtual Int_t GetRunNumber() const {return fRunNumber;}
 
   private:
-
+    // private methods
+    virtual void SetLoader(AliITSLoader* loader) {fLoader=loader;}
     static const Int_t fgkNdettypes;          // number of det. types
     static const Int_t fgkDefaultNModulesSPD; // Total numbers of SPD modules by default
     static const Int_t fgkDefaultNModulesSDD; // Total numbers of SDD modules by default
     static const Int_t fgkDefaultNModulesSSD; // Total numbers of SSD modules by default
-    Int_t fNMod[3];                           // numbers of modules from different types
+    Int_t *fNMod;     // numbers of modules from different types
 
-    AliITSgeom   *fGeom;          // ITS geometry
     TObjArray    *fReconstruction;//! [NDet]
     TObjArray    *fSegmentation;  //! [NDet]
     TObjArray    *fCalibration;   //! [NMod]
@@ -128,10 +127,10 @@ class AliITSDetTypeRec : public TObject {
     Int_t         fNRecPoints; // Number of rec points
 
     TString fSelectedVertexer; // Vertexer selected in CreateVertexer
-    AliITSLoader* fLoader;     // ITS loader
+    AliITSLoader* fLoader;     //! ITS loader
     Int_t         fRunNumber;    //! run number (to access DB)
 
-    ClassDef(AliITSDetTypeRec,4) // ITS Reconstruction structure
+    ClassDef(AliITSDetTypeRec,5) // ITS Reconstruction structure
 };
 
 #endif

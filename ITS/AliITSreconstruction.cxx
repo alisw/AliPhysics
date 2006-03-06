@@ -155,8 +155,7 @@ Bool_t AliITSreconstruction::Init(){
     fRunLoader->CdGAFile();
     fITSgeom = (AliITSgeom*)gDirectory->Get("AliITSgeom");
 
-    fDetTypeRec = new AliITSDetTypeRec();
-    fDetTypeRec->SetITSgeom(fITSgeom);
+    fDetTypeRec = new AliITSDetTypeRec(fLoader);
     fDetTypeRec->SetDefaults();
     fDet[0] = fDet[1] = fDet[2] = kTRUE;
     fEnt0 = 0;
@@ -170,7 +169,6 @@ Bool_t AliITSreconstruction::Init(){
     if (fLoader->TreeR() == 0x0) fLoader->MakeTree("R");
     if (fLoader->TreeC() == 0x0) fLoader->MakeTree("C");
  
-    fDetTypeRec->SetLoader(fLoader);
     fDetTypeRec->MakeBranchR(0);
     fDetTypeRec->MakeBranchC();
     fDetTypeRec->SetTreeAddress();
@@ -272,8 +270,6 @@ void AliITSreconstruction::Exec(const Option_t *opt){
       Info("Exec","");
 
       fRunLoader->GetEvent(evnt);
-      fDetTypeRec->SetITSgeom(fITSgeom);
-      fDetTypeRec->SetLoader(fLoader);
       if (fLoader->TreeR() == 0x0) fLoader->MakeTree("R");
       fDetTypeRec->MakeBranchR(0);
       if (fLoader->TreeC() == 0x0){

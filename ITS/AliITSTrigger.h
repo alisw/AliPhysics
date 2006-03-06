@@ -15,6 +15,13 @@
 
 #include "AliTriggerDetector.h"
 
+#include "AliITSLoader.h"
+#include "AliITSgeom.h"
+#include "AliITSdigitSPD.h"
+
+#include "AliTriggerInput.h"
+
+
 class AliITSTrigger : public AliTriggerDetector
 {
  public:
@@ -24,7 +31,12 @@ class AliITSTrigger : public AliTriggerDetector
    virtual void    Trigger();
 
 private:
-         Bool_t    RequireZ10cm(Int_t iFOperChipinStave[][40][2], Int_t stave1, Int_t stave2);
+
+   Int_t fFODigistThreshold;         // minimum number of digits to fire the FO trigger
+   Int_t fHighMultFODigistThreshold; // minimum number of digits to fire the FO high mult trigger
+
+   void MultiplicityTriggers(TObjArray* digDet, TTree* treeD, AliITSgeom* geom);
+   void GeometryTriggers(TObjArray* digDet, TTree* treeD, AliITSgeom* geom);
 
   ClassDef( AliITSTrigger, 1 )  // ITS SPD Trigger Detector class
 };
