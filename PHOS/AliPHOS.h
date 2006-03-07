@@ -7,6 +7,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.64  2005/11/03 13:09:19  hristov
+ * Removing meaningless const declarations (linuxicc)
+ *
  * Revision 1.63  2005/07/26 13:32:39  kharlov
  * Restoring raw data fit from version of 29-Aug-2004
  *
@@ -36,6 +39,7 @@ class TRandom ;
 #include "AliDetector.h" 
 #include "AliLog.h"
 #include "AliPHOSGeometry.h" 
+class AliPHOSAlignData;
 
 class AliPHOS : public AliDetector {
 
@@ -62,6 +66,8 @@ public:
   virtual void  FinishRun() {;}
   virtual AliPHOSGeometry * GetGeometry() const 
   {return AliPHOSGeometry::GetInstance(GetTitle(),"") ;  }
+  virtual AliPHOSGeometry * GetGeometry(AliPHOSAlignData *alignda) const 
+  {return AliPHOSGeometry::GetInstance(GetTitle(),"",alignda) ;  }
   virtual void    Hits2SDigits();
   virtual Int_t   IsVersion(void) const = 0 ;  
   // Raw Read Out

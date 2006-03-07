@@ -16,6 +16,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.93  2005/11/22 08:45:11  kharlov
+ * Calibration is read from CDB if any (Boris Polichtchouk)
+ *
  * Revision 1.92  2005/11/03 13:09:19  hristov
  * Removing meaningless const declarations (linuxicc)
  *
@@ -87,11 +90,26 @@ Double_t AliPHOS::fgTimeTrigger = 100E-9 ;      // 100ns, just for a reference
 AliPHOS::AliPHOS(const char* name, const char* title): AliDetector(name, title)
 {
   //   ctor : title is used to identify the layout
+
+  // Check if CDB_PATH is defined and take alignment data from CDB
+  AliPHOSAlignData* alignda = 0;
+  if (gSystem->Getenv("CDB_PATH")) {
+    TString cdbPath = gSystem->Getenv("CDB_PATH");
+    AliCDBStorage *cdbStorage = AliCDBManager::Instance()->GetStorage(cdbPath);
+    if (cdbStorage != NULL) {
+      alignda  =
+	(AliPHOSAlignData*)(cdbStorage->Get("PHOS/Alignment/Geometry",0)->GetObject());
+      if(AliLog::GetGlobalDebugLevel()>0) alignda->Print();
+    }
+    else {
+      Fatal("AliPHOS", "No CDB storage at the path %s", cdbPath.Data()) ;
+    }
+  }
   
   fHighCharge        = 8.2 ;          // adjusted for a high gain range of 5.12 GeV (10 bits)
   fHighGain          = 6.64 ; 
   fHighLowGainFactor = 16. ;          // adjusted for a low gain range of 82 GeV (10 bits) 
-  fLowGainOffset     = GetGeometry()->GetNModules() + 1 ;   
+  fLowGainOffset     = GetGeometry(alignda)->GetNModules() + 1 ;   
     // offset added to the module id to distinguish high and low gain data
 }
 
@@ -103,7 +121,7 @@ AliPHOS::~AliPHOS()
 //____________________________________________________________________________
 void AliPHOS::Copy(TObject &obj)const
 {
-  // copy method to be used byy the cpy ctor
+  // copy method to be used by the cpy ctor
   TObject::Copy(obj);
   
   AliPHOS &phos = static_cast<AliPHOS &>(obj); 
