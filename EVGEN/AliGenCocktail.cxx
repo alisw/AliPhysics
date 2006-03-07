@@ -41,12 +41,13 @@ AliGenCocktail::AliGenCocktail()
 // Constructor
     fName = "Cocktail";
     fTitle= "Particle Generator using cocktail of generators";
-    flnk1 = 0;
-    flnk2 = 0;
-    fNGenerators=0;
-    fEntries = 0;
-    fRandom  = kFALSE;
-    fHeader  = 0;
+    flnk1            = 0;
+    flnk2            = 0;
+    fNGenerators     = 0;
+    fEntries         = 0;
+    fHeader          = 0;
+    fRandom          = kFALSE;
+    fUsePerEventRate = kFALSE;
 }
 
 AliGenCocktail::AliGenCocktail(const AliGenCocktail & cocktail):
@@ -167,6 +168,8 @@ AddGenerator(AliGenerator *Generator, const char* Name, Float_t RateExp)
     AliGenCocktailEntry *preventry = 0;
     AliGenerator* gen = 0;
     if (fHeader) delete fHeader;
+
+    
     fHeader = new AliGenCocktailEventHeader("Cocktail Header");
 
     TObjArray *partArray = gAlice->GetMCApp()->Particles();
@@ -184,8 +187,10 @@ AddGenerator(AliGenerator *Generator, const char* Name, Float_t RateExp)
 	//
 	// Loop over generators and generate events
 	Int_t igen=0;
-	
 	while((entry = (AliGenCocktailEntry*)next())) {
+
+	    if (fUsePerEventRate && (gRandom->Rndm() > entry->Rate())) continue;
+	    
 	    igen++;
 	    if (igen ==1) {
 		entry->SetFirst(0);
@@ -210,7 +215,7 @@ AddGenerator(AliGenerator *Generator, const char* Name, Float_t RateExp)
 	    entry->SetLast(partArray->GetEntriesFast());
 	    preventry = entry;
 	}  
-    } else {
+    } else if (fRandom) {
 	//
 	// Select a generator randomly
 	//
@@ -227,8 +232,7 @@ AddGenerator(AliGenerator *Generator, const char* Name, Float_t RateExp)
 	entry->Generator()->SetVertex(fVertex.At(0), fVertex.At(1), fVertex.At(2));
 	entry->Generator()->Generate();
 	entry->SetLast(partArray->GetEntriesFast());
-    }
-    
+    } 
     
     next.Reset();
 
