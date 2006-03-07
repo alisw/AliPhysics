@@ -25,6 +25,7 @@ class IcePandel : public TTask
   void SetPrintLevel(Int_t level);                     // Set the fitter (Minuit) printlevel
   void UseTracks(TString classname,Int_t n=-1);        // Specify first guess tracks to be used
   void SelectHits(Int_t mode=1);                       // Specify which hits to be used
+  void SetTrackName(TString s); // Set (alternative) name for the produced tracks
   void FitFCN(Int_t&,Double_t*,Double_t&,Double_t*,Int_t); // The minimisation FCN
 
  protected :
@@ -37,7 +38,8 @@ class IcePandel : public TTask
   AliTrack* fTrack;     // Pointer to the first guess track being processed
   TObjArray* fHits;     // The various hits to be used in the fitting process 
   TFitter* fFitter;     // Pointer to the minimisation processor
+  TString fTrackname;   // The name identifier for the produced tracks
 
- ClassDef(IcePandel,1) // TTask derived class to perform Pandel fitting
+ ClassDef(IcePandel,2) // TTask derived class to perform Pandel fitting
 };
 #endif

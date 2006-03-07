@@ -25,7 +25,13 @@
 // This will not only provide a means to reconstruct muon bundles and
 // multiple track events in IceCube, but will also allow to reduce the
 // background of faked upgoing muons as a result of multiple downgoing
-// muons hitting the top and bottom parts of the detector. 
+// muons hitting the top and bottom parts of the detector.
+// To prevent waisting CPU time in trying to reconstruct (high-energy) cascade
+// events, or to select specifically reconstruction of low multiplicity events,
+// the user may invoke the memberfunction SetMaxModA(). This allows selection
+// of events for processing with a certain maximum number of good Amanda OMs
+// firing. By default this maximum is set to 999 in the constructor, which
+// implies no multiplicity selection. 
 // The various reconstruction steps are summarised as follows :
 //
 // 1) Construction of track elements (TE's).
@@ -119,8 +125,13 @@
 //    to 1 GeV. The mass and charge of the track are left 0.
 //    The reference point data of the jet will provide the r0 and t0
 //    (i.e. reference point) of the track.
-//    All these tracks will be stored in the IceEvent structure with "IceDwalk"
-//    as the name of the track.
+//
+//    All these tracks will be stored in the IceEvent structure with as
+//    default "IceDwalk" as the name of the track.
+//    This track name identifier can be modified by the user via the
+//    SetTrackName() memberfunction. This will allow unique identification
+//    of tracks which are produced when re-processing existing data with
+//    different criteria.
 //
 //    Note : In case the maximum jet opening angle was specified <0,
 //           only the jet with the maximum number of tracks will appear
@@ -159,6 +170,8 @@ IceDwalk::IceDwalk(const char* name,const char* title) : TTask(name,title)
  fJangmax=fTangmax/2.;
  fRjangmax=fRtangmax;
  fRjdmax=fDmin;
+ fMaxmodA=999;
+ fTrackname="IceDwalk";
 }
 ///////////////////////////////////////////////////////////////////////////
 IceDwalk::~IceDwalk()
@@ -283,6 +296,29 @@ void IceDwalk::SetRjdmax(Float_t d)
  fRjdmax=d;
 }
 ///////////////////////////////////////////////////////////////////////////
+void IceDwalk::SetMaxModA(Int_t nmax)
+{
+// Set the maximum number of good Amanda modules that may have fired
+// in order to process this event.
+// This allows suppression of processing (high-energy) cascade events
+// with this direct walk tracking to prevent waisting cpu time for cases
+// in which tracking doesn't make sense anyhow.
+// Furthermore it allows selection of low multiplicity events for processing.
+// By default the maximum number of Amanda modules is set to 999 in the ctor,
+// which implies no selection on module multiplicity.
+ fMaxmodA=nmax;
+}
+///////////////////////////////////////////////////////////////////////////
+void IceDwalk::SetTrackName(TString s)
+{
+// Set (alternative) name identifier for the produced first guess tracks.
+// This allows unique identification of (newly) produced direct walk tracks
+// in case of re-processing of existing data with different criteria.
+// By default the produced first guess tracks have the name "IceDwalk"
+// which is set in the constructor of this class.
+ fTrackname=s;
+}
+///////////////////////////////////////////////////////////////////////////
 void IceDwalk::Exec(Option_t* opt)
 {
 // Implementation of the direct walk track reconstruction.
@@ -299,6 +335,17 @@ void IceDwalk::Exec(Option_t* opt)
  TObjArray* aoms=evt->GetDevices("IceAOM");
  Int_t naoms=aoms->GetEntries();
  if (!naoms) return;
+
+ // Check for the maximum number of good fired Amanda OMs
+ Int_t ngood=0;
+ for (Int_t iom=0; iom<naoms; iom++)
+ {
+  IceGOM* omx=(IceGOM*)aoms->At(iom);
+  if (!omx) continue;
+  if (omx->GetDeadValue("ADC") || omx->GetDeadValue("LE") || omx->GetDeadValue("TOT")) continue;
+  ngood++;
+ } 
+ if (ngood>fMaxmodA) return;
 
  const Float_t c=0.3;                // Light speed in vacuum in meters per ns
  const Float_t nice=1.33;            // Refractive index of ice
@@ -698,7 +745,7 @@ void IceDwalk::Exec(Option_t* opt)
  // will be used to form a track. This will allow comparison with
  // the standard Sieglinde processing.
  AliTrack t; 
- t.SetNameTitle("IceDwalk","Direct walk track");
+ t.SetNameTitle(fTrackname.Data(),"IceDwalk direct walk track");
  for (Int_t jet=0; jet<njets; jet++)
  {
   AliJet* jx=(AliJet*)jets2.At(jet);

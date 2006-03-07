@@ -38,8 +38,12 @@
 // macro icepandel.cc which resides in the /macros subdirectory.
 // 
 // The minimisation results are stored in the IceEvent structure as
-// tracks with name "IcePandel" (just like the first guess results
-// of e.g. IceDwalk).
+// tracks with as default the name "IcePandel" (just like the first guess
+// results of e.g. IceDwalk).
+// This track name identifier can be modified by the user via the
+// SetTrackName() memberfunction. This will allow unique identification
+// of tracks which are produced when re-processing existing data with
+// different criteria.
 // A pointer to the first guess track which was used as input is available
 // via the GetParentTrack facility of these "IcePandel" tracks.
 // Furthermore, all the hits that were used in the minisation are available
@@ -118,6 +122,7 @@ IcePandel::IcePandel(const char* name,const char* title) : TTask(name,title)
  fTrack=0;
  fHits=0;
  fFitter=0;
+ fTrackname="IcePandel";
 
  // Set the global pointer to this instance
  gIcePandel=this;
@@ -221,15 +226,15 @@ void IcePandel::Exec(Option_t* opt)
  Ali3Vector p;
  AliPosition pos;
  AliTrack tkfit;
- tkfit.SetNameTitle("IcePandel","Pandel fit result");
+ tkfit.SetNameTitle(fTrackname.Data(),"IcePandel fit result");
  AliSignal fitstats;
  fitstats.SetNameTitle("Fitstats","TFitter stats for Pandel fit");
  fitstats.SetSlotName("IER",1);
  fitstats.SetSlotName("FCN",2);
  fitstats.SetSlotName("EDM",3);
  fitstats.SetSlotName("NVARS",4);
- Float_t x,y,z,r,theta,phi;
- Float_t xmin,xmax,ymin,ymax,zmin,zmax,rmin,rmax,thetamin,thetamax,phimin,phimax;
+ Float_t x,y,z,theta,phi;
+ Float_t xmin,xmax,ymin,ymax,zmin,zmax,thetamin,thetamax,phimin,phimax;
  Double_t amin,edm,errdef; // Minimisation stats
  Int_t ier,nvpar,nparx;    // Minimisation stats
  Int_t ntk=0;
@@ -443,6 +448,16 @@ void IcePandel::SelectHits(Int_t mode)
 // The default is mode=1.
 
  if (mode==0 || mode==1) fSelhits=mode;
+}
+///////////////////////////////////////////////////////////////////////////
+void IcePandel::SetTrackName(TString s)
+{
+// Set (alternative) name identifier for the produced tracks.
+// This allows unique identification of (newly) produced pandel tracks
+// in case of re-processing of existing data with different criteria.
+// By default the produced tracks have the name "IcePandel" which is
+// set in the constructor of this class.
+ fTrackname=s;
 }
 ///////////////////////////////////////////////////////////////////////////
 void IcePandel::FitFCN(Int_t&,Double_t*,Double_t& f,Double_t* x,Int_t)

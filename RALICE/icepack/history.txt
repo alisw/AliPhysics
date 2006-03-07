@@ -46,4 +46,10 @@
                 from a chain of ROOT files using the task processor facilities.
 28-feb-2006 NvE Example macro anaroot.cc in sub-directory /macros updated to use the
                 more convenient new ProcessObject() facility of AliJob.
+                Also unused variables r, rmin and rmax removed in IcePandel.cxx to prevent
+                compiler warnings. 
+07-mar-2006 NvE Facility introduced in IceDwalk and IcePandel to modify the name tag of
+                the produced tracks via the memberfunction SetTrackName().
+                Also specification of maximum number of good fired modules for events to
+                be processed introduced in IceDwalk. 
 
