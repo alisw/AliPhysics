@@ -15,7 +15,7 @@
 #include "AliDCSValue.h"
 
 #include <TString.h>
-#include <TList.h>
+#include <TObjArray.h>
 
 #define HEADER_SIZE 8
 #define ID_OFFSET 0
@@ -127,7 +127,7 @@ public:
         TString GetRequestString() const;
 
         // MultiRequestType Message getters and setters
-        void GetRequestStrings(TList& result) const;
+        void GetRequestStrings(TObjArray& result) const;
 
         Bool_t AddRequestString(const char* request);
 
@@ -141,7 +141,7 @@ public:
 
         UInt_t GetValueCount() const;
 
-        UInt_t GetValues(TList& result) const;
+        UInt_t GetValues(TObjArray& result) const;
 
         Bool_t AddValue(const AliDCSValue& value);
 
@@ -181,7 +181,7 @@ private:
 	//ResultSet message fields
 	AliSimpleValue::Type fSimpleValueType;
 
-	TList fValues;
+	TObjArray fValues;
 	
 	//Error message fields
 	ErrorCode fErrorCode;
@@ -189,7 +189,7 @@ private:
 	TString fErrorString;
 
 	//MultiRequest message fields
-	TList fRequestStrings; 
+	TObjArray fRequestStrings; 
 
 	
 	// Message setter helpers

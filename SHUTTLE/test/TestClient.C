@@ -29,7 +29,7 @@ void GetValues(const char* host, Int_t port, const char* request,
 		result = client.GetDPValues(startTime, endTime, values);
 
 	} else {
-		TList* valueSet = new TList();
+		TObjArray* valueSet = new TObjArray();
 		valueSet->SetOwner(1);
 
 		values.Add(new TObjString(request), valueSet);
@@ -60,16 +60,16 @@ void GetValues(const char* host, Int_t port, const char* request,
 	TObjString* aRequest;
 	while ((aRequest = (TObjString*) iter.Next())) {
 
-		TList* valueSet = (TList*) values.GetValue(aRequest);
+		TObjArray* valueSet = (TObjArray*) values.GetValue(aRequest);
 		
 		cout<<" '"<<aRequest->String()<<"' values: " 
-			<<valueSet->GetSize()<<endl;
+			<<valueSet->GetEntriesFast()<<endl;
 
-/*		TIter valIter(valueSet);
+		TIter valIter(valueSet);
 		AliDCSValue* aValue;
 		while ((aValue = (AliDCSValue*) valIter.Next())) {
 			cout<<aValue->ToString()<<endl;
-		} */
+		} 
 	}
 
 /*	TFile file("dump.root", "UPDATE");

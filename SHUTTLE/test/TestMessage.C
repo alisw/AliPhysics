@@ -1,4 +1,4 @@
-void Compare(TList& a, TList& b) {
+void Compare(TObjArray& a, TObjArray& b) {
 
 	Assert(a.GetSize() == b.GetSize());
 
@@ -20,7 +20,7 @@ void Compare(TList& a, TList& b) {
 	
 }
 
-void CompareStr(TList& a, TList& b) {
+void CompareStr(TObjArray& a, TObjArray& b) {
 
 	cout<<"A size: "<<a.GetSize()<<endl;
 	cout<<"B size: "<<b.GetSize()<<endl;
@@ -112,11 +112,11 @@ void TestMessage() {
 
         Assert(rsMsg.GetType() == AliDCSMessage::kResultSet);
 
-        TList values;
+        TObjArray values;
 	values.SetOwner(1);
-        values.Add(new AliDCSValue(kFALSE, currentTime.GetSec()));
-        values.Add(new AliDCSValue(kTRUE, currentTime.GetSec() + 1));
-        values.Add(new AliDCSValue(kFALSE, currentTime.GetSec()+ 200));
+        values.AddLast(new AliDCSValue(kFALSE, currentTime.GetSec()));
+        values.AddLast(new AliDCSValue(kTRUE, currentTime.GetSec() + 1));
+        values.AddLast(new AliDCSValue(kFALSE, currentTime.GetSec()+ 200));
 
         rsMsg.AddValue(*(AliDCSValue*) values.At(0));
         rsMsg.AddValue(*(AliDCSValue*) values.At(1));
@@ -131,7 +131,7 @@ void TestMessage() {
         Assert(nrsMsg.GetType() == AliDCSMessage::kResultSet);
 	Assert(nrsMsg.GetSimpleValueType() == AliSimpleValue::kBool);
 
-        TList nvalues;
+        TObjArray nvalues;
 	nvalues.SetOwner(1);
         Assert(nrsMsg.GetValues(nvalues) == maxCount);
 
@@ -143,11 +143,11 @@ void TestMessage() {
 
         Assert(rsMsg.GetType() == AliDCSMessage::kResultSet);
 
-        TList values;
+        TObjArray values;
 	values.SetOwner(1);
-        values.Add(new AliDCSValue((Char_t) 25, currentTime.GetSec()));
-        values.Add(new AliDCSValue((Char_t) 0, currentTime.GetSec() + 1));
-        values.Add(new AliDCSValue((Char_t) 255, currentTime.GetSec()+ 200));
+        values.AddLast(new AliDCSValue((Char_t) 25, currentTime.GetSec()));
+        values.AddLast(new AliDCSValue((Char_t) 0, currentTime.GetSec() + 1));
+        values.AddLast(new AliDCSValue((Char_t) 255, currentTime.GetSec()+ 200));
 
         rsMsg.AddValue(*(AliDCSValue*) values.At(0));
         rsMsg.AddValue(*(AliDCSValue*) values.At(1));
@@ -160,7 +160,7 @@ void TestMessage() {
         Assert(nrsMsg.GetType() == AliDCSMessage::kResultSet);
         Assert(nrsMsg.GetSimpleValueType() == AliSimpleValue::kByte);
 
-        TList nvalues;
+        TObjArray nvalues;
 	nvalues.SetOwner(1);
         Assert(nrsMsg.GetValues(nvalues) == maxCount);
 
@@ -173,11 +173,11 @@ void TestMessage() {
 
 	Assert(rsMsg.GetType() == AliDCSMessage::kResultSet);
 
-	TList values;
+	TObjArray values;
 	values.SetOwner(1);
-	values.Add(new AliDCSValue(100, currentTime.GetSec()));
-	values.Add(new AliDCSValue(10, currentTime.GetSec() + 1));
-	values.Add(new AliDCSValue(666, currentTime.GetSec()+ 200));
+	values.AddLast(new AliDCSValue(100, currentTime.GetSec()));
+	values.AddLast(new AliDCSValue(10, currentTime.GetSec() + 1));
+	values.AddLast(new AliDCSValue(666, currentTime.GetSec()+ 200));
 	
 	rsMsg.AddValue(*(AliDCSValue*) values.At(0));
 	rsMsg.AddValue(*(AliDCSValue*) values.At(1));
@@ -190,7 +190,7 @@ void TestMessage() {
 	Assert(nrsMsg.GetType() == AliDCSMessage::kResultSet);
 	Assert(nrsMsg.GetSimpleValueType() == AliSimpleValue::kInt);
 
-        TList nvalues;
+        TObjArray nvalues;
 	nvalues.SetOwner(1);
 	Assert(nrsMsg.GetValues(nvalues) == maxCount);
 
@@ -202,11 +202,11 @@ void TestMessage() {
 
         Assert(rsMsg.GetType() == AliDCSMessage::kResultSet);
 
-        TList values;
+        TObjArray values;
 	values.SetOwner(1);
-        values.Add(new AliDCSValue((UInt_t) 1000, currentTime.GetSec()));
-        values.Add(new AliDCSValue((UInt_t) 104, currentTime.GetSec() + 1));
-        values.Add(new AliDCSValue((UInt_t) 6665, currentTime.GetSec()+ 200));
+        values.AddLast(new AliDCSValue((UInt_t) 1000, currentTime.GetSec()));
+        values.AddLast(new AliDCSValue((UInt_t) 104, currentTime.GetSec() + 1));
+        values.AddLast(new AliDCSValue((UInt_t) 6665, currentTime.GetSec()+ 200));
 
         rsMsg.AddValue(*(AliDCSValue*) values.At(0));
         rsMsg.AddValue(*(AliDCSValue*) values.At(1));
@@ -219,7 +219,7 @@ void TestMessage() {
         Assert(nrsMsg.GetType() == AliDCSMessage::kResultSet);
         Assert(nrsMsg.GetSimpleValueType() == AliSimpleValue::kUInt);
 
-        TList nvalues;
+        TObjArray nvalues;
 	nvalues.SetOwner(1);
         Assert(nrsMsg.GetValues(nvalues) == maxCount);
 
@@ -231,11 +231,11 @@ void TestMessage() {
 
         Assert(rsMsg.GetType() == AliDCSMessage::kResultSet);
 
-        TList values;
+        TObjArray values;
 	values.SetOwner(1);
-        values.Add(new AliDCSValue((Float_t) 1000.55, currentTime.GetSec()));
-        values.Add(new AliDCSValue((Float_t) 10.4, currentTime.GetSec() + 1));
-        values.Add(new AliDCSValue((Float_t) 6665.1, currentTime.GetSec()+ 200));
+        values.AddLast(new AliDCSValue((Float_t) 1000.55, currentTime.GetSec()));
+        values.AddLast(new AliDCSValue((Float_t) 10.4, currentTime.GetSec() + 1));
+        values.AddLast(new AliDCSValue((Float_t) 6665.1, currentTime.GetSec()+ 200));
 
         rsMsg.AddValue(*(AliDCSValue*) values.At(0));
         rsMsg.AddValue(*(AliDCSValue*) values.At(1));
@@ -248,7 +248,7 @@ void TestMessage() {
         Assert(nrsMsg.GetType() == AliDCSMessage::kResultSet);
         Assert(nrsMsg.GetSimpleValueType() == AliSimpleValue::kFloat);
 
-        TList nvalues;
+        TObjArray nvalues;
 	nvalues.SetOwner(1);
         Assert(nrsMsg.GetValues(nvalues) == maxCount);
 
@@ -276,11 +276,11 @@ void TestMessage() {
         Assert(newErrorMsg.GetErrorString() == errorString); 
 
 	// MultiRequest Message
-	TList requests;
+	TObjArray requests;
 	requests.SetOwner(1);
-	requests.Add(new TObjString("alias1.test"));
-	requests.Add(new TObjString("alias2.test"));
-	requests.Add(new TObjString("alias3.test"));
+	requests.AddLast(new TObjString("alias1.test"));
+	requests.AddLast(new TObjString("alias2.test"));
+	requests.AddLast(new TObjString("alias3.test"));
 
 	AliDCSMessage multiMsg;
 	multiMsg.CreateMultiRequestMessage(AliDCSMessage::kAlias, 
@@ -309,7 +309,7 @@ void TestMessage() {
 
 	PrintBuffer(nmultiMsg.GetMessage(), nmultiMsg.GetMessageSize());
 	
-	TList nrequests;
+	TObjArray nrequests;
 	nrequests.SetOwner(1);
 	nmultiMsg.GetRequestStrings(nrequests);
 	

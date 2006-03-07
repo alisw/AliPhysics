@@ -15,6 +15,15 @@
 
 /*
 $Log$
+Revision 1.3  2005/11/17 17:47:34  byordano
+TList changed to TObjArray
+
+Revision 1.2  2005/11/17 14:43:22  byordano
+import to local CVS
+
+Revision 1.1.1.1  2005/10/28 07:33:58  hristov
+Initial import as subdirectory in AliRoot
+
 Revision 1.1.1.1  2005/09/12 22:11:40  byordano
 SHUTTLE package
 
@@ -37,7 +46,7 @@ some docs added
 //	startTime: when the run started
 //	endTime: when the run finished	
 //
-//	2) virtual void Process(const char* alias, TList& valueSet,
+//	2) virtual void Process(const char* alias, TObjArray& valueSet,
 //                       Bool_t hasError)	
 //	
 //	This method is called for every particular alias which the detector

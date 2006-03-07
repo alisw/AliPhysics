@@ -16,10 +16,31 @@ attributetype ( 1.1.1.3 NAME 'alias'
         DESC 'DCS alias'
         EQUALITY caseIgnoreMatch
         SYNTAX 1.3.6.1.4.1.1466.115.121.1.15{40})
-		
+
+attributetype ( 1.1.2.1 NAME 'lbURI'
+        DESC 'DAQ Logbook URI'
+        EQUALITY caseIgnoreMatch
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.15{40} SINGLE-VALUE )
+
+attributetype ( 1.1.2.2 NAME 'lbUser'
+        DESC 'DAQ Logbook user name'
+        EQUALITY caseIgnoreMatch
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.15{40} SINGLE-VALUE )
+
+attributetype ( 1.1.2.3 NAME 'lbPassword'
+        DESC 'DAQ Logbook password'
+        EQUALITY caseIgnoreMatch
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.15{40} SINGLE-VALUE )
+
 objectclass ( 1.1.1
         NAME 'shuttleConfig'
         DESC 'ALICE: Shuttle configuration object.'
         SUP top
         MUST (dt $ ipHost $ ipServicePort $ alias) )
 	
+objectclass ( 1.1.2
+        NAME 'logbookConfig'
+        DESC 'ALICE: Logbook configuration object.'
+        SUP top AUXILIARY
+        MUST (lbURI $ lbUser $ lbPassword) )
+

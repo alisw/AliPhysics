@@ -25,16 +25,14 @@ class AliCDBPreProcessor;
 
 class AliShuttle: public TObject {
 public:
-	AliShuttle(const AliShuttleConfig* config, const char* cdbStorageURI,
-		UInt_t timeout = 5000, Int_t retries = 5);
-	AliShuttle(const AliShuttleConfig* config, const AliCDBParam* param,
+	AliShuttle(const AliShuttleConfig* config, AliCDBStorage* cdbStorage,
 		UInt_t timeout = 5000, Int_t retries = 5);
 	virtual ~AliShuttle();
 
 	void RegisterCDBPreProcessor(AliCDBPreProcessor* processor);
 	
-	void Process(Int_t run, UInt_t startTime, UInt_t endTime);
-	void Process(Int_t run, UInt_t startTime, UInt_t endTime,
+	Bool_t Process(Int_t run, UInt_t startTime, UInt_t endTime);
+	Bool_t Process(Int_t run, UInt_t startTime, UInt_t endTime,
 		const char* detector);
 
 	Int_t GetCurrentRun() const {return fCurrentRun;};
@@ -57,7 +55,7 @@ private:
 	UInt_t fCurrentEndTime;
 
 	Bool_t GetValueSet(const char* host, Int_t port, const char* alias,
-			TList& result);
+			TObjArray& result);
 	
 	ClassDef(AliShuttle, 0);
 };

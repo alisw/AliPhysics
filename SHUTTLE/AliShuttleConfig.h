@@ -13,7 +13,7 @@
 
 #include <TObject.h>
 #include <TString.h>
-#include <TList.h>
+#include <TObjArray.h>
 #include <TMap.h>
 #include <TLDAPServer.h>
 
@@ -26,12 +26,16 @@ public:
 
 	Bool_t IsValid() const {return fIsValid;};
 
-	const TList* GetDetectors() const;
+	const char* GetLogBookURI() const {return fLogBookURI.Data();}
+	const char* GetLogBookUser() const {return fLogBookUser.Data();}
+	const char* GetLogBookPassword() const {return fLogBookPassword.Data();}
+
+	const TObjArray* GetDetectors() const;
 
 	Bool_t HasDetector(const char* detector) const;
 	const char* GetHost(const char* detector) const;
 	Int_t GetPort(const char* detector) const;
-	const TList* GetAliases(const char* detector) const;
+	const TObjArray* GetAliases(const char* detector) const;
 
 	virtual void Print(Option_t* option = NULL) const;
 
@@ -41,7 +45,7 @@ private:
 		TString fDetector;
 		TString fHost;
 		Int_t fPort;
-		TList fAliases;		
+		TObjArray fAliases;		
 		Bool_t fIsValid;
 
 	public:
@@ -51,7 +55,7 @@ private:
 		const char* GetDetector() const {return fDetector.Data();};
 		const char* GetHost() const {return fHost.Data();};
 		Int_t GetPort() const {return fPort;};
-		const TList* GetAliases() const {return &fAliases;};
+		const TObjArray* GetAliases() const {return &fAliases;};
 
 		Bool_t IsValid() const {return fIsValid;};
 
@@ -61,8 +65,12 @@ private:
 
 	Bool_t fIsValid;
 
+	TString fLogBookURI;
+	TString fLogBookUser;
+	TString fLogBookPassword;
+
 	TMap fDetectorMap;
-	TList fDetectorList;	
+	TObjArray fDetectorList;	
 
 	ClassDef(AliShuttleConfig, 0);
 };

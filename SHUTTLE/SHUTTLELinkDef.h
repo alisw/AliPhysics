@@ -34,5 +34,8 @@
 #pragma link C++ class  AliShuttleConfig::ConfigHolder;
 #pragma link C++ class  AliShuttle;
 #pragma link C++ class  AliCDBPreProcessor;
+#pragma link C++ class  AliShuttleTrigger;
+#pragma link C++ class  TerminateSignalHandler;
+#pragma link C++ class  AliShuttleTrigger::DATEEntry;
 
 #endif

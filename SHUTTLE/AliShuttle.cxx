@@ -15,6 +15,21 @@
 
 /*
 $Log$
+Revision 1.6  2005/11/19 17:19:14  byordano
+RetrieveDATEEntries and RetrieveConditionsData added
+
+Revision 1.5  2005/11/19 11:09:27  byordano
+AliShuttle declaration added
+
+Revision 1.4  2005/11/17 17:47:34  byordano
+TList changed to TObjArray
+
+Revision 1.3  2005/11/17 14:43:23  byordano
+import to local CVS
+
+Revision 1.1.1.1  2005/10/28 07:33:58  hristov
+Initial import as subdirectory in AliRoot
+
 Revision 1.2  2005/09/13 08:41:15  byordano
 default startTime endTime added
 
@@ -54,41 +69,18 @@ some docs added
 ClassImp(AliShuttle)
 
 AliShuttle::AliShuttle(const AliShuttleConfig* config, 
-		const char* cdbStorageURI, UInt_t timeout, Int_t retries):
-	fConfig(config), fStorage(NULL), fTimeout(timeout), fRetries(retries),
-	fCurrentRun(-1), fCurrentStartTime(0), fCurrentEndTime(0)
+		AliCDBStorage* cdbStorage, UInt_t timeout, Int_t retries):
+	fConfig(config), fStorage(cdbStorage), fTimeout(timeout), 
+	fRetries(retries), fCurrentRun(-1), fCurrentStartTime(0), 
+	fCurrentEndTime(0)
 {
 	//
 	// config: AliShuttleConfig used
-	// cdbStorageURI: uri of the underlying AliCDBStorage
+	// cdbStorage: underlying AliCDBStorage
 	// timeout: timeout used for AliDCSClient connection
 	// retries: the number of retries in case of connection error.
 	//
 
-	fStorage = AliCDBManager::Instance()->GetStorage(cdbStorageURI);
-	if (!fStorage) {
-		AliError(Form("Can't get valid storage object for %s!", 
-			cdbStorageURI));
-	}
-}
-
-AliShuttle::AliShuttle(const AliShuttleConfig* config,
-		const AliCDBParam*  param, UInt_t timeout, Int_t retries):
-	fConfig(config), fStorage(NULL), fTimeout(timeout), fRetries(retries),
-	fCurrentRun(-1), fCurrentStartTime(0), fCurrentEndTime(0)
-{
-	//
-        // config: AliShuttleConfig used
-        // param: param of the underlying AliCDBStorage
-        // timeout: timeout used for AliDCSClient connection
-        // retries: the number of retries in case of connection error.
-        //
-
-	fStorage = AliCDBManager::Instance()->GetStorage(param);
-        if (!fStorage) {
-                AliError(Form("Can't get valid storage object for %s!", 
-                        param->GetURI().Data()));
-        }
 }
 
 AliShuttle::~AliShuttle() {
@@ -126,22 +118,29 @@ Bool_t AliShuttle::Store(const char* detector, const char* specType,
 	return fStorage->Put(object, id, metaData);
 }
 
-void AliShuttle::Process(Int_t run, UInt_t startTime, UInt_t endTime) {
+Bool_t AliShuttle::Process(Int_t run, UInt_t startTime, UInt_t endTime) {
 	//
 	// Makes data retrieval for all detectors in the configuration.	
 	// run: is the run number used
 	// startTime: is the run start time
 	// endTime: is the run end time
+	// Returns kFALSE in case of error occured and kTRUE otherwise
 	//
+
+	Bool_t hasError = kFALSE;
 
 	TIter iter(fConfig->GetDetectors());	
 	TObjString* aDetector;
 	while ((aDetector = (TObjString*) iter.Next())) {
-		Process(run, startTime, endTime, aDetector->String());
+		if(!Process(run, startTime, endTime, aDetector->String())) {
+			hasError = kTRUE;
+		}
 	}
+
+	return !hasError;
 }
 
-void AliShuttle::Process(Int_t run, UInt_t startTime, UInt_t endTime,
+Bool_t AliShuttle::Process(Int_t run, UInt_t startTime, UInt_t endTime,
 		const char* detector)
 {
 	//
@@ -151,6 +150,7 @@ void AliShuttle::Process(Int_t run, UInt_t startTime, UInt_t endTime,
         // startTime: is the run start time
         // endTime: is the run end time
         // detector: detector for which the retrieval will be made
+	// Returns kFALSE in case of error occured and kTRUE otherwise
 	//
 
 	AliInfo(Form("Retrieving values for %s, run %d", detector, run));
@@ -158,7 +158,7 @@ void AliShuttle::Process(Int_t run, UInt_t startTime, UInt_t endTime,
 	if (!fConfig->HasDetector(detector)) {
 		AliError(Form("There isn't any configuration for %s",
 				detector));
-		return;
+		return kFALSE;
 	}
 
 	fCurrentRun = run;
@@ -174,10 +174,12 @@ void AliShuttle::Process(Int_t run, UInt_t startTime, UInt_t endTime,
 	TIter iter(fConfig->GetAliases(detector));
 	TObjString* anAlias;
 
+	Bool_t hasError = kFALSE;
+
 	if (aPreProcessor) {
 		aPreProcessor->Initialize(run, startTime, endTime);
 
-		TList valueSet;
+		TObjArray valueSet;
 		while ((anAlias = (TObjString*) iter.Next())) {
 			Bool_t result = GetValueSet(host, port, 
 					anAlias->String(), valueSet);
@@ -198,7 +200,7 @@ void AliShuttle::Process(Int_t run, UInt_t startTime, UInt_t endTime,
 				new AliSimpleValue(endTime));
 		metaData.SetComment("Automatically stored by AliShuttle!");
 
-		TList valueSet;
+		TObjArray valueSet;
 		while ((anAlias = (TObjString*) iter.Next())) {
 			if (GetValueSet(host, port, anAlias->String(), 
 				valueSet)) {
@@ -207,6 +209,7 @@ void AliShuttle::Process(Int_t run, UInt_t startTime, UInt_t endTime,
 					AliError(Form("Can't store %s for %s!",
 						anAlias->String().Data(),
 						detector));
+					hasError = kTRUE;
 				}		
 			}
 
@@ -217,10 +220,12 @@ void AliShuttle::Process(Int_t run, UInt_t startTime, UInt_t endTime,
 	fCurrentRun = -1;
 	fCurrentStartTime = 0;
 	fCurrentEndTime = 0;
+
+	return !hasError;
 }
 
 Bool_t AliShuttle::GetValueSet(const char* host, Int_t port, const char* alias,
-				TList& valueSet)
+				TObjArray& valueSet)
 {
 	AliDCSClient client(host, port, fTimeout, fRetries);
 	if (!client.IsConnected()) {

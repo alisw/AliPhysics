@@ -15,6 +15,18 @@
 
 /*
 $Log$
+Revision 1.4  2005/11/19 14:20:31  byordano
+logbook config added to AliShuttleConfig
+
+Revision 1.3  2005/11/17 19:24:25  byordano
+TList changed to TObjArray in AliShuttleConfig
+
+Revision 1.2  2005/11/17 14:43:23  byordano
+import to local CVS
+
+Revision 1.1.1.1  2005/10/28 07:33:58  hristov
+Initial import as subdirectory in AliRoot
+
 Revision 1.1.1.1  2005/09/12 22:11:40  byordano
 SHUTTLE package
 
@@ -89,7 +101,7 @@ AliShuttleConfig::ConfigHolder::ConfigHolder(const TLDAPEntry* entry):
 	}
 	const char* anAlias;
 	while ((anAlias	= anAttribute->GetValue())) {
-		fAliases.Add(new TObjString(anAlias));
+		fAliases.AddLast(new TObjString(anAlias));
 	}
 		
 	fIsValid = kTRUE;
@@ -144,11 +156,57 @@ AliShuttleConfig::AliShuttleConfig(const char* host, Int_t port,
 
 		TObjString* detStr = new TObjString(aHolder->GetDetector());
 		fDetectorMap.Add(detStr, aHolder);
-		fDetectorList.Add(detStr);
+		fDetectorList.AddLast(detStr);
 	}	
 	
 	delete aResult;
 
+
+	aResult = aServer.Search(basedn, LDAP_SCOPE_ONELEVEL,
+			"(objectClass=logbookConfig)");
+	if (!aResult) {
+		AliError(Form("Can't find configuration with base DN: %s",
+				basedn));
+		return;
+	}
+
+	if (aResult->GetCount() == 0) {
+		AliError("Can't find DAQ log book configuration!");
+		return;
+	}
+
+	if (aResult->GetCount() > 1) {
+		AliError("More than one DAQ log book configuration found!");
+		return;
+	}
+
+	anEntry = aResult->GetNext();
+	
+	TLDAPAttribute* anAttribute;
+	anAttribute = anEntry->GetAttribute("lbURI");
+	if (!anAttribute) {
+		AliError("Can't find lbURI attribute!");
+		return;
+	}
+	fLogBookURI = anAttribute->GetValue();
+
+	anAttribute = anEntry->GetAttribute("lbUser");
+	if (!anAttribute) {
+		AliError("Can't find lbUser attribute!");
+		return;
+	}
+	fLogBookUser = anAttribute->GetValue();
+	
+	anAttribute = anEntry->GetAttribute("lbPassword");
+	if (!anAttribute) {
+		AliError("Can't find lbPassword attribute!");
+		return;
+	}
+	fLogBookPassword = anAttribute->GetValue();
+
+	delete anEntry;
+	delete aResult;
+	
 	fIsValid = kTRUE;
 }
 
@@ -156,7 +214,7 @@ AliShuttleConfig::~AliShuttleConfig() {
 	fDetectorMap.DeleteAll();
 }
 
-const TList* AliShuttleConfig::GetDetectors() const {
+const TObjArray* AliShuttleConfig::GetDetectors() const {
 	//
 	// returns collection of TObjString which contains the name
 	// of every detector which is in the configuration.
@@ -203,7 +261,7 @@ Int_t AliShuttleConfig::GetPort(const char* detector) const {
 	return aHolder->GetPort();
 }
 
-const TList* AliShuttleConfig::GetAliases(const char* detector) const {
+const TObjArray* AliShuttleConfig::GetAliases(const char* detector) const {
 	//
 	// returns collection of TObjString which represents the set of aliases
 	// which used for data retrieval for particular detector
@@ -223,6 +281,16 @@ void AliShuttleConfig::Print(Option_t* /*option*/) const {
 	
 	TString result;
 	result += '\n';
+
+	result += "LogBook URI: ";
+	result += fLogBookURI;
+	result += '\n';
+	result += "LogBook User: ";
+	result += fLogBookUser;
+	result += '\n';
+	result += "LogBook Password: ";
+	result.Append('*', fLogBookPassword.Length());
+	result += '\n';
 	
 	TIter iter(fDetectorMap.GetTable());
 	TPair* aPair;
@@ -240,7 +308,7 @@ void AliShuttleConfig::Print(Option_t* /*option*/) const {
 		result += '\n';
 
 		result += " Aliases: ";
-		const TList* aliases = aHolder->GetAliases(); 	
+		const TObjArray* aliases = aHolder->GetAliases(); 	
 		TIter it(aliases);		
 		TObjString* anAlias;	
 		while ((anAlias = (TObjString*) it.Next())) {

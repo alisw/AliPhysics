@@ -15,6 +15,12 @@
 
 /*
 $Log$
+Revision 1.2  2005/11/17 14:43:23  byordano
+import to local CVS
+
+Revision 1.1.1.1  2005/10/28 07:33:58  hristov
+Initial import as subdirectory in AliRoot
+
 Revision 1.1.1.1  2005/09/12 22:11:40  byordano
 SHUTTLE package
 

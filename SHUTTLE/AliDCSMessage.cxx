@@ -15,6 +15,15 @@
 
 /*
 $Log$
+Revision 1.3  2005/11/17 17:47:34  byordano
+TList changed to TObjArray
+
+Revision 1.2  2005/11/17 14:43:23  byordano
+import to local CVS
+
+Revision 1.1.1.1  2005/10/28 07:33:58  hristov
+Initial import as subdirectory in AliRoot
+
 Revision 1.1.1.1  2005/09/12 22:11:40  byordano
 SHUTTLE package
 
@@ -694,7 +703,7 @@ void AliDCSMessage::LoadMultiRequestMessage() {
 
 		TObjString* anObjString = new TObjString(
 			GetString(fMessage + cursor, strSize));
-		fRequestStrings.Add(anObjString);
+		fRequestStrings.AddLast(anObjString);
 
 		cursor += strSize;
 	}	
@@ -875,7 +884,7 @@ Bool_t AliDCSMessage::AddRequestString(const char* request) {
 		return kFALSE;	
 	}
 
-	fRequestStrings.Add(new TObjString(request));
+	fRequestStrings.AddLast(new TObjString(request));
 	return kTRUE;
 }
 
@@ -888,7 +897,7 @@ void AliDCSMessage::ClearRequestStrings() {
 	fRequestStrings.Delete();
 }
 
-void AliDCSMessage::GetRequestStrings(TList& result) const {
+void AliDCSMessage::GetRequestStrings(TObjArray& result) const {
 	//
         // MultRequest.
         // Returns all request strings in this message.
@@ -906,7 +915,7 @@ void AliDCSMessage::GetRequestStrings(TList& result) const {
 	TObjString* anObjString;
 	
 	while ((anObjString = (TObjString*) iter.Next())) {
-		result.Add(new TObjString(*anObjString));
+		result.AddLast(new TObjString(*anObjString));
 	}
 }
 
@@ -953,10 +962,10 @@ UInt_t AliDCSMessage::GetValueCount() const {
                 return 0;
         }
 
-	return fValues.GetSize();
+	return fValues.GetEntriesFast();
 }
 
-UInt_t AliDCSMessage::GetValues(TList& result) const {
+UInt_t AliDCSMessage::GetValues(TObjArray& result) const {
 	//
         // ResultSet.
         // Returns the number of values got from the message.
@@ -973,10 +982,10 @@ UInt_t AliDCSMessage::GetValues(TList& result) const {
 	AliDCSValue* aValue;
 	
 	while ((aValue = (AliDCSValue*) iter.Next())) {
-		result.Add(new AliDCSValue(*aValue));
+		result.AddLast(new AliDCSValue(*aValue));
 	}
 
-	return fValues.GetSize();
+	return fValues.GetEntriesFast();
 }
 
 Bool_t AliDCSMessage::AddValue(const AliDCSValue& value) {

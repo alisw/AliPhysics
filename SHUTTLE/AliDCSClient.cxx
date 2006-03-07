@@ -15,6 +15,15 @@
 
 /*
 $Log$
+Revision 1.3  2005/11/17 17:47:34  byordano
+TList changed to TObjArray
+
+Revision 1.2  2005/11/17 14:43:23  byordano
+import to local CVS
+
+Revision 1.1.1.1  2005/10/28 07:33:58  hristov
+Initial import as subdirectory in AliRoot
+
 Revision 1.1.1.1  2005/09/12 22:11:40  byordano
 SHUTTLE package
 
@@ -44,7 +53,7 @@ some more descriptions added
 #include "AliDCSValue.h"
 #include "AliLog.h"
 
-#include <TList.h>
+#include <TObjArray.h>
 #include <TMap.h>
 #include <TObjString.h>
 #include <TSystem.h>
@@ -237,7 +246,7 @@ Int_t AliDCSClient::ReceiveMessage(AliDCSMessage& message) {
 }
 
 Int_t AliDCSClient::GetValues(AliDCSMessage::RequestType reqType,
-	const char* reqString, UInt_t startTime, UInt_t endTime, TList& result) 
+	const char* reqString, UInt_t startTime, UInt_t endTime, TObjArray& result) 
 {
 	if (!IsConnected()) {
 		AliError("Not connected!");
@@ -275,15 +284,15 @@ Int_t AliDCSClient::GetValues(AliDCSMessage::RequestType reqType,
 	multiRequestMessage.CreateMultiRequestMessage(reqType, 
 			startTime, endTime);
 
-	TList requests;
+	TObjArray requests;
 	
 	TIter iter(&result);
 	TObjString* aRequest;
 	
-	// copy request strings to temporary TList because
+	// copy request strings to temporary TObjArray because
 	// TMap doesn't guarantee the order of elements!!!
 	while ((aRequest = (TObjString*) iter.Next())) {
-		requests.Add(aRequest);
+		requests.AddLast(aRequest);
 		if (!multiRequestMessage.AddRequestString(aRequest->String()))
 		{
 			return AliDCSClient::fgkInvalidParameter;
@@ -303,7 +312,7 @@ Int_t AliDCSClient::GetValues(AliDCSMessage::RequestType reqType,
 
 	TIter reqIter(&requests);
 	while ((aRequest = (TObjString*) reqIter.Next())) {
-		TList* resultSet = new TList();
+		TObjArray* resultSet = new TObjArray();
 		resultSet->SetOwner(1);
 
 		if ((sResult = ReceiveValueSet(*resultSet)) < 0) {
@@ -331,7 +340,7 @@ Int_t AliDCSClient::GetValues(AliDCSMessage::RequestType reqType,
 	return sResult;
 }
 	
-Int_t AliDCSClient::ReceiveValueSet(TList& result) {
+Int_t AliDCSClient::ReceiveValueSet(TObjArray& result) {
 
 	Int_t sResult;
 
@@ -406,7 +415,7 @@ Int_t AliDCSClient::ReceiveValueSet(TList& result) {
 }
 		
 Int_t AliDCSClient::GetDPValues(const char* dpName, UInt_t startTime,
-				UInt_t endTime, TList& result)
+				UInt_t endTime, TObjArray& result)
 {
 	//
 	// Reads a values from the server which correspond to this
@@ -423,7 +432,7 @@ Int_t AliDCSClient::GetDPValues(const char* dpName, UInt_t startTime,
 }
 
 Int_t AliDCSClient::GetAliasValues(const char* alias, UInt_t startTime,
-				UInt_t endTime, TList& result)
+				UInt_t endTime, TObjArray& result)
 {
 	//
         // Reads a values from the server which correspond to this
@@ -447,7 +456,7 @@ Int_t AliDCSClient::GetDPValues(UInt_t startTime, UInt_t endTime,
 	// reads a valueSet. The key represents particular DataPoint to be read.
         // For all DataPoints time interval (startTime - endTime) is used.
         // After the read, the correspoding value for every key is a 
-	// TList - collection of AliDCSValue, or result is an empty map in
+	// TObjArray - collection of AliDCSValue, or result is an empty map in
 	// case of error.
 	// 
         // Returns:
@@ -466,7 +475,7 @@ Int_t AliDCSClient::GetAliasValues(UInt_t startTime, UInt_t endTime,
         // reads a valueSet. The key represents particular Alias to be read.
         // For all aliases time interval (startTime - endTime) is used.
         // After the read, the correspoding value for every key is a 
-        // TList - collection of AliDCSValue, or result is an empty map in
+        // TObjArray - collection of AliDCSValue, or result is an empty map in
         // case of error.
         // 
         // Returns:

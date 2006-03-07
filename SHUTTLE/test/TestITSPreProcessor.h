@@ -14,7 +14,7 @@ protected:
 
         virtual void Finalize();
 
-        virtual void Process(const char* alias, TList& valueSet, 
+        virtual void Process(const char* alias, TObjArray& valueSet, 
                         Bool_t hasError);
 
 	ClassDef(TestITSPreProcessor, 0);

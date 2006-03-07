@@ -16,7 +16,7 @@
 #include <TSocket.h>
 
 
-class TList;
+class TObjArray;
 class TMap;
 
 class AliDCSClient: public TObject {
@@ -53,10 +53,10 @@ public:
 
 
         Int_t GetDPValues(const char* dpName, UInt_t startTime, UInt_t endTime,
-                                TList& result);
+                                TObjArray& result);
 
         Int_t GetAliasValues(const char* alias, UInt_t startTime,
-                                UInt_t endTime, TList& result);
+                                UInt_t endTime, TObjArray& result);
 
         Int_t GetDPValues(UInt_t startTime, UInt_t endTime, TMap& result);
 
@@ -99,12 +99,12 @@ private:
 
 	Int_t GetValues(AliDCSMessage::RequestType requestType,
 		const char* requestString, UInt_t startTime, UInt_t endTime,
-		TList& result);
+		TObjArray& result);
 	
 	Int_t GetValues(AliDCSMessage::RequestType requestType,
 		UInt_t startTime, UInt_t endTime, TMap& result);
 
-	Int_t ReceiveValueSet(TList& result);
+	Int_t ReceiveValueSet(TObjArray& result);
 
 
 	ClassDef(AliDCSClient, 0);

@@ -4,7 +4,6 @@
 #include "AliDCSValue.h"
 #include "AliLog.h"
 
-#include <TList.h>
 #include <TTimeStamp.h>
 
 ClassImp(TestITSPreProcessor)
@@ -28,7 +27,7 @@ void TestITSPreProcessor::Finalize() {
 	AliInfo("Finalizing...");
 }
 
-void TestITSPreProcessor::Process(const char* alias, TList& valueSet, 
+void TestITSPreProcessor::Process(const char* alias, TObjArray& valueSet, 
 	Bool_t hasError)
 {
 	AliInfo(Form("Alias %s, hasError: %d", alias, hasError));	
