@@ -1,16 +1,15 @@
 /* $Id$*/
 
 // Script to create alignment parameters and store them into CDB
-// Two sets of alignment parameters can be created:
-// 1) 1 PHOS module with exact position
-// 2) 5 PHOS modules with small disalignments
+// Three sets of alignment parameters can be created:
+// 0) 1 PHOS module with ideal geometry
+// 1) 5 PHOS modules with small disalignments
+// 2) 5 PHOS modules with ideal geometry
 
 #if !defined(__CINT__)
 #include "TControlBar.h"
 #include "TString.h"
 #include "TRandom.h"
-#include "TH2F.h"
-#include "TCanvas.h"
 
 #include "AliRun.h"
 #include "AliPHOSAlignData.h"
@@ -27,14 +26,21 @@ void AliPHOSSetAlignment()
   TControlBar *menu = new TControlBar("vertical","PHOS alignment control");
   menu->AddButton("Help to run PHOS alignment control","Help()",
 		  "Explains how to use PHOS alignment control menus");
+
   menu->AddButton("PHOS 2007","SetAlignment(0)",
 		  "Set PHOS alignment for the LHC run 2007");
-  menu->AddButton("Full PHOS","SetAlignment(1)",
+  menu->AddButton("Full misaligned PHOS","SetAlignment(1)",
 		  "Set all 5 modules with random displacement");
+  menu->AddButton("Full ideal PHOS","SetAlignment(2)",
+		  "Set all 5 modules with random displacement");
+
   menu->AddButton("Read PHOS 2007","GetAlignment(0)",
 		  "Read PHOS geometry for the LHC run 2007");
-  menu->AddButton("Read full PHOS","GetAlignment(1)",
+  menu->AddButton("Read full misaligned PHOS","GetAlignment(1)",
 		  "Read full PHOS geometry with random displacements");
+  menu->AddButton("Read full ideal PHOS","GetAlignment(2)",
+		  "Read full PHOS geometry with random displacements");
+
   menu->Show();
 }
 
@@ -123,6 +129,42 @@ void SetAlignment(Int_t flag=0)
       alignda->SetModuleAngle(iModule,2,0,theta);
       alignda->SetModuleAngle(iModule,2,1,phi);
     }
+  case 2:
+    DBFolder  ="local://AlignDB";
+    firstRun  =  0;
+    lastRun   = 10;
+    objFormat = "PHOS disaligned geometry with 5 modules";
+
+    Int_t nModules = 5;
+    alignda->SetNModules(nModules);
+    
+    Float_t dAngle= 20;
+    Float_t r0    = 460.;
+    Float_t theta, phi;
+    for (Int_t iModule=0; iModule<nModules; iModule++) {
+      Float_t r = r0;
+      Float_t angle = dAngle * ( iModule - nModules / 2.0 + 0.5 ) ;
+      Float_t x = r * TMath::Sin(angle * TMath::DegToRad() );
+      Float_t y =-r * TMath::Cos(angle * TMath::DegToRad() );
+      Float_t z = 0.;
+
+      alignda->SetModuleCenter(iModule,0,x);
+      alignda->SetModuleCenter(iModule,1,y);
+      alignda->SetModuleCenter(iModule,2,z);
+    
+      theta = 90;
+      phi   = angle;
+      alignda->SetModuleAngle(iModule,0,0,theta);
+      alignda->SetModuleAngle(iModule,0,1,phi);
+      theta = 0;
+      phi   = 0;
+      alignda->SetModuleAngle(iModule,1,0,theta);
+      alignda->SetModuleAngle(iModule,1,1,phi);
+      theta = 90;
+      phi   = 270+angle;
+      alignda->SetModuleAngle(iModule,2,0,theta);
+      alignda->SetModuleAngle(iModule,2,1,phi);
+    }
     break;
   default:
     printf("Unknown flag %d, can be 0 or 1 only\n",flag);
@@ -164,6 +206,9 @@ void GetAlignment(Int_t flag=0)
     break;
   case 1:
     DBFolder  ="local://DisAlignDB";
+    break;
+  case 2:
+    DBFolder  ="local://AlignDB";
     break;
   default:
     printf("Unknown flag %d, can be 0 or 1 only\n",flag);
