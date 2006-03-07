@@ -51,7 +51,9 @@ AliESD::AliESD():
   fPHOSParticles(0), 
   fEMCALParticles(0), 
   fFirstPHOSParticle(-1), 
-  fFirstEMCALParticle(-1){
+  fFirstEMCALParticle(-1),
+  fESDFMD(0x0)
+{
 }
 
 //______________________________________________________________________________
@@ -69,6 +71,7 @@ AliESD::~AliESD()
   fCascades.Delete();
   fKinks.Delete();
   fV0MIs.Delete();
+  delete fESDFMD;
 }
 
 void AliESD::UpdateV0PIDs()
@@ -116,6 +119,7 @@ void AliESD::Reset()
   fEMCALParticles=0; 
   fFirstPHOSParticle=-1; 
   fFirstEMCALParticle=-1;
+  if (fESDFMD) fESDFMD->Clear();
 }
 
 //______________________________________________________________________________
@@ -147,4 +151,5 @@ void AliESD::Print(Option_t *) const
   printf("                 cascades  %d\n)", GetNumberOfCascades());
   printf("                 kinks     %d\n)", GetNumberOfKinks());
   printf("                 V0MIs     %d\n)", GetNumberOfV0MIs());
+  printf("                 FMD       %s\n)", (fESDFMD ? "yes" : "no"));
 }

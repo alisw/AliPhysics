@@ -1,3 +1,4 @@
+// -*- mode: C++ -*- 
 #ifndef ALIESD_H
 #define ALIESD_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
@@ -25,6 +26,7 @@
 #include "AliESDHLTtrack.h"
 #include "AliESDv0.h"
 #include "AliESDV0MI.h"
+#include "AliESDFMD.h"
 
 class AliESD : public TObject {
 public:
@@ -150,6 +152,12 @@ public:
   void Reset();
 
   void  Print(Option_t *option="") const;
+
+  void SetFMDData(AliESDFMD * obj) {
+    fESDFMD = new AliESDFMD(*obj);
+  }
+
+  AliESDFMD * GetFMDData(){ return fESDFMD;}
    
 protected:
 
@@ -182,7 +190,9 @@ protected:
   Int_t        fFirstPHOSParticle; // First PHOS particle in the fTracks list 
   Int_t        fFirstEMCALParticle;// First EMCAL particle in the fTracks list 
  
-  ClassDef(AliESD,8)  //ESD class 
+  AliESDFMD *  fESDFMD; // FMD object containing rough multiplicity
+
+  ClassDef(AliESD,9)  //ESD class 
 };
 #endif 
 
