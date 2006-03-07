@@ -15,6 +15,8 @@ $Id$
 #include <TObject.h>
 #include <TObjArray.h>
 #include <TClonesArray.h>
+#include <AliITSCalibration.h>
+#include <AliITSgeom.h>
 
 class TTree;
 class AliCDBMetaData;
@@ -23,9 +25,8 @@ class AliITSmodule;
 class AliITSpListItem;
 class AliITSsimulation;
 class AliITSsegmentation;
-class AliITSCalibration;
+class AliITSresponse;
 class AliLoader;
-class AliITSgeom;
 
 class AliITSDetTypeSim : public TObject {
  public:
@@ -47,6 +48,7 @@ class AliITSDetTypeSim : public TObject {
 
     virtual void SetCalibrationModel(Int_t iMod,AliITSCalibration *resp);
     virtual AliITSCalibration* GetCalibrationModel(Int_t iMod);
+    virtual AliITSresponse* GetResponse(Int_t dettype) {return GetCalibrationModel(GetITSgeom()->GetStartDet(dettype))->GetResponse();}
 
     TObjArray* GetCalibrationArray() const {return fCalibration;}
     TObjArray* GetSegmentation() const {return fSegmentation;}

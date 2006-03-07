@@ -41,7 +41,6 @@
 #include "AliITSdigitSDD.h"
 #include "AliITSdigitSSD.h"
 #include "AliITSDetTypeSim.h"
-#include "AliITSgeom.h"
 #include "AliITSpListItem.h"
 #include "AliITSresponseSDD.h"
 #include "AliITSCalibrationSDD.h"
