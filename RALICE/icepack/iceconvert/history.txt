@@ -49,3 +49,7 @@
                 multiple F2K input files.
                 The example in the IceF2k docs and in the /macros sub-directory has been
                 updated accordingly.
+07-mar-2006 NvE Time offset correction introduced in IceF2k::PutHits() to account for
+                possible re-definition of hit times in the Sieglinde filtering process.
+                (Thanks David Boersma).
+

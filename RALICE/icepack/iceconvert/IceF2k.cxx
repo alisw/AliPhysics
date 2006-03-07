@@ -1014,7 +1014,7 @@ void IceF2k::PutHits()
   s.Reset();
   s.SetUniqueID(fEvent.h[i].id);
   s.SetSignal(fEvent.h[i].amp,1);
-  s.SetSignal(fEvent.h[i].t,2);
+  s.SetSignal((fEvent.h[i].t-fEvent.t_offset),2);
   s.SetSignal(fEvent.h[i].tot,3);
 
   omx->AddHit(s);
