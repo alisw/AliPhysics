@@ -26,6 +26,7 @@
 #include "AliTPCtrack.h"
 #include "AliCluster.h"
 #include "AliESDtrack.h"
+#include "AliTPCReconstructor.h"
 
 ClassImp(AliTPCtrack)
 
@@ -233,13 +234,13 @@ Double_t AliTPCtrack::GetYat(Double_t xk) const {
 //-----------------------------------------------------------------
 // This function calculates the Y-coordinate of a track at the plane x=xk.
 //-----------------------------------------------------------------
-  if (TMath::Abs(fP4*fX - fP2)>0.9999) return 1e10; //patch 01 jan 06
+  if (TMath::Abs(fP4*fX - fP2)>AliTPCReconstructor::GetMaxSnpTrack()) return 0.; //patch 01 jan 06
     Double_t c1=fP4*fX - fP2, r1=TMath::Sqrt(1.- c1*c1);
     Double_t c2=fP4*xk - fP2;
-    if (c2*c2>0.99999) {
-       Int_t n=GetNumberOfClusters();
-       if (n>4) cerr<<n<<"AliTPCtrack::GetYat: can't evaluate the y-coord !\n";
-       return 1e10;
+    if (c2*c2>AliTPCReconstructor::GetMaxSnpTrack()) {
+      //       Int_t n=GetNumberOfClusters();
+      // if (n>4) cerr<<n<<"AliTPCtrack::GetYat: can't evaluate the y-coord !\n";
+       return 0;
     } 
     Double_t r2=TMath::Sqrt(1.- c2*c2);
     return fP0 + (xk-fX)*(c1+c2)/(r1+r2);
@@ -250,7 +251,7 @@ Int_t AliTPCtrack::PropagateTo(Double_t xk,Double_t /*x0*/,Double_t rho) {
   //-----------------------------------------------------------------
   // This function propagates a track to a reference plane x=xk.
   //-----------------------------------------------------------------
-  if (TMath::Abs(fP4*xk - fP2) >= 0.9) {
+  if (TMath::Abs(fP4*xk - fP2) >= AliTPCReconstructor::GetMaxSnpTrack()) {
     //    Int_t n=GetNumberOfClusters();
     //if (n>4) cerr<<n<<" AliTPCtrack warning: Propagation failed !\n";
     return 0;
@@ -395,7 +396,7 @@ Int_t AliTPCtrack::Update(const AliCluster *c, Double_t chisq, UInt_t index) {
 
   Double_t dy=c->GetY() - fP0, dz=c->GetZ() - fP1;
   Double_t cur=fP4 + k40*dy + k41*dz, eta=fP2 + k20*dy + k21*dz;
-  if (TMath::Abs(cur*fX-eta) >= 0.9) {
+  if (TMath::Abs(cur*fX-eta) >= AliTPCReconstructor::GetMaxSnpTrack()) {
     //    Int_t n=GetNumberOfClusters();
     //if (n>4) cerr<<n<<" AliTPCtrack warning: Filtering failed !\n";
     return 0;
@@ -448,23 +449,23 @@ Int_t AliTPCtrack::Rotate(Double_t alpha)
   Double_t ca=cos(alpha), sa=sin(alpha);
   Double_t r1=fP4*fX - fP2;
   
-  if (TMath::Abs(r1)>=0.9999) return 0; //patch 01 jan 06
+  if (TMath::Abs(r1)>=AliTPCReconstructor::GetMaxSnpTrack()) return 0; //patch 01 jan 06
 
   fX = x1*ca + y1*sa;
   fP0=-x1*sa + y1*ca;
   fP2=fP2*ca + (fP4*y1 + sqrt(1.- r1*r1))*sa;
   
   Double_t r2=fP4*fX - fP2;
-  if (TMath::Abs(r2) >= 0.99999) {
-    Int_t n=GetNumberOfClusters();
-    if (n>4) cerr<<n<<" AliTPCtrack warning: Rotation failed !\n";
+  if (TMath::Abs(r2) >= AliTPCReconstructor::GetMaxSnpTrack()) {
+    //Int_t n=GetNumberOfClusters();
+    //    if (n>4) cerr<<n<<" AliTPCtrack warning: Rotation failed !\n";
     return 0;
   }
   
   Double_t y0=fP0 + sqrt(1.- r2*r2)/fP4;
   if ((fP0-y0)*fP4 >= 0.) {
-    Int_t n=GetNumberOfClusters();
-    if (n>4) cerr<<n<<" AliTPCtrack warning: Rotation failed !!!\n";
+    //Int_t n=GetNumberOfClusters();
+    //    if (n>4) cerr<<n<<" AliTPCtrack warning: Rotation failed !!!\n";
     return 0;
   }
 

@@ -128,7 +128,7 @@ Int_t AliTPCtrackerMI::UpdateTrack(AliTPCseed * track, Int_t accept){
   track->fClusterPointer[track->fRow] = c;  
   //
 
-  Float_t angle2 = track->GetSnp()*track->GetSnp();
+  Double_t angle2 = track->GetSnp()*track->GetSnp();
   angle2 = TMath::Sqrt(angle2/(1-angle2)); 
   //
   //SET NEW Track Point
@@ -645,7 +645,7 @@ Double_t AliTPCtrackerMI::ErrY2(AliTPCseed* seed, AliTPCclusterMI * cl){
   Float_t z = TMath::Abs(fParam->GetZLength()-TMath::Abs(seed->GetZ()));
   Int_t ctype = cl->GetType();  
   Float_t padlength= GetPadPitchLength(seed->fRow);
-  Float_t angle2 = seed->GetSnp()*seed->GetSnp();
+  Double_t angle2 = seed->GetSnp()*seed->GetSnp();
   angle2 = angle2/(1-angle2); 
   //
   //cluster "quality"
@@ -780,7 +780,7 @@ Double_t AliTPCtrackerMI::ErrZ2(AliTPCseed* seed, AliTPCclusterMI * cl){
   Int_t ctype = cl->GetType();  
   Float_t padlength= GetPadPitchLength(seed->fRow);
   //
-  Float_t angle2 = seed->GetSnp()*seed->GetSnp();
+  Double_t angle2 = seed->GetSnp()*seed->GetSnp();
   //  if (angle2<0.6) angle2 = 0.6;
   angle2 = seed->GetTgl()*seed->GetTgl()*(1+angle2/(1-angle2)); 
   //
@@ -1370,9 +1370,9 @@ Int_t AliTPCtrackerMI::FollowToNext(AliTPCseed& t, Int_t nr) {
       if (TMath::Abs(angle-t.GetAlpha())>0.001){
 	Double_t rotation = angle-t.GetAlpha();
 	t.fRelativeSector= relativesector;
-	t.Rotate(rotation); 	
+	if (!t.Rotate(rotation)) return 0; 	
       }
-      t.PropagateTo(x);
+      if (!t.PropagateTo(x)) return 0;
       //
       t.fCurrentCluster = cl; 
       t.fRow = nr;
@@ -1392,7 +1392,12 @@ Int_t AliTPCtrackerMI::FollowToNext(AliTPCseed& t, Int_t nr) {
       }    
     }
   }
-  if (fIteration>1) {t.fNFoundable++; return 0;}  // not look for new cluster during refitting
+  if (TMath::Abs(t.GetSnp())>AliTPCReconstructor::GetMaxSnpTracker()) return 0;  // cut on angle
+  if (fIteration>1){
+    // not look for new cluster during refitting    
+    t.fNFoundable++; 
+    return 0;
+  }
   //
   UInt_t index=0;
   //  if (TMath::Abs(t.GetSnp())>0.95 || TMath::Abs(x*t.GetC()-t.GetEta())>0.95) return 0;// patch 28 fev 06
@@ -1429,7 +1434,8 @@ Int_t AliTPCtrackerMI::FollowToNext(AliTPCseed& t, Int_t nr) {
   } 
   else
     {
-      if (TMath::Abs(z)<(AliTPCReconstructor::GetCtgRange()*x+10) && TMath::Abs(z)<fParam->GetZLength() ) t.fNFoundable++;
+      if (TMath::Abs(z)<(AliTPCReconstructor::GetCtgRange()*x+10) && TMath::Abs(z)<fParam->GetZLength() && (TMath::Abs(t.GetSnp())<AliTPCReconstructor::GetMaxSnpTracker())) 
+	t.fNFoundable++;
       else
 	return 0;
     }   
@@ -1645,7 +1651,7 @@ Int_t AliTPCtrackerMI::UpdateClusters(AliTPCseed& t,  Int_t nr) {
     //y = t.GetY();    
   }
   //
-
+  if (TMath::Abs(t.GetSnp())>AliTPCReconstructor::GetMaxSnpTracker()) return 0;
   AliTPCRow &krow=GetRow(t.fRelativeSector,nr);
 
   if (TMath::Abs(TMath::Abs(y)-ymax)<krow.fDeadZone){
@@ -1655,7 +1661,7 @@ Int_t AliTPCtrackerMI::UpdateClusters(AliTPCseed& t,  Int_t nr) {
   } 
   else
     {
-      if (TMath::Abs(t.GetZ())<(AliTPCReconstructor::GetCtgRange()*t.GetX()+10)) t.fNFoundable++;
+      if (TMath::Abs(t.GetZ())<(AliTPCReconstructor::GetCtgRange()*t.GetX()+10) && (TMath::Abs(t.GetSnp())<AliTPCReconstructor::GetMaxSnpTracker())) t.fNFoundable++;
       else
 	return 0;      
     }
@@ -6014,7 +6020,7 @@ void  AliTPCtrackerMI::GetShape(AliTPCseed * seed, Int_t row)
   Float_t padlength =  GetPadPitchLength(row);
   //
   Float_t sresy = (seed->fSector < fParam->GetNSector()/2) ? 0.2 :0.3;
-  Float_t angulary  = seed->GetSnp();
+  Double_t angulary  = seed->GetSnp();
   angulary = angulary*angulary/(1-angulary*angulary);
   seed->fCurrentSigmaY2 = sd2+padlength*padlength*angulary/12.+sresy*sresy;  
   //

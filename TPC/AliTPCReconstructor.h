@@ -42,11 +42,17 @@ public:
   static void SetCtgRange(Double_t ctgRange = 1.05) {fgCtgRange = ctgRange;}
   static Double_t GetCtgRange(){ return fgCtgRange;}
 
+  static void SetMaxSnpTracker(Double_t maxSnp) {fgMaxSnpTracker = maxSnp;}
+  static Double_t GetMaxSnpTracker(){ return fgMaxSnpTracker;}
+  static void SetMaxSnpTrack(Double_t maxSnp) {fgMaxSnpTrack = maxSnp;}
+  static Double_t GetMaxSnpTrack(){ return fgMaxSnpTrack;}
+
 private:
   AliTPCParam*         GetTPCParam(AliRunLoader* runLoader) const;
 
   static Double_t fgCtgRange; //! +-fCtgRange is the ctg(Theta) window used for clusterization and tracking (MI) 
-
+  static Double_t fgMaxSnpTracker;   // max sin of local angle  - for TPC tracker
+  static Double_t fgMaxSnpTrack;   // max sin of local angle  - for track 
   ClassDef(AliTPCReconstructor, 0)   // class for the TPC reconstruction
 };
 

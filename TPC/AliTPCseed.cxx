@@ -23,6 +23,7 @@
 //-----------------------------------------------------------------
 #include "TClonesArray.h"
 #include "AliTPCseed.h"
+#include "AliTPCReconstructor.h"
 
 ClassImp(AliTPCseed)
 
@@ -300,7 +301,7 @@ Int_t  AliTPCseed::GetProlongation(Double_t xk, Double_t &y, Double_t & z) const
   
   Double_t x1=fX, x2=x1+(xk-x1), dx=x2-x1;
 
-  if (TMath::Abs(fP4*xk - fP2) >= 0.999) {   
+  if (TMath::Abs(fP4*xk - fP2) >= AliTPCReconstructor::GetMaxSnpTrack()) {   
     return 0;
   }
 
@@ -414,7 +415,7 @@ Int_t AliTPCseed::Update(const AliCluster *c, Double_t chisq, UInt_t /*index*/) 
 
   Double_t dy=c->GetY() - fP0, dz=c->GetZ() - fP1;
   Double_t cur=fP4 + k40*dy + k41*dz, eta=fP2 + k20*dy + k21*dz;
-  if (TMath::Abs(cur*fX-eta) >= 0.9) {
+  if (TMath::Abs(cur*fX-eta) >= AliTPCReconstructor::GetMaxSnpTrack()) {
     return 0;
   }
 
