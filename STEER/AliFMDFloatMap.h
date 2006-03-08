@@ -32,7 +32,8 @@ public:
 				    UShort_t sec,
 				    UShort_t str) const;
 protected:
-  Float_t* fData;
+  size_t   fTotal;  // Total number of entries
+  Float_t* fData;   //[fTotal]
   ClassDef(AliFMDFloatMap,1) // Map of floats
 };
 

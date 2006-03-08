@@ -57,11 +57,11 @@ AliFMDMap::CheckIndex(size_t det, Char_t ring, size_t sec, size_t str) const
 {
   // Check that the index supplied is OK.   Returns true index, or -1
   // on error. 
+  if (det < 1) return -1;
   size_t ringi = (ring == 'I' ||  ring == 'i' ? 0 : 1);
   size_t idx = 
     (str + fMaxStrips * (sec + fMaxSectors * (ringi + fMaxRings * (det-1))));
-  if (idx >= fMaxDetectors * fMaxRings * fMaxSectors * fMaxStrips) 
-    return -1;
+  if (idx >= fMaxDetectors * fMaxRings * fMaxSectors * fMaxStrips) return -1;
   return idx;
 }
 

@@ -1,5 +1,5 @@
-#ifndef ALIFMDHIT_H
-#define ALIFMDHIT_H
+#ifndef ALIESDFMD_H
+#define ALIESDFMD_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights
  * reserved. 
  *
@@ -41,6 +41,10 @@ public:
 	      UShort_t sector, UShort_t strip, 
 	      Float_t mult);
 
+  size_t MaxDetectors() const { return fMultiplicity.MaxDetectors(); }
+  size_t MaxRings()     const { return fMultiplicity.MaxRings(); }
+  size_t MaxSectors()   const { return fMultiplicity.MaxSectors(); }
+  size_t MaxStrips()    const { return fMultiplicity.MaxStrips(); }
   void Print(Option_t* option="") const;
   enum {
     kInvalidMult = 1000
