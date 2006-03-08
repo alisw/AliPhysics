@@ -202,6 +202,7 @@
 #include "AliFMDRing.h"	        // ALIFMDRING_H
 #include "AliFMDHit.h"		// ALIFMDHIT_H
 #include "AliFMDDigit.h"	// ALIFMDDIGIT_H
+#include "AliFMDParameters.h"   // ALIFMDPARAMETERS_H
 #include <AliRunDigitizer.h>	// ALIRUNDIGITIZER_H
 #include <AliRun.h>		// ALIRUN_H
 #include <AliLoader.h>		// ALILOADER_H
@@ -231,9 +232,6 @@ AliFMDBaseDigitizer::AliFMDBaseDigitizer(AliRunDigitizer* manager)
 {
   // Normal CTOR
   AliDebug(1," processed");
-  SetVA1MipRange();
-  SetAltroChannelSize();
-  SetSampleRate();
   SetShapingTime();
 }
 
@@ -249,9 +247,6 @@ AliFMDBaseDigitizer::AliFMDBaseDigitizer(const Char_t* name,
 {
   // Normal CTOR
   AliDebug(1," processed");
-  SetVA1MipRange();
-  SetAltroChannelSize();
-  SetSampleRate();
   SetShapingTime();
 }
 
@@ -269,6 +264,16 @@ AliFMDBaseDigitizer::Init()
   return kTRUE;
 }
  
+
+//____________________________________________________________________
+UShort_t
+AliFMDBaseDigitizer::MakePedestal(UShort_t, 
+				  Char_t, 
+				  UShort_t, 
+				  UShort_t) const 
+{ 
+  return 0; 
+}
 
 //____________________________________________________________________
 void
@@ -306,6 +311,7 @@ AliFMDBaseDigitizer::SumContributions(AliFMD* fmd)
   // Get number of entries in the tree 
   Int_t ntracks  = Int_t(hitsTree->GetEntries());
   
+  AliFMDParameters* param = AliFMDParameters::Instance();
   Int_t read = 0;
   // Loop over the tracks in the 
   for (Int_t track = 0; track < ntracks; track++)  {
@@ -325,10 +331,16 @@ AliFMDBaseDigitizer::SumContributions(AliFMD* fmd)
       UShort_t sector   = fmdHit->Sector();
       UShort_t strip    = fmdHit->Strip();
       Float_t  edep     = fmdHit->Edep();
+
+      // Check if strip is `dead' 
+      if (param->IsDead(detector, ring, sector, strip)) continue;
+      
+      // Give warning in case of double hit 
       if (fEdep(detector, ring, sector, strip).fEdep != 0)
 	AliDebug(5, Form("Double hit in %d%c(%d,%d)", 
 			 detector, ring, sector, strip));
       
+      // Sum energy deposition
       fEdep(detector, ring, sector, strip).fEdep  += edep;
       fEdep(detector, ring, sector, strip).fN     += 1;
       // Add this to the energy deposited for this strip
@@ -354,8 +366,9 @@ AliFMDBaseDigitizer::DigitizeHits(AliFMD* fmd) const
     AliFMDDetector* det = geometry->GetDetector(detector);
     if (!det) continue;
     for (UShort_t ringi = 0; ringi <= 1; ringi++) {
+      Char_t ring = ringi == 0 ? 'I' : 'O';
       // Get pointer to Ring
-      AliFMDRing* r = det->GetRing((ringi == 0 ? 'I' : 'O'));
+      AliFMDRing* r = det->GetRing(ring);
       if (!r) continue;
       
       // Get number of sectors 
@@ -373,20 +386,18 @@ AliFMDBaseDigitizer::DigitizeHits(AliFMD* fmd) const
 	  // VA1_ALICE channel. 
 	  if (strip % 128 == 0) last = 0;
 	  
-	  Float_t edep = fEdep(detector, r->GetId(), sector, strip).fEdep;
-	  ConvertToCount(edep, last, r->GetSiThickness(), 
-			 geometry->GetSiDensity(), counts);
+	  Float_t edep = fEdep(detector, ring, sector, strip).fEdep;
+	  ConvertToCount(edep, last, detector, ring, sector, strip, counts);
 	  last = edep;
-	  AddDigit(fmd, detector, r->GetId(), sector, strip, 
-		   edep, UShort_t(counts[0]), 
-		   Short_t(counts[1]), Short_t(counts[2]));
+	  AddDigit(fmd, detector, ring, sector, strip, edep, 
+		   UShort_t(counts[0]), Short_t(counts[1]), 
+		   Short_t(counts[2]));
 #if 0
 	  // This checks if the digit created will give the `right'
 	  // number of particles when reconstructed, using a naiive
 	  // approach.  It's here only as a quality check - nothing
 	  // else. 
-	  CheckDigit(fEdep(detector, r->GetId(), sector, strip).fEdep,
-		     fEdep(detector, r->GetId(), sector, strip).fN,
+	  CheckDigit(digit, fEdep(detector, ring, sector, strip).fN,
 		     counts);
 #endif
 	} // Strip
@@ -399,8 +410,10 @@ AliFMDBaseDigitizer::DigitizeHits(AliFMD* fmd) const
 void
 AliFMDBaseDigitizer::ConvertToCount(Float_t   edep, 
 				    Float_t   last,
-				    Float_t   siThickness, 
-				    Float_t   siDensity, 
+				    UShort_t  detector, 
+				    Char_t    ring, 
+				    UShort_t  sector, 
+				    UShort_t  strip,
 				    TArrayI&  counts) const
 {
   // Convert the total energy deposited to a (set of) ADC count(s). 
@@ -440,25 +453,25 @@ AliFMDBaseDigitizer::ConvertToCount(Float_t   edep,
   // 
   //                  = E + (l - E) * ext(-B * t)
   // 
-  Float_t  mipEnergy  = 1.664 * siThickness * siDensity;
-  Float_t  convF      = (1/mipEnergy*Float_t(fAltroChannelSize)/fVA1MipRange);
-  UShort_t ped       = MakePedestal();
-
+  AliFMDParameters* param = AliFMDParameters::Instance();
+  Float_t  convF          = 1/param->GetPulseGain(detector,ring,sector,strip);
+  UShort_t ped            = MakePedestal(detector,ring,sector,strip);
+  UInt_t   maxAdc         = param->GetAltroChannelSize();
+  UShort_t rate           = param->GetSampleRate(AliFMDParameters::kBaseDDL);
+  UShort_t size           = param->GetAltroChannelSize();
+  
   // In case we don't oversample, just return the end value. 
-  if (fSampleRate == 1) {
-    counts[0] = UShort_t(TMath::Min(edep * convF + ped, 
-				    Float_t(fAltroChannelSize)));
+  if (rate == 1) {
+    counts[0] = UShort_t(TMath::Min(edep * convF + ped, Float_t(size)));
     return;
   }
   
   // Create a pedestal 
-  Int_t   n = fSampleRate;
   Float_t b = fShapingTime;
-  for (Ssiz_t i = 0; i < n;  i++) {
-    Float_t t = Float_t(i) / n;
+  for (Ssiz_t i = 0; i < rate;  i++) {
+    Float_t t = Float_t(i) / rate;
     Float_t s = edep + (last - edep) * TMath::Exp(-b * t);
-    counts[i] = UShort_t(TMath::Min(s * convF + ped, 
-				    Float_t(fAltroChannelSize))); 
+    counts[i] = UShort_t(TMath::Min(s * convF + ped, Float_t(maxAdc)));
   }
 }
 
@@ -479,7 +492,6 @@ AliFMDDigitizer::AliFMDDigitizer(AliRunDigitizer* manager)
 {
   // Normal CTOR
   AliDebug(1," processed");
-  SetPedestal();
 }
 
 //____________________________________________________________________
@@ -505,7 +517,8 @@ AliFMDDigitizer::Exec(Option_t*)
   if (!fRunLoader->GetAliRun()) fRunLoader->LoadgAlice();
 
   // Get the AliFMD object 
-  AliFMD* fmd = static_cast<AliFMD*>(fRunLoader->GetAliRun()->GetDetector("FMD"));
+  AliFMD* fmd = 
+    static_cast<AliFMD*>(fRunLoader->GetAliRun()->GetDetector("FMD"));
   if (!fmd) {
     AliError("Can not get FMD from gAlice");
     return;
@@ -555,10 +568,16 @@ AliFMDDigitizer::Exec(Option_t*)
 
 //____________________________________________________________________
 UShort_t
-AliFMDDigitizer::MakePedestal() const 
+AliFMDDigitizer::MakePedestal(UShort_t  detector, 
+			      Char_t    ring, 
+			      UShort_t  sector, 
+			      UShort_t  strip) const 
 {
   // Make a pedestal 
-  return UShort_t(TMath::Max(gRandom->Gaus(fPedestal, fPedestalWidth), 0.));
+  AliFMDParameters* param =AliFMDParameters::Instance();
+  Float_t           mean  =param->GetPedestal(detector,ring,sector,strip);
+  Float_t           width =param->GetPedestalWidth(detector,ring,sector,strip);
+  return UShort_t(TMath::Max(gRandom->Gaus(mean, width), 0.));
 }
 
 //____________________________________________________________________
@@ -579,18 +598,27 @@ AliFMDDigitizer::AddDigit(AliFMD*  fmd,
 
 //____________________________________________________________________
 void
-AliFMDDigitizer::CheckDigit(Float_t         /* edep */, 
+AliFMDDigitizer::CheckDigit(AliFMDDigit*    digit,
 			    UShort_t        nhits,
 			    const TArrayI&  counts) 
 {
   // Check that digit is consistent
-  Int_t integral = counts[0];
+  AliFMDParameters* param = AliFMDParameters::Instance();
+  UShort_t          det   = digit->Detector();
+  Char_t            ring  = digit->Ring();
+  UShort_t          sec   = digit->Sector();
+  UShort_t          str   = digit->Strip();
+  Float_t           mean  = param->GetPedestal(det,ring,sec,str);
+  Float_t           width = param->GetPedestalWidth(det,ring,sec,str);
+  UShort_t          range = param->GetVA1MipRange();
+  UShort_t          size  = param->GetAltroChannelSize();
+  Int_t             integral = counts[0];
   if (counts[1] >= 0) integral += counts[1];
   if (counts[2] >= 0) integral += counts[2];
-  integral -= Int_t(fPedestal + 2 * fPedestalWidth);
+  integral -= Int_t(mean + 2 * width);
   if (integral < 0) integral = 0;
   
-  Float_t convF = Float_t(fVA1MipRange) / fAltroChannelSize;
+  Float_t convF = Float_t(range) / size;
   Float_t mips  = integral * convF;
   if (mips > Float_t(nhits) + .5 || mips < Float_t(nhits) - .5) 
     Warning("CheckDigit", "Digit -> %4.2f MIPS != %d +/- .5 hits", 

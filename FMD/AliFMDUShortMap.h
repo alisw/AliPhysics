@@ -1,5 +1,5 @@
-#ifndef ALIFMDEDEPMAP_H
-#define ALIFMDEDEPMAP_H
+#ifndef ALIFMDUSHORTMAP_H
+#define ALIFMDUSHORTMAP_H
 /* Copyright(c) 1998-2000, ALICE Experiment at CERN, All rights
  * reserved. 
  *

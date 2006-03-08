@@ -5,14 +5,14 @@
 // include path to contain the relevant directories. 
 //
 void
-Compile(const char* script)
+Compile(const char* script, Option_t* option="g")
 {
   gSystem->Load("libFMDutil.so");
   gSystem->SetIncludePath("-I`root-config --incdir` "
 			  "-I${ALICE_ROOT}/include " 
 			  "-I${ALICE_ROOT}/FMD "
 			  "-I${ALICE_ROOT}/geant3/TGeant3");
-  gROOT->ProcessLine(Form(".L %s++g", script));
+  gROOT->ProcessLine(Form(".L %s+%s", script, option));
 }
 
 //____________________________________________________________________

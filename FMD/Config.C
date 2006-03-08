@@ -113,9 +113,10 @@ enum EG_t {
   kMuonCocktailCent1Single,	//
   kMuonCocktailPer1Single,	//
   kMuonCocktailPer4Single,
-  kFlatFMD1, 
-  kFlatFMD2, 
-  kFlatFMD3,
+  kFMD1Flat, 
+  kFMD2Flat, 
+  kFMD3Flat,
+  kFMDFlat,
   kEgMax
 };
 
@@ -177,7 +178,8 @@ const char* egName[kEgMax] = {
   "kMuonCocktailPer4Single",
   "kFMD1Flat",
   "kFMD2Flat",
-  "kFMD3Flat"
+  "kFMD3Flat",
+  "kFMDFlat"
 };
 
 //____________________________________________________________________
@@ -1574,10 +1576,10 @@ GeneratorFactory(EG_t eg, Rad_t rad, TString& comment)
       gGener=gener;
     }
     break;
-  case kFlatFMD1: 
+  case kFMD1Flat: 
     {
       comment = comment.Append(" Flat in FMD1 range");
-      AliGenBox* gener = AliGenBox(2000);
+      AliGenBox* gener = new AliGenBox(2000);
       gener->SetPart(211);
       gener->SetMomentumRange(3,4);
       gener->SetPhiRange(0, 360);
@@ -1585,10 +1587,10 @@ GeneratorFactory(EG_t eg, Rad_t rad, TString& comment)
       gGener = gener;
     }
     break;
-  case kFlatFMD2: 
+  case kFMD2Flat: 
     {
       comment = comment.Append(" Flat in FMD2 range");
-      AliGenBox* gener = AliGenBox(2000);
+      AliGenBox* gener = new AliGenBox(2000);
       gener->SetPart(211);
       gener->SetMomentumRange(3,4);
       gener->SetPhiRange(0, 360);
@@ -1596,14 +1598,33 @@ GeneratorFactory(EG_t eg, Rad_t rad, TString& comment)
       gGener = gener;
     }
     break;
-  case kFlatFMD3: 
+  case kFMD3Flat: 
     {
       comment = comment.Append(" Flat in FMD3 range");
-      AliGenBox* gener = AliGenBox(2000);
+      AliGenBox* gener = new AliGenBox(2000);
       gener->SetPart(211);
       gener->SetMomentumRange(3,4);
       gener->SetPhiRange(0, 360);
       gener->SetThetaRange(155.97, 176.73);
+      gGener = gener;
+    }
+    break;
+  case kFMDFlat:
+    {
+      comment = comment.Append(" Flat in FMD range");
+      AliGenCocktail* gener = AliGenCocktail("FMD cocktail");
+      gener->SetPart(211);
+      gener->SetMomentumRange(3,4);
+      gener->SetPhiRange(0, 360);
+      AliGenBox* gener3 = new AliGenBox(2000);
+      gener3->SetThetaRange(155.97, 176.73);
+      gener->AddGenerator(gener3, "FMD3", .33);
+      AliGenBox* gener2 = new AliGenBox(2000);
+      gener2->SetThetaRange(2.95, 20.42);
+      gener->AddGenerator(gener2, "FMD2", .33);
+      AliGenBox* gener1 = new AliGenBox(2000);
+      gener1->SetThetaRange(0.77, 3.08);
+      gener->AddGenerator(gener1, "FMD1", .34);
       gGener = gener;
     }
     break;

@@ -872,10 +872,10 @@ AliFMD::AddHitByFields(Int_t    track,
 	&& hit->Sector() == sector 
 	&& hit->Strip() == strip
 	&& hit->Track() == track) {
-      Warning("AddHit", "already had a hit in FMD%d%c[%2d,%3d] for track # %d,"
-	      " adding energy (%f) to that hit (%f) -> %f", 
-	      detector, ring, sector, strip, track, edep, hit->Edep(),
-	      hit->Edep() + edep);
+      AliDebug(1, Form("already had a hit in FMD%d%c[%2d,%3d] for track # %d,"
+		       " adding energy (%f) to that hit (%f) -> %f", 
+		       detector, ring, sector, strip, track, edep, hit->Edep(),
+		       hit->Edep() + edep));
       hit->SetEdep(hit->Edep() + edep);
       return hit;
     }

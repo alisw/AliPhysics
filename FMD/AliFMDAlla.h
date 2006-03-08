@@ -24,10 +24,9 @@ public:
   //  virtual void Hit2Digits(Int_t bgrEvent, Option_t *opt1=" ",
   // 	Option_t *opt2=" ",Text_t *name=" "); // hit to digit for v1 :test  
  virtual void  Response( Float_t Edep);
-//private:
+ //private:
  //Int_t fCharge; 
-
-
+ AliDigitizer* CreateDigitizer(AliRunDigitizer* manager) const;
 protected:
    Int_t fIdSens1; // Sensetive volume  in FMD
    Int_t fIdSens2; // Sensetive volume  in FMD
@@ -46,5 +45,9 @@ protected:
 };
 
 #endif
-
+//
+// Local Variables:
+//   mode: C++
+// End:
+//
 

@@ -27,15 +27,22 @@
 //
 #include "AliFMDInput.h"	// ALIFMDHIT_H
 #include "AliLog.h"		// ALILOG_H
-#include "Riostream.h"		// ROOT_Riostream
-#include <TDatabasePDG.h>
-#include <TMath.h>
-#include <TString.h>
-#include <TParticle.h>
+#include "AliLoader.h"          // ALILOADER_H
+#include "AliRunLoader.h"       // ALIRUNLOADER_H
+#include "AliRun.h"             // ALIRUN_H
+#include "AliStack.h"           // ALISTACK_H
+#include "AliFMD.h"             // ALIFMD_H
 #include "AliFMDHit.h"		// ALIFMDHIT_H
-#include "AliFMDDigit.h"		// ALIFMDDigit_H
-#include "AliFMDMultStrip.h"		// ALIFMDMultStrip_H
-#include "AliFMDMultRegion.h"		// ALIFMDMultRegion_H
+#include "AliFMDDigit.h"	// ALIFMDDigit_H
+#include "AliFMDMultStrip.h"	// ALIFMDMultStrip_H
+#include "AliFMDMultRegion.h"	// ALIFMDMultRegion_H
+#include <TTree.h>              // ROOT_TTree
+#include <TParticle.h>          // ROOT_TParticle
+#include <TString.h>            // ROOT_TString
+#include <TDatabasePDG.h>       // ROOT_TDatabasePDG
+#include <TMath.h>              // ROOT_TMath
+#include <TGeoManager.h>        // ROOT_TGeoManager 
+#include <Riostream.h>		// ROOT_Riostream
 
 //____________________________________________________________________
 ClassImp(AliFMDInput)
@@ -152,6 +159,21 @@ AliFMDInput::Init()
     return kFALSE;
   }
   fTreeE = fLoader->TreeE();
+
+  // Optionally, get the geometry 
+  if (TESTBIT(fTreeMask, kGeometry)) {
+    TString fname(fRun->GetGeometryFileName());
+    if (fname.IsNull()) {
+      Warning("Init", "No file name for the geometry from AliRun");
+      fname = gSystem->DirName(fGAliceFile);
+      fname.Append("/geometry.root");
+    }
+    fGeoManager = TGeoManager::Import(fname.Data());
+    if (!fGeoManager) {
+      Fatal("Init", "No geometry manager found");
+      return kFALSE;
+    }
+  }
   
   fIsInit = kTRUE;
   return fIsInit;
@@ -208,9 +230,9 @@ AliFMDInput::Begin(Int_t event)
     if (fFMDLoader->LoadRecPoints()) return kFALSE;
     fTreeR = fFMDLoader->TreeR();
     if (!fArrayN) fArrayN = new TClonesArray("AliFMDMultStrip");
-    if (!fArrayP) fArrayP = new TClonesArray("AliFMDMultRegion");
-    fTreeR->SetBranchAddress("FMDNaiive",  &fArrayN);
-    fTreeR->SetBranchAddress("FMDPoisson", &fArrayP);
+    // if (!fArrayP) fArrayP = new TClonesArray("AliFMDMultRegion");
+    fTreeR->SetBranchAddress("FMD",  &fArrayN);
+    // fTreeR->SetBranchAddress("FMDPoisson", &fArrayP);
   }
   return kTRUE;
 }

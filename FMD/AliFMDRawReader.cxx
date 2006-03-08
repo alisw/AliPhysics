@@ -66,8 +66,6 @@ AliFMDRawReader::AliFMDRawReader(AliRawReader* reader, TTree* tree)
     fSampleRate(1)
 {
   // Default CTOR
-  AliFMDParameters* pars = AliFMDParameters::Instance();
-  fSampleRate = pars->GetSampleRate();
 }
 
 
@@ -85,11 +83,15 @@ AliFMDRawReader::Exec(Option_t*)
   TClonesArray* array = new TClonesArray("AliFMDDigit");
   fTree->Branch("FMD", &array);
 
+  // Get sample rate 
+  AliFMDParameters* pars = AliFMDParameters::Instance();
+  fSampleRate = pars->GetSampleRate(AliFMDParameters::kBaseDDL);
+
   // Use AliAltroRawStream to read the ALTRO format.  No need to
   // reinvent the wheel :-) 
   AliFMDRawStream input(fReader, fSampleRate);
   // Select FMD DDL's 
-  fReader->Select(AliFMDParameters::kBaseDDL >> 8);
+  fReader->Select(AliFMDParameters::kBaseDDL);
   
   Int_t    oldDDL      = -1;
   Int_t    count       = 0;

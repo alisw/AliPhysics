@@ -16,6 +16,7 @@
 #include <iostream>
 #include <TStyle.h>
 #include <TArrayF.h>
+#include <TParticle.h>
 
 class DrawHits : public AliFMDInputHits
 {
@@ -26,9 +27,13 @@ public:
   TArrayF MakeLogScale(Int_t n, Double_t min, Double_t max) 
   {
     TArrayF bins(n+1);
+    bins[0]      = min;
+    if (n <= 20) {
+      for (Int_t i = 1; i < n+1; i++) bins[i] = bins[i-1] + (max-min)/n;
+      return bins;
+    }
     Float_t dp   = n / TMath::Log10(max / min);
     Float_t pmin = TMath::Log10(min);
-    bins[0]      = min;
     for (Int_t i = 1; i < n+1; i++) {
       Float_t p = pmin + i / dp;
       bins[i]   = TMath::Power(10, p);
@@ -40,20 +45,30 @@ public:
 	   Int_t pdg=211) 
     : fPdg(pdg)
   { 
+    AddLoad(kKinematics);
     TArrayF tkine(MakeLogScale(n, tmin, tmax));
     TArrayF eloss(MakeLogScale(m, emin, emax));
-    fElossVsPMQ = new TH2D("bad", "#Delta E/#Delta x vs. p/(mq^{2})", 
-			   tkine.fN-1, tkine.fArray, eloss.fN-1, eloss.fArray);
+    TString name(Form("elossVsP%s", (fPdg == 0 ? "MQ" : "")));
+    TString title(Form("#Delta E/#Delta x vs. p%s", 
+		       (fPdg == 0 ? "/(mq^{2})" : "")));
+    fElossVsPMQ = new TH2D(name.Data(), title.Data(), 
+			   tkine.fN-1, tkine.fArray, 
+			   eloss.fN-1, eloss.fArray);
     fElossVsPMQ->SetXTitle(Form("p%s", (fPdg == 0 ? "/(mq^{2})" : " [GeV]")));
     fElossVsPMQ->SetYTitle("#Delta E/#Delta x [MeV/cm]");
   }
-  Bool_t ProcessHit(AliFMDHit* hit, TParticle*) 
+  Bool_t ProcessHit(AliFMDHit* hit, TParticle* p) 
   {
     if (!hit) {
       std::cout << "No hit" << std::endl;
       return kFALSE;
     }
 
+    if (!p) {
+      std::cout << "No track" << std::endl;
+      return kFALSE;
+    }
+    if (!p->IsPrimary()) return kTRUE;
     if (hit->IsStop()) return kTRUE;
     Float_t x = hit->P();
     Float_t y = hit->Edep()/hit->Length();
@@ -78,9 +93,10 @@ public:
     gStyle->SetPadColor(0);
     gStyle->SetPadBorderSize(0);
     fElossVsPMQ->SetStats(kFALSE);
-    fElossVsPMQ->Draw("COLZ");
+    fElossVsPMQ->Draw("COLZ box");
     return kTRUE;
   }
+  ClassDef(DrawHits,0);
 };
 
 //____________________________________________________________________

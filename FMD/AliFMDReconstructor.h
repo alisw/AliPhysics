@@ -32,9 +32,6 @@
 #ifndef ALIRECONSTRUCTOR_H
 # include <AliReconstructor.h>
 #endif
-#ifndef ROOT_TObjArray
-# include <TObjArray.h>
-#endif
 
 //____________________________________________________________________
 class TTree;
@@ -43,6 +40,7 @@ class AliFMDDigit;
 class AliRawReader;
 class AliRunLoader;
 class AliESD;
+class AliESDFMD;
 
 //____________________________________________________________________
 class AliFMDReconstructor: public AliReconstructor 
@@ -73,12 +71,17 @@ private:
 protected:
   virtual void     ProcessDigits(TClonesArray* digits) const;
   virtual UShort_t SubtractPedestal(AliFMDDigit* digit) const;
+  virtual Float_t  Adc2Energy(AliFMDDigit* digit, Float_t eta, 
+			      UShort_t count) const;
+  virtual Float_t  Energy2Multiplicity(AliFMDDigit* digit, Float_t edep) const;
+  virtual void     PhysicalCoordinates(AliFMDDigit* digit, Float_t& eta, 
+				       Float_t& phi) const;
   
-  TObjArray	        fAlgorithms;    // Array of algorithms
-  Float_t               fPedestal;      // Pedestal to subtract
-  Float_t               fPedestalWidth; // Width of pedestal
-  Float_t               fPedestalFactor;// Number of pedestal widths 
+  mutable TClonesArray* fMult;          // Cache of RecPoints
+  mutable Int_t         fNMult;         // Number of entries in fMult 
+  mutable TTree*        fTreeR;         // Output tree 
   mutable Float_t       fCurrentVertex; // Z-coordinate of primary vertex
+  mutable AliESDFMD*    fESDObj;        // ESD output object
   AliESD*               fESD;
   
   ClassDef(AliFMDReconstructor, 0)  // class for the FMD reconstruction

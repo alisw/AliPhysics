@@ -103,10 +103,10 @@
 #include "AliFMDReconstructor.h"           // ALIFMDRECONSTRUCTOR_H
 #include "AliFMDRawStream.h"               // ALIFMDRAWSTREAM_H
 #include "AliFMDRawReader.h"               // ALIFMDRAWREADER_H
-#include "AliFMDMultAlgorithm.h" 	   // ALIFMDMULTALGORITHM_H
-#include "AliFMDMultPoisson.h"		   // ALIFMDMULTPOISSON_H
-#include "AliFMDMultNaiive.h"		   // ALIFMDMULTNAIIVE_H
+#include "AliFMDMultStrip.h"	   	   // ALIFMDMULTNAIIVE_H
 #include "AliESD.h"			   // ALIESD_H
+#include <AliESDFMD.h>			   // ALIESDFMD_H
+#include <TFile.h>
 
 //____________________________________________________________________
 ClassImp(AliFMDReconstructor)
@@ -117,45 +117,20 @@ ClassImp(AliFMDReconstructor)
 //____________________________________________________________________
 AliFMDReconstructor::AliFMDReconstructor() 
   : AliReconstructor(),
-    fPedestal(0), 
-    fPedestalWidth(0),
-    fPedestalFactor(0)
+    fMult(0), 
+    fESDObj(0)
 {
-  // Make a new FMD reconstructor object - default CTOR.
-  AliFMDParameters* pars = AliFMDParameters::Instance();
-  fPedestal       = pars->GetPedestal();
-  fPedestalWidth  = pars->GetPedestalWidth();
-  fPedestalFactor = pars->GetPedestalFactor();
-  
-  fAlgorithms.Add(new AliFMDMultNaiive);
-  fAlgorithms.Add(new AliFMDMultPoisson);
-
-  TIter next(&fAlgorithms);
-  AliFMDMultAlgorithm* algorithm = 0;
-  while ((algorithm = static_cast<AliFMDMultAlgorithm*>(next()))) 
-    algorithm->PreRun(0);
+  // Make a new FMD reconstructor object - default CTOR.  
 }
   
 
 //____________________________________________________________________
 AliFMDReconstructor::AliFMDReconstructor(const AliFMDReconstructor& other) 
-  : AliReconstructor(),
-    fPedestal(0), 
-    fPedestalWidth(0),
-    fPedestalFactor(0)
+  : AliReconstructor(), 
+    fMult(other.fMult),
+    fESDObj(other.fESDObj)
 {
   // Copy constructor 
-  fPedestal       = other.fPedestal;
-  fPedestalWidth  = other.fPedestalWidth;
-  fPedestalFactor = other.fPedestalFactor;
-
-  
-  fAlgorithms.Delete();
-  TIter next(&(other.fAlgorithms));
-  AliFMDMultAlgorithm* algorithm = 0;
-  while ((algorithm = static_cast<AliFMDMultAlgorithm*>(next()))) 
-    fAlgorithms.Add(algorithm);
-  fAlgorithms.SetOwner(kFALSE);
 }
   
 
@@ -164,17 +139,8 @@ AliFMDReconstructor&
 AliFMDReconstructor::operator=(const AliFMDReconstructor& other) 
 {
   // Assignment operator
-  fPedestal       = other.fPedestal;
-  fPedestalWidth  = other.fPedestalWidth;
-  fPedestalFactor = other.fPedestalFactor;
-
-  fAlgorithms.Delete();
-  TIter next(&(other.fAlgorithms));
-  AliFMDMultAlgorithm* algorithm = 0;
-  while ((algorithm = static_cast<AliFMDMultAlgorithm*>(next()))) 
-    fAlgorithms.Add(algorithm);
-  fAlgorithms.SetOwner(kFALSE);
-
+  fMult   = other.fMult;
+  fESDObj = other.fESDObj;
   return *this;
 }
 
@@ -182,7 +148,9 @@ AliFMDReconstructor::operator=(const AliFMDReconstructor& other)
 AliFMDReconstructor::~AliFMDReconstructor() 
 {
   // Destructor 
-  fAlgorithms.Delete();
+  if (fMult)   fMult->Delete();
+  if (fMult)   delete fMult;
+  if (fESDObj) delete fESDObj;
 }
 
 //____________________________________________________________________
@@ -191,16 +159,27 @@ AliFMDReconstructor::Init(AliRunLoader* runLoader)
 {
   // Initialize the reconstructor 
   AliDebug(1, Form("Init called with runloader 0x%x", runLoader));
+  // Current vertex position
   fCurrentVertex = 0;
+  // Create array of reconstructed strip multiplicities 
+  fMult = new TClonesArray("AliFMDMultStrip", 51200);
+  // Create ESD output object 
+  fESDObj = new AliESDFMD;
+  
+  // Check that we have a run loader
   if (!runLoader) { 
     Warning("Init", "No run loader");
     return;
   }
+
+  // Check if we can get the header tree 
   AliHeader* header = runLoader->GetHeader();
   if (!header) {
     Warning("Init", "No header");
     return;
   }
+
+  // Check if we can get a simulation header 
   AliGenEventHeader* eventHeader = header->GenEventHeader();
   if (eventHeader) {
     TArrayF vtx;
@@ -224,6 +203,7 @@ AliFMDReconstructor::ConvertDigits(AliRawReader* reader,
 				   TTree* digitsTree) const
 {
   // Convert Raw digits to AliFMDDigit's in a tree 
+  AliDebug(1, "Reading raw data into digits tree");
   AliFMDRawReader rawRead(reader, digitsTree);
   // rawRead.SetSampleRate(fFMD->GetSampleRate());
   rawRead.Exec();
@@ -241,11 +221,11 @@ AliFMDReconstructor::Reconstruct(TTree* digitsTree,
   AliDebug(1, "Reconstructing from digits in a tree");
 #if 0
   if (fESD) {
-    // const AliESDVertex* vertex = fESD->GetVertex();
-    // if (vertex) {
-    //   AliDebug(1, Form("Got vertex from ESD: %f", vertex->GetZv()));
-    //   fCurrentVertex = vertex->GetZv();
-    // }
+    const AliESDVertex* vertex = fESD->GetVertex();
+    if (vertex) {
+      AliDebug(1, Form("Got vertex from ESD: %f", vertex->GetZv()));
+      fCurrentVertex = vertex->GetZv();
+    }
   }
 #endif  
   TBranch *digitBranch = digitsTree->GetBranch("FMD");
@@ -256,23 +236,40 @@ AliFMDReconstructor::Reconstruct(TTree* digitsTree,
   TClonesArray* digits = new TClonesArray("AliFMDDigit");
   digitBranch->SetAddress(&digits);
 
-  TIter next(&fAlgorithms);
-  AliFMDMultAlgorithm* algorithm = 0;
-  while ((algorithm = static_cast<AliFMDMultAlgorithm*>(next()))) 
-    algorithm->PreEvent(clusterTree, fCurrentVertex);
+  // TIter next(&fAlgorithms);
+  // AliFMDMultAlgorithm* algorithm = 0;
+  // while ((algorithm = static_cast<AliFMDMultAlgorithm*>(next()))) {
+  //   AliDebug(10, Form("PreEvent called for algorithm %s", 
+  //                     algorithm->GetName()));    
+  //   algorithm->PreEvent(clusterTree, fCurrentVertex);
+  // }
+  if (fMult)   fMult->Clear();
+  if (fESDObj) fESDObj->Clear();
+  
+  fNMult = 0;
+  fTreeR = clusterTree;
+  fTreeR->Branch("FMD", &fMult);
+  
+  AliDebug(5, "Getting entry 0 from digit branch");
   digitBranch->GetEntry(0);
   
+  AliDebug(5, "Processing digits");
   ProcessDigits(digits);
 
-  next.Reset();
-  algorithm = 0;
-  while ((algorithm = static_cast<AliFMDMultAlgorithm*>(next()))) 
-    algorithm->PostEvent();
-  clusterTree->Fill();
+  // next.Reset();
+  // algorithm = 0;
+  // while ((algorithm = static_cast<AliFMDMultAlgorithm*>(next()))) {
+  //   AliDebug(10, Form("PostEvent called for algorithm %s", 
+  //                     algorithm->GetName()));
+  // algorithm->PostEvent();
+  // }
+  Int_t written = clusterTree->Fill();
+  AliDebug(10, Form("Filled %d bytes into cluster tree", written));
   digits->Delete();
   delete digits;
 }
  
+
 //____________________________________________________________________
 void
 AliFMDReconstructor::ProcessDigits(TClonesArray* digits) const
@@ -284,38 +281,49 @@ AliFMDReconstructor::ProcessDigits(TClonesArray* digits) const
   AliDebug(1, Form("Got %d digits", nDigits));
   for (Int_t i = 0; i < nDigits; i++) {
     AliFMDDigit* digit = static_cast<AliFMDDigit*>(digits->At(i));
-    AliFMDGeometry* fmd = AliFMDGeometry::Instance();
-    AliFMDDetector* subDetector = fmd->GetDetector(digit->Detector());
-    if (!subDetector) { 
-      Warning("ProcessDigits", "Unknown detector: FMD%d" , digit->Detector());
-      continue;
-    }
+    AliFMDParameters* param  = AliFMDParameters::Instance();
+    // Check that the strip is not marked as dead 
+    if (param->IsDead(digit->Detector(), digit->Ring(), 
+		      digit->Sector(), digit->Strip())) continue;
+
+    // digit->Print();
+    // Get eta and phi 
+    Float_t eta, phi;
+    PhysicalCoordinates(digit, eta, phi);
     
-    AliFMDRing* ring  = subDetector->GetRing(digit->Ring());
-    Float_t     ringZ = subDetector->GetRingZ(digit->Ring());
-    if (!ring) {
-      Warning("ProcessDigits", "Unknown ring: FMD%d%c", digit->Detector(), 
-	      digit->Ring());
-      break;
-    }
-    
-    Float_t  realZ    = fCurrentVertex + ringZ;
-    Float_t  stripR   = ((ring->GetHighR() - ring->GetLowR()) 
-			 / ring->GetNStrips() * (digit->Strip() + .5) 
-			 + ring->GetLowR());
-    Float_t  theta    = TMath::ATan2(stripR, realZ);
-    Float_t  phi      = (2 * TMath::Pi() / ring->GetNSectors() 
-			 * (digit->Sector() + .5));
-    Float_t  eta      = -TMath::Log(TMath::Tan(theta / 2));
+    // Substract pedestal. 
     UShort_t counts   = SubtractPedestal(digit);
     
-    TIter next(&fAlgorithms);
-    AliFMDMultAlgorithm* algorithm = 0;
-    while ((algorithm = static_cast<AliFMDMultAlgorithm*>(next()))) 
-      algorithm->ProcessDigit(digit, eta, phi, counts);
+    // Gain match digits. 
+    Double_t edep     = Adc2Energy(digit, eta, counts);
+    
+    // Make rough multiplicity 
+    Double_t mult     = Energy2Multiplicity(digit, edep);
+    
+    AliDebug(10, Form("FMD%d%c[%2d,%3d]: "
+		      "ADC: %d, Counts: %d, Energy: %f, Mult: %f", 
+		      digit->Detector(), digit->Ring(), digit->Sector(),
+		      digit->Strip(), digit->Counts(), counts, edep, mult));
+    
+    // Create a `RecPoint' on the output branch. 
+    AliFMDMultStrip* m = 
+      new ((*fMult)[fNMult]) AliFMDMultStrip(digit->Detector(), 
+					     digit->Ring(), 
+					     digit->Sector(),
+					     digit->Strip(),
+					     eta, phi, 
+					     edep, mult,
+					     AliFMDMult::kNaiive);
+    (void)m; // Suppress warnings about unused variables. 
+    fNMult++;
+
+    fESDObj->SetMultiplicity(digit->Detector(), digit->Ring(), 
+			     digit->Sector(),  digit->Strip(), mult);
+    fESDObj->SetEta(digit->Detector(), digit->Ring(), 
+		    digit->Sector(),  digit->Strip(), eta);
   }
 }
-      
+
 //____________________________________________________________________
 UShort_t
 AliFMDReconstructor::SubtractPedestal(AliFMDDigit* digit) const
@@ -325,24 +333,185 @@ AliFMDReconstructor::SubtractPedestal(AliFMDDigit* digit) const
   // load this to subtract a pedestal that was given in a database or
   // something like that. 
 
-  Int_t counts = 0;
-  Float_t ped = fPedestal + fPedestalFactor * fPedestalWidth;
+  Int_t             counts = 0;
+  AliFMDParameters* param  = AliFMDParameters::Instance();
+  Float_t           pedM   = param->GetPedestal(digit->Detector(), 
+						digit->Ring(), 
+						digit->Sector(), 
+						digit->Strip());
+  AliDebug(10, Form("Subtracting pedestal %f from signal %d", 
+		   pedM, digit->Counts()));
   if (digit->Count3() > 0)      counts = digit->Count3();
   else if (digit->Count2() > 0) counts = digit->Count2();
   else                          counts = digit->Count1();
-  counts = TMath::Max(Int_t(counts - ped), 0);
+  counts = TMath::Max(Int_t(counts - pedM), 0);
+  if (counts > 0) AliDebug(10, "Got a hit strip");
+  
   return  UShort_t(counts);
 }
+
+//____________________________________________________________________
+Float_t
+AliFMDReconstructor::Adc2Energy(AliFMDDigit* digit, 
+				Float_t      /* eta */, 
+				UShort_t     count) const
+{
+  // Converts number of ADC counts to energy deposited. 
+  // Note, that this member function can be overloaded by derived
+  // classes to do strip-specific look-ups in databases or the like,
+  // to find the proper gain for a strip. 
+  // 
+  // In this simple version, we calculate the energy deposited as 
+  // 
+  //    EnergyDeposited = cos(theta) * gain * count
+  // 
+  // where 
+  // 
+  //           Pre_amp_MIP_Range
+  //    gain = ----------------- * Energy_deposited_per_MIP
+  //           ADC_channel_size    
+  // 
+  // is constant and the same for all strips.
+
+  // Double_t theta = 2 * TMath::ATan(TMath::Exp(-eta));
+  // Double_t edep  = TMath::Abs(TMath::Cos(theta)) * fGain * count;
+  AliFMDParameters* param = AliFMDParameters::Instance();
+  Float_t           gain  = param->GetPulseGain(digit->Detector(), 
+						digit->Ring(), 
+						digit->Sector(), 
+						digit->Strip());
+  Double_t          edep  = count * gain;
+  AliDebug(10, Form("Converting counts %d to energy via factor %f", 
+		    count, gain));
+  return edep;
+}
+
+//____________________________________________________________________
+Float_t
+AliFMDReconstructor::Energy2Multiplicity(AliFMDDigit* /* digit */, 
+					 Float_t      edep) const
+{
+  // Converts an energy signal to number of particles. 
+  // Note, that this member function can be overloaded by derived
+  // classes to do strip-specific look-ups in databases or the like,
+  // to find the proper gain for a strip. 
+  // 
+  // In this simple version, we calculate the multiplicity as 
+  // 
+  //   multiplicity = Energy_deposited / Energy_deposited_per_MIP
+  // 
+  // where 
+  //
+  //   Energy_deposited_per_MIP = 1.664 * SI_density * SI_thickness 
+  // 
+  // is constant and the same for all strips 
+  AliFMDParameters* param   = AliFMDParameters::Instance();
+  Double_t          edepMIP = param->GetEdepMip();
+  Float_t           mult    = edep / edepMIP;
+  if (edep > 0) 
+    AliDebug(10, Form("Translating energy %f to multiplicity via "
+		     "divider %f->%f", edep, edepMIP, mult));
+  return mult;
+}
+
+//____________________________________________________________________
+void
+AliFMDReconstructor::PhysicalCoordinates(AliFMDDigit* digit, 
+					 Float_t& eta, 
+					 Float_t& phi) const
+{
+  // Get the eta and phi of a digit 
+  // 
+  // Get geometry. 
+  AliFMDGeometry* fmd = AliFMDGeometry::Instance();
+  AliFMDDetector* subDetector = fmd->GetDetector(digit->Detector());
+  if (!subDetector) { 
+    Warning("ProcessDigits", "Unknown detector: FMD%d" , digit->Detector());
+    return;
+  }
+    
+  // Get the ring - we should really use geometry->Detector2XYZ(...)
+  // here. 
+  AliFMDRing* ring  = subDetector->GetRing(digit->Ring());
+  Float_t     ringZ = subDetector->GetRingZ(digit->Ring());
+  if (!ring) {
+    Warning("ProcessDigits", "Unknown ring: FMD%d%c", digit->Detector(), 
+	    digit->Ring());
+    return;
+  }
+    
+  // Correct for vertex offset. 
+  Float_t  realZ    = fCurrentVertex + ringZ;
+  Float_t  stripR   = ((ring->GetHighR() - ring->GetLowR()) 
+		       / ring->GetNStrips() * (digit->Strip() + .5) 
+		       + ring->GetLowR());
+  Float_t  theta    = TMath::ATan2(stripR, realZ);
+  phi               = (2 * TMath::Pi() / ring->GetNSectors() 
+		       * (digit->Sector() + .5));
+  eta               = -TMath::Log(TMath::Tan(theta / 2));
+}
+
+      
 
 //____________________________________________________________________
 void 
 AliFMDReconstructor::FillESD(TTree*  /* digitsTree */, 
 			     TTree*  /* clusterTree */,
-			     AliESD* /* esd*/) const
+			     AliESD* esd) const
 {
   // nothing to be done
   // FIXME: The vertex may not be known when Reconstruct is executed,
   // so we may have to move some of that member function here. 
+  AliDebug(1, Form("Calling FillESD with two trees and one ESD"));
+  // fESDObj->Print();
+
+  if (esd) { 
+    AliDebug(1, Form("Writing FMD data to ESD tree"));
+    esd->SetFMDData(fESDObj);
+    // Let's check the data in the ESD
+#if 0
+    AliESDFMD* fromEsd = esd->GetFMDData();
+    if (!fromEsd) {
+      AliWarning("No FMD object in ESD!");
+      return;
+    }
+    for (UShort_t det = 1; det <= fESDObj->MaxDetectors(); det++) {
+      for (UShort_t ir = 0; ir < fESDObj->MaxRings(); ir++) {
+	Char_t ring = (ir == 0 ? 'I' : 'O');
+	for (UShort_t sec = 0; sec < fESDObj->MaxSectors(); sec++) {
+	  for (UShort_t str = 0; str < fESDObj->MaxStrips(); str++) {
+	    if (fESDObj->Multiplicity(det, ring, sec, str) != 
+		fromEsd->Multiplicity(det, ring, sec, str))
+	      AliWarning(Form("Mult for FMD%d%c[%2d,%3d]",det,ring,sec,str));
+	    if (fESDObj->Eta(det, ring, sec, str) != 
+		fromEsd->Eta(det, ring, sec, str))
+	      AliWarning(Form("Eta for FMD%d%c[%2d,%3d]", det,ring,sec,str));
+	    if (fESDObj->Multiplicity(det, ring, sec, str) > 0 && 
+		fESDObj->Multiplicity(det, ring, sec, str) 
+		!= AliESDFMD::kInvalidMult) 
+	      AliInfo(Form("Mult in FMD%d%c[%2d,%3d] is %f", det,ring,sec,str,
+			   fESDObj->Multiplicity(det, ring, sec, str)));
+	  }
+	}
+      }
+    }
+#endif
+  }
+
+#if 0  
+  static Int_t evNo = -1;
+  evNo++;
+  if (esd) evNo = esd->GetEventNumber();
+  TString fname(Form("FMD.ESD.%03d.root", evNo));
+  TFile* file = TFile::Open(fname.Data(), "RECREATE");
+  if (!file) {
+    AliError(Form("Failed to open file %s", fname.Data()));
+    return;
+  }
+  fESDObj->Write();
+  file->Close();
+#endif
+    
 #if 0
   TClonesArray* multStrips  = 0;
   TClonesArray* multRegions = 0;
@@ -381,6 +550,7 @@ AliFMDReconstructor::Reconstruct(AliRawReader*,TTree*) const
 {
   // Cannot be used.  See member function with same name but with 2
   // TTree arguments.   Make sure you do local reconstrucion 
+  AliDebug(1, Form("Calling FillESD with loader and tree"));
   AliError("MayNotUse");
 }
 //____________________________________________________________________
@@ -389,6 +559,7 @@ AliFMDReconstructor::Reconstruct(AliRunLoader*) const
 {
   // Cannot be used.  See member function with same name but with 2
   // TTree arguments.   Make sure you do local reconstrucion 
+  AliDebug(1, Form("Calling FillESD with loader"));
   AliError("MayNotUse");
 }
 //____________________________________________________________________
@@ -397,6 +568,7 @@ AliFMDReconstructor::Reconstruct(AliRunLoader*, AliRawReader*) const
 {
   // Cannot be used.  See member function with same name but with 2
   // TTree arguments.   Make sure you do local reconstrucion 
+  AliDebug(1, Form("Calling FillESD with loader and raw reader"));
   AliError("MayNotUse");
 }
 //____________________________________________________________________
@@ -405,6 +577,7 @@ AliFMDReconstructor::FillESD(AliRawReader*,TTree*,AliESD*) const
 {
   // Cannot be used.  See member function with same name but with 2
   // TTree arguments.   Make sure you do local reconstrucion 
+  AliDebug(1, Form("Calling FillESD with raw reader, tree, and ESD"));
   AliError("MayNotUse");
 }
 //____________________________________________________________________
@@ -413,6 +586,7 @@ AliFMDReconstructor::FillESD(AliRunLoader*,AliESD*) const
 {
   // Cannot be used.  See member function with same name but with 2
   // TTree arguments.   Make sure you do local reconstrucion 
+  AliDebug(1, Form("Calling FillESD with loader and ESD"));
   AliError("MayNotUse");
 }
 //____________________________________________________________________
@@ -421,6 +595,7 @@ AliFMDReconstructor::FillESD(AliRunLoader*,AliRawReader*,AliESD*) const
 {
   // Cannot be used.  See member function with same name but with 2
   // TTree arguments.   Make sure you do local reconstrucion 
+  AliDebug(1, Form("Calling FillESD with loader, raw reader, and ESD"));
   AliError("MayNotUse");
 }
 

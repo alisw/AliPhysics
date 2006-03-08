@@ -61,11 +61,12 @@
 
 #include "AliFMDDigit.h"	// ALIFMDDIGIT_H
 #include "Riostream.h"		// ROOT_Riostream
+#include <TString.h>
 
 //====================================================================
 ClassImp(AliFMDBaseDigit)
 #if 0
-  ; // This is here to keep Emacs for indenting the next line
+  ; // This is here to keep Emacs from indenting the next line
 #endif
 
 //____________________________________________________________________
@@ -106,6 +107,13 @@ AliFMDBaseDigit::Print(Option_t* /* option*/) const
        << setw(3) << fSector << ","
        << setw(3) << fStrip << "]" 
        << flush;
+}
+
+//____________________________________________________________________
+const char*
+AliFMDBaseDigit::GetName() const 
+{ 
+  return Form("FMD%d%c[%2d,%3d]", fDetector, fRing, fSector, fStrip);
 }
 
 //====================================================================

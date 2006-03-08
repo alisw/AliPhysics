@@ -137,7 +137,7 @@ AliFMDv1::VMC2FMD(Int_t copy, TLorentzVector& v,
   }
 #endif
   if (sector < 1 || sector > n) {
-    AliWarning(Form("Step", "sector # %d out of range (0-%d)", sector-1, n-1));
+    AliWarning(Form("sector # %d out of range (0-%d)", sector-1, n-1));
     return kFALSE;
   }
   sector--;
@@ -243,7 +243,7 @@ AliFMDv1::StepManager()
     if (mc->IsTrackOut())         what.Append("out ");
     
     Int_t mother = gAlice->GetMCApp()->GetPrimary(trackno);
-    AliWarning(Form("Step", "Track # %5d deposits a lot of energy\n" 
+    AliWarning(Form("Track # %5d deposits a lot of energy\n" 
 		    "  Volume:    %s\n" 
 		    "  Momentum:  (%7.4f,%7.4f,%7.4f)\n"
 		    "  PDG:       %d (%s)\n" 

@@ -14,6 +14,7 @@ SRCS		=  AliFMD.cxx 				\
 		   AliFMDG3OldSimulator.cxx		\
 		   AliFMDHit.cxx 			\
 		   AliFMDDigitizer.cxx			\
+		   AliFMDDigitizerAlla.cxx		\
 		   AliFMDEdepMap.cxx			\
 		   AliFMDRawWriter.cxx			\
 		   AliFMDAlla.cxx		

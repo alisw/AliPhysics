@@ -13,42 +13,35 @@
 // classes for customized class that do some sort of analysis on the
 // various types of data produced by the FMD. 
 //
-#ifndef ALILOADER_H
-# include <AliLoader.h>
-#endif
-#ifndef ALIRUNLOADER_H
-# include <AliRunLoader.h>
-#endif
-#ifndef ALIRUN_H
-# include <AliRun.h>
-#endif
-#ifndef ALISTACK_H
-# include <AliStack.h>
-#endif
-#ifndef ALIFMD_H
-# include <AliFMD.h>
-#endif
-#ifndef ROOT_TTree
-# include <TTree.h>
-#endif
-#ifndef ROOT_TParticle
-# include <TParticle.h>
-#endif
+#include <TObject.h>
 #ifndef ROOT_TString
 # include <TString.h>
 #endif
+class AliRunLoader;
+class AliLoader;
+class AliStack;
+class AliRun;
+class AliFMD;
+class AliFMDHit;
+class TString;
+class TClonesArray;
+class TTree;
+class TGeoManager;
+class TParticle;
+
 
 //___________________________________________________________________
 class AliFMDInput : public TObject
 {
 public:
   enum ETrees {
-    kHits       = 1, 
-    kKinematics, 
-    kDigits, 
-    kSDigits, 
-    kHeader, 
-    kRecPoints
+    kHits       = 1,  // Hits
+    kKinematics,      // Kinematics (from sim)
+    kDigits,          // Digits
+    kSDigits,         // Summable digits 
+    kHeader,          // Header information 
+    kRecPoints,       // Reconstructed points
+    kGeometry         // Not really a tree 
   };
   AliFMDInput();
   AliFMDInput(const char* gAliceFile);
@@ -82,6 +75,7 @@ protected:
   TClonesArray* fArrayS;     // SDigit info array
   TClonesArray* fArrayN;     // Mult (single) info array
   TClonesArray* fArrayP;     // Mult (region) info array
+  TGeoManager*  fGeoManager; // Geometry manager
   Int_t         fTreeMask;   // Which tree's to load
   Bool_t        fIsInit;
   ClassDef(AliFMDInput,0)  //Hits for detector FMD

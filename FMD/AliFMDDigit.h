@@ -26,7 +26,7 @@ public:
   UShort_t     Sector()	           const { return fSector;   }
   UShort_t     Strip()	           const { return fStrip;    }
   virtual void Print(Option_t* opt="") const;
-
+  const char*  GetName() const;
 protected:
   UShort_t fDetector;  // (Sub) Detector # (1,2, or 3)
   Char_t   fRing;      // Ring ID ('I' or 'O')

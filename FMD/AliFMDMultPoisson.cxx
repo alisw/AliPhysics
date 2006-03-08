@@ -61,6 +61,7 @@ void
 AliFMDMultPoisson::PreEvent(TTree* tree, Float_t ipZ) 
 {
   // Reset internal data
+  AliDebug(30, Form("before event with vertex %f", ipZ));
   AliFMDMultAlgorithm::PreEvent(tree, ipZ);
   fCurrentVertexZ = ipZ;
   fEmpty.Reset(kFALSE);
@@ -87,7 +88,9 @@ AliFMDMultPoisson::ProcessDigit(AliFMDDigit*  digit,
   //                    vertex of this event 
   //
   if (!digit) return;
-  if (count < fThreshold) fEmpty(digit->Detector() - 1, 
+  AliDebug(30, Form("Processing digit %s (%s)", digit->GetName(), 
+		    count < fThreshold ? "empty" : "hit"));
+  if (count < fThreshold) fEmpty(digit->Detector(),
 				 digit->Ring(), 
 				 digit->Sector(), 
 				 digit->Strip()) = kTRUE;
@@ -182,7 +185,7 @@ AliFMDMultPoisson::PostEvent()
 	  Int_t   emptyStrips = 0;
 	  for (Int_t sector = minSector; sector < maxSector; sector++) 
 	    for (Int_t strip = minStrip; strip < maxStrip; strip++) 
-	      if (fEmpty(sub->GetId() - 1, r->GetId(), sector, strip)) 
+	      if (fEmpty(sub->GetId(), r->GetId(), sector, strip)) 
 		emptyStrips++;
 	  
 	  // The total number of strips 

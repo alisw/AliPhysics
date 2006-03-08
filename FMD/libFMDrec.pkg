@@ -5,9 +5,6 @@
 SRCS		=  AliFMDReconstructor.cxx 	\
 		   AliFMDRawStream.cxx  	\
 		   AliFMDRawReader.cxx  	\
-		   AliFMDMultAlgorithm.cxx 	\
-		   AliFMDMultNaiive.cxx 	\
-		   AliFMDMultPoisson.cxx 	\
 		   AliFMDMultRegion.cxx		\
 		   AliFMDMult.cxx		\
 		   AliFMDMultStrip.cxx		
@@ -16,6 +13,11 @@ DHDR		:= FMDrecLinkDef.h
 EINCLUDE 	:= $(ALICE)/RAW
 # Un comment to use old code with seperate simulator task
 # PACKCXXFLAGS	:= $(CXXFLAGS) -DUSE_PRE_MOVE
+
+# Not used any more 
+#		   AliFMDMultAlgorithm.cxx 	\
+#		   AliFMDMultNaiive.cxx 	\
+#		   AliFMDMultPoisson.cxx 	\
 
 #
 # EOF

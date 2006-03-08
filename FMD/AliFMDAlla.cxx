@@ -45,6 +45,7 @@
 #include <AliFMDHit.h>
 #include "AliFMDv0.h"
 #include "AliFMDAlla.h"
+#include "AliFMDDigitizerAlla.h"
 #include "AliMagF.h"
 #include "AliRun.h"
 #include "AliMC.h"
@@ -409,7 +410,7 @@ AliFMDAlla::StepManager()
   if(id==fIdSens1||id==fIdSens2||id==fIdSens3||id==fIdSens4||id==fIdSens5) {
 
     if(gMC->IsTrackEntering())  {
-      vol[2]=copy;
+      vol[2]=copy-1;
       gMC->CurrentVolOffID(1,copy1);
       vol[1]=copy1;
       gMC->CurrentVolOffID(2,copy2);
@@ -475,12 +476,18 @@ AliFMDAlla::StepManager()
       Char_t   ring     = (vol[0] % 2) == 0 ? 'I' : 'O';
       UShort_t sector   = vol[1];
       UShort_t strip    = vol[2];
+      gMC->TrackPosition(pos);
+      TVector3 cur(pos.Vect());
+      TVector3 old(hits[0], hits[1], hits[2]);
+      cur -= old;
+      Double_t len = cur.Mag();
       AliFMDHit* h = new(lhits[fNhits++]) 
 	AliFMDHit(fIshunt,
 		  gAlice->GetMCApp()->GetCurrentTrackNumber(),
 		  detector, ring, sector, strip, 
 		  hits[0], hits[1], hits[2], hits[3], hits[4], hits[5], 
-		  hits[6], iPart, hits[8]);
+		  hits[6], iPart, hits[8], len, 
+		  gMC->IsTrackDisappeared()||gMC->IsTrackStop());
       if (hits[6] > 1 && p/mass > 1) fBad->Add(h);
     } // IsTrackExiting()
   }
@@ -496,6 +503,15 @@ AliFMDAlla::Response(Float_t Edep)
   if (Edep>0)
     charge=Int_t(gRandom->Gaus(chargeOnly,500));	
 }   
+
+//____________________________________________________________________
+AliDigitizer* 
+AliFMDAlla::CreateDigitizer(AliRunDigitizer* manager) const
+{
+  // Create a digitizer object 
+  AliFMDDigitizerAlla* digitizer = new AliFMDDigitizerAlla(manager);
+  return digitizer;
+}
 //--------------------------------------------------------------------------
 //
 // EOF

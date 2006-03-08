@@ -30,6 +30,7 @@
 #pragma link C++ class  AliFMDBaseDigitizer+;
 #pragma link C++ class  AliFMDDigitizer+;
 #pragma link C++ class  AliFMDSDigitizer+;
+#pragma link C++ class  AliFMDDigitizerAlla+;
 #pragma link C++ class  AliFMDRawWriter+;
 #pragma link C++ class  AliFMDAlla+;
 

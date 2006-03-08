@@ -17,32 +17,69 @@
 #ifndef ROOT_TNamed
 # include <TNamed.h>
 #endif
+#ifndef ROOT_TArrayI
+# include <TArrayI.h>
+#endif
+#ifndef ALIFMDUSHORTMAP_H
+# include <AliFMDUShortMap.h>
+#endif
+#ifndef ALIFMDBOOLMAP_H
+# include <AliFMDBoolMap.h>
+#endif
+typedef AliFMDUShortMap AliFMDCalibZeroSuppression;
+typedef AliFMDBoolMap   AliFMDCalibDeadMap;
+class AliFMDCalibPedestal;
+class AliFMDCalibGain;
+class AliFMDCalibSampleRate;
 
 class AliFMDParameters : public TNamed
 {
 public:
   static AliFMDParameters* Instance();
   
-  // Set various parameters 
-  void     SetVA1MipRange(UShort_t r=20)          { fVA1MipRange = r; }
-  void     SetAltroChannelSize(UShort_t s=1024)   { fAltroChannelSize = s;}
-  void     SetChannelsPerAltro(UShort_t size=128) { fChannelsPerAltro = size; }
-  void     SetZeroSuppression(UShort_t s=0)       { fZeroSuppression = s; }
-  void     SetSampleRate(UShort_t r=1)            { fSampleRate = (r>2?2:r);}
-  void     SetPedestal(Float_t p=10)              { fPedestal = p; }
-  void     SetPedestalWidth(Float_t w=1)          { fPedestalWidth = w; }
-  void     SetPedestalFactor(Float_t f=3)         { fPedestalFactor = f; }
+  // Set various `Fixed' parameters 
+  void SetVA1MipRange(UShort_t r=20)          { fVA1MipRange = r; }
+  void SetAltroChannelSize(UShort_t s=1024)   { fAltroChannelSize = s;}
+  void SetChannelsPerAltro(UShort_t size=128) { fChannelsPerAltro = size; }
+  void SetPedestalFactor(Float_t f=3)         { fPedestalFactor = f; }
 
-  // Get various parameters
+  // Set various variable parameter defaults
+  void SetZeroSuppression(UShort_t s=0)       { fFixedZeroSuppression = s; }
+  void SetSampleRate(UShort_t r=1)            { fFixedSampleRate = (r>2?2:r);}
+  void SetPedestal(Float_t p=10)              { fFixedPedestal = p; }
+  void SetPedestalWidth(Float_t w=1)          { fFixedPedestalWidth = w; }
+  void SetThreshold(Float_t t=0)              { fFixedThreshold = t; }
+
+  // Get `Fixed' various parameters
   UShort_t GetVA1MipRange()          const { return fVA1MipRange; }
   UShort_t GetAltroChannelSize()     const { return fAltroChannelSize; }
   UShort_t GetChannelsPerAltro()     const { return fChannelsPerAltro; }
-  UShort_t GetZeroSuppression()      const { return fZeroSuppression; }
-  UShort_t GetSampleRate()           const { return fSampleRate; }
   Float_t  GetEdepMip()              const;
-  Float_t  GetPedestal()	     const { return fPedestal; }
-  Float_t  GetPedestalWidth()	     const { return fPedestalWidth; }
   Float_t  GetPedestalFactor()	     const { return fPedestalFactor; }
+
+  // Get variable parameters 
+  Bool_t   IsDead(UShort_t detector, 
+		  Char_t ring, 
+		  UShort_t sector, 
+		  UShort_t strip) const;
+  Float_t  GetThreshold() const;
+  Float_t  GetPulseGain(UShort_t detector, 
+			Char_t ring, 
+			UShort_t sector, 
+			UShort_t strip) const;
+  Float_t  GetPedestal(UShort_t detector, 
+		       Char_t ring, 
+		       UShort_t sector, 
+		       UShort_t strip) const;
+  Float_t  GetPedestalWidth(UShort_t detector, 
+			    Char_t ring, 
+			    UShort_t sector, 
+			    UShort_t strip) const;
+  UShort_t GetZeroSuppression(UShort_t detector, 
+			      Char_t ring, 
+			      UShort_t sector, 
+			      UShort_t strip) const;
+  UShort_t GetSampleRate(UShort_t ddl) const;
 
   enum { 
     kBaseDDL = 0x1000 // DDL offset for the FMD
@@ -52,18 +89,28 @@ protected:
   virtual ~AliFMDParameters() {}
   static AliFMDParameters* fgInstance; // Static singleton instance
   
-  const Float_t fSiDeDxMip;        // MIP dE/dx in Silicon
-  UShort_t      fVA1MipRange;      // # MIPs the pre-amp can do    
-  UShort_t      fAltroChannelSize; // Largest # to store in 1 ADC ch.
-  UShort_t      fChannelsPerAltro; // Number of pre-amp. channels/adc chan.
-  UShort_t      fZeroSuppression;  // Threshold for zero-suppression
-  UShort_t      fSampleRate;       // Times the ALTRO samples pre-amp.
-  Float_t       fPedestal;         // Pedestal to subtract
-  Float_t       fPedestalWidth;    // Width of pedestal
-  Float_t       fPedestalFactor;   // Number of pedestal widths
+  const Float_t   fSiDeDxMip;            // MIP dE/dx in Silicon
+  UShort_t        fVA1MipRange;          // # MIPs the pre-amp can do    
+  UShort_t        fAltroChannelSize;     // Largest # to store in 1 ADC ch.
+  UShort_t        fChannelsPerAltro;     // Number of pre-amp. chan/adc chan.
+  Float_t         fPedestalFactor;       // Number of pedestal widths
 
+  Float_t         fFixedPedestal;        // Pedestal to subtract
+  Float_t         fFixedPedestalWidth;   // Width of pedestal
+  UShort_t        fFixedZeroSuppression; // Threshold for zero-suppression
+  UShort_t        fFixedSampleRate;      // Times the ALTRO samples pre-amp.
+  Float_t         fFixedThreshold;       //
+  mutable Float_t fFixedPulseGain;       //! Gain (cached)
+  mutable Float_t fEdepMip;              //! Cache of energy loss for a MIP
   
-  ClassDef(AliFMDParameters,1)
+  AliFMDCalibZeroSuppression* fZeroSuppression; // Zero suppression from CDB
+  AliFMDCalibSampleRate*      fSampleRate;      // Sample rate from CDB 
+  AliFMDCalibPedestal*        fPedestal;        // Pedestals 
+  AliFMDCalibGain*            fPulseGain;       // Pulser gain
+  AliFMDCalibDeadMap*         fDeadMap;         // Pulser gain
+  
+  
+  ClassDef(AliFMDParameters,2)
 };
 
 #endif

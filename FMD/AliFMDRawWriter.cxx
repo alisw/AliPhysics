@@ -55,8 +55,7 @@ AliFMDRawWriter::AliFMDRawWriter(AliFMD* fmd)
     fFMD(fmd)
 {
   AliFMDParameters* pars = AliFMDParameters::Instance();
-  fSampleRate            = pars->GetSampleRate();
-  fThreshold             = pars->GetZeroSuppression();
+  fSampleRate            = pars->GetSampleRate(AliFMDParameters::kBaseDDL);
   fChannelsPerAltro      = pars->GetChannelsPerAltro();
 }
 
@@ -137,6 +136,7 @@ AliFMDRawWriter::Exec(Option_t*)
   }
   digitBranch->SetAddress(&digits);
   
+  AliFMDParameters* pars = AliFMDParameters::Instance();
   Int_t nEvents = Int_t(digitTree->GetEntries());
   for (Int_t event = 0; event < nEvents; event++) {
     fFMD->ResetDigits();
@@ -179,6 +179,7 @@ AliFMDRawWriter::Exec(Option_t*)
       Char_t   ring   = digit->Ring();
       UShort_t sector = digit->Sector();
       UShort_t strip  = digit->Strip();
+      fThreshold      = pars->GetZeroSuppression(det, ring, sector, strip);
       if (det != prevDetector) {
 	AliDebug(15, Form("FMD: New DDL, was %d, now %d",
 			  AliFMDParameters::kBaseDDL + prevDetector - 1,

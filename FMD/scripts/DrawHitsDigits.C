@@ -63,6 +63,10 @@ public:
     Char_t   rng = hit->Ring();
     UShort_t sec = hit->Sector();
     UShort_t str = hit->Strip();
+    if (str > 511) {
+      AliWarning(Form("Bad strip number %d in hit", str));
+      return kTRUE;
+    }
     fMap(det, rng, sec, str).fEdep += hit->Edep();
     fMap(det, rng, sec, str).fN++;
     return kTRUE;
@@ -83,6 +87,10 @@ public:
 	Char_t   rng = digit->Ring();
 	UShort_t sec = digit->Sector();
 	UShort_t str = digit->Strip();
+	if (str > 511) {
+	  AliWarning(Form("Bad strip number %d in digit", str));
+	  continue;
+	}
 	fElossVsAdc->Fill(fMap(det, rng, sec, str).fEdep, digit->Counts());
       }    
     }
@@ -100,6 +108,8 @@ public:
     fElossVsAdc->Draw("COLZ");
     return kTRUE;
   }
+
+  ClassDef(DrawHitsDigits,0);
 };
 
 //____________________________________________________________________
