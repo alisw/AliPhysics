@@ -27,7 +27,33 @@
 // Note that the data structures are only written out if an outputfile has
 // been specified via the SetOutputFile memberfunction.
 // In case no outputfile has been specified, this class provides a facility
-// to investigate/analyse F2K data using the Ralice/IcePack analysis tools. 
+// to investigate/analyse F2K data using the Ralice/IcePack analysis tools.
+//
+// Note : Sometimes the filtering/reco process which produced the F2K file
+//        may have introduced a shift (i.e. offset) in the hit times w.r.t.
+//        the actual trigger time. The aim of this is to obtain the hit times
+//        centered more or less around zero.
+//        In case of real data, this is recorded in the F2K data itself and
+//        as such will be taken automatically into account by this IceF2k
+//        processor such that all times will be provided again unshifted.
+//        In other words, all times will be w.r.t. the actual trigger time
+//        as recorded in the trigger data device named "Trigger" in the IceEvent
+//        structure.
+//        In case of simulated data this shift is not available in the F2K data.
+//        The offset denoted in the F2K record is related to the time of the
+//        primary interaction to put it well ahead of the detector trigger.
+//        This primary interaction time, however, is irrelevant for the
+//        reconstruction of the recorded hit patterns. 
+//        If a user had introduced a shift in producing the MC data,
+//        very frequently (but not always) a value of -19000 is used.
+//        For the IceF2k processing, the user can manually introduce a
+//        time offset in case of MC data via the memberfunction SetMcToffset().
+//        This user defined offset value will then be used to correct all
+//        the hit times such that they will be provided again unshifted
+//        w.r.t. the actual trigger time as recorded in the device named 
+//        "Trigger" in the IceEvent structure.
+//        By default the MC time offset is set to 0 in the constructor
+//        of this class.
 //
 // Usage example :
 // ---------------
@@ -130,6 +156,8 @@ IceF2k::IceF2k(const char* name,const char* title) : AliJob(name,title)
  fOmdb=0;
  fFitdefs=0;
  fTrigdefs=0;
+ fToffset=0;
+ fMctoffset=0;
 }
 ///////////////////////////////////////////////////////////////////////////
 IceF2k::~IceF2k()
@@ -194,6 +222,14 @@ void IceF2k::SetBufferSize(Int_t bsize)
 // Set the buffer size for the ROOT data file.
 // bsize=32000 is the default initialisation in the constructor.
  if (bsize>=0) fBsize=bsize;
+}
+///////////////////////////////////////////////////////////////////////////
+void IceF2k::SetMcToffset(Float_t toffset)
+{
+// Set a user defined time offset for Monte Carlo data.
+// A very frequently (but not always) used value is -19000.
+// See the introductory docs of this class for further details.
+ fMctoffset=toffset;
 }
 ///////////////////////////////////////////////////////////////////////////
 void IceF2k::SetInputFile(TString name)
@@ -410,6 +446,11 @@ void IceF2k::Exec(Option_t* opt)
    evt->SetRunNumber(fEvent.nrun);
    evt->SetEventNumber(fEvent.enr);
    evt->SetMJD(fEvent.mjd,fEvent.secs,fEvent.nsecs);
+
+   // Take trigger offset into account which might have been
+   // introduced during the filtering process.
+   // For simulated data this will be treated separately in PutMcTracks().
+   fToffset=fEvent.t_offset;
 
    PutTrigger();
 
@@ -764,6 +805,12 @@ void IceF2k::PutMcTracks()
  IceEvent* evt=(IceEvent*)GetMainObject();
  if (!evt || fEvent.ntrack<=0) return;
 
+ // User defined trigger offset in case of simulated data.
+ // The offset in the F2K file is meant to put the primary interaction
+ // well ahead of the detector trigger.
+ // See the introductory docs of this IceF2k class for further details.
+ fToffset=fMctoffset;
+
  // Loop over all the tracks and add them to the current event
  AliTrack t;
  Double_t vec[3];
@@ -1014,7 +1061,7 @@ void IceF2k::PutHits()
   s.Reset();
   s.SetUniqueID(fEvent.h[i].id);
   s.SetSignal(fEvent.h[i].amp,1);
-  s.SetSignal((fEvent.h[i].t-fEvent.t_offset),2);
+  s.SetSignal((fEvent.h[i].t-fToffset),2);
   s.SetSignal(fEvent.h[i].tot,3);
 
   omx->AddHit(s);
