@@ -113,13 +113,6 @@ MUONrectrigger() or MUONrectrigger(##,"galice.root") for the event number ##
 ....
 
 ============================================================
- How to check the Geometry 
-============================================================
-gAlice->Init("$ALICE_ROOT/MUON/Config.C");
-.L $ALICE/geant3/TGeant3/G3GUI.C
-G3GUI()
-
-============================================================
  How to check the Geometry with the new Geometrical modeler
  ftp://root.cern.ch/root/doc/chapter16.pdf
  http://agenda.cern.ch/fullAgenda.php?ida=a05212
