@@ -160,9 +160,9 @@ AliEventTag::AliEventTag()
 	fNumberOfKinks = -10;
 
 	fNumberOfPMDTracks = -10;
-	fNumberOfPHOSTracks = -10;
-	fNumberOfEMCALTracks = -10;
 	fNumberOfFMDTracks = -10;
+	fNumberOfPHOSTracks = -10;
+	fNumberOfEMCALClusters = -10;
 
 	fNumberOfJetCandidates = -10;
 	fNumberOfHardPhotonsCandidates = -10;
@@ -236,9 +236,9 @@ void AliEventTag::CopyTag(AliEventTag *EvTag)
 	SetNumOfKinks(EvTag->GetNumOfKinks());
 
 	SetNumOfPMDTracks(EvTag->GetNumOfPMDTracks());
-	SetNumOfPHOSTracks(EvTag->GetNumOfPHOSTracks());
-	SetNumOfEMCALTracks(EvTag->GetNumOfEMCALTracks());
 	SetNumOfFMDTracks(EvTag->GetNumOfFMDTracks());
+	SetNumOfPHOSTracks(EvTag->GetNumOfPHOSTracks());
+	SetNumOfEMCALClusters(EvTag->GetNumOfEMCALClusters());
 
 	SetNumOfJetCandidates(EvTag->GetNumOfJetCandidates());
 	SetNumOfHardPhotonsCandidates(EvTag->GetNumOfHardPhotonsCandidates());

@@ -61,13 +61,12 @@ class AliEventTag : public TObject
   void   SetNumOfKinks(Int_t Ptr) {fNumberOfKinks = Ptr;}
 
   void   SetNumOfPMDTracks(Int_t Ptr) {fNumberOfPMDTracks = Ptr;}
-  void   SetNumOfPHOSTracks(Int_t Ptr) {fNumberOfPHOSTracks = Ptr;}
-  void   SetNumOfEMCALTracks(Int_t Ptr) {fNumberOfEMCALTracks = Ptr;}
   void   SetNumOfFMDTracks(Int_t Ptr) {fNumberOfFMDTracks = Ptr;}
+  void   SetNumOfPHOSClusters(Int_t Ptr) {fNumberOfPHOSClusters = Ptr;}
+  void   SetNumOfEMCALClusters(Int_t Ptr) {fNumberOfEMCALClusters = Ptr;}
 
   void   SetNumOfJetCandidates(Int_t Ptr) {fNumberOfJetCandidates = Ptr;}
   void   SetNumOfHardPhotonsCandidates(Int_t Ptr) {fNumberOfHardPhotonsCandidates = Ptr;}
-
 
   void   SetMaxJetEnergy(Float_t f) {fMaxJetEnergy = f;}
   void   SetMaxNeutralEnergy(Float_t f) {fMaxNeutralEnergy = f;}
@@ -143,9 +142,9 @@ class AliEventTag : public TObject
   Int_t   GetNumOfKinks() const {return fNumberOfKinks;}
 
   Int_t   GetNumOfPMDTracks() const {return fNumberOfPMDTracks;}
-  Int_t   GetNumOfPHOSTracks() const {return fNumberOfPHOSTracks;}
-  Int_t   GetNumOfEMCALTracks() const {return fNumberOfEMCALTracks;}
   Int_t   GetNumOfFMDTracks() const {return fNumberOfFMDTracks;}
+  Int_t   GetNumOfPHOSClusters() const {return fNumberOfPHOSClusters;}
+  Int_t   GetNumOfEMCALClusters() const {return fNumberOfEMCALClusters;}
 
   Int_t   GetNumOfJetCandidates() const {return fNumberOfJetCandidates;}
   Int_t   GetNumOfHardPhotonsCandidates() const {return fNumberOfHardPhotonsCandidates;}
@@ -219,9 +218,9 @@ class AliEventTag : public TObject
   Int_t    fNumberOfCascades;		       //Number of cascades
   Int_t    fNumberOfKinks;		       //Number of kinks
   Int_t    fNumberOfPMDTracks;		       //PMD tracks
-  Int_t    fNumberOfPHOSTracks;		       //PHOS tracks
-  Int_t    fNumberOfEMCALTracks;	       //EMCAL tracks
   Int_t    fNumberOfFMDTracks;		       //FMD tracks
+  Int_t    fNumberOfPHOSClusters;	       //PHOS clusters
+  Int_t    fNumberOfEMCALClusters;	       //EMCAL clusters
   Int_t    fNumberOfJetCandidates;	       //Jet candidates
 
   Float_t  fMaxJetEnergy;                      //jet energy info
@@ -268,7 +267,7 @@ class AliEventTag : public TObject
   Float_t  fEventPlaneAngle;		       //event plane info
   Float_t  fHBTRadii;                          //HBT info
 
-  ClassDef(AliEventTag,4)  //(ClassName, ClassVersion)
+  ClassDef(AliEventTag,5)  //(ClassName, ClassVersion)
     };
 //______________________________________________________________________________
 

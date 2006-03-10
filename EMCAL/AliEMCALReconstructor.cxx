@@ -67,8 +67,8 @@ void AliEMCALReconstructor::Reconstruct(AliRunLoader* runLoader) const
   if ( Debug() ) 
     clu.ExecuteTask("deb all") ; 
   else 
-    clu.ExecuteTask("") ;  
-
+    clu.ExecuteTask("pseudo") ;  
+ 
 }
 
 //____________________________________________________________________________
@@ -83,13 +83,13 @@ void AliEMCALReconstructor::Reconstruct(AliRunLoader* runLoader, AliRawReader* r
   rawreader->Reset() ; 
   TString headerFile(runLoader->GetFileName()) ; 
   TString branchName(runLoader->GetEventFolder()->GetName()) ;  
-  
+
   AliEMCALClusterizerv1 clu(headerFile, branchName);
   clu.SetEventRange(0, -1) ; // do all the events
   if ( Debug() ) 
-    clu.ExecuteTask("deb all") ; 
+    clu.ExecuteTask("deb pseudo all") ; 
   else 
-    clu.ExecuteTask("") ;  
+    clu.ExecuteTask("pseudo") ;  
 
 }
 
@@ -103,42 +103,54 @@ void AliEMCALReconstructor::FillESD(AliRunLoader* runLoader, AliESD* esd) const
   TString headerFile(runLoader->GetFileName()) ; 
   TString branchName(runLoader->GetEventFolder()->GetName()) ;  
 
-  // PID is not implemented. Skipping for now
-  //AliEMCALPIDv1 pid(headerFile, branchName);
-
-  // do current event; the loop over events is done by AliReconstruction::Run()
-  /*
-  pid.SetEventRange(eventNumber, eventNumber) ; 
-  if ( Debug() ) 
-    pid.ExecuteTask("deb all") ;
-  else 
-    pid.ExecuteTask("") ;
-  */
-
-  // Creates AliESDtrack from AliEMCALRecPoints 
+  // Creates AliESDCaloCluster from AliEMCALRecPoints 
   AliRunLoader *rl = AliRunLoader::GetRunLoader();
   AliEMCALLoader *emcalLoader = dynamic_cast<AliEMCALLoader*>(rl->GetDetectorLoader("EMCAL"));
   rl->LoadRecPoints();
   rl->GetEvent(eventNumber);
   TObjArray *clusters = emcalLoader->RecPoints();
   Int_t nClusters = clusters->GetEntries();
-  esd->SetNumberOfEMCALParticles(nClusters) ; 
-  esd->SetFirstEMCALParticle(esd->GetNumberOfTracks()) ; 
+  esd->SetNumberOfEMCALClusters(nClusters) ; 
+  esd->SetFirstEMCALCluster(esd->GetNumberOfCaloClusters()) ; 
   for (Int_t iClust = 0 ; iClust < nClusters ; iClust++) {
     const AliEMCALRecPoint * clust = emcalLoader->RecPoint(iClust);
-    if (Debug()) 
-      clust->Print();
-    AliESDtrack * et = new AliESDtrack() ; 
-    // fills the ESDtrack
-    Double_t xyz[3];
+
+    if (Debug()) clust->Print();
+
+    AliESDCaloCluster * ec = new AliESDCaloCluster() ; 
+    // fills the ESDCaloCluster
+    Float_t xyz[3];
     TVector3 gpos;
     clust->GetGlobalPosition(gpos);
     for (Int_t ixyz=0; ixyz<3; ixyz++) 
       xyz[ixyz] = gpos[ixyz];
-    et->SetEMCALposition(xyz) ; 
-    et->SetEMCALsignal  (clust->GetEnergy()) ; 
-    // add the track to the esd object
-    esd->AddTrack(et);
-    delete et;
+   
+    Int_t digitMult = clust->GetMultiplicity();
+    UShort_t *amplList = new UShort_t[digitMult];
+    UShort_t *timeList = new UShort_t[digitMult];
+    UShort_t *digiList = new UShort_t[digitMult];
+    Float_t *amplFloat = clust->GetEnergiesList();
+    Float_t *timeFloat = clust->GetTimeList();
+    Int_t   *digitInts = clust->GetAbsId();
+    // Convert Float_t* and Int_t* to UShort_t* to save memory
+    for (Int_t iDigit=0; iDigit<digitMult; iDigit++) {
+      amplList[iDigit] = (UShort_t)(amplFloat[iDigit]*500);
+      timeList[iDigit] = (UShort_t)(timeFloat[iDigit]*1e9*100);
+      digiList[iDigit] = (UShort_t)(digitInts[iDigit]);
+    }
+
+    ec->SetClusterType(clust->GetClusterType());
+    ec->SetGlobalPosition(xyz);
+    ec->SetClusterEnergy(clust->GetEnergy());
+    ec->SetClusterDisp(clust->GetDispersion());
+    ec->SetClusterChi2(-1); //not yet implemented
+    ec->SetNumberOfDigits(clust->GetMultiplicity());
+    ec->SetDigitAmplitude(amplList); //energies
+    ec->SetDigitTime(timeList);      //times
+    ec->SetDigitIndex(digiList);     //indices
+
+    // add the cluster to the esd object
+    esd->AddCaloCluster(ec);
+    delete ec;
   }
 }

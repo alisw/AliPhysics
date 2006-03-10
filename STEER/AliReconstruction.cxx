@@ -1439,8 +1439,8 @@ void AliReconstruction::CreateTag(TFile* file)
     evTag->SetNumOfElectronsAbove3GeV(nEl3GeV);
     evTag->SetNumOfElectronsAbove10GeV(nEl10GeV);
     
-    evTag->SetNumOfPHOSTracks(esd->GetNumberOfPHOSParticles());
-    evTag->SetNumOfEMCALTracks(esd->GetNumberOfEMCALParticles());
+    evTag->SetNumOfPHOSClusters(esd->GetNumberOfPHOSClusters());
+    evTag->SetNumOfEMCALClusters(esd->GetNumberOfEMCALClusters());
     
     evTag->SetTotalMomentum(totalP);
     evTag->SetMeanPt(meanPt);

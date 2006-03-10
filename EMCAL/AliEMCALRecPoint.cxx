@@ -45,6 +45,7 @@ AliEMCALRecPoint::AliEMCALRecPoint()
   : AliRecPoint()
 {
   // ctor
+  fClusterType = -1;
   fMaxTrack = 0 ;
   fMulDigit   = 0 ;  
   fMaxParent = 0;
@@ -52,6 +53,7 @@ AliEMCALRecPoint::AliEMCALRecPoint()
   fAmp   = 0. ;   
   fCoreEnergy = 0 ; 
   fEnergyList = 0 ;
+  fTimeList = 0 ;
   fAbsIdList  = 0;
   fParentsList = 0;
   fTime = 0. ;
@@ -65,6 +67,7 @@ AliEMCALRecPoint::AliEMCALRecPoint()
 AliEMCALRecPoint::AliEMCALRecPoint(const char * opt) : AliRecPoint(opt)
 {
   // ctor
+  fClusterType = -1;
   fMaxTrack = 1000 ;
   fMaxParent = 1000;
   fMulDigit   = 0 ; 
@@ -72,6 +75,7 @@ AliEMCALRecPoint::AliEMCALRecPoint(const char * opt) : AliRecPoint(opt)
   fAmp   = 0. ;   
   fCoreEnergy = 0 ; 
   fEnergyList = 0 ;
+  fTimeList = 0 ;
   fAbsIdList  = 0;
   fParentsList = new Int_t[fMaxParent];
   fTime = -1. ;
@@ -86,6 +90,8 @@ AliEMCALRecPoint::~AliEMCALRecPoint()
   // dtor
   if ( fEnergyList )
     delete[] fEnergyList ; 
+  if ( fTimeList )
+    delete[] fTimeList ; 
   if ( fAbsIdList )
     delete[] fAbsIdList ; 
    if ( fParentsList)
@@ -100,6 +106,8 @@ void AliEMCALRecPoint::AddDigit(AliEMCALDigit & digit, Float_t Energy)
   
   if(fEnergyList == 0)
     fEnergyList =  new Float_t[fMaxDigit]; 
+  if(fTimeList == 0)
+    fTimeList =  new Float_t[fMaxDigit]; 
   if(fAbsIdList == 0) {
     fAbsIdList =  new Int_t[fMaxDigit];
     fSuperModuleNumber = geom->GetSuperModuleNumber(digit.GetId());
@@ -109,12 +117,14 @@ void AliEMCALRecPoint::AddDigit(AliEMCALDigit & digit, Float_t Energy)
     fMaxDigit*=2 ; 
     Int_t * tempo = new Int_t[fMaxDigit]; 
     Float_t * tempoE =  new Float_t[fMaxDigit];
+    Float_t * tempoT =  new Float_t[fMaxDigit];
     Int_t * tempoId = new Int_t[fMaxDigit]; 
 
     Int_t index ;     
     for ( index = 0 ; index < fMulDigit ; index++ ){
       tempo[index]   = fDigitsList[index] ;
       tempoE[index]  = fEnergyList[index] ; 
+      tempoT[index]  = fTimeList[index] ; 
       tempoId[index] = fAbsIdList[index] ; 
     }
     
@@ -124,22 +134,28 @@ void AliEMCALRecPoint::AddDigit(AliEMCALDigit & digit, Float_t Energy)
     delete [] fEnergyList ;
     fEnergyList =  new Float_t[fMaxDigit];
 
+    delete [] fTimeList ;
+    fTimeList =  new Float_t[fMaxDigit];
+
     delete [] fAbsIdList ;
     fAbsIdList =  new Int_t[fMaxDigit];
 
     for ( index = 0 ; index < fMulDigit ; index++ ){
       fDigitsList[index] = tempo[index] ;
       fEnergyList[index] = tempoE[index] ; 
+      fTimeList[index] = tempoT[index] ; 
       fAbsIdList[index]  = tempoId[index] ; 
     }
  
     delete [] tempo ;
     delete [] tempoE ; 
+    delete [] tempoT ; 
     delete [] tempoId ; 
   } // if
   
   fDigitsList[fMulDigit]   = digit.GetIndexInList()  ; 
   fEnergyList[fMulDigit]   = Energy ;
+  fTimeList[fMulDigit]     = digit.GetTime() ;
   fAbsIdList[fMulDigit]    = digit.GetId();
   fMulDigit++ ; 
   fAmp += Energy ; 
@@ -158,8 +174,6 @@ Bool_t AliEMCALRecPoint::AreNeighbours(AliEMCALDigit * digit1, AliEMCALDigit * d
   static Int_t rowdiff=0, coldiff=0;
 
   areNeighbours = kFALSE ;
-
-  //  AliEMCALGeometry * geom =  AliEMCALGeometry::GetInstance();
 
   geom->GetCellIndex(digit1->GetId(), nSupMod,nTower,nIphi,nIeta);
   geom->GetCellPhiEtaIndexInSModule(nSupMod,nTower,nIphi,nIeta, relid1[0],relid1[1]);
@@ -344,7 +358,6 @@ void  AliEMCALRecPoint::EvalDispersion(Float_t logWeight, TClonesArray * digits)
   Double_t d = 0., wtot = 0., w = 0., xyzi[3], diff=0.;
   Int_t iDigit=0, nstat=0, i=0;
   AliEMCALDigit * digit ;
-  //  AliEMCALGeometry * geom =  AliEMCALGeometry::GetInstance();
 
   // Calculates the centre of gravity in the local EMCAL-module coordinates   
   if (!fLocPos.Mag()) 
@@ -380,7 +393,6 @@ void AliEMCALRecPoint::EvalLocalPosition(Float_t logWeight, TClonesArray * digit
   //  Info("Print", " logWeight %f : cluster energy %f ", logWeight, fAmp); // for testing
   
   AliEMCALDigit * digit;
-  //  AliEMCALGeometry * geom =  AliEMCALGeometry::GetInstance();
   Int_t i=0, nstat=0;
   Double_t clXYZ[3]={0.,0.,0.}, clRmsXYZ[3]={0.,0.,0.}, xyzi[3], wtot=0., w=0.;
 
@@ -444,7 +456,6 @@ void AliEMCALRecPoint::EvalCoreEnergy(Float_t logWeight, TClonesArray * digits)
 
   AliEMCALDigit * digit ;
   const Float_t kDeg2Rad = TMath::DegToRad() ;
-  //  AliEMCALGeometry * geom =  AliEMCALGeometry::GetInstance();
 
   Int_t iDigit;
 
@@ -480,7 +491,6 @@ void  AliEMCALRecPoint::EvalElipsAxis(Float_t logWeight,TClonesArray * digits)
   const Float_t kDeg2Rad = TMath::DegToRad();
   AliEMCALDigit * digit ;
 
-  //  AliEMCALGeometry * geom =  AliEMCALGeometry::GetInstance();
   TString gn(geom->GetName());
 
   Int_t iDigit;
@@ -835,11 +845,12 @@ void AliEMCALRecPoint::Print(Option_t *) const
 
   printf("\n Local x %6.2f y %7.2f z %7.1f \n", fLocPos[0], fLocPos[1], fLocPos[2]);
 
-  message  = "       Multiplicity    = %d" ;
+  message  = "       ClusterType     = %d" ;
+  message += "       Multiplicity    = %d" ;
   message += "       Cluster Energy  = %f" ; 
   message += "       Core energy     = %f" ; 
   message += "       Core radius     = %f" ; 
   message += "       Number of primaries %d" ; 
   message += "       Stored at position %d" ; 
-  Info("Print", message.Data(), fMulDigit, fAmp, fCoreEnergy, fCoreRadius, fMulTrack, GetIndexInList() ) ;  
+  Info("Print", message.Data(), fClusterType, fMulDigit, fAmp, fCoreEnergy, fCoreRadius, fMulTrack, GetIndexInList() ) ;  
 }

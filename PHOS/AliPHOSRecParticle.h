@@ -37,9 +37,9 @@ class AliPHOSRecParticle : public AliPHOSFastRecParticle {
   virtual const TParticle * GetPrimary(Int_t index) const ;
   virtual const TParticle * GetPrimary() const ;
   Int_t GetPrimaryIndex() const ;
-  const Double_t *GetPID() { return fPID ; }
+  const Float_t *GetPID() { return fPID ; }
   void    SetDebug() { fDebug = kTRUE ; } 
-  void    SetPID(Int_t type, Double_t weight) ; 
+  void    SetPID(Int_t type, Float_t weight) ; 
   void    SetPos(TVector3 pos) { fPos.SetXYZ( pos.X(), pos.Y(), pos.Z() ); } 
   void    UnsetDebug() { fDebug = kFALSE ; }
   void    SetTrackSegment(Int_t index){fPHOSTrackSegment = index; }

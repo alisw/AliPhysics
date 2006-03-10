@@ -53,9 +53,9 @@ ClassImp(AliEventTag)
     fNumberOfCascades(-10),
     fNumberOfKinks(-10),
     fNumberOfPMDTracks(-10),
-    fNumberOfPHOSTracks(-10),
-    fNumberOfEMCALTracks(-10),
     fNumberOfFMDTracks(-10),
+    fNumberOfPHOSClusters(-10),
+    fNumberOfEMCALClusters(-10),
     fNumberOfJetCandidates(-10),
     fMaxJetEnergy(-100.0),
     fNumberOfHardPhotonsCandidates(-10),
@@ -131,10 +131,10 @@ AliEventTag::AliEventTag(const AliEventTag & EvTag) : TObject(EvTag)
   SetNumOfKinks(EvTag.GetNumOfKinks());
   
   SetNumOfPMDTracks(EvTag.GetNumOfPMDTracks());
-  SetNumOfPHOSTracks(EvTag.GetNumOfPHOSTracks());
-  SetNumOfEMCALTracks(EvTag.GetNumOfEMCALTracks());
   SetNumOfFMDTracks(EvTag.GetNumOfFMDTracks());
-  
+  SetNumOfPHOSClusters(EvTag.GetNumOfPHOSClusters());
+  SetNumOfEMCALClusters(EvTag.GetNumOfEMCALClusters());
+
   SetNumOfJetCandidates(EvTag.GetNumOfJetCandidates());
   SetNumOfHardPhotonsCandidates(EvTag.GetNumOfHardPhotonsCandidates());
 
@@ -218,9 +218,9 @@ AliEventTag & AliEventTag::operator=(const AliEventTag &EvTag)
     SetNumOfKinks(EvTag.GetNumOfKinks());
     
     SetNumOfPMDTracks(EvTag.GetNumOfPMDTracks());
-    SetNumOfPHOSTracks(EvTag.GetNumOfPHOSTracks());
-    SetNumOfEMCALTracks(EvTag.GetNumOfEMCALTracks());
     SetNumOfFMDTracks(EvTag.GetNumOfFMDTracks());
+    SetNumOfPHOSClusters(EvTag.GetNumOfPHOSClusters());
+    SetNumOfEMCALClusters(EvTag.GetNumOfEMCALClusters());
     
     SetNumOfJetCandidates(EvTag.GetNumOfJetCandidates());
     SetNumOfHardPhotonsCandidates(EvTag.GetNumOfHardPhotonsCandidates());

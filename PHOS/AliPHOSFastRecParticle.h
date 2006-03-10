@@ -8,6 +8,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.36  2005/05/28 14:19:04  schutz
+ * Compilation warnings fixed by T.P.
+ *
  */
 
 //_________________________________________________________________________
@@ -22,8 +25,7 @@
 
 class TClonesArray;
 #include "TParticle.h"
-#include "AliESDtrack.h" 
-
+#include "AliPID.h"
 // --- Standard library ---
 
 // --- AliRoot header files ---
@@ -102,7 +104,7 @@ class AliPHOSFastRecParticle : public TParticle {
   Int_t fIndexInList ; // the index of this RecParticle in the list stored in TreeR (to be set by analysis)
   Float_t fTof ;       // time of fliht
   Int_t fType ;        // particle type obtained by "virtual" reconstruction
-  Double_t fPID[AliPID::kSPECIESN] ; // PID probability densities
+  Float_t fPID[AliPID::kSPECIESN] ; // PID probability densities
 
  private:
 

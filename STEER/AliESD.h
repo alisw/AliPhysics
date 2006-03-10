@@ -24,6 +24,7 @@
 #include "AliESDkink.h"
 #include "AliESDtrack.h"
 #include "AliESDHLTtrack.h"
+#include "AliESDCaloCluster.h"
 #include "AliESDv0.h"
 #include "AliESDV0MI.h"
 #include "AliESDFMD.h"
@@ -107,7 +108,15 @@ public:
     return fV0MIs.GetEntriesFast()-1;
   }
 
-
+  AliESDCaloCluster *GetCaloCluster(Int_t i) const {
+    return (AliESDCaloCluster *)fCaloClusters.UncheckedAt(i);
+  }
+  Int_t AddCaloCluster(const AliESDCaloCluster *c) {
+    AliESDCaloCluster *clus = new(fCaloClusters[fCaloClusters.GetEntriesFast()]) AliESDCaloCluster(*c);
+    clus->SetID(fCaloClusters.GetEntriesFast()-1);
+    return fCaloClusters.GetEntriesFast()-1;
+  }
+    
   void SetVertex(const AliESDVertex* vertex) {
     new(&fPrimaryVertex) AliESDVertex(*vertex);
   }
@@ -126,14 +135,17 @@ public:
   Int_t GetNumberOfCascades() const {return fCascades.GetEntriesFast();}
   Int_t GetNumberOfKinks() const {return fKinks.GetEntriesFast();}
   Int_t GetNumberOfV0MIs() const {return fV0MIs.GetEntriesFast();}
-  Int_t GetNumberOfPHOSParticles() const {return fPHOSParticles;}
-  void  SetNumberOfPHOSParticles(Int_t part) { fPHOSParticles = part ; }
-  void  SetFirstPHOSParticle(Int_t index) { fFirstPHOSParticle = index ; } 
-  Int_t GetFirstPHOSParticle() const  { return fFirstPHOSParticle ; }
-  Int_t GetNumberOfEMCALParticles() const {return fEMCALParticles;}
-  void  SetNumberOfEMCALParticles(Int_t part) { fEMCALParticles = part ; }
-  void  SetFirstEMCALParticle(Int_t index) { fFirstEMCALParticle = index ; } 
-  Int_t GetFirstEMCALParticle() const { return fFirstEMCALParticle ; } 
+  Int_t GetNumberOfCaloClusters() const {return fCaloClusters.GetEntriesFast();}
+
+  Int_t GetNumberOfEMCALClusters() const {return fEMCALClusters;}
+  void  SetNumberOfEMCALClusters(Int_t clus) {fEMCALClusters = clus;}
+  Int_t GetFirstEMCALCluster() const {return fFirstEMCALCluster;}
+  void  SetFirstEMCALCluster(Int_t index) {fFirstEMCALCluster = index;}
+
+  Int_t GetNumberOfPHOSClusters() const {return fPHOSClusters;}
+  void  SetNumberOfPHOSClusters(Int_t part) { fPHOSClusters = part ; }
+  void  SetFirstPHOSCluster(Int_t index) { fFirstPHOSCluster = index ; } 
+  Int_t GetFirstPHOSCluster() const  { return fFirstPHOSCluster ; }
 
   Float_t GetT0zVertex() const {return fT0zVertex;}
   void SetT0zVertex(Float_t z) {fT0zVertex=z;}
@@ -185,10 +197,12 @@ protected:
   TClonesArray fCascades;        // Cascade vertices
   TClonesArray fKinks;           // Kinks
   TClonesArray fV0MIs;           // V0MI
-  Int_t        fPHOSParticles;   // Number of PHOS particles (stored as fTracks)
-  Int_t        fEMCALParticles;  // Number of EMCAL particles (stored as fTracks)
-  Int_t        fFirstPHOSParticle; // First PHOS particle in the fTracks list 
-  Int_t        fFirstEMCALParticle;// First EMCAL particle in the fTracks list 
+  TClonesArray fCaloClusters;    // Calorimeter clusters for PHOS/EMCAL
+  Int_t        fEMCALClusters;   // Number of EMCAL clusters (subset of caloclusters)
+  Int_t        fFirstEMCALCluster; // First EMCAL cluster in the fCaloClusters list 
+
+  Int_t        fPHOSClusters;     // Number of PHOS clusters (subset of caloclusters)
+  Int_t        fFirstPHOSCluster; // First PHOS cluster in the fCaloClusters list 
  
   AliESDFMD *  fESDFMD; // FMD object containing rough multiplicity
 

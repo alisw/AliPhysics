@@ -17,7 +17,6 @@
 #include "AliReconstructor.h" 
 class AliEMCALDigitizer ;
 class AliEMCALClusterizer ;
-class AliEMCALPID ;
 class AliEMCALSDigitizer ;
 class AliESD ;
 class AliRawReaderFile ; 

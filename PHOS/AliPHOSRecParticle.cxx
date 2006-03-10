@@ -263,7 +263,7 @@ const TParticle * AliPHOSRecParticle::GetPrimary(Int_t index) const
 }
 
 //____________________________________________________________________________
-void AliPHOSRecParticle::SetPID(Int_t type, Double_t weight)
+void AliPHOSRecParticle::SetPID(Int_t type, Float_t weight)
 {
   // Set the probability densities that this reconstructed particle
   // has a type of i:

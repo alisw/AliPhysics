@@ -37,6 +37,9 @@ class AliEMCALRecPoint : public AliRecPoint {
   virtual void    Draw(Option_t * option="") ;
   virtual void    ExecuteEvent(Int_t event, Int_t, Int_t) ;
 
+  virtual void    SetClusterType(Int_t ver) { fClusterType = ver; }
+  virtual Int_t   GetClusterType() const { return fClusterType; }
+
   virtual void    EvalAll(Float_t logWeight, TClonesArray * digits);
   virtual void    EvalLocalPosition(Float_t logWeight, TClonesArray * digits) ;
   //  void            EvalLocalPositionSimple(TClonesArray *digits); // ??
@@ -55,6 +58,7 @@ class AliEMCALRecPoint : public AliRecPoint {
   virtual void    GetElipsAxis(Float_t * lambda)const {lambda[0] = fLambda[0]; lambda[1] = fLambda[1];};
   
   Float_t *   GetEnergiesList() const {return fEnergyList ;}       // gets the list of energies making this recpoint
+  Float_t *   GetTimeList() const {return fTimeList ;}       // gets the list of digit times in this recpoint
   Float_t     GetMaximalEnergy(void) const ;                       // get the highest energy in the cluster
   Int_t       GetMaximumMultiplicity() const {return fMaxDigit ;}  // gets the maximum number of digits allowed
   Int_t       GetMultiplicity(void) const { return fMulDigit ; }   // gets the number of digits making this recpoint
@@ -80,6 +84,8 @@ class AliEMCALRecPoint : public AliRecPoint {
     return *this ; 
   }
 
+  enum RecPointType {kPseudoCluster, kClusterv1};
+
 protected:
           void  EvalCoreEnergy(Float_t logWeight,TClonesArray * digits) ;             
 	  virtual void  EvalDispersion(Float_t logWeight,TClonesArray * digits) ;   // computes the dispersion of the shower
@@ -89,10 +95,14 @@ protected:
 	  Float_t ThetaToEta(Float_t arg) const;  //Converts Theta (Radians) to Eta(Radians)
 	  Float_t EtaToTheta(Float_t arg) const;  //Converts Eta (Radians) to Theta(Radians)
 
+private:
+          Int_t   fClusterType;    // type of cluster stored:
+				   // pseudocluster or v1
 	  Float_t fCoreEnergy ;       // energy in a shower core 
 	  Float_t fLambda[2] ;        // shower ellipse axes
-	  Float_t fDispersion ;       // shower dispersion
+	  Float_t fDispersion ;       // shower dispersio
 	  Float_t *fEnergyList ;      //[fMulDigit] energy of digits
+	  Float_t *fTimeList ;        //[fMulDigit] time of digits
           Int_t   *fAbsIdList;        //[fMulDigit] absId  of digits
 	  Float_t fTime ;             // Time of the digit with maximal energy deposition
 	  Float_t fCoreRadius;        // The radius in which the core energy is evaluated

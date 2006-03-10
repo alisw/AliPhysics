@@ -96,8 +96,7 @@ AliESDtrack::AliESDtrack() :
   fTOFchi2(0),
   fTOFindex(0),
   fTOFsignal(-1),
-  fPHOSsignal(-1),
-  fEMCALsignal(-1),
+  //  fPHOSsignal(-1),
   fRICHchi2(1e10),
   fRICHncls(0),
   fRICHindex(0),
@@ -121,14 +120,11 @@ AliESDtrack::AliESDtrack() :
     fRICHr[i]=1.;
   }
   
-  for (Int_t i=0; i<AliPID::kSPECIESN; i++) {
-    fPHOSr[i]  = 1.;
-    fEMCALr[i] = 1.;
-  }
+  //  for (Int_t i=0; i<AliPID::kSPECIESN; i++) {
+  //  fPHOSr[i]  = 1.;
+  // } 
+  //  fPHOSpos[0]=fPHOSpos[1]=fPHOSpos[2]=0.;
 
- 
-  fPHOSpos[0]=fPHOSpos[1]=fPHOSpos[2]=0.;
-  fEMCALpos[0]=fEMCALpos[1]=fEMCALpos[2]=0.;
   Int_t i;
   for (i=0;i<12;i++) fITSchi2MIP[i] =1e10;
   for (i=0; i<6; i++)  { fITSindex[i]=0; }
@@ -188,8 +184,7 @@ AliESDtrack::AliESDtrack(const AliESDtrack& track):
   fTOFchi2(track.fTOFchi2),
   fTOFindex(track.fTOFindex),
   fTOFsignal(track.fTOFsignal),
-  fPHOSsignal(track.fPHOSsignal),
-  fEMCALsignal(track.fEMCALsignal),
+  //fPHOSsignal(track.fPHOSsignal),
   fRICHchi2(track.fRICHchi2),
   fRICHncls(track.fRICHncls),
   fRICHindex(track.fRICHindex),
@@ -226,11 +221,8 @@ AliESDtrack::AliESDtrack(const AliESDtrack& track):
   for (Int_t i=0;i<3;i++) fTOFLabel[i]=track.fTOFLabel[i];
   for (Int_t i=0;i<10;i++) fTOFInfo[i]=track.fTOFInfo[i];
   //
-  for (Int_t i=0;i<3;i++) fPHOSpos[i]=track.fPHOSpos[i]; 
-  for (Int_t i=0;i<AliPID::kSPECIESN;i++) fPHOSr[i]=track.fPHOSr[i]; 
-  //
-  for (Int_t i=0;i<3;i++) fEMCALpos[i]=track.fEMCALpos[i]; 
-  for (Int_t i=0;i<AliPID::kSPECIESN;i++) fEMCALr[i]=track.fEMCALr[i]; 
+  //  for (Int_t i=0;i<3;i++) fPHOSpos[i]=track.fPHOSpos[i]; 
+  //for (Int_t i=0;i<AliPID::kSPECIESN;i++) fPHOSr[i]=track.fPHOSr[i]; 
   //
   for (Int_t i=0;i<AliPID::kSPECIES;i++) fRICHr[i]=track.fRICHr[i];
 
@@ -336,15 +328,10 @@ void AliESDtrack::MakeMiniESDtrack(){
   for (Int_t i=0;i<10;i++) fTOFInfo[i] = 0;
 
   // Reset PHOS related track information
-  for (Int_t i=0;i<3;i++) fPHOSpos[i] = 0; 
-  fPHOSsignal = 0; 
-  for (Int_t i=0;i<AliPID::kSPECIESN;i++) fPHOSr[i] = 0;
- 
-  // Reset EMCAL related track information
-  for (Int_t i=0;i<3;i++) fEMCALpos[i] = 0; 
-  fEMCALsignal = 0; 
-  for (Int_t i=0;i<AliPID::kSPECIESN;i++) fEMCALr[i] = 0;
- 
+  //for (Int_t i=0;i<3;i++) fPHOSpos[i] = 0; 
+  //fPHOSsignal = 0; 
+  //for (Int_t i=0;i<AliPID::kSPECIESN;i++) fPHOSr[i] = 0;
+  
   // Reset RICH related track information
   fRICHchi2 = 0;     
   fRICHncls = 0;     
@@ -794,32 +781,6 @@ void AliESDtrack::SetTOFInfo(Float_t*info) {
 
 
 //_______________________________________________________________________
-void AliESDtrack::SetPHOSpid(const Double_t *p) {  
-  // Sets the probability of each particle type (in PHOS)
-  SetPIDValues(fPHOSr,p,AliPID::kSPECIESN);
-  SetStatus(AliESDtrack::kPHOSpid);
-}
-
-//_______________________________________________________________________
-void AliESDtrack::GetPHOSpid(Double_t *p) const {
-  // Gets probabilities of each particle type (in PHOS)
-  for (Int_t i=0; i<AliPID::kSPECIESN; i++) p[i]=fPHOSr[i];
-}
-
-//_______________________________________________________________________
-void AliESDtrack::SetEMCALpid(const Double_t *p) {  
-  // Sets the probability of each particle type (in EMCAL)
-  SetPIDValues(fEMCALr,p,AliPID::kSPECIESN);
-  SetStatus(AliESDtrack::kEMCALpid);
-}
-
-//_______________________________________________________________________
-void AliESDtrack::GetEMCALpid(Double_t *p) const {
-  // Gets probabilities of each particle type (in EMCAL)
-  for (Int_t i=0; i<AliPID::kSPECIESN; i++) p[i]=fEMCALr[i];
-}
-
-//_______________________________________________________________________
 void AliESDtrack::SetRICHpid(const Double_t *p) {  
   // Sets the probability of each particle type (in RICH)
   SetPIDValues(fRICHr,p,AliPID::kSPECIES);
@@ -950,18 +911,13 @@ void AliESDtrack::Print(Option_t *) const {
       printf("%f, ", p[index]) ;
     printf("\n           signal = %f\n", GetRICHsignal()) ;
   }
-  if( IsOn(kPHOSpid) ){
-    printf("From PHOS: ") ; 
-    GetPHOSpid(p) ; 
-    for(index = 0 ; index < AliPID::kSPECIESN; index++) 
-      printf("%f, ", p[index]) ;
-    printf("\n           signal = %f\n", GetPHOSsignal()) ;
-  }
-  if( IsOn(kEMCALpid) ){
-    printf("From EMCAL: ") ; 
-    GetEMCALpid(p) ; 
-    for(index = 0 ; index < AliPID::kSPECIESN; index++) 
-      printf("%f, ", p[index]) ;
-    printf("\n           signal = %f\n", GetEMCALsignal()) ;
-  }
+  // Since 9 March 2006 PHOS left ESDtrack for ESDCaloCluster
+  // and cannot participate in the global PID for the moment
+//   if( IsOn(kPHOSpid) ){
+//     printf("From PHOS: ") ; 
+//     GetPHOSpid(p) ; 
+//     for(index = 0 ; index < AliPID::kSPECIESN; index++) 
+//       printf("%f, ", p[index]) ;
+//     printf("\n           signal = %f\n", GetPHOSsignal()) ;
+//   }
 } 

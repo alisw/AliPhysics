@@ -17,6 +17,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.11  2006/01/31 20:30:52  hristov
+ * Including TFile.h
+ *
  * Revision 1.10  2006/01/23 18:04:08  hristov
  * Removing meaningless const
  *
@@ -59,6 +62,7 @@
 #include "AliPHOSFastGlobalReconstruction.h"
 #include "AliESD.h"
 #include "AliESDtrack.h"
+#include "AliESDCaloCluster.h"
 #include "Riostream.h"
 
 
@@ -839,26 +843,26 @@ void AliPHOSGammaJet::CreateParticleListFromESD(TClonesArray * pl,
 
   Int_t index = pl->GetEntries() ; 
   Int_t npar  = 0 ;
-  Double_t pid[AliPID::kSPECIESN];  
+  Float_t *pid = new Float_t[AliPID::kSPECIESN];  
 
   //########### PHOS ##############
   //Info("CreateParticleListFromESD","Fill ESD PHOS list");
-  Int_t begphos = esd->GetFirstPHOSParticle();  
-  Int_t endphos = esd->GetFirstPHOSParticle() + 
-    esd->GetNumberOfPHOSParticles() ;  
+  Int_t begphos = esd->GetFirstPHOSCluster();  
+  Int_t endphos = esd->GetFirstPHOSCluster() + 
+    esd->GetNumberOfPHOSClusters() ;  
   Int_t indexNePHOS = plNePHOS->GetEntries() ;
   if(strstr(fOptionGJ,"deb all"))
     Info("CreateParticleListFromESD","PHOS: first particle %d, last particle %d",
 	 begphos,endphos);
 
   for (npar =  begphos; npar <  endphos; npar++) {//////////////PHOS track loop
-    AliESDtrack * track = esd->GetTrack(npar) ; // retrieve track from esd
+      AliESDCaloCluster * clus = esd->GetCaloCluster(npar) ; // retrieve track from esd
    
     //Create a TParticle to fill the particle list
 
-    Double_t en = track->GetPHOSsignal() ;
-    Double_t * p = new Double_t();
-    track->GetPHOSposition(p) ;
+    Float_t en = clus->GetClusterEnergy() ;
+    Float_t *p = new Float_t();
+    clus->GetGlobalPosition(p) ;
     TVector3 pos(p[0],p[1],p[2]) ; 
     Double_t phi  = pos.Phi();
     Double_t theta= pos.Theta();
@@ -871,7 +875,7 @@ void AliPHOSGammaJet::CreateParticleListFromESD(TClonesArray * pl,
 
     //Select only photons
     
-    track->GetPHOSpid(pid);
+    pid=clus->GetPid();
     //cout<<"pid "<<pid[AliPID::kPhoton]<<endl ;
     if( pid[AliPID::kPhoton] > 0.75)
       new((*plNePHOS)[indexNePHOS++])   TParticle(*particle) ;
@@ -911,20 +915,20 @@ void AliPHOSGammaJet::CreateParticleListFromESD(TClonesArray * pl,
   //##########Uncomment when ESD for EMCAL works ##########  
   //Info("CreateParticleListFromESD","Fill ESD EMCAL list");
  
-  Int_t begem = esd->GetFirstEMCALParticle();  
-  Int_t endem = esd->GetFirstEMCALParticle() + 
-    esd->GetNumberOfEMCALParticles() ;  
+  Int_t begem = esd->GetFirstEMCALCluster();  
+  Int_t endem = esd->GetFirstEMCALCluster() + 
+    esd->GetNumberOfEMCALClusters() ;  
   Int_t indexNe  = plNe->GetEntries() ; 
   if(strstr(fOptionGJ,"deb all"))
     Info("CreateParticleListFromESD","EMCAL: first particle %d, last particle %d",
 	 begem,endem);
    
   for (npar =  begem; npar <  endem; npar++) {//////////////EMCAL track loop
-     AliESDtrack * track = esd->GetTrack(npar) ; // retrieve track from esd
+     AliESDCaloCluster * clus = esd->GetCaloCluster(npar) ; // retrieve track from esd
   
-    Double_t en = track->GetEMCALsignal() ;
-    Double_t *p = new Double_t();
-    track->GetEMCALposition(p) ;
+    Float_t en = clus->GetClusterEnergy() ;
+    Float_t *p = new Float_t();
+    clus->GetGlobalPosition(p) ;
     TVector3 pos(p[0],p[1],p[2]) ;
     Double_t phi  = pos.Phi();
     Double_t theta= pos.Theta();

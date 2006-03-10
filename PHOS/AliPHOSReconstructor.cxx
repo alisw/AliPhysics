@@ -109,25 +109,26 @@ void AliPHOSReconstructor::FillESD(AliRunLoader* runLoader, AliESD* esd) const
   AliPHOSGetter::Instance()->Event(eventNumber, "P") ; 
   TClonesArray *recParticles = AliPHOSGetter::Instance()->RecParticles();
   Int_t nOfRecParticles = recParticles->GetEntries();
-  esd->SetNumberOfPHOSParticles(nOfRecParticles) ; 
-  esd->SetFirstPHOSParticle(esd->GetNumberOfTracks()) ; 
+  esd->SetNumberOfPHOSClusters(nOfRecParticles) ; 
+  esd->SetFirstPHOSCluster(esd->GetNumberOfTracks()) ; 
 
   for (Int_t recpart = 0 ; recpart < nOfRecParticles ; recpart++) {
     AliPHOSRecParticle * rp = dynamic_cast<AliPHOSRecParticle*>(recParticles->At(recpart));
     if (Debug()) 
       rp->Print();
-    AliESDtrack * et = new AliESDtrack() ; 
-    // fills the ESDtrack
-    Double_t xyz[3];
+    AliESDCaloCluster * ec = new AliESDCaloCluster() ; 
+//     AliESDtrack * et = new AliESDtrack() ; 
+    // fills the ESDCaloCluster
+    Float_t xyz[3];
     for (Int_t ixyz=0; ixyz<3; ixyz++) 
       xyz[ixyz] = rp->GetPos()[ixyz];
-    et->SetPHOSposition(xyz) ; 
-    et->SetPHOSsignal  (rp->Energy()) ; 
-    et->SetPHOSpid     (rp->GetPID()) ;
-    et->SetLabel       (rp->GetPrimaryIndex());
+    ec->SetGlobalPosition(xyz);
+    ec->SetClusterEnergy(rp->Energy());
+    ec->SetPid          (rp->GetPID()) ;
+    ec->SetPrimaryIndex (rp->GetPrimaryIndex());
     // add the track to the esd object
-    esd->AddTrack(et);
-    delete et;
+    esd->AddCaloCluster(ec);
+    delete ec;
   }
 }
 

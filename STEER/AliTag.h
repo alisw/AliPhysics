@@ -32,8 +32,8 @@ class AliEventTag : public TObject
 		Int_t    fNumberOfCascades;                //Number of cascades
 		Int_t    fNumberOfKinks;                   //Number of kinks
 		Int_t    fNumberOfPMDTracks;               //PMD tracks
-		Int_t    fNumberOfPHOSTracks;              //PHOS tracks
-		Int_t    fNumberOfEMCALTracks;             //EMCAL tracks
+		Int_t    fNumberOfPHOSClusters;            //PHOS clusters
+		Int_t    fNumberOfEMCALClusters;           //EMCAL clusters
 		Int_t    fNumberOfFMDTracks;               //FMD tracks
 		Int_t    fNumberOfJetCandidates;           //Jet candidates
 		Int_t    fNumberOfHardPhotonsCandidates;   //Hard photons candidates
@@ -93,8 +93,8 @@ class AliEventTag : public TObject
 		void          SetNumOfKinks(Int_t Ptr) {fNumberOfKinks = Ptr;}
 
 		void          SetNumOfPMDTracks(Int_t Ptr) {fNumberOfPMDTracks = Ptr;}
-		void          SetNumOfPHOSTracks(Int_t Ptr) {fNumberOfPHOSTracks = Ptr;}
-		void          SetNumOfEMCALTracks(Int_t Ptr) {fNumberOfEMCALTracks = Ptr;}
+		void          SetNumOfPHOSClusters(Int_t Ptr) {fNumberOfPHOSClusters = Ptr;}
+		void          SetNumOfEMCALClusters(Int_t Ptr) {fNumberOfEMCALClusters = Ptr;}
 		void          SetNumOfFMDTracks(Int_t Ptr) {fNumberOfFMDTracks = Ptr;}
 
 		void          SetNumOfJetCandidates(Int_t Ptr) {fNumberOfJetCandidates = Ptr;}
@@ -155,9 +155,9 @@ class AliEventTag : public TObject
 		Int_t         GetNumOfKinks() {return fNumberOfKinks;}
 
 		Int_t         GetNumOfPMDTracks() {return fNumberOfPMDTracks;}
-		Int_t         GetNumOfPHOSTracks() {return fNumberOfPHOSTracks;}
-		Int_t         GetNumOfEMCALTracks() {return fNumberOfEMCALTracks;}
 		Int_t         GetNumOfFMDTracks() {return fNumberOfFMDTracks;}
+		Int_t         GetNumOfPHOSClusters() {return fNumberOfPHOSClusters;}
+		Int_t         GetNumOfEMCALClusters() {return fNumberOfEMCALClusters;}
 
 		Int_t         GetNumOfJetCandidates() {return fNumberOfJetCandidates;}
 		Int_t         GetNumOfHardPhotonsCandidates() {return fNumberOfHardPhotonsCandidates;}
@@ -186,7 +186,7 @@ class AliEventTag : public TObject
 		Float_t       GetFlowV1() {return fFlowV1;}
 		Float_t       GetFlowV2() {return fFlowV2;}
 
-	ClassDef(AliEventTag,1)  //(ClassName, ClassVersion)
+	ClassDef(AliEventTag,2)  //(ClassName, ClassVersion)
 };
 //______________________________________________________________________________
 

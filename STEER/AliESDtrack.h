@@ -191,32 +191,20 @@ public:
     dx=fRICHdx; dy=fRICHdy;
   }
   
-  void SetPHOSposition(const Double_t *pos)  {
-    fPHOSpos[0] = pos[0]; fPHOSpos[1]=pos[1]; fPHOSpos[2]=pos[2];
-  }
-  void SetPHOSsignal(Double_t ene) {fPHOSsignal = ene; }
-  void SetPHOSpid(const Double_t *p);
-  void GetPHOSposition(Double_t *pos) const {
-    pos[0]=fPHOSpos[0]; pos[1]=fPHOSpos[1]; pos[2]=fPHOSpos[2];
-  }
-  Float_t GetPHOSsignal() const {return fPHOSsignal;}
-  void GetPHOSpid(Double_t *p) const;  
-
-  void SetEMCALposition(const Double_t *pos)  {
-    fEMCALpos[0] = pos[0]; fEMCALpos[1]=pos[1]; fEMCALpos[2]=pos[2];
-  }
-  void SetEMCALsignal(Double_t ene) {fEMCALsignal = ene; }
-  void SetEMCALpid(const Double_t *p);
-  void GetEMCALposition(Double_t *pos) const {
-    pos[0]=fEMCALpos[0]; pos[1]=fEMCALpos[1]; pos[2]=fEMCALpos[2];
-  }
-  Float_t GetEMCALsignal() const {return fEMCALsignal;}
-  void GetEMCALpid(Double_t *p) const;  
+ /*  void SetPHOSposition(const Double_t *pos)  { */
+/*     fPHOSpos[0] = pos[0]; fPHOSpos[1]=pos[1]; fPHOSpos[2]=pos[2]; */
+/*   } */
+/*   void SetPHOSsignal(Double_t ene) {fPHOSsignal = ene; } */
+/*   void SetPHOSpid(const Double_t *p); */
+/*   void GetPHOSposition(Double_t *pos) const { */
+/*     pos[0]=fPHOSpos[0]; pos[1]=fPHOSpos[1]; pos[2]=fPHOSpos[2]; */
+/*   } */
+/*   Float_t GetPHOSsignal() const {return fPHOSsignal;} */
+/*   void GetPHOSpid(Double_t *p) const;   */
 
   Bool_t IsOn(Int_t mask) const {return (fFlags&mask)>0;}
   Bool_t IsRICH()  const {return fFlags&kRICHpid;}
   Bool_t IsPHOS()  const {return fFlags&kPHOSpid;}
-  Bool_t IsEMCAL() const {return fFlags&kEMCALpid;}
 
   void   SetTrackPointArray(AliTrackPointArray *points) { fPoints = points; }
   AliTrackPointArray *GetTrackPointArray() const { return fPoints; }
@@ -234,7 +222,7 @@ public:
     kTPCin=0x0010,kTPCout=0x0020,kTPCrefit=0x0040,kTPCpid=0x0080,
     kTRDin=0x0100,kTRDout=0x0200,kTRDrefit=0x0400,kTRDpid=0x0800,
     kTOFin=0x1000,kTOFout=0x2000,kTOFrefit=0x4000,kTOFpid=0x8000,
-    kPHOSpid=0x10000, kRICHpid=0x20000, kEMCALpid=0x40000,
+    kPHOSpid=0x10000, kRICHpid=0x20000,
     kTRDbackup=0x80000,
     kTRDStop=0x20000000,
     kESDpid=0x40000000,
@@ -315,14 +303,9 @@ protected:
   Float_t fTOFInfo[10];       //! TOF informations
 
   // PHOS related track information 
-  Float_t fPHOSpos[3]; // position localised by PHOS in global coordinate system
-  Float_t fPHOSsignal; // energy measured by PHOS
-  Float_t fPHOSr[AliPID::kSPECIESN]; // PID information from PHOS
-
-  // EMCAL related track information 
-  Float_t fEMCALpos[3]; //position localised by EMCAL in global coordinate system
-  Float_t fEMCALsignal; // energy measured by EMCAL
-  Float_t fEMCALr[AliPID::kSPECIESN]; // PID information from EMCAL
+  //  Float_t fPHOSpos[3]; // position localised by PHOS in global coordinate system
+  // Float_t fPHOSsignal; // energy measured by PHOS
+  //Float_t fPHOSr[AliPID::kSPECIESN]; // PID information from PHOS
 
   // HMPID related track information
   Float_t fRICHchi2;       // chi2 in the RICH
@@ -337,7 +320,7 @@ protected:
 
   AliTrackPointArray *fPoints; // Array which contains the track space points in the global frame
 
-  ClassDef(AliESDtrack,22)  //ESDtrack 
+  ClassDef(AliESDtrack,23)  //ESDtrack 
 };
 
 #endif 
