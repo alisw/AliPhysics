@@ -43,6 +43,14 @@
 // talk effects are expected to have negligible effects on the observed
 // large module signals.
 //
+// Note : The amount with which the ADC value was corrected is stored
+//        in the signal as an ADC offset. This will allow easy investigation
+//        of Xtalk corrected signals and also enables successive
+//        applications of this Xtalk processor to investigate (systematic)
+//        effects of various criteria.
+//        Example : In case an amount of 1 pe was subtracted from the ADC
+//                  value, the ADC offset will be set to 1. 
+//
 // The values of "pmin" and "pe" can be set by the user via the
 // SetMinProb() and SetXtalkPE() memberfunctions.
 // The default values are pmin=0.5 and pe=1.
@@ -180,6 +188,10 @@ void IceXtalk::Exec(Option_t* opt)
     AliSignal* st=omt->GetHit(ithit);
     if (!st) continue;
 
+    // Eliminate possible previous Xtalk correction
+    sigcor=st->GetOffset("ADC");
+    st->AddSignal(sigcor,"ADC");
+    st->ResetOffset("ADC");
     adct=st->GetSignal("ADC",-4); // Get uncalibrated amplitude
     dlemin=fxtalk->GetParameter("dLE-min");
     dlemax=fxtalk->GetParameter("dLE-max");
@@ -226,11 +238,15 @@ void IceXtalk::Exec(Option_t* opt)
  } // end of transmitter OM loop
  
  // Perform the Xtalk signal correction to the registered receiver hits
+ // The correction value is stored in the signal data as an offset value
  for (Int_t ix=0; ix<xhits.GetEntries(); ix++)
  {
   AliSignal* sx=(AliSignal*)xhits.At(ix);
   if (!sx) continue;
-  adcr=sx->GetSignal("ADC");
+
+  // Eliminate possible previous Xtalk correction
+  sigcor=sx->GetOffset("ADC");
+  adcr=sx->GetSignal("ADC")+sigcor;
   sigcor=fPe;
   // If stored ADC data is un-calibrated, convert fPe to raw ADC value 
   AliSignal* parent=(AliSignal*)sx->GetDevice();
@@ -247,6 +263,7 @@ void IceXtalk::Exec(Option_t* opt)
   }
   adcr=adcr-sigcor;
   sx->SetSignal(adcr,"ADC");
+  sx->SetOffset(sigcor,"ADC");
  }
 }
 ///////////////////////////////////////////////////////////////////////////

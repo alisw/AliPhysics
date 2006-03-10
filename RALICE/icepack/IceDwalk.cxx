@@ -28,10 +28,11 @@
 // muons hitting the top and bottom parts of the detector.
 // To prevent waisting CPU time in trying to reconstruct (high-energy) cascade
 // events, or to select specifically reconstruction of low multiplicity events,
-// the user may invoke the memberfunction SetMaxModA(). This allows selection
-// of events for processing with a certain maximum number of good Amanda OMs
-// firing. By default this maximum is set to 999 in the constructor, which
-// implies no multiplicity selection. 
+// the user may invoke the memberfunctions SetMaxModA() and SetMinModA().
+// This allows selection of events for processing with a certain maximum and/or
+// minimum number of good Amanda OMs firing.
+// By default the minimum and maximum are set to 0 and 999, respectively,
+// in the constructor, which implies no multiplicity selection. 
 // The various reconstruction steps are summarised as follows :
 //
 // 1) Construction of track elements (TE's).
@@ -171,6 +172,7 @@ IceDwalk::IceDwalk(const char* name,const char* title) : TTask(name,title)
  fRjangmax=fRtangmax;
  fRjdmax=fDmin;
  fMaxmodA=999;
+ fMinmodA=0;
  fTrackname="IceDwalk";
 }
 ///////////////////////////////////////////////////////////////////////////
@@ -305,8 +307,20 @@ void IceDwalk::SetMaxModA(Int_t nmax)
 // in which tracking doesn't make sense anyhow.
 // Furthermore it allows selection of low multiplicity events for processing.
 // By default the maximum number of Amanda modules is set to 999 in the ctor,
-// which implies no selection on module multiplicity.
+// which implies no selection on maximum module multiplicity.
+// See also the memberfunction SetMinModA().
  fMaxmodA=nmax;
+}
+///////////////////////////////////////////////////////////////////////////
+void IceDwalk::SetMinModA(Int_t nmin)
+{
+// Set the minimum number of good Amanda modules that must have fired
+// in order to process this event.
+// This allows selection of a minimal multiplicity for events to be processed.
+// By default the minimum number of Amanda modules is set to 0 in the ctor,
+// which implies no selection on minimum module multiplicity.
+// See also the memberfunction SetMaxModA().
+ fMinmodA=nmin;
 }
 ///////////////////////////////////////////////////////////////////////////
 void IceDwalk::SetTrackName(TString s)
@@ -336,7 +350,7 @@ void IceDwalk::Exec(Option_t* opt)
  Int_t naoms=aoms->GetEntries();
  if (!naoms) return;
 
- // Check for the maximum number of good fired Amanda OMs
+ // Check for the minimum and/or maximum number of good fired Amanda OMs
  Int_t ngood=0;
  for (Int_t iom=0; iom<naoms; iom++)
  {
@@ -345,7 +359,7 @@ void IceDwalk::Exec(Option_t* opt)
   if (omx->GetDeadValue("ADC") || omx->GetDeadValue("LE") || omx->GetDeadValue("TOT")) continue;
   ngood++;
  } 
- if (ngood>fMaxmodA) return;
+ if (ngood<fMinmodA || ngood>fMaxmodA) return;
 
  const Float_t c=0.3;                // Light speed in vacuum in meters per ns
  const Float_t nice=1.33;            // Refractive index of ice

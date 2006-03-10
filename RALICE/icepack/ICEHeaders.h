@@ -19,4 +19,5 @@
 #include "IceCleanHits.h"
 #include "IceDwalk.h"
 #include "IcePandel.h"
+#include "IceLinefit.h"
 

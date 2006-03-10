@@ -52,4 +52,10 @@
                 the produced tracks via the memberfunction SetTrackName().
                 Also specification of maximum number of good fired modules for events to
                 be processed introduced in IceDwalk. 
-
+10-mar-2006 NvE Xtalk ADC correction value stored as ADC offset in IceXtalk processing.
+                This will allow easy investigation of Xtalk corrected hits and also
+                enable successive Xtalk processing to investigate (systematic) effects
+                of various criteria. See the IceXtalk docs for further details.
+                Also specification of minimum number of good fired modules for events to
+                be processed introduced in IceDwalk. 
+                New class IceLinefit introduced.  
