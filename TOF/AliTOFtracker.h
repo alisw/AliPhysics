@@ -66,6 +66,8 @@ private:
   Float_t fDx;           // Pad Size in X   
   Float_t fDy;           // Pad Size in Y (== X  TOF convention)
   Float_t fDz;           // Pad Size in Z 
+  Float_t fDzMax;        // Upper limit in z for the size of the search window 
+  Float_t fDyMax;        // Upper limit in y for the size of the search window 
   TClonesArray* fTracks; //! pointer to the TClonesArray with TOF tracks
   TClonesArray* fSeeds;  //! pointer to the TClonesArray with ESD tracks
 

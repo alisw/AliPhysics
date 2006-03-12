@@ -60,6 +60,8 @@ AliTOFtracker::AliTOFtracker(AliTOFGeometry * geom, Double_t parPID[2]) {
   fDy=AliTOFGeometry::XPad(); 
   fDz=AliTOFGeometry::ZPad(); 
   fDx=1.5; 
+  fDzMax=35.; 
+  fDyMax=50.; 
   fSeeds=0x0;
   fTracks=0x0;
   fN=0;
@@ -224,9 +226,9 @@ void AliTOFtracker::MatchTracks( Bool_t mLastStep){
   Int_t * clind[6];
   for (Int_t ii=0;ii<6;ii++) clind[ii] = new Int_t[fN];
   
-  for (Int_t i=0; i<fNseedsTOF; i++) {
+  for (Int_t iseed=0; iseed<fNseedsTOF; iseed++) {
 
-    AliTOFtrack *track =(AliTOFtrack*)fTracks->UncheckedAt(i);
+    AliTOFtrack *track =(AliTOFtrack*)fTracks->UncheckedAt(iseed);
     AliESDtrack *t =(AliESDtrack*)fSeeds->UncheckedAt(track->GetSeedIndex());
     if(t->GetTOFsignal()>0. ) continue;
     AliTOFtrack *trackTOFin =new AliTOFtrack(*track);
@@ -237,6 +239,7 @@ void AliTOFtracker::MatchTracks( Bool_t mLastStep){
     Float_t        dist[10000];
     Float_t       cxpos[10000];
     Float_t       crecL[10000];
+    TGeoHMatrix   global[1000];
      
     // Determine a window around the track
 
@@ -256,6 +259,12 @@ void AliTOFtracker::MatchTracks( Bool_t mLastStep){
     if (phi<-TMath::Pi())phi+=2*TMath::Pi();
     if (phi>=TMath::Pi())phi-=2*TMath::Pi();
     Double_t z=par[1];   
+
+    //upper limit on window's size.
+
+    if(dz> fDzMax) dz=fDzMax;
+    if(dphi*fR>fDyMax) dphi=fDyMax/fR;
+
 
     Int_t nc=0;
 
@@ -279,6 +288,16 @@ void AliTOFtracker::MatchTracks( Bool_t mLastStep){
       clind[3][nc] = c->GetDetInd(3);
       clind[4][nc] = c->GetDetInd(4);
       clind[5][nc] = k;      
+      Char_t path[100];
+      Int_t ind[5];
+      ind[0]=clind[0][nc];
+      ind[1]=clind[1][nc];
+      ind[2]=clind[2][nc];
+      ind[3]=clind[3][nc];
+      ind[4]=clind[4][nc];
+      fGeom->GetVolumePath(ind,path);
+      gGeoManager->cd(path);
+      global[nc] = *gGeoManager->GetCurrentMatrix();
       nc++;
     }
 
@@ -342,11 +361,11 @@ void AliTOFtracker::MatchTracks( Bool_t mLastStep){
 	cind[3]= clind[3][i];
 	cind[4]= clind[4][i];
         Bool_t accept = kFALSE;
-        if( mLastStep)accept = (fGeom->DistanceToPad(cind,ctrackPos)<fdCut);
-        if(!mLastStep)accept = (fGeom->IsInsideThePad(cind,ctrackPos));
+	if( mLastStep)accept = (fGeom->DistanceToPad(cind,global[i],ctrackPos)<fdCut);
+	if(!mLastStep)accept = (fGeom->IsInsideThePad(cind,global[i],ctrackPos));
 	if(accept){
 	  if(!mLastStep)isInside=kTRUE;
-	  dist[nfound]=fGeom->DistanceToPad(cind,ctrackPos);
+	  dist[nfound]=fGeom->DistanceToPad(cind,global[i],ctrackPos);
 	  crecL[nfound]=trackPos[3][istep];
 	  index[nfound]=clind[5][i]; // store cluster id 	    
 	  cxpos[nfound]=fGeom->RinTOF()+istep*0.1; //store prop.radius
@@ -385,7 +404,7 @@ void AliTOFtracker::MatchTracks( Bool_t mLastStep){
     }
 
     AliTOFcluster *c=fClusters[idclus];
-    c->Use(); //AliInfo(Form("I am usig the cluster"));
+    c->Use(); //AliInfo(Form("I am using the cluster"));
 
     // Track length correction for matching Step 2 
 
@@ -419,7 +438,6 @@ void AliTOFtracker::MatchTracks( Bool_t mLastStep){
 
     delete trackTOFin;
 
-    //Double_t tof=50*c->GetTDC()+32; // in ps
     Double_t tof=AliTOFGeometry::TdcBinWidth()*c->GetTDC()+32; // in ps
     t->SetTOFsignal(tof);
     //t->SetTOFcluster(c->GetIndex()); // pointing to the digits tree
@@ -463,23 +481,6 @@ Int_t AliTOFtracker::LoadClusters(TTree *cTree) {
 
   for (Int_t i=0; i<nc; i++) {
     AliTOFcluster *c=(AliTOFcluster*)clusters->UncheckedAt(i);
-    /*
-    for (Int_t jj=0; jj<5; jj++) dig[jj]=c->GetDetInd(jj);
-
-    Double_t h[5];
-    h[0]=c->GetR();
-    h[1]=c->GetPhi();
-    h[2]=c->GetZ();
-    h[3]=c->GetTDC();
-    h[4]=c->GetADC();
-
-    Int_t indexDig[3];
-    for (Int_t jj=0; jj<3; jj++) indexDig[jj] = c->GetLabel(jj);
-
-    AliTOFcluster *cl=new AliTOFcluster(h,c->GetTracks(),dig,i);
-    */
-
-    //    fClusters[i]=c; fN++;
     fClusters[i]=new AliTOFcluster(*c); fN++;
 
     //AliInfo(Form("%4i %4i  %f %f %f  %f %f   %2i %1i %2i %1i %2i",i, fClusters[i]->GetIndex(),fClusters[i]->GetZ(),fClusters[i]->GetR(),fClusters[i]->GetPhi(), fClusters[i]->GetTDC(),fClusters[i]->GetADC(),fClusters[i]->GetDetInd(0),fClusters[i]->GetDetInd(1),fClusters[i]->GetDetInd(2),fClusters[i]->GetDetInd(3),fClusters[i]->GetDetInd(4)));

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.12  2006/02/28 10:38:00  decaro
+AliTOFGeometry::fAngles, AliTOFGeometry::fHeights, AliTOFGeometry::fDistances arrays: dimension definition in the right location
+
 Revision 1.11  2005/12/15 14:17:29  decaro
 Correction of some parameter values
 
@@ -184,7 +187,7 @@ void AliTOFGeometry::Init()
 }
 
 //_____________________________________________________________________________
-void AliTOFGeometry::GetPos(Int_t *det, Float_t *pos) 
+void AliTOFGeometry::GetPosPar(Int_t *det, Float_t *pos) 
 {
 //
 // Returns space point coor (x,y,z) (cm)  for Detector 
