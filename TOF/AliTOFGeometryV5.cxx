@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.2  2006/02/28 10:38:00  decaro
+AliTOFGeometry::fAngles, AliTOFGeometry::fHeights, AliTOFGeometry::fDistances arrays: dimension definition in the right location
+
 Revision 1.1  2005/12/15 08:55:33  decaro
 New TOF geometry description (V5) -G. Cara Romeo and A. De Caro
 
@@ -86,6 +89,10 @@ AliTOFGeometryV5::~AliTOFGeometryV5()
   // AliTOFGeometryV5 destructor
   //
 
+}
+//_____________________________________________________________________________
+void AliTOFGeometryV5::ImportGeometry(){
+  TGeoManager::Import("geometry.root");
 }
 //_____________________________________________________________________________
 void AliTOFGeometryV5::Init()
@@ -166,7 +173,7 @@ void AliTOFGeometryV5::Init()
 }
 
 //_____________________________________________________________________________
-Float_t AliTOFGeometryV5::DistanceToPad(Int_t *det, Float_t *pos, Float_t *dist3d) 
+Float_t AliTOFGeometryV5::DistanceToPadPar(Int_t *det, Float_t *pos, Float_t *dist3d) 
 {
 //
 // Returns distance of  space point with coor pos (x,y,z) (cm) wrt 
@@ -192,7 +199,7 @@ Float_t AliTOFGeometryV5::DistanceToPad(Int_t *det, Float_t *pos, Float_t *dist3
   // Do the same for the selected pad
 
   Float_t g[3];
-  GetPos(det,g);
+  GetPosPar(det,g);
 
   Float_t padRadius = TMath::Sqrt(g[0]*g[0]+g[1]*g[1]);
   //Float_t padPhi = TMath::ATan(g[1]/g[0]);	
@@ -230,7 +237,7 @@ Float_t AliTOFGeometryV5::DistanceToPad(Int_t *det, Float_t *pos, Float_t *dist3
 }
 
 //_____________________________________________________________________________
-Bool_t AliTOFGeometryV5::IsInsideThePad(Int_t *det, Float_t *pos) 
+Bool_t AliTOFGeometryV5::IsInsideThePadPar(Int_t *det, Float_t *pos) 
 {
 //
 // Returns true if space point with coor pos (x,y,z) (cm) falls 
@@ -251,7 +258,7 @@ Bool_t AliTOFGeometryV5::IsInsideThePad(Int_t *det, Float_t *pos)
   //const Float_t klstripx = fgkStripLength;
   */
 
-  const Float_t khsensmy = 0.05;//0.05;//0.11;//0.16;//          // heigth of Sensitive Layer
+  const Float_t khsensmy = 0.5;//0.05;//0.11;//0.16;//          // heigth of Sensitive Layer
 
   //Transform pos into Sector Frame
 
@@ -271,7 +278,7 @@ Bool_t AliTOFGeometryV5::IsInsideThePad(Int_t *det, Float_t *pos)
   // Do the same for the selected pad
 
   Float_t g[3];
-  GetPos(det,g);
+  GetPosPar(det,g);
 
   Float_t padRadius = TMath::Sqrt(g[0]*g[0]+g[1]*g[1]);
   Float_t padPhi = TMath::Pi()+TMath::ATan2(-g[1],-g[0]);	
@@ -295,14 +302,82 @@ Bool_t AliTOFGeometryV5::IsInsideThePad(Int_t *det, Float_t *pos)
   Float_t yr =  yt;
   Float_t zr = -xt*TMath::Sin(alpha/kRaddeg)+zt*TMath::Cos(alpha/kRaddeg);
 
-  //if(TMath::Abs(xr)<=1.50*0.5 && TMath::Abs(yr)<= (fgkXPad*0.5) && TMath::Abs(zr)<= (fgkZPad*0.5)) ???
   if(TMath::Abs(xr)<=khsensmy*0.5 && TMath::Abs(yr)<= (fgkXPad*0.5) && TMath::Abs(zr)<= (fgkZPad*0.5))
-  //if(TMath::Abs(xr)<=khstripy*0.5 && TMath::Abs(yr)<= (fgkXPad*0.5) && TMath::Abs(zr)<= (fgkZPad*0.5))
     isInside=true;
   return isInside;
 
 }
 
+
+//_____________________________________________________________________________
+Float_t AliTOFGeometryV5::DistanceToPad(Int_t *det, TGeoHMatrix mat, Float_t *pos, Float_t *dist3d) 
+{
+//
+// Returns distance of  space point with coor pos (x,y,z) (cm) wrt 
+// pad with Detector Indices idet (iSect,iPlate,iStrip,iPadX,iPadZ) 
+//
+  if (!gGeoManager) {
+    printf("ERROR: no TGeo\n");
+    return 0.;
+  }
+  Double_t vecg[3];
+  vecg[0]=pos[0];
+  vecg[1]=pos[1];
+  vecg[2]=pos[2];
+  Double_t veclr[3]={-1.,-1.,-1.};
+  Double_t vecl[3]={-1.,-1.,-1.};
+  mat.MasterToLocal(vecg,veclr);  
+  vecl[0]=veclr[1];
+  vecl[1]=veclr[0];
+  //take into account reflections 
+  if(det[1]>-1)vecl[2]=-veclr[2];
+
+  Float_t dist = TMath::Sqrt(vecl[0]*vecl[0]+vecl[1]*vecl[1]+vecl[2]*vecl[2]);
+
+
+  if (dist3d){
+    dist3d[0] = vecl[0];
+    dist3d[1] = vecl[1];
+    dist3d[2] = vecl[2];
+  }
+
+  return dist;
+
+}
+
+
+//_____________________________________________________________________________
+Bool_t AliTOFGeometryV5::IsInsideThePad( Int_t *det, TGeoHMatrix mat, Float_t *pos) 
+{
+//
+// Returns true if space point with coor pos (x,y,z) (cm) falls 
+// inside pad with Detector Indices idet (iSect,iPlate,iStrip,iPadX,iPadZ) 
+//
+
+  const Float_t khsensmy = 0.5;      // heigth of Sensitive Layer
+  Double_t vecg[3];
+  vecg[0]=pos[0];
+  vecg[1]=pos[1];
+  vecg[2]=pos[2];
+  Double_t veclr[3]={-1.,-1.,-1.};
+  Double_t vecl[3]={-1.,-1.,-1.};
+  mat.MasterToLocal(vecg,vecl);  
+  vecl[0]=veclr[1];
+  vecl[1]=veclr[0];
+  //take into account reflections 
+  if(det[1]>-1)vecl[2]=-veclr[2];
+
+  Float_t xr = vecl[0];
+  Float_t yr = vecl[1];
+  Float_t zr = vecl[2];
+
+  Bool_t isInside=false; 
+  if(TMath::Abs(xr)<= khsensmy*0.5 && TMath::Abs(yr)<= (fgkXPad*0.5) && TMath::Abs(zr)<= (fgkZPad*0.5))
+    isInside=true; 
+  return isInside;
+
+}
+//_____________________________________________________________________________
 //_____________________________________________________________________________
 Float_t AliTOFGeometryV5::GetX(Int_t *det)
 {
@@ -1458,5 +1533,77 @@ void AliTOFGeometryV5::InverseRotation(Float_t *xyz, Double_t rotationAngles[6])
 
   return;
 
+}
+//_____________________________________________________________________________
+void AliTOFGeometryV5::GetVolumePath(Int_t *ind, Char_t *path ) {
+  //--------------------------------------------------------------------
+  // This function returns the colume path of a given pad 
+  //--------------------------------------------------------------------
+  Int_t sector = ind[0];
+  Char_t  string1[100];
+  Char_t  string2[100];
+  Char_t  string3[100];
+  
+  Int_t icopy=-1;
+  
+  if(sector<3){
+    icopy=sector+1;
+    sprintf(string1,"/ALIC_1/B077_1/B075_%i/BTO3_1/FTOA_0/FLTA_0",icopy);
+  }
+  else if(sector<11){
+    icopy=sector+3;
+    sprintf(string1,"/ALIC_1/B077_1/B071_%i/BTO1_1/FTOA_0/FLTA_0",icopy);
+  }
+  else if(sector==11 || sector==12){
+    icopy=sector-10;
+    sprintf(string1,"/ALIC_1/B077_1/B074_%i/BTO2_1/FTOA_0/FLTA_0",icopy);
+    if(fHoles)sprintf(string1,"/ALIC_1/B077_1/B074_%i/BTO2_1",icopy);
+  }
+  else {
+    icopy=sector-12;
+    sprintf(string1,"/ALIC_1/B077_1/B071_%i/BTO1_1/FTOA_0/FLTA_0",icopy);
+  }
+  
+  Int_t iplate=ind[1];
+  Int_t istrip=ind[2];
+  if( iplate==0) icopy=istrip; 
+  if( iplate==1) icopy=istrip+NStripC(); 
+  if( iplate==2) icopy=istrip+NStripC()+NStripB(); 
+  if( iplate==3) icopy=istrip+NStripC()+NStripB()+NStripA(); 
+  if( iplate==4) icopy=istrip+NStripC()+2*NStripB()+NStripA(); 
+  icopy++;
+  sprintf(string2,"FSTR_%i",icopy);
+  if(fHoles && (sector==11 || sector==12)){
+    if(iplate<2)  sprintf(string2,"FTOB_0/FLTB_0/FSTR_%i",icopy);
+    if(iplate>2)  sprintf(string2,"FTOC_0/FLTC_0/FSTR_%i",icopy);
+  }
+ 
+
+  Int_t padz = ind[3]+1; 
+  Int_t padx = ind[4]+1;
+  sprintf(string3,"FPCB_1/FSEN_1/FSEZ_%i/FPAD_%i",padz,padx);
+  sprintf(path,"%s/%s/%s",string1,string2,string3); 
+
+}
+//_____________________________________________________________________________
+void AliTOFGeometryV5::GetPos(Int_t *det, Float_t *pos) 
+{
+//
+// Returns space point coor (x,y,z) (cm)  for Detector 
+// Indices  (iSect,iPlate,iStrip,iPadX,iPadZ) 
+//
+  Char_t path[100];
+  GetVolumePath(det,path );
+  if (!gGeoManager) {
+    printf("ERROR: no TGeo\n");
+  }
+  gGeoManager->cd(path);
+  TGeoHMatrix global;
+  global = *gGeoManager->GetCurrentMatrix();
+  const Double_t *tr = global.GetTranslation();
+
+  pos[0]=tr[0];  
+  pos[1]=tr[1];  
+  pos[2]=tr[2];
 }
 //_____________________________________________________________________________

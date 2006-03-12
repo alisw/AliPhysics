@@ -85,7 +85,9 @@ AliTOFtracker::AliTOFtracker(const AliTOFtracker &t):AliTracker() {
   fdCut=t.fdCut; 
   fDy=t.fDy; 
   fDz=t.fDz; 
-  fDx=1.5; 
+  fDx=t.fDx; 
+  fDzMax=t.fDzMax; 
+  fDyMax=t.fDyMax; 
   fSeeds=t.fSeeds;
   fTracks=t.fTracks;
   fN=t.fN;

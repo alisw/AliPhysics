@@ -18,15 +18,20 @@ class AliTOFGeometryV5: public AliTOFGeometry {
  public:
   AliTOFGeometryV5();
   virtual ~AliTOFGeometryV5();
-  
+   
+  void    ImportGeometry();
   void    Init();
-  Bool_t  IsInsideThePad(Int_t *det, Float_t *pos); 
-  Float_t DistanceToPad(Int_t *det, Float_t *pos, Float_t *dist3d=0);
+  Bool_t  IsInsideThePad(Int_t *det, TGeoHMatrix mat, Float_t *pos);
+  Float_t DistanceToPad(Int_t *det, TGeoHMatrix mat, Float_t *pos, Float_t *dist3d=0);
+  Bool_t  IsInsideThePadPar(Int_t *det, Float_t *pos); 
+  Float_t DistanceToPadPar(Int_t *det, Float_t *pos, Float_t *dist3d=0);
+  void    GetVolumePath(Int_t *ind, Char_t *path );
   Int_t   GetPlate(Float_t *pos);
   Int_t   GetStrip(Float_t *pos);
   Int_t   GetSector(Float_t *pos);
   Int_t   GetPadX(Float_t *pos);
   Int_t   GetPadZ(Float_t *pos);
+  void    GetPos(Int_t *det,Float_t *pos);
   Float_t GetX(Int_t *det);
   Float_t GetY(Int_t *det);
   Float_t GetZ(Int_t *det);
