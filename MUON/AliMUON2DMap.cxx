@@ -32,6 +32,15 @@ AliMUON2DMap::AliMUON2DMap() : AliMUONV2DStore(), fMap(new AliMpExMap(true))
   //
 }
 
+//______________________________________________________________________________
+AliMUON2DMap::AliMUON2DMap(const AliMUON2DMap& right) 
+  : AliMUONV2DStore(right) 
+{  
+/// Protected copy constructor (not implemented)
+
+  AliFatal("Copy constructor not provided.");
+}
+
 //_____________________________________________________________________________
 AliMUON2DMap::~AliMUON2DMap()
 {
@@ -40,6 +49,20 @@ AliMUON2DMap::~AliMUON2DMap()
   //
   delete fMap;
 }
+
+//______________________________________________________________________________
+AliMUON2DMap& 
+AliMUON2DMap::operator=(const AliMUON2DMap& right)
+{
+/// Protected assignement operator (not implemented)
+
+  // check assignement to self
+  if (this == &right) return *this;
+
+  AliFatal("Assignement operator not provided.");
+    
+  return *this;  
+}    
 
 //_____________________________________________________________________________
 TObject* 

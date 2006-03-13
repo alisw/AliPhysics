@@ -39,6 +39,10 @@ public:
   
   virtual Bool_t Init();
 
+protected:
+  AliMUONDigitizerV3(const AliMUONDigitizerV3& right);
+  AliMUONDigitizerV3&  operator = (const AliMUONDigitizerV3& right);
+     
 private:
     
   void AddOrUpdateDigit(TClonesArray& array, 

@@ -30,6 +30,10 @@ public:
   TVector2 GetDimensions() const;
   TVector2 GetPosition() const;
 
+ protected:
+  AliMpPCBPainter(const AliMpPCBPainter& right);
+  AliMpPCBPainter&  operator = (const AliMpPCBPainter& right);
+     
  private:
   AliMpPCB* fPCB;
 

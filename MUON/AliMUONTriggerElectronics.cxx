@@ -78,6 +78,15 @@ AliMUONTriggerElectronics::AliMUONTriggerElectronics(AliMUONData *Data)
 	AliWarning("AliMUONLocalTriggerBoard Y_pos DIVIDED BY 2 TO BE CONSISTENT W/ AliMUONTrackReconstructor!!!");
 }
 
+//______________________________________________________________________________
+AliMUONTriggerElectronics::AliMUONTriggerElectronics(const AliMUONTriggerElectronics& right) 
+  : TTask(right) 
+{  
+/// Protected copy constructor (not implemented)
+
+  AliFatal("Copy constructor not provided.");
+}
+
 //___________________________________________
 AliMUONTriggerElectronics::~AliMUONTriggerElectronics()
 {
@@ -86,6 +95,20 @@ AliMUONTriggerElectronics::~AliMUONTriggerElectronics()
 
   for (Int_t i=0;i<234;i++) if (fCrateMap[i]) {delete [] fCrateMap[i]; fCrateMap[i] = NULL;}
 }
+
+//______________________________________________________________________________
+AliMUONTriggerElectronics& 
+AliMUONTriggerElectronics::operator=(const AliMUONTriggerElectronics& right)
+{
+/// Protected assignement operator (not implemented)
+
+  // check assignement to self
+  if (this == &right) return *this;
+
+  AliFatal("Assignement operator not provided.");
+    
+  return *this;  
+}    
 
 //___________________________________________
 void AliMUONTriggerElectronics::Factory()

@@ -33,6 +33,11 @@ class AliMpSlatPainter : public AliMpVPainter
   void Draw(Option_t* option);
 
   void Paint(Option_t* option);
+
+ protected:
+  AliMpSlatPainter(const AliMpSlatPainter& right);
+  AliMpSlatPainter&  operator = (const AliMpSlatPainter& right);
+     
   
  private:
   const AliMpSlat* fkSlat;

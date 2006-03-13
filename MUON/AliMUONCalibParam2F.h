@@ -38,6 +38,10 @@ public:
   virtual Float_t ValueAsFloat(Int_t i, Int_t j=0) const;
   virtual Int_t ValueAsInt(Int_t i, Int_t j=0) const;
 
+protected:
+  AliMUONCalibParam2F(const AliMUONCalibParam2F& right);
+  AliMUONCalibParam2F&  operator = (const AliMUONCalibParam2F& right);
+     
 private:
   Int_t Index(Int_t i, Int_t j) const;  
     

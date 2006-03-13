@@ -28,6 +28,11 @@ public:
   virtual Bool_t IsOwner() const { return kTRUE; }
 
   virtual void Print(Option_t* opt="") const;
+
+protected:
+  AliMUON2DMap(const AliMUON2DMap& right);
+  AliMUON2DMap&  operator = (const AliMUON2DMap& right);
+     
   
 private:
   AliMpExMap* fMap;

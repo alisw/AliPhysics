@@ -35,6 +35,17 @@ AliMUONChamberTrigger::AliMUONChamberTrigger()
 // Default constructor
 }
 
+//-------------------------------------------
+
+AliMUONChamberTrigger::AliMUONChamberTrigger(const AliMUONChamberTrigger& right) 
+  : AliMUONChamber(right) 
+{  
+/// Protected copy constructor (not implemented)
+
+  AliFatal("Copy constructor not provided.");
+}
+
+//-------------------------------------------
 
 AliMUONChamberTrigger::AliMUONChamberTrigger(Int_t id,
                               const AliMUONGeometryTransformer* kGeometryTransformer) 
@@ -43,6 +54,20 @@ AliMUONChamberTrigger::AliMUONChamberTrigger(Int_t id,
 {
 // Constructor using chamber id
 }
+
+//-------------------------------------------
+AliMUONChamberTrigger& 
+AliMUONChamberTrigger::operator=(const AliMUONChamberTrigger& right)
+{
+/// Protected assignement operator (not implemented)
+
+  // check assignement to self
+  if (this == &right) return *this;
+
+  AliFatal("Assignement operator not provided.");
+    
+  return *this;  
+}    
 
 //-------------------------------------------
 void AliMUONChamberTrigger::DisIntegration(AliMUONHit* hit,

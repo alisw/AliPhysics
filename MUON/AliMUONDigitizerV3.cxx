@@ -53,6 +53,15 @@ fTriggerCodeVersion(triggerCodeVersion)
   AliDebug(1,Form("AliRunDigitizer=%p",fManager));
 }
 
+//______________________________________________________________________________
+AliMUONDigitizerV3::AliMUONDigitizerV3(const AliMUONDigitizerV3& right) 
+  : AliDigitizer(right) 
+{  
+/// Protected copy constructor (not implemented)
+
+  AliFatal("Copy constructor not provided.");
+}
+
 //_____________________________________________________________________________
 AliMUONDigitizerV3::~AliMUONDigitizerV3()
 {
@@ -64,6 +73,20 @@ AliMUONDigitizerV3::~AliMUONDigitizerV3()
   delete fCalibrationData;
   delete fTriggerProcessor;
 }
+
+//______________________________________________________________________________
+AliMUONDigitizerV3& 
+AliMUONDigitizerV3::operator=(const AliMUONDigitizerV3& right)
+{
+/// Protected assignement operator (not implemented)
+
+  // check assignement to self
+  if (this == &right) return *this;
+
+  AliFatal("Assignement operator not provided.");
+    
+  return *this;  
+}    
 
 //_____________________________________________________________________________
 void 

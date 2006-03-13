@@ -58,6 +58,15 @@ fkSlat(slat)
   AliDebug(1,Form("this=%p Normal ctor slat=%p",this,slat));
 }
 
+//______________________________________________________________________________
+AliMpSlatSegmentation::AliMpSlatSegmentation(const AliMpSlatSegmentation& right) 
+  : AliMpVSegmentation(right) 
+{  
+/// Protected copy constructor (not implemented)
+
+  AliFatal("Copy constructor not provided.");
+}
+
 //_____________________________________________________________________________
 AliMpSlatSegmentation::~AliMpSlatSegmentation()
 {
@@ -67,6 +76,20 @@ AliMpSlatSegmentation::~AliMpSlatSegmentation()
   // Int_t i(0);//just to be able to put a breakpoint in gdb
   AliDebug(1,Form("this=%p",this));			
 }
+
+//______________________________________________________________________________
+AliMpSlatSegmentation& 
+AliMpSlatSegmentation::operator=(const AliMpSlatSegmentation& right)
+{
+/// Protected assignement operator (not implemented)
+
+  // check assignement to self
+  if (this == &right) return *this;
+
+  AliFatal("Assignement operator not provided.");
+    
+  return *this;  
+}    
 
 //_____________________________________________________________________________
 AliMpVPadIterator*

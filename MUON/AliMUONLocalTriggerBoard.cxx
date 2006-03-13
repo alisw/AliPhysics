@@ -33,6 +33,7 @@
 
 //___________________________________________
 AliMUONLocalTriggerBoard::AliMUONLocalTriggerBoard()
+  : AliMUONTriggerBoard()
 {
    fNumber = 0;
 
@@ -60,7 +61,8 @@ AliMUONLocalTriggerBoard::AliMUONLocalTriggerBoard()
 }
 
 //___________________________________________
-AliMUONLocalTriggerBoard::AliMUONLocalTriggerBoard(const char *name, Int_t a) : AliMUONTriggerBoard(name, a)
+AliMUONLocalTriggerBoard::AliMUONLocalTriggerBoard(const char *name, Int_t a) 
+ : AliMUONTriggerBoard(name, a)
 {
    fNumber = 0;
    
@@ -86,6 +88,29 @@ AliMUONLocalTriggerBoard::AliMUONLocalTriggerBoard(const char *name, Int_t a) : 
 
    for (Int_t i=0; i<2; i++) fLutLpt[i] = fLutHpt[i] = fLutApt[i] = 0;
 }
+
+//______________________________________________________________________________
+AliMUONLocalTriggerBoard::AliMUONLocalTriggerBoard(const AliMUONLocalTriggerBoard& right) 
+  : AliMUONTriggerBoard(right) 
+{  
+/// Protected copy constructor (not implemented)
+
+  AliFatal("Copy constructor not provided.");
+}
+
+//______________________________________________________________________________
+AliMUONLocalTriggerBoard& 
+AliMUONLocalTriggerBoard::operator=(const AliMUONLocalTriggerBoard& right)
+{
+/// Protected assignement operator (not implemented)
+
+  // check assignement to self
+  if (this == &right) return *this;
+
+  AliFatal("Assignement operator not provided.");
+    
+  return *this;  
+}    
 
 //___________________________________________
 void AliMUONLocalTriggerBoard::Reset()

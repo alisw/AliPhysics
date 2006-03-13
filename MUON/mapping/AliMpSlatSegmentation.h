@@ -69,6 +69,10 @@ class AliMpSlatSegmentation : public AliMpVSegmentation
   
   TVector2 Dimensions() const;
   
+ protected:
+  AliMpSlatSegmentation(const AliMpSlatSegmentation& right);
+  AliMpSlatSegmentation&  operator = (const AliMpSlatSegmentation& right);
+     
  private:
   const AliMpSlat* fkSlat; // Slat
 

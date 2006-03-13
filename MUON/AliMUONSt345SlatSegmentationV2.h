@@ -122,6 +122,10 @@ class AliMUONSt345SlatSegmentationV2 : public AliMUONVGeometryDESegmentation
   /// Print.
   void Print(Option_t* opt = "") const;
 
+ protected:
+  AliMUONSt345SlatSegmentationV2(const AliMUONSt345SlatSegmentationV2& right);
+  AliMUONSt345SlatSegmentationV2&  operator = (const AliMUONSt345SlatSegmentationV2& right);
+     
  private:
 
   Int_t fDetElemId;

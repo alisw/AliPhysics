@@ -53,6 +53,14 @@ fDeadChannels(0x0)
   }
 }
 
+//______________________________________________________________________________
+AliMUONCalibrationData::AliMUONCalibrationData(const AliMUONCalibrationData& right) 
+  : TObject(right) 
+{  
+/// Protected copy constructor (not implemented)
+
+  AliFatal("Copy constructor not provided.");
+}
 
 //_____________________________________________________________________________
 AliMUONCalibrationData::~AliMUONCalibrationData()
@@ -65,6 +73,19 @@ AliMUONCalibrationData::~AliMUONCalibrationData()
   delete fDeadChannels;
 }
 
+//______________________________________________________________________________
+AliMUONCalibrationData& 
+AliMUONCalibrationData::operator=(const AliMUONCalibrationData& right)
+{
+/// Protected assignement operator (not implemented)
+
+  // check assignement to self
+  if (this == &right) return *this;
+
+  AliFatal("Assignement operator not provided.");
+    
+  return *this;  
+}    
 
 //_____________________________________________________________________________
 AliMUONVCalibParam*

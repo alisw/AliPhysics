@@ -37,7 +37,11 @@ public:
   virtual Float_t ValueAsFloat(Int_t i, Int_t j=0) const;
   virtual Int_t ValueAsInt(Int_t i, Int_t j=0) const;
 
-private:
+ protected:
+  AliMUONCalibParam1I(const AliMUONCalibParam1I& right);
+  AliMUONCalibParam1I&  operator = (const AliMUONCalibParam1I& right);
+ 
+ private:
   Int_t fSize;
   Int_t* fValues; //[fSize]
   

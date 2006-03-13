@@ -36,6 +36,9 @@ class AliMUONChamberTrigger : public AliMUONChamber
        				 Int_t& nnew, Float_t newclust[6][500]);
 
   protected:   
+    AliMUONChamberTrigger(const AliMUONChamberTrigger& right);
+    AliMUONChamberTrigger&  operator = (const AliMUONChamberTrigger& right);
+
     const AliMUONGeometryTransformer* fkGeomTransformer;// geometry transformations
 
   ClassDef(AliMUONChamberTrigger,2) // Muon trigger chamber class

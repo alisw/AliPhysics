@@ -66,6 +66,10 @@ class AliMUONTriggerElectronics : public TTask
 
 //      virtual AliMUONData* GetMUONData() {return fMUONData;}
 
+   protected:
+      AliMUONTriggerElectronics(const AliMUONTriggerElectronics& right);
+      AliMUONTriggerElectronics&  operator = (const AliMUONTriggerElectronics& right);
+     
    private:
       TString                    fSourceFileName;
       TClonesArray              *fCrates;

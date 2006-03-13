@@ -87,12 +87,36 @@ fYhit(FMAX)
 									fSlatSegmentation));
 }
 
+//______________________________________________________________________________
+AliMUONSt345SlatSegmentationV2::AliMUONSt345SlatSegmentationV2(
+                                   const AliMUONSt345SlatSegmentationV2& right) 
+  : AliMUONVGeometryDESegmentation(right) 
+{  
+/// Protected copy constructor (not implemented)
+
+  AliFatal("Copy constructor not provided.");
+}
+
 //_____________________________________________________________________________
 AliMUONSt345SlatSegmentationV2::~AliMUONSt345SlatSegmentationV2()
 {
 	AliDebug(1,Form("dtor this=%p",this));
   delete fPadIterator;
 }
+
+//______________________________________________________________________________
+AliMUONSt345SlatSegmentationV2& 
+AliMUONSt345SlatSegmentationV2::operator=(const AliMUONSt345SlatSegmentationV2& right)
+{
+/// Protected assignement operator (not implemented)
+
+  // check assignement to self
+  if (this == &right) return *this;
+
+  AliFatal("Assignement operator not provided.");
+    
+  return *this;  
+}    
 
 //_____________________________________________________________________________
 TF1*

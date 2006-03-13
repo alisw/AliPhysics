@@ -52,6 +52,15 @@ fkSlat(slat)
   AliDebug(1,Form("this=%p Normal ctor slat=%p",this,slat));
 }
 
+//______________________________________________________________________________
+AliMpTriggerSegmentation::AliMpTriggerSegmentation(const AliMpTriggerSegmentation& right) 
+  : AliMpVSegmentation(right) 
+{  
+/// Protected copy constructor (not implemented)
+
+  AliFatal("Copy constructor not provided.");
+}
+
 //_____________________________________________________________________________
 AliMpTriggerSegmentation::~AliMpTriggerSegmentation()
 {
@@ -60,6 +69,20 @@ AliMpTriggerSegmentation::~AliMpTriggerSegmentation()
   //
   AliDebug(1,Form("this=%p",this));			
 }
+
+//______________________________________________________________________________
+AliMpTriggerSegmentation& 
+AliMpTriggerSegmentation::operator=(const AliMpTriggerSegmentation& right)
+{
+/// Protected assignement operator (not implemented)
+
+  // check assignement to self
+  if (this == &right) return *this;
+
+  AliFatal("Assignement operator not provided.");
+    
+  return *this;  
+}    
 
 //_____________________________________________________________________________
 AliMpVPadIterator*

@@ -52,6 +52,15 @@ AliMUONCalibParam1I::AliMUONCalibParam1I(Int_t theSize, Int_t fillWithValue)
   }
 }
 
+//______________________________________________________________________________
+AliMUONCalibParam1I::AliMUONCalibParam1I(const AliMUONCalibParam1I& right) 
+  : AliMUONVCalibParam(right) 
+{  
+/// Protected copy constructor (not implemented)
+
+  AliFatal("Copy constructor not provided.");
+}
+
 //_____________________________________________________________________________
 AliMUONCalibParam1I::~AliMUONCalibParam1I()
 {
@@ -60,6 +69,20 @@ AliMUONCalibParam1I::~AliMUONCalibParam1I()
   //
   delete[] fValues;
 }
+
+//______________________________________________________________________________
+AliMUONCalibParam1I& 
+AliMUONCalibParam1I::operator=(const AliMUONCalibParam1I& right)
+{
+/// Protected assignement operator (not implemented)
+
+  // check assignement to self
+  if (this == &right) return *this;
+
+  AliFatal("Assignement operator not provided.");
+    
+  return *this;  
+}    
 
 //_____________________________________________________________________________
 void

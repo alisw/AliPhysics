@@ -52,6 +52,10 @@ public:
   /// The runnumber used by this object.
   Int_t RunNumber() const { return fRunNumber; }
   
+protected:
+  AliMUONCalibrationData(const AliMUONCalibrationData& right);
+  AliMUONCalibrationData&  operator = (const AliMUONCalibrationData& right);
+     
 private:
   AliCDBEntry* GetEntry(const char* path) const;
   AliMUONV2DStore* Gains() const;

@@ -40,6 +40,10 @@ class AliMUONReconstructor: public AliReconstructor
     virtual void         FillESD(AliRunLoader* runLoader, 
 				 AliRawReader* /*rawReader*/, AliESD* esd) const;
 
+protected:
+    AliMUONReconstructor(const AliMUONReconstructor& right);
+    AliMUONReconstructor&  operator = (const AliMUONReconstructor& right);
+     
 private:
 
     TTask* GetCalibrationTask(AliMUONData* data) const;

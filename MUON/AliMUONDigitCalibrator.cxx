@@ -49,6 +49,15 @@ AliMUONDigitCalibrator::AliMUONDigitCalibrator(AliMUONData* muonData,
     //
 }
 
+//______________________________________________________________________________
+AliMUONDigitCalibrator::AliMUONDigitCalibrator(const AliMUONDigitCalibrator& right) 
+  : TTask(right) 
+{  
+/// Protected copy constructor (not implemented)
+
+  AliFatal("Copy constructor not provided.");
+}
+
 //_____________________________________________________________________________
 AliMUONDigitCalibrator::~AliMUONDigitCalibrator()
 {
@@ -56,6 +65,20 @@ AliMUONDigitCalibrator::~AliMUONDigitCalibrator()
   // empty dtor.
   //
 }
+
+//______________________________________________________________________________
+AliMUONDigitCalibrator& 
+AliMUONDigitCalibrator::operator=(const AliMUONDigitCalibrator& right)
+{
+/// Protected assignement operator (not implemented)
+
+  // check assignement to self
+  if (this == &right) return *this;
+
+  AliFatal("Assignement operator not provided.");
+    
+  return *this;  
+}    
 
 //_____________________________________________________________________________
 void

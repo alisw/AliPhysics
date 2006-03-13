@@ -97,6 +97,9 @@ class AliMUONLocalTriggerBoard : public AliMUONTriggerBoard
 		
 
    protected:
+      AliMUONLocalTriggerBoard(const AliMUONLocalTriggerBoard& right);
+      AliMUONLocalTriggerBoard&  operator = (const AliMUONLocalTriggerBoard& right);
+      
 
       virtual void     Resp(Option_t *option); // local trigger info before ("I") and after ("F") LUT
 

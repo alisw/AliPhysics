@@ -62,6 +62,15 @@ fIsDone(kTRUE)
   Invalidate();
 }
 
+//______________________________________________________________________________
+AliMpSlatZonePadIterator::AliMpSlatZonePadIterator(const AliMpSlatZonePadIterator& right) 
+  : AliMpVPadIterator(right) 
+{  
+/// Protected copy constructor (not implemented)
+
+  AliFatal("Copy constructor not provided.");
+}
+
 //_____________________________________________________________________________
 AliMpSlatZonePadIterator::~AliMpSlatZonePadIterator()
 {
@@ -70,6 +79,20 @@ AliMpSlatZonePadIterator::~AliMpSlatZonePadIterator()
   //
   delete fSlatSegmentation;
 }
+
+//______________________________________________________________________________
+AliMpSlatZonePadIterator& 
+AliMpSlatZonePadIterator::operator=(const AliMpSlatZonePadIterator& right)
+{
+/// Protected assignement operator (not implemented)
+
+  // check assignement to self
+  if (this == &right) return *this;
+
+  AliFatal("Assignement operator not provided.");
+    
+  return *this;  
+}    
 
 //_____________________________________________________________________________
 Bool_t

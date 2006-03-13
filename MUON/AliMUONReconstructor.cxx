@@ -57,12 +57,35 @@ AliMUONReconstructor::AliMUONReconstructor()
     AliDebug(1,"");
 }
 
+//______________________________________________________________________________
+AliMUONReconstructor::AliMUONReconstructor(const AliMUONReconstructor& right) 
+  : AliReconstructor(right) 
+{  
+/// Protected copy constructor (not implemented)
+
+  AliFatal("Copy constructor not provided.");
+}
+
 //_____________________________________________________________________________
 AliMUONReconstructor::~AliMUONReconstructor()
 {
   AliDebug(1,"");
   delete fCalibrationData;
 }
+
+//______________________________________________________________________________
+AliMUONReconstructor& 
+AliMUONReconstructor::operator=(const AliMUONReconstructor& right)
+{
+/// Protected assignement operator (not implemented)
+
+  // check assignement to self
+  if (this == &right) return *this;
+
+  AliFatal("Assignement operator not provided.");
+    
+  return *this;  
+}    
 
 //_____________________________________________________________________________
 TTask* 

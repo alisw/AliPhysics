@@ -28,6 +28,8 @@
 #include "AliMpMotifPosition.h"
 #include "AliMpPCB.h"
 
+#include "AliLog.h"
+
 #include "TVirtualX.h"
 #include "TPad.h"
 
@@ -44,6 +46,15 @@ AliMpPCBPainter::AliMpPCBPainter(AliMpPCB* pcb)
     //
 }
 
+//______________________________________________________________________________
+AliMpPCBPainter::AliMpPCBPainter(const AliMpPCBPainter& right) 
+  : AliMpVPainter(right) 
+{  
+/// Protected copy constructor (not implemented)
+
+  AliFatal("Copy constructor not provided.");
+}
+
 //_____________________________________________________________________________
 AliMpPCBPainter::~AliMpPCBPainter()
 {
@@ -51,6 +62,20 @@ AliMpPCBPainter::~AliMpPCBPainter()
   // Dtor.
   //
 }
+
+//______________________________________________________________________________
+AliMpPCBPainter& 
+AliMpPCBPainter::operator=(const AliMpPCBPainter& right)
+{
+/// Protected assignement operator (not implemented)
+
+  // check assignement to self
+  if (this == &right) return *this;
+
+  AliFatal("Assignement operator not provided.");
+    
+  return *this;  
+}    
 
 //_____________________________________________________________________________
 TVector2
