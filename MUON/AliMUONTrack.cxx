@@ -78,10 +78,12 @@ AliMUONTrack::AliMUONTrack(AliMUONSegment* BegSegment, AliMUONSegment* EndSegmen
   // memory allocation for the TObjArray of pointers to reconstructed TrackHit's
   fTrackHitsPtr = new TObjArray(10);
   fNTrackHits = 0;
-  AddSegment(BegSegment); // add hits from BegSegment
-  AddSegment(EndSegment); // add hits from EndSegment
-  fTrackHitsPtr->Sort(); // sort TrackHits according to increasing Z
-  SetTrackParamAtVertex(); // set track parameters at vertex
+  if (BegSegment) { //AZ
+    AddSegment(BegSegment); // add hits from BegSegment
+    AddSegment(EndSegment); // add hits from EndSegment
+    fTrackHitsPtr->Sort(); // sort TrackHits according to increasing Z
+    SetTrackParamAtVertex(); // set track parameters at vertex
+  }
   fTrackParamAtHit = new TClonesArray("AliMUONTrackParam",10);
   fHitForRecAtHit = new TClonesArray("AliMUONHitForRec",10);
   // set fit conditions...
