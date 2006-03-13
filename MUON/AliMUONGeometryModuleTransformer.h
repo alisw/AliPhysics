@@ -14,8 +14,8 @@
 ///
 /// Author: Ivana Hrivnacova, IPN Orsay
 
-#ifndef ALI_MUON_GEOMETRY_MODULE_TRANSFORMS_H
-#define ALI_MUON_GEOMETRY_MODULE_TRANSFORMS_H
+#ifndef ALI_MUON_GEOMETRY_MODULE_TRANSFORMER_H
+#define ALI_MUON_GEOMETRY_MODULE_TRANSFORMER_H
 
 #include <TObject.h>
 #include <TString.h>
@@ -107,4 +107,4 @@ inline  AliMUONGeometryStore*
 AliMUONGeometryModuleTransformer::GetDetElementStore() const
 { return fDetElements; }
 
-#endif //ALI_MUON_GEOMETRY_MODULE_PARAM_H
+#endif //ALI_MUON_GEOMETRY_MODULE_TRANSFORMER_H
