@@ -349,6 +349,10 @@ void AliMUONTrackReconstructor::EventReconstruct(void)
 {
   // To reconstruct one event
   AliDebug(1,"Enter EventReconstruct");
+  ResetTracks(); //AZ
+  ResetTrackHits(); //AZ 
+  ResetSegments(); //AZ
+  ResetHitsForRec(); //AZ
   MakeEventToBeReconstructed();
   MakeSegments();
   MakeTracks();
@@ -444,7 +448,7 @@ void AliMUONTrackReconstructor::MakeEventToBeReconstructed(void)
   AliRunLoader *runLoader = fLoader->GetRunLoader();
 
   AliDebug(1,"Enter MakeEventToBeReconstructed");
-  ResetHitsForRec();
+  //AZ ResetHitsForRec();
   if (fRecTrackRefHits == 1) {
     // Reconstruction from track ref. hits
     // Back to the signal file
@@ -744,10 +748,10 @@ void AliMUONTrackReconstructor::AddHitsForRecFromRawClusters(TTree* TR)
       (fNHitsForRecPerChamber[ch])++;
       // more information into HitForRec
       //  resolution: info should be already in raw cluster and taken from it ????
-      hitForRec->SetBendingReso2(fBendingResolution * fBendingResolution);
-      hitForRec->SetNonBendingReso2(fNonBendingResolution * fNonBendingResolution);
-      //hitForRec->SetBendingReso2(clus->GetErrY() * clus->GetErrY());
-      //hitForRec->SetNonBendingReso2(clus->GetErrX() * clus->GetErrX());
+      //hitForRec->SetBendingReso2(fBendingResolution * fBendingResolution);
+      //hitForRec->SetNonBendingReso2(fNonBendingResolution * fNonBendingResolution);
+      hitForRec->SetBendingReso2(clus->GetErrY() * clus->GetErrY());
+      hitForRec->SetNonBendingReso2(clus->GetErrX() * clus->GetErrX());
       //  original raw cluster
       hitForRec->SetChamberNumber(ch);
       hitForRec->SetHitNumber(iclus);
@@ -771,7 +775,7 @@ void AliMUONTrackReconstructor::MakeSegments(void)
   // To make the list of segments in all stations,
   // from the list of hits to be reconstructed
   AliDebug(1,"Enter MakeSegments");
-  ResetSegments();
+  //AZ ResetSegments();
   // Loop over stations
   Int_t nb = (fTrackMethod != 1) ? 3 : 0; //AZ
   for (Int_t st = nb; st < AliMUONConstants::NTrackingCh()/2; st++) 
@@ -907,8 +911,8 @@ void AliMUONTrackReconstructor::MakeTracks(void)
   // from the list of segments and points in all stations
   AliDebug(1,"Enter MakeTracks");
   // The order may be important for the following Reset's
-  ResetTracks();
-  ResetTrackHits();
+  //AZ ResetTracks();
+  //AZ ResetTrackHits();
   if (fTrackMethod != 1) { //AZ - Kalman filter
     MakeTrackCandidatesK();
     if (fRecTracksPtr->GetEntriesFast() == 0) return;
@@ -1605,13 +1609,8 @@ void AliMUONTrackReconstructor::MakeTrackCandidatesK(void)
   AliMUONTrackK *trackK;
 
   AliDebug(1,"Enter MakeTrackCandidatesK");
-  // Reset the TClonesArray of reconstructed tracks
-  if (fRecTracksPtr) fRecTracksPtr->Delete();
-  // Delete in order that the Track destructors are called,
-  // hence the space for the TClonesArray of pointers to TrackHit's is freed
-  fNRecTracks = 0;
 
-  AliMUONTrackK a(this, fHitsForRecPtr); // bad idea ???
+  AliMUONTrackK a(this, fHitsForRecPtr);
   // Loop over stations(1...) 5 and 4
   for (istat=4; istat>=3; istat--) {
     // Loop over segments in the station
@@ -1687,8 +1686,7 @@ void AliMUONTrackReconstructor::FollowTracksK(void)
 
     ok = kTRUE;
     if (trackK->GetRecover() == 0) hit = (AliMUONHitForRec*) 
-                                   trackK->GetHitOnTrack()->Last(); // last hit
-    //else hit = (AliMUONHitForRec*) (*trackK->GetHitOnTrack())[1]; // 2'nd hit
+                                   trackK->GetTrackHits()->Last(); // last hit
     else hit = trackK->GetHitLastOk(); // hit where track stopped
     if (hit) ichamBeg = hit->GetChamberNumber();
     ichamEnd = 0;
@@ -1737,7 +1735,7 @@ void AliMUONTrackReconstructor::FollowTracksK(void)
     chamBits = 0;
     Double_t chi2max = 0;
     for (Int_t i=0; i<trackK->GetNTrackHits(); i++) {
-      hit = (AliMUONHitForRec*) (*trackK->GetHitOnTrack())[i];
+      hit = (AliMUONHitForRec*) (*trackK->GetTrackHits())[i];
       chamBits |= BIT(hit->GetChamberNumber());
       if (trackK->GetChi2PerPoint(i) > chi2max) chi2max = trackK->GetChi2PerPoint(i);
     }
@@ -1769,8 +1767,8 @@ Bool_t AliMUONTrackReconstructor::CheckCandidateK(Int_t icand, Int_t nSeeds) con
   AliMUONHitForRec *hit1, *hit2, *hit;
 
   track1 = (AliMUONTrackK*) ((*fRecTracksPtr)[icand]);
-  hit1 = (AliMUONHitForRec*) (*track1->GetHitOnTrack())[0]; // 1'st hit
-  hit2 = (AliMUONHitForRec*) (*track1->GetHitOnTrack())[1]; // 2'nd hit
+  hit1 = (AliMUONHitForRec*) (*track1->GetTrackHits())[0]; // 1'st hit
+  hit2 = (AliMUONHitForRec*) (*track1->GetTrackHits())[1]; // 2'nd hit
 
   for (Int_t i=0; i<icand; i++) {
     track2 = (AliMUONTrackK*) ((*fRecTracksPtr)[i]);
@@ -1782,7 +1780,7 @@ Bool_t AliMUONTrackReconstructor::CheckCandidateK(Int_t icand, Int_t nSeeds) con
     } else {
       Int_t nSame = 0;
       for (Int_t j=0; j<track2->GetNTrackHits(); j++) {
-        hit = (AliMUONHitForRec*) (*track2->GetHitOnTrack())[j];
+        hit = (AliMUONHitForRec*) (*track2->GetTrackHits())[j];
         if (hit == hit1 || hit == hit2) {
           nSame++;
           if (nSame == 2) return kFALSE;
@@ -1855,6 +1853,6 @@ void AliMUONTrackReconstructor::SetTrackMethod(Int_t iTrackMethod)
     fRecTracksPtr = new TClonesArray("AliMUONTrackK", 10);
     if (fTrackMethod == 2) cout << " *** Tracking with the Kalman filter *** " << endl;
     else cout << " *** Combined cluster / track finder ***" << endl;
-  } else cout << " *** Traditional tracking *** " << endl;
+  } else cout << " *** Original tracking *** " << endl;
 
 }
