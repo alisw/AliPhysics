@@ -14,12 +14,12 @@
  **************************************************************************/
 
 // $Id$
-//
+
+// ----------------------------------
 // Class AliMUONGeometryEnvelopeStore
 // ----------------------------------
 // Class for definititon of the temporary volume envelopes
 // used in geometry construction
-//
 // Author: Ivana Hrivnacova, IPN Orsay
 
 #include <TVirtualMC.h>

@@ -19,6 +19,12 @@
 
 /* $Id$ */
 
+// --------------------------
+// Class AliMUONSegFactory
+// --------------------------
+// New factory for building segmentations at all levels
+// Authors: Ivana Hrivnacova, IPN Orsay
+
 #include "AliMUONSegFactory.h"
 #include "AliMUONConstants.h"
 #include "AliMUONGeometryStore.h"
@@ -862,6 +868,10 @@ void AliMUONSegFactory::BuildStation5()
 //__________________________________________________________________________
 void AliMUONSegFactory::BuildStation6() 
 { 
+  //--------------------------------------------------------
+  // Configuration for Trigger stations
+  //^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
  
     AliMUONGeometrySegmentation *chamberSeg[2];
 

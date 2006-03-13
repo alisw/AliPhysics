@@ -14,12 +14,13 @@
  **************************************************************************/
 
 // $Id$
-//
+// $MpId: $
+
+// ------------------------------------ 
 // Class AliMpStringObjMap
 // ------------------------------------ 
 // Helper class that substitutes map <string, int> 
 // which ALICE does not allow to use 
-//
 // Author: Ivana Hrivnacova, IPN Orsay
 
 #include <Riostream.h>

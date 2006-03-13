@@ -15,10 +15,10 @@
 
 // $Id$
 //
+// --------------------------------------
 // Class AliMUONGeometryDetElement
 // --------------------------------------
 // The class defines the detection element.
-//
 // Author: Ivana Hrivnacova, IPN Orsay
 
 #include "AliMUONGeometryDetElement.h"

@@ -15,10 +15,10 @@
 
 // $Id$
 //
+// -------------------------------------
 // Class AliMUONGeometryModuleTransformer
 // -------------------------------------
 // Class for definition of the detector module transformations
-//
 // Author: Ivana Hrivnacova, IPN Orsay
 
 #include "AliMUONGeometryModuleTransformer.h"

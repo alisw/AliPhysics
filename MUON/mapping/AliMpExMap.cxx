@@ -16,7 +16,7 @@
 // $Id$
 // $MpId: AliMpExMap.cxx,v 1.2 2006/03/02 16:28:23 ivana Exp $
 // Category: basic
-//
+// ------------------------
 // Class AliMpExMap
 // ------------------------
 // Helper class making Root persistent TExMap

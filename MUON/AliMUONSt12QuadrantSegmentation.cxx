@@ -15,11 +15,11 @@
  
 /* $Id$ */
 
+// -------------------------------------
 // Class AliMUONSt12QuadrantSegmentation
 // -------------------------------------
 // Segmentation for MUON quadrants of stations 1 and 2 using 
 // the mapping package
-//
 // Author: Ivana Hrivnacova, IPN Orsay
  
 #include <TError.h>

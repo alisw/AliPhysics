@@ -15,10 +15,10 @@
 
 // $Id$
 //
+// ----------------------------
 // Class AliMUONGeometry
 // ----------------------------
 // Manager class for geometry construction via geometry builders.
-//
 // Author: Ivana Hrivnacova, IPN Orsay
 
 #include "AliMUONGeometry.h"

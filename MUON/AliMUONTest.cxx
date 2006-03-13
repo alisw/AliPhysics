@@ -15,9 +15,10 @@
 
 // $Id$
 //
+// -----------------
 // Class AliMUONTest
 // -----------------
-// Class with functions for testing
+// Class with functions for testing segmentations
 //
 // Author: Ivana Hrivnacova, IPN Orsay
 

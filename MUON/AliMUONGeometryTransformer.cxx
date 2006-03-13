@@ -15,10 +15,10 @@
 
 // $Id$
 //
+// ----------------------------
 // Class AliMUONGeometryTransformer
 // ----------------------------
 // Top container class for geometry transformations
-//
 // Author: Ivana Hrivnacova, IPN Orsay
 
 #include "AliMUONGeometryTransformer.h"
@@ -865,7 +865,7 @@ void AliMUONGeometryTransformer::Global2Local(Int_t detElemId,
 /// Transform point from the global reference frame (ALIC)
 /// to the local reference frame of the detection element specified
 /// by detElemId.
-   
+
   const AliMUONGeometryModuleTransformer* kTransformer 
     = GetModuleTransformerByDEId(detElemId);
   
@@ -881,7 +881,7 @@ void AliMUONGeometryTransformer::Global2Local(Int_t detElemId,
 /// Transform point from the global reference frame (ALIC)
 /// to the local reference frame of the detection element specified
 /// by detElemId.
-   
+
   const AliMUONGeometryModuleTransformer* kTransformer 
     = GetModuleTransformerByDEId(detElemId);
   
