@@ -52,7 +52,7 @@ class AliMpPad : public TObject
   AliMpPad& operator = (const AliMpPad& src) ;
   
   // methods
-          void PrintOn(ostream&) const;
+          void PrintOn(ostream& out) const;
   virtual void Print(const char* /*option*/ = "") const;
 
   // static get methods
