@@ -558,6 +558,7 @@ Int_t AliAlignmentTracks::LoadPoints(const TArrayI *volids, AliTrackPointArray**
 
   // Allocate the pointer to the space-point arrays
   points = new AliTrackPointArray*[nArrays];
+  for (Int_t i = 0; i < nArrays; i++) points[i] = 0x0;
 
   // Init the array used to flag already loaded tree entries
   Bool_t *indexUsed = new Bool_t[fPointsTree->GetEntries()];
