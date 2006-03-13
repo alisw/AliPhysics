@@ -1095,7 +1095,7 @@ void AliTOFv4T0::StepManager()
   if(
      gMC->IsTrackEntering()
      && gMC->TrackCharge()
-     && gMC->GetMedium()==idtmed[513]
+     //&& gMC->GetMedium()==idtmed[513]
      && gMC->CurrentMedium()==idtmed[513]
      && gMC->CurrentVolID(copy)==fIdSens
      )
