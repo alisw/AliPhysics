@@ -15,6 +15,13 @@
 
 /* $Id$ */
 
+// Class AliMUONTrackK
+// -------------------------------------
+// Reconstructed track in the muons system based on the extended 
+// Kalman filter approach
+//
+// Author: Alexander Zinchenko, JINR Dubna
+
 #include <Riostream.h>
 #include <TClonesArray.h>
 #include <TArrayD.h>
@@ -62,8 +69,8 @@ AliMUONTrackK::AliMUONTrackK()
   fgNOfPoints = 0; // number of points
 
   fStartSegment = NULL;
-  fTrackHitsPtr = NULL;
-  fNTrackHits = 0;
+  fTrackHits = NULL;
+  fNmbTrackHits = 0;
   fTrackPar = fTrackParNew = NULL;
   fCovariance = fWeight = NULL;
   fSkipHit = NULL;
@@ -91,8 +98,8 @@ AliMUONTrackK::AliMUONTrackK(AliMUONTrackReconstructor *TrackReconstructor, TClo
   if (fgTrackReconstructor->GetTrackMethod() == 3) fgCombi = AliMUONEventRecoCombi::Instance();
 
   fStartSegment = NULL;
-  fTrackHitsPtr = NULL;
-  fNTrackHits = 0;
+  fTrackHits = NULL;
+  fNmbTrackHits = 0;
   fChi2 = 0;
   fTrackPar = fTrackParNew = NULL;
   fCovariance = fWeight = NULL;
@@ -107,7 +114,8 @@ AliMUONTrackK::AliMUONTrackK(AliMUONTrackReconstructor *TrackReconstructor, TClo
 
   //__________________________________________________________________________
 AliMUONTrackK::AliMUONTrackK(AliMUONSegment *segment)
-  : AliMUONTrack(segment, segment, fgTrackReconstructor)
+  //: AliMUONTrack(segment, segment, fgTrackReconstructor)
+  : AliMUONTrack(NULL, segment, fgTrackReconstructor)
 {
   // Constructor from a segment
   Double_t dX, dY, dZ;
@@ -129,8 +137,8 @@ AliMUONTrackK::AliMUONTrackK(AliMUONSegment *segment)
     hit2 = segment->GetHitForRec1();
   }
   // memory allocation for the TObjArray of pointers to reconstructed TrackHit's
-  fTrackHitsPtr = new TObjArray(13);
-  fNTrackHits = 2;
+  fTrackHits = new TObjArray(13);
+  fNmbTrackHits = 2;
   fChi2 = 0;
   fBPFlag = kFALSE;
   fTrackPar = new TMatrixD(fgkSize,1); // track parameters
@@ -144,8 +152,8 @@ AliMUONTrackK::AliMUONTrackK(AliMUONSegment *segment)
     (*fTrackPar)(0,0) = hit1->GetBendingCoor(); // y
     (*fTrackPar)(1,0) = hit1->GetNonBendingCoor(); // x
     fPosition = hit1->GetZ(); // z
-    fTrackHitsPtr->Add(hit2); // add hit 2
-    fTrackHitsPtr->Add(hit1); // add hit 1
+    fTrackHits->Add(hit2); // add hit 2
+    fTrackHits->Add(hit1); // add hit 1
     //AZ(Z->-Z) fTrackDir = -1;
     fTrackDir = 1;
   } else {
@@ -153,8 +161,8 @@ AliMUONTrackK::AliMUONTrackK(AliMUONSegment *segment)
     (*fTrackPar)(0,0) = hit2->GetBendingCoor(); // y
     (*fTrackPar)(1,0) = hit2->GetNonBendingCoor(); // x
     fPosition = hit2->GetZ(); // z
-    fTrackHitsPtr->Add(hit1); // add hit 1
-    fTrackHitsPtr->Add(hit2); // add hit 2
+    fTrackHits->Add(hit1); // add hit 1
+    fTrackHits->Add(hit2); // add hit 2
     //AZ(Z->-Z) fTrackDir = 1;
     fTrackDir = -1;
   }
@@ -186,11 +194,11 @@ AliMUONTrackK::AliMUONTrackK(AliMUONSegment *segment)
   cout << fgTrackReconstructor->GetNRecTracks()-1 << " " << fgTrackReconstructor->GetBendingMomentumFromImpactParam(segment->GetBendingImpact()) << " " << 1/(*fTrackPar)(4,0) << " ";
   if (fgTrackReconstructor->GetRecTrackRefHits()) { 
     // from track ref. hits
-    cout << ((AliMUONHitForRec*)((*fTrackHitsPtr)[0]))->GetTTRTrack() << "<-->" << ((AliMUONHitForRec*)((*fTrackHitsPtr)[1]))->GetTTRTrack() << " @ " << fStartSegment->GetHitForRec1()->GetChamberNumber() << endl;
+    cout << ((AliMUONHitForRec*)((*fTrackHits)[0]))->GetTTRTrack() << "<-->" << ((AliMUONHitForRec*)((*fTrackHits)[1]))->GetTTRTrack() << " @ " << fStartSegment->GetHitForRec1()->GetChamberNumber() << endl;
   } else {
     // from raw clusters
     for (Int_t i=0; i<2; i++) {
-      hit1 = (AliMUONHitForRec*) ((*fTrackHitsPtr)[i]);
+      hit1 = (AliMUONHitForRec*) ((*fTrackHits)[i]);
       rawclusters = fgTrackReconstructor->GetMUONData()->RawClusters(hit1->GetChamberNumber());
       clus = (AliMUONRawCluster*) rawclusters->UncheckedAt(hit1->GetHitNumber());
       cout << clus->GetTrack(1);
@@ -206,9 +214,14 @@ AliMUONTrackK::~AliMUONTrackK()
 {
   // Destructor
 
-  if (fTrackHitsPtr) {
-    delete fTrackHitsPtr; // delete the TObjArray of pointers to TrackHit's
-    fTrackHitsPtr = NULL;
+  if (fTrackHits) {
+    //cout << fNmbTrackHits << endl;
+    for (Int_t i = 0; i < fNmbTrackHits; i++) {
+      AliMUONHitForRec *hit = (AliMUONHitForRec*) fTrackHits->UncheckedAt(i);
+      hit->SetNTrackHits(hit->GetNTrackHits()-1);
+    }
+    delete fTrackHits; // delete the TObjArray of pointers to TrackHit's
+    fTrackHits = NULL;
   }
   if (fTrackPar) {
     delete fTrackPar; delete fTrackParNew; delete fCovariance;
@@ -299,7 +312,7 @@ AliMUONTrackK & AliMUONTrackK::operator=(const AliMUONTrackK& source)
   AliMUONTrack::operator=(source);
 
   fStartSegment = source.fStartSegment;
-  fNTrackHits = source.fNTrackHits;
+  fNmbTrackHits = source.fNmbTrackHits;
   fChi2 = source.fChi2;
   fPosition = source.fPosition;
   fPositionNew = source.fPositionNew;
@@ -309,9 +322,13 @@ AliMUONTrackK & AliMUONTrackK::operator=(const AliMUONTrackK& source)
   fSkipHit = source.fSkipHit;
 
   // Pointers
-  fTrackHitsPtr = new TObjArray(*source.fTrackHitsPtr);
-  //source.fTrackHitsPtr->Dump();
-  //fTrackHitsPtr->Dump();
+  fTrackHits = new TObjArray(*source.fTrackHits);
+  //source.fTrackHits->Dump();
+  //fTrackHits->Dump();
+  for (Int_t i = 0; i < fNmbTrackHits; i++) {
+    AliMUONHitForRec *hit = (AliMUONHitForRec*) fTrackHits->UncheckedAt(i);
+    hit->SetNTrackHits(hit->GetNTrackHits()+1);
+  }
   
   fTrackPar = new TMatrixD(*source.fTrackPar); // track parameters
   fTrackParNew = new TMatrixD(*source.fTrackParNew); // track parameters
@@ -408,25 +425,25 @@ Bool_t AliMUONTrackK::KalmanFilter(Int_t ichamBeg, Int_t ichamEnd, Bool_t Back, 
   if (Back) {
     // backpropagation
     currIndx = 1; 
-    if (((AliMUONHitForRec*)fTrackHitsPtr->First())->GetChamberNumber() != ichamb) currIndx = 0;
+    if (((AliMUONHitForRec*)fTrackHits->First())->GetChamberNumber() != ichamb) currIndx = 0;
   } else if (fRecover) {
     hit = GetHitLastOk();
-    currIndx = fTrackHitsPtr->IndexOf(hit);
+    currIndx = fTrackHits->IndexOf(hit);
     if (currIndx < 0) hit = fStartSegment->GetHitForRec1(); // for station 3
     Back = kTRUE;
     ichamb = hit->GetChamberNumber();
     if (hit == fSkipHit || fRecover == 2 && currIndx >= 0) {
       // start from the last point or outlier
       // remove the skipped hit
-      fTrackHitsPtr->Remove(fSkipHit); // remove hit
-      fNTrackHits --;
+      fTrackHits->Remove(fSkipHit); // remove hit
+      fNmbTrackHits --;
       fSkipHit->SetNTrackHits(fSkipHit->GetNTrackHits()-1); // unmark hit 
       if (fRecover == 1) {
 	// recovery
 	Back = kFALSE;
 	fRecover = 0; 
-	ichambOK = ((AliMUONHitForRec*)((*fTrackHitsPtr)[fNTrackHits-1]))->GetChamberNumber();
-	//if (ichambOK >= 8 && ((AliMUONHitForRec*)((*fTrackHitsPtr)[0]))->GetChamberNumber() == 6) ichambOK = 6;
+	ichambOK = ((AliMUONHitForRec*)((*fTrackHits)[fNmbTrackHits-1]))->GetChamberNumber();
+	//if (ichambOK >= 8 && ((AliMUONHitForRec*)((*fTrackHits)[0]))->GetChamberNumber() == 6) ichambOK = 6;
 	if (fgTrackReconstructor->GetTrackMethod() == 3 && 
 	    fSkipHit->GetHitNumber() < 0) {
 	  iz0 = fgCombi->IZfromHit(fSkipHit);
@@ -435,15 +452,15 @@ Bool_t AliMUONTrackK::KalmanFilter(Int_t ichamBeg, Int_t ichamEnd, Bool_t Back, 
 	else currIndx = fgHitForRec->IndexOf(fSkipHit);
       } else {
 	// outlier
-	fTrackHitsPtr->Compress();
+	fTrackHits->Compress();
       }
     } // if (hit == fSkipHit)
-    else if (currIndx < 0) currIndx = fTrackHitsPtr->IndexOf(hit);
+    else if (currIndx < 0) currIndx = fTrackHits->IndexOf(hit);
   } // else if (fRecover) 
   else {
     // Get indices of the 1'st and last hits on the track candidate
-    firstHit = (AliMUONHitForRec*) fTrackHitsPtr->First();
-    lastHit = (AliMUONHitForRec*) fTrackHitsPtr->Last();
+    firstHit = (AliMUONHitForRec*) fTrackHits->First();
+    lastHit = (AliMUONHitForRec*) fTrackHits->Last();
     if (fgTrackReconstructor->GetTrackMethod() == 3 && 
 	lastHit->GetHitNumber() < 0) iz0 = fgCombi->IZfromHit(lastHit);
     else {
@@ -458,8 +475,8 @@ Bool_t AliMUONTrackK::KalmanFilter(Int_t ichamBeg, Int_t ichamEnd, Bool_t Back, 
   // Find the closest hit in Z, not belonging to the current plane
     if (Back) {
       // backpropagation
-      if (currIndx < fNTrackHits) {
-	hitAdd = (AliMUONHitForRec*) fTrackHitsPtr->UncheckedAt(currIndx);
+      if (currIndx < fNmbTrackHits) {
+	hitAdd = (AliMUONHitForRec*) fTrackHits->UncheckedAt(currIndx);
 	zEnd = hitAdd->GetZ();
 	//AZ(z->-z) } else zEnd = -9999;
       } else zEnd = 9999;
@@ -515,6 +532,7 @@ Bool_t AliMUONTrackK::KalmanFilter(Int_t ichamBeg, Int_t ichamEnd, Bool_t Back, 
       Int_t dStatMiss = TMath::Abs (ichamb/2 - ichambOK/2);
       if (zEnd > 999) dStatMiss++;
       if (dStatMiss > 1) {
+      //if (dStatMiss == 2 && ichambOK/2 != 3 || dStatMiss > 2) { // AZ - missing st. 3
 	// missing station - abandon track
 	//cout << dChamb << " " << ichambOK << " " << fgNOfPoints << " " << 1/(*fTrackPar)(4,0) << endl;
 	if (fgDebug >= 10) {
@@ -526,9 +544,9 @@ Bool_t AliMUONTrackK::KalmanFilter(Int_t ichamBeg, Int_t ichamEnd, Bool_t Back, 
 	    cout << ((AliMUONHitForRec*)((*fgHitForRec)[i1]))->GetTTRTrack() << endl;
 	  }
 	  cout << endl;
-	  cout << fNTrackHits << endl;
-	  for (Int_t i1=0; i1<fNTrackHits; i1++) {
-	    hit = (AliMUONHitForRec*) ((*fTrackHitsPtr)[i1]);
+	  cout << fNmbTrackHits << endl;
+	  for (Int_t i1=0; i1<fNmbTrackHits; i1++) {
+	    hit = (AliMUONHitForRec*) ((*fTrackHits)[i1]);
 	    printf(" * %d %10.4f %10.4f %10.4f", 
 	           hit->GetChamberNumber(), hit->GetBendingCoor(), 
 		   hit->GetNonBendingCoor(), hit->GetZ());
@@ -545,7 +563,7 @@ Bool_t AliMUONTrackK::KalmanFilter(Int_t ichamBeg, Int_t ichamEnd, Bool_t Back, 
 	    }
 	  }
 	} // if (fgDebug >= 10) 
-	if (fNTrackHits>2 && fRecover==0) Recover(); // try to recover track later
+	if (fNmbTrackHits>2 && fRecover==0) Recover(); // try to recover track later
 	return kFALSE;
       } // if (dStatMiss > 1)
     } // if (!Back)
@@ -594,12 +612,12 @@ Bool_t AliMUONTrackK::KalmanFilter(Int_t ichamBeg, Int_t ichamEnd, Bool_t Back, 
       miss = kTRUE;
       ichamb = fSkipHit->GetChamberNumber();
       // remove the skipped hit
-      fTrackHitsPtr->Remove(fSkipHit); 
-      fNTrackHits --;
-      fSkipHit->SetNTrackHits(fSkipHit->GetNTrackHits()-1); // unmark hit 
+      fTrackHits->Remove(fSkipHit); 
+      fNmbTrackHits --;
+      //AZ fSkipHit->SetNTrackHits(fSkipHit->GetNTrackHits()-1); // unmark hit 
       Back = kFALSE;
-      fRecover =0;
-      ichambOK = ((AliMUONHitForRec*)((*fTrackHitsPtr)[fNTrackHits-1]))->GetChamberNumber();
+      fRecover = 0;
+      ichambOK = ((AliMUONHitForRec*)((*fTrackHits)[fNmbTrackHits-1]))->GetChamberNumber();
       //? if (fgTrackReconstructor->GetTrackMethod() != 3) currIndx = fgHitForRec->IndexOf(fSkipHit);
       currIndx = fgHitForRec->IndexOf(fSkipHit);
     }
@@ -629,15 +647,15 @@ Bool_t AliMUONTrackK::KalmanFilter(Int_t ichamBeg, Int_t ichamEnd, Bool_t Back, 
 	*fTrackPar = *fTrackParNew; 
       } else {
 	//add point
-	fTrackHitsPtr->Add(hitAdd); // add hit
-	fNTrackHits ++;
+	fTrackHits->Add(hitAdd); // add hit
+	fNmbTrackHits ++;
 	hitAdd->SetNTrackHits(hitAdd->GetNTrackHits()+1); // mark hit as being on track
 	ichambOK = ichamb;
 	currIndx = fgHitForRec->IndexOf(hitAdd); // Check
       }
     }
   } // while
-  if (fgDebug > 0) cout << fNTrackHits << " " << fChi2 << " " << 1/(*fTrackPar)(4,0) << " " << fPosition << endl;
+  if (fgDebug > 0) cout << fNmbTrackHits << " " << fChi2 << " " << 1/(*fTrackPar)(4,0) << " " << fPosition << endl;
   if (1/TMath::Abs((*fTrackPar)(4,0)) < fgTrackReconstructor->GetMinBendingMomentum()) success = kFALSE; // p < p_min
   return success;
 }
@@ -844,7 +862,7 @@ Bool_t AliMUONTrackK::FindPoint(Int_t ichamb, Double_t zEnd, Int_t currIndx, Int
   TMatrixD trackParTmp = point;
   Int_t nHitsOK = 0, ihitB = currIndx, ihitE = fgNOfPoints, iDhit = iFB;
   Double_t zLast;
-  zLast = ((AliMUONHitForRec*)fTrackHitsPtr->Last())->GetZ();
+  zLast = ((AliMUONHitForRec*)fTrackHits->Last())->GetZ();
   if (fgTrackReconstructor->GetTrackMethod() == 3 && detElem) {
     ihitB = 0;
     ihitE = detElem->NHitsForRec();
@@ -951,7 +969,7 @@ Bool_t AliMUONTrackK::FindPoint(Int_t ichamb, Double_t zEnd, Int_t currIndx, Int
 	    trackK = new ((*trackPtr)[nRecTracks]) AliMUONTrackK(NULL, NULL); 
 	    *trackK = *this;
 	    fgTrackReconstructor->SetNRecTracks(nRecTracks+1);
-	    if (fgDebug > 0) cout << " ******** New track: " << ichamb << " " << hit->GetTTRTrack() << " " << 1/(trackPar)(4,0) << " " << hit->GetBendingCoor() << " " << hit->GetNonBendingCoor() << " " << fNTrackHits << " " << nRecTracks << endl;
+	    if (fgDebug > 0) cout << " ******** New track: " << ichamb << " " << hit->GetTTRTrack() << " " << 1/(trackPar)(4,0) << " " << hit->GetBendingCoor() << " " << hit->GetNonBendingCoor() << " " << fNmbTrackHits << " " << nRecTracks << endl;
 	    trackK->fRecover = 0;
 	    *(trackK->fTrackPar) = trackPar;
 	    *(trackK->fWeight) += pointWeight; 
@@ -980,9 +998,9 @@ Bool_t AliMUONTrackK::FindPoint(Int_t ichamb, Double_t zEnd, Int_t currIndx, Int
 	      AddMatrices (trackK, dChi2, hit);
 	    }
 	    // Mark hits as being on 2 tracks
-	    for (Int_t i=0; i<fNTrackHits; i++) {
-	      hitLoop = (AliMUONHitForRec*) ((*fTrackHitsPtr)[i]);
-	      hitLoop->SetNTrackHits(hitLoop->GetNTrackHits()+1); 
+	    for (Int_t i=0; i<fNmbTrackHits; i++) {
+	      hitLoop = (AliMUONHitForRec*) ((*fTrackHits)[i]);
+	      //AZ hitLoop->SetNTrackHits(hitLoop->GetNTrackHits()+1); 
 	      if (fgDebug >=10) {
 		cout << " ** ";
 		cout << hitLoop->GetChamberNumber() << " ";
@@ -998,8 +1016,8 @@ Bool_t AliMUONTrackK::FindPoint(Int_t ichamb, Double_t zEnd, Int_t currIndx, Int
 	      }
 	    }
 	    //add point
-	    trackK->fTrackHitsPtr->Add(hit); // add hit
-	    trackK->fNTrackHits ++;
+	    trackK->fTrackHits->Add(hit); // add hit
+	    trackK->fNmbTrackHits ++;
 	    hit->SetNTrackHits(hit->GetNTrackHits()+1); // mark hit as being on track
 	    if (ichamb == 9) {
 	      // the last chamber
@@ -1118,12 +1136,12 @@ void AliMUONTrackK::StartBack(void)
   for (Int_t i=0; i<fgkSize; i++) {
     for (Int_t j=0; j<fgkSize; j++) {
       if (j==i) (*fWeight)(i,i) /= 100;
-      //if (j==i) (*fWeight)(i,i) /= fNTrackHits*fNTrackHits;
+      //if (j==i) (*fWeight)(i,i) /= fNmbTrackHits*fNmbTrackHits;
       else (*fWeight)(j,i) = 0;
     }
   }
   // Sort hits on track in descending order in abs(z)
-  SortHits(0, fTrackHitsPtr);
+  SortHits(0, fTrackHits);
 }
 
   //__________________________________________________________________________
@@ -1196,8 +1214,8 @@ void AliMUONTrackK::SetTrackQuality(Int_t iChi2)
     AliWarning(Form(" *** Too high Chi2: %f ", fChi2));
     fChi2 = 500;
   }
-  if (iChi2 == 0) fChi2 = fNTrackHits + (500.-fChi2)/501;
-  else fChi2 = 500 - (fChi2-fNTrackHits)*501;
+  if (iChi2 == 0) fChi2 = fNmbTrackHits + (500.-fChi2)/501;
+  else fChi2 = 500 - (fChi2-fNmbTrackHits)*501;
 }
 
   //__________________________________________________________________________
@@ -1221,15 +1239,15 @@ Bool_t AliMUONTrackK::KeepTrack(AliMUONTrackK* track0) const
   AliMUONHitForRec *hit0, *hit1;
 
   hitsInCommon = 0;
-  nHits0 = track0->fNTrackHits;
-  nTrackHits2 = fNTrackHits/2;
+  nHits0 = track0->fNmbTrackHits;
+  nTrackHits2 = fNmbTrackHits/2;
 
   for (i=0; i<nHits0; i++) {
     // Check if hit belongs to several tracks
-    hit0 = (AliMUONHitForRec*) (*track0->fTrackHitsPtr)[i]; 
+    hit0 = (AliMUONHitForRec*) (*track0->fTrackHits)[i]; 
     if (hit0->GetNTrackHits() == 1) continue; 
-    for (j=0; j<fNTrackHits; j++) {
-      hit1 = (AliMUONHitForRec*) (*fTrackHitsPtr)[j]; 
+    for (j=0; j<fNmbTrackHits; j++) {
+      hit1 = (AliMUONHitForRec*) (*fTrackHits)[j]; 
       if (hit1->GetNTrackHits() == 1) continue; 
       if (hit0 == hit1) {
 	hitsInCommon++;
@@ -1245,16 +1263,6 @@ Bool_t AliMUONTrackK::KeepTrack(AliMUONTrackK* track0) const
 void AliMUONTrackK::Kill(void)
 {
   // Kill track candidate
-  Int_t i;
-  AliMUONHitForRec *hit;
-
-  if (fTrackHitsPtr) {
-    // Remove track mark from hits
-    for (i=0; i<fNTrackHits; i++) {
-      hit = (AliMUONHitForRec*) (*fTrackHitsPtr)[i]; 
-      hit->SetNTrackHits(hit->GetNTrackHits()-1); 
-    }
-  }
   fgTrackReconstructor->GetRecTracksPtr()->Remove(this);
 }
 
@@ -1264,25 +1272,27 @@ void AliMUONTrackK::FillMUONTrack(void)
   // Compute track parameters at hit positions (as for AliMUONTrack)
 
   // Set number of hits per track
-  ((AliMUONTrack*)this)->SetNTrackHits(fNTrackHits);
+  SetNTrackHits(fNmbTrackHits);
+  // Set Chi2
+  SetFitFMin(fChi2);
 
   // Set track parameters at vertex
   AliMUONTrackParam trackParam;
   SetTrackParam(&trackParam, fTrackPar, fPosition);
-  ((AliMUONTrack*)this)->SetTrackParamAtVertex(&trackParam);
+  SetTrackParamAtVertex(&trackParam);
 
   // Set track parameters at hits
-  for (Int_t i = fNTrackHits-1; i>=0; i--) {
+  for (Int_t i = fNmbTrackHits-1; i>=0; i--) {
     if ((*fChi2Smooth)[i] < 0) {
       // Propagate through last chambers
-      trackParam.ExtrapToZ(((AliMUONHitForRec*)((*fTrackHitsPtr)[i]))->GetZ());
+      trackParam.ExtrapToZ(((AliMUONHitForRec*)((*fTrackHits)[i]))->GetZ());
     } else {
       // Take saved info
-      SetTrackParam(&trackParam, (TMatrixD*)fParSmooth->UncheckedAt(i), ((AliMUONHitForRec*)((*fTrackHitsPtr)[i]))->GetZ());
+      SetTrackParam(&trackParam, (TMatrixD*)fParSmooth->UncheckedAt(i), ((AliMUONHitForRec*)((*fTrackHits)[i]))->GetZ());
     }
-    ((AliMUONTrack*)this)->AddTrackParamAtHit(&trackParam); 
+    AddTrackParamAtHit(&trackParam); 
     // Fill array of HitForRec's
-    ((AliMUONTrack*)this)->AddHitForRecAtHit((AliMUONHitForRec*)fTrackHitsPtr->UncheckedAt(i)); 
+    AddHitForRecAtHit((AliMUONHitForRec*)fTrackHits->UncheckedAt(i)); 
   }
 }
 
@@ -1508,31 +1518,31 @@ vertex:
   fChi2 += dChi2; // Chi2
   if (fgDebug < 0) return; // no output
 
-  cout << pOld << " " << 1/(*fTrackPar)(4,0) << " " << dChi2 << " " << fChi2 << " " << fNTrackHits << endl;
-  for (Int_t i1=0; i1<fNTrackHits; i1++) {
-    hit =  (AliMUONHitForRec*) ((*fTrackHitsPtr)[i1]);
-    printf ("%4d", hit->GetChamberNumber()); 
+  cout << pOld << " " << 1/(*fTrackPar)(4,0) << " " << dChi2 << " " << fChi2 << " " << fNmbTrackHits << endl;
+  for (Int_t i1=0; i1<fNmbTrackHits; i1++) {
+    hit =  (AliMUONHitForRec*) ((*fTrackHits)[i1]);
+    printf ("%5d", hit->GetChamberNumber()); 
   }
   cout << endl;
   if (fgDebug > 0) {
-    for (Int_t i1=0; i1<fNTrackHits; i1++) {
-      hit =  (AliMUONHitForRec*) ((*fTrackHitsPtr)[i1]);
-      //cout << ((AliMUONHitForRec*)((*fTrackHitsPtr)[i1]))->GetHitNumber() << " ";
-      //cout << ((AliMUONHitForRec*)((*fTrackHitsPtr)[i1]))->GetZ() << " ";
-      printf ("%4d", fgHitForRec->IndexOf(hit)); 
+    for (Int_t i1=0; i1<fNmbTrackHits; i1++) {
+      hit =  (AliMUONHitForRec*) ((*fTrackHits)[i1]);
+      //cout << ((AliMUONHitForRec*)((*fTrackHits)[i1]))->GetHitNumber() << " ";
+      //cout << ((AliMUONHitForRec*)((*fTrackHits)[i1]))->GetZ() << " ";
+      printf ("%5d", fgHitForRec->IndexOf(hit)); 
     }
     cout << endl;
   }
   if (fgTrackReconstructor->GetRecTrackRefHits()) { 
       // from track ref. hits
-    for (Int_t i1=0; i1<fNTrackHits; i1++) {
-      hit =  (AliMUONHitForRec*) ((*fTrackHitsPtr)[i1]);
+    for (Int_t i1=0; i1<fNmbTrackHits; i1++) {
+      hit =  (AliMUONHitForRec*) ((*fTrackHits)[i1]);
       cout << hit->GetTTRTrack() + hit->GetTrackRefSignal()*10000 << " ";
     }
   } else {
     // from raw clusters
-    for (Int_t i1=0; i1<fNTrackHits; i1++) {
-      hit =  (AliMUONHitForRec*) ((*fTrackHitsPtr)[i1]);
+    for (Int_t i1=0; i1<fNmbTrackHits; i1++) {
+      hit =  (AliMUONHitForRec*) ((*fTrackHits)[i1]);
       if (hit->GetHitNumber() < 0) { // combined cluster / track finder
 	Int_t index = -hit->GetHitNumber() / 100000;
 	Int_t iPos = -hit->GetHitNumber() - index * 100000;
@@ -1541,11 +1551,11 @@ vertex:
 	rawclusters = fgTrackReconstructor->GetMUONData()->RawClusters(hit->GetChamberNumber());
 	clus = (AliMUONRawCluster*) rawclusters->UncheckedAt(hit->GetHitNumber());
       }
-      printf ("%4d", clus->GetTrack(1)); 
+      printf ("%5d", clus->GetTrack(1)%10000000); 
     }
     cout << endl;
-    for (Int_t i1=0; i1<fNTrackHits; i1++) {
-      hit =  (AliMUONHitForRec*) ((*fTrackHitsPtr)[i1]);
+    for (Int_t i1=0; i1<fNmbTrackHits; i1++) {
+      hit =  (AliMUONHitForRec*) ((*fTrackHits)[i1]);
       if (hit->GetHitNumber() < 0) { // combined cluster / track finder
 	Int_t index = -hit->GetHitNumber() / 100000;
 	Int_t iPos = -hit->GetHitNumber() - index * 100000;
@@ -1554,18 +1564,18 @@ vertex:
 	rawclusters = fgTrackReconstructor->GetMUONData()->RawClusters(hit->GetChamberNumber());
 	clus = (AliMUONRawCluster*) rawclusters->UncheckedAt(hit->GetHitNumber());
       }
-      if (clus->GetTrack(2) != -1) printf ("%4d", clus->GetTrack(2));
-      else printf ("%4s", "   ");
+      if (clus->GetTrack(2) != -1) printf ("%5d", clus->GetTrack(2)%10000000);
+      else printf ("%5s", "    ");
     }
   }
   cout << endl;
-  for (Int_t i1=0; i1<fNTrackHits; i1++) {
-    //cout << ((AliMUONHitForRec*)((*fTrackHitsPtr)[i1]))->GetHitNumber() << " ";
-    cout << ((AliMUONHitForRec*)((*fTrackHitsPtr)[i1]))->GetZ() << " ";
-    //cout << fgHitForRec->IndexOf(((AliMUONHitForRec*)((*fTrackHitsPtr)[i1]))) << " ";
+  for (Int_t i1=0; i1<fNmbTrackHits; i1++) {
+    //cout << ((AliMUONHitForRec*)((*fTrackHits)[i1]))->GetHitNumber() << " ";
+    cout << ((AliMUONHitForRec*)((*fTrackHits)[i1]))->GetZ() << " ";
+    //cout << fgHitForRec->IndexOf(((AliMUONHitForRec*)((*fTrackHits)[i1]))) << " ";
   }
   cout << endl;
-  for (Int_t i1=0; i1<fNTrackHits; i1++) printf("%8.4f", (*fChi2Smooth)[i1]);
+  for (Int_t i1=0; i1<fNmbTrackHits; i1++) printf("%8.4f", (*fChi2Smooth)[i1]);
   cout << endl;
   cout << "---------------------------------------------------" << endl;
 
@@ -1668,50 +1678,50 @@ Bool_t AliMUONTrackK::Recover(void)
   // Remove hit with the highest chi2
   Double_t chi2 = 0;
   if (fgDebug > 0) {
-    for (Int_t i=0; i<fNTrackHits; i++) {
+    for (Int_t i=0; i<fNmbTrackHits; i++) {
       chi2 = fChi2Smooth ? (*fChi2Smooth)[i] : (*fChi2Array)[i];
       printf("%10.4f", chi2);
     }
     printf("\n");
-    for (Int_t i=0; i<fNTrackHits; i++) {
-      printf("%10d", ((AliMUONHitForRec*)fTrackHitsPtr->UncheckedAt(i))->GetChamberNumber());
+    for (Int_t i=0; i<fNmbTrackHits; i++) {
+      printf("%10d", ((AliMUONHitForRec*)fTrackHits->UncheckedAt(i))->GetChamberNumber());
     }
     printf("\n");
   }
   Double_t chi2max = 0;
   Int_t imax = 0;
-  for (Int_t i=0; i<fNTrackHits; i++) {
+  for (Int_t i=0; i<fNmbTrackHits; i++) {
     chi2 = fChi2Smooth ? (*fChi2Smooth)[i] : (*fChi2Array)[i];
     if (chi2 < chi2max) continue;
     chi2max = chi2;
     imax = i;
   }
   //if (chi2max < 10) return kFALSE; // !!!
-  //if (chi2max < 25) imax = fNTrackHits - 1;
-  if (chi2max < 15) imax = fNTrackHits - 1; // discard the last point
+  //if (chi2max < 25) imax = fNmbTrackHits - 1;
+  if (chi2max < 15) imax = fNmbTrackHits - 1; // discard the last point
   // Check if the outlier is not from the seed segment
-  AliMUONHitForRec *skipHit = (AliMUONHitForRec*) fTrackHitsPtr->UncheckedAt(imax);
+  AliMUONHitForRec *skipHit = (AliMUONHitForRec*) fTrackHits->UncheckedAt(imax);
   if (skipHit == fStartSegment->GetHitForRec1() || skipHit == fStartSegment->GetHitForRec2()) {
     //DropBranches(fStartSegment); // drop all tracks with the same seed segment
     return kFALSE; // to be changed probably
   }
   
   // Make a copy of track hit collection
-  TObjArray *hits = new TObjArray(*fTrackHitsPtr);
+  TObjArray *hits = new TObjArray(*fTrackHits);
   Int_t imax0;
   imax0 = imax;
 
   // Hits after the found one will be removed
   if (GetStation0() == 3 && skipHit->GetChamberNumber() >= 7) {
-    SortHits(1, fTrackHitsPtr); // unsort hits
-    imax = fTrackHitsPtr->IndexOf(skipHit);
+    SortHits(1, fTrackHits); // unsort hits
+    imax = fTrackHits->IndexOf(skipHit);
   }
-  Int_t nTrackHits = fNTrackHits;
+  Int_t nTrackHits = fNmbTrackHits;
   for (Int_t i=imax+1; i<nTrackHits; i++) {
-    AliMUONHitForRec *hit = (AliMUONHitForRec*) fTrackHitsPtr->UncheckedAt(i);
-    fTrackHitsPtr->Remove(hit);
+    AliMUONHitForRec *hit = (AliMUONHitForRec*) fTrackHits->UncheckedAt(i);
+    fTrackHits->Remove(hit);
     hit->SetNTrackHits(hit->GetNTrackHits()-1); // unmark hit 
-    fNTrackHits--;
+    fNmbTrackHits--;
   }
 
   // Check if the track candidate doesn't exist yet
@@ -1721,7 +1731,7 @@ Bool_t AliMUONTrackK::Recover(void)
   delete hits;
 
   nRecTracks = fgTrackReconstructor->GetNRecTracks();
-  skipHit = (AliMUONHitForRec*) ((*fTrackHitsPtr)[fNTrackHits-1]);
+  skipHit = (AliMUONHitForRec*) ((*fTrackHits)[fNmbTrackHits-1]);
   // Remove all saved steps and smoother matrices after the skipped hit 
   RemoveMatrices(skipHit->GetZ());
 
@@ -1733,9 +1743,9 @@ Bool_t AliMUONTrackK::Recover(void)
     fgTrackReconstructor->SetNRecTracks(nRecTracks+1);
     trackK->fRecover = 1;
     trackK->fSkipHit = skipHit;
-    trackK->fNTrackHits = fNTrackHits;
-    delete trackK->fTrackHitsPtr; // not efficient ?
-    trackK->fTrackHitsPtr = new TObjArray(*fTrackHitsPtr);
+    trackK->fNmbTrackHits = fNmbTrackHits;
+    delete trackK->fTrackHits; // not efficient ?
+    trackK->fTrackHits = new TObjArray(*fTrackHits);
     if (fgDebug > 0) cout << nRecTracks << " " << trackK->fRecover << endl;
     return kTRUE;
   } 
@@ -1773,7 +1783,7 @@ Bool_t AliMUONTrackK::Recover(void)
   }
   trackK->fPosition = trackK->fPositionNew = (*fSteps)[fNSteps-1];
   trackK->fChi2 = 0;
-  for (Int_t i=0; i<fNTrackHits-1; i++) trackK->fChi2 += (*fChi2Array)[i];
+  for (Int_t i=0; i<fNmbTrackHits-1; i++) trackK->fChi2 += (*fChi2Array)[i];
   if (fgDebug > 0) cout << nRecTracks << " " << trackK->fRecover << endl;
   return kTRUE;
 }
@@ -1817,14 +1827,14 @@ void AliMUONTrackK::AddMatrices(AliMUONTrackK *trackK, Double_t dChi2, AliMUONHi
   trackK->fCovFilter->Last()->SetUniqueID(iD);
 
   // Save Chi2-increment for point
-  Int_t indx = trackK->fTrackHitsPtr->IndexOf(hitAdd);
-  if (indx < 0) indx = fNTrackHits;
+  Int_t indx = trackK->fTrackHits->IndexOf(hitAdd);
+  if (indx < 0) indx = fNmbTrackHits;
   if (trackK->fChi2Array->fN <= indx) trackK->fChi2Array->Set(indx+10); 
   trackK->fChi2Array->AddAt(dChi2,indx);
 }
 
   //__________________________________________________________________________
-void AliMUONTrackK::CreateMatrix(TObjArray *objArray)
+void AliMUONTrackK::CreateMatrix(TObjArray *objArray) const
 {
   // Create new matrix and add it to TObjArray 
 
@@ -1892,9 +1902,9 @@ void AliMUONTrackK::RemoveMatrices(AliMUONTrackK* trackK)
 Bool_t AliMUONTrackK::Smooth(void)
 {
   // Apply smoother
-  Int_t ihit = fNTrackHits - 1;
-  AliMUONHitForRec *hit = (AliMUONHitForRec*) (*fTrackHitsPtr)[ihit];
-  fChi2Smooth = new TArrayD(fNTrackHits);
+  Int_t ihit = fNmbTrackHits - 1;
+  AliMUONHitForRec *hit = (AliMUONHitForRec*) (*fTrackHits)[ihit];
+  fChi2Smooth = new TArrayD(fNmbTrackHits);
   fChi2Smooth->Reset(-1);
   fChi2 = 0;
   fParSmooth = new TObjArray(15);
@@ -1908,15 +1918,15 @@ Bool_t AliMUONTrackK::Smooth(void)
     cout << endl;
     for (Int_t i=fNSteps-1; i>=0; i--) {cout << i << " " << (*fSteps)[i]; ((TMatrixD*)fParFilter->UncheckedAt(i))->Print(); ((TMatrixD*)fParExtrap->UncheckedAt(i))->Print(); ((TMatrixD*)fJacob->UncheckedAt(i))->Print();}
     */
-    for (Int_t i=ihit; i>=0; i--) cout << ((AliMUONHitForRec*)(*fTrackHitsPtr)[i])->GetZ() << " ";
+    for (Int_t i=ihit; i>=0; i--) cout << ((AliMUONHitForRec*)(*fTrackHits)[i])->GetZ() << " ";
     cout << endl;
   }
 
   // Find last point corresponding to the last hit
   Int_t iLast = fNSteps - 1;
   for ( ; iLast>=0; iLast--) {
-    //AZ(z->-z) if ((*fSteps)[iLast] + 0.01 > ((AliMUONHitForRec*)(*fTrackHitsPtr)[fNTrackHits-1])->GetZ()) break;
-    if (TMath::Abs((*fSteps)[iLast]) + 0.01 > TMath::Abs(((AliMUONHitForRec*)(*fTrackHitsPtr)[fNTrackHits-1])->GetZ())) break;
+    //AZ(z->-z) if ((*fSteps)[iLast] + 0.01 > ((AliMUONHitForRec*)(*fTrackHits)[fNmbTrackHits-1])->GetZ()) break;
+    if (TMath::Abs((*fSteps)[iLast]) + 0.01 > TMath::Abs(((AliMUONHitForRec*)(*fTrackHits)[fNmbTrackHits-1])->GetZ())) break;
   }
 
   TMatrixD parSmooth = *((TMatrixD*)(fParFilter->UncheckedAt(iLast))); // last filtered = first smoothed
@@ -1961,10 +1971,10 @@ Bool_t AliMUONTrackK::Smooth(void)
     // Check if there was a measurement at given z
     found = kFALSE;
     for ( ; ihit>=0; ihit--) { 
-      hit = (AliMUONHitForRec*) (*fTrackHitsPtr)[ihit];
+      hit = (AliMUONHitForRec*) (*fTrackHits)[ihit];
       if (TMath::Abs(hit->GetZ()-(*fSteps)[i-1]) < 0.1) { found = kTRUE; break; }
-      //AZ(z->-z) else if (ihit < fNTrackHits-1 && hit->GetZ() > (*fSteps)[i-1]) { ihit++; break; }
-      else if (ihit < fNTrackHits-1 && TMath::Abs(hit->GetZ()) > TMath::Abs((*fSteps)[i-1])) { ihit++; break; }
+      //AZ(z->-z) else if (ihit < fNmbTrackHits-1 && hit->GetZ() > (*fSteps)[i-1]) { ihit++; break; }
+      else if (ihit < fNmbTrackHits-1 && TMath::Abs(hit->GetZ()) > TMath::Abs((*fSteps)[i-1])) { ihit++; break; }
     }
     if (!found) continue; // no measurement - skip the rest
     else if (fgDebug > 1) cout << i << " " << ihit << " " << hit->GetZ() << endl;
@@ -2029,33 +2039,33 @@ void AliMUONTrackK::Outlier()
 
   if (fgDebug > 0) {
     cout << " ******** Enter Outlier " << endl;
-    for (Int_t i=0; i<fNTrackHits; i++) printf("%10.4f", (*fChi2Smooth)[i]);
+    for (Int_t i=0; i<fNmbTrackHits; i++) printf("%10.4f", (*fChi2Smooth)[i]);
     printf("\n");
-    for (Int_t i=0; i<fNTrackHits; i++) {
-      printf("%10d", ((AliMUONHitForRec*)fTrackHitsPtr->UncheckedAt(i))->GetChamberNumber());
+    for (Int_t i=0; i<fNmbTrackHits; i++) {
+      printf("%10d", ((AliMUONHitForRec*)fTrackHits->UncheckedAt(i))->GetChamberNumber());
     }
     printf("\n");
   }
 
   Double_t chi2max = 0;
   Int_t imax = 0;
-  for (Int_t i=0; i<fNTrackHits; i++) {
+  for (Int_t i=0; i<fNmbTrackHits; i++) {
     if ((*fChi2Smooth)[i] < chi2max) continue;
     chi2max = (*fChi2Smooth)[i];
     imax = i;
   }
   // Check if the outlier is not from the seed segment
-  AliMUONHitForRec *hit = (AliMUONHitForRec*) fTrackHitsPtr->UncheckedAt(imax);
+  AliMUONHitForRec *hit = (AliMUONHitForRec*) fTrackHits->UncheckedAt(imax);
   if (hit == fStartSegment->GetHitForRec1() || hit == fStartSegment->GetHitForRec2()) return; // to be changed probably
 
   // Check for missing station
   Int_t ok = 1;
   if (imax == 0) {
-    if (((AliMUONHitForRec*)fTrackHitsPtr->UncheckedAt(1))->GetChamberNumber() < 8) ok--; 
-  } else if (imax == fNTrackHits-1) {
-    if (((AliMUONHitForRec*)fTrackHitsPtr->UncheckedAt(fNTrackHits-2))->GetChamberNumber() > 1) ok--; 
+    if (((AliMUONHitForRec*)fTrackHits->UncheckedAt(1))->GetChamberNumber() < 8) ok--; 
+  } else if (imax == fNmbTrackHits-1) {
+    if (((AliMUONHitForRec*)fTrackHits->UncheckedAt(fNmbTrackHits-2))->GetChamberNumber() > 1) ok--; 
   } 
-  else if (((AliMUONHitForRec*)fTrackHitsPtr->UncheckedAt(imax-1))->GetChamberNumber()/2 - ((AliMUONHitForRec*)fTrackHitsPtr->UncheckedAt(imax+1))->GetChamberNumber()/2 > 1) ok--;
+  else if (((AliMUONHitForRec*)fTrackHits->UncheckedAt(imax-1))->GetChamberNumber()/2 - ((AliMUONHitForRec*)fTrackHits->UncheckedAt(imax+1))->GetChamberNumber()/2 > 1) ok--;
   if (!ok) { Recover(); return; } // try to recover track
   //AZ if (!ok) { if (fgDebug >= 0) cout << imax << endl; DropBranches(imax, 0); return; } 
 
@@ -2075,10 +2085,20 @@ void AliMUONTrackK::Outlier()
     fgTrackReconstructor->SetNRecTracks(nRecTracks+1);
     trackK->fRecover = 2;
     trackK->fSkipHit = hit;
-    trackK->fNTrackHits = fNTrackHits;
-    delete trackK->fTrackHitsPtr; // not efficient ?
-    trackK->fTrackHitsPtr = new TObjArray(*fTrackHitsPtr);
-    if (GetStation0() == 3) trackK->SortHits(1, trackK->fTrackHitsPtr);
+    trackK->fNmbTrackHits = fNmbTrackHits;
+
+    hit = (AliMUONHitForRec*) trackK->fTrackHits->UncheckedAt(0);
+    hit->SetNTrackHits(hit->GetNTrackHits()-1);
+    hit = (AliMUONHitForRec*) trackK->fTrackHits->UncheckedAt(1);
+    hit->SetNTrackHits(hit->GetNTrackHits()-1);
+    delete trackK->fTrackHits; // not efficient ?
+    trackK->fTrackHits = new TObjArray(*fTrackHits);
+    for (Int_t i = 0; i < fNmbTrackHits; i++) {
+      hit = (AliMUONHitForRec*) fTrackHits->UncheckedAt(i);
+      hit->SetNTrackHits(hit->GetNTrackHits()+1);
+    }
+
+    if (GetStation0() == 3) trackK->SortHits(1, trackK->fTrackHits);
     if (fgDebug > 0) cout << nRecTracks << " Outlier" << endl;
     return;
   } 
@@ -2114,7 +2134,7 @@ void AliMUONTrackK::Outlier()
   }
   trackK->fPosition = trackK->fPositionNew = (*fSteps)[fNSteps-1];
   trackK->fChi2 = 0;
-  for (Int_t i=0; i<fNTrackHits-1; i++) trackK->fChi2 += (*fChi2Array)[i];
+  for (Int_t i=0; i<fNmbTrackHits-1; i++) trackK->fChi2 += (*fChi2Array)[i];
   if (fgDebug > 0) cout << nRecTracks << " Outlier " << trackK->fChi2 << endl;
 }
 
@@ -2135,14 +2155,14 @@ void AliMUONTrackK::Print(FILE *lun) const
   AliMUONHitForRec *hit = 0; 
   if (fgTrackReconstructor->GetRecTrackRefHits()) { 
     // from track ref. hits
-    for (Int_t j=0; j<fNTrackHits; j++) {
-      hit = (AliMUONHitForRec*) fTrackHitsPtr->UncheckedAt(j);
+    for (Int_t j=0; j<fNmbTrackHits; j++) {
+      hit = (AliMUONHitForRec*) fTrackHits->UncheckedAt(j);
       if (hit->GetTTRTrack() > 1) { flag = 0; break; }
     }
-    for (Int_t j=0; j<fNTrackHits; j++) {
+    for (Int_t j=0; j<fNmbTrackHits; j++) {
       printf("%10.4f", GetChi2PerPoint(j));
       if (GetChi2PerPoint(j) > -0.1) {
-	hit = (AliMUONHitForRec*) fTrackHitsPtr->UncheckedAt(j);
+	hit = (AliMUONHitForRec*) fTrackHits->UncheckedAt(j);
 	fprintf(lun,"%3d %3d %10.4f", gAlice->GetEvNumber(), hit->GetChamberNumber(), GetChi2PerPoint(j));
 	fprintf(lun, "%3d %3d %3d \n", hit->GetTrackRefSignal(), hit->GetTTRTrack(), flag);
       }
@@ -2152,8 +2172,8 @@ void AliMUONTrackK::Print(FILE *lun) const
     // from raw clusters
     AliMUONRawCluster *clus = 0;
     TClonesArray *rawclusters = 0;
-    for (Int_t i1=0; i1<fNTrackHits; i1++) {
-      hit =  (AliMUONHitForRec*) ((*fTrackHitsPtr)[i1]);
+    for (Int_t i1=0; i1<fNmbTrackHits; i1++) {
+      hit =  (AliMUONHitForRec*) ((*fTrackHits)[i1]);
       rawclusters = fgTrackReconstructor->GetMUONData()->RawClusters(hit->GetChamberNumber());
       clus = (AliMUONRawCluster*) rawclusters->UncheckedAt(hit->GetHitNumber());
       if (TMath::Abs(clus->GetTrack(1)-1) < 2) {
@@ -2168,9 +2188,9 @@ void AliMUONTrackK::Print(FILE *lun) const
       break;
     }
     Int_t sig[2]={1,1}, tid[2]={0};
-    for (Int_t i1=0; i1<fNTrackHits; i1++) {
+    for (Int_t i1=0; i1<fNmbTrackHits; i1++) {
       if (GetChi2PerPoint(i1) < -0.1) continue;
-      hit =  (AliMUONHitForRec*) ((*fTrackHitsPtr)[i1]);
+      hit =  (AliMUONHitForRec*) ((*fTrackHits)[i1]);
       rawclusters = fgTrackReconstructor->GetMUONData()->RawClusters(hit->GetChamberNumber());
       clus = (AliMUONRawCluster*) rawclusters->UncheckedAt(hit->GetHitNumber());
       for (Int_t j=0; j<2; j++) {
@@ -2200,20 +2220,20 @@ void AliMUONTrackK::DropBranches(Int_t imax, TObjArray *hits)
   trackPtr = fgTrackReconstructor->GetRecTracksPtr();
   nRecTracks = fgTrackReconstructor->GetNRecTracks();
   Int_t icand = trackPtr->IndexOf(this);
-  if (!hits) hits = fTrackHitsPtr; 
+  if (!hits) hits = fTrackHits; 
 
   // Check if the track candidate doesn't exist yet
   for (Int_t i=icand+1; i<nRecTracks; i++) {
     trackK = (AliMUONTrackK*) ((*trackPtr)[i]);
-    if (trackK->fNTrackHits == 2 && trackK->GetRecover() == 0) continue;
+    if (trackK->fNmbTrackHits == 2 && trackK->GetRecover() == 0) continue;
     if (trackK->GetRecover() < 0) continue;
 
-    if (trackK->fNTrackHits >= imax + 1) {
+    if (trackK->fNmbTrackHits >= imax + 1) {
       for (Int_t j=0; j<=imax; j++) {
-	//if (j != fNTrackHits-1 && (*trackK->fTrackHitsPtr)[j] != (*fTrackHitsPtr)[j]) break;
-	if ((*trackK->fTrackHitsPtr)[j] != (*hits)[j]) break;
+	//if (j != fNmbTrackHits-1 && (*trackK->fTrackHits)[j] != (*fTrackHits)[j]) break;
+	if ((*trackK->fTrackHits)[j] != (*hits)[j]) break;
 	if (j == imax) {
-	  if (hits != fTrackHitsPtr) {
+	  if (hits != fTrackHits) {
 	    // Drop all branches downstream the hit (for Recover)
 	    trackK->SetRecover(-1);
 	    if (fgDebug >= 0 )cout << " Recover " << i << endl;
@@ -2222,12 +2242,12 @@ void AliMUONTrackK::DropBranches(Int_t imax, TObjArray *hits)
 	  // Check if the removal of the hit breaks the track
 	  Int_t ok = 1;
 	  if (imax == 0) {
-	    if (((AliMUONHitForRec*)trackK->fTrackHitsPtr->UncheckedAt(1))->GetChamberNumber() < 8) ok--; }
-	  else if (imax == trackK->fNTrackHits-1) continue;
-	    // else if (imax == trackK->fNTrackHits-1) {
-	    //if (((AliMUONHitForRec*)trackK->fTrackHitsPtr->UncheckedAt(trackK->fNTrackHits-2))->GetChamberNumber() > 1) ok--; 
+	    if (((AliMUONHitForRec*)trackK->fTrackHits->UncheckedAt(1))->GetChamberNumber() < 8) ok--; }
+	  else if (imax == trackK->fNmbTrackHits-1) continue;
+	    // else if (imax == trackK->fNmbTrackHits-1) {
+	    //if (((AliMUONHitForRec*)trackK->fTrackHits->UncheckedAt(trackK->fNmbTrackHits-2))->GetChamberNumber() > 1) ok--; 
 	    //} 
-	  else if (((AliMUONHitForRec*)trackK->fTrackHitsPtr->UncheckedAt(imax-1))->GetChamberNumber()/2 - ((AliMUONHitForRec*)trackK->fTrackHitsPtr->UncheckedAt(imax+1))->GetChamberNumber()/2 > 1) ok--;
+	  else if (((AliMUONHitForRec*)trackK->fTrackHits->UncheckedAt(imax-1))->GetChamberNumber()/2 - ((AliMUONHitForRec*)trackK->fTrackHits->UncheckedAt(imax+1))->GetChamberNumber()/2 > 1) ok--;
 	  if (!ok) trackK->SetRecover(-1);
 	}
       } // for (Int_t j=0;
@@ -2249,7 +2269,7 @@ void AliMUONTrackK::DropBranches(AliMUONSegment *segment)
 
   for (Int_t i=icand+1; i<nRecTracks; i++) {
     trackK = (AliMUONTrackK*) ((*trackPtr)[i]);
-    if (trackK->fNTrackHits == 2 && trackK->GetRecover() == 0) continue;
+    if (trackK->fNmbTrackHits == 2 && trackK->GetRecover() == 0) continue;
     if (trackK->GetRecover() < 0) continue;
     if (trackK->fStartSegment == segment) trackK->SetRecover(-1);
   }
@@ -2261,7 +2281,7 @@ AliMUONHitForRec* AliMUONTrackK::GetHitLastOk(void)
 {
   // Return the hit where track stopped
 
-  if (!fNSteps) return (AliMUONHitForRec*)((*fTrackHitsPtr)[1]);
+  if (!fNSteps) return (AliMUONHitForRec*)((*fTrackHits)[1]);
   return fSkipHit;
 }
 
@@ -2279,7 +2299,7 @@ Bool_t AliMUONTrackK::ExistDouble(AliMUONHitForRec *hit)
 
   TClonesArray *trackPtr = fgTrackReconstructor->GetRecTracksPtr();
   Int_t nRecTracks = fgTrackReconstructor->GetNRecTracks();
-  TObjArray *hitArray = new TObjArray(*fTrackHitsPtr);
+  TObjArray *hitArray = new TObjArray(*fTrackHits);
   TObjArray *hitArray1 = new TObjArray(*hitArray);
   hitArray1->Remove(hit);
   hitArray1->Compress();
@@ -2287,13 +2307,13 @@ Bool_t AliMUONTrackK::ExistDouble(AliMUONHitForRec *hit)
   Bool_t same = kFALSE;
   for (Int_t i=0; i<nRecTracks; i++) {
     AliMUONTrackK *trackK = (AliMUONTrackK*) ((*trackPtr)[i]);
-    if (trackK->fNTrackHits == 2 && trackK->GetRecover() == 0) continue;
+    if (trackK->fNmbTrackHits == 2 && trackK->GetRecover() == 0) continue;
     if (trackK == this) continue;
-    if (trackK->fNTrackHits == fNTrackHits || trackK->fNTrackHits == fNTrackHits-1) {
-      TObjArray *hits = new TObjArray(*trackK->fTrackHitsPtr);
+    if (trackK->fNmbTrackHits == fNmbTrackHits || trackK->fNmbTrackHits == fNmbTrackHits-1) {
+      TObjArray *hits = new TObjArray(*trackK->fTrackHits);
       same = kTRUE;
-      if (trackK->fNTrackHits == fNTrackHits) {
-	for (Int_t j=0; j<fNTrackHits; j++) {
+      if (trackK->fNmbTrackHits == fNmbTrackHits) {
+	for (Int_t j=0; j<fNmbTrackHits; j++) {
 	  if (hits->UncheckedAt(j) != hitArray->UncheckedAt(j)) { same = kFALSE; break; }
 	}
 	if (same) { delete hits; break; }
@@ -2302,7 +2322,7 @@ Bool_t AliMUONTrackK::ExistDouble(AliMUONHitForRec *hit)
 	  if (hits1->Remove(trackK->fSkipHit) > 0) {
 	    hits1->Compress();
 	    same = kTRUE;
-	    for (Int_t j=0; j<fNTrackHits-1; j++) {
+	    for (Int_t j=0; j<fNmbTrackHits-1; j++) {
 	      if (hits1->UncheckedAt(j) != hitArray1->UncheckedAt(j)) { same = kFALSE; break; }
 	    }
 	    if (same) { delete hits1; break; }
@@ -2312,7 +2332,7 @@ Bool_t AliMUONTrackK::ExistDouble(AliMUONHitForRec *hit)
       } else {
 	// Check with removed outlier
 	same = kTRUE;
-	for (Int_t j=0; j<fNTrackHits-1; j++) {
+	for (Int_t j=0; j<fNmbTrackHits-1; j++) {
 	  if (hits->UncheckedAt(j) != hitArray1->UncheckedAt(j)) { same = kFALSE; break; }
 	}
 	if (same) { delete hits; break; }
@@ -2333,26 +2353,26 @@ Bool_t AliMUONTrackK::ExistDouble(void)
   TClonesArray *trackPtr = fgTrackReconstructor->GetRecTracksPtr();
   Int_t nRecTracks = fgTrackReconstructor->GetNRecTracks();
 
-  TObjArray *hitArray = new TObjArray(*fTrackHitsPtr);
+  TObjArray *hitArray = new TObjArray(*fTrackHits);
   if (GetStation0() == 3) SortHits(0, hitArray); // sort
   //if (GetStation0() == 3) SortHits(1, hitArray); // unsort
 
   Bool_t same = kFALSE;
   for (Int_t i=0; i<nRecTracks; i++) {
     AliMUONTrackK *trackK = (AliMUONTrackK*) ((*trackPtr)[i]);
-    if (trackK->fNTrackHits == 2 && trackK->GetRecover() == 0) continue;
+    if (trackK->fNmbTrackHits == 2 && trackK->GetRecover() == 0) continue;
     if (trackK == this) continue;
     //AZ if (trackK->GetRecover() < 0) continue; //
-    if (trackK->fNTrackHits >= fNTrackHits) {
-      TObjArray *hits = new TObjArray(*trackK->fTrackHitsPtr);
+    if (trackK->fNmbTrackHits >= fNmbTrackHits) {
+      TObjArray *hits = new TObjArray(*trackK->fTrackHits);
       if (trackK->GetStation0() == 3) SortHits(0, hits); // sort
       //if (trackK->GetStation0() == 3) SortHits(1, hits); // unsort
-      for (Int_t j=0; j<fNTrackHits; j++) {
-	//cout << fNTrackHits << " " << i << " " << j << " " << (*hitArray)[j] << " " << (*hits)[j] << " " << trackK->fSkipHit << endl;
-	if (j != fNTrackHits-1 && (*hitArray)[j] != (*hits)[j]) break; 
-	if (j == fNTrackHits-1) {
+      for (Int_t j=0; j<fNmbTrackHits; j++) {
+	//cout << fNmbTrackHits << " " << i << " " << j << " " << (*hitArray)[j] << " " << (*hits)[j] << " " << trackK->fSkipHit << endl;
+	if (j != fNmbTrackHits-1 && (*hitArray)[j] != (*hits)[j]) break; 
+	if (j == fNmbTrackHits-1) {
 	  if (trackK->fSkipHit && TMath::Abs(((AliMUONHitForRec*)((*hitArray)[j]))->GetZ()-trackK->fSkipHit->GetZ()) < 0.5) same = kTRUE; 
-	  //if (trackK->fNTrackHits > fNTrackHits && 
+	  //if (trackK->fNmbTrackHits > fNmbTrackHits && 
 	  //if (trackK->fSkipHit) cout << ((AliMUONHitForRec*)((*hitArray)[j]))->GetZ() << " " << trackK->fSkipHit->GetZ() << endl;
 	}
       } // for (Int_t j=0;

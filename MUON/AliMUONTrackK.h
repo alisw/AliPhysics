@@ -33,8 +33,8 @@ class AliMUONTrackK : public AliMUONTrack {
   AliMUONTrackK(AliMUONSegment *segment); // Constructor from a segment
 
   // Pointer to hits on track
-  TObjArray* GetHitOnTrack(void) const {return fTrackHitsPtr;} // ptr. to hits on track
-  Int_t GetNTrackHits(void) const {return fNTrackHits;} // hits on track
+  TObjArray* GetTrackHits(void) const {return fTrackHits;} // ptr. to hits on track
+  Int_t GetNTrackHits(void) const {return fNmbTrackHits;} // hits on track
   Double_t GetTrackQuality(void) const {return fChi2;} // track quality
   TMatrixD* GetTrackParameters(void) const {return fTrackPar;} // track parameters
   Double_t GetZ(void) const {return fPosition;} // Z-coordinate of track 
@@ -89,8 +89,8 @@ class AliMUONTrackK : public AliMUONTrack {
   Double_t fPosition; // Z-coordinate of track
   Double_t fPositionNew; //! Z-coordinate of track
   Double_t fChi2; // Chi2 of track
-  TObjArray *fTrackHitsPtr; // pointer to hits on track
-  Int_t fNTrackHits; // number of points on track
+  TObjArray *fTrackHits; // pointer to hits on track
+  Int_t fNmbTrackHits; // number of points on track
   Int_t fTrackDir; // track direction (+(-) towards high (low) z)
   Bool_t fBPFlag; // backpropagation flag (TRUE if backpropagation)
   Int_t fRecover; // recover flag (!=0 if recovery procedure was applied)
@@ -128,7 +128,7 @@ class AliMUONTrackK : public AliMUONTrack {
   void GetFromGeantParam(Double_t *VGeant3, Int_t iFB);
   Bool_t Recover(void);
   void AddMatrices(AliMUONTrackK *trackK, Double_t dChi2, AliMUONHitForRec *hitAdd);
-  void CreateMatrix(TObjArray *objArray);
+  void CreateMatrix(TObjArray *objArray) const;
   void RemoveMatrices(Double_t zEnd);
   void RemoveMatrices(AliMUONTrackK* trackK);
   void Outlier();
