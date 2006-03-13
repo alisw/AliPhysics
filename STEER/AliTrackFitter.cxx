@@ -114,6 +114,8 @@ void AliTrackFitter::SetTrackPointArray(AliTrackPointArray *array, Bool_t owner)
   // Load space points from array
   // By default we don't copy them but
   // just put the pointers to them
+  if (!array) return;
+
   Reset();
 
   if (fIsOwner) delete fPoints;
