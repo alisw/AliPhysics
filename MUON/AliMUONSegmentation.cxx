@@ -15,10 +15,10 @@
 
 // $Id$
 //
+// ----------------------------
 // Class AliMUONSegmentation
 // ----------------------------
 // Manager class for geometry construction via geometry builders.
-//
 // Author: Ivana Hrivnacova, IPN Orsay
 
 #include <iostream>
@@ -83,7 +83,7 @@ AliMUONSegmentation::AliMUONSegmentation()
 AliMUONSegmentation::AliMUONSegmentation(const AliMUONSegmentation& right) 
   : TObject(right) 
 {  
-/// Copy constructor (not implemented)
+/// Protected copy constructor (not implemented)
 
   AliFatal("Copy constructor not provided.");
 }
@@ -105,7 +105,7 @@ AliMUONSegmentation::~AliMUONSegmentation()
 AliMUONSegmentation& 
 AliMUONSegmentation::operator=(const AliMUONSegmentation& right)
 {
-/// Assignement operator (not implemented)
+/// Protected assignement operator (not implemented)
 
   // check assignement to self
   if (this == &right) return *this;

@@ -16,7 +16,7 @@
 // $Id$
 // $MpId: AliMpMotifMap.cxx,v 1.10 2006/03/02 16:32:38 ivana Exp $
 // Category: motif
-//
+// -------------------
 // Class AliMpMotifMap
 // -------------------
 // Class describing the motif map container, where motifs are
@@ -226,6 +226,9 @@ void  AliMpMotifMap::PrintMotifTypes() const
 void 
 AliMpMotifMap::GetAllMotifPositionsIDs(TArrayI& ecn) const
 {
+/// Fill the given array with all motif positions IDs (electronic card numbers)
+/// defined in the map
+
 #ifdef WITH_STL
   ecn.Set(fMotifPositions.size());  
   Int_t i(0);

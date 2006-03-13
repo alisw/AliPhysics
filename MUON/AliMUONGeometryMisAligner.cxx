@@ -116,9 +116,12 @@ operator=(const AliMUONGeometryMisAligner & right)
   return *this;
 }
 
+//_________________________________________________________________________
 void
 AliMUONGeometryMisAligner::SetXYAngMisAligFactor(Double_t factor)
 {
+  /// Set factor 
+
   if (TMath::Abs(factor) > 1.0 && factor > 0.)
     fXYAngMisAligFactor = factor;
   else

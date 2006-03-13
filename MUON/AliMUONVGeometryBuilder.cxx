@@ -354,6 +354,9 @@ void AliMUONVGeometryBuilder::SetMotherVolume(Int_t moduleId,
 void  AliMUONVGeometryBuilder::SetReferenceFrame(
                                   const TGeoCombiTrans& referenceFrame)
 { 
+/// Set reference frame to builder and to all associated geometry 
+/// modules
+
   fReferenceFrame = referenceFrame; 
 
   for (Int_t i=0; i<fGeometryModules->GetEntriesFast(); i++) {

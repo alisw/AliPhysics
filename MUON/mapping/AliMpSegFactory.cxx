@@ -13,11 +13,14 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-////////////////////////////////////////////////////////////
-//  Factory for muon chambers, segmentations and response //
-////////////////////////////////////////////////////////////
-
-/* $Id$ */
+// $Id$
+// $MpId: $
+// Category: management
+// -----------------------
+// Class AliMpSegFactory
+// -----------------------
+// The factory for building mapping segmentations
+// Authors: Ivana Hrivnacova, IPN Orsay
 
 #include "AliMpSegFactory.h"
 
@@ -83,6 +86,48 @@ AliMpSegFactory&  AliMpSegFactory::operator=(const AliMpSegFactory& rhs)
 }    
           
 //
+// private methods
+//
+
+//_____________________________________________________________________________
+AliMpExMap*
+AliMpSegFactory::FillMpMap(Int_t detElemId)
+{
+/// Fill the map of electronic cards IDs to segmentations for
+/// given detElemId
+
+  AliDebug(1,Form("detElemId=%d",detElemId));
+  
+  AliMpExMap* mde = new AliMpExMap(true);
+  mde->SetOwner(kFALSE);
+  fMpMap->Add(detElemId,mde);
+  
+  AliMpVSegmentation* seg[2];
+  TArrayI ecn[2];
+  
+  // Do it in 2 steps to be able to set the AliMpExMap size once for all,
+  // to avoid annoying warning message in case of dynamical resizing.
+  // (not critical).
+  for ( Int_t cathode = 0; cathode < 2; ++cathode )
+  {
+    seg[cathode] = CreateMpSegmentation(detElemId,cathode);
+    seg[cathode]->GetAllElectronicCardIDs(ecn[cathode]);
+  }
+  
+  mde->SetSize(ecn[0].GetSize()+ecn[1].GetSize());
+  
+  for ( Int_t cathode = 0; cathode < 2; ++ cathode )
+  {
+    for ( Int_t i = 0; i < ecn[cathode].GetSize(); ++i )
+    {
+      mde->Add(ecn[cathode][i],const_cast<AliMpVSegmentation*>(seg[cathode]));
+    }
+  }
+  
+  return mde;
+}
+
+//
 // public methods
 //
 
@@ -136,8 +181,11 @@ AliMpSegFactory::CreateMpSegmentation(Int_t detElemId, Int_t cath)
 //_____________________________________________________________________________
 AliMpVSegmentation* 
 AliMpSegFactory::CreateMpSegmentationByElectronics(Int_t detElemId,
-                                                   Int_t FEMId)
+                                                   Int_t ecId)
 {
+/// Create mapping segmentation for given detElemId and electronic card Id
+/// (motif position Id) or return it if it was already built
+
   AliMpExMap* m = static_cast<AliMpExMap*>(fMpMap->GetValue(detElemId));
   
   if (!m)
@@ -145,13 +193,14 @@ AliMpSegFactory::CreateMpSegmentationByElectronics(Int_t detElemId,
     m = FillMpMap(detElemId);
   }
   
-  return static_cast<AliMpVSegmentation*>(m->GetValue(FEMId));
+  return static_cast<AliMpVSegmentation*>(m->GetValue(ecId));
 }
     
 //______________________________________________________________________________
 void AliMpSegFactory::DeleteSegmentations()
 {
 /// Delete all segmentations created with this manager
+
   AliDebug(1,"deleting mpSegmentations");
   fMpSegmentations.Clear();
   AliDebug(1,"deleting mpMap");
@@ -160,37 +209,3 @@ void AliMpSegFactory::DeleteSegmentations()
   AliDebug(1,"done");
 }
 
-//_____________________________________________________________________________
-AliMpExMap*
-AliMpSegFactory::FillMpMap(Int_t detElemId)
-{
-  AliDebug(1,Form("detElemId=%d",detElemId));
-  
-  AliMpExMap* mde = new AliMpExMap(true);
-  mde->SetOwner(kFALSE);
-  fMpMap->Add(detElemId,mde);
-  
-  AliMpVSegmentation* seg[2];
-  TArrayI ecn[2];
-  
-  // Do it in 2 steps to be able to set the AliMpExMap size once for all,
-  // to avoid annoying warning message in case of dynamical resizing.
-  // (not critical).
-  for ( Int_t cathode = 0; cathode < 2; ++cathode )
-  {
-    seg[cathode] = CreateMpSegmentation(detElemId,cathode);
-    seg[cathode]->GetAllElectronicCardIDs(ecn[cathode]);
-  }
-  
-  mde->SetSize(ecn[0].GetSize()+ecn[1].GetSize());
-  
-  for ( Int_t cathode = 0; cathode < 2; ++ cathode )
-  {
-    for ( Int_t i = 0; i < ecn[cathode].GetSize(); ++i )
-    {
-      mde->Add(ecn[cathode][i],const_cast<AliMpVSegmentation*>(seg[cathode]));
-    }
-  }
-  
-  return mde;
-}

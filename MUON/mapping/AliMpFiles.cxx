@@ -16,7 +16,7 @@
 // $Id$
 // $MpId: AliMpFiles.cxx,v 1.8 2006/03/02 16:37:20 ivana Exp $
 // Category: basic
-//
+// ----------------
 // Class AliMpFiles
 // ----------------
 // Class for generating file names and paths.
@@ -103,6 +103,10 @@ AliMpFiles& AliMpFiles::operator=(const AliMpFiles& right)
 //______________________________________________________________________________
 TString AliMpFiles::GetTop()
 {
+/// Return top path to mapping data defined either via MINSTALL
+/// or ALICE_ROOT environment variable.                                      \n
+/// If both variables are defined, MINSTALL is used.
+
   TString top = getenv("MINSTALL");    
   if ( ! top.IsNull() ) return top;
 
@@ -198,6 +202,8 @@ TString AliMpFiles::DENamesFilePath(AliMpStationType station)
 //______________________________________________________________________________
 TString AliMpFiles::LocalTriggerBoardMapping()
 {
+/// Return path to data file with DE names for given station.
+
   return TString(PlaneDataDir(kStationTrigger,kNonBendingPlane) 
                  + fgkTriggerLocalBoards
                  + fgkDataExt);

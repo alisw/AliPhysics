@@ -327,6 +327,8 @@ Bool_t AliMpDEManager::IsValidModuleId(Int_t moduleId, Bool_t warn)
 Int_t 
 AliMpDEManager::GetCathod(Int_t detElemId, AliMpPlaneType planeType)
 {
+/// Return cathod number for given detElemId and planeType
+
   if ( !IsValidDetElemId(detElemId) ) return -1;
   AliMpIntPair* pair = 
     static_cast<AliMpIntPair*>(fgDECathBNBMap.GetValue(detElemId));

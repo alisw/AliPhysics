@@ -13,7 +13,14 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id$ */
+// $Id$ 
+// $MpId: $
+
+// ------------------------
+// Class AliMpDEIterator
+// ------------------------
+// The iterator over valid detection element IDs
+// Author: Ivana Hrivnacova, IPN Orsay
 
 #include "AliMpDEIterator.h"
 #include "AliMpDEManager.h"
@@ -162,6 +169,7 @@ void AliMpDEIterator::First()
 //______________________________________________________________________________
 void AliMpDEIterator::First(Int_t moduleId)
 {
+/// Reset the iterator, so that it points to the first DE
  
   fModuleId = -1;
   fIndex = -1;  
@@ -191,6 +199,8 @@ void AliMpDEIterator::First(Int_t moduleId)
 //______________________________________________________________________________
 void AliMpDEIterator::Next()
 {
+/// Increment iterator to next DE
+
   fIndex++;
 
   // Invalidate if at the end
@@ -204,12 +214,16 @@ void AliMpDEIterator::Next()
 //______________________________________________________________________________
 Bool_t AliMpDEIterator::IsDone() const
 {
+/// Is the iterator in the end?
+
   return ( fIndex < 0 );
 }   
 
 //______________________________________________________________________________
 Int_t AliMpDEIterator::CurrentDE() const
 {
+/// Current DE Id
+
   if ( ! IsDone() )
     return fgDetElemIds.At(fIndex);
   else {   
