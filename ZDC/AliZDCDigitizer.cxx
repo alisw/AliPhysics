@@ -353,17 +353,18 @@ Int_t AliZDCDigitizer::Phe2ADCch(Int_t Det, Int_t Quad, Float_t Light,
 Int_t AliZDCDigitizer::Pedestal(Int_t Det, Int_t Quad, Int_t Res) const
 {
   
-  /*Float_t meanPed;
+  Float_t meanPed;
   if(Det != 3) meanPed = fCalibData->GetMeanPed(10*(Det-1)+Quad+5*Res);
   else         meanPed = fCalibData->GetMeanPed(10*(Det-1)+Quad+1*Res);
-  */
+  
   //printf("\t Pedestal -> det = %d, quad = %d, res = %d - Ped[%d] = %d\n",
   //	Det, Quad, Res,10*(Det-1)+Quad+5*Res,(Int_t) meanPed); // Chiara debugging!
   
   // To create calibration object
-  Float_t meanPed;
+  /*Float_t meanPed;
   meanPed = gRandom->Gaus((40.+10.*gRandom->Rndm()),5.);
-  
+  */
+
   return (Int_t) meanPed;
 }
 
