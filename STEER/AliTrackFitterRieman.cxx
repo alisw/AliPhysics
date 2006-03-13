@@ -1,6 +1,7 @@
 #include "TMatrixDSym.h"
 #include "TMatrixD.h"
 #include "AliTrackFitterRieman.h"
+#include "AliLog.h"
 
 ClassImp(AliTrackFitterRieman)
 
@@ -155,7 +156,7 @@ Bool_t AliTrackFitterRieman::Fit(const TArrayI *volIds,const TArrayI *volIdsFit,
       fNUsed++;
     }
 
-  if (fNUsed < 3) {
+  if (npVolId == 0 || fNUsed < 3) {
     delete [] pindex;
     delete [] fX;
     delete [] fY;
@@ -546,7 +547,10 @@ Bool_t AliTrackFitterRieman::GetPCA(const AliTrackPoint &p, AliTrackPoint &p2) c
   Double_t y  = p.GetY()*cosp - p.GetX()*sinp;
   Double_t x0p= x0*cosp + y0*sinp;
   Double_t y0p= y0*cosp - x0*sinp;
-  if ((R*R - (x-x0p)*(x-x0p))<0) return kFALSE;
+  if ((R*R - (x-x0p)*(x-x0p))<0) {
+    AliWarning(Form("Track extrapolation failed ! (Track radius = %f, track circle x = %f, space-point x = %f, reference plane angle = %f\n",R,x0p,x,alphap));
+    return kFALSE;
+  }
   Double_t temp = TMath::Sqrt(R*R - (x-x0p)*(x-x0p));
   Double_t y1 = y0p + temp;
   Double_t y2 = y0p - temp;
