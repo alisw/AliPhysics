@@ -45,9 +45,9 @@ class AliMpConstants : public TObject
                                             // a geometric border inside (pad, motif)
   static const Int_t     fgkStartPadIndex;  // global pad indices start value
   static const Int_t     fgkNCh;            // number of chambers
-  static const Int_t     fgNonBendingManuMask; // bit to set to indicate a manu located in non-bending plane
+  static const Int_t     fgkNonBendingManuMask; // bit to set to indicate a manu located in non-bending plane
   
-  ClassDef(AliMpConstants,2) //Class for globally used constants definition
+  ClassDef(AliMpConstants,3) //Class for globally used constants definition
 };
 
 // inline functions

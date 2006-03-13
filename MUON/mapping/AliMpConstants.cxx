@@ -33,7 +33,7 @@ const Double_t AliMpConstants::fgkLengthTolerance = 1e-05; // 0.1 mum
 const Double_t AliMpConstants::fgkLengthStep = 0.1; // 1 mm
 const Int_t    AliMpConstants::fgkStartPadIndex = 1;
 const Int_t    AliMpConstants::fgkNCh = 14;
-const Int_t AliMpConstants::fgNonBendingManuMask(1<<10);
+const Int_t AliMpConstants::fgkNonBendingManuMask(1<<10);
 
 ClassImp(AliMpConstants)
 
@@ -75,5 +75,5 @@ AliMpConstants::ManuMask(AliMpPlaneType planeType)
   //
   // The manuIDs get an offset if they are in the non-bending plane
   //
-  return ( planeType == kNonBendingPlane ) ? fgNonBendingManuMask : 0;
+  return ( planeType == kNonBendingPlane ) ? fgkNonBendingManuMask : 0;
 }
