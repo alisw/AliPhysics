@@ -26,7 +26,7 @@ class AliMUONEventRecoCombi : public TObject
     virtual ~AliMUONEventRecoCombi();
     static AliMUONEventRecoCombi* Instance();
     void FillEvent(AliMUONData *data, AliMUONClusterFinderAZ *recModel); // fill event info
-    void FillRecP(AliMUONData *dataCluster, AliMUONTrackReconstructor *recoTrack); // fill used rec. points from det. elems
+    void FillRecP(AliMUONData *dataCluster, AliMUONTrackReconstructor *recoTrack) const; // fill used rec. points from det. elems
 
     Int_t Nz() const { return fNZ; } // number of DE different Z-positions
     Double_t Z(Int_t iz) const { return (*fZ)[iz]; } // Z of DE
@@ -36,8 +36,8 @@ class AliMUONEventRecoCombi : public TObject
 
  protected:
     AliMUONEventRecoCombi();
-    //AliMUONEventRecoCombi(const AliMUONEventRecoCombi& rhs);
-    //AliMUONEventRecoCombi & operator = (const AliMUONEventRecoCombi& rhs);
+    AliMUONEventRecoCombi(const AliMUONEventRecoCombi& rhs);
+    AliMUONEventRecoCombi & operator = (const AliMUONEventRecoCombi& rhs);
 
  private:
     static AliMUONEventRecoCombi* fgRecoCombi; // ! singleton instance

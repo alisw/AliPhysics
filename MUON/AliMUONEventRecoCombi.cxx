@@ -15,6 +15,12 @@
 
 /* $Id$ */
 
+// -------------------------------------
+// Class AliMUONEventRecoCombi
+// -------------------------------------
+// Steering class for the combined cluster / track reconstructor
+// Author: Alexander Zinchenko, JINR Dubna
+
 #include "AliMUONEventRecoCombi.h"
 
 #include "AliMUONData.h"
@@ -32,6 +38,7 @@
 #include <TClonesArray.h>
 #include <TArrayS.h>
 #include <TArrayD.h>
+#include "AliLog.h"
 
 AliMUONEventRecoCombi* AliMUONEventRecoCombi::fgRecoCombi = 0; 
 
@@ -69,6 +76,27 @@ AliMUONEventRecoCombi::~AliMUONEventRecoCombi()
   delete fDetElems;
   delete fZ;
   delete [] fDEvsZ;
+}
+
+//_________________________________________________________________________
+AliMUONEventRecoCombi::AliMUONEventRecoCombi (const AliMUONEventRecoCombi& rhs)
+  : TObject(rhs)
+{
+  // Protected copy constructor
+  AliFatal("Not implemented.");
+}
+
+//_________________________________________________________________________
+AliMUONEventRecoCombi & AliMUONEventRecoCombi::operator = (const AliMUONEventRecoCombi& rhs)
+{
+  // Protected assignment operator
+
+  // check assignement to self
+  if (this == &rhs) return *this;
+
+  AliFatal("Not implemented.");
+
+  return *this;
 }
 
 //_________________________________________________________________________
@@ -160,14 +188,14 @@ void AliMUONEventRecoCombi::FillEvent(AliMUONData *data, AliMUONClusterFinderAZ 
 }
 
 //_________________________________________________________________________
-void AliMUONEventRecoCombi::FillRecP(AliMUONData *dataCluster, AliMUONTrackReconstructor *recoTrack)
+void AliMUONEventRecoCombi::FillRecP(AliMUONData *dataCluster, AliMUONTrackReconstructor *recoTrack) const
 {
   // Fill rec. points used for tracking from det. elems
 
   TClonesArray *tracks = recoTrack->GetRecTracksPtr();
   for (Int_t i = 0; i < recoTrack->GetNRecTracks(); i++) {
     AliMUONTrackK *track = (AliMUONTrackK*) tracks->UncheckedAt(i);
-    TObjArray *hits = track->GetHitOnTrack();
+    TObjArray *hits = track->GetTrackHits();
     for (Int_t j = 0; j < track->GetNTrackHits(); j++) {
       AliMUONHitForRec *hit = (AliMUONHitForRec*) hits->UncheckedAt(j);
       if (hit->GetHitNumber() >= 0) continue;
