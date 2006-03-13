@@ -14,7 +14,8 @@
  **************************************************************************/
 
 // $Id$ 
-// $MpId: $
+// $MpId: AliMpDEIterator.cxx,v 1.4 2006/03/13 12:22:15 ivana Exp $
+// Category: management
 
 // ------------------------
 // Class AliMpDEIterator

@@ -14,9 +14,9 @@
  **************************************************************************/
 
 // $Id$
-// $MpId: $
-// Category: basic
-//
+// $MpId: AliMpBusPatch.cxx,v 1.2 2006/03/13 12:22:15 ivana Exp $
+// Category: management
+
 // Class AliMpBusPatch
 // ---------------
 // Class that manages the maps buspatch<>DDL<>DE 

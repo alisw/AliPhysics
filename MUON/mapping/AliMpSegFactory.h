@@ -4,7 +4,8 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-/* $Id$ */
+// $Id$ 
+// $MpId: AliMpSegFactory.h,v 1.4 2006/03/13 12:22:08 ivana Exp $ 
 
 /// \ingroup management
 /// \class AliMpSegFactory
