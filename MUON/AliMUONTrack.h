@@ -65,6 +65,7 @@ class AliMUONTrack : public TObject
   void SetFitMCS(Int_t FitMCS);
   void SetFitNParam(Int_t FitNParam);
   void SetFitStart(Int_t FitStart);
+  void SetFitFMin(Double_t chi2) { fFitFMin = chi2; } // set Chi2
 
   AliMUONTrackParam* GetTrackParamAtFirstHit(void) const;
 
