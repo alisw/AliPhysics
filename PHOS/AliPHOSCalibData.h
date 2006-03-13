@@ -7,32 +7,56 @@
 /* $Id$ */
 
 ////////////////////////////////////////////////
-//  class for PHOS calibration                 //
+//  class for PHOS calibration                //
 ////////////////////////////////////////////////
 
 #include "TNamed.h"
-#include "AliPHOS.h"
+#include "TString.h"
+#include "AliPHOSEmcCalibData.h"
+#include "AliPHOSCpvCalibData.h"
+#include "AliCDBMetaData.h"
 
 class AliPHOSCalibData: public TNamed {
 
  public:
   AliPHOSCalibData();
-  AliPHOSCalibData(const char* name);
-  AliPHOSCalibData(const AliPHOSCalibData &calibda);
-  AliPHOSCalibData& operator= (const AliPHOSCalibData &calibda);
+  AliPHOSCalibData(Int_t runNumber);
   virtual ~AliPHOSCalibData();
   void Reset();
   virtual void Print(Option_t *option = "") const; 
-  //
+  
+  void CreateNew();
+  void RandomEmc();
+  void RandomCpv();
+
   Float_t GetADCchannelEmc(Int_t module, Int_t column, Int_t row) const;
   Float_t GetADCpedestalEmc(Int_t module, Int_t column, Int_t row) const;
-  //
+  
   void SetADCchannelEmc(Int_t module, Int_t column, Int_t row, Float_t value);
   void SetADCpedestalEmc(Int_t module, Int_t column, Int_t row, Float_t value);
 
- protected:
-  Float_t  fADCchannelEmc[5][56][64] ;  // width of one ADC channel in GeV ([mod][col][row])
-  Float_t  fADCpedestalEmc[5][56][64] ; // value of the EMC ADC pedestal ([mod][col][row])
+  Float_t GetADCchannelCpv(Int_t module, Int_t column, Int_t row) const;
+  Float_t GetADCpedestalCpv(Int_t module, Int_t column, Int_t row) const;
+  
+  void SetADCchannelCpv(Int_t module, Int_t column, Int_t row, Float_t value);
+  void SetADCpedestalCpv(Int_t module, Int_t column, Int_t row, Float_t value);
+
+  void SetDB(const char* db) {fDB=db;}
+  void SetEmcDataPath(const char* emcPath) {fEmcDataPath=emcPath;}
+  void SetCpvDataPath(const char* cpvPath) {fCpvDataPath=cpvPath;}
+
+  Bool_t WriteEmc(Int_t firstRun, Int_t lastRun, AliCDBMetaData *md);
+  Bool_t WriteCpv(Int_t firstRun, Int_t lastRun, AliCDBMetaData *md);
+
+ private:
+
+  AliPHOSEmcCalibData* fCalibDataEmc; // EMC calibration data
+  AliPHOSCpvCalibData* fCalibDataCpv; // CPV calibration data
+  
+  TString fDB;
+  TString fEmcDataPath; // path to EMC calibration data
+  TString fCpvDataPath; // path to CPV calibration data
+
   //
   ClassDef(AliPHOSCalibData,1)    // PHOS Calibration data
 };

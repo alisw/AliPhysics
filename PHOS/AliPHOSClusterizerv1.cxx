@@ -18,6 +18,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.88  2006/01/11 08:54:52  hristov
+ * Additional protection in case no calibration entry was found
+ *
  * Revision 1.87  2005/11/22 08:46:43  kharlov
  * Updated to new CDB (Boris Polichtchouk)
  *
@@ -151,8 +154,11 @@ Float_t  AliPHOSClusterizerv1::Calibrate(Int_t amp, Int_t absId)
       fADCpedestalEmc = fCalibData->GetADCpedestalEmc(module,column,row);
       return fADCpedestalEmc + amp*fADCchanelEmc ;        
     }
-    else //calibrate as CPV, not implemented yet
-      return 0;
+    else { //calibrate as CPV
+      fADCchanelCpv   = fCalibData->GetADCchannelCpv (module,column,row);
+      fADCpedestalCpv = fCalibData->GetADCpedestalCpv(module,column,row);
+      return fADCpedestalCpv + amp*fADCchanelCpv ;              
+    }     
   }
   else{ //simulation
     if(absId <= fEmcCrystals) //calibrate as EMC 
@@ -332,13 +338,7 @@ void AliPHOSClusterizerv1::GetCalibrationParameters()
   // AliCDBStorage* storage = AliCDBManager::Instance()->GetStorage("local://CalibDB");
 
   AliPHOSGetter * gime = AliPHOSGetter::Instance();
-
-  if(AliCDBManager::Instance()->IsDefaultStorageSet()){
-    AliCDBEntry *entry = (AliCDBEntry*) AliCDBManager::Instance()->GetDefaultStorage()
-      ->Get("PHOS/GainFactors_and_Pedestals/Calibration",gAlice->GetRunNumber());
-    if (entry) fCalibData = (AliPHOSCalibData*) entry->GetObject();
-  }
-  
+  fCalibData = new AliPHOSCalibData(gAlice->GetRunNumber()); 
   
   if(!fCalibData)
     {

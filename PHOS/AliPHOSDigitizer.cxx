@@ -18,6 +18,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.87  2005/08/24 15:33:49  kharlov
+ * Calibration data for raw digits
+ *
  * Revision 1.86  2005/07/12 20:07:35  hristov
  * Changes needed to run simulation and reconstrruction in the same AliRoot session
  *
@@ -393,6 +396,11 @@ Int_t AliPHOSDigitizer::DigitizeEnergy(Float_t energy, Int_t absId)
 
   AliPHOSGetter* gime = AliPHOSGetter::Instance();
 
+  if(!gime->CalibData()) {
+    AliPHOSCalibData* cdb = new AliPHOSCalibData(gAlice->GetRunNumber());
+    gime->SetCalibData(cdb);
+  }
+
   //Determine rel.position of the cell absId
   Int_t relId[4];
   gime->PHOSGeometry()->AbsToRelNumbering(absId,relId);
@@ -418,6 +426,11 @@ Int_t AliPHOSDigitizer::DigitizeEnergy(Float_t energy, Int_t absId)
     if(chanel > fNADCemc ) chanel =  fNADCemc ;
   }
   else{ //Digitize as CPV
+    if(gime->CalibData()) {
+      fADCpedestalCpv = gime->CalibData()->GetADCpedestalCpv(module,column,raw);
+      fADCchanelCpv = gime->CalibData()->GetADCchannelCpv(module,column,raw);
+    }
+
     chanel = (Int_t) TMath::Ceil((energy - fADCpedestalCpv)/fADCchanelCpv) ;       
     if(chanel > fNADCcpv ) chanel =  fNADCcpv ;
   }

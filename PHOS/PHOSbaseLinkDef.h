@@ -26,6 +26,7 @@
 #pragma link C++ class AliPHOSRawStream2004+;
 #pragma link C++ class AliPHOSCalibData+;
 #pragma link C++ class AliPHOSAlignData+;
-
+#pragma link C++ class AliPHOSCpvCalibData+;
+#pragma link C++ class AliPHOSEmcCalibData+;
 
 #endif
