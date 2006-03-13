@@ -288,19 +288,10 @@ Float_t AliTrackPoint::GetAngle() const
   if ((fCov[2] != 0) || (fCov[4] != 0))
     return TMath::ATan2(-fCov[4],-fCov[2]);
   else {
-    if (fCov[1] == 0) return 0;
-    Float_t phi= TMath::ATan2(TMath::Abs(fCov[1]),fCov[3]);
-    if (fCov[1] < 0) {
-      phi += TMath::PiOver2();
-      if ((fY-fX) < 0) phi += TMath::Pi();
-    }
-    else {
-      if ((fX+fY) < 0) phi += TMath::Pi();
-    }
+    Float_t phi= TMath::ATan2(-fCov[1],fCov[3]);
+    if (fX < 0) phi += TMath::Pi();
     return phi;
   } 
-//     return TMath::ATan2(TMath::Sign((Float_t)1.0,fY)*TMath::Abs(fCov[1]),
-// 			TMath::Sign((Float_t)1.0,fX)*fCov[3]);
 }
 
 //_____________________________________________________________________________
