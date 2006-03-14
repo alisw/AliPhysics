@@ -130,6 +130,7 @@
 #include "AliGenEventHeader.h"
 #include "AliPID.h"
 #include "AliESDpid.h"
+#include "AliESDtrack.h"
 
 #include "AliRunTag.h"
 //#include "AliLHCTag.h"
@@ -799,7 +800,22 @@ Bool_t AliReconstruction::RunTracking(AliESD*& esd)
     fTracker[iDet]->UnloadClusters();
     fLoader[iDet]->UnloadRecPoints();
   }
-
+  //
+  // Propagate track to the vertex - if not done by ITS
+  //
+  Int_t ntracks = esd->GetNumberOfTracks();
+  for (Int_t itrack=0; itrack<ntracks; itrack++){
+    const Double_t kRadius  = 3;   // beam pipe radius
+    const Double_t kMaxStep = 5;   // max step
+    const Double_t kMaxD    = 123456;  // max distance to prim vertex
+    Double_t       fieldZ   = AliTracker::GetBz();  //
+    AliESDtrack * track = esd->GetTrack(itrack);
+    if (!track) continue;
+    if (track->IsOn(AliESDtrack::kITSrefit)) continue;
+    track->PropagateTo(kRadius, track->GetMass(),kMaxStep,kTRUE);
+    track->RelateToVertex(esd->GetVertex(),fieldZ, kMaxD);
+  }
+  
   AliInfo(Form("Execution time: R:%.2fs C:%.2fs",
 	       stopwatch.RealTime(),stopwatch.CpuTime()));
 
