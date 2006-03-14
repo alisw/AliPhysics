@@ -43,6 +43,9 @@ public:
   virtual Int_t   AreNeighbours(AliEMCALDigit * d1, AliEMCALDigit * d2)const ; 
                                // Checks if digits are in neighbour cells 
 
+  // Checks if digits are in a tower group; for pseudoclusters 
+  virtual Int_t   AreInGroup(AliEMCALDigit * d1, AliEMCALDigit * d2)const ; 
+
   virtual Float_t Calibrate(Int_t amp, Int_t cellId) ;  // Tranforms Amp to energy 
 
   virtual void    GetNumberOfClustersFound(int numb )const{ numb = fNumberOfECAClusters ;} 
@@ -77,19 +80,21 @@ public:
 protected:
 
   void           WriteRecPoints() ;
-  virtual void   MakeClusters( ) ;            
+  virtual void   MakeClusters(char* opt ) ;            
+  virtual void   MakeClusters() { Fatal("MakeClusters","not implemented"); }
+            
 ///////////////////// 
    TList  *fHists;   //!
-   TH1F* pointE;
-   TH1F* pointL1;
-   TH1F* pointL2;
-   TH1F* pointDis;
-   TH1F* pointMult;
-   TH1F* digitAmp;
-   TH1F* MaxE;
-   TH1F* MaxL1;
-   TH1F* MaxL2;
-   TH1F* MaxDis;
+   TH1F* fPointE;
+   TH1F* fPointL1;
+   TH1F* fPointL2;
+   TH1F* fPointDis;
+   TH1F* fPointMult;
+   TH1F* fDigitAmp;
+   TH1F* fMaxE;
+   TH1F* fMaxL1;
+   TH1F* fMaxL2;
+   TH1F* fMaxDis;
 ///////////////////////
 
 
@@ -108,16 +113,16 @@ private:
 			       AliEMCALDigit ** /*maxAt*/,
 			       Float_t * /*maxAtEnergy*/ ) const; //Unfolds cluster using TMinuit package
   void           PrintRecPoints(Option_t * option) ;
-  //  TFile* recofile;
+
 private:
+  AliEMCALGeometry* fGeom;           //! pointer to geometry for utilities
 
   Bool_t  fDefaultInit;              //! Says if the task was created by defaut ctor (only parameters are initialized)
-
-  Int_t   fNTowers ;                 // number of Towers in EMCAL
-
   Bool_t  fToUnfold ;                // To perform unfolding 
   Int_t   fNumberOfECAClusters ;     // number of clusters found in EC section
-  
+
+  Int_t   fNTowerInGroup;            // number of towers to group for pseudoclusters
+
   //Calibration parameters... to be replaced by database 
 
   AliEMCALCalibData * fCalibData  ;   //! Calibration database if aval

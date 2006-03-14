@@ -38,8 +38,6 @@
 
 ClassImp(AliEMCALRecPoint)
 
-AliEMCALGeometry * geom = 0;
-
 //____________________________________________________________________________
 AliEMCALRecPoint::AliEMCALRecPoint()
   : AliRecPoint()
@@ -59,8 +57,8 @@ AliEMCALRecPoint::AliEMCALRecPoint()
   fTime = 0. ;
   //  fLocPos.SetX(1.e+6)  ;      //Local position should be evaluated
   fCoreRadius = 10;        //HG Check this
-  geom = AliEMCALGeometry::GetInstance();
-  geom->GetTransformationForSM(); // Global <-> Local
+  fGeom = AliEMCALGeometry::GetInstance();
+  fGeom->GetTransformationForSM(); // Global <-> Local
 }
 
 //____________________________________________________________________________
@@ -81,8 +79,8 @@ AliEMCALRecPoint::AliEMCALRecPoint(const char * opt) : AliRecPoint(opt)
   fTime = -1. ;
   //fLocPos.SetX(1.e+6)  ;      //Local position should be evaluated
   fCoreRadius = 10;        //HG Check this
-  geom = AliEMCALGeometry::GetInstance();
-  geom->GetTransformationForSM(); // Global <-> Local
+  fGeom = AliEMCALGeometry::GetInstance();
+  fGeom->GetTransformationForSM(); // Global <-> Local
 }
 //____________________________________________________________________________
 AliEMCALRecPoint::~AliEMCALRecPoint()
@@ -110,7 +108,7 @@ void AliEMCALRecPoint::AddDigit(AliEMCALDigit & digit, Float_t Energy)
     fTimeList =  new Float_t[fMaxDigit]; 
   if(fAbsIdList == 0) {
     fAbsIdList =  new Int_t[fMaxDigit];
-    fSuperModuleNumber = geom->GetSuperModuleNumber(digit.GetId());
+    fSuperModuleNumber = fGeom->GetSuperModuleNumber(digit.GetId());
   }
 
   if ( fMulDigit >= fMaxDigit ) { // increase the size of the lists 
@@ -175,11 +173,11 @@ Bool_t AliEMCALRecPoint::AreNeighbours(AliEMCALDigit * digit1, AliEMCALDigit * d
 
   areNeighbours = kFALSE ;
 
-  geom->GetCellIndex(digit1->GetId(), nSupMod,nTower,nIphi,nIeta);
-  geom->GetCellPhiEtaIndexInSModule(nSupMod,nTower,nIphi,nIeta, relid1[0],relid1[1]);
+  fGeom->GetCellIndex(digit1->GetId(), nSupMod,nTower,nIphi,nIeta);
+  fGeom->GetCellPhiEtaIndexInSModule(nSupMod,nTower,nIphi,nIeta, relid1[0],relid1[1]);
 
-  geom->GetCellIndex(digit2->GetId(), nSupMod1,nTower1,nIphi1,nIeta1);
-  geom->GetCellPhiEtaIndexInSModule(nSupMod1,nTower1,nIphi1,nIeta1, relid2[0],relid2[1]);
+  fGeom->GetCellIndex(digit2->GetId(), nSupMod1,nTower1,nIphi1,nIeta1);
+  fGeom->GetCellPhiEtaIndexInSModule(nSupMod1,nTower1,nIphi1,nIeta1, relid2[0],relid2[1]);
   
   rowdiff = TMath::Abs( relid1[0] - relid2[0] ) ;  
   coldiff = TMath::Abs( relid1[1] - relid2[1] ) ;  
@@ -367,7 +365,7 @@ void  AliEMCALRecPoint::EvalDispersion(Float_t logWeight, TClonesArray * digits)
   for(iDigit=0; iDigit < fMulDigit; iDigit++) {
     digit = (AliEMCALDigit *) digits->At(fDigitsList[iDigit])  ;
 
-    geom->RelPosCellInSModule(digit->GetId(), xyzi[0], xyzi[1], xyzi[2]);
+    fGeom->RelPosCellInSModule(digit->GetId(), xyzi[0], xyzi[1], xyzi[2]);
     w = TMath::Max(0.,logWeight+TMath::Log(fEnergyList[iDigit]/fAmp ) ) ;
 
     if(w>0.0) {
@@ -399,7 +397,7 @@ void AliEMCALRecPoint::EvalLocalPosition(Float_t logWeight, TClonesArray * digit
   for(Int_t iDigit=0; iDigit<fMulDigit; iDigit++) {
     digit = dynamic_cast<AliEMCALDigit *>(digits->At(fDigitsList[iDigit])) ;
 
-    geom->RelPosCellInSModule(digit->GetId(), xyzi[0], xyzi[1], xyzi[2]);
+    fGeom->RelPosCellInSModule(digit->GetId(), xyzi[0], xyzi[1], xyzi[2]);
     // printf(" Id %i : Local x,y,z %f %f %f \n", digit->GetId(), xyzi[0], xyzi[1], xyzi[2]);
 
     if(logWeight > 0.0) w = TMath::Max( 0., logWeight + TMath::Log( fEnergyList[iDigit] / fAmp ));
@@ -467,7 +465,7 @@ void AliEMCALRecPoint::EvalCoreEnergy(Float_t logWeight, TClonesArray * digits)
     digit = (AliEMCALDigit *) ( digits->At(fDigitsList[iDigit]) ) ;
     Float_t etai = 0. ;
     Float_t phii = 0. ;
-    geom->PosInAlice(digit->GetId(), etai, phii);
+    fGeom->PosInAlice(digit->GetId(), etai, phii);
     phii = phii * kDeg2Rad;
   
     Float_t distance = TMath::Sqrt((etai-fLocPos.X())*(etai-fLocPos.X())+(phii-fLocPos.Y())*(phii-fLocPos.Y())) ;
@@ -491,7 +489,7 @@ void  AliEMCALRecPoint::EvalElipsAxis(Float_t logWeight,TClonesArray * digits)
   const Float_t kDeg2Rad = TMath::DegToRad();
   AliEMCALDigit * digit ;
 
-  TString gn(geom->GetName());
+  TString gn(fGeom->GetName());
 
   Int_t iDigit;
   
@@ -504,12 +502,12 @@ void  AliEMCALRecPoint::EvalElipsAxis(Float_t logWeight,TClonesArray * digits)
     // for this geometry does not exist
       int nSupMod=0, nTower=0, nIphi=0, nIeta=0;
       int iphi=0, ieta=0;
-      geom->GetCellIndex(digit->GetId(), nSupMod,nTower,nIphi,nIeta);
-      geom->GetCellPhiEtaIndexInSModule(nSupMod,nTower,nIphi,nIeta, iphi,ieta);
+      fGeom->GetCellIndex(digit->GetId(), nSupMod,nTower,nIphi,nIeta);
+      fGeom->GetCellPhiEtaIndexInSModule(nSupMod,nTower,nIphi,nIeta, iphi,ieta);
       etai=(Float_t)ieta;
       phii=(Float_t)iphi;
     } else {
-      geom->EtaPhiFromIndex(digit->GetId(), etai, phii);
+      fGeom->EtaPhiFromIndex(digit->GetId(), etai, phii);
       phii = phii * kDeg2Rad;
     }
 
@@ -674,9 +672,8 @@ void AliEMCALRecPoint::GetGlobalPosition(TVector3 & gpos) const
 {
   // returns the position of the cluster in the global reference system of ALICE
   // These are now the Cartesian X, Y and Z
-  geom = AliEMCALGeometry::GetInstance();
   //  cout<<" geom "<<geom<<endl;
-  geom->GetGlobal(fLocPos, gpos, fSuperModuleNumber);
+  fGeom->GetGlobal(fLocPos, gpos, fSuperModuleNumber);
 }
 
 //____________________________________________________________________________

@@ -19,6 +19,8 @@ class TVector3 ;
 #include "AliRecPoint.h"
 #include "AliEMCALDigit.h"
 
+class AliEMCALGeometry;
+
 class AliEMCALRecPoint : public AliRecPoint {
 
  public:
@@ -96,6 +98,8 @@ protected:
 	  Float_t EtaToTheta(Float_t arg) const;  //Converts Eta (Radians) to Theta(Radians)
 
 private:
+          AliEMCALGeometry* fGeom;  //! Pointer to geometry for utilities
+
           Int_t   fClusterType;    // type of cluster stored:
 				   // pseudocluster or v1
 	  Float_t fCoreEnergy ;       // energy in a shower core 
@@ -110,7 +114,7 @@ private:
           Int_t fMaxParent;           // Maximum number of parents allowed
           Int_t * fParentsList;       // [fMulParent] list of the parents of the digits
           Int_t   fSuperModuleNumber; //
-    
+
   ClassDef(AliEMCALRecPoint,7) // RecPoint for EMCAL (Base Class)
  
 };
