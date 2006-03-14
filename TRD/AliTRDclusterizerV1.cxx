@@ -1,3 +1,4 @@
+
 /**************************************************************************
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
@@ -177,16 +178,7 @@ Bool_t AliTRDclusterizerV1::MakeClusters()
   */
 
   // Get the geometry
-  AliTRDgeometry *geo = AliTRDgeometry::GetGeometry(fRunLoader);
-
-  // Create a default parameter class if none is defined
-  if (!fPar) {
-    fPar = new AliTRDparameter("TRDparameter","Standard TRD parameter");
-    printf("<AliTRDclusterizerV1::MakeCluster> ");
-    printf("Create the default parameter object.\n");
-  }
-  fPar->Init();
-  
+  AliTRDgeometry *geo = AliTRDgeometry::GetGeometry(fRunLoader);  
   AliTRDcalibDB* calibration = AliTRDcalibDB::Instance();
   if (!calibration)
   {
@@ -219,12 +211,6 @@ Bool_t AliTRDclusterizerV1::MakeClusters()
     return kFALSE;
   }
     
-  //Float_t timeBinSize = fPar->GetDriftVelocity()
-  //                    / fPar->GetSamplingFrequency();
-  // Half of ampl.region
-  //  const Float_t kAmWidth = AliTRDgeometry::AmThick()/2.; 
-
-  //Float_t omegaTau = fPar->GetOmegaTau();
   if (fVerbose > 0) {
     //printf("<AliTRDclusterizerV1::MakeCluster> ");
     //printf("OmegaTau = %f \n",omegaTau);
@@ -306,9 +292,7 @@ Bool_t AliTRDclusterizerV1::MakeClusters()
         digitsIn->Expand();
         digitsOut->Expand();
 
-	if (simParam->TCOn()) {            // tail cancellation
-	  Transform(digitsIn, digitsOut, idet, nRowMax, nColMax, nTimeTotal);
-	}
+	Transform(digitsIn, digitsOut, idet, nRowMax, nColMax, nTimeTotal);
 
         track0 = fDigitsManager->GetDictionary(idet,0);
         track0->Expand();
@@ -463,8 +447,6 @@ Bool_t AliTRDclusterizerV1::MakeClusters()
 		// Take the shift of the additional time bins into account
                 clusterPads[2] = time + 0.5;
 
-                // correct for t0
-                clusterPads[2] -= calibration->GetT0(idet, col, row);
                 
                 if (recParam->LUTOn()) {
   		  // Calculate the position of the cluster by using the
@@ -487,10 +469,6 @@ Bool_t AliTRDclusterizerV1::MakeClusters()
 		    padSignal[4] = TMath::Abs(digitsOut->GetDataUnchecked(row,col+2,time));
 		  }		  
 		  clusterPads[1] =  GetCOG(padSignal);
-		  //Double_t check = fPar->LUTposition(iplan,clusterSignal[0]
-                  //                                        ,clusterSignal[1]
-		  //	  		                    ,clusterSignal[2]);
-		  //		  Float_t diff = clusterPads[1] -  check;
 
 		}
 
@@ -500,15 +478,19 @@ Bool_t AliTRDclusterizerV1::MakeClusters()
                 Double_t clusterSigmaY2 = (q1*(q0+q2)+4*q0*q2) /
                                           (clusterCharge*clusterCharge);
 
-                Float_t vdrift = calibration->GetVdrift(idet, col, row);  
+
 		
                 // Calculate the position and the error
+		
+                // correct for t0
+		Int_t clusterTimeBin = TMath::Nint(time - calibration->GetT0(idet, col, row));
+
                 Double_t colSize = padPlane->GetColSize(col);
                 Double_t rowSize = padPlane->GetRowSize(row);
                 Double_t clusterPos[3];
 		clusterPos[0] = padPlane->GetColPos(col) - (clusterPads[1]+0.5)*colSize;  // MI change
 		clusterPos[1] = padPlane->GetRowPos(row) - 0.5*rowSize; //MI change
-                clusterPos[2] = CalcXposFromTimebin(clusterPads[2], vdrift);
+                clusterPos[2] = CalcXposFromTimebin(clusterPads[2], idet, col, row);
                 Double_t clusterSig[2];
                 clusterSig[0] = (clusterSigmaY2 + 1./12.) * colSize*colSize;
                 clusterSig[1] = rowSize * rowSize / 12.;                                       
@@ -516,7 +498,7 @@ Bool_t AliTRDclusterizerV1::MakeClusters()
                 
                 // Add the cluster to the output array 
                 AliTRDcluster * cluster = AddCluster(clusterPos
-                          ,(Int_t) clusterPads[2]
+                          ,clusterTimeBin
                           ,idet
 			  ,clusterCharge
 			  ,clusterTracks
@@ -639,6 +621,7 @@ void AliTRDclusterizerV1::Transform(AliTRDdataArrayI* digitsIn,
 {
 
   //
+  // Apply gain factor
   // Apply tail cancellation: Transform digitsIn to digitsOut
   //
 
@@ -650,6 +633,7 @@ void AliTRDclusterizerV1::Transform(AliTRDdataArrayI* digitsIn,
     printf("ERROR getting instance of AliTRDSimParam");
     return;
   }
+  AliTRDcalibDB* calibration = AliTRDcalibDB::Instance();
   
   Double_t *inADC  = new Double_t[nTimeTotal];  // adc data before tail cancellation
   Double_t *outADC = new Double_t[nTimeTotal];  // adc data after tail cancellation
@@ -663,8 +647,15 @@ void AliTRDclusterizerV1::Transform(AliTRDdataArrayI* digitsIn,
   for (Int_t iRow  = 0; iRow  <  nRowMax;   iRow++ ) {
     for (Int_t iCol  = 0; iCol  <  nColMax;   iCol++ ) {
       for (Int_t iTime = 0; iTime < nTimeTotal; iTime++) {
-
+	//
+	// add gain
+	//
+	Double_t gain = calibration->GetGainFactor(idet, iCol, iRow);
+	if (gain==0) {
+	  AliError("Not a valid gain\n");
+	}
 	inADC[iTime]  = digitsIn->GetDataUnchecked(iRow, iCol, iTime);
+	inADC[iTime]  /= gain; 
 	outADC[iTime] = inADC[iTime];
 
       }
