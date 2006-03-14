@@ -2,7 +2,7 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$
-// $MpId: AliMpSectorSegmentation.h,v 1.11 2006/03/02 16:35:06 ivana Exp $
+// $MpId: AliMpSectorSegmentation.h,v 1.12 2006/03/14 09:03:48 ivana Exp $
 
 /// \ingroup sector
 /// \class AliMpSectorSegmentation
@@ -71,8 +71,9 @@ class AliMpSectorSegmentation : public AliMpVSegmentation
     virtual AliMpPad PadByDirection(const TVector2& startPosition, 
                                Double_t distance) const;
  
-    virtual Int_t  MaxPadIndexX();
-    virtual Int_t  MaxPadIndexY();
+    virtual Int_t  MaxPadIndexX() const;
+    virtual Int_t  MaxPadIndexY() const;
+    virtual Int_t  NofPads() const;
 
     virtual Int_t    Zone(const AliMpPad& pad, Bool_t warning = kTRUE) const;
     virtual TVector2 PadDimensions(Int_t zone, Bool_t warning = kTRUE) const;

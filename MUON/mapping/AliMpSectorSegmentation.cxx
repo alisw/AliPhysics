@@ -14,7 +14,7 @@
  **************************************************************************/
 
 // $Id$
-// $MpId: AliMpSectorSegmentation.cxx,v 1.11 2006/03/02 16:35:12 ivana Exp $
+// $MpId: AliMpSectorSegmentation.cxx,v 1.12 2006/03/14 09:03:52 ivana Exp $
 // Category: sector
 //
 // Class AliMpSectorSegmentation
@@ -372,7 +372,7 @@ AliMpSectorSegmentation::Dimensions() const
 AliMpPlaneType
 AliMpSectorSegmentation::PlaneType() const
 {
-  return GetSector()->PlaneType();
+  return GetSector()->GetPlaneType();
 }
 
 //______________________________________________________________________________
@@ -507,31 +507,27 @@ AliMpSectorSegmentation::PadByDirection(const TVector2& startPosition,
 }
 
 //______________________________________________________________________________
-Int_t  AliMpSectorSegmentation::MaxPadIndexX()
+Int_t  AliMpSectorSegmentation::MaxPadIndexX() const
 {
 /// Return maximum pad index in x
 
-  if (fMaxIndexInX) return fMaxIndexInX;
-  
-  for (Int_t i=0; i<fkSector->GetNofRows(); i++) {
-    Int_t ixh = fkSector->GetRow(i)->GetHighIndicesLimit().GetFirst();
-    if ( ixh > fMaxIndexInX ) fMaxIndexInX = ixh;
-  }  
-  return fMaxIndexInX;
+  return fkSector->GetMaxPadIndices().GetFirst();
 }
 
 //______________________________________________________________________________
-Int_t  AliMpSectorSegmentation::MaxPadIndexY()
+Int_t  AliMpSectorSegmentation::MaxPadIndexY() const
 {
 /// Return maximum pad index in y
 
-  if (fMaxIndexInY) return fMaxIndexInY;
-  
-  for (Int_t i=0; i<fkSector->GetNofRows(); i++) {
-    Int_t iyh = fkSector->GetRow(i)->GetHighIndicesLimit().GetSecond();
-    if ( iyh > fMaxIndexInY ) fMaxIndexInY = iyh;
-  }  
-  return fMaxIndexInY;
+  return fkSector->GetMaxPadIndices().GetSecond();
+}
+
+//______________________________________________________________________________
+Int_t  AliMpSectorSegmentation::NofPads() const
+{
+/// Return number of pads defined in the sector
+
+  return fkSector->GetNofPads();
 }
 
 //______________________________________________________________________________
