@@ -47,7 +47,7 @@ class AliTRDclusterizer : public TNamed {
 
  protected:
 
-   Double_t CalcXposFromTimebin(Float_t timebin, Float_t vdrift);
+   Double_t CalcXposFromTimebin(Float_t timebin, Int_t idet, Int_t col, Int_t row);
        
   AliRunLoader    *fRunLoader;     //! Run Loader
   

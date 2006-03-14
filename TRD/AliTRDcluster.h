@@ -63,7 +63,7 @@ class AliTRDcluster : public AliCluster {
   };
   
   Int_t   fDetector;       // TRD detector number
-  Float_t  fX;              // local (in this detector) x pos (first order proportional to time bin (depends on local drift velocity!))
+  Float_t  fX;              // local (in this detector) x pos (first order proportional to time bin (depends on local drift velocity!), (x=0 corresponds timebin=0, thus x increases TOWARDS interaction point )
   Char_t    fTimeBin;        // Time bin number within the detector
   Float_t   fQ;              // amplitude 
   Char_t    fNPads;          // number of pads in cluster

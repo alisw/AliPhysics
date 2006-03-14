@@ -304,18 +304,22 @@ AliTRDcluster* AliTRDclusterizer::AddCluster(Double_t *pos, Int_t timebin, Int_t
 }
 
 //_____________________________________________________________________________
-Double_t AliTRDclusterizer::CalcXposFromTimebin(Float_t timebin, Float_t vdrift)
+Double_t AliTRDclusterizer::CalcXposFromTimebin(Float_t timebin, Int_t idet, Int_t col, Int_t row)
 {
   //
   // Calculates the local x position in the detector from the timebin, depends on the drift velocity
-  // The timebin has to be t0 corrected already
+  // and t0
   //
   
   AliTRDcalibDB* calibration = AliTRDcalibDB::Instance();
   if (!calibration)
     return -1;
-    
-  Int_t totalTimebins = calibration->GetNumberOfTimeBins();
+
+  Float_t vdrift = calibration->GetVdrift(idet, col, row);  
+  Float_t t0 = calibration->GetT0(idet, col, row);
   Float_t samplingFrequency = calibration->GetSamplingFrequency();
-  return (totalTimebins - timebin) / samplingFrequency * vdrift;
+
+  timebin -= t0;
+
+  return timebin / samplingFrequency * vdrift;
 }
