@@ -996,7 +996,10 @@ Bool_t AliTRDdigitizer::MakeDigits()
 
           // The time bin (always positive), with t0 correction
           Double_t timeBinIdeal = drifttime * samplingRate + t0;
-	  if (TMath::Abs(timeBinIdeal)>nTimeTotal*2) timeBinIdeal = nTimeTotal*2; //???MI????
+	  // Protection according to MI
+          if (TMath::Abs(timeBinIdeal) > 2*nTimeTotal) {
+            timeBinIdeal = 2 * nTimeTotal;
+	  }
           Int_t    timeBinTruncated = (Int_t) timeBinIdeal;
           // The distance of the position to the middle of the timebin
           Double_t timeOffset = ((Float_t) timeBinTruncated + 0.5 - timeBinIdeal) / samplingRate;

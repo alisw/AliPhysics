@@ -79,6 +79,9 @@ AliTRDRecParam::AliTRDRecParam()
   fLUTOn              = kFALSE;  
   fLUTbin = 0;
   
+  fTCOn               = kFALSE;
+  fTCnexp             = 0;
+  
   Init();
 }
 
@@ -139,6 +142,9 @@ void AliTRDRecParam::Copy(TObject &p) const
   target->fClusMaxThresh      = fClusMaxThresh;
   target->fClusSigThresh      = fClusSigThresh;
   
+  target->fTCOn               = fTCOn;
+  target->fTCnexp             = fTCnexp;
+
 }
 
 //_____________________________________________________________________________
@@ -157,6 +163,13 @@ void AliTRDRecParam::Init()
 
   // Create the LUT
   FillLUT();
+
+  // The tail cancelation
+  fTCOn           = kTRUE;
+  
+  // The number of exponentials
+  fTCnexp         = 1;
+
 }
 
 //_____________________________________________________________________________

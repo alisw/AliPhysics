@@ -211,6 +211,8 @@ Bool_t AliTRDclusterizerV1::MakeClusters()
     return kFALSE;
   }
     
+  Float_t ADCthreshold = simParam->GetADCthreshold();
+
   if (fVerbose > 0) {
     //printf("<AliTRDclusterizerV1::MakeCluster> ");
     //printf("OmegaTau = %f \n",omegaTau);
@@ -261,7 +263,6 @@ Bool_t AliTRDclusterizerV1::MakeClusters()
     printf("Number of Time Bins = %d.\n",nTimeTotal);
   }
 
-
   // Start clustering in every chamber
   for (Int_t icham = chamBeg; icham < chamEnd; icham++) {
     for (Int_t iplan = planBeg; iplan < planEnd; iplan++) {
@@ -292,7 +293,9 @@ Bool_t AliTRDclusterizerV1::MakeClusters()
         digitsIn->Expand();
         digitsOut->Expand();
 
-	Transform(digitsIn, digitsOut, idet, nRowMax, nColMax, nTimeTotal);
+	if (recParam->TCOn()) {            // tail cancellation
+	  Transform(digitsIn, digitsOut, idet, nRowMax, nColMax, nTimeTotal, ADCthreshold);
+	}
 
         track0 = fDigitsManager->GetDictionary(idet,0);
         track0->Expand();
@@ -437,7 +440,6 @@ Bool_t AliTRDclusterizerV1::MakeClusters()
                   iUnfold = 1;
                 }
 
-
                 Double_t clusterCharge = clusterSignal[0]
                                        + clusterSignal[1]
                                        + clusterSignal[2];
@@ -541,6 +543,7 @@ Bool_t AliTRDclusterizerV1::MakeClusters()
 
 }
 
+//_____________________________________________________________________________
 Double_t AliTRDclusterizerV1::GetCOG(Double_t signal[5])
 {
   //
@@ -550,8 +553,6 @@ Double_t AliTRDclusterizerV1::GetCOG(Double_t signal[5])
   Double_t res = (0.0*(-signal[0]+signal[4])+(-signal[1]+signal[3]))/sum;
   return res;		  
 }
-
-
 
 //_____________________________________________________________________________
 Double_t AliTRDclusterizerV1::Unfold(Double_t eps, Int_t plane, Double_t* padSignal)
@@ -617,7 +618,8 @@ Double_t AliTRDclusterizerV1::Unfold(Double_t eps, Int_t plane, Double_t* padSig
 void AliTRDclusterizerV1::Transform(AliTRDdataArrayI* digitsIn,
 				    AliTRDdataArrayI* digitsOut,
 				    Int_t idet, Int_t nRowMax,
-				    Int_t nColMax, Int_t nTimeTotal)
+				    Int_t nColMax, Int_t nTimeTotal,
+				    Float_t ADCthreshold)
 {
 
   //
@@ -626,11 +628,11 @@ void AliTRDclusterizerV1::Transform(AliTRDdataArrayI* digitsIn,
   //
 
 
-  AliTRDSimParam* simParam = AliTRDSimParam::Instance();
-  if (!simParam)
+  AliTRDRecParam* recParam = AliTRDRecParam::Instance();
+  if (!recParam)
   {
     printf("<AliTRDclusterizerV1::Transform> ");
-    printf("ERROR getting instance of AliTRDSimParam");
+    printf("ERROR getting instance of AliTRDRecParam");
     return;
   }
   AliTRDcalibDB* calibration = AliTRDcalibDB::Instance();
@@ -641,7 +643,7 @@ void AliTRDclusterizerV1::Transform(AliTRDdataArrayI* digitsIn,
   if (fVerbose > 0) {
     printf("<AliTRDclusterizerV1::Transform> ");
     printf("Tail cancellation (nExp = %d) for detector %d.\n",
-	   simParam->GetTCnexp(),idet);
+	   recParam->GetTCnexp(),idet);
   }
 
   for (Int_t iRow  = 0; iRow  <  nRowMax;   iRow++ ) {
@@ -661,14 +663,14 @@ void AliTRDclusterizerV1::Transform(AliTRDdataArrayI* digitsIn,
       }
 
       // Apply the tail cancelation via the digital filter
-      if (simParam->TCOn())
+      if (recParam->TCOn())
       {
-	DeConvExp(inADC,outADC,nTimeTotal,simParam->GetTCnexp());
+	DeConvExp(inADC,outADC,nTimeTotal,recParam->GetTCnexp());
       }
 
       for (Int_t iTime = 0; iTime < nTimeTotal; iTime++) {   
 	// Store the amplitude of the digit if above threshold
-	if (outADC[iTime] > simParam->GetADCthreshold()) {
+	if (outADC[iTime] > ADCthreshold) {
 	  if (fVerbose > 1)
 	  {
 	    printf("  iRow = %d, iCol = %d, iTime = %d, adc = %f\n"

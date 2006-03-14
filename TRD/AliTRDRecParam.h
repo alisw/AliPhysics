@@ -29,11 +29,17 @@ class AliTRDRecParam : public TObject
     virtual void     SetClusMaxThresh(Int_t thresh)                 { fClusMaxThresh  = thresh;   };
     virtual void     SetClusSigThresh(Int_t thresh)                 { fClusSigThresh  = thresh;   };
     
+            void SetTailCancelation(Int_t tcOn = 1)                 { fTCOn           = tcOn;     };
+            void SetNexponential(Int_t nexp)                        { fTCnexp         = nexp;     };
+  
     Bool_t   LUTOn()                                          const { return fLUTOn;         };
     virtual Int_t    GetClusMaxThresh()                       const { return fClusMaxThresh; };
     virtual Int_t    GetClusSigThresh()                       const { return fClusSigThresh; };
     
     virtual Double_t  LUTposition(Int_t iplane, Double_t ampL, Double_t ampC, Double_t ampR) const;
+  
+            Bool_t   TCOn()                                   const { return fTCOn;          };
+            Int_t    GetTCnexp()                              const { return fTCnexp;            };
   
   protected:
     static AliTRDRecParam* fgInstance;     // Instance of this class (singleton implementation)
@@ -49,6 +55,8 @@ class AliTRDRecParam : public TObject
     Int_t                fLUTbin;                             //  Number of bins of the LUT
     Float_t             *fLUT;                                //! The lookup table
   
+    Int_t                fTCOn;                               //  Switch for the tail cancelation
+    Int_t                fTCnexp;                             //  Number of exponentials, digital filter
     virtual void         FillLUT();
   
   private:

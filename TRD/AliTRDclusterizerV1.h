@@ -38,7 +38,7 @@ class AliTRDclusterizerV1 : public AliTRDclusterizer {
  private:
   void DeConvExp(Double_t *source, Double_t *target, Int_t nTimeTotal, Int_t nexp);
   void Transform(AliTRDdataArrayI* digitsIn, AliTRDdataArrayI* digitsOut,
-		 Int_t idet, Int_t nRowMax, Int_t nColMax, Int_t nTimeTotal);
+		 Int_t idet, Int_t nRowMax, Int_t nColMax, Int_t nTimeTotal, Float_t ADCthreshold);
   virtual Double_t Unfold(Double_t eps, Int_t plane, Double_t *padSignal);
   Double_t GetCOG(Double_t signal[5]);      // get COG position
 

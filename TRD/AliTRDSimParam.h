@@ -44,9 +44,6 @@ public:
   
   void SetCrossTalk(Int_t ctOn = 1)                   { fCTOn           = ctOn; ReInit(); };
   
-  void SetTailCancelation(Int_t tcOn = 1)             { fTCOn           = tcOn;     };
-  void SetNexponential(Int_t nexp)                    { fTCnexp         = nexp;     };
-  
   void SetPadCoupling(Float_t v)                      { fPadCoupling    = v;        };
   void SetTimeCoupling(Float_t v)                     { fTimeCoupling   = v;        };
   void SetAnodeWireOffset(Float_t offset = 0.25)      { fAnodeWireOffset = offset;};
@@ -75,9 +72,6 @@ public:
   
   Bool_t   CTOn()                                   const { return fCTOn;          };
   Double_t CrossTalk(Double_t time) const; 
-  
-  Bool_t   TCOn()                                   const { return fTCOn;          };
-  Int_t    GetTCnexp()                              const { return fTCnexp;            };
   
   Float_t  GetPadCoupling()                         const { return fPadCoupling;       };
   Float_t  GetTimeCoupling()                        const { return fTimeCoupling;      };
@@ -114,9 +108,6 @@ protected:
   
   Int_t                fCTOn;                               //  Switch for cross talk
   Float_t             *fCTsmp;                              //! Integrated cross talk
-  
-  Int_t                fTCOn;                               //  Switch for the tail cancelation
-  Int_t                fTCnexp;                             //  Number of exponential of the digital filter
   
   Float_t              fAnodeWireOffset;                    //  Distance of first anode wire from pad edge
   Float_t              fPadCoupling;                        //  Pad coupling factor

@@ -100,10 +100,6 @@ AliTRDSimParam::AliTRDSimParam()
   fCTOn               = kFALSE;
   fCTsmp              = 0;
   
-  fTCOn               = kFALSE;
-  
-  fTCnexp             = 0;
-  
   fAnodeWireOffset    = 0.0;
   fPadCoupling        = 0.0;
   fTimeCoupling       = 0.0;
@@ -142,12 +138,6 @@ void AliTRDSimParam::Init()
 
   // The cross talk
   fCTOn           = kTRUE;
-
-  // The tail cancelation
-  fTCOn           = kTRUE;
-  
-  // The number of exponentials
-  fTCnexp         = 1;
 
   // The pad coupling factor
   //fPadCoupling    = 0.3;
@@ -256,9 +246,6 @@ void AliTRDSimParam::Copy(TObject &p) const
     target->fCTsmp[iBin]  = fCTsmp[iBin];
   }
   
-  target->fTCOn               = fTCOn;
-  target->fTCnexp             = fTCnexp;
-
   target->fAnodeWireOffset    = fAnodeWireOffset;
   target->fPadCoupling        = fPadCoupling;
   target->fTimeCoupling       = fTimeCoupling;

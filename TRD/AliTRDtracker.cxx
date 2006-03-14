@@ -708,7 +708,6 @@ Int_t AliTRDtracker::FollowProlongation(AliTRDtrack& t, Int_t rf)
   Int_t lastplane = GetLastPlane(&t);
   Double_t radLength = 0.0;
   Double_t rho = 0.0;
-  Double_t x;
   Int_t expectedNumberOfClusters = 0;
   //
   //
@@ -2374,9 +2373,9 @@ AliTRDtracker::AliTRDtrackingSector::AliTRDtrackingSector(AliTRDgeometry* geo, I
 
   // add layers for each of the planes
   Double_t dxAmp = (Double_t) fGeom->CamHght();   // Amplification region
-  Double_t dxDrift = (Double_t) fGeom->CdrHght(); // Drift region  
+  //Double_t dxDrift = (Double_t) fGeom->CdrHght(); // Drift region  
 
-  Int_t tb, tbIndex;
+  Int_t    tbIndex;
   const Int_t  kNchambers = AliTRDgeometry::Ncham();
   Double_t  ymax = 0;
   Double_t ymaxsensitive=0;
@@ -2414,8 +2413,8 @@ AliTRDtracker::AliTRDtrackingSector::AliTRDtrackingSector(AliTRDgeometry* geo, I
     rho = 0.00295 * 0.85; radLength = 11.0;  
 
     Double_t x0 = (Double_t) AliTRDgeometry::GetTime0(plane);
-    Double_t xbottom = x0 - dxDrift;
-    Double_t xtop = x0 + dxAmp;
+    //Double_t xbottom = x0 - dxDrift;
+    //Double_t xtop = x0 + dxAmp;
     //
     Int_t nTimeBins =  AliTRDcalibDB::Instance()->GetNumberOfTimeBins();    
     for (Int_t iTime = 0; iTime<nTimeBins; iTime++){
