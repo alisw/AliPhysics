@@ -698,7 +698,8 @@ Int_t AliPHOSGetter::ReadRaw(AliRawReader *rawReader)
       PHOSGeometry()->RelToAbsNumbering(relId, id) ;
       if (!first) {
 	FitRaw(lowGainFlag, gLowGain, gHighGain, signalF, energy, time) ; 
- 	amp = CalibrateRaw(energy,relId);
+//  	amp = CalibrateRaw(energy,relId);
+ 	amp = (Int_t)energy;
 	if (amp > 0) {
 	  new((*digits)[idigit]) AliPHOSDigit( -1, id, amp, time) ;	
 	  idigit++ ; 
@@ -723,7 +724,8 @@ Int_t AliPHOSGetter::ReadRaw(AliRawReader *rawReader)
   } // PHOS entries loop
 
   FitRaw(lowGainFlag, gLowGain, gHighGain, signalF, energy, time) ; 
-  amp = CalibrateRaw(energy,relId);
+//   amp = CalibrateRaw(energy,relId);
+  amp = (Int_t)energy;
   if (amp > 0 ) {
     new((*digits)[idigit]) AliPHOSDigit( -1, id, amp, time) ;
     idigit++ ; 

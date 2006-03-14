@@ -16,6 +16,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.94  2006/03/07 18:56:25  kharlov
+ * CDB is passed via environment variable
+ *
  * Revision 1.93  2005/11/22 08:45:11  kharlov
  * Calibration is read from CDB if any (Boris Polichtchouk)
  *
@@ -435,7 +438,7 @@ void AliPHOS::Digits2Raw()
 
   // get the digitizer 
   loader->LoadDigitizer();
-  AliPHOSDigitizer * digitizer = dynamic_cast<AliPHOSDigitizer *>(loader->Digitizer())  ; 
+//   AliPHOSDigitizer * digitizer = dynamic_cast<AliPHOSDigitizer *>(loader->Digitizer())  ; 
   
   // get the geometry
   AliPHOSGeometry* geom = GetGeometry();
@@ -453,14 +456,14 @@ void AliPHOS::Digits2Raw()
   Int_t adcValuesLow[fkTimeBins];
   Int_t adcValuesHigh[fkTimeBins];
 
-  AliPHOSCalibData* calib=0;
+//   AliPHOSCalibData* calib=0;
 
-  //retrieve calibration database
-  if(AliCDBManager::Instance()->IsDefaultStorageSet()){
-    AliCDBEntry *entry = (AliCDBEntry*) AliCDBManager::Instance()->GetDefaultStorage()
-      ->Get("PHOS/GainFactors_and_Pedestals/Calibration",gAlice->GetRunNumber());
-    calib = (AliPHOSCalibData*) entry->GetObject();
-  }
+//   //retrieve calibration database
+//   if(AliCDBManager::Instance()->IsDefaultStorageSet()){
+//     AliCDBEntry *entry = (AliCDBEntry*) AliCDBManager::Instance()->GetDefaultStorage()
+//       ->Get("PHOS/GainFactors_and_Pedestals/Calibration",gAlice->GetRunNumber());
+//     calib = (AliPHOSCalibData*) entry->GetObject();
+//   }
 
   // loop over digits (assume ordered digits)
   for (Int_t iDigit = 0; iDigit < digits->GetEntries(); iDigit++) {
@@ -509,18 +512,21 @@ void AliPHOS::Digits2Raw()
     } else {
       Double_t energy = 0 ;
       Int_t   module = relId[0];
-      Int_t   column = relId[3];
-      Int_t   row    = relId[2];
+//       Int_t   column = relId[3];
+//       Int_t   row    = relId[2];
       if ( digit->GetId() <= geom->GetNModules() *  geom->GetNCristalsInModule()) {
-	if(calib)
-	  energy = digit->GetAmp()*calib->GetADCchannelEmc(module,column,row) + 
-	    calib->GetADCpedestalEmc(module,column,row);
-	else
-	  energy=digit->GetAmp()*digitizer->GetEMCchannel()+digitizer->GetEMCpedestal();
-      } 
-      else 
-	energy = digit->GetAmp()*digitizer->GetCPVchannel()+digitizer->GetCPVpedestal();
-        
+// 	if(calib)
+// 	  energy = digit->GetAmp()*calib->GetADCchannelEmc(module,column,row) + 
+// 	    calib->GetADCpedestalEmc(module,column,row);
+// 	else
+// 	  energy=digit->GetAmp()*digitizer->GetEMCchannel()+digitizer->GetEMCpedestal();
+//       } 
+	energy=digit->GetAmp();
+      }
+      else {
+// 	energy = digit->GetAmp()*digitizer->GetCPVchannel()+digitizer->GetCPVpedestal();
+ 	energy = 0; // CPV raw data format is now know yet
+      }        
       Bool_t lowgain = RawSampledResponse(digit->GetTimeR(), energy, adcValuesHigh, adcValuesLow) ; 
       
      if (lowgain) 
