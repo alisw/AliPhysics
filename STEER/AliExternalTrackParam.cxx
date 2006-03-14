@@ -27,6 +27,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 #include "AliExternalTrackParam.h"
 #include "AliKalmanTrack.h"
+#include "AliTracker.h"
+
 
 ClassImp(AliExternalTrackParam)
 
@@ -484,3 +486,76 @@ void AliExternalTrackParam::Print(Option_t* /*option*/) const
   printf("              %12g %12g %12g %12g %12g\n", 
 	 fC[10], fC[11], fC[12], fC[13], fC[14]);
 }
+
+
+Bool_t AliExternalTrackParam::PropagateTo(Double_t xToGo, Double_t mass, Double_t maxStep, Bool_t rotateTo){
+  //----------------------------------------------------------------
+  // Propagate this track to the plane X=xk (cm) 
+  // correction for unhomogenity of the magnetic field and the
+  // the correction for the material is included
+  //
+  //  Require acces to magnetic field and geomanager
+  //
+  // mass     - mass used in propagation - used for energy loss correction
+  // maxStep  - maximal step for propagation
+  //----------------------------------------------------------------
+  const Double_t kEpsilon = 0.00001;
+  Double_t xpos     = GetX();
+  Double_t dir      = (xpos<xToGo) ? 1.:-1.;
+  //
+  while ( (xToGo-xpos)*dir > kEpsilon){
+    Double_t step = dir*TMath::Min(TMath::Abs(xToGo-xpos), maxStep);
+    Double_t x    = xpos+step;
+    Double_t xyz0[3],xyz1[3],param[7];
+    GetXYZ(xyz0);   //starting global position
+    Float_t  pos0[3] = {xyz0[0],xyz0[1],xyz0[2]};
+    Double_t magZ = AliTracker::GetBz(pos0);
+    if (!GetXYZAt(x,magZ,xyz1)) return kFALSE;   // no prolongation
+    AliKalmanTrack::MeanMaterialBudget(xyz0,xyz1,param);	
+    if (!PropagateTo(x,magZ))  return kFALSE;
+    Double_t distance = param[4];
+    if (!CorrectForMaterial(distance,param[1],param[0],mass)) return kFALSE;
+    if (rotateTo){
+      GetXYZ(xyz0);   // global position
+      Double_t alphan = TMath::ATan2(xyz0[1], xyz0[0]);
+      if (!Rotate(alphan)) return kFALSE;
+    }
+    xpos = GetX();
+  }
+  return kTRUE;
+}
+
+//_____________________________________________________________________________
+Bool_t AliExternalTrackParam::CorrectForMaterial(Double_t d, Double_t x0, Double_t rho, Double_t mass)
+{
+  //
+  // Take into account material effects assuming:
+  // x0  - mean rad length
+  // rho - mean density
+
+  //
+  // multiple scattering
+  //
+  if (mass<=0) {
+    AliError("Non-positive mass");
+    return kFALSE;
+  }
+  Double_t p2=(1.+ fP[3]*fP[3])/(fP[4]*fP[4]);
+  Double_t beta2=p2/(p2 + mass*mass);
+  Double_t theta2=14.1*14.1/(beta2*p2*1e6)*d/x0*rho;
+  //
+  fC[5] += theta2*(1.- fP[2]*fP[2])*(1. + fP[3]*fP[3]);
+  fC[9] += theta2*(1. + fP[3]*fP[3])*(1. + fP[3]*fP[3]);
+  fC[13] += theta2*fP[3]*fP[4]*(1. + fP[3]*fP[3]);
+  fC[14] += theta2*fP[3]*fP[4]*fP[3]*fP[4];
+  //
+  Double_t dE=0.153e-3/beta2*(log(5940*beta2/(1-beta2+1e-10)) - beta2)*d*rho;  
+  fP[4] *=(1.- TMath::Sqrt(p2+mass*mass)/p2*dE);
+  //
+  Double_t sigmade = 0.02*TMath::Sqrt(TMath::Abs(dE));   // energy loss fluctuation 
+  Double_t sigmac2 = sigmade*sigmade*fP[4]*fP[4]*(p2+mass*mass)/(p2*p2);
+  fC[14] += sigmac2;
+  return kTRUE;
+}
+
+
