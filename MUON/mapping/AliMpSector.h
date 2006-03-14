@@ -2,7 +2,7 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$
-// $MpId: AliMpSector.h,v 1.10 2006/03/02 16:35:06 ivana Exp $
+// $MpId: AliMpSector.h,v 1.11 2006/03/14 09:05:38 ivana Exp $
 
 /// \ingroup sector
 /// \class AliMpSector
@@ -29,6 +29,7 @@
 
 #include "AliMpDirection.h"
 #include "AliMpPlaneType.h"
+#include "AliMpIntPair.h"
 
 class TArrayI;
 class AliMpZone;
@@ -77,21 +78,27 @@ class AliMpSector : public TNamed
     TVector2  Position() const;
     TVector2  Dimensions() const;
    
+    //
     // get methods
+
     Int_t       GetNofZones() const;
     AliMpZone*  GetZone(Int_t i) const;    
+
     Int_t       GetNofRows() const;
     AliMpRow*   GetRow(Int_t i) const;
+
     AliMpDirection  GetDirection() const;  
+    AliMpPlaneType  GetPlaneType() const;  
+
     TVector2        GetMinPadDimensions() const;
+    AliMpIntPair    GetMaxPadIndices() const;
+    Int_t           GetNofPads() const;
+
     AliMpMotifMap*  GetMotifMap() const;
+    void            GetAllMotifPositionsIDs(TArrayI& ecn) const;
     
     virtual void Print(Option_t* opt="") const;
     
-    /// Get all motifPositionsIDs (=electronicCardNumbers) handled by this sector
-    void GetAllMotifPositionsIDs(TArrayI& ecn) const;
-    
-    AliMpPlaneType PlaneType() const;
     
   protected:
     AliMpSector(const AliMpSector& right);
@@ -104,6 +111,8 @@ class AliMpSector : public TNamed
     void SetMotifPositions();
     void SetGlobalIndices();
     void SetMinPadDimensions();
+    void SetMaxPadIndices();
+    void SetNofPads();
 
     // data members        
     TString    fID;       // sector ID
@@ -113,6 +122,9 @@ class AliMpSector : public TNamed
     AliMpMotifMap* fMotifMap; // motif map
     AliMpDirection fDirection;// the direction of constant pad size
     TVector2       fMinPadDimensions; // minimal pad dimensions
+    AliMpIntPair   fMaxPadIndices;    // maximum pad indices    
+    Int_t          fNofPads;     //  total number of pads
+
 
   ClassDef(AliMpSector,1)  //Sector
 };
@@ -124,6 +136,12 @@ inline AliMpDirection AliMpSector::GetDirection() const
 
 inline TVector2   AliMpSector::GetMinPadDimensions() const
 { return fMinPadDimensions; }
+
+inline AliMpIntPair  AliMpSector::GetMaxPadIndices() const
+{ return fMaxPadIndices; }
+
+inline Int_t  AliMpSector::GetNofPads() const
+{ return fNofPads; }
 
 inline AliMpMotifMap* AliMpSector::GetMotifMap() const 
 { return fMotifMap; }    

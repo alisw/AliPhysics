@@ -14,7 +14,7 @@
  **************************************************************************/
 
 // $Id$
-// $MpId: AliMpSector.cxx,v 1.11 2006/03/02 16:35:12 ivana Exp $
+// $MpId: AliMpSector.cxx,v 1.12 2006/03/14 09:05:42 ivana Exp $
 // Category: sector
 //
 // Class AliMpSector
@@ -47,7 +47,9 @@ AliMpSector::AliMpSector(const TString& id, Int_t nofZones, Int_t nofRows,
     fZones(),
     fRows(),
     fDirection(direction),
-    fMinPadDimensions(TVector2(1.e6, 1.e6))
+    fMinPadDimensions(TVector2(1.e6, 1.e6)),
+    fMaxPadIndices(AliMpIntPair::Invalid()),
+    fNofPads(0)
 {
 /// Standard constructor
 
@@ -89,7 +91,9 @@ AliMpSector::AliMpSector()
     fRows(),
     fMotifMap(0),
     fDirection(kX),
-    fMinPadDimensions(TVector2(0., 0.))
+    fMinPadDimensions(TVector2(0., 0.)),
+    fMaxPadIndices(AliMpIntPair::Invalid()),
+    fNofPads(0)
 {
 /// Default constructor
 }
@@ -208,6 +212,36 @@ void  AliMpSector::SetMinPadDimensions()
   }
 }
 
+//_____________________________________________________________________________
+void  AliMpSector::SetMaxPadIndices()
+{
+/// Set maximum pad indices in x, y
+
+  if ( fMaxPadIndices != AliMpIntPair::Invalid() ) return;
+  
+  Int_t maxIndexInX = 0;
+  Int_t maxIndexInY = 0;
+  for (Int_t i=0; i<GetNofRows(); i++) {
+
+    Int_t ixh = GetRow(i)->GetHighIndicesLimit().GetFirst();
+    if ( ixh > maxIndexInX ) maxIndexInX = ixh;
+
+    Int_t iyh = GetRow(i)->GetHighIndicesLimit().GetSecond();
+    if ( iyh > maxIndexInY ) maxIndexInY = iyh;
+  }  
+  
+  fMaxPadIndices = AliMpIntPair(maxIndexInX, maxIndexInY);
+}
+
+
+//_____________________________________________________________________________
+void  AliMpSector::SetNofPads()
+{
+/// Set the total number of pads
+
+  fNofPads = fMotifMap->CalculateNofPads();
+}
+
 //
 // public methods
 //
@@ -231,6 +265,8 @@ void AliMpSector::Initialize()
   SetMotifPositions();
   SetGlobalIndices();
   SetMinPadDimensions();
+  SetMaxPadIndices();
+  SetNofPads();
 }  
 
 //_____________________________________________________________________________
@@ -383,13 +419,6 @@ AliMpZone*  AliMpSector::FindZone(const TVector2& padDimensions) const
 }
 
 //_____________________________________________________________________________
-AliMpPlaneType
-AliMpSector::PlaneType() const
-{
-  return GetDirection()==kY ? kBendingPlane : kNonBendingPlane;
-}
-
-//_____________________________________________________________________________
 TVector2 AliMpSector::Position() const
 {
 /// Return the sector offset.
@@ -428,13 +457,6 @@ TVector2 AliMpSector::Dimensions() const
   
   return TVector2(x, y);  
 }  
-
-//_____________________________________________________________________________
-void 
-AliMpSector::GetAllMotifPositionsIDs(TArrayI& ecn) const
-{
-  fMotifMap->GetAllMotifPositionsIDs(ecn);
-}
 
 //_____________________________________________________________________________
 Int_t AliMpSector::GetNofZones() const
@@ -503,9 +525,29 @@ AliMpRow* AliMpSector::GetRow(Int_t rowID) const
 }
 
 //_____________________________________________________________________________
+AliMpPlaneType
+AliMpSector::GetPlaneType() const
+{
+/// Return the plane type
+
+  return GetDirection()==kY ? kBendingPlane : kNonBendingPlane;
+}
+
+//_____________________________________________________________________________
+void 
+AliMpSector::GetAllMotifPositionsIDs(TArrayI& ecn) const
+{
+/// Return the array of all motif positions IDs
+
+  fMotifMap->GetAllMotifPositionsIDs(ecn);
+}
+
+//_____________________________________________________________________________
 void
 AliMpSector::Print(Option_t* opt) const
 {
-  cout << "Sector," << PlaneTypeName(PlaneType()) << endl;
+/// Print the map of motifs
+
+  cout << "Sector," << PlaneTypeName(GetPlaneType()) << endl;
   fMotifMap->Print(opt);
 }
