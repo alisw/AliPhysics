@@ -2,7 +2,7 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$
-// $MpId: AliMpMotifMap.h,v 1.10 2006/03/02 16:32:16 ivana Exp $
+// $MpId: AliMpMotifMap.h,v 1.11 2006/03/14 09:04:53 ivana Exp $
 
 /// \ingroup motif
 /// \class AliMpMotifMap
@@ -83,7 +83,10 @@ class AliMpMotifMap : public TObject
     AliMpMotifPosition*  FindMotifPosition(Int_t motifPositionID) const;
 
     /// Find all motifPositionsIDs (=electronicCardNumbers) handled by this map
-    void GetAllMotifPositionsIDs(TArrayI& enc) const;
+    void  GetAllMotifPositionsIDs(TArrayI& enc) const;
+
+    /// Calculate total number of pads defined in the map
+    Int_t CalculateNofPads() const;
      
   private:
     // methods

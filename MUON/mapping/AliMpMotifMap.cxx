@@ -14,7 +14,7 @@
  **************************************************************************/
 
 // $Id$
-// $MpId: AliMpMotifMap.cxx,v 1.10 2006/03/02 16:32:38 ivana Exp $
+// $MpId: AliMpMotifMap.cxx,v 1.12 2006/03/14 09:04:57 ivana Exp $
 // Category: motif
 // -------------------
 // Class AliMpMotifMap
@@ -45,7 +45,7 @@ AliMpMotifMap::AliMpMotifMap(Bool_t /*standardConstructor*/)
      fMotifTypes(true),
      fMotifPositions(true),
      fMotifPositions2(true)
-#endif         
+#endif 
 {
 /// Standard constructor
   
@@ -253,6 +253,33 @@ AliMpMotifMap::GetAllMotifPositionsIDs(TArrayI& ecn) const
   }
   
 #endif  
+}
+
+//_____________________________________________________________________________
+Int_t AliMpMotifMap::CalculateNofPads() const 
+{
+  Int_t nofPads = 0;
+
+#ifdef WITH_STL
+  MotifPositionMapIterator it;
+  for (it=fMotifPositions.begin(); it != fMotifPositions.end(); it++) {
+    AliMpMotifPosition* motifPosition = (*it).second;
+    nofPads += motifPosition->GetMotif()->GetMotifType()->GetNofPads();
+  }
+#endif
+  
+#ifdef WITH_ROOT  
+  TExMapIter it = fMotifPositions.GetIterator();
+  Long_t key, value;
+  
+  while ( it.Next(key, value) ) {
+    AliMpMotifPosition* motifPosition = reinterpret_cast<AliMpMotifPosition*>(value);
+    nofPads += motifPosition->GetMotif()->GetMotifType()->GetNofPads();
+  }
+#endif  
+
+  cout << "AliMpMotifMap::CalculateNofPads: " << nofPads << endl;
+  return nofPads;
 }
 
 //_____________________________________________________________________________
