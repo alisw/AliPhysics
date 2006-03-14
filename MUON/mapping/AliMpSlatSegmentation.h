@@ -2,7 +2,7 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$
-// $MpId: AliMpSlatSegmentation.h,v 1.7 2006/03/02 16:35:16 ivana Exp $
+// $MpId: AliMpSlatSegmentation.h,v 1.9 2006/03/14 09:04:25 ivana Exp $
 
 /// \ingroup slat
 /// \class AliMpSlatSegmentation
@@ -47,8 +47,9 @@ class AliMpSlatSegmentation : public AliMpVSegmentation
   
   Bool_t HasPad(const AliMpIntPair& indices) const;
 
-  Int_t MaxPadIndexX();
-  Int_t MaxPadIndexY();
+  Int_t MaxPadIndexX() const;
+  Int_t MaxPadIndexY() const;
+  Int_t NofPads() const;
   
   virtual AliMpPad PadByLocation(const AliMpIntPair& location, 
 			 Bool_t warning) const;

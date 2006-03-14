@@ -2,7 +2,7 @@
 * See cxx source for full Copyright notice                               */
 
 // $Id$
-// $MpId: AliMpTriggerSegmentation.h,v 1.2 2006/03/02 16:35:27 ivana Exp $
+// $MpId: AliMpTriggerSegmentation.h,v 1.4 2006/03/14 09:04:32 ivana Exp $
 
 /// \ingroup trigger
 /// \class AliMpTriggerSegmentation
@@ -42,8 +42,9 @@ public:
   
   Bool_t HasPad(const AliMpIntPair& indices) const;
   
-  Int_t MaxPadIndexX();
-  Int_t MaxPadIndexY();
+  Int_t MaxPadIndexX() const;
+  Int_t MaxPadIndexY() const;
+  Int_t NofPads() const;
     
   virtual AliMpPad PadByLocation(const AliMpIntPair& location, 
                                  Bool_t warning) const;

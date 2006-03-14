@@ -14,7 +14,7 @@
 **************************************************************************/
 
 // $Id$
-// $MpId: AliMpSlatSegmentation.cxx,v 1.7 2006/03/02 16:35:20 ivana Exp $
+// $MpId: AliMpSlatSegmentation.cxx,v 1.9 2006/03/14 09:04:28 ivana Exp $
 
 // Caution !!
 // Implementation note.
@@ -151,7 +151,7 @@ AliMpSlatSegmentation::HasPad(const AliMpIntPair& indices) const
 
 //_____________________________________________________________________________
 Int_t 
-AliMpSlatSegmentation::MaxPadIndexX()
+AliMpSlatSegmentation::MaxPadIndexX() const
 {
   //
   // Returns the value of the largest pad index in x-direction.
@@ -162,13 +162,24 @@ AliMpSlatSegmentation::MaxPadIndexX()
 
 //_____________________________________________________________________________
 Int_t 
-AliMpSlatSegmentation::MaxPadIndexY()
+AliMpSlatSegmentation::MaxPadIndexY() const
 {
   //
   // Returns the value of the largest pad index in y-direction.
   //
   
   return fkSlat->GetMaxNofPadsY()-1;
+}
+
+//_____________________________________________________________________________
+Int_t 
+AliMpSlatSegmentation::NofPads() const
+{
+/// Return number of pads defined in the slat
+  
+  AliError("Not yet implemented");
+
+  return 0;
 }
 
 //_____________________________________________________________________________

@@ -14,7 +14,7 @@
 **************************************************************************/
 
 // $Id$
-// $MpId: AliMpTriggerSegmentation.cxx,v 1.2 2006/03/02 16:35:31 ivana Exp $
+// $MpId: AliMpTriggerSegmentation.cxx,v 1.4 2006/03/14 09:04:34 ivana Exp $
 
 #include "AliMpTriggerSegmentation.h"
 
@@ -136,7 +136,7 @@ AliMpTriggerSegmentation::HasPad(const AliMpIntPair& indices) const
 
 //_____________________________________________________________________________
 Int_t 
-AliMpTriggerSegmentation::MaxPadIndexX()
+AliMpTriggerSegmentation::MaxPadIndexX() const
 {
   //
   // Returns the value of the largest pad index in x-direction.
@@ -147,13 +147,24 @@ AliMpTriggerSegmentation::MaxPadIndexX()
 
 //_____________________________________________________________________________
 Int_t 
-AliMpTriggerSegmentation::MaxPadIndexY()
+AliMpTriggerSegmentation::MaxPadIndexY() const
 {
   //
   // Returns the value of the largest pad index in y-direction.
   //
   
   return fkSlat->GetMaxNofPadsY()-1;
+}
+
+//_____________________________________________________________________________
+Int_t 
+AliMpTriggerSegmentation::NofPads() const
+{
+/// Return number of pads defined in the trigger chamber
+  
+  AliError("Not yet implemented");
+  
+  return 0;
 }
 
 //_____________________________________________________________________________
