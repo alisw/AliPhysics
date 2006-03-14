@@ -5,8 +5,7 @@ AliRunLoader *loader = AliRunLoader::Open("galice.root");
 loader->LoadgAlice();
 gAlice = loader->GetAliRun();
 AliMagF * field = gAlice->Field();
-AliKalmanTrack::SetFieldMap(gAlice->Field());
-AliExternalTrackParam::SetFieldMap(gAlice->Field());
+AliTracker::SetFieldMap(gAlice->Field(),1);
 TFile fg("geometry.root");
 gGeoManager = (TGeoManager*)fg.Get("Geo");
 if (!gGeoManager) TGeoManager::Import("geometry.root");
@@ -19,7 +18,7 @@ if (!gGeoManager) TGeoManager::Import("geometry.root");
 MakeCompTr();
 MakeTree();
 
-
+ 
  
 MakeComp();
 MakeAlias();
@@ -643,7 +642,7 @@ void MakeAlias(){
   comp.fTree->SetAlias("prob5","exp(-(TRD1.fTracklets[5].fChi2)/16.)*max((TRD1.fTracklets[5].fNFound-6)/9.,0)");
   comp.fTree->SetAlias("prob4","exp(-(TRD1.fTracklets[4].fChi2)/16.)*max((TRD1.fTracklets[4].fNFound-6)/9.,0)");
   //
-  comp.fTree->SetAlias("TPCE","sqrt(MC.fTPCReferences[4].P()**2+MC.fMass**2)");
+  comp.fTree->SetAlias("TPCE","sqrt(MC.fTPCReferences[2].P()**2+MC.fMass**2)");
   comp.fTree->SetAlias("TOFE","sqrt(MC.fTOFReferences[0].P()**2+MC.fMass**2)");
   comp.fTree->SetAlias("TRDE","sqrt(TR.P()**2+MC.fMass**2)");
   comp.fTree->SetAlias("dtpi","TRD0.fIntegratedTime[2]-10^12*MC.fTOFReferences.fTime");
@@ -703,12 +702,12 @@ void DrawYResol0(TCut cut){
 }
 
 
-void DrawTOFResY(Float_t ptmin=0.5, Float_t ptmax =1.5, Float_t dymin=-0.5, Float_t dymax=0.5){
+void DrawTOFResY(Int_t ndiv =10,Float_t ptmin=0.5, Float_t ptmax =1.5, Float_t dymin=-0.5, Float_t dymax=0.5){
   //
   //
   //Float_t ptmin=0.5, ptmax =1.5, dymin=-0.5, dymax=0.5;
   //Float_t ptmin=0.5, ptmax =5, dymin=-0.3, dymax=0.3;
-  Int_t   ndiv =5;
+  //  Int_t   ndiv =5;
   TCut cl("cl","InfoCl.fNClusters>60");
   comp.DrawXY("TR.Pt()","TRD0.fY",c0+c2+cl,"1",ndiv,ptmin, ptmax,dymin, dymax,60);
   TH1F * histof = (TH1F*)comp.fRes->Clone();
@@ -967,7 +966,7 @@ void ReadTracks(Int_t eventNr, TObjArray *esds, TObjArray *trds)
     tree2->GetEntry(ip);
     if (eventNr!=teventNr) continue;
     //
-    Int_t label = TMath::Abs(trdp->GetLabel());
+    Int_t label = TMath::Abs(esdp->GetLabel());
     if (label==0) continue;
     if (!(esds->At(label))){
       esds->AddAt(new AliESDtrack(*esdp),label);
