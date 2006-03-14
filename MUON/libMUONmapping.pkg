@@ -1,5 +1,3 @@
-# $Id$
-
 #
 # mapping 
 #
@@ -45,9 +43,9 @@ SRCS +=  \
 	 mapping/AliMpRowSegment.cxx  \
 	 mapping/AliMpRowSegmentLSpecial.cxx  \
 	 mapping/AliMpRowSegmentRSpecial.cxx  \
-	 mapping/AliMpSector.cxx  \
 	 mapping/AliMpSectorAreaHPadIterator.cxx  \
 	 mapping/AliMpSectorAreaVPadIterator.cxx  \
+	 mapping/AliMpSector.cxx  \
 	 mapping/AliMpSectorPadIterator.cxx  \
 	 mapping/AliMpSectorReader.cxx  \
 	 mapping/AliMpSectorSegmentation.cxx  \
