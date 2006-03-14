@@ -40,6 +40,10 @@
 #include "AliPMDrecpoint1.h"
 #include "AliPMDrechit.h"
 #include "AliPMDRawStream.h"
+#include "AliPMDCalibData.h"
+
+#include "AliCDBManager.h"
+#include "AliCDBEntry.h"
 
 
 
@@ -60,6 +64,7 @@ AliPMDClusterFinder::AliPMDClusterFinder():
 //
 // Constructor
 //
+  fCalibData = GetCalibData();
 }
 // ------------------------------------------------------------------------- //
 AliPMDClusterFinder::AliPMDClusterFinder(AliRunLoader* runLoader):
@@ -77,6 +82,7 @@ AliPMDClusterFinder::AliPMDClusterFinder(AliRunLoader* runLoader):
 //
 // Constructor
 //
+  fCalibData = GetCalibData();
 }
 // ------------------------------------------------------------------------- //
 AliPMDClusterFinder::~AliPMDClusterFinder()
@@ -162,6 +168,15 @@ void AliPMDClusterFinder::Digits2RecPoints(Int_t ievt)
 	  xpos   = pmddigit->GetRow();
 	  ypos   = pmddigit->GetColumn();
 	  adc    = pmddigit->GetADC();
+	  
+	  // CALIBRATION
+	  Float_t gain = fCalibData->GetGainFact(det,smn,xpos,ypos);
+	  
+	 // printf("adc = %d gain = %f\n",adc,gain);
+	  
+	  adc = adc*gain;
+
+
 	  //Int_t trno   = pmddigit->GetTrackNumber();
 	  fCellADC[xpos][ypos] = (Double_t) adc;
 	}
@@ -188,8 +203,6 @@ void AliPMDClusterFinder::Digits2RecPoints(Int_t ievt)
 
 	  AddRecPoint(idet,ismn,clusdata);
 
-	  // This part will be worked out
-	  // BKN
 	  Int_t ncell = (Int_t) clusdata[3];
 	  for(Int_t ihit = 0; ihit < ncell; ihit++)
 	    {
@@ -286,6 +299,15 @@ void AliPMDClusterFinder::Digits2RecPoints(AliRawReader *rawReader,
 	  Int_t row = pmdinput.GetRow();
 	  Int_t col = pmdinput.GetColumn();
 	  Int_t sig = pmdinput.GetSignal();
+	  
+	  Float_t sig1 = (Float_t) sig;
+
+	  // CALIBRATION
+	  Float_t gain = fCalibData->GetGainFact(det,smn,row,col);
+	  
+	//  printf("sig = %d gain = %f\n",sig,gain);
+	  
+	  sig = (Int_t) (sig1*gain);
 	  
 	  Int_t indexsmn = 0;
 
@@ -389,7 +411,7 @@ void AliPMDClusterFinder::Digits2RecPoints(AliRawReader *rawReader,
 	      clusdata[5] = pmdcl->GetClusSigmaY();
 
 	      AddRecPoint(idet,ismn,clusdata);
-	      // BKN
+
 	      Int_t ncell = (Int_t) clusdata[3];
 	      for(Int_t ihit = 0; ihit < ncell; ihit++)
 		{
@@ -501,6 +523,14 @@ void AliPMDClusterFinder::Digits2RecPoints(Int_t ievt, AliRawReader *rawReader)
 	  Int_t row = pmdinput.GetRow();
 	  Int_t col = pmdinput.GetColumn();
 	  Int_t sig = pmdinput.GetSignal();
+
+	  Float_t sig1 = (Float_t) sig;
+	  // CALIBRATION
+	  Float_t gain = fCalibData->GetGainFact(det,smn,row,col);
+	  
+	 // printf("sig = %d gain = %f\n",sig,gain);
+	  
+	  sig = (Int_t) (sig1*gain);
 	  
 	  Int_t indexsmn = 0;
 
@@ -605,7 +635,6 @@ void AliPMDClusterFinder::Digits2RecPoints(Int_t ievt, AliRawReader *rawReader)
 
 	      AddRecPoint(idet,ismn,clusdata);
 
-	      // BKN
 	      Int_t ncell = (Int_t) clusdata[3];
 	      for(Int_t ihit = 0; ihit < ncell; ihit++)
 		{
@@ -729,3 +758,31 @@ void AliPMDClusterFinder::UnLoadClusters()
   fPMDLoader->UnloadRecPoints();
 }
 // ------------------------------------------------------------------------- //
+
+AliPMDCalibData* AliPMDClusterFinder::GetCalibData() const
+{
+  // The run number will be centralized in AliCDBManager,
+  // you don't need to set it here!
+  // Added by ZA
+  AliCDBEntry  *entry = AliCDBManager::Instance()->Get("PMD/Calib/Data");
+  
+  if(!entry){
+    AliWarning("Calibration object retrieval failed! Dummy calibration will be used.");
+    
+    // this just remembers the actual default storage. No problem if it is null.
+    AliCDBStorage *origStorage = AliCDBManager::Instance()->GetDefaultStorage();
+    AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT");
+    
+    entry = AliCDBManager::Instance()->Get("PMD/Calib/Data");
+    
+    // now reset the original default storage to AliCDBManager...
+    AliCDBManager::Instance()->SetDefaultStorage(origStorage);  
+  }
+  
+  AliPMDCalibData *calibdata=0;
+  if (entry) calibdata = (AliPMDCalibData*) entry->GetObject();
+  
+  if (!calibdata)  AliError("No calibration data from calibration database !");
+  
+  return calibdata;
+}

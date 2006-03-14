@@ -33,8 +33,6 @@
 
 #include "AliLog.h"
 #include "AliRun.h"
-#include "AliPMD.h"
-#include "AliPMDhit.h"
 #include "AliHit.h"
 #include "AliDetector.h"
 #include "AliRunLoader.h"
@@ -44,12 +42,19 @@
 #include "AliRunDigitizer.h"
 #include "AliDigitizer.h"
 #include "AliHeader.h"
+#include "AliCDBManager.h"
+#include "AliCDBStorage.h"
+#include "AliCDBEntry.h"
+#include "AliMC.h"
 
+#include "AliPMD.h"
+#include "AliPMDhit.h"
 #include "AliPMDcell.h"
 #include "AliPMDsdigit.h"
 #include "AliPMDdigit.h"
+#include "AliPMDCalibData.h"
 #include "AliPMDDigitizer.h"
-#include "AliMC.h"
+
 
 ClassImp(AliPMDDigitizer)
 
@@ -82,6 +87,7 @@ AliPMDDigitizer::AliPMDDigitizer() :
 	    }
 	}
     }
+  fCalibData = GetCalibData();
 
 }
 //____________________________________________________________________________
@@ -100,6 +106,8 @@ AliPMDDigitizer::AliPMDDigitizer(AliRunDigitizer* manager)
   fZPos(361.5)// in units of cm, This is the default position of PMD
 {
   // ctor which should be used
+
+  fCalibData = GetCalibData();
 
   for (Int_t i = 0; i < fgkTotUM; i++)
     {
@@ -568,11 +576,11 @@ void AliPMDDigitizer::Hits2Digits(Int_t ievt)
 	      yPos = fPMDHit->Y();
 	      zPos = fPMDHit->Z();
 
-	      edep       = fPMDHit->GetEnergy();
 	      Int_t vol1 = fPMDHit->GetVolume(1); // Column
 	      Int_t vol2 = fPMDHit->GetVolume(2); // Row
 	      Int_t vol3 = fPMDHit->GetVolume(3); // UnitModule
 	      Int_t vol6 = fPMDHit->GetVolume(6); // SuperModule
+	      edep       = fPMDHit->GetEnergy();
 
 	      // -----------------------------------------//
 	      // For Super Module 1 & 2                   //
@@ -632,11 +640,11 @@ void AliPMDDigitizer::Hits2Digits(Int_t ievt)
   TrackAssignment2Cell();
   ResetCell();
 
+  Float_t gain1,gain2;
   Float_t adc;
   Float_t deltaE = 0.;
   Int_t detno = 0;
   Int_t trno = 1;
-
   for (Int_t idet = 0; idet < 2; idet++)
     {
       for (Int_t ism = 0; ism < fgkTotUM; ism++)
@@ -647,13 +655,17 @@ void AliPMDDigitizer::Hits2Digits(Int_t ievt)
 		{
 		  if (idet == 0)
 		    {
-		      deltaE = fPRE[ism][jrow][kcol];
+	       gain1 =Gain(idet,ism,jrow,kcol);
+  //           cout<<"The gain Factor is"<<gain1<<endl;
+		      deltaE = fPRE[ism][jrow][kcol]*gain1;
 		      trno   = fPRETrackNo[ism][jrow][kcol];
 		      detno = 0;
 		    }
 		  else if (idet == 1)
 		    {
-		      deltaE = fCPV[ism][jrow][kcol];
+	       gain2 =Gain(idet,ism,jrow,kcol);
+   //          cout<<"The Gain factor is"<<gain2<<endl;
+		      deltaE = fCPV[ism][jrow][kcol]*gain2;
 		      trno   = fCPVTrackNo[ism][jrow][kcol];
 		      detno = 1;
 		    }
@@ -831,7 +843,6 @@ void AliPMDDigitizer::MergeSDigits(Int_t filenumber, Int_t troffset)
   Int_t   itrackno, idet, ism;
   Int_t   ixp, iyp;
   Float_t edep;
-  
   Int_t nmodules = (Int_t) treeS->GetEntries();
   AliDebug(1,Form("Number of Modules in the treeS = %d",nmodules));
   AliDebug(1,Form("Track Offset = %d",troffset));
@@ -849,7 +860,6 @@ void AliPMDDigitizer::MergeSDigits(Int_t filenumber, Int_t troffset)
 	  ixp       = pmdsdigit->GetRow();
 	  iyp       = pmdsdigit->GetColumn();
 	  edep      = pmdsdigit->GetCellEdep();
-
 	  if (idet == 0)
 	    {
 	      if (fPRE[ism][ixp][iyp] < edep)
@@ -1193,6 +1203,7 @@ void AliPMDDigitizer::ResetCellADC()
 	}
     }
 }
+//------------------------------------------------------
 //____________________________________________________________________________
 
 void AliPMDDigitizer::UnLoad(Option_t *option)
@@ -1215,4 +1226,52 @@ void AliPMDDigitizer::UnLoad(Option_t *option)
       fPMDLoader->UnloadHits();
       fPMDLoader->UnloadSDigits();
     }
+}
+
+//----------------------------------------------------------------------
+Float_t AliPMDDigitizer::Gain(Int_t det, Int_t smn, Int_t row, Int_t col) const
+{
+  // returns of the gain of the cell
+  // Added this method by ZA
+
+  //cout<<" I am here in gain "<<fCalibData<< "smn,row, col "<<smn
+  //<<" "<<row<<" "<<col<<endl;
+
+  if(!fCalibData) {
+    AliError("No calibration data loaded from CDB!!!");
+    return -1;
+  }
+
+  Float_t GainFact;
+  GainFact = fCalibData->GetGainFact(det,smn,row,col);
+  printf("\t gain=%10.3f\n",GainFact);
+  return GainFact;
+}
+//----------------------------------------------------------------------
+AliPMDCalibData* AliPMDDigitizer::GetCalibData() const
+{
+  // The run number will be centralized in AliCDBManager,
+  // you don't need to set it here!
+  // Added this method by ZA
+  AliCDBEntry  *entry = AliCDBManager::Instance()->Get("PMD/Calib/Data");
+  
+  if(!entry){
+    AliWarning("Calibration object retrieval failed! Dummy calibration will be used.");
+    
+    // this just remembers the actual default storage. No problem if it is null.
+    AliCDBStorage *origStorage = AliCDBManager::Instance()->GetDefaultStorage();
+    AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT");
+    
+    entry = AliCDBManager::Instance()->Get("PMD/Calib/Data");
+    
+    // now reset the original default storage to AliCDBManager...
+    AliCDBManager::Instance()->SetDefaultStorage(origStorage);  
+  }
+  
+  AliPMDCalibData *calibdata=0;
+  if (entry) calibdata = (AliPMDCalibData*) entry->GetObject();
+  
+  if (!calibdata)  AliError("No calibration data from calibration database !");
+  
+  return calibdata;
 }

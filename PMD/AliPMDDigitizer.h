@@ -10,7 +10,6 @@
 //                                                     //
 //-----------------------------------------------------//
 
-#include <TObjArray.h>
 
 #include "AliDigitizer.h"
 
@@ -29,10 +28,13 @@ class AliPMDhit;
 class AliHit;
 class AliHeader;
 class AliRunDigitizer;
+class AliCDBManager;
+class AliCDBStorage;
 
 class AliPMDcell;
 class AliPMDsdigit;
 class AliPMDdigit;
+class AliPMDCalibData;
 
 class AliPMDDigitizer:public AliDigitizer
 {
@@ -63,12 +65,18 @@ class AliPMDDigitizer:public AliDigitizer
   void ResetCellADC();
   void UnLoad(Option_t * option);
 
+  Float_t  Gain(Int_t det, Int_t smn, Int_t row, Int_t col) const;
+
+  AliPMDCalibData *GetCalibData() const;
+
  protected:
   AliRunLoader *fRunLoader;  //! Pointer to Run Loader
   AliPMDhit    *fPMDHit;     //! Pointer to specific detector hits
   AliDetector  *fPMD;        //! Get pointers to Alice detectors 
                              // and Hits containers 
   AliLoader    *fPMDLoader;  //! Pointer to specific detector loader
+
+  AliPMDCalibData *fCalibData;  //! calibration data
 
   TClonesArray *fSDigits;    //! List of summable digits
   TClonesArray *fDigits;     //! List of digits
@@ -91,7 +99,7 @@ class AliPMDDigitizer:public AliDigitizer
   Int_t   fCPVTrackNo[fgkTotUM][fgkRow][fgkCol]; //! CPV Array containing track number
 
 
-  ClassDef(AliPMDDigitizer,5)    // To digitize PMD Hits
+  ClassDef(AliPMDDigitizer,6)    // To digitize PMD Hits
 };
 #endif
 

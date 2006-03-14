@@ -18,6 +18,7 @@ class TTree;
 class AliLoader;
 class AliRunLoader;
 class AliRawReader;
+class AliPMDCalibData;
 
 class AliPMDClusterFinder : public TObject
 {
@@ -42,9 +43,13 @@ class AliPMDClusterFinder : public TObject
   void UnLoad();
   void UnLoadClusters();
 
+  AliPMDCalibData *GetCalibData() const;
+
  protected:
   AliRunLoader *fRunLoader; // Pointer to Run Loader
   AliLoader    *fPMDLoader; // Pointer to specific detector loader
+
+  AliPMDCalibData *fCalibData;  //! calibration data
 
   TTree        *fTreeD;     // Digits tree
   TTree        *fTreeR;     // Reconstructed points
@@ -62,7 +67,7 @@ class AliPMDClusterFinder : public TObject
   static const Int_t fgkCol = 96; // Total number of cols in one unitmodule
   Double_t fCellADC[fgkRow][fgkCol]; // Array containing individual cell ADC
 
-  ClassDef(AliPMDClusterFinder,8) // To run PMD clustering
+  ClassDef(AliPMDClusterFinder,9) // To run PMD clustering
 };
 #endif
 
