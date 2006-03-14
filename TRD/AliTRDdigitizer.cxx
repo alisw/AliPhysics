@@ -996,6 +996,7 @@ Bool_t AliTRDdigitizer::MakeDigits()
 
           // The time bin (always positive), with t0 correction
           Double_t timeBinIdeal = drifttime * samplingRate + t0;
+	  if (TMath::Abs(timeBinIdeal)>nTimeTotal*2) timeBinIdeal = nTimeTotal*2; //???MI????
           Int_t    timeBinTruncated = (Int_t) timeBinIdeal;
           // The distance of the position to the middle of the timebin
           Double_t timeOffset = ((Float_t) timeBinTruncated + 0.5 - timeBinIdeal) / samplingRate;
@@ -1155,6 +1156,8 @@ Bool_t AliTRDdigitizer::MakeDigits()
               Float_t signalAmp = signals->GetDataUnchecked(iRow,iCol,iTime);
               // Pad and time coupling
               signalAmp *= coupling;
+	      Float_t padgain = calibration->GetGainFactor(iDet, iCol, iRow);
+	      signalAmp *= padgain;
               // Add the noise, starting from minus ADC baseline in electrons
               Double_t baselineEl = simParam->GetADCbaseline() * (simParam->GetADCinRange()
                                                            / simParam->GetADCoutRange()) 
