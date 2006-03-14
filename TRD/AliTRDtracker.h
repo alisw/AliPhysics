@@ -89,7 +89,11 @@ class AliTRDtracker : public AliTracker {
   Int_t         Clusters2Tracks(AliESD* event);
   Int_t         PropagateBack(AliESD* event);
   Int_t         RefitInward(AliESD* event);
-  
+  // transformation
+  Int_t         LocalToGlobalID(Int_t lid);
+  Int_t         GlobalToLocalID(Int_t gid);
+  Bool_t        Transform(AliTRDcluster * cluster);
+  //
   Int_t         LoadClusters(TTree *cTree);
   void          UnloadClusters();
   AliCluster   *GetCluster(Int_t index) const { if (index >= fNclusters) return NULL; 
@@ -128,7 +132,7 @@ class AliTRDtracker : public AliTracker {
    // *****************  internal class *******************
    public: 
      AliTRDpropagationLayer(Double_t x, Double_t dx, Double_t rho, 
-                            Double_t x0, Int_t tbIndex); 
+                            Double_t x0, Int_t tbIndex, Int_t plane); 
 
      ~AliTRDpropagationLayer() { 
        if(fTimeBinIndex >= 0) { delete[] fClusters; delete[] fIndex; }
@@ -139,13 +143,8 @@ class AliTRDtracker : public AliTracker {
      UInt_t         GetIndex(Int_t i) const {return fIndex[i];} 
      Double_t       GetX() const { return fX; }
      Double_t       GetdX() const { return fdX; }
-     Double_t       GetRho() const { return fRho; }
-     Double_t       GetX0() const { return fX0; }
      Int_t          GetTimeBinIndex() const { return fTimeBinIndex; }     
-     Bool_t         GetPropagationParameters(Double_t y, Double_t z,
-                                Double_t &dx, Double_t &rho, Double_t &x0, 
-					     Bool_t &lookForCluster) const;
-     Int_t          GetZone( Double_t z) const;
+     Int_t          GetPlane() const { return fPlane;}
      Int_t          Find(Float_t y) const; 
      Int_t          FindNearestCluster(Float_t y, Float_t z, Float_t maxroad, Float_t maxroadz) const;
      void           SetZmax(Int_t cham, Double_t center, Double_t w)
@@ -176,6 +175,7 @@ class AliTRDtracker : public AliTracker {
      Double_t       fRho;       // default density of the material 
      Double_t       fX0;        // default radiation length 
      Int_t          fTimeBinIndex;  // plane * F(local_tb)  
+     Int_t          fPlane;         // plane number
      Double_t       fZc[kZones];  // Z position of the center for 5 active areas
      Double_t       fZmax[kZones]; // half of active area length in Z
      Double_t       fZmaxSensitive[kZones]; //sensitive area for detection Z     
@@ -194,7 +194,7 @@ class AliTRDtracker : public AliTracker {
 
    class AliTRDtrackingSector {
    public:
-     AliTRDtrackingSector(AliTRDgeometry* geo, Int_t gs, AliTRDparameter* par);
+     AliTRDtrackingSector(AliTRDgeometry* geo, Int_t gs);
      ~AliTRDtrackingSector() { for(Int_t i=0; i<fN; i++) delete fLayers[i]; }
      Int_t    GetNumberOfLayers() const { return fN; }
      Int_t    GetNumberOfTimeBins() const;
@@ -213,7 +213,6 @@ class AliTRDtracker : public AliTracker {
    private:
      Int_t                     fN;      // total number of layers
      AliTRDgeometry            *fGeom;  // geometry
-     AliTRDparameter           *fPar;   // parameter
      AliTRDpropagationLayer    *fLayers[kMaxLayersPerSector];   // layers   
      Int_t                     fTimeBinIndex[kMaxTimeBinIndex]; // time bin index
      Int_t                     fGeomSector;   // sector # in AliTRDgeometry
@@ -224,7 +223,6 @@ class AliTRDtracker : public AliTracker {
   friend class AliTRDtracker::AliTRDtrackingSector;
 
   AliTRDgeometry     *fGeom;            // Pointer to TRD geometry
-  AliTRDparameter    *fPar;             // Pointer to TRD parameter
 
   AliTRDtrackingSector *fTrSec[kTrackingSectors];  // array of tracking sectors;    
   Int_t            fNclusters;        // Number of clusters in TRD 
@@ -247,12 +245,8 @@ class AliTRDtracker : public AliTracker {
 
   static const Float_t  fgkLabelFraction;  // min fraction of same label
   //
-  static const Double_t  fgkDriftCorrection; // correction coeficients for drift velocity
-  static const Double_t  fgkOffset;         // correction coeficients 
-  static const Double_t  fgkOffsetX;         // correction coeficients offset in X 
-  static const Double_t  fgkCoef;           // correction coeficients
-  static const Double_t  fgkMean;           // correction coeficients
-  static const Double_t  fgkExB;            // correction coeficients
+  static const Double_t fgkMaxSnp;           // maximal snp for tracking
+  static const Double_t fgkMaxStep;           // maximal step for tracking  
 
   Bool_t                fAddTRDseeds;      // Something else
 
@@ -267,11 +261,9 @@ class AliTRDtracker : public AliTracker {
 
   Int_t         FollowProlongation(AliTRDtrack& t, Int_t rf);
   Int_t         FollowBackProlongation(AliTRDtrack& t);
-  Int_t         Refit(AliTRDtrack& t, Int_t rf);
   void          CookdEdxTimBin(AliTRDtrack& t);  
 
-  Int_t         PropagateToTPC(AliTRDtrack& t);
-  Int_t         PropagateToOuterPlane(AliTRDtrack& t, Double_t x);
+  Int_t         PropagateToX(AliTRDtrack& t, Double_t xToGo, Double_t maxStep);
 
   Double_t      ExpectedSigmaY2(Double_t r, Double_t tgl, Double_t pt) const;
   Double_t      ExpectedSigmaZ2(Double_t r, Double_t tgl) const;
