@@ -769,7 +769,11 @@ Float_t AliTRDcalibDB::GetOmegaTau(Float_t vdrift)
   AliTRDCommonParam* commonParam = AliTRDCommonParam::Instance();
   if (!commonParam)
     return -1;
-  Float_t field = commonParam->GetField();
+  Float_t fieldAbs = TMath::Abs(commonParam->GetField());
+  Float_t fieldSgn = 1.0;
+  if (fieldAbs > 0.0) {
+    fieldSgn = commonParam->GetField() / fieldAbs;
+  }
 
   const Int_t kNb = 5;
   Float_t p0[kNb] = {  0.004810,  0.007412,  0.010252,  0.013409,  0.016888 };
@@ -777,16 +781,17 @@ Float_t AliTRDcalibDB::GetOmegaTau(Float_t vdrift)
   Float_t p2[kNb] = { -0.008682, -0.012896, -0.016987, -0.020880, -0.024623 };
   Float_t p3[kNb] = {  0.000155,  0.000238,  0.000330,  0.000428,  0.000541 };
 
-  Int_t ib = ((Int_t) (10 * (field - 0.15)));
+  Int_t ib = ((Int_t) (10 * (fieldAbs - 0.15)));
   ib       = TMath::Max(  0,ib);
   ib       = TMath::Min(kNb,ib);
 
   Float_t alphaL = p0[ib] 
-      + p1[ib] * vdrift
-      + p2[ib] * vdrift*vdrift
-      + p3[ib] * vdrift*vdrift*vdrift;
+                 + p1[ib] * vdrift
+                 + p2[ib] * vdrift*vdrift
+                 + p3[ib] * vdrift*vdrift*vdrift;
 
-  return TMath::Tan(alphaL);
+  return TMath::Tan(fieldSgn * alphaL);
+
 }
 
 //_____________________________________________________________________________
