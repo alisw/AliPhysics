@@ -29,6 +29,7 @@
 
 #include "AliLog.h"
 #include "AliAlignObjMatrix.h"
+#include "AliAlignObj.h"
 
 #include <Riostream.h>
 #include <TSystem.h>
@@ -822,10 +823,13 @@ void  AliMUONGeometryTransformer::AddMisAlignModule(Int_t moduleId,
   // Get path  
   TString path = kTransformer->GetVolumePath(); 
   
+  // Get unique align object ID
+  Int_t volId = AliAlignObj::LayerToVolUID(AliAlignObj::kMUON, moduleId); 
+
   // Create mis align matrix
   TClonesArray& refArray =*fMisAlignArray;
   Int_t pos = fMisAlignArray->GetEntriesFast();
-  new (refArray[pos]) AliAlignObjMatrix(path.Data(), moduleId, 
+  new (refArray[pos]) AliAlignObjMatrix(path.Data(), volId, 
                               const_cast<TGeoHMatrix&>(matrix));
 }
 
@@ -850,10 +854,13 @@ void  AliMUONGeometryTransformer::AddMisAlignDetElement(Int_t detElemId,
   // Get path  
   TString path = kDetElement->GetVolumePath(); 
   
+  // Get unique align object ID
+  Int_t volId = AliAlignObj::LayerToVolUID(AliAlignObj::kMUON, detElemId); 
+
   // Create mis align matrix
   TClonesArray& refArray =*fMisAlignArray;
   Int_t pos = fMisAlignArray->GetEntriesFast();
-  new(refArray[pos]) AliAlignObjMatrix(path.Data(), detElemId, 
+  new(refArray[pos]) AliAlignObjMatrix(path.Data(), volId, 
                               const_cast<TGeoHMatrix&>(matrix));
 }
 
