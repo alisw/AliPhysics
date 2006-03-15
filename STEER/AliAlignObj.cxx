@@ -189,7 +189,7 @@ Bool_t AliAlignObj::MatrixToAngles(const Double_t *rot, Double_t *angles) const
 {
   // Calculates the Euler angles in "x y z" notation
   // using the rotation matrix
-  if(rot[0]<1e-7 || rot[8]<1e-7) return kFALSE;
+  if(TMath::Abs(rot[0])<1e-7 || TMath::Abs(rot[8])<1e-7) return kFALSE;
   Double_t raddeg = TMath::RadToDeg();
   angles[0]=raddeg*TMath::ATan2(-rot[5],rot[8]);
   angles[1]=raddeg*TMath::ASin(rot[2]);
