@@ -14,7 +14,7 @@
  **************************************************************************/
 
 // $Id$
-// $MpId: AliMpSectorSegmentation.cxx,v 1.12 2006/03/14 09:03:52 ivana Exp $
+// $MpId: AliMpSectorSegmentation.cxx,v 1.13 2006/03/15 10:05:25 ivana Exp $
 // Category: sector
 //
 // Class AliMpSectorSegmentation
@@ -416,10 +416,8 @@ AliMpSectorSegmentation::PadByIndices(const AliMpIntPair& indices,
    
   AliMpMotifPosition* motifPos = FindMotifPosition(indices);
   if (!motifPos) {    
-    if (warning) {
-      cout << "indices " <<  indices << endl;
+    if (warning) 
       Warning("PadByIndices","Pad indices not contained in any motif!");
-    }  
     return AliMpPad::Invalid();
   }
   

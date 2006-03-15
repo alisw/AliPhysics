@@ -14,7 +14,7 @@
  **************************************************************************/
 
 // $Id$
-// $MpId: AliMpMotifMap.cxx,v 1.12 2006/03/14 09:04:57 ivana Exp $
+// $MpId: AliMpMotifMap.cxx,v 1.13 2006/03/15 10:04:36 ivana Exp $
 // Category: motif
 // -------------------
 // Class AliMpMotifMap
@@ -278,7 +278,6 @@ Int_t AliMpMotifMap::CalculateNofPads() const
   }
 #endif  
 
-  cout << "AliMpMotifMap::CalculateNofPads: " << nofPads << endl;
   return nofPads;
 }
 
