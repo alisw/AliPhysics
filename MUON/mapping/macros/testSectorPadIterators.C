@@ -1,5 +1,5 @@
 // $Id$
-// $MpId: testSectorPadIterators.C,v 1.9 2005/10/28 15:36:08 ivana Exp $
+// $MpId: testSectorPadIterators.C,v 1.11 2006/03/15 13:07:07 ivana Exp $
 //
 // Test macro for reading  sector, and iterate over it
 
@@ -31,7 +31,8 @@ void testSectorPadIterators(AliMpStationType station = kStation1,
 
   for (it.First(); ! it.IsDone(); it.Next()) {
     AliMpIntPair indices = it.CurrentItem().GetIndices();
-    cout<<"Iterator number "<< num++ << " at "<< indices <<endl;
+    cout<<"Iterator number "<< num << " at "<< indices <<endl;
+    num++;
     TMarker* marker = new TMarker( (Double_t)indices.GetFirst() /xmax,
                                    (Double_t)indices.GetSecond()/ymax,
                                    2);

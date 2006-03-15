@@ -1,5 +1,5 @@
 // $Id$
-// $MpId: testAnyPadIterators.C,v 1.15 2006/03/02 16:15:29 ivana Exp $
+// $MpId: testAnyPadIterators.C,v 1.17 2006/03/15 13:07:07 ivana Exp $
 //
 // Test macro for reading  sector, and iterate over it
 
@@ -15,7 +15,8 @@ void MarkPads(AliMpVPadIterator& it,Int_t xmax,Int_t ymax,Bool_t print=kTRUE)
 
   for (it.First(); ! it.IsDone(); it.Next()){
     AliMpIntPair indices = it.CurrentItem().GetIndices();
-    if (print) cout<<"Iterator number "<< num++ << " at "<< indices <<endl;
+    if (print) cout<<"Iterator number "<< num << " at "<< indices <<endl;
+    num++;
     TMarker* marker = new TMarker( (Double_t)indices.GetFirst() /xmax,
                                    (Double_t)indices.GetSecond()/ymax,
                                    2);
