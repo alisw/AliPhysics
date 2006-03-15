@@ -28,7 +28,6 @@
 #include <TObjArray.h> 
 
 #include "AliTRDgeometry.h"
-#include "AliTRDparameter.h"
 #include "AliTRDpadPlane.h"
 #include "AliTRDgeometryFull.h"
 #include "AliTRDcluster.h" 

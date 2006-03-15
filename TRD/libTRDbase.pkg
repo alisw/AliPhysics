@@ -8,23 +8,29 @@ SRCS= AliTRDarrayI.cxx \
       AliTRDsegmentArray.cxx \
       AliTRDgeometry.cxx \
       AliTRDgeometryFull.cxx \
-      AliTRDparameter.cxx \
       AliTRDdigit.cxx \
       AliTRDdigitsManager.cxx \
       AliTRDrawData.cxx \
       AliTRDpadPlane.cxx \
       AliTRDRawStream.cxx \
-      AliTRDCalROC.cxx \
-      AliTRDCalPad.cxx \
-      AliTRDCalDet.cxx \
-      AliTRDCalGlobals.cxx \
-      AliTRDCalChamberPos.cxx \
-      AliTRDCalStackPos.cxx \
       AliTRDCommonParam.cxx \
       AliTRDcalibDB.cxx \
-      AliTRDCalPIDLQ.cxx
+      Cal/AliTRDCalROC.cxx \
+      Cal/AliTRDCalPad.cxx \
+      Cal/AliTRDCalDet.cxx \
+      Cal/AliTRDCalGlobals.cxx \
+      Cal/AliTRDCalChamberPos.cxx \
+      Cal/AliTRDCalStackPos.cxx \
+      Cal/AliTRDCalSuperModulePos.cxx \
+      Cal/AliTRDCalPIDLQ.cxx \
+      Cal/AliTRDCalMonitoring.cxx \
+      Cal/AliTRDCalSuperModuleStatus.cxx \
+      Cal/AliTRDCalChamberStatus.cxx \
+      Cal/AliTRDCalMCMStatus.cxx \
+      Cal/AliTRDCalPadStatus.cxx \
+      Cal/AliTRDCalSingleChamberStatus.cxx
 
-HDRS= $(SRCS:.cxx=.h)                
+HDRS= $(SRCS:.cxx=.h)
 
 DHDR= TRDbaseLinkDef.h
 

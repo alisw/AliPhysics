@@ -21,7 +21,6 @@
 
 #pragma link C++ class  AliTRDgeometry+;
 #pragma link C++ class  AliTRDgeometryFull+;
-#pragma link C++ class  AliTRDparameter+;
 #pragma link C++ class  AliTRDpadPlane+;
 
 #pragma link C++ class  AliTRDdigit+;
@@ -38,6 +37,15 @@
 #pragma link C++ class  AliTRDCalGlobals+;
 #pragma link C++ class  AliTRDCalChamberPos+;
 #pragma link C++ class  AliTRDCalStackPos+;
+#pragma link C++ class  AliTRDCalSuperModulePos+;
 #pragma link C++ class  AliTRDCalPIDLQ+;
+#pragma link C++ class  AliTRDCalMonitoring+;
+
+#pragma link C++ class  AliTRDCalSuperModuleStatus+;
+#pragma link C++ class  AliTRDCalChamberStatus+;
+#pragma link C++ class  AliTRDCalMCMStatus+;
+#pragma link C++ class  AliTRDCalPadStatus+;
+#pragma link C++ class  AliTRDCalSingleChamberStatus+;
+
 
 #endif

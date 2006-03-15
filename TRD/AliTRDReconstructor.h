@@ -13,7 +13,6 @@
 
 #include "AliReconstructor.h"
 
-class AliTRDparameter;
 class AliRawReader;
 
 class AliTRDReconstructor: public AliReconstructor {
@@ -32,7 +31,6 @@ public:
   virtual void         FillESD(AliRunLoader* runLoader, AliESD* esd) const;
 
 private:
-  AliTRDparameter*     GetTRDparameter(AliRunLoader* runLoader) const;
 
   ClassDef(AliTRDReconstructor, 0)   // class for the TRD reconstruction
 };

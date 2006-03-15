@@ -27,12 +27,10 @@
  
 #include "AliRun.h"
 #include "AliTRDgeometry.h"
-#include "AliTRDparameter.h"
 #include "AliTRDsimpleMC.h"
 #include "AliTRDv1.h"
-#include "AliTRDparameter.h"
 #include "AliMC.h"
- 
+
 ClassImp(AliTRDsimpleMC)
  
 //_____________________________________________________________________________
@@ -60,9 +58,8 @@ AliTRDsimpleMC::AliTRDsimpleMC()
   fTrackEntering = kFALSE;   
 
   fTRD           = NULL;
-  fPar           = NULL;
-                                        
-}                                                                               
+
+}
 
 //_____________________________________________________________________________
 AliTRDsimpleMC::AliTRDsimpleMC(const char *name, const char *title)
@@ -90,9 +87,8 @@ AliTRDsimpleMC::AliTRDsimpleMC(const char *name, const char *title)
   fTrackEntering = kFALSE;   
 
   fTRD           = NULL;
-  fPar           = NULL;
-                                        
-}                                                                               
+
+}
  
 //_____________________________________________________________________________
 AliTRDsimpleMC::AliTRDsimpleMC(const AliTRDsimpleMC &m):TVirtualMC(m)
@@ -160,13 +156,9 @@ void AliTRDsimpleMC::NewTrack(Int_t iTrack, Int_t pdg
   // Starts a new track.
   // 
 
-  if (!fPar) {
-    fPar = new AliTRDparameter("TRDparameter","Standard TRD parameter");
-  }
-
   if (!fTRD) {
     fTRD = (AliTRDv1 *) gAlice->GetDetector("TRD");   
-    fX0  = AliTRDgeometry::GetTime0(0) - AliTRDgeometry::DrThick(); 
+    fX0  = AliTRDgeometry::GetTime0(0) - AliTRDgeometry::DrThick();
   }
 
   fTRD->ResetHits();

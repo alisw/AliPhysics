@@ -26,7 +26,6 @@
 
 #include "AliRunLoader.h"
 #include "AliTRDgeometry.h"
-#include "AliTRDparameter.h"
 #include "AliTRDpadPlane.h"
 
 #include "AliRun.h"
@@ -302,21 +301,22 @@ Bool_t AliTRDgeometry::Local2Global(Int_t iplan, Int_t icham, Int_t isect
   Float_t  timeSlice = local[2] + 0.5;
   Float_t  time0     = GetTime0(iplan);
 
+  Int_t idet = GetDetector(iplan, icham, isect);
+
   Double_t  rot[3];
-  rot[0] = time0 - (timeSlice - calibration->GetT0(iplan, icham, isect, col, row)) 
-      * calibration->GetVdrift(iplan, icham, isect, col, row)/calibration->GetSamplingFrequency();
+  rot[0] = time0 - (timeSlice - calibration->GetT0(idet, col, row))
+      * calibration->GetVdrift(idet, col, row)/calibration->GetSamplingFrequency();
   rot[1] = padPlane->GetColPos(col) - 0.5 * padPlane->GetColSize(col);
   rot[2] = padPlane->GetRowPos(row) - 0.5 * padPlane->GetRowSize(row);
 
   // Rotate back to original position
-  Int_t idet = GetDetector(iplan,icham,isect); 
   return RotateBack(idet,rot,global);
 
 }
 
 //_____________________________________________________________________________
 Bool_t AliTRDgeometry::Global2Local(Int_t mode, Double_t *local, Double_t *global
-                                   , Int_t* index,  AliTRDparameter *par) const
+                                   , Int_t* index) const
 {
   //
   // Converts local pad-coordinates (row,col,time) into 
@@ -330,11 +330,6 @@ Bool_t AliTRDgeometry::Global2Local(Int_t mode, Double_t *local, Double_t *globa
   // mode=2  - local coordinate in pad, and pad row, x - rotated global
   //
 
-  if (!par) {
-    Error("Global2Local","No parameter defined\n");
-    return kFALSE;
-  }
-  
   //Int_t    idet    = GetDetector(iplan,icham,isect); // Detector number
   Int_t    idet      = GetDetector(index[0],index[1],index[2]); // Detector number
   Rotate(idet,global,local);

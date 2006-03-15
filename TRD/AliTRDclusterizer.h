@@ -11,7 +11,6 @@
 class TFile;
 class TTree;
 class AliRunLoader;
-class AliTRDparameter;
 class AliTRD;
 class AliTRDcluster;
 ///////////////////////////////////////////////////////
@@ -35,10 +34,7 @@ class AliTRDclusterizer : public TNamed {
   virtual Bool_t  OpenOutput();
   virtual Bool_t  MakeClusters() = 0;
   virtual Bool_t  WriteClusters(Int_t det);
-  virtual void    SetParameter(AliTRDparameter *par)      { fPar           = par; };
   void            SetVerbose(Int_t v = 1)                 { fVerbose       = v;   };
-
-  AliTRDparameter *GetParameter()                   const { return fPar;          };
 
   TObjArray*      RecPoints() {if (!fRecPoints) fRecPoints = new TObjArray(400); return fRecPoints;}
   virtual AliTRDcluster  * AddCluster(Double_t *pos, Int_t timebin, Int_t det, Double_t amp, Int_t *tracks
@@ -52,7 +48,6 @@ class AliTRDclusterizer : public TNamed {
   AliRunLoader    *fRunLoader;     //! Run Loader
   
   TTree           *fClusterTree;   //! Tree with the cluster
-  AliTRDparameter *fPar;           //  TRD digitization parameter object
 
   TObjArray*       fRecPoints;     //! Array of clusters
   Int_t            fVerbose;       //  Sets the verbose level

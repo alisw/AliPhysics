@@ -14,7 +14,6 @@
 #include "AliGeometry.h"
 
 class AliRunLoader;
-class AliTRDparameter;
 
 class AliTRDgeometry : public AliGeometry {
 
@@ -34,7 +33,7 @@ class AliTRDgeometry : public AliGeometry {
                                 , Double_t *local, Double_t *global) const;
 
   virtual Bool_t   Global2Local(Int_t mode, Double_t *local, Double_t *global
-                               , Int_t* index,  AliTRDparameter *par) const;
+                               , Int_t* index) const;
   virtual Bool_t   Global2Detector(Double_t global[3], Int_t index[3]);
 
   virtual Bool_t   Rotate(Int_t d, Double_t *pos, Double_t *rot) const;

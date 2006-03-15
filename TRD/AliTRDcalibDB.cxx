@@ -34,13 +34,23 @@
 #include "AliTRDpadPlane.h"
 #include "AliTRDCommonParam.h"
 
-#include "AliTRDCalROC.h"
-#include "AliTRDCalChamberPos.h"
-#include "AliTRDCalStackPos.h"
-#include "AliTRDCalPad.h"
-#include "AliTRDCalDet.h"
-#include "AliTRDCalGlobals.h"
-#include "AliTRDCalPIDLQ.h"
+#include "Cal/AliTRDCalROC.h"
+
+#include "Cal/AliTRDCalChamberPos.h"
+#include "Cal/AliTRDCalStackPos.h"
+#include "Cal/AliTRDCalSuperModulePos.h"
+
+#include "Cal/AliTRDCalPad.h"
+#include "Cal/AliTRDCalDet.h"
+#include "Cal/AliTRDCalGlobals.h"
+#include "Cal/AliTRDCalPIDLQ.h"
+#include "Cal/AliTRDCalMonitoring.h"
+
+#include "Cal/AliTRDCalSuperModuleStatus.h"
+#include "Cal/AliTRDCalChamberStatus.h"
+#include "Cal/AliTRDCalMCMStatus.h"
+#include "Cal/AliTRDCalPadStatus.h"
+#include "Cal/AliTRDCalSingleChamberStatus.h"
 
 ClassImp(AliTRDcalibDB)
 
@@ -152,17 +162,30 @@ const TObject* AliTRDcalibDB::GetCachedCDBObject(Int_t id)
     switch (id)
     {
       // parameters defined per pad and chamber
-      case kIDVdrift : return CacheMergeCDBEntry(kIDVdrift, "TRD/Calib/LocalVdrift", "TRD/Calib/ChamberVdrift"); break;
-      case kIDT0 : return CacheMergeCDBEntry(kIDT0, "TRD/Calib/LocalT0", "TRD/Calib/ChamberT0"); break;
-      
+      case kIDVdriftPad : return CacheCDBEntry(kIDVdriftPad, "TRD/Calib/LocalVdrift"); break;
+      case kIDVdriftChamber : return CacheCDBEntry(kIDVdriftChamber, "TRD/Calib/ChamberVdrift"); break;
+
+      case kIDT0Pad : return CacheCDBEntry(kIDT0Pad, "TRD/Calib/LocalT0"); break;
+      case kIDT0Chamber : return CacheCDBEntry(kIDT0Chamber, "TRD/Calib/ChamberT0"); break;
+
+      case kIDGainFactorPad : return CacheCDBEntry(kIDGainFactorPad, "TRD/Calib/LocalGainFactor"); break;
+      case kIDGainFactorChamber : return CacheCDBEntry(kIDGainFactorChamber, "TRD/Calib/ChamberGainFactor"); break;
+
       // parameters defined per pad
-      case kIDGainFactor : return CacheCDBEntry(kIDGainFactor, "TRD/Calib/GainFactor"); break;
       case kIDPRFWidth : return CacheCDBEntry(kIDPRFWidth, "TRD/Calib/PRFWidth"); break;
-    
+
+      // status values
+      case kIDSuperModuleStatus : return CacheCDBEntry(kIDSuperModuleStatus, "TRD/Calib/SuperModuleStatus"); break;
+      case kIDChamberStatus : return CacheCDBEntry(kIDChamberStatus, "TRD/Calib/ChamberStatus"); break;
+      case kIDMCMStatus : return CacheCDBEntry(kIDMCMStatus, "TRD/Calib/MCMStatus"); break;
+      case kIDPadStatus : return CacheCDBEntry(kIDPadStatus, "TRD/Calib/PadStatus"); break;
+
       // global parameters
+      case kIDMonitoringData : return CacheCDBEntry(kIDMonitoringData, "TRD/Calib/MonitoringData"); break;
       case kIDGlobals : return CacheCDBEntry(kIDGlobals, "TRD/Calib/Globals"); break;
-      case kIDChamber : return CacheCDBEntry(kIDChamber, "TRD/Calib/Chamber"); break;
-      case kIDStack : return CacheCDBEntry(kIDStack, "TRD/Calib/Stack"); break;
+      case kIDSuperModulePos : return CacheCDBEntry(kIDSuperModulePos, "TRD/Calib/SuperModulePos"); break;
+      case kIDChamberPos : return CacheCDBEntry(kIDChamberPos, "TRD/Calib/ChamberPos"); break;
+      case kIDStackPos : return CacheCDBEntry(kIDStackPos, "TRD/Calib/StackPos"); break;
       case kIDPIDLQ : return CacheCDBEntry(kIDPIDLQ, "TRD/Calib/PIDLQ"); break;
     }
     return 0;
@@ -214,71 +237,20 @@ const TObject* AliTRDcalibDB::CacheCDBEntry(Int_t id, const char* cdbPath)
 }
 
 //_____________________________________________________________________________
-const TObject* AliTRDcalibDB::CacheMergeCDBEntry(Int_t id, const char* cdbPadPath, const char* cdbChamberPath)
-{
-  //
-  // Retrieves and caches an object (id <id>) from the CDB. This function is specialized for parameters which are stored
-  // as local variation at pad level of a global variable defined per detector chamber. It uses the classes AliTRDCalPad and AliTRDCalDet.
-  // Before storing the object it retrieves the local variations (cdbPadPath) and the global variable (cdbChamberPath) and merges them using
-  // the AliTRDCalPad::ScaleROCs.
-  //
-    
-  if (!fCDBCache[id]) 
-  {
-    AliTRDCalPad* padObject = 0;
-    AliTRDCalDet* detObject = 0;
-   
-    fCDBEntries[id] = GetCDBEntry(cdbPadPath);
-    if (fCDBEntries[id])
-      padObject = dynamic_cast<AliTRDCalPad*>(fCDBEntries[id]->GetObject());
-   
-    AliCDBEntry* mergeEntry = GetCDBEntry(cdbChamberPath);
-    if (mergeEntry)
-      detObject = dynamic_cast<AliTRDCalDet*>(mergeEntry->GetObject());
-    
-    if (!padObject || !detObject) 
-    {
-      if (fCDBEntries[id]) {
-        if (fCDBEntries[id]->IsOwner() == kFALSE && padObject)
-          delete padObject;
-        delete fCDBEntries[id];
-        fCDBEntries[id] = 0;
-      }
-      if (mergeEntry) 
-      {
-        if (mergeEntry->IsOwner() == kFALSE && detObject)
-          delete detObject;
-        delete mergeEntry;
-      }
-      return 0;
-    }
-    
-    padObject->ScaleROCs(detObject);
-    if (mergeEntry->IsOwner() == kFALSE)
-      delete detObject;
-    delete mergeEntry;
-    
-    fCDBCache[id] = padObject;
-  }
-  
-  return fCDBCache[id];
-}
-
-//_____________________________________________________________________________
 void AliTRDcalibDB::SetRun(Long64_t run)
 {
   //
-  // Sets current run number. Calibration data is read from the corresponding file. 
+  // Sets current run number. Calibration data is read from the corresponding file.
   // When the run number changes the caching is invalidated.
   //
-  
+
   if (fRun == run)
     return;
-  
+
   fRun = run;
   Invalidate();
 }
-  
+
 //_____________________________________________________________________________
 void AliTRDcalibDB::Invalidate()
 {
@@ -307,14 +279,14 @@ Bool_t AliTRDcalibDB::GetChamberPos(Int_t det, Float_t* xyz)
   // Returns the deviation of the chamber position from the nominal position.
   //
   
-  const AliTRDCalChamberPos* chamber = dynamic_cast<const AliTRDCalChamberPos*>(GetCachedCDBObject(kIDChamber));
+  const AliTRDCalChamberPos* chamber = dynamic_cast<const AliTRDCalChamberPos*>(GetCachedCDBObject(kIDChamberPos));
   if (!chamber)
     return kFALSE;
   
-  const Float_t* kvalues = chamber->GetChamberPos(det);
+  const Float_t* kvalues = chamber->GetPos(det);
   if (!kvalues)
     return kFALSE;
-  
+
   xyz[0] = kvalues[0];
   xyz[1] = kvalues[1];
   xyz[2] = kvalues[2];
@@ -329,11 +301,11 @@ Bool_t AliTRDcalibDB::GetChamberRot(Int_t det, Float_t* xyz)
   // Returns the rotation of the chamber from the nominal position.
   //
   
-  const AliTRDCalChamberPos* chamber = dynamic_cast<const AliTRDCalChamberPos*>(GetCachedCDBObject(kIDChamber));
+  const AliTRDCalChamberPos* chamber = dynamic_cast<const AliTRDCalChamberPos*>(GetCachedCDBObject(kIDChamberPos));
   if (!chamber)
     return kFALSE;
   
-  const Float_t* kvalues = chamber->GetChamberRot(det);
+  const Float_t* kvalues = chamber->GetRot(det);
   if (!kvalues)
     return kFALSE;
   
@@ -351,11 +323,11 @@ Bool_t AliTRDcalibDB::GetStackPos(Int_t chamber, Int_t sector, Float_t* xyz)
   // Returns the deviation of the stack position from the nominal position.
   //
   
-  const AliTRDCalStackPos* stack = dynamic_cast<const AliTRDCalStackPos*>(GetCachedCDBObject(kIDStack));
+  const AliTRDCalStackPos* stack = dynamic_cast<const AliTRDCalStackPos*>(GetCachedCDBObject(kIDStackPos));
   if (!stack)
     return kFALSE;
   
-  const Float_t* kvalues = stack->GetStackPos(chamber, sector);
+  const Float_t* kvalues = stack->GetPos(chamber, sector);
   if (!kvalues)
     return kFALSE;
   
@@ -373,11 +345,55 @@ Bool_t AliTRDcalibDB::GetStackRot(Int_t chamber, Int_t sector, Float_t* xyz)
   // Returns the rotation of the stack from the nominal position.
   //
   
-  const AliTRDCalStackPos* stack = dynamic_cast<const AliTRDCalStackPos*>(GetCachedCDBObject(kIDStack));
+  const AliTRDCalStackPos* stack = dynamic_cast<const AliTRDCalStackPos*>(GetCachedCDBObject(kIDStackPos));
   if (!stack)
     return kFALSE;
   
-  const Float_t* kvalues = stack->GetStackRot(chamber, sector);
+  const Float_t* kvalues = stack->GetRot(chamber, sector);
+  if (!kvalues)
+    return kFALSE;
+
+  xyz[0] = kvalues[0];
+  xyz[1] = kvalues[1];
+  xyz[2] = kvalues[2];
+  
+  return kTRUE;
+}
+
+//_____________________________________________________________________________
+Bool_t AliTRDcalibDB::GetSuperModulePos(Int_t sm, Float_t* xyz)
+{
+  //
+  // Returns the deviation of the supermodule position from the nominal position.
+  //
+  
+  const AliTRDCalSuperModulePos* smPos = dynamic_cast<const AliTRDCalSuperModulePos*>(GetCachedCDBObject(kIDSuperModulePos));
+  if (!smPos)
+    return kFALSE;
+  
+  const Float_t* kvalues = smPos->GetPos(sm);
+  if (!kvalues)
+    return kFALSE;
+  
+  xyz[0] = kvalues[0];
+  xyz[1] = kvalues[1];
+  xyz[2] = kvalues[2];
+  
+  return kTRUE;
+}
+
+//_____________________________________________________________________________
+Bool_t AliTRDcalibDB::GetSuperModuleRot(Int_t sm, Float_t* xyz)
+{
+  //
+  // Returns the rotation of the supermodule from the nominal position.
+  //
+  
+  const AliTRDCalSuperModulePos* smPos = dynamic_cast<const AliTRDCalSuperModulePos*>(GetCachedCDBObject(kIDSuperModulePos));
+  if (!smPos)
+    return kFALSE;
+  
+  const Float_t* kvalues = smPos->GetRot(sm);
   if (!kvalues)
     return kFALSE;
   
@@ -394,8 +410,8 @@ Float_t AliTRDcalibDB::GetVdrift(Int_t det, Int_t col, Int_t row)
   //
   // Returns the drift velocity for the given pad.
   //
-  
-  const AliTRDCalPad* calPad = dynamic_cast<const AliTRDCalPad*> (GetCachedCDBObject(kIDVdrift));
+
+  const AliTRDCalPad* calPad = dynamic_cast<const AliTRDCalPad*> (GetCachedCDBObject(kIDVdriftPad));
   if (!calPad)
     return -1;
 
@@ -403,7 +419,25 @@ Float_t AliTRDcalibDB::GetVdrift(Int_t det, Int_t col, Int_t row)
   if (!roc)
     return -1;
 
-  return roc->GetValue(col, row);
+  const AliTRDCalDet* calChamber = dynamic_cast<const AliTRDCalDet*> (GetCachedCDBObject(kIDVdriftChamber));
+  if (!calChamber)
+    return -1;
+
+  return calChamber->GetValue(det) * roc->GetValue(col, row);
+}
+
+//_____________________________________________________________________________
+Float_t AliTRDcalibDB::GetVdriftAverage(Int_t det)
+{
+  //
+  // Returns the average drift velocity for the given detector
+  //
+
+  const AliTRDCalDet* calDet = dynamic_cast<const AliTRDCalDet*> (GetCachedCDBObject(kIDVdriftChamber));
+  if (!calDet)
+    return -1;
+
+  return calDet->GetValue(det);
 }
 
 //_____________________________________________________________________________
@@ -413,7 +447,7 @@ Float_t AliTRDcalibDB::GetT0(Int_t det, Int_t col, Int_t row)
   // Returns t0 for the given pad.
   //
   
-  const AliTRDCalPad* calPad = dynamic_cast<const AliTRDCalPad*> (GetCachedCDBObject(kIDT0));
+  const AliTRDCalPad* calPad = dynamic_cast<const AliTRDCalPad*> (GetCachedCDBObject(kIDT0Pad));
   if (!calPad)
     return -1;
 
@@ -421,7 +455,25 @@ Float_t AliTRDcalibDB::GetT0(Int_t det, Int_t col, Int_t row)
   if (!roc)
     return -1;
 
-  return roc->GetValue(col, row);
+  const AliTRDCalDet* calChamber = dynamic_cast<const AliTRDCalDet*> (GetCachedCDBObject(kIDT0Chamber));
+  if (!calChamber)
+    return -1;
+
+  return calChamber->GetValue(det) * roc->GetValue(col, row);
+}
+
+//_____________________________________________________________________________
+Float_t AliTRDcalibDB::GetT0Average(Int_t det)
+{
+  //
+  // Returns the average t0 for the given detector
+  //
+
+  const AliTRDCalDet* calDet = dynamic_cast<const AliTRDCalDet*> (GetCachedCDBObject(kIDT0Chamber));
+  if (!calDet)
+    return -1;
+
+  return calDet->GetValue(det);
 }
 
 //_____________________________________________________________________________
@@ -431,7 +483,7 @@ Float_t AliTRDcalibDB::GetGainFactor(Int_t det, Int_t col, Int_t row)
   // Returns the gain factor for the given pad.
   //
   
-  const AliTRDCalPad* calPad = dynamic_cast<const AliTRDCalPad*> (GetCachedCDBObject(kIDGainFactor));
+  const AliTRDCalPad* calPad = dynamic_cast<const AliTRDCalPad*> (GetCachedCDBObject(kIDGainFactorPad));
   if (!calPad)
     return -1;
 
@@ -439,7 +491,25 @@ Float_t AliTRDcalibDB::GetGainFactor(Int_t det, Int_t col, Int_t row)
   if (!roc)
     return -1;
 
-  return roc->GetValue(col, row);
+  const AliTRDCalDet* calChamber = dynamic_cast<const AliTRDCalDet*> (GetCachedCDBObject(kIDGainFactorChamber));
+  if (!calChamber)
+    return -1;
+
+  return calChamber->GetValue(det) * roc->GetValue(col, row);
+}
+
+//_____________________________________________________________________________
+Float_t AliTRDcalibDB::GetGainFactorAverage(Int_t det)
+{
+  //
+  // Returns the average gain factor for the given detector
+  //
+
+  const AliTRDCalDet* calDet = dynamic_cast<const AliTRDCalDet*> (GetCachedCDBObject(kIDGainFactorChamber));
+  if (!calDet)
+    return -1;
+
+  return calDet->GetValue(det);
 }
 
 //_____________________________________________________________________________
@@ -480,12 +550,188 @@ Int_t AliTRDcalibDB::GetNumberOfTimeBins()
   //
   // Returns the number of time bins which are read-out.
   //
-  
+
   const AliTRDCalGlobals* calGlobal = dynamic_cast<const AliTRDCalGlobals*> (GetCachedCDBObject(kIDGlobals));
   if (!calGlobal)
-    return -1;  
-  
+    return -1;
+
   return calGlobal->GetNumberOfTimeBins();
+}
+
+//_____________________________________________________________________________
+Char_t AliTRDcalibDB::GetPadStatus(Int_t det, Int_t col, Int_t row)
+{
+  //
+  // Returns the status of the given pad
+  //
+
+  const AliTRDCalPadStatus* cal = dynamic_cast<const AliTRDCalPadStatus*> (GetCachedCDBObject(kIDPadStatus));
+  if (!cal)
+    return -1;
+
+  const AliTRDCalSingleChamberStatus* roc = cal->GetCalROC(det);
+  if (!roc)
+    return -1;
+
+  return roc->GetStatus(col, row);
+}
+
+//_____________________________________________________________________________
+Char_t AliTRDcalibDB::GetMCMStatus(Int_t det, Int_t col, Int_t row)
+{
+  //
+  // Returns the status of the given MCM
+  //
+
+  const AliTRDCalMCMStatus* cal = dynamic_cast<const AliTRDCalMCMStatus*> (GetCachedCDBObject(kIDMCMStatus));
+  if (!cal)
+    return -1;
+
+  const AliTRDCalSingleChamberStatus* roc = cal->GetCalROC(det);
+  if (!roc)
+    return -1;
+
+  return roc->GetStatus(col, row);
+}
+
+//_____________________________________________________________________________
+Char_t AliTRDcalibDB::GetChamberStatus(Int_t det)
+{
+  //
+  // Returns the status of the given chamber
+  //
+
+  const AliTRDCalChamberStatus* cal = dynamic_cast<const AliTRDCalChamberStatus*> (GetCachedCDBObject(kIDChamberStatus));
+  if (!cal)
+    return -1;
+
+  return cal->GetStatus(det);
+}
+
+//_____________________________________________________________________________
+Char_t AliTRDcalibDB::GetSuperModuleStatus(Int_t sm)
+{
+  //
+  // Returns the status of the given chamber
+  //
+
+  const AliTRDCalSuperModuleStatus* cal = dynamic_cast<const AliTRDCalSuperModuleStatus*> (GetCachedCDBObject(kIDSuperModuleStatus));
+  if (!cal)
+    return -1;
+
+  return cal->GetStatus(sm);
+}
+
+//_____________________________________________________________________________
+Bool_t AliTRDcalibDB::IsPadMasked(Int_t det, Int_t col, Int_t row)
+{
+  //
+  // Returns status, see name of functions for details ;-)
+  //
+
+  const AliTRDCalPadStatus* cal = dynamic_cast<const AliTRDCalPadStatus*> (GetCachedCDBObject(kIDPadStatus));
+  if (!cal)
+    return -1;
+
+  return cal->IsMasked(det, col, row);
+}
+
+//_____________________________________________________________________________
+Bool_t AliTRDcalibDB::IsPadBridgedLeft(Int_t det, Int_t col, Int_t row)
+{
+  //
+  // Returns status, see name of functions for details ;-)
+  //
+
+  const AliTRDCalPadStatus* cal = dynamic_cast<const AliTRDCalPadStatus*> (GetCachedCDBObject(kIDPadStatus));
+  if (!cal)
+    return -1;
+
+  return cal->IsBridgedLeft(det, col, row);
+}
+
+//_____________________________________________________________________________
+Bool_t AliTRDcalibDB::IsPadBridgedRight(Int_t det, Int_t col, Int_t row)
+{
+  //
+  // Returns status, see name of functions for details ;-)
+  //
+
+  const AliTRDCalPadStatus* cal = dynamic_cast<const AliTRDCalPadStatus*> (GetCachedCDBObject(kIDPadStatus));
+  if (!cal)
+    return -1;
+
+  return cal->IsBridgedRight(det, col, row);
+}
+
+//_____________________________________________________________________________
+Bool_t AliTRDcalibDB::IsMCMMasked(Int_t det, Int_t col, Int_t row)
+{
+  //
+  // Returns status, see name of functions for details ;-)
+  //
+
+  const AliTRDCalMCMStatus* cal = dynamic_cast<const AliTRDCalMCMStatus*> (GetCachedCDBObject(kIDMCMStatus));
+  if (!cal)
+    return -1;
+
+  return cal->IsMasked(det, col, row);
+}
+
+//_____________________________________________________________________________
+Bool_t AliTRDcalibDB::IsChamberInstalled(Int_t det)
+{
+  //
+  // Returns status, see name of functions for details ;-)
+  //
+
+  const AliTRDCalChamberStatus* cal = dynamic_cast<const AliTRDCalChamberStatus*> (GetCachedCDBObject(kIDChamberStatus));
+  if (!cal)
+    return -1;
+
+  return cal->IsInstalled(det);
+}
+
+//_____________________________________________________________________________
+Bool_t AliTRDcalibDB::IsChamberMasked(Int_t det)
+{
+  //
+  // Returns status, see name of functions for details ;-)
+  //
+
+  const AliTRDCalChamberStatus* cal = dynamic_cast<const AliTRDCalChamberStatus*> (GetCachedCDBObject(kIDChamberStatus));
+  if (!cal)
+    return -1;
+
+  return cal->IsMasked(det);
+}
+
+//_____________________________________________________________________________
+Bool_t AliTRDcalibDB::IsSuperModuleInstalled(Int_t det)
+{
+  //
+  // Returns status, see name of functions for details ;-)
+  //
+
+  const AliTRDCalSuperModuleStatus* cal = dynamic_cast<const AliTRDCalSuperModuleStatus*> (GetCachedCDBObject(kIDSuperModuleStatus));
+  if (!cal)
+    return -1;
+
+  return cal->IsInstalled(det);
+}
+
+//_____________________________________________________________________________
+Bool_t AliTRDcalibDB::IsSuperModuleMasked(Int_t det)
+{
+  //
+  // Returns status, see name of functions for details ;-)
+  //
+
+  const AliTRDCalSuperModuleStatus* cal = dynamic_cast<const AliTRDCalSuperModuleStatus*> (GetCachedCDBObject(kIDSuperModuleStatus));
+  if (!cal)
+    return -1;
+
+  return cal->IsMasked(det);
 }
 
 //_____________________________________________________________________________
@@ -494,8 +740,18 @@ const AliTRDCalPIDLQ* AliTRDcalibDB::GetPIDLQObject()
   //
   // Returns the object storing the distributions for PID with likelihood
   //
-  
+
   return dynamic_cast<const AliTRDCalPIDLQ*> (GetCachedCDBObject(kIDPIDLQ));
+}
+
+//_____________________________________________________________________________
+const AliTRDCalMonitoring* AliTRDcalibDB::GetMonitoringObject()
+{
+  //
+  // Returns the object storing the monitoring data
+  //
+
+  return dynamic_cast<const AliTRDCalMonitoring*> (GetCachedCDBObject(kIDMonitoringData));
 }
 
 //_____________________________________________________________________________

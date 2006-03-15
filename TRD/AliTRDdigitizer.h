@@ -16,7 +16,6 @@ class AliRunLoader;
 class AliTRD;
 class AliTRDdigitsManager;
 class AliTRDgeometry;
-class AliTRDparameter;
 
 ///////////////////////////////////////////////////////
 //  Produces digits from the hits information        //
@@ -54,9 +53,8 @@ class AliTRDdigitizer : public AliDigitizer {
   virtual void         SetSDigits(Int_t v = 1)              { fSDigits         = v;   };
   virtual void         SetSDigitsScale(Float_t s)           { fSDigitsScale    = s;   };
   virtual void         SetEvent(Int_t v = 0)                { fEvent           = v;   };
-  virtual void         SetManager(AliTRDdigitsManager *man) { fDigitsManager   = man; };   
+  virtual void         SetManager(AliTRDdigitsManager *man) { fDigitsManager   = man; };
   virtual void         SetGeometry(AliTRDgeometry *geo)     { fGeo             = geo; };
-  virtual void         SetParameter(AliTRDparameter *par)   { fPar             = par; };
   virtual void         SetMergeSignalOnly(Bool_t m = kTRUE) { fMergeSignalOnly = m;   };
 
   AliTRDdigitsManager *Digits()                       const { return fDigitsManager; };
@@ -64,9 +62,8 @@ class AliTRDdigitizer : public AliDigitizer {
   Bool_t               GetCompress()                  const { return fCompress;      };
   Bool_t               GetSDigits()                   const { return fSDigits;       };
   Float_t              GetSDigitsScale()              const { return fSDigitsScale;  };
-  AliTRDparameter     *GetParameter()                 const { return fPar;           };
 
-  virtual Double_t     TimeStruct(Float_t vdrift, Double_t time, Double_t z);  
+  virtual Double_t     TimeStruct(Float_t vdrift, Double_t time, Double_t z);
 
           Float_t      GetDiffusionT(Float_t vdrift);
           Float_t      GetDiffusionL(Float_t vdrift);
@@ -83,7 +80,6 @@ class AliTRDdigitizer : public AliDigitizer {
   TList               *fSDigitsManagerList; //! List of managers of input s-digits
   AliTRD              *fTRD;                //! TRD detector class
   AliTRDgeometry      *fGeo;                //! TRD geometry
-  AliTRDparameter     *fPar;                //  TRD common parameter object
   Int_t                fEvent;              //! Event number
   Int_t               *fMasks;              //! Masks for the merging
   Bool_t               fCompress;           //  Switch to keep only compressed data in memory
@@ -120,7 +116,7 @@ class AliTRDdigitizer : public AliDigitizer {
     
   virtual Bool_t       CheckDetector(Int_t plane, Int_t chamber, Int_t sector);
 
-  ClassDef(AliTRDdigitizer,9)               //  Produces TRD-Digits
+  ClassDef(AliTRDdigitizer, 10)               //  Produces TRD-Digits
 
 };
 

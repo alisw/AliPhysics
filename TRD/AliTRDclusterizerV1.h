@@ -13,7 +13,6 @@
 
 class AliTRDdataArrayI;
 class AliTRDdigitsManager;
-class AliTRDparameter;
 class AliRawReader;
 
 class AliTRDclusterizerV1 : public AliTRDclusterizer {

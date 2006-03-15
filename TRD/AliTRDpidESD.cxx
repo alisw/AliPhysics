@@ -27,7 +27,7 @@
 #include "AliESD.h"
 #include "AliESDtrack.h"
 #include "AliTRDcalibDB.h"
-#include "AliTRDCalPIDLQ.h"
+#include "Cal/AliTRDCalPIDLQ.h"
 
 ClassImp(AliTRDpidESD)
 

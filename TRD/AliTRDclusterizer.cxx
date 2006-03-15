@@ -33,7 +33,6 @@
 #include "AliTRDcluster.h"
 #include "AliTRDrecPoint.h"
 #include "AliTRDgeometry.h"
-#include "AliTRDparameter.h"
 #include "AliTRDcalibDB.h"
 
 ClassImp(AliTRDclusterizer)
@@ -48,7 +47,6 @@ AliTRDclusterizer::AliTRDclusterizer():TNamed()
   fClusterTree = NULL;
   fRecPoints   = 0;
   fVerbose     = 0;
-  fPar         = 0;
 
 }
 
@@ -63,7 +61,6 @@ AliTRDclusterizer::AliTRDclusterizer(const Text_t* name, const Text_t* title)
   fClusterTree = NULL;
   fRecPoints   = 0;
   fVerbose     = 0;
-  fPar         = 0;
 
 }
 
@@ -113,7 +110,6 @@ void AliTRDclusterizer::Copy(TObject &c) const
   ((AliTRDclusterizer &) c).fClusterTree = NULL;
   ((AliTRDclusterizer &) c).fRecPoints   = NULL;  
   ((AliTRDclusterizer &) c).fVerbose     = fVerbose;  
-  ((AliTRDclusterizer &) c).fPar         = 0;
 
 }
 
@@ -241,7 +237,6 @@ Bool_t AliTRDclusterizer::WriteClusters(Int_t det)
     AliTRDgeometry *geo = fTRD->GetGeometry();
     geo->SetName("TRDgeometry");
     geo->Write();
-    fPar->Write();
     */
     AliLoader* loader = fRunLoader->GetLoader("TRDLoader");
     loader->WriteRecPoints("OVERWRITE");

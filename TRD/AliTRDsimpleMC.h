@@ -17,7 +17,6 @@
 #include "AliDecayer.h"
 
 class AliTRDv1;
-class AliTRDparameter;
 class TArrayD;
 
 class AliTRDsimpleMC : public TVirtualMC {
@@ -304,9 +303,8 @@ class AliTRDsimpleMC : public TVirtualMC {
   Bool_t           fTrackEntering;      //  Track entering chamber
 
   AliTRDv1        *fTRD;                //! TRD detector object
-  AliTRDparameter *fPar;                //! TRD parameter object
 
-  ClassDef(AliTRDsimpleMC,2)            //  Simple TRD Monte Carlo class
+  ClassDef(AliTRDsimpleMC, 3)            //  Simple TRD Monte Carlo class
 
 };
 #endif

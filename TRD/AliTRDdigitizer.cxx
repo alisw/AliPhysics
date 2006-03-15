@@ -71,7 +71,6 @@
 #include "AliTRDsegmentArray.h"
 #include "AliTRDdigitsManager.h"
 #include "AliTRDgeometry.h"
-#include "AliTRDparameter.h"
 #include "AliTRDpadPlane.h"
 #include "AliTRDcalibDB.h"
 #include "AliTRDSimParam.h"
@@ -92,7 +91,6 @@ AliTRDdigitizer::AliTRDdigitizer()
   fSDigitsManagerList = 0;
   fTRD                = 0;
   fGeo                = 0;
-  fPar                = 0;
   fEvent              = 0;
   fMasks              = 0;
   fCompress           = kTRUE;
@@ -169,7 +167,6 @@ Bool_t AliTRDdigitizer::Init()
   fSDigitsManagerList = 0;
   fTRD                = 0;
   fGeo                = 0;
-  fPar                = 0;  
   //End NewIO comment
 
   fEvent              = 0;
@@ -271,7 +268,6 @@ void AliTRDdigitizer::Copy(TObject &d) const
   ((AliTRDdigitizer &) d).fSDigitsManagerList = 0;
   ((AliTRDdigitizer &) d).fTRD                = 0;
   ((AliTRDdigitizer &) d).fGeo                = 0;
-  ((AliTRDdigitizer &) d).fPar                = 0;
   ((AliTRDdigitizer &) d).fEvent              = 0;
   ((AliTRDdigitizer &) d).fMasks              = 0;
   ((AliTRDdigitizer &) d).fCompress           = fCompress;
@@ -439,7 +435,6 @@ void AliTRDdigitizer::Exec(Option_t* option)
 
   //Write parameters
   orl->CdGAFile();
-  if (!gFile->Get("TRDparameter")) GetParameter()->Write();
 
   if (fDebug > 0) {
     printf("<AliTRDdigitizer::Exec> ");
@@ -636,15 +631,7 @@ Bool_t AliTRDdigitizer::MakeDigits()
 
   TGeoManager::Import("geometry.root");
 
-  // Create a default parameter class if none is defined
-  if (!fPar) {
-    fPar = new AliTRDparameter("TRDparameter","Standard TRD parameter");
-    if (fDebug > 0) {
-      printf("<AliTRDdigitizer::MakeDigits> ");
-      printf("Create the default parameter object\n");
-    }
-  }
-  
+
   AliTRDSimParam* simParam = AliTRDSimParam::Instance();
   if (!simParam) {
     printf("<AliTRDdigitizer::MakeDigits> ");
@@ -1160,6 +1147,11 @@ Bool_t AliTRDdigitizer::MakeDigits()
               // Pad and time coupling
               signalAmp *= coupling;
 	      Float_t padgain = calibration->GetGainFactor(iDet, iCol, iRow);
+              if (padgain<=0) {
+                TString error;
+                error.Form("Not a valid gain %f, %d %d %d\n", padgain, iDet, iCol, iRow);
+                AliError(error);
+              }
 	      signalAmp *= padgain;
               // Add the noise, starting from minus ADC baseline in electrons
               Double_t baselineEl = simParam->GetADCbaseline() * (simParam->GetADCinRange()
@@ -1290,14 +1282,6 @@ Bool_t AliTRDdigitizer::ConvertSDigits()
   Int_t iCol;
   Int_t iTime;
 
-  if (!fPar) {    
-    fPar = new AliTRDparameter("TRDparameter","Standard parameter");
-    if (fDebug > 0) {
-      printf("<AliTRDdigitizer::ConvertSDigits> ");
-      printf("Create the default parameter object\n");
-    }
-  }
-
   AliTRDSimParam* simParam = AliTRDSimParam::Instance();
   if (!simParam)
   {
@@ -1376,6 +1360,13 @@ Bool_t AliTRDdigitizer::ConvertSDigits()
         for (iTime = 0; iTime < nTimeTotal; iTime++) {         
           Double_t signal = (Double_t) digitsIn->GetDataUnchecked(iRow,iCol,iTime);
           signal *= sDigitsScale;
+          Float_t padgain = calibration->GetGainFactor(iDet, iCol, iRow);
+          if (padgain<=0) {
+                  TString error;
+                  error.Form("Not a valid gain %f, %d %d %d\n", padgain, iDet, iCol, iRow);
+                  AliError(error);
+          }
+          signal *= padgain;
           // Pad and time coupling
           signal *= coupling;
           // Add the noise, starting from minus ADC baseline in electrons
@@ -1443,14 +1434,6 @@ Bool_t AliTRDdigitizer::MergeSDigits()
 
   // Number of track dictionary arrays
   const Int_t kNDict = AliTRDdigitsManager::kNDict;
-
-  if (!fPar) {
-    fPar = new AliTRDparameter("TRDparameter","Standard parameter");
-    if (fDebug > 0) {
-      printf("<AliTRDdigitizer::MergeSDigits> ");
-      printf("Create the default parameter object\n");
-    }
-  }
 
   AliTRDSimParam* simParam = AliTRDSimParam::Instance();
   if (!simParam)
@@ -1648,7 +1631,6 @@ Bool_t AliTRDdigitizer::WriteDigits() const
 
   //Write parameters
   fRunLoader->CdGAFile();
-  if (!gFile->Get("TRDparameter")) GetParameter()->Write();
 
   // Store the digits and the dictionary in the tree
   return fDigitsManager->WriteDigits();
@@ -1734,7 +1716,7 @@ Double_t AliTRDdigitizer::TimeStruct(Float_t vdrift, Double_t dist, Double_t z)
   const Int_t kz2 = kz1+1;
 
   if (r1<0 || r1>37 || kz1<0 || kz1>10) {
-    printf("<AliTRDparameter::TimeStruct> Warning. Indices out of range: ");
+    printf("<AliTRDdigitizer::TimeStruct> Warning. Indices out of range: ");
     printf("dist=%.2f, z=%.2f, r1=%d, kz1=%d\n",dist,z,r1,kz1);
   }
 
@@ -1805,16 +1787,16 @@ void AliTRDdigitizer::SampleTimeStruct(Float_t vdrift)
   fVDsmp[7] = 2.134;
 
   if ( vdrift < fVDsmp[0] ) {
-    printf("<AliTRDparameter::SampleTimeStruct> !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
-    printf("<AliTRDparameter::SampleTimeStruct> Drift Velocity too small (%.3f<%.3f)\n"
+    printf("<AliTRDdigitizer::SampleTimeStruct> !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+    printf("<AliTRDdigitizer::SampleTimeStruct> Drift Velocity too small (%.3f<%.3f)\n"
           , vdrift, fVDsmp[0]);
-    printf("<AliTRDparameter::SampleTimeStruct> !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+    printf("<AliTRDdigitizer::SampleTimeStruct> !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
     vdrift = fVDsmp[0];
   } else if ( vdrift > fVDsmp[7] ) {
-    printf("<AliTRDparameter::SampleTimeStruct> !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
-    printf("<AliTRDparameter::SampleTimeStruct> Drift Velocity too large (%.3f>%.3f)\n"
+    printf("<AliTRDdigitizer::SampleTimeStruct> !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+    printf("<AliTRDdigitizer::SampleTimeStruct> Drift Velocity too large (%.3f>%.3f)\n"
           , vdrift,fVDsmp[6]);
-    printf("<AliTRDparameter::SampleTimeStruct> !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+    printf("<AliTRDdigitizer::SampleTimeStruct> !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
     vdrift = fVDsmp[7];
   }
 
@@ -2506,15 +2488,7 @@ void AliTRDdigitizer::RecalcDiffusion(Float_t vdrift)
 {
   if (vdrift == fDiffusionInfo.fLastVdrift)
     return;
-  
-  if (!fPar) {
-    fPar = new AliTRDparameter("TRDparameter","Standard TRD parameter");
-    if (fDebug > 0) {
-      printf("<AliTRDdigitizer::RecalcDiffusion> ");
-      printf("Create the default parameter object\n");
-    }
-  }
-  
+
   AliTRDSimParam* simParam = AliTRDSimParam::Instance();
   if (!simParam)
   {

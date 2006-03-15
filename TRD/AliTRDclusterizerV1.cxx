@@ -38,7 +38,6 @@
 #include "AliTRDdataArrayF.h"
 #include "AliTRDdataArrayI.h"
 #include "AliTRDdigitsManager.h"
-#include "AliTRDparameter.h"
 #include "AliTRDpadPlane.h"
 #include "AliTRDrawData.h"
 #include "AliTRDcalibDB.h"

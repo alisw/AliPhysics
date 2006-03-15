@@ -24,7 +24,6 @@
 
 #include "AliTRDReconstructor.h"
 #include "AliRunLoader.h"
-#include "AliTRDparameter.h"
 #include "AliTRDclusterizerV1.h"
 #include "AliTRDtracker.h"
 #include "AliTRDpidESD.h"
@@ -45,13 +44,6 @@ void AliTRDReconstructor::Reconstruct(AliRunLoader* runLoader) const
 
   AliTRDclusterizerV1 clusterer("clusterer", "TRD clusterizer");
   runLoader->CdGAFile();
-  AliTRDparameter* trdParam = GetTRDparameter(runLoader); 
-  if (!trdParam) {
-    Error("Reconstruct", "no TRD parameters found");
-    return;
-  }
-  trdParam->ReInit();
-  clusterer.SetParameter(trdParam);
   Int_t nEvents = runLoader->GetNumberOfEvents();
 
   for (Int_t iEvent = 0; iEvent < nEvents; iEvent++) {
@@ -77,13 +69,6 @@ void AliTRDReconstructor::Reconstruct(AliRunLoader* runLoader,
 
   AliTRDclusterizerV1 clusterer("clusterer", "TRD clusterizer");
   runLoader->CdGAFile();
-  AliTRDparameter* trdParam = GetTRDparameter(runLoader); 
-  if (!trdParam) {
-    Error("Reconstruct", "no TRD parameters found");
-    return;
-  }
-  trdParam->ReInit();
-  clusterer.SetParameter(trdParam);
   Int_t nEvents = runLoader->GetNumberOfEvents();
 
   for (Int_t iEvent = 0; iEvent < nEvents; iEvent++) {
@@ -121,19 +106,5 @@ void AliTRDReconstructor::FillESD(AliRunLoader* /*runLoader*/,
   trdPID.MakePID(esd);
 }
 
-
-//_____________________________________________________________________________
-AliTRDparameter* AliTRDReconstructor::GetTRDparameter(AliRunLoader* runLoader) const
-{
-// get the TRD parameters
-
-  runLoader->CdGAFile();
-  AliTRDparameter* trdParam = (AliTRDparameter*) gFile->Get("TRDparameter"); 
-  if (!trdParam) {
-    Error("GetTRDparameter", "no TRD parameters available");
-    return NULL;
-  }
-  return trdParam;
-}
 
 

@@ -13,7 +13,6 @@ class TParticle;
 class TParticlePDG;
 
 class AliTRDgeometry;
-class AliTRDparameter;
 class AliTRDtrack;
 class AliTRDtracklet;
 class AliTRDcluster;
