@@ -177,6 +177,9 @@ public:
 
   void SetSampling(Float_t samp) { fSampling = samp; printf("SetSampling: Sampling factor set to %f", fSampling) ; }
 
+  Int_t GetNCellsInSupMod() const {return fNCellsInSupMod;}
+  Int_t GetNCellsInTower() const {return fNCellsInTower; }
+
 protected:
   AliEMCALGeometry(const Text_t* name, const Text_t* title="") :
     AliGeometry(name, title) {// ctor only for internal usage (singleton)
