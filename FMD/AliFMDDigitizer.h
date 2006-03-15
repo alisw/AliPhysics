@@ -69,14 +69,14 @@ protected:
 			    Short_t  /* count2   */, 
 			    Short_t  /* count3   */) const {}
 
-  AliRunLoader* fRunLoader;	   // Run loader
+  AliRunLoader* fRunLoader;	   //! Run loader
   AliFMDEdepMap fEdep;             // Cache of Energy from hits 
   Float_t       fShapingTime;      // Shaping profile parameter
   
   AliFMDBaseDigitizer(const AliFMDBaseDigitizer& o) 
     : AliDigitizer(o) {}
   AliFMDBaseDigitizer& operator=(const AliFMDBaseDigitizer&) { return *this; }
-  ClassDef(AliFMDBaseDigitizer,1) // Base class for FMD digitizers
+  ClassDef(AliFMDBaseDigitizer,2) // Base class for FMD digitizers
 };
 
 //====================================================================
