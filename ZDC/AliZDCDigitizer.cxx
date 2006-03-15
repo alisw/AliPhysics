@@ -85,6 +85,9 @@ Bool_t AliZDCDigitizer::Init()
      fPMGain[0][j] = 50000.;
      fPMGain[1][j] = 100000.;
      fPMGain[2][j] = 100000.;
+     fPMGain[3][j] = 50000.;
+     fPMGain[4][j] = 100000.;
+     fPMGain[5][j] = 100000.;
    }
    // ADC Caen V965
   fADCRes[0] = 0.0000008; // ADC Resolution high gain: 200 fC/adcCh

@@ -57,7 +57,7 @@ private:
                     Int_t Res) const;
   Int_t   Pedestal(Int_t Detector, Int_t Quadrant, Int_t Res) const;
 
-  Float_t fPMGain[3][5];      	// PM gain
+  Float_t fPMGain[6][5];      	// PM gain
   Float_t fADCRes[2];	      	// ADC conversion factors
   
   AliCDBStorage *fStorage; 	//! storage
