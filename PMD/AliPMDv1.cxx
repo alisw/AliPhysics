@@ -816,7 +816,7 @@ void AliPMDv1::StepManager()
   Int_t   vol[8];
   //const char *namep;
   
-  if(gMC->GetMedium() == fMedSens && (destep = gMC->Edep())) {
+  if(gMC->CurrentMedium() == fMedSens && (destep = gMC->Edep())) {
   
     gMC->CurrentVolID(copy);
     //namep=gMC->CurrentVolName();

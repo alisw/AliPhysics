@@ -1071,7 +1071,7 @@ void AliTOFv2::StepManager()
   Int_t   *idtmed = fIdtmed->GetArray()-499;
   Float_t incidenceAngle;
   
-  if(gMC->GetMedium()==idtmed[513] && 
+  if(gMC->CurrentMedium()==idtmed[513] && 
      gMC->IsTrackEntering() && gMC->TrackCharge()
      && gMC->CurrentVolID(copy)==fIdSens) 
   {    

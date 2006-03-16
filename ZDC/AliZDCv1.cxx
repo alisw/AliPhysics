@@ -1184,23 +1184,23 @@ void AliZDCv1::StepManager()
 
   for (j=0;j<10;j++) hits[j]=0;
 
-  if((gMC->GetMedium() == fMedSensZN) || (gMC->GetMedium() == fMedSensZP) ||
-     (gMC->GetMedium() == fMedSensGR) || (gMC->GetMedium() == fMedSensF1) ||
-     (gMC->GetMedium() == fMedSensF2) || (gMC->GetMedium() == fMedSensZEM)){
+  if((gMC->CurrentMedium() == fMedSensZN) || (gMC->CurrentMedium() == fMedSensZP) ||
+     (gMC->CurrentMedium() == fMedSensGR) || (gMC->CurrentMedium() == fMedSensF1) ||
+     (gMC->CurrentMedium() == fMedSensF2) || (gMC->CurrentMedium() == fMedSensZEM)){
 
 //   --- This part is for no shower developement in beam pipe and TDI
-//     (gMC->GetMedium() == fMedSensPI) || (gMC->GetMedium() == fMedSensTDI)){
+//     (gMC->CurrentMedium() == fMedSensPI) || (gMC->CurrentMedium() == fMedSensTDI)){
        
   // If particle interacts with beam pipe -> return
-//    if((gMC->GetMedium() == fMedSensPI) || (gMC->GetMedium() == fMedSensTDI)){ 
+//    if((gMC->CurrentMedium() == fMedSensPI) || (gMC->CurrentMedium() == fMedSensTDI)){ 
       // If option NoShower is set -> StopTrack
 //      if(fNoShower==1) {
-//	if(gMC->GetMedium() == fMedSensPI) {
+//	if(gMC->CurrentMedium() == fMedSensPI) {
 //          knamed = gMC->CurrentVolName();
 //          if((!strncmp(knamed,"MQ",2)) || (!strncmp(knamed,"YM",2)))  fpLostIT += 1;
 //          if((!strncmp(knamed,"MD1",3))|| (!strncmp(knamed,"YD1",2))) fpLostD1 += 1;
 //	}
-//	if(gMC->GetMedium() == fMedSensTDI) fpLostTDI += 1;
+//	if(gMC->CurrentMedium() == fMedSensTDI) fpLostTDI += 1;
 //        gMC->StopTrack();
 //	printf("\n	# of p lost in Inner Triplet = %d\n",fpLostIT);
 //	printf("\n	# of p lost in D1  = %d\n",fpLostD1);
@@ -1310,7 +1310,7 @@ void AliZDCv1::StepManager()
 
 
   // *** Light production in fibres 
-  if((gMC->GetMedium() == fMedSensF1) || (gMC->GetMedium() == fMedSensF2)){
+  if((gMC->CurrentMedium() == fMedSensF1) || (gMC->CurrentMedium() == fMedSensF2)){
 
      //Select charged particles
      if((destep=gMC->Edep())){
@@ -1378,7 +1378,7 @@ void AliZDCv1::StepManager()
 	 nphe = gRandom->Poisson(out);
 //	 printf("ZN --- ibeta = %d, ialfa = %d, ibe = %d"
 //	        "	-> out = %f, nphe = %d\n", ibeta, ialfa, ibe, out, nphe);
-	 if(gMC->GetMedium() == fMedSensF1){
+	 if(gMC->CurrentMedium() == fMedSensF1){
 	   hits[7] = nphe;  	//fLightPMQ
 	   hits[8] = 0;
 	   hits[9] = 0;
@@ -1397,7 +1397,7 @@ void AliZDCv1::StepManager()
 	 nphe = gRandom->Poisson(out);
 //	 printf("ZP --- ibeta = %d, ialfa = %d, ibe = %d"
 //	        "	-> out = %f, nphe = %d\n", ibeta, ialfa, ibe, out, nphe);
-	 if(gMC->GetMedium() == fMedSensF1){
+	 if(gMC->CurrentMedium() == fMedSensF1){
 	   hits[7] = nphe;  	//fLightPMQ
 	   hits[8] = 0;
 	   hits[9] = 0;

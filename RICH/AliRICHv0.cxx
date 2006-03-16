@@ -80,7 +80,7 @@ void AliRICHv0::StepManager()
   Int_t mid=gMC->CurrentMaterial(a,z,den,rad,abs);
   Info("Material","id=%i a=%7.2f z=%7.2f den=%9.4f rad=%9.2f abs=%9.2f",mid,a,z,den,rad,abs);
   
-  Int_t iTmedId=gMC->GetMedium();
+  Int_t iTmedId=gMC->CurrentMedium();
   const char *sTmed;
   switch(iTmedId){
     case kAir:        sTmed="Air"      ;break;
