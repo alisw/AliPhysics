@@ -201,8 +201,6 @@ void AliGenHerwig::Generate()
 	fTrials++;
 	fHerwig->ImportParticles(particles,"All");
 	Int_t np = particles->GetEntriesFast()-1;
-	printf("Particles from Herwig %d \n", np);
-	
 	if (np == 0 ) continue;
 	
 	Int_t nc=0;
@@ -240,15 +238,11 @@ void AliGenHerwig::Generate()
 	    } // end of if: selection of particle
 	} // end of for: particle loop
 	if (newPos) delete[] newPos;
-	printf("\n I've put %i particles on the stack \n",nc);
 	//      MakeHeader();
-	printf("nc: %d %d\n", nc, fNpart);
-	
 	if (nc > 0) {
 	    jev+=nc;
 	    if (jev >= fNpart || fNpart == -1) {
 		fKineBias=Float_t(fNpart)/Float_t(fTrials);
-		printf("\n Trials: %i %i %i\n",fTrials, fNpart, jev);
 		break;
 	    }
 	}
