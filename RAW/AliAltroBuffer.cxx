@@ -22,16 +22,17 @@
 // Author: D.Favretto
 
 #include "AliAltroBuffer.h"
+#include "AliAltroMapping.h"
 #include "AliRawDataHeader.h"
+#include "AliLog.h"
 #include <Riostream.h>
 #include <stdlib.h>
 
 
 ClassImp(AliAltroBuffer)
 
-
 //_____________________________________________________________________________
-AliAltroBuffer::AliAltroBuffer(const char* fileName, Int_t flag):
+AliAltroBuffer::AliAltroBuffer(const char* fileName, Int_t flag, const AliAltroMapping *mapping):
   fShift(0),
   fCurrentCell(0),
   fFreeCellBuffer(0),
@@ -42,7 +43,8 @@ AliAltroBuffer::AliAltroBuffer(const char* fileName, Int_t flag):
   fFilePosition(0),
   fFileEnd(0),
   fDataHeaderPos(0),
-  fEndingFillWords(0)
+  fEndingFillWords(0),
+  fMapping(mapping)
 {
 //if flag = 1 the actual object is used in the write mode
 //if flag = 0 the actual object is used in the read mode
@@ -77,6 +79,7 @@ AliAltroBuffer::AliAltroBuffer(const char* fileName, Int_t flag):
     fFileEnd = fFilePosition;
     fFile->seekg(0);
   }
+
 }
 
 //_____________________________________________________________________________
@@ -91,6 +94,7 @@ AliAltroBuffer::~AliAltroBuffer()
   }//end if
   fFile->close();
   delete fFile;
+
 }
 
 //_____________________________________________________________________________
@@ -106,7 +110,8 @@ AliAltroBuffer::AliAltroBuffer(const AliAltroBuffer& source):
   fFilePosition(source.fFilePosition),
   fFileEnd(source.fFileEnd),
   fDataHeaderPos(source.fDataHeaderPos),
-  fEndingFillWords(source.fEndingFillWords)
+  fEndingFillWords(source.fEndingFillWords),
+  fMapping(source.fMapping)
 {
 // Copy Constructor
 
@@ -260,19 +265,54 @@ void AliAltroBuffer::FillBuffer(Int_t val)
 
 
 //_____________________________________________________________________________
+void AliAltroBuffer::WriteDummyTrailer(Int_t wordsNumber, Int_t padNumber,
+				       Int_t rowNumber, Int_t secNumber)
+{
+//Writes a trailer of 40 bits
+
+   Int_t num = fFreeCellBuffer % 4;
+   for(Int_t i = 0; i < num; i++) {
+     FillBuffer(0x2AA);
+   }//end for
+   FillBuffer(wordsNumber);
+   FillBuffer(padNumber);
+   FillBuffer(rowNumber);
+   FillBuffer(secNumber);
+}
+
+//_____________________________________________________________________________
 void AliAltroBuffer::WriteTrailer(Int_t wordsNumber, Int_t padNumber,
 				  Int_t rowNumber, Int_t secNumber)
 {
 //Writes a trailer of 40 bits
 
+  if (!fMapping) {
+    AliError("No ALTRO mapping information is loaded! Filling a dummy trailer!");
+    return WriteDummyTrailer(wordsNumber,padNumber,
+			     rowNumber,secNumber);
+  }
+
   Int_t num = fFreeCellBuffer % 4;
   for(Int_t i = 0; i < num; i++) {
     FillBuffer(0x2AA);
   }//end for
-  FillBuffer(wordsNumber);
-  FillBuffer(padNumber);
-  FillBuffer(rowNumber);
-  FillBuffer(secNumber);
+  Int_t temp;
+  temp = 0x2AA;
+  FillBuffer(temp);
+  temp = 0xA << 6;
+  temp |= (wordsNumber >> 4);
+  FillBuffer(temp);
+  temp = (wordsNumber << 6) & 0x3FF;
+  temp |= (0xA << 2);
+
+  Short_t hwAdress = fMapping->GetHWAdress(rowNumber,padNumber);
+  if (hwAdress == -1)
+    AliFatal(Form("No hardware (ALTRO) adress found for these pad-row (%d) and pad (%d) indeces !",rowNumber,padNumber));
+      
+  temp |= (hwAdress >> 10) & 0x3;
+  FillBuffer(temp);
+  temp = hwAdress & 0x3FF;
+  FillBuffer(temp);
 }
 
 //_____________________________________________________________________________
@@ -394,3 +434,4 @@ Bool_t AliAltroBuffer::ReadDataHeader()
   fFile->seekp(currentPos);
   return header.TestAttribute(0);
 }
+

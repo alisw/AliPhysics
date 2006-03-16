@@ -24,10 +24,11 @@ class fstream;
 #include "Riostream.h"
 #endif
 
+class AliAltroMapping;
 
 class AliAltroBuffer: public TObject {
  public:
-  AliAltroBuffer(const char* fileName, Int_t flag);
+  AliAltroBuffer(const char* fileName, Int_t flag, const AliAltroMapping *mapping = NULL);
   virtual ~AliAltroBuffer();
 
   void  FillBuffer(Int_t val);
@@ -42,6 +43,9 @@ class AliAltroBuffer: public TObject {
   void  WriteTrailer(Int_t wordsNumber, Int_t padNumber, 
 		     Int_t rowNumber, Int_t secNumber);
   //this method is used to write the trailer
+  void  WriteDummyTrailer(Int_t wordsNumber, Int_t padNumber, 
+			  Int_t rowNumber, Int_t secNumber);
+  //this method is used to write a dummy trailer
   Bool_t ReadTrailer(Int_t& wordsNumber, Int_t& padNumber, 
 		     Int_t& rowNumber, Int_t &secNumber);
   //this method is used to read the trailer when the file is read forward
@@ -88,6 +92,9 @@ class AliAltroBuffer: public TObject {
   UInt_t fFileEnd;     //position of the last element of the file (File dimension)
   UInt_t fDataHeaderPos;//Data header position
   Int_t  fEndingFillWords;//Few words at the end of the stream
+
+  // Now the parameters for the mapping
+  const AliAltroMapping*    fMapping;      // Pointer to the mapping handler
 
   ClassDef(AliAltroBuffer,0)  // Interface to the Altro format
 };
