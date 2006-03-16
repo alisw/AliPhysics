@@ -11,7 +11,7 @@ revdisp-@MODULE@:	reveng-@MODULE@
 	@echo revdisp for @MODULE@
 	@cd @MODULE@/check ; \
       $(IRST_INSTALLDIR)/webreveng/create-class-diagram-pages.sh
-	@sed -e "s/\@MODULE\@/@MODULE@/g" < $(IRST_INSTALLDIR)/webreveng/WWW/STEER/HomePage.html > @MODULE@/check/HomePage.html
+	@sed -e "s/STEER/@MODULE@/g" < $(IRST_INSTALLDIR)/webreveng/WWW/STEER/HomePage.html > @MODULE@/check/HomePage.html
 
 PACKREVENG =
 
