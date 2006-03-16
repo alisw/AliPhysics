@@ -237,7 +237,7 @@ void AliPMDCalibrator::CalculateIsoCell()
 		  if(isoMean[d1][i1][j1][k1]>0.0 && histMean[d1][i1]>0.0)
 		    {
 		      fGainFact[d1][i1][j1][k1]=isoMean[d1][i1][k1][j1]/histMean[d1][i1];
-		      float_t gain=fGainFact[d1][i1][j1][k1];
+		      Float_t gain=fGainFact[d1][i1][j1][k1];
 		      fCalibData->SetGainFact(d1,i1,j1,k1,gain);
 		    }                              
 		}
