@@ -133,6 +133,13 @@
 //    SetTrackName() memberfunction. This will allow unique identification
 //    of tracks which are produced when re-processing existing data with
 //    different criteria.
+//    By default the charge of the produced tracks is set to 0, since
+//    no distinction can be made between positive or negative tracks.
+//    However, the user can define the track charge by invokation
+//    of the memberfunction SetCharge().
+//    This facility may be used to distinguish tracks produced by the
+//    various reconstruction algorithms in a (3D) colour display
+//    (see the class AliHelix for further details).  
 //
 //    Note : In case the maximum jet opening angle was specified <0,
 //           only the jet with the maximum number of tracks will appear
@@ -174,6 +181,7 @@ IceDwalk::IceDwalk(const char* name,const char* title) : TTask(name,title)
  fMaxmodA=999;
  fMinmodA=0;
  fTrackname="IceDwalk";
+ fCharge=0;
 }
 ///////////////////////////////////////////////////////////////////////////
 IceDwalk::~IceDwalk()
@@ -331,6 +339,15 @@ void IceDwalk::SetTrackName(TString s)
 // By default the produced first guess tracks have the name "IceDwalk"
 // which is set in the constructor of this class.
  fTrackname=s;
+}
+///////////////////////////////////////////////////////////////////////////
+void IceDwalk::SetCharge(Float_t charge)
+{
+// Set user defined charge for the produced first guess tracks.
+// This allows identification of these tracks on color displays.
+// By default the produced first guess tracks have charge=0
+// which is set in the constructor of this class.
+ fCharge=charge;
 }
 ///////////////////////////////////////////////////////////////////////////
 void IceDwalk::Exec(Option_t* opt)
@@ -760,6 +777,7 @@ void IceDwalk::Exec(Option_t* opt)
  // the standard Sieglinde processing.
  AliTrack t; 
  t.SetNameTitle(fTrackname.Data(),"IceDwalk direct walk track");
+ t.SetCharge(fCharge);
  for (Int_t jet=0; jet<njets; jet++)
  {
   AliJet* jx=(AliJet*)jets2.At(jet);

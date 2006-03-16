@@ -59,3 +59,4 @@
                 Also specification of minimum number of good fired modules for events to
                 be processed introduced in IceDwalk. 
                 New class IceLinefit introduced.  
+14-mar-2006 NvE User defined track charge setting introduced in IceDwalk, IceLinefit and IcePandel.

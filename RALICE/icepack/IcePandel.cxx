@@ -44,6 +44,13 @@
 // SetTrackName() memberfunction. This will allow unique identification
 // of tracks which are produced when re-processing existing data with
 // different criteria.
+// By default the charge of the produced tracks is set to 0, since
+// no distinction can be made between positive or negative tracks.
+// However, the user can define the track charge by invokation
+// of the memberfunction SetCharge().
+// This facility may be used to distinguish tracks produced by the
+// various reconstruction algorithms in a (3D) colour display
+// (see the class AliHelix for further details).  
 // A pointer to the first guess track which was used as input is available
 // via the GetParentTrack facility of these "IcePandel" tracks.
 // Furthermore, all the hits that were used in the minisation are available
@@ -123,6 +130,7 @@ IcePandel::IcePandel(const char* name,const char* title) : TTask(name,title)
  fHits=0;
  fFitter=0;
  fTrackname="IcePandel";
+ fCharge=0;
 
  // Set the global pointer to this instance
  gIcePandel=this;
@@ -356,6 +364,7 @@ void IcePandel::Exec(Option_t* opt)
    tkfit.Reset();
    ntkreco++;
    tkfit.SetId(ntkreco);
+   tkfit.SetCharge(fCharge);
    tkfit.SetParentTrack(fTrack);
    AliTimestamp* tt0=r0->GetTimestamp();
    pos.SetTimestamp(*tt0);
@@ -458,6 +467,15 @@ void IcePandel::SetTrackName(TString s)
 // By default the produced tracks have the name "IcePandel" which is
 // set in the constructor of this class.
  fTrackname=s;
+}
+///////////////////////////////////////////////////////////////////////////
+void IcePandel::SetCharge(Float_t charge)
+{
+// Set user defined charge for the produced tracks.
+// This allows identification of these tracks on color displays.
+// By default the produced tracks have charge=0 which is set in the
+// constructor of this class.
+ fCharge=charge;
 }
 ///////////////////////////////////////////////////////////////////////////
 void IcePandel::FitFCN(Int_t&,Double_t*,Double_t& f,Double_t* x,Int_t)

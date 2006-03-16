@@ -649,6 +649,68 @@ TObjArray* AliJet::GetTracks(TString name)
  return fSelected;
 }
 ///////////////////////////////////////////////////////////////////////////
+void AliJet::RemoveTracks(TString name)
+{
+// Remove all tracks with the specified name.
+// If name="*" all tracks will be removed.
+//
+// Note :
+// ------
+// In case the user has labeled reconstructed tracks with the name of
+// the applied reconstruction algorithm, this memberfunction provides
+// easy removal of all tracks reconstructed by a certain method.
+
+ if (!fTracks) return;
+
+ AliTrack* tx=0;
+ TString s;
+ TObject* obj=0;
+ for (Int_t i=0; i<fNtrk; i++)
+ {
+  tx=(AliTrack*)fTracks->At(i);
+  if (!tx) continue;
+
+  s=tx->GetName();
+  if (s==name || name=="*")
+  {
+   obj=fTracks->Remove(tx);
+   if (obj && fTracks->IsOwner()) delete tx;
+  }
+ }
+ fTracks->Compress();
+ fNtrk=fTracks->GetEntries();
+}
+///////////////////////////////////////////////////////////////////////////
+void AliJet::RemoveTracks(Int_t idmode,Int_t chmode,Int_t pcode)
+{
+// Remove user selected tracks based on the idmode, chmode and pcode
+// selections as specified by the user.
+// For defintions of these selections see the corresponding GetTracks()
+// memberfunction.
+
+ if (!fTracks) return;
+
+ TObjArray* arr=GetTracks(idmode,chmode,pcode);
+ if (!arr) return;
+ 
+ Int_t ntk=arr->GetEntries();
+ if (!ntk) return;
+
+ AliTrack* tx=0;
+ TObject* obj=0;
+ for (Int_t i=0; i<ntk; i++)
+ {
+  tx=(AliTrack*)arr->At(i);
+  if (!tx) continue;
+
+  obj=fTracks->Remove(tx);
+  if (obj && fTracks->IsOwner()) delete tx;
+ }
+ fTracks->Compress();
+ fNtrk=fTracks->GetEntries();
+ arr->Clear();
+}
+///////////////////////////////////////////////////////////////////////////
 void AliJet::ShowTracks(Int_t mode)
 {
 // Provide an overview of the available tracks.

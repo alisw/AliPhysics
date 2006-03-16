@@ -38,6 +38,13 @@
 // to 1 GeV. The mass and charge of the track are left 0.
 // The r0 and t0 can be obtained from the reference point of the track,
 // whereas the t0 ia also available from the track timestamp .
+// By default the charge of the produced tracks is set to 0, since
+// no distinction can be made between positive or negative tracks.
+// However, the user can define the track charge by invokation
+// of the memberfunction SetCharge().
+// This facility may be used to distinguish tracks produced by the
+// various reconstruction algorithms in a (3D) colour display
+// (see the class AliHelix for further details).  
 //
 // For further details the user is referred to NIM A524 (2004) 169.
 //
@@ -60,6 +67,7 @@ IceLinefit::IceLinefit(const char* name,const char* title) : TTask(name,title)
  fMaxmodA=999;
  fMinmodA=0;
  fTrackname="IceLinefit";
+ fCharge=0;
 }
 ///////////////////////////////////////////////////////////////////////////
 IceLinefit::~IceLinefit()
@@ -100,6 +108,15 @@ void IceLinefit::SetTrackName(TString s)
 // By default the produced first guess tracks have the name "IceLinefit"
 // which is set in the constructor of this class.
  fTrackname=s;
+}
+///////////////////////////////////////////////////////////////////////////
+void IceLinefit::SetCharge(Float_t charge)
+{
+// Set user defined charge for the produced first guess tracks.
+// This allows identification of these tracks on color displays.
+// By default the produced first guess tracks have charge=0
+// which is set in the constructor of this class.
+ fCharge=charge;
 }
 ///////////////////////////////////////////////////////////////////////////
 void IceLinefit::Exec(Option_t* opt)
@@ -185,6 +202,7 @@ void IceLinefit::Exec(Option_t* opt)
 
  AliTrack t; 
  t.SetNameTitle(fTrackname.Data(),"IceLinefit linefit track");
+ t.SetCharge(fCharge);
  evt->AddTrack(t);
  AliTrack* trk=evt->GetTrack(evt->GetNtracks());
  if (!trk) return;
