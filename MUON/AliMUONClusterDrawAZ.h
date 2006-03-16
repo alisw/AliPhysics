@@ -53,6 +53,7 @@ private:
   void   Init(); // initialization
   void   ModifyHistos(); // modify histograms
   void   DrawHits(); // draw simulated and reconstructed hits
+  TH2D*  GetBackground(Int_t iHist); // build histogram with bkg. contaminated pads
 
 ClassDef(AliMUONClusterDrawAZ,0) // cluster drawing for MUON arm of ALICE
 };

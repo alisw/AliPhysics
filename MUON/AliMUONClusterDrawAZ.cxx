@@ -15,7 +15,11 @@
 
 /* $Id$ */
 
-// Cluster drawing object for AZ cluster finder 
+// Class AliMUONClusterDrawAZ
+// -------------------------------------
+// Cluster drawing for AZ cluster finder 
+//
+// Author: Alexander Zinchenko, JINR Dubna
 
 #include <stdlib.h>
 #include <Riostream.h>
@@ -185,7 +189,6 @@ void AliMUONClusterDrawAZ::DrawCluster()
       for (Int_t i = 0; i < fFind->GetNPads(0)+fFind->GetNPads(1); i++) {
 	if (fFind->GetIJ(0,i) != cath) continue;
 	fHist[cath*2]->Fill(fFind->GetXyq(0,i),fFind->GetXyq(1,i),fFind->GetXyq(2,i));
-	//cout << fXyq[0][i] << fXyq[1][i] << fXyq[2][i] << endl;
       }
     } else {
       // different segmentation in the cluster
@@ -238,7 +241,9 @@ void AliMUONClusterDrawAZ::DrawCluster()
   } // for (Int_t cath = 0;
 	
   // Draw histograms and coordinates
-  TH2D *hFake = 0x0;
+  //TH2D *hFake = 0x0;
+  TH2D *hFake = (TH2D*) gROOT->FindObject("hFake");
+  if (hFake) hFake->Delete();
   if (fModif) {
     // This part works only after a modification of THistPainter::PaintLego(Option_t *) 
     // in ROOT
@@ -251,8 +256,8 @@ void AliMUONClusterDrawAZ::DrawCluster()
       ymax = TMath::Max (ymax, fHist[i]->GetYaxis()->GetXmax());
       aMax = TMath:: Max (aMax, fHist[i]->GetMaximum());
     }
-    if (c1->FindObject("hFake")) delete c1->FindObject("hFake");
-    hFake = new TH2D ("hFake", "", 1, xmin, xmax, 1, ymin, ymax);
+    //if (c1->FindObject("hFake")) delete c1->FindObject("hFake");
+    hFake = new TH2D ("hFake", "hFake", 1, xmin, xmax, 1, ymin, ymax);
     hFake->SetMaximum(aMax);
     hFake->SetNdivisions(505,"Z");
     hFake->SetStats(kFALSE);
@@ -309,6 +314,9 @@ void AliMUONClusterDrawAZ::DrawCluster()
     if (r1 > r2) {
       if (fModif) fHist[cath*2]->Draw("lego1FbSame");
       else fHist[cath*2]->Draw("lego1Fb");
+      // Draw background contaminated charges
+      //TH2D *hBkg = GetBackground(cath*2);
+      //if (hBkg) hBkg->Draw("lego1FbBbSameAxis");
       if (fHist[cath*2+1]) fHist[cath*2+1]->Draw("lego1SameAxisBbFb");
     } else {
       if (fModif) fHist[cath*2+1]->Draw("lego1FbSame");
@@ -330,7 +338,7 @@ void AliMUONClusterDrawAZ::DrawHits()
 
   TView *view[2] = { 0x0, 0x0 };
   Double_t p1[3]={0}, p2[3], xNDC[6], xl, yl, zl;
-  TLine *line[99] = {0};
+  TLine *line[199] = {0};
   TCanvas *c1 = (TCanvas*) gROOT->GetListOfCanvases()->FindObject("c1");
   if (c1) {
     c1->cd(1);
@@ -358,9 +366,10 @@ void AliMUONClusterDrawAZ::DrawHits()
     for (Int_t ihit = 0; ihit < nhits; ihit++) {
       mHit = (AliMUONHit*) hits->UncheckedAt(ihit);
       if (mHit->Chamber() != fChamber+1) continue;  // chamber number
+      if (mHit->DetElemId() != fidDE) continue;  // det. elem. Id
       AliMUONClusterInput::Instance()->Segmentation2(0)->GetTransformer()->
  	                 Global2Local(fidDE, mHit->X(), mHit->Y(), mHit->Z(), xl, yl, zl);
-      if (TMath::Abs(zl-fFind->GetZpad()) > 1) continue; // different slat
+      //if (TMath::Abs(zl-fFind->GetZpad()) > 1) continue; // different slat
       p2[0] = p1[0] = xl;        // x-pos of hit
       p2[1] = p1[1] = yl;        // y-pos
       if (p1[0] < hist->GetXaxis()->GetXmin() || 
@@ -404,6 +413,7 @@ void AliMUONClusterDrawAZ::DrawHits()
       }
     } // for (Int_t ihit = 0; ihit < nhits;
   } // for (Int_t i = 0; i < ntracks;
+  fData->ResetHits();
 
   // Draw reconstructed coordinates
   if (fData->TreeR()) fData->GetRawClusters();
@@ -454,6 +464,7 @@ void AliMUONClusterDrawAZ::DrawHits()
       }
     } // for (Int_t i = 0; i < rawclust ->GetEntries();
   } // if (rawclust)
+  if (fData->TreeR()) fData->ResetRawClusters();
   c1->Update();
 }
 
@@ -690,4 +701,53 @@ void AliMUONClusterDrawAZ::UpdateCluster(Int_t npad)
     gPad->Modified();
     gPad->Update();
   }  
+}
+
+//_____________________________________________________________________________
+TH2D* AliMUONClusterDrawAZ::GetBackground(Int_t iHist)
+{
+  // Build histogram with pads from the cluster contaminated by the background
+
+  //return 0x0;
+  Int_t cath = iHist / 2;
+  Double_t xmin = fHist[iHist]->GetXaxis()->GetXmin();
+  Double_t xmax = fHist[iHist]->GetXaxis()->GetXmax();
+  Double_t ymin = fHist[iHist]->GetYaxis()->GetXmin();
+  Double_t ymax = fHist[iHist]->GetYaxis()->GetXmax();
+  
+  // Create histogram
+  char hName[4];
+  sprintf(hName,"Bkg%1d",iHist);
+  TH2D *hist = (TH2D*) gROOT->FindObject(hName);
+  if (hist) hist->Delete();
+  hist = (TH2D*) fHist[iHist]->Clone(hName);
+  hist->Reset();
+
+  // Loop over pads
+  Int_t digit = 0, iok = 0, ix = 0, iy = 0; 
+  AliMUONDigit *mdig = 0x0;
+  Double_t cont = 0, x = 0, y = 0; 
+  for (Int_t i = 0; i < fFind->GetNPads(0)+fFind->GetNPads(1); i++) {
+    if (fFind->GetIJ(0,i) != cath) continue;
+    x = fFind->GetXyq(0,i);
+    y = fFind->GetXyq(1,i);
+    if (x < xmin || x > xmax) continue;
+    if (y < ymin || y > ymax) continue;
+    digit = fFind->GetIJ(4,i);
+    if (digit >= 0) mdig = AliMUONClusterInput::Instance()->Digit(cath, digit);
+    else mdig = AliMUONClusterInput::Instance()->Digit(TMath::Even(cath), -digit-1);
+    if (mdig->Track(1) >= 0 || mdig->Track(0) >= 10000000) {
+      ix = fHist[iHist]->GetXaxis()->FindBin(x);
+      iy = fHist[iHist]->GetYaxis()->FindBin(y);
+      cont = fHist[iHist]->GetCellContent(ix, iy);
+      hist->Fill(x, y, cont);
+      iok = 1;
+    }
+  }
+  if (iok) { 
+    hist->SetFillColor(5); 
+    hist->SetMaximum(fHist[iHist]->GetMaximum());
+    return hist; 
+  }
+  return 0x0;
 }
