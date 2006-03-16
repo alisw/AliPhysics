@@ -23,10 +23,12 @@ class AliMUONPixel : public TObject {
   Double_t Charge(void) const { return fCharge; } // pixel charge
   Double_t Size(Int_t ixy) const { return fSize[ixy]; } // pixel size
   Double_t Coord(Int_t ixy) const { return fXY[ixy]; } // pixel coordinate
+  Int_t Flag(void) const { return fFlag; } // pixel flag
   
   void SetCharge(Double_t Charge) { fCharge = Charge; } // set charge
   void SetSize(Int_t ixy, Double_t Size) { fSize[ixy] = Size; } // set size
-  void SetCoord(Int_t ixy, Double_t Coord) { fXY[ixy] = Coord; }
+  void SetCoord(Int_t ixy, Double_t Coord) { fXY[ixy] = Coord; } // set coordinate
+  void SetFlag(Int_t flag) { fFlag = flag; } // set flag
   void Shift(Int_t ixy, Double_t shift) { fXY[ixy] += shift; }
   void Print(const char* opt="") const;
   // What is necessary for sorting TObjArray's
@@ -37,9 +39,10 @@ class AliMUONPixel : public TObject {
 
  private:
  
-  Double_t fCharge; // pixel charge
-  Double_t fSize[2]; // pixel size
-  Double_t fXY[2]; // pixel coordinates
+  Double_t fCharge; // ! pixel charge
+  Double_t fSize[2]; // ! pixel size
+  Double_t fXY[2]; // ! pixel coordinates
+  Int_t fFlag; // ! pixel flag
 
   // Functions
 

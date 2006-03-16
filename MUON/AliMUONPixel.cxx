@@ -15,6 +15,13 @@
 
 /* $Id$ */
 
+// Class AliMUONPixel
+// -------------------------------------
+// Basic object of the cluster / rec. point finder based 
+// on Expectation-Minimization approach (AZ cluster finder)
+//
+// Author: Alexander Zinchenko, JINR Dubna
+
 #include "AliMUONPixel.h"
 
 ClassImp(AliMUONPixel) // Class implementation in ROOT context
@@ -23,7 +30,9 @@ ClassImp(AliMUONPixel) // Class implementation in ROOT context
 AliMUONPixel::AliMUONPixel()
   : TObject()
 {
-// Default constructor
+  // Default constructor
+  fXY[0] = fXY[1] = fSize[0] = fSize[1] = fCharge = 0;
+  fFlag = 0;
 } 
 
 //_____________________________________________________________________________
@@ -32,6 +41,7 @@ AliMUONPixel::AliMUONPixel(Double_t xc, Double_t yc, Double_t wx, Double_t wy, D
 {
   // Constructor
   fXY[0] = xc; fXY[1] = yc; fSize[0] = wx; fSize[1] = wy; fCharge = charge;
+  fFlag = 0;
 }
 
 //_____________________________________________________________________________
@@ -54,6 +64,6 @@ Int_t AliMUONPixel::Compare(const TObject* pixel) const
 //__________________________________________________________________________
 void AliMUONPixel::Print(const char* /*opt*/) const
 {
-  // "Compare" function to sort with decreasing pixel charge
-  printf("%9.4f %9.4f %9.4f %9.4f %9.4f \n", fXY[0], fXY[1], fSize[0], fSize[1], fCharge);
+  // Print function
+  printf("%9.4f %9.4f %9.4f %9.4f %9.4f %1d\n", fXY[0], fXY[1], fSize[0], fSize[1], fCharge, fFlag);
 }
