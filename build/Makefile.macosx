@@ -1,5 +1,7 @@
 # Makefile for AliRoot for MacOS X with gcc
 
+XARGS = xargs
+
 # OS version
 MACOSX_MAJOR := $(strip $(shell sw_vers | sed -n 's/ProductVersion://p' | cut -d . -f 1))
 MACOSX_MINOR := $(strip $(shell sw_vers | sed -n 's/ProductVersion://p' | cut -d . -f 2))
