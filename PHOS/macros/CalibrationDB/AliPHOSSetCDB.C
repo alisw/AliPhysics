@@ -63,43 +63,28 @@ void SetCC(Int_t flag=0)
   Int_t beamPeriod =  1;
   char* objFormat  = "";
 
+  AliPHOSCalibData* cdb = 0;
+
   if      (flag == 0) {
     DBFolder  ="local://InitCalibDB";
     firstRun  =  0;
     lastRun   =  0;
     objFormat = "PHOS initial gain factors and pedestals";
+    cdb = new AliPHOSCalibData();
+    cdb->CreateNew();
   }
+
   else if (flag == 1) {
     DBFolder  ="local://DeCalibDB";
     firstRun  =  0;
     lastRun   = 10;
     objFormat = "PHOS random pedestals and ADC gain factors (5x64x56)";
+ 
+    cdb = new AliPHOSCalibData();    
+    cdb->RandomEmc();
+    cdb->RandomCpv();
   }
   
-  AliPHOSCalibData *calibda=new AliPHOSCalibData("PHOS");
-  
-  Float_t fADCpedestalEmc = 0.005;
-  Float_t fADCchanelEmc   = 0.0015;
-  
-  TRandom rn;
-  
-  for(Int_t module=1; module<6; module++) {
-    for(Int_t column=1; column<57; column++) {
-      for(Int_t row=1; row<65; row++) {
-	if (flag == 1) {
-	  // Decalibration:
-	  // Spread calibration coefficients uniformly with
-	  // Cmax/Cmin = 5, (Cmax-Cmin)/2 = 0.0015
-	  // and pedestals 0.005 +-10%
-	  fADCchanelEmc  =rn.Uniform(0.00075,0.00375);
-	  fADCpedestalEmc=rn.Uniform(0.0045,0.0055);
-	}
-	calibda->SetADCchannelEmc (module,column,row,fADCchanelEmc);
-	calibda->SetADCpedestalEmc(module,column,row,fADCpedestalEmc);
-      }
-    }
-  }
-
   //Store calibration data into database
   
   AliCDBMetaData md;
@@ -107,11 +92,11 @@ void SetCC(Int_t flag=0)
   md.SetBeamPeriod(beamPeriod);
   md.SetResponsible("Boris Polichtchouk");
   
-  AliCDBId id("PHOS/Calib/GainFactors_and_Pedestals",firstRun,lastRun);
+  AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT");
+  AliCDBManager::Instance()->SetSpecificStorage("PHOS",DBFolder.Data());
 
-  AliCDBManager* man = AliCDBManager::Instance();  
-  AliCDBStorage* loc = man->GetStorage(DBFolder.Data());
-  loc->Put(calibda, id, &md);
+  cdb->WriteEmc(firstRun,lastRun,&md);
+  cdb->WriteCpv(firstRun,lastRun,&md);
 
 }
 
@@ -133,19 +118,22 @@ void GetCC(Int_t flag=0)
     DBFolder  ="local://DeCalibDB";
   }
 
-  AliPHOSCalibData* clb  = (AliPHOSCalibData*)
-    (AliCDBManager::Instance()
-     ->GetStorage(DBFolder.Data())
-     ->Get("PHOS/Calib/GainFactors_and_Pedestals",
-	   gAlice->GetRunNumber())->GetObject());
+  AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT");
+  AliCDBManager::Instance()->SetSpecificStorage("PHOS",DBFolder.Data());
+
+  AliPHOSCalibData* clb  = new AliPHOSCalibData(gAlice->GetRunNumber());
 
   static const Int_t nMod =  5;
   static const Int_t nCol = 56;
   static const Int_t nRow = 64;
 
-  TH2F *hPed[nMod], *hGain[nMod];
-  TCanvas *cPed  = new TCanvas("cPed" ,"Pedestals"   , 10,10,400,800);
-  TCanvas *cGain = new TCanvas("cGain","Gain factors",410,10,400,800);
+  TH2::AddDirectory(kFALSE);
+
+  TH2F* hPed[5];
+  TH2F* hGain[5];
+
+  TCanvas *cPed  = new TCanvas("cPed" ,"PHOS EMC Pedestals"   , 10,10,400,800);
+  TCanvas *cGain = new TCanvas("cGain","PHOS EMC Gain factors",410,10,400,800);
   cPed ->Divide(1,5);
   cGain->Divide(1,5);
 
@@ -168,12 +156,12 @@ void GetCC(Int_t flag=0)
       for (Int_t row=1; row<=nRow; row++) {
 	Float_t ped  = clb->GetADCpedestalEmc(module,column,row);
 	Float_t gain = clb->GetADCchannelEmc (module,column,row);
-	hPed[module-1] ->SetBinContent(column,row,ped);
+	hPed[module-1]->SetBinContent(column,row,ped);
 	hGain[module-1]->SetBinContent(column,row,gain);
       }
     }
     cPed ->cd(module);
-    hPed[module-1] ->Draw("lego2");
+    hPed[module-1]->Draw("lego2");
     cGain->cd(module);
     hGain[module-1]->Draw("lego2");
   }
