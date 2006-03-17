@@ -2,7 +2,7 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$
-// $MpId: AliMpNeighboursPadIterator.h,v 1.8 2005/09/26 16:12:11 ivana Exp $
+// $MpId: AliMpNeighboursPadIterator.h,v 1.10 2006/03/17 11:38:28 ivana Exp $
 
 /// \ingroup sector
 /// \class AliMpNeighboursPadIterator
@@ -15,17 +15,17 @@
 
 #include "AliMpContainers.h"
 
-#ifdef WITH_STL
-#include <vector>
-#include <set>
-#endif
+#include "AliMpVPadIterator.h"
+#include "AliMpPad.h"
 
 #ifdef WITH_ROOT
 #include <TObjArray.h>
 #endif
 
-#include "AliMpVPadIterator.h"
-#include "AliMpPad.h"
+#ifdef WITH_STL
+#include <vector>
+#include <set>
+#endif
 
 class AliMpSectorSegmentation;
 class AliMpIntPair;

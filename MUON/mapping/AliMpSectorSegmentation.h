@@ -2,7 +2,7 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$
-// $MpId: AliMpSectorSegmentation.h,v 1.12 2006/03/14 09:03:48 ivana Exp $
+// $MpId: AliMpSectorSegmentation.h,v 1.13 2006/03/17 11:38:28 ivana Exp $
 
 /// \ingroup sector
 /// \class AliMpSectorSegmentation
@@ -17,21 +17,19 @@
 #ifndef ALI_MP_SECTOR_SEGMENTATION_H
 #define ALI_MP_SECTOR_SEGMENTATION_H
 
-
 #include "AliMpContainers.h"
 
-#ifdef WITH_STL
-#include <map>
-#endif
+#include "AliMpVSegmentation.h"
+#include "AliMpPad.h"
 
+#include <TVector2.h>
 #ifdef WITH_ROOT
 #include <TExMap.h>
 #endif
 
-#include <TVector2.h>
-
-#include "AliMpVSegmentation.h"
-#include "AliMpPad.h"
+#ifdef WITH_STL
+#include <map>
+#endif
 
 class AliMpSector;
 class AliMpMotifPosition;

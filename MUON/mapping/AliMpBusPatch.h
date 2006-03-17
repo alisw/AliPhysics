@@ -2,7 +2,7 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$
-// $MpId: AliMpBusPatch.h,v 1.1 2006/01/11 10:24:20 ivana Exp $
+// $MpId: AliMpBusPatch.h,v 1.2 2006/03/17 11:35:58 ivana Exp $
 
 /// \ingroup management
 /// \class AliMpBusPatch
@@ -15,9 +15,11 @@
 #ifndef ALI_MP_BUSPATCH_H
 #define ALI_MP_BUSPATCH_H
 
-#include <TArrayI.h>
-#include <TExMap.h>
 #include <TObject.h>
+
+#include <TExMap.h>
+
+class TArrayI;
 
 class AliMpBusPatch : public TObject
 {

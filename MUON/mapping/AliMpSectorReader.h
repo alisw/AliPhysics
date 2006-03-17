@@ -2,7 +2,7 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$
-// $MpId: AliMpSectorReader.h,v 1.3 2005/08/26 15:43:36 ivana Exp $
+// $MpId: AliMpSectorReader.h,v 1.5 2006/03/17 11:38:28 ivana Exp $
 
 /// \ingroup sector
 /// \class AliMpSectorReader
@@ -13,15 +13,16 @@
 #ifndef ALI_MP_SECTOR_READER_H
 #define ALI_MP_SECTOR_READER_H
 
-#include <fstream>
-
 #include <TObject.h>
-#include <TString.h>
 
 #include "AliMpStationType.h"
 #include "AliMpPlaneType.h"
 #include "AliMpXDirection.h"
 #include "AliMpIntPair.h"
+
+#include <TString.h>
+
+#include <fstream>
 
 class AliMpSector;
 class AliMpZone;
@@ -42,9 +43,6 @@ class AliMpSectorReader : public TObject
   
     // methods   
     AliMpSector*  BuildSector();
-
-    // set methods
-    void SetVerboseLevel(Int_t verboseLevel); 
     
   protected:
     AliMpSectorReader(const AliMpSectorReader& right);
@@ -82,7 +80,6 @@ class AliMpSectorReader : public TObject
     AliMpPlaneType    fPlaneType;   // plane type 
     AliMpSector*      fSector;      // sector
     AliMpMotifReader* fMotifReader; // motif reader
-    Int_t             fVerboseLevel;// verbose level
 
   ClassDef(AliMpSectorReader,1)  // Data reader
 };

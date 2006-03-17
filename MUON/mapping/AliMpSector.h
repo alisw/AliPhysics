@@ -2,7 +2,7 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$
-// $MpId: AliMpSector.h,v 1.11 2006/03/14 09:05:38 ivana Exp $
+// $MpId: AliMpSector.h,v 1.12 2006/03/17 11:38:28 ivana Exp $
 
 /// \ingroup sector
 /// \class AliMpSector
@@ -13,31 +13,32 @@
 #ifndef ALI_MP_SECTOR_H
 #define ALI_MP_SECTOR_H
 
-#include "AliMpContainers.h"
-
-#ifdef WITH_STL
-#include <vector>
-#endif
-
-#ifdef WITH_ROOT
-#include <TObjArray.h>
-#endif
-
 #include <TNamed.h>
-#include <TString.h>
-#include <TVector2.h>
+
+#include "AliMpContainers.h"
 
 #include "AliMpDirection.h"
 #include "AliMpPlaneType.h"
 #include "AliMpIntPair.h"
 
-class TArrayI;
+#include <TString.h>
+#include <TVector2.h>
+#ifdef WITH_ROOT
+#include <TObjArray.h>
+#endif
+
+#ifdef WITH_STL
+#include <vector>
+#endif
+
 class AliMpZone;
 class AliMpRow;
 class AliMpVRowSegment;
 class AliMpVMotif;
 class AliMpVPadIterator;
 class AliMpMotifMap;
+
+class TArrayI;
 
 class AliMpSector : public TNamed
 {

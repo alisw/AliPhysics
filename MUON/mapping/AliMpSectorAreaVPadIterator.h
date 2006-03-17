@@ -2,7 +2,7 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$
-// $MpId: AliMpSectorAreaVPadIterator.h,v 1.4 2005/08/26 15:43:36 ivana Exp $
+// $MpId: AliMpSectorAreaVPadIterator.h,v 1.5 2006/03/17 11:38:28 ivana Exp $
 
 /// \ingroup sector
 /// \class AliMpSectorAreaVPadIterator
@@ -13,8 +13,6 @@
 
 #ifndef ALI_MP_SECTOR_AREA_V_PAD_ITERATOR_H
 #define ALI_MP_SECTOR_AREA_V_PAD_ITERATOR_H
-
-#include <TObject.h>
 
 #include "AliMpVPadIterator.h"
 #include "AliMpArea.h"

@@ -2,7 +2,7 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$
-// $MpId: AliMpStationType.h,v 1.6 2006/01/11 10:07:18 ivana Exp $
+// $MpId: AliMpStationType.h,v 1.7 2006/03/17 11:34:29 ivana Exp $
 
 /// \ingroup basic
 /// \enum AliMpStationType
@@ -13,10 +13,10 @@
 #ifndef ALI_MP_STATION_TYPE_H
 #define ALI_MP_STATION_TYPE_H
 
-#include <TString.h>
-
 #include "AliLog.h"
  
+#include <TString.h>
+
 enum AliMpStationType
 {
   kStation1,           ///< station 1 (quadrants)

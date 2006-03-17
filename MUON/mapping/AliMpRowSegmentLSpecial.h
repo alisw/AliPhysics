@@ -2,7 +2,7 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$
-// $MpId: AliMpRowSegmentLSpecial.h,v 1.5 2005/08/26 15:43:36 ivana Exp $
+// $MpId: AliMpRowSegmentLSpecial.h,v 1.7 2006/03/17 11:38:28 ivana Exp $
 
 /// \ingroup sector
 /// \class AliMpRowSegmentLSpecial
@@ -13,9 +13,9 @@
 #ifndef ALI_MP_ROW_SEGMENT_L_SPECIAL_H
 #define ALI_MP_ROW_SEGMENT_L_SPECIAL_H
 
-#include <TVector2.h>
-
 #include "AliMpVRowSegmentSpecial.h"
+
+#include <TVector2.h>
 
 class AliMpRow;
 class AliMpPadRow;

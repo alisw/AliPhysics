@@ -2,7 +2,7 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$
-// $MpId: AliMpPlaneType.h,v 1.5 2006/01/11 10:06:32 ivana Exp $
+// $MpId: AliMpPlaneType.h,v 1.6 2006/03/17 11:34:29 ivana Exp $
 
 /// \ingroup basic
 /// \enum AliMpPlaneType
@@ -13,10 +13,10 @@
 #ifndef ALI_MP_PLANE_TYPE_H
 #define ALI_MP_PLANE_TYPE_H
 
-#include <TString.h>
-
 #include "AliLog.h"
  
+#include <TString.h>
+
 enum AliMpPlaneType
 {
   kBendingPlane,    ///< bending plane

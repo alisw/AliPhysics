@@ -2,7 +2,7 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$
-// $MpId: AliMpConstants.h,v 1.8 2006/03/02 16:26:53 ivana Exp $
+// $MpId: AliMpConstants.h,v 1.9 2006/03/13 12:08:51 ivana Exp $
 
 /// \ingroup basic
 /// \class AliMpConstants

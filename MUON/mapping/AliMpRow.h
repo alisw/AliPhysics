@@ -2,7 +2,7 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$
-// $MpId: AliMpRow.h,v 1.8 2005/09/26 16:12:11 ivana Exp $
+// $MpId: AliMpRow.h,v 1.9 2006/03/17 11:38:28 ivana Exp $
 
 /// \ingroup sector
 /// \class AliMpRow
@@ -15,18 +15,17 @@
 
 #include "AliMpContainers.h"
 
-#ifdef WITH_STL
-#include <vector>
-#endif
+#include "AliMpVIndexed.h"
+#include "AliMpDirection.h"
 
+#include <TVector2.h>
 #ifdef WITH_ROOT
 #include <TList.h>
 #endif
 
-#include <TVector2.h>
-
-#include "AliMpVIndexed.h"
-#include "AliMpDirection.h"
+#ifdef WITH_STL
+#include <vector>
+#endif
 
 class AliMpVRowSegment;
 class AliMpVPadIterator;

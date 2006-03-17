@@ -2,7 +2,7 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$
-// $MpId: AliMpVSegmentation.h,v 1.9 2006/03/14 09:03:44 ivana Exp $
+// $MpId: AliMpVSegmentation.h,v 1.10 2006/03/17 11:34:29 ivana Exp $
 
 /// \ingroup basic
 /// \class AliMpVSegmentation
@@ -23,12 +23,12 @@
 #include "AliMpPad.h"
 #include "AliMpPlaneType.h"
 
-class TArrayI;
-class TVector2;
-
 class AliMpVPadIterator;
 class AliMpIntPair;
 class AliMpArea;
+
+class TArrayI;
+class TVector2;
 
 class AliMpVSegmentation : public TObject
 {

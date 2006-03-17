@@ -2,7 +2,7 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$
-// $MpId: AliMpFiles.h,v 1.6 2006/01/11 10:05:01 ivana Exp $
+// $MpId: AliMpFiles.h,v 1.8 2006/03/17 11:34:29 ivana Exp $
 
 /// \ingroup basic
 /// \class AliMpFiles
@@ -19,10 +19,11 @@
 #define ALI_MP_FILES_H
 
 #include <TObject.h>
-#include <TString.h>
 
 #include "AliMpStationType.h"
 #include "AliMpPlaneType.h"
+
+#include <TString.h>
 
 class AliMpFiles : public TObject
 {

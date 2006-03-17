@@ -5,7 +5,7 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$ 
-// $MpId: AliMpSegFactory.h,v 1.4 2006/03/13 12:22:08 ivana Exp $ 
+// $MpId: AliMpSegFactory.h,v 1.5 2006/03/17 11:35:58 ivana Exp $ 
 
 /// \ingroup management
 /// \class AliMpSegFactory
@@ -19,7 +19,7 @@
 /// Authors: Ivana Hrivnacova, IPN Orsay
 
 #ifndef ROOT_TObject
-#  include "TObject.h"
+#  include <TObject.h>
 #endif
 
 #ifndef ALI_MP_STRING_OBJ_MAP_H

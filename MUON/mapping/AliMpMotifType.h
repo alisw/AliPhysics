@@ -2,7 +2,7 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$
-// $MpId: AliMpMotifType.h,v 1.8 2005/09/26 16:10:46 ivana Exp $
+// $MpId: AliMpMotifType.h,v 1.9 2006/03/17 11:37:51 ivana Exp $
 
 /// \ingroup motif
 /// \class AliMpMotifType
@@ -13,20 +13,20 @@
 #ifndef ALI_MP_MOTIF_TYPE_H
 #define ALI_MP_MOTIF_TYPE_H
 
+#include <TObject.h>
+
 #include "AliMpContainers.h"
 
-#ifdef WITH_STL
-#include <map>
-#endif
-
+#include "AliMpIntPair.h"
 #ifdef WITH_ROOT
 #include "AliMpExMap.h"
 #endif
 
-#include <TObject.h>
 #include <TString.h>
 
-#include "AliMpIntPair.h"
+#ifdef WITH_STL
+#include <map>
+#endif
 
 class AliMpConnection;
 class AliMpVPadIterator;

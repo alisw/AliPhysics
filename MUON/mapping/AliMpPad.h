@@ -2,7 +2,7 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$
-// $MpId: AliMpPad.h,v 1.6 2005/08/26 15:43:36 ivana Exp $
+// $MpId: AliMpPad.h,v 1.9 2006/03/17 11:34:29 ivana Exp $
 
 /// \ingroup basic
 /// \class AliMpPad
@@ -13,20 +13,19 @@
 #ifndef ALI_MP_PAD_H
 #define ALI_MP_PAD_H
 
+#include <TObject.h>
+
 #include "AliMpContainers.h"
+#include "AliMpIntPair.h"
 
-#ifdef WITH_STL
-#include <vector>
-#endif
-
+#include <TVector2.h>
 #ifdef WITH_ROOT
 #include <TClonesArray.h>
 #endif
 
-#include <TObject.h>
-#include <TVector2.h>
-
-#include "AliMpIntPair.h"
+#ifdef WITH_STL
+#include <vector>
+#endif
 
 class AliMpPad : public TObject
 {

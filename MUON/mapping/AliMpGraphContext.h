@@ -2,7 +2,7 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$
-// $MpId: AliMpGraphContext.h,v 1.8 2005/09/26 16:06:11 ivana Exp $
+// $MpId: AliMpGraphContext.h,v 1.9 2006/03/17 11:35:15 ivana Exp $
 
 /// \ingroup graphics
 /// \class AliMpGraphContext
@@ -14,18 +14,18 @@
 #ifndef ALI_MP_GRAPH_CONTEXT_H
 #define ALI_MP_GRAPH_CONTEXT_H
 
+#include <TObject.h>
+
 #include "AliMpContainers.h"
 
-#ifdef WITH_STL
-#include <vector>
-#endif
-
+#include <TVector2.h>
 #ifdef WITH_ROOT
 #include "AliMpExMap.h"
 #endif
 
-#include <TObject.h>
-#include <TVector2.h>
+#ifdef WITH_STL
+#include <vector>
+#endif
 
 class MPainter;
 

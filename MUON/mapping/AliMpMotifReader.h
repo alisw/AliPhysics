@@ -2,7 +2,7 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$
-// $MpId: AliMpMotifReader.h,v 1.5 2005/09/26 16:10:46 ivana Exp $
+// $MpId: AliMpMotifReader.h,v 1.7 2006/03/17 11:37:51 ivana Exp $
 
 /// \ingroup motif
 /// \class AliMpMotifReader
@@ -13,27 +13,26 @@
 #ifndef ALI_MP_MOTIF_READER_H
 #define ALI_MP_MOTIF_READER_H
 
-#include "AliMpContainers.h"
-
-#ifdef WITH_STL
-#include <map>
-#endif    
-
-#ifdef WITH_ROOT
-#include <TExMap.h>
-#endif    
-
-#include <fstream>
-
 #include <TObject.h>
-#include <TString.h>
-#include <TVector2.h>
-#include <Riostream.h>
+
+#include "AliMpContainers.h"
 
 #include "AliMpStationType.h"
 #include "AliMpPlaneType.h"
 #include "AliMpIntPair.h"
 #include "AliMpContainers.h"
+
+#ifdef WITH_ROOT
+#include <TExMap.h>
+#endif    
+#include <TString.h>
+#include <TVector2.h>
+#include <Riostream.h>
+
+#include <fstream>
+#ifdef WITH_STL
+#include <map>
+#endif    
 
 class AliMpMotifMap;
 class AliMpVMotif;
@@ -61,9 +60,6 @@ class AliMpMotifReader : public TObject
     AliMpMotifSpecial*  BuildMotifSpecial(const TString& motifID,
                                           AliMpMotifType* motifType,
                                           Double_t scale=1.0);
-
-    // set methods
-    void SetVerboseLevel(Int_t verboseLevel); 
     
   protected:
     AliMpMotifReader(const AliMpMotifReader& right);
@@ -73,7 +69,6 @@ class AliMpMotifReader : public TObject
     // data members  
     AliMpStationType  fStationType; // station type 
     AliMpPlaneType    fPlaneType;   // plane type 
-    Int_t             fVerboseLevel;// verbose level
 
   ClassDef(AliMpMotifReader,1)  // Data reader
 };

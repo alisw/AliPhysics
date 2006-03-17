@@ -2,7 +2,7 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$
-// $MpId: AliMpPadPair.h,v 1.7 2005/08/26 15:43:36 ivana Exp $
+// $MpId: AliMpPadPair.h,v 1.8 2006/03/17 11:34:29 ivana Exp $
 
 /// \ingroup basic
 /// \class AliMpPadPair
@@ -13,6 +13,8 @@
 
 #ifndef ALI_MP_PAD_PAIR_H
 #define ALI_MP_PAD_PAIR_H
+
+#include <TObject.h>
 
 #include "AliMpPad.h"
 

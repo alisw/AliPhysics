@@ -2,7 +2,7 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$
-// $MpId: AliMpMotifSpecial.h,v 1.7 2005/09/26 16:10:46 ivana Exp $
+// $MpId: AliMpMotifSpecial.h,v 1.8 2006/03/17 11:37:51 ivana Exp $
 
 /// \ingroup motif
 /// \class AliMpMotifSpecial
@@ -15,18 +15,19 @@
 
 #include "AliMpContainers.h"
 
-#ifdef WITH_STL
-#include <vector>
-#endif
-
+#include "AliMpVMotif.h"
 #ifdef WITH_ROOT
-#include <TObjArray.h>
 #include "AliMpExMap.h"
 #endif
 
 #include <TVector2.h>
+#ifdef WITH_ROOT
+#include <TObjArray.h>
+#endif
 
-#include "AliMpVMotif.h"
+#ifdef WITH_STL
+#include <vector>
+#endif
 
 class TString;
 

@@ -2,7 +2,7 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$
-// $MpId: AliMpConnection.h,v 1.6 2005/08/26 15:43:36 ivana Exp $
+// $MpId: AliMpConnection.h,v 1.7 2006/03/17 11:37:50 ivana Exp $
 
 /// \ingroup motif
 /// \class AliMpConnection
@@ -14,10 +14,11 @@
 #define ALI_MP_CONNECTION_H
 
 #include <TObject.h>
-#include <TString.h>
 
 #include "AliMpMotifType.h"
 #include "AliMpIntPair.h"
+
+#include <TString.h>
 
 class AliMpConnection : public TObject
 {

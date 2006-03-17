@@ -2,7 +2,7 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$
-// $MpId: AliMpMotif.h,v 1.5 2005/08/26 15:43:36 ivana Exp $
+// $MpId: AliMpMotif.h,v 1.6 2006/03/17 11:37:50 ivana Exp $
 
 /// \ingroup motif
 /// \class AliMpMotif
@@ -13,10 +13,10 @@
 #ifndef ALI_MP_MOTIF_H
 #define ALI_MP_MOTIF_H
 
+#include "AliMpVMotif.h"
+
 #include <TObject.h>
 #include <TVector2.h>
-
-#include "AliMpVMotif.h"
 
 class TString;
 

@@ -2,7 +2,7 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$ 
-// $MpId: AliMpDEIterator.h,v 1.2 2006/03/13 12:22:08 ivana Exp $ 
+// $MpId: AliMpDEIterator.h,v 1.3 2006/03/17 11:35:58 ivana Exp $ 
 
 /// \ingroup management
 /// \class AliMpDEIterator
@@ -19,9 +19,10 @@
 #ifndef ALI_MP_DE_ITERATOR_H
 #define ALI_MP_DE_ITERATOR_H
 
+#include <TObject.h>
+
 #include "AliMpStationType.h"
 
-#include <TObject.h>
 #include <TArrayI.h>
 
 class TString;

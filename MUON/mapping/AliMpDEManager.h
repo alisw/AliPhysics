@@ -2,7 +2,7 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$
-// $MpId: AliMpDEManager.h,v 1.3 2006/03/13 12:22:08 ivana Exp $ 
+// $MpId: AliMpDEManager.h,v 1.4 2006/03/17 11:35:58 ivana Exp $ 
 
 /// \ingroup management
 /// \class AliMpDEManager
@@ -20,11 +20,11 @@
 #ifndef ALI_MP_DE_MANAGER_H
 #define ALI_MP_DE_MANAGER_H
 
+#include <TObject.h>
+
 #include "AliMpExMap.h"
 #include "AliMpPlaneType.h"
 #include "AliMpStationType.h"
-
-#include <TObject.h>
 
 class AliMpVSegmentation;
 

@@ -2,7 +2,7 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$
-// $MpId: AliMpMotifPosition.h,v 1.6 2005/08/26 15:43:36 ivana Exp $
+// $MpId: AliMpMotifPosition.h,v 1.7 2006/03/17 11:37:51 ivana Exp $
 
 /// \ingroup motif
 /// \class AliMpMotifPosition
@@ -13,10 +13,10 @@
 #ifndef ALI_MP_MOTIF_POSITION_H
 #define ALI_MP_MOTIF_POSITION_H
 
-#include <TVector2.h>
-
 #include "AliMpVIndexed.h"
 #include "AliMpVMotif.h"
+
+#include <TVector2.h>
 
 class AliMpVPadIterator;
 

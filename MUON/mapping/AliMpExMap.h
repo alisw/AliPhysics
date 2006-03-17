@@ -2,7 +2,7 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$
-// $MpId: AliMpExMap.h,v 1.1 2005/09/26 16:16:16 ivana Exp $
+// $MpId: AliMpExMap.h,v 1.2 2006/03/17 11:34:29 ivana Exp $
 
 /// \ingroup basic
 /// \class AliMpExMap
@@ -21,9 +21,9 @@
 #include <TArrayL.h>
 #include <TExMap.h>
 
-class TString;
-
 class AliMpIntPair;
+
+class TString;
 
 class AliMpExMap : public TObject
 {

@@ -2,7 +2,7 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$
-// $MpId: AliMpMotifMap.h,v 1.11 2006/03/14 09:04:53 ivana Exp $
+// $MpId: AliMpMotifMap.h,v 1.12 2006/03/17 11:37:50 ivana Exp $
 
 /// \ingroup motif
 /// \class AliMpMotifMap
@@ -19,10 +19,11 @@
 #ifndef ALI_MP_MOTIF_MAP_H
 #define ALI_MP_MOTIF_MAP_H
 
+#include <TObject.h>
+
 #include "AliMpContainers.h"
 
 #ifdef WITH_STL
-#include <map>
 #include "AliMpIntPair.h"
 #endif
 
@@ -30,16 +31,18 @@
 #include "AliMpExMap.h"
 #endif
 
-#include <TObject.h>
-
-class TArrayI;
-class TString;
-class TVector2;
+#ifdef WITH_STL
+#include <map>
+#endif
 
 class AliMpVMotif;
 class AliMpMotifType;
 class AliMpMotifPosition;
 class AliMpMotifMap;
+
+class TArrayI;
+class TString;
+class TVector2;
 
 class AliMpMotifMap : public TObject
 {
