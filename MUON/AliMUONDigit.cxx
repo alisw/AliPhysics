@@ -20,12 +20,20 @@
 #include "Riostream.h"
 #include "TString.h"
 
-ClassImp(AliMUONDigit)
+///
+/// A class representing a digit in the MUON spectrometer
+/// either in tracking or trigger chambers.
+///
+/// A digit holds the signal (proportional to a charge) on a pad
+/// (or strip).
+/// 
+/// This class is used to represent either sdigits (purely simulated digit, 
+/// with no electronic noise whatsoever) or digits (either real digits or
+/// simulated ones but including electronic noise and de-calibration, to 
+/// closely ressemble real ones).
+///
 
-namespace
-{
-  const UInt_t SATURATEDFLAG = 0x1;
-}
+ClassImp(AliMUONDigit)
 
 //_____________________________________________________________________________
 AliMUONDigit::AliMUONDigit()
@@ -315,9 +323,35 @@ AliMUONDigit::Copy(TObject& obj) const
 
 //_____________________________________________________________________________
 Bool_t
+AliMUONDigit::IsNoiseOnly() const
+{
+  // Whether this (simulated only) digit is only due to noise.
+  return (fFlags & fgkNoiseOnlyMask );
+}
+
+//_____________________________________________________________________________
+Bool_t
 AliMUONDigit::IsSaturated() const
 {
-  return (fFlags & SATURATEDFLAG );
+  // Whether this digit is saturated or not.
+  return (fFlags & fgkSaturatedMask );
+}
+
+//_____________________________________________________________________________
+void
+AliMUONDigit::NoiseOnly(Bool_t value)
+{
+  //
+  // Set the NoiseOnly status of this digit.
+  //
+  if ( value )
+  {
+    fFlags |= fgkNoiseOnlyMask;
+  }
+  else
+  {
+    fFlags ^= fgkNoiseOnlyMask;
+  }
 }
 
 //_____________________________________________________________________________
@@ -370,6 +404,8 @@ AliMUONDigit::Print(Option_t* opt) const
     cout << "   ";
   }
   cout << " ADC=" << setw(4) << ADC();
+  cout << " Flags=0x" << setw(4) << hex << setfill('0') << fFlags << dec
+    << setfill(' ');
   TString options(opt);
   options.ToLower();
   if ( options.Contains("tracks") )
@@ -397,13 +433,16 @@ AliMUONDigit::Print(Option_t* opt) const
 void
 AliMUONDigit::Saturated(Bool_t value)
 {
+  //
+  // Set the saturation status of this digit.
+  //
   if ( value )
   {
-    fFlags |= SATURATEDFLAG;
+    fFlags |= fgkSaturatedMask;
   }
   else
   {
-    fFlags ^= SATURATEDFLAG;
+    fFlags ^= fgkSaturatedMask;
   }
 }
 

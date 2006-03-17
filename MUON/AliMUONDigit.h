@@ -48,7 +48,9 @@ class AliMUONDigit : public TObject
     virtual Int_t ManuId() const { return fManuId; }
     virtual Int_t ManuChannel() const { return fManuChannel; }
     virtual Bool_t IsSaturated() const;
+    virtual Bool_t IsNoiseOnly() const;
     
+    virtual void NoiseOnly(Bool_t value=kTRUE);
     virtual void Saturated(Bool_t saturated=kTRUE);
     virtual void SetElectronics(Int_t manuId, Int_t manuChannel);
     virtual void SetADC(Int_t adc) { fADC=adc; }
@@ -93,6 +95,9 @@ private:
     Int_t fPhysics;       // MC physics contribution to signal 
     Int_t fHit;           // MC hit number - temporary solution
   
+    static const UInt_t fgkSaturatedMask = 0x1; // the mask (part of fFlags) to indicate this digit is saturated
+    static const UInt_t fgkNoiseOnlyMask = 0x1000; // indicate a simulated digit due to noise only
+    
     ClassDef(AliMUONDigit,4)  //Digits for MUON
 };
 #endif
