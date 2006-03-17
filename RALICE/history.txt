@@ -678,3 +678,7 @@
 23-feb-2006 NvE Support for automatic subtask(s) execution introduced in AliJob::ExecuteJob().
 28-feb-2006 NvE Memberfunction ProcessObject() introduced in AliJob for convenience.
 14-mar-2006 NvE RemoveTracks() facilities introduced in AliJet.
+17-mar-2006 NvE Support for marker of track starting point introduced in AliHelix.
+                This allows observation of moving direction in event displays.
+                Also support for ignoring track endpoints introduced in AliHelix to 
+                allow correct display for very long tracks together with observed hits.

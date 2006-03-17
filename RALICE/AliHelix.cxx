@@ -22,6 +22,10 @@
 // This class is meant to provide a means to display and extrapolate
 // AliTrack objects in the presence of a constant homogeneous magnetic field. 
 //
+// To indicate the track starting point, the memberfunction SetMarker()
+// may be used.
+// By default no marker will be displayed. 
+//
 // Examples :
 // ==========
 //
@@ -153,6 +157,10 @@ AliHelix::AliHelix() : THelix()
  fCurves=0;
  fExt=0;
  fTofmax=1e-8;
+ fMstyle=-1;
+ fMsize=0;
+ fMcol=0;
+ fEnduse=1;
 }
 ///////////////////////////////////////////////////////////////////////////
 AliHelix::~AliHelix()
@@ -215,6 +223,32 @@ Float_t AliHelix::GetTofmax() const
  return fTofmax;
 }
 ///////////////////////////////////////////////////////////////////////////
+void AliHelix::SetMarker(Int_t style,Float_t size,Int_t col)
+{
+// Specify the marker (style, size and colour) to indicate the starting point
+// of a track in a display.
+// In case col<0 the marker will have the same color as the track itself.
+// 
+// Defaults are style=8, size=0.2 and col=-1.
+ 
+ fMstyle=style;
+ fMsize=size;
+ fMcol=col;
+}
+///////////////////////////////////////////////////////////////////////////
+void AliHelix::UseEndPoint(Int_t mode)
+{
+// Select usage of track endpoint in drawing and extrapolation.
+// This allows correct event displays even for very long tracks.
+//
+// mode = 0 : Do not use the track endpoint
+//        1 : Use the track endpoint
+// 
+// The default value is mode=1 (which is also set in the constructor).
+
+ if (mode==0 || mode==1) fEnduse=mode; 
+}
+///////////////////////////////////////////////////////////////////////////
 void AliHelix::MakeCurve(AliTrack* t,Double_t* range,Int_t iaxis,Double_t scale)
 {
 // Make the helix curve for the specified AliTrack.
@@ -263,7 +297,8 @@ void AliHelix::MakeCurve(AliTrack* t,Double_t* range,Int_t iaxis,Double_t scale)
  if (energy<=0 || betanorm<=0) return;
 
  AliPosition* rbeg=t->GetBeginPoint();
- AliPosition* rend=t->GetEndPoint();
+ AliPosition* rend=0;
+ if (fEnduse) rend=t->GetEndPoint();
  AliPosition* rref=t->GetReferencePoint();
 
  // Magnetic field vector or default Z-direction
@@ -656,6 +691,20 @@ void AliHelix::Display(AliTrack* t,Double_t* range,Int_t iaxis,Double_t scale)
   fCurves->SetOwner();
  }
  fCurves->Add(curve);
+
+ // Display the marker for the track starting point
+ if (fMstyle>0)
+ {
+  TPolyMarker3D* m=new TPolyMarker3D();
+  m->SetPoint(0,points[0],points[1],points[2]);
+  m->SetMarkerStyle(fMstyle);
+  m->SetMarkerSize(fMsize);
+  Int_t col=curve->GetLineColor();
+  if (fMcol>0) col=fMcol;
+  m->SetMarkerColor(col);
+  m->Draw();
+  fCurves->Add(m);
+ }
 }
 ///////////////////////////////////////////////////////////////////////////
 void AliHelix::Refresh(Int_t mode)

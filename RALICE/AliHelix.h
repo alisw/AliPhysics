@@ -7,6 +7,7 @@
 
 #include "THelix.h"
 #include "TObjArray.h"
+#include "TPolyMarker3D.h"
 
 #include "Ali3Vector.h"
 #include "AliTrack.h"
@@ -27,14 +28,20 @@ class AliHelix : public THelix
   void Refresh(Int_t mode=0);  // Refresh the view before drawing the next one
   AliPosition* Extrapolate(AliTrack* t,Double_t* pars=0,Double_t scale=-1); // Extrapolate this track
   void MakeCurve(AliTrack* t,Double_t* range=0,Int_t iaxis=3,Double_t scale=-1); // Helix curve for this track
+  void SetMarker(Int_t marker=8,Float_t size=0.2,Int_t color=-1); // Set marker for track starting point 
+  void UseEndPoint(Int_t mode=1); // (De)Select (0/1) usage of track endpoint for drawing and extrapolation
 
  protected:
-  Ali3Vector fB;                               // The magnetic field vector in Tesla
-  Float_t fTofmax;                             // The maximum time of flight
-  Int_t fRefresh;                              // Auto-refresh flag for drawings
-  TObjArray* fCurves;                          //! Temp. storage for the curves on the drawing
-  AliPosition* fExt;                           //! The extrapolation result
+  Ali3Vector fB;       // The magnetic field vector in Tesla
+  Float_t fTofmax;     // The maximum time of flight
+  Int_t fRefresh;      // Auto-refresh flag for drawings
+  Int_t fMstyle;       // The marker style to indicate the track starting point
+  Float_t fMsize;      // The size of the marker
+  Int_t fMcol;         // The colour of the marker
+  Int_t fEnduse;       // Flag to denote tracks endpoint usage
+  TObjArray* fCurves;  //! Temp. storage for the curves on the drawing
+  AliPosition* fExt;   //! The extrapolation result
  
- ClassDef(AliHelix,1) // Representation and extrapolation of AliTracks in a magnetic field.
+ ClassDef(AliHelix,2) // Representation and extrapolation of AliTracks in a magnetic field.
 };
 #endif
