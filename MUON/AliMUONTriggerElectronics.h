@@ -20,6 +20,7 @@
 #endif
 
 class AliMUONTriggerCrate;
+class AliMUONCalibrationData;
 class AliMUONData;
 class AliMUONGlobalTriggerBoard;
 class TClonesArray;
@@ -27,7 +28,7 @@ class TClonesArray;
 class AliMUONTriggerElectronics : public TTask
 {
    public:
-      AliMUONTriggerElectronics(AliMUONData* Data = 0);
+      AliMUONTriggerElectronics(AliMUONData* Data = 0, AliMUONCalibrationData* =0);
       virtual ~AliMUONTriggerElectronics();
 
       virtual void Exec(Option_t*);
@@ -36,7 +37,8 @@ class AliMUONTriggerElectronics : public TTask
       virtual void SetDataSource(TString SourceFile = "$ALICE_ROOT/MUON/data/CRATE.TXT") 
       {fSourceFileName = SourceFile;}
 
-      virtual void Factory();
+      virtual void Factory(AliMUONCalibrationData*);
+      void LoadMasks(AliMUONCalibrationData*);
       virtual void AddCrate(char *name);
 
       virtual AliMUONTriggerCrate* Crate(char *name);

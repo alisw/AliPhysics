@@ -36,7 +36,8 @@
 #include "AliMpTriggerSegmentation.h"
 #include "AliMUONSegmentation.h"
 #include "AliMpVSegmentation.h"
-
+#include "AliMUONCalibrationData.h"
+#include "AliMUONVCalibParam.h"
 #include "TBits.h"
 
 #include "Riostream.h"
@@ -47,7 +48,7 @@ ClassImp(AliMUONTriggerElectronics)
 const Int_t AliMUONTriggerElectronics::fgkNCrates = 16;
 
 //___________________________________________
-AliMUONTriggerElectronics::AliMUONTriggerElectronics(AliMUONData *Data) 
+AliMUONTriggerElectronics::AliMUONTriggerElectronics(AliMUONData *Data, AliMUONCalibrationData* calibData) 
 : TTask("AliMUONTriggerElectronics",
         "From trigger digits to Local and Global Trigger objects"),
   fCrates(new TClonesArray("AliMUONTriggerCrate", fgkNCrates)),
@@ -72,8 +73,9 @@ AliMUONTriggerElectronics::AliMUONTriggerElectronics(AliMUONData *Data)
 	for (Int_t i=0;i<234;i++) fBoardMap[i] = 0;
 	
    SetDataSource();
-   Factory();
-
+   Factory(calibData);
+   LoadMasks(calibData);
+   
 	AliWarning("ZERO-ALLY-LSB TO BE CHECKED!!!");
 	AliWarning("AliMUONLocalTriggerBoard Y_pos DIVIDED BY 2 TO BE CONSISTENT W/ AliMUONTrackReconstructor!!!");
 }
@@ -111,7 +113,7 @@ AliMUONTriggerElectronics::operator=(const AliMUONTriggerElectronics& right)
 }    
 
 //___________________________________________
-void AliMUONTriggerElectronics::Factory()
+void AliMUONTriggerElectronics::Factory(AliMUONCalibrationData* calibData)
 {  
    ifstream myInputFile(gSystem->ExpandPathName(fSourceFileName.Data()), ios::in);
 
@@ -161,7 +163,10 @@ void AliMUONTriggerElectronics::Factory()
 //             CONVENTION: SLOT 0 HOLDS THE REGIONAL BOARD
                Int_t sl = atoi(fields[10]);
 
-               AliMUONLocalTriggerBoard *board = new AliMUONLocalTriggerBoard(fields[4], sl);
+               AliMUONTriggerLut* lut = calibData->TriggerLut();
+               
+               AliMUONLocalTriggerBoard *board = 
+                 new AliMUONLocalTriggerBoard(fields[4], sl, lut);
 
 					if (strcmp(fields[1],"nn")) 
 					{
@@ -593,6 +598,57 @@ void AliMUONTriggerElectronics::Reset()
 
    fGlobal = 0;
 }
+
+//_______________________________________________________________________
+void AliMUONTriggerElectronics::LoadMasks(AliMUONCalibrationData* calibData)
+{
+  // LOAD MASKS FROM CDB
+  
+
+  // SET MASKS
+  for (Int_t i=0; i<fgkNCrates; i++)
+  {
+    AliMUONTriggerCrate *cr = (AliMUONTriggerCrate*)fCrates->UncheckedAt(i);
+    
+    TObjArray *boards = cr->Boards();
+    
+    AliMUONRegionalTriggerBoard *regb =
+      (AliMUONRegionalTriggerBoard*)boards->At(0);
+
+    AliMUONVCalibParam* regionalBoardMasks = calibData->RegionalTriggerBoardMasks(i);
+    
+    for ( Int_t i = 0; i < regionalBoardMasks->Size(); ++i )
+    {
+      UShort_t rmask = static_cast<UShort_t>(regionalBoardMasks->ValueAsInt(i) & 0x3F);
+      regb->Mask(i,rmask);
+    }
+    
+    for (Int_t j=1; j<boards->GetEntries(); j++)
+    {
+      AliMUONLocalTriggerBoard *b = (AliMUONLocalTriggerBoard*)boards->At(j);
+      
+      Int_t cardNumber = b->GetNumber();
+      
+      if (cardNumber) // interface board are not interested
+      {
+        AliMUONVCalibParam* localBoardMasks = calibData->LocalTriggerBoardMasks(cardNumber);
+        for ( Int_t i = 0; i < localBoardMasks->Size(); ++i )
+        {
+          UShort_t lmask = static_cast<UShort_t>(localBoardMasks->ValueAsInt(i) & 0xFFFF);
+          b->Mask(i,lmask);
+        }
+      }
+    }
+  }
+  
+  AliMUONVCalibParam* globalBoardMasks = calibData->GlobalTriggerBoardMasks();
+  for ( Int_t i = 0; i < globalBoardMasks->Size(); ++i )
+  {
+    UShort_t gmask = static_cast<UShort_t>(globalBoardMasks->ValueAsInt(i) & 0xFFF);
+    fGlobalTriggerBoard->Mask(i,gmask);
+  }
+}
+
 
 //___________________________________________
 void AliMUONTriggerElectronics::LocalResponse()
