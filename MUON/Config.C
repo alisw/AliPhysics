@@ -155,9 +155,11 @@ void Config(char directory[100]="", char option[6]="param")
   //
   // - "FactoryV4", that is all stations using new segmentations/mapping
   // - "sdigitizer:AliMUONSDigitizerV2", performing decalibration
-  // - "digitizer:NewDigitizerOldTrigger" <=> digitizer=AliMUONDigitizerV3,
-  //    using the "old" trigger code, performing calibration
-  //
+  // - "digitizer:NewDigitizerWithNoiseOldTrigger" => 
+  //    digitizer=AliMUONDigitizerV3,
+  //    using the "old" trigger code, performing calibration, and
+  //    generating noise-only digits for the tracker.
+
   AliMUON *MUON = new AliMUONv1("MUON");
 
   //To get old behavior (which usage is no longer supported), please use :
@@ -166,12 +168,18 @@ void Config(char directory[100]="", char option[6]="param")
   //                                "AliMUONSDigitizerv1",
   //                                "AliMUONDigitizerv2");
   //
-  //To get brand new trigger code, please use :
+  // To get brand new trigger code, please use :
+  //
+  // AliMUON *MUON = new AliMUONv1("MUON", "FactoryV4",
+  //                               "sdigitizer:AliMUONSDigitizerV2",
+  //                               "digitizer:NewDigitizerNewTrigger");
+  //
+  // To enable Trigger Chamber Efficiency, please use :
   //
   // AliMUON *MUON = new AliMUONv1("MUON", "FactoryV4",
   //                              "sdigitizer:AliMUONSDigitizerV2",
-  //                              "digitizer:NewDigitizerNewTrigger");
-  
+  //                              "digitizer:NewDigitizerEffTrigger");
+  // 
   // If SetAlign, the detection elements transformations
   // are taken from the input file and not from the code
   // MUON->SetAlign("transform.dat");
