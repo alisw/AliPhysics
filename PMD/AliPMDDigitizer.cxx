@@ -640,7 +640,7 @@ void AliPMDDigitizer::Hits2Digits(Int_t ievt)
   TrackAssignment2Cell();
   ResetCell();
 
-  Float_t gain1,gain2;
+  Float_t gain1;
   Float_t adc;
   Float_t deltaE = 0.;
   Int_t detno = 0;
@@ -655,17 +655,16 @@ void AliPMDDigitizer::Hits2Digits(Int_t ievt)
 		{
 		  if (idet == 0)
 		    {
-	       gain1 =Gain(idet,ism,jrow,kcol);
-  //           cout<<"The gain Factor is"<<gain1<<endl;
+		      gain1 = Gain(idet,ism,jrow,kcol);
+
 		      deltaE = fPRE[ism][jrow][kcol]*gain1;
 		      trno   = fPRETrackNo[ism][jrow][kcol];
 		      detno = 0;
 		    }
 		  else if (idet == 1)
 		    {
-	       gain2 =Gain(idet,ism,jrow,kcol);
-   //          cout<<"The Gain factor is"<<gain2<<endl;
-		      deltaE = fCPV[ism][jrow][kcol]*gain2;
+		      gain1 = Gain(idet,ism,jrow,kcol);
+		      deltaE = fCPV[ism][jrow][kcol]*gain1;
 		      trno   = fCPVTrackNo[ism][jrow][kcol];
 		      detno = 1;
 		    }
@@ -683,7 +682,7 @@ void AliPMDDigitizer::Hits2Digits(Int_t ievt)
   
   fPMDLoader->WriteDigits("OVERWRITE");
   ResetCellADC();
-
+  
 }
 //____________________________________________________________________________
 
@@ -1239,7 +1238,7 @@ Float_t AliPMDDigitizer::Gain(Int_t det, Int_t smn, Int_t row, Int_t col) const
 
   if(!fCalibData) {
     AliError("No calibration data loaded from CDB!!!");
-    return -1;
+    return 1;
   }
 
   Float_t GainFact;

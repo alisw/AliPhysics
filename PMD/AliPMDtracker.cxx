@@ -146,14 +146,13 @@ void AliPMDtracker::Clusters2Tracks(AliESD *event)
   AliPMDDiscriminator *pmddiscriminator = new AliPMDEmpDiscriminator();
   pmddiscriminator->Discrimination(fPMDcontin,fPMDcontout);
 
-  const Float_t kzpos0 = 361.5;    // for PREshower plane BKN
-  const Float_t kzpos1 = 361.5;    // for CPV plane
+  const Float_t kzpos = 361.5;    // middle of the PMD
   Int_t   ism =0, ium=0;
   Int_t   det,smn;
   Float_t xpos,ypos;
   Float_t xpad = 0, ypad = 0;
   Float_t adc, ncell, rad;
-  Float_t xglobal, yglobal, zglobal;
+  Float_t xglobal, yglobal, zglobal = 0;
   Float_t pid;
 
 
@@ -217,11 +216,11 @@ void AliPMDtracker::Clusters2Tracks(AliESD *event)
 
       if (det == 0)
 	{
-	  zglobal = kzpos0 + 0.5; // to be found out
+	  zglobal = kzpos + 1.6; // PREshower plane
 	}
       else if (det == 1)
 	{
-	  zglobal = kzpos1 - 0.5; // to be found out BKN
+	  zglobal = kzpos - 1.7; // CPV plane
 	}
 
 

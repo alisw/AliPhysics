@@ -54,8 +54,8 @@ Int_t AliPMDRecpointRead(Int_t nevent = 1)
 	}
 
       AliPMDrecpoint1  *pmdrecpoint;
-      TBranch *branch = treeR->GetBranch("PMDRecpoint");
-      branch->SetAddress(&fRecpoints);
+      TBranch *branch1 = treeR->GetBranch("PMDRecpoint");
+      branch1->SetAddress(&fRecpoints);
       /**********************************************************************
        *    det   : Detector, 0: PRE & 1:CPV                                *
        *    smn   : Serial Module Number from which Super Module Number     *
@@ -75,13 +75,13 @@ Int_t AliPMDRecpointRead(Int_t nevent = 1)
       Int_t   ism, ium;
       Int_t   det,smn;
       Float_t xpos,ypos, xpad, ypad;
-      Float_t adc, ncell, rad;
+      Float_t adc, ncell, sigx, sigy;
       Float_t xx, yy;
-      Int_t   nmodules = treeR->GetEntries();
+      Int_t   nmodules = branch1->GetEntries();
       cout << " nmodules = " << nmodules << endl;
       for (Int_t imodule = 0; imodule < nmodules; imodule++)
 	{
-	  treeR->GetEntry(imodule); 
+	  branch1->GetEntry(imodule); 
 	  Int_t nentries = fRecpoints->GetLast();
 	  for(Int_t ient = 0; ient < nentries+1; ient++)
 	    {
@@ -92,7 +92,8 @@ Int_t AliPMDRecpointRead(Int_t nevent = 1)
 	      ypos  = pmdrecpoint->GetClusY();
 	      adc   = pmdrecpoint->GetClusADC();
 	      ncell = pmdrecpoint->GetClusCells();
-	      rad   = pmdrecpoint->GetClusRadius();
+	      sigx  = pmdrecpoint->GetClusSigmaX();
+	      sigy  = pmdrecpoint->GetClusSigmaY();
 	      //
 	      // Now change the xpos and ypos to its original values
 	      // for the unit modules which are earlier changed.
@@ -119,8 +120,8 @@ Int_t AliPMDRecpointRead(Int_t nevent = 1)
 	      // User has to plug in his analysis code here
 	      //
 
-	      fprintf(fpw,"%d %d %d %d %f %f %f %f %f\n",
-		      det,smn,ism,ium,xpad,ypad,adc,ncell,rad);
+	      fprintf(fpw,"%d %d %d %d %f %f %f %f %f %f\n",
+		      det,smn,ism,ium,xpad,ypad,adc,ncell,sigx,sigy);
 	      //
 	      // Plot the cluster centroid to see the PMD geometry
 	      // using the PMD Utility class

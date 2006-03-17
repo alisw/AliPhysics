@@ -38,12 +38,12 @@ void AliPMDDigits2Recpoints(Int_t nevt=1)
 
   // Create the PMD Cluster Finder 
   AliPMDClusterFinder *clus = new AliPMDClusterFinder(fRunLoader);
-  clus->SetDebug(1);
-  if (itype == 0)
+
+  if (itype == 1)
     {
       clus->Load();
     }
-  else if (itype == 1)
+  else if (itype == 0)
     {
       clus->LoadClusters();
     }  
@@ -51,23 +51,23 @@ void AliPMDDigits2Recpoints(Int_t nevt=1)
 
   for (Int_t ievt = 0; ievt < nevt; ievt++)
     {
-      if (itype == 0)
+      if (itype == 1)
 	{
 	  // from digits data
 	  clus->Digits2RecPoints(ievt);
 	}
-      else if (itype == 1)
+      else if (itype == 0)
 	{
 	  // from raw data
 	  AliRawReaderFile reader(ievt);
 	  clus->Digits2RecPoints(ievt, &reader);
 	}
     }
-  if (itype == 0)
+  if (itype == 1)
     {
       clus->UnLoad();
     }
-  else if (itype == 1)
+  else if (itype == 0)
     {
       clus->UnLoadClusters();
     }
