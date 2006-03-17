@@ -43,11 +43,15 @@ class AliAltroBuffer: public TObject {
   void  WriteTrailer(Int_t wordsNumber, Int_t padNumber, 
 		     Int_t rowNumber, Int_t secNumber);
   //this method is used to write the trailer
+  void  WriteTrailer(Int_t wordsNumber, Short_t hwAdress); 
+  //this method is used to write the trailer
   void  WriteDummyTrailer(Int_t wordsNumber, Int_t padNumber, 
 			  Int_t rowNumber, Int_t secNumber);
   //this method is used to write a dummy trailer
   Bool_t ReadTrailer(Int_t& wordsNumber, Int_t& padNumber, 
 		     Int_t& rowNumber, Int_t &secNumber);
+  //this method is used to read the trailer when the file is read forward
+  Bool_t ReadTrailer(Int_t& wordsNumber, Short_t& hwAdress); 
   //this method is used to read the trailer when the file is read forward
   Bool_t ReadDummyTrailer(Int_t& wordsNumber, Int_t& padNumber, 
 			  Int_t& rowNumber, Int_t &secNumber);
@@ -55,11 +59,19 @@ class AliAltroBuffer: public TObject {
   Bool_t ReadTrailerBackward(Int_t& wordsNumber, Int_t& padNumber, 
 			     Int_t& rowNumber, Int_t& secNumber);
   //this method is used to read the trailer when the file is read backward
+  Bool_t ReadTrailerBackward(Int_t& wordsNumber, Short_t& hwAdress); 
+  //this method is used to read the trailer when the file is read backward
+  Bool_t ReadDummyTrailerBackward(Int_t& wordsNumber, Int_t& padNumber, 
+				  Int_t& rowNumber, Int_t& secNumber);
+  //this method is used to read the trailer when the file is read backward
 
   void  WriteChannel(Int_t padNumber, Int_t rowNumber, Int_t secNumber,
 		     Int_t nTimeBins, const Int_t* adcValues, 
 		     Int_t threshold = 0);
   //this method is used to write all ADC values and the trailer of a channel
+  void  ReadChannel(Int_t padNumber, Int_t rowNumber,  Int_t secNumber,
+		    Int_t& nTimeBins, Int_t* adcValues);
+  //this method is used to read all ADC values and the trailer of a channel
 
   void  WriteDataHeader(Bool_t dummy, Bool_t compressed);
   //this method is used to write the data header
@@ -75,7 +87,7 @@ class AliAltroBuffer: public TObject {
 
   void  SetMapping(AliAltroMapping *mapping) { fMapping = mapping; }
 
- private:
+ protected:
   AliAltroBuffer(const AliAltroBuffer& source);
   AliAltroBuffer& operator = (const AliAltroBuffer& source);
 

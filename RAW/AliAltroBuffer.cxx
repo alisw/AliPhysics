@@ -292,6 +292,17 @@ void AliAltroBuffer::WriteTrailer(Int_t wordsNumber, Int_t padNumber,
 			     rowNumber,secNumber);
   }
 
+  Short_t hwAdress = fMapping->GetHWAdress(rowNumber,padNumber,secNumber);
+  if (hwAdress == -1)
+    AliFatal(Form("No hardware (ALTRO) adress found for these pad-row (%d) and pad (%d) indeces !",rowNumber,padNumber));
+  WriteTrailer(wordsNumber,hwAdress);
+}
+
+//_____________________________________________________________________________
+void AliAltroBuffer::WriteTrailer(Int_t wordsNumber, Short_t hwAdress)
+{
+//Writes a trailer of 40 bits using
+//a given hardware adress
   Int_t num = fFreeCellBuffer % 4;
   for(Int_t i = 0; i < num; i++) {
     FillBuffer(0x2AA);
@@ -305,10 +316,6 @@ void AliAltroBuffer::WriteTrailer(Int_t wordsNumber, Int_t padNumber,
   temp = (wordsNumber << 6) & 0x3FF;
   temp |= (0xA << 2);
 
-  Short_t hwAdress = fMapping->GetHWAdress(rowNumber,padNumber,secNumber);
-  if (hwAdress == -1)
-    AliFatal(Form("No hardware (ALTRO) adress found for these pad-row (%d) and pad (%d) indeces !",rowNumber,padNumber));
-      
   temp |= (hwAdress >> 10) & 0x3;
   FillBuffer(temp);
   temp = hwAdress & 0x3FF;
@@ -343,6 +350,20 @@ Bool_t AliAltroBuffer::ReadTrailer(Int_t& wordsNumber, Int_t& padNumber,
 			    rowNumber,secNumber);
   }
 
+  Short_t hwAdress;
+  if (!ReadTrailer(wordsNumber,hwAdress)) return kFALSE;
+  rowNumber = fMapping->GetPadRow(hwAdress);
+  padNumber = fMapping->GetPad(hwAdress);
+  secNumber = fMapping->GetSector(hwAdress);
+
+  return kTRUE;
+}
+
+//_____________________________________________________________________________
+Bool_t AliAltroBuffer::ReadTrailer(Int_t& wordsNumber, Short_t& hwAdress)
+{
+//Read a trailer of 40 bits in the forward reading mode
+
   Int_t temp = GetNext();
   if (temp != 0x2AA)
     AliFatal(Form("Incorrect trailer found ! Expecting 0x2AA but found %x !",temp));
@@ -354,23 +375,19 @@ Bool_t AliAltroBuffer::ReadTrailer(Int_t& wordsNumber, Int_t& padNumber,
 
   temp = GetNext();
   wordsNumber |= (temp >> 6);
-  if ((temp & 0xF) != 0xA)
+  if (((temp >> 2) & 0xF) != 0xA)
     AliFatal(Form("Incorrect trailer found ! Expecting second 0xA but found %x !",temp >> 6));
-  Int_t hwAdress = (temp & 0x3) << 10;
+  hwAdress = (temp & 0x3) << 10;
 
   temp = GetNext();
   hwAdress |= temp;
 
-  rowNumber = fMapping->GetPadRow(hwAdress);
-  padNumber = fMapping->GetPad(hwAdress);
-  secNumber = fMapping->GetSector(hwAdress);
   return kTRUE;
 }
 
 //_____________________________________________________________________________
-Bool_t AliAltroBuffer::ReadTrailerBackward(Int_t& wordsNumber, 
-					   Int_t& padNumber,
-					   Int_t& rowNumber, Int_t& secNumber)
+Bool_t AliAltroBuffer::ReadDummyTrailerBackward(Int_t& wordsNumber, Int_t& padNumber,
+						Int_t& rowNumber, Int_t& secNumber)
 {
 //Read a trailer of 40 bits in the backward reading mode
 
@@ -392,6 +409,59 @@ Bool_t AliAltroBuffer::ReadTrailerBackward(Int_t& wordsNumber,
   return kTRUE;
 } 
 
+//_____________________________________________________________________________
+Bool_t AliAltroBuffer::ReadTrailerBackward(Int_t& wordsNumber, Int_t& padNumber,
+					   Int_t& rowNumber, Int_t& secNumber)
+{
+//Read a trailer of 40 bits in the backward reading mode
+  if (!fMapping) {
+    AliError("No ALTRO mapping information is loaded! Reading a dummy trailer!");
+    return ReadDummyTrailerBackward(wordsNumber,padNumber,
+				    rowNumber,secNumber);
+  }
+
+  Short_t hwAdress;
+  if (!ReadTrailerBackward(wordsNumber,hwAdress)) return kFALSE;
+  rowNumber = fMapping->GetPadRow(hwAdress);
+  padNumber = fMapping->GetPad(hwAdress);
+  secNumber = fMapping->GetSector(hwAdress);
+
+  return kTRUE;
+}
+
+//_____________________________________________________________________________
+Bool_t AliAltroBuffer::ReadTrailerBackward(Int_t& wordsNumber, Short_t& hwAdress)
+{
+//Read a trailer of 40 bits in the backward reading mode
+
+  Int_t temp;
+  fEndingFillWords = 0;
+  do {
+    temp = GetNextBackWord();
+    fEndingFillWords++;
+    if (temp == -1) return kFALSE;
+  } while (temp == 0x2AA);  
+  fEndingFillWords--;
+
+  hwAdress = temp;
+
+  temp = GetNextBackWord();
+  hwAdress |= (temp & 0x3) << 10;
+  if (((temp >> 2) & 0xF) != 0xA)
+    AliFatal(Form("Incorrect trailer found ! Expecting second 0xA but found %x !",temp >> 6));
+  wordsNumber = (temp >> 6);
+
+  temp = GetNextBackWord();
+  wordsNumber |= (temp << 4) & 0x3FF;
+  if ((temp >> 6) != 0xA)
+    AliFatal(Form("Incorrect trailer found ! Expecting 0xA but found %x !",temp >> 6));
+  
+  temp = GetNextBackWord();
+  if (temp != 0x2AA)
+    AliFatal(Form("Incorrect trailer found ! Expecting 0x2AA but found %x !",temp));
+
+  return kTRUE;
+} 
 
 //_____________________________________________________________________________
 void AliAltroBuffer::WriteChannel(Int_t padNumber, Int_t rowNumber, 
@@ -432,6 +502,50 @@ void AliAltroBuffer::WriteChannel(Int_t padNumber, Int_t rowNumber,
   WriteTrailer(nWords, padNumber, rowNumber, secNumber);
 }
 
+//_____________________________________________________________________________
+void AliAltroBuffer::ReadChannel(Int_t padNumber, Int_t rowNumber, 
+				 Int_t secNumber,
+				 Int_t& nTimeBins, Int_t* adcValues)
+{
+//Read all ADC values and the trailer of a channel
+
+  Int_t wordsNumber;
+  if (!ReadTrailer(wordsNumber,padNumber,
+		   rowNumber,secNumber)) return;
+
+  if (wordsNumber < 0) return;
+  // Number of fill words 
+  Int_t nFillWords;
+  if ((wordsNumber % 4) == 0)
+    nFillWords = 0;
+  else
+    nFillWords = 4 - wordsNumber % 4;
+  // Read the fill words 
+  for (Int_t i = 0; i < nFillWords; i++) {
+    Int_t temp = GetNext();
+    if (temp != 0x2AA) 
+      AliFatal(Form("Invalid fill word, expected 0x2AA, but got %X", temp));
+  }
+
+  // Decoding
+  Int_t lastWord =  wordsNumber;
+  nTimeBins = -1;
+  while (lastWord > 0) { 
+    Int_t l =  GetNext(); 
+    if (l < 0) AliFatal(Form("Bad bunch length (%d) !", l));
+    Int_t t =  GetNext(); 
+    if (t < 0) AliFatal(Form("Bad bunch time (%d) !", t));
+    lastWord -= 2;
+    if (nTimeBins == -1) nTimeBins = t + 1;
+    for (Int_t i = 2; i < l; i++) {
+      Int_t amp = GetNext();
+      if (amp < 0) AliFatal(Form("Bad adc value (%X) !", amp));
+      adcValues[t - (i-2)] = amp;
+      lastWord--;
+    }
+  }
+
+} 
 
 //_____________________________________________________________________________
 void AliAltroBuffer::WriteDataHeader(Bool_t dummy, Bool_t compressed)
