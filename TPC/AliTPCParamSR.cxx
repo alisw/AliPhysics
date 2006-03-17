@@ -367,7 +367,7 @@ Bool_t AliTPCParamSR::Update()
      fYOuter[i+1]= x*tan(fOuterAngle/2.)-fOuterWireMount;
      fNPadsUp[i] = 1+2*(Int_t)(y/fOuterPadPitchWidth) ;
      if(i==fNRowUp1-1) {
-       fLastWireUp1=fPadRowUp[i] +0.375;
+       fLastWireUp1=fPadRowUp[i] +0.625;
        firstrow = fPadRowUp[i] + 0.5*(fOuter1PadPitchLength+fOuter2PadPitchLength);
      }
      }
