@@ -17,7 +17,8 @@
 /// Author: Gines Martinez, Subatech,  September 2003
 
 #include <TNamed.h>
-#include <TArrayI.h>
+
+class TArrayI;
 
 #include "AliLoader.h"
 
@@ -25,6 +26,7 @@ class TClonesArray;
 class TNamed;
 class TObjArray;
 class TTree;
+class TIterator;
 
 class AliMUONConstants;
 class AliMUONRawCluster;
@@ -45,6 +47,9 @@ class AliMUONGlobalTrigger;
 class AliMUONData : public TNamed 
 {
   public:
+  
+  enum EChamberIteration { kAllChambers, kTrackingChambers, kTriggerChambers };
+  
     AliMUONData();
     AliMUONData(AliLoader * loader, const char* name, const char* title);
     virtual ~AliMUONData();  
@@ -81,17 +86,15 @@ class AliMUONData : public TNamed
     TClonesArray*  Hits() {return fHits;}
     TClonesArray*  Digits(Int_t DetectionPlane) const;
     TClonesArray*  SDigits(Int_t DetectionPlane) const;
-//    TClonesArray*  LocalTrigger() {return fLocalTrigger;}
-//    TClonesArray*  GlobalTrigger() {return fGlobalTrigger;}
-    TClonesArray*  LocalTrigger();
-    TClonesArray*  GlobalTrigger();    
+    TClonesArray*  LocalTrigger() const;
+    TClonesArray*  GlobalTrigger() const;    
     TClonesArray*  RawClusters(Int_t DetectionPlane);
     TClonesArray*  RecTracks() {return fRecTracks;}
     TClonesArray*  RecTriggerTracks() {return fRecTriggerTracks;}
 
     void           GetTrack(Int_t it) const  {fLoader->TreeH()->GetEvent(it);}
     Int_t          GetNtracks() const      {return (Int_t) fLoader->TreeH()->GetEntries();}
-    void           GetDigits() const {fLoader->TreeD()->GetEvent(0);}
+    void           GetDigits() const;
     void           GetSDigits() const {fLoader->TreeS()->GetEvent(0);}
     void           GetRawClusters() const {fLoader->TreeR()->GetEvent(0);}
     void           GetTrigger() const {fLoader->TreeR()->GetEvent(0);}
@@ -107,7 +110,7 @@ class AliMUONData : public TNamed
     Bool_t        IsTrackBranchesInTree();
     Bool_t        IsTriggerTrackBranchesInTree();
 
-    virtual AliLoader* GetLoader() {return fLoader;}
+    virtual AliLoader* GetLoader() const { return fLoader; }
     virtual void       SetLoader(AliLoader * loader) {fLoader=loader;}    
     
     virtual void   Fill(Option_t* opt=" ");
@@ -133,6 +136,8 @@ class AliMUONData : public TNamed
     TTree*         TreeT() {return fLoader->TreeT(); }
     TTree*         TreeP() {return fLoader->TreeP(); }
 
+    TIterator* CreateDigitIterator(EChamberIteration type);
+    
   protected: 
     AliMUONData(const AliMUONData& rhs);
     AliMUONData& operator=(const AliMUONData& rhs);
@@ -157,12 +162,14 @@ class AliMUONData : public TNamed
     Int_t           fNrectriggertracks; //! Number of reconstructed tracks
     Int_t           fSplitLevel; // Splitting of branches 0 no spitting (root files are smaller) 1 splitting (larger output files)
 
-  private:  
-    //descendant classes should
-    //use protected interface methods to access these folders
+    mutable Int_t fCurrentEvent; // Current event we're dealing with
+    
+private:  
 
-  
-  ClassDef(AliMUONData,2)
+  ClassDef(AliMUONData,3) // Data accessor for MUON module
+      
 };
+
+
 #endif
 

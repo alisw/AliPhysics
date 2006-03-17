@@ -14,11 +14,14 @@
  **************************************************************************/
 
 /* $Id$ */
-// AliMUONData classes
-// Class containing MUON data: hits, digits, rawclusters, globaltrigger, localtrigger, etc ..
-// The classe makes the lik between the MUON data lists and the event trees from loaders
-// Gines Martinez, Subatech,  September 2003
-//
+
+/// AliMUONData class
+///
+/// Class containing MUON data: hits, digits, rawclusters, globaltrigger, localtrigger, etc ..
+/// The classe makes the lik between the MUON data lists and the event trees from loaders
+///
+/// Gines Martinez, Subatech,  September 2003
+///
 
 #include "AliMUONData.h"
 
@@ -31,6 +34,8 @@
 #include "AliMUONRawCluster.h"
 #include "AliMUONTrack.h"
 #include "AliMUONTriggerTrack.h"
+#include "AliRunLoader.h"
+#include "TArrayI.h"
 #include "TString.h"
 
 ClassImp(AliMUONData)
@@ -55,7 +60,8 @@ ClassImp(AliMUONData)
     fNlocaltrigger(0),
     fNrectracks(0),
     fNrectriggertracks(0),
-    fSplitLevel(0)
+    fSplitLevel(0),
+    fCurrentEvent(-1)
 {
   // Default constructor
 }
@@ -79,32 +85,10 @@ AliMUONData::AliMUONData(AliLoader * loader, const char* name, const char* title
     fNlocaltrigger(0),
     fNrectracks(0),
     fNrectriggertracks(0),
-    fSplitLevel(0)
+    fSplitLevel(0),
+    fCurrentEvent(-1)
 {
   // Constructor for AliMUONData
-
-//   fHits          = new TClonesArray("AliMUONHit",1000);
-//   fNhits         = 0;
-//   fDigits        = new TObjArray(AliMUONConstants::NCh());
-//   fNdigits       = new Int_t[AliMUONConstants::NCh()];
-//   for (Int_t iDetectionPlane=0; iDetectionPlane<AliMUONConstants::NCh() ;iDetectionPlane++) {
-//     fDigits->AddAt(new TClonesArray("AliMUONDigit",10000),iDetectionPlane); 
-//     fNdigits[iDetectionPlane]=0;
-//   }
-//   fRawClusters   = new TObjArray(AliMUONConstants::NTrackingCh());
-//   fNrawclusters  = new Int_t[AliMUONConstants::NTrackingCh()];
-//   for (Int_t iDetectionPlane=0; iDetectionPlane<AliMUONConstants::NTrackingCh();iDetectionPlane++) {
-//     fRawClusters->AddAt(new TClonesArray("AliMUONRawCluster",10000),iDetectionPlane); 
-//     fNrawclusters[iDetectionPlane]=0;
-//   }
-//   fGlobalTrigger = new TClonesArray("AliMUONGlobalTrigger",1);    
-//   fNglobaltrigger =0;
-//   fLocalTrigger  = new TClonesArray("AliMUONLocalTrigger",234);   
-//   fNlocaltrigger = 0;
-//   fRecTracks     = new TClonesArray("AliMUONTrack", 100);
-//   fNrectracks    = 0; // really needed or GetEntriesFast sufficient ????
-
-
 }
 
 //_____________________________________________________________________________
@@ -152,7 +136,6 @@ AliMUONData::~AliMUONData()
     fRecTriggerTracks->Delete();
     delete fRecTriggerTracks;
   }
-  //detructor 
 }
 
 //_____________________________________________________________________________
@@ -436,7 +419,8 @@ void AliMUONData::Fill(Option_t* option)
   TBranch * branch = 0x0;
 
   // Filling TreeH
-  if ( TreeH() && cH ) {
+  if ( TreeH() && cH ) 
+  {
     TreeH()->Fill();
   }  
  
@@ -444,89 +428,133 @@ void AliMUONData::Fill(Option_t* option)
 
   if ( TreeD() && cD && cGLT )
   {
+    // Writing digits and (global+local) trigger at once.
     TreeD()->Fill();
   }
-  
-  if ( TreeD() && cD ) {
-    if ( IsTriggerBranchesInTreeD() ) {
-      for (int i=0; i<AliMUONConstants::NCh(); i++) {
-	sprintf(branchname,"%sDigits%d",GetName(),i+1);
-	branch = TreeD()->GetBranch(branchname);
-	branch->Fill();
+  else
+  {
+    if ( TreeD() && cD ) 
+    {
+      if ( IsTriggerBranchesInTreeD() ) 
+      {
+        for (int i=0; i<AliMUONConstants::NCh(); i++) 
+        {
+          sprintf(branchname,"%sDigits%d",GetName(),i+1);
+          branch = TreeD()->GetBranch(branchname);
+          branch->Fill();
+        }
+      } 
+      else
+      {
+        TreeD()->Fill();
       }
-    } else 
-      TreeD()->Fill();
-  }
-
-  // filling trigger
-  if ( TreeD() && cGLT ) {
-    if ( IsDigitsBranchesInTree() ) {
-      sprintf(branchname,"%sLocalTrigger",GetName());
-      branch = TreeD()->GetBranch(branchname); 
-      branch->Fill();
-      sprintf(branchname,"%sGlobalTrigger",GetName());
-      branch = TreeD()->GetBranch(branchname);
-      branch->Fill();
-    } else
-      TreeD()->Fill();
-  }
+    }
+    
+    if ( TreeD() && cGLT ) 
+    {
+      if ( IsDigitsBranchesInTree() ) 
+      {
+        sprintf(branchname,"%sLocalTrigger",GetName());
+        branch = TreeD()->GetBranch(branchname); 
+        branch->Fill();
+        sprintf(branchname,"%sGlobalTrigger",GetName());
+        branch = TreeD()->GetBranch(branchname);
+        branch->Fill();
+      } 
+      else
+      {
+        TreeD()->Fill();
+      }
+    }
+  } // end of TreeD() handling.
 
   // Filling TreeS
-  if ( TreeS() && cS) {
+  if ( TreeS() && cS) 
+  {
     TreeS()->Fill();
   }
 
-  //
-  // filling rawclusters
-  if ( TreeR()  && cRC ) {
-    if ( IsTriggerBranchesInTree() ) {
+  // Filling TreeR
+  
+  if ( TreeR() && cRC && cTC )
+  {
+    TreeR()->Fill();
+  }
+  else
+  {  
+    if ( TreeR()  && cRC ) 
+    {
+      if ( IsTriggerBranchesInTree() ) 
+      {
       // Branch per branch filling
-      for (int i=0; i<AliMUONConstants::NTrackingCh(); i++) {
-	sprintf(branchname,"%sRawClusters%d",GetName(),i+1);
-	branch = TreeR()->GetBranch(branchname);
-	branch->Fill();
+        for (int i=0; i<AliMUONConstants::NTrackingCh(); i++) 
+        {
+          sprintf(branchname,"%sRawClusters%d",GetName(),i+1);
+          branch = TreeR()->GetBranch(branchname);
+          branch->Fill();
+        }
+      }
+      else  
+      {
+        TreeR()->Fill();
       }
     }
-    else  TreeR()->Fill();
+    
+    if ( TreeR()  && cTC) 
+    {
+      if (IsRawClusterBranchesInTree()) 
+      {
+        // Branch per branch filling
+        sprintf(branchname,"%sLocalTrigger",GetName());
+        branch = TreeR()->GetBranch(branchname); 
+        branch->Fill();
+        sprintf(branchname,"%sGlobalTrigger",GetName());
+        branch = TreeR()->GetBranch(branchname);
+        branch->Fill();
+      }
+      else
+      {
+        TreeR()->Fill();
+      }
+    }
   }
+
+  // Filling TreeT
   
- //
-  // filling trigger 
-  if ( TreeR()  && cTC) {
-    if (IsRawClusterBranchesInTree()) {
-      // Branch per branch filling
-      sprintf(branchname,"%sLocalTrigger",GetName());
-      branch = TreeR()->GetBranch(branchname); 
-      branch->Fill();
-      sprintf(branchname,"%sGlobalTrigger",GetName());
-      branch = TreeR()->GetBranch(branchname);
-      branch->Fill();
+  if ( TreeT() && cRT && cRL )
+  {
+    TreeT()->Fill();
+  }
+  else
+  {
+    if ( TreeT() && cRT ) 
+    {
+      if (IsTriggerTrackBranchesInTree()) 
+      {
+        sprintf(branchname,"%sTrack",GetName());  
+        branch = TreeT()->GetBranch(branchname);
+        branch->Fill();
+      }
+      else 
+      {
+        TreeT()->Fill();
+      }
     }
-    else  TreeR()->Fill();
-  }
-  //
-  // filling tracks
-  if ( TreeT() && cRT ) {
-    if (IsTriggerTrackBranchesInTree()) {
-	sprintf(branchname,"%sTrack",GetName());  
-	branch = TreeT()->GetBranch(branchname);
-	branch->Fill();
+
+    if ( TreeT() && cRL ) 
+    {
+      if (IsTrackBranchesInTree()) 
+      {
+        sprintf(branchname,"%sTriggerTrack",GetName());  
+        branch = TreeT()->GetBranch(branchname);
+        branch->Fill();
+      }    
+      else 
+      {
+        TreeT()->Fill();
+      }
     }
-    else  TreeT()->Fill();
   }
-  // filling trigger tracks
-  if ( TreeT() && cRL ) {
-    if (IsTrackBranchesInTree()) {
-	sprintf(branchname,"%sTriggerTrack",GetName());  
-	branch = TreeT()->GetBranch(branchname);
-	branch->Fill();
-    }    
-    else TreeT()->Fill();
-  }
-//   if ( TreeT() && cRL ) {
-//     sprintf(branchname,"%sTrackTrig",GetName());  
-//     TreeT()->Fill();
-//   }
 }
 
 //_____________________________________________________________________________
@@ -564,7 +592,7 @@ void AliMUONData::MakeBranch(Option_t* option)
     sprintf(branchname,"%sHits",GetName());  
     branch = TreeH()->GetBranch(branchname);
     if (branch) {  
-      AliInfo(Form("MakeBranch","Branch %s is already in tree.",GetName()));
+      AliInfo(Form("MakeBranch","Branch %s is already in tree.",branchname));
       return ;
     }
     branch = TreeH()->Branch(branchname,&fHits,kBufferSize);
@@ -605,7 +633,7 @@ void AliMUONData::MakeBranch(Option_t* option)
       branch = treeD->GetBranch(branchname);
       if (branch) 
       {  
-        AliInfo(Form("Branch %s is already in tree.",GetName()));
+        AliInfo(Form("Branch %s is already in tree.",branchname));
         return;
       }
       TClonesArray * digits = Digits(iDetectionPlane); 
@@ -675,7 +703,7 @@ void AliMUONData::MakeBranch(Option_t* option)
       branch = 0x0;
       branch = TreeS()->GetBranch(branchname);
       if (branch) {  
-        AliInfo(Form("Branch %s is already in tree.",GetName()));
+        AliInfo(Form("Branch %s is already in tree.",branchname));
         return;
       }
       TClonesArray * sdigits = SDigits(iDetectionPlane); 
@@ -709,7 +737,7 @@ void AliMUONData::MakeBranch(Option_t* option)
       branch = 0x0;
       branch = TreeR()->GetBranch(branchname);
       if (branch) {  
-        AliInfo(Form("Branch %s is already in tree.",GetName()));
+        AliInfo(Form("Branch %s is already in tree.",branchname));
         return;
       }
       branch = TreeR()->Branch(branchname, &((*fRawClusters)[i]),kBufferSize);
@@ -790,24 +818,35 @@ TClonesArray*  AliMUONData::RawClusters(Int_t DetectionPlane)
   else
     return NULL;
 }
+
 //____________________________________________________________________________
-TClonesArray*  AliMUONData::LocalTrigger()
+TClonesArray*  
+AliMUONData::LocalTrigger() const
 {
-  // Getting Local Trigger
-  if (fLocalTrigger) 
-    return ( (TClonesArray*) fLocalTrigger );
-  else
-    return NULL;
+  return fLocalTrigger;
 }
+
 //____________________________________________________________________________
-TClonesArray*  AliMUONData::GlobalTrigger()
+void
+AliMUONData::GetDigits() const 
 {
-  // Getting Global Trigger
-  if (fGlobalTrigger) 
-    return ( (TClonesArray*) fGlobalTrigger );
-  else
-    return NULL;
+  // Load the digits from TreeD for the current event.
+  Int_t event = fLoader->GetRunLoader()->GetEventNumber();
+  if ( fCurrentEvent != event )
+  {
+    fLoader->TreeD()->GetEvent(0);
+    fCurrentEvent = event;
+  }
 }
+
+//____________________________________________________________________________
+TClonesArray*  
+AliMUONData::GlobalTrigger() const
+{
+  // Return the global trigger 
+  return fGlobalTrigger;
+}
+
 //____________________________________________________________________________
 void AliMUONData::ResetDigits()
 {
@@ -1071,6 +1110,7 @@ void AliMUONData::SetTreeAddress(Option_t* option)
 void
 AliMUONData::Print(Option_t* opt) const
 {
+  // Dump object on screen
   TString options(opt);
   options.ToUpper();
   
