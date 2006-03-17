@@ -19,6 +19,7 @@
 class AliMUONV2DStore : public TObject
 {
 public:
+  AliMUONV2DStore();
   virtual ~AliMUONV2DStore();
   
   /// Return the object stored at (i,j).

@@ -22,6 +22,16 @@
 #include "TMath.h"
 #include "TString.h"
 
+/// This class is implementing the AliMUONVCalibParam interface.
+/// 
+/// It stores a given number of integers.
+/// 
+/// Those integers can also be retrieved as floats if really needed 
+/// (this is to comply with the base class).
+/// 
+/// You might consider just as it is, namely a C++ wrapper to 
+/// a plain int[] array.
+
 ClassImp(AliMUONCalibParam1I)
 
 //_____________________________________________________________________________
@@ -52,13 +62,28 @@ AliMUONCalibParam1I::AliMUONCalibParam1I(Int_t theSize, Int_t fillWithValue)
   }
 }
 
-//______________________________________________________________________________
-AliMUONCalibParam1I::AliMUONCalibParam1I(const AliMUONCalibParam1I& right) 
-  : AliMUONVCalibParam(right) 
-{  
-/// Protected copy constructor (not implemented)
+//_____________________________________________________________________________
+AliMUONCalibParam1I::AliMUONCalibParam1I(const AliMUONCalibParam1I& other) 
+: AliMUONVCalibParam(other),
+fSize(0),
+fValues(0x0)
+{
+  //
+  // Copy ctor
+  //
+  other.CopyTo(*this);
+}
 
-  AliFatal("Copy constructor not provided.");
+//_____________________________________________________________________________
+AliMUONCalibParam1I&
+AliMUONCalibParam1I::operator=(const AliMUONCalibParam1I& other) 
+{
+  //
+  // Assignment operator
+  //
+  AliMUONVCalibParam::operator=(other);
+  other.CopyTo(*this);
+  return *this;
 }
 
 //_____________________________________________________________________________
@@ -70,19 +95,24 @@ AliMUONCalibParam1I::~AliMUONCalibParam1I()
   delete[] fValues;
 }
 
-//______________________________________________________________________________
-AliMUONCalibParam1I& 
-AliMUONCalibParam1I::operator=(const AliMUONCalibParam1I& right)
+//_____________________________________________________________________________
+void
+AliMUONCalibParam1I::CopyTo(AliMUONCalibParam1I& destination) const
 {
-/// Protected assignement operator (not implemented)
-
-  // check assignement to self
-  if (this == &right) return *this;
-
-  AliFatal("Assignement operator not provided.");
-    
-  return *this;  
-}    
+  //
+  // Copy this into destination.
+  //
+  delete[] destination.fValues;
+  destination.fSize = fSize;
+  if ( fSize > 0 )
+  {
+    destination.fValues = new Int_t[fSize];
+    for ( Int_t i = 0; i < fSize; ++i )
+    {
+      destination.fValues[i] = fValues[i];
+    }
+  }
+}
 
 //_____________________________________________________________________________
 void

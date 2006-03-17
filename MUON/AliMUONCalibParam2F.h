@@ -24,6 +24,9 @@ class AliMUONCalibParam2F : public AliMUONVCalibParam
 public:
   AliMUONCalibParam2F();
   AliMUONCalibParam2F(Int_t theSize, Int_t fillWithValue=0);
+  AliMUONCalibParam2F(const AliMUONCalibParam2F& other);
+  AliMUONCalibParam2F& operator=(const AliMUONCalibParam2F& other);
+  
   virtual ~AliMUONCalibParam2F();
 
   virtual Int_t Dimension() const { return 2; }
@@ -37,17 +40,14 @@ public:
 
   virtual Float_t ValueAsFloat(Int_t i, Int_t j=0) const;
   virtual Int_t ValueAsInt(Int_t i, Int_t j=0) const;
-
-protected:
-  AliMUONCalibParam2F(const AliMUONCalibParam2F& right);
-  AliMUONCalibParam2F&  operator = (const AliMUONCalibParam2F& right);
      
 private:
+  void CopyTo(AliMUONCalibParam2F& destination) const;
   Int_t Index(Int_t i, Int_t j) const;  
     
 private:
-  Int_t fSize;
-  Int_t fN;
+  Int_t fSize; // The number of float pair we hold
+  Int_t fN; // The total number of floats we hold (2*fSize)
   Float_t* fValues; //[fN]
   
   ClassDef(AliMUONCalibParam2F,1) // Container for calibration parameters

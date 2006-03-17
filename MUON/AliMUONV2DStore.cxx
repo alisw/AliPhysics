@@ -17,7 +17,21 @@
 
 #include "AliMUONV2DStore.h"
 
+///
+/// Defines an interface equivalent to a 2D array of TObject, indexed
+/// by a pair of integers (somehow a matrix, 
+/// except that indices are not necessarily sequential).
+/// 
+/// It's extremely simple and hopefully allow many implementations.
+/// It also makes the object ownership self-evident.
+///
+
 ClassImp(AliMUONV2DStore)
+
+//_____________________________________________________________________________
+AliMUONV2DStore::AliMUONV2DStore()
+{
+}
 
 //_____________________________________________________________________________
 AliMUONV2DStore::~AliMUONV2DStore()

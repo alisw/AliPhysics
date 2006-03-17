@@ -20,7 +20,11 @@
 #include "AliLog.h"
 #include "AliMpExMap.h"
 
-#include <cassert>
+/// 
+/// Basic implementation of AliMUONV2DStore container using
+/// AliMpExMap internally.
+/// What we store is a "double" map : an AliMpExMap of AliMpExMaps
+///
 
 ClassImp(AliMUON2DMap)
 
@@ -32,13 +36,20 @@ AliMUON2DMap::AliMUON2DMap() : AliMUONV2DStore(), fMap(new AliMpExMap(true))
   //
 }
 
-//______________________________________________________________________________
-AliMUON2DMap::AliMUON2DMap(const AliMUON2DMap& right) 
-  : AliMUONV2DStore(right) 
-{  
-/// Protected copy constructor (not implemented)
+//_____________________________________________________________________________
+AliMUON2DMap::AliMUON2DMap(const AliMUON2DMap& other)
+: AliMUONV2DStore(),
+fMap(0x0)
+{
+  other.CopyTo(*this);
+}
 
-  AliFatal("Copy constructor not provided.");
+//_____________________________________________________________________________
+AliMUON2DMap&
+AliMUON2DMap::operator=(const AliMUON2DMap& other)
+{
+  other.CopyTo(*this);
+  return *this;
 }
 
 //_____________________________________________________________________________
@@ -50,19 +61,15 @@ AliMUON2DMap::~AliMUON2DMap()
   delete fMap;
 }
 
-//______________________________________________________________________________
-AliMUON2DMap& 
-AliMUON2DMap::operator=(const AliMUON2DMap& right)
+//_____________________________________________________________________________
+void
+AliMUON2DMap::CopyTo(AliMUON2DMap&) const
 {
-/// Protected assignement operator (not implemented)
-
-  // check assignement to self
-  if (this == &right) return *this;
-
-  AliFatal("Assignement operator not provided.");
-    
-  return *this;  
-}    
+  // 
+  // Copy this into dest.
+  //
+  AliFatal("Implement me if needed");
+}
 
 //_____________________________________________________________________________
 TObject* 
@@ -106,7 +113,6 @@ AliMUON2DMap::Set(Int_t i, Int_t j, TObject* object, Bool_t replace)
     AliMpExMap* m = new AliMpExMap(true);
     fMap->Add(i,m);
     o = fMap->GetValue(i);
-    assert(m==o);
   }
   AliMpExMap* m = dynamic_cast<AliMpExMap*>(o);
   if (!m) AliFatal(Form("fMap[%d] not of the expected type",i));

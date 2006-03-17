@@ -22,6 +22,13 @@
 #include "TMath.h"
 #include "TString.h"
 
+///
+/// Implementation of AliMUONVCalibParam for pair of floats.
+///
+/// Conceptually, this class is the equivalent of a vector or float pairs,
+/// but it is implemented using bare Float_t[] array.
+///
+
 ClassImp(AliMUONCalibParam2F)
 
 //_____________________________________________________________________________
@@ -54,13 +61,23 @@ AliMUONCalibParam2F::AliMUONCalibParam2F(Int_t theSize, Int_t fillWithValue)
   }
 }
 
-//______________________________________________________________________________
-AliMUONCalibParam2F::AliMUONCalibParam2F(const AliMUONCalibParam2F& right) 
-  : AliMUONVCalibParam(right) 
-{  
-/// Protected copy constructor (not implemented)
 
-  AliFatal("Copy constructor not provided.");
+//_____________________________________________________________________________
+AliMUONCalibParam2F::AliMUONCalibParam2F(const AliMUONCalibParam2F& other) 
+: AliMUONVCalibParam(),
+fSize(0),
+fN(0),
+fValues(0x0)
+{
+  other.CopyTo(*this);
+}
+
+//_____________________________________________________________________________
+AliMUONCalibParam2F&
+AliMUONCalibParam2F::operator=(const AliMUONCalibParam2F& other) 
+{
+  other.CopyTo(*this);
+  return *this;
 }
 
 //_____________________________________________________________________________
@@ -72,19 +89,26 @@ AliMUONCalibParam2F::~AliMUONCalibParam2F()
   delete[] fValues;
 }
 
-//______________________________________________________________________________
-AliMUONCalibParam2F& 
-AliMUONCalibParam2F::operator=(const AliMUONCalibParam2F& right)
+//_____________________________________________________________________________
+void
+AliMUONCalibParam2F::CopyTo(AliMUONCalibParam2F& destination) const
 {
-/// Protected assignement operator (not implemented)
+  //
+  // Copy *this to destination
+  //
+  delete[] destination.fValues;
+  destination.fN = fN;
+  destination.fSize = fSize;
 
-  // check assignement to self
-  if (this == &right) return *this;
-
-  AliFatal("Assignement operator not provided.");
-    
-  return *this;  
-}    
+  if ( fN > 0 )
+  {
+    destination.fValues = new Float_t[fN];
+    for ( Int_t i = 0; i < fN; ++i )
+    {
+      destination.fValues[i] = fValues[i];
+    }
+  }
+}
 
 //_____________________________________________________________________________
 Int_t

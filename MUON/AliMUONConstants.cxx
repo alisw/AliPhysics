@@ -17,7 +17,17 @@
 
 #include "AliMUONConstants.h"
 
-#include <TMath.h>
+#include "TMath.h"
+
+///
+/// This class holds various constants to be used in many places,
+/// such as the number of tracking and trigger chambers, 
+/// some geometrical constants (to build the initial geometry for simulation)
+/// and mathieson distribution default values.
+/// Those constants should as much as possible replace hard-coded values
+/// which are to be considered strictly illegal in the MUON code (or any code,
+/// by the way).
+///
 
 Int_t   AliMUONConstants::fgNCh = 14;
 Int_t   AliMUONConstants::fgNTrackingCh = 10;

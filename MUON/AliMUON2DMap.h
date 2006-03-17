@@ -20,22 +20,24 @@ class AliMpExMap;
 class AliMUON2DMap : public AliMUONV2DStore
 {
 public:
-  AliMUON2DMap();
+  AliMUON2DMap();  
   virtual ~AliMUON2DMap();
 
   virtual TObject* Get(Int_t i, Int_t j) const;
-  virtual Bool_t Set(Int_t i, Int_t j, TObject*, Bool_t replace);
+  virtual Bool_t Set(Int_t i, Int_t j, TObject* object, Bool_t replace);
   virtual Bool_t IsOwner() const { return kTRUE; }
 
   virtual void Print(Option_t* opt="") const;
 
 protected:
-  AliMUON2DMap(const AliMUON2DMap& right);
-  AliMUON2DMap&  operator = (const AliMUON2DMap& right);
-     
+  AliMUON2DMap(const AliMUON2DMap& other);
+  AliMUON2DMap&  operator = (const AliMUON2DMap& other);
+
+private:
+    void CopyTo(AliMUON2DMap& destination) const;
   
 private:
-  AliMpExMap* fMap;
+  AliMpExMap* fMap; // Our internal map (an AliMpExMap of AliMpExMaps)
   
   ClassDef(AliMUON2DMap,1) // A 2D container
 };
